@@ -104,6 +104,7 @@ class Mapping : public JetVector
   ~Mapping();
 
   Mapping& operator=( const Mapping& );
+  Vector  operator()( const Vector& ) const;
   Mapping operator()( const Mapping& ) const;  // Mapping composition.
   Mapping operator* ( const Mapping& ) const;  // Mapping composition also; an alias.
 

@@ -5,6 +5,7 @@
 #include "dlist.h"
 #include "Jet__environment.h"
 #include "IntArray.h"
+#include "VectorD.h"
 #include "JL.h"    // Not strictly needed, but should not be
                    // necessary to invoke this from app'n.
 
@@ -142,6 +143,7 @@ public:
   Jet filter( char (*)( const IntArray&, const double& ) ); 
                                    // Returns those JLterms for which the 
                                    // argument is satisfied.
+  double operator() ( const Vector& ) const;
   double operator() ( double* ) const;	   
                                    // Performs a multinomial evaluation of 
 				   // the Jet variable.  Essentially acts as a 

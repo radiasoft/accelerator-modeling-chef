@@ -150,6 +150,34 @@ Mapping& Mapping::operator=( const Mapping& x )
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+Vector
+Mapping::operator()( const Vector& x ) const
+{
+ static int i;
+
+ i = x.Dim();
+ if( ( i != myEnv->NumVar ) || ( i != dim ) ) {
+   cerr << "\n\n"
+        << "*** ERROR ***                                  \n"
+        << "*** ERROR *** Mapping::operator()( Mapping )   \n"
+        << "*** ERROR ***                                  \n"
+        << "*** ERROR *** Incompatible dimensions.         \n"
+        << "*** ERROR ***                                  \n"
+        << endl;
+   exit(1);
+ }
+
+ Vector z( dim );
+
+ for( i = 0; i < myEnv->SpaceDim; i++) {
+  z(i) = comp[i]( x );
+ }
+
+ return z;
+}
+
+//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 Mapping 
 Mapping::operator()( const Mapping& x ) const
 {
