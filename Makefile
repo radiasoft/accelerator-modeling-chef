@@ -19,10 +19,6 @@ default:
 	@echo "  make solaris-debug     for Solaris systems and Sun debug"
 	@echo "  make solaris-gcc       for Solaris systems with GCC"
 	@echo "  make solaris-gcc-debug for Solaris systems with GCC debug on"
-	@echo "  make solaris-all       builds both sun and gcc libraries."
-	@echo "  make solaris-debug-all builds both sun and gcc libraries with debugging on."
-	@echo "  make sunos4            for Sun systems with SunOS 4.x"
-	@echo "  make sunos4-debug      for Sun systems with SunOS 4.x and Sun debug"
 	@echo "  make setup             Make include and lib dirs and links."
 	@echo "  make link              Make the links in the include dir."
 	@echo "  make include-dir       Make the include directory."
@@ -31,20 +27,19 @@ default:
 	@echo "  make lib-clean         Remove all library (.a) files."
 	@echo "  make clean             Remove all .o,.sb,.~ files."
 	@echo "  make link-clean        Remove all links in include directory."
-	@echo "  make export            Cleans up all .o, .~, .sb files in prep for tar."
-	@echo "  make tar               Tar up all (*.cc,*.h,.sb) files. See above."
+	@echo "  make tar               Tar up all source (*.cc,*.h,.sb) files."
 	@echo "  make tar_everything    Tar up ALL files."
 
 
-LINKDIRS  = beamline mxyzptlk Machine tev tcl socket server sybase filter swyd recycler
+LINKDIRS  = bml mxb Machine tev tcl socket server sybase filter swyd recycler
 
-SUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app swyd/src swyd/app recycler/app recycler/src
+SUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app swyd/src swyd/app recycler/app recycler/src
 
-SUNSUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src recycler/src
+SUNSUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src recycler/src
 
-SGISUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src sybase/src socket/src server/src filter/src
+SGISUBDIRS  = $(SUNSUBDIRS)
 
-gcc solaris-gcc solaris-gcc-debug solaris solaris-debug sunos4 sunos4-debug ultra ultra-opt ultra-debug :
+gcc solaris-gcc solaris-gcc-debug solaris solaris-debug ultra ultra-opt ultra-debug :
 	@set -x; for i in $(SUNSUBDIRS); do \
 		(cd $$i; $(MAKE)  $@); \
 		done
@@ -109,19 +104,7 @@ export: real-clean
 	rm -rf include;\
 	rm -rf lib;\
 
-solaris-all:
-	$(MAKE) clean
-	$(MAKE) solaris
-	$(MAKE) clean
-	$(MAKE) solaris-gcc
-
-solaris-debug-all:
-	$(MAKE) clean
-	$(MAKE) solaris-debug
-	$(MAKE) clean
-	$(MAKE) solaris-gcc-debug
-
-NAME = Model-1.0
+NAME = Model-2.0
 
 TAR_FILES =	\
 	fnal/README \
@@ -129,8 +112,8 @@ TAR_FILES =	\
 	fnal/Make-config \
 	fnal/tar-exclude \
 	fnal/ChangeLog \
-	fnal/beamline	\
-	fnal/mxyzptlk	\
+	fnal/bml	\
+	fnal/mxb	\
 	fnal/tev \
 	fnal/Machine \
 	fnal/server \
@@ -138,8 +121,8 @@ TAR_FILES =	\
 	fnal/sybase \
 	fnal/filter \
 	fnal/swyd \
-	fnal/tcl \
-	fnal/recycler 
+	fnal/recycler \
+	fnal/tcl
 
 tar:
 	cd .. ; \
@@ -149,7 +132,7 @@ tar:
 
 tar_everything:
 	cd .. ; \
-	tar -cvf $(NAME).tar $(TAR_FILES) fnal/mc fnal/mxb ; \
+	tar -cvf $(NAME).tar $(TAR_FILES) fnal/mc ; \
 	gzip $(NAME).tar ; \
 	mv $(NAME).tar.gz fnal
 
