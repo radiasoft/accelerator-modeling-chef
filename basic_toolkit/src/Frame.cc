@@ -321,17 +321,33 @@ Frame Frame::relativeTo( const Frame& f ) const
 
 ostream& operator<< ( ostream& os, /* const */ Frame& f )
 {
-  os << "Frame origin: " << f.o << endl;
-  os << "Frame x axis: ( " 
+  /* 
+     os << "Frame origin: " << f.o << endl;
+     os << "Frame x axis: ( " 
      << f.e(0,0) << ", " << f.e(1,0) << ", " << f.e(2,0) << " )"
      << endl;
-  os << "Frame y axis: ( " 
+     os << "Frame y axis: ( " 
      << f.e(0,1) << ", " << f.e(1,1) << ", " << f.e(2,1) << " )"
      << endl;
-  os << "Frame z axis: ( " 
+     os << "Frame z axis: ( " 
      << f.e(0,2) << ", " << f.e(1,2) << ", " << f.e(2,2) << " )"
      << endl;
+     return os;
+     */
+  os << f.o(0) << " " << f.o(1) << " " << f.o(2) << endl;
+  os << f.e(0,0) << " " << f.e(1,0) << " " << f.e(2,0) << endl;
+  os << f.e(0,1) << " " << f.e(1,1) << " " << f.e(2,1) << endl;
+  os << f.e(0,2) << " " << f.e(1,2) << " " << f.e(2,2) << endl;
   return os;
+}
+
+istream& operator>> ( istream& is, /* const */ Frame& f )
+{
+  is >> f.o(0) >> f.o(1) >> f.o(2);
+  is >> f.e(0,0) >> f.e(1,0) >> f.e(2,0);
+  is >> f.e(0,1) >> f.e(1,1) >> f.e(2,1);
+  is >> f.e(0,2) >> f.e(1,2) >> f.e(2,2);
+  return is;
 }
 
 
