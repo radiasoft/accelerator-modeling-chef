@@ -790,8 +790,8 @@ ostream& operator<<( ostream& os, const JL& x ) {
  os << "\n Count = " << x.count << " , Weight = " << x.weight;
  os << " , Max accurate weight = " << x.accuWgt << endl;
  os << "Begin Environment: \n"
-    << x.myEnv
-    << "End Environment: " << endl;
+    << (int) x.myEnv
+    << "\nEnd Environment: " << endl;
 
  while((  q = getNext()  )) {
    p = (JLterm*) q->info();
