@@ -170,9 +170,9 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
     _editMenu->insertItem( "Condense", this, SLOT(_editCondense()) );
     _editMenu->insertItem( "Merge equivalent quads", this, SLOT(_editMergeQuads()) );
     _editMenu->insertItem( "Convert to Slots", this, SLOT(_editD2S()) );
-    int id_AddMon =
+    // REMOV: int id_AddMon =
     _editMenu->insertItem( "Insert monitors", this, SLOT(_editAddQtMons()) );
-    _editMenu->setItemEnabled( id_AddMon, false );   
+    // REMOVE: _editMenu->setItemEnabled( id_AddMon, false );   
     int id_PartSect = 
     _editMenu->insertItem( "Partition and sectorize", this, SLOT(_editPartAndSect()) );
     _editMenu->setItemEnabled( id_PartSect, false );
@@ -385,6 +385,7 @@ void CHEF::_editRemoveLine()
   { // Note: Beamline has been eliminated as well.
     _contextList.remove( _p_currBmlCon );
     // REMOVE: if( _p_currBmlCon == _p_clickedCon ) { _p_currBmlCon = 0; }
+    delete _p_currBmlCon;
     _p_currBmlCon = 0;
     // REMOVE: _p_clickedCon = 0;
   }
@@ -801,6 +802,12 @@ void CHEF::_editAlign()
 
 void CHEF::_editCondense()
 {
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF: INFO",
+                              "You must select a beamline first." );
+    return;
+  }
+
   DriftEliminator de;
   _p_currBmlCon->accept(de);
   // if( !(_contextList.contains(_p_currBmlCon)) ) 
