@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -33,6 +30,10 @@
 *************************************************************************/
 
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "marker.h"
 
 using namespace std;
@@ -45,7 +46,7 @@ marker::marker() : bmlnElmnt()
 {
 }
 
-marker::marker( char* n ) : bmlnElmnt(n) 
+marker::marker( const char* n ) : bmlnElmnt(n) 
 {
 }
 

@@ -41,7 +41,7 @@ class marker : public bmlnElmnt
 {
 public:
   marker();                   // Data to be written to standard output
-  marker( char* );            // Name identifier.
+  marker( const char* );      // Name identifier.
   marker( const marker& );
   marker( bmlnElmntData& );
   ~marker();

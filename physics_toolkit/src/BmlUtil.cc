@@ -233,3 +233,85 @@ int BmlUtil::makeCovariance( CovarianceSage::Info* wPtr,
 }
 
 
+beamline* BmlUtil::cloneLineAndInsert( double          percent,
+                                       BmlPtrList&     insertions,
+                                       BmlPtrList&     targets,
+                                       const beamline* linePtr )
+{
+  // Test arguments
+  if( !linePtr ) { return 0; }
+
+  if( 0 == insertions.size() || 0 == targets.size() ) {
+    return ((beamline*) (linePtr->Clone()));
+  }
+
+  if( percent < 0.0 ) { percent = 0.0; }
+  if( percent > 1.0 ) { percent = 1.0; }
+  bool upstream   = (0.0 == percent);
+  bool downstream = (1.0 == percent);
+
+
+  // Begin ...
+  beamline* ret = new beamline( linePtr->Name() );
+  BeamlineIterator bli( linePtr );
+  bmlnElmnt* q   = 0;
+  bmlnElmnt* ins = 0;
+  bmlnElmnt* trg = 0;
+  bmlnElmnt* spa = 0;
+  bmlnElmnt* spb = 0;
+
+
+  while( 0 != ( q = bli++ ) ) {
+    ins = insertions.get();
+    trg = targets.get();
+    if( (0 == ins) || (0 == trg) ) { break; }
+
+    if( 0 == strcmp( "beamline", q->Type() ) ) {
+      insertions.insert(ins);
+      targets.insert(trg);
+      ret->append( BmlUtil::cloneLineAndInsert
+                   ( percent, insertions, targets,
+                     dynamic_cast<const beamline*>(q) ) );
+    }
+
+    else {
+      // Here's where the real work is done.
+      if( trg == q ) {
+        if( upstream ) {
+          ret->append( ins );
+          ret->append( q->Clone() );
+        }
+        else if( downstream ) {
+          ret->append( q->Clone() );
+          ret->append( ins );
+        }
+        else {
+          q->Split( percent, &spa, &spb );
+          ret->append( spa );
+          ret->append( ins );
+          ret->append( spb );
+        }
+      }
+
+      else {
+        ret->append(q->Clone());
+        insertions.insert(ins);
+        targets.insert(trg);
+      }
+    }
+  }  
+
+
+  // If there are elements left over, handle them.
+  while(q) {
+    ret->append(q->Clone());
+    q = bli++;
+  }
+
+  // Finished ...
+  ret->setEnergy( linePtr->Energy() );
+  return ret;
+}
+
+
+

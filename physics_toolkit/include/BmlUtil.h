@@ -80,6 +80,43 @@ class BmlUtil
   //   a second bool argument, with default value for backwards 
   //   compatability.
 
+
+  static beamline* cloneLineAndInsert( double          percent,
+                                       BmlPtrList&     insertions,
+                                       BmlPtrList&     targets,
+                                       const beamline* linePtr );
+  // Creates a new beamline and returns its address. The
+  //   invoking program takes responsibility for deleting the
+  //   created beamline. It also takes the responsibility of 
+  //   making certain that no element in <insertions> are already
+  //   included in beamlines.
+  // The new beamline is a clone of <linePtr> with the difference
+  //   that elements from <insertions> are inserted next to
+  //   elements in <targets>. As input, the elements stored
+  //   in <targets> must correspond to elements in <linePtr>
+  //   and be stored in the same order. 
+  //   *********************
+  //   NOTE WELL: the elements in <insertions> are NOT cloned.
+  //   *********************
+  // Reference energy and name of the new beamline will match 
+  //   the old. 
+  // <percent> must take on a value in [0,1] and determines where 
+  //   elements are inserted. If <percent> = 0, then elements from
+  //   <insertions> are put upstream of their corresponding 
+  //   elements from <targets>; if <percent> = 1, then insertion
+  //   is downstream; if an intermediate value, the target element
+  //   is split <percent> of the distance from its upstream end
+  //   and the insertion is made there.
+  // If completely successful, both <insertions> and <targets>
+  //   will be empty when the method has completed.
+  // A clone of <linePtr> is returned if:
+  //   (i) either <insertions> or <targets> is empty
+  //   (ii) no element of targets matches an element in <*linePtr>
+  // The method works recursively so that the hierarchical structure
+  //   of <linePtr> is preserved.
+
+
+  // Message streams
   static void setErrorStream( std::ostream* );
   static void setOutputStream( std::ostream* );
 
