@@ -56,7 +56,7 @@ public:
                    { setVariable( x, i ); }
   void setVariable( const JetC&, int );
 
-  void setVariable( const Complex&, const int& ); // WARNING: alters the environment!!
+  void setVariable( const FNAL::Complex&, const int& ); // WARNING: alters the environment!!
 
   CLieOperator& operator=( const JetCVector& );
 
@@ -70,13 +70,13 @@ public:
   // Lie operations ...................................
   JetC operator^( const JetC& ) const ;      
                                 // Action as a Lie operator
-  JetC expMap( const Complex&, const JetC& );    
+  JetC expMap( const FNAL::Complex&, const JetC& );    
                                 // Performs exponential map on
                                 // the second argument.
   JetC expMap( const JetC&, const JetC& );
                                 // The orbit parameter is here
                                 // a JetC variable.
-  JetCVector expMap( const Complex&, const JetCVector& );
+  JetCVector expMap( const FNAL::Complex&, const JetCVector& );
                                 // Performs exponential map 
                                 // componenet wise.
   JetCVector expMap( const JetC&, const JetCVector& );
