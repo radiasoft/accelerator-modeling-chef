@@ -65,17 +65,27 @@
 #include "QuadEliminator.h"
 #include "bmlfactory.h"
 #include "BeamlineBrowser.h"
-#include "LattFncPlt.h"
-#include "ETFncPlt.h"
-#include "MomentsFncPlt.h"
-#include "LBFncPlt.h"
-#include "DspnFncPlt.h"
+
+// #include "LattFncPlt.h"
+// #include "ETFncPlt.h"
+// #include "MomentsFncPlt.h"
+// #include "LBFncPlt.h"
+// #include "DspnFncPlt.h"
+
+#include "chefplotmain.h"
+#include "LattFncData.h"
+#include "ETFncData.h"
+#include "MomentsFncData.h"
+#include "LBFncData.h"
+#include "DspnFncData.h"
+
 #include "Tracker.h"
 #include "RayTrace.h"
 #include "SiteViewer.h"
 #include "QtMonitor.h"
 #include "QueryDialog.h"
 #include "ModifierVisitor.h"
+#include "InitCondDialogLF.h"
 
 // This undef is needed because of the compiler.
 // #undef connect
@@ -163,19 +173,28 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
     _id_EditSelectMenu =
     _editMenu->insertItem( "Select", _edit_selectMenu );
     _editMenu->setItemEnabled( _id_EditSelectMenu, false);
+
+    _editMenu->insertSeparator();
     
-    _editMenu->insertItem( "Copy line", this, SLOT(_editCopyLine()) );
     _editMenu->insertItem( "Remove line", this, SLOT(_editRemoveLine()) );
-    _editMenu->insertItem( "(Mis)align ...", this, SLOT(_editAlign()) );
-    _editMenu->insertItem( "Condense", this, SLOT(_editCondense()) );
+    _editMenu->insertItem( "Duplicate line", this, SLOT(_editCopyLine()) );
+    _editMenu->insertItem( "Condense line", this, SLOT(_editCondense()) );
     _editMenu->insertItem( "Merge equivalent quads", this, SLOT(_editMergeQuads()) );
-    _editMenu->insertItem( "Convert to Slots", this, SLOT(_editD2S()) );
     // REMOV: int id_AddMon =
     _editMenu->insertItem( "Insert monitors", this, SLOT(_editAddQtMons()) );
     // REMOVE: _editMenu->setItemEnabled( id_AddMon, false );   
+
+    _editMenu->insertSeparator();
+
+    _editMenu->insertItem( "(Mis)align ...", this, SLOT(_editAlign()) );
+    _editMenu->insertItem( "Convert to Slots", this, SLOT(_editD2S()) );
     int id_PartSect = 
     _editMenu->insertItem( "Partition and sectorize", this, SLOT(_editPartAndSect()) );
     _editMenu->setItemEnabled( id_PartSect, false );
+
+    _editMenu->insertSeparator();
+
+    _editMenu->insertItem( "Mode...", this, SLOT(_editMode()) );
   _mainMenu->insertItem( "Edit", _editMenu );
 
     _mach_imagMenu = new QPopupMenu;
@@ -202,6 +221,12 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
           _calcLattFuncMenu->insertItem( "Eigenvectors", this, SLOT(_launchLB()) );
           _calcLattFuncMenu->insertItem( "Moments", this, SLOT(_launchMoments()) );
         _calcCalcFuncMenu->insertItem( "Lattice Functions", _calcLattFuncMenu );
+
+          _calcPushMenu = new QPopupMenu;
+          _calcPushMenu->insertItem( "Uncoupled Lattice Functions", this, SLOT(_pushULF()) );
+          _calcPushMenu->insertItem( "Moments", this, SLOT(_pushMoments()) );
+          _calcPushMenu->insertItem( "Dispersion", this, SLOT(_pushDispersion()) );
+        _calcCalcFuncMenu->insertItem( "Push", _calcPushMenu );
 
         _calcCalcFuncMenu->insertItem( "Dispersion", this, SLOT(_launchDispersion()) );
         _calcCalcFuncMenu->insertItem( "Emittance Dilution", this, SLOT(_launchDilution()) );
@@ -398,18 +423,54 @@ void CHEF::_editRemoveLine()
 
 void CHEF::_horTuneCtrl()
 {
-  _testFC( CHEF::_buildHTuneCircuit );
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+
+  if( _p_currBmlCon->isTreatedAsRing() ) {
+    _testFC( CHEF::_buildHTuneCircuit );
+  }
+  else {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
+  }
 }
 
 
 void CHEF::_verTuneCtrl()
 {
-  _testFC( CHEF::_buildVTuneCircuit );
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+
+  if( _p_currBmlCon->isTreatedAsRing() ) {
+    _testFC( CHEF::_buildVTuneCircuit );
+  }
+  else {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
+  }
 }
 
 
 void CHEF::_tuneCtrl()
 {
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+
+  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
+    return;
+  }
+  // --------------------------------------------------------------
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QHBox* qhb1 = new QHBox( qvb );
@@ -886,8 +947,91 @@ void CHEF::_editAddQtMons()
 }
 
 
+void CHEF::_editMode()
+{
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+
+  // Set up the query
+  bool makeRing = false;
+  QString message(_p_currBmlCon->name());
+
+  if( _p_currBmlCon->isRing() ) {
+    if( _p_currBmlCon->isTreatedAsRing() ) {
+      message +=   " is closed and is currently considered"
+                 "\n a periodic structure."
+                 "\n Do you want to treat it only as a beamline?";
+      makeRing = false;
+    }
+    else {
+      message +=   " is closed but is handled only as a beamline."
+                   "\n Do you want to recognize its periodicity again?";
+      makeRing = true;
+    }
+  }
+  else {
+    if( _p_currBmlCon->isTreatedAsRing() ) {
+      message +=   " is not closed but is considered periodic."
+                   "\nDo you want to treat it only as a beamline?";
+      makeRing = false;
+    }
+    else {
+      message +=   " is not closed and is handled as a beamline."
+                   "\nDo you want to consider it periodic?";
+      makeRing = true;
+    }
+  }
+
+
+  // Create the dialog
+  QDialog* wpu = new QDialog( 0, 0, true );
+    QVBox* qvb = new QVBox( wpu );
+      QLabel* qlb = new QLabel( message, qvb );
+      qlb->setMargin(5);
+      QHBox* qhb = new QHBox( qvb );
+        QPushButton* yesBtn = new QPushButton( "Yes", qhb );
+          yesBtn->setDefault( true );
+          connect( yesBtn, SIGNAL(pressed()),
+                   wpu,    SLOT(accept()) );
+        QPushButton* noBtn = new QPushButton( "No", qhb );
+          connect( noBtn, SIGNAL(pressed()),
+                   wpu,   SLOT(reject()) );
+      qhb->setMargin(5);
+      qhb->setSpacing(3);
+      qhb->adjustSize();
+    qvb->adjustSize();
+  wpu->adjustSize();
+  wpu->setCaption( "CHEF: Line/Ring Mode" );
+
+
+  // Process the dialog
+  int returnCode = wpu->exec();
+
+  if( returnCode == QDialog::Accepted ) {
+    _p_currBmlCon->reset();
+    // "Yes" answer indicates change of mode.
+
+    if( makeRing ) {
+      _p_currBmlCon->handleAsRing();
+    }
+    else {
+      _p_currBmlCon->handleAsLine();
+    }
+  }
+
+  delete wpu;
+}
+
+
 void CHEF::_editPartAndSect()
 {
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+
   beamline* bmlPtr = _p_currBmlCon->cloneBeamline();
   // Must be eliminated before exiting.
 
@@ -1036,128 +1180,415 @@ void CHEF::_slot_contextGenerated( BeamlineContext* x )
 void CHEF::_launchLatt()
 {
   if( 0 == _p_currBmlCon ) {
-    QMessageBox::information( 0, "CHEF",
-                              "Must select a beamline first." );
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
     return;
   }
 
+  LattFncData* lfd = 0;
   try {
-    _plotWidget = new LattFncPlt(_p_currBmlCon);
+    lfd = new LattFncData( _p_currBmlCon );
+    lfd->doCalc();
+    lfd->makeCurves();
   }
   catch( const std::exception& ge ) {
-    if( 0 != _plotWidget ) { delete _plotWidget; _plotWidget = 0; }
     ostringstream uic;
     uic << __FILE__ << ", line " << __LINE__ << ": "
-        << "Exception was thrown with message:\n"
+        << "Exception was thrown by LattFncData.\n"
+           "The message was:\n"
         << ge.what();
-    QMessageBox::information( 0, "CHEF: ERROR",
-                             uic.str().c_str() );
+
+    QMessageBox mb(QString("CHEF: ERROR"), QString(uic.str().c_str()), 
+                   QMessageBox::Critical, 
+                   QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+    mb.show();
+    while(mb.isVisible()) { qApp->processEvents(); }
+
+    if( 0 != lfd ) { delete lfd; lfd = 0; }
     return;
   }
 
-  char theCaption[1024];
-  for( int i = 0; i < 1024; i++ ) {
-    theCaption[i] = '\0';
+  if( lfd ) {
+    _plotWidget  =  new CHEFPlotMain( 0, "plotWidget", Qt::WDestructiveClose );  
+    // destructive close needed !
+    // *_plotWidget will delete itself upon closing.
+    //   The problem is: _plotWidget is not reset to zero.
+    _plotWidget->addData( *lfd );
+
+    char theCaption[1024];
+    for( int i = 0; i < 1024; i++ ) {
+      theCaption[i] = '\0';
+    }
+    strcat( theCaption, "CHEF: Lattice Functions (uncoupled): " );
+    strcat( theCaption, _p_currBmlCon->name() );
+    _plotWidget->setCaption( theCaption );
+    _plotWidget->show();
+  
+    delete lfd; 
+    lfd = 0;
   }
-  strcat( theCaption, "CHEF: Lattice Functions (uncoupled): " );
-  strcat( theCaption, _p_currBmlCon->name() );
-  _plotWidget->setCaption( theCaption );
 }
 
 
 void CHEF::_launchET()
 {
   if( 0 == _p_currBmlCon ) {
-    QMessageBox::information( 0, "CHEF",
-                              "Must select a beamline first." );
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
     return;
   }
 
+  ETFncData*  etfd = 0;
   try {
-    _ETplotWidget = new ETFncPlt(_p_currBmlCon);
+    etfd = new ETFncData( _p_currBmlCon );
+    etfd->doCalc();
+    etfd->makeCurves();
   }
   catch( const std::exception& ge ) {
-    if( 0 != _ETplotWidget ) { delete _ETplotWidget; _ETplotWidget = 0; }
     ostringstream uic;
     uic << __FILE__ << ", line " << __LINE__ << ": "
-        << "Exception was thrown with message:\n"
+        << "Exception was thrown by ETFncData.\n"
+           "The message was:\n"
         << ge.what();
-    QMessageBox::information( 0, "CHEF: ERROR",
-                              uic.str().c_str() );
+
+    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ), 
+                   QMessageBox::Critical, 
+                   QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+    mb.show();
+    while(mb.isVisible()) { qApp->processEvents(); }
+
+    if( 0 != etfd ) { delete etfd; etfd = 0; }
     return;
   }
 
-  char theCaption[1024];
-  for( int i = 0; i < 1024; i++ ) {
-    theCaption[i] = '\0';
+  if( etfd ) {
+    _ETplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
+                                                      Qt::WDestructiveClose); 
+    // destructive close needed !
+    _ETplotWidget->addData( *etfd );
+
+    char theCaption[1024];
+    for( int i = 0; i < 1024; i++ ) {
+      theCaption[i] = '\0';
+    }
+    strcat( theCaption, "CHEF: Lattice Functions (factorization): " );
+    strcat( theCaption, _p_currBmlCon->name() );
+    _ETplotWidget->setCaption( theCaption );
+    _ETplotWidget->show();
+
+    delete etfd;
   }
-  strcat( theCaption, "CHEF: Lattice Functions (factorization): " );
-  strcat( theCaption, _p_currBmlCon->name() );
-  _ETplotWidget->setCaption( theCaption );
 }
 
 
 void CHEF::_launchLB()
 {
   if( 0 == _p_currBmlCon ) {
-    QMessageBox::information( 0, "CHEF",
-                              "Must select a beamline first." );
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
     return;
   }
 
+  LBFncData* lbfd = 0;
   try {
-    _LBplotWidget = new LBFncPlt(_p_currBmlCon);
+    lbfd = new LBFncData( _p_currBmlCon );
+    lbfd->doCalc();
+    lbfd->makeCurves(); 
   }
   catch( const std::exception& ge ) {
-    if( 0 != _LBplotWidget ) { delete _LBplotWidget; _LBplotWidget = 0; }
     ostringstream uic;
     uic << __FILE__ << ", line " << __LINE__ << ": "
-        << "Exception was thrown with message:\n"
+        << "Exception was thrown by LBFncData.\n"
+           "The message was:\n"
         << ge.what();
-    QMessageBox::information( 0, "CHEF: ERROR",
-                              uic.str().c_str() );
+
+    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ), 
+                   QMessageBox::Critical, 
+                   QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+    mb.show();
+    while(mb.isVisible()) { qApp->processEvents(); }
+
+    if( lbfd ) { delete lbfd; lbfd = 0; }
     return;
   }
 
-  char theCaption[1024];
-  for( int i = 0; i < 1024; i++ ) {
-    theCaption[i] = '\0';
+  if( lbfd ) {
+    _LBplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", Qt::WDestructiveClose); // destructive close needed !
+    _LBplotWidget->addData( *lbfd );
+  
+    char theCaption[1024];
+    for( int i = 0; i < 1024; i++ ) {
+      theCaption[i] = '\0';
+    }
+    strcat( theCaption, "CHEF: Lattice Functions (eigenvectors): " );
+    strcat( theCaption, _p_currBmlCon->name() );
+    _LBplotWidget->setCaption( theCaption );
+    _LBplotWidget->show();
+
+    delete lbfd;
   }
-  strcat( theCaption, "CHEF: Lattice Functions (eigenvectors): " );
-  strcat( theCaption, _p_currBmlCon->name() );
-  _LBplotWidget->setCaption( theCaption );
 }
 
 
 void CHEF::_launchMoments()
 {
-  if( 0 == _p_currBmlCon ) {
-    QMessageBox::information( 0, "CHEF",
-                              "Must select a beamline first." );
+  if( 0 == _p_currBmlCon ) { 
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
     return;
   }
 
+
+  MomentsFncData*  mfd = 0;
   try {
-    _MMplotWidget = new MomentsFncPlt(_p_currBmlCon);
+    mfd = new MomentsFncData( _p_currBmlCon ); 
+    mfd->doCalc();
+    mfd->makeCurves();
   }
   catch( const std::exception& ge ) {
-    if( 0 != _MMplotWidget ) { delete _MMplotWidget; _MMplotWidget = 0; }
     ostringstream uic;
     uic << __FILE__ << ", line " << __LINE__ << ": "
-        << "Exception was thrown with message:\n"
+        << "Exception was thrown by MomentsFncData.\n"
+           "The message was:\n"
         << ge.what();
-    QMessageBox::information( 0, "CHEF: ERROR",
-                              uic.str().c_str() );
+
+    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ), 
+                   QMessageBox::Critical, 
+                   QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+    mb.show();
+    while(mb.isVisible()) { qApp->processEvents(); }
+
+    if( 0 != mfd ) { delete mfd; mfd = 0; }
     return;
   }
 
-  char theCaption[1024];
-  for( int i = 0; i < 1024; i++ ) {
-    theCaption[i] = '\0';
+  if( mfd ) {
+    _MMplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
+                                                      Qt::WDestructiveClose);  
+    // destructive close needed !
+    _MMplotWidget->addData( *mfd );
+  
+    char theCaption[1024];
+    for( int i = 0; i < 1024; i++ ) {
+      theCaption[i] = '\0';
+    }
+    strcat( theCaption, "CHEF: Lattice Functions (covariance): " );
+    strcat( theCaption, _p_currBmlCon->name() );
+    _MMplotWidget->setCaption( theCaption );
+    _MMplotWidget->show();
+
+    delete mfd;
   }
-  strcat( theCaption, "CHEF: Lattice Functions (covariance): " );
-  strcat( theCaption, _p_currBmlCon->name() );
-  _MMplotWidget->setCaption( theCaption );
+}
+
+
+void CHEF::_pushMoments()
+{
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+  if( _p_currBmlCon->isTreatedAsRing() ) {
+    QMessageBox::information( 0, "CHEF: ERROR",
+      "Moments are \"pushed\" through beamlines only."
+      "\nTry fixing with Edit/Mode function." );
+    return;
+  }
+
+  InitCondDialogLF* wpu
+    = new InitCondDialogLF( 0, "CHEF::Initial Lattice Functions" );
+
+  if( QDialog::Accepted == wpu->exec() ){
+    // Two steps are needed here: 
+    //   (1) read the text widgets and 
+    //   (2) return the lattice functions.
+    wpu->readInputValues();
+    LattFuncSage::lattFunc initialConditions( wpu->getInitCond() );
+
+    int N = _p_currBmlCon->_proton.State().Dim();
+
+    /* Begin new code
+    MatrixC E(  );
+    End new code */
+  }  
+
+  QMessageBox::information( 0, "CHEF", "Function under construction.\nComing soon." );
+  return;
+}
+
+
+void CHEF::_pushDispersion()
+{
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+  if( _p_currBmlCon->isTreatedAsRing() ) {
+    QMessageBox::information( 0, "CHEF: ERROR",
+      "Dispersion is \"pushed\" through beamlines only."
+      "\nTry fixing with Edit/Mode function." );
+    return;
+  }
+
+  InitCondDialogLF* wpu
+    = new InitCondDialogLF( 0, "CHEF::Initial Lattice Functions" );
+
+  if( QDialog::Accepted == wpu->exec() ){
+    // Two steps are needed here: 
+    //   (1) read the text widgets and 
+    //   (2) return the lattice functions.
+    wpu->readInputValues();
+    LattFuncSage::lattFunc initialConditions( wpu->getInitCond() );
+
+    DispersionSage::Info initialDispersion;
+    initialDispersion.arcLength      = 0.0;
+    initialDispersion.dispersion.hor = initialConditions.dispersion.hor;
+    initialDispersion.dispersion.ver = initialConditions.dispersion.ver;
+    initialDispersion.dPrime.hor     = initialConditions.dPrime.hor;
+    initialDispersion.dPrime.ver     = initialConditions.dPrime.ver;
+
+    _p_currBmlCon->setInitial( initialDispersion );
+
+    DspnFncData* dfd = 0;
+    try {
+      dfd = new DspnFncData ( _p_currBmlCon );
+      // dfd->doCalc( initialDispersion );
+      dfd->doCalc();
+      dfd->makeCurves();
+    }
+    catch( const std::exception& ge ) {
+      ostringstream uic;
+      uic << __FILE__ << ", line " << __LINE__ << ": "
+          << "Exception was thrown by DspnFncData.\n"
+             "The message was:\n"
+          << ge.what();
+      QMessageBox mb(QString("CHEF: ERROR"), QString( uic.str().c_str() ), 
+                     QMessageBox::Critical, 
+                     QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+      mb.show();
+      while(mb.isVisible()) { qApp->processEvents(); }
+
+      if( 0 != wpu) { delete wpu; wpu = 0; }
+      if( 0 != dfd) { delete dfd; dfd = 0; }
+      return;
+    }
+
+    if(dfd) {
+      _DspnplotWidget = new CHEFPlotMain( 0, "DspnplotWidget", Qt::WDestructiveClose ); 
+      // destructive close needed !
+      _DspnplotWidget->addData( *dfd  );
+  
+       char theCaption[1024];
+       for( int i = 0; i < 1024; i++ ) {
+        theCaption[i] = '\0';
+      }
+      strcat( theCaption, "CHEF: Dispersion: " );
+      strcat( theCaption, _p_currBmlCon->name() );
+      _DspnplotWidget->setCaption( theCaption );
+
+      _DspnplotWidget->show();
+
+      delete dfd; 
+      dfd = 0;
+    }
+  }
+
+  // Clean up before exiting
+  if( 0 != wpu) { delete wpu; wpu = 0; }
+}
+
+
+void CHEF::_pushULF()
+{
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+  if( _p_currBmlCon->isTreatedAsRing() ) {
+    QMessageBox::information( 0, "CHEF: ERROR",
+      "Lattice functions are \"pushed\" through beamlines only."
+      "\nTry fixing with Edit/Mode function." );
+    return;
+  }
+
+  InitCondDialogLF* wpu
+    = new InitCondDialogLF( 0, "CHEF::Initial Lattice Functions" );
+
+  if( QDialog::Accepted == wpu->exec() ){
+    // Two steps are needed here: 
+    //   (1) read the text widgets and 
+    //   (2) return the lattice functions.
+    wpu->readInputValues();
+    LattFuncSage::lattFunc initialConditions( wpu->getInitCond() );
+    
+    _p_currBmlCon->setInitial( initialConditions );
+
+    LattFncData* lfd = 0;
+    try {
+      lfd = new LattFncData ( _p_currBmlCon );
+      // lfd->doCalc( initialConditions );
+      lfd->doCalc();
+      lfd->makeCurves();
+    }
+    catch( const std::exception& ge ) {
+      ostringstream uic;
+      uic << __FILE__ << ", line " << __LINE__ << ": "
+          << "Exception was thrown by LattFncData.\n"
+             "The message was:\n"
+          << ge.what();
+      QMessageBox mb(QString("CHEF: ERROR"), QString( uic.str().c_str() ), 
+                     QMessageBox::Critical, 
+                     QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+      mb.show();
+      while(mb.isVisible()) { qApp->processEvents(); }
+
+      if( 0 != wpu) { delete wpu; wpu = 0; }
+      if( 0 != lfd) { delete lfd; lfd = 0; }
+      return;
+    }
+
+    if(lfd) {
+      _plotWidget = new CHEFPlotMain( 0, "DspnplotWidget", Qt::WDestructiveClose ); 
+      // destructive close needed !
+      _plotWidget->addData( *lfd  );
+  
+       char theCaption[1024];
+       for( int i = 0; i < 1024; i++ ) {
+        theCaption[i] = '\0';
+      }
+      strcat( theCaption, "CHEF: Uncoupled lattice functions: " );
+      strcat( theCaption, _p_currBmlCon->name() );
+      _plotWidget->setCaption( theCaption );
+
+      _plotWidget->show();
+
+      delete lfd; 
+      lfd = 0;
+    }
+  }
+
+  // Clean up before exiting
+  if( 0 != wpu) { delete wpu; wpu = 0; }
 }
 
 
@@ -1166,6 +1597,12 @@ void CHEF::_launchTrack()
   if( 0 == _p_currBmlCon ) {
     QMessageBox::information( 0, "CHEF",
                               "Must select a beamline first." );
+    return;
+  }
+  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
     return;
   }
 
@@ -1182,6 +1619,13 @@ void CHEF::_launchRayTrace()
                               "Must select a beamline first." );
     return;
   }
+  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
+    return;
+  }
+
 
   _traceWidget = new RayTrace(_p_currBmlCon);
   _traceWidget->setCaption( "CHEF:: Orbit Trace" );
@@ -1191,33 +1635,58 @@ void CHEF::_launchRayTrace()
 
 void CHEF::_launchDispersion()
 {
-  if( 0 == _p_currBmlCon ) {
-    QMessageBox::information( 0, "CHEF",
-                              "Must select a beamline first." );
+  if( 0 == _p_currBmlCon ) { 
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
     return;
   }
 
+
+  DspnFncData* dfd = 0;
   try {
-    _DspnplotWidget = new DspnFncPlt(_p_currBmlCon);
+    dfd = new DspnFncData ( _p_currBmlCon );
+    dfd->doCalc();
+    dfd->makeCurves();
   }
   catch( const std::exception& ge ) {
-    if( 0 != _DspnplotWidget ) { delete _DspnplotWidget; _DspnplotWidget = 0; }
     ostringstream uic;
     uic << __FILE__ << ", line " << __LINE__ << ": "
-        << "Exception was thrown with message:\n"
+        << "Exception was thrown by DspnFncData.\n"
+           "The message was:\n"
         << ge.what();
-    QMessageBox::information( 0, "CHEF: ERROR",
-                             uic.str().c_str() );
+
+    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ), 
+                   QMessageBox::Critical, 
+                   QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+    mb.show();
+    while(mb.isVisible()) { qApp->processEvents(); }
+
+    if( 0 != dfd ) { delete dfd; dfd = 0; }
     return;
   }
 
-  char theCaption[1024];
-  for( int i = 0; i < 1024; i++ ) {
-    theCaption[i] = '\0';
+  if( dfd ) {
+    _DspnplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
+                                                        Qt::WDestructiveClose); 
+    // destructive close needed !
+    _DspnplotWidget->addData( *dfd  );
+  
+    char theCaption[1024];
+    for( int i = 0; i < 1024; i++ ) {
+      theCaption[i] = '\0';
+    }
+    strcat( theCaption, "CHEF: Dispersion: " );
+    strcat( theCaption, _p_currBmlCon->name() );
+    _DspnplotWidget->setCaption( theCaption );
+    _DspnplotWidget->show();
+
+    delete dfd;
   }
-  strcat( theCaption, "CHEF: Dispersion: " );
-  strcat( theCaption, _p_currBmlCon->name() );
-  _DspnplotWidget->setCaption( theCaption );
 }
 
 
@@ -1240,6 +1709,18 @@ void CHEF::_launchDilution()
                               "\nERROR: Must have two beamlines." );
     return;
   }
+  else { 
+    BeamlineContext* bc1Ptr = (BeamlineContext*) (onePtr->ptr());
+    BeamlineContext* bc2Ptr = (BeamlineContext*) (twoPtr->ptr());
+
+    if( !(bc1Ptr->isTreatedAsRing() && bc2Ptr->isTreatedAsRing()) ) {
+      QMessageBox::information( 0, "CHEF: ERROR",
+                                "Both lines must be periodic."
+                                "\nTry fixing with Edit/Mode function." );
+      return;
+    }
+  }
+
 
   // Phase space dimension must be 6 (optional?)
   int n = Particle::PSD;
@@ -1422,6 +1903,17 @@ void CHEF::_launchSiteVu()
 
 void CHEF::_chromCtrl()
 {
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
+    return;
+  }
+
   _do_nothing();
 }
 
@@ -1537,12 +2029,13 @@ void CHEF::_openFile()
       _p_currBmlCon = new BeamlineContext( false, bmlPtr );
       _p_currBmlCon->setClonedFlag( true );
       _contextList.insert( _p_currBmlCon );
-
     }
   
+    // REMOVE: if( _p_currBmlCon->isRing() ) { _p_currBmlCon->handleAsRing(); }
+    // REMOVE: else                          { _p_currBmlCon->handleAsLine(); }
+
     delete wpu;
   }
-
 
   else if( bmlFile ) { 
     beamline* bmlPtr = new beamline;
@@ -1552,9 +2045,12 @@ void CHEF::_openFile()
 
     _p_currBmlCon = new BeamlineContext( false, bmlPtr );
     _p_currBmlCon->setClonedFlag( true );
+
+    // REMOVE: if( _p_currBmlCon->isRing() ) { _p_currBmlCon->handleAsRing(); }
+    // REMOVE: else                          { _p_currBmlCon->handleAsLine(); }
+
     _contextList.insert( _p_currBmlCon );
   }
-
 
   emit _new_beamline();
 }
@@ -1807,7 +2303,7 @@ argPtr::argPtr( void* x, bool y )
             "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** ERROR *** argPtr::argPtr( void* x )"
             "\n*** ERROR *** Constructor does not accept null argument."
-	 << endl;
+         << endl;
     _ptr = this;
   }
 };

@@ -52,6 +52,8 @@
 
 using namespace std;
 
+int ClosedOrbitSage::ERR_NOTRING = -17;
+
 ClosedOrbitSage::ClosedOrbitSage( const beamline* x, bool doClone )
 : Sage( x, doClone ), _forced(false), _ignoreErrors(false)
 {
@@ -67,6 +69,11 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   if( _verbose ) {
     *_outputStreamPtr << "ClosedOrbitSage -- Entering ClosedOrbitSage::findClosedOrbit"
                       << endl;
+  }
+
+  // If the line is not to be treated as a ring, abort the calculation.
+  if( !(this->isTreatedAsRing()) ) {
+    if( !_ignoreErrors ) { return ERR_NOTRING; }
   }
 
   // Preliminary steps ...

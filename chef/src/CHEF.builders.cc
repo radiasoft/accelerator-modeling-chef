@@ -89,6 +89,8 @@ void CHEF::_makeFODO()
   _p_currBmlCon->setClonedFlag( true );
   _contextList.insert( _p_currBmlCon );
 
+  _p_currBmlCon->handleAsRing();
+
   emit _new_beamline();
 }
 
@@ -129,6 +131,8 @@ void CHEF::_makeSingSext()
   _p_currBmlCon = new BeamlineContext( false, bmlPtr );
   _p_currBmlCon->setClonedFlag( true );
   _contextList.insert( _p_currBmlCon );
+
+  _p_currBmlCon->handleAsRing();
 
   emit _new_beamline();
 }

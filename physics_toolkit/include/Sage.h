@@ -52,6 +52,10 @@
 
 class Sage 
 {
+private:
+ static double _defGapTol;
+ static double _defAngleTol;
+
 public:
   Sage( const beamline*, bool = false );
   // Second argument controls cloning.
@@ -73,17 +77,34 @@ public:
 
  static bool no ( bmlnElmnt* );
  static bool yes( bmlnElmnt* );
+ static bool isRing( const beamline*, double = _defGapTol, double = _defAngleTol );
+ static bool isRing( const beamline&, double = _defGapTol, double = _defAngleTol );
+ // The second argument is the maximum gap allowed 
+ //   for a return of "true." 
+ // These tests will return true for pathologically short lines
+ //   like a beamline consisting of a single 1 mm drift.
+ bool hasRing() const;
+ bool isTreatedAsRing() const;
 
  void setErrorStream( ostream* );
  void setOutputStream( ostream* );
+
+ void treatAsRing( bool );
+ void setGapTolerance( double );
+ double getGapTolerance() const;
+ void setAngleTolerance( double );
+ double getAngleTolerance() const;
 
 protected:
  beamline*           _myBeamlinePtr;
  beamline::arrayRep* _arrayPtr;
  bool                _verbose;
  bool                _cloned;
+ bool                _isRing;
  ostream*            _errorStreamPtr;
  ostream*            _outputStreamPtr;
+ double              _ringGapTolerance;
+ double              _ringAngleTolerance;
 };
 
 
@@ -107,6 +128,43 @@ inline void Sage::setOutputStream( ostream* x )
   _outputStreamPtr = x;
 }
 
+inline void Sage::treatAsRing( bool x )
+{
+  if(x) {
+    _myBeamlinePtr->setLineMode( beamline::ring );
+  }
+  else {
+    _myBeamlinePtr->setLineMode( beamline::line );
+  }
+}
+
+inline bool Sage::isTreatedAsRing() const
+{
+  return ( beamline::ring == _myBeamlinePtr->getLineMode() );
+}
+
+
+inline void Sage::setGapTolerance( double x )
+{
+  _ringGapTolerance = std::abs(x);
+}
+
+
+inline double Sage::getGapTolerance() const
+{
+  return _ringGapTolerance;
+}
+
+
+inline void Sage::setAngleTolerance( double x )
+{
+  _ringAngleTolerance = std::abs(x);
+}
+
+
+inline double Sage::getAngleTolerance() const
+{
+  return _ringAngleTolerance;
+}
 
 #endif // SAGE_H
-

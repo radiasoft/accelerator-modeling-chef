@@ -96,23 +96,34 @@ void LattFuncSage::set_dpp( double x )
 LattFuncSage::LattFuncSage( const beamline* x, bool doClone ) 
 : Sage( x, doClone ), _dpp( 0.00005 )
 {
-  _lf = new lattFunc[ _arrayPtr->size() ];
-  _lr = new lattRing;
+  _finishConstructor();
 }
 
 LattFuncSage::LattFuncSage( const beamline& x, bool doClone ) 
 : Sage( &x, doClone ), _dpp( 0.00005 )
 {
+  _finishConstructor();
+}
+
+LattFuncSage::~LattFuncSage() 
+{
+  _deleteCalcs();
+}
+
+
+void LattFuncSage::_finishConstructor()
+{
   _lf = new lattFunc[ _arrayPtr->size() ];
   _lr = new lattRing;
 }
 
-LattFuncSage::~LattFuncSage() {
- // ??? Should remove barnacles from its beamline. !!!
-  if( _lf ) { delete [] _lf; }
-  if( _lr ) { delete    _lr; }
-}
 
+void LattFuncSage::_deleteCalcs()
+{
+  // ??? Should remove barnacles from its beamline. !!!
+  if( _lf ) { delete [] _lf; _lf = 0; }
+  if( _lr ) { delete    _lr; _lr = 0; }
+}
 
 /* ============================================================== */
 
@@ -136,6 +147,125 @@ LattFuncSage::lattRing* LattFuncSage::get_lattRingPtr()
 {
   // DANGEROUS: Returns pointer!!
   return _lr;
+}
+
+
+int LattFuncSage::pushCalc( const Particle& prt, 
+                            const LattFuncSage::lattFunc& initialConditions )
+{
+  if( _verbose ) {
+    *_outputStreamPtr << "LattFuncSage -- Entering LattFuncSage::pushCalc" << endl;
+    _outputStreamPtr->flush();
+  }
+
+  int ret = 0;
+  int i;
+
+  _deleteCalcs();
+  _finishConstructor();
+
+  // --------------------------------------------------------------------
+  // The following lines of code were lifted and modified slightly from
+  // /home/michelotti/projects/ARCHIVE/CVS_Oct_8_2003/slac/nlc/tests/printTwiss.4.cc,
+  // dated October 22, 1999. (By coincidence, today is October 22, 2004.)
+  // --------------------------------------------------------------------
+  
+  const int N = prt.State().Dim();
+  coord** coordPtr = new coord* [N];
+
+  // Preserve the current Jet environment
+  Jet__environment*  storedEnv  = Jet::_lastEnv;
+  JetC__environment* storedEnvC = JetC::_lastEnv;
+
+  // Create a new Jet environment
+  double scale[N];
+  //   scale is probably no longer needed ... oh, well ...
+  Jet::BeginEnvironment( 1 );
+  for( i = 0; i < N; i++ ) {
+    scale[i] = 0.001;
+    coordPtr[i] = new coord( prt.State(i) );
+  }
+  // REMOVE: Jet__environment* pje = Jet::EndEnvironment( scale );
+  // REMOVE: JetC::lastEnv = JetC::CreateEnvFrom( pje );
+  JetC::_lastEnv = JetC::CreateEnvFrom( Jet::EndEnvironment( scale ) );
+ 
+
+  Particle* p0Ptr = prt.Clone();
+  JetParticle* jpPtr = prt.ConvertToJetParticle();
+
+  const double beta_x_0  = initialConditions.beta.hor;
+  const double alpha_x_0 = initialConditions.alpha.hor;
+  const double gamma_x_0 = ( 1.0 + alpha_x_0*alpha_x_0 )/beta_x_0;
+
+  const double beta_y_0  = initialConditions.beta.ver;
+  const double alpha_y_0 = initialConditions.alpha.ver;
+  const double gamma_y_0 = ( 1.0 + alpha_y_0*alpha_y_0 )/beta_y_0;
+
+  double beta_x, beta_y;
+
+  bmlnElmnt* be;
+  DeepBeamlineIterator dbi( _myBeamlinePtr );
+
+  MatrixD mtrx(N,N,0.0);
+
+  int x =  prt.xIndex();
+  int y =  prt.yIndex();
+  int px = prt.npxIndex();
+  int py = prt.npyIndex();
+
+  const double energy = jpPtr->ReferenceEnergy();
+  const int limit = _arrayPtr->size();
+  double arcLength = 0.0;
+  double a, b, c, d;
+  int count = 0;
+  while ( (0 != (be = dbi++)) && (count < limit) ) 
+  {
+    arcLength += be -> OrbitLength( *p0Ptr );
+    be -> propagate( *jpPtr );
+    mtrx = jpPtr->State().Jacobian();
+
+    a = mtrx(x,x);
+    b = mtrx(x,px);
+    c = mtrx(px,x);
+    d = mtrx(px,px);
+
+    beta_x =  ( a*a*beta_x_0 - 2.0*a*b*alpha_x_0 + b*b*gamma_x_0 )
+             *( jpPtr->ReferenceEnergy()/energy );
+
+    a = mtrx(y,y);
+    b = mtrx(y,py);
+    c = mtrx(py,y);
+    d = mtrx(py,py);
+
+    beta_y =  ( a*a*beta_y_0 - 2.0*a*b*alpha_y_0 + b*b*gamma_y_0 )
+             *( jpPtr->ReferenceEnergy()/energy );
+
+    // Output
+    _lf[count].arcLength = arcLength;
+    _lf[count].beta.hor = beta_x;
+    _lf[count].beta.ver = beta_y;
+
+    count++;
+  } // end while loop over the beamline elements ..............
+
+  // --------------------------------------------------------------------
+  // The preceding lines of code were lifted and modified slightly from
+  // /home/michelotti/projects/ARCHIVE/CVS_Oct_8_2003/slac/nlc/tests/printTwiss.4.cc
+  // dated October 22, 1999. (By coincidence, today is October 22, 2004.)
+  // --------------------------------------------------------------------
+  
+  // Clean up before exit
+  Jet::_lastEnv = storedEnv;
+  JetC::_lastEnv = storedEnvC;
+  for( i = 0; i < N; i++ ) { delete coordPtr[i]; }
+  delete [] coordPtr;
+  
+  if( _verbose ) {
+    *_outputStreamPtr << "LattFuncSage -- Leaving LattFuncSage::pushCalc" << endl;
+    _outputStreamPtr->flush();
+  }
+
+  return ret;
 }
 
 

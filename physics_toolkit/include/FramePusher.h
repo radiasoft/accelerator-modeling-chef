@@ -55,7 +55,7 @@
 #endif
 
 
-class FramePusher : public BmlVisitor
+class FramePusher : public ConstBmlVisitor
 {
  public:
   FramePusher();
@@ -63,12 +63,12 @@ class FramePusher : public BmlVisitor
   FramePusher( const FramePusher& );
   ~FramePusher();
 
-  void visitBmlnElmnt( bmlnElmnt* );
+  void visitBmlnElmnt( const bmlnElmnt* );
 
-  void visitSlot     ( Slot*     );
-  void visitSbend    ( sbend*    );
-  void visitCF_sbend ( CF_sbend* );
-  void visitSector   ( sector*   );
+  void visitSlot     ( const Slot*     );
+  void visitSbend    ( const sbend*    );
+  void visitCF_sbend ( const CF_sbend* );
+  void visitSector   ( const sector*   );
 
   Frame getFrame();
 

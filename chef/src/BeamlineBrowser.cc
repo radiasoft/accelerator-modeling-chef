@@ -576,13 +576,9 @@ const bmlnElmnt* BeamlineBrowser::getSelectedElement( BeamlineContext* bcPtr ) c
   }
 
   QBmlRoot* fc = dynamic_cast<QBmlRoot*>( this->firstChild() );
-  // cout << "DGN: " << ( fc->_myBmlCon->cheatBmlPtr()->Name() )
-  //      << endl;
   bool found = ( bcPtr == fc->_myBmlCon );
   while( !found ) {
     fc = dynamic_cast<QBmlRoot*>( fc->nextSibling() );
-    // cout << "DGN: " << ( fc->_myBmlCon->cheatBmlPtr()->Name() )
-    //      << endl;
     found = ( bcPtr == fc->_myBmlCon );
   }
 
@@ -1099,7 +1095,6 @@ int BeamlineBrowser::findElement( QBml*                startpoint,
           || ((void*)(qbmlPtr->parent()) == this)
           || qbmlPtr->isSelected()                ) 
       { 
-        // REMOVE: cout << "DGN: parent = " << ((int) (qbmlPtr->parent())) << endl;
         break; 
       }
     }

@@ -320,6 +320,10 @@ Proton::Proton( const Proton& u ) : Particle( u ) {
 Proton::~Proton() {
 }
 
+JetParticle* Proton::ConvertToJetParticle() const
+{
+  return new JetProton( *this );
+}
 
 // **************************************************
 //   class AntiProton
@@ -345,6 +349,11 @@ AntiProton::~AntiProton() {
 }
 
 
+JetParticle* AntiProton::ConvertToJetParticle() const
+{
+  return new JetAntiProton( *this );
+}
+
 // **************************************************
 //   class Electron
 // **************************************************
@@ -367,6 +376,10 @@ Electron::Electron( const Electron& u ) : Particle( u ) {
 Electron::~Electron() {
 }
 
+JetParticle* Electron::ConvertToJetParticle() const
+{
+  return new JetElectron( *this );
+}
 
 // **************************************************
 //   class Positron
@@ -390,6 +403,11 @@ Positron::Positron( const Positron& u ) : Particle( u ) {
 Positron::~Positron() {
 }
 
+JetParticle* Positron::ConvertToJetParticle() const
+{
+  return new JetPositron( *this );
+}
+
 // **************************************************
 //   class Muon
 // **************************************************
@@ -411,6 +429,11 @@ Muon::Muon( const Muon& u ) : Particle( u ) {
 }
 
 Muon::~Muon() {
+}
+
+JetParticle* Muon::ConvertToJetParticle() const
+{
+  return new JetMuon( *this );
 }
 
 
@@ -437,6 +460,10 @@ AntiMuon::AntiMuon( const AntiMuon& u ) : Particle( u ) {
 AntiMuon::~AntiMuon() {
 }
 
+JetParticle* AntiMuon::ConvertToJetParticle() const
+{
+  return new JetAntiMuon( *this );
+}
 
 
 // **************************************************

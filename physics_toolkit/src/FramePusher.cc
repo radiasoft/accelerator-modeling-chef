@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 /*
  * File: FramePusher.cc
@@ -86,7 +86,7 @@ FramePusher::~FramePusher()
 
 // Visiting functions
 
-void FramePusher::visitBmlnElmnt( bmlnElmnt* x )
+void FramePusher::visitBmlnElmnt( const bmlnElmnt* x )
 {
   if( x->Length() > 0.0 ) {
     _frame.translate( (x->Length())*(_frame.getzAxis()) );
@@ -94,7 +94,7 @@ void FramePusher::visitBmlnElmnt( bmlnElmnt* x )
 }
 
 
-void FramePusher::visitSbend    ( sbend* x    )
+void FramePusher::visitSbend    ( const sbend* x    )
 {
   static double angle;
   static double displacement;
@@ -111,7 +111,7 @@ void FramePusher::visitSbend    ( sbend* x    )
 }
 
 
-void FramePusher::visitCF_sbend ( CF_sbend* x )
+void FramePusher::visitCF_sbend ( const CF_sbend* x )
 {
   static double angle;
   static double displacement;
@@ -128,7 +128,7 @@ void FramePusher::visitCF_sbend ( CF_sbend* x )
 }
 
 
-void FramePusher::visitSector   ( sector*     )
+void FramePusher::visitSector   ( const sector*     )
 {
   cerr << "*** WARNING ***                                \n"
        << "*** WARNING *** FramePusher::visitSector       \n"
@@ -143,7 +143,7 @@ void FramePusher::visitSector   ( sector*     )
 }
 
 
-void FramePusher::visitSlot     ( Slot* x     )
+void FramePusher::visitSlot     ( const Slot* x     )
 {
   _frame = ( ( x->getOutFrame() ).relativeTo( x->getInFrame() ) ) 
            .patchedOnto( _frame );

@@ -92,8 +92,8 @@ public:
   sbend( const sbend& );
   ~sbend();
 
-  double setAngle(double a)	{ return (angle = a); }
-  double getAngle() { return angle; }
+  double setAngle(double a) { return (angle = a); }
+  double getAngle() const   { return angle; }
 
   void geomToEnd   ( BMLN_posInfo& );
   void geomToStart ( BMLN_posInfo& );

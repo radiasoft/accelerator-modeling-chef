@@ -5,7 +5,7 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.2
+******  Version:   2.3
 ******                                    
 ******  File:      beamline.cc
 ******                                                                
@@ -245,6 +245,7 @@ beamline::arrayRep::~arrayRep()
 beamline::beamline( const char* nm ) 
 : bmlnElmnt( nm ), dlist() 
 {
+ _mode          = unknown;
  numElem        = 0;
  nominalEnergy  = NOTKNOWN;
  depth          = 0;
@@ -255,6 +256,7 @@ beamline::beamline( const char* nm )
 beamline::beamline( const beamline& a ) 
 : bmlnElmnt( (const bmlnElmnt&) a ), dlist( (dlist&) a ) 
 {
+ _mode             = a._mode;
  nominalEnergy     = a.nominalEnergy;
  numElem           = a.numElem;
  twissDone         = 0;
@@ -269,6 +271,8 @@ bmlnElmnt* beamline::Clone() const {
  ret->length        = length;
  ret->strength      = strength;
  ret->depth         = depth;
+
+ ret->_mode         = _mode;
    //
    // O.K.
    //
@@ -310,9 +314,11 @@ double beamline::OrbitLength( const Particle& x )
 }
 
 
-beamline::beamline( bmlnElmnt* q ) : bmlnElmnt(), dlist() {
+beamline::beamline( bmlnElmnt* q ) : bmlnElmnt(), dlist() 
+{
  dlist::insert( q );
 
+ _mode          = unknown;
  numElem        = 1;
  nominalEnergy  = NOTKNOWN;
  depth          = q->depth + 1;
@@ -346,6 +352,7 @@ beamline::beamline( bmlnElmnt* q ) : bmlnElmnt(), dlist() {
 beamline::beamline( char* n, bmlnElmnt* q ) : bmlnElmnt( n ), dlist() {
  dlist::insert( q );
 
+ _mode          = unknown;
  numElem        = 1;
  nominalEnergy  = NOTKNOWN;
  depth          = q->depth + 1;
