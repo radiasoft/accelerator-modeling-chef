@@ -3,7 +3,9 @@
 INCLUDEDIR = -I$(BASIC_TOOLKIT_INC) -I$(VMALLOC_INC) $(STL_CONFIG)
 
 OBJS = Barnacle.o \
+       BooleanExpressionTree.o \
 	BubbleSort.o \
+        ColorWheel.o \
         Distribution.o \
         Frame.o \
 	IntArray.o \
@@ -12,7 +14,6 @@ OBJS = Barnacle.o \
         Matrix.o \
         Matrix_SVD.o \
         Vector.o \
-        apstring.o \
         binomcoeff_recursive.o \
         cg.o \
         d_sign.o \
