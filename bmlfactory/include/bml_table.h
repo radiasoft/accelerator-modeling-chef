@@ -53,7 +53,7 @@ extern "C" {
 #endif
 
 GHashTable*  bml_table_init( void );
-int          bml_table_delete( GHashTable* bml_table, fb_allocator* bml_alloc );
+int          bml_table_delete( GHashTable* bml_table, fb_allocator* bml_alloc);
 void         bml_table_display( FILE* out, GHashTable* bml_table );
 
 gpointer     bml_table_lookup( char* bml_name, GHashTable* bml_table );
