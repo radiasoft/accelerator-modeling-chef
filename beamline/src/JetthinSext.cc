@@ -59,6 +59,13 @@ void JetthinSext::eliminate() {
  delete this;
 }
 
+
+char* JetthinSext::Type() const 
+{ 
+  return "JetthinSext"; 
+}
+
+
 ostream& JetthinSext::writeTo(ostream& os)
 {
   os << strengthIndex << "\n";

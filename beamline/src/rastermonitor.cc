@@ -797,4 +797,10 @@ double rasterMonitor::getAveYPRIMEstate(){
   return sumState[4]/numParticles;
 }
 
+char* rasterMonitor::Type() const  
+{ 
+  return "rasterMonitor"; 
+}
+
+
 #endif // Exclude under Visual C++ and Borland builds.

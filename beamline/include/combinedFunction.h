@@ -40,10 +40,10 @@ public:
   void setField(WHICH_MULTIPOLE, double field);
   double Field(WHICH_MULTIPOLE);
   void setSkew(WHICH_MULTIPOLE, alignmentData&);
-  void setLength( const double& x )
+  void setLength( double x )
     { length = x; }
   alignmentData Skew(WHICH_MULTIPOLE);
-  char* Type() const { return "combinedFunction"; }
+  char* Type() const;
   bmlnElmnt* Clone() const { return new combinedFunction( *this ); }
 
   double AdjustPosition( const Proton& );

@@ -263,6 +263,13 @@ void CF_rbend::eliminate( void )
 }
 
 
+
+char* CF_rbend::Type() const  
+{ 
+  return "CF_rbend"; 
+}
+
+
 double CF_rbend::OrbitLength( const Particle& x )
 {
   static double tworho;

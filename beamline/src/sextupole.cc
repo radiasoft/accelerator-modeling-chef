@@ -76,6 +76,13 @@ void sextupole::setCurrent( double s ) {
 // ??? REMOVE }
 
 
+
+char* sextupole::Type() const 
+{ 
+  return "sextupole"; 
+}
+
+
 void sextupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {

@@ -270,6 +270,11 @@ istream& combinedFunction::readFrom(istream& is)
 }
 
 
+char* combinedFunction::Type() const 
+{ 
+  return "combinedFunction"; 
+}
+
 double combinedFunction::AdjustPosition( const Proton& arg_p )
 {
   JetProton myJP( arg_p );  // This probably won't work properly.

@@ -84,7 +84,7 @@ private:
     /// Resets origin to zero.
     void ResetOrigin();
 
-    char*      Type() const { return "tclMonitor"; }
+    char* Type() const;
     bmlnElmnt* Clone() const { return new tclMonitor( *this ); }
     int        getColor();
     void       setColor(int);

@@ -20,6 +20,13 @@ marker::~marker() {
 }
 
 
+
+char* marker::Type() const 
+{ 
+  return "marker"; 
+}
+
+
 // ??? REMOVE void marker::image( int d, slist* s, BMLN_posInfo* cg ) {
 // ??? REMOVE  bmlnElmntData* p = bmlnElmnt::image();
 // ??? REMOVE 

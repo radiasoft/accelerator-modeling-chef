@@ -50,3 +50,8 @@ istream& kick::readFrom(istream& is) {
 	return is;
 }
 
+
+char* kick::Type() const 
+{ 
+  return "kick"; 
+}

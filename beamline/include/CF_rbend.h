@@ -55,8 +55,7 @@ class CF_rbend : public bmlnElmnt
   void accept( BmlVisitor& v ) 
     { v.visitCF_rbend( this ); }
   
-  char* Type() const 
-    { return "CF_rbend"; }
+  char* Type() const;
   bmlnElmnt* Clone() const 
     { return new CF_rbend( *this ); }
   double OrbitLength( const Particle& );

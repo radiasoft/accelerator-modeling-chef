@@ -34,3 +34,7 @@ double hmonitor::operator[]( int n ) {
 }
 
 
+char* hmonitor::Type() const 
+{ 
+  return "hmonitor"; 
+}

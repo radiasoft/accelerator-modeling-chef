@@ -139,6 +139,13 @@ void thinSeptum::eliminate() {
  delete this;
 }
 
+
+char* thinSeptum::Type() const 
+{ 
+  return "thinSeptum"; 
+}
+
+
 istream& thinSeptum::readFrom(istream& is) 
 {
   is >> strengthPos >> strengthNeg >> xWire;

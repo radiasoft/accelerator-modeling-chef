@@ -107,6 +107,13 @@ void monitor::setOutputFile( FILE* of ) {
  outputFile = of;
 }
 
+
+char* monitor::Type() const 
+{ 
+  return "monitor"; 
+}
+
+
 /* ??? REMOVE */ void monitor::image( int d, slist* s, BMLN_posInfo* cg ) {
 /* ??? REMOVE */  bmlnElmntData* p = bmlnElmnt::image();
 /* ??? REMOVE */ 

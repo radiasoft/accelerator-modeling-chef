@@ -72,6 +72,13 @@ void octupole::setCurrent( double s ) {
 // ??? REMOVE  s->append( p );
 // ??? REMOVE }
 
+
+char* octupole::Type() const 
+{ 
+  return "octupole"; 
+}
+
+
 void octupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {

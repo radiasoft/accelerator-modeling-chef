@@ -19,8 +19,8 @@ public:
 	  double =0 	/* Horizontal kick is default*/ );
   Pinger( const Pinger& );
   Pinger( bmlnElmntData& );
-  ~Pinger();
-  char* Type() const { return "Pinger"; };
+  ~Pinger(); 
+  char* Type() const;
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
@@ -48,7 +48,7 @@ class HPinger : public Pinger {
   HPinger( const HPinger& );
   HPinger( bmlnElmntData& );
   ~HPinger();
-  char* Type() const { return "HPinger"; };
+  char* Type() const;
   bmlnElmnt* Clone() const { return new HPinger( *this ); }
   void accept( BmlVisitor& v ) { v.visitHPinger( this ); }
 
@@ -67,7 +67,7 @@ class VPinger : public Pinger {
   VPinger( const VPinger& );
   VPinger( bmlnElmntData& );
   ~VPinger();
-  char* Type() const { return "VPinger"; };
+  char* Type() const;
   bmlnElmnt* Clone() const { return new VPinger( *this ); }
   void accept( BmlVisitor& v ) { v.visitVPinger( this ); }
 

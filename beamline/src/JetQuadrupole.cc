@@ -194,6 +194,14 @@ void JetQuadrupole::eliminate() {
  delete this;
 }
 
+
+
+char* JetQuadrupole::Type() const 
+{ 
+  return "JetQuadrupole"; 
+}
+
+
 void JetQuadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {

@@ -33,6 +33,13 @@ void thinrfcavityData::eliminate() {
  delete this;
 }
 
+
+char* thinrfcavity::Type() const 
+{ 
+  return "thinrfcavity"; 
+}
+
+
 void* thinrfcavityData::clone() {
  void* p = new thinrfcavityData( *this );
  return p;

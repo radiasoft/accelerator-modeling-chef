@@ -27,6 +27,13 @@ srot::srot( const srot& x )
 srot::~srot() {
 }
 
+
+char* srot::Type() const 
+{ 
+  return "srot"; 
+}
+
+
 // ??? REMOVE void srot::image( int d, slist* s, BMLN_posInfo* cg ) {
 // ??? REMOVE  bmlnElmntData* p = bmlnElmnt::image();
 // ??? REMOVE 
