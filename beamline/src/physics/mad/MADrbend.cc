@@ -81,13 +81,9 @@ int rbend::MAD_Prop::operator()( bmlnElmnt* p_be, Particle& p ) {
   // First do the entrance edge
   
     if( BMLN_dynDim != 6 ) {
-      cerr << "*** ERROR ***                                  "
-              "*** ERROR *** sbend::MAD_Prop::operator()      "
-              "*** ERROR *** This was written for a phase     "
-              "*** ERROR *** space dimension of 6.            "
-              "*** ERROR ***                                  "
-           << endl;
-      exit(1);
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+             "int rbend::MAD_Prop::operator()( bmlnElmnt* p_be, Particle& p ) {", 
+             "This was written for a phase space dimension of 6." ) );
     }
 
     inState[0] = p.get_x();
@@ -176,13 +172,9 @@ int rbend::MAD_Prop::operator()( bmlnElmnt* p_be, JetParticle& p ) {
  // First do the entrance edge
   
     if( BMLN_dynDim != 6 ) {
-      cerr << "*** ERROR ***                                  "
-              "*** ERROR *** sbend::MAD_Prop::operator()      "
-              "*** ERROR *** This was written for a phase     "
-              "*** ERROR *** space dimension of 6.            "
-              "*** ERROR ***                                  "
-           << endl;
-      exit(1);
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+             "int rbend::MAD_Prop::operator()( bmlnElmnt* p_be, JetParticle& p ) {", 
+             "This was written for a phase space dimension of 6." ) );
     }
 
     inState[0] = p.get_x();
