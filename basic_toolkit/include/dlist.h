@@ -221,7 +221,7 @@ public:
   char SetFirst( ent );
   char SetLast( DLIST_CRITFUNC );
   char SetFirst( DLIST_CRITFUNC );
-  dlink* lastPtr() {return last;}
+  const dlink* lastPtr() {return last;}
   ent lastInfoPtr() { if( last ) return last->e;
                       else       return 0;
                     }
@@ -271,6 +271,7 @@ public:
   void Reset() { ce = cs->last; }
   void GoBack( int = 1 );
   void Terminate() { ce = 0; }
+  bool isFinished() { return ( 0 == ce ); }
 } ;
 
 class dlist_looper {
