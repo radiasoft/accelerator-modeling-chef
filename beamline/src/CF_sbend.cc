@@ -35,20 +35,28 @@
 
 #include <iomanip>
 
+#include "PhysicsConstants.h"
 #include "CF_sbend.h"
 #include "quadrupole.h"
 #include "sextupole.h"
 #include "sbend.h"
 #include "octupole.h"
-#include "PhysicsConstants.h"
+#include "Particle.h"
 
 using namespace std;
 
 CF_sbend::CF_sbend( double        lng,  // length     [ meter    ]
                     double        fld,  // field      [ tesla    ]
-                    double        ang,  // angle      [ radians  ]
+                    double        ang,  // bend angle [ radians  ]
                     int )
-: bmlnElmnt( lng, fld ), _angle(ang)
+: bmlnElmnt( lng, fld )
+  , _angle(ang)
+  , _usEdgeAngle(0.0)
+  , _dsEdgeAngle(0.0)
+  , _usAngle(0.0)
+  , _dsAngle(0.0)
+  , _usTan(0.0)
+  , _dsTan(0.0)
 {
   _finishConstructor();
 }
@@ -59,37 +67,71 @@ CF_sbend::CF_sbend( const char*   nm,   // name
                     double        fld,  // field      [ tesla    ]
                     double        ang,  // angle      [ radians  ]
                     int )
-: bmlnElmnt( nm, lng, fld ), _angle(ang)
+: bmlnElmnt( nm, lng, fld )
+  , _angle(ang)
+  , _usEdgeAngle(0.0)
+  , _dsEdgeAngle(0.0)
+  , _usAngle(0.0)
+  , _dsAngle(0.0)
+  , _usTan(0.0)
+  , _dsTan(0.0)
 {
   _finishConstructor();
 }
 
 
-CF_sbend::CF_sbend( double lng,
-                    double fld,
-                    double ang,
-                    const Vector& xmlt,
-                    int  )
-: bmlnElmnt( lng, fld ), _angle(ang)
+CF_sbend::CF_sbend( double        lng,  // length     [ meter    ]
+                    double        fld,  // field      [ tesla    ]
+                    double        ang,  // bend angle [ radians ]
+                    double        us,   // upstream edge angle [radians]
+                    double        ds,   // downstream edge angle [radians]
+                                        // signs of previous two parameters
+                                        // are as defined for sbends by MAD
+                    int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
+: bmlnElmnt( lng, fld )
+  , _angle(ang)
+  , _usEdgeAngle(us)
+  , _dsEdgeAngle(ds)
+  , _usAngle(us)
+  , _dsAngle(-ds)
+  , _usTan(tan(us))
+  , _dsTan(-tan(ds))
 {
   _finishConstructor();
 }
 
 
-CF_sbend::CF_sbend( const char*  nm,
-                    double lng,
-                    double fld,
-                    double ang,
-                    const Vector& xmlt,
-                    int  )
-: bmlnElmnt( nm, lng, fld ), _angle(ang)
+CF_sbend::CF_sbend( const char*   nm,   // name
+                    double        lng,  // length     [ meter    ]
+                    double        fld,  // field      [ tesla    ]
+                    double        ang,  // bend angle [ radians ]
+                    double        us,   // upstream edge angle [radians]
+                    double        ds,   // downstream edge angle [radians]
+                                        // signs of previous two parameters
+                                        // are as defined for sbends by MAD
+                    int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
+: bmlnElmnt( nm, lng, fld )
+  , _angle(ang)
+  , _usEdgeAngle(us)
+  , _dsEdgeAngle(ds)
+  , _usAngle(us)
+  , _dsAngle(-ds)
+  , _usTan(tan(us))
+  , _dsTan(-tan(ds))
 {
   _finishConstructor();
 }
 
 
 CF_sbend::CF_sbend( const CF_sbend& x )
-: bmlnElmnt( (const bmlnElmnt&) x ), _angle(x._angle)
+: bmlnElmnt( (const bmlnElmnt&) x )
+  , _angle(x._angle)
+  , _usEdgeAngle(x._usEdgeAngle)
+  , _dsEdgeAngle(x._dsEdgeAngle)
+  , _usAngle(x._usAngle)
+  , _dsAngle(x._dsAngle)
+  , _usTan(x._usTan)
+  , _dsTan(x._dsTan)
 {
   int m = 1 + ( ( int(x._v) - int(x._u) )/sizeof( bmlnElmnt* ) );
   _u = new bmlnElmnt* [ m ];
@@ -109,10 +151,12 @@ void CF_sbend::_finishConstructor()
   double frontLength =  6.0*(this->length/4.0)/15.0;
   double sepLength   = 16.0*(this->length/4.0)/15.0;
 
-  sbend edge ( frontLength, field, (frontLength/this->length)*_angle, 
-               this->Propagator );
-  sbend body ( sepLength,   field, (sepLength/this->length)*_angle,
-               this->Propagator );
+  sbend inEdge  ( frontLength,     field, (frontLength/this->length)*_angle, 
+                  _usEdgeAngle, 0.0, &sbend::InEdge  );
+  sbend outEdge ( frontLength,     field, (frontLength/this->length)*_angle, 
+                  0.0, _dsEdgeAngle, &sbend::OutEdge );
+  sbend body    ( sepLength,   field, (sepLength/this->length)*_angle,
+                  0.0,          0.0, &sbend::NoEdge );
 
   thinSextupole ts( 0.0 );
   thinQuad      tq( 0.0 );
@@ -120,7 +164,7 @@ void CF_sbend::_finishConstructor()
   _u = new bmlnElmnt* [ 13 ];
   _v = _u;
 
-  *(_v++) = new sbend          ( edge    );
+  *(_v++) = new sbend          ( inEdge    );
   *(_v++) = new thinSextupole  ( ts      );
   *(_v++) = new thinQuad       ( tq      );
   *(_v++) = new sbend          ( body    );
@@ -132,7 +176,7 @@ void CF_sbend::_finishConstructor()
   *(_v++) = new sbend          ( body    );
   *(_v++) = new thinSextupole  ( ts      );
   *(_v++) = new thinQuad       ( tq      );
-  *(_v  ) = new sbend          ( edge    );
+  *(_v  ) = new sbend          ( outEdge    );
 }
 
 
@@ -205,6 +249,38 @@ void CF_sbend::localPropagate( JetParticle& p )
   while( x <= _v ) {
     (*(x++))->localPropagate( p );
   }
+}
+
+
+double sbend::setEntryAngle( const Particle& p )
+{
+  return this->setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
+  // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
+}
+
+
+double sbend::setExitAngle( const Particle& p )
+{
+  return this->setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
+  // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
+}
+
+
+double sbend::setEntryAngle( double phi /* radians */ )
+{
+  double ret = _usAngle;
+  _usAngle = phi;
+  _usTan = tan(phi);
+  return ret;
+}
+
+
+double sbend::setExitAngle( double phi /* radians */ )
+{
+  double ret = _dsAngle;
+  _dsAngle = phi;  
+  _dsTan  = tan(phi);
+  return ret;
 }
 
 
@@ -422,13 +498,7 @@ double CF_sbend::getDipoleField() const
 }
 
 
-double CF_sbend::getAngle() const
-{
-  return _angle;
-}
-
-
-double CF_sbend::Angle() const
+double CF_sbend::getBendAngle() const
 {
   return _angle;
 }
@@ -439,6 +509,14 @@ void CF_sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
   static bool firstTime = true;
   if( firstTime ) {
     firstTime = false;
+    cerr << "\n"
+            "\n*** WARNING ***"
+            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
+            "\n*** WARNING *** The new, split elements must be commissioned with"
+            "\n*** WARNING *** RefRegVisitor before being used."
+            "\n*** WARNING *** "
+         << endl;
     cerr << "\n*** WARNING ***                             "
             "\n*** WARNING *** void CF_sbend::Split        "
             "\n*** WARNING *** Combined split elements     "
@@ -459,8 +537,8 @@ void CF_sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 
   // We assume "strength" means field, not field*length.
   // "length," "strength," and "_angle" are private data members.
-  *a = new CF_sbend( pc*length, strength, pc*_angle );
-  *b = new CF_sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle );
+  *a = new CF_sbend(         pc*length, strength,         pc*_angle, _usEdgeAngle, 0.0 );
+  *b = new CF_sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle, 0.0, _dsEdgeAngle );
 
 
   // Assign quadrupole strength
@@ -486,9 +564,14 @@ void CF_sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
   delete [] newname;
 }
 
+
 ostream& CF_sbend::writeTo( ostream& os )
 {
   os << OSTREAM_DOUBLE_PREC << _angle << " ";
+  os << OSTREAM_DOUBLE_PREC << _usEdgeAngle << " "
+     << OSTREAM_DOUBLE_PREC << _dsEdgeAngle << endl;
+  os << OSTREAM_DOUBLE_PREC << _usAngle << " "
+     << OSTREAM_DOUBLE_PREC << _dsAngle << endl;
   os << OSTREAM_DOUBLE_PREC << getQuadrupole() << " ";
   os << OSTREAM_DOUBLE_PREC << getSextupole() << " ";
   os << OSTREAM_DOUBLE_PREC << getOctupole() << " ";
@@ -496,17 +579,25 @@ ostream& CF_sbend::writeTo( ostream& os )
   return os;
 }
 
+
 istream& CF_sbend::readFrom( istream& is )
 {
   double quadStrength = 0.0;  // Assignment mitigates 
   double sextStrength = 0.0;  // obnoxious warning message
   double octStrength  = 0.0;  // from compiler.
 
+
   is >> ( this->_angle ) 
+     >> ( this->_usEdgeAngle )
+     >> ( this->_dsEdgeAngle )
+     >> ( this->_usAngle )
+     >> ( this->_dsAngle )
      >> quadStrength 
      >> sextStrength
      >> octStrength;
 
+  _usTan = tan(_usAngle);
+  _dsTan = tan(_dsAngle);
 
   // Rebuild basic element ...
   // ... First deconstruct (identical to CF_sbend destructor)
@@ -529,11 +620,11 @@ istream& CF_sbend::readFrom( istream& is )
   return is;
 }
 
+
 void CF_sbend::eliminate( void )
 {
   delete this;
 }
-
 
 
 const char* CF_sbend::Type() const  
@@ -546,5 +637,3 @@ double CF_sbend::OrbitLength( const Particle& x )
 {
   return length;
 }
-
-

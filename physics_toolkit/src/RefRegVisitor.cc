@@ -111,13 +111,25 @@ void RefRegVisitor::visitBmlnElmnt( bmlnElmnt* x )
 
 void RefRegVisitor::visitCF_rbend( CF_rbend* x ) 
 {
+  // This does not nullify the edge focussing from 
+  // the inner propagators before setting the entry
+  // and exit angles. It may be that these attributes
+  // are not even used.
+  x->setEntryAngle( *_prtnPtr );
   x->acceptInner( *this );
+  x->setExitAngle( *_prtnPtr );
 }
 
 
 void RefRegVisitor::visitCF_sbend( CF_sbend* x ) 
 {
+  // This does not nullify the edge focussing from 
+  // the inner propagators before setting the entry
+  // and exit angles. It may be that these attributes
+  // are not even used.
+  x->setEntryAngle( *_prtnPtr );
   x->acceptInner( *this );
+  x->setExitAngle( *_prtnPtr );
 }
 
 
