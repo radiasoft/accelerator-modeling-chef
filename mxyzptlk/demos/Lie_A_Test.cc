@@ -32,6 +32,7 @@ main( int argc, char** argv ) {
  v.setVariable(      p, 0 );
  v.setVariable( -x - p, 1 );
 
- cout << "Answer is: \n"
-      << ( v.operator^( x*x + p*p ) ).standardPart();
+ cout << "Answer is: "
+      << ( v.operator^( x*x + p*p ) ).standardPart()
+      << endl;
 }
