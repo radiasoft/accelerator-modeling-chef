@@ -96,7 +96,7 @@ public:
       // If default value is used for second argument, 
       //   information is attached to all elements.
 
-  const LBSage::Info* get_LBFuncPtr( int );
+  const LBSage::Info* getInfoPtr( int );
 
   void eraseAll();
 };

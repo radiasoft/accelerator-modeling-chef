@@ -171,23 +171,26 @@ int LBSage::doCalc( const JetParticle* ptr_jp, beamline::Criterion& crit )
   FNAL::Complex temp;
 
   while( (0 != ( be = dbi++ )) && (i<_n) ) {
+    _calcs[i] = new LBSage::Info;
+
     lng += be->OrbitLength( *ptr_proton );
     _calcs[i]->arcLength = lng;
     
     be->propagate( *localPtr );
     E2 = (( localPtr->State() ).Jacobian())*E;
+    BmlUtil::normalize( E2 );
     
     // beta_1x and beta_2y
     temp = E2(x,x);
     if( real(temp) > 0.0 ) {
-      _calcs[i]->beta_1x = real(temp)*real(temp);
+      _calcs[i]->beta_1x = 2.0*real(temp)*real(temp);
     }
     else { 
       _deleteCalcs(); delete ptr_proton; delete localPtr; return 1; 
     }
     temp = real(E2(y,y));
     if( real(temp) > 0.0 ) {
-      _calcs[i]->beta_2y = real(temp)*real(temp);
+      _calcs[i]->beta_2y = 2.0*real(temp)*real(temp);
     }
     else { 
       _deleteCalcs(); delete ptr_proton; delete localPtr; return 2; 
@@ -195,9 +198,9 @@ int LBSage::doCalc( const JetParticle* ptr_jp, beamline::Criterion& crit )
 
     // beta_1y and beta_2x
     temp = E2(y,x);
-    _calcs[i]->beta_1y = real(temp*conj(temp));
+    _calcs[i]->beta_1y = 2.0*real(temp*conj(temp));
     temp = E2(x,y);
-    _calcs[i]->beta_2x = real(temp*conj(temp));
+    _calcs[i]->beta_2x = 2.0*real(temp*conj(temp));
 
     // And that's all I'll bother with for now
     i++;
@@ -220,7 +223,7 @@ int LBSage::doCalc( const JetParticle* ptr_jp, beamline::Criterion& crit )
 }
 
 
-const LBSage::Info* LBSage::get_LBFuncPtr( int j )
+const LBSage::Info* LBSage::getInfoPtr( int j )
 {
   if( 0 == _calcs || j < 0 || _arrayPtr->size() <= j ) 
   { return 0; }

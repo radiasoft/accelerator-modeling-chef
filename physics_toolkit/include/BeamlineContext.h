@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   2.0
 ******                                    
 ******  File:      BeamlineContext.h
+******  Version:   2.0
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -70,6 +70,10 @@ typedef TMapping<double,FNAL::Complex> Mapping;
 
 #ifndef COVARIANCESAGE_H
 #include "CovarianceSage.h"
+#endif
+
+#ifndef LBSAGE_H
+#include "LBSage.h"
 #endif
 
 #ifndef DISPERSIONSAGE_H
@@ -137,6 +141,7 @@ class BeamlineContext
     const LattFuncSage::lattFunc* getLattFuncPtr( int );
     const EdwardsTengSage::Info* getETFuncPtr( int );
     const CovarianceSage::Info* getCovFuncPtr( int );
+    const LBSage::Info* getLBFuncPtr( int );
     const DispersionSage::Info* getDispersionPtr( int );
 
     MatrixD equilibriumCovariance();
@@ -200,6 +205,7 @@ class BeamlineContext
     LattFuncSage*         _p_lfs;
     EdwardsTengSage*      _p_ets;
     CovarianceSage*       _p_covs;
+    LBSage*               _p_lbs;
     ClosedOrbitSage*      _p_cos;
     DispersionSage*       _p_dsps;
     ChromaticityAdjuster* _p_ca;
@@ -238,12 +244,13 @@ class BeamlineContext
     EdwardsTengSage::Tunes*  _eigentunes;
 
     // Status flags
-    bool                  _isCloned;
-    bool                  _normalLattFuncsCalcd;
-    bool                  _edwardstengFuncsCalcd;
-    bool                  _dispersionFuncsCalcd;
-    bool                  _momentsFuncsCalcd;
-    bool                  _dispCalcd;
+    bool _isCloned;
+    bool _normalLattFuncsCalcd;
+    bool _edwardstengFuncsCalcd;
+    bool _dispersionFuncsCalcd;
+    bool _momentsFuncsCalcd;
+    bool _LBFuncsCalcd;
+    bool _dispCalcd;
 
     // Iterators
     BeamlineIterator*            _p_bi;
@@ -257,6 +264,8 @@ class BeamlineContext
     void _deleteLFS();
     void _createETS();
     void _deleteETS();
+    void _createLBS();
+    void _deleteLBS();
     void _createCOVS();
     void _deleteCOVS();
     void _createDSPS();

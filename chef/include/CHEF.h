@@ -76,6 +76,7 @@ class QBmlRoot;
 class LattFncPlt;
 class ETFncPlt;
 class MomentsFncPlt;
+class LBFncPlt;
 class DspnFncPlt;
 class Tracker;
 class RayTrace;
@@ -203,6 +204,7 @@ private:
   LattFncPlt*      _plotWidget;
   ETFncPlt*        _ETplotWidget;
   MomentsFncPlt*   _MMplotWidget;
+  LBFncPlt*        _LBplotWidget;
   DspnFncPlt*      _DspnplotWidget;
   Tracker*         _trackWidget;
   RayTrace*        _traceWidget;
@@ -290,6 +292,7 @@ private slots:
   void _launchLatt();
   void _launchET();
   void _launchMoments();
+  void _launchLB();
   void _launchTrack();
   void _launchRayTrace();
   void _launchDispersion();

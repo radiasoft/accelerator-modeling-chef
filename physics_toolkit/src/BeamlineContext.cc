@@ -61,7 +61,7 @@ using namespace std;
 
 BeamlineContext::BeamlineContext( bool doClone, beamline* x )
 : _p_bml(x), _proton( x->Energy() ),
-  _p_lfs(0), _p_ets(0), _p_covs(0), _p_cos(0), _p_dsps(0),
+  _p_lfs(0), _p_ets(0), _p_covs(0), _p_lbs(0), _p_cos(0), _p_dsps(0),
   _p_ca(0), _p_ta(0),
   _p_co_p(0), _p_disp_p(0), _dpp(0.0001),
   _isCloned(doClone),
@@ -72,6 +72,7 @@ BeamlineContext::BeamlineContext( bool doClone, beamline* x )
   _normalLattFuncsCalcd(false), 
   _edwardstengFuncsCalcd(false), 
   _momentsFuncsCalcd(false), 
+  _LBFuncsCalcd(false), 
   _dispersionFuncsCalcd(false), 
   _dispCalcd(false)
 {
@@ -97,10 +98,11 @@ BeamlineContext::~BeamlineContext()
   if( _isCloned && (_p_bml != 0) ) 
   { _p_bml->eliminate(); }
 
-  this->_deleteLFS();
-  this->_deleteETS();
-  this->_deleteCOVS();
-  this->_deleteClosedOrbit();
+  _deleteLFS();
+  _deleteETS();
+  _deleteCOVS();
+  _deleteLBS();
+  _deleteClosedOrbit();
 
   // if( _p_lfs ) delete _p_lfs;
   if( _p_ca  ) delete _p_ca;
@@ -434,6 +436,26 @@ void BeamlineContext::_createETS()
 {
   this->_deleteETS();
   _p_ets = new EdwardsTengSage( _p_bml, false );
+}
+
+
+void BeamlineContext::_deleteLBS()
+{
+  if( 0 != _p_lbs )
+  {
+    _p_lbs->eraseAll();
+    delete _p_lbs;
+    _p_lbs = 0;
+
+    _LBFuncsCalcd = false;
+  }
+}
+
+
+void BeamlineContext::_createLBS()
+{
+  this->_deleteLBS();
+  _p_lbs = new LBSage( _p_bml, false );
 }
 
 
@@ -822,6 +844,46 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
 
   if( _momentsFuncsCalcd ) { return (_p_covs->getInfoPtr(i)); }
   else                     { return 0;                        }
+}
+
+
+const LBSage::Info* BeamlineContext::getLBFuncPtr( int i )
+{
+  if( 0 == _p_lbs ) {
+    this->_createLBS();
+  }
+  
+  if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
+    try {
+      _createClosedOrbit(); 
+    }
+    catch( const GenericException& ge ) {
+      _deleteClosedOrbit(); // Almost certainly not necessary.
+      throw ge;
+    }
+  }
+  // At this point, _p_jp's state is that after one-turn on the
+  //   closed orbit. It's environment is centered on the closed
+  //   orbit and may be out of synch with the current environment.
+
+
+  if( !_LBFuncsCalcd ) {
+    // Preserve current Jet environment
+    //   and reset to that of *_p_jp
+    Jet__environment*  storedEnv  = Jet::_lastEnv;
+    JetC__environment* storedEnvC = JetC::_lastEnv;
+    Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
+    JetC::_lastEnv = JetC::CreateEnvFrom( Jet::_lastEnv );
+
+    _LBFuncsCalcd = ( 0 == _p_lbs->doCalc( _p_jp, beamline::yes ) );
+
+    // Restore current environment
+    Jet::_lastEnv = storedEnv;
+    JetC::_lastEnv = storedEnvC;
+  }
+
+  if( _LBFuncsCalcd ) { return (_p_lbs->getInfoPtr(i)); }
+  else                { return 0;                       }
 }
 
 

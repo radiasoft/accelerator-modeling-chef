@@ -68,6 +68,7 @@
 #include "LattFncPlt.h"
 #include "ETFncPlt.h"
 #include "MomentsFncPlt.h"
+#include "LBFncPlt.h"
 #include "DspnFncPlt.h"
 #include "Tracker.h"
 #include "RayTrace.h"
@@ -92,7 +93,7 @@ using namespace std;
 
 CHEF::CHEF( beamline* xbml, int argc, char** argv )
 : _p_vwr(0), _plotWidget(0), 
-  _ETplotWidget(0), _MMplotWidget(0), _DspnplotWidget(0)
+  _ETplotWidget(0), _MMplotWidget(0), _LBplotWidget(0), _DspnplotWidget(0)
 {
   int i;
   for( i = 0; i < CHEF_numargs; i++ )
@@ -198,6 +199,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
           _calcLattFuncMenu = new QPopupMenu;
           _calcLattFuncMenu->insertItem( "Uncoupled", this, SLOT(_launchLatt()) );
           _calcLattFuncMenu->insertItem( "Edwards-Teng", this, SLOT(_launchET()) );
+          _calcLattFuncMenu->insertItem( "Lebedev-Bogacz", this, SLOT(_launchLB()) );
           _calcLattFuncMenu->insertItem( "Moments", this, SLOT(_launchMoments()) );
         _calcCalcFuncMenu->insertItem( "Lattice Functions", _calcLattFuncMenu );
 
@@ -1085,6 +1087,38 @@ void CHEF::_launchET()
   strcat( theCaption, "CHEF: Edwards-Teng Lattice Functions: " );
   strcat( theCaption, _p_currBmlCon->name() );
   _ETplotWidget->setCaption( theCaption );
+}
+
+
+void CHEF::_launchLB()
+{
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF",
+                              "Must select a beamline first." );
+    return;
+  }
+
+  try {
+    _LBplotWidget = new LBFncPlt(_p_currBmlCon);
+  }
+  catch( const std::exception& ge ) {
+    if( 0 != _LBplotWidget ) { delete _LBplotWidget; _LBplotWidget = 0; }
+    ostringstream uic;
+    uic << __FILE__ << ", line " << __LINE__ << ": "
+        << "Exception was thrown with message:\n"
+        << ge.what();
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              uic.str().c_str() );
+    return;
+  }
+
+  char theCaption[1024];
+  for( int i = 0; i < 1024; i++ ) {
+    theCaption[i] = '\0';
+  }
+  strcat( theCaption, "CHEF: Lebedev-Bogacz Lattice Functions: " );
+  strcat( theCaption, _p_currBmlCon->name() );
+  _LBplotWidget->setCaption( theCaption );
 }
 
 
