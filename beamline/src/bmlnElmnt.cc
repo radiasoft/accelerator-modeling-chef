@@ -957,3 +957,22 @@ bmlnElmnt* bmlnElmnt::Clone(char* name) {
   temp->Rename(name);
   return temp;
 }
+
+
+ostream& operator<<(ostream& os, bmlnElmnt& b)
+{
+  if ( &b ) {
+    os << OSTREAM_DOUBLE_PREC 
+       << b.Type() 
+       << " " 
+       << b.Name() 
+       << " " 
+       << b.Length() 
+       << " " 
+       << b.Strength() 
+       << " " ;
+    os << (*b.align) << "\n";
+    b.writeTo(os); // Polymorphically call the appropriate writeTo().
+  }
+  return os;
+}

@@ -1392,6 +1392,23 @@ ostream& beamline::writeTo(ostream& os) {
   return os;
 }
 
+// ??? REMOVE: istream& beamline::readFrom(istream& is)
+// ??? REMOVE: {
+// ??? REMOVE:   // Written by Elliott McCrory
+// ??? REMOVE:   bmlnElmnt *e = NULL;
+// ??? REMOVE:   is >> nominalEnergy;
+// ??? REMOVE:   // cerr << "Beamline " << Name() << " has energy of " << nominalEnergy << "\n";
+// ??? REMOVE:   // Now, continue reading is until we see the end of this beamline
+// ??? REMOVE:   length = 0;
+// ??? REMOVE:   do {
+// ??? REMOVE:     e = read_istream(is);	// (Recursion)
+// ??? REMOVE:     // read_istream will return NULL when end of file or end of beamline is reached.
+// ??? REMOVE:     if ( e ) 
+// ??? REMOVE:       append(e);
+// ??? REMOVE:   } while ( e );
+// ??? REMOVE: 
+// ??? REMOVE:   return is;
+// ??? REMOVE: }
 
 // **************************************************
 //   Frame functions

@@ -333,8 +333,21 @@ bmlnElmnt* read_istream(istream& is)
 	  type,name,length,strength,x,y,t);
 
   // Get the rest of the description if we got a real element
+  double energy;
   if ( element ) {
-    element->readFrom(is);
+    if( 0 != strcmp( element->Type(), "beamline" ) ) {
+      element->readFrom(is);    
+    }
+    else {
+      bmlnElmnt *e = NULL;
+      is >> energy;
+      ((beamline*) element)->setEnergy( energy );
+      do {
+        e = read_istream(is);
+        if ( e ) 
+          ((beamline*) element)->append(e);
+      } while ( e );
+    }
 
     // Check if this element is misaligned
     if ( x!=0 || y!=0 || t!= 0 ) {
@@ -350,28 +363,6 @@ bmlnElmnt* read_istream(istream& is)
   return element;
 }
  
-
-// ==== Relevant to class beamline. ==================================================
-// This is put here so linking to beamline.o does not necessarily bring in
-// all the modules from all the bmlnElmnt descendants.
-
-istream& beamline::readFrom(istream& is)
-{
-  bmlnElmnt *e = NULL;
-  is >> nominalEnergy;
-  // cerr << "Beamline " << Name() << " has energy of " << nominalEnergy << "\n";
-  // Now, continue reading is until we see the end of this beamline
-  length = 0;
-  do {
-    e = read_istream(is);	// (Recursion)
-    // read_istream will return NULL when end of file or end of beamline is reached.
-    if ( e ) 
-      append(e);
-  } while ( e );
-
-  return is;
-}
-
 
 istream& operator>>(istream& is, beamline& bl)
 {
@@ -389,8 +380,18 @@ istream& operator>>(istream& is, beamline& bl)
   else
     bl.Rename(name);
   
-  bl.readFrom(is);		// Polymorphically call the right readFrom().
-
+  // ??? REMOVE: bl.readFrom(is); // Polymorphically call the right readFrom().
+  bmlnElmnt *e = 0;
+  is >> bl.nominalEnergy;
+  // Now, continue reading is until we see the end of this beamline
+  length = 0;
+  do {
+    e = read_istream(is);     // (Recursion)
+    // read_istream will return NULL when end of file or end of beamline is reached.
+    if ( e ) 
+      bl.append(e);
+  } while ( e );
+  
   if ( x!=0 || y!=0 || t!=0 ) {
     alignmentData align;
     align.xOffset = x;
@@ -401,23 +402,4 @@ istream& operator>>(istream& is, beamline& bl)
   return is;
 }
 
-// ==== Relevant to class bmlnElmnt ==================================================
-
-ostream& operator<<(ostream& os, bmlnElmnt& b)
-{
-  if ( &b ) {
-    os << OSTREAM_DOUBLE_PREC 
-       << b.Type() 
-       << " " 
-       << b.Name() 
-       << " " 
-       << b.Length() 
-       << " " 
-       << b.Strength() 
-       << " " ;
-    os << (*b.align) << "\n";
-    b.writeTo(os); // Polymorphically call the appropriate writeTo().
-  }
-  return os;
-}
 
