@@ -59,7 +59,6 @@ void combinedFunction::setField( bmlnElmnt::CRITFUNC crit,
 {
   DeepBeamlineIterator dbi( p_bml );
   bmlnElmnt* element;
-  double count = 0.0;
   double newstrength;
   slist  foundElements;
 
@@ -67,8 +66,8 @@ void combinedFunction::setField( bmlnElmnt::CRITFUNC crit,
     if( crit( element ) ) foundElements.append( element );
   }
 
-  if( count > 0.0 ) {
-    newstrength = s/foundElements.size();
+  if( foundElements.size() > 0 ) {
+    newstrength = s/( (double) foundElements.size() );
     slist_iterator getNext( foundElements );
     while((  element = (bmlnElmnt*) getNext()  )) {
       if( 0 == strcmp( "combinedFunction", element->Type() ) ) {
@@ -83,133 +82,142 @@ void combinedFunction::setField( bmlnElmnt::CRITFUNC crit,
 
 
 void combinedFunction::setField(WHICH_MULTIPOLE mult, double field) {
-  dlist_iterator getNext(*(dlist*)p_bml);
+  DeepBeamlineIterator dbi( p_bml );
   bmlnElmnt* element;
+  double newstrength;
+  slist  foundElements;
 
-  while((element = (bmlnElmnt*)getNext()) != 0) {
+  while((  element = dbi++  )) 
+  {
     switch (mult) {
     case DIPOLE_FIELD:
       if(strcasecmp(element->Type(),"sbend") == 0 ||
 	 strcasecmp(element->Type(),"rbend") == 0 )
-	element->setStrength(field);
+	foundElements.append( element );
       break;
     case QUADRUPOLE_FIELD:
       if(strcasecmp(element->Type(),"quadrupole") == 0 ||
 	 strcasecmp(element->Type(),"thinQuad") == 0 )
-	element->setStrength(field);
+	foundElements.append( element );
       break;
     case SEXTUPOLE_FIELD:
       if(strcasecmp(element->Type(),"sextupole") == 0 ||
 	 strcasecmp(element->Type(),"thinSextupole") == 0 )
-	element->setStrength(field);
+	foundElements.append( element );
       break;
     case OCTUPOLE_FIELD:
       if(strcasecmp(element->Type(),"thinOctupole") == 0 )
-	element->setStrength(field);
+	foundElements.append( element );
       break;
     case DECAPOLE_FIELD:
       if(strcasecmp(element->Type(),"thinDecapole") == 0 )
-	element->setStrength(field);
+	foundElements.append( element );
       break;
     case TWELVEPOLE_FIELD:
       if(strcasecmp(element->Type(),"thin12pole") == 0 )
-	element->setStrength(field);
+	foundElements.append( element );
       break;
     case FOURTEENPOLE_FIELD:
       if(strcasecmp(element->Type(),"thin14pole") == 0 )
-	element->setStrength(field);
+	foundElements.append( element );
       break;
     case SIXTEENPOLE_FIELD:
       if(strcasecmp(element->Type(),"thin16pole") == 0 )
-	element->setStrength(field);
+	foundElements.append( element );
       break;
     case EIGHTEENPOLE_FIELD:
       if(strcasecmp(element->Type(),"thin18pole") == 0 )
-	element->setStrength(field);
+	foundElements.append( element );
       break;
     default:
       break;
+    }
+  }
+
+  if( foundElements.size() > 0 ) {
+    newstrength = field/( (double) foundElements.size() );
+    slist_iterator getNext( foundElements );
+    while((  element = (bmlnElmnt*) getNext()  )) {
+      if( 0 == strcmp( "combinedFunction", element->Type() ) ) {
+        ((combinedFunction*) element)->setField( mult, newstrength );
+      }
+      else {
+        element->setStrength( newstrength );
+      }
     }
   }
 }
 
 double combinedFunction::Field(WHICH_MULTIPOLE mult) {
-  dlist_iterator getNext(*(dlist*)p_bml);
+  DeepBeamlineIterator dbi( p_bml );
   bmlnElmnt* element;
-  double multStrength = 0;
-  int foundIt = 0;
+  double multStrength = 0.0;
 
-  while((element = (bmlnElmnt*)getNext()) != 0 && foundIt == 0) {
+  while((  element = dbi++  )) 
+  {
     switch (mult) {
     case DIPOLE_FIELD:
       if(strcasecmp(element->Type(),"sbend") == 0 ||
 	 strcasecmp(element->Type(),"rbend") == 0 ) {
-	multStrength = element->Strength();
-	foundIt = 1;
+	multStrength += element->Strength();
       }
       break;
     case QUADRUPOLE_FIELD:
       if(strcasecmp(element->Type(),"quadrupole") == 0 ||
 	 strcasecmp(element->Type(),"thinQuad") == 0 ) {
-	multStrength = element->Strength();
-	foundIt = 1;
+	multStrength += element->Strength();
       }
       break;
     case SEXTUPOLE_FIELD:
       if(strcasecmp(element->Type(),"sextupole") == 0 ||
 	 strcasecmp(element->Type(),"thinSextupole") == 0 ) {
-	multStrength = element->Strength();
-	foundIt = 1;
+	multStrength += element->Strength();
       }
       break;
     case OCTUPOLE_FIELD:
       if(strcasecmp(element->Type(),"thinOctupole") == 0 ) {
-	multStrength = element->Strength();
-	foundIt = 1;
+	multStrength += element->Strength();
       }
       break;
     case DECAPOLE_FIELD:
       if(strcasecmp(element->Type(),"thinDecapole") == 0 ) {
-	multStrength = element->Strength();
-	foundIt = 1;
+	multStrength += element->Strength();
       }
       break;
     case TWELVEPOLE_FIELD:
       if(strcasecmp(element->Type(),"thin12pole") == 0 ) {
-	multStrength = element->Strength();
-	foundIt = 1;
+	multStrength += element->Strength();
       }
       break;
     case FOURTEENPOLE_FIELD:
       if(strcasecmp(element->Type(),"thin14pole") == 0 ) {
-	multStrength = element->Strength();
-	foundIt = 1;
+	multStrength += element->Strength();
       }
       break;
     case SIXTEENPOLE_FIELD:
       if(strcasecmp(element->Type(),"thin16pole") == 0 ) {
-	multStrength = element->Strength();
-	foundIt = 1;
+	multStrength += element->Strength();
       }
       break;
     case EIGHTEENPOLE_FIELD:
       if(strcasecmp(element->Type(),"thin18pole") == 0 ) {
-	multStrength = element->Strength();
-	foundIt = 1;
+	multStrength += element->Strength();
       }
       break;
     default:
       break;
     }
   }
+
   return multStrength;
 }
 
 void combinedFunction::setSkew(WHICH_MULTIPOLE mult, alignmentData& alignD) {
-  dlist_iterator getNext(*(dlist*)p_bml);
+  DeepBeamlineIterator dbi( p_bml );
   bmlnElmnt* element;
 
-  while((element = (bmlnElmnt*)getNext()) != 0) {
+  while((  element = dbi++  )) 
+  {
     switch (mult) {
     case DIPOLE_FIELD:
       if(strcasecmp(element->Type(),"sbend") == 0 ||
@@ -233,6 +241,26 @@ void combinedFunction::setSkew(WHICH_MULTIPOLE mult, alignmentData& alignD) {
     case DECAPOLE_FIELD:
       if(strcasecmp(element->Type(),"thinDecapole") == 0 )
 	element->setAlignment(alignD);
+      break;
+    case TWELVEPOLE_FIELD:
+      if(strcasecmp(element->Type(),"thin12pole") == 0 ) {
+	element->setAlignment(alignD);
+      }
+      break;
+    case FOURTEENPOLE_FIELD:
+      if(strcasecmp(element->Type(),"thin14pole") == 0 ) {
+	element->setAlignment(alignD);
+      }
+      break;
+    case SIXTEENPOLE_FIELD:
+      if(strcasecmp(element->Type(),"thin16pole") == 0 ) {
+	element->setAlignment(alignD);
+      }
+      break;
+    case EIGHTEENPOLE_FIELD:
+      if(strcasecmp(element->Type(),"thin18pole") == 0 ) {
+	element->setAlignment(alignD);
+      }
       break;
     default:
       break;
@@ -277,6 +305,30 @@ alignmentData combinedFunction::Skew(WHICH_MULTIPOLE mult) {
       break;
     case DECAPOLE_FIELD:
       if(strcasecmp(element->Type(),"thinDecapole") == 0 ) {
+	alignD = element->Alignment();
+	foundIt = 1;
+      }
+      break;
+    case TWELVEPOLE_FIELD:
+      if(strcasecmp(element->Type(),"thin12pole") == 0 ) {
+	alignD = element->Alignment();
+	foundIt = 1;
+      }
+      break;
+    case FOURTEENPOLE_FIELD:
+      if(strcasecmp(element->Type(),"thin14pole") == 0 ) {
+	alignD = element->Alignment();
+	foundIt = 1;
+      }
+      break;
+    case SIXTEENPOLE_FIELD:
+      if(strcasecmp(element->Type(),"thin16pole") == 0 ) {
+	alignD = element->Alignment();
+	foundIt = 1;
+      }
+      break;
+    case EIGHTEENPOLE_FIELD:
+      if(strcasecmp(element->Type(),"thin18pole") == 0 ) {
 	alignD = element->Alignment();
 	foundIt = 1;
       }
