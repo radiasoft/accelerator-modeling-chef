@@ -72,7 +72,7 @@ MatrixD::MatrixD(int rows, int columns, double* initval) : stacked(0) {
 #endif
 }
 
-MatrixD::MatrixD(char * flag, int dimension) : stacked(0) {
+MatrixD::MatrixD(const char* flag, int dimension) : stacked(0) {
 
   int    i;
   double tmp_float = dimension;
@@ -120,7 +120,7 @@ MatrixD::MatrixD(char * flag, int dimension) : stacked(0) {
 }
 
 /* ??? OLD FORM: REMOVE
-MatrixD::MatrixD(char * flag, int dimension) {
+MatrixD::MatrixD(const char* flag, int dimension) {
   int i;
   float tmp_float = dimension/2.0;
   ml = new MLD(dimension,dimension,0.0);
@@ -185,7 +185,7 @@ MatrixD& MatrixD::DeepCopy(const MatrixD& x) {
  return *this; 
 }
 
-void MatrixD::error(char * msg1, char * msg2) const {
+void MatrixD::error( const char* msg1, const char* msg2 ) const {
   double temp = 0.0;
   cerr << "MatrixD error: " << msg1 << " " << msg2  << endl;
   double temp1 = 1.0/temp;
@@ -1081,7 +1081,7 @@ MatrixC::MatrixC(int rows, int columns, Complex* initval) : stacked(0) {
 #endif
 }
 
-MatrixC::MatrixC(char * flag, int dimension) {
+MatrixC::MatrixC(const char* flag, int dimension) {
   int i;
   float tmp_float = dimension/2.0;
   ml = new MLC(dimension,dimension,complex_0);
@@ -1149,7 +1149,7 @@ MatrixC& MatrixC::DeepCopy(const MatrixC& x) {
  return *this; 
 }
 
-void MatrixC::error(char * msg1, char * msg2) const {
+void MatrixC::error( const char* msg1, const char* msg2 ) const {
   cerr << "MatrixC error: " << msg1 << " " << msg2  << endl;
   exit(1);
 }
@@ -1964,7 +1964,7 @@ MatrixI::MatrixI(int rows, int columns, int* initval) : stacked(0) {
 #endif
 }
 
-MatrixI::MatrixI(char * flag, int dimension) {
+MatrixI::MatrixI(const char* flag, int dimension) {
   int i;
   float tmp_float = dimension/2.0;
   ml = new MLI(dimension,dimension,0);
@@ -2057,7 +2057,7 @@ MatrixI& MatrixI::DeepCopy(const MatrixI& x) {
  return *this; 
 }
 
-void MatrixI::error(char * msg1, char * msg2) const {
+void MatrixI::error( const char* msg1, const char* msg2 ) const {
   cerr << "MatrixI error: " << msg1 << " " << msg2  << endl;
   exit(1);
 }

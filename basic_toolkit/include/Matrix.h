@@ -22,7 +22,7 @@ private:
   MatrixD scale();
   MatrixD lu_decompose(int*, int&) const;
   void lu_back_subst(int*,MatrixD&);
-  void error(char * msgl, char * msg2 = (char*) " ")const ;
+  void error( const char* msgl, const char* msg2 = " ") const ;
 
 public:
   char  stacked;
@@ -33,9 +33,9 @@ public:
   MatrixD(int rows, int columns);
   MatrixD(int rows, int columns, double initval);
   MatrixD(int rows, int columns, double* initval);
-  MatrixD(char* flag, int dimension); // create an identity matrix
-				     // or a symplectic matrix
-  MatrixD(const MatrixD& X);
+  MatrixD(const char* flag, int dimension); // create an identity matrix
+                                            // or a symplectic matrix
+   MatrixD(const MatrixD& X);
   ~MatrixD();
 
   // Public member functions__________________________________________
@@ -106,7 +106,7 @@ private:
   MatrixC scale();
   MatrixC lu_decompose(int*, int&);
   void lu_back_subst(int*,MatrixC&);
-  void error(char * msgl, char * msg2 = (char*) " ")const ;
+  void error( const char* msgl, const char* msg2 = " ") const ;
 
 public:
   char  stacked;
@@ -118,7 +118,7 @@ public:
   MatrixC(int rows, int columns, const Complex& initval );
   MatrixC(int rows, int columns, Complex* initval);
   MatrixC(const MatrixD&);
-  MatrixC(char* flag, int dimension); // create an identity matrix
+  MatrixC(const char* flag, int dimension); // create an identity matrix
 				     // or a symplectic matrix
   MatrixC(const MatrixC& X);
   ~MatrixC();
@@ -185,7 +185,7 @@ class MatrixI {
 private:
   MLI* ml;
 
-  void error(char * msgl, char * msg2 = (char*) " ")const ;
+  void error( const char* msgl, const char* msg2 = " ")const ;
 public:
   char  stacked;
 
@@ -195,7 +195,7 @@ public:
   MatrixI(int rows, int columns );
   MatrixI(int rows, int columns, int initval );
   MatrixI(int rows, int columns, int* initval);
-  MatrixI(char* flag, int dimension); // create an identity matrix
+  MatrixI(const char* flag, int dimension); // create an identity matrix
 				     // or a symplectic matrix
   MatrixI(const MatrixI& X);
   ~MatrixI();
