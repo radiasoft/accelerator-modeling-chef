@@ -11,6 +11,8 @@ default:
 	@echo "   make irix5-gcc      for SGI systems with IRIX 5.x with GCC debug on"
 	@echo "   make solaris-gcc    for Solaris 2 systems with GCC"
 	@echo "   make solaris        for Solaris 2 systems "
+	@echo "   make ultra          for Solaris 2 systems on an UltraSparc"
+	@echo "   make ultra-opt      for Solaris 2 systems on an UltraSparc"
 	@echo "   make solaris-debug  for Solaris 2 systems and Sun debug"
 	@echo "   make sunos4         for Sun systems with SunOS 4.x"
 	@echo "   make sunos4-debug   for Sun systems with SunOS 4.x and Sun debug"
@@ -20,13 +22,13 @@ default:
 
 LINKDIRS  = beamline mxyzptlk Machine tev tcl socket server sybase
 
-SUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src Machine/src tcl/src socket/src sybase/src sybase/app tev/app server/app server/src
+SUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src Machine/src tcl/src socket/src sybase/src sybase/app tev/app server/app server/src filter/src
 
-SUNSUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src tcl/src socket/src
+SUNSUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src
 
-SGISUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src sybase/src socket/src server/src
+SGISUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src sybase/src socket/src server/src filter/src
 
-gcc solaris-gcc solaris solaris-debug sunos4 sunos4-debug  :
+gcc solaris-gcc solaris solaris-debug sunos4 sunos4-debug ultra ultra-opt  :
 	@set -x; for i in $(SUNSUBDIRS); do \
 		(cd $$i; $(MAKE)  $@); \
 		done
@@ -58,6 +60,7 @@ include-dir:
 lib-dir:
 	@if [ ! -d lib ] ; then \
 		mkdir lib;\
+		mkdir lib/ultra; \
 		mkdir lib/sun; \
 		mkdir lib/sgi; \
 		mkdir lib/gcc; \
@@ -68,6 +71,7 @@ lib-dir:
 real-clean: clean lib-clean link-clean
 
 lib-clean:
+	rm -f lib/ultra/*.a;\
 	rm -f lib/sun/*.a;\
 	rm -f lib/sgi/*.a;\
 	rm -f lib/gcc/*.a;
@@ -102,6 +106,7 @@ TAR_FILES =	\
 	fnal/server \
 	fnal/socket \
 	fnal/sybase \
+	fnal/filter \
 	fnal/tcl
 
 tar:

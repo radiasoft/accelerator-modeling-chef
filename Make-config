@@ -57,7 +57,8 @@ irix5-gcc:
 	"RANLIB = ranlib" \
 	"TKINC = -I/usr/local/tk-tcl/include" \
 	"XINC = -I/usr/local/X11R5/include" \
-	"INCDIR = $(FNALROOT)/include"\
+	"INCDIR = $(FNALROOT)/include "\
+	"SYBASEINC = -I/usr/local/sybase"\
 	"LIBDIR = $(FNALROOT)/lib/sgi"
 
 irix5-debug:
@@ -82,8 +83,37 @@ solaris:
 	"MAKELIB = ar ruv" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
+	"SYBASEINC = -I/usr/local/ap/sybase/include" \
 	"TKINC = -I/usr/local/TCL-TK/include" \
 	"XINC = -I/usr/local/ap/X11R6/include" \
+	"RANLIB = echo"
+
+ultra:
+	$(MAKE) targets \
+	"C   = cc" \
+	"C++ = CC" \
+	"CFLAGS = " \
+	"C++FLAGS = -DULTRA" \
+	"MAKELIB = ar ruv" \
+	"INCDIR = $(FNALROOT)/include" \
+	"LIBDIR = $(FNALROOT)/lib/ultra" \
+	"TKINC = -I/usr/local/TCL-TK/include" \
+	"XINC = -I/usr/local/ap/X11R6/include" \
+	"SYBASEINC = -I/usr/local/ap/sybase/include" \
+	"RANLIB = echo"
+
+ultra-opt:
+	$(MAKE) targets \
+	"C   = cc" \
+	"C++ = CC" \
+	"CFLAGS = -fast" \
+	"C++FLAGS = -DULTRA -fast" \
+	"MAKELIB = ar ruv" \
+	"INCDIR = $(FNALROOT)/include" \
+	"LIBDIR = $(FNALROOT)/lib/ultra" \
+	"TKINC = -I/usr/local/TCL-TK/include" \
+	"XINC = -I/usr/local/ap/X11R6/include" \
+	"SYBASEINC = -I/usr/local/ap/sybase/include" \
 	"RANLIB = echo"
 
 solaris-debug:
