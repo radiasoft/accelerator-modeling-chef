@@ -137,12 +137,13 @@ int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 
 double sbend::Approx_Prop::fastArcsin( double x ) const
 {
+  return x;
+  /*
   double u = x*x;
   return x*( 1.0 +
              u*( 0.16666666666667 +
                  u*( 0.075 +
-                     u*( 0.044642857142857 ))));
-  /*
+                     u*( 0.044642857142857 +
                          u*( 0.030381944444444 +
                              u*( 0.022372159090909 +
                                  u*( 0.017352764423077 +
@@ -152,18 +153,19 @@ double sbend::Approx_Prop::fastArcsin( double x ) const
                                                  u*( 0.0083903358096168 +
                                                      u*( 0.0073125258735988 +
                                                          u*( 0.0064472103118896 )))))))))))));
-  */
+ */
 }
 
 
 Jet sbend::Approx_Prop::fastArcsin( const Jet& x ) const
 {
+  return x;
+  /*
   Jet u( x*x );
   return x*( 1.0 +
              u*( 0.16666666666667 +
                  u*( 0.075 +
-                     u*( 0.044642857142857 ))));
-  /*
+                     u*( 0.044642857142857 +
                          u*( 0.030381944444444 +
                              u*( 0.022372159090909 +
                                  u*( 0.017352764423077 +
@@ -173,7 +175,7 @@ Jet sbend::Approx_Prop::fastArcsin( const Jet& x ) const
                                                  u*( 0.0083903358096168 +
                                                      u*( 0.0073125258735988 +
                                                          u*( 0.0064472103118896 )))))))))))));
-  */
+ */
 }
 
 
