@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -40,11 +43,11 @@
 
 
 #include <iostream>
+#include <cstdlib>
+#include <string>
+
 using std::cerr;
 using std::endl;
-
-#include <stdlib.h>
-#include <string>
 
 #include "IntArray.h"
 
