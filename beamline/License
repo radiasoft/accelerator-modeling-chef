@@ -118,11 +118,9 @@ Archive:  beamline.zip
      2808  11-22-01 10:37   include/marker.h
      5555  11-22-01 10:37   include/monitor.h
      2376  11-22-01 10:37   include/mover.h
-     6491  11-22-01 10:37   include/mwiremonitor.h
      3783  11-22-01 10:37   include/octupole.h
      4765  11-22-01 10:37   include/pinger.h
      4929  11-22-01 10:37   include/quadrupole.h
-     9030  11-22-01 10:37   include/rastermonitor.h
      6665  11-22-01 10:37   include/rbend.h
      5914  11-22-01 10:37   include/rfcavity.h
      4632  11-22-01 10:37   include/sbend.h
@@ -130,7 +128,6 @@ Archive:  beamline.zip
      3425  11-22-01 10:37   include/septum.h
      4859  11-22-01 10:37   include/sextupole.h
      2784  11-22-01 10:37   include/srot.h
-     6143  11-22-01 10:37   include/tclmonitor.h
      5831  11-22-01 10:37   include/thinpoles.h
     12285  11-22-01 10:47   src/BBLens.cc
      8317  11-22-01 10:47   src/BeamlineIterator.cc
@@ -162,11 +159,9 @@ Archive:  beamline.zip
      2432  11-22-01 10:47   src/marker.cc
      5866  11-22-01 10:47   src/monitor.cc
      2933  11-22-01 10:47   src/mover.cc
-    14844  11-22-01 10:47   src/mwiremonitor.cc
      5855  11-22-01 10:47   src/octupole.cc
      4135  11-22-01 10:47   src/pinger.cc
      9309  11-22-01 10:47   src/quadrupole.cc
-    30381  11-22-01 10:47   src/rastermonitor.cc
      8623  11-22-01 10:47   src/rbend.cc
     12550  11-22-01 10:47   src/read_istream.cc
      6323  11-22-01 10:47   src/rfcavity.cc
@@ -175,7 +170,6 @@ Archive:  beamline.zip
      3477  11-22-01 10:47   src/septum.cc
      5064  11-22-01 10:47   src/sextupole.cc
      2447  11-22-01 10:47   src/srot.cc
-    18053  11-22-01 10:47   src/tclmonitor.cc
      2480  11-22-01 10:47   src/testString.cc
      5632  11-22-01 10:47   src/thinpoles.cc
      4905  11-22-01 10:47   src/CF_rbendConstructor.ins
