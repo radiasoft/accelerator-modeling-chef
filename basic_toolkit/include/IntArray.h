@@ -105,7 +105,7 @@ public:
     GenericException( const char*, const char* );
     ~GenericException() throw() {}
     const char* what() const throw();
-    std::basic_string<char> w;
+    std::string w;
   };
 
 #ifdef OBJECT_DEBUG
