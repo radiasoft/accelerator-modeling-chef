@@ -53,6 +53,7 @@ private:
 public:
   char        stacked;    // ??? Made public for convenience: no application
                           // ??? should touch this variable.
+  static JetC__environment* lastEnv;
 
   // Constructors and destructors_____________________________________
   JetC( JetC__environment* = JetC::lastEnv );
@@ -65,7 +66,6 @@ public:
   void Reconstruct();
   void Reconstruct( JetC__environment* pje );
 
-  static JetC__environment* lastEnv;
   static JetC__environment* workEnv;  // This probably doesn't belong with JetC.
   static void BeginEnvironment( int = 1 /* maximum weight */ );
   static void Parameters();
@@ -174,22 +174,30 @@ public:
   friend JetC operator+( const Complex&, const JetC& );
   friend JetC operator+( const JetC&, const double& );
   friend JetC operator+( const double&, const JetC& );
+
   friend JetC operator-( const JetC&, const JetC& );
   friend JetC operator-( const Jet&,  const JetC& );
   friend JetC operator-( const JetC&, const Jet&  );
   friend JetC operator-( const JetC& );
   friend JetC operator-( const JetC&, const Complex& );
   friend JetC operator-( const Complex&, const JetC& );
+  friend JetC operator-( const JetC&, const double& );
+  friend JetC operator-( const double&, const JetC& );
+
   friend JetC operator*( const JetC&, const JetC& );
   friend JetC operator*( const JetC&, const Jet& );
   friend JetC operator*( const Jet&,  const JetC& );
   friend JetC operator*( const JetC&, const Complex& );
   friend JetC operator*( const Complex&, const JetC& );  // ??? Change this!!
+
   friend JetC operator/( const JetC&, const JetC& );     // ??? Friendliness
-  friend JetC operator/( const Jet&,  const JetC& );     // ??? Friendliness
-  friend JetC operator/( const JetC&, const Jet&  );     // ??? Friendliness
-  friend JetC operator/( const JetC&, const Complex& );  // ??? unnecessary
+  friend JetC operator/( const Jet&,  const JetC& );     // ??? unnecessary
+  friend JetC operator/( const JetC&, const Jet&  );     
+  friend JetC operator/( const JetC&, const Complex& );  
   friend JetC operator/( const Complex&, const JetC& ); 
+  friend JetC operator/( const JetC&, const double& );  
+  friend JetC operator/( const double&, const JetC& ); 
+
   friend JetC operator^( const JetC&, const JetC& );   // Poisson bracket
 
   friend JLCterm operator*( JLCterm&, JLCterm& );
