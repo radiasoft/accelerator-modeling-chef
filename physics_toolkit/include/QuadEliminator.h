@@ -31,15 +31,15 @@
 
 
 /*
- * File: DriftEliminator.h
+ * File: QuadEliminator.h
  * 
- * Header for class DriftEliminator
+ * Header for class QuadEliminator
  * 
- * Concatenates drifts and removes passive
+ * Concatenates quads and removes passive
  * elements of zero length.
  * 
  * Leo Michelotti
- * May 17, 2001
+ * March 11, 2002
  * 
  */
 

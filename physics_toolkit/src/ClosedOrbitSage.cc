@@ -140,6 +140,18 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
       cerr << "*** ERROR ***                                   \n"
               "*** ERROR *** ClosedOrbitSage::findClosedOrbit            \n"
               "*** ERROR *** Closed orbit not correct.         \n"
+              "*** ERROR *** delta x = " 
+           << ( fabs( co(i_x)  - p_prt->State(i_x)  ))
+           << "   \n"
+              "*** ERROR *** delta y = " 
+           << ( fabs( co(i_y)  - p_prt->State(i_y)  ))
+           << "   \n"
+              "*** ERROR *** delta p_x/p = " 
+           << ( fabs( co(i_px)  - p_prt->State(i_px)  ))
+           << "   \n"
+              "*** ERROR *** delta p_y/p = " 
+           << ( fabs( co(i_py)  - p_prt->State(i_py)  ))
+           << "   \n"
               "*** ERROR ***                                   \n"
            << endl;
       if( this->_verbose ) {
@@ -182,6 +194,18 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
         cerr << "*** ERROR ***                                   \n"
                 "*** ERROR *** ClosedOrbitSage::findClosedOrbit            \n"
                 "*** ERROR *** Closed orbit not correct.         \n"
+                "*** ERROR *** delta x = " 
+             << ( fabs( co(i_x)  - p_prt->State(i_x)  ))
+             << "   \n"
+                "*** ERROR *** delta y = " 
+             << ( fabs( co(i_y)  - p_prt->State(i_y)  ))
+             << "   \n"
+                "*** ERROR *** delta p_x/p = " 
+             << ( fabs( co(i_px)  - p_prt->State(i_px)  ))
+             << "   \n"
+                "*** ERROR *** delta p_y/p = " 
+             << ( fabs( co(i_py)  - p_prt->State(i_py)  ))
+             << "   \n"
                 "*** ERROR ***                                   \n"
              << endl;
         if( this->_verbose ) {
