@@ -1,12 +1,9 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.0                    
+******  Version:   4.1
 ******                                    
 ******  File:      Distribution.cc
 ******                                                                
@@ -35,25 +32,139 @@
  * Distribtion class written by Jim Holt.
  * August 11, 1994
  *
+ * Modified by Leo Michelotti
+ * December 4, 2003
+ *
  */
+
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <math.h>
 #include <stdlib.h>
+#include <iostream>
+
 #include "Distribution.h"
+#include "VectorD.h"
 
 
-Gaussian::Gaussian(long seed = 0) : Distribution(seed) {
+using namespace std;
+
+Gaussian::Gaussian( double m, double s, long seed ) 
+: Distribution( seed ), 
+  _mean( m ),
+  _sigma( s )
+{
 }
-Gaussian::~Gaussian() {
+
+
+Gaussian::~Gaussian() 
+{
 }
-double Gaussian::getValue() {
-  double r;
-  double random1,random2;
+
+
+void Gaussian::setSigma( double s )
+{
+  if( s >= 0.0 ) { _sigma = s; }
+}
+
+
+double Gaussian::getValue() const
+{
+  double w, r, random1, random2;
   do {
-    random1 = 2.0*drand48() - 1.0;
+    random1 = 2.0*drand48() - 1.0;  // ??? Why was it done this way???
     random2 = 2.0*drand48() - 1.0;
     r = random1*random1 + random2*random2;
   } while (r >= 1.0);
+
   double factor = sqrt(-2.0*log(r)/r);
-  return random2 * factor;
+  w = random2 * factor;
+
+  return _mean + _sigma*w;
+}
+
+
+MultiGaussian::MultiGaussian( const Vector& average, 
+                              const Vector& deviation,
+                              long seed )
+: Distribution( seed ), 
+  _mean( average ),
+  _sigma( deviation ),
+  _covariance( average.Dim(), average.Dim() ),
+  _R( average.Dim(), average.Dim() )
+{
+  int i;
+  int n = average.Dim();
+  for( i = 0; i < n; i++ ) { _covariance(i,i) = deviation(i)*deviation(i); }
+  MatrixD::RandomOrthogonal generator( n );
+  _R = generator.build();
+  _covariance = _R * _covariance * _R.transpose();
+}
+
+
+MultiGaussian::~MultiGaussian()
+{
+}
+
+
+void MultiGaussian::setSigma( const Vector& s )
+{
+  if( s.Dim() != _sigma.Dim() ) { 
+    cerr << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** void MultiGaussian::setSigma( const Vector& s )"
+            "\n*** WARNING *** Incompatible dimensions: returning."
+         << endl;
+    return; 
+  }
+ 
+  for( int i = 0; i < s.Dim(); i++ ) {
+    if( s(i) >= 0.0 ) { _sigma(i) = s(i); }
+  }
+}
+
+
+void MultiGaussian::setRotation( const MatrixD& M )
+{
+  if( !(M.isOrthogonal()) ) { 
+    cerr << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** void void MultiGaussian::setRotation( const MatrixD& M )"
+            "\n*** WARNING *** Argument is not an orthogonal matrix. Returning."
+         << endl;
+    return; 
+  }
+  
+  if( _R.rows() != M.rows() ) {
+    cerr << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** void void MultiGaussian::setRotation( const MatrixD& M )"
+            "\n*** WARNING *** Argument is wrong size. Returning."
+         << endl;
+    return; 
+  }
+
+  _R = M;
+}
+
+
+Vector MultiGaussian::getValue() const
+{
+  int n = _mean.Dim();
+  Vector ret( n );
+
+  double w, r, random1, random2;
+  double factor;
+  for( int i = 0; i < n; i++ ) {
+    do {
+      random1 = 2.0*drand48() - 1.0;  // ??? Why was it done this way???
+      random2 = 2.0*drand48() - 1.0;
+      r = random1*random1 + random2*random2;
+    } while (r >= 1.0);
+    factor = sqrt(-2.0*log(r)/r);
+    w = random2 * factor;
+    ret(i) = w*_sigma(i);
+  }
+
+  ret = _mean + _R*ret;
+  return ret;
 }

@@ -77,6 +77,7 @@ public:
   double trace(); // return the trace of a square matrix
   void SVD( MatrixD&, MatrixD&, MatrixD& ) const;
   
+  bool isOrthogonal() const;
 
   // Operators________________________________________________________
 

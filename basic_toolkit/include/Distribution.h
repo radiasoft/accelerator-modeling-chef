@@ -3,14 +3,15 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.0                    
+******  Version:   4.1
 ******                                    
 ******  File:      Distribution.h
 ******                                                                
 ******  Copyright (c) 1990 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
 ******                                                                
-******  Author:    Leo Michelotti                                     
+******  Authors:   Jim Holt
+******             Leo Michelotti
 ******                                                                
 ******             Fermilab                                           
 ******             P.O.Box 500                                        
@@ -32,6 +33,9 @@
  * Distribtion class written by Jim Holt.
  * August 11, 1994
  *
+ * Modified by Leo Michelotti
+ * December 4, 2003
+ *
  */
 
 #ifndef DISTRIBUTION_HXX
@@ -39,21 +43,63 @@
 
 #include <cstdlib>
 
+#include "VectorD.h"
+#include "Matrix.h"
 
-class Distribution {
-protected:
-  long initialSeed;
-public:
-  Distribution(long seed) {initialSeed = seed; srand48(seed);}
+class Distribution 
+{
+ public:
+  Distribution( long seed = 0 ) 
+  : _initialSeed( seed ) { srand48(seed); }
   virtual ~Distribution() { }
+
   virtual double getValue() { return drand48();}
+
+ protected:
+  long   _initialSeed;
 };
 
-class Gaussian : public Distribution {
-public:
-  Gaussian(long);
-  virtual ~Gaussian();
-  virtual double getValue();
+
+class Gaussian : public Distribution 
+{
+ public:
+  Gaussian( double mean = 0.0, double sigma = 1.0, long seed = 0 );
+  ~Gaussian();
+
+  void setMean( double m ) { _mean = m; }
+  double mean() const { return _mean; }
+  void setSigma( double );
+  double sigma() const { return _sigma; }
+
+  double getValue() const;
+
+ private:
+  double _mean;
+  double _sigma;
+};
+
+
+class MultiGaussian : public Distribution 
+{
+ public:
+  MultiGaussian( const Vector& average, const Vector& sigma, long seed = 0 );
+  ~MultiGaussian();
+
+  void setMean( const Vector& m ) { _mean = m; }
+  Vector mean() const { return _mean; }
+  void setSigma( const Vector& );
+  Vector sigma() const { return _sigma; }
+  MatrixD covariance() const { return _covariance; }
+  void setRotation( const MatrixD& M );
+
+  Vector getValue() const;
+
+ private:
+  Vector   _mean;
+  Vector   _sigma;
+  MatrixD  _covariance;
+  MatrixD  _R;   // _R.transpose() * _covariance * _R
+                 // is diagonal.
 };
 
 #endif  // DISTRIBUTION_HXX
