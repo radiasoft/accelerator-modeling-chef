@@ -3,9 +3,9 @@
 **************************************************************************
 ******                                                                
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
-******  Version:   4.1                    
 ******                                    
 ******  File:      JLC.cc
+******  Version:   4.2
 ******                                                                
 ******  Copyright (c) 1990 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
