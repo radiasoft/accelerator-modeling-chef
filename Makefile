@@ -29,15 +29,18 @@ default:
 	@echo "  make real-clean        Remove all .o,.sb,.~ files, libraries and links."
 	@echo "  make lib-clean         Remove all library (.a) files."
 	@echo "  make clean             Remove all .o,.sb,.~ files."
+	@echo "  make clean-app         Do a make clean in the app dirs, too"
+	@echo "  make clean-all         Do a make clean and a make clean-app"
 	@echo "  make link-clean        Remove all links in include directory."
 	@echo "  make tar               Tar up all source (*.cc,*.h) files."
 	@echo "  make tar_everything    Tar up ALL files."
+	@echo "  make app               Does a make (no args) in each app dir."
 	@echo "  make test-app          Make all the programs in the app directories."
 
 
 LINKDIRS  = bml mxb mi Machine tev tcl socket server sybase filter swyd recycler mi_8gev mr_8gev 
 
-SUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app swyd/src swyd/app recycler/app recycler/src mi_8gev/src mi_8gev/app mi/src mi/app
+SUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src server/src filter/src swyd/src recycler/src mi_8gev/src mi/src
 
 SUNSUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src recycler/src mi_8gev/src mi/src mr_8gev/src 
 
@@ -83,7 +86,6 @@ lib-dir:
 		mkdir lib/gcc; \
 		else true; \
 	fi
-	
 
 real-clean: clean lib-clean link-clean
 
@@ -92,9 +94,8 @@ lib-clean:
 	rm -f lib/sun/*.a;\
 	rm -f lib/sgi/*.a;\
 	rm -f lib/gcc/*.a;
-	
-# Remove .o files, emacs backup files, etc.
 
+# Remove .o files, emacs backup files, etc.
 clean:
 	rm -f ./*~*
 	rm -f include/*~*
@@ -102,6 +103,14 @@ clean:
 		(cd $$i; $(MAKE)  $@); \
 		done
 	@echo "== CLEAN COMPLETE =="
+
+clean-app: 
+	@set -x; for i in $(APPSUBDIRS); do \
+		(cd $$i; $(MAKE) clean); \
+		done
+	@echo "== CLEAN-APP COMPLETE =="
+
+clean-all: clean clean-app
 
 link-clean:
 	rm -f include/*
