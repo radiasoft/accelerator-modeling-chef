@@ -2,11 +2,11 @@
 #ifndef RASTERMONITOR_H
 #define RASTERMONITOR_H
 
-#include "mxyzptlk.h"
-#include "beamline.inc"
-#include "ParticleBunch.h"
-#include "pipestream.h"
-
+#include "beamline.h"
+class ParticleBunch;
+class Particle;
+class Vector;
+class iopipestream;
 
 /// rasterMonitor class.
 /** This class provides a visual display of phase space for a beamline
