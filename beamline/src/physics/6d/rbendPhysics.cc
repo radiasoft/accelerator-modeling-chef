@@ -1,20 +1,185 @@
+#include "VectorD.h"
 #include "beamline.inc"
+
+void rbend::P_Exact( bmlnElmnt* p_be, Particle& p )
+{
+  rbend::P_Face(p_be,p);
+  rbend::P_NoEdge(p_be,p);
+  rbend::P_Face(p_be,p);
+}
+
+void rbend::J_Exact( bmlnElmnt* p_be, JetParticle& p )
+{
+  rbend::J_Face(p_be,p);
+  rbend::J_NoEdge(p_be,p);
+  rbend::J_Face(p_be,p);
+}
+
+void rbend::P_InEdge( bmlnElmnt* p_be, Particle& p )
+{
+  rbend::P_Face(p_be,p);
+  rbend::P_NoEdge(p_be,p);
+}
+
+void rbend::J_InEdge( bmlnElmnt* p_be, JetParticle& p )
+{
+  rbend::J_Face(p_be,p);
+  rbend::J_NoEdge(p_be,p);
+}
+
+void rbend::P_OutEdge( bmlnElmnt* p_be, Particle& p )
+{
+  rbend::P_NoEdge(p_be,p);
+  rbend::P_Face(p_be,p);
+}
+
+void rbend::J_OutEdge( bmlnElmnt* p_be, JetParticle& p )
+{
+  rbend::J_NoEdge(p_be,p);
+  rbend::J_Face(p_be,p);
+}
+
+
+
+
+void rbend::P_Face( bmlnElmnt* p_be, Particle& p )
+{
+  static const enum { x = 0, y, cdt, xp, yp, dpop };
+  static rbend* pbe;
+
+  pbe = (rbend*) p_be;  // ??? Why isn't the argument an rbend* ?
+
+  // Calculate the transformation angle.
+  double psi;
+  if( pbe->poleFaceAngle == M_TWOPI ) {
+    psi =   asin(   ( pbe->strength * pbe->Length() )
+                  / ( 2.0*p.ReferenceBRho() )
+                );
+    // i.e., sin( psi ) = (l/2) / rho
+    //                  = Bl/(2*Brho)
+    pbe->poleFaceAngle = psi;
+  }
+  else {
+    psi = pbe->poleFaceAngle;
+  }
+
+  double cs( cos(psi) ); 
+  double sn( sin(psi) ); 
+
+  // Drift frame represented in the rbend frame.
+  Vector e_1(3), e_2(3), e_3(3);
+  e_1(0) = cs;  e_1(1) = 0.0;  e_1(2) = -sn; 
+  e_2(0) = 0.0; e_2(1) = 1.0;  e_2(2) = 0.0; 
+  e_3(0) = sn;  e_3(1) = 0.0;  e_3(2) = cs; 
+
+  // Coordinate transformation.
+  Vector r        ( p.State(x)*e_1 + p.State(y)*e_2 );
+  Vector dummy    ( p.VectorBeta() );
+  Vector beta     ( dummy(0)*e_1 +
+                    dummy(1)*e_2 +
+                    dummy(2)*e_3 );
+
+  double tau      ( - r(2) / beta(2) );
+
+  p.state[x]    = r(0) + tau*beta(0);
+  p.state[y]    = r(1) + tau*beta(1);
+  p.state[cdt] += tau;
+
+  // Momentum transformation
+  double p1( p.State( xp ) );
+  double p2( p.State( yp ) );
+  double p3divpbar = sqrt( ( 1.0 + p.state[dpop] ) * ( 1.0 + p.state[dpop] )
+                            - p1*p1 - p2*p2 );
+
+  p.state[xp] = cs*p.State( xp ) + sn*p3divpbar;
+}
+
+
+
+void rbend::J_Face( bmlnElmnt* p_be, JetParticle& p )
+{
+  static const enum { x = 0, y, cdt, xp, yp, dpop };
+  static rbend* pbe;
+
+  pbe = (rbend*) p_be;  // ??? Why isn't the argument an rbend* ?
+
+  // Calculate the transformation angle.
+  double psi;
+  if( pbe->poleFaceAngle == M_TWOPI ) {
+    psi =   asin(   ( pbe->strength * pbe->Length() )
+                  / ( 2.0*p.ReferenceBRho() )
+                );
+    // i.e., sin( psi ) = (l/2) / rho
+    //                  = Bl/(2*Brho)
+    pbe->poleFaceAngle = psi;
+  }
+  else {
+    psi = pbe->poleFaceAngle;
+  }
+
+  double cs( cos(psi) ); 
+  double sn( sin(psi) ); 
+
+  // Drift frame represented in the rbend frame.
+  Vector e_1(3), e_2(3), e_3(3);
+  e_1(0) = cs;  e_1(1) = 0.0;  e_1(2) = -sn; 
+  e_2(0) = 0.0; e_2(1) = 1.0;  e_2(2) = 0.0; 
+  e_3(0) = sn;  e_3(1) = 0.0;  e_3(2) = cs; 
+
+  // Coordinate transformation.
+  JetVector r        ( p.State(x)*e_1 + p.State(y)*e_2 );
+  JetVector dummy    ( p.VectorBeta() );
+  JetVector beta     ( dummy(0)*e_1 +
+                       dummy(1)*e_2 +
+                       dummy(2)*e_3 );
+
+  Jet tau            ( - r(2) / beta(2) );
+
+ ( p.state ).SetComponent( x,   r(0) + tau*beta(0) );
+ ( p.state ).SetComponent( y,   r(1) + tau*beta(1) );
+ ( p.state ).SetComponent( cdt, p.state(cdt) + tau );
+
+  // Momentum transformation
+  Jet p1( p.State( xp ) );
+  Jet p2( p.State( yp ) );
+  Jet p3divpbar = sqrt( ( 1.0 + p.state(dpop) ) * ( 1.0 + p.state(dpop) )
+                            - p1*p1 - p2*p2 );
+
+  ( p.state ).SetComponent( xp, cs*p.State( xp ) + sn*p3divpbar );
+}
+
+
 
 void rbend::P_NoEdge( bmlnElmnt* p_be, Particle& p )
 {
- rbend* pbe = (rbend*) p_be;
- static double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
+ static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
+ static rbend* pbe;
+ pbe = (rbend*) p_be;
+
+ // Adjust for misalignment ...
+ if( pbe->align ) {
+   (pbe->align)->misalign( p.state );
+ }
+
+
+ // Put in a kludge for the vertical focusing upon entrance.
+ double Rho  = p.bRho / pbe->strength;
+ double psq = 1.0 + p.state[5];
+ psq = psq*psq;
+ // double p3divpbar = sqrt( psq - p.state[3]*p.state[3] - p.state[4]*p.state[4] );
+ // p.state[4] -= ( (p.state[3]/p3divpbar) / Rho ) * p.state[1];
+ if( pbe->poleFaceAngle != 0.0 && pbe->poleFaceAngle != M_TWOPI ) {
+   p.state[4] -= ( tan(pbe->poleFaceAngle) / Rho ) * p.state[1];
+ }
+
 
  // Preliminary filter from state coordinates
- double psq = 1.0 + p.state[5];
-        psq = psq*psq;
  double E_factor = 1.0 / sqrt( psq + p.pni2 );
  double beta_1 = E_factor*p.state[3];
  double beta_2 = E_factor*p.state[4];
  double beta_3 = E_factor*sqrt( psq - p.state[3]*p.state[3]
                                     - p.state[4]*p.state[4] );
 
- double Rho    = p.bRho / pbe->strength;        // Fiducial parameters
  double dphi   = 0.0;
  double Omega  = csq_red * pbe->strength / p.E;
 
@@ -47,18 +212,47 @@ void rbend::P_NoEdge( bmlnElmnt* p_be, Particle& p )
  p.state[1] = p.state[1] + beta_2*cdt;
  p.state[2] = p.state[2] + ( cdt - CDT );
  p.state[3] = imag( vuf )/( E_factor * PH_MKS_c );
+
+
+ // Put in a kludge for the vertical focusing upon exit.
+ // p3divpbar = sqrt( psq - p.state[3]*p.state[3] - p.state[4]*p.state[4] );
+ // p.state[4] -= ( (p.state[3]/p3divpbar) / Rho ) * p.state[1];
+ if( pbe->poleFaceAngle != 0.0 && pbe->poleFaceAngle != M_TWOPI ) {
+   p.state[4] -= ( tan(pbe->poleFaceAngle) / Rho ) * p.state[1];
+ }
+
+
+ // Adjust for misalignment ...
+ if( pbe->align ) {
+   (pbe->align)->align( p.state );
+ }
+
 }
 
 void rbend::J_NoEdge( bmlnElmnt* p_be, JetParticle& p ) 
 {
- rbend* pbe = (rbend*) p_be;
- static double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
+ static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
+ static rbend* pbe;
+ pbe = (rbend*) p_be;
+
+ // Adjust for misalignment ...
+ if( pbe->align ) {
+   (pbe->align)->misalign( p.state );
+ }
+
+
+ // Put in a kludge for the vertical focusing upon entrance.
+ double Rho  = p.bRho / pbe->strength;
+ Jet psq( 1.0 + p.state(5) );
+ psq = psq*psq;
+ // Jet p3divpbar( sqrt( psq - p.state(3)*p.state(3) - p.state(4)*p.state(4) ) );
+ // p.state(4) -= ( (p.state(3)/p3divpbar) / Rho ) * p.state(1);
+ if( pbe->poleFaceAngle != 0.0 && pbe->poleFaceAngle != M_TWOPI ) {
+   p.state(4) -= ( tan(pbe->poleFaceAngle) / Rho ) * p.state(1);
+ }
+
 
  // Preliminary filter from state coordinates
- Jet psq;
- psq = 1.0 + p.state(5);
- psq = psq*psq;
-
  Jet E_factor;
  E_factor = 1.0 / sqrt( psq + p.pni2 );
 
@@ -68,7 +262,6 @@ void rbend::J_NoEdge( bmlnElmnt* p_be, JetParticle& p )
  beta_3 = E_factor*sqrt( psq - p.state(3)*p.state(3)
                              - p.state(4)*p.state(4) );
 
- double Rho    = p.bRho / pbe->strength;        // Fiducial parameters
  double dphi   = 0.0;
  double Omega  = csq_red * pbe->strength / p.E;
 
@@ -108,537 +301,19 @@ void rbend::J_NoEdge( bmlnElmnt* p_be, JetParticle& p )
  ( p.state ).SetComponent( 1, p.state(1) + beta_2*cdt              );
  ( p.state ).SetComponent( 2, p.state(2) + ( cdt - CDT )           );
  ( p.state ).SetComponent( 3, imag( vuf )/( E_factor * PH_MKS_c )  );
-}
-
-enum EDGE_CASE {EDGECASE_1,EDGECASE_2,EDGECASE_3,EDGECASE_4,EDGECASE_5};
-
-void rbend::P_Exact( bmlnElmnt* p_be, Particle& p )
-{
-  rbend::P_InFace(p_be,p);
-  rbend::P_NoEdge(p_be,p);
-  rbend::P_OutFace(p_be,p);
-}
-
-void rbend::J_Exact( bmlnElmnt* p_be, JetParticle& p )
-{
-  rbend::J_InFace(p_be,p);
-  rbend::J_NoEdge(p_be,p);
-  rbend::J_OutFace(p_be,p);
-}
-
-void rbend::P_InEdge( bmlnElmnt* p_be, Particle& p )
-{
-  rbend::P_InFace(p_be,p);
-  rbend::P_NoEdge(p_be,p);
-}
-
-void rbend::J_InEdge( bmlnElmnt* p_be, JetParticle& p )
-{
-  rbend::J_InFace(p_be,p);
-  rbend::J_NoEdge(p_be,p);
-}
-
-void rbend::P_OutEdge( bmlnElmnt* p_be, Particle& p )
-{
-  rbend::P_NoEdge(p_be,p);
-  rbend::P_OutFace(p_be,p);
-}
-
-void rbend::J_OutEdge( bmlnElmnt* p_be, JetParticle& p )
-{
-  rbend::J_NoEdge(p_be,p);
-  rbend::J_OutFace(p_be,p);
-}
 
 
-void rbend::P_InFace( bmlnElmnt* p_be, Particle& p )
-{
- rbend* pbe = (rbend*) p_be;
- EDGE_CASE whichCase;
+ // Put in a kludge for the vertical focusing upon exit.
+ // p3divpbar = sqrt( psq - p.state(3)*p.state(3) - p.state(4)*p.state(4) );
+ // p.state(4) -= ( (p.state(3)/p3divpbar) / Rho ) * p.state(1);
+ if( pbe->poleFaceAngle != 0.0 && pbe->poleFaceAngle != M_TWOPI ) {
+   p.state(4) -= ( tan(pbe->poleFaceAngle) / Rho ) * p.state(1);
+ }
 
- double Rho    = p.ReferenceBRho() / pbe->strength;        // Fiducial parameters
- 
- double TrState[6];
- int i;
 
+ // Adjust for misalignment ...
  if( pbe->align ) {
-   pbe->align->misalign( p, pbe->geometry /* ??? */, TrState );
-   p.setState(TrState);
- } else {
-   for( i = 0; i < 6; i++  ) 
-     TrState[i] = p.state[i];
- }
- double thetaOver2;
- if(pbe->poleFaceAngle == M_TWOPI)
-   thetaOver2 = asin(pbe->Length()/(2.0*Rho));
- else
-   thetaOver2 = pbe->poleFaceAngle;
-
-
- double xpr, ypr, p3divpbar;
- p3divpbar = sqrt( ( 1.0 + TrState[5] ) * ( 1.0 + TrState[5] )
-                 - TrState[3]*TrState[3] 
-                 - TrState[4]*TrState[4] );
- xpr = TrState[3] / p3divpbar; 
- ypr = TrState[4] / p3divpbar; 
- p3divpbar = ( 1.0 + TrState[5] ) / sqrt( 1.0 + xpr*xpr + ypr*ypr );
-
- double psi = xpr;
- double r = p.state[0]/cos(thetaOver2);
- double b = r * sin(thetaOver2);
- double backLength = 0.0;
- double xLength = 0.0;
- double yLength = 0.0;
- double phi = M_PI_2 - thetaOver2;
-
- if(((pbe->strength >= 0.0) && (p.Charge() >= 0.0)) ||
-    (pbe->strength <= 0.0) && (p.Charge() <= 0.0)) {
-   if(p.state[0] < 0.0 && psi < 0.0)
-     whichCase = EDGECASE_1;
-   else if(p.state[0] < 0.0 && psi > 0.0)
-     whichCase = EDGECASE_2;
-   else if(p.state[0] > 0.0 && psi < 0.0)
-     whichCase = EDGECASE_3;
-   else if(p.state[0] > 0.0 && psi > 0.0)
-     whichCase = EDGECASE_4;
-   else if(p.state[0] == 0.0)
-     whichCase = EDGECASE_5;
- } else {
-   if(p.state[0] < 0.0 && psi < 0.0)
-     whichCase = EDGECASE_4;
-   else if(p.state[0] < 0.0 && psi > 0.0)
-     whichCase = EDGECASE_3;
-   else if(p.state[0] > 0.0 && psi < 0.0)
-     whichCase = EDGECASE_2;
-   else if(p.state[0] > 0.0 && psi > 0.0)
-     whichCase = EDGECASE_1;
-   else if(p.state[0] == 0.0)
-     whichCase = EDGECASE_5;
-
- }
-				// Calculate the length needed to get to the real
-				// magnet face (can be positive or negative).
- switch(whichCase) {
- case EDGECASE_1:
-   xLength = b * sin(phi)/sin(M_PI-(phi+ psi));
-   yLength = xLength * tan(ypr);
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-   if(backLength > 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_2:
-   xLength = b * sin(M_PI - phi)/sin(phi - psi);
-   yLength = xLength * tan(ypr);
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-   if(backLength > 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_3:
-   xLength = b * sin(phi)/sin(M_PI-(phi+ psi));
-   yLength = xLength * tan(ypr);
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-   if(backLength < 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_4:
-   xLength = b * sin(M_PI - phi)/sin(phi - psi);
-   yLength = xLength * tan(ypr);
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-   if(backLength < 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_5:
-   backLength = 0.0;
-   break;
- default:
-   break;
- }
-
-				// Propagate to the magnet face.
- if(backLength != 0.0) {
-   drift tmpDrift(backLength);
-   tmpDrift.propagate(p);
- }
-				// Put in a kludge for the vertical focusing.
-
- p.state[4] -= tan(thetaOver2)/Rho * p.state[1];
-
-				// Rotate momentum into the coord of the magnet.
- double newPx = p.state[3] * cos(thetaOver2) + p3divpbar*sin(thetaOver2);
-
- p.state[3] = newPx;
-}
-
-void rbend::J_InFace(bmlnElmnt* p_be,JetParticle& p) {
- rbend* pbe = (rbend*) p_be;
- EDGE_CASE whichCase;
-
- double Rho    = p.ReferenceBRho() / pbe->strength;        // Fiducial parameters
-
- double thetaOver2;
- if(pbe->poleFaceAngle == M_TWOPI)
-   thetaOver2 = asin(pbe->Length()/(2.0*Rho));
- else
-   thetaOver2 = pbe->poleFaceAngle;
-
- Jet TrState[6];
- int i;
-
- if( pbe->align ) {
-   pbe->align->misalign( p, pbe->geometry /* ??? */, TrState );
-   for(i=0; i < 6; i++)
-     ( p.state ).SetComponent( i, TrState[i] );
- } else {
-   for( i = 0; i < 6; i++  ) 
-     TrState[i] = p.State(i);
- }
-
-
- Jet xpr, ypr, p3divpbar;
- p3divpbar = sqrt( pow( 1.0 + TrState[5], 2.0 )
-                 - TrState[3]*TrState[3] 
-                 - TrState[4]*TrState[4] );
- xpr = TrState[3] / p3divpbar; 
- ypr = TrState[4] / p3divpbar; 
- p3divpbar = ( 1.0 + TrState[5] ) / sqrt( 1.0 + xpr*xpr + ypr*ypr );
-
- double psi = xpr.standardPart();
- double r = p.state(0).standardPart()/cos(thetaOver2);
- double b = r * sin(thetaOver2);
- double backLength = 0.0;
- double xLength = 0.0;
- double yLength = 0.0;
- double phi = M_PI_2 - thetaOver2;
-
- if(((pbe->strength >= 0.0) && (p.Charge() >= 0.0)) ||
-    (pbe->strength <= 0.0) && (p.Charge() <= 0.0)) {
-   if(p.state(0).standardPart() < 0.0 && psi < 0.0)
-     whichCase = EDGECASE_1;
-   else if(p.state(0).standardPart() < 0.0 && psi > 0.0)
-     whichCase = EDGECASE_2;
-   else if(p.state(0).standardPart() > 0.0 && psi < 0.0)
-     whichCase = EDGECASE_3;
-   else if(p.state(0).standardPart() > 0.0 && psi > 0.0)
-     whichCase = EDGECASE_4;
-   else if(p.state(0).standardPart() == 0.0)
-     whichCase = EDGECASE_5;
- } else {
-   if(p.state(0).standardPart() < 0.0 && psi < 0.0)
-     whichCase = EDGECASE_4;
-   else if(p.state(0).standardPart() < 0.0 && psi > 0.0)
-     whichCase = EDGECASE_3;
-   else if(p.state(0).standardPart() > 0.0 && psi < 0.0)
-     whichCase = EDGECASE_2;
-   else if(p.state(0).standardPart() > 0.0 && psi > 0.0)
-     whichCase = EDGECASE_1;
-   else if(p.state(0).standardPart() == 0.0)
-     whichCase = EDGECASE_5;
-
- }
-				// Calculate the length needed to get to the real
-				// magnet face (can be positive or negative).
- switch(whichCase) {
- case EDGECASE_1:
-   xLength = b * sin(phi)/sin(M_PI-(phi+ psi));
-   yLength = xLength * tan(ypr.standardPart());
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-
-   if(backLength > 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_2:
-   xLength = b * sin(M_PI - phi)/sin(phi - psi);
-   yLength = xLength * tan(ypr.standardPart());
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-
-   if(backLength > 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_3:
-   xLength = b * sin(phi)/sin(M_PI-(phi+ psi));
-   yLength = xLength * tan(ypr.standardPart());
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-
-   if(backLength < 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_4:
-   xLength = b * sin(M_PI - phi)/sin(phi - psi);
-   yLength = xLength * tan(ypr.standardPart());
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-
-   if(backLength < 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_5:
-   backLength = 0.0;
-   break;
- default:
-   break;
- }
-				// Propagate to the magnet face.
- if(backLength != 0.0) {
-   drift tmpDrift(backLength);
-   tmpDrift.propagate(p);
- }
- Jet newPx = p.state(3) * cos(thetaOver2) + p3divpbar*sin(thetaOver2);
- p.state(3) = newPx;
-
- p.state(4) = p.state(4)  - tan(thetaOver2)/Rho * p.state(1);
-}
-void rbend::P_OutFace( bmlnElmnt* p_be, Particle& p )
-{
- rbend* pbe = (rbend*) p_be;
- EDGE_CASE whichCase;
-
- double Rho    = p.ReferenceBRho() / pbe->strength;        // Fiducial parameters
-
- double thetaOver2;
- if(pbe->poleFaceAngle == M_TWOPI)
-   thetaOver2 = asin(pbe->Length()/(2.0*Rho));
- else
-   thetaOver2 = pbe->poleFaceAngle;
-
- double TrState[6];
- int i;
-
-
- for( i = 0; i < 6; i++  ) 
-   TrState[i] = p.state[i];
-
- double xpr, ypr, p3divpbar;
- p3divpbar = sqrt( pow( 1.0 + TrState[5], 2.0 )
-                 - TrState[3]*TrState[3] 
-                 - TrState[4]*TrState[4] );
- xpr = TrState[3] / p3divpbar; 
- ypr = TrState[4] / p3divpbar; 
- p3divpbar = ( 1.0 + TrState[5] ) / sqrt( 1.0 + xpr*xpr + ypr*ypr );
-
- double psi = xpr;
- double r = p.state[0]/cos(thetaOver2);
- double b = r * sin(thetaOver2);
- double backLength = 0.0;
- double xLength = 0.0;
- double yLength = 0.0;
- double phi = M_PI_2 - thetaOver2;
-
-
-				// Rotate momentum out of the coord of the magnet.
- for( i = 0; i < 6; i++  ) 
-   TrState[i] = p.state[i];
- p3divpbar = sqrt( ( 1.0 + TrState[5] ) * ( 1.0 + TrState[5] )
-                 - TrState[3]*TrState[3] 
-                 - TrState[4]*TrState[4] );
- xpr = TrState[3] / p3divpbar; 
- ypr = TrState[4] / p3divpbar; 
- p3divpbar = ( 1.0 + TrState[5] ) / sqrt( 1.0 + xpr*xpr + ypr*ypr );
-
- double newPx = p.state[3] * cos(thetaOver2) + p3divpbar*sin(thetaOver2);
- p.state[3] = newPx;
- psi = xpr;
-
-				// Setup to propagate to the begining of the drift.
-
- if(((pbe->strength >= 0.0) && (p.Charge() >= 0.0)) ||
-    (pbe->strength <= 0.0) && (p.Charge() <= 0.0)) {
-   if(p.state[0] < 0.0 && psi < 0.0)
-     whichCase = EDGECASE_2;
-   else if(p.state[0] < 0.0 && psi > 0.0)
-     whichCase = EDGECASE_1;
-   else if(p.state[0] > 0.0 && psi < 0.0)
-     whichCase = EDGECASE_4;
-   else if(p.state[0] > 0.0 && psi > 0.0)
-     whichCase = EDGECASE_3;
-   else if(p.state[0] == 0.0)
-     whichCase = EDGECASE_5;
- } else {
-   if(p.state[0] < 0.0 && psi < 0.0)
-     whichCase = EDGECASE_3;
-   else if(p.state[0] < 0.0 && psi > 0.0)
-     whichCase = EDGECASE_4;
-   else if(p.state[0] > 0.0 && psi < 0.0)
-     whichCase = EDGECASE_1;
-   else if(p.state[0] > 0.0 && psi > 0.0)
-     whichCase = EDGECASE_2;
-   else if(p.state[0] == 0.0)
-     whichCase = EDGECASE_5;
-
- }
-				// Calculate the length needed to get to the real
-				// magnet face (can be positive or negative).
- switch(whichCase) {
- case EDGECASE_1:
-   xLength = b * sin(phi)/sin(M_PI-(phi+ psi));
-   yLength = xLength * tan(ypr);
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-   if(backLength > 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_2:
-   xLength = b * sin(M_PI - phi)/sin(phi - psi);
-   yLength = xLength * tan(ypr);
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-   if(backLength > 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_3:
-   xLength = b * sin(phi)/sin(M_PI-(phi+ psi));
-   yLength = xLength * tan(ypr);
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-   if(backLength < 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_4:
-   xLength = b * sin(M_PI - phi)/sin(phi - psi);
-   yLength = xLength * tan(ypr);
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-   if(backLength < 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_5:
-   backLength = 0.0;
-   break;
- default:
-   break;
- }
-				// Propagate to the drift face.
- if(backLength != 0.0) {
-   drift tmpDrift(backLength);
-   tmpDrift.propagate(p);
- }
- p.state[4] -= tan(thetaOver2)/Rho * p.state[1];
-
- if( pbe->align ) {
-   pbe->align->align( p, pbe->geometry /* ??? */, TrState );
-   p.setState(TrState);
- }
-}
-
-
-void rbend::J_OutFace(bmlnElmnt* p_be,JetParticle& p) {
- rbend* pbe = (rbend*) p_be;
- EDGE_CASE whichCase;
-
- double Rho    = p.ReferenceBRho() / pbe->strength;        // Fiducial parameters
-
- double thetaOver2;
- if(pbe->poleFaceAngle == M_TWOPI)
-   thetaOver2 = asin(pbe->Length()/(2.0*Rho));
- else
-   thetaOver2 = pbe->poleFaceAngle;
-
-
- Jet TrState[6];
- int i;
- for( i = 0; i < 6; i++  ) 
-   TrState[i] = p.State(i);
-
-
-
- Jet xpr, ypr, p3divpbar;
- p3divpbar = sqrt( pow( 1.0 + TrState[5], 2.0 )
-                 - TrState[3]*TrState[3] 
-                 - TrState[4]*TrState[4] );
- xpr = TrState[3] / p3divpbar; 
- ypr = TrState[4] / p3divpbar; 
- p3divpbar = ( 1.0 + TrState[5] ) / sqrt( 1.0 + xpr*xpr + ypr*ypr );
-
- double psi = xpr.standardPart();
- double r = p.state(0).standardPart()/cos(thetaOver2);
- double b = r * sin(thetaOver2);
- double backLength = 0.0;
- double xLength = 0.0;
- double yLength = 0.0;
- double phi = M_PI_2 - thetaOver2;
-
-
-				// Rotate momentum out of the coord of the magnet.
- for( i = 0; i < 6; i++  ) 
-   TrState[i] = p.State(i);
- p3divpbar = sqrt( pow( 1.0 + TrState[5], 2.0 )
-                 - TrState[3]*TrState[3] 
-                 - TrState[4]*TrState[4] );
- xpr = TrState[3] / p3divpbar; 
- ypr = TrState[4] / p3divpbar; 
- p3divpbar = ( 1.0 + TrState[5] ) / sqrt( 1.0 + xpr*xpr + ypr*ypr );
-
- Jet newPx = p.state(3) * cos(thetaOver2) + p3divpbar*sin(thetaOver2);
- p.state(3) = newPx;
- psi = xpr.standardPart();
-
- if(((pbe->strength >= 0.0) && (p.Charge() >= 0.0)) ||
-    (pbe->strength <= 0.0) && (p.Charge() <= 0.0)) {
-   if(p.state(0).standardPart() < 0.0 && psi < 0.0)
-     whichCase = EDGECASE_2;
-   else if(p.state(0).standardPart() < 0.0 && psi > 0.0)
-     whichCase = EDGECASE_1;
-   else if(p.state(0).standardPart() > 0.0 && psi < 0.0)
-     whichCase = EDGECASE_4;
-   else if(p.state(0).standardPart() > 0.0 && psi > 0.0)
-     whichCase = EDGECASE_3;
-   else if(p.state(0).standardPart() == 0.0)
-     whichCase = EDGECASE_5;
- } else {
-   if(p.state(0).standardPart() < 0.0 && psi < 0.0)
-     whichCase = EDGECASE_3;
-   else if(p.state(0).standardPart() < 0.0 && psi > 0.0)
-     whichCase = EDGECASE_4;
-   else if(p.state(0).standardPart() > 0.0 && psi < 0.0)
-     whichCase = EDGECASE_1;
-   else if(p.state(0).standardPart() > 0.0 && psi > 0.0)
-     whichCase = EDGECASE_2;
-   else if(p.state(0).standardPart() == 0.0)
-     whichCase = EDGECASE_5;
-
- }
-				// Calculate the length needed to get to the real
-				// magnet face (can be positive or negative).
- switch(whichCase) {
- case EDGECASE_1:
-   xLength = b * sin(phi)/sin(M_PI-(phi+ psi));
-   yLength = xLength * tan(ypr.standardPart());
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-   if(backLength > 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_2:
-   xLength = b * sin(M_PI - phi)/sin(phi - psi);
-   yLength = xLength * tan(ypr.standardPart());
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-   if(backLength > 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_3:
-   xLength = b * sin(phi)/sin(M_PI-(phi+ psi));
-   yLength = xLength * tan(ypr.standardPart());
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-   if(backLength < 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_4:
-   xLength = b * sin(M_PI - phi)/sin(phi - psi);
-   yLength = xLength * tan(ypr.standardPart());
-   backLength = sqrt(xLength*xLength + yLength*yLength);
-   if(backLength < 0.0)
-     backLength *= -1.0;
-   break;
- case EDGECASE_5:
-   backLength = 0.0;
-   break;
- default:
-   break;
- }
-				// Propagate to the drift face.
- if(backLength != 0.0) {
-   drift tmpDrift(backLength);
-   tmpDrift.propagate(p);
- }
- p.state(4) = p.state(4)  - tan(thetaOver2)/Rho * p.state(1);
-
- if( pbe->align ) {
-   pbe->align->align( p, pbe->geometry /* ??? */, TrState );
-   for(i=0; i < 6; i++)
-     ( p.state ).SetComponent( i, TrState[i] );
+   (pbe->align)->align( p.state );
  }
 
 }

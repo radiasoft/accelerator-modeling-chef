@@ -165,10 +165,10 @@ ostream& rbend::writeTo(ostream& os)
   // Determine which propogators are being used, and make a note of it.
   if ( Propagator == 		&rbend::P_Exact )
     os << "rbend::P_Exact ";
-  else if ( Propagator == 	&rbend::P_OutFace )
-    os << "rbend::P_OutFace ";
-  else if ( Propagator == 	&rbend::P_InFace )
-    os << "rbend::P_InFace ";
+  // ??? REMOVE: else if ( Propagator == 	&rbend::P_InFace )
+  // ??? REMOVE:   os << "rbend::P_InFace ";
+  // ??? REMOVE: else if ( Propagator == 	&rbend::P_OutFace )
+  // ??? REMOVE:   os << "rbend::P_OutFace ";
   else if ( Propagator == 	&rbend::P_LikeMAD )
     os << "rbend::P_LikeMAD ";
   else if ( Propagator == 	&rbend::P_Exact )
@@ -182,10 +182,10 @@ ostream& rbend::writeTo(ostream& os)
   
   if ( JetPropagator == 	&rbend::J_Exact )
     os << "rbend::J_Exact";
-  else if ( JetPropagator == 	&rbend::J_OutFace )
-    os << "rbend::J_OutFace";
-  else if ( JetPropagator == 	&rbend::J_InFace )
-    os << "rbend::J_InFace";
+  // ??? REMOVE: else if ( JetPropagator == 	&rbend::J_InFace )
+  // ??? REMOVE:   os << "rbend::J_InFace";
+  // ??? REMOVE: else if ( JetPropagator == 	&rbend::J_OutFace )
+  // ??? REMOVE:   os << "rbend::J_OutFace";
   else if ( JetPropagator == 	&rbend::J_LikeMAD )
     os << "rbend::J_LikeMAD";
   else if ( JetPropagator == 	&rbend::J_Exact )
@@ -211,10 +211,10 @@ istream& rbend::readFrom(istream& is)
 
   if ( strcasecmp(prop_fun, 		"rbend::P_Exact" ) == 0 )
     setPropFunction(&rbend::P_Exact );
-  else if ( strcasecmp(prop_fun, 	"rbend::P_OutFace" ) == 0 )
-    setPropFunction(&rbend::P_OutFace );
-  else if ( strcasecmp(prop_fun, 	"rbend::P_InFace" ) == 0 )
-    setPropFunction(&rbend::P_InFace );
+  // ??? REMOVE: else if ( strcasecmp(prop_fun, 	"rbend::P_InFace" ) == 0 )
+  // ??? REMOVE:   setPropFunction(&rbend::P_InFace );
+  // ??? REMOVE: else if ( strcasecmp(prop_fun, 	"rbend::P_OutFace" ) == 0 )
+  // ??? REMOVE:   setPropFunction(&rbend::P_OutFace );
   else if ( strcasecmp(prop_fun, 	"rbend::P_LikeMAD" ) == 0 )
     setPropFunction(&rbend::P_LikeMAD );
   else if ( strcasecmp(prop_fun, 	"rbend::P_Exact" ) == 0 )
@@ -236,10 +236,10 @@ istream& rbend::readFrom(istream& is)
   
   if ( strcasecmp(jet_prop_fun, 	"rbend::J_Exact" ) == 0 )
     setJPropFunction(&rbend::J_Exact);
-  else if ( strcasecmp(jet_prop_fun, 	"rbend::J_OutFace" ) == 0 )
-    setJPropFunction(&rbend::J_OutFace);
-  else if ( strcasecmp(jet_prop_fun, 	"rbend::J_InFace" ) == 0 )
-    setJPropFunction(&rbend::J_InFace);
+  // ??? REMOVE: else if ( strcasecmp(jet_prop_fun, 	"rbend::J_InFace" ) == 0 )
+  // ??? REMOVE:   setJPropFunction(&rbend::J_InFace);
+  // ??? REMOVE: else if ( strcasecmp(jet_prop_fun, 	"rbend::J_OutFace" ) == 0 )
+  // ??? REMOVE:   setJPropFunction(&rbend::J_OutFace);
   else if ( strcasecmp(jet_prop_fun, 	"rbend::J_LikeMAD" ) == 0 )
     setJPropFunction(&rbend::J_LikeMAD);
   else if ( strcasecmp(jet_prop_fun, 	"rbend::J_Exact" ) == 0 )

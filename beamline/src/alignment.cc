@@ -299,3 +299,79 @@ ostream& operator<<(ostream& os, alignment& align)
 
   return os;
 }
+
+
+void alignment::misalign( double* inState )
+{
+  static double result[4];
+  inState[0] -= xOffset;
+  inState[1] -= yOffset;
+
+  if(tilt != 0.0) {
+    result[0] = inState[0] * cosTilt + inState[1] * sinTilt;
+    result[1] = inState[1] * cosTilt - inState[0] * sinTilt;
+    inState[0] = result[0];
+    inState[1] = result[1];
+    result[2] = inState[3] * cosTilt + inState[4] * sinTilt;
+    result[3] = inState[4] * cosTilt - inState[3] * sinTilt;
+    inState[3] = result[2];
+    inState[4] = result[3];
+  }
+}
+
+void alignment::align( double* outState ) 
+{
+ if(tilt != 0.0) {
+   double result[4];
+   result[0] = outState[0] * cosTilt - outState[1] * sinTilt;
+   result[1] = outState[1] * cosTilt + outState[0] * sinTilt;
+   outState[0] = result[0];
+   outState[1] = result[1];
+   result[2] = outState[3] * cosTilt - outState[4] * sinTilt;
+   result[3] = outState[4] * cosTilt + outState[3] * sinTilt;
+   outState[3] = result[2];
+   outState[4] = result[3];
+ }
+
+  outState[0] += xOffset;
+  outState[1] += yOffset;
+}
+
+
+void alignment::misalign( JetVector& inState ) 
+{
+  inState(0) -= xOffset;
+  inState(1) -= yOffset;
+
+  if(tilt != 0.0) {
+    Jet result[4];
+    result[0] = inState(0) * cosTilt + inState(1) * sinTilt;
+    result[1] = inState(1) * cosTilt - inState(0) * sinTilt;
+    inState(0) = result[0];
+    inState(1) = result[1];
+    result[2] = inState(3) * cosTilt + inState(4) * sinTilt;
+    result[3] = inState(4) * cosTilt - inState(3) * sinTilt;
+    inState(3) = result[2];
+    inState(4) = result[3];
+  }
+}
+
+void alignment::align( JetVector& outState ) 
+{
+ if(tilt != 0.0) {
+   Jet result[4];
+   result[0] = outState(0) * cosTilt - outState(1) * sinTilt;
+   result[1] = outState(1) * cosTilt + outState(0) * sinTilt;
+   outState(0) = result[0];
+   outState(1) = result[1];
+   result[2] = outState(3) * cosTilt - outState(4) * sinTilt;
+   result[3] = outState(4) * cosTilt + outState(3) * sinTilt;
+   outState(3) = result[2];
+   outState(4) = result[3];
+ }
+
+  outState(0) += xOffset;
+  outState(1) += yOffset;
+
+}
+
