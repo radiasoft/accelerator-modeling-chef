@@ -75,14 +75,14 @@ public:
   };
 
   struct Options {
-    bool onClosedOrbit;
+    bool onClosedOrbit;   // Default: false
     // 
     Options();
     Options( const Options& x );
     ~Options() {}
     Options& operator=( const Options& x );
-  } flags;
-
+  };
+  Options flags;
   static const Options defaultFlags;
 
 
@@ -136,6 +136,9 @@ public:
   void   set_dpp( double );
   double get_dpp() const;
 
+  DispersionSage::Options get_options();
+  void set_options( const DispersionSage::Options& );
+
   void setIgnoreErrors( bool );
 
   // Error identifiers
@@ -171,6 +174,16 @@ inline double DispersionSage::get_dpp() const
 inline void DispersionSage::setIgnoreErrors( bool x )
 {
   _ignoreErrors = x;
+}
+
+inline DispersionSage::Options DispersionSage::get_options()
+{
+  return flags;
+}
+
+inline void DispersionSage::set_options( const DispersionSage::Options& x )
+{
+  flags = x;
 }
 
 #endif // DISPERSIONSAGE_H
