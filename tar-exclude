@@ -184,3 +184,9 @@ fnal/integrator/demos/CVS
 fnal/integrator/include/CVS
 fnal/integrator/src/.sb
 fnal/integrator/src/CVS
+fnal/visitor/CVS
+fnal/visitor/demos/.sb
+fnal/visitor/demos/CVS
+fnal/visitor/include/CVS
+fnal/visitor/src/.sb
+fnal/visitor/src/CVS

@@ -18,6 +18,7 @@ FILTER_INC   = $(FNALROOT)/filter/include
 RECYCLER_INC = $(FNALROOT)/machines/recycler/include
 SERVER_INC   = $(FNALROOT)/server/include
 SOCKET_INC   = $(FNALROOT)/socket/include
+VISITOR_INC  = $(FNALROOT)/visitor/include
 SYBASE_INC   = $(FNALROOT)/sybase/include
 SWYD_INC     = $(FNALROOT)/machines/swyd/include
 MACHINE_INC  = $(FNALROOT)/machines/Machine/include
