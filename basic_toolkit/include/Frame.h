@@ -3,9 +3,10 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.0                    
 ******                                    
 ******  File:      Frame.h
+******  Version:   4.1
+******  Date:      March 15, 2005
 ******                                                                
 ******  Copyright (c) 1990 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -64,12 +65,14 @@ class Frame
    short int setAxis     ( int, const Vector& );
    short int setDualAxis ( int, const Vector& );
 
+   bool setOrthonormalAxes( const MatrixD& );
+
    Frame dual() const;
    bool  isOrthonormal() const;
 
-   int xAxisIndex() const;
-   int yAxisIndex() const;
-   int zAxisIndex() const;
+   static int xAxisIndex();
+   static int yAxisIndex();
+   static int zAxisIndex();
 
    Vector  getOrigin()        const;
    Vector  getAxis( int )     const;
@@ -94,6 +97,16 @@ class Frame
                                   // onto the argument Frame: the
                                   // inverse operation of relativeTo.
                                   // Assumes an orthonormal Frame.
+   static Frame tween( const Frame&, const Frame&, double, bool=true );
+                                  // Returns a Frame located in between
+                                  //  its first two arguments. 
+                                  // The third argument should lie
+                                  //  within [0,1].  
+                                  // The last argument determines whether
+                                  //  all paranoid checks are done.
+                                  // It is called "tween" because of
+                                  //  its similarity to the "tweening"
+                                  //  done in cartoon animation.
 
    friend std::ostream& operator<< ( std::ostream& os, /* const */ Frame& );
    friend std::istream& operator>> ( std::istream& is, /* const */ Frame& );

@@ -1,14 +1,12 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.0                    
 ******                                    
 ******  File:      Frame.cc
+******  Version:   4.1
+******  Date:      March 15, 2005
 ******                                                                
 ******  Copyright (c) 1990 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -31,31 +29,15 @@
 *************************************************************************/
 
 
-// #ifdef __sparc
-// 
-//   #ifndef bool
-//   #define bool char
-//   #else
-//   #define boolAlreadyDefined
-//   #endif
-//   
-//   #ifndef true
-//   #define true 1
-//   #else
-//   #define trueAlreadyDefined
-//   #endif
-//   
-//   #ifndef false
-//   #define false 0
-//   #else
-//   #define falseAlreadyDefined
-//   #endif
-// 
-// #endif // __sparc
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
+#include "GenericException.h"
 #include "Frame.h"
 
 using namespace std;
+
 
 Frame::Frame()
 : o(3), e(3,3)
@@ -179,6 +161,21 @@ short int Frame::setDualAxis   ( int i, const Vector& x )
   }  
 
   return ret;
+}
+
+
+bool Frame::setOrthonormalAxes( const MatrixD& axisSystem )
+{
+  MatrixD oldSystem;
+  oldSystem = e;
+  e = axisSystem;
+  if( this->isOrthonormal() ) {
+    return true;
+  }
+  else {
+    e = oldSystem;
+    return false;
+  }
 }
 
 
@@ -369,6 +366,137 @@ Frame Frame::patchedOnto( const Frame& f ) const
 }
 
 
+Frame Frame::tween(   const Frame& one, const Frame& two
+                    , double pct, bool doChecks )
+{
+  static bool firstTime = true;
+
+  // Trim the pct argument
+  if( doChecks ) {
+    if( pct < 0.0 ) { pct = 0.0; }
+    if( 1.0 < pct ) { pct = 1.0; }
+  }
+
+  // Simplest case: pct = 0 or 1
+  if( std::abs(pct) < 1.0e-10) {  
+    if( firstTime ) {
+      cerr << "\n***WARNING***"
+           << "\n***WARNING*** File: " << __FILE__ << ", Line " << __LINE__
+           << "\n***WARNING*** Function: Frame::tween"
+           << "\n***WARNING*** Argument pct is being reset to 0.0."
+           << "\n***WARNING*** This message is printed only once."
+           << "\n***WARNING***"
+           << endl;
+      firstTime = false;
+    }
+    return one;
+  }
+  if( std::abs(1.0 - pct) < 1.0e-10) {  
+    if( firstTime ) {
+      cerr << "\n***WARNING***"
+           << "\n***WARNING*** File: " << __FILE__ << ", Line " << __LINE__
+           << "\n***WARNING*** Function: Frame::tween"
+           << "\n***WARNING*** Argument pct is being reset to 1.0."
+           << "\n***WARNING*** This message is printed only once."
+           << "\n***WARNING***"
+           << endl;
+      firstTime = false;
+    }
+    return two;
+  }
+
+
+  // Check orthonormal condition
+  if( doChecks ) {
+    if( (!(one.isOrthonormal())) || (!(two.isOrthonormal())) ) {
+      cerr << "\n***WARNING***"
+           << "\n***WARNING*** File: " << __FILE__ << ", Line " << __LINE__
+           << "\n***WARNING*** Function: Frame::tween"
+           << "\n***WARNING*** This method only works with orthonormal frames."
+           << "\n***WARNING***"
+           << endl;
+    }
+  }
+
+
+  // Construct mid Frame
+  Frame middle;
+  middle.setOrigin( (1.0 - pct)*one.getOrigin() +  pct*two.getOrigin() );
+
+  MatrixD E1(3,3), E2(3,3), W(3,3);
+  MatrixC U(3,3), UI(3,3), lambda(3,3);
+
+  // ... the rotation matrix
+  E1 = one.getAxes();
+  E2 = two.getAxes();
+  W = E1.transpose() * E2;
+  
+  // ... eigenvalues and eigenvectors
+  U = W.eigenVectors();
+  UI = U.inverse();
+  lambda = UI*W*U;
+  
+  // ...... more paranoia
+  int i, j;
+  if( doChecks ) {
+    for( i = 0; i < 3; i++ ) {
+      for( j = 0; j < 3; j++ ) {
+        if( i == j ) {
+          if( 1.0e-8 < std::abs( 1.0 - std::abs(lambda(i,i)) ) ) {
+            continue;
+	  }
+          else {
+            throw( GenericException( __FILE__, __LINE__
+                   , "Frame::tween"
+                   , "Horrible! Inexplicable!! Rotation matrix failed test!!!") );
+	  }
+	}
+        else {
+          if( 1.0e-8 < std::abs(lambda(i,j)) ) {
+            continue;
+	  }
+          else {
+            throw( GenericException( __FILE__, __LINE__
+                   , "Frame::tween"
+                   , "Horrible! Inexplicable!! Rotation matrix failed test!!!") );
+	  }
+	}
+      }
+    }
+  }
+
+
+  // Reset the array lambda to correspond to a partial rotation,
+  //  and trim its off-diagonal elements.
+  // We've already determined the magnitudes of the diagonal
+  //  elements of lambda are all 1.0.
+  // Note: according to the manual, the result of atan2 should lie
+  //  within the range (-pi,pi). I'm going to assume this is correct.
+  //  Even paranoia has its limits.
+  double theta;
+  for( i = 0; i < 3; i++ ) {
+    for( j = 0; j < 3; j++ ) {
+      if( i == j ) {
+        theta = pct*atan2( imag(lambda(i,i)), real(lambda(i,i)) );
+        lambda(i,i) = FNAL::Complex( cos(theta), sin(theta) );
+      }
+      else {
+        lambda(i,j) = 0.0;
+      }
+    }
+  }
+  
+
+  // Construct the "tweened" axes.
+  // Exuding confidence; no paranoia.
+  middle.setOrthonormalAxes( real( U*lambda*UI ) );
+
+
+  // Finished
+  return middle;
+}
+
+
 ostream& operator<< ( ostream& os, /* const */ Frame& f )
 {
   /* 
@@ -399,27 +527,3 @@ istream& operator>> ( istream& is, /* const */ Frame& f )
   is >> f.e(0,2) >> f.e(1,2) >> f.e(2,2);
   return is;
 }
-
-
-
-// #ifdef __sparc
-// 
-//   #ifndef boolAlreadyDefined
-//   #undef bool
-//   #else 
-//   #undef boolAlreadyDefined
-//   #endif
-//   
-//   #ifndef trueAlreadyDefined
-//   #undef true
-//   #else 
-//   #undef trueAlreadyDefined
-//   #endif
-//   
-//   #ifndef falseAlreadyDefined
-//   #undef false
-//   #else 
-//   #undef falseAlreadyDefined
-//   #endif
-//   
-// #endif
