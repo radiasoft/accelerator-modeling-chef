@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <iomanip.h>
-#include "MathConstants.h"
 #include "JetC.h"
 #include "JetCVector.h"
+#include "MathConstants.h"
 
 
 // ================================================================
