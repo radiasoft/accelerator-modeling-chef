@@ -1,9 +1,11 @@
 #if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
 #include <stream.h>
 #include <limits.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include "ParticleBunch.h"
+#include "pipestream.h"
 #include "rastermonitor.h"
-#include "stdlib.h"
-#include "stdio.h"
 #include <tk.h>
 #include "tclf.h"
 
