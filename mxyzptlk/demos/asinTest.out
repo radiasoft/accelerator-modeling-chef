@@ -1,0 +1,37 @@
+Command line: asinTest  0.6  
+
+
+Count  = 6, Weight = 5, Max accurate weight = 5
+Reference point: 
+6.000000e-01  
+
+Index:    0   Value:   6.435011e-01  
+Index:    1   Value:   1.250000e+00  
+Index:    2   Value:   5.859375e-01  
+Index:    3   Value:   8.748372e-01  
+Index:    4   Value:   1.330376e+00  
+Index:    5   Value:   2.361238e+00  
+
+
+
+Count  = 2, Weight = 1, Max accurate weight = 5
+Reference point: 
+6.000000e-01  
+
+Index:    0   Value:   6.000000e-01  
+Index:    1   Value:   1.000000e+00  
+
+
+
+Count  = 6, Weight = 5, Max accurate weight = 5
+Reference point: 
+6.000000e-01  
+
+Index:    0   Value:   1.988807e-01  
+Index:    1   Value:   4.702716e-01  
+Index:    2   Value:   1.108944e-02  
+Index:    3   Value:  -2.391448e-01  
+Index:    4   Value:   1.545134e-01  
+Index:    5   Value:  -7.953020e-02  
+
+
