@@ -186,25 +186,17 @@ beamline::arrayRep::arrayRep( const beamline* x, bool doClone )
 : _element(0)
 {
   if( 0 == x ) {
-    cerr << "*** ERROR ***                             \n"
-            "*** ERROR *** arrayRep::arrayRep          \n"
-            "*** ERROR *** Constructor invoked with    \n"
-            "*** ERROR *** null pointer.               \n"
-            "*** ERROR ***                             \n"
-         << endl;
-    exit(1);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "beamline::arrayRep::arrayRep( const beamline* x, bool doClone )", 
+           "Constructor invoked with null pointer." ) );
   }
 
 #ifndef NO_RTTI 
   if( typeid(*x) != typeid(beamline) ) {
-    cerr << "*** ERROR ***                             \n"
-            "*** ERROR *** arrayRep::arrayRep          \n"
-            "*** ERROR *** Constructor invoked with    \n"
-            "*** ERROR *** pointer to something other  \n"
-            "*** ERROR *** than a beamline.            \n"
-            "*** ERROR ***                             \n"
-         << endl;
-    exit(1);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "beamline::arrayRep::arrayRep( const beamline* x, bool doClone )", 
+           "Constructor invoked with pointer to something other "
+           "than a beamline." ) );
   }
 #endif
 
@@ -541,9 +533,13 @@ lattFunc beamline::whatIsLattice( int n ) {
  lattFunc errRet;
 
  if ( ( n < 0 ) || ( numElem <= n ) ){
-   printf( "\n*** ERROR: n = %d passed to beamline::whatIsLattice.\n", n );
-   printf(   "           Acceptable range is 0 to %d.\n", numElem - 1 );
-   exit(1);
+    ostringstream uic;
+    uic  << "Argument n = " << n 
+         << " lies outside [0," 
+         << (numElem-1) << "].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "lattFunc beamline::whatIsLattice( int n ) {", 
+           uic.str().c_str() ) );
  }
 
  int count = 0;
@@ -901,14 +897,9 @@ void beamline::append( bmlnElmnt* q ) {
 
 void beamline::Split( double, bmlnElmnt**, bmlnElmnt** )
 {
- cerr << "\n"
-         "*** ERROR ***                                    \n"
-         "*** ERROR *** beamline::Split                    \n"
-         "*** ERROR *** This method should not be invoked  \n"
-         "*** ERROR *** by a beamline object.              \n"
-         "*** ERROR ***                                    \n"
-      << endl;
- exit(1);
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "void beamline::Split( double, bmlnElmnt**, bmlnElmnt** )", 
+         "This method should not be invoked by a beamline object." ) );
 }
 
 
@@ -1517,14 +1508,9 @@ void beamline::enterLocalFrame( Particle& p ) const
     if( strcasecmp( element->Type(), "sbend" ) == 0 ||
         strcasecmp( element->Type(), "rbend" ) == 0     
       ) {
-      cerr << "\n"
-              "*** ERROR ***                                    \n"
-              "*** ERROR *** beamline::enterLocalFrame          \n"
-              "*** ERROR *** Not implemented for beamlines      \n"
-              "*** ERROR *** containing bends.                  \n"
-              "*** ERROR ***                                    \n"
-           << endl;
-      exit(1);
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+             "void beamline::enterLocalFrame( Particle& p ) const", 
+             "Not implemented for beamlines containing bends." ) );
     }
   }
   
@@ -1542,14 +1528,9 @@ void beamline::enterLocalFrame( JetParticle& p ) const
     if( strcasecmp( element->Type(), "sbend" ) == 0 ||
         strcasecmp( element->Type(), "rbend" ) == 0     
       ) {
-      cerr << "\n"
-              "*** ERROR ***                                    \n"
-              "*** ERROR *** beamline::enterLocalFrame          \n"
-              "*** ERROR *** Not implemented for beamlines      \n"
-              "*** ERROR *** containing bends.                  \n"
-              "*** ERROR ***                                    \n"
-           << endl;
-      exit(1);
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+             "void beamline::enterLocalFrame( JetParticle& p ) const", 
+             "Not implemented for beamlines containing bends." ) );
     }
   }
   
