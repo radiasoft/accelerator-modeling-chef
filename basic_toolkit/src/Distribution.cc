@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -38,7 +41,6 @@
 #include <stdlib.h>
 #include "Distribution.h"
 
-extern "C" double drand48( void );
 
 Gaussian::Gaussian(long seed = 0) : Distribution(seed) {
 }
