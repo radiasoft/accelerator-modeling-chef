@@ -33,7 +33,7 @@ struct Jet__environment {
 			//   when storing monomials. The array exponent 
 			//   is allocated by JLSetup.
  char*   expCode;       // The Wilf code of a monomial. 
- char    PBOK;          // Taking Poisson brackets is OK: the dimension of 
+ short   PBOK;          // Taking Poisson brackets is OK: the dimension of 
 			//   phase space is even.
  MatrixI* numPaths;     // An array counting the number of paths to a vertex 
 			//   in the Wilf graph.  JLSetup arranges that 
@@ -62,7 +62,9 @@ struct Jet__environment {
 
  // Streams
  friend ostream& operator<<( ostream&, const Jet__environment& );
- friend istream& operator>>( istream&, Jet__environment* );
+ friend istream& streamIn( istream&, Jet__environment** );
+ // friend ostream& operator>>( ostream&, const Jet__environment* );
+ // will not work properly.
 
  // A global
  static char SkipEnvEqTest;

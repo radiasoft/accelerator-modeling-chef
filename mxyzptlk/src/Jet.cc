@@ -294,38 +294,46 @@ char Jet__environment::operator!=( const Jet__environment& x ) const
 }
 
 
+// ??? REMOVE: ostream& 
+// ??? REMOVE: operator<<( ostream& os, const Jet__environment* x )
+// ??? REMOVE: {
+// ??? REMOVE:   // This routine does not work so well.
+// ??? REMOVE:   // It is never called from a stream statement.
+// ??? REMOVE:   // Instead, only the address is written to the stream.
+// ??? REMOVE:   int i;
+// ??? REMOVE:   os << x->NumVar << endl;
+// ??? REMOVE:   os << x->SpaceDim << endl;
+// ??? REMOVE:   for( i = 0; i < x->NumVar; i++ ) os << setprecision(30) 
+// ??? REMOVE:                                       << x->refPoint[i] << endl;
+// ??? REMOVE:   for( i = 0; i < x->NumVar; i++ ) os << setprecision(30) 
+// ??? REMOVE:                                       << x->scale[i] << endl;
+// ??? REMOVE:   os << x->MaxWeight << endl;
+// ??? REMOVE:   os << x->PBOK << endl;
+// ??? REMOVE:   return os;
+// ??? REMOVE: }
+
 ostream& 
-operator<<( ostream& os, const Jet__environment* x )
+operator<<( ostream& os, const Jet__environment& x )
 {
   int i;
-  os << x->NumVar << endl;
-  os << x->SpaceDim << endl;
-  for( i = 0; i < x->NumVar; i++ ) os << setprecision(30) 
-                                      << x->refPoint[i] << endl;
-  for( i = 0; i < x->NumVar; i++ ) os << setprecision(30) 
-                                      << x->scale[i] << endl;
-  os << x->MaxWeight << endl;
-  os << x->PBOK << endl;
+  os << x.NumVar << endl;
+  os << x.SpaceDim << endl;
+  for( i = 0; i < x.NumVar; i++ ) os << setprecision(30) 
+                                     << x.refPoint[i] << endl;
+  for( i = 0; i < x.NumVar; i++ ) os << setprecision(30) 
+                                     << x.scale[i] << endl;
+  os << x.MaxWeight << endl;
+  os << x.PBOK << endl;
   return os;
 }
 
-istream& 
-operator>>( istream& is, Jet__environment* x )
+istream& streamIn( istream& is, Jet__environment** x )
 {
   static slist envs;
   slist_iterator getNext( envs );
   Jet__environment* pje;
   int i(0), j(0);
 
-  // --- Test to see if x was previously read
-  while((  pje = (Jet__environment*) getNext()  ))
-    if( *pje == *x ) {
-      if( x ) delete x;
-      x = pje;
-      return is;
-    }
-  
-  // --- x was not previously read
   pje = new Jet__environment;
   is >> pje->NumVar;
   is >> pje->SpaceDim;
@@ -344,8 +352,8 @@ operator>>( istream& is, Jet__environment* x )
   
   pje->refPoint = new double[ pje->NumVar ];
   pje->scale = new double[ pje->NumVar ];
-  for( i = 0; i < x->NumVar; i++ ) is >> pje->refPoint[i];
-  for( i = 0; i < x->NumVar; i++ ) is >> pje->scale[i];
+  for( i = 0; i < pje->NumVar; i++ ) is >> pje->refPoint[i];
+  for( i = 0; i < pje->NumVar; i++ ) is >> pje->scale[i];
 
   is >> pje->MaxWeight;
   is >> pje->PBOK;
@@ -366,15 +374,33 @@ operator>>( istream& is, Jet__environment* x )
   // Load the numPaths array with binomial coefficients;
   // required by Wilf's algorithm for ranking monomials.
   pje->numPaths = new MatrixI( w+1, n );
-  for( i = 0; i <= w; i++ )
-    for( j = 1; j <= n; j++ )
+  for( i = 0; i <= w; i++ ) {
+    for( j = 1; j <= n; j++ ) {
       (*(pje->numPaths))( i, j-1 ) = bcfRec( i + j - 1, i );
+    }
+  }
 
   // Initialize the coordinates
   // ??? HOW ???
 
+  // --- Test to see if environment was already read
+  Jet__environment* q;
+  bool found( false );
+  while((  !found && ( q = (Jet__environment*) getNext()  ) )) 
+  {
+    if( *pje == *q ) 
+    {
+      delete pje;
+      pje = q;
+      found = true;
+    }
+  }
+  if( !found ) {
+    envs.append( pje );
+  }
+
   // --- Finished
-  envs.append( pje );
+  *x = pje;
   return is;
 }
 
@@ -628,7 +654,7 @@ Jet::BeginEnvironment( int w )
 void
 Jet::Parameters()
 {
-  if( workEnv->PBOK == 1 ) {
+  if( workEnv->PBOK ) {
     cerr << "\n\n"
          << "*** ERROR ***                                          \n"
          << "*** ERROR *** Jet::Parameters                          \n"
@@ -791,7 +817,7 @@ void Jet::EnlargeEnvironment( Jet__environment* pje )
     // ??? REMOVE workEnv->myCoords.append( new coord( pje->refPoint[ i ] ) );
 
   // Like Jet::Parameters()
-  if( pje->PBOK != 0 ) {
+  if( pje->PBOK ) {
     workEnv->PBOK = pje->PBOK;
     workEnv->SpaceDim = pje->SpaceDim;
   }

@@ -293,37 +293,27 @@ char JetC__environment::operator!=( const JetC__environment& x ) const
 
 
 ostream& 
-operator<<( ostream& os, const JetC__environment* x )
+operator<<( ostream& os, const JetC__environment& x )
 {
   int i;
-  os << x->NumVar << endl;
-  os << x->SpaceDim << endl;
-  for( i = 0; i < x->NumVar; i++ ) os << setprecision(30) 
-                                      << x->refPoint[i] << endl;
-  for( i = 0; i < x->NumVar; i++ ) os << setprecision(30) 
-                                      << x->scale[i] << endl;
-  os << x->MaxWeight << endl;
-  os << x->PBOK << endl;
+  os << x.NumVar << endl;
+  os << x.SpaceDim << endl;
+  for( i = 0; i < x.NumVar; i++ ) os << setprecision(30) 
+                                      << x.refPoint[i] << endl;
+  for( i = 0; i < x.NumVar; i++ ) os << setprecision(30) 
+                                      << x.scale[i] << endl;
+  os << x.MaxWeight << endl;
+  os << x.PBOK << endl;
   return os;
 }
 
-istream& 
-operator>>( istream& is, JetC__environment* x )
+istream& streamIn( istream& is, JetC__environment** x )
 {
   static slist envs;
   slist_iterator getNext( envs );
   JetC__environment* pje;
   int i(0), j(0);
 
-  // --- Test to see if x was previously read
-  while((  pje = (JetC__environment*) getNext()  ))
-    if( *pje == *x ) {
-      if( x ) delete x;
-      x = pje;
-      return is;
-    }
-  
-  // --- x was not previously read
   pje = new JetC__environment;
   is >> pje->NumVar;
   is >> pje->SpaceDim;
@@ -342,8 +332,8 @@ operator>>( istream& is, JetC__environment* x )
   
   pje->refPoint = new Complex[ pje->NumVar ];
   pje->scale = new double[ pje->NumVar ];
-  for( i = 0; i < x->NumVar; i++ ) is >> pje->refPoint[i];
-  for( i = 0; i < x->NumVar; i++ ) is >> pje->scale[i];
+  for( i = 0; i < pje->NumVar; i++ ) is >> pje->refPoint[i];
+  for( i = 0; i < pje->NumVar; i++ ) is >> pje->scale[i];
 
   is >> pje->MaxWeight;
   is >> pje->PBOK;
@@ -364,15 +354,33 @@ operator>>( istream& is, JetC__environment* x )
   // Load the numPaths array with binomial coefficients;
   // required by Wilf's algorithm for ranking monomials.
   pje->numPaths = new MatrixI( w+1, n );
-  for( i = 0; i <= w; i++ )
-    for( j = 1; j <= n; j++ )
+  for( i = 0; i <= w; i++ ) {
+    for( j = 1; j <= n; j++ ) {
       (*(pje->numPaths))( i, j-1 ) = bcfRec( i + j - 1, i );
+    }
+  }
 
   // Initialize the coordinates
   // ??? HOW ???
 
+  // --- Test to see if environment was already read
+  JetC__environment* q;
+  bool found( false );
+  while((  !found && ( q = (JetC__environment*) getNext()  ) )) 
+  {
+    if( *pje == *q ) 
+    {
+      delete pje;
+      pje = q;
+      found = true;
+    }
+  }
+  if( !found ) {
+    envs.append( pje );
+  }
+
   // --- Finished
-  envs.append( pje );
+  *x = pje;
   return is;
 }
 
@@ -589,7 +597,7 @@ JetC::BeginEnvironment( int w )
 void
 JetC::Parameters()
 {
-  if( workEnv->PBOK == 1 ) {
+  if( workEnv->PBOK ) {
     cerr << "\n\n"
          << "*** ERROR ***                                          \n"
          << "*** ERROR *** JetC::Parameters                          \n"
@@ -747,7 +755,7 @@ void JetC::EnlargeEnvironment( JetC__environment* pje )
     // ??? REMOVE workEnv->myCoordCs.append( new coordC( pje->refPoint[ i ] ) );
 
   // Like JetC::Parameters()
-  if( pje->PBOK != 0 ) {
+  if( pje->PBOK ) {
     workEnv->PBOK = pje->PBOK;
     workEnv->SpaceDim = pje->SpaceDim;
   }
