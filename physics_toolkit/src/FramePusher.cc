@@ -5,7 +5,7 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
+******  Version:   2.0
 ******                                    
 ******  File:      FramePusher.cc
 ******                                                                
@@ -51,6 +51,8 @@
 #include "bmlnElmnt.h"
 #include "sbend.h"
 #include "CF_sbend.h"
+#include "rbend.h"
+#include "CF_rbend.h"
 #include "Slot.h"
 
 // Static error codes
@@ -89,42 +91,98 @@ FramePusher::~FramePusher()
 void FramePusher::visitBmlnElmnt( const bmlnElmnt* x )
 {
   if( x->Length() > 0.0 ) {
-    _frame.translate( (x->Length())*(_frame.getzAxis()) );
+    _frame.translate( (x->Length())*_frame.getzAxis() );
+  }
+}
+
+
+void FramePusher::visitRbend( const rbend* x )
+{
+  // Note: the lower bound of 1/2 nanoradian was
+  // taken from file: rbend.cc
+  //        function: bool rbend::hasStandardFaces
+  // 
+  double edgeAngle = x->getEntryEdgeAngle();
+  if( 0.5e-9 < std::abs(edgeAngle) ) {
+    _frame.rotate( - edgeAngle, _frame.getyAxis(), false );
+  }
+
+  _frame.translate( (x->Length())*_frame.getzAxis() );
+
+  edgeAngle = x->getExitEdgeAngle();
+  if( 0.5e-9 < std::abs(edgeAngle) ) {
+    _frame.rotate(   edgeAngle, _frame.getyAxis(), false );
+  }
+}
+
+
+void FramePusher::visitCF_rbend ( const CF_rbend* x )
+{
+  // Note: the lower bound of 1/2 nanoradian was
+  // taken from file: rbend.cc
+  //        function: bool rbend::hasStandardFaces
+  // 
+  double edgeAngle = x->getEntryEdgeAngle();
+  if( 0.5e-9 < std::abs(edgeAngle) ) {
+    _frame.rotate( - edgeAngle, _frame.getyAxis(), false );
+  }
+
+  _frame.translate( (x->Length())*_frame.getzAxis() );
+
+  edgeAngle = x->getExitEdgeAngle();
+  if( 0.5e-9 < std::abs(edgeAngle) ) {
+    _frame.rotate(   edgeAngle, _frame.getyAxis(), false );
   }
 }
 
 
 void FramePusher::visitSbend    ( const sbend* x    )
 {
-  static double angle;
-  static double displacement;
-  static double rho;
+  double angle;
+  double displacement;
+  double rho;
 
   angle = x->getAngle();
   rho = x->Length() / angle;
   angle /= 2.0;
   displacement = 2.0*rho*sin(angle);
 
-  _frame.rotate( - angle, _frame.getyAxis(), false );
+  double edgeAngle = x->getEntryEdgeAngle();
+  if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
+    _frame.rotate( - (angle - edgeAngle), _frame.getyAxis(), false );
+  }
+
   _frame.translate( displacement*_frame.getzAxis() );
-  _frame.rotate( - angle, _frame.getyAxis(), false );
+
+  edgeAngle = x->getExitEdgeAngle();
+  if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
+    _frame.rotate( - (angle - edgeAngle), _frame.getyAxis(), false );
+  }
 }
 
 
 void FramePusher::visitCF_sbend ( const CF_sbend* x )
 {
-  static double angle;
-  static double displacement;
-  static double rho;
+  double angle;
+  double displacement;
+  double rho;
 
   angle = x->getAngle();
   rho = x->Length() / angle;
   angle /= 2.0;
   displacement = 2.0*rho*sin(angle);
 
-  _frame.rotate( - angle, _frame.getyAxis(), false );
+  double edgeAngle = x->getEntryEdgeAngle();
+  if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
+    _frame.rotate( - (angle - edgeAngle), _frame.getyAxis(), false );
+  }
+
   _frame.translate( displacement*_frame.getzAxis() );
-  _frame.rotate( - angle, _frame.getyAxis(), false );
+
+  edgeAngle = x->getExitEdgeAngle();
+  if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
+    _frame.rotate( - (angle - edgeAngle), _frame.getyAxis(), false );
+  }
 }
 
 
@@ -148,6 +206,3 @@ void FramePusher::visitSlot     ( const Slot* x     )
   _frame = ( ( x->getOutFrame() ).relativeTo( x->getInFrame() ) ) 
            .patchedOnto( _frame );
 }
-
-
-
