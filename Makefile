@@ -6,6 +6,7 @@ default:
 	@echo "One time only do a make setup then"
 	@echo "Type one of the following:"
 	@echo "  make gcc               for a generic system with GCC"
+	@echo "  make egcs              for a generic system with Gnu egcs"
 	@echo "  make linux             for Linux systems using GCC"
 	@echo "  make irix              for SGI systems with IRIX"
 	@echo "  make irix -gcc         for SGI systems with IRIX with GCC"
@@ -75,7 +76,7 @@ APPDIRS  = filter/app \
 	sybase/app
 
 
-gcc solaris-gcc solaris-gcc-debug solaris solaris-debug solaris-devel solaris-depend solaris-gcc-depend:
+gcc egcs solaris-gcc solaris-gcc-debug solaris solaris-debug solaris-devel solaris-depend solaris-gcc-depend:
 	@set -x; for i in $(SUBDIRS); do \
 		(cd $$i; $(MAKE)  $@); \
 		done
@@ -98,6 +99,7 @@ lib-dir:
 		mkdir lib/sun; \
 		mkdir lib/sgi; \
 		mkdir lib/gcc; \
+		mkdir lib/egcs; \
 		else true; \
 	fi
 
@@ -106,6 +108,7 @@ real-clean: clean lib-clean
 lib-clean:
 	rm -f lib/sun/*.a;\
 	rm -f lib/sgi/*.a;\
+	rm -f lib/egcs/*.a;\
 	rm -f lib/gcc/*.a;
 
 # Remove .o files, emacs backup files, etc.
