@@ -11,6 +11,7 @@
  */
 
 
+#include <string.h>   // for memcpy()
 #include "VectorD.h"
 
 #ifdef __VISUAL_CPP__
@@ -142,8 +143,7 @@ Vector& Vector::operator= ( const Vector& x )
 #ifndef NOCHECKS
   CHECKOUT(dim != x.dim, "Vector::operator=", "Incompatible dimensions.")
 #endif
-
-  for ( int i = 0; i < dim; i++ ) comp[i] = x.comp[i];
+  memcpy((void *)comp, (const void *)x.comp, dim * sizeof(double));
   return *this;
 }
 
