@@ -12,6 +12,7 @@
 
 ACCUMULATOR_INC = $(FNALROOT)/machines/accumulator/include
 BEAMLINE_INC = $(FNALROOT)/beamline/include
+BOOSTER_INC  = $(FNALROOT)/machines/booster/include
 MXYZPTLK_INC = $(FNALROOT)/mxyzptlk/include
 FILTER_INC   = $(FNALROOT)/filter/include
 RECYCLER_INC = $(FNALROOT)/machines/recycler/include
