@@ -8,9 +8,18 @@
  *  Version 3.0
  *  June 23, 1995
  *  
+ * 
+ *  Added some formatting to the output to change 
+ *  its look.
+ *
+ *  Version 3.1
+ *  October 29, 1998
+ *
  *  Leo Michelotti
  *  
  */
+
+#include <iomanip.h>
 
 #include "beamline.h"
 #include "FindCovariance.h"
@@ -32,7 +41,7 @@ MatrixD FindCovariance( const beamline& line,
 //******************************************************************
 
   dlist_iterator NextElement( (dlist&) line );
-  slist_iterator NextSample (          sampleSites );
+  slist_iterator NextSample ( sampleSites );
   bmlnElmnt* pbe_line;
   bmlnElmnt* pbe_sample;
   double zero [] = { 0., 0., 0., 0., 0., 0. };
@@ -136,6 +145,7 @@ void TestCovariance( const beamline& line,
   Mapping map;
 
   jp.setState( zero );
+  cout.setf( ios::fixed );
 
   if( pbe_sample = (bmlnElmnt*) NextSample() ) {
     while( ( pbe_sample                            ) && 
@@ -144,27 +154,52 @@ void TestCovariance( const beamline& line,
 
       pbe_line->propagate( jp );
 
-      if( pbe_line == pbe_sample ) {
+      if( pbe_line == pbe_sample ) 
+      {
 	jp.getState(map);
         M = map.Jacobian();
         Cov = M*C*M.transpose();
       
         xsq = ( (WIREData*) pbe_line->dataHook.find("WIREData") )->hsigma;
-        cout << "At element : " << pbe_line->Name()
-             << "  Data = "   << xsq*xsq
-             << "  Theory = " << Cov( 0, 0 )
-             << "  Horizontal"
+        cout << setw(12) << pbe_line->Name()
+             << "  Data = "   
+             << setw(8) << setprecision(3) << 1000.0*xsq
+             << "  Theory = " 
+             << setw(8) << setprecision(3) << 1000.0*sqrt( Cov( 0, 0 ) )
+             << "  [mm]  Horizontal"
              << endl;
         
         ysq = ( (WIREData*) pbe_line->dataHook.find("WIREData") )->vsigma;
-        cout << "At element : " << pbe_line->Name()
-             << "  Data = "   << ysq*ysq
-             << "  Theory = " << Cov( 1, 1 )
-             << "  Vertical"
+        cout << setw(12) << pbe_line->Name()
+             << "  Data = "   
+             << setw(8) << setprecision(3) << 1000.0*ysq
+             << "  Theory = " 
+             << setw(8) << setprecision(3) << 1000.0*sqrt( Cov( 1, 1 ) )
+             << "  [mm]  Vertical"
              << endl;
         
         pbe_sample = (bmlnElmnt*) NextSample();
       } 
+      else 
+      {
+	jp.getState(map);
+        M = map.Jacobian();
+        Cov = M*C*M.transpose();
+      
+        cout << setw(12) << pbe_line->Name()
+             << "                 "
+             << "  Theory = " 
+             << setw(8) << setprecision(3) << 1000.0*sqrt( Cov( 0, 0 ) )
+             << "  [mm]  Horizontal"
+             << endl;
+        
+        cout << setw(12) << pbe_line->Name()
+             << "                 "
+             << "  Theory = " 
+             << setw(8) << setprecision(3) << 1000.0*sqrt( Cov( 1, 1 ) )
+             << "  [mm]  Vertical"
+             << endl;
+      }
     }
   }
 
