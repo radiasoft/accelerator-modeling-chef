@@ -561,7 +561,7 @@ int ParameterList::ArcCircumference::_recalc()
 {
   Proton xp( _myList->energy() );
   double brho( xp.ReferenceBRho() );
-  double rho( brho / _myList->Bfield() );
+  double rho( brho / (double) _myList->Bfield() );
 
   _value = M_TWOPI*rho;
   // Note: C [km] = 20.958... * p[TeV/c] / B[T]
@@ -601,7 +601,7 @@ int ParameterList::NumCells::_recalc()
 
   Proton xp( _myList->energy() );
   double brho( xp.ReferenceBRho() );
-  double rho( brho / _myList->Bfield() );
+  double rho( brho / (double) _myList->Bfield() );
 
   double gfp, gfm, gfa, gfb;
 
@@ -673,7 +673,7 @@ int ParameterList::QuadGrad::_recalc()
   double maxD  ( _myList->maxDisp() );
   Proton xp    ( _myList->energy() );
   double brho  ( xp.ReferenceBRho() );
-  double rho   ( brho / _myList->Bfield() );
+  double rho   ( brho / (double) _myList->Bfield() );
 
   double gfp, gfm, gfa, gfb;
 
@@ -699,7 +699,7 @@ int ParameterList::MaxBetaH::_recalc()
   double maxD  ( _myList->maxDisp() );
   Proton xp    ( _myList->energy() );
   double brho  ( xp.ReferenceBRho() );
-  double rho   ( brho / _myList->Bfield() );
+  double rho   ( brho / (double) _myList->Bfield() );
 
   double gfp, gfm, gfa, gfb;
 
@@ -733,7 +733,7 @@ int ParameterList::MinBetaH::_recalc()
   double maxD  ( _myList->maxDisp() );
   Proton xp    ( _myList->energy() );
   double brho  ( xp.ReferenceBRho() );
-  double rho   ( brho / _myList->Bfield() );
+  double rho   ( brho / (double) _myList->Bfield() );
 
   double gfp, gfm, gfa, gfb;
 
@@ -776,7 +776,7 @@ int ParameterList::MinDisp::_recalc()
   double maxD  ( _myList->maxDisp() );
   Proton xp    ( _myList->energy() );
   double brho  ( xp.ReferenceBRho() );
-  double rho   ( brho / _myList->Bfield() );
+  double rho   ( brho / (double) _myList->Bfield() );
 
   double gfp, gfm, gfa, gfb;
 
