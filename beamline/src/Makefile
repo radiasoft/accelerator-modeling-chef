@@ -47,7 +47,8 @@ OBJS = BBLens.o \
        thinSextupole.o \
        thinrfcavity.o \
        vkick.o \
-       vmonitor.o
+       vmonitor.o \
+       read_istream.o
 
 SOURCES = $(OBJS:.o=.cc)
 
