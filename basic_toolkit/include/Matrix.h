@@ -20,7 +20,7 @@ private:
   void switch_columns(int,int);
   void switch_rows(int,int);
   MatrixD scale();
-  MatrixD lu_decompose(int*, int&);
+  MatrixD lu_decompose(int*, int&) const;
   void lu_back_subst(int*,MatrixD&);
   void error(char * msgl, char * msg2 = " ")const ;
 
@@ -44,7 +44,7 @@ public:
   MatrixD transpose() const;
   MatrixD Square() const;
   double determinant();
-  MatrixD inverse();
+  MatrixD inverse() const;
   MatrixC eigenValues();
   MatrixC eigenVectors();
   double trace(); // return the trace of a square matrix
@@ -56,6 +56,7 @@ public:
   MatrixD& operator=(const MatrixD&);
   MatrixD& DeepCopy(const MatrixD&);
   double& operator()(int row, int column);
+  double  getElement(int row, int column) const;
   double& operator()(int row);
   void operator+=( const double&);
   void operator-=( const double&);

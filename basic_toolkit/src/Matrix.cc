@@ -282,7 +282,7 @@ double MatrixD::determinant() {
   return determinant;
 }
 
-MatrixD MatrixD::inverse() {
+MatrixD MatrixD::inverse() const {
   if(rows()  != cols())
     error("MatrixD must be square for inverse()");
   MatrixD Y("I",rows()); // create an identity MatrixD
@@ -615,6 +615,18 @@ double& MatrixD::operator()(int i, int j) {
  return ml->m[i][j];
 }
 
+double MatrixD::getElement(int i, int j) const {
+  if((i >= rows()) || (j >= cols())) {
+    cerr << "\n*** ERROR *** " << endl;
+    cerr << "*** ERROR *** double& MatrixD::getElement(int i, int j) " << endl;
+    cerr << "*** ERROR *** limits are " << rows() << " " << cols() << endl;
+    cerr << "*** ERROR *** You asked for "<< i << " " << j << endl;
+    cerr << "*** ERROR *** matrix limits exceeded " << endl;
+    exit(1);
+  }
+ return ml->m[i][j];
+}
+
 double& MatrixD::operator()(int i) {
   if( rows() == 1 ) return ml->m[0][i];
   if( cols() == 1 ) return ml->m[i][0];
@@ -861,7 +873,8 @@ MatrixD MatrixD::scale()  {
   return scale_vector;
 }
 
-MatrixD MatrixD::lu_decompose(int* indx, int& d ) {
+MatrixD MatrixD::lu_decompose(int* indx, int& d ) const 
+{
 /*
  Returns the L-U decomposition of a matrix. indx is an ouput
  vector which records the row permutation affected by the
