@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -31,9 +34,6 @@
 #include <iostream>
 #include <iomanip>
 
-#include <stdlib.h>
-#include <iostream>
-#include <iomanip>
 
 #include "Matrix.h"
 //extern "C" {strstr(char*,char*);} // this may need to be commented out
@@ -50,6 +50,10 @@ extern "C" { void rg_(int*, int*, double*, double*,double*, int*, double*,
 extern "C" { void cg_(int*, int*, double*, double*,double*,double*, int*, 
 		      double*,double*,double*, double*, double*,int*); }
 
+
+using std::abs;
+using FNAL::Complex;
+
 const double tiny = double(1e-20);
 const double limit = double(1e-14);
 const int PHASESPACE = 6;
@@ -64,8 +68,6 @@ int MatrixI::objectCount = 0;
 #define WID setw(8)
 #define PREC setprecision(8)
 
-
-using namespace std;
 
 MatrixD::MatrixD() : stacked(0) {
   ml = new MLD;
