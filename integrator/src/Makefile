@@ -37,7 +37,7 @@ real-clean: clean
 
 
 depend:
-	$(C++) $(INCLUDEDIR) $(DEPEND_FLAG) *.cc *.c > dependencies
+	$(C++) $(INCLUDEDIR) $(DEPEND_FLAG) *.cc > dependencies
 
 
 include dependencies
