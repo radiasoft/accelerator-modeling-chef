@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
 ******                                    
 ******  File:      DriftsToSlots.cc
+******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -48,6 +48,13 @@
  *  Version 2.0
  *  September 14, 1999
  *
+ *
+ *  Added tests to check whether the beamline is
+ *  or is not to be treated as a ring.
+ *
+ *  Version 2.1 (untested)
+ *  January 26, 2005
+ *
  *  Leo Michelotti
  *  
  */
@@ -64,43 +71,29 @@
 
 using namespace std;
 
-char d2S_LookUpStream ( bmlnElmnt*&      el2Ptr, 
-                        char&            rb, 
-                        char&            CF, 
+bool d2S_LookUpStream ( bmlnElmnt*&      el2Ptr, 
+                        bool&            rb, 
+                        bool&            CF, 
                         BeamlineIterator bi
-                       )
+                      )
 {
-  rb = 0;
-  CF = 0;
+  rb = false;
+  CF = false;
 
   bi.goBack();
   bi.goBack();
   el2Ptr = bi++;
 
-  // cout << "DGN> " 
-  //      << el2Ptr->Type() << "  " 
-  //      << el2Ptr->Name()
-  //      << endl;
-
   while( 0 != strcmp( el2Ptr->Type(), "rbend"    )  &&
          0 != strcmp( el2Ptr->Type(), "CF_rbend" )     ) 
   {
-    // REMOVE: if( 0.0 != el2Ptr->Length() ) {
-    // REMOVE:   return 0;
-    // REMOVE: }
-
     if( 0 == strcmp( "drift", el2Ptr->Type() ) ) {
-      return 0;
+      return false;
     }
 
     bi.goBack();
     bi.goBack();
     el2Ptr = bi++;
-    // cout << "DGN> " 
-    //      << el2Ptr->Type() << "  " 
-    //      << el2Ptr->Name()
-    //      << endl;
-
   }
 
   rb = ( 0 == strcmp( el2Ptr->Type(), "rbend"    ) );
@@ -114,23 +107,23 @@ char d2S_LookUpStream ( bmlnElmnt*&      el2Ptr,
             "*** ERROR *** occurred while looking upstream.       \n"
             "*** ERROR ***                                        \n"
          << endl;
-    return 0;
+    return false;
   }
 
-  return 1;
+  return true;
 }
 
 
 
 
-char d2S_LookDownStream ( bmlnElmnt*&      el2Ptr, 
-                          char&            rb, 
-                          char&            CF, 
+bool d2S_LookDownStream ( bmlnElmnt*&      el2Ptr, 
+                          bool&            rb, 
+                          bool&            CF, 
                           BeamlineIterator bi
-                       )
+                        )
 {
-  rb = 0;
-  CF = 0;
+  rb = false;
+  CF = false;
 
   el2Ptr = bi++;
   if( el2Ptr == 0 ) {
@@ -138,20 +131,11 @@ char d2S_LookDownStream ( bmlnElmnt*&      el2Ptr,
     el2Ptr = bi++;
   }
 
-  // cout << "DGN> " 
-  //      << el2Ptr->Type() << "  " 
-  //      << el2Ptr->Name()
-  //      << endl;
-
   while( 0 != strcmp( el2Ptr->Type(), "rbend"    )  &&
          0 != strcmp( el2Ptr->Type(), "CF_rbend" )     ) 
   {
-    // REMOVE: if( 0.0 != el2Ptr->Length() ) {
-    // REMOVE:   return 0;
-    // REMOVE: }
-
     if( 0 == strcmp( "drift", el2Ptr->Type() ) ) {
-      return 0;
+      return false;
     }
 
     el2Ptr = bi++;
@@ -159,11 +143,6 @@ char d2S_LookDownStream ( bmlnElmnt*&      el2Ptr,
       bi.reset();
       el2Ptr = bi++;
     }
-    // cout << "DGN> " 
-    //      << el2Ptr->Type() << "  " 
-    //      << el2Ptr->Name()
-    //      << endl;
-
   }
 
   rb = ( 0 == strcmp( el2Ptr->Type(), "rbend"    ) );
@@ -177,10 +156,10 @@ char d2S_LookDownStream ( bmlnElmnt*&      el2Ptr,
             "*** ERROR *** occurred while looking downstream.     \n"
             "*** ERROR ***                                        \n"
          << endl;
-    return 0;
+    return false;
   }
 
-  return 1;
+  return true;
 }
 
 
@@ -188,10 +167,25 @@ char d2S_LookDownStream ( bmlnElmnt*&      el2Ptr,
 
 beamline* DriftsToSlots( /* const */ beamline& original )
 {
+  // This routine creates and returns a beamline
+  //   for which the invoker must take responsibility.
+
   bmlnElmnt* elPtr;
   bmlnElmnt* el2Ptr;
-  dlink*     linkPtr;
-  dlink*     link2Ptr;
+  const bmlnElmnt* firstPtr = original.firstElement();
+  const bmlnElmnt* lastPtr  = original.lastElement();
+
+
+  // There should be more than one element
+  if( firstPtr == lastPtr ) {
+    cerr << "*** WARNING ***                                        \n"
+            "*** WARNING *** DriftsToSlots                          \n"
+            "*** WARNING *** Beamline contains only one element.    \n"
+            "*** WARNING *** Original line will be returned.        \n"
+            "*** WARNING ***                                        \n"
+         << endl;
+    return &original;
+  }
 
 
   // Check if Slots are already present ...
@@ -199,10 +193,11 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   while((  elPtr = dbi++  )) 
   {
     if( 0 == strcmp( elPtr->Type(), "Slot" ) ) {
-      cerr << "*** ERROR ***                                        \n"
-              "*** ERROR *** DriftsToSlots                          \n"
-              "*** ERROR *** Slots already exist in this beamline.  \n"
-              "*** ERROR ***                                        \n"
+      cerr << "*** WARNING ***                                        \n"
+              "*** WARNING *** DriftsToSlots                          \n"
+              "*** WARNING *** Slots already exist in this beamline.  \n"
+              "*** WARNING *** Original line will be returned.        \n"
+              "*** WARNING ***                                        \n"
            << endl;
       return &original;
     }
@@ -220,14 +215,18 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   enum { x = 0, y, z };
   arcFrame.reset();  
 
-  char isUpStream, isDownStream;
-  char a_rb, a_CF, c_rb, c_CF;
+  bool isUpStream, isDownStream;
+  bool a_rb, a_CF, c_rb, c_CF;
   bmlnElmnt* a;
   bmlnElmnt* c;
   
 
   // Process the flattened beamline ...
   BeamlineIterator bi( flatRing );
+  bool isRing = ( beamline::ring == flatRing->getLineMode() );
+  firstPtr = flatRing->firstElement();
+  lastPtr  = flatRing->lastElement();
+
   while((  elPtr = bi++  )) 
   {
     // If the trial element is not a drift, just copy it ...
@@ -235,30 +234,30 @@ beamline* DriftsToSlots( /* const */ beamline& original )
     {
       ret->append( elPtr->Clone() );
     }
-  
-
     // ... otherwise, begin processing ...
     else 
     {
-      // There are four possibilities
-      // cout << "DGN> Looking upstream for "
-      //      << elPtr->Type() << "  "
-      //      << elPtr->Name() << "  "
-      //      << endl;
-      isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CF, bi );
-      // cout << "DGN> Looking downstream for "
-      //      << elPtr->Type() << "  "
-      //      << elPtr->Name() << "  "
-      //      << endl;
-      isUpStream    = d2S_LookDownStream ( c, c_rb, c_CF, bi );
+      // Search upstream and downstream for the closest rbend or CF_rbend
+      if( isRing ) {
+        isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CF, bi );
+        isUpStream    = d2S_LookDownStream ( c, c_rb, c_CF, bi );
+      }
+      else {
+        if( firstPtr == elPtr ) {
+          isDownStream  = false;
+          isUpStream    = d2S_LookDownStream ( c, c_rb, c_CF, bi );
+	}
+        if( lastPtr == elPtr ) {
+          isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CF, bi );
+          isUpStream    = false;
+	}
+        else {
+          isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CF, bi );
+          isUpStream    = d2S_LookDownStream ( c, c_rb, c_CF, bi );
+	}
+      }
 
-      // isUpStream   = ( ( c_rb = ( 0 == strcmp( c->Type(), "rbend"    ) ) ) || 
-      //                  ( c_CF = ( 0 == strcmp( c->Type(), "CF_rbend" ) ) )
-      //                );
-      // isDownStream = ( ( a_rb = ( 0 == strcmp( a->Type(), "rbend"    ) ) ) || 
-      //                  ( a_CF = ( 0 == strcmp( a->Type(), "CF_rbend" ) ) )
-      //                );
-      // 
+      // There are four possibilities
       if( !isUpStream && !isDownStream )
       {
         ret->append( elPtr->Clone() );
@@ -347,10 +346,12 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   // Because the original beamline is flattened
   // but not cloned, do not use .zap() 
   // or .eliminate()
-
   delete flatRing;
 
+
+  // Final manipulations
   ret->setEnergy( original.Energy() );
   ret->Rename( original.Name() );
+  ret->setLineMode( original.getLineMode() );
   return ret;
 }
