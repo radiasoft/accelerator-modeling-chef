@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(src/CLieOperator.cc)
+AC_INIT(src/TJetConversions.cc)
 AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE(mxyzptlk, 1.0, no-define)
