@@ -27,7 +27,7 @@ thinOctupole::~thinOctupole() {
 }
 
 
-char* thinOctupole::Type() const 
+const char* thinOctupole::Type() const 
 { 
   return "thinOctupole"; 
 }

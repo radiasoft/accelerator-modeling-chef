@@ -21,7 +21,7 @@ marker::~marker() {
 
 
 
-char* marker::Type() const 
+const char* marker::Type() const 
 { 
   return "marker"; 
 }

@@ -46,6 +46,6 @@ thinSextupole::~thinSextupole() {
 // ??? REMOVE }
 
 
-char* thinSextupole::Type() const { 
+const char* thinSextupole::Type() const { 
   return "thinSextupole"; 
 }

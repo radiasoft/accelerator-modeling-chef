@@ -22,7 +22,7 @@ thin16pole::thin16pole( const thin16pole& x )
 thin16pole::~thin16pole() {
 }
 
-char* thin16pole::Type() const 
+const char* thin16pole::Type() const 
 { 
   return "thin16pole"; 
 }

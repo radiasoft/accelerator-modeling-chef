@@ -351,7 +351,7 @@ void sector::setFrequency( Jet (*fcn)( const Jet& ) ) {
 }
 
 
-char* sector::Type() const 
+const char* sector::Type() const 
 { 
   return "sector"; 
 }

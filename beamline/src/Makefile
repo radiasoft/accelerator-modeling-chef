@@ -30,13 +30,11 @@ OBJS = BBLens.o \
        octupole.o \
        pinger.o \
        quadrupole.o \
-       rastermonitor.o \
        rbend.o \
        sbend.o \
        sector.o \
        sextupole.o \
        srot.o \
-       tclmonitor.o \
        thin12pole.o \
        thin14pole.o \
        thin16pole.o \

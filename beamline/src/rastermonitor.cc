@@ -802,7 +802,7 @@ double rasterMonitor::getAveYPRIMEstate(){
   return sumState[4]/numParticles;
 }
 
-char* rasterMonitor::Type() const  
+const char* rasterMonitor::Type() const  
 { 
   return "rasterMonitor"; 
 }

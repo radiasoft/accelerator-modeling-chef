@@ -68,7 +68,7 @@ class Slot : public bmlnElmnt
 
    void Split( double s, bmlnElmnt**, bmlnElmnt** );
 
-   char*  Type()  const;
+   const char*  Type()  const;
 
    short int setInFrame( const Frame& );
    short int setOutFrame( const Frame& );
@@ -85,7 +85,7 @@ class Slot : public bmlnElmnt
    void setAlignment  ( const alignmentData& );
    double Current() const;
    double OrbitLength( const Particle& );
-   char* Name() const;
+   const char* Name() const;
 
 
  private:

@@ -140,7 +140,7 @@ void thinSeptum::eliminate() {
 }
 
 
-char* thinSeptum::Type() const 
+const char* thinSeptum::Type() const 
 { 
   return "thinSeptum"; 
 }

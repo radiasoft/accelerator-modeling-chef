@@ -77,7 +77,7 @@ void JetthinQuad::eliminate() {
 }
 
 
-char* JetthinQuad::Type() const 
+const char* JetthinQuad::Type() const 
 { 
   return "JetthinQuad"; 
 }

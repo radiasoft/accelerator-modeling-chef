@@ -293,7 +293,7 @@ void CF_rbend::eliminate( void )
 
 
 
-char* CF_rbend::Type() const  
+const char* CF_rbend::Type() const  
 { 
   return "CF_rbend"; 
 }

@@ -35,7 +35,7 @@ public:
         double& horizontalStrength() { return horizontalKick; }
         double& verticalStrength() { return verticalKick; }
 
-        char* Type() const;
+        const char* Type() const;
         bmlnElmnt* Clone() const { return new kick( *this ); }
 };
 

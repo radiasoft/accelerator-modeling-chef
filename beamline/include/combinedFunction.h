@@ -52,7 +52,7 @@ public:
   alignmentData getAlignment( WHICH_MULTIPOLE x )
     { return this->Skew(x); }
 
-  char* Type() const;
+  const char* Type() const;
   bmlnElmnt* Clone() const { return new combinedFunction( *this ); }
 
   double AdjustPosition( const Proton& );

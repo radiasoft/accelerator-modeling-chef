@@ -92,7 +92,7 @@ void rbend::eliminate() {
 }
 
 
-char* rbend::Type() const { 
+const char* rbend::Type() const { 
   return "rbend"; 
 }
 

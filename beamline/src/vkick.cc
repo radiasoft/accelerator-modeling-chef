@@ -41,7 +41,7 @@ vkick::~vkick() {
 }
 
 
-char* vkick::Type() const 
+const char* vkick::Type() const 
 { 
   return "vkick"; 
 }

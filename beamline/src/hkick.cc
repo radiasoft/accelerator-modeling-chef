@@ -42,7 +42,7 @@ hkick::~hkick() {
 }
 
 
-char* hkick::Type() const 
+const char* hkick::Type() const 
 { 
   return "hkick"; 
 }

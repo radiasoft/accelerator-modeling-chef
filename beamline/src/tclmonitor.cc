@@ -501,7 +501,7 @@ void tclMonitor::setColor( int newcolor) {
   color = newcolor;
 }
 
-char* tclMonitor::Type() const 
+const char* tclMonitor::Type() const 
 { 
 return "tclMonitor"; 
 }

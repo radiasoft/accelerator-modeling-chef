@@ -17,7 +17,7 @@ circuit::circuit() {
    numElm = 0;
 }
 
-circuit::circuit( char* n ) {
+circuit::circuit( const char* n ) {
    onOffSwitch  = 1;
    numElm = 0;
    ident  = strdup( n );
@@ -30,7 +30,7 @@ circuit::circuit( bmlnElmnt* q ) {
    numElm++;
 }
 
-circuit::circuit( char* n, bmlnElmnt* q ) {
+circuit::circuit( const char* n, bmlnElmnt* q ) {
    onOffSwitch  = 1;
    dlist::append(q);
    numElm++;
@@ -86,7 +86,7 @@ ICircuit::ICircuit() : circuit () {
   current = 0.0;
 }
 
-ICircuit::ICircuit(char* n) : circuit (n) {
+ICircuit::ICircuit(const char* n) : circuit (n) {
   current = 0.0;
 }
 
@@ -94,7 +94,7 @@ ICircuit::ICircuit(bmlnElmnt* q) : circuit (q) {
   current = q->Current();
 }
 
-ICircuit::ICircuit(char* n, bmlnElmnt* q) : circuit (n,q) {
+ICircuit::ICircuit(const char* n, bmlnElmnt* q) : circuit (n,q) {
   current = q->Current();
 }
 ICircuit::~ICircuit() {
@@ -140,7 +140,7 @@ FCircuit::FCircuit() : circuit () {
   field = 0.0;
 }
 
-FCircuit::FCircuit(char* n) : circuit (n) {
+FCircuit::FCircuit(const char* n) : circuit (n) {
   field = 0.0;
 }
 
@@ -148,7 +148,7 @@ FCircuit::FCircuit(bmlnElmnt* q) : circuit (q) {
   field = q->Strength();
 }
 
-FCircuit::FCircuit(char* n, bmlnElmnt* q) : circuit (n,q) {
+FCircuit::FCircuit(const char* n, bmlnElmnt* q) : circuit (n,q) {
   field = q->Strength();
 }
 FCircuit::~FCircuit() {
@@ -243,13 +243,13 @@ void FCircuit::append( bmlnElmnt* q ) {
 mover::mover() : circuit (), align() {
 }
 
-mover::mover(char* n) : circuit (n), align() {
+mover::mover(const char* n) : circuit (n), align() {
 }
 
 mover::mover(bmlnElmnt* q) : circuit (q), align(q->Alignment()) {
 }
 
-mover::mover(char* n, bmlnElmnt* q) : circuit (n,q), align(q->Alignment()) {
+mover::mover(const char* n, bmlnElmnt* q) : circuit (n,q), align(q->Alignment()) {
 }
 
 mover::~mover() {}
@@ -293,7 +293,7 @@ BipolarCircuit::BipolarCircuit() : circuit () {
   field = 0.0;
 }
 
-BipolarCircuit::BipolarCircuit(char* n) : circuit (n) {
+BipolarCircuit::BipolarCircuit(const char* n) : circuit (n) {
   field = 0.0;
 }
 
@@ -301,7 +301,7 @@ BipolarCircuit::BipolarCircuit(bmlnElmnt* q) : circuit (q) {
   field = 0.0;
 }
 
-BipolarCircuit::BipolarCircuit(char* n, bmlnElmnt* q) : circuit (n,q) {
+BipolarCircuit::BipolarCircuit(const char* n, bmlnElmnt* q) : circuit (n,q) {
   field = 0.0;
 }
 BipolarCircuit::~BipolarCircuit() {

@@ -37,7 +37,7 @@ double vmonitor::operator[]( int n ) {
 }
 
 
-char* vmonitor::Type() const 
+const char* vmonitor::Type() const 
 { 
   return "vmonitor"; 
 }

@@ -23,7 +23,7 @@ thin18pole::~thin18pole() {
 }
 
 
-char* thin18pole::Type() const 
+const char* thin18pole::Type() const 
 { 
   return "thin18pole"; 
 }
