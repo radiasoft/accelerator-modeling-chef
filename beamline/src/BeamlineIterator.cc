@@ -29,7 +29,7 @@ BeamlineIterator::BeamlineIterator( const beamline* x )
 
 BeamlineIterator::BeamlineIterator( const BeamlineIterator& x )
 {
-  char firstTime = 1;
+  static char firstTime = 1;
   if( firstTime ) {
     cerr << "*** WARNING ***                                       \n"
             "*** WARNING *** BeamlineIterator::BeamlineIterator( const BeamlineIterator& ) \n"
