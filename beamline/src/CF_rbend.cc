@@ -1,3 +1,9 @@
+#ifdef __VISUAL_CPP__
+#include <iomanip>
+#else
+#include <iomanip.h>
+#endif
+
 #include "CF_rbend.h"
 
 CF_rbend::CF_rbend( double        lng,  // length     [ meter    ]
@@ -59,6 +65,8 @@ CF_rbend::CF_rbend( const CF_rbend& x )
 
 CF_rbend::~CF_rbend()
 {
+  // NOTE: If this code is ever modified, you 
+  // must also modify CF_rbend::readFrom.
   while( _v >= _u ) {
     delete (*(_v--));
   }
@@ -213,23 +221,39 @@ void CF_rbend::Split( double, bmlnElmnt**, bmlnElmnt** )
 
 ostream& CF_rbend::writeTo( ostream& os )
 {
-  cerr << "*** ERROR ***                                 \n" 
-          "*** ERROR *** CF_rbend::writeTo               \n" 
-          "*** ERROR *** This function is not written.   \n" 
-          "*** ERROR ***                                 \n" 
-       << endl;
-  exit(1);
+  os << OSTREAM_DOUBLE_PREC << ( this->_poleFaceAngle ) << " ";
+  os << OSTREAM_DOUBLE_PREC << getQuadrupole() << " ";
+  os << OSTREAM_DOUBLE_PREC << getSextupole() << " ";
+  os << "\n";
   return os;
 }
 
 istream& CF_rbend::readFrom( istream& is )
 {
-  cerr << "*** ERROR ***                                 \n" 
-          "*** ERROR *** CF_rbend::readFrom              \n" 
-          "*** ERROR *** This function is not written.   \n" 
-          "*** ERROR ***                                 \n" 
-       << endl;
-  exit(1);
+  double quadStrength, sextStrength;
+  is >> ( this->_poleFaceAngle ) 
+     >> quadStrength 
+     >> sextStrength;
+
+
+  // Rebuild basic element ...
+  // ... First deconstruct (identical to CF_rbend destructor)
+  while( _v >= _u ) {
+    delete (*(_v--));
+  }
+  delete [] _u;
+  _v = 0;
+  _u = 0;
+
+  // ... Then reconstruct
+  #include "CF_rbendConstructor.ins"
+
+
+  // Set multipoles
+  this->setQuadrupole( quadStrength );
+  this->setSextupole( sextStrength );
+
+
   return is;
 }
 

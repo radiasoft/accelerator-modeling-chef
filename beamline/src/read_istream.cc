@@ -82,6 +82,7 @@
 #include "mwiremonitor.h"
 #endif
 #include "pinger.h"
+#include "CF_rbend.h"
 
 bmlnElmnt* read_istream(istream& is)
 {
@@ -134,6 +135,7 @@ bmlnElmnt* read_istream(istream& is)
   VPinger               * vPingerPtr;
   kick                  * kickPtr;
   Slot			* slot;
+  CF_rbend              * cfRbendPtr;
 
   const double MIN_ANGLE = 2.0E-9;
   const int SIZE=80;
@@ -315,6 +317,10 @@ bmlnElmnt* read_istream(istream& is)
   else if( strcasecmp(type, 		"JetthinSext") == 0 ) {
     jtSextPtr = new JetthinSext(name, length, 1);
     element = jtSextPtr;
+  }
+  else if( strcasecmp(type, 		"CF_rbend") == 0 ) {
+    cfRbendPtr = new CF_rbend(name, length, strength, MIN_ANGLE);
+    element = cfRbendPtr;
   }
   else {
     cerr << "read_istream(istream&): Unknown element type \"" << type << "\"\n";
