@@ -156,12 +156,6 @@ TJetEnvironment<Complex,double>::TJetEnvironment( const TJetEnvironment<double,C
    _allZeroes(i) = 0;   // ??? Redundant and unnecessary.
   }
 
-  slist_iterator getNext( x._myCoords );
-  TJet<double,Complex>* pj;
-  while((  pj = (TJet<double,Complex>*) getNext()  )) {
-    _myCoords.append( new TJet<Complex,double>( *pj, this ) );
-  }
-
   bcfr = bcfRec( w + n, n );
   _monomial   = new Complex[ bcfr ];
   _TJLmonomial = new TJet<Complex,double>  [ bcfr ];
@@ -241,23 +235,6 @@ TJetEnvironment<Complex,double>& TJetEnvironment<Complex,double>::operator=( con
    _scale[i] = x._scale[i];
    _allZeroes(i) = 0;   // ??? Redundant and unnecessary.
   }
-
-
-  // Clear and reload _myCoords ...
-  slist_iterator getNext( _myCoords );
-  TJet<double,Complex>*  pj;
-  TJet<Complex,double>* pjc;
-
-  if( _myCoords.Owns() ) 
-    while((  pjc = (TJet<Complex,double>*) getNext()  )) delete pjc;
-
-  getNext.Reset( x._myCoords );
-  while((  pj = (TJet<double,Complex>*) getNext()  )) {
-    _myCoords.append( new TJet<Complex,double>( *pj, this ) );
-  }
-
-  _myCoords.DoesOwn();
-
 
   // Final constructions ...
   bcfr = bcfRec( w + n, n );
@@ -340,12 +317,6 @@ TJetEnvironment<double,Complex>::TJetEnvironment<double,Complex>( const TJetEnvi
    _refPoint[i] = real( x._refPoint[i] );
    _scale[i] = x._scale[i];
    _allZeroes(i) = 0;   // ??? Redundant and unnecessary.
-  }
-
-  slist_iterator getNext( x._myCoords );
-  TJet<Complex,double>* pj;
-  while((  pj = (TJet<Complex,double>*) getNext()  )) {
-    _myCoords.append( new TJet<double,Complex>( *pj, this ) );
   }
 
   bcfr = bcfRec( w + n, n );
@@ -436,22 +407,6 @@ TJetEnvironment<double,Complex>& TJetEnvironment<double,Complex>::operator=( con
    _scale[i] = x._scale[i];
    _allZeroes(i) = 0;   // ??? Redundant and unnecessary.
   }
-
-
-  // Clear and reload _myCoords ...
-  slist_iterator getNext( _myCoords );
-  TJet<double,Complex>*  pj;
-  TJet<Complex,double>* pjc;
-
-  if( _myCoords.Owns() ) 
-    while((  pj = (TJet<double,Complex>*) getNext()  )) delete pj;
-
-  getNext.Reset( x._myCoords );
-  while((  pjc = (TJet<Complex,double>*) getNext()  )) {
-    _myCoords.append( new TJet<double,Complex>( *pjc, this ) );
-  }
-
-  _myCoords.DoesOwn();
 
 
   // Final constructions ...
