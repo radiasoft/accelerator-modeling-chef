@@ -50,6 +50,8 @@ class TMapping : public TJetVector<T1,T2>
 
   TMapping& operator= ( const TMapping& );
   TMapping& operator= ( const TMapping<T2,T1>&  );
+
+  Vector    operator()( const Vector& ) const;
   TMapping  operator()( const TMapping& ) const;  // TMapping composition.
   TMapping  operator* ( const TMapping& ) const;  // TMapping composition also; an alias.
   TMapping* operator*=( const TMapping<T1,T2>& );
@@ -75,10 +77,7 @@ inline TJet<T1,T2>& TMapping<T1,T2>::operator()( int i )
 
 template<typename T1, typename T2>
 inline TMapping<T1,T2>& TMapping<T1,T2>::operator=( const TMapping<T1,T2>& x )
-{ TJetVector<T1,T2>::operator=( (JetVector&) x ); return *this; }
+{ TJetVector<T1,T2>::operator=( (TJetVector<T1,T2>&) x ); return *this; }
 
-
-typedef TMapping<double,FNAL::Complex> Mapping;
-typedef TMapping<FNAL::Complex,double> MappingC;
 
 #endif // TMAP_H

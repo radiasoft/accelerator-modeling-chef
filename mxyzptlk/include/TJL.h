@@ -72,8 +72,8 @@ struct TJLterm
   T1 _value;       // The value associated with the JLterm.
 
   // Constructors and destructors
-  TJLterm( const TJetEnvironment<T1,T2>* );
-  TJLterm( const IntArray&, const T1&, const TJetEnvironment<T1,T2>*  );
+  TJLterm( TJetEnvironment<T1,T2>* );
+  TJLterm( const IntArray&, const T1&, TJetEnvironment<T1,T2>*  );
   TJLterm( const TJLterm* );
   TJLterm( const TJLterm& );
   TJLterm( const TJLterm<T2,T1>& );
@@ -112,7 +112,7 @@ struct TJL : public dlist
   TJLterm<T1,T2>* remove( dlink* );
 
   // Constructors and destructors_____________________________________
-  TJL( const TJetEnvironment<T1,T2>* = 0 );
+  TJL( TJetEnvironment<T1,T2>* = 0 );
   TJL( const T1&, TJetEnvironment<T1,T2>* );
   TJL( const TJL& );
   TJL( const TJL* );
@@ -265,10 +265,5 @@ struct TJL : public dlist
   };
 };
 
-
-typedef TJLterm<double,FNAL::Complex> JLterm;
-typedef TJLterm<FNAL::Complex,double> JLCterm;
-typedef TJL<double,FNAL::Complex> JL;
-typedef TJL<FNAL::Complex,double> JLC;
 
 #endif // TJL_H

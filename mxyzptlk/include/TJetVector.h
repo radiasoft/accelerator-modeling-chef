@@ -88,6 +88,7 @@ public:
 
   void             Reconstruct();
   void             Reconstruct( int, TJetEnvironment<T1,T2>* );
+  void             CopyFrom( const TJetVector& );
 
   // Assignment ...
   void             Set             ( const TJet<T1,T2>* );
@@ -102,10 +103,14 @@ public:
   TJetVector&       operator=      ( const TJetVector<T2,T1>&  );
 
   TJetVector        operator+      ( const TJetVector& ) const;
+  TJetVector        operator+      ( const Vector& ) const;
   TJetVector        operator+=     ( const TJetVector& );
+  TJetVector        operator+=     ( const Vector& );
   friend TJetVector operator-<>    ( const TJetVector& );
   TJetVector        operator-      ( const TJetVector& ) const;
+  TJetVector        operator-      ( const Vector& ) const;
   TJetVector        operator-=     ( const TJetVector& );
+  TJetVector        operator-=     ( const Vector& );
   TJetVector        operator*      ( const TJet<T1,T2>&    ) const;
   TJetVector        operator*      ( const T1& ) const;
   friend TJetVector operator*<>    ( const TJet<T1,T2>&, const TJetVector& );
@@ -119,6 +124,7 @@ public:
 
 
   TJet<T1,T2>       operator*      ( const TJetVector& ) const; // dot product
+  TJet<T1,T2>       operator*      ( const Vector& )     const; // dot product
   TJetVector        operator^      ( const TJetVector& ) const; // cross product:
                                                                 // only works if
                                                                 // the vector is
@@ -174,6 +180,10 @@ public:
 } ;
 
 
+template<typename T1, typename T2>
+TJetVector<T1,T2> operator*( const TJet<T1,T2>&, const Vector& );
+
+
 // Inline functions ...
 
 // .. Functions included for symmetry
@@ -195,8 +205,20 @@ template<typename T1, typename T2>
 inline const TJetEnvironment<T1,T2>* TJetVector<T1,T2>::Env() const 
 { return _myEnv; }
 
+template<typename T1, typename T2>
+inline TJetVector<T1,T2> operator+( const Vector& x, const TJetVector<T1,T2>& y )
+{ return y.operator+( x ); }
 
-typedef TJetVector<double,FNAL::Complex> JetVector;
-typedef TJetVector<FNAL::Complex,double> JetCVector;
+template<typename T1, typename T2>
+inline TJetVector<T1,T2> operator-( const Vector& x, const TJetVector<T1,T2>& y )
+{ return operator-( y.operator-( x ) ); }
+
+template<typename T1, typename T2>
+inline TJet<T1,T2> operator*( const Vector& x, const TJetVector<T1,T2>& y )
+{ return y.operator*( x ); }
+
+template<typename T1, typename T2>
+TJetVector<T1,T2> operator*( const Vector& x, const TJet<T1,T2>& y )
+{ return operator*(y,x); }
 
 #endif // TJETVECTOR_H

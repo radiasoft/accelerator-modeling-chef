@@ -265,7 +265,7 @@ const char* TJL<T1,T2>::HideousException::what() const throw()
 //    Constructors and destructors    |||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-TJL<T1,T2>::TJL( const TJetEnvironment<T1,T2>* pje ) 
+TJL<T1,T2>::TJL( TJetEnvironment<T1,T2>* pje ) 
 {
  _rc      = 1;
  _weight  = -1;
@@ -1178,7 +1178,7 @@ TJLterm<T1,T2> TJLterm<T1,T2>::operator*( const TJLterm<T1,T2>& y )
 //      Implementation of Class TJLterm<T1,T2>
 
 template<typename T1, typename T2>
-TJLterm<T1,T2>::TJLterm<T1,T2>( const TJetEnvironment<T1,T2>* pje ) 
+TJLterm<T1,T2>::TJLterm<T1,T2>( TJetEnvironment<T1,T2>* pje ) 
 : _index( pje->_numVar ), _weight(0), _value(0.0)
 {
 }
@@ -1189,7 +1189,7 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const TJetEnvironment<T1,T2>* pje )
 template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l, 
                 const T1& x, 
-                const TJetEnvironment<T1,T2>* pje ) 
+                TJetEnvironment<T1,T2>* pje ) 
 : _index( l )
 {
  // I think that it is not necessary to use a try block
@@ -1203,7 +1203,7 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l,
    int n = l.Dim();
    if( n != pje->_numVar ) {
      throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, const TJetEnvironment<T1,T2>*",
+            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, TJetEnvironment<T1,T2>*",
             "Dimensions are wrong.") );
    }
   
@@ -1212,7 +1212,7 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l,
    for( i = 0; i < n; i++ ) {
      if( (l(i) < 0) ) {
        throw( GenericException( __FILE__, __LINE__, 
-              "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, const TJetEnvironment<T1,T2>*",
+              "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, TJetEnvironment<T1,T2>*",
               "Bad index in JLTerm.") );
      }
      dpt += l(i);
@@ -1220,7 +1220,7 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l,
   
    if( dpt > pje->_maxWeight ) {
      throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, const TJetEnvironment<T1,T2>*",
+            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, TJetEnvironment<T1,T2>*",
             "Attempt to load a JLTerm with too large a weight.") );
    }
    
@@ -1232,12 +1232,12 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l,
  else {
    if( l.Dim() != 1 ) {
      throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, const TJetEnvironment<T1,T2>*",
+            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, TJetEnvironment<T1,T2>*",
             "Inconsistency between l and pje") );
    }
    if( l(0) != 0 ) {
      throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, const TJetEnvironment<T1,T2>*",
+            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, TJetEnvironment<T1,T2>*",
             "Bad value of the index when pje = 0.") );
    }
    _index = l;

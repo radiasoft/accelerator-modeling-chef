@@ -110,7 +110,4 @@ struct TJetEnvironment
  static bool _skipEnvEqTest;
 };
 
-typedef TJetEnvironment<double,FNAL::Complex> Jet__environment;
-typedef TJetEnvironment<FNAL::Complex,double> JetC__environment;
-
 #endif // TJETENV_H

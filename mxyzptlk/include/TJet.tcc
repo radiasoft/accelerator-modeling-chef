@@ -37,6 +37,8 @@
 #include <iomanip>
 #include <fstream>
 
+class Vector;
+
 #include "GenericException.h"
 #include "TJet.h"
 #include "TJetVector.h"
@@ -477,7 +479,7 @@ Tcoord<T1,T2>::Tcoord( T1 x )
  
  if( !_workEnv ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "Tcoord<T1,T2>::coord( double ) ",
+          "Tcoord<T1,T2>::coord( T1 ) ",
           "Use TJet<T1,T2>::BeginEnvironment() to open an environment first." ) );
  }
 
@@ -1482,22 +1484,6 @@ TJet<T1,T2> TJet<T1,T2>::_truncMult( const TJet<T1,T2>& v, const int& wl ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<FNAL::Complex,double> operator/(const TJet<FNAL::Complex,double>& x, const double& y)
-{
-  return x/FNAL::Complex(y);
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-TJet<FNAL::Complex,double> operator/(const double& x, const TJet<FNAL::Complex,double>& y)
-{
-  return FNAL::Complex(x)/y;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 template<typename T1, typename T2>
 TJet<T1,T2> operator/( const TJet<T1,T2>& wArg, const TJet<T1,T2>& uArg ) 
 { 
@@ -1858,7 +1844,7 @@ TJet<T1,T2> log ( const TJet<T1,T2>& x )
  static TJet<T1,T2>             epsilon;
  static TJet<T1,T2>             u, w;
  static T1 std;
- static double           n;
+ static double n;
  static TJLterm<T1,T2>*         p;
  dlist_iterator  getNext( *(dlist*) x._jl );
  
@@ -2152,154 +2138,11 @@ TJet<T1,T2> tanh( const TJet<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<double,FNAL::Complex> fabs( const TJet<double,FNAL::Complex>& x )
-{
- static double u;
-
- if( x->_count == 0 ) {
-   throw( GenericException( __FILE__, __LINE__, 
-          "Jet fabs( const Jet& ) { ",
-          "Argument is zero." ) );
- }
- 
- if( (u = x.standardPart()) != 0.0 ) 
- {
-   if( u > 0.0 ) return x;
-   else          return -x;
- }
- else
- {
-   throw( GenericException( __FILE__, __LINE__, 
-          "Jet fabs( const Jet& ) ",
-          "Argument is nilpotent." ) );
- }
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-TJet<double,FNAL::Complex> erf( const TJet<double,FNAL::Complex>& z ) 
-{
-  TJetEnvironment<double,FNAL::Complex>* pje = z.Env();
-
-  TJet<double,FNAL::Complex> series    ( pje );
-  TJet<double,FNAL::Complex> oldseries ( pje );
-  TJet<double,FNAL::Complex> arg       ( pje );
-  TJet<double,FNAL::Complex> term      ( pje );
-
-  static double  den;
-  static double  fctr_x;
-  static int     counter;
-
-  series        = 1.0;
-  oldseries     = 0.0;
-  arg           = - z*z;
-  den           = 1.0;
-  term          = 1.0;
-  fctr_x        = 0.0;
-
-  counter = 0;
-  while( ( series != oldseries ) || counter++ < pje->_maxWeight ) {
-    oldseries = series;
-    den      += 2.0;
-    fctr_x   += 1.0;
-    term     *= arg/fctr_x;
-    series   += term/den;
-  }  
-
-  return (2.0/MATH_SQRTPI)*z*series;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-TJet<FNAL::Complex,double> erf( const TJet<FNAL::Complex,double>& z ) 
-{
-  TJetEnvironment<FNAL::Complex,double>* pje = z.Env();
-
-  if( ( fabs(imag(z.standardPart())) > 3.9 ) || 
-      ( fabs(real(z.standardPart())) > 3.0 ) ) {
-    TJet<FNAL::Complex,double> u( pje );
-    u = FNAL::Complex( 0., 1. )*z;
-    u = FNAL::Complex( 1., 0. ) - exp(u*u)*w(u);
-    return u;
-  }
-
-  TJet<FNAL::Complex,double>    series    ( pje );
-  TJet<FNAL::Complex,double>    oldseries ( pje );
-  TJet<FNAL::Complex,double>    arg       ( pje );
-  TJet<FNAL::Complex,double>    term      ( pje );
-  static double  den;
-  static double  fctr_x;
-  static int     counter;
-
-  series        = complex_1;
-  oldseries     = complex_0;  // ??? Why necessary?
-  // ??? REMOVE oldseries     = 0.0;
-  arg           = - z*z;
-  den           = 1.0;
-  term          = complex_1;
-  fctr_x        = 0.0;
-
-  counter = 0;
-  while( ( series != oldseries ) || counter++ < pje->_maxWeight ) {
-    oldseries = series;
-    den      += 2.0;
-    fctr_x   += 1.0;
-    term     *= arg/fctr_x;
-    series   += term/den;
-  }  
-
-  return FNAL::Complex(2.0/MATH_SQRTPI,0.0)*z*series;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 template<typename T1, typename T2>
 TJet<T1,T2> erfc( const TJet<T1,T2>& z ) 
 {
   static const T1 one = ((T1) 1.0);
   return ( one - erf( z ) );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-TJet<FNAL::Complex,double> w( const TJet<FNAL::Complex,double>& z ) 
-{
-  static const FNAL::Complex mi( 0., -1. );
-  static double x;
-  static double y;
-  TJet<FNAL::Complex,double>  answer( z.Env() );
-  
-  x = real( z.standardPart() );
-  y = imag( z.standardPart() );
-
-  if( ( x < 0.0 ) || ( y < 0.0  ) ) {
-    throw( GenericException( __FILE__, __LINE__, 
-           "TJet<FNAL::Complex,double> w( const TJet<FNAL::Complex,double>& ) ",
-           "Argument must have positive standard part." ) );
-  }
-
-  if( ( x > 6.0 ) || ( y > 6.0 ) ) 
-    answer = ( - mi * z * (
-                          ( 0.5124242  /( z*z - 0.2752551 )) + 
-                          ( 0.05176536 /( z*z - 2.724745  ))
-                          ) 
-             );
-
-  else if( ( x > 3.9 ) || ( y > 3.0 ) ) 
-    answer = ( - mi * z * (
-                          ( 0.4613135   /( z*z - 0.1901635 )) + 
-                          ( 0.09999216  /( z*z - 1.7844927 )) + 
-                          ( 0.002883894 /( z*z - 5.5253437 ))
-                          ) 
-             );
-
-  else answer = exp( -z*z )*( 1.0 - erf( mi*z ) );
-
-  return answer;
 }
 
 
@@ -2854,6 +2697,15 @@ TJet<T1,T2> TJet<T1,T2>::operator() ( const TJet<T1,T2>* y ) const
  delete [] u;
 
  return z;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T1, typename T2>
+T1 TJet<T1,T2>::operator() ( const Vector& x ) const 
+{
+ return _jl->operator()( x );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
