@@ -99,13 +99,16 @@ BarnacleData* BarnacleList::find( const char* ident, int n ) const {
  return 0;
 }
 
-Barnacle* BarnacleList::lift( const char* ident ) {
+Barnacle* BarnacleList::lift( const char* ident, int n ) {
  dlist_iterator getNext( theList );
+ int i = 1;
  Barnacle* p;
  while( 0 != (  p = (Barnacle*) getNext()  )) 
   if( strcmp( ident, p->id ) == 0 ) {
-   theList.remove( (ent) p );   // ??? This is REALLY stupid!
-   return p;
+   if( n == i++ ) {
+    theList.remove( (ent) p );   // ??? This is REALLY stupid!
+    return p;
+   }
   }
  return 0;
 }
