@@ -94,13 +94,13 @@ class Mapping : public JetVector
  public: 
 
   Mapping( const int&  /* dimension */   = Jet::lastEnv->SpaceDim,
-       const Jet*  /* components */  = 0, 
-             Jet__environment*       = Jet::lastEnv 
+           const Jet*  /* components */  = 0, 
+                 Jet__environment*       = Jet::lastEnv 
      );
   Mapping( const Mapping& );
   Mapping( const JetVector& );
   Mapping( char*, 
-       Jet__environment* = Jet::lastEnv );    // Produces the identity.
+           Jet__environment* = Jet::lastEnv );    // Produces the identity.
   ~Mapping();
 
   Mapping& operator=( const Mapping& );
