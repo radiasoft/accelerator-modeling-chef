@@ -16,6 +16,7 @@ gcc:
 	"C++ = g++" \
 	"CFLAGS =  " \
 	"C++FLAGS =  " \
+	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
 	"INCDIR = $(FNALROOT)/include" \
@@ -29,6 +30,7 @@ linux:
 	"C++ = g++" \
 	"CFLAGS =  " \
 	"C++FLAGS =  " \
+	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
 	"INCDIR = $(FNALROOT)/include -I/usr/include/g++-include" \
@@ -42,6 +44,7 @@ irix5:
 	"C++ = CC" \
 	"CFLAGS = " \
 	"C++FLAGS = " \
+	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
 	"TKINC = -I/usr/local/tk-tcl/include" \
@@ -55,6 +58,7 @@ irix5-gcc:
 	"C++ = g++" \
 	"CFLAGS = " \
 	"C++FLAGS = " \
+	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
 	"TKINC = -I/usr/local/tk-tcl/include" \
@@ -69,6 +73,7 @@ irix5-debug:
 	"C++ = g++" \
 	"CFLAGS = -g " \
 	"C++FLAGS = -g " \
+	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
 	"TKINC = -I/usr/local/tk-tcl/include" \
@@ -81,8 +86,9 @@ solaris:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = " \
-	"C++FLAGS = " \
-	"MAKELIB = ar ruv" \
+	"C++FLAGS = -ptr$(FNALROOT) -verbose=template" \
+	"INLINE_FLAG = +d " \
+	"MAKELIB = CC -xar -o" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
 	"SYBASEINC = -I/usr/local/ap/sybase/include" \
@@ -95,8 +101,9 @@ ultra:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = " \
-	"C++FLAGS = -DULTRA -ptr$(FNALROOT) -ptv" \
-	"MAKELIB = ar ruv" \
+	"C++FLAGS = -DULTRA -ptr$(FNALROOT) -verbose=template" \
+	"INLINE_FLAG = +d " \
+	"MAKELIB = CC -xar -o" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/ultra" \
 	"TKINC = -I/usr/local/TCL-TK/include" \
@@ -109,8 +116,9 @@ ultra-opt:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = -fast" \
-	"C++FLAGS = -DULTRA -fast -xchip=ultra -xarch=v8plus -ptr$(FNALROOT) -ptv" \
-	"MAKELIB = ar ruv" \
+	"C++FLAGS = -DULTRA -fast -xchip=ultra -xarch=v8plus -ptr$(FNALROOT) -verbose=template" \
+	"INLINE_FLAG = +d " \
+	"MAKELIB = CC -xar -o" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/ultra" \
 	"TKINC = -I/usr/local/TCL-TK/include" \
@@ -123,8 +131,9 @@ ultra-debug:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = -g " \
-	"C++FLAGS = -DULTRA -g -sb -ptr$(FNALROOT) -ptv" \
-	"MAKELIB = ar ruv" \
+	"C++FLAGS = -DULTRA -g -sb -ptr$(FNALROOT) -verbose=template" \
+	"INLINE_FLAG = +d " \
+	"MAKELIB = CC -xar -o" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/ultra" \
 	"TKINC = -I/usr/local/TCL-TK/include" \
@@ -137,8 +146,9 @@ ultra-devel:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = -g -DDEVEL" \
-	"C++FLAGS = -DULTRA -DDEVEL -g -sb " \
-	"MAKELIB = ar ruv" \
+	"C++FLAGS = -DULTRA -DDEVEL -g -sb -ptr$(FNALROOT) -verbose=template" \
+	"INLINE_FLAG = +d " \
+	"MAKELIB = CC -xar -o" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/ultra" \
 	"TKINC = -I/usr/local/TCL-TK/include" \
@@ -151,8 +161,9 @@ solaris-debug:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = -g " \
-	"C++FLAGS = -g -sb " \
-	"MAKELIB = ar ruv" \
+	"C++FLAGS = -g -sb -ptr$(FNALROOT) -verbose=template" \
+	"INLINE_FLAG = +d " \
+	"MAKELIB = CC -xar -o" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
 	"SYBASEINC = -I/usr/local/ap/sybase/include" \
@@ -165,8 +176,9 @@ solaris-devel:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = -g -DDEVEL " \
-	"C++FLAGS = -g -sb -DDEVEL " \
-	"MAKELIB = ar ruv" \
+	"C++FLAGS = -g -sb -DDEVEL -ptr$(FNALROOT) -verbose=template" \
+	"INLINE_FLAG = +d " \
+	"MAKELIB = CC -xar -o" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
 	"SYBASEINC = -I/usr/local/ap/sybase/include" \
@@ -180,6 +192,7 @@ solaris-gcc:
 	"C++ = g++ -pipe" \
 	"CFLAGS = " \
 	"C++FLAGS = " \
+	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"LIBDIR = $(FNALROOT)/lib/gcc" \
 	"INCDIR = $(FNALROOT)/include" \
@@ -194,6 +207,7 @@ solaris-gcc-debug:
 	"C++ = g++ -pipe" \
 	"CFLAGS = -g " \
 	"C++FLAGS = -g " \
+	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"LIBDIR = $(FNALROOT)/lib/gcc" \
 	"INCDIR = $(FNALROOT)/include" \
