@@ -270,7 +270,6 @@ istream& Slot::readFrom( istream& is )
 {
   // Read in my private attributes
 
-  cerr << "Slot::readFrom(): begin " << Name() << endl;
   // First, get the "in" frame"
   is >> in;
 
@@ -306,7 +305,6 @@ istream& Slot::readFrom( istream& is )
   is >> out;
   length = out.getOrigin() .Norm();
 
-  cerr << "Slot::readFrom(): end\n";
   return is;
 }
 
