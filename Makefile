@@ -143,15 +143,19 @@ TAR_FILES =	\
 	fnal/mi_8gev \
 	fnal/mr_8gev 
 
+# The tar command relies on the Solaris tar; -FF won't work with gnu tar.
+# The location of tar in irix seems to be /bin/tar.  Tar is probably not
+# available on PC's either, but one might want to use some zip derivative.
+
 tar:
 	cd .. ; \
-	tar -cvfFFX /tmp/$(NAME).tar fnal/tar-exclude $(TAR_FILES) ; \
+	/usr/sbin/tar -cvfFFX /tmp/$(NAME).tar fnal/tar-exclude $(TAR_FILES) ; \
 	gzip /tmp/$(NAME).tar ; \
 	mv /tmp/$(NAME).tar.gz fnal
 
 tar_everything:
 	cd .. ; \
-	tar -cvf $(NAME).tar $(TAR_FILES) fnal/mc ; \
+	/usr/sbin/tar -cvf $(NAME).tar $(TAR_FILES) fnal/mc ; \
 	gzip $(NAME).tar ; \
 	mv $(NAME).tar.gz fnal
 
