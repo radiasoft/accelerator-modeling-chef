@@ -7,7 +7,7 @@
 # CFLAGS      flags to C compiler (usually -O)
 # MAKELIB     the command and flags to make a library file (usually "ar ruv"
 #                   or a shell script for shared libs)
-# RANLIB      "ranlib" = use ranlib, "true" = don't use ranlib
+# RANLIB      "ranlib" = use ranlib, "echo" = don't use ranlib
 #
 
 gcc:
@@ -171,25 +171,3 @@ solaris-gcc-debug:
 	"TKINC = -I/usr/local/TCL-TK/include" \
 	"XINC = -I/usr/local/ap/X11R6/include" \
 	"RANLIB = echo"
-
-sunos4:
-	$(MAKE) targets \
-	"C   = acc" \
-	"C++ = CC" \
-	"CFLAGS = " \
-	"C++FLAGS = " \
-	"MAKELIB = ar ruv" \
-	"INCDIR = $(FNALROOT)/include" \
-	"LIBDIR = $(FNALROOT)/lib/sunos4" \
-	"RANLIB = ranlib"
-
-sunos4-debug:
-	$(MAKE) targets \
-	"C   = acc" \
-	"C++ = CC" \
-	"CFLAGS = -g -sb" \
-	"C++FLAGS = -g -sb" \
-	"MAKELIB = ar ruv" \
-	"RANLIB = ranlib" \
-	"INCDIR = $(FNALROOT)/include" \
-	"LIBDIR = $(FNALROOT)/lib/sunos4"
