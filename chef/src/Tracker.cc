@@ -10,7 +10,7 @@
 ******                                    
 ******  File:      Tracker.cc
 ******                                                                
-******  Copyright (c) 2004  Universities Research Association, Inc.   
+******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
 ******                                                                
 ******  Author:    Leo Michelotti                                     
@@ -56,7 +56,6 @@
 
 #include "PointEdit.h"
 #include "Tracker.h"
-#include "TrackerDefs.h"
 #include "TrbWidget.h"
 #include "beamline.h"
 #include "BeamlineContext.h"
@@ -206,10 +205,15 @@ void Orbit::Iterator::goBack( int n )
 // Implementation: class DrawSpace
 // -------------------------------
 
+const double DrawSpace::DEF_RANGE    = 0.002;
+const double DrawSpace::DEF_X_CENTER = 0.000;
+const double DrawSpace::DEF_Y_CENTER = 0.000;
+
+
 DrawSpace::DrawSpace( Tracker* p, QHBox* parent, const char* m )
 : QGLWidget(parent), _topTracker(p), _r(1.0), _g(1.0), _b(1.0),
-  _xLo( - TR_DEF_RANGE ), _xHi( TR_DEF_RANGE ), 
-  _yLo( - TR_DEF_RANGE ), _yHi( TR_DEF_RANGE ),
+  _xLo( - DEF_RANGE ), _xHi( DEF_RANGE ), 
+  _yLo( - DEF_RANGE ), _yHi( DEF_RANGE ),
   _pointSize(3),
   _zoomActive( false ), _isZooming( false ), _zoomed( false )
 {
@@ -286,6 +290,15 @@ void DrawSpace::setScaleTo( double x )
     _yLo = -u;
     _yHi =  u;
   }
+}
+
+
+void DrawSpace::setRange( double xl, double xh, double yl, double yh )
+{
+  _xLo = xl;
+  _xHi = xh;
+  _yLo = yl;
+  _yHi = yh;
 }
 
 
@@ -616,7 +629,81 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
 
   else { // Right button pressed
     if( !(_topTracker->isIterating()) ) {
-      if( (_myFunc == DrawSpace::drawH_ViewNorm) || 
+      if(_myFunc == DrawSpace::DrawSpace::drawPhiHPhiV) {
+        // These transformations should be done in
+        //   a separate routine!!
+
+  	double alphaH, betaH, alphaV, betaV;
+  	double u, v, amp;
+
+  	alphaH = ( _topTracker->_p_info->alpha ).hor;
+  	betaH  = ( _topTracker->_p_info->beta  ).hor;
+  	alphaV = ( _topTracker->_p_info->alpha ).ver;
+  	betaV  = ( _topTracker->_p_info->beta  ).ver;
+
+        slist orbits3D;
+        slist_iterator getNext( _topTracker->_orbits );
+        Vector z(3);
+        const Vector* vec = 0;
+        Orbit* orbitPtr = 0;
+        Orbit* newOrbitPtr = 0;
+
+        if((  0 == (orbitPtr = (Orbit*) getNext())   ))
+        { return; }
+
+        while((  0 != orbitPtr )) {
+	  Orbit::Iterator oit( orbitPtr );
+          vec = oit++;
+
+      	  // Horizontal
+      	  u = (*vec)(0);
+      	  v = alphaH*u + betaH*(*vec)(3);
+      	  z(0) = atan2(u,v);
+      	  if( z(0) > M_PI ) z(0) -= M_TWOPI;
+      	  // Vertical
+      	  u = (*vec)(1);
+      	  v = alphaV*u + betaV*(*vec)(4);
+      	  z(1) = atan2(u,v);
+      	  if( z(1) > M_PI ) z(1) -= M_TWOPI;
+          
+          z(2) = 1000.0*sqrt( u*u + v*v );  // ??? Temporary kludge ???
+  
+          newOrbitPtr = new Orbit( z );
+          newOrbitPtr->setColor( orbitPtr->Red(), 
+                                 orbitPtr->Green(), 
+                                 orbitPtr->Blue()   );
+
+          vec = oit++;
+          while( 0 != vec ) {
+      	    // Horizontal
+      	    u = (*vec)(0);
+      	    v = alphaH*u + betaH*(*vec)(3);
+      	    z(0) = atan2(u,v);
+      	    if( z(0) > M_PI ) z(0) -= M_TWOPI;
+      	    // Vertical
+      	    u = (*vec)(1);
+      	    v = alphaV*u + betaV*(*vec)(4);
+      	    z(1) = atan2(u,v);
+      	    if( z(1) > M_PI ) z(1) -= M_TWOPI;
+
+            z(2) = 1000.0*sqrt( u*u + v*v );  // ??? Temporary kludge ???
+  
+            newOrbitPtr->add( z );
+            vec = oit++;
+	  }
+
+          orbits3D.append( newOrbitPtr );
+          orbitPtr = (Orbit*) getNext();
+	}
+
+        TrbWidget* trbPtr = new TrbWidget( orbits3D );
+        // The TrbWidget constructor assumes ownership
+        //   of all Orbits in orbits3D. In the process
+        //   it empties the list.
+        trbPtr->show();
+      }
+
+      else if( (_myFunc == DrawSpace::drawH_ViewNorm) || 
           (_myFunc == DrawSpace::drawV_ViewNorm)    ) {
 
         // These transformations should be done in
@@ -773,15 +860,6 @@ void DrawSpace::setPointSize( int x )
 }
 
 
-void DrawSpace::setRange( double xl, double xh, double yl, double yh )
-{
-  _xLo = xl;
-  _xHi = xh;
-  _yLo = yl;
-  _yHi = yh;
-}
-
-
 bool DrawSpace::ViewIs( DrawFunc df ) 
 {
   return (df == _myFunc);
@@ -805,8 +883,8 @@ void DrawSpace::deactivateZoom()
 void DrawSpace::resetZoom()
 {
   this->deactivateZoom();
-  this->setScaleTo( TR_DEF_RANGE );
-  this->setCenterTo( TR_DEF_X_CENTER, TR_DEF_Y_CENTER );
+  this->setScaleTo( DEF_RANGE );
+  this->setCenterTo( DEF_X_CENTER, DEF_Y_CENTER );
   this->updateGL();
 }
 
@@ -1051,7 +1129,7 @@ void Tracker::_fileClose()
 
 void Tracker::_do_nothing()
 {
-  QMessageBox::information( this, "CHEF::Tracker",
+  QMessageBox::information( this, "Tracker",
                             "Sorry. This function is not implemented." );
 }
 
@@ -1109,8 +1187,10 @@ void Tracker::_view_rect()
      connect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
               this,          SLOT  (_cnvFromVViewRect(double,double)) );
 
-  _p_leftWindow  ->setRange( - TR_DEF_RANGE, TR_DEF_RANGE, - TR_DEF_RANGE, TR_DEF_RANGE );
-  _p_rightWindow ->setRange( - TR_DEF_RANGE, TR_DEF_RANGE, - TR_DEF_RANGE, TR_DEF_RANGE );
+  _p_leftWindow  ->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
+                             - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
+  _p_rightWindow ->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
+                             - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
 
   _p_leftWindow->updateGL();
   _p_rightWindow->updateGL();
@@ -1149,8 +1229,10 @@ void Tracker::_view_norm()
      connect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
               this,          SLOT  (_cnvFromVViewNorm(double,double)) );
 
-  _p_leftWindow  ->setRange( - TR_DEF_RANGE, TR_DEF_RANGE, - TR_DEF_RANGE, TR_DEF_RANGE );
-  _p_rightWindow ->setRange( - TR_DEF_RANGE, TR_DEF_RANGE, - TR_DEF_RANGE, TR_DEF_RANGE );
+  _p_leftWindow  ->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
+                             - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
+  _p_rightWindow ->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
+                             - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
 
   _p_leftWindow->updateGL();
   _p_rightWindow->updateGL();
