@@ -15,7 +15,7 @@ kick::kick() : bmlnElmnt() {
 	verticalKick = 0.0;
 }
 
-kick::kick( char* s ) : bmlnElmnt(s) {
+kick::kick( const char* s ) : bmlnElmnt(s) {
 }
 
 kick::kick(double hStrength, double vStrength ) : bmlnElmnt() {
@@ -23,10 +23,29 @@ kick::kick(double hStrength, double vStrength ) : bmlnElmnt() {
 	verticalKick = vStrength;
 }
 
-kick::kick(char* s, double hStrength, double vStrength) : bmlnElmnt(s) {
+kick::kick(const char* s, double hStrength, double vStrength) : bmlnElmnt(s) {
 	horizontalKick = hStrength;
 	verticalKick = vStrength;
 }
+
+
+// The following two constructors added 9/1/99.
+// (L.M.)
+kick::kick( double lng, double hStrength, double vStrength ) 
+: bmlnElmnt( "NONAME", lng, hStrength + vStrength, 0 ),  // strength is arbitrary
+  horizontalKick( hStrength ), 
+  verticalKick  ( vStrength )
+{
+}
+
+kick::kick( const char* s, double lng, double hStrength, double vStrength ) 
+: bmlnElmnt( s, lng, hStrength + vStrength, 0 ),  // strength is arbitrary
+  horizontalKick( hStrength ), 
+  verticalKick  ( vStrength )
+{
+}
+
+
 
 kick::kick(const kick& x) : bmlnElmnt( (bmlnElmnt&) x ) {
 	horizontalKick = x.horizontalKick;
