@@ -1,12 +1,9 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.0                    
+******  Version:   4.1
 ******                                    
 ******  File:      Matrix.cc
 ******                                                                
@@ -30,9 +27,13 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iostream>
 #include <iomanip>
+#include <MathConstants.h>
 
 
 #include "Matrix.h"
@@ -124,24 +125,6 @@ MatrixD::MatrixD(const char* flag, int dimension) : stacked(0) {
       ml->m[i-dimension/2][i] = 1;
       ml->m[i][i-dimension/2] = -1;
     }
-  } else if ( flag[0] == 'O' || flag[0] == 'o' ) {
-// ??? RAND      for (i = 0; i< dimension; i++) ml->m[i][i] = 1.0;
-// ??? RAND      for( turns = 0; turns < 5*dimension*dimension; turns++ ) {
-// ??? RAND        i = (int) ( drand48()*tmp_float );
-// ??? RAND        j = (int) ( drand48()*tmp_float );
-// ??? RAND        while( j == i ) j = (int) ( drand48()*tmp_float );
-// ??? RAND        if( i >= dimension || j >= dimension ) 
-// ??? RAND          error( "drand48 error: What happened here?", flag );
-// ??? RAND        theta = 6.28318*drand48();
-// ??? RAND        cs = cos( theta );
-// ??? RAND        sn = sin( theta );
-// ??? RAND        for( k = 0; k < dimension; k++ ) {
-// ??? RAND          a1 = ml->m[i][k];
-// ??? RAND          a2 = ml->m[j][k];
-// ??? RAND          ml->m[i][k] =   cs*a1 + sn*a2;
-// ??? RAND          ml->m[j][k] = - sn*a1 + cs*a2;
-// ??? RAND        }
-// ??? RAND      }
   } else
     error("Unknown flag: ",flag);
 }
@@ -1063,7 +1046,167 @@ void MatrixD::lu_back_subst(int* indx, MatrixD& b)  {
   }
 }
 
-// MatrixC
+
+// Implementation of class MatrixD::RandomOrthogonal
+
+MatrixD::RandomOrthogonal::RandomOrthogonal( int n )
+: _dim(n), _passes(1)
+{
+  int i, j;
+
+  _omitted = new bool*[ _dim ];
+  for( i = 0; i < _dim; i++ ) {
+    _omitted[i] = new bool[ _dim ];
+    for( j = 0; j < _dim; j++ ) { _omitted[i][j] = false; }
+    _omitted[i][i] = true;
+  }
+
+  _lowerTheta = new double*[ _dim ];
+  for( i = 0; i < _dim; i++ ) { 
+    _lowerTheta[i] = new double[ _dim ];
+    for( j = 0; j < _dim; j++ ) { _lowerTheta[i][j] = 0.0; }
+  }
+
+  _upperTheta = new double*[ _dim ];
+  for( i = 0; i < _dim; i++ ) { 
+    _upperTheta[i] = new double[ _dim ];
+    for( j = 0; j < _dim; j++ ) { _upperTheta[i][j] = M_TWOPI; }
+    _upperTheta[i][i] = 0.0;
+  }
+
+  _rangeTheta = new double*[ _dim ];
+  for( i = 0; i < _dim; i++ ) { 
+    _rangeTheta[i] = new double[ _dim ];
+    for( j = 0; j < _dim; j++ ) { _rangeTheta[i][j] = M_TWOPI; }
+    _rangeTheta[i][i] = 0.0;
+  }
+}
+
+
+MatrixD::RandomOrthogonal::~RandomOrthogonal()
+{
+  for( int i = 0; i < _dim; i++ ) {
+    delete [] _omitted[i];
+    delete [] _lowerTheta[i];
+    delete [] _upperTheta[i];
+    delete [] _rangeTheta[i];
+  }
+
+  delete [] _omitted;
+  delete [] _lowerTheta;
+  delete [] _upperTheta;
+  delete [] _rangeTheta;
+}
+
+
+void MatrixD::RandomOrthogonal::omitIndex( int i, int j )
+{
+  if( 0 <= i  &&  i < _dim  &&  0 <= j  &&  j < _dim ) { 
+    _omitted[i][j] = true;
+    _omitted[j][i] = true;
+  }
+}
+
+
+void MatrixD::RandomOrthogonal::omitIndex( int n )
+{
+  for( int i = 0; i < _dim; i++ ) { 
+    this->omitIndex( n, i ); 
+  }
+}
+
+
+void MatrixD::RandomOrthogonal::includeIndex( int i, int j )
+{
+  if( 0 <= i  &&  i < _dim  &&  0 <= j  &&  j < _dim ) { 
+    _omitted[i][j] = false;
+    _omitted[j][i] = false;
+  }
+}
+
+
+void MatrixD::RandomOrthogonal::includeIndex( int n )
+{
+  for( int i = 0; i < _dim; i++ ) { 
+    this->includeIndex( n, i ); 
+  }
+}
+
+
+void MatrixD::RandomOrthogonal::setNumberOfPasses( int n )
+{
+  if( 0 < n ) { _passes = n; }
+}
+
+
+void MatrixD::RandomOrthogonal::setRange( int i, int j, double lo, double hi )
+{
+  // Check and condition the arguments
+  if( i < 0  ||  _dim <= i  ||  
+      j < 0  ||  _dim <= j  ||  
+      hi <= lo ) 
+  { return; }
+
+  if( std::abs(lo) < 1.0e-12            ) { lo = 0.0;     }
+  if( std::abs(hi - M_TWOPI ) < 1.0e-12 ) { hi = M_TWOPI; }
+
+  while( lo < 0.0      ) { lo += M_TWOPI; }
+  while( lo > M_TWOPI  ) { lo -= M_TWOPI; }
+  while( hi < 0.0      ) { hi += M_TWOPI; }
+  while( hi > M_TWOPI  ) { hi -= M_TWOPI; }
+
+  // Set the range
+  _lowerTheta[i][j] = lo;
+  _lowerTheta[j][i] = lo;
+  _upperTheta[i][j] = hi;
+  _upperTheta[j][i] = hi;
+  _rangeTheta[i][j] = hi - lo;
+  _rangeTheta[j][i] = hi - lo;
+}
+
+
+void MatrixD::RandomOrthogonal::setRange( int n, double lo, double hi )
+{
+  for( int i = 0; i < _dim; i++ ) { 
+    this->setRange( n, i, lo, hi ); 
+  }
+}
+
+
+MatrixD MatrixD::RandomOrthogonal::build()
+{
+  // This was programmed very inefficiently
+  // but quickly. It will have to be redone
+  // if used many times in an application.
+
+  int i, j, p;
+  double theta, cs, sn, tmp;
+  MatrixD R( "I", _dim );
+  MatrixD U( "I", _dim );
+  MatrixD W( "I", _dim );
+
+  for( p = 0; p < _passes; p++ ) {
+    for( i = 0; i < _dim-1; i++ ) {
+      for( j = i+1; j < _dim; j++ ) {
+        if( !(_omitted[i][j]) ) {
+          theta = _lowerTheta[i][j] + drand48()*_rangeTheta[i][j];
+          cs = cos( theta );
+          sn = sin( theta );
+          W(i,i) =  cs;  W(i,j) = sn;
+          W(j,i) = -sn;  W(j,j) = cs;
+          R = R*W;
+          W = U;
+	}
+      }
+    }
+  }
+
+  return R;
+}
+
+
+
+// Implementation of class MatrixC
 
 
 MatrixC::MatrixC() : stacked(0) {
