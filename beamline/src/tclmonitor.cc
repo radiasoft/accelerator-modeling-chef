@@ -145,9 +145,9 @@ tclMonitor::tclMonitor(char* name, char* parent_wid, FILE* out_file)
   windowInitialized = 0;
 }
 
-tclMonitor::tclMonitor( const tclMonitor& x ) : monitor( (monitor&) x) {
+tclMonitor::tclMonitor( const tclMonitor& x ) 
+: monitor( (monitor&) x), origin(x.origin) {
   registerMode = x.registerMode;
-  origin = x.origin;
   windowInitialized = x.windowInitialized;
   axmin = x.axmin;
   axmax = x.axmax;
@@ -162,6 +162,12 @@ tclMonitor::tclMonitor( const tclMonitor& x ) : monitor( (monitor&) x) {
   cymin = x.cymin;
   cymax = x.cymax;
   size = x.size;
+  if(x.display != 0) {
+    display = new char[strlen(x.display)+1];
+  strcpy(display,x.display);
+  } else {
+    display = 0;
+  }
 }
 
 tclMonitor::~tclMonitor() {

@@ -205,18 +205,34 @@ rasterMonitor::rasterMonitor(char* name, char* parent_wid, FILE* out_file)
 }
 
 rasterMonitor::rasterMonitor( const rasterMonitor& x ) : 
-monitor( (monitor &) x) {
+monitor( (monitor &) x), origin(x.origin) {
   registerMode = x.registerMode;
-  origin = x.origin;
-  windowInitialized = x.windowInitialized;
+  windowInitialized = 0;  // Set it up to re-initialize it's own pipe.
+  numParticles      = 0;  // We've never seen particles before either.
+  if(x.registerParticle != 0) {
+    registerParticle  = x.registerParticle->Clone();
+  } else {
+    registerParticle = 0;
+  }
   int i;
   for(i=0; i< 4; i++) {
-    x_plot_limits[i] = x.x_plot_limits[i];
+    x_plot_limits[i]   = x.x_plot_limits[i];
+    y_plot_limits[i]   = x.y_plot_limits[i];
+    cdt_plot_limits[i] = x.cdt_plot_limits[i];
   }
+  for(i=0; i< 6; i++) sumState[i] = 0.0;
   size = x.size;
   normalizedFlag = x.normalizedFlag;
   if(x.plotFunc != 0) {
     plotFunc = new lattFunc(*x.plotFunc); 
+  } else {
+    plotFunc = 0;
+  }
+  if(x.display != 0) {
+    display = new char[strlen(x.display)+1];
+    strcpy(display,x.display);
+  } else {
+    display = 0;
   }
 }
 
