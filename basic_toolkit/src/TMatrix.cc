@@ -691,7 +691,7 @@ TMatrix<T> TMatrix<T>::_scale()
   TMatrix<T> scale_vector(cols());
 
   for (int row = 0; row < rows(); row++){
-    T maximum = 0.0;
+    double maximum = 0.0;
     for(int col = 0; col < cols(); col++) {
       temp = _ml->_m[row][col];
       if (std::abs(temp) > maximum)
@@ -704,7 +704,7 @@ TMatrix<T> TMatrix<T>::_scale()
                      , "Singular TMatrix<T> in _scale()" ) );
     }
     // save scaling
-    scale_vector._ml->_m[row][0] = 1.0/maximum;
+    scale_vector._ml->_m[row][0] = ((T)(1.0/maximum));
   }
   return scale_vector;
 }
