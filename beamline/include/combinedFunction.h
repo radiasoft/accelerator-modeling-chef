@@ -31,7 +31,6 @@ private:
   alignmentData Skew(WHICH_MULTIPOLE);
   char* Type() { return "combinedFunction"; }
   bmlnElmnt* Clone() { return new combinedFunction( *this ); }
-  void accept(BmlVisitor&);
 
 };
 
