@@ -141,7 +141,7 @@ void MLD::clear() {
   if((r == 0) && (c == 0)) return;
   for(int i = 0; i < r; i++)
     delete []m[i];
-  delete m;
+  delete [] m;
   r = 0;
   c = 0;
 }
@@ -312,7 +312,7 @@ void MLC::clear() {
   if((r == 0) && (c == 0)) return;
   for(int i = 0; i < r; i++)
     delete []m[i];
-  delete m;
+  delete [] m;
   r = 0;
   c = 0;
 }
@@ -468,7 +468,7 @@ void MLI::clear() {
   if((r == 0) && (c == 0)) return;
   for(int i = 0; i < r; i++)
     delete []m[i];
-  delete m;
+  delete [] m;
   r = 0;
   c = 0;
 }
