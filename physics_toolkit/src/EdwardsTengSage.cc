@@ -131,6 +131,11 @@ void EdwardsTengSage::_deleteCalcs()
 int EdwardsTengSage::eigenTuneCalc( const JetParticle& ptr_jp, 
                                     EdwardsTengSage::Tunes& answer )
 {
+  const int x  = Particle::_x();
+  const int y  = Particle::_y();
+  const int xp = Particle::_xp();
+  const int yp = Particle::_yp();
+
   MatrixD mtrx;
   mtrx = ptr_jp.State().Jacobian();
   MatrixC lambda;
@@ -150,8 +155,8 @@ int EdwardsTengSage::eigenTuneCalc( const JetParticle& ptr_jp,
     return 10;
   }
 
-  if( ( abs( lambda(0) - conj( lambda(3) ) ) > 1.0e-4 )  ||
-      ( abs( lambda(1) - conj( lambda(4) ) ) > 1.0e-4 )
+  if( ( std::abs( lambda(0) - conj( lambda(3) ) ) > 1.0e-4 )  ||
+      ( std::abs( lambda(1) - conj( lambda(4) ) ) > 1.0e-4 )
     ) {
     cerr << "\n*** ERROR ***                                      "
          << "\n*** ERROR *** EdwardsTengSage::TuneCalc()          "
@@ -164,11 +169,18 @@ int EdwardsTengSage::eigenTuneCalc( const JetParticle& ptr_jp,
     return 11;
   }
 
-  double t = atan2( imag( lambda(0) ), real( lambda(0) ) );
-  if( t < 0.0 ) { t += M_TWOPI; }
+  double cs = real( lambda(0) );
+  double sn = sqrt( 1.0 - cs*cs );
+  if( mtrx(x,xp) < 0.0 ) { sn = - sn; }
+  double t = atan2( sn, cs );
+  while( t < 0.0 ) { t += M_TWOPI; }
   answer.hor = ( t / M_TWOPI );
-  t = atan2( imag( lambda(1) ), real( lambda(1) ) );
-  if( t < 0.0 ) { t += M_TWOPI; }
+
+  cs = real( lambda(1) );
+  sn = sqrt( 1.0 - cs*cs );
+  if( mtrx(y,yp) < 0.0 ) { sn = - sn; }
+  t = atan2( sn, cs );
+  while( t < 0.0 ) { t += M_TWOPI; }
   answer.ver = ( t / M_TWOPI );
 
   return 0;
