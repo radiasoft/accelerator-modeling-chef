@@ -30,6 +30,7 @@
 *************************************************************************/
 
 
+#include "marker.h"
 #include "Slot.h"
 
 using namespace std;
@@ -39,11 +40,11 @@ using namespace std;
 // --------------------------------------------------
 
 Slot::Slot()
-: bmlnElmnt()
+  : bmlnElmnt()
 {
   p_bml   = 0;
   p_bml_e = 0;
-  align = new alignment;
+  align = new alignment;  // ??? why???
 }
 
 
@@ -75,6 +76,7 @@ Slot::Slot( const Frame& y )
   align   = 0;
 
   length = out.getOrigin() .Norm();
+  _ctRef = length;
 }
 
 
@@ -97,6 +99,7 @@ Slot::Slot( const char* nm, const Frame& y )
   align   = 0;
 
   length = out.getOrigin() .Norm();
+  _ctRef = length;
 }
 
 
@@ -335,6 +338,66 @@ short int Slot::checkFrame( const Frame& f ) const
 }
 
 
+double Slot::setReferenceTime( double x )
+{
+  double oldValue = _ctRef;
+  _ctRef = x;
+  if( fabs(_ctRef) < 1.0e-12 ) { _ctRef = 0.0; }
+  return oldValue;
+}
+
+
+double Slot::setReferenceTime( const Particle& prtn )
+{
+  // This probably should never be used.
+  // Code copied from Slot::localPropagate
+  // and edited slightly. The two functions
+  // must stay synchronized.
+
+  Particle* localParticle = prtn.Clone();
+
+  // This part correlates with bmlnElmnt.h
+  if( this->align != 0 ) {
+    this->enterLocalFrame( *localParticle );
+  }
+
+  // This assumes the in face corresponds to the
+  // in Frame. It is attached to the out face
+  // of the previous element.
+  Vector r(3);
+  r(0) = localParticle->get_x();
+  r(1) = localParticle->get_y();
+  // r(2) = 0.0, set in constructor
+
+  Vector beta ( localParticle->VectorBeta() );
+  Vector u_3  ( out.getAxis(2) );
+  Vector q    ( out.getOrigin() );
+
+  double betaParallel = beta * u_3;
+
+  if( betaParallel > 0.0 ) {
+    _ctRef = ( q - r )*u_3 / betaParallel;
+  }
+  else {
+    cerr << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** double Slot::setReferenceTime( const Particle& prtn )"
+            "\n*** WARNING *** Velocity is not forward.        "
+            "\n*** WARNING ***                                 ";
+    cerr << "\n*** WARNING *** " << this->Name();
+    cerr << "\n*** WARNING *** " << in;
+    cerr << "\n*** WARNING *** " << out;
+    cerr << "\n*** WARNING *** " << "VectorBeta(): " << localParticle->VectorBeta();
+    cerr << "\n*** WARNING *** " << "betaParallel: " << betaParallel;
+    cerr << endl;
+
+    _ctRef = 0.0;
+  }
+
+  delete localParticle;
+  return _ctRef;
+}
+
+
 // --------------------------------------------------
 // --- Istream and Ostream support ------------------
 // --------------------------------------------------
@@ -407,10 +470,54 @@ istream& Slot::readFrom( istream& is )
 }
 
 
-void Slot::Split( double, bmlnElmnt**, bmlnElmnt** )
+void Slot::Split( double pct, bmlnElmnt** a, bmlnElmnt** b )
 {
-  cerr << "*** ERROR *** Slot::Split is not implemented." << endl;
-  exit(1);
+  if( pct < 0.0 || 1.0 < pct ) {
+    cerr << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** void Slot::Split( double, bmlnElmnt**, bmlnElmnt** )"
+         << "\n*** WARNING *** Function called with first argument = " 
+         << pct <<             ", outside [0,1]."
+         << "\n*** WARNING *** Null pointers are being returned." 
+         << endl;
+    *a = 0;
+    *b = 0;
+    return;
+  }
+  if( pct == 0.0 ) {
+    *a = new marker( "Null Slot" );
+    *b = new Slot( *this );
+    return;
+  }
+  if( pct == 1.0 ) {
+    *a = new Slot( *this );
+    *b = new marker( "Null Slot" );
+    return;
+  }
+
+  Vector d( out.getOrigin() - in.getOrigin() );
+  Vector av( pct*d );
+  Vector bv( ( 1. - pct )*d );  
+  
+  Frame aOutFrame( in );
+  aOutFrame.setOrigin( in.getOrigin() + pct*d );
+  Frame bOutFrame( out.relativeTo( aOutFrame ) );
+
+  *a = new Slot( aOutFrame );
+  *b = new Slot( bOutFrame );
+
+  // Rename
+  char* newname;
+  newname = new char [ strlen(ident) + 6 ];
+
+  strcpy( newname, ident );
+  strcat( newname, "_CL_A" );
+  (*a)->Rename( newname );
+
+  strcpy( newname, ident );
+  strcat( newname, "_CL_B" );
+  (*b)->Rename( newname );
+
+  delete [] newname;
 }
 
 
@@ -618,6 +725,9 @@ void Slot::leaveLocalFrame( JetParticle& p ) const
 
 void Slot::localPropagate( Particle& p )
 {
+  // If this is modified, one should
+  // simultaneously modify Slot::setReferenceTime( const Particle& )
+
   if      ( 0 != p_bml_e ) p_bml_e ->propagate( p );
   else if ( 0 != p_bml   ) p_bml   ->propagate( p );
 
@@ -634,7 +744,7 @@ void Slot::localPropagate( Particle& p )
     Vector u_2  ( out.getAxis(1) );
     Vector u_3  ( out.getAxis(2) );
 
-    double tauZero = length / p.ReferenceBeta();
+    // REMOVE: double tauZero = length / p.ReferenceBeta();
     double tau;
     double betaParallel = beta * u_3;
 
@@ -659,7 +769,8 @@ void Slot::localPropagate( Particle& p )
 
     p.state[ p.xIndex()   ]  = r*u_1;
     p.state[ p.yIndex()   ]  = r*u_2;
-    p.state[ p.cdtIndex() ] += ( tau - tauZero );
+    // REMOVE: p.state[ p.cdtIndex() ] += ( tau - tauZero );
+    p.state[ p.cdtIndex() ] += ( tau - _ctRef );
 
     // Momentum transformation
     Vector momntm(3);
@@ -688,7 +799,7 @@ void Slot::localPropagate( JetParticle& p )
     Vector u_2  ( out.getAxis(1) );
     Vector u_3  ( out.getAxis(2) );
 
-    double tauZero = length / p.ReferenceBeta();
+    // REMOVE: double tauZero = length / p.ReferenceBeta();
     Jet    tau;
     Jet    betaParallel = beta * u_3;
 
@@ -713,7 +824,8 @@ void Slot::localPropagate( JetParticle& p )
 
     p.state( p.xIndex()   )  = r*u_1;
     p.state( p.yIndex()   )  = r*u_2;
-    p.state( p.cdtIndex() ) += ( tau - tauZero );
+    // REMOVE: p.state( p.cdtIndex() ) += ( tau - tauZero );
+    p.state( p.cdtIndex() ) += ( tau - _ctRef );
 
     // Momentum transformation
     JetVector mom( p.NormalizedVectorMomentum() );
@@ -782,7 +894,7 @@ double Slot::OrbitLength( const Particle& x )
 
   if     ( 0 != p_bml   ) return p_bml   ->OrbitLength( x );
   else if( 0 != p_bml_e ) return p_bml_e ->OrbitLength( x );
-  else                    {
+  else {
     if( firstTime ) {
       firstTime = false;
       cerr << "*** WARNING ***                                 \n"

@@ -192,6 +192,9 @@ bmlnElmnt::bmlnElmnt( const char* n, PropFunc* pf ) {
   ident = new char [8];
   strcpy( ident, "NONAME" );
  }
+
+ _ctRef = 0.0;
+
  length       = 0.0;
  strength     = 0.0;
  depth        = 0;
@@ -234,6 +237,8 @@ bmlnElmnt::bmlnElmnt( double l /* length */, PropFunc* pf ) {
 
  pAperture = 0;
  
+ _ctRef = 0.0;
+
  iToField     = 1.0;
  shuntCurrent = 0.0;
 
@@ -270,6 +275,8 @@ bmlnElmnt::bmlnElmnt( double l /* length */,
  length       = l;
  strength     = s;
  depth        = 0;
+
+ _ctRef = 0.0;
 
  pAperture    = 0;
  
@@ -315,6 +322,8 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  length       = l;
  strength     = 0.0;
  depth        = 0;
+
+ _ctRef = 0.0;
 
  pAperture = 0;
  
@@ -362,6 +371,8 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  strength     = s;
  depth        = 0;
 
+ _ctRef = 0.0;
+
  pAperture = 0;
  
  iToField     = 1.0;
@@ -398,6 +409,8 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
  length        = a.length;
  strength      = a.strength;
  depth         = a.depth;
+
+ _ctRef = a._ctRef;
 
  pAperture = 0;
  if(a.pAperture != 0) 
@@ -479,6 +492,8 @@ bmlnElmnt::bmlnElmnt( bmlnElmntData& x ) {
  length        = x.length;
  strength      = x.strength;
  depth         = x.depth;  // ??? This is meaningless.
+
+ _ctRef = 0.0;  // not kosher, but I should eliminate bmlnElmntData anyway.
 
  pAperture = 0;
  if(x.pAperture != 0) 
@@ -972,6 +987,31 @@ void bmlnElmnt::setAperture( Aperture* pAperture_in ) {
     //
   pAperture = pAperture_in;
 }
+
+
+double bmlnElmnt::setReferenceTime( const Particle& prtn )
+{
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** double bmlnElmnt::setReferenceTime( const Particle& )"
+            "\n*** WARNING *** Invoked on base class. Nothing will happen."
+            "\n*** WARNING *** This warning is issued only once."
+            "\n*** WARNING *** "
+         << endl;
+    firstTime = false;
+  }
+}
+
+
+double bmlnElmnt::setReferenceTime( double x )
+{
+  double oldValue = _ctRef;
+  _ctRef = x;
+  if( fabs(_ctRef) < 1.0e-12 ) { _ctRef = 0.0; }
+  return oldValue;
+}
+
 
 void bmlnElmnt::Rename( const char* n ) {
   delete [] ident;

@@ -5,7 +5,7 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
+******  Version:   2.2
 ******                                    
 ******  File:      rbend.h
 ******                                                                
@@ -42,6 +42,7 @@ private:
   // ??? REMOVE: static void J_Face    ( const bmlnElmnt*, JetParticle& );
   double poleFaceAngle;
   double tanPFAngle;
+  double _CT;   // Reference time of traversal, in meters.
 
   // bmlnElmnt::strength -> magnetic field [T]
   ostream& writeTo(ostream&);
@@ -130,11 +131,56 @@ public:
   };
   static OutEdge_Prop OutEdge;
 
+  class Real_Exact_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "rbend::Real_Exact_Prop"; }
+
+    Real_Exact_Prop();
+    ~Real_Exact_Prop();
+    void setPropagator( NoEdge_Prop* );
+  private:
+    NoEdge_Prop* _myPropagator;
+  };
+  static Real_Exact_Prop RealExact;
+
+  class Real_InEdge_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "rbend::Real_InEdge_Prop"; }
+
+    Real_InEdge_Prop();
+    ~Real_InEdge_Prop();
+    void setPropagator( NoEdge_Prop* );
+  private:
+    NoEdge_Prop* _myPropagator;
+  };
+  static Real_InEdge_Prop RealInEdge;
+
+  class Real_OutEdge_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "rbend::Real_OutEdge_Prop"; }
+
+    Real_OutEdge_Prop();
+    ~Real_OutEdge_Prop();
+    void setPropagator( NoEdge_Prop* );
+  private:
+    NoEdge_Prop* _myPropagator;
+  };
+  static Real_OutEdge_Prop RealOutEdge;
+
   // ------------------------------------------------------
 
   rbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
-         PropFunc*    = &rbend::Exact );
+         PropFunc*    = &rbend::RealExact );
 
   rbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
@@ -144,7 +190,7 @@ public:
   rbend( char*,      // name
          double,     // length  [ meters ]
          double,     // field   [ tesla ]
-         PropFunc*    = &rbend::Exact );
+         PropFunc*    = &rbend::RealExact );
 
   rbend( char*,      // name
          double,     // length  [ meters ]
@@ -171,11 +217,14 @@ public:
   void Split( double, bmlnElmnt**, bmlnElmnt** );
 
 
+  double getReferenceTime()    const {return _CT;}
   double PoleFaceAngle()       const {return poleFaceAngle;} 
   double getPoleFaceAngle()    const {return poleFaceAngle;} 
   double getTanPoleFaceAngle() const {return tanPFAngle;}    
   double getEntryAngle()       const {return poleFaceAngle;} 
 
+  double setReferenceTime( const Particle& );  // returns _CT
+  double setReferenceTime( double );           // returns previous _CT
   double setPoleFaceAngle( const Particle& );
   double setPoleFaceAngle( const JetParticle& );
   void   setEntryAngle( const Particle& x )
