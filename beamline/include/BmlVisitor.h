@@ -52,8 +52,6 @@ class thinLamb;
 class BmlVisitor
 {
 public:
-  // No such function as: virtual void visitBmlnElmnt( bmlnElmnt* ) {}
-
   virtual void visitBeamline( beamline* );
   virtual void visitBmlnElmnt( bmlnElmnt* ) {}
 
