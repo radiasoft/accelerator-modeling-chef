@@ -173,65 +173,6 @@ Jet bmlnElmnt::AsinFunctor::operator()( const Jet& x ) const
 
 
 // **************************************************
-//   struct BMLN_posInfo
-// **************************************************
-
-BMLN_posInfo::BMLN_posInfo() {
- inPoint.set   ( 0., 0., 0. );
- inAxes[0].set ( 1., 0., 0. );
- inAxes[1].set ( 0., 1., 0. );
- inAxes[2].set ( 0., 0., 1. );
-
- outPoint.set   ( 0., 0., 0. );
- outAxes[0].set ( 1., 0., 0. );
- outAxes[1].set ( 0., 1., 0. );
- outAxes[2].set ( 0., 0., 1. );
-}
-
-
-BMLN_posInfo::BMLN_posInfo( const BMLN_posInfo& x ) {
- inPoint  = x.inPoint;
- outPoint = x.outPoint;
- int j; // O.K.
- for( j = 0; j < 3; j++ ) inAxes[j]  = x.inAxes[j];
- for( j = 0; j < 3; j++ ) outAxes[j] = x.outAxes[j];
-}
-
-
-BMLN_posInfo& BMLN_posInfo::operator=( const BMLN_posInfo& x ) {
- inPoint  = x.inPoint;
- outPoint = x.outPoint;
- int j; // O.K.
- for( j = 0; j < 3; j++ ) inAxes[j]  = x.inAxes[j];
- for( j = 0; j < 3; j++ ) outAxes[j] = x.outAxes[j];
- return *this;
-}
-ostream& operator<<(ostream& os, BMLN_posInfo& x) {
-
-  os << "\n inPoint = " << x.inPoint(0) 
-                << ", " << x.inPoint(1) 
-                << ", " << x.inPoint(2) << endl;
-  int i;
-  for( i = 0; i < 3; i++ ) {
-    os << "\n inAxes["<< i <<"] = " 
-       << x.inAxes[i](0) << ", " 
-       << x.inAxes[i](1) << ", " 
-       << x.inAxes[i](2) << endl;
-  }
-  os << "\n outPoint = " 
-     << x.outPoint(0) << ", " 
-     << x.outPoint(1) << ", " 
-     << x.outPoint(2) << endl;
-  for( i = 0; i < 3; i++ ) {
-    os << "\n outAxes["<< i <<"] = " 
-       << x.outAxes[i](0) << ", " 
-       << x.outAxes[i](1) << ", " 
-       << x.outAxes[i](2) << endl;
-  }
- return os << "\n" << endl;
-}
-
-// **************************************************
 //   struct bmlnElmntData
 // **************************************************
 
@@ -247,17 +188,6 @@ bmlnElmntData::bmlnElmntData() {
  iToField = 1.0;                // 1 KA = 1 Tesla default
  shuntCurrent = 0.0;
 
- // ...... Initialize geometry .................................
- geometry.inPoint.set   ( 0., 0., 0. );
- geometry.inAxes[0].set ( 1., 0., 0. );
- geometry.inAxes[1].set ( 0., 1., 0. );
- geometry.inAxes[2].set ( 0., 0., 1. );
-
- geometry.outPoint.set   ( 0., 0., 0. );
- geometry.outAxes[0].set ( 1., 0., 0. );
- geometry.outAxes[1].set ( 0., 1., 0. );
- geometry.outAxes[2].set ( 0., 0., 1. );
-
  more     = 0;
 }
 
@@ -269,7 +199,6 @@ bmlnElmntData::bmlnElmntData( bmlnElmntData& x ) {
  depth     = x.depth;
  length    = x.length;
  strength  = x.strength;
- geometry  = x.geometry;   // ??? Memory leak!!!  Bit copy
  more      = x.more;
  pAperture = 0;
  if(x.pAperture != 0) 
@@ -328,16 +257,6 @@ bmlnElmnt::bmlnElmnt( const char* n, PropFunc* pf ) {
    _tag[i] = '\0';
  }
 
- // ...... Initialize geometry .................................
- geometry.inPoint.set   ( 0., 0., 0. );
- geometry.inAxes[0].set ( 1., 0., 0. );
- geometry.inAxes[1].set ( 0., 1., 0. );
- geometry.inAxes[2].set ( 0., 0., 1. );
-
- geometry.outPoint.set   ( 0., 0., 0. );
- geometry.outAxes[0].set ( 1., 0., 0. );
- geometry.outAxes[1].set ( 0., 1., 0. );
- geometry.outAxes[2].set ( 0., 0., 1. );
  #ifdef OBJECT_DEBUG
  objectCount++;
  #endif
@@ -367,16 +286,6 @@ bmlnElmnt::bmlnElmnt( double l /* length */, PropFunc* pf ) {
    _tag[i] = '\0';
  }
 
- // ...... Initialize geometry .................................
- geometry.inPoint.set   ( 0., 0., 0. );
- geometry.inAxes[0].set ( 1., 0., 0. );
- geometry.inAxes[1].set ( 0., 1., 0. );
- geometry.inAxes[2].set ( 0., 0., 1. );
-
- geometry.outPoint.set   ( 0., 0., 0. );
- geometry.outAxes[0].set ( 1., 0., 0. );
- geometry.outAxes[1].set ( 0., 1., 0. );
- geometry.outAxes[2].set ( 0., 0., 1. );
  #ifdef OBJECT_DEBUG
  objectCount++;
  #endif
@@ -408,16 +317,6 @@ bmlnElmnt::bmlnElmnt( double l /* length */,
    _tag[i] = '\0';
  }
 
- // ...... Initialize geometry .................................
- geometry.inPoint.set   ( 0., 0., 0. );
- geometry.inAxes[0].set ( 1., 0., 0. );
- geometry.inAxes[1].set ( 0., 1., 0. );
- geometry.inAxes[2].set ( 0., 0., 1. );
-
- geometry.outPoint.set   ( 0., 0., 0. );
- geometry.outAxes[0].set ( 1., 0., 0. );
- geometry.outAxes[1].set ( 0., 1., 0. );
- geometry.outAxes[2].set ( 0., 0., 1. );
  #ifdef OBJECT_DEBUG
  objectCount++;
  #endif
@@ -455,16 +354,6 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
    _tag[i] = '\0';
  }
 
- // ...... Initialize geometry .................................
- geometry.inPoint.set   ( 0., 0., 0. );
- geometry.inAxes[0].set ( 1., 0., 0. );
- geometry.inAxes[1].set ( 0., 1., 0. );
- geometry.inAxes[2].set ( 0., 0., 1. );
-
- geometry.outPoint.set   ( 0., 0., 0. );
- geometry.outAxes[0].set ( 1., 0., 0. );
- geometry.outAxes[1].set ( 0., 1., 0. );
- geometry.outAxes[2].set ( 0., 0., 1. );
  #ifdef OBJECT_DEBUG
  objectCount++;
  #endif
@@ -503,16 +392,6 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
    _tag[i] = '\0';
  }
 
- // ...... Initialize geometry .................................
- geometry.inPoint.set   ( 0., 0., 0. );
- geometry.inAxes[0].set ( 1., 0., 0. );
- geometry.inAxes[1].set ( 0., 1., 0. );
- geometry.inAxes[2].set ( 0., 0., 1. );
-
- geometry.outPoint.set   ( 0., 0., 0. );
- geometry.outAxes[0].set ( 1., 0., 0. );
- geometry.outAxes[1].set ( 0., 1., 0. );
- geometry.outAxes[2].set ( 0., 0., 1. );
  #ifdef OBJECT_DEBUG
  objectCount++;
  #endif
@@ -589,12 +468,6 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
  }
 
 
- geometry.inPoint  = a.geometry.inPoint;
- geometry.outPoint = a.geometry.outPoint;
- for( int i = 0; i < 3; i++ ) {
-    geometry.inAxes[i] = a.geometry.inAxes[i];
-   geometry.outAxes[i] = a.geometry.outAxes[i];
- }
  #ifdef OBJECT_DEBUG
  objectCount++;
  #endif
@@ -631,12 +504,6 @@ bmlnElmnt::bmlnElmnt( bmlnElmntData& x ) {
  p_bml = 0;
  p_bml_e = 0;
 
- geometry.inPoint  = x.geometry.inPoint;
- geometry.outPoint = x.geometry.outPoint;
- for( int i = 0; i < 3; i++ ) {
-    geometry.inAxes[i] = x.geometry.inAxes[i];
-   geometry.outAxes[i] = x.geometry.outAxes[i];
- }
  #ifdef OBJECT_DEBUG
  objectCount++;
  #endif
@@ -910,26 +777,6 @@ void bmlnElmnt::setCurrent( double I ) {
   setStrength((I-getShunt()) * IToField());
 }
 
-void bmlnElmnt::geomToEnd( BMLN_posInfo& g ) {
- // Default operation is to act like a drift.
- for( int i = 0; i < 3; i++ ) {
-   geometry .inAxes[i] = g.outAxes[i];
-   geometry.outAxes[i] = g.outAxes[i];
- }
- geometry.inPoint = g.outPoint;
- geometry.outPoint = geometry.inPoint + length*geometry.outAxes[2];
-}
-
-void bmlnElmnt::geomToStart( BMLN_posInfo& g ) {
- // Default operation is to act like a drift.
- for( int i = 0; i < 3; i++ ) {
-   geometry .inAxes[i] = g.inAxes[i];
-   geometry.outAxes[i] = g.inAxes[i];
- }
- geometry.outPoint = g.inPoint;
- geometry.inPoint = geometry.outPoint - length*geometry.outAxes[2];
-}
-
 void bmlnElmnt::eliminate() {
  delete this;
 }
@@ -959,12 +806,6 @@ bmlnElmnt& bmlnElmnt::operator=( const bmlnElmnt& a ) {
    alignmentData data = a.align->getAlignment();
    if((data.xOffset != 0.0) || (data.yOffset != 0.0) || (data.tilt != 0.0))
      align         =  new alignment(data);
- }
- geometry.inPoint  = a.geometry.inPoint;
- geometry.outPoint = a.geometry.outPoint;
- for( int i = 0; i < 3; i++ ) {
-    geometry.inAxes[i] = a.geometry.inAxes[i];
-   geometry.outAxes[i] = a.geometry.outAxes[i];
  }
  return *this;
 }

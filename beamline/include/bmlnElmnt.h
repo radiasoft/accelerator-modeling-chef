@@ -115,19 +115,6 @@ struct lattFunc : public BarnacleData {
 std::ostream& operator<<(std::ostream&, const lattFunc&);
 std::istream& operator>>(std::istream&, lattFunc&);
 
-struct BMLN_posInfo {
-    Vector inPoint;      // This struct defines the upstream and
-    Vector inAxes  [3];  // downstream faces of the magnets slot.
-    Vector outPoint;
-    Vector outAxes [3];
-    BMLN_posInfo( );
-    BMLN_posInfo( const BMLN_posInfo& );
-    BMLN_posInfo& operator=( const BMLN_posInfo& );   // ??? Does this struct
-                                                      // ??? need a destructor?
-    friend std::ostream& operator<<(std::ostream&, BMLN_posInfo&);
-
-} ;
-
 
 struct alignmentData {
   double       xOffset;
@@ -167,12 +154,12 @@ public:
                                 // BMLM_dynDim in length
                                 // I don\'t think that the Particle or
                                 // JetParticle should be modified directly
-  void align(const Particle&, BMLN_posInfo, double*);
-  void align(double*, BMLN_posInfo, double*);
-  void misalign(const Particle&, BMLN_posInfo, double*);
-  void align(JetParticle&, BMLN_posInfo, Jet*);
-  void align(Jet*, BMLN_posInfo, Jet*);
-  void misalign(JetParticle&, BMLN_posInfo, Jet*);
+  void align(const Particle&, double*);
+  void align(double*, double*);
+  void misalign(const Particle&, double*);
+  void align(JetParticle&, Jet*);
+  void align(Jet*, Jet*);
+  void misalign(JetParticle&, Jet*);
   void misalign( double* );
   void align( double* );
   void misalign( JetVector& );
@@ -207,7 +194,6 @@ struct bmlnElmntData {
   Aperture*       pAperture;
   
   alignmentData   align;
-  BMLN_posInfo    geometry;
   double          iToField;
   double	  shuntCurrent;
   char            more;
@@ -294,15 +280,12 @@ protected:
   double       iToField;   // Conversion factor for current through
                            // magnet in amperes to field or gradient etc.
   double       shuntCurrent; // Does this element have a shunt?
-  BMLN_posInfo geometry;
 
   beamline*    p_bml;      // The element may be composite.
   bmlnElmnt*   p_bml_e;    // with one active part.
 
   PropFunc*    Propagator;
 
-  virtual void geomToEnd   ( BMLN_posInfo& );
-  virtual void geomToStart ( BMLN_posInfo& );
   virtual void eliminate();
 
   friend class beamline;
@@ -695,11 +678,6 @@ public:
   char     remove( const bmlnElmnt& );
   char     remove( const bmlnElmnt* );
 
-  // GEOMETRY
-
-  void geomToEnd   ( BMLN_posInfo& );
-  void geomToStart ( BMLN_posInfo& );
-  void resetGeometry();
   void setAlignment ( const alignmentData& );
 
 

@@ -102,8 +102,6 @@ public:
   sector( const sector& );
   ~sector();
 
-  void geomToEnd   ( BMLN_posInfo& );
-  void geomToStart ( BMLN_posInfo& );
   void eliminate();
 
   Mapping getMap() const;
