@@ -52,6 +52,11 @@
 
 #define VAR_NAME_LENGTH 128
 
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
+
 typedef  struct {
     char        name_[VAR_NAME_LENGTH];
     GNode*      expr_;
@@ -66,6 +71,8 @@ typedef struct var_link_ {
     variable*         var_;
     struct var_link_* next_;
 } var_link;
+
+
 
 int          var_init( variable* ptr, const char* name, GNode* expr, int linenum, const char* filename, int local_linenum );
 variable*    var_alloc_init( const char* name, GNode* expr, int linenum, const char* filename, int local_linenum, fb_allocator* alloc );
@@ -83,5 +90,10 @@ int          var_table_to_array( variable*** var_arr, GHashTable* var_table );
 var_link*    var_table_check_circ( variable* var_arr[], int var_arr_size, int* var_idx, GHashTable* var_table, GHashTable* bel_table );
 int          var_compare( const void* ptr1, const void* ptr2 );
 void         var_remove_forward( variable*** var_arr, int size, GHashTable* var_table );
+
+#if defined (__cplusplus)
+}
+#endif
+
 
 #endif /* var_table_h */
