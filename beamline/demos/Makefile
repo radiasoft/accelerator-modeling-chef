@@ -31,7 +31,7 @@ C++FLAGS =
 	$(CC) $(CFLAGS) $(INCLUDE) -c $*.c
 
 
-ALL = FODO_E boosterv6 norm_A norm_B normalFormTest TuneAdjusterTest ChromaticityAdjusterTest
+ALL = FODO_E boosterv6 norm_A norm_B normalFormTest TuneAdjusterTest ChromaticityAdjusterTest MatrixCalcTest
 
 all: $(ALL)
 

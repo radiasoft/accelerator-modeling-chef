@@ -10,8 +10,12 @@ OBJS = ClosedOrbitSage.o \
        FindCovariance.o \
        JacobianVisitor.o \
        LattFuncSage.o \
+       MatrixCalcVisitor.o \
+       ParameterList.o \
        QBpropVisitor.o \
        Sage.o \
+       TuneAdjuster.o \
+       ChromaticityAdjuster.o \
        beamline_twiss.o \
        normalForm.o \
        particleVisitor.o
