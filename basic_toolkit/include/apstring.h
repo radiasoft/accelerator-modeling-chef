@@ -4,7 +4,8 @@
 #include <iostream.h>
 // uncomment line below if bool not built-in type
 // #include <bool.h>
-#include "MathConstants.h"
+
+// REMOVE: #include "MathConstants.h"
 
 // *******************************************************************
 //  APCS string class
