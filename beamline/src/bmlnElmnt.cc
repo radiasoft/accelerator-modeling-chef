@@ -1,4 +1,3 @@
-<<<<<<< bmlnElmnt.cc
 #ifdef __VISUAL_CPP__
 #include <iomanip>
 using std::setprecision;

@@ -1,4 +1,3 @@
-<<<<<<< rbend.cc
 #ifdef __VISUAL_CPP__
 #include <iomanip>
 #else
