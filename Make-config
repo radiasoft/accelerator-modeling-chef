@@ -222,3 +222,53 @@ egcs:
 	"TKINC = /usr/local/TCL-TK/include" \
 	"LIBDIR = $(FNALROOT)/lib/egcs"
 
+kai-debug:
+	$(MAKE) targets \
+	"C   = cc" \
+	"C++ = KCC" \
+	"CFLAGS = -g " \
+	"C++FLAGS =  +K0 -D__VISUAL_CPP__ -D__KAI__" \
+	"INLINE_FLAG = " \
+	"MAKELIB = ar -ruv" \
+	"LIBDIR = $(FNALROOT)/lib/kai" \
+	"SYBASEINC = /usr/local/ap/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/local/ap/X11R6/include" \
+	"RANLIB = echo"
+
+kai-depend:
+	$(MAKE) depend \
+	"C++ = KCC" \
+	"DEPEND_FLAG = -M" \
+	"SYBASEINC = /usr/local/ap/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/local/ap/X11R6/include"
+
+kai-opt:
+	$(MAKE) targets \
+	"C   = cc" \
+	"C++ = KCC" \
+	"CFLAGS =  " \
+	"C++FLAGS =  +K3 -D__VISUAL_CPP__ -D__KAI__" \
+	"INLINE_FLAG = " \
+	"MAKELIB = ar -ruv" \
+	"LIBDIR = $(FNALROOT)/lib/kai" \
+	"SYBASEINC = /usr/local/ap/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/local/ap/X11R6/include" \
+	"RANLIB = echo"
+
+kai:
+	$(MAKE) targets \
+	"C   = cc" \
+	"C++ = KCC" \
+	"CFLAGS =  " \
+	"C++FLAGS = -D__VISUAL_CPP__ -D__KAI__" \
+	"INLINE_FLAG = " \
+	"MAKELIB = ar -ruv" \
+	"LIBDIR = $(FNALROOT)/lib/kai" \
+	"SYBASEINC = /usr/local/ap/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/local/ap/X11R6/include" \
+	"RANLIB = echo"
+
