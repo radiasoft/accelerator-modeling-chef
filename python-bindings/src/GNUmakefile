@@ -1,59 +1,85 @@
 .SUFFIXES:
 .SUFFIXES: .cpp .o .so .h
 
-CXXFLAGS   = -g -fPIC -DPIC -D_REENTRANT -mthreads
+#CXXFLAGS   = -g -fPIC -DPIC -D_REENTRANT -mthreads
+CXXFLAGS   = -g -fPIC -DPIC -D_REENTRANT 
 LDFLAGS    = -Wl,--export-dynamic -mthreads -shared
+
+# setup for wally.fnal.gov
+
+#FNALROOT     =  /home/ostiguy/FNALTEST
+#BOOST_INC    =  /usr/local/ap/include/boost-1_32
+#BOOST_LIB    =  /usr/local/ap/lib
+#BOOST_VER    =  1_32
+#QTDIR        =  /usr/local/ap/qt3
+#QT_INC       =  /usr/local/ap/qt3/include
+#PYTHON_DIR   =  /usr/local/ap
+#PYTHON_VER   =  2.4
+#INSTALL_DIR  = /home/ostiguy/FNALTEST
+#GLIB_DIR     = /usr/local/ap
+#GLIB_INC_DIR           =  $(GLIB_DIR)/include/glib-2.0
+#GLIBCONFIG_INC_DIR     =  $(GLIB_DIR)/lib/glib-2.0/include
 
 # setup for ironchef.fnal.gov
 
-FNALROOT   =  /home/ostiguy/chef-win32
-BOOST_INC  =  /boost/include/boost-1_32
-BOOST_LIB  =  /boost/lib
-BOOST_VER  =  1_32
-QTDIR      =  /qt/3.3.3new
-QT_INC     =  /qt/3.3.3new/include
-PYTHON_DIR =  /python23
-PYTHON_VER =  2.3
-INSTALL_DIR = /home/ostiguy/chef-win32/lib 
+#CHEF_INSTALL_TOP_DIR   =  /home/ostiguy/chef-tmp-2
+#FNALROOT               =  /home/ostiguy/chef-tmp-2
+#BOOST_INC              =  /usr/local/include/boost-1_32
+#BOOST_LIB              =  /usr/local/lib
+#BOOST_VER              =  1_32
+#QTDIR                  =  /usr/local/qt
+#QT_INC                 =  /usr/local/qt/include
+#PYTHON_DIR             =  /usr/local
+#PYTHON_VER             =  2.3
+#INSTALL_DIR            = /home/ostiguy/chef-tmp-2
+#GLIB_DIR               = /usr
+#GLIB_INC_DIR           =  $(GLIB_DIR)/include/glib-2.0
+#GLIBCONFIG_INC_DIR     =  $(GLIB_DIR)/lib/glib-2.0/include
 
 
-# private setup (heaviside)
+# private setup (heaviside linux)
+CHEF_INSTALL_TOP_DIR   =  /home/ostiguy/CHEF/chef-tmp
+FNALROOT               =  /home/ostiguy/CHEF/chef-tmp
+BOOST_INC              =  /usr/include
+BOOST_LIB              =  /usr/lib
+BOOST_VER              =  1_32
+QTDIR                  =  /usr/qt/3
+QT_INC                 =  /usr/qt/3/include
+PYTHON_DIR             =  /usr
+PYTHON_VER             =  2.3
+INSTALL_DIR            = /home/ostiguy/CHEF/chef-tmp
+GLIB_DIR               = /usr
+GLIB_INC_DIR           =  $(GLIB_DIR)/include/glib-2.0
+GLIBCONFIG_INC_DIR     =  $(GLIB_DIR)/lib/glib-2.0/include
 
-#BOOST_INC = /usr/local/include/boost-1_32
-#BOOST_LIB = /usr/local/lib
-#BOOST_VER = 1_32
-#QT_INC    = /usr/qt/3/include
-#PYTHON_DIR = /usr
-#PYTHON_VER = 2.3
-#INSTALL_DIR = /usr/local/fnal-1st-order-proto-4/lib 
-#FNALROOT   = /usr/local/fnal-1st-order-proto-4
 
-#LIBS = -lbmlfactory -lbeamline -lphysics_toolkit -lmxyzptlk -lbasic_toolkit -lglib
 LIBS = -lbmlfactory -lbeamline -lphysics_toolkit -lmxyzptlk -lbasic_toolkit -lglib-2.0
 
+# WIN32 (msys)
+
 INCS_LOCAL  =  -I. -I../include \
-               -I../../chef/src \
-               -I../../chef/include \
-               -I../../chef/src/ui \
-               -I../../chef/src/moc \
+               -I../../chef-mdi/src \
+               -I../../chef-mdi/include \
+               -I../../chef-mdi/src/ui \
+               -I../../chef-mdi/src/moc \
                -I$(QT_INC) \
-               -I../../widget_toolkit/src/ui \
-               -I../../widget_toolkit/include
+               -I../../widget_toolkit/chefplot/src/ui \
+               -I../../widget_toolkit/chefplot/include
 
 #INCS_PYTHON =  -I$(PYTHON_DIR)/include/python$(PYTHON_VER)
-INCS_PYTHON  =  -I$(PYTHON_DIR)/include
+#INCS_PYTHON  =  -I$(PYTHON_DIR)/include
 
-INCS_FNAL      = -I$(FNALROOT)/include/bmlfactory \
-               -I$(FNALROOT)/include/beamline \
-               -I$(FNALROOT)/include/physics_toolkit \
-               -I$(FNALROOT)/include/mxyzptlk \
-               -I$(FNALROOT)/include/basic_toolkit \
-               -I/local/include/glib-2.0 \
-               -I/local/lib/glib-2.0/include 
+
+INCS_FNAL      = -I$(FNALROOT)/include/gms \
+                 -I$(FNALROOT)/include/bmlfactory \
+                 -I$(FNALROOT)/include/beamline \
+                 -I$(FNALROOT)/include/physics_toolkit \
+                 -I$(FNALROOT)/include/mxyzptlk \
+                 -I$(FNALROOT)/include/basic_toolkit 
 
 INCS_BOOST   =  -I$(BOOST_INC) 
 
-INCS = $(INCS_LOCAL) $(INCS_PYTHON) $(INCS_BOOST) $(INCS_FNAL) -I/local/include -I/local/include/glib-2.0 -I/local/lib/glib-2.0/include
+INCS = $(INCS_LOCAL) $(INCS_PYTHON) $(INCS_BOOST) $(INCS_FNAL) -I/local/include -I$(GLIB_INC_DIR) -I$(GLIBCONFIG_INC_DIR)
 
 OBJS_BEAMLINE = \
        py-beamline-module.o \
@@ -182,7 +208,7 @@ structest.so: structest.cc
 clean:			
 	\rm ../lib/*.so ../lib/*.a *.o
 install: ../lib/libpybasic_toolkit.a ../lib/libpybeamline.a ../lib/libpybmlfactory.a ../lib/libpymxyzptlk.a ../lib/libpyphysics_toolkit.a  ../lib/libpychef.a
-	install -v ../lib/libpybasic_toolkit.a ../lib/libpybeamline.a ../lib/libpybmlfactory.a ../lib/libpymxyzptlk.a ../lib/libpyphysics_toolkit.a ../lib/libpychef.a ../lib/libpychefplot.a $(INSTALL_DIR)
+	install  ../lib/libpybasic_toolkit.a ../lib/libpybeamline.a ../lib/libpybmlfactory.a ../lib/libpymxyzptlk.a ../lib/libpyphysics_toolkit.a ../lib/libpychef.a ../lib/libpychefplot.a $(INSTALL_DIR)/lib
 
 
 tevtest-dynamic: tevtest.o
