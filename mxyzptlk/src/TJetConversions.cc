@@ -600,8 +600,16 @@ TJetVector<Complex,double>& TJetVector<Complex,double>::operator=( const TJetVec
 
   _myEnv = TJet<Complex,double>::CreateEnvFrom( (TJetEnvironment<double,Complex>*) (x.Env()) );
   Reconstruct( x.Dim(), _myEnv );
-  for ( int i = 0; i < _dim; i++ ) _comp[i] = x(i);
+  for ( int i = 0; i < _dim; i++ ) { _comp[i] = x(i); }
   return *this;
+}
+
+
+// ----------------------------------------------------------
+
+TMapping<Complex,double>& TMapping<Complex,double>::operator= ( const TMapping<double,Complex>& x )
+{
+  return (TMapping<Complex,double>&) ( ( (TJetVector<Complex,double>*) this )->operator=( (TJetVector<double,Complex>&) x ) ); 
 }
 
 

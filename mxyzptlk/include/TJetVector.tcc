@@ -455,10 +455,10 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator^ ( const Vector& x ) const
 }
 
 template<typename T1, typename T2>
-TJetVector<T1,T2> operator^ ( Vector y, const TJetVector<T1,T2>& x )
+TJetVector<T1,T2> operator^ ( const Vector& y, const TJetVector<T1,T2>& x )
 {
 #ifndef NOCHECKS
-  CHECKOUT(( y._Dim() != 3 ) || ( x._dim != 3 ),
+  CHECKOUT(( y.Dim() != 3 ) || ( x._dim != 3 ),
            "TJetVector<T1,T2>::operator^",
            "Dimension must be 3." )
 #endif

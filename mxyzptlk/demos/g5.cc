@@ -8,9 +8,13 @@
 ** --- Leo Michelotti
 ** --- August 19, 1993
 **
+** 
+** Templated version.
+** --- March 18, 2004
+**
 */
 
-#include "mxyzptlk.h"
+#include "Jet"
 
 Jet g( const Jet& x, int n ) {
   Jet z = 0.0;
