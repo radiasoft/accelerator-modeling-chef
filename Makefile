@@ -36,9 +36,9 @@ default:
 
 LINKDIRS  = bml mxb mi Machine tev tcl socket server sybase filter swyd recycler mi_8gev mr_8gev 
 
-SUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app swyd/src swyd/app recycler/app recycler/src mi_8gev/src mi_8gev/app 
+SUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app swyd/src swyd/app recycler/app recycler/src mi_8gev/src mi_8gev/app mi/src mi/app
 
-SUNSUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src recycler/src mi_8gev/src
+SUNSUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src recycler/src mi_8gev/src mi/src mi/app
 
 SGISUBDIRS  = $(SUNSUBDIRS)
 
