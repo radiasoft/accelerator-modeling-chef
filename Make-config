@@ -216,6 +216,7 @@ egcs:
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
 	"XINC = /usr/local/ap/X11R6/include" \
+	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"TKINC = /usr/include/tcl" \
 	"LIBDIR = $(FNALROOT)/lib/egcs"
 
