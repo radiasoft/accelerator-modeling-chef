@@ -856,7 +856,6 @@ char operator!=( const Complex& x, const JLC& y ) {
 
 JLC& JLC::operator=( const Complex& x ) {
  static int* ndx;
- static int  i;
  
  clear();
  weight = 0;   // rc is purposely left untouched!!

@@ -1645,7 +1645,6 @@ Jet epsPow( const Jet& epsilon, const double s ) {
  static Jet z;
  static Jet term;
  static double f, n;
- static int i;
 
  z->myEnv = epsilon->myEnv;
  z = 1.0;

@@ -920,7 +920,6 @@ char operator!=( const double& x, const JL& y ) {
 
 JL& JL::operator=( const double& x ) {
  static int* ndx;
- static int  i;
  
  clear();
  weight = 0;   // rc is purposely left untouched!!
