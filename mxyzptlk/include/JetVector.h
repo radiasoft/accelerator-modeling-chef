@@ -58,10 +58,20 @@ public:
   JetVector&       operator=      ( const JetCVector&  );
 
   JetVector        operator+      ( const JetVector& ) const;
+  friend JetVector operator+      ( const JetVector&, 
+                                    const    Vector& );
+  friend JetVector operator+      ( const    Vector&, 
+                                    const JetVector& );
   JetVector        operator+=     ( const JetVector& );
+  JetVector        operator+=     ( const    Vector& );
   friend JetVector operator-      ( const JetVector& );
   JetVector        operator-      ( const JetVector& ) const;
+  friend JetVector operator-      ( const JetVector&, 
+                                    const    Vector& );
+  friend JetVector operator-      ( const    Vector&, 
+                                    const JetVector& );
   JetVector        operator-=     ( const JetVector& );
+  JetVector        operator-=     ( const    Vector& );
   JetVector        operator*      ( const Jet&    ) const;
   JetVector        operator*      (     double    ) const;
   friend JetVector operator*      ( const Jet&, const JetVector& );
@@ -75,6 +85,10 @@ public:
 
 
   Jet              operator*      ( const JetVector& ) const; // dot product
+  friend Jet       operator*      ( const JetVector&, 
+                                    const Vector& );
+  friend Jet       operator*      ( const Vector&, 
+                                    const JetVector& );
   JetVector        operator^      ( const JetVector& ) const; // cross product:
                                                         // only works if
                                                         // the vector is
