@@ -19,17 +19,17 @@
 main( int, char** ) {
  
  JetC::BeginEnvironment( 4 );
- coordC x( complex( -1.2,  0.9 ) ), 
-        y( complex(  3.5,  1.7 ) ), 
-        z( complex(  2.1, -0.3 ) );
+ coordC x( Complex( -1.2,  0.9 ) ), 
+        y( Complex(  3.5,  1.7 ) ), 
+        z( Complex(  2.1, -0.3 ) );
  JetC::EndEnvironment();
 
  MappingC  w;
  MappingC  u;
 
- w.SetComponent( 0, complex(  3.0,  1.0 ) + x + 3.0*y + x*y - y*z   );
- w.SetComponent( 1, complex( -1.0,  0.2 ) + y - x + z + x*z + y*y   );
- w.SetComponent( 2, complex(  2.0, -0.9 ) + z + 2.0*x + y*z - x*y*z );
+ w.SetComponent( 0, Complex(  3.0,  1.0 ) + x + 3.0*y + x*y - y*z   );
+ w.SetComponent( 1, Complex( -1.0,  0.2 ) + y - x + z + x*z + y*y   );
+ w.SetComponent( 2, Complex(  2.0, -0.9 ) + z + 2.0*x + y*z - x*y*z );
 
  u = w.Inverse();
 
