@@ -333,7 +333,7 @@ char Vector::IsUnit() const
 {
   double x = 0.0;
   for( int i = 0; i < dim; i++ ) x += comp[i]*comp[i];
-  return x == 1.0;
+  return ( fabs(x - 1.0) < 1.0e-10 );
 }
 
 
@@ -407,15 +407,15 @@ ostream& operator<<( ostream& os, const Vector& v )
     for( int i = 0; i < v.dim - 1; i++ ) {
       os << setw(q->width) 
          << setprecision(q->precision) 
-         << resetiosflags(014002 | 04) 
-         << setiosflags(q->flags) 
+         << resetiosflags((std::_Ios_Fmtflags) (014002 | 04)) 
+         << setiosflags((std::_Ios_Fmtflags) (q->flags)) 
          << v.comp[i] << ", "
          << q->getPadding();
     }
     os << setw(q->width) 
        << setprecision(q->precision) 
-       << resetiosflags(014002 | 04) 
-       << setiosflags(q->flags) 
+       << resetiosflags((std::_Ios_Fmtflags) (014002 | 04)) 
+       << setiosflags((std::_Ios_Fmtflags) (q->flags)) 
        << v.comp[ v.dim - 1 ] << " )";
 
     return os;
