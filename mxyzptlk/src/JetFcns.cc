@@ -7,6 +7,7 @@
 #include "MathConstants.h"
 #include "JetVector.h"
 
+#define PREPFORCHANGE(jl)  if(((jl)->rc)>1){--((jl)->rc);(jl) = new JL(jl);}
 
 // ================================================================
 //      External routines
@@ -43,8 +44,12 @@ void Jet::operator+=( const Jet& y ) {
                      // ??? Come up with a more efficient implementation SOON.
                                        // ??? This should be modified so that
                                        // terms beyond the accurate weight of
- JLterm* p;                            // x or y are not computed and carried
- JLterm* q;                            // into the answer.
+                                       // x or y are not computed and carried
+                                       // into the answer.
+ PREPFORCHANGE(jl)
+                    
+ JLterm* p;
+ JLterm* q;
  JL* xPtr =   jl;
  JL* yPtr = y.jl;
 
@@ -94,6 +99,7 @@ void operator/=( Jet& x, const double& y ) {
 //     Member functions(public)  |||||||||||||||||||||||||||||||
 
 void Jet::addTerm( JLterm* a) {
+ PREPFORCHANGE(jl)
  jl->addTerm( a );
 }
 
@@ -154,8 +160,12 @@ char operator!=( const double& x, const Jet& y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Jet::operator+=( const double& x ) {   // ??? Untested!!
- if( jl == NULL ) jl = new JL;              // ??? DANGER: what is the 
-                                            // ??? reference point?
+ if( jl == NULL ) {                         // ??? DANGER: what is the 
+   jl = new JL;                             // ??? reference point?
+ }
+ else {
+   PREPFORCHANGE(jl)
+ }
  jl->operator+=( x );
 }
 
@@ -170,7 +180,7 @@ void Jet::operator-=( const double& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Jet operator+( const Jet& x, const Jet& y ) { 
-                                       // ??? This should be modified so that
+
  // Possibility: constant Jet argument
  if( !(x->myEnv) ) {
    if( x->count == 1 ) {
@@ -205,9 +215,9 @@ Jet operator+( const Jet& x, const Jet& y ) {
  }
 
 
- static Jet z;                         // terms beyond the accurate weight of
- static JLterm* p;                     // x or y are not computed and carried
- static JLterm* q;                     // into the answer.
+ static Jet z;
+ static JLterm* p;
+ static JLterm* q;
 
  p    = 0;
  q    = 0;
@@ -222,13 +232,11 @@ Jet operator+( const Jet& x, const Jet& y ) {
  // If one of the arguments is void, then return the other ..
  if( x->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( y );      // what is returned does not own
-   z.stacked = 1;        // the same data as x or y.
-   return z;
+   return z;             // the same data as x or y.
  }
 
  if( y->count < 1 ) {
    z.DeepCopy( x );
-   z.stacked = 1;
    return z;
  }
                                 
@@ -251,7 +259,6 @@ Jet operator+( const Jet& x, const Jet& y ) {
  if( x->accuWgt < y->accuWgt ) z->accuWgt = x->accuWgt;
  else                          z->accuWgt = y->accuWgt;
  
- z.stacked = 1;
  return z;
 }
 
@@ -262,7 +269,6 @@ Jet operator+( const Jet& x, const double& y ) {
  static Jet z;     // !!! "Jet z = x;" does not work.  The copy constructor
  z.DeepCopy( x );  // ??? is called, which makes x and z own the same data!!
  z += y;
- z.stacked = 1;
  return z;
 }
 
@@ -273,7 +279,6 @@ Jet operator+( const double& y, const Jet& x ) {
  Jet z;
  z.DeepCopy( x );
  z += y;
- z.stacked = 1;
  return z;
 }
 
@@ -302,7 +307,6 @@ Jet operator-( const Jet& y ) {
 
  // If the argument is void, then return it ..
  if( y->count < 1 ) { 
-   z.stacked = 1;
    return z;
  }
 
@@ -313,7 +317,6 @@ Jet operator-( const Jet& y ) {
    p->value = - p->value;
  }
 
- z.stacked = 1;
  return z;
 }
 
@@ -328,8 +331,8 @@ void Jet::Negate()
  if( jl->count < 1 ) return;
 
  // .. otherwise continue normal operations.
+ PREPFORCHANGE(jl)
  dlist_iterator getNext( *(dlist*) jl );
-
  while((  p = (JLterm*) getNext()  )) p->value = - p->value;
 
  return;
@@ -347,8 +350,8 @@ void Jet::Mult( const double& x )
  if( jl->count < 1 ) return;
 
  // .. otherwise continue normal operations.
+ PREPFORCHANGE(jl)
  dlist_iterator getNext( *(dlist*) jl );
-
  while((  p = (JLterm*) getNext()  )) p->value *= x;
 
  return;
@@ -377,13 +380,11 @@ Jet operator-( const Jet& x, const Jet& y ) {
  // If one of the arguments is void, then return the other ..
  if( x->count < 1 ) {    // This is done in this way so that
    z = -y;               // what is returned does not own
-   z.stacked = 1;        // the same data as x or y.
-   return z;
+   return z;             // the same data as x or y.
  }
 
  if( y->count < 1 ) {
    z.DeepCopy( x );
-   z.stacked = 1;
    return z;
  }
                                 
@@ -409,7 +410,6 @@ Jet operator-( const Jet& x, const Jet& y ) {
  if( x->accuWgt < y->accuWgt ) z->accuWgt = x->accuWgt;
  else                          z->accuWgt = y->accuWgt;
  
- z.stacked = 1;
  return z;
 }
 
@@ -450,13 +450,11 @@ Jet operator*( const Jet& x, const Jet& y ) {
  // If one of the arguments is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x or y.
-   return z;
+   return z;                // the same data as x or y.
  }
 
  if( yPtr->count < 1 ) {
    z.DeepCopy( y );
-   z.stacked = 1;
    return z;
  }
                                 
@@ -477,7 +475,6 @@ Jet operator*( const Jet& x, const Jet& y ) {
    zPtr->addTerm( r );
  }}
  
- z.stacked = 1;
  return z;
 }
 
@@ -502,15 +499,13 @@ Jet operator*( const Jet& x, const double& y ) {
  testWeight = z->accuWgt = x->accuWgt;
 
  if( y == 0.0 ) {
-   z.stacked = 1;
    return z;
  }
  
  // If x is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
+   return z;                // the same data as x.
  }
 
  dlist_iterator gx( *(dlist*) xPtr );
@@ -522,7 +517,6 @@ Jet operator*( const Jet& x, const double& y ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 
@@ -548,15 +542,13 @@ Jet operator*( const Jet& x, const int& j ) {
  testWeight = z->accuWgt = x->accuWgt;
 
  if( ( y = (double) j ) == 0.0 ) {
-   z.stacked = 1;
    return z;
  }
  
  // If x is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
+   return z;                // the same data as x.
  }
 
  dlist_iterator gx( *(dlist*) xPtr );
@@ -568,7 +560,6 @@ Jet operator*( const Jet& x, const int& j ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 
@@ -592,15 +583,13 @@ Jet operator*( const double& y, const Jet& x ) {
  testWeight = z->accuWgt = x->accuWgt;
 
  if( y == 0.0 ) {
-   z.stacked = 1;
    return z;
  }
  
  // If x is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
+   return z;                // the same data as x.
  }
 
  dlist_iterator gx( *(dlist*) xPtr );
@@ -612,7 +601,6 @@ Jet operator*( const double& y, const Jet& x ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 
@@ -639,15 +627,13 @@ Jet operator*( const int& j, const Jet& x ) {
  testWeight = z->accuWgt = x->accuWgt;
 
  if( ( y = (double) j ) == 0.0 ) {
-   z.stacked = 1;
    return z;
  }
  
  // If x is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
+   return z;                // the same data as x.
  }
 
  dlist_iterator gx( *(dlist*) xPtr );
@@ -659,7 +645,6 @@ Jet operator*( const int& j, const Jet& x ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 
@@ -694,8 +679,7 @@ Jet operator/( const Jet& x, const double& y ) {
  // If x is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
+   return z;                // the same data as x.
  }
 
  dlist_iterator gx( *(dlist*) xPtr );
@@ -707,7 +691,6 @@ Jet operator/( const Jet& x, const double& y ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 
@@ -745,8 +728,7 @@ Jet operator/( const Jet& x, const int& j ) {
  // If x is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
+   return z;                // the same data as x.
  }
 
  dlist_iterator gx( *(dlist*) xPtr );
@@ -758,7 +740,6 @@ Jet operator/( const Jet& x, const int& j ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 
@@ -775,7 +756,7 @@ Jet operator/( const double& a, const Jet& b ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Jet Jet::TruncMult( const Jet& v, const int& wl ) 
+Jet Jet::TruncMult( const Jet& v, const int& wl ) const
 { 
  /*
  Truncated multiplication: used only by the division operator.
@@ -813,7 +794,6 @@ Jet Jet::TruncMult( const Jet& v, const int& wl )
  else                           z->accuWgt = v->accuWgt;
  
  z->myEnv = jl->myEnv;  // ??? Redundant?
- z.stacked = 1;
  return z;
 }
 
@@ -906,7 +886,6 @@ Jet operator/( const Jet& wArg, const Jet& uArg ) {
  
  // .. and return value.
  v->myEnv = wArg->myEnv;  // Rampant paranoia ...
- v.stacked = 1;
  return v;
 }
 
@@ -954,7 +933,6 @@ Jet operator^( const Jet& x, const Jet& y ) {
  
    delete [] m;
    delete [] n;
-   z.stacked = 1;
    return z;
  }
  
@@ -968,7 +946,6 @@ Jet operator^( const Jet& x, const Jet& y ) {
  if( 2 + 3 == 5 ) exit(1);       // Done to avoid compiler warnings
  delete [] m;                    // about leaving the function without
  delete [] n;                    // returning something.
- z.stacked = 1;
  return z;                       
 }
 
@@ -987,7 +964,6 @@ Jet acos( const Jet&  ) {   // ??? Write this damned thing!!!  It's trivial!!
  cerr <<  "Jet acos( Jet& x ) to be written.\n" 
       << endl;
  exit(0);
- z.stacked = 1;
  return z;
 }
  
@@ -1036,7 +1012,6 @@ Jet asin( const Jet& x ) {
   }
  }
 
- z.stacked = 1;
  return z;
 }
  
@@ -1070,7 +1045,6 @@ Jet atan( const Jet& x ) {
        << endl;
  }
 
- z.stacked = 1;
  return z;
 }
  
@@ -1107,7 +1081,6 @@ Jet cos( const Jet& x ) {
      exit(1);
    }
    epsilon.addTerm( new JLterm( x->myEnv->AllZeroes, 1.0, x->myEnv ) );
-   epsilon.stacked = 1;
    return epsilon;
  }
  
@@ -1133,7 +1106,6 @@ Jet cosh( const Jet& x ) {
  static Jet z;
  z = exp(x);
  z = ( z + ( 1.0 / z ) ) / 2.0;
- z.stacked = 1;
  return z;
 }
 
@@ -1166,7 +1138,6 @@ Jet exp( const Jet& x ) {
      exit(1);
    }
    epsilon.addTerm( new JLterm( x->myEnv->AllZeroes, 1.0, x->myEnv ) );
-   epsilon.stacked = 1;
    return epsilon;
  }
  
@@ -1292,7 +1263,6 @@ Jet pow( const Jet& x, const double& s ) {
      exit(1);
    }
    epsilon.addTerm( new JLterm( x->myEnv->AllZeroes, 0.0, x->myEnv ) );
-   epsilon.stacked = 1;
    return epsilon;
  }
  
@@ -1313,7 +1283,6 @@ Jet pow( const Jet& x, const double& s ) {
    delete p;
    epsilon.scaleBy( 1.0/std );
    epsilon = factor*epsPow( epsilon, s );
-   epsilon.stacked = 1;
    return epsilon;
    }
  else                                 // x is pure infinitesimal
@@ -1327,18 +1296,15 @@ Jet pow( const Jet& x, const double& s ) {
      }
    epsilon = 1.0;
    if ( u == 0 ) {
-     epsilon.stacked = 1;
      return epsilon;
    }
    if ( u > 0 ) {
      while( u-- > 0 ) epsilon *= x;
-     epsilon.stacked = 1;
      return epsilon;
      }
    else {
      while( u++ < 0 ) epsilon *= x;
      epsilon = 1.0 / epsilon;
-     epsilon.stacked = 1;
      return epsilon;
      }
    }
@@ -1366,7 +1332,6 @@ Jet pow( const Jet& x, int n ) {
     xr = z;
     for( i = -2; i >= n; i-- ) z *= xr;
   }
-  z.stacked = 1;
   return z;
 }
 
@@ -1400,7 +1365,6 @@ Jet sin( const Jet& x ) {
      exit(1);
    }
    epsilon.addTerm( new JLterm( x->myEnv->AllZeroes, 0.0, x->myEnv ) );
-   epsilon.stacked = 1;
    return epsilon;
  }
  
@@ -1489,7 +1453,7 @@ Jet sqrt( const Jet& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Jet tan( Jet& x ) { 
+Jet tan( const Jet& x ) { 
  return sin(x) / cos(x) ;
 }
 
@@ -1606,7 +1570,6 @@ Jet epsCos( const Jet& epsilon ) {
  
  z->accuWgt = epsilon->accuWgt;
 
- z.stacked = 1;
  return z;
 }
 
@@ -1633,7 +1596,6 @@ Jet epsExp( const Jet& epsilon ) {
  
  z->accuWgt = epsilon->accuWgt;
 
- z.stacked = 1;
  return z;
 }
 
@@ -1661,7 +1623,6 @@ Jet epsPow( const Jet& epsilon, const double s ) {
  
  z->accuWgt = epsilon->accuWgt;
 
- z.stacked = 1;
  return z;
 }
 
@@ -1686,7 +1647,6 @@ Jet epsSin( const Jet& epsilon ) {
  
  z->accuWgt = epsilon->accuWgt;
 
- z.stacked = 1;
  return z;
 }
 
@@ -1715,7 +1675,6 @@ Jet epsSqrt( const Jet& epsilon ) {  // This function is identical to epsPow
  
  z->accuWgt = epsilon->accuWgt;
 
- z.stacked = 1;
  return z;
 }
  
@@ -1861,13 +1820,13 @@ void Jet::printCoeffs( int  ) const {
 // ??? REMOVE 
 // ??? REMOVE // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ??? REMOVE 
-void Jet::writeToFile( char* fileName ) {
+void Jet::writeToFile( char* fileName ) const {
  jl->writeToFile( fileName );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Jet::writeToFile( FILE* filePtr ) {
+void Jet::writeToFile( FILE* filePtr ) const {
  jl->writeToFile( filePtr );
 }
 
@@ -1875,6 +1834,7 @@ void Jet::writeToFile( FILE* filePtr ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Jet::scaleBy( double y ) {
+ PREPFORCHANGE(jl)
  jl->scaleBy( y );
 }
 
@@ -1882,6 +1842,7 @@ void Jet::scaleBy( double y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JLterm* Jet::get() {
+ PREPFORCHANGE(jl)
  return jl->get();
 }
 
@@ -1896,20 +1857,21 @@ double Jet::standardPart() const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Jet::clear() {
+ PREPFORCHANGE(jl)
  jl->clear();
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double Jet::weightedDerivative( int* ind ) {
+double Jet::weightedDerivative( const int* ind ) const {
  return jl->weightedDerivative( ind );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double Jet::derivative( int* ind ) {
+double Jet::derivative( const int* ind ) const {
  return jl->derivative( ind );
 }
 
@@ -1932,7 +1894,6 @@ Jet Jet::filter( const int& wgtLo, const int& wgtHi ) const {
      ( wgtHi >= thisPtr->weight )   
    ) {
    z = *this;
-   z.stacked = 1;
    return z;
  } 
 
@@ -1953,14 +1914,13 @@ Jet Jet::filter( const int& wgtLo, const int& wgtHi ) const {
  zPtr->weight = upperWgt;  // ??? Where is the copy of the re
  zPtr->accuWgt = thisPtr->accuWgt;   // ??? reference point???
 
- z.stacked = 1;
  return z;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Jet Jet::filter( char (*f) ( const IntArray&, const double& ) ) { 
+Jet Jet::filter( char (*f) ( const IntArray&, const double& ) ) const { 
  static Jet z;
  static JL* zPtr;
  static JLterm* p;
@@ -2003,7 +1963,6 @@ Jet Jet::filter( char (*f) ( const IntArray&, const double& ) ) {
    }
  }
 
- z.stacked = 1;
  return z;
 }
 
@@ -2029,7 +1988,6 @@ Jet Jet::concat() const {
    v += ( p->value ) * ( jl->myEnv->JLmonomial[ jl->myEnv->monoRank() ] );
  }
  
- v.stacked = 1;
  return v;
 }
 
@@ -2049,14 +2007,13 @@ Jet::operator() ( /* const */ JetVector& y ) const
  z = operator()( u );
 
  delete [] u;
- z.stacked = 1;
  return z;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Jet Jet::operator() ( Jet* y ) const { 
+Jet Jet::operator() ( const Jet* y ) const { 
  Jet*     u = new Jet [ jl->myEnv->NumVar ];
  static Jet      z, term;
  static int      i, j, w;
@@ -2140,14 +2097,13 @@ Jet Jet::operator() ( Jet* y ) const {
  // Finish...
  delete [] u;
 
- z.stacked = 1;
  return z;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double Jet::operator() ( double* x ) const {
+double Jet::operator() ( const double* x ) const {
  return jl->operator()( x );
 }
 
@@ -2161,7 +2117,7 @@ double Jet::operator() ( const Vector& x ) const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Jet Jet::D( int* n ) const {
+Jet Jet::D( const int* n ) const {
  // ??? REMOVE static char noTermAdded;
  static char doit;
  static int f, i, j, k, w;
@@ -2202,7 +2158,6 @@ Jet Jet::D( int* n ) const {
  
  if( w == 0 ) {
    z = *this;
-   z.stacked = 1;
    return z;
  }
 
@@ -2257,14 +2212,13 @@ Jet Jet::D( int* n ) const {
  
  z->accuWgt = jl->accuWgt - w;       // ??? Is this correct ???
 
- z.stacked = 1;
  return z;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Jet Jet::D( IntArray& n ) const 
+Jet Jet::D( const IntArray& n ) const 
 {
 
  if( n.Dim() != jl->myEnv->NumVar ) {
@@ -2319,7 +2273,6 @@ Jet Jet::D( IntArray& n ) const
  
  if( w == 0 ) {
    z = *this;
-   z.stacked = 1;
    return z;
  }
 
@@ -2372,7 +2325,6 @@ Jet Jet::D( IntArray& n ) const
  
  z->accuWgt = jl->accuWgt - w;       // ??? Is this correct ???
 
- z.stacked = 1;
  return z;
 }
 
@@ -2439,7 +2391,6 @@ Jet Jet::D( IntArray& n ) const
 // POSTPONED                           z->myEnv );
 // POSTPONED  }
 // POSTPONED 
-// POSTPONED  z.stacked = 1;
 // POSTPONED  return z;
 // POSTPONED }
 // POSTPONED 
@@ -2466,6 +2417,5 @@ Jet Jet::D( IntArray& n ) const
 // POSTPONED   v = ( operator()(&z) - x ) / g(&z);
 // POSTPONED  }
 // POSTPONED 
-// POSTPONED  z.stacked = 1;
 // POSTPONED  return z;
 // POSTPONED }

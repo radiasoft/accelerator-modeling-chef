@@ -8,6 +8,8 @@ using std::setprecision;
 
 #include "JetC.h"
 
+#define PREPFORCHANGE(jl)  if(((jl)->rc)>1){--((jl)->rc);(jl) = new JLC(jl);}
+
 // ================================================================
 //      Global variables
 //
@@ -379,7 +381,6 @@ operator>>( istream& is, JetC__environment* x )
 //***************************************************************
 
 JetC::JetC( JetC__environment* pje ) 
-: stacked(0) 
 {
  jl = new JLC( pje );
 
@@ -389,7 +390,6 @@ JetC::JetC( JetC__environment* pje )
 }
 
 JetC::JetC( const Complex& x, JetC__environment* p_je ) 
-: stacked(0) 
 {
  jl = new JLC( x, p_je );
 
@@ -400,7 +400,6 @@ JetC::JetC( const Complex& x, JetC__environment* p_je )
 
 JetC::JetC( const JetC& x ) 
 {
- stacked = x.stacked;
  jl = x.jl;
  ( jl->rc )++;
 
@@ -426,7 +425,6 @@ void JetC::Reconstruct()
  pje = jl->myEnv;
  if( --(jl->rc) == 0 ) delete jl;
  jl = new JLC( pje );
- stacked = 0;
 }
 
 void JetC::Reconstruct( JetC__environment* pje )
@@ -435,7 +433,6 @@ void JetC::Reconstruct( JetC__environment* pje )
  // Use when initializing a static JetC variable.
  if( --(jl->rc) == 0 ) delete jl;
  jl = new JLC( pje );
- stacked = 0;
 }
 
 
@@ -450,7 +447,7 @@ void JetC::Env( JetC__environment* pje ) const
 }
 
 
-void JetC::getReference( Complex* r ) 
+void JetC::getReference( Complex* r ) const 
 {
  jl->getReference( r );
 }
@@ -459,35 +456,34 @@ void JetC::setVariable( const Complex& x,
                        const int& j, 
                              JetC__environment* pje )
 {
- if( jl == NULL ) jl = new JLC( pje );
+ if( jl == NULL ) {
+   jl = new JLC( pje );
+ }
+ else {
+   PREPFORCHANGE(jl)
+ }
  jl->setVariable( x, j, pje );  // !! Alters the environment!
 }
 
 void JetC::setVariable( const int& j, 
                              JetC__environment* pje ) 
 {
- if( jl == NULL ) jl = new JLC( pje );
+ if( jl == NULL ) {
+   jl = new JLC( pje );
+ }
+ else {
+   PREPFORCHANGE(jl)
+ }
  jl->setVariable( j, pje );
 }
 
 JetC& JetC::operator=( const JetC& x ) 
 {
- if( this != &x ) {
-  if( --(jl->rc) == 0 ) delete jl;
-#ifndef FORBIDSTACKED
-  if( x.stacked ) {
+ if( jl != x.jl ) {
+   if( --(jl->rc) == 0 ) delete jl;
    jl = x.jl;
    (jl->rc)++;
-  }
-  else { 
-#endif
-   jl = new JLC( x->myEnv );
-   *jl = *(x.jl);
-#ifndef FORBIDSTACKED
-  }
-#endif
  }
- stacked = 0;   // ??? This line is probably unnecessary.
  return *this; 
 }
 
@@ -498,7 +494,6 @@ JetC& JetC::DeepCopy( const JetC& x )
   jl = new JLC( x->myEnv );
   *jl = *(x.jl);
  }
- stacked = 0;   // ??? This line is probably unnecessary.
  return *this; 
 }
 
@@ -510,7 +505,6 @@ JetC& JetC::operator=( const Complex& x )
  if( --(jl->rc) == 0 ) delete jl;
  jl = new JLC(pje);
  *(jl) = x;
- stacked = 0;
  return *this; 
 }
 
@@ -521,7 +515,7 @@ istream& operator>>( istream& is,  JetC& x )
  return operator>>( is, *(x.jl) );
 }
 
-ostream& operator<<( ostream& os, JetC& x ) 
+ostream& operator<<( ostream& os, const JetC& x ) 
 {
  return operator<<( os, *(x.jl) );
 }

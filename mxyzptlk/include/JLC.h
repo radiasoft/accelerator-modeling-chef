@@ -117,7 +117,7 @@ struct JLCterm {
 
   // Operators
   void operator=( const JLCterm& );
-  Complex coeff(){ return value; }
+  Complex coeff() const { return value; }
 #ifdef OBJECT_DEBUG
   static int objectCount;
 #endif
@@ -153,11 +153,11 @@ struct JLC : public dlist {
                             // one of lowest weight.
   void addTerm( JLCterm* );  // Public only for diagnostic purposes.
 
-  char isNilpotent();
-  void writeToFile( char*   /* Name of unopened file */ );
-  void writeToFile( FILE* );
+  char isNilpotent() const;
+  void writeToFile( char*   /* Name of unopened file */ ) const;
+  void writeToFile( FILE* ) const;
 
-  void getReference( Complex* );
+  void getReference( Complex* ) const;
   void scaleBy( Complex );
 
   void setVariable( const Complex&, 
@@ -169,15 +169,18 @@ struct JLC : public dlist {
   void setVariable( const int&, 
                           JetC__environment* = 0 );
 
-  Complex standardPart();
+  Complex standardPart() const;
   void clear();
-  Complex weightedDerivative( int* );
-  Complex derivative( int* );
-  Complex operator()( Complex* );	   // Performs a multinomial evaluation of 
-				   // the JLC variable.  Essentially acts as a 
-				   // power series expansion.
-  JLC& operator()( JLC* );         // Self explanatory ...
-  JLC& D( int* )const ;		   // Performs differentiation of a JLC variable.
+  Complex weightedDerivative( const int* ) const;
+  Complex derivative( const int* ) const;
+  Complex operator()( const Complex* ) const;
+             // Performs a multinomial evaluation of 
+             // the JLC variable.  Essentially acts as a 
+             // power series expansion.
+  JLC& operator()( const JLC* ) const;
+             // Self explanatory ...
+  // ??? REMOVE JLC& D( const int* ) const;
+  // ??? REMOVE            // Performs differentiation of a JLC variable.
 
   JLC& operator=( const JLC& );
   JLC& operator=( const Complex& );
@@ -202,15 +205,15 @@ char operator!=( const Complex&, const JLC& );
 //     Setup routines, etc.
 //
 
-extern ostream& operator<<(ostream&, JLC&);
-extern istream& operator>>(istream&, JLC&);
+extern ostream& operator<<(ostream&, const JLC&);
+extern istream& operator>>(istream&,       JLC&);
 extern char operator==( const JLCterm&, const JLCterm& );
 extern char operator==( const JLC&,     const JLC& );
 extern char operator==( const JLC&,     const Complex& );
 extern char operator==( const Complex&, const JLC& );
-extern char operator<=( JLCterm&, JLCterm& );
-extern char operator%=( JLCterm&, JLCterm& );   // Acts like == but compares
+extern char operator<=( const JLCterm&, const JLCterm& );
+extern char operator%=( const JLCterm&, const JLCterm& );   // Acts like == but compares
                                        // indices only.
-extern JLCterm operator*( JLCterm&, JLCterm& );
+extern JLCterm operator*( const JLCterm&, const JLCterm& );
 
 #endif

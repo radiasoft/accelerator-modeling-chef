@@ -159,22 +159,6 @@ JLC::JLC( const JLC& x ) {
  JLCterm* p;
  JLCterm* q;
 
- 
- static char firstCall = 1;
- if( firstCall ) {
-  firstCall = 0;
-  cout << "\n*** WARNING *** The JLC copy constructor was called for \n"
-       <<   "*** WARNING *** some inexplicable reason.\n"
-       <<   "*** WARNING *** You must have an incredible error somewhere.\n"
-       <<   "*** WARNING *** Go figure!!\n\n";
-  cout.flush();
-  cerr << "\n*** WARNING *** The JLC copy constructor was called for \n"
-       <<   "*** WARNING *** some inexplicable reason.\n"
-       <<   "*** WARNING *** You must have an incredible error somewhere.\n"
-       <<   "*** WARNING *** Go figure!!\n\n";
-  cerr.flush();
- }
-
  while((  p = (JLCterm*) getNext()  )) {
    q = new JLCterm( p );
    append( q );
@@ -198,17 +182,6 @@ JLC::JLC( JLC* x ) {
  dlist_iterator getNext( *(dlist*) x );
  JLCterm* p;
  JLCterm* q;
-
- 
- static char firstCall = 1;
- if( firstCall ) {
-  firstCall = 0;
-  cout << "\n*** WARNING *** The JLC pointer constructor was called for \n"
-       <<   "*** WARNING *** some inexplicable reason.\n"
-       <<   "*** WARNING *** You must have an incredible error somewhere.\n"
-       <<   "*** WARNING *** Go figure!!\n\n";
-  cout.flush();
- }
 
  while((  p = (JLCterm*) getNext()  )) {
    q = new JLCterm( p );
@@ -339,7 +312,7 @@ void JLC::addTerm( JLCterm* a) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JLC::getReference( Complex* r ) {
+void JLC::getReference( Complex* r ) const {
  int i;
  for( i = 0; i < myEnv->NumVar; i++ ) r[i] = myEnv->refPoint[i];
 }
@@ -347,7 +320,7 @@ void JLC::getReference( Complex* r ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-char JLC::isNilpotent() {
+char JLC::isNilpotent() const {
  dlist_iterator getNext( *(dlist*) this );
  JLCterm* p = (JLCterm*) getNext();
  if( p->weight == 0 && p->value != 0.0 ) return 0;
@@ -357,7 +330,7 @@ char JLC::isNilpotent() {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JLC::writeToFile( char* fileName ) {
+void JLC::writeToFile( char* fileName ) const {
  dlist_traversor getNext( *(dlist*) this );
  int i;
  JLCterm* p;
@@ -389,7 +362,7 @@ void JLC::writeToFile( char* fileName ) {
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JLC::writeToFile( FILE* filePtr ) {
+void JLC::writeToFile( FILE* filePtr ) const {
  dlist_traversor getNext( *(dlist*) this );
  int i;
  JLCterm* p;
@@ -557,7 +530,7 @@ JLCterm* JLC::remove( dlink* w ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Complex JLC::standardPart() {
+Complex JLC::standardPart() const {
  JLCterm* p; 
  if( count < 1 )       return 0.0;
  dlist_iterator g( (dlist&) *this );
@@ -583,7 +556,7 @@ void JLC::clear() {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Complex JLC::weightedDerivative( int* ind ) {
+Complex JLC::weightedDerivative( const int* ind ) const {
  int i;
  JLCterm* p;
  char theOne;
@@ -605,7 +578,7 @@ Complex JLC::weightedDerivative( int* ind ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Complex JLC::derivative( int* ind ) {
+Complex JLC::derivative( const int* ind ) const {
  static double n;
  static double multiplier;
  static Complex d;
@@ -626,7 +599,7 @@ Complex JLC::derivative( int* ind ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Complex JLC::operator()( Complex* x ) {
+Complex JLC::operator()( const Complex* x ) const {
  JLCterm* p;
  Complex v;
  int w;
@@ -745,7 +718,7 @@ istream& operator>>( istream& is,  JLC& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ostream& operator<<( ostream& os, JLC& x ) {
+ostream& operator<<( ostream& os, const JLC& x ) {
  dlist_traversor getNext( (dlist&) x );
  int i;
  JLCterm* p;
@@ -954,7 +927,7 @@ JLC& JLC::operator+=( const Complex& x ) {   // ??? Untested!!
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JLCterm operator*( JLCterm& x, JLCterm& y ) {
+JLCterm operator*( const JLCterm& x, const JLCterm& y ) {
  JLCterm z(x);
  static int i, n;
 
@@ -1134,7 +1107,7 @@ char operator!=( const JLCterm& a, const JLCterm& b ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-char operator<=( JLCterm& a, JLCterm& b ) {
+char operator<=( const JLCterm& a, const JLCterm& b ) {
  int i;
  if( a.index.Dim() != b.index.Dim() ) {
    cerr << "\n\n"
@@ -1159,7 +1132,7 @@ char operator<=( JLCterm& a, JLCterm& b ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-char operator%=( JLCterm& a, JLCterm& b ) {
+char operator%=( const JLCterm& a, const JLCterm& b ) {
  if( a.weight != b.weight ) return 0;
  return a.index == b.index;
 }

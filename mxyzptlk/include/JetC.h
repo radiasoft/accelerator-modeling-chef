@@ -23,7 +23,7 @@ private:
                            // nilpotent JetCs.
   JetC concat() const;
 
-  JetC TruncMult( const JetC&, const int& );  // Used by division algorithm.
+  JetC TruncMult( const JetC&, const int& ) const;  // Used by division algorithm.
 
   // Friends
   friend class coordC;   // ??? Is this necessary???
@@ -51,8 +51,6 @@ private:
   static int               currentIndex;
 
 public:
-  char        stacked;    // ??? Made public for convenience: no application
-                          // ??? should touch this variable.
   static JetC__environment* lastEnv;
 
   // Constructors and destructors_____________________________________
@@ -119,10 +117,10 @@ public:
   void printCoeffs( int ) const;
 
   dlist image();
-  void writeToFile( char*   /* Name of unopened file */ );
-  void writeToFile( FILE* );
+  void writeToFile( char*   /* Name of unopened file */ ) const;
+  void writeToFile( FILE* ) const;
 
-  void getReference( Complex* );
+  void getReference( Complex* ) const;
   void scaleBy( Complex );
 
   void setVariable( const Complex&, const int&, JetC__environment* );
@@ -132,27 +130,27 @@ public:
 
   Complex standardPart() const;
   void clear();
-  Complex weightedDerivative( int* );
-  Complex derivative( int* );
+  Complex weightedDerivative( const int* ) const;
+  Complex derivative( const int* ) const;
   JetC filter(  const int&, const int& ) const;  
                                   // Returns only those JLCterms whose weight 
           	                  // are between two specified values, inclusive.
-  JetC filter( char (*)( const IntArray&, const Complex& ) ); 
+  JetC filter( char (*)( const IntArray&, const Complex& ) ) const; 
                                    // Returns those JLCterms for which the 
                                    // argument is satisfied.
-  Complex operator() ( Complex* ) const;	   
+  Complex operator() ( const Complex* ) const;	   
                                    // Performs a multinomial evaluation of 
 				   // the JetC variable.  Essentially acts as a 
 				   // power series expansion.
-  JetC  operator() ( JetC* ) const;  // Self explanatory ...
+  JetC  operator() ( const JetC* ) const;  // Self explanatory ...
   JetC  operator() ( /* const */ JetCVector& ) const;  // Self explanatory ...
   // ??? REMOVE JetC  operator() ( const LieOperator& ) const; 
   // ??? REMOVE                                  // Self explanatory ...
-  JetC  D( int* )const ;		   // Performs differentiation of a JetC variable.
-  JetC  D( IntArray& )const ;	   // Performs differentiation of a JetC variable.
+  JetC  D( const int* )const ;		   // Performs differentiation of a JetC variable.
+  JetC  D( const IntArray& )const ;	   // Performs differentiation of a JetC variable.
 
   // Operators________________________________________________________
-  friend ostream& operator<<(ostream&, JetC&);
+  friend ostream& operator<<(ostream&, const JetC&);
   friend istream& operator>>(istream&, JetC&);
   friend char operator==( const JetC&, const JetC& );
   friend char operator==( const JetC&, const Complex& );
@@ -200,7 +198,7 @@ public:
 
   friend JetC operator^( const JetC&, const JetC& );   // Poisson bracket
 
-  friend JLCterm operator*( JLCterm&, JLCterm& );
+  friend JLCterm operator*( const JLCterm&, const JLCterm& );
   friend JetC operator*( const Complex&, const Jet& );
   friend JetC operator*( const Jet&, const Complex& );
   friend JetC operator*( const JetC&, const int& );

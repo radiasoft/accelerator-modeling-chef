@@ -10,6 +10,7 @@ using std::setprecision;
 #include "JetCVector.h"
 #include "MathConstants.h"
 
+#define PREPFORCHANGE(jl)  if(((jl)->rc)>1){--((jl)->rc);(jl) = new JLC(jl);}
 
 // ================================================================
 //      External routines
@@ -46,14 +47,16 @@ void JetC::operator+=( const JetC& y ) {
                      // ??? Come up with a more efficient implementation SOON.
                                        // ??? This should be modified so that
                                        // terms beyond the accurate weight of
- JLCterm* p;                            // x or y are not computed and carried
- JLCterm* q;                            // into the answer.
+                                       // x or y are not computed and carried
+                                       // into the answer.
+ PREPFORCHANGE(jl)
+
+ JLCterm* p;
+ JLCterm* q;
  JLC* xPtr =  jl;
  JLC* yPtr = y.jl;
 
- dlist_iterator gy( *(dlist*) yPtr );
- 
- 
+
  // Check for consistency and set reference point of the sum.
  if( xPtr->myEnv != yPtr->myEnv )
  {
@@ -65,6 +68,8 @@ void JetC::operator+=( const JetC& y ) {
  if( xPtr->count < 1 ) { (*this) = y; return; }
  if( yPtr->count < 1 ) return;
 
+ dlist_iterator gy( *(dlist*) yPtr );
+ 
  // .. otherwise, continue normal operations.
  while((  p = (JLCterm*) gy()  )) {
    q = new JLCterm( p );
@@ -93,9 +98,11 @@ void operator/=( JetC& x, const Complex y ) {
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 //     Member functions(public)  |||||||||||||||||||||||||||||||||||||||
 
 void JetC::addTerm( JLCterm* a) {
+ PREPFORCHANGE(jl)
  jl->addTerm( a );
 }
 
@@ -156,8 +163,12 @@ char operator!=( const Complex& x, const JetC& y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void JetC::operator+=( const Complex& x ) {   // ??? Untested!!
- if( jl == NULL ) jl = new JLC;              // ??? DANGER: what is the 
-                                            // ??? reference point?
+ if( jl == NULL ) {                           // ??? DANGER: what is the 
+   jl = new JLC;                              // ??? reference point?
+ }              
+ else {
+   PREPFORCHANGE(jl)
+ }
  jl->operator+=( x );
 }
 
@@ -172,14 +183,6 @@ void JetC::operator-=( const Complex& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetC operator+( const JetC& x, const JetC& y ) { 
-                                       // ??? This should be modified so that
- static JetC z;                         // terms beyond the accurate weight of
- static JLCterm* p;                     // x or y are not computed and carried
- static JLCterm* q;                     // into the answer.
-
- p    = 0;
- q    = 0;
-
 
  // Possibility: constant JetC argument
  if( !(x->myEnv) ) {
@@ -214,12 +217,14 @@ JetC operator+( const JetC& x, const JetC& y ) {
    }
  }
 
+                                        // ??? This should be modified so that
+ static JetC z;                         // terms beyond the accurate weight of
+ static JLCterm* p;                     // x or y are not computed and carried
+ static JLCterm* q;                     // into the answer.
 
+ p    = 0;
+ q    = 0;
 
- dlist_iterator gx( *(dlist*) x.jl );
- dlist_iterator gy( *(dlist*) y.jl );
-
- 
  // Check for consistency and set reference point of the sum.
  if( x->myEnv != y->myEnv ) {
      cerr << "\n\n*** JetC::operator+ ERROR: Inconsistent environments." 
@@ -230,16 +235,17 @@ JetC operator+( const JetC& x, const JetC& y ) {
  // If one of the arguments is void, then return the other ..
  if( x->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( y );      // what is returned does not own
-   z.stacked = 1;        // the same data as x or y.
-   return z;
+   return z;             // the same data as x or y.
  }
 
  if( y->count < 1 ) {
    z.DeepCopy( x );
-   z.stacked = 1;
    return z;
  }
                                 
+ dlist_iterator gx( *(dlist*) x.jl );
+ dlist_iterator gy( *(dlist*) y.jl );
+
  // .. otherwise, continue normal operations.
  if( x->count > y->count ) {
    z.DeepCopy( x );
@@ -256,7 +262,6 @@ JetC operator+( const JetC& x, const JetC& y ) {
  if( x->accuWgt < y->accuWgt ) z->accuWgt = x->accuWgt;
  else                          z->accuWgt = y->accuWgt;
  
- z.stacked = 1;
  return z;
 }
 
@@ -267,7 +272,6 @@ JetC operator+( const JetC& x, const Complex& y ) {
  static JetC z;    // !!! "JetC z = x;" does not work.  The copy constructor
  z.DeepCopy( x );  // ??? is called, which makes x and z own the same data!!
  z += y;
- z.stacked = 1;
  return z;
 }
 
@@ -278,7 +282,6 @@ JetC operator+( const Complex& y, const JetC& x ) {
  JetC z;
  z.DeepCopy( x );
  z += y;
- z.stacked = 1;
  return z;
 }
 
@@ -289,7 +292,6 @@ JetC operator+( const JetC& x, const double& y ) {
  static JetC z;    // !!! "JetC z = x;" does not work.  The copy constructor
  z.DeepCopy( x );  // ??? is called, which makes x and z own the same data!!
  z += Complex( y, 0.0 );
- z.stacked = 1;
  return z;
 }
 
@@ -300,7 +302,6 @@ JetC operator+( const double& y, const JetC& x ) {
  JetC z;
  z.DeepCopy( x );
  z += Complex( y, 0.0 );
- z.stacked = 1;
  return z;
 }
 
@@ -343,7 +344,6 @@ JetC operator-( const JetC& y ) {
 
  // If the argument is void, then return it ..
  if( y->count < 1 ) { 
-   z.stacked = 1;
    return z;
  }
 
@@ -354,7 +354,6 @@ JetC operator-( const JetC& y ) {
    p->value = - p->value;
  }
 
- z.stacked = 1;
  return z;
 }
 
@@ -369,8 +368,8 @@ void JetC::Negate()
  if( jl->count < 1 ) return;
 
  // .. otherwise continue normal operations.
+ PREPFORCHANGE(jl)
  dlist_iterator getNext( *(dlist*) jl );
-
  while((  p = (JLCterm*) getNext()  )) p->value = - p->value;
 
  return;
@@ -388,8 +387,8 @@ void JetC::Mult( const Complex& x )
  if( jl->count < 1 ) return;
 
  // .. otherwise continue normal operations.
+ PREPFORCHANGE(jl)
  dlist_iterator getNext( *(dlist*) jl );
-
  while((  p = (JLCterm*) getNext()  )) p->value *= x;
 
  return;
@@ -408,10 +407,6 @@ JetC operator-( const JetC& x, const JetC& y ) {
  p    = 0;
  q    = 0;
 
- dlist_iterator gx( *(dlist*) x.jl );
- dlist_iterator gy( *(dlist*) y.jl );
-
- 
  // Check for consistency and set reference point of the difference.
  if( x->myEnv != y->myEnv ) {
      cerr << "\n\n*** JetC::operator- ERROR: Inconsistent environments." 
@@ -422,16 +417,17 @@ JetC operator-( const JetC& x, const JetC& y ) {
  // If one of the arguments is void, then return the other ..
  if( x->count < 1 ) {    // This is done in this way so that
    z = -y;               // what is returned does not own
-   z.stacked = 1;        // the same data as x or y.
-   return z;
+   return z;             // the same data as x or y.
  }
 
  if( y->count < 1 ) {
    z.DeepCopy( x );
-   z.stacked = 1;
    return z;
  }
                                 
+ dlist_iterator gx( *(dlist*) x.jl );
+ dlist_iterator gy( *(dlist*) y.jl );
+
  // .. otherwise, continue normal operations.
  if( x->count > y->count ) {
    z.DeepCopy( x );
@@ -451,7 +447,6 @@ JetC operator-( const JetC& x, const JetC& y ) {
  if( x->accuWgt < y->accuWgt ) z->accuWgt = x->accuWgt;
  else                          z->accuWgt = y->accuWgt;
  
- z.stacked = 1;
  return z;
 }
 
@@ -459,7 +454,7 @@ JetC operator-( const JetC& x, const JetC& y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetC operator*( const JetC& x, const JetC& y ) {        
-                                       // ??? This should be modified so that
+                                        // ??? This should be modified so that
  static JetC z;                         // terms beyond the accurate weight of
  static JLCterm* p;                     // x or y are not computed and carried
  static JLCterm* q;                     // into the answer.
@@ -489,21 +484,14 @@ JetC operator*( const JetC& x, const JetC& y ) {
  zPtr       = z.jl;
  testWeight = 0;
 
-
- dlist_looper gx( *(dlist*) xPtr );
- dlist_looper gy( *(dlist*) yPtr );
- 
-
  // If one of the arguments is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x or y.
-   return z;
+   return z;                // the same data as x or y.
  }
 
  if( yPtr->count < 1 ) {
    z.DeepCopy( y );
-   z.stacked = 1;
    return z;
  }
                                 
@@ -511,6 +499,10 @@ JetC operator*( const JetC& x, const JetC& y ) {
  if( xPtr->accuWgt < yPtr->accuWgt ) zPtr->accuWgt = xPtr->accuWgt;
  else                                zPtr->accuWgt = yPtr->accuWgt;
  
+
+ dlist_looper gx( *(dlist*) xPtr );
+ dlist_looper gy( *(dlist*) yPtr );
+
  // .. and continue normal operations.
  testWeight = zPtr->accuWgt;
  while((  p = (JLCterm*) gy()  )) {
@@ -520,7 +512,6 @@ JetC operator*( const JetC& x, const JetC& y ) {
    zPtr->addTerm( r );
  }}
  
- z.stacked = 1;
  return z;
 }
 
@@ -546,15 +537,13 @@ JetC operator*( const JetC& x, const Complex& y ) {
  testWeight = z->accuWgt = x->accuWgt;
 
  if( y == CZero ) {
-   z.stacked = 1;
    return z;
  }
  
  // If x is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
+   return z;                // the same data as x.
  }
 
  dlist_iterator gx( *(dlist*) xPtr );
@@ -566,7 +555,6 @@ JetC operator*( const JetC& x, const Complex& y ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 
@@ -592,15 +580,13 @@ JetC operator*( const JetC& x, const int& j ) {
  testWeight = z->accuWgt = x->accuWgt;
 
  if( ( y = (Complex) j ) == 0.0 ) {
-   z.stacked = 1;
    return z;
  }
  
  // If x is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
+   return z;                // the same data as x.
  }
 
  dlist_iterator gx( *(dlist*) xPtr );
@@ -612,7 +598,6 @@ JetC operator*( const JetC& x, const int& j ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 
@@ -637,15 +622,13 @@ JetC operator*( const Complex& y, const JetC& x ) {
  testWeight = z->accuWgt = x->accuWgt;
 
  if( y == CZero ) {
-   z.stacked = 1;
    return z;
  }
  
  // If x is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
+   return z;                // the same data as x.
  }
 
  dlist_iterator gx( *(dlist*) xPtr );
@@ -657,7 +640,6 @@ JetC operator*( const Complex& y, const JetC& x ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 
@@ -684,15 +666,13 @@ JetC operator*( const int& j, const JetC& x ) {
  testWeight = z->accuWgt = x->accuWgt;
 
  if( ( y = (Complex) j ) == 0.0 ) {
-   z.stacked = 1;
    return z;
  }
  
  // If x is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
+   return z;                // the same data as x.
  }
 
  dlist_iterator gx( *(dlist*) xPtr );
@@ -704,7 +684,6 @@ JetC operator*( const int& j, const JetC& x ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 
@@ -731,15 +710,13 @@ JetC operator*( const double& j, const JetC& x ) {
  testWeight = z->accuWgt = x->accuWgt;
 
  if( ( y = (Complex) j ) == 0.0 ) {
-   z.stacked = 1;
    return z;
  }
  
  // If x is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
+   return z;                // the same data as x.
  }
 
  dlist_iterator gx( *(dlist*) xPtr );
@@ -751,7 +728,6 @@ JetC operator*( const double& j, const JetC& x ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 
@@ -794,8 +770,7 @@ JetC operator/( const JetC& x, const Complex& y ) {
  // If x is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
+   return z;                // the same data as x.
  }
 
  dlist_iterator gx( *(dlist*) xPtr );
@@ -807,7 +782,6 @@ JetC operator/( const JetC& x, const Complex& y ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 
@@ -842,8 +816,7 @@ JetC operator/( const JetC& x, const double& y ) {
  // If x is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
+   return z;                // the same data as x.
  }
 
  dlist_iterator gx( *(dlist*) xPtr );
@@ -855,7 +828,6 @@ JetC operator/( const JetC& x, const double& y ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 
@@ -893,8 +865,7 @@ JetC operator/( const JetC& x, const int& j ) {
  // If x is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
+   return z;                // the same data as x.
  }
 
  dlist_iterator gx( *(dlist*) xPtr );
@@ -906,7 +877,6 @@ JetC operator/( const JetC& x, const int& j ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 
@@ -933,7 +903,7 @@ JetC operator/( const double& a, const JetC& b ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC JetC::TruncMult( const JetC& v, const int& wl ) 
+JetC JetC::TruncMult( const JetC& v, const int& wl ) const 
 { 
  /*
  Truncated multiplication: used only by the division operator.
@@ -971,7 +941,6 @@ JetC JetC::TruncMult( const JetC& v, const int& wl )
  else                           z->accuWgt = v->accuWgt;
  
  z->myEnv = jl->myEnv;  // ??? Redundant?
- z.stacked = 1;
  return z;
 }
 
@@ -1064,7 +1033,6 @@ JetC operator/( const JetC& wArg, const JetC& uArg ) {
  
  // .. and return value.
  v->myEnv = wArg->myEnv;  // Rampant paranoia ...
- v.stacked = 1;
  return v;
 }
 
@@ -1112,7 +1080,6 @@ JetC operator^( const JetC& x, const JetC& y ) {
  
    delete [] m;
    delete [] n;
-   z.stacked = 1;
    return z;
  }
  
@@ -1126,7 +1093,6 @@ JetC operator^( const JetC& x, const JetC& y ) {
  if( 2 + 3 == 5 ) exit(1);       // Done to avoid compiler warnings
  delete [] m;                    // about leaving the function without
  delete [] n;                    // returning something.
- z.stacked = 1;
  return z;                       
 }
 
@@ -1145,7 +1111,6 @@ JetC acos( const JetC&  ) {   // ??? Write this damned thing!!!  It's trivial!!
  cerr <<  "JetC acos( JetC& x ) to be written.\n" 
       << endl;
  exit(0);
- z.stacked = 1;
  return z;
 }
  
@@ -1191,7 +1156,6 @@ JetC asin( const JetC& x ) {
   }
  }
 
- z.stacked = 1;
  return z;
 }
  
@@ -1225,7 +1189,6 @@ JetC atan( const JetC& x ) {   // ??? START HERE, LEO!!!
        << endl;
  }
 
- z.stacked = 1;
  return z;
 }
  
@@ -1262,7 +1225,6 @@ JetC cos( const JetC& x ) {
      exit(1);
    }
    epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, Complex( 1.0, 0.0 ), x->myEnv ) );
-   epsilon.stacked = 1;
    return epsilon;
  }
  
@@ -1288,7 +1250,6 @@ JetC cosh( const JetC& x ) {
  static JetC z;
  z = exp(x);
  z = ( z + ( 1.0 / z ) ) / 2.0;
- z.stacked = 1;
  return z;
 }
 
@@ -1322,7 +1283,6 @@ JetC exp( const JetC& x ) {
      exit(1);
    }
    epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, Complex( 1.0, 0.0 ), x->myEnv ) );
-   epsilon.stacked = 1;
    return epsilon;
  }
  
@@ -1447,7 +1407,6 @@ JetC pow( const JetC& x, const double& s ) {
      exit(1);
    }
    epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, Complex( 0.0, 0.0 ), x->myEnv ) );
-   epsilon.stacked = 1;
    return epsilon;
  }
  
@@ -1466,7 +1425,6 @@ JetC pow( const JetC& x, const double& s ) {
    delete p;
    epsilon.scaleBy( 1.0/std );
    epsilon = factor*epsPow( epsilon, s );
-   epsilon.stacked = 1;
    return epsilon;
    }
  else                                 // x is pure infinitesimal
@@ -1480,18 +1438,15 @@ JetC pow( const JetC& x, const double& s ) {
      }
    epsilon = complex_1;
    if ( u == 0 ) {
-     epsilon.stacked = 1;
      return epsilon;
    }
    if ( u > 0 ) {
      while( u-- > 0 ) epsilon *= x;
-     epsilon.stacked = 1;
      return epsilon;
      }
    else {
      while( u++ < 0 ) epsilon *= x;
      epsilon = 1.0 / epsilon;
-     epsilon.stacked = 1;
      return epsilon;
      }
    }
@@ -1519,7 +1474,6 @@ JetC pow( const JetC& x, int n ) {
     xr = z;
     for( i = -2; i >= n; i-- ) z *= xr;
   }
-  z.stacked = 1;
   return z;
 }
 
@@ -1554,7 +1508,6 @@ JetC sin( const JetC& x ) {
      exit(1);
    }
    epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, Complex( 0.0, 0.0 ), x->myEnv ) );
-   epsilon.stacked = 1;
    return epsilon;
  }
  
@@ -1640,7 +1593,7 @@ JetC sqrt( const JetC& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC tan( JetC& x ) { 
+JetC tan( const JetC& x ) { 
  return sin(x) / cos(x) ;
 }
 
@@ -1812,7 +1765,6 @@ JetC epsCos( const JetC& epsilon ) {
  
  z->accuWgt = epsilon->accuWgt;
 
- z.stacked = 1;
  return z;
 }
 
@@ -1839,7 +1791,6 @@ JetC epsExp( const JetC& epsilon ) {
  
  z->accuWgt = epsilon->accuWgt;
 
- z.stacked = 1;
  return z;
 }
 
@@ -1868,7 +1819,6 @@ JetC epsPow( const JetC& epsilon, const double& s ) {
  
  z->accuWgt = epsilon->accuWgt;
 
- z.stacked = 1;
  return z;
 }
 
@@ -1893,7 +1843,6 @@ JetC epsSin( const JetC& epsilon ) {
  
  z->accuWgt = epsilon->accuWgt;
 
- z.stacked = 1;
  return z;
 }
 
@@ -1923,7 +1872,6 @@ JetC epsSqrt( const JetC& epsilon ) {  // This function is identical to epsPow
  
  z->accuWgt = epsilon->accuWgt;
 
- z.stacked = 1;
  return z;
 }
  
@@ -2082,13 +2030,13 @@ void JetC::printCoeffs( int  ) const {
 // ??? REMOVE 
 // ??? REMOVE // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ??? REMOVE 
-void JetC::writeToFile( char* fileName ) {
+void JetC::writeToFile( char* fileName ) const {
  jl->writeToFile( fileName );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JetC::writeToFile( FILE* filePtr ) {
+void JetC::writeToFile( FILE* filePtr ) const {
  jl->writeToFile( filePtr );
 }
 
@@ -2096,6 +2044,7 @@ void JetC::writeToFile( FILE* filePtr ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void JetC::scaleBy( Complex y ) {
+ PREPFORCHANGE(jl)
  jl->scaleBy( y );
 }
 
@@ -2103,6 +2052,7 @@ void JetC::scaleBy( Complex y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JLCterm* JetC::get() {
+ PREPFORCHANGE(jl)
  return jl->get();
 }
 
@@ -2117,20 +2067,21 @@ Complex JetC::standardPart() const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void JetC::clear() {
+ PREPFORCHANGE(jl)
  jl->clear();
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Complex JetC::weightedDerivative( int* ind ) {
+Complex JetC::weightedDerivative( const int* ind ) const {
  return jl->weightedDerivative( ind );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Complex JetC::derivative( int* ind ) {
+Complex JetC::derivative( const int* ind ) const {
  return jl->derivative( ind );
 }
 
@@ -2153,7 +2104,6 @@ JetC JetC::filter( const int& wgtLo, const int& wgtHi ) const {
      ( wgtHi >= thisPtr->weight )   
    ) {
    z = *this;
-   z.stacked = 1;
    return z;
  } 
 
@@ -2174,14 +2124,13 @@ JetC JetC::filter( const int& wgtLo, const int& wgtHi ) const {
  zPtr->weight = upperWgt;  // ??? Where is the copy of the re
  zPtr->accuWgt = thisPtr->accuWgt;   // ??? reference point???
 
- z.stacked = 1;
  return z;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC JetC::filter( char (*f) ( const IntArray&, const Complex& ) ) { 
+JetC JetC::filter( char (*f) ( const IntArray&, const Complex& ) ) const { 
  static JetC z;
  static JLC* zPtr;
  static JLCterm* p;
@@ -2224,7 +2173,6 @@ JetC JetC::filter( char (*f) ( const IntArray&, const Complex& ) ) {
    }
  }
 
- z.stacked = 1;
  return z;
 }
 
@@ -2250,7 +2198,6 @@ JetC JetC::concat() const {
    v += ( p->value ) * ( jl->myEnv->JLCmonomial[ jl->myEnv->monoRank() ] );
  }
  
- v.stacked = 1;
  return v;
 }
 
@@ -2270,14 +2217,13 @@ JetC::operator() ( /* const */ JetCVector& y ) const
  z = operator()( u );
 
  delete [] u;
- z.stacked = 1;
  return z;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC JetC::operator() ( JetC* y ) const { 
+JetC JetC::operator() ( const JetC* y ) const { 
  JetC*     u = new JetC [ jl->myEnv->NumVar ];
  static JetC      z, term;
  static int      i, j, w;
@@ -2361,21 +2307,20 @@ JetC JetC::operator() ( JetC* y ) const {
  // Finish...
  delete [] u;
 
- z.stacked = 1;
  return z;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Complex JetC::operator() ( Complex* x ) const {
+Complex JetC::operator() ( const Complex* x ) const {
  return jl->operator()( x );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC JetC::D( int* n ) const {
+JetC JetC::D( const int* n ) const {
  // ??? REMOVE static char noTermAdded;
  static char doit;
  static int f, i, j, k, w;
@@ -2417,7 +2362,6 @@ JetC JetC::D( int* n ) const {
  
  if( w == 0 ) {
    z = *this;
-   z.stacked = 1;
    return z;
  }
 
@@ -2470,14 +2414,13 @@ JetC JetC::D( int* n ) const {
  
  z->accuWgt = jl->accuWgt - w;       // ??? Is this correct ???
 
- z.stacked = 1;
  return z;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC JetC::D( IntArray& n ) const 
+JetC JetC::D( const IntArray& n ) const 
 {
 
  if( n.Dim() != jl->myEnv->NumVar ) {
@@ -2532,7 +2475,6 @@ JetC JetC::D( IntArray& n ) const
  
  if( w == 0 ) {
    z = *this;
-   z.stacked = 1;
    return z;
  }
 
@@ -2585,7 +2527,6 @@ JetC JetC::D( IntArray& n ) const
  
  z->accuWgt = jl->accuWgt - w;       // ??? Is this correct ???
 
- z.stacked = 1;
  return z;
 }
 
@@ -2652,7 +2593,6 @@ JetC JetC::D( IntArray& n ) const
 // POSTPONED                           z->myEnv );
 // POSTPONED  }
 // POSTPONED 
-// POSTPONED  z.stacked = 1;
 // POSTPONED  return z;
 // POSTPONED }
 // POSTPONED 
@@ -2679,6 +2619,5 @@ JetC JetC::D( IntArray& n ) const
 // POSTPONED   v = ( operator()(&z) - x ) / g(&z);
 // POSTPONED  }
 // POSTPONED 
-// POSTPONED  z.stacked = 1;
 // POSTPONED  return z;
 // POSTPONED }

@@ -8,6 +8,8 @@ using std::setprecision;
 
 #include "Jet.h"
 
+#define PREPFORCHANGE(jl)  if(((jl)->rc)>1){--((jl)->rc);(jl) = new JL(jl);}
+
 // ================================================================
 //      Global variables
 //
@@ -381,7 +383,6 @@ operator>>( istream& is, Jet__environment* x )
 //***************************************************************
 
 Jet::Jet( Jet__environment* pje ) 
-: stacked(0) 
 {
  jl = new JL( pje );
 
@@ -391,7 +392,6 @@ Jet::Jet( Jet__environment* pje )
 }
 
 Jet::Jet( const double& x, Jet__environment* p_je ) 
-: stacked(0) 
 {
  jl = new JL( x, p_je );
 
@@ -402,7 +402,6 @@ Jet::Jet( const double& x, Jet__environment* p_je )
 
 Jet::Jet( const Jet& x ) 
 {
- stacked = x.stacked;
  jl = x.jl;
  ( jl->rc )++;
 
@@ -428,7 +427,6 @@ void Jet::Reconstruct()
  pje = jl->myEnv;
  if( --(jl->rc) == 0 ) delete jl;
  jl = new JL( pje );
- stacked = 0;
 }
 
 void Jet::Reconstruct( Jet__environment* pje )
@@ -437,7 +435,6 @@ void Jet::Reconstruct( Jet__environment* pje )
  // Use when initializing a static Jet variable.
  if( --(jl->rc) == 0 ) delete jl;
  jl = new JL( pje );
- stacked = 0;
 }
 
 
@@ -452,7 +449,7 @@ void Jet::Env( Jet__environment* pje ) const
 }
 
 
-void Jet::getReference( double* r ) 
+void Jet::getReference( double* r ) const
 {
  jl->getReference( r );
 }
@@ -461,7 +458,12 @@ void Jet::setVariable( const double& x,
                        const int& j, 
                              Jet__environment* pje )
 {
- if( jl == NULL ) jl = new JL( pje );
+ if( jl == NULL ) {
+   jl = new JL( pje );
+ }
+ else {
+   PREPFORCHANGE(jl)
+ }
  jl->setVariable( x, j, pje );  // !! Alters the environment!
 }
 
@@ -478,13 +480,21 @@ void Jet::setVariable( const double& x,
         << endl;
    exit(1);
  }
+ else {
+   PREPFORCHANGE(jl)
+ }
  jl->setVariable( x, j, jl->myEnv );  // !! Alters the environment!
 }
 
 void Jet::setVariable( const int& j, 
                              Jet__environment* pje ) 
 {
- if( jl == NULL ) jl = new JL( pje );
+ if( jl == NULL ) {
+   jl = new JL( pje );
+ }
+ else {
+   PREPFORCHANGE(jl)
+ }
  jl->setVariable( j, pje );
 }
 
@@ -500,27 +510,19 @@ void Jet::setVariable( const int& j )
         << endl;
    exit(1);
  }
+ else {
+   PREPFORCHANGE(jl)
+ }
  jl->setVariable( j, jl->myEnv );
 }
 
 Jet& Jet::operator=( const Jet& x ) 
 {
- if( this != &x ) {
-  if( --(jl->rc) == 0 ) delete jl;
-#ifndef FORBIDSTACKED
-  if( x.stacked ) {
+ if( jl != x.jl ) {
+   if( --(jl->rc) == 0 ) delete jl;
    jl = x.jl;
    (jl->rc)++;
-  }
-  else { 
-#endif
-   jl = new JL( x->myEnv );
-   *jl = *(x.jl);
-#ifndef FORBIDSTACKED
-  }
-#endif
  }
- stacked = 0;   // ??? This line is probably unnecessary.
  return *this; 
 }
 
@@ -531,7 +533,6 @@ Jet& Jet::DeepCopy( const Jet& x )
   jl = new JL( x->myEnv );
   *jl = *(x.jl);
  }
- stacked = 0;   // ??? This line is probably unnecessary.
  return *this; 
 }
 
@@ -543,7 +544,6 @@ Jet& Jet::operator=( const double& x )
  if( --(jl->rc) == 0 ) delete jl;
  jl = new JL(pje);
  *(jl) = x;
- stacked = 0;
  return *this; 
 }
 
@@ -554,7 +554,7 @@ istream& operator>>( istream& is,  Jet& x )
  return operator>>( is, *(x.jl) );
 }
 
-ostream& operator<<( ostream& os, Jet& x ) 
+ostream& operator<<( ostream& os, const Jet& x ) 
 {
  return operator<<( os, *(x.jl) );
 }
