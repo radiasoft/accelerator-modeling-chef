@@ -143,7 +143,7 @@ ostream& operator<<(ostream& os, const lattFunc& x) {
   return (os << endl);
 }
 
-istream& operator>>(istream& is, lattFunc& x) {
+istream& operator>>(istream& is, const lattFunc& x) {
   is >> x.alpha.hor;
   is >> x.beta.hor; 
   is >> x.psi.hor ;
