@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   ?.?
 ******                                    
 ******  File:      LayoutVisitor.h
+******  Version:   1.1
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -42,6 +42,8 @@
  * Leo Michelotti
  * May 7, 2002
  * 
+ * Version 1.1  June 27, 2003
+ * 
  */
 
 #ifndef LAYOUTVISITOR_H
@@ -49,6 +51,10 @@
 
 #ifndef BMLVISITOR_H
 #include "BmlVisitor.h"
+#endif
+
+#ifndef BMLNELMNT_H
+#include "bmlnElmnt.h"
 #endif
 
 #include <fstream>
@@ -73,6 +79,8 @@ class LayoutVisitor : public BmlVisitor
   int  openFile( const char* );
   int  closeFile();
 
+  void setDiscriminator( bmlnElmnt::Discriminator*, double = 0.0 );
+
   // Error codes
   static const int OKAY;
   static const int SECTORVISITED;
@@ -84,11 +92,13 @@ class LayoutVisitor : public BmlVisitor
   double _bendHeight;
   double _quadHeight;
   double _sextHeight;
+  double _specialHeight;
 
-  std::ofstream* _streamPtr;
+  bmlnElmnt::Discriminator* _ptrCritFunc;  // not owned
+  std::ofstream* _streamPtr;  // owned
 
   void _visit_bend( bmlnElmnt* );
-
+  void _processSpecialElement( bmlnElmnt* );
   int    _errorCode;
 };
 
