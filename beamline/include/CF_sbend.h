@@ -37,43 +37,43 @@
 #include "bmlnElmnt.h"
 #endif
 
+class Proton;
+class JetProton;
+
 class CF_sbend : public bmlnElmnt
 {
-  public:
+ public:
+  // Constructors
+  CF_sbend( double,     // length       [ meters ]
+            double,     // field        [ tesla ]
+            double,     // bend angle   [ radians ]
+            int = 4 );  // ignored
+
+  CF_sbend( const char*,// name
+            double,     // length       [ meters ]
+            double,     // field        [ tesla ]
+            double,     // bend angle   [ radians ]
+            int = 4 );  // ignored
 
   CF_sbend( double,     // length  [ meters ]
             double,     // field   [ tesla ]
-            double,     // angle   [ radians ]
-            int = 4 );
- 
+                        // (assumed along the y-axis)
+            double,     // bend angle   [ radians ]
+            double,     // upstream edge angle [radians]
+            double,     // downstream edge angle [radians]
+                        // signs of previous two parameters
+                        // are as defined for sbends by MAD
+            int = 4 );  // ignored
 
   CF_sbend( const char*,// name
             double,     // length  [ meters ]
             double,     // field   [ tesla ]
-            double,     // angle   [ radians ]
-            int = 4 );
-
-
-  CF_sbend( double,         // length     [ meter    ]
-            double,         // field      [ tesla    ]
-            double,         // angle      [ radians  ]
-            const Vector&,  // multipoles [ meter^-n ]
-            // Normal and skew multipoles alternate.
-            // xmlt(0)       = b_0    xmlt(1)     = a_0
-            // xmlt(2)       = b_1    xmlt(3)     = a_1
-            // xmlt(4)       = b_2    xmlt(5)     = a_2
-            // ...
-            // xmlt(2*m)     = b_[m]  xmlt(2*m+1) = a_[m]
-            int = 4 );
-
-
-  CF_sbend( const char*,    // name
-            double,         // length     [ meter    ]
-            double,         // field      [ tesla    ]
-            double,         // angle      [ radians  ]
-            const Vector&,  // multipoles [ meter^-n ]
-            int = 4 );
-
+            double,     // bend angle   [ radians ]
+            double,     // upstream edge angle [radians]
+            double,     // downstream edge angle [radians]
+                        // signs of previous two parameters
+                        // are as defined for sbends by MAD
+            int = 4 );  // ignored
 
   CF_sbend( const CF_sbend& );
 
@@ -101,11 +101,32 @@ class CF_sbend : public bmlnElmnt
     { return new CF_sbend( *this ); }
   double OrbitLength( const Particle& );
   void Split( double, bmlnElmnt**, bmlnElmnt** );
+    // WARNING: After the Split function is used, the new elements 
+    // must be commissioned with RefRegVisitor.
 
 
-  int setQuadrupole  ( double );  
-  int setSextupole   ( double );  
-  int setOctupole    ( double );  
+  // Note: entry and exit angles are not arguments
+  // in the rbend constructors. A symmetric bend is assumed
+  // by default. Otherwise, use one of the following.
+  double setEntryAngle( const Particle& ); 
+  double setExitAngle( const Particle& ); 
+  double getEntryAngle() { return _usAngle; }
+  double getExitAngle()  { return _dsAngle; }
+  double setEntryAngle( double /* radians */ ); 
+  double setExitAngle( double /* radians */ ); 
+
+
+
+
+
+
+  double AdjustPosition( const Proton& );
+  double AdjustPosition( const JetProton& );
+
+
+  int setQuadrupole ( double );  
+  int setSextupole  ( double );  
+  int setOctupole   ( double );  
   // The argument is integrated multipole strength
   // i.e., .setQuadrupole ( B'l   )
   //       .setSextupole  ( B''l/2 )
@@ -131,16 +152,31 @@ class CF_sbend : public bmlnElmnt
   // Returns the dipole field,
   // NOT the integrated dipole field.
 
-  double getAngle() const;
-  double Angle()    const;
+  double getBendAngle() const;
+  double BendAngle()    const { return this->getBendAngle(); }
+  double getAngle()     const { return this->getBendAngle(); }
+  double Angle()        const { return this->getBendAngle(); }
 
  private:
-
   bmlnElmnt** _u;
   bmlnElmnt** _v;
 
-  double _angle; // total bend angle  [ radians ]
+  double _angle;            // total bend angle  [ radians ]
+  double _usEdgeAngle, _dsEdgeAngle;
+                            // [radians] as defined in MAD for rbends.
+  double _usAngle, _dsAngle;// [radians] entry (upstream) and exit (downstream) 
+                            // angles of the fiducial orbit referenced
+                            // to the physical edge of the magnet. If no
+                            // registration particle is used, default
+                            // values depend only on edge angles (see
+                            // below).
+  double _usTan, _dsTan;    // tangents of the entry and exit angles:
+                            // px/pz of a reference particle at the
+                            // upstream and downstream edges of the magnet.
+                            // For a (usual) symmetric bend,
+                            // sgn( _usTan ) = - sgn( _dsTan )
 
+  void _calcPropParams();
   void _finishConstructor();
 
   std::ostream& writeTo(std::ostream&);

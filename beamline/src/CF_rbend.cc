@@ -46,11 +46,53 @@
 
 using namespace std;
 
+CF_rbend::CF_rbend( double        lng,  // length      [ meter    ]
+                    double        fld,  // field       [ tesla    ]
+                    double        ang,  // entry angle [ radians  ]
+                    int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
+: bmlnElmnt( lng, fld )
+  , _usEdgeAngle(0.0)
+  , _dsEdgeAngle(0.0)
+  , _usAngle(ang)
+  , _dsAngle(-ang)
+  , _usTan(tan(ang))
+  , _dsTan(-tan(ang))
+{
+  _finishConstructor(n);
+}
+
+
+CF_rbend::CF_rbend( const char*   nm,   // name
+                    double        lng,  // length      [ meter    ]
+                    double        fld,  // field       [ tesla    ]
+                    double        ang,  // entry angle [ radians  ]
+                    int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
+: bmlnElmnt( nm, lng, fld )
+  , _usEdgeAngle(0.0)
+  , _dsEdgeAngle(0.0)
+  , _usAngle(ang)
+  , _dsAngle(-ang)
+  , _usTan(tan(ang))
+  , _dsTan(-tan(ang))
+{
+  _finishConstructor(n);
+}
+
+
 CF_rbend::CF_rbend( double        lng,  // length     [ meter    ]
                     double        fld,  // field      [ tesla    ]
-                    double        ang,  // angle      [ radians  ]
+                    double        us,   // upstream edge angle [radians]
+                    double        ds,   // downstream edge angle [radians]
+                                        // signs of previous two parameters
+                                        // are as defined for rbends by MAD
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
-: bmlnElmnt( lng, fld ), _poleFaceAngle( ang  )
+: bmlnElmnt( lng, fld )
+  , _usEdgeAngle(us)
+  , _dsEdgeAngle(ds)
+  , _usAngle(M_TWOPI)
+  , _dsAngle(-M_TWOPI)
+  , _usTan(0.0)
+  , _dsTan(0.0)
 {
   _finishConstructor(n);
 }
@@ -59,39 +101,31 @@ CF_rbend::CF_rbend( double        lng,  // length     [ meter    ]
 CF_rbend::CF_rbend( const char*   nm,   // name
                     double        lng,  // length     [ meter    ]
                     double        fld,  // field      [ tesla    ]
-                    double        ang,  // angle      [ radians  ]
+                    double        us,   // upstream edge angle [radians]
+                    double        ds,   // downstream edge angle [radians]
+                                        // signs of previous two parameters
+                                        // are as defined for rbends by MAD
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
-: bmlnElmnt( nm, lng, fld ), _poleFaceAngle( ang  )
-{
-  _finishConstructor(n);
-}
-
-
-CF_rbend::CF_rbend( double lng,
-                    double fld,
-                    double ang,
-                    const  Vector& xmlt,
-                    int    n  )
-: bmlnElmnt( lng, fld ), _poleFaceAngle( ang  )
-{
-  _finishConstructor(n);
-}
-
-
-CF_rbend::CF_rbend( const char*  nm,
-                    double lng,
-                    double fld,
-                    double ang,
-                    const  Vector& xmlt,
-                    int    n  )
-: bmlnElmnt( nm, lng, fld ), _poleFaceAngle( ang  )
+: bmlnElmnt( nm, lng, fld )
+  , _usEdgeAngle(us)
+  , _dsEdgeAngle(ds)
+  , _usAngle(M_TWOPI)
+  , _dsAngle(-M_TWOPI)
+  , _usTan(0.0)
+  , _dsTan(0.0)
 {
   _finishConstructor(n);
 }
 
 
 CF_rbend::CF_rbend( const CF_rbend& x )
-: bmlnElmnt( (const bmlnElmnt&) x ), _poleFaceAngle( x._poleFaceAngle )
+: bmlnElmnt( (const bmlnElmnt&) x )
+  , _usEdgeAngle(x._usEdgeAngle)
+  , _dsEdgeAngle(x._dsEdgeAngle)
+  , _usAngle(x._usAngle)
+  , _dsAngle(x._dsAngle)
+  , _usTan(x._usTan)
+  , _dsTan(x._dsTan)
 {
   int m = 1 + ( ( int(x._v) - int(x._u) )/sizeof( bmlnElmnt* ) );
   _u = new bmlnElmnt* [ m ];
@@ -125,10 +159,10 @@ void CF_rbend::_finishConstructor(int n)
   double frontLength =  (6.0*(this->length/4.0)/15.0)/((double) n);
   double sepLength   = (16.0*(this->length/4.0)/15.0)/((double) n);
 
-  rbend inEdge    ( frontLength,     field, _poleFaceAngle, &rbend::InEdge  );
-  rbend outEdge   ( frontLength,     field, _poleFaceAngle, &rbend::OutEdge );
-  rbend separator ( 2.0*frontLength, field, &rbend::NoEdge );
-  rbend body      ( sepLength,       field, &rbend::NoEdge );
+  rbend inEdge    ( frontLength,     field, _usEdgeAngle, 0.0, &rbend::InEdge  );
+  rbend outEdge   ( frontLength,     field, 0.0, _dsEdgeAngle, &rbend::OutEdge );
+  rbend separator ( 2.0*frontLength, field, 0.0,          0.0, &rbend::NoEdge  );
+  rbend body      ( sepLength,       field, 0.0,          0.0, &rbend::NoEdge  );
 
   thinSextupole ts( 0.0 );
   thinQuad      tq( 0.0 );
@@ -208,6 +242,38 @@ void CF_rbend::localPropagate( JetParticle& p )
   while( x <= _v ) {
     (*(x++))->localPropagate( p );
   }
+}
+
+
+double rbend::setEntryAngle( const Particle& p )
+{
+  return this->setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
+  // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
+}
+
+
+double rbend::setExitAngle( const Particle& p )
+{
+  return this->setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
+  // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
+}
+
+
+double rbend::setEntryAngle( double phi /* radians */ )
+{
+  double ret = _usAngle;
+  _usAngle = phi;
+  _usTan = tan(phi);
+  return ret;
+}
+
+
+double rbend::setExitAngle( double phi /* radians */ )
+{
+  double ret = _dsAngle;
+  _dsAngle = phi;  
+  _dsTan  = tan(phi);
+  return ret;
 }
 
 
@@ -298,6 +364,38 @@ int CF_rbend::setQuadrupole( double arg_x )
   return 0;
 }
 
+
+int CF_rbend::setDipoleField( double arg_x )
+{
+  this->strength = arg_x;
+
+  int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  rbend** w = new rbend* [ m ];
+  int counter = -1;
+  bmlnElmnt** x = _u;
+
+  while( x <= _v ) {
+    if( 0 == strcmp( (*x)->Type(), "rbend" ) ) {
+      // w[++counter] = dynamic_cast<rbend*>(*x);
+      w[++counter] = (rbend*)(*x);
+    }
+    x++;
+  }
+
+  if( counter < 0 ) {
+    delete [] w;
+    return 1;
+  }
+  
+  for( int i = 0; i <= counter; i++ ) {
+    w[i]->setStrength( this->strength );
+  }
+  
+  delete [] w;
+  return 0;
+}
+
+
 double CF_rbend::getOctupole() const
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
@@ -387,11 +485,70 @@ double CF_rbend::getQuadrupole() const
 }
 
 
-void CF_rbend::Split( double, bmlnElmnt**, bmlnElmnt** )
+double CF_rbend::getDipoleField() const
 {
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-         "void CF_rbend::Split( double, bmlnElmnt**, bmlnElmnt** )", 
-         "Function not implemented." ) );
+  return this->strength;
+}
+
+
+void CF_rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
+{
+  static bool firstTime = true;
+  if( firstTime ) {
+    firstTime = false;
+    cerr << "\n"
+            "\n*** WARNING ***"
+            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
+            "\n*** WARNING *** The new, split elements must be commissioned with"
+            "\n*** WARNING *** RefRegVisitor before being used."
+            "\n*** WARNING *** "
+         << endl;
+    cerr << "\n*** WARNING ***                             "
+            "\n*** WARNING *** void CF_rbend::Split        "
+            "\n*** WARNING *** Combined split elements     "
+            "\n*** WARNING *** are not identical to the    "
+            "\n*** WARNING *** original.                   "
+            "\n*** WARNING ***                           \n"
+         << endl;
+  }
+
+  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
+    ostringstream uic;
+    uic << "Requested percentage = " << pc << "; should be in [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void CF_rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           uic.str().c_str() ) );
+  }
+
+
+  // We assume "strength" means field, not field*length.
+  // "length," "strength," and "_angle" are private data members.
+  *a = new CF_rbend(         pc*length, strength, _usEdgeAngle, 0.0 );
+  *b = new CF_rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle );
+
+
+  // Assign quadrupole strength
+  double quadStrength = this->getQuadrupole();  
+  // quadStrength = B'l
+
+  ((CF_rbend*) *a)->setQuadrupole( pc*quadStrength );
+  ((CF_rbend*) *b)->setQuadrupole( (1.0 - pc)*quadStrength );
+
+
+  // Rename
+  char* newname;
+  newname = new char [ strlen(ident) + 6 ];
+
+  strcpy( newname, ident );
+  strcat( newname, "_1" );
+  (*a)->Rename( newname );
+
+  strcpy( newname, ident );
+  strcat( newname, "_2" );
+  (*b)->Rename( newname );
+
+  delete [] newname;
 }
 
 
@@ -416,11 +573,6 @@ void CF_rbend::acceptInner( ConstBmlVisitor& v )
     _ctRef += (*x)->getReferenceTime();
     x++;
   }
-
-  // REMOVE: bmlnElmnt** x = _u;
-  // REMOVE: while( x <= _v ) {
-  // REMOVE:   (*(x++))->accept( v );
-  // REMOVE: }
 }
 
 
@@ -453,13 +605,17 @@ ostream& CF_rbend::writeTo( ostream& os )
   }
 
   os << (n/12) << "  ";
-  os << OSTREAM_DOUBLE_PREC << ( this->_poleFaceAngle ) << " ";
+  os << OSTREAM_DOUBLE_PREC << _usEdgeAngle << " "
+     << OSTREAM_DOUBLE_PREC << _dsEdgeAngle << endl;
+  os << OSTREAM_DOUBLE_PREC << _usAngle << " "
+     << OSTREAM_DOUBLE_PREC << _dsAngle << endl;
   os << OSTREAM_DOUBLE_PREC << getQuadrupole() << " ";
   os << OSTREAM_DOUBLE_PREC << getSextupole() << " ";
   os << OSTREAM_DOUBLE_PREC << getOctupole() << " ";
   os << "\n";
   return os;
 }
+
 
 istream& CF_rbend::readFrom( istream& is )
 {
@@ -469,11 +625,16 @@ istream& CF_rbend::readFrom( istream& is )
   int    n            = 0;
 
   is >> n
-     >> ( this->_poleFaceAngle ) 
+     >> (this->_usEdgeAngle)
+     >> (this->_dsEdgeAngle)
+     >> (this->_usAngle)
+     >> (this->_dsAngle)
      >> quadStrength 
      >> sextStrength
      >> octStrength;
 
+  _usTan = tan(_usAngle);
+  _dsTan = tan(_dsAngle);
 
   // Rebuild basic element ...
   // ... First deconstruct (identical to CF_rbend destructor)
@@ -496,12 +657,6 @@ istream& CF_rbend::readFrom( istream& is )
   return is;
 }
 
-void CF_rbend::eliminate( void )
-{
-  delete this;
-}
-
-
 
 const char* CF_rbend::Type() const  
 { 
@@ -517,15 +672,28 @@ double CF_rbend::OrbitLength( const Particle& x )
 }
 
 
+void CF_rbend::eliminate( void )
+{
+  delete this;
+}
+
+
 double CF_rbend::AdjustPosition( const Proton& arg_p )
 {
   JetProton myJP( arg_p );  // This probably won't work properly.
   return AdjustPosition( myJP );
 }
 
+
 double CF_rbend::AdjustPosition( const JetProton& arg_jp )
 {
-  /* static */ enum { x = 0, y, cdt, xp, yp, dpop };
+  if( ( 0.0 != _usEdgeAngle ) || ( 0.0 != _dsEdgeAngle ) ) {
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "double CF_rbend::AdjustPosition( const JetProton& arg_jp )", 
+           "In this version: only implemented for parallel faces." ) );
+  }
+
+  enum { x = 0, y, cdt, xp, yp, dpop };
   JetProton  myJP( arg_jp );
   Proton*    p_myP = (Proton*) myJP.ConvertToParticle();
   // This is deleted before returning.
@@ -536,10 +704,6 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
   double inState [] = { 0, 0, 0, 0, 0, 0 };
   inState[x]  = x_i;
   inState[xp] = xp_i;
-
-  // REMOVE: cout << "DGN: " << __FILE__ << ": initial state = ( "
-  // REMOVE:      << x_i << ", " << xp_i << " )" 
-  // REMOVE:      << endl;
 
   double f, m, z;
 
@@ -559,13 +723,7 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
   z = x_i;
   inState[x] = z;
   p_myP->setState( inState );
-  // REMOVE: cout << "DGN: " << __FILE__ ": before single pass: " 
-  // REMOVE:      << ( p_myP->State() )
-  // REMOVE:      << endl;
   this->propagate( *p_myP );
-  // REMOVE: cout << "DGN: " << __FILE__ ": after single pass: " 
-  // REMOVE:      << ( p_myP->State() )
-  // REMOVE:      << endl;
   f = ( p_myP->State() )( xp ) + xp_i;
 
   int i = 0;
@@ -591,7 +749,6 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
     // Recalculate difference ...
     p_myP->setState( inState );
     this->propagate( *p_myP );
-    // REMOVE: cout << "DGN: " << __FILE__ << ": " << p_myP->State() << endl;
     f = ( p_myP->State() )( xp ) + xp_i;
   }
 
