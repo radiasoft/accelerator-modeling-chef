@@ -51,8 +51,8 @@ linux:
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
 	"INCDIR = $(FNALROOT)/include -I/usr/include/g++-include" \
-	"TKINC = -I/usr/include/tcl" \
-	"XINC = -I/usr/include" \
+	"TKINC = /usr/include/tcl" \
+	"XINC = /usr/include" \
 	"LIBDIR = $(FNALROOT)/lib/gcc"
 
 irix:
@@ -66,7 +66,7 @@ irix:
 	"RANLIB = ranlib" \
 	"SYBASEINC = /usr/local/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
-	"XINC = /usr/include" \
+	"XINC = /usr/include/X11" \
 	"LIBDIR = $(FNALROOT)/lib/sgi"
 
 irix-gcc:
@@ -81,7 +81,6 @@ irix-gcc:
 	"SYBASEINC = /usr/local/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/include" \
-	"SYBASEINC = /usr/local/sybase" \
 	"LIBDIR = $(FNALROOT)/lib/sgi"
 
 irix-gcc-debug:
