@@ -67,7 +67,7 @@ public:
 
   // Constructors and destructors_____________________________________
   Jet( Jet__environment* = Jet::lastEnv );
-  Jet( const double&, Jet__environment* = Jet::lastEnv );
+  Jet( double, Jet__environment* = Jet::lastEnv );
   Jet( const Jet& );
   Jet( const JetC&  );
   Jet( const JetC&, /* const */ Jet__environment* );

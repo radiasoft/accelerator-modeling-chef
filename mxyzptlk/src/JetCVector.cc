@@ -197,8 +197,9 @@ JetCVector JetCVector::operator- ( const JetCVector& x ) const
 #endif
 
   JetCVector z( dim, 0, myEnv );
-  for ( int i = 0; i < dim; i++ ) 
+  for ( int i = 0; i < dim; i++ ) {
     z.comp[i] = comp[i] - x.comp[i];
+  }
   return z;
 }
 
