@@ -64,6 +64,7 @@ public:
   bmlnElmnt* operator++( int );    // postfix increment
   void reset();
   void goBack( int = 1 );
+  bool isFinished();
 
 private:
   dlist_iterator* _getNext;
