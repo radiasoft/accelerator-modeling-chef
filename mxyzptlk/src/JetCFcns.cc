@@ -121,7 +121,7 @@ void operator/=( JetC& x, const JetC& y ) {
  x = x / y;
 }
 
-void operator/=( JetC& x, const Complex y ) {
+void operator/=( JetC& x, const FNAL::Complex y ) {
  x = x / y;
 }
 
@@ -156,14 +156,14 @@ char operator==( const JetC& x, const JetC& y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-char operator==( const JetC& x, const Complex& y ) {
+char operator==( const JetC& x, const FNAL::Complex& y ) {
  return *(x.jl) == y;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-char operator==( const Complex& y, const JetC& x ){
+char operator==( const FNAL::Complex& y, const JetC& x ){
  return *(x.jl) == y;
 }
 
@@ -177,21 +177,21 @@ char operator!=( const JetC& x, const JetC& y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-char operator!=( const JetC& x, const Complex& y ) {
+char operator!=( const JetC& x, const FNAL::Complex& y ) {
  return !( x == y );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-char operator!=( const Complex& x, const JetC& y ) {
+char operator!=( const FNAL::Complex& x, const JetC& y ) {
  return !( x == y );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JetC::operator+=( const Complex& x ) {   // ??? Untested!!
+void JetC::operator+=( const FNAL::Complex& x ) {   // ??? Untested!!
  if( jl == NULL ) {                           // ??? DANGER: what is the 
    jl = new JLC;                              // ??? reference point?
  }              
@@ -204,7 +204,7 @@ void JetC::operator+=( const Complex& x ) {   // ??? Untested!!
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JetC::operator-=( const Complex& x ) {
+void JetC::operator-=( const FNAL::Complex& x ) {
  operator+=( -x );
 }
 
@@ -297,7 +297,7 @@ JetC operator+( const JetC& x, const JetC& y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC operator+( const JetC& x, const Complex& y ) {
+JetC operator+( const JetC& x, const FNAL::Complex& y ) {
  static JetC z;    // !!! "JetC z = x;" does not work.  The copy constructor
  z.DeepCopy( x );  // ??? is called, which makes x and z own the same data!!
  z += y;
@@ -307,7 +307,7 @@ JetC operator+( const JetC& x, const Complex& y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC operator+( const Complex& y, const JetC& x ) {
+JetC operator+( const FNAL::Complex& y, const JetC& x ) {
  JetC z;
  z.DeepCopy( x );
  z += y;
@@ -320,7 +320,7 @@ JetC operator+( const Complex& y, const JetC& x ) {
 JetC operator+( const JetC& x, const double& y ) {
  static JetC z;    // !!! "JetC z = x;" does not work.  The copy constructor
  z.DeepCopy( x );  // ??? is called, which makes x and z own the same data!!
- z += Complex( y, 0.0 );
+ z += FNAL::Complex( y, 0.0 );
  return z;
 }
 
@@ -330,7 +330,7 @@ JetC operator+( const JetC& x, const double& y ) {
 JetC operator+( const double& y, const JetC& x ) {
  JetC z;
  z.DeepCopy( x );
- z += Complex( y, 0.0 );
+ z += FNAL::Complex( y, 0.0 );
  return z;
 }
 
@@ -351,14 +351,14 @@ JetC operator-( const double& y, const JetC& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC operator-( const JetC& x, const Complex& y ) {
+JetC operator-( const JetC& x, const FNAL::Complex& y ) {
  return x + (-y);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC operator-( const Complex& y, const JetC& x ) {
+JetC operator-( const FNAL::Complex& y, const JetC& x ) {
  return y + (-x);
 }
 
@@ -408,7 +408,7 @@ void JetC::Negate()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JetC::Mult( const Complex& x )
+void JetC::Mult( const FNAL::Complex& x )
 {
  static JLCterm* p;
 
@@ -574,14 +574,14 @@ JetC operator*( const JetC& x, const JetC& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC operator*( const JetC& x, const Complex& y ) {  
+JetC operator*( const JetC& x, const FNAL::Complex& y ) {  
  static JetC z;
  static JLCterm* p;
  static JLCterm* q;
  static JLC* xPtr;
  static JLC* zPtr;
  static int testWeight;
- static Complex CZero( 0.0, 0.0 );
+ static FNAL::Complex CZero( 0.0, 0.0 );
  
  z.Reconstruct( x->myEnv );
 
@@ -624,7 +624,7 @@ JetC operator*( const JetC& x, const int& j ) {
  static JLC* xPtr;
  static JLC* zPtr;
  static int testWeight;
- static Complex y;  // ????? START HERE
+ static FNAL::Complex y;  // ????? START HERE
  
  z.Reconstruct( x->myEnv );
 
@@ -635,7 +635,7 @@ JetC operator*( const JetC& x, const int& j ) {
 
  testWeight = z->accuWgt = x->accuWgt;
 
- if( ( y = (Complex) j ) == 0.0 ) {
+ if( ( y = (FNAL::Complex) j ) == 0.0 ) {
    return z;
  }
  
@@ -660,14 +660,14 @@ JetC operator*( const JetC& x, const int& j ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC operator*( const Complex& y, const JetC& x ) {  
+JetC operator*( const FNAL::Complex& y, const JetC& x ) {  
  static JetC z;
  static JLCterm* p;
  static JLCterm* q;
  static JLC* xPtr;
  static JLC* zPtr;
  static int testWeight;
- static Complex CZero( 0.0, 0.0 );
+ static FNAL::Complex CZero( 0.0, 0.0 );
  
  z.Reconstruct( x->myEnv );
 
@@ -709,7 +709,7 @@ JetC operator*( const int& j, const JetC& x ) {
  static JLC* xPtr;
  static JLC* zPtr;
  static int testWeight;
- static Complex y;
+ static FNAL::Complex y;
  
  z.Reconstruct( x->myEnv );
 
@@ -721,7 +721,7 @@ JetC operator*( const int& j, const JetC& x ) {
 
  testWeight = z->accuWgt = x->accuWgt;
 
- if( ( y = (Complex) j ) == 0.0 ) {
+ if( ( y = (FNAL::Complex) j ) == 0.0 ) {
    return z;
  }
  
@@ -753,7 +753,7 @@ JetC operator*( const double& j, const JetC& x ) {
  static JLC* xPtr;
  static JLC* zPtr;
  static int testWeight;
- static Complex y;
+ static FNAL::Complex y;
  
  z.Reconstruct( x->myEnv );
 
@@ -765,7 +765,7 @@ JetC operator*( const double& j, const JetC& x ) {
 
  testWeight = z->accuWgt = x->accuWgt;
 
- if( ( y = (Complex) j ) == 0.0 ) {
+ if( ( y = (FNAL::Complex) j ) == 0.0 ) {
    return z;
  }
  
@@ -797,14 +797,14 @@ JetC operator*( const JetC& x, const double& j ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC operator/( const JetC& x, const Complex& y ) { 
+JetC operator/( const JetC& x, const FNAL::Complex& y ) { 
  static JetC z;
  static JLCterm* p;
  static JLCterm* q;
  static JLC* xPtr;
  static JLC* zPtr;
  static int testWeight;
- static Complex CZero( 0.0, 0.0 );
+ static FNAL::Complex CZero( 0.0, 0.0 );
  
  z.Reconstruct( x->myEnv ); 
 
@@ -897,7 +897,7 @@ JetC operator/( const JetC& x, const int& j ) {
  static JLC* xPtr;
  static JLC* zPtr;
  static int testWeight;
- static Complex y;
+ static FNAL::Complex y;
  
  z.Reconstruct( x->myEnv ); 
 
@@ -911,7 +911,7 @@ JetC operator/( const JetC& x, const int& j ) {
  testWeight = z->accuWgt = x->accuWgt;
 
  // Check for division by zero ..
- if( ( y = (Complex) j ) == 0.0 ) {
+ if( ( y = (FNAL::Complex) j ) == 0.0 ) {
    cerr << "\n*** JetC::operator/ ERROR *** "
         << "Attempt to divide by a scalar zero.\n"
         << endl;
@@ -939,7 +939,7 @@ JetC operator/( const JetC& x, const int& j ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC operator/( const Complex& a, const JetC& b ) {
+JetC operator/( const FNAL::Complex& a, const JetC& b ) {
   static JetC u;
   u.Reconstruct( b->myEnv ); 
   u = a;
@@ -952,7 +952,7 @@ JetC operator/( const Complex& a, const JetC& b ) {
 JetC operator/( const double& a, const JetC& b ) {
   static JetC u;
   u.Reconstruct( b->myEnv ); 
-  u = Complex( a, 0 );
+  u = FNAL::Complex( a, 0 );
   return u/b;
 } 
 
@@ -1029,7 +1029,7 @@ JetC operator/( const JetC& wArg, const JetC& uArg ) {
  static JetC w, u;
  static JLCterm* qu;
  static JLCterm* qw;
- static Complex u0;
+ static FNAL::Complex u0;
  static int i, wgt, wl, mw;
  
  // Initialize local variables and set the environment of the answer.
@@ -1257,7 +1257,7 @@ JetC cos( const JetC& x ) {
  // ??? REMOVE: JetC epsCos( const JetC& );
  // ??? REMOVE: 
  static JetC epsilon;
- static Complex cs, sn;
+ static FNAL::Complex cs, sn;
  dlist_iterator getNext( *(dlist*) x.jl );
  static JLCterm* p;
  
@@ -1280,7 +1280,7 @@ JetC cos( const JetC& x ) {
           << endl;
      exit(1);
    }
-   epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, Complex( 1.0, 0.0 ), x->myEnv ) );
+   epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, FNAL::Complex( 1.0, 0.0 ), x->myEnv ) );
    return epsilon;
  }
  
@@ -1316,7 +1316,7 @@ JetC exp( const JetC& x ) {
  
  // ??? REMOVE: JetC epsExp( const JetC& );
  static JetC epsilon;
- static Complex factor;
+ static FNAL::Complex factor;
  dlist_iterator getNext( *(dlist*) x.jl );
  static JLCterm* p;
 
@@ -1338,7 +1338,7 @@ JetC exp( const JetC& x ) {
           << endl;
      exit(1);
    }
-   epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, Complex( 1.0, 0.0 ), x->myEnv ) );
+   epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, FNAL::Complex( 1.0, 0.0 ), x->myEnv ) );
    return epsilon;
  }
  
@@ -1361,7 +1361,7 @@ JetC exp( const JetC& x ) {
 JetC log ( const JetC& x ) { 
  static JetC             epsilon;
  static JetC             u, w;
- static Complex          std;
+ static FNAL::Complex          std;
  static double           n;
  static JLCterm*         p;
  dlist_iterator  getNext( *(dlist*) x.jl );
@@ -1427,7 +1427,7 @@ JetC log ( const JetC& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetC log10( const JetC& x ) {
- static const Complex logE = 0.4342944819032518276511289;
+ static const FNAL::Complex logE = 0.4342944819032518276511289;
  return  logE*log(x);
 }
 
@@ -1437,8 +1437,8 @@ JetC log10( const JetC& x ) {
 JetC pow( const JetC& x, const double& s ) { 
  // ??? REMOVE: JetC epsPow( const JetC&, const double& );
  static JetC epsilon;
- static Complex factor;
- static Complex std;
+ static FNAL::Complex factor;
+ static FNAL::Complex std;
  dlist_iterator getNext( *(dlist*) x.jl );
  static JLCterm* p;
  static int u;
@@ -1462,7 +1462,7 @@ JetC pow( const JetC& x, const double& s ) {
           << endl;
      exit(1);
    }
-   epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, Complex( 0.0, 0.0 ), x->myEnv ) );
+   epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, FNAL::Complex( 0.0, 0.0 ), x->myEnv ) );
    return epsilon;
  }
  
@@ -1486,7 +1486,7 @@ JetC pow( const JetC& x, const double& s ) {
  else                                 // x is pure infinitesimal
    {
    u = nearestInteger( s );
-   if( s != (Complex) u ) {
+   if( s != (FNAL::Complex) u ) {
      cerr <<  "\n*** ERROR::JLC pow: attempt to use infinitesimal " 
           <<  "as base with non-integer exponent.\n" 
           << endl;
@@ -1541,7 +1541,7 @@ JetC sin( const JetC& x ) {
  // ??? REMOVE: JetC epsSin( const JetC& );
  // ??? REMOVE: JetC epsCos( const JetC& );
  static JetC epsilon;
- static Complex cs, sn;
+ static FNAL::Complex cs, sn;
  dlist_iterator getNext( *(dlist*) x.jl );
  static JLCterm* p;
 
@@ -1563,7 +1563,7 @@ JetC sin( const JetC& x ) {
           << endl;
      exit(1);
    }
-   epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, Complex( 0.0, 0.0 ), x->myEnv ) );
+   epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, FNAL::Complex( 0.0, 0.0 ), x->myEnv ) );
    return epsilon;
  }
  
@@ -1596,8 +1596,8 @@ JetC sinh( const JetC& x ) {
 JetC sqrt( const JetC& x ) {
  // ??? REMOVE: JetC epsSqrt( const JetC& );
  static JetC epsilon;
- static Complex factor;
- static Complex std;
+ static FNAL::Complex factor;
+ static FNAL::Complex std;
  dlist_iterator getNext( *(dlist*) x.jl );
  static JLCterm* p;
 
@@ -1665,7 +1665,7 @@ JetC tanh( const JetC& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetC fabs( const JetC& x ) {
- static Complex u;
+ static FNAL::Complex u;
 
  if( x->count == 0 ) {
      cerr << "\n\n"
@@ -1702,7 +1702,7 @@ JetC erf( const JetC& z )
   if( ( fabs(imag(z.standardPart())) > 3.9 ) || 
       ( fabs(real(z.standardPart())) > 3.0 ) ) {
     JetC u( pje );
-    u = Complex( 0., 1. )*z;
+    u = FNAL::Complex( 0., 1. )*z;
     u = 1.0 - exp(u*u)*w(u);
 
     return u;
@@ -1741,7 +1741,7 @@ JetC erf( const JetC& z )
 
 JetC erfc( const JetC& z ) 
 {
-  static const Complex one( 1.0, 0.0 );
+  static const FNAL::Complex one( 1.0, 0.0 );
   return ( one - erf( z ) );
 }
 
@@ -1750,7 +1750,7 @@ JetC erfc( const JetC& z )
 
 JetC w( const JetC& z ) 
 {
-  static const Complex mi( 0., -1. );
+  static const FNAL::Complex mi( 0., -1. );
   static double x;
   static double y;
          JetC   answer( z.Env() );
@@ -2094,7 +2094,7 @@ void JetC::writeToFile( FILE* filePtr ) const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JetC::scaleBy( Complex y ) {
+void JetC::scaleBy( FNAL::Complex y ) {
  PREPFORCHANGE(jl)
  jl->scaleBy( y );
 }
@@ -2124,7 +2124,7 @@ JLCterm JetC::lowTerm() const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Complex JetC::standardPart() const {
+FNAL::Complex JetC::standardPart() const {
  return jl->standardPart();
 }
 
@@ -2139,14 +2139,14 @@ void JetC::clear() {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Complex JetC::weightedDerivative( const int* ind ) const {
+FNAL::Complex JetC::weightedDerivative( const int* ind ) const {
  return jl->weightedDerivative( ind );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Complex JetC::derivative( const int* ind ) const {
+FNAL::Complex JetC::derivative( const int* ind ) const {
  return jl->derivative( ind );
 }
 
@@ -2195,7 +2195,7 @@ JetC JetC::filter( const int& wgtLo, const int& wgtHi ) const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC JetC::filter( char (*f) ( const IntArray&, const Complex& ) ) const { 
+JetC JetC::filter( char (*f) ( const IntArray&, const FNAL::Complex& ) ) const { 
  static JetC z;
  static JLC* zPtr;
  static JLCterm* p;
@@ -2228,7 +2228,7 @@ JetC JetC::filter( char (*f) ( const IntArray&, const Complex& ) ) const {
    if( oldIndex(i) != p->index(i) ) {
     cerr <<  "\n"
          <<  "*** ERROR ***                                      \n" 
-         <<  "*** ERROR *** JetC JetC::filter( char (*f) ( int*, Complex ) \n" 
+         <<  "*** ERROR *** JetC JetC::filter( char (*f) ( int*, FNAL::Complex ) \n" 
          <<  "*** ERROR *** The test routine is not allowed      \n" 
          <<  "*** ERROR *** to change the values in the index    \n" 
          <<  "*** ERROR *** array!!                              \n" 
@@ -2378,7 +2378,7 @@ JetC JetC::operator() ( const JetC* y ) const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Complex JetC::operator() ( const Complex* x ) const {
+FNAL::Complex JetC::operator() ( const FNAL::Complex* x ) const {
  return jl->operator()( x );
 }
 
@@ -2601,7 +2601,7 @@ JetC JetC::D( const IntArray& n ) const
 // POSTPONED JetC JetC::Inverse() const {
 // POSTPONED  static JetC      z;
 // POSTPONED  static JLCterm*  p;
-// POSTPONED  static Complex   zero;
+// POSTPONED  static FNAL::Complex   zero;
 // POSTPONED  static char     t1, t2;
 // POSTPONED 
 // POSTPONED  // Initializations
