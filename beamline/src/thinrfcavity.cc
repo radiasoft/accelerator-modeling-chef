@@ -182,5 +182,6 @@ istream& thinrfcavity::readFrom(istream& is)
   is >> w >> e >> phi_s >> Q >> R;
   w_rf = w*MATH_TWOPI;
   sin_phi_s = sin(phi_s);
+  setStrength(e);
   return is;
 }
