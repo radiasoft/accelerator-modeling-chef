@@ -185,6 +185,37 @@ int CF_sbend::setQuadrupole( double arg_x )
 }
 
 
+int CF_sbend::setDipoleField( double arg_x )
+{
+  this->strength = arg_x;
+
+  int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  sbend** w = new sbend* [ m ];
+  int counter = -1;
+  bmlnElmnt** x = _u;
+
+  while( x <= _v ) {
+    if( 0 == strcmp( (*x)->Type(), "sbend" ) ) {
+      // w[++counter] = dynamic_cast<sbend*>(*x);
+      w[++counter] = (sbend*)(*x);
+    }
+    x++;
+  }
+
+  if( counter < 0 ) {
+    delete [] w;
+    return 1;
+  }
+  
+  for( int i = 0; i <= counter; i++ ) {
+    w[i]->setStrength( this->strength );
+  }
+  
+  delete [] w;
+  return 0;
+}
+
+
 double CF_sbend::getOctupole()
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
@@ -271,6 +302,12 @@ double CF_sbend::getQuadrupole()
   
   delete [] w;
   return ret;
+}
+
+
+double CF_sbend::getDipoleField()
+{
+  return this->strength;
 }
 
 
