@@ -112,6 +112,7 @@ class BeamlineContext
 
     // Beamline methods
     const char* name() const;
+    void rename( const char* );
     void peekAt( double& s, Particle* = 0 ) const;
     double sumLengths() const;
 

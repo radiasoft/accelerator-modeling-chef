@@ -943,10 +943,10 @@ void BeamlineBrowser::contentsMousePressEvent( QMouseEvent* e )
   { if( typeid(*j) == typeid(QBmlRoot) ) 
     { _lastClickedRootPtr = dynamic_cast<QBmlRoot*>(j);
       if( 0 != ( ((QBmlRoot*) j) -> _myBmlCon ) ) {
-        emit sig_bmlLeftClicked( ((QBmlRoot*) j) -> _myBmlCon );
+        emit sig_bmlLeftClicked( ((QBmlRoot*) j) -> _myBmlCon, ((QBmlRoot*) j) );
       }
     }
-    emit sig_bmlLeftClicked( j );
+    emit sig_bmlLeftClicked( j );  // No longer necessary???
   }
 
 
@@ -1145,7 +1145,7 @@ void BeamlineBrowser::displayBeamline( const BeamlineContext* ptr )
   this->ensureItemVisible( root );
 
   if( 0 != ( root->_myBmlCon ) ) {
-    emit sig_bmlLeftClicked( root->_myBmlCon );
+    emit sig_bmlLeftClicked( root->_myBmlCon, root );
   }
   else {
     ostringstream uic;
@@ -1155,7 +1155,7 @@ void BeamlineBrowser::displayBeamline( const BeamlineContext* ptr )
            "\ncreation of a null BeamlineContext.";
     QMessageBox::information( 0, "BeamlineBrowser: WARNING", uic.str().c_str() );
   }
-  emit sig_bmlLeftClicked( root );
+  emit sig_bmlLeftClicked( root );  // No longer necessary???
 
   if ( childCount() == 1 ) emit sig_browserIsNotEmpty();
 }
