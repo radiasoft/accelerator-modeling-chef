@@ -283,6 +283,26 @@ void CF_rbend::Split( double, bmlnElmnt**, bmlnElmnt** )
   exit(1);
 }
 
+
+void CF_rbend::peekAt( double& s, Particle* p_prt )
+{
+ cout << setw(12) << s;
+ s += OrbitLength( *p_prt );
+ cout << setw(12) << s           
+                  << " : " 
+      << setw(10) << (int) this  
+      << setw(15) << ident       
+      << setw(15) << Type()      
+      << setw(12) << length      
+      << setw(12) << strength    
+      << setw(12) << ((this->getQuadrupole())/length)
+      << setw(12) << (2.0*(this->getSextupole())/length)
+      << setw(12) << (6.0*(this->getOctupole())/length)
+      << setw(12) << shuntCurrent
+      << endl;
+}
+
+
 ostream& CF_rbend::writeTo( ostream& os )
 {
   os << OSTREAM_DOUBLE_PREC << ( this->_poleFaceAngle ) << " ";
