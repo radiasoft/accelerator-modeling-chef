@@ -1,3 +1,6 @@
+#ifdef HAVE_CONFIG
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -34,8 +37,6 @@
 #include "rbend.h"
 #include "PhysicsConstants.h"
 #include "JetC.h"
-
-using FNAL::Complex;
 
 rbend::NoEdge_Prop       rbend::NoEdge;
 rbend::Exact_Prop        rbend::Exact;

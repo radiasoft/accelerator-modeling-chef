@@ -1,9 +1,6 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 #include "sextupole.h"
 
 void sextupole::localPropagate( Particle& p ) {
