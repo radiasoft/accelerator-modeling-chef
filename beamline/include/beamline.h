@@ -210,6 +210,10 @@ public:
   void align(JetParticle&, BMLN_posInfo, Jet*);
   void align(Jet*, BMLN_posInfo, Jet*);
   void misalign(JetParticle&, BMLN_posInfo, Jet*);
+  void misalign( double* );
+  void align( double* );
+  void misalign( JetVector& );
+  void align( JetVector& );
   void setAlignment(const alignmentData&);
   alignmentData getAlignment();
   friend ostream& operator<<(ostream&, alignment&);
@@ -682,10 +686,8 @@ struct rbendData;
 class rbend : public bmlnElmnt
 {
 private:
-  static void P_OutFace    ( bmlnElmnt*, Particle& );
-  static void J_OutFace    ( bmlnElmnt*, JetParticle& );
-  static void P_InFace    ( bmlnElmnt*, Particle& );
-  static void J_InFace    ( bmlnElmnt*, JetParticle& );
+  static void P_Face    ( bmlnElmnt*, Particle& );
+  static void J_Face    ( bmlnElmnt*, JetParticle& );
   double poleFaceAngle;
 
   // bmlnElmnt::strength -> magnetic field [T]
