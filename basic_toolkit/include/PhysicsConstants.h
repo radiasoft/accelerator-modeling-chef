@@ -53,5 +53,8 @@
 // PH_CNV_brho_to_p = 10-9 PH_MKS_c
 //
 // PH_MKS_rp        = PH_MKS_re*PH_NORM_me/PH_NORM_mp
+// 
+// PH_MKS_re        = e^2 / (4 pi epsilon_0 mc^2)
+//                  = PH_MKS_e^2 / (4 pi epsilon_0 PH_NORM_me^2)
 
 #endif // PHYSC_H
