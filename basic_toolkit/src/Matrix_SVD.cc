@@ -43,7 +43,7 @@
 
 #include "Matrix.h"
 
-using namspace std;
+using namespace std;
 
 void MatrixD::SVD ( MatrixD& U, MatrixD& W, MatrixD& V ) const
 {
