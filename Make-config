@@ -46,14 +46,15 @@ gcc:
 
 linux:
 	$(MAKE) targets \
-	"C   = gcc" \
-	"C++ = g++" \
+	"C   = gcc5" \
+	"C++ = g++5" \
 	"CFLAGS =  " \
 	"C++FLAGS =  " \
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
-	"INCDIR = $(FNALROOT)/include -I/usr/include/g++-include" \
+	"SYBASEINC = /home/sybase/sybase/include" \
+	"INCDIR = $(FNALROOT)/include" \
 	"TKINC = /usr/include/tcl" \
 	"XINC = /usr/include" \
 	"LIBDIR = $(FNALROOT)/lib/gcc"
