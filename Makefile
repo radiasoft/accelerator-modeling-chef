@@ -126,7 +126,7 @@ TAR_FILES =	\
 
 tar:
 	cd .. ; \
-	tar -cvfX $(NAME).tar fnal/tar-exclude $(TAR_FILES) ; \
+	tar -cvfFFX $(NAME).tar fnal/tar-exclude $(TAR_FILES) ; \
 	gzip $(NAME).tar ; \
 	mv $(NAME).tar.gz fnal
 
