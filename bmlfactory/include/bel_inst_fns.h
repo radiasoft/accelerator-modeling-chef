@@ -48,6 +48,11 @@ make_solenoid( char* name, double length ) {
 }
 
 static inline bmlnElmnt*
+make_elseparator( char* name, double length ) {
+  return new drift( name, length );
+}
+
+static inline bmlnElmnt*
 make_instrument( char* name, double length ) {
   return new drift( name, length );
 }
