@@ -306,6 +306,19 @@ void Frame::reset()
 }
 
 
+Frame Frame::relativeTo( const Frame& f ) const
+{
+  Frame ret;
+  MatrixD W( 3, 3 );
+
+  W = ( f.e ).transpose();
+  ret.o = W * ( this->o - f.o );
+  ret.e = W * ( this->e );
+
+  return ret;
+}
+
+
 ostream& operator<< ( ostream& os, /* const */ Frame& f )
 {
   os << "Frame origin: " << f.o << endl;
