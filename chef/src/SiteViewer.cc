@@ -215,12 +215,12 @@ void SiteViewer::_fileSite()
     int i;
     ofstream outputFileStream( fileName );
     outputFileStream << setiosflags(ios::fixed);
-    outputFileStream << setw(15) << "Element"
-                     << setw(15) << "Name"
-                     << setw(15) << "Azimuth"
-                     << setw(15) << "x[m]"
-                     << setw(15) << "y[m]"
-                     << setw(15) << "z[m]"
+    outputFileStream << setw(18) << "Element"
+                     << setw(18) << "Name"
+                     << setw(18) << "Azimuth"
+                     << setw(18) << "x[m]"
+                     << setw(18) << "y[m]"
+                     << setw(18) << "z[m]"
                      << endl;
     for( i = 0; i < (6*15); i++ ) {
       outputFileStream << "-";
@@ -239,12 +239,12 @@ void SiteViewer::_fileSite()
       xx = _x[i];
       yy = _y[i];
       zz = _z[i];
-      outputFileStream << setw(15) << _element[i]->Type() 
-                       << setw(15) << _element[i]->Name()
-                       << setw(15) << az
-                       << setw(15) << setprecision(3) << _x[i]
-                       << setw(15) << setprecision(3) << _y[i]
-                       << setw(15) << setprecision(3) << _z[i]
+      outputFileStream << setw(18) << _element[i]->Type() 
+                       << setw(18) << _element[i]->Name()
+                       << setw(18) << az
+                       << setw(18) << setprecision(6) << _x[i]
+                       << setw(18) << setprecision(6) << _y[i]
+                       << setw(18) << setprecision(6) << _z[i]
                        << endl;
     }
 
