@@ -278,7 +278,7 @@ double combinedFunction::AdjustPosition( const Proton& arg_p )
 
 double combinedFunction::AdjustPosition( const JetProton& arg_jp )
 {
-  enum { x, y, cdt, xp, yp, dpop };
+  static const enum { x = 0, y, cdt, xp, yp, dpop };
   JetProton  myJP( arg_jp );
   Proton*    p_myP = (Proton*) myJP.ConvertToParticle();
   // This is deleted before returning.
