@@ -5,21 +5,24 @@ void quadrupole::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
   int     i, j;
   double  arg, factor;
   double  inState[ BMLN_dynDim ];
-  double mapMatrix[BMLN_dynDim][BMLN_dynDim];
+  static double mapMatrix[BMLN_dynDim][BMLN_dynDim];
+  static double I_Matrix[BMLN_dynDim][BMLN_dynDim];
   double realStrength; 
-  for   ( i = 0; i < BMLN_dynDim; i++ ) {
-    for ( j = 0; j < BMLN_dynDim; j++ )
-      mapMatrix[i][j] = 0.0;
-    mapMatrix[i][i] = 1.0;
+  if(I_Matrix[0][0] != 1.0) {
+    for   ( i = 0; i < BMLN_dynDim; i++ ) {
+      for ( j = 0; j < BMLN_dynDim; j++ )
+	I_Matrix[i][j] = 0.0;
+      I_Matrix[i][i] = 1.0;
+    }
   }
+  memcpy((void *)mapMatrix, (const void *)I_Matrix, 
+	 BMLN_dynDim * BMLN_dynDim * sizeof(double));
+
   realStrength = pbe->strength / p.BRho();
  if ( realStrength == 0.0 )         // Zero-strength quad acts like a drift
  {
-   mapMatrix[0][0] = 1.0;  mapMatrix[0][3] = pbe->length;
-   mapMatrix[3][0] = 0.0;  mapMatrix[3][3] = 1.0;
-
-   mapMatrix[1][1] = 1.0;  mapMatrix[1][4] = pbe->length;
-   mapMatrix[4][1] = 0.0;  mapMatrix[4][4] = 1.0;
+   mapMatrix[0][3] = pbe->length;
+   mapMatrix[1][4] = pbe->length;
  }
  else if ( realStrength < 0.0 )     // Defocussing horizontally
  {                              // Focussing   vertically
@@ -92,11 +95,8 @@ void quadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
   
   if ( realStrength.standardPart() == 0.0 )         // Zero-strength quad acts like a drift
     {
-      mapMatrix[0][0] = 1.0;  mapMatrix[0][3] = pbe->length;
-      mapMatrix[3][0] = 0.0;  mapMatrix[3][3] = 1.0;
-      
-      mapMatrix[1][1] = 1.0;  mapMatrix[1][4] = pbe->length;
-      mapMatrix[4][1] = 0.0;  mapMatrix[4][4] = 1.0;
+      mapMatrix[0][3] = pbe->length;
+      mapMatrix[1][4] = pbe->length;
     }
   else if ( realStrength.standardPart() < 0.0 )     // Defocussing horizontally
     {                              // Focussing   vertically
