@@ -3,7 +3,7 @@
 **************************************************************************
 ******                                                                
 ******  BEAMLINE FACTORY:  Interprets MAD input files and             
-******             creates instances of class beamline.                       
+******             creates instances of class beamline.                 
 ******                                                
 ******  Version:   1.2
 ******                                    
@@ -26,7 +26,7 @@
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
+******  Usage, modification, and redistribution are subject to terms    
 ******  of the License and the GNU General Public License, both of
 ******  which are supplied with this software.
 ******                                                                
@@ -321,9 +321,132 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       }
       break;
     }
-    case BEL_MULTIPOLE:
-      lbel = make_multipole( bel->name_, expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+    case BEL_MULTIPOLE: {
+      double roll     = 0.0;
+      double momentum = PH_CNV_brho_to_p*BRHO_;
+      double energy   = sqrt( momentum*momentum + PH_NORM_mp*PH_NORM_mp );
+      bmlnElmnt* q    = 0;
+      beamline* temp  = new beamline( bel->name_ );
+      temp->setEnergy( energy );
+
+      double k0l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K0L], var_table_, bel_table_ );
+      if( k0l != 0.0 ) {
+        cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
+             << "\n*** WARNING *** Value of K0L is being ignored.       "
+             << "\n*** WARNING *** K0L = " << k0l << " for " <<  bel->name_
+             << "\n*** WARNING ***                                      "
+             << endl;
+      }
+
+      double k1l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K1L], var_table_, bel_table_ );
+      if( k1l != 0.0 ) {
+        q = new thinQuad( BRHO_*k1l );
+        roll = expr_evaluate( bel->params_[BEL_MULTIPOLE_T1], var_table_, bel_table_ );
+        if( 0.0 != roll ) {
+          aligner->xOffset = 0.0;
+          aligner->yOffset = 0.0;
+          aligner->tilt    = roll;
+          q->setAlignment( *aligner );
+	}
+        temp->append( q );
+      }
+      
+      double k2l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K2L], var_table_, bel_table_ );
+      if( k2l != 0.0 ) {
+        q = new thinSextupole( BRHO_*k2l/2.0 );
+        roll = expr_evaluate( bel->params_[BEL_MULTIPOLE_T2], var_table_, bel_table_ );
+        if( 0.0 != roll ) {
+          aligner->xOffset = 0.0;
+          aligner->yOffset = 0.0;
+          aligner->tilt    = roll;
+          q->setAlignment( *aligner );
+	}
+        temp->append( q );
+      }
+      
+      double k3l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K3L], var_table_, bel_table_ );
+      if( k3l != 0.0 ) {
+        q = new thinOctupole( BRHO_*k3l/6.0 );
+        roll = expr_evaluate( bel->params_[BEL_MULTIPOLE_T3], var_table_, bel_table_ );
+        if( 0.0 != roll ) {
+          aligner->xOffset = 0.0;
+          aligner->yOffset = 0.0;
+          aligner->tilt    = roll;
+          q->setAlignment( *aligner );
+	}
+        temp->append( q );
+      }
+      
+      double k4l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K4L], var_table_, bel_table_ );
+      if( k4l != 0.0 ) {
+        cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
+             << "\n*** WARNING *** Value of K4L is being ignored.       "
+             << "\n*** WARNING *** K4L = " << k4l << " for " <<  bel->name_
+             << "\n*** WARNING ***                                      "
+             << endl;
+      }
+
+      double k5l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K5L], var_table_, bel_table_ );
+      if( k5l != 0.0 ) {
+        cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
+             << "\n*** WARNING *** Value of K5L is being ignored.       "
+             << "\n*** WARNING *** K5L = " << k5l << " for " <<  bel->name_
+             << "\n*** WARNING ***                                      "
+             << endl;
+      }
+
+      double k6l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K6L], var_table_, bel_table_ );
+      if( k6l != 0.0 ) {
+        cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
+             << "\n*** WARNING *** Value of K6L is being ignored.       "
+             << "\n*** WARNING *** K6L = " << k6l << " for " <<  bel->name_
+             << "\n*** WARNING ***                                      "
+             << endl;
+      }
+
+      double k7l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K7L], var_table_, bel_table_ );
+      if( k7l != 0.0 ) {
+        cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
+             << "\n*** WARNING *** Value of K7L is being ignored.       "
+             << "\n*** WARNING *** K7L = " << k7l << " for " <<  bel->name_
+             << "\n*** WARNING ***                                      "
+             << endl;
+      }
+
+      double k8l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K8L], var_table_, bel_table_ );
+      if( k8l != 0.0 ) {
+        cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
+             << "\n*** WARNING *** Value of K8L is being ignored.       "
+             << "\n*** WARNING *** K8L = " << k8l << " for " <<  bel->name_
+             << "\n*** WARNING ***                                      "
+             << endl;
+      }
+
+      double k9l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K9L], var_table_, bel_table_ );
+      if( k9l != 0.0 ) {
+        cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
+             << "\n*** WARNING *** Value of K9L is being ignored.       "
+             << "\n*** WARNING *** K9L = " << k9l << " for " <<  bel->name_
+             << "\n*** WARNING ***                                      "
+             << endl;
+      }
+
+      int n = temp->howMany();
+
+      if( 0 == n ) {
+        lbel = new marker( bel->name_ );
+        delete temp;
+      }
+      else if( 1 == n ) {
+        lbel = temp->firstElement();
+        lbel->Rename( bel->name_ );
+        delete temp;  // This should not delete the element.
+      }
+      else {
+        lbel = temp;
+      }
       break;
+    }
     case BEL_SOLENOID:
       lbel = make_solenoid( bel->name_, expr_evaluate( bel->length_, var_table_, bel_table_ ) );
       break;
@@ -402,9 +525,31 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       
       break;
     }
-    case BEL_ELSEPARATOR:
-      lbel = make_elseparator( bel->name_, expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+    case BEL_ELSEPARATOR: {
+      // lbel = make_elseparator( bel->name_, expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+
+      // According to the MAD manual, field is in MV/m
+      // Separator strengths are in MV/m.
+      // approximate bend angle is theta(ur) = E_MAD(MV/m)*2.57175(m)/E(Tev)
+
+      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
+      double field  = expr_evaluate( bel->params_[BEL_ELSEPARATOR_E], var_table_, bel_table_ );
+
+      double momentum = PH_CNV_brho_to_p*BRHO_;
+      double energy   = sqrt( momentum*momentum + PH_NORM_mp*PH_NORM_mp );
+      double angle    = 0.001 * (field*length/momentum) * (energy/momentum);
+
+      lbel = new vkick( bel->name_, length, angle );
+
+      if ( ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->kind_ != NUMBER_EXPR ) {
+        aligner->xOffset = 0.0;
+        aligner->yOffset = 0.0;
+        aligner->tilt    = expr_evaluate( bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
+        lbel->setAlignment( *aligner );
+      }
+
       break;
+    }
     case BEL_HMONITOR: {
       double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
       // REMOVE: char   name[BEL_NAME_LENGTH];
