@@ -1708,6 +1708,32 @@ beamline* beamline::flatten() {
 } 
 
 
+
+int beamline::startAt( const bmlnElmnt* x )
+{
+  return this->dlist::startAt( (void*) x );
+}
+
+
+int beamline::startAt( char* s )
+{
+  dlist_traversor getNext( *(dlist*) this );
+  dlink* q;
+
+  while((  q = getNext()  )) 
+  {
+    if( 0 == strcmp( ((bmlnElmnt*)(q->info()))->Name(), s ) ) 
+    {
+      this->dlist::riskStartAt( q );
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
+
+
 sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2, 
                                int deg, JetParticle& jp ) {
 
