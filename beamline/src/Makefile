@@ -15,6 +15,7 @@ OBJS = BBLens.o \
        Slot.o \
        alignment.o \
        beamline.o \
+       BeamlineIterator.o \
        bmlnElmnt.o \
        circuit.o \
        combinedFunction.o \
