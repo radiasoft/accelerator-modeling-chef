@@ -4,6 +4,7 @@ INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(BASIC_TOOLKIT_INC) -I$(PHYS
 
 OBJS = ConvertToTunes.o \
 	EdwardsTeng.o \
+	FindCovariance.o \
 	FPSolver.o \
 	JacobianVisitor.o \
 	normalForm.o \
