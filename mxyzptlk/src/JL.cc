@@ -241,16 +241,16 @@ JL::~JL() {
 //     Member functions(public)  |||||||||||||||||||||||||||||||
 
 void JL::addTerm( JLterm* a) {
- dlist_traversor getNext( *(dlist*) this );
- dlink* p;
- 
  // If the value of *a is 0, don't bother with it unless
  // the weight is also 0.
  if( ( a -> value == 0.0 ) && ( a -> weight != 0 ) ) {
    delete a;
    return;
  }
- 
+
+ dlist_traversor getNext( *(dlist*) this );
+ dlink* p;
+
  //
  // In the event that the candidate is lighter than the first
  // element in the JL dlist ... or the list is empty
@@ -555,9 +555,9 @@ JLterm* JL::remove( dlink* w ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double JL::standardPart() {
- dlist_iterator g( (dlist&) *this );
  JLterm* p; 
  if( count < 1 )       return 0.0;
+ dlist_iterator g( (dlist&) *this );
  p = (JLterm*) g();
  if( p->weight  == 0 ) return p->value;
                        return 0.0;
@@ -834,12 +834,6 @@ ostream& operator<<( ostream& os, JL& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 char operator==( const JL& x, const JL& y ) {
- dlist_iterator getNextX( (dlist&) x );
- dlist_iterator getNextY( (dlist&) y );
- JLterm* p;
- JLterm* q;
-
- 
  if( ( x.count   != y.count )   ||
      ( x.weight  != y.weight )  ||
      ( x.accuWgt != y.accuWgt )
@@ -847,6 +841,11 @@ char operator==( const JL& x, const JL& y ) {
  
  if( x.myEnv != y.myEnv ) return 0;
 
+ dlist_iterator getNextX( (dlist&) x );
+ dlist_iterator getNextY( (dlist&) y );
+ JLterm* p;
+ JLterm* q;
+ 
  while((  p = (JLterm*) getNextX()  )) {
    if( !( q = (JLterm*) getNextY() ) ) return 0;
    if( !( *p == *q ) ) return 0;
@@ -867,13 +866,14 @@ char operator==( const JL& x, const JL& y ) {
 
 char operator==( const JL& x, const double& y ) {
  char result = 1;
- dlist_iterator getNext( (dlist&) x );
  JLterm* p;
 
  if( x.count < 1 ) {
   if( y == 0.0 ) return 1;
   else           return 0;
  }
+
+ dlist_iterator getNext( (dlist&) x );
 
  while((  p = (JLterm*) getNext()  )) 
   result = result && ( p->weight == 0 ? p->value == y : 
@@ -946,13 +946,15 @@ JL& JL::operator=( const double& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JL& JL::operator=( const JL& x ) {
- dlist_iterator getNext( (dlist&) x );
  static JLterm* p;
  static JLterm* q;
 
  if( this == &x ) return *this;
  
  clear();
+
+ dlist_iterator getNext( (dlist&) x );
+
  while((  p = (JLterm*) getNext()  )) {
    q = new JLterm( p );
    append( q );
@@ -1049,11 +1051,8 @@ JLterm operator*( JLterm& x, JLterm& y ) {
 //      Implementation of Class JLterm
 
 JLterm::JLterm( const Jet__environment* pje ) 
-: index( pje->NumVar )
+: index( pje->NumVar ), weight(0), value(0.0)
 {
- weight = 0;
- value = 0.0;
-
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -1065,7 +1064,7 @@ JLterm::JLterm( const Jet__environment* pje )
 JLterm::JLterm( const IntArray& l, 
                 const double& x, 
                 const Jet__environment* pje ) 
-: index( l.Dim() )
+: index( l )
 {
  int i, dpt;
 
@@ -1091,7 +1090,7 @@ JLterm::JLterm( const IntArray& l,
      exit(0);
    }
    
-   index = l;
+   // ??? REMOVE: index = l;
    weight = dpt;
    value = x;
  }
@@ -1131,13 +1130,8 @@ JLterm::JLterm( const IntArray& l,
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JLterm::JLterm( JLterm* x ) 
-: index( x->index.Dim() )
+: index( x->index ), weight(x->weight), value(x->value)
 {
-
- 
- weight = x->weight;
- value  = x->value;
- index  = x->index;
 
 #ifdef OBJECT_DEBUG
  objectCount++;
@@ -1148,14 +1142,8 @@ JLterm::JLterm( JLterm* x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JLterm::JLterm( JLterm& x ) 
-: index( x.index.Dim() )
+: index( x.index ), weight(x.weight), value(x.value)
 {
-
- 
- weight = x.weight;
- value  = x.value;
- index  = x.index;
-
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -1220,11 +1208,7 @@ char operator<=( JLterm& a, JLterm& b ) {
    exit(1);
  }
  if( a.weight != b.weight ) return ( a.weight < b.weight );
- for( i = 0; i < a.index.Dim(); i++ ) {
-   if( a.index(i) == b.index(i) ) continue;
-   return ( a.index(i) < b.index(i) );
- }
- return 1;  // when all indices are the same.
+ return (a.index <= b.index);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

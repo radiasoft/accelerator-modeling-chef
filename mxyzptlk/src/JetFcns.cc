@@ -48,9 +48,6 @@ void Jet::operator+=( const Jet& y ) {
  JL* xPtr =   jl;
  JL* yPtr = y.jl;
 
- dlist_iterator gx( *(dlist*) xPtr );
- dlist_iterator gy( *(dlist*) yPtr );
-
  
  // Check for consistency and set reference point of the sum.
  if( xPtr->myEnv != yPtr->myEnv )
@@ -62,6 +59,8 @@ void Jet::operator+=( const Jet& y ) {
  // If one of the arguments is void, then return the other ..
  if( xPtr->count < 1 ) { (*this) = y; return; }
  if( yPtr->count < 1 ) return;
+
+ dlist_iterator gy( *(dlist*) yPtr );
 
  // .. otherwise, continue normal operations.
  while((  p = (JLterm*) gy()  )) {
@@ -172,14 +171,6 @@ void Jet::operator-=( const double& x ) {
 
 Jet operator+( const Jet& x, const Jet& y ) { 
                                        // ??? This should be modified so that
- static Jet z;                         // terms beyond the accurate weight of
- static JLterm* p;                     // x or y are not computed and carried
- static JLterm* q;                     // into the answer.
-
- p    = 0;
- q    = 0;
-
-
  // Possibility: constant Jet argument
  if( !(x->myEnv) ) {
    if( x->count == 1 ) {
@@ -214,11 +205,13 @@ Jet operator+( const Jet& x, const Jet& y ) {
  }
 
 
+ static Jet z;                         // terms beyond the accurate weight of
+ static JLterm* p;                     // x or y are not computed and carried
+ static JLterm* q;                     // into the answer.
 
- dlist_iterator gx( *(dlist*) x.jl );
- dlist_iterator gy( *(dlist*) y.jl );
+ p    = 0;
+ q    = 0;
 
- 
  // Check for consistency and set reference point of the sum.
  if( x->myEnv != y->myEnv ) {
      cerr << "\n\n*** Jet::operator+ ERROR: Inconsistent environments." 
@@ -239,6 +232,9 @@ Jet operator+( const Jet& x, const Jet& y ) {
    return z;
  }
                                 
+ dlist_iterator gx( *(dlist*) x.jl );
+ dlist_iterator gy( *(dlist*) y.jl );
+
  // .. otherwise, continue normal operations.
  if( x->count > y->count ) {
    z.DeepCopy( x );
@@ -371,10 +367,6 @@ Jet operator-( const Jet& x, const Jet& y ) {
  p    = 0;
  q    = 0;
 
- dlist_iterator gx( *(dlist*) x.jl );
- dlist_iterator gy( *(dlist*) y.jl );
-
- 
  // Check for consistency and set reference point of the difference.
  if( x->myEnv != y->myEnv ) {
      cerr << "\n\n*** Jet::operator- ERROR: Inconsistent environments." 
@@ -395,6 +387,9 @@ Jet operator-( const Jet& x, const Jet& y ) {
    return z;
  }
                                 
+ dlist_iterator gx( *(dlist*) x.jl );
+ dlist_iterator gy( *(dlist*) y.jl );
+
  // .. otherwise, continue normal operations.
  if( x->count > y->count ) {
    z.DeepCopy( x );
@@ -452,11 +447,6 @@ Jet operator*( const Jet& x, const Jet& y ) {
  zPtr       = z.jl;
  testWeight = 0;
 
-
- dlist_looper gx( *(dlist*) xPtr );
- dlist_looper gy( *(dlist*) yPtr );
- 
-
  // If one of the arguments is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
    z.DeepCopy( x );         // what is returned does not own
@@ -473,6 +463,10 @@ Jet operator*( const Jet& x, const Jet& y ) {
  // Determine the maximum weight computed accurately.
  if( xPtr->accuWgt < yPtr->accuWgt ) zPtr->accuWgt = xPtr->accuWgt;
  else                                zPtr->accuWgt = yPtr->accuWgt;
+ 
+
+ dlist_looper gx( *(dlist*) xPtr );
+ dlist_looper gy( *(dlist*) yPtr );
  
  // .. and continue normal operations.
  testWeight = zPtr->accuWgt;
@@ -1151,7 +1145,6 @@ Jet exp( const Jet& x ) {
  Jet epsExp( const Jet& );
  static Jet epsilon;
  static double factor;
- dlist_iterator getNext( *(dlist*) x.jl );
  static JLterm* p;
 
  // Paranoid initializations
@@ -1177,6 +1170,8 @@ Jet exp( const Jet& x ) {
    return epsilon;
  }
  
+ dlist_iterator getNext( *(dlist*) x.jl );
+
  p = (JLterm*) getNext();
  if( ( p -> weight ) == 0 ) {         // x has non-zero standard part
    factor = exp( p -> value );
@@ -1199,7 +1194,6 @@ Jet log ( const Jet& x ) {
  static double          std;
  static double          n;
  static JLterm*         p;
- dlist_iterator  getNext( *(dlist*) x.jl );
  
  // Paranoid initializations
  epsilon.Reconstruct( x->myEnv );
@@ -1220,6 +1214,8 @@ Jet log ( const Jet& x ) {
      exit(1);
  }
  
+ dlist_iterator  getNext( *(dlist*) x.jl );
+
  p = (JLterm*) getNext();
  if( ( ( p -> weight      ) ==  0   ) &&
      ( ( std = p -> value ) !=  0.0 )
@@ -1273,7 +1269,6 @@ Jet pow( const Jet& x, const double& s ) {
  static Jet epsilon;
  static double factor;
  static double std;
- dlist_iterator getNext( *(dlist*) x.jl );
  static JLterm* p;
  static int u;
 
@@ -1301,6 +1296,8 @@ Jet pow( const Jet& x, const double& s ) {
    return epsilon;
  }
  
+ dlist_iterator getNext( *(dlist*) x.jl );
+
  p = (JLterm*) getNext();
  if( ( ( p -> weight      ) ==  0   ) &&
      ( ( std = p -> value ) !=  0.0 )
@@ -1382,7 +1379,6 @@ Jet sin( const Jet& x ) {
  Jet epsCos( const Jet& );
  static Jet epsilon;
  static double cs, sn;
- dlist_iterator getNext( *(dlist*) x.jl );
  static JLterm* p;
 
  // Paranoid initializations
@@ -1408,6 +1404,8 @@ Jet sin( const Jet& x ) {
    return epsilon;
  }
  
+ dlist_iterator getNext( *(dlist*) x.jl );
+
  p = (JLterm*) getNext();
  if( ( p -> weight ) == 0 ) {         // x has non-zero standard part
    cs = cos( p -> value );
@@ -1439,7 +1437,6 @@ Jet sqrt( const Jet& x ) {
  static Jet epsilon;
  static double factor;
  static double std;
- dlist_iterator getNext( *(dlist*) x.jl );
  static JLterm* p;
 
  // Paranoid initializations
@@ -1458,6 +1455,8 @@ Jet sqrt( const Jet& x ) {
      exit(1);
  }
  
+ dlist_iterator getNext( *(dlist*) x.jl );
+
  p = (JLterm*) getNext();
  if( ( ( p -> weight      ) ==  0   ) &&
      ( ( std = p -> value ) !=  0.0 )
@@ -2167,7 +2166,6 @@ Jet Jet::D( int* n ) const {
  static char doit;
  static int f, i, j, k, w;
  static Jet z;
- dlist_iterator getNext( *(dlist*) jl );
  static JLterm* p;
  static JLterm* q;
  
@@ -2212,6 +2210,8 @@ Jet Jet::D( int* n ) const {
  // --- Construct the derivative one link at a time.
  // --- ( See note Obs.4 )
  
+ dlist_iterator getNext( *(dlist*) jl );
+
  while((  p = (JLterm*) getNext()  )) {
  
    q = new JLterm( p );

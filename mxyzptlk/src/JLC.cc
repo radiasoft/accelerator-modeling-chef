@@ -242,7 +242,6 @@ JLC::~JLC() {
 //     Member functions(public)  |||||||||||||||||||||||||||||||
 
 void JLC::addTerm( JLCterm* a) {
- dlist_traversor getNext( *(dlist*) this );
  dlink* p;
  
  // If the value of *a is 0, don't bother with it unless
@@ -252,6 +251,8 @@ void JLC::addTerm( JLCterm* a) {
    return;
  }
  
+ dlist_traversor getNext( *(dlist*) this );
+
  //
  // In the event that the candidate is lighter than the first
  // element in the JLC dlist ... or the list is empty
@@ -557,9 +558,9 @@ JLCterm* JLC::remove( dlink* w ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Complex JLC::standardPart() {
- dlist_iterator g( (dlist&) *this );
  JLCterm* p; 
  if( count < 1 )       return 0.0;
+ dlist_iterator g( (dlist&) *this );
  p = (JLCterm*) g();
  if( p->weight  == 0 ) return p->value;
                        return 0.0;
@@ -770,8 +771,6 @@ ostream& operator<<( ostream& os, JLC& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 char operator==( const JLC& x, const JLC& y ) {
- dlist_iterator getNextX( (dlist&) x );
- dlist_iterator getNextY( (dlist&) y );
  JLCterm* p;
  JLCterm* q;
 
@@ -782,6 +781,9 @@ char operator==( const JLC& x, const JLC& y ) {
    ) return 0;
  
  if( x.myEnv != y.myEnv ) return 0;
+
+ dlist_iterator getNextX( (dlist&) x );
+ dlist_iterator getNextY( (dlist&) y );
 
  while((  p = (JLCterm*) getNextX()  )) {
    if( !( q = (JLCterm*) getNextY() ) ) return 0;
@@ -803,13 +805,14 @@ char operator==( const JLC& x, const JLC& y ) {
 
 char operator==( const JLC& x, const Complex& y ) {
  char result = 1;
- dlist_iterator getNext( (dlist&) x );
  JLCterm* p;
 
  if( x.count < 1 ) {
   if( real(y) == 0.0 && imag(y) == 0.0 )  return 1;
   else                                    return 0;
  }
+
+ dlist_iterator getNext( (dlist&) x );
 
  while((  p = (JLCterm*) getNext()  )) 
   result = result && ( p->weight == 0 ? p->value == y : 
@@ -883,12 +886,13 @@ JLC& JLC::operator=( const Complex& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JLC& JLC::operator=( const JLC& x ) {
- dlist_iterator getNext( (dlist&) x );
  static JLCterm* p;
  static JLCterm* q;
 
  if( this == &x ) return *this;
  
+ dlist_iterator getNext( (dlist&) x );
+
  clear();
  while((  p = (JLCterm*) getNext()  )) {
    q = new JLCterm( p );
@@ -1068,14 +1072,8 @@ JLCterm::JLCterm( const IntArray& l,
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JLCterm::JLCterm( const JLCterm* x ) 
-: index( x->index.Dim() )
+: index( x->index ), weight(x->weight), value(x->value)
 {
-
- 
- weight = x->weight;
- value  = x->value;
- index  = x->index;
-
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -1085,14 +1083,8 @@ JLCterm::JLCterm( const JLCterm* x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JLCterm::JLCterm( const JLCterm& x ) 
-: index( x.index.Dim() )
+: index( x.index ), weight(x.weight), value(x.value)
 {
-
- 
- weight = x.weight;
- value  = x.value;
- index  = x.index;
-
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
