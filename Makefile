@@ -36,17 +36,13 @@ default:
 	@echo "  make tar_everything    Tar up ALL files."
 
 
-#LINKDIRS  = beamline mxyzptlk Machine tev tcl socket server sybase filter swyd recycler
-LINKDIRS  = bml mxb tcl filter swyd recycler
+LINKDIRS  = beamline mxyzptlk Machine tev tcl socket server sybase filter swyd recycler
 
-#SUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app swyd/src swyd/app recycler/app recycler/src
-SUBDIRS  = bml/src bml/src/physics/6d bml/src/physics/mad mxb/src Machine/src tcl/src filter/src filter/app swyd/src swyd/app recycler/app recycler/src
+SUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app swyd/src swyd/app recycler/app recycler/src
 
-#SUNSUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src recycler/src
-SUNSUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src tcl/src filter/src swyd/src recycler/src
+SUNSUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src recycler/src
 
-#SGISUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src sybase/src socket/src server/src filter/sr
-SGISUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src filter/src
+SGISUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src sybase/src socket/src server/src filter/src
 
 gcc solaris-gcc solaris-gcc-debug solaris solaris-debug sunos4 sunos4-debug ultra ultra-opt ultra-debug :
 	@set -x; for i in $(SUNSUBDIRS); do \
