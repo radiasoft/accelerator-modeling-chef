@@ -108,8 +108,6 @@ JL::JL( const Jet__environment* pje ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JL::JL( const double& x, Jet__environment* pje ) {
-
- 
  clear();
  rc = 1;
  weight = 0;
@@ -138,16 +136,16 @@ JL::JL( const JL& x ) {
  JLterm* p;
  JLterm* q;
 
- while((  p = (JLterm*) getNext()  )) {
-   q = new JLterm( p );
-   append( q );
- }
-
  count    = x.count;
  weight   = x.weight;
  accuWgt  = x.accuWgt;
  myEnv    = x.myEnv;
  rc       = 1;
+
+ while((  p = (JLterm*) getNext()  )) {
+   q = new JLterm( p );
+   append( q );
+ }
 
 #ifdef OBJECT_DEBUG
  objectCount++;
@@ -162,16 +160,16 @@ JL::JL( JL* x ) {
  JLterm* p;
  JLterm* q;
 
- while((  p = (JLterm*) getNext()  )) {
-   q = new JLterm( p );
-   append( q );
- }
-
  count    = x->count;
  weight   = x->weight;
  accuWgt  = x->accuWgt;
  myEnv    = x->myEnv;
  rc       = 1;
+
+ while((  p = (JLterm*) getNext()  )) {
+   q = new JLterm( p );
+   append( q );
+ }
 
 #ifdef OBJECT_DEBUG
  objectCount++;

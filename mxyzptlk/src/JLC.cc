@@ -130,16 +130,16 @@ JLC::JLC( const JLC& x ) {
  JLCterm* p;
  JLCterm* q;
 
- while((  p = (JLCterm*) getNext()  )) {
-   q = new JLCterm( p );
-   append( q );
- }
-
  count    = x.count;
  weight   = x.weight;
  accuWgt  = x.accuWgt;
  myEnv    = x.myEnv;
  rc       = 1;
+
+ while((  p = (JLCterm*) getNext()  )) {
+   q = new JLCterm( p );
+   append( q );
+ }
 
 #ifdef OBJECT_DEBUG
  objectCount++;
@@ -154,16 +154,16 @@ JLC::JLC( JLC* x ) {
  JLCterm* p;
  JLCterm* q;
 
- while((  p = (JLCterm*) getNext()  )) {
-   q = new JLCterm( p );
-   append( q );
- }
-
  count    = x->count;
  weight   = x->weight;
  accuWgt  = x->accuWgt;
  myEnv    = x->myEnv;
  rc       = 1;
+
+ while((  p = (JLCterm*) getNext()  )) {
+   q = new JLCterm( p );
+   append( q );
+ }
 
 #ifdef OBJECT_DEBUG
  objectCount++;
@@ -316,12 +316,13 @@ void JLC::writeToFile( char* fileName ) const {
           count, weight, accuWgt );
  fprintf( JLC::scratchFile, "Reference point:  \n" );
  for( i = 0; i < myEnv->NumVar; i++ )
-   fprintf( JLC::scratchFile, "%e  ", myEnv->refPoint[i] );
+   fprintf( JLC::scratchFile, "%e  %e  ", std::real(myEnv->refPoint[i]), 
+                                        std::imag(myEnv->refPoint[i]) );
  fprintf( JLC::scratchFile, "\n" );
  while((  q = getNext()  )) {
    p = (JLCterm*) q->info();
-   fprintf( JLC::scratchFile, "Weight: %d   Value: %e  || ",
-           p -> weight, p -> value );
+   fprintf( JLC::scratchFile, "Weight: %d   Value: %e  %e  || ",
+           p -> weight, std::real(p -> value), std::imag(p -> value) );
    fprintf( JLC::scratchFile, "Addresses: %d %d %d : %d\n",
                   q->prevPtr(), q, q->nextPtr(), p );
    fprintf( JLC::scratchFile, "Index:  ");
@@ -346,12 +347,14 @@ void JLC::writeToFile( FILE* filePtr ) const {
           count, weight, accuWgt );
  fprintf( filePtr, "Reference point:  \n" );
  for( i = 0; i < myEnv->NumVar; i++ )
-   fprintf( filePtr, "%e  ", myEnv->refPoint[i] );
+   fprintf( filePtr, "%e  %e  ", std::real(myEnv->refPoint[i]),
+                                 std::imag(myEnv->refPoint[i]) );
  fprintf( filePtr, "\n" );
  while((  q = getNext()  )) {
    p = (JLCterm*) q->info();
-   fprintf( filePtr, "Weight: %d   Value: %e  || ",
-           p -> weight, p -> value );
+   fprintf( filePtr, "Weight: %d   Value: %e  %e  || ",
+           p -> weight, std::real(p -> value), 
+                        std::imag(p -> value) );
    fprintf( filePtr, "Addresses: %d %d %d : %d\n",
                   q->prevPtr(), q, q->nextPtr(), p );
    fprintf( filePtr, "Index:  ");
