@@ -59,6 +59,7 @@ normalFormTest: normalFormTest.o
 
 clean:
 	rm -f *.o
+	rm -f core
 	rm -rf .sb
 	rm -f *~*
 	rm -f $(ALL)
