@@ -164,6 +164,32 @@ JetVector JetVector::operator+ ( const JetVector& x ) const
 }
 
 
+JetVector operator+ ( const JetVector& x, const Vector& y )
+{
+#ifndef NOCHECKS
+  CHECKOUT(x.dim != y.Dim(), "JetVector::operator+", "Incompatible dimensions.")
+#endif
+
+  JetVector z( x );
+  for ( int i = 0; i < x.dim; i++ ) 
+    z.comp[i] += y(i);
+  return z;
+}
+
+
+JetVector operator+ ( const Vector& y, const JetVector& x )
+{
+#ifndef NOCHECKS
+  CHECKOUT(x.dim != y.Dim(), "JetVector::operator+", "Incompatible dimensions.")
+#endif
+
+  JetVector z( x );
+  for ( int i = 0; i < x.dim; i++ ) 
+    z.comp[i] += y(i);
+  return z;
+}
+
+
 JetVector JetVector::operator+= ( const JetVector& x )
 {
 #ifndef NOCHECKS
@@ -172,6 +198,18 @@ JetVector JetVector::operator+= ( const JetVector& x )
 #endif
 
   for ( int i = 0; i < dim; i++ ) comp[i] += x.comp[i];
+  return *this;
+}
+
+
+JetVector JetVector::operator+= ( const Vector& x )
+{
+#ifndef NOCHECKS
+  CHECKOUT(dim != x.Dim(), "JetVector::operator-=", "Incompatible dimensions.")
+#endif
+
+  for ( int i = 0; i < dim; i++ ) 
+    comp[i] += x(i);
   return *this;
 }
 
@@ -186,6 +224,34 @@ JetVector JetVector::operator- ( const JetVector& x ) const
   JetVector z( dim, 0, myEnv );
   for ( int i = 0; i < dim; i++ ) 
     z.comp[i] = comp[i] - x.comp[i];
+  return z;
+}
+
+
+JetVector operator- ( const JetVector& x, const Vector& y )
+{
+#ifndef NOCHECKS
+  CHECKOUT(x.dim != y.Dim(), "JetVector::operator-", "Incompatible dimensions.")
+#endif
+
+  JetVector z( x );
+  for ( int i = 0; i < x.dim; i++ ) 
+    z.comp[i] -= y(i);
+  return z;
+}
+
+
+JetVector operator- ( const Vector& y, const JetVector& x )
+{
+#ifndef NOCHECKS
+  CHECKOUT(x.dim != y.Dim(), "JetVector::operator-", "Incompatible dimensions.")
+#endif
+
+  JetVector z( x );
+  for ( int i = 0; i < x.dim; i++ ) {
+    z.comp[i] -= y(i);
+    z.comp[i].Negate();
+  }
   return z;
 }
 
@@ -208,6 +274,18 @@ JetVector JetVector::operator-= ( const JetVector& x )
 
   for ( int i = 0; i < dim; i++ ) 
     comp[i] -= x.comp[i];
+  return *this;
+}
+
+
+JetVector JetVector::operator-= ( const Vector& x )
+{
+#ifndef NOCHECKS
+  CHECKOUT(dim != x.Dim(), "JetVector::operator-=", "Incompatible dimensions.")
+#endif
+
+  for ( int i = 0; i < dim; i++ ) 
+    comp[i] -= x(i);
   return *this;
 }
 
@@ -297,6 +375,34 @@ Jet JetVector::operator* ( const JetVector& x ) const
   u = 0.0;
   int i;
   for ( i = 0; i < dim; i++ ) u += comp[i] * x.comp[i];
+  return u;
+}
+
+
+Jet operator* ( const JetVector& x, const Vector& y )
+{
+#ifndef NOCHECKS
+  CHECKOUT(x.dim != y.Dim(), "JetVector::operator*", "Incompatible dimensions.")
+#endif
+
+  static int i;
+  Jet u( x.myEnv );
+  u = 0.0;
+  for ( i = 0; i < x.dim; i++ ) u += x.comp[i] * y(i);
+  return u;
+}
+
+
+Jet operator* ( const Vector& y, const JetVector& x )
+{
+#ifndef NOCHECKS
+  CHECKOUT(x.Dim() != y.Dim(), "JetVector::operator*", "Incompatible dimensions.")
+#endif
+
+  static int i;
+  Jet u( x.myEnv );
+  u = 0.0;
+  for ( i = 0; i < x.dim; i++ ) u += x.comp[i] * y(i);
   return u;
 }
 
