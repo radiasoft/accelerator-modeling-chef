@@ -119,44 +119,48 @@ int beamline::twiss( JetParticle& p, double dpp, char flag )
     // Combine dispersion and lattice function information ...
     lattFunc*  plf;
     lattFunc*  qlf;
-    while( q = dbi++ ) {
-      if( 0 != ( plf = (lattFunc*) q->dataHook.find("Twiss") ) ) {
-  	if( 0 != ( qlf = (lattFunc*) q->dataHook.find("Dispersion") ) ) {
-  	  plf->dispersion.hor = qlf->dispersion.hor;
-  	  plf->dispersion.ver = qlf->dispersion.ver;
-  	  plf->dPrime.hor     = qlf->dPrime.hor;
-  	  plf->dPrime.ver     = qlf->dPrime.ver;
-  	  q->dataHook.eraseAll("Dispersion");
-  	}
-  	else {
-  	  cerr << "beamline::twiss: Dispersion data missing from "
-  	       << q->Type() << "  " << q->Name()
-  	       << endl;
-  	  ret = -1;
-  	  delete [] zero;
-  	  return ret;
-  	}
+    
+    if( flag ) {
+      while( q = dbi++ ) {
+        if( 0 != ( plf = (lattFunc*) q->dataHook.find("Twiss") ) ) {
+          if( 0 != ( qlf = (lattFunc*) q->dataHook.find("Dispersion") ) ) {
+            plf->dispersion.hor = qlf->dispersion.hor;
+            plf->dispersion.ver = qlf->dispersion.ver;
+            plf->dPrime.hor     = qlf->dPrime.hor;
+            plf->dPrime.ver     = qlf->dPrime.ver;
+            q->dataHook.eraseAll("Dispersion");
+          }
+          else {
+            cerr << "beamline::twiss: Dispersion data missing from "
+                 << q->Type() << "  " << q->Name()
+                 << endl;
+            ret = -1;
+            delete [] zero;
+            return ret;
+          }
+        }
+        else {
+          cerr << "beamline::twiss: Twiss data missing from "
+               << q->Type() << "  " << q->Name()
+               << endl;
+          ret = -1;
+          delete [] zero;
+          return ret;
+        }
       }
-      else {
-  	cerr << "beamline::twiss: Twiss data missing from "
-  	     << q->Type() << "  " << q->Name()
-  	     << endl;
-  	ret = -1;
-  	delete [] zero;
-  	return ret;
-      }
-    }
-  
+    }  
   
   
     // .......... Cleaning up and leaving ...................
   
-    lattFunc* latticeFunctions = new lattFunc;
-    (*latticeFunctions) = *((lattFunc*)( lastElement()->dataHook.find( "Twiss" ) ));
-    this->dataHook.eraseFirst( "Twiss" );
-    this->dataHook.insert( new Barnacle( "Twiss", latticeFunctions ) );
-    // dataHook.eraseFirst( "Ring" );
-    // dataHook.insert( new Barnacle( "Ring", latticeRing ) );
+    if( flag ) {
+      lattFunc* latticeFunctions = new lattFunc;
+      (*latticeFunctions) = *((lattFunc*)( lastElement()->dataHook.find( "Twiss" ) ));
+      this->dataHook.eraseFirst( "Twiss" );
+      this->dataHook.insert( new Barnacle( "Twiss", latticeFunctions ) );
+      // dataHook.eraseFirst( "Ring" );
+      // dataHook.insert( new Barnacle( "Ring", latticeRing ) );
+    }
   
   
     twissDone = 1;
