@@ -3,10 +3,10 @@
 **************************************************************************
 ******                                                                
 ******  CHEF: Library of Qt based widget classes, providing GUI   
-******             interfaces to exercise the functionality        
-******             of BEAMLINE.                                    
+******        interfaces to exercise the functionality        
+******        of BEAMLINE.                                    
 ******                                                                
-******  Version:   3.0                    
+******  Version:   3.2
 ******                                    
 ******  File:      CHEF.cc
 ******                                                                
@@ -56,6 +56,7 @@
 #include <qptrlist.h>
 // #include <qprocess.h>
 
+#include "GenericException.h"
 #include "beamline.h"
 #include "InsertionList.h"
 #include "BeamlineContext.h"
@@ -66,6 +67,8 @@
 #include "bmlfactory.h"
 #include "BeamlineBrowser.h"
 #include "LattFncPlt.h"
+#include "ETFncPlt.h"
+#include "MomentsFncPlt.h"
 #include "Tracker.h"
 #include "RayTrace.h"
 #include "SiteViewer.h"
@@ -88,12 +91,14 @@ using namespace std;
 // 
 
 CHEF::CHEF( beamline* xbml, int argc, char** argv )
-: _p_vwr(0), _plotWidget(0)
+: _p_vwr(0), _plotWidget(0), _ETplotWidget(0), _MMplotWidget(0)
 {
   int i;
   for( i = 0; i < CHEF_numargs; i++ )
   {  _toolArgs[i] = 0;
   }
+
+  _userOptions.couplingOption = Options::ignore_coupling;
 
   if( 0 != xbml ) 
   { _p_currBmlCon = new BeamlineContext( true, xbml );
@@ -116,13 +121,13 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
 
 
   _mainWindow = new QMainWindow;
-  _mainWindow->setCaption( "CHEF (prototype #1)" );
+  _mainWindow->setCaption( "CHEF" );
   // _mainWindow->resize( 600, 400  );
 
   _centralWidget = new QLabel( _mainWindow );
   // _centralWidget->setText( "DUMMY CENTRAL WIDGET" );
 
-  #include "chef_logo.xpm"        // This file defines splash_xpm.
+  #include "chef_logo.xpm"  // This file instantiates array chef_logo_xpm
 
   _splash = new QPixmap( chef_logo_xpm );    // not deleted
   _centralWidget->setPixmap( *_splash );
@@ -187,13 +192,19 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
       // _tool_calcMenu->insertItem( "Enter...", _calcEnterMenu);
 
       _tool_calcMenu->insertItem( "Site Viewer", this, SLOT(_launchSiteVu()) );
-      _tool_calcMenu->insertItem( "Lattice Functions", this, SLOT(_launchLatt()) );
-        _id_ToolTracking = 
+
+
+        _calcLattFuncMenu = new QPopupMenu;
+        _calcLattFuncMenu->insertItem( "Uncoupled", this, SLOT(_launchLatt()) );
+        _calcLattFuncMenu->insertItem( "Edwards-Teng", this, SLOT(_launchET()) );
+        _calcLattFuncMenu->insertItem( "Moments", this, SLOT(_launchMoments()) );
+      _tool_calcMenu->insertItem( "Lattice Functions", _calcLattFuncMenu );
+
       _tool_calcMenu->insertItem( "Track", this, SLOT(_launchTrack()) );
-        // _toolMenu->setItemEnabled( _id_ToolTracking, false);
-        // _tool_calcMenu->insertItem( "Trace", this, SLOT(_launchRayTrace()) );
-        // _tool_calcMenu->insertItem( "Emittance Dilution", this, SLOT(_launchDilution()) );
+      _tool_calcMenu->insertItem( "Trace", this, SLOT(_launchRayTrace()) );
+      _id_analMenu = 
     _toolMenu->insertItem( "Analysis", _tool_calcMenu );
+      _toolMenu->setItemEnabled( _id_analMenu, false );
 
       _tool_ctrlMenu = new QPopupMenu;
       _tool_ctrlMenu->insertItem( "Build hor. tune circuit", this, SLOT(_horTuneCtrl()) );
@@ -206,15 +217,14 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
       _tool_ctrlMenu->insertSeparator();
       _tool_ctrlMenu->insertItem( "Align CF_rbends...", this, SLOT(_toolAlignBends()) );
       _tool_ctrlMenu->insertItem( "Misalign all...",    this, SLOT(_toolMisalign()) );
-      int id_ctrlMenu = 
+      _id_ctrlMenu = 
     _toolMenu->insertItem( "Control", _tool_ctrlMenu );
-      _toolMenu->setItemEnabled( id_ctrlMenu, false );
+      _toolMenu->setItemEnabled( _id_ctrlMenu, false );
 
       _tool_dsgnMenu = new QPopupMenu;
-      int id_dsgnMenu = 
+      _id_dsgnMenu = 
     _toolMenu->insertItem( "Design", _tool_dsgnMenu );
-      _toolMenu->setItemEnabled( id_dsgnMenu, false );
-
+      _toolMenu->setItemEnabled( _id_dsgnMenu, false );
   _mainMenu->insertItem( "Tools", _toolMenu );
 
   // Make connections
@@ -247,13 +257,16 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
   coord* py = new coord(0.0);
   coord* pz = new coord(0.0);
   _p_JetEnv = Jet::EndEnvironment( scale );
-  _p_JetCEnv = JetC::lastEnv = JetC::CreateEnvFrom( _p_JetEnv );
+  _p_JetCEnv = JetC::_lastEnv = JetC::CreateEnvFrom( _p_JetEnv );
  
-  if( _p_JetEnv != Jet::lastEnv ) {
-    cerr << "\n*** ERROR *** " << __FILE__ << ", line " << __LINE__
-         << "Impossible!!!"
-         << endl;
-    exit(13);
+  if( _p_JetEnv != Jet::_lastEnv ) {
+    ostringstream uic;
+    uic << "An impossibility has occurred\nin file "
+        << __FILE__
+        << " at line " << __LINE__
+        << ":\n_p_JetEnv != Jet::lastEnv";
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              uic.str().c_str() );
   }
 
   // Cleaning up
@@ -289,93 +302,6 @@ void CHEF::_editFindFilter()
            this, SLOT  (_processFilter( const BoolNode& )) );
   qdl->exec();
   delete qdl;
-
-  // REMOVE: QDialog* wpu = new QDialog( 0, 0, true );
-  // REMOVE:   QVBox* qvb = new QVBox( wpu );
-  // REMOVE:     QHBox* qhb1 = new QHBox( qvb );
-  // REMOVE:       // REMOVE QLabel* qlb = new QLabel( "Name of element: ", qhb1 );
-  // REMOVE:       QVButtonGroup* qvbg = new QVButtonGroup( qhb1 );
-  // REMOVE:       QRadioButton* typeButton = new QRadioButton ( "Type", qvbg );
-  // REMOVE:       QRadioButton* nameButton = new QRadioButton ( "Name", qvbg );
-  // REMOVE:       QRadioButton* lengthButton = new QRadioButton ( "Length", qvbg );
-  // REMOVE:       QRadioButton* strengthButton = new QRadioButton ( "Strength", qvbg );
-  // REMOVE:       qvbg->setExclusive( true );
-  // REMOVE:       QString stl;
-  // REMOVE:       QLineEdit* qle = new QLineEdit( stl, qhb1 );
-  // REMOVE:     qhb1->setMargin(5);
-  // REMOVE:     qhb1->setSpacing(3);
-  // REMOVE:     qhb1->adjustSize();
-  // REMOVE: 
-  // REMOVE:     QHBox* qhb2 = new QHBox( qvb );
-  // REMOVE:       QPushButton* enterBtn = new QPushButton( "Enter", qhb2 );
-  // REMOVE:     qhb2->setMargin(5);
-  // REMOVE:     qhb2->setSpacing(3);
-  // REMOVE:     qhb2->adjustSize();
-  // REMOVE: 
-  // REMOVE:     QHBox* qhb3 = new QHBox( qvb );
-  // REMOVE:       QPushButton* closeBtn = new QPushButton( "Close", qhb3 );
-  // REMOVE:         closeBtn->setDefault( true );
-  // REMOVE:         connect( closeBtn, SIGNAL(pressed()),
-  // REMOVE:                  wpu,     SLOT(accept()) );
-  // REMOVE:       QPushButton* cancelBtn = new QPushButton( "Cancel", qhb3 );
-  // REMOVE:         connect( cancelBtn, SIGNAL(pressed()),
-  // REMOVE:                  wpu,       SLOT(reject()) );
-  // REMOVE:     qhb3->setMargin(5);
-  // REMOVE:     qhb3->setSpacing(3);
-  // REMOVE:     qhb3->adjustSize();
-  // REMOVE: 
-  // REMOVE:   qvb->adjustSize();
-  // REMOVE: wpu->setCaption( QString("CHEF (prototype #1)::Choose element") );
-  // REMOVE: wpu->adjustSize();
-  // REMOVE: 
-  // REMOVE: int returnCode = wpu->exec();
-  // REMOVE: 
-  // REMOVE: int i = 1;
-  // REMOVE: if( returnCode == QDialog::Accepted ) {
-  // REMOVE:   bool ok;
-  // REMOVE:   stl = qle->text();
-  // REMOVE:   BoolNode* queryPtr = 0;
-  // REMOVE:   QButton* selection = qvbg->selected();
-  // REMOVE:   if( selection->text() == "Type" ) {
-  // REMOVE:     queryPtr = new TypeNode( stl.ascii() );
-  // REMOVE:   }
-  // REMOVE:   else if( selection->text() == "Name" ) {
-  // REMOVE:     queryPtr = new NameNode( stl.ascii() );
-  // REMOVE:   }
-  // REMOVE:   else if( selection->text() == "Length" ) {
-  // REMOVE:     double l = stl.toDouble(&ok);
-  // REMOVE:     if(ok) { queryPtr = new LengthNode( l ); }
-  // REMOVE:     else   { queryPtr = new LengthNode( 0.0 ); }
-  // REMOVE:   }
-  // REMOVE:   else if( selection->text() == "Strength" ) {
-  // REMOVE:     double s = stl.toDouble(&ok);
-  // REMOVE:     if(ok) { queryPtr = new StrengthNode( s ); }
-  // REMOVE:     else   { queryPtr = new StrengthNode( 0.0 ); }
-  // REMOVE:   }
-  // REMOVE: 
-  // REMOVE:   queryPtr->writeTo( cout ); cout << endl;
-  // REMOVE:   // Note: by placing _foundList in the arguments, the
-  // REMOVE:   // BeamlineBrowser _p_vwr is allowed to manipulate
-  // REMOVE:   // a private member of this CHEF object.
-  // REMOVE:   // Whoa!
-  // REMOVE:   if( 0 == (_p_vwr->findElement( _p_clickedQBml, *queryPtr, _foundList )) ) {
-  // REMOVE:     const bmlnElmnt* elementPtr;
-  // REMOVE:     while((  elementPtr = _foundList.getFirst()  )) {
-  // REMOVE:       cout << i++ << ":  " 
-  // REMOVE:            << elementPtr->Type() << "  " << elementPtr->Name() 
-  // REMOVE:            << endl;
-  // REMOVE:       _foundList.removeFirst();
-  // REMOVE:     }
-  // REMOVE:   }
-  // REMOVE:   else {
-  // REMOVE:     QMessageBox::information( 0, "CHEF: ERROR",
-  // REMOVE:                               "Operation not successful." );
-  // REMOVE:   }
-  // REMOVE: 
-  // REMOVE:   if( 0 != queryPtr ) { delete queryPtr; }
-  // REMOVE: }
-  // REMOVE: 
-  // REMOVE: delete wpu;
 }
 
 
@@ -388,9 +314,6 @@ void CHEF::_processFilter( const BoolNode& query )
     QPtrListIterator<bmlnElmnt> it( _foundList );
     while ( (elementPtr = it.current()) != 0 ) {
       ++it;
-      // REMOVE: cout << i++ << ":  " 
-      // REMOVE:      << elementPtr->Type() << "  " << elementPtr->Name() 
-      // REMOVE:      << endl;
     }
   }
   else {
@@ -494,7 +417,7 @@ void CHEF::_tuneCtrl()
 
     qvb->adjustSize();
 
-  wpu->setCaption( "CHEF (prototype #1): Tune Adjuster" );
+  wpu->setCaption( "CHEF: Tune Adjuster" );
   wpu->adjustSize();
 
   int returnCode = wpu->exec();
@@ -535,10 +458,12 @@ void CHEF::_testFC( ACTFUNC11 actfcn ) const
     }
 
     else {
-      cerr << "*** ERROR *** Impossible! " 
-           << __FILE__ << ", line " << __LINE__
-           << endl;
-      exit(1);
+      ostringstream uic;
+      uic << "An impossibility has occurred\nin file "
+          << __FILE__
+          << " at line " << __LINE__ ;
+      QMessageBox::information( 0, "CHEF: ERROR",
+                                uic.str().c_str() );
     }
 
     fc = fc->nextSibling();
@@ -570,10 +495,12 @@ void CHEF::_traverseTree( const QBmlRoot* x, ACTFUNC11 actfcn ) const
     }
 
     else {
-      cerr << "*** ERROR *** Impossible! " 
-           << __FILE__ << ", line " << __LINE__
-           << endl;
-      exit(1);
+      ostringstream uic;
+      uic << "An impossibility has occurred\nin file "
+          << __FILE__
+          << " at line " << __LINE__ ;
+      QMessageBox::information( 0, "CHEF: ERROR",
+                                uic.str().c_str() );
     }
     
     fc = fc->nextSibling();
@@ -737,7 +664,7 @@ void CHEF::_toolAlignBends()
     
         qvb->adjustSize();
     
-      wpu->setCaption( "CHEF (prototype #1): CF_rbend Alignment" );
+      wpu->setCaption( "CHEF: CF_rbend Alignment" );
       wpu->adjustSize();
     
       int returnCode = wpu->exec();
@@ -748,25 +675,6 @@ void CHEF::_toolAlignBends()
         CF_rbendFinder_quad cf( prototype->getQuadrupole() );
         _p_currBmlCon->setAlignment( cf, prototype->Alignment() );
       }
-
-      // REMOVE: if( returnCode == QDialog::Accepted ) 
-      // REMOVE: {
-      // REMOVE:   const beamline* bmlPtr = _p_currBmlCon->cheatBmlPtr();
-      // REMOVE:   DeepBeamlineIterator dbi( bmlPtr );
-      // REMOVE:   bmlnElmnt* q;
-      // REMOVE:   double protoquad = prototype->getQuadrupole();
-      // REMOVE:   while((  q = dbi++  )) 
-      // REMOVE:   {
-      // REMOVE:     if( 0 == strcmp( q->Type(), "CF_rbend" ) ) 
-      // REMOVE:     {
-      // REMOVE:       CF_rbend* cfrPtr = (CF_rbend*) q;
-      // REMOVE:       if( protoquad == cfrPtr->getQuadrupole() ) 
-      // REMOVE:       {
-      // REMOVE:         q->setAlignment( prototype->Alignment() );
-      // REMOVE:       }
-      // REMOVE:     }
-      // REMOVE:   }
-      // REMOVE: }
 
       delete wpu;
       delete prototype;
@@ -830,7 +738,7 @@ void CHEF::_editAlign()
       qhbp->adjustSize();
     qvb->adjustSize();
 
-  wpu->setCaption( "CHEF (prototype #1): Alignment parameters" );
+  wpu->setCaption( "CHEF: Alignment parameters" );
   wpu->adjustSize();
 
   int returnCode = wpu->exec();
@@ -993,7 +901,7 @@ void CHEF::_editPartAndSect()
 
     qvb->adjustSize();
 
-  wpu->setCaption( "CHEF (prototype #1): Partition" );
+  wpu->setCaption( "CHEF: Partition" );
   wpu->adjustSize();
 
   int returnCode = wpu->exec();
@@ -1041,8 +949,8 @@ void CHEF::_editPartAndSect()
       cout << endl;
     
       // Create a temporary Jet environment 
-      Jet__environment*  formerJetEnv  = Jet::lastEnv;
-      JetC__environment* formerJetCEnv = JetC::lastEnv;
+      Jet__environment*  formerJetEnv  = Jet::_lastEnv;
+      JetC__environment* formerJetCEnv = JetC::_lastEnv;
       double scale[]  = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3 };
       Jet::BeginEnvironment( order );
       // coord x(0.0),  y(0.0),  z(0.0),
@@ -1055,7 +963,7 @@ void CHEF::_editPartAndSect()
       coord* py = new coord(0.0);
       coord* pz = new coord(0.0);
       Jet::EndEnvironment( scale );
-      JetC::lastEnv = JetC::CreateEnvFrom( _p_JetEnv );
+      JetC::_lastEnv = JetC::CreateEnvFrom( _p_JetEnv );
  
       // Sectorize between the partition markers.
       for( i = 0; i < numberOfSectors; i++ ) {
@@ -1067,8 +975,8 @@ void CHEF::_editPartAndSect()
       }
 
       // Restore former environment...
-      Jet::lastEnv  = formerJetEnv;
-      JetC::lastEnv = formerJetCEnv;
+      Jet::_lastEnv  = formerJetEnv;
+      JetC::_lastEnv = formerJetCEnv;
     }
   }
 
@@ -1110,13 +1018,58 @@ void CHEF::_launchLatt()
   for( int i = 0; i < 1024; i++ ) {
     theCaption[i] = '\0';
   }
-  strcat( theCaption, "CHEF: Linear Lattice Functions: " );
+  strcat( theCaption, "CHEF: Uncoupled Lattice Functions: " );
   strcat( theCaption, _p_currBmlCon->name() );
   _plotWidget->setCaption( theCaption );
-  // REMOVE: _plotWidget->setCaption( "CHEF (prototype #1):: Linear Lattice Functions" );
 
   _plotWidget->resize( 540, 400 );
   _plotWidget->show();
+}
+
+
+void CHEF::_launchET()
+{
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF",
+                              "Must select a beamline first." );
+    return;
+  }
+
+  _ETplotWidget = new ETFncPlt(_p_currBmlCon);
+
+  char theCaption[1024];
+  for( int i = 0; i < 1024; i++ ) {
+    theCaption[i] = '\0';
+  }
+  strcat( theCaption, "CHEF: Edwards-Teng Lattice Functions: " );
+  strcat( theCaption, _p_currBmlCon->name() );
+  _ETplotWidget->setCaption( theCaption );
+
+  _ETplotWidget->resize( 540, 400 );
+  _ETplotWidget->show();
+}
+
+
+void CHEF::_launchMoments()
+{
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF",
+                              "Must select a beamline first." );
+    return;
+  }
+
+  _MMplotWidget = new MomentsFncPlt(_p_currBmlCon);
+
+  char theCaption[1024];
+  for( int i = 0; i < 1024; i++ ) {
+    theCaption[i] = '\0';
+  }
+  strcat( theCaption, "CHEF: Edwards-Teng Lattice Functions: " );
+  strcat( theCaption, _p_currBmlCon->name() );
+  _MMplotWidget->setCaption( theCaption );
+
+  _MMplotWidget->resize( 540, 400 );
+  _MMplotWidget->show();
 }
 
 
@@ -1129,7 +1082,7 @@ void CHEF::_launchTrack()
   }
 
   _trackWidget = new Tracker(_p_currBmlCon);
-  _trackWidget->setCaption( "CHEF (prototype #1):: Phase Space Tracking" );
+  _trackWidget->setCaption( "CHEF:: Phase Space Tracking" );
   _trackWidget->show();
 }
 
@@ -1143,7 +1096,7 @@ void CHEF::_launchRayTrace()
   }
 
   _traceWidget = new RayTrace(_p_currBmlCon);
-  _traceWidget->setCaption( "CHEF (prototype #1):: Orbit Trace" );
+  _traceWidget->setCaption( "CHEF:: Orbit Trace" );
   _traceWidget->show();
 }
 
@@ -1223,7 +1176,7 @@ void CHEF::_launchDilution()
       qhb3->adjustSize();
     qvb->adjustSize();
 
-  wpu->setCaption( "CHEF (prototype #1)::Tool: Emittance Dilution" );
+  wpu->setCaption( "CHEF::Tool: Emittance Dilution" );
   wpu->adjustSize();
 
   int returnCode = wpu->exec();
@@ -1250,9 +1203,6 @@ void CHEF::_launchDilution()
           cov_b(i,j) = cov2( index[i], index[j] );
         }
       }
-
-      // REMOVE: cout << (cov_a*(cov_b.inverse())).eigenValues() << endl;
-      // REMOVE: cout << (cov_b*(cov_a.inverse())).eigenValues() << endl;
 
       MatrixD ev(1,4);
       ev = real( (cov_a*(cov_b.inverse())).eigenValues() );
@@ -1335,9 +1285,9 @@ void CHEF::_launchSiteVu()
     return;
   }
 
-  _siteWidget = new SiteViewer( _p_currBmlCon );
+  _siteWidget = new SiteViewer( *(_p_currBmlCon) );
   // Must be deleted by itself.
-  _siteWidget->setCaption( QString("CHEF (prototype #1):: Site Viewer")+
+  _siteWidget->setCaption( QString("CHEF:: Site Viewer")+
                            QString("    ")+ 
                            QString(_p_currBmlCon->name()) );
   _siteWidget->show();
@@ -1403,7 +1353,7 @@ void CHEF::_openFile()
     
         qvb->adjustSize();
     
-      wpu->setCaption( "CHEF (prototype #1): beamline selector" );
+      wpu->setCaption( "CHEF: beamline selector" );
       wpu->adjustSize();
 
       wpu->show();
@@ -1423,15 +1373,12 @@ void CHEF::_openFile()
           brho = ( fabs( atof( brhoText ) )/PH_CNV_brho_to_p );
         }
         else {
-          cerr << "*** ERROR *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": The impossible has occurred."
-               << endl;
-          QMessageBox::information( 0, "CHEF",
-                      "The impossible has occurred.\nRead cerr." );
-          exit(1);
+          ostringstream uic;
+          uic << "An impossibility has occurred\nin file "
+              << __FILE__
+              << " at line " << __LINE__ ;
+          QMessageBox::information( 0, "CHEF: ERROR",
+                                    uic.str().c_str() );
         }
 
         // bmlfactory bf( s, brho );
@@ -1572,15 +1519,17 @@ void CHEF::_launch_browser()
     return;
   }
   
-  _fileMenu->setItemEnabled( _id_FileWriteTree, true);
-  _fileMenu->setItemEnabled( _id_FilePrint, true );
+  _fileMenu->setItemEnabled( _id_FileWriteTree,  true);
+  _fileMenu->setItemEnabled( _id_FilePrint,      true );
   _editMenu->setItemEnabled( _id_EditSelectMenu, true);
+  _toolMenu->setItemEnabled( _id_analMenu,       true );
+  _toolMenu->setItemEnabled( _id_ctrlMenu,       true );
 
   if( _p_vwr == 0 ) {
     _p_vwr = new BeamlineBrowser( _mainWindow );
     // _p_vwr = new BeamlineBrowser( 0 );
   
-    _p_vwr->setCaption( "CHEF (prototype #1):: Beamline Browser" );
+    _p_vwr->setCaption( "CHEF:: Beamline Browser" );
     _p_vwr->setAllColumnsShowFocus( TRUE );
     _p_vwr->show();
 

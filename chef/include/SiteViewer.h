@@ -93,7 +93,7 @@ class Wndw : public QGLWidget
 
 public:
   SiteViewer( beamline* );
-  SiteViewer( BeamlineContext* );
+  SiteViewer( BeamlineContext& );
   ~SiteViewer();
 
   bool filter( const bmlnElmnt* ) const;

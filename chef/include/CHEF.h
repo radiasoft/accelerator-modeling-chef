@@ -73,6 +73,8 @@ namespace CHEF_domain
 class QBml;
 class QBmlRoot;
 class LattFncPlt;
+class ETFncPlt;
+class MomentsFncPlt;
 class Tracker;
 class RayTrace;
 class SiteViewer;
@@ -80,6 +82,12 @@ class SiteViewer;
 
 // Utility classes
 // ---------------
+
+struct Options
+{
+  enum Coupling { ignore_coupling=0, edwards_teng, moments } couplingOption;
+};
+
 
 class CF_rbendFinder_quad : public beamline::Criterion
 {
@@ -191,6 +199,8 @@ private:
   QMainWindow*     _mainWindow;
   QLabel*          _centralWidget;
   LattFncPlt*      _plotWidget;
+  ETFncPlt*        _ETplotWidget;
+  MomentsFncPlt*   _MMplotWidget;
   Tracker*         _trackWidget;
   RayTrace*        _traceWidget;
   SiteViewer*      _siteWidget;
@@ -208,14 +218,17 @@ private:
   QPopupMenu*      _toolMenu;
   QPopupMenu*        _tool_calcMenu;
   QPopupMenu*          _calcEnterMenu;
+  QPopupMenu*          _calcLattFuncMenu;
   QPopupMenu*        _tool_ctrlMenu;
   QPopupMenu*        _tool_dsgnMenu;
 
   // Menu identifiers
   int              _id_FilePrint;
   int              _id_FileWriteTree;
-  int              _id_ToolTracking;
   int              _id_EditSelectMenu;
+  int              _id_analMenu;
+  int              _id_ctrlMenu;
+  int              _id_dsgnMenu;
   
 
   QPtrList<QBml>    _selListItems;  // selected QListViewItems
@@ -232,6 +245,8 @@ private:
 
   Jet__environment*  _p_JetEnv;
   JetC__environment* _p_JetCEnv;
+
+  Options  _userOptions;
 
   static int _buildVTuneCircuit( const CHEF*, const bmlnElmnt* );
   static int _buildHTuneCircuit( const CHEF*, const bmlnElmnt* );
@@ -266,6 +281,8 @@ private slots:
   void _makeSingSext();
 
   void _launchLatt();
+  void _launchET();
+  void _launchMoments();
   void _launchTrack();
   void _launchRayTrace();
   void _launchDilution();

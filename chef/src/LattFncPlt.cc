@@ -179,8 +179,6 @@ void LattFncPlt::_finishConstructor()
     strcat( theTitle, _bmlConPtr->name() );
 
     plt = new QwtPlot( theTitle, this );
-    // plt->setTitle( theTitle );
-    // REMOVE: plt->setTitle("CHEF: Lattice Functions");
     
     plt->enableAxis( QwtPlot::yRight, true );
     // Set the bottom of the beta axis to zero.
@@ -630,10 +628,10 @@ void LattFncPlt::recalc()
 
   while( 0 != infoPtr ) {
     if( i >= _arraySize ) {
-      cerr << "Too many lattice functions: i = " << i
-           << ", _arraySize = " << _arraySize
-           << endl;
-      exit(1);
+      QMessageBox::information( this, "CHEF: Lattice Functions.",
+          "Too many lattice functions." );
+      i = _arraySize;
+      infoPtr = 0;
     }
     else {
       _azimuth[i]      = infoPtr->arcLength;
@@ -649,18 +647,18 @@ void LattFncPlt::recalc()
       _root_beta_V[i]  = sqrt(infoPtr->beta.ver);
       _disp_H[i]       = infoPtr->dispersion.hor;
       _disp_V[i]       = infoPtr->dispersion.ver;
-    }
 
-    infoPtr = _bmlConPtr->getLattFuncPtr(++i);
+      infoPtr = _bmlConPtr->getLattFuncPtr(++i);
+    }
   }
 
   if( i != _arraySize ) {
-    cerr << "\n*** WARNONG *** "
+    cerr << "\n*** WARNING *** "
          << __FILE__ << ", " << __LINE__ << ": "
          << "LattFncPlt::recalc(): "
-         << "\n*** WARNONG ***  _arraySize is being reset from "
+         << "\n*** WARNING ***  _arraySize is being reset from "
          << _arraySize << " to " << i << "."
-         << "\n*** WARNONG *** "
+         << "\n*** WARNING *** "
          << endl;
   }
   _arraySize = i;
@@ -691,92 +689,6 @@ void LattFncPlt::recalc()
 
   plt->replot();
 }
-
-
-// void LattFncPlt::recalc()
-// {
-//   _p_cell->dataHook.eraseAll();
-// 
-//   JetProton    p( _p_cell->Energy() );
-//   Proton   probe( _p_cell->Energy() );
-// 
-//   LattFuncSage lfs( _p_cell );
-//   bmlnElmnt*   lbe;
-//   LattFuncSage::tunes* tunes;
-//   LattFuncSage::lattFunc* infoPtr;
-//  
-//   int lfs_result = lfs.TuneCalc( &p );
-//   if( lfs_result != 0 ) {
-//    cerr << "Something went wrong while calculating tune: error " 
-//         << lfs_result 
-//         << endl;
-//    exit(0);
-//   }
-//   
-// 
-//   tunes = (LattFuncSage::tunes*) _p_cell->dataHook.find( "Tunes" );
-//   _currentTune[0] = tunes->hor;
-//   _currentTune[1] = tunes->ver;
-// 
-// 
-//   {
-//   QString qstr;
-//   qstr.setNum( _currentTune[0] );
-//   frmInp->_lbl_H_Tune->setText( QString("Tunes:    Horizontal: ") + qstr );
-//   qstr.setNum( _currentTune[1] );
-//   frmInp->_lbl_V_Tune->setText( QString("Vertical: ") + qstr );
-//   }
-// 
-//   lfs.NewSlow_CS_Calc( &p );
-// 
-//   int i = 0;
-//   infoPtr = lfs.get_lattFuncPtr(i);
-// 
-//   while( 0 != infoPtr ) {
-//     if( i >= _arraySize ) {
-//       cerr << "Too many lattice functions: i = " << i
-//            << ", _arraySize = " << _arraySize
-//            << endl;
-//       exit(1);
-//     }
-//     else {
-//       _azimuth[i]      = infoPtr->arcLength;
-//       _beta_H[i]       = infoPtr->beta.hor;
-//       _alpha_H[i]      = infoPtr->alpha.hor;
-//       _psi_H[i]        = infoPtr->psi.hor;
-//       _beta_V[i]       = infoPtr->beta.ver;
-//       _alpha_V[i]      = infoPtr->alpha.ver;
-//       _psi_V[i]        = infoPtr->psi.ver;
-//       _inv_beta_H[i]   = 1.0/infoPtr->beta.hor;
-//       _inv_beta_V[i]   = 1.0/infoPtr->beta.ver;
-//       _root_beta_H[i]  = sqrt(infoPtr->beta.hor);
-//       _root_beta_V[i]  = sqrt(infoPtr->beta.ver);
-//     }
-// 
-//     infoPtr = lfs.get_lattFuncPtr(++i);
-//   }
-// 
-//   _arraySize = i;
-// 
-// 
-//   // copies data (less efficient, but safe)
-//   if( _plotType == betaPlot ) {
-//     plt->setCurveData( crv1, _azimuth, _beta_H, _arraySize );
-//     plt->setCurveData( crv2, _azimuth, _beta_V, _arraySize );
-//   }
-//   else if( _plotType == invPlot ) {
-//     plt->setCurveData( crv1, _azimuth, _inv_beta_H, _arraySize );
-//     plt->setCurveData( crv2, _azimuth, _inv_beta_V, _arraySize );
-//   }
-//   else {
-//     plt->setCurveData( crv1, _azimuth, _root_beta_H, _arraySize );
-//     plt->setCurveData( crv2, _azimuth, _root_beta_V, _arraySize );
-//   }
-// 
-//   // attaches data (more efficient, but dangerous)
-//   // plt->setCurveRawData(crv2, frequency, phase, ArraySize);
-// 
-// }
 
 
 void LattFncPlt::resizeEvent(QResizeEvent *e)

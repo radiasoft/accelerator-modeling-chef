@@ -26,6 +26,8 @@ SOURCES = CHEF.builders.cc \
           BeamlineBrowser.cc \
           ExpressionBrowser.cc \
           LattFncPlt.cc \
+          ETFncPlt.cc \
+          MomentsFncPlt.cc \
           PointEdit.cc \
           QtMonitor.cc \
           QueryDialog.cc \
@@ -37,6 +39,8 @@ HEADERS = ../include/CHEF.h \
           ../include/BeamlineBrowser.h \
           ../include/ExpressionBrowser.h \
           ../include/LattFncPlt.h \
+          ../include/ETFncPlt.h \
+          ../include/MomentsFncPlt.h \
           ../include/PointEdit.h \
           ../include/QtMonitor.h \
           ../include/QueryDialog.h \

@@ -87,13 +87,11 @@ const char* Pinger::Type() const
 }
 
 istream& Pinger::readFrom(istream& is) {
-  cout << "DGN: istream& Pinger::readFrom(istream& is) {" << endl;
   is >> _kick_direction >> _counter;
   return is;
 }
 
 ostream& Pinger::writeTo(ostream& os) {
-  cout << "DGN: ostream& Pinger::writeTo(ostream& os) {" << endl;
   os << _kick_direction << "  " << _counter << "\n";
   return os;
 }

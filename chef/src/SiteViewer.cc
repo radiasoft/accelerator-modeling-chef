@@ -6,7 +6,7 @@
 ******             interfaces to exercise the functionality        
 ******             of BEAMLINE.                                    
 ******                                                                
-******  Version:   3.0                    
+******  Version:   3.1
 ******                                    
 ******  File:      SiteViewer.cc
 ******                                                                
@@ -59,37 +59,40 @@ using namespace std;
 const BoolNullNode SiteViewer::nada;
 
 
-SiteViewer::SiteViewer( BeamlineContext* bmlCP )
-: _bmlConPtr( bmlCP ), _deleteContext( false ),
+SiteViewer::SiteViewer( BeamlineContext& bmlCP )
+: _bmlConPtr( &bmlCP ), 
+  _x(0), _y(0), _z(0), 
+  _element(0),
+  _filterPtr(0),
+  _deleteContext( false ),
   _xmin(1.0e10), _xmax(-1.0e10),
   _ymin(1.0e10), _ymax(-1.0e10),
   _zmin(1.0e10), _zmax(-1.0e10),
-  _showStart( false ), 
-  _filterPtr(0)
+  _showStart( false )
 {
   this->_finishConstructor();
 }
 
 
 SiteViewer::SiteViewer( beamline* x )
-: _bmlConPtr( 0 ), _deleteContext( true ),
+: _bmlConPtr( 0 ), 
+  _x(0), _y(0), _z(0), 
+  _element(0),
+  _filterPtr(0),
+  _deleteContext( true ),
   _xmin(1.0e10), _xmax(-1.0e10),
   _ymin(1.0e10), _ymax(-1.0e10),
   _zmin(1.0e10), _zmax(-1.0e10),
-  _showStart( false ), 
-  _filterPtr(0)
+  _showStart( false )
 {
   if( 0 == x ) {
-    cerr << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__
-         << "\n*** ERROR *** SiteViewer::SiteViewer( beamline* )"
-         << "\n*** ERROR *** null argument passed to constructor."
-         << "\n*** ERROR *** \n"
-         << endl;
-    exit(9);
+    QMessageBox::information( 0, "CHEF::SiteViewer",
+                              "Must specify a beamline first." );
   }
-
-  _bmlConPtr = new BeamlineContext( false, x );
-  this->_finishConstructor();
+  else {
+    _bmlConPtr = new BeamlineContext( false, x );
+    this->_finishConstructor();
+  }
 }
 
 
@@ -178,12 +181,12 @@ void SiteViewer::_finishConstructor()
 
 SiteViewer::~SiteViewer()
 {
-  delete [] _x;
-  delete [] _y;
-  delete [] _z;
-  delete [] _element;
+  if(_x)             { delete [] _x; }
+  if(_y)             { delete [] _y; }
+  if(_z)             { delete [] _z; }
+  if(_element)       { delete [] _element; }
   if(_deleteContext) { delete _bmlConPtr; _bmlConPtr = 0; }
-  if(_filterPtr) { _filterPtr->eliminate(); _filterPtr = 0; }
+  if(_filterPtr)     { _filterPtr->eliminate(); _filterPtr = 0; }
 }
 
 
@@ -204,7 +207,7 @@ void SiteViewer::_fileSite()
     QString("CHEF: Site Coordinate File") );
 
   if( fileName.isNull() ) {
-    QMessageBox::information( 0, "CHEF::_fileSite()",
+    QMessageBox::information( 0, "CHEF::SiteViewer",
                               "Sorry. It didn't work." );
   }
 
@@ -395,7 +398,7 @@ void SiteViewer::Wndw::paintGL()
   glEnd();
 
 
-  // Draw big sextupoles
+  // Draw selected elements.
   if( _hilights ) {
     glPointSize(9);
     glBegin( GL_POINTS );
@@ -407,16 +410,7 @@ void SiteViewer::Wndw::paintGL()
     for( int i = 0; i < _parent->_n; i++ ) 
     {
       q = _parent->_element[i];
-      // if( !(0 == strstr(q->Type(), "sex")) ) {
-      // if( (0 == strcmp(q->Type(), "sextupole")) ) {
       if( _parent->filter(q) ) {
-
-        // if( 0 == strcmp(q->Name(), "SEXH:XCHR" ) ) {
-        //   glColor3f( 1., 1., 0. );
-        // }
-        // else {
-        //   glColor3f( 0., 1., 1. );
-        // }
 
         glColor3f( 1., 1., 0. );  // yellow
         glVertex3f( xx, yy, zz );
