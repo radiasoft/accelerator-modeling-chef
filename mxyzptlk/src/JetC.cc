@@ -181,7 +181,7 @@ JetC__environment& JetC__environment::operator=( const JetC__environment& x )
 
   // The first line is useful for the JetC::EndEnvironment function.
   if( JetC__environment::SkipEnvEqTest == 1 ) 
-      JetC__environment::SkipEnvEqTest == 0;
+      JetC__environment::SkipEnvEqTest = 0;
 
   else if( JetC::workEnv != 0 ) {
     cerr << "\n\n"

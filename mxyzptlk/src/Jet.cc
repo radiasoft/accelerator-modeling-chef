@@ -183,7 +183,7 @@ Jet__environment& Jet__environment::operator=( const Jet__environment& x )
 
   // The first line is useful for the Jet::EndEnvironment function.
   if( Jet__environment::SkipEnvEqTest == 1 ) 
-      Jet__environment::SkipEnvEqTest == 0;
+      Jet__environment::SkipEnvEqTest = 0;
 
   else if( Jet::workEnv != 0 ) {
     cerr << "\n\n"
