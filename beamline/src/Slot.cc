@@ -14,8 +14,39 @@ Slot::Slot()
 }
 
 
+Slot::Slot( const char* nm )
+: bmlnElmnt(nm)
+{
+  p_bml   = 0;
+  p_bml_e = 0;
+  align = new alignment;
+}
+
+
 Slot::Slot( const Frame& y )
 : bmlnElmnt(), out(y)
+{
+  if( !out.isOrthonormal() )
+  {
+    cerr << "*** ERROR ***                                 \n"
+            "*** ERROR *** Slot::Slot                      \n"
+            "*** ERROR *** Current implementation requires \n"
+            "*** ERROR *** that frames be orthonormal.     \n"
+            "*** ERROR ***                                 \n"
+         << endl;
+    exit(1);
+  }
+
+  p_bml   = 0;
+  p_bml_e = 0;
+  align   = 0;
+
+  length = out.getOrigin() .Norm();
+}
+
+
+Slot::Slot( const char* nm, const Frame& y )
+: bmlnElmnt(nm), out(y)
 {
   if( !out.isOrthonormal() )
   {
@@ -52,11 +83,46 @@ Slot::Slot( const Frame&     x,
 }
 
 
+Slot::Slot( const char*      nm,
+            const Frame&     x, 
+            const Frame&     y, 
+            const beamline&  bl
+          )
+: bmlnElmnt(nm), in(x), out(y)
+{
+  if( ( 0 == this->checkFrame(in)  ) && 
+      ( 0 == this->checkFrame(out) ) ) 
+  {
+    p_bml_e = 0;
+    p_bml   = (beamline*) bl.Clone();
+  }
+  align = new alignment;
+}
+
+
 Slot::Slot( const Frame&     x, 
             const Frame&     y, 
             const bmlnElmnt& be
           )
 : bmlnElmnt(), in(x), out(y)
+{
+  if( ( 0 == this->checkFrame(in)  ) && 
+      ( 0 == this->checkFrame(out) ) &&
+      ( 0 != strcasecmp( be.Type(), "Slot" ) ) ) 
+  {
+    p_bml_e = be.Clone();
+    p_bml   = 0;
+  }
+  align = new alignment;
+}
+
+
+Slot::Slot( const char*     nm,
+            const Frame&     x, 
+            const Frame&     y, 
+            const bmlnElmnt& be
+          )
+: bmlnElmnt(nm), in(x), out(y)
 {
   if( ( 0 == this->checkFrame(in)  ) && 
       ( 0 == this->checkFrame(out) ) &&
