@@ -114,6 +114,10 @@ public:
       //   calculation of dispersion at the beginning of the
       //   beamline.
       // By the way, "FAD" stands for "Fast and Dirty."
+  int pushCalc( const Particle&, const Info& );
+      // Assumes the data in the second argument are
+      //   initial conditions and "pushes" a dispersion
+      //   calculation down the beamline.
 
   DispersionSage::GlobalInfo getGlobalInfo() const;
   const DispersionSage::Info* getInfoPtr() const;
@@ -124,16 +128,16 @@ public:
   const DispersionSage::Info* getInfoPtr( int ) const;
       // Returns the information calculated for the
       //   ith element in the line.
-  bool checkInfoPtr() const;
-      // Checks whether the address of the Info
-      //   stored on the last beamline element
-      //   matches the pointer stored in the _calcs
-      //   array
-  bool checkInfoPtr( int ) const;
-      // Checks whether the address of the Info
-      //   stored on the kth beamline element
-      //   matches the pointer stored in the _calcs
-      //   array
+  // REMOVE: bool checkInfoPtr() const;
+  // REMOVE:     // Checks whether the address of the Info
+  // REMOVE:     //   stored on the last beamline element
+  // REMOVE:     //   matches the pointer stored in the _calcs
+  // REMOVE:     //   array
+  // REMOVE: bool checkInfoPtr( int ) const;
+  // REMOVE:     // Checks whether the address of the Info
+  // REMOVE:     //   stored on the kth beamline element
+  // REMOVE:     //   matches the pointer stored in the _calcs
+  // REMOVE:     //   array
 
   void eraseAll();
 
@@ -152,7 +156,7 @@ public:
 
  private:
   double _dpp;    // used for dispersion calculations
-  Info** _calcs;  // array of calculated results;
+  Info*  _calcs;  // array of calculated results;
                   //   the objects stored on
                   //   the individual beamline elements
   int    _n;      // size of the _calcs array
