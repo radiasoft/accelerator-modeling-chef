@@ -67,13 +67,9 @@ Slot::Slot( const Frame& y )
 {
   if( !out.isOrthonormal() )
   {
-    cerr << "*** ERROR ***                                 \n"
-            "*** ERROR *** Slot::Slot                      \n"
-            "*** ERROR *** Current implementation requires \n"
-            "*** ERROR *** that frames be orthonormal.     \n"
-            "*** ERROR ***                                 \n"
-         << endl;
-    exit(1);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+           "Slot::Slot( const Frame& y )", 
+           "Current implementation requires that frames be orthonormal." ) );
   }
 
   p_bml   = 0;
@@ -90,13 +86,9 @@ Slot::Slot( const char* nm, const Frame& y )
 {
   if( !out.isOrthonormal() )
   {
-    cerr << "*** ERROR ***                                 \n"
-            "*** ERROR *** Slot::Slot                      \n"
-            "*** ERROR *** Current implementation requires \n"
-            "*** ERROR *** that frames be orthonormal.     \n"
-            "*** ERROR ***                                 \n"
-         << endl;
-    exit(1);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+           "Slot::Slot( const char* nm, const Frame& y )", 
+           "Current implementation requires that frames be orthonormal." ) );
   }
 
   p_bml   = 0;
@@ -304,39 +296,24 @@ short int Slot::checkFrame( const Frame& f ) const
   ret = 0;
 
   if( !f.isOrthonormal() ) {
-    cerr << "*** ERROR ***                                 \n"
-            "*** ERROR *** Slot::Slot                      \n"
-            "*** ERROR *** Current implementation requires \n"
-            "*** ERROR *** that frames be orthonormal.     \n"
-            "*** ERROR ***                                 \n"
-         << endl;
-    ret = 1;
-    exit(1);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+           "short int Slot::checkFrame( const Frame& f ) const", 
+           "Current implementation requires that frames be orthonormal." ) );
   }
 
   if( f.getOrigin() != zero.getOrigin() ) {
-    cerr << "*** ERROR ***                                 \n"
-            "*** ERROR *** Slot::Slot                      \n"
-            "*** ERROR *** Current implementation requires \n"
-            "*** ERROR *** no displacement of origin.      \n"
-            "*** ERROR ***                                 \n"
-         << endl;
-    ret = 2;
-    exit(2);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+           "short int Slot::checkFrame( const Frame& f ) const", 
+           "Current implementation requires no displacement of origin." ) );
   }
 
   else if( (  f.getAxis(y) != zero.getAxis(y) ) && 
            (  f.getAxis(z) != zero.getAxis(z) )
          ) {
-    cerr << "*** ERROR ***                                 \n"
-            "*** ERROR *** Slot::Slot                      \n"
-            "*** ERROR *** Current implementation requires \n"
-            "*** ERROR *** rotation only about either      \n"
-            "*** ERROR *** y or z axis, but not both.      \n"
-            "*** ERROR ***                                 \n"
-         << endl;
-    ret = 3;
-    exit(3);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+           "short int Slot::checkFrame( const Frame& f ) const", 
+           "Current implementation allows rotation about "
+           "y or z axis, but not both." ) );
   }
 
   return ret;
@@ -452,11 +429,11 @@ istream& Slot::readFrom( istream& is )
     // "slot_END" line to read in.
     is >> type >> name >> Length >> Strength >> x >> y >> t;
     if ( strcasecmp(type, "slot_END") != 0 ) {
-      cerr << " **** ERROR ****" << endl;
-      cerr << " **** ERROR **** Slot:readFrom(istream&): Expecting \"slot_END\"" << endl;
-      cerr << " **** ERROR **** but got \"" << type << "\"\n";
-      cerr << " **** ERROR ****" << endl;
-      exit(1);
+      ostringstream uic;
+      uic << "Expecting \"slot_END\" but got " << type;
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+             "istream& Slot::readFrom( istream& is )", 
+             uic.str().c_str() ) );
     }
   } else {
     if( align != 0 ) {
@@ -757,16 +734,12 @@ void Slot::localPropagate( Particle& p )
       tau = ( q - r )*u_3 / betaParallel;
     }
     else {
-      cerr << "*** ERROR ***                                 \n"
-              "*** ERROR *** Slot::localPropagate(Proton)    \n"
-              "*** ERROR *** Velocity is not forward.        \n"
-              "*** ERROR ***                                 \n"
-           << endl;
-      cerr << this->Name() << endl;
-      cerr << in << "\n" << out << endl;
-      cerr << "p.VectorBeta(): " << p.VectorBeta() << endl;
-      cerr << "betaParallel: " << betaParallel << endl;
-      exit(3);
+      ostringstream uic;
+      uic << this->Type() << "  " << this->Name()
+          << ": Velocity is not forward: it may be NAN.";
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+             "void Slot::localPropagate( Particle& p )", 
+             uic.str().c_str() ) );
     }
 
     r += tau*beta;
@@ -812,16 +785,12 @@ void Slot::localPropagate( JetParticle& p )
       tau = ( q - r )*u_3 / betaParallel;
     }
     else {
-      cerr << "*** ERROR ***                                 \n"
-              "*** ERROR *** Slot::localPropagate(JetProton) \n"
-              "*** ERROR *** Velocity is not forward.        \n"
-              "*** ERROR ***                                 \n"
-           << endl;
-      cerr << this->Name() << endl;
-      cerr << in << "\n" << out << endl;
-      cerr << "p.VectorBeta(): " << p.VectorBeta() << endl;
-      cerr << "betaParallel: " << betaParallel << endl;
-      exit(3);
+      ostringstream uic;
+      uic << this->Type() << "  " << this->Name()
+          << ": Velocity is not forward: it may be NAN.";
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+             "void Slot::localPropagate( JetParticle& p )", 
+             uic.str().c_str() ) );
     }
 
     r += tau*beta;
