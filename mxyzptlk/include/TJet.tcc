@@ -1316,8 +1316,9 @@ TJet<T1,T2> operator*( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
    if( ( p->_weight + q->_weight ) > testWeight ) continue;
    // REMOVE: r = new TJLterm<T1,T2>( (*p)*(*q) ); 
 
-   pje->_monoCode( p->_index + q->_index );
-   indy = pje->_monoRank();
+   // REMOVE: pje->_monoCode( p->_index + q->_index );
+   // REMOVE: indy = pje->_monoRank();
+   indy = pje->_offset( p->_index + q->_index );
    // Will work even when the exponents are all zero.
 
    product = p->_value * q->_value;
@@ -1604,8 +1605,9 @@ TJet<T1,T2> TJet<T1,T2>::_truncMult( const TJet<T1,T2>& v, const int& wl ) const
    // REMOVE: r = new TJLterm<T1,T2>( _jl->_myEnv );
    // REMOVE: *r = (*p)*(*q);
    // REMOVE: z.addTerm( r );
-   pje->_monoCode( p->_index + q->_index );
-   indy = pje->_monoRank();
+   // REMOVE: pje->_monoCode( p->_index + q->_index );
+   // REMOVE: indy = pje->_monoRank();
+   indy = pje->_offset( p->_index + q->_index );
    // Will work even when the exponents are all zero.
 
    product = p->_value * q->_value;
@@ -2739,14 +2741,16 @@ TJet<T1,T2> TJet<T1,T2>::_concat() const
  p = 0;
  i = 0;
 
- v.Reconstruct( (( (_jl->_myEnv)->_TJLmonomial )[0] )->_myEnv );
+ TJetEnvironment<T1,T2>* theEnv = _jl->_myEnv;
+ v.Reconstruct( (( (theEnv)->_TJLmonomial )[0] )->_myEnv );
  
  while((  p = (TJLterm<T1,T2>*) getNext()  )) {
    if( p->_weight > _jl->_accuWgt ) break;
-   for( i = 0; i < _jl->_myEnv->_numVar; i++ )
-     _jl->_myEnv->_exponent[i] = (p->_index)(i);
-   _jl->_myEnv->_monoCode();
-   v += ( p->_value ) * ( _jl->_myEnv->_TJLmonomial[ _jl->_myEnv->_monoRank() ] );
+   // REMOVE: for( i = 0; i < theEnv->_numVar; i++ )
+   // REMOVE:   theEnv->_exponent[i] = (p->_index)(i);
+   // REMOVE: theEnv->_monoCode();
+   // REMOVE: v += ( p->_value ) * ( theEnv->_TJLmonomial[ theEnv->_monoRank() ] );
+   v += ( p->_value ) * ( theEnv->_TJLmonomial[ theEnv->_offset(p->_index) ] );
  }
  
  return v;
@@ -2777,7 +2781,8 @@ TJet<T1,T2> TJet<T1,T2>::operator() ( const TJetVector<T1,T2>& y ) const
 template<typename T1, typename T2>
 TJet<T1,T2> TJet<T1,T2>::operator() ( const TJet<T1,T2>* y ) const 
 { 
- TJet<T1,T2>*     u = new TJet<T1,T2> [ _jl->_myEnv->_numVar ];
+ TJetEnvironment<T1,T2>* theEnv = _jl->_myEnv;
+ TJet<T1,T2>*     u = new TJet<T1,T2> [ theEnv->_numVar ];
  static TJet<T1,T2>      z, term;
  static int      i, j, w;
 
@@ -2789,42 +2794,44 @@ TJet<T1,T2> TJet<T1,T2>::operator() ( const TJet<T1,T2>* y ) const
 
  // Check consistency of reference points and
  // subtract reference point prior to concatenation.
- for( i = 0; i < _jl->_myEnv->_numVar; i++ ) {
+ for( i = 0; i < theEnv->_numVar; i++ ) {
    if( y[i]->_myEnv != y[0]->_myEnv ) {
      throw( GenericException( __FILE__, __LINE__, 
             "TJet<T1,T2> TJet<T1,T2>::operator() ( const TJet<T1,T2>* ) const ",
             "Inconsistent environments." ) );
    }
-   u[i] = y[i] - _jl->_myEnv->_refPoint[i];
+   u[i] = y[i] - theEnv->_refPoint[i];
  }
  
  // Evaluate and store monomials.
  
  // The zeroth one.
- ( ( _jl->_myEnv->_TJLmonomial )[0] )->_myEnv = y[0]->_myEnv; // Needed by 
-                                                        // TJet<T1,T2>::concat
- _jl->_myEnv->_TJLmonomial[0] = ((T1) 1.0);
+ ( ( theEnv->_TJLmonomial )[0] )->_myEnv = y[0]->_myEnv; // Needed by 
+                                                         // TJet<T1,T2>::concat
+ theEnv->_TJLmonomial[0] = ((T1) 1.0);
 
  // For all higher weights ...
  for( w = 1; w <= _jl->_accuWgt; w++ )
  
    // Get the next set of _exponents of weight w.
-   while( nexcom( w, _jl->_myEnv->_numVar, _jl->_myEnv->_exponent ) ) {
+   while( nexcom( w, theEnv->_numVar, theEnv->_exponent ) ) {
  
      // Find the first non-zero _exponent.
      i = 0;
-     while( !( _jl->_myEnv->_exponent[i++] ) ) ;
+     while( !( theEnv->_exponent[i++] ) ) ;
      i--;
  
      // The value of the monomial associated with this composition
      // is obtained by multiplying a factor into a previously
      // computed monomial.
-     ( _jl->_myEnv->_exponent[i] )--;
-     _jl->_myEnv->_monoCode();
-     term = _jl->_myEnv->_TJLmonomial[ _jl->_myEnv->_monoRank() ];
-     ( _jl->_myEnv->_exponent[i] )++;
-     _jl->_myEnv->_monoCode();
-     _jl->_myEnv->_TJLmonomial[ _jl->_myEnv->_monoRank() ] = term * u[i]; // ??? Is this OK???
+     ( theEnv->_exponent[i] )--;
+     // REMOVE: theEnv->_monoCode();
+     // REMOVE: term = theEnv->_TJLmonomial[ theEnv->_monoRank() ];
+     term = theEnv->_TJLmonomial[ theEnv->_offset( theEnv->_exponent ) ];
+     ( theEnv->_exponent[i] )++;
+     // REMOVE: theEnv->_monoCode();
+     // REMOVE: theEnv->_TJLmonomial[ theEnv->_monoRank() ] = term * u[i]; // ??? Is this OK???
+     theEnv->_TJLmonomial[ theEnv->_offset( theEnv->_exponent ) ] = term * u[i];
  
    } // End while loop.
  
@@ -2840,14 +2847,15 @@ TJet<T1,T2> TJet<T1,T2>::operator() ( const TJet<T1,T2>* y ) const
   p = 0;
   i = 0;
  
-  z->_myEnv = (( _jl->_myEnv->_TJLmonomial )[0] )->_myEnv;
+  z->_myEnv = (( theEnv->_TJLmonomial )[0] )->_myEnv;
   
   while((  p = (TJLterm<T1,T2>*) getNext()  )) {
     if( p->_weight > _jl->_accuWgt ) break;
-    for( i = 0; i < _jl->_myEnv->_numVar; i++ )
-      _jl->_myEnv->_exponent[i] = (p->_index)(i);
-    _jl->_myEnv->_monoCode();
-    z += ( p->_value ) * ( _jl->_myEnv->_TJLmonomial[ _jl->_myEnv->_monoRank() ] );
+    // REMOVE: for( i = 0; i < theEnv->_numVar; i++ )
+    // REMOVE:   theEnv->_exponent[i] = (p->_index)(i);
+    // REMOVE: theEnv->_monoCode();
+    // REMOVE: z += ( p->_value ) * ( theEnv->_TJLmonomial[ theEnv->_monoRank() ] );
+    z += ( p->_value ) * ( theEnv->_TJLmonomial[ theEnv->_offset(p->_index) ] );
   }
  }
 

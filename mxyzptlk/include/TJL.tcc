@@ -948,11 +948,13 @@ T1 TJL<T1,T2>::operator()( const T1* x )  const
      // is obtained by multiplying a factor into a previously
      // computed _monomial.
      ( _myEnv->_exponent[i] )--;
-     _myEnv->_monoCode();
-     term = _myEnv->_monomial[ _myEnv->_monoRank() ];
+     // REMOVE: _myEnv->_monoCode();
+     // REMOVE: term = _myEnv->_monomial[ _myEnv->_monoRank() ];
+     term = _myEnv->_monomial[ _myEnv->_offset( _myEnv->_exponent ) ];
      ( _myEnv->_exponent[i] )++;
-     _myEnv->_monoCode();
-     _myEnv->_monomial[ _myEnv->_monoRank() ] = term * u[i];
+     // REMOVE: _myEnv->_monoCode();
+     // REMOVE: _myEnv->_monomial[ _myEnv->_monoRank() ] = term * u[i];
+     _myEnv->_monomial[ _myEnv->_offset( _myEnv->_exponent ) ] = term * u[i];
  
    }
  
@@ -962,9 +964,10 @@ T1 TJL<T1,T2>::operator()( const T1* x )  const
  v = 0.0;
  
  while((  p = (TJLterm<T1,T2>*) getNext()  )) {
-   for( i = 0; i < _myEnv->_numVar; i++ ) _myEnv->_exponent[i] = (p->_index)(i);
-   _myEnv->_monoCode();
-   v += ( p->_value ) * ( _myEnv->_monomial[ _myEnv->_monoRank() ] );
+   // REMOVE; for( i = 0; i < _myEnv->_numVar; i++ ) _myEnv->_exponent[i] = (p->_index)(i);
+   // REMOVE: _myEnv->_monoCode();
+   // REMOVE: v += ( p->_value ) * ( _myEnv->_monomial[ _myEnv->_monoRank() ] );
+   v += ( p->_value ) * ( _myEnv->_monomial[ _myEnv->_offset( p->_index ) ] );
  }
  
  delete [] u;

@@ -5,7 +5,7 @@
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
 ******                                    
 ******  File:      TJetEnvironment.cc
-******  Version:   1.0
+******  Version:   2.0
 ******                                                                
 ******  Copyright (c) 1990, 2004 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -78,6 +78,7 @@ extern "C" {
 
 template<typename T1, typename T2>
 TJetEnvironment<T1,T2>::TJetEnvironment() 
+: _offset( 2, 1 )
 {
   _numVar            = 0;
   _spaceDim          = -1;
@@ -90,9 +91,9 @@ TJetEnvironment<T1,T2>::TJetEnvironment()
   _TJLmonomial       = 0;
   _TJLmml            = 0;
   _exponent          = 0;
-  _expCode           = 0;
+  // OBSOLETE _expCode           = 0;
   _pbok              = 0;
-  _numPaths          = 0;
+  // OBSOLETE _numPaths          = 0;
 }
  
 
@@ -106,7 +107,10 @@ TJetEnvironment<T1,T2>::TJetEnvironment( const TJetEnvironment& x )
   _spaceDim( x._spaceDim ),
   _pbok( x._pbok ),
   _dof( x._dof ),
-  _numPaths(0), _TJLmonomial(0), _TJLmml(0)
+  // OBSOLETE _numPaths(0), 
+  _TJLmonomial(0), 
+  _TJLmml(0),
+  _offset( x._maxWeight, x._numVar )
 {
   if( TJet<T1,T2>::workEnvironment() != 0 ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -145,14 +149,14 @@ TJetEnvironment<T1,T2>::TJetEnvironment( const TJetEnvironment& x )
   int i, j;
 
   _exponent   = new int[ n ];
-  _expCode    = new char[ w + n ];
+  // OBSOLETE _expCode    = new char[ w + n ];
 
-  _numPaths = new MatrixI( w+1, n );
-  for( i = 0; i <= w; i++ ) {
-    for( j = 1; j <= n; j++ ) {
-      (*_numPaths)( i, j-1 ) = bcfRec( i + j - 1, i );
-    }
-  }
+  // OBSOLETE _numPaths = new MatrixI( w+1, n );
+  // OBSOLETE for( i = 0; i <= w; i++ ) {
+  // OBSOLETE   for( j = 1; j <= n; j++ ) {
+  // OBSOLETE     (*_numPaths)( i, j-1 ) = bcfRec( i + j - 1, i );
+  // OBSOLETE   }
+  // OBSOLETE }
 
   _refPoint = new T1[ n ];
   _scale = new double[ n ];
@@ -255,6 +259,8 @@ TJetEnvironment<T1,T2>& TJetEnvironment<T1,T2>::operator=( const TJetEnvironment
   _maxWeight = x._maxWeight;
   _numVar    = x._numVar;
   _spaceDim  = x._spaceDim;
+
+  _offset.reconstruct( x._offset );
 
   if( _numVar == 0 ) {
     cerr << "\n\n"
@@ -476,6 +482,8 @@ istream& streamIn( istream& is, TJetEnvironment<T1,T2>** x )
   int n = pje->_numVar;
   int w = pje->_maxWeight;
 
+  pje->_offset.reconstruct( w, n );
+
   pje->_exponent   = new int[ n ];
   pje->_expCode    = new char[ w + n ];
 
@@ -518,95 +526,95 @@ istream& streamIn( istream& is, TJetEnvironment<T1,T2>** x )
 }
 
 
-// ***************************************************************
-// ***************************************************************
-// ***************************************************************
-//
-//      Functions which rank and unrank _monomials.  Developed from
-//      algorithms provided by Nijenhuis and Wilf, Combinatorial
-//      Algorithms. (2nd ed.)
- 
-template<typename T1, typename T2>
-void TJetEnvironment<T1,T2>::_monoCode() {
- int c;
- int i, j;
- j = 0;
- for( i = 0; i < _numVar; i++ ) {
-   for( c = 0; c < _exponent[i]; c++ ) _expCode[j++] = 1;
-   _expCode[j++] = 0;
-   }
-}
-
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T1, typename T2>
-void TJetEnvironment<T1,T2>::_monoCode( const IntArray& e ) {
-  int c, i, j;
-  if( _numVar == e.Dim() ) {
-    j = 0;
-    for( i = 0; i < _numVar; i++ ) {
-      for( c = 0; c < e(i); c++ ) { _expCode[j++] = 1; }
-      _expCode[j++] = 0;
-    }
-  }
-  else {
-    throw( GenericException( __FILE__, __LINE__, 
-           "void TJetEnvironment<T1,T2>::_monoCode( const Intarray& e )", 
-           "Argument has wrong dimension." ) );
-  }
-}
-
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T1, typename T2>
-void TJetEnvironment<T1,T2>::_monoDecode() {
- int c;
- int i, j;
- j = 0;
- for( i = 0; i < _numVar; i++ ) {
-   c = 0;
-   while( _expCode[j++] ) ++c;
-   _exponent[i] = c;
-   }
-}
-
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T1, typename T2>
-int TJetEnvironment<T1,T2>::_monoRank() {
- //  This function assumes _monoCode has been run,
- //  so that the path is appropriately coded into _expCode.
- char edge;
- int w, n;
- int rank;
- int zeroCount;
- int i;
- 
- i = 0;
- rank = 0;
- w = 0;
- n = 1;
- 
- if((  edge = _expCode[i++]  )) zeroCount = 0;
- else                           zeroCount = 1;
- 
- while( zeroCount < _numVar ) {
- 
-   if( edge ) {
-     w++;
-     if( ( w > 0 ) && ( n > 1 ) )  rank += (*_numPaths)(w, n-2);
-     // ??? REMOVE: if( ( w > 0 ) && ( n > 1 ) )  rank += _numPaths[w][n-1];
-     }
-   else  n++;
- 
-   if( !( edge = _expCode[i++] ) ) zeroCount++;
- 
-   }
- 
- rank += ( w * (*_numPaths)(w, n-1) ) / n;
- 
- return rank;
-}
+// OBSOLETE // ***************************************************************
+// OBSOLETE // ***************************************************************
+// OBSOLETE // ***************************************************************
+// OBSOLETE //
+// OBSOLETE //      Functions which rank and unrank _monomials.  Developed from
+// OBSOLETE //      algorithms provided by Nijenhuis and Wilf, Combinatorial
+// OBSOLETE //      Algorithms. (2nd ed.)
+// OBSOLETE  
+// OBSOLETE template<typename T1, typename T2>
+// OBSOLETE void TJetEnvironment<T1,T2>::_monoCode() {
+// OBSOLETE  int c;
+// OBSOLETE  int i, j;
+// OBSOLETE  j = 0;
+// OBSOLETE  for( i = 0; i < _numVar; i++ ) {
+// OBSOLETE    for( c = 0; c < _exponent[i]; c++ ) _expCode[j++] = 1;
+// OBSOLETE    _expCode[j++] = 0;
+// OBSOLETE    }
+// OBSOLETE }
+// OBSOLETE 
+// OBSOLETE //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// OBSOLETE 
+// OBSOLETE template<typename T1, typename T2>
+// OBSOLETE void TJetEnvironment<T1,T2>::_monoCode( const IntArray& e ) {
+// OBSOLETE   int c, i, j;
+// OBSOLETE   if( _numVar == e.Dim() ) {
+// OBSOLETE     j = 0;
+// OBSOLETE     for( i = 0; i < _numVar; i++ ) {
+// OBSOLETE       for( c = 0; c < e(i); c++ ) { _expCode[j++] = 1; }
+// OBSOLETE       _expCode[j++] = 0;
+// OBSOLETE     }
+// OBSOLETE   }
+// OBSOLETE   else {
+// OBSOLETE     throw( GenericException( __FILE__, __LINE__, 
+// OBSOLETE            "void TJetEnvironment<T1,T2>::_monoCode( const Intarray& e )", 
+// OBSOLETE            "Argument has wrong dimension." ) );
+// OBSOLETE   }
+// OBSOLETE }
+// OBSOLETE 
+// OBSOLETE //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// OBSOLETE 
+// OBSOLETE template<typename T1, typename T2>
+// OBSOLETE void TJetEnvironment<T1,T2>::_monoDecode() {
+// OBSOLETE  int c;
+// OBSOLETE  int i, j;
+// OBSOLETE  j = 0;
+// OBSOLETE  for( i = 0; i < _numVar; i++ ) {
+// OBSOLETE    c = 0;
+// OBSOLETE    while( _expCode[j++] ) ++c;
+// OBSOLETE    _exponent[i] = c;
+// OBSOLETE    }
+// OBSOLETE }
+// OBSOLETE 
+// OBSOLETE //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// OBSOLETE 
+// OBSOLETE template<typename T1, typename T2>
+// OBSOLETE int TJetEnvironment<T1,T2>::_monoRank() {
+// OBSOLETE  //  This function assumes _monoCode has been run,
+// OBSOLETE  //  so that the path is appropriately coded into _expCode.
+// OBSOLETE  char edge;
+// OBSOLETE  int w, n;
+// OBSOLETE  int rank;
+// OBSOLETE  int zeroCount;
+// OBSOLETE  int i;
+// OBSOLETE  
+// OBSOLETE  i = 0;
+// OBSOLETE  rank = 0;
+// OBSOLETE  w = 0;
+// OBSOLETE  n = 1;
+// OBSOLETE  
+// OBSOLETE  if((  edge = _expCode[i++]  )) zeroCount = 0;
+// OBSOLETE  else                           zeroCount = 1;
+// OBSOLETE  
+// OBSOLETE  while( zeroCount < _numVar ) {
+// OBSOLETE  
+// OBSOLETE    if( edge ) {
+// OBSOLETE      w++;
+// OBSOLETE      if( ( w > 0 ) && ( n > 1 ) )  rank += (*_numPaths)(w, n-2);
+// OBSOLETE      // ??? REMOVE: if( ( w > 0 ) && ( n > 1 ) )  rank += _numPaths[w][n-1];
+// OBSOLETE      }
+// OBSOLETE    else  n++;
+// OBSOLETE  
+// OBSOLETE    if( !( edge = _expCode[i++] ) ) zeroCount++;
+// OBSOLETE  
+// OBSOLETE    }
+// OBSOLETE  
+// OBSOLETE  rank += ( w * (*_numPaths)(w, n-1) ) / n;
+// OBSOLETE  
+// OBSOLETE  return rank;
+// OBSOLETE }
 
 #undef PREPFORCHANGE
 

@@ -5,7 +5,7 @@
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
 ******                                    
 ******  File:      TJetEnvironment.h
-******  Version:   1.0
+******  Version:   2.0
 ******                                                                
 ******  Copyright (c) 1990, 2004 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -73,21 +73,23 @@ struct TJetEnvironment
  T1*       _monomial;     // Storage area for monomials used in multinomial
                           //   evaluation. 
  int       _maxTerms;     // Maximum number of monomial terms.
- TJet<T1,T2>* _TJLmonomial;  // Storage area for TJL monomials used in concatenation.
+ TJet<T1,T2>* _TJLmonomial; // Storage area for TJL monomials used in concatenation.
  TJLterm<T1,T2>* _TJLmml; // Same as above, but used for collecting terms
                           //   during multiplication.
                           //   ??? There should be no need for a second array.
                           //   ??? Both are employed as scratchpads.
                           //   ??? Rewrite code so that only one is used.
+ Cascade   _offset;       // Switching functor for fast access to offset
+                          //   indices in the _TJLmonomial and _TJLmml arrays.
  int*      _exponent;     // Used by nexcom (as called by TJL::operator()
                           //   when storing monomials.
- char*     _expCode;      // The Wilf code of a monomial. 
+ // OBSOLETE char*     _expCode;      // The Wilf code of a monomial. 
  bool      _pbok;         // Taking Poisson brackets is OK: the dimension of 
                           //   phase space is even.
- MatrixI*  _numPaths;     // An array counting the number of paths to a vertex 
-                          //   in the Wilf graph.  Setup arranges that 
-                          //   numPaths[w][n] = number of compositions of
-                          //   a weight  w  into  n  parts.
+ // OBSOLETE MatrixI*  _numPaths;     // An array counting the number of paths to a vertex 
+ // OBSOLETE                          //   in the Wilf graph.  Setup arranges that 
+ // OBSOLETE                          //   numPaths[w][n] = number of compositions of
+ // OBSOLETE                          //   a weight  w  into  n  parts.
  IntArray  _allZeroes;    // An integer array containing zeroes.  Used to 
                           //   filter the standard part of a variable.
 
@@ -122,14 +124,15 @@ struct TJetEnvironment
  bool hasApproxReferencePoint( const double*, const double* tolerance ) const;
 
 
- // Monomial ranking routines based on Wilf's algorithm
- void _monoCode();     // Computes the code of a monomial from its
-                       //   exponents, stored in _exponents.
- void _monoCode( const IntArray& );
-                       // Same as above, but takes its exponents 
-                       //   from the argument.
- void _monoDecode();   // The inverse operation to monoCode.
- int  _monoRank();     // Computes the rank of a monomial.
+ // OBSOLETE // Monomial ranking routines based on Wilf's algorithm
+ // OBSOLETE *** Replaced with a Cascade object ***
+ // OBSOLETE void _monoCode();     // Computes the code of a monomial from its
+ // OBSOLETE                       //   exponents, stored in _exponents.
+ // OBSOLETE void _monoCode( const IntArray& );
+ // OBSOLETE                       // Same as above, but takes its exponents 
+ // OBSOLETE                       //   from the argument.
+ // OBSOLETE void _monoDecode();   // The inverse operation to monoCode.
+ // OBSOLETE int  _monoRank();     // Computes the rank of a monomial.
 
 
  // Streams
