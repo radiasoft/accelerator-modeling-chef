@@ -1,0 +1,96 @@
+# An rdist distribution file (distfile)
+# To run, simply say:
+#	From a cartoon machine: "rdist mrtumnus"
+#		Distribute your FNALROOT files to mrtumnus
+#	From mrtumnus, as you:  "rdist internal"
+#		Distribute <you>@mrtumnus's FNALROOT to olmkeep@mrtumnus
+#	From mrtumnus, as you or olmkeep: "rdist narnia"
+#		Distribute olmkeep@mrtumnus to all machines in narnia.
+
+CARTOON_USER = mccrory
+NARNIA_USER  = mccrory
+# do not know what happens when these users aren't the same.
+
+CARTOON_ROOT  = /home/room1/${CARTOON_USER}/repository/fnal
+MRTUMNUS_ROOT = /export/home/mrtumnus/${NARNIA_USER}/fnal
+DEST = fnal
+
+# Directories to omit
+CARTOON_DIRS_OMIT = ( 
+	${CARTOON_ROOT}/lib 
+	${CARTOON_ROOT}/machines/mi/bpm_calibration_data 
+	${CARTOON_ROOT}/machines/mi/oas_development
+	${CARTOON_ROOT}/www
+	${CARTOON_ROOT}/vms_side
+	${CARTOON_ROOT}/machines/mr_8gev/app )
+
+MRTUMNUS_DIRS_OMIT = ( 
+	${MRTUMNUS_ROOT}/lib 
+	${MRTUMNUS_ROOT}/machines/mi/bpm_calibration_data 
+	${MRTUMNUS_ROOT}/www
+	${MRTUMNUS_ROOT}/vms_side
+	${MRTUMNUS_ROOT}/machines/mr_8gev/app )
+
+#This is a list of the executables.  This list is made obsolete by the "noexec" option.
+
+# sybase/app/addTest sybase/app/initTevFxt sybase/app/tstProcs
+# sybase/app/initRMat sybase/app/tstTev server/app/accumulatorServer
+# server/app/bl8OAServer server/app/masterServer server/app/mi8Server
+# server/app/miOAModel server/app/miOAModel_good server/app/miOAModel_old
+# server/app/miServer server/app/recyclerOAModel server/app/recyclerServer
+# server/app/tevExtractServer server/app/tevServer filter/app/concatDriftTest
+# filter/app/testIO filter/app/testInput filter/app/cfg2bml
+# filter/app/testDiff machines/accumulator/cfg2bml machines/accumulator/orbitCheck
+# machines/accumulator/twissCheck machines/accumulator/regenAccTables 
+# machines/mi/app/differentEnergies machines/mi/app/leos_test 
+# machines/mi/app/orbit_bml machines/mi/app/orbit_cfg machines/mi/app/testMIBPM
+# machines/mi/app/testMIBPM_before_ansil machines/mi/app/orbitCheck 
+# machines/mi/app/twissCheck machines/mi/app/regenMiTables 
+# machines/mi_8gev/app/checkShunts machines/mi_8gev/app/circuittest 
+# machines/mi_8gev/app/orbitCheck machines/mi_8gev/app/twissCheck 
+# machines/mi_8gev/app/regenMi8Tables machines/booster/app/makeBml
+# machines/booster/app/orbitCheck machines/booster/app/twissCheck
+# machines/booster/app/regenBoosterTables machines/recycler/app/edw
+# machines/recycler/app/dnudp machines/recycler/app/makeBml
+# machines/recycler/app/regenRecTables machines/recycler/app/twissCheck
+# machines/recycler/app/orbitCheck machines/recycler/app/regenMiTables
+# machines/tev/app/dat2bml machines/tev/app/orbitCheck
+# machines/tev/app/twissCheck machines/tev/app/helixCheck
+# machines/tev/app/tevbpmcross machines/tev/app/TevLattFuncs_B
+# machines/tev/app/nameCheck machines/tev/app/timing
+# machines/tev/app/normalTev machines/tev/app/track )
+
+# File name patterns to omit -- Be careful here! 
+# "CVS" matches any file that contains the chars CVS, like "abcCVSxyz.cc"
+FILE_OMIT = ( \\.sb \\.o \\# \\~  \\.tar \\_orig \\_new \\.log \\-hold \\.cdf 
+	CVS dependencies temp junk server/app/bpm_dump )
+
+CARTOON_FILES = ( ${CARTOON_ROOT} )
+MRTUMNUS_FILES = ( ${MRTUMNUS_ROOT} )
+
+# Update from cartoon machine to mrtumnus only, based on "younger" comparison
+mrtumnus :	${CARTOON_FILES} -> ( mrtumnus )
+		install -onoexec,younger -h ${DEST} ;
+		except ${CARTOON_DIRS_OMIT} ;
+		except_pat ${FILE_OMIT} ;
+		notify ${CARTOON_USER}@bpmail.fnal.gov ;
+
+# The options on the "install" directive are set to compare the files.
+# This can be changed from "compare" to "younger", and that will be
+# substantially faster.  But since rdist has never been used to keep
+# these partitions up-to-date, the first time you use "younger" will 
+# cause a whole lot of files to be updated needlessly.
+
+# Update from narnia:mrtumnus to the other machines
+narnia :	${MRTUMNUS_FILES} -> ( reepicheep trumpkin )
+		install -onoexec,compare -h ${DEST} ;
+		except ${MRTUMNUS_DIRS_OMIT} ;
+		except_pat ${FILE_OMIT} ;
+		notify ${CARTOON_USER}@bpmail.fnal.gov ;
+
+# Update from USER@mrtumnus to olmkeep@mrtumnus
+internal :	${MRTUMNUS_FILES} -> ( mrtumnus )
+		install -onoexec,compare -h /export/home/mrtumnus/olmkeep/fnal ;
+		except ${MRTUMNUS_DIRS_OMIT} ;
+		except_pat ${FILE_OMIT} ;
+		notify ${CARTOON_USER}@bpmail.fnal.gov ;
