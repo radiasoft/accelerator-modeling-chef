@@ -52,7 +52,7 @@ class apstring
     const apstring & operator += ( char ch );            // append char
  
         
-  private:
+  protected:
       int myLength;                     // length of string (# of characters)
       int myCapacity;                   // capacity of string
       char * myCstring;                 // storage for characters         
@@ -80,6 +80,29 @@ bool operator >= ( const apstring & lhs, const apstring & rhs );
 apstring operator + ( const apstring & lhs, const apstring & rhs );
 apstring operator + ( char ch, const apstring & str );
 apstring operator + ( const apstring & str, char ch );
+
+
+class String : public apstring
+{
+ public:
+  String()                    : apstring()      {}
+  String( const char* s     ) : apstring(s)     {}
+  String( const apstring& s ) : apstring(s)     {}
+  String( const String& str ) : apstring(str)   {}
+  ~String()                                     {}
+  
+  static const int NULL_ARG;
+  static const int BAD_START;
+
+  int     copy  ( char*,  // buffer to be copied into
+                  int,    // number of characters 
+                  int = 0 // starting position in *this
+                ) const;
+  String& append( char*,  // buffer containing characters to be appended
+                  int     // number of characters to append
+                );
+};
+
 
 // *******************************************************************
 // Specifications for string functions

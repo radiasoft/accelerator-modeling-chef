@@ -347,3 +347,33 @@ bool operator >= ( const apstring & lhs, const apstring & rhs )
 {
     return rhs <= lhs;
 }
+
+
+
+const int String::NULL_ARG  = -1;
+const int String::BAD_START = -2;
+
+
+int String::copy( char* buf, int num, int pos ) const
+{
+  if( buf == 0 ) {
+    return NULL_ARG;
+  }
+  if( pos < 0 || pos + 1 > myLength ) {
+    return BAD_START;
+  }
+  if( pos + num > myLength ) {
+    num = myLength - pos;
+  }
+  memcpy( (void*) buf, (const void*) (myCstring + pos), num*sizeof(char) );
+  return num;
+}
+
+
+String& String::append( char* buf, int n )
+{
+  for( int i = 0; i < n; i++ ) {
+    (*this) += buf[i];
+  }
+  return *this;
+}
