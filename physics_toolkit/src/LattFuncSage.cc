@@ -66,6 +66,11 @@ LattFuncSage::LattFuncSage( const beamline* x )
 {
 }
 
+LattFuncSage::LattFuncSage( const beamline& x ) 
+: Sage( &x ), _dpp( 0.00005 )
+{
+}
+
 LattFuncSage::~LattFuncSage() {
  // Will remove barnacles from its beamline.
 }
