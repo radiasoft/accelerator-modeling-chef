@@ -500,10 +500,14 @@ void Slot::localPropagate( Particle& p )
     }
     else {
       cerr << "*** ERROR ***                                 \n"
-              "*** ERROR *** Slot::localPropagate            \n"
+              "*** ERROR *** Slot::localPropagate(Proton)    \n"
               "*** ERROR *** Velocity is not forward.        \n"
               "*** ERROR ***                                 \n"
            << endl;
+      cerr << this->Name() << endl;
+      cerr << in << "\n" << out << endl;
+      cerr << "p.VectorBeta(): " << p.VectorBeta() << endl;
+      cerr << "betaParallel: " << betaParallel << endl;
       exit(3);
     }
 
@@ -544,17 +548,21 @@ void Slot::localPropagate( JetParticle& p )
 
     double tauZero = length / p.ReferenceBeta();
     Jet    tau;
-    Jet betaParallel = beta * u_3;
+    Jet    betaParallel = beta * u_3;
 
     if( betaParallel.standardPart() > 0.0 ) {
       tau = ( q - r )*u_3 / betaParallel;
     }
     else {
       cerr << "*** ERROR ***                                 \n"
-              "*** ERROR *** Slot::localPropagate            \n"
+              "*** ERROR *** Slot::localPropagate(JetProton) \n"
               "*** ERROR *** Velocity is not forward.        \n"
               "*** ERROR ***                                 \n"
            << endl;
+      cerr << this->Name() << endl;
+      cerr << in << "\n" << out << endl;
+      cerr << "p.VectorBeta(): " << p.VectorBeta() << endl;
+      cerr << "betaParallel: " << betaParallel << endl;
       exit(3);
     }
 
