@@ -10,7 +10,7 @@
 ******                                    
 ******  File:      Tracker.h
 ******                                                                
-******  Copyright (c) 2004  Universities Research Association, Inc.   
+******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
 ******                                                                
 ******  Author:    Leo Michelotti                                     
@@ -248,6 +248,12 @@ public:
 
   void activateZoom();
   void resetZoom();
+
+public:
+
+  static const double DEF_RANGE;
+  static const double DEF_X_CENTER;
+  static const double DEF_Y_CENTER;
 
 public slots:
   void deactivateZoom();
