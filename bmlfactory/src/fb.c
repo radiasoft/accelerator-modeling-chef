@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -59,9 +62,9 @@ main( void ) {
 
   printf("Allocating three element...\n");
 
-  allocate( p0, alloc );
-  allocate( p1, alloc );
-  allocate( p2, alloc );
+  PRIVATE_ALLOCATE( p0, alloc );
+  PRIVATE_ALLOCATE( p1, alloc );
+  PRIVATE_ALLOCATE( p2, alloc );
 
   printf("and printing their addresses\n");
 
@@ -71,7 +74,7 @@ main( void ) {
 
   printf("Deallocating middle element \n");
 
-  deallocate( p1, alloc );
+  PRIVATE_DEALLOCATE( p1, alloc );
 
   printf("and printing again \n");
 
@@ -80,7 +83,7 @@ main( void ) {
   printf("%li\n\n", (long)p2 );
 
   printf("Reallocating middle element \n");
-  allocate( p1, alloc );
+  PRIVATE_ALLOCATE( p1, alloc );
   
   printf("and printing again \n");
   
@@ -90,9 +93,9 @@ main( void ) {
 
   printf("Deallocating all stuff... \n");
   
-  deallocate(p1, alloc );
-  deallocate(p0, alloc );
-  deallocate(p2, alloc );
+  PRIVATE_DEALLOCATE(p1, alloc );
+  PRIVATE_DEALLOCATE(p0, alloc );
+  PRIVATE_DEALLOCATE(p2, alloc );
 
   fb_alloc_delete( alloc );
 

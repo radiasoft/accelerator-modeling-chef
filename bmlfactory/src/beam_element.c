@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -96,7 +99,7 @@ beam_element_init( fb_allocator* expr_alloc,
   assert( bel_alloc != NULL );
   assert( expr_alloc != NULL );
   
-  allocate( bel, bel_alloc );
+  PRIVATE_ALLOCATE( bel, bel_alloc );
   if ( bel != NULL ) {
     memset( bel, 0, sizeof( beam_element ) );
 
@@ -192,7 +195,7 @@ beam_element_set_linenum( beam_element* bel,
    */
 int
 beam_element_delete( beam_element* bel, fb_allocator* bel_alloc ) {
-  deallocate( bel, bel_alloc );
+  PRIVATE_DEALLOCATE( bel, bel_alloc );
   return 0;
 }
 
@@ -206,7 +209,7 @@ beam_element_copy( beam_element* bel, fb_allocator* bel_alloc ) {
   beam_element* new_bel = NULL;
   assert( bel != NULL );
 
-  allocate( new_bel, bel_alloc );
+  PRIVATE_ALLOCATE( new_bel, bel_alloc );
   memcpy( new_bel, bel, sizeof(beam_element) );
 
   return new_bel;

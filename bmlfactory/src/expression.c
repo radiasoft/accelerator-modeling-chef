@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -89,7 +92,7 @@ expr_expr_delete( GNode*   node,
     free( data->svalue_ );
     data->svalue_ = NULL;
   }
-  deallocate( data, (fb_allocator*)user_data );
+  PRIVATE_DEALLOCATE( data, (fb_allocator*)user_data );
   data = NULL;
 
   return FALSE;
@@ -110,7 +113,7 @@ expr_node_init( double        dvalue,
   assert( svalue != NULL );
   assert( expr_alloc != NULL );
 
-  allocate( data, expr_alloc );
+  PRIVATE_ALLOCATE( data, expr_alloc );
   if ( data != NULL ) {
     data->kind_ = NUMBER_EXPR;
     data->dvalue_ = dvalue;
@@ -119,7 +122,7 @@ expr_node_init( double        dvalue,
       strcpy( data->svalue_, svalue );
       expr = g_node_new( data );
     } else {
-      deallocate( expr, expr_alloc );
+      PRIVATE_DEALLOCATE( expr, expr_alloc );
     }
   }
 

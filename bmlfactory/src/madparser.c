@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -254,7 +257,7 @@ madparser_init( const char* filename_in,
       mp->filenames_list_   = g_slist_prepend( mp->filenames_list_, mp->filename_in_ );
       mp->current_filename_ = mp->filename_in_;
 
-      allocate( y, mp->yybuff_alloc_ );
+      PRIVATE_ALLOCATE( y, mp->yybuff_alloc_ );
       assert( y != NULL );
       
       y->filename_      = mp->filename_in_;
@@ -421,7 +424,7 @@ madparser_new_yybuff( madparser*  mp,
       mp->current_filename_ = p;
       r                     = fopen( p, "r" );
 
-      allocate( y, mp->yybuff_alloc_ );
+      PRIVATE_ALLOCATE( y, mp->yybuff_alloc_ );
       assert( y != NULL );
 
       y->filename_ = p;
@@ -478,7 +481,7 @@ madparser_restore_yybuff( madparser* mp ) {
   assert( mp != NULL );
 
   mp->yybuff_list_ = g_slist_remove( mp->yybuff_list_, mp->current_yybuff_ );
-  deallocate( mp->current_yybuff_, mp->yybuff_alloc_ );
+  PRIVATE_DEALLOCATE( mp->current_yybuff_, mp->yybuff_alloc_ );
 
   mp->current_yybuff_ = (yybuff*)(mp->yybuff_list_)->data;
 
@@ -498,7 +501,7 @@ free_yybuff( gpointer data,
   assert( data != NULL );
   assert( user_data != NULL );
 
-  deallocate( data, (fb_allocator*)user_data );
+  PRIVATE_DEALLOCATE( data, (fb_allocator*)user_data );
 }
 
 int
