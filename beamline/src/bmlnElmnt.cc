@@ -790,12 +790,10 @@ void bmlnElmnt::setStrength( double s ) {
 }
 
 void bmlnElmnt::setStrength( double, int ) {
- cerr << "*** ERROR *** \n"
-      << "*** ERROR *** void bmlnElmnt::setStrength( double s, int index )\n"
-      << "*** ERROR *** This virtual function should never \n"
-      << "*** ERROR *** have been called in its base class version.\n"
-      << endl;
- exit(1);
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "void bmlnElmnt::setStrength( double, int ) {", 
+         "This virtual function should never have been "
+         "called in its base class version." ) );
 }
 
 void bmlnElmnt::setCurrent( double I ) {
@@ -1092,25 +1090,17 @@ Aperture* bmlnElmnt::getAperture() {
 void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 {
   if( p_bml || p_bml_e ) {
-    cerr << "\n"
-            "*** ERROR ***                                    \n"
-            "*** ERROR *** bmlnElmnt::Split                   \n"
-            "*** ERROR *** Cannot use base ::Split function   \n"
-            "*** ERROR *** when the element is composite.     \n"
-            "*** ERROR ***                                    \n"
-         << endl;
-    exit (1);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           "Cannot use base ::Split function when the element is composite." ) );
   }
 
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    cerr << "\n"
-            "*** ERROR ***                                    \n"
-            "*** ERROR *** bmlnElmnt::Split                   \n"
-            "*** ERROR *** pc = " << pc << 
-                               "and is out of bounds.         \n"
-            "*** ERROR ***                                    \n"
-         << endl;
-    exit (1);
+    ostringstream uic;
+    uic  << "Requested percentage = " << pc << "; not with [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           uic.str().c_str() ) );
   }
 
   *a = Clone();
@@ -1189,13 +1179,9 @@ bmlnElmnt::Discriminator::Discriminator()
 
 bmlnElmnt::Discriminator::Discriminator( const Discriminator& )
 {
-  cerr << "\n*** ERROR *** "
-          "\n*** ERROR *** Copy constructor invoked for"
-          "\n*** ERROR *** a Discriminator object. Your program"
-          "\n*** ERROR *** will probably abort soon."
-          "\n*** ERROR *** "
-       << endl;
-  exit(1);
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "bmlnElmnt::Discriminator::Discriminator( const Discriminator& )", 
+         "Copy constructor invoked for a Discriminator object." ) );
 }
 
 
