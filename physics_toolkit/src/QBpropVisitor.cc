@@ -55,12 +55,13 @@ void QBpropVisitor::visitSbend( sbend* x )
 
 void QBpropVisitor::visitSector( sector* x )
 {
-  cerr << "*** ERROR ***                              \n"
-          "*** ERROR *** QBpropVisitor::visitSector   \n"
-          "*** ERROR *** Sorry. Sectors not allowed.  \n"
-          "*** ERROR ***                              \n"
+  x->propagate( *particle );
+  cerr << "*** WARNING ***                              \n"
+          "*** WARNING *** QBpropVisitor::visitSector   \n"
+          "*** WARNING *** Using 1st order part of map  \n"
+          "*** WARNING ***                              \n"
        << endl;
-  exit(1);
+  //exit(1);
 }
 
 
