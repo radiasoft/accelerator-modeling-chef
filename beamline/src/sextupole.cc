@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "sextupole.h"
 #include "drift.h"
@@ -83,9 +83,9 @@ void sextupole::setStrength( double s ) {
 
 
 void sextupole::setStrength( double, int ) {
- cerr << "\nCall to sextupole::setStrength( double s, int index )"
-      << endl;
- exit(1);
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "void sextupole::setStrength( double, int ) {", 
+         "Function should not be called." ) );
 }
 
 
@@ -103,14 +103,11 @@ const char* sextupole::Type() const
 void sextupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    cerr << "\n"
-            "*** ERROR ***                                    \n"
-            "*** ERROR *** sextupole::Split                   \n"
-            "*** ERROR *** pc = " << pc << 
-                               "and is out of bounds.         \n"
-            "*** ERROR ***                                    \n"
-         << endl;
-    exit (1);
+    ostringstream uic;
+    uic  << "pc = " << pc << ": this should be within [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void sextupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           uic.str().c_str() ) );
   }
 
   // We assume "strength" means field, not field*length.
