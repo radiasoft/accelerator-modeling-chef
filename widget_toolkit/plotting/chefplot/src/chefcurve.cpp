@@ -1,13 +1,33 @@
+////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                            //
+// FILE:       chefcurve.cpp                                                                  //
+//                                                                                            //
+// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+//             Accelerator Division / Accelerator Integration Dept                            //
+//             Fermi National Laboratory, Batavia, IL                                         //
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+// DATE:       September 2004                                                                 //
+//                                                                                            //
+// COPYRIGHT: Universities Research Association                                               //
+//                                                                                            //
+//                                                                                            //
+////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "chefplotdata.h"
+#include <qwt/qwt_plot.h>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <algorithm>
 
-
-QwtDoublePoint CHEFCurve::DefaultLinearInterpolator::operator()( const QwtDoublePoint* data_begin, 
-                                                                 const QwtDoublePoint* data_end, double x ) {
+QwtDoublePoint 
+CHEFCurve::DefaultLinearInterpolator::operator()( const QwtDoublePoint* data_begin, 
+                                                                 const QwtDoublePoint* data_end, double x ) 
+{
   
 return QwtDoublePoint(0.0,0.0);
 
@@ -15,7 +35,8 @@ return QwtDoublePoint(0.0,0.0);
  
 
 
-CHEFCurve::CHEFCurve(std::ifstream& is, const char* name): QwtPlotCurve(0,name)  {
+CHEFCurve::CHEFCurve(std::ifstream& is, const char* name): QwtPlotCurve(0,name)  
+{
 
 #if 0 
 
@@ -49,6 +70,7 @@ is.getline(linebuf, 256);
  _visible      = true;
 
  interpolationOff();
+
 #endif
 
  return;
@@ -56,10 +78,11 @@ is.getline(linebuf, 256);
 }
 
 
-CHEFCurve::CHEFCurve(const CHEFCurve& c, const char* name): QwtPlotCurve(0,name) {
+CHEFCurve::CHEFCurve(const CHEFCurve& c, const char* name ): QwtPlotCurve(0,name) 
+{
 
+#if 0
 
-#if 0 
    for (int i=0; i<c._n; i++) {
     _theData[i] = c._theData[i];
 
@@ -74,48 +97,46 @@ CHEFCurve::CHEFCurve(const CHEFCurve& c, const char* name): QwtPlotCurve(0,name)
 }
 
 
-CHEFCurve::CHEFCurve(const double* x, const double* y, int npts, const char* name): QwtPlotCurve(0,name) {
+CHEFCurve::CHEFCurve(const double* x, const double* y, int npts, const char* name): 
+  QwtPlotCurve(0,name)
+{
   
+   setData(x, y, npts);
 
-  QwtDoublePoint point;
+  _visible   = true;                                     // currently unused
+  _dataIp = new CHEFCurve::DefaultLinearInterpolator();  // currently unused
 
-  const double* xptr = x;
-  const double* yptr = y;
-    
-  _theData.resize(npts);
-
-
-  // save a copy of the data. This may be useful to interpolate lattice functions "smartly" 
-
-  for (int i=0; i< npts; i++) {
-    point.setX(*xptr);   
-    point.setY(*yptr);
-    _theData[i] = point;
-     xptr++; yptr++;
- };
-
-  setData(x, y, npts);
-
-  _dataIp = new CHEFCurve::DefaultLinearInterpolator();  // UNUSED FOR THE MOMENT
-
-  _visible      = true;                                  // UNUSED FOR THE MOMENT
-
-   
 }
 
 
-CHEFCurve::CHEFCurve(const QwtData &data, const char* name): QwtPlotCurve(0,name) {
-  
+CHEFCurve::CHEFCurve(const CurveData &data, const char* name): 
+  QwtPlotCurve( 0 , name )
 
+{
+  
   setData(data);
+}
+
+
+void 
+CHEFCurve::copy(const CHEFCurve& c)
+{
+
+   QwtPlotCurve::copy(c);
+   setXAxis( c.xAxis() );
+   setYAxis( c.yAxis() );    
 
 
 }
 
 
 
-CHEFCurve::~CHEFCurve() {
-     // handled by the QwtPlotCurve destructor.
+
+CHEFCurve::~CHEFCurve() 
+{
+
+  // handled by the QwtPlotCurve destructor.
+
 }
 
 

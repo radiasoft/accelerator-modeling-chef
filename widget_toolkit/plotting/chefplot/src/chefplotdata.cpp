@@ -1,3 +1,21 @@
+////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                            //
+// FILE:       chefplotdata.cpp                                                               //
+//                                                                                            //
+// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+//             Accelerator Division / Accelerator Integration Dept                            //
+//             Fermi National Laboratory, Batavia, IL                                         //
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+// DATE:       September 2004                                                                 //
+//                                                                                            //
+// COPYRIGHT: Universities Research Association                                               //
+//                                                                                            //
+//                                                                                            //
+////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "chefplotdata.h"
 #include <beamline.h>
 #include <string>
@@ -7,8 +25,110 @@
 #include <qwt/qwt_plot.h>
 #include <qwt/qwt_plot_classes.h>
 
-CHEFPlotData::CHEFPlotData(): _bml(0), _scalemagright(1.0), _scalemagleft(1.0) {
 
+
+CurveData::CurveData( boost::shared_array<double> x , boost::shared_array<double> y, int size):
+  _x(x), _y(y), _size(size) 
+
+{
+
+  const double* xp = _x.get();
+  const double* yp = _y.get();
+
+  _xmin = *std::min_element( xp, xp+_size);
+  _xmax = *std::max_element( xp, xp+_size);
+
+  _ymin = *std::min_element( yp, yp+_size);
+  _ymax = *std::max_element( yp, yp+_size);
+
+
+}
+
+CurveData::CurveData( const double* x , const double* y, int size):
+  _x( new double[size] ), _y( new double[size] ), _size(size) 
+
+{
+
+  // copy the data 
+
+  double* xdum = _x.get();
+  double* ydum = _y.get();
+
+  for ( int i=0; i<size ; i++ ) 
+  {
+
+    *xdum++ = *x++; 
+    *ydum++ = *y++; 
+
+   };
+
+ // find and store min/max values
+
+  _xmin = *std::min_element( _x.get(), _x.get()+_size);
+  _xmax = *std::max_element( _x.get(), _x.get()+_size);
+
+  _ymin = *std::min_element( _y.get(), _y.get()+_size);
+  _ymax = *std::max_element( _y.get(), _y.get()+_size);
+
+
+}
+
+
+CurveData::~CurveData()
+{
+
+  // data is automatically destroyed when smart_array[s] go out of scope   
+
+  // std::cout << "CurveData::~CurveData" << std::endl;
+  // std::cout << "_x.use_count() = " << _x.use_count() << endl;
+  // std::cout << "_y.use_count() = " << _y.use_count() << endl;
+
+}
+
+
+QwtData*   
+CurveData::copy () const
+{
+
+  return new CurveData(_x, _y, _size);
+
+}
+
+
+size_t
+CurveData::size () const 
+{
+
+  return _size;
+
+}
+
+double
+CurveData::x (size_t i) const
+{
+  return _x.get()[i];
+
+}
+
+double
+CurveData::y (size_t i) const
+{
+
+  return _y.get()[i];
+}
+
+
+QwtDoubleRect   
+CurveData::boundingRect () const
+{
+
+  return QwtDoubleRect(_xmin, _xmax, _ymin, _ymax);
+
+}
+
+
+
+CHEFPlotData::CHEFPlotData(): _bml(0), _scalemagright(1.0), _scalemagleft(1.0), _cloned(true) {
  
  _global_xmin  = 0.0;
  _global_xmax  = 0.0;
@@ -22,50 +142,66 @@ CHEFPlotData::CHEFPlotData(): _bml(0), _scalemagright(1.0), _scalemagleft(1.0) {
 
 CHEFPlotData::~CHEFPlotData(){
 
-   // deletes the _curves vector elements.
-   // Note that the curves generally have been reparented by the 
-   // plot widget. In that case, the plot widget destroys them.
-   // Only curves that have *not* been reparented (i.e. have parent 0)
-   // are destroyed here.  
+   // plot widget destroys Curves and beamline.
+   // both have been cloned, so this is safe  
 
-   std::vector<CHEFCurve*>::iterator it;
-   
-   for (it = _curves.begin(); it != _curves.end(); it++) {
-        //( !( (*it)->parentPlot() ) ) delete (*it);
-     delete (*it);
-     
-   };
-   
-     // delete the beamline elements using zap
-     // then delete the beamline itself
+  if (_bml && _cloned) 
+  { 
+    const_cast<beamline*>(_bml)->zap();
+    delete const_cast<beamline*>(_bml);
+    _bml = 0;
+  }
 
-   if (_bml) {
 
-     _bml->zap();
-     delete _bml;
+}
 
-  };
+double CHEFPlotData::getHorTune()
+{
+  // this is a virtual function. Default implementation just returns -1.0 
+
+  return -1.0;
+
+}
+
+double CHEFPlotData::getVerTune()
+{
+  // this is a virtual function. Default implementation just returns -1.0 
+
+  return -1.0;
 
 }
 
 
-beamline* CHEFPlotData::getBeamline() {
+const beamline* 
+CHEFPlotData::getBeamline() 
+{
  
   return _bml;
   
 }
 
 
-
-void CHEFPlotData::setBeamline(const beamline* bml){
+void 
+CHEFPlotData::setBeamline(const beamline* bml, bool clone)
+{
 
   if (bml == 0) return;
 
-  _bml = dynamic_cast<beamline*>( bml->clone() );
-  
+  if (clone) 
+  {
+    _cloned = true;  
+    _bml = dynamic_cast<const beamline*>( bml->clone() );
+  }  
+  else 
+  {
+    _cloned = false;
+    _bml = dynamic_cast<const beamline*>( bml );  
+  }
 }
 
-void CHEFPlotData::addCurve(CHEFCurve* curve){
+void 
+CHEFPlotData::addCurve(boost::shared_ptr<CHEFCurve> curve)
+{
 
      // add a curve and compute global min/max
 
@@ -106,7 +242,9 @@ void CHEFPlotData::addCurve(CHEFCurve* curve){
 }
 
 
-CHEFCurve* CHEFPlotData::operator[](int i) const {
+boost::shared_ptr<CHEFCurve> 
+CHEFPlotData::operator[](int i) const 
+{
   
   return _curves[i];
   
@@ -114,14 +252,18 @@ CHEFCurve* CHEFPlotData::operator[](int i) const {
 
     
 
-void CHEFPlotData::setXLabel(const char* label) {
+void 
+CHEFPlotData::setXLabel(const char* label) 
+{
 
   _xLabel = QString(label);
 
 }
  
 
-void CHEFPlotData::setYLabel(const char* label, int axis){
+void 
+CHEFPlotData::setYLabel(const char* label, int axis)
+{
 
 switch (axis) {
   case QwtPlot::yRight:  
@@ -135,71 +277,85 @@ switch (axis) {
 }
 
 
-
-QString CHEFPlotData::yLLabel() const {
+QString 
+CHEFPlotData::yLLabel() const 
+{
   return _yLLabel;
 }
 
-QString CHEFPlotData::yRLabel() const {
+QString 
+CHEFPlotData::yRLabel() const 
+{
   return _yRLabel;
 }
 
-QString CHEFPlotData::xLabel() const {
+QString CHEFPlotData::xLabel() const 
+{
   return _xLabel;
 }
 
 
-
-
-double CHEFPlotData::xMin() const {
+double 
+CHEFPlotData::xMin() const 
+{
   return _global_xmin;
 }
 
-double CHEFPlotData::xMax()const {
+double CHEFPlotData::xMax()const 
+{
   return  _global_xmax;
 }
 
 
-double CHEFPlotData::yLMin() const {
+double CHEFPlotData::yLMin() const 
+{
   return _global_ylmin;
 }
 
-double CHEFPlotData::yLMax() const {
+double CHEFPlotData::yLMax() const 
+{
   return _global_ylmax; 
 }
 
 
-double CHEFPlotData::yRMin() const {
+double CHEFPlotData::yRMin() const 
+{
   return _global_yrmin;
 }
 
-double CHEFPlotData::yRMax() const  {
+double CHEFPlotData::yRMax() const  
+{
   return _global_yrmax;
   
 }
 
-int CHEFPlotData::nCurves() const  {
+int CHEFPlotData::nCurves() const  
+{
   return _curves.size();
   
 }
 
-void CHEFPlotData::setScaleMagRight(double rmag)  {
+void CHEFPlotData::setScaleMagRight(double rmag)  
+{
   _scalemagright = rmag;
   
 }
 
 
-void CHEFPlotData::setScaleMagLeft(double lmag)  {
+void CHEFPlotData::setScaleMagLeft(double lmag)  
+{
   _scalemagleft = lmag;
   
 }
 
-double CHEFPlotData::scaleMagLeft() const  {
+double CHEFPlotData::scaleMagLeft() const  
+{
   return _scalemagleft;
   
 }
 
-double CHEFPlotData::scaleMagRight() const  {
+double CHEFPlotData::scaleMagRight() const  
+{
   return _scalemagright;
   
 }
