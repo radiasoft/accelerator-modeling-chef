@@ -4,9 +4,9 @@
   double frontLength =  6.0*(this->length/4.0)/15.0;
   double sepLength   = 16.0*(this->length/4.0)/15.0;
 
-  rbend inEdge  ( frontLength, field, ang,
+  rbend inEdge  ( frontLength, field, _poleFaceAngle,
                   rbend::P_InEdge, rbend::J_InEdge   );
-  rbend outEdge ( frontLength, field, ang,
+  rbend outEdge ( frontLength, field, _poleFaceAngle,
                   rbend::P_OutEdge, rbend::J_OutEdge );
   rbend body    ( sepLength, field,
                   rbend::P_NoEdge, rbend::J_NoEdge   );
