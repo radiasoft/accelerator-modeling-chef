@@ -115,6 +115,40 @@ void Particle::getState( double* u ) {
 } 
 
 
+void Particle::getState( Vector& u ) {
+  if( u.Dim() == BMLN_dynDim ) {
+    for( int i = 0; i < BMLN_dynDim; i++ ) {
+      u(i) = state[i];
+    }
+  }
+  else {
+    cerr << "*** ERROR ***                                      \n"
+            "*** ERROR *** Particle::getState( Vector& )        \n"
+            "*** ERROR *** Dimension is not correct.            \n"
+            "*** ERROR ***                                      \n"
+         << endl;
+    exit(1);
+  }
+} 
+
+
+void Particle::getState( Vector* u ) {
+  if( u->Dim() == BMLN_dynDim ) {
+    for( int i = 0; i < BMLN_dynDim; i++ ) {
+      (*u)(i) = state[i];
+    }
+  }
+  else {
+    cerr << "*** ERROR ***                                      \n"
+            "*** ERROR *** Particle::getState( Vector* )        \n"
+            "*** ERROR *** Dimension is not correct.            \n"
+            "*** ERROR ***                                      \n"
+         << endl;
+    exit(1);
+  }
+} 
+
+
 void Particle::SetReferenceEnergy( double energy ) {
  E = energy;
  if( E < m ) {

@@ -101,6 +101,8 @@ public:
   void setState      ( double* );
   void setState      ( const Vector& );
   void getState      ( double* );
+  void getState      ( Vector& );
+  void getState      ( Vector* );
   void setStateToZero();
 
   double get_x()     { return state[0]; }
