@@ -319,7 +319,7 @@ var_check_circ( GNode*          expr,
         {
           variable* var = (variable*)var_table_lookup( data->svalue_, var_table );
           if ( var == NULL ) {
-            fprintf(stderr, "error ! variable %s never defined\n", data->svalue_ );
+            fprintf(stderr, "error (e)! variable %s never defined\n", data->svalue_ );
             exit( EXIT_FAILURE );
           } else {
             if ( var == var_to_compare ) {
@@ -332,7 +332,7 @@ var_check_circ( GNode*          expr,
         {
           beam_element* bel = (beam_element*)bel_table_lookup( data->svalue_, bel_table );
           if ( bel == NULL ) {
-            fprintf(stderr, "error ! beam element %s never defined\n", data->svalue_ );
+            fprintf(stderr, "error (f)! beam element %s never defined\n", data->svalue_ );
             exit( EXIT_FAILURE );
           } else {
             var_check_circ( bel->length_, NULL, res, var_table, bel_table );

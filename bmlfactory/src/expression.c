@@ -140,7 +140,7 @@ expr_display( FILE*       out,
     case BEAMEL_LEN_EXPR : {
       beam_element* bel = (beam_element*)bel_table_lookup( data->svalue_, bel_table );
       if ( bel == NULL ) {
-        fprintf( out, "error ! beam element %s never defined\n", data->svalue_ );
+        fprintf( out, "error (a)! beam element %s never defined\n", data->svalue_ );
         exit( EXIT_FAILURE );
       } else {
         fprintf( out, "%e /* %s.Length() */", expr_evaluate( bel->length_, var_table, bel_table ), data->svalue_ );
@@ -300,7 +300,7 @@ expr_evaluate( GNode*      expr,
       {
         variable* var = (variable*)var_table_lookup( data->svalue_, var_table );
         if ( var == NULL ) {
-          fprintf(stderr, "error ! variable %s never defined\n", data->svalue_);
+          fprintf(stderr, "error (b)! variable %s never defined\n", data->svalue_);
           exit( EXIT_FAILURE );
         } else {
           return expr_evaluate( var->expr_, var_table, bel_table );
@@ -311,7 +311,7 @@ expr_evaluate( GNode*      expr,
       {
         beam_element* bel = (beam_element*)bel_table_lookup( data->svalue_, bel_table );
         if ( bel == NULL ) {
-          fprintf(stderr, "error ! beam element %s never defined\n", data->svalue_);
+          fprintf(stderr, "error (c)! beam element %s never defined\n", data->svalue_);
           exit( EXIT_FAILURE );
         } else {
           return expr_evaluate( bel->length_, var_table, bel_table );
@@ -405,7 +405,7 @@ expr_is_string( GNode*      expr,
   expr_struct* data;
   variable* assigned_var = (variable*)var_table_lookup( ((expr_struct*)(expr->data))->svalue_, var_table );
   if ( assigned_var == NULL ) {
-    fprintf(stderr, "error ! variable %s never defined\n", ((expr_struct*)(expr->data))->svalue_);
+    fprintf(stderr, "error (d)! variable %s never defined\n", ((expr_struct*)(expr->data))->svalue_);
     exit( EXIT_FAILURE );
   }
   data = (expr_struct*)(((GNode*)(assigned_var->expr_))->data);
