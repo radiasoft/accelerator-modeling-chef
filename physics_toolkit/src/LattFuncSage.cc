@@ -33,11 +33,11 @@ const int LattFuncSage::PHASE_ERROR    = 4;
 const int LattFuncSage::WRONG_COUNT    = 5;
 const int LattFuncSage::NOT_WRITTEN    = 6;
 
-double          LattFuncSage::_csH( 0.0 ), 
-                LattFuncSage::_csV( 0.0 ), 
-                LattFuncSage::_snH( 0.0 ), 
-                LattFuncSage::_snV( 0.0 );
-Mapping*        LattFuncSage::_theMapPtr = 0;
+double LattFuncSage::_csH = 0.0;
+double LattFuncSage::_csV = 0.0;
+double LattFuncSage::_snH = 0.0;
+double LattFuncSage::_snV = 0.0;
+Mapping* LattFuncSage::_theMapPtr = 0;
 
 
 

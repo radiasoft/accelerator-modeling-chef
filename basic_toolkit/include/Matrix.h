@@ -56,6 +56,7 @@ public:
   MatrixD& operator=(const MatrixD&);
   MatrixD& DeepCopy(const MatrixD&);
   double& operator()(int row, int column);
+  double  operator()(int row, int column) const;
   double  getElement(int row, int column) const;
   double& operator()(int row);
   void operator+=( const double&);

@@ -103,6 +103,6 @@ public:
 
 
 // Utilities
-Vector operator*( MatrixD&, Vector& );
+Vector operator*( const MatrixD&, const Vector& );
 
 #endif  // VECTOR_H

@@ -615,6 +615,18 @@ double& MatrixD::operator()(int i, int j) {
  return ml->m[i][j];
 }
 
+double  MatrixD::operator()(int i, int j) const {
+  if((i >= rows()) || (j >= cols())) {
+    cerr << "\n*** ERROR *** " << endl;
+    cerr << "*** ERROR *** double& MatrixD::operator()(int i, int j) " << endl;
+    cerr << "*** ERROR *** limits are " << rows() << " " << cols() << endl;
+    cerr << "*** ERROR *** You asked for "<< i << " " << j << endl;
+    cerr << "*** ERROR *** matrix limits exceeded " << endl;
+    exit(1);
+  }
+ return ml->m[i][j];
+}
+
 double MatrixD::getElement(int i, int j) const {
   if((i >= rows()) || (j >= cols())) {
     cerr << "\n*** ERROR *** " << endl;
