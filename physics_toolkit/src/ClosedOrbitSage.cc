@@ -296,7 +296,7 @@ int ClosedOrbitSage::_invokeFPSolver( JetParticle* p_jp )
     *_errorStreamPtr
          << "\n*** WARNING ***"
             "\n*** WARNING *** File: " << __FILE__ << " Line: " << __LINE__
-         << "\n*** WARNING *** ClosedOrbitSage::findClosedOrbit"
+         << "\n*** WARNING *** ClosedOrbitSage::_invokeFPSolver"
             "\n*** WARNING *** Closed orbit not correct."
             "\n*** WARNING *** delta x = "
          << (std::abs(co(i_x)  - p_prt->State(i_x)))
@@ -310,7 +310,7 @@ int ClosedOrbitSage::_invokeFPSolver( JetParticle* p_jp )
          << endl;
 
     if( _verbose ) {
-      *_outputStreamPtr << "ClosedOrbitSage -- Leaving ClosedOrbitSage::findClosedOrbit with error"
+      *_outputStreamPtr << "ClosedOrbitSage -- Leaving ClosedOrbitSage::_invokeFPSolver with error"
                         << endl;
     }
 
