@@ -5,7 +5,7 @@ const double changeMADConvention = - 1.0;
 void rbend::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
   rbend* pbe = (rbend*) p_be;
   int     i, j;
-  double  rho,factor, K;
+  double  rho;
   double  matrix [ BMLN_dynDim ][BMLN_dynDim];
   double  edgeMatrix [ BMLN_dynDim ][BMLN_dynDim];
   double  inState[ BMLN_dynDim ];
@@ -86,7 +86,7 @@ void rbend::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
   Jet      outState [BMLN_dynDim];
   Jet      zero;
   int     i, j;
-  Jet  rho, factor, K;
+  Jet  rho;
   Jet  matrix [ BMLN_dynDim ][BMLN_dynDim];
   Jet  edgeMatrix [ BMLN_dynDim ][BMLN_dynDim];
 

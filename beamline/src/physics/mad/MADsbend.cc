@@ -5,7 +5,6 @@ const double changeMADConvention = - 1.0;
 void sbend::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
   sbend* pbe = (sbend*) p_be;
   static  int     i, j;
-  static  double  factor, K;
   static  double  matrix [ BMLN_dynDim ][BMLN_dynDim];
   static  double  inState[ BMLN_dynDim ];
   double rho;
@@ -64,7 +63,6 @@ void sbend::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
   Jet      zero;
   Jet dummy;
   static  int     i, j;
-  static  double  factor, K;
   static  double  matrix [ BMLN_dynDim ][ BMLN_dynDim ];
   double rho;
 
