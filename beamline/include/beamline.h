@@ -1997,8 +1997,8 @@ public:
                        bmlnElmnt&,   // the bmlnElmnt arguments replaced by a map.
                        int,          // <-- This argument is the degree of the map.
                        JetParticle& );
-  void putAbove( bmlnElmnt& x, bmlnElmnt& y ); // Insert y above (before;  upstream of) x
-  void putBelow( bmlnElmnt& x, bmlnElmnt& y ); // Insert y below (after, downstream of) x
+  char putAbove( bmlnElmnt& x, bmlnElmnt& y ); // Insert y above (before;  upstream of) x
+  char putBelow( bmlnElmnt& x, bmlnElmnt& y ); // Insert y below (after, downstream of) x
 
   beamline remove( bmlnElmnt&, bmlnElmnt& );
   char     remove( void * );

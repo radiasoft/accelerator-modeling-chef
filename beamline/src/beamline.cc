@@ -1152,56 +1152,69 @@ void beamline::Split( double, bmlnElmnt**, bmlnElmnt** )
 }
 
 
-void beamline::putAbove( bmlnElmnt& x, bmlnElmnt& y ) {
-
+char beamline::putAbove( bmlnElmnt& x, bmlnElmnt& y ) 
+{
  // Insert y above (before; upstream of) x in the beamline
 
  static char firstCall = 1;
  if( firstCall ) {
    firstCall = 0;
-   printf( "\n*** WARNING ***                                             \n" );
-   printf(   "*** WARNING *** beamline::putAbove                          \n" );
-   printf(   "*** WARNING *** Geometry information will be corrupted.     \n" );
-   printf(   "*** WARNING ***                                             \n" );
+   cerr << "\n*** WARNING ***                                             \n"
+             "*** WARNING *** beamline::putAbove                          \n"
+             "*** WARNING *** Geometry information will be corrupted.     \n"
+             "*** WARNING ***                                             \n"
+        << endl;
  }
 
  unTwiss();
 
  if ( !dlist::putAbove( &x, &y ) ) {
-   printf( "\n*** ERROR ***                                             \n" );
-   printf(   "*** ERROR *** beamline::putAbove                          \n" );
-   printf(   "*** ERROR *** dlist::putAbove did not work.               \n" );
-   printf(   "*** ERROR ***                                             \n" );
-   exit(1);
+   cerr << "\n*** ERROR ***                                             \n"
+             "*** ERROR *** beamline::putAbove                          \n"
+             "*** ERROR *** dlist::putAbove did not work.               \n"
+             "*** ERROR ***                                             \n"
+        << endl;
+   return 1;
  }
 
  length += y.length;
  if( y.depth + 1 > depth ) depth = y.depth + 1;
  numElem++;
+
+ return 0;
 }
 
 
-void beamline::putBelow( bmlnElmnt& x, bmlnElmnt& y ) {
+char beamline::putBelow( bmlnElmnt& x, bmlnElmnt& y ) 
+{
+ // Insert y below (after; downstream of) x in the beamline
+
  static char firstCall = 1;
  if( firstCall ) {
    firstCall = 0;
-   printf( "\n*** WARNING ***                                             \n" );
-   printf(   "*** WARNING *** beamline::putBelow                          \n" );
-   printf(   "*** WARNING *** Geometry information will be corrupted.     \n" );
-   printf(   "*** WARNING ***                                             \n" );
+   cerr << "\n*** WARNING ***                                             \n"
+             "*** WARNING *** beamline::putBelow                          \n"
+             "*** WARNING *** Geometry information will be corrupted.     \n"
+             "*** WARNING ***                                             \n"
+        << endl;
  }
 
  unTwiss();
 
  if ( !dlist::putBelow( &x, &y ) ) {
-   printf( "\n*** ERROR ***                                             \n" );
-   printf(   "*** ERROR *** beamline::putBelow                          \n" );
-   printf(   "*** ERROR *** dlist::putBelow did not work.               \n" );
-   printf(   "*** ERROR ***                                             \n" );
-   exit(1);
+   cerr << "\n*** ERROR ***                                             \n"
+             "*** ERROR *** beamline::putBelow                          \n"
+             "*** ERROR *** dlist::putAbove did not work.               \n"
+             "*** ERROR ***                                             \n"
+        << endl;
+   return 1;
  }
 
+ length += y.length;
+ if( y.depth + 1 > depth ) depth = y.depth + 1;
  numElem++;
+
+ return 0;
 }
 
 
