@@ -74,6 +74,8 @@ public:
 #endif
   }
 
+  bool contains( const ent ) const;
+
   void insert( ent );
   void append( ent );
   ent remove( ent );

@@ -142,6 +142,18 @@ void dlink::putBelow( dlink* a ) {
   next = a;
 }
 
+bool dlist::contains( const ent x ) const
+{
+  bool ret = false;
+  dlist_iterator getNext( *this );
+  ent q;
+  while((  !ret && (q = getNext())  )) 
+  { ret = ( q == x );
+  }
+  return ret;
+}
+
+
 ent dlist::remove( dlink* p ) 
 {
   ent a;

@@ -228,6 +228,8 @@ public:
 #endif
   }
 
+  bool contains( const ent ) const;
+
   ent remove( dlink* );            // Removes the single argument.
   char remove( ent );              // Ditto 
   ent remove( int );               // Returns the ent removed from the dlist
@@ -278,6 +280,7 @@ public:
 class dlist_iterator {
   dlink* ce;
   dlist* cs;
+
 public:
 #ifdef OBJECT_DEBUG
   static int objectCount;
