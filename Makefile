@@ -32,13 +32,16 @@ default:
 	@echo "  make link-clean        Remove all links in include directory."
 	@echo "  make tar               Tar up all source (*.cc,*.h) files."
 	@echo "  make tar_everything    Tar up ALL files."
+	@echo "  make test-app          Make all the programs in the app directories."
 
 
 LINKDIRS  = bml mxb mi Machine tev tcl socket server sybase filter swyd recycler mi_8gev mr_8gev 
 
 SUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app swyd/src swyd/app recycler/app recycler/src mi_8gev/src mi_8gev/app mi/src mi/app
 
-SUNSUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src recycler/src mi_8gev/src mi/src mi/app
+SUNSUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src recycler/src mi_8gev/src mi/src mr_8gev/src 
+
+APPDIRS  = tev/app sybase/app server/app filter/app swyd/app recycler/app mi_8gev/app mi/app
 
 SGISUBDIRS  = $(SUNSUBDIRS)
 
@@ -142,4 +145,8 @@ tar_everything:
 	gzip $(NAME).tar ; \
 	mv $(NAME).tar.gz fnal
 
-
+test-app:
+	@set -x; for i in $(APPDIRS); do \
+		(cd $$i; $(MAKE) clean; $(MAKE) all); \
+		done
+	@echo "== MAKE test-app COMPLETE =="
