@@ -51,6 +51,15 @@ public:
  void set_dpp( double );
  double get_dpp();
 
+ // Error identifiers
+ static const int DONE;
+ static const int SLOTS_DETECTED;
+ static const int UNSTABLE;
+ static const int INTEGER_TUNE;
+ static const int PHASE_ERROR;
+ static const int NOT_FLAT;
+ static const int WRONG_COUNT;
+ static const int NOT_WRITTEN;
 
 private:
  static double     _csH, _csV, _snH, _snV;

@@ -26,6 +26,15 @@ extern int filterTransverseTunes( /* const */ MatrixD&, Vector& );
 
 
 // ... Globals:
+const int LattFuncSage::DONE           = 0;
+const int LattFuncSage::SLOTS_DETECTED = 1;
+const int LattFuncSage::UNSTABLE       = 2;
+const int LattFuncSage::INTEGER_TUNE   = 3;
+const int LattFuncSage::PHASE_ERROR    = 4;
+const int LattFuncSage::NOT_FLAT       = 5;
+const int LattFuncSage::WRONG_COUNT    = 6;
+const int LattFuncSage::NOT_WRITTEN    = 7;
+
 double          LattFuncSage::_csH( 0.0 ), 
                 LattFuncSage::_csV( 0.0 ), 
                 LattFuncSage::_snH( 0.0 ), 
@@ -76,7 +85,7 @@ int LattFuncSage::Orig_RX_Calc( JetParticle*   ptr_jp,
                                 ET_CRITFUNC  Crit
                              ) 
 {
-  return 1;
+  return LattFuncSage::NOT_WRITTEN;
 }
 
 
@@ -115,7 +124,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Cri
                   "*** ERROR *** Try using another method.           \n"
                   "*** ERROR ***                                     \n"
                << endl;
-          exit(2);
+          return LattFuncSage::SLOTS_DETECTED;
         }
       }
   }
@@ -180,7 +189,10 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Cri
             "*** ERROR *** Cannot continue with calculation.   \n"
             "*** ERROR ***                                     \n"
          << endl;
-    exit(1);
+
+    delete p_1;
+    delete p_2;
+    return LattFuncSage::UNSTABLE;
   }
 
   if( sn == 0.0 ) {
@@ -189,7 +201,10 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Cri
             "*** ERROR *** Integer horizontal tune.            \n"
             "*** ERROR ***                                     \n"
          << endl;
-    exit(1);
+
+    delete p_1;
+    delete p_2;
+    return LattFuncSage::INTEGER_TUNE;
   }
 
   beta_x  = mtrx( i_x, i_px ) / sn;
@@ -212,7 +227,10 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Cri
             "*** ERROR *** Cannot continue with calculation.   \n"
             "*** ERROR ***                                     \n"
          << endl;
-    exit(1);
+
+    delete p_1;
+    delete p_2;
+    return LattFuncSage::UNSTABLE;
   }
 
   if( sn == 0.0 ) {
@@ -221,7 +239,10 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Cri
             "*** ERROR *** Integer vertical tune.              \n"
             "*** ERROR ***                                     \n"
          << endl;
-    exit(1);
+
+    delete p_1;
+    delete p_2;
+    return LattFuncSage::INTEGER_TUNE;
   }
 
   beta_y  = mtrx( i_y, i_py ) / sn;
@@ -300,7 +321,10 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Cri
   	cout << "*** ERROR *** " 
              << outState[i_px]/resizeFactor 
              << endl;
-  	exit(1);
+
+        delete p_1;
+        delete p_2;
+  	return LattFuncSage::PHASE_ERROR;
     }
     dpsi_x = atan2( imag(phase), real(phase) );
     while( dpsi_x < psi_x ) dpsi_x += M_TWOPI;
@@ -321,7 +345,10 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Cri
   	cout << "*** ERROR *** " 
              << outState[i_py]/resizeFactor 
              << endl;
-  	exit(1);
+
+        delete p_1;
+        delete p_2;
+ 	return LattFuncSage::PHASE_ERROR;
     }
     dpsi_y = atan2( imag(phase), real(phase) );
     while( dpsi_y < psi_y ) dpsi_y += M_TWOPI;
@@ -457,7 +484,10 @@ int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Cri
             "*** ERROR *** Cannot continue with calculation.   \n"
             "*** ERROR ***                                     \n"
          << endl;
-    exit(1);
+
+    delete prt;
+    delete jprt;
+    return LattFuncSage::UNSTABLE;
   }
 
   if( sn == 0.0 ) {
@@ -466,7 +496,10 @@ int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Cri
             "*** ERROR *** Integer horizontal tune.            \n"
             "*** ERROR ***                                     \n"
          << endl;
-    exit(1);
+
+    delete prt;
+    delete jprt;
+    return LattFuncSage::INTEGER_TUNE;
   }
 
   beta_x  = mtrx( i_x, i_px ) / sn;
@@ -490,7 +523,10 @@ int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Cri
             "*** ERROR *** Cannot continue with calculation.   \n"
             "*** ERROR ***                                     \n"
          << endl;
-    exit(1);
+
+    delete prt;
+    delete jprt;
+    return LattFuncSage::UNSTABLE;
   }
 
   if( sn == 0.0 ) {
@@ -499,7 +535,10 @@ int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Cri
             "*** ERROR *** Integer vertical tune.              \n"
             "*** ERROR ***                                     \n"
          << endl;
-    exit(1);
+
+    delete prt;
+    delete jprt;
+    return LattFuncSage::INTEGER_TUNE;
   }
 
   beta_y  = mtrx( i_y, i_py ) / sn;
@@ -1056,13 +1095,13 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp,
 
 int LattFuncSage::ET_Disp_Calc( JetParticle*, ET_CRITFUNC )
 {
-  return 1;
+  return LattFuncSage::NOT_WRITTEN;
 }
 
 
 int LattFuncSage::CS_Disp_Calc( JetParticle*, ET_CRITFUNC )
 {
-  return 1;
+  return LattFuncSage::NOT_WRITTEN;
 }
 
 
@@ -1112,11 +1151,12 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
           <<                                 "   csV = " << csV          << endl;
      cerr << "*** WARNING *** beamline::twiss()  did not exit properly." << endl;
      cerr << "*** WARNING *** " << endl;
+
      delete [] zero;
      delete [] z;
      delete latticeFunctions;
      delete latticeRing;
-     return -1;
+     return LattFuncSage::UNSTABLE;
    }
 
    snH = sqrt( -1.0* mtrx(0,3)*mtrx(3,0) - 
@@ -1220,13 +1260,22 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
      lng = be -> Length();
      elmntPos++;
 
-     if( strcasecmp( be->Type(), "beamline" ) == 0 ) {
+     if( strcasecmp( be->Type(), "beamline" ) == 0 ) 
+     {
        cerr << "\n *** SORRY: beamline::twiss cannot "
                "handle inserted beamlines yet."
             << endl;
-       exit(0);
-     } else
+
+       delete [] zero;
+       delete [] z;
+       delete latticeFunctions;
+       delete latticeRing;
+       return LattFuncSage::NOT_FLAT;
+     } 
+     else
+     {
        be -> propagate( p );
+     }
 
      // .......... While calculating lattice functions .......
      lf = new lattFunc;
@@ -1305,7 +1354,12 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
      cerr << "*** ERROR:  not equal to num elements expected, " 
           << _myBeamlinePtr->howMany() << endl;
      cerr << "*** ERROR: Bailing out" << endl;
-     exit(1);
+
+     delete [] zero;
+     delete [] z;
+     delete latticeFunctions;
+     delete latticeRing;
+     return LattFuncSage::WRONG_COUNT;
    }
 
    // .......... Cleaning up and leaving ...................
@@ -1320,7 +1374,7 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
  }
 
 
- return 0;
+ return LattFuncSage::DONE;
 }
 
 
@@ -1388,13 +1442,22 @@ int LattFuncSage::Twiss_Calc( const lattFunc& W, JetParticle& p, ET_CRITFUNC Cri
     lng = be -> OrbitLength( *ptr_dummy );
     elmntPos++;
 
-    if( strcasecmp( be->Type(), "beamline" ) == 0 ) {
+    if( strcasecmp( be->Type(), "beamline" ) == 0 ) 
+    {
       cerr << "\n *** SORRY: beamline::twiss cannot "
               "handle inserted beamlines yet."
            << endl;
-      exit(0);
-    } else
+
+      delete [] zero;
+      delete [] z;
+      delete latticeFunctions;
+      delete ptr_dummy;
+      return LattFuncSage::NOT_FLAT;
+    } 
+    else
+    {
       be -> propagate( p );
+    }
 
     // .......... While calculating lattice functions .......
     lf = new lattFunc;
@@ -1471,7 +1534,12 @@ int LattFuncSage::Twiss_Calc( const lattFunc& W, JetParticle& p, ET_CRITFUNC Cri
     cerr << "*** ERROR: is not equal to num elements expected, " 
          << _myBeamlinePtr->countHowMany() << endl;
     cerr << "*** ERROR: Bailing out" << endl;
-    exit(1);
+
+    delete [] zero;
+    delete [] z;
+    delete latticeFunctions;
+    delete ptr_dummy;
+    return LattFuncSage::WRONG_COUNT;
   }
 
   // .......... Cleaning up and leaving ...................
@@ -1479,7 +1547,6 @@ int LattFuncSage::Twiss_Calc( const lattFunc& W, JetParticle& p, ET_CRITFUNC Cri
    delete [] zero;
    delete [] z;
    delete latticeFunctions;
-
    delete ptr_dummy;
-   return 0;
+   return LattFuncSage::DONE;
 }
