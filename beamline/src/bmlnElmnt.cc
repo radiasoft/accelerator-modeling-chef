@@ -6,8 +6,8 @@ using std::setprecision;
 #endif
 #include "beamline.inc"
 
-// #include "combinedFunction.h"
-// #include "mwiremonitor.h"
+#include "combinedFunction.h"
+#include "mwiremonitor.h"
 
 // **************************************************
 //   struct BMLN_posInfo
@@ -827,7 +827,7 @@ bmlnElmnt* read_istream(istream& is)
   JetthinQuad		* jtQuadPtr;
   JetthinSext		* jtSextPtr;
   beamline		* bl;
-  // combinedFunction	* cmbPtr;
+  combinedFunction	* cmbPtr;
   drift			* driftPtr;
   hkick			* hkickPtr;
   hmonitor		* hmonitorPtr;
@@ -845,7 +845,7 @@ bmlnElmnt* read_istream(istream& is)
   thin16pole		* pole16Ptr;
   thin18pole		* pole18Ptr;
   thinDecapole		* thinDecapolePtr;
-  // thinLamb		* thinLambPtr;
+  thinLamb		* thinLambPtr;
   thinMultipole		* thinMultipolePtr;
   thinOctupole		* thinOctupolePtr;
   thinQuad		* thinQuadPtr;
@@ -879,13 +879,13 @@ bmlnElmnt* read_istream(istream& is)
   else if ( strcasecmp(type, 		"beamline_END") == 0 ) {
     element = NULL;
   }
-  // else if ( strcasecmp(type, 		"combinedFunction_END") == 0 ) {
-  //   element = NULL;
-  // }
-  // else if ( strcasecmp(type, 		"combinedFunction") == 0 ) {
-  //   cmbPtr = new combinedFunction(name);
-  //   element = cmbPtr;
-  // }
+  else if ( strcasecmp(type, 		"combinedFunction_END") == 0 ) {
+    element = NULL;
+  }
+  else if ( strcasecmp(type, 		"combinedFunction") == 0 ) {
+    cmbPtr = new combinedFunction(name);
+    element = cmbPtr;
+  }
   else if( strcasecmp(type, 		"drift") == 0 ) {
     driftPtr = new drift(name, length);
     element = driftPtr;
@@ -906,10 +906,10 @@ bmlnElmnt* read_istream(istream& is)
     monitorPtr = new monitor(name);
     element = monitorPtr;
   }
-  // else if( strcasecmp(type, 		"mwireMonitor") == 0 ) {
-  //   monitorPtr = new mwireMonitor(name);
-  //   element = monitorPtr;
-  // }
+  else if( strcasecmp(type, 		"mwireMonitor") == 0 ) {
+    monitorPtr = new mwireMonitor(name);
+    element = monitorPtr;
+  }
   else if( strcasecmp(type, 		"octupole") == 0 ) {
     octupolePtr = new octupole(name, length, strength);
     element = octupolePtr;
@@ -938,10 +938,10 @@ bmlnElmnt* read_istream(istream& is)
     thinDecapolePtr = new thinDecapole(name, strength);
     element = thinDecapolePtr;
   }
-  // else if( strcasecmp(type, 		"thinLamb") == 0 ) {
-  //   thinLambPtr = new thinLamb(name);
-  //   element = thinLambPtr;
-  // }
+  else if( strcasecmp(type, 		"thinLamb") == 0 ) {
+    thinLambPtr = new thinLamb(name);
+    element = thinLambPtr;
+  }
   else if( strcasecmp(type, 		"thinMultipole") == 0 ) {
     thinMultipolePtr = new thinMultipole(name, strength);
     element = thinMultipolePtr;
