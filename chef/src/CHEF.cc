@@ -198,8 +198,8 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
 
           _calcLattFuncMenu = new QPopupMenu;
           _calcLattFuncMenu->insertItem( "Uncoupled", this, SLOT(_launchLatt()) );
-          _calcLattFuncMenu->insertItem( "Edwards-Teng", this, SLOT(_launchET()) );
-          _calcLattFuncMenu->insertItem( "Lebedev-Bogacz", this, SLOT(_launchLB()) );
+          _calcLattFuncMenu->insertItem( "Factorization", this, SLOT(_launchET()) );
+          _calcLattFuncMenu->insertItem( "Eigenvectors", this, SLOT(_launchLB()) );
           _calcLattFuncMenu->insertItem( "Moments", this, SLOT(_launchMoments()) );
         _calcCalcFuncMenu->insertItem( "Lattice Functions", _calcLattFuncMenu );
 
