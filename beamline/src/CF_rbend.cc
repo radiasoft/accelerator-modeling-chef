@@ -357,10 +357,10 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
 
 
   // Step procedure when Newton's method fails ...
-  if( i >= 10 ) {
+  if( i >= 15 ) {
     cerr << "*** WARNING ***                                      \n"
             "*** WARNING *** CF_rbend::AdjustPosition             \n"
-            "*** WARNING *** No convergence within 10 Newton      \n"
+            "*** WARNING *** No convergence within 15 Newton      \n"
             "*** WARNING *** iterations for magnet "
          <<                               this->Name() 
          <<                           ". Proceeding to find       \n"
