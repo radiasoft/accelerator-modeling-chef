@@ -51,7 +51,6 @@ SUBDIRS  = basic_toolkit/src \
 	server/src \
 	socket/src \
 	sybase/src \
-	visitor/src \
 	tcl/src
 
 APPDIRS  = filter/app \
