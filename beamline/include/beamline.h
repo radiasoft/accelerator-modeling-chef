@@ -2038,6 +2038,7 @@ public:
   mover( char* );
   mover( bmlnElmnt* );
   mover( char*, bmlnElmnt* );
+  void append( bmlnElmnt* );
   void switchOn();
   void switchOff();
   void set( void* );
