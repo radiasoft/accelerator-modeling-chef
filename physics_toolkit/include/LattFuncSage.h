@@ -33,9 +33,10 @@ public:
  int Disp_Calc      ( JetParticle*, ET_CRITFUNC = 0 );
  int Orig_RX_Calc   ( JetParticle*, ET_CRITFUNC = 0 );
 		      
- int Fast_CS_Calc   ( JetParticle*, ET_CRITFUNC = 0 );
- int ET_Disp_Calc   ( JetParticle*, ET_CRITFUNC = 0 );
- int CS_Disp_Calc   ( JetParticle*, ET_CRITFUNC = 0 );
+ int Fast_CS_Calc   ( /* const */ JetParticle*, ET_CRITFUNC = 0 );
+ int Slow_CS_Calc   ( /* const */ JetParticle*, ET_CRITFUNC = 0 );
+ int ET_Disp_Calc   (             JetParticle*, ET_CRITFUNC = 0 );
+ int CS_Disp_Calc   (             JetParticle*, ET_CRITFUNC = 0 );
                // If default value is used for ET_CRITFUNC, then
                // information is attached to all elements.
 
