@@ -39,11 +39,6 @@
 //extern "C" {strstr(char*,char*);} // this may need to be commented out
 				  // on some systems.
 
-// ??? RAND extern "C" double drand48( void );
-//#ifdef __VISUAL_CPP__
-//typedef std::cerr cerr;
-//#endif
-
 extern "C" { void rg_(int*, int*, double*, double*,double*, int*, double*,
 		 int*, double*, int*); }
 
