@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -38,10 +41,9 @@
  */
 
 
-#include <stdlib.h>
 #include "Matrix.h"
 
-using namespace std;
+using namspace std;
 
 void MatrixD::SVD ( MatrixD& U, MatrixD& W, MatrixD& V ) const
 {

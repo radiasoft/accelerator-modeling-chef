@@ -48,6 +48,7 @@ int MLI::objectCount = 0;
 
 
 using namespace std;
+using FNAL::Complex;
 
 MLD::MLD() {
   m = 0;
