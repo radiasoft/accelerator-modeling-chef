@@ -11,21 +11,12 @@ default:
 	@echo "  make irix5-gcc         for SGI systems with IRIX 5.x with GCC"
 	@echo "  make irix5-debug       for SGI systems with IRIX 5.x with GCC debug on"
 	@echo "  make solaris           for Solaris systems and Sun compiler"
-	@echo "  make ultra             for Solaris systems on Ultras with the Sun compiler"
-	@echo "  make ultra-opt         for Solaris Ultra systems with the Sun compiler and \
-                                        -fast optimization"
-	@echo "  make ultra-debug       for Solaris Ultra systems with the Sun compiler and \
-                                        debug on"
-	@echo "  make ultra-devel       for Solaris Ultra systems with the Sun compiler and \
-                                        debug and DEVEL flags on"
+
 	@echo "  make solaris-debug     for Solaris systems and Sun debug"
 	@echo "  make solaris-devel     for Solaris systems and Sun debug and devel on"
 	@echo "  make solaris-gcc       for Solaris systems with GCC"
 	@echo "  make solaris-gcc-debug for Solaris systems with GCC debug on"
 	@echo "  make setup             Make include and lib dirs and links."
-	@echo "  make link              Make the links in the include dir."
-	@echo "  make include-dir       Make the include directory."
-	@echo "  make lib-dir           Make the library directory tree."
 	@echo "  make real-clean        Remove all .o,.sb,.~ files, libraries and links."
 	@echo "  make lib-clean         Remove all library (.a) files."
 	@echo "  make clean             Remove all .o,.sb,.~ files."
@@ -38,59 +29,79 @@ default:
 	@echo "  make test-app          Make all the programs in the app directories."
 
 
-LINKDIRS  = bml mxb mi Machine tev tcl socket server sybase filter swyd recycler mi_8gev mr_8gev accumulator
+LINKDIRS  = beamline \
+	mxyzptlk \
+	machines/Machine \
+	machines/tev \
+	tcl \
+	socket \
+	server \
+	sybase \
+	filter \
+	machines/swyd \
+	machines/recycler \
+	machines/mi_8gev \
+	machines/mr_8gev \
+	machines/accumulator \
+	machines/mi
 
-SUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src server/src filter/src swyd/src recycler/src mi_8gev/src mi/src accumulator/src
+SUBDIRS  = beamline/src \
+	beamline/src/physics/6d \
+	beamline/src/physics/mad \
+	filter/src \
+	mxyzptlk/src \
+	machines/accumulator/src \
+	machines/Machine/src \
+	machines/mi/src \
+	machines/mi_8gev/src \
+	machines/recycler/src \
+	machines/swyd/src \
+	machines/tev/src \
+	server/src \
+	socket/src \
+	sybase/src \
+	tcl/src
 
-SUNSUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src recycler/src mi_8gev/src mi/src accumulator/src mr_8gev/src 
+APPDIRS  = filter/app \
+	machines/accumulator/app \
+	machines/mi/app \
+	machines/mi_8gev/app \
+	machines/recycler/app \
+	machines/swyd/app \
+	machines/tev/app \
+	server/app \
+	sybase/app
 
-APPDIRS  = tev/app sybase/app server/app filter/app swyd/app recycler/app mi_8gev/app mi/app accumulator/app
 
-SGISUBDIRS  = $(SUNSUBDIRS)
-
-gcc solaris-gcc solaris-gcc-debug solaris solaris-debug solaris-devel ultra ultra-opt ultra-debug ultra-devel :
-	@set -x; for i in $(SUNSUBDIRS); do \
+gcc solaris-gcc solaris-gcc-debug solaris solaris-debug solaris-devel solaris-depend solaris-gcc-depend:
+	@set -x; for i in $(SUBDIRS); do \
 		(cd $$i; $(MAKE)  $@); \
 		done
 	@echo "== MAKE COMPLETE =="
 
 linux irix5 irix5-gcc irix5-debug :
-	@set -x; for i in $(SGISUBDIRS); do \
+	@set -x; for i in $(SUBDIRS); do \
 		(cd $$i; $(MAKE)  $@ ); \
 		done
 	@echo "== MAKE COMPLETE =="
 
+
+
 setup:
-	$(MAKE) include-dir;\
-	$(MAKE) lib-dir;\
-	$(MAKE) link
-
-link:
-	@set -x; for i in $(LINKDIRS); do \
-		(cd $$i; $(MAKE)  $@ ); \
-		done
-	@echo "== LINK COMPLETE =="
-
-include-dir:
-	@if [ ! -d include ] ; then \
-		mkdir include; \
-		else true; \
-	fi
+	$(MAKE) lib-dir;
 
 lib-dir:
 	@if [ ! -d lib ] ; then \
 		mkdir lib;\
-		mkdir lib/ultra; \
 		mkdir lib/sun; \
 		mkdir lib/sgi; \
 		mkdir lib/gcc; \
 		else true; \
 	fi
 
-real-clean: clean lib-clean link-clean
+real-clean: clean lib-clean
 
 lib-clean:
-	rm -f lib/ultra/*.a;\
 	rm -f lib/sun/*.a;\
 	rm -f lib/sgi/*.a;\
 	rm -f lib/gcc/*.a;
@@ -98,7 +109,6 @@ lib-clean:
 # Remove .o files, emacs backup files, etc.
 clean:
 	rm -f ./*~*
-	rm -f include/*~*
 	@set -x; for i in $(SUBDIRS); do \
 		(cd $$i; $(MAKE)  $@); \
 		done
@@ -116,8 +126,7 @@ link-clean:
 	rm -f include/*
 
 export: real-clean
-	rm -rf include;\
-	rm -rf lib;\
+	rm -rf lib;
 
 NAME = Model-2.0
 
@@ -127,21 +136,14 @@ TAR_FILES =	\
 	fnal/Make-config \
 	fnal/tar-exclude \
 	fnal/ChangeLog \
-	fnal/accumulator \
-	fnal/bml	\
-	fnal/mxb	\
-	fnal/tev \
-	fnal/Machine \
+	fnal/beamline	\
+	fnal/mxyzptlk	\
+	fnal/machines \
 	fnal/server \
 	fnal/socket \
 	fnal/sybase \
 	fnal/filter \
-	fnal/swyd \
-	fnal/recycler \
-	fnal/tcl \
-	fnal/mi \
-	fnal/mi_8gev \
-	fnal/mr_8gev 
+	fnal/tcl
 
 # The tar command relies on the Solaris tar; -FF won't work with gnu tar.
 # The location of tar in irix seems to be /bin/tar.  Tar is probably not
