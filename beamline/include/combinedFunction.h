@@ -38,12 +38,20 @@ public:
 
   void accept( BmlVisitor& v ) { v.visitCombinedFunction( this ); }
   
-  void setField(WHICH_MULTIPOLE, double field);
-  double Field(WHICH_MULTIPOLE);
-  void setSkew(WHICH_MULTIPOLE, alignmentData&);
+  void setField( bmlnElmnt::CRITFUNC, double );
+  void setField( WHICH_MULTIPOLE, double field );
+
+  double Field( WHICH_MULTIPOLE );
+  double getField( WHICH_MULTIPOLE x ) 
+    { return this->Field(x); }
+
+  void setSkew( WHICH_MULTIPOLE, alignmentData& );
   void setLength( double x )   // ??? Should this be here???
     { length = x; }
-  alignmentData Skew(WHICH_MULTIPOLE);
+  alignmentData Skew( WHICH_MULTIPOLE );
+  alignmentData getAlignment( WHICH_MULTIPOLE x )
+    { return this->Skew(x); }
+
   char* Type() const;
   bmlnElmnt* Clone() const { return new combinedFunction( *this ); }
 
