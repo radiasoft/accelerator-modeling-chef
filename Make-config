@@ -10,6 +10,22 @@
 # RANLIB      "ranlib" = use ranlib, "echo" = don't use ranlib
 #
 
+ACCUMULATOR_INC = $(FNALROOT)/machines/accumulator/include
+BEAMLINE_INC = $(FNALROOT)/beamline/include
+MXYZPTLK_INC = $(FNALROOT)/mxyzptlk/include
+FILTER_INC   = $(FNALROOT)/filter/include
+RECYCLER_INC = $(FNALROOT)/machines/recycler/include
+SERVER_INC   = $(FNALROOT)/server/include
+SOCKET_INC   = $(FNALROOT)/socket/include
+SYBASE_INC   = $(FNALROOT)/sybase/include
+SWYD_INC     = $(FNALROOT)/machines/swyd/include
+MACHINE_INC  = $(FNALROOT)/machines/Machine/include
+TEV_INC  = $(FNALROOT)/machines/tev/include
+MI_INC  = $(FNALROOT)/machines/mi/include
+MI_8_INC  = $(FNALROOT)/machines/mi_8gev/include
+MR_8_INC  = $(FNALROOT)/machines/mr_8gev/include
+TCL_INC   = $(FNALROOT)/tcl/include
+
 gcc:
 	$(MAKE) targets \
 	"C   = gcc" \
@@ -19,9 +35,8 @@ gcc:
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
-	"INCDIR = $(FNALROOT)/include" \
-	"XINC = -I/usr/local/ap/X11R6/include" \
-	"TKINC = -I/usr/include/tcl" \
+	"XINC = /usr/local/ap/X11R6/include" \
+	"TKINC = /usr/include/tcl" \
 	"LIBDIR = $(FNALROOT)/lib/gcc"
 
 linux:
@@ -49,7 +64,6 @@ irix5:
 	"RANLIB = ranlib" \
 	"TKINC = -I/usr/local/tk-tcl/include" \
 	"XINC = -I/usr/local/X11R5/include" \
-	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/sgi"
 
 irix5-gcc:
@@ -63,7 +77,6 @@ irix5-gcc:
 	"RANLIB = ranlib" \
 	"TKINC = -I/usr/local/tk-tcl/include" \
 	"XINC = -I/usr/local/X11R5/include" \
-	"INCDIR = $(FNALROOT)/include "\
 	"SYBASEINC = -I/usr/local/sybase"\
 	"LIBDIR = $(FNALROOT)/lib/sgi"
 
@@ -76,9 +89,8 @@ irix5-debug:
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
-	"TKINC = -I/usr/local/tk-tcl/include" \
-	"XINC = -I/usr/local/X11R5/include" \
-	"INCDIR = $(FNALROOT)/include"\
+	"TKINC = /usr/local/tk-tcl/include" \
+	"XINC = /usr/local/X11R5/include" \
 	"LIBDIR = $(FNALROOT)/lib/sgi"
 
 solaris:
@@ -89,26 +101,10 @@ solaris:
 	"C++FLAGS = -ptr$(FNALROOT) -verbose=template" \
 	"INLINE_FLAG = +d " \
 	"MAKELIB = CC -xar -o" \
-	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
-	"SYBASEINC = -I/usr/local/ap/sybase/include" \
-	"TKINC = -I/usr/local/TCL-TK/include" \
-	"XINC = -I/usr/local/ap/X11R6/include" \
-	"RANLIB = echo"
-
-ultra:
-	$(MAKE) targets \
-	"C   = cc" \
-	"C++ = CC" \
-	"CFLAGS = " \
-	"C++FLAGS = -DULTRA -ptr$(FNALROOT) -verbose=template" \
-	"INLINE_FLAG = +d " \
-	"MAKELIB = CC -xar -o" \
-	"INCDIR = $(FNALROOT)/include" \
-	"LIBDIR = $(FNALROOT)/lib/ultra" \
-	"TKINC = -I/usr/local/TCL-TK/include" \
-	"XINC = -I/usr/local/ap/X11R6/include" \
-	"SYBASEINC = -I/usr/local/ap/sybase/include" \
+	"SYBASEINC = /usr/local/ap/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo"
 
 ultra-opt:
@@ -121,39 +117,9 @@ ultra-opt:
 	"MAKELIB = CC -xar -o" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/ultra" \
-	"TKINC = -I/usr/local/TCL-TK/include" \
-	"XINC = -I/usr/local/ap/X11R6/include" \
-	"SYBASEINC = -I/usr/local/ap/sybase/include" \
-	"RANLIB = echo"
-
-ultra-debug:
-	$(MAKE) targets \
-	"C   = cc" \
-	"C++ = CC" \
-	"CFLAGS = -g " \
-	"C++FLAGS = -DULTRA -g -sb -ptr$(FNALROOT) -verbose=template" \
-	"INLINE_FLAG = +d " \
-	"MAKELIB = CC -xar -o" \
-	"INCDIR = $(FNALROOT)/include" \
-	"LIBDIR = $(FNALROOT)/lib/ultra" \
-	"TKINC = -I/usr/local/TCL-TK/include" \
-	"XINC = -I/usr/local/ap/X11R6/include" \
-	"SYBASEINC = -I/usr/local/ap/sybase/include" \
-	"RANLIB = echo"
-
-ultra-devel:
-	$(MAKE) targets \
-	"C   = cc" \
-	"C++ = CC" \
-	"CFLAGS = -g -DDEVEL" \
-	"C++FLAGS = -DULTRA -DDEVEL -g -sb -ptr$(FNALROOT) -verbose=template" \
-	"INLINE_FLAG = +d " \
-	"MAKELIB = CC -xar -o" \
-	"INCDIR = $(FNALROOT)/include" \
-	"LIBDIR = $(FNALROOT)/lib/ultra" \
-	"TKINC = -I/usr/local/TCL-TK/include" \
-	"XINC = -I/usr/local/ap/X11R6/include" \
-	"SYBASEINC = -I/usr/local/ap/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/local/ap/X11R6/include" \
+	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"RANLIB = echo"
 
 solaris-debug:
@@ -164,11 +130,10 @@ solaris-debug:
 	"C++FLAGS = -g -sb -ptr$(FNALROOT) -verbose=template" \
 	"INLINE_FLAG = +d " \
 	"MAKELIB = CC -xar -o" \
-	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
-	"SYBASEINC = -I/usr/local/ap/sybase/include" \
-	"TKINC = -I/usr/local/TCL-TK/include" \
-	"XINC = -I/usr/local/ap/X11R6/include" \
+	"SYBASEINC = /usr/local/ap/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo"
 
 solaris-devel:
@@ -179,11 +144,10 @@ solaris-devel:
 	"C++FLAGS = -g -sb -DDEVEL -ptr$(FNALROOT) -verbose=template" \
 	"INLINE_FLAG = +d " \
 	"MAKELIB = CC -xar -o" \
-	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
-	"SYBASEINC = -I/usr/local/ap/sybase/include" \
-	"TKINC = -I/usr/local/TCL-TK/include" \
-	"XINC = -I/usr/local/ap/X11R6/include" \
+	"SYBASEINC = /usr/local/ap/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo"
 
 solaris-gcc:
@@ -195,10 +159,9 @@ solaris-gcc:
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"LIBDIR = $(FNALROOT)/lib/gcc" \
-	"INCDIR = $(FNALROOT)/include" \
-	"SYBASEINC = -I/usr/local/ap/sybase/include" \
-	"TKINC = -I/usr/local/TCL-TK/include" \
-	"XINC = -I/usr/local/ap/X11R6/include" \
+	"SYBASEINC = /usr/local/ap/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo"
 
 solaris-gcc-debug:
@@ -210,8 +173,22 @@ solaris-gcc-debug:
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"LIBDIR = $(FNALROOT)/lib/gcc" \
-	"INCDIR = $(FNALROOT)/include" \
-	"SYBASEINC = -I/usr/local/ap/sybase/include" \
-	"TKINC = -I/usr/local/TCL-TK/include" \
-	"XINC = -I/usr/local/ap/X11R6/include" \
+	"SYBASEINC = /usr/local/ap/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo"
+
+solaris-gcc-depend:
+	$(MAKE) depend \
+	"COMPILER_DEPEND =  /usr/local/ap/lib/g++-include" \
+	"SYBASEINC = /usr/local/ap/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/local/ap/X11R6/include"
+
+solaris-depend:
+	$(MAKE) depend \
+	"COMPILER_DEPEND = /opt/SUNWspro/SC4.2/include/CC" \
+	"SYBASEINC = /usr/local/ap/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/local/ap/X11R6/include"
+
