@@ -16,7 +16,10 @@ default:
                                         -fast optimization"
 	@echo "  make ultra-debug       for Solaris Ultra systems with the Sun compiler and \
                                         debug on"
+	@echo "  make ultra-devel       for Solaris Ultra systems with the Sun compiler and \
+                                        debug and DEVEL flags on"
 	@echo "  make solaris-debug     for Solaris systems and Sun debug"
+	@echo "  make solaris-devel     for Solaris systems and Sun debug and devel on"
 	@echo "  make solaris-gcc       for Solaris systems with GCC"
 	@echo "  make solaris-gcc-debug for Solaris systems with GCC debug on"
 	@echo "  make setup             Make include and lib dirs and links."
@@ -39,7 +42,7 @@ SUNSUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/sr
 
 SGISUBDIRS  = $(SUNSUBDIRS)
 
-gcc solaris-gcc solaris-gcc-debug solaris solaris-debug ultra ultra-opt ultra-debug :
+gcc solaris-gcc solaris-gcc-debug solaris solaris-debug solaris-devel ultra ultra-opt ultra-debug ultra-devel :
 	@set -x; for i in $(SUNSUBDIRS); do \
 		(cd $$i; $(MAKE)  $@); \
 		done

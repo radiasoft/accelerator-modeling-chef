@@ -109,7 +109,7 @@ ultra-opt:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = -fast" \
-	"C++FLAGS = -DULTRA -fast   -xchip=ultra -xarch=v8plus" \
+	"C++FLAGS = -DULTRA -fast  -xchip=ultra -xarch=v8plus" \
 	"MAKELIB = ar ruv" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/ultra" \
@@ -132,12 +132,40 @@ ultra-debug:
 	"SYBASEINC = -I/usr/local/ap/sybase/include" \
 	"RANLIB = echo"
 
+ultra-devel:
+	$(MAKE) targets \
+	"C   = cc" \
+	"C++ = CC" \
+	"CFLAGS = -g -DDEVEL" \
+	"C++FLAGS = -DULTRA -DDEVEL -g -sb " \
+	"MAKELIB = ar ruv" \
+	"INCDIR = $(FNALROOT)/include" \
+	"LIBDIR = $(FNALROOT)/lib/ultra" \
+	"TKINC = -I/usr/local/TCL-TK/include" \
+	"XINC = -I/usr/local/ap/X11R6/include" \
+	"SYBASEINC = -I/usr/local/ap/sybase/include" \
+	"RANLIB = echo"
+
 solaris-debug:
 	$(MAKE) targets \
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = -g " \
 	"C++FLAGS = -g -sb " \
+	"MAKELIB = ar ruv" \
+	"INCDIR = $(FNALROOT)/include" \
+	"LIBDIR = $(FNALROOT)/lib/sun" \
+	"SYBASEINC = -I/usr/local/ap/sybase/include" \
+	"TKINC = -I/usr/local/TCL-TK/include" \
+	"XINC = -I/usr/local/ap/X11R6/include" \
+	"RANLIB = echo"
+
+solaris-devel:
+	$(MAKE) targets \
+	"C   = cc" \
+	"C++ = CC" \
+	"CFLAGS = -g -DDEVEL " \
+	"C++FLAGS = -g -sb -DDEVEL " \
 	"MAKELIB = ar ruv" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
