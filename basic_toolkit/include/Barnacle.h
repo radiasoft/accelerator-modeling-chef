@@ -35,7 +35,8 @@ public:
  char            eraseAll  ( const char* = 0 /* identifier */ );
  BarnacleData*   find      ( const char*     /* identifier */,
                                    int   = 1 /* instance   */ ) const;
- Barnacle*       lift      ( const char*     /* identifier */ );
+ Barnacle*       lift      ( const char*     /* identifier */,
+                                   int   = 1 /* instance   */ );
 
 #ifdef OBJECT_DEBUG
   static int objectCount;
