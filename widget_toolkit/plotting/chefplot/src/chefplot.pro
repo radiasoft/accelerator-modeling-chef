@@ -1,21 +1,50 @@
+###################################################################
+#
+# chefplot.pro
+#
+# Author: Jean-Francois Ostiguy
+#         Accelerator Division
+#         Fermi National Accelerator Laboratory 
+#         ostiguy@fnal.gov
+#
+########################################################################
+#
+# Please define the following
+#
+########################################################################
+   unix:CHEF_INSTALL_TOP_DIR  = /usr/local/ap/FNAL  
+windows:CHEF_INSTALL_TOP_DIR  = ..\..\..\..\chef-win32   
+
+   unix:FNAL_INSTALL_TOP_DIR  = /usr/local/ap/FNAL  
+windows:FNAL_INSTALL_TOP_DIR  = ..\..\..\..\chef-win32   
+
+   unix:BOOST_INSTALL_TOP_DIR = /usr/local/ap 
+windows:BOOST_INSTALL_TOP_DIR = c:\boost
+
+########################################################################
+# THERE SHOULD BE NO NEED TO CHANGE ANYTHING BELOW THIS LINE !
+########################################################################
+
 TEMPLATE	= lib
 LANGUAGE	= C++
 
-unix:CONFIG	+= qt warn_on debug thread rtti exceptions dll
-win32:CONFIG	+= qt warn_on       thread rtti exceptions staticlib
 
-unix:LIBS	+= -lqwt -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -lglib-2.0
+unix:CONFIG	+= qt warn_on debug thread rtti exceptions dll
+windows:CONFIG	+= qt warn_on       thread rtti exceptions staticlib
+
+unix:LIBS	+= -lqwt -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -lglib
+###unix:LIBS	+= -lqwt -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -lglib-2.0
 
 
 
 HEADERS	+= ../include/plot.h \
-	../include/chefplot.h \
-	../include/chefplotdata.h \
-	../include/chefplotzoomer.h \
-	../include/chefplotmain.h \
-	../include/lego.h \
-	../include/datadisplay.h \
-	../include/TuneDialog.h
+	   ../include/chefplot.h \
+	   ../include/chefplotdata.h \
+	   ../include/chefplotzoomer.h \
+	   ../include/chefplotmain.h \
+	   ../include/lego.h \
+	   ../include/datadisplay.h \
+	   ../include/TuneDialog.h
 
 SOURCES	+= chefplot.cpp \
 	chefplotmain.cpp \
@@ -42,30 +71,54 @@ IMAGES	= images/filenew \
 	images/editpaste \
 	images/searchfind
 
-INCLUDEPATH += ..\include
-win32:INCLUDEPATH += c:\boost\include\boost-1_32
-win32:INCLUDEPATH += ..\..\..\chef-win32\include\beamline 
-win32:INCLUDEPATH += ..\..\..\chef-win32\include\bmlfactory 
-win32:INCLUDEPATH += ..\..\..\chef-win32\include\mxyzptlk 
-win32:INCLUDEPATH += ..\..\..\chef-win32\include\basic_toolkit 
-win32:INCLUDEPATH += ..\..\..\chef-win32\include\physics_toolkit 
-win32:INCLUDEPATH += ..\..\..\..\..\local\include\glib-2.0 
-win32:INCLUDEPATH += ..\..\..\..\..\local\lib\glib-2.0/include
-win32:INCLUDEPATH += ..\..\..\widget_toolkit\include
+unix:INCLUDEPATH += ../include
+unix:INCLUDEPATH += $$join(FNAL_INSTALL_TOP_DIR, "/include/beamline" , ,      /include/beamline        )
+unix:INCLUDEPATH += $$join(FNAL_INSTALL_TOP_DIR, "/include/bmlfactory", ,     /include/bmlfactory      )
+unix:INCLUDEPATH += $$join(FNAL_INSTALL_TOP_DIR, "/include/mxyzptlk", ,       /include/mxyzptlk        )
+unix:INCLUDEPATH += $$join(FNAL_INSTALL_TOP_DIR, "/include/basic_toolkit", ,  /include/basic_toolkit   )
+unix:INCLUDEPATH += $$join(FNAL_INSTALL_TOP_DIR, "/include/physics_toolkit", ,/include/physics_toolkit )
+### for block allocator
+unix:INCLUDEPATH += $$join(FNAL_INSTALL_TOP_DIR,"/include/gms", ,             /include/gms)             
+unix:INCLUDEPATH += $$join(FNAL_INSTALL_TOP_DIR,"/include", ,                 /include)             
 
-target.path = ..\lib
+
+windows:INCLUDEPATH += ..\include
+windows:INCLUDEPATH += $$join(BOOST_INSTALL_TOP_DIR, "\include\boost-1_32",     , \include\boost-1_32      ) 
+windows:INCLUDEPATH += $$join(FNAL_INSTALL_TOP_DIR,  "\include\beamline"  ,     , \include\beamline        )
+windows:INCLUDEPATH += $$join(FNAL_INSTALL_TOP_DIR   "\include\bmlfactory",     , \include\bmlfactory      )
+windows:INCLUDEPATH += $$join(FNAL_INSTALL_TOP_DIR   "\include\mxyzptlk",       , \include\mxyzptlk        )
+windows:INCLUDEPATH += $$join(FNAL_INSTALL_TOP_DIR   "\include\basic_toolkit",  , \include\basic_toolkit   )
+windows:INCLUDEPATH += $$join(FNAL_INSTALL_TOP_DIR   "\include\physics_toolkit" , \include\physics_toolkit )
+### for block allocator
+windows:INCLUDEPATH += $$join(FNAL_INSTALL_TOP_DIR,"\include\gms",                 , \include\gms             )             
+windows:INCLUDEPATH += $$join(FNAL_INSTALL_TOP_DIR,"\include",                     , \include                 )             
+
+
+   unix:target.path = $$join(CHEF_INSTALL_TOP_DIR, "/lib", , /lib)
+windows:target.path = $$join(CHEF_INSTALL_TOP_DIR, "\lib", , \lib)
+
 INSTALLS += target
 
 DESTDIR = ../lib
 
 unix:QMAKE_LIBDIR_FLAGS += -L/opt/chef/lib 
 unix:QMAKE_LIBDIR_FLAGS += -L/usr/local/lib 
-unix:QMAKE_LFLAGS_SHAPP += -Wl,-rpath,/usr/local/lib -Wl,-rpath,/opt/chef/lib 
+unix:QMAKE_LIBDIR_FLAGS += -L/usr/local/ap/lib 
+unix:QMAKE_LIBDIR_FLAGS += -L/usr/local/ap/FNAL/lib 
+
+unix:QMAKE_LFLAGS_SHAPP += -Wl,-rpath,/usr/local/lib 
+unix:QMAKE_LFLAGS_SHAPP += -Wl,-rpath,/usr/local/ap/lib 
+unix:QMAKE_LFLAGS_SHAPP += -Wl,-rpath,/usr/local/ap/FNAL/lib 
+unix:QMAKE_LFLAGS_SHAPP += -Wl,-rpath,/opt/chef/lib 
 unix:QMAKE_LFLAGS_SHAPP += -Wl,-rpath,/usr/local/fnal-1st-order-proto-3/lib 
 
-UI_DIR       =  .\ui
-MOC_DIR      =  .\moc
-OBJECTS_DIR  =  .\obj
+windows:UI_DIR       =  .\ui
+windows:MOC_DIR      =  .\moc
+windows:OBJECTS_DIR  =  .\obj
+
+unix:UI_DIR       =  ./ui
+unix:MOC_DIR      =  ./moc
+unix:OBJECTS_DIR  =  ./obj
 
 
 QMAKE_CXXFLAGS_MT        += -pipe 
