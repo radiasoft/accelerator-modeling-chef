@@ -181,6 +181,7 @@ struct lattFunc : public BarnacleData {
   lattFunc& operator=( const lattFunc& );
 } ;
  ostream& operator<<(ostream&, const lattFunc&);
+ istream& operator>>(istream&, const lattFunc&);
 
 struct alignmentData {
   double       xOffset;

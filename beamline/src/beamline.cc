@@ -142,6 +142,21 @@ ostream& operator<<(ostream& os, const lattFunc& x) {
   os << " " << x.dispersion.ver << " " << x.dPrime.ver;
   return (os << endl);
 }
+
+istream& operator>>(istream& is, lattFunc& x) {
+  is >> x.alpha.hor;
+  is >> x.beta.hor; 
+  is >> x.psi.hor ;
+  is >> x.alpha.ver; 
+  is >> x.beta.ver; 
+  is >> x.psi.ver; 
+  is >> x.dispersion.hor;
+  is >> x.dPrime.hor;
+  is >> x.dispersion.ver;
+  is >> x.dPrime.ver;
+  return is;
+}
+
 // **************************************************
 //   struct lattRing
 // **************************************************

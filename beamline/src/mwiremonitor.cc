@@ -1,4 +1,4 @@
-#if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
+#if !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(_EXCLUDE_MONITORS_)
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -9,7 +9,7 @@
 #include <tk.h>
 #include "tclf.h"
 
-const int mwireMonitor::WISH_WAIT_TIME = 1;
+int mwireMonitor::WISH_WAIT_TIME = 1;
 
 mwireMonitor::mwireMonitor() : monitor() {
   binNumber = 48;
@@ -350,7 +350,7 @@ void mwireMonitor::localPropagate( Particle& part) {
     y2_sum += coords[1]*coords[1];
 
     particle_count++;
-    if ( particle_count%10 == 0 ) {
+    if ( particle_count % 10 == 0 ) {
       x_sigma = 1000.0 * sqrt( x2_sum/particle_count - (x_sum*x_sum)/(particle_count*particle_count) );
       y_sigma = 1000.0 * sqrt( y2_sum/particle_count - (y_sum*y_sum)/(particle_count*particle_count) );
       
