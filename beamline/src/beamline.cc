@@ -738,7 +738,8 @@ void beamline::propagate( JetParticle& x ) {
  int i;
  if( align ) {
    align->misalign( x, geometry /* ??? */, TrState );
-   ( x.state ).SetComponent( i, TrState[i] );
+   for(i=0; i < 6; i++)
+     ( x.state ).SetComponent( i, TrState[i] );
  }
  while ((  p = (bmlnElmnt*) getNext()  )) {
    p -> propagate( x );
