@@ -10,17 +10,36 @@ class Slot : public bmlnElmnt
 {
  public:
    Slot();
+   Slot( const char*  /* name */ );
+
    Slot( const Frame& /* out */
        );
+   Slot( const char*  /* name */,
+         const Frame& /* out */
+       );
+
    Slot( const Frame& /* in */, 
          const Frame& /* out */, 
          const beamline&
        );
+   Slot( const char*  /* name */,
+         const Frame& /* in */, 
+         const Frame& /* out */, 
+         const beamline&
+       );
+
    Slot( const Frame& /* in */, 
          const Frame& /* out */, 
          const bmlnElmnt&
        );
+   Slot( const char*  /* name */,
+         const Frame& /* in */, 
+         const Frame& /* out */, 
+         const bmlnElmnt&
+       );
+
    Slot( const Slot& );
+
    ~Slot();
  
    short int checkFrame( const Frame& ) const;
