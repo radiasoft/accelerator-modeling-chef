@@ -1,47 +1,77 @@
-C++ = Bcc32
-ILINK32 = Ilink32
-TLINK32 = Tlink32
+.SUFFIXES: .o .C .c .cc
+
+include $(FNALROOT)/Make-config
+
+INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(FILTER_INC) \
+             -I$(BASIC_TOOLKIT_INC) -I$(PHYSICS_TOOLKIT_INC)
+
+INCLUDE = -I. $(INCLUDEDIR) 
+
+MYLIBDIR = -L$(FNALROOT)/lib/sun 
+MYLIBS = -lfilter -lphysics_toolkit -lbeamline -lmxyzptlk \
+         -lbasic_toolkit -lfilter -lsocket++
+SYBASELIBS = -lct -lcs -lcomn -lsybtcl -lsybintl -lblk
+XLIBS = -L/usr/local/ap/X11R6/lib -L/usr/local/TCL-TK/lib -ltcl -ltk \
+        -lX11 -lICE -lSM 
+SYSLIBS = -lcomplex -lm -lsocket -lnsl -lintl
+
+CC = cc
+C++ = CC
+
+CFLAGS   = 
+C++FLAGS = 
+
+.C.o:
+	$(C++) $(C++FLAGS) $(INCLUDE) -c $*.C
+
+.cc.o:
+	$(C++) $(C++FLAGS) $(INCLUDE) -c $*.cc
+
+.c.o:
+	$(CC) $(CFLAGS) $(INCLUDE) -c $*.c
 
 
-IncDirectories = -IC:\BC5\INCLUDE;..\INCLUDE;..\..\MXB\INCLUDE;
-DefinedSymbols = -D_RTLDLL;_BIDSDLL;__BORLAND_CPP__;
-LibDirectories = -LC:\BC5\LIB;C:\winnt\profiles\michelot\projects\bmlmxb\mxb\lib;C:\winnt\profiles\michelot\projects\bmlmxb\bml\lib;
-Libraries = phys.lib bml.lib mxb.lib cxxlibr.lib bidsfi.lib import32.lib cw32i.lib
+ALL = FODO_E boosterv6 norm_A norm_B normalFormTest 
+
+all: $(ALL)
+
+FODO_E: FODO_E.o
+	$(C++) $(C++FLAGS) -o $@ $? \
+               $(MYLIBDIR) $(MYLIBS) $(SYSLIBS)
+
+boosterv6: boosterv6.o
+	$(C++) $(C++FLAGS) -o $@ $? \
+               $(MYLIBDIR) $(MYLIBS) $(SYSLIBS)
+
+norm_A: norm_A.o
+	$(C++) $(C++FLAGS) -o $@ $?\
+               $(MYLIBDIR) $(MYLIBS) $(SYSLIBS)
+
+norm_B: norm_B.o
+	$(C++) $(C++FLAGS) -o $@ $?\
+               $(MYLIBDIR) $(MYLIBS) $(SYSLIBS)
+
+normalFormTest: normalFormTest.o
+	$(C++) $(C++FLAGS) -o $@ $? \
+               $(MYLIBDIR) $(MYLIBS) $(SYSLIBS)
+
+clean:
+	rm -f *.o
+	rm -rf .sb
+	rm -f *~*
+	rm -f $(ALL)
+
+depend:
+	makedepend -- $(DEPEND_INC) -- $(SOURCES)
 
 
-demoFiles = \
-FODO_E.exe \
-boosterv6.exe \
-norm_A.exe \
-norm_B.exe \
-normalFormTest.exe \
-sbendTest.exe
+# DO NOT DELETE THIS LINE -- make depend depends on it.
 
 
-all: $(demoFiles)
 
 
-.obj.exe:
-  $(ILINK32) @&&| 
-  $(LibDirectories) -x \
-  C:\BC5\LIB\c0x32.obj \
-  $&.obj,  $@, , \
-  $(Libraries), , 
-|
 
-.cc.obj:
-    $(C++) -c -P @&&|
-    -WC $(IncDirectories) $(DefinedSymbols) -o$@ $&.cc
-|
 
-# Compiler configuration file
-BccW32.cfg : 
-   Copy &&|
--w
--R
--v
--WM-
--vi
--H
--H=mxyzptlk.csm
-| $@
+
+
+
