@@ -72,11 +72,13 @@ class CF_rbend : public bmlnElmnt
   double AdjustPosition( const JetProton& );
 
 
-  int setQuadrupole( double );  
-  int setSextupole( double );  
+  int setQuadrupole ( double );  
+  int setSextupole  ( double );  
+  int setOctupole   ( double );  
   // The argument is integrated multipole strength
   // i.e., .setQuadrupole ( B'l   )
-  //       .setSextupole  ( B"l/2 )
+  //       .setSextupole  ( B''l/2 )
+  //       .setOctupole   ( B'''l/6 )
   // 
   // Returns 0 if multipole is set correctly.
   //         1 if there are no multipoles of required type.

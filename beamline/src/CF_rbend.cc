@@ -92,6 +92,35 @@ void CF_rbend::localPropagate( JetParticle& p )
 }
 
 
+int CF_rbend::setOctupole( double arg_x )
+{
+  int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  thinOctupole** w = new thinOctupole* [ m ];
+  int counter = -1;
+  bmlnElmnt** x = _u;
+
+  while( x <= _v ) {
+    if( 0 == strcmp( (*x)->Type(), "thinOctupole" ) ) {
+      // w[++counter] = dynamic_cast<thinOctupole*>(*x);
+      w[++counter] = (thinOctupole*)(*x);
+    }
+    x++;
+  }
+
+  if( counter < 0 ) {
+    delete [] w;
+    return 1;
+  }
+  
+  double s = arg_x/((double) ( counter + 1 ));
+  for( int i = 0; i <= counter; i++ ) {
+    w[i]->setStrength( s );
+  }
+  
+  delete [] w;
+  return 0;
+}
+
 int CF_rbend::setSextupole( double arg_x )
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
