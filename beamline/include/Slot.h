@@ -1,9 +1,13 @@
 #ifndef SLOT_H
 #define SLOT_H
 
+#ifndef BMLNELMNT_H
+#include "bmlnElmnt.h"
+#endif
+
+#ifndef FRAME_H
 #include "Frame.h"
-#include "mxyzptlk.h"
-#include "beamline.inc"
+#endif
 
 
 class Slot : public bmlnElmnt

@@ -1,5 +1,5 @@
-#include "beamline.inc"
 #include "combinedFunction.h"
+#include "BeamlineIterator.h"
 
 
 // **************************************************
