@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -30,6 +27,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iomanip>
 
@@ -114,15 +114,9 @@ Jet__environment::Jet__environment( Jet__environment& x )
   SpaceDim( x.SpaceDim )
 {
   if( Jet::workEnv != 0 ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** Jet__environment::Jet__environment       \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** You must close the open environment      \n"
-         << "*** ERROR *** before attempting to copy an environment.\n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JL::GenericException( __FILE__, __LINE__, 
+           "Jet__environment::Jet__environment( Jet__environment& )",
+           "Close open environment before copying." ) );
   }
 
   if( NumVar == 0 ) {
@@ -217,15 +211,9 @@ Jet__environment& Jet__environment::operator=( const Jet__environment& x )
       Jet__environment::SkipEnvEqTest = 0;
 
   else if( Jet::workEnv != 0 ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** Jet__environment::operator=              \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** You must close the open environment      \n"
-         << "*** ERROR *** before attempting to assign.             \n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JL::GenericException( __FILE__, __LINE__, 
+           "Jet__environment& Jet__environment::operator=( const Jet__environment& )",
+           "Close open environment before assigning." ) );
   }
 
   MaxWeight = x.MaxWeight;
@@ -368,15 +356,9 @@ istream& streamIn( istream& is, Jet__environment** x )
   is >> pje->SpaceDim;
 
   if( pje->NumVar < pje->SpaceDim ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                              \n"
-         << "*** ERROR *** istream operator>>           \n"
-         << "*** ERROR ***                              \n"
-         << "*** ERROR *** Jet__enviroment dimensions   \n"
-         << "*** ERROR *** are wrong.                   \n"
-         << "*** ERROR ***                              \n"
-         << endl;
-    exit(1);
+    throw( JL::GenericException( __FILE__, __LINE__, 
+           "istream& streamIn( istream&, Jet__environment** )",
+           "Jet__enviroment dimensions are wrong." ) );
   }
   
   pje->refPoint = new double[ pje->NumVar ];
@@ -558,14 +540,9 @@ void Jet::setVariable( const double& x,
                        const int& j )
 {
  if( jl == NULL ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                               \n"
-        << "*** ERROR *** Jet::setVariable( int, double )    \n"
-        << "*** ERROR ***                               \n"
-        << "*** ERROR *** jl not initialized?????       \n"
-        << "*** ERROR ***                               \n"
-        << endl;
-   exit(1);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "void Jet::setVariable( const double&, const int& )",
+          "Impossible! jl not initialized?????" ) );
  }
  else {
    PREPFORCHANGE(jl)
@@ -588,14 +565,9 @@ void Jet::setVariable( const int& j,
 void Jet::setVariable( const int& j )
 {
  if( jl == NULL ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                               \n"
-        << "*** ERROR *** Jet::setVariable( int )       \n"
-        << "*** ERROR ***                               \n"
-        << "*** ERROR *** jl not initialized?????       \n"
-        << "*** ERROR ***                               \n"
-        << endl;
-   exit(1);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "void Jet::setVariable( const int& )",
+          "Impossible: jl not initialized?????" ) );
  }
  else {
    PREPFORCHANGE(jl)
@@ -659,19 +631,12 @@ ostream& operator<<( ostream& os, const Jet& x )
 //      dimension of phase space, s,
 //      default reference point, r.
 
-void
-Jet::BeginEnvironment( int w ) 
+void Jet::BeginEnvironment( int w ) 
 {
   if( workEnv != 0 ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** Jet::BeginEnvironment                    \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** You cannot open a new environment        \n"
-         << "*** ERROR *** until you close an old one.              \n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JL::GenericException( __FILE__, __LINE__, 
+           "void Jet::BeginEnvironment( int w )",
+           "Cannot open two environments simultaneously. Close first." ) );
   }
 
   workEnv = new Jet__environment;
@@ -680,27 +645,19 @@ Jet::BeginEnvironment( int w )
 }
 
 
-void
-Jet::Parameters()
+void Jet::Parameters()
 {
   if( workEnv->PBOK ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** Jet::Parameters                          \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** You can only call this once for an       \n"
-         << "*** ERROR *** open environment.                        \n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "void Jet::Parameters()",
+          "Can only be called once per (open) environment." ) );
   }
   workEnv->PBOK = 1;
   workEnv->SpaceDim = currentIndex;
 }
 
 
-Jet__environment*
-Jet::EndEnvironment( double* scl )
+Jet__environment* Jet::EndEnvironment( double* scl )
 {
   if( currentIndex == 0 ) {
     delete workEnv;
@@ -714,21 +671,11 @@ Jet::EndEnvironment( double* scl )
 
   if((  ( currentIndex     != newCoords.size() )  ||  
         ( newCoords.size() != newValues.size() )  )) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                   \n"
-         << "*** ERROR *** Jet::EndEnvironment               \n"
-         << "*** ERROR *** A horrible, inexplicable error    \n"
-         << "*** ERROR *** has occurred. This is beyond      \n"
-         << "*** ERROR *** the realm of human understanding. \n"
-         << "*** ERROR *** Please consult an exorcist.       \n"
-         << "*** ERROR ***                                   \n";
-
-    cerr << "*** ERROR *** currentIndex:      " << currentIndex     << endl;
-    cerr << "*** ERROR *** newCoords.size() : " << newCoords.size() << endl;
-    cerr << "*** ERROR *** newValues.size() : " << newValues.size() << endl;
-    cerr << "*** ERROR ***                                   \n"
-         << endl;
-    exit(1);
+    throw( JL::HorribleException( 
+           currentIndex, newCoords.size(), newValues.size(),
+           __FILE__, __LINE__, 
+           "Jet__environment* Jet::EndEnvironment( double* )",
+           "" ) );
   }
 
   workEnv->NumVar = currentIndex;
@@ -739,7 +686,7 @@ Jet::EndEnvironment( double* scl )
          << "*** WARNING ***                                 \n"
          << "*** WARNING *** Jet::EndEnvironment()           \n"
          << "*** WARNING *** Phase space has odd dimension.  \n"
-         << "*** WARNING *** I hope you know what your       \n"
+         << "*** WARNING *** I hope you know what you        \n"
          << "*** WARNING *** are doing, but I doubt it.      \n"
          << "*** WARNING ***                                 \n"
          << endl;
@@ -762,17 +709,9 @@ Jet::EndEnvironment( double* scl )
   while( ( q = (double*) GetNextValue() ) != 0 )
     workEnv->refPoint[i++] = *q;
   if( i != n ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                   \n"
-         << "*** ERROR *** Jet::EndEnvironment               \n"
-         << "*** ERROR *** An unbelievably hideous error     \n"
-         << "*** ERROR *** has occurred.                     \n"
-         << "*** ERROR *** " << i << " != " << n << "        \n"
-         << "*** ERROR ***               This is beyond      \n"
-         << "*** ERROR *** the realm of human understanding. \n"
-         << "*** ERROR ***                                   \n"
-         << endl;
-    exit(1);
+    throw( JL::HideousException(i, n, __FILE__, __LINE__, 
+             "Jet__environment* Jet::EndEnvironment( double* )", 
+             "" ) );
   }
  
   workEnv->AllZeroes.Reconstruct(n);
@@ -823,15 +762,9 @@ void Jet::EnlargeEnvironment( Jet__environment* pje )
 
   // Like Jet::BeginEnvironment
   if( workEnv != 0 ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** Jet::EnlargeEnvironment                  \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** You cannot enlarge an environment        \n"
-         << "*** ERROR *** until all environments are closed.       \n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JL::GenericException( __FILE__, __LINE__, 
+           "void Jet::EnlargeEnvironment( Jet__environment* )",
+           "Close open environment before invoking this function." ) );
   }
 
   workEnv = new Jet__environment;
@@ -864,17 +797,9 @@ coord::coord( double x )
 : Jet( workEnv ) {
  
  if( !workEnv ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                          \n"
-        << "*** ERROR *** coord::coord                             \n"
-        << "*** ERROR ***                                          \n"
-        << "*** ERROR *** You cannot declare a coordinate before   \n"
-        << "*** ERROR *** opening an environment.                  \n"
-        << "*** ERROR ***                                          \n"
-        << "*** ERROR *** Use Jet::BeginEnvironment()              \n"
-        << "*** ERROR ***                                          \n"
-        << endl;
-   exit(1);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "coord::coord( double ) ",
+          "Use Jet::BeginEnvironment() to open an environment first." ) );
  }
 
  // ??? REMOVE: jl->myEnv = workEnv;
@@ -908,11 +833,9 @@ coord::~coord() {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 coord::coord( const coord&  ) {
- printf( "\n*** ERROR ***                                       \n" );
- printf(   "*** ERROR *** coord::coord( coord& )                \n" );
- printf(   "*** ERROR *** Coordinate copy constructor called.   \n" );
- printf(   "*** ERROR ***                                       \n" );
- exit(1);
+ throw( JL::GenericException( __FILE__, __LINE__, 
+        "coord::coord( const coord& )",
+        "Coordinate copy constructor called; this is forbidden." ) );
 
 #ifdef OBJECT_DEBUG
   objectCount++;
@@ -931,13 +854,10 @@ void coord::operator=( const double& x ) {   // DANGER: Be careful!
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 coord& coord::operator=( const coord& ) {
- printf( "\n*** ERROR ***                                       \n" );
- printf(   "*** ERROR *** coord::operator=                      \n" );
- printf(   "*** ERROR *** Attempt made to change the value      \n" );
- printf(   "*** ERROR *** of a coordinate.                      \n" );
- printf(   "*** ERROR ***                                       \n" );
- if( 3 + 8 == 11 ) exit(1);  // To avoid compiler warnings.
- return *this;
+ throw( JL::GenericException( __FILE__, __LINE__, 
+        "coord& coord::operator=( const coord& )",
+        "It is forbidden to change the value of a coordinate." ) );
+ return *this;  // Never executed, of course.
 }
 
 
@@ -945,13 +865,10 @@ coord& coord::operator=( const coord& ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 coord& coord::operator=( const Jet& ) {
- printf( "\n*** ERROR ***                                       \n" );
- printf(   "*** ERROR *** coord::operator=                      \n" );
- printf(   "*** ERROR *** Attempt made to change the value      \n" );
- printf(   "*** ERROR *** of a coordinate.                      \n" );
- printf(   "*** ERROR ***                                       \n" );
- if( 3 + 8 == 11 ) exit(1);  // To avoid compiler warnings.
- return *this;
+ throw( JL::GenericException( __FILE__, __LINE__, 
+        "coord& coord::operator=( const Jet& )",
+        "It is forbidden to change the value of a coordinate." ) );
+ return *this;  // Never executed, of course.
 }
 
 
@@ -1050,13 +967,9 @@ JLterm Jet::stepConstIterator()  const
     return JLterm( (JLterm*) (constIterPtr->operator()()) );
   }
   else {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** Jet::stepConstIterator                   \n"
-         << "*** ERROR *** You must first resetConstIterator        \n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JL::GenericException( __FILE__, __LINE__, 
+           "JLterm Jet::stepConstIterator()  const",
+           "You must first resetConstIterator." ) );
   }
 }
 
@@ -1082,12 +995,8 @@ JLterm* Jet::stepIterator()
     return (JLterm*) (iterPtr->operator()());
   }
   else {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** Jet::stepIterator                        \n"
-         << "*** ERROR *** You must first resetIterator             \n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JL::GenericException( __FILE__, __LINE__, 
+           "JLterm* Jet::stepIterator()",
+           "You must first resetIterator." ) );
   }
 }

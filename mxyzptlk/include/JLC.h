@@ -146,8 +146,8 @@ struct JLC : public dlist {
   // Exception subclasses____________________________________________
   struct GenericException : public std::exception
   {
-    // Miscellaneous other errors
     GenericException( std::string, int, const char* = "", const char* = "" );
+    // Miscellaneous errors
     // 1st argument: name of file in which exception is thrown
     // 2nd         : line from which exception is thrown
     // 3rd         : identifies function containing throw
@@ -159,7 +159,6 @@ struct JLC : public dlist {
 
   struct BadDimension: public std::exception
   {
-    // Miscellaneous other errors
     BadDimension( int, int, std::string, int, const char* = "", const char* = "" );
     // A binary operator has detected mismatch between its two arguments 
     // in number of Jet coordinates.
@@ -173,6 +172,44 @@ struct JLC : public dlist {
     const char* what() const throw();
     std::string errorString;
     int xdim, ydim;
+  };
+
+  struct HorribleException : public std::exception
+  {
+    HorribleException( int, int, int, 
+                       std::string, int, const char* = "", const char* = "" );
+    // Thrown from Jet::EndEnvironment if index numbers don't align correctly.
+    // This should be impossible.
+    // 1st argument: currentIndex
+    // 2nd         : newCoords.size()
+    // 3rd         : newValues.size()
+    // 4th         : name of file in which exception is thrown
+    // 5th	   : line from which exception is thrown
+    // 6th         : identifies function containing throw
+    // 7th         : identifies type of error
+    ~HorribleException() throw() {}
+    const char* what() const throw();
+    std::string errorString;
+    int curIndex, coordSize, valueSize;
+  };
+
+  struct HideousException : public std::exception
+  {
+    HideousException( int, int, 
+                       std::string, int, const char* = "", const char* = "" );
+    // Thrown from Jet::EndEnvironment if index numbers don't align correctly.
+    // This should be impossible.
+    // 1st argument: currentIndex
+    // 2nd         : newCoords.size()
+    // 3rd         : newValues.size()
+    // 4th         : name of file in which exception is thrown
+    // 5th	   : line from which exception is thrown
+    // 6th         : identifies function containing throw
+    // 7th         : identifies type of error
+    ~HideousException() throw() {}
+    const char* what() const throw();
+    std::string errorString;
+    int i, n;
   };
 
 
