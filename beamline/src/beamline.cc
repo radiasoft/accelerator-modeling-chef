@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -29,8 +32,9 @@
 **************************************************************************
 *************************************************************************/
 
-
+#ifndef NO_RTTI 
 #include <typeinfo>
+#endif
 #include <string>
 
 #include "bmlnElmnt.h"
@@ -189,6 +193,7 @@ beamline::arrayRep::arrayRep( const beamline* x, bool doClone )
     exit(1);
   }
 
+#ifndef NO_RTTI 
   if( typeid(*x) != typeid(beamline) ) {
     cerr << "*** ERROR ***                             \n"
             "*** ERROR *** arrayRep::arrayRep          \n"
@@ -199,6 +204,7 @@ beamline::arrayRep::arrayRep( const beamline* x, bool doClone )
          << endl;
     exit(1);
   }
+#endif
 
   DeepBeamlineIterator dbi(x);
   bmlnElmnt* q;
