@@ -899,3 +899,9 @@ void bmlnElmnt::setShunt(double a)
   shuntCurrent = a;
 }
 
+bmlnElmnt* bmlnElmnt::Clone(char* name) {
+  // Clone this bmlnElmnt, changing the name to my argument.
+  bmlnElmnt *temp = Clone();
+  temp->Rename(name);
+  return temp;
+}

@@ -411,6 +411,7 @@ public:
                                    // create a copy of itself and
                                    // return a pointer to the new
                                    // object.
+  bmlnElmnt* Clone(char* name);    // Clone it and change the name.
 
   virtual void Split( double s, bmlnElmnt**, bmlnElmnt** );
                                    // Splits the element at percent orbitlength
