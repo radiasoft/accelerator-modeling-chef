@@ -35,6 +35,7 @@
 #include <string>   // needed for strcat
 #include <math.h>
 
+#include "GenericException.h"
 #include "complexAddon.h"
 #include "bmlfactory.h"
 #include "DspnFncPlt.h"
@@ -56,7 +57,9 @@ using namespace std;
 
 
 DspnFncPlt::DspnFncPlt( BeamlineContext* bcp, const char* name )
+try
 : _errorStreamPtr(&cerr), _outputStreamPtr(&cout),
+  _plotter(0), _di(0), 
   _bmlConPtr(bcp), _deleteContext(false),
   _arraySize(0), _azimuth(0),
   _clo_H(0), _clo_V(0), 
@@ -65,10 +68,17 @@ DspnFncPlt::DspnFncPlt( BeamlineContext* bcp, const char* name )
 {
   this->_finishConstructor( name );
 }
+catch( const GenericException& ge )
+{
+  this->~DspnFncPlt();
+  throw ge;
+}
 
 
 DspnFncPlt::DspnFncPlt( /* const */ beamline* pBml, const char* name )
+try
 : _errorStreamPtr(&cerr), _outputStreamPtr(&cout),
+  _plotter(0), _di(0), 
   _bmlConPtr(0), _deleteContext(true),
   _arraySize(0), _azimuth(0),
   _clo_H(0), _clo_V(0), 
@@ -77,6 +87,11 @@ DspnFncPlt::DspnFncPlt( /* const */ beamline* pBml, const char* name )
 {
   _bmlConPtr = new BeamlineContext( false, pBml );
   this->_finishConstructor( name );
+}
+catch( const GenericException& ge )
+{
+  this->~DspnFncPlt();
+  throw ge;
 }
 
 void DspnFncPlt::_finishConstructor( const char* name )
@@ -163,16 +178,16 @@ void DspnFncPlt::_finishConstructor( const char* name )
 
 DspnFncPlt::~DspnFncPlt()
 {
-  if( _name ) { delete [] _name; }
+  if( _di )      { delete _di;          _di = 0;      }
+  if( _name )    { delete [] _name;     _name = 0;    }
+  if( _azimuth ) { delete [] _azimuth;  _azimuth = 0; }
+  if( _disp_H )  { delete [] _disp_H;   _disp_H = 0;  }
+  if( _disp_V )  { delete [] _disp_V;   _disp_V = 0;  }
+  if( _clo_H )   { delete [] _clo_H;    _clo_H = 0;   }
+  if( _clo_V )   { delete [] _clo_V;    _clo_V = 0;   }
 
-  delete    _di;
-  delete [] _azimuth;  _azimuth = 0;
-  delete [] _disp_H;   _disp_H = 0;
-  delete [] _disp_V;   _disp_V = 0;
-  delete [] _clo_H;    _clo_H = 0;
-  delete [] _clo_V;    _clo_V = 0;
-
-  if(_deleteContext) { delete _bmlConPtr; }
+  if( _deleteContext && (0 != _bmlConPtr) ) 
+                 { delete _bmlConPtr; _bmlConPtr = 0; }
 }
 
 
@@ -180,13 +195,15 @@ DspnFncPlt::~DspnFncPlt()
 void DspnFncPlt::_recalc()
 {
   const double mm = 0.001;
-
-  _currentTune[0] = _bmlConPtr->getHorizontalEigenTune();
-  _currentTune[1] = _bmlConPtr->getVerticalEigenTune();
-
-
   int i = 0;
-  const DispersionSage::Info* infoPtr = _bmlConPtr->getDispersionPtr(i);
+
+  const DispersionSage::Info* infoPtr;
+  try {
+    infoPtr = _bmlConPtr->getDispersionPtr(i);
+  }
+  catch( const GenericException& ge ) {
+    throw ge;
+  }
 
   while( 0 != infoPtr ) {
     if( i >= _arraySize ) {

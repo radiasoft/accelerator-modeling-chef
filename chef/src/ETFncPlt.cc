@@ -166,22 +166,23 @@ void ETFncPlt::_finishConstructor( const char* name )
 
 ETFncPlt::~ETFncPlt()
 {
-  if( _name ) { delete [] _name; }
+  if( _name )        { delete [] _name;        _name        = 0; }
 
-  delete    _di;
-  delete [] _azimuth;
-  delete [] _beta_H;
-  delete [] _alpha_H;
-  delete [] _beta_V;
-  delete [] _alpha_V;
-  delete [] _inv_beta_H;
-  delete [] _inv_beta_V;
-  delete [] _root_beta_H;
-  delete [] _root_beta_V;
-  delete [] _disp_H;
-  delete [] _disp_V;
+  if( _di )          { delete    _di;          _di          = 0; }
+  if( _azimuth )     { delete [] _azimuth;     _azimuth     = 0; }
+  if( _beta_H )      { delete [] _beta_H;      _beta_H      = 0; }
+  if( _alpha_H )     { delete [] _alpha_H;     _alpha_H     = 0; }
+  if( _beta_V )      { delete [] _beta_V;      _beta_V      = 0; }
+  if( _alpha_V )     { delete [] _alpha_V;     _alpha_V     = 0; }
+  if( _inv_beta_H )  { delete [] _inv_beta_H;  _inv_beta_H  = 0; }
+  if( _inv_beta_V )  { delete [] _inv_beta_V;  _inv_beta_V  = 0; }
+  if( _root_beta_H ) { delete [] _root_beta_H; _root_beta_H = 0; }
+  if( _root_beta_V ) { delete [] _root_beta_V; _root_beta_V = 0; }
+  if( _disp_H )      { delete [] _disp_H;      _disp_H      = 0; }
+  if( _disp_V )      { delete [] _disp_V;      _disp_V      = 0; }
 
-  if(_deleteContext) { delete _bmlConPtr; }
+  if(_deleteContext&&(0 != _bmlConPtr)) 
+                     { delete _bmlConPtr;      _bmlConPtr   = 0; }
 }
 
 

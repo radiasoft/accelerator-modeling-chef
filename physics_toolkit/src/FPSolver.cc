@@ -634,7 +634,7 @@ void FPSolver::operator()( double* result )
     for( i = 0; i < 6; i++ ) {
       if( isnan(u[i]) ) { 
         cerr << "fixedPoint:: p->State(" << i << ") is NaN." << endl;
-        return -1; 
+        return; 
       }
     }
       

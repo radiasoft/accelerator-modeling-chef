@@ -137,7 +137,7 @@ int EdwardsTengSage::eigenTuneCalc( const JetParticle& ptr_jp,
   const int yp = Particle::_yp();
 
   MatrixD mtrx;
-  mtrx = ptr_jp.State().Jacobian();
+  mtrx = ptr_jp.State().Jacobian();  
   MatrixC lambda;
   lambda = mtrx.eigenValues();
 

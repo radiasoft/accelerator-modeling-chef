@@ -1173,12 +1173,21 @@ void Tracker::_view_norm()
     return;
   }
 
-  if( _p_info ) {
-    delete _p_info;
-    _p_info = 0;
-  }
+  if( _p_info ) { delete _p_info; _p_info = 0; }
   int n = _bmlConPtr->countHowManyDeeply();
-  _p_info = new LattFuncSage::lattFunc( *(_bmlConPtr->getLattFuncPtr(n-1)) );
+
+  try {
+    _p_info = new LattFuncSage::lattFunc( *(_bmlConPtr->getLattFuncPtr(n-1)) );
+  }
+  catch( const std::exception& ge ) {
+    if( _p_info ) { delete _p_info; _p_info = 0; }
+    ostringstream uic;
+    uic << __FILE__ << ", line " << __LINE__
+        << "Exception was thrown with message:\n"
+        << ge.what();
+    QMessageBox::information( 0, "CHEF: ERROR", uic.str().c_str() );
+    return;
+  }
 
 
   _p_leftWindow->setTransformer( new NormH( _p_info->alpha.hor, _p_info->beta.hor ) );
@@ -1200,12 +1209,21 @@ void Tracker::_view_actang()
     return;
   }
 
-  if( _p_info ) {
-    delete _p_info;
-    _p_info = 0;
-  }
+  if( _p_info ) { delete _p_info; _p_info = 0; }
   int n = _bmlConPtr->countHowManyDeeply();
-  _p_info = new LattFuncSage::lattFunc( *(_bmlConPtr->getLattFuncPtr(n-1)) );
+  
+  try {
+    _p_info = new LattFuncSage::lattFunc( *(_bmlConPtr->getLattFuncPtr(n-1)) );
+  }
+  catch( const std::exception& ge ) {
+    if( _p_info ) { delete _p_info; _p_info = 0; }
+    ostringstream uic;
+    uic << __FILE__ << ", line " << __LINE__
+        << "Exception was thrown with message:\n"
+        << ge.what();
+    QMessageBox::information( 0, "CHEF: ERROR", uic.str().c_str() );
+    return;
+  }
 
   double a1 = _p_info->alpha.hor;
   double b1 = _p_info->beta.hor;

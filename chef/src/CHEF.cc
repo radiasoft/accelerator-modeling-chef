@@ -1032,7 +1032,19 @@ void CHEF::_launchLatt()
     return;
   }
 
-  _plotWidget = new LattFncPlt(_p_currBmlCon);
+  try {
+    _plotWidget = new LattFncPlt(_p_currBmlCon);
+  }
+  catch( const std::exception& ge ) {
+    if( 0 != _plotWidget ) { delete _plotWidget; _plotWidget = 0; }
+    ostringstream uic;
+    uic << __FILE__ << ", line " << __LINE__ << ": "
+        << "Exception was thrown with message:\n"
+        << ge.what();
+    QMessageBox::information( 0, "CHEF: ERROR",
+                             uic.str().c_str() );
+    return;
+  }
 
   char theCaption[1024];
   for( int i = 0; i < 1024; i++ ) {
@@ -1052,7 +1064,19 @@ void CHEF::_launchET()
     return;
   }
 
-  _ETplotWidget = new ETFncPlt(_p_currBmlCon);
+  try {
+    _ETplotWidget = new ETFncPlt(_p_currBmlCon);
+  }
+  catch( const std::exception& ge ) {
+    if( 0 != _ETplotWidget ) { delete _ETplotWidget; _ETplotWidget = 0; }
+    ostringstream uic;
+    uic << __FILE__ << ", line " << __LINE__ << ": "
+        << "Exception was thrown with message:\n"
+        << ge.what();
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              uic.str().c_str() );
+    return;
+  }
 
   char theCaption[1024];
   for( int i = 0; i < 1024; i++ ) {
@@ -1072,7 +1096,19 @@ void CHEF::_launchMoments()
     return;
   }
 
-  _MMplotWidget = new MomentsFncPlt(_p_currBmlCon);
+  try {
+    _MMplotWidget = new MomentsFncPlt(_p_currBmlCon);
+  }
+  catch( const std::exception& ge ) {
+    if( 0 != _MMplotWidget ) { delete _MMplotWidget; _MMplotWidget = 0; }
+    ostringstream uic;
+    uic << __FILE__ << ", line " << __LINE__ << ": "
+        << "Exception was thrown with message:\n"
+        << ge.what();
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              uic.str().c_str() );
+    return;
+  }
 
   char theCaption[1024];
   for( int i = 0; i < 1024; i++ ) {
@@ -1120,7 +1156,19 @@ void CHEF::_launchDispersion()
     return;
   }
 
-  _DspnplotWidget = new DspnFncPlt(_p_currBmlCon);
+  try {
+    _DspnplotWidget = new DspnFncPlt(_p_currBmlCon);
+  }
+  catch( const std::exception& ge ) {
+    if( 0 != _DspnplotWidget ) { delete _DspnplotWidget; _DspnplotWidget = 0; }
+    ostringstream uic;
+    uic << __FILE__ << ", line " << __LINE__ << ": "
+        << "Exception was thrown with message:\n"
+        << ge.what();
+    QMessageBox::information( 0, "CHEF: ERROR",
+                             uic.str().c_str() );
+    return;
+  }
 
   char theCaption[1024];
   for( int i = 0; i < 1024; i++ ) {

@@ -354,7 +354,16 @@ beamline* BeamlineContext::cloneBeamline() const
 
 Mapping BeamlineContext::getOneTurnMap()
 {
-  if( 0 == _p_jp ) { this->_createClosedOrbit(); }
+  if( 0 == _p_jp ) { 
+    try {
+      this->_createClosedOrbit(); 
+    }
+    catch( const GenericException& ge ) {
+      this->_deleteClosedOrbit(); // Almost certainly not necessary.
+      throw ge;
+    }
+  }
+
   if( 0 == _p_jp ) {
     cerr << "\n*** ERROR *** " << __FILE__ << ", line " << __LINE__ << ": "
          << "\n*** ERROR *** Mapping BeamlineContext::getOneTurnMap() const"
@@ -597,7 +606,13 @@ void BeamlineContext::_deleteClosedOrbit()
 void BeamlineContext::_createTunes()
 {
   // First, 
-  _createClosedOrbit();
+  try {
+    _createClosedOrbit(); 
+  }
+  catch( const GenericException& ge ) {
+    _deleteClosedOrbit(); // Almost certainly not necessary.
+    throw ge;
+  }
 
   // At this point, _p_jp's state is that after one-turn on the
   // closed orbit.
@@ -663,7 +678,13 @@ double BeamlineContext::getVerticalFracTune()
 
 void BeamlineContext::_createEigentunes()
 {
-  _createClosedOrbit();
+  try {
+    _createClosedOrbit(); 
+  }
+  catch( const GenericException& ge ) {
+    _deleteClosedOrbit(); // Almost certainly not necessary.
+    throw ge;
+  }
   // At this point, _p_jp's state is that after one-turn on the
   //   closed orbit. It's environment is centered on the closed
   //   orbit and may be out of synch with the current environment.
@@ -811,7 +832,16 @@ const DispersionSage::Info* BeamlineContext::getDispersionPtr( int i )
   }
   
   if( !_dispersionFuncsCalcd ) { 
-    if( 0 == _p_jp ) { this->_createClosedOrbit(); }
+    if( 0 == _p_jp ) { 
+      try {
+        this->_createClosedOrbit(); 
+      }
+      catch( const GenericException& ge ) {
+        this->_deleteDSPS(); 
+        this->_deleteClosedOrbit();
+        throw ge;
+      }
+    }
 
     // Preserve/reset the current Jet environment
     Jet__environment*  storedEnv  = Jet::_lastEnv;
@@ -856,7 +886,15 @@ MatrixD BeamlineContext::equilibriumCovariance( double eps_1, double eps_2 )
   const int index [] = { 0, 3, 1, 4 };
 
   // If necessary ...
-  if( 0 == _p_jp ) { _createClosedOrbit(); }
+  if( 0 == _p_jp ) { 
+    try {
+      _createClosedOrbit(); 
+    }
+    catch( const GenericException& ge ) {
+      _deleteClosedOrbit(); // Almost certainly not necessary.
+      throw ge;
+    }
+  }
 
   double betaGamma = _p_jp->ReferenceBeta() * _p_jp->ReferenceGamma();
 

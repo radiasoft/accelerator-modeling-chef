@@ -123,10 +123,9 @@ private:
 
   // Formally global quantities
   //   controlling the plotting coordinates
-  double _cur_x, _cur_y;
-
-  double _x_min, _x_max, _x_scale;
-  double _y_min, _y_max, _y_scale;
+  double _x_min, _x_max, _x_center, _x_scale;
+  double _y_min, _y_max, _y_center, _y_scale;
+  double _z_min, _z_max, _z_center, _z_scale;
 
   double _x_cell_width;
   double _y_cell_width;

@@ -56,10 +56,6 @@ class DspnFncPlt : public QObject
     BeamlineContext* _bmlConPtr;
     bool             _deleteContext;
 
-    double        _currentTune[2];
-    double        _targetHorTune;
-    double        _dnu_x;
-
     int     _arraySize;
     double* _azimuth;
     double* _clo_H;
