@@ -49,7 +49,6 @@ private:
   MatrixD scale();
   MatrixD lu_decompose(int*, int&) const;
   void lu_back_subst(int*,MatrixD&);
-  void error( const char* msgl, const char* msg2 = " ") const ;
 
 public:
   char  stacked;
@@ -113,6 +112,58 @@ friend MatrixD operator/(MatrixD& ,MatrixD &);
   static int objectCount;
 #endif
 
+  // Exception subclasses
+  struct IndexRange
+  {
+    // User has tried to access a matrix element with
+    // out-of-range indices: M(i,j) with 
+    // i or j < 0
+    // or i > rows - 1
+    // or j > cols - 1
+    IndexRange( int, int, int, int, const char* );
+    ~IndexRange() {}
+    int i,  j;   // Row and column indices called
+    int im, jm;  // Maximum allowed values
+  };
+
+  struct NotVector
+  {
+    // Attempt to access a matrix element as a vector element,
+    // with one index, when the matrix is not a vector.
+    NotVector( int, int, int, const char* );
+    ~NotVector() {}
+    int i, r, c;  // index, rows, columns
+  };
+
+  struct Incompatible
+  {
+    // Attempting operations on matrices who dimensions
+    // are not compatible.
+    Incompatible( int, int, int, int, const char* );
+    ~Incompatible() {}
+    int ra, ca, rb, cb;
+  };
+
+  struct NotSquare
+  {
+    // Non-square matrix handed over for square
+    // matrix operations
+    NotSquare( int, int, const char* );
+    ~NotSquare() {}
+    int r, c;
+  };
+
+  struct Generic
+  {
+    // Miscellaneous other errors
+    Generic( int, int, const char*, const char* = "" );
+    ~Generic() {}
+    int r, c;
+  };
+
+
+
+  // Special subclass MatrixD::RandomOrthogonal
   class RandomOrthogonal
   {
     public: 
@@ -163,7 +214,6 @@ private:
   MatrixC scale();
   MatrixC lu_decompose(int*, int&);
   void lu_back_subst(int*,MatrixC&);
-  void error( const char* msgl, const char* msg2 = " ") const ;
 
 public:
   char  stacked;
@@ -248,7 +298,6 @@ class MatrixI {
 private:
   MLI* ml;
 
-  void error( const char* msgl, const char* msg2 = " ")const ;
 public:
   char  stacked;
 
