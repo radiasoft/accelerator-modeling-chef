@@ -180,7 +180,7 @@ class slist_traversor {
   slink* ce;
   slist* cs;
 public:
-  slist_traversor( slist& s ) { cs = &s; ce = cs->last; }
+  slist_traversor( const slist& s ) { cs = const_cast<slist*>(&s); ce = cs->last; }
   slink* operator()();
   void Reset( const slist& s ) { cs = (slist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
