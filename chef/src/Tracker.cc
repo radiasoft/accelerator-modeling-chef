@@ -1735,25 +1735,24 @@ void Tracker::_tool_pdicOrb()
       return;
     }
 
-    Vector w(6);
-    w(0) = _bmlConPtr->_proton.State(0); // ??? Change this
-    w(3) = _bmlConPtr->_proton.State(3); // ??? Change this
+    Vector w(6);                            // ??? Change this
+    // w(0) = _bmlConPtr->_proton.State(0); // ??? Change this
+    // w(3) = _bmlConPtr->_proton.State(3); // ??? Change this
+    w = _bmlConPtr->_proton.State();
 
     const uint order = 5;  // ??? Change this
     const uint ul    = 5;  // ??? Change this
   
     Vector z(w);
   
-
     beamline* bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
     Jet__environment* storedEnv = Jet::_lastEnv;
     double energy = _bmlConPtr->_proton.Energy();
-  
 
     for( int iterCount = 0; iterCount < ul; iterCount++ ) {
       Jet::BeginEnvironment( order );
-  	coord x(  w(0) ),  y(0.0),  q(0.0),
-  	      px( w(3) ), py(0.0), qq(0.0);
+  	coord  x(w(0)),  y(w(1)),  q(0.0),
+  	      px(w(3)), py(w(4)), qq(0.0);
       Jet::EndEnvironment();
   
       Jet xsq;
@@ -1772,14 +1771,17 @@ void Tracker::_tool_pdicOrb()
   
       stuff = jpr.State();
   
-      MatrixD M(6,6), jac(6,6);
-      jac = stuff.Jacobian();
-      M(0,0) = jac(0,0);
-      M(0,3) = jac(0,3);
-      M(3,0) = jac(3,0);
-      M(3,3) = jac(3,3);
-  
-      for( i = 0; i < 6; i++ ) M( i, i ) -= 1.0;
+      MatrixD M(6,6);
+      M = stuff.Jacobian();
+
+      for( i = 0; i < 6; i++ ) {
+        M(i,2) = 0.0;
+        M(2,i) = 0.0;
+        M(i,5) = 0.0;
+        M(5,i) = 0.0;
+      }
+
+      for( i = 0; i < 6; i++ ) { M( i, i ) -= 1.0; }
       M = M.inverse();
   
       Vector z(w);
