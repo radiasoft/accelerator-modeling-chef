@@ -336,6 +336,7 @@ public:
   void SetReferenceEnergy( double /* Energy */ );
 
   void setState( double* );
+  void setState( const Vector& );
   void setState( const Mapping& );
   void getState( Mapping& );
   void getState( Jet* );

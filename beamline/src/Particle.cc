@@ -449,6 +449,24 @@ JetParticle::JetParticle(const JetParticle& u) {
 JetParticle::~JetParticle() {
 }
 
+void JetParticle::setState( const Vector& u ) {
+ if( u.Dim() != BMLN_dynDim ) {
+   cout << "*** ERROR ***                                     \n" 
+        << "*** ERROR *** JetParticle::setState( const Vector& ) \n" 
+        << "*** ERROR *** Dimension incorrect ...             \n" 
+        << "*** ERROR ***                                     \n" 
+        << endl;
+   exit(1);
+ }
+
+ Jet__environment* pje = state.Env();
+ state = Mapping( "id", pje );
+ for( int i = 0; i < state.Dim(); i++ )  
+   state(i) = state(i) + ( u(i) - pje->refPoint[i] );
+ // ??? REMOVE for( int i = 0; i < BMLN_dynDim; i++ )  state.SetComponent( i, u[i] );
+ // ??? REMOVE state.fixReference(u);
+} 
+
 void JetParticle::setState( double* u ) {
  Jet__environment* pje = state.Env();
  state = Mapping( "id", pje );
