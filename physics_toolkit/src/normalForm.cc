@@ -325,8 +325,10 @@ void normalForm( const Mapping& theMapping, /* input */
   doc = N[k] - reg;
   for( i = 0; i < 6; i++ ) {
    scr.clear();
-   dlist_iterator g( *(dlist*) doc(i).jl );
-   while((  q = (JLCterm*) g()  )) {
+   doc(i).resetIterator();
+   // ??? REMOVE: dlist_iterator g( *(dlist*) doc(i).jl );
+   // ??? REMOVE: while((  q = (JLCterm*) g()  )) {
+   while((  q = doc(i).stepIterator()  )) {
     factor = 1.0;
     for( j = 0; j < 6; j++ ) {
      temp = FORIRIX_one / lambda(j);
