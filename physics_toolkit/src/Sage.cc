@@ -53,8 +53,8 @@ using namespace std;
 
 Sage::Sage( const beamline* x, bool doClone )
 : _verbose(false),
-  _errorStream( std::cerr ),
-  _outputStream( std::cout )
+  _errorStreamPtr( &std::cerr ),
+  _outputStreamPtr( &std::cout )
 {
   // Preconditions: x is a valid pointer to a beamline
   // Requirements:
