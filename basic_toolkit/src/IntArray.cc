@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -31,16 +28,9 @@
 *************************************************************************/
 
 
-/*
- * Implementation of class IntArray
- * 
- * Version 1.0       Mar, 1996
- * 
- * Leo Michelotti
- * michelot@calvin.fnal.gov
- * 
- */
-
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iostream>
 #include <cstdlib>
@@ -70,17 +60,33 @@ Vmalloc_t* IntArray::_vmem = 0;
 int IntArray::objectCount = 0;
 #endif
 
-#define CHECKOUT(test,fcn,message)          \
-  if( test ) {                              \
-    cerr << "\n\n"                          \
-            "*** ERROR ***\n"               \
-            "*** ERROR ***" fcn "\n"        \
-            "*** ERROR ***" message "\n"    \
-            "*** ERROR ***\n"               \
-            "*** ERROR ***"                 \
-         << endl;                           \
-         exit(1);                           \
+
+IntArray::GenericException::GenericException( const char* msg, const char* fcn )
+: w( msg )
+{
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << "\n*** ERROR *** "
+            "\n*** ERROR *** " << fcn
+         << "\n*** ERROR *** " << msg
+         << "\n*** ERROR *** This message is printed only once." 
+         << endl;
+    firstTime = false;
   }
+}
+
+
+const char* IntArray::GenericException::what() const throw()
+{
+  return strcat( "IntArray::GenericException: ", w.c_str() );
+}
+
+
+#define CHECKOUT(test,fcn,message)                       \
+  if( test ) {                                           \
+    throw( IntArray::GenericException( message, fcn ) ); \
+  }
+
 
 IntArray::IntArray( const int& n, const int* x )
 {
@@ -139,20 +145,22 @@ void IntArray::Set( const int& x )
   for ( i = 0; i < dim; i++ ) comp[i] = x;
 }
 
-int& IntArray::operator() ( const int& i ) const
+int IntArray::operator() ( const int& i ) const
 {
-  static int dummy = - 12345678;  // ??? Better way???
-  if ( ( 0 <= i ) && ( i < dim ) ) return comp[i];
+  if ( ( 0 <= i ) && ( i < dim ) ) { return comp[i]; }
   else {
-    cerr << "\n\n"
-         << "*** ERROR ***                                    \n"
-         << "*** ERROR *** IntArray::operator()               \n"
-         << "*** ERROR ***                                    \n"
-         << "*** ERROR *** Index is out of range.             \n"
-         << "*** ERROR ***                                    \n"
-         << endl;
-    if( 3+2==5 ) exit(1);
-    return dummy;
+    throw GenericException( "Index is out of range.", 
+                            "int IntArray::operator() ( const int& i ) const" );
+  }
+}
+
+
+int& IntArray::operator() ( const int& i )
+{
+  if ( ( 0 <= i ) && ( i < dim ) ) { return comp[i]; }
+  else {
+    throw GenericException( "Index is out of range.", 
+                            "int& IntArray::operator() ( const int& i )" );
   }
 }
 
@@ -299,16 +307,8 @@ istream& operator>>( istream& is, IntArray& x )
 
   is >> buf;
   if( buf[0] != '(' ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                \n"
-         << "*** ERROR *** istream operator>>( IntArray ) \n"
-         << "*** ERROR *** First character read was       \n"
-         << "*** ERROR *** not correct.                   \n"
-         << "*** ERROR ***                                \n"
-         << "*** ERROR *** Expected ( and got " << buf << " \n"
-         << "*** ERROR ***                                \n"
-         << endl;
-    exit(1);
+    throw( IntArray::GenericException("Incorrect first character in line.",
+                         "istream& operator>>( istream& is, IntArray& x )") );
   }
   
   i = 0;
@@ -321,17 +321,8 @@ istream& operator>>( istream& is, IntArray& x )
   }
 
   if( x.dim != ++i ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                \n"
-         << "*** ERROR *** istream operator>>( IntArray ) \n"
-         << "*** ERROR *** Incorrect number of components \n"
-         << "*** ERROR *** were read. .                   \n"
-         << "*** ERROR ***                                \n"
-         << "*** ERROR *** Expected " << x.dim 
-         <<              " and got "  << i <<           " \n"
-         << "*** ERROR ***                                \n"
-         << endl;
-    exit(1);
+    throw( IntArray::GenericException("Incorrect number of components were read.",
+                                "istream& operator>>( istream& is, IntArray& x )") );
   }
 
   return is;

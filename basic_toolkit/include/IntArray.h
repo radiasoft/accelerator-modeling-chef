@@ -36,6 +36,9 @@
 #define INTARRAY_H
 
 #include <iostream>
+#include <exception>
+#include <string>
+
 using std::istream;
 using std::ostream;
 
@@ -64,8 +67,8 @@ public:
   // Assignment ...
   void     Set              ( const int* );
   void     Set              ( const int& );
-  int&     operator()       ( const int& ) const;    // return or set
-                                                     // component
+  int      operator()       ( const int& ) const;    // return component
+  int&     operator()       ( const int& );          // set    component
   void     Reconstruct( const int& = 0, const int* = 0 );  
            // Just like constructor
 
@@ -95,6 +98,15 @@ public:
   // Utilities ..
   friend ostream& operator<<( ostream&, const IntArray& );
   friend istream& operator>>( istream&, IntArray& );
+
+  // Exceptions ...
+  struct GenericException : public std::exception
+  {
+    GenericException( const char*, const char* );
+    ~GenericException() throw() {}
+    const char* what() const throw();
+    std::basic_string<char> w;
+  };
 
 #ifdef OBJECT_DEBUG
   static int objectCount;
