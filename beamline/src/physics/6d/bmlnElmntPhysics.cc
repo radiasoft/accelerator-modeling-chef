@@ -91,12 +91,9 @@ void bmlnElmnt::localPropagate( Particle& p ) {
  static double /* x, y, */ D, p3divpbar;
  static double xpr, ypr;
 
- // x = p.state[0];
- // y = p.state[1];
  p3divpbar = sqrt( ( 1.0 + p.state[5] ) * ( 1.0 + p.state[5] )
                  - p.state[3]*p.state[3] 
                  - p.state[4]*p.state[4] );
-
 
  xpr = p.state[3] / p3divpbar;
  ypr = p.state[4] / p3divpbar; 
@@ -106,11 +103,12 @@ void bmlnElmnt::localPropagate( Particle& p ) {
 
  D = length*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
 
- // D = sqrt( length*length 
- //         + (p.state[0] - x ) * (p.state[0] - x )
- //         + (p.state[1] - y ) * (p.state[1] - y ) ); 
-
- p.state[2] += ( D / p.Beta() ) - ( length / p.beta );
+ if( 0. == _ctRef ) {
+   p.state[2] += ( D / p.Beta() ) - ( length / p.beta );
+ }
+ else {
+   p.state[2] += ( D / p.Beta() ) - _ctRef;
+ }
 }
 
 void bmlnElmnt::localPropagate( JetParticle& p ) {
@@ -118,8 +116,6 @@ void bmlnElmnt::localPropagate( JetParticle& p ) {
  /* static ??? */ Jet dummy;
  /* static ??? */ Jet xpr, ypr;
 
- // x = p.state[0];
- // y = p.state[1];
  p3divpbar = sqrt( pow( 1.0 + p.state(5), 2 )
                  - p.state(3)*p.state(3) 
                  - p.state(4)*p.state(4) );
@@ -134,11 +130,12 @@ void bmlnElmnt::localPropagate( JetParticle& p ) {
 
  D = length*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
 
- // D = sqrt( length*length 
- //         + pow(p.state(0) - x, 2)
- //         + pow(p.state(1) - y, 2) ); 
-
- dummy = p.state(2) + ( D / p.Beta() ) - ( length / p.beta );
+ if( 0. == _ctRef ) {
+   dummy = p.state(2) + ( D / p.Beta() ) - ( length / p.beta );
+ }
+ else {
+   dummy = p.state(2) + ( D / p.Beta() ) - _ctRef;
+ }
  ( p.state ).SetComponent( 2, dummy );
 }
 
