@@ -88,7 +88,7 @@ class CLieOperator;
 #include <math.h>
 #ifdef __VISUAL_CPP__
 #include <iostream>
-#include <Complex>
+#include <complex>
 #else
 #include <stdlib.h>
 #include <stdio.h>
