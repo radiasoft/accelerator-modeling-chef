@@ -59,6 +59,7 @@
 #include "beamel_table.h"
 #endif /* beamel_table_h */
 
+
    /*
      Takes a string and returns its hash table index
    */
@@ -85,7 +86,8 @@ bel_free_func( gpointer key,
                gpointer value,
                gpointer user_data ) {
   free( key );
-  beam_element_delete( (beam_element*)value,  (fb_allocator*)user_data );
+  beam_element_delete( (beam_element*)value, ((bel_expr_alloc_struct*) user_data)->bel_alloc_ , 
+                                             ((bel_expr_alloc_struct*) user_data)->expr_alloc_ );
   return TRUE;
 }
 
@@ -138,11 +140,20 @@ bel_table_init( void ) {
    */
 int
 bel_table_delete( GHashTable*   bel_table,
-                  fb_allocator* bel_alloc ) {
+                  fb_allocator* bel_alloc,
+                  fb_allocator* expr_alloc) {
 
   assert( bel_table != NULL );
   
-  g_hash_table_foreach_remove( bel_table, bel_free_func, bel_alloc );
+  /**********************/
+  bel_expr_alloc_struct bel_expr_alloc;
+
+  bel_expr_alloc.bel_alloc_  = bel_alloc;
+  bel_expr_alloc.expr_alloc_ = expr_alloc;
+
+  /***********************/
+
+  g_hash_table_foreach_remove( bel_table, bel_free_func, (gpointer) &bel_expr_alloc); 
   g_hash_table_destroy( bel_table );
   
   return BEL_OK;
