@@ -15,6 +15,7 @@ MatrixCalcVisitor::MatrixCalcVisitor( const Particle& x )
   _map_v(2,2),
   _counter(0), 
   _myParticle(&x),
+  _myBeamlinePtr(0),
   _linearModel_h(0),
   _linearModel_v(0),
   _beta_h(0),
@@ -61,7 +62,9 @@ MatrixCalcVisitor::~MatrixCalcVisitor()
 
 void MatrixCalcVisitor::visitBeamline( beamline* x )
 {
-  if( _firstTime ) {
+  if( _firstTime ) 
+  {
+    _myBeamlinePtr    = x;
     _numberOfElements = x->countHowManyDeeply();
     _linearModel_h    = new MatrixD* [_numberOfElements];
     _linearModel_v    = new MatrixD* [_numberOfElements];
@@ -80,40 +83,46 @@ void MatrixCalcVisitor::visitBeamline( beamline* x )
 
     _firstTime = 0;
   }
-  else {
-    cerr << "*** ERROR *** MatrixCalcVisitor::visitBeamline \n"
-            "*** ERROR *** You must not visit a beamline twice\n"
-            "*** ERROR *** with the same object."
-         << endl;
-    exit(137);
-  }
 
-  DeepBeamlineIterator dbi( x );
-  bmlnElmnt* q;
-  double s = 0.0;
-  _counter = -1;
-  while((  q = dbi++  )) {
-    _counter++;
-    if( _counter < _numberOfElements ) {
-      q->accept( *this );
-      s += q->OrbitLength( *_myParticle );
-      _arcLength[_counter] = s;
+
+  if( x == _myBeamlinePtr ) 
+  {
+    _calcDone = 0;
+
+    _map_h(0,0) = 1.0;    _map_h(0,1) = 0.0;
+    _map_h(1,0) = 0.0;    _map_h(1,1) = 1.0;
+    _map_v(0,0) = 1.0;    _map_v(0,1) = 0.0;
+    _map_v(1,0) = 0.0;    _map_v(1,1) = 1.0;
+
+    DeepBeamlineIterator dbi( x );
+    bmlnElmnt* q;
+    double s = 0.0;
+    _counter = -1;
+    while((  q = dbi++  )) {
+      _counter++;
+      if( _counter < _numberOfElements ) {
+  	q->accept( *this );
+  	s += q->OrbitLength( *_myParticle );
+  	_arcLength[_counter] = s;
+      }
+      else {
+  	cerr << "*** ERROR *** MatrixCalcVisitor::visitBeamline \n"
+  		"*** ERROR *** A horrible, inexplicable error has occurred. \n"
+                "*** ERROR *** The counter has overrun the number of elements: "
+  	     << _counter << " > " << _numberOfElements
+  	     << endl;
+  	exit(137);
+      }
     }
-    else {
+  
+    if( _counter + 1 != _numberOfElements ) {
       cerr << "*** ERROR *** MatrixCalcVisitor::visitBeamline \n"
-              "*** ERROR *** A horrible, inexplicable error has occurred: "
-           << _counter << " > " << _numberOfElements
-           << endl;
+  	      "*** ERROR *** A horrible, inexplicable error has occurred. \n"
+           << "*** ERROR *** The count is not correct: "
+  	   << _counter << " + 1 != " << _numberOfElements
+  	   << endl;
       exit(137);
     }
-  }
-
-  if( _counter + 1 != _numberOfElements ) {
-    cerr << "*** ERROR *** MatrixCalcVisitor::visitBeamline \n"
-            "*** ERROR *** A horrible, inexplicable error has occurred: "
-         << _counter << " + 1 != " << _numberOfElements
-         << endl;
-    exit(137);
   }
 }
 
@@ -296,6 +305,7 @@ void visitCombinedFunction( combinedFunction* x )
        << endl;
   exit(1);
 }
+
 
 
 void MatrixCalcVisitor::getState( Vector& x )
@@ -508,3 +518,48 @@ int MatrixCalcVisitor::_doCalc()
   _calcDone = 1;
   return MatrixCalcVisitor::DONE;
 }
+
+
+
+const double* MatrixCalcVisitor::Beta_h() {
+  static int ret;
+  if( !_calcDone ) ret = this->_doCalc();
+  if( ret < 0 )  return (const double*) ret;
+  else           return _beta_h;
+}
+
+const double* MatrixCalcVisitor::Beta_v() {
+  static int ret;
+  if( !_calcDone ) ret = this->_doCalc();
+  if( ret < 0 )  return (const double*) ret;
+  else           return _beta_v;
+}
+
+const double* MatrixCalcVisitor::Alpha_h() {
+  static int ret;
+  if( !_calcDone ) ret = this->_doCalc();
+  if( ret < 0 )  return (const double*) ret;
+  else           return _alpha_h;
+}
+
+const double* MatrixCalcVisitor::Alpha_v() {
+  static int ret;
+  if( !_calcDone ) ret = this->_doCalc();
+  if( ret < 0 )  return (const double*) ret;
+  else           return _alpha_v;
+}
+
+const double* MatrixCalcVisitor::Psi_h() {
+  static int ret;
+  if( !_calcDone ) ret = this->_doCalc();
+  if( ret < 0 )  return (const double*) ret;
+  else           return _psi_h;
+}
+
+const double* MatrixCalcVisitor::Psi_v() {
+  static int ret;
+  if( !_calcDone ) ret = this->_doCalc();
+  if( ret < 0 )  return (const double*) ret;
+  else           return _psi_v;
+}
+
