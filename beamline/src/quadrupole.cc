@@ -145,8 +145,49 @@ quadrupole::~quadrupole() {
 
 void quadrupole::setStrength( double s ) {
  strength = s - getShunt()*IToField();
- if(p_bml_e != 0)
-   p_bml_e->setStrength( strength*length );
+ double integratedStrength = strength*length;
+
+ if( p_bml != 0 ) 
+ {
+   double counter = 0.0;
+   BeamlineIterator bi( p_bml );
+   bmlnElmnt* q;
+   while( 0 != ( q = bi++  ) ) {
+     if( 0 == strcmp( q->Type(), "thinQuad" ) )  counter++;
+   }
+   if( counter <= 0.0 ) {
+     cerr << "*** ERROR ***                                    \n"
+             "*** ERROR *** quadrupole::setStrength            \n"
+             "*** ERROR *** No thin quads in the internal      \n"
+             "*** ERROR *** beamline.                          \n"
+             "*** ERROR ***                                    \n"
+          << endl;
+     exit(1);
+   }
+   else if( counter == 1.0 ) {
+     if(p_bml_e != 0) 
+     {
+       p_bml_e->setStrength( integratedStrength );
+     }
+     else 
+     {
+       cerr << "*** ERROR ***                                    \n"
+               "*** ERROR *** quadrupole::setStrength            \n"
+               "*** ERROR *** p_bml_e not set.                   \n"
+               "*** ERROR ***                                    \n"
+            << endl;
+       exit(2);
+     }
+   }
+   else {
+     bi.reset();
+     while( 0 != ( q = bi++  ) ) {
+       if( 0 == strcmp( q->Type(), "thinQuad" ) ) {
+         q->setStrength( integratedStrength/counter );
+       }
+     }
+   }
+ }
 }
 
 
