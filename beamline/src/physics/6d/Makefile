@@ -16,6 +16,7 @@ OBJS =  BBLensPhysics.o\
            markerPhysics.o \
            monitorPhysics.o \
            octupolePhysics.o \
+           PingerPhysics.o \
            quadrupolePhysics.o \
            rbendPhysics.o \
            sbendPhysics.o \

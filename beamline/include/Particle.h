@@ -48,6 +48,9 @@ protected:
   friend class thinSeptum;
   friend class thinLamb;
   friend class beamline;
+  friend class Pinger;
+  friend class HPinger;
+  friend class VPinger;
 
 
   double   state [ BMLN_dynDim ];
@@ -256,6 +259,9 @@ protected:
   friend class thinSeptum;
   friend class thinLamb;
   friend class beamline;
+  friend class Pinger;
+  friend class HPinger;
+  friend class VPinger;
 
 
   Mapping state;
