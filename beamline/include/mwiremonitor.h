@@ -1,4 +1,4 @@
-#if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
+#if !defined(_MSC_VER_) && !defined(__BORLANDC__) && !defined(_EXCLUDE_MONITORS_)
 #ifndef MWIREMONITOR_H
 #define MWIREMONITOR_H
 
@@ -34,6 +34,16 @@ class mwireMonitor : public monitor {
 
     void          calcBin(const double*);  // calculates what X & Y bins to 
                                            // increment.
+
+    // 
+    int           particle_count;
+    double        x_sum;
+    double        y_sum;
+    double        x2_sum;
+    double        y2_sum;
+    double        x_sigma;
+    double        y_sigma;
+ 
 
   public:
     mwireMonitor();
@@ -85,6 +95,8 @@ class mwireMonitor : public monitor {
     void   setYOffset(double);       // Sets the user defined offset in Y.
     inline double getYOffset() { return y_offset; }  // Gets X axis
                                                      // offset of the Y plot.
+    static int mwireMonitor::WISH_WAIT_TIME;
+
 };
 
 #endif // MWIREMONITOR_H

@@ -1,4 +1,4 @@
-#if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
+#if !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(_EXCLUDE_MONITORS_)
 #ifndef TCLMONITOR_H
 #define TCLMONITOR_H
 
