@@ -1,3 +1,35 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
+******             which facilitate calculations with the             
+******             BEAMLINE class library.                            
+******  Version:   1.0                    
+******                                    
+******  File:      DriftsToSlots.cc
+******                                                                
+******  Copyright (c) 2001  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 /*
  *  DriftsToSlots
  *  
@@ -47,9 +79,14 @@ char d2S_LookUpStream ( bmlnElmnt*&      el2Ptr,
   while( 0 != strcmp( el2Ptr->Type(), "rbend"    )  &&
          0 != strcmp( el2Ptr->Type(), "CF_rbend" )     ) 
   {
-    if( 0.0 != el2Ptr->Length() ) {
+    // REMOVE: if( 0.0 != el2Ptr->Length() ) {
+    // REMOVE:   return 0;
+    // REMOVE: }
+
+    if( 0 == strcmp( "drift", el2Ptr->Type() ) ) {
       return 0;
     }
+
     bi.goBack();
     bi.goBack();
     el2Ptr = bi++;
@@ -103,9 +140,14 @@ char d2S_LookDownStream ( bmlnElmnt*&      el2Ptr,
   while( 0 != strcmp( el2Ptr->Type(), "rbend"    )  &&
          0 != strcmp( el2Ptr->Type(), "CF_rbend" )     ) 
   {
-    if( 0.0 != el2Ptr->Length() ) {
+    // REMOVE: if( 0.0 != el2Ptr->Length() ) {
+    // REMOVE:   return 0;
+    // REMOVE: }
+
+    if( 0 == strcmp( "drift", el2Ptr->Type() ) ) {
       return 0;
     }
+
     el2Ptr = bi++;
     if( el2Ptr == 0 ) {
       bi.reset();
@@ -213,73 +255,73 @@ beamline* DriftsToSlots( /* const */ beamline& original )
       // 
       if( !isUpStream && !isDownStream )
       {
-	ret->append( elPtr->Clone() );
+        ret->append( elPtr->Clone() );
       }
   
       else if( isUpStream && !isDownStream )
       {
-	arcFrame.reset();  
-	if( c_rb ) {
-	  arcFrame.rotate( - ((rbend*) c)->getPoleFaceAngle(), arcFrame.getyAxis() );
-	}
-	else if( c_CF ) {
-	  arcFrame.rotate( - ((CF_rbend*) c)->getPoleFaceAngle(), arcFrame.getyAxis() );
-	}
-	else {
-	  exit(22);
-	}
-	fd(x) = 0.0;
-	fd(y) = 0.0;
-	fd(z) = elPtr->Length();
-	arcFrame.translate(fd);
-	ret->append( new Slot(elPtr->Name(), arcFrame) );
+        arcFrame.reset();  
+        if( c_rb ) {
+          arcFrame.rotate( - ((rbend*) c)->getPoleFaceAngle(), arcFrame.getyAxis() );
+        }
+        else if( c_CF ) {
+          arcFrame.rotate( - ((CF_rbend*) c)->getPoleFaceAngle(), arcFrame.getyAxis() );
+        }
+        else {
+          exit(22);
+        }
+        fd(x) = 0.0;
+        fd(y) = 0.0;
+        fd(z) = elPtr->Length();
+        arcFrame.translate(fd);
+        ret->append( new Slot(elPtr->Name(), arcFrame) );
       }
   
       else if( !isUpStream && isDownStream )
       {
-	arcFrame.reset(); 
-	fd(x) = 0.0;
-	fd(y) = 0.0;
-	fd(z) = elPtr->Length();
-	arcFrame.translate(fd);
-	if( a_rb ) {
-	  arcFrame.rotate( - ((rbend*) a)->getPoleFaceAngle(), arcFrame.getyAxis() );
-	}
-	else if( a_CF ) {
-	  arcFrame.rotate( - ((CF_rbend*) a)->getPoleFaceAngle(), arcFrame.getyAxis() );
-	}
-	else {
-	  exit(22);
-	}
-	ret->append( new Slot(elPtr->Name(), arcFrame) );
+        arcFrame.reset(); 
+        fd(x) = 0.0;
+        fd(y) = 0.0;
+        fd(z) = elPtr->Length();
+        arcFrame.translate(fd);
+        if( a_rb ) {
+          arcFrame.rotate( - ((rbend*) a)->getPoleFaceAngle(), arcFrame.getyAxis() );
+        }
+        else if( a_CF ) {
+          arcFrame.rotate( - ((CF_rbend*) a)->getPoleFaceAngle(), arcFrame.getyAxis() );
+        }
+        else {
+          exit(22);
+        }
+        ret->append( new Slot(elPtr->Name(), arcFrame) );
       }
   
       else // isUpstream and isDownStream
       {
-	arcFrame.reset();  
-	if( c_rb ) {
-	  arcFrame.rotate( - ((rbend*) c)->getPoleFaceAngle(), arcFrame.getyAxis() );
-	}
-	else if( c_CF ) {
-	  arcFrame.rotate( - ((CF_rbend*) c)->getPoleFaceAngle(), arcFrame.getyAxis() );
-	}
-	else {
-	  exit(22);
-	}
-	fd(x) = 0.0;
-	fd(y) = 0.0;
-	fd(z) = elPtr->Length();
-	arcFrame.translate(fd);
-	if( a_rb ) {
-	  arcFrame.rotate( - ((rbend*) a)->getPoleFaceAngle(), arcFrame.getyAxis() );
-	}
-	else if( a_CF ) {
-	  arcFrame.rotate( - ((CF_rbend*) a)->getPoleFaceAngle(), arcFrame.getyAxis() );
-	}
-	else {
-	  exit(22);
-	}
-	ret->append( new Slot(elPtr->Name(), arcFrame) );
+        arcFrame.reset();  
+        if( c_rb ) {
+          arcFrame.rotate( - ((rbend*) c)->getPoleFaceAngle(), arcFrame.getyAxis() );
+        }
+        else if( c_CF ) {
+          arcFrame.rotate( - ((CF_rbend*) c)->getPoleFaceAngle(), arcFrame.getyAxis() );
+        }
+        else {
+          exit(22);
+        }
+        fd(x) = 0.0;
+        fd(y) = 0.0;
+        fd(z) = elPtr->Length();
+        arcFrame.translate(fd);
+        if( a_rb ) {
+          arcFrame.rotate( - ((rbend*) a)->getPoleFaceAngle(), arcFrame.getyAxis() );
+        }
+        else if( a_CF ) {
+          arcFrame.rotate( - ((CF_rbend*) a)->getPoleFaceAngle(), arcFrame.getyAxis() );
+        }
+        else {
+          exit(22);
+        }
+        ret->append( new Slot(elPtr->Name(), arcFrame) );
       }
   
     } // End processing 
@@ -291,8 +333,10 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   // Because the original beamline is flattened
   // but not cloned, do not use .zap() 
   // or .eliminate()
-  
+
   delete flatRing;
 
+  ret->setEnergy( original.Energy() );
+  ret->Rename( original.Name() );
   return ret;
 }
