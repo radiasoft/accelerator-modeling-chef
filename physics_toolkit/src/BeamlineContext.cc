@@ -545,30 +545,23 @@ double BeamlineContext::getVerticalFracTune()
 const LattFuncSage::lattFunc* BeamlineContext::getLattFuncPtr( int i )
 {
   if( 0 == _p_lfs ) {
-    cout << "DGN:     this->_createLFS();" << endl;
     this->_createLFS();
   }
   
   if( 0 == _tunes ) {
-    cout << "DGN:     this->_createTunes();" << endl;
     this->_createTunes();
   }
 
   if( !_normalLattFuncsCalcd ) {
-    cout << "DGN:     _p_lfs->NewSlow_CS_Calc( _p_jp );" << endl;
     _p_lfs->NewSlow_CS_Calc( _p_jp );
-    cout << "DGN:     _normalLattFuncsCalcd = true;" << endl;
     _normalLattFuncsCalcd = true;
   }
 
   if( !_dispCalcd ) {
-    cout << "DGN:     _p_lfs->NewDisp_Calc( _p_jp, true );" << endl;
     _p_lfs->NewDisp_Calc( _p_jp, true );
-    cout << "DGN:     _dispCalcd = true;" << endl;
     _dispCalcd = true;
   }
 
-  cout << "DGN:   return (_p_lfs->get_lattFuncPtr(i));" << endl;
   return (_p_lfs->get_lattFuncPtr(i));
 }
 
