@@ -315,7 +315,7 @@ double CF_rbend::AdjustPosition( const Proton& arg_p )
 
 double CF_rbend::AdjustPosition( const JetProton& arg_jp )
 {
-  /* static */ const enum { x = 0, y, cdt, xp, yp, dpop };
+  /* static */ enum { x = 0, y, cdt, xp, yp, dpop };
   JetProton  myJP( arg_jp );
   Proton*    p_myP = (Proton*) myJP.ConvertToParticle();
   // This is deleted before returning.
