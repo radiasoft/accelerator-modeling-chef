@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -33,6 +30,10 @@
 *************************************************************************/
 
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "sextupole.h"
 
 using namespace std;
@@ -63,11 +64,9 @@ JetthinSext::JetthinSext ( char* n,
 
 
 JetthinSext::JetthinSext( bmlnElmntData& x ) : bmlnElmnt( x ) {
- cerr << "*** ERROR *** \n"
-      << "*** ERROR *** JetthinSext::JetthinSext( bmlnElmntData& x ) \n"
-      << "*** ERROR *** Sorry, Jack!  You can't do this.\n"
-      << endl;
- exit (1);
+ throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+        "JetthinSext::JetthinSext( bmlnElmntData& x ) : bmlnElmnt( x ) {", 
+        "Sorry. You can't do this." ) );
 }
 
 JetthinSext::JetthinSext( const JetthinSext& x ) 
