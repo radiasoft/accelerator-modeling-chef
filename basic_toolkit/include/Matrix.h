@@ -153,6 +153,7 @@ public:
   inline int rows() const { return ml->r;}
   inline int cols() const { return ml->c;}
   MatrixC transpose() const;
+  MatrixC dagger() const;
   MatrixC Square() const;
   FNAL::Complex determinant();
   MatrixC inverse();
@@ -166,6 +167,7 @@ public:
   MatrixC& operator=(const MatrixC&);
   MatrixC& DeepCopy(const MatrixC&);
   FNAL::Complex& operator()(int row, int column);
+  FNAL::Complex  operator()(int row, int column) const;
   FNAL::Complex& operator()(int row);
   void operator+=( const FNAL::Complex&);
   void operator-=( const FNAL::Complex&);
@@ -207,6 +209,10 @@ char operator!=( const MatrixC&, const MatrixC& );
 char operator!=( const MatrixC&, const FNAL::Complex& );
 char operator!=( const FNAL::Complex&, const MatrixC& );
 
+MatrixD real( const MatrixC& x );
+MatrixD imag( const MatrixC& x );
+
+
 class MatrixI {
 private:
   MLI* ml;
@@ -236,6 +242,7 @@ public:
   MatrixI& operator=(const MatrixI&);
   MatrixI& DeepCopy(const MatrixI&);
   int& operator()(int row, int column);
+  int  operator()(int row, int column) const;
   int& operator()(int row);
   void operator+=( const int&);
   void operator-=( const int&);
