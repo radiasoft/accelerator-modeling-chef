@@ -3,11 +3,11 @@
 **************************************************************************
 ******                                                                
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
-******  Version:   4.1                    
 ******                                    
 ******  File:      mxyzptlk.h
+******  Version:   5.0
 ******                                                                
-******  Copyright (c) 1990 Universities Research Association, Inc.    
+******  Copyright (c) 1990, 2004 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
 ******                                                                
 ******  Author:    Leo Michelotti                                     
@@ -28,41 +28,13 @@
 *************************************************************************/
 
 
-#ifndef MXYZPTLK_H
-#define MXYZPTLK_H
+#ifndef T_MXYZPTLK
+#define T_MXYZPTLK
 
-class JetTerm;
-class Jet;
-class JetCterm;
-class JetC;
-class LieOperator;
-class CLieOperator;
+#include "Jet"
+#include "JetVector"
+#include "LieOperator"
+#include "Mapping"
 
 
-#include <math.h>
-#ifdef __VISUAL_CPP__
-#include <iostream>
-#include <complex>
-#else
-#include <stdlib.h>
-#include <stdio.h>
-#include <complex>
-#include <iostream>
-#endif
-// ??? Should this line be added??? #include <iostream.h>
-// ??? Should this line be added??? #include <fstream.h>
-// ??? Should this line be added??? #include <iomanip.h>
-
-#include "dlist.h"
-#include "complexAddon.h"
-#include "TMatrix.h"
-#include "JL.h"
-#include "Jet.h"
-#include "LieOperator.h"
-#include "JLC.h"
-#include "JetC.h"
-#include "CLieOperator.h"
-#include "Mapping.h"
-#include "MappingC.h"
-
-#endif // MXYZPTLK_H
+#endif // T_MXYZPTLK
