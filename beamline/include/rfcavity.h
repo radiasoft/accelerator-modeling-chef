@@ -51,6 +51,9 @@ public:
   virtual int isType(char* c) { if ( strcmp(c, "thinrfcavity") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new thinrfcavity( *this ); }
   inline double getPhi() const { return phi_s; }
+  inline double getFrequency() const { return w_rf; }
+  inline double getQ() const { return Q; }
+  inline double getR() const { return R; }
 };
 
 
