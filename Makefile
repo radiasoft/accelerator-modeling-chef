@@ -127,6 +127,7 @@ TAR_FILES =	\
 	fnal/Make-config \
 	fnal/tar-exclude \
 	fnal/ChangeLog \
+	fnal/accumulator \
 	fnal/bml	\
 	fnal/mxb	\
 	fnal/tev \
