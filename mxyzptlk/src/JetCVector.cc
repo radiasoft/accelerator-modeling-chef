@@ -1,3 +1,33 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  MXYZPTLK:  A C++ implementation of differential algebra.      
+******  Version:   4.1                    
+******                                    
+******  File:      JetCVector.cc
+******                                                                
+******  Copyright (c) 1990 Universities Research Association, Inc.    
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 /*
  * Implementation of class JetCVector
  * 
@@ -7,11 +37,6 @@
  * michelot@calvin.fnal.gov
  * 
  */
-
-#ifndef __VISUAL_CPP__
-#include <stdlib.h>
-#include <iomanip.h>
-#endif
 
 #include "JetCVector.h"
 #include "JLC.h"
@@ -23,6 +48,8 @@
 #ifdef OBJECT_DEBUG
 int JetCVector::objectCount = 0;
 #endif
+
+using namespace std;
 
 // ================================================================
 //      Constructors and the destructor ...

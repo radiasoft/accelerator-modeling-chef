@@ -1,8 +1,35 @@
-#ifdef __VISUAL_CPP__
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  MXYZPTLK:  A C++ implementation of differential algebra.      
+******  Version:   4.1                    
+******                                    
+******  File:      JetFcns.cc
+******                                                                
+******  Copyright (c) 1990 Universities Research Association, Inc.    
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 #include <iomanip>
-#else
-#include <iomanip.h>
-#endif
+
 #include "mxyzptlk.h"
 #include "MathConstants.h"
 #include "JetVector.h"
@@ -36,6 +63,10 @@ extern "C" {
 #define MX_MAXITER  100     // Maximum number of iterations allowed
                             //   in iterative routines
 #endif  // MX_MAXITER
+
+
+using namespace std;
+
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

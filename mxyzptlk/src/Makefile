@@ -23,9 +23,9 @@ SOURCES = $(OBJS:.o=.cc)
 
 
 .cc.o:
-	$(C++) -c $(INCLUDEDIR) $(C++FLAGS) $*.cc
+	$(C++) -g -c $(INCLUDEDIR) $(C++FLAGS) $*.cc
 .c.o:
-	$(C) -c $(INCLUDEDIR) $(CFLAGS) $*.c
+	$(C) -g -c $(INCLUDEDIR) $(CFLAGS) $*.c
 
 include $(FNALROOT)/Make-config
 

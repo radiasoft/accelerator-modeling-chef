@@ -1,75 +1,71 @@
-C++ = Bcc32
-ILINK32 = Ilink32
-TLINK32 = Tlink32
+.SUFFIXES: .o .C .c .cc
 
-IncDirectories = -IC:\BC5\INCLUDE;..\INCLUDE;..\..\BML\INCLUDE;
-DefinedSymbols = -D_RTLDLL;_BIDSDLL;__BORLAND_CPP__;
-LibDirectories = -LC:\BC5\LIB;C:\winnt\profiles\michelot\projects\bmlmxb\mxb\lib
-Libraries = mxb.LIB cxxlibr.LIB bidsfi.lib import32.lib cw32i.lib
+INCLUDEDIR = -I../include -I../../basic_toolkit/include
 
-demoFiles = \
-CMapTest.exe \
-Inverse_B_Test.exe \
-Inverse_C_Test.exe \
-Inverse_D_Test.exe \
-Inverse_E_Test.exe \
-Lie_A_Test.exe \
-Lie_B_Test.exe \
-Lie_C_Test.exe \
-Lie_D_Test.exe \
-Lie_E_Test.exe \
-Lie_F_Test.exe \
-Lie_G_Test.exe \
-Lie_H_Test.exe \
-Lie_I_Test.exe \
-Lie_J_Test.exe \
-Limit_A_Test.exe \
-Limit_B_Test.exe \
-Limit_C_Test.exe \
-Limit_D_Test.exe \
-Limit_E_Test.exe \
-Limit_F_Test.exe \
-Limit_G_Test.exe \
-Limit_H_Test.exe \
-SVDTest.exe \
-concattest.exe \
-coordTest.exe \
-dfr.exe \
-envTest.exe \
-evaltest.exe \
-g5.exe \
-hptest.exe \
-orthogonalTest.exe \
-pbtest.exe \
-survey.exe 
+EXE = NewtonStep \
+      concattest \
+      coordTest \
+      dfr \
+      envTest \
+      evaltest \
+      g5 \
+      hptest \
+      orthogonalTest \
+      pbtest \
+      ranTest \
+      survey \
+      CMapTest \
+      Inverse_B_Test \
+      Inverse_C_Test \
+      Inverse_D_Test \
+      Inverse_E_Test \
+      Lie_A_Test \
+      Lie_B_Test \
+      Lie_C_Test \
+      Lie_D_Test \
+      Lie_E_Test \
+      Lie_F_Test \
+      Lie_G_Test \
+      Lie_H_Test \
+      Lie_I_Test \
+      Lie_J_Test \
+      Limit_A_Test \
+      Limit_B_Test \
+      Limit_C_Test \
+      Limit_D_Test \
+      Limit_E_Test \
+      Limit_F_Test \
+      Limit_G_Test \
+      Limit_H_Test \
+      PlusEqualTest \
+      SVDTest
 
 
-all: $(demoFiles)
+SOURCES = $(EXE:.o=.cc)
+LIBS = -lmxyzptlk -lbasic_toolkit -lm
 
 
-.obj.exe:
-  $(ILINK32) @&&| 
-  $(LibDirectories) -x \
-  C:\BC5\LIB\c0x32.obj \
-  $&.obj,  $@, , \
-  $(Libraries), , 
-|
-
-.cc.obj:
-    $(C++) -c -P @&&|
-    -WC $(IncDirectories) $(DefinedSymbols) -o$@ $&.cc
-|
-
-# Compiler configuration file
-BccW32.cfg : 
-   Copy &&|
--w
--R
--v
--WM-
--vi
--H
--H=mxyzptlk.csm
-| $@
+.cc.o:
+	$(C++) -c $(C++FLAGS) $(INCLUDEDIR) $*.cc
+.c.o:
+	$(C) -c $(CFLAGS) $(INCLUDEDIR) $*.c
+.cc :
+	$(C++) $(C++FLAGS) $(INCLUDEDIR) -o $* $*.cc \
+        -L$(LIBDIR) $(LIBS)
+.o :
+	$(C++) $(C++FLAGS) -o $@ \
+        $< -L$(LIBDIR) $(LIBS)
 
 
+
+include ../../Make-config
+
+
+targets: $(EXE)
+
+
+depend:
+	$(C++) $(INCLUDEDIR) $(DEPEND_FLAG) *.cc  > dependencies
+
+
+include dependencies

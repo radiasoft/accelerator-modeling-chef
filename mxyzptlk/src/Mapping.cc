@@ -1,55 +1,32 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                ****
-******  MXYZPTLK:  A C++ implementation of differential algebra.      ****
-******                                                                ****
-******  Copyright (c) 1990  Universities Research Association, Inc.   ****
-******                All Rights Reserved                             ****
-******                                                                ****
-******  Author:    Leo Michelotti                                     ****
-******                                                                ****
-******             Fermilab                                           ****
-******             P.O.Box 500                                        ****
-******             Mail Stop 345                                      ****
-******             Batavia, IL   60510                                ****
-******                                                                ****
-******             Phone: (708) 840 4956                              ****
-******             Email: michelot@hazel.fnal.gov                     ****
-******                    michelotti@adcalc.fnal.gov                  ****
-******                    almond::michelotti                          ****
-******                                                                ****
-******  Release    Version 1.0 : January   31, 1990                   ****
-******  Dates:              .1 : October   11, 1990                   ****
-******                      .2 : November   6, 1990                   ****
-******                      .3 : October    2, 1992                   ****
-******                      .4 : July      20, 1993                   ****
-******                     2.0   August    12, 1993                   ****
-******                     3.0   May       19, 1994                   ****
-******                      .1   September 14, 1994                   ****
-******                                                                ****
-**************************************************************************
-**************************************************************************
-******                                                                ****
-******  This material resulted from work developed under a            ****
-******  Government Contract and is subject to the following           ****
-******  license: The Government retains a paid-up, nonexclusive,      ****
-******  irrevocable worldwide license to reproduce, prepare           ****
-******  derivative works, perform publicly and display publicly       ****
-******  by or for the Government, including the right to distribute   ****
-******  to other Government contractors.  Neither the United          ****
-******  States nor the United States Department of Energy, nor        ****
-******  any of their employees, makes any warranty, express or        ****
-******  implied, or assumes any legal liability or responsibility     ****
-******  for the accuracy, completeness or usefulness of any           ****
-******  information, apparatus, product, or process disclosed, or     ****
-******  represents that its use would not infringe privately owned    ****
-******  rights.                                                       ****
-******                                                                ****
-**************************************************************************
-**************************************************************************
+******                                                                
+******  MXYZPTLK:  A C++ implementation of differential algebra.      
+******  Version:   4.1                    
+******                                    
+******  File:      Mapping.cc
+******                                                                
+******  Copyright (c) 1990 Universities Research Association, Inc.    
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
 **************************************************************************
 *************************************************************************/
+
 
 #include "Mapping.h"
 #include "JL.h"
@@ -73,6 +50,8 @@ using std::cout;
 int Mapping::objectCount = 0;
 #endif
 
+
+using namespace std;
 
 //    Constructors and destructors    |||||||||||||||||||||||||||
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
