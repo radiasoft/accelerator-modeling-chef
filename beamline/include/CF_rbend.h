@@ -84,6 +84,26 @@ class CF_rbend : public bmlnElmnt
                         // are as defined for rbends by MAD
             int = 1 );
 
+  CF_rbend( double,     // length  [ meters ]     // No entry angle assumed
+            double,     // field   [ tesla ]      // Must use a registration proton
+                        // (assumed along the y-axis)
+            double,     // entry angle [radians]
+            double,     // upstream edge angle [radians]
+            double,     // downstream edge angle [radians]
+                        // signs of previous two parameters
+                        // are as defined for rbends by MAD
+            int = 1 );
+
+  CF_rbend( const char*,// name
+            double,     // length  [ meters ]
+            double,     // field   [ tesla ]
+            double,     // entry angle [radians]
+            double,     // upstream edge angle [radians]
+            double,     // downstream edge angle [radians]
+                        // signs of previous two parameters
+                        // are as defined for rbends by MAD
+            int = 1 );
+
   CF_rbend( const CF_rbend& );
 
   ~CF_rbend();

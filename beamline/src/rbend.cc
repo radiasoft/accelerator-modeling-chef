@@ -259,6 +259,148 @@ rbend::rbend( const char* n, double l, double s, double us, double ds, PropFunc*
 }
 
 
+rbend::rbend( double l, double s, double entryangle, double us, double ds, PropFunc* pf )
+:   bmlnElmnt( l, s, pf )
+  , _usEdgeAngle(us)
+  , _dsEdgeAngle(ds)
+  , _usAngle(entryangle + us)
+  , _dsAngle(-(entryangle + ds))
+  , _usTan(tan(entryangle + us))
+  , _dsTan(-tan(entryangle + ds))
+  , _myArcsin(true)
+{
+ static bool firstTime = true;
+ if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-6) ) {
+   _usAngle = us;
+   _usTan   = tan(us);
+   _dsAngle = -ds;
+   _dsTan   = -tan(ds);
+   if( firstTime) {
+     cerr <<   "*** WARNING *** "
+             "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
+          << "\n*** WARNING *** rbend::rbend( char* n, ... PropFunc* pf )"
+             "\n*** WARNING *** | upstream edge angle | = " 
+          << fabs(entryangle) 
+          << " < 1 microradian."
+             "\n*** WARNING *** It will be reset to zero."
+             "\n*** WARNING *** This message is written once only."
+          << endl;
+     firstTime = false;
+   }
+ }
+ if ( fabs( us ) < 1.0e-6 ) {
+   _usEdgeAngle = 0.0;
+   _usAngle = entryangle;
+   _usTan = tan(entryangle);
+   if( firstTime) {
+     cerr <<   "*** WARNING *** "
+             "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
+          << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
+             "\n*** WARNING *** | upstream edge angle | = " 
+          << fabs(us) 
+          << " < 1 microradian."
+             "\n*** WARNING *** It will be reset to zero."
+             "\n*** WARNING *** This message is written once only."
+          << endl;
+     firstTime = false;
+   }
+ }
+ if ( fabs( ds ) < 1.0e-6 ) {
+   _dsEdgeAngle = 0.0;
+   _dsAngle = -entryangle;
+   _dsTan = -tan(entryangle);
+   if( firstTime) {
+     cerr <<   "*** WARNING *** "
+             "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
+          << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
+             "\n*** WARNING *** | downstream edge angle | = " 
+          << fabs(ds) 
+          << " < 1 microradian."
+             "\n*** WARNING *** It will be reset to zero."
+             "\n*** WARNING *** This message is written once only."
+          << endl;
+     firstTime = false;
+   }
+ }
+ if(pf == 0) {
+   Propagator = &rbend::Exact;
+ }
+
+ _calcPropParams();
+}
+
+
+rbend::rbend( const char* n, double l, double s, double entryangle, double us, double ds, PropFunc* pf )
+:   bmlnElmnt( n, l, s, pf )
+  , _usEdgeAngle(us)
+  , _dsEdgeAngle(ds)
+  , _usAngle(entryangle + us)
+  , _dsAngle(-(entryangle + ds))
+  , _usTan(tan(entryangle + us))
+  , _dsTan(-tan(entryangle + ds))
+  , _myArcsin(true)
+{
+ static bool firstTime = true;
+ if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-6) ) {
+   _usAngle = us;
+   _usTan   = tan(us);
+   _dsAngle = -ds;
+   _dsTan   = -tan(ds);
+   if( firstTime) {
+     cerr <<   "*** WARNING *** "
+             "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
+          << "\n*** WARNING *** rbend::rbend( char* n, ... PropFunc* pf )"
+             "\n*** WARNING *** | upstream edge angle | = " 
+          << fabs(entryangle) 
+          << " < 1 microradian."
+             "\n*** WARNING *** It will be reset to zero."
+             "\n*** WARNING *** This message is written once only."
+          << endl;
+     firstTime = false;
+   }
+ }
+ if ( fabs( us ) < 1.0e-6 ) {
+   _usEdgeAngle = 0.0;
+   _usAngle = entryangle;
+   _usTan = tan(entryangle);
+   if( firstTime) {
+     cerr <<   "*** WARNING *** "
+             "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
+          << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
+             "\n*** WARNING *** | upstream edge angle | = " 
+          << fabs(us) 
+          << " < 1 microradian."
+             "\n*** WARNING *** It will be reset to zero."
+             "\n*** WARNING *** This message is written once only."
+          << endl;
+     firstTime = false;
+   }
+ }
+ if ( fabs( ds ) < 1.0e-6 ) {
+   _dsEdgeAngle = 0.0;
+   _dsAngle = -entryangle;
+   _dsTan = -tan(entryangle);
+   if( firstTime) {
+     cerr <<   "*** WARNING *** "
+             "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
+          << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
+             "\n*** WARNING *** | downstream edge angle | = " 
+          << fabs(ds) 
+          << " < 1 microradian."
+             "\n*** WARNING *** It will be reset to zero."
+             "\n*** WARNING *** This message is written once only."
+          << endl;
+     firstTime = false;
+   }
+ }
+ if(pf == 0) {
+   Propagator = &rbend::Exact;
+ }
+
+ _calcPropParams();
+}
+
+
 void rbend::_calcPropParams()
 {
   // For edge focussing kludge

@@ -33,7 +33,12 @@
 #ifndef RBEND_H
 #define RBEND_H
 
+#ifndef BMLNELMNT_H
 #include "bmlnElmnt.h"
+#endif
+
+
+
 
 class rbend : public bmlnElmnt
 {
@@ -240,6 +245,25 @@ public:
   rbend( const char*,// name
          double,     // length  [ meters ]
          double,     // field   [ tesla ]
+         double,     // upstream edge angle [radians]
+         double,     // downstream edge angle [radians]
+                     // signs of previous two parameters
+                     // are as defined for rbends by MAD
+         PropFunc*    = &rbend::RealExact );
+
+  rbend( double,     // length  [ meters ]
+         double,     // field   [ tesla ]
+         double,     // entry angle [radians]
+         double,     // upstream edge angle [radians]
+         double,     // downstream edge angle [radians]
+                     // signs of previous two parameters
+                     // are as defined for rbends by MAD
+         PropFunc*    = &rbend::RealExact );
+
+  rbend( const char*,// name
+         double,     // length  [ meters ]
+         double,     // field   [ tesla ]
+         double,     // entry angle [radians]
          double,     // upstream edge angle [radians]
          double,     // downstream edge angle [radians]
                      // signs of previous two parameters
