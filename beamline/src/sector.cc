@@ -165,6 +165,15 @@ sector::sector( char* n, const Mapping& m, double l ) : bmlnElmnt( n, l ) {
  myMap = m;
 }
 
+sector::sector( const char* n, double l ) : bmlnElmnt( n, l ) {
+ mapType  = 0;
+ for   ( int i = 0; i < BMLN_dynDim; i++ ) {
+   for ( int j = 0; j < BMLN_dynDim; j++ )
+     mapMatrix[i][j] = 0.0;
+   mapMatrix[i][i] = 1.0;
+ }
+}
+
 
 
 sector::~sector() {
