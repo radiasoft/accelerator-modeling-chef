@@ -2,10 +2,6 @@
 
 INCLUDEDIR = -I$(BASIC_TOOLKIT_INC)
 
-DEPEND_INC = $(INCLUDEDIR) -I$(COMPILER_DEPEND)
-
-
-
 OBJS = Barnacle.o \
 	BubbleSort.o \
         Distribution.o \
@@ -57,8 +53,14 @@ clean:
 	rm -f  ../*~*
 	rm -rf .sb
 
+real-clean: clean
+	rm -f dependencies
+	touch dependencies
+
+
 depend:
-	makedepend -- $(DEPEND_INC) -- $(SOURCES)
+	$(C++) $(INCLUDEDIR) $(DEPEND_FLAG) *.cc *.c > dependencies
 
 
-# DO NOT DELETE THIS LINE -- make depend depends on it.
+include dependencies
+

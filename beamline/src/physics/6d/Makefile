@@ -2,9 +2,6 @@
 
 INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(BASIC_TOOLKIT_INC) -I$(TKINC) -I$(XINC)
 
-DEPEND_INC = $(INCLUDEDIR) -I$(COMPILER_DEPEND)
-
-
 OBJS =  BBLensPhysics.o\
 	   JetQuadrupolePhysics.o\
 	   JetThinQuadPhysics.o\
@@ -61,9 +58,12 @@ clean:
 	rm -f *.o *~*
 	rm -rf .sb
 
+real-clean: clean
+	rm -f dependencies
+	touch dependencies
+
 depend:
-	makedepend -- $(DEPEND_INC) -- $(SOURCES)
+	$(C++) $(INCLUDEDIR) $(DEPEND_FLAG) *.cc  > dependencies
 
 
-# DO NOT DELETE THIS LINE -- make depend depends on it.
-
+include dependencies

@@ -184,14 +184,16 @@ solaris-gcc-debug:
 
 solaris-gcc-depend:
 	$(MAKE) depend \
-	"COMPILER_DEPEND =  /usr/local/ap/lib/g++-include" \
+	"C++ = g++" \
+	"DEPEND_FLAG = -M" \
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include"
 
 solaris-depend:
 	$(MAKE) depend \
-	"COMPILER_DEPEND = /opt/SUNWspro/SC4.2/include/CC" \
+	"C++ = CC" \
+	"DEPEND_FLAG = -xM" \
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include"
