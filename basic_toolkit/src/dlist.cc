@@ -353,17 +353,20 @@ return r;
 
 
 
-int dlist::startAt( const ent x )
+int dlist::startAt( const ent x, int n )
 {
   dlist_traversor getNext( *(dlist*) this );
   dlink* q;
+  int count(0);
 
   while((  q = getNext()  )) 
   {
     if( q->e == x ) 
     {
-      last = q->prev;
-      return 0;
+      if( (++count) == n ) {
+        last = q->prev;
+        return 0;
+      }
     }
   }
 

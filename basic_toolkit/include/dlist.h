@@ -241,8 +241,9 @@ public:
   char putBelow( ent a, ent b );   // Installs b below a in the list
   ent get();
 
-  int  startAt( const ent );
-  void riskStartAt( const dlink* );// Does not check whether the argument
+  int  startAt( const ent, int=1 );
+  void riskStartAt( const dlink* );
+                                   // Does not check whether the argument
                                    // is in the list.
   char Owns();
   void DoesOwn()    { owner = 1; }

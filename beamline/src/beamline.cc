@@ -1709,23 +1709,26 @@ beamline* beamline::flatten() {
 
 
 
-int beamline::startAt( const bmlnElmnt* x )
+int beamline::startAt( const bmlnElmnt* x, int n )
 {
-  return this->dlist::startAt( (void*) x );
+  return this->dlist::startAt( (void*) x, n );
 }
 
 
-int beamline::startAt( char* s )
+int beamline::startAt( char* s, int n )
 {
   dlist_traversor getNext( *(dlist*) this );
   dlink* q;
+  int count(0);
 
   while((  q = getNext()  )) 
   {
     if( 0 == strcmp( ((bmlnElmnt*)(q->info()))->Name(), s ) ) 
     {
-      this->dlist::riskStartAt( q );
-      return 0;
+      if( (++count) == n ) {
+        this->dlist::riskStartAt( q );
+        return 0;
+      }
     }
   }
 
