@@ -102,7 +102,7 @@ public:
 
   // Constructors and destructors_____________________________________
   JetC( JetC__environment* = JetC::lastEnv );
-  JetC( const Complex&, JetC__environment* = JetC::lastEnv );
+  JetC( const FNAL::Complex&, JetC__environment* = JetC::lastEnv );
   JetC( const JetC& );
   JetC( const Jet&  );
   JetC( const Jet&, /* const */ JetC__environment* );
@@ -114,7 +114,7 @@ public:
   static JetC__environment* workEnv;  // This probably doesn't belong with JetC.
   static void BeginEnvironment( int = 1 /* maximum weight */ );
   static void Parameters();
-  static JetC__environment* EndEnvironment( Complex* = 0 /* scale array    */ );
+  static JetC__environment* EndEnvironment( FNAL::Complex* = 0 /* scale array    */ );
   static void EnlargeEnvironment( JetC__environment* );
   static JetC__environment* CreateEnvFrom( const Jet__environment* );
 
@@ -134,17 +134,17 @@ public:
   // static void Setup( const int      = 6, /* Total number of variables */
   //                    const int      = 1, /* Maximum derivative weight */
   //                    const int      = 0, /* Dimension of phase space  */
-  //                    const Complex*  = 0, /* Default reference point   */
-  //                    const Complex*  = 0  /* Scaling array             */
+  //                    const FNAL::Complex*  = 0, /* Default reference point   */
+  //                    const FNAL::Complex*  = 0  /* Scaling array             */
   //                  );
   // 
   // static void setup( const int, const int );
-  // static void setup( const int, const int, const Complex* );
+  // static void setup( const int, const int, const FNAL::Complex* );
   // static void setup( const int, const int, const int );
-  // static void setup( const int, const int, const int, const Complex* );
+  // static void setup( const int, const int, const int, const FNAL::Complex* );
   // ------------------------------------------------------------------
 
-  // ??? REMOVE static void FixReference        ( const Complex* );
+  // ??? REMOVE static void FixReference        ( const FNAL::Complex* );
   // ??? REMOVE static void FixReference        ( const int* );
   // ??? REMOVE static void FixReference        ( const JetC& );
   // ??? REMOVE static void FixReferenceAtStart ( const LieOperator& );
@@ -167,7 +167,7 @@ public:
   JLCterm* stepIterator();
 
   // ??? REMOVE void fixReference();
-  // ??? REMOVE void fixReference( const Complex* );
+  // ??? REMOVE void fixReference( const FNAL::Complex* );
   // ??? REMOVE void fixReference( const JetC& );
   // ??? REMOVE void fixReferenceAtEnd( const LieOperator& );
   // ??? REMOVE void fixReferenceAtStart( const LieOperator& );
@@ -184,7 +184,7 @@ public:
   void writeToFile( char*   /* Name of unopened file */ ) const;
   void writeToFile( FILE* ) const;
 
-  void getReference( Complex* ) const;
+  void getReference( FNAL::Complex* ) const;
   int  getEnvNumVar() const;
   int  getEnvSpaceDim() const;
   int  getEnvMaxWeight() const;
@@ -192,24 +192,24 @@ public:
   int  getWeight() const;
   int  getAccuWgt() const;
 
-  void scaleBy( Complex );
+  void scaleBy( FNAL::Complex );
 
-  void setVariable( const Complex&, const int&, JetC__environment* );
+  void setVariable( const FNAL::Complex&, const int&, JetC__environment* );
                // Alters the environment
   void setVariable( const int&, JetC__environment* );
                // Does not alter the environment.
 
-  Complex standardPart() const;
+  FNAL::Complex standardPart() const;
   void clear();
-  Complex weightedDerivative( const int* ) const;
-  Complex derivative( const int* ) const;
+  FNAL::Complex weightedDerivative( const int* ) const;
+  FNAL::Complex derivative( const int* ) const;
   JetC filter(  const int&, const int& ) const;  
                                   // Returns only those JLCterms whose weight 
           	                  // are between two specified values, inclusive.
-  JetC filter( char (*)( const IntArray&, const Complex& ) ) const; 
+  JetC filter( char (*)( const IntArray&, const FNAL::Complex& ) ) const; 
                                    // Returns those JLCterms for which the 
                                    // argument is satisfied.
-  Complex operator() ( const Complex* ) const;	   
+  FNAL::Complex operator() ( const FNAL::Complex* ) const;	   
                                    // Performs a multinomial evaluation of 
 				   // the JetC variable.  Essentially acts as a 
 				   // power series expansion.
@@ -224,23 +224,23 @@ public:
   friend ostream& operator<<(ostream&, const JetC&);
   friend istream& operator>>(istream&, JetC&);
   friend char operator==( const JetC&, const JetC& );
-  friend char operator==( const JetC&, const Complex& );
-  friend char operator==( const Complex&, const JetC& );
+  friend char operator==( const JetC&, const FNAL::Complex& );
+  friend char operator==( const FNAL::Complex&, const JetC& );
 
   JetC& operator=( const JetC& );
   JetC& operator=( const Jet&  );
-  JetC& operator=( const Complex& );
+  JetC& operator=( const FNAL::Complex& );
   JetC& DeepCopy( const JetC& );
-  void operator+=( const Complex& );
-  void operator-=( const Complex& );
+  void operator+=( const FNAL::Complex& );
+  void operator-=( const FNAL::Complex& );
 
   void operator+=( const JetC& );   // ??? Why are these void operators?
 
   friend JetC operator+( const JetC&, const JetC& );
   friend JetC operator+( const JetC&, const Jet&  );
   friend JetC operator+( const Jet&,  const JetC& );
-  friend JetC operator+( const JetC&, const Complex& );
-  friend JetC operator+( const Complex&, const JetC& );
+  friend JetC operator+( const JetC&, const FNAL::Complex& );
+  friend JetC operator+( const FNAL::Complex&, const JetC& );
   friend JetC operator+( const JetC&, const double& );
   friend JetC operator+( const double&, const JetC& );
 
@@ -248,30 +248,30 @@ public:
   friend JetC operator-( const Jet&,  const JetC& );
   friend JetC operator-( const JetC&, const Jet&  );
   friend JetC operator-( const JetC& );
-  friend JetC operator-( const JetC&, const Complex& );
-  friend JetC operator-( const Complex&, const JetC& );
+  friend JetC operator-( const JetC&, const FNAL::Complex& );
+  friend JetC operator-( const FNAL::Complex&, const JetC& );
   friend JetC operator-( const JetC&, const double& );
   friend JetC operator-( const double&, const JetC& );
 
   friend JetC operator*( const JetC&, const JetC& );
   friend JetC operator*( const JetC&, const Jet& );
   friend JetC operator*( const Jet&,  const JetC& );
-  friend JetC operator*( const JetC&, const Complex& );
-  friend JetC operator*( const Complex&, const JetC& );  // ??? Change this!!
+  friend JetC operator*( const JetC&, const FNAL::Complex& );
+  friend JetC operator*( const FNAL::Complex&, const JetC& );  // ??? Change this!!
 
   friend JetC operator/( const JetC&, const JetC& );     // ??? Friendliness
   friend JetC operator/( const Jet&,  const JetC& );     // ??? unnecessary
   friend JetC operator/( const JetC&, const Jet&  );     
-  friend JetC operator/( const JetC&, const Complex& );  
-  friend JetC operator/( const Complex&, const JetC& ); 
+  friend JetC operator/( const JetC&, const FNAL::Complex& );  
+  friend JetC operator/( const FNAL::Complex&, const JetC& ); 
   friend JetC operator/( const JetC&, const double& );  
   friend JetC operator/( const double&, const JetC& ); 
 
   friend JetC operator^( const JetC&, const JetC& );   // Poisson bracket
 
   friend JLCterm operator*( const JLCterm&, const JLCterm& );
-  friend JetC operator*( const Complex&, const Jet& );
-  friend JetC operator*( const Jet&, const Complex& );
+  friend JetC operator*( const FNAL::Complex&, const Jet& );
+  friend JetC operator*( const Jet&, const FNAL::Complex& );
   friend JetC operator*( const JetC&, const int& );
   friend JetC operator*( const int&, const JetC& );
   friend JetC operator*( const JetC&, const double& );
@@ -283,7 +283,7 @@ public:
 
   // Utility arithmetic functions ...
   void Negate();
-  void Mult( const Complex& );
+  void Mult( const FNAL::Complex& );
 
 
   // Inversion ...
@@ -327,20 +327,20 @@ public:
 void operator-=( JetC&, const JetC& );   // ??? Why are these void operators?
 void operator*=( JetC&, const JetC& );   // ??? And why not member functions?
 void operator/=( JetC&, const JetC& );
-void operator/=( JetC&, const Complex );
+void operator/=( JetC&, const FNAL::Complex );
 char operator!=( const JetC&, const JetC& );
-char operator!=( const JetC&, const Complex& );
-char operator!=( const Complex&, const JetC& );
+char operator!=( const JetC&, const FNAL::Complex& );
+char operator!=( const FNAL::Complex&, const JetC& );
 
 
-JetC operator+( const Complex&, const Jet& );
-JetC operator+( const Jet&, const Complex& );
-JetC operator-( const Complex&, const Jet& );
-JetC operator-( const Jet&, const Complex& );
-JetC operator*( const Complex&, const Jet& );
-JetC operator*( const Jet&, const Complex& );
-JetC operator/( const Complex&, const Jet& );
-JetC operator/( const Jet&, const Complex& );
+JetC operator+( const FNAL::Complex&, const Jet& );
+JetC operator+( const Jet&, const FNAL::Complex& );
+JetC operator-( const FNAL::Complex&, const Jet& );
+JetC operator-( const Jet&, const FNAL::Complex& );
+JetC operator*( const FNAL::Complex&, const Jet& );
+JetC operator*( const Jet&, const FNAL::Complex& );
+JetC operator/( const FNAL::Complex&, const Jet& );
+JetC operator/( const Jet&, const FNAL::Complex& );
 
 // *******************************************************************
 
@@ -349,11 +349,11 @@ private:
   int index;
 public:
   coordC();
-  coordC( Complex = complex_0 );
+  coordC( FNAL::Complex = complex_0 );
   coordC( const coordC& );
   ~coordC();
 
-  void    operator=( const Complex& );
+  void    operator=( const FNAL::Complex& );
   coordC& operator=( const coordC& );
   coordC& operator=( const JetC& );
 

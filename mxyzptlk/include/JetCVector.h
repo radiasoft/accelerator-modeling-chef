@@ -55,7 +55,7 @@ using std::setprecision;
 
 class JetVector;
 
-typedef char (*MX_R_FUNCCPTR)(const IntArray&, const Complex&);
+typedef char (*MX_R_FUNCCPTR)(const IntArray&, const FNAL::Complex&);
 
 class JetCVector 
 {
@@ -93,17 +93,17 @@ public:
   JetCVector        operator-      ( const JetCVector& ) const;
   JetCVector        operator-=     ( const JetCVector& );
   JetCVector        operator*      ( const JetC&    ) const;
-  JetCVector        operator*      ( const Complex& ) const;
+  JetCVector        operator*      ( const FNAL::Complex& ) const;
   JetCVector        operator*      ( const double&  ) const;
   friend JetCVector operator*      ( const JetC&, const JetCVector& );
-  friend JetCVector operator*      ( const Complex&, const JetCVector& );
+  friend JetCVector operator*      ( const FNAL::Complex&, const JetCVector& );
   friend JetCVector operator*      ( const double&,  const JetCVector& );
   JetCVector        operator*=     ( const JetC&    );
-  JetCVector        operator*=     (       Complex  );
+  JetCVector        operator*=     (       FNAL::Complex  );
   JetCVector        operator/      ( const JetC&    ) const;
-  JetCVector        operator/      (       Complex  ) const;
+  JetCVector        operator/      (       FNAL::Complex  ) const;
   JetCVector        operator/=     ( const JetC&    );
-  JetCVector        operator/=     (       Complex  );
+  JetCVector        operator/=     (       FNAL::Complex  );
 
 
   JetC              operator*      ( const JetCVector& ) const; // dot product
@@ -120,9 +120,9 @@ public:
 
   // Boolean functions ...
   char          operator==     ( const JetCVector& ) const;
-  char          operator==     ( const Complex&    ) const;
+  char          operator==     ( const FNAL::Complex&    ) const;
   char          operator!=     ( const JetCVector& ) const;
-  char          operator!=     ( const Complex&    ) const;
+  char          operator!=     ( const FNAL::Complex&    ) const;
   char          operator<      ( const JetCVector& ) const;
   char          operator<=     ( const JetCVector& ) const;
   char          operator>      ( const JetCVector& ) const;
@@ -133,8 +133,8 @@ public:
 
 
   // Functions related to differentiation
-  void weightedDerivative( int*, Complex* );
-  void derivative( int*, Complex* );
+  void weightedDerivative( int*, FNAL::Complex* );
+  void derivative( int*, FNAL::Complex* );
   
 
   // Queries ...
@@ -142,8 +142,8 @@ public:
   JetC__environment* Env() const;
   int AccuWgt() const;
   int Weight()  const;
-  void standardPart( Complex* ) const;
-  void getReference( Complex* r ) const;
+  void standardPart( FNAL::Complex* ) const;
+  void getReference( FNAL::Complex* r ) const;
 
   // Utilities ..
   void        peekAt           () const;
