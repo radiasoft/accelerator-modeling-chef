@@ -61,8 +61,8 @@ int IntArray::objectCount = 0;
 #endif
 
 
-IntArray::GenericException::GenericException( const char* msg, const char* fcn )
-: w( msg )
+IntArray::GenericException::GenericException( const char* fcn, const char* msg )
+: errorString( msg )
 {
   static bool firstTime = true;
   if( firstTime ) {
@@ -78,13 +78,13 @@ IntArray::GenericException::GenericException( const char* msg, const char* fcn )
 
 const char* IntArray::GenericException::what() const throw()
 {
-  return strcat( "IntArray::GenericException: ", w.c_str() );
+  return strcat( "IntArray::GenericException: ", errorString.c_str() );
 }
 
 
 #define CHECKOUT(test,fcn,message)                       \
   if( test ) {                                           \
-    throw( IntArray::GenericException( message, fcn ) ); \
+    throw( IntArray::GenericException( fcn, message ) ); \
   }
 
 
@@ -149,8 +149,8 @@ int IntArray::operator() ( const int& i ) const
 {
   if ( ( 0 <= i ) && ( i < dim ) ) { return comp[i]; }
   else {
-    throw GenericException( "Index is out of range.", 
-                            "int IntArray::operator() ( const int& i ) const" );
+    throw GenericException( "int IntArray::operator() ( const int& i ) const", 
+                            "Index is out of range." );
   }
 }
 
@@ -159,8 +159,8 @@ int& IntArray::operator() ( const int& i )
 {
   if ( ( 0 <= i ) && ( i < dim ) ) { return comp[i]; }
   else {
-    throw GenericException( "Index is out of range.", 
-                            "int& IntArray::operator() ( const int& i )" );
+    throw GenericException( "int& IntArray::operator() ( const int& i )", 
+                            "Index is out of range." );
   }
 }
 
@@ -307,8 +307,9 @@ istream& operator>>( istream& is, IntArray& x )
 
   is >> buf;
   if( buf[0] != '(' ) {
-    throw( IntArray::GenericException("Incorrect first character in line.",
-                         "istream& operator>>( istream& is, IntArray& x )") );
+    throw( IntArray::GenericException(
+                         "istream& operator>>( istream& is, IntArray& x )",
+                         "Incorrect first character in line."  ) );
   }
   
   i = 0;
@@ -321,8 +322,9 @@ istream& operator>>( istream& is, IntArray& x )
   }
 
   if( x.dim != ++i ) {
-    throw( IntArray::GenericException("Incorrect number of components were read.",
-                                "istream& operator>>( istream& is, IntArray& x )") );
+    throw( IntArray::GenericException(
+                                "istream& operator>>( istream& is, IntArray& x )",
+                                "Incorrect number of components were read.") );
   }
 
   return is;

@@ -103,9 +103,11 @@ public:
   struct GenericException : public std::exception
   {
     GenericException( const char*, const char* );
+    // 1st argument: identifies function containing throw
+    // 2nd         : identifies type of error
     ~GenericException() throw() {}
     const char* what() const throw();
-    std::string w;
+    std::string errorString;
   };
 
 #ifdef OBJECT_DEBUG
