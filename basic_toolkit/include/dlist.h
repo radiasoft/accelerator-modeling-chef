@@ -288,7 +288,7 @@ class dlist_traversor {
   dlink* ce;
   dlist* cs;
 public:
-  dlist_traversor( dlist& s ) { cs = &s; ce = cs->last; }
+  dlist_traversor( const dlist& s ) { cs = const_cast<dlist*>(&s); ce = cs->last; }
   dlist_traversor( const dlist_traversor& x ) { cs = x.cs; ce = x.ce; }
   dlink* operator()();
   void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
