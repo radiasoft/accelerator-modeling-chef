@@ -48,6 +48,7 @@ class MatrixCalcVisitor : public BmlVisitor
   char      _calcDone;
   int       _doCalc();
   Particle* _myParticle;
+  beamline* _myBeamlinePtr;
   int       _numberOfElements;
   int       _counter;
   MatrixD** _linearModel_h;

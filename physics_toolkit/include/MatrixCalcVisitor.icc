@@ -2,36 +2,6 @@
 #define MATRIXCALCVISITOR_ICC
 
 
-inline const double* MatrixCalcVisitor::Beta_h() {
-  if( !_calcDone ) this->_doCalc();
-  return _beta_h;
-}
-
-inline const double* MatrixCalcVisitor::Beta_v() {
-  if( !_calcDone ) this->_doCalc();
-  return _beta_v;
-}
-
-inline const double* MatrixCalcVisitor::Alpha_h() {
-  if( !_calcDone ) this->_doCalc();
-  return _alpha_h;
-}
-
-inline const double* MatrixCalcVisitor::Alpha_v() {
-  if( !_calcDone ) this->_doCalc();
-  return _alpha_v;
-}
-
-inline const double* MatrixCalcVisitor::Psi_h() {
-  if( !_calcDone ) this->_doCalc();
-  return _psi_h;
-}
-
-inline const double* MatrixCalcVisitor::Psi_v() {
-  if( !_calcDone ) this->_doCalc();
-  return _psi_v;
-}
-
 inline const double* MatrixCalcVisitor::s() {
   return _arcLength;
 }
