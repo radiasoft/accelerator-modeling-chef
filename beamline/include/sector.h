@@ -57,16 +57,46 @@ private:
   istream& readFrom( istream& );
 
 public:
+
+  class JET_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "sector::JET_Prop"; }
+  };
+ 
+  friend class JET_Prop;
+  static JET_Prop defaultPropagate; 
+
   sector( const char* = 0, double = 0.0 );
   sector( double* betaH,  double* alphaH,  double* psiH,
           double* betaV,  double* alphaV,  double* psiV, double length );
   sector( char*, double* betaH,  double* alphaH,  double* psiH,
                  double* betaV,  double* alphaV,  double* psiV, double length );
 
-  sector( Jet*, double /* length */, char = 1 /* mapType */ );
-  sector( char*, Jet*, double, char = 1 /* mapType */ );
-  sector( const Mapping&,  double /* length */, char = 1 /* mapType */ );
-  sector( char*, const Mapping&,  double, char = 1 /* mapType */ );
+  sector( Jet*, 
+          double /* length */, 
+          char = 1, /* mapType */
+          PropFunc*    = &sector::defaultPropagate );
+
+  sector( char*, 
+          Jet*, 
+          double, 
+          char = 1,    /* mapType */ 
+          PropFunc*    = &sector::defaultPropagate );
+
+  sector( const Mapping&,  
+          double /* length */, 
+          char = 1, /* mapType */ 
+          PropFunc*    = &sector::defaultPropagate );
+
+  sector( char*, 
+          const Mapping&,  
+          double, 
+          char = 1, /* mapType */ 
+          PropFunc*    = &sector::defaultPropagate );
+
   sector( const sector& );
   ~sector();
 
@@ -77,8 +107,8 @@ public:
   Mapping getMap() const;
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+  void localPropagate( Particle&    p ) { (*Propagator)( this, p ); }
+  void localPropagate( JetParticle& p ) { (*Propagator)( this, p ); }
 
   void accept( BmlVisitor& v ) { v.visitSector( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitSector( this ); }
