@@ -1,5 +1,7 @@
 %{
+#if HAVE_CONFIG_H
 #include <config.h>
+#endif
 #include <assert.h>
 #include <math.h>  
 #include <stdlib.h>  
@@ -1846,7 +1848,7 @@ const_expr_unit			: MAD_NUMERIC_LITERAL {
                                   if ( ptr != 0 ) {
                                     if ( ptr->svalue_ != NULL ) {
                                       fprintf(stderr, "fatal parser error ! string constant %s used in an algebraic expression\n", $<sval>1);
-                                      exit( EXIT_FAILURE );
+                                      bmlfactory_exit();
                                     }
                                     
                                     data->kind_ = NUM_IDENT_EXPR;
