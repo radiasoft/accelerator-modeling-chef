@@ -1,0 +1,139 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                ****
+******  PHYSICS TOOLKIT: Library of utilites and Sage classes         ****
+******             which facilitate calculations with the             ****
+******             BEAMLINE class library.                            ****
+******                                                                ****
+******  Copyright (c) 2001  Universities Research Association, Inc.   ****
+******                All Rights Reserved                             ****
+******                                                                ****
+******  Author:    Leo Michelotti                                     ****
+******                                                                ****
+******             Fermilab                                           ****
+******             P.O.Box 500                                        ****
+******             Mail Stop 220                                      ****
+******             Batavia, IL   60510                                ****
+******                                                                ****
+******             Phone: (630) 840 4956                              ****
+******             Email: michelotti@fnal.gov                         ****
+******                                                                ****
+******  Release    Version 1.0 : November  22, 2001                   ****
+******  Dates:                                                        ****
+******                                                                ****
+**************************************************************************
+**************************************************************************
+******                                                                ****
+******  This material resulted from work developed under a            ****
+******  Government Contract and is subject to the following           ****
+******  license: The Government retains a paid-up, nonexclusive,      ****
+******  irrevocable worldwide license to reproduce, prepare           ****
+******  derivative works, perform publicly and display publicly       ****
+******  by or for the Government, including the right to distribute   ****
+******  to other Government contractors.  Neither the United          ****
+******  States nor the United States Department of Energy, nor        ****
+******  any of their employees, makes any warranty, express or        ****
+******  implied, or assumes any legal liability or responsibility     ****
+******  for the accuracy, completeness or usefulness of any           ****
+******  information, apparatus, product, or process disclosed, or     ****
+******  represents that its use would not infringe privately owned    ****
+******  rights.                                                       ****
+******                                                                ****
+******  The files listed at the bottom are free software,             ****
+******  made available within the archive physics_toolkit.zip,        ****
+******  which may be redistributed as a whole, without                ****
+******  modification.  All redistribution must comply with            ****
+******  the terms of GNU General Public License (GPL) as              ****
+******  published by the Free Software Foundation and must            ****
+******  include a copy of this License and the GPL.                   ****
+******  Individual files may be modified under these same             ****
+******  terms. You should have received a copy of the GNU             ****
+******  General Public License as part of this archive; if            ****
+******  not, write to the Free Software Foundation, Inc.,             ****
+******  59 Temple Place, Suite 330, Boston, MA 02111-1307             ****
+******  USA                                                           ****
+******                                                                ****
+******  These files are provided "as is" with no                      ****
+******  warranties of any kind including the warranties of            ****
+******  design, merchantibility and fitness for a                     ****
+******  particular purpose, or arising from a course of               ****
+******  dealing, usage or trade practice.  See the GNU                ****
+******  General Public License for more details.                      ****
+******                                                                ****
+******  These files are provided with no support or obligation on     ****
+******  the part of U.R.A. or Fermilab to assist in their use,        ****
+******  correction, modification or enhancement.                      ****
+******                                                                ****
+******  If improvements are made to the software, the author would    ****
+******  appreciate learning about them. Credit will be given for      ****
+******  contributions incorporated into his verions.                  ****
+******                                                                ****
+******  Neither U.R.A. nor Fermilab shall be liable with              ****
+******  respect to the infringement of copyrights, trade              ****
+******  secrets or any patents by these files or any part             ****
+******  thereof.                                                      ****
+******                                                                ****
+******  In no event will U.R.A., Fermilab, or the author(s) be        ****
+******  liable for any lost revenue or profits or other               ****
+******  special, indirect and consequential damages, even if          ****
+******  they have been advised of the possibility of such             ****
+******  damages.                                                      ****
+******                                                                ****
+**************************************************************************
+*************************************************************************/
+
+Files included in Version 1.0 of PHYSICS TOOLKIT
+
+Software operation assumes prior installation of the
+BASIC TOOLKIT, MXYZPTLK, and BEAMLINE packages.
+
+Archive:  physics_toolkit.zip
+  Length     Date   Time    Name
+ --------    ----   ----    ----
+     4411  11-06-01 14:34   include/BeamlineContext.h
+     1301  05-24-01 10:09   include/ChromaticityAdjuster.h
+      752  05-24-01 10:09   include/ClosedOrbitSage.h
+     1082  08-31-01 09:39   include/DriftEliminator.h
+     1366  01-06-00 14:36   include/EdwardsTeng.h
+     1137  10-14-01 10:55   include/FPSolver.h
+      412  06-26-98 13:54   include/FindCovariance.h
+      856  05-11-01 16:14   include/FramePusher.h
+     1507  01-19-98 16:55   include/JacobianVisitor.h
+     4142  10-30-01 20:39   include/LattFuncSage.h
+     1584  02-11-99 11:33   include/MatrixCalcVisitor.h
+     7206  12-17-98 13:55   include/ParameterList.h
+      765  11-30-98 14:26   include/QBpropVisitor.h
+     1077  05-24-01 10:28   include/Sage.h
+     1699  05-24-01 10:09   include/TuneAdjuster.h
+     1169  01-19-98 16:55   include/particleVisitor.h
+      593  02-16-99 15:04   include/ChromaticityAdjuster.icc
+      334  05-11-01 15:16   include/FramePusher.icc
+      246  02-11-99 13:18   include/MatrixCalcVisitor.icc
+      739  02-16-99 14:49   include/TuneAdjuster.icc
+     6232  02-01-01 14:39   src/AdjustPosition.cc
+    15580  11-06-01 14:33   src/BeamlineContext.cc
+      588  06-06-01 16:18   src/BeamlineSpitout.cc
+     4343  06-05-01 12:12   src/ChromaticityAdjuster.cc
+     5511  05-24-01 10:09   src/ClosedOrbitSage.cc
+    14094  08-14-01 08:38   src/ConvertToTunes.cc
+     3968  08-31-01 09:42   src/DriftEliminator.cc
+     7571  10-29-01 15:09   src/DriftsToSlots.cc
+    11161  09-10-98 14:08   src/EdwardsTeng.cc
+    17425  10-14-01 11:58   src/FPSolver.cc
+     6426  12-16-99 10:15   src/FindCovariance.cc
+     2427  05-17-01 09:59   src/FramePusher.cc
+     4668  01-19-98 16:55   src/JacobianVisitor.cc
+    66179  10-30-01 20:43   src/LattFuncSage.cc
+    15161  10-01-99 11:12   src/MatrixCalcVisitor.cc
+    17758  12-16-99 13:51   src/ParameterList.cc
+      834  10-06-98 16:44   src/PhaseIntegral.cc
+     1842  12-16-99 10:39   src/QBpropVisitor.cc
+     1493  05-24-01 14:05   src/Sage.cc
+     8603  05-24-01 10:10   src/TuneAdjuster.cc
+    10094  01-18-00 15:31   src/beamline_twiss.cc
+    15452  09-04-01 09:05   src/normalForm.cc
+     3259  01-19-98 16:55   src/particleVisitor.cc
+     1186  06-06-01 14:45   src/Makefile
+ --------                   -------
+   274233                   44 files
