@@ -10,19 +10,21 @@
 # RANLIB      "ranlib" = use ranlib, "echo" = don't use ranlib
 #
 
-ACCUMULATOR_INC     = $(FNALROOT)/machines/accumulator/include
 BASIC_TOOLKIT_INC   = $(FNALROOT)/basic_toolkit/include
+PHYSICS_TOOLKIT_INC = $(FNALROOT)/physics_toolkit/include
+WIDGET_TOOLKIT_INC  = $(FNALROOT)/widget_toolkit/include
 BEAMLINE_INC        = $(FNALROOT)/beamline/include
+MACHINE_INC         = $(FNALROOT)/machines/Machine/include
+ACCUMULATOR_INC     = $(FNALROOT)/machines/accumulator/include
 BOOSTER_INC         = $(FNALROOT)/machines/booster/include
 DATAACQ_INC         = $(FNALROOT)/dataacq/include
+FACTORY_INC         = $(FNALROOT)/bmlfactory/include
 FILTER_INC          = $(FNALROOT)/filter/include
 INTEGRATOR_INC      = $(FNALROOT)/integrator/include
-MACHINE_INC         = $(FNALROOT)/machines/Machine/include
 MI_INC              = $(FNALROOT)/machines/mi/include
 MI_8_INC            = $(FNALROOT)/machines/mi_8gev/include
 MR_8_INC            = $(FNALROOT)/machines/mr_8gev/include
 MXYZPTLK_INC        = $(FNALROOT)/mxyzptlk/include
-PHYSICS_TOOLKIT_INC = $(FNALROOT)/physics_toolkit/include
 RECYCLER_INC        = $(FNALROOT)/machines/recycler/include
 SERVER_INC	    = $(FNALROOT)/server/include
 SOCKET_INC          = $(FNALROOT)/socket/include
@@ -45,6 +47,7 @@ gcc:
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
 	"XINC = /usr/local/ap/X11R6/include" \
+        "QTDIR = /usr/local/ap/qt" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"LIBDIR = $(FNALROOT)/lib/gcc" \
 	"STL_CONFIG = " \
