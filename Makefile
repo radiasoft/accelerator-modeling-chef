@@ -84,6 +84,7 @@ lib-dir:
 	@if [ ! -d lib ] ; then \
 		mkdir lib;\
 		mkdir lib/sun; \
+		mkdir lib/ultra; \
 		mkdir lib/sgi; \
 		mkdir lib/gcc; \
 		mkdir lib/egcs; \
