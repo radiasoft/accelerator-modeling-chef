@@ -1383,6 +1383,11 @@ void Tracker::_view_rect()
                               - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
   }
 
+  if( _centralParticlePtr ) {
+    _p_leftWindow->setCenterOn( *_centralParticlePtr );
+    _p_rightWindow->setCenterOn( *_centralParticlePtr );
+  }
+
   _p_leftWindow->updateGL();
   _p_rightWindow->updateGL();
 }
@@ -1424,6 +1429,11 @@ void Tracker::_view_norm()
     _p_rightWindow->setTransformer( new NormV( _p_info->alpha.ver, _p_info->beta.ver ) );
     _p_rightWindow->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
                               - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
+  }
+
+  if( _centralParticlePtr ) {
+    _p_leftWindow->setCenterOn( *_centralParticlePtr );
+    _p_rightWindow->setCenterOn( *_centralParticlePtr );
   }
 
   _p_leftWindow->updateGL();
