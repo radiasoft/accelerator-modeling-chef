@@ -351,11 +351,13 @@ public:
 
   // Editing functions
   virtual bmlnElmnt* Clone() const = 0;  
-                                   // Each type of bmlnElmnt will
-                                   // create a copy of itself and
-                                   // return a pointer to the new
-                                   // object.
-  bmlnElmnt* Clone(char* name);    // Clone it and change the name.
+  bmlnElmnt* clone() const;
+                                       // Each type of bmlnElmnt will
+                                       // create a copy of itself and
+                                       // return a pointer to the new
+                                       // object.
+  bmlnElmnt* Clone(const char* name);  // Clone it and change the name.
+  bmlnElmnt* clone(const char* name);
 
   virtual void Split( double s, bmlnElmnt**, bmlnElmnt** );
                                    // Splits the element at percent orbitlength
