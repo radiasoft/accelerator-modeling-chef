@@ -997,9 +997,6 @@ int beamline::twiss( char, JetParticle& p ) {
   MatrixD        mtrx;
   int             i;
 
-  zero           = new double   [ BMLN_dynDim ];
-  z              = new Jet      [ BMLN_dynDim ];
- 
  // .......... Propagate a JetProton to get transfer matrix
 
 
