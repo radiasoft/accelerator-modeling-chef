@@ -10,6 +10,7 @@ OBJS = Barnacle.o \
 	BubbleSort.o \
         Distribution.o \
 	IntArray.o \
+	LookupTable.o \
 	ML.o \
         Matrix.o \
         Matrix_SVD.o \
