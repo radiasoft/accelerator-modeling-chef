@@ -89,6 +89,7 @@
 **************************************************************************
 *************************************************************************/
 
+#include <typeinfo>
 #include "bmlnElmnt.h"
 #include "sector.h"
 #include "BeamlineIterator.h"
@@ -227,6 +228,72 @@ void* beamlineData::clone() {
 // ??? REMOVE or REWRITE:   fwrite( &sz, sizeof( int ), 1, f );
 // ??? REMOVE or REWRITE:   fprintf( f, "%s ", name );
 // ??? REMOVE or REWRITE:  }
+
+
+
+// **************************************************
+//   class beamline::arrayRep
+// **************************************************
+
+beamline::arrayRep::arrayRep( const beamline* x, bool doClone )
+: _element(0)
+{
+  if( 0 == x ) {
+    cerr << "*** ERROR ***                             \n"
+            "*** ERROR *** arrayRep::arrayRep          \n"
+            "*** ERROR *** Constructor invoked with    \n"
+            "*** ERROR *** null pointer.               \n"
+            "*** ERROR ***                             \n"
+         << endl;
+    exit(1);
+  }
+
+  if( typeid(*x) != typeid(beamline) ) {
+    cerr << "*** ERROR ***                             \n"
+            "*** ERROR *** arrayRep::arrayRep          \n"
+            "*** ERROR *** Constructor invoked with    \n"
+            "*** ERROR *** pointer to something other  \n"
+            "*** ERROR *** than a beamline.            \n"
+            "*** ERROR ***                             \n"
+         << endl;
+    exit(1);
+  }
+
+  DeepBeamlineIterator dbi(x);
+  bmlnElmnt* q;
+  int i = 0;
+
+  _n = x->countHowManyDeeply();
+  _cloned = doClone;
+
+  if ( 0 < _n ) {
+    _element = new bmlnElmnt* [_n];
+  
+    if( _cloned ) {
+      while( ( 0 != (q = dbi++) ) && ( i < _n ) ) {
+  	_element[i] = q->Clone();   // The second check, i < _n,
+  	i++;                        // is simply paranoia;
+      }                             // it should not be necessary.
+    }
+    else {
+      while( ( 0 != (q = dbi++) ) && ( i < _n ) ) {
+  	_element[i] = q;
+  	i++;
+      }
+    }
+  }
+}
+
+
+beamline::arrayRep::~arrayRep()
+{
+  if ( _cloned ) {
+    for( int i = 0; i < _n; i++ ) {
+      delete _element[i];
+    }
+  }
+  delete [] _element;
+}
 
 
 
@@ -378,7 +445,7 @@ beamline::~beamline() {
  // beamline::zap().
  bmlnElmnt* p;
  while((  p = (bmlnElmnt*) get()  ));
- clear();  // Wipes out all the links; probably unnecessary.
+ this->dlist::clear();  // Wipes out all the links; probably unnecessary.
 }
 
 void beamline::zap() {
@@ -389,7 +456,7 @@ void beamline::zap() {
    }
    delete p;  // ??? This will produce errors of *p is on the stack.
  }
- clear();  // Wipes out all the links.  Probably unnecessary.
+ this->dlist::clear();  // Wipes out all the links.  Probably unnecessary.
  numElem = 0;
 }
 
@@ -398,6 +465,11 @@ void beamline::eliminate() {
  delete this;
 }
 
+
+void beamline::clear() {
+  this->dlist::clear();
+  numElem = 0;
+}
 
 
 void beamline::geomToEnd( BMLN_posInfo& ) {
@@ -736,7 +808,12 @@ beamline& operator^( bmlnElmnt& x, bmlnElmnt& y ) {
 }
 
 beamline& operator-( beamline& x ) {
- beamline* result = new beamline;
+ const static char* rev = "REVERSE_";
+ char* theName = new char[ strlen(rev) + strlen(x.Name()) + 1 ];
+ theName[0] = '\0';
+ strcat( theName, rev );
+ strcat( theName, x.Name() );
+ beamline* result = new beamline( theName );
  dlist_reverseIterator getNext( (dlist&) x );
  bmlnElmnt* p;
  while((  p = (bmlnElmnt*) getNext()  )) {
@@ -744,6 +821,7 @@ beamline& operator-( beamline& x ) {
                             result->append( - *(beamline*) p );
   else                      result->append( p );
  }
+ delete [] theName;
  return *result;
 }
 
@@ -1236,7 +1314,7 @@ sector* beamline::makeSector( int degree, JetParticle& pd ) {
 void beamline::sectorize( int degree, JetParticle& pd ) {
  sector* s;
  s = makeSector( degree, pd );
- clear();
+ this->dlist::clear();
  unTwiss();
  numElem      = 0;
  length       = 0.0;
@@ -1289,26 +1367,45 @@ void beamline::peekAt( double& s, Particle* p_prt ) {
 }
 
 
-int beamline::countHowMany() {
+int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
  int ret;
  dlist_iterator getNext ( *(dlist*) this );
  bmlnElmnt* p;
 
  ret = 0;
- while ((  p = (bmlnElmnt*) getNext()  )) ret++;
 
- if( ret != numElem ) {
-   printf( " *** WARNING ***                                     \n"  );
-   printf( " *** WARNING *** beamline::countHowMany              \n"  );
-   printf( " *** WARNING *** Inconsistency in the count:         \n"  );
-   printf( " *** WARNING *** %d != %d                            \n", ret, numElem );
-   printf( " *** WARNING ***                                     \n"  );
+ if( query == 0 ) {
+   while ((  p = (bmlnElmnt*) getNext()  )) { 
+     ret++; 
+   }
+   if( ret != numElem ) {
+     cerr << "\n*** WARNING ***                                     \n"
+               "*** WARNING *** beamline::countHowMany              \n"
+               "*** WARNING *** Inconsistency in the count:         \n"
+               "*** WARNING *** "
+          << ret
+          << " != "
+          << numElem
+          << "\n*** WARNING ***                                     \n"
+          << endl;
+   }
+ }
+
+ else {
+   while ((  p = (bmlnElmnt*) getNext()  )) {
+     if( query(p) ) { 
+       ret++; 
+       if( listPtr ) {
+         listPtr->append(p);
+       }
+     }
+   }
  }
 
  return ret;
 }
 
-int beamline::countHowManyDeeply() {
+int beamline::countHowManyDeeply( CRITFUNC query, slist* listPtr ) const {
  int ret;
  dlist_iterator getNext ( *(dlist*) this );
  bmlnElmnt* p;
@@ -1316,10 +1413,15 @@ int beamline::countHowManyDeeply() {
  ret = 0;
  while ((  p = (bmlnElmnt*) getNext()  )) {
    if( 0 == strcmp( p->Type(), "beamline" ) ) {
-     ret += ((beamline*) p)->countHowManyDeeply();
+     ret += ((beamline*) p)->countHowManyDeeply( query, listPtr );
    }
    else {
-     ret++;
+     if( ( query == 0 ) || ( query(p) ) ) {
+       ret++;
+       if( listPtr ) {
+         listPtr->append(p);
+       }
+     }
    }
  }
 
