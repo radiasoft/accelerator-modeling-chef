@@ -45,7 +45,7 @@ all: lib
 targets: lib
 
 lib: $(OBJS)
-	$(MAKELIB) $(LIBDIR)/libbasic_toolkit.a $(CCOBJS)
+	$(MAKELIB) $(LIBDIR)/libbasic_toolkit.a $(OBJS)
 	$(RANLIB) $(LIBDIR)/libbasic_toolkit.a
 
 clean:
