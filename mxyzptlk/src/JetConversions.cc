@@ -502,7 +502,6 @@ JetC::JetC( const Jet& x )
 {
   jl = new JLC( *(x.jl), 
                 JetC::CreateEnvFrom( x->myEnv ) );
-  stacked = 0;   // ??? This line is probably unnecessary.
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -514,7 +513,6 @@ JetC& JetC::operator=( const Jet& x )
   if( --(jl->rc) == 0 ) delete jl;
   jl = new JLC( *(x.jl), 
                 JetC::CreateEnvFrom( x->myEnv ) );
-  stacked = 0;   // ??? This line is probably unnecessary.
   return *this; 
 }
 
@@ -522,7 +520,6 @@ JetC& JetC::operator=( const Jet& x )
 JetC::JetC( const Jet& x, /* const */ JetC__environment* pje )
 {
   jl = new JLC( *(x.jl), pje );
-  stacked = 0;   // ??? This line is probably unnecessary.
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -595,7 +592,6 @@ Jet::Jet( const JetC& x )
 {
   jl = new JL( *(x.jl), 
                 Jet::CreateEnvFrom( x->myEnv ) );
-  stacked = 0;   // ??? This line is probably unnecessary.
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -607,7 +603,6 @@ Jet& Jet::operator=( const JetC& x )
   if( --(jl->rc) == 0 ) delete jl;
   jl = new JL( *(x.jl), 
                 Jet::CreateEnvFrom( x->myEnv ) );
-  stacked = 0;   // ??? This line is probably unnecessary.
   return *this; 
 }
 
@@ -615,7 +610,6 @@ Jet& Jet::operator=( const JetC& x )
 Jet::Jet( const JetC& x, /* const */ Jet__environment* pje )
 {
   jl = new JL( *(x.jl), pje );
-  stacked = 0;   // ??? This line is probably unnecessary.
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -696,7 +690,6 @@ Jet real( const JetC& x ) {
   // If the argument is void, then return ...
   if( xPtr->count < 1 ) {
    z = 0.0;
-   z.stacked = 1;
    return z;
   }
  
@@ -709,7 +702,6 @@ Jet real( const JetC& x ) {
   // Set the maximum accurate weight.
   zPtr->accuWgt = xPtr->accuWgt;
   
-  z.stacked = 1;
   return z;
 }
 
@@ -736,7 +728,6 @@ Jet imag( const JetC& x ) {
   // If the argument is void, then return ...
   if( xPtr->count < 1 ) {
    z = 0.0;
-   z.stacked = 1;
    return z;
   }
  
@@ -749,7 +740,6 @@ Jet imag( const JetC& x ) {
   // Set the maximum accurate weight.
   zPtr->accuWgt = xPtr->accuWgt;
   
-  z.stacked = 1;
   return z;
 }
 
@@ -824,13 +814,11 @@ JetC operator+( const Jet& x, const JetC& y ) {
 //  // If one of the arguments is void, then return the other ..
 //  if( x->count < 1 ) {    // This is done in this way so that
 //    z.DeepCopy( y );      // what is returned does not own
-//    z.stacked = 1;        // the same data as x or y.
 //    return z;
 //  }
 // 
 //  if( y->count < 1 ) {
 //    z = (JetC) x;
-//    z.stacked = 1;
 //    return z;
 //  }
 //                                 
@@ -850,7 +838,6 @@ JetC operator+( const Jet& x, const JetC& y ) {
 //  if( x->accuWgt < y->accuWgt ) z->accuWgt = x->accuWgt;
 //  else                          z->accuWgt = y->accuWgt;
 //  
-//  z.stacked = 1;
 //  return z;
 // }
 // 
@@ -924,21 +911,18 @@ JetC operator*( const Complex& y, const Jet& x ) {
  testWeight = z->accuWgt = x->accuWgt;
 
  if( y == CZero ) {
-   z.stacked = 1;
    return z;
  }
  
  // ??? REMOVE // If x is void, return it ..
  // ??? REMOVE if( xPtr->count < 1 ) {    // This is done in this way so that
  // ??? REMOVE   z.DeepCopy( x );         // what is returned does not own
- // ??? REMOVE   z.stacked = 1;           // the same data as x.
- // ??? REMOVE   return z;
+ // ??? REMOVE   return z;                // the same data as x.
  // ??? REMOVE }
 
  // If x is void, return z, 
  // which is itself void at this point in the program.
  if( xPtr->count < 1 ) {
-   z.stacked = 1;
    return z;
  }
 
@@ -951,7 +935,6 @@ JetC operator*( const Complex& y, const Jet& x ) {
    zPtr->addTerm( q );
  }
  
- z.stacked = 1;
  return z;
 }
 

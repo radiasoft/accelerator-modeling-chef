@@ -108,14 +108,14 @@ struct JLterm {
   // Constructors and destructors
   JLterm( const Jet__environment* ); 
   JLterm( const IntArray&, const double&, const Jet__environment*  );
-  JLterm( JLterm* );
-  JLterm( JLterm& );
+  JLterm( const JLterm* );
+  JLterm( const JLterm& );
   JLterm( const JLCterm& );
   ~JLterm();
 
   // Operators
   void operator=( const JLterm& );
-  double coeff(){ return value; }
+  double coeff() const { return value; }
 #ifdef OBJECT_DEBUG
   static int objectCount;
 #endif
@@ -151,11 +151,11 @@ struct JL : public dlist {
                             // one of lowest weight.
   void addTerm( JLterm* );  // Public only for diagnostic purposes.
 
-  char isNilpotent();
-  void writeToFile( char*   /* Name of unopened file */ );
-  void writeToFile( FILE* );
+  char isNilpotent() const;
+  void writeToFile( char*   /* Name of unopened file */ ) const;
+  void writeToFile( FILE* ) const;
 
-  void getReference( double* );
+  void getReference( double* ) const;
   void scaleBy( double );
 
   void setVariable( const double&, 
@@ -167,20 +167,22 @@ struct JL : public dlist {
   void setVariable( const int&, 
                           Jet__environment* = 0 );
 
-  double standardPart();
+  double standardPart() const;
   void clear();
-  double weightedDerivative( int* );
-  double derivative( int* );
+  double weightedDerivative( const int* ) const;
+  double derivative( const int* ) const;
 
   double operator()( const Vector& ) const;
-  double operator()( double* );	   // Performs a multinomial evaluation of 
-				   // the JL variable.  Essentially acts as a 
-				   // power series expansion.
-  JL& operator()( JL* );           // Self explanatory ...
+  double operator()( const double* ) const;
+                       // Performs a multinomial evaluation of 
+                       // the JL variable.  Essentially acts as a 
+                       // power series expansion.
+  JL& operator()( const JL* ) const; 
+                       // Self explanatory ...
 
   // ??? REMOVE JL& operator()( LieOperator& );  // Self explanatory ...
 
-  JL& D( int* )const ;		   // Performs differentiation of a JL variable.
+  // ??? REMOVE JL& D( const int* )const ;		   // Performs differentiation of a JL variable.
 
   JL& operator=( const JL& );
   JL& operator=( const double& );
@@ -210,15 +212,16 @@ char operator!=( const double&, const JL& );
 // ??? REMOVE extern void JLFixReferenceAtStart( const LieOperator& );
 // ??? REMOVE extern void JLFixReferenceAtEnd( LieOperator& );
 
-extern ostream& operator<<(ostream&, JL&);
-extern istream& operator>>(istream&, JL&);
+extern ostream& operator<<(ostream&, const JL&);
+extern istream& operator>>(istream&,       JL&);
 extern char operator==( const JLterm&, const JLterm& );
 extern char operator==( const JL&,     const JL& );
 extern char operator==( const JL&,     const double& );
 extern char operator==( const double&, const JL& );
-extern char operator<=( JLterm&, JLterm& );
-extern char operator%=( JLterm&, JLterm& );   // Acts like == but compares
+extern char operator<=( const JLterm&, const JLterm& );
+extern char operator%=( const JLterm&, const JLterm& );   
+                                       // Acts like == but compares
                                        // indices only.
-extern JLterm operator*( JLterm&, JLterm& );
+extern JLterm operator*( const JLterm&, const JLterm& );
 
 #endif // JL_HXX

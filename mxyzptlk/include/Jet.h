@@ -22,7 +22,7 @@ private:
                            // nilpotent Jets.
   Jet concat() const;
 
-  Jet TruncMult( const Jet&, const int& );  // Used by division algorithm.
+  Jet TruncMult( const Jet&, const int& ) const;  // Used by division algorithm.
 
   // Friends
   friend class coord;   // ??? Is this necessary???
@@ -50,8 +50,6 @@ private:
   static int               currentIndex;
 
 public:
-  char        stacked;    // ??? Made public for convenience: no application
-                          // ??? should touch this variable.
   static Jet__environment* lastEnv;  // G++ needs this here.
 
   // Constructors and destructors_____________________________________
@@ -117,11 +115,11 @@ public:
   void peekAt( int ) const;       // Prints to Jet::scratchFile
   void printCoeffs( int ) const;
 
-  dlist image();
-  void writeToFile( char*   /* Name of unopened file */ );
-  void writeToFile( FILE* );
+  // ??? REMOVE: dlist image() const;
+  void writeToFile( char*   /* Name of unopened file */ ) const;
+  void writeToFile( FILE* ) const;
 
-  void getReference( double* );
+  void getReference( double* ) const;
   void scaleBy( double );
 
   void setVariable( const double&, const int&, Jet__environment* );
@@ -135,28 +133,29 @@ public:
 
   double standardPart() const;
   void clear();
-  double weightedDerivative( int* );
-  double derivative( int* );
+  double weightedDerivative( const int* ) const;
+  double derivative( const int* ) const;
   Jet filter(  const int&, const int& ) const;  
                                   // Returns only those JLterms whose weight 
           	                  // are between two specified values, inclusive.
-  Jet filter( char (*)( const IntArray&, const double& ) ); 
+  Jet filter( char (*)( const IntArray&, const double& ) ) const; 
                                    // Returns those JLterms for which the 
                                    // argument is satisfied.
   double operator() ( const Vector& ) const;
-  double operator() ( double* ) const;	   
+  double operator() ( const double* ) const;	   
                                    // Performs a multinomial evaluation of 
 				   // the Jet variable.  Essentially acts as a 
 				   // power series expansion.
-  Jet  operator() ( Jet* ) const;  // Self explanatory ...
+  Jet  operator() ( const Jet* ) const;  
+                                   // Self explanatory ...
   Jet  operator() ( /* const */ JetVector& ) const;  // Self explanatory ...
   // ??? REMOVE Jet  operator() ( const LieOperator& ) const; 
   // ??? REMOVE                                  // Self explanatory ...
-  Jet  D( int* )const ;		   // Performs differentiation of a Jet variable.
-  Jet  D( IntArray& )const ;	   // Performs differentiation of a Jet variable.
+  Jet  D( const int* ) const ;	      // Performs differentiation of a Jet variable.
+  Jet  D( const IntArray& ) const ;   // Performs differentiation of a Jet variable.
 
   // Operators________________________________________________________
-  friend ostream& operator<<(ostream&, Jet&);
+  friend ostream& operator<<(ostream&, const Jet&);
   friend istream& operator>>(istream&, Jet&);
   friend char operator==( const Jet&, const Jet& );
   friend char operator==( const Jet&, const double& );
@@ -189,7 +188,7 @@ public:
   friend JetC operator*( const Complex&, const Jet& );
   friend JetC operator*( const Jet&, const Complex& );
 
-  friend JLterm operator*( JLterm&, JLterm& );
+  friend JLterm operator*( const JLterm&, const JLterm& );
   friend Jet operator*( const Jet&, const int& );
   friend Jet operator*( const int&, const Jet& );
   friend Jet operator/( const Jet&, const int& ); 

@@ -158,22 +158,6 @@ JL::JL( const JL& x ) {
  JLterm* p;
  JLterm* q;
 
- 
- static char firstCall = 1;
- if( firstCall ) {
-  firstCall = 0;
-  cout << "\n*** WARNING *** The JL copy constructor was called for \n"
-       <<   "*** WARNING *** some inexplicable reason.\n"
-       <<   "*** WARNING *** You must have an incredible error somewhere.\n"
-       <<   "*** WARNING *** Go figure!!\n\n";
-  cout.flush();
-  cerr << "\n*** WARNING *** The JL copy constructor was called for \n"
-       <<   "*** WARNING *** some inexplicable reason.\n"
-       <<   "*** WARNING *** You must have an incredible error somewhere.\n"
-       <<   "*** WARNING *** Go figure!!\n\n";
-  cerr.flush();
- }
-
  while((  p = (JLterm*) getNext()  )) {
    q = new JLterm( p );
    append( q );
@@ -197,17 +181,6 @@ JL::JL( JL* x ) {
  dlist_iterator getNext( *(dlist*) x );
  JLterm* p;
  JLterm* q;
-
- 
- static char firstCall = 1;
- if( firstCall ) {
-  firstCall = 0;
-  cout << "\n*** WARNING *** The JL pointer constructor was called for \n"
-       <<   "*** WARNING *** some inexplicable reason.\n"
-       <<   "*** WARNING *** You must have an incredible error somewhere.\n"
-       <<   "*** WARNING *** Go figure!!\n\n";
-  cout.flush();
- }
 
  while((  p = (JLterm*) getNext()  )) {
    q = new JLterm( p );
@@ -337,7 +310,7 @@ void JL::addTerm( JLterm* a) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JL::getReference( double* r ) {
+void JL::getReference( double* r ) const {
  int i;
  for( i = 0; i < myEnv->NumVar; i++ ) r[i] = myEnv->refPoint[i];
 }
@@ -345,7 +318,7 @@ void JL::getReference( double* r ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-char JL::isNilpotent() {
+char JL::isNilpotent() const {
  dlist_iterator getNext( *(dlist*) this );
  JLterm* p = (JLterm*) getNext();
  if( p->weight == 0 && p->value != 0.0 ) return 0;
@@ -355,7 +328,7 @@ char JL::isNilpotent() {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JL::writeToFile( char* fileName ) {
+void JL::writeToFile( char* fileName ) const {
  dlist_traversor getNext( *(dlist*) this );
  int i;
  JLterm* p;
@@ -387,7 +360,7 @@ void JL::writeToFile( char* fileName ) {
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JL::writeToFile( FILE* filePtr ) {
+void JL::writeToFile( FILE* filePtr ) const {
  dlist_traversor getNext( *(dlist*) this );
  int i;
  JLterm* p;
@@ -554,7 +527,7 @@ JLterm* JL::remove( dlink* w ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double JL::standardPart() {
+double JL::standardPart() const {
  JLterm* p; 
  if( count < 1 )       return 0.0;
  dlist_iterator g( (dlist&) *this );
@@ -580,7 +553,7 @@ void JL::clear() {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double JL::weightedDerivative( int* ind ) {
+double JL::weightedDerivative( const int* ind ) const {
  int i;
  JLterm* p;
  char theOne;
@@ -602,7 +575,7 @@ double JL::weightedDerivative( int* ind ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double JL::derivative( int* ind ) {
+double JL::derivative( const int* ind ) const {
  static double n;
  static double multiplier;
  static double d;
@@ -623,7 +596,7 @@ double JL::derivative( int* ind ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double JL::operator()( double* x ) {
+double JL::operator()( const double* x )  const {
  // This routine is linked to double JL::operator()( const Vector& x ) const
  // Any change made to this must be reflected in the other.
  JLterm* p;
@@ -808,7 +781,7 @@ istream& operator>>( istream& is,  JL& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ostream& operator<<( ostream& os, JL& x ) {
+ostream& operator<<( ostream& os, const JL& x ) {
  dlist_traversor getNext( (dlist&) x );
  int i;
  JLterm* p;
@@ -1015,7 +988,7 @@ JL& JL::operator+=( const double& x ) {   // ??? Untested!!
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JLterm operator*( JLterm& x, JLterm& y ) {
+JLterm operator*( const JLterm& x, const JLterm& y ) {
  JLterm z(x);
  static int i, n;
 
@@ -1129,7 +1102,7 @@ JLterm::JLterm( const IntArray& l,
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JLterm::JLterm( JLterm* x ) 
+JLterm::JLterm( const JLterm* x ) 
 : index( x->index ), weight(x->weight), value(x->value)
 {
 
@@ -1141,7 +1114,7 @@ JLterm::JLterm( JLterm* x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JLterm::JLterm( JLterm& x ) 
+JLterm::JLterm( const JLterm& x ) 
 : index( x.index ), weight(x.weight), value(x.value)
 {
 #ifdef OBJECT_DEBUG
@@ -1193,7 +1166,7 @@ char operator!=( const JLterm& a, const JLterm& b ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-char operator<=( JLterm& a, JLterm& b ) {
+char operator<=( const JLterm& a, const JLterm& b ) {
  int i;
  if( a.index.Dim() != b.index.Dim() ) {
    cerr << "\n\n"
@@ -1218,7 +1191,7 @@ char operator<=( JLterm& a, JLterm& b ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-char operator%=( JLterm& a, JLterm& b ) {
+char operator%=( const JLterm& a, const JLterm& b ) {
  if( a.weight != b.weight ) return 0;
  return a.index == b.index;
 }

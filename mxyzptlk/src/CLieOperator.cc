@@ -399,7 +399,6 @@ JetC CLieOperator::operator^( JetC& x ) {
    ( x->accuWgt )--;
    answer->accuWgt = aw;   // ??? Actually, this should be automatic.
  }
- answer.stacked = 1;
  return answer;
 }
 
@@ -460,7 +459,6 @@ JetC CLieOperator::expMap( const Complex& t, const JetC& x ) {
        << endl;
  }
 
- answer.stacked = 1;
  return answer;
 }
 
@@ -495,7 +493,6 @@ JetC CLieOperator::expMap( const JetC& t, const JetC& x ) {
        << endl;
  }
 
- answer.stacked = 1;
  return answer;
 }
 

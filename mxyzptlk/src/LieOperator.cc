@@ -401,7 +401,6 @@ Jet LieOperator::operator^( Jet& x ) {
    ( x->accuWgt )--;
    answer->accuWgt = aw;   // ??? Actually, this should be automatic.
  }
- answer.stacked = 1;
  return answer;
 }
 
@@ -462,7 +461,6 @@ Jet LieOperator::expMap( const double& t, const Jet& x ) {
        << endl;
  }
 
- answer.stacked = 1;
  return answer;
 }
 
@@ -497,7 +495,6 @@ Jet LieOperator::expMap( const Jet& t, const Jet& x ) {
        << endl;
  }
 
- answer.stacked = 1;
  return answer;
 }
 
