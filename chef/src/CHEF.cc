@@ -996,13 +996,22 @@ void CHEF::_editMergeQuads()
 void CHEF::_editD2S() 
 {
   beamline* bmlPtr = DriftsToSlots( (beamline&) *(_p_currBmlCon->cheatBmlPtr()) );
-  _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-  // _p_currBmlCon = new BeamlineContext( false, de.clonedBeamlinePtr() );
-
-  _p_currBmlCon->setClonedFlag( true );
-  _contextList.insert( _p_currBmlCon );
-
-  emit _new_beamline();
+  if( bmlPtr != _p_currBmlCon->cheatBmlPtr() ) {
+    _p_currBmlCon = new BeamlineContext( false, bmlPtr );
+    // _p_currBmlCon = new BeamlineContext( false, de.clonedBeamlinePtr() );
+    _p_currBmlCon->setClonedFlag( true );
+    _contextList.insert( _p_currBmlCon );
+    emit _new_beamline();
+  }
+  else {
+    QMessageBox::warning( 0
+                          , "CHEF: WARNING"
+                          , "Operation not successful. See error message."
+                          ,  QMessageBox::Ok
+                          ,  QMessageBox::NoButton
+                          ,  QMessageBox::NoButton
+                        );
+  }
 }
 
 
