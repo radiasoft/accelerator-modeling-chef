@@ -440,7 +440,7 @@ public:
   inline char    IsYourName( const char* x ) { return strcmp( x, ident ); }
   char hasName( const char* x ) const
     { return ( 0 == strcmp( ident, x ) ); }
-  virtual char*  Name() 
+  virtual char*  Name() const
     { return ident; }
   virtual char*  Type() const = 0;
   virtual int    isType(char* s) { return strcmp(s, "bmlnElmnt") == 0; }
