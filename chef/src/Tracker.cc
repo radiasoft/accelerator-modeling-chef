@@ -238,7 +238,7 @@ void NormH::toDynamics( const Vector& state, double* xPtr, double* yPtr, double*
 {
   *xPtr = state(Particle::_x());
   *yPtr = _alpha*state(Particle::_x()) + _beta*state(Particle::_xp());
-  *zPtr = 0.0;
+  *zPtr = state(Particle::_y());  // Somewhat arbitrary. Fix this.
 }
 
 
@@ -253,7 +253,7 @@ void NormV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double*
 {
   *xPtr = state(Particle::_y());
   *yPtr = _alpha*state(Particle::_y()) + _beta*state(Particle::_yp());
-  *zPtr = 0.0;
+  *zPtr = state(Particle::_x());  // Somewhat arbitrary. Fix this.
 }
 
 
@@ -694,22 +694,10 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
       else if( (typeid(*_transformPtr) == typeid(NormH)) ||
                (typeid(*_transformPtr) == typeid(NormV))    )
       {
-        // These transformations should be done in
-        //   a separate routine!!
-        bool isHorizontal = (typeid(*_transformPtr) == typeid(NormH));
-        double alpha, beta;
-        if( isHorizontal ) {
-          alpha = ( _topTracker->_p_info->alpha ).hor;
-          beta  = ( _topTracker->_p_info->beta  ).hor;
-	}
-        else {
-          alpha = ( _topTracker->_p_info->alpha ).ver;
-          beta  = ( _topTracker->_p_info->beta  ).ver;
-	}
-
         slist orbits3D;
         slist_iterator getNext( _topTracker->_orbits );
         Vector z(3);
+        double a, b, c;
         const Vector* vec = 0;
         Orbit* orbitPtr = 0;
         Orbit* newOrbitPtr = 0;
@@ -721,35 +709,21 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
 	  Orbit::Iterator oit( orbitPtr );
           vec = oit++;
 
-          if( isHorizontal ) {
-            z(0) = (*vec)(0);
-            z(1) = alpha*(*vec)(0) + beta*(*vec)(3);
-            z(2) = (*vec)(1);
-	  }
-          else {
-            z(0) = (*vec)(1);
-            z(1) = alpha*(*vec)(1) + beta*(*vec)(4);
-            z(2) = (*vec)(0);
-	  }
+          _transformPtr->toDynamics( *vec, &a, &b, &c );
+          z(0) = a;
+          z(1) = b;
+          z(2) = c;
 
           newOrbitPtr = new Orbit( z );
           newOrbitPtr->setColor( orbitPtr->Red(), 
                                  orbitPtr->Green(), 
                                  orbitPtr->Blue()   );
-
           vec = oit++;
           while( 0 != vec ) {
-            if( isHorizontal ) {
-              z(0) = (*vec)(0);
-              z(1) = alpha*(*vec)(0) + beta*(*vec)(3);
-              z(2) = (*vec)(1);
-	    }
-            else {
-              z(0) = (*vec)(1);
-              z(1) = alpha*(*vec)(1) + beta*(*vec)(4);
-              z(2) = (*vec)(0);
-	    }
-            
+            _transformPtr->toDynamics( *vec, &a, &b, &c );
+            z(0) = a;
+            z(1) = b;
+            z(2) = c;
             newOrbitPtr->add( z );
             vec = oit++;
 	  }
