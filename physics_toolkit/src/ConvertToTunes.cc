@@ -42,7 +42,7 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
     while((  jlctPtr = y.get()  )) {
       v = jlctPtr->value;
       if((  v != c_zero  )) {
-        if( real(v) > 1.0e-10 * imag(v) ) return 140;
+        if( fabs( real(v) ) > 1.0e-10 * fabs( imag(v) ) ) return 140;
         ndx = jlctPtr->index;
         ndx(i) -= 1;
         for( j = 0; j < sd2; j++ ) {
