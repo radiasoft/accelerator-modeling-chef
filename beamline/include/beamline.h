@@ -195,7 +195,10 @@ private:
   double       sinTilt;         // sin(tilt)
 public:
   alignment();
-  alignment(double,double,double);
+  alignment( double, // xOffset
+             double, // yOffset
+             double  // roll (=tilt)
+           );
   alignment(const alignment&);
   alignment(const alignmentData&);
   ~alignment();
@@ -418,6 +421,7 @@ public:
                                    // eventually deleting these.
   virtual void peekAt( double& s, Particle* = 0 );
 
+  virtual void setLength     ( double );
   virtual void setStrength   ( double );
   virtual void setStrength   ( double, int );  // for JetQuad
   virtual void setCurrent    ( double );
@@ -776,47 +780,47 @@ public:
 
   rbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
-#ifdef __GNUG__
+         #ifdef __GNUG__
          PROPFUNC    = 0,
          JETPROPFUNC = 0 );
-#else
+         #else
          PROPFUNC    = rbend::P_Exact,
          JETPROPFUNC = rbend::J_Exact );
-#endif
+         #endif
+
   rbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
          double,     // Pole face angle [ radians ]
-#ifdef __GNUG__
+         #ifdef __GNUG__
          PROPFUNC    = 0,
          JETPROPFUNC = 0 );
-#else
+         #else
          PROPFUNC    = rbend::P_Exact,
          JETPROPFUNC = rbend::J_Exact );
-#endif
-
+         #endif
 
   rbend( char*,      // name
          double,     // length  [ meters ]
          double,     // field   [ tesla ]
-#ifdef __GNUG__
+         #ifdef __GNUG__
          PROPFUNC    = 0,
          JETPROPFUNC = 0 );
-#else
+         #else
          PROPFUNC    = rbend::P_Exact,
          JETPROPFUNC = rbend::J_Exact );
-#endif
+         #endif
 
   rbend( char*,      // name
          double,     // length  [ meters ]
          double,     // field   [ tesla ]
          double,     // Pole face angle [ radians ]
-#ifdef __GNUG__
+         #ifdef __GNUG__
          PROPFUNC    = 0,
          JETPROPFUNC = 0 );
-#else
+         #else
          PROPFUNC    = rbend::P_Exact,
          JETPROPFUNC = rbend::J_Exact );
-#endif
+         #endif
 
   rbend( rbendData& );
   rbend( const rbend& );
