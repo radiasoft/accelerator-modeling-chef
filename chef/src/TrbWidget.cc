@@ -12,7 +12,11 @@
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
 ******                                                                
-******  Author:    Leo Michelotti                                     
+******  Authors:   Leo Michelotti
+******             Nadezhda Shemyakina  (Summer, 2001)
+******             
+******             with ideas taken from a simple trackball
+******             widget written by Josef Wilgen.
 ******                                                                
 ******             Fermilab                                           
 ******             P.O.Box 500                                        
