@@ -194,9 +194,18 @@ beam_element_set_linenum( beam_element* bel,
      Takes a bel, deallocates the memory given to it, and returns 0
    */
 int
-beam_element_delete( beam_element* bel, fb_allocator* bel_alloc ) {
+beam_element_delete( beam_element* bel, fb_allocator* bel_alloc,  fb_allocator* expr_alloc) {
+
+  int i =0;
+  for ( i = 0; i < BEL_NOF_PARAMS; ++i ) {
+   expr_node_delete(bel->params_[i], expr_alloc);
+  };
+
+  expr_node_delete(bel->length_, expr_alloc);
+
   PRIVATE_DEALLOCATE( bel, bel_alloc );
   return 0;
+
 }
 
    /*
