@@ -134,7 +134,7 @@ solaris-debug:
 	$(MAKE) targets \
 	"C   = cc" \
 	"C++ = CC" \
-	"CFLAGS = -g -sb " \
+	"CFLAGS = -g " \
 	"C++FLAGS = -g -sb " \
 	"MAKELIB = ar ruv" \
 	"INCDIR = $(FNALROOT)/include" \
