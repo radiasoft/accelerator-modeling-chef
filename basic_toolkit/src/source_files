@@ -1,1 +1,0 @@
-libbasic_toolkit_la_SOURCES = Barnacle.cc BubbleSort.cc ColorWheel.cc Distribution.cc Frame.cc IntArray.cc LookupTable.cc ML.cc Matrix.cc Matrix_SVD.cc OutputFormat.cc Vector.cc dlist.cc erf.cc menu.cc mygaussj.cc nexcom.cc slist.cc binomcoeff_recursive.c cg.c d_sign.c gcd.c mod2pi.c nearint.c parsef.c rg.c strequals.c

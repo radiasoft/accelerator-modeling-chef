@@ -1,2 +1,0 @@
-includedir = ${prefix}/include/basic_toolkit
-include_HEADERS = include/Barnacle.h include/ColorWheel.h include/Distribution.h include/Frame.h include/IntArray.h include/LookupTable.h include/ML.h include/MXBBML_bool.h include/MathConstants.h include/Matrix.h include/OutputFormat.h include/PhysicsConstants.h include/VectorD.h include/complexAddon.h include/dlist.h include/f2c.h include/menu.h include/rand48.h include/slist.h include/Frame.icc
