@@ -113,6 +113,7 @@ fnal/recycler/include/CVS
 fnal/recycler/lattices/CVS
 fnal/recycler/app/CVS
 fnal/recycler/app/.sb
+fnal/recycler/app/dnudp
 fnal/recycler/app/edw
 fnal/recycler/app/orbitCheck
 fnal/recycler/app/twissCheck
@@ -132,6 +133,8 @@ fnal/mi_8gev/include/CVS
 fnal/mi_8gev/lattices/CVS
 fnal/mi_8gev/app/CVS
 fnal/mi_8gev/app/.sb
+fnal/mi_8gev/app/checkShunts
+fnal/mi_8gev/app/regenTables
 fnal/mi_8gev/app/twissCheck
 fnal/mr_8gev/CVS
 fnal/mr_8gev/src/CVS
