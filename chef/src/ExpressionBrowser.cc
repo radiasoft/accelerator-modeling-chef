@@ -445,7 +445,7 @@ ExpressionBrowser::ExpressionBrowser( QWidget *parent, const char *name, bool sd
   
   this->setSelectionMode( QListView::Extended );
   this->resize( 400, 400 );
-  this->setCaption( "CHEF (prototype #2): Expression Browser" );
+  this->setCaption( "CHEF: Expression Browser" );
   this->setAllColumnsShowFocus( TRUE );
   this->show();
 }

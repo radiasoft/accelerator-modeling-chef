@@ -141,7 +141,7 @@ void DspnFncPlt::_finishConstructor( const char* name )
 
 
   // Prepare the plotting widget
-  _plotter = new CHEFPlotMain(0, 0, 0 );
+  _plotter = new CHEFPlotMain(0, 0, Qt::WDestructiveClose );
   // This will delete itself using a "File/Close" menu item.
 
   char theTitle[1024];

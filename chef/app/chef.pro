@@ -23,7 +23,8 @@ CONFIG += stl
 
 SOURCES = chef.cc
 HEADERS = 
-LIBS += -lchef -lqwt -lbasic_toolkit -lbeamline -lbmlfactory -lintegrator -lmxyzptlk -lphysics_toolkit -lwidget_toolkit
-LIBS += -lglib
+LIBS += -lchef -lwidget_toolkit -lqwt -lqt-mt
+LIBS += -lbasic_toolkit -lbeamline -lbmlfactory -lintegrator -lmxyzptlk -lphysics_toolkit
+LIBS += -lglib -lglut -lGLU -lGL
 QMAKE_LIBDIR += /home/michelotti/projects/CURRENT/first_order_jl/installed/lib
 QMAKE_LIBDIR += /usr/local/ap/lib
