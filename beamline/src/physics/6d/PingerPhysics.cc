@@ -5,7 +5,7 @@
    Note that these are also the propagators for HPinger and VPinger
    */
 
-void Pinger::propagate( Particle& p ) {
+void Pinger::localPropagate( Particle& p ) {
   if ( isArmed() ) {
     p.state[3] += cos(_kick_direction)*strength;
     p.state[4] += sin(_kick_direction)*strength;
@@ -13,7 +13,7 @@ void Pinger::propagate( Particle& p ) {
   }
 }
 
-void Pinger::propagate( JetParticle& p ) {
+void Pinger::localPropagate( JetParticle& p ) {
   if ( isArmed() ) {
     Jet  dummy;
     dummy = p.State(3) + cos(_kick_direction)*strength;

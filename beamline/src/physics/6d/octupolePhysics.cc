@@ -1,9 +1,9 @@
 #include "beamline.inc"
 
-void octupole::propagate( Particle& p ) {
+void octupole::localPropagate( Particle& p ) {
   p_bml->propagate( p );
 }
 
-void octupole::propagate( JetParticle& p ) {
+void octupole::localPropagate( JetParticle& p ) {
   p_bml->propagate( p );
 }

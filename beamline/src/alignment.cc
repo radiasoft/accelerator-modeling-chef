@@ -37,7 +37,7 @@ alignment::alignment() {
   sinTilt = 0.0;
 }
 
-alignment::alignment(const double x, const double y, const double t ) {
+alignment::alignment(double x, double y, double t ) {
   xOffset = x;
   yOffset = y;
   tilt    = t;

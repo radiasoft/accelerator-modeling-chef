@@ -342,7 +342,7 @@ void sector::image( int d, slist* s, BMLN_posInfo* cg ) {
  s->append( p );
 }
 
-void sector::setFrequency( double (*fcn)( const double ) ) {
+void sector::setFrequency( double (*fcn)( double ) ) {
  DeltaT = fcn;
 }
 

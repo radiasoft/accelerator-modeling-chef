@@ -52,6 +52,7 @@ protected:
   friend class HPinger;
   friend class VPinger;
   friend class kick;
+  friend class Slot;
 
   double   state [ BMLN_dynDim ];
                       // state[0] = x
@@ -71,7 +72,7 @@ protected:
   double   beta;      // normalized reference velocity = v/c
   double   gamma;     // reference gamma
 
-  void SetReferenceEnergy( const double /* Energy */ );
+  void SetReferenceEnergy( double /* Energy */ );
 
   Particle( double  /* mass [GeV/c^2] */ );
   Particle( double  /* mass [GeV/c^2] */,
@@ -86,9 +87,28 @@ public:
 
   virtual Particle* Clone() const = 0;
   
+  // Phase space indices
+  short int xIndex()     { return 0; }
+  short int yIndex()     { return 1; }
+  short int cdtIndex()   { return 2; }
+  short int npxIndex()   { return 3; }
+  short int npyIndex()   { return 4; }
+  short int ndpIndex()   { return 5; }
+
+  // Dimension of phase space
+  static const short int PSD;
+  short int psd()        { return Particle::PSD; }
+
   void setState( double* );
   void setState( const Vector& );
   void getState( double* );
+
+  double get_x()     { return state[0]; }
+  double get_y()     { return state[1]; }
+  double get_cdt()   { return state[2]; }
+  double get_npx()   { return state[3]; }
+  double get_npy()   { return state[4]; }
+  double get_ndp()   { return state[5]; }
 
   inline Vector State() 
          {  return Vector( BMLN_dynDim, state ); } 
@@ -99,12 +119,15 @@ public:
    else                       return 123.456789; 
   }
   inline double Energy() const {
-   double x;
-   x = p*( 1.0+state[5] );
-   return sqrt( x*x + m*m );
+   double u;
+   u = p*( 1.0+state[5] );
+   return sqrt( u*u + m*m );
   }
   inline double Momentum() const {
    return p*(1.0+state[5]);
+  }
+  inline double NormalizedMomentum() const {
+   return (1.0+state[5]);
   }
   inline double Mass() const {
    return m;
@@ -132,7 +155,9 @@ public:
   inline double Charge() const {
    return q;
   }
-  Vector VectorBeta();
+  Vector VectorBeta() const;
+  Vector VectorMomentum() const;
+  Vector NormalizedVectorMomentum() const;
   inline double BRho() const {
    return bRho*( 1.0 + state[5] );
   }
@@ -263,6 +288,7 @@ protected:
   friend class HPinger;
   friend class VPinger;
   friend class kick;
+  friend class Slot;
 
   Mapping state;
                       // state[0] = x
@@ -282,7 +308,7 @@ protected:
   double   beta;      // normalized reference velocity = v/c
   double   gamma;     // reference gamma
 
-  void SetReferenceEnergy( const double /* Energy */ );
+  void SetReferenceEnergy( double /* Energy */ );
 
   JetParticle( double  /* mass [GeV/c^2] */ );
   JetParticle( double  /* mass [GeV/c^2] */,
@@ -298,10 +324,28 @@ public:
   virtual ~JetParticle();
   virtual JetParticle* Clone() const = 0;
 
+  // Phase space indices
+  short int xIndex()     { return 0; }
+  short int yIndex()     { return 1; }
+  short int cdtIndex()   { return 2; }
+  short int npxIndex()   { return 3; }
+  short int npyIndex()   { return 4; }
+  short int ndpIndex()   { return 5; }
+
+  // Dimension of phase space
+  short int psd()        { return Particle::PSD; }
+
   void setState( double* );
   void setState( const Mapping& );
   void getState( Mapping& );
   void getState( Jet* );
+
+  Jet get_x()     { return state(0); }
+  Jet get_y()     { return state(1); }
+  Jet get_cdt()   { return state(2); }
+  Jet get_npx()   { return state(3); }
+  Jet get_npy()   { return state(4); }
+  Jet get_ndp()   { return state(5); }
 
   inline Mapping State() { return state; } // ??? why doesn't const work?
   inline Jet State( int i ) {
@@ -322,6 +366,9 @@ public:
   }
   inline Jet Momentum() const {
    return p*(state(5) + 1.0);
+  }
+  inline Jet NormalizedMomentum() const {
+   return (state(5) + 1.0);
   }
   inline double Mass() const {
    return m;
@@ -347,7 +394,9 @@ public:
   inline double Charge() const {
    return q;
   }
-  JetVector VectorBeta();
+  JetVector VectorBeta() const;
+  JetVector VectorMomentum() const;
+  JetVector NormalizedVectorMomentum() const;
   inline Jet Beta() const {
    return Momentum() / Energy();
   }

@@ -1,6 +1,6 @@
 #include "beamline.inc"
 
-void JetthinQuad::propagate( Particle& p ) {
+void JetthinQuad::localPropagate( Particle& p ) {
  // "Strength" is B'l in Tesla
  static double xpr, ypr, p3divpbar, state5p1;
 
@@ -20,7 +20,7 @@ void JetthinQuad::propagate( Particle& p ) {
  p.state[4] = ypr*p3divpbar;
 }
 
-void JetthinQuad::propagate( JetParticle& p ) {
+void JetthinQuad::localPropagate( JetParticle& p ) {
  Jet dummy;
  Jet xpr, ypr, p3divpbar;
 

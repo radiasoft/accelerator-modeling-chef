@@ -1,6 +1,6 @@
 #include "beamline.inc"
 
-void hmonitor::propagate( Particle& p ) {
+void hmonitor::localPropagate( Particle& p ) {
  for ( int i = 0; i < BMLN_dynDim; i++ ) rgr[i] = p.state[i];
  
  if ( onOff ) {
@@ -9,7 +9,7 @@ void hmonitor::propagate( Particle& p ) {
  }
 }
 
-void hmonitor::propagate( JetParticle& p ) {
+void hmonitor::localPropagate( JetParticle& p ) {
  for ( int i = 0; i < BMLN_dynDim; i++ ) rgr[i] = ( p.state(i) ).standardPart();
  
  if ( onOff ) {

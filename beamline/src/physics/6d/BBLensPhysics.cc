@@ -1,24 +1,17 @@
 #include "beamline.inc"
 #include "VectorD.h"
 
-void BBLens::propagate( Particle& p ) {
+void BBLens::localPropagate( Particle& p ) {
 
  if( strength == 0.0 ) return;
 
  double x, y;
  Vector p_beta(3);
  Vector E(3), K(3);
- alignmentData offsets;
 
  x = p.state[0];
  y = p.state[1];
  
- if( align ) {
-   offsets = align->getAlignment();
-   x -= offsets.xOffset;
-   y -= offsets.yOffset;
- }
-
  E = NormalizedEField( x, y );
  p_beta = p.VectorBeta();
  K  = Beta()^E;
@@ -32,24 +25,17 @@ void BBLens::propagate( Particle& p ) {
  p.state[4] += K(1);
 }
 
-void BBLens::propagate( JetParticle& p ) {
+void BBLens::localPropagate( JetParticle& p ) {
 
  if( strength == 0.0 ) return;
 
  Jet x, y, s;
  JetVector p_beta(3);
  JetVector E(3), K(3);
- alignmentData offsets;
 
  x = p.state(0);
  y = p.state(1);
  
- if( align ) {
-   offsets = align->getAlignment();
-   x -= offsets.xOffset;
-   y -= offsets.yOffset;
- }
-
  E = NormalizedEField( x, y );
  p_beta = p.VectorBeta();
  K  = Beta()^E;

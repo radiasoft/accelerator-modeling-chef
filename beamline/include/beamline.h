@@ -119,7 +119,7 @@ struct BMLN_posInfo {
     Vector outPoint;
     Vector outAxes [3];
     BMLN_posInfo( );
-    BMLN_posInfo( BMLN_posInfo& );
+    BMLN_posInfo( const BMLN_posInfo& );
     BMLN_posInfo& operator=( const BMLN_posInfo& );   // ??? Does this struct
                                                       // ??? need a destructor?
     friend ostream& operator<<(ostream&, BMLN_posInfo&);
@@ -195,10 +195,11 @@ private:
   double       sinTilt;         // sin(tilt)
 public:
   alignment();
-  alignment(const double,const double,const double);
+  alignment(double,double,double);
   alignment(const alignment&);
   alignment(const alignmentData&);
   ~alignment();
+
   alignment& operator=(const alignment&);
                                 // these methods will overwrite an array
                                 // BMLM_dynDim in length
@@ -214,8 +215,16 @@ public:
   void align( double* );
   void misalign( JetVector& );
   void align( JetVector& );
+
   void setAlignment(const alignmentData&);
   alignmentData getAlignment();
+
+  double x_offset() { return xOffset; }
+  double y_offset() { return yOffset; }
+  double roll()     { return tilt;    }
+  double cos_roll() { return cosTilt; }
+  double sin_roll() { return sinTilt; }
+
   friend ostream& operator<<(ostream&, alignment&);
 };
 
@@ -290,31 +299,33 @@ protected:
   friend beamline& operator-( beamline& );
 
 public:
+  // ??? Why are these constructors public???
+  // 
   bmlnElmnt( const char*   n = "NONAME" /* name     */,
              PROPFUNC        = 0,
              JETPROPFUNC     = 0
            );		   
-  bmlnElmnt( const double  l /* length   */,
+  bmlnElmnt( double  l       /* length   */,
              PROPFUNC        = 0,
              JETPROPFUNC     = 0
            );		   
-  bmlnElmnt( const double  l /* length   */,
-             const double  s /* strength */,
-             PROPFUNC        = 0,
-             JETPROPFUNC     = 0
-           );		   
-  bmlnElmnt( const char*   n /* name     */,
-             const double  l /* length   */,
+  bmlnElmnt( double  l       /* length   */,
+             double  s       /* strength */,
              PROPFUNC        = 0,
              JETPROPFUNC     = 0
            );		   
   bmlnElmnt( const char*   n /* name     */,
-             const double  l /* length   */,
-             const double  s /* strength */,
+             double        l /* length   */,
+             PROPFUNC        = 0,
+             JETPROPFUNC     = 0
+           );		   
+  bmlnElmnt( const char*   n /* name     */,
+             double        l /* length   */,
+             double        s /* strength */,
              PROPFUNC        = 0,
              JETPROPFUNC     = 0
            );
-  bmlnElmnt( bmlnElmnt&  );
+  bmlnElmnt( const bmlnElmnt&  );
   bmlnElmnt( bmlnElmntData& );
 
   virtual ~bmlnElmnt();
@@ -331,15 +342,69 @@ public:
   void setPropFunction(PROPFUNC a)	{ Propagator = a; }
   void setJPropFunction(JETPROPFUNC a)	{ JetPropagator = a; }
 
-  virtual void propagate( ParticleBunch& );
-  virtual void propagate( Particle& );
-  virtual void propagate( JetParticle& );
+  void propagate( Particle& x ) 
+  {
+    if( align == 0 ) {
+      localPropagate  ( x );
+    }
+    else {
+      enterLocalFrame ( x );
+      localPropagate  ( x );
+      leaveLocalFrame ( x );
+    }
+  }
+
+  void propagate( JetParticle& x )
+  {
+    if( align == 0 ) {
+      localPropagate  ( x );
+    }
+    else {
+      enterLocalFrame ( x );
+      localPropagate  ( x );
+      leaveLocalFrame ( x );
+    }
+  }
+
+  void propagate( ParticleBunch& x )
+  {
+    static Particle* p;
+    if( align == 0 ) {
+      localPropagate  ( x );
+    }
+    else {
+      slist_iterator getNext( (slist&) x );
+      while((  p = (Particle*) getNext()  )) enterLocalFrame( *p );
+      localPropagate  ( x );
+      getNext.Reset( (const slist&) x );
+      while((  p = (Particle*) getNext()  )) leaveLocalFrame( *p );
+    }
+  }
+
+  virtual void localPropagate( Particle& );
+  virtual void localPropagate( JetParticle& );
+  virtual void localPropagate( ParticleBunch& );
+
+  virtual void enterLocalFrame( Particle&                ) const;
+  virtual void enterLocalFrame( JetParticle&             ) const;
+  // ??? To do (?): virtual void enterLocalFrame( double*                  ) const;
+  // ??? To do (?): virtual void enterLocalFrame( JetVector&               ) const;
+  // ??? To do (?): virtual void enterLocalFrame( const Particle&, double* ) const;
+  // ??? To do (?): virtual void enterLocalFrame( const JetParticle&, Jet* ) const;
+
+  virtual void leaveLocalFrame( Particle&                ) const;
+  virtual void leaveLocalFrame( JetParticle&             ) const;
+  // ??? To do (?): virtual void leaveLocalFrame( double*                  ) const;
+  // ??? To do (?): virtual void leaveLocalFrame( JetVector&               ) const;
+  // ??? To do (?): virtual void leaveLocalFrame( const Particle&, double* ) const;
+  // ??? To do (?): virtual void leaveLocalFrame( const JetParticle&, Jet* ) const;
 
   bmlnElmntData* image();
   void image( bmlnElmntData* );
 
   // Editing functions
-  virtual bmlnElmnt* Clone() = 0;  // Each type of bmlnElmnt will
+  virtual bmlnElmnt* Clone() const = 0;  
+                                   // Each type of bmlnElmnt will
                                    // create a copy of itself and
                                    // return a pointer to the new
                                    // object.
@@ -353,9 +418,9 @@ public:
                                    // eventually deleting these.
   virtual void peekAt( double& s, Particle* = 0 );
 
-  virtual void setStrength   ( const double );
-  virtual void setStrength   ( const double, const int );  // for JetQuad
-  virtual void setCurrent    ( const double );
+  virtual void setStrength   ( double );
+  virtual void setStrength   ( double, int );  // for JetQuad
+  virtual void setCurrent    ( double );
   virtual void setAlignment  ( const alignmentData& );
           void set           ( const bmlnElmntData& );
           void setAperture   ( Aperture* );
@@ -370,8 +435,9 @@ public:
   inline double  Length() 	const { return length; }
   virtual double Current() 	const { return strength/iToField; }
   inline char    IsYourName( const char* x ) { return strcmp( x, ident ); }
-  inline char*   Name() { return ident; }
-  virtual char*  Type() = 0;
+  virtual char*  Name() 
+    { return ident; }
+  virtual char*  Type() const = 0;
   virtual double OrbitLength( const Particle& ) { return length; }
                                    // Returns length of design orbit
                                    // segment through the element.
@@ -398,11 +464,11 @@ public:
   hkick( const hkick& );
   hkick( bmlnElmntData& );
   ~hkick();
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& );
-  void propagate( JetParticle& );
-  char* Type() { return "hkick"; }
-  bmlnElmnt* Clone() { return new hkick( *this ); }
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
+  char* Type() const { return "hkick"; }
+  bmlnElmnt* Clone() const { return new hkick( *this ); }
   void accept( BmlVisitor& v ) { v.visitHkick( this ); }
 };
 
@@ -422,17 +488,17 @@ public:
 
   void accept( BmlVisitor& v ) { v.visitOctupole( this ); }
 
-  void setStrength( const double );
-  void setStrength( const double, const int );
+  void setStrength( double );
+  void setStrength( double, int );
 
-  void setCurrent( const double );
+  void setCurrent( double );
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
 
-  char* Type() { return "octupole"; }
-  bmlnElmnt* Clone() { return new octupole( *this ); }
+  char* Type() const { return "octupole"; }
+  bmlnElmnt* Clone() const { return new octupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** );
 };
 
@@ -470,21 +536,21 @@ public:
                 double,   // Q
                 double    // R shunt impedance
                 );
-  thinrfcavity( thinrfcavity& );
+  thinrfcavity( const thinrfcavity& );
   thinrfcavity( thinrfcavityData& );
   ~thinrfcavity();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThinrfcavity( this ); }
 
   thinrfcavityData* image();
   void eliminate();
 
-  char* Type() { return "thinrfcavity"; }
-  bmlnElmnt* Clone() { return new thinrfcavity( *this ); }
+  char* Type() const { return "thinrfcavity"; }
+  bmlnElmnt* Clone() const { return new thinrfcavity( *this ); }
 
 };
 
@@ -519,14 +585,14 @@ public:
   srot( bmlnElmntData& );
   ~srot();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitSrot( this ); }
 
-  char* Type() { return "srot"; }
-  bmlnElmnt* Clone() { return new srot( *this ); }
+  char* Type() const { return "srot"; }
+  bmlnElmnt* Clone() const { return new srot( *this ); }
 };
 
 
@@ -543,14 +609,14 @@ public:
   vkick( bmlnElmntData& );
   ~vkick();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitVkick( this ); }
 
-  char* Type() { return "vkick"; }
-  bmlnElmnt* Clone() { return new vkick( *this ); }
+  char* Type() const { return "vkick"; }
+  bmlnElmnt* Clone() const { return new vkick( *this ); }
 };
 
 
@@ -578,15 +644,15 @@ public:
   virtual void off();
   double operator[]( int );    // Readout of data
   // ---------------------
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle&   );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle&   );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitMonitor( this ); }
   
   inline int State() const {return onOff;}
-  char* Type() { return "monitor"; }
-  bmlnElmnt* Clone() { return new monitor( *this ); }
+  char* Type() const { return "monitor"; }
+  bmlnElmnt* Clone() const { return new monitor( *this ); }
 } ;
 
 class hmonitor : public monitor
@@ -600,12 +666,12 @@ public:
   hmonitor( const hmonitor& );
   ~hmonitor();
   double operator[]( int );    // Readout of data
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle&   );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle&   );
+  void localPropagate( JetParticle& );
 
-  char* Type() { return "hmonitor"; }
-  bmlnElmnt* Clone() { return new hmonitor( *this ); }
+  char* Type() const { return "hmonitor"; }
+  bmlnElmnt* Clone() const { return new hmonitor( *this ); }
 } ;
 
 struct monitorData : public bmlnElmntData {
@@ -632,12 +698,12 @@ public:
   vmonitor( const vmonitor& );
   ~vmonitor();
   double operator[]( int );    // Readout of data
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle&   );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle&   );
+  void localPropagate( JetParticle& );
 
-  char* Type() { return "vmonitor"; }
-  bmlnElmnt* Clone() { return new vmonitor( *this ); }
+  char* Type() const { return "vmonitor"; }
+  bmlnElmnt* Clone() const { return new vmonitor( *this ); }
 } ;
 
 class marker : public bmlnElmnt
@@ -647,18 +713,18 @@ class marker : public bmlnElmnt
 public:
   marker();                   // Data to be written to standard output
   marker( char* );            // Name identifier.
-  marker( marker& );
+  marker( const marker& );
   marker( bmlnElmntData& );
   ~marker();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle&   );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle&   );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitMarker( this ); }
 
-  char* Type() { return "marker"; }
-  bmlnElmnt* Clone() { return new marker( *this ); }
+  char* Type() const { return "marker"; }
+  bmlnElmnt* Clone() const { return new marker( *this ); }
 } ;
 
 class drift : public bmlnElmnt
@@ -677,8 +743,8 @@ public:
 
   void accept( BmlVisitor& v ) { v.visitDrift( this ); }
 
-  char* Type() { return "drift"; }
-  bmlnElmnt* Clone() { return new drift( *this ); }
+  char* Type() const { return "drift"; }
+  bmlnElmnt* Clone() const { return new drift( *this ); }
 } ;
 
 
@@ -686,9 +752,10 @@ struct rbendData;
 class rbend : public bmlnElmnt
 {
 private:
-  static void P_Face    ( bmlnElmnt*, Particle& );
-  static void J_Face    ( bmlnElmnt*, JetParticle& );
+  static void P_Face    ( const bmlnElmnt*, Particle& );
+  static void J_Face    ( const bmlnElmnt*, JetParticle& );
   double poleFaceAngle;
+  double tanPFAngle;
 
   // bmlnElmnt::strength -> magnetic field [T]
   void image( int, slist*, BMLN_posInfo* );
@@ -755,23 +822,39 @@ public:
   rbend( const rbend& );
   ~rbend();
 
-  double setAngle(double a) 	{ return (poleFaceAngle = a); }
   void eliminate();
 
   void accept( BmlVisitor& v ) { v.visitRbend( this ); }
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle&    p ) {    Propagator( this, p ); }
-  void propagate( JetParticle& p ) { JetPropagator( this, p ); }
+  // ??? REMOVE: void enterLocalFrame( Particle&    ) const;
+  // ??? REMOVE: void enterLocalFrame( JetParticle& ) const;
+  // ??? REMOVE: void leaveLocalFrame( Particle&    ) const;
+  // ??? REMOVE: void leaveLocalFrame( JetParticle& ) const;
+  // ??? REMOVE: 
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle&    p ) {    Propagator( this, p ); }
+  void localPropagate( JetParticle& p ) { JetPropagator( this, p ); }
+
   rbendData* image();
 
-  char* Type() { return "rbend"; }
-  bmlnElmnt* Clone() { return new rbend( *this ); }
+  char* Type() const { return "rbend"; }
+  bmlnElmnt* Clone() const { return new rbend( *this ); }
   double OrbitLength( const Particle& );
   void Split( double, bmlnElmnt**, bmlnElmnt** );
-  double& PoleFaceAngle() {return poleFaceAngle;}
 
-} ;
+
+  double PoleFaceAngle()    {return poleFaceAngle;}
+  double getPoleFaceAngle() {return poleFaceAngle;}
+  double setPoleFaceAngle( const Particle& );
+  double setPoleFaceAngle( const JetParticle& );
+  double setAngle(double a)
+  { 
+     poleFaceAngle = a;
+     tanPFAngle    = tan( poleFaceAngle );
+     return poleFaceAngle;
+  }
+
+};
 
 struct rbendData : public bmlnElmntData {
   double angle;     // pole face angle angle [ radians ]
@@ -800,6 +883,8 @@ public:
   static void J_LikeMAD    ( bmlnElmnt*, JetParticle& );
   static void P_Exact      ( bmlnElmnt*, Particle& );
   static void J_Exact      ( bmlnElmnt*, JetParticle& );
+         void P_Face       ( Particle&,    const double& /* psi */  ) const;
+         void J_Face       ( JetParticle&, const double& /* psi */  ) const;
   
   sbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
@@ -833,18 +918,23 @@ public:
   void geomToStart ( BMLN_posInfo& );
   void eliminate();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle&    p ) {    Propagator( this, p ); }
-  void propagate( JetParticle& p ) { JetPropagator( this, p ); }
+  void enterLocalFrame( Particle&    ) const;
+  void enterLocalFrame( JetParticle& ) const;
+  void leaveLocalFrame( Particle&    ) const;
+  void leaveLocalFrame( JetParticle& ) const;
+
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle&    p ) {    Propagator( this, p ); }
+  void localPropagate( JetParticle& p ) { JetPropagator( this, p ); }
 
   void accept( BmlVisitor& v ) { v.visitSbend( this ); }
 
-  // ??? REMOVE void propagate( Particle&   p );
-  // ??? REMOVE void propagate( JetParticle& p );
+  // ??? REMOVE void localPropagate( Particle&   p );
+  // ??? REMOVE void localPropagate( JetParticle& p );
   sbendData* image();
 
-  char* Type() { return "sbend"; }
-  bmlnElmnt* Clone() { return new sbend( *this ); }
+  char* Type() const { return "sbend"; }
+  bmlnElmnt* Clone() const { return new sbend( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** );
 
 } ;
@@ -876,7 +966,7 @@ private:
   double deltaPsiV;
   double mapMatrix[BMLN_dynDim][BMLN_dynDim];
   void image( int, slist*, BMLN_posInfo* );
-  double (*DeltaT) ( const double );
+  double (*DeltaT) ( double );
   Jet    (*JetDeltaT) ( const Jet& );
 public:
   sector( double* betaH,  double* alphaH,  double* psiH,
@@ -896,18 +986,18 @@ public:
   void geomToStart ( BMLN_posInfo& );
   void eliminate();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitSector( this ); }
 
   sectorData* image();
-  void setFrequency( double (*)( const double ) );
+  void setFrequency( double (*)( double ) );
   void setFrequency( Jet (*)( const Jet& ) );
 
-  char* Type() { return "sector"; }
-  bmlnElmnt* Clone() { return new sector( *this ); }
+  char* Type() const { return "sector"; }
+  bmlnElmnt* Clone() const { return new sector( *this ); }
 } ;
 
 struct sectorData : public bmlnElmntData {
@@ -969,20 +1059,20 @@ public:
   quadrupole( const quadrupole& );
   ~quadrupole();
 
-  void setStrength( const double );
-  void setStrength( const double, const int );
+  void setStrength( double );
+  void setStrength( double, int );
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle&    p ) {    Propagator( this, p ); }
-  void propagate( JetParticle& p ) { JetPropagator( this, p ); }
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle&    p ) {    Propagator( this, p ); }
+  void localPropagate( JetParticle& p ) { JetPropagator( this, p ); }
 
   void accept( BmlVisitor& v ) { v.visitQuadrupole( this ); }
 
   // ??? REMOVE void peekAt( double& s, Particle* = 0 );
   void eliminate();
 
-  char* Type() { return "quadrupole"; }
-  bmlnElmnt* Clone() { return new quadrupole( *this ); }
+  char* Type() const { return "quadrupole"; }
+  bmlnElmnt* Clone() const { return new quadrupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** );
 
 } ;
@@ -1019,20 +1109,20 @@ public:
   JetQuadrupole( const JetQuadrupole& );
   ~JetQuadrupole();
 
-  void setStrength( const double );
-  void setStrength( const double, const int );
+  void setStrength( double );
+  void setStrength( double, int );
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle&    p ) {    Propagator( this, p ); }
-  void propagate( JetParticle& p ) { JetPropagator( this, p ); }
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle&    p ) {    Propagator( this, p ); }
+  void localPropagate( JetParticle& p ) { JetPropagator( this, p ); }
 
   void accept( BmlVisitor& v ) { v.visitJetQuadrupole( this ); }
 
   // ??? REMOVE void peekAt( double& s, Particle* = 0 );
   void eliminate();
 
-  char* Type() { return "JetQuadrupole"; }
-  bmlnElmnt* Clone() { return new JetQuadrupole( *this ); }
+  char* Type() const { return "JetQuadrupole"; }
+  bmlnElmnt* Clone() const { return new JetQuadrupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** );
 
 } ;
@@ -1060,19 +1150,19 @@ public:
   thinQuad( const thinQuad& );
   ~thinQuad();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& p );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& p );
+  void localPropagate( JetParticle& );
   void eliminate();
 
   void accept( BmlVisitor& v ) { v.visitThinQuad( this ); }
 
-  char* Type() { return "thinQuad"; }
-  bmlnElmnt* Clone() { return new thinQuad( *this ); }
+  char* Type() const { return "thinQuad"; }
+  bmlnElmnt* Clone() const { return new thinQuad( *this ); }
 } ;
 
 
- class JetthinQuad : public bmlnElmnt
+class JetthinQuad : public bmlnElmnt
  {
  private:
    Jet KL;
@@ -1081,27 +1171,27 @@ public:
   istream& readFrom(istream&);
 
  public:
-   JetthinQuad( const double, const int );
-   JetthinQuad( char*,             // name
-                const double,      // B-prime L in Tesla; + = horizontally focussing
-                const int );       // index of focal length parameter (> 6)
+   JetthinQuad( double, int );
+   JetthinQuad( char*,      // name
+                double,     // B-prime L in Tesla; + = horizontally focussing
+                int );      // index of focal length parameter (> 6)
    JetthinQuad( bmlnElmntData& );
    JetthinQuad( const JetthinQuad& );
    ~JetthinQuad();
  
-   void setStrength( const double );
-   void setStrength( const double, const int );
+   void setStrength( double );
+   void setStrength( double, int );
  
-   void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-   void propagate( Particle& p );
-   void propagate( JetParticle& );
+   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+   void localPropagate( Particle& p );
+   void localPropagate( JetParticle& );
 
    void accept( BmlVisitor& v ) { v.visitJetthinQuad( this ); }
 
    void eliminate();
  
-   char* Type() { return "JetthinQuad"; }
-   bmlnElmnt* Clone() { return new JetthinQuad( *this ); }
+   char* Type() const { return "JetthinQuad"; }
+   bmlnElmnt* Clone() const { return new JetthinQuad( *this ); }
 
 } ;
  
@@ -1118,14 +1208,14 @@ public:
   thinSextupole( const thinSextupole& );
   ~thinSextupole();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& p );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& p );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThinSextupole( this ); }
 
-  char* Type() { return "thinSextupole"; }
-  bmlnElmnt* Clone() { return new thinSextupole( *this ); }
+  char* Type() const { return "thinSextupole"; }
+  bmlnElmnt* Clone() const { return new thinSextupole( *this ); }
 } ;
 
 class JetthinSext : public bmlnElmnt
@@ -1137,27 +1227,27 @@ private:
   istream& readFrom(istream&);
 
 public:
-  JetthinSext( const double, const int );
-  JetthinSext( char*,             // name
-	       const double,      // B-prime L in Tesla; + = horizontally focussing
-	       const int );       // index of focal length parameter (> 6)
+  JetthinSext( double, int );
+  JetthinSext( char*,       // name
+	       double,      // B-prime L in Tesla; + = horizontally focussing
+	       int );       // index of focal length parameter (> 6)
   JetthinSext( bmlnElmntData& );
   JetthinSext( const JetthinSext& );
   ~JetthinSext();
   
-  void setStrength( const double );
-  void setStrength( const double, const int );
+  void setStrength( double );
+  void setStrength( double, int );
   
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& p );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& p );
+  void localPropagate( JetParticle& );
   
   void accept( BmlVisitor& v ) { v.visitJetthinSext( this ); }
 
   void eliminate();
   
-  char* Type() { return "JetthinSext"; }
-  bmlnElmnt* Clone() { return new JetthinSext( *this ); }
+  char* Type() const { return "JetthinSext"; }
+  bmlnElmnt* Clone() const { return new JetthinSext( *this ); }
   
 } ;
  
@@ -1173,14 +1263,14 @@ public:
   thinOctupole( const thinOctupole& );
   ~thinOctupole();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& p );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& p );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThinOctupole( this ); }
 
-  char* Type() { return "thinOctupole"; }
-  bmlnElmnt* Clone() { return new thinOctupole( *this ); }
+  char* Type() const { return "thinOctupole"; }
+  bmlnElmnt* Clone() const { return new thinOctupole( *this ); }
 } ;
 
 class thinDecapole : public bmlnElmnt
@@ -1195,14 +1285,14 @@ public:
   thinDecapole( const thinDecapole& );
   ~thinDecapole();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& p );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& p );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThinDecapole( this ); }
 
-  char* Type() { return "thinDecapole"; }
-  bmlnElmnt* Clone() { return new thinDecapole( *this ); }
+  char* Type() const { return "thinDecapole"; }
+  bmlnElmnt* Clone() const { return new thinDecapole( *this ); }
 } ;
 
 class thin12pole : public bmlnElmnt
@@ -1215,14 +1305,14 @@ public:
   thin12pole( const thin12pole& );
   ~thin12pole();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& p );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& p );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThin12pole( this ); }
 
-  char* Type() { return "thin12pole"; }
-  bmlnElmnt* Clone() { return new thin12pole( *this ); }
+  char* Type() const { return "thin12pole"; }
+  bmlnElmnt* Clone() const { return new thin12pole( *this ); }
 } ;
 
 class thin14pole : public bmlnElmnt
@@ -1235,14 +1325,14 @@ public:
   thin14pole( const thin14pole& );
   ~thin14pole();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& p );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& p );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThin14pole( this ); }
 
-  char* Type() { return "thin14pole"; }
-  bmlnElmnt* Clone() { return new thin14pole( *this ); }
+  char* Type() const { return "thin14pole"; }
+  bmlnElmnt* Clone() const { return new thin14pole( *this ); }
 } ;
 
 class thin16pole : public bmlnElmnt
@@ -1255,14 +1345,14 @@ public:
   thin16pole( const thin16pole& );
   ~thin16pole();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& p );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& p );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThin16pole( this ); }
 
-  char* Type() { return "thin16pole"; }
-  bmlnElmnt* Clone() { return new thin16pole( *this ); }
+  char* Type() const { return "thin16pole"; }
+  bmlnElmnt* Clone() const { return new thin16pole( *this ); }
 } ;
 
 class thin18pole : public bmlnElmnt
@@ -1275,14 +1365,14 @@ public:
   thin18pole( const thin18pole& );
   ~thin18pole();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& p );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& p );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThin18pole( this ); }
 
-  char* Type() { return "thin18pole"; }
-  bmlnElmnt* Clone() { return new thin18pole( *this ); }
+  char* Type() const { return "thin18pole"; }
+  bmlnElmnt* Clone() const { return new thin18pole( *this ); }
 } ;
 
 class thinMultipole : public bmlnElmnt
@@ -1297,14 +1387,14 @@ public:
   thinMultipole( const thinMultipole& );
   ~thinMultipole();
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& p );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& p );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThinMultipole( this ); }
 
-  char* Type() { return "thinMultipole"; }
-  bmlnElmnt* Clone() { return new thinMultipole( *this ); }
+  char* Type() const { return "thinMultipole"; }
+  bmlnElmnt* Clone() const { return new thinMultipole( *this ); }
 } ;
 
 
@@ -1322,19 +1412,19 @@ public:
   sextupole( const sextupole& );
   ~sextupole();
 
-  void setStrength( const double );
-  void setStrength( const double, const int );
+  void setStrength( double );
+  void setStrength( double, int );
 
-  void setCurrent( const double );
+  void setCurrent( double );
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& p );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& p );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitSextupole( this ); }
 
-  char* Type() { return "sextupole"; }
-  bmlnElmnt* Clone() { return new sextupole( *this ); }
+  char* Type() const { return "sextupole"; }
+  bmlnElmnt* Clone() const { return new sextupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** );
 } ;
 
@@ -1354,13 +1444,13 @@ private:
 public:
   BBLens( const char*   = 0
              /* name */,
-          const double  = 1.0
+          double        = 1.0
              /* length [m]: the length of the bunch
                 in its rest frame */,
-          const double  = 3.3e11
+          double        = 3.3e11
              /* strength : total number of proton
                 charges in the bunch */,
-          const double  = 1000.0
+          double        = 1000.0
              /* gamma of the bunch, in the lab frame */,
           const double* = 0
              /* pointer to an array containing
@@ -1397,14 +1487,14 @@ public:
                 Q is the line density of charge [C/m] (in
                 rest frame). */
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitBBLens( this ); }
 
-  char* Type() { return "BBLens"; }
-  bmlnElmnt* Clone() { return new BBLens( *this ); }
+  char* Type() const { return "BBLens"; }
+  bmlnElmnt* Clone() const { return new BBLens( *this ); }
   Vector Beta();
   void GetSigma( double* );
 };
@@ -1439,20 +1529,20 @@ public:
   thinSeptum( const thinSeptum& );
   ~thinSeptum();
   
-  void setStrengths( const double sPos, const double sNeg); 
-  void setWire( const double x); 
+  void setStrengths( double sPos, double sNeg); 
+  void setWire( double x); 
   
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle&    p );
-  void propagate( JetParticle& p );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle&    p );
+  void localPropagate( JetParticle& p );
 
   void accept( BmlVisitor& v ) { v.visitThinSeptum( this ); }
 
   thinSeptumData* image();
   void eliminate();
   
-  char* Type() { return "thinSeptum"; }
-  bmlnElmnt* Clone() { return new thinSeptum( *this ); }
+  char* Type() const { return "thinSeptum"; }
+  bmlnElmnt* Clone() const { return new thinSeptum( *this ); }
 
 };
  
@@ -1480,7 +1570,7 @@ private:
                            // with phase space state of RefState()
                            // will be on the reference orbit of the
                            // extraction line.  The specified coordinates are 
-			   // SUBTRACTED from the particle coordinates.
+                           // SUBTRACTED from the particle coordinates.
   void image( int, slist*, BMLN_posInfo* );
   ostream& writeTo(ostream&);
   istream& readFrom(istream&);
@@ -1503,23 +1593,23 @@ public:
   thinLamb( const thinLamb& );
   ~thinLamb();
   
-  void setSeptum( const double x); 
+  void setSeptum( double x); 
   void setBeamline( beamline* b); 
   void setRefState( const double* s);
 
   void getRefState( double* );
   
-  void propagate( ParticleBunch& x );
-  void propagate( Particle&    p );
-  void propagate( JetParticle& p );
+  void localPropagate( ParticleBunch& x );
+  void localPropagate( Particle&    p );
+  void localPropagate( JetParticle& p );
   
   void accept( BmlVisitor& v ) { v.visitThinLamb( this ); }
 
   thinLambData* image();
   void eliminate();
   
-  char* Type() { return "thinLamb"; }
-  bmlnElmnt* Clone() { return new thinLamb( *this ); }
+  char* Type() const { return "thinLamb"; }
+  bmlnElmnt* Clone() const { return new thinLamb( *this ); }
 };
  
 
@@ -1605,7 +1695,7 @@ public:
 
   beamline( const char* nm = "NONAME" );
   beamline( bmlnElmnt* );
-  beamline( beamline& );
+  beamline( const beamline& );
   beamline( beamlineImage* );         // Creates a beamline from the
                                       //  list representation written
                                       //  by beamline::image.  In the
@@ -1701,9 +1791,14 @@ public:
 
   // PROPAGATE PARTICLES
 
-  void propagate( ParticleBunch& );
-  void propagate( Particle& );
-  void propagate( JetParticle& );
+  void localPropagate( ParticleBunch& );
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
+
+  void enterLocalFrame( Particle&    ) const;
+  void enterLocalFrame( JetParticle& ) const;
+  void leaveLocalFrame( Particle&    ) const;
+  void leaveLocalFrame( JetParticle& ) const;
 
   void accept( BmlVisitor& v ) { v.visitBeamline( this ); }
 
@@ -1744,8 +1839,8 @@ public:
   int    countHowMany();
   int    howDeep();
   double Energy() const { return nominalEnergy; }
-  char*  Type() { return "beamline"; }
-  bmlnElmnt* Clone();
+  char*  Type() const { return "beamline"; }
+  bmlnElmnt* Clone() const;
   double OrbitLength( const Particle& );
   lattRing whatIsRing();
 
@@ -1905,33 +2000,6 @@ private:
   dlist setOfBeamlines;
   dlist setOfProbes;
 } ;
-
-struct Slot
-{
- char*       name;
- alignment*  pre;
- bmlnElmnt*  device;
- alignment*  post;
-
- Slot( bmlnElmnt& x, char* nm = "NONAME" ) {
-   pre = post = 0;
-   name = nm;
-   device = &x;
- }
- Slot( bmlnElmnt& x, double length, char* nm = "NONAME" );
- Slot( double length, char* nm = "NONAME" ) {
-   pre = post = 0;
-   name = nm;
-   device = new drift( length );
- }
- ~Slot();
-
- // void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
- void propagate( Particle& );
- void propagate( JetParticle& );
-
- void setAlignment(const alignmentData&);  // ??? <-- or whatever
-};
 
 
 #endif // BEAMLINE_H

@@ -50,6 +50,8 @@ class Pinger;
 class HPinger;
 class VPinger;
 class kick;
+class Slot;
+class CF_rbend;
 
 // ---------------------------
 
@@ -122,9 +124,13 @@ public:
   virtual void visitHPinger( HPinger* x )
 			 { visitBmlnElmnt( (bmlnElmnt*) x ); }
   virtual void visitVPinger( VPinger* x )
-			  { visitBmlnElmnt( (bmlnElmnt*) x ); } 
-  virtual void visitKick( kick * x)
-			{ visitBmlnElmnt( (bmlnElmnt*) x); }
+			 { visitBmlnElmnt( (bmlnElmnt*) x ); } 
+  virtual void visitKick( kick* x)
+			 { visitBmlnElmnt( (bmlnElmnt*) x);  }
+  virtual void visitSlot( Slot* x)
+			 { visitBmlnElmnt( (bmlnElmnt*) x);  }
+  virtual void visitCF_rbend( CF_rbend* x)
+			 { visitBmlnElmnt( (bmlnElmnt*) x);  }
 
 protected:
   BmlVisitor() {}

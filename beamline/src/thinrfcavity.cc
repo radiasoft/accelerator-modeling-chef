@@ -100,7 +100,7 @@ thinrfcavity::thinrfcavity(char * name_arg,   // name
   R = R_arg;
 }
 
-thinrfcavity::thinrfcavity( thinrfcavity& x ) 
+thinrfcavity::thinrfcavity( const thinrfcavity& x ) 
 : bmlnElmnt( (bmlnElmnt&) x ) 
 {
  w_rf      = x.w_rf;

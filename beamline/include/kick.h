@@ -18,16 +18,16 @@ public:
 	kick(const kick&);
 	virtual ~kick();
 
-	void propagate( ParticleBunch& x) {bmlnElmnt::propagate( x ); }
-	void propagate( Particle& );
-	void propagate( JetParticle& );
+	void localPropagate( ParticleBunch& x) {bmlnElmnt::localPropagate( x ); }
+	void localPropagate( Particle& );
+	void localPropagate( JetParticle& );
 
 	void accept(BmlVisitor& v) { v.visitKick( this ); }
 	double& horizontalStrength() { return horizontalKick; }
 	double& verticalStrength() { return verticalKick; }
 
-	char* Type() { return "kick"; }
-	bmlnElmnt* Clone() { return new kick( *this ); }
+	char* Type() const { return "kick"; }
+	bmlnElmnt* Clone() const { return new kick( *this ); }
 };
 
 #endif    // KICK_H

@@ -7,10 +7,6 @@ void sbend::P_Exact( bmlnElmnt* p_be, Particle& p )
 
  double TrState[6];
 
- if( pbe->align ) {
-   pbe->align->misalign( p, pbe->geometry /* ??? */, TrState );
-   p.setState(TrState);
- }
  // Preliminary filter from state coordinates
  double psq = 1.0 + p.state[5];
         psq = psq*psq;
@@ -59,10 +55,6 @@ void sbend::P_Exact( bmlnElmnt* p_be, Particle& p )
  p.state[2] = p.state[2] + ( cdt - CDT );
  p.state[3] = imag( vuf )/( E_factor * PH_MKS_c );
 
- if( pbe->align ) {
-   pbe->align->align( p, pbe->geometry /* ??? */, TrState );
-   p.setState(TrState);
- }
 }
 
 void sbend::J_Exact( bmlnElmnt* p_be, JetParticle& p ) 
@@ -73,11 +65,6 @@ void sbend::J_Exact( bmlnElmnt* p_be, JetParticle& p )
  Jet TrState[6];
  int i;
 
- if( pbe->align ) {
-   pbe->align->misalign( p, pbe->geometry /* ??? */, TrState );
-   for(i=0; i < 6; i++)
-     ( p.state ).SetComponent( i, TrState[i] );
- }
  // Preliminary filter from state coordinates
  static Jet psq;
  psq = 1.0 + p.state(5);
@@ -139,9 +126,4 @@ void sbend::J_Exact( bmlnElmnt* p_be, JetParticle& p )
  ( p.state ).SetComponent( 2, p.state(2) + ( cdt - CDT )          );
  ( p.state ).SetComponent( 3, imag( vuf )/( E_factor * PH_MKS_c ) );
 
- if( pbe->align ) {
-   pbe->align->align( p, pbe->geometry /* ??? */, TrState );
-   for(i=0; i < 6; i++)
-     ( p.state ).SetComponent( i, TrState[i] );
- }
 }

@@ -57,22 +57,15 @@ void quadrupole::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
 
  mapMatrix[2][5] = -pbe->length/p.Beta()/p.Gamma()/p.Gamma();
  
-  if(pbe->align != 0) 
-    pbe->align->misalign(p,pbe->geometry,inState);
-  else {
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      inState[i] = p.state[i];
-  }
+ for( i = 0; i < BMLN_dynDim; i++  ) {
+   inState[i] = p.state[i];
+ }
  for( i = 0; i < BMLN_dynDim; i++  ) {
    p.state[i] = 0.0;
    for( j = 0; j < BMLN_dynDim; j++  ) 
      p.state[i] += mapMatrix[i][j]*inState[j];
  }
-  if(pbe->align != 0) {
-    pbe->align->align(p,pbe->geometry,inState);
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      p.state[i] = inState[i];
-  }
+
 }
 
 
@@ -135,11 +128,8 @@ void quadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
   zero = 0.0;
   // ??? REMOVE zero.fixReferenceAtStart( p.state );
 
-  if(pbe->align != 0) 
-    pbe->align->misalign(p,pbe->geometry,inState);
-  else {
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      inState[i] = p.state(i);
+  for( i = 0; i < BMLN_dynDim; i++  ) {
+    inState[i] = p.state(i);
   }
 
   for( i = 0; i < BMLN_dynDim; i++  ) {
@@ -147,12 +137,8 @@ void quadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
     for( j = 0; j < BMLN_dynDim; j++  ) 
       outState[i] = outState[i] + mapMatrix[i][j]*inState[j];
   }
-  if(pbe->align != 0) {
-    pbe->align->align(outState,pbe->geometry,inState);
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      ( p.state ).SetComponent( i, inState[i] );
-  } else {
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      ( p.state ).SetComponent( i, outState[i] );
+
+  for( i = 0; i < BMLN_dynDim; i++  ) {
+    ( p.state ).SetComponent( i, outState[i] );
   }
 }

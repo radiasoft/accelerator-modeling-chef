@@ -61,12 +61,12 @@ class mwireMonitor : public monitor {
 
     ~mwireMonitor();
 
-    void propagate( Particle& );
-    void propagate( JetParticle& );
-    void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
+    void localPropagate( Particle& );
+    void localPropagate( JetParticle& );
+    void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
 
-    inline char*      Type()  { return "mwireMonitor"; }
-    inline bmlnElmnt* Clone() { return new mwireMonitor( *this ); }
+    inline char*      Type() const  { return "mwireMonitor"; }
+    inline bmlnElmnt* Clone() const { return new mwireMonitor( *this ); }
 
     void on();                       // Turns monitor on.
     void on(char*);                  // Turns monitor on and defines where

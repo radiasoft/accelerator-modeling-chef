@@ -43,6 +43,7 @@ rbend::rbend( double l, double s,
    JetPropagator = rbend::J_Exact;
  }
  poleFaceAngle = M_TWOPI;
+ tanPFAngle = 0.0;
 }
 
 rbend::rbend( double l, double s, double angle,
@@ -52,6 +53,7 @@ rbend::rbend( double l, double s, double angle,
    JetPropagator = rbend::J_Exact;
  }
  poleFaceAngle = angle;
+ tanPFAngle    = tan( poleFaceAngle );
 }
 
 
@@ -62,6 +64,7 @@ rbend::rbend( char* n, double l, double s,
    JetPropagator = rbend::J_Exact;
  }
  poleFaceAngle = M_TWOPI;
+ tanPFAngle = 0.0;
 }
 
 rbend::rbend( char* n, double l, double s, double angle,
@@ -71,6 +74,7 @@ rbend::rbend( char* n, double l, double s, double angle,
    JetPropagator = rbend::J_Exact;
  }
  poleFaceAngle = angle;
+ tanPFAngle    = tan( poleFaceAngle );
 }
 
 
@@ -81,6 +85,7 @@ rbend::rbend( const rbend& x )
 : bmlnElmnt( (bmlnElmnt&) x )
 {
   poleFaceAngle = x.poleFaceAngle;
+  tanPFAngle    = tan( poleFaceAngle );
 }
 
 rbend::~rbend() {
@@ -158,6 +163,37 @@ void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 
   delete [] newname;
 }
+
+
+double rbend::setPoleFaceAngle( const Particle& p )
+{
+  this->poleFaceAngle =   
+     asin(   ( this->strength * this->Length() )
+           / ( 2.0*p.ReferenceBRho() )
+         );
+
+  // i.e., sin( psi ) = (l/2) / rho
+  //                  = Bl/(2*Brho)
+
+  this->tanPFAngle = tan( this->poleFaceAngle );
+  return this->poleFaceAngle;
+}
+
+
+double rbend::setPoleFaceAngle( const JetParticle& p )
+{
+  this->poleFaceAngle =   
+     asin(   ( this->strength * this->Length() )
+           / ( 2.0*p.ReferenceBRho() )
+         );
+
+  // i.e., sin( psi ) = (l/2) / rho
+  //                  = Bl/(2*Brho)
+
+  this->tanPFAngle = tan( this->poleFaceAngle );
+  return this->poleFaceAngle;
+}
+
 
 ostream& rbend::writeTo(ostream& os)
 {
@@ -260,4 +296,173 @@ istream& rbend::readFrom(istream& is)
     }
 
   return is;
+}
+
+
+// **************************************************
+//   Frame functions
+// **************************************************
+
+
+// ??? REMOVE: void rbend::enterLocalFrame( Particle& p ) const
+// ??? REMOVE: {
+// ??? REMOVE:   P_Face( this, p );
+// ??? REMOVE:   bmlnElmnt::enterLocalFrame( p );
+// ??? REMOVE: }
+// ??? REMOVE: 
+// ??? REMOVE: 
+// ??? REMOVE: void rbend::enterLocalFrame( JetParticle& p ) const
+// ??? REMOVE: {
+// ??? REMOVE:   J_Face( this, p );
+// ??? REMOVE:   bmlnElmnt::enterLocalFrame( p );
+// ??? REMOVE: }
+// ??? REMOVE: 
+// ??? REMOVE: 
+// ??? REMOVE: void rbend::leaveLocalFrame( Particle& p ) const
+// ??? REMOVE: {
+// ??? REMOVE:   bmlnElmnt::leaveLocalFrame( p );
+// ??? REMOVE:   P_Face( this, p );
+// ??? REMOVE: }
+// ??? REMOVE: 
+// ??? REMOVE: 
+// ??? REMOVE: void rbend::leaveLocalFrame( JetParticle& p ) const
+// ??? REMOVE: {
+// ??? REMOVE:   bmlnElmnt::leaveLocalFrame( p );
+// ??? REMOVE:   J_Face( this, p );
+// ??? REMOVE: }
+// ??? REMOVE: 
+// ??? REMOVE: 
+void rbend::P_Face( const bmlnElmnt* p_be, Particle& p )
+{
+  static int x;
+  static int y;
+  static int cdt;
+  static int xp;
+  static int yp;
+  static int dpop;
+
+  x    = p.xIndex();
+  y    = p.yIndex();
+  cdt  = p.cdtIndex();
+  xp   = p.npxIndex();
+  yp   = p.npyIndex();
+  dpop = p.ndpIndex();
+
+
+  static rbend* pbe;
+
+  pbe = (rbend*) p_be;  // ??? Why isn't the argument an rbend* ?
+
+  // Calculate the transformation angle.
+  double psi;
+  if( pbe->poleFaceAngle == M_TWOPI ) {
+    psi =   asin(   ( pbe->strength * pbe->Length() )
+                  / ( 2.0*p.ReferenceBRho() )
+                );
+    // i.e., sin( psi ) = (l/2) / rho
+    //                  = Bl/(2*Brho)
+    pbe->poleFaceAngle = psi;
+    pbe->tanPFAngle    = tan( psi );
+  }
+  else {
+    psi = pbe->poleFaceAngle;
+  }
+
+  double cs( cos(psi) ); 
+  double sn( sin(psi) ); 
+
+  // Drift frame represented in the rbend frame.
+  Vector e_1(3), e_2(3), e_3(3);
+  e_1(0) = cs;  e_1(1) = 0.0;  e_1(2) = -sn; 
+  e_2(0) = 0.0; e_2(1) = 1.0;  e_2(2) = 0.0; 
+  e_3(0) = sn;  e_3(1) = 0.0;  e_3(2) = cs; 
+
+  // Coordinate transformation.
+  Vector r        ( p.State(x)*e_1 + p.State(y)*e_2 );
+  Vector dummy    ( p.VectorBeta() );
+  Vector beta     ( dummy(0)*e_1 +
+                    dummy(1)*e_2 +
+                    dummy(2)*e_3 );
+
+  double tau      ( - r(2) / beta(2) );
+
+  p.state[x]    = r(0) + tau*beta(0);
+  p.state[y]    = r(1) + tau*beta(1);
+  p.state[cdt] += tau;
+
+  // Momentum transformation
+  double p1( p.State( xp ) );
+  double p2( p.State( yp ) );
+  double p3divpbar = sqrt( ( 1.0 + p.state[dpop] ) * ( 1.0 + p.state[dpop] )
+                            - p1*p1 - p2*p2 );
+
+  p.state[xp] = cs*p.State( xp ) + sn*p3divpbar;
+}
+
+
+void rbend::J_Face( const bmlnElmnt* p_be, JetParticle& p )
+{
+  static int x;
+  static int y;
+  static int cdt;
+  static int xp;
+  static int yp;
+  static int dpop;
+
+  x    = p.xIndex();
+  y    = p.yIndex();
+  cdt  = p.cdtIndex();
+  xp   = p.npxIndex();
+  yp   = p.npyIndex();
+  dpop = p.ndpIndex();
+
+
+  static rbend* pbe;
+
+  pbe = (rbend*) p_be;  // ??? Why isn't the argument an rbend* ?
+
+  // Calculate the transformation angle.
+  double psi;
+  if( pbe->poleFaceAngle == M_TWOPI ) {
+    psi =   asin(   ( pbe->strength * pbe->Length() )
+                  / ( 2.0*p.ReferenceBRho() )
+                );
+    // i.e., sin( psi ) = (l/2) / rho
+    //                  = Bl/(2*Brho)
+    pbe->poleFaceAngle = psi;
+    pbe->tanPFAngle    = tan( psi );
+  }
+  else {
+    psi = pbe->poleFaceAngle;
+  }
+
+  double cs( cos(psi) ); 
+  double sn( sin(psi) ); 
+
+  // Drift frame represented in the rbend frame.
+  Vector e_1(3), e_2(3), e_3(3);
+  e_1(0) = cs;  e_1(1) = 0.0;  e_1(2) = -sn; 
+  e_2(0) = 0.0; e_2(1) = 1.0;  e_2(2) = 0.0; 
+  e_3(0) = sn;  e_3(1) = 0.0;  e_3(2) = cs; 
+
+  // Coordinate transformation.
+  JetVector r        ( p.State(x)*e_1 + p.State(y)*e_2 );
+  JetVector dummy    ( p.VectorBeta() );
+  JetVector beta     ( dummy(0)*e_1 +
+                       dummy(1)*e_2 +
+                       dummy(2)*e_3 );
+
+  Jet tau            ( - r(2) / beta(2) );
+
+  ( p.state ).SetComponent( x,   r(0) + tau*beta(0) );
+  ( p.state ).SetComponent( y,   r(1) + tau*beta(1) );
+  ( p.state ).SetComponent( cdt, p.state(cdt) + tau );
+
+  // Momentum transformation
+  Jet p1( p.State( xp ) );
+  Jet p2( p.State( yp ) );
+  Jet p3divpbar = sqrt( ( 1.0 + p.state(dpop) ) * ( 1.0 + p.state(dpop) )
+                            - p1*p1 - p2*p2 );
+
+  ( p.state ).SetComponent( xp, cs*p.State( xp ) + sn*p3divpbar );
 }

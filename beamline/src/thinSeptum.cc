@@ -89,12 +89,12 @@ thinSeptum::~thinSeptum() {
 }
 
 
-void thinSeptum::setStrengths( const double sPos, const double sNeg ) {
+void thinSeptum::setStrengths( double sPos, double sNeg ) {
  strengthPos = sPos;
  strengthNeg = sNeg;
 }
 
-void thinSeptum::setWire( const double x) {
+void thinSeptum::setWire( double x) {
  xWire = x;
 }
 

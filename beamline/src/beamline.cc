@@ -368,15 +368,15 @@ beamline::beamline( const char* nm )
 } 
 
 
-beamline::beamline( beamline& a ) 
-: bmlnElmnt( (bmlnElmnt&) a ), dlist( (dlist&) a ) 
+beamline::beamline( const beamline& a ) 
+: bmlnElmnt( (const bmlnElmnt&) a ), dlist( (dlist&) a ) 
 {
  nominalEnergy     = a.nominalEnergy;
  numElem           = a.numElem;
  twissDone         = 0;
 } 
 
-bmlnElmnt* beamline::Clone() {
+bmlnElmnt* beamline::Clone() const {
  beamline* ret = new beamline( ident );
  // ??? REMOVE beamline* ret = new beamline;
 
@@ -705,49 +705,27 @@ void beamline::resetGeometry() {
  }
 
 
-void beamline::propagate( Particle& x ) {
+void beamline::localPropagate( Particle& x ) {
  dlist_iterator getNext ( *(dlist*) this );
  bmlnElmnt* p;
- double TrState[6];
- if( align ) {
-   align->misalign( x, geometry /* ??? */, TrState );
-   x.setState(TrState);
- }
- while ((  p = (bmlnElmnt*) getNext()  )) {
-   p -> propagate( x );
- }
- if( align ) {
-   align->align( x, geometry /* ??? */, TrState );
-   x.setState(TrState);
+ while ((  p = (bmlnElmnt*) getNext() )) {
+   p->propagate( x );
  }
 } 
 
-void beamline::propagate( ParticleBunch& x ) {
+void beamline::localPropagate( ParticleBunch& x ) {
  dlist_iterator getNext ( *(dlist*) this );
  bmlnElmnt* p;
-
- while ((  p = (bmlnElmnt*) getNext()  )) {
+ while ((  p = (bmlnElmnt*) getNext() )) {
    p -> propagate( x );
  }
 } 
 
-void beamline::propagate( JetParticle& x ) {
+void beamline::localPropagate( JetParticle& x ) {
  dlist_iterator getNext ( *(dlist*) this );
  bmlnElmnt* p;
- Jet TrState[6];
- int i;
- if( align ) {
-   align->misalign( x, geometry /* ??? */, TrState );
-   for(i=0; i < 6; i++)
-     ( x.state ).SetComponent( i, TrState[i] );
- }
  while ((  p = (bmlnElmnt*) getNext()  )) {
-   p -> propagate( x );
- }
- if( align ) {
-   align->align( x, geometry /* ??? */, TrState );
-   for(i=0; i < 6; i++)
-     ( x.state ).SetComponent( i, TrState[i] );
+   p->propagate( x );
  }
 } 
 
@@ -810,11 +788,11 @@ int beamline::twiss( JetParticle& p ) {
    }
 
    snH = sqrt( -1.0* mtrx(0,3)*mtrx(3,0) - 
-	       (mtrx(0,0) - mtrx(3,3))*
-	      (mtrx(0,0) - mtrx(3,3))/4.0);
+               (mtrx(0,0) - mtrx(3,3))*
+              (mtrx(0,0) - mtrx(3,3))/4.0);
    snV = sqrt( -1.0*mtrx(1,4) * mtrx(4,1) - 
-	       (mtrx(1,1) - mtrx(4,4))*
-	      (mtrx(1,1) - mtrx(4,4))/4.0);
+               (mtrx(1,1) - mtrx(4,4))*
+              (mtrx(1,1) - mtrx(4,4))/4.0);
 
    if( mtrx(0,3) < 0.0 ) snH *= -1.0;       // ?? Is there a better way of
    if( mtrx(1,4) < 0.0 ) snV *= -1.0;       // ?? changing the sign?
@@ -895,7 +873,7 @@ int beamline::twiss( JetParticle& p ) {
    double alpha0V = latticeFunctions->alpha.ver;
    double beta0V = latticeFunctions->beta.ver;
 
-   double tb;			// use temp variables to save calc time
+   double tb;                   // use temp variables to save calc time
 
    MatrixD dispFinal(6,1);
    MatrixD dispVector(6,1);
@@ -1036,11 +1014,11 @@ int beamline::twiss( char, JetParticle& p ) {
    }
     
     snH = sqrt( -1.0* mtrx(0,3)*mtrx(3,0) - 
-	       (mtrx(0,0) - mtrx(3,3))*
-	       (mtrx(0,0) - mtrx(3,3))/4.0);
+               (mtrx(0,0) - mtrx(3,3))*
+               (mtrx(0,0) - mtrx(3,3))/4.0);
     snV = sqrt( -1.0*mtrx(1,4) * mtrx(4,1) - 
-	       (mtrx(1,1) - mtrx(4,4))*
-	       (mtrx(1,1) - mtrx(4,4))/4.0);
+               (mtrx(1,1) - mtrx(4,4))*
+               (mtrx(1,1) - mtrx(4,4))/4.0);
 
 
     if( mtrx(0,3) < 0.0 ) snH *= -1.0;       // ?? Is there a better way of
@@ -1170,7 +1148,7 @@ int beamline::twiss( lattFunc& W, JetParticle& p) {
     dispVector(4,0) = latticeFunctions->dPrime.ver;
     dispVector(5,0) = 1.0;
 
-    double tb;			// use temp variables to save calc time
+    double tb;                  // use temp variables to save calc time
 
    while ((  be = (bmlnElmnt*) getNext()  )) {
      lng = be -> length;
@@ -1259,9 +1237,9 @@ lattRing beamline::whatIsRing() {
   cout << "*** WARNING ***                               \n"
     << "*** WARNING *** beamline::whatIsRing       \n"
       << "*** WARNING *** Entry was not found.          \n"
-	<< "*** WARNING *** Meaningless value being       \n"
-	  << "*** WARNING *** returned.                     \n"
-	    << "*** WARNING ***                               \n" << endl;
+        << "*** WARNING *** Meaningless value being       \n"
+          << "*** WARNING *** returned.                     \n"
+            << "*** WARNING ***                               \n" << endl;
   return errRet;
 }
 
@@ -1304,7 +1282,7 @@ lattFunc beamline::whatIsLattice( char* n ) {
   while((  p = (bmlnElmnt*) getNext()  )) 
     if( !strcmp(p->Name(),n) ) 
       return (*(lattFunc*) p->dataHook.find( "Twiss" ));
-	return errRet;  
+        return errRet;  
 }
 
 // ??? REMOVE or REWRITE:  void beamline::writeTo( FILE* f ) {
@@ -2166,4 +2144,70 @@ ostream& beamline::writeTo(ostream& os) {
   }
   os << "beamline_END " << Name() << " 0 0 0 0 0\n";
   return os;
+}
+
+
+// **************************************************
+//   Frame functions
+// **************************************************
+
+void beamline::enterLocalFrame( Particle& p ) const
+{
+  // Check for bends
+  dlist_iterator getNext( *(dlist*) this );
+  static bmlnElmnt* element;
+
+  while((  element = (bmlnElmnt*) getNext() )) 
+  {
+    if( strcasecmp( element->Type(), "sbend" ) == 0 ||
+        strcasecmp( element->Type(), "rbend" ) == 0     
+      ) {
+      cerr << "\n"
+              "*** ERROR ***                                    \n"
+              "*** ERROR *** beamline::enterLocalFrame          \n"
+              "*** ERROR *** Not implemented for beamlines      \n"
+              "*** ERROR *** containing bends.                  \n"
+              "*** ERROR ***                                    \n"
+           << endl;
+      exit(1);
+    }
+  }
+  
+  bmlnElmnt::enterLocalFrame( p );
+}
+
+void beamline::enterLocalFrame( JetParticle& p ) const
+{
+  // Check for bends
+  dlist_iterator getNext( *(dlist*) this );
+  static bmlnElmnt* element;
+
+  while((  element = (bmlnElmnt*) getNext() )) 
+  {
+    if( strcasecmp( element->Type(), "sbend" ) == 0 ||
+        strcasecmp( element->Type(), "rbend" ) == 0     
+      ) {
+      cerr << "\n"
+              "*** ERROR ***                                    \n"
+              "*** ERROR *** beamline::enterLocalFrame          \n"
+              "*** ERROR *** Not implemented for beamlines      \n"
+              "*** ERROR *** containing bends.                  \n"
+              "*** ERROR ***                                    \n"
+           << endl;
+      exit(1);
+    }
+  }
+  
+  bmlnElmnt::enterLocalFrame( p );
+}
+
+
+void beamline::leaveLocalFrame( Particle& p ) const
+{
+  bmlnElmnt::leaveLocalFrame( p );
+}
+
+void beamline::leaveLocalFrame( JetParticle& p ) const
+{
+  bmlnElmnt::leaveLocalFrame( p );
 }

@@ -137,11 +137,11 @@ class rasterMonitor : public monitor {
     //@Man: Propagators
     //@{
     ///
-    void propagate( Particle& );
+    void localPropagate( Particle& );
     ///
-    void propagate( JetParticle& );
+    void localPropagate( JetParticle& );
     ///
-    void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
+    void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
     //@}
 
     //@Man: Origin manipulation
@@ -153,10 +153,10 @@ class rasterMonitor : public monitor {
     //@}
 
     ///  Returns a string describing the type of the element ("rasterMonitor")
-    char*      Type()  { return "rasterMonitor"; }
+    char*      Type() const  { return "rasterMonitor"; }
 
     ///
-    bmlnElmnt* Clone() { return new rasterMonitor( *this ); }
+    bmlnElmnt* Clone() const { return new rasterMonitor( *this ); }
 
     /// Turns monitor on.
     void on();

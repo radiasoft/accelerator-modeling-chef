@@ -4,6 +4,10 @@
 //   class Particle
 // **************************************************
 
+const short int Particle::PSD = 6;
+
+
+
 Particle::Particle( double mass ) {
  q     = 0.0;
  for( int i = 0; i < BMLN_dynDim; i++ ) state[i] = 0.0;
@@ -65,29 +69,31 @@ Particle::Particle( double mass, double energy, double* s ) {
  else            pni2 = 1.0e33;
 }
 
-Particle::Particle( const Particle& x ) {
+Particle::Particle( const Particle& u ) {
  int i;
- for( i = 0; i < BMLN_dynDim; i++ ) state[i] = x.state[i];
- q = x.q;
- E = x.E;
- p = x.p;
- m = x.m;
- pn = x.pn;
- pni2 = x.pni2;
- bRho = x.bRho;
- beta = x.beta;
- gamma = x.gamma;
+ for( i = 0; i < BMLN_dynDim; i++ ) state[i] = u.state[i];
+ q = u.q;
+ E = u.E;
+ p = u.p;
+ m = u.m;
+ pn = u.pn;
+ pni2 = u.pni2;
+ bRho = u.bRho;
+ beta = u.beta;
+ gamma = u.gamma;
 }
 
 Particle::~Particle() {
 }
 
-void Particle::setState( double* x ) {
- for( int i = 0; i < BMLN_dynDim; i++ )  state[i] = x[i];
+void Particle::setState( double* u ) {
+ memcpy( (void *) this->state, 
+         (const void *) u, 
+         BMLN_dynDim * sizeof(double) );
 } 
 
-void Particle::setState( const Vector& x ) {
- if( x.Dim() != BMLN_dynDim ) {
+void Particle::setState( const Vector& u ) {
+ if( u.Dim() != BMLN_dynDim ) {
    cout << "*** ERROR ***                                     \n" 
         << "*** ERROR *** Particle::setState( const Vector& ) \n" 
         << "*** ERROR *** Dimension incorrect ...             \n" 
@@ -95,15 +101,17 @@ void Particle::setState( const Vector& x ) {
         << endl;
    exit(1);
  }
- for( int i = 0; i < BMLN_dynDim; i++ )  state[i] = x(i);
+ for( int i = 0; i < BMLN_dynDim; i++ )  state[i] = u(i);
 } 
 
-void Particle::getState( double* x ) {
- for( int i = 0; i < BMLN_dynDim; i++ )  x[i] = state[i];
+void Particle::getState( double* u ) {
+ memcpy( (void *) u, 
+         (const void *) this->state, 
+         BMLN_dynDim * sizeof(double) );
 } 
 
 
-void Particle::SetReferenceEnergy( const double energy ) {
+void Particle::SetReferenceEnergy( double energy ) {
  E = energy;
  if( E < m ) {
   cout << "\n"
@@ -124,7 +132,7 @@ void Particle::SetReferenceEnergy( const double energy ) {
  else            pni2 = 1.0e33;
 }
 
-Vector Particle::VectorBeta()
+Vector Particle::VectorBeta() const
 {
  Vector ret(3);
  double nrg = Energy();
@@ -136,19 +144,46 @@ Vector Particle::VectorBeta()
  return ret;
 }
 
-Particle& Particle::operator=( const Particle& x ) {
+Vector Particle::VectorMomentum() const
+{
+ Vector ret(3);
+ double px, py;
+ double pz  = Momentum();
+
+ ret(0) = px = p*state[3];
+ ret(1) = py = p*state[4];
+ ret(2) = sqrt( pz*pz - px*px - py*py );
+
+ return ret;
+}
+
+Vector Particle::NormalizedVectorMomentum() const
+{
+ // ??? This assumes ret(2) > 0
+ Vector ret(3);
+ double px, py;
+ double pz  = NormalizedMomentum();
+
+ ret(0) = px = state[3];
+ ret(1) = py = state[4];
+ ret(2) = sqrt( pz*pz - px*px - py*py );
+
+ return ret;
+}
+
+Particle& Particle::operator=( const Particle& u ) {
  int i;
- if(&x != this) {
-   for( i = 0; i < BMLN_dynDim; i++ ) state[i] = x.state[i];
-   q = x.q;
-   E = x.E;
-   p = x.p;
-   m = x.m;
-   pn = x.pn;
-   pni2 = x.pni2;
-   bRho = x.bRho;
-   beta = x.beta;
-   gamma = x.gamma;
+ if(&u != this) {
+   for( i = 0; i < BMLN_dynDim; i++ ) state[i] = u.state[i];
+   q = u.q;
+   E = u.E;
+   p = u.p;
+   m = u.m;
+   pn = u.pn;
+   pni2 = u.pni2;
+   bRho = u.bRho;
+   beta = u.beta;
+   gamma = u.gamma;
  }
  return *this;
 }
@@ -171,7 +206,7 @@ Proton::Proton( double energy, double* s ) : Particle( PH_NORM_mp, energy, s ){
  q = PH_MKS_e;
 }
 
-Proton::Proton( const Proton& x ) : Particle( x ) {
+Proton::Proton( const Proton& u ) : Particle( u ) {
 }
 
 Proton::~Proton() {
@@ -195,7 +230,7 @@ AntiProton::AntiProton( double energy, double* s ) : Particle( PH_NORM_mp, energ
  q = - PH_MKS_e;
 }
 
-AntiProton::AntiProton( const AntiProton& x ) : Particle( x ) {
+AntiProton::AntiProton( const AntiProton& u ) : Particle( u ) {
 }
 
 AntiProton::~AntiProton() {
@@ -218,7 +253,7 @@ Electron::Electron( double W, double* s ) : Particle( PH_NORM_me, W, s ){
  q = - PH_MKS_e;
 }
 
-Electron::Electron( const Electron& x ) : Particle( x ) {
+Electron::Electron( const Electron& u ) : Particle( u ) {
 }
 
 Electron::~Electron() {
@@ -241,7 +276,7 @@ Positron::Positron( double W, double* s ) : Particle( PH_NORM_me, W, s ){
  q =  PH_MKS_e;
 }
 
-Positron::Positron( const Positron& x ) : Particle( x ) {
+Positron::Positron( const Positron& u ) : Particle( u ) {
 }
 
 Positron::~Positron() {
@@ -264,7 +299,7 @@ Muon::Muon( double energy, double* s ) : Particle( PH_NORM_mmu, energy, s ){
  q = -PH_MKS_e;
 }
 
-Muon::Muon( const Muon& x ) : Particle( x ) {
+Muon::Muon( const Muon& u ) : Particle( u ) {
 }
 
 Muon::~Muon() {
@@ -288,7 +323,7 @@ AntiMuon::AntiMuon( double energy, double* s ) : Particle( PH_NORM_mmu, energy, 
  q = PH_MKS_e;
 }
 
-AntiMuon::AntiMuon( const AntiMuon& x ) : Particle( x ) {
+AntiMuon::AntiMuon( const AntiMuon& u ) : Particle( u ) {
 }
 
 AntiMuon::~AntiMuon() {
@@ -366,14 +401,14 @@ JetParticle::JetParticle( double mass, double energy, double* s ) {
  else            pni2 = 1.0e33;
 }
 
-JetParticle::JetParticle( const Particle& x ) {
- q = x.Charge();
+JetParticle::JetParticle( const Particle& u ) {
+ q = u.Charge();
  state = Mapping( "id", Jet::lastEnv );
  for( int i = 0; i < state.Dim(); i++ )  
-   state(i) = state(i) + ( x.State(i) - Jet::lastEnv->refPoint[i] );
- // ??? REMOVE for( int i = 0; i < BMLN_dynDim; i++ )  state.SetComponent( i, x.State(i) );
- m = x.Mass();
- E = x.ReferenceEnergy();
+   state(i) = state(i) + ( u.State(i) - Jet::lastEnv->refPoint[i] );
+ // ??? REMOVE for( int i = 0; i < BMLN_dynDim; i++ )  state.SetComponent( i, u.State(i) );
+ m = u.Mass();
+ E = u.ReferenceEnergy();
  if( E < m ) {
   cout << "\n"
        << "*** ERROR ***  JetParticle::JetParticle( double )      \n"
@@ -394,41 +429,41 @@ JetParticle::JetParticle( const Particle& x ) {
 }
 
 
-JetParticle::JetParticle(const JetParticle& x) {
-  state = x.state;
-  q = x.q;
-  E = x.E;
-  p = x.p;
-  m = x.m;
-  pn = x.pn;
-  pni2 = x.pni2;
-  bRho = x.bRho;
-  beta = x.beta;
-  gamma = x.gamma;
+JetParticle::JetParticle(const JetParticle& u) {
+  state = u.state;
+  q = u.q;
+  E = u.E;
+  p = u.p;
+  m = u.m;
+  pn = u.pn;
+  pni2 = u.pni2;
+  bRho = u.bRho;
+  beta = u.beta;
+  gamma = u.gamma;
 }
 
 JetParticle::~JetParticle() {
 }
 
-void JetParticle::setState( double* x ) {
+void JetParticle::setState( double* u ) {
  Jet__environment* pje = state.Env();
  state = Mapping( "id", pje );
  for( int i = 0; i < state.Dim(); i++ )  
-   state(i) = state(i) + ( x[i] - pje->refPoint[i] );
- // ??? REMOVE for( int i = 0; i < BMLN_dynDim; i++ )  state.SetComponent( i, x[i] );
- // ??? REMOVE state.fixReference(x);
+   state(i) = state(i) + ( u[i] - pje->refPoint[i] );
+ // ??? REMOVE for( int i = 0; i < BMLN_dynDim; i++ )  state.SetComponent( i, u[i] );
+ // ??? REMOVE state.fixReference(u);
 } 
 
-void JetParticle::setState( const Mapping& x ) {
- state = x;
+void JetParticle::setState( const Mapping& u ) {
+ state = u;
 } 
 
-void JetParticle::getState( Mapping& x ) {
- x = state;
+void JetParticle::getState( Mapping& u ) {
+ u = state;
 } 
 
-void JetParticle::getState( Jet* x ) {
- for( int i = 0; i < BMLN_dynDim; i++ ) x[i] = state(i);
+void JetParticle::getState( Jet* u ) {
+ for( int i = 0; i < BMLN_dynDim; i++ ) u[i] = state(i);
 } 
 
 
@@ -454,7 +489,7 @@ MatrixD JetParticle::SymplecticTest() {
 }
 
 
-void JetParticle::SetReferenceEnergy( const double energy ) {
+void JetParticle::SetReferenceEnergy( double energy ) {
  E = energy;
  if( E < m ) {
   cout << "\n"
@@ -475,8 +510,9 @@ void JetParticle::SetReferenceEnergy( const double energy ) {
  else            pni2 = 1.0e33;
 }
 
-JetVector JetParticle::VectorBeta()
+JetVector JetParticle::VectorBeta() const
 {
+ // ??? This assumes ret(2) > 0
  JetVector ret(3);
  Jet nrg = Energy();
  Jet pz  = Momentum();
@@ -484,6 +520,34 @@ JetVector JetParticle::VectorBeta()
  ret(0) = p*state(3) / nrg;
  ret(1) = p*state(4) / nrg;
  ret(2) = pz         / nrg;
+ return ret;
+}
+
+JetVector JetParticle::VectorMomentum() const
+{
+ // ??? This assumes ret(2) > 0
+ JetVector ret(3);
+ Jet px, py;
+ Jet pz  = Momentum();
+
+ ret(0) = px = p*state(3);
+ ret(1) = py = p*state(4);
+ ret(2) = sqrt( pz*pz - px*px - py*py );
+
+ return ret;
+}
+
+JetVector JetParticle::NormalizedVectorMomentum() const
+{
+ // ??? This assumes ret(2) > 0
+ JetVector ret(3);
+ Jet px, py;
+ Jet pz  = NormalizedMomentum();
+
+ ret(0) = px = state(3);
+ ret(1) = py = state(4);
+ ret(2) = sqrt( pz*pz - px*px - py*py );
+
  return ret;
 }
 
@@ -499,10 +563,10 @@ JetProton::JetProton( double energy ) : JetParticle( PH_NORM_mp, energy ){
  q = PH_MKS_e;
 }
 
-JetProton::JetProton( const Proton& x ) : JetParticle( (Particle&) x ) {
+JetProton::JetProton( const Proton& u ) : JetParticle( (Particle&) u ) {
 }
 
-JetProton::JetProton( const JetProton& x ) : JetParticle( (JetParticle&) x ) {
+JetProton::JetProton( const JetProton& u ) : JetParticle( (JetParticle&) u ) {
 }
 
 JetProton::~JetProton() {
@@ -510,26 +574,26 @@ JetProton::~JetProton() {
 
 Particle* JetProton::ConvertToParticle() {
  static int i;
- double* x = new double[ BMLN_dynDim ];
- for( i = 0; i < BMLN_dynDim; i++ ) x[i] = state(i).standardPart();
+ double* u = new double[ BMLN_dynDim ];
+ for( i = 0; i < BMLN_dynDim; i++ ) u[i] = state(i).standardPart();
  Particle* prt = new Proton( E );
- prt->setState( x );
- delete [] x;
+ prt->setState( u );
+ delete [] u;
  return prt;
 }
 
-JetParticle& JetParticle::operator=(const JetParticle& x) {
-  if(&x != this) {
-    state = x.state;
-    q = x.q;
-    E = x.E;
-    p = x.p;
-    m = x.m;
-    pn = x.pn;
-    pni2 = x.pni2;
-    bRho = x.bRho;
-    beta = x.beta;
-    gamma = x.gamma;
+JetParticle& JetParticle::operator=(const JetParticle& u) {
+  if(&u != this) {
+    state = u.state;
+    q = u.q;
+    E = u.E;
+    p = u.p;
+    m = u.m;
+    pn = u.pn;
+    pni2 = u.pni2;
+    bRho = u.bRho;
+    beta = u.beta;
+    gamma = u.gamma;
   }
   return *this;
 }
@@ -546,10 +610,10 @@ JetAntiProton::JetAntiProton( double energy ) : JetParticle( PH_NORM_mp, energy 
  q = - PH_MKS_e;
 }
 
-JetAntiProton::JetAntiProton( const AntiProton& x ) : JetParticle( (Particle&) x ) {
+JetAntiProton::JetAntiProton( const AntiProton& u ) : JetParticle( (Particle&) u ) {
 }
 
-JetAntiProton::JetAntiProton( const JetAntiProton& x ) : JetParticle( (JetParticle&) x ) {
+JetAntiProton::JetAntiProton( const JetAntiProton& u ) : JetParticle( (JetParticle&) u ) {
 }
 
 JetAntiProton::~JetAntiProton() {
@@ -557,11 +621,11 @@ JetAntiProton::~JetAntiProton() {
 
 Particle* JetAntiProton::ConvertToParticle() {
  static int i;
- double* x = new double[ BMLN_dynDim ];
- for( i = 0; i < BMLN_dynDim; i++ ) x[i] = state(i).standardPart();
+ double* u = new double[ BMLN_dynDim ];
+ for( i = 0; i < BMLN_dynDim; i++ ) u[i] = state(i).standardPart();
  Particle* prt = new AntiProton( E );
- prt->setState( x );
- delete [] x;
+ prt->setState( u );
+ delete [] u;
  return prt;
 }
 
@@ -578,10 +642,10 @@ JetElectron::JetElectron( double energy ) : JetParticle( PH_NORM_me, energy ) {
  q = - PH_MKS_e;
 }
 
-JetElectron::JetElectron( const Electron& x ) : JetParticle( (Particle&) x ) {
+JetElectron::JetElectron( const Electron& u ) : JetParticle( (Particle&) u ) {
 }
 
-JetElectron::JetElectron( const JetElectron& x ) : JetParticle( (JetParticle&) x ) {
+JetElectron::JetElectron( const JetElectron& u ) : JetParticle( (JetParticle&) u ) {
 }
 
 JetElectron::~JetElectron() {
@@ -589,11 +653,11 @@ JetElectron::~JetElectron() {
 
 Particle* JetElectron::ConvertToParticle() {
  static int i;
- double* x = new double[ BMLN_dynDim ];
- for( i = 0; i < BMLN_dynDim; i++ ) x[i] = state(i).standardPart();
+ double* u = new double[ BMLN_dynDim ];
+ for( i = 0; i < BMLN_dynDim; i++ ) u[i] = state(i).standardPart();
  Particle* prt = new Electron( E );
- prt->setState( x );
- delete [] x;
+ prt->setState( u );
+ delete [] u;
  return prt;
 }
 
@@ -610,10 +674,10 @@ JetPositron::JetPositron( double energy ) : JetParticle( PH_NORM_me, energy ) {
  q = PH_MKS_e;
 }
 
-JetPositron::JetPositron( const Positron& x ) : JetParticle( (Particle&) x ) {
+JetPositron::JetPositron( const Positron& u ) : JetParticle( (Particle&) u ) {
 }
 
-JetPositron::JetPositron( const JetPositron& x ) : JetParticle( (JetParticle&) x ) {
+JetPositron::JetPositron( const JetPositron& u ) : JetParticle( (JetParticle&) u ) {
 }
 
 JetPositron::~JetPositron() {
@@ -621,11 +685,11 @@ JetPositron::~JetPositron() {
 
 Particle* JetPositron::ConvertToParticle() {
  static int i;
- double* x = new double[ BMLN_dynDim ];
- for( i = 0; i < BMLN_dynDim; i++ ) x[i] = state(i).standardPart();
+ double* u = new double[ BMLN_dynDim ];
+ for( i = 0; i < BMLN_dynDim; i++ ) u[i] = state(i).standardPart();
  Particle* prt = new Positron( E );
- prt->setState( x );
- delete [] x;
+ prt->setState( u );
+ delete [] u;
  return prt;
 }
 
@@ -641,10 +705,10 @@ JetMuon::JetMuon( double energy ) : JetParticle( PH_NORM_mmu, energy ){
  q = - PH_MKS_e;
 }
 
-JetMuon::JetMuon( const Muon& x ) : JetParticle( (Particle&) x ) {
+JetMuon::JetMuon( const Muon& u ) : JetParticle( (Particle&) u ) {
 }
 
-JetMuon::JetMuon( const JetMuon& x ) : JetParticle( (JetParticle&) x ) {
+JetMuon::JetMuon( const JetMuon& u ) : JetParticle( (JetParticle&) u ) {
 }
 
 JetMuon::~JetMuon() {
@@ -652,11 +716,11 @@ JetMuon::~JetMuon() {
 
 Particle* JetMuon::ConvertToParticle() {
  static int i;
- double* x = new double[ BMLN_dynDim ];
- for( i = 0; i < BMLN_dynDim; i++ ) x[i] = state(i).standardPart();
+ double* u = new double[ BMLN_dynDim ];
+ for( i = 0; i < BMLN_dynDim; i++ ) u[i] = state(i).standardPart();
  Particle* prt = new Muon( E );
- prt->setState( x );
- delete [] x;
+ prt->setState( u );
+ delete [] u;
  return prt;
 }
 
@@ -672,10 +736,10 @@ JetAntiMuon::JetAntiMuon( double energy ) : JetParticle( PH_NORM_mmu, energy ){
  q = PH_MKS_e;
 }
 
-JetAntiMuon::JetAntiMuon( const AntiMuon& x ) : JetParticle( (Particle&) x ) {
+JetAntiMuon::JetAntiMuon( const AntiMuon& u ) : JetParticle( (Particle&) u ) {
 }
 
-JetAntiMuon::JetAntiMuon( const JetAntiMuon& x ) : JetParticle( (JetParticle&) x ) {
+JetAntiMuon::JetAntiMuon( const JetAntiMuon& u ) : JetParticle( (JetParticle&) u ) {
 }
 
 JetAntiMuon::~JetAntiMuon() {
@@ -683,11 +747,11 @@ JetAntiMuon::~JetAntiMuon() {
 
 Particle* JetAntiMuon::ConvertToParticle() {
  static int i;
- double* x = new double[ BMLN_dynDim ];
- for( i = 0; i < BMLN_dynDim; i++ ) x[i] = state(i).standardPart();
+ double* u = new double[ BMLN_dynDim ];
+ for( i = 0; i < BMLN_dynDim; i++ ) u[i] = state(i).standardPart();
  Particle* prt = new AntiMuon( E );
- prt->setState( x );
- delete [] x;
+ prt->setState( u );
+ delete [] u;
  return prt;
 }
 

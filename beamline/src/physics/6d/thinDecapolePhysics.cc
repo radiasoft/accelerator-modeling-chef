@@ -1,6 +1,6 @@
 #include "beamline.inc"
 
-void thinDecapole::propagate( Particle& p ) {
+void thinDecapole::localPropagate( Particle& p ) {
  double x, y, k;
  double xx, xy, yy;
  
@@ -16,7 +16,7 @@ void thinDecapole::propagate( Particle& p ) {
   }
 }
 
-void thinDecapole::propagate( JetParticle& p ) {
+void thinDecapole::localPropagate( JetParticle& p ) {
   if(strength != 0) {
     Jet     k, x, y, s;;
     Jet     xx, xy, yy;
