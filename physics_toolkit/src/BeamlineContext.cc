@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -33,6 +30,11 @@
 *************************************************************************/
 
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+
 #include "slist.h"  // This should not be necessary!!!
 #include "BeamlineContext.h"
 #include "beamline.h"
@@ -41,6 +43,7 @@
 #include "ClosedOrbitSage.h"
 #include "ChromaticityAdjuster.h"
 #include "TuneAdjuster.h"
+#include "BmlUtil.h"
 
 extern void BeamlineSpitout( int, BeamlineIterator& );
 
@@ -130,6 +133,16 @@ int BeamlineContext::assign( beamline* x )
 void BeamlineContext::accept( ConstBmlVisitor& x ) const
 {
   _p_bml->accept(x);
+}
+
+
+void BeamlineContext::accept( BmlVisitor& x )
+{
+  _p_bml->accept(x);
+  this->_deleteLFS();
+  if( _p_cos ) { delete _p_cos; _p_cos = 0; }
+  if( _p_ca  ) { delete _p_ca; _p_ca = 0;   }
+  if( _p_ta  ) { delete _p_ta; _p_ta = 0;   }
 }
 
 
@@ -318,6 +331,24 @@ beamline* BeamlineContext::cloneBeamline() const
 {
   // Creates new beamline, for which the invoker is responsible.
   return dynamic_cast<beamline*>(_p_bml->Clone());
+}
+
+
+Mapping BeamlineContext::getOneTurnMap()
+{
+  if( 0 == _p_jp ) { this->_createClosedOrbit(); }
+  if( 0 == _p_jp ) {
+    cerr << "\n*** ERROR *** " << __FILE__ << ", line " << __LINE__ << ": "
+         << "\n*** ERROR *** Mapping BeamlineContext::getOneTurnMap() const"
+            "\n*** ERROR *** Unable to calculate closed orbit correctly."
+            "\n*** ERROR *** Will return identity map. Your calculations"
+            "\n*** ERROR *** will be wrong."
+         << endl;
+    Mapping idMap("id");
+    return idMap;
+  }
+  
+  return _p_jp->State();
 }
 
 
@@ -534,6 +565,52 @@ const LattFuncSage::lattFunc* BeamlineContext::getLattFuncPtr( int i )
   }
 
   return (_p_lfs->get_lattFuncPtr(i));
+}
+
+
+MatrixD BeamlineContext::equilibriumCovariance( double I1, double I2 )
+{
+  // I1 and I2 are two "invariant emittances" (essentially, actions)
+  // in units of pi mm-mr.
+  // We assume that I1 is "mostly horizontal" and I2 is
+  // "mostly vertical."
+
+  int i=0, j=0;
+  const double mm_mr = 1.0e-6;
+  const int index [] = { 0, 3, 1, 4 };
+
+  // If necessary ...
+  if( 0 == _p_jp ) { _createClosedOrbit(); }
+
+  double betaGamma = _p_jp->ReferenceBeta() * _p_jp->ReferenceGamma();
+
+  // Convert to action, in meters (crazy units)
+  I1 = ( std::abs( I1 )/betaGamma ) * mm_mr / 2.0;
+  I2 = ( std::abs( I2 )/betaGamma ) * mm_mr / 2.0;
+
+  int x   = Particle::_x();
+  int y   = Particle::_y();
+  int cdt = Particle::_cdt();
+  int xp  = Particle::_xp(); 
+  int yp  = Particle::_yp(); 
+  int dpp = Particle::_dpop();
+
+  int n = Particle::PSD;
+
+  MatrixD aa(n,n);
+  aa(x,x)     = I1;
+  aa(xp,xp)   = I1;
+  aa(y,y)     = I2;
+  aa(yp,yp)   = I2;
+
+  MatrixC E(n,n);
+  E = ( _p_jp->State() ).Jacobian().eigenVectors();
+  BmlUtil::normalize( E );
+
+  MatrixD cov(n,n);
+  cov = real(E*aa*E.dagger());
+
+  return cov;
 }
 
 

@@ -42,6 +42,7 @@ class ClosedOrbitSage;
 class ChromaticityAdjuster;
 class TuneAdjuster;
 class ConstBmlVisitor;
+class BmlVisitor;
 class Particle;
 class JetProton;
 class bmlnElmnt;
@@ -49,6 +50,8 @@ class BeamlineIterator;
 class DeepBeamlineIterator;
 class ReverseBeamlineIterator;
 class DeepReverseBeamlineIterator;
+
+class Mapping;
 
 #ifndef LATTFUNCSAGE_H
 #include "LattFuncSage.h"
@@ -69,6 +72,7 @@ class BeamlineContext
     int assign( /* const */ beamline* );
 
     void accept( ConstBmlVisitor& ) const;
+    void accept( BmlVisitor& );
     void setClonedFlag( bool );
     bool getClonedFlag();
 
@@ -94,13 +98,26 @@ class BeamlineContext
     alignmentData getAlignmentData( const bmlnElmnt* ) const;
     beamline* cloneBeamline() const;
     // Creates new beamline, for which the invoker is responsible.
+    Mapping getOneTurnMap();
+    // Returns the one turn map; 
+    // Side effect: calculates closed orbit if not
+    // already done.
 
 
-    // Sage methods
+    // Sage methods ... and others
     double getHorizontalFracTune();
     double getVerticalFracTune();
     const LattFuncSage::lattFunc* getLattFuncPtr( int );
 
+    MatrixD equilibriumCovariance( double, double );
+    // Arguments are the "invariant emittances" -
+    //   essentially two scaled action coordinates -
+    //   in pi mm-mr units. The first is "mostly horizontal," 
+    //   the second, "mostly vertical."
+    // This routine returns a covariance matrix over
+    //   the full phase space, but only the transverse
+    //   components should be believed. It assumes tat
+    //   the longitudinal actions are zero.
 
     // Adjuster methods
     int addHTuneCorrector( const bmlnElmnt* );
