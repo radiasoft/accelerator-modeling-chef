@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -8,9 +5,8 @@
 ******  BEAMLINE FACTORY:  Interprets MAD input files and             
 ******             creates instances of class beamline.                 
 ******                                                
-******  Version:   1.5
-******                                    
 ******  File:      bmlfactory.cc
+******  Version:   1.6
 ******                                                                
 ******  Copyright (c) 1999  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -50,6 +46,10 @@
 *  -Added member function to allow external evaluation of a variable expression. 
 *  -Added member function to allow parsing from in-memory buffer
 *****************************************************************************/
+
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iostream>
 using namespace std;
@@ -697,7 +697,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       
       lbel = new beamline( bel->name_ );
       ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new thinrfcavity( add_str( name, bel->name_, "center" ), harmon, volt*1.0e6*1.602177e-19, lag*2*M_PI, 0.0, shunt ) );
+      ((beamline*)lbel)->append( (bmlnElmnt*)new thinrfcavity( add_str( name, bel->name_, "center" ), harmon, volt*1.0e6, lag*2*M_PI, 0.0, shunt ) );
       ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
       
          // Ignored parameters: BETRF, PG, TFILL
