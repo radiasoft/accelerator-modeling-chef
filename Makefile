@@ -7,9 +7,9 @@ default:
 	@echo "Type one of the following:"
 	@echo "  make gcc               for a generic system with GCC"
 	@echo "  make linux             for Linux systems using GCC"
-	@echo "  make irix5             for SGI systems with IRIX 5.x"
-	@echo "  make irix5-gcc         for SGI systems with IRIX 5.x with GCC"
-	@echo "  make irix5-debug       for SGI systems with IRIX 5.x with GCC debug on"
+	@echo "  make irix              for SGI systems with IRIX"
+	@echo "  make irix -gcc         for SGI systems with IRIX with GCC"
+	@echo "  make irix -debug       for SGI systems with IRIX with GCC debug on"
 	@echo "  make solaris           for Solaris systems and Sun compiler"
 
 	@echo "  make solaris-debug     for Solaris systems and Sun debug"
@@ -45,7 +45,8 @@ LINKDIRS  = beamline \
 	machines/accumulator \
 	machines/mi
 
-SUBDIRS  = beamline/src \
+SUBDIRS  = basic_toolkit/src \
+	beamline/src \
 	beamline/src/physics/6d \
 	beamline/src/physics/mad \
 	filter/src \
@@ -57,6 +58,7 @@ SUBDIRS  = beamline/src \
 	machines/recycler/src \
 	machines/swyd/src \
 	machines/tev/src \
+	physics_toolkit/src \
 	server/src \
 	socket/src \
 	sybase/src \
@@ -79,7 +81,7 @@ gcc solaris-gcc solaris-gcc-debug solaris solaris-debug solaris-devel solaris-de
 		done
 	@echo "== MAKE COMPLETE =="
 
-linux irix5 irix5-gcc irix5-debug :
+linux irix irix-gcc irix-debug irix-depend:
 	@set -x; for i in $(SUBDIRS); do \
 		(cd $$i; $(MAKE)  $@ ); \
 		done

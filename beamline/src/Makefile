@@ -1,13 +1,11 @@
 .SUFFIXES: .o .C .c .cc
 
-INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(SOCKET_INC) -I$(TKINC) -I$(XINC)
+INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(BASIC_TOOLKIT_INC) -I$(PHYSICS_TOOLKIT_INC) -I$(SOCKET_INC) -I$(TKINC) -I$(XINC)
 
 DEPEND_INC = $(INCLUDEDIR) -I$(COMPILER_DEPEND)
 
 OBJS = BBLens.o \
        BmlVisitor.o\
-       EdwardsTeng.o \
-       FPSolver.o \
        InsertionList.o \
        JetQuadrupole.o\
        JetThinQuad.o\

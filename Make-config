@@ -25,6 +25,8 @@ MI_INC  = $(FNALROOT)/machines/mi/include
 MI_8_INC  = $(FNALROOT)/machines/mi_8gev/include
 MR_8_INC  = $(FNALROOT)/machines/mr_8gev/include
 TCL_INC   = $(FNALROOT)/tcl/include
+BASIC_TOOLKIT_INC = $(FNALROOT)/basic_toolkit/include
+PHYSICS_TOOLKIT_INC = $(FNALROOT)/physics_toolkit/include
 
 gcc:
 	$(MAKE) targets \
@@ -53,7 +55,7 @@ linux:
 	"XINC = -I/usr/include" \
 	"LIBDIR = $(FNALROOT)/lib/gcc"
 
-irix5:
+irix:
 	pmake targets \
 	"C   = cc" \
 	"C++ = CC" \
@@ -62,11 +64,12 @@ irix5:
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
-	"TKINC = -I/usr/local/tk-tcl/include" \
-	"XINC = -I/usr/local/X11R5/include" \
+	"SYBASEINC = /usr/local/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/include" \
 	"LIBDIR = $(FNALROOT)/lib/sgi"
 
-irix5-gcc:
+irix-gcc:
 	pmake targets \
 	"C   = gcc" \
 	"C++ = g++" \
@@ -75,12 +78,13 @@ irix5-gcc:
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
-	"TKINC = -I/usr/local/tk-tcl/include" \
-	"XINC = -I/usr/local/X11R5/include" \
-	"SYBASEINC = -I/usr/local/sybase"\
+	"SYBASEINC = /usr/local/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/include" \
+	"SYBASEINC = /usr/local/sybase" \
 	"LIBDIR = $(FNALROOT)/lib/sgi"
 
-irix5-debug:
+irix-gcc-debug:
 	pmake targets \
 	"C   = gcc" \
 	"C++ = g++" \
@@ -89,8 +93,9 @@ irix5-debug:
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
-	"TKINC = /usr/local/tk-tcl/include" \
-	"XINC = /usr/local/X11R5/include" \
+	"SYBASEINC = /usr/local/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/include" \
 	"LIBDIR = $(FNALROOT)/lib/sgi"
 
 solaris:
@@ -191,4 +196,12 @@ solaris-depend:
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include"
+
+irix-depend:
+	pmake dpend \
+	"COMPILER_DEPEND = /usr/include/CC" \
+	"SYBASEINC = /usr/local/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"XINC = /usr/include" \
+	"LIBDIR = $(FNALROOT)/lib/sgi"
 
