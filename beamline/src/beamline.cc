@@ -1245,7 +1245,7 @@ beamline& beamline::operator=( const beamline& a ) {
  return *this;
 } 
 
-beamline* beamline::flatten() {
+beamline* beamline::flatten() const {
  dlist_iterator  getNext( *(dlist*) this );
  dlist_iterator* getNew;
  beamline*       r;
