@@ -2,7 +2,12 @@
 
 int MappPropFunc::operator() ( bmlnElmnt* b, Particle& p ) 
 {
+  cout << "DGN> Entering MappPropFunc::operator()" << endl;
+  cout << "DGN> " << p.State() << endl;
+  cout << "DGN> " << _myMap( p.State() ) << endl;
   p.setState( _myMap( p.State() ) );
+  cout << "DGN> " << p.State() << endl;
+  cout << "DGN> Leaving MappPropFunc::operator()" << endl;
   return 0;
 }
 
@@ -18,7 +23,7 @@ MappPropFunc::MappPropFunc( JetParticle& p, bmlnElmnt& b )
 {
   // This assumes the p has already been set 
   // up correctly for the in-state.
-  b.propagate( p );
+  b.localPropagate( p );
   _myMap.CopyFrom( p.State() );
 }
 
@@ -36,5 +41,11 @@ MappPropFunc::MappPropFunc( const MappPropFunc& x )
 void MappPropFunc::setMapping( const Mapping& x )
 {
   _myMap.CopyFrom( x );
+}
+
+
+Mapping MappPropFunc::getMapping()
+{
+  return _myMap;
 }
 

@@ -16,6 +16,7 @@ class MappPropFunc : public bmlnElmnt::PropFunc
     ~MappPropFunc(){}
 
     void setMapping( const Mapping& );
+    Mapping getMapping();
 
   protected:
     Mapping _myMap;
