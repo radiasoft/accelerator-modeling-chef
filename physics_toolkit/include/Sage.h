@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
 ******                                    
 ******  File:      Sage.h
+******  Version:   1.1
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -35,7 +35,7 @@
  *  Base class for all sages.
  *  
  *  Leo Michelotti
- *  November 23, 1998
+ *  Original code: November 23, 1998
  */
 
 #ifndef SAGE_H
@@ -43,10 +43,6 @@
 
 #ifndef BEAMLINE_H
 #include "beamline.h"
-#endif
-
-#ifndef MATHCONS_H
-#include "MathConstants.h"     // to get bool
 #endif
 
 class Sage 
@@ -67,18 +63,20 @@ public:
 
  virtual void eraseAll() = 0;
 
- typedef char (*CRITFUNC)( bmlnElmnt* );
+ typedef bool (*CRITFUNC)( bmlnElmnt* );
 
 protected:
  beamline*           _myBeamlinePtr;
  beamline::arrayRep* _arrayPtr;
- char                _verbose;
+ bool                _verbose;
  bool                _cloned;
- bmlnElmnt**         _element;
+ ostream&            _errorStream;  
+ ostream&            _outputStream;  
+
 
 public:
- static char no ( bmlnElmnt* );
- static char yes( bmlnElmnt* );
+ static bool no ( bmlnElmnt* );
+ static bool yes( bmlnElmnt* );
 
 };
 
