@@ -132,6 +132,7 @@ TAR_FILES =	\
 	fnal/ChangeLog \
 	fnal/basic_toolkit \
 	fnal/beamline	\
+	fnal/integrator \
 	fnal/mxyzptlk	\
 	fnal/machines \
 	fnal/physics_toolkit \
