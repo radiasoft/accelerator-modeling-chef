@@ -95,6 +95,9 @@ class CF_sbend : public bmlnElmnt
   // Returns the dipole field,
   // NOT the integrated dipole field.
 
+  inline double getAngle() { return _angle; }
+  inline double Angle()    { return _angle; }
+
  private:
 
   bmlnElmnt** _u;
