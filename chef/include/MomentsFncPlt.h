@@ -86,10 +86,8 @@ class InputFrame : public QFrame
     double* _azimuth;
     double* _beta_H;
     double* _alpha_H;
-    double* _psi_H;
     double* _beta_V;
     double* _alpha_V;
-    double* _psi_V;
     double* _inv_beta_H;
     double* _inv_beta_V;
     double* _root_beta_H;
