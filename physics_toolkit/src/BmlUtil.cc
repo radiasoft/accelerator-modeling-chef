@@ -34,6 +34,7 @@
 #include <config.h>
 #endif
 
+#include "GenericException.h"
 #include "BmlUtil.h"
 #include "TMatrix.h"
 
@@ -62,18 +63,15 @@ void BmlUtil::normalize( MatrixC& B )
        /* CAUTION */   for( j = 0; j < 6; j++ ) {
        /* CAUTION */    if( j == i ) continue;
        /* CAUTION */    else if( abs( Nx(i,j) ) > BmlUtil::mlt1 ) {
-       /* CAUTION */          cout << "\n"
-       /* CAUTION */               << "***                                        \n"
-       /* CAUTION */               << "*** ERROR:                                 \n"
-       /* CAUTION */               << "*** ERROR: void normalForm()               \n"
-       /* CAUTION */               << "*** ERROR: Nondiagonal element in BJB^TJ   \n"
-       /* CAUTION */               << "*** ERROR: abs( Nx( " << i << ", " << j 
-                                   << " ) ) = " << abs(Nx(i,j)) << "\n"
-       /* CAUTION */               << "*** ERROR:                                 \n"
-       /* CAUTION */               << endl;
-       /* CAUTION */          exit(0);
-       /* CAUTION */         }
-       /* CAUTION */        else Nx(i,j) = complex_0;
+       /* CAUTION */          ostringstream uic;
+       /* CAUTION */          uic << "Nondiagonal element in BJB^TJ: abs( Nx( " 
+                                  << i << ", " << j << " ) ) = " 
+                                  << std::abs(Nx(i,j));
+       /* CAUTION */          throw( GenericException( __FILE__, __LINE__, 
+       /* CAUTION */                 "void BmlUtil::normalize( MatrixC& B )",
+       /* CAUTION */                 uic.str().c_str() ) );
+       /* CAUTION */    }
+       /* CAUTION */    else Nx(i,j) = complex_0;
        /* CAUTION */   }
   }
 

@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,7 +29,11 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
+#include "GenericException.h"
 #include "beamline.h"
 #include "FPSolver.h"
 
@@ -53,16 +54,13 @@ FPinfo::FPinfo( const double& s, const Vector& u ) : state( u.Dim() ) {
 FPSolver::FPSolver( beamline* bml, int n ) {
   int i;
   dimension = n;
-
   if( n <= 0 || bml == 0 ) {
-    cerr << "*** ERROR ***                            \n"
-         << "*** ERROR *** FPSolver::FPSolver         \n"
-         << "*** ERROR *** Incorrect parameters:      \n"
-         << "*** ERROR *** bml = " << (int) bml << "  \n"
-         << "*** ERROR *** n   = " <<       n   << "  \n"
-         << "*** ERROR ***                            \n"
-         << endl;
-    exit(1);
+    ostringstream uic;
+    uic << "Incorrect parameters: bml = " << (int) bml 
+        << " n = " << n;
+    throw( GenericException( __FILE__, __LINE__, 
+           "FPSolver::FPSolver( beamline* bml, int n )",
+           uic.str().c_str() ) );
   }
 
   jumpScale = new double [ n ];
@@ -90,13 +88,12 @@ FPSolver::~FPSolver() {
 int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
 {
   if( dimension != p->State().Dim() ) {
-    cerr << "*** ERROR ***                                         \n"
-            "*** ERROR *** FPSolver::operator()(Proton*, char*)    \n"
-            "*** ERROR *** Dimensions are not correct.             \n"
-            "*** ERROR ***  " << dimension << " != " << p->State().Dim() << "\n"
-            "*** ERROR ***                                         \n"
-         << endl;
-    exit(1);
+    ostringstream uic;
+    uic << "Dimensions are not correct. " << dimension 
+        << " != " << p->State().Dim();
+    throw( GenericException( __FILE__, __LINE__, 
+           "int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )",
+           uic.str().c_str() ) );
   }
 
   int i, j;
@@ -347,13 +344,12 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
   Vector z = p->State();
 
   if( dimension != z.Dim() ) {
-    cerr << "*** ERROR ***                                         \n"
-            "*** ERROR *** FPSolver::operator()(Proton*)           \n"
-            "*** ERROR *** Dimensions are not correct.             \n"
-            "*** ERROR ***  " << dimension << " != " << z.Dim() << "\n"
-            "*** ERROR ***                                         \n"
-         << endl;
-    exit(1);
+    ostringstream uic;
+    uic << "Dimensions are not correct. "
+        << dimension << " != " << z.Dim();
+    throw( GenericException( __FILE__, __LINE__, 
+           "int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )",
+           uic.str().c_str() ) );
   }
 
   int i;
@@ -676,14 +672,12 @@ void FPSolver::eraseAll() {
 double& FPSolver::JumpScale( int i ) { 
   if( i >= 0 && i < dimension ) return jumpScale[i];
   else {
-    cerr << "*** ERROR ***                                    \n" 
-         << "*** ERROR *** FPSolver::JumpScale                \n" 
-	 << "*** ERROR *** integer argument out of range      \n" 
-	 << "*** ERROR *** Either " << i << " < 0 or          \n" 
-	 << "*** ERROR *** " << dimension << " <= " << i << " \n" 
-	 << "*** ERROR ***                                    \n" 
-	 << endl;
-    exit(1);
+    ostringstream uic;
+    uic << "integer argument out of range. Either " 
+        << i << " < 0 or " << dimension << " <= " << i;
+    throw( GenericException( __FILE__, __LINE__, 
+           "double& FPSolver::JumpScale( int i )",
+           uic.str().c_str() ) );
   }
 
   return jumpScale[i];  // This line will never be reached.
@@ -693,14 +687,12 @@ double& FPSolver::JumpScale( int i ) {
 double& FPSolver::ZeroScale( int i ) { 
   if( i >= 0 && i < dimension ) return zeroScale[i];
   else {
-    cerr << "*** ERROR ***                                    \n" 
-         << "*** ERROR *** FPSolver::zeroScale                \n" 
-	 << "*** ERROR *** integer argument out of range      \n" 
-	 << "*** ERROR *** Either " << i << " < 0 or          \n" 
-	 << "*** ERROR *** " << dimension << " <= " << i << " \n" 
-	 << "*** ERROR ***                                    \n" 
-	 << endl;
-    exit(1);
+    ostringstream uic;
+    uic << "integer argument out of range. Either " 
+        << i << " < 0 or " << dimension << " <= " << i;
+    throw( GenericException( __FILE__, __LINE__, 
+           "double& FPSolver::ZeroScale( int i )",
+           uic.str().c_str() ) );
   }
 
   return zeroScale[i];  // This line will never be reached.
