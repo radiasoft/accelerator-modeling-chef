@@ -7,7 +7,7 @@
 // -- Elliott McCrory
 
 
-// #if defined(__SUNPRO_CC) || defined(__sparc)
+// #if defined(__SUNPRO_CC)
 #if defined(__SUNPRO_CC)
 typedef enum { false = 0, true = 1 } bool;
 #endif // __SUNPRO_CC
