@@ -16,7 +16,7 @@
 #if !defined(madparser_h)
 #include "madparser.h"
 #endif /* madparser_h */  
-  
+
 #include "mad_yacc.tab.h"
 
 #define MAX_ERR_MSG_LENGTH 256
@@ -25,16 +25,23 @@ static char     errmsg[MAX_ERR_MSG_LENGTH];
 static int      eof_encountered = 0;
 static GString* comments = NULL;
  
-static void copy_and_format( char* dst, char* src );
-void        yyerror( char* s );
+static  void copy_and_format( char* dst, char* src );
+
+void    read_from_string(const char* buffer); 
+void    yyerror( char* s );
 
 extern struct madparser_* mp; 
+
 
 %}
 
 %x Comment Include
 
 %%
+
+\!(P|p)(Y|y)(T|t)(H|h)(O|o)(N|n)"_"(B|b)(E|e)(G|g)(I|i)(N|n)[ \t]*\n { fprintf(stderr, "PYTHON_BEGIN\n"); }
+\!(P|p)(Y|y)(T|t)(H|h)(O|o)(N|n)"_"(E|e)(N|n)(D|d)[ \t]*\n           { fprintf(stderr, "PYTHON_END\n");   }
+
 
 <*>^.*\n			{
 				  madparser_inc_linenum(mp);
@@ -44,6 +51,8 @@ extern struct madparser_* mp;
 (h|H)(e|E)(l|L)(p|P)					return MAD_HELP;
 (s|S)(h|H)(o|O)(w|W)					return MAD_SHOW;
 (t|T)(i|I)(t|T)(l|L)(e|E)				return MAD_TITLE;
+(c|C)(a|A)(l|L)(l|L)                                    return MAD_CALL;
+(r|R)(e|E)(t|T)(u|U)(r|R)(n|N)                          return MAD_RETURN;
 (s|S)(t|T)(o|O)(p|P)					return MAD_STOP;
 
 (o|O)(p|P)(t|T)(i|I)(o|O)(n|N)				return MAD_OPTION;
@@ -344,9 +353,7 @@ extern struct madparser_* mp;
 (m|M)(a|A)(x|X)			return MAD_MAX;
 (m|M)(i|I)(n|N)			return MAD_MIN;
 
-(C|c)(A|a)(L|l)(L|l)[ \t]*(F|f)(I|i)(L|l)(E|e)(N|n)(A|a)(M|m)(E|e)[ \t]*= { BEGIN(Include); }
-
-^[ \t]*\!.*\n			{
+^[ \t]+\!.*\n			{
 				  char* ptr;
 				  for ( ptr = yytext; *ptr != '!'; ++ptr ) {}
 				  comments = g_string_new( ++ptr );
@@ -401,6 +408,7 @@ extern struct madparser_* mp;
 				  } else {
 				      yyerror( "Memory allocation problem\n" );
 				  }
+
 				  return MAD_EXCOMMENT;
 				}
 
@@ -434,7 +442,7 @@ extern struct madparser_* mp;
 				      strcpy( errmsg, "fatal error ! number out of range: " );
 				      assert( strlen( errmsg )+yyleng+1 < MAX_ERR_MSG_LENGTH );
 				      yyerror( strcat( errmsg, (char*)yylval.sval ) );
-				      bmlfactory_exit();
+				      exit( EXIT_FAILURE );
 				  }
 				  current_constant = CONSTANT_DOUBLE;
 				  return MAD_NUMERIC_LITERAL;
@@ -459,7 +467,7 @@ extern struct madparser_* mp;
 				  strcpy( errmsg, "Illegal *,/,+,- combination: " );
 				  assert( strlen( errmsg )+yyleng < MAX_ERR_MSG_LENGTH );
 				  yyerror( strcat( errmsg, (char*)yytext ) );
-				  bmlfactory_exit();
+				  exit( EXIT_FAILURE );
 				}
 
 [ \t]* |
@@ -469,56 +477,22 @@ extern struct madparser_* mp;
 \n |
 ";"				{ return MAD_NEWLINE; }
 
-<<EOF>>				{
-				  if ( eof_encountered == 0) {
-			            eof_encountered = 1;
-				    return MAD_NEWLINE;
-				  } else {
-   /*
-                                           if ( --include_stack_ptr < 0 ) {
-                                             yyterminate();
-                                           } else {
-                                             yy_delete_buffer( YY_CURRENT_BUFFER );
-                                             yy_switch_to_buffer( include_stack[include_stack_ptr] );
-                                           }
-  */
-                                    eof_encountered = 0; /* !!! */
+<<EOF>>                         {
 
-                                    if ( madparser_has_input(mp) ) {
-                                      yy_delete_buffer( (YY_BUFFER_STATE)madparser_current_buffer(mp) );
-                                      yy_switch_to_buffer( (YY_BUFFER_STATE)madparser_restore_yybuff(mp) );
-                                    } else {
-                                      yyterminate();
-                                    }
+                                  if ( madparser_has_input(mp) ) 
+                                  {
+                                     fprintf(stderr, "Warning: Added missing RETURN statement.\n");
+                                     return MAD_RETURN;   /*this takes care of a missing RETURN statement */
                                   }
-				}
-
-.				return yytext[0];
-
-<Include>[ \t]*      /* eat the whitespace */
-
-<Include>[^ \t\n]+              { /* got the include file name */
-                                     /*
-                                     if ( include_stack_ptr >= MAX_INCLUDE_DEPTH ) {
-                                       fprintf( stderr, "Includes nested too deeply: %d\n", MAX_INCLUDE_DEPTH );
-                                       bmlfactory_exit();
-                                     }     
-                                     include_stack[include_stack_ptr++] = YY_CURRENT_BUFFER;
-                                    */
-                                  assert( sizeof(YY_CURRENT_BUFFER) <= sizeof(void*) );
-                                  madparser_save_yybuff( mp, YY_CURRENT_BUFFER );
-                                  yyin = madparser_new_yybuff( mp, yytext );
-                                  assert( yyin != NULL );
-                                     /*
-                                  yyin = fopen( yytext, "r" );
-                                     */                                  
-                                  if ( ! yyin ) {
-                                    fprintf( stderr, "Unable to open file %s\n", yytext );
-                                    bmlfactory_exit();
+                                  else
+                                  { 
+                                     yyterminate();
+                                     return;
                                   }
-                                  yy_switch_to_buffer( yy_create_buffer( yyin, YY_BUF_SIZE ) );     
-                                  BEGIN(INITIAL);
                                 }
+                                ;
+
+.                               return yytext[0];
 
 %%
 
@@ -546,4 +520,34 @@ copy_and_format( char* dst, char* src ) {
   }
 
   *q = '\0';
+}
+
+void read_from_string(const char* buffer) 
+{
+  yy_scan_string(buffer);
+  madparser_set_inmemory_flag(mp,1);
+
+} 
+
+void reset_input_buffer() 
+{
+  if ( madparser_is_reading_from_memory(mp) != 0 ) 
+  {
+
+    BEGIN(0);    
+    YY_FLUSH_BUFFER;
+    yy_delete_buffer( YY_CURRENT_BUFFER); 
+
+  }
+  else
+  {
+    BEGIN(0);    
+    YY_FLUSH_BUFFER;
+  } 
+} 
+
+void* get_current_buffer( ){
+
+return YY_CURRENT_BUFFER;
+
 }
