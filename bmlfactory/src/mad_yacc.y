@@ -1,7 +1,5 @@
 %{
-#if HAVE_CONFIG_H
 #include <config.h>
-#endif
 #include <assert.h>
 #include <math.h>  
 #include <stdlib.h>  
@@ -48,10 +46,13 @@
 #include "madparser.h"
 #endif /* madparser_h */
 
-#define YYDEBUG 1
+/**** this should be undefined for the production version ***/
+#define YYDEBUG 1 
 
 void yyerror( char* s );
 int  yylex( void );
+void bmlfactory_exit(const char*, int, const char*);
+void bmlfactory_parse_error(const char*, int, const char*);
 
 extern struct madparser_* mp;
  
@@ -127,7 +128,7 @@ extern struct madparser_* mp;
 
 %token MAD_SQRT MAD_LOG MAD_EXP MAD_SIN MAD_COS MAD_TAN MAD_ASIN MAD_ABS MAD_MAX MAD_MIN
 
-%token MAD_CALL MAD_FILENAME
+%token MAD_CALL MAD_FILENAME MAD_RETURN
 
 %start mad_input_list
 
@@ -188,8 +189,35 @@ command				: help
 				| use
 				| beam
 				| resbeam
+                                | call
+                                | return
 				;
 
+/* call */
+
+call                            : MAD_CALL ',' call_attr
+                                | MAD_CALL ','  MAD_STRING_LITERAL 
+                                { 
+                                  yyin = madparser_call_include(mp, $<sval>3 ,(void*) YY_CURRENT_BUFFER );
+                                  yy_switch_to_buffer( yy_create_buffer( yyin, YY_BUF_SIZE ) );
+				}
+                                ;
+
+call_attr			: MAD_FILENAME '=' MAD_STRING_LITERAL 
+                                {
+
+                                  yyin = madparser_call_include(mp, $<sval>3, (void*) YY_CURRENT_BUFFER );
+                                  yy_switch_to_buffer( yy_create_buffer( yyin, YY_BUF_SIZE ) );
+				}
+                                ; 
+ 
+return                          : MAD_RETURN { 
+
+                                 yy_delete_buffer( YY_CURRENT_BUFFER );
+                                 yy_switch_to_buffer( (YY_BUFFER_STATE) madparser_return_from_include( mp ) );
+				
+                                }
+                                ;
 /* Help */
 
 help				: MAD_HELP { printf("List all valid keywords.\n"); }
@@ -439,7 +467,7 @@ var_definition			: identifier MAD_DEF_PARAM var_expression {
 marker_definition		: identifier ':' MAD_MARKER marker_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp),  madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_MARKER );
@@ -468,7 +496,7 @@ marker_attr			: MAD_TYPE '=' identifier {
 drift_definition		: identifier ':' MAD_DRIFT drift_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_DRIFT );
@@ -500,7 +528,7 @@ drift_attr			: MAD_TYPE '=' identifier {
 sbend_definition		: identifier ':' MAD_SBEND sbend_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp)  );
                                   }
 
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_SBEND );
@@ -570,7 +598,7 @@ sbend_attr			: MAD_TYPE '=' identifier {
 rbend_definition		: identifier ':' MAD_RBEND rbend_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
 
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_RBEND );
@@ -640,7 +668,7 @@ rbend_attr			: MAD_TYPE '=' identifier {
 quadrupole_definition		: identifier ':' MAD_QUADRUPOLE quadrupole_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp),  madparser_expr_alloc(mp) );
                                   }
 
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_QUADRUPOLE );
@@ -683,7 +711,7 @@ quadrupole_attr			: MAD_TYPE '=' identifier {
 sextupole_definition		: identifier ':' MAD_SEXTUPOLE sextupole_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp ) );
                                   }
 
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_SEXTUPOLE );
@@ -726,7 +754,7 @@ sextupole_attr			: MAD_TYPE '=' identifier {
 octupole_definition		: identifier ':' MAD_OCTUPOLE octupole_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp),  madparser_expr_alloc(mp) );
                                   }
 
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_OCTUPOLE );
@@ -764,7 +792,7 @@ octupole_attr			: MAD_TYPE '=' identifier {
 multipole_definition		: identifier ':' MAD_MULTIPOLE multipole_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_MULTIPOLE );
@@ -901,7 +929,7 @@ multipole_attr			: MAD_TYPE '=' identifier {
 solenoid_definition		: identifier ':' MAD_SOLENOID solenoid_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
 
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_SOLENOID );
@@ -936,7 +964,7 @@ solenoid_attr			: MAD_TYPE '=' identifier {
 hkicker_definition		: identifier ':' MAD_HKICKER hkicker_attrs { 
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_HKICKER );
@@ -950,7 +978,7 @@ hkicker_definition		: identifier ':' MAD_HKICKER hkicker_attrs {
 hkick_definition		: identifier ':' MAD_HKICK hkicker_attrs { 
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_HKICKER );
@@ -984,7 +1012,7 @@ hkicker_attr			: MAD_TYPE '=' identifier {
 vkicker_definition		: identifier ':' MAD_VKICKER vkicker_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_VKICKER );
@@ -998,7 +1026,7 @@ vkicker_definition		: identifier ':' MAD_VKICKER vkicker_attrs {
 vkick_definition		: identifier ':' MAD_VKICK vkicker_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_VKICKER );
@@ -1031,7 +1059,7 @@ vkicker_attr			: MAD_TYPE '=' identifier {
 kicker_definition		: identifier ':' MAD_KICKER kicker_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL )
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp)  );
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_KICKER );
                                   beam_element_set_name( madparser_current_bel(mp), $<sval>1, madparser_current_bel_type(mp) );
@@ -1066,7 +1094,7 @@ kicker_attr			: MAD_TYPE '=' identifier {
 rfcavity_definition		: identifier ':' MAD_RFCAVITY rfcavity_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_RFCAVITY );
@@ -1114,7 +1142,7 @@ rfcavity_attr			: MAD_TYPE '=' identifier {
 elseparator_definition		: identifier ':' MAD_ELSEPARATOR elseparator_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_ELSEPARATOR );
@@ -1147,7 +1175,7 @@ elseparator_attr		: MAD_TYPE '=' identifier {
 hmonitor_definition		: identifier ':' MAD_HMONITOR hmonitor_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp)  );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_HMONITOR );
@@ -1161,7 +1189,7 @@ hmonitor_definition		: identifier ':' MAD_HMONITOR hmonitor_attrs {
 hmon_definition		        : identifier ':' MAD_HMON hmonitor_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_HMONITOR );
@@ -1188,7 +1216,7 @@ hmonitor_attr			: MAD_TYPE '=' identifier {
 vmonitor_definition		: identifier ':' MAD_VMONITOR vmonitor_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_VMONITOR );
@@ -1202,7 +1230,7 @@ vmonitor_definition		: identifier ':' MAD_VMONITOR vmonitor_attrs {
 vmon_definition		: identifier ':' MAD_VMON vmonitor_attrs {
                           beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                           if ( ptr != NULL ) {
-                            beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                            beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                           }
                           
                           beam_element_set_kind( madparser_current_bel(mp), BEL_VMONITOR );
@@ -1229,7 +1257,7 @@ vmonitor_attr			: MAD_TYPE '=' identifier {
 monitor_definition		: identifier ':' MAD_MONITOR monitor_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
 
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_MONITOR );
@@ -1256,7 +1284,7 @@ monitor_attr			: MAD_TYPE '=' identifier {
 instrument_definition		: identifier ':' MAD_INSTRUMENT instrument_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
 
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_INSTRUMENT );
@@ -1283,7 +1311,7 @@ instrument_attr			: MAD_TYPE '=' identifier {
 ecollimator_definition		: identifier ':' MAD_ECOLLIMATOR ecollimator_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_ECOLLIMATOR );
@@ -1316,7 +1344,7 @@ ecollimator_attr		: MAD_TYPE '=' identifier {
 rcollimator_definition		: identifier ':' MAD_RCOLLIMATOR rcollimator_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
 
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_RCOLLIMATOR );
@@ -1349,7 +1377,7 @@ rcollimator_attr		: MAD_TYPE '=' identifier {
 yrot_definition			: identifier ':' MAD_YROT yrot_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp),  madparser_expr_alloc(mp));
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_YROT );
@@ -1376,7 +1404,7 @@ yrot_attr			: MAD_TYPE '=' identifier {
 srot_definition			: identifier ':' MAD_SROT srot_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_SROT );
@@ -1403,7 +1431,7 @@ srot_attr			: MAD_TYPE '=' identifier {
 beambeam_definition		: identifier ':' MAD_BEAMBEAM beambeam_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_BEAMBEAM );
@@ -1447,7 +1475,7 @@ matrix_definition		: identifier ':' MAD_MATRIX matrix_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
 
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_MATRIX );
@@ -1514,7 +1542,7 @@ matrix_attr			: MAD_TYPE '=' identifier {
 lump_definition			: identifier ':' MAD_LUMP lump_attrs {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
-                                    beam_element_delete( ptr, madparser_bel_alloc(mp) );
+                                    beam_element_delete( ptr, madparser_bel_alloc(mp), madparser_expr_alloc(mp) );
                                   }
                                   
                                   beam_element_set_kind( madparser_current_bel(mp), BEL_LUMP );
@@ -1848,7 +1876,7 @@ const_expr_unit			: MAD_NUMERIC_LITERAL {
                                   if ( ptr != 0 ) {
                                     if ( ptr->svalue_ != NULL ) {
                                       fprintf(stderr, "fatal parser error ! string constant %s used in an algebraic expression\n", $<sval>1);
-                                      bmlfactory_exit();
+                                      exit( EXIT_FAILURE );
                                     }
                                     
                                     data->kind_ = NUM_IDENT_EXPR;
@@ -2178,20 +2206,20 @@ beam_attrs			: beam_attr
 				;
 
 beam_attr			: MAD_PARTICLE '=' particle_name
-				| MAD_MASS '=' const_expression { printf("BEAM with particle mass=expr.\n"); }
-				| MAD_CHARGE '=' const_expression { printf("BEAM with particle charge=expr.\n"); }
-				| MAD_ENERGY '=' const_expression { printf("BEAM with energy=expr.\n"); }
-				| MAD_PC '=' const_expression { printf("BEAM with pc=expr.\n"); }
-				| MAD_GAMMA '=' const_expression { printf("BEAM with gamma=expr.\n"); }
-				| MAD_EX '=' const_expression { printf("BEAM with ex=expr.\n"); }
-				| MAD_EXN '=' const_expression { printf("BEAM with exn=expr.\n"); }
-				| MAD_EY '=' const_expression { printf("BEAM with ey=expr.\n"); }
-				| MAD_EYN '=' const_expression { printf("BEAM with eyn=expr.\n"); }
-				| MAD_ET '=' const_expression { printf("BEAM with et=expr.\n"); }
-				| MAD_SIGT '=' const_expression { printf("BEAM with sigt=expr.\n"); }
-				| MAD_SIGE '=' const_expression { printf("BEAM with sige=expr.\n"); }
-				| MAD_KBUNCH '=' const_expression { printf("BEAM with kbunch=expr.\n"); }
-				| MAD_NPART '=' const_expression { printf("BEAM with npart=expr.\n"); }
+				| MAD_MASS     '=' const_expression { printf("BEAM with particle mass=expr.\n"); }
+				| MAD_CHARGE   '=' const_expression { printf("BEAM with particle charge=expr.\n"); }
+				| MAD_ENERGY   '=' const_expression { printf("BEAM with energy=expr.\n"); }
+				| MAD_PC       '=' const_expression { printf("BEAM with pc=expr.\n"); }
+				| MAD_GAMMA    '=' const_expression { printf("BEAM with gamma=expr.\n"); }
+				| MAD_EX       '=' const_expression { printf("BEAM with ex=expr.\n"); }
+				| MAD_EXN      '=' const_expression { printf("BEAM with exn=expr.\n"); }
+				| MAD_EY       '=' const_expression { printf("BEAM with ey=expr.\n"); }
+				| MAD_EYN      '=' const_expression { printf("BEAM with eyn=expr.\n"); }
+				| MAD_ET       '=' const_expression { printf("BEAM with et=expr.\n"); }
+				| MAD_SIGT     '=' const_expression { printf("BEAM with sigt=expr.\n"); }
+				| MAD_SIGE     '=' const_expression { printf("BEAM with sige=expr.\n"); }
+				| MAD_KBUNCH   '=' const_expression { printf("BEAM with kbunch=expr.\n"); }
+				| MAD_NPART    '=' const_expression { printf("BEAM with npart=expr.\n"); }
 				| MAD_BCURRENT '=' const_expression { printf("BEAM with bcurrent=expr.\n"); }
 				| MAD_BUNCHED { printf("BEAM with BUNCHED true.\n"); }
 				| '-' MAD_BUNCHED { printf("BEAM with BUNCHED false.\n"); }
@@ -2543,5 +2571,11 @@ identifier			: MAD_IDENTIFIER
 
 void
 yyerror( char* s ) {
+
   fprintf( stderr, "Line %d: %s\n" , madparser_linenum(mp), s );
+  if (  madparser_is_reading_from_memory(mp) != 0 )
+        bmlfactory_parse_error( "Current Editor Window", madparser_linenum(mp), s);
+  else
+        bmlfactory_parse_error( madparser_current_filename(mp), madparser_linenum(mp), s);
+
 }
