@@ -310,12 +310,9 @@ double CF_rbend::getQuadrupole() const
 
 void CF_rbend::Split( double, bmlnElmnt**, bmlnElmnt** )
 {
-  cerr << "*** ERROR ***                                 \n" 
-          "*** ERROR *** CF_rbend::Split                 \n" 
-          "*** ERROR *** This function is not written.   \n" 
-          "*** ERROR ***                                 \n" 
-       << endl;
-  exit(1);
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "void CF_rbend::Split( double, bmlnElmnt**, bmlnElmnt** )", 
+         "Function not implemented." ) );
 }
 
 
@@ -371,12 +368,9 @@ ostream& CF_rbend::writeTo( ostream& os )
 {
   int n = ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   if( 0 != n%12 ) {
-    cerr << "*** ERROR ***                                         \n"
-            "*** ERROR *** CF_rbend::writeTo                       \n"
-            "*** ERROR *** Unexpected number of blocks.            \n"
-            "*** ERROR ***                                         \n"
-         << endl;
-    exit(9);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "ostream& CF_rbend::writeTo( ostream& os )", 
+           "Unexpected number of blocks." ) );
   }
 
   os << (n/12) << "  ";
@@ -476,13 +470,9 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
 
   m = ( myJP.State().Jacobian() )( xp, x );
   if( fabs(m) < 1.0e-12 ) {
-    cerr << "*** ERROR ***                                       \n"
-         << "*** ERROR *** CF_rbend::AdjustPosition              \n"
-         << "*** ERROR *** A horrible, inexplicable error has    \n"
-         << "*** ERROR *** occurred. A multi-valued solution     \n"
-         << "*** ERROR *** is suspected.                         \n"
-         << "*** ERROR ***                                       \n";
-    exit(0);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "double CF_rbend::AdjustPosition( const JetProton& arg_jp )", 
+           "Horrible, inexplicable error: a multi-valued solution is suspected." ) );
   }
   m = 1.0 / m;
 
@@ -513,15 +503,9 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
     this->propagate( myJP );
     m = ( myJP.State().Jacobian() )( xp, x );
     if( fabs(m) < 1.0e-12 ) {
-      cerr << "*** ERROR ***                                       \n"
-              "*** ERROR *** CF_rbend::AdjustPosition              \n"
-              "*** ERROR *** A horrible, inexplicable error has    \n"
-              "*** ERROR *** occurred at step "
-                                          <<  i
-                                          << " . A multi-valued solution \n"
-              "*** ERROR *** is suspected.                         \n"
-              "*** ERROR ***                                       \n";
-      exit(0);
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+             "double CF_rbend::AdjustPosition( const JetProton& arg_jp )", 
+             "Horrible, inexplicable error: a multi-valued solution is suspected." ) );
     }
     m = 1.0 / m;
 
