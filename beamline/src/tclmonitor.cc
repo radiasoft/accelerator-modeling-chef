@@ -1,5 +1,5 @@
 #if !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(_EXCLUDE_MONITORS_)
-#include <stream.h>
+#include <iostream.h>
 #include "pipestream.h"
 #include "ParticleBunch.h"
 #include "tclmonitor.h"
