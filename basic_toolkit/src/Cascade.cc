@@ -77,7 +77,8 @@ Switch::Switch( const Switch& x )
 
 void Switch::reconstruct( int maxWeight, int indexValue, const IntArray& x )
 {
-  this->~Switch();
+  _clean();
+  // REMOVE: this->~Switch();
   _w = maxWeight;
   _index = indexValue;
   _xpt.Reconstruct( x.Dim(), 0 );
@@ -89,7 +90,8 @@ void Switch::reconstruct( int maxWeight, int indexValue, const IntArray& x )
 
 void Switch::reconstruct( const Switch& x )
 {
-  this->~Switch();
+  _clean();
+  // REMOVE:   this->~Switch();
   _w = x._w;
   _index = x._index;
   _xpt.Reconstruct( x._xpt.Dim(), 0 );
@@ -107,6 +109,12 @@ void Switch::_finishConstructor()
 
 
 Switch::~Switch()
+{
+  _clean();
+}
+
+
+void Switch::_clean()
 {
   if( _arrow ) { delete [] _arrow; _arrow = 0; }
 }
@@ -140,7 +148,8 @@ Cascade::Cascade( const Cascade& x )
 
 void Cascade::reconstruct( int weight, int numvar, bool verbosity )
 {
-  this->~Cascade();
+  _clean();
+  // REMOVE:   this->~Cascade();
 
   _maxWeight         = weight;
   _numVar            = numvar;
@@ -154,7 +163,8 @@ void Cascade::reconstruct( int weight, int numvar, bool verbosity )
 
 void Cascade::reconstruct( const Cascade& x )
 {
-  this->~Cascade();
+  _clean();
+  // REMOVE:   this->~Cascade();
 
   _maxWeight         = x._maxWeight;
   _numVar            = x._numVar;
@@ -418,6 +428,12 @@ void Cascade::_finishConstructor()
 
 
 Cascade::~Cascade() 
+{
+  _clean();
+}
+
+
+void Cascade::_clean()
 {
   if( _arrayOfSwitches ) { delete [] _arrayOfSwitches; _arrayOfSwitches = 0; }
   if( _startPoint )      { delete [] _startPoint;      _startPoint      = 0; }
