@@ -580,11 +580,11 @@ template<typename T1, typename T2>
 void TJet<T1,T2>::resetConstIterator() 
 {
   if( 0 == _constIterPtr ) {
-    _constIterPtr = new dlist_iterator( *(dlist*) _jl );
+    _constIterPtr = new dlist_iterator( _jl->_theList );
   }
   else {
     delete _constIterPtr;
-    _constIterPtr = new dlist_iterator( *(dlist*) _jl );
+    _constIterPtr = new dlist_iterator( _jl->_theList );
     // Note: _jl may have changed.
   }
 }
@@ -606,11 +606,11 @@ template<typename T1, typename T2>
 void TJet<T1,T2>::resetIterator()
 {
   if( 0 == _iterPtr ) {
-    _iterPtr = new dlist_iterator( *(dlist*) _jl );
+    _iterPtr = new dlist_iterator( _jl->_theList );
   }
   else {
     delete _iterPtr;
-    _iterPtr = new dlist_iterator( *(dlist*) _jl );
+    _iterPtr = new dlist_iterator( _jl->_theList );
     // Note: _jl may have changed.
   }
 }
@@ -912,8 +912,8 @@ TJet<T1,T2>& TJet<T1,T2>::operator*=( const T1& x )
 // REMOVE:    return z;
 // REMOVE:  }
 // REMOVE:                                 
-// REMOVE:  dlist_iterator gx( *(dlist*) x._jl );
-// REMOVE:  dlist_iterator gy( *(dlist*) y._jl );
+// REMOVE:  dlist_iterator gx( x._jl->_theList );
+// REMOVE:  dlist_iterator gy( y._jl->_theList );
 // REMOVE: 
 // REMOVE:  // .. otherwise, continue normal operations.
 // REMOVE:  if( x->_count > y->_count ) {
@@ -999,8 +999,8 @@ TJet<T1,T2> operator+( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
                                  
 
   // .. otherwise, continue normal operations.
-  dlist_iterator getp( *(dlist*) x._jl );
-  dlist_iterator getq( *(dlist*) y._jl );
+  dlist_iterator getp( x._jl->_theList );
+  dlist_iterator getq( y._jl->_theList );
 
   p = (TJLterm<T1,T2>*) getp();
   q = (TJLterm<T1,T2>*) getq();
@@ -1111,7 +1111,7 @@ TJet<T1,T2> operator-( const TJet<T1,T2>& y )
  z.DeepCopy( y ); 
 
  // .. otherwise continue normal operations.
- dlist_iterator getNext( *(dlist*) z._jl );
+ dlist_iterator getNext( z._jl->_theList );
 
  while((  p = (TJLterm<T1,T2>*) getNext()  )) {
    p->_value = - p->_value;
@@ -1133,7 +1133,7 @@ void TJet<T1,T2>::Negate()
 
  // .. otherwise continue normal operations.
  PREPFORCHANGE(_jl)
- dlist_iterator getNext( *(dlist*) _jl );
+ dlist_iterator getNext( _jl->_theList );
  while((  p = (TJLterm<T1,T2>*) getNext()  )) p->_value = - p->_value;
 }
 
@@ -1150,7 +1150,7 @@ void TJet<T1,T2>::Mult( const T1& x )
 
  // .. otherwise continue normal operations.
  PREPFORCHANGE(_jl)
- dlist_iterator getNext( *(dlist*) _jl );
+ dlist_iterator getNext( _jl->_theList );
  while((  p = (TJLterm<T1,T2>*) getNext()  )) p->_value *= x;
 }
 
@@ -1305,8 +1305,8 @@ TJet<T1,T2> operator*( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
 
 
  // .. and continue normal operations.
- dlist_looper gx( *(dlist*) xPtr );
- dlist_looper gy( *(dlist*) yPtr );
+ dlist_looper gx( xPtr->_theList);
+ dlist_looper gy( yPtr->_theList );
 
  testWeight = zPtr->_accuWgt;
 
@@ -1367,7 +1367,7 @@ TJet<T1,T2> operator*( const TJet<T1,T2>& x, const T1& y )
  zPtr = z._jl;    // what is returned does not own
                   // the same data as x.
  
- dlist_iterator gz( *(dlist*) zPtr );
+ dlist_iterator gz( zPtr->_theList );
  while((  p = (TJLterm<T1,T2>*) gz()  )) {
    p->_value *= y;
  }
@@ -1396,7 +1396,7 @@ TJet<T1,T2> operator*( const T1& y, const TJet<T1,T2>& x )
  zPtr = z._jl;    // what is returned does not own
                   // the same data as x.
  
- dlist_iterator gz( *(dlist*) zPtr );
+ dlist_iterator gz( zPtr->_theList );
  while((  p = (TJLterm<T1,T2>*) gz()  )) {
    p->_value *= y;
  }
@@ -1542,8 +1542,8 @@ TJet<T1,T2> operator/( const T1& a, const TJet<T1,T2>& b )
 // REMOVE:  q = 0;
 // REMOVE:  r = 0;
 // REMOVE: 
-// REMOVE:  dlist_looper gu( *(dlist*)   _jl );
-// REMOVE:  dlist_looper gv( *(dlist*) v._jl );
+// REMOVE:  dlist_looper gu( _jl->_theList );
+// REMOVE:  dlist_looper gv( v._jl->_theList );
 // REMOVE:  
 // REMOVE:  // .. otherwise continue normal operations.
 // REMOVE:  while((  p = (TJLterm<T1,T2>*) gv()  )) {
@@ -1594,8 +1594,8 @@ TJet<T1,T2> TJet<T1,T2>::_truncMult( const TJet<T1,T2>& v, const int& wl ) const
  q = 0;
  // REMOVE: r = 0;
 
- dlist_looper gu( *(dlist*)   _jl );
- dlist_looper gv( *(dlist*) v._jl );
+ dlist_looper gu( _jl->_theList );
+ dlist_looper gv( v._jl->_theList );
  
  // .. otherwise continue normal operations.
  while((  p = (TJLterm<T1,T2>*) gv()  )) {
@@ -1662,8 +1662,8 @@ TJet<T1,T2> operator/( const TJet<T1,T2>& wArg, const TJet<T1,T2>& uArg )
           "Inconsistent environments." ) );
  }
 
- dlist_looper gu( *(dlist*) uArg._jl );
- dlist_looper gw( *(dlist*) wArg._jl );
+ dlist_looper gu( uArg._jl->_theList );
+ dlist_looper gw( wArg._jl->_theList );
 
  static TJet<T1,T2> v;
  static TJet<T1,T2> vn;
@@ -1901,7 +1901,7 @@ TJet<T1,T2> cos( const TJet<T1,T2>& x )
  // ??? REMOVE: 
  static TJet<T1,T2> epsilon;
  static T1 cs, sn;
- dlist_iterator getNext( *(dlist*) x._jl );
+ dlist_iterator getNext( x._jl->_theList );
  static TJLterm<T1,T2>* p;
  
  // Paranoid initializations
@@ -1960,7 +1960,7 @@ TJet<T1,T2> exp( const TJet<T1,T2>& x )
  // ??? REMOVE: TJet<T1,T2> epsExp( const TJet<T1,T2>& );
  static TJet<T1,T2> epsilon;
  static T1 factor;
- dlist_iterator getNext( *(dlist*) x._jl );
+ dlist_iterator getNext( x._jl->_theList );
  static TJLterm<T1,T2>* p;
 
  // Paranoid initializations
@@ -2005,7 +2005,7 @@ TJet<T1,T2> log ( const TJet<T1,T2>& x )
  static T1 std;
  static double n;
  static TJLterm<T1,T2>*         p;
- dlist_iterator  getNext( *(dlist*) x._jl );
+ dlist_iterator  getNext( x._jl->_theList );
  
  // Paranoid initializations
  epsilon.Reconstruct( x->_myEnv );
@@ -2075,7 +2075,7 @@ TJet<T1,T2> pow( const TJet<T1,T2>& x, const double& s )
  static TJet<T1,T2> epsilon;
  static T1 factor;
  static T1 std;
- dlist_iterator getNext( *(dlist*) x._jl );
+ dlist_iterator getNext( x._jl->_theList );
  static TJLterm<T1,T2>* p;
  static int u;
 
@@ -2177,7 +2177,7 @@ TJet<T1,T2> sin( const TJet<T1,T2>& x )
  // ??? REMOVE: TJet<T1,T2> epsCos( const TJet<T1,T2>& );
  static TJet<T1,T2> epsilon;
  static T1 cs, sn;
- dlist_iterator getNext( *(dlist*) x._jl );
+ dlist_iterator getNext( x._jl->_theList );
  static TJLterm<T1,T2>* p;
 
  // Paranoid initializations
@@ -2233,7 +2233,7 @@ TJet<T1,T2> sqrt( const TJet<T1,T2>& x )
  static TJet<T1,T2> epsilon;
  static T1 factor;
  static T1 std;
- dlist_iterator getNext( *(dlist*) x._jl );
+ dlist_iterator getNext( x._jl->_theList );
  static TJLterm<T1,T2>* p;
 
  // Paranoid initializations
@@ -2473,7 +2473,7 @@ TJet<T1,T2> TJet<T1,T2>::_epsSqrt( const TJet<T1,T2>& epsilon )
 template<typename T1, typename T2>
 void TJet<T1,T2>::peekAt() const 
 {
- dlist_traversor getNext( *(dlist*) _jl );
+ dlist_traversor getNext( _jl->_theList );
  int i;
  TJLterm<T1,T2>* p;
  dlink* q;
@@ -2514,7 +2514,7 @@ void TJet<T1,T2>::peekAt() const
 template<typename T1, typename T2>
 void TJet<T1,T2>::printCoeffs() const 
 {
- dlist_iterator getNext( *(dlist*) _jl );
+ dlist_iterator getNext( _jl->_theList );
  int i;
  TJLterm<T1,T2>* p;
 
@@ -2644,7 +2644,7 @@ TJet<T1,T2> TJet<T1,T2>::filter( const int& wgtLo, const int& wgtHi ) const
  TJet<T1,T2> z;
  TJL<T1,T2>* zPtr = z._jl;
  TJL<T1,T2>* thisPtr = _jl;
- dlist_iterator getNext( *(dlist*) thisPtr );
+ dlist_iterator getNext( thisPtr->_theList );
  TJLterm<T1,T2>* p;
  TJLterm<T1,T2>* q;
  int numTerms;
@@ -2696,7 +2696,7 @@ TJet<T1,T2> TJet<T1,T2>::filter( bool (*f) ( const IntArray&, const T1& ) ) cons
  p    = 0;
  q    = 0;
 
- dlist_iterator getNext( *(dlist*) _jl );
+ dlist_iterator getNext( _jl->_theList );
 
  static int i;
  static int nv;
@@ -2732,7 +2732,7 @@ template<typename T1, typename T2>
 TJet<T1,T2> TJet<T1,T2>::_concat() const 
 {
  static TJet<T1,T2> v;
- dlist_iterator getNext( *(dlist*) _jl );
+ dlist_iterator getNext( _jl->_theList );
  static TJLterm<T1,T2>* p;
  static int i;
  
@@ -2833,7 +2833,7 @@ TJet<T1,T2> TJet<T1,T2>::operator() ( const TJet<T1,T2>* y ) const
  // Formerly done by using concat routine, which
  // I copy here
  {
-  dlist_iterator getNext( *(dlist*) _jl );
+  dlist_iterator getNext( _jl->_theList );
   static TJLterm<T1,T2>* p;
   static int i;
   
@@ -3090,7 +3090,7 @@ TJet<T1,T2> TJet<T1,T2>::D( const int* n ) const
  static bool doit;
  static int f, i, j, k, w;
  static TJet<T1,T2> z;
- dlist_iterator getNext( *(dlist*) _jl );
+ dlist_iterator getNext( _jl->_theList );
  static TJLterm<T1,T2>* p;
  static TJLterm<T1,T2>* q;
  
@@ -3188,7 +3188,7 @@ TJet<T1,T2> TJet<T1,T2>::D( const IntArray& n ) const
  static bool doit;
  static int f, i, j, k, w;
  static TJet<T1,T2> z;
- dlist_iterator getNext( *(dlist*) _jl );
+ dlist_iterator getNext( _jl->_theList );
  static TJLterm<T1,T2>* p;
  static TJLterm<T1,T2>* q;
  

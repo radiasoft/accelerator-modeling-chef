@@ -107,8 +107,11 @@ struct TJLterm
 
 // *******************************************************************
 template<typename T1, typename T2>
-struct TJL : public dlist 
+struct TJL
 {
+
+  dlist _theList;    // Data structure to hold all the information.
+
   int _count;        // The number of JL terms in the variable
   int _weight;       // The maximum weight of the terms
   int _accuWgt;      // Highest weight computed accurately
