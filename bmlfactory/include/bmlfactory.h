@@ -40,6 +40,7 @@
 #include <functional>
 #include <glib.h>
 #include <list>
+#include <string>
 
    // from MXYZPLTK
 #include <beamline.h>
@@ -94,35 +95,59 @@ struct bml_predicate : public std::binary_function<bml_pair,char_ptr,bool> {
 
 
 class bmlfactory {
+
   private:
-    char*             fname_;
-    double            BRHO_;
-    madparser*        mp_;
-    GHashTable*       var_table_;
-    GHashTable*       bel_table_;
-    beam_element**    bel_arr_;
-    int               bel_arr_size_;
-    beam_line**       bml_arr_;
-    int               bml_arr_size_;
-    bel_pair_list__t* bel_list_;
-    bml_pair_list__t* bml_list_;
-    
+
+    char*                   fname_;
+    double                  BRHO_;
+    madparser*              mp_;
+    GHashTable*             var_table_;
+    GHashTable*             bel_table_;
+    beam_element**          bel_arr_;
+    int                     bel_arr_size_;
+    beam_line**             bml_arr_;
+    int                     bml_arr_size_;
+    bel_pair_list__t*       bel_list_;
+    bml_pair_list__t*       bml_list_;
+
+    std::list<std::string> _beamline_identifiers_list;
+    std::list<beamline*>   _beamline_objects_list;
+    std::list<bmlnElmnt*>  _bmlnElmnt_objects_list;
+ 
+
     bmlnElmnt* beam_element_instantiate( beam_element* );
     bmlnElmnt* find_beam_element( char* );
+
     void create_bel_list();
     void delete_bel_list();
     
     beamline* beam_line_instantiate( beam_line* );
     beamline* find_beam_line( char* );
+
     void append_bml_element( char*, beamline* );
     void create_bml_list();
     void delete_bml_list();
-    
+
+    beamline* create_beamline_private( const char*  beamline, double brho);    
+    beamline* create_beamline_private( const char*  beamline);    
+
+    void bmlfactory_init(const char* fname, const char* stringbuffer);
+
   public:
-    bmlfactory( const char* /* filename */,
-                double /* BRHO */ );
+
+    bmlfactory( const char* filename, double brho, const char* stringbuffer=0); // deprecated
+    bmlfactory( const char* filename, const char* stringbuffer=0);
+
     ~bmlfactory();
-    beamline* create_beamline( const char*  /* beamline name */ );
+
+    beamline* create_beamline( const char* beamline,  double brho);
+    beamline* create_beamline( const char* beamline); // deprecated 
+        
+    std::list<std::string>&  getBeamlineList();   
+
+    bool    variableIsDefined(const char* varname) const;
+    double  getVariableValue(const char* varname) const;   
+
 };
 
 #endif // BMLFACTORY_H
