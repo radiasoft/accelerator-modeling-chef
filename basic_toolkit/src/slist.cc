@@ -3,7 +3,7 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.0                    
+******  Version:   4.1                    
 ******                                    
 ******  File:      slist.cc
 ******                                                                
@@ -216,6 +216,12 @@ if( cs->last )
   if( ce == cs->last ) ce = 0;
 }
 return ret;
+}
+
+
+void slist_iterator::Terminate()
+{
+  ce = 0;
 }
 
 
