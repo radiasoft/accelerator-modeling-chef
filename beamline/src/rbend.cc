@@ -42,7 +42,7 @@ rbend::rbend( double l, double s,
    Propagator = rbend::P_Exact;
    JetPropagator = rbend::J_Exact;
  }
- poleFaceAngle = 2.0 * M_PI;
+ poleFaceAngle = M_TWOPI;
 }
 
 rbend::rbend( double l, double s, double angle,
@@ -61,7 +61,7 @@ rbend::rbend( char* n, double l, double s,
    Propagator = rbend::P_Exact;
    JetPropagator = rbend::J_Exact;
  }
- poleFaceAngle = 2.0 * M_PI;
+ poleFaceAngle = M_TWOPI;
 }
 
 rbend::rbend( char* n, double l, double s, double angle,
