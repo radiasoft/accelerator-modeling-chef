@@ -410,3 +410,10 @@ void sbend::J_Face( JetParticle& p, const double& psi ) const
 
   ( p.state ).SetComponent( xp, cs*p.State( xp ) + sn*p3divpbar );
 }
+
+
+
+char* sbend::Type() const 
+{ 
+  return "sbend"; 
+}

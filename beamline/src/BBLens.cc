@@ -435,6 +435,13 @@ JetVector BBLens::NormalizedEField( const Jet& arg_x, const Jet& arg_y )
   return retvec;  // This line should never be reached.
 }
 
+
+char* BBLens::Type() const 
+{ 
+  return "BBLens"; 
+}
+
+
 Vector BBLens::Beta() 
 {
   static char firstCall = 1;

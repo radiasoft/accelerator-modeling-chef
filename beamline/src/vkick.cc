@@ -33,6 +33,13 @@ vkick::vkick( const vkick& x )
 vkick::~vkick() {
 }
 
+
+char* vkick::Type() const 
+{ 
+  return "vkick"; 
+}
+
+
 // ??? REMOVE void vkick::image( int d, slist* s, BMLN_posInfo* cg ) {
 // ??? REMOVE  bmlnElmntData* p = bmlnElmnt::image();
 // ??? REMOVE 

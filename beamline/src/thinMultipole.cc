@@ -47,6 +47,13 @@ thinMultipole::~thinMultipole() {
 }
 
 
+
+char* thinMultipole::Type() const 
+{ 
+  return "thinMultipole"; 
+}
+
+
 // ??? REMOVE void thinMultipole::image( int d, slist* s, BMLN_posInfo* cg ) {
 // ??? REMOVE  bmlnElmntData* p = bmlnElmnt::image();
 // ??? REMOVE 

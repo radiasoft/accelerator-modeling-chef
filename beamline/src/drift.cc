@@ -27,6 +27,12 @@ drift::drift( const drift& x )
 drift::~drift() {
 }
 
+
+char* drift::Type() const 
+{ 
+  return "drift"; 
+}
+
 // ??? REMOVE void drift::image( int d, slist* s, BMLN_posInfo* cg ) {
 // ??? REMOVE  bmlnElmntData* p = bmlnElmnt::image();
 // ??? REMOVE 

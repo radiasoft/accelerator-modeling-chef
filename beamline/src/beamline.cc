@@ -407,6 +407,13 @@ bmlnElmnt* beamline::Clone() const {
 }
 
 
+
+char*  beamline::Type() const 
+{ 
+  return "beamline"; 
+}
+
+
 double beamline::OrbitLength( const Particle& x )
 {
  dlist_iterator getNext ( *(dlist*) this );

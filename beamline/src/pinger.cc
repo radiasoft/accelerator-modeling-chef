@@ -46,6 +46,11 @@ Pinger::~Pinger() {
   ;
 }
 
+char* Pinger::Type() const 
+{ 
+  return "Pinger"; 
+}
+
 istream& Pinger::readFrom(istream& is) {
   is >> _kick_direction;
   return is;
@@ -83,6 +88,12 @@ HPinger::~HPinger() {
   ;
 }
 
+char* HPinger::Type() const 
+{ 
+  return "HPinger"; 
+}
+
+
 /* VPinger Constructors */
 
 VPinger::VPinger() : Pinger((double) 0, M_PI_2) {
@@ -110,3 +121,7 @@ VPinger::~VPinger() {
   ;
 }
 
+char* VPinger::Type() const 
+{ 
+  return "VPinger"; 
+}

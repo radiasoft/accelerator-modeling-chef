@@ -71,9 +71,17 @@ void JetthinQuad::setStrength( double s, int index ) {
 // ??? REMOVE s->append( p );
 // ??? REMOVE}
 
+
 void JetthinQuad::eliminate() {
  delete this;
 }
+
+
+char* JetthinQuad::Type() const 
+{ 
+  return "JetthinQuad"; 
+}
+
 
 ostream& JetthinQuad::writeTo(ostream& os)
 {

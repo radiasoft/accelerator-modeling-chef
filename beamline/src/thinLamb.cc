@@ -141,6 +141,13 @@ void thinLamb::eliminate() {
  delete this;
 }
 
+
+char* thinLamb::Type() const 
+{ 
+  return "thinLamb"; 
+}
+
+
 ostream& thinLamb::writeTo(ostream& os) 
 {
   os << OSTREAM_DOUBLE_PREC << xSeptum;

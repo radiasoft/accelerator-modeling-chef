@@ -167,6 +167,10 @@ Slot::~Slot()
   }
 }
 
+char*  Slot::Type()  const  
+{ 
+  return "Slot"; 
+}
 
 short int Slot::setInFrame( const Frame& frm )
 {

@@ -184,6 +184,13 @@ void quadrupole::eliminate() {
  delete this;
 }
 
+
+char* quadrupole::Type() const 
+{ 
+  return "quadrupole"; 
+}
+
+
 void quadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {

@@ -26,6 +26,13 @@ thinOctupole::thinOctupole( const thinOctupole& x )
 thinOctupole::~thinOctupole() {
 }
 
+
+char* thinOctupole::Type() const 
+{ 
+  return "thinOctupole"; 
+}
+
+
 // ??? REMOVE void thinOctupole::image( int d, slist* s, BMLN_posInfo* cg ) {
 // ??? REMOVE  bmlnElmntData* p = bmlnElmnt::image();
 // ??? REMOVE 

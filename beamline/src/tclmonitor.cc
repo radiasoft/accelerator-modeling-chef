@@ -470,4 +470,10 @@ void tclMonitor::setColor( int newcolor) {
   color = newcolor;
 }
 
+char* tclMonitor::Type() const 
+{ 
+return "tclMonitor"; 
+}
+
+
 #endif // Exclude under Visual C++ and Borland builds.

@@ -68,8 +68,7 @@ class Slot : public bmlnElmnt
 
    void Split( double s, bmlnElmnt**, bmlnElmnt** );
 
-   char*  Type()  const
-     { return "Slot"; }
+   char*  Type()  const;
 
    short int setInFrame( const Frame& );
    short int setOutFrame( const Frame& );

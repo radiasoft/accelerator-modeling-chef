@@ -27,6 +27,13 @@ thinDecapole::~thinDecapole() {
 }
 
 
+
+char* thinDecapole::Type() const 
+{ 
+  return "thinDecapole"; 
+}
+
+
 // ??? REMOVE void thinDecapole::image( int d, slist* s, BMLN_posInfo* cg ) {
 // ??? REMOVE  bmlnElmntData* p = bmlnElmnt::image();
 // ??? REMOVE 

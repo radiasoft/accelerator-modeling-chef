@@ -34,6 +34,12 @@ hkick::~hkick() {
 }
 
 
+char* hkick::Type() const 
+{ 
+  return "hkick"; 
+}
+
+
 // ??? REMOVE void hkick::image( int d, slist* s, BMLN_posInfo* cg ) {
 // ??? REMOVE  bmlnElmntData* p = bmlnElmnt::image();
 // ??? REMOVE 
