@@ -79,7 +79,7 @@
 
 typedef enum { false = 0, true = 1 } bool;
 
-#endif __SUNPRO_CC
+#endif // __SUNPRO_CC
 
 
 #endif // MATHCONS_H
