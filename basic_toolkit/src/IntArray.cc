@@ -119,8 +119,7 @@ IntArray& IntArray::operator= ( const IntArray& x )
   CHECKOUT(dim != x.dim, "IntArray::operator=", "Incompatible dimensions.")
 #endif
 
-  static int i;
-  for ( i = 0; i < dim; i++ ) comp[i] = x.comp[i];
+  memcpy((void *)comp, (const void *)x.comp, dim * sizeof(int));
   return *this;
 }
 
