@@ -9,7 +9,7 @@
 **
 */
 
-#include "beamline.h"  // This include BmlVisitor.h internally.
+#include "bmlnElmnt.h"  // This include BmlVisitor.h internally.
 
 void BmlVisitor::visitBeamline( beamline* x )
 {
