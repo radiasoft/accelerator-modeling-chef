@@ -57,6 +57,11 @@ void BeamlineIterator::reset()
 }
 
 
+void BeamlineIterator::goBack( int n )
+{
+  _getNext->GoBack(n);
+}
+
 
 
 DeepBeamlineIterator::DeepBeamlineIterator( const beamline& x )
