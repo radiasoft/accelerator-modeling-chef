@@ -28,6 +28,10 @@
 *************************************************************************/
 
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifndef __VISUAL_CPP__
 #include <stdlib.h>
 #endif
