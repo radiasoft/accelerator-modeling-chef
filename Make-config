@@ -109,7 +109,7 @@ ultra-opt:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = -fast" \
-	"C++FLAGS = -DULTRA -fast" \
+	"C++FLAGS = -DULTRA -fast   -xchip=ultra -xarch=v8plus" \
 	"MAKELIB = ar ruv" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/ultra" \
