@@ -1564,8 +1564,8 @@ beam_line_elements		: beam_line_element
                                 }
 				| beam_line_elements beam_line_element {
                                   beam_line* bml = (beam_line*)$<ptr>1;
-                                  beam_line_add_bml( bml, (beam_line*)$<ptr>3 );
-                                  beam_line_delete( (beam_line*)$<ptr>3, madparser_bml_alloc(mp) );
+                                  beam_line_add_bml( bml, (beam_line*)$<ptr>2 );
+                                  beam_line_delete( (beam_line*)$<ptr>2, madparser_bml_alloc(mp) );
                                   $<ptr>$ = bml;
                                 }
 				;
