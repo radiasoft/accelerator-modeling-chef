@@ -1752,6 +1752,17 @@ public:
   friend beamline& operator-( beamline& );
 
 
+  int startAt( const bmlnElmnt*);    // Resets the "beginning" of the
+                                     // beamline to the element given
+                                     // by the argument. Should be used
+                                     // only for rings. Returns non-zero
+                                     // if error occurs (esp., no such
+                                     // element.
+  int startAt( char* );              // Resets the "beginning" of the
+                                     // beamline to the element whose
+                                     // name is given by the argument.
+
+
   sector* makeSector ( int, JetParticle& );
                                      // Returns a pointer to a new
                                      // sector equivalent to the entire
