@@ -5,7 +5,7 @@
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
 ******                                    
 ******  File:      JLC.cc
-******  Version:   4.2
+******  Version:   4.3
 ******                                                                
 ******  Copyright (c) 1990 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -400,20 +400,15 @@ void JLC::scaleBy( Complex y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void JLC::setVariable( const Complex& x, 
-                      const int& j, 
+                       const int& j, 
                             JetC__environment* theEnv )
 {
  if( theEnv != 0 ) myEnv = theEnv;
 
  if( myEnv == 0 ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** JLC::setVariable                      \n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** myEnv = 0                            \n"
-        << "*** ERROR ***                                      \n"
-        << endl;
-   exit(1);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+     "void JLC::setVariable( const Complex&, const int&, JetC__environment* )", 
+     "Private data myEnv is null: object has no environment assigned.") );
  }
 
  clear();
@@ -437,14 +432,9 @@ void JLC::setVariable( const int& j,
  if( theEnv != 0 ) myEnv = theEnv;
 
  if( myEnv == 0 ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** JLC::setVariable                      \n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** myEnv = 0                            \n"
-        << "*** ERROR ***                                      \n"
-        << endl;
-   exit(1);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+     "void JLC::setVariable( const int&, JetC__environment* )", 
+     "Private data myEnv is null: object has no environment assigned.") );
  }
 
  static Complex x;
@@ -863,17 +853,11 @@ JLC& JLC::operator=( const Complex& x ) {
  clear();
  weight = 0;   // rc is purposely left untouched!!
  count  = 0;
-
  if( myEnv ) accuWgt = myEnv->MaxWeight;
  else {
-   cerr << "\n\n"
-        << "*** ERROR ***                                       \n"
-        << "*** ERROR ***  JLC::operator=( Complex )              \n"
-        << "*** ERROR ***                                       \n"
-        << "*** ERROR ***  myEnv must be set ahead of time.     \n"
-        << "*** ERROR ***                                       \n"
-        << endl;
-   exit(1);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+     "JLC& JLC::operator=( const Complex& x ) {", 
+     "Private data myEnv is null: object has no environment assigned.") );
  }
 
  insert( new JLCterm( IntArray( myEnv->NumVar ), x, myEnv ) );
@@ -959,16 +943,10 @@ JLCterm operator*( const JLCterm& x, const JLCterm& y ) {
  static int i, n;
 
  if((  ( n = x.index.Dim() ) != y.index.Dim()  )) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** JLCterm operator*                     \n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** Dimensions don't match.              \n"
-        << "*** ERROR *** First argument:  " << x.index.Dim() << " \n"
-        << "*** ERROR *** Second argument: " << y.index.Dim() << " \n"
-        << "*** ERROR ***                                      \n"
-        << endl;
-   exit(1);
+   throw( JLC::BadDimension( x.index.Dim(), y.index.Dim(),
+                             __FILE__, __LINE__, 
+                             "JLCterm operator*( const JLCterm& x, const JLCterm& y )",
+                             "Inconsistent number of coordinates." ) );
  }
 
  z.weight = x.weight + y.weight;
@@ -1013,23 +991,26 @@ JLCterm::JLCterm( const IntArray& l,
  if( pje ) {
    int n = l.Dim();
    if( n != pje->NumVar ) {
-     cerr << "\n*** JLC ERROR *** Dimensions are wrong." << endl;
-     exit(1);
+     throw( JLC::GenericException( __FILE__, __LINE__, 
+            "JLCterm::JLCterm( const IntArray&, const Complex&, const JetC__environment*",
+            "Dimensions are wrong.") );
    }
   
    // ??? These checks could be removed for speed.
    dpt = 0;
    for( i = 0; i < n; i++ ) {
      if( (l(i) < 0) ) {
-       printf( "\n*** JLC ERROR *** Bad index in JLCTerm.\n" );
-       exit(0);
+       throw( JLC::GenericException( __FILE__, __LINE__, 
+              "JLCterm::JLCterm( const IntArray&, const Complex&, const JetC__environment*",
+              "Bad index in JLCTerm.") );
      }
      dpt += l(i);
    }
   
    if( dpt > pje->MaxWeight ) {
-     printf("\n*** JLC ERROR *** Attempt to load a JLCTerm with too large a weight.\n");
-     exit(0);
+     throw( JLC::GenericException( __FILE__, __LINE__, 
+            "JLCterm::JLCterm( const IntArray&, const Complex&, const JetC__environment*",
+            "Attempt to load a JLCTerm with too large a weight.") );
    }
    
    index = l;
@@ -1039,24 +1020,14 @@ JLCterm::JLCterm( const IntArray& l,
 
  else {
    if( l.Dim() != 1 ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                        \n"
-          << "*** ERROR *** JLCTerm::JLCTerm                         \n"
-          << "*** ERROR ***                                        \n"
-          << "*** ERROR *** Inconsistency between l and pje        \n"
-          << "*** ERROR ***                                        \n"
-          << endl;
-     exit(1);
+     throw( JLC::GenericException( __FILE__, __LINE__, 
+            "JLCterm::JLCterm( const IntArray&, const Complex&, const JetC__environment*",
+            "Inconsistency between l and pje") );
    }
    if( l(0) != 0 ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                        \n"
-          << "*** ERROR *** JLCTerm::JLCTerm                         \n"
-          << "*** ERROR ***                                        \n"
-          << "*** ERROR *** Bad value of the index when pje = 0.   \n"
-          << "*** ERROR ***                                        \n"
-          << endl;
-     exit(1);
+     throw( JLC::GenericException( __FILE__, __LINE__, 
+            "JLCterm::JLCterm( const IntArray&, const Complex&, const JetC__environment*",
+            "Bad value of the index when pje = 0.") );
    }
    index = l;
    weight = l.Sum();
@@ -1137,16 +1108,10 @@ char operator!=( const JLCterm& a, const JLCterm& b ) {
 char operator<=( const JLCterm& a, const JLCterm& b ) {
  int i;
  if( a.index.Dim() != b.index.Dim() ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** char operator<=( JLCterm, JLCterm )    \n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** Dimensions don't match.              \n"
-        << "*** ERROR *** First argument:  " << a.index.Dim() << " \n"
-        << "*** ERROR *** Second argument: " << b.index.Dim() << " \n"
-        << "*** ERROR ***                                      \n"
-        << endl;
-   exit(1);
+   throw( JLC::BadDimension( a.index.Dim(), b.index.Dim(), 
+          __FILE__, __LINE__, 
+          "char operator<=( const JLCterm&, const JLCterm& )",
+          "Dimensions don't match.") );
  }
  if( a.weight != b.weight ) return ( a.weight < b.weight );
  for( i = 0; i < a.index.Dim(); i++ ) {
