@@ -1,5 +1,7 @@
 #ifdef __VISUAL_CPP__
 #include <iostream>
+using std::cerr;
+using std::endl;
 #else
 #include <iostream.h>
 #endif
