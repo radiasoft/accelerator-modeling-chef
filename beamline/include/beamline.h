@@ -50,11 +50,10 @@
 #include <math.h>
 // #include <string>   (More trouble than it's worth.)
 #include "MathConstants.h"
-#include "mxyzptlk.h"
+#include "Mxyzptlk"
 #include "slist.h"
 #include "Barnacle.h"
 #include "VectorD.h"
-#include "JetVector.h"
 #include "Particle.h"
 
 #if defined (__VISUAL_CPP__) && !defined(__KCC)

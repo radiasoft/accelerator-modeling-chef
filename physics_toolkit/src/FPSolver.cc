@@ -472,7 +472,7 @@ void FPSolver::operator()( JetProton* p, FP_CRITFUNC Crit )
     FORALL(i) particleCoord[i] += eps(i,0);
 
     FORALL(i) {
-      y.setVariable( i, p->State().Env() );
+      y.setVariable( i, ((Jet__environment*) p->State().Env()) );
       w.SetComponent( i, y );
     }
     p->setState(w);
@@ -594,7 +594,7 @@ void FPSolver::operator()( double* result )
 
   do{
     FORALL(i) {
-      y.setVariable( i, p.State().Env() );
+      y.setVariable( i, ((Jet__environment*) p.State().Env()) );
       w.SetComponent( i, y );
     }
     p.setState(w);

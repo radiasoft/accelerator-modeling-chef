@@ -38,7 +38,7 @@
 #endif
 
 #ifndef MAP_HXX
-#include "Mapping.h"
+#include "Mapping"
 #endif
 
 class MappPropFunc : public bmlnElmnt::PropFunc

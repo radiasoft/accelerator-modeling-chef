@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,7 +29,6 @@
 **************************************************************************
 *************************************************************************/
 
-
 /*
 ** int ConvertNtoTunes( MappingC& nu, const CLieOperator& N )
 **
@@ -52,8 +48,12 @@
 **                  December 1, 1998
 */
 
-#include "CLieOperator.h"
-#include "MappingC.h"
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include "LieOperator"
+#include "Mapping"
 #include "MathConstants.h"
 
 #include <iomanip>
@@ -340,15 +340,15 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
   if( nu.Env() != N.Env() )        return 137;
   if( nu.Dim() != N.Dim() )        return 138;
 
-  int sd = N.Env()->SpaceDim;
+  int sd = N.Env()->_spaceDim;
   if( sd%2 != 0 )                  return 139;
   int sd2 = sd/2;
 
   // Environment is set ........................
-  JetC__environment* thisEnv = N.Env();
+  JetC__environment* thisEnv = ((JetC__environment*) N.Env());
 
   JLCterm* jlctPtr;
-  IntArray  ndx( N.Env()->NumVar );
+  IntArray  ndx( N.Env()->_numVar );
   Complex   v;
 
   // Construct the Mapping .......................
@@ -359,7 +359,7 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
     y = N( i );
     nu(i) = complex_0;
     while((  jlctPtr = y.get()  )) {
-      v = jlctPtr->value;
+      v = jlctPtr->coefficient();
       if((  v != c_zero  )) {
 
         // Reality check ...
@@ -378,7 +378,7 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
           returnValue = 140;
         }
 
-        ndx = jlctPtr->index;
+        ndx = jlctPtr->exponents();
         ndx(i) -= 1;
         for( j = 0; j < sd2; j++ ) {
           if( ndx(j) != ndx(j+sd2) ) {

@@ -36,7 +36,7 @@
 
 #include "sbend.h"
 #include "PhysicsConstants.h"
-#include "JetC.h"
+#include "Jet"
 #include "Particle.h"
 
 sbend::Exact_Prop    sbend::Exact;

@@ -962,7 +962,7 @@ void bmlnElmnt::enterLocalFrame( Particle& p ) const
 void bmlnElmnt::enterLocalFrame( JetParticle& p ) const
 {
   JetVector inState ( p.State() );
-  Jet       temp    ( inState.Env() );
+  Jet       temp    ( ((Jet__environment*) inState.Env()) );
   static    double  cs, sn;
 
   cs = align->cos_roll();
@@ -1014,7 +1014,7 @@ void bmlnElmnt::leaveLocalFrame( Particle& p ) const
 void bmlnElmnt::leaveLocalFrame( JetParticle& p ) const
 {
   JetVector outState ( p.State() );
-  Jet       temp     ( outState.Env() );
+  Jet       temp     ( ((Jet__environment*) outState.Env()) );
   static    double   cs, sn;
 
   cs = align->cos_roll();

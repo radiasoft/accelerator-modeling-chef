@@ -47,53 +47,53 @@
 */
 
 #include "GenericException.h"
-#include "mxyzptlk.h"
+#include "Mxyzptlk"
 
 #define MLT1  1.0e-6
 
 using namespace std;
 using FNAL::Complex;
 
-char sh0( const IntArray& index, const Complex& /* value */ ) {
- if( index(0) != index(3) + 1 ) return 0;
- if( index(1) != index(4) )     return 0;
- if( index(2) != index(5) )     return 0;
- return 1;
+bool sh0( const IntArray& index, const Complex& /* value */ ) {
+ if( index(0) != index(3) + 1 ) return false;
+ if( index(1) != index(4) )     return false;
+ if( index(2) != index(5) )     return false;
+ return true;
 }
 
-char sh1( const IntArray& index, const Complex& /* value */ ) {
- if( index(0) != index(3) )     return 0;
- if( index(1) != index(4) + 1 ) return 0;
- if( index(2) != index(5) )     return 0;
- return 1;
+bool sh1( const IntArray& index, const Complex& /* value */ ) {
+ if( index(0) != index(3) )     return false;
+ if( index(1) != index(4) + 1 ) return false;
+ if( index(2) != index(5) )     return false;
+ return true;
 }
 
-char sh2( const IntArray& index, const Complex& /* value */ ) {
- if( index(0) != index(3) )     return 0;
- if( index(1) != index(4) )     return 0;
- if( index(2) != index(5) + 1 ) return 0;
- return 1;
+bool sh2( const IntArray& index, const Complex& /* value */ ) {
+ if( index(0) != index(3) )     return false;
+ if( index(1) != index(4) )     return false;
+ if( index(2) != index(5) + 1 ) return false;
+ return true;
 }
 
-char sh3( const IntArray& index, const Complex& /* value */ ) {
- if( index(0) != index(3) - 1 ) return 0;
- if( index(1) != index(4) )     return 0;
- if( index(2) != index(5) )     return 0;
- return 1;
+bool sh3( const IntArray& index, const Complex& /* value */ ) {
+ if( index(0) != index(3) - 1 ) return false;
+ if( index(1) != index(4) )     return false;
+ if( index(2) != index(5) )     return false;
+ return true;
 }
 
-char sh4( const IntArray& index, const Complex& /* value */ ) {
- if( index(0) != index(3) )     return 0;
- if( index(1) != index(4) - 1 ) return 0;
- if( index(2) != index(5) )     return 0;
- return 1;
+bool sh4( const IntArray& index, const Complex& /* value */ ) {
+ if( index(0) != index(3) )     return false;
+ if( index(1) != index(4) - 1 ) return false;
+ if( index(2) != index(5) )     return false;
+ return true;
 }
 
-char sh5( const IntArray& index, const Complex& /* value */ ) {
- if( index(0) != index(3) )     return 0;
- if( index(1) != index(4) )     return 0;
- if( index(2) != index(5) - 1 ) return 0;
- return 1;
+bool sh5( const IntArray& index, const Complex& /* value */ ) {
+ if( index(0) != index(3) )     return false;
+ if( index(1) != index(4) )     return false;
+ if( index(2) != index(5) - 1 ) return false;
+ return true;
 }
 
 // ===============================================================
@@ -102,11 +102,13 @@ void normalForm( const Mapping& theMapping, /* input */
                  int            maxOrder,   /* input */
                  MatrixC*       Bptr,
                  CLieOperator*  N,
-                 CLieOperator*  T ) {
-
+                 CLieOperator*  T ) 
+{
  // typedef char (*MX_R_FUNCCPTR)(const IntArray&, const Complex&);
  // typedef char (*CFUNCPTR)(const IntArray&, const Complex& );
- static MX_R_FUNCCPTR shear[] = { sh0, sh1, sh2, sh3, sh4, sh5 };
+ // static MX_R_FUNCCPTR shear[] = { sh0, sh1, sh2, sh3, sh4, sh5 };
+ bool (*shear[])( const IntArray&, const Complex& ) 
+    = { sh0, sh1, sh2, sh3, sh4, sh5 };
  int i, j;
 
       /* CAUTION */  // A little test
@@ -309,7 +311,7 @@ void normalForm( const Mapping& theMapping, /* input */
     if( abs( denom ) <= 1.0e-7 ) {
       N[k](i).addTerm( new JLCterm( q->exponents(), 
                                     - q->coefficient(), 
-                                    CL1.Env() ) );
+                                    ((JetC__environment*) CL1.Env()) ) );
     }
     else {
       q->coefficient() /= denom;

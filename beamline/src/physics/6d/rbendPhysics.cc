@@ -37,7 +37,7 @@
 #include "VectorD.h"
 #include "rbend.h"
 #include "PhysicsConstants.h"
-#include "JetC.h"
+#include "Jet"
 
 rbend::NoEdge_Prop       rbend::NoEdge;
 rbend::Exact_Prop        rbend::Exact;

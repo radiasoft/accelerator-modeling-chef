@@ -48,7 +48,7 @@
 #endif
 
 #ifndef MAP_HXX
-#include "Mapping.h"
+#include "Mapping"
 #endif
 
 #ifndef MATHCONS_H
