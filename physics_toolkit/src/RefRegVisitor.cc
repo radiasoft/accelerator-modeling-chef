@@ -45,6 +45,7 @@
 
 
 #include "RefRegVisitor.h"
+#include "CF_rbend.h"
 #include "rbend.h"
 #include "Slot.h"
 #include "Particle.h"
@@ -102,17 +103,14 @@ void RefRegVisitor::visitBmlnElmnt( bmlnElmnt* x )
 }
 
 
-/*
-void RefRegVisitor::visitRbend( rbend* x )
+void RefRegVisitor::visitCF_rbend( CF_rbend* x ) 
 {
-  x->setReferenceTime(0.0);
-  _prtnPtr->set_cdt(0.0);
-  x->propagate( *_prtnPtr );
-  x->setReferenceTime( _prtnPtr->get_cdt() );
+  x->acceptInner( *this );
 }
 
 
-void visitCF_rbend( CF_rbend* x ) 
+/*
+void RefRegVisitor::visitRbend( rbend* x )
 {
   x->setReferenceTime(0.0);
   _prtnPtr->set_cdt(0.0);
