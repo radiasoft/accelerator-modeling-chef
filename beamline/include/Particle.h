@@ -40,8 +40,6 @@
 const int BMLN_dynDim  = 6;   // ??? Doesn't this imply that BMLN_dynDim
                               // ??? can be defined in several modules?
 
-class JetParticle;
-
 // .............................. Particle classes
 class Particle {
 protected:
@@ -86,6 +84,7 @@ protected:
   friend class VPinger;
   friend class kick;
   friend class Slot;
+  friend class jetprop;
 
   double   state [ BMLN_dynDim ];
                       // state[0] = x
