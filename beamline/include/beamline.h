@@ -2158,7 +2158,7 @@ public:
   // CLONING AND STORING
 
   beamline& operator=( const beamline& );
-  beamline* flatten();               // Produces a flattened version of itself.
+  beamline* flatten() const;  // Produces a flattened version of itself.
 
   void   writeLattFunc( );
   void   writeLattFunc( FILE* );
