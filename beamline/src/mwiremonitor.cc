@@ -296,7 +296,7 @@ void mwireMonitor::on(char* whereToDisplay) {
   }
 }
 
-void mwireMonitor::propagate( Particle& part) {
+void mwireMonitor::localPropagate( Particle& part) {
 //******************************************************
 //
 //  This should update the display of the phase-space plot if 
@@ -325,12 +325,12 @@ void mwireMonitor::propagate( Particle& part) {
 
     // If file I/O is enabled, let the base class do the work!
     if(outputFile != stdout && outputFile != 0){
-      monitor::propagate(part);
+      monitor::localPropagate(part);
     }
   }
 }
 
-void mwireMonitor::propagate( JetParticle& jpart) {
+void mwireMonitor::localPropagate( JetParticle& jpart) {
 //******************************************************
 //
 //  This should update the display of the phase-space plot if 
@@ -351,7 +351,7 @@ void mwireMonitor::propagate( JetParticle& jpart) {
     jpart.getState(JetParticleCoords);
 
     if(outputFile != stdout && outputFile != 0){
-      monitor::propagate(jpart);
+      monitor::localPropagate(jpart);
     }
   }
 }

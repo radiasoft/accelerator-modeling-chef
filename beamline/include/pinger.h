@@ -20,11 +20,11 @@ public:
   Pinger( const Pinger& );
   Pinger( bmlnElmntData& );
   ~Pinger();
-  char* Type() { return "Pinger"; };
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& );
-  void propagate( JetParticle& );
-  bmlnElmnt* Clone() { return new Pinger( *this ); }
+  char* Type() const { return "Pinger"; };
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
+  bmlnElmnt* Clone() const { return new Pinger( *this ); }
   void accept( BmlVisitor& v ) { v.visitPinger( this ); }
   int arm() { _armed = 1; return _armed; }
   int disarm() { _armed = 0; return _armed; }
@@ -48,8 +48,8 @@ class HPinger : public Pinger {
   HPinger( const HPinger& );
   HPinger( bmlnElmntData& );
   ~HPinger();
-  char* Type() { return "HPinger"; };
-  bmlnElmnt* Clone() { return new HPinger( *this ); }
+  char* Type() const { return "HPinger"; };
+  bmlnElmnt* Clone() const { return new HPinger( *this ); }
   void accept( BmlVisitor& v ) { v.visitHPinger( this ); }
 
   ostream& writeTo(ostream& os) { return os; }
@@ -67,8 +67,8 @@ class VPinger : public Pinger {
   VPinger( const VPinger& );
   VPinger( bmlnElmntData& );
   ~VPinger();
-  char* Type() { return "VPinger"; };
-  bmlnElmnt* Clone() { return new VPinger( *this ); }
+  char* Type() const { return "VPinger"; };
+  bmlnElmnt* Clone() const { return new VPinger( *this ); }
   void accept( BmlVisitor& v ) { v.visitVPinger( this ); }
 
   ostream& writeTo(ostream& os) { return os; }

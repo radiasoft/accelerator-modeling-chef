@@ -4,7 +4,7 @@
 //   class JetthinQuad
 // **************************************************
 
-JetthinQuad::JetthinQuad( const double s, const int index ) 
+JetthinQuad::JetthinQuad( double s, int index ) 
  : bmlnElmnt() 
 {
  KL.setVariable( s, index );
@@ -13,8 +13,8 @@ JetthinQuad::JetthinQuad( const double s, const int index )
 }
 
 JetthinQuad::JetthinQuad( char*  n, 
-                          const double s,
-                          const int    index ) 
+                          double s,
+                          int    index ) 
  : bmlnElmnt(n) 
 {
  KL.setVariable( s, index );
@@ -41,13 +41,13 @@ JetthinQuad::JetthinQuad( const JetthinQuad& x )
 JetthinQuad::~JetthinQuad() {
 }
 
-void JetthinQuad::setStrength( const double s ) {
+void JetthinQuad::setStrength( double s ) {
  KL.setVariable( s, strengthIndex );
  strength = s;
 }
 
 
-void JetthinQuad::setStrength( const double s, const int index ) {
+void JetthinQuad::setStrength( double s, int index ) {
  KL.setVariable( s, index );
  strength = s;
  strengthIndex = index;

@@ -12,9 +12,9 @@ double const SIGMA_ROUND = 0.1;
 // **************************************************
 
 BBLens::BBLens( const char*   nm,
-                const double  l, 
-                const double  s,
-                const double  gmm, 
+                double        l, 
+                double        s,
+                double        gmm, 
                 const double* emt )
 : bmlnElmnt( nm, l, s )
 {

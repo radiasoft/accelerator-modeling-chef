@@ -38,20 +38,20 @@ sextupole::~sextupole() {
 }
 
 
-void sextupole::setStrength( const double s ) {
+void sextupole::setStrength( double s ) {
   strength = s - getShunt()*IToField();
   p_bml_e->setStrength( strength*length );
 }
 
 
-void sextupole::setStrength( const double, const int ) {
- cerr << "\nCall to sextupole::setStrength( const double s, const int index )"
+void sextupole::setStrength( double, int ) {
+ cerr << "\nCall to sextupole::setStrength( double s, int index )"
       << endl;
  exit(1);
 }
 
 
-void sextupole::setCurrent( const double s ) {
+void sextupole::setCurrent( double s ) {
  p_bml_e->setCurrent( s );
 }
 

@@ -1,6 +1,6 @@
 #include "beamline.inc"
 
-void sector::propagate( Particle& p ) {
+void sector::localPropagate( Particle& p ) {
  static int    i, j; 
  static double inState[ BMLN_dynDim ];
  
@@ -25,7 +25,7 @@ void sector::propagate( Particle& p ) {
 
 }
 
-void sector::propagate( JetParticle& p ) {
+void sector::localPropagate( JetParticle& p ) {
  static int  i, j; 
         Jet  inState  [BMLN_dynDim];
  static Jet  outState;

@@ -290,7 +290,7 @@ void rasterMonitor::on(char* whereToDisplay) {
    }
 }
 
-void rasterMonitor::propagate( Particle& part) {
+void rasterMonitor::localPropagate( Particle& part) {
 //******************************************************
 //
 //  This should update the display of the phase-space plot if 
@@ -323,7 +323,7 @@ void rasterMonitor::propagate( Particle& part) {
    ParticleCoords -= origin;
 
    if(outputFile != 0 && outputFile != stdout) {
-     monitor::propagate(part);
+     monitor::localPropagate(part);
    }
 
 //   cout << " X = " << ParticleCoords(0) << " Xprime = " 
@@ -334,7 +334,7 @@ void rasterMonitor::propagate( Particle& part) {
 //        << ParticleCoords(5) << endl;
 
    if(numParticles == LONG_MAX) {
-     cerr << "rasterMonitor::propagate(Particle&): Number particles seen \n"
+     cerr << "rasterMonitor::localPropagate(Particle&): Number particles seen \n"
           << "                                     exceeds particle counter.\n"
           << "                                     Rollover will occur making\n"
           << "                                     getAveState() calculations \n"
@@ -374,7 +374,7 @@ void rasterMonitor::propagate( Particle& part) {
  }
 }
 
-void rasterMonitor::propagate( JetParticle& jpart) {
+void rasterMonitor::localPropagate( JetParticle& jpart) {
 //******************************************************
 //
 //  This should update the display of the phase-space plot if 
@@ -397,7 +397,7 @@ void rasterMonitor::propagate( JetParticle& jpart) {
    jpart.getState(JetParticleCoords);
 
    if(outputFile != 0 && outputFile != stdout) {
-     monitor::propagate(jpart);
+     monitor::localPropagate(jpart);
    }
 
 //   cout << " X = " << (JetParticleCoords[0]).standardPart() 

@@ -85,7 +85,7 @@ thinLamb::thinLamb( const thinLamb& x ) : bmlnElmnt( (bmlnElmnt&) x )
 thinLamb::~thinLamb() {
 }
 
-void thinLamb::setSeptum( const double x) {
+void thinLamb::setSeptum( double x) {
  xSeptum = x;
 }
 

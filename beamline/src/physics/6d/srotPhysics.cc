@@ -1,6 +1,6 @@
 #include "beamline.inc"
 
-void srot::propagate(Particle& p) {
+void srot::localPropagate(Particle& p) {
 double result[4];
 
 result[0] = p.state[0] * cos(strength) + p.state[1] * sin(strength);
@@ -13,7 +13,7 @@ p.state[3] = result[2];
 p.state[4] = result[3];
 }
 
-void srot::propagate(JetParticle& p) {
+void srot::localPropagate(JetParticle& p) {
 Jet result[4];
 
 result[0] = p.state(0) * cos(strength) + p.state(1) * sin(strength);

@@ -267,3 +267,146 @@ ostream& sbend::writeTo(ostream& os)
   os << "\n";
   return os;
 }
+
+
+// **************************************************
+//   Frame functions
+// **************************************************
+
+
+void sbend::enterLocalFrame( Particle& p ) const
+{
+  static double halfAngle;
+  halfAngle = this->angle / 2.0;
+  P_Face( p,   halfAngle );
+  bmlnElmnt::enterLocalFrame( p );
+  P_Face( p, - halfAngle );
+}
+
+
+void sbend::enterLocalFrame( JetParticle& p ) const
+{
+  static double halfAngle;
+  halfAngle = this->angle / 2.0;
+  J_Face( p,   halfAngle );
+  bmlnElmnt::enterLocalFrame( p );
+  J_Face( p, - halfAngle );
+}
+
+
+void sbend::leaveLocalFrame( Particle& p ) const
+{
+  static double halfAngle;
+  halfAngle = this->angle / 2.0;
+  P_Face( p, - halfAngle );
+  bmlnElmnt::leaveLocalFrame( p );
+  P_Face( p,   halfAngle );
+}
+
+
+void sbend::leaveLocalFrame( JetParticle& p ) const
+{
+  static double halfAngle;
+  halfAngle = this->angle / 2.0;
+  J_Face( p, - halfAngle );
+  bmlnElmnt::leaveLocalFrame( p );
+  J_Face( p,   halfAngle );
+}
+
+
+void sbend::P_Face( Particle& p, const double& psi ) const
+{
+  static int x;
+  static int y;
+  static int cdt;
+  static int xp;
+  static int yp;
+  static int dpop;
+
+  x    = p.xIndex();
+  y    = p.yIndex();
+  cdt  = p.cdtIndex();
+  xp   = p.npxIndex();
+  yp   = p.npyIndex();
+  dpop = p.ndpIndex();
+
+
+  double cs( cos(psi) ); 
+  double sn( sin(psi) ); 
+
+  // Drift frame represented in the sbend frame.
+  Vector e_1(3), e_2(3), e_3(3);
+  e_1(0) = cs;  e_1(1) = 0.0;  e_1(2) = -sn; 
+  e_2(0) = 0.0; e_2(1) = 1.0;  e_2(2) = 0.0; 
+  e_3(0) = sn;  e_3(1) = 0.0;  e_3(2) = cs; 
+
+  // Coordinate transformation.
+  Vector r        ( p.State(x)*e_1 + p.State(y)*e_2 );
+  Vector dummy    ( p.VectorBeta() );
+  Vector beta     ( dummy(0)*e_1 +
+                    dummy(1)*e_2 +
+                    dummy(2)*e_3 );
+
+  double tau      ( - r(2) / beta(2) );
+
+  p.state[x]    = r(0) + tau*beta(0);
+  p.state[y]    = r(1) + tau*beta(1);
+  p.state[cdt] += tau;
+
+  // Momentum transformation
+  double p1( p.State( xp ) );
+  double p2( p.State( yp ) );
+  double p3divpbar = sqrt( ( 1.0 + p.state[dpop] ) * ( 1.0 + p.state[dpop] )
+                            - p1*p1 - p2*p2 );
+
+  p.state[xp] = cs*p.State( xp ) + sn*p3divpbar;
+}
+
+
+void sbend::J_Face( JetParticle& p, const double& psi ) const
+{
+  static int x;
+  static int y;
+  static int cdt;
+  static int xp;
+  static int yp;
+  static int dpop;
+
+  x    = p.xIndex();
+  y    = p.yIndex();
+  cdt  = p.cdtIndex();
+  xp   = p.npxIndex();
+  yp   = p.npyIndex();
+  dpop = p.ndpIndex();
+
+
+  double cs( cos(psi) ); 
+  double sn( sin(psi) ); 
+
+  // Drift frame represented in the sbend frame.
+  Vector e_1(3), e_2(3), e_3(3);
+  e_1(0) = cs;  e_1(1) = 0.0;  e_1(2) = -sn; 
+  e_2(0) = 0.0; e_2(1) = 1.0;  e_2(2) = 0.0; 
+  e_3(0) = sn;  e_3(1) = 0.0;  e_3(2) = cs; 
+
+  // Coordinate transformation.
+  JetVector r        ( p.State(x)*e_1 + p.State(y)*e_2 );
+  JetVector dummy    ( p.VectorBeta() );
+  JetVector beta     ( dummy(0)*e_1 +
+                       dummy(1)*e_2 +
+                       dummy(2)*e_3 );
+
+  Jet tau            ( - r(2) / beta(2) );
+
+ ( p.state ).SetComponent( x,   r(0) + tau*beta(0) );
+ ( p.state ).SetComponent( y,   r(1) + tau*beta(1) );
+ ( p.state ).SetComponent( cdt, p.state(cdt) + tau );
+
+  // Momentum transformation
+  Jet p1( p.State( xp ) );
+  Jet p2( p.State( yp ) );
+  Jet p3divpbar = sqrt( ( 1.0 + p.state(dpop) ) * ( 1.0 + p.state(dpop) )
+                            - p1*p1 - p2*p2 );
+
+  ( p.state ).SetComponent( xp, cs*p.State( xp ) + sn*p3divpbar );
+}

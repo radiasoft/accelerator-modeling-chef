@@ -2,11 +2,11 @@
 
 #ifdef MADPHYSICS
 
-void bmlnElmnt::propagate( Particle& p ) {
+void bmlnElmnt::localPropagate( Particle& p ) {
 
  static char firstCall = 1;
  if( firstCall ) {
-  cout << "*** WARNING ***  bmlnElmnt::propagate( Particle& ): This\n"
+  cout << "*** WARNING ***  bmlnElmnt::localPropagate( Particle& ): This\n"
        << "*** WARNING ***  routine was written using a linear\n"
        << "*** WARNING ***  approximation." << endl;
   firstCall = 0;
@@ -18,11 +18,11 @@ void bmlnElmnt::propagate( Particle& p ) {
 
 }
 
-void bmlnElmnt::propagate( JetParticle& p ) {
+void bmlnElmnt::localPropagate( JetParticle& p ) {
 
  static char firstCall = 1;
  if( firstCall ) {
-  cout << "*** WARNING ***  bmlnElmnt::propagate( JetParticle& ): This\n"
+  cout << "*** WARNING ***  bmlnElmnt::localPropagate( JetParticle& ): This\n"
        << "*** WARNING ***  routine was written using a linear\n"
        << "*** WARNING ***  approximation." << endl;
   firstCall = 0;
@@ -38,10 +38,10 @@ void bmlnElmnt::propagate( JetParticle& p ) {
 
 }
 
-void bmlnElmnt::propagate( ParticleBunch& b ) {
+void bmlnElmnt::localPropagate( ParticleBunch& b ) {
  slist_iterator getNext( (slist&) b );
  Particle* p;
- while( p = (Proton*) getNext() ) propagate( *p );
+ while( p = (Proton*) getNext() ) this->localPropagate( *p );
 }
  
 #endif
@@ -50,7 +50,7 @@ void bmlnElmnt::propagate( ParticleBunch& b ) {
 
 #ifndef MADPHYSICS
 
-void bmlnElmnt::propagate( Particle& p ) {
+void bmlnElmnt::localPropagate( Particle& p ) {
  static double /* x, y, */ D, p3divpbar;
  static double xpr, ypr;
 
@@ -76,7 +76,7 @@ void bmlnElmnt::propagate( Particle& p ) {
  p.state[2] += ( D / p.Beta() ) - ( length / p.beta );
 }
 
-void bmlnElmnt::propagate( JetParticle& p ) {
+void bmlnElmnt::localPropagate( JetParticle& p ) {
  /* static ??? */ Jet /* x, y, */ D, p3divpbar;
  /* static ??? */ Jet dummy;
  /* static ??? */ Jet xpr, ypr;
@@ -105,10 +105,10 @@ void bmlnElmnt::propagate( JetParticle& p ) {
  ( p.state ).SetComponent( 2, dummy );
 }
 
-void bmlnElmnt::propagate( ParticleBunch& b ) {
+void bmlnElmnt::localPropagate( ParticleBunch& b ) {
  slist_iterator getNext( (slist&) b );
  Particle* p;
- while((  p = (Proton*) getNext()  )) propagate( *p );
+ while((  p = (Proton*) getNext()  )) this->localPropagate( *p );
 }
 
 #endif

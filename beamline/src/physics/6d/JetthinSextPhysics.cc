@@ -1,6 +1,6 @@
 #include "beamline.inc"
 #include "FDPolarity.h"
-void JetthinSext::propagate( Particle& p ) {
+void JetthinSext::localPropagate( Particle& p ) {
  double k;
  double    inState  [BMLN_dynDim];
  double    outState  [BMLN_dynDim];
@@ -12,12 +12,7 @@ void JetthinSext::propagate( Particle& p ) {
  else
    k = strength / p.bRho;
 
-  if(align != 0) 
-    align->misalign(p,geometry,inState);
-  else {
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      inState[i] = p.state[i];
-  }
+  p.getState( inState );
 
   outState[0] = inState[0];
   outState[1] = inState[1];
@@ -29,17 +24,11 @@ void JetthinSext::propagate( Particle& p ) {
   outState[5] = inState[5];
 
 
-  if(align != 0) {
-    align->align(outState,geometry,inState);
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      p.state[i] = inState[i];
-  } else {
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      p.state[i] = outState[i];
-  }
+  p.setState( outState );
+
 }
 
-void JetthinSext::propagate( JetParticle& p ) {
+void JetthinSext::localPropagate( JetParticle& p ) {
   Jet k;
   Jet    zero;
   Jet    inState  [BMLN_dynDim];
@@ -51,14 +40,8 @@ void JetthinSext::propagate( JetParticle& p ) {
 
   k = K2L / p.BRho();
 
+  p.getState( inState );
 
-  if(align != 0) 
-    align->misalign(p,geometry,inState);
-  else {
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      inState[i] = p.state(i);
-  }
- 
   outState[0] = inState[0];
   outState[1] = inState[1];
   outState[2] = inState[2];
@@ -67,12 +50,7 @@ void JetthinSext::propagate( JetParticle& p ) {
   outState[4] = inState[4] - 2.0 * k * inState[0]*inState[1];
   outState[5] = inState[5];
 
-  if(align != 0) {
-    align->align(outState,geometry,inState);
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      ( p.state ).SetComponent( i, inState[i] );
-  } else {
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      ( p.state ).SetComponent( i, outState[i] );
+  for( i = 0; i < BMLN_dynDim; i++  ) {
+    ( p.state ).SetComponent( i, outState[i] );
   }
 }

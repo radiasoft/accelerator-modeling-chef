@@ -75,17 +75,17 @@ private:
 
     ~tclMonitor();
 
-    void propagate( Particle& );
-    void propagate( JetParticle& );
-    void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
+    void localPropagate( Particle& );
+    void localPropagate( JetParticle& );
+    void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
 
     /// Toggles origin registration
     void RegisterOrigin( Particle& );
     /// Resets origin to zero.
     void ResetOrigin();
 
-    char*      Type() { return "tclMonitor"; }
-    bmlnElmnt* Clone() { return new tclMonitor( *this ); }
+    char*      Type() const { return "tclMonitor"; }
+    bmlnElmnt* Clone() const { return new tclMonitor( *this ); }
     int        getColor();
     void       setColor(int);
     /// Turns monitor on.

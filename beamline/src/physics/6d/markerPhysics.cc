@@ -1,9 +1,9 @@
 #include "beamline.inc"
 
-void marker::propagate( Particle& ) {
+void marker::localPropagate( Particle& ) {
  // Markers don't do anything.
 }
 
-void marker::propagate( JetParticle& ) {
+void marker::localPropagate( JetParticle& ) {
  // Markers don't do anything.
 }

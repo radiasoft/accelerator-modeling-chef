@@ -33,22 +33,15 @@ void sbend::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
     matrix[3][3] = matrix[0][0];
     matrix[3][5] = changeMADConvention*(-matrix[2][0]);
     // Finally .. the mapping ...............................
-    if(pbe->align != 0) 
-      pbe->align->misalign(p,pbe->geometry,inState);
-    else {
-      for( i = 0; i < BMLN_dynDim; i++  ) 
-	inState[i] = p.state[i];
+    for( i = 0; i < BMLN_dynDim; i++  ) {
+      inState[i] = p.state[i];
     }
     for( i = 0; i < BMLN_dynDim; i++  ) {
       p.state[i] = 0.0;
       for( j = 0; j < BMLN_dynDim; j++  ) 
 	p.state[i] += matrix[i][j]*inState[j];
     }
-    if(pbe->align != 0) {
-      pbe->align->align(p,pbe->geometry,inState);
-      for( i = 0; i < BMLN_dynDim; i++  ) 
-	p.state[i] = inState[i];
-    }
+
   } else {
     p.state[0] += pbe->length * p.state[3];
     p.state[1] += pbe->length * p.state[4];
@@ -92,11 +85,8 @@ void sbend::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
     matrix[3][5] = changeMADConvention*(-matrix[2][0]);
     
     // Finally .. the mapping ...............................
-    if(pbe->align != 0) 
-      pbe->align->misalign(p,pbe->geometry,inState);
-    else {
-      for( i = 0; i < BMLN_dynDim; i++  ) 
-	inState[i] = p.state(i);
+    for( i = 0; i < BMLN_dynDim; i++  ) {
+      inState[i] = p.state(i);
     }
     zero = 0.0;
     // ??? REMOVE zero.fixReferenceAtStart( p.state );
@@ -106,14 +96,11 @@ void sbend::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
       for( j = 0; j < BMLN_dynDim; j++  ) 
 	outState[i] = outState[i] + matrix[i][j]*inState[j];
     }
-    if(pbe->align != 0) {
-      pbe->align->align(outState,pbe->geometry,inState);
-      for( i = 0; i < BMLN_dynDim; i++  ) 
-	( p.state ).SetComponent( i, inState[i] );
-    } else {
-      for( i = 0; i < BMLN_dynDim; i++  ) 
-	( p.state ).SetComponent( i, outState[i] );
+
+    for( i = 0; i < BMLN_dynDim; i++  ) {
+      ( p.state ).SetComponent( i, outState[i] );
     }
+
   } else {
     dummy = p.state(0) + pbe->length * p.state(3);
     ( p.state ).SetComponent( 0, dummy );

@@ -1,6 +1,6 @@
 #include "beamline.inc"
 
-void monitor::propagate( Particle& p ) {
+void monitor::localPropagate( Particle& p ) {
  int i;
  
  for ( i = 0; i < BMLN_dynDim; i++ ) rgr[i] = p.state[i];
@@ -13,7 +13,7 @@ void monitor::propagate( Particle& p ) {
  }
 }
 
-void monitor::propagate( JetParticle& p ) {
+void monitor::localPropagate( JetParticle& p ) {
  int i;
 
  for ( i = 0; i < BMLN_dynDim; i++ ) rgr[i] = ( p.state(i) ).standardPart();

@@ -224,7 +224,7 @@ void tclMonitor::on(char* whereToDisplay) {
    }
 }
 
-void tclMonitor::propagate( Particle& part) {
+void tclMonitor::localPropagate( Particle& part) {
 //******************************************************
 //
 //  This should update the display of the phase-space plot if 
@@ -355,7 +355,7 @@ void tclMonitor::propagate( Particle& part) {
  }
 }
 
-void tclMonitor::propagate( JetParticle& jpart) {
+void tclMonitor::localPropagate( JetParticle& jpart) {
 //******************************************************
 //
 //  This should update the display of the phase-space plot if 

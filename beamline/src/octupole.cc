@@ -35,20 +35,20 @@ octupole::~octupole() {
 }
 
 
-void octupole::setStrength( const double s ) {
+void octupole::setStrength( double s ) {
  strength = s - getShunt()*IToField();
  p_bml_e->setStrength( strength*length );
 }
 
 
-void octupole::setStrength( const double, const int ) {
- cerr << "\nCall to octupole::setStrength( const double s, const int index )"
+void octupole::setStrength( double, int ) {
+ cerr << "\nCall to octupole::setStrength( double s, int index )"
       << endl;
  exit(1);
 }
 
 
-void octupole::setCurrent( const double s ) {
+void octupole::setCurrent( double s ) {
  p_bml_e->setCurrent( s );
 }
 

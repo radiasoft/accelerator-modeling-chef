@@ -40,11 +40,8 @@ void rbend::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
   // Finally .. the mapping ...............................
   // First do the entrance edge
   
-  if(pbe->align != 0) 
-    pbe->align->misalign(p,pbe->geometry,inState);
-  else {
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      inState[i] = p.state[i];
+  for( i = 0; i < BMLN_dynDim; i++  ) {
+    inState[i] = p.state[i];
   }
   for( i = 0; i < BMLN_dynDim; i++  ) {
     p.state[i] = 0.0;
@@ -72,11 +69,6 @@ void rbend::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
     p.state[i] = 0.0;
     for( j = 0; j < BMLN_dynDim; j++  ) 
       p.state[i] += edgeMatrix[i][j]*inState[j];
-  }
-  if(pbe->align != 0) {
-    pbe->align->align(p,pbe->geometry,inState);
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      p.state[i] = inState[i];
   }
 }
 
@@ -120,11 +112,8 @@ void rbend::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
  // Finally .. the mapping ...............................
  // First do the entrance edge
  
-  if(pbe->align != 0) 
-    pbe->align->misalign(p,pbe->geometry,inState);
-  else {
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      inState[i] = p.state(i);
+  for( i = 0; i < BMLN_dynDim; i++  ) {
+    inState[i] = p.state(i);
   }
   zero = 0.0;
 //  zero.fixReferenceAtStart( p.state );
@@ -164,13 +153,9 @@ void rbend::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
     for( j = 0; j < BMLN_dynDim; j++  ) 
       outState[i] = outState[i] + edgeMatrix[i][j]*inState[j];
   }
-  if(pbe->align != 0) {
-    pbe->align->align(outState,pbe->geometry,inState);
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      ( p.state ).SetComponent( i, inState[i] );
-  } else {
-    for( i = 0; i < BMLN_dynDim; i++  ) 
-      ( p.state ).SetComponent( i, outState[i] );
+
+  for( i = 0; i < BMLN_dynDim; i++  ) {
+    ( p.state ).SetComponent( i, outState[i] );
   }
 }
 

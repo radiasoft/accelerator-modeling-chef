@@ -3,7 +3,8 @@
 INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(BASIC_TOOLKIT_INC) -I$(PHYSICS_TOOLKIT_INC) -I$(SOCKET_INC) -I$(TKINC) -I$(XINC)
 
 OBJS = BBLens.o \
-       BmlVisitor.o\
+       BmlVisitor.o \
+       CF_rbend.o \
        InsertionList.o \
        JetQuadrupole.o\
        JetThinQuad.o\
@@ -11,6 +12,7 @@ OBJS = BBLens.o \
        InsertionList.o \
        Particle.o \
        ParticleBunch.o \
+       Slot.o \
        alignment.o \
        beamline.o \
        bmlnElmnt.o \

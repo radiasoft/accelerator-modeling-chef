@@ -1,14 +1,14 @@
 #include "beamline.inc"
 
 // OLD FORM  
-// OLD FORM  void rfcavity::propagate( Proton& p) {
+// OLD FORM  void rfcavity::localPropagate( Proton& p) {
 // OLD FORM   double phi;
 // OLD FORM  
 // OLD FORM   phi = phi_s + p.state[2] * w_rf;
 // OLD FORM   p.state[5] += eV * ( sin(phi) - sin_phi_s );
 // OLD FORM  }
 // OLD FORM  
-// OLD FORM  void rfcavity::propagate( JetProton& p) {
+// OLD FORM  void rfcavity::localPropagate( JetProton& p) {
 // OLD FORM   Jet phi, u;
 // OLD FORM   
 // OLD FORM   phi = phi_s + p.state[2] * w_rf;
@@ -20,7 +20,7 @@
 
 #ifndef MADPHYSICS
 
-void thinrfcavity::propagate( Particle& p ) 
+void thinrfcavity::localPropagate( Particle& p ) 
 {
  static double E;
  E = p.Energy() + strength*sin( phi_s + p.state[2] * w_rf / PH_MKS_c );
@@ -29,7 +29,7 @@ void thinrfcavity::propagate( Particle& p )
               - sqrt((p.E-p.m)*(p.E+p.m))) / p.p;
 }
 
-void thinrfcavity::propagate( JetParticle& p ) 
+void thinrfcavity::localPropagate( JetParticle& p ) 
 {
  static Jet E;
  E = p.Energy() + strength*sin( phi_s + p.state(2) * w_rf / PH_MKS_c );
@@ -45,11 +45,11 @@ void thinrfcavity::propagate( JetParticle& p )
 
 #ifdef MADPHYSICS
 
-void thinrfcavity::propagate( Particle& p) 
+void thinrfcavity::localPropagate( Particle& p) 
 {
  static char firstCall = 1;
  if( firstCall ) {
-  cout << "*** WARNING ***  thinrfcavity::propagate( Particle& ): This\n"
+  cout << "*** WARNING ***  thinrfcavity::localPropagate( Particle& ): This\n"
        << "*** WARNING ***  routine was written using a linear\n"
        << "*** WARNING ***  approximation.  Eventually it will be\n"
        << "*** WARNING ***  fixed so as to represent an RF kick more\n"
@@ -62,11 +62,11 @@ void thinrfcavity::propagate( Particle& p)
  p.state[5] += kick*p.state[2];
 }
 
-void thinrfcavity::propagate( JetParticle& p) 
+void thinrfcavity::localPropagate( JetParticle& p) 
 {
  static char firstCall = 1;
  if( firstCall ) {
-  cout << "*** WARNING ***  thinrfcavity::propagate( JetParticle& ): This\n"
+  cout << "*** WARNING ***  thinrfcavity::localPropagate( JetParticle& ): This\n"
        << "*** WARNING ***  routine was written using a linear\n"
        << "*** WARNING ***  approximation.  Eventually it will be\n"
        << "*** WARNING ***  fixed so as to represent an RF kick more\n"

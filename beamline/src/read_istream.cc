@@ -161,10 +161,10 @@ bmlnElmnt* read_istream(istream& is)
   else if ( strcasecmp(type, 		"combinedFunction_END") == 0 ) {
     element = NULL;
   }
-  else if ( strcasecmp(type, 		"combinedFunction") == 0 ) {
-    cmbPtr = new combinedFunction(name);
-    element = cmbPtr;
-  }
+  // else if ( strcasecmp(type, 		"combinedFunction") == 0 ) {
+  //   cmbPtr = new combinedFunction(name);
+  //   element = cmbPtr;
+  // }
   else if( strcasecmp(type, 		"drift") == 0 ) {
     driftPtr = new drift(name, length);
     element = driftPtr;

@@ -4,7 +4,7 @@
 //   class JetthinSext
 // **************************************************
 
-JetthinSext::JetthinSext ( const double s, const int index ) 
+JetthinSext::JetthinSext ( double s, int index ) 
 : bmlnElmnt() {
  // The strength is to be interpreted as
  // B''l in  Tesla / meter
@@ -15,8 +15,8 @@ JetthinSext::JetthinSext ( const double s, const int index )
 }
 
 JetthinSext::JetthinSext ( char* n, 
-			   const double s,
-			   const int index) : bmlnElmnt( n, 0.0, s ) {
+			   double s,
+			   int index) : bmlnElmnt( n, 0.0, s ) {
  // The strength is to be interpreted as
  // B''l in  Tesla / meter
  K2L.setVariable( s, index );
@@ -43,13 +43,13 @@ JetthinSext::JetthinSext( const JetthinSext& x )
 JetthinSext::~JetthinSext() {
 }
 
-void JetthinSext::setStrength( const double s ) {
+void JetthinSext::setStrength( double s ) {
  K2L.setVariable( s, strengthIndex );
  strength = s;
 }
 
 
-void JetthinSext::setStrength( const double s, const int index ) {
+void JetthinSext::setStrength( double s, int index ) {
  K2L.setVariable( s, index );
  strength = s;
  strengthIndex = index;

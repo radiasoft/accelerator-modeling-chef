@@ -149,7 +149,7 @@ JetQuadrupole::~JetQuadrupole() {
 }
 
 
-void JetQuadrupole::setStrength( const double s ) {
+void JetQuadrupole::setStrength( double s ) {
  JetStrength.setVariable(strengthIndex);
 // JetStrength += s;
  if(p_bml_e != 0)
@@ -157,7 +157,7 @@ void JetQuadrupole::setStrength( const double s ) {
 }
 
 
-void JetQuadrupole::setStrength( const double s, const int index) {
+void JetQuadrupole::setStrength( double s, int index) {
  strength = s;
  strengthIndex = index;
  JetStrength.setVariable(s,index);

@@ -22,9 +22,18 @@ public:
   void append(bmlnElmnt&);
   void eliminate() {delete this;}
 
-  void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
-  void propagate( Particle& );
-  void propagate( JetParticle& );
+  virtual void enterLocalFrame( Particle&    p ) const
+    { bmlnElmnt::enterLocalFrame( p ); }
+  virtual void enterLocalFrame( JetParticle& p ) const
+    { bmlnElmnt::enterLocalFrame( p ); }
+  virtual void leaveLocalFrame( Particle&    p ) const
+    { bmlnElmnt::leaveLocalFrame( p ); }
+  virtual void leaveLocalFrame( JetParticle& p ) const
+    { bmlnElmnt::leaveLocalFrame( p ); }
+
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitCombinedFunction( this ); }
   
@@ -32,8 +41,8 @@ public:
   double Field(WHICH_MULTIPOLE);
   void setSkew(WHICH_MULTIPOLE, alignmentData&);
   alignmentData Skew(WHICH_MULTIPOLE);
-  char* Type() { return "combinedFunction"; }
-  bmlnElmnt* Clone() { return new combinedFunction( *this ); }
+  char* Type() const { return "combinedFunction"; }
+  bmlnElmnt* Clone() const { return new combinedFunction( *this ); }
 
   double AdjustPosition( const Proton& );
   double AdjustPosition( const JetProton& );

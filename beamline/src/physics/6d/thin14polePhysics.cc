@@ -1,6 +1,6 @@
 #include "beamline.inc"
 
-void thin14pole::propagate( Particle& p ) {
+void thin14pole::localPropagate( Particle& p ) {
  double x, y, k;
  
   if(strength != 0) {
@@ -17,7 +17,7 @@ void thin14pole::propagate( Particle& p ) {
   }
 }
 
-void thin14pole::propagate( JetParticle& p ) {
+void thin14pole::localPropagate( JetParticle& p ) {
   if(strength != 0) {
     Jet  k, x, y, s;
     JetC z;

@@ -23,7 +23,7 @@ BMLN_posInfo::BMLN_posInfo() {
 }
 
 
-BMLN_posInfo::BMLN_posInfo( BMLN_posInfo& x ) {
+BMLN_posInfo::BMLN_posInfo( const BMLN_posInfo& x ) {
  inPoint  = x.inPoint;
  outPoint = x.outPoint;
  int j; // O.K.
@@ -187,7 +187,7 @@ bmlnElmnt::bmlnElmnt( const char* n, PROPFUNC pf, JETPROPFUNC jpf ) {
 #endif
 }
 
-bmlnElmnt::bmlnElmnt( const double l /* length */, 
+bmlnElmnt::bmlnElmnt( double l /* length */, 
                       PROPFUNC pf, JETPROPFUNC jpf ) {
  ident        = new char [8];
                  strcpy( ident, "NONAME" );
@@ -222,8 +222,8 @@ bmlnElmnt::bmlnElmnt( const double l /* length */,
 #endif
 }
 
-bmlnElmnt::bmlnElmnt( const double l /* length */, 
-                      const double s /* strength */, 
+bmlnElmnt::bmlnElmnt( double l /* length */, 
+                      double s /* strength */, 
                       PROPFUNC pf, JETPROPFUNC jpf ) {
  ident        = new char [8];
                  strcpy( ident, "NONAME" );
@@ -259,7 +259,7 @@ bmlnElmnt::bmlnElmnt( const double l /* length */,
 }
 
 bmlnElmnt::bmlnElmnt( const char*  n /* name */, 
-                      const double l /* length */, 
+                      double l       /* length */, 
                       PROPFUNC pf, JETPROPFUNC jpf ) {
  if( n ) {
   ident = new char [ strlen(n) + 1 ];
@@ -301,8 +301,8 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
 }
 
 bmlnElmnt::bmlnElmnt( const char*  n /* name */, 
-                      const double l /* length */, 
-                      const double s /* strength */, 
+                      double l       /* length */, 
+                      double s       /* strength */, 
                       PROPFUNC pf, JETPROPFUNC jpf ) {
  if( n ) {
   ident = new char [ strlen(n) + 1 ];
@@ -343,7 +343,7 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
 #endif
 }
 
-bmlnElmnt::bmlnElmnt( bmlnElmnt& a ) {
+bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
  ident         = new char [ strlen(a.ident) + 1 ];
                  strcpy( ident, a.ident );
  length        = a.length;
@@ -476,8 +476,14 @@ bmlnElmnt::~bmlnElmnt() {
  delete []     ident;
  if( align )   delete align;
  if(pAperture) delete pAperture;
- if( p_bml )   p_bml->eliminate();
- if( p_bml_e ) delete p_bml_e;
+ if( p_bml )   {
+   p_bml->eliminate();
+   p_bml = 0;
+ }
+ if( p_bml_e ) {
+   delete p_bml_e;
+   p_bml_e = 0;
+ }
  dataHook.eraseAll();
 #ifdef OBJECT_DEBUG
  objectCount--;
@@ -509,20 +515,20 @@ void bmlnElmnt::set( const bmlnElmntData& data ) {
 
 }
 
-void bmlnElmnt::setStrength( const double s ) {
+void bmlnElmnt::setStrength( double s ) {
   strength = s - getShunt()*IToField(); 
 }
 
-void bmlnElmnt::setStrength( const double, const int ) {
+void bmlnElmnt::setStrength( double, int ) {
  cerr << "*** ERROR *** "
-      << "*** ERROR *** void bmlnElmnt::setStrength( const double s, const int index )\n"
+      << "*** ERROR *** void bmlnElmnt::setStrength( double s, int index )\n"
       << "*** ERROR *** This virtual function should never \n"
       << "*** ERROR *** have been called in its base class version.\n"
       << endl;
  exit(1);
 }
 
-void bmlnElmnt::setCurrent( const double I ) {
+void bmlnElmnt::setCurrent( double I ) {
   setStrength((I-getShunt()) * IToField());
 }
 
@@ -718,6 +724,110 @@ alignmentData bmlnElmnt::Alignment() {
     x = align->getAlignment();
   }
   return x;
+}
+
+void bmlnElmnt::enterLocalFrame( Particle& p ) const
+{
+  static double inState[ BMLN_dynDim ];
+  static double temp;
+  static double cs, sn;
+
+  cs = align->cos_roll();
+  sn = align->sin_roll();
+
+  p.getState( inState );
+
+  inState[0] -= align->x_offset();
+  inState[1] -= align->y_offset();
+
+  if( align->roll() != 0.0) {
+    temp       = inState[0] * cs + inState[1] * sn;
+    inState[1] = inState[1] * cs - inState[0] * sn;
+    inState[0] = temp;
+
+    temp       = inState[3] * cs + inState[4] * sn;
+    inState[4] = inState[4] * cs - inState[3] * sn;
+    inState[3] = temp;
+  }
+ 
+  p.setState( inState) ;
+}
+
+void bmlnElmnt::enterLocalFrame( JetParticle& p ) const
+{
+  JetVector inState ( p.State() );
+  Jet       temp    ( inState.Env() );
+  static    double  cs, sn;
+
+  cs = align->cos_roll();
+  sn = align->sin_roll();
+
+  inState(0) -= align->x_offset();
+  inState(1) -= align->y_offset();
+
+  if( align->roll() != 0.0) {
+    temp       = inState(0) * cs + inState(1) * sn;
+    inState(1) = inState(1) * cs - inState(0) * sn;
+    inState(0) = temp;
+
+    temp       = inState(3) * cs + inState(4) * sn;
+    inState(4) = inState(4) * cs - inState(3) * sn;
+    inState(3) = temp;
+  }
+
+  p.setState( inState );
+}
+
+void bmlnElmnt::leaveLocalFrame( Particle& p ) const
+{
+  static double outState[ BMLN_dynDim ];
+  static double temp;
+  static double cs, sn;
+
+  cs = align->cos_roll();
+  sn = align->sin_roll();
+
+  p.getState( outState );
+
+  if( align->roll() != 0.0) {
+    temp        = outState[0] * cs - outState[1] * sn;
+    outState[1] = outState[1] * cs + outState[0] * sn;
+    outState[0] = temp;
+
+    temp        = outState[3] * cs - outState[4] * sn;
+    outState[4] = outState[4] * cs + outState[3] * sn;
+    outState[3] = temp;
+  }
+
+  outState[0] += align->x_offset();
+  outState[1] += align->y_offset();
+
+  p.setState( outState );
+}
+
+void bmlnElmnt::leaveLocalFrame( JetParticle& p ) const
+{
+  JetVector outState ( p.State() );
+  Jet       temp     ( outState.Env() );
+  static    double   cs, sn;
+
+  cs = align->cos_roll();
+  sn = align->sin_roll();
+
+  if( align->roll() != 0.0) {
+    temp        = outState(0) * cs - outState(1) * sn;
+    outState(1) = outState(1) * cs + outState(0) * sn;
+    outState(0) = temp;
+
+    temp        = outState(3) * cs - outState(4) * sn;
+    outState(4) = outState(4) * cs + outState(3) * sn;
+    outState(3) = temp;
+  }
+
+  outState(0) += align->x_offset();
+  outState(1) += align->y_offset();
+
+  p.setState( outState );
 }
 
 void bmlnElmnt::setAperture( Aperture* pAperture_in ) {

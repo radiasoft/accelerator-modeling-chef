@@ -143,15 +143,15 @@ quadrupole::~quadrupole() {
 }
 
 
-void quadrupole::setStrength( const double s ) {
+void quadrupole::setStrength( double s ) {
  strength = s - getShunt()*IToField();
  if(p_bml_e != 0)
    p_bml_e->setStrength( strength*length );
 }
 
 
-void quadrupole::setStrength( const double, const int ) {
- cerr << "\nCall to quadrupole::setStrength( const double s, const int index )"
+void quadrupole::setStrength( double, int ) {
+ cerr << "\nCall to quadrupole::setStrength( double s, int index )"
       << endl;
  exit(1);
 }
