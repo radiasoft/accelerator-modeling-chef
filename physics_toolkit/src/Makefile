@@ -12,6 +12,7 @@ OBJS = ClosedOrbitSage.o \
        LattFuncSage.o \
        QBpropVisitor.o \
        Sage.o \
+       beamline_twiss.o \
        normalForm.o \
        particleVisitor.o
 
