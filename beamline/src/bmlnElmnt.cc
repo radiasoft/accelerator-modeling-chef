@@ -522,6 +522,16 @@ void bmlnElmnt::set( const bmlnElmntData& data ) {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 
+short bmlnElmnt::writeTag ( char c, short index )
+{
+  if( index < 0 || index >= BF_MAXCHAR ) {
+    return BF_BAD_START;
+  }
+  _tag[index] = c;
+  return BF_OK;
+}
+
+
 short bmlnElmnt::writeTag ( const char* s, short start, short num )
 {
   if( s == 0 ) {
