@@ -2,7 +2,13 @@
 
 set -x
 
-for dir in basic_toolkit beamline bmlfactory mxyzptlk physics_toolkit 
+aclocal -I config
+#autoheader
+automake --add-missing --foreign --copy
+autoconf
+#libtoolize --force --copy
+
+for dir in basic_toolkit beamline bmlfactory mxyzptlk physics_toolkit integrator
 do
   cd $dir
   aclocal -I config
