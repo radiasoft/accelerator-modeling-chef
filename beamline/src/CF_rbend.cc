@@ -184,6 +184,36 @@ int CF_rbend::setQuadrupole( double arg_x )
   return 0;
 }
 
+double CF_rbend::getOctupole()
+{
+  int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  thinOctupole** w = new thinOctupole* [ m ];
+  int counter = -1;
+  bmlnElmnt** x = _u;
+
+  while( x <= _v ) {
+    if( 0 == strcmp( (*x)->Type(), "thinOctupole" ) ) {
+      // w[++counter] = dynamic_cast<thinOctupole*>(*x);
+      w[++counter] = (thinOctupole*)(*x);
+    }
+    x++;
+  }
+
+  if( counter < 0 ) {
+    delete [] w;
+    return 0.0;
+  }
+  
+  double ret = 0.0;
+  for( int i = 0; i <= counter; i++ ) {
+    ret += w[i]->Strength();
+  }
+  
+  delete [] w;
+  return ret;
+}
+
+
 double CF_rbend::getSextupole()
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
@@ -258,16 +288,20 @@ ostream& CF_rbend::writeTo( ostream& os )
   os << OSTREAM_DOUBLE_PREC << ( this->_poleFaceAngle ) << " ";
   os << OSTREAM_DOUBLE_PREC << getQuadrupole() << " ";
   os << OSTREAM_DOUBLE_PREC << getSextupole() << " ";
+  os << OSTREAM_DOUBLE_PREC << getOctupole() << " ";
   os << "\n";
   return os;
 }
 
 istream& CF_rbend::readFrom( istream& is )
 {
-  double quadStrength, sextStrength;
+  double quadStrength = 0.0;
+  double sextStrength = 0.0;
+  double octStrength  = 0.0;
   is >> ( this->_poleFaceAngle ) 
      >> quadStrength 
-     >> sextStrength;
+     >> sextStrength
+     >> octStrength;
 
 
   // Rebuild basic element ...

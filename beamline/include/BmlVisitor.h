@@ -52,6 +52,7 @@ class VPinger;
 class kick;
 class Slot;
 class CF_rbend;
+class CF_sbend;
 
 // ---------------------------
 
@@ -130,6 +131,8 @@ public:
   virtual void visitSlot( Slot* x)
 			 { visitBmlnElmnt( (bmlnElmnt*) x);  }
   virtual void visitCF_rbend( CF_rbend* x)
+			 { visitBmlnElmnt( (bmlnElmnt*) x);  }
+  virtual void visitCF_sbend( CF_sbend* x)
 			 { visitBmlnElmnt( (bmlnElmnt*) x);  }
 
 protected:

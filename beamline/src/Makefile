@@ -5,6 +5,7 @@ INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(BASIC_TOOLKIT_INC) -I$(PHYS
 OBJS = BBLens.o \
        BmlVisitor.o \
        CF_rbend.o \
+       CF_sbend.o \
        InsertionList.o \
        JetQuadrupole.o\
        JetthinSext.o\
