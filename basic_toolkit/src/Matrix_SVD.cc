@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -41,6 +38,10 @@
  */
 
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "Matrix.h"
 
 using namespace std;
@@ -63,27 +64,27 @@ void MatrixD::SVD ( MatrixD& U, MatrixD& W, MatrixD& V ) const
   int n = ml->c;
 
   if (m < n) {
-    cout << "\n *** ERROR*** MatrixD::SVD: You must augment A with extra zero rows"
-         << endl;
-    exit(1);
+    throw( ml->r, ml->c, 
+           "void MatrixD::SVD ( MatrixD& U, MatrixD& W, MatrixD& V ) const",
+           "Fewer rows than columns: augment matrix with extra rows" );
   } 
   
   if( (U.ml->r != m) || (U.ml->c != n) ) {
-    cout << "\n *** ERROR *** MatrixD::SVD: U has the wrong dimensions."
-         << endl;
-    exit(1);
+    throw( U.ml->r, U.ml->c, 
+           "void MatrixD::SVD ( MatrixD& U, MatrixD& W, MatrixD& V ) const",
+           "U has the wrong dimensions." );
   }
 
   if( (W.ml->r != n) || (W.ml->c != 1) ) {
-    cout << "\n *** ERROR *** MatrixD::SVD: W has the wrong dimensions."
-         << endl;
-    exit(1);
+    throw( W.ml->r, W.ml->c, 
+           "void MatrixD::SVD ( MatrixD& U, MatrixD& W, MatrixD& V ) const",
+           "W has the wrong dimensions." );
   }
 
   if( (V.ml->r != n) || (V.ml->c != n) ) {
-    cout << "\n *** ERROR *** MatrixD::SVD: V has the wrong dimensions."
-         << endl;
-    exit(1);
+    throw( V.ml->r, V.ml->c, 
+           "void MatrixD::SVD ( MatrixD& U, MatrixD& W, MatrixD& V ) const",
+           "V has the wrong dimensions." );
   }
 
   U = *this;
@@ -218,9 +219,9 @@ void MatrixD::SVD ( MatrixD& U, MatrixD& W, MatrixD& V ) const
       }
 
       if (its == 30) { 
-        cout << "*** ERROR *** SVD: No convergence in 30 SVDCMP iterations"
-             << endl;
-        exit(2);
+        throw( ml->r, ml->c, 
+               "void MatrixD::SVD ( MatrixD& U, MatrixD& W, MatrixD& V ) const",
+               "No convergence in 30 SVDCMP iterations." );
       }
 
       x=W(l-1);
