@@ -51,7 +51,7 @@ protected:
   friend class Pinger;
   friend class HPinger;
   friend class VPinger;
-
+  friend class kick;
 
   double   state [ BMLN_dynDim ];
                       // state[0] = x
@@ -262,7 +262,7 @@ protected:
   friend class Pinger;
   friend class HPinger;
   friend class VPinger;
-
+  friend class kick;
 
   Mapping state;
                       // state[0] = x
