@@ -35,6 +35,8 @@
 #include "PhysicsConstants.h"
 #include "JetC.h"
 
+using FNAL::Complex;
+
 rbend::NoEdge_Prop       rbend::NoEdge;
 rbend::Exact_Prop        rbend::Exact;
 rbend::InEdge_Prop       rbend::InEdge;
