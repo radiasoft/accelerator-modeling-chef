@@ -54,11 +54,11 @@ struct JLCterm {
                   //   would correspond to D_1^1 D_2^1 D_4^2 .
   int weight;     // The sum of the values in index.  For the above example,
                   //   this would be 4.
-  Complex value;   // The value associated with the JLCterm.
+  FNAL::Complex value;   // The value associated with the JLCterm.
 
   // Constructors and destructors
   JLCterm( const JetC__environment* ); 
-  JLCterm( const IntArray&, const Complex&, const JetC__environment*  );
+  JLCterm( const IntArray&, const FNAL::Complex&, const JetC__environment*  );
   JLCterm( const JLCterm* );
   JLCterm( const JLCterm& );
   JLCterm( const JLterm& );
@@ -67,7 +67,7 @@ struct JLCterm {
 
   // Operators
   void operator=( const JLCterm& );
-  Complex coeff() const { return value; }
+  FNAL::Complex coeff() const { return value; }
 #ifdef OBJECT_DEBUG
   static int objectCount;
 #endif
@@ -94,7 +94,7 @@ struct JLC : public dlist {
 
   // Constructors and destructors_____________________________________
   JLC( const JetC__environment* = 0 );
-  JLC( const Complex&, JetC__environment* );
+  JLC( const FNAL::Complex&, JetC__environment* );
   JLC( const JLC& );
   JLC( const JL&, JetC__environment* );
   JLC( JLC* );
@@ -113,10 +113,10 @@ struct JLC : public dlist {
   void writeToFile( char*   /* Name of unopened file */ ) const;
   void writeToFile( FILE* ) const;
 
-  void getReference( Complex* ) const;
-  void scaleBy( Complex );
+  void getReference( FNAL::Complex* ) const;
+  void scaleBy( FNAL::Complex );
 
-  void setVariable( const Complex&, 
+  void setVariable( const FNAL::Complex&, 
                     const int&, 
                           JetC__environment* = 0 );
                   // WARNING: This routine alters the environment in
@@ -125,11 +125,11 @@ struct JLC : public dlist {
   void setVariable( const int&, 
                           JetC__environment* = 0 );
 
-  Complex standardPart() const;
+  FNAL::Complex standardPart() const;
   void clear();
-  Complex weightedDerivative( const int* ) const;
-  Complex derivative( const int* ) const;
-  Complex operator()( const Complex* ) const;
+  FNAL::Complex weightedDerivative( const int* ) const;
+  FNAL::Complex derivative( const int* ) const;
+  FNAL::Complex operator()( const FNAL::Complex* ) const;
              // Performs a multinomial evaluation of 
              // the JLC variable.  Essentially acts as a 
              // power series expansion.
@@ -139,8 +139,8 @@ struct JLC : public dlist {
   // ??? REMOVE            // Performs differentiation of a JLC variable.
 
   JLC& operator=( const JLC& );
-  JLC& operator=( const Complex& );
-  JLC& operator+=( const Complex& );
+  JLC& operator=( const FNAL::Complex& );
+  JLC& operator+=( const FNAL::Complex& );
 
 #ifdef OBJECT_DEBUG
   static int objectCount;
@@ -152,8 +152,8 @@ void operator-=( JLC&, const JLC& );
 void operator*=( JLC&, const JLC& );
 void operator/=( JLC&, const JLC& );
 char operator!=( const JLC&, const JLC& );
-char operator!=( const JLC&, const Complex& );
-char operator!=( const Complex&, const JLC& );
+char operator!=( const JLC&, const FNAL::Complex& );
+char operator!=( const FNAL::Complex&, const JLC& );
 
 
 // *******************************************************************
@@ -165,8 +165,8 @@ extern ostream& operator<<(ostream&, const JLC&);
 extern istream& operator>>(istream&,       JLC&);
 extern char operator==( const JLCterm&, const JLCterm& );
 extern char operator==( const JLC&,     const JLC& );
-extern char operator==( const JLC&,     const Complex& );
-extern char operator==( const Complex&, const JLC& );
+extern char operator==( const JLC&,     const FNAL::Complex& );
+extern char operator==( const FNAL::Complex&, const JLC& );
 extern char operator<=( const JLCterm&, const JLCterm& );
 extern char operator%=( const JLCterm&, const JLCterm& );   // Acts like == but compares
                                        // indices only.

@@ -253,8 +253,8 @@ public:
   friend Jet operator/( const double&, const Jet& ); 
   friend Jet operator^( const Jet&, const Jet& );   // Poisson bracket
 
-  friend JetC operator*( const Complex&, const Jet& );
-  friend JetC operator*( const Jet&, const Complex& );
+  friend JetC operator*( const FNAL::Complex&, const Jet& );
+  friend JetC operator*( const Jet&, const FNAL::Complex& );
 
   friend JLterm operator*( const JLterm&, const JLterm& );
   friend Jet operator*( const Jet&, const int& );
