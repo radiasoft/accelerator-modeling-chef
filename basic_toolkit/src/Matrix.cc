@@ -276,6 +276,29 @@ double MatrixD::trace() {
   return temp;
 }
 
+bool MatrixD::isOrthogonal() const
+{
+  if( rows() != cols() ) { return false; }
+  int n = rows();
+  int i, j;
+  MatrixD W( n, n );
+  W = (*this) * (this->transpose());
+  for( i = 0; i < n; i++ ) {
+    for( j = 0; j < n; j++ ) {
+      if( i != j ) { if( 1.0e-12 < std::abs( W(i,j) ) )       { return false; } }
+      else         { if( 1.0e-12 < std::abs( W(i,j) - 1.0 ) ) { return false; } }
+    }
+  }
+  W = (this->transpose())*(*this);
+  for( i = 0; i < n; i++ ) {
+    for( j = 0; j < n; j++ ) {
+      if( i != j ) { if( 1.0e-12 < std::abs( W(i,j) ) )       { return false; } }
+      else         { if( 1.0e-12 < std::abs( W(i,j) - 1.0 ) ) { return false; } }
+    }
+  }
+  return true;
+}
+
 double MatrixD::determinant() {
   if(rows()  != cols())
     error("MatrixD must be square for determinant()");
