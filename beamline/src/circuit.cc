@@ -26,7 +26,7 @@ circuit::circuit( char* n ) {
 circuit::circuit( bmlnElmnt* q ) {
    onOffSwitch  = 1;
    dlist::append(q);
-   ident = strdup( "NONAME" );
+   ident = strdup( q->Name() );
    numElm++;
 }
 
@@ -91,11 +91,11 @@ ICircuit::ICircuit(char* n) : circuit (n) {
 }
 
 ICircuit::ICircuit(bmlnElmnt* q) : circuit (q) {
-  current = 0.0;
+  current = q->Current();
 }
 
 ICircuit::ICircuit(char* n, bmlnElmnt* q) : circuit (n,q) {
-  current = 0.0;
+  current = q->Current();
 }
 ICircuit::~ICircuit() {
 }
@@ -145,11 +145,11 @@ FCircuit::FCircuit(char* n) : circuit (n) {
 }
 
 FCircuit::FCircuit(bmlnElmnt* q) : circuit (q) {
-  field = 0.0;
+  field = q->Strength();
 }
 
 FCircuit::FCircuit(char* n, bmlnElmnt* q) : circuit (n,q) {
-  field = 0.0;
+  field = q->Strength();
 }
 FCircuit::~FCircuit() {
 }
@@ -251,13 +251,21 @@ mover::mover() : circuit (), align() {
 mover::mover(char* n) : circuit (n), align() {
 }
 
-mover::mover(bmlnElmnt* q) : circuit (q), align() {
+mover::mover(bmlnElmnt* q) : circuit (q), align(q->Alignment()) {
 }
 
-mover::mover(char* n, bmlnElmnt* q) : circuit (n,q), align() {
+mover::mover(char* n, bmlnElmnt* q) : circuit (n,q), align(q->Alignment()) {
 }
 
 mover::~mover() {}
+
+void mover::append( bmlnElmnt* q ) {
+   dlist::append( q );
+   if ( align.xOffset == 0 && align.yOffset == 0 && align.tilt == 0 ) {
+     align = q->Alignment();
+   }
+   numElm++;
+}
 
 void mover::switchOn() {
   onOffSwitch = 1;
