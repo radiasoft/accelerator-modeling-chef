@@ -135,6 +135,94 @@ const char* BeamlineBrowser::bml_black_xpm[19]={
 ".......#........"
 };
 
+// const char* BeamlineBrowser::bmr_black_xpm[19]={
+// "  16 16 2 1",
+// "# c #000000",
+// ". c #ffffff",
+// "...........##...",
+// "....########....",
+// "...########.....",
+// "..##...#........",
+// ".......#........",
+// ".....#####......",
+// ".....#####......",
+// ".......#........",
+// ".......#........",
+// ".....#####......",
+// ".....#####......",
+// ".......#........",
+// ".......#...##...",
+// "....########....",
+// "...########.....",
+// "..##............"
+// };
+// 
+// const char* BeamlineBrowser::bmr_orange_xpm[19]={
+// "  16 16 2 1",
+// "# c #ff8800",
+// ". c #ffffff",
+// "...........##...",
+// "....########....",
+// "...########.....",
+// "..##...#........",
+// ".......#........",
+// ".....#####......",
+// ".....#####......",
+// ".......#........",
+// ".......#........",
+// ".....#####......",
+// ".....#####......",
+// ".......#........",
+// ".......#...##...",
+// "....########....",
+// "...########.....",
+// "..##............"
+// };
+
+const char* BeamlineBrowser::bmr_black_xpm[19]={
+"  16 16 2 1",
+"# c #000000",
+". c #ffffff",
+"................",
+"....########....",
+"...##########...",
+"..##...#....##..",
+".##....#.....##.",
+"##...#####...##.",
+"##...#####...##.",
+"##.....#.....##.",
+"##.....#.....##.",
+"##...#####...##.",
+"##...#####...##.",
+"##.....#.....##.",
+".##....#...##...",
+"..##########....",
+"...########.....",
+"................"
+};
+
+const char* BeamlineBrowser::bmr_orange_xpm[19]={
+"  16 16 2 1",
+"# c #ff8800",
+". c #ffffff",
+"................",
+"....########....",
+"...##########...",
+"..##...#....##..",
+".##....#.....##.",
+"##...#####...##.",
+"##...#####...##.",
+"##.....#.....##.",
+"##.....#.....##.",
+"##...#####...##.",
+"##...#####...##.",
+"##.....#.....##.",
+".##....#...##...",
+"..##########....",
+"...########.....",
+"................"
+};
+
 const char* BeamlineBrowser::bml_orange_xpm[19]={
 "  16 16 2 1",
 "# c #ff8800",
@@ -271,10 +359,12 @@ const char* BeamlineBrowser::elmnt_xpm[19]={
 QPixmap* BeamlineBrowser::driftSymbol     = 0;
 QPixmap* BeamlineBrowser::slotSymbol      = 0;
 QPixmap* BeamlineBrowser::bmlBlackSymbol  = 0;
+QPixmap* BeamlineBrowser::bmrBlackSymbol  = 0;
 QPixmap* BeamlineBrowser::sextupoleSymbol = 0;
 QPixmap* BeamlineBrowser::fquadSymbol     = 0;
 QPixmap* BeamlineBrowser::dquadSymbol     = 0;
 QPixmap* BeamlineBrowser::bmlOrangeSymbol = 0;
+QPixmap* BeamlineBrowser::bmrOrangeSymbol = 0;
 QPixmap* BeamlineBrowser::dipoleSymbol    = 0;
 QPixmap* BeamlineBrowser::elmntSymbol     = 0;
 
@@ -404,10 +494,12 @@ QBmlRoot::QBmlRoot( QBmlRoot * parent, /* const */ beamline* q, double& s )
     str.setNum( ((double) s) );
     this->setText( 2, str );
 
-    if ( 0 == strcmp(q->Type(),"beamline") )
-        setPixmap( BeamlineBrowser::bmlBlackSymbol );
-    else
-        setPixmap( BeamlineBrowser::elmntSymbol );
+    if( 0 == strcmp(q->Type(),"beamline") ) {
+      setPixmap( BeamlineBrowser::bmlBlackSymbol );
+    }
+    else {
+      setPixmap( BeamlineBrowser::elmntSymbol );
+    }
 }
 
 
@@ -430,12 +522,32 @@ QBmlRoot::~QBmlRoot()
 
 void QBmlRoot::setOpen( bool o )
 {
-    if ( o )
-        setPixmap( BeamlineBrowser::bmlOrangeSymbol );
-    else
-        setPixmap( BeamlineBrowser::bmlBlackSymbol );
+  if( !_myBmlCon ) {
+    if ( o ) {
+      setPixmap( BeamlineBrowser::bmlOrangeSymbol );
+    }
+    else {
+      setPixmap( BeamlineBrowser::bmlBlackSymbol );
+    }
+  }
+  else if( _myBmlCon->isTreatedAsRing() ) {
+    if ( o ) {
+      setPixmap( BeamlineBrowser::bmrOrangeSymbol );
+    }
+    else {
+      setPixmap( BeamlineBrowser::bmrBlackSymbol );
+    }
+  }
+  else {
+    if ( o ) {
+      setPixmap( BeamlineBrowser::bmlOrangeSymbol );
+    }
+    else {
+      setPixmap( BeamlineBrowser::bmlBlackSymbol );
+    }
+  }
 
-    QListViewItem::setOpen( o );
+  QListViewItem::setOpen( o );
 }
 
 void QBmlRoot::setup()
@@ -529,6 +641,8 @@ BeamlineBrowser::BeamlineBrowser( QWidget *parent, const char *name, bool sdo )
       BeamlineBrowser::slotSymbol = new QPixmap( slot_xpm );
       BeamlineBrowser::bmlBlackSymbol = new QPixmap( bml_black_xpm );
       BeamlineBrowser::bmlOrangeSymbol = new QPixmap( bml_orange_xpm );
+      BeamlineBrowser::bmrBlackSymbol = new QPixmap( bmr_black_xpm );
+      BeamlineBrowser::bmrOrangeSymbol = new QPixmap( bmr_orange_xpm );
       BeamlineBrowser::sextupoleSymbol = new QPixmap( sextupole_xpm );
       BeamlineBrowser::fquadSymbol = new QPixmap( fquad_xpm );
       BeamlineBrowser::dquadSymbol = new QPixmap( dquad_xpm );
@@ -877,6 +991,53 @@ void BeamlineBrowser::setDir( const QString &s )
 }
 
 
+void BeamlineBrowser::resetPixmap( const BeamlineContext* bcPtr )
+{
+  if( 0 == bcPtr ) {
+    QMessageBox::information( 0, "CHEF: WARNING", 
+      "Null pointer passed to BeamlineContext::resetPixmap." 
+      "\nNo action will be taken." );
+    return;
+  }
+
+  QBmlRoot* ptrRoot = dynamic_cast<QBmlRoot*>( this->firstChild() );
+  bool found = ( bcPtr == ptrRoot->_myBmlCon );
+  while( !found ) {
+    ptrRoot = dynamic_cast<QBmlRoot*>( ptrRoot->nextSibling() );
+    found = ( bcPtr == ptrRoot->_myBmlCon );
+  }
+
+  if( !found ) {
+    ostringstream uic;
+    uic << "An impossibility has occurred!"
+           "\nFile " << __FILE__ << " at line " << __LINE__
+        << "\ninside BeamlineContext::resetPixmap."
+        << "\nCould not find indicated BeamlineContext."
+           "\nNo action will be taken.";
+    QMessageBox::information( 0, "CHEF: ERROR", uic.str().c_str() );
+    return;
+  }
+
+  if( bcPtr->isTreatedAsRing() ) {
+    if( ptrRoot->isOpen() ) {
+      ptrRoot->setPixmap( BeamlineBrowser::bmrOrangeSymbol );
+    }
+    else {
+      ptrRoot->setPixmap( BeamlineBrowser::bmrBlackSymbol );
+    }
+  }
+  else {
+    if( ptrRoot->isOpen() ) {
+      ptrRoot->setPixmap( BeamlineBrowser::bmlOrangeSymbol );
+    }
+    else {
+      ptrRoot->setPixmap( BeamlineBrowser::bmlBlackSymbol );
+    }
+  }
+
+  this->repaint();
+}
+
 // 
 // Readers
 // 
@@ -926,11 +1087,30 @@ BeamlineContext* BeamlineBrowser::readMADFile( const char* fileName,
 
 void BeamlineBrowser::displayBeamline( const BeamlineContext* ptr )
 {
+  if( !ptr ) {
+    ostringstream uic;
+    uic << "Null pointer was passed to BeamlineBrowser::displayBeamline"
+           "\nFile "
+        << __FILE__
+        << " at line " << __LINE__ 
+        << "\nException will be thrown.";
+    QMessageBox::information( 0, "CHEF: ERROR", uic.str().c_str() );
+    throw( GenericException( __FILE__, __LINE__, 
+           "void BeamlineBrowser::displayBeamline( const BeamlineContext* ptr )",
+           "Null pointer passed as argument." ) );
+    return;
+  }
+
   double s = ptr->sumLengths();
   QString str1, str2;
 
   QBmlRoot* root = new QBmlRoot( this, (BeamlineContext*) ptr, s );
-  root->setPixmap( BeamlineBrowser::bmlBlackSymbol );
+  if( ptr->isTreatedAsRing() ) {
+    root->setPixmap( BeamlineBrowser::bmrBlackSymbol ); 
+  }
+  else {
+    root->setPixmap( BeamlineBrowser::bmlBlackSymbol );
+  }
   _topLevelItems.insert( (void*) root );
 
   str2.setNum(s);

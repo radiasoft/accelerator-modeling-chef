@@ -71,7 +71,7 @@ CovarianceSage::Info::Info()
 }
 
 
-CovarianceSage::Info::Info( const Info& x ) 
+CovarianceSage::Info::Info( const CovarianceSage::Info& x ) 
 : covariance( Particle::PSD, Particle::PSD )
 {
   arcLength  = x.arcLength;
@@ -80,6 +80,21 @@ CovarianceSage::Info::Info( const Info& x )
   alpha.hor  = x.alpha.hor;
   alpha.ver  = x.alpha.ver;
   covariance = x.covariance;
+}
+
+
+CovarianceSage::Info& CovarianceSage::Info::operator=( const CovarianceSage::Info& x )
+{
+  if( this != &x ) {
+    this->arcLength  = x.arcLength;
+    this->covariance = x.covariance;
+    this->beta.hor   = x.beta.hor;
+    this->beta.ver   = x.beta.ver;
+    this->alpha.hor  = x.alpha.hor;
+    this->alpha.ver  = x.alpha.ver;
+  }
+
+  return *this;
 }
 
 

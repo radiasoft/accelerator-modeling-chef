@@ -103,6 +103,9 @@ class BeamlineContext
     void setInitial( const LattFuncSage::lattFunc& );
     void setInitial( const LattFuncSage::lattFunc* );
     void getInitial( LattFuncSage::lattFunc* );
+    void setInitial( const CovarianceSage::Info& );
+    void setInitial( const CovarianceSage::Info* );
+    void getInitial( CovarianceSage::Info* );
 
     void writeTree();
 
@@ -232,6 +235,7 @@ class BeamlineContext
     // Initial conditions
     LattFuncSage::lattFunc* _initialLattFuncPtr;
     DispersionSage::Info*   _initialDispersionPtr;
+    CovarianceSage::Info*   _initialCovariancePtr;
 
     double                _dpp;
     // value of dp/p used for dispersion calculation.

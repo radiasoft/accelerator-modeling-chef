@@ -157,7 +157,9 @@ struct infoWriter : public ConstBmlVisitor
   static const char* drift_xpm[19];
   static const char* slot_xpm[19];
   static const char* bml_black_xpm[19];
+  static const char* bmr_black_xpm[19];
   static const char* bml_orange_xpm[19];
+  static const char* bmr_orange_xpm[19];
   static const char* dquad_xpm[19];
   static const char* fquad_xpm[19];
   static const char* sextupole_xpm[19];
@@ -167,10 +169,12 @@ struct infoWriter : public ConstBmlVisitor
   static QPixmap* driftSymbol;
   static QPixmap* slotSymbol;
   static QPixmap* bmlBlackSymbol;
+  static QPixmap* bmrBlackSymbol;
   static QPixmap* sextupoleSymbol;
   static QPixmap* fquadSymbol;
   static QPixmap* dquadSymbol;
   static QPixmap* bmlOrangeSymbol;
+  static QPixmap* bmrOrangeSymbol;
   static QPixmap* dipoleSymbol;
   static QPixmap* elmntSymbol;
   
@@ -185,6 +189,7 @@ struct infoWriter : public ConstBmlVisitor
 
 public slots:
     void setDir( const QString & );
+    void resetPixmap( const BeamlineContext* );
 
 signals:
     void folderSelected( const QString & );

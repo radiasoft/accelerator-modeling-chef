@@ -160,38 +160,81 @@ void LattFncData::doCalc()
 
 void LattFncData::makeCurves()
 {
-  boost::shared_ptr<CHEFCurve>  
-    c1( new CHEFCurve(  CurveData(_azimuth, _beta_H, _arraySize), "Horizontal Beta" ) );
-  boost::shared_ptr<CHEFCurve>  
-    c2( new CHEFCurve(  CurveData( _azimuth, _beta_V, _arraySize), "Vertical Beta" ) );
-  boost::shared_ptr<CHEFCurve> 
-    c3( new CHEFCurve(  CurveData( _azimuth, _disp_H, _arraySize), "Horizontal Dispersion" ) );
-  boost::shared_ptr<CHEFCurve>  
-    c4( new CHEFCurve(  CurveData(_azimuth, _disp_V, _arraySize), "Vertical Dispersion" ) );
+  // This test should be removed, but for now I retain it.   - lpjm
+  if( _bmlConPtr->isTreatedAsRing() ) {
+    boost::shared_ptr<CHEFCurve>  
+      c1( new CHEFCurve(  CurveData(_azimuth, _beta_H, _arraySize), "Horizontal Beta" ) );
+    boost::shared_ptr<CHEFCurve>  
+      c2( new CHEFCurve(  CurveData( _azimuth, _beta_V, _arraySize), "Vertical Beta" ) );
+    boost::shared_ptr<CHEFCurve> 
+      c3( new CHEFCurve(  CurveData( _azimuth, _disp_H, _arraySize), "Horizontal Dispersion" ) );
+    boost::shared_ptr<CHEFCurve>  
+      c4( new CHEFCurve(  CurveData(_azimuth, _disp_V, _arraySize), "Vertical Dispersion" ) );
 
-  c1->setPen( QPen( "black", 1, Qt::SolidLine ) );
-  c2->setPen( QPen( "red", 1, Qt::SolidLine ) );
-  c3->setPen( QPen( "black",  0, Qt::DashLine ) );
-  c4->setPen( QPen( "red",  0, Qt::DashLine ) );
+    c1->setPen( QPen( "black", 1, Qt::SolidLine ) );
+    c2->setPen( QPen( "red", 1, Qt::SolidLine ) );
+    c3->setPen( QPen( "black",  0, Qt::DashLine ) );
+    c4->setPen( QPen( "red",  0, Qt::DashLine ) );
 
-  c1->setAxis( QwtPlot::xBottom, QwtPlot::yLeft  );
-  c2->setAxis( QwtPlot::xBottom, QwtPlot::yLeft  );
-  c3->setAxis( QwtPlot::xBottom, QwtPlot::yRight );
-  c4->setAxis( QwtPlot::xBottom, QwtPlot::yRight );
+    c1->setAxis( QwtPlot::xBottom, QwtPlot::yLeft  );
+    c2->setAxis( QwtPlot::xBottom, QwtPlot::yLeft  );
+    c3->setAxis( QwtPlot::xBottom, QwtPlot::yRight );
+    c4->setAxis( QwtPlot::xBottom, QwtPlot::yRight );
 
-  // c4->setStyle( QwtCurve::NoCurve ); // this turns off a curve
+    // c4->setStyle( QwtCurve::NoCurve ); // this turns off a curve
 
-  addCurve( c1 );
-  addCurve( c2 );
-  addCurve( c3 );
-  addCurve( c4 );
+    addCurve( c1 );
+    addCurve( c2 );
+    addCurve( c3 );
+    addCurve( c4 );
 
-  setXLabel( "Arc Length [m]"                  );
-  setYLabel( "Beta [m]",       QwtPlot::yLeft  );
-  setYLabel( "Dispersion [m]", QwtPlot::yRight );
+    setXLabel( "Arc Length [m]"                  );
+    setYLabel( "Beta [m]",       QwtPlot::yLeft  );
+    setYLabel( "Dispersion [m]", QwtPlot::yRight );
 
-  setScaleMagRight( 5.0 ); 
-  setBeamline( _bmlConPtr->cheatBmlPtr(), false ); // false = do not clone line   
+    setScaleMagRight( 5.0 ); 
+    setBeamline( _bmlConPtr->cheatBmlPtr(), false ); // false = do not clone line   
+  }
+
+  // The following is done if the line is really a line.
+  else {
+    boost::shared_ptr<CHEFCurve>  
+      c1( new CHEFCurve(  CurveData(_azimuth, _beta_H, _arraySize),
+                          "Horizontal Beta" ) );
+    boost::shared_ptr<CHEFCurve>  
+      c2( new CHEFCurve(  CurveData( _azimuth, _beta_V, _arraySize), 
+                                    "Vertical Beta" ) );
+    boost::shared_ptr<CHEFCurve> 
+      c3( new CHEFCurve(  CurveData( _azimuth, _alpha_H, _arraySize), 
+                                     "Horizontal Alpha" ) );
+    boost::shared_ptr<CHEFCurve>  
+      c4( new CHEFCurve(  CurveData(_azimuth, _alpha_V, _arraySize), 
+                                    "Vertical Alpha" ) );
+
+    c1->setPen( QPen( "black", 1, Qt::SolidLine ) );
+    c2->setPen( QPen( "red", 1, Qt::SolidLine ) );
+    c3->setPen( QPen( "black",  0, Qt::DashLine ) );
+    c4->setPen( QPen( "red",  0, Qt::DashLine ) );
+
+    c1->setAxis( QwtPlot::xBottom, QwtPlot::yLeft  );
+    c2->setAxis( QwtPlot::xBottom, QwtPlot::yLeft  );
+    c3->setAxis( QwtPlot::xBottom, QwtPlot::yRight );
+    c4->setAxis( QwtPlot::xBottom, QwtPlot::yRight );
+
+    // c4->setStyle( QwtCurve::NoCurve ); // this turns off a curve
+
+    addCurve( c1 );
+    addCurve( c2 );
+    addCurve( c3 );
+    addCurve( c4 );
+
+    setXLabel( "Arc Length [m]" );
+    setYLabel( "Beta [m]", QwtPlot::yLeft  );
+    setYLabel( "Alpha",    QwtPlot::yRight );
+
+    // setScaleMagRight( 5.0 ); 
+    setBeamline( _bmlConPtr->cheatBmlPtr(), false ); // false = do not clone line   
+  }
 }
 
 

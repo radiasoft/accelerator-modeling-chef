@@ -102,18 +102,29 @@ void MomentsFncData::makeCurves()
     c1( new CHEFCurve( CurveData( _azimuth, _beta_H, _arraySize), "Horizontal Beta" ) );
   boost::shared_ptr<CHEFCurve>
     c2( new CHEFCurve( CurveData( _azimuth, _beta_V, _arraySize), "Vertical Beta" ) );
+  boost::shared_ptr<CHEFCurve> 
+    c3( new CHEFCurve(  CurveData( _azimuth, _alpha_H, _arraySize), "Horizontal Alpha" ) );
+  boost::shared_ptr<CHEFCurve>  
+    c4( new CHEFCurve(  CurveData(_azimuth, _alpha_V, _arraySize), "Vertical Alpha" ) );
 
   c1->setPen( QPen( "black", 1, Qt::SolidLine ) );
   c2->setPen( QPen( "red",   1, Qt::SolidLine ) );
+  c3->setPen( QPen( "black", 1, Qt::DashLine  ) );
+  c4->setPen( QPen( "red",   1, Qt::DashLine  ) );
 
   c1->setAxis( QwtPlot::xBottom, QwtPlot::yLeft  );
   c2->setAxis( QwtPlot::xBottom, QwtPlot::yLeft  );
+  c3->setAxis( QwtPlot::xBottom, QwtPlot::yRight );
+  c4->setAxis( QwtPlot::xBottom, QwtPlot::yRight );
 
   addCurve( c1 );
   addCurve( c2 );
+  addCurve( c3 );
+  addCurve( c4 );
 
-  setXLabel( "Arc Length [m]"                  );
-  setYLabel( "Beta [m]",       QwtPlot::yLeft  );
+  setXLabel( "Arc Length [m]" );
+  setYLabel( "Beta [m]", QwtPlot::yLeft  );
+  setYLabel( "Alpha",    QwtPlot::yRight );
 
   setBeamline( _bmlConPtr->cheatBmlPtr(), false ); // false = do not clone line   
 }
@@ -127,10 +138,14 @@ MomentsFncData::~MomentsFncData()
 
 void MomentsFncData::doCalc()
 {
-
-  _currentTune[0] = _bmlConPtr->getHorizontalEigenTune();
-  _currentTune[1] = _bmlConPtr->getVerticalEigenTune();
-
+  if( _bmlConPtr->isTreatedAsRing() ) {
+    _currentTune[0] = _bmlConPtr->getHorizontalEigenTune();
+    _currentTune[1] = _bmlConPtr->getVerticalEigenTune();
+  }
+  else {
+    _currentTune[0] = -1.0;
+    _currentTune[1] = -1.0;
+  }
 
   int i = 0;
   const CovarianceSage::Info* infoPtr = _bmlConPtr->getCovFuncPtr(i);
