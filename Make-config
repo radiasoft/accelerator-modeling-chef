@@ -204,3 +204,16 @@ irix-depend:
 	"XINC = /usr/include" \
 	"LIBDIR = $(FNALROOT)/lib/sgi"
 
+egcs:
+	$(MAKE) targets \
+	"C   = /usr/local/ap/egcs/bin/gcc" \
+	"C++ = /usr/local/ap/egcs/bin/g++" \
+	"CFLAGS =  " \
+	"C++FLAGS =  " \
+	"INLINE_FLAG = " \
+	"MAKELIB = ar ruv" \
+	"RANLIB = ranlib" \
+	"XINC = /usr/local/ap/X11R6/include" \
+	"TKINC = /usr/include/tcl" \
+	"LIBDIR = $(FNALROOT)/lib/egcs"
+
