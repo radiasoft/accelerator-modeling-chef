@@ -28,11 +28,72 @@ public:
  LattFuncSage( const beamline& );
  ~LattFuncSage();
   
+ struct tunes : BarnacleData {
+   double hor;
+   double ver;
+   tunes() : hor(0.0), ver(0.0) {}
+   tunes( const tunes& x ) {hor = x.hor; ver = x.ver;}
+   ~tunes(){}
+ };
+
+ struct lattRing : public BarnacleData {
+   struct {
+     double hor;
+     double ver;
+   } tune;
+   struct {
+     double hor;
+     double ver;
+   } chromaticity;
+   lattRing() 
+     { tune.hor = 0.;
+       tune.ver = 0.;
+       chromaticity.hor = 0.;
+       chromaticity.ver = 0.;
+     }
+   ~lattRing() {}
+   lattRing& operator=( const LattFuncSage::lattRing& x )
+     { if( this != &x ) {
+         tune.hor = x.tune.hor;
+         tune.ver = x.tune.ver;
+         chromaticity.hor = x.chromaticity.hor;
+         chromaticity.ver = x.chromaticity.ver;
+       }
+       return *this;
+     }
+ };
+
+ struct lattFunc : public BarnacleData {
+   double arcLength;
+   struct {
+     double hor;
+     double ver;
+   } dispersion;
+   struct {
+     double hor;
+     double ver;
+   } dPrime;
+   struct {
+     double hor;
+     double ver;
+   } beta;
+   struct {
+     double hor;
+     double ver;
+   } alpha;
+   struct {
+     double hor;
+     double ver;
+   } psi;
+ 
+   lattFunc();
+   ~lattFunc() {}
+   lattFunc& operator=( const lattFunc& );
+ };
+
+
  int TuneCalc       ( JetParticle* );
- int Tune_Chrom_Calc( JetParticle* );
  int Disp_Calc      ( JetParticle*, Sage::CRITFUNC = 0 );
- int Orig_RX_Calc   ( JetParticle*, Sage::CRITFUNC = 0 );
-		      
  int Fast_CS_Calc   ( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
  int Slow_CS_Calc   ( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
  int ET_Disp_Calc   (             JetParticle*, Sage::CRITFUNC = 0 );
@@ -40,7 +101,7 @@ public:
                // If default value is used for Sage::CRITFUNC, then
                // information is attached to all elements.
 
- int Twiss_Calc     ( const lattFunc&, JetParticle&, Sage::CRITFUNC = 0 ); 
+ int Twiss_Calc     ( const LattFuncSage::lattFunc&, JetParticle&, Sage::CRITFUNC = 0 ); 
  int Twiss_Calc     ( JetParticle& );
                // These reproduce the old beamline::twiss
                // and therefore are both obsolete and wrong.
@@ -56,9 +117,10 @@ public:
  static const int UNSTABLE;
  static const int INTEGER_TUNE;
  static const int PHASE_ERROR;
- static const int NOT_FLAT;
  static const int WRONG_COUNT;
  static const int NOT_WRITTEN;
+
+
 
 private:
  static double     _csH, _csV, _snH, _snV;
