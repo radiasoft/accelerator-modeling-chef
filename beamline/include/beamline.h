@@ -938,9 +938,9 @@ public:
      tanPFAngle    = tan( poleFaceAngle );
      return poleFaceAngle;
   }
-  double setAngle(double a)
+  double setAngle( double a )
   { 
-     this->setEntryAngle();
+     this->setEntryAngle(a);
      return poleFaceAngle;
   }
 };
