@@ -1,5 +1,7 @@
 #if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
 #include <stream.h>
+#include "pipestream.h"
+#include "ParticleBunch.h"
 #include "tclmonitor.h"
 #include <tk.h>
 #include "tclf.h"
