@@ -14,7 +14,7 @@ MatrixCalcVisitor::MatrixCalcVisitor( const Particle& x )
   _map_h(2,2), 
   _map_v(2,2),
   _counter(0), 
-  _myParticle(&x),
+  _myParticle((Particle*) &x),
   _myBeamlinePtr(0),
   _linearModel_h(0),
   _linearModel_v(0),

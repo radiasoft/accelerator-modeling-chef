@@ -92,8 +92,8 @@ class CLieOperator;
 #else
 #include <stdlib.h>
 #include <stdio.h>
-#include <complex.h>
-#include <iostream.h>
+#include <complex>
+#include <iostream>
 #endif
 // ??? Should this line be added??? #include <iostream.h>
 // ??? Should this line be added??? #include <fstream.h>

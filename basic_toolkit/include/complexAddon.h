@@ -9,6 +9,7 @@
 // Dec 16, 1994    (Battle of the Bulge + 50 years)
 
 #include <math.h>
+#include <complex>
 
 #ifdef __GNUG__
   typedef complex<double> Complex;
@@ -16,7 +17,7 @@
 
 // Check for Solaris.
 #if defined(__sparc) && !defined(__GNUG__) && !defined(__KCC)
-  typedef complex Complex;
+  typedef std::complex<double> Complex;
 #endif
 
 #ifdef __BORLAND_CPP__
@@ -78,6 +79,11 @@ inline Complex operator/( const Complex& x, const double& y )
 inline Complex operator/( const double& x,  const Complex& y )
 {
  return (Complex) x / y;
+}
+
+inline double abs(const Complex& x) 
+{
+ return sqrt(real(x)*real(x) + imag(x)*imag(x));
 }
 
 inline double fabs( const Complex& x )

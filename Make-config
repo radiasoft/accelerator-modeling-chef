@@ -111,9 +111,9 @@ irix-gcc-debug:
 solaris:
 	$(MAKE) targets \
 	"C   = cc" \
-	"C++ = CC" \
+	"C++ = /opt/SUNWspro/SC5.0/bin/CC" \
 	"CFLAGS = " \
-	"C++FLAGS = -ptr$(FNALROOT) -verbose=template" \
+	"C++FLAGS = -ptr$(FNALROOT) -verbose=template " \
 	"INLINE_FLAG = +d " \
 	"MAKELIB = CC -xar -o" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
@@ -121,8 +121,7 @@ solaris:
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = -I/opt/SUNWspro/include/stl"
-
+	"STL_CONFIG = -I/opt/SUNWspro/SC5.0/include/CC"
 
 # the options "-fast" is close, but it includes the "-O4", which we don't really need.
 # So the options following "-O " here are the rest of the "-fast" macro.
@@ -140,7 +139,7 @@ ultra-opt:
 	"XINC = /usr/local/ap/X11R6/include" \
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = -I/opt/SUNWspro/include/stl"
+	"STL_CONFIG = -I/opt/SUNWspro/SC5.0/include/CC"
 
 
 solaris-debug:
@@ -156,7 +155,7 @@ solaris-debug:
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = -I/opt/SUNWspro/include/stl"
+	"STL_CONFIG = -I/opt/SUNWspro/SC5.0/include/CC"
 
 solaris-devel:
 	$(MAKE) targets \
@@ -171,7 +170,7 @@ solaris-devel:
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = -I/opt/SUNWspro/include/stl"
+	"STL_CONFIG = -I/opt/SUNWspro/SC5.0/include/CC"
 
 solaris-gcc:
 	$(MAKE) targets \

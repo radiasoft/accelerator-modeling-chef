@@ -11,7 +11,7 @@
 #include <iostream>
 using std::cerr;
 #else
-#include <complex.h>
+#include <complex>
 #endif
 #include "complexAddon.h"
 #include "MathConstants.h"
@@ -50,7 +50,7 @@ Complex erf( const Complex& z )
 {
   if( ( fabs(imag(z)) > 3.9 ) || ( fabs(real(z)) > 3.0 ) ) {
     Complex u( - imag(z), real(z) );
-    return ( 1.0 - exp(u*u)*w(u) );
+    return ( 1.0 - std::exp(u*u)*w(u) );
   }
 
   static Complex series;
@@ -98,7 +98,7 @@ Complex w( Complex z )
   y = imag(z);
 
   if( y < 0.0 )
-    return 2.0*exp( -z*z ) - w( -z );
+    return 2.0*std::exp( -z*z ) - w( -z );
 
   if( x < 0.0 ) 
     return conj( w( Complex( - x, y ) ) );
@@ -118,7 +118,7 @@ Complex w( Complex z )
                         ) 
            );
 
-  return exp( -z*z )*( 1.0 - erf( mi*z ) );
+  return std::exp( -z*z )*( 1.0 - erf( mi*z ) );
 
 }
 
