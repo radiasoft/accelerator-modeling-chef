@@ -133,6 +133,37 @@ const char* JLC::BadDimension::what() const throw()
   return errorString.c_str();
 }
 
+JLC::BadEnvironment::BadEnvironment( int a, int b, int c, 
+                                string fileName, int lineNumber, 
+                                const char* fcn, 
+                                const char* msg )
+: i(a), env_1(b), env_2(c)
+{
+  ostringstream uic;
+  uic << "\n*** ERROR *** "
+         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
+      << "\n*** ERROR *** " << fcn
+      << "\n*** ERROR *** " << msg
+      << "\n*** ERROR *** comp[" << i << "].Env = " << env_1
+      << "\n*** ERROR *** this->myEnv = " << env_2
+      << "\n*** ERROR *** ";
+  errorString = uic.str();
+
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << errorString;
+    cerr << "\n*** ERROR *** This message is printed only once."
+            "\n*** ERROR *** "
+         << endl;
+    firstTime = false;
+  }
+}
+
+const char* JLC::BadEnvironment::what() const throw()
+{
+  return errorString.c_str();
+}
+
 JLC::HorribleException::HorribleException( int i, int j, int k, 
                                 string fileName, int lineNumber, 
                                 const char* fcn, 
@@ -395,14 +426,14 @@ void JLC::addTerm( JLCterm* a) {
        (( (JLCterm*) (p->info()) ) -> value ) += ( a -> value );
  
        if(
-	   (
-	     abs( ( (JLCterm*) (p->info()) ) -> value ) < MX_SMALL*abs( a -> value )
-	   )
-	   // REMOVE ??? &&
-	   // REMOVE ??? (
-	   // REMOVE ???   p != ( dlist::lastPtr() ) -> nextPtr()
-	   // REMOVE ??? )
-	 )
+           (
+             abs( ( (JLCterm*) (p->info()) ) -> value ) < MX_SMALL*abs( a -> value )
+           )
+           // REMOVE ??? &&
+           // REMOVE ??? (
+           // REMOVE ???   p != ( dlist::lastPtr() ) -> nextPtr()
+           // REMOVE ??? )
+         )
  
          delete remove( p );
  

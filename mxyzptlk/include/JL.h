@@ -202,6 +202,24 @@ struct JL : public dlist {
     int xdim, ydim;
   };
 
+  struct BadEnvironment: public std::exception
+  {
+    BadEnvironment( int, int, int, std::string, int, const char* = "", const char* = "" );
+    // Thrown by JetVector copy constructor: environment mismatch
+    // in a component. THIS SHOULD NEVER HAPPEN.
+    // 1st argument: component index
+    // 2nd         : address of component's environment
+    // 3rd         : address of JetVector environment
+    // 4th         : name of file in which exception is thrown
+    // 5th         : line from which exception is thrown
+    // 6th         : identifies function containing throw
+    // 7th         : identifies type of error
+    ~BadEnvironment() throw() {}
+    const char* what() const throw();
+    std::string errorString;
+    int i, env_1, env_2;
+  };
+
   struct HorribleException : public std::exception
   {
     HorribleException( int, int, int, 

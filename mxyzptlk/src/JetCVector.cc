@@ -103,16 +103,11 @@ JetCVector::JetCVector( const JetCVector& x )
                             // of lazy evaluation.
     #ifndef NOCHECKS
     if( comp[i].Env() != myEnv ) {
-      cerr << "\n" 
-           << "*** ERROR ***                                           \n" 
-              "*** ERROR *** JetVector::JetVector( JetVector& )        \n"          
-              "*** ERROR *** Inconsistent environment at component "
-           << i << "\n"
-              "*** ERROR *** "
-           << (int) comp[i].Env() << " != " << (int) myEnv << "\n"
-              "*** ERROR ***                                           \n" 
-           << endl;
-      exit(0);
+      throw( JLC::BadEnvironment( 
+               i, (int) comp[i].Env(), (int) myEnv, 
+               __FILE__, __LINE__, 
+               "JetCVector::JetCVector( const JetCVector& )",
+               "Inconsistent environment at a component." ));
     }
     #endif
   }
