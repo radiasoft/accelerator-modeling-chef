@@ -8,7 +8,7 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
+******  Version:   2.1
 ******                                    
 ******  File:      pinger.cc
 ******                                                                
@@ -53,34 +53,32 @@ using namespace std;
 Pinger::Pinger() : bmlnElmnt() {
   strength = 0;
   _kick_direction = 0;
-  disarm();
+  _counter = -1;
 }
 
 
-Pinger::Pinger(double k, double r) : bmlnElmnt() {
+Pinger::Pinger( double k, double r, int c ) : bmlnElmnt() {
   strength = k;
   _kick_direction = r;
-  disarm();
+  _counter = c;
 }
 
-Pinger::Pinger(char *n, double k, double r) : bmlnElmnt(n) {
+Pinger::Pinger(char *n, double k, double r, int c) : bmlnElmnt(n) {
   strength = k;
   _kick_direction = r;
-  disarm();
+  _counter = c;
 }
 
 Pinger::Pinger(char *n) : bmlnElmnt(n) {
   strength = 0;
   _kick_direction = 0;
-  disarm();
+  _counter = -1;
 }
 
 Pinger::Pinger(const Pinger& p) : bmlnElmnt((bmlnElmnt&) p) {
-  disarm();
 }
 
 Pinger::~Pinger() {
-  ;
 }
 
 const char* Pinger::Type() const 
@@ -89,40 +87,36 @@ const char* Pinger::Type() const
 }
 
 istream& Pinger::readFrom(istream& is) {
-  is >> _kick_direction;
+  cout << "DGN: istream& Pinger::readFrom(istream& is) {" << endl;
+  is >> _kick_direction >> _counter;
   return is;
 }
 
 ostream& Pinger::writeTo(ostream& os) {
-  os << _kick_direction << "\n";
+  cout << "DGN: ostream& Pinger::writeTo(ostream& os) {" << endl;
+  os << _kick_direction << "  " << _counter << "\n";
   return os;
 }
 
 /* HPinger Constructors */
 
-HPinger::HPinger() : Pinger((double) 0, 0) {
-  disarm();
+HPinger::HPinger() : Pinger() {
 }
 
 
-HPinger::HPinger(double kick) : Pinger(kick, 0) {
-  disarm();
+HPinger::HPinger(double kick, int c) : Pinger(kick, 0.0, c) {
 }
 
-HPinger::HPinger(char *name, double kick) : Pinger(name, kick, 0) {
-  disarm();
+HPinger::HPinger(char *name, double kick, int c) : Pinger(name, kick, 0.0, c) {
 }
 
-HPinger::HPinger(char *name) : Pinger(name, 0, 0) {
-  disarm();
+HPinger::HPinger(char *name) : Pinger(name, 0.0, 0.0, -1) {
 }
 
 HPinger::HPinger(const HPinger& p) : Pinger(p) {
-  disarm();
 }
 
 HPinger::~HPinger() {
-  ;
 }
 
 const char* HPinger::Type() const 
@@ -133,29 +127,23 @@ const char* HPinger::Type() const
 
 /* VPinger Constructors */
 
-VPinger::VPinger() : Pinger((double) 0, M_PI_2) {
-  disarm();
+VPinger::VPinger() : Pinger(0.0, M_PI_2, -1) {
 }
 
 
-VPinger::VPinger(double kick) : Pinger(kick, M_PI_2) {
-  disarm();
+VPinger::VPinger(double kick, int c) : Pinger(kick, M_PI_2, c) {
 }
 
-VPinger::VPinger(char *name, double kick) : Pinger(name, kick, M_PI_2) {
-  disarm();
+VPinger::VPinger(char *name, double kick, int c) : Pinger(name, kick, M_PI_2, c) {
 }
 
-VPinger::VPinger(char *name) : Pinger(name, 0, M_PI_2) {
-  disarm();
+VPinger::VPinger(char *name) : Pinger(name, 0.0, M_PI_2, -1) {
 }
 
 VPinger::VPinger(const VPinger& p) : Pinger(p) {
-  disarm();
 }
 
 VPinger::~VPinger() {
-  ;
 }
 
 const char* VPinger::Type() const 

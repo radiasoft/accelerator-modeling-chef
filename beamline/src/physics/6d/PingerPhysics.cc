@@ -8,7 +8,7 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
+******  Version:   2.1
 ******                                    
 ******  File:      PingerPhysics.cc
 ******                                                                
@@ -41,20 +41,24 @@
 
 void Pinger::localPropagate( Particle& p ) {
   if ( isArmed() ) {
-    p.state[3] += cos(_kick_direction)*strength;
-    p.state[4] += sin(_kick_direction)*strength;
-    disarm();
+    if( 0 == _counter ) {
+      p.state[3] += cos(_kick_direction)*strength;
+      p.state[4] += sin(_kick_direction)*strength;
+    }
+    _counter--;
   }
 }
 
 void Pinger::localPropagate( JetParticle& p ) {
   if ( isArmed() ) {
-    Jet  dummy;
-    dummy = p.State(3) + cos(_kick_direction)*strength;
-    ( p.state ).SetComponent( 3, dummy );
-    dummy = p.State(4) + sin(_kick_direction)*strength;
-    ( p.state ).SetComponent( 4, dummy );
-    disarm();
+    if( 0 == _counter ) {
+      Jet  dummy;
+      dummy = p.State(3) + cos(_kick_direction)*strength;
+      ( p.state ).SetComponent( 3, dummy );
+      dummy = p.State(4) + sin(_kick_direction)*strength;
+      ( p.state ).SetComponent( 4, dummy );
+    }
+    _counter--;
   }
 }
 
