@@ -1504,7 +1504,7 @@ public:
   void setBeamline( beamline* b); 
   void setRefState( const double* s);
 
-  getRefState( double* );
+  void getRefState( double* );
   
   void propagate( ParticleBunch& x );
   void propagate( Particle&    p );
