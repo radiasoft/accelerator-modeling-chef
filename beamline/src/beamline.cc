@@ -1084,7 +1084,8 @@ sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2,
  // desired by the calling program.  This routine does NOT
  // initialize the state of jp.
 
- dlist_iterator getNext( *(dlist*) this );
+ // REMOVE: dlist_iterator getNext( *(dlist*) this );
+ DeepBeamlineIterator dbi( this );
  bmlnElmnt* p_be;
  char       firstFound  = 0;
  char       secondFound = 0;
@@ -1093,7 +1094,8 @@ sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2,
 
  p_prt = jp.ConvertToParticle();
 
- while ( p_be = (bmlnElmnt*) getNext() ) {
+ // REMOVE: while ( p_be = (bmlnElmnt*) getNext() ) {
+ while ((  p_be = dbi++  )) {
 
   if( p_be == &be_2 ) {
    cout << "*** WARNING ***                                      \n" 
@@ -1123,8 +1125,9 @@ sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2,
   return 0;
  }
  
- while ( p_be = (bmlnElmnt*) getNext() ) {  // Notice: we do not propagate through
-  if( p_be == &be_2 ) {                     // be_1 and be_2
+ // REMOVE: while ( p_be = (bmlnElmnt*) getNext() ) {
+ while ((  p_be = dbi++  )) {  // Notice: we do not propagate through
+  if( p_be == &be_2 ) {        // be_1 and be_2
     secondFound = 1;
     break;
   }
