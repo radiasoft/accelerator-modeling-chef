@@ -1,4 +1,6 @@
+#if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
 #include <stream.h>
+#include <limits.h>
 #include "rastermonitor.h"
 #include "stdlib.h"
 #include "stdio.h"
@@ -8,20 +10,23 @@
 rasterMonitor::rasterMonitor() : monitor(), origin( BMLN_dynDim ) {
   registerMode    = 0;
   registerParticle = 0;
-  for( int i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
+  int i;
+  for( i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
+  for( i = 0; i < 6; i++) sumState[i] = 0.0;
+  numParticles = 0;
 
-// Default scalings for the phase plot if the user provides nothing.
+  // Default scalings for the phase plot if the user provides nothing.
   outputFile = 0;
-  x_plot_limits[0]   = -0.005;        // x_plot x-axis minimum   
-  x_plot_limits[1]   =  0.005;	      // x_plot x-axis maximum   
-  x_plot_limits[2]   = -0.0001;	      // x_plot y-axis minimum   
-  x_plot_limits[3]   =  0.0001;	      // x_plot y-axis maximum   
-                    		                                 
-  y_plot_limits[0]   = -0.005;	      // y_plot x-axis minimum   
-  y_plot_limits[1]   =  0.005;	      // y_plot x-axis maximum   
-  y_plot_limits[2]   = -0.0001;	      // y_plot y-axis minimum   
-  y_plot_limits[3]   =  0.0001;	      // y_plot y-axis maximum   
-                    		                                 
+  x_plot_limits[0]   = -0.05;        // x_plot x-axis minimum   
+  x_plot_limits[1]   =  0.05;	      // x_plot x-axis maximum   
+  x_plot_limits[2]   = -0.001;	      // x_plot y-axis minimum   
+  x_plot_limits[3]   =  0.001;	      // x_plot y-axis maximum   
+
+  y_plot_limits[0]   = -0.05;	      // y_plot x-axis minimum   
+  y_plot_limits[1]   =  0.05;	      // y_plot x-axis maximum   
+  y_plot_limits[2]   = -0.001;	      // y_plot y-axis minimum   
+  y_plot_limits[3]   =  0.001;	      // y_plot y-axis maximum   
+
   cdt_plot_limits[0] = -0.8;	      // cdt_plot x-axis minimum 
   cdt_plot_limits[1] =  0.8;	      // cdt_plot x-axis maximum 
   cdt_plot_limits[2] = -0.002;	      // cdt_plot y-axis minimum 
@@ -38,19 +43,22 @@ rasterMonitor::rasterMonitor(char* name, FILE* out_file)
 
   registerMode = 0;
   registerParticle = 0;
-  for( int i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
+  int i;
+  for( i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
+  for( i = 0; i < 6; i++) sumState[i] = 0.0;
+  numParticles = 0;
 
-// Default scalings for the phase plot if the user provides nothing.
-  x_plot_limits[0]   = -0.005;          // x_plot x-axis minimum   
-  x_plot_limits[1]   =  0.005;	        // x_plot x-axis maximum   
-  x_plot_limits[2]   = -0.0001;	        // x_plot y-axis minimum   
-  x_plot_limits[3]   =  0.0001;	        // x_plot y-axis maximum   
-                    		                                   
-  y_plot_limits[0]   = -0.005;	        // y_plot x-axis minimum   
-  y_plot_limits[1]   =  0.005;	        // y_plot x-axis maximum   
-  y_plot_limits[2]   = -0.0001;	        // y_plot y-axis minimum   
-  y_plot_limits[3]   =  0.0001;	        // y_plot y-axis maximum   
-                    		                                 
+  // Default scalings for the phase plot if the user provides nothing.
+  x_plot_limits[0]   = -0.05;          // x_plot x-axis minimum   
+  x_plot_limits[1]   =  0.05;	        // x_plot x-axis maximum   
+  x_plot_limits[2]   = -0.001;	        // x_plot y-axis minimum   
+  x_plot_limits[3]   =  0.001;	        // x_plot y-axis maximum   
+
+  y_plot_limits[0]   = -0.05;	        // y_plot x-axis minimum   
+  y_plot_limits[1]   =  0.05;	        // y_plot x-axis maximum   
+  y_plot_limits[2]   = -0.001;	        // y_plot y-axis minimum   
+  y_plot_limits[3]   =  0.001;	        // y_plot y-axis maximum   
+
   cdt_plot_limits[0] = -0.8;		// cdt_plot x-axis minimum 
   cdt_plot_limits[1] =  0.8;		// cdt_plot x-axis maximum 
   cdt_plot_limits[2] = -0.002;	        // cdt_plot y-axis minimum 
@@ -66,20 +74,23 @@ rasterMonitor::rasterMonitor(char* name) : monitor(name),
                                            origin( BMLN_dynDim )  {
   registerMode = 0;
   registerParticle = 0;
-  for( int i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
+  int i;
+  for( i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
+  for( i = 0; i < 6; i++) sumState[i] = 0.0;
+  numParticles = 0;
 
-// Default scalings for the phase plot if the user provides nothing.
+  // Default scalings for the phase plot if the user provides nothing.
   outputFile = 0;
-  x_plot_limits[0]   = -0.005;     // x_plot x-axis minimum   
-  x_plot_limits[1]   =  0.005;     // x_plot x-axis maximum   
-  x_plot_limits[2]   = -0.0001;    // x_plot y-axis minimum   
-  x_plot_limits[3]   =  0.0001;    // x_plot y-axis maximum   
-                    		                              
-  y_plot_limits[0]   = -0.005;     // y_plot x-axis minimum   
-  y_plot_limits[1]   =  0.005;	   // y_plot x-axis maximum   
-  y_plot_limits[2]   = -0.0001;	   // y_plot y-axis minimum   
-  y_plot_limits[3]   =  0.0001;	   // y_plot y-axis maximum   
-                    		                              
+  x_plot_limits[0]   = -0.05;     // x_plot x-axis minimum   
+  x_plot_limits[1]   =  0.05;     // x_plot x-axis maximum   
+  x_plot_limits[2]   = -0.001;    // x_plot y-axis minimum   
+  x_plot_limits[3]   =  0.001;    // x_plot y-axis maximum   
+
+  y_plot_limits[0]   = -0.05;     // y_plot x-axis minimum   
+  y_plot_limits[1]   =  0.05;	   // y_plot x-axis maximum   
+  y_plot_limits[2]   = -0.001;	   // y_plot y-axis minimum   
+  y_plot_limits[3]   =  0.001;	   // y_plot y-axis maximum   
+
   cdt_plot_limits[0] = -0.8;       // cdt_plot x-axis minimum 
   cdt_plot_limits[1] =  0.8;	   // cdt_plot x-axis maximum 
   cdt_plot_limits[2] = -0.002;	   // cdt_plot y-axis minimum 
@@ -98,20 +109,23 @@ rasterMonitor::rasterMonitor(char* name, double x, double xp,
 
   registerMode = 0;
   registerParticle = 0;
-  for( int i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
+  int i;
+  for( i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
+  for( i = 0; i < 6; i++) sumState[i] = 0.0;
+  numParticles = 0;
 
-// Default scalings for the phase plot if the user provides nothing.
+  // Default scalings for the phase plot if the user provides nothing.
   outputFile = 0;
   x_plot_limits[0]   =  -x;        // x_plot x-axis minimum   
   x_plot_limits[1]   =   x;	   // x_plot x-axis maximum   
   x_plot_limits[2]   =  -xp;	   // x_plot y-axis minimum   
   x_plot_limits[3]   =   xp;	   // x_plot y-axis maximum   
-                    		                              
+
   y_plot_limits[0]   = -y;	   // y_plot x-axis minimum   
   y_plot_limits[1]   =  y;	   // y_plot x-axis maximum   
   y_plot_limits[2]   = -yp;	   // y_plot y-axis minimum   
   y_plot_limits[3]   =  yp;	   // y_plot y-axis maximum   
-                    		                              
+
   cdt_plot_limits[0] = -cdt;	   // cdt_plot x-axis minimum 
   cdt_plot_limits[1] =  cdt;	   // cdt_plot x-axis maximum 
   cdt_plot_limits[2] = -dp;	   // cdt_plot y-axis minimum 
@@ -128,26 +142,29 @@ rasterMonitor::rasterMonitor( char* name, char* parent_wid )
 
   registerMode = 0;
   registerParticle = 0;
-  for( int i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
+  int i;
+  for( i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
+  for( i = 0; i < 6; i++) sumState[i] = 0.0;
+  numParticles = 0;
 
-// Default scalings for the phase plot if the user provides nothing.
+  // Default scalings for the phase plot if the user provides nothing.
   outputFile = 0;
-  x_plot_limits[0]   = -0.005;           // x_plot x-axis minimum
-  x_plot_limits[1]   =  0.005;	         // x_plot x-axis maximum   
-  x_plot_limits[2]   = -0.0001;	         // x_plot y-axis minimum   
-  x_plot_limits[3]   =  0.0001;	         // x_plot y-axis maximum   
-                    		                                    
-  y_plot_limits[0]   = -0.005;	         // y_plot x-axis minimum   
-  y_plot_limits[1]   =  0.005;	         // y_plot x-axis maximum   
-  y_plot_limits[2]   = -0.0001;	         // y_plot y-axis minimum   
-  y_plot_limits[3]   =  0.0001;	         // y_plot y-axis maximum   
-                    		                                    
+  x_plot_limits[0]   = -0.05;           // x_plot x-axis minimum
+  x_plot_limits[1]   =  0.05;	         // x_plot x-axis maximum   
+  x_plot_limits[2]   = -0.001;	         // x_plot y-axis minimum   
+  x_plot_limits[3]   =  0.001;	         // x_plot y-axis maximum   
+
+  y_plot_limits[0]   = -0.05;	         // y_plot x-axis minimum   
+  y_plot_limits[1]   =  0.05;	         // y_plot x-axis maximum   
+  y_plot_limits[2]   = -0.001;	         // y_plot y-axis minimum   
+  y_plot_limits[3]   =  0.001;	         // y_plot y-axis maximum   
+
   cdt_plot_limits[0] = -0.8;		 // cdt_plot x-axis minimum 
   cdt_plot_limits[1] =  0.8;		 // cdt_plot x-axis maximum 
   cdt_plot_limits[2] = -0.002;	         // cdt_plot y-axis minimum 
   cdt_plot_limits[3] =  0.002;	         // cdt_plot y-axis maximum 
   size = 200;                            // Full width of the canvas.
-  display = new char[strlen(parent_wid)];
+  display = new char[strlen(parent_wid)+1];
   strcpy(display,parent_wid);
   windowInitialized = 0;
   normalizedFlag = 0;
@@ -159,29 +176,48 @@ rasterMonitor::rasterMonitor(char* name, char* parent_wid, FILE* out_file)
 
   registerMode = 0;
   registerParticle = 0;
-  for( int i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
+  int i;
+  for( i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
+  for( i = 0; i < 6; i++) sumState[i] = 0.0;
+  numParticles = 0;
 
-// Default scalings for the phase plot if the user provides nothing.
-  x_plot_limits[0]   = -0.005;          // x_plot x-axis minimum   
-  x_plot_limits[1]   =  0.005;	        // x_plot x-axis maximum   
-  x_plot_limits[2]   = -0.0001;	        // x_plot y-axis minimum   
-  x_plot_limits[3]   =  0.0001;	        // x_plot y-axis maximum   
-                    		                                   
-  y_plot_limits[0]   = -0.005;	        // y_plot x-axis minimum   
-  y_plot_limits[1]   =  0.005;	        // y_plot x-axis maximum   
-  y_plot_limits[2]   = -0.0001;	        // y_plot y-axis minimum   
-  y_plot_limits[3]   =  0.0001;	        // y_plot y-axis maximum   
-                    		                                 
+  // Default scalings for the phase plot if the user provides nothing.
+  x_plot_limits[0]   = -0.05;          // x_plot x-axis minimum   
+  x_plot_limits[1]   =  0.05;	        // x_plot x-axis maximum   
+  x_plot_limits[2]   = -0.001;	        // x_plot y-axis minimum   
+  x_plot_limits[3]   =  0.001;	        // x_plot y-axis maximum   
+
+  y_plot_limits[0]   = -0.05;	        // y_plot x-axis minimum   
+  y_plot_limits[1]   =  0.05;	        // y_plot x-axis maximum   
+  y_plot_limits[2]   = -0.001;	        // y_plot y-axis minimum   
+  y_plot_limits[3]   =  0.001;	        // y_plot y-axis maximum   
+
   cdt_plot_limits[0] = -0.8;		// cdt_plot x-axis minimum 
   cdt_plot_limits[1] =  0.8;		// cdt_plot x-axis maximum 
   cdt_plot_limits[2] = -0.002;	        // cdt_plot y-axis minimum 
   cdt_plot_limits[3] =  0.002;	        // cdt_plot y-axis maximum 
   size = 200;                           // Full width of the canvas.
-  display = new char[strlen(parent_wid)];
+  display = new char[strlen(parent_wid)+1];
   strcpy(display,parent_wid);
   windowInitialized = 0;
   normalizedFlag = 0;
   plotFunc = 0;
+}
+
+rasterMonitor::rasterMonitor( const rasterMonitor& x ) : 
+monitor( (monitor &) x) {
+  registerMode = x.registerMode;
+  origin = x.origin;
+  windowInitialized = x.windowInitialized;
+  int i;
+  for(i=0; i< 4; i++) {
+    x_plot_limits[i] = x.x_plot_limits[i];
+  }
+  size = x.size;
+  normalizedFlag = x.normalizedFlag;
+  if(x.plotFunc != 0) {
+    plotFunc = new lattFunc(*x.plotFunc); 
+  }
 }
 
 rasterMonitor::~rasterMonitor() {
@@ -213,9 +249,9 @@ void rasterMonitor::on() {
      p = new iopipestream("raster_wish");      // Start the child process.
      *p << "source $env(FNALROOT)/tcl/scripts/rastermonitor.tcl\n" 
         << flush; 
-// Give the main window the name of the monitor.
+     // Give the main window the name of the monitor.
      *p << "wm title . " << Name() << " \n" << flush; 
-// Place coordinates on the windows: x xp y yp cdt dp
+     // Place coordinates on the windows: x xp y yp cdt dp
      setNewScaling();
    }
 }
@@ -229,9 +265,9 @@ void rasterMonitor::on(char* whereToDisplay) {
      p = new iopipestream(processMsg);         // Start the child process.
      *p << "source $env(FNALROOT)/tcl/scripts/rastermonitor.tcl\n" 
         << flush; 
-// Give the main window the name of the monitor.
+     // Give the main window the name of the monitor.
      *p << "wm title . " << Name() << " \n" << flush; 
-// Place coordinates on the windows.
+     // Place coordinates on the windows.
      setNewScaling();
    }
 }
@@ -260,11 +296,11 @@ void rasterMonitor::propagate( Particle& part) {
      p = new iopipestream("raster_wish");        // Start the child process.
      *p << "source ./rastermonitor.tcl\n" 
         << flush; 
-// Place coordinates on the windows.
+     // Place coordinates on the windows.
      setNewScaling();
    }
 
-// Pull off the value of the particle position and send to the interpreter.
+   // Pull off the value of the particle position and send to the interpreter.
    Vector ParticleCoords( part.State() );
    ParticleCoords -= origin;
 
@@ -278,6 +314,16 @@ void rasterMonitor::propagate( Particle& part) {
 //        << ParticleCoords(4) << endl;
 //   cout << " cdt= " << ParticleCoords(2) << " dp/p    = " 
 //        << ParticleCoords(5) << endl;
+
+   if(numParticles == LONG_MAX) {
+     cerr << "rasterMonitor::propagate(Particle&): Number particles seen \n"
+          << "                                     exceeds particle counter.\n"
+          << "                                     Rollover will occur making\n"
+          << "                                     getAveState() calculations \n"
+          << "                                     meaningless!!" << endl;
+   }
+   numParticles++;
+   for(int j = 0; j < 6; j++) sumState[j] += ParticleCoords(j); 
    double scaledCoords[6];
    if((normalizedFlag == 1) && (plotFunc != 0)) {
      scaledCoords[0] = ParticleCoords(0);
@@ -324,13 +370,12 @@ void rasterMonitor::propagate( JetParticle& jpart) {
      p = new iopipestream("raster_wish");         // Start the child process.
      *p << "source ./rastermonitor.tcl\n" 
         << flush; // init script to read.
-// Place coordinates on the windows.
+     // Place coordinates on the windows.
      setNewScaling();
    }
 
-// Pull off the value of the particle position and send to the interpreter.
+   // Pull off the value of the particle position and send to the interpreter.
    Jet    JetParticleCoords[6];
-   double Coords[6];
    jpart.getState(JetParticleCoords);
 
    if(outputFile != 0 && outputFile != stdout) {
@@ -493,7 +538,6 @@ void rasterMonitor::setXplotScaling(double* limits ) {
 //  phase space plot.
 //
 //******************************************************
-  int  count;
 
   if(limits == 0) {          // Check for null pointer passed.
     cerr << "\n";
@@ -509,7 +553,7 @@ void rasterMonitor::setXplotScaling(double* limits ) {
   x_plot_limits[2] = -1 * limits[3];
   x_plot_limits[3] = limits[3];
 
-// Now actually set the new scaling. 
+  // Now actually set the new scaling. 
   setNewScaling();
 }
 
@@ -520,7 +564,6 @@ void rasterMonitor::setYplotScaling(double* limits ) {
 //  phase space plot.
 //
 //******************************************************
-  int  count;
 
   if(limits == 0) {          // Check for null pointer passed.
     cerr << "\n";
@@ -536,7 +579,7 @@ void rasterMonitor::setYplotScaling(double* limits ) {
   y_plot_limits[2] = -1 * limits[3];
   y_plot_limits[3] = limits[3];
 
-// Now actually set the new scaling. 
+  // Now actually set the new scaling. 
   setNewScaling();
 }
 
@@ -547,7 +590,6 @@ void rasterMonitor::setZplotScaling(double* limits ) {
 //  phase space plot.
 //
 //******************************************************
-  int  count;
 
   if(limits == 0) {          // Check for null pointer passed.
     cerr << "\n";
@@ -563,7 +605,7 @@ void rasterMonitor::setZplotScaling(double* limits ) {
   cdt_plot_limits[2] = -1 * limits[3];
   cdt_plot_limits[3] = limits[3];
 
-// Now actually set the new scaling. 
+  // Now actually set the new scaling. 
   setNewScaling();
 }
 
@@ -574,6 +616,9 @@ void rasterMonitor::resetXplot() {
 //
 //******************************************************
   *p << "new_scale $p.fr.x.plot x_wind \n" << flush;
+  numParticles = 0;
+  sumState[0] = 0.0;
+  sumState[3] = 0.0;
 }
 
 void rasterMonitor::resetYplot() {
@@ -583,6 +628,9 @@ void rasterMonitor::resetYplot() {
 //
 //******************************************************
   *p << "new_scale $p.fr.y.plot y_wind \n" << flush;
+  numParticles = 0;
+  sumState[1] = 0.0;
+  sumState[4] = 0.0;
 }
 
 void rasterMonitor::resetZplot() {
@@ -592,6 +640,9 @@ void rasterMonitor::resetZplot() {
 //
 //******************************************************
   *p << "new_scale $p.fr.cdt.plot cdt_wind \n" << flush;
+  numParticles = 0;
+  sumState[2] = 0.0;
+  sumState[5] = 0.0;
 }
 
 void rasterMonitor::setAllplotScaling(double* limits ) {
@@ -617,7 +668,7 @@ void rasterMonitor::setAllplotScaling(double* limits ) {
   setYplotScaling(limits+4);
   setZplotScaling(limits+8);
 
-// Now actually set the new scaling. 
+  // Now actually set the new scaling. 
   setNewScaling();
   return;
 }
@@ -659,3 +710,73 @@ void rasterMonitor::setNewScaling() {
 	       y_plot_limits[3],cdt_plot_limits[1],cdt_plot_limits[3]) 
      << flush;
 }
+
+double rasterMonitor::getAveXstate(){
+//******************************************************
+//
+//  This routine returns the average phase space X 
+//  coordinates passed through the rastermonitor since 
+//  the last call 
+//  to resetXplot(). 
+//
+//******************************************************
+  if(numParticles == 0) {
+    cerr << "rasterMonitor::getAveXstate(): Number of particles seen is 0!\n"
+         << "                               Can't calculate average!" << endl;
+    return 0;
+  }
+  return sumState[0]/numParticles;
+}
+
+double rasterMonitor::getAveXPRIMEstate(){
+//******************************************************
+//
+//  This routine returns the average phase space X' 
+//  coordinates passed through the rastermonitor since 
+//  the last call 
+//  to resetXplot(). 
+//
+//******************************************************
+  if(numParticles == 0) {
+    cerr << "rasterMonitor::getAveXPRIMEstate(): Number of particles seen is 0!\n"
+         << "                                    Can't calculate average!" << endl;
+    return 0;
+  }
+  return sumState[3]/numParticles;
+}
+
+double rasterMonitor::getAveYstate(){
+//******************************************************
+//
+//  This routine returns the average phase space Y 
+//  coordinates passed through the rastermonitor since 
+//  the last call 
+//  to resetYplot(). 
+//
+//******************************************************
+  if(numParticles == 0) {
+    cerr << "rasterMonitor::getAveYstate(): Number of particles seen is 0!\n"
+         << "                               Can't calculate average!" << endl;
+    return 0;
+  }
+  return sumState[1]/numParticles;
+}
+
+double rasterMonitor::getAveYPRIMEstate(){
+//******************************************************
+//
+//  This routine returns the average phase space Y' 
+//  coordinates passed through the rastermonitor since 
+//  the last call 
+//  to resetYplot(). 
+//
+//******************************************************
+  if(numParticles == 0) {
+    cerr << "rasterMonitor::getAveXstate(): Number of particles seen is 0!\n"
+         << "                               Can't calculate average!" << endl;
+    return 0;
+  }
+  return sumState[4]/numParticles;
+}
+
+#endif // Exclude under Visual C++ and Borland builds.

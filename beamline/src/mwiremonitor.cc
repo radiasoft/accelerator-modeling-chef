@@ -1,3 +1,4 @@
+#if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
 #include "mwiremonitor.h"
 #include "stdlib.h"
 #include "stdio.h"
@@ -24,6 +25,7 @@ mwireMonitor::mwireMonitor() : monitor() {
   }
   windowInitialized = 0;
   display = 0;
+  p = 0;
 }
 
 mwireMonitor::mwireMonitor(char* name) : monitor(name) {
@@ -45,6 +47,7 @@ mwireMonitor::mwireMonitor(char* name) : monitor(name) {
   }
   windowInitialized = 0;
   display = 0;
+  p = 0;
 }
 
 mwireMonitor::mwireMonitor(char* name, FILE* outFile) : monitor(name,outFile) {
@@ -66,6 +69,7 @@ mwireMonitor::mwireMonitor(char* name, FILE* outFile) : monitor(name,outFile) {
   }
   windowInitialized = 0;
   display = 0;
+  p = 0;
 }
 
 mwireMonitor::mwireMonitor(char* name, double spacing) : monitor(name) {
@@ -92,6 +96,7 @@ mwireMonitor::mwireMonitor(char* name, double spacing) : monitor(name) {
   }
   windowInitialized = 0;
   display = 0;
+  p = 0;
 }
 
 mwireMonitor::mwireMonitor(char* name, FILE* outFile, double spacing) : 
@@ -119,6 +124,7 @@ monitor(name,outFile) {
   }
   windowInitialized = 0;
   display = 0;
+  p = 0;
 }
 
 mwireMonitor::mwireMonitor( char* name, double spacing, double x_max, 
@@ -146,6 +152,8 @@ double y_max )
   }
   size = 200;                            // Full width of the canvas.
   windowInitialized = 0;
+  display = 0;
+  p = 0;
 }
 
 mwireMonitor::mwireMonitor(char* name, double x_max, double y_max) 
@@ -169,18 +177,61 @@ mwireMonitor::mwireMonitor(char* name, double x_max, double y_max)
   }
   size = 200;                           // Full width of the canvas.
   windowInitialized = 0;
+  p = 0;
+}
+
+//******************************************************
+//
+//  Routine for copy constructor.
+//
+//******************************************************
+mwireMonitor::mwireMonitor( const mwireMonitor& x ){
+  if(ident != 0) {
+    delete [] ident;
+  }
+  ident = new char[strlen(x.ident)+1];
+  strcpy(ident,x.ident);
+  
+  binNumber  = x.binNumber;
+  x_fs       = x.x_fs;
+  y_fs       = x.y_fs;
+  x_fiducial = x.x_fiducial;
+  y_fiducial = x.y_fiducial;
+  size       = x.size;
+  x_offset   = x.x_offset;
+  y_offset   = x.y_offset;
+  windowInitialized = x.windowInitialized;
+  display    = x.display;
+  wireSpacing = x.wireSpacing;
+  p = 0;
+  x_bins = new int[x.binNumber];
+  y_bins = new int[x.binNumber];
+  int i;
+  for(i=0; i< x.binNumber; i++){
+    x_bins[i] = x.x_bins[i];
+    y_bins[i] = x.y_bins[i];
+  }
+  p = 0;
 }
 
 mwireMonitor::~mwireMonitor() {
   if(onOff){  // Only kill if a window was started.
     *p << "exit\n" << flush;
     delete p;
+    p = 0;
   }
-  if(display != 0) 
+  if(display != 0) {
     delete [] display;
-
-  delete [] x_bins;
-  delete [] y_bins;
+    display = 0;
+  }
+  if(x_bins != 0) {
+    delete [] x_bins;
+    x_bins = 0;
+  }
+  if(y_bins != 0) {
+    delete [] y_bins;
+    y_bins = 0;
+  }
 }
 
 //******************************************************
@@ -213,7 +264,6 @@ void mwireMonitor::on() {
     // Give the main window the name of the monitor.
     *p << "wm title . " << Name() << " \n" << flush; 
     scaleCheck();
-    char msg[80];
     setWireSpacing(wireSpacing);
   }
 }
@@ -298,7 +348,6 @@ void mwireMonitor::propagate( JetParticle& jpart) {
 
     // Pull off the value of the particle position and send to the interpreter.
     Jet    JetParticleCoords[6];
-    double Coords[6];
     jpart.getState(JetParticleCoords);
 
     if(outputFile != stdout && outputFile != 0){
@@ -418,3 +467,5 @@ void mwireMonitor::setXOffset(double offset) {
 void mwireMonitor::setYOffset(double offset) {
   y_offset = offset;
 }
+
+#endif // Exclude under Visual C++ and Borland builds.
