@@ -97,7 +97,8 @@ bool EnvEquivalent( const TJetEnvironment<Complex,double>* x,
 TJetEnvironment<Complex,double>::TJetEnvironment( const TJetEnvironment<double,Complex>& x )
 : _maxWeight( x._maxWeight ), 
   _numVar( x._numVar ), 
-  _spaceDim( x._spaceDim )
+  _spaceDim( x._spaceDim ),
+  _numPaths(0), _monomial(0), _TJLmonomial(0), _TJLmml(0), _maxTerms(0)
 {
   if( TJet<Complex,double>::_workEnv != 0 ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -117,6 +118,8 @@ TJetEnvironment<Complex,double>::TJetEnvironment( const TJetEnvironment<double,C
 
     _monomial           = 0;
     _TJLmonomial        = 0;
+    _TJLmml             = 0;
+    _maxTerms           = 0;
     _exponent           = 0;
     _expCode            = 0;
     _pbok               = 0;
@@ -156,10 +159,12 @@ TJetEnvironment<Complex,double>::TJetEnvironment( const TJetEnvironment<double,C
    _allZeroes(i) = 0;   // ??? Redundant and unnecessary.
   }
 
-  bcfr = bcfRec( w + n, n );
-  _monomial   = new Complex[ bcfr ];
-  _TJLmonomial = new TJet<Complex,double>  [ bcfr ];
-  for( i = 0; i < bcfr; i++ ) _TJLmonomial[i].Reconstruct( this );
+  // REMOVE: bcfr = bcfRec( w + n, n );
+  // REMOVE: _monomial   = new Complex[ bcfr ];
+  // REMOVE: _TJLmonomial = new TJet<Complex,double>  [ bcfr ];
+  // REMOVE: for( i = 0; i < bcfr; i++ ) _TJLmonomial[i].Reconstruct( this );
+
+  _buildScratchPads();
 
 #ifdef OBJECT_DEBUG
  objectCount++;
@@ -187,6 +192,8 @@ TJetEnvironment<Complex,double>& TJetEnvironment<Complex,double>::operator=( con
 
     _monomial           = 0;
     _TJLmonomial        = 0;
+    _TJLmml             = 0;
+    _maxTerms           = 0;
     _exponent           = 0;
     _expCode            = 0;
     _pbok               = 0;
@@ -237,10 +244,12 @@ TJetEnvironment<Complex,double>& TJetEnvironment<Complex,double>::operator=( con
   }
 
   // Final constructions ...
-  bcfr = bcfRec( w + n, n );
-  _monomial   = new Complex[ bcfr ];
-  _TJLmonomial = new TJet<Complex,double>  [ bcfr ];
-  for( i = 0; i < bcfr; i++ ) _TJLmonomial[i].Reconstruct( this );
+  // REMOVE: bcfr = bcfRec( w + n, n );
+  // REMOVE: _monomial   = new Complex[ bcfr ];
+  // REMOVE: _TJLmonomial = new TJet<Complex,double>  [ bcfr ];
+  // REMOVE: for( i = 0; i < bcfr; i++ ) _TJLmonomial[i].Reconstruct( this );
+
+  _buildScratchPads();
 
   return *this;
 }
@@ -279,7 +288,9 @@ TJetEnvironment<double,Complex>::TJetEnvironment<double,Complex>( const TJetEnvi
          << endl;
 
     _monomial           = 0;
-    _TJLmonomial         = 0;
+    _TJLmonomial        = 0;
+    _TJLmml             = 0;
+    _maxTerms           = 0;
     _exponent           = 0;
     _expCode            = 0;
     _pbok               = 0;
@@ -319,10 +330,12 @@ TJetEnvironment<double,Complex>::TJetEnvironment<double,Complex>( const TJetEnvi
    _allZeroes(i) = 0;   // ??? Redundant and unnecessary.
   }
 
-  bcfr = bcfRec( w + n, n );
-  _monomial   = new double[ bcfr ];
-  _TJLmonomial = new TJet<double,Complex> [ bcfr ];
-  for( i = 0; i < bcfr; i++ ) _TJLmonomial[i].Reconstruct( this );
+  // REMOVE: bcfr = bcfRec( w + n, n );
+  // REMOVE: _monomial   = new double[ bcfr ];
+  // REMOVE: _TJLmonomial = new TJet<double,Complex> [ bcfr ];
+  // REMOVE: for( i = 0; i < bcfr; i++ ) _TJLmonomial[i].Reconstruct( this );
+
+  _buildScratchPads();
 
 #ifdef OBJECT_DEBUG
  objectCount++;
@@ -358,7 +371,9 @@ TJetEnvironment<double,Complex>& TJetEnvironment<double,Complex>::operator=( con
          << endl;
 
     _monomial           = 0;
-    _TJLmonomial         = 0;
+    _TJLmonomial        = 0;
+    _TJLmml             = 0;
+    _maxTerms           = 0;
     _exponent           = 0;
     _expCode            = 0;
     _pbok               = 0;
@@ -410,10 +425,12 @@ TJetEnvironment<double,Complex>& TJetEnvironment<double,Complex>::operator=( con
 
 
   // Final constructions ...
-  bcfr = bcfRec( w + n, n );
-  _monomial   = new double[ bcfr ];
-  _TJLmonomial = new TJet<double,Complex> [ bcfr ];
-  for( i = 0; i < bcfr; i++ ) _TJLmonomial[i].Reconstruct( this );
+  // REMOVE: bcfr = bcfRec( w + n, n );
+  // REMOVE: _monomial   = new double[ bcfr ];
+  // REMOVE: _TJLmonomial = new TJet<double,Complex> [ bcfr ];
+  // REMOVE: for( i = 0; i < bcfr; i++ ) _TJLmonomial[i].Reconstruct( this );
+
+  _buildScratchPads();
 
   return *this;
 }

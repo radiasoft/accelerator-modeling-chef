@@ -45,6 +45,9 @@ template<typename T1, typename T2>
 class TJetEnvironment;
 
 template<typename T1, typename T2> 
+class TJLterm;
+
+template<typename T1, typename T2> 
 std::ostream& operator<<( std::ostream&, const TJetEnvironment<T1,T2>& );
 
 template<typename T1, typename T2> 
@@ -69,7 +72,13 @@ struct TJetEnvironment
                           //   to be carried through calculations.
  T1*       _monomial;     // Storage area for monomials used in multinomial
                           //   evaluation. 
+ int       _maxTerms;     // Maximum number of monomial terms.
  TJet<T1,T2>* _TJLmonomial;  // Storage area for TJL monomials used in concatenation.
+ TJLterm<T1,T2>* _TJLmml; // Same as above, but used for collecting terms
+                          //   during multiplication.
+                          //   ??? There should be no need for a second array.
+                          //   ??? Both are employed as scratchpads.
+                          //   ??? Rewrite code so that only one is used.
  int*      _exponent;     // Used by nexcom (as called by TJL::operator()
                           //   when storing monomials.
  char*     _expCode;      // The Wilf code of a monomial. 
@@ -88,6 +97,8 @@ struct TJetEnvironment
  TJetEnvironment( const TJetEnvironment& );
  TJetEnvironment( const TJetEnvironment<T2,T1>& );
  ~TJetEnvironment();
+
+ void _buildScratchPads();
 
  TJetEnvironment& operator=( const TJetEnvironment& );
  TJetEnvironment& operator=( const TJetEnvironment<T2,T1>& );
@@ -113,7 +124,10 @@ struct TJetEnvironment
 
  // Monomial ranking routines based on Wilf's algorithm
  void _monoCode();     // Computes the code of a monomial from its
-                       // exponents.
+                       //   exponents, stored in _exponents.
+ void _monoCode( const IntArray& );
+                       // Same as above, but takes its exponents 
+                       //   from the argument.
  void _monoDecode();   // The inverse operation to monoCode.
  int  _monoRank();     // Computes the rank of a monomial.
 

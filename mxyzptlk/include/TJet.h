@@ -235,6 +235,7 @@ public:
 
   void Reconstruct();
   void Reconstruct( TJetEnvironment<T1,T2>* pje );
+  void Reconstruct( const IntArray&, const T1&, TJetEnvironment<T1,T2>* pje );
 
   static void BeginEnvironment( int = 1 /* maximum weight */ );
   static void Parameters();

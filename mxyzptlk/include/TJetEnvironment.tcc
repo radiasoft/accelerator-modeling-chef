@@ -85,8 +85,10 @@ TJetEnvironment<T1,T2>::TJetEnvironment()
   _refPoint          = 0;       
   _scale             = 0;
   _maxWeight         = 0;
+  _maxTerms          = 0;
   _monomial          = 0;
   _TJLmonomial       = 0;
+  _TJLmml            = 0;
   _exponent          = 0;
   _expCode           = 0;
   _pbok              = 0;
@@ -103,7 +105,8 @@ TJetEnvironment<T1,T2>::TJetEnvironment( const TJetEnvironment& x )
   _numVar( x._numVar ), 
   _spaceDim( x._spaceDim ),
   _pbok( x._pbok ),
-  _dof( x._dof )
+  _dof( x._dof ),
+  _numPaths(0), _TJLmonomial(0), _TJLmml(0)
 {
   if( TJet<T1,T2>::workEnvironment() != 0 ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -122,6 +125,7 @@ TJetEnvironment<T1,T2>::TJetEnvironment( const TJetEnvironment& x )
 
     _monomial    = 0;
     _TJLmonomial = 0;
+    _TJLmml      = 0;
     _exponent    = 0;
     _expCode     = 0;
     _pbok        = 0;
@@ -140,18 +144,15 @@ TJetEnvironment<T1,T2>::TJetEnvironment( const TJetEnvironment& x )
   int n = _numVar;
   int i, j;
 
-  j = bcfRec( w + n, n );
-
-  _monomial    = new T1[ j ];
-  _TJLmonomial = new TJet<T1,T2>[ j ];
-  for( i = 0; i < j; i++ ) _TJLmonomial[i].Reconstruct( (TJetEnvironment*) &x );
   _exponent   = new int[ n ];
   _expCode    = new char[ w + n ];
 
   _numPaths = new MatrixI( w+1, n );
-  for( i = 0; i <= w; i++ )
-    for( j = 1; j <= n; j++ )
+  for( i = 0; i <= w; i++ ) {
+    for( j = 1; j <= n; j++ ) {
       (*_numPaths)( i, j-1 ) = bcfRec( i + j - 1, i );
+    }
+  }
 
   _refPoint = new T1[ n ];
   _scale = new double[ n ];
@@ -162,6 +163,61 @@ TJetEnvironment<T1,T2>::TJetEnvironment( const TJetEnvironment& x )
    _scale[i] = x._scale[i];
    _allZeroes(i) = 0;   // ??? Redundant and unnecessary.
   }
+
+  _buildScratchPads();
+
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T1, typename T2>
+void TJetEnvironment<T1,T2>::_buildScratchPads()
+{
+  if(    0 < _maxWeight && 0 < _numVar 
+      && 0 != _exponent && 0 != _expCode ) {
+
+    int w = _maxWeight;
+    int n = _numVar;
+    _maxTerms = bcfRec( w + n, n );
+
+    if( _monomial ) { delete [] _monomial; }
+    _monomial    = new T1[ _maxTerms ];
+
+    if( _TJLmonomial ) { delete [] _TJLmonomial; }
+    _TJLmonomial = new TJet<T1,T2>[ _maxTerms ];
+    int i;
+    for( i = 0; i < _maxTerms; i++ ) {
+      _TJLmonomial[i].Reconstruct( this ); 
+    }
+
+    if( _TJLmml ) { delete [] _TJLmml; }
+    _TJLmml = new TJLterm<T1,T2>[ _maxTerms ];
+    IntArray powers(n);
+    T1 startValue(0.0);
+    _TJLmml[0].Reconstruct( powers, startValue );
+    i = 1;
+    for( int wd = 1; wd <= w; wd++ ) {
+      while( nexcom( wd, _numVar, _exponent ) ) {
+        powers.Set(_exponent);
+        if( i < _maxTerms ) {
+          _TJLmml[i].Reconstruct( powers, startValue );
+        }
+        else {
+          throw( GenericException( __FILE__, __LINE__, 
+                 "TJetEnvironment::_buildScratchPads()",
+                 "Overran number of possible monomial terms." ) );
+        }
+        i++;
+      }
+    }
+  }
+  else {
+    throw( GenericException( __FILE__, __LINE__, 
+           "TJetEnvironment::_buildScratchPads()",
+           "Function called by underconstructed environment." ) );
+    
+  }
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -170,13 +226,14 @@ TJetEnvironment<T1,T2>::TJetEnvironment( const TJetEnvironment& x )
 template<typename T1, typename T2>
 TJetEnvironment<T1,T2>::~TJetEnvironment() 
 {
-  if( _monomial   )  delete [] _monomial;
-  if( _TJLmonomial ) delete [] _TJLmonomial;
-  if( _exponent   )  delete [] _exponent;
-  if( _expCode    )  delete [] _expCode;
-  if( _numPaths   )  delete    _numPaths;
-  if( _refPoint   )  delete [] _refPoint;
-  if( _scale      )  delete [] _scale;
+  if( _monomial   )  { delete [] _monomial;    _monomial = 0;    }
+  if( _TJLmonomial ) { delete [] _TJLmonomial; _TJLmonomial = 0; }
+  if( _TJLmml     )  { delete [] _TJLmml;      _TJLmml = 0;      }
+  if( _exponent   )  { delete [] _exponent;    _exponent = 0;    }
+  if( _expCode    )  { delete [] _expCode;     _expCode = 0;     }
+  if( _numPaths   )  { delete    _numPaths;    _numPaths = 0;    }
+  if( _refPoint   )  { delete [] _refPoint;    _refPoint = 0;    }
+  if( _scale      )  { delete [] _scale;       _scale = 0;       }
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -210,6 +267,7 @@ TJetEnvironment<T1,T2>& TJetEnvironment<T1,T2>::operator=( const TJetEnvironment
 
     _monomial           = 0;
     _TJLmonomial        = 0;
+    _TJLmml             = 0;
     _exponent           = 0;
     _expCode            = 0;
     _pbok               = 0;
@@ -230,9 +288,6 @@ TJetEnvironment<T1,T2>& TJetEnvironment<T1,T2>::operator=( const TJetEnvironment
 
   if( _monomial ) { delete [] _monomial; }
   _monomial   = new T1[ bcfRec( w + n, n ) ];
-
-  if( _TJLmonomial ) { delete [] _TJLmonomial; }
-  _TJLmonomial = new TJet<T1,T2>[ bcfRec( w + n, n ) ];
 
   if( _exponent ) { delete [] _exponent; }
   _exponent   = new int[ n ];
@@ -265,6 +320,8 @@ TJetEnvironment<T1,T2>& TJetEnvironment<T1,T2>::operator=( const TJetEnvironment
    _scale[i] = x._scale[i];
    _allZeroes(i) = 0;   // ??? Redundant and unnecessary
   }
+
+  _buildScratchPads();
 
   return *this;
 }
@@ -421,8 +478,6 @@ istream& streamIn( istream& is, TJetEnvironment<T1,T2>** x )
 
   pje->_exponent   = new int[ n ];
   pje->_expCode    = new char[ w + n ];
-  pje->_monomial   = new T1[ bcfRec( w + n, n ) ];
-  pje->_TJLmonomial = new TJet<T1,T2>[ bcfRec( w + n, n ) ];
 
   pje->_allZeroes.Reconstruct(n);
   for( i = 0; i < n; i++ ) pje->_allZeroes(i) = 0;
@@ -435,6 +490,8 @@ istream& streamIn( istream& is, TJetEnvironment<T1,T2>** x )
       (*(pje->_numPaths))( i, j-1 ) = bcfRec( i + j - 1, i );
     }
   }
+
+  pje->_buildScratchPads();
 
   // Initialize the coordinates
   // ??? HOW ???
@@ -483,6 +540,25 @@ void TJetEnvironment<T1,T2>::_monoCode() {
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
+void TJetEnvironment<T1,T2>::_monoCode( const IntArray& e ) {
+  int c, i, j;
+  if( _numVar == e.Dim() ) {
+    j = 0;
+    for( i = 0; i < _numVar; i++ ) {
+      for( c = 0; c < e(i); c++ ) { _expCode[j++] = 1; }
+      _expCode[j++] = 0;
+    }
+  }
+  else {
+    throw( GenericException( __FILE__, __LINE__, 
+           "void TJetEnvironment<T1,T2>::_monoCode( const Intarray& e )", 
+           "Argument has wrong dimension." ) );
+  }
+}
+
+//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T1, typename T2>
 void TJetEnvironment<T1,T2>::_monoDecode() {
  int c;
  int i, j;
@@ -512,7 +588,7 @@ int TJetEnvironment<T1,T2>::_monoRank() {
  n = 1;
  
  if((  edge = _expCode[i++]  )) zeroCount = 0;
- else                          zeroCount = 1;
+ else                           zeroCount = 1;
  
  while( zeroCount < _numVar ) {
  
