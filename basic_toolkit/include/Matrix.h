@@ -89,6 +89,7 @@ public:
   double  operator()(int row, int column) const;
   double  getElement(int row, int column) const;
   double& operator()(int row);
+  double  operator()(int row) const;
   void operator+=( const double&);
   void operator-=( const double&);
 friend char operator==( const MatrixD&, const MatrixD& );
@@ -263,6 +264,7 @@ public:
   FNAL::Complex& operator()(int row, int column);
   FNAL::Complex  operator()(int row, int column) const;
   FNAL::Complex& operator()(int row);
+  FNAL::Complex  operator()(int row) const;
   void operator+=( const FNAL::Complex&);
   void operator-=( const FNAL::Complex&);
 friend char operator==( const MatrixC&, const MatrixC& );
@@ -337,6 +339,7 @@ public:
   int& operator()(int row, int column);
   int  operator()(int row, int column) const;
   int& operator()(int row);
+  int  operator()(int row) const;
   void operator+=( const int&);
   void operator-=( const int&);
 friend char operator==( const MatrixI&, const MatrixI& );
