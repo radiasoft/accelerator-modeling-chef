@@ -21,7 +21,8 @@
 
 
 /* first, here is the signal handler */
-void catch_int(int sig_num)
+void 
+catch_int(int sig_num)
 {
     /* re-s   the signal handler again to catch_int, for next time */
     signal(SIGINT, catch_int);
@@ -48,7 +49,9 @@ void catch_int(int sig_num)
   }
 
 
-  bool PyCHEF_KeyPressFilter::eventFilter( QObject *o, QEvent *e ) {
+bool 
+PyCHEF_KeyPressFilter::eventFilter( QObject *o, QEvent *e ) 
+{
 
   int index; 
   int para; 
@@ -111,12 +114,14 @@ QPyCHEFBase(parent, name), _indented(false)
 
 QPyCHEF::~QPyCHEF() 
 {
-
-    delete _key_press_filter;
+    
+  py_textEdit->removeEventFilter( _key_press_filter );
+  delete _key_press_filter;
  }
 
 
-void QPyCHEF::initializePython() 
+void 
+QPyCHEF::initializePython() 
 {
 
 // set the INT (Ctrl-C) signal handler to 'catch_int'
@@ -150,7 +155,8 @@ void QPyCHEF::initializePython()
 
 }
 
-const char* QPyCHEF::getPythonCurrentPrompt() {
+const 
+char* QPyCHEF::getPythonCurrentPrompt() {
 
   if (_indented ) {
       return _interpreter->getPythonPrompt2();
@@ -161,9 +167,8 @@ const char* QPyCHEF::getPythonCurrentPrompt() {
 
 
 
-void QPyCHEF::append(QString s) {
-
-  // py_textEdit->setColor( QColor("blue") );
+void 
+QPyCHEF::append(QString s) {
 
   py_textEdit->insert( s );  
 
@@ -186,12 +191,13 @@ void QPyCHEF::append_err(QString s) {
 
  py_textEdit->setCursorPosition (_command_paragraph, _command_index);
 
- //py_textEdit->setColor( QColor("blue") );
+ py_textEdit->setColor( QColor("black") );
 
 }
 
 
-void QPyCHEF::sendCommand()
+void 
+QPyCHEF::sendCommand()
 {
 
    py_textEdit->setSelection ( _command_paragraph, _command_index, _command_paragraph, 
@@ -212,6 +218,15 @@ void QPyCHEF::sendCommand()
          _indented = true;
    };
    
+
+   // first, take care of the case where the line is empty
+   if ( command.stripWhiteSpace().length() == 0) 
+   { 
+         append( _interpreter->getPythonPrompt1() );
+         return;
+   };
+
+
    switch ( testcomplete( const_cast<char*>(( command.stripWhiteSpace() + QString("\n")).ascii() ) ) ) {
 
       case 0:
@@ -272,7 +287,8 @@ void QPyCHEF::sendCommand()
 }
 
 
-void QPyCHEF::readFile(const char* fname) 
+void 
+QPyCHEF::readFile(const char* fname) 
 {
 
 
