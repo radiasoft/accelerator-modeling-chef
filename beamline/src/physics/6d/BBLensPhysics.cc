@@ -1,5 +1,6 @@
-#include "beamline.inc"
+#include "BBLens.h"
 #include "VectorD.h"
+#include "PhysicsConstants.h"
 
 void BBLens::localPropagate( Particle& p ) {
 

@@ -1,4 +1,4 @@
-#include "beamline.inc"
+#include "lambertson.h"
 #include "ParticleBunch.h"
 
 void thinLamb::localPropagate( Particle& p ) { }

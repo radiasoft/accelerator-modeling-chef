@@ -1,4 +1,4 @@
-#include "beamline.inc"
+#include "decapole.h"
 
 void thinDecapole::localPropagate( Particle& p ) {
  double x, y, k;

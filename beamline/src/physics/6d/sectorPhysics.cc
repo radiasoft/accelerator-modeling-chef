@@ -1,4 +1,4 @@
-#include "beamline.inc"
+#include "sector.h"
 
 void sector::localPropagate( Particle& p ) {
  static int    i, j; 

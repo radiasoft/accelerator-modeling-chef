@@ -1,4 +1,4 @@
-#include "beamline.inc"
+#include "septum.h"
 
 void thinSeptum::localPropagate( Particle& p ) {
   static int i;
