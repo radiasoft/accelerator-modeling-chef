@@ -87,8 +87,9 @@
 #include "dlist.h"
 #include "IntArray.h"
 #include "Matrix.h"
-#include "JetC.h"    // Needed for JetC::scratchFile
+// ??? REMOVE: #include "JetC.h"    // Needed for JetC::scratchFile
 #include "complexAddon.h"
+#include "JetC__environment.h"
 
 class LieOperator;
 struct JLterm;
@@ -140,8 +141,10 @@ struct JLC : public dlist {
   void append( JLCterm* );
   JLCterm* remove( dlink* );
 
+  static FILE  *scratchFile;
+
   // Constructors and destructors_____________________________________
-  JLC( JetC__environment* = 0 );
+  JLC( const JetC__environment* = 0 );
   JLC( const Complex&, JetC__environment* );
   JLC( const JLC& );
   JLC( const JL&, JetC__environment* );
@@ -149,9 +152,13 @@ struct JLC : public dlist {
   ~JLC();
 
   // Public member functions__________________________________________
-  JLCterm* get();            // Pops the top term, which should be the 
-                            // one of lowest weight.
-  void addTerm( JLCterm* );  // Public only for diagnostic purposes.
+  JLCterm* get();               // Pops the top term, which should be the 
+                                // one of lowest weight.
+  JLCterm  firstTerm() const;   // Returns a JLterm equivalent to the top term,
+                                // which should be the one of lowest weight.
+  JLCterm  lowTerm()   const;   // Returns a JLCterm equivalent to the 
+                                // non-zero term of lowest weight.
+  void addTerm( JLCterm* );     // Public only for diagnostic purposes.
 
   char isNilpotent() const;
   void writeToFile( char*   /* Name of unopened file */ ) const;

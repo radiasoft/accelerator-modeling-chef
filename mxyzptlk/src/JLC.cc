@@ -106,13 +106,13 @@ int JLCterm::objectCount = 0;
 
 //    Constructors and destructors    |||||||||||||||||||||||||||
 
-JLC::JLC( JetC__environment* pje ) {
+JLC::JLC( const JetC__environment* pje ) {
  rc      = 1;
  weight  = -1;
  count   = 0;
 
  if( pje ) {
-   myEnv   = pje;
+   myEnv   = (JetC__environment*) pje;
    accuWgt = pje->MaxWeight;
  }
  else {
@@ -336,28 +336,28 @@ void JLC::writeToFile( char* fileName ) const {
  JLCterm* p;
  dlink* q;
  
- JetC::scratchFile = fopen( fileName, "w" );
+ JLC::scratchFile = fopen( fileName, "w" );
  
- fprintf( JetC::scratchFile,
+ fprintf( JLC::scratchFile,
           "\nCount  = %d, Weight = %d, Max accurate weight = %d\n",
           count, weight, accuWgt );
- fprintf( JetC::scratchFile, "Reference point:  \n" );
+ fprintf( JLC::scratchFile, "Reference point:  \n" );
  for( i = 0; i < myEnv->NumVar; i++ )
-   fprintf( JetC::scratchFile, "%e  ", myEnv->refPoint[i] );
- fprintf( JetC::scratchFile, "\n" );
+   fprintf( JLC::scratchFile, "%e  ", myEnv->refPoint[i] );
+ fprintf( JLC::scratchFile, "\n" );
  while((  q = getNext()  )) {
    p = (JLCterm*) q->info();
-   fprintf( JetC::scratchFile, "Weight: %d   Value: %e  || ",
+   fprintf( JLC::scratchFile, "Weight: %d   Value: %e  || ",
            p -> weight, p -> value );
-   fprintf( JetC::scratchFile, "Addresses: %d %d %d : %d\n",
+   fprintf( JLC::scratchFile, "Addresses: %d %d %d : %d\n",
                   q->prevPtr(), q, q->nextPtr(), p );
-   fprintf( JetC::scratchFile, "Index:  ");
+   fprintf( JLC::scratchFile, "Index:  ");
    for( i = 0; i < myEnv->NumVar; i++ )
-     fprintf( JetC::scratchFile, "%d  ", (p -> index)(i) );
-   fprintf( JetC::scratchFile, "\n\n");
+     fprintf( JLC::scratchFile, "%d  ", (p -> index)(i) );
+   fprintf( JLC::scratchFile, "\n\n");
    }
  
- fclose( JetC::scratchFile );
+ fclose( JLC::scratchFile );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -486,6 +486,43 @@ JLCterm* JLC::get() {
  p = ((JLCterm*) dlist::get());
  if( --count == 0 ) weight = -1;
  return p;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JLCterm JLC::lowTerm() const {
+ dlist_iterator getNext( *(dlist*) this );
+ static JLCterm* p;
+ static JLCterm* result;
+
+ p = (JLCterm*) getNext();
+ result = 0;
+   
+ while ( (result == 0) && (p!=0) ) 
+ {
+   if( p->value != Complex( 0.0, 0.0 ) ) result = p;
+   p = (JLCterm*) getNext();
+ }
+
+ if( result == 0 ) return JLCterm( this->myEnv->AllZeroes, 
+                                  Complex( 0.0, 0.0 ),
+                                  this->myEnv );
+ else              return JLCterm( *result );
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JLCterm JLC::firstTerm() const {
+ static JLCterm* p;
+ p = (JLCterm*) ( ((dlist*) this)->firstInfoPtr() );
+ if( 0 != p ) {
+   return JLCterm( *p );
+ }
+ else {
+   return JLCterm( this->myEnv->AllZeroes, 0.0, this->myEnv );
+ }
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -42,20 +42,20 @@ int JetCVector::objectCount = 0;
 
 JetCVector::JetCVector( const int& n, 
                         const JetC* x, 
-                              JetC__environment* pje )
+                        const JetC__environment* pje )
 {
   int i;
 
   CHECKOUT(n <= 0, "JetCVector::JetCVector", "Dimension must be positive.")
   CHECKOUT(pje == 0, "JetCVector::JetCVector", "Environment is required.")
 
-  myEnv = pje;
+  myEnv = (JetC__environment*) pje;
   dim = n;
   comp = new JetC [ dim ];
 
   if( x ) for ( i = 0; i < dim; i++ ) comp[i] = x[i];
   else    for ( i = 0; i < dim; i++ ) {
-    comp[i]->myEnv = pje;
+    comp[i].setEnvTo( pje );
     comp[i] = complex_0;    // ??? Unnecessary?
   }
 
@@ -72,10 +72,29 @@ JetCVector::JetCVector( const JetCVector& x )
   dim = x.dim;
   comp = new JetC [ dim ];
 
+  // ??? REMOVE: for ( i = 0; i < dim; i++ ) {
+  // ??? REMOVE:   if( --((comp[i].jl)->rc) == 0 ) delete comp[i].jl;
+  // ??? REMOVE:   comp[i].jl = x.comp[i].jl;    // Perform shallow copy.
+  // ??? REMOVE:   ( comp[i]->rc )++;            // Increase reference counter.
+  // ??? REMOVE: }
+
   for ( i = 0; i < dim; i++ ) {
-    if( --((comp[i].jl)->rc) == 0 ) delete comp[i].jl;
-    comp[i].jl = x.comp[i].jl;    // Perform shallow copy.
-    ( comp[i]->rc )++;            // Increase reference counter.
+    comp[i] = x.comp[i];    // Shallow copy is automatic because
+                            // of lazy evaluation.
+    #ifndef NOCHECKS
+    if( comp[i].Env() != myEnv ) {
+      cerr << "\n" 
+           << "*** ERROR ***                                           \n" 
+              "*** ERROR *** JetVector::JetVector( JetVector& )        \n"          
+              "*** ERROR *** Inconsistent environment at component "
+           << i << "\n"
+              "*** ERROR *** "
+           << (int) comp[i].Env() << " != " << (int) myEnv << "\n"
+              "*** ERROR ***                                           \n" 
+           << endl;
+      exit(0);
+    }
+    #endif
   }
 
 #ifdef OBJECT_DEBUG
@@ -99,13 +118,13 @@ JetCVector::~JetCVector()
 void JetCVector::Set( const JetC* x )
 {
   JetC__environment* pje;
-  pje = x[0]->myEnv;
+  pje = x[0].Env();
 #ifndef NOCHECKS
     CHECKOUT(pje != myEnv, "JetCVector::Set", "Wrong environment.")
 #endif
   for ( int i = 0; i < 3; i++ ) {
 #ifndef NOCHECKS
-    CHECKOUT(x[i]->myEnv != pje, "JetCVector::Set", "Inequivalent environments.")
+    CHECKOUT(x[i].Env() != pje, "JetCVector::Set", "Inequivalent environments.")
 #endif
     comp[i] = x[i];
   }
@@ -484,7 +503,7 @@ char JetCVector::IsUnit() const
 
 char JetCVector::IsNilpotent() const {
  for( int i = 0; i <  myEnv->SpaceDim; i++ ) 
-  if( !(comp[i]->isNilpotent()) ) return 0;
+  if( !(comp[i].isNilpotent()) ) return 0;
  return 1;
 }
 
@@ -499,7 +518,7 @@ JetCVector::Reconstruct()
   delete [] comp;
   comp = new JetC [ dim ];
   for ( int i = 0; i < dim; i++ ) {
-    comp[i]->myEnv = myEnv;
+    comp[i].setEnvTo( myEnv );
     comp[i].Reconstruct();
   }
 }
@@ -659,14 +678,14 @@ JetCVector JetCVector::filter( int lower, int upper ) {
 
 void JetCVector::weightedDerivative( int* m, Complex* x ) {
  int i;
- for( i = 0; i < dim; i++ ) x[i] = comp[i]->weightedDerivative( m );
+ for( i = 0; i < dim; i++ ) x[i] = comp[i].weightedDerivative( m );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void JetCVector::derivative( int* m, Complex* x ) {
  int i;
- for( i = 0; i < dim; i++ ) x[i] = comp[i]->derivative( m );
+ for( i = 0; i < dim; i++ ) x[i] = comp[i].derivative( m );
 }
 
 
@@ -679,7 +698,7 @@ JetCVector::AccuWgt() const
 {
   int accuWgt = myEnv->MaxWeight;
   for( int i = 0; i < dim; i++ ) {
-   if( myEnv != comp[i]->myEnv ) {
+   if( myEnv != comp[i].Env() ) {
      cerr << "\n\n"
  	  << "*** WARNING ***                                   \n"
  	  << "*** WARNING *** JetCVector::AccuWgt()             \n"
@@ -689,7 +708,7 @@ JetCVector::AccuWgt() const
  	  << "*** WARNING ***                                   \n"
  	  << endl;
    }
-   if( accuWgt > comp[i]->accuWgt ) accuWgt = comp[i]->accuWgt;
+   if( accuWgt > comp[i].getAccuWgt() ) accuWgt = comp[i].getAccuWgt();
   }
   return accuWgt;
 }
@@ -699,7 +718,7 @@ JetCVector::Weight()  const
 {
   int weight = -1;
   for( int i = 0; i < dim; i++ ) {
-   if( myEnv != comp[i]->myEnv ) {
+   if( myEnv != comp[i].Env() ) {
      cerr << "\n\n"
  	  << "*** WARNING ***                                   \n"
  	  << "*** WARNING *** JetCVector::Weight()               \n"
@@ -709,7 +728,7 @@ JetCVector::Weight()  const
  	  << "*** WARNING ***                                   \n"
  	  << endl;
    }
-   if( weight  < comp[i]->weight  ) weight  = comp[i]->weight;
+   if( weight  < comp[i].getWeight()  ) weight  = comp[i].getWeight();
   }
   return weight;
 }

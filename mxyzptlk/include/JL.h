@@ -87,9 +87,10 @@
 #include "IntArray.h"
 #include "Matrix.h"
 #include "VectorD.h"
-#include "Jet.h"    // Needed for Jet::scratchFile
+// ??? REMOVE: #include "Jet.h"    // Needed for Jet::scratchFile
+#include "Jet__environment.h"
 
-class LieOperator;
+class  LieOperator;
 struct JLCterm;
 struct JLC;
 
@@ -138,8 +139,10 @@ struct JL : public dlist {
   void append( JLterm* );
   JLterm* remove( dlink* );
 
+  static FILE  *scratchFile;
+
   // Constructors and destructors_____________________________________
-  JL( Jet__environment* = 0 );
+  JL( const Jet__environment* = 0 );
   JL( const double&, Jet__environment* );
   JL( const JL& );
   JL( const JLC&, Jet__environment* );
@@ -147,9 +150,13 @@ struct JL : public dlist {
   ~JL();
 
   // Public member functions__________________________________________
-  JLterm* get();            // Pops the top term, which should be the 
-                            // one of lowest weight.
-  void addTerm( JLterm* );  // Public only for diagnostic purposes.
+  JLterm* get();                // Pops the top term, which should be the 
+                                // one of lowest weight.
+  JLterm  firstTerm() const;    // Returns a JLterm equivalent to the top term,
+                                // which should be the one of lowest weight.
+  JLterm  lowTerm()   const;    // Returns a JLterm equivalent to the 
+                                // non-zero term of lowest weight.
+  void addTerm( JLterm* );      // Public only for diagnostic purposes.
 
   char isNilpotent() const;
   void writeToFile( char*   /* Name of unopened file */ ) const;

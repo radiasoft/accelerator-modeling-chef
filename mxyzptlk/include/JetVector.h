@@ -38,12 +38,13 @@ public:
   // Constructors and the destructor ...
   JetVector( const int&  /* dim */        = Jet::lastEnv->NumVar,
              const Jet*  /* components */ = 0, 
-                   Jet__environment*      = Jet::lastEnv );
+             const Jet__environment*      = Jet::lastEnv );
   JetVector( const JetVector& );
   ~JetVector();
 
   void        Reconstruct();
   void        Reconstruct( const int&, Jet__environment* pje );
+  void        Reconstruct( const int& );
 
   // Assignment ...
   void             Set              ( const Jet* );

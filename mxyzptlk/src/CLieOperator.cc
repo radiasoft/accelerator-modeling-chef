@@ -126,10 +126,14 @@ CLieOperator::CLieOperator( CLieOperator& x )
  
  myEnv = x.myEnv;
 
+ // ??? REMOVE: for ( i = 0; i < myEnv->SpaceDim; i++ ) {
+ // ??? REMOVE:   if( --((comp[i].jl)->rc) == 0 ) delete comp[i].jl;
+ // ??? REMOVE:   comp[i].jl = x.comp[i].jl;    // Perform shallow copy.
+ // ??? REMOVE:   ( comp[i]->rc )++;            // Increase reference counter.
+ // ??? REMOVE: }
+
  for ( i = 0; i < myEnv->SpaceDim; i++ ) {
-   if( --((comp[i].jl)->rc) == 0 ) delete comp[i].jl;
-   comp[i].jl = x.comp[i].jl;    // Perform shallow copy.
-   ( comp[i]->rc )++;         // Increase reference counter.
+   comp[i] = x.comp[i];
  }
 
 #ifdef OBJECT_DEBUG
@@ -140,13 +144,13 @@ CLieOperator::CLieOperator( CLieOperator& x )
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CLieOperator::CLieOperator( const JetC& x ) 
-: JetCVector( x->myEnv->SpaceDim, 0, x->myEnv )
+: JetCVector( (x.Env())->SpaceDim, 0, x.Env() )
 { 
  static int i;
  static JetC__environment* pje;
 
  i = 0;
- pje = x->myEnv;
+ pje = x.Env();
 
  int s = pje->SpaceDim;
  int n = pje->NumVar;
@@ -184,7 +188,7 @@ CLieOperator::CLieOperator( const JetC& x )
  }
 
  for( i = s; i < n; i++ ) {
-   comp[i]->myEnv = pje;
+   comp[i].setEnvTo( pje );
    comp[i] = complex_0;
  }
 
@@ -239,7 +243,7 @@ CLieOperator::~CLieOperator() {
 void CLieOperator::setVariable( const JetC& x, int j ) {
 
  
- if( myEnv != x->myEnv ) {
+ if( myEnv != x.Env() ) {
     cerr << "\n\n"
          << "*** ERROR ***                                          \n"
          << "*** ERROR *** CLieOperator::setVariable( JetC, int )     \n"
@@ -289,11 +293,11 @@ void CLieOperator::setVariable( const Complex& x, const int& j ) {
  static IntArray ndx;
  ndx.Reconstruct( n );
 
- comp[j]->insert( new JLCterm( ndx, x, myEnv ) );
+ comp[j].addTerm( new JLCterm( ndx, x, myEnv ) );
  ndx(j) = 1;
- comp[j]->append( new JLCterm( ndx, complex_1, myEnv ) );
+ comp[j].addTerm( new JLCterm( ndx, complex_1, myEnv ) );
 
- for( int i = 0; i < dim; i++ ) comp[i]->myEnv = myEnv;
+ for( int i = 0; i < dim; i++ ) comp[i].setEnvTo( myEnv );
 }
 
 
@@ -335,11 +339,84 @@ ostream& operator<<(ostream& os,  CLieOperator& x) {
 }
 
 
+// ??? REMOVE: // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// ??? REMOVE: 
+// ??? REMOVE: JetC CLieOperator::operator^( const JetC& x_arg ) const 
+// ??? REMOVE: { 
+// ??? REMOVE: 
+// ??? REMOVE:  if( myEnv != x.Env() ) {
+// ??? REMOVE:     cerr << "\n\n"
+// ??? REMOVE:          << "*** ERROR ***                                   \n"
+// ??? REMOVE:          << "*** ERROR *** CLieOperator::operator^( JetC )   \n"
+// ??? REMOVE:          << "*** ERROR ***                                   \n"
+// ??? REMOVE:          << "*** ERROR *** Inconsistent environments.        \n"
+// ??? REMOVE:          << "*** ERROR ***                                   \n"
+// ??? REMOVE:          << endl;
+// ??? REMOVE:     exit(1);
+// ??? REMOVE:  }
+// ??? REMOVE: 
+// ??? REMOVE:  static JetC__environment* pje;
+// ??? REMOVE:  static JetC answer;
+// ??? REMOVE:  static JetC x;
+// ??? REMOVE:  static int  s;
+// ??? REMOVE:  static int aw, i, jw;
+// ??? REMOVE:  static IntArray ndx;
+// ??? REMOVE:  static char adjustWeight;
+// ??? REMOVE: 
+// ??? REMOVE:  x = x_arg;
+// ??? REMOVE: 
+// ??? REMOVE:  pje = myEnv;
+// ??? REMOVE:  answer.Reconstruct( pje );
+// ??? REMOVE:  aw = pje->MaxWeight;
+// ??? REMOVE:  s = pje->SpaceDim;
+// ??? REMOVE:  ndx.Reconstruct( pje->NumVar );
+// ??? REMOVE: 
+// ??? REMOVE:  aw = myEnv->MaxWeight;
+// ??? REMOVE:  i = jw = 0;
+// ??? REMOVE: 
+// ??? REMOVE:       // Differentiation will normally lower 
+// ??? REMOVE:       //  the maximum accurate order by one.  This is 
+// ??? REMOVE:       //  offset if the constant term in comp[] vanishes.
+// ??? REMOVE:       //
+// ??? REMOVE:       adjustWeight = 1;
+// ??? REMOVE:       for( i = 0; i < s; i++ ) {
+// ??? REMOVE:         if( comp[i].standardPart() == 0.0 ) {
+// ??? REMOVE:          jw = comp[i].getAccuWgt();
+// ??? REMOVE:          if( jw > x.getAccuWgt() ) jw = x.getAccuWgt();
+// ??? REMOVE:          if( jw < aw ) aw = jw;
+// ??? REMOVE:         }
+// ??? REMOVE:         else adjustWeight = 0;
+// ??? REMOVE:       }
+// ??? REMOVE:       if( adjustWeight ) ( x->accuWgt )++;  // Not true, of course,
+// ??? REMOVE:                                             // but it fools the algorithm.
+// ??? REMOVE:  ndx(0) = 1;                                // It is necessary to do it
+// ??? REMOVE:  answer = comp[0]*x.D( ndx );               // this way because of break
+// ??? REMOVE:  ndx(0) = 0;                                // statements.
+// ??? REMOVE: 
+// ??? REMOVE:  if( s > 1 ) for( i = 1; i < s; i++ ) {
+// ??? REMOVE:   ndx(i) = 1;
+// ??? REMOVE:   answer += comp[i]*x.D( ndx );
+// ??? REMOVE:   ndx(i) = 0;
+// ??? REMOVE: 
+// ??? REMOVE:  }
+// ??? REMOVE: 
+// ??? REMOVE:  // The accuracy of the answer is adjusted only if
+// ??? REMOVE:  //  all components of comp[] are differentials.
+// ??? REMOVE:  // 
+// ??? REMOVE:  if( adjustWeight ) {
+// ??? REMOVE:    ( x->accuWgt )--;
+// ??? REMOVE:    answer->accuWgt = aw;   // ??? Actually, this should be automatic.
+// ??? REMOVE:  }
+// ??? REMOVE:  return answer;
+// ??? REMOVE: }
+// ??? REMOVE: 
+// ??? REMOVE: 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC CLieOperator::operator^( JetC& x ) { 
+JetC CLieOperator::operator^( const JetC& x ) const 
+{ 
 
- if( myEnv != x->myEnv ) {
+ if( myEnv != x.Env() ) {
     cerr << "\n\n"
          << "*** ERROR ***                                   \n"
          << "*** ERROR *** CLieOperator::operator^( JetC )   \n"
@@ -353,35 +430,18 @@ JetC CLieOperator::operator^( JetC& x ) {
  static JetC__environment* pje;
  static JetC answer;
  static int  s;
- static int aw, i, jw;
+ static int  i;
  static IntArray ndx;
  static char adjustWeight;
 
  pje = myEnv;
  answer.Reconstruct( pje );
- aw = pje->MaxWeight;
  s = pje->SpaceDim;
  ndx.Reconstruct( pje->NumVar );
 
- aw = myEnv->MaxWeight;
- i = jw = 0;
+ i = 0;
 
-      // Differentiation will normally lower 
-      //  the maximum accurate order by one.  This is 
-      //  offset if the constant term in comp[] vanishes.
-      //
-      adjustWeight = 1;
-      for( i = 0; i < s; i++ ) {
-        if( comp[i]->standardPart() == 0.0 ) {
-         jw = comp[i]->accuWgt;
-         if( jw > x->accuWgt ) jw = x->accuWgt;
-         if( jw < aw ) aw = jw;
-        }
-        else adjustWeight = 0;
-      }
-      if( adjustWeight ) ( x->accuWgt )++;  // Not true, of course,
-                                            // but it fools the algorithm.
- ndx(0) = 1;
+ ndx(0) = 1; 
  answer = comp[0]*x.D( ndx );
  ndx(0) = 0;
 
@@ -389,16 +449,8 @@ JetC CLieOperator::operator^( JetC& x ) {
   ndx(i) = 1;
   answer += comp[i]*x.D( ndx );
   ndx(i) = 0;
-
  }
 
- // The accuracy of the answer is adjusted only if
- //  all components of comp[] are differentials.
- // 
- if( adjustWeight ) {
-   ( x->accuWgt )--;
-   answer->accuWgt = aw;   // ??? Actually, this should be automatic.
- }
  return answer;
 }
 
@@ -406,7 +458,7 @@ JetC CLieOperator::operator^( JetC& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CLieOperator operator^( /* const */ CLieOperator& x, 
-                       /* const */ CLieOperator& y ) 
+                        /* const */ CLieOperator& y ) 
 {
  if( x.myEnv != y.myEnv ) {
    cerr << "\n\n"

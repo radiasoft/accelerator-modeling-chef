@@ -9,46 +9,63 @@
                     // necessary to invoke this from app'n.
 
 struct JLCterm;
+struct JL;
 struct JLC;
 class  JetCVector;
 class  Jet;
 class  Mapping;
+class  LieOperator;
+class  CLieOperator;
 
 class JetC {
 
 private:
   JLC*  jl;
+  dlist_iterator* constIterPtr;
+  dlist_iterator* iterPtr;
 
   JetC EpsInverse() const;  // Calculates the inverse of
-                           // nilpotent JetCs.
+                            // nilpotent JetCs.
   JetC concat() const;
 
   JetC TruncMult( const JetC&, const int& ) const;  // Used by division algorithm.
 
   // Friends
-  friend class coordC;   // ??? Is this necessary???
-  friend class JetCVector;
-  friend class Jet;
-  friend class LieOperator;  // ??? Necessary for LieOperator copy constructor
-  friend class CLieOperator;
+  // ??? REMOVE: friend class coordC;   // ??? Is this necessary???
+  // ??? REMOVE: friend class JetCVector;
+  // ??? REMOVE: friend class Jet;
+  // ??? REMOVE: friend class LieOperator;  // ??? Necessary for LieOperator copy constructor
+  // ??? REMOVE: friend class CLieOperator;
 
   friend Jet real( const JetC & );
   friend Jet imag( const JetC & );
 
-  friend void normalForm( const Mapping&,    /* Input:   map                    */
-                          int,               /* Input:   order                  */
-                          MatrixC*,          /* Output:  matrix of eigenvectors */
-                                             /*          of Jacobian of map     */
-                          CLieOperator*,     /* Output:  normal form            */
-                          CLieOperator* );   /* Output:  transformation         */
-
-
+  // ??? REMOVE: friend void normalForm( const Mapping&,    /* Input:   map                    */
+  // ??? REMOVE:                         int,               /* Input:   order                  */
+  // ??? REMOVE:                         MatrixC*,          /* Output:  matrix of eigenvectors */
+  // ??? REMOVE:                                            /*          of Jacobian of map     */
+  // ??? REMOVE:                         CLieOperator*,     /* Output:  normal form            */
+  // ??? REMOVE:                         CLieOperator* );   /* Output:  transformation         */
+  // ??? REMOVE: 
+  // ??? REMOVE: 
   // ??? REMOVE static dlist  coordCPool;          
-  static dlist  coordCPtrs;          
 
-  static slist             newCoordCs;
-  static slist             newValues;
-  static int               currentIndex;
+
+  // Utility functions; used by public analytic functions ...
+  static JetC epsCos( const JetC& );
+  static JetC epsExp( const JetC& );
+  static JetC epsPow( const JetC&, const double& );
+  static JetC epsSin( const JetC& );
+  static JetC epsSqrt( const JetC& ); 
+
+
+protected:
+  static dlist  coordCPtrs;          
+  static slist  newCoordCs;
+  static slist  newValues;
+  static int    currentIndex;
+
+  JLC* operator->() const { return jl; }
 
 public:
   static JetC__environment* lastEnv;
@@ -71,8 +88,17 @@ public:
   static void EnlargeEnvironment( JetC__environment* );
   static JetC__environment* CreateEnvFrom( const Jet__environment* );
 
-  JetC__environment* Env() const;            // ??? These two break
-  void Env( JetC__environment* pje ) const;  // ??? protection!!
+  void setEnvTo( const JetC& );              // Changes environment to
+  void setEnvTo( const JetC__environment* ); // that of the argument.
+
+  int intEnv() const;                        // Returns integer representation
+                                             // of the environment pointer.
+  JetC__environment* Env() const;            // ??? DANGER!!! These two break
+  void Env( JetC__environment* pje ) const;  // ??? DANGER!!! protection!!
+
+
+  JL* newJL() const;                         // Used by conversion routines.
+  JL* newJL( /* const */ Jet__environment* ) const;
 
   // Obsolete setup routines -----------------------------------------
   // static void Setup( const int      = 6, /* Total number of variables */
@@ -94,14 +120,21 @@ public:
   // ??? REMOVE static void FixReferenceAtStart ( const LieOperator& );
   // ??? REMOVE static void FixReferenceAtEnd   ( const LieOperator& );
 
-  static FILE  *scratchFile;
+  // ??? REMOVE: static FILE  *scratchFile;
 
   // Public member functions__________________________________________
-  JLC* operator->() const { return jl; }
+  JLCterm* get();               // Pops the top term, which should be the 
+                                // one of lowest weight.
+  JLCterm  firstTerm() const;   // Returns a JLterm equivalent to the top term,
+                                // which should be the one of lowest weight.
+  JLCterm  lowTerm()   const;   // Returns a JLCterm equivalent to the 
+                                // non-zero term of lowest weight.
+  void addTerm( JLCterm* );     // Public only for diagnostic purposes.
 
-  JLCterm* get();            // Pops the top term, which should be the 
-                            // one of lowest weight.
-  void addTerm( JLCterm* );  // Public only for diagnostic purposes.
+  void     resetConstIterator();
+  JLCterm  stepConstIterator()  const;
+  void     resetIterator();
+  JLCterm* stepIterator();
 
   // ??? REMOVE void fixReference();
   // ??? REMOVE void fixReference( const Complex* );
@@ -109,18 +142,26 @@ public:
   // ??? REMOVE void fixReferenceAtEnd( const LieOperator& );
   // ??? REMOVE void fixReferenceAtStart( const LieOperator& );
 
-  char IsNilpotent() const;
+  char isNilpotent() const;
 
   void peekAt() const;
   void printCoeffs() const;
   void peekAt( int ) const;       // Prints to JetC::scratchFile
   void printCoeffs( int ) const;
+  int  termCount() const;         // Returns number of monomial terms
 
-  dlist image();
+  // ??? REMOVE: dlist image();
   void writeToFile( char*   /* Name of unopened file */ ) const;
   void writeToFile( FILE* ) const;
 
   void getReference( Complex* ) const;
+  int  getEnvNumVar() const;
+  int  getEnvSpaceDim() const;
+  int  getEnvMaxWeight() const;
+
+  int  getWeight() const;
+  int  getAccuWgt() const;
+
   void scaleBy( Complex );
 
   void setVariable( const Complex&, const int&, JetC__environment* );
@@ -207,7 +248,7 @@ public:
   friend JetC operator*( const double&, const JetC& );
   friend JetC operator/( const JetC& x, const int& j );
 
-  friend LieOperator operator*( const LieOperator&, const LieOperator& );
+  // ??? REMOVE: friend LieOperator operator*( const LieOperator&, const LieOperator& );
 
 
   // Utility arithmetic functions ...
@@ -293,4 +334,71 @@ public:
 #endif
 };
 
-#endif 
+
+LieOperator operator*( const LieOperator&, const LieOperator& );
+
+void normalForm( const Mapping&,    /* Input:   map                    */
+                 int,               /* Input:   order                  */
+                 MatrixC*,          /* Output:  matrix of eigenvectors */
+                                    /*          of Jacobian of map     */
+                 CLieOperator*,     /* Output:  normal form            */
+                 CLieOperator* );   /* Output:  transformation         */
+
+
+
+
+inline JetC__environment* JetC::Env() const
+{
+  return jl->myEnv;
+}
+
+inline void JetC::Env( JetC__environment* pje ) const
+{
+  pje = jl->myEnv;
+}
+
+
+inline int JetC::intEnv() const
+{  
+  return int( jl->myEnv );
+}
+
+
+inline int JetC::termCount() const
+{
+  return jl->count;
+}
+
+
+inline int JetC::getEnvNumVar() const 
+{
+  return jl->myEnv->NumVar;
+}
+
+inline int JetC::getEnvSpaceDim() const 
+{
+  return jl->myEnv->SpaceDim;
+}
+
+inline int JetC::getEnvMaxWeight() const 
+{
+  return jl->myEnv->MaxWeight;
+}
+
+inline int JetC::getWeight() const 
+{
+  return jl->weight;
+}
+
+inline int JetC::getAccuWgt() const 
+{
+  return jl->accuWgt;
+}
+
+inline char JetC::isNilpotent() const 
+{
+ return jl->isNilpotent();
+}
+
+
+#endif // JETC_HXX

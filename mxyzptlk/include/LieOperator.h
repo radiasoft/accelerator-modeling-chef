@@ -115,7 +115,8 @@ public:
   friend istream& operator>>(istream&, LieOperator&);
 
   // Lie operations ...................................
-  Jet operator^( Jet& );        // Action as a Lie operator
+  Jet operator^( const Jet& ) const; 
+                                // Action as a Lie operator
   Jet expMap( const double&, const Jet& );    
                                 // Performs exponential map on
                                 // the second argument.

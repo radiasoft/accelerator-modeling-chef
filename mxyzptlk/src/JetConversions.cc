@@ -215,7 +215,7 @@ JetC__environment& JetC__environment::operator=( const Jet__environment& x )
   JetC* pjc;
 
   if( myCoords.Owns() ) 
-    while((  pjc = (JetC*) getNext()  )) delete pj;
+    while((  pjc = (JetC*) getNext()  )) delete pjc;
 
   getNext.Reset( x.myCoords );
   while((  pj = (Jet*) getNext()  )) {
@@ -498,10 +498,36 @@ Jet__environment* Jet::CreateEnvFrom( const JetC__environment* x )
 // ----------------------------------------------------------
 // ----------------------------------------------------------
 
+
+JLC* Jet::newJLC() const
+{
+  return new JLC( *(this->jl), JetC::CreateEnvFrom( this->jl->myEnv ) );
+}
+
+
+JL* JetC::newJL() const
+{
+  return new JL( *(this->jl), Jet::CreateEnvFrom( this->jl->myEnv ) );
+}
+
+JLC* Jet::newJLC( /* const */ JetC__environment* pje ) const
+{
+  return new JLC( *(this->jl), pje );
+}
+
+
+JL* JetC::newJL( /* const */ Jet__environment* pje ) const
+{
+  return new JL( *(this->jl), pje );
+}
+
+// ----------------------------------------------------------
+// ----------------------------------------------------------
+
 JetC::JetC( const Jet& x )
 {
-  jl = new JLC( *(x.jl), 
-                JetC::CreateEnvFrom( x->myEnv ) );
+  jl = x.newJLC();
+
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -511,15 +537,14 @@ JetC::JetC( const Jet& x )
 JetC& JetC::operator=( const Jet& x )
 {
   if( --(jl->rc) == 0 ) delete jl;
-  jl = new JLC( *(x.jl), 
-                JetC::CreateEnvFrom( x->myEnv ) );
+  jl = x.newJLC();
   return *this; 
 }
 
 
 JetC::JetC( const Jet& x, /* const */ JetC__environment* pje )
 {
-  jl = new JLC( *(x.jl), pje );
+  jl = x.newJLC( pje );
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -590,8 +615,7 @@ JetCVector& JetCVector::operator=( const JetVector& x )
 
 Jet::Jet( const JetC& x )
 {
-  jl = new JL( *(x.jl), 
-                Jet::CreateEnvFrom( x->myEnv ) );
+  jl = x.newJL();
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -601,15 +625,14 @@ Jet::Jet( const JetC& x )
 Jet& Jet::operator=( const JetC& x )
 {
   if( --(jl->rc) == 0 ) delete jl;
-  jl = new JL( *(x.jl), 
-                Jet::CreateEnvFrom( x->myEnv ) );
+  jl = x.newJL();
   return *this; 
 }
 
 
 Jet::Jet( const JetC& x, /* const */ Jet__environment* pje )
 {
-  jl = new JL( *(x.jl), pje );
+  jl = x.newJL( pje );
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif

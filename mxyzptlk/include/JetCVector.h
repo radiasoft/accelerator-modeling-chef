@@ -42,7 +42,7 @@ public:
   // Constructors and the destructor ...
   JetCVector( const int&  /* dim */        = JetC::lastEnv->NumVar,
               const JetC* /* components */ = 0, 
-                    JetC__environment*     = JetC::lastEnv );
+              const JetC__environment*     = JetC::lastEnv );
   JetCVector( const JetCVector& );
   ~JetCVector();
 
