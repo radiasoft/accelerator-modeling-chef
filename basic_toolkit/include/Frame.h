@@ -60,6 +60,7 @@ class Frame
                                   // "as seen by" the argument Frame.
 
    friend ostream& operator<< ( ostream& os, /* const */ Frame& );
+   friend istream& operator>> ( istream& is, /* const */ Frame& );
 };
 
 
