@@ -286,15 +286,21 @@ public:
   dlist_iterator( const dlist& s ) { 
     cs = (dlist*) &s; 
     ce = cs->last; 
-#ifdef OBJECT_DEBUG
-  objectCount++;
-#endif
+    #ifdef OBJECT_DEBUG
+    objectCount++;
+    #endif
+  }
+
+  // A copy constructor. Use with caution.
+  dlist_iterator( const dlist_iterator& x ) {
+    ce = x.ce;
+    cs = x.cs;
   }
 
   ~dlist_iterator () {
-#ifdef OBJECT_DEBUG
-  objectCount--;
-#endif
+    #ifdef OBJECT_DEBUG
+    objectCount--;
+    #endif
   }
 
   ent operator()();
@@ -308,6 +314,7 @@ class dlist_looper {
   dlist* cs;
 public:
   dlist_looper( dlist& s ) { cs = &s; ce = cs->last; }
+  dlist_looper( const dlist_looper& x ) { cs = x.cs; ce = x.ce; }
   ent operator()();
   void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
@@ -318,6 +325,7 @@ class dlist_traversor {
   dlist* cs;
 public:
   dlist_traversor( dlist& s ) { cs = &s; ce = cs->last; }
+  dlist_traversor( const dlist_traversor& x ) { cs = x.cs; ce = x.ce; }
   dlink* operator()();
   void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
@@ -328,6 +336,7 @@ class dlist_reverseIterator {
   dlist* cs;
 public:
   dlist_reverseIterator( dlist& s ) { cs = &s; ce = cs->last; }
+  dlist_reverseIterator( const dlist_reverseIterator& x ) { cs = x.cs; ce = x.ce; }
   ent operator()();
   void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
