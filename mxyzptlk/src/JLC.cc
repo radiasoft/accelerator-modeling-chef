@@ -323,8 +323,10 @@ void JLC::getReference( Complex* r ) const {
 char JLC::isNilpotent() const {
  dlist_iterator getNext( *(dlist*) this );
  JLCterm* p = (JLCterm*) getNext();
- if( p->weight == 0 && p->value != 0.0 ) return 0;
- else                                    return 1;
+ if( p->weight == 0 && abs(p->value) > MX_SMALL ) 
+   { return 0; }
+ else
+   { return 1; }
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
