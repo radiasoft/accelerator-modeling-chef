@@ -30,6 +30,7 @@ TCL_INC   = $(FNALROOT)/tcl/include
 BASIC_TOOLKIT_INC = $(FNALROOT)/basic_toolkit/include
 PHYSICS_TOOLKIT_INC = $(FNALROOT)/physics_toolkit/include
 INTEGRATOR_INC = $(FNALROOT)/integrator/include
+VMALLOC_INC    = $(FNALROOT)/vmalloc
 
 gcc:
 	$(MAKE) targets \
