@@ -31,7 +31,7 @@ default:
 	@echo "  make tar_everything    Tar up ALL files."
 
 
-LINKDIRS  = bml mxb Machine tev tcl socket server sybase filter swyd recycler
+LINKDIRS  = bml mxb mi Machine tev tcl socket server sybase filter swyd recycler
 
 SUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app swyd/src swyd/app recycler/app recycler/src
 
