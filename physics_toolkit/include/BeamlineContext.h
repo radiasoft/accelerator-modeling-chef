@@ -131,6 +131,7 @@ class BeamlineContext
     // Returns the one turn map; 
     // Side effect: calculates closed orbit if not
     // already done.
+    bool onTransClosedOrbit( const Proton& ) const;
 
 
     // Sage methods ... and others
@@ -273,8 +274,6 @@ class BeamlineContext
     void _createEigentunes();
     void _createClosedOrbit();
     void _deleteClosedOrbit();
-
-    bool _onTransClosedOrbit( const Proton& ) const;
 };
 
 #endif // BEAMLINECONTEXT_H
