@@ -34,6 +34,7 @@ protected:
  beamline*  _myBeamlinePtr;
  char       _verbose;
 
+public:
  static char no ( bmlnElmnt* );
  static char yes( bmlnElmnt* );
 
