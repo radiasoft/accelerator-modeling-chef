@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,15 +29,20 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iomanip>
 
+#include "PhysicsConstants.h"
 #include "CF_rbend.h"
 #include "quadrupole.h"
 #include "sextupole.h"
 #include "rbend.h"
 #include "octupole.h"
-#include "PhysicsConstants.h"
+#include "Particle.h"
+
 
 using namespace std;
 

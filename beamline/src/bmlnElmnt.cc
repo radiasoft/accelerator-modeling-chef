@@ -43,6 +43,11 @@
 #endif
 
 #include "bmlnElmnt.h"
+#include "Particle.h"
+#include "ParticleBunch.h"
+#include "Aperture.h"
+#include "BmlVisitor.h"
+
 
 #ifdef OBJECT_DEBUG
 int bmlnElmnt::objectCount = 0;
@@ -129,7 +134,7 @@ bmlnElmntData::bmlnElmntData() {
  strength = 0.0;
  pAperture = 0;
  
- iToField = 1.0;		// 1 KA = 1 Tesla default
+ iToField = 1.0;                // 1 KA = 1 Tesla default
  shuntCurrent = 0.0;
 
  // ...... Initialize geometry .................................
@@ -444,7 +449,7 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
          getNext.Reset( *(dlist*) p_bml );
          for( int i = 0; i < count; i++ ) {
            q = (bmlnElmnt*) getNext();
-	 }
+         }
          p_bml_e = q;
          notFound = false;
          break;
@@ -571,10 +576,62 @@ void bmlnElmnt::set( const bmlnElmntData& data ) {
 }
 
 
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// Begin: basic propagaor functions
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+void bmlnElmnt::propagate( Particle& x ) 
+{
+  if( align == 0 ) {
+    localPropagate  ( x );
+  }
+  else {
+    enterLocalFrame ( x );
+    localPropagate  ( x );
+    leaveLocalFrame ( x );
+  }
+}
+
+
+void bmlnElmnt::propagate( JetParticle& x )
+{
+  if( align == 0 ) {
+    localPropagate  ( x );
+  }
+  else {
+    enterLocalFrame ( x );
+    localPropagate  ( x );
+    leaveLocalFrame ( x );
+  }
+}
+
+
+void bmlnElmnt::propagate( ParticleBunch& x )
+{
+  static Particle* p;
+  if( align == 0 ) {
+    localPropagate  ( x );
+  }
+  else {
+    ParticleBunch::Iterator get( x );
+    while((  p = (Particle*) get.next()  )) enterLocalFrame( *p );
+    localPropagate  ( x );
+    get.reset();
+    while((  p = (Particle*) get.next()  )) leaveLocalFrame( *p );
+  }
+}
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// End: basic propagator functions
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 // Begin: tagging routines
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
 
 short bmlnElmnt::writeTag ( char c, short index )
 {
@@ -1076,7 +1133,7 @@ void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 }
 
 void bmlnElmnt::setShunt(double a) 
-{		// Set the value of the shunt, creating it if necessary
+{               // Set the value of the shunt, creating it if necessary
   strength += ( shuntCurrent - a ) * IToField();
   shuntCurrent = a;
 }

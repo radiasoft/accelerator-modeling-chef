@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -33,6 +30,11 @@
 *************************************************************************/
 
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include "Particle.h"
 #include "lambertson.h"
 #include "ParticleBunch.h"
 
@@ -41,6 +43,7 @@ void thinLamb::localPropagate( Particle& p ) { }
 void thinLamb::localPropagate( JetParticle& p ) { }
 
 void thinLamb::localPropagate( ParticleBunch& PB ) {
+  /* Mask
   static int i;
   static double TrState[6], dummy[6];
   int ExtFlag;
@@ -76,7 +79,7 @@ void thinLamb::localPropagate( ParticleBunch& PB ) {
     // ParticleBunch and remove it from the main bunch.
     if (ExtFlag) {
       if (align) this->leaveLocalFrame( *pCur );
-      ExtPB->append(pCur);
+      ExtPB->append(*pCur);
       PB.remove(pCur);
     }
   } while ( (pCur = pNxt) );
@@ -86,5 +89,6 @@ void thinLamb::localPropagate( ParticleBunch& PB ) {
   }
 
   delete ExtPB;
+  */
 }
 

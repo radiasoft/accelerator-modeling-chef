@@ -35,7 +35,9 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
+
 #include "sbend.h"
+#include "Particle.h"
 
 sbend::MAD_Prop   sbend::LikeMAD;
 

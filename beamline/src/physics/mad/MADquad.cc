@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -33,6 +30,10 @@
 *************************************************************************/
 
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 // This version of the LikeMAD propagators
 // was written by Mike Martens, who corrected
 // higher order errors present in the 
@@ -41,6 +42,7 @@
 // Nov.4, 1998
 
 #include "quadrupole.h"
+#include "Particle.h"
 
 quadrupole::MAD_Prop   quadrupole::LikeMAD;
 

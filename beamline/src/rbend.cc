@@ -33,9 +33,10 @@
 #include <iomanip>
 #include <typeinfo>
 
-#include "rbend.h"
 #include "MathConstants.h"
 #include "PhysicsConstants.h"
+#include "rbend.h"
+#include "Particle.h"
 
 using namespace std;
 

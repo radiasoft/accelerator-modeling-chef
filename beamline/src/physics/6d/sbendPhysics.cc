@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -33,9 +30,14 @@
 *************************************************************************/
 
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "sbend.h"
 #include "PhysicsConstants.h"
 #include "JetC.h"
+#include "Particle.h"
 
 sbend::Exact_Prop    sbend::Exact;
 sbend::Approx_Prop   sbend::Approx;

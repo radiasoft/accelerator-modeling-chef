@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,7 +29,12 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
+#include "Particle.h"
+#include "ParticleBunch.h"
 #include "bmlnElmnt.h"
 
 #ifdef MADPHYSICS
@@ -74,9 +76,9 @@ void bmlnElmnt::localPropagate( JetParticle& p ) {
 }
 
 void bmlnElmnt::localPropagate( ParticleBunch& b ) {
- slist_iterator getNext( (slist&) b );
- Particle* p;
- while( p = (Particle*) getNext() ) this->localPropagate( *p );
+  Particle* p;
+  ParticleBunch::Iterator get( b );
+  while((  p = (Particle*) get.next()  )) this->localPropagate( *p );
 }
  
 #endif
@@ -141,9 +143,9 @@ void bmlnElmnt::localPropagate( JetParticle& p ) {
 }
 
 void bmlnElmnt::localPropagate( ParticleBunch& b ) {
- slist_iterator getNext( (slist&) b );
  Particle* p;
- while((  p = (Particle*) getNext()  )) this->localPropagate( *p );
+ ParticleBunch::Iterator get( b );
+ while((  p = (Particle*) get.next()  )) { this->localPropagate( *p ); }
 }
 
 #endif

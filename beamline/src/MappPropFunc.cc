@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,19 +29,23 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "MappPropFunc.h"
+#include "Particle.h"
 
 using namespace std;
 
 int MappPropFunc::operator() ( bmlnElmnt* b, Particle& p ) 
 {
-  cout << "DGN> Entering MappPropFunc::operator()" << endl;
-  cout << "DGN> " << p.State() << endl;
-  cout << "DGN> " << _myMap( p.State() ) << endl;
+  // cout << "DGN> Entering MappPropFunc::operator()" << endl;
+  // cout << "DGN> " << p.State() << endl;
+  // cout << "DGN> " << _myMap( p.State() ) << endl;
   p.setState( _myMap( p.State() ) );
-  cout << "DGN> " << p.State() << endl;
-  cout << "DGN> Leaving MappPropFunc::operator()" << endl;
+  // cout << "DGN> " << p.State() << endl;
+  // cout << "DGN> Leaving MappPropFunc::operator()" << endl;
   return 0;
 }
 
