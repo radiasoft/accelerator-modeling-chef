@@ -47,6 +47,6 @@ void thinQuad::eliminate() {
 }
 
 
-char* thinQuad::Type() const { 
+const char* thinQuad::Type() const { 
   return "thinQuad"; 
 }

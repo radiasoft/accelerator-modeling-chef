@@ -28,7 +28,7 @@ thinDecapole::~thinDecapole() {
 
 
 
-char* thinDecapole::Type() const 
+const char* thinDecapole::Type() const 
 { 
   return "thinDecapole"; 
 }

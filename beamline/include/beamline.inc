@@ -12,8 +12,6 @@
 static const double  pi           = 3.14159265358979323846;
 static const double  twoPi        = 6.28318530717958647693;
 
-#define NOTKNOWN   -123456.789
-
 #ifndef BMLN_SMALL
 #define BMLN_SMALL    1.0e-14 // Used by DA::addTerm to decide
                               //   removal of a DAterm.

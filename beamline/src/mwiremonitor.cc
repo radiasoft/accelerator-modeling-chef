@@ -253,7 +253,7 @@ void mwireMonitor::scaleCheck() {
 }
 
 
-char* mwireMonitor::Type() const  
+const char* mwireMonitor::Type() const  
 { 
   return "mwireMonitor"; 
 }

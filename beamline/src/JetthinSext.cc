@@ -60,7 +60,7 @@ void JetthinSext::eliminate() {
 }
 
 
-char* JetthinSext::Type() const 
+const char* JetthinSext::Type() const 
 { 
   return "JetthinSext"; 
 }

@@ -75,7 +75,7 @@ class mwireMonitor : public monitor {
     void localPropagate( JetParticle& );
     void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
 
-    char*      Type() const;
+    const char*       Type() const;
     inline bmlnElmnt* Clone() const { return new mwireMonitor( *this ); }
 
     void on();                       // Turns monitor on.

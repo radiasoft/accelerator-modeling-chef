@@ -77,7 +77,7 @@ void sextupole::setCurrent( double s ) {
 
 
 
-char* sextupole::Type() const 
+const char* sextupole::Type() const 
 { 
   return "sextupole"; 
 }

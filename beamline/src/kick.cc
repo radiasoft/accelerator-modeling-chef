@@ -70,7 +70,7 @@ istream& kick::readFrom(istream& is) {
 }
 
 
-char* kick::Type() const 
+const char* kick::Type() const 
 { 
   return "kick"; 
 }

@@ -55,7 +55,7 @@ class CF_rbend : public bmlnElmnt
   void accept( BmlVisitor& v ) 
     { v.visitCF_rbend( this ); }
   
-  char* Type() const;
+  const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "CF_rbend") != 0 )
     return bmlnElmnt::isType(c); else return 1; }
   

@@ -46,7 +46,7 @@ Pinger::~Pinger() {
   ;
 }
 
-char* Pinger::Type() const 
+const char* Pinger::Type() const 
 { 
   return "Pinger"; 
 }
@@ -88,7 +88,7 @@ HPinger::~HPinger() {
   ;
 }
 
-char* HPinger::Type() const 
+const char* HPinger::Type() const 
 { 
   return "HPinger"; 
 }
@@ -121,7 +121,7 @@ VPinger::~VPinger() {
   ;
 }
 
-char* VPinger::Type() const 
+const char* VPinger::Type() const 
 { 
   return "VPinger"; 
 }

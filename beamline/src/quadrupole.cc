@@ -179,7 +179,7 @@ void quadrupole::eliminate() {
 }
 
 
-char* quadrupole::Type() const 
+const char* quadrupole::Type() const 
 { 
   return "quadrupole"; 
 }

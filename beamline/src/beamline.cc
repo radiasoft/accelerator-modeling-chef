@@ -89,7 +89,9 @@
 **************************************************************************
 *************************************************************************/
 
-#include "beamline.inc"
+#include "bmlnElmnt.h"
+#include "BeamlineIterator.h"
+
 #ifdef __VISUAL_CPP__
 #include <iomanip>
 #else
@@ -424,7 +426,7 @@ bmlnElmnt* beamline::Clone() const {
 
 
 
-char*  beamline::Type() const 
+const char*  beamline::Type() const 
 { 
   return "beamline"; 
 }
@@ -510,146 +512,146 @@ beamline::beamline( char* n, bmlnElmnt* q ) : bmlnElmnt( n ), dlist() {
 }
 
 
-beamline::beamline( beamlineImage* bi ) : bmlnElmnt(), dlist() {
-
- slist* w = &(bi->img);
-
- // Standard constructor stuff ...
- numElem        = 0;
- nominalEnergy  = NOTKNOWN;
- depth          = 0;
-
- twissDone      = 0;
-
- // And now for something completely different ...
-
- bmlnElmntData* p;
- if( !( p = (bmlnElmntData*) w->get() ) ) {
-  printf( "\n" );
-  printf( "*** ERROR ***                                       \n" );
-  printf( "*** ERROR *** beamline::beamline( slist* )          \n" );
-  printf( "*** ERROR *** Null pointer used as argument.        \n" );
-  printf( "*** ERROR ***                                       \n" );
-  printf( "\n" );
-  exit(0);
- }
-
- if( strcasecmp( p->type, "beamline" ) != 0 ) {
-  printf( "\n" );
-  printf( "*** ERROR ***                                       \n" );
-  printf( "*** ERROR *** beamline::beamline( slist* )          \n" );
-  printf( "*** ERROR *** Unable to interpret the argunent as   \n" );
-  printf( "*** ERROR *** a beamline image.  p->type = %d       \n", p->type );
-  printf( "*** ERROR ***                                       \n" );
-  printf( "\n" );
-  exit(0);
- }
-
- int topDepth = p->depth;
-
- bmlnElmnt*  ptrBe;
-
- while((  p = (bmlnElmntData*) w->get()  )) {
-
-  if( p->depth >= topDepth ) {
-   w->insert( p );
-   return;
-  }
-
-  if( strcasecmp( p->type, "drift" ) == 0 ) 
-   ptrBe = new drift( *p );
-                      
-  else if( strcasecmp( p->type, "sextupole" ) == 0 ) 
-   ptrBe = new sextupole( *p );
-
-  else if( strcasecmp( p->type, "octupole" ) == 0 ) 
-   ptrBe = new octupole( *p );
-
-  else if( strcasecmp( p->type, "thinMultipole" ) == 0 ) 
-   ptrBe = new thinMultipole( *p );
-
-  else if( strcasecmp( p->type, "thinOctupole" ) == 0 ) 
-   ptrBe = new thinOctupole( *p );
-
-  else if( strcasecmp( p->type, "thinDecapole" ) == 0 ) 
-   ptrBe = new thinDecapole( *p );
-
-  else if( strcasecmp( p->type, "thinSextupole" ) == 0 ) 
-   ptrBe = new thinSextupole( *p );
-
-  else if( strcasecmp( p->type, "thinrfcavity" ) == 0 ) 
-   ptrBe = new thinrfcavity( (thinrfcavityData&)*p );  // ??? Is this right???
-
-  else if( strcasecmp( p->type, "marker" ) == 0 ) 
-   ptrBe = new marker( *p );
-
-  else if( strcasecmp( p->type, "monitor" ) == 0 ) 
-   ptrBe = new monitor( *p );
-
-  else if( strcasecmp( p->type, "hmonitor" ) == 0 ) 
-   ptrBe = new hmonitor( *p );
-
-  else if( strcasecmp( p->type, "vmonitor" ) == 0 ) 
-   ptrBe = new vmonitor( *p );
-
-  else if( strcasecmp( p->type, "hkick" ) == 0 ) 
-   ptrBe = new hkick( *p );
-
-  else if( strcasecmp( p->type, "vkick" ) == 0 ) 
-   ptrBe = new vkick( *p );
-
-  else if( strcasecmp( p->type, "srot" ) == 0 ) 
-   ptrBe = new srot( *p );
-
-  else if( strcasecmp( p->type, "quadrupole" ) == 0 ) 
-   ptrBe = new quadrupole( *p );
-
-  else if( strcasecmp( p->type, "thinQuad" ) == 0 ) 
-   ptrBe = new thinQuad( *p );
-
-  else if( strcasecmp( p->type, "JetthinQuad" ) == 0 ) {
-   cout << "\n" 
-        << "*** WARNING ***                                       \n" 
-        << "*** WARNING *** beamline::beamline( beamlineImage* )  \n" 
-        << "*** WARNING *** JetthinQuad is not tested:            \n" 
-        << "*** WARNING *** will undoubtedly give wrong results.  \n" 
-        << "\n" << endl;
-   // NULLIFIED ptrBe = new JetthinQuad( *p );
-  }
-
-
-  // Non-default types ...
-
-  else if( strcasecmp( p->type, "beamline" ) == 0 ) {
-   w->insert( p );               // Recursive piece.
-   ptrBe = new beamline( bi );
-  }
-
-  else if( strcasecmp( p->type, "rbend" ) == 0 ) 
-   ptrBe = new rbend( (rbendData&) *p );
-
-  else if( strcasecmp( p->type, "sbend" ) == 0 ) 
-   ptrBe = new sbend( (sbendData&) *p );
-
-  else if( strcasecmp( p->type, "sector" ) == 0 ) 
-   ptrBe = new sector( (sectorData&) *p );
-
-  // And finally ...
-
-  else {
-     cerr << "\n"
-             "*** WARNING ***                                       \n" 
-             "*** WARNING *** beamline::beamline( beamlineImage* )  \n" 
-             "*** WARNING *** Unrecognized type "
-          <<                            p->type 
-          <<                                  " is being ignored.   \n" 
-          << endl;
-  }
-
-  append( ptrBe );
-
- }
-}
+// ??? REMOVE beamline::beamline( beamlineImage* bi ) : bmlnElmnt(), dlist() {
+// ??? REMOVE 
+// ??? REMOVE  slist* w = &(bi->img);
+// ??? REMOVE 
+// ??? REMOVE  // Standard constructor stuff ...
+// ??? REMOVE  numElem        = 0;
+// ??? REMOVE  nominalEnergy  = NOTKNOWN;
+// ??? REMOVE  depth          = 0;
+// ??? REMOVE 
+// ??? REMOVE  twissDone      = 0;
+// ??? REMOVE 
+// ??? REMOVE  // And now for something completely different ...
+// ??? REMOVE 
+// ??? REMOVE  bmlnElmntData* p;
+// ??? REMOVE  if( !( p = (bmlnElmntData*) w->get() ) ) {
+// ??? REMOVE   printf( "\n" );
+// ??? REMOVE   printf( "*** ERROR ***                                       \n" );
+// ??? REMOVE   printf( "*** ERROR *** beamline::beamline( slist* )          \n" );
+// ??? REMOVE   printf( "*** ERROR *** Null pointer used as argument.        \n" );
+// ??? REMOVE   printf( "*** ERROR ***                                       \n" );
+// ??? REMOVE   printf( "\n" );
+// ??? REMOVE   exit(0);
+// ??? REMOVE  }
+// ??? REMOVE 
+// ??? REMOVE  if( strcasecmp( p->type, "beamline" ) != 0 ) {
+// ??? REMOVE   printf( "\n" );
+// ??? REMOVE   printf( "*** ERROR ***                                       \n" );
+// ??? REMOVE   printf( "*** ERROR *** beamline::beamline( slist* )          \n" );
+// ??? REMOVE   printf( "*** ERROR *** Unable to interpret the argunent as   \n" );
+// ??? REMOVE   printf( "*** ERROR *** a beamline image.  p->type = %d       \n", p->type );
+// ??? REMOVE   printf( "*** ERROR ***                                       \n" );
+// ??? REMOVE   printf( "\n" );
+// ??? REMOVE   exit(0);
+// ??? REMOVE  }
+// ??? REMOVE 
+// ??? REMOVE  int topDepth = p->depth;
+// ??? REMOVE 
+// ??? REMOVE  bmlnElmnt*  ptrBe;
+// ??? REMOVE 
+// ??? REMOVE  while((  p = (bmlnElmntData*) w->get()  )) {
+// ??? REMOVE 
+// ??? REMOVE   if( p->depth >= topDepth ) {
+// ??? REMOVE    w->insert( p );
+// ??? REMOVE    return;
+// ??? REMOVE   }
+// ??? REMOVE 
+// ??? REMOVE   if( strcasecmp( p->type, "drift" ) == 0 ) 
+// ??? REMOVE    ptrBe = new drift( *p );
+// ??? REMOVE                       
+// ??? REMOVE   else if( strcasecmp( p->type, "sextupole" ) == 0 ) 
+// ??? REMOVE    ptrBe = new sextupole( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "octupole" ) == 0 ) 
+// ??? REMOVE    ptrBe = new octupole( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "thinMultipole" ) == 0 ) 
+// ??? REMOVE    ptrBe = new thinMultipole( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "thinOctupole" ) == 0 ) 
+// ??? REMOVE    ptrBe = new thinOctupole( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "thinDecapole" ) == 0 ) 
+// ??? REMOVE    ptrBe = new thinDecapole( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "thinSextupole" ) == 0 ) 
+// ??? REMOVE    ptrBe = new thinSextupole( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "thinrfcavity" ) == 0 ) 
+// ??? REMOVE    ptrBe = new thinrfcavity( (thinrfcavityData&)*p );  // ??? Is this right???
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "marker" ) == 0 ) 
+// ??? REMOVE    ptrBe = new marker( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "monitor" ) == 0 ) 
+// ??? REMOVE    ptrBe = new monitor( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "hmonitor" ) == 0 ) 
+// ??? REMOVE    ptrBe = new hmonitor( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "vmonitor" ) == 0 ) 
+// ??? REMOVE    ptrBe = new vmonitor( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "hkick" ) == 0 ) 
+// ??? REMOVE    ptrBe = new hkick( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "vkick" ) == 0 ) 
+// ??? REMOVE    ptrBe = new vkick( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "srot" ) == 0 ) 
+// ??? REMOVE    ptrBe = new srot( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "quadrupole" ) == 0 ) 
+// ??? REMOVE    ptrBe = new quadrupole( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "thinQuad" ) == 0 ) 
+// ??? REMOVE    ptrBe = new thinQuad( *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "JetthinQuad" ) == 0 ) {
+// ??? REMOVE    cout << "\n" 
+// ??? REMOVE         << "*** WARNING ***                                       \n" 
+// ??? REMOVE         << "*** WARNING *** beamline::beamline( beamlineImage* )  \n" 
+// ??? REMOVE         << "*** WARNING *** JetthinQuad is not tested:            \n" 
+// ??? REMOVE         << "*** WARNING *** will undoubtedly give wrong results.  \n" 
+// ??? REMOVE         << "\n" << endl;
+// ??? REMOVE    // NULLIFIED ptrBe = new JetthinQuad( *p );
+// ??? REMOVE   }
+// ??? REMOVE 
+// ??? REMOVE 
+// ??? REMOVE   // Non-default types ...
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "beamline" ) == 0 ) {
+// ??? REMOVE    w->insert( p );               // Recursive piece.
+// ??? REMOVE    ptrBe = new beamline( bi );
+// ??? REMOVE   }
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "rbend" ) == 0 ) 
+// ??? REMOVE    ptrBe = new rbend( (rbendData&) *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "sbend" ) == 0 ) 
+// ??? REMOVE    ptrBe = new sbend( (sbendData&) *p );
+// ??? REMOVE 
+// ??? REMOVE   else if( strcasecmp( p->type, "sector" ) == 0 ) 
+// ??? REMOVE    ptrBe = new sector( (sectorData&) *p );
+// ??? REMOVE 
+// ??? REMOVE   // And finally ...
+// ??? REMOVE 
+// ??? REMOVE   else {
+// ??? REMOVE      cerr << "\n"
+// ??? REMOVE              "*** WARNING ***                                       \n" 
+// ??? REMOVE              "*** WARNING *** beamline::beamline( beamlineImage* )  \n" 
+// ??? REMOVE              "*** WARNING *** Unrecognized type "
+// ??? REMOVE           <<                            p->type 
+// ??? REMOVE           <<                                  " is being ignored.   \n" 
+// ??? REMOVE           << endl;
+// ??? REMOVE   }
+// ??? REMOVE 
+// ??? REMOVE   append( ptrBe );
+// ??? REMOVE 
+// ??? REMOVE  }
+// ??? REMOVE }
 
 // Destructors
 

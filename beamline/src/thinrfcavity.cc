@@ -34,7 +34,7 @@ void thinrfcavityData::eliminate() {
 }
 
 
-char* thinrfcavity::Type() const 
+const char* thinrfcavity::Type() const 
 { 
   return "thinrfcavity"; 
 }

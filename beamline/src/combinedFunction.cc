@@ -361,7 +361,7 @@ istream& combinedFunction::readFrom(istream& is)
 }
 
 
-char* combinedFunction::Type() const 
+const char* combinedFunction::Type() const 
 { 
   return "combinedFunction"; 
 }

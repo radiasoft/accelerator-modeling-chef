@@ -120,7 +120,7 @@ void JetQuadrupole::eliminate() {
 
 
 
-char* JetQuadrupole::Type() const 
+const char* JetQuadrupole::Type() const 
 { 
   return "JetQuadrupole"; 
 }

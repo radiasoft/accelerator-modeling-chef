@@ -153,7 +153,7 @@ class rasterMonitor : public monitor {
     //@}
 
     ///  Returns a string describing the type of the element ("rasterMonitor")
-    char* Type() const;
+    const char* Type() const;
 
     ///
     bmlnElmnt* Clone() const { return new rasterMonitor( *this ); }

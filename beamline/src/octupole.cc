@@ -73,7 +73,7 @@ void octupole::setCurrent( double s ) {
 // ??? REMOVE }
 
 
-char* octupole::Type() const 
+const char* octupole::Type() const 
 { 
   return "octupole"; 
 }

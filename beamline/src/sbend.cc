@@ -368,7 +368,7 @@ void sbend::J_Face( JetParticle& p, const double& psi ) const
 
 
 
-char* sbend::Type() const 
+const char* sbend::Type() const 
 { 
   return "sbend"; 
 }

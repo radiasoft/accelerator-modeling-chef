@@ -20,7 +20,7 @@ public:
   Pinger( const Pinger& );
   Pinger( bmlnElmntData& );
   ~Pinger(); 
-  char* Type() const;
+  const char* Type() const;
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
@@ -48,7 +48,7 @@ class HPinger : public Pinger {
   HPinger( const HPinger& );
   HPinger( bmlnElmntData& );
   ~HPinger();
-  char* Type() const;
+  const char* Type() const;
   bmlnElmnt* Clone() const { return new HPinger( *this ); }
   void accept( BmlVisitor& v ) { v.visitHPinger( this ); }
 
@@ -67,7 +67,7 @@ class VPinger : public Pinger {
   VPinger( const VPinger& );
   VPinger( bmlnElmntData& );
   ~VPinger();
-  char* Type() const;
+  const char* Type() const;
   bmlnElmnt* Clone() const { return new VPinger( *this ); }
   void accept( BmlVisitor& v ) { v.visitVPinger( this ); }
 

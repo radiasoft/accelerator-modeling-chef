@@ -142,7 +142,7 @@ void thinLamb::eliminate() {
 }
 
 
-char* thinLamb::Type() const 
+const char* thinLamb::Type() const 
 { 
   return "thinLamb"; 
 }

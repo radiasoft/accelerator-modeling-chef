@@ -436,7 +436,7 @@ JetVector BBLens::NormalizedEField( const Jet& arg_x, const Jet& arg_y )
 }
 
 
-char* BBLens::Type() const 
+const char* BBLens::Type() const 
 { 
   return "BBLens"; 
 }

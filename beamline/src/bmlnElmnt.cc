@@ -5,7 +5,13 @@
   #include <iomanip.h>
 #endif
 
-#include "beamline.h"
+#ifdef __SUNPRO_CC
+  #ifndef __STL_NEED_EXPLICIT
+    #define __STL_NEED_EXPLICIT
+  #endif
+#endif
+
+#include "bmlnElmnt.h"
 
 #ifdef OBJECT_DEBUG
 int bmlnElmnt::objectCount = 0;

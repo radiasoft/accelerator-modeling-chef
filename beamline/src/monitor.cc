@@ -124,7 +124,7 @@ void monitor::setOutputFile( FILE* of ) {
 }
 
 
-char* monitor::Type() const 
+const char* monitor::Type() const 
 { 
   return "monitor"; 
 }

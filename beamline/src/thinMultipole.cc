@@ -48,7 +48,7 @@ thinMultipole::~thinMultipole() {
 
 
 
-char* thinMultipole::Type() const 
+const char* thinMultipole::Type() const 
 { 
   return "thinMultipole"; 
 }

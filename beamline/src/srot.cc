@@ -28,7 +28,7 @@ srot::~srot() {
 }
 
 
-char* srot::Type() const 
+const char* srot::Type() const 
 { 
   return "srot"; 
 }

@@ -23,7 +23,7 @@ thin14pole::~thin14pole() {
 }
 
 
-char* thin14pole::Type() const 
+const char* thin14pole::Type() const 
 { 
   return "thin14pole"; 
 }
