@@ -397,6 +397,9 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
             << endl;
      }
    }
+   else {
+     p_bml_e = 0;
+   }
  }
  else 
  {
