@@ -314,6 +314,24 @@ void CF_rbend::Split( double, bmlnElmnt**, bmlnElmnt** )
 }
 
 
+void CF_rbend::acceptInner( BmlVisitor& v )
+{
+  bmlnElmnt** x = _u;
+  while( x <= _v ) {
+    (*(x++))->accept( v );
+  }
+}
+
+
+void CF_rbend::acceptInner( ConstBmlVisitor& v )
+{
+  bmlnElmnt** x = _u;
+  while( x <= _v ) {
+    (*(x++))->accept( v );
+  }
+}
+
+
 void CF_rbend::peekAt( double& s, Particle* p_prt )
 {
  cout << setw(12) << s;
