@@ -31,12 +31,8 @@
 #include <LookupTable.h>
 #include <MathConstants.h>
 
-#ifdef __VISUAL_CPP__
 #include <iostream>
-using std::cerr;
-#else
-#include <iostream.h>
-#endif
+using namespace std;
 
 #ifndef ABS
 inline double ABS(double x) {

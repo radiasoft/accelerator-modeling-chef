@@ -28,14 +28,10 @@
 *************************************************************************/
 
 
-#ifdef __VISUAL_CPP__
+#include <stdlib.h>
 #include <iostream>
 using std::cerr;
 using std::endl;
-#else
-#include <stdlib.h>
-#include <iostream.h>
-#endif
 
 #include "dlist.h"
 
@@ -377,23 +373,23 @@ void dlist::clear()
   last = 0;
 }
 
-void dlist::zap()
-{
-  dlink* l;
-  dlink* ll;
-  l = last;
-  if( l == 0 ) return;
-  do {
-    ll = l;
-    l = l->next;
-    delete ll->e;
-    delete ll;
-    }
-  while( l != last );
-  delete l->e;
-  delete l;
-  last = 0;
-}
+// void dlist::zap()
+// {
+//   dlink* l;
+//   dlink* ll;
+//   l = last;
+//   if( l == 0 ) return;
+//   do {
+//     ll = l;
+//     l = l->next;
+//     delete ll->e;
+//     delete ll;
+//     }
+//   while( l != last );
+//   delete l->e;
+//   delete l;
+//   last = 0;
+// }
 
 
 char dlist::SetLast( ent x ) {   // Warning: not tested!!

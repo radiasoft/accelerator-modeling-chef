@@ -47,6 +47,8 @@ int MLI::objectCount = 0;
 //
 
 
+using namespace std;
+
 MLD::MLD() {
   m = 0;
   r = 0;

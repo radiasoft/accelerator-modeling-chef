@@ -28,14 +28,12 @@
 *************************************************************************/
 
 
-#ifdef _MSC_VER
 #include <iostream>
 #include <iomanip>
-#else
+
 #include <stdlib.h>
-#include <iostream.h>
-#include <iomanip.h>
-#endif
+#include <iostream>
+#include <iomanip>
 
 #include "Matrix.h"
 //extern "C" {strstr(char*,char*);} // this may need to be commented out
@@ -66,6 +64,8 @@ int MatrixI::objectCount = 0;
 #define WID setw(8)
 #define PREC setprecision(8)
 
+
+using namespace std;
 
 MatrixD::MatrixD() : stacked(0) {
   ml = new MLD;

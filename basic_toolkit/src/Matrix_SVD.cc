@@ -38,12 +38,10 @@
  */
 
 
-#include "Matrix.h"
-#ifdef __VISUAL_CPP__
-using std::cout;
-#else
 #include <stdlib.h>
-#endif
+#include "Matrix.h"
+
+using namespace std;
 
 void MatrixD::SVD ( MatrixD& U, MatrixD& W, MatrixD& V ) const
 {

@@ -44,11 +44,7 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#ifdef __VISUAL_CPP__
 #include <iostream>
-#else
-#include <iostream.h>
-#endif
 
 #include <math.h>
 #include "Matrix.h"     // Needed only for final utility.
@@ -124,7 +120,7 @@ public:
                                                    // an angle theta using
                                                    // *this as the axis
 
-  friend ostream& operator<<( ostream&, const Vector& );
+  friend std::ostream& operator<<( std::ostream&, const Vector& );
 
 #ifdef OBJECT_DEBUG
   static int objectCount;

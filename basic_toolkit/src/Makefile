@@ -3,33 +3,32 @@
 INCLUDEDIR = -I$(BASIC_TOOLKIT_INC) -I$(VMALLOC_INC) $(STL_CONFIG)
 
 OBJS = Barnacle.o \
-       BooleanExpressionTree.o \
-	BubbleSort.o \
-        ColorWheel.o \
-        Distribution.o \
-        Frame.o \
-	IntArray.o \
-	LookupTable.o \
-	ML.o \
-        Matrix.o \
-        Matrix_SVD.o \
-        Vector.o \
-        binomcoeff_recursive.o \
-        cg.o \
-        d_sign.o \
-        dlist.o \
-	erf.o \
-        gcd.o \
-        menu.o \
-        mod2pi.o \
-	mygaussj.o \
-        nearint.o \
-        nexcom.o \
-        OutputFormat.o \
-        parsef.o \
-        rg.o \
-        slist.o \
-        strequals.o
+       BubbleSort.o \
+       ColorWheel.o \
+       Distribution.o \
+       Frame.o \
+       IntArray.o \
+       LookupTable.o \
+       ML.o \
+       Matrix.o \
+       Matrix_SVD.o \
+       Vector.o \
+       binomcoeff_recursive.o \
+       cg.o \
+       d_sign.o \
+       dlist.o \
+       erf.o \
+       gcd.o \
+       menu.o \
+       mod2pi.o \
+       mygaussj.o \
+       nearint.o \
+       nexcom.o \
+       OutputFormat.o \
+       parsef.o \
+       rg.o \
+       slist.o \
+       strequals.o
 
 
 SOURCES = $(OBJS:.o=.cc)

@@ -191,22 +191,22 @@ last = 0;
 }
 
 
-void slist::zap(){
-slink* l;
-slink* ll;
-l = last;
-if( l == 0 ) return;
-do {
-  ll = l;
-  l = l->next;
-  delete ll->e;
-  delete ll;
-  }
-while( l != last );
-delete l->e;
-delete l;
-last = 0;
-}
+// void slist::zap(){
+// slink* l;
+// slink* ll;
+// l = last;
+// if( l == 0 ) return;
+// do {
+//   ll = l;
+//   l = l->next;
+//   delete ll->e;
+//   delete ll;
+//   }
+// while( l != last );
+// delete l->e;
+// delete l;
+// last = 0;
+// }
 
 ent slist_iterator::operator()() {
 ent ret = 0;

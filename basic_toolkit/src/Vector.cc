@@ -28,20 +28,14 @@
 *************************************************************************/
 
 
+#include <stdlib.h>
 #include <string.h>   // for memcpy()
 #include "VectorD.h"
 
-#ifdef _MSC_VER
 using std::cout;
 #include <iomanip>
-using std::setw;
-using std::setprecision;
-using std::resetiosflags;
-using std::setiosflags;
-#else
-#include <stdlib.h>
-#include <iomanip.h>
-#endif
+ 
+using namespace std;
 
 
 // ================================================================
@@ -426,6 +420,8 @@ ostream& operator<<( ostream& os, const Vector& v )
          << setprecision(q->precision) 
          << resetiosflags((std::_Ios_Fmtflags) (014002 | 04)) 
          << setiosflags((std::_Ios_Fmtflags) (q->flags)) 
+//         << resetiosflags((014002 | 04)) 
+//         << setiosflags((q->flags)) 
          << v.comp[i] << ", "
          << q->getPadding();
     }
@@ -433,6 +429,8 @@ ostream& operator<<( ostream& os, const Vector& v )
        << setprecision(q->precision) 
        << resetiosflags((std::_Ios_Fmtflags) (014002 | 04)) 
        << setiosflags((std::_Ios_Fmtflags) (q->flags)) 
+//       << resetiosflags((014002 | 04)) 
+//       << setiosflags((q->flags)) 
        << v.comp[ v.dim - 1 ] << " )";
 
     return os;

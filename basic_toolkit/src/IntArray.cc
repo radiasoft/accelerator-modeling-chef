@@ -39,14 +39,12 @@
  */
 
 
-#ifdef __VISUAL_CPP__
 #include <iostream>
 using std::cerr;
 using std::endl;
-#else
+
 #include <stdlib.h>
-#include <string.h>
-#endif
+#include <string>
 
 #include "IntArray.h"
 
