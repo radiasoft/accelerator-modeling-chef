@@ -31,6 +31,7 @@ SOURCES = CHEF.builders.cc \
           ETFncPlt.cc \
           DspnFncPlt.cc \
           MomentsFncPlt.cc \
+          LBFncPlt.cc \
           PointEdit.cc \
           QtMonitor.cc \
           QueryDialog.cc \
@@ -46,6 +47,7 @@ HEADERS = ../include/CHEF.h \
           ../include/ETFncPlt.h \
           ../include/DspnFncPlt.h \
           ../include/MomentsFncPlt.h \
+          ../include/LBFncPlt.h \
           ../include/PointEdit.h \
           ../include/QtMonitor.h \
           ../include/QueryDialog.h \
