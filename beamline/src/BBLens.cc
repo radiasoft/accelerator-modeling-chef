@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -34,13 +37,15 @@
 #include "BBLens.h"
 #include "EdwardsTeng.h"
 
+using namespace std;
+using FNAL::Complex;
+
 extern Complex w( Complex );
 extern JetC    w( const JetC& );
 
 double const SIGMA_LIMIT = 64.0;
 double const SIGMA_ROUND = 0.1;
 
-using namespace std;
 
 // **************************************************
 //   class BBLens
