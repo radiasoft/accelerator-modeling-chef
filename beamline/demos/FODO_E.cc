@@ -13,8 +13,9 @@
 **
 */
 
-#include "beamline.h"
-// #include "quadrupole.h"
+// #include "beamline.h"
+#include "quadrupole.h"
+#include "drift.h"
 #include "mxyzptlk.h"
 #include "EdwardsTeng.h"
 
@@ -91,14 +92,10 @@ main( int argc, char** argv ) {
   cout << "Result for line " << n << "******************\n" << endl;
   theLine[n]->peekAt( sl, &pr );
 
-  cout << "DGN>   EdwardsTeng ET( theLine[n] );" << endl;
   EdwardsTeng ET( theLine[n] );
-  cout << "DGN>   JetProton p( energy );" << endl;
   JetProton p( energy );
-  cout << "DGN>   argc = ET.doCalc( &p, cf );" << endl;
   argc = ET.doCalc( &p, cf );
 
-  cout << "DGN>   if( argc == 0 ) {" << endl;
   if( argc == 0 ) {
    tunes = (ETtunes*) theLine[n]->dataHook.find( "Tunes" );
    cout << "\nTune: horizontal = " << tunes->hor
