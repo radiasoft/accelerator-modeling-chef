@@ -141,8 +141,8 @@ public:
   MatrixC();
   MatrixC(int);
   MatrixC(int rows, int columns );
-  MatrixC(int rows, int columns, const Complex& initval );
-  MatrixC(int rows, int columns, Complex* initval);
+  MatrixC(int rows, int columns, const FNAL::Complex& initval );
+  MatrixC(int rows, int columns, FNAL::Complex* initval);
   MatrixC(const MatrixD&);
   MatrixC(const char* flag, int dimension); // create an identity matrix
 				     // or a symplectic matrix
@@ -154,40 +154,40 @@ public:
   inline int cols() const { return ml->c;}
   MatrixC transpose() const;
   MatrixC Square() const;
-  Complex determinant();
+  FNAL::Complex determinant();
   MatrixC inverse();
   MatrixC eigenValues();
   MatrixC eigenVectors();
-  Complex trace(); // return the trace of a square matrix
+  FNAL::Complex trace(); // return the trace of a square matrix
   
 
   // Operators________________________________________________________
 
   MatrixC& operator=(const MatrixC&);
   MatrixC& DeepCopy(const MatrixC&);
-  Complex& operator()(int row, int column);
-  Complex& operator()(int row);
-  void operator+=( const Complex&);
-  void operator-=( const Complex&);
+  FNAL::Complex& operator()(int row, int column);
+  FNAL::Complex& operator()(int row);
+  void operator+=( const FNAL::Complex&);
+  void operator-=( const FNAL::Complex&);
 friend char operator==( const MatrixC&, const MatrixC& );
-friend char operator==( const MatrixC&, const Complex& );
-friend char operator==( const Complex&, const MatrixC& );
+friend char operator==( const MatrixC&, const FNAL::Complex& );
+friend char operator==( const FNAL::Complex&, const MatrixC& );
 friend std::ostream& operator<<(std::ostream&, const MatrixC&);
 //friend istream& operator>>(istream&, MatrixC&);
 friend MatrixC operator+ (const MatrixC &,const MatrixC &);
-friend MatrixC operator+ (const MatrixC &,const Complex&); 
-friend MatrixC operator+ (const Complex& ,const MatrixC &); 
+friend MatrixC operator+ (const MatrixC &,const FNAL::Complex&); 
+friend MatrixC operator+ (const FNAL::Complex& ,const MatrixC &); 
 friend MatrixC operator-(const MatrixC &); 
 friend MatrixC operator-(const MatrixC &,const MatrixC&); 
-friend MatrixC operator-(const MatrixC &,const Complex&); 
-friend MatrixC operator-(const Complex&,const MatrixC &); 
+friend MatrixC operator-(const MatrixC &,const FNAL::Complex&); 
+friend MatrixC operator-(const FNAL::Complex&,const MatrixC &); 
 friend MatrixC operator*(const MatrixC &,const MatrixC&); 
 friend MatrixC operator*(const MatrixC &,const MatrixD&); 
 friend MatrixC operator*(const MatrixD &,const MatrixC&); 
-friend MatrixC operator*(const MatrixC &,const Complex&);
-friend MatrixC operator*(const Complex& ,const MatrixC &);
-friend MatrixC operator/(const MatrixC &,const Complex&);
-friend MatrixC operator/(const Complex&,MatrixC &);
+friend MatrixC operator*(const MatrixC &,const FNAL::Complex&);
+friend MatrixC operator*(const FNAL::Complex& ,const MatrixC &);
+friend MatrixC operator/(const MatrixC &,const FNAL::Complex&);
+friend MatrixC operator/(const FNAL::Complex&,MatrixC &);
 friend MatrixC operator/(const MatrixC &,const double);
 friend MatrixC operator/(const double,MatrixC &);
 friend MatrixC operator/(MatrixC& ,MatrixC &);
@@ -204,8 +204,8 @@ void operator*=( MatrixC&, const MatrixC& );
 //void operator/=( MatrixC&, const MatrixC& );
 //void operator/=( MatrixC&, const complex );
 char operator!=( const MatrixC&, const MatrixC& );
-char operator!=( const MatrixC&, const Complex& );
-char operator!=( const Complex&, const MatrixC& );
+char operator!=( const MatrixC&, const FNAL::Complex& );
+char operator!=( const FNAL::Complex&, const MatrixC& );
 
 class MatrixI {
 private:
