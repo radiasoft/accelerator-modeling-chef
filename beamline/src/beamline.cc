@@ -1301,7 +1301,6 @@ lattFunc beamline::whatIsLattice( char* n ) {
   // May 24, 1996
   lattFunc errRet;
   
-  int count = 0;
   dlist_iterator getNext( *(dlist*) this );
   bmlnElmnt* p;
   
