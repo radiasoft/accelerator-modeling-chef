@@ -80,7 +80,6 @@ class InputFrame : public QFrame
     bool             _deleteContext;
 
     double        _currentTune[2];
-    double        _targetHorTune;
     double        _dnu_x;
 
     int    _arraySize;
