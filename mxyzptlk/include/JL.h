@@ -1,29 +1,29 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                
-******  MXYZPTLK:  A C++ implementation of differential algebra.      
-******  Version:   4.1                    
-******                                    
+******
+******  MXYZPTLK:  A C++ implementation of differential algebra.
+******  Version:   4.3
+******
 ******  File:      JL.h
-******                                                                
-******  Copyright (c) 1990 Universities Research Association, Inc.    
-******                All Rights Reserved                             
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
+******
+******  Copyright (c) 1990 Universities Research Association, Inc.
+******                All Rights Reserved
+******
+******  Author:    Leo Michelotti
+******
+******             Fermilab
+******             P.O.Box 500
+******             Mail Stop 220
+******             Batavia, IL   60510
+******
+******             Phone: (630) 840 4956
+******             Email: michelotti@fnal.gov
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License and the GNU General Public License, both of
 ******  which are supplied with this software.
-******                                                                
+******
 **************************************************************************
 *************************************************************************/
 
@@ -58,15 +58,15 @@ struct JLC;
 
 // *******************************************************************
 
-struct JLterm {    
+struct JLterm {
 
 #ifdef __PRIVATE_ALLOCATOR__
   private:
-  
+
   static int _init;
   static Vmalloc_t* _vmem;
   static void meminit(size_t size);
-  
+
   public:
 
   void* operator new(size_t size);
@@ -82,7 +82,7 @@ struct JLterm {
   double value;   // The value associated with the JLterm.
 
   // Constructors and destructors
-  JLterm( const Jet__environment* ); 
+  JLterm( const Jet__environment* );
   JLterm( const IntArray&, const double&, const Jet__environment*  );
   JLterm( const JLterm* );
   JLterm( const JLterm& );
@@ -99,13 +99,13 @@ struct JLterm {
 
 
 // *******************************************************************
-struct JL : public dlist {  
+struct JL : public dlist {
 
   int count;        // The number of JL terms in the variable
   int weight;       // The maximum weight of the terms
   int accuWgt;      // Highest weight computed accurately
 
-  Jet__environment* myEnv;  
+  Jet__environment* myEnv;
                     // Environment of the jet.
 
   int rc;           // Reference counting for garbage collection
@@ -125,11 +125,11 @@ struct JL : public dlist {
   ~JL();
 
   // Public member functions__________________________________________
-  JLterm* get();                // Pops the top term, which should be the 
+  JLterm* get();                // Pops the top term, which should be the
                                 // one of lowest weight.
   JLterm  firstTerm() const;    // Returns a JLterm equivalent to the top term,
                                 // which should be the one of lowest weight.
-  JLterm  lowTerm()   const;    // Returns a JLterm equivalent to the 
+  JLterm  lowTerm()   const;    // Returns a JLterm equivalent to the
                                 // non-zero term of lowest weight.
   void addTerm( JLterm* );      // Public only for diagnostic purposes.
 
@@ -140,13 +140,13 @@ struct JL : public dlist {
   void getReference( double* ) const;
   void scaleBy( double );
 
-  void setVariable( const double&, 
-                    const int&, 
+  void setVariable( const double&,
+                    const int&,
                           Jet__environment* = 0 );
                   // WARNING: This routine alters the environment in
                   // WARNING: the third argument.
 
-  void setVariable( const int&, 
+  void setVariable( const int&,
                           Jet__environment* = 0 );
 
   double standardPart() const;
@@ -156,10 +156,10 @@ struct JL : public dlist {
 
   double operator()( const Vector& ) const;
   double operator()( const double* ) const;
-                       // Performs a multinomial evaluation of 
-                       // the JL variable.  Essentially acts as a 
+                       // Performs a multinomial evaluation of
+                       // the JL variable.  Essentially acts as a
                        // power series expansion.
-  JL& operator()( const JL* ) const; 
+  JL& operator()( const JL* ) const;
                        // Self explanatory ...
 
   // ??? REMOVE JL& operator()( LieOperator& );  // Self explanatory ...
@@ -169,6 +169,40 @@ struct JL : public dlist {
   JL& operator=( const JL& );
   JL& operator=( const double& );
   JL& operator+=( const double& );
+
+
+  // Exception subclasses____________________________________________
+  struct GenericException : public std::exception
+  {
+    // Miscellaneous other errors
+    GenericException( std::string, int, const char* = "", const char* = "" );
+    // 1st argument: name of file in which exception is thrown
+    // 2nd         : line from which exception is thrown
+    // 3rd         : identifies function containing throw
+    // 4th         : identifies type of error
+    ~GenericException() throw() {}
+    const char* what() const throw();
+    std::string errorString;
+  };
+
+  struct BadDimension: public std::exception
+  {
+    // Miscellaneous other errors
+    BadDimension( int, int, std::string, int, const char* = "", const char* = "" );
+    // A binary operator has detected mismatch between its two arguments 
+    // in number of Jet coordinates.
+    // 1st argument: IntArray dimension of operator's first argument
+    // 2nd         : IntArray dimension of operator's second argument
+    // 3rd         : name of file in which exception is thrown
+    // 4th         : line from which exception is thrown
+    // 5th         : identifies function containing throw
+    // 6th         : identifies type of error
+    ~BadDimension() throw() {}
+    const char* what() const throw();
+    std::string errorString;
+    int xdim, ydim;
+  };
+
 
 #ifdef OBJECT_DEBUG
   static int objectCount;
@@ -201,7 +235,7 @@ extern char operator==( const JL&,     const JL& );
 extern char operator==( const JL&,     const double& );
 extern char operator==( const double&, const JL& );
 extern char operator<=( const JLterm&, const JLterm& );
-extern char operator%=( const JLterm&, const JLterm& );   
+extern char operator%=( const JLterm&, const JLterm& );
                                        // Acts like == but compares
                                        // indices only.
 extern JLterm operator*( const JLterm&, const JLterm& );

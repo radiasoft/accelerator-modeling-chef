@@ -5,7 +5,7 @@
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
 ******                                    
 ******  File:      JL.cc
-******  Version:   4.2
+******  Version:   4.3
 ******                                                                
 ******  Copyright (c) 1990 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -74,6 +74,68 @@ using namespace std;
 int JL::objectCount = 0;
 int JLterm::objectCount = 0;
 #endif
+
+
+// ================================================================
+//      Implementation of exceptions
+
+JL::GenericException::GenericException( string fileName, int lineNumber, 
+                                        const char* fcn, 
+                                        const char* msg )
+{
+  ostringstream uic;
+  uic << "\n*** ERROR *** "
+         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
+      << "\n*** ERROR *** " << fcn
+      << "\n*** ERROR *** " << msg
+      << "\n*** ERROR *** ";
+  errorString = uic.str();
+
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << errorString;
+    cerr << "\n*** ERROR *** This message is printed only once."
+            "\n*** ERROR *** "
+         << endl;
+    firstTime = false;
+  }
+}
+
+const char* JL::GenericException::what() const throw()
+{
+  return errorString.c_str();
+}
+
+JL::BadDimension::BadDimension( int i, int j, 
+                                string fileName, int lineNumber, 
+                                const char* fcn, 
+                                const char* msg )
+: xdim(i), ydim(j)
+{
+  ostringstream uic;
+  uic << "\n*** ERROR *** "
+         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
+      << "\n*** ERROR *** " << fcn
+      << "\n*** ERROR *** " << msg
+      << "\n*** ERROR *** First  argument has " << xdim << " coordinates."
+      << "\n*** ERROR *** Second argument has " << ydim << " coordinates."
+      << "\n*** ERROR *** ";
+  errorString = uic.str();
+
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << errorString;
+    cerr << "\n*** ERROR *** This message is printed only once."
+            "\n*** ERROR *** "
+         << endl;
+    firstTime = false;
+  }
+}
+
+const char* JL::BadDimension::what() const throw()
+{
+  return errorString.c_str();
+}
 
 
 
@@ -406,14 +468,9 @@ void JL::setVariable( const double& x,
  if( theEnv != 0 ) myEnv = theEnv;
 
  if( myEnv == 0 ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** JL::setVariable                      \n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** myEnv = 0                            \n"
-        << "*** ERROR ***                                      \n"
-        << endl;
-   exit(1);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+     "void JL::setVariable( const double&, const int&, Jet__environment* )", 
+     "Private data myEnv is null: object has no environment assigned.") );
  }
 
  clear();
@@ -437,14 +494,9 @@ void JL::setVariable( const int& j,
  if( theEnv != 0 ) myEnv = theEnv;
 
  if( myEnv == 0 ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** JL::setVariable                      \n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** myEnv = 0                            \n"
-        << "*** ERROR ***                                      \n"
-        << endl;
-   exit(1);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+     "void JL::setVariable( const int&, Jet__environment* )", 
+     "Private data myEnv is null: object has no environment assigned.") );
  }
 
  clear();
@@ -927,14 +979,9 @@ JL& JL::operator=( const double& x ) {
  count  = 0;
  if( myEnv ) accuWgt = myEnv->MaxWeight;
  else {
-   cerr << "\n\n"
-        << "*** ERROR ***                                       \n"
-        << "*** ERROR ***  JL::operator=( double )              \n"
-        << "*** ERROR ***                                       \n"
-        << "*** ERROR ***  myEnv must be set ahead of time.     \n"
-        << "*** ERROR ***                                       \n"
-        << endl;
-   exit(1);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+     "JL& JL::operator=( const double& x ) {", 
+     "Private data myEnv is null: object has no environment assigned.") );
  }
 
  insert( new JLterm( IntArray( myEnv->NumVar ), x, myEnv ) );
@@ -1021,16 +1068,10 @@ JLterm operator*( const JLterm& x, const JLterm& y ) {
  static int i, n;
 
  if((  ( n = x.index.Dim() ) != y.index.Dim()  )) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** JLterm operator*                     \n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** Dimensions don't match.              \n"
-        << "*** ERROR *** First argument:  " << x.index.Dim() << " \n"
-        << "*** ERROR *** Second argument: " << y.index.Dim() << " \n"
-        << "*** ERROR ***                                      \n"
-        << endl;
-   exit(1);
+   throw( JL::BadDimension( x.index.Dim(), y.index.Dim(),
+                            __FILE__, __LINE__, 
+                            "JLterm operator*( const JLterm& x, const JLterm& y )",
+                            "Inconsistent number of coordinates." ) );
  }
 
  z.weight = x.weight + y.weight;
@@ -1067,28 +1108,36 @@ JLterm::JLterm( const IntArray& l,
                 const Jet__environment* pje ) 
 : index( l )
 {
+ // I think that it is not necessary to use a try block
+ // with this constructor, even though it throws exceptions,
+ // because the destructor does no subsidiary garbage collection.
+ // - Leo Michelotti
+ //   January 22, 2004
  int i, dpt;
 
  if( pje ) {
    int n = l.Dim();
    if( n != pje->NumVar ) {
-     cerr << "\n*** JL ERROR *** Dimensions are wrong." << endl;
-     exit(1);
+     throw( JL::GenericException( __FILE__, __LINE__, 
+            "JLterm::JLterm( const IntArray&, const double&, const Jet__environment*",
+            "Dimensions are wrong.") );
    }
   
    // ??? These checks could be removed for speed.
    dpt = 0;
    for( i = 0; i < n; i++ ) {
      if( (l(i) < 0) ) {
-       printf( "\n*** JL ERROR *** Bad index in JLTerm.\n" );
-       exit(0);
+       throw( JL::GenericException( __FILE__, __LINE__, 
+              "JLterm::JLterm( const IntArray&, const double&, const Jet__environment*",
+              "Bad index in JLTerm.") );
      }
      dpt += l(i);
    }
   
    if( dpt > pje->MaxWeight ) {
-     printf("\n*** JL ERROR *** Attempt to load a JLTerm with too large a weight.\n");
-     exit(0);
+     throw( JL::GenericException( __FILE__, __LINE__, 
+            "JLterm::JLterm( const IntArray&, const double&, const Jet__environment*",
+            "Attempt to load a JLTerm with too large a weight.") );
    }
    
    // ??? REMOVE: index = l;
@@ -1098,24 +1147,14 @@ JLterm::JLterm( const IntArray& l,
 
  else {
    if( l.Dim() != 1 ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                        \n"
-          << "*** ERROR *** JLTerm::JLTerm                         \n"
-          << "*** ERROR ***                                        \n"
-          << "*** ERROR *** Inconsistency between l and pje        \n"
-          << "*** ERROR ***                                        \n"
-          << endl;
-     exit(1);
+     throw( JL::GenericException( __FILE__, __LINE__, 
+            "JLterm::JLterm( const IntArray&, const double&, const Jet__environment*",
+            "Inconsistency between l and pje") );
    }
    if( l(0) != 0 ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                        \n"
-          << "*** ERROR *** JLTerm::JLTerm                         \n"
-          << "*** ERROR ***                                        \n"
-          << "*** ERROR *** Bad value of the index when pje = 0.   \n"
-          << "*** ERROR ***                                        \n"
-          << endl;
-     exit(1);
+     throw( JL::GenericException( __FILE__, __LINE__, 
+            "JLterm::JLterm( const IntArray&, const double&, const Jet__environment*",
+            "Bad value of the index when pje = 0.") );
    }
    index = l;
    weight = l.Sum();
@@ -1220,18 +1259,12 @@ char operator!=( const JLterm& a, const JLterm& b ) {
 char operator<=( const JLterm& a, const JLterm& b ) {
  int i;
  if( a.index.Dim() != b.index.Dim() ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** char operator<=( JLterm, JLterm )    \n"
-        << "*** ERROR ***                                      \n"
-        << "*** ERROR *** Dimensions don't match.              \n"
-        << "*** ERROR *** First argument:  " << a.index.Dim() << " \n"
-        << "*** ERROR *** Second argument: " << b.index.Dim() << " \n"
-        << "*** ERROR ***                                      \n"
-        << endl;
-   exit(1);
+   throw( JL::BadDimension( a.index.Dim(), b.index.Dim(), 
+          __FILE__, __LINE__, 
+          "char operator<=( const JLterm&, const JLterm& )",
+          "Dimensions don't match.") );
  }
- if( a.weight != b.weight ) return ( a.weight < b.weight );
+ if( a.weight != b.weight ) { return ( a.weight < b.weight ); }
  for( i = 0; i < a.index.Dim(); i++ ) {
    if( a.index(i) == b.index(i) ) continue;
    return ( a.index(i) < b.index(i) );
