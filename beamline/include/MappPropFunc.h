@@ -1,7 +1,9 @@
 #ifndef MAPPPROPFUNC_H
 #define MAPPPROPFUNC_H
 
-#include "beamline.h"
+#ifndef BMLNELMNT_H
+#include "bmlnElmnt.h"
+#endif
 
 class MappPropFunc : public bmlnElmnt::PropFunc
 {

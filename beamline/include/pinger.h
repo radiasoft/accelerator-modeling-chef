@@ -1,8 +1,13 @@
 #ifndef PINGER_H
 #define PINGER_H
 
-#include <beamline.h>
-#include <BmlVisitor.h>
+#ifndef BMLNELMNT_H
+#include "bmlnElmnt.h"
+#endif
+
+#ifndef BMLVISITOR_H
+#include "BmlVisitor.h"
+#endif
 
 class Pinger : public bmlnElmnt {
 private:

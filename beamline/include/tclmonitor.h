@@ -2,7 +2,10 @@
 #ifndef TCLMONITOR_H
 #define TCLMONITOR_H
 
-#include "beamline.h"
+#ifndef BMLNELMNT_H
+#include "bmlnElmnt.h"
+#endif
+
 class iopipestream;
 class Particle;
 class ParticleBunch;
