@@ -158,6 +158,20 @@ solaris-gcc:
 	"XINC = -I/usr/local/ap/X11R6/include" \
 	"RANLIB = echo"
 
+solaris-gcc-debug:
+	$(MAKE) targets \
+	"C   = gcc -pipe" \
+	"C++ = g++ -pipe" \
+	"CFLAGS = -g " \
+	"C++FLAGS = -g " \
+	"MAKELIB = ar ruv" \
+	"LIBDIR = $(FNALROOT)/lib/gcc" \
+	"INCDIR = $(FNALROOT)/include" \
+	"SYBASEINC = -I/usr/local/ap/sybase/include" \
+	"TKINC = -I/usr/local/TCL-TK/include" \
+	"XINC = -I/usr/local/ap/X11R6/include" \
+	"RANLIB = echo"
+
 sunos4:
 	$(MAKE) targets \
 	"C   = acc" \
