@@ -312,14 +312,14 @@ public:
   // ??? REMOVE:  lattFunc     lattInfo;   // Information on maps and lattice functions.
   bmlnElmnt& operator=( const bmlnElmnt& );
 
-  virtual void accept( BmlVisitor& ) = 0;
-
   void setPropFunction(PROPFUNC a)	{ Propagator = a; }
   void setJPropFunction(JETPROPFUNC a)	{ JetPropagator = a; }
 
   virtual void propagate( ParticleBunch& );
   virtual void propagate( Particle& );
   virtual void propagate( JetParticle& );
+
+  virtual void accept( BmlVisitor& v )  = 0;
 
   bmlnElmntData* image();
   void image( bmlnElmntData* );
