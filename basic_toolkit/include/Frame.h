@@ -1,11 +1,22 @@
+/*
+ * File: Frame.h
+ * Header file for class Frame
+ * 
+ * Version 1.0       July, 1998
+ * 
+ * Author: Leo Michelotti
+ * michelotti@fnal.gov
+ * 
+ */
+
 #ifndef FRAME_H
 #define FRAME_H
-
-#include "MXBBML_bool.h" // For Sun compilers: bool
 
 #include "VectorD.h"
 #include "Matrix.h"
 
+// #include "MXBBML_bool.h" // For Sun compilers: bool
+#include "MathConstants.h" // For Sun compilers: bool
 
 class Frame
 {
@@ -26,8 +37,15 @@ class Frame
    Frame dual() const;
    bool  isOrthonormal() const;
 
+   int xAxisIndex();
+   int yAxisIndex();
+   int zAxisIndex();
+
    Vector getOrigin()        const;
    Vector getAxis( int )     const;
+   Vector getxAxis()         const;
+   Vector getyAxis()         const;
+   Vector getzAxis()         const;
    Vector getDualAxis( int ) const;
 
    short int rotate    ( double,        // rotation angle [ radians ]
@@ -40,6 +58,10 @@ class Frame
 
    friend ostream& operator<< ( ostream& os, /* const */ Frame& );
 };
+
+
+
+#include "Frame.icc"
 
 
 #endif  // FRAME_H

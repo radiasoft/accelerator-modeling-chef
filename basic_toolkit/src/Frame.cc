@@ -187,6 +187,27 @@ Vector Frame::getAxis( int j ) const
   return ret;
 }
 
+Vector Frame::getxAxis() const
+{
+  Vector ret(3);
+  for( int i = 0; i < 3; i++ ) ret(i) = e.getElement(i,0);
+  return ret;
+}
+
+Vector Frame::getyAxis() const
+{
+  Vector ret(3);
+  for( int i = 0; i < 3; i++ ) ret(i) = e.getElement(i,1);
+  return ret;
+}
+
+Vector Frame::getzAxis() const
+{
+  Vector ret(3);
+  for( int i = 0; i < 3; i++ ) ret(i) = e.getElement(i,2);
+  return ret;
+}
+
 Vector Frame::getDualAxis( int i ) const
 {
   Vector ret(3);
