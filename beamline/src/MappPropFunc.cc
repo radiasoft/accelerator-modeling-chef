@@ -1,14 +1,16 @@
 #include "MappPropFunc.h"
 
-int operator() ( bmlnElmnt* b, Particle& p ) 
+int MappPropFunc::operator() ( bmlnElmnt* b, Particle& p ) 
 {
   p.setState( _myMap( p.State() ) );
+  return 0;
 }
 
 
-int operator() ( bmlnElmnt* b, JetParticle& p ) 
+int MappPropFunc::operator() ( bmlnElmnt* b, JetParticle& p ) 
 {
   p.setState( _myMap( p.State() ) );
+  return 0;
 }
 
 
