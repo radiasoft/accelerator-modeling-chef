@@ -91,7 +91,7 @@
 #include "Aperture.h"   // O.K.
 #include "BmlVisitor.h"
 
-#ifdef __VISUAL_CPP__
+#if defined (__VISUAL_CPP__) && !defined(__KAI__)
 #define strcasecmp stricmp
 #endif
 
