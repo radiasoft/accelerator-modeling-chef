@@ -1,1 +1,0 @@
-libintegrator_la_SOURCES = DriftMap.cc Integrator.cc KickMap.cc ODE.cc Oscillator.cc RungeKutta.cc Symplectic.cc
