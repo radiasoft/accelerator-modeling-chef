@@ -167,7 +167,8 @@ tar:
 	cd .. ; \
 	/usr/sbin/tar -cvfFFX /tmp/$(NAME).tar fnal/tar-exclude $(TAR_FILES) ; \
 	gzip /tmp/$(NAME).tar ; \
-	mv /tmp/$(NAME).tar.gz fnal
+	mv /tmp/$(NAME).tar.gz fnal ; \
+	ln fnal/$(NAME).tar.gz www/$(NAME).tar.gz
 
 tar_everything:
 	cd .. ; \
