@@ -14,9 +14,10 @@ private:
 
 public:
   combinedFunction();
-  combinedFunction(char * /* name */ );
-  combinedFunction(char *, beamline&);
-  combinedFunction(const combinedFunction&);
+  combinedFunction( const char* /* name */ );
+  combinedFunction( const char*, const beamline& );
+  combinedFunction( const beamline& );
+  combinedFunction( const combinedFunction& );
   virtual ~combinedFunction();
 
   void append(bmlnElmnt&);
@@ -40,7 +41,7 @@ public:
   void setField(WHICH_MULTIPOLE, double field);
   double Field(WHICH_MULTIPOLE);
   void setSkew(WHICH_MULTIPOLE, alignmentData&);
-  void setLength( double x )
+  void setLength( double x )   // ??? Should this be here???
     { length = x; }
   alignmentData Skew(WHICH_MULTIPOLE);
   char* Type() const;

@@ -14,12 +14,22 @@ combinedFunction::combinedFunction()
   exit(1);
 }
 
-combinedFunction::combinedFunction(char* n) : bmlnElmnt(n) {
+combinedFunction::combinedFunction( const char* n ) : bmlnElmnt(n) 
+{
   p_bml = new beamline();
 }
 
-combinedFunction::combinedFunction(char* n, beamline& b) : bmlnElmnt(n) {
-  p_bml = (beamline*)b.Clone();
+combinedFunction::combinedFunction( const char* n, const beamline& b ) 
+: bmlnElmnt(n) 
+{
+  p_bml = (beamline*) b.Clone();
+  length = b.Length();
+}
+
+combinedFunction::combinedFunction( const beamline& b ) 
+: bmlnElmnt(b.Name())
+{
+  p_bml = (beamline*) b.Clone();
   length = b.Length();
 }
 
