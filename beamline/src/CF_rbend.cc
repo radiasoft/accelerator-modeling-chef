@@ -30,11 +30,7 @@
 *************************************************************************/
 
 
-#ifdef __VISUAL_CPP__
 #include <iomanip>
-#else
-#include <iomanip.h>
-#endif
 
 #include "CF_rbend.h"
 #include "quadrupole.h"
@@ -42,6 +38,8 @@
 #include "rbend.h"
 #include "octupole.h"
 #include "PhysicsConstants.h"
+
+using namespace std;
 
 CF_rbend::CF_rbend( double        lng,  // length     [ meter    ]
                     double        fld,  // field      [ tesla    ]

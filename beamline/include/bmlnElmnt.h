@@ -1,7 +1,39 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE:  C++ objects for design and analysis
+******             of beamlines, storage rings, and   
+******             synchrotrons.                      
+******  Version:   2.0                    
+******                                    
+******  File:      bmlnElmnt.h
+******                                                                
+******  Copyright (c) 1991 Universities Research Association, Inc.    
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 #ifndef BMLNELMNT_H
 #define BMLNELMNT_H
 
-#include "apstring.h"
+#include <string>
 #include "Particle.h"
 #include "ParticleBunch.h"
 #include "Aperture.h"   // O.K.
@@ -80,6 +112,7 @@ struct alignmentData {
   alignmentData(const alignmentData&);
   ~alignmentData();
   alignmentData& operator=(const alignmentData&);
+  bool operator==(const alignmentData&) const;
 };
 
 
@@ -101,6 +134,9 @@ public:
   alignment(const alignmentData&);
   ~alignment();
 
+  bool isNull() const;
+  bool operator==( const alignment& ) const;
+
   alignment& operator=(const alignment&);
                                 // these methods will overwrite an array
                                 // BMLM_dynDim in length
@@ -118,7 +154,7 @@ public:
   void align( JetVector& );
 
   void setAlignment(const alignmentData&);
-  alignmentData getAlignment();
+  alignmentData getAlignment() const;
 
   double x_offset() { return xOffset; }
   double y_offset() { return yOffset; }
@@ -314,7 +350,10 @@ public:
                                    // in the second and third arguments.
                                    // The user has responsibility for
                                    // eventually deleting these.
+
   virtual void peekAt( double& s, Particle* = 0 );
+  virtual bool equivTo( const bmlnElmnt& ) const;
+  virtual bool equivTo( const bmlnElmnt* ) const;
 
   short  writeTag ( char,          // character to be written
                     short = 0      // position in tag
@@ -325,11 +364,11 @@ public:
                   );
   short  writeTag ( const char* );
 
-  short  writeTag ( const String&,
+  short  writeTag ( const std::string&,
                     short,         // starting position in tag
                     short          // number of characters 
                   );
-  short  writeTag ( const String& );
+  short  writeTag ( const std::string& );
 
   short  readTag  ( char*,         // returned characters
                     short,         // starting position in tag
@@ -339,10 +378,11 @@ public:
 
   char   readTag  ( short          // position in tag
                   );    
-  String readTag  ( short,         // starting position in tag
-                    short          // number of characters 
+  std::string readTag  ( 
+              short,         // starting position in tag
+              short          // number of characters 
                   );
-  String readTag  ();
+  std::string readTag  ();
 
   short  getTagSize() 
     { return BF_MAXCHAR; }
@@ -358,11 +398,11 @@ public:
   void setShunt(double a);
 
   // Query functions ...
-  alignmentData  Alignment( void );
+  alignmentData  Alignment( void ) const;
   Aperture*      getAperture( void );	// returns a clone of the aperture class
   inline int     hasAperture( void ) const { return  ( pAperture ? 1 : 0 ); }
   inline double  Strength() 	const { return strength; }
-  inline double  Length() 	const { return length; }
+  double  Length() const;
   virtual double Current() 	const { return strength/iToField; }
   inline char    IsYourName( const char* x ) { return strcmp( x, ident ); }
   char hasName( const char* x ) const
@@ -373,20 +413,20 @@ public:
   virtual int    isType(char* s) { return strcmp(s, "bmlnElmnt") == 0; }
 
 
-  void setFlavor( const apstring& x )
+  void setFlavor( const std::string& x )
     { flavor = x; }
   void setFlavor( const char* x )
     { flavor = x; }
-  apstring Flavor()
+  std::string Flavor()
     { return flavor; }
-  apstring getFlavor()
+  std::string getFlavor()
     { return flavor; }
-  apstring FlavorOrType()
-    { if( flavor.length() == 0 ) return apstring(this->Type());
+  std::string FlavorOrType()
+    { if( flavor.length() == 0 ) return std::string(this->Type());
       else                       return flavor;
     }
-  apstring getFlavorOrType()
-    { if( flavor.length() == 0 ) return apstring(this->Type());
+  std::string getFlavorOrType()
+    { if( flavor.length() == 0 ) return std::string(this->Type());
       else                       return flavor;
     }
 
@@ -411,7 +451,7 @@ private:
   friend ostream& operator<<(ostream&, bmlnElmnt&);
   friend bmlnElmnt* read_istream(istream&);
 
-  apstring     flavor;     // Allows for "flavors" of types of elements.
+  std::string flavor;     // Allows for "flavors" of types of elements.
   char         _tag[ BF_MAXCHAR ];
 };
 
@@ -485,6 +525,23 @@ public:
     bmlnElmnt** _element;
     bool        _cloned;
   };
+
+  struct Criterion
+  {
+    virtual bool operator()( const bmlnElmnt* );
+    virtual bool operator()( const bmlnElmnt& );
+  };
+  // Returns true if element matches the derived 
+  // criterion; false, if not.
+
+  struct Action
+  {
+    virtual int operator()( bmlnElmnt* );
+    virtual int operator()( bmlnElmnt& );
+  };
+  // Derived classes should return 0 if the action is 
+  // performed successfully on the element. All other
+  // values indicate error.
 
 private:
   double            nominalEnergy;    // In GeV
@@ -672,6 +729,9 @@ public:
   int    countHowMany( CRITFUNC = 0, slist* = 0 ) const;
   int    countHowManyDeeply( CRITFUNC = 0, slist* = 0 ) const;
   int    howDeep();
+  int    contains( const bmlnElmnt*) const;
+  // Returns the number of times the argument appears.
+
   inline bmlnElmnt* firstElement()
     {
       return (bmlnElmnt*) ( ((dlist*) this)->firstInfoPtr() );

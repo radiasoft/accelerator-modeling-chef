@@ -1,8 +1,36 @@
-#ifdef __VISUAL_CPP__
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE:  C++ objects for design and analysis
+******             of beamlines, storage rings, and   
+******             synchrotrons.                      
+******  Version:   2.0                    
+******                                    
+******  File:      CF_sbend.cc
+******                                                                
+******  Copyright (c) 1991 Universities Research Association, Inc.    
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 #include <iomanip>
-#else
-#include <iomanip.h>
-#endif
 
 #include "CF_sbend.h"
 #include "quadrupole.h"
@@ -10,6 +38,8 @@
 #include "sbend.h"
 #include "octupole.h"
 #include "PhysicsConstants.h"
+
+using namespace std;
 
 CF_sbend::CF_sbend( double        lng,  // length     [ meter    ]
                     double        fld,  // field      [ tesla    ]
@@ -342,14 +372,59 @@ double CF_sbend::Angle() const
 }
 
 
-void CF_sbend::Split( double, bmlnElmnt**, bmlnElmnt** )
+void CF_sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 {
-  cerr << "*** ERROR ***                                 \n" 
-          "*** ERROR *** CF_sbend::Split                 \n" 
-          "*** ERROR *** This function is not written.   \n" 
-          "*** ERROR ***                                 \n" 
-       << endl;
-  exit(1);
+  static bool firstTime = true;
+  if( firstTime ) {
+    firstTime = false;
+    cerr << "\n*** WARNING ***                             "
+            "\n*** WARNING *** void CF_sbend::Split        "
+            "\n*** WARNING *** Combined split elements     "
+            "\n*** WARNING *** are not identical to the    "
+            "\n*** WARNING *** original.                   "
+            "\n*** WARNING ***                           \n"
+         << endl;
+  }
+
+  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
+    cerr << "\n"
+            "*** ERROR ***                                    \n"
+            "*** ERROR *** sbend::Split                       \n"
+            "*** ERROR *** pc = " << pc << 
+                               " and is out of bounds.        \n"
+            "*** ERROR ***                                    \n"
+         << endl;
+    exit (1);
+  }
+
+
+  // We assume "strength" means field, not field*length.
+  // "length," "strength," and "_angle" are private data members.
+  *a = new CF_sbend( pc*length, strength, pc*_angle );
+  *b = new CF_sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle );
+
+
+  // Assign quadrupole strength
+  double quadStrength = this->getQuadrupole();  
+  // quadStrength = B'l
+
+  ((CF_sbend*) *a)->setQuadrupole( pc*quadStrength );
+  ((CF_sbend*) *b)->setQuadrupole( (1.0 - pc)*quadStrength );
+
+
+  // Rename
+  char* newname;
+  newname = new char [ strlen(ident) + 6 ];
+
+  strcpy( newname, ident );
+  strcat( newname, "_CL_A" );
+  (*a)->Rename( newname );
+
+  strcpy( newname, ident );
+  strcat( newname, "_CL_B" );
+  (*b)->Rename( newname );
+
+  delete [] newname;
 }
 
 ostream& CF_sbend::writeTo( ostream& os )
