@@ -434,7 +434,7 @@ extern struct madparser_* mp;
 				      strcpy( errmsg, "fatal error ! number out of range: " );
 				      assert( strlen( errmsg )+yyleng+1 < MAX_ERR_MSG_LENGTH );
 				      yyerror( strcat( errmsg, (char*)yylval.sval ) );
-				      exit( EXIT_FAILURE );
+				      bmlfactory_exit();
 				  }
 				  current_constant = CONSTANT_DOUBLE;
 				  return MAD_NUMERIC_LITERAL;
@@ -459,7 +459,7 @@ extern struct madparser_* mp;
 				  strcpy( errmsg, "Illegal *,/,+,- combination: " );
 				  assert( strlen( errmsg )+yyleng < MAX_ERR_MSG_LENGTH );
 				  yyerror( strcat( errmsg, (char*)yytext ) );
-				  exit( EXIT_FAILURE );
+				  bmlfactory_exit();
 				}
 
 [ \t]* |
@@ -501,7 +501,7 @@ extern struct madparser_* mp;
                                      /*
                                      if ( include_stack_ptr >= MAX_INCLUDE_DEPTH ) {
                                        fprintf( stderr, "Includes nested too deeply: %d\n", MAX_INCLUDE_DEPTH );
-                                       exit( EXIT_FAILURE );
+                                       bmlfactory_exit();
                                      }     
                                      include_stack[include_stack_ptr++] = YY_CURRENT_BUFFER;
                                     */
@@ -514,7 +514,7 @@ extern struct madparser_* mp;
                                      */                                  
                                   if ( ! yyin ) {
                                     fprintf( stderr, "Unable to open file %s\n", yytext );
-                                    exit( EXIT_FAILURE );
+                                    bmlfactory_exit();
                                   }
                                   yy_switch_to_buffer( yy_create_buffer( yyin, YY_BUF_SIZE ) );     
                                   BEGIN(INITIAL);

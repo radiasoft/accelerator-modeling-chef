@@ -85,7 +85,7 @@ bml_free_func( gpointer key,
                gpointer value,
                gpointer user_data ) {
   free( key );
-  beam_line_delete( value, (fb_allocator*)user_data );
+  beam_line_delete( ((beam_line*) value), (fb_allocator*)user_data );
   return TRUE;
 }
 

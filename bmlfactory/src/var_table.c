@@ -45,6 +45,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern void bmlfactory_exit();
+
 #if !defined(str_to_upper_h)
 #include "str_to_upper.h"
 #endif /* str_to_upper_h */
@@ -357,7 +359,7 @@ var_check_circ( GNode*          expr,
           variable* var = (variable*)var_table_lookup( data->svalue_, var_table );
           if ( var == NULL ) {
             fprintf(stderr, "error ! variable %s never defined\n", data->svalue_ );
-            exit( EXIT_FAILURE );
+            bmlfactory_exit();
           } else {
             if ( var == var_to_compare ) {
               *res = (var_link*)16; /* !!! */
@@ -370,7 +372,7 @@ var_check_circ( GNode*          expr,
           beam_element* bel = (beam_element*)bel_table_lookup( data->svalue_, bel_table );
           if ( bel == NULL ) {
             fprintf(stderr, "error ! beam element %s never defined\n", data->svalue_ );
-            exit( EXIT_FAILURE );
+            bmlfactory_exit();
           } else {
             var_check_circ( bel->length_, NULL, res, var_table, bel_table );
           }
@@ -439,7 +441,7 @@ var_check_circ( GNode*          expr,
         break;
       default :
         fprintf(stderr, "error ! unknown expression type\n");
-        exit( EXIT_FAILURE );
+        bmlfactory_exit();
     }
   }
   return;
