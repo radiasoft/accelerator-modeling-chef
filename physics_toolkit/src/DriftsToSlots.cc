@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -56,6 +53,11 @@
  */
 
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include "GenericException.h"
 #include "beamline.h"
 #include "CF_rbend.h"
 #include "Slot.h"
@@ -272,7 +274,9 @@ beamline* DriftsToSlots( /* const */ beamline& original )
           arcFrame.rotate( - ((CF_rbend*) c)->getPoleFaceAngle(), arcFrame.getyAxis() );
         }
         else {
-          exit(22);
+          throw( GenericException( __FILE__, __LINE__, 
+                 "beamline* DriftsToSlots( /* const */ beamline& original )", 
+                 "Both c_rb and c_CF are null." ) );
         }
         fd(x) = 0.0;
         fd(y) = 0.0;
@@ -295,7 +299,9 @@ beamline* DriftsToSlots( /* const */ beamline& original )
           arcFrame.rotate( - ((CF_rbend*) a)->getPoleFaceAngle(), arcFrame.getyAxis() );
         }
         else {
-          exit(22);
+          throw( GenericException( __FILE__, __LINE__, 
+                 "beamline* DriftsToSlots( /* const */ beamline& original )", 
+                 "Both a_rb and a_CF are null." ) );
         }
         ret->append( new Slot(elPtr->Name(), arcFrame) );
       }
@@ -310,7 +316,9 @@ beamline* DriftsToSlots( /* const */ beamline& original )
           arcFrame.rotate( - ((CF_rbend*) c)->getPoleFaceAngle(), arcFrame.getyAxis() );
         }
         else {
-          exit(22);
+          throw( GenericException( __FILE__, __LINE__, 
+                 "beamline* DriftsToSlots( /* const */ beamline& original )", 
+                 "Both c_rb and c_CF are null." ) );
         }
         fd(x) = 0.0;
         fd(y) = 0.0;
@@ -323,7 +331,9 @@ beamline* DriftsToSlots( /* const */ beamline& original )
           arcFrame.rotate( - ((CF_rbend*) a)->getPoleFaceAngle(), arcFrame.getyAxis() );
         }
         else {
-          exit(22);
+          throw( GenericException( __FILE__, __LINE__, 
+                 "beamline* DriftsToSlots( /* const */ beamline& original )", 
+                 "Both a_rb and a_CF are null." ) );
         }
         ret->append( new Slot(elPtr->Name(), arcFrame) );
       }

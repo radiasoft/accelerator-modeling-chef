@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -46,11 +43,16 @@
  * 
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <iostream>
 #include <string>
 
 #include "DriftEliminator.h"
 
+#include "GenericException.h"
 #include "drift.h"
 #include "marker.h"
 #include "monitor.h"
@@ -68,12 +70,9 @@ DriftEliminator::DriftEliminator()
 
 DriftEliminator::DriftEliminator( const DriftEliminator& )
 {
-  cerr << "*** ERROR ***                                 \n"
-          "*** ERROR *** Never, never, never copy an     \n"
-          "*** ERROR *** DriftEliminator object!         \n"
-          "*** ERROR ***                                 \n"
-       << endl;
-  exit(1);
+  throw( GenericException( __FILE__, __LINE__, 
+         "DriftEliminator::DriftEliminator( const DriftEliminator& )", 
+         "Copying object not permitted." ) );
 }
 
 
@@ -88,13 +87,9 @@ void DriftEliminator::visitBeamline( const beamline* x )
 {
   // Quick check
   if( 0 != _bmlPtr ) {  // Paranoid check only
-    cerr << "*** ERROR ***                             \n"
-            "*** ERROR ***  DriftEliminator::visitBeamline  \n"
-            "*** ERROR ***  A horrible, inexplicable   \n"
-            "*** ERROR ***  error has occurred!!       \n"
-            "*** ERROR ***                             \n"
-         << endl;
-    exit(-1);
+    throw( GenericException( __FILE__, __LINE__, 
+           "void DriftEliminator::visitBeamline( const beamline* x )", 
+           "A horrible, inexplicable error has occurred!! Null _bmlPtr." ) );
   }
 
 
@@ -104,13 +99,9 @@ void DriftEliminator::visitBeamline( const beamline* x )
   strcpy( nuNam, x->Name() );
   strcat( nuNam, "_Condensed" );
   if( strlen(nuNam) != n-1 ) {  // More paranoia
-    cerr << "*** ERROR ***                             \n"
-            "*** ERROR ***  DriftEliminator::visitBeamline  \n"
-            "*** ERROR ***  An inexplicable, horrible  \n"
-            "*** ERROR ***  error has occurred!!       \n"
-            "*** ERROR ***                             \n"
-         << endl;
-    exit(-1);
+    throw( GenericException( __FILE__, __LINE__, 
+           "void DriftEliminator::visitBeamline( const beamline* x )", 
+           "An inexplicable, horrible error has occurred!!" ) );
   }
 
   _bmlPtr = new beamline( nuNam );
