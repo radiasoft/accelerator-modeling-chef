@@ -3,7 +3,7 @@
 more header_files | tr " " "\n" > test.header_files.old
 setenv headername `basename $cwd`
 echo includedir = \$\{prefix\}/include/$headername > header_files
-echo include_HEADERS = include/*.{h,icc} >> header_files
+echo include_HEADERS = include/*.{h,icc,tcc} >> header_files
 unsetenv headername
 more header_files | tr " " "\n" > test.header_files.new
 diff test.header_files.old test.header_files.new | sed "s/</Removed/g" | sed "s/>/Added/g"
