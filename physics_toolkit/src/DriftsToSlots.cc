@@ -362,7 +362,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
                "The message was:\n"
             << ge.what();
         cerr << "\n--- BEGIN EXCEPTION ---\n" 
-             << uic 
+             << uic.str()
              << "\n Original argument will be returned."
              << "\n--- END EXCEPTION -----\n" 
              << endl;
