@@ -13,7 +13,7 @@
 #endif
 
 // Check for Solaris.
-#if defined(__sparc) && !defined(__GNUG__) 
+#if defined(__sparc) && !defined(__GNUG__) && !defined(__KAI__)
   typedef complex Complex;
 #endif
 
@@ -36,7 +36,7 @@ using std::cerr;
 using std::endl;
 #endif  // __VISUAL_CPP__
 
-#if defined(__sparc) && !defined(__GNUG__) 
+#if defined(__sparc) && !defined(__GNUG__) && !defined(__KAI__) 
 
 inline Complex operator+( const Complex& x, const double& y )
 {

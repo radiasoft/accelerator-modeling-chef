@@ -7,7 +7,7 @@
 */
 
 #ifdef __VISUAL_CPP__
-#include <Complex>
+#include <complex>
 #include <iostream>
 using std::cerr;
 #else
