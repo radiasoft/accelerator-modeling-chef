@@ -149,6 +149,9 @@ public:
   inline double get_cdt()   const { return state[2]; }
   inline double get_npx()   const { return state[3]; }
   inline double get_npy()   const { return state[4]; }
+  inline double get_npz()   const { return sqrt( ( 1.0 + state[5] )*( 1.0 + state[5] ) 
+                                                 - state[3]*state[3]  
+                                                 - state[4]*state[4] ); }
   inline double get_ndp()   const { return state[5]; }
 
   void set_x   ( double u )  { state[0] = u; }
@@ -417,6 +420,9 @@ public:
   inline Jet get_cdt()   const { return state(2); }
   inline Jet get_npx()   const { return state(3); }
   inline Jet get_npy()   const { return state(4); }
+  inline Jet get_npz()   const { return sqrt( ( 1.0 + state(5) )*( 1.0 + state(5) ) 
+                                              - state(3)*state(3)  
+                                              - state(4)*state(4) ); }
   inline Jet get_ndp()   const { return state(5); }
 
   void set_x   ( const Jet& u )  { state.SetComponent(0,u); }

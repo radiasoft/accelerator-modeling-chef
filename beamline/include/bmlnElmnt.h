@@ -224,6 +224,29 @@ struct bmlnElmntData {
 class bmlnElmnt
 {
 public:
+
+  // AsinFunctor is a utility class used by sbend and rbend.
+  class AsinFunctor
+  {
+  public:
+    AsinFunctor( bool = false /* i.e. approximate */, int = 1 );
+    AsinFunctor( const AsinFunctor& );
+    ~AsinFunctor() {}
+    double   operator()( double x ) const;
+    Jet      operator()( const Jet& x ) const;
+    int      setNumTerms( int );
+    int      getNumTerms();
+    bool     isExact();
+    bool     makeExact();
+    bool     makeApproximate();
+  private: 
+    bool                    _exactMode;
+    int                     _n;
+    static   const double   _coeff[];
+    static   const int      _size;
+  };
+
+
   class PropFunc
   {
     public:
@@ -290,6 +313,7 @@ protected:
                   // a reference particle to cross
                   // the element. Established by a
                   // RefRegVisitor.
+
 
 public:
   bmlnElmnt( const char*   n = "NONAME" /* name     */,
