@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 /*
  *  FindCovariance & TestCovariance
@@ -56,6 +56,7 @@
 
 #include <iomanip>
 
+#include "GenericException.h"
 #include "beamline.h"
 #include "FindCovariance.h"
 
@@ -132,13 +133,14 @@ MatrixD FindCovariance( const beamline& line,
     // A little check .........................................
 
     if( count != rows ) {
-      cerr << "*** ERROR ***                                  \n"
-              "*** ERROR *** FindCovariance                   \n"
-              "*** ERROR *** Not all data samples were found. \n"
-              "*** ERROR ***                                  \n"
-	" Found " << count << " marked bmlnElmnts but expected " << rows
-           << endl;
-      exit(1);
+      ostringstream uic;
+      uic << "Found " 
+          << count << " marked bmlnElmnts but expected " 
+          << rows
+          << endl;
+      throw( GenericException( __FILE__, __LINE__, 
+             "MatrixD FindCovariance( const beamline& line,       ", 
+             uic.str().c_str() ) );
     }
 
     // Solve the equations and return the answer ..............
@@ -156,15 +158,10 @@ MatrixD FindCovariance( const beamline& line,
 
     return C;
   }
-
   else {
-    cerr << "*** ERROR ***                            \n"
-         << "*** ERROR *** FindCovariance             \n"
-         << "*** ERROR *** Empty sampling list        \n"
-         << "*** ERROR ***                            \n"
-         << endl;
-    exit(1);
-    return C;
+      throw( GenericException( __FILE__, __LINE__, 
+             "MatrixD FindCovariance( const beamline& line,       ", 
+             "Empty sampling list." ) );
   }
 }
 
@@ -241,12 +238,9 @@ void TestCovariance( const beamline& line,
   }
 
   else {
-    cerr << "*** ERROR ***                            \n"
-         << "*** ERROR *** TestCovariance             \n"
-         << "*** ERROR *** Empty sampling list        \n"
-         << "*** ERROR ***                            \n"
-         << endl;
-    if( 1 + 1 == 2 ) exit(1);
+    throw( GenericException( __FILE__, __LINE__, 
+           "void TestCovariance( const beamline& line,", 
+           "Empty sampling list." ) );
   }
 
 }
