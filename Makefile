@@ -5,17 +5,32 @@ default:
 	@echo "The enviroment variable FNALROOT must be set to this directory"
 	@echo "One time only do a make setup then"
 	@echo "Type one of the following:"
-	@echo "   make gcc            for a generic system with GCC"
-	@echo "   make irix5          for SGI systems with IRIX 5.x"
-	@echo "   make irix5-gcc      for SGI systems with IRIX 5.x with GCC"
-	@echo "   make irix5-gcc      for SGI systems with IRIX 5.x with GCC debug on"
-	@echo "   make solaris-gcc    for Solaris 2 systems with GCC"
-	@echo "   make solaris        for Solaris 2 systems "
-	@echo "   make solaris-debug  for Solaris 2 systems and Sun debug"
-	@echo "   make sunos4         for Sun systems with SunOS 4.x"
-	@echo "   make sunos4-debug   for Sun systems with SunOS 4.x and Sun debug"
-	@echo "   make clean"
-
+	@echo "  make gcc               for a generic system with GCC"
+	@echo "  make linux             for Linux systems using GCC"
+	@echo "  make irix5             for SGI systems with IRIX 5.x"
+	@echo "  make irix5-gcc         for SGI systems with IRIX 5.x with GCC"
+	@echo "  make irix5-debug       for SGI systems with IRIX 5.x with GCC debug on"
+	@echo "  make solaris           for Solaris systems and Sun compiler"
+	@echo "  make ultra             for Solaris systems on Ultras with the Sun compiler"
+	@echo "  make ultra-opt         for Solaris Ultra systems with the Sun compiler and \
+                                        -fast optimization"
+	@echo "  make ultra-debug       for Solaris Ultra systems with the Sun compiler and \
+                                        debug on"
+	@echo "  make solaris-debug     for Solaris systems and Sun debug"
+	@echo "  make solaris-gcc       for Solaris systems with GCC"
+	@echo "  make solaris-gcc-debug for Solaris systems with GCC debug on"
+	@echo "  make sunos4            for Sun systems with SunOS 4.x"
+	@echo "  make sunos4-debug      for Sun systems with SunOS 4.x and Sun debug"
+	@echo "  make setup             Make include and lib dirs and links."
+	@echo "  make link              Make the links in the include dir."
+	@echo "  make include-dir       Make the include directory."
+	@echo "  make lib-dir           Make the library directory tree."
+	@echo "  make real-clean        Remove all .o,.sb,.~ files, libraries and links."
+	@echo "  make lib-clean         Remove all library (.a) files."
+	@echo "  make clean             Remove all .o,.sb,.~ files."
+	@echo "  make link-clean        Remove all links in include directory."
+	@echo "  make tar               Tar up all source (*.cc,*.h,.sb) files."
+	@echo "  make tar_everything    Tar up ALL files."
 
 
 LINKDIRS  = beamline mxyzptlk Machine tev tcl socket server sybase filter swyd
@@ -26,7 +41,7 @@ SUNSUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxy
 
 SGISUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src sybase/src socket/src server/src filter/src
 
-gcc solaris-gcc solaris solaris-debug sunos4 sunos4-debug ultra ultra-opt ultra-debug :
+gcc solaris-gcc solaris-gcc-debug solaris solaris-debug sunos4 sunos4-debug ultra ultra-opt ultra-debug :
 	@set -x; for i in $(SUNSUBDIRS); do \
 		(cd $$i; $(MAKE)  $@); \
 		done
