@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -30,6 +27,10 @@
 **************************************************************************
 *************************************************************************/
 
+
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <stdlib.h>
 #include <iostream>
@@ -180,20 +181,23 @@ dlist dlist::remove( ent a, ent b )
      } while ( p != 0 && w != a && w != b );
   
   if( p == 0 ) {
-    cerr << "\n*** ERROR ***                              \n";
-    cerr <<   "*** ERROR *** dlist::remove( ent, ent )    \n";
-    cerr <<   "*** ERROR *** Reached the end of the list  \n";
-    cerr <<   "*** ERROR *** without finding markers.     \n";
-    cerr <<   "*** ERROR ***                              \n";
-    exit(1);
+    cerr << "\n*** WARNING ***                              \n";
+    cerr <<   "*** WARNING *** dlist::remove( ent, ent )    \n";
+    cerr <<   "*** WARNING *** Reached the end of the list  \n";
+    cerr <<   "*** WARNING *** without finding markers.     \n";
+    cerr <<   "*** WARNING ***                              \n";
+    cerr << endl;
+    return *this;
   }
   
   if( w == a ) y = b;
   else  {      y = a;
-	       if( w != b ) {
-		 cerr << "\n*** IMPOSSIBLE ERROR!\n" ;
-		 exit(1);
-	       }
+               if( w != b ) {
+                 cerr << "\n*** WARNING*** IMPOSSIBLE ERROR!";
+                 cerr << "\n*** WARNING *** dlist::remove( ent, ent )";
+                 cerr << endl;
+                 return *this;
+               }
   }
   
   p = getNext();
@@ -203,6 +207,7 @@ dlist dlist::remove( ent a, ent b )
     cerr <<   "*** WARNING *** dlist::remove( ent, ent )           \n";
     cerr <<   "*** WARNING *** No elements available for removal.  \n";
     cerr <<   "*** WARNING ***                                     \n";
+    cerr << endl;
     return *this;
   }
   
@@ -218,6 +223,7 @@ dlist dlist::remove( ent a, ent b )
     cerr <<   "*** WARNING *** dlist::remove( ent, ent )      \n";
     cerr <<   "*** WARNING *** Reached the end of the list.   \n";
     cerr <<   "*** WARNING ***                                \n";
+    cerr << endl;
   }
   
   return ret;
