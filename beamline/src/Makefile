@@ -10,6 +10,7 @@ OBJS = BBLens.o \
        JetThinQuad.o\
        JetthinSext.o\
        InsertionList.o \
+       MappPropFunc.o \
        Particle.o \
        ParticleBunch.o \
        Slot.o \

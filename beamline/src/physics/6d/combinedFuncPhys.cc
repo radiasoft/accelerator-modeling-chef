@@ -3,13 +3,15 @@
 
 void combinedFunction::localPropagate( Particle& p ) {
 
-  p_bml->propagate( p );
+  if( Propagator ) (*Propagator)   ( this, p );
+  else             p_bml->propagate( p );
 
 }
 
 void combinedFunction::localPropagate( JetParticle& p ) {
 
-  p_bml->propagate( p );
+  if( Propagator ) (*Propagator)   ( this, p );
+  else             p_bml->propagate( p );
 
 }
   
