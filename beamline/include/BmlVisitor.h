@@ -16,6 +16,8 @@
 
 // Predefined classes ...
 class bmlnElmnt;
+class beamline;
+
 class hkick;
 class octupole;
 class thinrfcavity;
@@ -44,7 +46,6 @@ class sextupole;
 class BBLens;
 class thinSeptum;
 class thinLamb;
-class beamline;
 
 // ---------------------------
 
@@ -54,39 +55,68 @@ public:
   // No such function as: virtual void visitBmlnElmnt( bmlnElmnt* ) {}
 
   virtual void visitBeamline( beamline* );
+  virtual void visitBmlnElmnt( bmlnElmnt* ) {}
 
-  virtual void visitHkick( hkick* ) {}
-  virtual void visitOctupole( octupole* ) {}
-  virtual void visitThinrfcavity( thinrfcavity* ) {}
-  virtual void visitSrot( srot* ) {}
-  virtual void visitVkick( vkick* ) {}
-  virtual void visitMonitor( monitor* ) {}
-  virtual void visitMarker( marker* ) {}
-  virtual void visitDrift( drift* ) {}
-  virtual void visitRbend( rbend* ) {}
-  virtual void visitSbend( sbend* ) {}
-  virtual void visitSector( sector* ) {}
-  virtual void visitQuadrupole( quadrupole* ) {}
-  virtual void visitJetQuadrupole( JetQuadrupole* ) {}
-  virtual void visitThinQuad( thinQuad* ) {}
-  virtual void visitThinSextupole( thinSextupole* ) {}
-  virtual void visitJetthinSext( JetthinSext* ) {}
-  virtual void visitJetthinQuad( JetthinQuad* ) {}
-  virtual void visitThinOctupole( thinOctupole* ) {}
-  virtual void visitThinDecapole( thinDecapole* ) {}
-  virtual void visitThin12pole( thin12pole* ) {}
-  virtual void visitThin14pole( thin14pole* ) {}
-  virtual void visitThin16pole( thin16pole* ) {}
-  virtual void visitThin18pole( thin18pole* ) {}
-  virtual void visitThinMultipole( thinMultipole* ) {}
-  virtual void visitSextupole( sextupole* ) {}
-  virtual void visitBBLens( BBLens* ) {}
-  virtual void visitThinSeptum( thinSeptum* ) {}
-  virtual void visitThinLamb( thinLamb* ) {}
+  virtual void visitHkick( hkick* x )
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitOctupole( octupole* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitThinrfcavity( thinrfcavity* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitSrot( srot* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitVkick( vkick* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitMonitor( monitor* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitMarker( marker* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitDrift( drift* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitRbend( rbend* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitSbend( sbend* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitSector( sector* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitQuadrupole( quadrupole* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitJetQuadrupole( JetQuadrupole* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitThinQuad( thinQuad* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitThinSextupole( thinSextupole* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitJetthinSext( JetthinSext* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitJetthinQuad( JetthinQuad* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitThinOctupole( thinOctupole* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitThinDecapole( thinDecapole* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitThin12pole( thin12pole* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitThin14pole( thin14pole* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitThin16pole( thin16pole* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitThin18pole( thin18pole* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitThinMultipole( thinMultipole* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitSextupole( sextupole* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitBBLens( BBLens* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitThinSeptum( thinSeptum* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitThinLamb( thinLamb* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
 
 protected:
-  BmlVisitor();
-  virtual ~BmlVisitor();
+  BmlVisitor() {}
+  virtual ~BmlVisitor() {}
 
 };
 
