@@ -10,30 +10,30 @@
 # RANLIB      "ranlib" = use ranlib, "echo" = don't use ranlib
 #
 
-ACCUMULATOR_INC	= $(FNALROOT)/machines/accumulator/include
-BEAMLINE_INC	= $(FNALROOT)/beamline/include
-BOOSTER_INC 	= $(FNALROOT)/machines/booster/include
-MXYZPTLK_INC	= $(FNALROOT)/mxyzptlk/include
-FILTER_INC 	= $(FNALROOT)/filter/include
-RECYCLER_INC	= $(FNALROOT)/machines/recycler/include
-SERVER_INC	= $(FNALROOT)/server/include
-SOCKET_INC	= $(FNALROOT)/socket/include
-VISITOR_INC	= $(FNALROOT)/visitor/include
-SYBASE_INC	= $(FNALROOT)/sybase/include
-SWYD_INC	= $(FNALROOT)/machines/swyd/include
-MACHINE_INC	= $(FNALROOT)/machines/Machine/include
-TEV_INC		= $(FNALROOT)/machines/tev/include
-MI_INC 		= $(FNALROOT)/machines/mi/include
-MI_8_INC	= $(FNALROOT)/machines/mi_8gev/include
-MR_8_INC	= $(FNALROOT)/machines/mr_8gev/include
-TCL_INC 	= $(FNALROOT)/tcl/include
-INTEGRATOR_INC	= $(FNALROOT)/integrator/include
-VMALLOC_INC	= $(FNALROOT)/vmalloc
-DATAACQ_INC	= $(FNALROOT)/dataacq/include
-BASIC_TOOLKIT_INC	= $(FNALROOT)/basic_toolkit/include
-PHYSICS_TOOLKIT_INC	= $(FNALROOT)/physics_toolkit/include
-
-# REC_BL_30_INC  	= $(FNALROOT)/machines/rec_beamline_30/include
+ACCUMULATOR_INC     = $(FNALROOT)/machines/accumulator/include
+BASIC_TOOLKIT_INC   = $(FNALROOT)/basic_toolkit/include
+BEAMLINE_INC        = $(FNALROOT)/beamline/include
+BOOSTER_INC         = $(FNALROOT)/machines/booster/include
+DATAACQ_INC         = $(FNALROOT)/dataacq/include
+FILTER_INC          = $(FNALROOT)/filter/include
+INTEGRATOR_INC      = $(FNALROOT)/integrator/include
+MACHINE_INC         = $(FNALROOT)/machines/Machine/include
+MI_INC              = $(FNALROOT)/machines/mi/include
+MI_8_INC            = $(FNALROOT)/machines/mi_8gev/include
+MR_8_INC            = $(FNALROOT)/machines/mr_8gev/include
+MXYZPTLK_INC        = $(FNALROOT)/mxyzptlk/include
+PHYSICS_TOOLKIT_INC = $(FNALROOT)/physics_toolkit/include
+RECYCLER_INC        = $(FNALROOT)/machines/recycler/include
+SERVER_INC	    = $(FNALROOT)/server/include
+SOCKET_INC          = $(FNALROOT)/socket/include
+SWYD_INC            = $(FNALROOT)/machines/swyd/include
+SYBASE_INC          = $(FNALROOT)/sybase/include
+TCL_INC             = $(FNALROOT)/tcl/include
+TEV_INC             = $(FNALROOT)/machines/tev/include
+TUNER_INC           = $(FNALROOT)/tuner/include
+VISITOR_INC         = $(FNALROOT)/visitor/include
+VMALLOC_INC         = $(FNALROOT)/vmalloc
+# REC_BL_30_INC     = $(FNALROOT)/machines/rec_beamline_30/include
 
 gcc:
 	$(MAKE) targets \
@@ -148,7 +148,7 @@ solaris-debug:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = -g " \
-	"C++FLAGS = -g -library=iostream -sb -ptr$(FNALROOT) -verbose=template" \
+	"C++FLAGS = -g -library=iostream -sb -verbose=template" \
 	"INLINE_FLAG = +d " \
 	"MAKELIB = CC -xar -o" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
