@@ -109,7 +109,7 @@ void JetVector::Set( const Jet* x )
 #ifndef NOCHECKS
     CHECKOUT(pje != myEnv, "JetVector::Set", "Wrong environment.")
 #endif
-  for ( int i = 0; i < 3; i++ ) {
+  for ( int i = 0; i < dim; i++ ) {
 #ifndef NOCHECKS
     CHECKOUT(x[i]->myEnv != pje, "JetVector::Set", "Inequivalent environments.")
 #endif
@@ -237,6 +237,15 @@ JetVector operator* ( double c, const JetVector& x )
 {
   JetVector z( x.dim, 0, x.myEnv );
   for ( int i = 0; i < x.dim; i++ ) z.comp[i] = c * x.comp[i];
+  return z;
+}
+
+JetVector operator* ( const Jet& c, const Vector& x )
+{
+  static int d, i;
+  d = x.Dim();
+  JetVector z( d, 0, c.Env() );
+  for ( i = 0; i < d; i++ ) z.SetComponent( i, c * x(i) );
   return z;
 }
 
