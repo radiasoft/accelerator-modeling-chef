@@ -53,6 +53,35 @@ void combinedFunction::append(bmlnElmnt& x) {
   length += x.Length();
 }
 
+
+void combinedFunction::setField( bmlnElmnt::CRITFUNC crit, 
+                                 double s )
+{
+  DeepBeamlineIterator dbi( p_bml );
+  bmlnElmnt* element;
+  double count = 0.0;
+  double newstrength;
+  slist  foundElements;
+
+  while((  element = dbi++  )) {
+    if( crit( element ) ) foundElements.append( element );
+  }
+
+  if( count > 0.0 ) {
+    newstrength = s/foundElements.size();
+    slist_iterator getNext( foundElements );
+    while((  element = (bmlnElmnt*) getNext()  )) {
+      if( 0 == strcmp( "combinedFunction", element->Type() ) ) {
+        ((combinedFunction*) element)->setField( crit, newstrength );
+      }
+      else {
+        element->setStrength( newstrength );
+      }
+    }
+  }
+}
+
+
 void combinedFunction::setField(WHICH_MULTIPOLE mult, double field) {
   dlist_iterator getNext(*(dlist*)p_bml);
   bmlnElmnt* element;
