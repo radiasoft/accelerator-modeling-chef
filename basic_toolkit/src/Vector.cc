@@ -112,16 +112,16 @@ void Vector::Set( const double* x )
 
 void Vector::set( double x, double y, double z )
 {
-  static char firstTime = 1;
-  if( firstTime ) {
-    firstTime = 0;
-    cerr << "\n"
-            "*** WARNING ***                                 \n"
-            "*** WARNING *** Vector::set( double, double, double ) \n"
-            "*** WARNING *** This function is obsolete.      \n"
-            "*** WARNING ***                                 \n"
-         << endl;
-  }
+  // ??? REMOVE: static char firstTime = 1;
+  // ??? REMOVE: if( firstTime ) {
+  // ??? REMOVE:   firstTime = 0;
+  // ??? REMOVE:   cerr << "\n"
+  // ??? REMOVE:           "*** WARNING ***                                 \n"
+  // ??? REMOVE:           "*** WARNING *** Vector::set( double, double, double ) \n"
+  // ??? REMOVE:           "*** WARNING *** This function is obsolete.      \n"
+  // ??? REMOVE:           "*** WARNING ***                                 \n"
+  // ??? REMOVE:        << endl;
+  // ??? REMOVE: }
   if( dim >= 3 ) {
     comp[0] = x;
     comp[1] = y;
