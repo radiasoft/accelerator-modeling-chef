@@ -45,8 +45,17 @@
 class ParticleBunch;
 class Aperture;
 class Particle;
-class Jet;
-class JetVector;
+
+template<typename T1, typename T2> 
+class TJet;
+typedef TJet<double,FNAL::Complex> Jet;
+// class Jet;
+
+template<typename T1, typename T2> 
+class TJetVector;
+typedef TJetVector<double,FNAL::Complex> JetVector;
+// class JetVector;
+
 class JetParticle;
 class InsertionList;
 class sector;

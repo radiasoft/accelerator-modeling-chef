@@ -37,6 +37,8 @@
 #include <iostream>
 #endif
 
+#include "complexAddon.h"
+
 class beamline;
 class ClosedOrbitSage;
 class ChromaticityAdjuster;
@@ -51,7 +53,10 @@ class DeepBeamlineIterator;
 class ReverseBeamlineIterator;
 class DeepReverseBeamlineIterator;
 
-class Mapping;
+template<typename T1, typename T2> 
+class TMapping;
+typedef TMapping<double,FNAL::Complex> Mapping;
+// class Mapping;
 
 #ifndef LATTFUNCSAGE_H
 #include "LattFuncSage.h"

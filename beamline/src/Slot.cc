@@ -608,7 +608,7 @@ void Slot::processFrame( const Frame& frm, JetParticle& p ) const
   static bool firstTime = 1;
   
   Mapping   inState ( p.State() );
-  Jet       temp    ( inState.Env() );
+  Jet       temp    ( (Jet__environment*) inState.Env() );
   static    double  cs, sn;
 
 

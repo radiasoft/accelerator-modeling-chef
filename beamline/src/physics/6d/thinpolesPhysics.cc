@@ -34,7 +34,7 @@
 #endif
 
 #include "thinpoles.h"
-#include "JetC.h"
+#include "Jet"
 #include "Particle.h"
 
 void thin12pole::localPropagate( Particle& p ) {

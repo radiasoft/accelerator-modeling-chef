@@ -48,7 +48,11 @@
 
 class Particle;
 class JetParticle;
-class Jet;
+
+template<typename T1, typename T2> 
+class TJet;
+typedef TJet<double,FNAL::Complex> Jet;
+// class Jet;
 
 // ---------------------------
 class particleVisitor : public BmlVisitor {

@@ -446,7 +446,7 @@ AntiMuon::~AntiMuon() {
 JetParticle::JetParticle( double mass ) {
  q     = 0.0;
  // ??? REMOVE for( int i = 0; i < BMLN_dynDim; i++ )  state.SetComponent( i, 0.0 );
- state = Mapping( "id", Jet::lastEnv );
+ state = Mapping( "id", Jet::_lastEnv );
  E     = mass;
  p     = 0.0;
  m     = mass;
@@ -459,7 +459,7 @@ JetParticle::JetParticle( double mass ) {
 
 JetParticle::JetParticle( double mass, double energy ) {
  q = 0.0;
- state = Mapping( "id", Jet::lastEnv );
+ state = Mapping( "id", Jet::_lastEnv );
  m = mass;
  E = energy;
  if( E < m ) {
@@ -480,9 +480,9 @@ JetParticle::JetParticle( double mass, double energy ) {
 
 JetParticle::JetParticle( double mass, double energy, double* s ) {
  q = 0.0;
- state = Mapping( "id", Jet::lastEnv );
+ state = Mapping( "id", Jet::_lastEnv );
  for( int i = 0; i < state.Dim(); i++ )  
-   state(i) = state(i) + ( s[i] - Jet::lastEnv->refPoint[i] );
+   state(i) = state(i) + ( s[i] - Jet::_lastEnv->_refPoint[i] );
  m = mass;
  E = energy;
  if( E < m ) {
@@ -503,9 +503,9 @@ JetParticle::JetParticle( double mass, double energy, double* s ) {
 
 JetParticle::JetParticle( const Particle& u ) {
  q = u.Charge();
- state = Mapping( "id", Jet::lastEnv );
+ state = Mapping( "id", Jet::_lastEnv );
  for( int i = 0; i < state.Dim(); i++ )  
-   state(i) = state(i) + ( u.State(i) - Jet::lastEnv->refPoint[i] );
+   state(i) = state(i) + ( u.State(i) - Jet::_lastEnv->_refPoint[i] );
  m = u.Mass();
  E = u.ReferenceEnergy();
  if( E < m ) {
@@ -552,19 +552,19 @@ void JetParticle::setState( const Vector& u ) {
          uic.str().c_str() ) );
  }
 
- Jet__environment* pje = state.Env();
+ Jet__environment* pje = ((Jet__environment*) state.Env());
  state = Mapping( "id", pje );
  for( int i = 0; i < state.Dim(); i++ )  
-   state(i) = state(i) + ( u(i) - pje->refPoint[i] );
+   state(i) = state(i) + ( u(i) - pje->_refPoint[i] );
  // ??? REMOVE for( int i = 0; i < BMLN_dynDim; i++ )  state.SetComponent( i, u[i] );
  // ??? REMOVE state.fixReference(u);
 } 
 
 void JetParticle::setState( double* u ) {
- Jet__environment* pje = state.Env();
+ Jet__environment* pje = ((Jet__environment*) state.Env());
  state = Mapping( "id", pje );
  for( int i = 0; i < state.Dim(); i++ )  
-   state(i) = state(i) + ( u[i] - pje->refPoint[i] );
+   state(i) = state(i) + ( u[i] - pje->_refPoint[i] );
  // ??? REMOVE for( int i = 0; i < BMLN_dynDim; i++ )  state.SetComponent( i, u[i] );
  // ??? REMOVE state.fixReference(u);
 } 

@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 /*
  *  File: ClosedOrbitSage.cc
@@ -65,8 +65,8 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
   // Preliminary steps ...
   beamline* bml = this->_myBeamlinePtr;
-  Jet__environment* storedEnv = Jet::lastEnv;   // Just precautionary
-  Jet::lastEnv = (p_jp->State()).Env();
+  Jet__environment* storedEnv = Jet::_lastEnv;   // Just precautionary
+  Jet::_lastEnv = (Jet__environment*) (p_jp->State()).Env();
 
 
   // Data structures for handling RF ...
@@ -237,7 +237,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   }
 
   // Reset the Jet environment ...
-  Jet::lastEnv = storedEnv;
+  Jet::_lastEnv = storedEnv;
 
 
   // ??? REMOVE: Put the argument on the closed orbit
