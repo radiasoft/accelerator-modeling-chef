@@ -112,9 +112,11 @@ MatrixD::MatrixD(const char* flag, int dimension) : stacked(0) {
   ml = new MLD(dimension,dimension,0.0);
   
   if( ((double) (dimension/2) != tmp_float/2.0) && 
-      (flag[0] == 'J')
-    )
-    error("dimension must be even","for J matrix");
+      (flag[0] == 'J') ) {
+    throw( Generic( dimension, dimension
+                     , "MatrixD::MatrixD(const char* flag, int dimension)"
+                     , "Dimension must be even for J matrix") );
+  }
 
   if (flag[0]  == 'I') {
     for (i = 0; i< dimension; i++) {
@@ -125,31 +127,13 @@ MatrixD::MatrixD(const char* flag, int dimension) : stacked(0) {
       ml->m[i-dimension/2][i] = 1;
       ml->m[i][i-dimension/2] = -1;
     }
-  } else
-    error("Unknown flag: ",flag);
+  } else {
+      throw( Generic( dimension, dimension
+                     , "MatrixD::MatrixD(const char* flag, int dimension)"
+                     , strcat("Unknown flag: ", flag) ) );
+  }
 }
 
-/* ??? OLD FORM: REMOVE
-MatrixD::MatrixD(const char* flag, int dimension) {
-  int i;
-  float tmp_float = dimension/2.0;
-  ml = new MLD(dimension,dimension,0.0);
-  
-  if(((dimension/2) != tmp_float) && (flag[0] == 'J'))
-    error("dimension must be even","for J and I matrix");
-  if (flag[0]  == 'I') {
-    for (i = 0; i< dimension; i++) {
-      ml->m[i][i] = 1.0;
-    }
-  } else if (flag[0] == 'J') {
-    for (i = dimension/2; i< dimension; i++) {
-      ml->m[i-dimension/2][i] = 1;
-      ml->m[i][i-dimension/2] = -1;
-    }
-  } else
-    error("Unknown flag: ",flag);
-}
-*/
 MatrixD::MatrixD(const MatrixD& X) {
   stacked = X.stacked;
   ml = X.ml;
@@ -193,13 +177,6 @@ MatrixD& MatrixD::DeepCopy(const MatrixD& x) {
  }
  stacked = 0;   // ??? This line is probably unnecessary.
  return *this; 
-}
-
-void MatrixD::error( const char* msg1, const char* msg2 ) const {
-  double temp = 0.0;
-  cerr << "MatrixD error: " << msg1 << " " << msg2  << endl;
-  double temp1 = 1.0/temp;
-//  exit(1);
 }
 
 char operator==( const MatrixD& x, const MatrixD& y ) {
@@ -267,12 +244,10 @@ MatrixD MatrixD::transpose() const {
 
 double MatrixD::trace() {
   double temp = 0.0;
-
-  if(rows()  != cols())
-    error("MatrixD must be square to take a trace!\n");
-  for (int i = 0; i < rows(); i++)  {
-      temp += ml->m[i][i];
+  if(rows()  != cols()) {
+    throw( NotSquare( rows(), cols(), "double MatrixD::trace()" )  );
   }
+  else { for (int i = 0; i < rows(); i++)  { temp += ml->m[i][i]; } }
   return temp;
 }
 
@@ -300,37 +275,44 @@ bool MatrixD::isOrthogonal() const
 }
 
 double MatrixD::determinant() {
-  if(rows()  != cols())
-    error("MatrixD must be square for determinant()");
-  int* indx = new int[cols()]; // create the "index vector
-			       // see pp 38. in Numerical Recipes
-  int d;
-  // perform the decomposition once:
+  double det = 0.0;
+  if(rows() != cols()) {
+    throw( NotSquare( rows(), cols(), "double MatrixD::determinant()" )  );
+  }
+  else {
+    int* indx = new int[cols()]; // create the "index vector
+  			         // see pp 38. in Numerical Recipes
+    int d;
+    // perform the decomposition once:
 
-  MatrixD decomp = lu_decompose(indx,d);
-  double determinant = d;
-  for(int i=0; i < cols() ; i++)
-    determinant *= decomp.ml->m[i][i];
-  delete []indx;
-  return determinant;
+    MatrixD decomp = lu_decompose(indx,d);
+    det = d;
+    for(int i=0; i < cols() ; i++)
+      det *= decomp.ml->m[i][i];
+    delete [] indx;
+  }
+  return det;
 }
 
 MatrixD MatrixD::inverse() const {
-  if(rows()  != cols())
-    error("MatrixD must be square for inverse()");
-  MatrixD Y("I",rows()); // create an identity MatrixD
-  int* indx = new int[cols()];  // create the "index vector"
-  MatrixD B(cols());     // see Press & Flannery
-  int d;
-  // perform the decomposition once:
-  MatrixD decomp = lu_decompose(indx,d);
-  for(int col = 0; col < cols(); col++){
-    B.copy_column(Y,col,0);
-    decomp.lu_back_subst(indx,B);
-    Y.copy_column(B,0,col);
+  if(rows()  != cols()) {
+    throw( NotSquare( rows(), cols(), "MatrixD MatrixD::inverse()" )  );
   }
-  delete []indx;
-  return Y;
+  else {
+    MatrixD Y("I",rows()); // create an identity MatrixD
+    int* indx = new int[cols()];  // create the "index vector"
+    MatrixD B(cols());     // see Press & Flannery
+    int d;
+    // perform the decomposition once:
+    MatrixD decomp = lu_decompose(indx,d);
+    for(int col = 0; col < cols(); col++){
+      B.copy_column(Y,col,0);
+      decomp.lu_back_subst(indx,B);
+      Y.copy_column(B,0,col);
+    }
+    delete []indx;
+    return Y;
+  }
 }
 
 MatrixC MatrixD::eigenValues() {
@@ -360,7 +342,7 @@ MatrixC MatrixD::eigenValues() {
 
   if(ierr != 0) {
     cerr << "MatrixD: Error in eigenvalue routine. error = ";
-    cerr << ierr<< endl;
+    cerr << ierr << endl;
     delete []wr;
     delete []wi;
     delete []iv1;
@@ -637,51 +619,50 @@ MatrixC MatrixD::eigenVectors() {
 // operators
 
 double& MatrixD::operator()(int i, int j) {
-  if((i >= rows()) || (j >= cols())) {
-    cerr << "\n*** ERROR *** " << endl;
-    cerr << "*** ERROR *** double& MatrixD::operator()(int i, int j) " << endl;
-    cerr << "*** ERROR *** limits are " << rows() << " " << cols() << endl;
-    cerr << "*** ERROR *** You asked for "<< i << " " << j << endl;
-    cerr << "*** ERROR *** matrix limits exceeded " << endl;
-    exit(1);
+  if((i >= rows()) || (j >= cols()) ||
+     (i < 0      ) || (j < 0      )    ) 
+  { throw( IndexRange( i, j, rows()-1, cols()-1, 
+                       "double& MatrixD::operator()(int i, int j)" ) );
   }
- return ml->m[i][j];
+  else { return ml->m[i][j]; }
 }
 
 double  MatrixD::operator()(int i, int j) const {
-  if((i >= rows()) || (j >= cols())) {
-    cerr << "\n*** ERROR *** " << endl;
-    cerr << "*** ERROR *** double& MatrixD::operator()(int i, int j) " << endl;
-    cerr << "*** ERROR *** limits are " << rows() << " " << cols() << endl;
-    cerr << "*** ERROR *** You asked for "<< i << " " << j << endl;
-    cerr << "*** ERROR *** matrix limits exceeded " << endl;
-    exit(1);
+  if((i >= rows()) || (j >= cols()) ||
+     (i < 0      ) || (j < 0      )    ) 
+  { throw( IndexRange( i, j, rows()-1, cols()-1, 
+                       "double MatrixD::operator()(int i, int j) const" ) );
   }
- return ml->m[i][j];
+  else { return ml->m[i][j]; }
 }
 
 double MatrixD::getElement(int i, int j) const {
-  if((i >= rows()) || (j >= cols())) {
-    cerr << "\n*** ERROR *** " << endl;
-    cerr << "*** ERROR *** double& MatrixD::getElement(int i, int j) " << endl;
-    cerr << "*** ERROR *** limits are " << rows() << " " << cols() << endl;
-    cerr << "*** ERROR *** You asked for "<< i << " " << j << endl;
-    cerr << "*** ERROR *** matrix limits exceeded " << endl;
-    exit(1);
-  }
- return ml->m[i][j];
+  return this->operator()(i,j);
 }
 
 double& MatrixD::operator()(int i) {
-  if( rows() == 1 ) return ml->m[0][i];
-  if( cols() == 1 ) return ml->m[i][0];
-  cerr << "\n*** ERROR *** " << endl;
-  cerr << "*** ERROR *** double& MatrixD::operator()(int i) " << endl;
-  cerr << "*** ERROR *** Can only be used with single row  " << endl;
-  cerr << "*** ERROR *** or column matrices. " << endl;
-  cerr << "*** ERROR *** " << endl;
-  exit(1);
-  return ml->m[0][0];
+  if( rows() == 1 ) { 
+    if( i >= 0 && i < cols() ) {
+      return ml->m[0][i]; 
+    }
+    else {
+      throw( IndexRange( 0, i, 0, cols()-1, 
+                       "double& MatrixD::operator()(int i)" ) );
+    }
+  }
+  else if( cols() == 1 ) { 
+    if( i >= 0 && i < rows() ) {
+      return ml->m[i][0]; 
+    }
+    else {
+      throw( IndexRange( i, 0, rows()-1, 0, 
+                       "double& MatrixD::operator()(int i)" ) );
+    }
+  }
+  else { 
+    throw( NotVector( i, rows(), cols(),
+                      "double& MatrixD::operator()(int i)" ) );
+  }
 }
 
 ostream& operator<<(ostream& os, const MatrixD& x)
@@ -704,8 +685,10 @@ MatrixD operator+(const MatrixD& x, const MatrixD& y) {
   MLD* xPtr = x.ml;
   MLD* yPtr = y.ml;
   MLD* zPtr = z.ml;
-  if(( x.rows() != y.rows()) || (x.cols() != y.cols()))
-    x.error("Must have equal dimensions for addition!");
+  if( (x.rows() != y.rows()) || (x.cols() != y.cols()) ) {
+    throw( MatrixD::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+           "MatrixD operator+(const MatrixD& x, const MatrixD& y)" ) );
+  }
   for(int i = 0; i< x.rows() ; i++) {
     for(int j = 0; j < x.cols(); j++) {
       zPtr->m[i][j] = xPtr->m[i][j] + yPtr->m[i][j];
@@ -751,8 +734,10 @@ MatrixD operator-(const MatrixD& x, const MatrixD& y) {
   MLD* xPtr = x.ml;
   MLD* yPtr = y.ml;
   MLD* zPtr = z.ml;
-  if(( x.rows() != y.rows()) || (x.cols() != y.cols()))
-    x.error("Must have equal dimensions for addition!");
+  if(( x.rows() != y.rows()) || (x.cols() != y.cols())) {
+    throw( MatrixD::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+           "MatrixD operator-(const MatrixD& x, const MatrixD& y)" ) );
+  }
   for(int i = 0; i< x.rows() ; i++) {
     for(int j = 0; j < x.cols(); j++) {
       zPtr->m[i][j] = xPtr->m[i][j] - yPtr->m[i][j];
@@ -813,8 +798,10 @@ MatrixD operator*(const MatrixD& x, const MatrixD& y)  {
   MLD* xPtr = x.ml;
   MLD* yPtr = y.ml;
   MLD* zPtr = z.ml;
-  if( x.cols() != y.rows())
-    x.error("# of rows of 2nd matrix must equal # cols of 1st for multiply");
+  if( x.cols() != y.rows()) {
+    throw( MatrixD::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+           "MatrixD operator*(const MatrixD& x, const MatrixD& y)" ) );
+  }
   double tmp;
   for(int row = 0; row < x.rows(); row++) {
     for(int col = 0; col < y.cols(); col++){
@@ -858,10 +845,14 @@ The private support functions for determinant & inverse:
 // copy the from_col of mm to the to_col of "this"
 
 void MatrixD::copy_column(MatrixD& mm, int from_col, int to_col){
-  if(rows()  != mm.rows())
-    error("number of rows must be equal for copy_column()");
-  for(int row=0; row < rows(); row++)
-    ml->m[row][to_col] = mm.ml->m[row][from_col];
+  if(rows()  != mm.rows()) {
+    throw( Incompatible( rows(), cols(), mm.rows(), mm.cols(), 
+       "void MatrixD::copy_column(MatrixD& mm, int from_col, int to_col)" )  );
+  }
+  else {
+    for(int row=0; row < rows(); row++)
+      ml->m[row][to_col] = mm.ml->m[row][from_col];
+  }
 }
 
 void MatrixD::switch_columns(int col1, int col2) {
@@ -895,10 +886,14 @@ void MatrixD::switch_rows(int row1, int row2) {
 
 MatrixD MatrixD::scale()  {
   double temp;
-  if (rows() <= 0 || cols() <= 0)
-    error(" bad MatrixD for scale()");
-  if (rows() != cols())
-    error(" MatrixD must be square for scale()");   
+  if (rows() <= 0 || cols() <= 0) {
+    throw( Generic( rows(), cols()
+                   , "MatrixD MatrixD::scale()"
+                   , "Bad MatrixD for scale()" ) );
+  }
+  if (rows() != cols()) {
+    throw( NotSquare( rows(), cols(), "MatrixD MatrixD::scale()" )  );
+  }
   MatrixD scale_vector(cols());
   
   for (int row = 0; row < rows(); row++){
@@ -909,8 +904,10 @@ MatrixD MatrixD::scale()  {
 	maximum = fabs(temp); 
     }
     if(maximum == 0.0) {
-		cerr << "Matrix = \n" << *this << endl;
-      error("singular MatrixD in scale()");
+      cerr << "\n*** ERROR *** Matrix = \n" << *this << endl;
+      throw( Generic( rows(), cols()
+                     , "MatrixD MatrixD::scale()"
+                     , "Singular MatrixD in scale()" ) );
     }
     // save scaling
     scale_vector.ml->m[row][0] = 1.0/maximum; 
@@ -928,8 +925,10 @@ MatrixD MatrixD::lu_decompose(int* indx, int& d ) const
  This routine is used in combination with lu_back_subst to
  solve linear equations or invert a matrix.
 */
-  if(rows()  != cols())
-    error("Matrix must be square to L-U decompose!\n");
+  if(rows()  != cols()) {
+    throw( NotSquare( rows(), cols(), 
+      "MatrixD MatrixD::lu_decompose(int* indx, int& d ) const " )  );
+  }
   d = 1; // parity check
   int j,i,k,col_max; // counters
   double dum; // from the book - I don't know signj
@@ -1028,10 +1027,14 @@ void MatrixD::lu_back_subst(int* indx, MatrixD& b)  {
 // for use in matrix inversion. See pp 36-37 in
 // Press & Flannery.
   
-  if(rows()  != cols())
-    error ("non-square lu_decomp matrix in lu_back_subst()");
-  if(rows()  != b.rows()) 
-    error("wrong size B vector passed to lu_back_subst()");
+  if(rows()  != cols()) {
+    throw( NotSquare( rows(), cols(), 
+      "void MatrixD::lu_back_subst(int* indx, MatrixD& b)" )  );
+  }
+  if(rows()  != b.rows()) {
+    throw( Incompatible( rows(), cols(), b.rows(), b.cols(), 
+      "void MatrixD::lu_back_subst(int* indx, MatrixD& b)" )  );
+  }
 //  if(rows()  != indx.rows())
 //    error("wrong size indx vector passed to lu_back_subst()");
   int i,j,ip;
@@ -1066,6 +1069,98 @@ void MatrixD::lu_back_subst(int* indx, MatrixD& b)  {
     }
     // store a component of the soln vector X:
     b.ml->m[i][0] = sum/ml->m[i][i];
+  }
+}
+
+
+
+// Implementation of exception subclasses
+
+MatrixD::IndexRange::IndexRange( int a, int b, int c, int d, const char* f ) 
+: i(a), j(b), im(c), jm(d)
+{
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << "\n*** ERROR *** "
+            "\n*** ERROR *** " << f
+         << "\n*** ERROR *** limits are " << im << " " << jm
+         << "\n*** ERROR *** You asked for "<< i << " " << j
+         << "\n*** ERROR *** matrix limits exceeded " 
+            "\n*** ERROR *** " 
+            "\n*** ERROR *** This message is printed only once." 
+         << endl;
+    firstTime = false;
+  }
+}
+
+
+MatrixD::NotVector::NotVector( int x, int y, int z, const char* f ) 
+: i(x), r(y), c(z)
+{
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << "\n*** ERROR *** "
+            "\n*** ERROR *** " << f
+         << "\n*** ERROR *** Matrix is not a vector:" 
+            "\n*** ERROR *** its dimenions are " << r << " x " << c
+         << "\n*** ERROR *** " 
+            "\n*** ERROR *** " 
+            "\n*** ERROR *** This message is printed only once." 
+         << endl;
+    firstTime = false;
+  }
+}
+
+
+MatrixD::Incompatible::Incompatible( int x, int y, int z, int t, const char* f ) 
+  : ra(x), ca(y), rb(z), cb(t)
+{
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << "\n*** ERROR *** "
+            "\n*** ERROR *** " << f
+         << "\n*** ERROR *** Incompatible dimensions between matrices."
+            "\n*** ERROR *** First  argument is " << ra << " x " << ca
+         << "\n*** ERROR *** Second argument is " << rb << " x " << cb
+         << "\n*** ERROR *** " 
+            "\n*** ERROR *** This message is printed only once." 
+         << endl;
+    firstTime = false;
+  }
+}
+
+
+MatrixD::NotSquare::NotSquare( int x, int y, const char* f ) 
+  : r(x), c(y)
+{
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << "\n*** ERROR *** "
+            "\n*** ERROR *** " << f
+         << "\n*** ERROR *** Matrix must be square: it's dimensions are "
+         << r << " x " << c
+         << "\n*** ERROR *** " 
+            "\n*** ERROR *** This message is printed only once." 
+         << endl;
+    firstTime = false;
+  }
+}
+
+
+MatrixD::Generic::Generic( int x, int y, const char* f, const char* m ) 
+  : r(x), c(y)
+{
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << "\n*** ERROR *** "
+            "\n*** ERROR *** " << f
+         << "\n*** ERROR *** " << m
+         << "\n*** ERROR *** The dimensions are "
+         << r << " x " << c
+         << "\n*** ERROR *** " 
+            "\n*** ERROR *** This message is printed only once." 
+         << endl;
+    firstTime = false;
   }
 }
 
@@ -1279,8 +1374,11 @@ MatrixC::MatrixC(const char* flag, int dimension) {
   float tmp_float = dimension/2.0;
   ml = new MLC(dimension,dimension,complex_0);
   
-  if(((dimension/2) != tmp_float) && (flag[0] == 'J'))
-    error("dimension must be even","for J and I matrix");
+  if(((dimension/2) != tmp_float) && (flag[0] == 'J')) {
+    throw( MatrixD::Generic( dimension, dimension
+                    , "MatrixC::MatrixC(const char* flag, int dimension)"
+                    , "Dimension must be even for J or I matrix") );
+  }
   if (flag[0]  == 'I') {
     for (i = 0; i< dimension; i++) {
       ml->m[i][i] = complex_1;
@@ -1290,8 +1388,11 @@ MatrixC::MatrixC(const char* flag, int dimension) {
       ml->m[i-dimension/2][i] = complex_1;
       ml->m[i][i-dimension/2] = -complex_1;
     }
-  } else
-    error("Unknown flag: ",flag);
+  } else {
+      throw( MatrixD::Generic( dimension, dimension
+                     , "MatrixC::MatrixC(const char* flag, int dimension)"
+                     , strcat("Unknown flag: ", flag) ) );
+  }
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -1340,11 +1441,6 @@ MatrixC& MatrixC::DeepCopy(const MatrixC& x) {
  }
  stacked = 0;   // ??? This line is probably unnecessary.
  return *this; 
-}
-
-void MatrixC::error( const char* msg1, const char* msg2 ) const {
-  cerr << "MatrixC error: " << msg1 << " " << msg2  << endl;
-  exit(1);
 }
 
 char operator==( const MatrixC& x, const MatrixC& y ) {
@@ -1425,17 +1521,18 @@ MatrixC MatrixC::dagger() const {
 Complex MatrixC::trace() {
   Complex temp = complex_0;
 
-  if(rows()  != cols())
-    error("MatrixC must be square to take a trace!\n");
-  for (int i = 0; i < rows(); i++)  {
-      temp += ml->m[i][i];
+  if(rows()  != cols()) {
+    throw( MatrixD::NotSquare( rows(), cols(), "double MatrixC::trace()" )  );
   }
+  else { for (int i = 0; i < rows(); i++)  { temp += ml->m[i][i]; } }
   return temp;
 }
 
 Complex MatrixC::determinant() {
-  if(rows()  != cols())
-    error("MatrixC must be square for determinant()");
+  if(rows() != cols()) {
+    throw( MatrixD::NotSquare( rows(), cols(), "Complex MatrixC::determinant()" )  );
+  }
+
   int* indx = new int[cols()]; // create the "index vector
 			       // see pp 38. in Numerical Recipes
   int d;
@@ -1450,8 +1547,10 @@ Complex MatrixC::determinant() {
 }
 
 MatrixC MatrixC::inverse() {
-  if(rows()  != cols())
-    error("MatrixC must be square for inverse()");
+  if(rows()  != cols()) {
+    throw( MatrixD::NotSquare( rows(), cols(), "MatrixC MatrixC::inverse()" )  );
+  }
+
   MatrixC Y("I",rows()); // create an identity MatrixC
   int* indx = new int[cols()];  // create the "index vector"
   MatrixC B(cols());     // see Press & Flannery
@@ -1644,39 +1743,46 @@ MatrixC MatrixC::eigenVectors() {
 // operators
 
 Complex& MatrixC::operator()(int i, int j) {
-  if((i >= rows()) || (j >= cols())) {
-    cerr << "\n*** ERROR *** " << endl;
-    cerr << "*** ERROR *** Complex& MatrixC::operator()(int i, int j)" << endl;
-    cerr << "*** ERROR *** limits are " << rows() << " " << cols() << endl;
-    cerr << "*** ERROR *** You asked for "<< i << " " << j << endl;
-    cerr << "*** ERROR *** matrix limits exceeded " << endl;
-    exit(1);
+  if((i >= rows()) || (j >= cols()) ||
+     (i < 0      ) || (j < 0      )    ) 
+  { throw( MatrixD::IndexRange( i, j, rows()-1, cols()-1, 
+                       "Complex& MatrixC::operator()(int i, int j)" ) );
   }
-  return ml->m[i][j];
+  else { return ml->m[i][j]; }
 }
 
 Complex MatrixC::operator()(int i, int j) const {
-  if((i >= rows()) || (j >= cols())) {
-    cerr << "\n*** ERROR *** " << endl;
-    cerr << "*** ERROR *** Complex& MatrixC::operator()(int i, int j)" << endl;
-    cerr << "*** ERROR *** limits are " << rows() << " " << cols() << endl;
-    cerr << "*** ERROR *** You asked for "<< i << " " << j << endl;
-    cerr << "*** ERROR *** matrix limits exceeded " << endl;
-    exit(1);
+  if((i >= rows()) || (j >= cols()) ||
+     (i < 0      ) || (j < 0      )    ) 
+  { throw( MatrixD::IndexRange( i, j, rows()-1, cols()-1, 
+                       "Complex MatrixC::operator()(int i, int j) const" ) );
   }
-  return ml->m[i][j];
+  else { return ml->m[i][j]; }
 }
 
 Complex& MatrixC::operator()(int i) {
-  if( rows() == 1 ) return ml->m[0][i];
-  if( cols() == 1 ) return ml->m[i][0];
-  cerr << "\n*** ERROR *** " << endl;
-  cerr << "*** ERROR *** Complex& MatrixC::operator()(int i) " << endl;
-  cerr << "*** ERROR *** Can only be used with single row  " << endl;
-  cerr << "*** ERROR *** or column matrices. " << endl;
-  cerr << "*** ERROR *** " << endl;
-  exit(1);
-  return ml->m[0][0];
+  if( rows() == 1 ) { 
+    if( i >= 0 && i < cols() ) {
+      return ml->m[0][i]; 
+    }
+    else {
+      throw( MatrixD::IndexRange( 0, i, 0, cols()-1, 
+                       "Complex& MatrixC::operator()(int i)" ) );
+    }
+  }
+  else if( cols() == 1 ) { 
+    if( i >= 0 && i < rows() ) {
+      return ml->m[i][0]; 
+    }
+    else {
+      throw( MatrixD::IndexRange( i, 0, rows()-1, 0, 
+                       "Complex& MatrixC::operator()(int i)" ) );
+    }
+  }
+  else { 
+    throw( MatrixD::NotVector( i, rows(), cols(),
+                      "Complex& MatrixC::operator()(int i)" ) );
+  }
 }
 
 ostream& operator<<(ostream& os, const MatrixC& x)
@@ -1699,8 +1805,10 @@ MatrixC operator+(const MatrixC& x, const MatrixC& y) {
   MLC* xPtr = x.ml;
   MLC* yPtr = y.ml;
   MLC* zPtr = z.ml;
-  if(( x.rows() != y.rows()) || (x.cols() != y.cols()))
-    x.error("Must have equal dimensions for addition!");
+  if(( x.rows() != y.rows()) || (x.cols() != y.cols())) {
+    throw( MatrixD::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+           "MatrixC operator+(const MatrixC& x, const MatrixC& y)" ) );
+  }
   for(int i = 0; i< x.rows() ; i++) {
     for(int j = 0; j < x.cols(); j++) {
       zPtr->m[i][j] = xPtr->m[i][j] + yPtr->m[i][j];
@@ -1746,8 +1854,10 @@ MatrixC operator-(const MatrixC& x, const MatrixC& y) {
   MLC* xPtr = x.ml;
   MLC* yPtr = y.ml;
   MLC* zPtr = z.ml;
-  if(( x.rows() != y.rows()) || (x.cols() != y.cols()))
-    x.error("Must have equal dimensions for addition!");
+  if(( x.rows() != y.rows()) || (x.cols() != y.cols())) {
+    throw( MatrixD::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+           "MatrixC operator-(const MatrixC& x, const MatrixC& y)" ) );
+  }
   for(int i = 0; i< x.rows() ; i++) {
     for(int j = 0; j < x.cols(); j++) {
       zPtr->m[i][j] = xPtr->m[i][j] - yPtr->m[i][j];
@@ -1808,8 +1918,10 @@ MatrixC operator*(const MatrixC& x, const MatrixC& y)  {
   MLC* xPtr = x.ml;
   MLC* yPtr = y.ml;
   MLC* zPtr = z.ml;
-  if( x.cols() != y.rows())
-    x.error("# of rows of 2nd matrix must equal # cols of 1st for multiply");
+  if( x.cols() != y.rows()) {
+    throw( MatrixD::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+           "MatrixC operator*(const MatrixC& x, const MatrixC& y)" ) );
+  }
   Complex tmp;
   for(int row = 0; row < x.rows(); row++) {
     for(int col = 0; col < y.cols(); col++){
@@ -1832,8 +1944,10 @@ MatrixC operator*(const MatrixC& x, const MatrixD& y)  {
   MLC* xPtr = x.ml;
   MLD* yPtr = y.ml;
   MLC* zPtr = z.ml;
-  if( x.cols() != y.rows())
-    x.error("# of rows of 2nd matrix must equal # cols of 1st for multiply");
+  if( x.cols() != y.rows()) {
+    throw( MatrixD::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+           "MatrixC operator*(const MatrixC& x, const MatrixD& y)" ) );
+  }
   Complex tmp;
   for(int row = 0; row < x.rows(); row++) {
     for(int col = 0; col < y.cols(); col++){
@@ -1856,8 +1970,10 @@ MatrixC operator*(const MatrixD& y, const MatrixC& x)  {
   MLC* xPtr = x.ml;
   MLD* yPtr = y.ml;
   MLC* zPtr = z.ml;
-  if( y.cols() != x.rows())
-    x.error("# of rows of 2nd matrix must equal # cols of 1st for multiply");
+  if( y.cols() != x.rows()) {
+    throw( MatrixD::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+           "MatrixC operator*(const MatrixD& x, const MatrixC& y)" ) );
+  }
   Complex tmp;
   for(int row = 0; row < y.rows(); row++) {
     for(int col = 0; col < x.cols(); col++){
@@ -1934,10 +2050,14 @@ The private support functions for determinant & inverse:
 // copy the from_col of mm to the to_col of "this"
 
 void MatrixC::copy_column(MatrixC& mm, int from_col, int to_col){
-  if(rows()  != mm.rows())
-    error("number of rows must be equal for copy_column()");
-  for(int row=0; row < rows(); row++)
-    ml->m[row][to_col] = mm.ml->m[row][from_col];
+  if(rows()  != mm.rows()) {
+    throw( MatrixD::Incompatible( rows(), cols(), mm.rows(), mm.cols(), 
+       "void MatrixC::copy_column(MatrixC& mm, int from_col, int to_col)" )  );
+  }
+  else {
+    for(int row=0; row < rows(); row++)
+      ml->m[row][to_col] = mm.ml->m[row][from_col];
+  }
 }
 
 void MatrixC::switch_columns(int col1, int col2) {
@@ -1970,10 +2090,16 @@ void MatrixC::switch_rows(int row1, int row2) {
 
 MatrixC MatrixC::scale()  {
   Complex temp;
-  if (rows() <= 0 || cols() <= 0)
-    error(" bad MatrixC for scale()");
-  if (rows() != cols())
-    error(" MatrixC must be square for scale()");   
+
+  if (rows() <= 0 || cols() <= 0) {
+    throw( MatrixD::Generic( rows(), cols()
+                   , "MatrixC MatrixC::scale()"
+                   , "Bad MatrixC for scale()" ) );
+  }
+  if (rows() != cols()) {
+    throw( MatrixD::NotSquare( rows(), cols(), "MatrixC MatrixC::scale()" )  );
+  }
+
   MatrixC scale_vector(cols());
   
   for (int row = 0; row < rows(); row++){
@@ -1983,8 +2109,12 @@ MatrixC MatrixC::scale()  {
       if (abs(temp) > maximum)
 	maximum = abs(temp); 
     }
-    if(maximum == 0.0)
-      error("singular MatrixC in scale()");
+    if(maximum == 0.0) {
+      cerr << "\n*** ERROR *** Matrix = \n" << *this << endl;
+      throw( MatrixD::Generic( rows(), cols()
+                     , "MatrixC MatrixC::scale()"
+                     , "Singular MatrixC in scale()" ) );
+    }
     // save scaling
     scale_vector.ml->m[row][0] = Complex(1.0/maximum,0.0); 
   }
@@ -2000,8 +2130,10 @@ MatrixC MatrixC::lu_decompose(int* indx, int& d ) {
  This routine is used in combination with lu_back_subst to
  solve linear equations or invert a matrix.
 */
-  if(rows()  != cols())
-    error("Matrix must be square to L-U decompose!\n");
+  if(rows()  != cols()) {
+    throw( MatrixD::NotSquare( rows(), cols(), 
+      "MatrixC MatrixC::lu_decompose(int* indx, int& d ) const " )  );
+  }
   d = 1; // parity check
   int j,i,k,col_max; // counters
   Complex dum; // from the book - I don't know signj
@@ -2100,12 +2232,18 @@ void MatrixC::lu_back_subst(int* indx, MatrixC& b)  {
 // for use in matrix inversion. See pp 36-37 in
 // Press & Flannery.
   
-  if(rows()  != cols())
-    error ("non-square lu_decomp matrix in lu_back_subst()");
-  if(rows()  != b.rows()) 
-    error("wrong size B vector passed to lu_back_subst()");
+  if(rows()  != cols()) {
+    throw( MatrixD::NotSquare( rows(), cols(), 
+      "void MatrixC::lu_back_subst(int* indx, MatrixC& b)" )  );
+  }
+  if(rows()  != b.rows()) {
+    throw( MatrixD::Incompatible( rows(), cols(), b.rows(), b.cols(), 
+      "void MatrixC::lu_back_subst(int* indx, MatrixC& b)" )  );
+  }
+
 //  if(rows()  != indx.rows())
 //    error("wrong size indx vector passed to lu_back_subst()");
+
   int i,j,ip;
   int ii = -1;
   Complex sum;
@@ -2217,8 +2355,11 @@ MatrixI::MatrixI(const char* flag, int dimension) {
   float tmp_float = dimension/2.0;
   ml = new MLI(dimension,dimension,0);
   
-  if(((dimension/2) != tmp_float) && (flag[0] == 'J'))
-    error("dimension must be even","for J and I matrix");
+  if(((dimension/2) != tmp_float) && (flag[0] == 'J')) {
+    throw( MatrixD::Generic( dimension, dimension
+                     , "MatrixI::MatrixI(const char* flag, int dimension)"
+                     , "Dimension must be even for J and I matrix") );
+  }
   if (flag[0]  == 'I') {
     for (i = 0; i< dimension; i++) {
       ml->m[i][i] = 1;
@@ -2228,8 +2369,11 @@ MatrixI::MatrixI(const char* flag, int dimension) {
       ml->m[i-dimension/2][i] = 1;
       ml->m[i][i-dimension/2] = -1;
     }
-  } else
-    error("Unknown flag: ",flag);
+  } else {
+      throw( MatrixD::Generic( dimension, dimension
+                     , "MatrixI::MatrixI(const char* flag, int dimension)"
+                     , strcat("Unknown flag: ", flag) ) );
+  }
 
 #ifdef OBJECT_DEBUG
  objectCount++;
@@ -2267,12 +2411,10 @@ MatrixI MatrixI::transpose() const {
 }
 int MatrixI::trace() {
   int temp = 0;
-
-  if(rows()  != cols())
-    error("MatrixI must be square to take a trace!\n");
-  for (int i = 0; i < rows(); i++)  {
-      temp += ml->m[i][i];
+  if(rows()  != cols()) {
+    throw( MatrixD::NotSquare( rows(), cols(), "double MatrixI::trace()" )  );
   }
+  else { for (int i = 0; i < rows(); i++)  { temp += ml->m[i][i]; } }
   return temp;
 }
 
@@ -2305,45 +2447,47 @@ MatrixI& MatrixI::DeepCopy(const MatrixI& x) {
  return *this; 
 }
 
-void MatrixI::error( const char* msg1, const char* msg2 ) const {
-  cerr << "MatrixI error: " << msg1 << " " << msg2  << endl;
-  exit(1);
-}
-
 int& MatrixI::operator()(int i, int j) {
-  if((i >= rows()) || (j >= cols())) {
-    cerr << "\n*** ERROR *** " << endl;
-    cerr << "*** ERROR *** int& MatrixI::operator()(int i, int j) " << endl;
-    cerr << "*** ERROR *** limits are " << rows() << " " << cols() << endl;
-    cerr << "*** ERROR *** You asked for " << i << " " << j << endl;
-    cerr << "*** ERROR *** matrix limits exceeded " << endl;
-    exit(1);
+  if((i >= rows()) || (j >= cols()) ||
+     (i < 0      ) || (j < 0      )    ) 
+  { throw( MatrixD::IndexRange( i, j, rows()-1, cols()-1, 
+                       "int& MatrixI::operator()(int i, int j)" ) );
   }
- return ml->m[i][j];
+  else { return ml->m[i][j]; }
 }
 
 int  MatrixI::operator()(int i, int j) const {
-  if((i >= rows()) || (j >= cols())) {
-    cerr << "\n*** ERROR *** " << endl;
-    cerr << "*** ERROR *** int& MatrixI::operator()(int i, int j) " << endl;
-    cerr << "*** ERROR *** limits are " << rows() << " " << cols() << endl;
-    cerr << "*** ERROR *** You asked for " << i << " " << j << endl;
-    cerr << "*** ERROR *** matrix limits exceeded " << endl;
-    exit(1);
+  if((i >= rows()) || (j >= cols()) ||
+     (i < 0      ) || (j < 0      )    ) 
+  { throw( MatrixD::IndexRange( i, j, rows()-1, cols()-1, 
+                       "int MatrixI::operator()(int i, int j) const" ) );
   }
- return ml->m[i][j];
+  else { return ml->m[i][j]; }
 }
 
 int& MatrixI::operator()(int i) {
-  if( rows() == 1 ) return ml->m[0][i];
-  if( cols() == 1 ) return ml->m[i][0];
-  cerr << "\n*** ERROR *** " << endl;
-  cerr << "*** ERROR *** int& MatrixI::operator()(int i) " << endl;
-  cerr << "*** ERROR *** Can only be used with single row  " << endl;
-  cerr << "*** ERROR *** or column matrices. " << endl;
-  cerr << "*** ERROR *** " << endl;
-  exit(1);
-  return ml->m[0][0];
+  if( rows() == 1 ) { 
+    if( i >= 0 && i < cols() ) {
+      return ml->m[0][i]; 
+    }
+    else {
+      throw( MatrixD::IndexRange( 0, i, 0, cols()-1, 
+                       "int& MatrixI::operator()(int i)" ) );
+    }
+  }
+  else if( cols() == 1 ) { 
+    if( i >= 0 && i < rows() ) {
+      return ml->m[i][0]; 
+    }
+    else {
+      throw( MatrixD::IndexRange( i, 0, rows()-1, 0, 
+                       "int& MatrixI::operator()(int i)" ) );
+    }
+  }
+  else { 
+    throw( MatrixD::NotVector( i, rows(), cols(),
+                      "int& MatrixI::operator()(int i)" ) );
+  }
 }
 
 void MatrixI::operator+=( const int& x ) {
@@ -2386,8 +2530,10 @@ MatrixI operator+(const MatrixI& x, const MatrixI& y) {
   MLI* xPtr = x.ml;
   MLI* yPtr = y.ml;
   MLI* zPtr = z.ml;
-  if(( x.rows() != y.rows()) || (x.cols() != y.cols()))
-    x.error("Must have equal dimensions for addition!");
+  if(( x.rows() != y.rows()) || (x.cols() != y.cols())) {
+    throw( MatrixD::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+           "MatrixI operator+(const MatrixI& x, const MatrixI& y)" ) );
+  }
   for(int i = 0; i< x.rows() ; i++) {
     for(int j = 0; j < x.cols(); j++) {
       zPtr->m[i][j] = xPtr->m[i][j] + yPtr->m[i][j];
@@ -2431,8 +2577,10 @@ MatrixI operator-(const MatrixI& x, const MatrixI& y) {
   MLI* xPtr = x.ml;
   MLI* yPtr = y.ml;
   MLI* zPtr = z.ml;
-  if(( x.rows() != y.rows()) || (x.cols() != y.cols()))
-    x.error("Must have equal dimensions for addition!");
+  if(( x.rows() != y.rows()) || (x.cols() != y.cols())) {
+    throw( MatrixD::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+           "MatrixI operator-(const MatrixI& x, const MatrixI& y)" ) );
+  }
   for(int i = 0; i< x.rows() ; i++) {
     for(int j = 0; j < x.cols(); j++) {
       zPtr->m[i][j] = xPtr->m[i][j] - yPtr->m[i][j];
@@ -2493,8 +2641,10 @@ MatrixI operator*(const MatrixI& x, const MatrixI& y)  {
   MLI* xPtr = x.ml;
   MLI* yPtr = y.ml;
   MLI* zPtr = z.ml;
-  if( x.cols() != y.rows())
-    x.error("# of rows of 2nd matrix must equal # cols of 1st for multiply");
+  if( x.cols() != y.rows()) {
+    throw( MatrixD::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+           "MatrixI operator*(const MatrixI& x, const MatrixI& y)" ) );
+  }
   int tmp;
   for(int row = 0; row < x.rows(); row++) {
     for(int col = 0; col < y.cols(); col++){
