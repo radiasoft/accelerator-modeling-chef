@@ -324,8 +324,10 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
   f = ( p_myP->State() )( xp ) + xp_i;
 
   int i = 0;
-  while( (i++ < 10) && (fabs(f) > 1.0e-9) ) 
+  while( ( 5 < i ) || ( ( i < 10 ) && (fabs(f) > 1.0e-9) ) ) 
   {
+    i++;
+
     // One Newton's step ...
     z -= m*f;
     inState[x]  = z;
