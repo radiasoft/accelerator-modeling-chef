@@ -63,10 +63,10 @@ public:
   sector( char*, double* betaH,  double* alphaH,  double* psiH,
                  double* betaV,  double* alphaV,  double* psiV, double length );
 
-  sector( Jet*, double /* length */ );
-  sector( char*, Jet*, double );
-  sector( const Mapping&,  double /* length */ );
-  sector( char*, const Mapping&,  double );
+  sector( Jet*, double /* length */, char = 1 /* mapType */ );
+  sector( char*, Jet*, double, char = 1 /* mapType */ );
+  sector( const Mapping&,  double /* length */, char = 1 /* mapType */ );
+  sector( char*, const Mapping&,  double, char = 1 /* mapType */ );
   sector( const sector& );
   ~sector();
 

@@ -154,17 +154,33 @@ sector::sector( char* n, double* bH,  double* aH,  double* pH, double* bV,  doub
 } // end function sector::sector( double* bH, ... )
 
 
-sector::sector( Jet* m, double l ) : bmlnElmnt(l) {
- int i;
- mapType  = 1;
+sector::sector( Jet* m, double l, char mpt ) : bmlnElmnt(l) {
+ int i, j;
+ mapType  = mpt;
  for( i = 0; i < BMLN_dynDim; i++ ) myMap.SetComponent( i, m[i] );
+ if( mpt == 0 ) {
+   MatrixD M = myMap.Jacobian();
+   for( i = 0; i < BMLN_dynDim; i++ ) {
+     for( j = 0; j < BMLN_dynDim; i++ ) {
+       mapMatrix[i][j] = M(i,j);
+     }
+   }
+ }
 }
 
 
-sector::sector( char* n, Jet* m, double l ) : bmlnElmnt( n, l ) {
- int i;
- mapType  = 1;
+sector::sector( char* n, Jet* m, double l, char mpt ) : bmlnElmnt( n, l ) {
+ int i, j;
+ mapType  = mpt;
  for( i = 0; i < BMLN_dynDim; i++ ) myMap.SetComponent( i, m[i] );
+ if( mpt == 0 ) {
+   MatrixD M = myMap.Jacobian();
+   for( i = 0; i < BMLN_dynDim; i++ ) {
+     for( j = 0; j < BMLN_dynDim; i++ ) {
+       mapMatrix[i][j] = M(i,j);
+     }
+   }
+ }
 }
 
 sector::sector( const sector& x )
@@ -188,15 +204,33 @@ sector::sector( const sector& x )
    mapMatrix[i][j] = x.mapMatrix[i][j];
 }
 
-sector::sector( const Mapping& m, double l ) : bmlnElmnt(l) {
- mapType  = 1;
+sector::sector( const Mapping& m, double l, char mpt ) : bmlnElmnt(l) {
+ int i,j;
+ mapType  = mpt;
  myMap = m;
+ if( mpt == 0 ) {
+   MatrixD M = myMap.Jacobian();
+   for( i = 0; i < BMLN_dynDim; i++ ) {
+     for( j = 0; j < BMLN_dynDim; i++ ) {
+       mapMatrix[i][j] = M(i,j);
+     }
+   }
+ }
 }
 
 
-sector::sector( char* n, const Mapping& m, double l ) : bmlnElmnt( n, l ) {
- mapType  = 1;
+sector::sector( char* n, const Mapping& m, double l, char mpt ) : bmlnElmnt( n, l ) {
+ int i,j;
+ mapType  = mpt;
  myMap = m;
+ if( mpt == 0 ) {
+   MatrixD M = myMap.Jacobian();
+   for( i = 0; i < BMLN_dynDim; i++ ) {
+     for( j = 0; j < BMLN_dynDim; i++ ) {
+       mapMatrix[i][j] = M(i,j);
+     }
+   }
+ }
 }
 
 sector::sector( const char* n, double l ) : bmlnElmnt( n, l ) {
