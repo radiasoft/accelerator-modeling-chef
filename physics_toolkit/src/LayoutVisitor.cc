@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
 ******                                    
 ******  File:      LayoutVisitor.cc
+******  Version:   1.1
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -41,6 +41,8 @@
  *
  * Leo Michelotti
  * May 7, 2002
+ * 
+ * Version 1.1  June 27, 2003
  *
  */
 
@@ -72,8 +74,10 @@ LayoutVisitor::LayoutVisitor( double bsl, double bh, double qh, double sh )
   _bendHeight(bh),
   _quadHeight(qh),
   _sextHeight(sh),
+  _specialHeight(0.0),
   _streamPtr(0),
-  _errorCode(OKAY)
+  _errorCode(OKAY),
+  _ptrCritFunc(0)
 {
 }
 
@@ -84,9 +88,19 @@ LayoutVisitor::LayoutVisitor( const LayoutVisitor& x )
   _bendHeight(x._bendHeight),
   _quadHeight(x._quadHeight),
   _sextHeight(x._sextHeight),
+  _specialHeight(x._specialHeight),
   _streamPtr(0),
-  _errorCode(x._errorCode)
+  _errorCode(x._errorCode),
+  _ptrCritFunc(x._ptrCritFunc)
 {
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << "\n*** WARNING *** "
+            "\n*** WARNING *** You should not copy a LayoutVisitor."
+            "\n*** WARNING *** "
+         << endl;
+    firstTime = false;
+  }
 }
 
 
@@ -95,6 +109,14 @@ LayoutVisitor::~LayoutVisitor()
   if( _streamPtr ) {
     this->closeFile();
   }
+}
+
+
+void LayoutVisitor::setDiscriminator( bmlnElmnt::Discriminator* dsc, 
+                                      double hght )
+{
+  _specialHeight = hght;
+  _ptrCritFunc = dsc;
 }
 
 
@@ -118,11 +140,20 @@ void LayoutVisitor::visitSector   ( sector*     )
 void LayoutVisitor::visitBmlnElmnt( bmlnElmnt* x )
 {
   if( _streamPtr ) {
+
+    if( _ptrCritFunc ) {
+      if( (*_ptrCritFunc)(x) ) {
+        _processSpecialElement( x );
+        return;
+      }
+    }
+
     if( x->Length() > 0.0 ) {
       _s += x->Length();
       (*_streamPtr) << _s << "  " << _baseline << endl;
     }
   }
+
   else {
     _errorCode = NOFILEOPENED;
   }
@@ -132,6 +163,14 @@ void LayoutVisitor::visitBmlnElmnt( bmlnElmnt* x )
 void LayoutVisitor::visitQuadrupole( quadrupole* x )
 {
   if( _streamPtr ) {
+
+    if( _ptrCritFunc ) {
+      if( (*_ptrCritFunc)(x) ) {
+        _processSpecialElement( x );
+        return;
+      }
+    }
+
     if( 0 == x->Strength() ) {
       this->visitBmlnElmnt(x);
     }
@@ -157,6 +196,14 @@ void LayoutVisitor::visitQuadrupole( quadrupole* x )
 void LayoutVisitor::_visit_bend( bmlnElmnt* x )
 {
   if( _streamPtr ) {
+
+    if( _ptrCritFunc ) {
+      if( (*_ptrCritFunc)(x) ) {
+        _processSpecialElement( x );
+        return;
+      }
+    }
+
     if( 0 == x->Strength() ) {
       this->visitBmlnElmnt(x);
     }
@@ -206,6 +253,14 @@ void LayoutVisitor::visitCF_sbend( CF_sbend* x )
 void LayoutVisitor::visitSextupole( sextupole* x )
 {
   if( _streamPtr ) {
+
+    if( _ptrCritFunc ) {
+      if( (*_ptrCritFunc)(x) ) {
+        _processSpecialElement( x );
+        return;
+      }
+    }
+
     if( 0 == x->Strength() ) {
       this->visitBmlnElmnt(x);
     }
@@ -267,4 +322,13 @@ int LayoutVisitor::closeFile()
 int LayoutVisitor::getErrorCode() const
 {
   return _errorCode;
+}
+
+
+void LayoutVisitor::_processSpecialElement( bmlnElmnt* x )
+{
+  (*_streamPtr) << _s << "  " << _baseline + _specialHeight << endl;
+  _s += x->Length();
+  (*_streamPtr) << _s << "  " << _baseline + _specialHeight << endl;
+  (*_streamPtr) << _s << "  " << _baseline << endl;
 }
