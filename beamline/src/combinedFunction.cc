@@ -251,7 +251,7 @@ alignmentData combinedFunction::Skew(WHICH_MULTIPOLE mult) {
 
 ostream& combinedFunction::writeTo(ostream& os) {
   os << *p_bml;
-  os << "combinedFunction_END " << ident << "0 0 0 0 0\n";
+  os << "combinedFunction_END " << ident << " 0 0 0 0 0\n";
   return os;
 }
 
