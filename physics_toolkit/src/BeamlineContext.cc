@@ -35,6 +35,7 @@
 #endif
 
 
+#include "GenericException.h"
 #include "BmlUtil.h"
 #include "slist.h"  // This should not be necessary!!!
 #include "BeamlineContext.h"
@@ -67,12 +68,9 @@ BeamlineContext::BeamlineContext( bool doClone, beamline* x )
   _tunes(0), _p_jp(0), _normalLattFuncsCalcd(false), _dispCalcd(false)
 {
   if( x == 0 ) {
-    cerr << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__ << ": "
-         << "\n*** ERROR *** BeamlineContext::BeamlineContext"
-            "\n*** ERROR *** Invoked with null beamline pointer."
-            "\n*** ERROR *** \n"
-         << endl;
-    exit(9);
+    throw( GenericException( __FILE__, __LINE__, 
+           "BeamlineContext::BeamlineContext( bool doClone, beamline* x )", 
+           "Invoked with null beamline pointer." ) );
   }
 
   if( _isCloned ) 
@@ -81,8 +79,9 @@ BeamlineContext::BeamlineContext( bool doClone, beamline* x )
 
 BeamlineContext::BeamlineContext( const BeamlineContext& )
 {
-  cerr << "*** ERROR *** BeamlineContext copy constructor called." << endl;
-  exit(3);
+  throw( GenericException( __FILE__, __LINE__, 
+         "BeamlineContext::BeamlineContext( const BeamlineContext& )", 
+         "Calling copy constructor is not allowed." ) );
 }
 
 BeamlineContext::~BeamlineContext()
@@ -436,12 +435,12 @@ void BeamlineContext::_createClosedOrbit()
     int err;
 
     if( 0 != ( err = _p_cos->findClosedOrbit( _p_jp ) ) ) {
-      cerr << "\n*** ERROR *** " << __FILE__ << ", line " << __LINE__ << ": "
-           << "BeamlineContext::_createTunes()"
-              "\n*** ERROR *** Closed orbit calculation exited with error "
-           << err
-           << "\n*** ERROR *** \n"
-           << endl;
+      ostringstream uic;
+      uic  << "Closed orbit calculation exited with error "
+           << err;
+      throw( GenericException( __FILE__, __LINE__, 
+             "void BeamlineContext::_createClosedOrbit()", 
+             uic.str().c_str() ) );
     }
 
     _p_co_p = ((Proton*) _p_jp->ConvertToParticle());
@@ -493,13 +492,12 @@ void BeamlineContext::_createTunes()
 
   int lfs_result = _p_lfs->TuneCalc( _p_jp, false );
   if( lfs_result != 0 ) {
-    cerr << "\n*** ERROR *** " << __FILE__ << ", line " << __LINE__ << ": "
-         << "BeamlineContext::_createTunes()"
-            "\n*** ERROR *** Something went wrong while calculating tune: error no. " 
-         << lfs_result 
-         << "\n*** ERROR *** \n"
-         << endl;
-    exit(0);
+    ostringstream uic;
+    uic  << "Something went wrong while calculating tune: error no. " 
+         << lfs_result;
+    throw( GenericException( __FILE__, __LINE__, 
+           "void BeamlineContext::_createTunes()", 
+           uic.str().c_str() ) );
   }
     
   if( _tunes == 0 ) {
@@ -860,14 +858,10 @@ istream& operator>>( istream& is, BeamlineContext& x )
   static char charBuffer[128];
   is.getline( charBuffer, 128, '\n' );
   if( 0 != strcmp( charBuffer, "Begin BeamlineContext" ) ) 
-  { cerr << "*** ERROR *** "
-         << __FILE__
-         << ", line "
-         << __LINE__
-         << ": operator>> : "
-            "Expected beginning of BeamlineContext."
-         << endl;
-    exit(9);
+  { 
+    throw( GenericException( __FILE__, __LINE__, 
+           "istream& operator>>( istream& is, BeamlineContext& x )", 
+           "Expected beginning of BeamlineContext." ) );
   }
 
   is.getline( charBuffer, 128, '\n' );
@@ -880,15 +874,11 @@ istream& operator>>( istream& is, BeamlineContext& x )
 
     else 
     { 
-      cerr << "*** ERROR *** "
-           << __FILE__
-           << ", line "
-           << __LINE__
-           << ": operator>> : "
-              "Unrecognized keyword "
-           << charBuffer
-           << endl;
-      exit(8);
+      ostringstream uic;
+      uic  << "Unrecognized keyword " << charBuffer;
+      throw( GenericException( __FILE__, __LINE__, 
+             "istream& operator>>( istream& is, BeamlineContext& x )", 
+             uic.str().c_str() ) );
     }
 
     is.getline( charBuffer, 128, '\n' );
