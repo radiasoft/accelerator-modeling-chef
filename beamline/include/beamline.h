@@ -85,6 +85,7 @@
   #endif
 #endif
 
+// ??? Are all these really needed???
 #include "PhysicsConstants.h"
 #include <math.h>
 // #include <string>   (More trouble than it's worth.)
@@ -103,15 +104,6 @@
 #ifdef __BORLAND_CPP__
 #define strcasecmp strcmpi
 #endif
-
-
-// Predefined class names ...
-// ??? REMOVE: class Particle;             // ??? These lines should not be
-// ??? REMOVE: class ParticleBunch;        // ??? necessary.
-// ??? REMOVE: class JetParticle;          // =============================
-
-// ??? REMOVE: typedef void (*PROPFUNC)    ( bmlnElmnt*, Particle& );
-// ??? REMOVE: typedef void (*JETPROPFUNC) ( bmlnElmnt*, JetParticle& );
 
 
 // ................................ Beamline classes
