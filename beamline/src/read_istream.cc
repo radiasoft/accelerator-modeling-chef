@@ -68,18 +68,19 @@
 **************************************************************************
 *************************************************************************/
 
-#include <beamline.h>
+#include "beamline.h"
 #ifdef __VISUAL_CPP__
 #include <iomanip>
 #else
 #include <iomanip.h>
 #endif
 
-#include <combinedFunction.h>
+#include "combinedFunction.h"
+#include "kick.h"
 #if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
-#include <mwiremonitor.h>
+#include "mwiremonitor.h"
 #endif
-#include <pinger.h>
+#include "pinger.h"
 
 bmlnElmnt* read_istream(istream& is)
 {
@@ -130,6 +131,7 @@ bmlnElmnt* read_istream(istream& is)
   Pinger                * PingerPtr;
   HPinger               * hPingerPtr;
   VPinger               * vPingerPtr;
+  kick                  * kickPtr;
 
   const double MIN_ANGLE = 2.0E-9;
   const int SIZE=80;
@@ -174,6 +176,10 @@ bmlnElmnt* read_istream(istream& is)
   else if( strcasecmp(type, 		"vkick") == 0 ) {
     vkickPtr = new vkick(name, strength);
     element = vkickPtr;
+  }
+  else if( strcasecmp(type, 		"kick") == 0 ) {
+    vkickPtr = new vkick(name);
+    element = kickPtr;
   }
   else if( strcasecmp(type, 		"vpinger") == 0 ) {
     vPingerPtr = new VPinger(name, strength);
