@@ -191,6 +191,8 @@ private:
   double       yOffset;         // offset in meters
   double       tilt;            // roll in radians
                                 // we could put in pitch someday
+  double       cosTilt;         // cos(tilt)
+  double       sinTilt;         // sin(tilt)
 public:
   alignment();
   alignment(const double,const double,const double);
@@ -1502,6 +1504,8 @@ public:
   void setBeamline( beamline* b); 
   void setRefState( const double* s);
 
+  getRefState( double* );
+  
   void propagate( ParticleBunch& x );
   void propagate( Particle&    p );
   void propagate( JetParticle& p );
