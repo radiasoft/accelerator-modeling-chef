@@ -34,8 +34,13 @@
  *  File: Sage.h
  *  Base class for all sages.
  *  
+ *  November 23, 1998
+ *  Original code
  *  Leo Michelotti
- *  Original code: November 23, 1998
+ * 
+ *  April 30, 2004
+ *  Writing to user-specified error and output streams.
+ *  Leo Michelotti
  */
 
 #ifndef SAGE_H
@@ -51,11 +56,11 @@ public:
   Sage( const beamline*, bool = false );
   // Second argument controls cloning.
   // If true, then the Sage will clone
-  // its own copy of the beamline from
-  // the first argument, completely
-  // disconnecting it from the calling
-  // routine. By default, it just stores
-  // the pointer.
+  //   its own copy of the beamline from
+  //   the first argument, completely
+  //   disconnecting it from the calling
+  //   routine. 
+  // By default, it just stores the pointer.
   Sage( const Sage& );
  ~Sage();
   
@@ -84,12 +89,12 @@ protected:
 
 inline void Sage::set_verbose()
 {
-  _verbose = 1;
+  _verbose = true;
 }
 
 inline void Sage::unset_verbose()
 {
-  _verbose = 0;
+  _verbose = false;
 }
 
 inline void Sage::setErrorStream( ostream* x )

@@ -5,7 +5,7 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0.2
+******  Version:   1.1
 ******                                    
 ******  File:      EdwardsTeng.cc
 ******                                                                
@@ -50,7 +50,9 @@
 
 using namespace std;
 
-ETinfo::ETinfo( const ETinfo& x ) {
+ETinfo::ETinfo( const ETinfo& x ) 
+{
+ arcLength = x.arcLength;
  map       = x.map;
  mapInv    = x.mapInv;
  beta.hor  = x.beta.hor;
@@ -72,13 +74,13 @@ Mapping*        EdwardsTeng::theMap;
 
 
 
-int attachETLattFuncs( bmlnElmnt* lbe ) {
- double          dcos, cos2phi, sin2phi, tanphi;
+int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe ) 
+{
+ double  dcos, cos2phi, sin2phi, tanphi;
  MatrixD mtrx;
- static
- MatrixD M( 2, 2 ), N( 2, 2 ), m( 2, 2 ), n( 2, 2 ),
-              D( 2, 2 ), S( "J", 2 ), A( 2, 2 ), B( 2, 2 ),
-              U( "I", 2 );
+ static MatrixD M( 2, 2 ), N( 2, 2 ), m( 2, 2 ), n( 2, 2 ),
+                D( 2, 2 ), S( "J", 2 ), A( 2, 2 ), B( 2, 2 ),
+                U( "I", 2 );
  ETinfo*   ETptr;
  Barnacle* ETbarn;
  Mapping   localMap;
@@ -250,27 +252,28 @@ int attachETLattFuncs( bmlnElmnt* lbe ) {
 }
 
 
-EdwardsTeng::EdwardsTeng( const beamline* x ) {
+EdwardsTeng::EdwardsTeng( const beamline* x ) 
+{
  myBeamline = (beamline*) x;
 }
 
-EdwardsTeng::~EdwardsTeng() {
+EdwardsTeng::~EdwardsTeng()
+{
  // Will remove barnacles from its beamline.
 }
 
 
 /* ============================================================== */
 
-void EdwardsTeng::eraseAll() {
+void EdwardsTeng::eraseAll() 
+{
  dlist_iterator getNext ( *(dlist*) myBeamline );
  bmlnElmnt*      be;
  while((  be = (bmlnElmnt*) getNext()  )) 
   be->dataHook.eraseAll( "EdwardsTeng" );
 }
 
-int EdwardsTeng::doCalc( void* arg, 
-                         ET_CRITFUNC Crit
-                       ) 
+int EdwardsTeng::doCalc( void* arg, ET_CRITFUNC Crit ) 
 {
  int             ret;
  bmlnElmnt*      be;
@@ -287,17 +290,24 @@ int EdwardsTeng::doCalc( void* arg,
  // .......... Propagate a JetProton element by element
  // .......... It is assumed to be on a closed orbit!!
  ptr_jp = (JetProton*) arg;
+ Proton* ptr_proton = (Proton*) (ptr_jp->ConvertToParticle());
+ // is deleted before returning
 
+
+ double lng = 0.0;
  while (( be = (bmlnElmnt*) getNext() )) {
+   lng += be->OrbitLength( *ptr_proton );
    be->propagate( *ptr_jp );
    if( !Crit ) {
      ETptr = new ETinfo;
+     ETptr->arcLength = lng;
      ptr_jp->getState( ETptr->map );   // ??? Change statements?  Use pointer?
      ETptr->mapInv = ETptr->map.Inverse();
      be->dataHook.append( "EdwardsTeng", ETptr );
    }
    else if( (*Crit)( be ) ) {
      ETptr = new ETinfo;
+     ETptr->arcLength = lng;
      ptr_jp->getState( ETptr->map );   // ??? Change statements?  Use pointer?
      ETptr->mapInv = ETptr->map.Inverse();
      be->dataHook.append( "EdwardsTeng", ETptr );
@@ -323,6 +333,7 @@ int EdwardsTeng::doCalc( void* arg,
         << "*** ERROR ***                                     \n"
         << endl;
    delete EdwardsTeng::theMap;
+   delete ptr_proton;
    eraseAll();
    return 10;
   }
@@ -337,6 +348,7 @@ int EdwardsTeng::doCalc( void* arg,
         << "*** ERROR *** Eigenvalues =                        \n"
         << "*** ERROR *** " << lambda << endl;
    delete EdwardsTeng::theMap;
+   delete ptr_proton;
    eraseAll();
    return 11;
  }
@@ -354,6 +366,7 @@ int EdwardsTeng::doCalc( void* arg,
   if( !Crit ) {
    if( ( ret = attachETLattFuncs( be ) ) != 0 ) {
     delete EdwardsTeng::theMap;
+    delete ptr_proton;
     eraseAll();
     return ret;
    }
@@ -361,6 +374,7 @@ int EdwardsTeng::doCalc( void* arg,
   else if( (*Crit)( be ) ) {
    if( ( ret = attachETLattFuncs( be ) ) != 0 ) {
     delete EdwardsTeng::theMap;
+    delete ptr_proton;
     eraseAll();
     return ret;
    }
@@ -378,6 +392,7 @@ int EdwardsTeng::doCalc( void* arg,
  myBeamline->dataHook.append( "Tunes", tuneptr );
 
  delete EdwardsTeng::theMap;
+ delete ptr_proton;
  return 0;
 }
 

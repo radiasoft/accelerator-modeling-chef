@@ -512,10 +512,21 @@ Tcoord<T1,T2>::Tcoord( const Tcoord<T1,T2>&  )
 
 template<typename T1, typename T2>
 void Tcoord<T1,T2>::operator=( const T1& x ) 
-{                                        // DANGER: Be careful!
-  setVariable( x, _index, this->Env() );  // This alters the environment!
+{
+  throw( GenericException( __FILE__, __LINE__, 
+         "void Tcoord<T1,T2>::operator=( const T1& x ) ",
+         "Changing the value of a coordinate is forbidden." ) );
 }
 
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// 
+// template<typename T1, typename T2>
+// void Tcoord<T1,T2>::operator=( const T1& x ) 
+// {                                        // DANGER: Be careful!
+//   setVariable( x, _index, this->Env() );  // This alters the environment!
+// }
+// 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 

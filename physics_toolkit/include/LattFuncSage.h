@@ -50,9 +50,6 @@
 
 #include "Sage.h"
 
-class LattFuncSage;
-
-
 class LattFuncSage : public Sage
 {
 public:
@@ -127,13 +124,19 @@ public:
 
 
  int TuneCalc       ( JetParticle*, bool forceClosedOrbitCalc = true );
+               // TuneCalc implicitly assumes an uncoupled ring; results
+               // are suspect-to-meaningless if coupling exists.
+               // Upon exit, (a) the JetParticle argument is on the closed
+               //                orbit and its state is the one-turn mapping.
+               //            (b) the beamline's dataHook holds one barnacle
+               //                labelled "Tunes" containing a
+               //                LattFuncSage::tunes data struct.
+
  int Disp_Calc      ( JetParticle*, Sage::CRITFUNC = 0 );
  int NewDisp_Calc   ( JetParticle*, bool onClosedOrbit = false );
  int Fast_CS_Calc   ( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
  int Slow_CS_Calc   ( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
  int NewSlow_CS_Calc( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
- int ET_Disp_Calc   (             JetParticle*, Sage::CRITFUNC = 0 );
- int CS_Disp_Calc   (             JetParticle*, Sage::CRITFUNC = 0 );
                // If default value is used for Sage::CRITFUNC, then
                // information is attached to all elements.
  int FAD_Disp_Calc  ( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
@@ -178,8 +181,6 @@ private:
  static double     _csH, _csV, _snH, _snV;
  static Mapping*   _theMapPtr;
         double     _dpp;    // used for dispersion calculations
-
- static int attachETLattFuncs( bmlnElmnt* );
 
  lattFunc* _lf;
  lattRing* _lr;

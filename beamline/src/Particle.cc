@@ -699,7 +699,8 @@ JetProton::JetProton( const JetProton& u ) : JetParticle( (JetParticle&) u ) {
 JetProton::~JetProton() {
 }
 
-Particle* JetProton::ConvertToParticle() {
+Particle* JetProton::ConvertToParticle() const 
+{
  static int i;
  double* u = new double[ BMLN_dynDim ];
  for( i = 0; i < BMLN_dynDim; i++ ) u[i] = state(i).standardPart();
@@ -746,7 +747,8 @@ JetAntiProton::JetAntiProton( const JetAntiProton& u ) : JetParticle( (JetPartic
 JetAntiProton::~JetAntiProton() {
 }
 
-Particle* JetAntiProton::ConvertToParticle() {
+Particle* JetAntiProton::ConvertToParticle() const
+{
  static int i;
  double* u = new double[ BMLN_dynDim ];
  for( i = 0; i < BMLN_dynDim; i++ ) u[i] = state(i).standardPart();
@@ -778,7 +780,8 @@ JetElectron::JetElectron( const JetElectron& u ) : JetParticle( (JetParticle&) u
 JetElectron::~JetElectron() {
 }
 
-Particle* JetElectron::ConvertToParticle() {
+Particle* JetElectron::ConvertToParticle() const
+{
  static int i;
  double* u = new double[ BMLN_dynDim ];
  for( i = 0; i < BMLN_dynDim; i++ ) u[i] = state(i).standardPart();
@@ -810,7 +813,8 @@ JetPositron::JetPositron( const JetPositron& u ) : JetParticle( (JetParticle&) u
 JetPositron::~JetPositron() {
 }
 
-Particle* JetPositron::ConvertToParticle() {
+Particle* JetPositron::ConvertToParticle() const
+{
  static int i;
  double* u = new double[ BMLN_dynDim ];
  for( i = 0; i < BMLN_dynDim; i++ ) u[i] = state(i).standardPart();
@@ -841,7 +845,8 @@ JetMuon::JetMuon( const JetMuon& u ) : JetParticle( (JetParticle&) u ) {
 JetMuon::~JetMuon() {
 }
 
-Particle* JetMuon::ConvertToParticle() {
+Particle* JetMuon::ConvertToParticle() const
+{
  static int i;
  double* u = new double[ BMLN_dynDim ];
  for( i = 0; i < BMLN_dynDim; i++ ) u[i] = state(i).standardPart();
@@ -872,7 +877,8 @@ JetAntiMuon::JetAntiMuon( const JetAntiMuon& u ) : JetParticle( (JetParticle&) u
 JetAntiMuon::~JetAntiMuon() {
 }
 
-Particle* JetAntiMuon::ConvertToParticle() {
+Particle* JetAntiMuon::ConvertToParticle() const
+{
  static int i;
  double* u = new double[ BMLN_dynDim ];
  for( i = 0; i < BMLN_dynDim; i++ ) u[i] = state(i).standardPart();

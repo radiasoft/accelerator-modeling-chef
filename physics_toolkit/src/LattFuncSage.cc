@@ -888,19 +888,15 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
   double psi_x   = 0.0;
   double psi_y   = 0.0;
 
-  cout << "DGN:   jprt->setState( prt->State() );" << endl;
   jprt->setState( prt->State() );
 
-  cout << "DGN:   for( int counter = 0; counter < _arrayPtr->size(); counter++ ) " << endl;
   for( int counter = 0; counter < _arrayPtr->size(); counter++ ) 
   {
     lbe = _arrayPtr->e( counter );
 
     lng += lbe->OrbitLength( *prt );
-    cout << "DGN:     lbe -> propagate( *jprt );" << endl;
     lbe -> propagate( *jprt );
 
-    cout << "DGN:     mtrx = jprt->State().Jacobian();" << endl;
     mtrx = jprt->State().Jacobian();
     
     if( ( 0 != strcmp( lbe->Type(), "rbend"    ) ) && 
@@ -1666,28 +1662,6 @@ int LattFuncSage::FAD_Disp_Calc( /* const */ JetParticle* arg_jp,
                                    // calculation twice. But this is only
                                    // a 5x5, so it shouldn't matter much.
   
-  // DGN: {
-  // DGN: cout << "DGN: FADmap: " << endl;
-  // DGN: cout << FADmap << endl;
-  // DGN: cout << "DGN: EV: " << endl;
-  // DGN: cout << EV << endl;
-  // DGN: for( i = 0; i < 5; i++ ) {
-  // DGN:   for( j = 0; j < 5; j++ ) {
-  // DGN:     cout << EV(i,j) << " || ";
-  // DGN:   }
-  // DGN:   cout << endl;
-  // DGN: }
-  // DGN: cout << endl;
-  // DGN: cout << "DGN: lambda: " << endl;
-  // DGN: cout << lambda << endl;
-  // DGN: 
-  // DGN: MatrixC LAMBDA( 5, 5 );
-  // DGN: for( int i = 0; i < 5; i++ ) {
-  // DGN:   LAMBDA(i,i) = lambda(0,i);
-  // DGN: }
-  // DGN: cout << "DGN: Difference: " << ( FADmap*EV - EV*LAMBDA ) << endl;
-  // DGN: }
-
   int numberFound = 0;
   static const Complex c_one( 1.0, 0.0 );
   int theColumn;

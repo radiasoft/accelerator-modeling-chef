@@ -60,16 +60,18 @@ const double BeamlineContext::_smallClosedOrbitNPYError /*[rad]*/ = 1.0e-9;
 using namespace std;
 
 BeamlineContext::BeamlineContext( bool doClone, beamline* x )
-: _p_bml(x), 
-  _p_lfs(0), _p_ets(0), _p_cos(0), 
+: _p_bml(x), _proton( x->Energy() ),
+  _p_lfs(0), _p_ets(0), _p_covs(0), _p_cos(0), 
   _p_ca(0), _p_ta(0),
   _p_co_p(0), _p_disp_p(0), _dpp(0.0001),
   _isCloned(doClone),
   _p_bi(0), _p_dbi(0), _p_rbi(0), _p_drbi(0),
   _tunes(0), _eigentunes(0), 
   _p_jp(0), 
+  _eps_1(40.0), _eps_2(40.0),
   _normalLattFuncsCalcd(false), 
   _edwardstengFuncsCalcd(false), 
+  _momentsFuncsCalcd(false), 
   _dispCalcd(false)
 {
   if( x == 0 ) {
@@ -95,6 +97,8 @@ BeamlineContext::~BeamlineContext()
   { _p_bml->eliminate(); }
 
   this->_deleteLFS();
+  this->_deleteETS();
+  this->_deleteCOVS();
   this->_deleteClosedOrbit();
 
   // if( _p_lfs ) delete _p_lfs;
@@ -246,6 +250,15 @@ int BeamlineContext::setStrength( bmlnElmnt* w, double s )
   if(notFound) { ret = 1; }
 
   return ret;
+}
+
+
+void BeamlineContext::setAvgInvariantEmittance( double x, double y )
+{
+  _eps_1 = std::abs(x);
+  _eps_2 = std::abs(y);
+  // Note: it is assumed that x and y are
+  //       in units of pi mm-mr.
 }
 
 
@@ -403,7 +416,6 @@ void BeamlineContext::_deleteETS()
     _p_ets = 0;
 
     _edwardstengFuncsCalcd = false;
-    _dispCalcd = false;
   }
 }
 
@@ -412,6 +424,30 @@ void BeamlineContext::_createETS()
 {
   this->_deleteETS();
   _p_ets = new EdwardsTengSage( _p_bml, false );
+}
+
+
+void BeamlineContext::_deleteCOVS()
+{
+  if( 0 != _p_covs )
+  {
+    _p_covs->eraseAll();
+    if( _eigentunes ) { 
+      delete _eigentunes; 
+      _eigentunes = 0;
+    }
+    delete _p_covs;
+    _p_covs = 0;
+
+    _momentsFuncsCalcd = false;
+  }
+}
+
+
+void BeamlineContext::_createCOVS()
+{
+  this->_deleteCOVS();
+  _p_covs = new CovarianceSage( _p_bml, false );
 }
 
 
@@ -622,28 +658,18 @@ void BeamlineContext::_createEigentunes()
 
 double BeamlineContext::getHorizontalEigenTune()
 {
-  if( 0 == _p_ets ) {
-    this->_createETS();
-  }
-  
   if( 0 == _eigentunes ) {
     this->_createEigentunes();
   }
-
   return _eigentunes->hor;
 }
 
 
 double BeamlineContext::getVerticalEigenTune()
 {
-  if( 0 == _p_ets ) {
-    this->_createETS();
-  }
-  
   if( 0 == _eigentunes ) {
     this->_createEigentunes();
   }
-
   return _eigentunes->ver;
 }
 
@@ -710,12 +736,57 @@ const EdwardsTengSage::Info* BeamlineContext::getETFuncPtr( int i )
 }
 
 
-MatrixD BeamlineContext::equilibriumCovariance( double I1, double I2 )
+const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
 {
-  // I1 and I2 are two "invariant emittances" (essentially, actions)
-  // in units of pi mm-mr.
-  // We assume that I1 is "mostly horizontal" and I2 is
-  // "mostly vertical."
+  if( 0 == _p_covs ) {
+    this->_createCOVS();
+  }
+  
+  if( 0 == _eigentunes ) {
+    this->_createEigentunes();
+  }
+
+  if( !_momentsFuncsCalcd ) { 
+    int n = Particle::PSD;
+    MatrixD covariance(n,n);
+    covariance = this->equilibriumCovariance( _eps_1, _eps_2 );
+
+    // Preserve/reset the current Jet environment
+    Jet__environment*  storedEnv  = Jet::_lastEnv;
+    JetC__environment* storedEnvC = JetC::_lastEnv;
+    Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
+    JetC::_lastEnv = JetC::CreateEnvFrom( Jet::_lastEnv );
+
+    JetParticle* ptr_arg = _p_jp->Clone();
+    Mapping id( "identity" );
+    ptr_arg->setState( id );
+
+    int errorFlag = _p_covs->doCalc( ptr_arg, covariance, beamline::yes );
+    _momentsFuncsCalcd = ( 0 == errorFlag );
+    delete ptr_arg;
+
+    // Restore current environment
+    Jet::_lastEnv = storedEnv;
+    JetC::_lastEnv = storedEnvC;
+  }
+
+  if( _momentsFuncsCalcd ) { return (_p_covs->getInfoPtr(i)); }
+  else                     { return 0;                        }
+}
+
+
+MatrixD BeamlineContext::equilibriumCovariance()
+{
+  return this->equilibriumCovariance( _eps_1, _eps_2 );
+}
+
+
+MatrixD BeamlineContext::equilibriumCovariance( double eps_1, double eps_2 )
+{
+  // eps_1 and eps_2 are two "invariant emittances"
+  //   in units of pi mm-mr.
+  // We assume that eps_1 is "mostly horizontal" and eps_2 is
+  //   "mostly vertical."
 
   int i=0, j=0;
   const double mm_mr = 1.0e-6;
@@ -727,8 +798,8 @@ MatrixD BeamlineContext::equilibriumCovariance( double I1, double I2 )
   double betaGamma = _p_jp->ReferenceBeta() * _p_jp->ReferenceGamma();
 
   // Convert to action, in meters (crazy units)
-  I1 = ( std::abs( I1 )/betaGamma ) * mm_mr / 2.0;
-  I2 = ( std::abs( I2 )/betaGamma ) * mm_mr / 2.0;
+  double I1 = ( std::abs( eps_1 )/betaGamma ) * mm_mr / 2.0;
+  double I2 = ( std::abs( eps_2 )/betaGamma ) * mm_mr / 2.0;
 
   int x   = Particle::_x();
   int y   = Particle::_y();
