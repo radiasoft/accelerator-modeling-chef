@@ -86,6 +86,9 @@
 ******  The XXXData structs and XXXX::image functions have been       ****
 ******  rewritten to take better advantage of inheritance.            ****
 ******                                                                ****
+******  September 7, 2001                                             ****
+******  Corrected error in method beamline::InsertElementsFromList    ****
+******                                                                ****
 **************************************************************************
 *************************************************************************/
 
@@ -678,12 +681,10 @@ void beamline::InsertElementsFromList( double& s,
                                      )
 {
  dlist_iterator getNext( *(dlist*) this );
- bmlnElmnt* p_be   = 0;
+ bmlnElmnt* p_be   = (bmlnElmnt*) getNext();
  bmlnElmnt* p_be_a = 0;
  bmlnElmnt* p_be_b = 0;
- InsertionListElement* p_ile = 0;
- p_be = (bmlnElmnt*) getNext();
- p_ile = inList.Get();
+ InsertionListElement* p_ile = inList(0);  // top element; not removed
  Proton prtn;
 
  prtn = inList.GetParticle();
@@ -713,8 +714,8 @@ void beamline::InsertElementsFromList( double& s,
 
  while( p_be && p_ile ) {
   if( strcasecmp( p_be->Type(), "beamline" ) == 0 ) {
-    inList.Insert( p_ile );
     ( (beamline*) p_be )->InsertElementsFromList( s, inList, removedElements );
+    p_ile = inList(0);   // this may have changed
     p_be = (bmlnElmnt*) getNext();
   }
 
@@ -725,12 +726,13 @@ void beamline::InsertElementsFromList( double& s,
 
   else if ( s == p_ile->s ) {
     putAbove( *(p_be), *(p_ile->q) );
-    p_ile = inList.Get();
+    inList.Get();      // removes top element
+    p_ile = inList(0); // accesses new top element
   }
 
   else if ( p_be->p_bml ) {
-    inList.Insert( p_ile );
     p_be->p_bml->InsertElementsFromList( s, inList, removedElements );
+    p_ile = inList(0);   // this may have changed
     p_be = (bmlnElmnt*) getNext();
   }
 
@@ -750,7 +752,8 @@ void beamline::InsertElementsFromList( double& s,
     removedElements.append( (ent) p_be );
 
     p_be = p_be_b;
-    p_ile = inList.Get();
+    inList.Get();      // removes top element
+    p_ile = inList(0); // accesses new top element
   }
 
   else {
@@ -790,7 +793,7 @@ void beamline::InsertElementsFromList( double& s,
  }
 }
 
- beamline& beamline::operator^( bmlnElmnt& x ) {
+beamline& beamline::operator^( bmlnElmnt& x ) {
  append( x );
  return *this;
 }
