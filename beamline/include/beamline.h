@@ -1855,6 +1855,7 @@ public:
   void setEnergy( double /* Nominal energy in GeV */ );
   void unTwiss();
 
+  void eraseBarnacles( const char* = 0 );
 
   // ANALYSIS
 

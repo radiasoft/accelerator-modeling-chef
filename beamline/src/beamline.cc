@@ -752,6 +752,16 @@ void beamline::unTwiss() {
 }
 
 
+void beamline::eraseBarnacles( const char* s )
+{
+  DeepBeamlineIterator dbi( this );
+  bmlnElmnt* q;
+  while((  q = dbi++  )) {
+    q->dataHook.eraseAll( s );
+  }
+}
+
+
 lattRing beamline::whatIsRing() {
   lattRing errRet;
   lattRing* ringPtr = (lattRing*)dataHook.find( "Ring" );
