@@ -6,6 +6,10 @@ using std::setprecision;
 #endif
 #include "beamline.h"
 
+#ifdef OBJECT_DEBUG
+int bmlnElmnt::objectCount = 0;
+#endif
+
 // **************************************************
 //   struct BMLN_posInfo
 // **************************************************
