@@ -59,7 +59,7 @@ protected:
 public:
 
   // Constructors and the destructor ...
-  IntArray( const int&   /* dim */        = 3,
+  IntArray(       int    /* dim */        = 3,
             const int*   /* components */ = 0 );
   IntArray( const IntArray& );
   ~IntArray();
