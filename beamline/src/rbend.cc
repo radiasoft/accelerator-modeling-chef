@@ -246,3 +246,132 @@ istream& rbend::readFrom(istream& is)
   
   return is;
 }
+
+
+// **************************************************
+//   classes rbend::XXXEdge_Prop
+// **************************************************
+
+// --- rbend::NoEdge_Prop -----------------------
+
+rbend::NoEdge_Prop::NoEdge_Prop()
+: _approx(0)
+{
+}
+ 
+rbend::NoEdge_Prop::~NoEdge_Prop()
+{
+}
+ 
+char rbend::NoEdge_Prop::isApproximate()
+{
+  return _approx;
+}
+
+void rbend::NoEdge_Prop::makeApproximate()
+{
+  _approx = 1;
+}
+
+void rbend::NoEdge_Prop::makeExact()
+{
+  _approx = 0;
+}
+
+
+// --- rbend::Exact_Prop -----------------------
+
+rbend::Exact_Prop::Exact_Prop()
+{
+  _myPropagator = &rbend::NoEdge;
+}
+ 
+rbend::Exact_Prop::~Exact_Prop()
+{
+}
+ 
+char rbend::Exact_Prop::isApproximate()
+{
+  return _myPropagator->isApproximate();
+}
+
+void rbend::Exact_Prop::makeApproximate()
+{
+  _myPropagator->makeApproximate();
+}
+
+void rbend::Exact_Prop::makeExact()
+{
+  _myPropagator->makeExact();
+}
+
+void rbend::Exact_Prop::setPropagator( NoEdge_Prop* x )
+{
+  _myPropagator = x;
+}
+
+
+// --- rbend::InEdge_Prop -----------------------
+
+rbend::InEdge_Prop::InEdge_Prop()
+{
+  _myPropagator = &rbend::NoEdge;
+}
+ 
+rbend::InEdge_Prop::~InEdge_Prop()
+{
+}
+ 
+char rbend::InEdge_Prop::isApproximate()
+{
+  return _myPropagator->isApproximate();
+}
+
+void rbend::InEdge_Prop::makeApproximate()
+{
+  _myPropagator->makeApproximate();
+}
+
+void rbend::InEdge_Prop::makeExact()
+{
+  _myPropagator->makeExact();
+}
+
+void rbend::InEdge_Prop::setPropagator( NoEdge_Prop* x )
+{
+  _myPropagator = x;
+}
+
+
+// --- rbend::OutEdge_Prop -----------------------
+
+rbend::OutEdge_Prop::OutEdge_Prop()
+{
+  _myPropagator = &rbend::NoEdge;
+}
+ 
+rbend::OutEdge_Prop::~OutEdge_Prop()
+{
+}
+ 
+char rbend::OutEdge_Prop::isApproximate()
+{
+  return _myPropagator->isApproximate();
+}
+
+void rbend::OutEdge_Prop::makeApproximate()
+{
+  _myPropagator->makeApproximate();
+}
+
+void rbend::OutEdge_Prop::makeExact()
+{
+  _myPropagator->makeExact();
+}
+
+void rbend::OutEdge_Prop::setPropagator( NoEdge_Prop* x )
+{
+  _myPropagator = x;
+}
+
+

@@ -6,6 +6,52 @@ rbend::NoEdge_Prop  rbend::NoEdge;
 rbend::InEdge_Prop  rbend::InEdge;
 rbend::OutEdge_Prop rbend::OutEdge;
 
+// ********************************************************
+
+double rbend::NoEdge_Prop::_fastArcsin( double x ) const
+{
+  double u = x*x;
+  return x*( 1.0 +
+             u*( 0.16666666666667 +
+                 u*( 0.075 +
+                     u*( 0.044642857142857 ))));
+  /*
+                         u*( 0.030381944444444 +
+                             u*( 0.022372159090909 +
+                                 u*( 0.017352764423077 +
+                                     u*( 0.01396484375 +
+                                         u*( 0.01155180089614 +
+                                             u*( 0.0097616095291941 +
+                                                 u*( 0.0083903358096168 +
+                                                     u*( 0.0073125258735988 +
+                                                         u*( 0.0064472103118896 )))))))))))));
+  */
+}
+
+
+Jet rbend::NoEdge_Prop::_fastArcsin( const Jet& x ) const
+{
+  Jet u( x*x );
+  return x*( 1.0 +
+             u*( 0.16666666666667 +
+                 u*( 0.075 +
+                     u*( 0.044642857142857 ))));
+  /*
+                         u*( 0.030381944444444 +
+                             u*( 0.022372159090909 +
+                                 u*( 0.017352764423077 +
+                                     u*( 0.01396484375 +
+                                         u*( 0.01155180089614 +
+                                             u*( 0.0097616095291941 +
+                                                 u*( 0.0083903358096168 +
+                                                     u*( 0.0073125258735988 +
+                                                         u*( 0.0064472103118896 )))))))))))));
+  */
+}
+
+
+// ********************************************************
+
 int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
   static rbend* pbe;
@@ -23,7 +69,7 @@ int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 
 
   // Propagate through the constant magnetic field.
-  rbend::NoEdge(pbe,p);
+  (*_myPropagator)(pbe,p);
 
 
   // Put in a kludge for the vertical focusing upon exit.
@@ -55,7 +101,7 @@ int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 
 
   // Propagate through constant magnetic field.
-  rbend::NoEdge(pbe,p);
+  (*_myPropagator)(pbe,p);
 
 
   // Put in a kludge for the vertical focusing upon exit.
@@ -88,7 +134,7 @@ int rbend::InEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 
 
   // Propagate through the constant magnetic field.
-  rbend::NoEdge(pbe,p);
+  (*_myPropagator)(pbe,p);
 
   return 0;
 }
@@ -111,7 +157,7 @@ int rbend::InEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 
 
   // Propagate through constant magnetic field.
-  rbend::NoEdge(pbe,p);
+  (*_myPropagator)(pbe,p);
 
   return 0;
 }
@@ -123,7 +169,7 @@ int rbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
   pbe = (rbend*) p_be;
 
   // Propagate through the constant magnetic field.
-  rbend::NoEdge(pbe,p);
+  (*_myPropagator)(pbe,p);
 
   // Put in a kludge for the vertical focusing upon exit.
   #ifdef RBEND_POLEFACECHECK
@@ -144,7 +190,7 @@ int rbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
   static rbend* pbe;
   pbe = (rbend*) p_be;
 
-  rbend::NoEdge(pbe,p);
+  (*_myPropagator)(pbe,p);
 
   // Put in a kludge for the vertical focusing upon exit.
   #ifdef RBEND_POLEFACECHECK
@@ -196,7 +242,13 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  
  // Step 3.
  double rho = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
- double dthmdphi = asin( real(bi)/rho ) - asin( real(bf)/rho );
+ double dthmdphi;
+ if( _approx ) {
+   dthmdphi = _fastArcsin( real(bi)/rho ) - _fastArcsin( real(bf)/rho );
+ }
+ else {
+   dthmdphi = asin( real(bi)/rho ) - asin( real(bf)/rho );
+ }
 
  // Step 4.
  Complex expFactor( cos(dthmdphi), sin(dthmdphi) );
@@ -207,7 +259,13 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  // Final filter back to state coordinates
  double dtheta = dthmdphi + dphi;
  double cdt    = - PH_MKS_c * dtheta / omega;
- double CDT    = - PH_MKS_c * ( - 2.0*asin( pbe->Length() / (2.0*Rho) ) ) / Omega;
+ double CDT;
+ if( _approx ) {
+   CDT    = - PH_MKS_c * ( - 2.0*_fastArcsin( pbe->Length() / (2.0*Rho) ) ) / Omega;
+ }
+ else {
+   CDT    = - PH_MKS_c * ( - 2.0*asin( pbe->Length() / (2.0*Rho) ) ) / Omega;
+ }
 
  p.set_x    ( imag( uf ) );
  p.set_y    ( p.get_y() + beta_2*cdt );
@@ -259,7 +317,12 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  // Step 3.
  Jet rho, dthmdphi;
  rho      = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
- dthmdphi = asin( real(bi)/rho ) - asin( real(bf)/rho );
+ if( _approx ) {
+   dthmdphi = _fastArcsin( real(bi)/rho ) - _fastArcsin( real(bf)/rho );
+ }
+ else {
+   dthmdphi = asin( real(bi)/rho ) - asin( real(bf)/rho );
+ }
 
  // Step 4.
  JetC expF, vuf, uf;
@@ -273,7 +336,12 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  double CDT; 
  dtheta = dthmdphi + dphi;
  cdt    = - PH_MKS_c * dtheta / omega;
- CDT    = - PH_MKS_c * ( - 2.0*asin( pbe->Length() / (2.0*Rho) ) ) / Omega;
+ if( _approx ) {
+   CDT    = - PH_MKS_c * ( - 2.0*_fastArcsin( pbe->Length() / (2.0*Rho) ) ) / Omega;
+ }
+ else {
+   CDT    = - PH_MKS_c * ( - 2.0*asin( pbe->Length() / (2.0*Rho) ) ) / Omega;
+ }
 
  p.set_x    ( imag( uf ) );
  p.set_y    ( p.get_y() + beta_2*cdt );

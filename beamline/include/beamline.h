@@ -838,23 +838,42 @@ public:
   };
   static MAD_Prop LikeMAD;
 
-  class Exact_Prop : public bmlnElmnt::PropFunc
-  {
-  public:
-    int operator()( bmlnElmnt*, Particle&    );
-    int operator()( bmlnElmnt*, JetParticle& );
-    const char* Type() const { return "rbend::Exact_Prop"; }
-  };
-  static Exact_Prop Exact;
-
   class NoEdge_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
     int operator()( bmlnElmnt*, JetParticle& );
     const char* Type() const { return "rbend::NoEdge_Prop"; }
+
+    NoEdge_Prop();
+    ~NoEdge_Prop();
+    char isApproximate();
+    void makeApproximate();
+    void makeExact();
+  private:
+    double _fastArcsin( double x     ) const;
+    Jet    _fastArcsin( const Jet& x ) const;
+    char   _approx;
   };
   static NoEdge_Prop NoEdge;
+
+  class Exact_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "rbend::Exact_Prop"; }
+
+    Exact_Prop();
+    ~Exact_Prop();
+    char isApproximate();
+    void makeApproximate();
+    void makeExact();
+    void setPropagator( NoEdge_Prop* );
+  private:
+    NoEdge_Prop* _myPropagator;
+  };
+  static Exact_Prop Exact;
 
   class InEdge_Prop : public bmlnElmnt::PropFunc
   {
@@ -862,6 +881,15 @@ public:
     int operator()( bmlnElmnt*, Particle&    );
     int operator()( bmlnElmnt*, JetParticle& );
     const char* Type() const { return "rbend::InEdge_Prop"; }
+
+    InEdge_Prop();
+    ~InEdge_Prop();
+    char isApproximate();
+    void makeApproximate();
+    void makeExact();
+    void setPropagator( NoEdge_Prop* );
+  private:
+    NoEdge_Prop* _myPropagator;
   };
   static InEdge_Prop InEdge;
 
@@ -871,9 +899,19 @@ public:
     int operator()( bmlnElmnt*, Particle&    );
     int operator()( bmlnElmnt*, JetParticle& );
     const char* Type() const { return "rbend::OutEdge_Prop"; }
+
+    OutEdge_Prop();
+    ~OutEdge_Prop();
+    char isApproximate();
+    void makeApproximate();
+    void makeExact();
+    void setPropagator( NoEdge_Prop* );
+  private:
+    NoEdge_Prop* _myPropagator;
   };
   static OutEdge_Prop OutEdge;
 
+  // ------------------------------------------------------
 
   rbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
