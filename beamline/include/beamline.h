@@ -1858,6 +1858,14 @@ public:
   int    howMany() const { return numElem; }
   int    countHowMany();
   int    howDeep();
+  bmlnElmnt* firstElement()
+    {
+      return (bmlnElmnt*) ( ((dlist*) this)->lastInfoPtr() );
+    }
+  bmlnElmnt* lastElement()
+    {
+      return (bmlnElmnt*) ( ((dlist*) this)->firstInfoPtr() );
+    }
   double Energy() const { return nominalEnergy; }
   char*  Type() const;
   bmlnElmnt* Clone() const;
