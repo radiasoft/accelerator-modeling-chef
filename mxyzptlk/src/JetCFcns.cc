@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -30,6 +27,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iomanip>
 
@@ -89,8 +89,9 @@ void JetC::operator+=( const JetC& y ) {
  // Check for consistency and set reference point of the sum.
  if( xPtr->myEnv != yPtr->myEnv )
  {
-   cerr << "\n*** JLC ADDITION ERROR: Inconsistent reference points." << endl;
-   exit(0);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "void JetC::operator+=( const JetC& )",
+          "Inconsistent reference points." ) );
  }
  
  // If one of the arguments is void, then return the other ..
@@ -256,9 +257,9 @@ JetC operator+( const JetC& x, const JetC& y ) {
 
  // Check for consistency and set reference point of the sum.
  if( x->myEnv != y->myEnv ) {
-     cerr << "\n\n*** JetC::operator+ ERROR: Inconsistent environments." 
-          << endl;
-     exit(0);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC operator+( const JetC& x, const JetC& )",
+          "Inconsistent environments." ) );
  }
  
  // If one of the arguments is void, then return the other ..
@@ -438,9 +439,9 @@ JetC operator-( const JetC& x, const JetC& y ) {
 
  // Check for consistency and set reference point of the difference.
  if( x->myEnv != y->myEnv ) {
-     cerr << "\n\n*** JetC::operator- ERROR: Inconsistent environments." 
-          << endl;
-     exit(0);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC operator-( const JetC&, const JetC& )  ",
+          "Inconsistent environments." ) );
  }
  
  // If one of the arguments is void, then return the other ..
@@ -495,9 +496,9 @@ JetC operator*( const JetC& x, const JetC& y )
 
  // Check for consistency 
  if( x->myEnv != y->myEnv ) {
-     cerr << "\n\n*** JetC::operator* ERROR: Inconsistent environments." 
-          << endl;
-     exit(0);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC operator*( const JetC&, const JetC& ) ",
+          "Inconsistent environments." ) );
  }
  else {
    z.Reconstruct( x->myEnv );
@@ -817,10 +818,9 @@ JetC operator/( const JetC& x, const FNAL::Complex& y ) {
 
  // Check for division by zero ..
  if( y == CZero ) {
-   cerr << "\n*** JetC::operator/ ERROR *** "
-        << "Attempt to divide by a scalar zero.\n"
-        << endl;
-   exit(0);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC operator/( const JetC&, const FNAL::Complex& ) ",
+          "Attempt to divide by a scalar zero." ) );
  }
  
  // If x is void, return it ..
@@ -863,10 +863,9 @@ JetC operator/( const JetC& x, const double& y ) {
 
  // Check for division by zero ..
  if( y == 0.0 ) {
-   cerr << "\n*** JetC::operator/ ERROR *** "
-        << "Attempt to divide by a scalar zero.\n"
-        << endl;
-   exit(0);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC operator/( const JetC&, const double& )",
+          "Attempt to divide by a scalar zero." ) );
  }
  
  // If x is void, return it ..
@@ -912,10 +911,9 @@ JetC operator/( const JetC& x, const int& j ) {
 
  // Check for division by zero ..
  if( ( y = (FNAL::Complex) j ) == 0.0 ) {
-   cerr << "\n*** JetC::operator/ ERROR *** "
-        << "Attempt to divide by a scalar zero.\n"
-        << endl;
-   exit(0);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC operator/( const Jet&, const int& )",
+          "Attempt to divide by a scalar zero." ) );
  }
  
  // If x is void, return it ..
@@ -1008,17 +1006,16 @@ JetC operator/( const JetC& wArg, const JetC& uArg ) {
  // Check for void operators ..
  if ( wArg->count < 1 ) return wArg;
  if ( uArg->count < 1 ) {
-   cerr << "\n*** JLC ERROR *** "
-        << "Attempt to divide by a void JLC variable.\n"
-        << endl;
-   exit(0);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC operator/( const JetC&, const JetC& )",
+          "Attempt to divide by a void JLC variable." ) );
  }
  
  // Check for consistency 
  if( wArg->myEnv != uArg->myEnv ) {
-     cerr << "\n\n*** JetC::operator/ ERROR: Inconsistent environments." 
-          << endl;
-     exit(0);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC operator/( const JetC&, const JetC& )",
+          "Inconsistent environments." ) );
  }
 
  dlist_looper gu( *(dlist*) uArg.jl );
@@ -1049,19 +1046,19 @@ JetC operator/( const JetC& wArg, const JetC& uArg ) {
 
  // Normalize the denominator
  if( ( qu = (JLCterm*) gu() ) == 0 ) {
-   cerr <<  "\n*** JLC ERROR ***  Division algorithm called with uninitialized JLC.\n"
-        << endl;
-   exit(0);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC operator/( const JetC&, const JetC& )",
+          "Division algorithm called with uninitialized JL." ) );
    }
  if( ( wgt = qu->weight ) != 0 ) {
-   cerr <<  "\n*** JLC ERROR ***  Attempt to divide by nilpotent element.\n"
-        << endl;
-   exit(0);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC operator/( const JetC&, const JetC& )",
+          "Attempt to divide by nilpotent element." ) );
    }
  if( ( u0 = qu->value ) == 0.0 ) {
-   cerr <<  "\n*** JLC ERROR ***  Attempt to divide by zero.\n"
-        << endl;
-   exit(0);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC operator/( const JetC&, const JetC& )",
+          "Attempt to divide by zero." ) );
    }
  u = uArg / u0;
  
@@ -1099,9 +1096,9 @@ JetC operator^( const JetC& x, const JetC& y ) {
 
  // Check for consistency 
  if( x->myEnv != y->myEnv ) {
-     cerr << "\n\n*** JetC::operator^ ERROR: Inconsistent environments." 
-          << endl;
-     exit(1);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC operator^( const JetC&, const JetC& )",
+          "Inconsistent environments." ) );
  }
 
  static JetC__environment* theEnv;
@@ -1138,18 +1135,13 @@ JetC operator^( const JetC& x, const JetC& y ) {
    delete [] n;
    return z;
  }
- 
- cerr << "\n*** ERROR ***                                \n"
-      <<   "*** ERROR *** JLC operator^( JLC&, JLC& )       \n"
-      <<   "*** ERROR *** Wrong JLCSetup used; cannot     \n"
-      <<   "*** ERROR *** perform bracket.               \n"
-      <<   "*** ERROR ***                                \n"
-      << endl;
- 
- if( 2 + 3 == 5 ) exit(1);       // Done to avoid compiler warnings
- delete [] m;                    // about leaving the function without
- delete [] n;                    // returning something.
- return z;                       
+ else {
+   delete [] m;
+   delete [] n;
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC operator^( const JetC&, const JetC& )",
+          "Environment not correct for performing bracket." ) );
+ }
 }
 
 
@@ -1162,12 +1154,9 @@ JetC operator^( const JetC& x, const JetC& y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC acos( const JetC&  ) {   // ??? Write this damned thing!!!  It's trivial!!
- static JetC z;
- cerr <<  "JetC acos( JetC& x ) to be written.\n" 
-      << endl;
- exit(0);
- return z;
+JetC acos( const JetC& x ) {
+  // Returns answer in (0,pi) if asin returns (-pi/2,pi/2).
+  return ( M_PI_2 - asin(x) );
 }
  
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1269,16 +1258,12 @@ JetC cos( const JetC& x ) {
 
  if( x->count == 0 ) {
    if( epsilon->count != 0  ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** JetC cos( JetC )                    \n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Horrible, inexplicable error!!!     \n"
-          << "*** ERROR *** epsilon->count = " << epsilon->count 
-          <<                                  "                 \n"
-          << "*** ERROR ***                                     \n"
-          << endl;
-     exit(1);
+     ostringstream uic;
+     uic  << "Horrible, inexplicable error: epsilon->count = " 
+          << epsilon->count;
+     throw( JLC::GenericException( __FILE__, __LINE__, 
+            "JetC cos( const JetC& ) ",
+            uic.str().c_str() ) );
    }
    epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, FNAL::Complex( 1.0, 0.0 ), x->myEnv ) );
    return epsilon;
@@ -1327,16 +1312,12 @@ JetC exp( const JetC& x ) {
  
  if( x->count == 0 ) {
    if( epsilon->count != 0  ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** JetC exp( JetC )                    \n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Horrible, inexplicable error!!!     \n"
-          << "*** ERROR *** epsilon->count = " << epsilon->count 
-          <<                                  "                 \n"
-          << "*** ERROR ***                                     \n"
-          << endl;
-     exit(1);
+     ostringstream uic;
+     uic  << "Horrible, inexplicable error: epsilon->count = " 
+          << epsilon->count;
+     throw( JLC::GenericException( __FILE__, __LINE__, 
+            "JetC exp( const JetC& ) ",
+            uic.str().c_str() ) );
    }
    epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, FNAL::Complex( 1.0, 0.0 ), x->myEnv ) );
    return epsilon;
@@ -1376,14 +1357,9 @@ JetC log ( const JetC& x ) {
  p = 0;
  
  if( x->count == 0 ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** JetC log( JetC )                    \n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** x->count == 0 implies a zero argument.\n"
-          << "*** ERROR ***                                     \n"
-          << endl;
-     exit(1);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC log ( const JetC& ) { ",
+          "Argument is zero." ) );
  }
  
  p = (JLCterm*) getNext();
@@ -1413,13 +1389,9 @@ JetC log ( const JetC& x ) {
    }
  else                                 // x has zero standard part
    {
-   cerr <<  "\n\n*** ERROR *** \n"                                  
-        <<      "*** ERROR *** JLC log called with argument whose\n" 
-        <<      "*** ERROR *** standard part vanishes.\n"           
-        <<      "*** ERROR *** \n\n"                                
-        << endl;
-   if( 1 + 1 == 2 ) exit(1);
-   return x;
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC log ( const JetC& ) ",
+          "Argument's standard part vanishes; it is nilpotent." ) );
    }
 }
 
@@ -1451,16 +1423,12 @@ JetC pow( const JetC& x, const double& s ) {
  
  if( x->count == 0 ) {
    if( epsilon->count != 0  ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** JetC pow( JetC, double )            \n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Horrible, inexplicable error!!!     \n"
-          << "*** ERROR *** epsilon->count = " << epsilon->count 
-          <<                                  "                 \n"
-          << "*** ERROR ***                                     \n"
-          << endl;
-     exit(1);
+     ostringstream uic;
+     uic  << "Horrible, inexplicable error: epsilon->count = " 
+          << epsilon->count;
+     throw( JLC::GenericException( __FILE__, __LINE__, 
+            "JetC pow( const JetC&, double ) ",
+            uic.str().c_str() ) );
    }
    epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, FNAL::Complex( 0.0, 0.0 ), x->myEnv ) );
    return epsilon;
@@ -1487,11 +1455,10 @@ JetC pow( const JetC& x, const double& s ) {
    {
    u = nearestInteger( s );
    if( s != (FNAL::Complex) u ) {
-     cerr <<  "\n*** ERROR::JLC pow: attempt to use infinitesimal " 
-          <<  "as base with non-integer exponent.\n" 
-          << endl;
-     exit(1);
-     }
+     throw( JLC::GenericException( __FILE__, __LINE__, 
+            "JetC pow( const JetC&, const double& )",
+            "Cannot use infinitesimal as base with non-integer exponent." ) );
+   }
    epsilon = complex_1;
    if ( u == 0 ) {
      return epsilon;
@@ -1552,16 +1519,12 @@ JetC sin( const JetC& x ) {
  
  if( x->count == 0 ) {
    if( epsilon->count != 0  ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** JetC sin( JetC )                    \n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Horrible, inexplicable error!!!     \n"
-          << "*** ERROR *** epsilon->count = " << epsilon->count 
-          <<                                  "                 \n"
-          << "*** ERROR ***                                     \n"
-          << endl;
-     exit(1);
+     ostringstream uic;
+     uic  << "Horrible, inexplicable error: epsilon->count = " 
+          << epsilon->count;
+     throw( JLC::GenericException( __FILE__, __LINE__, 
+            "JetC sin( const JetC&, double ) ",
+            uic.str().c_str() ) );
    }
    epsilon.addTerm( new JLCterm( x->myEnv->AllZeroes, FNAL::Complex( 0.0, 0.0 ), x->myEnv ) );
    return epsilon;
@@ -1607,14 +1570,9 @@ JetC sqrt( const JetC& x ) {
  p = 0; 
  
  if( x->count == 0 ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** JetC sqrt( JetC )                   \n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** x->count == 0 implies a zero argument.\n"
-          << "*** ERROR ***                                     \n"
-          << endl;
-     exit(1);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC sqrt( const JetC& ) { ",
+          "Argument is zero." ) );
  }
  
  p = (JLCterm*) getNext();
@@ -1639,10 +1597,9 @@ JetC sqrt( const JetC& x ) {
    }
  else                                 // x is pure infinitesimal
    {
-   cerr <<  "\n*** ERROR::JLC sqrt: attempt to use infinitesimal argument." 
-        << endl;
-   if( 1 + 1 == 2 ) exit(1);
-   return x;
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC sqrt( const JetC& ) ",
+          "Argument's standard part vanishes; it is nilpotent." ) );
    }
 }
 
@@ -1668,14 +1625,9 @@ JetC fabs( const JetC& x ) {
  static FNAL::Complex u;
 
  if( x->count == 0 ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** JetC fabs( JetC )                   \n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** x->count == 0 implies a zero argument.\n"
-          << "*** ERROR ***                                     \n"
-          << endl;
-     exit(1);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC fabs( const JetC& ) { ",
+          "Argument is zero." ) );
  }
  
  if( (u = x.standardPart()) != 0.0 ) 
@@ -1685,10 +1637,9 @@ JetC fabs( const JetC& x ) {
  }
  else
  {
-   cerr << "\n*** ERROR::JetC fabs: attempt to use infinitesimal argument."
-        << endl;
-   if( 1 + 1 == 2 ) exit(1);   // This weird stuff done to avoid
-   return x;                   // compiler warnings.
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC fabs( const JetC& ) ",
+          "Argument's standard part vanishes; it is nilpotent." ) );
  }
 }
 
@@ -1759,13 +1710,9 @@ JetC w( const JetC& z )
   y = imag( z.standardPart() );
 
   if( ( x < 0.0 ) || ( y < 0.0  ) ) {
-    cout << "*** ERROR ***                                     \n"
-            "*** ERROR *** JetC w( const JetC& )               \n"
-            "*** ERROR *** Argument must have positive         \n"
-            "*** ERROR *** standard part.                      \n"
-            "*** ERROR ***                                     \n"
-         << endl;
-    exit(1);
+    throw( JLC::GenericException( __FILE__, __LINE__, 
+           "JetC w( const JetC& ) ",
+           "Argument must have positive standard part." ) );
   }
 
   if( ( x > 6.0 ) || ( y > 6.0 ) ) 
@@ -2226,15 +2173,10 @@ JetC JetC::filter( char (*f) ( const IntArray&, const FNAL::Complex& ) ) const {
 
   for( i = 0; i < nv; i++ ) 
    if( oldIndex(i) != p->index(i) ) {
-    cerr <<  "\n"
-         <<  "*** ERROR ***                                      \n" 
-         <<  "*** ERROR *** JetC JetC::filter( char (*f) ( int*, FNAL::Complex ) \n" 
-         <<  "*** ERROR *** The test routine is not allowed      \n" 
-         <<  "*** ERROR *** to change the values in the index    \n" 
-         <<  "*** ERROR *** array!!                              \n" 
-         <<  "*** ERROR ***                                      \n" 
-         << endl;
-    exit(0);
+    throw( JLC::GenericException( __FILE__, __LINE__, 
+           "JetC JetC::filter( char (*f) ( const IntArray&, "
+           "const FNAL::Complex& ) ) const",
+           "Test routine changes value of index array." ) );
    }
  }
 
@@ -2303,14 +2245,9 @@ JetC JetC::operator() ( const JetC* y ) const {
  // subtract reference point prior to concatenation.
  for( i = 0; i < jl->myEnv->NumVar; i++ ) {
    if( y[i]->myEnv != y[0]->myEnv ) {
-     cerr << "\n\n"
- 	  << " *** ERROR ***                                \n"
- 	  << " *** ERROR *** JetC::operator()( JetC* )        \n"
- 	  << " *** ERROR ***                                \n"
- 	  << " *** ERROR *** Inconsistent environments.     \n"
- 	  << " *** ERROR ***                                \n"
- 	  << endl;
-     exit(1);
+     throw( JLC::GenericException( __FILE__, __LINE__, 
+            "JetC JetC::operator() ( const JetC* ) const ",
+            "Inconsistent environments." ) );
    }
    u[i] = y[i] - jl->myEnv->refPoint[i];
  }
@@ -2410,19 +2347,17 @@ JetC JetC::D( const int* n ) const {
  
  for( i = 0; i < jl->myEnv->NumVar; i++ ) {
    if( n[i] < 0 ) {
-     cerr <<  "\n*** JLC ERROR: Cannot differentiate with negative index." 
-          <<  "\n*******************************************************\n" 
-          << endl;
-     exit(0);
+     throw( JLC::GenericException( __FILE__, __LINE__, 
+            "JetC JetC::D( const int* ) const",
+            "Cannot differentiate with negative index." ) );
      }
    w += n[i];
  }
  
  if( w > jl->accuWgt ) {
-   cerr <<  "\n*** JLC ERROR: Differentiation request beyond accuracy allowed." 
-        <<  "\n**************************************************************\n" 
-        << endl;
-   exit(0);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC JetC::D( const int* ) const",
+          "Differentiation request beyond accuracy allowed." ) );
  }
  
  if( w == 0 ) {
@@ -2451,10 +2386,9 @@ JetC JetC::D( const int* n ) const {
        for( i = 0; i < n[k]; i++ ) f *= ++j;
      }
      if( f <= 0 ) {
-       cerr <<  "\n*** JLC ERROR: Horrible, unexplainable error while differentiating!" 
-            <<  "\n******************************************************************\n" 
-            << endl;
-       exit(0);
+       throw( JLC::GenericException( __FILE__, __LINE__, 
+              "JetC JetC::D( const int* ) const",
+              "Horrible, unexplainable error while differentiating!" ) );
      }                           // Super fussbudget!! ( f "must" be positive )
    
      // -- Make final changes in private data of the JLCterm and
@@ -2489,14 +2423,9 @@ JetC JetC::D( const IntArray& n ) const
 {
 
  if( n.Dim() != jl->myEnv->NumVar ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                   \n"
-         << "*** ERROR *** JetC::D( IntArray )                \n"
-         << "*** ERROR ***                                   \n"
-         << "*** ERROR *** Inconsistent dimensions.          \n"
-         << "*** ERROR ***                                   \n"
-         << endl;
-    exit(1);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC JetC::D( const IntArray& ) const ",
+          "Inconsistent dimensions." ) );
  }
 
  // ??? REMOVE static char noTermAdded;
@@ -2523,19 +2452,17 @@ JetC JetC::D( const IntArray& n ) const
  
  for( i = 0; i < jl->myEnv->NumVar; i++ ) {
    if( n(i) < 0 ) {
-     cerr <<  "\n*** JLC ERROR: Cannot differentiate with negative index." 
-          <<  "\n*******************************************************\n" 
-          << endl;
-     exit(0);
-     }
+     throw( JLC::GenericException( __FILE__, __LINE__, 
+            "JetC JetC::D( const IntArray& ) const ",
+            "Cannot differentiate with negative index." ) );
+   }
    w += n(i);
  }
  
  if( w > jl->accuWgt ) {
-   cerr <<  "\n*** JLC ERROR: Differentiation request beyond accuracy allowed." 
-        <<  "\n**************************************************************\n" 
-        << endl;
-   exit(0);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "JetC JetC::D( const IntArray& ) const ",
+          "Differentiation request beyond accuracy allowed." ) );
  }
  
  if( w == 0 ) {
@@ -2564,10 +2491,9 @@ JetC JetC::D( const IntArray& n ) const
        for( i = 0; i < n(k); i++ ) f *= ++j;
        }
      if( f <= 0 ) {
-       cerr <<  "\n*** JLC ERROR: Horrible, unexplainable error while differentiating!" 
-            <<  "\n******************************************************************\n" 
-            << endl;
-       exit(0);
+       throw( JLC::GenericException( __FILE__, __LINE__, 
+              "JetC JetC::D( const IntArray& ) const",
+              "Horrible, unexplainable error while differentiating!" ) );
        }                           // Super fussbudget!! ( f "must" be positive )
    
      // -- Make final changes in private data of the JLCterm and

@@ -67,13 +67,19 @@ struct JLCterm {
 
   // Operators
   void operator=( const JLCterm& );
-  FNAL::Complex coeff() const { return value; }
 #ifdef OBJECT_DEBUG
   static int objectCount;
 #endif
+
+  // Accessors
+  IntArray&        exponents()         { return index; }
+  IntArray         exponents()   const { return index; }
+  FNAL::Complex&   coefficient()       { return value; }
+  FNAL::Complex    coefficient() const { return value; }
+  FNAL::Complex    coeff()       const { return value; }  // old
 } ;
 
-
+
 // *******************************************************************
 struct JLC : public dlist {  
 

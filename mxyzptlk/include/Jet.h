@@ -125,29 +125,6 @@ public:
   JLC* newJLC() const;                      // Used by conversion routines.
   JLC* newJLC( /* const */ JetC__environment* ) const;
 
-  // Obsolete setup routines -----------------------------------------
-  // static void Setup( const int      = 6, /* Total number of variables */
-  //                    const int      = 1, /* Maximum derivative weight */
-  //                    const int      = 0, /* Dimension of phase space  */
-  //                    const double*  = 0, /* Default reference point   */
-  //                    const double*  = 0  /* Scaling array             */
-  //                  );
-  // 
-  // static void setup( const int, const int );
-  // static void setup( const int, const int, const double* );
-  // static void setup( const int, const int, const int );
-  // static void setup( const int, const int, const int, const double* );
-  // ------------------------------------------------------------------
-
-  // ??? REMOVE static void FixReference        ( const double* );
-  // ??? REMOVE static void FixReference        ( const int* );
-  // ??? REMOVE static void FixReference        ( const Jet& );
-  // ??? REMOVE static void FixReferenceAtStart ( const LieOperator& );
-  // ??? REMOVE static void FixReferenceAtEnd   ( const LieOperator& );
-
-  // ??? REMOVE: static FILE  *scratchFile;
-
-
   // Public member functions__________________________________________
   JLterm* get();                // Pops the top term, which should be the 
                                 // one of lowest weight.

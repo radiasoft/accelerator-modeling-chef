@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -30,6 +27,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iomanip>
 
@@ -91,8 +91,9 @@ void Jet::operator+=( const Jet& y ) {
  // Check for consistency and set reference point of the sum.
  if( xPtr->myEnv != yPtr->myEnv )
  {
-   cerr << "\n*** JL ADDITION ERROR: Inconsistent reference points." << endl;
-   exit(0);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "void Jet::operator+=( const Jet& )",
+          "Inconsistent reference points." ) );
  }
  
  // If one of the arguments is void, then return the other ..
@@ -258,9 +259,9 @@ Jet operator+( const Jet& x, const Jet& y ) {
 
  // Check for consistency and set reference point of the sum.
  if( x->myEnv != y->myEnv ) {
-     cerr << "\n\n*** Jet::operator+ ERROR: Inconsistent environments." 
-          << endl;
-     exit(0);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet operator+( const Jet& x, const Jet& )",
+          "Inconsistent environments." ) );
  }
  
  // If one of the arguments is void, then return the other ..
@@ -406,9 +407,9 @@ Jet operator-( const Jet& x, const Jet& y ) {
 
  // Check for consistency and set reference point of the difference.
  if( x->myEnv != y->myEnv ) {
-     cerr << "\n\n*** Jet::operator- ERROR: Inconsistent environments." 
-          << endl;
-     exit(0);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet operator-( const Jet&, const Jet& )  ",
+          "Inconsistent environments." ) );
  }
  
  // If one of the arguments is void, then return the other ..
@@ -463,9 +464,9 @@ Jet operator*( const Jet& x, const Jet& y )
 
  // Check for consistency 
  if( x->myEnv != y->myEnv ) {
-     cerr << "\n\n*** Jet::operator* ERROR: Inconsistent environments." 
-          << endl;
-     exit(0);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet operator*( const Jet&, const Jet& ) ",
+          "Inconsistent environments." ) );
  }
  else {
    z.Reconstruct( x->myEnv );
@@ -733,10 +734,9 @@ Jet operator/( const Jet& x, const double& y ) {
 
  // Check for division by zero ..
  if( y == 0.0 ) {
-   cerr << "\n*** Jet::operator/ ERROR *** "
-        << "Attempt to divide by a scalar zero.\n"
-        << endl;
-   exit(0);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet operator/( const Jet&, const double& ) ",
+          "Attempt to divide by a scalar zero." ) );
  }
  
  // If x is void, return it ..
@@ -782,10 +782,9 @@ Jet operator/( const Jet& x, const int& j ) {
 
  // Check for division by zero ..
  if( ( y = (double) j ) == 0.0 ) {
-   cerr << "\n*** Jet::operator/ ERROR *** "
-        << "Attempt to divide by a scalar zero.\n"
-        << endl;
-   exit(0);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet operator/( const Jet&, const int& )",
+          "Attempt to divide by a scalar zero." ) );
  }
  
  // If x is void, return it ..
@@ -868,17 +867,16 @@ Jet operator/( const Jet& wArg, const Jet& uArg ) {
  // Check for void operators ..
  if ( wArg->count < 1 ) return wArg;
  if ( uArg->count < 1 ) {
-   cerr << "\n*** JL ERROR *** "
-        << "Attempt to divide by a void JL variable.\n"
-        << endl;
-   exit(0);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet operator/( const Jet&, const Jet& )",
+          "Attempt to divide by a void JL variable." ) );
  }
  
  // Check for consistency 
  if( wArg->myEnv != uArg->myEnv ) {
-     cerr << "\n\n*** Jet::operator/ ERROR: Inconsistent environments." 
-          << endl;
-     exit(0);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet operator/( const Jet&, const Jet& )",
+          "Inconsistent environments." ) );
  }
 
  dlist_looper gu( *(dlist*) uArg.jl );
@@ -909,19 +907,19 @@ Jet operator/( const Jet& wArg, const Jet& uArg ) {
 
  // Normalize the denominator
  if( ( qu = (JLterm*) gu() ) == 0 ) {
-   cerr <<  "\n*** JL ERROR ***  Division algorithm called with uninitialized JL.\n"
-        << endl;
-   exit(0);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet operator/( const Jet&, const Jet& )",
+          "Division algorithm called with uninitialized JL." ) );
    }
  if( ( wgt = qu->weight ) != 0 ) {
-   cerr <<  "\n*** JL ERROR ***  Attempt to divide by nilpotent element.\n"
-        << endl;
-   exit(0);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet operator/( const Jet&, const Jet& )",
+          "Attempt to divide by nilpotent element." ) );
    }
  if( ( u0 = qu->value ) == 0.0 ) {
-   cerr <<  "\n*** JL ERROR ***  Attempt to divide by zero.\n"
-        << endl;
-   exit(0);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet operator/( const Jet&, const Jet& )",
+          "Attempt to divide by zero." ) );
    }
  u = uArg / u0;
  
@@ -959,9 +957,9 @@ Jet operator^( const Jet& x, const Jet& y ) {
 
  // Check for consistency 
  if( x->myEnv != y->myEnv ) {
-     cerr << "\n\n*** Jet::operator^ ERROR: Inconsistent environments." 
-          << endl;
-     exit(1);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet operator^( const Jet&, const Jet& )",
+          "Inconsistent environments." ) );
  }
 
  static Jet__environment* theEnv;
@@ -998,18 +996,13 @@ Jet operator^( const Jet& x, const Jet& y ) {
    delete [] n;
    return z;
  }
- 
- cerr << "\n*** ERROR ***                                \n"
-      <<   "*** ERROR *** JL operator^( JL&, JL& )       \n"
-      <<   "*** ERROR *** Wrong JLSetup used; cannot     \n"
-      <<   "*** ERROR *** perform bracket.               \n"
-      <<   "*** ERROR ***                                \n"
-      << endl;
- 
- if( 2 + 3 == 5 ) exit(1);       // Done to avoid compiler warnings
- delete [] m;                    // about leaving the function without
- delete [] n;                    // returning something.
- return z;                       
+ else {
+   delete [] m;
+   delete [] n;
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet operator^( const Jet&, const Jet& )",
+          "Environment not correct for performing bracket." ) );
+ }
 }
 
 
@@ -1022,12 +1015,9 @@ Jet operator^( const Jet& x, const Jet& y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Jet acos( const Jet&  ) {   // ??? Write this damned thing!!!  It's trivial!!
- static Jet z;
- cerr <<  "Jet acos( Jet& x ) to be written.\n" 
-      << endl;
- exit(0);
- return z;
+Jet acos( const Jet& x ) {
+  // Returns answer in (0,pi) if asin returns (-pi/2,pi/2).
+  return ( M_PI_2 - asin(x) );
 }
  
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1132,16 +1122,12 @@ Jet cos( const Jet& x ) {
 
  if( x->count == 0 ) {
    if( epsilon->count != 0  ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Jet cos( Jet )                      \n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Horrible, inexplicable error!!!     \n"
-          << "*** ERROR *** epsilon->count = " << epsilon->count 
-          <<                                  "                 \n"
-          << "*** ERROR ***                                     \n"
-          << endl;
-     exit(1);
+     ostringstream uic;
+     uic  << "Horrible, inexplicable error: epsilon->count = " 
+          << epsilon->count;
+     throw( JL::GenericException( __FILE__, __LINE__, 
+            "Jet cos( const Jet& ) ",
+            uic.str().c_str() ) );
    }
    epsilon.addTerm( new JLterm( x->myEnv->AllZeroes, 1.0, x->myEnv ) );
    return epsilon;
@@ -1189,16 +1175,12 @@ Jet exp( const Jet& x ) {
  
  if( x->count == 0 ) {
    if( epsilon->count != 0  ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Jet exp( Jet )                      \n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Horrible, inexplicable error!!!     \n"
-          << "*** ERROR *** epsilon->count = " << epsilon->count 
-          <<                                  "                 \n"
-          << "*** ERROR ***                                     \n"
-          << endl;
-     exit(1);
+     ostringstream uic;
+     uic  << "Horrible, inexplicable error: epsilon->count = " 
+          << epsilon->count;
+     throw( JL::GenericException( __FILE__, __LINE__, 
+            "Jet exp( const Jet& ) ",
+            uic.str().c_str() ) );
    }
    epsilon.addTerm( new JLterm( x->myEnv->AllZeroes, 1.0, x->myEnv ) );
    return epsilon;
@@ -1238,14 +1220,9 @@ Jet log ( const Jet& x ) {
  p = 0;
  
  if( x->count == 0 ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Jet log( Jet )                      \n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** x->count == 0 implies a zero argument.\n"
-          << "*** ERROR ***                                     \n"
-          << endl;
-     exit(1);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet log ( const Jet& ) { ",
+          "Argument is zero." ) );
  }
  
  dlist_iterator  getNext( *(dlist*) x.jl );
@@ -1277,13 +1254,9 @@ Jet log ( const Jet& x ) {
    }
  else                                 // x has zero standard part
    {
-   cerr <<  "\n\n*** ERROR *** \n"                                  
-        <<      "*** ERROR *** JL log called with argument whose\n" 
-        <<      "*** ERROR *** standard part vanishes.\n"           
-        <<      "*** ERROR *** \n\n"                                
-        << endl;
-   if( 1 + 1 == 2 ) exit(1);
-   return x;
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet log ( const Jet& ) ",
+          "Argument's standard part vanishes; it is nilpotent." ) );
    }
 }
 
@@ -1314,16 +1287,12 @@ Jet pow( const Jet& x, const double& s ) {
  
  if( x->count == 0 ) {
    if( epsilon->count != 0  ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Jet pow( Jet, double )              \n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Horrible, inexplicable error!!!     \n"
-          << "*** ERROR *** epsilon->count = " << epsilon->count 
-          <<                                  "                 \n"
-          << "*** ERROR ***                                     \n"
-          << endl;
-     exit(1);
+     ostringstream uic;
+     uic  << "Horrible, inexplicable error: epsilon->count = " 
+          << epsilon->count;
+     throw( JL::GenericException( __FILE__, __LINE__, 
+            "Jet pow( const Jet&, const double& ) ",
+            uic.str().c_str() ) );
    }
    epsilon.addTerm( new JLterm( x->myEnv->AllZeroes, 0.0, x->myEnv ) );
    return epsilon;
@@ -1352,10 +1321,9 @@ Jet pow( const Jet& x, const double& s ) {
    {
    u = nearestInteger( s );
    if( s != (double) u ) {
-     cerr <<  "\n*** ERROR::JL pow: attempt to use infinitesimal " 
-          <<  "as base with non-integer exponent.\n" 
-          << endl;
-     exit(1);
+     throw( JL::GenericException( __FILE__, __LINE__, 
+            "Jet pow( const Jet&, const double& )",
+            "Cannot use infinitesimal as base with non-integer exponent." ) );
      }
    epsilon = 1.0;
    if ( u == 0 ) {
@@ -1416,16 +1384,12 @@ Jet sin( const Jet& x ) {
  
  if( x->count == 0 ) {
    if( epsilon->count != 0  ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Jet sin( Jet )                      \n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Horrible, inexplicable error!!!     \n"
-          << "*** ERROR *** epsilon->count = " << epsilon->count 
-          <<                                  "                 \n"
-          << "*** ERROR ***                                     \n"
-          << endl;
-     exit(1);
+     ostringstream uic;
+     uic  << "Horrible, inexplicable error: epsilon->count = " 
+          << epsilon->count;
+     throw( JL::GenericException( __FILE__, __LINE__, 
+            "Jet sin( const Jet& ) ",
+            uic.str().c_str() ) );
    }
    epsilon.addTerm( new JLterm( x->myEnv->AllZeroes, 0.0, x->myEnv ) );
    return epsilon;
@@ -1472,14 +1436,9 @@ Jet sqrt( const Jet& x ) {
  p = 0; 
  
  if( x->count == 0 ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Jet sqrt( Jet )                     \n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** x->count == 0 implies a zero argument.\n"
-          << "*** ERROR ***                                     \n"
-          << endl;
-     exit(1);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet sqrt( const Jet& ) { ",
+          "Argument is zero." ) );
  }
  
  dlist_iterator getNext( *(dlist*) x.jl );
@@ -1506,10 +1465,9 @@ Jet sqrt( const Jet& x ) {
    }
  else                                 // x is pure infinitesimal
    {
-   cerr <<  "\n*** ERROR::JL sqrt: attempt to use infinitesimal argument." 
-        << endl;
-   if( 1 + 1 == 2 ) exit(1);
-   return x;
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet sqrt( const Jet& ) ",
+          "Argument's standard part vanishes; it is nilpotent." ) );
    }
 }
 
@@ -1535,14 +1493,9 @@ Jet fabs( const Jet& x ) {
  static double u;
 
  if( x->count == 0 ) {
-     cerr << "\n\n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** Jet fabs( Jet )                     \n"
-          << "*** ERROR ***                                     \n"
-          << "*** ERROR *** x->count == 0 implies a zero argument.\n"
-          << "*** ERROR ***                                     \n"
-          << endl;
-     exit(1);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet fabs( const Jet& ) { ",
+          "Argument is zero." ) );
  }
  
  if( (u = x.standardPart()) != 0.0 ) 
@@ -1552,10 +1505,9 @@ Jet fabs( const Jet& x ) {
  }
  else
  {
-   cerr << "\n*** ERROR::Jet fabs: attempt to use infinitesimal argument."
-        << endl;
-   if( 1 + 1 == 2 ) exit(1);   // This weird stuff done to avoid
-   return x;                   // compiler warnings.
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet fabs( const Jet& ) ",
+          "Argument's standard part vanishes; it is nilpotent." ) );
  }
 }
 
@@ -2036,15 +1988,9 @@ Jet Jet::filter( char (*f) ( const IntArray&, const double& ) ) const {
 
   for( i = 0; i < nv; i++ ) 
    if( oldIndex(i) != p->index(i) ) {
-    cerr <<  "\n"
-         <<  "*** ERROR ***                                      \n" 
-         <<  "*** ERROR *** Jet Jet::filter( char (*f) ( int*, double ) \n" 
-         <<  "*** ERROR *** The test routine is not allowed      \n" 
-         <<  "*** ERROR *** to change the values in the index    \n" 
-         <<  "*** ERROR *** array!!                              \n" 
-         <<  "*** ERROR ***                                      \n" 
-         << endl;
-    exit(0);
+    throw( JL::GenericException( __FILE__, __LINE__, 
+           "Jet Jet::filter( char (*f) ( const IntArray&, const double& ) ) const",
+           "Test routine changes value of index array." ) );
    }
  }
 
@@ -2113,14 +2059,9 @@ Jet Jet::operator() ( const Jet* y ) const {
  // subtract reference point prior to concatenation.
  for( i = 0; i < jl->myEnv->NumVar; i++ ) {
    if( y[i]->myEnv != y[0]->myEnv ) {
-     cerr << "\n\n"
- 	  << " *** ERROR ***                                \n"
- 	  << " *** ERROR *** Jet::operator()( Jet* )        \n"
- 	  << " *** ERROR ***                                \n"
- 	  << " *** ERROR *** Inconsistent environments.     \n"
- 	  << " *** ERROR ***                                \n"
- 	  << endl;
-     exit(1);
+     throw( JL::GenericException( __FILE__, __LINE__, 
+            "Jet Jet::operator() ( const Jet* ) const ",
+            "Inconsistent environments." ) );
    }
    u[i] = y[i] - jl->myEnv->refPoint[i];
  }
@@ -2226,19 +2167,17 @@ Jet Jet::D( const int* n ) const {
  
  for( i = 0; i < jl->myEnv->NumVar; i++ ) {
    if( n[i] < 0 ) {
-     cerr <<  "\n*** JL ERROR: Cannot differentiate with negative index." 
-          <<  "\n*******************************************************\n" 
-          << endl;
-     exit(0);
+     throw( JL::GenericException( __FILE__, __LINE__, 
+            "Jet Jet::D( const int* ) const",
+            "Cannot differentiate with negative index." ) );
      }
    w += n[i];
  }
  
  if( w > jl->accuWgt ) {
-   cerr <<  "\n*** JL ERROR: Differentiation request beyond accuracy allowed." 
-        <<  "\n**************************************************************\n" 
-        << endl;
-   exit(0);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet Jet::D( const int* ) const",
+          "Differentiation request beyond accuracy allowed." ) );
  }
  
  if( w == 0 ) {
@@ -2269,10 +2208,9 @@ Jet Jet::D( const int* n ) const {
        for( i = 0; i < n[k]; i++ ) f *= ++j;
      }
      if( f <= 0 ) {
-       cerr <<  "\n*** JL ERROR: Horrible, unexplainable error while differentiating!" 
-            <<  "\n******************************************************************\n" 
-            << endl;
-       exit(0);
+       throw( JL::GenericException( __FILE__, __LINE__, 
+              "Jet Jet::D( const int* ) const",
+              "Horrible, unexplainable error while differentiating!" ) );
      }                           // Super fussbudget!! ( f "must" be positive )
    
      // -- Make final changes in private data of the JLterm and
@@ -2307,14 +2245,9 @@ Jet Jet::D( const IntArray& n ) const
 {
 
  if( n.Dim() != jl->myEnv->NumVar ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                   \n"
-         << "*** ERROR *** Jet::D( IntArray )                \n"
-         << "*** ERROR ***                                   \n"
-         << "*** ERROR *** Inconsistent dimensions.          \n"
-         << "*** ERROR ***                                   \n"
-         << endl;
-    exit(1);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet Jet::D( const IntArray& ) const ",
+          "Inconsistent dimensions." ) );
  }
 
  // ??? REMOVE static char noTermAdded;
@@ -2341,19 +2274,17 @@ Jet Jet::D( const IntArray& n ) const
  
  for( i = 0; i < jl->myEnv->NumVar; i++ ) {
    if( n(i) < 0 ) {
-     cerr <<  "\n*** JL ERROR: Cannot differentiate with negative index." 
-          <<  "\n*******************************************************\n" 
-          << endl;
-     exit(0);
+     throw( JL::GenericException( __FILE__, __LINE__, 
+            "Jet Jet::D( const IntArray& ) const ",
+            "Cannot differentiate with negative index." ) );
      }
    w += n(i);
  }
  
  if( w > jl->accuWgt ) {
-   cerr <<  "\n*** JL ERROR: Differentiation request beyond accuracy allowed." 
-        <<  "\n**************************************************************\n" 
-        << endl;
-   exit(0);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "Jet Jet::D( const IntArray& ) const ",
+          "Differentiation request beyond accuracy allowed." ) );
  }
  
  if( w == 0 ) {
@@ -2382,10 +2313,9 @@ Jet Jet::D( const IntArray& n ) const
        for( i = 0; i < n(k); i++ ) f *= ++j;
        }
      if( f <= 0 ) {
-       cerr <<  "\n*** JL ERROR: Horrible, unexplainable error while differentiating!" 
-            <<  "\n******************************************************************\n" 
-            << endl;
-       exit(0);
+       throw( JL::GenericException( __FILE__, __LINE__, 
+              "Jet Jet::D( const IntArray& ) const",
+              "Horrible, unexplainable error while differentiating!" ) );
        }                           // Super fussbudget!! ( f "must" be positive )
    
      // -- Make final changes in private data of the JLterm and

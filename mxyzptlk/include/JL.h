@@ -91,13 +91,19 @@ struct JLterm {
 
   // Operators
   void operator=( const JLterm& );
-  double coeff() const { return value; }
 #ifdef OBJECT_DEBUG
   static int objectCount;
 #endif
+
+  // Accessors
+  IntArray& exponents()         { return index; }
+  IntArray  exponents()   const { return index; }
+  double&   coefficient()       { return value; }
+  double    coefficient() const { return value; }
+  double    coeff()       const { return value; }  // old
 } ;
 
-
+
 // *******************************************************************
 struct JL : public dlist {
 
