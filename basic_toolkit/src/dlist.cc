@@ -133,9 +133,9 @@ dlist& dlist::operator=( const dlist& x )
   clear();
   while((  p = getNext()  )) append( p );
   return *this;
-  }
+}
   
-  void dlink::putBelow( dlink* a ) {
+void dlink::putBelow( dlink* a ) {
   a -> prev = this;
   a -> next = next;
   next -> prev = a;
