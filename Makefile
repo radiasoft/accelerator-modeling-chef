@@ -40,6 +40,7 @@ SUBDIRS  = basic_toolkit/src \
 	integrator/src \
 	mxyzptlk/src \
 	machines/accumulator/src \
+	machines/booster/src \
 	machines/Machine/src \
 	machines/mi/src \
 	machines/mi_8gev/src \
