@@ -205,7 +205,7 @@ bmlnElmnt* read_istream(istream& is)
     element = PingerPtr;
   }
   else if( strcasecmp(type, 		"hmonitor") == 0 ) {
-    hmonitorPtr = new hmonitor(name);
+    hmonitorPtr = new hmonitor(name, length);
     element = hmonitorPtr;
   }
   else if( strcasecmp(type, 		"marker") == 0 ) {
@@ -213,7 +213,7 @@ bmlnElmnt* read_istream(istream& is)
     element = markerPtr;
   }
   else if( strcasecmp(type, 		"monitor") == 0 ) {
-    monitorPtr = new monitor(name);
+    monitorPtr = new monitor(name, length);
     element = monitorPtr;
   }
 #if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
@@ -279,7 +279,7 @@ bmlnElmnt* read_istream(istream& is)
     element = cavityPtr;
   }
   else if( strcasecmp(type, 		"vmonitor" ) == 0 ) {
-    vmonitorPtr = new vmonitor(name);
+    vmonitorPtr = new vmonitor(name, length);
     element = vmonitorPtr;
   }
   else if( strcasecmp(type, 		"BBLens") == 0 ) {

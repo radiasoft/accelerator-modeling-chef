@@ -10,6 +10,9 @@ hmonitor::hmonitor() : monitor() {
 hmonitor::hmonitor( char* n ) : monitor( n ){
 }
 
+hmonitor::hmonitor( char* n, double l ) : monitor( n, l ){
+}
+
 hmonitor::hmonitor( FILE* of ) : monitor( of ) {
 }
 

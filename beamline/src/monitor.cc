@@ -7,11 +7,13 @@
 monitorData::monitorData() : bmlnElmntData() {
  more = 1;
  onOff = 0;
+ driftFraction = 0.5;
 }
 
 monitorData::monitorData( monitorData& x  ) : bmlnElmntData( (bmlnElmntData&) x ) {
  more = x.more;
  onOff = x.onOff;
+ driftFraction = x.driftFraction;
 }
 
 monitorData::~monitorData() {
@@ -52,6 +54,7 @@ void* monitorData::clone() {
 monitor::monitor() : bmlnElmnt() {
  outputFile = stdout;
  onOff      = 0;
+ driftFraction = 0.5;
  rgr   = new double [ BMLN_dynDim ];
  for( int i = 0; i < BMLN_dynDim; i++ ) rgr[i] = 0.0;
 }
@@ -59,6 +62,15 @@ monitor::monitor() : bmlnElmnt() {
 monitor::monitor( char* n ) : bmlnElmnt(n) {
  outputFile = stdout;
  onOff      = 0;
+ driftFraction = 0.5;
+ rgr   = new double [ BMLN_dynDim ];
+ for( int i = 0; i < BMLN_dynDim; i++ ) rgr[i] = 0.0;
+}
+
+monitor::monitor( char* n, double l ) : bmlnElmnt(n, l) {
+ outputFile = stdout;
+ onOff      = 0;
+ driftFraction = 0.5;
  rgr   = new double [ BMLN_dynDim ];
  for( int i = 0; i < BMLN_dynDim; i++ ) rgr[i] = 0.0;
 }
@@ -66,6 +78,7 @@ monitor::monitor( char* n ) : bmlnElmnt(n) {
 monitor::monitor( FILE* of ) : bmlnElmnt() {
  outputFile = of;
  onOff      = 0;
+ driftFraction = 0.5;
  rgr   = new double [ BMLN_dynDim ];
  for( int i = 0; i < BMLN_dynDim; i++ ) rgr[i] = 0.0;
 }
@@ -73,12 +86,14 @@ monitor::monitor( FILE* of ) : bmlnElmnt() {
 monitor::monitor( char* n, FILE* of ) : bmlnElmnt(n) {
  outputFile = of;
  onOff      = 0;
+ driftFraction = 0.5;
  rgr   = new double [ BMLN_dynDim ];
  for( int i = 0; i < BMLN_dynDim; i++ ) rgr[i] = 0.0;
 }
 
 monitor::monitor( bmlnElmntData& x ) : bmlnElmnt( x ) {
  onOff = 0;
+ driftFraction = 0.5;
  rgr   = new double [ BMLN_dynDim ];
  for( int i = 0; i < BMLN_dynDim; i++ ) rgr[i] = 0.0;
 }
@@ -87,6 +102,7 @@ monitor::monitor( const monitor& x )
 : bmlnElmnt( (bmlnElmnt&) x )
 {
  onOff = x.onOff;
+ driftFraction = x.driftFraction;
  rgr   = new double [ BMLN_dynDim ];
  for( int i = 0; i < BMLN_dynDim; i++ ) rgr[i] = x.rgr[i];
 }
@@ -140,3 +156,21 @@ double monitor::operator[]( int n ) {
  return rgr[n];
 }
 
+ostream& monitor::writeTo(ostream &os) {
+  if ( Length() != 0 ) 
+    os << driftFraction << endl;
+  return os;
+}
+
+istream& monitor::readFrom(istream &is) {
+  if ( Length() != 0 ) {
+    is >> driftFraction ;
+    if ( driftFraction < 0 || driftFraction > 1 ) {
+      cerr << "monitor::readFrom(istream&): Read a drift fraction of " << driftFraction << "; substituting 0.5" << endl;
+      driftFraction = 0.5;
+    }
+  } else {
+    driftFraction = 0.5; // Basically irrelevant if the monitor has no length!
+  }
+  return is;
+}

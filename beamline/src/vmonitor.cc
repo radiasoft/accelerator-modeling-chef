@@ -10,6 +10,9 @@ vmonitor::vmonitor() : monitor() {
 vmonitor::vmonitor( char* n ) : monitor( n ){
 }
 
+vmonitor::vmonitor( char* n, double l ) : monitor( n,l ){
+}
+
 vmonitor::vmonitor( FILE* of ) : monitor( of ) {
 }
 

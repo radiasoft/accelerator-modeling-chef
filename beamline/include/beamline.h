@@ -638,6 +638,8 @@ struct monitorData;
 
 class monitor : public bmlnElmnt
 {
+ private:
+  double driftFraction;
 protected:
   FILE*    outputFile;
   void     image( int, slist*, BMLN_posInfo* );
@@ -647,6 +649,7 @@ protected:
 public:
   monitor();                   // Data to be written to standard output
   monitor( char* );            // Name identifier.
+  monitor( char*, double );    // Name identifier, length.
   monitor( FILE* );            // Data written to file.
   monitor( char*, FILE* );     //                      ... and name.
   monitor( bmlnElmntData& );
@@ -657,6 +660,11 @@ public:
   virtual void on();
   virtual void off();
   double operator[]( int );    // Readout of data
+  double setDriftFraction(double f) { if ( f <= 1 && f >= 0 ) driftFraction = f; return driftFraction; }
+  double getDriftFraction() { return driftFraction; }
+  virtual ostream& writeTo(ostream&);	// Is this "virtual" tag really necessary?  Probably!
+  virtual istream& readFrom(istream&);
+  void getState(double *s) { for ( int i=0; i<6; i++ ) s[i] = rgr[i]; }
   // ---------------------
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle&   );
@@ -664,7 +672,7 @@ public:
 
   void accept( BmlVisitor& v ) { v.visitMonitor( this ); }
   
-  inline int State() const {return onOff;}
+  inline int State() const { return onOff; }
   char* Type() const;
   bmlnElmnt* Clone() const { return new monitor( *this ); }
 } ;
@@ -674,6 +682,7 @@ class hmonitor : public monitor
 public:
   hmonitor();                   // Data to be written to standard output
   hmonitor( char* );            // Name identifier.
+  hmonitor( char*, double );    // Name identifier, length.
   hmonitor( FILE* );            // Data written to file.
   hmonitor( char*, FILE* );     // Data written to file ... and name.
   hmonitor( bmlnElmntData& );
@@ -690,6 +699,7 @@ public:
 
 struct monitorData : public bmlnElmntData {
   char    onOff;
+  double  driftFraction;
 
   monitorData();
 
@@ -706,6 +716,7 @@ class vmonitor : public monitor
 public:
   vmonitor();                   // Data to be written to standard output
   vmonitor( char* );            // Name identifier.
+  vmonitor( char*, double );    // Name identifier, length.
   vmonitor( FILE* );            // Data written to file.
   vmonitor( char*, FILE* );     // Data written to file ... and name.
   vmonitor( bmlnElmntData& );
