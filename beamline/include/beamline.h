@@ -752,8 +752,8 @@ struct rbendData;
 class rbend : public bmlnElmnt
 {
 private:
-  static void P_Face    ( const bmlnElmnt*, Particle& );
-  static void J_Face    ( const bmlnElmnt*, JetParticle& );
+  // ??? REMOVE: static void P_Face    ( const bmlnElmnt*, Particle& );
+  // ??? REMOVE: static void J_Face    ( const bmlnElmnt*, JetParticle& );
   double poleFaceAngle;
   double tanPFAngle;
 

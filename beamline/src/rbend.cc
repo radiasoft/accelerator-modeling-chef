@@ -332,137 +332,137 @@ istream& rbend::readFrom(istream& is)
 // ??? REMOVE: }
 // ??? REMOVE: 
 // ??? REMOVE: 
-void rbend::P_Face( const bmlnElmnt* p_be, Particle& p )
-{
-  static int x;
-  static int y;
-  static int cdt;
-  static int xp;
-  static int yp;
-  static int dpop;
-
-  x    = p.xIndex();
-  y    = p.yIndex();
-  cdt  = p.cdtIndex();
-  xp   = p.npxIndex();
-  yp   = p.npyIndex();
-  dpop = p.ndpIndex();
-
-
-  static rbend* pbe;
-
-  pbe = (rbend*) p_be;  // ??? Why isn't the argument an rbend* ?
-
-  // Calculate the transformation angle.
-  double psi;
-  if( pbe->poleFaceAngle == M_TWOPI ) {
-    psi =   asin(   ( pbe->strength * pbe->Length() )
-                  / ( 2.0*p.ReferenceBRho() )
-                );
-    // i.e., sin( psi ) = (l/2) / rho
-    //                  = Bl/(2*Brho)
-    pbe->poleFaceAngle = psi;
-    pbe->tanPFAngle    = tan( psi );
-  }
-  else {
-    psi = pbe->poleFaceAngle;
-  }
-
-  double cs( cos(psi) ); 
-  double sn( sin(psi) ); 
-
-  // Drift frame represented in the rbend frame.
-  Vector e_1(3), e_2(3), e_3(3);
-  e_1(0) = cs;  e_1(1) = 0.0;  e_1(2) = -sn; 
-  e_2(0) = 0.0; e_2(1) = 1.0;  e_2(2) = 0.0; 
-  e_3(0) = sn;  e_3(1) = 0.0;  e_3(2) = cs; 
-
-  // Coordinate transformation.
-  Vector r        ( p.State(x)*e_1 + p.State(y)*e_2 );
-  Vector dummy    ( p.VectorBeta() );
-  Vector beta     ( dummy(0)*e_1 +
-                    dummy(1)*e_2 +
-                    dummy(2)*e_3 );
-
-  double tau      ( - r(2) / beta(2) );
-
-  p.state[x]    = r(0) + tau*beta(0);
-  p.state[y]    = r(1) + tau*beta(1);
-  p.state[cdt] += tau;
-
-  // Momentum transformation
-  double p1( p.State( xp ) );
-  double p2( p.State( yp ) );
-  double p3divpbar = sqrt( ( 1.0 + p.state[dpop] ) * ( 1.0 + p.state[dpop] )
-                            - p1*p1 - p2*p2 );
-
-  p.state[xp] = cs*p.State( xp ) + sn*p3divpbar;
-}
-
-
-void rbend::J_Face( const bmlnElmnt* p_be, JetParticle& p )
-{
-  static int x;
-  static int y;
-  static int cdt;
-  static int xp;
-  static int yp;
-  static int dpop;
-
-  x    = p.xIndex();
-  y    = p.yIndex();
-  cdt  = p.cdtIndex();
-  xp   = p.npxIndex();
-  yp   = p.npyIndex();
-  dpop = p.ndpIndex();
-
-
-  static rbend* pbe;
-
-  pbe = (rbend*) p_be;  // ??? Why isn't the argument an rbend* ?
-
-  // Calculate the transformation angle.
-  double psi;
-  if( pbe->poleFaceAngle == M_TWOPI ) {
-    psi =   asin(   ( pbe->strength * pbe->Length() )
-                  / ( 2.0*p.ReferenceBRho() )
-                );
-    // i.e., sin( psi ) = (l/2) / rho
-    //                  = Bl/(2*Brho)
-    pbe->poleFaceAngle = psi;
-    pbe->tanPFAngle    = tan( psi );
-  }
-  else {
-    psi = pbe->poleFaceAngle;
-  }
-
-  double cs( cos(psi) ); 
-  double sn( sin(psi) ); 
-
-  // Drift frame represented in the rbend frame.
-  Vector e_1(3), e_2(3), e_3(3);
-  e_1(0) = cs;  e_1(1) = 0.0;  e_1(2) = -sn; 
-  e_2(0) = 0.0; e_2(1) = 1.0;  e_2(2) = 0.0; 
-  e_3(0) = sn;  e_3(1) = 0.0;  e_3(2) = cs; 
-
-  // Coordinate transformation.
-  JetVector r        ( p.State(x)*e_1 + p.State(y)*e_2 );
-  JetVector dummy    ( p.VectorBeta() );
-  JetVector beta     ( dummy(0)*e_1 +
-                       dummy(1)*e_2 +
-                       dummy(2)*e_3 );
-
-  Jet tau            ( - r(2) / beta(2) );
-
-  ( p.state ).SetComponent( x,   r(0) + tau*beta(0) );
-  ( p.state ).SetComponent( y,   r(1) + tau*beta(1) );
-  ( p.state ).SetComponent( cdt, p.state(cdt) + tau );
-
-  // Momentum transformation
-  Jet p1( p.State( xp ) );
-  Jet p2( p.State( yp ) );
-  Jet p3divpbar = sqrt( ( 1.0 + p.state(dpop) ) * ( 1.0 + p.state(dpop) )
-                            - p1*p1 - p2*p2 );
-
-  ( p.state ).SetComponent( xp, cs*p.State( xp ) + sn*p3divpbar );
-}
+// ??? REMOVE: void rbend::P_Face( const bmlnElmnt* p_be, Particle& p )
+// ??? REMOVE: {
+// ??? REMOVE:   static int x;
+// ??? REMOVE:   static int y;
+// ??? REMOVE:   static int cdt;
+// ??? REMOVE:   static int xp;
+// ??? REMOVE:   static int yp;
+// ??? REMOVE:   static int dpop;
+// ??? REMOVE: 
+// ??? REMOVE:   x    = p.xIndex();
+// ??? REMOVE:   y    = p.yIndex();
+// ??? REMOVE:   cdt  = p.cdtIndex();
+// ??? REMOVE:   xp   = p.npxIndex();
+// ??? REMOVE:   yp   = p.npyIndex();
+// ??? REMOVE:   dpop = p.ndpIndex();
+// ??? REMOVE: 
+// ??? REMOVE: 
+// ??? REMOVE:   static rbend* pbe;
+// ??? REMOVE: 
+// ??? REMOVE:   pbe = (rbend*) p_be;  // ??? Why isn't the argument an rbend* ?
+// ??? REMOVE: 
+// ??? REMOVE:   // Calculate the transformation angle.
+// ??? REMOVE:   double psi;
+// ??? REMOVE:   if( pbe->poleFaceAngle == M_TWOPI ) {
+// ??? REMOVE:     psi =   asin(   ( pbe->strength * pbe->Length() )
+// ??? REMOVE:                   / ( 2.0*p.ReferenceBRho() )
+// ??? REMOVE:                 );
+// ??? REMOVE:     // i.e., sin( psi ) = (l/2) / rho
+// ??? REMOVE:     //                  = Bl/(2*Brho)
+// ??? REMOVE:     pbe->poleFaceAngle = psi;
+// ??? REMOVE:     pbe->tanPFAngle    = tan( psi );
+// ??? REMOVE:   }
+// ??? REMOVE:   else {
+// ??? REMOVE:     psi = pbe->poleFaceAngle;
+// ??? REMOVE:   }
+// ??? REMOVE: 
+// ??? REMOVE:   double cs( cos(psi) ); 
+// ??? REMOVE:   double sn( sin(psi) ); 
+// ??? REMOVE: 
+// ??? REMOVE:   // Drift frame represented in the rbend frame.
+// ??? REMOVE:   Vector e_1(3), e_2(3), e_3(3);
+// ??? REMOVE:   e_1(0) = cs;  e_1(1) = 0.0;  e_1(2) = -sn; 
+// ??? REMOVE:   e_2(0) = 0.0; e_2(1) = 1.0;  e_2(2) = 0.0; 
+// ??? REMOVE:   e_3(0) = sn;  e_3(1) = 0.0;  e_3(2) = cs; 
+// ??? REMOVE: 
+// ??? REMOVE:   // Coordinate transformation.
+// ??? REMOVE:   Vector r        ( p.State(x)*e_1 + p.State(y)*e_2 );
+// ??? REMOVE:   Vector dummy    ( p.VectorBeta() );
+// ??? REMOVE:   Vector beta     ( dummy(0)*e_1 +
+// ??? REMOVE:                     dummy(1)*e_2 +
+// ??? REMOVE:                     dummy(2)*e_3 );
+// ??? REMOVE: 
+// ??? REMOVE:   double tau      ( - r(2) / beta(2) );
+// ??? REMOVE: 
+// ??? REMOVE:   p.state[x]    = r(0) + tau*beta(0);
+// ??? REMOVE:   p.state[y]    = r(1) + tau*beta(1);
+// ??? REMOVE:   p.state[cdt] += tau;
+// ??? REMOVE: 
+// ??? REMOVE:   // Momentum transformation
+// ??? REMOVE:   double p1( p.State( xp ) );
+// ??? REMOVE:   double p2( p.State( yp ) );
+// ??? REMOVE:   double p3divpbar = sqrt( ( 1.0 + p.state[dpop] ) * ( 1.0 + p.state[dpop] )
+// ??? REMOVE:                             - p1*p1 - p2*p2 );
+// ??? REMOVE: 
+// ??? REMOVE:   p.state[xp] = cs*p.State( xp ) + sn*p3divpbar;
+// ??? REMOVE: }
+// ??? REMOVE: 
+// ??? REMOVE: 
+// ??? REMOVE: void rbend::J_Face( const bmlnElmnt* p_be, JetParticle& p )
+// ??? REMOVE: {
+// ??? REMOVE:   static int x;
+// ??? REMOVE:   static int y;
+// ??? REMOVE:   static int cdt;
+// ??? REMOVE:   static int xp;
+// ??? REMOVE:   static int yp;
+// ??? REMOVE:   static int dpop;
+// ??? REMOVE: 
+// ??? REMOVE:   x    = p.xIndex();
+// ??? REMOVE:   y    = p.yIndex();
+// ??? REMOVE:   cdt  = p.cdtIndex();
+// ??? REMOVE:   xp   = p.npxIndex();
+// ??? REMOVE:   yp   = p.npyIndex();
+// ??? REMOVE:   dpop = p.ndpIndex();
+// ??? REMOVE: 
+// ??? REMOVE: 
+// ??? REMOVE:   static rbend* pbe;
+// ??? REMOVE: 
+// ??? REMOVE:   pbe = (rbend*) p_be;  // ??? Why isn't the argument an rbend* ?
+// ??? REMOVE: 
+// ??? REMOVE:   // Calculate the transformation angle.
+// ??? REMOVE:   double psi;
+// ??? REMOVE:   if( pbe->poleFaceAngle == M_TWOPI ) {
+// ??? REMOVE:     psi =   asin(   ( pbe->strength * pbe->Length() )
+// ??? REMOVE:                   / ( 2.0*p.ReferenceBRho() )
+// ??? REMOVE:                 );
+// ??? REMOVE:     // i.e., sin( psi ) = (l/2) / rho
+// ??? REMOVE:     //                  = Bl/(2*Brho)
+// ??? REMOVE:     pbe->poleFaceAngle = psi;
+// ??? REMOVE:     pbe->tanPFAngle    = tan( psi );
+// ??? REMOVE:   }
+// ??? REMOVE:   else {
+// ??? REMOVE:     psi = pbe->poleFaceAngle;
+// ??? REMOVE:   }
+// ??? REMOVE: 
+// ??? REMOVE:   double cs( cos(psi) ); 
+// ??? REMOVE:   double sn( sin(psi) ); 
+// ??? REMOVE: 
+// ??? REMOVE:   // Drift frame represented in the rbend frame.
+// ??? REMOVE:   Vector e_1(3), e_2(3), e_3(3);
+// ??? REMOVE:   e_1(0) = cs;  e_1(1) = 0.0;  e_1(2) = -sn; 
+// ??? REMOVE:   e_2(0) = 0.0; e_2(1) = 1.0;  e_2(2) = 0.0; 
+// ??? REMOVE:   e_3(0) = sn;  e_3(1) = 0.0;  e_3(2) = cs; 
+// ??? REMOVE: 
+// ??? REMOVE:   // Coordinate transformation.
+// ??? REMOVE:   JetVector r        ( p.State(x)*e_1 + p.State(y)*e_2 );
+// ??? REMOVE:   JetVector dummy    ( p.VectorBeta() );
+// ??? REMOVE:   JetVector beta     ( dummy(0)*e_1 +
+// ??? REMOVE:                        dummy(1)*e_2 +
+// ??? REMOVE:                        dummy(2)*e_3 );
+// ??? REMOVE: 
+// ??? REMOVE:   Jet tau            ( - r(2) / beta(2) );
+// ??? REMOVE: 
+// ??? REMOVE:   ( p.state ).SetComponent( x,   r(0) + tau*beta(0) );
+// ??? REMOVE:   ( p.state ).SetComponent( y,   r(1) + tau*beta(1) );
+// ??? REMOVE:   ( p.state ).SetComponent( cdt, p.state(cdt) + tau );
+// ??? REMOVE: 
+// ??? REMOVE:   // Momentum transformation
+// ??? REMOVE:   Jet p1( p.State( xp ) );
+// ??? REMOVE:   Jet p2( p.State( yp ) );
+// ??? REMOVE:   Jet p3divpbar = sqrt( ( 1.0 + p.state(dpop) ) * ( 1.0 + p.state(dpop) )
+// ??? REMOVE:                             - p1*p1 - p2*p2 );
+// ??? REMOVE: 
+// ??? REMOVE:   ( p.state ).SetComponent( xp, cs*p.State( xp ) + sn*p3divpbar );
+// ??? REMOVE: }

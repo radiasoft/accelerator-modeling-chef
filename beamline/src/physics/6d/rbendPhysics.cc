@@ -3,50 +3,145 @@
 
 void rbend::P_Exact( bmlnElmnt* p_be, Particle& p )
 {
-  // ??? The removals follow from introducing the 
-  // ??? [enter|leave]LocalFrame functions.
-  // ??? 
-  // ??? There are too many function calls now. This
-  // ??? should be cleaned up.
-  // ???
-  // ??? REMOVE rbend::P_Face(p_be,p);
-  rbend::P_NoEdge(p_be,p);
-  // ??? REMOVE rbend::P_Face(p_be,p);
+  static rbend* pbe;
+  pbe = (rbend*) p_be;
+
+  // Put in a kludge for the vertical focusing upon entrance.
+  #ifdef RBEND_POLEFACECHECK
+  if( 0.0 != pbe->tanPFAngle ) {
+  #endif
+    double edgeCoeff = ( pbe->tanPFAngle / ( p.bRho / pbe->strength ) );
+    p.state[4] -= edgeCoeff* p.state[1];
+  #ifdef RBEND_POLEFACECHECK
+  }
+  #endif
+
+
+  // Propagate through the constant magnetic field.
+  rbend::P_NoEdge(pbe,p);
+
+
+  // Put in a kludge for the vertical focusing upon exit.
+  #ifdef RBEND_POLEFACECHECK
+  if( 0.0 != pbe->tanPFAngle ) {
+  #endif
+    p.state[4] -= edgeCoeff* p.state[1];
+  #ifdef RBEND_POLEFACECHECK
+  }
+  #endif
+
 }
 
 void rbend::J_Exact( bmlnElmnt* p_be, JetParticle& p )
 {
-  // ??? REMOVE rbend::J_Face(p_be,p);
-  rbend::J_NoEdge(p_be,p);
-  // ??? REMOVE rbend::J_Face(p_be,p);
+  static rbend* pbe;
+  pbe = (rbend*) p_be;
+
+  // Put in a kludge for the vertical focusing upon entrance.
+  #ifdef RBEND_POLEFACECHECK
+  if( 0.0 != pbe->tanPFAngle ) {
+  #endif
+    double edgeCoeff = ( pbe->tanPFAngle / ( p.bRho / pbe->strength ) );
+    p.state(4) -= edgeCoeff * p.state(1);
+  #ifdef RBEND_POLEFACECHECK
+  }
+  #endif
+
+
+  // Propagate through constant magnetic field.
+  rbend::J_NoEdge(pbe,p);
+
+
+  // Put in a kludge for the vertical focusing upon exit.
+  #ifdef RBEND_POLEFACECHECK
+  if( 0.0 != pbe->tanPFAngle ) {
+  #endif
+    p.state(4) -= edgeCoeff * p.state(1);
+  #ifdef RBEND_POLEFACECHECK
+  }
+  #endif
+
 }
+
 
 void rbend::P_InEdge( bmlnElmnt* p_be, Particle& p )
 {
-  // ??? Should this function be removed?
-  rbend::P_Face(p_be,p);
-  rbend::P_NoEdge(p_be,p);
+  static rbend* pbe;
+  pbe = (rbend*) p_be;
+
+  // Put in a kludge for the vertical focusing upon entrance.
+  #ifdef RBEND_POLEFACECHECK
+  if( 0.0 != pbe->tanPFAngle ) {
+  #endif
+    double edgeCoeff = ( pbe->tanPFAngle / ( p.bRho / pbe->strength ) );
+    p.state[4] -= edgeCoeff* p.state[1];
+  #ifdef RBEND_POLEFACECHECK
+  }
+  #endif
+
+
+  // Propagate through the constant magnetic field.
+  rbend::P_NoEdge(pbe,p);
 }
+
 
 void rbend::J_InEdge( bmlnElmnt* p_be, JetParticle& p )
 {
-  // ??? Should this function be removed?
-  rbend::J_Face(p_be,p);
-  rbend::J_NoEdge(p_be,p);
+  static rbend* pbe;
+  pbe = (rbend*) p_be;
+
+  // Put in a kludge for the vertical focusing upon entrance.
+  #ifdef RBEND_POLEFACECHECK
+  if( 0.0 != pbe->tanPFAngle ) {
+  #endif
+    double edgeCoeff = ( pbe->tanPFAngle / ( p.bRho / pbe->strength ) );
+    p.state(4) -= edgeCoeff * p.state(1);
+  #ifdef RBEND_POLEFACECHECK
+  }
+  #endif
+
+
+  // Propagate through constant magnetic field.
+  rbend::J_NoEdge(pbe,p);
 }
+
 
 void rbend::P_OutEdge( bmlnElmnt* p_be, Particle& p )
 {
-  // ??? Should this function be removed?
-  rbend::P_NoEdge(p_be,p);
-  rbend::P_Face(p_be,p);
+  static rbend* pbe;
+  pbe = (rbend*) p_be;
+
+  // Propagate through the constant magnetic field.
+  rbend::P_NoEdge(pbe,p);
+
+  // Put in a kludge for the vertical focusing upon exit.
+  #ifdef RBEND_POLEFACECHECK
+  if( 0.0 != pbe->tanPFAngle ) {
+  #endif
+    double edgeCoeff = ( pbe->tanPFAngle / ( p.bRho / pbe->strength ) );
+    p.state[4] -= edgeCoeff* p.state[1];
+  #ifdef RBEND_POLEFACECHECK
+  }
+  #endif
 }
+
 
 void rbend::J_OutEdge( bmlnElmnt* p_be, JetParticle& p )
 {
-  // ??? Should this function be removed?
-  rbend::J_NoEdge(p_be,p);
-  rbend::J_Face(p_be,p);
+  static rbend* pbe;
+  pbe = (rbend*) p_be;
+
+  rbend::J_NoEdge(pbe,p);
+
+  // Put in a kludge for the vertical focusing upon exit.
+  #ifdef RBEND_POLEFACECHECK
+  if( 0.0 != pbe->tanPFAngle ) {
+  #endif
+    double edgeCoeff = ( pbe->tanPFAngle / ( p.bRho / pbe->strength ) );
+    p.state(4) -= edgeCoeff * p.state(1);
+  #ifdef RBEND_POLEFACECHECK
+  }
+  #endif
 }
 
 
@@ -54,25 +149,14 @@ void rbend::J_OutEdge( bmlnElmnt* p_be, JetParticle& p )
 
 void rbend::P_NoEdge( bmlnElmnt* p_be, Particle& p )
 {
- static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
  static rbend* pbe;
  pbe = (rbend*) p_be;
 
- // Put in a kludge for the vertical focusing upon entrance.
+ static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
+
  double Rho  = p.bRho / pbe->strength;
  double psq = 1.0 + p.state[5];
  psq = psq*psq;
- // double p3divpbar = sqrt( psq - p.state[3]*p.state[3] - p.state[4]*p.state[4] );
- // p.state[4] -= ( (p.state[3]/p3divpbar) / Rho ) * p.state[1];
-
-
- #ifdef RBEND_POLEFACECHECK
- if( 0.0 != pbe->tanPFAngle ) {
- #endif
-   p.state[4] -= ( pbe->tanPFAngle / Rho ) * p.state[1];
- #ifdef RBEND_POLEFACECHECK
- }
- #endif
 
 
  // Preliminary filter from state coordinates
@@ -115,46 +199,18 @@ void rbend::P_NoEdge( bmlnElmnt* p_be, Particle& p )
  p.state[2] = p.state[2] + ( cdt - CDT );
  p.state[3] = imag( vuf )/( E_factor * PH_MKS_c );
 
-
- // Put in a kludge for the vertical focusing upon exit.
- // p3divpbar = sqrt( psq - p.state[3]*p.state[3] - p.state[4]*p.state[4] );
- // p.state[4] -= ( (p.state[3]/p3divpbar) / Rho ) * p.state[1];
-
-
- #ifdef RBEND_POLEFACECHECK
- if( 0.0 != pbe->tanPFAngle ) {
- #endif
-   p.state[4] -= ( pbe->tanPFAngle / Rho ) * p.state[1];
- #ifdef RBEND_POLEFACECHECK
- }
- #endif
-
-
 }
 
 void rbend::J_NoEdge( bmlnElmnt* p_be, JetParticle& p ) 
 {
- static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
  static rbend* pbe;
  pbe = (rbend*) p_be;
 
+ static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
 
- // Put in a kludge for the vertical focusing upon entrance.
  double Rho  = p.bRho / pbe->strength;
  Jet psq( 1.0 + p.state(5) );
  psq = psq*psq;
- // Jet p3divpbar( sqrt( psq - p.state(3)*p.state(3) - p.state(4)*p.state(4) ) );
- // p.state(4) -= ( (p.state(3)/p3divpbar) / Rho ) * p.state(1);
-
-
- #ifdef RBEND_POLEFACECHECK
- if( 0.0 != pbe->tanPFAngle ) {
- #endif
-   p.state(4) -= ( pbe->tanPFAngle / Rho ) * p.state(1);
- #ifdef RBEND_POLEFACECHECK
- }
- #endif
-
 
  // Preliminary filter from state coordinates
  Jet E_factor;
@@ -205,18 +261,5 @@ void rbend::J_NoEdge( bmlnElmnt* p_be, JetParticle& p )
  ( p.state ).SetComponent( 1, p.state(1) + beta_2*cdt              );
  ( p.state ).SetComponent( 2, p.state(2) + ( cdt - CDT )           );
  ( p.state ).SetComponent( 3, imag( vuf )/( E_factor * PH_MKS_c )  );
-
-
- // Put in a kludge for the vertical focusing upon exit.
- // p3divpbar = sqrt( psq - p.state(3)*p.state(3) - p.state(4)*p.state(4) );
- // p.state(4) -= ( (p.state(3)/p3divpbar) / Rho ) * p.state(1);
-
- #ifdef RBEND_POLEFACECHECK
- if( 0.0 != pbe->tanPFAngle ) {
- #endif
-   p.state(4) -= ( pbe->tanPFAngle / Rho ) * p.state(1);
- #ifdef RBEND_POLEFACECHECK
- }
- #endif
 
 }
