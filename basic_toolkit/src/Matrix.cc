@@ -1,4 +1,4 @@
-#ifdef __VISUAL_CPP__
+#ifdef _MSC_VER
 #include <iostream>
 #include <iomanip>
 #else
