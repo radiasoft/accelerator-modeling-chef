@@ -1,0 +1,23 @@
+/*
+ *  File: FramePusher.icc
+ * 
+ * Header for class FramePusher.
+ * 
+ * Moves a Frame around a beamline, 
+ * in anticipation of drawing the footprint.
+ * 
+ * Leo Michelotti
+ * May 11, 2001
+ * 
+ */
+
+#ifndef FRAMEPUSHER_ICC
+#define FRAMEPUSHER_ICC
+
+inline Frame FramePusher::getFrame()
+{
+  return _frame;
+}
+
+
+#endif // FRAMEPUSHER_ICC
