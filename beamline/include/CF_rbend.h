@@ -9,14 +9,14 @@ class CF_rbend : public bmlnElmnt
 
   CF_rbend( double,     // length  [ meters ]
             double,     // field   [ tesla ]
-            double,     // Pole face angle [ radians ]
+            double,     // Entry angle [ radians ]
             int = 4 );
  
 
   CF_rbend( const char*,// name
             double,     // length  [ meters ]
             double,     // field   [ tesla ]
-            double,     // Pole face angle [ radians ]
+            double,     // Entry angle [ radians ]
             int = 4 );
 
 
