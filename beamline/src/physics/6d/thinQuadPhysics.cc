@@ -3,7 +3,6 @@
 void thinQuad::propagate( Particle& p ) {
  // "Strength" is B'l in Tesla
  static double TrState[6], dummy[6];
- static int    i;
  static double k;
 
  if( align ) {
