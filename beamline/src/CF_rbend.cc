@@ -167,7 +167,7 @@ double CF_rbend::getSextupole()
 
   if( counter < 0 ) {
     delete [] w;
-    return 1;
+    return 0.0;
   }
   
   double ret = 0.0;
@@ -196,7 +196,7 @@ double CF_rbend::getQuadrupole()
 
   if( counter < 0 ) {
     delete [] w;
-    return 1;
+    return 0.0;
   }
   
   double ret = 0.0;
