@@ -230,7 +230,7 @@ kai-debug:
 	"C   = cc" \
 	"C++ = KCC" \
 	"CFLAGS = -g " \
-	"C++FLAGS =  +K0 -D__VISUAL_CPP__ -D__KAI__" \
+	"C++FLAGS =  +K0 -D__VISUAL_CPP__ " \
 	"INLINE_FLAG = " \
 	"MAKELIB = ar -ruv" \
 	"LIBDIR = $(FNALROOT)/lib/kai" \
@@ -252,7 +252,7 @@ kai-opt:
 	"C   = cc" \
 	"C++ = KCC" \
 	"CFLAGS =  " \
-	"C++FLAGS =  +K3 -D__VISUAL_CPP__ -D__KAI__" \
+	"C++FLAGS =  +K3 -D__VISUAL_CPP__ " \
 	"INLINE_FLAG = " \
 	"MAKELIB = ar -ruv" \
 	"LIBDIR = $(FNALROOT)/lib/kai" \
@@ -266,7 +266,7 @@ kai:
 	"C   = cc" \
 	"C++ = KCC" \
 	"CFLAGS =  " \
-	"C++FLAGS = -D__VISUAL_CPP__ -D__KAI__" \
+	"C++FLAGS = -D__VISUAL_CPP__ " \
 	"INLINE_FLAG = " \
 	"MAKELIB = ar -ruv" \
 	"LIBDIR = $(FNALROOT)/lib/kai" \
