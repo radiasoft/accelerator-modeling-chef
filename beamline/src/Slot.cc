@@ -649,7 +649,7 @@ void Slot::localPropagate( ParticleBunch& x )
     Particle* p;
     slist_iterator getNext( (slist&) x );
     while((  p = (Particle*) getNext()  )) {
-      localPropagate  ( x );
+      this->localPropagate( *p );
     }
   }
 }
