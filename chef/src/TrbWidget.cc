@@ -73,9 +73,9 @@ DrawSpace3D::DrawSpace3D( TrbWidget* p )
 : QGLWidget(p), _topTrbWidget(p), 
   _isIterating(false), _cameraInitialized(false),
   _theta(0.0),  _phi(0.0),
-  _cur_x(0.0), _cur_y(0.0), 
-  _x_min(-1.0), _x_max(1.0), _x_scale(1.0), 
-  _y_min(-1.0), _y_max(1.0), _y_scale(1.0), 
+  _x_min(-1.0), _x_max(1.0), _x_center(0.0), _x_scale(1.0), 
+  _y_min(-1.0), _y_max(1.0), _y_center(0.0), _y_scale(1.0), 
+  _z_min(-1.0), _z_max(1.0), _z_center(0.0), _z_scale(1.0), 
   _x_cell_width(0.1), 
   _y_cell_width(0.1), 
   _sx_cell_width(0.1), 
@@ -125,6 +125,8 @@ DrawSpace3D::DrawSpace3D( TrbWidget* p )
   _x_max = - MAXFLOAT;
   _y_min =   MAXFLOAT;
   _y_max = - MAXFLOAT;
+  _z_min =   MAXFLOAT;
+  _z_max = - MAXFLOAT;
   
   const Orbit* orbitPtr = 0;
   const Vector* vec;
@@ -136,11 +138,22 @@ DrawSpace3D::DrawSpace3D( TrbWidget* p )
       if( (*vec)(0) > _x_max ) { _x_max = (*vec)(0);}
       if( (*vec)(1) < _y_min ) { _y_min = (*vec)(1);}
       if( (*vec)(1) > _y_max ) { _y_max = (*vec)(1);}
+      if( (*vec)(2) < _z_min ) { _z_min = (*vec)(2);}
+      if( (*vec)(2) > _z_max ) { _z_max = (*vec)(2);}
     }
   }
 
   _x_cell_width = ( _x_max - _x_min ) / 10.0;
   _y_cell_width = ( _y_max - _y_min ) / 10.0;
+  double zCellWidth = ( _z_max - _z_min ) / 10.0;
+
+  _x_center = ( _x_min + _x_max ) / 2.0;
+  _y_center = ( _y_min + _y_max ) / 2.0;
+  _z_center = ( _z_min + _z_max ) / 2.0;
+
+  if( std::abs(_x_center) <= 2.0*_x_cell_width ) { _x_center = 0.0; }
+  if( std::abs(_y_center) <= 2.0*_y_cell_width ) { _y_center = 0.0; }
+  if( std::abs(_z_center) <= 2.0*zCellWidth    ) { _z_center = 0.0; }
 
   _x_scale = std::abs( std::abs(_x_min) > std::abs(_x_max) ? 
                        _x_min : _x_max
@@ -148,11 +161,11 @@ DrawSpace3D::DrawSpace3D( TrbWidget* p )
   _y_scale = std::abs( std::abs(_y_min) > std::abs(_y_max) ? 
                        _y_min : _y_max
                      );
+  _z_scale = std::abs( std::abs(_z_min) > std::abs(_z_max) ? 
+                       _z_min : _z_max
+                     );
   _sx_cell_width = (_x_cell_width/(_x_scale));
   _sy_cell_width = (_y_cell_width/(_y_scale)); 
-  
-  // REMOVE: _sc_size_x = 0.6*_sx_cell_width;
-  // REMOVE: _sc_size_y = 0.6*_sy_cell_width;
 }
 
 
@@ -630,7 +643,9 @@ void DrawSpace3D::paintGL()
     glColor3f( orbitPtr->Red(), orbitPtr->Green(), orbitPtr->Blue() );
     Orbit::Iterator oi( orbitPtr );
     while((  vec = oi++  )) {
-      glVertex3f( (*vec)(0)/_x_scale, (*vec)(1)/_y_scale, (*vec)(2)/_x_scale );
+      glVertex3f( ((*vec)(0) - _x_center)/_x_scale,
+                  ((*vec)(1) - _y_center)/_y_scale,
+                  ((*vec)(2) - _z_center)/_z_scale  );
     }
   }
   glEnd();
