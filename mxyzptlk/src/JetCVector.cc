@@ -639,10 +639,12 @@ void JetCVector::Rotate ( JetCVector& v, const JetC& theta ) const
 
 ostream& operator<<( ostream& os, const JetCVector& v )
 {
-  os << "( ";
-  for( int i = 0; i < v.dim - 1; i++ )
-    os << v.comp[i] << ", ";
-  os << v.comp[ v.dim - 1 ] << " )";
+  os << "Begin JetCVector data:";
+  for( int i = 0; i < v.dim; i++ ) {
+    os << "\nJetCVector component " << i << ":" << endl;
+    os << v.comp[i];
+  }
+  os << "\nEnd JetCVector data." << endl;
   return os;
 }
 
