@@ -45,11 +45,15 @@
 #define PH_NORM_me         0.5110034e-3       // Mass of electron [GeV/c^2]
 #define PH_NORM_mmu        0.105658387        // mass of muon [GeV/c^2]
 
-#define PH_MKS_e           1.6021892e-19      // Proton charge   [Coulombs]
-#define PH_ESU_e           4.803242e-10       // Proton charge   [esu]
+// #define PH_MKS_e           1.6021892e-19      // Proton charge   [Coulombs]
+// #define PH_ESU_e           4.803242e-10       // Proton charge   [esu]
+
+#define PH_MKS_e           1.602176462e-19    // Proton charge   [Coulombs]
 #define PH_MKS_c           2.99792458e8       // Speed of light  [m/sec]
+#define PH_MKS_h           6.62606876e-34     // Planck's constant [Joule-sec]
 #define PH_MKS_omega_p     9.578756e7         // Proton cyclotron frequence
                                               // = e / m_p [ rad/sec/Tesla ]
+#define PH_MKS_e_div_h     2.417989491e14     // e/h [Amps/Joule]
 #define PH_MKS_eps0        8.854187817e-12    // Epsilon nought:
                                               // permittivity of free space
                                               // Units:[F/m] or  [Amp-sec/V-m]
