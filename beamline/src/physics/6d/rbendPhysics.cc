@@ -16,14 +16,12 @@ void rbend::P_NoEdge( bmlnElmnt* p_be, Particle& p )
 
  double Rho    = p.bRho / pbe->strength;        // Fiducial parameters
  double dphi   = 0.0;
- double Gamma  = p.gamma;
  double Omega  = csq_red * pbe->strength / p.E;
 
  Complex ui  ( 0.0, p.state[0] );
  Complex vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
 
  // Step 1.
- double gamma = p.Energy()/p.Mass();
  double omega  = csq_red * pbe->strength / p.Energy();
  Complex bi = ( complex_i*vui / omega ) - ui;
 
@@ -72,7 +70,6 @@ void rbend::J_NoEdge( bmlnElmnt* p_be, JetParticle& p )
 
  double Rho    = p.bRho / pbe->strength;        // Fiducial parameters
  double dphi   = 0.0;
- double Gamma  = p.gamma;
  double Omega  = csq_red * pbe->strength / p.E;
 
  JetC ui, vui;
@@ -80,9 +77,8 @@ void rbend::J_NoEdge( bmlnElmnt* p_be, JetParticle& p )
  vui = PH_MKS_c*( beta_3 + complex_i * beta_1 );
 
  // Step 1.
- Jet gamma, omega;
+ Jet omega;
  JetC bi;
- gamma = p.Energy()/p.Mass();
  omega  = csq_red * pbe->strength / p.Energy();
  bi = ( complex_i*vui / omega ) - ui;
 
