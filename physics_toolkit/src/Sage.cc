@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
 ******                                    
 ******  File:      Sage.cc
+******  Version:   1.1
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -52,7 +52,9 @@
 using namespace std;
 
 Sage::Sage( const beamline* x, bool doClone )
-: _verbose(0)
+: _verbose(false),
+  _errorStream( std::cerr ),
+  _outputStream( std::cout )
 {
   // Preconditions: x is a valid pointer to a beamline
   // Requirements:
@@ -92,13 +94,13 @@ Sage::~Sage()
 }
 
 
-char Sage::no ( bmlnElmnt* )
+bool Sage::no ( bmlnElmnt* )
 {
-  return 0;
+  return false;
 }
 
 
-char Sage::yes( bmlnElmnt* )
+bool Sage::yes( bmlnElmnt* )
 {
-  return 1;
+  return true;
 }
