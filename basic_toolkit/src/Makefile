@@ -12,6 +12,7 @@ OBJS = Barnacle.o \
         Matrix.o \
         Matrix_SVD.o \
         Vector.o \
+        apstring.o \
         binomcoeff_recursive.o \
         cg.o \
         d_sign.o \
