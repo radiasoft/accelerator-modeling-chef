@@ -1,10 +1,6 @@
 .SUFFIXES: .o .C .c .cc
 
-INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(BASIC_TOOLKIT_INC)
-
-DEPEND_INC = $(INCLUDEDIR) -I$(COMPILER_DEPEND)
-
-
+INCLUDEDIR = -I$(MXYZPTLK_INC) -I$(BASIC_TOOLKIT_INC)
 
 OBJS = CLieOperator.o \
         JL.o \
@@ -47,9 +43,14 @@ clean:
 	rm -f  ../*~*
 	rm -rf .sb
 
+real-clean: clean
+	rm -f dependencies
+	touch dependencies
+
+
 depend:
-	makedepend -- $(DEPEND_INC) -- $(SOURCES)
+	$(C++) $(INCLUDEDIR) $(DEPEND_FLAG) *.cc  > dependencies
 
 
-# DO NOT DELETE THIS LINE -- make depend depends on it.
+include dependencies
 
