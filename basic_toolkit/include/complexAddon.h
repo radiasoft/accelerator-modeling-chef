@@ -12,7 +12,8 @@
 #include <complex>
 
 #ifdef __GNUC__
-  typedef complex<double> Complex;
+//  typedef complex<double> Complex;
+  typedef std::complex<double> Complex;
 #endif
 
 // Check for Solaris.
