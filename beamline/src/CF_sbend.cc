@@ -79,6 +79,25 @@ CF_sbend::~CF_sbend()
 }
 
 
+void CF_sbend::peekAt( double& s, Particle* p_prt )
+{
+ cout << setw(12) << s;
+ s += OrbitLength( *p_prt );
+ cout << setw(12) << s           
+                  << " : " 
+      << setw(10) << (int) this  
+      << setw(15) << ident       
+      << setw(15) << Type()      
+      << setw(12) << length      
+      << setw(12) << strength    
+      << setw(12) << ((this->getQuadrupole())/length)
+      << setw(12) << (2.0*(this->getSextupole())/length)
+      << setw(12) << (6.0*(this->getOctupole())/length)
+      << setw(12) << shuntCurrent
+      << endl;
+}
+
+
 void CF_sbend::localPropagate( Particle& p )
 {
   bmlnElmnt** x = _u;
@@ -216,7 +235,7 @@ int CF_sbend::setDipoleField( double arg_x )
 }
 
 
-double CF_sbend::getOctupole()
+double CF_sbend::getOctupole() const
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   thinOctupole** w = new thinOctupole* [ m ];
@@ -246,7 +265,7 @@ double CF_sbend::getOctupole()
 }
 
 
-double CF_sbend::getSextupole()
+double CF_sbend::getSextupole() const
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   thinSextupole** w = new thinSextupole* [ m ];
@@ -275,7 +294,7 @@ double CF_sbend::getSextupole()
   return ret;
 }
 
-double CF_sbend::getQuadrupole()
+double CF_sbend::getQuadrupole() const
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   thinQuad** w = new thinQuad* [ m ];
@@ -305,9 +324,21 @@ double CF_sbend::getQuadrupole()
 }
 
 
-double CF_sbend::getDipoleField()
+double CF_sbend::getDipoleField() const
 {
   return this->strength;
+}
+
+
+double CF_sbend::getAngle() const
+{
+  return _angle;
+}
+
+
+double CF_sbend::Angle() const
+{
+  return _angle;
 }
 
 

@@ -99,12 +99,12 @@ void octupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 
 thinOctupole::thinOctupole ( double s ) : bmlnElmnt( 0.0, s ) {
  // The strength is to be interpreted as
- // B'''l  in  Tesla-meters^-2
+ // (1/3!)*B'''l  in  Tesla-meters^-2
 }
 
 thinOctupole::thinOctupole ( char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
  // The strength is to be interpreted as
- // B'''l  in  Tesla-meters^-2
+ // (1/3!)*B'''l  in  Tesla-meters^-2
 }
 
 

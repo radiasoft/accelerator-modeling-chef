@@ -18,6 +18,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThin12pole( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitThin12pole( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "thin12pole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
@@ -40,6 +41,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThin14pole( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitThin14pole( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "thin14pole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
@@ -61,6 +63,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThin16pole( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitThin16pole( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "thin16pole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
@@ -82,6 +85,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThin18pole( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitThin18pole( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "thin18pole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
@@ -103,6 +107,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThinMultipole( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitThinMultipole( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "thinMultipole") != 0 ) return bmlnElmnt::isType(c); else return 1; }

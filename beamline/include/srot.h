@@ -20,6 +20,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitSrot( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitSrot( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "srot") != 0 ) return bmlnElmnt::isType(c); else return 1; }

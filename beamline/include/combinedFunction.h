@@ -38,6 +38,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitCombinedFunction( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitCombinedFunction( this ); }
   
   void setField( bmlnElmnt::CRITFUNC, double );
   void setField( WHICH_MULTIPOLE, double field );

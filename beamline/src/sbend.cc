@@ -16,7 +16,9 @@ sbend::sbend( double l, double s, double alpha, PropFunc* pf )
  if ( fabs( alpha ) < 1.0e-9 ) {
    cerr << "\n";
    cerr << "*** ERROR ** sbend::sbend( double l, double s, double alpha )\n";
-   cerr << "             Bend angle < 1 nanoradian\n";
+   cerr << "             Bend angle = "
+        << alpha
+        << " < 1 nanoradian\n";
    cerr << "             Program aborted.\n";
    exit(0);
  }
@@ -32,8 +34,12 @@ sbend::sbend( char* n, double l, double s, double alpha, PropFunc* pf )
 
  if ( fabs( alpha ) < 1.0e-9 ) {
    cerr << "\n";
-   cerr << "*** ERROR ** sbend::sbend( char* n, double l, double s, double alpha )\n";
-   cerr << "             Bend angle < 1 nanoradian\n";
+   cerr << "*** ERROR ** sbend::sbend( "
+        << n
+        << ", double l, double s, double alpha )\n";
+   cerr << "             Bend angle = "
+        << alpha
+        << " < 1 nanoradian\n";
    cerr << "             Program aborted.\n";
    exit(0);
  }

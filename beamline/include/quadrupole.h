@@ -59,6 +59,7 @@ public:
   void localPropagate( JetParticle& p ) { (*Propagator)( this, p ); }
 
   void accept( BmlVisitor& v ) { v.visitQuadrupole( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitQuadrupole( this ); }
 
   void eliminate();
 
@@ -86,6 +87,7 @@ public:
   void eliminate();
 
   void accept( BmlVisitor& v ) { v.visitThinQuad( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitThinQuad( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "thinQuad") != 0 ) return bmlnElmnt::isType(c); else return 1; }

@@ -332,6 +332,8 @@ protected:
   JetParticle( const Particle& );
   JetParticle( const JetParticle& );
 
+  static void errorHandler( const char* f, int l, const char* msg, int e );
+
 public:
   virtual Particle* ConvertToParticle() = 0;
   virtual ~JetParticle();
@@ -371,9 +373,9 @@ public:
   void set_ndp ( const Jet& u )  { state.SetComponent(5,u); }
 
   inline Mapping State() { return state; } // ??? why doesn't const work?
-  inline Jet State( int i ) {
-   if( (0 <= i) && (i <= 5) ) return state(i);
-   else                       return 123.456789; 
+  inline Jet& State( int i ) {
+   if( (0 <= i) && (i <= 5) ) {return state(i);}
+   else {JetParticle::errorHandler( __FILE__, __LINE__, "Index out of range", -5 );}
   }
 
   MatrixD SymplecticTest();  // Tests the state for the

@@ -31,6 +31,7 @@ public:
   void localPropagate( JetParticle& );
   bmlnElmnt* Clone() const { return new Pinger( *this ); }
   void accept( BmlVisitor& v ) { v.visitPinger( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitPinger( this ); }
   int arm() { _armed = 1; return _armed; }
   int disarm() { _armed = 0; return _armed; }
   int isArmed() { return _armed; };
@@ -56,6 +57,7 @@ class HPinger : public Pinger {
   const char* Type() const;
   bmlnElmnt* Clone() const { return new HPinger( *this ); }
   void accept( BmlVisitor& v ) { v.visitHPinger( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitHPinger( this ); }
 
   ostream& writeTo(ostream& os) { return os; }
   istream& readFrom(istream& is) { return is; } 
@@ -75,6 +77,7 @@ class VPinger : public Pinger {
   const char* Type() const;
   bmlnElmnt* Clone() const { return new VPinger( *this ); }
   void accept( BmlVisitor& v ) { v.visitVPinger( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitVPinger( this ); }
 
   ostream& writeTo(ostream& os) { return os; }
   istream& readFrom(istream& is) { return is; } 

@@ -12,14 +12,14 @@ class CF_rbend : public bmlnElmnt
   CF_rbend( double,     // length  [ meters ]
             double,     // field   [ tesla ]
             double,     // Entry angle [ radians ]
-            int = 4 );
+            int = 1 );
  
 
   CF_rbend( const char*,// name
             double,     // length  [ meters ]
             double,     // field   [ tesla ]
             double,     // Entry angle [ radians ]
-            int = 4 );
+            int = 1 );
 
 
   CF_rbend( double,         // length     [ meter    ]
@@ -32,7 +32,7 @@ class CF_rbend : public bmlnElmnt
             // xmlt(4)       = b_2    xmlt(5)     = a_2
             // ...
             // xmlt(2*m)     = b_[m]  xmlt(2*m+1) = a_[m]
-            int = 4 );
+            int = 1 );
 
 
   CF_rbend( const char*,    // name
@@ -40,7 +40,7 @@ class CF_rbend : public bmlnElmnt
             double,         // field      [ tesla    ]
             double,         // angle      [ radians  ]
             const Vector&,  // multipoles [ meter^-n ]
-            int = 4 );
+            int = 1 );
 
 
   CF_rbend( const CF_rbend& );
@@ -54,8 +54,8 @@ class CF_rbend : public bmlnElmnt
   void localPropagate( ParticleBunch& x ) 
     { bmlnElmnt::localPropagate( x ); }
 
-  void accept( BmlVisitor& v ) 
-    { v.visitCF_rbend( this ); }
+  void accept( BmlVisitor& v ) { v.visitCF_rbend( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitCF_rbend( this ); }
   
   void peekAt( double& s, Particle* = 0 );
 
@@ -91,9 +91,9 @@ class CF_rbend : public bmlnElmnt
   //         1 if there are no multipoles of required type.
   //           (this should never happen)
 
-  double getQuadrupole();
-  double getSextupole();
-  double getOctupole();
+  double getQuadrupole() const;
+  double getSextupole()  const;
+  double getOctupole()   const;
   // Returns integrated multipole strengths
   // i.e., .getQuadrupole() returns B'l
   //       .getSextupole()  returns B"l/2

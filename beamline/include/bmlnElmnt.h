@@ -236,6 +236,7 @@ public:
   bmlnElmnt& operator=( const bmlnElmnt& );
 
   virtual void accept( BmlVisitor& ) = 0;
+  virtual void accept( ConstBmlVisitor& ) const = 0;
 
   PropFunc* setPropFunction ( const PropFunc* a );  // return previous
   PropFunc* setPropFunction ( const PropFunc& a );  // Propagator
@@ -614,7 +615,10 @@ public:
   void leaveLocalFrame( Particle&    ) const;
   void leaveLocalFrame( JetParticle& ) const;
 
-  void accept( BmlVisitor& v ) { v.visitBeamline( this ); }
+  void accept( BmlVisitor& v )
+  { v.visitBeamline( this ); }
+  void accept( ConstBmlVisitor& v ) const
+  { v.visitBeamline( this ); }
 
   void propLattFunc( );
   void propLattFunc( FILE* );

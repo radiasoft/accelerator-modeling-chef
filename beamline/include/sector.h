@@ -47,6 +47,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitSector( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitSector( this ); }
 
   void setFrequency( double (*)( double ) );
   void setFrequency( Jet (*)( const Jet& ) );

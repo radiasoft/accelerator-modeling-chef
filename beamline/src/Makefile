@@ -47,9 +47,9 @@ OBJS = BBLens.o \
 SOURCES = $(OBJS:.o=.cc)
 
 .cc.o:
-	$(C++) $(C++FLAGS) $(INCLUDEDIR)  -c $*.cc
+	$(C++) $(C++FLAGS) -D_EXCLUDE_MONITORS_ $(INCLUDEDIR)  -c $*.cc
 .c.o:
-	$(C) $(CFLAGS) $(INCLUDEDIR) -c $*.c
+	$(C) $(CFLAGS) -D_EXCLUDE_MONITORS_ $(INCLUDEDIR) -c $*.c
 
 include $(FNALROOT)/Make-config
 

@@ -103,12 +103,12 @@ void sextupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 
 thinSextupole::thinSextupole ( double s ) : bmlnElmnt( 0.0, s ) {
  // The strength is to be interpreted as
- // B''l in  Tesla / meter
+ // (1/2)*B''l in  Tesla / meter
 }
 
 thinSextupole::thinSextupole ( char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
  // The strength is to be interpreted as
- // B''l in  Tesla / meter
+ // (1/2)*B''l in  Tesla / meter
 }
 
 

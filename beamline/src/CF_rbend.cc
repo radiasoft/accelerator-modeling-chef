@@ -14,7 +14,7 @@
 CF_rbend::CF_rbend( double        lng,  // length     [ meter    ]
                     double        fld,  // field      [ tesla    ]
                     double        ang,  // angle      [ radians  ]
-                    int )
+                    int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( lng, fld ), _poleFaceAngle( ang  )
 {
   #include "CF_rbendConstructor.ins"
@@ -25,7 +25,7 @@ CF_rbend::CF_rbend( const char*   nm,   // name
                     double        lng,  // length     [ meter    ]
                     double        fld,  // field      [ tesla    ]
                     double        ang,  // angle      [ radians  ]
-                    int )
+                    int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( nm, lng, fld ), _poleFaceAngle( ang  )
 {
   #include "CF_rbendConstructor.ins"
@@ -35,8 +35,8 @@ CF_rbend::CF_rbend( const char*   nm,   // name
 CF_rbend::CF_rbend( double lng,
                     double fld,
                     double ang,
-                    const Vector& xmlt,
-                    int  )
+                    const  Vector& xmlt,
+                    int    n  )
 : bmlnElmnt( lng, fld ), _poleFaceAngle( ang  )
 {
   #include "CF_rbendConstructor.ins"
@@ -47,8 +47,8 @@ CF_rbend::CF_rbend( const char*  nm,
                     double lng,
                     double fld,
                     double ang,
-                    const Vector& xmlt,
-                    int  )
+                    const  Vector& xmlt,
+                    int    n  )
 : bmlnElmnt( nm, lng, fld ), _poleFaceAngle( ang  )
 {
   #include "CF_rbendConstructor.ins"
@@ -184,7 +184,7 @@ int CF_rbend::setQuadrupole( double arg_x )
   return 0;
 }
 
-double CF_rbend::getOctupole()
+double CF_rbend::getOctupole() const
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   thinOctupole** w = new thinOctupole* [ m ];
@@ -214,7 +214,7 @@ double CF_rbend::getOctupole()
 }
 
 
-double CF_rbend::getSextupole()
+double CF_rbend::getSextupole() const
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   thinSextupole** w = new thinSextupole* [ m ];
@@ -243,7 +243,7 @@ double CF_rbend::getSextupole()
   return ret;
 }
 
-double CF_rbend::getQuadrupole()
+double CF_rbend::getQuadrupole() const
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   thinQuad** w = new thinQuad* [ m ];
@@ -305,6 +305,17 @@ void CF_rbend::peekAt( double& s, Particle* p_prt )
 
 ostream& CF_rbend::writeTo( ostream& os )
 {
+  int n = ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  if( 0 != n%12 ) {
+    cerr << "*** ERROR ***                                         \n"
+            "*** ERROR *** CR_rbend::writeTo                       \n"
+            "*** ERROR *** Unexpected number of blocks.            \n"
+            "*** ERROR ***                                         \n"
+         << endl;
+    exit(9);
+  }
+
+  os << n << "  ";
   os << OSTREAM_DOUBLE_PREC << ( this->_poleFaceAngle ) << " ";
   os << OSTREAM_DOUBLE_PREC << getQuadrupole() << " ";
   os << OSTREAM_DOUBLE_PREC << getSextupole() << " ";
@@ -318,7 +329,10 @@ istream& CF_rbend::readFrom( istream& is )
   double quadStrength = 0.0;
   double sextStrength = 0.0;
   double octStrength  = 0.0;
-  is >> ( this->_poleFaceAngle ) 
+  int    n            = 0;
+
+  is >> n
+     >> ( this->_poleFaceAngle ) 
      >> quadStrength 
      >> sextStrength
      >> octStrength;

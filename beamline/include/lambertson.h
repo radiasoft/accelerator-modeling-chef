@@ -46,6 +46,7 @@ public:
   void localPropagate( JetParticle& p );
   
   void accept( BmlVisitor& v ) { v.visitThinLamb( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitThinLamb( this ); }
 
   void eliminate();
   

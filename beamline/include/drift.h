@@ -16,6 +16,7 @@ public:
   ~drift();
 
   void accept( BmlVisitor& v ) { v.visitDrift( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitDrift( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "drift") != 0 ) return bmlnElmnt::isType(c); else return 1; }

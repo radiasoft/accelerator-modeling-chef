@@ -19,6 +19,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitMarker( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitMarker( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "marker") != 0 ) return bmlnElmnt::isType(c); else return 1; }

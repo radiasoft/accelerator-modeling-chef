@@ -59,9 +59,9 @@ class Slot : public bmlnElmnt
    void eliminate() 
      { delete this; }
  
-   void accept( BmlVisitor& v ) 
-     { v.visitSlot( this ); }
- 
+   void accept( BmlVisitor& v ) { v.visitSlot( this ); }
+   void accept( ConstBmlVisitor& v ) const { v.visitSlot( this ); }
+
    void enterLocalFrame( Particle&     ) const;
    void enterLocalFrame( JetParticle&  ) const;
    void leaveLocalFrame( Particle&     ) const;

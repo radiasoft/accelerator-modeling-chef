@@ -6,12 +6,12 @@
 
 thinDecapole::thinDecapole ( double s ) : bmlnElmnt( 0.0, s ) {
  // The strength is to be interpreted as
- // B''l/Brho  in  meters^-2
+ // (1/4!)*B''''l/Brho  in  meters^-2
 }
 
 thinDecapole::thinDecapole ( char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
  // The strength is to be interpreted as
- // B''l/Brho  in  meters^-2
+ // (1/4!)*B''''l/Brho  in  meters^-2
 }
 
 
