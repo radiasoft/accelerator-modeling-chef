@@ -180,16 +180,16 @@ LieOperator::LieOperator( char*, Jet__environment* pje  )
 { 
  int i;
  
- if( pje->SpaceDim == 0 ) {
-   throw( JL::GenericException(__FILE__, __LINE__, 
-          "LieOperator::LieOperator( char*, Jet__environment* ) ",
-          "Phase space has dimension zero." ) );
-   }
- 
  if( !pje ) {
    throw( JL::GenericException(__FILE__, __LINE__, 
           "LieOperator::LieOperator( char*, Jet__environment* ) ",
           "Jet__environment pointer is null." ) );
+   }
+ 
+ if( pje->SpaceDim == 0 ) {
+   throw( JL::GenericException(__FILE__, __LINE__, 
+          "LieOperator::LieOperator( char*, Jet__environment* ) ",
+          "Phase space has dimension zero." ) );
    }
  
  myEnv = pje;

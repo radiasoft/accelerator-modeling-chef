@@ -182,16 +182,16 @@ CLieOperator::CLieOperator( char*, JetC__environment* pje  )
 { 
  int i;
  
- if( pje->SpaceDim == 0 ) {
-   throw( JLC::GenericException(__FILE__, __LINE__, 
-          "CLieOperator::CLieOperator( char*, JetC__environment* ) ",
-          "Phase space has dimension zero." ) );
-   }
- 
  if( !pje ) {
    throw( JLC::GenericException(__FILE__, __LINE__, 
           "CLieOperator::CLieOperator( char*, JetC__environment* ) ",
           "Jet__environment pointer is null." ) );
+   }
+ 
+ if( pje->SpaceDim == 0 ) {
+   throw( JLC::GenericException(__FILE__, __LINE__, 
+          "CLieOperator::CLieOperator( char*, JetC__environment* ) ",
+          "Phase space has dimension zero." ) );
    }
  
  myEnv = pje;
