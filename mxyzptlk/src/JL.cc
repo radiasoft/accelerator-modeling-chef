@@ -136,8 +136,8 @@ JL::JL( const JL& x ) {
  JLterm* p;
  JLterm* q;
 
- count    = x.count;
- weight   = x.weight;
+ count    = x.count;   // needed by append function
+ weight   = x.weight;  // needed by append function
  accuWgt  = x.accuWgt;
  myEnv    = x.myEnv;
  rc       = 1;
@@ -146,6 +146,12 @@ JL::JL( const JL& x ) {
    q = new JLterm( p );
    append( q );
  }
+
+ count    = x.count;    // gets reset by append function
+ weight   = x.weight;   // may get reset by append function
+ accuWgt  = x.accuWgt;
+ myEnv    = x.myEnv;
+ rc       = 1;
 
 #ifdef OBJECT_DEBUG
  objectCount++;
@@ -170,6 +176,12 @@ JL::JL( JL* x ) {
    q = new JLterm( p );
    append( q );
  }
+
+ count    = x->count;
+ weight   = x->weight;
+ accuWgt  = x->accuWgt;
+ myEnv    = x->myEnv;
+ rc       = 1;
 
 #ifdef OBJECT_DEBUG
  objectCount++;
