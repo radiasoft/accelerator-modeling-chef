@@ -73,10 +73,14 @@
 #ifndef BEAMLINE_H
 #define BEAMLINE_H
 
-#include <complex.h>   // ??? Why is this here?
+//#include <complex.h>   // ??? Why is this here?
+#ifndef __VISUAL_CPP__
 #include <stdio.h>
 #include <string.h>
+#endif
+
 #include "PhysicsConstants.h"
+#include <math.h>
 #include "MathConstants.h"
 #include "mxyzptlk.h"
 #include "slist.h"
@@ -86,6 +90,10 @@
 #include "Particle.h"
 #include "Aperture.h"   // O.K.
 #include "BmlVisitor.h"
+
+#ifdef __VISUAL_CPP__
+#define strcasecmp stricmp
+#endif
 
 #ifdef __BORLAND_CPP__
 #define strcasecmp strcmpi
@@ -118,7 +126,7 @@ struct BMLN_posInfo {
 
     } ;
 
-
+
 // ................................ Beamline classes
 
 struct lattRing : public BarnacleData {
