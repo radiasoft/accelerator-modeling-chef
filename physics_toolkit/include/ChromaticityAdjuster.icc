@@ -1,0 +1,10 @@
+inline int  ChromaticityAdjuster::numberOfCorrectors() const
+{
+  return _numberOfCorrectors;
+}
+
+
+inline char ChromaticityAdjuster::_isaThinSextupole( const bmlnElmnt* q ) const
+{
+  return ( 0 == strcmp( q->Type(), "thinSextupole" ) );
+}
