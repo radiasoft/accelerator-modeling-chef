@@ -82,14 +82,14 @@ void LattFuncSage::eraseAll() {
 
 
 int LattFuncSage::Orig_RX_Calc( JetParticle*   ptr_jp,
-                                ET_CRITFUNC  Crit
+                                Sage::CRITFUNC  Crit
                              ) 
 {
   return LattFuncSage::NOT_WRITTEN;
 }
 
 
-int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Crit )
+int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC Crit )
 {
   // PRECONDITIONS: 
   // *arg_jp  is already on the closed orbit and its
@@ -407,7 +407,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Cri
 }
 
 
-int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Crit )
+int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC Crit )
 {
   // PRECONDITIONS: 
   // *arg_jp  is already on the closed orbit and its
@@ -897,7 +897,7 @@ int LattFuncSage::Tune_Chrom_Calc( JetParticle* arg_jp )
 
 
 int LattFuncSage::Disp_Calc( JetParticle* arg_jp, 
-                             ET_CRITFUNC  Crit )
+                             Sage::CRITFUNC  Crit )
 {
   if( this->_verbose ) {
     cout << "LattFuncSage -- Entering LattFuncSage::Disp_Calc" << endl;
@@ -1093,13 +1093,13 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp,
 }
 
 
-int LattFuncSage::ET_Disp_Calc( JetParticle*, ET_CRITFUNC )
+int LattFuncSage::ET_Disp_Calc( JetParticle*, Sage::CRITFUNC )
 {
   return LattFuncSage::NOT_WRITTEN;
 }
 
 
-int LattFuncSage::CS_Disp_Calc( JetParticle*, ET_CRITFUNC )
+int LattFuncSage::CS_Disp_Calc( JetParticle*, Sage::CRITFUNC )
 {
   return LattFuncSage::NOT_WRITTEN;
 }
@@ -1379,7 +1379,7 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
 
 
 
-int LattFuncSage::Twiss_Calc( const lattFunc& W, JetParticle& p, ET_CRITFUNC Crit )
+int LattFuncSage::Twiss_Calc( const lattFunc& W, JetParticle& p, Sage::CRITFUNC Crit )
 {
   // This function replaces int beamline::twiss( lattFunc& W, JetParticle& p)
   // This code is both obsolete and wrong.

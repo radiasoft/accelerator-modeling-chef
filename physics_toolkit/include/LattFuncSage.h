@@ -20,8 +20,6 @@
 
 class LattFuncSage;
 
-typedef char (*ET_CRITFUNC)( bmlnElmnt* );
-
 
 class LattFuncSage : public Sage
 {
@@ -31,17 +29,17 @@ public:
   
  int TuneCalc       ( JetParticle* );
  int Tune_Chrom_Calc( JetParticle* );
- int Disp_Calc      ( JetParticle*, ET_CRITFUNC = 0 );
- int Orig_RX_Calc   ( JetParticle*, ET_CRITFUNC = 0 );
+ int Disp_Calc      ( JetParticle*, Sage::CRITFUNC = 0 );
+ int Orig_RX_Calc   ( JetParticle*, Sage::CRITFUNC = 0 );
 		      
- int Fast_CS_Calc   ( /* const */ JetParticle*, ET_CRITFUNC = 0 );
- int Slow_CS_Calc   ( /* const */ JetParticle*, ET_CRITFUNC = 0 );
- int ET_Disp_Calc   (             JetParticle*, ET_CRITFUNC = 0 );
- int CS_Disp_Calc   (             JetParticle*, ET_CRITFUNC = 0 );
-               // If default value is used for ET_CRITFUNC, then
+ int Fast_CS_Calc   ( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
+ int Slow_CS_Calc   ( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
+ int ET_Disp_Calc   (             JetParticle*, Sage::CRITFUNC = 0 );
+ int CS_Disp_Calc   (             JetParticle*, Sage::CRITFUNC = 0 );
+               // If default value is used for Sage::CRITFUNC, then
                // information is attached to all elements.
 
- int Twiss_Calc     ( const lattFunc&, JetParticle&, ET_CRITFUNC = 0 ); 
+ int Twiss_Calc     ( const lattFunc&, JetParticle&, Sage::CRITFUNC = 0 ); 
  int Twiss_Calc     ( JetParticle& );
                // These reproduce the old beamline::twiss
                // and therefore are both obsolete and wrong.
