@@ -34,4 +34,10 @@ inline int  TuneAdjuster::numberOfCorrectors() const
 }
 
 
+inline MatrixD TuneAdjuster::getControls()
+{
+  return _c;
+}
+
+
 #endif // TUNEADJUST_ICC

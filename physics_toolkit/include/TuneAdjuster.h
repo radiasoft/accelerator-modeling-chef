@@ -33,6 +33,7 @@ public:
   int  numberOfCorrectors() const;
 
   int changeTunesBy ( double, double, const JetProton& );
+  MatrixD getControls();
 
   void eraseAll();
 
@@ -40,6 +41,7 @@ private:
   bmlnElmnt** _correctors;
   int         _numberOfCorrectors;
   MatrixD*    _f;
+  MatrixD     _c;
   void        _addCorrector( const bmlnElmnt*, double, double );
 
   char        _isQuadLike  ( const bmlnElmnt* ) const;

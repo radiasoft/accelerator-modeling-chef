@@ -14,14 +14,14 @@
 #include "LattFuncSage.h"
 
 TuneAdjuster::TuneAdjuster( const beamline* x ) 
-: Sage( x ), _numberOfCorrectors(0)
+: Sage( x ), _numberOfCorrectors(0), _c(2,1)
 {
   _correctors = 0;
   _f = 0;
 }
 
 TuneAdjuster::TuneAdjuster( const beamline& x ) 
-: Sage( &x ), _numberOfCorrectors(0)
+: Sage( &x ), _numberOfCorrectors(0), _c(2,1)
 {
   _correctors = 0;
   _f = 0;
@@ -123,11 +123,10 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetProton& jp )
   int N = this->numberOfCorrectors();
   MatrixD beta      (2,N);
   MatrixD delta_nu  (2,1);
-  MatrixD c         (2,1);
   MatrixD w         (N,1);
 
-  // delta_nu = beta*f*c;
-  // w = 4*pi*brho*f*c
+  // delta_nu = beta*f*c/4*pi*brho*;
+  // w = f*c
   // delta strength_k = w_k
  
   LattFuncSage::lattFunc* ptr;
@@ -148,9 +147,9 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetProton& jp )
   delta_nu(0,0) = delta_H;
   delta_nu(1,0) = delta_V;
  
-  c = (beta*(*_f)).inverse() * delta_nu;
   double brho = jpr.ReferenceBRho();
-  w = (4.0*M_PI*brho)*((*_f)*c);
+  _c = (4.0*M_PI*brho)*( (beta*(*_f)).inverse() * delta_nu );
+  w = (*_f)*_c;
  
   for( j = 0; j < _numberOfCorrectors; j++ ) 
   {
