@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -30,6 +27,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "MappingC.h"
 #include "JLC.h"
@@ -94,16 +94,10 @@ MappingC::MappingC( char*, JetC__environment* pje  )
  int i, s;
  
  if( pje->SpaceDim == 0 ) {
-   cerr << "\n*** ERROR: MappingC::MappingC called " << endl;
-   cerr << "but phase space has dimension 0.\n" << endl;
-   exit(0);
+   throw( JLC::GenericException(__FILE__, __LINE__, 
+          "MappingC::MappingC( char*, JetC__environment* ) ",
+          "Phase space has dimension 0." ) );
  }
- 
- // if( !pje ) {
- //   cerr << "\n*** MappingC::MappingC( char* ) ERROR *** " << endl;
- //   cerr << "No environment defined." << endl;
- //   exit(0);
- // }
  
  s = pje->SpaceDim;
  myEnv = pje;
@@ -133,18 +127,12 @@ MappingC& MappingC::operator=( const MappingC& x )
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-MappingC 
-MappingC::operator()( const MappingC& x ) const
+MappingC MappingC::operator()( const MappingC& x ) const
 {
  if( x.dim != myEnv->NumVar ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                  \n"
-        << "*** ERROR *** MappingC::operator()( MappingC )           \n"
-        << "*** ERROR ***                                  \n"
-        << "*** ERROR *** Incompatible dimensions.         \n"
-        << "*** ERROR ***                                  \n"
-        << endl;
-   exit(1);
+   throw( JLC::GenericException(__FILE__, __LINE__, 
+          "MappingC MappingC::operator()( const MappingC& ) const",
+          "Incompatible dimensions." ) );
  }
 
  int i;
@@ -197,16 +185,9 @@ MappingC
 MappingC::Inverse() const 
 { 
  if( myEnv->SpaceDim != dim ) {
-  cerr << "*** ERROR ***                                     \n"
-          "*** ERROR *** MappingC::Inverse                        \n"
-          "*** ERROR ***                                     \n"
-          "*** ERROR *** Dimensions do not match correctly.  \n"
-          "*** ERROR *** myEnv->SpaceDim = " 
-                                     << myEnv->SpaceDim << " \n"
-          "*** ERROR *** dim = " << dim << "                 \n"
-          "*** ERROR ***                                     \n"
-       << endl;
-  exit(1);
+  throw( JLC::BadDimension( myEnv->SpaceDim, dim, __FILE__, __LINE__, 
+         "Mapping Mapping::Inverse() const ",
+         "Phase space dimensions do not match." ) );
  }
 
  int        i, j;

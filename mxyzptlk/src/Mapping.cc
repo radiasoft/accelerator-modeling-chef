@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -30,6 +27,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "Mapping.h"
 #include "JL.h"
@@ -93,16 +93,10 @@ Mapping::Mapping( char*, Jet__environment* pje  )
  int i, s;
  
  if( pje->SpaceDim == 0 ) {
-   cerr << "\n*** ERROR: Mapping::Mapping called " << endl;
-   cerr << "but phase space has dimension 0.\n" << endl;
-   exit(0);
+   throw( JL::GenericException(__FILE__, __LINE__, 
+          "Mapping::Mapping( char*, Jet__environment* ) ",
+          "Phase space has dimension 0." ) );
  }
- 
- // if( !pje ) {
- //   cerr << "\n*** Mapping::Mapping( char* ) ERROR *** " << endl;
- //   cerr << "No environment defined." << endl;
- //   exit(0);
- // }
  
  s = pje->SpaceDim;
  myEnv = pje;
@@ -132,21 +126,15 @@ Mapping& Mapping::operator=( const Mapping& x )
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Vector
-Mapping::operator()( const Vector& x ) const
+Vector Mapping::operator()( const Vector& x ) const
 {
  static int i;
 
  i = x.Dim();
  if( ( i != myEnv->NumVar ) || ( i != dim ) ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                  \n"
-        << "*** ERROR *** Mapping::operator()( Mapping )   \n"
-        << "*** ERROR ***                                  \n"
-        << "*** ERROR *** Incompatible dimensions.         \n"
-        << "*** ERROR ***                                  \n"
-        << endl;
-   exit(1);
+   throw( JL::GenericException(__FILE__, __LINE__, 
+          "Vector Mapping::operator()( const Vector& ) const",
+          "Incompatible dimensions." ) );
  }
 
  Vector z( dim );
@@ -160,18 +148,12 @@ Mapping::operator()( const Vector& x ) const
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Mapping 
-Mapping::operator()( const Mapping& x ) const
+Mapping Mapping::operator()( const Mapping& x ) const
 {
  if( x.dim != myEnv->NumVar ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                  \n"
-        << "*** ERROR *** Mapping::operator()( Mapping )           \n"
-        << "*** ERROR ***                                  \n"
-        << "*** ERROR *** Incompatible dimensions.         \n"
-        << "*** ERROR ***                                  \n"
-        << endl;
-   exit(1);
+   throw( JL::GenericException(__FILE__, __LINE__, 
+          "Mapping Mapping::operator()( const Mapping& ) const",
+          "Incompatible dimensions." ) );
  }
 
  int i;
@@ -220,20 +202,12 @@ Mapping::Jacobian() const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Mapping 
-Mapping::Inverse() const 
+Mapping Mapping::Inverse() const 
 { 
  if( myEnv->SpaceDim != dim ) {
-  cerr << "*** ERROR ***                                     \n"
-          "*** ERROR *** Mapping::Inverse                        \n"
-          "*** ERROR ***                                     \n"
-          "*** ERROR *** Dimensions do not match correctly.  \n"
-          "*** ERROR *** myEnv->SpaceDim = " 
-                                     << myEnv->SpaceDim << " \n"
-          "*** ERROR *** dim = " << dim << "                 \n"
-          "*** ERROR ***                                     \n"
-       << endl;
-  exit(1);
+  throw( JL::BadDimension( myEnv->SpaceDim, dim, __FILE__, __LINE__, 
+         "Mapping Mapping::Inverse() const ",
+         "Phase space dimensions do not match." ) );
  }
 
  int        i, j;
