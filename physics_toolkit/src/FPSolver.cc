@@ -33,7 +33,7 @@
 #include <config.h>
 #endif
 
-#include <ieeefp.h>
+#include <math.h>
 
 #include "GenericException.h"
 #include "beamline.h"
