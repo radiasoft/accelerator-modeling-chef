@@ -59,7 +59,7 @@ char sh5( const IntArray& index, const Complex& /* value */ ) {
 
 // ===============================================================
 
-void normalForm( const Mapping&     theMapping,     /* input */
+void normalForm( const Mapping& theMapping, /* input */
                  int            maxOrder,   /* input */
                  MatrixC*       Bptr,
                  CLieOperator*  N,
@@ -306,12 +306,12 @@ void normalForm( const Mapping&     theMapping,     /* input */
  /* DGN  cout << endl;*/
 
  // And the rest ...
- Complex          factor;
+ Complex          factor, denom;
  int              ll;
  JLCterm*         q;
  JetC             scr;
- MappingC             reg;
- MappingC             doc;
+ MappingC         reg;
+ MappingC         doc;
 
  for( int k = 0; k <= maxOrder - 2; k++ ) {
   reg = id;
@@ -333,8 +333,17 @@ void normalForm( const Mapping&     theMapping,     /* input */
       // factor *= pow( 1.0 / lambda(j), q->index(j) );
     }
     factor *= lambda(i);
-    q->value /= ( factor - FORIRIX_one );
-    scr.addTerm( new JLCterm( *q ) );
+
+    // Either absorption or resonance subtraction ... 
+    denom = factor - FORIRIX_one;
+    if( abs( denom ) <= 1.0e-7 ) {
+      N[k](i).addTerm( new JLCterm( q->index, - q->value, CL1.Env() ) );
+    }
+    else {
+      q->value /= denom;
+      scr.addTerm( new JLCterm( *q ) );
+    }
+
    }
    T[k].SetComponent( i, scr );
   }
