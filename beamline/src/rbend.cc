@@ -5,7 +5,7 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
+******  Version:   2.2
 ******                                    
 ******  File:      rbend.cc
 ******                                                                
@@ -31,6 +31,7 @@
 
 
 #include <iomanip>
+#include <typeinfo>
 
 #include "rbend.h"
 #include "MathConstants.h"
@@ -43,7 +44,7 @@ using namespace std;
 // **************************************************
 
 rbend::rbend( double l, double s, PropFunc* pf ) 
-: bmlnElmnt( l, s, pf ) {
+: bmlnElmnt( l, s, pf ), _CT(0.0) {
  if(pf == 0) {
    Propagator = &rbend::Exact;
  }
@@ -52,7 +53,7 @@ rbend::rbend( double l, double s, PropFunc* pf )
 }
 
 rbend::rbend( double l, double s, double angle, PropFunc* pf ) 
-: bmlnElmnt( l, s, pf ) {
+: bmlnElmnt( l, s, pf ), _CT(0.0) {
  if(pf == 0) {
    Propagator = &rbend::Exact;
  }
@@ -62,7 +63,7 @@ rbend::rbend( double l, double s, double angle, PropFunc* pf )
 
 
 rbend::rbend( char* n, double l, double s, PropFunc* pf ) 
-: bmlnElmnt( n, l, s, pf ) {
+: bmlnElmnt( n, l, s, pf ), _CT(0.0) {
  if(pf == 0) {
    Propagator = &rbend::Exact;
  }
@@ -70,8 +71,9 @@ rbend::rbend( char* n, double l, double s, PropFunc* pf )
  tanPFAngle = 0.0;
 }
 
+
 rbend::rbend( char* n, double l, double s, double angle, PropFunc* pf ) 
-: bmlnElmnt( n, l, s, pf ) {
+: bmlnElmnt( n, l, s, pf ), _CT(0.0) {
  if(pf == 0) {
    Propagator = &rbend::Exact;
  }
@@ -81,14 +83,16 @@ rbend::rbend( char* n, double l, double s, double angle, PropFunc* pf )
 
 
 rbend::rbend( const rbend& x )
-: bmlnElmnt( (bmlnElmnt&) x )
+: bmlnElmnt( (bmlnElmnt&) x ), _CT(0.0)
 {
   poleFaceAngle = x.poleFaceAngle;
   tanPFAngle    = tan( poleFaceAngle );
 }
 
+
 rbend::~rbend() {
 }
+
 
 void rbend::eliminate() {
  delete this;
@@ -112,21 +116,79 @@ void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     cerr << "\n"
-            "*** ERROR ***                                    \n"
-            "*** ERROR *** rbend::Split                       \n"
-            "*** ERROR *** pc = " << pc << 
-                               "and is out of bounds.         \n"
-            "*** ERROR ***                                    \n"
+            "\n*** WARNING ***                                    "
+            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
+            "\n*** WARNING *** pc = " << pc << 
+                                        " is out of bounds.       "
+            "\n*** WARNING ***                                    "
          << endl;
-    exit (1);
+    *a = 0;
+    *b = 0;
+    return;
   }
 
-  *a = new rbend( pc*length, strength );
-  *b = new rbend( (1.0 - pc)*length, strength );
+  if( typeid(*Propagator) == typeid(MAD_Prop) ) {
+    cerr << "\n*** WARNING *** "
+            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
+            "\n*** WARNING *** Splitting rbend with MAD-like propagator."
+            "\n*** WARNING *** I'm not responsible for what happens."
+            "\n*** WARNING *** You'll get wrong results, "
+                              "but it's your fault for using this propagator."
+            "\n*** WARNING *** "
+         << endl;
+    *a = new rbend( pc*length, strength, 
+                    pc*poleFaceAngle, // this is surely the wrong thing to do
+                    Propagator );     // but there is no right thing
+    *b = new rbend( (1.0 - pc)*length, strength, 
+                    (1.0 - pc)*poleFaceAngle, 
+                    Propagator );
+  }
+  else if( typeid(*Propagator) == typeid(NoEdge_Prop) ) {
+    *a = new rbend(         pc*length, strength, poleFaceAngle, Propagator );
+    *b = new rbend( (1.0 - pc)*length, strength, poleFaceAngle, Propagator );
+  }
+  else if( typeid(*Propagator) == typeid(Exact_Prop) ) {
+    *a = new rbend(         pc*length, strength, poleFaceAngle, &rbend::InEdge );
+    *b = new rbend( (1.0 - pc)*length, strength, poleFaceAngle, &rbend::OutEdge );
+  }
+  else if( typeid(*Propagator) == typeid(InEdge_Prop) ) {
+    *a = new rbend(         pc*length, strength, poleFaceAngle, Propagator );
+    *b = new rbend( (1.0 - pc)*length, strength, poleFaceAngle, &rbend::NoEdge );
+  }
+  else if( typeid(*Propagator) == typeid(OutEdge_Prop) ) {
+    *a = new rbend(         pc*length, strength, poleFaceAngle, &rbend::NoEdge );
+    *b = new rbend( (1.0 - pc)*length, strength, poleFaceAngle, Propagator );
+  }
+  else if( typeid(*Propagator) == typeid(Real_Exact_Prop) ) {
+    *a = new rbend(         pc*length, strength, poleFaceAngle, &rbend::RealInEdge );
+    *b = new rbend( (1.0 - pc)*length, strength, poleFaceAngle, &rbend::RealOutEdge );
+  }
+  else if( typeid(*Propagator) == typeid(Real_InEdge_Prop) ) {
+    *a = new rbend(         pc*length, strength, poleFaceAngle, Propagator );
+    *b = new rbend( (1.0 - pc)*length, strength, poleFaceAngle, &rbend::NoEdge );
+  }
+  else if( typeid(*Propagator) == typeid(Real_OutEdge_Prop) ) {
+    *a = new rbend(         pc*length, strength, poleFaceAngle, &rbend::NoEdge );
+    *b = new rbend( (1.0 - pc)*length, strength, poleFaceAngle, Propagator );
+  }
+  else {
+    cerr << "\n*** WARNING *** "
+            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
+            "\n*** WARNING *** Propagator type unrecognized."
+            "\n*** WARNING *** I'm not responsible for what happens."
+            "\n*** WARNING *** It's all your fault."
+            "\n*** WARNING *** "
+         << endl;
+    *a = new rbend( pc*length, strength );
+    *b = new rbend( (1.0 - pc)*length, strength );
+  }
+
 
   // Rename
-  char* newname;
-  newname = new char [ strlen(ident) + 6 ];
+  char* newname = new char [ strlen(ident) + 6 ];
 
   strcpy( newname, ident );
   strcat( newname, "_CL_A" );
@@ -167,6 +229,26 @@ double rbend::setPoleFaceAngle( const JetParticle& p )
 
   this->tanPFAngle = tan( this->poleFaceAngle );
   return this->poleFaceAngle;
+}
+
+
+double rbend::setReferenceTime( const Particle& prtn )
+{
+  // Assumes "normal" symmetric crossing.
+  static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
+  double Omega  = csq_red * this->Strength() / prtn.ReferenceEnergy();
+  double Rho  = prtn.ReferenceBRho() / this->Strength();
+  _CT = PH_MKS_c * ( 2.0*asin( this->Length() / (2.0*Rho) ) ) / Omega;
+  return _CT;
+}
+
+
+double rbend::setReferenceTime( double x )
+{
+  double oldValue = _CT;
+  _CT = x;
+  if( fabs(_CT) < 1.0e-12 ) { _CT = 0.0; }
+  return oldValue;
 }
 
 
@@ -344,6 +426,57 @@ void rbend::OutEdge_Prop::makeExact()
 }
 
 void rbend::OutEdge_Prop::setPropagator( NoEdge_Prop* x )
+{
+  _myPropagator = x;
+}
+
+
+// --- rbend::Real_Exact_Prop -----------------------
+
+rbend::Real_Exact_Prop::Real_Exact_Prop()
+{
+  _myPropagator = &rbend::NoEdge;
+}
+ 
+rbend::Real_Exact_Prop::~Real_Exact_Prop()
+{
+}
+ 
+void rbend::Real_Exact_Prop::setPropagator( NoEdge_Prop* x )
+{
+  _myPropagator = x;
+}
+
+
+// --- rbend::Real_InEdge_Prop -----------------------
+
+rbend::Real_InEdge_Prop::Real_InEdge_Prop()
+{
+  _myPropagator = &rbend::NoEdge;
+}
+ 
+rbend::Real_InEdge_Prop::~Real_InEdge_Prop()
+{
+}
+ 
+void rbend::Real_InEdge_Prop::setPropagator( NoEdge_Prop* x )
+{
+  _myPropagator = x;
+}
+
+
+// --- rbend::Real_OutEdge_Prop -----------------------
+
+rbend::Real_OutEdge_Prop::Real_OutEdge_Prop()
+{
+  _myPropagator = &rbend::NoEdge;
+}
+ 
+rbend::Real_OutEdge_Prop::~Real_OutEdge_Prop()
+{
+}
+ 
+void rbend::Real_OutEdge_Prop::setPropagator( NoEdge_Prop* x )
 {
   _myPropagator = x;
 }

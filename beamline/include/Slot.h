@@ -118,6 +118,10 @@ class Slot : public bmlnElmnt
    Frame getOutFrame() const
      { return out; }
 
+   // Not overloaded: virtual double getReferenceTime() const {return _ctRef;}
+   double setReferenceTime( double );
+   double setReferenceTime( const Particle& );  // returns _ctRef
+
    // Functions passed on to tenant
    void setStrength   ( double );
    void setStrength   ( double, int );

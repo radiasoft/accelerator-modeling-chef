@@ -208,6 +208,11 @@ public:
   };
 
   typedef char (*CRITFUNC)( bmlnElmnt* );
+  struct Discriminator
+  {
+    virtual bool operator()( const bmlnElmnt* ) const = 0;
+    virtual ~Discriminator() {}
+  };
 
   static const short BF_OK;
   static const short BF_NULL_ARG;
@@ -238,6 +243,10 @@ protected:
   // friend class circuit;
   friend beamline& operator-( beamline& );
 
+  double _ctRef;  // (normalized) time required for
+                  // a reference particle to cross
+                  // the element. Established by a
+                  // RefRegVisitor.
 
 public:
   bmlnElmnt( const char*   n = "NONAME" /* name     */,
@@ -277,6 +286,7 @@ public:
   PropFunc* setPropFunction ( const PropFunc* a );  // return previous
   PropFunc* setPropFunction ( const PropFunc& a );  // Propagator
   PropFunc* getPropFunction() { return Propagator; }
+
 
   void propagate( Particle& x ) 
   {
@@ -396,6 +406,12 @@ public:
           void setAperture   ( Aperture* );
           void Rename        ( const char* );
   void setShunt(double a);
+
+
+  virtual double getReferenceTime() const {return _ctRef;}
+  virtual double setReferenceTime( const Particle& );  // returns _ctRef
+  virtual double setReferenceTime( double );  // returns previous _ctRef
+
 
   // Query functions ...
   alignmentData  Alignment( void ) const;
