@@ -243,4 +243,8 @@ char operator!=( const TMatrix<T>&, const T& );
 template<typename T>
 char operator!=( const T&, const TMatrix<T>& );
 
+typedef TMatrix<double> Matrix;
+typedef TMatrix<double> MatrixD;
+typedef TMatrix<FNAL::Complex> MatrixC;
+
 #endif // TMATRIX_H
