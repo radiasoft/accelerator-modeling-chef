@@ -1,3 +1,4 @@
+// emacs -*- C++ -*- mode
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -443,6 +444,8 @@ public:
   virtual char*  Name() 
     { return ident; }
   virtual char*  Type() const = 0;
+  virtual int    isType(char* s) { return strcmp(s, "bmlnElmnt") == 0; }
+
   virtual double OrbitLength( const Particle& ) { return length; }
                                    // Returns length of design orbit
                                    // segment through the element.
@@ -478,6 +481,7 @@ public:
   void localPropagate( JetParticle& );
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "hkick") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new hkick( *this ); }
 
   void accept( BmlVisitor& v ) { v.visitHkick( this ); }
@@ -506,6 +510,7 @@ public:
   void accept( BmlVisitor& v ) { v.visitVkick( this ); }
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "vkick") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new vkick( *this ); }
 };
 
@@ -536,6 +541,7 @@ public:
   void localPropagate( JetParticle& );
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "octupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new octupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** );
 };
@@ -588,6 +594,7 @@ public:
   void eliminate();
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "thinrfcavity") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new thinrfcavity( *this ); }
 
 };
@@ -630,6 +637,7 @@ public:
   void accept( BmlVisitor& v ) { v.visitSrot( this ); }
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "srot") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new srot( *this ); }
 };
 
@@ -674,6 +682,8 @@ public:
   
   inline int State() const { return onOff; }
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "monitor") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
   bmlnElmnt* Clone() const { return new monitor( *this ); }
 } ;
 
@@ -694,6 +704,7 @@ public:
   void localPropagate( JetParticle& );
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "hmonitor") != 0 ) return monitor::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new hmonitor( *this ); }
 } ;
 
@@ -728,6 +739,7 @@ public:
   void localPropagate( JetParticle& );
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "vmonitor") != 0 ) return monitor::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new vmonitor( *this ); }
 } ;
 
@@ -749,6 +761,7 @@ public:
   void accept( BmlVisitor& v ) { v.visitMarker( this ); }
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "marker") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new marker( *this ); }
 } ;
 
@@ -769,6 +782,7 @@ public:
   void accept( BmlVisitor& v ) { v.visitDrift( this ); }
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "drift") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new drift( *this ); }
 } ;
 
@@ -864,6 +878,7 @@ public:
 
   // ??? REMOVE: char* Type() const { return "rbend"; }
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "rbend") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new rbend( *this ); }
   double OrbitLength( const Particle& );
   void Split( double, bmlnElmnt**, bmlnElmnt** );
@@ -962,6 +977,7 @@ public:
   sbendData* image();
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "sbend") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new sbend( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** );
 
@@ -1025,6 +1041,8 @@ public:
   void setFrequency( Jet (*)( const Jet& ) );
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "sector") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
   bmlnElmnt* Clone() const { return new sector( *this ); }
 } ;
 
@@ -1100,6 +1118,8 @@ public:
   void eliminate();
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "quadrupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
   bmlnElmnt* Clone() const { return new quadrupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** );
 
@@ -1150,6 +1170,8 @@ public:
   void eliminate();
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "JetQuadrupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
   bmlnElmnt* Clone() const { return new JetQuadrupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** );
 
@@ -1187,6 +1209,8 @@ public:
 
   // ??? REMOVE: char* Type() const { return "thinQuad"; }
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "thinQuad") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  
   bmlnElmnt* Clone() const { return new thinQuad( *this ); }
 } ;
 
@@ -1220,6 +1244,8 @@ class JetthinQuad : public bmlnElmnt
    void eliminate();
  
    char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "JetthinQuad") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
    bmlnElmnt* Clone() const { return new JetthinQuad( *this ); }
 
 } ;
@@ -1245,6 +1271,8 @@ public:
 
   // ??? REMOVE: char* Type() const { return "thinSextupole"; }
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "thinSextupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
   bmlnElmnt* Clone() const { return new thinSextupole( *this ); }
 } ;
 
@@ -1277,6 +1305,8 @@ public:
   void eliminate();
   
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "JetthinSext") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
   bmlnElmnt* Clone() const { return new JetthinSext( *this ); }
   
 } ;
@@ -1300,6 +1330,8 @@ public:
   void accept( BmlVisitor& v ) { v.visitThinOctupole( this ); }
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "thinOctupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  
   bmlnElmnt* Clone() const { return new thinOctupole( *this ); }
 } ;
 
@@ -1322,6 +1354,8 @@ public:
   void accept( BmlVisitor& v ) { v.visitThinDecapole( this ); }
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "thinDecapole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
   bmlnElmnt* Clone() const { return new thinDecapole( *this ); }
 } ;
 
@@ -1342,6 +1376,8 @@ public:
   void accept( BmlVisitor& v ) { v.visitThin12pole( this ); }
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "thin12pole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
   bmlnElmnt* Clone() const { return new thin12pole( *this ); }
 } ;
 
@@ -1362,6 +1398,7 @@ public:
   void accept( BmlVisitor& v ) { v.visitThin14pole( this ); }
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "thin14pole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new thin14pole( *this ); }
 } ;
 
@@ -1382,6 +1419,7 @@ public:
   void accept( BmlVisitor& v ) { v.visitThin16pole( this ); }
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "thin16pole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new thin16pole( *this ); }
 } ;
 
@@ -1402,6 +1440,7 @@ public:
   void accept( BmlVisitor& v ) { v.visitThin18pole( this ); }
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "thin18pole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new thin18pole( *this ); }
 } ;
 
@@ -1424,6 +1463,7 @@ public:
   void accept( BmlVisitor& v ) { v.visitThinMultipole( this ); }
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "thinMultipole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new thinMultipole( *this ); }
 } ;
 
@@ -1454,6 +1494,8 @@ public:
   void accept( BmlVisitor& v ) { v.visitSextupole( this ); }
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "sextupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
   bmlnElmnt* Clone() const { return new sextupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** );
 } ;
@@ -1524,6 +1566,8 @@ public:
   void accept( BmlVisitor& v ) { v.visitBBLens( this ); }
 
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "BBLens") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
   bmlnElmnt* Clone() const { return new BBLens( *this ); }
   Vector Beta();
   void GetSigma( double* );
@@ -1572,6 +1616,8 @@ public:
   void eliminate();
   
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "thinSeptum") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
   bmlnElmnt* Clone() const { return new thinSeptum( *this ); }
 
 };
@@ -1639,6 +1685,8 @@ public:
   void eliminate();
   
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "thinLamb") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
   bmlnElmnt* Clone() const { return new thinLamb( *this ); }
 };
  
@@ -1909,6 +1957,8 @@ public:
     }
   double Energy() const { return nominalEnergy; }
   char*  Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "beamline") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
   bmlnElmnt* Clone() const;
   double OrbitLength( const Particle& );
   lattRing whatIsRing();
