@@ -245,16 +245,16 @@ void FCircuit::append( bmlnElmnt* q ) {
    numElm++;
 }
 
-mover::mover() : circuit () {
+mover::mover() : circuit (), align() {
 }
 
-mover::mover(char* n) : circuit (n) {
+mover::mover(char* n) : circuit (n), align() {
 }
 
-mover::mover(bmlnElmnt* q) : circuit (q) {
+mover::mover(bmlnElmnt* q) : circuit (q), align() {
 }
 
-mover::mover(char* n, bmlnElmnt* q) : circuit (n,q) {
+mover::mover(char* n, bmlnElmnt* q) : circuit (n,q), align() {
 }
 
 mover::~mover() {}
@@ -333,7 +333,7 @@ void BipolarCircuit::set(void* x) {
 	p->Name() << " Assuming +1 " << endl;
       p -> setStrength( *curr );
 
-    } else
+    } else 
       p -> setStrength( (*curr)* pol->polarity );
   }
 }
