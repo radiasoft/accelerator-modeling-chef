@@ -1,3 +1,7 @@
+// Private allocators
+// J.F. Ostiguy Beam Physics - Feb 11 1999
+//#define __PRIVATE_ALLOCATOR__
+
 #ifndef INTARRAY_H
 #define INTARRAY_H
 
@@ -9,9 +13,19 @@ using std::ostream;
 #include <iostream.h>
 #endif
 
+#ifdef __PRIVATE_ALLOCATOR__
+#include <vmalloc.h>
+#endif
+
 class IntArray {
+#ifdef __PRIVATE_ALLOCATOR__
+private:
+  static int         _init;  // private pool memory manager initialization status flag
+  static Vmalloc_t*  _vmem;  // private pool memory manager heap
+  static             void meminit();
+#endif
 protected:
-  int  dim;    // Number of componenents
+  int  dim;    // Number of components
   int* comp;   // Data
 public:
 
@@ -48,6 +62,10 @@ public:
   int  Dim() const;
   int  Sum() const;
 
+
+  //  void* operator new(size_t bytes_to_allocate);
+  //  void  operator delete(void* obj, size_t size);
+
   // Utilities ..
   friend ostream& operator<<( ostream&, const IntArray& );
   friend istream& operator>>( istream&, IntArray& );
@@ -56,14 +74,6 @@ public:
   static int objectCount;
 #endif
 };
-
-inline IntArray::~IntArray()
-{
-  delete [] comp;
-#ifdef OBJECT_DEBUG
-  objectCount--;
-#endif
-}
 
 inline int IntArray::Dim() const
 {
