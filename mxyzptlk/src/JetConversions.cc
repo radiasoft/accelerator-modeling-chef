@@ -527,6 +527,8 @@ JL* JetC::newJL( /* const */ Jet__environment* pje ) const
 JetC::JetC( const Jet& x )
 {
   jl = x.newJLC();
+  constIterPtr = 0;
+  iterPtr      = 0;
 
 #ifdef OBJECT_DEBUG
  objectCount++;
@@ -545,6 +547,9 @@ JetC& JetC::operator=( const Jet& x )
 JetC::JetC( const Jet& x, /* const */ JetC__environment* pje )
 {
   jl = x.newJLC( pje );
+  constIterPtr = 0;
+  iterPtr      = 0;
+
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -616,6 +621,9 @@ JetCVector& JetCVector::operator=( const JetVector& x )
 Jet::Jet( const JetC& x )
 {
   jl = x.newJL();
+  constIterPtr = 0;
+  iterPtr      = 0;
+ 
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -633,6 +641,9 @@ Jet& Jet::operator=( const JetC& x )
 Jet::Jet( const JetC& x, /* const */ Jet__environment* pje )
 {
   jl = x.newJL( pje );
+  constIterPtr = 0;
+  iterPtr      = 0;
+
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
