@@ -65,6 +65,7 @@
 #include "QuadEliminator.h"
 #include "bmlfactory.h"
 #include "BeamlineBrowser.h"
+#include "BmlUtil.h"
 
 // #include "LattFncPlt.h"
 // #include "ETFncPlt.h"
@@ -1019,6 +1020,8 @@ void CHEF::_editMode()
     else {
       _p_currBmlCon->handleAsLine();
     }
+
+    emit _modeChanged( _p_currBmlCon );
   }
 
   delete wpu;
@@ -1425,15 +1428,70 @@ void CHEF::_pushMoments()
     wpu->readInputValues();
     LattFuncSage::lattFunc initialConditions( wpu->getInitCond() );
 
-    int N = _p_currBmlCon->_proton.State().Dim();
+    CovarianceSage::Info initialCovariance;
+    initialCovariance.arcLength = 0.0;
+    initialCovariance.beta.hor  = initialConditions.beta.hor;
+    initialCovariance.beta.ver  = initialConditions.beta.ver;
+    initialCovariance.alpha.hor = initialConditions.alpha.hor;
+    initialCovariance.alpha.ver = initialConditions.alpha.ver;
+    
+    int returnCode 
+      = BmlUtil::makeCovariance( initialCovariance, _p_currBmlCon->_proton );
+    // This assumes, by default, an equal horizontal and vertical emittance.
 
-    /* Begin new code
-    MatrixC E(  );
-    End new code */
-  }  
+    if( 0 != returnCode ) {
+      QMessageBox::information( 0, "CHEF", "Calculation failed." );
+      delete wpu;
+      return;
+    }
 
-  QMessageBox::information( 0, "CHEF", "Function under construction.\nComing soon." );
-  return;
+    _p_currBmlCon->setInitial( initialCovariance );
+
+    MomentsFncData* mfd = 0;
+    try {
+      mfd = new MomentsFncData ( _p_currBmlCon );
+      mfd->doCalc();
+      mfd->makeCurves();
+    }
+    catch( const std::exception& ge ) {
+      ostringstream uic;
+      uic << __FILE__ << ", line " << __LINE__ << ": "
+          << "Exception was thrown by MomentsFncData.\n"
+             "The message was:\n"
+          << ge.what();
+      QMessageBox mb(QString("CHEF: ERROR"), QString( uic.str().c_str() ), 
+                     QMessageBox::Critical, 
+                     QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+      mb.show();
+      while(mb.isVisible()) { qApp->processEvents(); }
+
+      if( 0 != wpu) { delete wpu; wpu = 0; }
+      if( 0 != mfd) { delete mfd; mfd = 0; }
+      return;
+    }
+
+    if(mfd) {
+      _MMplotWidget = new CHEFPlotMain( 0, "MMplotWidget", Qt::WDestructiveClose ); 
+      // destructive close needed !
+      _MMplotWidget->addData( *mfd  );
+  
+       char theCaption[1024];
+       for( int i = 0; i < 1024; i++ ) {
+        theCaption[i] = '\0';
+      }
+      strcat( theCaption, "CHEF: Lattice Functions (covariance): " );
+      strcat( theCaption, _p_currBmlCon->name() );
+      _MMplotWidget->setCaption( theCaption );
+
+      _MMplotWidget->show();
+
+      delete mfd; 
+      mfd = 0;
+    }
+  }
+
+  // Clean up before exiting
+  if( 0 != wpu) { delete wpu; wpu = 0; }
 }
 
 
@@ -2132,6 +2190,8 @@ void CHEF::_launch_browser()
     _p_vwr->setAllColumnsShowFocus( TRUE );
     _p_vwr->show();
 
+    connect( this,   SIGNAL(_modeChanged( const BeamlineContext* )),
+             _p_vwr, SLOT(resetPixmap( const BeamlineContext* ))        );
     connect( _p_vwr, SIGNAL(sig_bmlLeftClicked( BeamlineContext* )),
              this,   SLOT(_set_p_clickedContext( BeamlineContext* ))    );
     connect( _p_vwr, SIGNAL(sig_bmlLeftClicked( QBml* )),

@@ -322,7 +322,7 @@ private slots:
 
 signals:
   void _new_beamline();
-
+  void _modeChanged( const BeamlineContext* );
 };
 
 }; // end namespace CHEF

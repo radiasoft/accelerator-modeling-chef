@@ -65,6 +65,7 @@ public:
     Info();
     Info( const Info& );
     ~Info(){}
+    Info& operator=( const Info& );
   };
 
 
@@ -82,10 +83,10 @@ public:
   void eraseAll();
 
   // Error codes returned by functions
-  static const int CovarianceSage::OKAY;
-  static const int CovarianceSage::NOTSQR;
-  static const int CovarianceSage::OVRRUN;
-  static const int CovarianceSage::NEGDET;
+  static const int OKAY;
+  static const int NOTSQR;
+  static const int OVRRUN;
+  static const int NEGDET;
 
 private:
   Info** _calcs;  // array of calculated results

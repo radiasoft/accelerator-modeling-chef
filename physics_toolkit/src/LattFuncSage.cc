@@ -201,7 +201,7 @@ int LattFuncSage::pushCalc( const Particle& prt,
   const double alpha_y_0 = initialConditions.alpha.ver;
   const double gamma_y_0 = ( 1.0 + alpha_y_0*alpha_y_0 )/beta_y_0;
 
-  double beta_x, beta_y;
+  double beta_x, beta_y, alpha_x, alpha_y;
 
   bmlnElmnt* be;
   DeepBeamlineIterator dbi( _myBeamlinePtr );
@@ -229,7 +229,10 @@ int LattFuncSage::pushCalc( const Particle& prt,
     c = mtrx(px,x);
     d = mtrx(px,px);
 
+    // I allow for the possibility of RF cavities by scaling
     beta_x =  ( a*a*beta_x_0 - 2.0*a*b*alpha_x_0 + b*b*gamma_x_0 )
+             *( jpPtr->ReferenceEnergy()/energy );
+    alpha_x = ( - a*c*beta_x_0 + (a*d+b*c)*alpha_x_0 - d*b*gamma_x_0 )
              *( jpPtr->ReferenceEnergy()/energy );
 
     a = mtrx(y,y);
@@ -239,11 +242,15 @@ int LattFuncSage::pushCalc( const Particle& prt,
 
     beta_y =  ( a*a*beta_y_0 - 2.0*a*b*alpha_y_0 + b*b*gamma_y_0 )
              *( jpPtr->ReferenceEnergy()/energy );
+    alpha_y = ( - a*c*beta_y_0 + (a*d+b*c)*alpha_y_0 - d*b*gamma_y_0 )
+             *( jpPtr->ReferenceEnergy()/energy );
 
     // Output
     _lf[count].arcLength = arcLength;
     _lf[count].beta.hor = beta_x;
     _lf[count].beta.ver = beta_y;
+    _lf[count].alpha.hor = alpha_x;
+    _lf[count].alpha.ver = alpha_y;
 
     count++;
   } // end while loop over the beamline elements ..............

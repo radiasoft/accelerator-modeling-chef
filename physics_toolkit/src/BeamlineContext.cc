@@ -64,7 +64,9 @@ BeamlineContext::BeamlineContext( bool doClone, beamline* x )
   _p_lfs(0), _p_ets(0), _p_covs(0), _p_lbs(0), _p_cos(0), _p_dsps(0),
   _p_ca(0), _p_ta(0),
   _p_co_p(0), _p_disp_p(0), 
-  _initialLattFuncPtr(0), _initialDispersionPtr(0),
+  _initialLattFuncPtr(0), 
+  _initialDispersionPtr(0),
+  _initialCovariancePtr(0),
   _dpp(0.0001),
   _isCloned(doClone),
   _p_bi(0), _p_dbi(0), _p_rbi(0), _p_drbi(0),
@@ -127,6 +129,8 @@ void BeamlineContext::reset()
   { delete _initialLattFuncPtr;   _initialLattFuncPtr = 0;   } 
   if( _initialDispersionPtr ) 
   { delete _initialDispersionPtr; _initialDispersionPtr = 0; }
+
+  _proton.setStateToZero();
 }
 
 
@@ -207,6 +211,32 @@ void BeamlineContext::getInitial( DispersionSage::Info* u )
   }
 
   (*u) = (*_initialDispersionPtr);
+}
+
+
+void BeamlineContext::setInitial( const CovarianceSage::Info& u )
+{
+  if( _initialCovariancePtr ) { delete _initialCovariancePtr; }
+  _initialCovariancePtr = new CovarianceSage::Info(u);
+}
+
+
+void BeamlineContext::setInitial( const CovarianceSage::Info* u )
+{
+  if( _initialCovariancePtr ) { delete _initialCovariancePtr; }
+  _initialCovariancePtr = new CovarianceSage::Info(*u);
+}
+
+
+void BeamlineContext::getInitial( CovarianceSage::Info* u )
+{
+  if( _initialCovariancePtr ) { 
+    throw( GenericException( __FILE__, __LINE__, 
+             "BeamlineContext::getInitial( CovarianceSage::Info* )",
+             "Initial conditions for covariance are not available." ) );
+  }
+
+  (*u) = (*_initialCovariancePtr);
 }
 
 
@@ -599,7 +629,7 @@ void BeamlineContext::_createClosedOrbit()
   
   if( !(this->isTreatedAsRing()) ) {
     ostringstream uic;
-    uic  <<   "Cannot find closed orbit: line is not a ring.";
+    uic  <<   "Cannot find closed orbit: line is not considered a ring.";
     throw( GenericException( __FILE__, __LINE__, 
            "void BeamlineContext::_createClosedOrbit()", 
            uic.str().c_str() ) );
@@ -919,36 +949,83 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
     this->_createCOVS();
   }
   
-  if( 0 == _eigentunes ) {
-    this->_createEigentunes();
+  if( this->isTreatedAsRing() ) {
+    if( 0 == _eigentunes ) {
+      this->_createEigentunes();
+    }
   }
 
-  if( !_momentsFuncsCalcd ) { 
-    int n = Particle::PSD;
+  if( !_momentsFuncsCalcd ) 
+  { 
+    int j;
+    const int n = Particle::PSD;
     MatrixD covariance(n,n);
-    covariance = this->equilibriumCovariance( _eps_1, _eps_2 );
+    Jet__environment*  storedEnv = 0;
+    JetC__environment* storedEnvC = 0;
+    JetParticle* ptr_arg = 0;
+    coord** coordPtr = 0;
 
-    // Preserve/reset the current Jet environment
-    Jet__environment*  storedEnv  = Jet::_lastEnv;
-    JetC__environment* storedEnvC = JetC::_lastEnv;
-    Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
-    JetC::_lastEnv = JetC::CreateEnvFrom( Jet::_lastEnv );
+    if( this->isTreatedAsRing() ) {
+      covariance = this->equilibriumCovariance( _eps_1, _eps_2 );
 
-    JetParticle* ptr_arg = _p_jp->Clone();
+      storedEnv  = Jet::_lastEnv;
+      storedEnvC = JetC::_lastEnv;
+      Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
+      JetC::_lastEnv = JetC::CreateEnvFrom( Jet::_lastEnv );
+
+      ptr_arg = _p_jp->Clone();
+    }
+    else {
+      if( 0 != _initialCovariancePtr ) {
+        covariance = _initialCovariancePtr->covariance;
+
+        coordPtr = new coord* [n];
+
+        // Preserve the current Jet environment
+        storedEnv  = Jet::_lastEnv;
+        storedEnvC = JetC::_lastEnv;
+
+        // Create a new Jet environment
+        double scale[n];
+        //   scale is probably no longer needed ... oh, well ...
+        Jet::BeginEnvironment( 1 );
+        for( j = 0; j < n; j++ ) {
+          scale[j] = 0.001;
+          coordPtr[j] = new coord( _proton.State(j) );
+        }
+        JetC::_lastEnv = JetC::CreateEnvFrom( Jet::EndEnvironment( scale ) );
+
+        ptr_arg = _proton.ConvertToJetParticle();
+      }
+
+      else {
+        _momentsFuncsCalcd = false;
+        throw( GenericException( __FILE__, __LINE__, 
+               "BeamlineContext::getCovFuncPtr", 
+               "You must first provide initial conditions"
+               "\nfor a non-periodic line." ) );
+      }
+    }
+
     Mapping id( "identity" );
     ptr_arg->setState( id );
 
     int errorFlag = _p_covs->doCalc( ptr_arg, covariance, beamline::yes );
     _momentsFuncsCalcd = ( 0 == errorFlag );
+
+    // Clean up before leaving 
     delete ptr_arg;
+    if( coordPtr ) {
+      for( j = 0; j < n; j++ ) { delete coordPtr[j]; }
+      delete [] coordPtr;
+    }
 
     // Restore current environment
     Jet::_lastEnv = storedEnv;
     JetC::_lastEnv = storedEnvC;
   }
 
-  if( _momentsFuncsCalcd ) { return (_p_covs->getInfoPtr(i)); }
-  else                     { return 0;                        }
+  return (_p_covs->getInfoPtr(i));
 }
 
 
@@ -1065,12 +1142,11 @@ MatrixD BeamlineContext::equilibriumCovariance( double eps_1, double eps_2 )
 {
   // eps_1 and eps_2 are two "invariant emittances"
   //   in units of pi mm-mr.
-  // We assume that eps_1 is "mostly horizontal" and eps_2 is
+  // I assume that eps_1 is "mostly horizontal" and eps_2 is
   //   "mostly vertical."
 
   int i=0, j=0;
   const double mm_mr = 1.0e-6;
-  const int index [] = { 0, 3, 1, 4 };
 
   // If necessary ...
   // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {

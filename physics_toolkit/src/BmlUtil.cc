@@ -41,7 +41,24 @@
 using FNAL::Complex;
 using namespace std;
 
-const double BmlUtil::mlt1 = 1.0e-6;
+ostream* BmlUtil::_errorStreamPtr  = &cerr;
+ostream* BmlUtil::_outputStreamPtr = &cout;
+
+const double BmlUtil::mlt1   = 1.0e-6;
+const int    BmlUtil::PSDERR = 1;
+
+
+void BmlUtil::setErrorStream( ostream* w )
+{
+  _errorStreamPtr = w;
+}
+
+
+void setOutputStream( ostream* w )
+{
+  BmlUtil::_outputStreamPtr = w;
+}
+
 
 void BmlUtil::normalize( MatrixC& B )
 {
@@ -104,3 +121,115 @@ void BmlUtil::normalize( MatrixC& B )
     }
   }
 }
+
+
+// ============================================================== //
+
+int BmlUtil::makeCovariance( CovarianceSage::Info& w,
+                             const Particle& prtn, 
+                             double eps_1, double eps_2, double eps_3 )
+{
+  // Some of this code has been lifted from the function
+  //   MatrixD BeamlineContext::equilibriumCovariance( double eps_1, double eps_2 )
+  //   in the file BeamlineContext.cc.   - Leo Michelotti (October 29, 2004)
+  
+  static bool firstTime = true;
+  static const FNAL::Complex i( 0., 1. );
+
+  if( firstTime ) {
+    *_errorStreamPtr << "\n*** WARNING ***"
+                        "\n*** WARNING *** File: " << __FILE__ 
+                     <<                  " Line: " << __LINE__
+                     << "\n*** WARNING *** BmlUtil::makeCovariance"
+                        "\n*** WARNING *** Current version of this function ignores"
+                        "\n*** WARNING ***   the third \"emittance\" argument."
+                        "\n*** WARNING ***"
+                     << endl;
+    firstTime = false;
+  }
+
+  // eps_1 and eps_2 are two "invariant emittances"
+  //   in units of pi mm-mr. In this version, eps_3 is currently ignored.
+  // I assume that eps_1 is "mostly horizontal" and eps_2 is
+  //   "mostly vertical."
+
+  // Convert to action, in meters (crazy units):
+  //   I1 and I2 are expectation values of action coordinates.
+  const double mm_mr = 1.0e-6;
+  const double betaGamma = prtn.ReferenceBeta() * prtn.ReferenceGamma();
+  double I1 = ( std::abs( eps_1 )/betaGamma ) * mm_mr / 2.0;
+  double I2 = ( std::abs( eps_2 )/betaGamma ) * mm_mr / 2.0;
+
+  int x   = Particle::_x();
+  int y   = Particle::_y();
+  int cdt = Particle::_cdt();    // not yet used
+  int xp  = Particle::_xp(); 
+  int yp  = Particle::_yp(); 
+  int dpp = Particle::_dpop();   // not yet used
+
+  int n = Particle::PSD;
+  if( 6 != n ) {
+    *_errorStreamPtr << "\n*** WARNING ***"
+                        "\n*** WARNING *** File: " << __FILE__ 
+                     <<                  " Line: " << __LINE__
+                     << "\n*** WARNING *** BmlUtil::makeCovariance"
+                        "\n*** WARNING *** Current version of this function"
+                        "\n*** WARNING ***   assumes phase space of dimension 6."
+                        "\n*** WARNING ***   You are using " << Particle::PSD << "."
+                        "\n*** WARNING ***"
+                     << endl;
+    return BmlUtil::PSDERR;
+  }
+
+  MatrixD aa(n,n);
+  aa(x,x)     = I1;
+  aa(xp,xp)   = I1;
+  aa(y,y)     = I2;
+  aa(yp,yp)   = I2;
+
+  // Construct matrix of eigenvectors
+  MatrixC E("I",n);
+  E(x , 0) = sqrt( w.beta.hor / 2.0 );
+  E(xp, 0) = - ( i + w.alpha.hor )/sqrt( 2.0*w.beta.hor );
+  E(y , 1) = sqrt( w.beta.ver / 2.0 );
+  E(yp, 1) = - ( i + w.alpha.ver )/sqrt( 2.0*w.beta.ver );
+  
+  for( int j = 0; j < 2; j++ ) {
+    int m = j + (n/2);
+    for( int k = 0; k < n; k++ ) {
+      E(k,m) = conj(E(k,j));
+    }
+  }
+
+  // This line is almost certainly not necessary.
+  //   The matrix E already, has correct normalization,
+  //   at least, as I normalize on Oct.29, 2004. 
+  //   But that may change. Who knows? So I'll retain the line.
+
+  // DGN: Begin diagnostic section
+  // cout << "DGN:   BmlUtil::normalize( E );" << endl;
+  // MatrixC W(E); // DGN:
+  // DGN: End   diagnostic section
+
+  BmlUtil::normalize( E );
+
+  // DGN: Begin diagnostic section
+  // cout << "DGN: Change in argument = " << endl;
+  // cout << (E - W) << endl;
+  // DGN: End   diagnostic section
+
+  // Finally, the actual calculation: one line ...
+  w.covariance = real(E*aa*E.dagger());
+
+  return 0;
+}
+
+
+int BmlUtil::makeCovariance( CovarianceSage::Info* wPtr,
+                             const Particle& prtn, 
+                             double eps_1, double eps_2, double eps_3 )
+{
+  return BmlUtil::makeCovariance( *wPtr, prtn, eps_1, eps_2, eps_3 );
+}
+
+
