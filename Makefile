@@ -1,6 +1,7 @@
 # To add a new configuration for your system add it to the list below
 # then update the Make-config file.
 
+
 default:
 	@echo "The enviroment variable FNALROOT must be set to this directory"
 	@echo "One time only do a make setup then"
