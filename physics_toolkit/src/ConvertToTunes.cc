@@ -15,6 +15,7 @@
 
 int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
 {
+  int returnValue = 0;
   static const Complex c_zero = Complex( 0.0,   0.0 );
   static const Complex c_mi   = Complex( 0.0, - 1.0 );
 
@@ -42,7 +43,23 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
     while((  jlctPtr = y.get()  )) {
       v = jlctPtr->value;
       if((  v != c_zero  )) {
-        if( fabs( real(v) ) > 1.0e-10 * fabs( imag(v) ) ) return 140;
+
+        // Reality check ...
+        if( fabs( real(v) ) > 1.0e-10 * fabs( imag(v) ) ) {
+          cerr << "WARNING:                              " << endl;
+          cerr << "WARNING: ConvertNToTunes              " << endl;
+          cerr << "WARNING: Reality check was violated.  " << endl;
+          cerr << "WARNING: Offending ration is ";
+          if( fabs( imag(v) ) == 0.0 ) {
+            cerr << "infinite." << endl;
+          }
+          else {
+            cerr << fabs( real(v) )/fabs( imag(v) ) << endl;
+          }
+          cerr << "WARNING:                              " << endl;
+          returnValue = 140;
+        }
+
         ndx = jlctPtr->index;
         ndx(i) -= 1;
         for( j = 0; j < sd2; j++ ) {
@@ -57,7 +74,7 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
     }
   }
 
-  return 0;
+  return returnValue;
 }
 
 
