@@ -41,7 +41,7 @@ class BoolNode
 {
 public:
   virtual bool evaluate( const bmlnElmnt* ) const = 0;
-  virtual void writeTo( ostream& ) const = 0;
+  virtual void writeTo( std::ostream& ) const = 0;
   virtual ~BoolNode() {}
   virtual void eliminate() = 0;  // Dangerous function: acts like delete.
                                  // Assumes everything exists
@@ -57,7 +57,7 @@ public:
   BoolNullNode() {}
   ~BoolNullNode() {}
   bool evaluate( const bmlnElmnt* ) const { return false; }
-  void writeTo( ostream& ) const {}
+  void writeTo( std::ostream& ) const {}
   void eliminate() { delete this; }
   BoolNode* Clone() const { return new BoolNullNode; }
 };
@@ -91,7 +91,7 @@ private:
   const bmlnElmnt::Discriminator* _ptrCritFunc;
 
 public:
-  void writeTo( ostream& os ) const { _ptrCritFunc->writeTo(os); }
+  void writeTo( std::ostream& os ) const { _ptrCritFunc->writeTo(os); }
   void eliminate();
 };
 
@@ -104,7 +104,7 @@ protected:
   virtual ~BoolOpNode();
   
   virtual bool evaluate( const bmlnElmnt* ) const = 0;
-  virtual void writeTo( ostream& ) const = 0;
+  virtual void writeTo( std::ostream& ) const = 0;
   virtual BoolNode* Clone() const = 0;
 
 protected:
@@ -127,7 +127,7 @@ class AndNode : public virtual BoolOpNode
    ~AndNode();
 
    bool evaluate( const bmlnElmnt* ) const;
-   void writeTo( ostream& os ) const;
+   void writeTo( std::ostream& os ) const;
    BoolNode* Clone() const { return new AndNode( *this ); }
 };
 
@@ -140,7 +140,7 @@ class OrNode : public virtual BoolOpNode
    ~OrNode();
 
    bool evaluate( const bmlnElmnt* ) const;
-   void writeTo( ostream& os ) const;
+   void writeTo( std::ostream& os ) const;
    BoolNode* Clone() const { return new OrNode( *this ); }
 };
 
@@ -153,7 +153,7 @@ class NotNode : public virtual BoolOpNode
    ~NotNode();
 
    bool evaluate( const bmlnElmnt* ) const;
-   void writeTo( ostream& os ) const;
+   void writeTo( std::ostream& os ) const;
    BoolNode* Clone() const { return new NotNode( *this ); }
 };
 
@@ -171,7 +171,7 @@ public:
 
   bmlnElmnt::Discriminator* Clone() const;
   bool operator()( const bmlnElmnt* ) const;
-  void writeTo( ostream& os ) const;
+  void writeTo( std::ostream& os ) const;
 private: 
   char* _type;
 };
@@ -185,7 +185,7 @@ public:
 
   bmlnElmnt::Discriminator* Clone() const;
   bool operator()( const bmlnElmnt* ) const;
-  void writeTo( ostream& os ) const;
+  void writeTo( std::ostream& os ) const;
 private: 
   char* _name;
 };
@@ -199,7 +199,7 @@ public:
 
   bmlnElmnt::Discriminator* Clone() const;
   bool operator()( const bmlnElmnt* ) const;
-  void writeTo( ostream& os ) const;
+  void writeTo( std::ostream& os ) const;
 private: 
   double _length;
 };
@@ -213,7 +213,7 @@ public:
 
   bmlnElmnt::Discriminator* Clone() const;
   bool operator()( const bmlnElmnt* ) const;
-  void writeTo( ostream& os ) const;
+  void writeTo( std::ostream& os ) const;
 private: 
   double _length;
 };
@@ -227,7 +227,7 @@ public:
 
   bmlnElmnt::Discriminator* Clone() const;
   bool operator()( const bmlnElmnt* ) const;
-  void writeTo( ostream& os ) const;
+  void writeTo( std::ostream& os ) const;
 private: 
   double _length;
 };
@@ -241,7 +241,7 @@ public:
 
   bmlnElmnt::Discriminator* Clone() const;
   bool operator()( const bmlnElmnt* ) const;
-  void writeTo( ostream& os ) const;
+  void writeTo( std::ostream& os ) const;
 private: 
   double _strength;
 };
@@ -255,7 +255,7 @@ public:
 
   bmlnElmnt::Discriminator* Clone() const;
   bool operator()( const bmlnElmnt* ) const;
-  void writeTo( ostream& os ) const;
+  void writeTo( std::ostream& os ) const;
 private: 
   double _strength;
 };
@@ -269,7 +269,7 @@ public:
 
   bmlnElmnt::Discriminator* Clone() const;
   bool operator()( const bmlnElmnt* ) const;
-  void writeTo( ostream& os ) const;
+  void writeTo( std::ostream& os ) const;
 private: 
   double _strength;
 };

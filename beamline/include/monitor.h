@@ -55,8 +55,8 @@ public:
   virtual ~monitor();
 
   // ---------------------
-  void setOutputStream( ostream& );
-  void setOutputStream( ostream* );
+  void setOutputStream( std::ostream& );
+  void setOutputStream( std::ostream* );
 
   virtual bool on();  // returns previous state
   virtual bool off();
@@ -74,8 +74,8 @@ public:
   { return _driftFraction; }
 
   // Is this "virtual" tag really necessary?  Probably!
-  virtual ostream& writeTo(ostream&); 
-  virtual istream& readFrom(istream&);
+  virtual std::ostream& writeTo(std::ostream&); 
+  virtual std::istream& readFrom(std::istream&);
 
   void getState(double *s) 
   { for ( int i=0; i<6; i++ ) s[i] = _rgr[i]; } // DANGEROUS!!

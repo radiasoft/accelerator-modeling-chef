@@ -40,8 +40,8 @@ class sbend : public bmlnElmnt
 private:
   // bmlnElmnt::strength -> magnetic field [T]
   double angle;      // bend angle  [ radians ]
-  ostream& writeTo(ostream&);
-  istream& readFrom(istream&);
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
 
 public:
 

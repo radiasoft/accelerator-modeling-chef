@@ -39,11 +39,14 @@
 
 enum WHICH_MULTIPOLE { DIPOLE_FIELD, QUADRUPOLE_FIELD, SEXTUPOLE_FIELD, OCTUPOLE_FIELD, DECAPOLE_FIELD, TWELVEPOLE_FIELD, FOURTEENPOLE_FIELD, SIXTEENPOLE_FIELD, EIGHTEENPOLE_FIELD };
 
+class Proton;
+class JetProton;
+
 class combinedFunction : public bmlnElmnt 
 {
 private:
-  istream& readFrom(istream&);
-  ostream& writeTo(ostream&);
+  std::istream& readFrom(std::istream&);
+  std::ostream& writeTo(std::ostream&);
 
 public:
   combinedFunction();

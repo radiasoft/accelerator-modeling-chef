@@ -141,8 +141,8 @@ class CF_sbend : public bmlnElmnt
 
   double _angle; // total bend angle  [ radians ]
 
-  ostream& writeTo(ostream&);
-  istream& readFrom(istream&);
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
 };
 
 

@@ -34,10 +34,25 @@
 #define BMLNELMNT_H
 
 #include <string>
-#include "Particle.h"
-#include "ParticleBunch.h"
-#include "Aperture.h"   // O.K.
+#include <iostream>
+
+#include "slist.h"
+#include "Barnacle.h"
+#include "VectorD.h"
 #include "BmlVisitor.h"
+
+class ParticleBunch;
+class Aperture;
+class Particle;
+class Jet;
+class JetVector;
+class JetParticle;
+class InsertionList;
+class sector;
+
+// Forward declaration required
+class bmlnElmnt;
+class beamline;
 
 #define BF_MAXCHAR 8
 #define NOTKNOWN   -123456.789
@@ -57,7 +72,7 @@ struct lattRing : public BarnacleData {
   ~lattRing() {}
   lattRing& operator=( const lattRing& );
 } ;
- ostream& operator<<(ostream&, const lattRing&);
+ std::ostream& operator<<(std::ostream&, const lattRing&);
 
 struct lattFunc : public BarnacleData {
   double arcLength;
@@ -87,8 +102,8 @@ struct lattFunc : public BarnacleData {
   lattFunc& operator=( const lattFunc& );
 } ;
 
-ostream& operator<<(ostream&, const lattFunc&);
-istream& operator>>(istream&, lattFunc&);
+std::ostream& operator<<(std::ostream&, const lattFunc&);
+std::istream& operator>>(std::istream&, lattFunc&);
 
 struct BMLN_posInfo {
     Vector inPoint;      // This struct defines the upstream and
@@ -99,7 +114,7 @@ struct BMLN_posInfo {
     BMLN_posInfo( const BMLN_posInfo& );
     BMLN_posInfo& operator=( const BMLN_posInfo& );   // ??? Does this struct
                                                       // ??? need a destructor?
-    friend ostream& operator<<(ostream&, BMLN_posInfo&);
+    friend std::ostream& operator<<(std::ostream&, BMLN_posInfo&);
 
 } ;
 
@@ -162,7 +177,7 @@ public:
   double cos_roll() { return cosTilt; }
   double sin_roll() { return sinTilt; }
 
-  friend ostream& operator<<(ostream&, alignment&);
+  friend std::ostream& operator<<(std::ostream&, alignment&);
 };
 
 
@@ -215,7 +230,7 @@ public:
     virtual ~Discriminator() {}
     virtual bool operator()( const bmlnElmnt* ) const = 0;
     virtual Discriminator* Clone() const = 0;
-    virtual void writeTo( ostream& ) const = 0;
+    virtual void writeTo( std::ostream& ) const = 0;
   };
 
   static const short BF_OK;
@@ -291,45 +306,9 @@ public:
   PropFunc* setPropFunction ( const PropFunc& a );  // Propagator
   PropFunc* getPropFunction() { return Propagator; }
 
-
-  void propagate( Particle& x ) 
-  {
-    if( align == 0 ) {
-      localPropagate  ( x );
-    }
-    else {
-      enterLocalFrame ( x );
-      localPropagate  ( x );
-      leaveLocalFrame ( x );
-    }
-  }
-
-  void propagate( JetParticle& x )
-  {
-    if( align == 0 ) {
-      localPropagate  ( x );
-    }
-    else {
-      enterLocalFrame ( x );
-      localPropagate  ( x );
-      leaveLocalFrame ( x );
-    }
-  }
-
-  void propagate( ParticleBunch& x )
-  {
-    static Particle* p;
-    if( align == 0 ) {
-      localPropagate  ( x );
-    }
-    else {
-      slist_iterator getNext( (slist&) x );
-      while((  p = (Particle*) getNext()  )) enterLocalFrame( *p );
-      localPropagate  ( x );
-      getNext.Reset( (const slist&) x );
-      while((  p = (Particle*) getNext()  )) leaveLocalFrame( *p );
-    }
-  }
+  void propagate( Particle& );
+  void propagate( JetParticle& );
+  void propagate( ParticleBunch& );
 
   virtual void localPropagate( Particle& );
   virtual void localPropagate( JetParticle& );
@@ -468,24 +447,15 @@ public:
 private:
   /* All the work is done in friend ostream& operator<<(),
      placeholder for if descendants want to do somthing. */
-  virtual ostream& writeTo(ostream& os) 	{ return os; }
-  virtual istream& readFrom(istream& is)	{ return is; }
-  friend ostream& operator<<(ostream&, bmlnElmnt&);
-  friend bmlnElmnt* read_istream(istream&);
+  virtual std::ostream& writeTo(std::ostream& os) 	{ return os; }
+  virtual std::istream& readFrom(std::istream& is)	{ return is; }
+  friend std::ostream& operator<<(std::ostream&, bmlnElmnt&);
+  friend bmlnElmnt* read_istream(std::istream&);
 
   std::string flavor;     // Allows for "flavors" of types of elements.
   char         _tag[ BF_MAXCHAR ];
 };
 
-
-
-struct InsertionListElement {
-  double     s;  // Position (design orbit length)
-  bmlnElmnt* q;  // Element to be inserted.
-  InsertionListElement( double     x = 0.0, /* s */
-                        bmlnElmnt* p = 0    /* q */ 
-                      ) { s = x; q = p; }
-};
 
 
 class BmlPtrList : private dlist
@@ -513,46 +483,6 @@ public:
   int size() const;
   void clear();   // Preserves the bmlnElmnts
 };
-
-
-class InsertionList : private dlist
-{
-private:
-  double smax;
-  Proton prtn;
-public:
-  InsertionList( double /* momentum [GeV/c] */ = 1000.0 );
-  InsertionList( const InsertionList& );
-  ~InsertionList();
-
-  void Append( const InsertionListElement& );
-  void Append( const InsertionListElement* );
-  void Insert( const InsertionListElement& );
-  void Insert( const InsertionListElement* );
-  void MergeUnique( InsertionList& );
-  void MergeAll   ( InsertionList& );
-  InsertionListElement* Get();   // Iterator; removes elements from list
-  InsertionListElement* operator()( const int& ) const;
-  InsertionList& operator=( const InsertionList& );
-  int Size();
-  void Clear();   // Preserves the InsertionListElements
-  Proton GetParticle() { return prtn; }
-  friend ostream& operator<<( ostream&, const InsertionList& );
-};
-
-inline 
-InsertionListElement* 
-InsertionList::Get()
-{
-  return (InsertionListElement*) dlist::get();
-}
-
-inline 
-InsertionListElement* 
-InsertionList::operator()( const int& n ) const
-{
-  return (InsertionListElement*) dlist::operator[]( n );
-}
 
 
 class beamline : public bmlnElmnt, public dlist
@@ -596,9 +526,9 @@ private:
   double            nominalEnergy;    // In GeV
   int               numElem;          // Number of elements in the beamline
   char              twissDone;
-  ostream& writeTo(ostream&);
+  std::ostream& writeTo(std::ostream&);
   // ??? REMOVE: istream& readFrom(istream&);
-  friend istream& operator>>( istream&, beamline& );
+  friend std::istream& operator>>( std::istream&, beamline& );
 
 public:
 

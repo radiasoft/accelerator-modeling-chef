@@ -98,8 +98,8 @@ class kick : public bmlnElmnt {
 private:
         double horizontalKick;
         double verticalKick;
-        istream& readFrom(istream&);
-        ostream& writeTo(ostream&);
+        std::istream& readFrom(std::istream&);
+        std::ostream& writeTo(std::ostream&);
 public:
         kick();
         kick( const char* /* name */ );

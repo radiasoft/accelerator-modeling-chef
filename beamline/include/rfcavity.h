@@ -45,8 +45,8 @@ private:
   // The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
   double Q;                     // quality factor
   double R;                     // shunt impedance
-  ostream& writeTo(ostream&);
-  istream& readFrom(istream&);
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
 
 public:
   rfcavity( const char* = "NONAME" ); // Name
@@ -101,8 +101,8 @@ private:
   // The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
   double Q;                     // quality factor
   double R;                     // shunt impedance
-  ostream& writeTo(ostream&);
-  istream& readFrom(istream&);
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
 
 public:
   thinrfcavity( char * ); // Name

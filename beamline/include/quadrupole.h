@@ -38,8 +38,8 @@
 class quadrupole : public bmlnElmnt
 {
 private:
-  ostream& writeTo(ostream&);
-  istream& readFrom(istream&);
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
 
 public:
  
