@@ -330,8 +330,10 @@ void JL::getReference( double* r ) const {
 char JL::isNilpotent() const {
  dlist_iterator getNext( *(dlist*) this );
  JLterm* p = (JLterm*) getNext();
- if( p->weight == 0 && p->value != 0.0 ) return 0;
- else                                    return 1;
+ if( p->weight == 0 && fabs(p->value) > MX_SMALL ) 
+   { return 0; }
+ else
+   { return 1; }
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
