@@ -13,6 +13,9 @@
 #include "beamline.h"
 #endif
 
+#ifndef MATHCONS_H
+#include "MathConstants.h"     // to get bool
+#endif
 
 class Sage 
 {
@@ -24,6 +27,8 @@ public:
  void unset_verbose();
 
  virtual void eraseAll() = 0;
+
+ typedef char (*CRITFUNC)( bmlnElmnt* );
 
 protected:
  beamline*  _myBeamlinePtr;
