@@ -143,6 +143,8 @@ class CF_rbend : public bmlnElmnt
 
   double _poleFaceAngle;
 
+  void _finishConstructor( int /* number of element blocks*/ );
+
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 };

@@ -50,7 +50,7 @@ CF_sbend::CF_sbend( double        lng,  // length     [ meter    ]
                     int )
 : bmlnElmnt( lng, fld ), _angle(ang)
 {
-  #include "CF_sbendConstructor.ins"
+  _finishConstructor();
 }
 
 
@@ -61,7 +61,7 @@ CF_sbend::CF_sbend( const char*   nm,   // name
                     int )
 : bmlnElmnt( nm, lng, fld ), _angle(ang)
 {
-  #include "CF_sbendConstructor.ins"
+  _finishConstructor();
 }
 
 
@@ -72,7 +72,7 @@ CF_sbend::CF_sbend( double lng,
                     int  )
 : bmlnElmnt( lng, fld ), _angle(ang)
 {
-  #include "CF_sbendConstructor.ins"
+  _finishConstructor();
 }
 
 
@@ -84,7 +84,7 @@ CF_sbend::CF_sbend( const char*  nm,
                     int  )
 : bmlnElmnt( nm, lng, fld ), _angle(ang)
 {
-  #include "CF_sbendConstructor.ins"
+  _finishConstructor();
 }
 
 
@@ -98,6 +98,41 @@ CF_sbend::CF_sbend( const CF_sbend& x )
   for( int k = 0; k < m; k++ ) {
     _u[k] = ( x._u[k] )->Clone();
   }
+}
+
+
+void CF_sbend::_finishConstructor()
+{
+// Insertion for CF_sbend constructors
+// 
+  double field       = this->strength;
+  double frontLength =  6.0*(this->length/4.0)/15.0;
+  double sepLength   = 16.0*(this->length/4.0)/15.0;
+
+  sbend edge ( frontLength, field, (frontLength/this->length)*_angle, 
+               this->Propagator );
+  sbend body ( sepLength,   field, (sepLength/this->length)*_angle,
+               this->Propagator );
+
+  thinSextupole ts( 0.0 );
+  thinQuad      tq( 0.0 );
+
+  _u = new bmlnElmnt* [ 13 ];
+  _v = _u;
+
+  *(_v++) = new sbend          ( edge    );
+  *(_v++) = new thinSextupole  ( ts      );
+  *(_v++) = new thinQuad       ( tq      );
+  *(_v++) = new sbend          ( body    );
+  *(_v++) = new thinSextupole  ( ts      );
+  *(_v++) = new thinQuad       ( tq      );
+  *(_v++) = new sbend          ( body    );
+  *(_v++) = new thinSextupole  ( ts      );
+  *(_v++) = new thinQuad       ( tq      );
+  *(_v++) = new sbend          ( body    );
+  *(_v++) = new thinSextupole  ( ts      );
+  *(_v++) = new thinQuad       ( tq      );
+  *(_v  ) = new sbend          ( edge    );
 }
 
 
@@ -483,7 +518,7 @@ istream& CF_sbend::readFrom( istream& is )
   _u = 0;
 
   // ... Then reconstruct
-  #include "CF_sbendConstructor.ins"
+  _finishConstructor();
 
 
   // Set multipoles
