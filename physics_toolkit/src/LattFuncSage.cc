@@ -1,11 +1,12 @@
 /*
- *  This "lattice function" method is based on
- *  D.A.Edwards and L.C.Teng
- *  "Parametrization of Linear Coupled Motion in Periodic Systems"
- *  IEEE Tr.NucSci.
- *  NS-20(3), 885(1973).
- *       -- Leo Michelotti
- *          June 6, 1994   ( D-Day + 50 years )
+ *  File: LattFuncSage.h
+ *  
+ *  Implementation for a sage for computing
+ *  traditional, and untraditional,  lattice 
+ *  functions.
+ *  
+ *  Leo Michelotti
+ *  Nov. 19, 1998
  */
 
 #ifdef __VISUAL_CPP__
