@@ -109,7 +109,6 @@ void rbend::image( int d, slist* s, BMLN_posInfo* cg ) {
  
   p->address   = this;
   p->depth     = d;
- 
   geomToEnd( *cg );
   cg->outPoint = geometry.outPoint;
   for( j = 0; j < 3; j++ ) cg->outAxes[j] = geometry.outAxes[j];

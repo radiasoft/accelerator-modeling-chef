@@ -34,6 +34,7 @@ sextupole::sextupole( const sextupole& x )
 }
 
 sextupole::~sextupole() {
+  p_bml_e = 0;
 }
 
 

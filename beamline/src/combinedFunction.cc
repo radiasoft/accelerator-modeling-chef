@@ -1,6 +1,6 @@
 #include "beamline.inc"
 #include "combinedFunction.h"
-#include "beamlineStreams.h"
+
 
 // **************************************************
 //   class combinedFunction
