@@ -271,15 +271,15 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  double dphi   = 0.0;
  double Omega  = csq_red * pbe->Strength() / p.ReferenceEnergy();
 
- Complex ui  ( 0.0, p.get_x() );
- Complex vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
+ FNAL::Complex ui  ( 0.0, p.get_x() );
+ FNAL::Complex vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
 
  // Step 1.
  double omega  = csq_red * pbe->Strength() / p.Energy();
- Complex bi = ( complex_i*vui / omega ) - ui;
+ FNAL::Complex bi = ( complex_i*vui / omega ) - ui;
 
  // Step 2.
- Complex bf = bi + pbe->Length();
+ FNAL::Complex bf = bi + pbe->Length();
  
  // Step 3.
  double rho = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
@@ -292,9 +292,9 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  }
 
  // Step 4.
- Complex expFactor( cos(dthmdphi), sin(dthmdphi) );
- Complex vuf = vui*expFactor;
- Complex uf  = ( ui + bi )*expFactor - bf;
+ FNAL::Complex expFactor( cos(dthmdphi), sin(dthmdphi) );
+ FNAL::Complex vuf = vui*expFactor;
+ FNAL::Complex uf  = ( ui + bi )*expFactor - bf;
 
 
  // Final filter back to state coordinates
