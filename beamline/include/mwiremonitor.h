@@ -2,10 +2,9 @@
 #ifndef MWIREMONITOR_H
 #define MWIREMONITOR_H
 
-#include "mxyzptlk.h"
-#include "beamline.inc"
-#include "ParticleBunch.h"
-#include "pipestream.h"
+#include "beamline.h"
+class ParticleBunch;
+class iopipestream;
 
 class mwireMonitor : public monitor {  
 
