@@ -478,12 +478,6 @@ void dlist_iterator::GoBack( int n )
 }
 
 
-void dlist_iterator::Terminate()
-{
-  ce = 0;
-}
-
-
 ent dlist_looper::operator()() 
 {
   ent ret = 0;
@@ -513,6 +507,17 @@ dlink* dlist_traversor::operator()()
   return ret;
 }
 
+void dlist_traversor::GoBack( int n ) 
+{
+  static int j;
+  
+  if( n < 1 ) n = 1;
+  if( ce == 0 ) ce = cs->last;  // Cancels interference from 
+				// dlist_traversor::operator()
+  for( j = 0; j < n; j++ ) ce = ce->prev;
+}
+
+
 ent dlist_reverseIterator::operator()() 
 {
   if( ce == 0 ) return 0;
@@ -523,12 +528,6 @@ ent dlist_reverseIterator::operator()()
     if( ( ce = ce->prev ) == cs->last ) ce = 0;
   }
   return ret;
-}
-
-
-void dlist_reverseIterator::Terminate()
-{
-  ce = 0;
 }
 
 

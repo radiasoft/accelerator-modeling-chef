@@ -222,12 +222,6 @@ return ret;
 }
 
 
-void slist_iterator::Terminate()
-{
-  ce = 0;
-}
-
-
 ent slist_looper::operator()() {
 ent ret = 0;
 if( cs->last )

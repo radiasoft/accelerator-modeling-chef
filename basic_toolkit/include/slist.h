@@ -160,7 +160,7 @@ public:
 
   void Reset    ( const slist& s ) { cs = (slist*) &s; ce = cs->last; }
   void Reset()  { ce = cs->last; }
-  void Terminate();
+  void Terminate() { ce = 0; }
 
   ent operator()();
 } ;
@@ -184,7 +184,7 @@ public:
   slink* operator()();
   void Reset( const slist& s ) { cs = (slist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
-  void Terminate();
+  void Terminate() { ce = 0; }
 } ;
 
 
