@@ -31,6 +31,7 @@ public:
 
   bmlnElmnt* operator++( int );    // postfix increment
   void reset();
+  void goBack( int = 1 );
 
 private:
   dlist_iterator* _getNext;
