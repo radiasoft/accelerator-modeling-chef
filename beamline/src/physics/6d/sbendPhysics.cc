@@ -64,16 +64,16 @@ int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  double Rho    = - pbe->Length() / dphi;
  double Omega  = csq_red * pbe->Strength() / p.ReferenceEnergy();
 
- Complex ui  ( 0.0, p.get_x() );
- Complex vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
+ FNAL::Complex ui  ( 0.0, p.get_x() );
+ FNAL::Complex vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
 
  // Step 1.
  double omega  = csq_red * pbe->Strength() / p.Energy();
- Complex bi = ( complex_i*vui / omega ) - ui;
+ FNAL::Complex bi = ( complex_i*vui / omega ) - ui;
 
  // Step 2.
- Complex expFactor( cos(dphi), - sin(dphi) );
- Complex bf = bi*expFactor +
+ FNAL::Complex expFactor( cos(dphi), - sin(dphi) );
+ FNAL::Complex bf = bi*expFactor +
               complex_i * Rho * ( 1.0 - expFactor );
 
  // Step 3.
@@ -82,8 +82,8 @@ int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 
  // Step 4.
  expFactor = cos(dthmdphi) + complex_i*sin(dthmdphi);
- Complex vuf = vui*expFactor;
- Complex uf  = ( ui + bi )*expFactor - bf;
+ FNAL::Complex vuf = vui*expFactor;
+ FNAL::Complex uf  = ( ui + bi )*expFactor - bf;
 
 
  // Final filter back to state coordinates
@@ -138,7 +138,7 @@ int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  bi = ( complex_i*vui / omega ) - ui;
 
  // Step 2.
- Complex expFactor( cos(dphi), - sin(dphi) );
+ FNAL::Complex expFactor( cos(dphi), - sin(dphi) );
  static JetC bf;
  bf = bi*expFactor +
       complex_i * Rho * ( 1.0 - expFactor );
@@ -235,16 +235,16 @@ int sbend::Approx_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  double Rho    = - pbe->Length() / dphi;
  double Omega  = csq_red * pbe->Strength() / p.ReferenceEnergy();
 
- Complex ui  ( 0.0, p.get_x() );
- Complex vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
+ FNAL::Complex ui  ( 0.0, p.get_x() );
+ FNAL::Complex vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
 
  // Step 1.
  double omega  = csq_red * pbe->Strength() / p.Energy();
- Complex bi = ( complex_i*vui / omega ) - ui;
+ FNAL::Complex bi = ( complex_i*vui / omega ) - ui;
 
  // Step 2.
- Complex expFactor( cos(dphi), - sin(dphi) );
- Complex bf = bi*expFactor +
+ FNAL::Complex expFactor( cos(dphi), - sin(dphi) );
+ FNAL::Complex bf = bi*expFactor +
               complex_i * Rho * ( 1.0 - expFactor );
 
  // Step 3.
@@ -253,8 +253,8 @@ int sbend::Approx_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 
  // Step 4.
  expFactor = cos(dthmdphi) + complex_i*sin(dthmdphi);
- Complex vuf = vui*expFactor;
- Complex uf  = ( ui + bi )*expFactor - bf;
+ FNAL::Complex vuf = vui*expFactor;
+ FNAL::Complex uf  = ( ui + bi )*expFactor - bf;
 
 
  // Final filter back to state coordinates
@@ -306,7 +306,7 @@ int sbend::Approx_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  bi = ( complex_i*vui / omega ) - ui;
 
  // Step 2.
- Complex expFactor( cos(dphi), - sin(dphi) );
+ FNAL::Complex expFactor( cos(dphi), - sin(dphi) );
  static JetC bf;
  bf = bi*expFactor +
       complex_i * Rho * ( 1.0 - expFactor );

@@ -44,8 +44,8 @@ void thin12pole::localPropagate( Particle& p ) {
    x = p.state[0];
    y = p.state[1];
    
-   Complex z( x, y );
-   Complex z2 = z*z;
+   FNAL::Complex z( x, y );
+   FNAL::Complex z2 = z*z;
    z = z2*z2*z;
    
    p.state[3] -= k * real(z);
@@ -83,7 +83,7 @@ void thin14pole::localPropagate( Particle& p ) {
     x = p.state[0];
     y = p.state[1];
  
-    Complex z( x, y );
+    FNAL::Complex z( x, y );
     z = z*z*z;
     z = z*z;
 
@@ -122,8 +122,8 @@ void thin16pole::localPropagate( Particle& p ) {
     x = p.state[0];
     y = p.state[1];
  
-    Complex z( x, y );
-    Complex u = z;
+    FNAL::Complex z( x, y );
+    FNAL::Complex u = z;
     z = z*z*z;
     z = z*z*u;
     
@@ -163,7 +163,7 @@ void thin18pole::localPropagate( Particle& p ) {
     x = p.state[0];
     y = p.state[1];
  
-    Complex z( x, y );
+    FNAL::Complex z( x, y );
     z = z*z;
     z = z*z;
     z = z*z;
