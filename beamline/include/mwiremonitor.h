@@ -1,3 +1,4 @@
+#if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
 #ifndef MWIREMONITOR_H
 #define MWIREMONITOR_H
 
@@ -57,6 +58,7 @@ class mwireMonitor : public monitor {
                   double,               // x full scale value.
                   double                // y full scale value.
                 );
+    mwireMonitor( const mwireMonitor& );
 
     ~mwireMonitor();
 
@@ -87,3 +89,5 @@ class mwireMonitor : public monitor {
 };
 
 #endif // MWIREMONITOR_H
+
+#endif // Exclude under Visual C++ and Borland builds.
