@@ -1,3 +1,35 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE:  C++ objects for design and analysis
+******             of beamlines, storage rings, and   
+******             synchrotrons.                      
+******  Version:   2.0                    
+******                                    
+******  File:      CF_rbend.cc
+******                                                                
+******  Copyright (c) 1991 Universities Research Association, Inc.    
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 #ifdef __VISUAL_CPP__
 #include <iomanip>
 #else
@@ -308,14 +340,14 @@ ostream& CF_rbend::writeTo( ostream& os )
   int n = ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   if( 0 != n%12 ) {
     cerr << "*** ERROR ***                                         \n"
-            "*** ERROR *** CR_rbend::writeTo                       \n"
+            "*** ERROR *** CF_rbend::writeTo                       \n"
             "*** ERROR *** Unexpected number of blocks.            \n"
             "*** ERROR ***                                         \n"
          << endl;
     exit(9);
   }
 
-  os << n << "  ";
+  os << (n/12) << "  ";
   os << OSTREAM_DOUBLE_PREC << ( this->_poleFaceAngle ) << " ";
   os << OSTREAM_DOUBLE_PREC << getQuadrupole() << " ";
   os << OSTREAM_DOUBLE_PREC << getSextupole() << " ";
@@ -400,6 +432,10 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
   inState[x]  = x_i;
   inState[xp] = xp_i;
 
+  // REMOVE: cout << "DGN: " << __FILE__ << ": initial state = ( "
+  // REMOVE:      << x_i << ", " << xp_i << " )" 
+  // REMOVE:      << endl;
+
   double f, m, z;
 
   // Initialize the derivative...
@@ -422,7 +458,13 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
   z = x_i;
   inState[x] = z;
   p_myP->setState( inState );
+  // REMOVE: cout << "DGN: " << __FILE__ ": before single pass: " 
+  // REMOVE:      << ( p_myP->State() )
+  // REMOVE:      << endl;
   this->propagate( *p_myP );
+  // REMOVE: cout << "DGN: " << __FILE__ ": after single pass: " 
+  // REMOVE:      << ( p_myP->State() )
+  // REMOVE:      << endl;
   f = ( p_myP->State() )( xp ) + xp_i;
 
   int i = 0;
@@ -454,6 +496,7 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
     // Recalculate difference ...
     p_myP->setState( inState );
     this->propagate( *p_myP );
+    // REMOVE: cout << "DGN: " << __FILE__ << ": " << p_myP->State() << endl;
     f = ( p_myP->State() )( xp ) + xp_i;
   }
 
