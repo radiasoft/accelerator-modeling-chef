@@ -45,19 +45,20 @@ const_comp_func( gconstpointer left,
      Takes a char pointer "key", constant "value", and "user_data" (not used),
      and frees the memory for "key" and "value"
    */
-static void
+static gboolean
 const_free_func( gpointer key,
                  gpointer value,
                  gpointer user_data ) {
   free( key );
   const_delete( (constant*)value, (fb_allocator*)user_data );
+  return TRUE;
 }
 
    /*
      Takes a char pointer "key", constant "value", and arr_ptr address "user_data", 
      and makes the array element at "user_data" point to "value"
    */
-static void
+static gboolean
 const_table_el_to_array_el( gpointer key,
                             gpointer value,
                             gpointer user_data ) {
@@ -65,6 +66,7 @@ const_table_el_to_array_el( gpointer key,
   constant** ptr = *((constant***)user_data);
   *ptr = (constant*)value;
   *((constant***)user_data) = ++ptr;
+  return TRUE;
 }
 
    /*
@@ -116,7 +118,7 @@ const_table_delete( GHashTable*   const_table,
   assert( const_table != NULL );
   assert( expr_alloc != NULL );
   
-  g_hash_table_foreach( const_table, (GHFunc)const_free_func, expr_alloc );
+  g_hash_table_foreach_remove( const_table, const_free_func, expr_alloc );
   g_hash_table_destroy( const_table );
   
   return CONST_OK;
@@ -438,7 +440,7 @@ const_table_to_array( constant*** const_arr,
   constant **arr_ptr;
   size_t size = g_hash_table_size( const_table );
   arr_ptr = *const_arr = (constant**)malloc( size*sizeof(constant*) );
-  g_hash_table_foreach( const_table, (GHFunc)const_table_el_to_array_el, &arr_ptr );
+  g_hash_table_foreach_remove( const_table, const_table_el_to_array_el, &arr_ptr );
 
   return size;
 }
