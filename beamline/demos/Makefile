@@ -31,7 +31,7 @@ C++FLAGS =
 	$(CC) $(CFLAGS) $(INCLUDE) -c $*.c
 
 
-ALL = FODO_E boosterv6 norm_A norm_B normalFormTest 
+ALL = FODO_E boosterv6 norm_A norm_B normalFormTest TuneAdjusterTest ChromaticityAdjusterTest
 
 all: $(ALL)
 
@@ -54,6 +54,14 @@ norm_B: norm_B.o
                $(MYLIBDIR) $(MYLIBS) $(SYSLIBS)
 
 normalFormTest: normalFormTest.o
+	$(C++) $(C++FLAGS) -o $@ $? \
+               $(MYLIBDIR) $(MYLIBS) $(SYSLIBS)
+
+TuneAdjusterTest: TuneAdjusterTest.o
+	$(C++) $(C++FLAGS) -o $@ $? \
+               $(MYLIBDIR) $(MYLIBS) $(SYSLIBS)
+
+ChromaticityAdjusterTest: ChromaticityAdjusterTest.o
 	$(C++) $(C++FLAGS) -o $@ $? \
                $(MYLIBDIR) $(MYLIBS) $(SYSLIBS)
 
