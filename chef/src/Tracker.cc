@@ -1107,7 +1107,7 @@ void Tracker::_edit_clear()
   _p_currOrb = 0;
 
   Orbit* q;
-  while( q = (Orbit*) _orbits.get() ) {
+  while(( q = (Orbit*) _orbits.get() )) {
     delete q;
   }
 
@@ -1675,9 +1675,6 @@ void Tracker::_iterate()
 
 void Tracker::_start_callback()
 {
-  static Proton* protonPtr;
-  protonPtr = &(_bmlConPtr->_proton);
-
   // Reset the colors in the PointEdit objects.
   _p_x_input->unsetPalette();
   _p_x_input->repaint();
@@ -1689,20 +1686,16 @@ void Tracker::_start_callback()
   _p_yp_input->repaint();
   QApplication::flushX();
   
-
   _isIterating = !( _isIterating );
 
   if( _isIterating ) {
+    _p_startBtn->setText( "Stop" );
     if( 0 == _p_currOrb ) {
       _makeNewOrbit();
-      // REMOVE: _p_currOrb = new Orbit( protonPtr->State() );
-      // REMOVE: _orbits.append( _p_currOrb );
     }
     _p_timer->start( 100, true );
   }
   else {
-    // ??? REMOVE: Fl::remove_timeout( Tracker::iterate, ae );
+    _p_startBtn->setText( "Track" );
   }
 }
-
-
