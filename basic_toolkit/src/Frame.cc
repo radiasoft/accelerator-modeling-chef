@@ -1,24 +1,24 @@
-#ifdef __sparc
-
-  #ifndef bool
-  #define bool char
-  #else
-  #define boolAlreadyDefined
-  #endif
-  
-  #ifndef true
-  #define true 1
-  #else
-  #define trueAlreadyDefined
-  #endif
-  
-  #ifndef false
-  #define false 0
-  #else
-  #define falseAlreadyDefined
-  #endif
-
-#endif // __sparc
+// #ifdef __sparc
+// 
+//   #ifndef bool
+//   #define bool char
+//   #else
+//   #define boolAlreadyDefined
+//   #endif
+//   
+//   #ifndef true
+//   #define true 1
+//   #else
+//   #define trueAlreadyDefined
+//   #endif
+//   
+//   #ifndef false
+//   #define false 0
+//   #else
+//   #define falseAlreadyDefined
+//   #endif
+// 
+// #endif // __sparc
 
 #include "Frame.h"
 
@@ -104,7 +104,7 @@ short int Frame::setAxis   ( int j, const Vector& x )
   }
 
   else {
-    for( int i = 0; i < 2; i++ ) {
+    for( int i = 0; i < 3; i++ ) {
       e( i, j ) = x(i);
     }
   }  
@@ -137,7 +137,7 @@ short int Frame::setDualAxis   ( int i, const Vector& x )
 
   else {
     e = e.inverse();
-    for( int j = 0; j < 2; j++ ) {
+    for( int j = 0; j < 3; j++ ) {
       e( i, j ) = x(j);
     }
     e = e.inverse();
@@ -153,13 +153,13 @@ bool Frame::isOrthonormal() const
 
   u = e.transpose() - e.inverse();
 
-  for( int i = 0; i < 2; i++ ) {
-    for( int j = 0; j < 2; j++ ) {
-      if( 1.0e-12 < fabs( u(i,j) ) ) return 0;
+  for( int i = 0; i < 3; i++ ) {
+    for( int j = 0; j < 3; j++ ) {
+      if( 1.0e-12 < fabs( u(i,j) ) ) return false;
     }
   }
 
-  return 1;
+  return true;
 }
 
 
@@ -181,7 +181,7 @@ Vector Frame::getAxis( int j ) const
   }
 
   else {
-    for( int i = 0; i < 2; i++ ) ret(i) = e.getElement(i,j);
+    for( int i = 0; i < 3; i++ ) ret(i) = e.getElement(i,j);
   }
 
   return ret;
@@ -202,14 +202,15 @@ Vector Frame::getDualAxis( int i ) const
 
   else {
     w = e.inverse();
-    for( int j = 0; j < 2; j++ ) ret(j) = w(i,j);
+    for( int j = 0; j < 3; j++ ) ret(j) = w(i,j);
   }
 
   return ret;
 }
 
 short int Frame::rotate( double theta, 
-                         const Vector& u )
+                         const  Vector& u,
+                         bool   rotateOrigin )
 {
   static short int ret;
   ret = 0;
@@ -226,15 +227,20 @@ short int Frame::rotate( double theta,
   else {
     Vector w(3);
     int i, k;
-    for( i = 0; i < 2; i++ ) {
-      for( k = 0; k < 2; k++ ) {
+    for( i = 0; i < 3; i++ ) {
+      for( k = 0; k < 3; k++ ) {
         w(k) = e(k,i);
       }
       u.Rotate( w, theta );
-      for( k = 0; k < 2; k++ ) {
+      for( k = 0; k < 3; k++ ) {
         e(k,i) = w(k);
       }
     }
+  }
+
+  // Origin is rotated by default ...
+  if( rotateOrigin ) {
+    u.Rotate( o, theta );
   }
 
   return ret;
@@ -263,24 +269,57 @@ short int Frame::translate ( const Vector& x )
 
 
 
-#ifdef __sparc
+void Frame::reset()
+{
+  o(0) = 0.0;
+  o(1) = 0.0;
+  o(2) = 0.0;
 
-  #ifndef boolAlreadyDefined
-  #undef bool
-  #else 
-  #undef boolAlreadyDefined
-  #endif
-  
-  #ifndef trueAlreadyDefined
-  #undef true
-  #else 
-  #undef trueAlreadyDefined
-  #endif
-  
-  #ifndef falseAlreadyDefined
-  #undef false
-  #else 
-  #undef falseAlreadyDefined
-  #endif
-  
-#endif
+  for( int i = 0; i < 3; i++ ) {
+    e(i,i) = 1.0;
+    for( int j = i+1; j < 3; j++ ) {
+      e(i,j) = 0.0;
+      e(j,i) = 0.0;
+    }
+  }
+}
+
+
+ostream& operator<< ( ostream& os, /* const */ Frame& f )
+{
+  os << "Frame origin: " << f.o << endl;
+  os << "Frame x axis: ( " 
+     << f.e(0,0) << ", " << f.e(1,0) << ", " << f.e(2,0) << " )"
+     << endl;
+  os << "Frame y axis: ( " 
+     << f.e(0,1) << ", " << f.e(1,1) << ", " << f.e(2,1) << " )"
+     << endl;
+  os << "Frame z axis: ( " 
+     << f.e(0,2) << ", " << f.e(1,2) << ", " << f.e(2,2) << " )"
+     << endl;
+  return os;
+}
+
+
+
+// #ifdef __sparc
+// 
+//   #ifndef boolAlreadyDefined
+//   #undef bool
+//   #else 
+//   #undef boolAlreadyDefined
+//   #endif
+//   
+//   #ifndef trueAlreadyDefined
+//   #undef true
+//   #else 
+//   #undef trueAlreadyDefined
+//   #endif
+//   
+//   #ifndef falseAlreadyDefined
+//   #undef false
+//   #else 
+//   #undef falseAlreadyDefined
+//   #endif
+//   
+// #endif

@@ -1,6 +1,8 @@
 #ifndef FRAME_H
 #define FRAME_H
 
+#include "MXBBML_bool.h" // For Sun compilers: bool
+
 #include "VectorD.h"
 #include "Matrix.h"
 
@@ -21,6 +23,7 @@ class Frame
    short int setAxis     ( int, const Vector& );
    short int setDualAxis ( int, const Vector& );
 
+   Frame dual() const;
    bool  isOrthonormal() const;
 
    Vector getOrigin()        const;
@@ -28,12 +31,14 @@ class Frame
    Vector getDualAxis( int ) const;
 
    short int rotate    ( double,        // rotation angle [ radians ]
-                         const Vector&  // axis of rotation (right-hand sense)
+                         const Vector&, // axis of rotation (right-hand sense)
+                         bool = true    // 0 -> do not rotate origin
                        );
    short int translate ( const Vector&  // displacement of origin
                        );
+   void      reset();
 
-   Frame dual() const;
+   friend ostream& operator<< ( ostream& os, /* const */ Frame& );
 };
 
 
