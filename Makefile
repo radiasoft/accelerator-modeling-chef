@@ -19,6 +19,8 @@ default:
 	@echo "  make solaris-debug     for Solaris systems and Sun debug"
 	@echo "  make solaris-gcc       for Solaris systems with GCC"
 	@echo "  make solaris-gcc-debug for Solaris systems with GCC debug on"
+	@echo "  make solaris-all       builds both sun and gcc libraries."
+	@echo "  make solaris-debug-all builds both sun and gcc libraries with debugging on."
 	@echo "  make sunos4            for Sun systems with SunOS 4.x"
 	@echo "  make sunos4-debug      for Sun systems with SunOS 4.x and Sun debug"
 	@echo "  make setup             Make include and lib dirs and links."
@@ -29,7 +31,8 @@ default:
 	@echo "  make lib-clean         Remove all library (.a) files."
 	@echo "  make clean             Remove all .o,.sb,.~ files."
 	@echo "  make link-clean        Remove all links in include directory."
-	@echo "  make tar               Tar up all source (*.cc,*.h,.sb) files."
+	@echo "  make export            Cleans up all .o, .~, .sb files in prep for tar."
+	@echo "  make tar               Tar up all (*.cc,*.h,.sb) files. See above."
 	@echo "  make tar_everything    Tar up ALL files."
 
 
@@ -106,6 +109,18 @@ export: real-clean
 	rm -rf include;\
 	rm -rf lib;\
 
+solaris-all:
+	$(MAKE) clean
+	$(MAKE) solaris
+	$(MAKE) clean
+	$(MAKE) solaris-gcc
+
+solaris-debug-all:
+	$(MAKE) clean
+	$(MAKE) solaris-debug
+	$(MAKE) clean
+	$(MAKE) solaris-gcc-debug
+
 NAME = Model-1.0
 
 TAR_FILES =	\
@@ -123,7 +138,8 @@ TAR_FILES =	\
 	fnal/sybase \
 	fnal/filter \
 	fnal/swyd \
-	fnal/tcl
+	fnal/tcl \
+	fnal/recycler 
 
 tar:
 	cd .. ; \
