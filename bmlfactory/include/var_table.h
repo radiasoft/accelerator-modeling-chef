@@ -1,3 +1,39 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE FACTORY:  Interprets MAD input files and             
+******             creates instances of class beamline.                       
+******                                                
+******  Version:   1.2
+******                                    
+******  File:      var_table.h
+******                                                                
+******  Copyright (c) 1999  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******                    (630) 840 2231                              
+******             Email: michelotti@fnal.gov                         
+******                    ostiguy@fnal.gov                            
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
    /* -*- C -*- */
 
 #ifndef var_table_h
@@ -40,7 +76,7 @@ GHashTable*  var_table_init( void );
 int          var_table_delete( GHashTable* var_table, fb_allocator* expr_alloc );
 void         var_table_display( FILE* out, GHashTable* const_table, GHashTable* var_table, GHashTable* bel_table );
 
-int          var_table_lookup( char* var_name, GHashTable* var_table );
+gpointer     var_table_lookup( char* var_name, GHashTable* var_table );
 int          var_table_add( char* var_name, variable* value, GHashTable* var_table );
 int          var_table_to_array( variable*** var_arr, GHashTable* var_table );
 

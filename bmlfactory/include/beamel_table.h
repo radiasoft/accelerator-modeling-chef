@@ -1,3 +1,39 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE FACTORY:  Interprets MAD input files and             
+******             creates instances of class beamline.                       
+******                                                
+******  Version:   1.2
+******                                    
+******  File:      beamel_table.h
+******                                                                
+******  Copyright (c) 1999  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******                    (630) 840 2231                              
+******             Email: michelotti@fnal.gov                         
+******                    ostiguy@fnal.gov                            
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
    /* -*- C -*- */
 
 #ifndef beamel_table_h
@@ -30,7 +66,7 @@ GHashTable* bel_table_init( void );
 int         bel_table_delete( GHashTable* bel_table, fb_allocator* bel_alloc );
 void        bel_table_display( FILE* out, GHashTable* var_table, GHashTable* bel_table );
 
-int         bel_table_lookup( char* bel_name, GHashTable* bel_table );
+gpointer    bel_table_lookup( char* bel_name, GHashTable* bel_table );
 int         bel_table_add( char* bel_name, beam_element* value, GHashTable* bel_table );
 int         bel_table_to_array( beam_element*** bel_arr, GHashTable* bel_table );
 

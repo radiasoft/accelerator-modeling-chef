@@ -1,7 +1,44 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE FACTORY:  Interprets MAD input files and             
+******             creates instances of class beamline.                       
+******                                                
+******  Version:   1.2                    
+******                                    
+******  File:      expression.c
+******                                                                
+******  Copyright (c) 1999  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******                    (630) 840 2231                              
+******             Email: michelotti@fnal.gov                         
+******                    ostiguy@fnal.gov                            
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #if !defined(beam_element_h)
 #include "beam_element.h"
@@ -73,7 +110,7 @@ expr_node_init( double        dvalue,
   assert( svalue != NULL );
   assert( expr_alloc != NULL );
 
-  data = (expr_struct*)allocate( expr_alloc );
+  allocate( data, expr_alloc );
   if ( data != NULL ) {
     data->kind_ = NUMBER_EXPR;
     data->dvalue_ = dvalue;
@@ -140,7 +177,7 @@ expr_display( FILE*       out,
     case BEAMEL_LEN_EXPR : {
       beam_element* bel = (beam_element*)bel_table_lookup( data->svalue_, bel_table );
       if ( bel == NULL ) {
-        fprintf( out, "error (a)! beam element %s never defined\n", data->svalue_ );
+        fprintf( out, "error ! beam element %s never defined\n", data->svalue_ );
         exit( EXIT_FAILURE );
       } else {
         fprintf( out, "%e /* %s.Length() */", expr_evaluate( bel->length_, var_table, bel_table ), data->svalue_ );
@@ -300,7 +337,7 @@ expr_evaluate( GNode*      expr,
       {
         variable* var = (variable*)var_table_lookup( data->svalue_, var_table );
         if ( var == NULL ) {
-          fprintf(stderr, "error (b)! variable %s never defined\n", data->svalue_);
+          fprintf(stderr, "error ! variable %s never defined\n", data->svalue_);
           exit( EXIT_FAILURE );
         } else {
           return expr_evaluate( var->expr_, var_table, bel_table );
@@ -311,7 +348,7 @@ expr_evaluate( GNode*      expr,
       {
         beam_element* bel = (beam_element*)bel_table_lookup( data->svalue_, bel_table );
         if ( bel == NULL ) {
-          fprintf(stderr, "error (c)! beam element %s never defined\n", data->svalue_);
+          fprintf(stderr, "error ! beam element %s never defined\n", data->svalue_);
           exit( EXIT_FAILURE );
         } else {
           return expr_evaluate( bel->length_, var_table, bel_table );
@@ -405,7 +442,7 @@ expr_is_string( GNode*      expr,
   expr_struct* data;
   variable* assigned_var = (variable*)var_table_lookup( ((expr_struct*)(expr->data))->svalue_, var_table );
   if ( assigned_var == NULL ) {
-    fprintf(stderr, "error (d)! variable %s never defined\n", ((expr_struct*)(expr->data))->svalue_);
+    fprintf(stderr, "error ! variable %s never defined\n", ((expr_struct*)(expr->data))->svalue_);
     exit( EXIT_FAILURE );
   }
   data = (expr_struct*)(((GNode*)(assigned_var->expr_))->data);

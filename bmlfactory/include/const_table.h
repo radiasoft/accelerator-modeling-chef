@@ -1,3 +1,39 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE FACTORY:  Interprets MAD input files and             
+******             creates instances of class beamline.                       
+******                                                
+******  Version:   1.2
+******                                    
+******  File:      const_table.h
+******                                                                
+******  Copyright (c) 1999  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******                    (630) 840 2231                              
+******             Email: michelotti@fnal.gov                         
+******                    ostiguy@fnal.gov                            
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
    /* -*- C -*- */
 
 #ifndef const_table_h
@@ -44,7 +80,7 @@ GHashTable*  const_table_init( fb_allocator* expr_alloc, fb_allocator* const_all
 int          const_table_delete( GHashTable* const_table, fb_allocator* expr_alloc );
 void         const_table_display( FILE* out, GHashTable* const_table, GHashTable* var_table, GHashTable* bel_table );
 
-int          const_table_lookup( char* const_name, GHashTable* const_table );
+gpointer     const_table_lookup( char* const_name, GHashTable* const_table );
 int          const_table_add( char* const_name, constant* value, GHashTable* const_table );
 int          const_table_to_array( constant*** const_arr, GHashTable* const_table );
 

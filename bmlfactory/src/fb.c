@@ -1,3 +1,39 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE FACTORY:  Interprets MAD input files and             
+******             creates instances of class beamline.                       
+******                                                
+******  Version:   1.2                    
+******                                    
+******  File:      fb.c
+******                                                                
+******  Copyright (c) 1999  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******                    (630) 840 2231                              
+******             Email: michelotti@fnal.gov                         
+******                    ostiguy@fnal.gov                            
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -23,9 +59,9 @@ main( void ) {
 
   printf("Allocating three element...\n");
 
-  p0 = allocate( alloc );
-  p1 = allocate( alloc );
-  p2 = allocate( alloc );
+  allocate( p0, alloc );
+  allocate( p1, alloc );
+  allocate( p2, alloc );
 
   printf("and printing their addresses\n");
 
@@ -44,7 +80,7 @@ main( void ) {
   printf("%li\n\n", (long)p2 );
 
   printf("Reallocating middle element \n");
-  p1 = allocate( alloc );
+  allocate( p1, alloc );
   
   printf("and printing again \n");
   
