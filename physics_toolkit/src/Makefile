@@ -3,12 +3,13 @@
 INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(BASIC_TOOLKIT_INC) -I$(PHYSICS_TOOLKIT_INC)
 
 OBJS = ConvertToTunes.o \
-	EdwardsTeng.o \
-	FindCovariance.o \
-	FPSolver.o \
-	JacobianVisitor.o \
-	normalForm.o \
-	particleVisitor.o
+       DriftsToSlots.o \
+       EdwardsTeng.o \
+       FPSolver.o \
+       FindCovariance.o \
+       JacobianVisitor.o \
+       normalForm.o \
+       particleVisitor.o
 
 SOURCES = $(OBJS:.o=.cc)
 
