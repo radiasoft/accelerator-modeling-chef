@@ -1,0 +1,132 @@
+DGN> [ exp(Jet) ] factor = 1.64872
+DGN> [ exp(Jet) ] epsExp( epsilon = )
+DGN> [ exp(Jet) ]   return factor*epsExp( epsilon );
+DGN> (evaltest.cc) u.peekAt();
+DGN> (evaltest.cc) v = exp( x + y + z );
+DGN> (evaltest.cc) (x+y+z).peekAt();
+DGN> (evaltest.cc) exp(x+y+z).peekAt();
+DGN> [ exp(Jet) ] factor = 2.4596
+DGN> [ exp(Jet) ] epsExp( epsilon = )
+DGN> [ exp(Jet) ]   return factor*epsExp( epsilon );
+DGN> [ exp(Jet) ] factor = 2.4596
+DGN> [ exp(Jet) ] epsExp( epsilon = )
+DGN> [ exp(Jet) ]   return factor*epsExp( epsilon );
+DGN> (evaltest.cc) u.peekAt();
+DGN> (evaltest.cc) v.peekAt();
+
+Count  = 8, Weight = 7, Max accurate weight = 7
+Reference point:  
+5.000000e-01  4.000000e-01  0.000000e+00  
+Weight: 0   Value: 1.000000e+00  || Addresses: 697600 674272 674416 : 668352
+Index:  0  0  0  
+
+Weight: 1   Value: 1.000000e+00  || Addresses: 674272 674416 674344 : 668448
+Index:  1  0  0  
+
+Weight: 2   Value: 5.000000e-01  || Addresses: 674416 674344 674488 : 668416
+Index:  2  0  0  
+
+Weight: 3   Value: 1.666667e-01  || Addresses: 674344 674488 674536 : 668512
+Index:  3  0  0  
+
+Weight: 4   Value: 4.166667e-02  || Addresses: 674488 674536 697504 : 668544
+Index:  4  0  0  
+
+Weight: 5   Value: 8.333333e-03  || Addresses: 674536 697504 697552 : 668576
+Index:  5  0  0  
+
+Weight: 6   Value: 1.388889e-03  || Addresses: 697504 697552 697600 : 668608
+Index:  6  0  0  
+
+Weight: 7   Value: 1.984127e-04  || Addresses: 697552 697600 674272 : 668640
+Index:  7  0  0  
+
+
+Count  = 2, Weight = 1, Max accurate weight = 7
+Reference point:  
+5.000000e-01  4.000000e-01  0.000000e+00  
+Weight: 0   Value: 1.648721e+00  || Addresses: 674440 697744 674440 : 668736
+Index:  0  0  0  
+
+Weight: 1   Value: 1.648721e+00  || Addresses: 697744 674440 697744 : 668480
+Index:  1  0  0  
+
+
+Count  = 4, Weight = 1, Max accurate weight = 7
+Reference point:  
+5.000000e-01  4.000000e-01  0.000000e+00  
+Weight: 0   Value: 9.000000e-01  || Addresses: 674368 674248 674512 : 668352
+Index:  0  0  0  
+
+Weight: 1   Value: 1.000000e+00  || Addresses: 674248 674512 674392 : 668512
+Index:  0  0  1  
+
+Weight: 1   Value: 1.000000e+00  || Addresses: 674512 674392 674368 : 668448
+Index:  0  1  0  
+
+Weight: 1   Value: 1.000000e+00  || Addresses: 674392 674368 674248 : 668416
+Index:  1  0  0  
+
+
+Count  = 4, Weight = 1, Max accurate weight = 7
+Reference point:  
+5.000000e-01  4.000000e-01  0.000000e+00  
+Weight: 0   Value: 1.000000e+00  || Addresses: 697912 674320 697816 : 668384
+Index:  0  0  0  
+
+Weight: 1   Value: 1.000000e+00  || Addresses: 674320 697816 697864 : 668768
+Index:  0  0  1  
+
+Weight: 1   Value: 1.000000e+00  || Addresses: 697816 697864 697912 : 668800
+Index:  0  1  0  
+
+Weight: 1   Value: 1.000000e+00  || Addresses: 697864 697912 674320 : 668832
+Index:  1  0  0  
+
+
+Count  = 0, Weight = -1, Max accurate weight = 7
+Reference point:  
+5.000000e-01  4.000000e-01  0.000000e+00  
+
+Count  = 4, Weight = 1, Max accurate weight = 7
+Reference point:  
+5.000000e-01  4.000000e-01  0.000000e+00  
+Weight: 0   Value: 1.000000e+00  || Addresses: 698224 674320 674536 : 669088
+Index:  0  0  0  
+
+Weight: 1   Value: 1.000000e+00  || Addresses: 674320 674536 698296 : 668544
+Index:  0  0  1  
+
+Weight: 1   Value: 1.000000e+00  || Addresses: 674536 698296 698224 : 668832
+Index:  0  1  0  
+
+Weight: 1   Value: 1.000000e+00  || Addresses: 698296 698224 674320 : 669056
+Index:  1  0  0  
+
+
+Count  = 4, Weight = 1, Max accurate weight = 7
+Reference point:  
+5.000000e-01  4.000000e-01  0.000000e+00  
+Weight: 0   Value: 4.108324e+00  || Addresses: 674440 697744 697648 : 668736
+Index:  0  0  0  
+
+Weight: 1   Value: 2.459603e+00  || Addresses: 697744 697648 697696 : 668672
+Index:  0  0  1  
+
+Weight: 1   Value: 2.459603e+00  || Addresses: 697648 697696 674440 : 668704
+Index:  0  1  0  
+
+Weight: 1   Value: 4.108324e+00  || Addresses: 697696 674440 697744 : 668480
+Index:  1  0  0  
+
+
+Count  = 0, Weight = -1, Max accurate weight = 7
+Reference point:  
+5.000000e-01  4.000000e-01  0.000000e+00  
+1: 5.178645   0.000000  
+2: 5.178645   0.000000  
+3: 5.178645   0.000000  
+4: 5.178645   0.000000  
+5: 5.178645   0.000000  
+6: 5.178645   0.000000  
+7: 5.178645   0.000000  
