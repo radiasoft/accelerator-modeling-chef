@@ -6,9 +6,8 @@
 ******             interfaces to exercise the functionality        
 ******             of BEAMLINE.                                    
 ******                                                                
-******  Version:   3.0                    
-******                                    
 ******  File:      RayTrace.cc
+******  Version:   3.1
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -172,7 +171,6 @@ void RayDrawSpace::drawH_ViewRect( RayDrawSpace* x )
   glClear( GL_COLOR_BUFFER_BIT );
   glLoadIdentity();
   glOrtho( x->_xLo, x->_xHi, x->_yLo, x->_yHi, -1., 1. );
-  glColor3f( x->_r, x->_g, x->_b );
   // glPointSize(x->_pointSize);
   glLineWidth(1);
 
@@ -184,9 +182,20 @@ void RayDrawSpace::drawH_ViewRect( RayDrawSpace* x )
   
   n = x->_topRayTrace->numberOfMonitors();
   if( n <= 0 )  { return; }
+
+  m = ( x->_topRayTrace->_history ).size();
+  if( m > (x->_topRayTrace->maxHistory())*n ) {
+    m -= (x->_topRayTrace->maxHistory())*n;
+    for( i = 0; i < m; i++ ) {
+      delete ((Ray*)((x->_topRayTrace->_history).get()));
+    }
+  }
+
   m = ( x->_topRayTrace->_history ).size() / n;
-      
   for( i = 0; i < m-1; i++ ) {
+    glColor3f( ((i+1)*(x->_r))/m, 
+               ((i+1)*(x->_g))/m, 
+               ((i+1)*(x->_b))/m );
     glBegin( GL_LINE_STRIP );
     for( j = 0; j < n; j++ ) {
       q = (Ray*) getNext();
@@ -233,7 +242,6 @@ void RayDrawSpace::drawV_ViewRect( RayDrawSpace* x )
   glClear( GL_COLOR_BUFFER_BIT );
   glLoadIdentity();
   glOrtho( x->_xLo, x->_xHi, x->_yLo, x->_yHi, -1., 1. );
-  glColor3f( x->_r, x->_g, x->_b );
   // glPointSize(x->_pointSize);
   glLineWidth(1);
 
@@ -245,9 +253,20 @@ void RayDrawSpace::drawV_ViewRect( RayDrawSpace* x )
   
   n = x->_topRayTrace->numberOfMonitors();
   if( n <= 0 )  { return; }
+
+  m = ( x->_topRayTrace->_history ).size();
+  if( m > (x->_topRayTrace->maxHistory())*n ) {
+    m -= (x->_topRayTrace->maxHistory())*n;
+    for( i = 0; i < m; i++ ) {
+      delete ((Ray*)((x->_topRayTrace->_history).get()));
+    }
+  }
+
   m = ( x->_topRayTrace->_history ).size() / n;
-      
   for( i = 0; i < m-1; i++ ) {
+    glColor3f( ((i+1)*(x->_r))/m, 
+               ((i+1)*(x->_g))/m, 
+               ((i+1)*(x->_b))/m );
     glBegin( GL_LINE_STRIP );
     for( j = 0; j < n; j++ ) {
       q = (Ray*) getNext();
@@ -312,7 +331,8 @@ void RayDrawSpace::setRange( double xl, double xh, double yl, double yh )
 
 RayTrace::RayTrace( BeamlineContext* bmlCP )
 : _bmlConPtr( bmlCP ), _isIterating(0), _p_info(0), _number(1),
-  _deleteContext( false )
+  _deleteContext( false ), 
+  _maxHistory(64)
 {
   this->_finishConstructor();
 }
@@ -320,7 +340,8 @@ RayTrace::RayTrace( BeamlineContext* bmlCP )
 
 RayTrace::RayTrace( /* const */ beamline* x )
 : _bmlConPtr( 0 ), _isIterating(0), _p_info(0), _number(1),
-  _deleteContext( true )
+  _deleteContext( true ),
+  _maxHistory(64)
 {
   if( 0 == x ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -392,6 +413,7 @@ void RayTrace::_finishConstructor()
     //   pointsizeMenu->insertItem( "Small", this, SLOT(_opt_smallPoints()) );
     // optionMenu->insertItem( "Point Size", pointsizeMenu );
     // ---------------------------------------------
+    optionMenu->insertItem( "Maximum Traces", this, SLOT(_opt_setHistory()) );
     optionMenu->insertItem( "Strobe", this, SLOT(_opt_setIter()) );
       QPopupMenu* bgColorMenu = new QPopupMenu;
       bgColorMenu->insertItem( "Black",  this, SLOT(_opt_bg_black()) );
@@ -416,7 +438,6 @@ void RayTrace::_finishConstructor()
     _p_leftWindow->show();
     _p_leftWindow->setDraw( RayDrawSpace::drawH_ViewRect );
     _p_leftWindow->setColors( 1., 0., 1. );
-    // _p_leftWindow->qglColor( QColor(255,0,255) );
     int drawArea = (25*QApplication::desktop()->height()*
                        QApplication::desktop()->width())/100;
     int fixedWidth = (int) sqrt( (double) drawArea );
@@ -614,6 +635,49 @@ void RayTrace::_opt_smallPoints()
 }
 
 
+void RayTrace::_opt_setHistory()
+{
+  QDialog* wpu = new QDialog( 0, 0, true );
+    QVBox* qvb = new QVBox( wpu );
+      QHBox* qhb1 = new QHBox( qvb );
+        QLabel* qlb = new QLabel( "Maximum number of traces", qhb1 );
+        QString stl;
+        stl.setNum( _maxHistory );
+        QLineEdit* qle = new QLineEdit( stl, qhb1 );
+      qhb1->setMargin(5);
+      qhb1->setSpacing(3);
+      qhb1->adjustSize();
+      QHBox* qhb2 = new QHBox( qvb );
+        QPushButton* okayBtn = new QPushButton( "Okay", qhb2 );
+          okayBtn->setDefault( true );
+          connect( okayBtn, SIGNAL(pressed()),
+                   wpu,     SLOT(accept()) );
+        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb2 );
+          connect( cancelBtn, SIGNAL(pressed()),
+                   wpu,       SLOT(reject()) );
+      qhb2->setMargin(5);
+      qhb2->setSpacing(3);
+      qhb2->adjustSize();
+    qvb->adjustSize();
+  wpu->setCaption( "Setting trace size" );
+  wpu->adjustSize();
+
+  int returnCode = wpu->exec();
+
+  if( returnCode == QDialog::Accepted ) {
+    if( stl != qle->text() ) {
+      bool ok;
+      int j = (qle->text()).toInt( &ok );
+      if( ok ) {
+        _maxHistory = j;
+      }
+    }
+  }
+
+  delete wpu;
+}
+
+
 void RayTrace::_opt_setIter()
 {
   QDialog* wpu = new QDialog( 0, 0, true );
@@ -772,7 +836,11 @@ void RayTrace::_start_callback()
   _isIterating = !( _isIterating );
 
   if( _isIterating ) {
+    _p_startBtn->setText( "Stop" );
     _p_timer->start( 100, true );
+  }
+  else {
+    _p_startBtn->setText( "Trace" );
   }
 }
 

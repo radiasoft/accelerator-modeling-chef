@@ -6,9 +6,8 @@
 ******             interfaces to exercise the functionality        
 ******             of BEAMLINE.                                    
 ******                                                                
-******  Version:   3.0                    
-******                                    
 ******  File:      RayTrace.h
+******  Version:   3.1
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -97,6 +96,7 @@ public:
   void      setState( const Vector& );
 
   int       numberOfMonitors() const;
+  int       maxHistory() const;
 
 public slots:
   // Conversion slots: connected to RayDrawSpaces
@@ -119,6 +119,7 @@ public slots:
   void   _opt_largePoints ();
   void   _opt_smallPoints ();
   void   _opt_setIter     ();
+  void   _opt_setHistory  ();
   void   _opt_bg_black    ();
   void   _opt_bg_white    ();
   void   _opt_bg_yellow   ();
@@ -137,6 +138,7 @@ private:
 
   int              _number;
   int              _n_monitor;
+  int              _maxHistory;
 
   QTimer*          _p_timer;
   RayDrawSpace*       _p_leftWindow;
@@ -191,7 +193,7 @@ public slots:
 private:
   RayTrace*   _topRayTrace;
   RayDrawFunc _myFunc;
-  int      _pointSize;
+  int         _pointSize;
   GLdouble _r, _g, _b;
   GLclampf _rClr, _gClr, _bClr, _aClr;
   char _myName[20];
@@ -208,6 +210,12 @@ private:
 inline int RayTrace::numberOfMonitors() const
 {
   return _n_monitor;
+}
+
+
+inline int RayTrace::maxHistory() const
+{
+  return _maxHistory;
 }
 
 
