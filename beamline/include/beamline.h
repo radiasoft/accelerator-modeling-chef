@@ -434,25 +434,30 @@ public:
                                    // eventually deleting these.
   virtual void peekAt( double& s, Particle* = 0 );
 
+  short  writeTag ( char,          // character to be written
+                    short = 0      // position in tag
+                  );
   short  writeTag ( const char*,   // characters to be written
-                    short,         // starting position in bit field
+                    short,         // starting position in tag
                     short          // number of characters 
                   );
   short  writeTag ( const char* );
 
   short  writeTag ( const String&,
-                    short,         // starting position in bit field
+                    short,         // starting position in tag
                     short          // number of characters 
                   );
   short  writeTag ( const String& );
 
   short  readTag  ( char*,         // returned characters
-                    short,         // starting position in bit field
+                    short,         // starting position in tag
                     short          // number of characters
                   );
   short  readTag  ( char* );
 
-  String readTag  ( short,         // starting position in bit field
+  char   readTag  ( short          // position in tag
+                  );    
+  String readTag  ( short,         // starting position in tag
                     short          // number of characters 
                   );
   String readTag  ();
