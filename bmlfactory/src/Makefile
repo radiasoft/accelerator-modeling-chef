@@ -22,12 +22,15 @@ OBJS = mad.tab.o \
 
 SOURCES = $(OBJS:.o=.cc)
 
+ALLOCFLAGS = -Dallocate=allocate_block__ -Ddeallocate=deallocate__
+# ALLOCFLAGS = -Dallocate=allocate_malloc__ -Ddeallocate=deallocate_free__
+
 .cc.o:
-	$(C++) -Dallocate=allocate__ -Ddeallocate=deallocate__ \
+	$(C++) $(ALLOCFLAGS) \
         $(C++FLAGS) -Wall -Wcast-align -g \
         $(INCLUDEDIR)  -c $*.cc
 .c.o:
-	$(C) -Dallocate=allocate__ -Ddeallocate=deallocate__ \
+	$(C) $(ALLOCFLAGS) \
         $(CFLAGS) -Wall -Wcast-align -g \
         $(INCLUDEDIR) -c $*.c
 

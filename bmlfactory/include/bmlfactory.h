@@ -44,8 +44,6 @@
    // from MXYZPLTK
 #include <beamline.h>
 
-using namespace std;
-
 #if !defined(beam_element_h)
 #include "beam_element.h"
 #endif /* beam_element.h */
@@ -65,16 +63,16 @@ typedef struct {
     bmlnElmnt*    lbel_ptr_; /* beam element from Leo */
 } bel_pair;
 
-typedef list<bel_pair> bel_pair_list__t;
+typedef std::list<bel_pair> bel_pair_list__t;
 
 typedef struct {
     beam_line* bml_ptr_;  /* beam line from MAD parser */
     beamline*  lbml_ptr_; /* beam line from Leo */
 } bml_pair;
 
-typedef list<bml_pair> bml_pair_list__t;
+typedef std::list<bml_pair> bml_pair_list__t;
 
-struct bel_predicate : public binary_function<bel_pair,char_ptr,bool> {
+struct bel_predicate : public std::binary_function<bel_pair,char_ptr,bool> {
     bool operator()( const bel_pair& x, const char_ptr& ptr ) const {
       char label[BEL_NAME_LENGTH];
       beam_element_get_label( x.bel_ptr_, label );
@@ -85,7 +83,7 @@ struct bel_predicate : public binary_function<bel_pair,char_ptr,bool> {
     }
 };
 
-struct bml_predicate : public binary_function<bml_pair,char_ptr,bool> {
+struct bml_predicate : public std::binary_function<bml_pair,char_ptr,bool> {
     bool operator()( const bml_pair& x, const char_ptr& ptr ) const {
       if ( strcasecmp( (x.bml_ptr_)->name_, ptr ) == 0 )
         return true;
