@@ -56,7 +56,7 @@ void bmlnElmnt::propagate( Particle& p ) {
 
  // x = p.state[0];
  // y = p.state[1];
- p3divpbar = sqrt( pow( 1.0 + p.state[5], 2.0 )
+ p3divpbar = sqrt( ( 1.0 + p.state[5] ) * ( 1.0 + p.state[5] )
                  - p.state[3]*p.state[3] 
                  - p.state[4]*p.state[4] );
 
@@ -70,8 +70,8 @@ void bmlnElmnt::propagate( Particle& p ) {
  D = length*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
 
  // D = sqrt( length*length 
- //         + pow(p.state[0] - x, 2.0)
- //         + pow(p.state[1] - y, 2.0) ); 
+ //         + (p.state[0] - x ) * (p.state[0] - x )
+ //         + (p.state[1] - y ) * (p.state[1] - y ) ); 
 
  p.state[2] += ( D / p.Beta() ) - ( length / p.beta );
 }
