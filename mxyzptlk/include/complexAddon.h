@@ -10,10 +10,26 @@
 
 #ifdef __GNUG__
   typedef complex<double> Complex;
-#else 
-  typedef complex Complex;
-#endif // __GNUG__
+#endif
 
+#ifdef __sparc
+  typedef complex Complex;
+#endif
+
+#ifdef __VISUAL_CPP__
+typedef std::complex<double> Complex;
+using std::real;
+using std::imag;
+using std::exp;
+using std::conj;
+using std::cos;
+using std::sin;
+using std::pow;
+using std::sqrt;
+using  std::ostream;
+using std::cerr;
+using std::endl;
+#endif  // __VISUAL_CPP__
 
 #ifdef __sparc 
 
@@ -125,5 +141,29 @@ inline char operator> ( const Complex& x, const Complex& y )
 }
 
 #endif // __BORLAND_CPP__
+
+#ifdef __VISUAL_CPP__
+
+inline double abs(const Complex& x) {
+	return sqrt(real(x)*real(x) + imag(x)*imag(x));
+}
+
+ostream& operator<<(ostream& os, const Complex& x) {
+	os << "( " << real(x) << "," << imag(x) << " )" << std::endl;
+	return os;
+}
+inline char operator>= ( const Complex& x, const Complex& y )
+{
+ return real(x) >= real(y)  &&  imag(x) >= imag(y);
+}
+inline char operator> ( const Complex& x, const Complex& y )
+{
+ return real(x) > real(y)  &&  imag(x) > imag(y);
+}
+
+#endif // __VISUAL_CPP__
+
+const Complex complex_1 = Complex(1.0,0.0);
+const Complex complex_0 = Complex(0.0,0.0);
 
 #endif // COMPLEXADDON_H
