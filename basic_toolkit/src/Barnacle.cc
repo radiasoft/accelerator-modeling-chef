@@ -32,7 +32,6 @@
 
 
 #include <iostream>
-#include <string>
 
 #include "Barnacle.h"
 // ================================================================
