@@ -19,7 +19,9 @@
 class ClosedOrbitSage : public Sage
 {
  public:
-  ClosedOrbitSage( const beamline* );
+  ClosedOrbitSage( const beamline*, bool = false );
+  // Second argument is used by class Sage
+  // to control cloning. (See Sage.h)
   ~ClosedOrbitSage();
   
   int findClosedOrbit( JetParticle* );

@@ -11,8 +11,8 @@
 #include "FPSolver.h"
 
 
-ClosedOrbitSage::ClosedOrbitSage( const beamline* x )
-: Sage( x ), _forced(0)
+ClosedOrbitSage::ClosedOrbitSage( const beamline* x, bool doClone )
+: Sage( x, doClone ), _forced(0)
 {
 }
 
