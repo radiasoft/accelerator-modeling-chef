@@ -1,3 +1,25 @@
+#ifdef __sparc
+
+  #ifndef bool
+  #define bool char
+  #else
+  #define boolAlreadyDefined
+  #endif
+  
+  #ifndef true
+  #define true 1
+  #else
+  #define trueAlreadyDefined
+  #endif
+  
+  #ifndef false
+  #define false 0
+  #else
+  #define falseAlreadyDefined
+  #endif
+
+#endif // __sparc
+
 #include "Frame.h"
 
 Frame::Frame()
@@ -114,15 +136,32 @@ short int Frame::setDualAxis   ( int i, const Vector& x )
   }
 
   else {
-    e = e.inverse().transpose();
+    e = e.inverse();
     for( int j = 0; j < 2; j++ ) {
       e( i, j ) = x(j);
     }
-    e = e.transpose().inverse();
+    e = e.inverse();
   }  
 
   return ret;
 }
+
+
+bool Frame::isOrthonormal() const
+{
+  MatrixD u(3,3);
+
+  u = e.transpose() - e.inverse();
+
+  for( int i = 0; i < 2; i++ ) {
+    for( int j = 0; j < 2; j++ ) {
+      if( 1.0e-12 < fabs( u(i,j) ) ) return 0;
+    }
+  }
+
+  return 1;
+}
+
 
 Vector Frame::getOrigin() const
 {
@@ -162,7 +201,7 @@ Vector Frame::getDualAxis( int i ) const
   }
 
   else {
-    w = e.inverse().transpose();
+    w = e.inverse();
     for( int j = 0; j < 2; j++ ) ret(j) = w(i,j);
   }
 
@@ -222,3 +261,26 @@ short int Frame::translate ( const Vector& x )
   return ret;
 }
 
+
+
+#ifdef __sparc
+
+  #ifndef boolAlreadyDefined
+  #undef bool
+  #else 
+  #undef boolAlreadyDefined
+  #endif
+  
+  #ifndef trueAlreadyDefined
+  #undef true
+  #else 
+  #undef trueAlreadyDefined
+  #endif
+  
+  #ifndef falseAlreadyDefined
+  #undef false
+  #else 
+  #undef falseAlreadyDefined
+  #endif
+  
+#endif
