@@ -1330,154 +1330,129 @@ void CHEF::_openFile()
 {
   // Open file dialog
   QString s = QFileDialog::getOpenFileName( QString::null, 
-                   "Beamline (*.bml);;MAD (*.mad *.lat)" );
+                   "MAD (*.mad *.lat);;Beamline (*.bml);;All files (*.*)" );
+  if( s.isEmpty() ) { return; }
 
-  if( s.isEmpty() ) {
-    return;
+
+  bool madFile = false, bmlFile = false;
+  if( (QString(".mad") != s.right(4)) &&
+      (QString(".lat") != s.right(4)) &&
+      (QString(".bml") != s.right(4))    )
+  {
+    ostringstream uic;
+    uic <<   "You are attempting to read a file with"
+           "\nnon-standard suffix:  " << s.right(4)
+        << "\nI will proceed under the assumptions that"
+           "\n(a) it describes a lattice in MAD format and"
+           "\n(b) you know what you are doing.";
+    QMessageBox::information( 0, "CHEF: WARNING", uic.str().c_str() );
+    madFile = true;
+  }
+  else if( QString(".mad") == s.right(4) ||
+           QString(".lat") == s.right(4)    ) {
+    madFile = true;
+  }
+  else if( QString(".bml") == s.right(4) ) {
+    bmlFile = true;
   }
 
-  else {
-    if( QString(".mad") == s.right(4) ||
-        QString(".lat") == s.right(4)    ) {
-    // == New version: ========================
-      QDialog* wpu = new QDialog( 0, 0, true );
-        QVBox* qvb = new QVBox( wpu );
-          QHBox* qhb1 = new QHBox( qvb );
-            QLabel* qlbh = new QLabel( "Beamline name: ", qhb1 );
-            QLineEdit* qleh = new QLineEdit( "", qhb1 );
-          qhb1->setMargin(5);
-          qhb1->setSpacing(3);
-          qhb1->adjustSize();
-    
-          QHBox* qhb2 = new QHBox( qvb );
-            QButtonGroup* qbg = new QButtonGroup( 2, Qt::Vertical, qhb2 );
-              QRadioButton* kePtr 
-                = new QRadioButton( "Proton kinetic energy [GeV]: ", qbg );
-              QRadioButton* pcPtr 
-                = new QRadioButton( "Proton momentum [GeV/c]: ", qbg );
-            qbg->setExclusive( true );
-            qbg->setMargin(5);
-            // qbg->setSpacing(3);
-            qbg->adjustSize();
 
-            QLineEdit* qlev = new QLineEdit( "0.0", qhb2 );
-          qhb2->setMargin(5);
-          qhb2->setSpacing(3);
-          qhb2->adjustSize();
-    
-          QHBox* qhb3 = new QHBox( qvb );
-            QPushButton* okayBtn = new QPushButton( "Okay", qhb3 );
-              okayBtn->setDefault( true );
-              connect( okayBtn, SIGNAL(pressed()),
-                       wpu,     SLOT(accept()) );
-            QPushButton* cancelBtn = new QPushButton( "Cancel", qhb3 );
-              connect( cancelBtn, SIGNAL(pressed()),
-                       wpu,       SLOT(reject()) );
-          qhb3->setMargin(5);
-          qhb3->setSpacing(3);
-          qhb3->adjustSize();
-    
-        qvb->adjustSize();
-    
-      wpu->setCaption( "CHEF: beamline selector" );
-      wpu->adjustSize();
+  if( madFile ) {
+    QDialog* wpu = new QDialog( 0, 0, true );
+      QVBox* qvb = new QVBox( wpu );
+        QHBox* qhb1 = new QHBox( qvb );
+          QLabel* qlbh = new QLabel( "Beamline name: ", qhb1 );
+          QLineEdit* qleh = new QLineEdit( "", qhb1 );
+        qhb1->setMargin(5);
+        qhb1->setSpacing(3);
+        qhb1->adjustSize();
+  
+        QHBox* qhb2 = new QHBox( qvb );
+          QButtonGroup* qbg = new QButtonGroup( 2, Qt::Vertical, qhb2 );
+            QRadioButton* kePtr 
+              = new QRadioButton( "Proton kinetic energy [GeV]: ", qbg );
+            QRadioButton* pcPtr 
+              = new QRadioButton( "Proton momentum [GeV/c]: ", qbg );
+          qbg->setExclusive( true );
+          qbg->setMargin(5);
+          // qbg->setSpacing(3);
+          qbg->adjustSize();
 
-      wpu->show();
-      int returnCode = wpu->exec();
-    
-      if( returnCode == QDialog::Accepted ) {
-        QString bmlName ( qleh->text() );
-        QString brhoText( qlev->text() );
+          QLineEdit* qlev = new QLineEdit( "0.0", qhb2 );
+        qhb2->setMargin(5);
+        qhb2->setSpacing(3);
+        qhb2->adjustSize();
+  
+        QHBox* qhb3 = new QHBox( qvb );
+          QPushButton* okayBtn = new QPushButton( "Okay", qhb3 );
+            okayBtn->setDefault( true );
+            connect( okayBtn, SIGNAL(pressed()),
+                     wpu,     SLOT(accept()) );
+          QPushButton* cancelBtn = new QPushButton( "Cancel", qhb3 );
+            connect( cancelBtn, SIGNAL(pressed()),
+                     wpu,       SLOT(reject()) );
+        qhb3->setMargin(5);
+        qhb3->setSpacing(3);
+        qhb3->adjustSize();
+  
+      qvb->adjustSize();
+  
+    wpu->setCaption( "CHEF: beamline selector" );
+    wpu->adjustSize();
 
-        double brho;
-        if( kePtr == qbg->selected() ) {
-          brho = fabs( atof( brhoText ) );              // = kinetic energy
-          brho = sqrt( brho*(brho + 2.0*PH_NORM_mp) );  // = momentum
-          brho /= PH_CNV_brho_to_p;                     // = magnetic rigidity
-        }
-        else if( pcPtr == qbg->selected() ) {
-          brho = ( fabs( atof( brhoText ) )/PH_CNV_brho_to_p );
-        }
-        else {
-          ostringstream uic;
-          uic << "An impossibility has occurred\nin file "
-              << __FILE__
-              << " at line " << __LINE__ ;
-          QMessageBox::information( 0, "CHEF: ERROR",
-                                    uic.str().c_str() );
-        }
+    wpu->show();
+    int returnCode = wpu->exec();
+  
+    if( returnCode == QDialog::Accepted ) {
+      QString bmlName ( qleh->text() );
+      QString brhoText( qlev->text() );
 
-        // bmlfactory bf( s, brho );
-        // beamline* bmlPtr = bf.create_beamline( bmlName );
-        // ??? The bmlfactory destructor produces a segmentation
-        // ??? fault on my laptop. My temporary kludge is to
-        // ??? create one on the heap and never destroy it.
-
-        bmlfactory* bfPtr = new bmlfactory( s, brho );
-        beamline* bmlPtr = bfPtr->create_beamline( bmlName );
-
-        _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-        _p_currBmlCon->setClonedFlag( true );
-        _contextList.insert( _p_currBmlCon );
-
+      double brho;
+      if( kePtr == qbg->selected() ) {
+        brho = fabs( atof( brhoText ) );              // = kinetic energy
+        brho = sqrt( brho*(brho + 2.0*PH_NORM_mp) );  // = momentum
+        brho /= PH_CNV_brho_to_p;                     // = magnetic rigidity
       }
-    
-      delete wpu;
+      else if( pcPtr == qbg->selected() ) {
+        brho = ( fabs( atof( brhoText ) )/PH_CNV_brho_to_p );
+      }
+      else {
+        ostringstream uic;
+        uic << "An impossibility has occurred\nin file "
+            << __FILE__
+            << " at line " << __LINE__ ;
+        QMessageBox::information( 0, "CHEF: ERROR",
+                                  uic.str().c_str() );
+      }
 
-    // == Old version: ========================
-    //bool okay = false;
-    //QString bmlName = QInputDialog::getText( "CHEF",
-    //                       "Name of beamline", 
-    //                       "fcell",
-    //                       &okay );
-    //if( okay && !bmlName.isEmpty() ) {
-    //  bool allright = false;
-    //  QString brhoText = QInputDialog::getText( 
-    //                       "CHEF",
-    //                       "Enter proton momentum [GeV/c]", 
-    //                       "20000.0",
-    //                       &allright );
-    //  if( allright && !brhoText.isEmpty() ) {
-    //    double brho = ( fabs( atof( brhoText ) )/PH_CNV_brho_to_p );
-    // 
-    //    // bmlfactory bf( s, brho );
-    //    // beamline* bmlPtr = bf.create_beamline( bmlName );
-    //    // ??? The bmlfactory destructor produces a segmentation
-    //    // ??? fault on my laptop. My temporary kludge is to
-    //    // ??? create one on the heap and never destroy it.
-    // 
-    //    bmlfactory* bfPtr = new bmlfactory( s, brho );
-    //    beamline* bmlPtr = bfPtr->create_beamline( bmlName );
-    // 
-    //    _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-    //    _p_currBmlCon->setClonedFlag( true );
-    //    _contextList.insert( _p_currBmlCon );
-    //  }
-    //  else {
-    //    QMessageBox::information( 0, "CHEF",
-    //                              "Sorry. It didn't work." );
-    //    return;
-    //  }
-    //}
-    //else {
-    //  QMessageBox::information( 0, "CHEF",
-    //                            "Sorry. It didn't work." );
-    //  return;
-    //}
-    // ========================================
+      // bmlfactory bf( s, brho );
+      // beamline* bmlPtr = bf.create_beamline( bmlName );
+      // ??? The bmlfactory destructor produces a segmentation
+      // ??? fault on my laptop. My temporary kludge is to
+      // ??? create one on the heap and never destroy it.
 
-    }
-
-    else { // Read .bml file, not .mad file
-      beamline* bmlPtr = new beamline;
-      ifstream inputStream( s );
-      inputStream >> (*bmlPtr);
-      inputStream.close();
+      bmlfactory* bfPtr = new bmlfactory( s, brho );
+      beamline* bmlPtr = bfPtr->create_beamline( bmlName );
 
       _p_currBmlCon = new BeamlineContext( false, bmlPtr );
       _p_currBmlCon->setClonedFlag( true );
       _contextList.insert( _p_currBmlCon );
+
     }
+  
+    delete wpu;
+  }
+
+
+  else if( bmlFile ) { 
+    beamline* bmlPtr = new beamline;
+    ifstream inputStream( s );
+    inputStream >> (*bmlPtr);
+    inputStream.close();
+
+    _p_currBmlCon = new BeamlineContext( false, bmlPtr );
+    _p_currBmlCon->setClonedFlag( true );
+    _contextList.insert( _p_currBmlCon );
   }
 
 
