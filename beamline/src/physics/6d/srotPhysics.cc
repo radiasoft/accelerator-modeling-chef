@@ -1,4 +1,4 @@
-#include "beamline.inc"
+#include "srot.h"
 
 void srot::localPropagate(Particle& p) {
 double result[4];

@@ -17,18 +17,12 @@ OBJS =  BBLensPhysics.o\
            sbendPhysics.o \
            sectorPhysics.o \
            sextupolePhysics.o \
+           decapolePhysics.o \
            srotPhysics.o \
-           thin12polePhysics.o \
-           thin14polePhysics.o \
-           thin16polePhysics.o \
-           thin18polePhysics.o \
-           thinDecapolePhysics.o \
-	   thinLambPhysics.o \
-           thinMultipolePhysics.o \
-           thinOctupolePhysics.o \
-	   thinSeptumPhysics.o\
-           thinSextupolePhysics.o \
-           thinrfcavityPhysics.o
+	   lambertsonPhysics.o \
+	   septumPhysics.o\
+           thinpolesPhysics.o \
+           rfcavityPhysics.o
 
 SOURCES = $(OBJS:.o=.cc)
 

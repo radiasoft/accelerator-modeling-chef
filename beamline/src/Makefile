@@ -18,6 +18,10 @@ OBJS = BBLens.o \
        BeamlineIterator.o \
        bmlnElmnt.o \
        circuit.o \
+       ICircuit.o \
+       FCircuit.o \
+       mover.o \
+       BipolarCircuit.o \
        combinedFunction.o \
        drift.o \
        kick.o \
@@ -32,17 +36,11 @@ OBJS = BBLens.o \
        sector.o \
        sextupole.o \
        srot.o \
-       thin12pole.o \
-       thin14pole.o \
-       thin16pole.o \
-       thin18pole.o \
-       thinDecapole.o \
-       thinLamb.o \
-       thinMultipole.o \
-       thinOctupole.o \
-       thinSeptum.o \
-       thinSextupole.o \
-       thinrfcavity.o \
+       thinpoles.o \
+       decapole.o \
+       lambertson.o \
+       septum.o \
+       rfcavity.o \
        read_istream.o
 
 SOURCES = $(OBJS:.o=.cc)

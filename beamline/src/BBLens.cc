@@ -1,4 +1,4 @@
-#include "beamline.inc"
+#include "BBLens.h"
 #include "EdwardsTeng.h"
 
 extern Complex w( Complex );

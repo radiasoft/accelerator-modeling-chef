@@ -1,4 +1,4 @@
-#include "beamline.inc"
+#include "decapole.h"
 
 // **************************************************
 //   class thinDecapole 

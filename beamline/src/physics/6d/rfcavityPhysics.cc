@@ -1,22 +1,5 @@
-#include "beamline.inc"
-
-// OLD FORM  
-// OLD FORM  void rfcavity::localPropagate( Proton& p) {
-// OLD FORM   double phi;
-// OLD FORM  
-// OLD FORM   phi = phi_s + p.state[2] * w_rf;
-// OLD FORM   p.state[5] += eV * ( sin(phi) - sin_phi_s );
-// OLD FORM  }
-// OLD FORM  
-// OLD FORM  void rfcavity::localPropagate( JetProton& p) {
-// OLD FORM   Jet phi, u;
-// OLD FORM   
-// OLD FORM   phi = phi_s + p.state[2] * w_rf;
-// OLD FORM   u = p.state[5] + eV * ( sin(phi) - sin_phi_s );
-// OLD FORM   ( p.state ).setVariable( u, 5 );
-// OLD FORM  }
-// OLD FORM  
-
+#include "rfcavity.h"
+#include "PhysicsConstants.h"
 
 #ifndef MADPHYSICS
 

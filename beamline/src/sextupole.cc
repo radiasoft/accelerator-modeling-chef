@@ -1,4 +1,5 @@
-#include "beamline.inc"
+#include "sextupole.h"
+#include "drift.h"
 
 // **************************************************
 //   class sextupole 
@@ -113,4 +114,56 @@ void sextupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
   (*b)->Rename( newname );
 
   delete [] newname;
+}
+
+
+
+// **************************************************
+//   class thinSextupole
+// **************************************************
+
+thinSextupole::thinSextupole ( double s ) : bmlnElmnt( 0.0, s ) {
+ // The strength is to be interpreted as
+ // B''l in  Tesla / meter
+}
+
+thinSextupole::thinSextupole ( char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
+ // The strength is to be interpreted as
+ // B''l in  Tesla / meter
+}
+
+
+thinSextupole::thinSextupole( bmlnElmntData& x ) : bmlnElmnt( x ) {
+}
+
+thinSextupole::thinSextupole( const thinSextupole& x ) 
+: bmlnElmnt( (bmlnElmnt&) x )
+{
+}
+
+thinSextupole::~thinSextupole() {
+}
+// ??? REMOVE 
+// ??? REMOVE void thinSextupole::image( int d, slist* s, BMLN_posInfo* cg ) {
+// ??? REMOVE  bmlnElmntData* p = bmlnElmnt::image();
+// ??? REMOVE 
+// ??? REMOVE  strcpy( p->type, Type() );
+// ??? REMOVE  p->address   = this;
+// ??? REMOVE  p->depth     = d;
+// ??? REMOVE 
+// ??? REMOVE  geomToEnd( *cg );
+// ??? REMOVE  cg->outPoint = geometry.outPoint;
+// ??? REMOVE  for( int j = 0; j < 3; j++ ) cg->outAxes[j] = geometry.outAxes[j];
+// ??? REMOVE 
+// ??? REMOVE      p->geometry.inPoint  = geometry.inPoint;
+// ??? REMOVE      p->geometry.outPoint = geometry.outPoint;
+// ??? REMOVE      for( j = 0; j < 3; j++ ) p->geometry.inAxes[j]  = geometry.inAxes[j];
+// ??? REMOVE      for( j = 0; j < 3; j++ ) p->geometry.outAxes[j] = geometry.outAxes[j];
+// ??? REMOVE 
+// ??? REMOVE  s->append( p );
+// ??? REMOVE }
+
+
+const char* thinSextupole::Type() const { 
+  return "thinSextupole"; 
 }
