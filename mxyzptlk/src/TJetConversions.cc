@@ -1114,7 +1114,7 @@ TJet<FNAL::Complex,double> w( const TJet<FNAL::Complex,double>& z )
                           ) 
              );
 
-  else answer = exp( -z*z )*( 1.0 - erf( mi*z ) );
+  else answer = exp( -z*z )*( 1.0 - erf<FNAL::Complex,double>( mi*z ) );
 
   return answer;
 }

@@ -185,6 +185,9 @@ template<typename T1, typename T2>
 TJet<T1,T2> tanh ( const TJet<T1,T2>& );
 
 template<typename T1, typename T2> 
+TJet<T1,T2> erf ( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
 TJet<T1,T2> erfc ( const TJet<T1,T2>& );
 
 
@@ -388,7 +391,7 @@ public:
   friend TJet<T1,T2> sqrt<> ( const TJet<T1,T2>& );
   friend TJet<T1,T2> tan<>  ( const TJet<T1,T2>& );
   friend TJet<T1,T2> tanh<> ( const TJet<T1,T2>& );
-  friend TJet<T1,T2> erf    ( const TJet<T1,T2>& );
+  friend TJet<T1,T2> erf<>  ( const TJet<T1,T2>& );
   friend TJet<T1,T2> erfc<> ( const TJet<T1,T2>& );
 
   friend TJet<FNAL::Complex,double> w ( const TJet<FNAL::Complex,double>& );
