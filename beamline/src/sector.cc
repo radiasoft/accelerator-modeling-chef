@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -154,7 +157,7 @@ sector::sector( char* n, double* bH,  double* aH,  double* pH, double* bV,  doub
 } // end function sector::sector( double* bH, ... )
 
 
-sector::sector( Jet* m, double l, char mpt ) : bmlnElmnt(l) {
+sector::sector( Jet* m, double l, char mpt, PropFunc* prop) : bmlnElmnt(l,prop) {
  int i, j;
  mapType  = mpt;
  for( i = 0; i < BMLN_dynDim; i++ ) myMap.SetComponent( i, m[i] );
@@ -169,7 +172,7 @@ sector::sector( Jet* m, double l, char mpt ) : bmlnElmnt(l) {
 }
 
 
-sector::sector( char* n, Jet* m, double l, char mpt ) : bmlnElmnt( n, l ) {
+sector::sector( char* n, Jet* m, double l, char mpt, PropFunc* prop ) : bmlnElmnt( n, l, prop ) {
  int i, j;
  mapType  = mpt;
  for( i = 0; i < BMLN_dynDim; i++ ) myMap.SetComponent( i, m[i] );
@@ -204,12 +207,13 @@ sector::sector( const sector& x )
    mapMatrix[i][j] = x.mapMatrix[i][j];
 }
 
-sector::sector( const Mapping& m, double l, char mpt ) : bmlnElmnt(l) {
+sector::sector( const Mapping& m, double l, char mpt, PropFunc* prop   ) : bmlnElmnt(l, prop) {
  int i,j;
  mapType  = mpt;
  myMap = m;
  if( mpt == 0 ) {
-   MatrixD M = myMap.Jacobian();
+   MatrixD M(6,6);
+   M = myMap.Jacobian();
    for( i = 0; i < BMLN_dynDim; i++ ) {
      for( j = 0; j < BMLN_dynDim; j++ ) {
        mapMatrix[i][j] = M(i,j);
@@ -219,7 +223,7 @@ sector::sector( const Mapping& m, double l, char mpt ) : bmlnElmnt(l) {
 }
 
 
-sector::sector( char* n, const Mapping& m, double l, char mpt ) : bmlnElmnt( n, l ) {
+sector::sector( char* n, const Mapping& m, double l, char mpt,PropFunc* prop ) : bmlnElmnt( n, l, prop ) {
  int i,j;
  mapType  = mpt;
  myMap = m;
