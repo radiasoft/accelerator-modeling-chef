@@ -85,7 +85,7 @@ class Slot : public bmlnElmnt
    void setAlignment  ( const alignmentData& );
    double Current() const;
    double OrbitLength( const Particle& );
-   char* Name();
+   char* Name() const;
 
 
  private:

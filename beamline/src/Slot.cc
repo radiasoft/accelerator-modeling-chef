@@ -715,7 +715,7 @@ double Slot::OrbitLength( const Particle& x )
 }
  
 
-char* Slot::Name()
+char* Slot::Name() const
 {
   if     ( 0 != p_bml   ) return p_bml   ->Name();
   else if( 0 != p_bml_e ) return p_bml_e ->Name();
