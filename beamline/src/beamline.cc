@@ -649,7 +649,12 @@ beamline::~beamline() {
 
 void beamline::zap() {
  bmlnElmnt* p;
- while((  p = (bmlnElmnt*) get()  )) delete p;
+ while((  p = (bmlnElmnt*) get()  )) {
+   if( 0 == strcmp( p->Type(), "beamline" ) ) {
+    ((beamline*) p)->zap();
+   }
+   delete p;  // ??? This will produce errors of *p is on the stack.
+ }
  clear();  // Wipes out all the links.  Probably unnecessary.
  numElem = 0;
 }
