@@ -1,5 +1,5 @@
 /*
- *  File: LattFuncSage.h
+ *  File: LattFuncSage.cc
  *  
  *  Implementation for a sage for computing
  *  traditional, and untraditional,  lattice 
