@@ -34,12 +34,12 @@
 *************************************************************************/
 
 
-#include <algorithm>
-#include <assert.h>
-#include <cmath>
+#undef allocate
+#undef deallocate
+
 #include <functional>
-#include <iostream>
-#include <list>
+
+// #include <list>
 
    // from MXYZPLTK
 #include <beamline.h>
@@ -74,7 +74,14 @@
 
 #include "bel_inst_fns.c"
 
+#include <algorithm>
+#include <assert.h>
+#include <cmath>
+#include <iostream>
+
 extern struct madparser_* mp;
+
+using namespace std;
 
 bmlfactory::bmlfactory( const char* fname,
                         double BRHO ) {
@@ -325,10 +332,11 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       double kck    = expr_evaluate( bel->params_[BEL_HKICKER_KICK], var_table_, bel_table_ );
       char   name[BEL_NAME_LENGTH];
       
-      lbel = new beamline( bel->name_ );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new hkick( add_str( name, bel->name_, "center" ), kck ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
+      if ( length != 0.0 || kck != 0.0 ) {
+        lbel = new hkick( bel->name_, length, kck );
+      } else {
+        lbel = new hkick( bel->name_, kck );
+      }
       
       if ( ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner->xOffset = 0.0;
@@ -343,10 +351,11 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       double kck    = expr_evaluate( bel->params_[BEL_VKICKER_KICK], var_table_, bel_table_ );
       char   name[BEL_NAME_LENGTH];
       
-      lbel = new beamline( bel->name_ );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new vkick( add_str( name, bel->name_, "center" ), kck ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
+      if ( length != 0.0 || kck != 0.0 ) {
+        lbel = new vkick( bel->name_, length, kck );
+      } else {
+        lbel = new vkick( bel->name_, kck );
+      }
       
       if ( ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner->xOffset = 0.0;
@@ -362,11 +371,11 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       double vkck   = expr_evaluate( bel->params_[BEL_KICKER_VKICK], var_table_, bel_table_ );
       char   name[BEL_NAME_LENGTH];
       
-      lbel = new beamline( bel->name_ );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new hkick( add_str( name, bel->name_, "center_hkick" ), hkck ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new vkick( add_str( name, bel->name_, "center_vkick" ), vkck ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
+      if ( length != 0.0 || hkck != 0.0 || vkck != 0.0 ) {
+        lbel = new kick( bel->name_, length, hkck, vkck );
+      } else {
+        lbel = new kick( bel->name_, hkck, vkck );
+      }
       
       if ( ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner->xOffset = 0.0;

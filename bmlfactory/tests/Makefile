@@ -13,18 +13,22 @@ LIBS    =       $(SUBLIBS) \
                 $(MYLIBS) \
                 $(SYSLIBS)
 
+ALLOCFLAGS = -Dallocate=allocate__ -Ddeallocate=deallocate__
+# ALLOCFLAGS = -Dallocate=allocate_malloc__ -Ddeallocate=deallocate_free__
+
 .cc.o:
-	$(C++) -Dallocate=allocate__ -Ddeallocate=deallocate__ $(C++FLAGS) $(INCLUDEDIR)  -c $*.cc
+	$(C++) $(ALLOCFLAGS) $(C++FLAGS) $(INCLUDEDIR)  -c $*.cc
 .cc :
-	$(C++) -Dallocate=allocate__ -Ddeallocate=deallocate__ $(C++FLAGS) $(INCLUDEDIR) -o $* $*.cc \
+	$(C++) $(ALLOCFLAGS) $(C++FLAGS) $(INCLUDEDIR) -o $* $*.cc \
         -L$(LIBDIR) $(LIBS) -L/usr/local/ap/lib 
 .c.o:
-	$(C) -Dallocate=allocate__ -Ddeallocate=deallocate__ $(CFLAGS) $(INCLUDEDIR) -c $*.c
+	$(C) $(ALLOCFLAGS) $(CFLAGS) $(INCLUDEDIR) -c $*.c
 .c :
-	$(C) -Dallocate=allocate__ -Ddeallocate=deallocate__ $(CFLAGS) $(INCLUDEDIR) -o $* $*.c \
+	$(C) $(ALLOCFLAGS) $(CFLAGS) $(INCLUDEDIR) -o $* $*.c \
         -L$(LIBDIR) $(LIBS) 
 
 include $(FNALROOT)/Make-config
 
 # targets: mad2cfg test-factory vlhcTest
-targets: vlhcTest
+targets: mad2cfg vlhcTest
+
