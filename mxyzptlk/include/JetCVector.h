@@ -44,9 +44,6 @@
 
 #include <iostream>
 #include <iomanip>
-using std::cout;
-using std::setw;
-using std::setprecision;
 
 #include <math.h>
 #include "JetC.h"
