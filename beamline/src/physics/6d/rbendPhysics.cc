@@ -238,6 +238,7 @@ void rbend::J_NoEdge( bmlnElmnt* p_be, JetParticle& p )
  // Step 2.
  JetC bf;
  bf = bi + pbe->length;
+
  // Step 3.
  Jet rho, dthmdphi;
  rho      = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
