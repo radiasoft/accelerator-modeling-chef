@@ -1,4 +1,4 @@
-#include "beamline.inc"
+#include "sextupole.h"
 
 // **************************************************
 //   class JetthinSext

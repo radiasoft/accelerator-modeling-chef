@@ -7,7 +7,7 @@ void sextupole::localPropagate( Particle& p ) {
 void sextupole::localPropagate( JetParticle& p ) {
   p_bml->propagate( p );
 }
-#include "beamline.inc"
+
 
 void thinSextupole::localPropagate( Particle& p ) {
  double x, y, k;

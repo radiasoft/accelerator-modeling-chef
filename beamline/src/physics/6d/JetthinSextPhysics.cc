@@ -1,5 +1,6 @@
-#include "beamline.inc"
+#include "sextupole.h"
 #include "FDPolarity.h"
+
 void JetthinSext::localPropagate( Particle& p ) {
  double k;
  double    inState  [BMLN_dynDim];
