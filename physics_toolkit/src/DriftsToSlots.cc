@@ -11,7 +11,7 @@
  *
  *  Changed the algorithm to be more general.
  *  It now searches upstream and downstream for
- *  non-zero longth elements or rbends.
+ *  zero-length elements or rbends.
  *
  *  Version 2.0
  *  September 14, 1999
