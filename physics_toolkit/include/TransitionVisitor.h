@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
+******  Version:   ?.?
 ******                                    
-******  File:      BeamlineSpitout.cc
+******  File:      TransitionVisitor.h
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -30,35 +30,85 @@
 *************************************************************************/
 
 
-#include "bmlnElmnt.h"
-#include "BeamlineIterator.h"
+/*
+ * File: TransitionVisitor.h
+ * 
+ * Header for class TransitionVisitor
+ * 
+ * Calculates transition energy or gamma-t.
+ * 
+ * Leo Michelotti
+ * May 15, 2002
+ * 
+ */
 
-using namespace std;
+#ifndef TRANSITIONVISITOR_H
+#define TRANSITIONVISITOR_H
 
-void BeamlineSpitout( int numspaces, BeamlineIterator& bi )
+#ifndef BMLVISITOR_H
+#include "BmlVisitor.h"
+#endif
+
+#ifndef PARTICLE_H
+#include "Particle.h"
+#endif
+
+
+class TransitionVisitor : public BmlVisitor
 {
-  static bmlnElmnt* q;
-  static int i;
+ public:
+  TransitionVisitor();
+  TransitionVisitor( const TransitionVisitor& );
+  ~TransitionVisitor();
 
-  while( true ) {
-    q = bi++;
-    if( 0 == q ) {return;}
+  void visitBeamline  ( beamline*   );
+  void visitBmlnElmnt ( bmlnElmnt*  );
+  void visitRbend     ( rbend*      );
+  void visitSbend     ( sbend*      );
+  void visitCF_rbend  ( CF_rbend*   );
+  void visitCF_sbend  ( CF_sbend*   );
 
-    for( i = 0; i < numspaces; i++ ) {
-      cout << " ";
-    }
-    cout << q->Type() << "  " << q->Name() << endl;
+  double getTransitionGamma() const;
+  double getMomentumCompaction() const;
 
-    if( 0 == strcmp("beamline",q->Type()) ) {
-      BeamlineIterator newbi( (beamline*) q );
-      BeamlineSpitout(numspaces+3,newbi);
-    }
-  }
-}
+  // Error codes
+  int  getErrorCode() const;
+  const char* getErrorMessage() const;
+  const char* getErrorMessage(int) const;
 
+  static const int NUMERRS;
+  static const int OKAY;
+  static const int NEGLEVEL;
+  static const int ZEROLENGTH;
+  static const int NEGCOMP;
+  static const int DOUBLED;
+  static const int NOPROTON;
+  static const int NOLATTFUNC;
+  static const int VERDISP;
+  static const int NOELEMENTS;
+  static const int NULLBMLPTR;
 
-void BeamlineSpitout( const beamline& bml )
-{
-  BeamlineIterator bi( bml );
-  BeamlineSpitout( 0, bi );
-}
+ private:
+  double  _s;
+  double  _alpha;
+  double  _gamma_t;
+  Proton* _protonPtr;
+
+  int     _level;
+  double  _D;
+  double  _Dprime;
+
+  MatrixD _coeff;
+  MatrixD _b;
+  MatrixD _f;
+
+  bool    _calcDone;
+
+  int    _errorCode;
+  static const char* _errorMessage[];
+
+  void _visit_bend( bmlnElmnt* );
+  void _set_prev( const bmlnElmnt* );
+};
+
+#endif // TRANSITIONVISITOR_H

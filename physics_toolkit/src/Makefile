@@ -8,6 +8,7 @@ OBJS = AdjustPosition.o \
        ClosedOrbitSage.o \
        ConvertToTunes.o \
        DriftsToSlots.o \
+       QuadEliminator.o \
        DriftEliminator.o \
        EdwardsTeng.o \
        FPSolver.o \
@@ -15,9 +16,11 @@ OBJS = AdjustPosition.o \
        FramePusher.o \
        JacobianVisitor.o \
        LattFuncSage.o \
+       LayoutVisitor.o \
        MatrixCalcVisitor.o \
        QBpropVisitor.o \
        Sage.o \
+       TransitionVisitor.o \
        TuneAdjuster.o \
        ChromaticityAdjuster.o \
        beamline_twiss.o \

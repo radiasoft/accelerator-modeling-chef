@@ -7,7 +7,7 @@
 ******             BEAMLINE class library.                            
 ******  Version:   1.0                    
 ******                                    
-******  File:      BeamlineSpitout.cc
+******  File:      DriftEliminator.h
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -30,35 +30,57 @@
 *************************************************************************/
 
 
-#include "bmlnElmnt.h"
-#include "BeamlineIterator.h"
+/*
+ * File: DriftEliminator.h
+ * 
+ * Header for class DriftEliminator
+ * 
+ * Concatenates drifts and removes passive
+ * elements of zero length.
+ * 
+ * Leo Michelotti
+ * May 17, 2001
+ * 
+ */
 
-using namespace std;
+#ifndef DRIFTELIMINATOR_H
+#define DRIFTELIMINATOR_H
 
-void BeamlineSpitout( int numspaces, BeamlineIterator& bi )
+#ifndef BMLVISITOR_H
+#include "BmlVisitor.h"
+#endif
+
+class DriftEliminator : public ConstBmlVisitor
 {
-  static bmlnElmnt* q;
-  static int i;
+ public:
+  DriftEliminator();
+  DriftEliminator( const DriftEliminator& );
+  ~DriftEliminator();
 
-  while( true ) {
-    q = bi++;
-    if( 0 == q ) {return;}
+  void visitBeamline( const beamline* );
+  void visitBmlnElmnt( const bmlnElmnt* );
 
-    for( i = 0; i < numspaces; i++ ) {
-      cout << " ";
-    }
-    cout << q->Type() << "  " << q->Name() << endl;
+  void visitMonitor( const monitor* ); 
+  void visitMarker( const marker* ); 
+  void visitDrift( const drift* ); 
 
-    if( 0 == strcmp("beamline",q->Type()) ) {
-      BeamlineIterator newbi( (beamline*) q );
-      BeamlineSpitout(numspaces+3,newbi);
-    }
-  }
-}
+  void visitSlot( const Slot* );
+
+  beamline* beamlinePtr();
+  // Invoking routine is responsible for
+  // using this beamline before the 
+  // DriftEliminator goes out of scope.
+
+  beamline* clonedBeamlinePtr();
+  // Invoking routine is responsible for
+  // eliminating the cloned beamline.
 
 
-void BeamlineSpitout( const beamline& bml )
-{
-  BeamlineIterator bi( bml );
-  BeamlineSpitout( 0, bi );
-}
+ private: 
+  beamline* _bmlPtr;
+  drift*    _driftPtr;
+  void      _handlePassiveElement( const bmlnElmnt* );
+};
+
+
+#endif // DRIFTELIMINATOR_H

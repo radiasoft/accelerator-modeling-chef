@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
+******  Version:   ?.?
 ******                                    
-******  File:      BeamlineSpitout.cc
+******  File:      LayoutVisitor.h
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -30,35 +30,66 @@
 *************************************************************************/
 
 
-#include "bmlnElmnt.h"
-#include "BeamlineIterator.h"
+/*
+ * File: LayoutVisitor.h
+ * 
+ * Header for class LayoutVisitor
+ * 
+ * Provides coordinates for simple 2D diagram
+ * of the beamline. FramePusher should be used
+ * for more detailed site maps.
+ * 
+ * Leo Michelotti
+ * May 7, 2002
+ * 
+ */
 
-using namespace std;
+#ifndef LAYOUTVISITOR_H
+#define LAYOUTVISITOR_H
 
-void BeamlineSpitout( int numspaces, BeamlineIterator& bi )
+#ifndef BMLVISITOR_H
+#include "BmlVisitor.h"
+#endif
+
+#include <fstream>
+
+class LayoutVisitor : public BmlVisitor
 {
-  static bmlnElmnt* q;
-  static int i;
+ public:
+  LayoutVisitor( double, double, double, double );
+  LayoutVisitor( const LayoutVisitor& );
+  ~LayoutVisitor();
 
-  while( true ) {
-    q = bi++;
-    if( 0 == q ) {return;}
+  void visitBmlnElmnt ( bmlnElmnt*  );
+  void visitQuadrupole( quadrupole* );
+  void visitRbend     ( rbend*      );
+  void visitSbend     ( sbend*      );
+  void visitCF_rbend  ( CF_rbend*   );
+  void visitCF_sbend  ( CF_sbend*   );
+  void visitSextupole ( sextupole*  );
+  void visitSector    ( sector*     );
 
-    for( i = 0; i < numspaces; i++ ) {
-      cout << " ";
-    }
-    cout << q->Type() << "  " << q->Name() << endl;
+  int  getErrorCode() const;
+  int  openFile( const char* );
+  int  closeFile();
 
-    if( 0 == strcmp("beamline",q->Type()) ) {
-      BeamlineIterator newbi( (beamline*) q );
-      BeamlineSpitout(numspaces+3,newbi);
-    }
-  }
-}
+  // Error codes
+  static const int OKAY;
+  static const int SECTORVISITED;
+  static const int NOFILEOPENED;
 
+ private:
+  double _s;
+  double _baseline;
+  double _bendHeight;
+  double _quadHeight;
+  double _sextHeight;
 
-void BeamlineSpitout( const beamline& bml )
-{
-  BeamlineIterator bi( bml );
-  BeamlineSpitout( 0, bi );
-}
+  std::ofstream* _streamPtr;
+
+  void _visit_bend( bmlnElmnt* );
+
+  int    _errorCode;
+};
+
+#endif // LAYOUTVISITOR_H
