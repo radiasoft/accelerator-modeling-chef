@@ -425,7 +425,7 @@ ostream& operator<<( ostream& os, const Vector& v )
 
 // Utilities
 
-Vector operator*( MatrixD& A, Vector& x )
+Vector operator*( const MatrixD& A, const Vector& x )
 {
   static int r; 
   static int c;
