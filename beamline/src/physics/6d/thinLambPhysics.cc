@@ -9,7 +9,6 @@ void thinLamb::propagate( ParticleBunch& PB ) {
   static int i;
   static double TrState[6], dummy[6];
   int ExtFlag;
-  int ExtCount = 0;
   ParticleBunch* ExtPB;
 
   if (ExtBeamline == 0 ) return; 
@@ -24,13 +23,19 @@ void thinLamb::propagate( ParticleBunch& PB ) {
     
     ExtFlag = 0;
 
-    if( align ) align->misalign( *pCur, geometry /* ??? */, TrState );
-    else        for( i = 0; i < 6; i++  ) TrState[i] = pCur->state[i];
-    
+    // Correct the particle `State' based on the alignment data of the
+    // thinLamb (if there is any).  Otherwise just grab the particle
+    // coordinates.
+    if( align ) {
+      align->misalign( *pCur, geometry /* ??? */, TrState );
+    } else {
+      for( i = 0; i < 6; i++ ) TrState[i] = pCur->state[i];
+    }
+
+    // Now figure out if the particle is really over the magnet septum.
     if (TrState[0] > xSeptum ) {
       for ( i = 0; i < 6; i++ ) TrState[i] -= RefState[i];
       ExtFlag = 1;
-      ++ExtCount;
     }
 
     if( align ) {
@@ -41,15 +46,16 @@ void thinLamb::propagate( ParticleBunch& PB ) {
     for ( i = 0; i < 6; i++ )  pCur->state[i] = TrState[i];
 
     pNxt =  (Particle*)getNext();
-    if (ExtFlag ) {
+
+    // Tranfer the particle in the extraction region into a different
+    // ParticleBunch and remove it from the main bunch.
+    if (ExtFlag) {
       ExtPB->append(pCur);
       PB.remove(pCur);
     }
-
   } while ( (pCur = pNxt) );
 
-  if (ExtCount) ExtBeamline->propagate(*ExtPB);
+  if (ExtPB->size() != 0) ExtBeamline->propagate(*ExtPB);
   delete ExtPB;
-
 }
 
