@@ -11,8 +11,6 @@ default:
 	@echo "   make irix5-gcc      for SGI systems with IRIX 5.x with GCC debug on"
 	@echo "   make solaris-gcc    for Solaris 2 systems with GCC"
 	@echo "   make solaris        for Solaris 2 systems "
-	@echo "   make ultra          for Solaris 2 systems on an UltraSparc"
-	@echo "   make ultra-opt      for Solaris 2 systems on an UltraSparc"
 	@echo "   make solaris-debug  for Solaris 2 systems and Sun debug"
 	@echo "   make sunos4         for Sun systems with SunOS 4.x"
 	@echo "   make sunos4-debug   for Sun systems with SunOS 4.x and Sun debug"
@@ -20,9 +18,9 @@ default:
 
 
 
-LINKDIRS  = beamline mxyzptlk Machine tev tcl socket server sybase
+LINKDIRS  = beamline mxyzptlk Machine tev tcl socket server sybase filter
 
-SUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src Machine/src tcl/src socket/src sybase/src sybase/app tev/app server/app server/src filter/src
+SUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src Machine/src tcl/src tcl/app socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app
 
 SUNSUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src
 
