@@ -35,6 +35,7 @@
 
 #include <string>
 #include <iostream>
+#include <exception>
 
 #include "slist.h"
 #include "Barnacle.h"
@@ -236,6 +237,20 @@ public:
   static const short BF_OK;
   static const short BF_NULL_ARG;
   static const short BF_BAD_START;
+
+  // Exceptions
+  struct GenericException : public std::exception
+  {
+    GenericException( std::string, int, const char* = "", const char* = "" );
+    // Miscellaneous errors
+    // 1st argument: name of file in which exception is thrown
+    // 2nd         : line from which exception is thrown
+    // 3rd         : identifies function containing throw
+    // 4th         : identifies type of error
+    ~GenericException() throw() {}
+    const char* what() const throw();
+    std::string errorString;
+  };
 
 protected:
   char*        ident;      // Name identifier of the element.
