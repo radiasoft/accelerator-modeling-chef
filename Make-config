@@ -1,6 +1,5 @@
 # Make-config
 
-
 # The following variables are passed to each Makefile:
 #
 # CC          the C compiler (usually cc or gcc)
@@ -9,7 +8,6 @@
 #                   or a shell script for shared libs)
 # RANLIB      "ranlib" = use ranlib, "echo" = don't use ranlib
 #
-
 
 BASIC_TOOLKIT_INC   = $(FNALROOT)/basic_toolkit/include
 PHYSICS_TOOLKIT_INC = $(FNALROOT)/physics_toolkit/include
