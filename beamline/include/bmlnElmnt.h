@@ -406,7 +406,7 @@ private:
   /* All the work is done in friend ostream& operator<<(),
      placeholder for if descendants want to do somthing. */
   virtual ostream& writeTo(ostream& os) 	{ return os; }
-  virtual istream& readFrom(istream& is)	{ return is; };
+  virtual istream& readFrom(istream& is)	{ return is; }
   friend ostream& operator<<(ostream&, bmlnElmnt&);
   friend bmlnElmnt* read_istream(istream&);
 
