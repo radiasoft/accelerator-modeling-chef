@@ -523,6 +523,10 @@ void BeamlineContext::_createClosedOrbit()
     int err;
 
     if( 0 != ( err = _p_cos->findClosedOrbit( _p_jp ) ) ) {
+      delete _p_jp; 
+      _p_jp = 0;
+      delete _p_cos;
+      _p_cos = 0;
       ostringstream uic;
       uic  << "Closed orbit calculation exited with error "
            << err;
