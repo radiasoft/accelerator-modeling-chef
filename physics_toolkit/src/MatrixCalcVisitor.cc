@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,7 +29,11 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
+#include "GenericException.h"
 #include "beamline.h"
 #include "MatrixCalcVisitor.h"
 
@@ -71,9 +72,9 @@ MatrixCalcVisitor::MatrixCalcVisitor( const Particle& x )
 
 MatrixCalcVisitor::MatrixCalcVisitor( const MatrixCalcVisitor& x )
 {
-  cerr << "ERROR: MatrixCalcVisitor copy constructor should not be called." 
-       << endl;
-  exit(1);
+  throw( GenericException( __FILE__, __LINE__, 
+         "MatrixCalcVisitor::MatrixCalcVisitor( const MatrixCalcVisitor& x )", 
+         "Not permitted to call copy constructor." ) );
 }
 
 MatrixCalcVisitor::~MatrixCalcVisitor()
@@ -143,22 +144,22 @@ void MatrixCalcVisitor::visitBeamline( beamline* x )
   	_arcLength[_counter] = s;
       }
       else {
-  	cerr << "*** ERROR *** MatrixCalcVisitor::visitBeamline \n"
-  		"*** ERROR *** A horrible, inexplicable error has occurred. \n"
-                "*** ERROR *** The counter has overrun the number of elements: "
-  	     << _counter << " > " << _numberOfElements
-  	     << endl;
-  	exit(137);
+        ostringstream uic;
+        uic  << "The counter has overrun the number of elements: "
+  	     << _counter << " > " << _numberOfElements;
+        throw( GenericException( __FILE__, __LINE__, 
+               "void MatrixCalcVisitor::visitBeamline( beamline* x )", 
+               uic.str().c_str() ) );
       }
     }
   
     if( _counter + 1 != _numberOfElements ) {
-      cerr << "*** ERROR *** MatrixCalcVisitor::visitBeamline \n"
-  	      "*** ERROR *** A horrible, inexplicable error has occurred. \n"
-           << "*** ERROR *** The count is not correct: "
-  	   << _counter << " + 1 != " << _numberOfElements
-  	   << endl;
-      exit(137);
+      ostringstream uic;
+      uic  << "The count is not correct: "
+  	   << _counter << " + 1 != " << _numberOfElements;
+      throw( Particle::GenericException( __FILE__, __LINE__, 
+             "void MatrixCalcVisitor::visitBeamline( beamline* x )", 
+             uic.str().c_str() ) );
     }
   }
 }
@@ -239,20 +240,17 @@ void MatrixCalcVisitor::visitSbend( sbend* x )
 
 void MatrixCalcVisitor::visitRbend( rbend* x )
 {
-  cerr << "Sorry: MatrixCalcVisitor::visitRbend is not written."
-       << endl;
-  exit(1);
+  throw( GenericException( __FILE__, __LINE__, 
+         "void MatrixCalcVisitor::visitRbend( rbend* x )", 
+         "Function not written." ) );
 }
 
 
 void MatrixCalcVisitor::visitSector( sector* x )
 {
-  cerr << "*** ERROR ***                              \n"
-          "*** ERROR *** MatrixCalcVisitor::visitSector   \n"
-          "*** ERROR *** Sorry. Sectors not allowed.  \n"
-          "*** ERROR ***                              \n"
-       << endl;
-  exit(1);
+  throw( GenericException( __FILE__, __LINE__, 
+         "void MatrixCalcVisitor::visitSector( sector* x )", 
+         "Sorry. Sectors not allowed." ) );
 }
 
 
@@ -299,9 +297,9 @@ void MatrixCalcVisitor::visitQuadrupole( quadrupole* x )
 
 void MatrixCalcVisitor::visitJetQuadrupole( JetQuadrupole* x )
 {
-  cerr << "Sorry: MatrixCalcVisitor::visitJetQuadrupole is not written."
-       << endl;
-  exit(1);
+  throw( GenericException( __FILE__, __LINE__, 
+         "void MatrixCalcVisitor::visitJetQuadrupole( JetQuadrupole* x )", 
+         "Function not written." ) );
 }
 
 
@@ -322,25 +320,25 @@ void MatrixCalcVisitor::visitThinQuad( thinQuad* x )
 
 void MatrixCalcVisitor::visitSlot( Slot* x )
 {
-  cerr << "Sorry: MatrixCalcVisitor::visitSlot is not written."
-       << endl;
-  exit(1);
+  throw( GenericException( __FILE__, __LINE__, 
+         "void MatrixCalcVisitor::visitSlot( Slot* x )", 
+         "Function not written." ) );
 }
 
 
 void MatrixCalcVisitor::visitCF_rbend( CF_rbend* x )
 {
-  cerr << "Sorry: MatrixCalcVisitor::visitCF_rbend is not written."
-       << endl;
-  exit(1);
+  throw( GenericException( __FILE__, __LINE__, 
+         "void MatrixCalcVisitor::visitCF_rbend( CF_rbend* x )", 
+         "Function not written." ) );
 }
 
 
 void visitCombinedFunction( combinedFunction* x )
 {
-  cerr << "Sorry: MatrixCalcVisitor::visitcombinedFunction is not written."
-       << endl;
-  exit(1);
+  throw( GenericException( __FILE__, __LINE__, 
+         "void visitCombinedFunction( combinedFunction* x )", 
+         "Function not written." ) );
 }
 
 

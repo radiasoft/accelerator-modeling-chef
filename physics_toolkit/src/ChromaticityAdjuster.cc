@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 /*
  *  File: ChromaticityAdjuster.cc
@@ -45,6 +45,7 @@
  */
 
 
+#include "GenericException.h"
 #include "ChromaticityAdjuster.h"
 #include "LattFuncSage.h"
 
@@ -173,15 +174,17 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPr
   {
     ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Dispersion" );
     if(!ptr) {
-      cout << "No dispersion." << endl;
-      exit(1);
+      throw( GenericException( __FILE__, __LINE__, 
+             "int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetProton& jp )", 
+             "No dispersion information found." ) );
     }
     dsp       =   ptr->dispersion.hor;
 
     ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
     if(!ptr) {
-      cout << "No lattice functions." << endl;
-      exit(1);
+      throw( GenericException( __FILE__, __LINE__, 
+             "int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetProton& jp )", 
+             "Lattice functions not yet calculated." ) );
     }
     beta(0,j) =   ptr->beta.hor * dsp;
     beta(1,j) = - ptr->beta.ver * dsp;

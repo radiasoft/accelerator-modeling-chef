@@ -33,6 +33,7 @@
 #include <config.h>
 #endif
 
+#include "GenericException.h"
 #include "bmlnElmnt.h"
 #include "Particle.h"
 
@@ -103,13 +104,9 @@ int AdjustPosition( bmlnElmnt* p_be, const JetProton& arg_jp, char )
 
   m = ( myJP.State().Jacobian() )( xp, x );
   if( fabs(m) < 1.0e-12 ) {
-    cerr << "*** ERROR ***                                       \n"
-         << "*** ERROR *** CF_rbend::AdjustPosition              \n"
-         << "*** ERROR *** A horrible, inexplicable error has    \n"
-         << "*** ERROR *** occurred. A multi-valued solution     \n"
-         << "*** ERROR *** is suspected.                         \n"
-         << "*** ERROR ***                                       \n";
-    exit(0);
+    throw( GenericException( __FILE__, __LINE__, 
+           "int AdjustPosition( bmlnElmnt* p_be, const JetProton& arg_jp, char )", 
+           "Horrible, inexplicable error: multi-valued solution is suspected." ) );
   }
   m = 1.0 / m;
 
@@ -133,15 +130,12 @@ int AdjustPosition( bmlnElmnt* p_be, const JetProton& arg_jp, char )
     p_be->propagate( myJP );
     m = ( myJP.State().Jacobian() )( xp, x );
     if( fabs(m) < 1.0e-12 ) {
-      cerr << "*** ERROR ***                                       \n"
-              "*** ERROR *** CF_rbend::AdjustPosition              \n"
-              "*** ERROR *** A horrible, inexplicable error has    \n"
-              "*** ERROR *** occurred at step "
-                                          <<  i
-                                          << " . A multi-valued solution \n"
-              "*** ERROR *** is suspected.                         \n"
-              "*** ERROR ***                                       \n";
-      exit(0);
+      ostringstream uic;
+      uic  << "Horrible, inexplicable error at step "
+           <<  i << ": multi-valued solution is suspected.";
+      throw( GenericException( __FILE__, __LINE__, 
+             "int AdjustPosition( bmlnElmnt* p_be, const JetProton& arg_jp, char )", 
+             uic.str().c_str() ) );
     }
     m = 1.0 / m;
 
