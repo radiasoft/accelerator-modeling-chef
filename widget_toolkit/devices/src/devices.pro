@@ -1,35 +1,52 @@
-###################################################################
+########################################################################
 # 
 # FILE:          devices.pro 
 #
-# DESCRIPTION:   qmake file for libdevices.a 
-#                libdevices.dll
-#                libdevices.lib
-#
-# AUTHOR:        Jean-Francois Ostiguy ostiguy@fnal.gov
+# AUTHOR:        Jean-Francois Ostiguy
+#                Accelerator Division
+#                Fermi National Accelerator Laboratory 
+#                ostiguy@fnal.gov
 #       
-###################################################################
+#######################################################################
+#
+# Please define the following
+#
+########################################################################
+   unix:CHEF_INSTALL_TOP_DIR  = /usr/local/ap/FNAL  
+windows:CHEF_INSTALL_TOP_DIR  = ..\..\..\..\chef-win32   
+
+   unix:FNAL_INSTALL_TOP_DIR  = /usr/local/ap/FNAL  
+windows:FNAL_INSTALL_TOP_DIR  = ..\..\..\..\chef-win32   
+
+   unix:BOOST_INSTALL_TOP_DIR = /usr/local/ap 
+windows:BOOST_INSTALL_TOP_DIR = c:\boost
+
+   unix:QUTEXR_INSTALL_TOP_DIR =  /usr/local/ap/qt3/include
+windows:QUTEXR_INSTALL_TOP_DIR =  c:\Qt\3.3.3\include 
+
+########################################################################
+# THERE SHOULD BE NO NEED TO CHANGE ANYTHING BELOW THIS LINE !
+########################################################################
 
 TEMPLATE	= lib
 LANGUAGE	= C++
 
-win32:CONFIG	+= qt debug warn_on thread staticlib exceptions rtti
- unix:CONFIG	+= qt debug warn_on thread staticlib exceptions rtti
+windows:CONFIG	+= qt debug warn_on thread staticlib exceptions rtti
+   unix:CONFIG	+= qt debug warn_on thread staticlib exceptions rtti
 
 
-unix:INCLUDEPATH += /usr/local/qt/include 
-unix:INCLUDEPATH += /opt/chef/include 
-unix:INCLUDEPATH += /usr/local/qt/include/qutexr
+
 unix:INCLUDEPATH += .
 unix:INCLUDEPATH += ../include 
+unix:INCLUDEPATH += $$join(QUTEXR_INSTALL_TOP_DIR, "/qutexr" ,, /qutexr) 
+
+windows:INCLUDEPATH += .
+windows:INCLUDEPATH += ../include 
+windows:INCLUDEPATH += $$join(QUTEXR_INSTALL_TOP_DIR, "\qutexr" ,,   \qutexr       )
+
+
 unix:LIBS	 += -lqutexr -lqwt 
-
-
-MSYS_TOPDIR       = /msys/1.0
-
-win32:INCLUDEPATH += $$MSYS_TOPDIR/local/include
-win32:INCLUDEPATH += $$MSYS_TOPDIR/local/include/qutexr
-win32:LIBS	 += -lqutexr -lqwt 
+windows:LIBS	 += -lqutexr -lqwt 
 
 HEADERS	+= ../include/devicetable.h
 
@@ -39,9 +56,9 @@ SOURCES	+= readdevice.cpp \
 FORMS	=  devicetablebase.ui
 
 
-win32:UI_DIR       =  .\ui
-win32:MOC_DIR      =  .\moc
-win32:OBJECTS_DIR  =  .\obj
+windows:UI_DIR       =  .\ui
+windows:MOC_DIR      =  .\moc
+windows:OBJECTS_DIR  =  .\obj
 
 unix:UI_DIR       =  ./ui
 unix:MOC_DIR      =  ./moc
@@ -52,9 +69,9 @@ unix:QMAKE_LFLAGS_DEBUG     +=-Wl,--export-dynamic  -Wl,--rpath=/usr/local/lib -
 unix:QMAKE_LFLAGS_RELEASE   +=-Wl,--export-dynamic  -Wl,--rpath=/usr/local/lib -Wl,--rpath=/usr/local/qt/lib
 
 
-win32:target.path = ..\lib
-win32:target.path = ..\lib
-win32:INSTALLS += target
+windows:target.path = ..\lib
+windows:target.path = ..\lib
+windows:INSTALLS += target
 
 unix:target.path = ../lib
 unix:target.path = ../lib
