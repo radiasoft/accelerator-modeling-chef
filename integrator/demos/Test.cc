@@ -2,9 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <Vector.h>
+#include <VectorD.h>
 #include <RungeKutta.h>
 #include <Oscillator.h>
+
+using namespace std;
 
 main()
 {

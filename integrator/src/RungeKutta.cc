@@ -1,9 +1,6 @@
 #include "RungeKutta.h"
 
-#ifdef __VISUAL_CPP__
-using std::cout;
-using std::endl;
-#endif
+using namespace std;
 
 /// ******************************************
 ///   class RungeKutta
