@@ -103,6 +103,8 @@ TJetEnvironment<T1,T2>::TJetEnvironment()
 template<typename T1, typename T2>
 TJetEnvironment<T1,T2>::TJetEnvironment( const TJetEnvironment& x )
 : _maxWeight( x._maxWeight ), 
+  _monomial(0),
+  _maxTerms( x._maxTerms ),
   _numVar( x._numVar ), 
   _spaceDim( x._spaceDim ),
   _pbok( x._pbok ),
