@@ -2,9 +2,11 @@
 #ifndef TCLMONITOR_H
 #define TCLMONITOR_H
 
-#include "mxyzptlk.h"
-#include "beamline.inc"
-#include "pipestream.h"
+#include "beamline.h"
+class iopipestream;
+class Particle;
+class ParticleBunch;
+class Vector;
 
 const int MAX_COLOR = 5;      // Maximum number of colors.  Modifications here
                               // must also be reflected in tclmonitor.tcl
@@ -44,40 +46,32 @@ private:
     double      cxmin,cxmax,cymin,cymax;     // Tk phaseplot min and max
     int         size;
 
-    // Physical beamline coordinates to Tk canvas coordinates 
-    // conversion rooutines.
+    /// Physical beamline coordinates to Tk canvas X coordinates conversion routines.
     int atopixx(double x, double max, double min) 
                                    { return (int)((x-min)*size/(max-min));}
+    /// Physical beamline coordinates to Tk canvas Y coordinates conversion routines.
     int atopixy(double y, double max, double min) 
                                    { return (int)((-y+max)*size/(max-min));}
 
-    // Tk canvas coordinates to Physical beamline coordinates 
-    // conversion rooutines.
+    /// Tk canvas X coordinates to Physical beamline coordinates conversion routines.
     double apixtox(int x, double max, double min) 
                                    { return min+(max-min)*x/(double)size;}
+    /// Tk canvas Y coordinates to Physical beamline coordinates conversion routines.
     double apixtoy(int y, double max, double min) 
                                    { return max-(max-min)*y/(double)size;}
 
   public:
     tclMonitor();
-    tclMonitor( char* );                     /// Name identifier.
-
-    tclMonitor( char*,                       /// Name identifier.
-  	        double,                      /// x plot limit (meters).
-	        double,                      /// x prime plot limit (radians).
-	        double,                      /// y plot limit (meters).
-	        double,                      /// y prime plot limit (radians).
-	        double,                      /// cdt plot limit.
-	        double);                     /// dp/p plot limit.
-
-    tclMonitor( char*,                       /// Name identifier.
-                char* );                     /// and parent tcl window.
-
-    tclMonitor( char*,                       /// Name identifier.
-                char*,                       /// parent tcl window name.
-                FILE* );                     /// file output name.
-
-    tclMonitor( const tclMonitor& );         /// Copy constructor.
+    /// Name identifier.
+    tclMonitor( char* );
+    /// Name identifier, x plot limit (meters), x prime plot limit (radians), y plot limit (meters), y prime plot limit (radians), cdt plot limit, dp/p plot limit.
+    tclMonitor( char*, double, double, double, double, double, double);
+    /// Name identifier, parent tcl window. 
+    tclMonitor( char*, char* );
+    /// Name identifier, parent tcl window name, file output name.
+    tclMonitor( char*, char*, FILE* );
+    /// Copy constructor.
+    tclMonitor( const tclMonitor& );
 
     ~tclMonitor();
 
@@ -96,7 +90,7 @@ private:
     void       setColor(int);
     /// Turns monitor on.
     void on();
-    // Turns monitor on and defines where to display it.
+    /// Turns monitor on and defines where to display it.
     void on(char*);
     void Off();
 };
