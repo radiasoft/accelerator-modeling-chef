@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <strings.h>
 
 strEquals( str_1, str_2 )
 char *str_1, *str_2;
