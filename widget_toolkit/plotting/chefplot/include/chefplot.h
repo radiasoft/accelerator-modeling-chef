@@ -1,3 +1,21 @@
+////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                            //
+// FILE:       chefplot.h                                                                     //
+//                                                                                            //
+// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+//             Accelerator Division / Accelerator Integration Dept                            //
+//             Fermi National Laboratory, Batavia, IL                                         //
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+// DATE:       September 2004                                                                 //
+//                                                                                            //
+// COPYRIGHT: Universities Research Association                                               //
+//                                                                                            //
+//                                                                                            //
+////////////////////////////////////////////////////////////////////////////////////////////////
+
 #ifndef CHEFPLOT_H
 #define CHEFPLOT_H
 
@@ -22,8 +40,10 @@ class CHEFPlot: public QWidget {
   CHEFPlot(QWidget * parent = 0, const char* name = 0, Qt::WFlags f = 0);
   virtual ~CHEFPlot();
 
-  void displayLattice(beamline* bml);
+  void displayLattice(const beamline* bml);
+  const beamline* getBeamline();
   void addData(CHEFPlotData& cpdata);
+  void clear();
   
   protected:
 
@@ -38,7 +58,9 @@ class CHEFPlot: public QWidget {
   void enableLegoPlot(bool set);
   void zoomUseLeftAxis();
   void zoomUseRightAxis();
-  
+  void setLogScale(int axis);
+  void setLinScale(int axis);
+
   private slots:
   
   void resizeLego();
