@@ -145,7 +145,7 @@ Slot::Slot( const Slot& x )
   else 
     align = NULL;
 
-  if     ( 0 != x.p_bml   ) p_bml   = (beamline*) x.p_bml   ->Clone();
+  if     ( 0 != x.p_bml   ) p_bml   = (beamline*) x.p_bml->Clone();
   else if( 0 != x.p_bml_e ) p_bml_e = x.p_bml_e ->Clone();
 }
 
