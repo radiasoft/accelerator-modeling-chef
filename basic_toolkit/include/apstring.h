@@ -98,9 +98,13 @@ class String : public apstring
                   int,    // number of characters 
                   int = 0 // starting position in *this
                 ) const;
+                          // returns actual number of characters copied
+
   String& append( char*,  // buffer containing characters to be appended
                   int     // number of characters to append
                 );
+                          // changes the invoking object and 
+                          // returns a reference to it.
 };
 
 
