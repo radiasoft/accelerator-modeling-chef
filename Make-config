@@ -114,12 +114,14 @@ solaris:
 	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo"
 
+# the options "-fast" is close, but it includes the "-O4", which we don't really need.
+# So the options following "-O " here are the rest of the "-fast" macro.
 ultra-opt:
 	$(MAKE) targets \
 	"C   = cc" \
 	"C++ = CC" \
-	"CFLAGS = -fast" \
-	"C++FLAGS = -DULTRA -fast -xchip=ultra -xarch=v8plus -ptr$(FNALROOT) -verbose=template" \
+	"CFLAGS = " \
+	"C++FLAGS = -DULTRA -O -native -dalign -fsimple=1 -fns -ftrap=%none -libmil -xlibmopt -xchip=ultra -xarch=v8plus -ptr$(FNALROOT) -verbose=template" \
 	"INLINE_FLAG = +d " \
 	"MAKELIB = CC -xar -o" \
 	"INCDIR = $(FNALROOT)/include" \
