@@ -27,7 +27,7 @@ default:
 	@echo "  make lib-clean         Remove all library (.a) files."
 	@echo "  make clean             Remove all .o,.sb,.~ files."
 	@echo "  make link-clean        Remove all links in include directory."
-	@echo "  make tar               Tar up all source (*.cc,*.h,.sb) files."
+	@echo "  make tar               Tar up all source (*.cc,*.h) files."
 	@echo "  make tar_everything    Tar up ALL files."
 
 
