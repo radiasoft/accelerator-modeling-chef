@@ -137,6 +137,76 @@ const char* JL::BadDimension::what() const throw()
   return errorString.c_str();
 }
 
+JL::HorribleException::HorribleException( int i, int j, int k, 
+                                string fileName, int lineNumber, 
+                                const char* fcn, 
+                                const char* msg )
+: curIndex(i), coordSize(j), valueSize(k)
+{
+  ostringstream uic;
+  uic << "\n*** ERROR *** "
+         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
+      << "\n*** ERROR *** " << fcn
+      << "\n*** ERROR *** A horrible, inexplicable error    "
+         "\n*** ERROR *** has occurred. This is beyond      "
+         "\n*** ERROR *** the realm of human understanding. "
+         "\n*** ERROR *** Please consult an exorcist.       "
+         "\n*** ERROR *** currentIndex:      " << curIndex
+      << "\n*** ERROR *** newCoords.size() : " << coordSize
+      << "\n*** ERROR *** newValues.size() : " << valueSize
+      << "\n*** ERROR *** " << msg
+      << "\n*** ERROR *** ";
+  errorString = uic.str();
+
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << errorString;
+    cerr << "\n*** ERROR *** This message is printed only once."
+            "\n*** ERROR *** "
+         << endl;
+    firstTime = false;
+  }
+}
+
+const char* JL::HorribleException::what() const throw()
+{
+  return errorString.c_str();
+}
+
+JL::HideousException::HideousException( int x, int y, 
+                                string fileName, int lineNumber, 
+                                const char* fcn, 
+                                const char* msg )
+: i(x), n(y)
+{
+  ostringstream uic;
+  uic << "\n*** ERROR *** "
+         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
+      << "\n*** ERROR *** " << fcn
+      << "\n*** ERROR *** An unbelievably hideous error     "
+      << "\n*** ERROR *** has occurred.                     "
+      << "\n*** ERROR *** " << i << " != " << n << "        "
+      << "\n*** ERROR ***               This is beyond      "
+      << "\n*** ERROR *** the realm of human understanding. "
+      << "\n*** ERROR *** " << msg
+      << "\n*** ERROR *** ";
+  errorString = uic.str();
+
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << errorString;
+    cerr << "\n*** ERROR *** This message is printed only once."
+            "\n*** ERROR *** "
+         << endl;
+    firstTime = false;
+  }
+}
+
+const char* JL::HideousException::what() const throw()
+{
+  return errorString.c_str();
+}
+
 
 
 //***************************************************************
@@ -1112,7 +1182,7 @@ JLterm::JLterm( const IntArray& l,
  // with this constructor, even though it throws exceptions,
  // because the destructor does no subsidiary garbage collection.
  // - Leo Michelotti
- //   January 22, 2004
+ //   Thursday, January 22, 2004
  int i, dpt;
 
  if( pje ) {

@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -30,6 +27,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iomanip>
 
@@ -113,15 +113,9 @@ JetC__environment::JetC__environment( JetC__environment& x )
   SpaceDim( x.SpaceDim )
 {
   if( JetC::workEnv != 0 ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** JetC__environment::JetC__environment       \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** You must close the open environment      \n"
-         << "*** ERROR *** before attempting to copy an environment.\n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JLC::GenericException( __FILE__, __LINE__, 
+           "JetC__environment::JetC__environment( JetC__environment& )",
+           "Close open environment before copying." ) );
   }
 
   if( NumVar == 0 ) {
@@ -216,15 +210,9 @@ JetC__environment& JetC__environment::operator=( const JetC__environment& x )
       JetC__environment::SkipEnvEqTest = 0;
 
   else if( JetC::workEnv != 0 ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** JetC__environment::operator=              \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** You must close the open environment      \n"
-         << "*** ERROR *** before attempting to assign.             \n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JLC::GenericException( __FILE__, __LINE__, 
+           "JetC__environment& JetC__environment::operator=( const JetC__environment& )",
+           "Close open environment before assigning." ) );
   }
 
   MaxWeight = x.MaxWeight;
@@ -349,15 +337,9 @@ istream& streamIn( istream& is, JetC__environment** x )
   is >> pje->SpaceDim;
 
   if( pje->NumVar < pje->SpaceDim ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                              \n"
-         << "*** ERROR *** istream operator>>           \n"
-         << "*** ERROR ***                              \n"
-         << "*** ERROR *** JetC__enviroment dimensions   \n"
-         << "*** ERROR *** are wrong.                   \n"
-         << "*** ERROR ***                              \n"
-         << endl;
-    exit(1);
+    throw( JLC::GenericException( __FILE__, __LINE__, 
+           "istream& streamIn( istream&, JetC__environment** )",
+           "JetC__enviroment dimensions are wrong." ) );
   }
   
   pje->refPoint = new Complex[ pje->NumVar ];
@@ -603,19 +585,12 @@ ostream& operator<<( ostream& os, const JetC& x )
 //      dimension of phase space, s,
 //      default reference point, r.
 
-void
-JetC::BeginEnvironment( int w ) 
+void JetC::BeginEnvironment( int w ) 
 {
   if( workEnv != 0 ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** JetC::BeginEnvironment                    \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** You cannot open a new environment        \n"
-         << "*** ERROR *** until you close an old one.              \n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JLC::GenericException( __FILE__, __LINE__, 
+           "void JetC::BeginEnvironment( int )",
+           "Cannot open two environments simultaneously. Close first." ) );
   }
 
   workEnv = new JetC__environment;
@@ -624,27 +599,19 @@ JetC::BeginEnvironment( int w )
 }
 
 
-void
-JetC::Parameters()
+void JetC::Parameters()
 {
   if( workEnv->PBOK ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** JetC::Parameters                          \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** You can only call this once for an       \n"
-         << "*** ERROR *** open environment.                        \n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "void JetC::Parameters()",
+          "Can only be called once per (open) environment." ) );
   }
   workEnv->PBOK = 1;
   workEnv->SpaceDim = currentIndex;
 }
 
 
-JetC__environment*
-JetC::EndEnvironment( Complex* scl )
+JetC__environment* JetC::EndEnvironment( Complex* scl )
 {
   if( currentIndex == 0 ) {
     delete workEnv;
@@ -656,18 +623,13 @@ JetC::EndEnvironment( Complex* scl )
   Complex* q;
   int     i, j;
 
-  if((  ( currentIndex     != newCoordCs.size() )  ||  
+  if((  ( currentIndex      != newCoordCs.size())  ||  
         ( newCoordCs.size() != newValues.size() )  )) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                   \n"
-         << "*** ERROR *** JetC::EndEnvironment               \n"
-         << "*** ERROR *** A horrible, inexplicable error    \n"
-         << "*** ERROR *** has occurred. This is beyond      \n"
-         << "*** ERROR *** the realm of human understanding. \n"
-         << "*** ERROR *** Please consult an exorcist.       \n"
-         << "*** ERROR ***                                   \n"
-         << endl;
-    exit(1);
+    throw( JLC::HorribleException( 
+           currentIndex, newCoordCs.size(), newValues.size(),
+           __FILE__, __LINE__, 
+           "JetC__environment* JetC::EndEnvironment( Complex* )",
+           "" ) );
   }
 
   workEnv->NumVar = currentIndex;
@@ -701,17 +663,9 @@ JetC::EndEnvironment( Complex* scl )
   while( ( q = (Complex*) GetNextValue() ) != 0 )
     workEnv->refPoint[i++] = *q;
   if( i != n ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                   \n"
-         << "*** ERROR *** JetC::EndEnvironment               \n"
-         << "*** ERROR *** An unbelievably hideous error     \n"
-         << "*** ERROR *** has occurred.                     \n"
-         << "*** ERROR *** " << i << " != " << n << "        \n"
-         << "*** ERROR ***               This is beyond      \n"
-         << "*** ERROR *** the realm of human understanding. \n"
-         << "*** ERROR ***                                   \n"
-         << endl;
-    exit(1);
+    throw( JLC::HideousException(i, n, __FILE__, __LINE__, 
+             "JetC__environment* JetC::EndEnvironment( Complex* )", 
+             "" ) );
   }
  
   workEnv->AllZeroes.Reconstruct(n);
@@ -762,15 +716,9 @@ void JetC::EnlargeEnvironment( JetC__environment* pje )
 
   // Like JetC::BeginEnvironment
   if( workEnv != 0 ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** JetC::EnlargeEnvironment                  \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** You cannot enlarge an environment        \n"
-         << "*** ERROR *** until all environments are closed.       \n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JLC::GenericException( __FILE__, __LINE__, 
+           "void JetC::EnlargeEnvironment( JetC__environment* )",
+           "Close open environment before invoking this function." ) );
   }
 
   workEnv = new JetC__environment;
@@ -803,17 +751,9 @@ coordC::coordC( Complex x )
 : JetC( workEnv ) {
  
  if( !workEnv ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                          \n"
-        << "*** ERROR *** coordC::coordC                             \n"
-        << "*** ERROR ***                                          \n"
-        << "*** ERROR *** You cannot declare a coordinate before   \n"
-        << "*** ERROR *** opening an environment.                  \n"
-        << "*** ERROR ***                                          \n"
-        << "*** ERROR *** Use JetC::BeginEnvironment()              \n"
-        << "*** ERROR ***                                          \n"
-        << endl;
-   exit(1);
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "coordC::coordC( Complex ) ",
+          "Use JetC::BeginEnvironment() to open an environment first." ) );
  }
 
  index = currentIndex++;
@@ -846,11 +786,9 @@ coordC::~coordC() {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 coordC::coordC( const coordC&  ) {
- printf( "\n*** ERROR ***                                       \n" );
- printf(   "*** ERROR *** coordC::coordC( coordC& )                \n" );
- printf(   "*** ERROR *** Coordinate copy constructor called.   \n" );
- printf(   "*** ERROR ***                                       \n" );
- exit(1);
+ throw( JLC::GenericException( __FILE__, __LINE__, 
+        "coordC::coordC( const coordC& )",
+        "Coordinate copy constructor called; this is forbidden." ) );
 
 #ifdef OBJECT_DEBUG
   objectCount++;
@@ -869,13 +807,10 @@ void coordC::operator=( const Complex& x ) {   // DANGER: Be careful!
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 coordC& coordC::operator=( const coordC& ) {
- printf( "\n*** ERROR ***                                       \n" );
- printf(   "*** ERROR *** coordC::operator=                      \n" );
- printf(   "*** ERROR *** Attempt made to change the value      \n" );
- printf(   "*** ERROR *** of a coordinate.                      \n" );
- printf(   "*** ERROR ***                                       \n" );
- if( 3 + 8 == 11 ) exit(1);  // To avoid compiler warnings.
- return *this;
+ throw( JLC::GenericException( __FILE__, __LINE__, 
+        "coordC& coordC::operator=( const coordC& )",
+        "It is forbidden to change the value of a coordinate." ) );
+ return *this; // Never executed, of course.
 }
 
 
@@ -883,13 +818,10 @@ coordC& coordC::operator=( const coordC& ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 coordC& coordC::operator=( const JetC& ) {
- printf( "\n*** ERROR ***                                       \n" );
- printf(   "*** ERROR *** coordC::operator=                      \n" );
- printf(   "*** ERROR *** Attempt made to change the value      \n" );
- printf(   "*** ERROR *** of a coordinate.                      \n" );
- printf(   "*** ERROR ***                                       \n" );
- if( 3 + 8 == 11 ) exit(1);  // To avoid compiler warnings.
- return *this;
+ throw( JLC::GenericException( __FILE__, __LINE__, 
+        "coordC& coordC::operator=( const JetC& )",
+        "It is forbidden to change the value of a coordinate." ) );
+ return *this;  // Never executed, of course.
 }
 
 
@@ -986,13 +918,9 @@ JLCterm JetC::stepConstIterator()  const
     return JLCterm( (JLCterm*) (constIterPtr->operator()()) );
   }
   else {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** JetC::stepConstIterator                  \n"
-         << "*** ERROR *** You must first resetConstIterator        \n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JLC::GenericException( __FILE__, __LINE__, 
+           "JLCterm JetC::stepConstIterator()  const",
+           "You must first resetConstIterator." ) );
   }
 }
 
@@ -1018,12 +946,8 @@ JLCterm* JetC::stepIterator()
     return (JLCterm*) (iterPtr->operator()());
   }
   else {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** JetC::stepIterator                       \n"
-         << "*** ERROR *** You must first resetIterator             \n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JLC::GenericException( __FILE__, __LINE__, 
+           "JLCterm* JetC::stepIterator()",
+           "You must first resetIterator." ) );
   }
 }

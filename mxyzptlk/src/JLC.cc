@@ -70,6 +70,140 @@ using namespace std;
 int JLC::objectCount = 0;
 int JLCterm::objectCount = 0;
 #endif
+
+
+// ================================================================
+//      Implementation of exceptions
+
+JLC::GenericException::GenericException( string fileName, int lineNumber, 
+                                         const char* fcn, 
+                                         const char* msg )
+{
+  ostringstream uic;
+  uic << "\n*** ERROR *** "
+         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
+      << "\n*** ERROR *** " << fcn
+      << "\n*** ERROR *** " << msg
+      << "\n*** ERROR *** ";
+  errorString = uic.str();
+
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << errorString;
+    cerr << "\n*** ERROR *** This message is printed only once."
+            "\n*** ERROR *** "
+         << endl;
+    firstTime = false;
+  }
+}
+
+const char* JLC::GenericException::what() const throw()
+{
+  return errorString.c_str();
+}
+
+JLC::BadDimension::BadDimension( int i, int j, 
+                                 string fileName, int lineNumber, 
+                                 const char* fcn, 
+                                 const char* msg )
+: xdim(i), ydim(j)
+{
+  ostringstream uic;
+  uic << "\n*** ERROR *** "
+         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
+      << "\n*** ERROR *** " << fcn
+      << "\n*** ERROR *** " << msg
+      << "\n*** ERROR *** First  argument has " << xdim << " coordinates."
+      << "\n*** ERROR *** Second argument has " << ydim << " coordinates."
+      << "\n*** ERROR *** ";
+  errorString = uic.str();
+
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << errorString;
+    cerr << "\n*** ERROR *** This message is printed only once."
+            "\n*** ERROR *** "
+         << endl;
+    firstTime = false;
+  }
+}
+
+const char* JLC::BadDimension::what() const throw()
+{
+  return errorString.c_str();
+}
+
+JLC::HorribleException::HorribleException( int i, int j, int k, 
+                                string fileName, int lineNumber, 
+                                const char* fcn, 
+                                const char* msg )
+: curIndex(i), coordSize(j), valueSize(k)
+{
+  ostringstream uic;
+  uic << "\n*** ERROR *** "
+         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
+      << "\n*** ERROR *** " << fcn
+      << "\n*** ERROR *** A horrible, inexplicable error    "
+         "\n*** ERROR *** has occurred. This is beyond      "
+         "\n*** ERROR *** the realm of human understanding. "
+         "\n*** ERROR *** Please consult an exorcist.       "
+         "\n*** ERROR *** currentIndex:      " << curIndex
+      << "\n*** ERROR *** newCoords.size() : " << coordSize
+      << "\n*** ERROR *** newValues.size() : " << valueSize
+      << "\n*** ERROR *** " << msg
+      << "\n*** ERROR *** ";
+  errorString = uic.str();
+
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << errorString;
+    cerr << "\n*** ERROR *** This message is printed only once."
+            "\n*** ERROR *** "
+         << endl;
+    firstTime = false;
+  }
+}
+
+const char* JLC::HorribleException::what() const throw()
+{
+  return errorString.c_str();
+}
+
+JLC::HideousException::HideousException( int x, int y, 
+                                string fileName, int lineNumber, 
+                                const char* fcn, 
+                                const char* msg )
+: i(x), n(y)
+{
+  ostringstream uic;
+  uic << "\n*** ERROR *** "
+         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
+      << "\n*** ERROR *** " << fcn
+      << "\n*** ERROR *** An unbelievably hideous error     "
+      << "\n*** ERROR *** has occurred.                     "
+      << "\n*** ERROR *** " << i << " != " << n << "        "
+      << "\n*** ERROR ***               This is beyond      "
+      << "\n*** ERROR *** the realm of human understanding. "
+      << "\n*** ERROR *** " << msg
+      << "\n*** ERROR *** ";
+  errorString = uic.str();
+
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << errorString;
+    cerr << "\n*** ERROR *** This message is printed only once."
+            "\n*** ERROR *** "
+         << endl;
+    firstTime = false;
+  }
+}
+
+const char* JLC::HideousException::what() const throw()
+{
+  return errorString.c_str();
+}
+
+
 
 //***************************************************************
 //***************************************************************
