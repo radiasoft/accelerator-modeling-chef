@@ -434,30 +434,30 @@ public:
                                    // eventually deleting these.
   virtual void peekAt( double& s, Particle* = 0 );
 
-  short  writeBitField ( const char*,   // characters to be written
-                         short,         // starting position in bit field
-                         short          // number of characters 
-                       );
-  short  writeBitField ( const char* );
+  short  writeTag ( const char*,   // characters to be written
+                    short,         // starting position in bit field
+                    short          // number of characters 
+                  );
+  short  writeTag ( const char* );
 
-  short  writeBitField ( const String&,
-                         short,         // starting position in bit field
-                         short          // number of characters 
-                       );
-  short  writeBitField ( const String& );
+  short  writeTag ( const String&,
+                    short,         // starting position in bit field
+                    short          // number of characters 
+                  );
+  short  writeTag ( const String& );
 
-  short  readBitField  ( char*,         // returned characters
-                         short,         // starting position in bit field
-                         short          // number of characters
-                       );
-  short  readBitField  ( char* );
+  short  readTag  ( char*,         // returned characters
+                    short,         // starting position in bit field
+                    short          // number of characters
+                  );
+  short  readTag  ( char* );
 
-  String readBitField  ( short,         // starting position in bit field
-                         short          // number of characters 
-                         );
-  String readBitField  ();
+  String readTag  ( short,         // starting position in bit field
+                    short          // number of characters 
+                  );
+  String readTag  ();
 
-  short  getBitFieldSize() 
+  short  getTagSize() 
     { return BF_MAXCHAR; }
 
   virtual void setLength     ( double );
@@ -525,7 +525,7 @@ private:
   friend bmlnElmnt* read_istream(istream&);
 
   apstring     flavor;     // Allows for "flavors" of types of elements.
-  char         _bitField[ BF_MAXCHAR ];
+  char         _tag[ BF_MAXCHAR ];
 };
 
 class hkick : public bmlnElmnt

@@ -12,7 +12,7 @@ int bmlnElmnt::objectCount = 0;
 #endif
 
 
-// Error flags for _bitfield manipulation functions.
+// Error flags for _tag manipulation functions.
 const short bmlnElmnt::BF_OK         = 0;
 const short bmlnElmnt::BF_NULL_ARG   = 1;
 const short bmlnElmnt::BF_BAD_START  = 2;
@@ -168,7 +168,7 @@ bmlnElmnt::bmlnElmnt( const char* n, PropFunc* pf ) {
  Propagator    = pf;
 
  for( int i = 0; i < BF_MAXCHAR; i++ ) {
-   _bitField[i] = '\0';
+   _tag[i] = '\0';
  }
 
  // ...... Initialize geometry .................................
@@ -205,7 +205,7 @@ bmlnElmnt::bmlnElmnt( double l /* length */, PropFunc* pf ) {
  Propagator    = pf;
 
  for( int i = 0; i < BF_MAXCHAR; i++ ) {
-   _bitField[i] = '\0';
+   _tag[i] = '\0';
  }
 
  // ...... Initialize geometry .................................
@@ -244,7 +244,7 @@ bmlnElmnt::bmlnElmnt( double l /* length */,
  Propagator    = pf;
 
  for( int i = 0; i < BF_MAXCHAR; i++ ) {
-   _bitField[i] = '\0';
+   _tag[i] = '\0';
  }
 
  // ...... Initialize geometry .................................
@@ -289,7 +289,7 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  Propagator    = pf;
 
  for( int i = 0; i < BF_MAXCHAR; i++ ) {
-   _bitField[i] = '\0';
+   _tag[i] = '\0';
  }
 
  // ...... Initialize geometry .................................
@@ -335,7 +335,7 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  Propagator    = pf;
 
  for( int i = 0; i < BF_MAXCHAR; i++ ) {
-   _bitField[i] = '\0';
+   _tag[i] = '\0';
  }
 
  // ...... Initialize geometry .................................
@@ -369,7 +369,7 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
 
  Propagator = a.Propagator;
 
- memcpy( (void*) _bitField, (const void*) a._bitField, BF_MAXCHAR*sizeof(char) );
+ memcpy( (void*) _tag, (const void*) a._tag, BF_MAXCHAR*sizeof(char) );
 
  if(a.align != 0) {
    alignmentData data = a.align->getAlignment();
@@ -518,11 +518,11 @@ void bmlnElmnt::set( const bmlnElmntData& data ) {
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-// Begin: Bit field routines
+// Begin: tagging routines
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 
-short bmlnElmnt::writeBitField ( const char* s, short start, short num )
+short bmlnElmnt::writeTag ( const char* s, short start, short num )
 {
   if( s == 0 ) {
     return BF_NULL_ARG;
@@ -534,12 +534,12 @@ short bmlnElmnt::writeBitField ( const char* s, short start, short num )
   if( start + num > BF_MAXCHAR ) {
     num = BF_MAXCHAR - start;
   }
-  memcpy( (void*) (_bitField + start), (const void*) s, num*sizeof(char) );
+  memcpy( (void*) (_tag + start), (const void*) s, num*sizeof(char) );
   return BF_OK;
 }
 
 
-short bmlnElmnt::writeBitField ( const char* s )
+short bmlnElmnt::writeTag ( const char* s )
 {
   static int num;
 
@@ -551,12 +551,12 @@ short bmlnElmnt::writeBitField ( const char* s )
   if( num > BF_MAXCHAR ) {
     num = BF_MAXCHAR;
   }
-  memcpy( (void*) _bitField, (const void*) s, num );
+  memcpy( (void*) _tag, (const void*) s, num );
   return BF_OK;
 }
 
 
-short  bmlnElmnt::writeBitField ( const String& s, short start, short  num )
+short  bmlnElmnt::writeTag ( const String& s, short start, short  num )
 {
   if( start < 0 || start + 1 > BF_MAXCHAR ) {
     return BF_BAD_START;
@@ -564,12 +564,12 @@ short  bmlnElmnt::writeBitField ( const String& s, short start, short  num )
   if( start + num > BF_MAXCHAR ) {
     num = BF_MAXCHAR - start;
   }
-  s.copy( _bitField + start, num );
+  s.copy( _tag + start, num );
   return BF_OK;
 }
 
 
-short  bmlnElmnt::writeBitField ( const String& s )
+short  bmlnElmnt::writeTag ( const String& s )
 {
   static int num;
 
@@ -577,12 +577,12 @@ short  bmlnElmnt::writeBitField ( const String& s )
   if( num > BF_MAXCHAR ) {
     num = BF_MAXCHAR;
   }
-  s.copy( _bitField, num );
+  s.copy( _tag, num );
   return BF_OK;
 }
 
 
-short bmlnElmnt::readBitField  ( char* s, short start, short num )
+short bmlnElmnt::readTag  ( char* s, short start, short num )
 {
   if( s == 0 ) {
     return BF_NULL_ARG;
@@ -593,18 +593,18 @@ short bmlnElmnt::readBitField  ( char* s, short start, short num )
   if( start + num > BF_MAXCHAR ) {
     num = BF_MAXCHAR - start;
   }
-  memcpy( (void*) s, (const void*) (_bitField + start), num*sizeof(char) );
+  memcpy( (void*) s, (const void*) (_tag + start), num*sizeof(char) );
   return BF_OK;
 }
 
 
-short bmlnElmnt::readBitField( char* s )
+short bmlnElmnt::readTag( char* s )
 {
-  return this->readBitField( s, 0, BF_MAXCHAR );
+  return this->readTag( s, 0, BF_MAXCHAR );
 }
 
 
-String bmlnElmnt::readBitField( short start, short  num )
+String bmlnElmnt::readTag( short start, short  num )
 {
   String ret;
   if( start < 0 || start + 1 > BF_MAXCHAR ) {
@@ -613,19 +613,19 @@ String bmlnElmnt::readBitField( short start, short  num )
   if( start + num > BF_MAXCHAR ) {
     num = BF_MAXCHAR - start;
   }
-  ret = ret.append( _bitField + start, num );
+  ret = ret.append( _tag + start, num );
   return ret;
 }
 
 
-String bmlnElmnt::readBitField()
+String bmlnElmnt::readTag()
 {
-  return this->readBitField( 0, BF_MAXCHAR );
+  return this->readTag( 0, BF_MAXCHAR );
 }
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-// End: Bit field routines
+// End: tagging routines
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 
