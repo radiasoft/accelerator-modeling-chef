@@ -1208,7 +1208,11 @@ char operator<=( JLterm& a, JLterm& b ) {
    exit(1);
  }
  if( a.weight != b.weight ) return ( a.weight < b.weight );
- return (a.index <= b.index);
+ for( i = 0; i < a.index.Dim(); i++ ) {
+   if( a.index(i) == b.index(i) ) continue;
+   return ( a.index(i) < b.index(i) );
+ }
+ return 1;  // when all indices are the same.
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
