@@ -162,6 +162,7 @@ beam_line_add_bml( beam_line*       bml1,
   }
 
   bml1->bel_list_ = g_list_concat( bml1->bel_list_, new_list );
+
   return BEAM_LINE_ADD_OK;
 }
 
@@ -176,6 +177,7 @@ beam_line_set_name( beam_line* bml, const char* name ) {
 
   strcpy( bml->name_, name );
 }
+
 
    /*
      Takes a bml and a line number, and sets the bml's line number to the given value
@@ -198,7 +200,17 @@ beam_line_set_linenum( beam_line*  bml,
 int
 beam_line_delete( beam_line*    bml,
                   fb_allocator* bml_alloc ) {
+
+  GList* list_element = g_list_first(bml->bel_list_);
+
+  while(list_element) {
+     free(list_element->data);
+     list_element = g_list_next(list_element);
+    
+  };
+
   g_list_free( bml->bel_list_ );
+
   PRIVATE_DEALLOCATE( bml, bml_alloc );
   
   return BEAM_LINE_DELETE_OK;
