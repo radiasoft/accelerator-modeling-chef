@@ -186,6 +186,21 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator+ ( const TJetVector<T1,T2>& x ) co
 
 
 template<typename T1, typename T2>
+TJetVector<T1,T2> TJetVector<T1,T2>::operator+ ( const Vector& y ) const
+{
+#ifndef NOCHECKS
+  CHECKOUT(_dim != y.Dim(), "JetVector::operator+", "Incompatible dimensions.")
+#endif
+
+  TJetVector<T1,T2> z( *this );
+  for ( int i = 0; i < _dim; i++ ) {
+    z._comp[i] += y(i);
+  }
+  return z;
+}
+
+
+template<typename T1, typename T2>
 TJetVector<T1,T2> TJetVector<T1,T2>::operator+= ( const TJetVector<T1,T2>& x )
 {
 #ifndef NOCHECKS
@@ -194,6 +209,20 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator+= ( const TJetVector<T1,T2>& x )
 #endif
 
   for ( int i = 0; i < _dim; i++ ) _comp[i] += x._comp[i];
+  return *this;
+}
+
+
+template<typename T1, typename T2>
+TJetVector<T1,T2> TJetVector<T1,T2>::operator+= ( const Vector& x )
+{
+#ifndef NOCHECKS
+  CHECKOUT(dim != x.Dim(), "JetVector::operator-=", "Incompatible dimensions.")
+#endif
+
+  for ( int i = 0; i < _dim; i++ ) {
+    _comp[i] += x(i);
+  }
   return *this;
 }
 
@@ -209,6 +238,21 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator- ( const TJetVector<T1,T2>& x ) co
   TJetVector<T1,T2> z( _dim, 0, _myEnv );
   for ( int i = 0; i < _dim; i++ ) {
     z._comp[i] = _comp[i] - x._comp[i];
+  }
+  return z;
+}
+
+
+template<typename T1, typename T2>
+TJetVector<T1,T2> TJetVector<T1,T2>::operator- ( const Vector& y ) const
+{
+#ifndef NOCHECKS
+  CHECKOUT(_dim != y.Dim(), "JetVector::operator-", "Incompatible dimensions.")
+#endif
+
+  TJetVector<T1,T2> z( *this );
+  for ( int i = 0; i < _dim; i++ ) {
+    z._comp[i] -= y(i);
   }
   return z;
 }
@@ -239,6 +283,20 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator-= ( const TJetVector<T1,T2>& x )
 
 
 template<typename T1, typename T2>
+TJetVector<T1,T2> TJetVector<T1,T2>::operator-= ( const Vector& x )
+{
+#ifndef NOCHECKS
+  CHECKOUT(_dim != x.Dim(), "JetVector::operator-=", "Incompatible dimensions.")
+#endif
+
+  for ( int i = 0; i < _dim; i++ ) {
+    _comp[i] -= x(i);
+  }
+  return *this;
+}
+
+
+template<typename T1, typename T2>
 TJetVector<T1,T2> TJetVector<T1,T2>::operator* ( const TJet<T1,T2>& c ) const
 {
   TJetVector<T1,T2> z( _dim, 0, _myEnv );
@@ -254,15 +312,21 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator* ( const T1& c ) const
   return z;
 }
 
-TJetVector<FNAL::Complex,double> operator*( const TJetVector<FNAL::Complex,double>& x, const double& c )
+
+
+template<typename T1, typename T2>
+TJetVector<T1,T2> operator*( const TJet<T1,T2>& c, const Vector& x )
 {
-  return x.operator*( FNAL::Complex(c,0.0) );
+  int d = x.Dim();
+  TJetVector<T1,T2> z( d, 0, ((TJetEnvironment<T1,T2>*) c.Env()) );
+  for ( int i = 0; i < d; i++ ) { z.SetComponent( i, c * x(i) ); }
+  return z;
 }
 
-TJetVector<FNAL::Complex,double> operator*( const double& c, const TJetVector<FNAL::Complex,double>& x )
-{
-  return x.operator*( FNAL::Complex(c,0.0) );  // it's commutative
-}
+
+
+
+
 
 template<typename T1, typename T2>
 TJetVector<T1,T2> operator* ( const TJet<T1,T2>& c, const TJetVector<T1,T2>& x )
@@ -339,6 +403,20 @@ TJet<T1,T2> TJetVector<T1,T2>::operator* ( const TJetVector<T1,T2>& x ) const
   u = ((T1) 0.0);
   int i;
   for ( i = 0; i < _dim; i++ ) u += _comp[i] * x._comp[i];
+  return u;
+}
+
+
+template<typename T1, typename T2>
+TJet<T1,T2> TJetVector<T1,T2>::operator* ( const Vector& y ) const
+{
+#ifndef NOCHECKS
+  CHECKOUT(_dim != y.Dim(), "JetVector::operator*", "Incompatible dimensions.")
+#endif
+
+  TJet<T1,T2> u( _myEnv );
+  u = 0.0; // This should not be necessary. Why is it here?
+  for ( int i = 0; i < _dim; i++ ) { u += _comp[i] * y(i); }
   return u;
 }
 
@@ -566,6 +644,14 @@ void TJetVector<T1,T2>::Reconstruct( int n, TJetEnvironment<T1,T2>* pje )
 
 
 template<typename T1, typename T2>
+void TJetVector<T1,T2>::CopyFrom( const TJetVector& x )
+{
+  this->Reconstruct( x.Dim(), ((TJetEnvironment<T1,T2>*) x.Env()) );
+  this->operator=( x );
+}
+
+
+template<typename T1, typename T2>
 void TJetVector<T1,T2>::peekAt() const
 {
   cout << "\n\nBegin TJetVector<T1,T2>::peekAt() ......\n";
@@ -574,55 +660,6 @@ void TJetVector<T1,T2>::peekAt() const
     _comp[i].peekAt();
   }
   cout << "End TJetVector<T1,T2>::peekAt() ......\n" << endl;
-}
-
-
-void TJetVector<double,FNAL::Complex>::printCoeffs() const
-{
-  int i;
-  cout << "\n\nBegin TJetVector<double,FNAL::Complex>::printCoeffs() ......\n"
-       << "Dimension: " << _dim 
-       << ", Weight = " << Weight()
-       << ", Max accurate weight = " << AccuWgt() 
-       << endl;
-  cout << "JetVector reference point: " 
-       << endl;
-  for( i = 0; i < _myEnv->_numVar; i++ ) 
-    cout << setw(20) << setprecision(12) 
-         << _myEnv->_refPoint[i]
-         << "\n" << endl;
-
-  for ( i = 0; i < _dim; i++ ) {
-    cout << "TJetVector<double,FNAL::Complex>::printCoeffs(): Component " << i << endl;
-    _comp[i].printCoeffs();
-  }
-  cout << "End TJetVector<double,FNAL::Complex>::printCoeffs() ......\n" << endl;
-}
-
-
-void TJetVector<FNAL::Complex,double>::printCoeffs() const
-{
-  int i;
-  cout << "\n\nBegin TJetVector<FNAL::Complex,double>::printCoeffs() ......\n"
-       << "Dimension: " << _dim 
-       << ", Weight = " << Weight()
-       << ", Max accurate weight = " << AccuWgt() 
-       << endl;
-  cout << "TJetVector<FNAL::Complex,double> reference point: " 
-       << endl;
-  for( i = 0; i < _myEnv->_numVar; i++ ) 
-    cout << setw(20) << setprecision(12) 
-         << real( _myEnv->_refPoint[i] )
-         << " + i"
-         << setw(20) << setprecision(12) 
-         << imag( _myEnv->_refPoint[i] )
-         << "\n" << endl;
-
-  for ( i = 0; i < _dim; i++ ) {
-    cout << "TJetVector<FNAL::Complex,double>::printCoeffs(): Component " << i << endl;
-    _comp[i].printCoeffs();
-  }
-  cout << "End TJetVector<FNAL::Complex,double>::printCoeffs() ......\n" << endl;
 }
 
 
@@ -643,69 +680,6 @@ TJetVector<T1,T2> TJetVector<T1,T2>::Unit () const
   TJetVector<T1,T2> z( *this );
   for ( int i = 0; i < _dim; i++ ) z._comp[i] /= x;
   return z;
-}
-
-
-void TJetVector<double,FNAL::Complex>::Rotate ( TJetVector<double,FNAL::Complex>& v, double theta ) const
-{
-#ifndef NOCHECKS
-  CHECKOUT((_dim != 3) || ( v._dim != 3 ),
-           "TJetVector<double,FNAL::Complex>::Rotate",
-           "Dimension must be 3." )
-#endif
-
-  double c, s;
-  TJetVector<double,FNAL::Complex> e( 3, 0, _myEnv ), u( 3, 0, _myEnv);
-
-  e = Unit();
-  c = cos( theta );
-  s = sin( theta );
-  u = ( c*v ) +
-      ( s*( e^v) ) +
-      ( ( ( 1.0 - c )*(e*v) )*e );
-  for ( int i = 0; i < 3; i++ ) v._comp[i] = u._comp[i];
-}
-
-
-void TJetVector<FNAL::Complex,double>::Rotate ( TJetVector<FNAL::Complex,double>&, double ) const
-{
-  throw( GenericException( __FILE__, __LINE__, 
-         "void JetCVectorRotate ( JetCVector&, double ) const", 
-         "Function does not exist." ) );
-}
-
-
-void TJetVector<double,FNAL::Complex>::Rotate ( TJetVector<double,FNAL::Complex>& v, 
-                                 const TJet<double,FNAL::Complex>& theta ) const
-{
-#ifndef NOCHECKS
-  CHECKOUT((_dim != 3) || ( v._dim != 3 ),
-           "TJetVector<double,FNAL::Complex>::Rotate",
-           "Dimension must be 3." )
-  CHECKOUT((_myEnv != v._myEnv)||(_myEnv != theta.Env()), 
-           "TJetVector<double,FNAL::Complex>::Rotate", 
-           "Incompatible environments.")
-#endif
-
-  TJet<double,FNAL::Complex> c( _myEnv ), s( _myEnv );
-  TJetVector<double,FNAL::Complex> e( 3, 0, _myEnv), u( 3, 0, _myEnv);
-
-  e = Unit();
-  c = cos( theta );
-  s = sin( theta );
-  u = ( c*v ) +
-      ( s*( e^v) ) +
-      ( ( ( 1.0 - c )*(e*v) )*e );
-  for ( int i = 0; i < 3; i++ ) v._comp[i] = u._comp[i];
-}
-
-
-void TJetVector<FNAL::Complex,double>::Rotate ( TJetVector<FNAL::Complex,double>&, 
-                                                const TJet<FNAL::Complex,double>& ) const
-{
-  throw( GenericException( __FILE__, __LINE__, 
-         "void JetCVectorRotate ( JetCVector&, const JetC& ) const", 
-         "Function does not exist." ) );
 }
 
 

@@ -53,10 +53,10 @@ class TLieOperator : public TJetVector<T1,T2>
 {
 public:
   // Constructors and destructors_____________________________________
-  TLieOperator( TJetEnvironment<T1,T2>* = (TJet<T1,T2>::lastEnvironment()) );
+  TLieOperator( TJetEnvironment<T1,T2>* = (TJet<T1,T2>::_lastEnv) );
   TLieOperator( const TLieOperator& );
   TLieOperator( const TJet<T1,T2>& );  // Creates a Hamiltonian vector field.
-  TLieOperator( char*, TJetEnvironment<T1,T2>* = (TJet<T1,T2>::lastEnvironment()) ); 
+  TLieOperator( char*, TJetEnvironment<T1,T2>* = (TJet<T1,T2>::_lastEnv) ); 
                                        // Creates the identity function.  
   ~TLieOperator();
 
@@ -121,8 +121,5 @@ inline void TLieOperator<T1,T2>::setComponent( int i, const TJet<T1,T2>& x )
 template<typename T1, typename T2>
 inline void TLieOperator<T1,T2>::SetComponent( int i, const TJet<T1,T2>& x )
 { this->setVariable( x, i ); }
-
-typedef TLieOperator<double,FNAL::Complex> LieOperator;
-typedef TLieOperator<FNAL::Complex,double> CLieOperator;
 
 #endif // TLIEOPERATOR_H

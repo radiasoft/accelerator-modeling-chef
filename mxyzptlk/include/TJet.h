@@ -34,12 +34,13 @@
 #include "slist.h"
 #include "dlist.h"
 #include "IntArray.h"
-#include "VectorD.h"
 
 #include "TJetEnvironment.h"
 #include "TJL.h"
 
 // Forward declarations
+class Vector;
+
 template<typename T1, typename T2> 
 class TJet;
 
@@ -71,6 +72,13 @@ TJet<T1,T2> operator+( const TJet<T1,T2>&, const T1& );
 template<typename T1, typename T2> 
 TJet<T1,T2> operator+( const T1&, const TJet<T1,T2>& );
 
+TJet<FNAL::Complex,double> operator+( const TJet<double,FNAL::Complex>& x, const TJet<FNAL::Complex,double>& y );
+TJet<FNAL::Complex,double> operator+( const TJet<FNAL::Complex,double>& x, const TJet<double,FNAL::Complex>& y );
+TJet<FNAL::Complex,double> operator+( const FNAL::Complex& x, const TJet<double,FNAL::Complex>& y );
+TJet<FNAL::Complex,double> operator+( const TJet<double,FNAL::Complex>& y, const FNAL::Complex& x );
+TJet<FNAL::Complex,double> operator+( const double& x, const TJet<FNAL::Complex,double>& y );
+TJet<FNAL::Complex,double> operator+( const TJet<FNAL::Complex,double>& y, const double& x );
+
 template<typename T1, typename T2> 
 TJet<T1,T2> operator-( const TJet<T1,T2>&, const TJet<T1,T2>& );
 
@@ -83,6 +91,13 @@ TJet<T1,T2> operator-( const TJet<T1,T2>&, const T1& );
 template<typename T1, typename T2> 
 TJet<T1,T2> operator-( const T1&, const TJet<T1,T2>& );
 
+TJet<FNAL::Complex,double> operator-( const TJet<double,FNAL::Complex>& x, const TJet<FNAL::Complex,double>& y );
+TJet<FNAL::Complex,double> operator-( const TJet<FNAL::Complex,double>& x, const TJet<double,FNAL::Complex>& y );
+TJet<FNAL::Complex,double> operator-( const FNAL::Complex& x, const TJet<double,FNAL::Complex>& y );
+TJet<FNAL::Complex,double> operator-( const TJet<double,FNAL::Complex>& y, const FNAL::Complex& x );
+TJet<FNAL::Complex,double> operator-( const double& x, const TJet<FNAL::Complex,double>& y );
+TJet<FNAL::Complex,double> operator-( const TJet<FNAL::Complex,double>& y, const double& x );
+
 template<typename T1, typename T2> 
 TJet<T1,T2> operator*( const TJet<T1,T2>&, const TJet<T1,T2>& );
 
@@ -91,6 +106,19 @@ TJet<T1,T2> operator*( const TJet<T1,T2>&, const T1& );
 
 template<typename T1, typename T2> 
 TJet<T1,T2> operator*( const T1&, const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator*( const TJet<T1,T2>&, const int& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator*( const int&, const TJet<T1,T2>& );
+
+TJet<FNAL::Complex,double> operator*( const TJet<double,FNAL::Complex>& x, const TJet<FNAL::Complex,double>& y );
+TJet<FNAL::Complex,double> operator*( const TJet<FNAL::Complex,double>& x, const TJet<double,FNAL::Complex>& y );
+TJet<FNAL::Complex,double> operator*( const FNAL::Complex& y, const TJet<double,FNAL::Complex>& x );
+TJet<FNAL::Complex,double> operator*( const TJet<double,FNAL::Complex>& x, const FNAL::Complex& y );
+TJet<FNAL::Complex,double> operator*( const TJet<FNAL::Complex,double>& x, const double& y );
+TJet<FNAL::Complex,double> operator*( const double& x, const TJet<FNAL::Complex,double>& y );
 
 template<typename T1, typename T2> 
 TJet<T1,T2> operator/( const TJet<T1,T2>&, const TJet<T1,T2>& );
@@ -102,19 +130,20 @@ template<typename T1, typename T2>
 TJet<T1,T2> operator/( const T1&, const TJet<T1,T2>& ); 
 
 template<typename T1, typename T2> 
+TJet<T1,T2> operator/( const TJet<T1,T2>&, const int& ); 
+
+TJet<FNAL::Complex,double> operator/( const TJet<double,FNAL::Complex>& x, const TJet<FNAL::Complex,double>& y );
+TJet<FNAL::Complex,double> operator/( const TJet<FNAL::Complex,double>& x, const TJet<double,FNAL::Complex>& y );
+TJet<FNAL::Complex,double> operator/( const FNAL::Complex& x, const TJet<double,FNAL::Complex>& y );
+TJet<FNAL::Complex,double> operator/( const TJet<double,FNAL::Complex>& y, const FNAL::Complex& x );
+TJet<FNAL::Complex,double> operator/( const TJet<FNAL::Complex,double>& x, const double& y );
+TJet<FNAL::Complex,double> operator/( const double& x, const TJet<FNAL::Complex,double>& y );
+
+template<typename T1, typename T2> 
 TJet<T1,T2> operator^( const TJet<T1,T2>&, const TJet<T1,T2>& );
 
 template<typename T1, typename T2> 
 TJLterm<T1,T2> operator*( const TJLterm<T1,T2>&, const TJLterm<T1,T2>& );
-
-template<typename T1, typename T2> 
-TJet<T1,T2> operator*( const TJet<T1,T2>&, const int& );
-
-template<typename T1, typename T2> 
-TJet<T1,T2> operator*( const int&, const TJet<T1,T2>& );
-
-template<typename T1, typename T2> 
-TJet<T1,T2> operator/( const TJet<T1,T2>&, const int& ); 
 
 template<typename T1, typename T2> 
 TJet<T1,T2> acos ( const TJet<T1,T2>& );
@@ -329,9 +358,13 @@ public:
   friend TJet operator-<>( const TJet& );
   friend TJet operator-<>( const TJet&, const T1& );
   friend TJet operator-<>( const T1&, const TJet& );
+
   friend TJet operator*<>( const TJet&, const TJet& );
+  friend TJet<FNAL::Complex,double> operator*( const TJet<double,FNAL::Complex>&, const TJet<FNAL::Complex,double>& );
+  friend TJet<FNAL::Complex,double> operator*( const TJet<FNAL::Complex,double>&, const TJet<double,FNAL::Complex>& );
   friend TJet operator*<>( const TJet&, const T1& );
   friend TJet operator*<>( const T1&, const TJet& );     // ??? Change this!!
+
   friend TJet operator/<>( const TJet&, const TJet& );   // ??? Friendliness
   friend TJet operator/<>( const TJet&, const T1& );     // ??? unnecessary
   friend TJet operator/<>( const T1&, const TJet& ); 
@@ -482,10 +515,5 @@ inline bool operator==( const T1& x, const TJet<T1,T2>& y )
   return y == x;
 }
 
-
-typedef TJet<double,FNAL::Complex> Jet;
-typedef TJet<FNAL::Complex,double> JetC;
-typedef Tcoord<double,FNAL::Complex> coord;
-typedef Tcoord<FNAL::Complex,double> coordC;
 
 #endif // TJET_H
