@@ -719,7 +719,7 @@ void RayTrace::setState( const Vector& s )
     uic  << "File: " << __FILE__ << ", Line: " << __LINE__
          << "\nvoid RayTrace::setState( const Vector& s )"
          << "\nArgument s has dimension " << (s.Dim()) << " != 6";
-    QMessageBox::information( this, "AESOP::Tracker", uic.str().c_str() );
+    QMessageBox::information( this, "CHEF::Tracker", uic.str().c_str() );
   }
 }
 

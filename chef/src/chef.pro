@@ -33,7 +33,8 @@ SOURCES = CHEF.builders.cc \
           QueryDialog.cc \
           RayTrace.cc \
           SiteViewer.cc \
-          Tracker.cc
+          Tracker.cc \
+          TrbWidget.cc
 
 HEADERS = ../include/CHEF.h \
           ../include/BeamlineBrowser.h \
@@ -47,4 +48,5 @@ HEADERS = ../include/CHEF.h \
           ../include/RayTrace.h \
           ../include/SiteViewer.h \
           ../include/Tracker.h \
+          ../include/TrbWidget.h \
           ../include/TrackerDefs.h

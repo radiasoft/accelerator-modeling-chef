@@ -79,6 +79,7 @@ class Orbit
   public: 
     Orbit( const Vector& );  // Arguments are always cloned.
     Orbit( const Vector* );
+    Orbit( const Orbit& );   // Does a deep copy
     ~Orbit();
 
     void add( const Vector& );
@@ -87,9 +88,9 @@ class Orbit
     const Vector* lastPoint();
     const Vector* firstPoint();
 
-    GLdouble Red();
-    GLdouble Blue();
-    GLdouble Green();
+    GLdouble Red() const;
+    GLdouble Green() const;
+    GLdouble Blue() const;
     void setColor( GLdouble, GLdouble, GLdouble );
 
     class Iterator 
@@ -133,7 +134,9 @@ public:
 
   // REMOVE void      setBeamline( const beamline* );
   // REMOVE void      _process ( DrawSpace*, double, double );
-  void      setState( const Vector& );
+  void setState( const Vector& );
+
+  bool isIterating();
 
 public slots:
   // Conversion slots: connected to DrawSpaces
@@ -209,7 +212,7 @@ private:
 
   BeamlineContext* _bmlConPtr;
   bool             _deleteContext;
-  char             _isIterating;
+  bool             _isIterating;
   Orbit*           _p_currOrb;
 };
 
@@ -278,19 +281,24 @@ private:
 
 // Inlined functions
 
-inline GLdouble Orbit::Red()
+inline GLdouble Orbit::Red() const
 {
   return _red;
 }
 
-inline GLdouble Orbit::Green()
+inline GLdouble Orbit::Green() const
 {
   return _green;
 }
 
-inline GLdouble Orbit::Blue()
+inline GLdouble Orbit::Blue() const
 {
   return _blue;
+}
+
+inline bool Tracker::isIterating()
+{
+  return _isIterating;
 }
 
 };  // end namespace CHEF

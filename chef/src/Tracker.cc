@@ -47,6 +47,7 @@
 #include <fstream>
 // #include <ieeefp.h>   // for isnan
 
+#include <qnamespace.h>
 #include <qapplication.h>
 #include <qtimer.h>
 #include <qfiledialog.h>
@@ -56,6 +57,7 @@
 #include "PointEdit.h"
 #include "Tracker.h"
 #include "TrackerDefs.h"
+#include "TrbWidget.h"
 #include "beamline.h"
 #include "BeamlineContext.h"
 // #include "EdwardsTeng.h"
@@ -81,6 +83,16 @@ Orbit::Orbit( const Vector* x )
 : _red(1), _green(1), _blue(1)
 {
   _history.append( new Vector( *x ) );
+}
+
+Orbit::Orbit( const Orbit& x ) 
+: _red(x._red), _green(x._green), _blue(x._blue)
+{
+  const Vector* v = 0; 
+  Orbit::Iterator oit( x );
+  while((  v = oit++  )) {
+    _history.append( new Vector(*v) );
+  }
 }
 
 Orbit::~Orbit()
@@ -566,35 +578,110 @@ void DrawSpace::drawPhiHPhiV( DrawSpace* dsPtr )
 
 void DrawSpace::mousePressEvent( QMouseEvent* qme )
 {
-  double ix, iy;
+  if( Qt::LeftButton == qme->button() ) { // Left button pressed
+    double ix, iy;
 
-  _ixbf = qme->pos().x();
-  _iybf = qme->pos().y();
+    _ixbf = qme->pos().x();
+    _iybf = qme->pos().y();
 
-  ix = ((double) _ixbf) / ((double) this->width() );
-  iy = ((double) _iybf) / ((double) this->height());
+    ix = ((double) _ixbf) / ((double) this->width() );
+    iy = ((double) _iybf) / ((double) this->height());
 
-  _xbf = ( _xHi*ix + _xLo*( 1.0 - ix ) );
-  _ybf = ( _yLo*iy + _yHi*( 1.0 - iy ) );
+    _xbf = ( _xHi*ix + _xLo*( 1.0 - ix ) );
+    _ybf = ( _yLo*iy + _yHi*( 1.0 - iy ) );
 
-  _isZooming = false;
+    _isZooming = false;
 
-  if( _zoomActive ) {
-    emit _startedZoom();
+    if( _zoomActive ) {
+      emit _startedZoom();
+    }
+    else {
+      emit _new_point( _xbf, _ybf );
+    }
   }
-  else {
-    emit _new_point( _xbf, _ybf );
-  }
 
-  // REMOVE: double x, y;
-  // REMOVE: 
-  // REMOVE: ix = ((double)(qme->pos().x())) / ((double) this->width() );
-  // REMOVE: iy = ((double)(qme->pos().y())) / ((double) this->height());
-  // REMOVE: 
-  // REMOVE: x = ( _xHi*ix + _xLo*( 1.0 - ix ) );
-  // REMOVE: y = ( _yLo*iy + _yHi*( 1.0 - iy ) );
-  // REMOVE: 
-  // REMOVE: emit _new_point( x, y );
+  else { // Right button pressed
+    if( !(_topTracker->isIterating()) ) {
+      if( (_myFunc == DrawSpace::drawH_ViewNorm) || 
+          (_myFunc == DrawSpace::drawV_ViewNorm)    ) {
+
+        // These transformations should be done in
+        //   a separate routine!!
+        bool isHorizontal = (_myFunc == DrawSpace::drawH_ViewNorm);
+        double alpha, beta;
+        if( isHorizontal ) {
+          alpha = ( _topTracker->_p_info->alpha ).hor;
+          beta  = ( _topTracker->_p_info->beta  ).hor;
+	}
+        else {
+          alpha = ( _topTracker->_p_info->alpha ).ver;
+          beta  = ( _topTracker->_p_info->beta  ).ver;
+	}
+
+        slist orbits3D;
+        slist_iterator getNext( _topTracker->_orbits );
+        Vector z(3);
+        const Vector* vec = 0;
+        Orbit* orbitPtr = 0;
+        Orbit* newOrbitPtr = 0;
+
+        if((  0 == (orbitPtr = (Orbit*) getNext())   ))
+        { return; }
+
+        while((  0 != orbitPtr )) {
+	  Orbit::Iterator oit( orbitPtr );
+          vec = oit++;
+
+          if( isHorizontal ) {
+            z(0) = (*vec)(0);
+            z(1) = alpha*(*vec)(0) + beta*(*vec)(3);
+            z(2) = (*vec)(1);
+	  }
+          else {
+            z(0) = (*vec)(1);
+            z(1) = alpha*(*vec)(1) + beta*(*vec)(4);
+            z(2) = (*vec)(0);
+	  }
+
+          newOrbitPtr = new Orbit( z );
+          newOrbitPtr->setColor( orbitPtr->Red(), 
+                                 orbitPtr->Green(), 
+                                 orbitPtr->Blue()   );
+
+          vec = oit++;
+          while( 0 != vec ) {
+            if( isHorizontal ) {
+              z(0) = (*vec)(0);
+              z(1) = alpha*(*vec)(0) + beta*(*vec)(3);
+              z(2) = (*vec)(1);
+	    }
+            else {
+              z(0) = (*vec)(1);
+              z(1) = alpha*(*vec)(1) + beta*(*vec)(4);
+              z(2) = (*vec)(0);
+	    }
+            
+            newOrbitPtr->add( z );
+            vec = oit++;
+	  }
+
+          orbits3D.append( newOrbitPtr );
+          orbitPtr = (Orbit*) getNext();
+	}
+
+        TrbWidget* trbPtr = new TrbWidget( orbits3D );
+        // The TrbWidget constructor assumes ownership
+        //   of all Orbits in orbits3D. In the process
+        //   it empties the list.
+        trbPtr->show();
+
+        // REMOVE: getNext.Reset(orbits3D);
+        // REMOVE: while((  0 != (orbitPtr = (Orbit*) orbits3D.get())   )) {
+        // REMOVE:   delete orbitPtr;
+	// REMOVE: }
+      }
+    }
+  }
 }
 
 
@@ -715,7 +802,7 @@ void DrawSpace::resetZoom()
 // -----------------------------
 
 Tracker::Tracker( BeamlineContext* bmlCP )
-: _bmlConPtr( bmlCP ), _isIterating(0), _p_info(0), _number(1),
+: _bmlConPtr( bmlCP ), _isIterating(false), _p_info(0), _number(1),
   _deleteContext( false ), _p_currOrb(0),
   _myWheel(0.0)
 {
@@ -727,7 +814,7 @@ Tracker::Tracker( BeamlineContext* bmlCP )
 
 
 Tracker::Tracker( /* const */ beamline* x )
-: _bmlConPtr( 0 ), _isIterating(0), _p_info(0), _number(1),
+: _bmlConPtr( 0 ), _isIterating(false), _p_info(0), _number(1),
   _deleteContext( true ), _p_currOrb(0),
   _myWheel(0.0)
 {
@@ -957,7 +1044,7 @@ void Tracker::_do_nothing()
 
 void Tracker::_edit_clear()
 {
-  _isIterating = 0;
+  _isIterating = false;
   _p_currOrb = 0;
 
   Orbit* q;
