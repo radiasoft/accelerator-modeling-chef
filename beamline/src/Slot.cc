@@ -297,13 +297,17 @@ istream& Slot::readFrom( istream& is )
       exit(1);
     }
   } else {
+    if( align != 0 ) {
+      delete align;
+      align = 0;
+    }
     // Skip the next line--it is not "slot_BEGIN" (assume it is "slot_empty")
     ;
   }
     
   // Finally, read in the "out" frame information.
   is >> out;
-  length = out.getOrigin() .Norm();
+  length = ( out.getOrigin() - in.getOrigin()) .Norm();
 
   return is;
 }
