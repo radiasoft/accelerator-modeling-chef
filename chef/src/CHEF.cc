@@ -1614,13 +1614,13 @@ void CHEF::_do_nothing()
 }
 
 
-void AESOP::_helpContents()
+void CHEF::_helpContents()
 {
   this->_do_nothing();
 }
 
 
-void AESOP::_helpAbout()
+void CHEF::_helpAbout()
 {
   this->_do_nothing();
 }
