@@ -133,6 +133,7 @@ public:
                                                    // *this as the axis
 
   friend ostream& operator<<( ostream&, const JetCVector& );
+  friend istream& operator>>( istream&, JetCVector& );
 
   JetCVector filter( int, int );
   JetCVector filter( MX_R_FUNCCPTR [] );

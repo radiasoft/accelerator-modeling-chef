@@ -733,7 +733,7 @@ istream& operator>>( istream& is,  JLC& x )
   is >> x.accuWgt;
   is >> buf;
   is >> buf;
-  is >> x.myEnv;
+  streamIn( is, &(x.myEnv) );
   is >> buf;
   is >> buf;
   IntArray ndx( x.myEnv->NumVar );
@@ -764,7 +764,7 @@ ostream& operator<<( ostream& os, const JLC& x ) {
  os << "\n Count = " << x.count << " , Weight = " << x.weight;
  os << " , Max accurate weight = " << x.accuWgt << endl;
  os << "Begin Environment: \n"
-    << (int) x.myEnv
+    << *(x.myEnv)
     << "\nEnd Environment: " << endl;
 
  while((  q = getNext()  )) {

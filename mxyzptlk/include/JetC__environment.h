@@ -33,7 +33,7 @@ struct JetC__environment {
                           //   when storing monomials. The array exponent 
                           //   is allocated by JLCSetup.
  char*     expCode;       // The Wilf code of a monomial. 
- char      PBOK;          // Taking Poisson brackets is OK: the dimension of 
+ short     PBOK;          // Taking Poisson brackets is OK: the dimension of 
                           //   phase space is even.
  MatrixI*  numPaths;      // An array counting the number of paths to a vertex 
                           //   in the Wilf graph.  JLCSetup arranges that 
@@ -62,7 +62,7 @@ struct JetC__environment {
 
  // Streams
  friend ostream& operator<<( ostream&, const JetC__environment& );
- friend istream& operator>>( istream&, JetC__environment* );
+ friend istream& streamIn( istream&, JetC__environment** );
 
  // A global
  static char SkipEnvEqTest;

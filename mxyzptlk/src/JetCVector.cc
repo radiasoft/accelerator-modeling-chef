@@ -639,13 +639,42 @@ void JetCVector::Rotate ( JetCVector& v, const JetC& theta ) const
 
 ostream& operator<<( ostream& os, const JetCVector& v )
 {
-  os << "Begin JetCVector data:";
+  os << "Begin JetCVector:" << endl;
+  os << v.dim << endl;
+  os << *(v.myEnv);
   for( int i = 0; i < v.dim; i++ ) {
     os << "\nJetCVector component " << i << ":" << endl;
     os << v.comp[i];
   }
-  os << "\nEnd JetCVector data." << endl;
+  os << "\nEnd JetCVector." << endl;
   return os;
+}
+
+
+istream& operator>>( istream& is, JetCVector& v )
+{
+  static char buf[100];
+  is >> buf;
+  is >> buf;
+  is >> v.dim;
+  CHECKOUT(v.dim <= 0, "JetCVector::JetCVector", "Dimension must be positive.")
+
+  streamIn( is, &(v.myEnv) );
+
+  if( v.comp ) delete [] v.comp;
+  v.comp = new JetC [ v.dim ];
+
+  for ( int i = 0; i < v.dim; i++ ) {
+    is >> buf;
+    is >> buf;
+    is >> buf;
+    is >> v.comp[i];
+  }
+
+  is >> buf;
+  is >> buf;
+
+  return is;
 }
 
 
