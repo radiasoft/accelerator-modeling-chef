@@ -269,7 +269,7 @@ void rbend::P_InFace( bmlnElmnt* p_be, Particle& p )
 
 				// Rotate momentum into the coord of the magnet.
  double newPx = p.state[3] * cos(thetaOver2) + p3divpbar*sin(thetaOver2);
- double newPz;
+
  p.state[3] = newPx;
 }
 
