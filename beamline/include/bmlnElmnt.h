@@ -467,6 +467,24 @@ InsertionList::operator()( const int& n ) const
 
 class beamline : public bmlnElmnt, public dlist
 {
+public:
+  class arrayRep
+  {
+  public:
+    arrayRep( const beamline*, bool = false );  
+    // Clones all elements if 2nd argument is true
+    ~arrayRep();
+    int size() { return _n; }
+    bmlnElmnt* e( int i ) { return _element[i]; }
+    // WARNING: For speed, this is made unsafe.
+    // User is responsible for staying in bounds.
+
+  private:
+    int         _n;
+    bmlnElmnt** _element;
+    bool        _cloned;
+  };
+
 private:
   double            nominalEnergy;    // In GeV
   int               numElem;          // Number of elements in the beamline
@@ -476,7 +494,6 @@ private:
   friend istream& operator>>( istream&, beamline& );
 
 public:
-
 
   // CONSTRUCTORS AND DESTRUCTOR
 
@@ -494,6 +511,7 @@ public:
   void zap();                          // Destroys the beamline elements
                                        // without destroying the beamline
   void eliminate();                    // Combines zap and ~beamline
+  void clear();                        // Returns state to empty beamline.
 
 
 
@@ -615,6 +633,7 @@ public:
   // ??? These three twiss functions should be eliminated.
   // ??? They are hopelessly obsolete.
 
+  virtual
   int twiss( JetParticle&, 
              double = 0.00001 /* dpp */,
              short int = 1 /* attachFlag */ );
@@ -625,11 +644,13 @@ public:
                            // Barnacle labelled "Twiss" to every element
                            // in the line.
 
+  virtual
   int twiss( char, 
              JetParticle& );
                            // Only computes lattice functions at
                            // the beginning of the ring.
                            // Uses the same method as MAD.
+  virtual
   int twiss( lattFunc&,
              JetParticle&,
              short int = 1 /* attachFlag */ );
@@ -644,8 +665,8 @@ public:
   lattFunc whatIsLattice( int );     // After element n, 0 <= n.
   lattFunc whatIsLattice( char* n ); // n is name of element 
   int    howMany() const { return numElem; }
-  int    countHowMany();
-  int    countHowManyDeeply();
+  int    countHowMany( CRITFUNC = 0, slist* = 0 ) const;
+  int    countHowManyDeeply( CRITFUNC = 0, slist* = 0 ) const;
   int    howDeep();
   inline bmlnElmnt* firstElement()
     {
@@ -672,6 +693,7 @@ public:
   virtual int isType(char* c) { if ( strcmp(c, "beamline") != 0 ) return bmlnElmnt::isType(c); else return 1; }
 
   bmlnElmnt* Clone() const;
+
   double OrbitLength( const Particle& );
   lattRing whatIsRing();
 
