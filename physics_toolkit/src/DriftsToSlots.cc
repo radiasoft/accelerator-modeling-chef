@@ -246,15 +246,15 @@ beamline* DriftsToSlots( /* const */ beamline& original )
         if( firstPtr == elPtr ) {
           isDownStream  = false;
           isUpStream    = d2S_LookDownStream ( c, c_rb, c_CF, bi );
-	}
-        if( lastPtr == elPtr ) {
+        }
+        else if( lastPtr == elPtr ) {
           isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CF, bi );
           isUpStream    = false;
-	}
+        }
         else {
           isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CF, bi );
           isUpStream    = d2S_LookDownStream ( c, c_rb, c_CF, bi );
-	}
+        }
       }
 
       // There are four possibilities
