@@ -1752,14 +1752,16 @@ public:
   friend beamline& operator-( beamline& );
 
 
-  int startAt( const bmlnElmnt*);    // Resets the "beginning" of the
-                                     // beamline to the element given
+  int startAt( const bmlnElmnt*,     // Resets the "beginning" of the
+               int = 1 );            // beamline to the element given
                                      // by the argument. Should be used
                                      // only for rings. Returns non-zero
                                      // if error occurs (esp., no such
-                                     // element.
-  int startAt( char* );              // Resets the "beginning" of the
-                                     // beamline to the element whose
+                                     // element. The optional integer
+                                     // argument allows one to reset to
+                                     // nth occurrence of the element.
+  int startAt( char*,                // Resets the "beginning" of the
+               int = 1 );            // beamline to the element whose
                                      // name is given by the argument.
 
 
