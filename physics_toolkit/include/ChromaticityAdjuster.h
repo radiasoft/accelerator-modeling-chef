@@ -21,8 +21,10 @@
 class ChromaticityAdjuster : public Sage
 {
 public:
-  ChromaticityAdjuster( const beamline* );
-  ChromaticityAdjuster( const beamline& );
+  ChromaticityAdjuster( const beamline*, bool = false );
+  ChromaticityAdjuster( const beamline&, bool = false );
+  // Second argument is used by class Sage
+  // to control cloning. (See Sage.h)
   ~ChromaticityAdjuster();
 
   void addCorrector( const sextupole&, double, double );
