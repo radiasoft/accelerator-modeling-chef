@@ -320,7 +320,7 @@ void QBml::setPixmap( QPixmap *px )
     setup();
     widthChanged( 0 );
     invalidateHeight();
-    repaint();
+    // REMOVE: repaint();
 }
 
 
