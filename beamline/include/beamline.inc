@@ -9,7 +9,6 @@
 #include <math.h>
 #include "beamline.h"
 
-static const Complex complex_i    ( 0., 1. );
 static const double  pi           = 3.14159265358979323846;
 static const double  twoPi        = 6.28318530717958647693;
 
