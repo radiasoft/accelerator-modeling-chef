@@ -1124,20 +1124,20 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
    if( mtrx(1,4) < 0.0 ) snV *= -1.0;       // ?? changing the sign?
 
    t = asin( snH );
-   if( csH < 0.0 ) t  = pi - t;              // 0 < t < 2 pi
-   if( t < 0.0 )   t += twoPi;
-   latticeRing->tune.hor = ( t / twoPi );
+   if( csH < 0.0 ) t  = M_PI - t;              // 0 < t < 2 pi
+   if( t < 0.0 )   t += M_TWOPI;
+   latticeRing->tune.hor = ( t / M_TWOPI );
 
    t = asin( snV );
-   if( csV < 0.0 ) t  = pi - t;              // 0 < t < 2 pi
-   if( t < 0.0 )   t += twoPi;
-   latticeRing->tune.ver = t / twoPi;
+   if( csV < 0.0 ) t  = M_PI - t;              // 0 < t < 2 pi
+   if( t < 0.0 )   t += M_TWOPI;
+   latticeRing->tune.ver = t / M_TWOPI;
 
 //   t = atan2(snH,csH);
-//   latticeRing->tune.hor = ( t / twoPi );
+//   latticeRing->tune.hor = ( t / M_TWOPI );
 
 //   t = atan2(snV,csV);
-//   latticeRing->tune.ver = ( t / twoPi );
+//   latticeRing->tune.ver = ( t / M_TWOPI );
 
 
    // .......... Calculating betas and alphas ..............
@@ -1237,7 +1237,7 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
      			     mtrx(0,3)*mtrx(3,3))/beta0H;
   
        t = atan2(mtrx(0,3),tb);
-       while(t < oldpsiH) t += twoPi;
+       while(t < oldpsiH) t += M_TWOPI;
        lf->psi.hor = oldpsiH = t;
   
        tb = mtrx(1,1) * beta0V -  mtrx(1,4) * alpha0V;
@@ -1247,7 +1247,7 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
      			     mtrx(1,4)*mtrx(4,4))/beta0V;
   
        t = atan2(mtrx(1,4),tb);
-       while(t < oldpsiV) t += twoPi;
+       while(t < oldpsiV) t += M_TWOPI;
        lf->psi.ver = oldpsiV = t;
      }
 
