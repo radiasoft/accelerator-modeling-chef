@@ -217,6 +217,6 @@ egcs:
 	"RANLIB = ranlib" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"SYBASEINC = /usr/local/ap/sybase/include" \
-	"TKINC = /usr/include/tcl" \
+	"TKINC = /usr/local/TCL-TK/include" \
 	"LIBDIR = $(FNALROOT)/lib/egcs"
 
