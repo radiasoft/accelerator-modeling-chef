@@ -141,6 +141,12 @@ JLC::JLC( const JLC& x ) {
    append( q );
  }
 
+ count    = x.count;
+ weight   = x.weight;
+ accuWgt  = x.accuWgt;
+ myEnv    = x.myEnv;
+ rc       = 1;
+
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -164,6 +170,12 @@ JLC::JLC( JLC* x ) {
    q = new JLCterm( p );
    append( q );
  }
+
+ count    = x->count;
+ weight   = x->weight;
+ accuWgt  = x->accuWgt;
+ myEnv    = x->myEnv;
+ rc       = 1;
 
 #ifdef OBJECT_DEBUG
  objectCount++;
