@@ -115,21 +115,10 @@ BoolOpNode::BoolOpNode( )
 
 BoolOpNode::BoolOpNode( const BoolOpNode& x )
 {
-  cout << "DGN: Entering BoolOpNode::BoolOpNode( const BoolOpNode& x )" << endl;
-
   if( x._left) { _left  = (x._left) ->Clone(); }
   else { _left = 0; }
   if( x._right) { _right = (x._right)->Clone(); }
   else { _right = 0; }
-
-  cout << "DGN: ( ";
-  _left->writeTo( cout );
-  cout << " OP ";
-  _right->writeTo( cout );
-  cout << " )";
-  cout << endl;
-
-  cout << "DGN: Leaving BoolOpNode::BoolOpNode( const BoolOpNode& x )" << endl;
 }
 
 BoolOpNode::~BoolOpNode()
