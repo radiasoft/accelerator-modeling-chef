@@ -296,8 +296,8 @@ int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
 int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
 {
   int returnValue = 0;
-  static const Complex c_zero = Complex( 0.0,   0.0 );
-  static const Complex c_mi   = Complex( 0.0, - 1.0 );
+  static const Complex c_zero = Complex( 0.0, 0.0 );
+  static const Complex c_i    = Complex( 0.0, 1.0 );
 
   if( nu.Env() != N.Env() )        return 137;
   if( nu.Dim() != N.Dim() )        return 138;
@@ -329,7 +329,7 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
           cerr << "WARNING:                              " << endl;
           cerr << "WARNING: ConvertNToTunes              " << endl;
           cerr << "WARNING: Reality check was violated.  " << endl;
-          cerr << "WARNING: Offending ration is ";
+          cerr << "WARNING: Offending ratio is ";
           if( fabs( imag(v) ) == 0.0 ) {
             cerr << "infinite." << endl;
           }
@@ -343,11 +343,15 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
         ndx = jlctPtr->index;
         ndx(i) -= 1;
         for( j = 0; j < sd2; j++ ) {
-          if( ndx(j) != ndx(j+sd2) ) return 141;
-          if( ndx(j) < 0           ) return 142;
+          if( ndx(j) != ndx(j+sd2) ) {
+            return 141;
+	  }
+          if( ndx(j) < 0 ) {
+            return 142;
+	  }
         }
         nu(i).addTerm( new JLCterm( ndx, 
-                                    c_mi*v/MATH_TWOPI, 
+                                    c_i*v/MATH_TWOPI, 
                                     thisEnv 
                                   ) );
       }

@@ -34,8 +34,10 @@
 class TuneAdjuster : public Sage
 {
 public:
-  TuneAdjuster( const beamline* );
-  TuneAdjuster( const beamline& );
+  TuneAdjuster( const beamline*, bool = false );
+  TuneAdjuster( const beamline&, bool = false );
+  // Second argument is used by class Sage
+  // to control cloning. (See Sage.h)
   ~TuneAdjuster();
 
   void addCorrector( const quadrupole&, double, double );

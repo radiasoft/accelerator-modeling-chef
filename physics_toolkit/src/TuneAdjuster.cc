@@ -26,15 +26,15 @@
 #include "TuneAdjuster.h"
 #include "LattFuncSage.h"
 
-TuneAdjuster::TuneAdjuster( const beamline* x ) 
-: Sage( x ), _numberOfCorrectors(0), _c(2,1)
+TuneAdjuster::TuneAdjuster( const beamline* x, bool doClone ) 
+: Sage( x, doClone ), _numberOfCorrectors(0), _c(2,1)
 {
   _correctors = 0;
   _f = 0;
 }
 
-TuneAdjuster::TuneAdjuster( const beamline& x ) 
-: Sage( &x ), _numberOfCorrectors(0), _c(2,1)
+TuneAdjuster::TuneAdjuster( const beamline& x, bool doClone ) 
+: Sage( &x, doClone ), _numberOfCorrectors(0), _c(2,1)
 {
   _correctors = 0;
   _f = 0;

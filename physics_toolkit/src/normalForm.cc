@@ -94,12 +94,90 @@ void normalForm( const Mapping& theMapping, /* input */
  A = theMapping.Jacobian();
  MatrixC B;
  B = A.eigenVectors();
- /* DGN  cout << "DGN> Before normalization: B = \n" << B;*/
- /* DGN  cout << endl;*/
 
- MatrixC lambda;
- lambda = A.eigenValues();
-                          
+ // Normalizing the linear normal form coordinates
+ Complex  mi( 0., -1. );
+ MatrixD  J( "J", 6 );
+ MatrixC  Nx;
+ Nx = ( B.transpose() * J * B * J ) * mi;
+
+ for( i = 0; i < 6; i++ ) {
+  Nx( i, i ) = 1.0 / sqrt( abs( Nx(i,i) ) );  
+                                       // ??? "abs" should not be necessary,
+                                       // ??? but Holt is finding some
+                                       // ??? counterexamples.(!!??)
+                                       // ???
+                                       // ??? In principle, could get divide
+                                       // ??? by zero here.
+
+  if( abs( ( (Complex) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) Nx(i,i) = 1.0;
+
+      /* CAUTION */   for( j = 0; j < 6; j++ ) {
+      /* CAUTION */    if( j == i ) continue;
+      /* CAUTION */    else if( abs( Nx(i,j) ) > MLT1) {
+      /* CAUTION */          cout << "\n"
+      /* CAUTION */               << "***                                        \n"
+      /* CAUTION */               << "*** ERROR:                                 \n"
+      /* CAUTION */               << "*** ERROR: void normalForm()               \n"
+      /* CAUTION */               << "*** ERROR: Nondiagonal element in BJB^TJ   \n"
+      /* CAUTION */               << "*** ERROR: abs( Nx( " << i << ", " << j 
+                                  << " ) ) = " << abs(Nx(i,j)) << "\n"
+      /* CAUTION */               << "*** ERROR:                                 \n"
+      /* CAUTION */               << endl;
+      /* CAUTION */          exit(0);
+      /* CAUTION */         }
+      /* CAUTION */        else Nx(i,j) = complex_0;
+      /* CAUTION */   }
+ }
+
+ B = B*Nx;
+
+
+
+ // Try to get the phase correct ...
+ Complex m0, cm0, m1, cm1;
+ m0  = B(0,0)/abs(B(0,0));
+ cm0 = conj(m0);
+ m1  = B(1,1)/abs(B(1,1));
+ cm1 = conj(m1);
+ for( i = 0; i < 6; i++ ) {
+   B(i,0) *= cm0;
+   B(i,3) *= m0;
+   B(i,1) *= cm1;
+   B(i,4) *= m1;
+ }
+ if( imag(B(3,0)) > 0.0 ) {
+   for( i = 0; i < 6; i++ ) {
+     m0 = B(i,0);
+     B(i,0) = B(i,3);
+     B(i,3) = m0;
+   }
+ }
+ if( imag(B(4,1)) > 0.0 ) {
+   for( i = 0; i < 6; i++ ) {
+     m0 = B(i,1);
+     B(i,1) = B(i,4);
+     B(i,4) = m0;
+   }
+ }
+
+ // Store the result
+ *Bptr = B;
+
+
+ // Some useful matrices
+ MatrixC Binv;
+ Binv = B.inverse();
+ MatrixC D;
+ D = Binv * A * B;
+ MatrixC Dinv;
+ Dinv = D.inverse();
+
+ MatrixC lambda(1,D.cols());
+ for( i = 0; i < 6; i++ ) {
+   lambda(i) = D(i,i);
+ }
+
       /* CAUTION */  for( i = 0; i < 6; i++ ) {
       /* CAUTION */   if( fabs( abs(lambda(i)) - 1.0 ) > MLT1 ) {
       /* CAUTION */    cout << "\n"
@@ -153,60 +231,7 @@ void normalForm( const Mapping& theMapping, /* input */
       /* CAUTION */    exit(0);
       /* CAUTION */   }
       /* CAUTION */  }
-
- // Normalizing the linear normal form coordinates
- Complex  mi( 0., -1. );
- MatrixD  J( "J", 6 );
- MatrixC  Nx;
- Nx = ( B.transpose() * J * B * J ) * mi;
-
- /* DGN  cout << "DGN> The normalizer: Nx = \n" << Nx;*/
- /* DGN  cout << endl;*/
- for( i = 0; i < 6; i++ ) {
-  Nx( i, i ) = 1.0 / sqrt( abs( Nx(i,i) ) );  
-                                       // ??? "abs" should not be necessary,
-                                       // ??? but Holt is finding some
-                                       // ??? counterexamples.(!!??)
-                                       // ???
-                                       // ??? In principle, could get divide
-                                       // ??? by zero here.
-
-  if( abs( ( (Complex) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) Nx(i,i) = 1.0;
-
-      /* CAUTION */   for( j = 0; j < 6; j++ ) {
-      /* CAUTION */    if( j == i ) continue;
-      /* CAUTION */    else if( abs( Nx(i,j) ) > MLT1) {
-      /* CAUTION */          cout << "\n"
-      /* CAUTION */               << "***                                        \n"
-      /* CAUTION */               << "*** ERROR:                                 \n"
-      /* CAUTION */               << "*** ERROR: void normalForm()               \n"
-      /* CAUTION */               << "*** ERROR: Nondiagonal element in BJB^TJ   \n"
-      /* CAUTION */               << "*** ERROR: abs( Nx( " << i << ", " << j 
-                                  << " ) ) = " << abs(Nx(i,j)) << "\n"
-      /* CAUTION */               << "*** ERROR:                                 \n"
-      /* CAUTION */               << endl;
-      /* CAUTION */          exit(0);
-      /* CAUTION */         }
-      /* CAUTION */        else Nx(i,j) = complex_0;
-      /* CAUTION */   }
- }
-
- B = B*Nx;
- *Bptr = B;
-
- /* DGN  cout << "DGN> The normalizer: Nx = \n" << Nx;*/
- /* DGN  cout << endl;*/
- /* DGN  cout << "DGN> After normalization: B = \n" << B;*/
- /* DGN  cout << endl;*/
-
- // Some useful matrices
- MatrixC Binv;
- Binv = B.inverse();
- MatrixC D;
- D = Binv * A * B;
- MatrixC Dinv;
- Dinv = D.inverse();
-
+      /* CAUTION */  
       /* CAUTION */  // A little checking and cleaning.
       /* CAUTION */  for( i = 0; i < 6; i++ ) {
       /* CAUTION */   if( fabs( abs(Dinv(i,i)) - 1.0 ) > MLT1 ) {
@@ -284,15 +309,6 @@ void normalForm( const Mapping& theMapping, /* input */
  MappingC CL1;
  CL1 = theMapping;
 
- /* DGN  { */
- /* DGN  Mapping id( "ident" );*/
- /* DGN  Mapping kick;*/
- /* DGN  kick = theMapping( A.inverse()*id );*/
- /* DGN  cout << "DGN> Sextupole kick??? " << endl;*/
- /* DGN  kick.printCoeffs();*/
- /* DGN  cout << "DGN> Sextupole kick??? " << endl;*/
- /* DGN  ( A.inverse()*theMapping ).printCoeffs();*/
- /* DGN  }*/
 
  MappingC id( "ident" );
  MappingC calN;
@@ -301,9 +317,6 @@ void normalForm( const Mapping& theMapping, /* input */
  MappingC mapT;
 
 
- /* DGN  cout << "DGN> Before processing, calN = \n";*/
- /* DGN  calN.printCoeffs();*/
- /* DGN  cout << endl;*/
 
  // And the rest ...
  Complex          factor, denom, temp;
@@ -342,6 +355,20 @@ void normalForm( const Mapping& theMapping, /* input */
 
     // Either absorption or resonance subtraction ... 
     denom = factor - FORIRIX_one;
+    // begin DGN-------------------------
+    // cerr <<  "DGN:(normalForm.cc) k = " << k 
+    //      << ", i = " << i 
+    //      << ", index = ( ";
+    // for( int dgn = 0; dgn < 5; dgn++ ) 
+    // {  
+    //   if( dgn != i ) { cerr << q->index(dgn) << ", "; }
+    //   else           { cerr << (q->index(dgn) - 1) << ", "; }
+    // }
+    // if( 5 != i ) { cerr << q->index(5) << ") "; }
+    // else         { cerr << (q->index(5) - 1) << ") "; }
+    // cerr << ", abs(denom) = " << abs(denom) 
+    //      << endl;
+    // end DGN-------------------------
     if( abs( denom ) <= 1.0e-7 ) {
       N[k](i).addTerm( new JLCterm( q->index, - q->value, CL1.Env() ) );
     }
@@ -354,6 +381,7 @@ void normalForm( const Mapping& theMapping, /* input */
    T[k].SetComponent( i, scr );
   }
   // T[k].reset();    // ??? Probably unnecessary
+
 
   // Prepare for the next order
   reg = Dinv*id;

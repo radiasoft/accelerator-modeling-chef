@@ -24,8 +24,10 @@ class LattFuncSage;
 class LattFuncSage : public Sage
 {
 public:
- LattFuncSage( const beamline* );
- LattFuncSage( const beamline& );
+ LattFuncSage( const beamline*, bool = false );
+ LattFuncSage( const beamline&, bool = false );
+ // Second argument is used by class Sage
+ // to control cloning. (See Sage.h)
  ~LattFuncSage();
   
  struct tunes : BarnacleData {
@@ -94,8 +96,10 @@ public:
 
  int TuneCalc       ( JetParticle* );
  int Disp_Calc      ( JetParticle*, Sage::CRITFUNC = 0 );
+ int NewDisp_Calc   ( JetParticle*, Sage::CRITFUNC = 0 );
  int Fast_CS_Calc   ( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
  int Slow_CS_Calc   ( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
+ int NewSlow_CS_Calc( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
  int ET_Disp_Calc   (             JetParticle*, Sage::CRITFUNC = 0 );
  int CS_Disp_Calc   (             JetParticle*, Sage::CRITFUNC = 0 );
                // If default value is used for Sage::CRITFUNC, then
@@ -119,6 +123,12 @@ public:
 
  void eraseAll();
 
+ lattFunc* get_lattFuncPtr( int );
+ lattRing* get_lattRingPtr();
+               // Returns 0 if the argument is
+               // out of bounds.
+               // Unsafe!! returns pointer.
+  
  void set_dpp( double );
  double get_dpp();
 
@@ -139,6 +149,8 @@ private:
 
  static int attachETLattFuncs( bmlnElmnt* );
 
+ lattFunc* _lf;
+ lattRing* _lr;
 };
 
 
