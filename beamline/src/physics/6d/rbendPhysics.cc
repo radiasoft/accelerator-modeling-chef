@@ -169,14 +169,14 @@ void rbend::P_InFace( bmlnElmnt* p_be, Particle& p )
      TrState[i] = p.state[i];
  }
  double thetaOver2;
- if(pbe->poleFaceAngle == 2.0 * M_PI)
+ if(pbe->poleFaceAngle == M_TWOPI)
    thetaOver2 = asin(pbe->Length()/(2.0*Rho));
  else
    thetaOver2 = pbe->poleFaceAngle;
 
 
  double xpr, ypr, p3divpbar;
- p3divpbar = sqrt( pow( 1.0 + TrState[5], 2.0 )
+ p3divpbar = sqrt( ( 1.0 + TrState[5] ) * ( 1.0 + TrState[5] )
                  - TrState[3]*TrState[3] 
                  - TrState[4]*TrState[4] );
  xpr = TrState[3] / p3divpbar; 
@@ -189,7 +189,7 @@ void rbend::P_InFace( bmlnElmnt* p_be, Particle& p )
  double backLength = 0.0;
  double xLength = 0.0;
  double yLength = 0.0;
- double phi = M_PI/2.0 - thetaOver2;
+ double phi = M_PI_2 - thetaOver2;
 
  if(((pbe->strength >= 0.0) && (p.Charge() >= 0.0)) ||
     (pbe->strength <= 0.0) && (p.Charge() <= 0.0)) {
@@ -276,7 +276,7 @@ void rbend::J_InFace(bmlnElmnt* p_be,JetParticle& p) {
  double Rho    = p.ReferenceBRho() / pbe->strength;        // Fiducial parameters
 
  double thetaOver2;
- if(pbe->poleFaceAngle == 2.0 * M_PI)
+ if(pbe->poleFaceAngle == M_TWOPI)
    thetaOver2 = asin(pbe->Length()/(2.0*Rho));
  else
    thetaOver2 = pbe->poleFaceAngle;
@@ -308,7 +308,7 @@ void rbend::J_InFace(bmlnElmnt* p_be,JetParticle& p) {
  double backLength = 0.0;
  double xLength = 0.0;
  double yLength = 0.0;
- double phi = M_PI/2.0 - thetaOver2;
+ double phi = M_PI_2 - thetaOver2;
 
  if(((pbe->strength >= 0.0) && (p.Charge() >= 0.0)) ||
     (pbe->strength <= 0.0) && (p.Charge() <= 0.0)) {
@@ -394,7 +394,7 @@ void rbend::P_OutFace( bmlnElmnt* p_be, Particle& p )
  double Rho    = p.ReferenceBRho() / pbe->strength;        // Fiducial parameters
 
  double thetaOver2;
- if(pbe->poleFaceAngle == 2.0 * M_PI)
+ if(pbe->poleFaceAngle == M_TWOPI)
    thetaOver2 = asin(pbe->Length()/(2.0*Rho));
  else
    thetaOver2 = pbe->poleFaceAngle;
@@ -420,13 +420,13 @@ void rbend::P_OutFace( bmlnElmnt* p_be, Particle& p )
  double backLength = 0.0;
  double xLength = 0.0;
  double yLength = 0.0;
- double phi = M_PI/2.0 - thetaOver2;
+ double phi = M_PI_2 - thetaOver2;
 
 
 				// Rotate momentum out of the coord of the magnet.
  for( i = 0; i < 6; i++  ) 
    TrState[i] = p.state[i];
- p3divpbar = sqrt( pow( 1.0 + TrState[5], 2.0 )
+ p3divpbar = sqrt( ( 1.0 + TrState[5] ) * ( 1.0 + TrState[5] )
                  - TrState[3]*TrState[3] 
                  - TrState[4]*TrState[4] );
  xpr = TrState[3] / p3divpbar; 
@@ -522,7 +522,7 @@ void rbend::J_OutFace(bmlnElmnt* p_be,JetParticle& p) {
  double Rho    = p.ReferenceBRho() / pbe->strength;        // Fiducial parameters
 
  double thetaOver2;
- if(pbe->poleFaceAngle == 2.0 * M_PI)
+ if(pbe->poleFaceAngle == M_TWOPI)
    thetaOver2 = asin(pbe->Length()/(2.0*Rho));
  else
    thetaOver2 = pbe->poleFaceAngle;
@@ -549,7 +549,7 @@ void rbend::J_OutFace(bmlnElmnt* p_be,JetParticle& p) {
  double backLength = 0.0;
  double xLength = 0.0;
  double yLength = 0.0;
- double phi = M_PI/2.0 - thetaOver2;
+ double phi = M_PI_2 - thetaOver2;
 
 
 				// Rotate momentum out of the coord of the magnet.

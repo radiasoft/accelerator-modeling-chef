@@ -6,16 +6,18 @@ void thinQuad::propagate( Particle& p ) {
  static int    i;
  static double k;
 
- if( align ) align->misalign( p, geometry /* ??? */, TrState );
- else        for( i = 0; i < 6; i++  ) 
-               TrState[i] = p.state[i];
+ if( align ) {
+   align->misalign( p, geometry /* ??? */, TrState );
+ } else  {
+   memcpy((void *)TrState, (const void *)p.state, 6 * sizeof(double));
+ }
 
  k = strength / p.ReferenceBRho();
  TrState[3] += - k * TrState[0];
  TrState[4] +=   k * TrState[1];
 
  if( align ) {
-   for( i = 0; i < 6; i++  ) dummy[i] = TrState[i];
+   memcpy((void *)dummy, (const void *)TrState, 6 * sizeof(double));
    align->align( dummy, geometry /* ??? */, TrState );
  }
 
