@@ -113,7 +113,7 @@ solaris:
 	"C   = cc" \
 	"C++ = /opt/SUNWspro/bin/CC" \
 	"CFLAGS = " \
-	"C++FLAGS = -library=iostream -ptr$(FNALROOT) -verbose=template " \
+	"C++FLAGS = -library=iostream -verbose=template " \
 	"INLINE_FLAG = +d " \
 	"MAKELIB = CC -xar -o" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
