@@ -85,6 +85,8 @@ Vector::Vector( const Vector& x )
   comp = new double [ dim ];
   for ( int i = 0; i < dim; i++ ) comp[i] = x.comp[i];
 
+  ofPtr = x.ofPtr;  // Note: shallow copy of output format
+
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
