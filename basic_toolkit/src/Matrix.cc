@@ -1633,7 +1633,7 @@ MatrixC operator*(const MatrixD& y, const MatrixC& x)  {
   for(int row = 0; row < y.rows(); row++) {
     for(int col = 0; col < x.cols(); col++){
       Complex sum = complex_0;
-      for(int i = 0; i < x.cols(); i++) {
+      for(int i = 0; i < y.cols(); i++) {
 	tmp = Complex(yPtr->m[row][i],0.0) * xPtr->m[i][col];
 	sum += tmp;
 	if(abs(sum) < M_SMALL*abs(tmp))
