@@ -215,6 +215,7 @@ public:
     virtual ~Discriminator() {}
     virtual bool operator()( const bmlnElmnt* ) const = 0;
     virtual Discriminator* Clone() const = 0;
+    virtual void writeTo( ostream& ) const = 0;
   };
 
   static const short BF_OK;
