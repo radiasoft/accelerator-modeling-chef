@@ -23,8 +23,12 @@
 void thinrfcavity::localPropagate( Particle& p ) 
 {
  static double E;
+ static double oldRefE;
  E = p.Energy() + strength*sin( phi_s + p.state[2] * w_rf / PH_MKS_c );
+ oldRefE = p.E;
  p.SetReferenceEnergy( p.E + strength*sin(phi_s) );
+ p.state[3] *= ( oldRefE / p.E );
+ p.state[4] *= ( oldRefE / p.E );
  p.state[5] = ( sqrt((E - p.m)*(E + p.m)) 
               - sqrt((p.E-p.m)*(p.E+p.m))) / p.p;
 }
@@ -32,8 +36,12 @@ void thinrfcavity::localPropagate( Particle& p )
 void thinrfcavity::localPropagate( JetParticle& p ) 
 {
  static Jet E;
+ static double oldRefE;
  E = p.Energy() + strength*sin( phi_s + p.state(2) * w_rf / PH_MKS_c );
+ oldRefE = p.E;
  p.SetReferenceEnergy( p.E + strength*sin(phi_s) );
+ ( p.state ).SetComponent( 3, ( oldRefE / p.E )*p.State(3) );
+ ( p.state ).SetComponent( 4, ( oldRefE / p.E )*p.State(4) );
  ( p.state ).SetComponent( 5, ( sqrt((E - p.m)*(E + p.m)) 
                               - sqrt((p.E-p.m)*(p.E+p.m)) ) / p.p 
                          );
