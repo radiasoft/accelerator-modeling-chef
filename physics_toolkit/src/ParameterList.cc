@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,7 +29,11 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
+#include "GenericException.h"
 #include "Particle.h"
 
 #ifndef PARAMLIST_H
@@ -133,13 +134,9 @@ extern "C" int nearestInteger( double );
     }
   }
   else {
-    cerr << "*** ERROR ***                              \n"
-            "*** ERROR *** operator/=                   \n"
-            "*** ERROR ***                              \n"
-            "*** ERROR *** Attempt to divide by zero.   \n"
-            "*** ERROR ***                              \n"
-         << endl;
-    exit(1);
+    throw( GenericException( __FILE__, __LINE__, 
+           "AccelParamAcc& AccelParamAcc::operator/=( const double& x )", 
+           "Attempt to divide by zero." ) );
   }
 
   return *this;

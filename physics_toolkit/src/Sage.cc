@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 /*
  *  File: Sage.cc
@@ -45,6 +45,8 @@
 #ifndef NO_RTTI
 #include <typeinfo>
 #endif
+
+#include "GenericException.h"
 #include "Sage.h"
 
 using namespace std;
@@ -57,25 +59,17 @@ Sage::Sage( const beamline* x, bool doClone )
   // _arrayPtr must be deleted by destructor.
 
   if( 0 == x ) {
-    cerr << "*** ERROR ***                             \n"
-            "*** ERROR *** Sage::Sage                  \n"
-            "*** ERROR *** Constructor invoked with    \n"
-            "*** ERROR *** null pointer.               \n"
-            "*** ERROR ***                             \n"
-         << endl;
-    exit(1);
+    throw( GenericException( __FILE__, __LINE__, 
+           "Sage::Sage( const beamline* x, bool doClone )", 
+           "Constructor invoked with null pointer." ) );
   }
 
 #ifndef NO_RTTI
   if( typeid(*x) != typeid(beamline) ) {
-    cerr << "*** ERROR ***                             \n"
-            "*** ERROR *** Sage::Sage                  \n"
-            "*** ERROR *** Constructor invoked with    \n"
-            "*** ERROR *** pointer to something other  \n"
-            "*** ERROR *** than a beamline.            \n"
-            "*** ERROR ***                             \n"
-         << endl;
-    exit(1);
+    throw( GenericException( __FILE__, __LINE__, 
+           "Sage::Sage( const beamline* x, bool doClone )", 
+           "Constructor invoked with pointer to "
+           "something other than a beamline." ) );
   }
 #endif
 
