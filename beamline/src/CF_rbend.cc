@@ -113,6 +113,35 @@ int CF_rbend::setSextupole( double arg_x )
   return 0;
 }
 
+int CF_rbend::setQuadrupole( double arg_x )
+{
+  int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  thinQuad** w = new thinQuad* [ m ];
+  int counter = -1;
+  bmlnElmnt** x = _u;
+
+  while( x <= _v ) {
+    if( 0 == strcmp( (*x)->Type(), "thinQuad" ) ) {
+      // w[++counter] = dynamic_cast<thinQuad*>(*x);
+      w[++counter] = (thinQuad*)(*x);
+    }
+    x++;
+  }
+
+  if( counter < 0 ) {
+    delete [] w;
+    return 1;
+  }
+  
+  double s = arg_x/((double) ( counter + 1 ));
+  for( int i = 0; i <= counter; i++ ) {
+    w[i]->setStrength( s );
+  }
+  
+  delete [] w;
+  return 0;
+}
+
 void CF_rbend::Split( double, bmlnElmnt**, bmlnElmnt** )
 {
   cerr << "*** ERROR ***                                 \n" 
