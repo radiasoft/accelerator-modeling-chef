@@ -35,6 +35,8 @@ ALL = FODO_E boosterv6 norm_A norm_B normalFormTest
 
 all: $(ALL)
 
+targets: $(ALL)
+
 FODO_E: FODO_E.o
 	$(C++) $(C++FLAGS) -o $@ $? \
                $(MYLIBDIR) $(MYLIBS) $(SYSLIBS)
