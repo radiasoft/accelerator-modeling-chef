@@ -156,7 +156,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   
   
   // Get rid of flatRing
-  // Because P8_GEV is flattened
+  // Because the original beamline is flattened
   // but not cloned, do not use .zap() 
   // or .eliminate()
   
