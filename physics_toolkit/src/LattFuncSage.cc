@@ -73,12 +73,22 @@ LattFuncSage::~LattFuncSage() {
 
 /* ============================================================== */
 
-void LattFuncSage::eraseAll() {
- dlist_iterator getNext ( *(dlist*) _myBeamlinePtr );
- bmlnElmnt*      be;
- while((  be = (bmlnElmnt*) getNext()  )) 
-  be->dataHook.eraseAll( "LattFuncSage" );
+void LattFuncSage::eraseAll() 
+{
+  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  bmlnElmnt* be = 0;
+  while((  be = dbi++  )) {
+    be->dataHook.eraseAll( "LattFuncSage" );
+ }
 }
+
+
+// void LattFuncSage::eraseAll() {
+//  dlist_iterator getNext ( *(dlist*) _myBeamlinePtr );
+//  bmlnElmnt*      be;
+//  while((  be = (bmlnElmnt*) getNext()  )) 
+//   be->dataHook.eraseAll( "LattFuncSage" );
+// }
 
 
 int LattFuncSage::Orig_RX_Calc( JetParticle*   ptr_jp,
