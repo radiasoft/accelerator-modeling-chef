@@ -1,4 +1,3 @@
-// emacs -*- C++ -*- mode
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -83,6 +82,7 @@
 #include "PhysicsConstants.h"
 #include <math.h>
 #include "MathConstants.h"
+#include "apstring.h"
 #include "mxyzptlk.h"
 #include "slist.h"
 #include "Barnacle.h"
@@ -272,6 +272,8 @@ private:
   friend ostream& operator<<(ostream&, bmlnElmnt&);
   friend bmlnElmnt* read_istream(istream&);
 
+  apstring     flavor;     // Allows for "flavors" of types of elements.
+
 protected:
   char*        ident;      // Name identifier of the element.
   double       length;     // Length of object [ meters ]
@@ -445,6 +447,25 @@ public:
     { return ident; }
   virtual char*  Type() const = 0;
   virtual int    isType(char* s) { return strcmp(s, "bmlnElmnt") == 0; }
+
+
+  void setFlavor( const apstring& x )
+    { flavor = x; }
+  void setFlavor( const char* x )
+    { flavor = x; }
+  apstring Flavor()
+    { return flavor; }
+  apstring getFlavor()
+    { return flavor; }
+  apstring FlavorOrType()
+    { if( flavor.length() == 0 ) return apstring(this->Type());
+      else                       return flavor;
+    }
+  apstring getFlavorOrType()
+    { if( flavor.length() == 0 ) return apstring(this->Type());
+      else                       return flavor;
+    }
+
 
   virtual double OrbitLength( const Particle& ) { return length; }
                                    // Returns length of design orbit
