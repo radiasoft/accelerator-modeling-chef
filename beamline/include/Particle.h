@@ -72,8 +72,6 @@ protected:
   double   beta;      // normalized reference velocity = v/c
   double   gamma;     // reference gamma
 
-  void SetReferenceEnergy( double /* Energy */ );
-
   Particle( double  /* mass [GeV/c^2] */ );
   Particle( double  /* mass [GeV/c^2] */,
             double  /* energy [GeV]   */ );  // ??? momentum here???
@@ -99,6 +97,7 @@ public:
   static const short int PSD;
   short int psd()        { return Particle::PSD; }
 
+  void SetReferenceEnergy( double /* Energy */ );
   void setState      ( double* );
   void setState      ( const Vector& );
   void getState      ( double* );
@@ -309,8 +308,6 @@ protected:
   double   beta;      // normalized reference velocity = v/c
   double   gamma;     // reference gamma
 
-  void SetReferenceEnergy( double /* Energy */ );
-
   JetParticle( double  /* mass [GeV/c^2] */ );
   JetParticle( double  /* mass [GeV/c^2] */,
                double  /* energy [GeV]   */ );   // ??? momentum here???
@@ -335,6 +332,8 @@ public:
 
   // Dimension of phase space
   short int psd()        { return Particle::PSD; }
+
+  void SetReferenceEnergy( double /* Energy */ );
 
   void setState( double* );
   void setState( const Mapping& );
