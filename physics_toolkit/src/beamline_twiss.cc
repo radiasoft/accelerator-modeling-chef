@@ -9,7 +9,7 @@
 #include "ClosedOrbitSage.h" // 
 
 
-int beamline::twiss( JetParticle& p, double dpp, char flag ) 
+int beamline::twiss( JetParticle& p, double dpp, short int flag ) 
 {
   static char firstTime = 1;
   if( firstTime ) {
@@ -100,11 +100,21 @@ int beamline::twiss( JetParticle& p, double dpp, char flag )
 
     // Calculate dispersion
     // This also puts the chromaticity ring data on the beamline.
-    if( flag ) {
-      ret = lfs.Disp_Calc( &p );
+    if( flag > 0 ) {
+      if( 1 == flag ) {
+        ret = lfs.Disp_Calc( &p );
+      }
+      else {
+        ret = lfs.FAD_Disp_Calc( &p );
+      }
     }
     else {
-      ret = lfs.Disp_Calc( &p, Sage::no );
+      if( 0 == flag ) {
+        ret = lfs.Disp_Calc( &p, Sage::no );
+      }
+      else {
+        ret = lfs.FAD_Disp_Calc( &p, Sage::no );
+      }
     }
   
     if( ret != 0 ) {
@@ -297,7 +307,7 @@ int beamline::twiss( char, JetParticle& p ) {
   return 0;
 } 
 
-int beamline::twiss( lattFunc& W_arg, JetParticle& p, char flag ) {
+int beamline::twiss( lattFunc& W_arg, JetParticle& p, short int flag ) {
   static char firstTime = 1;
 
   if( firstTime ) {

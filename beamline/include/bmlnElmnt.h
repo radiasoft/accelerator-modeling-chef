@@ -617,7 +617,7 @@ public:
 
   int twiss( JetParticle&, 
              double = 0.00001 /* dpp */,
-             char   = 1       /* attachFlag */ );
+             short int = 1 /* attachFlag */ );
                            // Computes lattice functions all the
                            // way around the ring.
                            // Attaches a lattRing Barnacle labelled 
@@ -632,7 +632,7 @@ public:
                            // Uses the same method as MAD.
   int twiss( lattFunc&,
              JetParticle&,
-             char  = 1        /* attachFlag */ );
+             short int = 1 /* attachFlag */ );
                            // Computes lattice functions for a
                            // non-periodic beamline.
                            // Uses the same method as MAD.
