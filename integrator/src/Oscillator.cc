@@ -1,5 +1,7 @@
 #include "Oscillator.h"
 
+using namespace std;
+
 /// ******************************************
 ///   class Oscillator
 /// ******************************************

@@ -1,5 +1,7 @@
 #include "Symplectic.h"
 
+using namespace std;
+
 /// ******************************************
 ///   class Symplectic
 /// ******************************************

@@ -1,25 +1,33 @@
-MYINCLUDEDIR = -I$(FNALROOT)/integrator/include \
-               -I$(FNALROOT)/mxb/include \
-               -I$(FNALROOT)/filter/include \
-               -I$(FNALROOT)/socket/include
-MYLIBDIR = -L$(FNALROOT)/lib/ultra
-MYLIBRARIES = -lMachine -lfilter -lBEAMLINE -lPHYS -lBEAMLINE -lmxb -lcxxlibr -lsocket++ -lsocket -lintegrator
+.SUFFIXES: .o .C .c .cc
 
+INCLUDEDIR = -I../include -I$(BASIC_TOOLKIT_INC)
 
-# ...... Sun-C++
-C++   = CC 
-# C++   = CC  -g -sb
-C     = cc 
+EXE = Test  Test_sym  testQuad  testRoot
+
+LIBS = -lintegrator -lbasic_toolkit -lm
+
 
 .cc.o:
-	$(C++) -c $(MYINCLUDEDIR) $*.cc
-
+	$(C++) -c $(C++FLAGS) $(INCLUDEDIR) $*.cc
+.c.o:
+	$(C) -c $(CFLAGS) $(INCLUDEDIR) $*.c
 .cc :
-	$(C++) -o $@ \
-        -I. $(MYINCLUDEDIR) \
-        $< \
-        $(MYLIBDIR) $(MYLIBRARIES)  -lcomplex -lm
-
+	$(C++) $(C++FLAGS) $(INCLUDEDIR) -o $* $*.cc \
+        -L$(LIBDIR) $(LIBS)
 .o :
-	$(C++) -o $@ \
-        $< $(MYLIBDIR) $(MYLIBRARIES)  -lcomplex -lm
+	$(C++) $(C++FLAGS) -o $@ \
+        $< -L$(LIBDIR) $(LIBS)
+
+
+
+include ../../Make-config
+
+
+targets: $(EXE)
+
+
+depend:
+	$(C++) $(INCLUDEDIR) $(DEPEND_FLAG) *.cc  > dependencies
+
+
+include dependencies

@@ -2,10 +2,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <Vector.h>
+#include <VectorD.h>
 #include <Symplectic.h>
 #include <DriftMap.h>
 #include <KickMap.h>
+
+using namespace std;
 
 main()
 {
