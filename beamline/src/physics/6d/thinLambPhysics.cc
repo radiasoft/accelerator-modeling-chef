@@ -40,13 +40,16 @@ void thinLamb::localPropagate( ParticleBunch& PB ) {
     // Tranfer the particle in the extraction region into a different
     // ParticleBunch and remove it from the main bunch.
     if (ExtFlag) {
-      this->leaveLocalFrame( *pCur );
+      if (align) this->leaveLocalFrame( *pCur );
       ExtPB->append(pCur);
       PB.remove(pCur);
     }
   } while ( (pCur = pNxt) );
 
-  if (ExtPB->size() != 0) ExtBeamline->propagate(*ExtPB);
+  if (ExtPB->size() != 0) {
+    ExtBeamline->propagate(*ExtPB);
+  }
+
   delete ExtPB;
 }
 
