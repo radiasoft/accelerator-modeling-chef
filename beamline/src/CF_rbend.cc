@@ -298,15 +298,13 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
   inState[x]  = x_i;
   inState[xp] = xp_i;
 
-  myJP  .setState( inState );
-  p_myP->setState( inState );
-
-  this->propagate( myJP );
-
   double f, m, z;
 
-  m = ( myJP.State().Jacobian() )( x, x );
-  m -= 1.0;
+  // Initialize the derivative...
+  myJP  .setState( inState );
+  this->propagate( myJP );
+
+  m = ( myJP.State().Jacobian() )( xp, x );
   if( fabs(m) < 1.0e-12 ) {
     cerr << "*** ERROR ***                                       \n"
          << "*** ERROR *** CF_rbend::AdjustPosition              \n"
@@ -318,14 +316,108 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
   }
   m = 1.0 / m;
 
+  // Initialize the difference ...
   z = x_i;
-  int i;
-  for( i = 0; i < 75; i++ ) {
-    inState[x] = z;
+  inState[x] = z;
+  p_myP->setState( inState );
+  this->propagate( *p_myP );
+  f = ( p_myP->State() )( xp ) + xp_i;
+
+  int i = 0;
+  while( (i++ < 10) && (fabs(f) > 1.0e-9) ) 
+  {
+    // One Newton's step ...
+    z -= m*f;
+    inState[x]  = z;
+
+    // Recalculate inverse derivative ...
+    myJP.setState( inState );
+    this->propagate( myJP );
+    m = ( myJP.State().Jacobian() )( xp, x );
+    if( fabs(m) < 1.0e-12 ) {
+      cerr << "*** ERROR ***                                       \n"
+              "*** ERROR *** CF_rbend::AdjustPosition              \n"
+              "*** ERROR *** A horrible, inexplicable error has    \n"
+              "*** ERROR *** occurred at step "
+                                          <<  i
+                                          << " . A multi-valued solution \n"
+              "*** ERROR *** is suspected.                         \n"
+              "*** ERROR ***                                       \n";
+      exit(0);
+    }
+    m = 1.0 / m;
+
+    // Recalculate difference ...
     p_myP->setState( inState );
     this->propagate( *p_myP );
-    f = ( p_myP->State() )( x ) - z;
-    z -= m*f;
+    f = ( p_myP->State() )( xp ) + xp_i;
+  }
+
+
+  // Step procedure when Newton's method fails ...
+  if( i >= 10 ) {
+    cerr << "*** WARNING ***                                      \n"
+            "*** WARNING *** CF_rbend::AdjustPosition             \n"
+            "*** WARNING *** No convergence within 10 Newton      \n"
+            "*** WARNING *** iterations for magnet "
+         <<                               this->Name() 
+         <<                           ". Proceeding to find       \n"
+            "*** WARNING *** best solution by stepping.           \n"
+            "*** WARNING ***                                      \n"
+         << endl;
+
+    inState[x] = 0.0;
+    double delta = 1.0e-4;           // step 0.1 mm
+
+    p_myP->setState( inState );
+    this->propagate( *p_myP );
+    double error = ( p_myP->State() )( xp ) + xp_i;
+
+    inState[x] = delta;
+    p_myP->setState( inState );
+    this->propagate( *p_myP );
+    f = ( p_myP->State() )( xp ) + xp_i;
+
+    if(      ( ( f >= 0.0 && error >= 0.0 ) || ( f <= 0.0 && error <= 0.0 ) ) 
+          && ( fabs(error) < fabs(f) ) ) 
+    {
+      delta = - delta;
+    }
+
+    inState[x] = 0.0;
+    while( fabs(delta) > 0.9e-6 ) {
+      inState[x] += delta;
+      p_myP->setState( inState );
+      this->propagate( *p_myP );
+      f = ( p_myP->State() )( xp ) + xp_i;
+
+      while( ( ( f <= 0.0 && error <= 0.0 ) || ( f >= 0.0 && error >= 0.0 ) ) && 
+             ( fabs(f) < fabs(error) ) )
+      {
+        error = f;
+        inState[x] += delta;
+      	p_myP->setState( inState );
+      	this->propagate( *p_myP );
+      	f = ( p_myP->State() )( xp ) + xp_i;
+      }
+
+      inState[x] -= delta;
+      delta      *= (-0.1);
+    }
+
+    cerr << "*** WARNING ***                                      \n"
+            "*** WARNING *** CF_rbend::AdjustPosition             \n"
+            "*** WARNING *** The step procedure suggests a best   \n"
+            "*** WARNING *** solution with magnet displacement "
+         <<                                  (-1000.0)*inState[x]
+         <<                                           " mm with   \n"
+            "*** WARNING *** bend angle error "
+         <<                                   (2.0e6)*error
+         <<                                       " microradians. \n"
+            "*** WARNING ***                                      \n"
+         << endl;
+
+    z = inState[x];
   }
 
 
