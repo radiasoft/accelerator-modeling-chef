@@ -77,6 +77,7 @@ public:
   void localPropagate( JetParticle& p ) { (*Propagator)( this, p ); }
 
   void accept( BmlVisitor& v ) { v.visitSbend( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitSbend( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "sbend") != 0 ) return bmlnElmnt::isType(c); else return 1; }

@@ -495,6 +495,22 @@ JetParticle::JetParticle(const JetParticle& u) {
 JetParticle::~JetParticle() {
 }
 
+
+void JetParticle::errorHandler( const char* f, int l, const char* msg, int e )
+{
+  cerr << "*** ERROR *** JetParticle error occurred at line "
+       << l
+       << " in file "
+       << f
+       << ".\n*** ERROR *** "
+       << msg
+       << "\n*** ERROR *** Exit code = "
+       << e
+       << endl;
+  exit(e);
+}
+
+
 void JetParticle::setState( const Vector& u ) {
  if( u.Dim() != BMLN_dynDim ) {
    cout << "*** ERROR ***                                     \n" 

@@ -662,7 +662,22 @@ String bmlnElmnt::readTag()
 
 
 void bmlnElmnt::setLength( double x ) {
-  length = x;
+  if( length < 0.0 ) {
+    cerr << "*** WARNING ***                       \n"
+            "*** WARNING *** bmlnElmnt::setLength  \n"
+            "*** WARNING *** Lengths must be positive.  \n"
+            "*** WARNING *** You have entered "
+         << x 
+         << "    \n"
+            "*** WARNING *** I will use its absolute\n"
+            "*** WARNING *** value.                \n"
+            "*** WARNING ***                       \n"
+         << endl;
+    length = -x;
+  }
+  else {
+    length = x;
+  }
 }
 
 void bmlnElmnt::setStrength( double s ) {
@@ -758,15 +773,16 @@ bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( const PropFunc& a )
 
 
 void bmlnElmnt::peekAt( double& s, Particle* p_prt ) {
- cout << s << "   ";
+ cout << setw(12) << s;
  s += OrbitLength( *p_prt );
- cout << s           << " :  (" 
-      << (int) this  << ")  "
-      << ident       << "  " 
-      << Type()      << "  " 
-      << length      << "  " 
-      << strength    << "  "
-      << shuntCurrent
+ cout << setw(12) << s           
+                  << " : " 
+      << setw(10) << (int) this  
+      << setw(15) << ident       
+      << setw(15) << Type()      
+      << setw(12) << length      
+      << setw(12) << strength    
+      << setw(12) << shuntCurrent
       << endl;
 }
 

@@ -14,6 +14,9 @@
 
 #include "BeamlineIterator.h"
 
+// 
+// Forward iterator
+// 
 
 BeamlineIterator::BeamlineIterator( const beamline& x )
 {
@@ -142,3 +145,146 @@ void DeepBeamlineIterator::reset()
   _subIterator = 0;
   _getNext->Reset();
 }
+
+
+// 
+// Reverse iterator
+// 
+
+
+ReverseBeamlineIterator::ReverseBeamlineIterator( const beamline& x )
+{
+  _getNext = new dlist_reverseIterator( (dlist&) x );
+}
+
+
+ReverseBeamlineIterator::ReverseBeamlineIterator( const beamline* x )
+{
+  _getNext = new dlist_reverseIterator( *(dlist*) x );
+}
+
+
+ReverseBeamlineIterator::ReverseBeamlineIterator( const ReverseBeamlineIterator& x )
+{
+  static char firstTime = 1;
+  if( firstTime ) {
+    cerr << "*** WARNING ***                                       \n"
+            "*** WARNING *** ReverseBeamlineIterator::ReverseBeamlineIterator( const ReverseBeamlineIterator& ) \n"
+            "*** WARNING *** Copy constructor has been called.     \n"
+            "*** WARNING ***                                       \n"
+            "*** WARNING *** This message appears once only.       \n"
+            "*** WARNING ***                                       \n"
+         << endl;
+    firstTime = 0;
+  }
+  
+  _getNext = new dlist_reverseIterator( *(x._getNext) );
+}
+
+
+ReverseBeamlineIterator::~ReverseBeamlineIterator()
+{
+  delete _getNext;
+}
+
+
+
+bmlnElmnt* ReverseBeamlineIterator::operator++( int )
+{
+  return (bmlnElmnt*) _getNext->operator()();
+}
+
+
+void ReverseBeamlineIterator::reset()
+{
+  _getNext->Reset();
+}
+
+
+void ReverseBeamlineIterator::goBack( int n )
+{
+  cerr << "*** ERROR ***                                           \n"
+       << "*** ERROR *** void ReverseBeamlineIterator::goBack      \n"
+       << "*** ERROR *** Sorry. This function is not implemented   \n"
+       << "*** ERROR *** for ReverseBeamlineIterator.              \n"
+       << "*** ERROR ***                                           \n"
+       << endl;
+  exit(1);
+  // _getNext->GoBack(n);  <- not written for dlist_reverseIterator
+}
+
+
+
+DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( const beamline& x )
+{
+  _subIterator = 0;
+  _getNext = new dlist_reverseIterator( (dlist&) x );
+}
+
+
+DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( const beamline* x )
+{
+  _subIterator = 0;
+  _getNext = new dlist_reverseIterator( *(dlist*) x );
+}
+
+
+DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( const DeepReverseBeamlineIterator& )
+{
+  cerr << "*** ERROR ***                                       \n"
+          "*** ERROR *** DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( const DeepReverseBeamlineIterator& ) \n"
+          "*** ERROR *** Copy constructor must not be called.  \n"
+          "*** ERROR ***                                       \n"
+       << endl;
+  exit(999);
+}
+
+
+DeepReverseBeamlineIterator::~DeepReverseBeamlineIterator()
+{
+  delete _getNext;
+  if( _subIterator ) delete _subIterator;
+  _subIterator = 0;
+}
+
+
+
+bmlnElmnt* DeepReverseBeamlineIterator::operator++( int )
+{
+  bmlnElmnt* ret = 0;
+
+  if( _subIterator ) 
+  {
+    ret = (*_subIterator)++;
+    if( ret == 0 ) 
+    {
+      delete _subIterator;
+      _subIterator = 0;
+      ret = (*this)++;
+    }
+  }
+  else 
+  {
+    ret = (bmlnElmnt*) _getNext->operator()();
+    if( ret != 0 ) 
+    {
+      if( 0 == strcmp( ret->Type(), "beamline" ) ) 
+      {
+        _subIterator = new DeepReverseBeamlineIterator( (beamline*) ret );
+        ret = (*this)++;
+      }
+    }    
+  }
+
+  return ret;
+}
+
+
+void DeepReverseBeamlineIterator::reset()
+{
+  if( _subIterator ) delete _subIterator;
+  _subIterator = 0;
+  _getNext->Reset();
+}
+
+

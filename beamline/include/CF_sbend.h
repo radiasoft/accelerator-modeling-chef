@@ -54,9 +54,11 @@ class CF_sbend : public bmlnElmnt
   void localPropagate( ParticleBunch& x ) 
     { bmlnElmnt::localPropagate( x ); }
 
-  void accept( BmlVisitor& v ) 
-    { v.visitCF_sbend( this ); }
+  void accept( BmlVisitor& v ) { v.visitCF_sbend( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitCF_sbend( this ); }
   
+  void peekAt( double& s, Particle* = 0 );
+
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "CF_sbend") != 0 )
     return bmlnElmnt::isType(c); else return 1; }
@@ -83,20 +85,20 @@ class CF_sbend : public bmlnElmnt
   // Here the argument is the dipole field, 
   // NOT the integrated dipole field.
 
-  double getQuadrupole();
-  double getSextupole();
-  double getOctupole();
+  double getQuadrupole() const;
+  double getSextupole()  const;
+  double getOctupole()   const;
   // Returns integrated multipole strengths
   // i.e., .getQuadrupole() returns B'l
   //       .getSextupole()  returns B''l/2
   //       .getOctupole()   returns B'''l/6
 
-  double getDipoleField();  
+  double getDipoleField() const;
   // Returns the dipole field,
   // NOT the integrated dipole field.
 
-  inline double getAngle() { return _angle; }
-  inline double Angle()    { return _angle; }
+  double getAngle() const;
+  double Angle()    const;
 
  private:
 

@@ -64,6 +64,7 @@ public:
   void localPropagate( JetParticle& p ) { (*Propagator)( this, p ); }
 
   void accept( BmlVisitor& v ) { v.visitJetQuadrupole( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitJetQuadrupole( this ); }
 
   void eliminate();
 
@@ -101,6 +102,7 @@ class JetthinQuad : public bmlnElmnt
    void localPropagate( JetParticle& );
 
    void accept( BmlVisitor& v ) { v.visitJetthinQuad( this ); }
+   void accept( ConstBmlVisitor& v ) const { v.visitJetthinQuad( this ); }
 
    void eliminate();
  

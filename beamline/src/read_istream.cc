@@ -128,6 +128,7 @@ bmlnElmnt* read_istream(istream& is)
   thinSeptum		* thinSeptaPtr;
   thinSextupole		* thinSextupolePtr;
   thinrfcavity		* cavityPtr;
+  rfcavity		* cavPtr;
   vkick			* vkickPtr;
   vmonitor		* vmonitorPtr;
   Pinger                * PingerPtr;
@@ -136,6 +137,7 @@ bmlnElmnt* read_istream(istream& is)
   kick                  * kickPtr;
   Slot			* slot;
   CF_rbend              * cfRbendPtr;
+  CF_sbend              * cfSbendPtr;
 
   const double MIN_ANGLE = 2.0E-9;
   const int SIZE=80;
@@ -189,7 +191,7 @@ bmlnElmnt* read_istream(istream& is)
     element = vkickPtr;
   }
   else if( strcasecmp(type, 		"kick") == 0 ) {
-    kickPtr = new kick(name);
+    kickPtr = new kick(name, length, strength, strength );
     element = kickPtr;
   }
   else if( strcasecmp(type, 		"vpinger") == 0 ) {
@@ -278,6 +280,10 @@ bmlnElmnt* read_istream(istream& is)
     cavityPtr = new thinrfcavity(name);
     element = cavityPtr;
   }
+  else if( strcasecmp(type, 		"rfcavity") == 0 ) {
+    cavPtr = new rfcavity(name);
+    element = cavPtr;
+  }
   else if( strcasecmp(type, 		"vmonitor" ) == 0 ) {
     vmonitorPtr = new vmonitor(name, length);
     element = vmonitorPtr;
@@ -319,8 +325,12 @@ bmlnElmnt* read_istream(istream& is)
     element = jtSextPtr;
   }
   else if( strcasecmp(type, 		"CF_rbend") == 0 ) {
-    cfRbendPtr = new CF_rbend(name, length, strength, MIN_ANGLE);
+    cfRbendPtr = new CF_rbend(name, length, strength, 1.0 /* Dummy large angle */ );
     element = cfRbendPtr;
+  }
+  else if( strcasecmp(type, 		"CF_sbend") == 0 ) {
+    cfSbendPtr = new CF_sbend(name, length, strength, 1.0 /* Dummy large angle */ );
+    element = cfSbendPtr;
   }
   else {
     cerr << "read_istream(istream&): Unknown element type \"" << type << "\"\n";
@@ -375,7 +385,8 @@ istream& operator>>(istream& is, beamline& bl)
 
   if ( strcasecmp(type, "beamline") != 0 ) {
     cerr << " **** WARNING **** Expecting data file to begin with a \"beamline\" directive\n";
-    cerr << " **** WARNING **** First element, " << name << ", ignored\n";
+    cerr << " **** WARNING **** First element, " 
+         << type << ",  " << name << ", ignored\n";
   }
   else
     bl.Rename(name);

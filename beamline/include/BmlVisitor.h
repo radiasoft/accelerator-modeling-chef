@@ -9,6 +9,11 @@
 ** --- Leo Michelotti
 ** --- August 21, 1997
 **
+** Added ConstBmlVisitor class.
+**
+** --- Leo Michelotti
+** --- August 21, 2001
+**
 */
 
 #ifndef BMLVISITOR_H
@@ -142,6 +147,134 @@ public:
 protected:
   BmlVisitor() {}
   virtual ~BmlVisitor() {}
+
+};
+
+
+// ************************************************************
+
+
+class ConstBmlVisitor
+{
+public:
+  virtual void visitBeamline( const beamline* );
+
+  virtual void visitBmlnElmnt( const bmlnElmnt* ) {}
+
+  virtual void visitHkick( const hkick* x )
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitOctupole( const octupole* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitThinrfcavity( const thinrfcavity* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitRfcavity( const rfcavity* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitSrot( const srot* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitVkick( const vkick* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitMonitor( const monitor* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitMarker( const marker* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitDrift( const drift* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitRbend( const rbend* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitSbend( const sbend* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitSector( const sector* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitQuadrupole( const quadrupole* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitJetQuadrupole( const JetQuadrupole* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitThinQuad( const thinQuad* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitThinSextupole( const thinSextupole* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitJetthinSext( const JetthinSext* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitJetthinQuad( const JetthinQuad* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitThinOctupole( const thinOctupole* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitThinDecapole( const thinDecapole* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitThin12pole( const thin12pole* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitThin14pole( const thin14pole* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitThin16pole( const thin16pole* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitThin18pole( const thin18pole* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitThinMultipole( const thinMultipole* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitSextupole( const sextupole* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitBBLens( const BBLens* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitThinSeptum( const thinSeptum* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitThinLamb( const thinLamb* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitCombinedFunction( const combinedFunction* x )
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitPinger( const Pinger* x )
+			 { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitHPinger( const HPinger* x )
+			 { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitVPinger( const VPinger* x )
+			 { visitBmlnElmnt( (const bmlnElmnt*) x ); } 
+
+  virtual void visitKick( const kick* x)
+			 { visitBmlnElmnt( (const bmlnElmnt*) x);  }
+
+  virtual void visitSlot( const Slot* x)
+			 { visitBmlnElmnt( (const bmlnElmnt*) x);  }
+
+  virtual void visitCF_rbend( const CF_rbend* x)
+			 { visitBmlnElmnt( (const bmlnElmnt*) x);  }
+
+  virtual void visitCF_sbend( const CF_sbend* x)
+			 { visitBmlnElmnt( (const bmlnElmnt*) x);  }
+
+protected:
+  ConstBmlVisitor() {}
+  virtual ~ConstBmlVisitor() {}
 
 };
 

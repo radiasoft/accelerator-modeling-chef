@@ -8,8 +8,8 @@ INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(FILTER_INC) \
 INCLUDE = -I. $(INCLUDEDIR) 
 
 MYLIBDIR = -L$(FNALROOT)/lib/sun 
-MYLIBS = -lfilter -lphysics_toolkit -lbeamline -lmxyzptlk \
-         -lbasic_toolkit -lfilter -lsocket++
+MYLIBS = -lfilter -lphysics_toolkit -lbeamline -lphysics_toolkit -lbeamline \
+         -lmxyzptlk -lbasic_toolkit -lfilter -lsocket++
 SYBASELIBS = -lct -lcs -lcomn -lsybtcl -lsybintl -lblk
 XLIBS = -L/usr/local/ap/X11R6/lib -L/usr/local/TCL-TK/lib -ltcl -ltk \
         -lX11 -lICE -lSM 

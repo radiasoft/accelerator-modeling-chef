@@ -30,6 +30,7 @@ public:
   bmlnElmnt* Clone() const { return new hkick( *this ); }
 
   void accept( BmlVisitor& v ) { v.visitHkick( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitHkick( this ); }
 };
 
 
@@ -53,6 +54,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitVkick( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitVkick( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "vkick") != 0 ) return bmlnElmnt::isType(c); else return 1; }
@@ -88,6 +90,8 @@ public:
         void localPropagate( JetParticle& );
 
         void accept(BmlVisitor& v) { v.visitKick( this ); }
+        void accept(ConstBmlVisitor& v) const { v.visitKick( this ); }
+
         double& horizontalStrength() { return horizontalKick; }
         double& verticalStrength() { return verticalKick; }
 

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "beamline.rsc"
+#include "beamline.h"
 #include "EdwardsTeng.h"
 
 char criterion( bmlnElmnt* ) { return 1; }

@@ -40,6 +40,7 @@ public:
   void localPropagate( JetParticle& p );
 
   void accept( BmlVisitor& v ) { v.visitThinSeptum( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitThinSeptum( this ); }
 
   void eliminate();
   

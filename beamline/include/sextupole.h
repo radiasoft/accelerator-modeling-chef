@@ -25,6 +25,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitSextupole( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitSextupole( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "sextupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
@@ -50,6 +51,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThinSextupole( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitThinSextupole( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "thinSextupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
@@ -82,6 +84,7 @@ public:
   void localPropagate( JetParticle& );
   
   void accept( BmlVisitor& v ) { v.visitJetthinSext( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitJetthinSext( this ); }
 
   void eliminate();
   

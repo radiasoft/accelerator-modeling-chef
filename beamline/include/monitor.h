@@ -37,6 +37,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitMonitor( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitMonitor( this ); }
   
   inline int State() const { return onOff; }
   const char* Type() const;

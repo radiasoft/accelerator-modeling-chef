@@ -16,6 +16,7 @@ public:
   ~octupole();
 
   void accept( BmlVisitor& v ) { v.visitOctupole( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitOctupole( this ); }
 
   void setStrength( double );
   void setStrength( double, int );
@@ -49,6 +50,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThinOctupole( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitThinOctupole( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "thinOctupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }

@@ -126,6 +126,7 @@ public:
   void eliminate();
 
   void accept( BmlVisitor& v ) { v.visitRbend( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitRbend( this ); }
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle&    p ) { (*Propagator)( this, p ); }

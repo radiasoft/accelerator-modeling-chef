@@ -18,6 +18,7 @@ public:
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThinDecapole( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitThinDecapole( this ); }
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "thinDecapole") != 0 ) return bmlnElmnt::isType(c); else return 1; }

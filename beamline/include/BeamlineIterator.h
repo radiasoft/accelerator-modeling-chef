@@ -55,4 +55,38 @@ private:
 };
 
 
+class ReverseBeamlineIterator
+{
+public:
+  ReverseBeamlineIterator( const beamline& );
+  ReverseBeamlineIterator( const beamline* );
+  ReverseBeamlineIterator( const ReverseBeamlineIterator& );
+  ~ReverseBeamlineIterator();
+
+  bmlnElmnt* operator++( int );    // postfix increment
+  void reset();
+  void goBack( int = 1 );
+
+private:
+  dlist_reverseIterator* _getNext;
+};
+
+
+class DeepReverseBeamlineIterator
+{
+public:
+  DeepReverseBeamlineIterator( const beamline& );
+  DeepReverseBeamlineIterator( const beamline* );
+  DeepReverseBeamlineIterator( const DeepReverseBeamlineIterator& );
+  ~DeepReverseBeamlineIterator();
+
+  bmlnElmnt* operator++( int );    // postfix increment
+  void reset();
+
+private:
+  dlist_reverseIterator*       _getNext;
+  DeepReverseBeamlineIterator* _subIterator;
+};
+
+
 #endif // BEAMLINE_ITERATOR
