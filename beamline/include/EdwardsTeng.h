@@ -11,12 +11,6 @@
 #ifndef EDWARDSTENG_H
 #define EDWARDSTENG_H
 
-#ifdef __VISUAL_CPP__
-#include <iomanip>
-#else
-#include <iomanip.h>
-#endif
-
 #include "beamline.h"
 
 typedef char (*ET_CRITFUNC)( bmlnElmnt* );

@@ -8,6 +8,12 @@
  *          June 6, 1994   ( D-Day + 50 years )
  */
 
+#ifdef __VISUAL_CPP__
+#include <iomanip>
+#else
+#include <iomanip.h>
+#endif
+
 #include "EdwardsTeng.h"
 
 
