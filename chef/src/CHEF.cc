@@ -3,8 +3,8 @@
 **************************************************************************
 ******                                                                
 ******  CHEF: Library of Qt based widget classes, providing GUI   
-******        interfaces to exercise the functionality        
-******        of BEAMLINE.                                    
+******         interfaces to exercise the functionality        
+******         of BEAMLINE.                                    
 ******                                                                
 ******  Version:   3.2
 ******                                    
@@ -69,6 +69,7 @@
 #include "LattFncPlt.h"
 #include "ETFncPlt.h"
 #include "MomentsFncPlt.h"
+#include "DspnFncPlt.h"
 #include "Tracker.h"
 #include "RayTrace.h"
 #include "SiteViewer.h"
@@ -91,7 +92,8 @@ using namespace std;
 // 
 
 CHEF::CHEF( beamline* xbml, int argc, char** argv )
-: _p_vwr(0), _plotWidget(0), _ETplotWidget(0), _MMplotWidget(0)
+: _p_vwr(0), _plotWidget(0), 
+  _ETplotWidget(0), _MMplotWidget(0), _DspnplotWidget(0)
 {
   int i;
   for( i = 0; i < CHEF_numargs; i++ )
@@ -137,7 +139,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
   _mainMenu = _mainWindow->menuBar();
 
     _fileMenu = new QPopupMenu;
-    _fileMenu->insertItem( "Open", this, SLOT(_openFile()) );
+    _fileMenu->insertItem( "Open...", this, SLOT(_openFile()) );
     _fileMenu->insertItem( "Save as...", this, SLOT(_fileSaveAs()) );
       _id_FilePrint = 
     _fileMenu->insertItem( "Peek at",   this, SLOT(_print()) );
@@ -182,6 +184,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
   _mainMenu->insertItem( "Examples", _mach_imagMenu );
 
     _toolMenu = new QPopupMenu;
+
       _tool_calcMenu = new QPopupMenu;
 
         // _calcEnterMenu = new QPopupMenu;
@@ -191,20 +194,25 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
         // _calcEnterMenu->insertItem( "Clear", this, SLOT(_clearArgs()) );
       // _tool_calcMenu->insertItem( "Enter...", _calcEnterMenu);
 
+        _calcCalcFuncMenu = new QPopupMenu;
+
+          _calcLattFuncMenu = new QPopupMenu;
+          _calcLattFuncMenu->insertItem( "Uncoupled", this, SLOT(_launchLatt()) );
+          _calcLattFuncMenu->insertItem( "Edwards-Teng", this, SLOT(_launchET()) );
+          _calcLattFuncMenu->insertItem( "Moments", this, SLOT(_launchMoments()) );
+        _calcCalcFuncMenu->insertItem( "Lattice Functions", _calcLattFuncMenu );
+
+        _calcCalcFuncMenu->insertItem( "Dispersion", this, SLOT(_launchDispersion()) );
+        _calcCalcFuncMenu->insertItem( "Emittance Dilution", this, SLOT(_launchDilution()) );
+      _tool_calcMenu->insertItem( "Calculations", _calcCalcFuncMenu );
+
       _tool_calcMenu->insertItem( "Site Viewer", this, SLOT(_launchSiteVu()) );
-
-
-        _calcLattFuncMenu = new QPopupMenu;
-        _calcLattFuncMenu->insertItem( "Uncoupled", this, SLOT(_launchLatt()) );
-        _calcLattFuncMenu->insertItem( "Edwards-Teng", this, SLOT(_launchET()) );
-        _calcLattFuncMenu->insertItem( "Moments", this, SLOT(_launchMoments()) );
-      _tool_calcMenu->insertItem( "Lattice Functions", _calcLattFuncMenu );
-
       _tool_calcMenu->insertItem( "Track", this, SLOT(_launchTrack()) );
       _tool_calcMenu->insertItem( "Trace", this, SLOT(_launchRayTrace()) );
+
       _id_analMenu = 
     _toolMenu->insertItem( "Analysis", _tool_calcMenu );
-      _toolMenu->setItemEnabled( _id_analMenu, false );
+    _toolMenu->setItemEnabled( _id_analMenu, false );
 
       _tool_ctrlMenu = new QPopupMenu;
       _tool_ctrlMenu->insertItem( "Build hor. tune circuit", this, SLOT(_horTuneCtrl()) );
@@ -1098,6 +1106,29 @@ void CHEF::_launchRayTrace()
   _traceWidget = new RayTrace(_p_currBmlCon);
   _traceWidget->setCaption( "CHEF:: Orbit Trace" );
   _traceWidget->show();
+}
+
+
+void CHEF::_launchDispersion()
+{
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF",
+                              "Must select a beamline first." );
+    return;
+  }
+
+  _DspnplotWidget = new DspnFncPlt(_p_currBmlCon);
+
+  char theCaption[1024];
+  for( int i = 0; i < 1024; i++ ) {
+    theCaption[i] = '\0';
+  }
+  strcat( theCaption, "CHEF: Dispersion: " );
+  strcat( theCaption, _p_currBmlCon->name() );
+  _DspnplotWidget->setCaption( theCaption );
+
+  _DspnplotWidget->resize( 540, 400 );
+  _DspnplotWidget->show();
 }
 
 

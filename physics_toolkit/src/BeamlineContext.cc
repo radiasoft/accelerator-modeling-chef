@@ -41,7 +41,7 @@
 #include "BeamlineContext.h"
 #include "beamline.h"
 #include "BeamlineIterator.h"
-#include "LattFuncSage.h"
+// REMOVE: #include "LattFuncSage.h"
 #include "ClosedOrbitSage.h"
 #include "ChromaticityAdjuster.h"
 #include "TuneAdjuster.h"
@@ -61,7 +61,7 @@ using namespace std;
 
 BeamlineContext::BeamlineContext( bool doClone, beamline* x )
 : _p_bml(x), _proton( x->Energy() ),
-  _p_lfs(0), _p_ets(0), _p_covs(0), _p_cos(0), 
+  _p_lfs(0), _p_ets(0), _p_covs(0), _p_cos(0), _p_dsps(0),
   _p_ca(0), _p_ta(0),
   _p_co_p(0), _p_disp_p(0), _dpp(0.0001),
   _isCloned(doClone),
@@ -72,6 +72,7 @@ BeamlineContext::BeamlineContext( bool doClone, beamline* x )
   _normalLattFuncsCalcd(false), 
   _edwardstengFuncsCalcd(false), 
   _momentsFuncsCalcd(false), 
+  _dispersionFuncsCalcd(false), 
   _dispCalcd(false)
 {
   if( x == 0 ) {
@@ -451,6 +452,26 @@ void BeamlineContext::_createCOVS()
 }
 
 
+void BeamlineContext::_deleteDSPS()
+{
+  if( 0 != _p_dsps )
+  {
+    _p_dsps->eraseAll();
+    delete _p_dsps;
+    _p_dsps = 0;
+
+    _dispersionFuncsCalcd = false;
+  }
+}
+
+
+void BeamlineContext::_createDSPS()
+{
+  this->_deleteDSPS();
+  _p_dsps = new DispersionSage( _p_bml, false );
+}
+
+
 bool BeamlineContext::_onTransClosedOrbit( const Proton& arg ) const
 {
   Proton probe( arg );
@@ -777,6 +798,40 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
   if( _momentsFuncsCalcd ) { return (_p_covs->getInfoPtr(i)); }
   else                     { return 0;                        }
 }
+
+
+const DispersionSage::Info* BeamlineContext::getDispersionPtr( int i )
+{
+  if( 0 == _p_dsps ) {
+    this->_createDSPS();
+  }
+  
+  if( !_dispersionFuncsCalcd ) { 
+    if( 0 == _p_jp ) { this->_createClosedOrbit(); }
+
+    // Preserve/reset the current Jet environment
+    Jet__environment*  storedEnv  = Jet::_lastEnv;
+    JetC__environment* storedEnvC = JetC::_lastEnv;
+    Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
+    JetC::_lastEnv = JetC::CreateEnvFrom( Jet::_lastEnv );
+
+    // DispersionSage::Options newOptions;
+    // newOptions.onClosedOrbit = true;
+    // _p_dsps->set_options( newOptions );
+    
+    _p_dsps->flags.onClosedOrbit = true;
+    int errorFlag = _p_dsps->doCalc( _p_jp, beamline::yes );
+    _dispersionFuncsCalcd = ( 0 == errorFlag );
+
+    // Restore current environment
+    Jet::_lastEnv = storedEnv;
+    JetC::_lastEnv = storedEnvC;
+  }
+
+  if( _dispersionFuncsCalcd ) { return (_p_dsps->getInfoPtr(i)); }
+  else                        { return 0;                        }
+}
+
 
 
 MatrixD BeamlineContext::equilibriumCovariance()

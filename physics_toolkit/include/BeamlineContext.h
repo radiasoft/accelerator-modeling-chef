@@ -72,6 +72,10 @@ typedef TMapping<double,FNAL::Complex> Mapping;
 #include "CovarianceSage.h"
 #endif
 
+#ifndef DISPERSIONSAGE_H
+#include "DispersionSage.h"
+#endif
+
 class BeamlineContext
 {
   public:
@@ -133,6 +137,7 @@ class BeamlineContext
     const LattFuncSage::lattFunc* getLattFuncPtr( int );
     const EdwardsTengSage::Info* getETFuncPtr( int );
     const CovarianceSage::Info* getCovFuncPtr( int );
+    const DispersionSage::Info* getDispersionPtr( int );
 
     MatrixD equilibriumCovariance();
     MatrixD equilibriumCovariance( double, double );
@@ -196,6 +201,7 @@ class BeamlineContext
     EdwardsTengSage*      _p_ets;
     CovarianceSage*       _p_covs;
     ClosedOrbitSage*      _p_cos;
+    DispersionSage*       _p_dsps;
     ChromaticityAdjuster* _p_ca;
     TuneAdjuster*         _p_ta;
 
@@ -235,6 +241,7 @@ class BeamlineContext
     bool                  _isCloned;
     bool                  _normalLattFuncsCalcd;
     bool                  _edwardstengFuncsCalcd;
+    bool                  _dispersionFuncsCalcd;
     bool                  _momentsFuncsCalcd;
     bool                  _dispCalcd;
 
@@ -252,6 +259,8 @@ class BeamlineContext
     void _deleteETS();
     void _createCOVS();
     void _deleteCOVS();
+    void _createDSPS();
+    void _deleteDSPS();
     void _createEigentunes();
     void _createClosedOrbit();
     void _deleteClosedOrbit();

@@ -236,6 +236,7 @@ public:
 
   void multScaleBy( double );
   void setScaleTo ( double );
+  void setCenterTo( double, double );
   void setPointSize( int );
   void setRange( double, double, double, double );
 
