@@ -308,6 +308,28 @@ TJL<T1,T2>::TJL( const T1& x, TJetEnvironment<T1,T2>* pje )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
+TJL<T1,T2>::TJL( const IntArray& e, const T1& x, TJetEnvironment<T1,T2>* pje ) 
+{
+ this->clear(); // ??? Why is this needed?
+ _rc = 1;
+ _weight = 0;
+ _count = 0;
+ _myEnv   = pje;
+
+ if( pje ) {
+   _accuWgt = pje->_maxWeight;
+   insert( new TJLterm<T1,T2>( e, x, pje ) );
+ }
+ else {
+   _accuWgt = 100000;    // ??? Better way?
+   insert( new TJLterm<T1,T2>( IntArray(1), x, 0 ) );
+ }
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T1, typename T2>
 TJL<T1,T2>::TJL( const TJL& x ) 
 {
  dlist_iterator getNext( (dlist&) x );
@@ -430,6 +452,102 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a)
  //
  while((  p = getNext()  )){
  
+   if(     *a   <=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
+     if(   *a   %=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
+ 
+       (( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) += ( a -> _value );
+ 
+       if(
+	   (
+	     std::abs( ( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) < MX_SMALL*std::abs( a -> _value )
+	   )
+	   // REMOVE ??? &&
+	   // REMOVE ??? (
+	   // REMOVE ???   p != ( dlist::lastPtr() ) -> nextPtr()
+	   // REMOVE ??? )
+	 )
+ 
+         delete remove( p );
+ 
+       delete a;
+       return;
+       }
+ 
+     else {
+       p -> putAbove( new dlink( a, 0, 0 ) );
+       (this->_count)++;
+       if( (this->_weight) < (a->_weight) ) this->_weight = a->_weight;
+       return;
+       }
+ 
+     }
+   }
+ 
+ //
+ //  The new entry is heavier than existing ones.
+ //
+ append( a );
+ return;
+ 
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T1, typename T2>
+void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a, dlist_traversor& getNext ) 
+{
+ // JUST A TEST: THIS IS NOT WRITTEN CORRECTLY.
+ // IT SHOULD NOT BE USED.
+
+ throw( GenericException( __FILE__, __LINE__, 
+   "void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a, dlist_traversor& getNext )", 
+   "This method is broken.") );
+
+
+ // If the value of *a is 0, don't bother with it unless
+ // the _weight is also 0.
+ if( ( a -> _value == 0.0 ) && ( a -> _weight != 0 ) ) {
+   delete a;
+   return;
+ }
+
+ dlink* p;
+
+ //
+ // In the event that the candidate is lighter than the first
+ // element in the JL dlist ... or the list is empty
+ //
+ p = getNext();
+ 
+ if( p == 0 ) {
+   insert( a );
+   return;
+   }
+ 
+ if(     *a   <=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
+   if(   *a   %=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
+ 
+     (( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) += ( a -> _value );
+ 
+     if( std::abs( ( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) 
+           < MX_SMALL*std::abs( a -> _value ) ) {
+       delete remove( p );
+     } 
+     delete a;
+     return;
+     }
+   else {
+     insert( a );
+     return;
+     }
+   }
+ 
+ //
+ // Otherwise, search through the list
+ //
+ while((  p = getNext()  ))
+ {
    if(     *a   <=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
      if(   *a   %=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
  
@@ -1169,6 +1287,23 @@ TJLterm<T1,T2> TJLterm<T1,T2>::operator*( const TJLterm<T1,T2>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<typename T1, typename T2>
+TJLterm<T1,T2> TJLterm<T1,T2>::operator+( const TJLterm<T1,T2>& y ) 
+{
+ if( this->_index != y._index ) {
+   throw( TJL<T1,T2>::BadDimension( this->_index.Dim(), y._index.Dim(),
+                            __FILE__, __LINE__, 
+                            "TJLterm<T1,T2> TJLterm<T1,T2>::operator*( const TJLterm<T1,T2>& y ) ",
+                            "Inconsistent number of coordinates." ) );
+ }
+ TJLterm<T1,T2> z(*this);
+ z._value += y._value;
+ return z;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 
 // ***************************************************************
@@ -1176,6 +1311,15 @@ TJLterm<T1,T2> TJLterm<T1,T2>::operator*( const TJLterm<T1,T2>& y )
 // ***************************************************************
 //
 //      Implementation of Class TJLterm<T1,T2>
+
+template<typename T1, typename T2>
+TJLterm<T1,T2>::TJLterm<T1,T2>() 
+: _index(6), _weight(0), _value(0.0)
+{
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm<T1,T2>( TJetEnvironment<T1,T2>* pje ) 
@@ -1249,6 +1393,15 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l,
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<typename T1, typename T2>
+TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l, const T1& x )
+: _index(l), _weight(l.Sum()), _value(x)
+{
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 #ifdef __PRIVATE_ALLOCATOR__
 
 template<typename T1, typename T2>
@@ -1291,6 +1444,17 @@ template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm<T1,T2>( const TJLterm<T1,T2>& x ) 
 : _index( x._index ), _weight(x._weight), _value(x._value)
 {
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T1, typename T2>
+void TJLterm<T1,T2>::Reconstruct( const IntArray& e, const T1& x )
+{
+  _index.Reconstruct(e);
+  _weight = e.Sum();
+  _value = x;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -70,6 +70,7 @@ public:
   int      operator()       ( const int& ) const;    // return component
   int&     operator()       ( const int& );          // set    component
   void     Reconstruct( const int& = 0, const int* = 0 );  
+  void     Reconstruct( const IntArray& );  
            // Just like constructor
 
   // Functions ...
@@ -86,6 +87,11 @@ public:
   char          operator!=     ( const int& ) const;
 
   char          IsNull         () const;
+
+  // This operator+ does not belong here, because an "array"
+  //   is not a "vector." The proper approach would be to
+  //   define a derived class IntVector : public IntArray
+  IntArray      operator+( const IntArray& );
 
   // Queries ...
   int  Dim() const;

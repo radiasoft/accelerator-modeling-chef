@@ -186,6 +186,22 @@ void IntArray::Reconstruct( const int& n, const int* x )
   else    for ( i = 0; i < dim; i++ ) comp[i] = 0;
 }
 
+void IntArray::Reconstruct( const IntArray& x )
+{
+  static int i;
+
+  dim = x.Dim();
+#ifdef __PRIVATE_ALLOCATOR__    
+  if( comp ) vmfree((Vmalloc_t *)_vmem, comp);
+  comp = (int *) vmalloc((Vmalloc_t *)_vmem, 32);
+#else
+  if( comp ) delete [] comp;
+  comp = new int [ dim ];
+#endif
+
+  for ( i = 0; i < dim; i++ ) { comp[i] = x.comp[i]; }
+}
+
 // Algebraic functions ...
 
 IntArray& IntArray::operator= ( const IntArray& x )
@@ -196,6 +212,21 @@ IntArray& IntArray::operator= ( const IntArray& x )
 
   memcpy((void *)comp, (const void *)x.comp, dim * sizeof(int));
   return *this;
+}
+
+
+IntArray IntArray::operator+( const IntArray& y )
+{
+  IntArray ret( *this );
+  int* yPtr = y.comp;
+  int* xPtr = ret.comp;
+  int* upper = yPtr + dim;
+  while( yPtr < upper ) { 
+    (*xPtr) += (*yPtr);
+    xPtr++;
+    yPtr++;
+  }
+  return ret;
 }
 
 

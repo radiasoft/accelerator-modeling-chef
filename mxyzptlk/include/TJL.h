@@ -72,8 +72,18 @@ struct TJLterm
   T1 _value;       // The value associated with the JLterm.
 
   // Constructors and destructors
+  TJLterm();
+  void Reconstruct( const IntArray&, const T1& );
+  // NOTE: The void constructor is to be used ONLY in
+  //   conjunction with Reconstruct. By default,
+  //   _index is made 6 dimensional until Reconstruct
+  //   is invoked.
   TJLterm( TJetEnvironment<T1,T2>* );
-  TJLterm( const IntArray&, const T1&, TJetEnvironment<T1,T2>*  );
+  TJLterm( const IntArray&, const T1&, TJetEnvironment<T1,T2>* );
+  // If 0 is used for the environment pointer,
+  //   it is assumed that the that the variable
+  //   represents a constant function.
+  TJLterm( const IntArray&, const T1& );
   TJLterm( const TJLterm* );
   TJLterm( const TJLterm& );
   TJLterm( const TJLterm<T2,T1>& );
@@ -83,6 +93,7 @@ struct TJLterm
   // Operators
   TJLterm& operator=( const TJLterm& );
   TJLterm  operator*( const TJLterm& );
+  TJLterm  operator+( const TJLterm& );
 
 
   // Accessors
@@ -114,6 +125,7 @@ struct TJL : public dlist
   // Constructors and destructors_____________________________________
   TJL( TJetEnvironment<T1,T2>* = 0 );
   TJL( const T1&, TJetEnvironment<T1,T2>* );
+  TJL( const IntArray&, const T1&, TJetEnvironment<T1,T2>*  );
   TJL( const TJL& );
   TJL( const TJL* );
   TJL( const TJL<T2,T1>&, TJetEnvironment<T1,T2>* );
@@ -130,6 +142,8 @@ struct TJL : public dlist
                                 // Returns a TJLterm<T1,T2> equivalent to the
                                 // non-zero term of lowest weight.
   void addTerm( TJLterm<T1,T2>* ); // Public only for diagnostic purposes.
+  void addTerm( TJLterm<T1,T2>*, dlist_traversor& ); 
+                                   // Public only for diagnostic purposes.
 
   bool isNilpotent() const;
   void writeToFile( std::ofstream& ) const;
