@@ -1541,9 +1541,10 @@ void beamline::sectorize( int degree, JetParticle& pd ) {
 
 
 beamline beamline::sectorize( bmlnElmnt& x, bmlnElmnt& y, int degree,
-                              JetParticle& pd ) {
+                              JetParticle& pd, const char* sectorName ) {
  beamline a;
  sector* s;
+ s->Rename( sectorName );
  if( &x == &y ) return a;
  a = remove( x, y );
  s = a.makeSector( degree, pd );

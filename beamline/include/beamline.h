@@ -1999,7 +1999,8 @@ public:
   beamline sectorize ( bmlnElmnt&,   // Alters the object: everything between
                        bmlnElmnt&,   // the bmlnElmnt arguments replaced by a map.
                        int,          // <-- This argument is the degree of the map.
-                       JetParticle& );
+                       JetParticle&, 
+                       const char* = "NONAME" );
   char putAbove( bmlnElmnt& x, bmlnElmnt& y ); // Insert y above (before;  upstream of) x
   char putBelow( bmlnElmnt& x, bmlnElmnt& y ); // Insert y below (after, downstream of) x
 
