@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -266,11 +269,11 @@ var_alloc_init( const char*   name,
   assert( var_alloc != NULL );
   assert( strlen(name) < VAR_NAME_LENGTH );
 
-  allocate( var, var_alloc );
+  PRIVATE_ALLOCATE( var, var_alloc );
   if ( var != NULL ) {
     int errcode = var_init( var, name, expr, linenum, filename, local_linenum );
     if ( errcode != VAR_OK ) {
-      deallocate( var, var_alloc );
+      PRIVATE_DEALLOCATE( var, var_alloc );
       var = NULL;
     }
   }
