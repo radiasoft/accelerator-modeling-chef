@@ -23,8 +23,8 @@
 void thinrfcavity::propagate( Particle& p ) 
 {
  static double E;
- E = p.Energy() + eV*sin( phi_s + p.state[2] * w_rf / PH_MKS_c );
- p.SetReferenceEnergy( p.E + eV*sin(phi_s) );
+ E = p.Energy() + strength*sin( phi_s + p.state[2] * w_rf / PH_MKS_c );
+ p.SetReferenceEnergy( p.E + strength*sin(phi_s) );
  p.state[5] = ( sqrt((E - p.m)*(E + p.m)) 
               - sqrt((p.E-p.m)*(p.E+p.m))) / p.p;
 }
@@ -32,8 +32,8 @@ void thinrfcavity::propagate( Particle& p )
 void thinrfcavity::propagate( JetParticle& p ) 
 {
  static Jet E;
- E = p.Energy() + eV*sin( phi_s + p.state(2) * w_rf / PH_MKS_c );
- p.SetReferenceEnergy( p.E + eV*sin(phi_s) );
+ E = p.Energy() + strength*sin( phi_s + p.state(2) * w_rf / PH_MKS_c );
+ p.SetReferenceEnergy( p.E + strength*sin(phi_s) );
  ( p.state ).SetComponent( 5, ( sqrt((E - p.m)*(E + p.m)) 
                               - sqrt((p.E-p.m)*(p.E+p.m)) ) / p.p 
                          );
@@ -58,7 +58,7 @@ void thinrfcavity::propagate( Particle& p)
  }
 
  double kick;
- kick = eV*2.0*M_PI*w_rf/p.Beta()*cos(phi_s)/p.Momentum()/PH_MKS_c/1.0e9;
+ kick = strength*M_TWOPI*w_rf/p.Beta()*cos(phi_s)/p.Momentum()/PH_MKS_c/1.0e9;
  p.state[5] += kick*p.state[2];
 }
 
@@ -76,7 +76,7 @@ void thinrfcavity::propagate( JetParticle& p)
 
  Jet phi, u;
  Jet kick;
- kick = eV*2.0*M_PI*w_rf/p.Beta()*cos(phi_s)/p.Momentum()/PH_MKS_c/1.0e9;
+ kick = strength*M_TWOPI*w_rf/p.Beta()*cos(phi_s)/p.Momentum()/PH_MKS_c/1.0e9;
  u = p.state(5) + kick *p.state(2);
  ( p.state ).SetComponent( 5, u );
 }

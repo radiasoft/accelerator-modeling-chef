@@ -21,7 +21,6 @@ thinrfcavityData::thinrfcavityData( thinrfcavityData& x  )
  w_rf      = x.w_rf;
  phi_s     = x.phi_s;
  sin_phi_s = x.sin_phi_s;
- eV        = x.eV;
  Q         = x.Q;
  R         = x.R;
 }
@@ -63,12 +62,11 @@ void* thinrfcavityData::clone() {
 // **************************************************
 thinrfcavity::thinrfcavity(char *name_arg) : bmlnElmnt(name_arg, 0.0, 0.0)
 {
-  w_rf = 0;
-  eV = 0;
-  phi_s = 0;
-  sin_phi_s = 0;
-  Q = 0;
-  R = 0;
+  w_rf = 0.0;
+  phi_s = 0.0;
+  sin_phi_s = 0.0;
+  Q = 0.0;
+  R = 0.0;
 }
   
 thinrfcavity::thinrfcavity(double w_rf_arg,   // rf frequency [Hz]
@@ -77,10 +75,9 @@ thinrfcavity::thinrfcavity(double w_rf_arg,   // rf frequency [Hz]
                    	   double Q_arg,      // Quality factor 
                    	   double R_arg       // shunt impedance 
                    	   ) 
-: bmlnElmnt( 0.0, eV_arg ) 
+: bmlnElmnt( 0.0, eV_arg )
 {
   w_rf = MATH_TWOPI*w_rf_arg;
-  eV = eV_arg*1.0e-9;    // Conversion from eV to GeV
   phi_s = phi_s_arg;
   sin_phi_s = sin(phi_s);
   Q = Q_arg;
@@ -97,7 +94,6 @@ thinrfcavity::thinrfcavity(char * name_arg,   // name
 : bmlnElmnt( name_arg, 0.0, eV_arg ) 
 {
   w_rf = MATH_TWOPI*w_rf_arg;
-  eV = eV_arg*1.0e-9;    // Conversion from eV to GeV
   phi_s = phi_s_arg;
   sin_phi_s = sin(phi_s);
   Q = Q_arg;
@@ -110,7 +106,6 @@ thinrfcavity::thinrfcavity( thinrfcavity& x )
  w_rf      = x.w_rf;
  phi_s     = x.phi_s;
  sin_phi_s = x.sin_phi_s;
- eV        = x.eV;
  Q         = x.Q;
  R         = x.R;
 }
@@ -122,7 +117,6 @@ thinrfcavity::thinrfcavity( thinrfcavityData& x )
  w_rf      = x.w_rf;
  phi_s     = x.phi_s;
  sin_phi_s = x.sin_phi_s;
- eV        = x.eV;
  Q         = x.Q;
  R         = x.R;
 
@@ -138,7 +132,6 @@ thinrfcavityData* thinrfcavity::image() {
  p->w_rf      = w_rf;
  p->phi_s     = phi_s;
  p->sin_phi_s = sin_phi_s;
- p->eV        = eV;
  p->Q         = Q;
  p->R         = R;
 
@@ -156,7 +149,6 @@ void thinrfcavity::image( int d, slist* s, BMLN_posInfo* cg ) {
  p->w_rf      = w_rf;
  p->phi_s     = phi_s;
  p->sin_phi_s = sin_phi_s;
- p->eV        = eV;
  p->Q         = Q;
  p->R         = R;
 
@@ -178,9 +170,9 @@ void thinrfcavity::eliminate() {
 
 ostream& thinrfcavity::writeTo(ostream& os) 
 {
-  // Note that w_rf is returned also through bmlnElmnt::Strength()
+  // Note that eV is returned also through bmlnElmnt::Strength()
   os << OSTREAM_DOUBLE_PREC << w_rf/MATH_TWOPI <<
-    " " << eV*1.0e9 << " " <<  phi_s << " " << Q << " " << R << "\n";
+    " " << strength << " " <<  phi_s << " " << Q << " " << R << "\n";
   return os;
 }
 
@@ -189,7 +181,6 @@ istream& thinrfcavity::readFrom(istream& is)
   double w, e;
   is >> w >> e >> phi_s >> Q >> R;
   w_rf = w*MATH_TWOPI;
-  eV   = e/1.0e9;
   sin_phi_s = sin(phi_s);
   return is;
 }
