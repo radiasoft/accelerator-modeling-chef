@@ -1,0 +1,428 @@
+DGN> Gonna do some tracking now ...
+2.39687e-09,  0,  -5.55431e-10,  2.0971e-10,  0,  0,  
+0.0575358,  0,  -0.0130226,  0.00504387,  0,  0,  
+-5.01302,  0,  130.568,  0.928809,  0,  0,  
+-8.27665,  0,  481.03,  0.972024,  0,  0,  
+-12.2853,  0,  1074.99,  0.987006,  0,  0,  
+-17.1711,  0,  1969.98,  0.993285,  0,  0,  
+-23.1129,  0,  3233.08,  0.996277,  0,  0,  
+-30.3331,  0,  4944.58,  0.997833,  0,  0,  
+-39.1042,  0,  7201.48,  0.998695,  0,  0,  
+-49.7578,  0,  10121.3,  0.999193,  0,  0,  
+-62.6969,  0,  13846.5,  0.999492,  0,  0,  
+-78.4114,  0,  18550.1,  0.999675,  0,  0,  
+-97.4963,  0,  24442.1,  0.99979,  0,  0,  
+-120.674,  0,  31777.5,  0.999863,  0,  0,  
+-148.823,  0,  40865.9,  0.99991,  0,  0,  
+-183.008,  0,  52083.3,  0.99994,  0,  0,  
+-224.523,  0,  65886.4,  0.99996,  0,  0,  
+-274.942,  0,  82829.7,  0.999974,  0,  0,  
+-336.174,  0,  103587,  0.999982,  0,  0,  
+-410.535,  0,  128975,  0.999988,  0,  0,  
+-500.844,  0,  159988,  0.999992,  0,  0,  
+-610.519,  0,  197832,  0.999995,  0,  0,  
+-743.713,  0,  243972,  0.999996,  0,  0,  
+-905.471,  0,  300187,  0.999998,  0,  0,  
+-1101.92,  0,  368637,  0.999998,  0,  0,  
+-1340.49,  0,  451946,  0.999999,  0,  0,  
+-1630.22,  0,  553301,  0.999999,  0,  0,  
+-1982.09,  0,  676572,  0.999999,  0,  0,  
+-2409.41,  0,  826458,  1,  0,  0,  
+-2928.37,  0,  1.00867e+06,  1,  0,  0,  
+-3558.62,  0,  1.23013e+06,  1,  0,  0,  
+-4324.02,  0,  1.49926e+06,  1,  0,  0,  
+-5253.56,  0,  1.82629e+06,  1,  0,  0,  
+-6382.43,  0,  2.22364e+06,  1,  0,  0,  
+-7753.39,  0,  2.70636e+06,  1,  0,  0,  
+-9418.34,  0,  3.29279e+06,  1,  0,  0,  
+-11440.3,  0,  4.00516e+06,  1,  0,  0,  
+-13895.9,  0,  4.87047e+06,  1,  0,  0,  
+-16878.1,  0,  5.92153e+06,  1,  0,  0,  
+-20499.9,  0,  7.19816e+06,  1,  0,  0,  
+-24898.2,  0,  8.74873e+06,  1,  0,  0,  
+-30239.8,  0,  1.0632e+07,  1,  0,  0,  
+-36726.9,  0,  1.29193e+07,  1,  0,  0,  
+-44605.1,  0,  1.56973e+07,  1,  0,  0,  
+-54172.7,  0,  1.90712e+07,  1,  0,  0,  
+-65792.1,  0,  2.31688e+07,  1,  0,  0,  
+-79903.2,  0,  2.81453e+07,  1,  0,  0,  
+-97040.4,  0,  3.41892e+07,  1,  0,  0,  
+-117852,  0,  4.15293e+07,  1,  0,  0,  
+-143128,  0,  5.04437e+07,  1,  0,  0,  
+-173823,  0,  6.12698e+07,  1,  0,  0,  
+-211100,  0,  7.44178e+07,  1,  0,  0,  
+-256375,  0,  9.03856e+07,  1,  0,  0,  
+-311364,  0,  1.09778e+08,  1,  0,  0,  
+-378145,  0,  1.3333e+08,  1,  0,  0,  
+-459234,  0,  1.61933e+08,  1,  0,  0,  
+-557753,  0,  1.96671e+08,  1,  0,  0,  
+-677370,  0,  2.38859e+08,  1,  0,  0,  
+-822615,  0,  2.90097e+08,  1,  0,  0,  
+-998994,  0,  3.52321e+08,  1,  0,  0,  
+-1.21315e+06,  0,  4.27882e+08,  1,  0,  0,  
+-1.47385e+06,  0,  5.19657e+08,  1,  0,  0,  
+-1.79025e+06,  0,  6.3112e+08,  1,  0,  0,  
+-2.17245e+06,  0,  7.66483e+08,  1,  0,  0,  
+-2.6373e+06,  0,  9.30767e+08,  1,  0,  0,  
+-3.19969e+06,  0,  1.13026e+09,  1,  0,  0,  
+-3.89936e+06,  0,  1.37283e+09,  1,  0,  0,  
+-4.72122e+06,  0,  1.66707e+09,  1,  0,  0,  
+-5.71184e+06,  0,  2.02384e+09,  1,  0,  0,  
+-6.8989e+06,  0,  2.4542e+09,  1,  0,  0,  
+-8.35134e+06,  0,  2.97705e+09,  1,  0,  0,  
+-1.00411e+07,  0,  3.60418e+09,  1,  0,  0,  
+-1.19597e+07,  0,  4.35272e+09,  1,  0,  0,  
+-1.45454e+07,  0,  5.25363e+09,  1,  0,  0,  
+-1.82104e+07,  0,  6.38049e+09,  1,  0,  0,  
+-2.14357e+07,  0,  7.69881e+09,  1,  0,  0,  
+-2.37837e+07,  0,  9.26757e+09,  1,  0,  0,  
+-3.05525e+07,  0,  1.10205e+10,  1,  0,  0,  
+-2.74435e+07,  0,  1.29111e+10,  1,  0,  0,  
+-3.20735e+07,  0,  1.50724e+10,  1,  0,  0,  
+-4.3239e+07,  0,  1.77041e+10,  1,  0,  0,  
+-4.28467e+07,  0,  2.07939e+10,  1,  0,  0,  
+-4.78581e+07,  0,  2.41441e+10,  1,  0,  0,  
+-3.13765e+07,  0,  2.66556e+10,  1,  0,  0,  
+-3.15035e+07,  0,  2.8822e+10,  1,  0,  0,  
+-4.59165e+07,  0,  3.15167e+10,  1,  0,  0,  
+-4.65154e+07,  0,  3.46503e+10,  1,  0,  0,  
+-4.16825e+07,  0,  3.72286e+10,  1,  0,  0,  
+-3.58465e+07,  0,  3.98655e+10,  1,  0,  0,  
+-4.44604e+07,  0,  4.32983e+10,  1,  0,  0,  
+-4.22125e+07,  0,  4.58127e+10,  1,  0,  0,  
+-4.106e+07,  0,  4.92534e+10,  1,  0,  0,  
+NaN,  NaN,  NaN,  NaN,  NaN,  0,  
+NaN,  NaN,  NaN,  NaN,  NaN,  0,  
+NaN,  NaN,  NaN,  NaN,  NaN,  0,  
+NaN,  NaN,  NaN,  NaN,  NaN,  0,  
+NaN,  NaN,  NaN,  NaN,  NaN,  0,  
+NaN,  NaN,  NaN,  NaN,  NaN,  0,  
+NaN,  NaN,  NaN,  NaN,  NaN,  0,  
+NaN,  NaN,  NaN,  NaN,  NaN,  0,  
+
+
+Begin JetVector::printCoeffs() ......
+Dimension: 6, Weight = 3, Max accurate weight = 3
+JetVector reference point: 
+0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  
+
+JetVector::printCoeffs(): Component 0
+
+Count  = 32, Weight = 3, Max accurate weight = 3
+Reference point: 
+0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  
+
+Index:    0  0  0  0  0  0   Value:   1.340248e-09  
+Index:    0  0  0  0  0  1   Value:  -8.918426e+06  
+Index:    0  0  0  1  0  0   Value:   1.091275e+08  
+Index:    1  0  0  0  0  0   Value:   1.446701e+07  
+Index:    0  0  0  0  0  2   Value:  -6.660460e+11  
+Index:    0  0  0  0  2  0   Value:  -1.516349e+06  
+Index:    0  0  0  1  0  1   Value:   1.630008e+13  
+Index:    0  0  0  2  0  0   Value:  -9.972990e+13  
+Index:    0  1  0  0  1  0   Value:  -2.055451e+04  
+Index:    0  2  0  0  0  0   Value:   8.336163e+04  
+Index:    1  0  0  0  0  1   Value:   2.160912e+12  
+Index:    1  0  0  1  0  0   Value:  -2.644234e+13  
+Index:    2  0  0  0  0  0   Value:  -1.752727e+12  
+Index:    0  0  0  0  0  3   Value:  -1.101029e+19  
+Index:    0  0  0  0  2  1   Value:  -2.265432e+11  
+Index:    0  0  0  1  0  2   Value:   4.041716e+20  
+Index:    0  0  0  1  2  0   Value:   2.772246e+12  
+Index:    0  0  0  2  0  1   Value:  -4.945519e+21  
+Index:    0  0  0  3  0  0   Value:   2.017143e+22  
+Index:    0  1  0  0  1  1   Value:  -3.060983e+09  
+Index:    0  1  0  1  1  0   Value:   3.742452e+10  
+Index:    0  2  0  0  0  1   Value:   1.245080e+10  
+Index:    0  2  0  1  0  0   Value:  -1.523549e+11  
+Index:    1  0  0  0  0  2   Value:   5.358094e+19  
+Index:    1  0  0  0  2  0   Value:   3.675088e+11  
+Index:    1  0  0  1  0  1   Value:  -1.311253e+21  
+Index:    1  0  0  2  0  0   Value:   8.022364e+21  
+Index:    1  1  0  0  1  0   Value:   4.961380e+09  
+Index:    1  2  0  0  0  0   Value:  -2.019765e+10  
+Index:    2  0  0  0  0  1   Value:  -8.691621e+19  
+Index:    2  0  0  1  0  0   Value:   1.063523e+21  
+Index:    3  0  0  0  0  0   Value:   4.699699e+19  
+
+
+JetVector::printCoeffs(): Component 1
+
+Count  = 25, Weight = 3, Max accurate weight = 3
+Reference point: 
+0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  
+
+Index:    0  0  0  0  0  0   Value:   0.000000e+00  
+Index:    0  0  0  0  1  0   Value:   1.289412e+01  
+Index:    0  1  0  0  0  0   Value:  -7.614601e-01  
+Index:    0  0  0  0  1  1   Value:   5.672827e+06  
+Index:    0  0  0  1  1  0   Value:  -6.941566e+07  
+Index:    0  1  0  0  0  1   Value:  -8.551170e+05  
+Index:    0  1  0  1  0  0   Value:   1.046375e+07  
+Index:    1  0  0  0  1  0   Value:  -9.202417e+06  
+Index:    1  1  0  0  0  0   Value:   1.387177e+06  
+Index:    0  0  0  0  1  2   Value:   2.017549e+13  
+Index:    0  0  0  0  3  0   Value:   9.645394e+05  
+Index:    0  0  0  1  1  1   Value:  -4.937414e+14  
+Index:    0  0  0  2  1  0   Value:   3.020753e+15  
+Index:    0  1  0  0  0  2   Value:  -3.112075e+12  
+Index:    0  1  0  0  2  0   Value:  -1.323166e+05  
+Index:    0  1  0  1  0  1   Value:   7.615987e+13  
+Index:    0  1  0  2  0  0   Value:  -4.659535e+14  
+Index:    0  2  0  0  1  0   Value:  -5.499755e+04  
+Index:    0  3  0  0  0  0   Value:   7.993204e+03  
+Index:    1  0  0  0  1  1   Value:  -6.545518e+13  
+Index:    1  0  0  1  1  0   Value:   8.009211e+14  
+Index:    1  1  0  0  0  1   Value:   1.009650e+13  
+Index:    1  1  0  1  0  0   Value:  -1.235427e+14  
+Index:    2  0  0  0  1  0   Value:   5.308896e+13  
+Index:    2  1  0  0  0  0   Value:  -8.189012e+12  
+
+
+JetVector::printCoeffs(): Component 2
+
+Count  = 33, Weight = 3, Max accurate weight = 3
+Reference point: 
+0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  
+
+Index:    0  0  0  0  0  0   Value:  -3.061471e-10  
+Index:    0  0  0  0  0  1   Value:   2.066693e+06  
+Index:    0  0  0  1  0  0   Value:  -2.528837e+07  
+Index:    0  0  1  0  0  0   Value:   1.000000e+00  
+Index:    1  0  0  0  0  0   Value:  -3.352474e+06  
+Index:    0  0  0  0  0  2   Value:   7.590085e+12  
+Index:    0  0  0  0  2  0   Value:   3.515186e+05  
+Index:    0  0  0  1  0  1   Value:  -1.857474e+14  
+Index:    0  0  0  2  0  0   Value:   1.136420e+15  
+Index:    0  1  0  0  1  0   Value:   4.735484e+03  
+Index:    0  2  0  0  0  0   Value:  -1.931555e+04  
+Index:    1  0  0  0  0  1   Value:  -2.462449e+13  
+Index:    1  0  0  1  0  0   Value:   3.013099e+14  
+Index:    2  0  0  0  0  0   Value:   1.997229e+13  
+Index:    0  0  0  0  0  3   Value:   3.599112e+17  
+Index:    0  0  0  0  2  1   Value:   2.581013e+12  
+Index:    0  0  0  1  0  2   Value:  -1.321243e+19  
+Index:    0  0  0  1  2  0   Value:  -3.158180e+13  
+Index:    0  0  0  2  0  1   Value:   1.616810e+20  
+Index:    0  0  0  3  0  0   Value:  -6.595152e+20  
+Index:    0  1  0  0  1  1   Value:   3.498334e+10  
+Index:    0  1  0  1  1  0   Value:  -4.280555e+11  
+Index:    0  2  0  0  0  1   Value:  -1.418908e+11  
+Index:    0  2  0  1  0  0   Value:   1.736202e+12  
+Index:    1  0  0  0  0  2   Value:  -1.751592e+18  
+Index:    1  0  0  0  2  0   Value:  -4.186789e+12  
+Index:    1  0  0  1  0  1   Value:   4.286832e+19  
+Index:    1  0  0  2  0  0   Value:  -2.622953e+20  
+Index:    1  1  0  0  1  0   Value:  -5.674722e+10  
+Index:    1  2  0  0  0  0   Value:   2.301679e+11  
+Index:    2  0  0  0  0  1   Value:   2.841540e+18  
+Index:    2  0  0  1  0  0   Value:  -3.477243e+19  
+Index:    3  0  0  0  0  0   Value:  -1.536591e+18  
+
+
+JetVector::printCoeffs(): Component 3
+
+Count  = 32, Weight = 3, Max accurate weight = 3
+Reference point: 
+0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  
+
+Index:    0  0  0  0  0  0   Value:   1.172628e-10  
+Index:    0  0  0  0  0  1   Value:  -7.803043e+05  
+Index:    0  0  0  1  0  0   Value:   9.547943e+06  
+Index:    1  0  0  0  0  0   Value:   1.265769e+06  
+Index:    0  0  0  0  0  2   Value:   1.829587e+11  
+Index:    0  0  0  0  2  0   Value:  -1.326704e+05  
+Index:    0  0  0  1  0  1   Value:  -4.477422e+12  
+Index:    0  0  0  2  0  0   Value:   2.739301e+13  
+Index:    0  1  0  0  1  0   Value:  -1.798462e+03  
+Index:    0  2  0  0  0  0   Value:   7.293604e+03  
+Index:    1  0  0  0  0  1   Value:  -5.935695e+11  
+Index:    1  0  0  1  0  0   Value:   7.262969e+12  
+Index:    2  0  0  0  0  0   Value:   4.814250e+11  
+Index:    0  0  0  0  0  3   Value:  -2.424272e+17  
+Index:    0  0  0  0  2  1   Value:   6.221216e+10  
+Index:    0  0  0  1  0  2   Value:   8.899138e+18  
+Index:    0  0  0  1  2  0   Value:  -7.612234e+11  
+Index:    0  0  0  2  0  1   Value:  -1.088912e+20  
+Index:    0  0  0  3  0  0   Value:   4.441362e+20  
+Index:    0  1  0  0  1  1   Value:   8.437179e+08  
+Index:    0  1  0  1  1  0   Value:  -1.032658e+10  
+Index:    0  2  0  0  0  1   Value:  -3.420303e+09  
+Index:    0  2  0  1  0  0   Value:   4.185125e+10  
+Index:    1  0  0  0  0  2   Value:   1.179756e+18  
+Index:    1  0  0  0  2  0   Value:  -1.009158e+11  
+Index:    1  0  0  1  0  1   Value:  -2.887136e+19  
+Index:    1  0  0  2  0  0   Value:   1.766371e+20  
+Index:    1  1  0  0  1  0   Value:  -1.368990e+09  
+Index:    1  2  0  0  0  0   Value:   5.548209e+09  
+Index:    2  0  0  0  0  1   Value:  -1.913734e+18  
+Index:    2  0  0  1  0  0   Value:   2.341674e+19  
+Index:    3  0  0  0  0  0   Value:   1.034784e+18  
+
+
+JetVector::printCoeffs(): Component 4
+
+Count  = 25, Weight = 3, Max accurate weight = 3
+Reference point: 
+0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  
+
+Index:    0  0  0  0  0  0   Value:   0.000000e+00  
+Index:    0  0  0  0  1  0   Value:   1.872087e+00  
+Index:    0  1  0  0  0  0   Value:  -1.881105e-01  
+Index:    0  0  0  0  1  1   Value:   5.032816e+05  
+Index:    0  0  0  1  1  0   Value:  -6.158275e+06  
+Index:    0  1  0  0  0  1   Value:  -7.111488e+04  
+Index:    0  1  0  1  0  0   Value:   8.702041e+05  
+Index:    1  0  0  0  1  0   Value:  -8.164010e+05  
+Index:    1  1  0  0  0  0   Value:   1.153627e+05  
+Index:    0  0  0  0  1  2   Value:   1.954087e+12  
+Index:    0  0  0  0  3  0   Value:   8.556761e+04  
+Index:    0  0  0  1  1  1   Value:  -4.782110e+13  
+Index:    0  0  0  2  1  0   Value:   2.925738e+14  
+Index:    0  1  0  0  0  2   Value:  -3.357067e+11  
+Index:    0  1  0  0  2  0   Value:  -1.093049e+04  
+Index:    0  1  0  1  0  1   Value:   8.215542e+12  
+Index:    0  1  0  2  0  0   Value:  -5.026348e+13  
+Index:    0  2  0  0  1  0   Value:  -4.868296e+03  
+Index:    0  3  0  0  0  0   Value:   6.647472e+02  
+Index:    1  0  0  0  1  1   Value:  -6.339633e+12  
+Index:    1  0  0  1  1  0   Value:   7.757288e+13  
+Index:    1  1  0  0  0  1   Value:   1.089132e+12  
+Index:    1  1  0  1  0  0   Value:  -1.332683e+13  
+Index:    2  0  0  0  1  0   Value:   5.141909e+12  
+Index:    2  1  0  0  0  0   Value:  -8.833676e+11  
+
+
+JetVector::printCoeffs(): Component 5
+
+Count  = 2, Weight = 1, Max accurate weight = 3
+Reference point: 
+0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  
+
+Index:    0  0  0  0  0  0   Value:   0.000000e+00  
+Index:    0  0  0  0  0  1   Value:   1.000000e+00  
+
+
+End JetVector::printCoeffs() ......
+
+DGN> Hang on, everybody. Here we goooo...!
+DGN> Filtered map:
+
+
+Begin JetVector::printCoeffs() ......
+Dimension: 4, Weight = 3, Max accurate weight = 3
+JetVector reference point: 
+0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  
+
+JetVector::printCoeffs(): Component 0
+
+Count  = 19, Weight = 3, Max accurate weight = 3
+Reference point: 
+0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  
+
+Index:    0  0  0  0  0  0   Value:   1.340248e-09  
+Index:    0  0  0  1  0  0   Value:   1.091275e+08  
+Index:    1  0  0  0  0  0   Value:   1.446701e+07  
+Index:    0  0  0  0  2  0   Value:  -1.516349e+06  
+Index:    0  0  0  2  0  0   Value:  -9.972990e+13  
+Index:    0  1  0  0  1  0   Value:  -2.055451e+04  
+Index:    0  2  0  0  0  0   Value:   8.336163e+04  
+Index:    1  0  0  1  0  0   Value:  -2.644234e+13  
+Index:    2  0  0  0  0  0   Value:  -1.752727e+12  
+Index:    0  0  0  1  2  0   Value:   2.772246e+12  
+Index:    0  0  0  3  0  0   Value:   2.017143e+22  
+Index:    0  1  0  1  1  0   Value:   3.742452e+10  
+Index:    0  2  0  1  0  0   Value:  -1.523549e+11  
+Index:    1  0  0  0  2  0   Value:   3.675088e+11  
+Index:    1  0  0  2  0  0   Value:   8.022364e+21  
+Index:    1  1  0  0  1  0   Value:   4.961380e+09  
+Index:    1  2  0  0  0  0   Value:  -2.019765e+10  
+Index:    2  0  0  1  0  0   Value:   1.063523e+21  
+Index:    3  0  0  0  0  0   Value:   4.699699e+19  
+
+
+JetVector::printCoeffs(): Component 1
+
+Count  = 17, Weight = 3, Max accurate weight = 3
+Reference point: 
+0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  
+
+Index:    0  0  0  0  0  0   Value:   0.000000e+00  
+Index:    0  0  0  0  1  0   Value:   1.289412e+01  
+Index:    0  1  0  0  0  0   Value:  -7.614601e-01  
+Index:    0  0  0  1  1  0   Value:  -6.941566e+07  
+Index:    0  1  0  1  0  0   Value:   1.046375e+07  
+Index:    1  0  0  0  1  0   Value:  -9.202417e+06  
+Index:    1  1  0  0  0  0   Value:   1.387177e+06  
+Index:    0  0  0  0  3  0   Value:   9.645394e+05  
+Index:    0  0  0  2  1  0   Value:   3.020753e+15  
+Index:    0  1  0  0  2  0   Value:  -1.323166e+05  
+Index:    0  1  0  2  0  0   Value:  -4.659535e+14  
+Index:    0  2  0  0  1  0   Value:  -5.499755e+04  
+Index:    0  3  0  0  0  0   Value:   7.993204e+03  
+Index:    1  0  0  1  1  0   Value:   8.009211e+14  
+Index:    1  1  0  1  0  0   Value:  -1.235427e+14  
+Index:    2  0  0  0  1  0   Value:   5.308896e+13  
+Index:    2  1  0  0  0  0   Value:  -8.189012e+12  
+
+
+JetVector::printCoeffs(): Component 2
+
+Count  = 19, Weight = 3, Max accurate weight = 3
+Reference point: 
+0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  
+
+Index:    0  0  0  0  0  0   Value:   1.172628e-10  
+Index:    0  0  0  1  0  0   Value:   9.547943e+06  
+Index:    1  0  0  0  0  0   Value:   1.265769e+06  
+Index:    0  0  0  0  2  0   Value:  -1.326704e+05  
+Index:    0  0  0  2  0  0   Value:   2.739301e+13  
+Index:    0  1  0  0  1  0   Value:  -1.798462e+03  
+Index:    0  2  0  0  0  0   Value:   7.293604e+03  
+Index:    1  0  0  1  0  0   Value:   7.262969e+12  
+Index:    2  0  0  0  0  0   Value:   4.814250e+11  
+Index:    0  0  0  1  2  0   Value:  -7.612234e+11  
+Index:    0  0  0  3  0  0   Value:   4.441362e+20  
+Index:    0  1  0  1  1  0   Value:  -1.032658e+10  
+Index:    0  2  0  1  0  0   Value:   4.185125e+10  
+Index:    1  0  0  0  2  0   Value:  -1.009158e+11  
+Index:    1  0  0  2  0  0   Value:   1.766371e+20  
+Index:    1  1  0  0  1  0   Value:  -1.368990e+09  
+Index:    1  2  0  0  0  0   Value:   5.548209e+09  
+Index:    2  0  0  1  0  0   Value:   2.341674e+19  
+Index:    3  0  0  0  0  0   Value:   1.034784e+18  
+
+
+JetVector::printCoeffs(): Component 3
+
+Count  = 17, Weight = 3, Max accurate weight = 3
+Reference point: 
+0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  0.000000e+00  
+
+Index:    0  0  0  0  0  0   Value:   0.000000e+00  
+Index:    0  0  0  0  1  0   Value:   1.872087e+00  
+Index:    0  1  0  0  0  0   Value:  -1.881105e-01  
+Index:    0  0  0  1  1  0   Value:  -6.158275e+06  
+Index:    0  1  0  1  0  0   Value:   8.702041e+05  
+Index:    1  0  0  0  1  0   Value:  -8.164010e+05  
+Index:    1  1  0  0  0  0   Value:   1.153627e+05  
+Index:    0  0  0  0  3  0   Value:   8.556761e+04  
+Index:    0  0  0  2  1  0   Value:   2.925738e+14  
+Index:    0  1  0  0  2  0   Value:  -1.093049e+04  
+Index:    0  1  0  2  0  0   Value:  -5.026348e+13  
+Index:    0  2  0  0  1  0   Value:  -4.868296e+03  
+Index:    0  3  0  0  0  0   Value:   6.647472e+02  
+Index:    1  0  0  1  1  0   Value:   7.757288e+13  
+Index:    1  1  0  1  0  0   Value:  -1.332683e+13  
+Index:    2  0  0  0  1  0   Value:   5.141909e+12  
+Index:    2  1  0  0  0  0   Value:  -8.833676e+11  
+
+
+End JetVector::printCoeffs() ......
+
+
+*** WARNING *** 
+*** WARNING *** Inserting beamlines into beamlines provides
+*** WARNING *** unreliable geometry information.
+*** WARNING *** This will be fixed.
+*** WARNING *** 
