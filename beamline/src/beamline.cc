@@ -5,7 +5,7 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.1
+******  Version:   2.2
 ******                                    
 ******  File:      beamline.cc
 ******                                                                
@@ -703,7 +703,15 @@ void beamline::InsertElementsFromList( double& s,
     getNext.GoBack();
     s += ( p_be_a->OrbitLength( prtn ) + p_ile->q->OrbitLength( prtn ) );
 
-    dlist::remove( (ent) p_be );      // ??? Screws up geometry, of course.
+    if( ((ent) p_be) == this->lastInfoPtr() ) {
+      dlist::remove( (ent) p_be );      // ??? Screws up geometry, of course.
+      getNext.Terminate();
+      // This is required because of the way 
+      // dlist_iterator::operator() is written.
+    }
+    else {
+      dlist::remove( (ent) p_be );
+    }
     removedElements.append( (ent) p_be );
 
     p_be = p_be_b;
@@ -746,6 +754,7 @@ void beamline::InsertElementsFromList( double& s,
     p_be = (bmlnElmnt*) getNext();
   }
  }
+
 }
 
 beamline& beamline::operator^( bmlnElmnt& x ) {
