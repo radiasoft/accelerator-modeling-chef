@@ -1,9 +1,15 @@
 #ifndef ML_H
 #define ML_H
 
+#ifdef __VISUAL_CPP__
+#include <iostream>
+#include <Complex>
+#else
 #include <iostream.h>
-#include <math.h>
 #include <complex.h>
+#endif
+#include <math.h>
+
 #include "complexAddon.h"
 
 struct MLD {

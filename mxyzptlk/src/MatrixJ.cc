@@ -1,7 +1,12 @@
+#include "MatrixJ.h"
+#ifdef __VISUAL_CPP__
+#include <iostream>
+#include <iomanip>
+#else
 #include <stdlib.h>
 #include <iostream.h>
-#include "MatrixJ.h"
 #include <iomanip.h>
+#endif
 
 //#define M_SMALL  1.0e-30
 

@@ -1,13 +1,17 @@
+#ifndef __VISUAL_CPP__
 #include <stdlib.h>
 #include <iostream.h>
-#include "Matrix.h"
 #include <iomanip.h>
+#endif
 
-
+#include "Matrix.h"
 //extern "C" {strstr(char*,char*);} // this may need to be commented out
 				  // on some systems.
 
 // ??? RAND extern "C" double drand48( void );
+//#ifdef __VISUAL_CPP__
+//typedef std::cerr cerr;
+//#endif
 
 extern "C" { void rg_(int*, int*, double*, double*,double*, int*, double*,
 		 int*, double*, int*); }
@@ -66,10 +70,8 @@ MatrixD::MatrixD(int rows, int columns, double* initval) : stacked(0) {
 }
 
 MatrixD::MatrixD(char * flag, int dimension) : stacked(0) {
-  double theta, cs, sn;
-  double a1, a2;
-  int    turns;
-  int    i, j, k;
+
+  int    i;
   double tmp_float = dimension;
 
 #ifdef OBJECT_DEBUG
@@ -629,7 +631,7 @@ ostream& operator<<(ostream& os, const MatrixD& x)
   for(i=0; i< x.rows(); i++) {
     os << "( ";
     for(j=0; j< x.cols(); j++) {
-      os << PREC << x.ml->m[i][j] << ", ";
+      os  << x.ml->m[i][j] << ", ";
     }
     os << " )\n";
   }
@@ -847,7 +849,7 @@ MatrixD MatrixD::scale()  {
 	maximum = fabs(temp); 
     }
     if(maximum == 0.0) {
-      cerr << "Matrix = \n" << *this << endl;
+		cerr << "Matrix = \n" << *this << endl;
       error("singular MatrixD in scale()");
     }
     // save scaling
@@ -1439,7 +1441,7 @@ ostream& operator<<(ostream& os, const MatrixC& x)
   for(i=0; i< x.rows(); i++) {
     os << "( ";
     for(j=0; j< x.cols(); j++) {
-      os << PREC << x.ml->m[i][j] << ", ";
+      os  << x.ml->m[i][j] << ", ";
     }
     os << " )\n";
   }

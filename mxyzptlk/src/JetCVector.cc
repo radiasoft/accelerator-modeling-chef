@@ -8,9 +8,11 @@
  * 
  */
 
-
+#ifndef __VISUAL_CPP__
 #include <stdlib.h>
 #include <iomanip.h>
+#endif
+
 #include "JetCVector.h"
 #include "JLC.h"
 

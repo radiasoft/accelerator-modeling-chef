@@ -1,9 +1,17 @@
 #ifndef JETML_H
 #define JETML_H
 
-#include <iostream.h>
+
 #include <math.h>
+
+#ifdef __VISUAL_CPP__
+#include <iostream>
+#include <complex>
+#else
+#include <iostream.h>
 #include <complex.h>
+#endif
+
 #include "complexAddon.h"
 #include "Jet.h"
 

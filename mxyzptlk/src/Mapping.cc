@@ -51,9 +51,13 @@
 **************************************************************************
 *************************************************************************/
 
-#include <stdlib.h>
 #include "Mapping.h"
 #include "JL.h"
+#ifdef __VISUAL_CPP__
+using std::cout;
+#else
+#include <stdlib.h>
+#endif
 
 
 #ifndef MX_MAXITER

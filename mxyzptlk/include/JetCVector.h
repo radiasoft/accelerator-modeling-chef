@@ -12,7 +12,16 @@
 #ifndef JETCVECTOR_H
 #define JETCVECTOR_H
 
+#ifdef __VISUAL_CPP__
+#include <iostream>
+#include <iomanip>
+using std::cout;
+using std::setw;
+using std::setprecision;
+#else
 #include <iostream.h>
+#endif
+
 #include <math.h>
 #include "JetC.h"
 #include "VectorD.h"

@@ -84,11 +84,17 @@ class JetC;
 class LieOperator;
 class CLieOperator;
 
+
+#include <math.h>
+#ifdef __VISUAL_CPP__
+#include <iostream>
+#include <Complex>
+#else
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 #include <complex.h>
 #include <iostream.h>
+#endif
 // ??? Should this line be added??? #include <iostream.h>
 // ??? Should this line be added??? #include <fstream.h>
 // ??? Should this line be added??? #include <iomanip.h>

@@ -51,10 +51,16 @@
 **************************************************************************
 *************************************************************************/
 
+
+#include "JL.h"
+#ifdef __VISUAL_CPP__
+#include <iomanip>
+using std::cout;
+using std::setprecision;
+#else
 #include <stdlib.h>
 #include <iomanip.h>
-#include "JL.h"
-
+#endif
 // ================================================================
 //      External routines
 //
@@ -122,7 +128,7 @@ JL::JL( Jet__environment* pje ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JL::JL( const double& x, Jet__environment* pje ) {
- int i;
+
  
  clear();
  rc = 1;
@@ -151,7 +157,7 @@ JL::JL( const JL& x ) {
  dlist_iterator getNext( (dlist&) x );
  JLterm* p;
  JLterm* q;
- int i;
+
  
  static char firstCall = 1;
  if( firstCall ) {
@@ -191,7 +197,7 @@ JL::JL( JL* x ) {
  dlist_iterator getNext( *(dlist*) x );
  JLterm* p;
  JLterm* q;
- int i;
+
  
  static char firstCall = 1;
  if( firstCall ) {
@@ -832,7 +838,7 @@ char operator==( const JL& x, const JL& y ) {
  dlist_iterator getNextY( (dlist&) y );
  JLterm* p;
  JLterm* q;
- int i;
+
  
  if( ( x.count   != y.count )   ||
      ( x.weight  != y.weight )  ||
@@ -1128,7 +1134,7 @@ JLterm::JLterm( const IntArray& l,
 JLterm::JLterm( JLterm* x ) 
 : index( x->index.Dim() )
 {
- int i;
+
  
  weight = x->weight;
  value  = x->value;
@@ -1145,7 +1151,7 @@ JLterm::JLterm( JLterm* x )
 JLterm::JLterm( JLterm& x ) 
 : index( x.index.Dim() )
 {
- int i;
+
  
  weight = x.weight;
  value  = x.value;
@@ -1174,7 +1180,7 @@ JLterm::~JLterm() {
 //      Overloaded operators for class JLterm
 
 void JLterm::operator=( const JLterm& x ) {
- int i;
+
  weight = x.weight;
  value  = x.value;
  index  = x.index;

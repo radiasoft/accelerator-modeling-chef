@@ -14,7 +14,12 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#ifdef __VISUAL_CPP__
+#include <iostream>
+#else
 #include <iostream.h>
+#endif
+
 #include <math.h>
 #include "Matrix.h"     // Needed only for final utility.
 

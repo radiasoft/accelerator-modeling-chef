@@ -76,9 +76,13 @@
 
 #ifndef JL_HXX
 #define JL_HXX
-
+#ifdef __VISUAL_CPP__
+#include <iostream>
+#else
 #include <iostream.h>
 #include <stdio.h>
+#endif
+
 #include "dlist.h"
 #include "IntArray.h"
 #include "Matrix.h"
@@ -86,8 +90,8 @@
 #include "Jet.h"    // Needed for Jet::scratchFile
 
 class LieOperator;
-class JLCterm;
-class JLC;
+struct JLCterm;
+struct JLC;
 
 // *******************************************************************
 

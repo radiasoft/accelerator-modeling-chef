@@ -11,8 +11,13 @@
  */
 
 
-#include <stdlib.h>
+
 #include "VectorD.h"
+#ifdef __VISUAL_CPP__
+using std::cout;
+#else
+#include <stdlib.h>
+#endif
 
 // ================================================================
 //      Global variables

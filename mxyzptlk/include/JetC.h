@@ -280,7 +280,7 @@ private:
   int index;
 public:
   coordC();
-  coordC( Complex = 0.0 );
+  coordC( Complex = complex_0 );
   coordC( const coordC& );
   ~coordC();
 

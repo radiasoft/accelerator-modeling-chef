@@ -4,10 +4,10 @@
 #include "ML.h"
 
 class MatrixC;
-class ostream;
 
-const Complex complex_0 = Complex(0.0,0.0);
-const Complex complex_1 = Complex(1.0,0.0);
+
+//class ostream;
+
 
 class MatrixD {
 private:

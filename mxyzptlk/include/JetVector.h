@@ -12,7 +12,12 @@
 #ifndef JETVECTOR_H
 #define JETVECTOR_H
 
+#ifdef __VISUAL_CPP__
+#include <iostream>
+#else
 #include <iostream.h>
+#endif
+
 #include <math.h>
 #include "Jet.h"
 #include "VectorD.h"

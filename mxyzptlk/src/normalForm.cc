@@ -316,7 +316,7 @@ void normalForm( const Mapping&     theMapping,     /* input */
  for( int k = 0; k <= maxOrder - 2; k++ ) {
   reg = id;
   ll = 0;
-  while( ll < k ) reg = N[ll++].expMap( -1.0, reg );
+  while( ll < k ) reg = N[ll++].expMap( -complex_1, reg );
   reg = calN( reg );
   // -------------
   reg = reg.filter( k+2, k+2 );
@@ -342,11 +342,11 @@ void normalForm( const Mapping&     theMapping,     /* input */
 
   // Prepare for the next order
   reg = Dinv*id;
-  mapT = T[k].expMap( 1.0, id );
+  mapT = T[k].expMap( complex_1, id );
   reg = mapT( reg );
   reg = D*reg;
   reg = calN( reg );
-  mapT = T[k].expMap( -1.0, id );
+  mapT = T[k].expMap( -complex_1, id );
   calN = mapT( reg );
   // In one line:
   // calN = T[k].expMap( -1.0, calN( D*( T[k].expMap( 1.0, Dinv*id ) ) ) );

@@ -5,8 +5,6 @@
 //      Global variables
 //
 
-const Complex complex_0 = Complex(0.0,0.0);
-const Complex complex_1 = Complex(1.0,0.0);
 
 #ifdef OBJECT_DEBUG
 int MLD::objectCount = 0;

@@ -9,11 +9,19 @@
  */
 
 
-#include <stdlib.h>
-#include <iomanip.h>
+
 #include "JetVector.h"
 #include "JL.h"
 
+#ifdef __VISUAL_CPP__
+#include <iomanip>
+using std::cout;
+using std::setw;
+using std::setprecision;
+#else
+#include <stdlib.h>
+#include <iomanip.h>
+#endif
 // ================================================================
 //      Global variables
 //

@@ -51,10 +51,18 @@
 **************************************************************************
 *************************************************************************/
 
-#include <stdlib.h>
-#include <iomanip.h>
+
 #include <math.h>
 #include "JLC.h"
+
+#ifdef __VISUAL_CPP__
+#include <iomanip>
+using std::cout;
+using std::setprecision;
+#else
+#include <stdlib.h>
+#include <iomanip.h>
+#endif
 
 // ================================================================
 //      External routines
@@ -121,7 +129,7 @@ JLC::JLC( JetC__environment* pje ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JLC::JLC( const Complex& x, JetC__environment* pje ) {
- int i;
+
  
  clear();
  rc = 1;
@@ -150,7 +158,7 @@ JLC::JLC( const JLC& x ) {
  dlist_iterator getNext( (dlist&) x );
  JLCterm* p;
  JLCterm* q;
- int i;
+
  
  static char firstCall = 1;
  if( firstCall ) {
@@ -190,7 +198,7 @@ JLC::JLC( JLC* x ) {
  dlist_iterator getNext( *(dlist*) x );
  JLCterm* p;
  JLCterm* q;
- int i;
+
  
  static char firstCall = 1;
  if( firstCall ) {
@@ -451,7 +459,7 @@ void JLC::setVariable( const Complex& x,
  IntArray ndx( myEnv->NumVar );  // Assumes: initialized with zeroes
  insert( new JLCterm( ndx, x, myEnv ) );
  ndx(j) = 1;
- append( new JLCterm( ndx, 1.0, myEnv ) );
+ append( new JLCterm( ndx, complex_1, myEnv ) );
  
  myEnv->refPoint[j] = x;
 }
@@ -483,7 +491,7 @@ void JLC::setVariable( const int& j,
  IntArray ndx( myEnv->NumVar );
  insert( new JLCterm( ndx, x, theEnv ) );
  ndx(j) = 1;
- append ( new JLCterm( ndx, 1.0, theEnv ) );
+ append ( new JLCterm( ndx, complex_1, theEnv ) );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -766,7 +774,7 @@ char operator==( const JLC& x, const JLC& y ) {
  dlist_iterator getNextY( (dlist&) y );
  JLCterm* p;
  JLCterm* q;
- int i;
+
  
  if( ( x.count   != y.count )   ||
      ( x.weight  != y.weight )  ||
@@ -1063,7 +1071,7 @@ JLCterm::JLCterm( const IntArray& l,
 JLCterm::JLCterm( const JLCterm* x ) 
 : index( x->index.Dim() )
 {
- int i;
+
  
  weight = x->weight;
  value  = x->value;
@@ -1080,7 +1088,7 @@ JLCterm::JLCterm( const JLCterm* x )
 JLCterm::JLCterm( const JLCterm& x ) 
 : index( x.index.Dim() )
 {
- int i;
+
  
  weight = x.weight;
  value  = x.value;
@@ -1109,7 +1117,7 @@ JLCterm::~JLCterm() {
 //      Overloaded operators for class JLCterm
 
 void JLCterm::operator=( const JLCterm& x ) {
- int i;
+
  weight = x.weight;
  value  = x.value;
  index  = x.index;

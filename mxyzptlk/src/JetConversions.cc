@@ -540,7 +540,7 @@ JLC::JLC( const JL& x, /* const */ JetC__environment* pje )
  dlist_iterator getNext( (dlist&) x );
  JLterm*  p;
  JLCterm* q;
- int i;
+ 
  
  count = 0;   // Certain compilers need these initialized.
  weight = 0;
@@ -633,7 +633,7 @@ JL::JL( const JLC& x, /* const */ Jet__environment* pje )
  dlist_iterator getNext( (dlist&) x );
  JLCterm*  p;
  JLterm* q;
- int i;
+
  
  count = 0;   // Certain compilers need these initialized.
  weight = 0;
@@ -681,7 +681,7 @@ JetVector& JetVector::operator=( const JetCVector& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Jet real( const JetC& x ) {
-  int       i;
+
   Jet       z;
   JLCterm*  p;
   JLterm*   q;
@@ -721,7 +721,7 @@ Jet real( const JetC& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Jet imag( const JetC& x ) {
-  int       i;
+
   Jet       z;
   JLCterm*  p;
   JLterm*   q;
