@@ -6,7 +6,7 @@
 #include <complex>
 #else
 #include <iostream.h>
-#include <complex.h>
+#include <complex>
 #endif
 #include <math.h>
 
@@ -21,7 +21,7 @@ struct MLD {
   // Private member functions_________________________________________
 
   void clear();
-  void error(char * msgl, char * msg2 = " ")const ;
+  void error(char * msgl, char * msg2 = (char*) " ")const ;
   // Constructors and destructors_____________________________________
 
   MLD();
@@ -51,7 +51,7 @@ struct MLC {
   // Private member functions_________________________________________
 
   void clear();
-  void error(char * msgl, char * msg2 = " ")const ;
+  void error(char * msgl, char * msg2 = (char*) " ")const ;
   // Constructors and destructors_____________________________________
 
   MLC();
@@ -83,7 +83,7 @@ struct MLI {
   // Private member functions_________________________________________
 
   void clear();
-  void error(char * msgl, char * msg2 = " ")const ;
+  void error(char * msgl, char * msg2 = (char*) " ")const ;
   // Constructors and destructors_____________________________________
 
   MLI();

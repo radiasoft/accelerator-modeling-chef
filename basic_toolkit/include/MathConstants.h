@@ -81,9 +81,9 @@
 
 // I am replacing Elliott's ansatz with that of STL. 
 
-#ifndef __SGI_STL_CONFIG_H
-#include <stl_config.h>
-#endif
+// #ifndef __SGI_STL_CONFIG_H
+// #include <stl_config.h>
+// #endif
 
 #endif // __SUNPRO_CC
 

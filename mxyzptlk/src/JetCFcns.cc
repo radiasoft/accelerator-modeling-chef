@@ -1257,8 +1257,8 @@ JetC cos( const JetC& x ) {
  
  p = (JLCterm*) getNext();
  if( ( p -> weight ) == 0 ) {         // x has non-zero standard part
-   cs = cos( p -> value );
-   sn = sin( p -> value );
+   cs = std::cos( p -> value );
+   sn = std::sin( p -> value );
    epsilon.DeepCopy( x );             // x must not be altered by the routine
    p = epsilon.get();                 // pops the standard part off epsilon
    delete p;
@@ -1315,7 +1315,7 @@ JetC exp( const JetC& x ) {
  
  p = (JLCterm*) getNext();
  if( ( p -> weight ) == 0 ) {         // x has non-zero standard part
-   factor = exp( p -> value );
+   factor = std::exp( p -> value );
    epsilon.DeepCopy( x );             // x must not be altered by the routine
    p = epsilon.get();                 // pops the standard part off epsilon
    delete p;
@@ -1446,7 +1446,7 @@ JetC pow( const JetC& x, const double& s ) {
      epsilon = pow( std, s );
      return epsilon;
    }
-   factor = pow( std, s );
+   factor = std::pow( std, s );
    epsilon.DeepCopy( x );             // x must not be altered by the routine
    p = epsilon.get();                 //   pops the standard part off epsilon
    delete p;
@@ -1540,8 +1540,8 @@ JetC sin( const JetC& x ) {
  
  p = (JLCterm*) getNext();
  if( ( p -> weight ) == 0 ) {         // x has non-zero standard part
-   cs = cos( p -> value );
-   sn = sin( p -> value );
+   cs = std::cos( p -> value );
+   sn = std::sin( p -> value );
    epsilon.DeepCopy( x );             // x must not be altered by the routine
    p = epsilon.get();                 // pops the standard part off epsilon
    delete p;
@@ -1593,7 +1593,7 @@ JetC sqrt( const JetC& x ) {
      ( ( std = p -> value ) !=  0.0 )
    )                                  // x has non-zero standard part
    {
-   factor = sqrt( std );
+   factor = std::sqrt( std );
    epsilon.DeepCopy( x );             // x must not be altered by the routine
    if( epsilon->count == 1 )          // x may have no derivatives
      {

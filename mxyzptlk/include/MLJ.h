@@ -7,8 +7,8 @@
 #include <iostream>
 #include <complex>
 #else
-#include <iostream.h>
-#include <complex.h>
+#include <iostream>
+#include <complex>
 #endif
 
 #include "complexAddon.h"

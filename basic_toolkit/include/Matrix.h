@@ -22,7 +22,7 @@ private:
   MatrixD scale();
   MatrixD lu_decompose(int*, int&) const;
   void lu_back_subst(int*,MatrixD&);
-  void error(char * msgl, char * msg2 = " ")const ;
+  void error(char * msgl, char * msg2 = (char*) " ")const ;
 
 public:
   char  stacked;
@@ -106,7 +106,7 @@ private:
   MatrixC scale();
   MatrixC lu_decompose(int*, int&);
   void lu_back_subst(int*,MatrixC&);
-  void error(char * msgl, char * msg2 = " ")const ;
+  void error(char * msgl, char * msg2 = (char*) " ")const ;
 
 public:
   char  stacked;
@@ -185,7 +185,7 @@ class MatrixI {
 private:
   MLI* ml;
 
-  void error(char * msgl, char * msg2 = " ")const ;
+  void error(char * msgl, char * msg2 = (char*) " ")const ;
 public:
   char  stacked;
 
