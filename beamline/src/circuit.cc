@@ -213,29 +213,24 @@ void FCircuit::getCurrent(void* x) {
 }
 
 void FCircuit::setCurrent(void* x) {
-  double* current = (double *)x;
-  double  ItoFieldvalue;
+  double ItoFieldvalue;
   dlist_iterator getNext ( *(dlist*) this );
   bmlnElmnt* p;
   
-  // Take as a representative element, the first one and use it's ItoField.
-  p = (bmlnElmnt*) getNext();
-  ItoFieldvalue = p->IToField();
-
-  if(ItoFieldvalue != 0.0) {
-    field = *current * ItoFieldvalue;
-  } else {
-    cerr << "FCircuit::setCurrent(): ItoField conversion is zero for " 
-         << getName() << endl;
-    *current = 0.0;
-    return;
-  }
-  // Now set all of the elements in the circuit to the same current.
-  getNext.Reset();
   while(p = (bmlnElmnt*) getNext()) {
-    p->setCurrent(*current);
+    double current = *((double *)x);
+    ItoFieldvalue = p->IToField();
+    if(ItoFieldvalue != 0.0) {
+      field = current * ItoFieldvalue;
+    } else {
+      cerr << "FCircuit::setCurrent(): ItoField conversion is zero for " 
+	   << p->Name() << endl;
+      current = field;
+      return;
+    }
+    p->setCurrent(current);
     cout << p->Name() << " Strength= " << p->Strength() << " Current= "
-         << *current  << " I2F= " << p->IToField() << endl;
+         << current  << " I2F= " << p->IToField() << endl;
   };
 }
 
