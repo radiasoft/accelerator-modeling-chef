@@ -88,6 +88,8 @@ class CF_rbend : public bmlnElmnt
 
   void accept( BmlVisitor& v ) { v.visitCF_rbend( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitCF_rbend( this ); }
+  void acceptInner( BmlVisitor& v );
+  void acceptInner( ConstBmlVisitor& v );
   
   void peekAt( double& s, Particle* = 0 );
 

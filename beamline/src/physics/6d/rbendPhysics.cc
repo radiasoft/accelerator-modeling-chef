@@ -5,7 +5,7 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
+******  Version:   2.2
 ******                                    
 ******  File:      rbendPhysics.cc
 ******                                                                
@@ -22,7 +22,7 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License and the GNU General Public License, both of
 ******  which are supplied with this software.
 ******                                                                
@@ -35,10 +35,13 @@
 #include "PhysicsConstants.h"
 #include "JetC.h"
 
-rbend::Exact_Prop   rbend::Exact;
-rbend::NoEdge_Prop  rbend::NoEdge;
-rbend::InEdge_Prop  rbend::InEdge;
-rbend::OutEdge_Prop rbend::OutEdge;
+rbend::NoEdge_Prop       rbend::NoEdge;
+rbend::Exact_Prop        rbend::Exact;
+rbend::InEdge_Prop       rbend::InEdge;
+rbend::OutEdge_Prop      rbend::OutEdge;
+rbend::Real_Exact_Prop   rbend::RealExact;
+rbend::Real_InEdge_Prop  rbend::RealInEdge;
+rbend::Real_OutEdge_Prop rbend::RealOutEdge;
 
 // ********************************************************
 
@@ -91,7 +94,7 @@ Jet rbend::NoEdge_Prop::_fastArcsin( const Jet& x ) const
 int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
   static rbend* pbe;
-  pbe = (rbend*) p_be;
+  pbe = dynamic_cast<rbend*>(p_be);
 
   // Put in a kludge for the vertical focusing upon entrance.
   #ifdef RBEND_POLEFACECHECK
@@ -123,7 +126,7 @@ int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 {
   static rbend* pbe;
-  pbe = (rbend*) p_be;
+  pbe = dynamic_cast<rbend*>(p_be);
 
   // Put in a kludge for the vertical focusing upon entrance.
   #ifdef RBEND_POLEFACECHECK
@@ -156,7 +159,7 @@ int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 int rbend::InEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
   static rbend* pbe;
-  pbe = (rbend*) p_be;
+  pbe = dynamic_cast<rbend*>(p_be);
 
   // Put in a kludge for the vertical focusing upon entrance.
   #ifdef RBEND_POLEFACECHECK
@@ -179,7 +182,7 @@ int rbend::InEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 int rbend::InEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 {
   static rbend* pbe;
-  pbe = (rbend*) p_be;
+  pbe = dynamic_cast<rbend*>(p_be);
 
   // Put in a kludge for the vertical focusing upon entrance.
   #ifdef RBEND_POLEFACECHECK
@@ -202,7 +205,7 @@ int rbend::InEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 int rbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
   static rbend* pbe;
-  pbe = (rbend*) p_be;
+  pbe = dynamic_cast<rbend*>(p_be);
 
   // Propagate through the constant magnetic field.
   (*_myPropagator)(pbe,p);
@@ -224,7 +227,7 @@ int rbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 int rbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 {
   static rbend* pbe;
-  pbe = (rbend*) p_be;
+  pbe = dynamic_cast<rbend*>(p_be);
 
   (*_myPropagator)(pbe,p);
 
@@ -247,11 +250,10 @@ int rbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
  static rbend* pbe;
- pbe = (rbend*) p_be;
+ pbe = dynamic_cast<rbend*>(p_be);
 
  static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
 
- double Rho  = p.ReferenceBRho() / pbe->Strength();
  double psq = 1.0 + p.get_ndp();
  psq = psq*psq;
 
@@ -295,13 +297,7 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  // Final filter back to state coordinates
  double dtheta = dthmdphi + dphi;
  double cdt    = - PH_MKS_c * dtheta / omega;
- double CDT;
- if( _approx ) {
-   CDT    = - PH_MKS_c * ( - 2.0*_fastArcsin( pbe->Length() / (2.0*Rho) ) ) / Omega;
- }
- else {
-   CDT    = - PH_MKS_c * ( - 2.0*asin( pbe->Length() / (2.0*Rho) ) ) / Omega;
- }
+ double CDT    = pbe->getReferenceTime();
 
  p.set_x    ( imag( uf ) );
  p.set_y    ( p.get_y() + beta_2*cdt );
@@ -312,14 +308,14 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  return 0;
 }
 
+
 int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p ) 
 {
  static rbend* pbe;
- pbe = (rbend*) p_be;
+ pbe = dynamic_cast<rbend*>(p_be);
 
  static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
 
- double Rho  = p.ReferenceBRho() / pbe->Strength();
  Jet psq( 1.0 + p.get_ndp() );
  psq = psq*psq;
 
@@ -369,15 +365,9 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 
  // Final filter back to state coordinates
  Jet dtheta, cdt;
- double CDT; 
  dtheta = dthmdphi + dphi;
  cdt    = - PH_MKS_c * dtheta / omega;
- if( _approx ) {
-   CDT    = - PH_MKS_c * ( - 2.0*_fastArcsin( pbe->Length() / (2.0*Rho) ) ) / Omega;
- }
- else {
-   CDT    = - PH_MKS_c * ( - 2.0*asin( pbe->Length() / (2.0*Rho) ) ) / Omega;
- }
+ double CDT = pbe->getReferenceTime();
 
  p.set_x    ( imag( uf ) );
  p.set_y    ( p.get_y() + beta_2*cdt );
@@ -385,4 +375,202 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  p.set_npx  ( imag( vuf )/( E_factor * PH_MKS_c ) );
 
  return 0;
+}
+
+
+
+// ********************************************************
+
+int rbend::Real_Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
+{
+  static rbend* pbe;
+  pbe = dynamic_cast<rbend*>(p_be);
+
+  // Edge focusing for upstream face;
+  // assumes positively charged particle
+  static double p3divpbar;
+  p3divpbar = sqrt(   ( 1.0 + p.get_ndp() ) * ( 1.0 + p.get_ndp() )
+                    - p.get_npx()*p.get_npx()
+                    - p.get_npy()*p.get_npy() );
+
+  static double xpr;
+  xpr = p.get_npx() / p3divpbar;
+  
+  static double edgeCoeff;
+  edgeCoeff = xpr / ( p.ReferenceBRho() / pbe->Strength() );
+
+  p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
+
+
+  // Propagate through the constant magnetic field.
+  (*_myPropagator)(pbe,p);
+
+
+  // Edge focussing for downstream face
+  p3divpbar = sqrt(   ( 1.0 + p.get_ndp() ) * ( 1.0 + p.get_ndp() )
+                    - p.get_npx()*p.get_npx()
+                    - p.get_npy()*p.get_npy() );
+  xpr = p.get_npx() / p3divpbar;
+  edgeCoeff = xpr / ( p.ReferenceBRho() / pbe->Strength() );
+  p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
+
+  return 0;
+}
+
+int rbend::Real_Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
+{
+  static rbend* pbe;
+  pbe = dynamic_cast<rbend*>(p_be);
+
+  // Edge focusing for upstream face;
+  // assumes positively charged particle
+
+  // Requires setting the Jet__environment::lastEnv correctly.
+
+  Jet p3divpbar;
+  p3divpbar = sqrt(   ( 1.0 + p.get_ndp() ) * ( 1.0 + p.get_ndp() )
+                    - p.get_npx()*p.get_npx()
+                    - p.get_npy()*p.get_npy() );
+
+  Jet xpr;
+  xpr = p.get_npx() / p3divpbar;
+  
+  Jet edgeCoeff;
+  edgeCoeff = xpr / ( p.ReferenceBRho() / pbe->Strength() );
+
+  p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
+
+
+  // Propagate through constant magnetic field.
+  (*_myPropagator)(pbe,p);
+
+
+  // Edge focussing for downstream face
+  p3divpbar = sqrt(   ( 1.0 + p.get_ndp() ) * ( 1.0 + p.get_ndp() )
+                    - p.get_npx()*p.get_npx()
+                    - p.get_npy()*p.get_npy() );
+  xpr = p.get_npx() / p3divpbar;
+  edgeCoeff = xpr / ( p.ReferenceBRho() / pbe->Strength() );
+  p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
+
+  return 0;
+}
+
+
+int rbend::Real_InEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
+{
+  static rbend* pbe;
+  pbe = dynamic_cast<rbend*>(p_be);
+
+  // Edge focusing for upstream face;
+  // assumes positively charged particle
+  static double p3divpbar;
+  p3divpbar = sqrt(   ( 1.0 + p.get_ndp() ) * ( 1.0 + p.get_ndp() )
+                    - p.get_npx()*p.get_npx()
+                    - p.get_npy()*p.get_npy() );
+
+  static double xpr;
+  xpr = p.get_npx() / p3divpbar;
+  
+  static double edgeCoeff;
+  edgeCoeff = xpr / ( p.ReferenceBRho() / pbe->Strength() );
+
+  p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
+
+
+  // Propagate through the constant magnetic field.
+  (*_myPropagator)(pbe,p);
+
+  return 0;
+}
+
+
+int rbend::Real_InEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
+{
+  static rbend* pbe;
+  pbe = dynamic_cast<rbend*>(p_be);
+
+  // Edge focusing for upstream face;
+  // assumes positively charged particle
+
+  // Requires setting the Jet__environment::lastEnv correctly.
+
+  Jet p3divpbar;
+  p3divpbar = sqrt(   ( 1.0 + p.get_ndp() ) * ( 1.0 + p.get_ndp() )
+                    - p.get_npx()*p.get_npx()
+                    - p.get_npy()*p.get_npy() );
+
+  Jet xpr;
+  xpr = p.get_npx() / p3divpbar;
+  
+  Jet edgeCoeff;
+  edgeCoeff = xpr / ( p.ReferenceBRho() / pbe->Strength() );
+
+  p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
+
+
+  // Propagate through constant magnetic field.
+  (*_myPropagator)(pbe,p);
+
+  return 0;
+}
+
+
+int rbend::Real_OutEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
+{
+  static rbend* pbe;
+  pbe = dynamic_cast<rbend*>(p_be);
+
+  // Propagate through the constant magnetic field.
+  (*_myPropagator)(pbe,p);
+
+
+  // Edge focusing for downstream face;
+  // assumes positively charged particle
+  static double p3divpbar;
+  p3divpbar = sqrt(   ( 1.0 + p.get_ndp() ) * ( 1.0 + p.get_ndp() )
+                    - p.get_npx()*p.get_npx()
+                    - p.get_npy()*p.get_npy() );
+
+  static double xpr;
+  xpr = p.get_npx() / p3divpbar;
+  
+  static double edgeCoeff;
+  edgeCoeff = xpr / ( p.ReferenceBRho() / pbe->Strength() );
+
+  p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
+
+
+  return 0;
+}
+
+
+int rbend::Real_OutEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
+{
+  static rbend* pbe;
+  pbe = dynamic_cast<rbend*>(p_be);
+
+  (*_myPropagator)(pbe,p);
+
+
+  // Edge focusing for upstream face;
+  // assumes positively charged particle
+
+  // Requires setting the Jet__environment::lastEnv correctly.
+
+  Jet p3divpbar;
+  p3divpbar = sqrt(   ( 1.0 + p.get_ndp() ) * ( 1.0 + p.get_ndp() )
+                    - p.get_npx()*p.get_npx()
+                    - p.get_npy()*p.get_npy() );
+
+  Jet xpr;
+  xpr = p.get_npx() / p3divpbar;
+  
+  Jet edgeCoeff;
+  edgeCoeff = xpr / ( p.ReferenceBRho() / pbe->Strength() );
+
+  p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
+
+
+  return 0;
 }
