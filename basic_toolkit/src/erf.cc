@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -45,6 +48,8 @@ using std::cerr;
 #endif
 #include "complexAddon.h"
 #include "MathConstants.h"
+
+using FNAL::Complex;
 
 Complex w( Complex );
 
