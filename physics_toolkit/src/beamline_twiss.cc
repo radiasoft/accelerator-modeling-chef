@@ -9,7 +9,7 @@
 #include "ClosedOrbitSage.h" // 
 
 
-int beamline::twiss( JetParticle& p, double dpp ) 
+int beamline::twiss( JetParticle& p, double dpp, char flag ) 
 {
   static char firstTime = 1;
   if( firstTime ) {
@@ -75,10 +75,20 @@ int beamline::twiss( JetParticle& p, double dpp )
     dbi.reset();
 
     if( slotFound ) {
-      ret = lfs.Slow_CS_Calc( &p );
+      if( flag ) {
+        ret = lfs.Slow_CS_Calc( &p );
+      }
+      else {
+        ret = lfs.Slow_CS_Calc( &p, Sage::no );
+      }
     }
     else {
-      ret = lfs.Fast_CS_Calc( &p );
+      if( flag ) {
+        ret = lfs.Fast_CS_Calc( &p );
+      }
+      else {
+        ret = lfs.Fast_CS_Calc( &p, Sage::no );
+      }
     }  
 
     if( ret != 0 ) {
@@ -90,7 +100,12 @@ int beamline::twiss( JetParticle& p, double dpp )
 
     // Calculate dispersion
     // This also puts the chromaticity ring data on the beamline.
-    ret = lfs.Disp_Calc( &p );
+    if( flag ) {
+      ret = lfs.Disp_Calc( &p );
+    }
+    else {
+      ret = lfs.Disp_Calc( &p, Sage::no );
+    }
   
     if( ret != 0 ) {
       cerr << "beamline::twiss: Problem calculating dispersion."
@@ -278,7 +293,7 @@ int beamline::twiss( char, JetParticle& p ) {
   return 0;
 } 
 
-int beamline::twiss( lattFunc& W_arg, JetParticle& p) {
+int beamline::twiss( lattFunc& W_arg, JetParticle& p, char flag ) {
   static char firstTime = 1;
 
   if( firstTime ) {
@@ -311,7 +326,13 @@ int beamline::twiss( lattFunc& W_arg, JetParticle& p) {
   W.psi.ver         = W_arg.psi.ver;
 
   if( ! twissDone ) {  // .... Check to see if this was done already.
-    ret = et.Twiss_Calc( W, p );
+    if( flag ) {
+      ret = et.Twiss_Calc( W, p );
+    }
+    else {
+      ret = et.Twiss_Calc( W, p, Sage::no );
+    }
+
     if( ret == 0 ) twissDone = 1;
     else {
       cerr << "***WARNING***                                     \n"
