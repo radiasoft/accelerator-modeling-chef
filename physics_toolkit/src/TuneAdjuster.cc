@@ -117,8 +117,28 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetProton& jp )
   LattFuncSage lfs( _myBeamlinePtr );
  
   _myBeamlinePtr->propagate( jpr );
-  lfs.Fast_CS_Calc( &jpr );
- 
+
+  // Check for Slots
+  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  bmlnElmnt* q;
+  char slotFound = 0;
+  while((  q = dbi++  )) {
+    if( strstr( "CF_rbend|rbend|Slot", q->Type() ) ) {
+      slotFound = 1;
+      break;
+    }
+  }
+  dbi.reset();
+
+  if( slotFound ) {
+    lfs.Slow_CS_Calc( &jpr );
+  }
+  else {
+    lfs.Fast_CS_Calc( &jpr );
+  }  
+  
+  // lfs.Fast_CS_Calc( &jpr );
+  // This Fast_CS_Calc does not work if there are Slot's!!!  Take action!
 
   int N = this->numberOfCorrectors();
   MatrixD beta      (2,N);
@@ -130,7 +150,7 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetProton& jp )
   // delta strength_k = w_k
  
   LattFuncSage::lattFunc* ptr;
-  bmlnElmnt* q;
+
   for( j = 0; j < N; j++ ) 
   {
     ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
