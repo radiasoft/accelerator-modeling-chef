@@ -443,6 +443,8 @@ public:
   inline double  Length() 	const { return length; }
   virtual double Current() 	const { return strength/iToField; }
   inline char    IsYourName( const char* x ) { return strcmp( x, ident ); }
+  char hasName( const char* x ) const
+    { return ( 0 == strcmp( ident, x ) ); }
   virtual char*  Name() 
     { return ident; }
   virtual char*  Type() const = 0;
