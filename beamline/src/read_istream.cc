@@ -78,7 +78,7 @@
 #include "combinedFunction.h"
 #include "kick.h"
 #include "Slot.h"
-#if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
+#if !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(_EXCLUDE_MONITORS_)
 #include "mwiremonitor.h"
 #endif
 #include "pinger.h"
@@ -216,7 +216,7 @@ bmlnElmnt* read_istream(istream& is)
     monitorPtr = new monitor(name, length);
     element = monitorPtr;
   }
-#if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
+#if !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(_EXCLUDE_MONITORS_)
   else if( strcasecmp(type, 		"mwireMonitor") == 0 ) {
     monitorPtr = new mwireMonitor(name);
     element = monitorPtr;

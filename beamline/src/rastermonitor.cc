@@ -1,4 +1,4 @@
-#if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
+#if !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(_EXCLUDE_MONITORS_)
 #include <stream.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -10,7 +10,7 @@
 #include <tk.h>
 #include "tclf.h"
 
-const int rasterMonitor::WISH_WAIT_TIME = 1;
+int rasterMonitor::WISH_WAIT_TIME = 1;
 
 rasterMonitor::rasterMonitor() : monitor(), origin( BMLN_dynDim ) {
   registerMode    = 0;
