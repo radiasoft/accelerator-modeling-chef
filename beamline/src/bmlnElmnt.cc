@@ -563,6 +563,20 @@ bmlnElmnt& bmlnElmnt::operator=( const bmlnElmnt& a ) {
 }
 
 
+bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( const PropFunc* a ) 
+{ 
+  bmlnElmnt::PropFunc* ret = this->Propagator;
+  this->Propagator = (PropFunc*) a;  
+  return ret;
+}
+
+bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( const PropFunc& a ) 
+{ 
+  bmlnElmnt::PropFunc* ret = this->Propagator;
+  this->Propagator = (PropFunc*) &a; 
+  return ret;
+}
+
 
 void bmlnElmnt::image( bmlnElmntData* p ) {
  strcpy( p->type, Type() );
