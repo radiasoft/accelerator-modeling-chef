@@ -56,6 +56,9 @@ class CF_rbend : public bmlnElmnt
     { v.visitCF_rbend( this ); }
   
   char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "CF_rbend") != 0 )
+    return bmlnElmnt::isType(c); else return 1; }
+  
   bmlnElmnt* Clone() const 
     { return new CF_rbend( *this ); }
   double OrbitLength( const Particle& );
