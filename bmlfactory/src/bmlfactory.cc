@@ -225,7 +225,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       simple = (k1->kind_ == NUMBER_EXPR && k1->dvalue_ == 0.0 && k2->kind_ == NUMBER_EXPR && k2->dvalue_ == 0.0 && k3->kind_ == NUMBER_EXPR && k3->dvalue_ == 0.0 && tilt->kind_ == NUMBER_EXPR && tilt->dvalue_ == 0.0);
 
       if( true == simple ) {
-        lbel = new rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length );
+        lbel = new rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) );
         if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
           aligner->xOffset = 0.0;
           aligner->yOffset = 0.0;

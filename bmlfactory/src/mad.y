@@ -2524,6 +2524,16 @@ identifier			: MAD_IDENTIFIER
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
+				| MAD_GAMMA {
+				  char* str = malloc( 8 );
+				  str[0] = 'G';
+				  str[1] = 'A';
+				  str[2] = 'M';
+				  str[3] = 'M';
+				  str[4] = 'A';                                  
+				  str[5] = '\0';
+				  $<sval>$ = str;
+				}
 				;
 
 %%
