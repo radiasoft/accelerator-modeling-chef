@@ -105,7 +105,7 @@ clean:
 	@echo "== CLEAN COMPLETE =="
 
 clean-app: 
-	@set -x; for i in $(APPSUBDIRS); do \
+	@set -x; for i in $(APPDIRS); do \
 		(cd $$i; $(MAKE) clean); \
 		done
 	@echo "== CLEAN-APP COMPLETE =="
