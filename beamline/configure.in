@@ -89,7 +89,6 @@ fi
 AC_DEFINE(_EXCLUDE_MONITORS_,,excludemonitors)
 
 
-AC_INC_TCLTK
 AC_INC_X
 
 if test "x$CXX" = "xpgCC"; then
