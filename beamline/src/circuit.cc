@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "circuit.h"
 #include <string>
@@ -77,12 +77,9 @@ circuit::circuit( const char* n, bmlnElmnt* q ) {
 
 circuit::circuit( const circuit& ) 
 {
- cerr << "*** ERROR ***                               \n"
-         "*** ERROR *** Circuit copy construction     \n"
-         "*** ERROR *** is not allowed!               \n"
-         "*** ERROR ***                                 "
-      << endl;
- exit(1);
+ throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+        "circuit::circuit( const circuit& ) ", 
+        "Cannot copy a circuit." ) );
 }
 
 // Destructor

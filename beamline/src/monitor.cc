@@ -96,12 +96,9 @@ void monitor::setOutputStream( ostream& x )
 {
   if( x.good() ) { _outputStreamPtr = &x; }
   else {
-    cerr << "\n *** ERROR *** "
-            "\n *** ERROR *** void monitor::setOutputStream( ostream& x )"
-            "\n *** ERROR *** Argument x is not avaliable for writing."
-            "\n *** ERROR *** \n"
-         << endl;
-    exit(1);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void monitor::setOutputStream( ostream& x )", 
+           "Argument x is not available for writing." ) );
   }
 }
 
