@@ -56,6 +56,9 @@ class Frame
                        );
    void      reset();
 
+   Frame relativeTo( const Frame& ) const;   // Returns "this" Frame
+                                  // "as seen by" the argument Frame.
+
    friend ostream& operator<< ( ostream& os, /* const */ Frame& );
 };
 
