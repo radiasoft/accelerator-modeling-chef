@@ -1,4 +1,4 @@
-#if HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 /*************************************************************************
@@ -61,9 +61,9 @@
 #include "const_table.h"
 #endif /* const_table_h */
 
-#if _WIN32
+#ifdef _WIN32
 #define M_PI 3.141592
-#define
+#endif
 
 enum constant_kind current_constant = CONSTANT_UNKNOWN;
 

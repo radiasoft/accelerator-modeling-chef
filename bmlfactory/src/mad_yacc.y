@@ -49,11 +49,15 @@
 /**** this should be undefined for the production version ***/
 #define YYDEBUG 1 
 
+/************** is this really needed ? *********************/
+extern FILE* yyin;
+extern void* get_current_buffer();
+extern int get_yy_buf_size();
+
 void yyerror( char* s );
 int  yylex( void );
-void bmlfactory_exit(const char*, int, const char*);
-void bmlfactory_parse_error(const char*, int, const char*);
-
+ void bmlfactory_exit(const char* filename, int lineno, const char* errmessage);
+ void bmlfactory_parse_error(const char* input_filename, int input_file_lineno, const char* parser_message);
 extern struct madparser_* mp;
  
 %}
@@ -198,23 +202,24 @@ command				: help
 call                            : MAD_CALL ',' call_attr
                                 | MAD_CALL ','  MAD_STRING_LITERAL 
                                 { 
-                                  yyin = madparser_call_include(mp, $<sval>3 ,(void*) YY_CURRENT_BUFFER );
-                                  yy_switch_to_buffer( yy_create_buffer( yyin, YY_BUF_SIZE ) );
+                                  yyin = madparser_call_include(mp, $<sval>3 ,get_current_buffer() );
+                                  yy_switch_to_buffer( yy_create_buffer( yyin, get_yy_buf_size() ) );
 				}
                                 ;
 
 call_attr			: MAD_FILENAME '=' MAD_STRING_LITERAL 
                                 {
 
-                                  yyin = madparser_call_include(mp, $<sval>3, (void*) YY_CURRENT_BUFFER );
-                                  yy_switch_to_buffer( yy_create_buffer( yyin, YY_BUF_SIZE ) );
+                                  yyin = madparser_call_include(mp, $<sval>3, get_current_buffer() );
+                                  yy_switch_to_buffer( yy_create_buffer( yyin, get_yy_buf_size() ) );
 				}
                                 ; 
  
 return                          : MAD_RETURN { 
 
-                                 yy_delete_buffer( YY_CURRENT_BUFFER );
-                                 yy_switch_to_buffer( (YY_BUFFER_STATE) madparser_return_from_include( mp ) );
+                                 yy_delete_buffer( get_current_buffer() );
+                                 /*** yy_switch_to_buffer( (YY_BUFFER_STATE) madparser_return_from_include( mp ) ); ***/
+                                 yy_switch_to_buffer( madparser_return_from_include( mp ) );
 				
                                 }
                                 ;

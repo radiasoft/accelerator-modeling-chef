@@ -17,7 +17,7 @@
 #include "madparser.h"
 #endif /* madparser_h */  
 
-#include "mad_yacc.tab.h"
+#include "mad_yacc.h"
 
 #define MAX_ERR_MSG_LENGTH 256
 
@@ -546,8 +546,17 @@ void reset_input_buffer()
   } 
 } 
 
-void* get_current_buffer( ){
+void* get_current_buffer( )
+{
 
-return YY_CURRENT_BUFFER;
+  return YY_CURRENT_BUFFER;
 
 }
+
+int get_yy_buf_size( )
+{
+
+ return YY_BUF_SIZE;
+
+}
+
