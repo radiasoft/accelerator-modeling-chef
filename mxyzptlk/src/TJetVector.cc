@@ -35,6 +35,7 @@
 
 #include "GenericException.h"
 #include "TJetVector.h"
+#include "TMatrix.h"
 
 // ================================================================
 //      Global variables
@@ -54,11 +55,11 @@ using namespace std;
 //
 
 template<typename T1, typename T2>
-TJetVector<T1,T2>::TJetVector<T1,T2>( short int n, 
+TJetVector<T1,T2>::TJetVector<T1,T2>( int n, 
                         const TJet<T1,T2>* x, 
                         const TJetEnvironment<T1,T2>* pje )
 {
-  short int i;
+  int i;
 
   CHECKOUT(n <= 0, "TJetVector<T1,T2>::TJetVector<T1,T2>", "Dimension must be positive.")
   CHECKOUT(pje == 0, "TJetVector<T1,T2>::TJetVector<T1,T2>", "Environment is required.")
@@ -77,7 +78,7 @@ TJetVector<T1,T2>::TJetVector<T1,T2>( short int n,
 template<typename T1, typename T2>
 TJetVector<T1,T2>::TJetVector<T1,T2>( const TJetVector<T1,T2>& x )
 {
-  static short int i;
+  static int i;
 
   _myEnv = x._myEnv;
   _dim = x._dim;
@@ -115,7 +116,7 @@ void TJetVector<T1,T2>::Set( const TJet<T1,T2>* x )
 #ifndef NOCHECKS
     CHECKOUT(pje != _myEnv, "TJetVector<T1,T2>::Set", "Wrong environment.")
 #endif
-  for ( short int i = 0; i < 3; i++ ) {
+  for ( int i = 0; i < 3; i++ ) {
 #ifndef NOCHECKS
     CHECKOUT(x[i].Env() != pje, "TJetVector<T1,T2>::Set", "Inequivalent environments.")
 #endif
@@ -125,7 +126,7 @@ void TJetVector<T1,T2>::Set( const TJet<T1,T2>* x )
 
 
 template<typename T1, typename T2>
-void TJetVector<T1,T2>::SetComponent( short int i, const TJet<T1,T2>& x )
+void TJetVector<T1,T2>::SetComponent( int i, const TJet<T1,T2>& x )
 {
 #ifndef NOCHECKS
     CHECKOUT(x.Env() != _myEnv, "TJetVector<T1,T2>::Set", "Wrong environment.")
@@ -135,7 +136,7 @@ void TJetVector<T1,T2>::SetComponent( short int i, const TJet<T1,T2>& x )
 
 
 template<typename T1, typename T2>
-TJet<T1,T2> TJetVector<T1,T2>::operator() ( short int i ) const
+TJet<T1,T2> TJetVector<T1,T2>::operator() ( int i ) const
 {
 #ifndef NOCHECKS
     CHECKOUT(!(( 0 <= i ) && ( i < _dim )), "TJetVector<T1,T2>::operator()", "Argument out of range")
@@ -145,7 +146,7 @@ TJet<T1,T2> TJetVector<T1,T2>::operator() ( short int i ) const
 
 
 template<typename T1, typename T2>
-TJet<T1,T2>& TJetVector<T1,T2>::operator() ( short int i )
+TJet<T1,T2>& TJetVector<T1,T2>::operator() ( int i )
 {
 #ifndef NOCHECKS
     CHECKOUT(!(( 0 <= i ) && ( i < _dim )), "TJetVector<T1,T2>::operator()", "Argument out of range")
@@ -161,7 +162,7 @@ TJetVector<T1,T2>& TJetVector<T1,T2>::operator= ( const TJetVector<T1,T2>& x )
 {
   Reconstruct( x._dim, x._myEnv );
 
-  for ( short int i = 0; i < _dim; i++ ) _comp[i] = x._comp[i];
+  for ( int i = 0; i < _dim; i++ ) _comp[i] = x._comp[i];
   return *this;
 }
 
@@ -175,7 +176,7 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator+ ( const TJetVector<T1,T2>& x ) co
 #endif
 
   TJetVector<T1,T2> z( _dim, 0, _myEnv );
-  for ( short int i = 0; i < _dim; i++ ) 
+  for ( int i = 0; i < _dim; i++ ) 
     z._comp[i] = _comp[i] + x._comp[i];
   return z;
 }
@@ -189,7 +190,7 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator+= ( const TJetVector<T1,T2>& x )
   CHECKOUT(_myEnv != x._myEnv, "TJetVector<T1,T2>::operator+=", "Incompatible environments.")
 #endif
 
-  for ( short int i = 0; i < _dim; i++ ) _comp[i] += x._comp[i];
+  for ( int i = 0; i < _dim; i++ ) _comp[i] += x._comp[i];
   return *this;
 }
 
@@ -203,7 +204,7 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator- ( const TJetVector<T1,T2>& x ) co
 #endif
 
   TJetVector<T1,T2> z( _dim, 0, _myEnv );
-  for ( short int i = 0; i < _dim; i++ ) {
+  for ( int i = 0; i < _dim; i++ ) {
     z._comp[i] = _comp[i] - x._comp[i];
   }
   return z;
@@ -214,7 +215,7 @@ template<typename T1, typename T2>
 TJetVector<T1,T2> operator- ( const TJetVector<T1,T2>& x )
 {
   TJetVector<T1,T2> z( x );
-  for ( short int i = 0; i < x._dim; i++ ) 
+  for ( int i = 0; i < x._dim; i++ ) 
     z._comp[i].Negate();
   return z;
 }
@@ -228,7 +229,7 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator-= ( const TJetVector<T1,T2>& x )
   CHECKOUT(_myEnv != x._myEnv, "TJetVector<T1,T2>::operator-=", "Incompatible environments.")
 #endif
 
-  for ( short int i = 0; i < _dim; i++ ) 
+  for ( int i = 0; i < _dim; i++ ) 
     _comp[i] -= x._comp[i];
   return *this;
 }
@@ -238,7 +239,7 @@ template<typename T1, typename T2>
 TJetVector<T1,T2> TJetVector<T1,T2>::operator* ( const TJet<T1,T2>& c ) const
 {
   TJetVector<T1,T2> z( _dim, 0, _myEnv );
-  for ( short int i = 0; i < _dim; i++ ) z._comp[i] = c * _comp[i];
+  for ( int i = 0; i < _dim; i++ ) z._comp[i] = c * _comp[i];
   return z;
 }
 
@@ -246,39 +247,42 @@ template<typename T1, typename T2>
 TJetVector<T1,T2> TJetVector<T1,T2>::operator* ( const T1& c ) const
 {
   TJetVector<T1,T2> z( _dim, 0, _myEnv );
-  for ( short int i = 0; i < _dim; i++ ) z._comp[i] = c * _comp[i];
+  for ( int i = 0; i < _dim; i++ ) z._comp[i] = c * _comp[i];
   return z;
 }
 
-TJetVector<double,FNAL::Complex> TJetVector<double,FNAL::Complex>::operator*<>( const FNAL::Complex& c ) const
+// REMOVE: TJetVector<double,FNAL::Complex> TJetVector<double,FNAL::Complex>::operator*<>( const FNAL::Complex& c ) const
+// REMOVE: {
+// REMOVE:   static bool firstTime = true;
+// REMOVE:   if( firstTime ) {
+// REMOVE:     cerr << "\n*** WARNING *** "
+// REMOVE:             "\n*** WARNING *** File: " << __FILE__ << " Line: " << __LINE__
+// REMOVE:          << "\n*** WARNING *** JetVector JetVector::operator*( const Complex& ) const"
+// REMOVE:             "\n*** WARNING *** Casting from a complex to a real will project out"
+// REMOVE:             "\n*** WARNING *** the imaginary part."
+// REMOVE:          << endl;
+// REMOVE:     firstTime = false;
+// REMOVE:   }
+// REMOVE:   TJetVector<double,FNAL::Complex> z( _dim, 0, _myEnv );
+// REMOVE:   for ( int i = 0; i < _dim; i++ ) z._comp[i] = real(c) * _comp[i];
+// REMOVE:   return z;
+// REMOVE: }
+
+TJetVector<FNAL::Complex,double> operator*( const TJetVector<FNAL::Complex,double>& x, const double& c )
 {
-  static bool firstTime = true;
-  if( firstTime ) {
-    cerr << "\n*** WARNING *** "
-            "\n*** WARNING *** File: " << __FILE__ << " Line: " << __LINE__
-         << "\n*** WARNING *** JetVector JetVector::operator*( const Complex& ) const"
-            "\n*** WARNING *** Casting from a complex to a real will project out"
-            "\n*** WARNING *** the imaginary part."
-         << endl;
-    firstTime = false;
-  }
-  TJetVector<double,FNAL::Complex> z( _dim, 0, _myEnv );
-  for ( short int i = 0; i < _dim; i++ ) z._comp[i] = real(c) * _comp[i];
-  return z;
+  return x.operator*( FNAL::Complex(c,0.0) );
 }
 
-TJetVector<FNAL::Complex,double> TJetVector<FNAL::Complex,double>::operator*<>( const double& c ) const
+TJetVector<FNAL::Complex,double> operator*( const double& c, const TJetVector<FNAL::Complex,double>& x )
 {
-  TJetVector<FNAL::Complex,double> z( _dim, 0, _myEnv );
-  for ( short int i = 0; i < _dim; i++ ) z._comp[i] = FNAL::Complex(c,0.0) * _comp[i];
-  return z;
+  return x.operator*( FNAL::Complex(c,0.0) );  // it's commutative
 }
 
 template<typename T1, typename T2>
 TJetVector<T1,T2> operator* ( const TJet<T1,T2>& c, const TJetVector<T1,T2>& x )
 {
   TJetVector<T1,T2> z( x._dim, 0, x._myEnv );
-  for ( short int i = 0; i < x._dim; i++ ) z._comp[i] = c * x._comp[i];
+  for ( int i = 0; i < x._dim; i++ ) z._comp[i] = c * x._comp[i];
   return z;
 }
 
@@ -286,24 +290,19 @@ template<typename T1, typename T2>
 TJetVector<T1,T2> operator* ( const T1& c, const TJetVector<T1,T2>& x )
 {
   TJetVector<T1,T2> z( x._dim, 0, x._myEnv );
-  for ( short int i = 0; i < x._dim; i++ ) z._comp[i] = c * x._comp[i];
+  for ( int i = 0; i < x._dim; i++ ) z._comp[i] = c * x._comp[i];
   return z;
 }
 
-TJetVector<double,FNAL::Complex> operator*( const FNAL::Complex& c, const TJetVector<double,FNAL::Complex>& x )
-{
-  return x*c;  // it's commutative
-}
-
-TJetVector<FNAL::Complex,double> operator*( const double& c, const TJetVector<FNAL::Complex,double>& x )
-{
-  return x*c;  // it's commutative
-}
+// REMOVE: TJetVector<double,FNAL::Complex> operator*( const FNAL::Complex& c, const TJetVector<double,FNAL::Complex>& x )
+// REMOVE: {
+// REMOVE:   return x*c;  // it's commutative
+// REMOVE: }
 
 template<typename T1, typename T2>
 TJetVector<T1,T2> TJetVector<T1,T2>::operator*=( const TJet<T1,T2>& c ) 
 {
- for( short int i = 0; i < _dim; i++ ) _comp[i] *= c;
+ for( int i = 0; i < _dim; i++ ) _comp[i] *= c;
  return *this;
 }
 
@@ -311,7 +310,7 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator*=( const TJet<T1,T2>& c )
 template<typename T1, typename T2>
 TJetVector<T1,T2> TJetVector<T1,T2>::operator*=( T1 c ) 
 {
- for( short int i = 0; i < _dim; i++ ) _comp[i] *= c;
+ for( int i = 0; i < _dim; i++ ) _comp[i] *= c;
  return *this;
 }
 
@@ -320,7 +319,7 @@ template<typename T1, typename T2>
 TJetVector<T1,T2> TJetVector<T1,T2>::operator/ ( const TJet<T1,T2>& c ) const
 {
  TJetVector<T1,T2> z( *this );  // ??? Can be speeded up by negate function.
- for( short int i = 0; i < _dim; i++ ) z._comp[i] /= c;
+ for( int i = 0; i < _dim; i++ ) z._comp[i] /= c;
  return z;
 }
 
@@ -328,21 +327,21 @@ template<typename T1, typename T2>
 TJetVector<T1,T2> TJetVector<T1,T2>::operator/ ( T1 c ) const
 {
  TJetVector<T1,T2> z( *this );
- for( short int i = 0; i < _dim; i++ ) z._comp[i] /= c;
+ for( int i = 0; i < _dim; i++ ) z._comp[i] /= c;
  return z;
 }
 
 template<typename T1, typename T2>
 TJetVector<T1,T2> TJetVector<T1,T2>::operator/=( const TJet<T1,T2>& c ) 
 {
- for( short int i = 0; i < _dim; i++ ) _comp[i] /= c;
+ for( int i = 0; i < _dim; i++ ) _comp[i] /= c;
  return *this;
 }
 
 template<typename T1, typename T2>
 TJetVector<T1,T2> TJetVector<T1,T2>::operator/=( T1 c ) 
 {
- for( short int i = 0; i < _dim; i++ ) _comp[i] /= c;
+ for( int i = 0; i < _dim; i++ ) _comp[i] /= c;
  return *this;
 }
 
@@ -357,7 +356,7 @@ TJet<T1,T2> TJetVector<T1,T2>::operator* ( const TJetVector<T1,T2>& x ) const
 
   TJet<T1,T2> u( _myEnv );
   u = ((T1) 0.0);
-  short int i;
+  int i;
   for ( i = 0; i < _dim; i++ ) u += _comp[i] * x._comp[i];
   return u;
 }
@@ -415,11 +414,11 @@ TJetVector<T1,T2> operator^ ( Vector y, const TJetVector<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-TJetVector<T1,T2> operator*(  const MatrixC& M, 
+TJetVector<T1,T2> operator*(  const TMatrix<T1>& M, 
                               const TJetVector<T1,T2>& x ) 
 {
  const TJetEnvironment<T1,T2>* pje = x._myEnv;
- TJetVector<T1,T2> z( M.rows(), pje );
+ TJetVector<T1,T2> z( M.rows(), 0, pje );
  int i, j, r, c;
 
  i = j = 0;
@@ -428,7 +427,7 @@ TJetVector<T1,T2> operator*(  const MatrixC& M,
 
  if( M.cols() != x._dim ) {
   throw( GenericException( __FILE__, __LINE__, 
-         "TJetVector<T1,T2> operator*(  const MatrixC&, const TJetVector<T1,T2>& )",
+         "TJetVector<T1,T2> operator*(  const TMatrix<T1>&, const TJetVector<T1,T2>& )",
          "Rows and/or columns of the matrix are not correct." ) );
  }
 
@@ -451,7 +450,7 @@ template<typename T1, typename T2>
 bool TJetVector<T1,T2>::operator== ( const TJetVector<T1,T2>& x ) const
 {
   if( ( _dim != x._dim ) || _myEnv != x._myEnv ) return 0;
-  for( short int i = 0; i < _dim; i++ ) 
+  for( int i = 0; i < _dim; i++ ) 
     if( _comp[i] != x._comp[i] ) return 0;
   return 1;
 }
@@ -461,7 +460,7 @@ bool TJetVector<T1,T2>::operator== ( const TJetVector<T1,T2>& x ) const
 template<typename T1, typename T2>
 bool TJetVector<T1,T2>::operator==( const T1& x ) const 
 {
- for( short int i = 0; i < _dim; i++ )
+ for( int i = 0; i < _dim; i++ )
    if( _comp[i] != x ) return 0;     // ??? WHAT???
  return 1;
 }
@@ -492,7 +491,7 @@ bool TJetVector<T1,T2>::operator< ( const TJetVector<T1,T2>& x ) const
   CHECKOUT(_dim != x._dim, "TJetVector<T1,T2>::operator<", "Incompatible dimensions.")
 #endif
 
-  for( short int i = 0; i < _dim; i++ ) 
+  for( int i = 0; i < _dim; i++ ) 
     if( _comp[i].standardPart() >= x._comp[i].standardPart() ) return 0;
   return 1;
 }
@@ -505,7 +504,7 @@ bool TJetVector<T1,T2>::operator<= ( const TJetVector<T1,T2>& x ) const
   CHECKOUT(_dim != x._dim, "TJetVector<T1,T2>::operator<", "Incompatible dimensions.")
 #endif
 
-  for( short int i = 0; i < _dim; i++ ) 
+  for( int i = 0; i < _dim; i++ ) 
     if( _comp[i].standardPart() > x._comp[i].standardPart() ) return 0;
   return 1;
 }
@@ -540,7 +539,7 @@ template<typename T1, typename T2>
 bool TJetVector<T1,T2>::IsUnit() const
 {
   T1 x = ((T1) 0.0);
-  for( short int i = 0; i < _dim; i++ ) 
+  for( int i = 0; i < _dim; i++ ) 
     x += _comp[i].standardPart()*_comp[i].standardPart();
   return x == 1.0;
 }
@@ -550,7 +549,7 @@ bool TJetVector<T1,T2>::IsUnit() const
 template<typename T1, typename T2>
 bool TJetVector<T1,T2>::IsNilpotent() const 
 {
- for( short int i = 0; i <  _myEnv->_spaceDim; i++ ) 
+ for( int i = 0; i <  _myEnv->_spaceDim; i++ ) 
   if( !(_comp[i].isNilpotent()) ) return 0;
  return 1;
 }
@@ -565,7 +564,7 @@ void TJetVector<T1,T2>::Reconstruct()
 {
   delete [] _comp;
   _comp = new TJet<T1,T2> [ _dim ];
-  for ( short int i = 0; i < _dim; i++ ) {
+  for ( int i = 0; i < _dim; i++ ) {
     _comp[i].setEnvTo( _myEnv );
     _comp[i].Reconstruct();
   }
@@ -573,13 +572,13 @@ void TJetVector<T1,T2>::Reconstruct()
 
 
 template<typename T1, typename T2>
-void TJetVector<T1,T2>::Reconstruct( short int n, TJetEnvironment<T1,T2>* pje )
+void TJetVector<T1,T2>::Reconstruct( int n, TJetEnvironment<T1,T2>* pje )
 {
   delete [] _comp;
   _dim = n;
   _myEnv = pje;
   _comp = new TJet<T1,T2> [ _dim ];
-  for ( short int i = 0; i < _dim; i++ ) {
+  for ( int i = 0; i < _dim; i++ ) {
     _comp[i].Reconstruct( pje );
   }
 }
@@ -589,7 +588,7 @@ template<typename T1, typename T2>
 void TJetVector<T1,T2>::peekAt() const
 {
   cout << "\n\nBegin TJetVector<T1,T2>::peekAt() ......\n";
-  for ( short int i = 0; i < _dim; i++ ) {
+  for ( int i = 0; i < _dim; i++ ) {
     cout << "TJetVector<T1,T2>::peekAt(): Component " << i << endl;
     _comp[i].peekAt();
   }
@@ -599,7 +598,7 @@ void TJetVector<T1,T2>::peekAt() const
 
 void TJetVector<double,FNAL::Complex>::printCoeffs() const
 {
-  short int i;
+  int i;
   cout << "\n\nBegin TJetVector<double,FNAL::Complex>::printCoeffs() ......\n"
        << "Dimension: " << _dim 
        << ", Weight = " << Weight()
@@ -622,7 +621,7 @@ void TJetVector<double,FNAL::Complex>::printCoeffs() const
 
 void TJetVector<FNAL::Complex,double>::printCoeffs() const
 {
-  short int i;
+  int i;
   cout << "\n\nBegin TJetVector<FNAL::Complex,double>::printCoeffs() ......\n"
        << "Dimension: " << _dim 
        << ", Weight = " << Weight()
@@ -651,7 +650,7 @@ TJet<T1,T2> TJetVector<T1,T2>::Norm () const
 {
   TJet<T1,T2> x( _myEnv );
   x = ((T1) 0.0);
-  for ( short int i = 0; i < _dim; i++ ) x += _comp[i]*_comp[i];
+  for ( int i = 0; i < _dim; i++ ) x += _comp[i]*_comp[i];
   return sqrt(x);
 }
 
@@ -661,7 +660,7 @@ TJetVector<T1,T2> TJetVector<T1,T2>::Unit () const
   TJet<T1,T2> x( _myEnv );
   x = Norm();
   TJetVector<T1,T2> z( *this );
-  for ( short int i = 0; i < _dim; i++ ) z._comp[i] /= x;
+  for ( int i = 0; i < _dim; i++ ) z._comp[i] /= x;
   return z;
 }
 
@@ -683,7 +682,7 @@ void TJetVector<double,FNAL::Complex>::Rotate ( TJetVector<double,FNAL::Complex>
   u = ( c*v ) +
       ( s*( e^v) ) +
       ( ( ( 1.0 - c )*(e*v) )*e );
-  for ( short int i = 0; i < 3; i++ ) v._comp[i] = u._comp[i];
+  for ( int i = 0; i < 3; i++ ) v._comp[i] = u._comp[i];
 }
 
 
@@ -716,7 +715,7 @@ void TJetVector<double,FNAL::Complex>::Rotate ( TJetVector<double,FNAL::Complex>
   u = ( c*v ) +
       ( s*( e^v) ) +
       ( ( ( 1.0 - c )*(e*v) )*e );
-  for ( short int i = 0; i < 3; i++ ) v._comp[i] = u._comp[i];
+  for ( int i = 0; i < 3; i++ ) v._comp[i] = u._comp[i];
 }
 
 
@@ -735,7 +734,7 @@ ostream& operator<<( ostream& os, const TJetVector<T1,T2>& v )
   os << "Begin TJetVector<T1,T2>:" << endl;
   os << v._dim << endl;
   os << *(v._myEnv);
-  for( short int i = 0; i < v._dim; i++ ) {
+  for( int i = 0; i < v._dim; i++ ) {
     os << "\nTJetVector<T1,T2> component " << i << ":" << endl;
     os << v._comp[i];
   }
@@ -758,7 +757,7 @@ istream& operator>>( istream& is, TJetVector<T1,T2>& v )
   if( v._comp ) delete [] v._comp;
   v._comp = new TJet<T1,T2> [ v._dim ];
 
-  for ( short int i = 0; i < v._dim; i++ ) {
+  for ( int i = 0; i < v._dim; i++ ) {
     is >> buf;
     is >> buf;
     is >> buf;
@@ -778,7 +777,7 @@ template<typename T1, typename T2>
 TJetVector<T1,T2> TJetVector<T1,T2>::filter( bool (*f[]) ( const IntArray&, const T1& ) )
 {
  TJetVector<T1,T2> z( _dim, 0, _myEnv );
- short int i;
+ int i;
 
  for( i = 0; i < _dim; i++ )
   z._comp[i] = _comp[i].filter( f[i] );
@@ -792,7 +791,7 @@ template<typename T1, typename T2>
 TJetVector<T1,T2> TJetVector<T1,T2>::filter( int lower, int upper ) 
 {
  TJetVector<T1,T2> z( _dim, 0, _myEnv );
- short int i;        
+ int i;        
 
  for( i = 0; i < _dim; i++ )
   z._comp[i] = _comp[i].filter( lower, upper );
@@ -808,7 +807,7 @@ TJetVector<T1,T2> TJetVector<T1,T2>::filter( int lower, int upper )
 template<typename T1, typename T2>
 void TJetVector<T1,T2>::weightedDerivative( int* m, T1* x ) 
 {
- short int i;
+ int i;
  for( i = 0; i < _dim; i++ ) x[i] = _comp[i].weightedDerivative( m );
 }
 
@@ -817,7 +816,7 @@ void TJetVector<T1,T2>::weightedDerivative( int* m, T1* x )
 template<typename T1, typename T2>
 void TJetVector<T1,T2>::derivative( int* m, T1* x ) 
 {
- short int i;
+ int i;
  for( i = 0; i < _dim; i++ ) x[i] = _comp[i].derivative( m );
 }
 
@@ -830,7 +829,7 @@ template<typename T1, typename T2>
 int TJetVector<T1,T2>::AccuWgt() const
 {
   int accuWgt = _myEnv->_maxWeight;
-  for( short int i = 0; i < _dim; i++ ) {
+  for( int i = 0; i < _dim; i++ ) {
    if( _myEnv != _comp[i].Env() ) {
      cerr << "\n\n"
  	  << "*** WARNING ***                                   \n"
@@ -850,7 +849,7 @@ template<typename T1, typename T2>
 int TJetVector<T1,T2>::Weight()  const
 {
   int weight = -1;
-  for( short int i = 0; i < _dim; i++ ) {
+  for( int i = 0; i < _dim; i++ ) {
    if( _myEnv != _comp[i].Env() ) {
      cerr << "\n\n"
  	  << "*** WARNING ***                                   \n"
@@ -871,7 +870,7 @@ int TJetVector<T1,T2>::Weight()  const
 template<typename T1, typename T2>
 void TJetVector<T1,T2>::standardPart( T1* x ) const 
 {
- short int i;
+ int i;
  for( i = 0; i < _dim; i++ ) 
    x[i] = _comp[i].standardPart();
 }
@@ -882,7 +881,7 @@ void TJetVector<T1,T2>::standardPart( T1* x ) const
 template<typename T1, typename T2>
 void TJetVector<T1,T2>::getReference( T1* r ) const 
 {
- short int i;
+ int i;
  for( i = 0; i < _myEnv->_numVar; i++ ) r[i] = _myEnv->_refPoint[i];
 }
 

@@ -37,32 +37,63 @@
 
 #include "TJet.h"
 
+
+// Forward declarations
 class Vector;
 
+template<typename T>
+class TMatrix;
+
+template<typename T1, typename T2> 
+class TJetVector;
+
+template<typename T1, typename T2> 
+TJetVector<T1,T2> operator-( const TJetVector<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJetVector<T1,T2> operator*( const TJet<T1,T2>&, const TJetVector<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJetVector<T1,T2> operator*( const T1&, const TJetVector<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJetVector<T1,T2> operator^( const Vector&, const TJetVector<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJetVector<T1,T2> operator*( const TMatrix<T1>&, const TJetVector<T1,T2>& );
+
+template<typename T1, typename T2> 
+std::ostream& operator<<( std::ostream&, const TJetVector<T1,T2>& );
+
+template<typename T1, typename T2> 
+std::istream& operator>>( std::istream&, TJetVector<T1,T2>& );
+
+
+// Class TJetVector template
 template<typename T1, typename T2>
 class TJetVector 
 {
 protected:
-  short int       _dim;
+  int       _dim;
   TJet<T1,T2>*             _comp;
   TJetEnvironment<T1,T2>*  _myEnv;
 
 public:
   // Constructors and the destructor ...
-  TJetVector( short int /* dim */ = (TJet<T1,T2>::lastEnvironment())->_numVar,
+  TJetVector( int /* dim */ = (TJet<T1,T2>::lastEnvironment())->_numVar,
               const TJet<T1,T2>* /* components */ = 0, 
               const TJetEnvironment<T1,T2>* = (TJet<T1,T2>::lastEnvironment()) );
   TJetVector( const TJetVector& );
   ~TJetVector();
 
   void             Reconstruct();
-  void             Reconstruct( short int, TJetEnvironment<T1,T2>* );
+  void             Reconstruct( int, TJetEnvironment<T1,T2>* );
 
   // Assignment ...
   void             Set             ( const TJet<T1,T2>* );
-  void             SetComponent    ( short int, const TJet<T1,T2>& );
-  TJet<T1,T2>      operator()      ( short int ) const; 
-  TJet<T1,T2>&     operator()      ( short int ); 
+  void             SetComponent    ( int, const TJet<T1,T2>& );
+  TJet<T1,T2>      operator()      ( int ) const; 
+  TJet<T1,T2>&     operator()      ( int ); 
                    // WARNING: There is no way to use this and be
                    //          assured that environments are consistent.
 
@@ -77,10 +108,8 @@ public:
   TJetVector        operator-=     ( const TJetVector& );
   TJetVector        operator*      ( const TJet<T1,T2>&    ) const;
   TJetVector        operator*      ( const T1& ) const;
-  TJetVector        operator*      ( const T2&  ) const;
   friend TJetVector operator*<>    ( const TJet<T1,T2>&, const TJetVector& );
   friend TJetVector operator*<>    ( const T1&, const TJetVector& );
-  friend TJetVector operator*<>    ( const T2&, const TJetVector& );
   TJetVector        operator*=     ( const TJet<T1,T2>&    );
   TJetVector        operator*=     (       T1  );
   TJetVector        operator/      ( const TJet<T1,T2>&    ) const;
@@ -97,12 +126,11 @@ public:
   TJetVector        operator^      ( const Vector& ) const;
   friend TJetVector operator^<>    ( const Vector&, const TJetVector& );
 
-  friend TJetVector operator*<>    ( const MatrixC&, const TJetVector& );
+  friend TJetVector operator*<>    ( const TMatrix<T1>&, const TJetVector& );
 
   // Boolean functions ...
   bool operator==     ( const TJetVector& ) const;
   bool operator==     ( const T1&    ) const;
-  bool operator==     ( const T2&    ) const;
   bool operator!=     ( const TJetVector& ) const;
   bool operator!=     ( const T1&    ) const;
   bool operator<      ( const TJetVector& ) const;
@@ -120,7 +148,7 @@ public:
   
 
   // Queries ...
-  short int  Dim() const;
+  int  Dim() const;
   const TJetEnvironment<T1,T2>* Env() const;
   int AccuWgt() const;
   int Weight()  const;
@@ -146,17 +174,6 @@ public:
 } ;
 
 
-// Templated friend function declarations
-template<typename T1,typename T2> TJetVector<T1,T2> operator-( const TJetVector<T1,T2>& );
-template<typename T1,typename T2> TJetVector<T1,T2> operator*( const TJet<T1,T2>&, const TJetVector<T1,T2>& );
-template<typename T1,typename T2> TJetVector<T1,T2> operator*( const T1&, const TJetVector<T1,T2>& );
-template<typename T1,typename T2> TJetVector<T1,T2> operator*( const T2&, const TJetVector<T1,T2>& );
-template<typename T1,typename T2> TJetVector<T1,T2> operator^( const Vector&, const TJetVector<T1,T2>& );
-template<typename T1,typename T2> TJetVector<T1,T2> operator*( const MatrixC&, const TJetVector<T1,T2>& );
-template<typename T1,typename T2> std::ostream& operator<<( std::ostream&, const TJetVector<T1,T2>& );
-template<typename T1,typename T2> std::istream& operator>>( std::istream&, TJetVector<T1,T2>& );
-
-
 // Inline functions ...
 
 // .. Functions included for symmetry
@@ -165,21 +182,13 @@ inline bool operator==( const T1& x, const TJetVector<T1,T2>& y )
 { return y == x; }
 
 template<typename T1, typename T2>
-inline bool operator==( const T2& x, const TJetVector<T1,T2>& y )
-{ return y == x; }
-
-template<typename T1, typename T2>
 inline bool operator!=( const T1& x, const TJetVector<T1,T2>& y )
-{ return !(y == x); }
-
-template<typename T1, typename T2>
-inline bool operator!=( const T2& x, const TJetVector<T1,T2>& y )
 { return !(y == x); }
 
 
 // ... Member functions (aka methods)
 template<typename T1, typename T2>
-inline short int TJetVector<T1,T2>::Dim() const 
+inline int TJetVector<T1,T2>::Dim() const 
 { return _dim; }
 
 template<typename T1, typename T2>

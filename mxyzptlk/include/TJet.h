@@ -39,13 +39,133 @@
 #include "TJetEnvironment.h"
 #include "TJL.h"
 
-template<typename T1, typename T2> struct TJLterm;
-template<typename T1, typename T2> struct TJL;
-template<typename T1, typename T2> class  TJetVector;
-template<typename T1, typename T2> class  TMapping;
-template<typename T1, typename T2> class  TLieOperator;
+// Forward declarations
+template<typename T1, typename T2> 
+class TJet;
+
+template<typename T1, typename T2> 
+class TJetVector;
+
+template<typename T1, typename T2> 
+class TMapping;
+
+template<typename T1, typename T2> 
+class TLieOperator;
+
+TJet<double,FNAL::Complex> fabs( const TJet<double,FNAL::Complex>& );
+TJet<double,FNAL::Complex> real( const TJet<FNAL::Complex,double>& );
+TJet<double,FNAL::Complex> imag( const TJet<FNAL::Complex,double>& );
+
+template<typename T1, typename T2> 
+std::ostream& operator<<(std::ostream&, const TJet<T1,T2>&);
+
+template<typename T1, typename T2> 
+std::istream& operator>>(std::istream&, TJet<T1,T2>&);
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator+( const TJet<T1,T2>&, const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator+( const TJet<T1,T2>&, const T1& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator+( const T1&, const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator-( const TJet<T1,T2>&, const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator-( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator-( const TJet<T1,T2>&, const T1& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator-( const T1&, const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator*( const TJet<T1,T2>&, const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator*( const TJet<T1,T2>&, const T1& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator*( const T1&, const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator/( const TJet<T1,T2>&, const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator/( const TJet<T1,T2>&, const T1& );  
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator/( const T1&, const TJet<T1,T2>& ); 
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator^( const TJet<T1,T2>&, const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJLterm<T1,T2> operator*( const TJLterm<T1,T2>&, const TJLterm<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator*( const TJet<T1,T2>&, const int& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator*( const int&, const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> operator/( const TJet<T1,T2>&, const int& ); 
+
+template<typename T1, typename T2> 
+TJet<T1,T2> acos ( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> asin ( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> atan ( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> cos  ( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> cosh ( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> exp  ( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> log  ( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> log10( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> pow  ( const TJet<T1,T2>&, const double& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> pow  ( const TJet<T1,T2>&, int );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> sin  ( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> sinh ( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> sqrt ( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> tan  ( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> tanh ( const TJet<T1,T2>& );
+
+template<typename T1, typename T2> 
+TJet<T1,T2> erfc ( const TJet<T1,T2>& );
 
 
+// Class TJet template
 template<typename T1,typename T2>
 class TJet 
 {
@@ -63,7 +183,6 @@ private:
   friend TJet<double,FNAL::Complex> fabs( const TJet<double,FNAL::Complex>& );
   friend TJet<double,FNAL::Complex> real( const TJet<FNAL::Complex,double>& );
   friend TJet<double,FNAL::Complex> imag( const TJet<FNAL::Complex,double>& );
-  friend TJet<FNAL::Complex,double> operator*( const FNAL::Complex&, const TJet<double,FNAL::Complex>& );
 
   // Utility functions; used by public analytic functions ...
   static TJet _epsCos( const TJet& );
@@ -133,12 +252,10 @@ public:
 
   void peekAt() const;
   void printCoeffs() const;
-  void peekAt( int ) const;       // Prints to Jet::scratchFile
-  void printCoeffs( int ) const;
   int  termCount() const;         // Returns number of monomial terms
 
   void writeToFile( char*   /* Name of unopened file */ ) const;
-  void writeToFile( FILE* ) const;
+  void writeToFile( std::ofstream& ) const;
 
   void getReference( T1* ) const;
   int  getEnvNumVar() const;
@@ -184,9 +301,11 @@ public:
   // Operators________________________________________________________
   friend std::ostream& operator<<<>(std::ostream&, const TJet&);
   friend std::istream& operator>><>(std::istream&, TJet&);
-  friend bool operator==<>( const TJet&, const TJet& );
-  friend bool operator==<>( const TJet&, const T1& );
-  friend bool operator==<>( const T1&, const TJet& );
+  // friend bool operator==<>( const TJet&, const TJet& );
+  // friend bool operator==<>( const TJet&, const T1& );
+  // friend bool operator==<>( const T1&, const TJet& );
+  bool operator==( const TJet& ) const;
+  bool operator==( const T1& ) const;
 
   TJet& operator=( const TJet& );
   TJet& operator=( const TJet<T2,T1>& );
@@ -216,17 +335,33 @@ public:
   friend TJet operator/<>( const TJet&, const TJet& );   // ??? Friendliness
   friend TJet operator/<>( const TJet&, const T1& );     // ??? unnecessary
   friend TJet operator/<>( const T1&, const TJet& ); 
-  friend TJet operator/<>( const TJet&, const T2& );     // ??? unnecessary
-  friend TJet operator/<>( const T2&, const TJet& ); 
-  friend TJet operator^<>( const TJet&, const TJet& );   // Poisson bracket
 
-  friend TJet<T2,T1> operator*<>( T2&, const TJet<T1,T2>& );
-  friend TJet<T2,T1> operator*<>( const TJet<T1,T2>&, const T2& );
+  friend TJet operator^<>( const TJet&, const TJet& );   // Poisson bracket
 
   friend TJLterm<T1,T2> operator*<>( const TJLterm<T1,T2>&, const TJLterm<T1,T2>& );
   friend TJet operator*<>( const TJet&, const int& );
   friend TJet operator*<>( const int&, const TJet& );
   friend TJet operator/<>( const TJet&, const int& ); 
+
+  friend TJet<T1,T2> acos<> ( const TJet<T1,T2>& );
+  friend TJet<T1,T2> asin<> ( const TJet<T1,T2>& );
+  friend TJet<T1,T2> atan<> ( const TJet<T1,T2>& );
+  friend TJet<T1,T2> cos<>  ( const TJet<T1,T2>& );
+  friend TJet<T1,T2> cosh<> ( const TJet<T1,T2>& );
+  friend TJet<T1,T2> exp<>  ( const TJet<T1,T2>& );
+  friend TJet<T1,T2> log<>  ( const TJet<T1,T2>& );
+  friend TJet<T1,T2> log10<>( const TJet<T1,T2>& );
+  friend TJet<T1,T2> pow<>  ( const TJet<T1,T2>&, const double& );
+  friend TJet<T1,T2> pow<>  ( const TJet<T1,T2>&, int );
+  friend TJet<T1,T2> sin<>  ( const TJet<T1,T2>& );
+  friend TJet<T1,T2> sinh<> ( const TJet<T1,T2>& );
+  friend TJet<T1,T2> sqrt<> ( const TJet<T1,T2>& );
+  friend TJet<T1,T2> tan<>  ( const TJet<T1,T2>& );
+  friend TJet<T1,T2> tanh<> ( const TJet<T1,T2>& );
+  friend TJet<T1,T2> erf    ( const TJet<T1,T2>& );
+  friend TJet<T1,T2> erfc<> ( const TJet<T1,T2>& );
+
+  friend TJet<FNAL::Complex,double> w ( const TJet<FNAL::Complex,double>& );
 
 
   // Utility arithmetic functions ...
@@ -244,10 +379,6 @@ public:
                                // should play around directly
                                // with it.
 };
-
-template<typename T1,typename T2> bool operator!=( const TJet<T1,T2>&, const TJet<T1,T2>& );
-template<typename T1,typename T2> bool operator!=( const TJet<T1,T2>&, const T1& );
-template<typename T1,typename T2> bool operator!=( const T1&, const TJet<T1,T2>& );
 
 // *******************************************************************
 
@@ -268,6 +399,8 @@ public:
   inline int Index() { return _index; }
 };
 
+
+// Inline functions
 
 template<typename T1, typename T2>
 inline TJetEnvironment<T1,T2>* TJet<T1,T2>::Env() const
@@ -343,63 +476,12 @@ inline const TJetEnvironment<T1,T2>* TJet<T1,T2>::lastEnvironment()
   return _lastEnv;
 }
 
+template<typename T1, typename T2>
+inline bool operator==( const T1& x, const TJet<T1,T2>& y )
+{
+  return y == x;
+}
 
-// Templated operators
-
-template<typename T1,typename T2> std::ostream& operator<<(std::ostream&, const TJet<T1,T2>&);
-template<typename T1,typename T2> std::istream& operator>>(std::istream&, TJet<T1,T2>&);
-template<typename T1,typename T2> bool operator==( const TJet<T1,T2>&, const TJet<T1,T2>& );
-template<typename T1,typename T2> bool operator==( const TJet<T1,T2>&, const T1& );
-template<typename T1,typename T2> bool operator==( const T1&, const TJet<T1,T2>& );
-
-template<typename T1,typename T2> TJet<T1,T2> operator+( const TJet<T1,T2>&, const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> operator+( const TJet<T1,T2>&, const T1& );
-template<typename T1,typename T2> TJet<T1,T2> operator+( const T1&, const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> operator-( const TJet<T1,T2>&, const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> operator-( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> operator-( const TJet<T1,T2>&, const T1& );
-template<typename T1,typename T2> TJet<T1,T2> operator-( const T1&, const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> operator*( const TJet<T1,T2>&, const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> operator*( const TJet<T1,T2>&, const T1& );
-template<typename T1,typename T2> TJet<T1,T2> operator*( const T1&, const TJet<T1,T2>& );  
-template<typename T1,typename T2> TJet<T1,T2> operator/( const TJet<T1,T2>&, const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> operator/( const TJet<T1,T2>&, const T1& );  
-template<typename T1,typename T2> TJet<T1,T2> operator/( const T1&, const TJet<T1,T2>& ); 
-template<typename T1,typename T2> TJet<T1,T2> operator/( const TJet<T1,T2>&, const T2& );  
-template<typename T1,typename T2> TJet<T1,T2> operator/( const T2&, const TJet<T1,T2>& ); 
-template<typename T1,typename T2> TJet<T1,T2> operator^( const TJet<T1,T2>&, const TJet<T1,T2>& );
-
-template<typename T1,typename T2> TJet<T2,T1> operator*( T2&, const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T2,T1> operator*( const TJet<T1,T2>&, const T2& );
-
-template<typename T1,typename T2> TJLterm<T1,T2> operator*( const TJLterm<T1,T2>&, const TJLterm<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> operator*( const TJet<T1,T2>&, const int& );
-template<typename T1,typename T2> TJet<T1,T2> operator*( const int&, const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> operator/( const TJet<T1,T2>&, const int& ); 
-
-
-// Templated overloaded analytic functions
-template<typename T1,typename T2> TJet<T1,T2> acos ( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> asin ( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> atan ( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> cos  ( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> cosh ( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> exp  ( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> log  ( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> log10( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> pow  ( const TJet<T1,T2>&, const double& );
-template<typename T1,typename T2> TJet<T1,T2> pow  ( const TJet<T1,T2>&, int );
-template<typename T1,typename T2> TJet<T1,T2> sin  ( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> sinh ( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> sqrt ( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> tan  ( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> tanh ( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> erf  ( const TJet<T1,T2>& );
-template<typename T1,typename T2> TJet<T1,T2> erfc ( const TJet<T1,T2>& );
-
-TJet<double,FNAL::Complex> fabs( const TJet<double,FNAL::Complex>& );
-TJet<double,FNAL::Complex> real( const TJet<FNAL::Complex,double>& );
-TJet<double,FNAL::Complex> imag( const TJet<FNAL::Complex,double>& );
 
 typedef TJet<double,FNAL::Complex> Jet;
 typedef TJet<FNAL::Complex,double> JetC;

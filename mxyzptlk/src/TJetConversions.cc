@@ -819,50 +819,25 @@ TJet<Complex,double> operator/( const TJet<Complex,double>& x, const TJet<double
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+TJet<Complex,double> operator/( const Complex& x, const TJet<double,Complex>& y ) 
+{
+  return x/TJet<Complex,double>(y);
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+TJet<Complex,double> operator/( const TJet<double,Complex>& y, const Complex& x ) 
+{
+  return TJet<Complex,double>(y)/x;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 TJet<Complex,double> operator*( const Complex& y, const TJet<double,Complex>& x ) 
 {  
- static TJet<Complex,double> z;
- static TJLterm<double,Complex>* p;
- static TJLterm<Complex,double>* q;
- static JL* xPtr;
- static TJL<Complex,double>* zPtr;
- static int testWeight;
- static Complex CZero( 0.0, 0.0 );
- 
- z.Reconstruct( TJet<Complex,double>::CreateEnvFrom( x->_myEnv ) );
-
- p    = 0;
- q    = 0;
- xPtr = x._jl;
- zPtr = z._jl;
- testWeight = z->_accuWgt = x->_accuWgt;
-
- if( y == CZero ) {
-   return z;
- }
- 
- // ??? REMOVE // If x is void, return it ..
- // ??? REMOVE if( xPtr->_count < 1 ) {    // This is done in this way so that
- // ??? REMOVE   z.DeepCopy( x );         // what is returned does not own
- // ??? REMOVE   return z;                // the same data as x.
- // ??? REMOVE }
-
- // If x is void, return z, 
- // which is itself void at this point in the program.
- if( xPtr->_count < 1 ) {
-   return z;
- }
-
- dlist_iterator gx( *(dlist*) xPtr );
-
- while((  p = (TJLterm<double,Complex>*) gx()  )) {
-   if( p->_weight > testWeight ) break;
-   q = new TJLterm<Complex,double>( p );
-   q->_value *= y;
-   zPtr->addTerm( q );
- }
- 
- return z;
+  return y*TJet<Complex,double>(x);
 }
 
 
@@ -871,7 +846,7 @@ TJet<Complex,double> operator*( const Complex& y, const TJet<double,Complex>& x 
 
 TJet<Complex,double> operator*( const TJet<double,Complex>& x, const Complex& y ) 
 {  
-  return y*x;
+  return y*TJet<Complex,double>(x);
 }
 
 
@@ -893,22 +868,6 @@ TJet<Complex,double> operator*( const TJet<double,Complex>& x, const Complex& y 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator/( const Complex& x, const TJet<double,Complex>& y ) 
-{
-  return x/TJet<Complex,double>(y);
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-TJet<Complex,double> operator/( const TJet<double,Complex>& y, const Complex& x ) 
-{
-  return TJet<Complex,double>(y)/x;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 TJet<Complex,double> operator-( const Complex& x, const TJet<double,Complex>& y ) 
 {
   return x - TJet<Complex,double>(y);
@@ -920,6 +879,22 @@ TJet<Complex,double> operator-( const Complex& x, const TJet<double,Complex>& y 
 TJet<Complex,double> operator-( const TJet<double,Complex>& y, const Complex& x ) 
 {
   return TJet<Complex,double>(y) - x;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+TJet<Complex,double> operator-( const double& x, const TJet<Complex,double>& y ) 
+{
+  return Complex(x,0.0) - y;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+TJet<Complex,double> operator-( const TJet<Complex,double>& y, const double& x ) 
+{
+  return y - Complex(x,0.0);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -937,3 +912,20 @@ TJet<Complex,double> operator+( const TJet<double,Complex>& y, const Complex& x 
 {
   return operator+( x, y );
 }
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+TJet<Complex,double> operator+( const double& x, const TJet<Complex,double>& y ) 
+{
+  return Complex(x,0.0) + y;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+TJet<Complex,double> operator+( const TJet<Complex,double>& y, const double& x ) 
+{
+  return y + Complex(x,0.0);
+}
+

@@ -33,6 +33,21 @@
 
 #include "TJetVector.h"
 
+// Forward declarations
+template<typename T1, typename T2>
+class TLieOperator;
+
+template<typename T1, typename T2>
+std::ostream& operator<<( std::ostream&, TLieOperator<T1,T2>& );
+
+template<typename T1, typename T2>
+std::istream& operator>>( std::istream&, TLieOperator<T1,T2>& );
+
+template<typename T1, typename T2>
+TLieOperator<T1,T2> operator^( const TLieOperator<T1,T2>&, const TLieOperator<T1,T2>& );
+
+
+// Class TLieOperator template
 template<typename T1, typename T2>
 class TLieOperator : public TJetVector<T1,T2>
 {
@@ -46,12 +61,12 @@ public:
   ~TLieOperator();
 
   // Member functions (public)
-  void SetComponent( short int           /* index     */,
+  void SetComponent( int           /* index     */,
                      const TJet<T1,T2>&  /* component */  );
-  void setComponent( short int           /* index     */,
+  void setComponent( int           /* index     */,
                      const TJet<T1,T2>&  /* component */  );
-  void setVariable( const TJet<T1,T2>&, short int );
-  void setVariable( const T1&, short int ); 
+  void setVariable( const TJet<T1,T2>&, int );
+  void setVariable( const T1&, int ); 
   // WARNING: this version alters the environment!!
 
   TLieOperator& operator=( const TJetVector<T1,T2>& );
@@ -85,6 +100,8 @@ public:
 };
 
 
+// Inline functions
+
 template<typename T1, typename T2>
 inline TLieOperator<T1,T2>& TLieOperator<T1,T2>::operator=( const TJetVector<T1,T2>& x )
 { return (TLieOperator<T1,T2>&) TJetVector<T1,T2>::operator=( x ); }
@@ -98,17 +115,12 @@ inline TJetVector<T1,T2> TLieOperator<T1,T2>::expMap( const TJetVector<T1,T2>& x
 { return this->expMap( 1.0, x  ); }
 
 template<typename T1, typename T2>
-inline void TLieOperator<T1,T2>::setComponent( short int i, const TJet<T1,T2>& x )
+inline void TLieOperator<T1,T2>::setComponent( int i, const TJet<T1,T2>& x )
 { this->setVariable( x, i ); }
 
 template<typename T1, typename T2>
-inline void TLieOperator<T1,T2>::SetComponent( short int i, const TJet<T1,T2>& x )
+inline void TLieOperator<T1,T2>::SetComponent( int i, const TJet<T1,T2>& x )
 { this->setVariable( x, i ); }
-
-
-template<typename T1,typename T2> std::ostream& operator<<( std::ostream&, TLieOperator<T1,T2>& );
-template<typename T1,typename T2> std::istream& operator>>( std::istream&, TLieOperator<T1,T2>& );
-template<typename T1,typename T2> TLieOperator<T1,T2> operator^( const TLieOperator<T1,T2>&, const TLieOperator<T1,T2>& );
 
 typedef TLieOperator<double,FNAL::Complex> LieOperator;
 typedef TLieOperator<FNAL::Complex,double> CLieOperator;

@@ -28,9 +28,11 @@
 *************************************************************************/
 
 
-#include "TJL.h"
-
 #include <iomanip>
+#include <fstream>
+
+#include "GenericException.h"
+#include "TJL.h"
 
 #ifdef  __PRIVATE_ALLOCATOR__
 #include <vmalloc.h>
@@ -38,15 +40,11 @@
 Vmalloc_t* TJLterm<T1,T2>::_vmem=0;
 #endif
 
-template<typename T1, typename T2>
-FILE  *TJL<T1,T2>::scratchFile;
-
-
 // ================================================================
 //      External routines
 //
 
-extern char nexcom( int, int, int* );  
+extern char nexcom( int, int, int* );
                                 // Computes the next composition
                                 //  of an integer into a number of parts.
                                 //  Algorithm devised by Herbert Wilf.
@@ -364,7 +362,7 @@ TJL<T1,T2>::~TJL()
  clear();
  // _myEnv is purposely NOT deleted, of course.
 }
-/*
+
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //     Member functions(public)  |||||||||||||||||||||||||||||||
 
@@ -373,7 +371,7 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a)
 {
  // If the value of *a is 0, don't bother with it unless
  // the _weight is also 0.
- if( ( a -> value == 0.0 ) && ( a -> _weight != 0 ) ) {
+ if( ( a -> _value == 0.0 ) && ( a -> _weight != 0 ) ) {
    delete a;
    return;
  }
@@ -395,11 +393,11 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a)
  if(     *a   <=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
    if(   *a   %=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
  
-     (( (TJLterm<T1,T2>*) (p->info()) ) -> value ) += ( a -> value );
+     (( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) += ( a -> _value );
  
      if(
          (
-           std::abs( ( (TJLterm<T1,T2>*) (p->info()) ) -> value ) < MX_SMALL*std::abs( a -> value )
+           std::abs( ( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) < MX_SMALL*std::abs( a -> _value )
          )
          // REMOVE ??? &&
          // REMOVE ??? (
@@ -428,11 +426,11 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a)
    if(     *a   <=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
      if(   *a   %=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
  
-       (( (TJLterm<T1,T2>*) (p->info()) ) -> value ) += ( a -> value );
+       (( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) += ( a -> _value );
  
        if(
 	   (
-	     std::abs( ( (TJLterm<T1,T2>*) (p->info()) ) -> value ) < MX_SMALL*std::abs( a -> value )
+	     std::abs( ( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) < MX_SMALL*std::abs( a -> _value )
 	   )
 	   // REMOVE ??? &&
 	   // REMOVE ??? (
@@ -468,7 +466,7 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-void TJL<T1,T2>::getReference( double* r ) const 
+void TJL<T1,T2>::getReference( T1* r ) const 
 {
  int i;
  for( i = 0; i < _myEnv->_numVar; i++ ) r[i] = _myEnv->_refPoint[i];
@@ -478,114 +476,89 @@ void TJL<T1,T2>::getReference( double* r ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-char TJL<T1,T2>::isNilpotent() const 
+bool TJL<T1,T2>::isNilpotent() const 
 {
  dlist_iterator getNext( *(dlist*) this );
  TJLterm<T1,T2>* p = (TJLterm<T1,T2>*) getNext();
- if( p->_weight == 0 && std::abs(p->value) > MX_SMALL ) 
-   { return 0; }
+ if( p->_weight == 0 && std::abs(p->_value) > MX_SMALL ) 
+   { return false; }
  else
-   { return 1; }
+   { return true; }
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
 template<typename T1, typename T2>
-void TJL<T1,T2>::writeToFile( char* fileName ) const 
+void TJL<T1,T2>::writeToFile( ofstream& outStr ) const 
 {
  dlist_traversor getNext( *(dlist*) this );
  int i;
  TJLterm<T1,T2>* p;
  dlink* q;
  
- TJL<T1,T2>::scratchFile = fopen( fileName, "w" );
- 
- fprintf( TJL<T1,T2>::scratchFile,
-          "\n_Count  = %d, Weight = %d, Max accurate weight = %d\n",
-          _count, _weight, _accuWgt );
- fprintf( TJL<T1,T2>::scratchFile, "Reference point:  \n" );
- for( i = 0; i < _myEnv->_numVar; i++ )
-   fprintf( TJL<T1,T2>::scratchFile, "%e  ", _myEnv->_refPoint[i] );
- fprintf( TJL<T1,T2>::scratchFile, "\n" );
+ outStr << "\n_Count  = " << _count
+        << ", Weight = " << _weight
+        << ", Max accurate weight = " << _accuWgt
+        << endl;
+ outStr << "Reference point:\n";
+ for( i = 0; i < _myEnv->_numVar; i++ ) {
+   outStr << _myEnv->_refPoint[i];
+ }
+ outStr << endl;
  while((  q = getNext()  )) {
    p = (TJLterm<T1,T2>*) q->info();
-   fprintf( TJL<T1,T2>::scratchFile, "Weight: %d   Value: %e  || ",
-           p -> _weight, p -> value );
-   fprintf( TJL<T1,T2>::scratchFile, "Addresses: %d %d %d : %d\n",
-                  q->prevPtr(), q, q->nextPtr(), p );
-   fprintf( TJL<T1,T2>::scratchFile, "Index:  ");
-   for( i = 0; i < _myEnv->_numVar; i++ )
-     fprintf( TJL<T1,T2>::scratchFile, "%d  ", (p -> index)(i) );
-   fprintf( TJL<T1,T2>::scratchFile, "\n\n");
+   outStr << "Weight: " << p -> _weight
+          << "   Value: " << p -> _value
+          << " || ";
+   outStr << "Addresses: " 
+          <<  ((int) q->prevPtr())
+          <<  ((int) q)
+          <<  ((int) q->nextPtr())
+          << " : " 
+          <<  ((int) p)
+          << endl;
+   outStr << "Index:  ";
+   for( i = 0; i < _myEnv->_numVar; i++ ) {
+     outStr << ((p->_index)(i)) << "  ";
    }
- 
- fclose( TJL<T1,T2>::scratchFile );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T1, typename T2>
-void TJL<T1,T2>::writeToFile( FILE* filePtr ) const 
-{
- dlist_traversor getNext( *(dlist*) this );
- int i;
- TJLterm<T1,T2>* p;
- dlink* q;
- 
- fprintf( filePtr,
-          "\n_Count  = %d, Weight = %d, Max accurate weight = %d\n",
-          _count, _weight, _accuWgt );
- fprintf( filePtr, "Reference point:  \n" );
- for( i = 0; i < _myEnv->_numVar; i++ )
-   fprintf( filePtr, "%e  ", _myEnv->_refPoint[i] );
- fprintf( filePtr, "\n" );
- while((  q = getNext()  )) {
-   p = (TJLterm<T1,T2>*) q->info();
-   fprintf( filePtr, "Weight: %d   Value: %e  || ",
-           p -> _weight, p -> value );
-   fprintf( filePtr, "Addresses: %d %d %d : %d\n",
-                  q->prevPtr(), q, q->nextPtr(), p );
-   fprintf( filePtr, "Index:  ");
-   for( i = 0; i < _myEnv->_numVar; i++ )
-     fprintf( filePtr, "%d  ", (p -> index)(i) );
-   fprintf( filePtr, "\n\n");
+   outStr << endl;
    }
- 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-void TJL<T1,T2>::_scaleBy( double y ) 
+void TJL<T1,T2>::scaleBy( T1 y ) 
 {
  TJLterm<T1,T2>* p;
  dlist_iterator getNext( *(dlist*) this );
  
  if ( this->_count < 1 ) {
-   cout << "\n\n*** WARNING::TJL<T1,T2>::_scaleBy: function invoked \n"
+   cout << "\n\n*** WARNING::TJL<T1,T2>::scaleBy: function invoked \n"
         <<     "    by null JL variable with address " << (int) this 
         << endl;
    return;
    }
  
- while((  p = (TJLterm<T1,T2>*) getNext()  ))   p->value *= y;
+ while((  p = (TJLterm<T1,T2>*) getNext()  ))   p->_value *= y;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-void TJL<T1,T2>::setVariable( const double& x, 
-                      const int& j, 
-                            TJetEnvironment<T1,T2>* theEnv )
+void TJL<T1,T2>::setVariable( const T1& x, 
+                              const int& j, 
+                              TJetEnvironment<T1,T2>* theEnv )
 {
  if( theEnv != 0 ) _myEnv = theEnv;
 
  if( _myEnv == 0 ) {
-   throw( TJL<T1,T2>::GenericException( __FILE__, __LINE__, 
-     "void TJL<T1,T2>::setVariable( const double&, const int&, TJetEnvironment<T1,T2>* )", 
+   throw( GenericException( __FILE__, __LINE__, 
+     "void TJL<T1,T2>::setVariable( const T1&, const int&, TJetEnvironment<T1,T2>* )", 
      "Private data _myEnv is null: object has no environment assigned.") );
  }
 
@@ -606,12 +579,12 @@ void TJL<T1,T2>::setVariable( const double& x,
 
 template<typename T1, typename T2>
 void TJL<T1,T2>::setVariable( const int& j, 
-                            TJetEnvironment<T1,T2>* theEnv ) 
+                              TJetEnvironment<T1,T2>* theEnv ) 
 {
  if( theEnv != 0 ) _myEnv = theEnv;
 
  if( _myEnv == 0 ) {
-   throw( TJL<T1,T2>::GenericException( __FILE__, __LINE__, 
+   throw( GenericException( __FILE__, __LINE__, 
      "void TJL<T1,T2>::setVariable( const int&, TJetEnvironment<T1,T2>* )", 
      "Private data _myEnv is null: object has no environment assigned.") );
  }
@@ -619,7 +592,7 @@ void TJL<T1,T2>::setVariable( const int& j,
  clear();
  if( ( j < 0 ) || ( j >= _myEnv->_numVar ) ) return;
  
- double x = theEnv->_refPoint[j];
+ T1 x = theEnv->_refPoint[j];
  IntArray ndx( _myEnv->_numVar );
  insert( new TJLterm<T1,T2>( ndx, x, theEnv ) );
  ndx(j) = 1;
@@ -665,7 +638,7 @@ TJLterm<T1,T2> TJL<T1,T2>::lowTerm() const
    
  while ( (result == 0) && (p!=0) ) 
  {
-   if( p->value != 0.0 ) result = p;
+   if( p->_value != 0.0 ) result = p;
    p = (TJLterm<T1,T2>*) getNext();
  }
 
@@ -736,14 +709,14 @@ TJLterm<T1,T2>* TJL<T1,T2>::remove( dlink* w )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-double TJL<T1,T2>::standardPart() const 
+T1 TJL<T1,T2>::standardPart() const 
 {
  TJLterm<T1,T2>* p; 
- if( _count < 1 )       return 0.0;
+ if( _count < 1 ) { return 0.0; }
  dlist_iterator g( (dlist&) *this );
  p = (TJLterm<T1,T2>*) g();
- if( p->_weight  == 0 ) return p->value;
-                       return 0.0;
+ if( p->_weight  == 0 ) { return p->_value; }
+ return 0.0;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -766,7 +739,7 @@ void TJL<T1,T2>::clear()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-double TJL<T1,T2>::weightedDerivative( const int* ind ) const 
+T1 TJL<T1,T2>::weightedDerivative( const int* ind ) const 
 {
  int i;
  TJLterm<T1,T2>* p;
@@ -779,8 +752,8 @@ double TJL<T1,T2>::weightedDerivative( const int* ind ) const
  while((  p = (TJLterm<T1,T2>*) getNext()  )) {
    theOne = 1;
    for ( i = 0; i < _myEnv->_numVar; i++ )
-     theOne = theOne && ( (p->index)(i) == ind[i] );
-   if( theOne ) return p->value;
+     theOne = theOne && ( (p->_index)(i) == ind[i] );
+   if( theOne ) return p->_value;
  }
  
  return 0.0;
@@ -790,11 +763,11 @@ double TJL<T1,T2>::weightedDerivative( const int* ind ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-double TJL<T1,T2>::derivative( const int* ind ) const 
+T1 TJL<T1,T2>::derivative( const int* ind ) const 
 {
  static double n;
  static double multiplier;
- static double d;
+ static T1 d;
  static int i;
  
  d = weightedDerivative( ind );
@@ -813,19 +786,19 @@ double TJL<T1,T2>::derivative( const int* ind ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-double TJL<T1,T2>::operator()( const double* x )  const 
+T1 TJL<T1,T2>::operator()( const T1* x )  const 
 {
  // This routine is linked to double TJL<T1,T2>::operator()( const Vector& x ) const
  // Any change made to this must be reflected in the other.
  TJLterm<T1,T2>* p;
- double v;
+ T1 v;
  int w;
  int i;
- double term;
- double* u;
+ T1 term;
+ T1* u;
  dlist_iterator getNext( *(dlist*) this );
  
- u = new double[ _myEnv->_numVar ];
+ u = new T1[ _myEnv->_numVar ];
  
  // Subtract off the reference point.
  for( i = 0; i < _myEnv->_numVar; i++ ) u[i] = x[i] - _myEnv->_refPoint[i];
@@ -864,9 +837,9 @@ double TJL<T1,T2>::operator()( const double* x )  const
  v = 0.0;
  
  while((  p = (TJLterm<T1,T2>*) getNext()  )) {
-   for( i = 0; i < _myEnv->_numVar; i++ ) _myEnv->_exponent[i] = (p->index)(i);
+   for( i = 0; i < _myEnv->_numVar; i++ ) _myEnv->_exponent[i] = (p->_index)(i);
    _myEnv->_monoCode();
-   v += ( p->value ) * ( _myEnv->_monomial[ _myEnv->_monoRank() ] );
+   v += ( p->_value ) * ( _myEnv->_monomial[ _myEnv->_monoRank() ] );
  }
  
  delete [] u;
@@ -879,73 +852,21 @@ double TJL<T1,T2>::operator()( const double* x )  const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-double TJL<T1,T2>::operator()( const Vector& x ) const 
+T1 TJL<T1,T2>::operator()( const Vector& x ) const 
 {
- // This routine is linked to double TJL<T1,T2>::operator()( double* x ) 
- // Any change made to this must be reflected in the other.
- TJLterm<T1,T2>* p;
- double v;
- int w;
- int i;
- double term;
- double* u;
- dlist_iterator getNext( *(dlist*) this );
- 
- u = new double[ _myEnv->_numVar ];
- 
- // Subtract off the reference point.
- for( i = 0; i < _myEnv->_numVar; i++ ) u[i] = x(i) - _myEnv->_refPoint[i];
- 
- // Evaluate and store _monomials.
- 
- // The zeroth one.
- _myEnv->_monomial[0] = 1.0;
- 
- // For all higher weights ...
- for( w = 1; w <= _weight; w++ )
- 
-   // Get the next set of _exponents of weight w.
-   while( nexcom( w, _myEnv->_numVar, _myEnv->_exponent ) ) {
- 
-     // Find the first non-zero _exponent.
-     i = 0;
-     while( !( _myEnv->_exponent[i++] ) ) ;
-     i--;
- 
-     // The value of the _monomial associated with this composition
-     // is obtained by multiplying a factor into a previously
-     // computed _monomial.
-     ( _myEnv->_exponent[i] )--;
-     _myEnv->_monoCode();
-     term = _myEnv->_monomial[ _myEnv->_monoRank() ];
-     ( _myEnv->_exponent[i] )++;
-     _myEnv->_monoCode();
-     _myEnv->_monomial[ _myEnv->_monoRank() ] = term * u[i];
- 
-   }
- 
- // Monomials have been now stored at this point.
- // Now traverse the JL variable and evaluate.
- 
- v = 0.0;
- 
- while((  p = (TJLterm<T1,T2>*) getNext()  )) {
-   for( i = 0; i < _myEnv->_numVar; i++ ) _myEnv->_exponent[i] = (p->index)(i);
-   _myEnv->_monoCode();
-   v += ( p->value ) * ( _myEnv->_monomial[ _myEnv->_monoRank() ] );
- }
- 
- delete [] u;
- 
- return v;
- 
+  int n = x.Dim();
+  T1 newarg [n];
+  for( int i = 0; i < n; i++ ) {
+    newarg[i] = x(i);
+  }
+  return this->operator()( newarg );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-
+
 // ***************************************************************
 // ***************************************************************
 // ***************************************************************
@@ -954,13 +875,13 @@ double TJL<T1,T2>::operator()( const Vector& x ) const
 //
 
 template<typename T1, typename T2>
-istream& operator>>( istream& is,  JL& x ) 
+istream& operator>>( istream& is,  TJL<T1,T2>& x ) 
 {  // ??? This function shouldn't
    // ??? be here.
   char buf[100];
   int i,j;
   int count;
-  double value;
+  T1 value;
   TJLterm<T1,T2>* q;
 
   x.clear();
@@ -1003,7 +924,7 @@ istream& operator>>( istream& is,  JL& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-ostream& operator<<( ostream& os, const JL& x ) 
+ostream& operator<<( ostream& os, const TJL<T1,T2>& x ) 
 {
  dlist_traversor getNext( (dlist&) x );
  int i;
@@ -1020,9 +941,9 @@ ostream& operator<<( ostream& os, const JL& x )
    p = (TJLterm<T1,T2>*) q->info();
    os << "Index: ";
    for( i = 0; i < x._myEnv->_numVar; i++ )
-     os << p -> index(i) << " ";
-   os << "   Value: " << setprecision(30) << p -> value << endl;
-   // os << "   Value: " << p -> value << endl;
+     os << p -> _index(i) << " ";
+   os << "   Value: " << setprecision(30) << p -> _value << endl;
+   // os << "   Value: " << p -> _value << endl;
  }
  return os << "\n" << endl;
 }
@@ -1031,14 +952,14 @@ ostream& operator<<( ostream& os, const JL& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-char operator==( const JL& x, const JL& y ) 
+bool operator==( const TJL<T1,T2>& x, const TJL<T1,T2>& y ) 
 {
  if( ( x._count   != y._count )   ||
      ( x._weight  != y._weight )  ||
      ( x._accuWgt != y._accuWgt )
-   ) return 0;
+   ) return false;
  
- if( x._myEnv != y._myEnv ) return 0;
+ if( x._myEnv != y._myEnv ) return false;
 
  dlist_iterator getNextX( (dlist&) x );
  dlist_iterator getNextY( (dlist&) y );
@@ -1046,45 +967,40 @@ char operator==( const JL& x, const JL& y )
  TJLterm<T1,T2>* q;
  
  while((  p = (TJLterm<T1,T2>*) getNextX()  )) {
-   if( !( q = (TJLterm<T1,T2>*) getNextY() ) ) return 0;
-   if( !( *p == *q ) ) return 0;
+   if( !( q = (TJLterm<T1,T2>*) getNextY() ) ) return false;
+   if( !( *p == *q ) ) return false;
    }
  
  if( (TJLterm<T1,T2>*) getNextY() ) {
    printf( "\n*** ERROR: Inconsistency in JL operator==\n" );
      // This point should never be reached, since that would imply that
      // x._count != y._count
-   return 0;
+   return false;
    }
  
- return 1;
+ return true;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-char operator==( const JL& x, const double& y ) 
+bool operator==( const TJL<T1,T2>& x, const T1& y ) 
 {
- char result = 1;
+ bool result = true;
  TJLterm<T1,T2>* p;
 
  if( x._count < 1 ) {
-  if( y == 0.0 ) return 1;
-  else           return 0;
+  if( y == 0.0 ) return true;
+  else           return false;
  }
 
  dlist_iterator getNext( (dlist&) x );
 
  while((  p = (TJLterm<T1,T2>*) getNext()  )) 
-  result = result && ( p->_weight == 0 ? p->value == y : 
-                                        p->value == 0.0 );
+  result = result && ( p->_weight == 0 ? p->_value == y : 
+                                        p->_value == 0.0 );
 
-  // REMOVE ??? result = result && ( ( ( p->_weight == 0 ) && ( p->value == y   ) )
-  // REMOVE ???                      ||
-  // REMOVE ???                      ( ( p->_weight != 0 ) && ( p->value == 0.0 ) )
-  // REMOVE ???                    )
-  // REMOVE ??? 
  return result;
 }
 
@@ -1092,7 +1008,7 @@ char operator==( const JL& x, const double& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-char operator==( const double& y, const JL& x )
+bool operator==( const T1& y, const TJL<T1,T2>& x )
 {
  return x == y;
 }
@@ -1101,7 +1017,7 @@ char operator==( const double& y, const JL& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-char operator!=( const JL& x, const JL& y ) 
+bool operator!=( const TJL<T1,T2>& x, const TJL<T1,T2>& y ) 
 {
  return !( x == y );
 }
@@ -1110,7 +1026,7 @@ char operator!=( const JL& x, const JL& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-char operator!=( const JL& x, const double& y ) 
+bool operator!=( const TJL<T1,T2>& x, const T1& y ) 
 {
  return !( x == y );
 }
@@ -1119,7 +1035,7 @@ char operator!=( const JL& x, const double& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-char operator!=( const double& x, const JL& y ) 
+bool operator!=( const T1& x, const TJL<T1,T2>& y ) 
 {
  return !( x == y );
 }
@@ -1128,7 +1044,7 @@ char operator!=( const double& x, const JL& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-JL& TJL<T1,T2>::operator=( const double& x ) 
+TJL<T1,T2>& TJL<T1,T2>::operator=( const T1& x ) 
 {
  static int* ndx;
  
@@ -1137,8 +1053,8 @@ JL& TJL<T1,T2>::operator=( const double& x )
  _count  = 0;
  if( _myEnv ) _accuWgt = _myEnv->_maxWeight;
  else {
-   throw( TJL<T1,T2>::GenericException( __FILE__, __LINE__, 
-     "JL& TJL<T1,T2>::operator=( const double& x ) {", 
+   throw( GenericException( __FILE__, __LINE__, 
+     "TJL<T1,T2>& TJL<T1,T2>::operator=( const T1& x ) {", 
      "Private data _myEnv is null: object has no environment assigned.") );
  }
 
@@ -1152,7 +1068,7 @@ JL& TJL<T1,T2>::operator=( const double& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-JL& TJL<T1,T2>::operator=( const JL& x ) 
+TJL<T1,T2>& TJL<T1,T2>::operator=( const TJL<T1,T2>& x ) 
 {
  static TJLterm<T1,T2>* p;
  static TJLterm<T1,T2>* q;
@@ -1180,7 +1096,7 @@ JL& TJL<T1,T2>::operator=( const JL& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-JL& TJL<T1,T2>::operator+=( const double& x ) {   // ??? Untested!!
+TJL<T1,T2>& TJL<T1,T2>::operator+=( const T1& x ) {   // ??? Untested!!
  static char firstNull = 1;
  int i;
  // ??? REMOVE dlist_iterator getNext( *(dlist*) this );
@@ -1191,15 +1107,15 @@ JL& TJL<T1,T2>::operator+=( const double& x ) {   // ??? Untested!!
  if( p = (TJLterm<T1,T2>*) firstInfoPtr() )
  {
    if ( p->_weight == 0 ) { 
-    p->value += x;
-    if( std::abs( p->value ) <  MX_SMALL*std::abs(x) ) p->value = 0.0;
+    p->_value += x;
+    if( std::abs( p->_value ) <  MX_SMALL*std::abs(x) ) p->_value = 0.0;
    }
  
    else {
      q = new TJLterm<T1,T2>( _myEnv );
-     for( i = 0; i < _myEnv->_numVar; i++ ) q->index(i) = 0;
+     for( i = 0; i < _myEnv->_numVar; i++ ) q->_index(i) = 0;
      q->_weight = 0;
-     q->value = x;
+     q->_value = x;
      insert( q );
    }
  }
@@ -1207,7 +1123,7 @@ JL& TJL<T1,T2>::operator+=( const double& x ) {   // ??? Untested!!
  {
    if( firstNull ) {
      cerr << "*** WARNING ***                                 \n"
-             "*** WARNING *** JL& TJL<T1,T2>::operator+=( const double& )\n"
+             "*** WARNING *** TJL<T1,T2>& TJL<T1,T2>::operator+=( const T1& )\n"
              "*** WARNING *** Operator invoked by a null      \n"
              "*** WARNING *** JL.  This warning will not be   \n"
              "*** WARNING *** repeated.                       \n"
@@ -1225,22 +1141,21 @@ JL& TJL<T1,T2>::operator+=( const double& x ) {   // ??? Untested!!
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-TJLterm<T1,T2> operator*( const TJLterm<T1,T2>& x, const TJLterm<T1,T2>& y ) 
+TJLterm<T1,T2> TJLterm<T1,T2>::operator*( const TJLterm<T1,T2>& y ) 
 {
- TJLterm<T1,T2> z(x);
+ TJLterm<T1,T2> z(*this);
  static int i, n;
 
- if((  ( n = x.index.Dim() ) != y.index.Dim()  )) {
-   throw( TJL<T1,T2>::BadDimension( x.index.Dim(), y.index.Dim(),
+ if((  ( n = this->_index.Dim() ) != y._index.Dim()  )) {
+   throw( TJL<T1,T2>::BadDimension( this->_index.Dim(), y._index.Dim(),
                             __FILE__, __LINE__, 
-                            "TJLterm<T1,T2> operator*( const TJLterm<T1,T2>& x, const TJLterm<T1,T2>& y )",
+                            "TJLterm<T1,T2> TJLterm<T1,T2>::operator*( const TJLterm<T1,T2>& y ) ",
                             "Inconsistent number of coordinates." ) );
  }
 
- z._weight = x._weight + y._weight;
- for( i = 0; i < n; i++ ) 
-   z.index(i) = x.index(i) + y.index(i);
- z.value = x.value * y.value;
+ z._weight = this->_weight + y._weight;
+ for( i = 0; i < n; i++ ) {  z._index(i) = this->_index(i) + y._index(i);  }
+ z._value = this->_value * y._value;
  return z;
 }
 
@@ -1257,7 +1172,7 @@ TJLterm<T1,T2> operator*( const TJLterm<T1,T2>& x, const TJLterm<T1,T2>& y )
 
 template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm<T1,T2>( const TJetEnvironment<T1,T2>* pje ) 
-: index( pje->_numVar ), _weight(0), value(0.0)
+: _index( pje->_numVar ), _weight(0), _value(0.0)
 {
 }
 
@@ -1266,9 +1181,9 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const TJetEnvironment<T1,T2>* pje )
 
 template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l, 
-                const double& x, 
+                const T1& x, 
                 const TJetEnvironment<T1,T2>* pje ) 
-: index( l )
+: _index( l )
 {
  // I think that it is not necessary to use a try block
  // with this constructor, even though it throws exceptions,
@@ -1280,8 +1195,8 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l,
  if( pje ) {
    int n = l.Dim();
    if( n != pje->_numVar ) {
-     throw( TJL<T1,T2>::GenericException( __FILE__, __LINE__, 
-            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const double&, const TJetEnvironment<T1,T2>*",
+     throw( GenericException( __FILE__, __LINE__, 
+            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, const TJetEnvironment<T1,T2>*",
             "Dimensions are wrong.") );
    }
   
@@ -1289,38 +1204,38 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l,
    dpt = 0;
    for( i = 0; i < n; i++ ) {
      if( (l(i) < 0) ) {
-       throw( TJL<T1,T2>::GenericException( __FILE__, __LINE__, 
-              "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const double&, const TJetEnvironment<T1,T2>*",
+       throw( GenericException( __FILE__, __LINE__, 
+              "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, const TJetEnvironment<T1,T2>*",
               "Bad index in JLTerm.") );
      }
      dpt += l(i);
    }
   
    if( dpt > pje->_maxWeight ) {
-     throw( TJL<T1,T2>::GenericException( __FILE__, __LINE__, 
-            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const double&, const TJetEnvironment<T1,T2>*",
+     throw( GenericException( __FILE__, __LINE__, 
+            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, const TJetEnvironment<T1,T2>*",
             "Attempt to load a JLTerm with too large a weight.") );
    }
    
-   // ??? REMOVE: index = l;
+   // ??? REMOVE: _index = l;
    _weight = dpt;
-   value = x;
+   _value = x;
  }
 
  else {
    if( l.Dim() != 1 ) {
-     throw( TJL<T1,T2>::GenericException( __FILE__, __LINE__, 
-            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const double&, const TJetEnvironment<T1,T2>*",
+     throw( GenericException( __FILE__, __LINE__, 
+            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, const TJetEnvironment<T1,T2>*",
             "Inconsistency between l and pje") );
    }
    if( l(0) != 0 ) {
-     throw( TJL<T1,T2>::GenericException( __FILE__, __LINE__, 
-            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const double&, const TJetEnvironment<T1,T2>*",
+     throw( GenericException( __FILE__, __LINE__, 
+            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, const TJetEnvironment<T1,T2>*",
             "Bad value of the index when pje = 0.") );
    }
-   index = l;
+   _index = l;
    _weight = l.Sum();
-   value = x;
+   _value = x;
  }
 }
 
@@ -1358,7 +1273,7 @@ void TJLterm<T1,T2>::operator delete(void* obj, size_t size)
 
 template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm<T1,T2>( const TJLterm<T1,T2>* x ) 
-: index( x->index ), _weight(x->_weight), value(x->value)
+: _index( x->_index ), _weight(x->_weight), _value(x->_value)
 {
 }
 
@@ -1367,7 +1282,7 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const TJLterm<T1,T2>* x )
 
 template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm<T1,T2>( const TJLterm<T1,T2>& x ) 
-: index( x.index ), _weight(x._weight), value(x.value)
+: _index( x._index ), _weight(x._weight), _value(x._value)
 {
 }
 
@@ -1388,31 +1303,31 @@ TJLterm<T1,T2>::~TJLterm<T1,T2>()
 //      Overloaded operators for class TJLterm<T1,T2>
 
 template<typename T1, typename T2>
-void TJLterm<T1,T2>::operator=( const TJLterm<T1,T2>& x ) 
+TJLterm<T1,T2>& TJLterm<T1,T2>::operator=( const TJLterm<T1,T2>& x ) 
 {
-
  _weight = x._weight;
- value  = x.value;
- index  = x.index;
+ _value  = x._value;
+ _index  = x._index;
+ return *this;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-char operator==( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b ) 
+bool operator==( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b ) 
 {
- if( a._weight != b._weight ) return 0;
- if( a.value  != b.value  ) return 0;
- if( a.index  != b.index  ) return 0;
- return 1;
+ if( a._weight != b._weight ) return false;
+ if( a._value  != b._value  ) return false;
+ if( a._index  != b._index  ) return false;
+ return true;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-char operator!=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b ) 
+bool operator!=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b ) 
 {
  return !( a == b );
 }
@@ -1421,36 +1336,35 @@ char operator!=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-char operator<=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b ) 
+bool operator<=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b ) 
 {
  int i;
- if( a.index.Dim() != b.index.Dim() ) {
-   throw( TJL<T1,T2>::BadDimension( a.index.Dim(), b.index.Dim(), 
+ if( a._index.Dim() != b._index.Dim() ) {
+   throw( TJL<T1,T2>::BadDimension( a._index.Dim(), b._index.Dim(), 
           __FILE__, __LINE__, 
           "char operator<=( const TJLterm<T1,T2>&, const TJLterm<T1,T2>& )",
           "Dimensions don't match.") );
  }
  if( a._weight != b._weight ) { return ( a._weight < b._weight ); }
- for( i = 0; i < a.index.Dim(); i++ ) {
-   if( a.index(i) == b.index(i) ) continue;
-   return ( a.index(i) < b.index(i) );
+ for( i = 0; i < a._index.Dim(); i++ ) {
+   if( a._index(i) == b._index(i) ) continue;
+   return ( a._index(i) < b._index(i) );
  }
- return 1;  // when all indices are the same.
+ return true;  // when all indices are the same.
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-char operator%=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b ) 
+bool operator%=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b ) 
 {
- if( a._weight != b._weight ) return 0;
- return a.index == b.index;
+ if( a._weight != b._weight ) return false;
+ return a._index == b._index;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-*/
 
 
 template TJL<double,FNAL::Complex>;

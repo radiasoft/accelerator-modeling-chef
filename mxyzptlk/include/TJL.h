@@ -47,10 +47,6 @@
 #include <fcntl.h>
 #endif
 
-// template<typename T1, typename T2> class TLieOperator;
-// template<typename T1, typename T2> struct TJL;
-
-
 // *******************************************************************
 
 template<typename T1, typename T2>
@@ -86,7 +82,7 @@ struct TJLterm
 
   // Operators
   TJLterm& operator=( const TJLterm& );
-  TJLterm& operator*( const TJLterm& );
+  TJLterm  operator*( const TJLterm& );
 
 
   // Accessors
@@ -115,8 +111,6 @@ struct TJL : public dlist
   void append( TJLterm<T1,T2>* );
   TJLterm<T1,T2>* remove( dlink* );
 
-  static FILE  *scratchFile;
-
   // Constructors and destructors_____________________________________
   TJL( const TJetEnvironment<T1,T2>* = 0 );
   TJL( const T1&, TJetEnvironment<T1,T2>* );
@@ -138,8 +132,7 @@ struct TJL : public dlist
   void addTerm( TJLterm<T1,T2>* ); // Public only for diagnostic purposes.
 
   bool isNilpotent() const;
-  void writeToFile( char* /* Name of unopened file */ ) const;
-  void writeToFile( FILE* ) const;
+  void writeToFile( std::ofstream& ) const;
 
   void getReference( T1* ) const;
   void scaleBy( T1 );
@@ -272,20 +265,9 @@ struct TJL : public dlist
   };
 };
 
-template<typename T1,typename T2> bool operator!=( const TJL<T1,T2>&, const TJL<T1,T2>& );
-template<typename T1,typename T2> bool operator!=( const TJL<T1,T2>&, const T1& );
-template<typename T1,typename T2> bool operator!=( const T1&, const TJL<T1,T2>& );
-template<typename T1,typename T2> std::ostream& operator<<(std::ostream&, const TJL<T1,T2>&);
-template<typename T1,typename T2> std::istream& operator>>(std::istream&,       TJL<T1,T2>&);
-template<typename T1,typename T2> bool operator==( const TJLterm<T1,T2>&, const TJLterm<T1,T2>& );
-template<typename T1,typename T2> bool operator==( const TJL<T1,T2>&,     const TJL<T1,T2>& );
-template<typename T1,typename T2> bool operator==( const TJL<T1,T2>&,     const double& );
-template<typename T1,typename T2> bool operator==( const double&, const TJL<T1,T2>& );
-template<typename T1,typename T2> bool operator<=( const TJLterm<T1,T2>&, const TJLterm<T1,T2>& );
-template<typename T1,typename T2> bool operator%=( const TJLterm<T1,T2>&, const TJLterm<T1,T2>& );
-                                // Acts like == but compares
-                                // indices only.
 
+typedef TJLterm<double,FNAL::Complex> JLterm;
+typedef TJLterm<FNAL::Complex,double> JLCterm;
 typedef TJL<double,FNAL::Complex> JL;
 typedef TJL<FNAL::Complex,double> JLC;
 

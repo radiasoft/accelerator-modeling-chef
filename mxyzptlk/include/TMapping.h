@@ -37,15 +37,15 @@ template<typename T1, typename T2>
 class TMapping : public TJetVector<T1,T2>
 {
  private:
-  TMapping<T1,T2> _epsInverse( const TJetEnvironment<T1,T2>* ) const;
+  TMapping<T1,T2> _epsInverse( TJetEnvironment<T1,T2>* ) const;
 
  public: 
-  TMapping( short int /* dimension  */ = (TJet<T1,T2>::_lastEnv)->_spaceDim,
+  TMapping( int /* dimension  */ = (TJet<T1,T2>::_lastEnv)->_spaceDim,
             const TJet<T1,T2>* /* components */ = 0, 
             TJetEnvironment<T1,T2>*  = (TJet<T1,T2>::_lastEnv) );
   TMapping( const TMapping& );
   TMapping( const TJetVector<T1,T2>& );
-  TMapping( char*, TJetEnvironment<T1,T2>* = JetC::lastEnv ); // Produces the identity.
+  TMapping( const char*, TJetEnvironment<T1,T2>* = (TJet<T1,T2>::_lastEnv) ); // Produces the identity.
   ~TMapping();
 
   TMapping& operator= ( const TMapping& );
@@ -56,19 +56,21 @@ class TMapping : public TJetVector<T1,T2>
 
   TMatrix<T1> Jacobian() const; // Retained for backwards compatability
   TMatrix<T1> jacobian() const;
-  TJet<T1,T2>  operator()( short int ) const; 
-  TJet<T1,T2>& operator()( short int ); 
+  TJet<T1,T2>  operator()( int ) const; 
+  TJet<T1,T2>& operator()( int ); 
 
   TMapping Inverse() const;  // retained for backwards compatability
   TMapping inverse() const;
 };
 
+
+// Inline methods
 template<typename T1, typename T2>
-inline TJet<T1,T2> TMapping<T1,T2>::operator()( short int ) const
+inline TJet<T1,T2> TMapping<T1,T2>::operator()( int i ) const
 { return TJetVector<T1,T2>::operator()( i ); }
 
 template<typename T1, typename T2>
-inline TJet<T1,T2>& TMapping<T1,T2>::operator()( short int )
+inline TJet<T1,T2>& TMapping<T1,T2>::operator()( int i )
 { return TJetVector<T1,T2>::operator()( i ); }
 
 template<typename T1, typename T2>

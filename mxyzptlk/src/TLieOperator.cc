@@ -189,7 +189,7 @@ TLieOperator<T1,T2>::~TLieOperator<T1,T2>()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-void TLieOperator<T1,T2>::setVariable( const TJet<T1,T2>& x, short int j ) 
+void TLieOperator<T1,T2>::setVariable( const TJet<T1,T2>& x, int j ) 
 {
  if( _myEnv != x.Env() ) {
    throw( GenericException(__FILE__, __LINE__, 
@@ -213,7 +213,7 @@ void TLieOperator<T1,T2>::setVariable( const TJet<T1,T2>& x, short int j )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-void TLieOperator<T1,T2>::setVariable( const T1& x, short int j ) 
+void TLieOperator<T1,T2>::setVariable( const T1& x, int j ) 
 {
 
  if( j < 0 || _dim <= j ) {
