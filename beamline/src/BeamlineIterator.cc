@@ -110,11 +110,14 @@ bmlnElmnt* DeepBeamlineIterator::operator++( int )
   else 
   {
     ret = (bmlnElmnt*) _getNext->operator()();
-    if( 0 == strcmp( ret->Type(), "beamline" ) ) 
+    if( ret != 0 ) 
     {
-      _subIterator = new DeepBeamlineIterator( ret );
-      ret = (*this)++;
-    }
+      if( 0 == strcmp( ret->Type(), "beamline" ) ) 
+      {
+        _subIterator = new DeepBeamlineIterator( ret );
+        ret = (*this)++;
+      }
+    }    
   }
 
   return ret;
