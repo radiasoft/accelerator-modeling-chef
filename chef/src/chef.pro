@@ -8,6 +8,7 @@ INCLUDEPATH += /home/michelotti/projects/CURRENT/first_order_jl/installed/includ
 INCLUDEPATH += /home/michelotti/projects/CURRENT/first_order_jl/installed/include/beamline
 INCLUDEPATH += /home/michelotti/projects/CURRENT/first_order_jl/installed/include/integrator
 INCLUDEPATH += /home/michelotti/projects/CURRENT/first_order_jl/installed/include/physics_toolkit
+INCLUDEPATH += /home/michelotti/projects/CURRENT/first_order_jl/installed/include/widget_toolkit
 
 QMAKE_EXT_MOC = .cc
 
@@ -27,6 +28,7 @@ SOURCES = CHEF.builders.cc \
           ExpressionBrowser.cc \
           LattFncPlt.cc \
           ETFncPlt.cc \
+          DspnFncPlt.cc \
           MomentsFncPlt.cc \
           PointEdit.cc \
           QtMonitor.cc \
@@ -41,6 +43,7 @@ HEADERS = ../include/CHEF.h \
           ../include/ExpressionBrowser.h \
           ../include/LattFncPlt.h \
           ../include/ETFncPlt.h \
+          ../include/DspnFncPlt.h \
           ../include/MomentsFncPlt.h \
           ../include/PointEdit.h \
           ../include/QtMonitor.h \
