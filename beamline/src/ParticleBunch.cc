@@ -150,11 +150,9 @@ ParticleBunch::Iterator::Iterator( ParticleBunch& x )
 
 ParticleBunch::Iterator::Iterator( const Iterator& )
 {
-  cerr << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
-       << "\n*** ERROR *** ParticleBunch::Iterator::Iterator( const Iterator& );"
-          "\n*** ERROR *** Copy constructor may not be called for this object."
-       << endl;
-  exit(99);
+  throw( Particle::GenericException( __FILE__, __LINE__, 
+         "ParticleBunch::Iterator::Iterator( const Iterator& )", 
+         "Copy constructor may not be called for this object." ) );
 }
 
 
