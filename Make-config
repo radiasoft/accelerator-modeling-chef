@@ -28,6 +28,7 @@ MR_8_INC  = $(FNALROOT)/machines/mr_8gev/include
 TCL_INC   = $(FNALROOT)/tcl/include
 BASIC_TOOLKIT_INC = $(FNALROOT)/basic_toolkit/include
 PHYSICS_TOOLKIT_INC = $(FNALROOT)/physics_toolkit/include
+INTEGRATOR_INC = $(FNALROOT)/integrator/include
 
 gcc:
 	$(MAKE) targets \
