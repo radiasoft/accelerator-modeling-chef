@@ -174,3 +174,31 @@ if( cs->last )
 }
 return ret;
 }
+
+
+ent slist_looper::operator()() {
+ent ret = 0;
+if( cs->last )
+{
+  ret = ce;
+  if( ret != 0 ) {
+    ret = ( ce = ce->next )->e;
+    if( ce == cs->last ) ce = 0;
+    }
+  else {
+    ce = cs->last;
+    }
+}
+return ret;
+}
+
+slink* slist_traversor::operator()() {
+slink* ret = 0;
+if( cs->last )
+{
+  if( ce != 0 ) ret = ( ce = ce->next );
+  else          ret = 0;
+  if( ce == cs->last ) ce = 0;
+}
+return ret;
+}

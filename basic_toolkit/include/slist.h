@@ -26,6 +26,8 @@ public:
 private:
 friend class slist;
 friend class slist_iterator;
+friend class slist_looper;
+friend class slist_traversor;
   slink* next;
   ent e;
 
@@ -95,6 +97,8 @@ public:
                      }
 
   friend class slist_iterator;
+  friend class slist_looper;
+  friend class slist_traversor;
 
 #ifdef OBJECT_DEBUG
   static int objectCount;
@@ -129,6 +133,29 @@ public:
 
   ent operator()();
 } ;
+
+
+class slist_looper {
+  slink* ce;
+  slist* cs;
+public:
+  slist_looper( slist& s ) { cs = &s; ce = cs->last; }
+  ent operator()();
+  void Reset( const slist& s ) { cs = (slist*) &s; ce = cs->last; }
+  void Reset() { ce = cs->last; }
+} ;
+
+class slist_traversor {
+  slink* ce;
+  slist* cs;
+public:
+  slist_traversor( slist& s ) { cs = &s; ce = cs->last; }
+  slink* operator()();
+  void Reset( const slist& s ) { cs = (slist*) &s; ce = cs->last; }
+  void Reset() { ce = cs->last; }
+} ;
+
+
 
 inline char slist::Owns() { return owner; }
 
