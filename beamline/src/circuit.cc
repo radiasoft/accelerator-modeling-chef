@@ -205,7 +205,8 @@ void FCircuit::getCurrent(void* x) {
     *curr = field/ItoFieldvalue;
     return;
   } else {
-    cerr << "FCircuit::getCurrent(): ItoField conversion is zero!!" << endl;
+    cerr << "FCircuit::getCurrent(): ItoField conversion is zero for " 
+         << getName() << endl;
     *curr = 0.0;
     return;
   }
@@ -224,7 +225,8 @@ void FCircuit::setCurrent(void* x) {
   if(ItoFieldvalue != 0.0) {
     field = *current * ItoFieldvalue;
   } else {
-    cerr << "FCircuit::setCurrent(): ItoField conversion is zero!!" << endl;
+    cerr << "FCircuit::setCurrent(): ItoField conversion is zero for " 
+         << getName() << endl;
     *current = 0.0;
     return;
   }
