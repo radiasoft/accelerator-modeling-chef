@@ -1,6 +1,12 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "RungeKutta.h"
 
-using namespace std;
+#ifdef __VISUAL_CPP__
+using std::cout;
+using std::endl;
+#endif
 
 /// ******************************************
 ///   class RungeKutta
