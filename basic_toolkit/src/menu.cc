@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -44,7 +47,6 @@ ttMenu::ttMenu() {
   numChoices = 0;
 }
 
-
 void ttMenu::go() {
   int menuChoice = 0;
   this->print();
@@ -60,7 +62,6 @@ void ttMenu::go() {
     }
 }
 
-
 void ttMenu::print() {
 int i = 0;
 printf( "\n" );
@@ -68,7 +69,6 @@ while( ++i <= numChoices ) printf( "%2d) %s\n", i, menuMessage[i] );
 printf( "\n" );
 }
 
-
 void ttMenu::setItem( char* message, MENUFUNC functionName ) {
   if( numChoices < MAXMENUCHOICES - 2 ) {
     menuMessage[ ++numChoices ] = message;
@@ -76,24 +76,20 @@ void ttMenu::setItem( char* message, MENUFUNC functionName ) {
     }
 }
 
-
 void ttMenu::setOperation( int choice, MENUFUNC functionName ) {
   if( ( choice > 0 ) && ( choice <= numChoices ) )
     menuFunction[ choice ] = functionName;
 }
 
-
 void ttMenu::setMessage( int choice, char* message ) {
   if( ( choice > 0 ) && ( choice <= numChoices ) )
     menuMessage[ choice ] = message;
 }
 
-
 void ttMenu::setPrompt( char* message ) {
   promptMessage = message;
 }
 
-
 void menuNullFunc() {
 return;
 }

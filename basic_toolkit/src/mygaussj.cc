@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -28,13 +31,13 @@
 *************************************************************************/
 
 
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include "Matrix.h"
 
-#define SWAP(a,b) { temp=(a);(a)=(b);(b)=temp;}
-
 using namespace std;
+
+#define SWAP(a,b) { temp=(a);(a)=(b);(b)=temp;}
 
 void mygaussj(MatrixD a,int n,MatrixD b,int m)
 {
