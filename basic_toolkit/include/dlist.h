@@ -191,9 +191,11 @@ _dlink_Pool::free(void* p)
 #endif  // POOLED
 
 class dlist {
+
 private:
   dlink* last;
   char   owner;
+
 public:
 #ifdef OBJECT_DEBUG
   static int objectCount;
@@ -239,6 +241,9 @@ public:
   char putBelow( ent a, ent b );   // Installs b below a in the list
   ent get();
 
+  int  startAt( const ent );
+  void riskStartAt( const dlink* );// Does not check whether the argument
+                                   // is in the list.
   char Owns();
   void DoesOwn()    { owner = 1; }
   void DoesNotOwn() { owner = 0; }
