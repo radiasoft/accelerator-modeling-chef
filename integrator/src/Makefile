@@ -1,6 +1,6 @@
 .SUFFIXES: .o .C .c .cc
 
-INCLUDEDIR =  -I$(INCDIR)
+INCLUDEDIR =  -I$(INTEGRATOR_INC) -I$(BASIC_TOOLKIT_INC)
 
 OBJS = ODE.o \
        Oscillator.o \
@@ -31,3 +31,13 @@ clean:
 	rm -f  ../*~*
 	rm -rf .sb
 
+real-clean: clean
+	rm -f dependencies
+	touch dependencies
+
+
+depend:
+	$(C++) $(INCLUDEDIR) $(DEPEND_FLAG) *.cc *.c > dependencies
+
+
+include dependencies
