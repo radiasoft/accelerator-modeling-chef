@@ -76,13 +76,17 @@ IntArray::IntArray( const IntArray& x )
 {
   static int i;
   dim = x.dim;
+
 #ifdef __PRIVATE_ALLOCATOR__
   if (_init == 0) meminit();
   comp = (int *) vmalloc((Vmalloc_t *) _vmem,32); 
 #else
   comp = new int [ dim ];
 #endif
-  for ( i = 0; i < dim; i++ ) comp[i] = x.comp[i];
+
+  memcpy((void *)comp, (const void *)x.comp, dim * sizeof(int));
+  // ??? REMOVE: for ( i = 0; i < dim; i++ ) comp[i] = x.comp[i];
+
 #ifdef OBJECT_DEBUG
   objectCount++;
 #endif
