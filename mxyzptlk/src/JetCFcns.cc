@@ -453,16 +453,16 @@ JetC operator-( const JetC& x, const JetC& y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC operator*( const JetC& x, const JetC& y ) {        
-                                        // ??? This should be modified so that
- static JetC z;                         // terms beyond the accurate weight of
- static JLCterm* p;                     // x or y are not computed and carried
- static JLCterm* q;                     // into the answer.
+JetC operator*( const JetC& x, const JetC& y ) 
+{
+ static JetC z;
+ static JLCterm* p;
+ static JLCterm* q;
  static JLCterm* r;
  static JLC* xPtr;
  static JLC* yPtr;
  static JLC* zPtr;
- static int testWeight;
+ static int testWeight, trialWeight;
 
  // Check for consistency 
  if( x->myEnv != y->myEnv ) {
@@ -476,13 +476,14 @@ JetC operator*( const JetC& x, const JetC& y ) {
  
 
  // Initializations
- p 	    = 0;
- q 	    = 0;
- r 	    = q;
- xPtr 	    = x.jl;
- yPtr 	    = y.jl;
- zPtr       = z.jl;
- testWeight = 0;
+ p 	     = 0;
+ q 	     = 0;
+ r 	     = q;
+ xPtr 	     = x.jl;
+ yPtr 	     = y.jl;
+ zPtr        = z.jl;
+ testWeight  = 0;
+ trialWeight = 0;
 
  // If one of the arguments is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
@@ -495,15 +496,41 @@ JetC operator*( const JetC& x, const JetC& y ) {
    return z;
  }
                                 
- // Determine the maximum weight computed accurately.
- if( xPtr->accuWgt < yPtr->accuWgt ) zPtr->accuWgt = xPtr->accuWgt;
- else                                zPtr->accuWgt = yPtr->accuWgt;
- 
 
+ // Determine the maximum weight computed accurately.
+ JLCterm x_1stTerm( xPtr->lowTerm() );
+ JLCterm y_1stTerm( yPtr->lowTerm() );
+
+ testWeight = xPtr->accuWgt;
+ if( ( y_1stTerm.weight != 0 ) && ( y_1stTerm.value != complex_0 ) ) 
+ {
+   testWeight += y_1stTerm.weight;
+ }
+
+ trialWeight = yPtr->accuWgt;
+ if( ( x_1stTerm.weight != 0 ) && ( x_1stTerm.value != complex_0 ) ) 
+ {
+   trialWeight += x_1stTerm.weight;
+ }
+
+ if( testWeight < trialWeight )
+ {
+   zPtr->accuWgt = testWeight;
+ }
+ else
+ {
+   zPtr->accuWgt = trialWeight;
+ }
+ if( (zPtr->accuWgt) > (zPtr->myEnv->MaxWeight) ) 
+ { 
+   zPtr->accuWgt = zPtr->myEnv->MaxWeight;
+ }
+
+
+ // .. and continue normal operations.
  dlist_looper gx( *(dlist*) xPtr );
  dlist_looper gy( *(dlist*) yPtr );
 
- // .. and continue normal operations.
  testWeight = zPtr->accuWgt;
  while((  p = (JLCterm*) gy()  )) {
  while((  q = (JLCterm*) gx()  )) {
@@ -1197,9 +1224,9 @@ JetC atan( const JetC& x ) {   // ??? START HERE, LEO!!!
 
 JetC cos( const JetC& x ) { 
  
- JetC epsSin( const JetC& );
- JetC epsCos( const JetC& );
-
+ // ??? REMOVE: JetC epsSin( const JetC& );
+ // ??? REMOVE: JetC epsCos( const JetC& );
+ // ??? REMOVE: 
  static JetC epsilon;
  static Complex cs, sn;
  dlist_iterator getNext( *(dlist*) x.jl );
@@ -1235,10 +1262,10 @@ JetC cos( const JetC& x ) {
    epsilon.DeepCopy( x );             // x must not be altered by the routine
    p = epsilon.get();                 // pops the standard part off epsilon
    delete p;
-   return cs*epsCos( epsilon ) - sn*epsSin( epsilon );
+   return cs*JetC::epsCos( epsilon ) - sn*JetC::epsSin( epsilon );
    }
  else {                               // x is pure infinitesimal
-   return epsCos( x );
+   return JetC::epsCos( x );
    }
  
 }
@@ -1258,7 +1285,7 @@ JetC cosh( const JetC& x ) {
 
 JetC exp( const JetC& x ) { 
  
- JetC epsExp( const JetC& );
+ // ??? REMOVE: JetC epsExp( const JetC& );
  static JetC epsilon;
  static Complex factor;
  dlist_iterator getNext( *(dlist*) x.jl );
@@ -1292,10 +1319,10 @@ JetC exp( const JetC& x ) {
    epsilon.DeepCopy( x );             // x must not be altered by the routine
    p = epsilon.get();                 // pops the standard part off epsilon
    delete p;
-   return factor*epsExp( epsilon );
+   return factor*JetC::epsExp( epsilon );
    }
  else {                               // x is pure infinitesimal
-   return epsExp( x );
+   return JetC::epsExp( x );
    }
 }
 
@@ -1379,7 +1406,7 @@ JetC log10( const JetC& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetC pow( const JetC& x, const double& s ) { 
- JetC epsPow( const JetC&, const double& );
+ // ??? REMOVE: JetC epsPow( const JetC&, const double& );
  static JetC epsilon;
  static Complex factor;
  static Complex std;
@@ -1424,7 +1451,7 @@ JetC pow( const JetC& x, const double& s ) {
    p = epsilon.get();                 //   pops the standard part off epsilon
    delete p;
    epsilon.scaleBy( 1.0/std );
-   epsilon = factor*epsPow( epsilon, s );
+   epsilon = factor*JetC::epsPow( epsilon, s );
    return epsilon;
    }
  else                                 // x is pure infinitesimal
@@ -1482,8 +1509,8 @@ JetC pow( const JetC& x, int n ) {
 
 JetC sin( const JetC& x ) { 
  
- JetC epsSin( const JetC& );
- JetC epsCos( const JetC& );
+ // ??? REMOVE: JetC epsSin( const JetC& );
+ // ??? REMOVE: JetC epsCos( const JetC& );
  static JetC epsilon;
  static Complex cs, sn;
  dlist_iterator getNext( *(dlist*) x.jl );
@@ -1518,10 +1545,10 @@ JetC sin( const JetC& x ) {
    epsilon.DeepCopy( x );             // x must not be altered by the routine
    p = epsilon.get();                 // pops the standard part off epsilon
    delete p;
-   return sn*epsCos( epsilon ) + cs*epsSin( epsilon );
+   return sn*JetC::epsCos( epsilon ) + cs*JetC::epsSin( epsilon );
    }
  else {                               // x is pure infinitesimal
-   return epsSin( x );
+   return JetC::epsSin( x );
    }
 }
 
@@ -1538,7 +1565,7 @@ JetC sinh( const JetC& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetC sqrt( const JetC& x ) {
- JetC epsSqrt( const JetC& );
+ // ??? REMOVE: JetC epsSqrt( const JetC& );
  static JetC epsilon;
  static Complex factor;
  static Complex std;
@@ -1578,7 +1605,7 @@ JetC sqrt( const JetC& x ) {
      p = epsilon.get();               // pops the standard part off epsilon
      delete p;
      epsilon.scaleBy( 1.0/std );
-     return factor*epsSqrt( epsilon );
+     return factor*JetC::epsSqrt( epsilon );
      }
    }
  else                                 // x is pure infinitesimal
@@ -1742,7 +1769,7 @@ JetC w( const JetC& z )
 //      It is assumed that the calling program checks to be sure
 //      that the argument has zero standard part.
  
-JetC epsCos( const JetC& epsilon ) { 
+JetC JetC::epsCos( const JetC& epsilon ) { 
  
  static JetC z;
  static JetC epsq, term;
@@ -1771,7 +1798,7 @@ JetC epsCos( const JetC& epsilon ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC epsExp( const JetC& epsilon ) { 
+JetC JetC::epsExp( const JetC& epsilon ) { 
  static JetC z;
  static JetC term;
  static double n;
@@ -1797,7 +1824,7 @@ JetC epsExp( const JetC& epsilon ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC epsPow( const JetC& epsilon, const double& s ) { 
+JetC JetC::epsPow( const JetC& epsilon, const double& s ) { 
  static JetC z;
  static JetC term;
  static double f;
@@ -1825,7 +1852,7 @@ JetC epsPow( const JetC& epsilon, const double& s ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC epsSin( const JetC& epsilon ) { 
+JetC JetC::epsSin( const JetC& epsilon ) { 
  
  static JetC z;
  static JetC epsq, term;
@@ -1849,8 +1876,11 @@ JetC epsSin( const JetC& epsilon ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC epsSqrt( const JetC& epsilon ) {  // This function is identical to epsPow
-                                     // with the substitution  s = 1/2
+JetC JetC::epsSqrt( const JetC& epsilon ) {  
+
+ // This function is identical to epsPow
+ // with the substitution  s = 1/2
+
  static JetC     z;
  static JetC     term;
  static double   f;
@@ -1881,10 +1911,6 @@ JetC epsSqrt( const JetC& epsilon ) {  // This function is identical to epsPow
 //***************************************************************
 //
 //      Implementation of Class JetC
-
-char JetC::IsNilpotent() const {
- return jl->isNilpotent();
-}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1929,37 +1955,33 @@ void JetC::peekAt() const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void JetC::printCoeffs() const {
- dlist_traversor getNext( *(dlist*) jl );
+ dlist_iterator getNext( *(dlist*) jl );
  int i;
  JLCterm* p;
- dlink* q;
+
  cout << "\nCount  = " << jl->count 
       << ", Weight = " << jl->weight 
       << ", Max accurate weight = " << jl->accuWgt << endl;
- cout << "Reference point: " << endl;
- for( i = 0; i < jl->myEnv->NumVar; i++ ) 
-  cout << setw(20) << setprecision(12)
-       << real( jl->myEnv->refPoint[i] )
-       << " + i"
-       << setw(20) << setprecision(12)
-       << imag( jl->myEnv->refPoint[i] )
-       << "\n" << endl;
- while((  q = getNext()  )) {
-   p = (JLCterm*) q->info();
+ cout << "Reference point: " 
+      << jl->myEnv->refPoint[0];
+ for( i = 1; i < jl->myEnv->NumVar; i++ ) {
+   cout << ", ";
+   cout << jl->myEnv->refPoint[i];
+ }
+ cout << endl;
+
+ while((  p = (JLCterm*) getNext()  )) {
    if( p->weight > jl->accuWgt ) break;
-   cout << "Index:  ";
-   for( i = 0; i < jl->myEnv->NumVar; i++ )
-     cout << setw(3) << (p -> index)(i);
-  cout << "   Value: "
-       << setw(20) << setprecision(12)
-       << real( p -> value )
-       << " + i"
-       << setw(20) << setprecision(12)
-       << imag( p -> value )
-       << endl;
-   }
+   cout << "Index:  " 
+        << p->index
+        << "   Value: "
+        << p->value
+        << endl;
+ }
+
  cout << "\n" << endl;
 }
+
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -1968,27 +1990,27 @@ void JetC::peekAt( int  ) const {
  int i;
  JLCterm* p;
  dlink* q;
- fprintf( JetC::scratchFile,
+ fprintf( JLC::scratchFile,
           "\nCount  = %d, Weight = %d, Max accurate weight = %d\n",
           jl->count, jl->weight, jl->accuWgt );
- fprintf( JetC::scratchFile, "Reference point:  \n" );
+ fprintf( JLC::scratchFile, "Reference point:  \n" );
  for( i = 0; i < jl->myEnv->NumVar; i++ )
-   fprintf( JetC::scratchFile, "( %e, %e )", 
+   fprintf( JLC::scratchFile, "( %e, %e )", 
             real( jl->myEnv->refPoint[i] ), 
             imag( jl->myEnv->refPoint[i] ) );
- fprintf( JetC::scratchFile, "\n" );
+ fprintf( JLC::scratchFile, "\n" );
  while((  q = getNext()  )) {
    p = (JLCterm*) q->info();
-   fprintf( JetC::scratchFile, "Weight: %d   Value: %e  %e  || ",
+   fprintf( JLC::scratchFile, "Weight: %d   Value: %e  %e  || ",
            p -> weight, 
            real( p -> value ), 
            imag( p -> value ));
-   fprintf( JetC::scratchFile, "Addresses: %d %d %d : %d\n",
+   fprintf( JLC::scratchFile, "Addresses: %d %d %d : %d\n",
                   q->prevPtr(), q, q->nextPtr(), p );
-   fprintf( JetC::scratchFile, "Index:  ");
+   fprintf( JLC::scratchFile, "Index:  ");
    for( i = 0; i < jl->myEnv->NumVar; i++ )
-     fprintf( JetC::scratchFile, "%d  ", (p -> index)(i) );
-   fprintf( JetC::scratchFile, "\n\n");
+     fprintf( JLC::scratchFile, "%d  ", (p -> index)(i) );
+   fprintf( JLC::scratchFile, "\n\n");
    }
 }
 
@@ -1999,26 +2021,26 @@ void JetC::printCoeffs( int  ) const {
  int i;
  JLCterm* p;
  dlink* q;
- fprintf( JetC::scratchFile, "\nCount  = %d, Weight = %d, Max accurate weight = %d\n",
+ fprintf( JLC::scratchFile, "\nCount  = %d, Weight = %d, Max accurate weight = %d\n",
           jl->count, jl->weight, jl->accuWgt );
- fprintf( JetC::scratchFile, "Reference point:  " );
+ fprintf( JLC::scratchFile, "Reference point:  " );
  for( i = 0; i < jl->myEnv->NumVar; i++ ) 
-   fprintf( JetC::scratchFile, "( %e, %e )", 
+   fprintf( JLC::scratchFile, "( %e, %e )", 
             real( jl->myEnv->refPoint[i] ), 
             imag( jl->myEnv->refPoint[i] ) );
- fprintf( JetC::scratchFile, "\n\n" );
+ fprintf( JLC::scratchFile, "\n\n" );
  while((  q = getNext()  )) {
    p = (JLCterm*) q->info();
    if( p->weight > jl->accuWgt ) break;
-   fprintf( JetC::scratchFile,"Index:  ");
+   fprintf( JLC::scratchFile,"Index:  ");
    for( i = 0; i < jl->myEnv->NumVar; i++ )
-     fprintf( JetC::scratchFile, "%3d ", (p -> index)(i) );
-   fprintf( JetC::scratchFile, "   Value: %14.6e  %14.6e  ", 
+     fprintf( JLC::scratchFile, "%3d ", (p -> index)(i) );
+   fprintf( JLC::scratchFile, "   Value: %14.6e  %14.6e  ", 
             real( p -> value ), 
             imag( p -> value ) );
-   fprintf( JetC::scratchFile,"\n");
+   fprintf( JLC::scratchFile,"\n");
    }
- fprintf( JetC::scratchFile, "\n\n" );
+ fprintf( JLC::scratchFile, "\n\n" );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -2054,6 +2076,20 @@ void JetC::scaleBy( Complex y ) {
 JLCterm* JetC::get() {
  PREPFORCHANGE(jl)
  return jl->get();
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JLCterm JetC::firstTerm() const {
+ return jl->firstTerm();
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JLCterm JetC::lowTerm() const {
+ return jl->lowTerm();
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

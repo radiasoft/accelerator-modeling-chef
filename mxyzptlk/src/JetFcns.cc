@@ -416,16 +416,16 @@ Jet operator-( const Jet& x, const Jet& y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Jet operator*( const Jet& x, const Jet& y ) {        
-                                       // ??? This should be modified so that
- static Jet z;                         // terms beyond the accurate weight of
- static JLterm* p;                     // x or y are not computed and carried
- static JLterm* q;                     // into the answer.
+Jet operator*( const Jet& x, const Jet& y ) 
+{
+ static Jet z;
+ static JLterm* p;
+ static JLterm* q;
  static JLterm* r;
  static JL* xPtr;
  static JL* yPtr;
  static JL* zPtr;
- static int testWeight;
+ static int testWeight, trialWeight;
 
  // Check for consistency 
  if( x->myEnv != y->myEnv ) {
@@ -439,13 +439,14 @@ Jet operator*( const Jet& x, const Jet& y ) {
  
 
  // Initializations
- p 	    = 0;
- q 	    = 0;
- r 	    = q;
- xPtr 	    = x.jl;
- yPtr 	    = y.jl;
- zPtr       = z.jl;
- testWeight = 0;
+ p 	     = 0;
+ q 	     = 0;
+ r 	     = q;
+ xPtr 	     = x.jl;
+ yPtr 	     = y.jl;
+ zPtr        = z.jl;
+ testWeight  = 0;
+ trialWeight = 0;
 
  // If one of the arguments is void, return it ..
  if( xPtr->count < 1 ) {    // This is done in this way so that
@@ -458,15 +459,43 @@ Jet operator*( const Jet& x, const Jet& y ) {
    return z;
  }
                                 
- // Determine the maximum weight computed accurately.
- if( xPtr->accuWgt < yPtr->accuWgt ) zPtr->accuWgt = xPtr->accuWgt;
- else                                zPtr->accuWgt = yPtr->accuWgt;
- 
 
+ // Determine the maximum weight computed accurately.
+ JLterm x_1stTerm( xPtr->lowTerm() );
+ JLterm y_1stTerm( yPtr->lowTerm() );
+
+ testWeight = xPtr->accuWgt;
+ if( ( y_1stTerm.weight != 0 ) && ( y_1stTerm.value != 0.0 ) ) 
+ {
+   testWeight += y_1stTerm.weight;
+ }
+ // ??? REMOVE: testWeight  = xPtr->accuWgt + (yPtr->firstTerm()).weight;
+
+ trialWeight = yPtr->accuWgt;
+ if( ( x_1stTerm.weight != 0 ) && ( x_1stTerm.value != 0.0 ) ) 
+ {
+   trialWeight += x_1stTerm.weight;
+ }
+ // ??? REMOVE: trialWeight = yPtr->accuWgt + (xPtr->firstTerm()).weight;
+
+ if( testWeight < trialWeight )
+ {
+   zPtr->accuWgt = testWeight;
+ }
+ else
+ {
+   zPtr->accuWgt = trialWeight;
+ }
+ if( (zPtr->accuWgt) > (zPtr->myEnv->MaxWeight) ) 
+ { 
+   zPtr->accuWgt = zPtr->myEnv->MaxWeight;
+ }
+
+
+ // .. and continue normal operations.
  dlist_looper gx( *(dlist*) xPtr );
  dlist_looper gy( *(dlist*) yPtr );
  
- // .. and continue normal operations.
  testWeight = zPtr->accuWgt;
  while((  p = (JLterm*) gy()  )) {
  while((  q = (JLterm*) gx()  )) {
@@ -1053,9 +1082,9 @@ Jet atan( const Jet& x ) {
 
 Jet cos( const Jet& x ) { 
  
- Jet epsSin( const Jet& );
- Jet epsCos( const Jet& );
-
+ // ??? REMOVE: Jet epsSin( const Jet& );
+ // ??? REMOVE: Jet epsCos( const Jet& );
+ // ??? REMOVE: 
  static Jet epsilon;
  static double cs, sn;
  dlist_iterator getNext( *(dlist*) x.jl );
@@ -1091,10 +1120,10 @@ Jet cos( const Jet& x ) {
    epsilon.DeepCopy( x );             // x must not be altered by the routine
    p = epsilon.get();                 // pops the standard part off epsilon
    delete p;
-   return cs*epsCos( epsilon ) - sn*epsSin( epsilon );
+   return cs*Jet::epsCos( epsilon ) - sn*Jet::epsSin( epsilon );
    }
  else {                               // x is pure infinitesimal
-   return epsCos( x );
+   return Jet::epsCos( x );
    }
  
 }
@@ -1114,7 +1143,7 @@ Jet cosh( const Jet& x ) {
 
 Jet exp( const Jet& x ) { 
  
- Jet epsExp( const Jet& );
+ // ??? REMOVE: Jet epsExp( const Jet& );
  static Jet epsilon;
  static double factor;
  static JLterm* p;
@@ -1149,10 +1178,10 @@ Jet exp( const Jet& x ) {
    epsilon.DeepCopy( x );             // x must not be altered by the routine
    p = epsilon.get();                 // pops the standard part off epsilon
    delete p;
-   return factor*epsExp( epsilon );
+   return factor*Jet::epsExp( epsilon );
    }
  else {                               // x is pure infinitesimal
-   return epsExp( x );
+   return Jet::epsExp( x );
    }
 }
 
@@ -1236,7 +1265,7 @@ Jet log10( const Jet& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Jet pow( const Jet& x, const double& s ) { 
- Jet epsPow( const Jet&, const double );
+ // ??? REMOVE: Jet epsPow( const Jet&, const double );
  static Jet epsilon;
  static double factor;
  static double std;
@@ -1282,7 +1311,7 @@ Jet pow( const Jet& x, const double& s ) {
    p = epsilon.get();                 //   pops the standard part off epsilon
    delete p;
    epsilon.scaleBy( 1.0/std );
-   epsilon = factor*epsPow( epsilon, s );
+   epsilon = factor*Jet::epsPow( epsilon, s );
    return epsilon;
    }
  else                                 // x is pure infinitesimal
@@ -1340,8 +1369,8 @@ Jet pow( const Jet& x, int n ) {
 
 Jet sin( const Jet& x ) { 
  
- Jet epsSin( const Jet& );
- Jet epsCos( const Jet& );
+ // ??? REMOVE: Jet epsSin( const Jet& );
+ // ??? REMOVE: Jet epsCos( const Jet& );
  static Jet epsilon;
  static double cs, sn;
  static JLterm* p;
@@ -1377,10 +1406,10 @@ Jet sin( const Jet& x ) {
    epsilon.DeepCopy( x );             // x must not be altered by the routine
    p = epsilon.get();                 // pops the standard part off epsilon
    delete p;
-   return sn*epsCos( epsilon ) + cs*epsSin( epsilon );
+   return sn*Jet::epsCos( epsilon ) + cs*Jet::epsSin( epsilon );
    }
  else {                               // x is pure infinitesimal
-   return epsSin( x );
+   return Jet::epsSin( x );
    }
 }
 
@@ -1397,7 +1426,7 @@ Jet sinh( const Jet& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Jet sqrt( const Jet& x ) {
- Jet epsSqrt( const Jet& );
+ // ??? REMOVE: Jet epsSqrt( const Jet& );
  static Jet epsilon;
  static double factor;
  static double std;
@@ -1438,7 +1467,7 @@ Jet sqrt( const Jet& x ) {
      p = epsilon.get();               // pops the standard part off epsilon
      delete p;
      epsilon.scaleBy( 1.0/std );
-     return factor*epsSqrt( epsilon );
+     return factor*Jet::epsSqrt( epsilon );
      }
    }
  else                                 // x is pure infinitesimal
@@ -1547,13 +1576,14 @@ Jet erfc( const Jet& z )
 //      It is assumed that the calling program checks to be sure
 //      that the argument has zero standard part.
  
-Jet epsCos( const Jet& epsilon ) { 
+Jet Jet::epsCos( const Jet& epsilon ) { 
  
  static Jet z;
  static Jet epsq, term;
  static double n;
 
- z->myEnv = epsilon->myEnv;
+ z.setEnvTo( epsilon );
+ // ??? REMOVE: z->myEnv = epsilon->myEnv;
  z = 1.0;
  
  epsq = - epsilon*epsilon;
@@ -1561,9 +1591,10 @@ Jet epsCos( const Jet& epsilon ) {
  term = epsq / 2.0;
  n = 2.0;
  
- z->myEnv = epsilon->myEnv;
+ z.setEnvTo( epsilon );   // ??? Why does this appear twice?
+ // ??? REMOVE: z->myEnv = epsilon->myEnv;
  
- while( term->count > 0 ) {
+ while( term.jl->count > 0 ) {
    z += term;
    term = ( ( term*epsq ) / ++n ) / ++n;
    }
@@ -1576,20 +1607,22 @@ Jet epsCos( const Jet& epsilon ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Jet epsExp( const Jet& epsilon ) { 
+Jet Jet::epsExp( const Jet& epsilon ) { 
  static Jet z;
  static Jet term;
  double n;
  
- z->myEnv = epsilon->myEnv;
+ z.setEnvTo( epsilon );
+ // ??? REMOVE: z->myEnv = epsilon->myEnv;
  z = 1.0;
  
  term = epsilon;
  n = 1.0;
  
- z->myEnv = epsilon->myEnv;  // ??? Redundant?
+ z.setEnvTo( epsilon );   // ??? Redundant?
+ // ??? REMOVE:  z->myEnv = epsilon->myEnv;  // ??? Redundant?
  
- while( term->count > 0 ) {
+ while( term.jl->count > 0 ) {
    z += term;
    term = ( term*epsilon ) / ++n;
  }
@@ -1602,21 +1635,23 @@ Jet epsExp( const Jet& epsilon ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Jet epsPow( const Jet& epsilon, const double s ) { 
+Jet Jet::epsPow( const Jet& epsilon, const double& s ) { 
  static Jet z;
  static Jet term;
  static double f, n;
 
- z->myEnv = epsilon->myEnv;
+ z.setEnvTo( epsilon );
+ // ??? REMOVE: z->myEnv = epsilon->myEnv;
  z = 1.0;
  
  f = s;
  n = 1.0;
  term = s*epsilon;
  
- z->myEnv = epsilon->myEnv;
+ z.setEnvTo( epsilon );
+ // ??? REMOVE:  z->myEnv = epsilon->myEnv;
  
- while( term->count > 0 ) {
+ while( term.jl->count > 0 ) {
    z += term;
    term = ( (--f) * term * epsilon ) / ++n;
    }
@@ -1629,7 +1664,7 @@ Jet epsPow( const Jet& epsilon, const double s ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Jet epsSin( const Jet& epsilon ) { 
+Jet Jet::epsSin( const Jet& epsilon ) { 
  
  static Jet z;
  static Jet epsq, term;
@@ -1640,7 +1675,7 @@ Jet epsSin( const Jet& epsilon ) {
  term = ( epsilon*epsq ) / 6.0;
  n = 3.0;
  
- while( term->count > 0 ) {
+ while( term.jl->count > 0 ) {
    z += term;
    term = ( ( term*epsq ) / ++n ) / ++n;
  }
@@ -1653,22 +1688,27 @@ Jet epsSin( const Jet& epsilon ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Jet epsSqrt( const Jet& epsilon ) {  // This function is identical to epsPow
-                                     // with the substitution  s = 1/2
+Jet Jet::epsSqrt( const Jet& epsilon ) {  
+
+ // This function is identical to epsPow
+ // with the substitution  s = 1/2
+
  static Jet     z;
  static Jet     term;
  static double  f, n;
  
- z->myEnv = epsilon->myEnv;
+ z.setEnvTo( epsilon );
+ // ??? REMOVE:  z->myEnv = epsilon->myEnv;
  z = 1.0;
  
  f    = 1.0 / 2.0;
  n    = 1.0;
  term = f*epsilon;
  
- z->myEnv = epsilon->myEnv;
+ z.setEnvTo( epsilon );
+ // ??? REMOVE:  z->myEnv = epsilon->myEnv;
  
- while( term->count > 0 ) {
+ while( term.jl->count > 0 ) {
    z += term;
    term *= ( (--f) * epsilon ) / ++n;
  }
@@ -1684,10 +1724,6 @@ Jet epsSqrt( const Jet& epsilon ) {  // This function is identical to epsPow
 //***************************************************************
 //
 //      Implementation of Class Jet
-
-char Jet::IsNilpotent() const {
- return jl->isNilpotent();
-}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1732,30 +1768,30 @@ void Jet::peekAt() const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Jet::printCoeffs() const {
- dlist_traversor getNext( *(dlist*) jl );
+ dlist_iterator getNext( *(dlist*) jl );
  int i;
  JLterm* p;
- dlink* q;
+
  cout << "\nCount  = " << jl->count 
       << ", Weight = " << jl->weight 
       << ", Max accurate weight = " << jl->accuWgt << endl;
- cout << "Reference point: " << endl;
- for( i = 0; i < jl->myEnv->NumVar; i++ ) 
-  cout << setprecision(12) << setw(20)
-       << jl->myEnv->refPoint[i]
-       << "\n" << endl;
- while((  q = getNext()  )) {
-   p = (JLterm*) q->info();
+ cout << "Reference point: " 
+      << jl->myEnv->refPoint[0];
+ for( i = 1; i < jl->myEnv->NumVar; i++ ) {
+   cout << ", ";
+   cout << jl->myEnv->refPoint[i];
+ }
+ cout << endl;
+
+ while((  p = (JLterm*) getNext()  )) {
    if( p->weight > jl->accuWgt ) break;
-   cout << "Index:  ";
-   for( i = 0; i < jl->myEnv->NumVar; i++ )
-     cout << setw(3) 
-          << (p -> index)(i)
-          << "   Value: "
-          << setw(14) << setprecision(6) 
-          << p -> value 
-          << "  " << endl;
-   }
+   cout << "Index:  " 
+        << p->index
+        << "   Value: "
+        << p->value
+        << endl;
+ }
+
  cout << "\n" << endl;
 }
 
@@ -1766,23 +1802,23 @@ void Jet::peekAt( int  ) const {
  int i;
  JLterm* p;
  dlink* q;
- fprintf( Jet::scratchFile,
+ fprintf( JL::scratchFile,
           "\nCount  = %d, Weight = %d, Max accurate weight = %d\n",
           jl->count, jl->weight, jl->accuWgt );
- fprintf( Jet::scratchFile, "Reference point:  \n" );
+ fprintf( JL::scratchFile, "Reference point:  \n" );
  for( i = 0; i < jl->myEnv->NumVar; i++ )
-   fprintf( Jet::scratchFile, "%e  ", jl->myEnv->refPoint[i] );
- fprintf( Jet::scratchFile, "\n" );
+   fprintf( JL::scratchFile, "%e  ", jl->myEnv->refPoint[i] );
+ fprintf( JL::scratchFile, "\n" );
  while((  q = getNext()  )) {
    p = (JLterm*) q->info();
-   fprintf( Jet::scratchFile, "Weight: %d   Value: %e  || ",
+   fprintf( JL::scratchFile, "Weight: %d   Value: %e  || ",
            p -> weight, p -> value );
-   fprintf( Jet::scratchFile, "Addresses: %d %d %d : %d\n",
+   fprintf( JL::scratchFile, "Addresses: %d %d %d : %d\n",
                   q->prevPtr(), q, q->nextPtr(), p );
-   fprintf( Jet::scratchFile, "Index:  ");
+   fprintf( JL::scratchFile, "Index:  ");
    for( i = 0; i < jl->myEnv->NumVar; i++ )
-     fprintf( Jet::scratchFile, "%d  ", (p -> index)(i) );
-   fprintf( Jet::scratchFile, "\n\n");
+     fprintf( JL::scratchFile, "%d  ", (p -> index)(i) );
+   fprintf( JL::scratchFile, "\n\n");
    }
 }
 
@@ -1793,22 +1829,22 @@ void Jet::printCoeffs( int  ) const {
  int i;
  JLterm* p;
  dlink* q;
- fprintf( Jet::scratchFile, "\nCount  = %d, Weight = %d, Max accurate weight = %d\n",
+ fprintf( JL::scratchFile, "\nCount  = %d, Weight = %d, Max accurate weight = %d\n",
           jl->count, jl->weight, jl->accuWgt );
- fprintf( Jet::scratchFile, "Reference point:  " );
+ fprintf( JL::scratchFile, "Reference point:  " );
  for( i = 0; i < jl->myEnv->NumVar; i++ ) 
-   fprintf( Jet::scratchFile, "%e  ", jl->myEnv->refPoint[i] );
- fprintf( Jet::scratchFile, "\n\n" );
+   fprintf( JL::scratchFile, "%e  ", jl->myEnv->refPoint[i] );
+ fprintf( JL::scratchFile, "\n\n" );
  while((  q = getNext()  )) {
    p = (JLterm*) q->info();
    if( p->weight > jl->accuWgt ) break;
-   fprintf( Jet::scratchFile,"Index:  ");
+   fprintf( JL::scratchFile,"Index:  ");
    for( i = 0; i < jl->myEnv->NumVar; i++ )
-     fprintf( Jet::scratchFile, "%3d ", (p -> index)(i) );
-   fprintf( Jet::scratchFile, "   Value: %14.6e  ", p -> value );
-   fprintf( Jet::scratchFile,"\n");
+     fprintf( JL::scratchFile, "%3d ", (p -> index)(i) );
+   fprintf( JL::scratchFile, "   Value: %14.6e  ", p -> value );
+   fprintf( JL::scratchFile,"\n");
    }
- fprintf( Jet::scratchFile, "\n\n" );
+ fprintf( JL::scratchFile, "\n\n" );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1844,6 +1880,20 @@ void Jet::scaleBy( double y ) {
 JLterm* Jet::get() {
  PREPFORCHANGE(jl)
  return jl->get();
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JLterm Jet::firstTerm() const {
+ return jl->firstTerm();
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JLterm Jet::lowTerm() const {
+ return jl->lowTerm();
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1888,7 +1938,8 @@ Jet Jet::filter( const int& wgtLo, const int& wgtHi ) const {
  int numTerms;
  int wgt, upperWgt;
  
- z.jl->myEnv = jl->myEnv;
+ z.setEnvTo( *this );
+ // ??? REMOVE:  z.jl->myEnv = jl->myEnv;
 
  if( ( wgtLo <= 0 ) && 
      ( wgtHi >= thisPtr->weight )   

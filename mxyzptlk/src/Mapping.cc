@@ -232,7 +232,7 @@ Mapping::Jacobian() const
  for( i = 0; i < nv; i++  ) d[i] = 0;
  for( j = 0; j < nv; j++ ) {
   d[j] = 1;
-  for( i = 0; i < dim; i++ ) M( i, j ) = comp[i]->derivative( d );
+  for( i = 0; i < dim; i++ ) M( i, j ) = comp[i].derivative( d );
   d[j] = 0;
  }
 
@@ -325,14 +325,14 @@ Mapping::Inverse() const
  for( j = 0; j < dim; j++ ) {
    if( !t2[j] ) { 
      p[j] = z.comp[j].get();
-     z.comp[j]->addTerm( new JLterm( z.myEnv->AllZeroes, 0.0, z.myEnv ) );
+     z.comp[j].addTerm( new JLterm( z.myEnv->AllZeroes, 0.0, z.myEnv ) );
      // ??? This last line should not be necessary.
    }
  }
 
  if( !t1 ) 
-   for( j = 0; j < dim; j++ )     // A little paranoia
-     z.comp[j]->myEnv = z.myEnv;  // never hurt.
+   for( j = 0; j < dim; j++ )        // A little paranoia
+     z.comp[j].setEnvTo( z.myEnv );  // never hurt.
 
  z = z.EpsInverse( z.myEnv );
 
@@ -355,11 +355,11 @@ Mapping::Inverse() const
  // ... Add the correct image point ...
  if( !t1 ) {
   for( j = 0; j < z.dim; j++ ) 
-   z.comp[j]->addTerm( new JLterm( z.myEnv->AllZeroes, 
-                                   myEnv->refPoint[j], 
-                                   z.myEnv
-                                 ) 
-                     );
+   z.comp[j].addTerm( new JLterm( z.myEnv->AllZeroes, 
+                                  myEnv->refPoint[j], 
+                                  z.myEnv
+                                ) 
+                    );
  }
 
 

@@ -53,6 +53,7 @@
 
 
 #include "JL.h"
+
 #ifdef __VISUAL_CPP__
 #include <iomanip>
 using std::cout;
@@ -61,6 +62,7 @@ using std::setprecision;
 #include <stdlib.h>
 #include <iomanip.h>
 #endif
+
 // ================================================================
 //      External routines
 //
@@ -105,13 +107,13 @@ int JLterm::objectCount = 0;
 
 //    Constructors and destructors    |||||||||||||||||||||||||||
 
-JL::JL( Jet__environment* pje ) {
+JL::JL( const Jet__environment* pje ) {
  rc      = 1;
  weight  = -1;
  count   = 0;
 
  if( pje ) {
-   myEnv   = pje;
+   myEnv   = (Jet__environment*) pje;
    accuWgt = pje->MaxWeight;
  }
  else {
@@ -334,28 +336,28 @@ void JL::writeToFile( char* fileName ) const {
  JLterm* p;
  dlink* q;
  
- Jet::scratchFile = fopen( fileName, "w" );
+ JL::scratchFile = fopen( fileName, "w" );
  
- fprintf( Jet::scratchFile,
+ fprintf( JL::scratchFile,
           "\nCount  = %d, Weight = %d, Max accurate weight = %d\n",
           count, weight, accuWgt );
- fprintf( Jet::scratchFile, "Reference point:  \n" );
+ fprintf( JL::scratchFile, "Reference point:  \n" );
  for( i = 0; i < myEnv->NumVar; i++ )
-   fprintf( Jet::scratchFile, "%e  ", myEnv->refPoint[i] );
- fprintf( Jet::scratchFile, "\n" );
+   fprintf( JL::scratchFile, "%e  ", myEnv->refPoint[i] );
+ fprintf( JL::scratchFile, "\n" );
  while((  q = getNext()  )) {
    p = (JLterm*) q->info();
-   fprintf( Jet::scratchFile, "Weight: %d   Value: %e  || ",
+   fprintf( JL::scratchFile, "Weight: %d   Value: %e  || ",
            p -> weight, p -> value );
-   fprintf( Jet::scratchFile, "Addresses: %d %d %d : %d\n",
+   fprintf( JL::scratchFile, "Addresses: %d %d %d : %d\n",
                   q->prevPtr(), q, q->nextPtr(), p );
-   fprintf( Jet::scratchFile, "Index:  ");
+   fprintf( JL::scratchFile, "Index:  ");
    for( i = 0; i < myEnv->NumVar; i++ )
-     fprintf( Jet::scratchFile, "%d  ", (p -> index)(i) );
-   fprintf( Jet::scratchFile, "\n\n");
+     fprintf( JL::scratchFile, "%d  ", (p -> index)(i) );
+   fprintf( JL::scratchFile, "\n\n");
    }
  
- fclose( Jet::scratchFile );
+ fclose( JL::scratchFile );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -483,6 +485,41 @@ JLterm* JL::get() {
  p = ((JLterm*) dlist::get());
  if( --count == 0 ) weight = -1;
  return p;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JLterm JL::lowTerm() const {
+ dlist_iterator getNext( *(dlist*) this );
+ static JLterm* p;
+ static JLterm* result;
+
+ p = (JLterm*) getNext();
+ result = 0;
+   
+ while ( (result == 0) && (p!=0) ) 
+ {
+   if( p->value != 0.0 ) result = p;
+   p = (JLterm*) getNext();
+ }
+
+ if( result == 0 ) return JLterm( this->myEnv->AllZeroes, 0.0, this->myEnv );
+ else              return JLterm( *result );
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JLterm JL::firstTerm() const {
+ static JLterm* p;
+ p = (JLterm*) ( ((dlist*) this)->firstInfoPtr() );
+ if( 0 != p ) {
+   return JLterm( *p );
+ }
+ else {
+   return JLterm( this->myEnv->AllZeroes, 0.0, this->myEnv );
+ }
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

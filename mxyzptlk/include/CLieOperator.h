@@ -114,7 +114,8 @@ public:
   friend istream& operator>>(istream&, CLieOperator&);
 
   // Lie operations ...................................
-  JetC operator^( JetC& );      // Action as a Lie operator
+  JetC operator^( const JetC& ) const ;      
+                                // Action as a Lie operator
   JetC expMap( const Complex&, const JetC& );    
                                 // Performs exponential map on
                                 // the second argument.

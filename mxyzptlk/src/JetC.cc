@@ -23,7 +23,7 @@ JetC__environment*  JetC::workEnv = 0;
 int                JetC::currentIndex = 0;
 slist              JetC::newCoordCs;
 slist              JetC::newValues;
-FILE              *JetC::scratchFile;
+FILE              *JLC::scratchFile;
 // ??? REMOVE dlist              JetC::coordCPool;
 dlist              JetC::coordCPtrs;
 #ifdef OBJECT_DEBUG
@@ -383,6 +383,8 @@ operator>>( istream& is, JetC__environment* x )
 JetC::JetC( JetC__environment* pje ) 
 {
  jl = new JLC( pje );
+ constIterPtr = 0;
+ iterPtr      = 0;
 
 #ifdef OBJECT_DEBUG
  objectCount++;
@@ -392,6 +394,8 @@ JetC::JetC( JetC__environment* pje )
 JetC::JetC( const Complex& x, JetC__environment* p_je ) 
 {
  jl = new JLC( x, p_je );
+ constIterPtr = 0;
+ iterPtr      = 0;
 
 #ifdef OBJECT_DEBUG
  objectCount++;
@@ -403,6 +407,9 @@ JetC::JetC( const JetC& x )
  jl = x.jl;
  ( jl->rc )++;
 
+ constIterPtr = 0;  // Iterators are NOT copied.
+ iterPtr      = 0;
+
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -410,7 +417,15 @@ JetC::JetC( const JetC& x )
 
 JetC::~JetC() 
 {
- if( --(jl->rc) == 0 ) delete jl;
+ if( 0 != iterPtr ) {
+   delete iterPtr;
+ }
+ if( 0 != constIterPtr ) {
+   delete constIterPtr;
+ }
+ if( --(jl->rc) == 0 ) {
+   delete jl;
+ }
 
 #ifdef OBJECT_DEBUG
  objectCount--;
@@ -436,14 +451,31 @@ void JetC::Reconstruct( JetC__environment* pje )
 }
 
 
-JetC__environment* JetC::Env() const
+void JetC::setEnvTo( const JetC& x )
 {
-  return jl->myEnv;
+  if( jl == NULL ) 
+  {
+    jl = new JLC( x.jl->myEnv );
+  }
+  else if( jl->myEnv != x.jl->myEnv ) 
+  {
+    PREPFORCHANGE(jl);
+    jl->myEnv = x.jl->myEnv;
+  }
 }
 
-void JetC::Env( JetC__environment* pje ) const
+
+void JetC::setEnvTo( const JetC__environment* pje )
 {
-  pje = jl->myEnv;
+  if( jl == NULL ) 
+  {
+    jl = new JLC( pje );
+  }
+  else if( jl->myEnv != pje ) 
+  {
+    PREPFORCHANGE(jl);
+    jl->myEnv = (JetC__environment*) pje;
+  }
 }
 
 
@@ -729,7 +761,8 @@ void JetC::EnlargeEnvironment( JetC__environment* pje )
 //    Implementation of class coordC
 //
  
-coordC::coordC( Complex x ) : JetC() {
+coordC::coordC( Complex x ) 
+: JetC( workEnv ) {
  
  if( !workEnv ) {
    cerr << "\n\n"
@@ -745,7 +778,6 @@ coordC::coordC( Complex x ) : JetC() {
    exit(1);
  }
 
- jl->myEnv = workEnv;
  index = currentIndex++;
  
  coordCPtrs.append( this ); // ??? Should coordCPtrs be removed?
@@ -791,7 +823,8 @@ coordC::coordC( const coordC&  ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void coordC::operator=( const Complex& x ) {   // DANGER: Be careful!
-  setVariable( x, index, jl->myEnv );          // This alters the environment!
+  setVariable( x, index, this->Env() );        // This alters the environment!
+  // ??? REMOVE: setVariable( x, index, jl->myEnv );          // This alters the environment!
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -890,3 +923,69 @@ int JetC__environment::monoRank() {
  return rank;
 }
 
+//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//
+//    Iteration routines
+// 
+
+void JetC::resetConstIterator()
+{
+  if( 0 == constIterPtr ) {
+    constIterPtr = new dlist_iterator( *(dlist*) jl );
+  }
+  else {
+    delete constIterPtr;
+    constIterPtr = new dlist_iterator( *(dlist*) jl );
+    // Note: jl may have changed.
+  }
+}
+
+JLCterm JetC::stepConstIterator()  const
+{
+  if( constIterPtr ) {
+    return JLCterm( (JLCterm*) (constIterPtr->operator()()) );
+  }
+  else {
+    cerr << "\n\n"
+         << "*** ERROR ***                                          \n"
+         << "*** ERROR *** JetC::stepConstIterator                  \n"
+         << "*** ERROR *** You must first resetConstIterator        \n"
+         << "*** ERROR ***                                          \n"
+         << endl;
+    exit(1);
+  }
+}
+
+void JetC::resetIterator()
+{
+  if( 0 == iterPtr ) {
+    iterPtr = new dlist_iterator( *(dlist*) jl );
+  }
+  else {
+    delete iterPtr;
+    iterPtr = new dlist_iterator( *(dlist*) jl );
+    // Note: jl may have changed.
+  }
+}
+
+JLCterm* JetC::stepIterator()
+{
+  PREPFORCHANGE(jl)
+  // This has to be done each time, since jl could have
+  // been given to a new JetC since the last invocation.
+
+  if( iterPtr ) {
+    return (JLCterm*) (iterPtr->operator()());
+  }
+  else {
+    cerr << "\n\n"
+         << "*** ERROR ***                                          \n"
+         << "*** ERROR *** JetC::stepIterator                       \n"
+         << "*** ERROR *** You must first resetIterator             \n"
+         << "*** ERROR ***                                          \n"
+         << endl;
+    exit(1);
+  }
+}

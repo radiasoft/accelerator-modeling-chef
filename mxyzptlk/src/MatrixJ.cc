@@ -35,7 +35,7 @@ MatrixJ::MatrixJ( Jet__environment* pje ) : stacked(0) {
 MatrixJ::MatrixJ( int rows, Jet__environment* pje ) : stacked(0) {
   myEnv = pje;
   Jet initval;
-  initval->myEnv = pje;
+  initval.setEnvTo( pje );
   initval = 0.0;
   ml = new MLJ(rows,1,initval);
 
@@ -48,7 +48,7 @@ MatrixJ::MatrixJ( int rows, Jet__environment* pje ) : stacked(0) {
 MatrixJ::MatrixJ( int rows, int columns,  Jet__environment* pje ) : stacked(0) {
   myEnv = pje;
   Jet initval;
-  initval->myEnv = pje;
+  initval.setEnvTo( pje );
   initval = 0.0;
   ml = new MLJ(rows,columns,initval);
 
@@ -81,7 +81,7 @@ MatrixJ::MatrixJ( char * flag, int dimension,  Jet__environment* pje ) {
   myEnv = pje;
   int i;
   Jet initval;
-  initval->myEnv = pje;
+  initval.setEnvTo( pje );
   initval = 0.0;
 
 #ifdef OBJECT_DEBUG
@@ -167,7 +167,7 @@ Jet MatrixJ::determinant( ) {
   MatrixJ decomp(myEnv);
   decomp = lu_decompose(indx,d,myEnv);
   Jet determinant;
-  determinant->myEnv=myEnv;
+  determinant.setEnvTo( myEnv );
   determinant = d;
   for(int i=0; i < cols() ; i++)
     determinant *= decomp.ml->m[i][i];
@@ -196,7 +196,7 @@ MatrixJ MatrixJ::inverse( ) {
 
 Jet MatrixJ::trace( ) {
   Jet temp;
-  temp->myEnv=myEnv;
+  temp.setEnvTo( myEnv );
   temp = 0.0;
   
   if(rows()  != cols())
@@ -211,7 +211,7 @@ int MatrixJ::CheckEnv( ) {
   int SameEnv = 1;
   for (int i = 0; i < rows(); i++)
     for (int j = 0; j < cols(); j++)
-      if ( myEnv != ml->m[i][j]->myEnv )
+      if ( myEnv != ml->m[i][j].Env() )
 	SameEnv = 0;
   return SameEnv;
 }
@@ -426,11 +426,11 @@ MatrixJ operator*( const MatrixJ& x, const MatrixJ& y )  {
   if( x.cols() != y.rows())
     x.error("# of rows of 2nd matrix must equal # cols of 1st for multiply");
   Jet tmp;
-  tmp->myEnv = x.myEnv;     //to prevent accidental use of last env
+  tmp.setEnvTo( x.myEnv );     //to prevent accidental use of last env
   for(int row = 0; row < x.rows(); row++) {
     for(int col = 0; col < y.cols(); col++){
       Jet sum;
-      sum->myEnv = x.myEnv; //to prevent accidental use of last env 
+      sum.setEnvTo( x.myEnv ); //to prevent accidental use of last env 
       sum = 0.0;
       for(int i = 0; i < x.cols(); i++) {
 	tmp = xPtr->m[row][i] * yPtr->m[i][col];
@@ -486,7 +486,7 @@ void MatrixJ::switch_rows( int row1, int row2 ) {
 
 MatrixJ MatrixJ::scale( )  {
   Jet temp;
-  temp->myEnv=myEnv;
+  temp.setEnvTo( myEnv );
   if (rows() <= 0 || cols() <= 0)
     error(" bad MatrixJ for scale()");
   if (rows() != cols())
@@ -495,7 +495,7 @@ MatrixJ MatrixJ::scale( )  {
   
   for (int row = 0; row < rows(); row++){
     Jet maximum;
-    maximum->myEnv = myEnv;
+    maximum.setEnvTo( myEnv );
     maximum = 0.0;
     for(int col = 0; col < cols(); col++) {
       temp = ml->m[row][col];
@@ -531,10 +531,10 @@ MatrixJ MatrixJ::lu_decompose( int* indx, int& d, Jet__environment* pje ) {
   Jet maximum;
   MatrixJ lu_decomp(pje);
   Jet tmp;
-  dum->myEnv=pje;
-  sum->myEnv=pje;
-  maximum->myEnv=pje;
-  tmp->myEnv=pje;
+  dum.setEnvTo( pje );
+  sum.setEnvTo( pje );
+  maximum.setEnvTo( pje );
+  tmp.setEnvTo( pje );
 
 
   // make a direct copy of the original matrix:
@@ -636,8 +636,8 @@ void MatrixJ::lu_back_subst( int* indx, MatrixJ& b )  {
   int ii = -1;
   Jet sum;
   Jet tmp;
-  sum->myEnv = myEnv;
-  tmp->myEnv = myEnv;
+  sum.setEnvTo( myEnv );
+  tmp.setEnvTo( myEnv );
 
   for(i=0;i < rows(); i++){
     ip = indx[i];

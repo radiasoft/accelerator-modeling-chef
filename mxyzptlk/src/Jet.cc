@@ -25,7 +25,7 @@ Jet__environment*  Jet::workEnv = 0;
 int                Jet::currentIndex = 0;
 slist              Jet::newCoords;
 slist              Jet::newValues;
-FILE              *Jet::scratchFile;
+FILE              *JL::scratchFile;
 // ??? REMOVE dlist              Jet::coordPool;
 dlist              Jet::coordPtrs;
 #ifdef OBJECT_DEBUG
@@ -385,6 +385,8 @@ operator>>( istream& is, Jet__environment* x )
 Jet::Jet( Jet__environment* pje ) 
 {
  jl = new JL( pje );
+ constIterPtr = 0;
+ iterPtr     = 0;
 
 #ifdef OBJECT_DEBUG
  objectCount++;
@@ -394,6 +396,8 @@ Jet::Jet( Jet__environment* pje )
 Jet::Jet( const double& x, Jet__environment* p_je ) 
 {
  jl = new JL( x, p_je );
+ constIterPtr = 0;
+ iterPtr     = 0;
 
 #ifdef OBJECT_DEBUG
  objectCount++;
@@ -405,6 +409,9 @@ Jet::Jet( const Jet& x )
  jl = x.jl;
  ( jl->rc )++;
 
+ constIterPtr = 0;  // The iterators are NOT copied.
+ iterPtr     = 0;
+
 #ifdef OBJECT_DEBUG
  objectCount++;
 #endif
@@ -412,7 +419,15 @@ Jet::Jet( const Jet& x )
 
 Jet::~Jet() 
 {
- if( --(jl->rc) == 0 ) delete jl;
+ if( 0 != iterPtr ) {
+   delete iterPtr;
+ }
+ if( 0 != constIterPtr ) {
+   delete constIterPtr;
+ }
+ if( --(jl->rc) == 0 ) {
+   delete jl;
+ }
 
 #ifdef OBJECT_DEBUG
  objectCount--;
@@ -438,14 +453,31 @@ void Jet::Reconstruct( Jet__environment* pje )
 }
 
 
-Jet__environment* Jet::Env() const
+void Jet::setEnvTo( const Jet& x )
 {
-  return jl->myEnv;
+  if( jl == NULL ) 
+  {
+    jl = new JL( x.jl->myEnv );
+  }
+  else if( jl->myEnv != x.jl->myEnv ) 
+  {
+    PREPFORCHANGE(jl);
+    jl->myEnv = x.jl->myEnv;
+  }
 }
 
-void Jet::Env( Jet__environment* pje ) const
+
+void Jet::setEnvTo( const Jet__environment* pje )
 {
-  pje = jl->myEnv;
+  if( jl == NULL ) 
+  {
+    jl = new JL( pje );
+  }
+  else if( jl->myEnv != pje ) 
+  {
+    PREPFORCHANGE(jl);
+    jl->myEnv = (Jet__environment*) pje;
+  }
 }
 
 
@@ -768,7 +800,8 @@ void Jet::EnlargeEnvironment( Jet__environment* pje )
 //    Implementation of class coord
 //
  
-coord::coord( double x ) : Jet() {
+coord::coord( double x ) 
+: Jet( workEnv ) {
  
  if( !workEnv ) {
    cerr << "\n\n"
@@ -784,7 +817,7 @@ coord::coord( double x ) : Jet() {
    exit(1);
  }
 
- jl->myEnv = workEnv;
+ // ??? REMOVE: jl->myEnv = workEnv;
  index = currentIndex++;
  
  coordPtrs.append( this ); // ??? Should coordPtrs be removed?
@@ -830,7 +863,8 @@ coord::coord( const coord&  ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void coord::operator=( const double& x ) {   // DANGER: Be careful!
-  setVariable( x, index, jl->myEnv );        // This alters the environment!
+  setVariable( x, index, this->Env() );      // This alters the environment!
+  // ??? REMOVE: setVariable( x, index, jl->myEnv );        // This alters the environment!
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -929,3 +963,71 @@ int Jet__environment::monoRank() {
  return rank;
 }
 
+
+
+//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//
+//    Iteration routines
+// 
+
+void Jet::resetConstIterator() 
+{
+  if( 0 == constIterPtr ) {
+    constIterPtr = new dlist_iterator( *(dlist*) jl );
+  }
+  else {
+    delete constIterPtr;
+    constIterPtr = new dlist_iterator( *(dlist*) jl );
+    // Note: jl may have changed.
+  }
+}
+
+JLterm Jet::stepConstIterator()  const
+{
+  if( constIterPtr ) {
+    return JLterm( (JLterm*) (constIterPtr->operator()()) );
+  }
+  else {
+    cerr << "\n\n"
+         << "*** ERROR ***                                          \n"
+         << "*** ERROR *** Jet::stepConstIterator                   \n"
+         << "*** ERROR *** You must first resetConstIterator        \n"
+         << "*** ERROR ***                                          \n"
+         << endl;
+    exit(1);
+  }
+}
+
+void Jet::resetIterator()
+{
+  if( 0 == iterPtr ) {
+    iterPtr = new dlist_iterator( *(dlist*) jl );
+  }
+  else {
+    delete iterPtr;
+    iterPtr = new dlist_iterator( *(dlist*) jl );
+    // Note: jl may have changed.
+  }
+}
+
+JLterm* Jet::stepIterator()
+{
+  PREPFORCHANGE(jl)
+  // This has to be done each time, since jl could have
+  // been given to a new Jet since the last invocation.
+
+  if( iterPtr ) {
+    return (JLterm*) (iterPtr->operator()());
+  }
+  else {
+    cerr << "\n\n"
+         << "*** ERROR ***                                          \n"
+         << "*** ERROR *** Jet::stepIterator                        \n"
+         << "*** ERROR *** You must first resetIterator             \n"
+         << "*** ERROR ***                                          \n"
+         << endl;
+    exit(1);
+  }
+}
