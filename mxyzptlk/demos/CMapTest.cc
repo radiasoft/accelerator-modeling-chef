@@ -2,7 +2,7 @@
 #include "MappingC.h"
 
 main( int, char** argv ) {
- complex z( atof( argv[1] ), atof( argv[2] ) );
+ Complex z( atof( argv[1] ), atof( argv[2] ) );
 
  JetC::BeginEnvironment( 6 );
  coordC x( z );
@@ -11,7 +11,7 @@ main( int, char** argv ) {
  MappingC f;
  JetC     u;
 
- u = complex( 3.0,1.0) + exp( x*(1.0 + 3.0*x) );
+ u = Complex( 3.0,1.0) + exp( x*(1.0 + 3.0*x) );
 
  f.SetComponent( 0, u );
 

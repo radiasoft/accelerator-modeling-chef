@@ -20,7 +20,6 @@ Jet g( const Jet& x, int n ) {
     z += term / ( (double) k );
     term *= x;
   }
-  z.stacked = 1;
   return z;
 }
 
