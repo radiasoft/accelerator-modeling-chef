@@ -7,7 +7,7 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      DriftsToSlots.cc
-******  Version:   2.1
+******  Version:   3.0
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -37,7 +37,7 @@
  *  they are either upstream and/or downstream
  *  of rbends of CF_rbends.
  *  
- *  Version 1.0  (untested)
+ *  Version 1.0
  *  October 30, 1998
  *  
  *
@@ -52,8 +52,17 @@
  *  Added tests to check whether the beamline is
  *  or is not to be treated as a ring.
  *
- *  Version 2.1 (untested)
- *  January 26, 2005
+ *  Version 2.1
+ *  January 20, 2005
+ *
+ * 
+ *  Extended to include the possibility of 
+ *  [CF]_sbend magnets with parallel faces.
+ * 
+ *  WARNING: UNTESTED!!
+ *
+ *  Version 3.0
+ *  February 24, 2005
  *
  *  Leo Michelotti
  *  
@@ -73,22 +82,34 @@ using namespace std;
 
 bool d2S_LookUpStream ( bmlnElmnt*&      el2Ptr, 
                         bool&            rb, 
-                        bool&            CF, 
+                        bool&            CFrb, 
+                        bool&            sb, 
+                        bool&            CFsb, 
                         BeamlineIterator bi
                       )
 {
-  rb = false;
-  CF = false;
+  rb   = false;
+  CFrb = false;
+  sb   = false;
+  CFsb = false;
 
   bi.goBack();
   bi.goBack();
   el2Ptr = bi++;
 
   while( 0 != strcmp( el2Ptr->Type(), "rbend"    )  &&
-         0 != strcmp( el2Ptr->Type(), "CF_rbend" )     ) 
+         0 != strcmp( el2Ptr->Type(), "CF_rbend" )  &&
+         0 != strcmp( el2Ptr->Type(), "sbend"    )  &&
+         0 != strcmp( el2Ptr->Type(), "CF_sbend" )     ) 
   {
     if( 0 == strcmp( "drift", el2Ptr->Type() ) ) {
       return false;
+    }
+    if( 0.0 != el2Ptr->Length() ) {
+      throw( GenericException( __FILE__, __LINE__, 
+             "beamline* DriftsToSlots( beamline& original )", 
+             "This routine works when only thin elements lie between"
+             " drifts and bends." ) );
     }
 
     bi.goBack();
@@ -96,17 +117,17 @@ bool d2S_LookUpStream ( bmlnElmnt*&      el2Ptr,
     el2Ptr = bi++;
   }
 
-  rb = ( 0 == strcmp( el2Ptr->Type(), "rbend"    ) );
-  CF = ( 0 == strcmp( el2Ptr->Type(), "CF_rbend" ) );
+  rb   = ( 0 == strcmp( el2Ptr->Type(), "rbend"    ) );
+  CFrb = ( 0 == strcmp( el2Ptr->Type(), "CF_rbend" ) );
+  sb   = ( 0 == strcmp( el2Ptr->Type(), "sbend"    ) );
+  CFsb = ( 0 == strcmp( el2Ptr->Type(), "CF_sbend" ) );
 
-  if( !(rb || CF) ) 
+  if( !(rb || CFrb || sb || CFsb ) ) 
   {
-    cerr << "*** ERROR ***                                        \n"
-            "*** ERROR *** ConvertDriftsToSlots                   \n"
-            "*** ERROR *** A horrible, inexplicable error has     \n"
-            "*** ERROR *** occurred while looking upstream.       \n"
-            "*** ERROR ***                                        \n"
-         << endl;
+      throw( GenericException( __FILE__, __LINE__, 
+             "beamline* DriftsToSlots( beamline& original )", 
+             "A horrible, inexplicable error has"
+             "  occurred while looking upstream." ) );
     return false;
   }
 
@@ -118,12 +139,16 @@ bool d2S_LookUpStream ( bmlnElmnt*&      el2Ptr,
 
 bool d2S_LookDownStream ( bmlnElmnt*&      el2Ptr, 
                           bool&            rb, 
-                          bool&            CF, 
+                          bool&            CFrb, 
+                          bool&            sb, 
+                          bool&            CFsb, 
                           BeamlineIterator bi
                         )
 {
-  rb = false;
-  CF = false;
+  rb   = false;
+  CFrb = false;
+  sb   = false;
+  CFsb = false;
 
   el2Ptr = bi++;
   if( el2Ptr == 0 ) {
@@ -132,10 +157,18 @@ bool d2S_LookDownStream ( bmlnElmnt*&      el2Ptr,
   }
 
   while( 0 != strcmp( el2Ptr->Type(), "rbend"    )  &&
-         0 != strcmp( el2Ptr->Type(), "CF_rbend" )     ) 
+         0 != strcmp( el2Ptr->Type(), "CF_rbend" )  &&
+         0 != strcmp( el2Ptr->Type(), "sbend"    )  &&
+         0 != strcmp( el2Ptr->Type(), "CF_sbend" )     ) 
   {
     if( 0 == strcmp( "drift", el2Ptr->Type() ) ) {
       return false;
+    }
+    if( 0.0 != el2Ptr->Length() ) {
+      throw( GenericException( __FILE__, __LINE__, 
+             "beamline* DriftsToSlots( beamline& original )", 
+             "This routine works when only thin elements lie between"
+             " drifts and bends." ) );
     }
 
     el2Ptr = bi++;
@@ -145,17 +178,19 @@ bool d2S_LookDownStream ( bmlnElmnt*&      el2Ptr,
     }
   }
 
-  rb = ( 0 == strcmp( el2Ptr->Type(), "rbend"    ) );
-  CF = ( 0 == strcmp( el2Ptr->Type(), "CF_rbend" ) );
+  rb   = ( 0 == strcmp( el2Ptr->Type(), "rbend"    ) );
+  CFrb = ( 0 == strcmp( el2Ptr->Type(), "CF_rbend" ) );
+  sb   = ( 0 == strcmp( el2Ptr->Type(), "sbend"    ) );
+  CFsb = ( 0 == strcmp( el2Ptr->Type(), "CF_sbend" ) );
 
-  if( !(rb || CF) ) 
+  if( !(rb || CFrb || sb || CFsb ) ) 
   {
-    cerr << "*** ERROR ***                                        \n"
-            "*** ERROR *** ConvertDriftsToSlots                   \n"
-            "*** ERROR *** A horrible, inexplicable error has     \n"
-            "*** ERROR *** occurred while looking downstream.     \n"
-            "*** ERROR ***                                        \n"
-         << endl;
+    if( 0.0 != el2Ptr->Length() ) {
+      throw( GenericException( __FILE__, __LINE__, 
+             "beamline* DriftsToSlots( beamline& original )", 
+             "A horrible, inexplicable error has"
+             "  occurred while looking downstream." ) );
+    }
     return false;
   }
 
@@ -163,6 +198,59 @@ bool d2S_LookDownStream ( bmlnElmnt*&      el2Ptr,
 }
 
 
+bool d2S_rbendLike( const bmlnElmnt* xPtr )
+{
+  if(0 == strcmp("rbend", xPtr->Type())) {
+    const rbend* bp = dynamic_cast<const rbend*>(xPtr);
+    return ( (0.0 == bp->getEntryEdgeAngle()) && (0.0 == bp->getExitEdgeAngle()) );
+  }
+  if(0 == strcmp("CF_rbend", xPtr->Type())) {
+    const CF_rbend* bp = dynamic_cast<const CF_rbend*>(xPtr);
+    return ( (0.0 == bp->getEntryEdgeAngle()) && (0.0 == bp->getExitEdgeAngle()) );
+  }
+  if(0 == strcmp("sbend", xPtr->Type())) {
+    const sbend* bp = dynamic_cast<const sbend*>(xPtr);
+    double halfBendAngle = bp->getBendAngle() / 2.0;
+    return ( (std::abs(bp->getEntryEdgeAngle() - halfBendAngle) < 1.0e-8) &&
+             (std::abs(bp->getExitEdgeAngle()  - halfBendAngle) < 1.0e-8)    );
+  }
+  if(0 == strcmp("CF_sbend", xPtr->Type())) {
+    const CF_sbend* bp = dynamic_cast<const CF_sbend*>(xPtr);
+    double halfBendAngle = bp->getBendAngle() / 2.0;
+    return ( (std::abs(bp->getEntryEdgeAngle() - halfBendAngle) < 1.0e-8) &&
+             (std::abs(bp->getExitEdgeAngle()  - halfBendAngle) < 1.0e-8)      );
+  }
+  return false;
+}
+
+
+bool d2S_sbendLike( const bmlnElmnt* xPtr )
+{
+  if(0 == strcmp("sbend", xPtr->Type())) {
+    const sbend* bp = dynamic_cast<const sbend*>(xPtr);
+    return ( (0.0 == bp->getEntryEdgeAngle()) && (0.0 == bp->getExitEdgeAngle()) );
+  }
+  if(0 == strcmp("CF_sbend", xPtr->Type())) {
+    const CF_sbend* bp = dynamic_cast<const CF_sbend*>(xPtr);
+    return ( (0.0 == bp->getEntryEdgeAngle()) && (0.0 == bp->getExitEdgeAngle()) );
+  }
+  // REMOVE: if(0 == strcmp("rbend", xPtr->Type())) {
+  // REMOVE:   const rbend* bp = dynamic_cast<const rbend*>(xPtr);
+  // REMOVE:   if( (1.0e-8 < std::abs( bp->getEntryAngle() )) || 
+  // REMOVE:       (1.0e-8 < std::abs( bp->getExitAngle()  ))    ) { 
+  // REMOVE:     return false; 
+  // REMOVE:   }
+  // REMOVE:   return ( std::abs(bp->getEntryEdgeAngle() - bp->getEntryEdgeAngle()) < 1.0e-8 );
+  // REMOVE:   // REMOVE: double halfBendAngle = ( bp->getEntryAngle() - bp->getExitAngle() )/ 2.0;
+  // REMOVE:   // REMOVE: return ( (std::abs(bp->getEntryEdgeAngle() + halfBendAngle) < 1.0e-8) &&
+  // REMOVE:   // REMOVE:          (std::abs(bp->getExitEdgeAngle()  + halfBendAngle) < 1.0e-8)    );
+  // REMOVE: }
+  // REMOVE: if(0 == strcmp("CF_rbend", xPtr->Type())) {
+  // REMOVE:   const CF_rbend* bp = dynamic_cast<const CF_rbend*>(xPtr);
+  // REMOVE:   return ( std::abs(bp->getEntryEdgeAngle() - bp->getEntryEdgeAngle()) < 1.0e-8 );
+  // REMOVE: }
+  return false;
+}
 
 
 beamline* DriftsToSlots( /* const */ beamline& original )
@@ -216,7 +304,8 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   arcFrame.reset();  
 
   bool isUpStream, isDownStream;
-  bool a_rb, a_CF, c_rb, c_CF;
+  bool a_rb, a_CFrb, a_sb, a_CFsb;
+  bool c_rb, c_CFrb, c_sb, c_CFsb;
   bmlnElmnt* a;
   bmlnElmnt* c;
   
@@ -237,25 +326,74 @@ beamline* DriftsToSlots( /* const */ beamline& original )
     // ... otherwise, begin processing ...
     else 
     {
-      // Search upstream and downstream for the closest rbend or CF_rbend
-      if( isRing ) {
-        isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CF, bi );
-        isUpStream    = d2S_LookDownStream ( c, c_rb, c_CF, bi );
+      // Search upstream and downstream for the closest rbend, sbend, 
+      // CF_rbend, or CF_sbend
+      try {
+      	if( isRing ) {
+      	  isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, bi );
+      	  isUpStream    = d2S_LookDownStream ( c, c_rb, c_CFrb, c_sb, c_CFsb, bi );
+      	}
+      	else {
+      	  if( firstPtr == elPtr ) {
+      	    isDownStream  = false;
+      	    isUpStream    = d2S_LookDownStream ( c, c_rb, c_CFrb, c_sb, c_CFsb, bi );
+      	  }
+      	  else if( lastPtr == elPtr ) {
+      	    isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, bi );
+      	    isUpStream    = false;
+      	  }
+      	  else {
+      	    isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, bi );
+      	    isUpStream    = d2S_LookDownStream ( c, c_rb, c_CFrb, c_sb, c_CFsb, bi );
+      	  }
+      	}
       }
-      else {
-        if( firstPtr == elPtr ) {
-          isDownStream  = false;
-          isUpStream    = d2S_LookDownStream ( c, c_rb, c_CF, bi );
-        }
-        else if( lastPtr == elPtr ) {
-          isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CF, bi );
-          isUpStream    = false;
-        }
-        else {
-          isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CF, bi );
-          isUpStream    = d2S_LookDownStream ( c, c_rb, c_CF, bi );
-        }
+      catch( const std::exception& ge ) {
+        ostringstream uic;
+        uic << "File: " << "  " << __FILE__ << ", line " << __LINE__ << ": "
+            << "Exception was thrown by DriftsToSlots.\n"
+               "The message was:\n"
+            << ge.what();
+        cerr << "\n--- BEGIN EXCEPTION ---\n" 
+             << uic 
+             << "\n--- END EXCEPTION -----\n" 
+             << endl;
+        delete flatRing;
+        ret->eliminate();
+        return &original;
       }
+
+
+      // Check viability of continuing the calculation
+      if( isDownStream ) {
+        if( ( a_rb || a_CFrb ) && !d2S_rbendLike( a ) ) {
+          cerr << "\n*** WARNING: *** "
+               << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
+               << "\n*** WARNING: *** Calculation discontinued."
+               << "\n*** WARNING: *** Assumptions regarding rbends violated."
+               << "\n*** WARNING: *** Function will return original argument."
+               << "\n*** WARNING: *** "
+               << endl;
+          delete flatRing;
+          ret->eliminate();
+          return &original;
+	}
+      }
+      if( isUpStream ) {
+        if( ( c_rb || c_CFrb ) && !d2S_rbendLike( c ) ) {
+          cerr << "\n*** WARNING: *** "
+               << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
+               << "\n*** WARNING: *** Calculation discontinued."
+               << "\n*** WARNING: *** Assumptions regarding rbends violated."
+               << "\n*** WARNING: *** Function will return original argument."
+               << "\n*** WARNING: *** "
+               << endl;
+          delete flatRing;
+          ret->eliminate();
+          return &original;
+	}
+      }
+
 
       // There are four possibilities
       if( !isUpStream && !isDownStream )
@@ -265,79 +403,170 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   
       else if( isUpStream && !isDownStream )
       {
-        arcFrame.reset();  
-        if( c_rb ) {
-          arcFrame.rotate( - ((rbend*) c)->getPoleFaceAngle(), arcFrame.getyAxis() );
-        }
-        else if( c_CF ) {
-          arcFrame.rotate( - ((CF_rbend*) c)->getPoleFaceAngle(), arcFrame.getyAxis() );
-        }
+        if( d2S_sbendLike( c ) ) {
+          ret->append( elPtr->Clone() );
+	}
+        else if( d2S_rbendLike(c) ) {
+          arcFrame.reset();  
+          if( c_sb ) {
+            arcFrame.rotate( - ((sbend*) c)->getEntryAngle(), arcFrame.getyAxis() );
+          }
+          else if( c_CFsb ) {
+            arcFrame.rotate( - ((CF_sbend*) c)->getEntryAngle(), arcFrame.getyAxis() );
+          }
+          if( c_rb ) {
+            arcFrame.rotate( - ((rbend*) c)->getEntryAngle(), arcFrame.getyAxis() );
+          }
+          else if( c_CFrb ) {
+            arcFrame.rotate( - ((CF_rbend*) c)->getEntryAngle(), arcFrame.getyAxis() );
+          }
+          else {
+            cerr << "\n*** WARNING: *** "
+                 << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
+                 << "\n*** WARNING: *** Calculation discontinued."
+                 << "\n*** WARNING: *** Both c_rb and c_CF are false."
+                 << "\n*** WARNING: *** Function will return original argument."
+                 << "\n*** WARNING: *** "
+                 << endl;
+            delete flatRing;
+            ret->eliminate();
+            return &original;
+          }
+          fd(x) = 0.0;
+          fd(y) = 0.0;
+          fd(z) = elPtr->Length();
+          arcFrame.translate(fd);
+          ret->append( new Slot(elPtr->Name(), arcFrame) );
+	}
         else {
-          throw( GenericException( __FILE__, __LINE__, 
-                 "beamline* DriftsToSlots( /* const */ beamline& original )", 
-                 "Both c_rb and c_CF are null." ) );
-        }
-        fd(x) = 0.0;
-        fd(y) = 0.0;
-        fd(z) = elPtr->Length();
-        arcFrame.translate(fd);
-        ret->append( new Slot(elPtr->Name(), arcFrame) );
+          cerr << "\n*** WARNING: *** "
+               << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
+               << "\n*** WARNING: *** Calculation cannot be continued."
+               << "\n*** WARNING: *** Function will return original argument."
+               << "\n*** WARNING: *** "
+               << endl;
+          delete flatRing;
+          ret->eliminate();
+          return &original;
+	}
       }
   
       else if( !isUpStream && isDownStream )
       {
-        arcFrame.reset(); 
-        fd(x) = 0.0;
-        fd(y) = 0.0;
-        fd(z) = elPtr->Length();
-        arcFrame.translate(fd);
-        if( a_rb ) {
-          arcFrame.rotate( - ((rbend*) a)->getPoleFaceAngle(), arcFrame.getyAxis() );
-        }
-        else if( a_CF ) {
-          arcFrame.rotate( - ((CF_rbend*) a)->getPoleFaceAngle(), arcFrame.getyAxis() );
-        }
+        if( d2S_sbendLike( a ) ) {
+          ret->append( elPtr->Clone() );
+	}
+        else if( d2S_rbendLike( a ) ) {
+          arcFrame.reset(); 
+          fd(x) = 0.0;
+          fd(y) = 0.0;
+          fd(z) = elPtr->Length();
+          arcFrame.translate(fd);
+          if( a_sb ) {
+            arcFrame.rotate( - ((sbend*) a)->getEntryAngle(), arcFrame.getyAxis() );
+          }
+          else if( a_CFsb ) {
+            arcFrame.rotate( - ((CF_sbend*) a)->getEntryAngle(), arcFrame.getyAxis() );
+          }
+          if( a_rb ) {
+            arcFrame.rotate( - ((rbend*) a)->getEntryAngle(), arcFrame.getyAxis() );
+          }
+          else if( a_CFrb ) {
+            arcFrame.rotate( - ((CF_rbend*) a)->getEntryAngle(), arcFrame.getyAxis() );
+          }
+          else {
+            cerr << "\n*** WARNING: *** "
+                 << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
+                 << "\n*** WARNING: *** Calculation discontinued."
+                 << "\n*** WARNING: *** Both a_rb and a_CF are false."
+                 << "\n*** WARNING: *** Function will return original argument."
+                 << "\n*** WARNING: *** "
+                 << endl;
+            delete flatRing;
+            ret->eliminate();
+            return &original;
+          }
+          ret->append( new Slot(elPtr->Name(), arcFrame) );
+	}
         else {
-          throw( GenericException( __FILE__, __LINE__, 
-                 "beamline* DriftsToSlots( /* const */ beamline& original )", 
-                 "Both a_rb and a_CF are null." ) );
+          cerr << "\n*** WARNING: *** "
+               << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
+               << "\n*** WARNING: *** Calculation cannot be continued."
+               << "\n*** WARNING: *** Function will return original argument."
+               << "\n*** WARNING: *** "
+               << endl;
+          delete flatRing;
+          ret->eliminate();
+          return &original;
         }
-        ret->append( new Slot(elPtr->Name(), arcFrame) );
       }
   
       else // isUpstream and isDownStream
       {
-        arcFrame.reset();  
-        if( c_rb ) {
-          arcFrame.rotate( - ((rbend*) c)->getPoleFaceAngle(), arcFrame.getyAxis() );
-        }
-        else if( c_CF ) {
-          arcFrame.rotate( - ((CF_rbend*) c)->getPoleFaceAngle(), arcFrame.getyAxis() );
-        }
+        if( d2S_sbendLike( a ) && d2S_sbendLike( c ) ) {
+          ret->append( elPtr->Clone() );
+	}
         else {
-          throw( GenericException( __FILE__, __LINE__, 
-                 "beamline* DriftsToSlots( /* const */ beamline& original )", 
-                 "Both c_rb and c_CF are null." ) );
-        }
-        fd(x) = 0.0;
-        fd(y) = 0.0;
-        fd(z) = elPtr->Length();
-        arcFrame.translate(fd);
-        if( a_rb ) {
-          arcFrame.rotate( - ((rbend*) a)->getPoleFaceAngle(), arcFrame.getyAxis() );
-        }
-        else if( a_CF ) {
-          arcFrame.rotate( - ((CF_rbend*) a)->getPoleFaceAngle(), arcFrame.getyAxis() );
-        }
-        else {
-          throw( GenericException( __FILE__, __LINE__, 
-                 "beamline* DriftsToSlots( /* const */ beamline& original )", 
-                 "Both a_rb and a_CF are null." ) );
-        }
-        ret->append( new Slot(elPtr->Name(), arcFrame) );
+          arcFrame.reset();  
+          if( d2S_rbendLike(c) ) {
+            if( c_sb ) {
+              arcFrame.rotate( - ((sbend*) c)->getEntryAngle(), arcFrame.getyAxis() );
+            }
+            else if( c_CFsb ) {
+              arcFrame.rotate( - ((CF_sbend*) c)->getEntryAngle(), arcFrame.getyAxis() );
+            }
+            if( c_rb ) {
+              arcFrame.rotate( - ((rbend*) c)->getEntryAngle(), arcFrame.getyAxis() );
+            }
+            else if( c_CFrb ) {
+              arcFrame.rotate( - ((CF_rbend*) c)->getEntryAngle(), arcFrame.getyAxis() );
+            }
+            else {
+              cerr << "\n*** WARNING: *** "
+                   << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
+                   << "\n*** WARNING: *** Calculation discontinued."
+                   << "\n*** WARNING: *** Both c_rb and c_CF are false."
+                   << "\n*** WARNING: *** "
+                   << endl;
+              delete flatRing;
+              ret->eliminate();
+              return &original;
+            }
+          }
+          fd(x) = 0.0;
+          fd(y) = 0.0;
+          fd(z) = elPtr->Length();
+          arcFrame.translate(fd);
+          if( d2S_rbendLike(a) ) {
+            if( a_sb ) {
+              arcFrame.rotate( - ((sbend*) a)->getEntryAngle(), arcFrame.getyAxis() );
+            }
+            else if( a_CFsb ) {
+              arcFrame.rotate( - ((CF_sbend*) a)->getEntryAngle(), arcFrame.getyAxis() );
+            }
+            if( a_rb ) {
+              arcFrame.rotate( - ((rbend*) a)->getEntryAngle(), arcFrame.getyAxis() );
+            }
+            else if( a_CFrb ) {
+              arcFrame.rotate( - ((CF_rbend*) a)->getEntryAngle(), arcFrame.getyAxis() );
+            }
+            else {
+              cerr << "\n*** WARNING: *** "
+                   << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
+                   << "\n*** WARNING: *** Calculation discontinued."
+                   << "\n*** WARNING: *** Both a_rb and a_CF are false."
+                   << "\n*** WARNING: *** "
+                   << endl;
+              delete flatRing;
+              ret->eliminate();
+              return &original;
+            }
+	  }
+          ret->append( new Slot(elPtr->Name(), arcFrame) );
+	}
       }
   
-    } // End processing 
+    } // End processing element
   
   } // End while loop
   
