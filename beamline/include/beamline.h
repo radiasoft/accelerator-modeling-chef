@@ -1479,7 +1479,8 @@ private:
   double    RefState[6];   // A particle in the "field" region
                            // with phase space state of RefState()
                            // will be on the reference orbit of the
-                           // extraction line.
+                           // extraction line.  The specified coordinates are 
+			   // SUBTRACTED from the particle coordinates.
   void image( int, slist*, BMLN_posInfo* );
   ostream& writeTo(ostream&);
   istream& readFrom(istream&);
