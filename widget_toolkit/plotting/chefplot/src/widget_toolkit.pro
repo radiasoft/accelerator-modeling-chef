@@ -3,7 +3,7 @@ LANGUAGE = C++
 
 CONFIG	+= qt warn_on debug thread
 
-LIBS += -lqwt -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -lglib
+LIBS += -lqwt -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit
 
 INCLUDEPATH += ../include
 INCLUDEPATH += /home/michelotti/briefcase/first_order_jl/installed/include/beamline 
@@ -11,8 +11,6 @@ INCLUDEPATH += /home/michelotti/briefcase/first_order_jl/installed/include/bmlfa
 INCLUDEPATH += /home/michelotti/briefcase/first_order_jl/installed/include/mxyzptlk 
 INCLUDEPATH += /home/michelotti/briefcase/first_order_jl/installed/include/basic_toolkit 
 INCLUDEPATH += /home/michelotti/briefcase/first_order_jl/installed/include/physics_toolkit 
-INCLUDEPATH += /usr/local/ap/include/glib-2.0 
-INCLUDEPATH += /usr/local/ap/lib/glib-2.0/include
 
 DESTDIR = /home/michelotti/briefcase/first_order_jl/installed/lib
 
@@ -36,7 +34,6 @@ SOURCES	+= chefplot.cpp \
 	chefplotzoomer.cpp \
 	lego.cpp
 
-QMAKE_LIBDIR_FLAGS += -L/home/michelotti/briefcase/first_order_jl/installed/lib 
 QMAKE_LIBDIR_FLAGS += -L/home/michelotti/briefcase/first_order_jl/installed/lib 
 QMAKE_LFLAGS_SHAPP += -Wl,-rpath,/usr/local/ap/lib -Wl,-rpath,/home/michelotti/briefcase/first_order_jl/installed/lib 
 
