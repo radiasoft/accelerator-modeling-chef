@@ -1,4 +1,4 @@
-/*************************************************************************
+/**************************************************************************
 **************************************************************************
 **************************************************************************
 ******                                                                
@@ -38,26 +38,15 @@
 // Leo Michelotti
 // Dec 16, 1994    (Battle of the Bulge + 50 years)
 
-#include <math.h>
 #include <complex>
-
-#ifdef __GNUC__
-//  typedef complex<double> Complex;
-  typedef std::complex<double> Complex;
+#include <cmath>
+#if !(defined(__SUNPRO_CC) && defined(IOSTREAMH))
+#include <iostream>
 #endif
 
-// Check for Solaris.
-#if defined(__SUNPRO_CC) 
-#include <iostream.h>  
-  typedef std::complex<double> Complex;
-#endif
-
-#ifdef __BORLANDC__
-  typedef complex Complex;
-#endif
-
-#ifdef _MSC_VER
+namespace FNAL {
 typedef std::complex<double> Complex;
+}
 using std::real;
 using std::imag;
 using std::exp;
@@ -66,10 +55,14 @@ using std::cos;
 using std::sin;
 using std::pow;
 using std::sqrt;
-using  std::ostream;
+using std::ostream;
 using std::cerr;
 using std::endl;
-#endif 
+
+//#if defined(__SUNPRO_CC) 
+//#ifdef __BORLANDC__
+//#ifdef _MSC_VER
+
 
 // -----------------------------------------------------------
 // The following operators are used by the mxyzptlk library
@@ -77,36 +70,35 @@ using std::endl;
 // DA variables. DO NOT modify this unless you understand
 // what you are doing !
 
-inline char operator>= ( const Complex& x, const Complex& y )
+inline char operator>= ( const FNAL::Complex& x, const FNAL::Complex& y )
 {
  return real(x) >= real(y)  &&  imag(x) >= imag(y);
 }
 
-inline char operator< ( const Complex& x, const Complex& y )
+inline char operator< ( const FNAL::Complex& x, const FNAL::Complex& y )
 {
  return real(x) < real(y)  &&  imag(x) < imag(y);
 }
 
-inline char operator> ( const Complex& x, const Complex& y )
+inline char operator> ( const FNAL::Complex& x, const FNAL::Complex& y )
 {
  return real(x) > real(y)  &&  imag(x) > imag(y);
 }
 
 // -----------------------------------------------------------
 
-#if defined(__SUNPRO_CC)
-
+#if defined(__SUNPRO_CC) && defined(IOSTREAMH)
+#include <iostream.h>
 // this is a kludge to allow the std::complex type to be used in conjunction 
 // with the old style AT&T iostream library
  
-using std::abs;
 
-inline ostream& operator<<(ostream& os, const Complex& x) {
+inline ostream& operator<<(ostream& os, const FNAL::Complex& x) {
 	os << "( " << std::real(x) << "," << std::imag(x) << " )";
 	return os;
 }
 
-inline istream& operator>>(istream& is, Complex& x) {
+inline istream& operator>>(istream& is, FNAL::Complex& x) {
  double u,v;
 	is  >> u; 
         is  >> v;
@@ -119,7 +111,7 @@ inline istream& operator>>(istream& is, Complex& x) {
 
 #ifdef __BORLANDC__
 
-inline Complex pow ( const Complex& x, int n )
+inline FNAL::Complex pow ( const FNAL::Complex& x, int n )
 {
   return pow( x, (double) n );
 }
@@ -129,24 +121,24 @@ inline double pow( const double& x, int n )
   return pow( x, (double) n );
 }
 
-inline bool operator==( const Complex& x, const double& y )
+inline bool operator==( const FNAL::Complex& x, const double& y )
 {
   if( ( imag(x) != 0.0 ) || ( real(x) != y ) )   return 0;
   else                                           return 1;
 }
 
-inline bool operator==( const double& y, const Complex& x )
+inline bool operator==( const double& y, const FNAL::Complex& x )
 {
   if( ( imag(x) != 0.0 ) || ( real(x) != y ) )   return 0;
   else                                           return 1;
 }
 
-inline bool operator!=( const Complex& x, const double& y )
+inline bool operator!=( const FNAL::Complex& x, const double& y )
 {
   return !( operator==( x, y ) );
 }
 
-inline bool operator!=( const double& y, const Complex& x )
+inline bool operator!=( const double& y, const FNAL::Complex& x )
 {
   return !( operator==( x, y ) );
 }
@@ -155,19 +147,19 @@ inline bool operator!=( const double& y, const Complex& x )
 
 #ifdef _MSC_VER
 
-inline double abs(const Complex& x) {
+inline double abs(const FNAL::Complex& x) {
 	return sqrt(real(x)*real(x) + imag(x)*imag(x));
 }
 
-//ostream& operator<<(ostream& os, const Complex& x) {
+//ostream& operator<<(ostream& os, const FNAL::Complex& x) {
 //	os << "( " << real(x) << "," << imag(x) << " )" << std::endl;
 //	return os;
 //}
 
 #endif // _MSC_VER
 
-const Complex complex_1( 1.0, 0.0 );
-const Complex complex_0( 0.0, 0.0 );
-const Complex complex_i( 0.0, 1.0 );
+const FNAL::Complex complex_1( 1.0, 0.0 );
+const FNAL::Complex complex_0( 0.0, 0.0 );
+const FNAL::Complex complex_i( 0.0, 1.0 );
 
 #endif // COMPLEXADDON_H
