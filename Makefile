@@ -39,6 +39,7 @@ SUBDIRS  = basic_toolkit/src \
 	filter/src \
 	integrator/src \
 	mxyzptlk/src \
+	physics_toolkit/src \
 	machines/accumulator/src \
 	machines/booster/src \
 	machines/Machine/src \
@@ -48,7 +49,6 @@ SUBDIRS  = basic_toolkit/src \
 	machines/recycler/src \
 	machines/swyd/src \
 	machines/tev/src \
-	physics_toolkit/src \
 	server/src \
 	socket/src \
 	sybase/src \
