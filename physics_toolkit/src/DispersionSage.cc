@@ -47,6 +47,8 @@ const int DispersionSage::IMPOSSIBILITY    = 111;
 DispersionSage::Info::Info()
 {
   arcLength = -1.0;
+  closedOrbit.hor = 0.0;
+  closedOrbit.ver = 0.0;
   dispersion.hor = 0.0;
   dispersion.ver = 0.0;
   dPrime.hor = 0.0;
@@ -365,11 +367,13 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
 
     d = ( secondParticle->State()  -  firstParticle->State() ) / _dpp;
   
-    _calcs[counter]->dispersion.hor = d( i_x  );
-    _calcs[counter]->dPrime.hor     = d( i_px );
-    _calcs[counter]->dispersion.ver = d( i_y  );
-    _calcs[counter]->dPrime.ver     = d( i_py );
-    _calcs[counter]->arcLength      = lng;
+    _calcs[counter]->closedOrbit.hor = firstParticle->get_x();
+    _calcs[counter]->closedOrbit.ver = firstParticle->get_y();
+    _calcs[counter]->dispersion.hor  = d( i_x  );
+    _calcs[counter]->dPrime.hor      = d( i_px );
+    _calcs[counter]->dispersion.ver  = d( i_y  );
+    _calcs[counter]->dPrime.ver      = d( i_py );
+    _calcs[counter]->arcLength       = lng;
   }  
 
 

@@ -59,6 +59,10 @@ public:
   struct Info : BarnacleData 
   {
     double arcLength;
+    struct Clort {
+      double hor;
+      double ver;
+    } closedOrbit;
     struct Dis {
       double hor;
       double ver;
