@@ -22,7 +22,7 @@ BarnacleList::BarnacleList() {
 BarnacleList::~BarnacleList() {
  dlist_iterator getNext( theList );
  Barnacle* p;
- while((  p = (Barnacle*) getNext()  )) delete p;
+ while( 0 != (  p = (Barnacle*) getNext() )) delete p;
 #ifdef OBJECT_DEBUG
   objectCount--;
 #endif
@@ -51,7 +51,7 @@ void BarnacleList::insert( const char* ident, const BarnacleData* w ) {
 char BarnacleList::eraseFirst( const char* ident ) {
  dlist_iterator getNext( theList );
  Barnacle* p;
- while((  p = (Barnacle*) getNext()  )) {
+ while( 0 != (  p = (Barnacle*) getNext()  )) {
   if( strcmp( ident, p->id ) == 0 ) {
    theList.remove( (ent) p );   // ??? This is REALLY stupid!
    delete p;
@@ -66,15 +66,17 @@ char BarnacleList::eraseAll( const char* ident ) {
  dlist_iterator getNext( theList );
  Barnacle* p;
  if( ident != 0 ) {
-  while((  p = (Barnacle*) getNext()  )) {
+  while( 0 != (  p = (Barnacle*) getNext()  )) {
    if( strcmp( ident, p->id ) == 0 ) {
+    getNext.GoBack();
     theList.remove( (ent) p );   // ??? This is REALLY stupid!
     delete p;
    }
   }
  }
  else {
-  while((  p = (Barnacle*) getNext()  )) {
+  while( 0 != (  p = (Barnacle*) getNext()  )) {
+   getNext.GoBack();
    theList.remove( (ent) p );   // ??? This is REALLY stupid!
    delete p;
   }
@@ -87,7 +89,7 @@ BarnacleData* BarnacleList::find( const char* ident, int n ) const {
  dlist_iterator getNext( theList );
  int i = 1;
  Barnacle* p;
- while((  p = (Barnacle*) getNext()  )) 
+ while( 0 != (  p = (Barnacle*) getNext()  )) 
   if( strcmp( ident, p->id ) == 0 )
     if( n == i++ ) 
       return p->info;
@@ -97,7 +99,7 @@ BarnacleData* BarnacleList::find( const char* ident, int n ) const {
 Barnacle* BarnacleList::lift( const char* ident ) {
  dlist_iterator getNext( theList );
  Barnacle* p;
- while((  p = (Barnacle*) getNext()  )) 
+ while( 0 != (  p = (Barnacle*) getNext()  )) 
   if( strcmp( ident, p->id ) == 0 ) {
    theList.remove( (ent) p );   // ??? This is REALLY stupid!
    return p;
