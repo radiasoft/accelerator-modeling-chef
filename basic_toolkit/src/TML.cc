@@ -54,16 +54,22 @@ TML<T>::TML()
 
 template<typename T>
 TML<T>::TML(int rows, int columns, T initval) {
-  int i,j;
+  int i,sz;
   _r = rows;
   _c = columns;
-  _rc = 1;
   _m = new T* [_r];
-  for(i = 0; i < _r; i++)  { _m[i] = new T [_c]; }
-  for(i = 0; i< _r; i++) {
-    for(j = 0; j < _c; j++) {
-      _m[i][j] = initval;
-    }
+  _rc = 1;
+
+  sz = _r*_c;
+  T* dataPtr = new T [ sz ];
+  for( i = 0; i < _r; i++ ) { 
+    _m[i] = dataPtr;
+    dataPtr += _c;
+  }
+
+  for( dataPtr = &(_m[0][0]); dataPtr <= &(_m[_r-1][_c-1]); dataPtr++ )
+  {
+    *dataPtr = initval;
   }
 }
 
@@ -84,14 +90,6 @@ TML<T>::TML(int rows, int columns, const T* values) {
   }
 
   memcpy( (void*) (_m[0]), (void*) values, sz*sizeof(T) );
-
-  // for(i = 0; i < _r; i++) { _m[i] = new T [_c]; }
-  // int index = 0;
-  // for(i = 0; i< _r; i++) { 
-  //   for(j = 0; j < _c; j++) {
-  //     m[i][j] = values[index++];
-  //   }
-  // }
 }
 
 
@@ -135,7 +133,7 @@ TML<T>::~TML() {
 template<typename T>
 void TML<T>::_clear() {
   if((_r == 0) && (_c == 0)) return;
-  for(int i = 0; i < _r; i++) { delete [] _m[i]; }
+  delete [] _m[0];
   delete [] _m;
   _r = 0;
   _c = 0;
@@ -164,6 +162,19 @@ TML<T>& TML<T>::operator=(const TML& X)
   }
 
   return *this;
+}
+
+
+template<typename T>
+bool TML<T>::operator==(const TML<T>& x)
+{
+  if((x._r != _r) || (x._c != _c)) { return false; }
+  for(int i = 0; i < _r; i++) {
+    for(int j = 0; j < _c; j++) {
+      if(x._m[i][j] != _m[i][j]) { return false; }
+    }
+  }
+  return true;
 }
 
 

@@ -486,7 +486,7 @@ TMatrix<T> operator-(const TMatrix<T>& x)
   TML<T>* zPtr = z._ml;
   for(int i = 0; i< x.rows() ; i++) {
     for(int j = 0; j < x.cols(); j++) {
-      zPtr->_m[i][j] = -1.0* xPtr->_m[i][j];
+      zPtr->_m[i][j] = - ( xPtr->_m[i][j] );
     }
   }
   z._stacked = true;
@@ -1675,5 +1675,216 @@ TMatrix<FNAL::Complex> TMatrix<FNAL::Complex>::eigenVectors() {
 }
 
 
+// Implementation of derived class MatrixC
+// Done to replicate member function dagger()
+
+MatrixC::MatrixC()
+: TMatrix<Complex>()
+{
+}
+
+MatrixC::MatrixC( const MatrixC& x )
+: TMatrix<Complex>( (const TMatrix<Complex>&) x )
+{
+}
+
+MatrixC::MatrixC( const TMatrix<Complex>& x )
+: TMatrix<Complex>( x )
+{
+}
+
+MatrixC::MatrixC( int i )
+: TMatrix<Complex>(i)
+{
+}
+
+MatrixC::MatrixC( int rows, int columns )
+: TMatrix<Complex>( rows, columns )
+{
+}
+
+MatrixC::MatrixC( int rows, int columns, const FNAL::Complex& initval )
+: TMatrix<Complex>( rows, columns, initval )
+{
+}
+
+MatrixC::MatrixC( int rows, int columns, FNAL::Complex* initval )
+: TMatrix<Complex>( rows, columns, initval )
+{
+}
+
+MatrixC::MatrixC( const char* flag, int dimension )
+: TMatrix<Complex>( flag, dimension )
+{
+}
+
+MatrixC::MatrixC( const TMatrix<double>& x )
+: TMatrix<Complex>( x.rows(), x.cols() )
+{
+  int i, j;
+  for( i=0; i< _ml->_r; i++ ) {
+    for( j=0; j< _ml->_c; j++ ) {
+      _ml->_m[i][j] = Complex( x(i,j), 0.0 );
+    }
+  }
+}
+
+MatrixC::~MatrixC()
+{
+}
+
+
+MatrixC MatrixC::dagger() const
+{
+  MatrixC z( cols(), rows(), complex_0 );
+  TML<Complex>* zPtr = z._ml;
+
+  for(int row = 0; row < rows(); row++) {
+    for(int col = 0; col < cols(); col++) {
+      zPtr->_m[col][row] = conj(_ml->_m[row][col]);
+    }
+  }
+  z._stacked = 1;
+  return z;
+}
+
+MatrixD real( const MatrixC& x )
+{
+  int r = x.rows();
+  int c = x.cols();
+  MatrixD ret( r, c );
+  for( int i = 0; i < r; i++ ) {
+    for( int j = 0; j < c; j++ ) {
+      ret(i,j) = real((const FNAL::Complex&) (x(i,j)));
+    }
+  }
+  return ret;
+}
+
+
+MatrixD imag( const MatrixC& x )
+{
+  int r = x.rows();
+  int c = x.cols();
+  MatrixD ret( r, c );
+  for( int i = 0; i < r; i++ ) {
+    for( int j = 0; j < c; j++ ) {
+      ret(i,j) = imag((const FNAL::Complex&) (x(i,j)));
+    }
+  }
+  return ret;
+}
+
 template class TMatrix<double>;
 template class TMatrix<FNAL::Complex>;
+template class TMatrix<int>;
+
+template char operator==( const TMatrix<double>&, const TMatrix<double>& );
+template char operator==( const TMatrix<double>&, const double& );
+template char operator==( const double&, const TMatrix<double>& );
+template std::ostream& operator<<(std::ostream&, const TMatrix<double>&);
+template TMatrix<double> operator+(const TMatrix<double>&, const TMatrix<double>&);
+template TMatrix<double> operator+(const TMatrix<double>&, const double&); 
+template TMatrix<double> operator+(const double&, const TMatrix<double>&); 
+template TMatrix<double> operator-(const TMatrix<double>&); 
+template TMatrix<double> operator-(const TMatrix<double>&, const TMatrix<double>&); 
+template TMatrix<double> operator-(const TMatrix<double>&, const double&); 
+template TMatrix<double> operator-(const double&, const TMatrix<double>&); 
+template TMatrix<double> operator*(const TMatrix<double>&, const TMatrix<double>&); 
+template TMatrix<double> operator*(const TMatrix<double>&, const double);
+template TMatrix<double> operator*(const double, const TMatrix<double>&);
+template TMatrix<double> operator/(const TMatrix<double>&, const double);
+template TMatrix<double> operator/(const double, TMatrix<double>&);
+template TMatrix<double> operator/(TMatrix<double>&, TMatrix<double>&);
+
+template char operator==( const TMatrix<int>&, const TMatrix<int>& );
+template char operator==( const TMatrix<int>&, const int& );
+template char operator==( const int&, const TMatrix<int>& );
+template std::ostream& operator<<(std::ostream&, const TMatrix<int>&);
+template TMatrix<int> operator+(const TMatrix<int>&, const TMatrix<int>&);
+template TMatrix<int> operator+(const TMatrix<int>&, const int&); 
+template TMatrix<int> operator+(const int&, const TMatrix<int>&); 
+template TMatrix<int> operator-(const TMatrix<int>&); 
+template TMatrix<int> operator-(const TMatrix<int>&, const TMatrix<int>&); 
+template TMatrix<int> operator-(const TMatrix<int>&, const int&); 
+template TMatrix<int> operator-(const int&, const TMatrix<int>&); 
+template TMatrix<int> operator*(const TMatrix<int>&, const TMatrix<int>&); 
+template TMatrix<int> operator*(const TMatrix<int>&, const int);
+template TMatrix<int> operator*(const int, const TMatrix<int>&);
+template TMatrix<int> operator/(const TMatrix<int>&, const int);
+template TMatrix<int> operator/(const int, TMatrix<int>&);
+template TMatrix<int> operator/(TMatrix<int>&, TMatrix<int>&);
+
+template char operator==( const TMatrix<FNAL::Complex>&, const TMatrix<FNAL::Complex>& );
+template char operator==( const TMatrix<FNAL::Complex>&, const FNAL::Complex& );
+template char operator==( const FNAL::Complex&, const TMatrix<FNAL::Complex>& );
+template std::ostream& operator<<(std::ostream&, const TMatrix<FNAL::Complex>&);
+template TMatrix<FNAL::Complex> operator+(const TMatrix<FNAL::Complex>&, const TMatrix<FNAL::Complex>&);
+template TMatrix<FNAL::Complex> operator+(const TMatrix<FNAL::Complex>&, const FNAL::Complex&); 
+template TMatrix<FNAL::Complex> operator+(const FNAL::Complex&, const TMatrix<FNAL::Complex>&); 
+template TMatrix<FNAL::Complex> operator-(const TMatrix<FNAL::Complex>&); 
+template TMatrix<FNAL::Complex> operator-(const TMatrix<FNAL::Complex>&, const TMatrix<FNAL::Complex>&); 
+template TMatrix<FNAL::Complex> operator-(const TMatrix<FNAL::Complex>&, const FNAL::Complex&); 
+template TMatrix<FNAL::Complex> operator-(const FNAL::Complex&, const TMatrix<FNAL::Complex>&); 
+template TMatrix<FNAL::Complex> operator*(const TMatrix<FNAL::Complex>&, const TMatrix<FNAL::Complex>&); 
+template TMatrix<FNAL::Complex> operator*(const TMatrix<FNAL::Complex>&, const FNAL::Complex);
+template TMatrix<FNAL::Complex> operator*(const FNAL::Complex, const TMatrix<FNAL::Complex>&);
+template TMatrix<FNAL::Complex> operator/(const TMatrix<FNAL::Complex>&, const FNAL::Complex);
+template TMatrix<FNAL::Complex> operator/(const FNAL::Complex, TMatrix<FNAL::Complex>&);
+template TMatrix<FNAL::Complex> operator/(TMatrix<FNAL::Complex>&, TMatrix<FNAL::Complex>&);
+
+
+TMatrix<FNAL::Complex> operator*(const TMatrix<FNAL::Complex>& x, const TMatrix<double>& y)
+{
+  TMatrix<FNAL::Complex> z(x.rows(),y.cols(),complex_0);
+  TML<FNAL::Complex>* xPtr = x._ml;
+  TML<double>* yPtr = y._ml;
+  TML<FNAL::Complex>* zPtr = z._ml;
+  if( x.cols() != y.rows()) {
+    throw( TMatrix<double>::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+           "TMatrix<FNAL::Complex> operator*(const TMatrix<FNAL::Complex>& x, const TMatrix<double>& y)" ) );
+  }
+  FNAL::Complex tmp;
+  for(int row = 0; row < x.rows(); row++) {
+    for(int col = 0; col < y.cols(); col++){
+      FNAL::Complex sum = complex_0;
+      for(int i = 0; i < x.cols(); i++) {
+        tmp = xPtr->_m[row][i] * FNAL::Complex(yPtr->_m[i][col],0.0);
+        sum += tmp;
+        if(abs(sum) < M_SMALL*abs(tmp))
+          sum = complex_0;
+      }
+      zPtr->_m[row][col] = sum;
+    }
+  }
+  z._stacked = true;
+  return z;
+}
+
+
+TMatrix<FNAL::Complex> operator*(const TMatrix<double>& y, const TMatrix<FNAL::Complex>& x)
+{
+  TMatrix<FNAL::Complex> z(y.rows(),x.cols(),complex_0);
+  TML<FNAL::Complex>* xPtr = x._ml;
+  TML<double>* yPtr = y._ml;
+  TML<FNAL::Complex>* zPtr = z._ml;
+  if( y.cols() != x.rows()) {
+    throw( TMatrix<double>::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+           "TMatrix<FNAL::Complex> operator*(const TMatrix<double>& x, const TMatrix<FNAL::Complex>& y)" ) );
+  }
+  FNAL::Complex tmp;
+  for(int row = 0; row < y.rows(); row++) {
+    for(int col = 0; col < x.cols(); col++){
+      FNAL::Complex sum = complex_0;
+      for(int i = 0; i < y.cols(); i++) {
+        tmp = FNAL::Complex(yPtr->_m[row][i],0.0) * xPtr->_m[i][col];
+        sum += tmp;
+        if(abs(sum) < M_SMALL*abs(tmp))
+          sum = complex_0;
+      }
+      zPtr->_m[row][col] = sum;
+    }
+  }
+  z._stacked = true;
+  return z;
+}

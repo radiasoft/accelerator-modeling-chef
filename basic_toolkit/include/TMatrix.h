@@ -36,31 +36,10 @@
 
 #include "TML.h"
 
-template<typename T> class TMatrix;
-
-template<typename T> char operator==( const TMatrix<T>&, const TMatrix<T>& );
-template<typename T> char operator==( const TMatrix<T>&, const T& );
-template<typename T> char operator==( const T&, const TMatrix<T>& );
-template<typename T> std::ostream& operator<<(std::ostream&, const TMatrix<T>&);
-template<typename T> TMatrix<T> operator+(const TMatrix<T>&, const TMatrix<T>&);
-template<typename T> TMatrix<T> operator+(const TMatrix<T>&, const T&); 
-template<typename T> TMatrix<T> operator+(const T&, const TMatrix<T>&); 
-template<typename T> TMatrix<T> operator-(const TMatrix<T>&); 
-template<typename T> TMatrix<T> operator-(const TMatrix<T>&, const TMatrix<T>&); 
-template<typename T> TMatrix<T> operator-(const TMatrix<T>&, const T&); 
-template<typename T> TMatrix<T> operator-(const T&, const TMatrix<T>&); 
-template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const TMatrix<T>&); 
-template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const T);
-template<typename T> TMatrix<T> operator*(const T, const TMatrix<T>&);
-template<typename T> TMatrix<T> operator/(const TMatrix<T>&, const T);
-template<typename T> TMatrix<T> operator/(const T, TMatrix<T>&);
-template<typename T> TMatrix<T> operator/(TMatrix<T>&, TMatrix<T>&);
-
-
 template<typename T>
 class TMatrix
 {
-private:
+protected:
   TML<T>* _ml;
 
 public:
@@ -228,23 +207,62 @@ class RandomOrthogonal
 };
 
 
-template<typename T>
-void operator-=( TMatrix<T>&, const TMatrix<T>& );
+template<typename T> void operator-=( TMatrix<T>&, const TMatrix<T>& );
 
-template<typename T>
-void operator*=( TMatrix<T>&, const TMatrix<T>& );
+template<typename T> void operator*=( TMatrix<T>&, const TMatrix<T>& );
 
-template<typename T>
-char operator!=( const TMatrix<T>&, const TMatrix<T>& );
+template<typename T> char operator!=( const TMatrix<T>&, const TMatrix<T>& );
 
-template<typename T>
-char operator!=( const TMatrix<T>&, const T& );
+template<typename T> char operator!=( const TMatrix<T>&, const T& );
 
-template<typename T>
-char operator!=( const T&, const TMatrix<T>& );
+template<typename T> char operator!=( const T&, const TMatrix<T>& );
+
+
+// Friend functions
+template<typename T> char operator==( const TMatrix<T>&, const TMatrix<T>& );
+template<typename T> char operator==( const TMatrix<T>&, const T& );
+template<typename T> char operator==( const T&, const TMatrix<T>& );
+template<typename T> std::ostream& operator<<(std::ostream&, const TMatrix<T>&);
+template<typename T> TMatrix<T> operator+(const TMatrix<T>&, const TMatrix<T>&);
+template<typename T> TMatrix<T> operator+(const TMatrix<T>&, const T&); 
+template<typename T> TMatrix<T> operator+(const T&, const TMatrix<T>&); 
+template<typename T> TMatrix<T> operator-(const TMatrix<T>&); 
+template<typename T> TMatrix<T> operator-(const TMatrix<T>&, const TMatrix<T>&); 
+template<typename T> TMatrix<T> operator-(const TMatrix<T>&, const T&); 
+template<typename T> TMatrix<T> operator-(const T&, const TMatrix<T>&); 
+template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const TMatrix<T>&); 
+template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const T);
+template<typename T> TMatrix<T> operator*(const T, const TMatrix<T>&);
+template<typename T> TMatrix<T> operator/(const TMatrix<T>&, const T);
+template<typename T> TMatrix<T> operator/(const T, TMatrix<T>&);
+template<typename T> TMatrix<T> operator/(TMatrix<T>&, TMatrix<T>&);
+
+
+// Cerived class MatrixC
+// Done to replicate member functions dagger() and MatrixC(const TMatrix<double>&)
+
+struct MatrixC : public TMatrix<FNAL::Complex>
+{
+  MatrixC();
+  MatrixC(const MatrixC& );
+  MatrixC(const TMatrix<FNAL::Complex>& );
+  MatrixC(const TMatrix<double>&);
+  MatrixC(int);
+  MatrixC(int rows, int columns );
+  MatrixC(int rows, int columns, const FNAL::Complex& initval );
+  MatrixC(int rows, int columns, FNAL::Complex* initval);
+  MatrixC(const char* flag, int dimension); // create an identity matrix
+				     // or a symplectic matrix
+  ~MatrixC();
+
+  MatrixC dagger() const;
+};
 
 typedef TMatrix<double> Matrix;
 typedef TMatrix<double> MatrixD;
-typedef TMatrix<FNAL::Complex> MatrixC;
+typedef TMatrix<int> MatrixI;
+
+MatrixD real( const MatrixC& x );
+MatrixD imag( const MatrixC& x );
 
 #endif // TMATRIX_H
