@@ -265,7 +265,6 @@ class beamline;
 class bmlnElmnt
 {
 public:
-  // --------------------------
   class PropFunc
   {
     public:
@@ -273,7 +272,9 @@ public:
       virtual int operator()( bmlnElmnt*, JetParticle& ) = 0;
       virtual const char* Type() const                   = 0;
   };
-  // --------------------------
+
+  typedef char (*CRITFUNC)( bmlnElmnt* );
+
 
 protected:
   char*        ident;      // Name identifier of the element.
