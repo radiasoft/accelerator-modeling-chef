@@ -355,3 +355,13 @@ char* sector::Type() const
 { 
   return "sector"; 
 }
+
+
+void sector::setLength( double )
+{
+  cerr << "*** WARNING ***                                \n"
+          "*** WARNING *** sector::setLength does nothing.\n"
+          "*** WARNING ***                                \n"
+       << endl;
+}
+
