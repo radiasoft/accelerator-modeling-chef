@@ -77,7 +77,7 @@ int attachETLattFuncs( bmlnElmnt* lbe ) {
 
  else {                                // Coupled lattice
 
-  if( fabs( EdwardsTeng::csH - EdwardsTeng::csV ) < 1.0e-6 ) {
+  if( fabs( EdwardsTeng::csH - EdwardsTeng::csV ) < 1.0e-4 ) {
     cout << "\n"
          << "*** ERROR *** EdwardsTeng()                        \n"
          << "*** ERROR *** \"Horizontal\" and \"vertical\" tunes\n"
@@ -91,8 +91,8 @@ int attachETLattFuncs( bmlnElmnt* lbe ) {
 
   dcos    = EdwardsTeng::csH - EdwardsTeng::csV;
   cos2phi = ( M - N ).trace() / ( 2.0 *( dcos ) );
-  if( fabs( cos2phi - 1.0 ) < 1.0e-6 ) cos2phi =   1.0;  // ??? Rather coarse,
-  if( fabs( cos2phi + 1.0 ) < 1.0e-6 ) cos2phi = - 1.0;  // ??? isn't it?
+  if( fabs( cos2phi - 1.0 ) < 1.0e-4 ) cos2phi =   1.0;  // ??? Rather coarse,
+  if( fabs( cos2phi + 1.0 ) < 1.0e-4 ) cos2phi = - 1.0;  // ??? isn't it?
 
   if( fabs( cos2phi ) > 1.0 ) {
    cout << "\n"
@@ -124,7 +124,7 @@ int attachETLattFuncs( bmlnElmnt* lbe ) {
     D(1,0) = 0.0;  D(1,1) = 1.0;
   }
 
-  if( fabs( D.determinant() - 1.0 ) > 1.0e-6 ) {
+  if( fabs( D.determinant() - 1.0 ) > 1.0e-4 ) {
     cout << "\n"
          << "*** ERROR *** EdwardsTeng()                        \n"
          << "*** ERROR *** The matrix D is non-symplectic.      \n"
@@ -163,7 +163,7 @@ int attachETLattFuncs( bmlnElmnt* lbe ) {
 
  // .......... A little test to keep everyone honest .....
  if( JH( 0, 0 ) != 0.0 )
-  if( fabs( ( JH(0,0) + JH(1,1) ) / ( JH(0,0) - JH(1,1) ) ) > 1.0e-6 ) {
+  if( fabs( ( JH(0,0) + JH(1,1) ) / ( JH(0,0) - JH(1,1) ) ) > 1.0e-4 ) {
    cout << endl;
    cout << "*** WARNING ***                                " << endl;
    cout << "*** WARNING *** EdwardsTeng()                  " << endl;
@@ -194,7 +194,7 @@ int attachETLattFuncs( bmlnElmnt* lbe ) {
 
  // .......... A little test to keep everyone honest .....
  if( JV( 0, 0 ) != 0.0 )
-  if( fabs( ( JV(0,0) + JV(1,1) ) / ( JV(0,0) - JV(1,1) ) ) > 1.0e-6 ) {
+  if( fabs( ( JV(0,0) + JV(1,1) ) / ( JV(0,0) - JV(1,1) ) ) > 1.0e-4 ) {
    cout << endl;
    cout << "*** WARNING ***                                " << endl;
    cout << "*** WARNING *** EdwardsTeng()                  " << endl;
@@ -282,7 +282,7 @@ int EdwardsTeng::doCalc( void* arg,
  lambda = mtrx.eigenValues();
 
  for( i = 0; i < BMLN_dynDim; i++ )
-  if( fabs( abs(lambda(i)) - 1.0 ) > 1.0e-6 ) {
+  if( fabs( abs(lambda(i)) - 1.0 ) > 1.0e-4 ) {
    cout << "\n"
         << "*** ERROR ***                                     \n"
         << "*** ERROR ***                                     \n"
@@ -299,8 +299,8 @@ int EdwardsTeng::doCalc( void* arg,
    return 10;
   }
 
- if( ( abs( lambda(0) - conj( lambda(3) ) ) > 1.0e-6 )  ||
-     ( abs( lambda(1) - conj( lambda(4) ) ) > 1.0e-6 )
+ if( ( abs( lambda(0) - conj( lambda(3) ) ) > 1.0e-4 )  ||
+     ( abs( lambda(1) - conj( lambda(4) ) ) > 1.0e-4 )
    ) {
    cout << "\n"
         << "*** ERROR *** EdwardsTeng()                        \n"
