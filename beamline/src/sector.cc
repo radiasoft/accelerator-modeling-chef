@@ -161,7 +161,7 @@ sector::sector( Jet* m, double l, char mpt ) : bmlnElmnt(l) {
  if( mpt == 0 ) {
    MatrixD M = myMap.Jacobian();
    for( i = 0; i < BMLN_dynDim; i++ ) {
-     for( j = 0; j < BMLN_dynDim; i++ ) {
+     for( j = 0; j < BMLN_dynDim; j++ ) {
        mapMatrix[i][j] = M(i,j);
      }
    }
@@ -176,7 +176,7 @@ sector::sector( char* n, Jet* m, double l, char mpt ) : bmlnElmnt( n, l ) {
  if( mpt == 0 ) {
    MatrixD M = myMap.Jacobian();
    for( i = 0; i < BMLN_dynDim; i++ ) {
-     for( j = 0; j < BMLN_dynDim; i++ ) {
+     for( j = 0; j < BMLN_dynDim; j++ ) {
        mapMatrix[i][j] = M(i,j);
      }
    }
@@ -211,7 +211,7 @@ sector::sector( const Mapping& m, double l, char mpt ) : bmlnElmnt(l) {
  if( mpt == 0 ) {
    MatrixD M = myMap.Jacobian();
    for( i = 0; i < BMLN_dynDim; i++ ) {
-     for( j = 0; j < BMLN_dynDim; i++ ) {
+     for( j = 0; j < BMLN_dynDim; j++ ) {
        mapMatrix[i][j] = M(i,j);
      }
    }
@@ -226,7 +226,7 @@ sector::sector( char* n, const Mapping& m, double l, char mpt ) : bmlnElmnt( n, 
  if( mpt == 0 ) {
    MatrixD M = myMap.Jacobian();
    for( i = 0; i < BMLN_dynDim; i++ ) {
-     for( j = 0; j < BMLN_dynDim; i++ ) {
+     for( j = 0; j < BMLN_dynDim; j++ ) {
        mapMatrix[i][j] = M(i,j);
      }
    }
