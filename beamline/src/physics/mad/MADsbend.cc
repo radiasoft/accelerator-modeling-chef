@@ -1,4 +1,4 @@
-#include "beamline.h"
+#include "sbend.h"
 
 sbend::MAD_Prop   sbend::LikeMAD;
 

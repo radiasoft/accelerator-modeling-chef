@@ -7,7 +7,6 @@ OBJS = BBLens.o \
        CF_rbend.o \
        InsertionList.o \
        JetQuadrupole.o\
-       JetThinQuad.o\
        JetthinSext.o\
        InsertionList.o \
        MappPropFunc.o \
@@ -21,7 +20,6 @@ OBJS = BBLens.o \
        circuit.o \
        combinedFunction.o \
        drift.o \
-       hmonitor.o \
        kick.o \
        marker.o \
        monitor.o \
@@ -42,11 +40,9 @@ OBJS = BBLens.o \
        thinLamb.o \
        thinMultipole.o \
        thinOctupole.o \
-       thinQuad.o \
        thinSeptum.o \
        thinSextupole.o \
        thinrfcavity.o \
-       vmonitor.o \
        read_istream.o
 
 SOURCES = $(OBJS:.o=.cc)

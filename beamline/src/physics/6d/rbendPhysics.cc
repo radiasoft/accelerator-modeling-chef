@@ -1,5 +1,7 @@
 #include "VectorD.h"
-#include "beamline.h"
+#include "rbend.h"
+#include "PhysicsConstants.h"
+#include "JetC.h"
 
 rbend::Exact_Prop   rbend::Exact;
 rbend::NoEdge_Prop  rbend::NoEdge;

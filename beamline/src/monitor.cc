@@ -1,52 +1,5 @@
-#include "beamline.inc"
+#include "monitor.h"
 
-// **************************************************
-//   struct monitorData
-// **************************************************
-
-monitorData::monitorData() : bmlnElmntData() {
- more = 1;
- onOff = 0;
- driftFraction = 0.5;
-}
-
-monitorData::monitorData( monitorData& x  ) : bmlnElmntData( (bmlnElmntData&) x ) {
- more = x.more;
- onOff = x.onOff;
- driftFraction = x.driftFraction;
-}
-
-monitorData::~monitorData() {
-}
-
-
-void monitorData::eliminate() {
- delete this;
-}
-
-void* monitorData::clone() {
- void* p = new monitorData( *this );
- return p;
-}
-
-// ??? REMOVE void monitorData::writeTo( FILE* f ) {
-// ??? REMOVE  int sz = strlen( name );
-// ??? REMOVE  if( sz == 0 ) {
-// ??? REMOVE   printf( "\n" );
-// ??? REMOVE   printf( "*** ERROR ***                                        \n" );
-// ??? REMOVE   printf( "*** ERROR *** void monitorData::writeTo( FILE* )  \n" );
-// ??? REMOVE   printf( "*** ERROR *** Anomoly in ident.  Quitting.           \n" );
-// ??? REMOVE   printf( "*** ERROR ***                                        \n" );
-// ??? REMOVE   printf( "\n" );
-// ??? REMOVE   exit(0);
-// ??? REMOVE  }
-// ??? REMOVE 
-// ??? REMOVE  fwrite( this, sizeof( monitorData ), 1, f );
-// ??? REMOVE  fwrite( &sz, sizeof( int ), 1, f );
-// ??? REMOVE  fprintf( f, "%s ", name );
-// ??? REMOVE }
-// ??? REMOVE 
-
 // **************************************************
 //   class monitor 
 // **************************************************
@@ -130,27 +83,6 @@ const char* monitor::Type() const
 }
 
 
-/* ??? REMOVE */ void monitor::image( int d, slist* s, BMLN_posInfo* cg ) {
-/* ??? REMOVE */  bmlnElmntData* p = bmlnElmnt::image();
-/* ??? REMOVE */ 
-/* ??? REMOVE */  strcpy( p->type, Type() );
-/* ??? REMOVE */  p->address   = this;
-/* ??? REMOVE */  p->depth     = d;
-/* ??? REMOVE */ 
-/* ??? REMOVE */  geomToEnd( *cg );
-/* ??? REMOVE */  cg->outPoint = geometry.outPoint;
-                  int j; // O.K.
-
-/* ??? REMOVE */  for( j = 0; j < 3; j++ ) cg->outAxes[j] = geometry.outAxes[j];
-/* ??? REMOVE */ 
-/* ??? REMOVE */      p->geometry.inPoint  = geometry.inPoint;
-/* ??? REMOVE */      p->geometry.outPoint = geometry.outPoint;
-/* ??? REMOVE */      for( j = 0; j < 3; j++ ) p->geometry.inAxes[j]  = geometry.inAxes[j];
-/* ??? REMOVE */      for( j = 0; j < 3; j++ ) p->geometry.outAxes[j] = geometry.outAxes[j];
-/* ??? REMOVE */ 
-/* ??? REMOVE */  s->append( p );
-/* ??? REMOVE */ }
-/* ??? REMOVE */ 
 double monitor::operator[]( int n ) {
  if( n < 0 || n > 5 ) return 0.0;
  return rgr[n];
@@ -173,4 +105,90 @@ istream& monitor::readFrom(istream &is) {
     driftFraction = 0.5; // Basically irrelevant if the monitor has no length!
   }
   return is;
+}
+
+
+// **************************************************
+//   class vmonitor 
+// **************************************************
+
+vmonitor::vmonitor() : monitor() {
+}
+
+vmonitor::vmonitor( char* n ) : monitor( n ){
+}
+
+vmonitor::vmonitor( char* n, double l ) : monitor( n,l ){
+}
+
+vmonitor::vmonitor( FILE* of ) : monitor( of ) {
+}
+
+vmonitor::vmonitor( char* n, FILE* of ) : monitor( n, of ) {
+}
+
+vmonitor::vmonitor( bmlnElmntData& x ) : monitor( x ) {
+}
+
+vmonitor::vmonitor( const vmonitor& x ) 
+: monitor( (monitor&) x ) 
+{
+}
+
+vmonitor::~vmonitor() {
+}
+
+double vmonitor::operator[]( int n ) {
+ if( n == 0 ) return rgr[1];
+ if( n == 1 ) return rgr[4];
+ return 0.0;
+}
+
+
+const char* vmonitor::Type() const 
+{ 
+  return "vmonitor"; 
+}
+
+
+// **************************************************
+//   class hmonitor 
+// **************************************************
+
+hmonitor::hmonitor() : monitor() {
+}
+
+hmonitor::hmonitor( char* n ) : monitor( n ){
+}
+
+hmonitor::hmonitor( char* n, double l ) : monitor( n, l ){
+}
+
+hmonitor::hmonitor( FILE* of ) : monitor( of ) {
+}
+
+hmonitor::hmonitor( char* n, FILE* of ) : monitor( n, of ) {
+}
+
+hmonitor::hmonitor( bmlnElmntData& x ) : monitor( x ) {
+}
+
+hmonitor::hmonitor( const hmonitor& x ) 
+: monitor( (monitor&) x ) 
+{
+}
+
+hmonitor::~hmonitor() {
+}
+
+double hmonitor::operator[]( int n ) {
+ if( n == 0 ) return rgr[0];
+ if( n == 1 ) return rgr[3];
+ return 0.0;
+}
+
+
+const char* hmonitor::Type() const 
+{ 
+  return "hmonitor"; 
 }

@@ -4,33 +4,7 @@
 #include <iomanip.h>
 #endif
 
-#include "beamline.h"
-
-// **************************************************
-//   struct sbendData 
-// **************************************************
-
-sbendData::sbendData() : bmlnElmntData() {
- more   = 1;
- angle  = 0.0;
-}
-
-sbendData::sbendData( sbendData& x ) : bmlnElmntData( (bmlnElmntData&) x ) {
- more   = x.more;
- angle  = x.angle;
-}
-
-sbendData::~sbendData() {
-}
-
-void sbendData::eliminate() {
- delete this;
-}
-
-void* sbendData::clone() {
- void* p = new sbendData( *this );
- return p;
-}
+#include "sbend.h"
 
 
 // **************************************************
@@ -69,10 +43,6 @@ sbend::sbend( char* n, double l, double s, double alpha, PropFunc* pf )
  }
 }
 
-
-sbend::sbend( sbendData& x ) : bmlnElmnt( (bmlnElmntData&) x ) {
- angle = x.angle;
-}
 
 sbend::sbend( const sbend& x )
 : bmlnElmnt( (bmlnElmnt&) x )
@@ -117,38 +87,6 @@ void sbend::geomToStart( BMLN_posInfo& g ) {
 
 void sbend::eliminate() {
  delete this;
-}
-
-
-sbendData* sbend::image() {
- sbendData* p = new sbendData;
- bmlnElmnt::image( (bmlnElmntData*) p );
-
- p->more      = 1;
- p->angle     = angle;
- return p;
-}
-
-void sbend::image( int d, slist* s, BMLN_posInfo* cg ) {
- sbendData* p = new sbendData;
- bmlnElmnt::image( (bmlnElmntData*) p );
-
- p->address   = this;
- p->depth     = d;
- p->more      = 1;
- p->angle     = angle;
-
- geomToEnd( *cg );
- cg->outPoint = geometry.outPoint;
- int j; // O.K.
- for( j = 0; j < 3; j++ ) cg->outAxes[j] = geometry.outAxes[j];
-
-     p->geometry.inPoint  = geometry.inPoint;
-     p->geometry.outPoint = geometry.outPoint;
-     for( j = 0; j < 3; j++ ) p->geometry.inAxes[j]  = geometry.inAxes[j];
-     for( j = 0; j < 3; j++ ) p->geometry.outAxes[j] = geometry.outAxes[j];
-
- s->append( p );
 }
 
 

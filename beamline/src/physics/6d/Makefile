@@ -4,11 +4,9 @@ INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(BASIC_TOOLKIT_INC) -I$(TKIN
 
 OBJS =  BBLensPhysics.o\
 	   JetQuadrupolePhysics.o\
-	   JetThinQuadPhysics.o\
 	   JetthinSextPhysics.o\
 	   bmlnElmntPhysics.o \
 	   combinedFuncPhys.o \
-           hmonitorPhysics.o \
 	   kickPhysics.o \
            markerPhysics.o \
            monitorPhysics.o \
@@ -28,11 +26,9 @@ OBJS =  BBLensPhysics.o\
 	   thinLambPhysics.o \
            thinMultipolePhysics.o \
            thinOctupolePhysics.o \
-           thinQuadPhysics.o \
 	   thinSeptumPhysics.o\
            thinSextupolePhysics.o \
-           thinrfcavityPhysics.o \
-           vmonitorPhysics.o
+           thinrfcavityPhysics.o
 
 SOURCES = $(OBJS:.o=.cc)
 
