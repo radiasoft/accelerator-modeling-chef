@@ -1,8 +1,8 @@
 #include <stdlib.h>
-#include <stdio.h>
-#include <iostream.h>
+#include <iostream>
+
 #include "menu.h"
-#include "mxyzptlk.h"
+#include "Jet"
 
 #define	NUMREG 4
 

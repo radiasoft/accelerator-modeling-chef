@@ -9,15 +9,17 @@
 ** 
 ** --- Leo Michelotti
 ** --- August 19, 1993
+** 
+** Templated version.
+** --- March 18, 2004
 **
 */
 
 #include <stdlib.h>
-#include "Jet.h"
-#include "Mapping.h"
+#include "Mapping"
 
-main( int argc, char** argv ) {
-
+int main( int argc, char** argv ) 
+{
  if( argc != 4 ) {
   std::cout << "\nUsage: " << argv[0] 
             << "  <r>  <theta (deg)>  <phi (deg)>\n"
@@ -34,7 +36,7 @@ main( int argc, char** argv ) {
        phi   ( d2r*atof( argv[3] ) );
  Jet::EndEnvironment();
 
- Mapping   position;
+ Mapping position;
 
  position.SetComponent( 0, r * sin( theta ) * cos( phi ) );
  position.SetComponent( 1, r * sin( theta ) * sin( phi ) );
@@ -42,4 +44,6 @@ main( int argc, char** argv ) {
 
  M = position.Jacobian();
  std::cout << M << "\n\n" << M.inverse() << std::endl;
+
+ return 0;
 }

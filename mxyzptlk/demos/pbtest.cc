@@ -1,12 +1,12 @@
 #include <stdlib.h>
-#include <stdio.h>
-#include <iostream.h>
+#include <iostream>
 
-#include "mxyzptlk.h"
+#include "Jet"
 
+using namespace std;
 
-main() {
-
+main() 
+{
  double u1, u2, v1, v2;
  double w, y, z, answer;
 
