@@ -27,14 +27,21 @@ BeamlineIterator::BeamlineIterator( const beamline* x )
 }
 
 
-BeamlineIterator::BeamlineIterator( const BeamlineIterator& )
+BeamlineIterator::BeamlineIterator( const BeamlineIterator& x )
 {
-  cerr << "*** ERROR ***                                       \n"
-          "*** ERROR *** BeamlineIterator::BeamlineIterator( const BeamlineIterator& ) \n"
-          "*** ERROR *** Copy constructor must not be called.  \n"
-          "*** ERROR ***                                       \n"
-       << endl;
-  exit(999);
+  char firstTime = 1;
+  if( firstTime ) {
+    cerr << "*** WARNING ***                                       \n"
+            "*** WARNING *** BeamlineIterator::BeamlineIterator( const BeamlineIterator& ) \n"
+            "*** WARNING *** Copy constructor has been called.     \n"
+            "*** WARNING ***                                       \n"
+            "*** WARNING *** This message appears once only.       \n"
+            "*** WARNING ***                                       \n"
+         << endl;
+    firstTime = 0;
+  }
+  
+  _getNext = new dlist_iterator( *(x._getNext) );
 }
 
 
