@@ -99,9 +99,10 @@ public:
   static const short int PSD;
   short int psd()        { return Particle::PSD; }
 
-  void setState( double* );
-  void setState( const Vector& );
-  void getState( double* );
+  void setState      ( double* );
+  void setState      ( const Vector& );
+  void getState      ( double* );
+  void setStateToZero();
 
   double get_x()     { return state[0]; }
   double get_y()     { return state[1]; }

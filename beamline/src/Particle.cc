@@ -104,6 +104,10 @@ void Particle::setState( const Vector& u ) {
  for( int i = 0; i < BMLN_dynDim; i++ )  state[i] = u(i);
 } 
 
+void Particle::setStateToZero() {
+ for( int i = 0; i < BMLN_dynDim; i++ )  state[i] = 0.0;
+} 
+
 void Particle::getState( double* u ) {
  memcpy( (void *) u, 
          (const void *) this->state, 
