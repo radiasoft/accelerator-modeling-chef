@@ -666,7 +666,12 @@ Jet::EndEnvironment( double* scl )
          << "*** ERROR *** has occurred. This is beyond      \n"
          << "*** ERROR *** the realm of human understanding. \n"
          << "*** ERROR *** Please consult an exorcist.       \n"
-         << "*** ERROR ***                                   \n"
+         << "*** ERROR ***                                   \n";
+
+    cerr << "*** ERROR *** currentIndex:      " << currentIndex     << endl;
+    cerr << "*** ERROR *** newCoords.size() : " << newCoords.size() << endl;
+    cerr << "*** ERROR *** newValues.size() : " << newValues.size() << endl;
+    cerr << "*** ERROR ***                                   \n"
          << endl;
     exit(1);
   }
