@@ -37,6 +37,9 @@
 #include "bmlnElmnt.h"
 #endif
 
+class Proton;
+class JetProton;
+
 class CF_rbend : public bmlnElmnt
 {
   public:
@@ -140,8 +143,8 @@ class CF_rbend : public bmlnElmnt
 
   double _poleFaceAngle;
 
-  ostream& writeTo(ostream&);
-  istream& readFrom(istream&);
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
 };
 
 

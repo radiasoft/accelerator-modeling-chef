@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
+******  Version:   1.0
 ******                                    
-******  File:      MappPropFunc.h
+******  File:      InsertionList.h
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -30,34 +30,60 @@
 *************************************************************************/
 
 
-#ifndef MAPPPROPFUNC_H
-#define MAPPPROPFUNC_H
+// Note: This file has been removed from bmlnElmnt.h
+// in order to improve separability.   - lpjm  12/9/03
 
-#ifndef BMLNELMNT_H
-#include "bmlnElmnt.h"
-#endif
+#ifndef INSERTIONLIST_H
+#define INSERTIONLIST_H
 
-#ifndef MAP_HXX
-#include "Mapping.h"
-#endif
+#include "Particle.h"
 
-class MappPropFunc : public bmlnElmnt::PropFunc
-{
-  public:
-    int operator()( bmlnElmnt*, Particle&    );
-    int operator()( bmlnElmnt*, JetParticle& );
-    const char* Type() const { return "MappPropFunc"; }
-
-    MappPropFunc( JetParticle&, bmlnElmnt& );
-    MappPropFunc( const Mapping& );
-    MappPropFunc( const MappPropFunc& );
-    ~MappPropFunc(){}
-
-    void setMapping( const Mapping& );
-    Mapping getMapping();
-
-  protected:
-    Mapping _myMap;
+struct InsertionListElement {
+  double     s;  // Position (design orbit length)
+  bmlnElmnt* q;  // Element to be inserted.
+  InsertionListElement( double     x = 0.0, /* s */
+                        bmlnElmnt* p = 0    /* q */ 
+                      ) { s = x; q = p; }
 };
 
-#endif
+
+class InsertionList : private dlist
+{
+private:
+  double smax;
+  Proton prtn;
+public:
+  InsertionList( double /* momentum [GeV/c] */ = 1000.0 );
+  InsertionList( const InsertionList& );
+  ~InsertionList();
+
+  void Append( const InsertionListElement& );
+  void Append( const InsertionListElement* );
+  void Insert( const InsertionListElement& );
+  void Insert( const InsertionListElement* );
+  void MergeUnique( InsertionList& );
+  void MergeAll   ( InsertionList& );
+  InsertionListElement* Get();   // Iterator; removes elements from list
+  InsertionListElement* operator()( const int& ) const;
+  InsertionList& operator=( const InsertionList& );
+  int Size();
+  void Clear();   // Preserves the InsertionListElements
+  Proton GetParticle() { return prtn; }
+  friend std::ostream& operator<<( std::ostream&, const InsertionList& );
+};
+
+inline 
+InsertionListElement* 
+InsertionList::Get()
+{
+  return (InsertionListElement*) dlist::get();
+}
+
+inline 
+InsertionListElement* 
+InsertionList::operator()( const int& n ) const
+{
+  return (InsertionListElement*) dlist::operator[]( n );
+}
+
+#endif // INSERTIONLIST_H

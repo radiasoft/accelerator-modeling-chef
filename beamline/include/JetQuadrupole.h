@@ -34,14 +34,15 @@
 #define JETQUADRUPOLE_H
 
 #include "bmlnElmnt.h"
+#include "Jet.h"
 
 class JetQuadrupole : public bmlnElmnt
 {
  private:
   Jet JetStrength;
   int strengthIndex;
-  istream& readFrom(istream&);
-  ostream& writeTo(ostream&);
+  std::istream& readFrom(std::istream&);
+  std::ostream& writeTo(std::ostream&);
 
 public:
 
@@ -114,8 +115,8 @@ class JetthinQuad : public bmlnElmnt
  private:
    Jet KL;
    int strengthIndex;
-  ostream& writeTo(ostream&);
-  istream& readFrom(istream&);
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
 
  public:
    JetthinQuad( double, int );

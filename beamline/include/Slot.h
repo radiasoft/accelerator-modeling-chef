@@ -85,8 +85,8 @@ class Slot : public bmlnElmnt
 
    short int checkFrame( const Frame& ) const;
 
-   ostream& writeTo ( ostream& );
-   istream& readFrom( istream& );
+   std::ostream& writeTo ( std::ostream& );
+   std::istream& readFrom( std::istream& );
  
    void eliminate() 
      { delete this; }

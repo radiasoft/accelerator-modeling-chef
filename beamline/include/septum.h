@@ -43,8 +43,8 @@ private:
   double strengthPos;    // kick in strength in radians for x > xWire
   double strengthNeg;	 // kick in strength in radians for x < xWire
   double xWire;		 // position of wire septum in meters
-  ostream& writeTo(ostream&);
-  istream& readFrom(istream&);
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
 
 public:
   

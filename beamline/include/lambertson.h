@@ -47,8 +47,8 @@ private:
                            // will be on the reference orbit of the
                            // extraction line.  The specified coordinates are 
                            // SUBTRACTED from the particle coordinates.
-  ostream& writeTo(ostream&);
-  istream& readFrom(istream&);
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
 
 public:
   

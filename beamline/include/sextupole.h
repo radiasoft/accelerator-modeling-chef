@@ -34,6 +34,7 @@
 #define SEXTUPOLE_H
 
 #include "bmlnElmnt.h"
+#include "Jet.h"
 
 class sextupole : public bmlnElmnt
 {
@@ -96,8 +97,8 @@ class JetthinSext : public bmlnElmnt
 private:
   Jet K2L;
   int strengthIndex;
-  ostream& writeTo(ostream&);
-  istream& readFrom(istream&);
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
 
 public:
   JetthinSext( double, int );

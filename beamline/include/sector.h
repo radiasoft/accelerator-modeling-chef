@@ -37,6 +37,8 @@
 #include "bmlnElmnt.h"
 #endif
 
+#include "Mapping.h"
+#include "Particle.h"
 
 class sector : public bmlnElmnt
 {
@@ -53,8 +55,8 @@ private:
   double (*DeltaT) ( double );
   Jet    (*JetDeltaT) ( const Jet& );
 
-  ostream& writeTo ( ostream& );
-  istream& readFrom( istream& );
+  std::ostream& writeTo ( std::ostream& );
+  std::istream& readFrom( std::istream& );
 
 public:
 

@@ -60,9 +60,9 @@ public:
   ~Pinger(); 
 
   const char* Type() const;
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
+  void localPropagate( ParticleBunch& x );
   bmlnElmnt* Clone() const { return new Pinger( *this ); }
   void accept( BmlVisitor& v ) { v.visitPinger( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitPinger( this ); }
@@ -70,8 +70,8 @@ public:
   void disarm()     { _counter = -1; }
   bool isArmed()    { return ( _counter >= 0 ); };
   
-  ostream& writeTo(ostream&);
-  istream& readFrom(istream&);
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
   
   double getKickDirection() { return _kick_direction; }
   void setKickDirection(double k) { _kick_direction = k; }

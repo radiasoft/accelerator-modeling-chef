@@ -45,8 +45,8 @@ private:
   double _CT;   // Reference time of traversal, in meters.
 
   // bmlnElmnt::strength -> magnetic field [T]
-  ostream& writeTo(ostream&);
-  istream& readFrom(istream&);
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
 
 public:
   class MAD_Prop : public bmlnElmnt::PropFunc
