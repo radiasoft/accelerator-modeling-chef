@@ -268,15 +268,15 @@ const char* BeamlineBrowser::elmnt_xpm[19]={
 };
 
 
-QPixmap* BeamlineBrowser::driftSymbol = 0;
-QPixmap* BeamlineBrowser::slotSymbol = 0;
-QPixmap* BeamlineBrowser::bmlBlackSymbol = 0;
+QPixmap* BeamlineBrowser::driftSymbol     = 0;
+QPixmap* BeamlineBrowser::slotSymbol      = 0;
+QPixmap* BeamlineBrowser::bmlBlackSymbol  = 0;
 QPixmap* BeamlineBrowser::sextupoleSymbol = 0;
-QPixmap* BeamlineBrowser::fquadSymbol = 0;
-QPixmap* BeamlineBrowser::dquadSymbol = 0;
+QPixmap* BeamlineBrowser::fquadSymbol     = 0;
+QPixmap* BeamlineBrowser::dquadSymbol     = 0;
 QPixmap* BeamlineBrowser::bmlOrangeSymbol = 0;
-QPixmap* BeamlineBrowser::dipoleSymbol = 0;
-QPixmap* BeamlineBrowser::elmntSymbol = 0;
+QPixmap* BeamlineBrowser::dipoleSymbol    = 0;
+QPixmap* BeamlineBrowser::elmntSymbol     = 0;
 
 
 // *****************************************************************************
@@ -553,6 +553,8 @@ BeamlineBrowser::BeamlineBrowser( QWidget *parent, const char *name, bool sdo )
   this->resize( 400, 400 );
   this->setCaption( "CHEF: Beamline Browser" );
   this->setAllColumnsShowFocus( TRUE );
+
+  if ( childCount() == 0 ) emit sig_browserIsEmpty();
   this->show();
 }
 
@@ -946,6 +948,8 @@ void BeamlineBrowser::displayBeamline( const BeamlineContext* ptr )
   this->setSelected ( root, true );
   emit sig_bmlLeftClicked( root->_myBmlCon );
   emit sig_bmlLeftClicked( root );
+
+  if ( childCount() == 1 ) emit sig_browserIsNotEmpty();
 }
 
 
@@ -1035,6 +1039,8 @@ int BeamlineBrowser::removeBeamline( BeamlineContext* ptr )
     _topLevelItems.remove( (void*) w );
     delete w;
   }
+
+  if ( childCount() == 0 ) emit sig_browserIsEmpty();
 
   return 0;
 }

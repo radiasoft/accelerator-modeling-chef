@@ -234,10 +234,10 @@ class BeamlineContext
     // reference energy on the closed orbit.
 
     // "small" numbers for testing orbit closure
-    const static double _smallClosedOrbitXError;
-    const static double _smallClosedOrbitYError;
-    const static double _smallClosedOrbitNPXError;
-    const static double _smallClosedOrbitNPYError;
+    static const double _smallClosedOrbitXError;
+    static const double _smallClosedOrbitYError;
+    static const double _smallClosedOrbitNPXError;
+    static const double _smallClosedOrbitNPYError;
 
 
     LattFuncSage::tunes*     _tunes;

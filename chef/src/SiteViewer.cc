@@ -59,31 +59,35 @@ using namespace std;
 const BoolNullNode SiteViewer::nada;
 
 
-SiteViewer::SiteViewer( BeamlineContext& bmlCP )
-: _bmlConPtr( &bmlCP ), 
+SiteViewer::SiteViewer( BeamlineContext& bmlCP, QWidget* parent, const char* name, WFlags f)
+: 
+  QVBox(parent,name,f),
   _x(0), _y(0), _z(0), 
-  _element(0),
-  _filterPtr(0),
-  _deleteContext( false ),
   _xmin(1.0e10), _xmax(-1.0e10),
   _ymin(1.0e10), _ymax(-1.0e10),
   _zmin(1.0e10), _zmax(-1.0e10),
-  _showStart( false )
+  _bmlConPtr( &bmlCP ), 
+  _deleteContext( false ),
+  _showStart( false ),
+  _element(0),
+  _filterPtr(0)
 {
   this->_finishConstructor();
 }
 
 
-SiteViewer::SiteViewer( beamline* x )
-: _bmlConPtr( 0 ), 
-  _x(0), _y(0), _z(0), 
-  _element(0),
-  _filterPtr(0),
-  _deleteContext( true ),
+SiteViewer::SiteViewer( beamline* x, QWidget* parent, const char* name, WFlags f)
+: 
+  QVBox(parent,name,f),
+   _x(0), _y(0), _z(0), 
   _xmin(1.0e10), _xmax(-1.0e10),
   _ymin(1.0e10), _ymax(-1.0e10),
   _zmin(1.0e10), _zmax(-1.0e10),
-  _showStart( false )
+  _bmlConPtr( 0 ), 
+  _deleteContext( true ),
+  _showStart( false ),
+  _element(0),
+  _filterPtr(0)
 {
   if( 0 == x ) {
     QMessageBox::information( 0, "CHEF::SiteViewer",
@@ -207,7 +211,7 @@ void SiteViewer::_fileSite()
     QString("CHEF: Site Coordinate File") );
 
   if( fileName.isNull() ) {
-    QMessageBox::information( 0, "CHEF::SiteViewer::_fileSite()",
+    QMessageBox::information( 0, "CHEF::SiteViewer",
                               "Sorry. It didn't work." );
   }
 
@@ -320,9 +324,11 @@ void SiteViewer::_optionHilt( const BoolNode& x )
 SiteViewer::Wndw::Wndw( SiteViewer* pt)
 : QGLWidget( (QWidget*) pt ), 
   _xbf(0.0), _ybf(0.0),
-  _zoomActive( false ), _isZooming( false ), 
-  _zoomed( false ), _startedZoom( false ),
-  _hilights( false )
+  _isZooming( false ), 
+  _zoomActive( false ), 
+  _startedZoom( false ),
+  _zoomed( false ), 
+ _hilights( false )
 {
   _parent = pt;
 }

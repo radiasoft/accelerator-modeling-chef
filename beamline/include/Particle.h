@@ -36,7 +36,7 @@
 #include <exception>
 
 #include "VectorD.h"
-#include "Mapping"
+#include "Mapping.h"
 #include "Barnacle.h"
 
 const int BMLN_dynDim  = 6;   // ??? Doesn't this imply that BMLN_dynDim

@@ -32,11 +32,11 @@
 #define TLIEOPERATOR
 
 #ifndef TJET
-#include "Jet"
+#include "Jet.h"
 #endif
 
 #ifndef TJETVECTOR
-#include "JetVector"
+#include "JetVector.h"
 #endif
 
 #include "TLieOperator.tcc"

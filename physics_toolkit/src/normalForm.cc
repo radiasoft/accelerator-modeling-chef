@@ -47,7 +47,7 @@
 */
 
 #include "GenericException.h"
-#include "Mxyzptlk"
+#include "mxyzptlk.h"
 
 #define MLT1  1.0e-6
 

@@ -858,8 +858,9 @@ void DrawSpace::resetZoom()
 // Implementation: class Tracker
 // -----------------------------
 
-Tracker::Tracker( BeamlineContext* bmlCP )
-: _bmlConPtr( bmlCP ), _isIterating(false), _p_info(0), _number(1),
+Tracker::Tracker( BeamlineContext* bmlCP, QWidget* parent, const char* name, WFlags f)
+  : QVBox(parent, name, f),
+  _bmlConPtr( bmlCP ), _isIterating(false), _p_info(0), _number(1),
   _deleteContext( false ), _p_currOrb(0),
   _myWheel(0.0)
 {
@@ -870,8 +871,9 @@ Tracker::Tracker( BeamlineContext* bmlCP )
 }
 
 
-Tracker::Tracker( /* const */ beamline* x )
-: _bmlConPtr( 0 ), _isIterating(false), _p_info(0), _number(1),
+Tracker::Tracker( /* const */ beamline* x,  QWidget* parent, const char* name, WFlags f)
+: QVBox(parent, name, f),
+  _bmlConPtr( 0 ), _isIterating(false), _p_info(0), _number(1),
   _deleteContext( true ), _p_currOrb(0),
   _myWheel(0.0)
 {

@@ -32,7 +32,7 @@
 #define TJETVECTOR
 
 #ifndef TJET
-#include "Jet"
+#include "Jet.h"
 #endif
 
 #include "TJetVector.tcc"

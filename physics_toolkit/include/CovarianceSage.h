@@ -37,7 +37,7 @@
 #include "bmlnElmnt.h"
 #endif
 #ifndef MAP_HXX
-#include "Mapping"
+#include "Mapping.h"
 #endif
 #ifndef MATHCONS_H
 #include "MathConstants.h"

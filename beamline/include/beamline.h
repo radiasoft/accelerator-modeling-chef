@@ -50,7 +50,7 @@
 #include <math.h>
 // #include <string>   (More trouble than it's worth.)
 #include "MathConstants.h"
-#include "Mxyzptlk"
+#include "mxyzptlk.h"
 #include "slist.h"
 #include "Barnacle.h"
 #include "VectorD.h"

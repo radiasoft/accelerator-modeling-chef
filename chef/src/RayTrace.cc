@@ -329,19 +329,27 @@ void RayDrawSpace::setRange( double xl, double xh, double yl, double yh )
 // Implementation: class RayTrace
 // -----------------------------
 
-RayTrace::RayTrace( BeamlineContext* bmlCP )
-: _bmlConPtr( bmlCP ), _isIterating(0), _p_info(0), _number(1),
-  _deleteContext( false ), 
-  _maxHistory(64)
+RayTrace::RayTrace( BeamlineContext* bmlCP, QWidget* parent, const char* name, WFlags f )
+: QVBox( parent, name, f),
+  _p_info(0), 
+  _number(1),
+  _maxHistory(64),
+  _bmlConPtr( bmlCP ), 
+  _deleteContext( false ),
+  _isIterating(0)
 {
   this->_finishConstructor();
 }
 
 
-RayTrace::RayTrace( /* const */ beamline* x )
-: _bmlConPtr( 0 ), _isIterating(0), _p_info(0), _number(1),
+RayTrace::RayTrace( /* const */ beamline* x, QWidget* parent, const char* name, WFlags f )
+: QVBox(parent, name, f),
+  _p_info(0), 
+  _number(1),
+  _maxHistory(64),
+  _bmlConPtr( 0 ), 
   _deleteContext( true ),
-  _maxHistory(64)
+  _isIterating(0) 
 {
   if( 0 == x ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -539,7 +547,7 @@ RayTrace::~RayTrace()
   delete _p_trackBox;
 
   Ray* q;
-  while( q = (Ray*) _history.get() ) {
+  while(( q = (Ray*) _history.get() )) {
     delete q;
   }
 
@@ -570,7 +578,7 @@ void RayTrace::_edit_clear()
   _isIterating = 0;
 
   Ray* q;
-  while( q = (Ray*) _history.get() ) {
+  while(( q = (Ray*) _history.get() )) {
     delete q;
   }
 

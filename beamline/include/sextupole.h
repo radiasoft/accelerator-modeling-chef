@@ -34,7 +34,7 @@
 #define SEXTUPOLE_H
 
 #include "bmlnElmnt.h"
-#include "Jet"
+#include "Jet.h"
 
 class sextupole : public bmlnElmnt
 {
