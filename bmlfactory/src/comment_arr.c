@@ -1,3 +1,39 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE FACTORY:  Interprets MAD input files and             
+******             creates instances of class beamline.                       
+******                                                
+******  Version:   1.2                    
+******                                    
+******  File:      comment_arr.c
+******                                                                
+******  Copyright (c) 1999  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******                    (630) 840 2231                              
+******             Email: michelotti@fnal.gov                         
+******                    ostiguy@fnal.gov                            
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
    /* -*- C -*- */
 
 #include <assert.h>
@@ -89,7 +125,7 @@ comment_compare( const void* ptr1,
      Takes a line number and returns a comment associated with that line,
      if there is one, or returns NULL if there isn't
    */
-int
+gpointer
 comment_arr_lookup( int         linenum,
                     GPtrArray*  comment_arr ) {
   
@@ -104,9 +140,9 @@ comment_arr_lookup( int         linenum,
   }
 
   if ( result == NULL ) {
-    return (int)NULL;
+    return NULL;
   } else {
-    return (int)(*result);
+    return (gpointer)(*result);
   }
 }
 
@@ -122,9 +158,10 @@ comment_arr_add_new( const char*   sptr,
                      int           local_linenum,
                      GPtrArray*    comment_arr,
                      fb_allocator* comment_alloc ) {
-  
-  comment* ptr = (comment*)allocate( comment_alloc );
 
+  comment* ptr;
+  
+  allocate( ptr, comment_alloc );
   assert( comment_arr != NULL );
   
   ptr->svalue_ = (char*)malloc( strlen(sptr) + 1 );

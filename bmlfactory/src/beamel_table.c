@@ -1,3 +1,39 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE FACTORY:  Interprets MAD input files and             
+******             creates instances of class beamline.                       
+******                                                
+******  Version:   1.2                    
+******                                    
+******  File:      beamel_table.c
+******                                                                
+******  Copyright (c) 1999  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******                    (630) 840 2231                              
+******             Email: michelotti@fnal.gov                         
+******                    ostiguy@fnal.gov                            
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
    /* -*- C -*- */
 
 #include <assert.h>
@@ -54,7 +90,7 @@ bel_free_func( gpointer key,
      Takes a char pointer "key", bel "value", and arr_ptr address "user_data", 
      and makes the array element at "user_data" point to "value"
    */
-static gboolean
+static void
 bel_table_el_to_array_el( gpointer key,
                           gpointer value,
                           gpointer user_data ) {
@@ -65,7 +101,6 @@ bel_table_el_to_array_el( gpointer key,
   
   *ptr = (beam_element*)value;
   *((beam_element***)user_data) = ++ptr;
-  return TRUE;
 }
 
    /*
@@ -131,11 +166,11 @@ bel_table_display( FILE*       out,
      Take a bel name, converts it to upper case, and returns the pointer to
      the bel if it's found or NULL if the bel is not found
    */
-int
+gpointer
 bel_table_lookup( char*       bel_name,
                   GHashTable* bel_table ) {
   str_to_upper( bel_name );
-  return (int)g_hash_table_lookup( bel_table, bel_name );
+  return g_hash_table_lookup( bel_table, bel_name );
 }
 
    /*
@@ -162,7 +197,7 @@ bel_table_to_array( beam_element*** bel_arr,
   beam_element** arr_ptr;
   size_t size = g_hash_table_size( bel_table );
   arr_ptr = *bel_arr = (beam_element**)malloc( size*sizeof(beam_element*) );
-  g_hash_table_foreach_remove( bel_table, bel_table_el_to_array_el, &arr_ptr );
+  g_hash_table_foreach( bel_table, (GHFunc)bel_table_el_to_array_el, &arr_ptr );
 
   return size;
 }

@@ -3,6 +3,11 @@
 #include <math.h>  
 #include <stdlib.h>  
 #include <stdio.h>
+#include <string.h>
+
+#if !defined(fb_allocator_h)
+#include "fb_allocator.h"
+#endif /*fb_allocator_h*/
 
 #if !defined(str_to_upper_h)
 #include "str_to_upper.h"
@@ -35,7 +40,7 @@
 #if !defined(expression_h)
 #include "expression.h"
 #endif /* expression_h */
-
+  
 #if !defined(madparser_h)
 #include "madparser.h"
 #endif /* madparser_h */
@@ -316,8 +321,9 @@ definition			: const_definition
 const_definition		: identifier ':' MAD_CONSTANT '=' identifier {
                                   if ( const_table_lookup( $<sval>1, madparser_const_table( mp ) ) == 0 ) {
                                     if ( var_table_lookup( $<sval>1, madparser_var_table( mp ) ) == 0 ) {
-                                      constant* dst = (constant*)allocate( madparser_const_alloc( mp ) );
-                                      constant* src = (constant*)const_table_lookup( $<sval>5, madparser_const_table(mp) );
+                                      constant* dst; constant* src;
+                                      allocate( dst, madparser_const_alloc( mp ) );
+                                      src = (constant*)const_table_lookup( $<sval>5, madparser_const_table(mp) );
                                       
                                       if ( src != NULL ) {
                                         const_init_e( dst, $<sval>1, src, $<sval>5, madparser_linenum(mp), madparser_current_filename(mp), madparser_local_linenum(mp), madparser_expr_alloc(mp) );
@@ -338,7 +344,8 @@ const_definition		: identifier ':' MAD_CONSTANT '=' identifier {
 				| identifier ':' MAD_CONSTANT '=' const_value {
                                   if ( const_table_lookup( $<sval>1, madparser_const_table(mp) ) == 0 ) {
                                     if ( var_table_lookup( $<sval>1, madparser_var_table(mp) ) == 0 ) {
-                                      constant* ptr = (constant*)allocate( madparser_const_alloc(mp) );
+                                      constant* ptr;
+                                      allocate( ptr, madparser_const_alloc(mp) );
                                       
                                       if ( current_constant == CONSTANT_DOUBLE ) {
                                         const_init_d( ptr, $<sval>1, (GNode*)$<ptr>5, madparser_linenum(mp), madparser_current_filename(mp), madparser_local_linenum(mp) );
@@ -402,7 +409,8 @@ var_definition			: identifier MAD_DEF_PARAM var_expression {
                                     variable* ptr = (variable*)var_table_lookup( $<sval>3, madparser_var_table(mp) );
                                     double val = expr_evaluate( (GNode*)$<ptr>5, madparser_var_table(mp), madparser_bel_table(mp) );
                                     
-                                    expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
+                                    expr_struct* data;
+                                    allocate( data, madparser_expr_alloc(mp) );
                                     data->kind_ = NUMBER_EXPR;
                                     data->dvalue_ = val;
                                     data->svalue_ = (char*)malloc( 16 );
@@ -1610,8 +1618,10 @@ const_expression		: const_expr_unit
   #if 0
                                   $<ptr>$ = $<ptr>2;
   #else
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode*       parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_   = BRACKETS_EXPR;
                                   data->dvalue_ = ((expr_struct*)(((GNode*)($<ptr>2))->data))->dvalue_;
                                   data->svalue_ = NULL;
@@ -1620,8 +1630,10 @@ const_expression		: const_expr_unit
   #endif                                 
                                 }
 				| '+' const_expression {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_   = UN_PLUS_EXPR;
                                   data->dvalue_ = ((expr_struct*)(((GNode*)($<ptr>2))->data))->dvalue_;
                                   data->svalue_ = NULL;
@@ -1629,8 +1641,10 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| '-' const_expression {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_   = UN_MINUS_EXPR;
                                   data->dvalue_ = -((expr_struct*)(((GNode*)($<ptr>2))->data))->dvalue_;
                                   data->svalue_ = NULL;
@@ -1638,8 +1652,10 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| const_expression '+' const_expression {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = ADD_OP_EXPR;
                                   data->dvalue_ = ((expr_struct*)(((GNode*)($<ptr>1))->data))->dvalue_ + ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_;
                                   data->svalue_ = NULL;
@@ -1648,8 +1664,10 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| const_expression '-' const_expression {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = SUB_OP_EXPR;
                                   data->dvalue_ = ((expr_struct*)(((GNode*)($<ptr>1))->data))->dvalue_ - ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_;
                                   data->svalue_ = NULL;
@@ -1658,8 +1676,10 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| const_expression '*' const_expression {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = MUL_OP_EXPR;
                                   data->dvalue_ = ((expr_struct*)(((GNode*)($<ptr>1))->data))->dvalue_ * ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_;
                                   data->svalue_ = NULL;
@@ -1668,8 +1688,10 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| const_expression '/' const_expression {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = DIV_OP_EXPR;
                                   data->dvalue_ = ((expr_struct*)(((GNode*)($<ptr>1))->data))->dvalue_ / ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_;
                                   data->svalue_ = NULL;
@@ -1678,8 +1700,10 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| const_expression '^' const_expression {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = POW_OP_EXPR;
                                   data->dvalue_ = pow( ((expr_struct*)(((GNode*)($<ptr>1))->data))->dvalue_, ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -1688,8 +1712,10 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| MAD_SQRT '(' const_expression ')' {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = SQRT_EXPR;
                                   data->dvalue_ = sqrt( ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -1697,8 +1723,10 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| MAD_LOG '(' const_expression ')' {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = LOG_EXPR;
                                   data->dvalue_ = log( ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -1706,8 +1734,10 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| MAD_EXP '(' const_expression ')' {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = EXP_EXPR;
                                   data->dvalue_ = exp( ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -1715,8 +1745,10 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| MAD_SIN '(' const_expression ')' {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = SIN_EXPR;
                                   data->dvalue_ = sin( ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -1724,8 +1756,10 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| MAD_COS '(' const_expression ')' {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = COS_EXPR;
                                   data->dvalue_ = cos( ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -1733,8 +1767,10 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| MAD_TAN '(' const_expression ')' {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = TAN_EXPR;
                                   data->dvalue_ = tan( ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -1742,8 +1778,10 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
                                 | MAD_ASIN '(' const_expression ')' {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = ASIN_EXPR;
                                   data->dvalue_ = asin( ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -1751,8 +1789,10 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| MAD_ABS '(' const_expression ')' {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;                                  
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = ABS_EXPR;
                                   data->dvalue_ = fabs( ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -1760,10 +1800,12 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| MAD_MAX '(' const_expression ',' const_expression ')' {
+                                  expr_struct *data;
+                                  GNode *parent;
                                   double val1 = ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_;
                                   double val2 = ((expr_struct*)(((GNode*)($<ptr>5))->data))->dvalue_;
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = MAX_EXPR;
                                   data->dvalue_ = ( val1 > val2 ) ? val1 : val2;
                                   data->svalue_ = NULL;
@@ -1772,10 +1814,12 @@ const_expression		: const_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| MAD_MIN '(' const_expression ',' const_expression ')' {
+                                  expr_struct *data;
+                                  GNode *parent;
                                   double val1 = ((expr_struct*)(((GNode*)($<ptr>3))->data))->dvalue_;
                                   double val2 = ((expr_struct*)(((GNode*)($<ptr>5))->data))->dvalue_;
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = MIN_EXPR;
                                   data->dvalue_ = ( val1 < val2 ) ? val1 : val2;
                                   data->svalue_ = NULL;
@@ -1786,15 +1830,18 @@ const_expression		: const_expr_unit
 				;
 
 const_expr_unit			: MAD_NUMERIC_LITERAL {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
+                                  expr_struct* data;
+                                  allocate( data, madparser_expr_alloc(mp) );
                                   data->kind_ = NUMBER_EXPR;
                                   data->dvalue_ = atof( $<sval>1 );
                                   data->svalue_ = $<sval>1;
                                   $<ptr>$ = g_node_new( data );
                                 }
                                 | identifier {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  constant *ptr = (constant*)const_table_lookup( $<sval>1, madparser_const_table(mp) );
+                                  expr_struct *data;
+                                  constant *ptr;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  ptr = (constant*)const_table_lookup( $<sval>1, madparser_const_table(mp) );
                                   if ( ptr != 0 ) {
                                     if ( ptr->svalue_ != NULL ) {
                                       fprintf(stderr, "fatal parser error ! string constant %s used in an algebraic expression\n", $<sval>1);
@@ -1823,8 +1870,10 @@ var_expression			: var_expr_unit
      #if 0
                                   $<ptr>$ = $<ptr>2;
      #else
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = BRACKETS_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>2 );
@@ -1832,24 +1881,30 @@ var_expression			: var_expr_unit
      #endif
                                 }
 				| '+' var_expression {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = UN_PLUS_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>2 );
                                   $<ptr>$ = parent;
                                 }
 				| '-' var_expression {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = UN_MINUS_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>2 );
                                   $<ptr>$ = parent;
                                 }
                                 | var_expression '+' var_expression {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;                                  
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = ADD_OP_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>3 );
@@ -1857,8 +1912,10 @@ var_expression			: var_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| var_expression '-' var_expression {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = SUB_OP_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>3 );
@@ -1866,8 +1923,10 @@ var_expression			: var_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| var_expression '*' var_expression {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = MUL_OP_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>3 );
@@ -1875,8 +1934,10 @@ var_expression			: var_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| var_expression '/' var_expression {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = DIV_OP_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>3 );
@@ -1884,8 +1945,10 @@ var_expression			: var_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| var_expression '^' var_expression {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = POW_OP_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>3 );
@@ -1893,72 +1956,90 @@ var_expression			: var_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| MAD_SQRT '(' var_expression ')' {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = SQRT_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>3 );
                                   $<ptr>$ = parent;
                                 }
 				| MAD_LOG '(' var_expression ')' {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = LOG_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>3 );
                                   $<ptr>$ = parent;
                                 }
 				| MAD_EXP '(' var_expression ')' {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;                                  
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = EXP_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>3 );
                                   $<ptr>$ = parent;
                                 }
 				| MAD_SIN '(' var_expression ')' {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = SIN_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>3 );
                                   $<ptr>$ = parent;
                                 }
 				| MAD_COS '(' var_expression ')' {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = COS_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>3 );
                                   $<ptr>$ = parent;
                                 }
 				| MAD_TAN '(' var_expression ')' {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = TAN_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>3 );
                                   $<ptr>$ = parent;
                                 }
 				| MAD_ASIN '(' var_expression ')' {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = ASIN_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>3 );
                                   $<ptr>$ = parent;
                                 }
 				| MAD_ABS '(' var_expression ')' {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = ABS_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>3 );
                                   $<ptr>$ = parent;
                                 }
 				| MAD_MAX '(' var_expression ',' var_expression ')' {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = MAX_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>5 );
@@ -1966,8 +2047,10 @@ var_expression			: var_expr_unit
                                   $<ptr>$ = parent;
                                 }
 				| MAD_MIN '(' var_expression ',' var_expression ')' {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = MIN_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)$<ptr>5 );
@@ -1983,14 +2066,17 @@ var_expr_unit			: MAD_NUMERIC_LITERAL {
                                   $<ptr>$ = expr;
                                 }
 				| MAD_STRING_LITERAL {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
+                                  expr_struct* data;
+                                  allocate( data, madparser_expr_alloc(mp) );
                                   data->kind_   = STRING_EXPR;
                                   data->svalue_ = $<sval>1;
                                   $<ptr>$ = g_node_new( data );
                                 }
 				| identifier {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  constant* src1 = (constant*)const_table_lookup( $<sval>1, madparser_const_table(mp) );
+                                  expr_struct* data;
+                                  constant* src1;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  src1 = (constant*)const_table_lookup( $<sval>1, madparser_const_table(mp) );
                                   
                                   if ( src1 != 0 ) {
                                     if ( src1->svalue_ != NULL ) {
@@ -2012,8 +2098,10 @@ var_expr_unit			: MAD_NUMERIC_LITERAL {
                                   $<ptr>$ = g_node_new( data );
                                 }
 				| identifier '[' MAD_L ']' {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  beam_element* bel = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
+                                  expr_struct* data;
+                                  beam_element* bel;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  bel = (beam_element*)bel_table_lookup( $<sval>1, madparser_bel_table(mp) );
                                   if ( bel == 0 ) {
                                     fprintf( stderr, "warning ! %s is not yet defined\n", $<sval>1);
                                   }
@@ -2122,315 +2210,315 @@ resbeam				: MAD_RESBEAM { printf("Reset all beam data.\n"); }
 
 identifier			: MAD_IDENTIFIER
 				| MAD_A {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'A';
 				  str[1] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_AT {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+                                  char* str = malloc( 4 );
 				  str[0] = 'A';
 				  str[1] = 'T';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_BY {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'B';
 				  str[1] = 'Y';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_DT {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'D';
 				  str[1] = 'T';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_DX {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'D';
 				  str[1] = 'X';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_DY {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'D';
 				  str[1] = 'Y';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_E {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'E';
 				  str[1] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_E1 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'E';
 				  str[1] = '1';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_E2 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'E';
 				  str[1] = '2';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_ET {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'E';
 				  str[1] = 'T';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_EX {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'E';
 				  str[1] = 'X';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_EY {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'E';
 				  str[1] = 'Y';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_H1 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'H';
 				  str[1] = '1';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_H2 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'H';
 				  str[1] = '2';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_K1 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'K';
 				  str[1] = '1';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_K2 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'K';
 				  str[1] = '2';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_K3 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'K';
 				  str[1] = '3';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_KS {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'K';
 				  str[1] = 'S';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_L {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'L';
 				  str[1] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_N {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'N';
 				  str[1] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_PC {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'P';
 				  str[1] = 'C';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_PG {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'P';
 				  str[1] = 'G';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_PT {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'P';
 				  str[1] = 'T';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_PX {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'P';
 				  str[1] = 'X';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_PY {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'P';
 				  str[1] = 'Y';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_RM {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'R';
 				  str[1] = 'M';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_T {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_T0 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '0';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_T1 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '1';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_T2 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '2';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_T3 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '3';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_T4 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '4';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_T5 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '5';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_T6 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '6';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_T7 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '7';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_T8 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '8';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_T9 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '9';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_TM {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = 'M';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_TO {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = 'O';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_WX {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'W';
 				  str[1] = 'X';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_WY {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'W';
 				  str[1] = 'Y';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_X {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'X';
 				  str[1] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_X0 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'X';
 				  str[1] = '0';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_Y {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'Y';
 				  str[1] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_Y0 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'Y';
 				  str[1] = '0';
 				  str[2] = '\0';
 				  $<sval>$ = str;
 				}
 				| MAD_Z0 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'Z';
 				  str[1] = '0';
 				  str[2] = '\0';

@@ -1,3 +1,39 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE FACTORY:  Interprets MAD input files and             
+******             creates instances of class beamline.                       
+******                                                
+******  Version:   1.2                    
+******                                    
+******  File:      beam_line.c
+******                                                                
+******  Copyright (c) 1999  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******                    (630) 840 2231                              
+******             Email: michelotti@fnal.gov                         
+******                    ostiguy@fnal.gov                            
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
    /* -*- C -*- */
 
 #include <assert.h>
@@ -39,7 +75,7 @@ beam_line*
 beam_line_init( fb_allocator* bml_alloc ) {
   beam_line* bml = NULL;
   
-  bml = (beam_line*)allocate( bml_alloc );
+  allocate( bml, bml_alloc );
   if ( bml != NULL ) {
     memset( bml, 0, sizeof(beam_line) );
   }
@@ -52,8 +88,8 @@ beam_line_init( fb_allocator* bml_alloc ) {
      bel list, and returns an OK or ERROR value
    */
 int
-beam_line_add_bel( beam_line* bml,
-                   char*      name,
+beam_line_add_bel( beam_line*  bml,
+                   char*       name,
                    GHashTable* bel_table,
                    GHashTable* bml_table ) {
   

@@ -1,3 +1,39 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE FACTORY:  Interprets MAD input files and             
+******             creates instances of class beamline.                       
+******                                                
+******  Version:   1.2                    
+******                                    
+******  File:      const_table.c
+******                                                                
+******  Copyright (c) 1999  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******                    (630) 840 2231                              
+******             Email: michelotti@fnal.gov                         
+******                    ostiguy@fnal.gov                            
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
    /* -*- C -*- */
 
 #include <assert.h>
@@ -58,7 +94,7 @@ const_free_func( gpointer key,
      Takes a char pointer "key", constant "value", and arr_ptr address "user_data", 
      and makes the array element at "user_data" point to "value"
    */
-static gboolean
+static void
 const_table_el_to_array_el( gpointer key,
                             gpointer value,
                             gpointer user_data ) {
@@ -66,7 +102,6 @@ const_table_el_to_array_el( gpointer key,
   constant** ptr = *((constant***)user_data);
   *ptr = (constant*)value;
   *((constant***)user_data) = ++ptr;
-  return TRUE;
 }
 
    /*
@@ -79,8 +114,11 @@ const_add_predef( fb_allocator* expr_alloc,
   
      /* Adding PI */
   char*        name = (char*)malloc( 3 );
-  constant*    const_ptr = (constant*)allocate( const_alloc );
+  constant*    const_ptr;
   expr_struct* data;
+
+  allocate( const_ptr, const_alloc );
+  
   strcpy( name, "PI" );
   const_init_a( const_ptr, name, 0, NULL, 0, expr_alloc );
   data = (expr_struct*)(const_ptr->expr_->data);
@@ -174,11 +212,11 @@ const_table_display( FILE*       out,
      Takes a constant name, converts it to upper case, and returns the pointer to
      the constant if it's found or NULL if the constant is not found
    */
-int
+gpointer
 const_table_lookup( char*       const_name,
                     GHashTable* const_table ) {
   str_to_upper( const_name );
-  return (int)g_hash_table_lookup( const_table, const_name );
+  return g_hash_table_lookup( const_table, const_name );
 }
 
    /*
@@ -218,7 +256,7 @@ const_init_a( constant*     ptr,
   strcpy( ptr->name_, name );
   ptr->svalue_ = NULL;
 
-  data = (expr_struct*)allocate( expr_alloc );
+  allocate( data, expr_alloc );
   data->kind_ = NUMBER_EXPR;
   data->dvalue_ = 0.0;
   data->svalue_ = (char*)malloc( 3 );
@@ -256,7 +294,7 @@ const_init_b( constant*     ptr,
 
   strcpy( ptr->name_, name );
 
-  data = (expr_struct*)allocate( expr_alloc );
+  allocate( data, expr_alloc );
   data->kind_ = STRING_EXPR;
   data->svalue_  = (char*)malloc( ssize );
   if ( data->svalue_ != NULL ) {
@@ -303,7 +341,7 @@ const_init_c( constant*     ptr,
 
   strcpy( ptr->name_, name );
 
-  data = (expr_struct*)allocate( expr_alloc );
+  allocate( data, expr_alloc );
   data->kind_ = STRING_EXPR;
   data->svalue_  = (char*)malloc( strlen(sptr) + 1 );
   if ( data->svalue_ != NULL ) {
@@ -383,7 +421,7 @@ const_init_e( constant*       dst,
   dst->filename_      = filename;
   dst->local_linenum_ = local_linenum;
 
-  data          = (expr_struct*)allocate( expr_alloc );
+  allocate( data, expr_alloc );
   data->svalue_ = (char*)src_name;
 
   if ( src->svalue_ == NULL ) {
@@ -440,7 +478,7 @@ const_table_to_array( constant*** const_arr,
   constant **arr_ptr;
   size_t size = g_hash_table_size( const_table );
   arr_ptr = *const_arr = (constant**)malloc( size*sizeof(constant*) );
-  g_hash_table_foreach_remove( const_table, const_table_el_to_array_el, &arr_ptr );
+  g_hash_table_foreach( const_table, (GHFunc)const_table_el_to_array_el, &arr_ptr );
 
   return size;
 }

@@ -1,3 +1,39 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE FACTORY:  Interprets MAD input files and             
+******             creates instances of class beamline.                       
+******                                                
+******  Version:   1.2                    
+******                                    
+******  File:      cfg_output.c
+******                                                                
+******  Copyright (c) 1999  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******                    (630) 840 2231                              
+******             Email: michelotti@fnal.gov                         
+******                    ostiguy@fnal.gov                            
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
    /* -*- C -*- */
 
 #include <assert.h>
@@ -82,6 +118,57 @@ const_def_output( FILE*       out,
   free( const_arr );
 }
 
+
+   /*
+     Takes a node of an expression and a pointer to a list ("user_data").
+     If the node contains a reference to a variable, then that variable is
+     added to the list. Always returns FALSE.
+   */
+static gboolean
+var_get_refs_helper( GNode*   node,
+                     gpointer user_data ) {
+
+  pair* p = (pair*)user_data;
+  
+  expr_struct* data = (expr_struct*)(node->data);
+  GList** ref_list  = (GList**)(p->first_);
+  if ( data->kind_ == VAR_IDENT_EXPR ) {
+    variable* var = (variable*)var_table_lookup( data->svalue_, (GHashTable*)(p->second_) );
+    if ( ref_list != NULL ) {
+      GList *list_ptr = g_list_first( *ref_list );
+      while ( list_ptr != NULL ) {
+        if ( (long)(list_ptr->data) == (long)var ) {
+          return FALSE;
+        }
+
+        list_ptr = g_list_next( list_ptr );
+      }
+    }
+    *ref_list = g_list_append( *ref_list, var );
+  }
+
+  return FALSE;
+}
+
+   /*
+     Takes an expression and returns a list of all the variables it references
+    */
+static GList*
+var_get_refs( GNode*      expr,
+              GHashTable* var_table ) {
+  pair p;
+  
+  GList* ref_list = NULL;
+
+  p.first_  = (void*)(&ref_list);
+  p.second_ = (void*)var_table;
+  
+  g_node_traverse( expr, G_PRE_ORDER, G_TRAVERSE_ALL, -1, (GNodeTraverseFunc)var_get_refs_helper, &p );
+
+  return ref_list;
+}
+
+
    /*
      Outputs C++ code for all the variable definitions, without forward references
    */
@@ -156,8 +243,7 @@ bml_def_output( FILE*       out,
   int size = bml_table_to_array( &bml_arr, bml_table );
   
   if ( size > 1 ) {
-    qsort( bml_arr, size, sizeof(beam_line*), bml_compare );
-    
+    qsort( bml_arr, size, sizeof(beam_line*), bml_compare );    
        /*
          There should be a check for circular references here
         */

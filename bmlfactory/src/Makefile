@@ -23,9 +23,13 @@ OBJS = mad.tab.o \
 SOURCES = $(OBJS:.o=.cc)
 
 .cc.o:
-	$(C++) $(C++FLAGS) $(INCLUDEDIR)  -c $*.cc
+	$(C++) -Dallocate=allocate__ -Ddeallocate=deallocate__ \
+        $(C++FLAGS) -Wall -Wcast-align -g \
+        $(INCLUDEDIR)  -c $*.cc
 .c.o:
-	$(C) $(CFLAGS) $(INCLUDEDIR) -c $*.c
+	$(C) -Dallocate=allocate__ -Ddeallocate=deallocate__ \
+        $(CFLAGS) -Wall -Wcast-align -g \
+        $(INCLUDEDIR) -c $*.c
 
 include $(FNALROOT)/Make-config
 

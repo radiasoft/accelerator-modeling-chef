@@ -1,3 +1,39 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE FACTORY:  Interprets MAD input files and             
+******             creates instances of class beamline.                       
+******                                                
+******  Version:   1.2                    
+******                                    
+******  File:      var_table.c
+******                                                                
+******  Copyright (c) 1999  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******                    (630) 840 2231                              
+******             Email: michelotti@fnal.gov                         
+******                    ostiguy@fnal.gov                            
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
    /* -*- C -*- */
 
 #include <assert.h>
@@ -72,7 +108,7 @@ var_free_func( gpointer key,
      Takes a char pointer "key", variable "value", and arr_ptr address "user_data",
      and makes the array element at "user_data" point to "value"
    */
-static gboolean
+static void
 var_table_el_to_array_el( gpointer key,
                           gpointer value,
                           gpointer user_data ) {
@@ -80,7 +116,6 @@ var_table_el_to_array_el( gpointer key,
   variable **ptr = *((variable***)user_data);
   *ptr = (variable*)value;
   *((variable***)user_data) = ++ptr;
-  return TRUE;
 }
 
 
@@ -162,19 +197,18 @@ var_table_display( FILE*       out,
   p.fourth_ = (void*)bel_table;
   
   fprintf( out, "\nTHE CONTENTS OF THE VARIABLE TABLE:\n");
-  g_hash_table_foreach( var_table,
-                        (GHFunc)var_display_func, &p );
+  g_hash_table_foreach( var_table, (GHFunc)var_display_func, &p );
 }
 
    /*
      Takes a variable name, converts it to upper case, and returns the pointer to
      the variable if it's found or NULL if the variable is not found
    */
-int
+gpointer
 var_table_lookup( char*       var_name,
                   GHashTable* var_table ) {
   str_to_upper( var_name );
-  return (int)g_hash_table_lookup( var_table, var_name );
+  return g_hash_table_lookup( var_table, var_name );
 }
 
    /*
@@ -232,7 +266,7 @@ var_alloc_init( const char*   name,
   assert( var_alloc != NULL );
   assert( strlen(name) < VAR_NAME_LENGTH );
 
-  var = (variable*)allocate( var_alloc );
+  allocate( var, var_alloc );
   if ( var != NULL ) {
     int errcode = var_init( var, name, expr, linenum, filename, local_linenum );
     if ( errcode != VAR_OK ) {
@@ -272,7 +306,7 @@ var_table_to_array( variable***  var_arr,
   variable **arr_ptr;
   size_t size = g_hash_table_size( var_table );
   arr_ptr = *var_arr = (variable**)malloc( size*sizeof(variable*) );
-  g_hash_table_foreach_remove( var_table, var_table_el_to_array_el, &arr_ptr );
+  g_hash_table_foreach( var_table, (GHFunc)var_table_el_to_array_el, &arr_ptr );
 
   return size;
 }
@@ -319,7 +353,7 @@ var_check_circ( GNode*          expr,
         {
           variable* var = (variable*)var_table_lookup( data->svalue_, var_table );
           if ( var == NULL ) {
-            fprintf(stderr, "error (e)! variable %s never defined\n", data->svalue_ );
+            fprintf(stderr, "error ! variable %s never defined\n", data->svalue_ );
             exit( EXIT_FAILURE );
           } else {
             if ( var == var_to_compare ) {
@@ -332,7 +366,7 @@ var_check_circ( GNode*          expr,
         {
           beam_element* bel = (beam_element*)bel_table_lookup( data->svalue_, bel_table );
           if ( bel == NULL ) {
-            fprintf(stderr, "error (f)! beam element %s never defined\n", data->svalue_ );
+            fprintf(stderr, "error ! beam element %s never defined\n", data->svalue_ );
             exit( EXIT_FAILURE );
           } else {
             var_check_circ( bel->length_, NULL, res, var_table, bel_table );

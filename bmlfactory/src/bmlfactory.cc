@@ -1,3 +1,39 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE FACTORY:  Interprets MAD input files and             
+******             creates instances of class beamline.                       
+******                                                
+******  Version:   1.2
+******                                    
+******  File:      bmlfactory.cc
+******                                                                
+******  Copyright (c) 1999  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******                    (630) 840 2231                              
+******             Email: michelotti@fnal.gov                         
+******                    ostiguy@fnal.gov                            
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 #include <algorithm>
 #include <assert.h>
 #include <cmath>
@@ -178,21 +214,51 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       }
     }
     case BEL_RBEND: {
+      bool simple = false;
       double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
       double angle  = expr_evaluate( bel->params_[BEL_RBEND_ANGLE], var_table_, bel_table_ );
-      expr_struct* tilt = (expr_struct*)bel->params_[BEL_RBEND_TILT]->data;
+      expr_struct *k1   = (expr_struct*)bel->params_[BEL_RBEND_K1]->data;
+      expr_struct *k2   = (expr_struct*)bel->params_[BEL_RBEND_K2]->data;
+      expr_struct *k3   = (expr_struct*)bel->params_[BEL_RBEND_K3]->data;
+      expr_struct *tilt = (expr_struct*)bel->params_[BEL_RBEND_TILT]->data;
       
-      lbel = new rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length );
-      if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
-        aligner->xOffset = 0.0;
-        aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( bel->params_[BEL_RBEND_TILT], var_table_, bel_table_ );
-        lbel->setAlignment( *aligner );
+      simple = (k1->kind_ == NUMBER_EXPR && k1->dvalue_ == 0.0 && k2->kind_ == NUMBER_EXPR && k2->dvalue_ == 0.0 && k3->kind_ == NUMBER_EXPR && k3->dvalue_ == 0.0 && tilt->kind_ == NUMBER_EXPR && tilt->dvalue_ == 0.0);
+
+      if( true == simple ) {
+        lbel = new rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length );
+        if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
+          aligner->xOffset = 0.0;
+          aligner->yOffset = 0.0;
+          aligner->tilt    = expr_evaluate( bel->params_[BEL_RBEND_TILT], var_table_, bel_table_ );
+          lbel->setAlignment( *aligner );
+        }
+        // Ignored parameters: K1, K2, K3, E1, E2, H1, H2, HGAP, FINT
+        break;
       }
-      
-         // Ignored parameters: K1, K2, K3, E1, E2, H1, H2, HGAP, FINT
-      
-      break;
+      else {
+        lbel = new CF_rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) );
+
+        double multipoleStrength;
+
+        multipoleStrength = expr_evaluate( bel->params_[BEL_RBEND_K1], var_table_, bel_table_ );
+        multipoleStrength = multipoleStrength*BRHO_*length;
+        if( multipoleStrength != 0.0 ) {
+          ((CF_rbend*) lbel)->setQuadrupole( multipoleStrength );
+	}
+
+        multipoleStrength = expr_evaluate( bel->params_[BEL_RBEND_K2], var_table_, bel_table_ );
+        multipoleStrength = multipoleStrength*BRHO_*length/2.0;
+        if( multipoleStrength != 0.0 ) {
+          ((CF_rbend*) lbel)->setSextupole( multipoleStrength );
+	}
+
+        multipoleStrength = expr_evaluate( bel->params_[BEL_RBEND_K3], var_table_, bel_table_ );
+        multipoleStrength = multipoleStrength*BRHO_*length/6.0;
+        if( multipoleStrength != 0.0 ) {
+          ((CF_rbend*) lbel)->setOctupole( multipoleStrength );
+	}
+        break;
+      }
     }
     case BEL_QUADRUPOLE: {
       double length = expr_evaluate( bel->length_, var_table_, bel_table_ );

@@ -284,6 +284,11 @@
 #include <math.h>  
 #include <stdlib.h>  
 #include <stdio.h>
+#include <string.h>
+
+#if !defined(fb_allocator_h)
+#include "fb_allocator.h"
+#endif /*fb_allocator_h*/
 
 #if !defined(str_to_upper_h)
 #include "str_to_upper.h"
@@ -316,7 +321,7 @@
 #if !defined(expression_h)
 #include "expression.h"
 #endif /* expression_h */
-
+  
 #if !defined(madparser_h)
 #include "madparser.h"
 #endif /* madparser_h */
@@ -329,7 +334,7 @@ int  yylex( void );
 extern struct madparser_* mp;
  
 
-#line 52 "mad.y"
+#line 57 "mad.y"
 typedef union {
   double   dval;
   char*    sval;
@@ -635,57 +640,57 @@ static const short yyrhs[] = {   289,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   134,   135,   138,   139,   140,   141,   144,   157,   158,   159,
-   162,   163,   172,   173,   174,   175,   176,   177,   178,   179,
-   180,   181,   182,   187,   188,   191,   192,   193,   194,   195,
-   196,   197,   198,   199,   200,   201,   202,   203,   204,   205,
-   206,   207,   208,   209,   210,   211,   212,   213,   214,   215,
-   216,   217,   218,   219,   220,   221,   222,   223,   224,   225,
-   230,   231,   236,   237,   242,   245,   246,   249,   250,   251,
-   252,   253,   254,   255,   256,   257,   258,   259,   260,   261,
-   262,   263,   264,   265,   266,   267,   268,   269,   270,   271,
-   272,   273,   274,   275,   280,   281,   282,   283,   284,   285,
-   286,   287,   288,   289,   290,   291,   292,   293,   294,   295,
-   296,   297,   298,   299,   300,   301,   302,   303,   304,   305,
-   306,   307,   308,   309,   310,   311,   316,   338,   360,   361,
-   366,   383,   399,   428,   447,   448,   451,   457,   476,   477,
-   480,   484,   489,   508,   509,   512,   516,   519,   522,   525,
-   528,   531,   536,   539,   542,   545,   548,   551,   554,   559,
-   578,   579,   582,   586,   589,   592,   595,   598,   601,   606,
-   609,   612,   615,   618,   621,   624,   629,   648,   649,   652,
-   656,   659,   662,   667,   672,   691,   692,   695,   699,   702,
-   705,   710,   715,   729,   730,   733,   737,   740,   743,   748,
-   753,   767,   768,   771,   775,   778,   781,   784,   787,   790,
-   793,   796,   799,   802,   805,   808,   813,   818,   823,   828,
-   833,   838,   843,   848,   853,   858,   861,   864,   867,   870,
-   873,   876,   879,   882,   885,   890,   909,   910,   913,   917,
-   920,   925,   939,   954,   955,   958,   962,   965,   968,   973,
-   987,  1001,  1002,  1005,  1009,  1012,  1015,  1020,  1033,  1034,
-  1037,  1041,  1044,  1047,  1050,  1055,  1069,  1070,  1073,  1077,
-  1080,  1083,  1086,  1089,  1092,  1095,  1098,  1103,  1117,  1118,
-  1121,  1125,  1128,  1131,  1136,  1150,  1164,  1165,  1168,  1172,
-  1177,  1191,  1205,  1206,  1209,  1213,  1218,  1232,  1233,  1236,
-  1240,  1245,  1259,  1260,  1263,  1267,  1272,  1286,  1287,  1290,
-  1294,  1297,  1300,  1305,  1319,  1320,  1323,  1327,  1330,  1333,
-  1338,  1352,  1353,  1356,  1360,  1365,  1379,  1380,  1383,  1387,
-  1392,  1406,  1407,  1410,  1414,  1417,  1420,  1423,  1426,  1429,
-  1434,  1459,  1460,  1463,  1467,  1483,  1503,  1517,  1518,  1521,
-  1525,  1528,  1530,  1536,  1547,  1548,  1554,  1562,  1569,  1572,
-  1584,  1608,  1609,  1622,  1631,  1640,  1650,  1660,  1670,  1680,
-  1690,  1699,  1708,  1717,  1726,  1735,  1744,  1753,  1762,  1774,
-  1788,  1795,  1821,  1822,  1834,  1842,  1850,  1859,  1868,  1877,
-  1886,  1895,  1903,  1911,  1919,  1927,  1935,  1943,  1951,  1959,
-  1968,  1979,  1985,  1991,  2014,  2029,  2034,  2039,  2042,  2045,
-  2046,  2049,  2050,  2055,  2058,  2059,  2062,  2063,  2064,  2065,
-  2066,  2067,  2068,  2071,  2072,  2075,  2076,  2077,  2082,  2085,
-  2086,  2089,  2090,  2091,  2092,  2093,  2094,  2095,  2096,  2097,
-  2098,  2099,  2100,  2101,  2102,  2103,  2104,  2105,  2106,  2107,
-  2108,  2111,  2112,  2113,  2114,  2118,  2123,  2124,  2130,  2137,
-  2144,  2151,  2158,  2165,  2171,  2178,  2185,  2192,  2199,  2206,
-  2213,  2220,  2227,  2234,  2241,  2248,  2254,  2260,  2267,  2274,
-  2281,  2288,  2295,  2302,  2308,  2315,  2322,  2329,  2336,  2343,
-  2350,  2357,  2364,  2371,  2378,  2385,  2392,  2399,  2406,  2412,
-  2419,  2425,  2432
+   139,   140,   143,   144,   145,   146,   149,   162,   163,   164,
+   167,   168,   177,   178,   179,   180,   181,   182,   183,   184,
+   185,   186,   187,   192,   193,   196,   197,   198,   199,   200,
+   201,   202,   203,   204,   205,   206,   207,   208,   209,   210,
+   211,   212,   213,   214,   215,   216,   217,   218,   219,   220,
+   221,   222,   223,   224,   225,   226,   227,   228,   229,   230,
+   235,   236,   241,   242,   247,   250,   251,   254,   255,   256,
+   257,   258,   259,   260,   261,   262,   263,   264,   265,   266,
+   267,   268,   269,   270,   271,   272,   273,   274,   275,   276,
+   277,   278,   279,   280,   285,   286,   287,   288,   289,   290,
+   291,   292,   293,   294,   295,   296,   297,   298,   299,   300,
+   301,   302,   303,   304,   305,   306,   307,   308,   309,   310,
+   311,   312,   313,   314,   315,   316,   321,   344,   367,   368,
+   373,   390,   406,   436,   455,   456,   459,   465,   484,   485,
+   488,   492,   497,   516,   517,   520,   524,   527,   530,   533,
+   536,   539,   544,   547,   550,   553,   556,   559,   562,   567,
+   586,   587,   590,   594,   597,   600,   603,   606,   609,   614,
+   617,   620,   623,   626,   629,   632,   637,   656,   657,   660,
+   664,   667,   670,   675,   680,   699,   700,   703,   707,   710,
+   713,   718,   723,   737,   738,   741,   745,   748,   751,   756,
+   761,   775,   776,   779,   783,   786,   789,   792,   795,   798,
+   801,   804,   807,   810,   813,   816,   821,   826,   831,   836,
+   841,   846,   851,   856,   861,   866,   869,   872,   875,   878,
+   881,   884,   887,   890,   893,   898,   917,   918,   921,   925,
+   928,   933,   947,   962,   963,   966,   970,   973,   976,   981,
+   995,  1009,  1010,  1013,  1017,  1020,  1023,  1028,  1041,  1042,
+  1045,  1049,  1052,  1055,  1058,  1063,  1077,  1078,  1081,  1085,
+  1088,  1091,  1094,  1097,  1100,  1103,  1106,  1111,  1125,  1126,
+  1129,  1133,  1136,  1139,  1144,  1158,  1172,  1173,  1176,  1180,
+  1185,  1199,  1213,  1214,  1217,  1221,  1226,  1240,  1241,  1244,
+  1248,  1253,  1267,  1268,  1271,  1275,  1280,  1294,  1295,  1298,
+  1302,  1305,  1308,  1313,  1327,  1328,  1331,  1335,  1338,  1341,
+  1346,  1360,  1361,  1364,  1368,  1373,  1387,  1388,  1391,  1395,
+  1400,  1414,  1415,  1418,  1422,  1425,  1428,  1431,  1434,  1437,
+  1442,  1467,  1468,  1471,  1475,  1491,  1511,  1525,  1526,  1529,
+  1533,  1536,  1538,  1544,  1555,  1556,  1562,  1570,  1577,  1580,
+  1592,  1616,  1617,  1632,  1643,  1654,  1666,  1678,  1690,  1702,
+  1714,  1725,  1736,  1747,  1758,  1769,  1780,  1791,  1802,  1816,
+  1832,  1840,  1868,  1869,  1883,  1893,  1903,  1914,  1925,  1936,
+  1947,  1958,  1968,  1978,  1988,  1998,  2008,  2018,  2028,  2038,
+  2049,  2062,  2068,  2075,  2100,  2117,  2122,  2127,  2130,  2133,
+  2134,  2137,  2138,  2143,  2146,  2147,  2150,  2151,  2152,  2153,
+  2154,  2155,  2156,  2159,  2160,  2163,  2164,  2165,  2170,  2173,
+  2174,  2177,  2178,  2179,  2180,  2181,  2182,  2183,  2184,  2185,
+  2186,  2187,  2188,  2189,  2190,  2191,  2192,  2193,  2194,  2195,
+  2196,  2199,  2200,  2201,  2202,  2206,  2211,  2212,  2218,  2225,
+  2232,  2239,  2246,  2253,  2259,  2266,  2273,  2280,  2287,  2294,
+  2301,  2308,  2315,  2322,  2329,  2336,  2342,  2348,  2355,  2362,
+  2369,  2376,  2383,  2390,  2396,  2403,  2410,  2417,  2424,  2431,
+  2438,  2445,  2452,  2459,  2466,  2473,  2480,  2487,  2494,  2500,
+  2507,  2513,  2520
 };
 #endif
 
@@ -2384,7 +2389,7 @@ yyreduce:
   switch (yyn) {
 
 case 7:
-#line 144 "mad.y"
+#line 149 "mad.y"
 {
                                   if ( !madparser_comment_at_eof_get(mp) ) {
                                     comment_arr_add( yyvsp[0].sval, madparser_linenum(mp), madparser_current_filename(mp), madparser_local_linenum(mp), madparser_comment_arr(mp), madparser_comment_alloc(mp) );
@@ -2396,11 +2401,11 @@ case 7:
                                 ;
     break;}
 case 11:
-#line 162 "mad.y"
+#line 167 "mad.y"
 { madparser_comment_mode_inc(mp); ;
     break;}
 case 12:
-#line 164 "mad.y"
+#line 169 "mad.y"
 { if (!madparser_comment_mode(mp) ) {
 				    fprintf( stderr, "Error: an unmatched ENDCOMMENT.\n" );
 				  } else {
@@ -2409,284 +2414,285 @@ case 12:
 				;
     break;}
 case 16:
-#line 175 "mad.y"
+#line 180 "mad.y"
 { fprintf(stderr, "Program execution terminated.\n"); ;
     break;}
 case 24:
-#line 187 "mad.y"
+#line 192 "mad.y"
 { printf("List all valid keywords.\n"); ;
     break;}
 case 26:
-#line 191 "mad.y"
+#line 196 "mad.y"
 { printf("HELP ON HELP.\n"); ;
     break;}
 case 27:
-#line 192 "mad.y"
+#line 197 "mad.y"
 { printf("HELP ON SHOW.\n"); ;
     break;}
 case 28:
-#line 193 "mad.y"
+#line 198 "mad.y"
 { printf("HELP ON TITLE.\n"); ;
     break;}
 case 29:
-#line 194 "mad.y"
+#line 199 "mad.y"
 { printf("HELP ON STOP.\n"); ;
     break;}
 case 30:
-#line 195 "mad.y"
+#line 200 "mad.y"
 { printf("HELP ON OPTION.\n"); ;
     break;}
 case 31:
-#line 196 "mad.y"
+#line 201 "mad.y"
 { printf("HELP ON SET.\n"); ;
     break;}
 case 32:
-#line 197 "mad.y"
+#line 202 "mad.y"
 { printf("HELP ON VALUE.\n"); ;
     break;}
 case 33:
-#line 198 "mad.y"
+#line 203 "mad.y"
 { printf("HELP ON SYSTEM.\n"); ;
     break;}
 case 34:
-#line 199 "mad.y"
+#line 204 "mad.y"
 { printf("HELP ON MARKER.\n"); ;
     break;}
 case 35:
-#line 200 "mad.y"
+#line 205 "mad.y"
 { printf("HELP ON DRIFT.\n"); ;
     break;}
 case 36:
-#line 201 "mad.y"
+#line 206 "mad.y"
 { printf("HELP ON SBEND.\n"); ;
     break;}
 case 37:
-#line 202 "mad.y"
+#line 207 "mad.y"
 { printf("HELP ON RBEND.\n"); ;
     break;}
 case 38:
-#line 203 "mad.y"
+#line 208 "mad.y"
 { printf("HELP ON QUADRUPOLE.\n"); ;
     break;}
 case 39:
-#line 204 "mad.y"
+#line 209 "mad.y"
 { printf("HELP ON SEXTUPOLE.\n"); ;
     break;}
 case 40:
-#line 205 "mad.y"
+#line 210 "mad.y"
 { printf("HELP ON OCTUPOLE.\n"); ;
     break;}
 case 41:
-#line 206 "mad.y"
+#line 211 "mad.y"
 { printf("HELP ON MULTIPOLE.\n"); ;
     break;}
 case 42:
-#line 207 "mad.y"
+#line 212 "mad.y"
 { printf("HELP ON SOLENOID.\n"); ;
     break;}
 case 43:
-#line 208 "mad.y"
+#line 213 "mad.y"
 { printf("HELP ON HKICKER.\n"); ;
     break;}
 case 44:
-#line 209 "mad.y"
+#line 214 "mad.y"
 { printf("HELP ON VKICKER.\n"); ;
     break;}
 case 45:
-#line 210 "mad.y"
+#line 215 "mad.y"
 { printf("HELP ON KICKER.\n"); ;
     break;}
 case 46:
-#line 211 "mad.y"
+#line 216 "mad.y"
 { printf("HELP ON RFCAVITY.\n"); ;
     break;}
 case 47:
-#line 212 "mad.y"
+#line 217 "mad.y"
 { printf("HELP ON ELSEPARATOR.\n"); ;
     break;}
 case 48:
-#line 213 "mad.y"
+#line 218 "mad.y"
 { printf("HELP ON HMONITOR.\n"); ;
     break;}
 case 49:
-#line 214 "mad.y"
+#line 219 "mad.y"
 { printf("HELP ON VMONITOR.\n"); ;
     break;}
 case 50:
-#line 215 "mad.y"
+#line 220 "mad.y"
 { printf("HELP ON MONITOR.\n"); ;
     break;}
 case 51:
-#line 216 "mad.y"
+#line 221 "mad.y"
 { printf("HELP ON INSTRUMENT.\n"); ;
     break;}
 case 52:
-#line 217 "mad.y"
+#line 222 "mad.y"
 { printf("HELP ON ECOLLIMATOR.\n"); ;
     break;}
 case 53:
-#line 218 "mad.y"
+#line 223 "mad.y"
 { printf("HELP ON RCOLLIMATOR.\n"); ;
     break;}
 case 54:
-#line 219 "mad.y"
+#line 224 "mad.y"
 { printf("HELP ON YROT.\n"); ;
     break;}
 case 55:
-#line 220 "mad.y"
+#line 225 "mad.y"
 { printf("HELP ON SROT.\n"); ;
     break;}
 case 56:
-#line 221 "mad.y"
+#line 226 "mad.y"
 { printf("HELP ON BEAMBEAM.\n"); ;
     break;}
 case 57:
-#line 222 "mad.y"
+#line 227 "mad.y"
 { printf("HELP ON MATRIX.\n"); ;
     break;}
 case 58:
-#line 223 "mad.y"
+#line 228 "mad.y"
 { printf("HELP ON LUMP.\n"); ;
     break;}
 case 59:
-#line 224 "mad.y"
+#line 229 "mad.y"
 { printf("HELP ON COMMENT.\n"); ;
     break;}
 case 60:
-#line 225 "mad.y"
+#line 230 "mad.y"
 { printf("HELP ON ENDCOMMENT.\n"); ;
     break;}
 case 61:
-#line 230 "mad.y"
+#line 235 "mad.y"
 { printf("SHOW ALL DEFINED NAMES.\n"); ;
     break;}
 case 62:
-#line 231 "mad.y"
+#line 236 "mad.y"
 { printf("SHOW THE DEFINITION OF %s.\n",yylval.sval); ;
     break;}
 case 63:
-#line 236 "mad.y"
+#line 241 "mad.y"
 { printf("Title: %s\n", yyvsp[0].sval); free( yyvsp[0].sval ); ;
     break;}
 case 64:
-#line 237 "mad.y"
+#line 242 "mad.y"
 { printf("Title: %s\n", yyvsp[0].sval); free( yyvsp[0].sval ); ;
     break;}
 case 68:
-#line 249 "mad.y"
+#line 254 "mad.y"
 { printf("RESET TRUE.\n"); ;
     break;}
 case 69:
-#line 250 "mad.y"
+#line 255 "mad.y"
 { printf("RESET FALSE.\n"); ;
     break;}
 case 70:
-#line 251 "mad.y"
+#line 256 "mad.y"
 { printf("INTER TRUE.\n"); ;
     break;}
 case 71:
-#line 252 "mad.y"
+#line 257 "mad.y"
 { printf("INTER FALSE.\n"); ;
     break;}
 case 72:
-#line 253 "mad.y"
+#line 258 "mad.y"
 { printf("ECHO TRUE.\n"); ;
     break;}
 case 73:
-#line 254 "mad.y"
+#line 259 "mad.y"
 { printf("ECHO FALSE.\n"); ;
     break;}
 case 74:
-#line 255 "mad.y"
+#line 260 "mad.y"
 { printf("TRACE TRUE.\n"); ;
     break;}
 case 75:
-#line 256 "mad.y"
+#line 261 "mad.y"
 { printf("TRACE FALSE.\n"); ;
     break;}
 case 76:
-#line 257 "mad.y"
+#line 262 "mad.y"
 { printf("DOUBLE TRUE.\n"); ;
     break;}
 case 77:
-#line 258 "mad.y"
+#line 263 "mad.y"
 { printf("DOUBLE FALSE.\n"); ;
     break;}
 case 78:
-#line 259 "mad.y"
+#line 264 "mad.y"
 { printf("VERIFY TRUE.\n"); ;
     break;}
 case 79:
-#line 260 "mad.y"
+#line 265 "mad.y"
 { printf("VERIFY FALSE.\n"); ;
     break;}
 case 80:
-#line 261 "mad.y"
+#line 266 "mad.y"
 { printf("WARN TRUE.\n"); ;
     break;}
 case 81:
-#line 262 "mad.y"
+#line 267 "mad.y"
 { printf("WARN FALSE.\n"); ;
     break;}
 case 82:
-#line 263 "mad.y"
+#line 268 "mad.y"
 { printf("INFO TRUE.\n"); ;
     break;}
 case 83:
-#line 264 "mad.y"
+#line 269 "mad.y"
 { printf("INFO FALSE.\n"); ;
     break;}
 case 84:
-#line 265 "mad.y"
+#line 270 "mad.y"
 { printf("SYMPL TRUE.\n"); ;
     break;}
 case 85:
-#line 266 "mad.y"
+#line 271 "mad.y"
 { printf("SYMPL FALSE.\n"); ;
     break;}
 case 86:
-#line 267 "mad.y"
+#line 272 "mad.y"
 { printf("DEBUG TRUE.\n"); ;
     break;}
 case 87:
-#line 268 "mad.y"
+#line 273 "mad.y"
 { printf("DEBUG FALSE.\n"); ;
     break;}
 case 88:
-#line 269 "mad.y"
+#line 274 "mad.y"
 { printf("KEYWORD=%s.\n", yylval.sval ); ;
     break;}
 case 89:
-#line 270 "mad.y"
+#line 275 "mad.y"
 { printf("COMMAND=%s.\n", yylval.sval ); ;
     break;}
 case 90:
-#line 271 "mad.y"
+#line 276 "mad.y"
 { printf("DEFINE=%s.\n",yylval.sval); ;
     break;}
 case 91:
-#line 272 "mad.y"
+#line 277 "mad.y"
 { printf("EXPRESS=%s.\n",yylval.sval); ;
     break;}
 case 92:
-#line 273 "mad.y"
+#line 278 "mad.y"
 { printf("LINE=%s.\n",yylval.sval); ;
     break;}
 case 93:
-#line 274 "mad.y"
+#line 279 "mad.y"
 { printf("COFACT IS NOW IGNORED.\n"); ;
     break;}
 case 94:
-#line 275 "mad.y"
+#line 280 "mad.y"
 { printf("LIST THE CURRENT SETTINGS.\n"); ;
     break;}
 case 127:
-#line 316 "mad.y"
+#line 321 "mad.y"
 {
                                   if ( const_table_lookup( yyvsp[-4].sval, madparser_const_table( mp ) ) == 0 ) {
                                     if ( var_table_lookup( yyvsp[-4].sval, madparser_var_table( mp ) ) == 0 ) {
-                                      constant* dst = (constant*)allocate( madparser_const_alloc( mp ) );
-                                      constant* src = (constant*)const_table_lookup( yyvsp[0].sval, madparser_const_table(mp) );
+                                      constant* dst; constant* src;
+                                      allocate( dst, madparser_const_alloc( mp ) );
+                                      src = (constant*)const_table_lookup( yyvsp[0].sval, madparser_const_table(mp) );
                                       
                                       if ( src != NULL ) {
                                         const_init_e( dst, yyvsp[-4].sval, src, yyvsp[0].sval, madparser_linenum(mp), madparser_current_filename(mp), madparser_local_linenum(mp), madparser_expr_alloc(mp) );
@@ -2706,11 +2712,12 @@ case 127:
                                 ;
     break;}
 case 128:
-#line 338 "mad.y"
+#line 344 "mad.y"
 {
                                   if ( const_table_lookup( yyvsp[-4].sval, madparser_const_table(mp) ) == 0 ) {
                                     if ( var_table_lookup( yyvsp[-4].sval, madparser_var_table(mp) ) == 0 ) {
-                                      constant* ptr = (constant*)allocate( madparser_const_alloc(mp) );
+                                      constant* ptr;
+                                      allocate( ptr, madparser_const_alloc(mp) );
                                       
                                       if ( current_constant == CONSTANT_DOUBLE ) {
                                         const_init_d( ptr, yyvsp[-4].sval, (GNode*)yyvsp[0].ptr, madparser_linenum(mp), madparser_current_filename(mp), madparser_local_linenum(mp) );
@@ -2729,7 +2736,7 @@ case 128:
                                 ;
     break;}
 case 131:
-#line 366 "mad.y"
+#line 373 "mad.y"
 {
                                   if ( const_table_lookup( yyvsp[-2].sval, madparser_const_table(mp) ) == 0 ) {
                                     variable* dst;
@@ -2749,7 +2756,7 @@ case 131:
                                 ;
     break;}
 case 132:
-#line 383 "mad.y"
+#line 390 "mad.y"
 {
                                   if ( const_table_lookup( yyvsp[-2].sval, madparser_const_table(mp) ) == 0 ) {
                                     variable* dst;
@@ -2768,14 +2775,15 @@ case 132:
                                 ;
     break;}
 case 133:
-#line 399 "mad.y"
+#line 406 "mad.y"
 {
                                   if ( const_table_lookup( yyvsp[-2].sval, madparser_const_table(mp) ) == 0 ) {
                                     variable* dst;
                                     variable* ptr = (variable*)var_table_lookup( yyvsp[-2].sval, madparser_var_table(mp) );
                                     double val = expr_evaluate( (GNode*)yyvsp[0].ptr, madparser_var_table(mp), madparser_bel_table(mp) );
                                     
-                                    expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
+                                    expr_struct* data;
+                                    allocate( data, madparser_expr_alloc(mp) );
                                     data->kind_ = NUMBER_EXPR;
                                     data->dvalue_ = val;
                                     data->svalue_ = (char*)malloc( 16 );
@@ -2796,7 +2804,7 @@ case 133:
                                 ;
     break;}
 case 134:
-#line 428 "mad.y"
+#line 436 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -2816,14 +2824,14 @@ case 134:
                                 ;
     break;}
 case 137:
-#line 451 "mad.y"
+#line 459 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval); /* strcpy( curr_bel_type, $<sval>3 ); */
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 138:
-#line 457 "mad.y"
+#line 465 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -2843,20 +2851,20 @@ case 138:
                                 ;
     break;}
 case 141:
-#line 480 "mad.y"
+#line 488 "mad.y"
 {
                                   madparser_set_bel_type( mp, yyvsp[0].sval );
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 142:
-#line 484 "mad.y"
+#line 492 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 143:
-#line 489 "mad.y"
+#line 497 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -2876,44 +2884,44 @@ case 143:
                                 ;
     break;}
 case 146:
-#line 512 "mad.y"
+#line 520 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 147:
-#line 516 "mad.y"
+#line 524 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 148:
-#line 519 "mad.y"
+#line 527 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SBEND_ANGLE, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 149:
-#line 522 "mad.y"
+#line 530 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SBEND_K1, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 150:
-#line 525 "mad.y"
+#line 533 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SBEND_E1, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 151:
-#line 528 "mad.y"
+#line 536 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SBEND_E2, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 152:
-#line 531 "mad.y"
+#line 539 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI_2, "1.57079632679489661923", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -2921,49 +2929,49 @@ case 152:
                                 ;
     break;}
 case 153:
-#line 536 "mad.y"
+#line 544 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SBEND_TILT, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 154:
-#line 539 "mad.y"
+#line 547 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SBEND_K2, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 155:
-#line 542 "mad.y"
+#line 550 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SBEND_H1, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 156:
-#line 545 "mad.y"
+#line 553 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SBEND_H2, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 157:
-#line 548 "mad.y"
+#line 556 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SBEND_HGAP, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 158:
-#line 551 "mad.y"
+#line 559 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SBEND_FINT, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 159:
-#line 554 "mad.y"
+#line 562 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SBEND_K3, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 160:
-#line 559 "mad.y"
+#line 567 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -2983,44 +2991,44 @@ case 160:
                                 ;
     break;}
 case 163:
-#line 582 "mad.y"
+#line 590 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval );
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 164:
-#line 586 "mad.y"
+#line 594 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 165:
-#line 589 "mad.y"
+#line 597 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RBEND_ANGLE, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 166:
-#line 592 "mad.y"
+#line 600 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RBEND_K1, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 167:
-#line 595 "mad.y"
+#line 603 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RBEND_E1, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 168:
-#line 598 "mad.y"
+#line 606 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RBEND_E2, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 169:
-#line 601 "mad.y"
+#line 609 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI_2, "1.57079632679489661923", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -3028,49 +3036,49 @@ case 169:
                                 ;
     break;}
 case 170:
-#line 606 "mad.y"
+#line 614 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RBEND_TILT, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 171:
-#line 609 "mad.y"
+#line 617 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RBEND_K2, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 172:
-#line 612 "mad.y"
+#line 620 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RBEND_H1, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 173:
-#line 615 "mad.y"
+#line 623 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RBEND_H2, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 174:
-#line 618 "mad.y"
+#line 626 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RBEND_HGAP, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 175:
-#line 621 "mad.y"
+#line 629 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RBEND_FINT, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 176:
-#line 624 "mad.y"
+#line 632 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RBEND_K3, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 177:
-#line 629 "mad.y"
+#line 637 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3090,26 +3098,26 @@ case 177:
                                 ;
     break;}
 case 180:
-#line 652 "mad.y"
+#line 660 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 181:
-#line 656 "mad.y"
+#line 664 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 182:
-#line 659 "mad.y"
+#line 667 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_QUADRUPOLE_K1, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 183:
-#line 662 "mad.y"
+#line 670 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI_4, "0.78539816339744830962", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -3117,13 +3125,13 @@ case 183:
                                 ;
     break;}
 case 184:
-#line 667 "mad.y"
+#line 675 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_QUADRUPOLE_TILT, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 185:
-#line 672 "mad.y"
+#line 680 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3143,26 +3151,26 @@ case 185:
                                 ;
     break;}
 case 188:
-#line 695 "mad.y"
+#line 703 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 189:
-#line 699 "mad.y"
+#line 707 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 190:
-#line 702 "mad.y"
+#line 710 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SEXTUPOLE_K2, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 191:
-#line 705 "mad.y"
+#line 713 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI/6.0, "0.52359877559829887308", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -3170,13 +3178,13 @@ case 191:
                                 ;
     break;}
 case 192:
-#line 710 "mad.y"
+#line 718 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SEXTUPOLE_TILT, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 193:
-#line 715 "mad.y"
+#line 723 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3191,26 +3199,26 @@ case 193:
                                 ;
     break;}
 case 196:
-#line 733 "mad.y"
+#line 741 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 197:
-#line 737 "mad.y"
+#line 745 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 198:
-#line 740 "mad.y"
+#line 748 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_OCTUPOLE_K3, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 199:
-#line 743 "mad.y"
+#line 751 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI/8.0, "0.39269908169872415481", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -3218,13 +3226,13 @@ case 199:
                                 ;
     break;}
 case 200:
-#line 748 "mad.y"
+#line 756 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_OCTUPOLE_TILT, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 201:
-#line 753 "mad.y"
+#line 761 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3239,80 +3247,80 @@ case 201:
                                 ;
     break;}
 case 204:
-#line 771 "mad.y"
+#line 779 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 205:
-#line 775 "mad.y"
+#line 783 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 206:
-#line 778 "mad.y"
+#line 786 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_K0L, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 207:
-#line 781 "mad.y"
+#line 789 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_K1L, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 208:
-#line 784 "mad.y"
+#line 792 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_K2L, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 209:
-#line 787 "mad.y"
+#line 795 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_K3L, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 210:
-#line 790 "mad.y"
+#line 798 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_K4L, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 211:
-#line 793 "mad.y"
+#line 801 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_K5L, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 212:
-#line 796 "mad.y"
+#line 804 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_K6L, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 213:
-#line 799 "mad.y"
+#line 807 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_K7L, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 214:
-#line 802 "mad.y"
+#line 810 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_K8L, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 215:
-#line 805 "mad.y"
+#line 813 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_K9L, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 216:
-#line 808 "mad.y"
+#line 816 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI/2.0, "1.57079632679489661923", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -3320,7 +3328,7 @@ case 216:
                                 ;
     break;}
 case 217:
-#line 813 "mad.y"
+#line 821 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI/4.0, "0.78539816339744830962", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -3328,7 +3336,7 @@ case 217:
                                 ;
     break;}
 case 218:
-#line 818 "mad.y"
+#line 826 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI/6.0, "0.52359877559829887308", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -3336,7 +3344,7 @@ case 218:
                                 ;
     break;}
 case 219:
-#line 823 "mad.y"
+#line 831 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI/8.0, "0.39269908169872415481", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -3344,7 +3352,7 @@ case 219:
                                 ;
     break;}
 case 220:
-#line 828 "mad.y"
+#line 836 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI/10.0, "0.31415926535897932385", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -3352,7 +3360,7 @@ case 220:
                                 ;
     break;}
 case 221:
-#line 833 "mad.y"
+#line 841 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI/12.0, "0.26179938779914943654", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -3360,7 +3368,7 @@ case 221:
                                 ;
     break;}
 case 222:
-#line 838 "mad.y"
+#line 846 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI/14.0, "0.22439947525641380275", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -3368,7 +3376,7 @@ case 222:
                                 ;
     break;}
 case 223:
-#line 843 "mad.y"
+#line 851 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI/16.0, "0.19634954084936207740", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -3376,7 +3384,7 @@ case 223:
                                 ;
     break;}
 case 224:
-#line 848 "mad.y"
+#line 856 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI/18.0, "0.17453292519943295769", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -3384,7 +3392,7 @@ case 224:
                                 ;
     break;}
 case 225:
-#line 853 "mad.y"
+#line 861 "mad.y"
 {
                                   GNode* expr = expr_node_init( M_PI/20.0, "0.15707963267948966192", madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -3392,67 +3400,67 @@ case 225:
                                 ;
     break;}
 case 226:
-#line 858 "mad.y"
+#line 866 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_T0, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 227:
-#line 861 "mad.y"
+#line 869 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_T1, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 228:
-#line 864 "mad.y"
+#line 872 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_T2, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 229:
-#line 867 "mad.y"
+#line 875 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_T3, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 230:
-#line 870 "mad.y"
+#line 878 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_T4, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 231:
-#line 873 "mad.y"
+#line 881 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_T5, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 232:
-#line 876 "mad.y"
+#line 884 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_T6, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 233:
-#line 879 "mad.y"
+#line 887 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_T7, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 234:
-#line 882 "mad.y"
+#line 890 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_T8, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 235:
-#line 885 "mad.y"
+#line 893 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_MULTIPOLE_T9, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 236:
-#line 890 "mad.y"
+#line 898 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3472,26 +3480,26 @@ case 236:
                                 ;
     break;}
 case 239:
-#line 913 "mad.y"
+#line 921 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 240:
-#line 917 "mad.y"
+#line 925 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 241:
-#line 920 "mad.y"
+#line 928 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SOLENOID_KS, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 242:
-#line 925 "mad.y"
+#line 933 "mad.y"
 { 
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3506,7 +3514,7 @@ case 242:
                                 ;
     break;}
 case 243:
-#line 939 "mad.y"
+#line 947 "mad.y"
 { 
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3521,32 +3529,32 @@ case 243:
                                 ;
     break;}
 case 246:
-#line 958 "mad.y"
+#line 966 "mad.y"
 {
                                   madparser_set_bel_type(mp, yyvsp[0].sval );
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 247:
-#line 962 "mad.y"
+#line 970 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 248:
-#line 965 "mad.y"
+#line 973 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_HKICKER_KICK, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 249:
-#line 968 "mad.y"
+#line 976 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_HKICKER_TILT, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 250:
-#line 973 "mad.y"
+#line 981 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3561,7 +3569,7 @@ case 250:
                                 ;
     break;}
 case 251:
-#line 987 "mad.y"
+#line 995 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3576,32 +3584,32 @@ case 251:
                                 ;
     break;}
 case 254:
-#line 1005 "mad.y"
+#line 1013 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 255:
-#line 1009 "mad.y"
+#line 1017 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 256:
-#line 1012 "mad.y"
+#line 1020 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_VKICKER_KICK, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 257:
-#line 1015 "mad.y"
+#line 1023 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_VKICKER_TILT, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 258:
-#line 1020 "mad.y"
+#line 1028 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL )
@@ -3615,38 +3623,38 @@ case 258:
                                 ;
     break;}
 case 261:
-#line 1037 "mad.y"
+#line 1045 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 262:
-#line 1041 "mad.y"
+#line 1049 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 263:
-#line 1044 "mad.y"
+#line 1052 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_KICKER_HKICK, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 264:
-#line 1047 "mad.y"
+#line 1055 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_KICKER_VKICK, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 265:
-#line 1050 "mad.y"
+#line 1058 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_KICKER_TILT, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 266:
-#line 1055 "mad.y"
+#line 1063 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3661,62 +3669,62 @@ case 266:
                                 ;
     break;}
 case 269:
-#line 1073 "mad.y"
+#line 1081 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 270:
-#line 1077 "mad.y"
+#line 1085 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 271:
-#line 1080 "mad.y"
+#line 1088 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RFCAVITY_VOLT, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 272:
-#line 1083 "mad.y"
+#line 1091 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RFCAVITY_LAG, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 273:
-#line 1086 "mad.y"
+#line 1094 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RFCAVITY_HARMON, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 274:
-#line 1089 "mad.y"
+#line 1097 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RFCAVITY_BETRF, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 275:
-#line 1092 "mad.y"
+#line 1100 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RFCAVITY_PG, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 276:
-#line 1095 "mad.y"
+#line 1103 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RFCAVITY_SHUNT, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 277:
-#line 1098 "mad.y"
+#line 1106 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RFCAVITY_TFILL, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 278:
-#line 1103 "mad.y"
+#line 1111 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3731,32 +3739,32 @@ case 278:
                                 ;
     break;}
 case 281:
-#line 1121 "mad.y"
+#line 1129 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 282:
-#line 1125 "mad.y"
+#line 1133 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 283:
-#line 1128 "mad.y"
+#line 1136 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_ELSEPARATOR_E, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 284:
-#line 1131 "mad.y"
+#line 1139 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_ELSEPARATOR_TILT, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 285:
-#line 1136 "mad.y"
+#line 1144 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3771,7 +3779,7 @@ case 285:
                                 ;
     break;}
 case 286:
-#line 1150 "mad.y"
+#line 1158 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3786,20 +3794,20 @@ case 286:
                                 ;
     break;}
 case 289:
-#line 1168 "mad.y"
+#line 1176 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 290:
-#line 1172 "mad.y"
+#line 1180 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 291:
-#line 1177 "mad.y"
+#line 1185 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3814,7 +3822,7 @@ case 291:
                                 ;
     break;}
 case 292:
-#line 1191 "mad.y"
+#line 1199 "mad.y"
 {
                           beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                           if ( ptr != NULL ) {
@@ -3829,20 +3837,20 @@ case 292:
                         ;
     break;}
 case 295:
-#line 1209 "mad.y"
+#line 1217 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 296:
-#line 1213 "mad.y"
+#line 1221 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 297:
-#line 1218 "mad.y"
+#line 1226 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3857,20 +3865,20 @@ case 297:
                                 ;
     break;}
 case 300:
-#line 1236 "mad.y"
+#line 1244 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 301:
-#line 1240 "mad.y"
+#line 1248 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 302:
-#line 1245 "mad.y"
+#line 1253 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3885,20 +3893,20 @@ case 302:
                                 ;
     break;}
 case 305:
-#line 1263 "mad.y"
+#line 1271 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 306:
-#line 1267 "mad.y"
+#line 1275 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 307:
-#line 1272 "mad.y"
+#line 1280 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3913,32 +3921,32 @@ case 307:
                                 ;
     break;}
 case 310:
-#line 1290 "mad.y"
+#line 1298 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 311:
-#line 1294 "mad.y"
+#line 1302 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 312:
-#line 1297 "mad.y"
+#line 1305 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_ECOLLIMATOR_XSIZE, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 313:
-#line 1300 "mad.y"
+#line 1308 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_ECOLLIMATOR_YSIZE, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 314:
-#line 1305 "mad.y"
+#line 1313 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3953,32 +3961,32 @@ case 314:
                                 ;
     break;}
 case 317:
-#line 1323 "mad.y"
+#line 1331 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 318:
-#line 1327 "mad.y"
+#line 1335 "mad.y"
 {
                                   beam_element_set_length( madparser_current_bel(mp), (GNode*)yyvsp[0].ptr, madparser_expr_alloc(mp) );
                                 ;
     break;}
 case 319:
-#line 1330 "mad.y"
+#line 1338 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RCOLLIMATOR_XSIZE, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 320:
-#line 1333 "mad.y"
+#line 1341 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_RCOLLIMATOR_YSIZE, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 321:
-#line 1338 "mad.y"
+#line 1346 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -3993,20 +4001,20 @@ case 321:
                                 ;
     break;}
 case 324:
-#line 1356 "mad.y"
+#line 1364 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 325:
-#line 1360 "mad.y"
+#line 1368 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_YROT_ANGLE, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 326:
-#line 1365 "mad.y"
+#line 1373 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -4021,20 +4029,20 @@ case 326:
                                 ;
     break;}
 case 329:
-#line 1383 "mad.y"
+#line 1391 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 330:
-#line 1387 "mad.y"
+#line 1395 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_SROT_ANGLE, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 331:
-#line 1392 "mad.y"
+#line 1400 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -4049,50 +4057,50 @@ case 331:
                                 ;
     break;}
 case 334:
-#line 1410 "mad.y"
+#line 1418 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval ); 
                                 ;
     break;}
 case 335:
-#line 1414 "mad.y"
+#line 1422 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_BEAMBEAM_SIGX, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 336:
-#line 1417 "mad.y"
+#line 1425 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_BEAMBEAM_SIGY, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 337:
-#line 1420 "mad.y"
+#line 1428 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_BEAMBEAM_XMA, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 338:
-#line 1423 "mad.y"
+#line 1431 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_BEAMBEAM_YMA, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 339:
-#line 1426 "mad.y"
+#line 1434 "mad.y"
 {
   /* beam_element_set_param( madparser_current_bel(mp), BEL_BEAMBEAM_CHARGE, -1.0 ); */
                                 ;
     break;}
 case 340:
-#line 1429 "mad.y"
+#line 1437 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_BEAMBEAM_CHARGE, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 341:
-#line 1434 "mad.y"
+#line 1442 "mad.y"
 {
   
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
@@ -4118,14 +4126,14 @@ case 341:
                                 ;
     break;}
 case 344:
-#line 1463 "mad.y"
+#line 1471 "mad.y"
 {
                                     madparser_set_bel_type(mp,yyvsp[0].sval);
                                     free( yyvsp[0].sval );
                                 ;
     break;}
 case 345:
-#line 1467 "mad.y"
+#line 1475 "mad.y"
 {
                                   int i, j;
                                   matrix* mtx = NULL;
@@ -4144,7 +4152,7 @@ case 345:
                                 ;
     break;}
 case 346:
-#line 1483 "mad.y"
+#line 1491 "mad.y"
 {
                                   int i, j, k;
                                   matrix* mtx = NULL;
@@ -4165,7 +4173,7 @@ case 346:
                                 ;
     break;}
 case 347:
-#line 1503 "mad.y"
+#line 1511 "mad.y"
 {
                                   beam_element* ptr = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( ptr != NULL ) {
@@ -4180,30 +4188,30 @@ case 347:
                                 ;
     break;}
 case 350:
-#line 1521 "mad.y"
+#line 1529 "mad.y"
 {
                                   madparser_set_bel_type(mp,yyvsp[0].sval);
                                   free( yyvsp[0].sval );
                                 ;
     break;}
 case 351:
-#line 1525 "mad.y"
+#line 1533 "mad.y"
 {
                                   beam_element_set_param( madparser_current_bel(mp), BEL_LUMP_ORDER, (GNode*)yyvsp[0].ptr );
                                 ;
     break;}
 case 352:
-#line 1528 "mad.y"
+#line 1536 "mad.y"
 {
                                 ;
     break;}
 case 353:
-#line 1530 "mad.y"
+#line 1538 "mad.y"
 {
                                 ;
     break;}
 case 354:
-#line 1536 "mad.y"
+#line 1544 "mad.y"
 {
                                   beam_line* ptr = (beam_line*)bml_table_lookup( yyvsp[-6].sval, madparser_bml_table(mp) );
                                   if ( ptr != NULL ) {
@@ -4215,7 +4223,7 @@ case 354:
                                 ;
     break;}
 case 356:
-#line 1548 "mad.y"
+#line 1556 "mad.y"
 {
                                   beam_line* bml = (beam_line*)yyvsp[-2].ptr;
                                   beam_line_add_bml( bml, (beam_line*)yyvsp[0].ptr );
@@ -4224,7 +4232,7 @@ case 356:
                                 ;
     break;}
 case 357:
-#line 1554 "mad.y"
+#line 1562 "mad.y"
 {
                                   beam_line* bml = (beam_line*)yyvsp[-1].ptr;
                                   beam_line_add_bml( bml, (beam_line*)yyvsp[1].ptr );
@@ -4233,7 +4241,7 @@ case 357:
                                 ;
     break;}
 case 358:
-#line 1562 "mad.y"
+#line 1570 "mad.y"
 {
                                   beam_line* bml = beam_line_init( madparser_bml_alloc(mp) );
                                   assert( bml != NULL );
@@ -4243,13 +4251,13 @@ case 358:
                                 ;
     break;}
 case 359:
-#line 1569 "mad.y"
+#line 1577 "mad.y"
 {
                                   yyval.ptr = yyvsp[-1].ptr;
                                 ;
     break;}
 case 360:
-#line 1572 "mad.y"
+#line 1580 "mad.y"
 {
                                   int i;
                                   int n = (int)atof( yyvsp[-2].sval );
@@ -4264,7 +4272,7 @@ case 360:
                                 ;
     break;}
 case 361:
-#line 1584 "mad.y"
+#line 1592 "mad.y"
 {
                                   GList* list = ((beam_line*)yyvsp[0].ptr)->bel_list_;
                                   GList* last = NULL;
@@ -4287,13 +4295,15 @@ case 361:
                                 ;
     break;}
 case 363:
-#line 1609 "mad.y"
+#line 1617 "mad.y"
 {
   #if 0
                                   yyval.ptr = yyvsp[-1].ptr;
   #else
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode*       parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_   = BRACKETS_EXPR;
                                   data->dvalue_ = ((expr_struct*)(((GNode*)(yyvsp[-1].ptr))->data))->dvalue_;
                                   data->svalue_ = NULL;
@@ -4303,10 +4313,12 @@ case 363:
                                 ;
     break;}
 case 364:
-#line 1622 "mad.y"
+#line 1632 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_   = UN_PLUS_EXPR;
                                   data->dvalue_ = ((expr_struct*)(((GNode*)(yyvsp[0].ptr))->data))->dvalue_;
                                   data->svalue_ = NULL;
@@ -4315,10 +4327,12 @@ case 364:
                                 ;
     break;}
 case 365:
-#line 1631 "mad.y"
+#line 1643 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_   = UN_MINUS_EXPR;
                                   data->dvalue_ = -((expr_struct*)(((GNode*)(yyvsp[0].ptr))->data))->dvalue_;
                                   data->svalue_ = NULL;
@@ -4327,10 +4341,12 @@ case 365:
                                 ;
     break;}
 case 366:
-#line 1640 "mad.y"
+#line 1654 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = ADD_OP_EXPR;
                                   data->dvalue_ = ((expr_struct*)(((GNode*)(yyvsp[-2].ptr))->data))->dvalue_ + ((expr_struct*)(((GNode*)(yyvsp[0].ptr))->data))->dvalue_;
                                   data->svalue_ = NULL;
@@ -4340,10 +4356,12 @@ case 366:
                                 ;
     break;}
 case 367:
-#line 1650 "mad.y"
+#line 1666 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = SUB_OP_EXPR;
                                   data->dvalue_ = ((expr_struct*)(((GNode*)(yyvsp[-2].ptr))->data))->dvalue_ - ((expr_struct*)(((GNode*)(yyvsp[0].ptr))->data))->dvalue_;
                                   data->svalue_ = NULL;
@@ -4353,10 +4371,12 @@ case 367:
                                 ;
     break;}
 case 368:
-#line 1660 "mad.y"
+#line 1678 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = MUL_OP_EXPR;
                                   data->dvalue_ = ((expr_struct*)(((GNode*)(yyvsp[-2].ptr))->data))->dvalue_ * ((expr_struct*)(((GNode*)(yyvsp[0].ptr))->data))->dvalue_;
                                   data->svalue_ = NULL;
@@ -4366,10 +4386,12 @@ case 368:
                                 ;
     break;}
 case 369:
-#line 1670 "mad.y"
+#line 1690 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = DIV_OP_EXPR;
                                   data->dvalue_ = ((expr_struct*)(((GNode*)(yyvsp[-2].ptr))->data))->dvalue_ / ((expr_struct*)(((GNode*)(yyvsp[0].ptr))->data))->dvalue_;
                                   data->svalue_ = NULL;
@@ -4379,10 +4401,12 @@ case 369:
                                 ;
     break;}
 case 370:
-#line 1680 "mad.y"
+#line 1702 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = POW_OP_EXPR;
                                   data->dvalue_ = pow( ((expr_struct*)(((GNode*)(yyvsp[-2].ptr))->data))->dvalue_, ((expr_struct*)(((GNode*)(yyvsp[0].ptr))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -4392,10 +4416,12 @@ case 370:
                                 ;
     break;}
 case 371:
-#line 1690 "mad.y"
+#line 1714 "mad.y"
 {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = SQRT_EXPR;
                                   data->dvalue_ = sqrt( ((expr_struct*)(((GNode*)(yyvsp[-1].ptr))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -4404,10 +4430,12 @@ case 371:
                                 ;
     break;}
 case 372:
-#line 1699 "mad.y"
+#line 1725 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = LOG_EXPR;
                                   data->dvalue_ = log( ((expr_struct*)(((GNode*)(yyvsp[-1].ptr))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -4416,10 +4444,12 @@ case 372:
                                 ;
     break;}
 case 373:
-#line 1708 "mad.y"
+#line 1736 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = EXP_EXPR;
                                   data->dvalue_ = exp( ((expr_struct*)(((GNode*)(yyvsp[-1].ptr))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -4428,10 +4458,12 @@ case 373:
                                 ;
     break;}
 case 374:
-#line 1717 "mad.y"
+#line 1747 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = SIN_EXPR;
                                   data->dvalue_ = sin( ((expr_struct*)(((GNode*)(yyvsp[-1].ptr))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -4440,10 +4472,12 @@ case 374:
                                 ;
     break;}
 case 375:
-#line 1726 "mad.y"
+#line 1758 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = COS_EXPR;
                                   data->dvalue_ = cos( ((expr_struct*)(((GNode*)(yyvsp[-1].ptr))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -4452,10 +4486,12 @@ case 375:
                                 ;
     break;}
 case 376:
-#line 1735 "mad.y"
+#line 1769 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = TAN_EXPR;
                                   data->dvalue_ = tan( ((expr_struct*)(((GNode*)(yyvsp[-1].ptr))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -4464,10 +4500,12 @@ case 376:
                                 ;
     break;}
 case 377:
-#line 1744 "mad.y"
+#line 1780 "mad.y"
 {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = ASIN_EXPR;
                                   data->dvalue_ = asin( ((expr_struct*)(((GNode*)(yyvsp[-1].ptr))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -4476,10 +4514,12 @@ case 377:
                                 ;
     break;}
 case 378:
-#line 1753 "mad.y"
+#line 1791 "mad.y"
 {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;                                  
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = ABS_EXPR;
                                   data->dvalue_ = fabs( ((expr_struct*)(((GNode*)(yyvsp[-1].ptr))->data))->dvalue_ );
                                   data->svalue_ = NULL;
@@ -4488,12 +4528,14 @@ case 378:
                                 ;
     break;}
 case 379:
-#line 1762 "mad.y"
+#line 1802 "mad.y"
 {
+                                  expr_struct *data;
+                                  GNode *parent;
                                   double val1 = ((expr_struct*)(((GNode*)(yyvsp[-3].ptr))->data))->dvalue_;
                                   double val2 = ((expr_struct*)(((GNode*)(yyvsp[-1].ptr))->data))->dvalue_;
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = MAX_EXPR;
                                   data->dvalue_ = ( val1 > val2 ) ? val1 : val2;
                                   data->svalue_ = NULL;
@@ -4503,12 +4545,14 @@ case 379:
                                 ;
     break;}
 case 380:
-#line 1774 "mad.y"
+#line 1816 "mad.y"
 {
+                                  expr_struct *data;
+                                  GNode *parent;
                                   double val1 = ((expr_struct*)(((GNode*)(yyvsp[-3].ptr))->data))->dvalue_;
                                   double val2 = ((expr_struct*)(((GNode*)(yyvsp[-1].ptr))->data))->dvalue_;
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = MIN_EXPR;
                                   data->dvalue_ = ( val1 < val2 ) ? val1 : val2;
                                   data->svalue_ = NULL;
@@ -4518,9 +4562,10 @@ case 380:
                                 ;
     break;}
 case 381:
-#line 1788 "mad.y"
+#line 1832 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
+                                  expr_struct* data;
+                                  allocate( data, madparser_expr_alloc(mp) );
                                   data->kind_ = NUMBER_EXPR;
                                   data->dvalue_ = atof( yyvsp[0].sval );
                                   data->svalue_ = yyvsp[0].sval;
@@ -4528,10 +4573,12 @@ case 381:
                                 ;
     break;}
 case 382:
-#line 1795 "mad.y"
+#line 1840 "mad.y"
 {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  constant *ptr = (constant*)const_table_lookup( yyvsp[0].sval, madparser_const_table(mp) );
+                                  expr_struct *data;
+                                  constant *ptr;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  ptr = (constant*)const_table_lookup( yyvsp[0].sval, madparser_const_table(mp) );
                                   if ( ptr != 0 ) {
                                     if ( ptr->svalue_ != NULL ) {
                                       fprintf(stderr, "fatal parser error ! string constant %s used in an algebraic expression\n", yyvsp[0].sval);
@@ -4555,13 +4602,15 @@ case 382:
                                 ;
     break;}
 case 384:
-#line 1822 "mad.y"
+#line 1869 "mad.y"
 {
      #if 0
                                   yyval.ptr = yyvsp[-1].ptr;
      #else
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = BRACKETS_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[-1].ptr );
@@ -4570,10 +4619,12 @@ case 384:
                                 ;
     break;}
 case 385:
-#line 1834 "mad.y"
+#line 1883 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = UN_PLUS_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[0].ptr );
@@ -4581,10 +4632,12 @@ case 385:
                                 ;
     break;}
 case 386:
-#line 1842 "mad.y"
+#line 1893 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = UN_MINUS_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[0].ptr );
@@ -4592,10 +4645,12 @@ case 386:
                                 ;
     break;}
 case 387:
-#line 1850 "mad.y"
+#line 1903 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;                                  
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = ADD_OP_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[0].ptr );
@@ -4604,10 +4659,12 @@ case 387:
                                 ;
     break;}
 case 388:
-#line 1859 "mad.y"
+#line 1914 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = SUB_OP_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[0].ptr );
@@ -4616,10 +4673,12 @@ case 388:
                                 ;
     break;}
 case 389:
-#line 1868 "mad.y"
+#line 1925 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = MUL_OP_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[0].ptr );
@@ -4628,10 +4687,12 @@ case 389:
                                 ;
     break;}
 case 390:
-#line 1877 "mad.y"
+#line 1936 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = DIV_OP_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[0].ptr );
@@ -4640,10 +4701,12 @@ case 390:
                                 ;
     break;}
 case 391:
-#line 1886 "mad.y"
+#line 1947 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = POW_OP_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[0].ptr );
@@ -4652,10 +4715,12 @@ case 391:
                                 ;
     break;}
 case 392:
-#line 1895 "mad.y"
+#line 1958 "mad.y"
 {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = SQRT_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[-1].ptr );
@@ -4663,10 +4728,12 @@ case 392:
                                 ;
     break;}
 case 393:
-#line 1903 "mad.y"
+#line 1968 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = LOG_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[-1].ptr );
@@ -4674,10 +4741,12 @@ case 393:
                                 ;
     break;}
 case 394:
-#line 1911 "mad.y"
+#line 1978 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;                                  
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = EXP_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[-1].ptr );
@@ -4685,10 +4754,12 @@ case 394:
                                 ;
     break;}
 case 395:
-#line 1919 "mad.y"
+#line 1988 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = SIN_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[-1].ptr );
@@ -4696,10 +4767,12 @@ case 395:
                                 ;
     break;}
 case 396:
-#line 1927 "mad.y"
+#line 1998 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode* parent = g_node_new( data );
+                                  expr_struct* data;
+                                  GNode* parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = COS_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[-1].ptr );
@@ -4707,10 +4780,12 @@ case 396:
                                 ;
     break;}
 case 397:
-#line 1935 "mad.y"
+#line 2008 "mad.y"
 {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = TAN_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[-1].ptr );
@@ -4718,10 +4793,12 @@ case 397:
                                 ;
     break;}
 case 398:
-#line 1943 "mad.y"
+#line 2018 "mad.y"
 {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = ASIN_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[-1].ptr );
@@ -4729,10 +4806,12 @@ case 398:
                                 ;
     break;}
 case 399:
-#line 1951 "mad.y"
+#line 2028 "mad.y"
 {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = ABS_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[-1].ptr );
@@ -4740,10 +4819,12 @@ case 399:
                                 ;
     break;}
 case 400:
-#line 1959 "mad.y"
+#line 2038 "mad.y"
 {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = MAX_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[-1].ptr );
@@ -4752,10 +4833,12 @@ case 400:
                                 ;
     break;}
 case 401:
-#line 1968 "mad.y"
+#line 2049 "mad.y"
 {
-                                  expr_struct *data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  GNode *parent = g_node_new( data );
+                                  expr_struct *data;
+                                  GNode *parent;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  parent = g_node_new( data );
                                   data->kind_ = MIN_EXPR;
                                   data->svalue_ = NULL;
                                   g_node_prepend( parent, (GNode*)yyvsp[-1].ptr );
@@ -4764,7 +4847,7 @@ case 401:
                                 ;
     break;}
 case 402:
-#line 1979 "mad.y"
+#line 2062 "mad.y"
 {
                                   GNode* expr = expr_node_init( atof( yyvsp[0].sval ), yyvsp[0].sval, madparser_expr_alloc(mp) );
                                   assert( expr != NULL );
@@ -4773,19 +4856,22 @@ case 402:
                                 ;
     break;}
 case 403:
-#line 1985 "mad.y"
+#line 2068 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
+                                  expr_struct* data;
+                                  allocate( data, madparser_expr_alloc(mp) );
                                   data->kind_   = STRING_EXPR;
                                   data->svalue_ = yyvsp[0].sval;
                                   yyval.ptr = g_node_new( data );
                                 ;
     break;}
 case 404:
-#line 1991 "mad.y"
+#line 2075 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  constant* src1 = (constant*)const_table_lookup( yyvsp[0].sval, madparser_const_table(mp) );
+                                  expr_struct* data;
+                                  constant* src1;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  src1 = (constant*)const_table_lookup( yyvsp[0].sval, madparser_const_table(mp) );
                                   
                                   if ( src1 != 0 ) {
                                     if ( src1->svalue_ != NULL ) {
@@ -4808,10 +4894,12 @@ case 404:
                                 ;
     break;}
 case 405:
-#line 2014 "mad.y"
+#line 2100 "mad.y"
 {
-                                  expr_struct* data = (expr_struct*)allocate( madparser_expr_alloc(mp) );
-                                  beam_element* bel = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
+                                  expr_struct* data;
+                                  beam_element* bel;
+                                  allocate( data, madparser_expr_alloc(mp) );
+                                  bel = (beam_element*)bel_table_lookup( yyvsp[-3].sval, madparser_bel_table(mp) );
                                   if ( bel == 0 ) {
                                     fprintf( stderr, "warning ! %s is not yet defined\n", yyvsp[-3].sval);
                                   }
@@ -4822,154 +4910,154 @@ case 405:
                                 ;
     break;}
 case 406:
-#line 2029 "mad.y"
+#line 2117 "mad.y"
 { printf("An expression has been evaluated with VALUE.\n"); ;
     break;}
 case 407:
-#line 2034 "mad.y"
+#line 2122 "mad.y"
 { printf("Execute a system command %s.\n",yylval.sval); ;
     break;}
 case 412:
-#line 2049 "mad.y"
+#line 2137 "mad.y"
 { printf("LIST with member %s.\n",yylval.sval); ;
     break;}
 case 417:
-#line 2062 "mad.y"
+#line 2150 "mad.y"
 { printf("USE %s.\n",yylval.sval); ;
     break;}
 case 418:
-#line 2063 "mad.y"
+#line 2151 "mad.y"
 { printf("USE with period line=%s.\n",yylval.sval); ;
     break;}
 case 419:
-#line 2064 "mad.y"
+#line 2152 "mad.y"
 { printf("USE with period.\n"); ;
     break;}
 case 420:
-#line 2065 "mad.y"
+#line 2153 "mad.y"
 { printf("USE with range.\n"); ;
     break;}
 case 421:
-#line 2066 "mad.y"
+#line 2154 "mad.y"
 { printf("USE with SYMM true.\n"); ;
     break;}
 case 422:
-#line 2067 "mad.y"
+#line 2155 "mad.y"
 { printf("USE with SYMM false.\n"); ;
     break;}
 case 423:
-#line 2068 "mad.y"
+#line 2156 "mad.y"
 { printf("USE with super=%s.\n",yylval.sval); ;
     break;}
 case 433:
-#line 2090 "mad.y"
+#line 2178 "mad.y"
 { printf("BEAM with particle mass=expr.\n"); ;
     break;}
 case 434:
-#line 2091 "mad.y"
+#line 2179 "mad.y"
 { printf("BEAM with particle charge=expr.\n"); ;
     break;}
 case 435:
-#line 2092 "mad.y"
+#line 2180 "mad.y"
 { printf("BEAM with energy=expr.\n"); ;
     break;}
 case 436:
-#line 2093 "mad.y"
+#line 2181 "mad.y"
 { printf("BEAM with pc=expr.\n"); ;
     break;}
 case 437:
-#line 2094 "mad.y"
+#line 2182 "mad.y"
 { printf("BEAM with gamma=expr.\n"); ;
     break;}
 case 438:
-#line 2095 "mad.y"
+#line 2183 "mad.y"
 { printf("BEAM with ex=expr.\n"); ;
     break;}
 case 439:
-#line 2096 "mad.y"
+#line 2184 "mad.y"
 { printf("BEAM with exn=expr.\n"); ;
     break;}
 case 440:
-#line 2097 "mad.y"
+#line 2185 "mad.y"
 { printf("BEAM with ey=expr.\n"); ;
     break;}
 case 441:
-#line 2098 "mad.y"
+#line 2186 "mad.y"
 { printf("BEAM with eyn=expr.\n"); ;
     break;}
 case 442:
-#line 2099 "mad.y"
+#line 2187 "mad.y"
 { printf("BEAM with et=expr.\n"); ;
     break;}
 case 443:
-#line 2100 "mad.y"
+#line 2188 "mad.y"
 { printf("BEAM with sigt=expr.\n"); ;
     break;}
 case 444:
-#line 2101 "mad.y"
+#line 2189 "mad.y"
 { printf("BEAM with sige=expr.\n"); ;
     break;}
 case 445:
-#line 2102 "mad.y"
+#line 2190 "mad.y"
 { printf("BEAM with kbunch=expr.\n"); ;
     break;}
 case 446:
-#line 2103 "mad.y"
+#line 2191 "mad.y"
 { printf("BEAM with npart=expr.\n"); ;
     break;}
 case 447:
-#line 2104 "mad.y"
+#line 2192 "mad.y"
 { printf("BEAM with bcurrent=expr.\n"); ;
     break;}
 case 448:
-#line 2105 "mad.y"
+#line 2193 "mad.y"
 { printf("BEAM with BUNCHED true.\n"); ;
     break;}
 case 449:
-#line 2106 "mad.y"
+#line 2194 "mad.y"
 { printf("BEAM with BUNCHED false.\n"); ;
     break;}
 case 450:
-#line 2107 "mad.y"
+#line 2195 "mad.y"
 { printf("BEAM with RADIATE true.\n"); ;
     break;}
 case 451:
-#line 2108 "mad.y"
+#line 2196 "mad.y"
 { printf("BEAM with RADIATE false.\n"); ;
     break;}
 case 452:
-#line 2111 "mad.y"
+#line 2199 "mad.y"
 { printf("BEAM with positrons.\n"); ;
     break;}
 case 453:
-#line 2112 "mad.y"
+#line 2200 "mad.y"
 { printf("BEAM with electrons.\n"); ;
     break;}
 case 454:
-#line 2113 "mad.y"
+#line 2201 "mad.y"
 { printf("BEAM with protons.\n"); ;
     break;}
 case 455:
-#line 2114 "mad.y"
+#line 2202 "mad.y"
 { printf("BEAM with anti-protons.\n"); ;
     break;}
 case 456:
-#line 2118 "mad.y"
+#line 2206 "mad.y"
 { printf("Reset all beam data.\n"); ;
     break;}
 case 458:
-#line 2124 "mad.y"
+#line 2212 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'A';
 				  str[1] = '\0';
 				  yyval.sval = str;
 				;
     break;}
 case 459:
-#line 2130 "mad.y"
+#line 2218 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+                                  char* str = malloc( 4 );
 				  str[0] = 'A';
 				  str[1] = 'T';
 				  str[2] = '\0';
@@ -4977,9 +5065,9 @@ case 459:
 				;
     break;}
 case 460:
-#line 2137 "mad.y"
+#line 2225 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'B';
 				  str[1] = 'Y';
 				  str[2] = '\0';
@@ -4987,9 +5075,9 @@ case 460:
 				;
     break;}
 case 461:
-#line 2144 "mad.y"
+#line 2232 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'D';
 				  str[1] = 'T';
 				  str[2] = '\0';
@@ -4997,9 +5085,9 @@ case 461:
 				;
     break;}
 case 462:
-#line 2151 "mad.y"
+#line 2239 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'D';
 				  str[1] = 'X';
 				  str[2] = '\0';
@@ -5007,9 +5095,9 @@ case 462:
 				;
     break;}
 case 463:
-#line 2158 "mad.y"
+#line 2246 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'D';
 				  str[1] = 'Y';
 				  str[2] = '\0';
@@ -5017,18 +5105,18 @@ case 463:
 				;
     break;}
 case 464:
-#line 2165 "mad.y"
+#line 2253 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'E';
 				  str[1] = '\0';
 				  yyval.sval = str;
 				;
     break;}
 case 465:
-#line 2171 "mad.y"
+#line 2259 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'E';
 				  str[1] = '1';
 				  str[2] = '\0';
@@ -5036,9 +5124,9 @@ case 465:
 				;
     break;}
 case 466:
-#line 2178 "mad.y"
+#line 2266 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'E';
 				  str[1] = '2';
 				  str[2] = '\0';
@@ -5046,9 +5134,9 @@ case 466:
 				;
     break;}
 case 467:
-#line 2185 "mad.y"
+#line 2273 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'E';
 				  str[1] = 'T';
 				  str[2] = '\0';
@@ -5056,9 +5144,9 @@ case 467:
 				;
     break;}
 case 468:
-#line 2192 "mad.y"
+#line 2280 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'E';
 				  str[1] = 'X';
 				  str[2] = '\0';
@@ -5066,9 +5154,9 @@ case 468:
 				;
     break;}
 case 469:
-#line 2199 "mad.y"
+#line 2287 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'E';
 				  str[1] = 'Y';
 				  str[2] = '\0';
@@ -5076,9 +5164,9 @@ case 469:
 				;
     break;}
 case 470:
-#line 2206 "mad.y"
+#line 2294 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'H';
 				  str[1] = '1';
 				  str[2] = '\0';
@@ -5086,9 +5174,9 @@ case 470:
 				;
     break;}
 case 471:
-#line 2213 "mad.y"
+#line 2301 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'H';
 				  str[1] = '2';
 				  str[2] = '\0';
@@ -5096,9 +5184,9 @@ case 471:
 				;
     break;}
 case 472:
-#line 2220 "mad.y"
+#line 2308 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'K';
 				  str[1] = '1';
 				  str[2] = '\0';
@@ -5106,9 +5194,9 @@ case 472:
 				;
     break;}
 case 473:
-#line 2227 "mad.y"
+#line 2315 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'K';
 				  str[1] = '2';
 				  str[2] = '\0';
@@ -5116,9 +5204,9 @@ case 473:
 				;
     break;}
 case 474:
-#line 2234 "mad.y"
+#line 2322 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'K';
 				  str[1] = '3';
 				  str[2] = '\0';
@@ -5126,9 +5214,9 @@ case 474:
 				;
     break;}
 case 475:
-#line 2241 "mad.y"
+#line 2329 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'K';
 				  str[1] = 'S';
 				  str[2] = '\0';
@@ -5136,27 +5224,27 @@ case 475:
 				;
     break;}
 case 476:
-#line 2248 "mad.y"
+#line 2336 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'L';
 				  str[1] = '\0';
 				  yyval.sval = str;
 				;
     break;}
 case 477:
-#line 2254 "mad.y"
+#line 2342 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'N';
 				  str[1] = '\0';
 				  yyval.sval = str;
 				;
     break;}
 case 478:
-#line 2260 "mad.y"
+#line 2348 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'P';
 				  str[1] = 'C';
 				  str[2] = '\0';
@@ -5164,9 +5252,9 @@ case 478:
 				;
     break;}
 case 479:
-#line 2267 "mad.y"
+#line 2355 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'P';
 				  str[1] = 'G';
 				  str[2] = '\0';
@@ -5174,9 +5262,9 @@ case 479:
 				;
     break;}
 case 480:
-#line 2274 "mad.y"
+#line 2362 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'P';
 				  str[1] = 'T';
 				  str[2] = '\0';
@@ -5184,9 +5272,9 @@ case 480:
 				;
     break;}
 case 481:
-#line 2281 "mad.y"
+#line 2369 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'P';
 				  str[1] = 'X';
 				  str[2] = '\0';
@@ -5194,9 +5282,9 @@ case 481:
 				;
     break;}
 case 482:
-#line 2288 "mad.y"
+#line 2376 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'P';
 				  str[1] = 'Y';
 				  str[2] = '\0';
@@ -5204,9 +5292,9 @@ case 482:
 				;
     break;}
 case 483:
-#line 2295 "mad.y"
+#line 2383 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'R';
 				  str[1] = 'M';
 				  str[2] = '\0';
@@ -5214,18 +5302,18 @@ case 483:
 				;
     break;}
 case 484:
-#line 2302 "mad.y"
+#line 2390 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '\0';
 				  yyval.sval = str;
 				;
     break;}
 case 485:
-#line 2308 "mad.y"
+#line 2396 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '0';
 				  str[2] = '\0';
@@ -5233,9 +5321,9 @@ case 485:
 				;
     break;}
 case 486:
-#line 2315 "mad.y"
+#line 2403 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '1';
 				  str[2] = '\0';
@@ -5243,9 +5331,9 @@ case 486:
 				;
     break;}
 case 487:
-#line 2322 "mad.y"
+#line 2410 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '2';
 				  str[2] = '\0';
@@ -5253,9 +5341,9 @@ case 487:
 				;
     break;}
 case 488:
-#line 2329 "mad.y"
+#line 2417 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '3';
 				  str[2] = '\0';
@@ -5263,9 +5351,9 @@ case 488:
 				;
     break;}
 case 489:
-#line 2336 "mad.y"
+#line 2424 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '4';
 				  str[2] = '\0';
@@ -5273,9 +5361,9 @@ case 489:
 				;
     break;}
 case 490:
-#line 2343 "mad.y"
+#line 2431 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '5';
 				  str[2] = '\0';
@@ -5283,9 +5371,9 @@ case 490:
 				;
     break;}
 case 491:
-#line 2350 "mad.y"
+#line 2438 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '6';
 				  str[2] = '\0';
@@ -5293,9 +5381,9 @@ case 491:
 				;
     break;}
 case 492:
-#line 2357 "mad.y"
+#line 2445 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '7';
 				  str[2] = '\0';
@@ -5303,9 +5391,9 @@ case 492:
 				;
     break;}
 case 493:
-#line 2364 "mad.y"
+#line 2452 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '8';
 				  str[2] = '\0';
@@ -5313,9 +5401,9 @@ case 493:
 				;
     break;}
 case 494:
-#line 2371 "mad.y"
+#line 2459 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = '9';
 				  str[2] = '\0';
@@ -5323,9 +5411,9 @@ case 494:
 				;
     break;}
 case 495:
-#line 2378 "mad.y"
+#line 2466 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = 'M';
 				  str[2] = '\0';
@@ -5333,9 +5421,9 @@ case 495:
 				;
     break;}
 case 496:
-#line 2385 "mad.y"
+#line 2473 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'T';
 				  str[1] = 'O';
 				  str[2] = '\0';
@@ -5343,9 +5431,9 @@ case 496:
 				;
     break;}
 case 497:
-#line 2392 "mad.y"
+#line 2480 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'W';
 				  str[1] = 'X';
 				  str[2] = '\0';
@@ -5353,9 +5441,9 @@ case 497:
 				;
     break;}
 case 498:
-#line 2399 "mad.y"
+#line 2487 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'W';
 				  str[1] = 'Y';
 				  str[2] = '\0';
@@ -5363,18 +5451,18 @@ case 498:
 				;
     break;}
 case 499:
-#line 2406 "mad.y"
+#line 2494 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'X';
 				  str[1] = '\0';
 				  yyval.sval = str;
 				;
     break;}
 case 500:
-#line 2412 "mad.y"
+#line 2500 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'X';
 				  str[1] = '0';
 				  str[2] = '\0';
@@ -5382,18 +5470,18 @@ case 500:
 				;
     break;}
 case 501:
-#line 2419 "mad.y"
+#line 2507 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'Y';
 				  str[1] = '\0';
 				  yyval.sval = str;
 				;
     break;}
 case 502:
-#line 2425 "mad.y"
+#line 2513 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'Y';
 				  str[1] = '0';
 				  str[2] = '\0';
@@ -5401,9 +5489,9 @@ case 502:
 				;
     break;}
 case 503:
-#line 2432 "mad.y"
+#line 2520 "mad.y"
 {
-				  char* str = (char*)allocate( madparser_ident_alloc(mp) );
+				  char* str = malloc( 4 );
 				  str[0] = 'Z';
 				  str[1] = '0';
 				  str[2] = '\0';
@@ -5632,7 +5720,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 2441 "mad.y"
+#line 2529 "mad.y"
 
 
 void
