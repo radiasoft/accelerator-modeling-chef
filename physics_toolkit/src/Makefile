@@ -2,12 +2,16 @@
 
 INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(BASIC_TOOLKIT_INC) -I$(PHYSICS_TOOLKIT_INC)
 
-OBJS = ConvertToTunes.o \
+OBJS = ClosedOrbitSage.o \
+       ConvertToTunes.o \
        DriftsToSlots.o \
        EdwardsTeng.o \
        FPSolver.o \
        FindCovariance.o \
        JacobianVisitor.o \
+       LattFuncSage.o \
+       QBpropVisitor.o \
+       Sage.o \
        normalForm.o \
        particleVisitor.o
 
