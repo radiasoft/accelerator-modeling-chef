@@ -276,8 +276,20 @@ int ClosedOrbitSage::_invokeFPSolver( JetParticle* p_jp )
   // *** CHANGE ***
   // *** CHANGE *** fp should know nothing about beamlines
   // *** CHANGE ***
-  fp( dynamic_cast<JetProton*>(p_jp), "transverse", Sage::no );
-      // ??? The recast is a kludge which must be changed.
+  // ??? Also: the recast is a kludge which must be changed.
+  int fpError = fp( dynamic_cast<JetProton*>(p_jp), "transverse", Sage::no );
+  if( 0 != fpError )
+  {
+    *_errorStreamPtr
+         << "\n*** ERROR ***"
+            "\n*** ERROR *** File: " << __FILE__ << " Line: " << __LINE__
+         << "\n*** ERROR *** ClosedOrbitSage::_invokeFPSolver"
+            "\n*** ERROR *** The FPSolver failed to find a solution."
+            "\n*** ERROR *** Return error code = " << fpError
+         << "\n*** ERROR *** "
+         << endl;
+    return 2;
+  }
 
   // Test the new closed orbit ...
   Particle* p_prt =  p_jp->ConvertToParticle();

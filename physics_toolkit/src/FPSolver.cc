@@ -33,6 +33,8 @@
 #include <config.h>
 #endif
 
+#include <ieeefp.h>
+
 #include "GenericException.h"
 #include "beamline.h"
 #include "FPSolver.h"
@@ -125,6 +127,15 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
   Vector eps(4);
   do {
     bmLine->propagate( *p );
+
+    // --- Has the state gone out of bounds? ---------
+    for( i = 0; i < Particle::PSD; i++ ) {
+      if( isnan(p->State(i)) ) { 
+        cerr << "FPSolver: *** ERROR *** p->State(" << i << ") is NaN." << endl;
+        return -1; 
+      }
+    }
+      
     for( i = 0; i < 4; i++ ) eps(i) = z(i) - p->State( l[i] );
 
     // --- Set up the tests --------------------------
@@ -256,6 +267,15 @@ int FPSolver::operator()( JetProton* p_jpr, const char*, FP_CRITFUNC Crit )
     Vector eps(4);
     do {
       bmLine->propagate( *p );
+
+      // --- Has the state gone out of bounds? ---------
+      for( i = 0; i < Particle::PSD; i++ ) {
+        if( isnan(p->State(i)) ) { 
+          cerr << "FPSolver: *** ERROR *** p->State(" << i << ") is NaN." << endl;
+          return -1; 
+        }
+      }
+      
       for( i = 0; i < 4; i++ ) eps(i) = z(i) - p->State( l[i] );
   
       // --- Set up the tests --------------------------
@@ -326,14 +346,12 @@ int FPSolver::operator()( JetProton* p_jpr, const char*, FP_CRITFUNC Crit )
     }
     p_jpr->setState( oneTurn );
 
-
   } // End block: if( ret == 0 )
 
 
   // --- Exit --------------------------------------------------------
   if(p) delete p;
   return ret;
-
 }
 
            /* ------------------------------------- */
@@ -371,6 +389,15 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
   Vector eps;
   do {
     bmLine->propagate( *p );
+
+    // --- Has the state gone out of bounds? ---------
+    for( i = 0; i < Particle::PSD; i++ ) {
+      if( isnan(p->State(i)) ) { 
+        cerr << "FPSolver: *** ERROR *** p->State(" << i << ") is NaN." << endl;
+        return -1; 
+      }
+    }
+      
     eps = z - p->State();
 
     // --- Set up the tests --------------------------
@@ -603,6 +630,14 @@ void FPSolver::operator()( double* result )
     test = 1;
     w.standardPart( u );
 
+    // --- Has the state gone out of bounds? ---------
+    for( i = 0; i < 6; i++ ) {
+      if( isnan(u[i]) ) { 
+        cerr << "fixedPoint:: p->State(" << i << ") is NaN." << endl;
+        return -1; 
+      }
+    }
+      
     FORALL(i) m[i] = 0;
     FORALL(i) FORALL(j) {
       m[j] = 1;
