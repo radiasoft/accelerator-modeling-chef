@@ -105,8 +105,9 @@
 #define strcasecmp strcmpi
 #endif
 
-
-// ................................ Beamline classes
+// ****************
+// BEAMLINE CLASSES
+// ****************
 
 #ifndef BMLNELMNT_H
 #include "bmlnElmnt.h"
@@ -209,6 +210,58 @@
 
 #ifndef BIPOLARCIRCUIT_H
 #include "BipolarCircuit.h"
+#endif
+
+#ifndef APERTURE_H
+#include "Aperture.h"
+#endif
+
+#ifndef BMLVISITOR_H
+#include "BmlVisitor.h"
+#endif
+
+#ifndef BUNCHPREDICATE_H
+#include "BunchPredicate.h"
+#endif
+
+#ifndef FDPOLARITY_H
+#include "FDPolarity.h"
+#endif
+
+#ifndef MAPPPROPFUNC_H
+#include "MappPropFunc.h"
+#endif
+
+#ifndef PARTICLE_H
+#include "Particle.h"
+#endif
+
+#ifndef PARTICLEBUNCH_H
+#include "ParticleBunch.h"
+#endif
+
+#ifndef SLOT_H
+#include "Slot.h"
+#endif
+
+#ifndef COMBINEDFUNCTION_H
+#include "combinedFunction.h"
+#endif
+
+#ifndef MWIREMONITOR_H
+#include "mwiremonitor.h"
+#endif
+
+#ifndef PINGER_H
+#include "pinger.h"
+#endif
+
+#ifndef RASTERMONITOR_H
+#include "rastermonitor.h"
+#endif
+
+#ifndef TCLMONITOR_H
+#include "tclmonitor.h"
 #endif
 
 #endif // BEAMLINE_H
