@@ -32,6 +32,8 @@
 #define MATRIX_H
 
 #include <exception>
+#include <string>
+
 #include "ML.h"
 
 class MatrixC;
@@ -158,12 +160,13 @@ friend MatrixD operator/(MatrixD& ,MatrixD &);
     int r, c;
   };
 
-  struct Generic : public std::exception
+  struct GenericException : public std::exception
   {
     // Miscellaneous other errors
-    Generic( int, int, const char*, const char* = "" );
-    ~Generic() throw() {}
+    GenericException( int, int, const char*, const char* = "" );
+    ~GenericException() throw() {}
     const char* what() const throw();
+    std::string errorString;
     int r, c;
   };
 

@@ -1,29 +1,29 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                
+******
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
 ******  Version:   4.2
-******                                    
+******
 ******  File:      Matrix.cc
-******                                                                
-******  Copyright (c) 1990 Universities Research Association, Inc.    
-******                All Rights Reserved                             
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
+******
+******  Copyright (c) 1990 Universities Research Association, Inc.
+******                All Rights Reserved
+******
+******  Author:    Leo Michelotti
+******
+******             Fermilab
+******             P.O.Box 500
+******             Mail Stop 220
+******             Batavia, IL   60510
+******
+******             Phone: (630) 840 4956
+******             Email: michelotti@fnal.gov
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License and the GNU General Public License, both of
 ******  which are supplied with this software.
-******                                                                
+******
 **************************************************************************
 *************************************************************************/
 
@@ -33,18 +33,19 @@
 
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 #include <MathConstants.h>
 
 
 #include "Matrix.h"
 //extern "C" {strstr(char*,char*);} // this may need to be commented out
-				  // on some systems.
+                                  // on some systems.
 
 extern "C" { void rg_(int*, int*, double*, double*,double*, int*, double*,
-		 int*, double*, int*); }
+                 int*, double*, int*); }
 
-extern "C" { void cg_(int*, int*, double*, double*,double*,double*, int*, 
-		      double*,double*,double*, double*, double*,int*); }
+extern "C" { void cg_(int*, int*, double*, double*,double*,double*, int*,
+                      double*,double*,double*, double*, double*,int*); }
 
 
 using namespace std;
@@ -111,10 +112,10 @@ MatrixD::MatrixD(const char* flag, int dimension) : stacked(0) {
 #endif
 
   ml = new MLD(dimension,dimension,0.0);
-  
-  if( ((double) (dimension/2) != tmp_float/2.0) && 
+
+  if( ((double) (dimension/2) != tmp_float/2.0) &&
       (flag[0] == 'J') ) {
-    throw( Generic( dimension, dimension
+    throw( GenericException( dimension, dimension
                      , "MatrixD::MatrixD(const char* flag, int dimension)"
                      , "Dimension must be even for J matrix") );
   }
@@ -129,7 +130,7 @@ MatrixD::MatrixD(const char* flag, int dimension) : stacked(0) {
       ml->m[i][i-dimension/2] = -1;
     }
   } else {
-      throw( Generic( dimension, dimension
+      throw( GenericException( dimension, dimension
                      , "MatrixD::MatrixD(const char* flag, int dimension)"
                      , strcat("Unknown flag: ", flag) ) );
   }
@@ -167,7 +168,7 @@ MatrixD& MatrixD::operator=(const MatrixD& x) {
 #endif
   }
  stacked = 0;   // ??? This line is probably unnecessary.
- return *this; 
+ return *this;
 }
 
 MatrixD& MatrixD::DeepCopy(const MatrixD& x) {
@@ -177,7 +178,7 @@ MatrixD& MatrixD::DeepCopy(const MatrixD& x) {
      *ml = *(x.ml);
  }
  stacked = 0;   // ??? This line is probably unnecessary.
- return *this; 
+ return *this;
 }
 
 char operator==( const MatrixD& x, const MatrixD& y ) {
@@ -225,9 +226,9 @@ MatrixD MatrixD::Square() const {
   MLD*    zPtr = z.ml;
 
   for( i = 0; i < d; i++ )
-    for( j = 0; j < d; j++ ) 
+    for( j = 0; j < d; j++ )
       zPtr->m[i][j] = ml->m[i][j];
-      
+
   return z;
 }
 
@@ -282,7 +283,7 @@ double MatrixD::determinant() {
   }
   else {
     int* indx = new int[cols()]; // create the "index vector
-  			         // see pp 38. in Numerical Recipes
+                                 // see pp 38. in Numerical Recipes
     int d;
     // perform the decomposition once:
 
@@ -335,7 +336,7 @@ MatrixC MatrixD::eigenValues() {
   k = 0;
   for(i = 0; i < rows(); i++) {
     for(j = 0; j< cols(); j++) {
-      b[k] = ml->m[j][i];	// the rg_ routine uses the transpose
+      b[k] = ml->m[j][i];       // the rg_ routine uses the transpose
       k++;
     }
   }
@@ -368,7 +369,7 @@ MatrixC MatrixD::eigenValues() {
     if(wi[i] == 0){
       realCount++;
       for(j=0; j<n; j++) {
-	tmp(j,k) = Complex(z1(i,j),0.0);
+        tmp(j,k) = Complex(z1(i,j),0.0);
       }
       tmp1(0,k) = Complex(wr[i],0.0);
       k++;
@@ -377,8 +378,8 @@ MatrixC MatrixD::eigenValues() {
       tmp1(0,k)   = Complex(wr[i],wi[i]);
       tmp1(0,k+1) = Complex(wr[i+1],wi[i+1]);
       for(j=0; j<n; j++) {
-	tmp(j,k)   = Complex(z1(i,j),z1(i+1,j));
-	tmp(j,k+1) = Complex(z1(i,j),-z1(i+1,j));
+        tmp(j,k)   = Complex(z1(i,j),z1(i+1,j));
+        tmp(j,k+1) = Complex(z1(i,j),-z1(i+1,j));
       }
       k += 2;
       i += 2;
@@ -395,40 +396,40 @@ MatrixC MatrixD::eigenValues() {
     }
     if(imag(tmp1(0,0)) == 0.0) {
       if(imag(tmp1(0,1)) == 0.0) {
-	tmp.switch_columns(0,2);
-	tmp1.switch_columns(0,2);
-	tmp.switch_columns(1,4);
-	tmp1.switch_columns(1,4);
-	tmp.switch_columns(4,5);
-	tmp1.switch_columns(4,5);
+        tmp.switch_columns(0,2);
+        tmp1.switch_columns(0,2);
+        tmp.switch_columns(1,4);
+        tmp1.switch_columns(1,4);
+        tmp.switch_columns(4,5);
+        tmp1.switch_columns(4,5);
       } else if(imag(tmp1(0,3)) == 0.0) {
-	tmp.switch_columns(2,3);
-	tmp1.switch_columns(2,3);
-	tmp.switch_columns(0,1);
-	tmp1.switch_columns(0,1);
-	tmp.switch_columns(2,4);
-	tmp1.switch_columns(2,4);
-	tmp.switch_columns(4,5);
-	tmp1.switch_columns(4,5);
+        tmp.switch_columns(2,3);
+        tmp1.switch_columns(2,3);
+        tmp.switch_columns(0,1);
+        tmp1.switch_columns(0,1);
+        tmp.switch_columns(2,4);
+        tmp1.switch_columns(2,4);
+        tmp.switch_columns(4,5);
+        tmp1.switch_columns(4,5);
       } else if(imag(tmp1(0,5)) == 0.0) {
-	tmp.switch_columns(2,3);
-	tmp1.switch_columns(2,3);
-	tmp.switch_columns(0,1);
-	tmp1.switch_columns(0,1);
-	tmp.switch_columns(1,2);
-	tmp1.switch_columns(1,2);
+        tmp.switch_columns(2,3);
+        tmp1.switch_columns(2,3);
+        tmp.switch_columns(0,1);
+        tmp1.switch_columns(0,1);
+        tmp.switch_columns(1,2);
+        tmp1.switch_columns(1,2);
       }
     } else if(imag(tmp1(0,2)) == 0.0) {
       if(imag(tmp1(0,5)) == 0.0) {
-	tmp.switch_columns(1,3);
-	tmp1.switch_columns(1,3);
+        tmp.switch_columns(1,3);
+        tmp1.switch_columns(1,3);
       } else if(imag(tmp1(0,3)) == 0.0) {
-	tmp.switch_columns(4,5);
-	tmp1.switch_columns(4,5);
-	tmp.switch_columns(1,5);
-	tmp1.switch_columns(1,5);
-	tmp.switch_columns(3,5);
-	tmp1.switch_columns(3,5);
+        tmp.switch_columns(4,5);
+        tmp1.switch_columns(4,5);
+        tmp.switch_columns(1,5);
+        tmp1.switch_columns(1,5);
+        tmp.switch_columns(3,5);
+        tmp1.switch_columns(3,5);
       }
     } else if(imag(tmp1(0,4)) == 0.0) {
       tmp.switch_columns(3,4);
@@ -453,18 +454,18 @@ MatrixC MatrixD::eigenValues() {
     sortFlag = 0;
     for(i=1; i < oddEven; i++) {
       if(abs(tmp(0,0)) < abs(tmp(0,i))) {
-	tmp.switch_columns(0,i); 
-	tmp1.switch_columns(0,i); 
-	sortFlag = 1;
-	if((oddEven*2) == nm) {
-	  tmp.switch_columns(oddEven,oddEven+i);
-	  tmp1.switch_columns(oddEven,oddEven+i);
-	}
+        tmp.switch_columns(0,i);
+        tmp1.switch_columns(0,i);
+        sortFlag = 1;
+        if((oddEven*2) == nm) {
+          tmp.switch_columns(oddEven,oddEven+i);
+          tmp1.switch_columns(oddEven,oddEven+i);
+        }
       }
     }
     counter++;
   }
-  if(counter >= 10) 
+  if(counter >= 10)
     cerr << "MatrixD: Something is wrong with the eigenValue sort" << endl;
   for(i=2; i < oddEven; i++) {
     if(abs(tmp(1,1)) < abs(tmp(1,i))) {
@@ -472,8 +473,8 @@ MatrixC MatrixD::eigenValues() {
       tmp1.switch_columns(1,i);
       sortFlag = 1;
       if((oddEven*2) == nm) {
-	tmp.switch_columns(oddEven+1,oddEven+i);
-	tmp1.switch_columns(oddEven+1,oddEven+i);
+        tmp.switch_columns(oddEven+1,oddEven+i);
+        tmp1.switch_columns(oddEven+1,oddEven+i);
       }
     }
   }
@@ -500,7 +501,7 @@ MatrixC MatrixD::eigenVectors() {
   k = 0;
   for(i = 0; i < rows(); i++) {
     for(j = 0; j< cols(); j++) {
-      b[k] = ml->m[j][i];	// the rg_ routine uses the transpose
+      b[k] = ml->m[j][i];       // the rg_ routine uses the transpose
       k++;
     }
   }
@@ -533,7 +534,7 @@ MatrixC MatrixD::eigenVectors() {
     if(wi[i] == 0){
       realCount++;
       for(j=0; j<n; j++) {
-	tmp(j,k) = Complex(z1(i,j),0.0);
+        tmp(j,k) = Complex(z1(i,j),0.0);
       }
       tmp1(0,k) = Complex(wr[i],0.0);
       k++;
@@ -542,8 +543,8 @@ MatrixC MatrixD::eigenVectors() {
       tmp1(0,k)   = Complex(wr[i],wi[i]);
       tmp1(0,k+1) = Complex(wr[i+1],wi[i+1]);
       for(j=0; j<n; j++) {
-	tmp(j,k)   = Complex(z1(i,j),z1(i+1,j));
-	tmp(j,k+1) = Complex(z1(i,j),-z1(i+1,j));
+        tmp(j,k)   = Complex(z1(i,j),z1(i+1,j));
+        tmp(j,k+1) = Complex(z1(i,j),-z1(i+1,j));
       }
       k += 2;
       i += 2;
@@ -557,26 +558,26 @@ MatrixC MatrixD::eigenVectors() {
     }
     if(imag(tmp1(0,0)) == 0.0) {
       if(imag(tmp1(0,1)) == 0.0) {
-	tmp.switch_columns(0,2);
-	tmp.switch_columns(1,4);
-	tmp.switch_columns(4,5);
+        tmp.switch_columns(0,2);
+        tmp.switch_columns(1,4);
+        tmp.switch_columns(4,5);
       } else if(imag(tmp1(0,3)) == 0.0) {
-	tmp.switch_columns(2,3);
-	tmp.switch_columns(0,1);
-	tmp.switch_columns(2,4);
-	tmp.switch_columns(4,5);
+        tmp.switch_columns(2,3);
+        tmp.switch_columns(0,1);
+        tmp.switch_columns(2,4);
+        tmp.switch_columns(4,5);
       } else if(imag(tmp1(0,5)) == 0.0) {
-	tmp.switch_columns(2,3);
-	tmp.switch_columns(0,1);
-	tmp.switch_columns(1,2);
+        tmp.switch_columns(2,3);
+        tmp.switch_columns(0,1);
+        tmp.switch_columns(1,2);
       }
     } else if(imag(tmp1(0,2)) == 0.0) {
       if(imag(tmp1(0,5)) == 0.0) {
-	tmp.switch_columns(1,3);
+        tmp.switch_columns(1,3);
       } else if(imag(tmp1(0,3)) == 0.0) {
-	tmp.switch_columns(4,5);
-	tmp.switch_columns(1,5);
-	tmp.switch_columns(3,5);
+        tmp.switch_columns(4,5);
+        tmp.switch_columns(1,5);
+        tmp.switch_columns(3,5);
       }
     } else if(imag(tmp1(0,4)) == 0.0) {
       tmp.switch_columns(3,4);
@@ -597,21 +598,21 @@ MatrixC MatrixD::eigenVectors() {
     sortFlag = 0;
     for(i=1; i < oddEven; i++) {
       if(abs(tmp(0,0)) < abs(tmp(0,i))) {
-	tmp.switch_columns(0,i); 
-	sortFlag = 1;
-	if((oddEven*2) == nm)
-	  tmp.switch_columns(oddEven,oddEven+i);
+        tmp.switch_columns(0,i);
+        sortFlag = 1;
+        if((oddEven*2) == nm)
+          tmp.switch_columns(oddEven,oddEven+i);
       }
     }
     counter++;
   }
-  if(counter >= 10) 
+  if(counter >= 10)
     cerr << "MatrixD: Something is wrong with the eigenVector sort" << endl;
   for(i=2; i < oddEven; i++) {
     if(abs(tmp(1,1)) < abs(tmp(1,i))) {
       tmp.switch_columns(1,i);
       if((oddEven*2) == nm)
-	tmp.switch_columns(1+oddEven,oddEven+i);
+        tmp.switch_columns(1+oddEven,oddEven+i);
     }
   }
   return tmp;
@@ -621,8 +622,8 @@ MatrixC MatrixD::eigenVectors() {
 
 double& MatrixD::operator()(int i, int j) {
   if((i >= rows()) || (j >= cols()) ||
-     (i < 0      ) || (j < 0      )    ) 
-  { throw( IndexRange( i, j, rows()-1, cols()-1, 
+     (i < 0      ) || (j < 0      )    )
+  { throw( IndexRange( i, j, rows()-1, cols()-1,
                        "double& MatrixD::operator()(int i, int j)" ) );
   }
   else { return ml->m[i][j]; }
@@ -630,8 +631,8 @@ double& MatrixD::operator()(int i, int j) {
 
 double  MatrixD::operator()(int i, int j) const {
   if((i >= rows()) || (j >= cols()) ||
-     (i < 0      ) || (j < 0      )    ) 
-  { throw( IndexRange( i, j, rows()-1, cols()-1, 
+     (i < 0      ) || (j < 0      )    )
+  { throw( IndexRange( i, j, rows()-1, cols()-1,
                        "double MatrixD::operator()(int i, int j) const" ) );
   }
   else { return ml->m[i][j]; }
@@ -642,25 +643,25 @@ double MatrixD::getElement(int i, int j) const {
 }
 
 double& MatrixD::operator()(int i) {
-  if( rows() == 1 ) { 
+  if( rows() == 1 ) {
     if( i >= 0 && i < cols() ) {
-      return ml->m[0][i]; 
+      return ml->m[0][i];
     }
     else {
-      throw( IndexRange( 0, i, 0, cols()-1, 
+      throw( IndexRange( 0, i, 0, cols()-1,
                        "double& MatrixD::operator()(int i)" ) );
     }
   }
-  else if( cols() == 1 ) { 
+  else if( cols() == 1 ) {
     if( i >= 0 && i < rows() ) {
-      return ml->m[i][0]; 
+      return ml->m[i][0];
     }
     else {
-      throw( IndexRange( i, 0, rows()-1, 0, 
+      throw( IndexRange( i, 0, rows()-1, 0,
                        "double& MatrixD::operator()(int i)" ) );
     }
   }
-  else { 
+  else {
     throw( NotVector( i, rows(), cols(),
                       "double& MatrixD::operator()(int i)" ) );
   }
@@ -669,7 +670,7 @@ double& MatrixD::operator()(int i) {
 ostream& operator<<(ostream& os, const MatrixD& x)
 {
   int i,j;
-  
+
   for(i=0; i< x.rows(); i++) {
     os << "( ";
     for(j=0; j< x.cols(); j++) {
@@ -694,7 +695,7 @@ MatrixD operator+(const MatrixD& x, const MatrixD& y) {
     for(int j = 0; j < x.cols(); j++) {
       zPtr->m[i][j] = xPtr->m[i][j] + yPtr->m[i][j];
       if(fabs(zPtr->m[i][j]) < M_SMALL*fabs(yPtr->m[i][j]))
-	zPtr->m[i][j] = 0.0;
+        zPtr->m[i][j] = 0.0;
     }
   }
   z.stacked = 1;
@@ -702,7 +703,7 @@ MatrixD operator+(const MatrixD& x, const MatrixD& y) {
 }
 
 MatrixD operator+(const MatrixD& x, const double& y) {
- MatrixD z; 
+ MatrixD z;
  z.DeepCopy( x );
  z += y;
  z.stacked = 1;
@@ -743,7 +744,7 @@ MatrixD operator-(const MatrixD& x, const MatrixD& y) {
     for(int j = 0; j < x.cols(); j++) {
       zPtr->m[i][j] = xPtr->m[i][j] - yPtr->m[i][j];
       if(fabs(zPtr->m[i][j]) < M_SMALL*fabs(yPtr->m[i][j]))
-	zPtr->m[i][j] = 0.0;
+        zPtr->m[i][j] = 0.0;
     }
   }
   z.stacked = 1;
@@ -751,7 +752,7 @@ MatrixD operator-(const MatrixD& x, const MatrixD& y) {
 }
 
 MatrixD operator-(const MatrixD& x, const double& y) {
- MatrixD z; 
+ MatrixD z;
  z.DeepCopy( x );
  z -= y;
  z.stacked = 1;
@@ -808,10 +809,10 @@ MatrixD operator*(const MatrixD& x, const MatrixD& y)  {
     for(int col = 0; col < y.cols(); col++){
       double sum = 0.0;
       for(int i = 0; i < x.cols(); i++) {
-	tmp = xPtr->m[row][i] * yPtr->m[i][col];
-	sum += tmp;
-	if(fabs(sum) < M_SMALL*fabs(tmp))
-	  sum = 0.0;
+        tmp = xPtr->m[row][i] * yPtr->m[i][col];
+        sum += tmp;
+        if(fabs(sum) < M_SMALL*fabs(tmp))
+          sum = 0.0;
       }
       zPtr->m[row][col] = sum;
     }
@@ -847,7 +848,7 @@ The private support functions for determinant & inverse:
 
 void MatrixD::copy_column(MatrixD& mm, int from_col, int to_col){
   if(rows()  != mm.rows()) {
-    throw( Incompatible( rows(), cols(), mm.rows(), mm.cols(), 
+    throw( Incompatible( rows(), cols(), mm.rows(), mm.cols(),
        "void MatrixD::copy_column(MatrixD& mm, int from_col, int to_col)" )  );
   }
   else {
@@ -858,9 +859,9 @@ void MatrixD::copy_column(MatrixD& mm, int from_col, int to_col){
 
 void MatrixD::switch_columns(int col1, int col2) {
   MatrixD temp(rows());
-  
+
   int row; // O.K.
-  
+
   for(row = 0; row < rows(); row++)
     // temporarily store col 1:
     temp.ml->m[row][0] = ml->m[row][col1];
@@ -873,7 +874,7 @@ void MatrixD::switch_columns(int col1, int col2) {
 void MatrixD::switch_rows(int row1, int row2) {
   MatrixD temp(cols());
   int col; // O.K.
-  
+
   for(col = 0; col < cols(); col++)
     // temporarily store row 1:
     temp.ml->m[col][0] = ml->m[row1][col];
@@ -888,7 +889,7 @@ void MatrixD::switch_rows(int row1, int row2) {
 MatrixD MatrixD::scale()  {
   double temp;
   if (rows() <= 0 || cols() <= 0) {
-    throw( Generic( rows(), cols()
+    throw( GenericException( rows(), cols()
                    , "MatrixD MatrixD::scale()"
                    , "Bad MatrixD for scale()" ) );
   }
@@ -896,27 +897,27 @@ MatrixD MatrixD::scale()  {
     throw( NotSquare( rows(), cols(), "MatrixD MatrixD::scale()" )  );
   }
   MatrixD scale_vector(cols());
-  
+
   for (int row = 0; row < rows(); row++){
     double maximum = 0.0;
     for(int col = 0; col < cols(); col++) {
       temp = ml->m[row][col];
       if (fabs(temp) > maximum)
-	maximum = fabs(temp); 
+        maximum = fabs(temp);
     }
     if(maximum == 0.0) {
       cerr << "\n*** ERROR *** Matrix = \n" << *this << endl;
-      throw( Generic( rows(), cols()
+      throw( GenericException( rows(), cols()
                      , "MatrixD MatrixD::scale()"
                      , "Singular MatrixD in scale()" ) );
     }
     // save scaling
-    scale_vector.ml->m[row][0] = 1.0/maximum; 
+    scale_vector.ml->m[row][0] = 1.0/maximum;
   }
   return scale_vector;
 }
 
-MatrixD MatrixD::lu_decompose(int* indx, int& d ) const 
+MatrixD MatrixD::lu_decompose(int* indx, int& d ) const
 {
 /*
  Returns the L-U decomposition of a matrix. indx is an ouput
@@ -927,7 +928,7 @@ MatrixD MatrixD::lu_decompose(int* indx, int& d ) const
  solve linear equations or invert a matrix.
 */
   if(rows()  != cols()) {
-    throw( NotSquare( rows(), cols(), 
+    throw( NotSquare( rows(), cols(),
       "MatrixD MatrixD::lu_decompose(int* indx, int& d ) const " )  );
   }
   d = 1; // parity check
@@ -941,7 +942,7 @@ MatrixD MatrixD::lu_decompose(int* indx, int& d ) const
   // make a direct copy of the original matrix:
   lu_decomp = *this;
   MatrixD scale_vector = lu_decomp.scale(); // scale the matrix
-  
+
   // The loop over columns of Crout's method:
   for(j = 0; j < rows(); j++) {
     if (j > 0) {
@@ -949,38 +950,38 @@ MatrixD MatrixD::lu_decompose(int* indx, int& d ) const
       for (i = 0; i <= j-1; i++) {
         sum = lu_decomp.ml->m[i][j];
         if(i > 0) {
-	  for(k = 0; k <= i-1; k++) {
-	    tmp = lu_decomp.ml->m[i][k]*lu_decomp.ml->m[k][j];
-	    sum -= tmp;
-	    if(fabs(sum) < M_SMALL*fabs(tmp))
-	      sum = 0.0;
-	  }
+          for(k = 0; k <= i-1; k++) {
+            tmp = lu_decomp.ml->m[i][k]*lu_decomp.ml->m[k][j];
+            sum -= tmp;
+            if(fabs(sum) < M_SMALL*fabs(tmp))
+              sum = 0.0;
+          }
           lu_decomp.ml->m[i][j] = sum;
         }
       }
     }
-    
+
 // Initialize the search for the largest pivot element:
     maximum = 0.0;
     // i=j of eq 2.3.12 & i=j+I..N of 2.3.13:
     for(i=j; i <= cols()-1; i++) {
       sum = lu_decomp.ml->m[i][j];
-      
+
       if(j > 0) {
-	for(k=0; k <= j-1; k++) {
-	  tmp =  lu_decomp.ml->m[i][k] * lu_decomp.ml->m[k][j];
-	  sum -= tmp;
-	  if(fabs(sum) < M_SMALL*fabs(tmp))
-	    sum = 0.0;
-	}
-	lu_decomp.ml->m[i][j] = sum;
+        for(k=0; k <= j-1; k++) {
+          tmp =  lu_decomp.ml->m[i][k] * lu_decomp.ml->m[k][j];
+          sum -= tmp;
+          if(fabs(sum) < M_SMALL*fabs(tmp))
+            sum = 0.0;
+        }
+        lu_decomp.ml->m[i][j] = sum;
       }
       // figure of merit for pivot:
-      dum = scale_vector.ml->m[i][0] * fabs(sum);      
+      dum = scale_vector.ml->m[i][0] * fabs(sum);
       if (dum >= maximum){
-	// is it better than the best so far ?
-	col_max = i;
-	maximum = dum;
+        // is it better than the best so far ?
+        col_max = i;
+        maximum = dum;
       }
     }
     // Do we need to interchange rows?
@@ -1002,10 +1003,10 @@ MatrixD MatrixD::lu_decompose(int* indx, int& d ) const
       // algorithm). For some applications on singular
       // matrices, it is desirable to substitute tiny for 0
       if(lu_decomp.ml->m[j][j] == 0.0)
-	lu_decomp.ml->m[j][j] = tiny;
+        lu_decomp.ml->m[j][j] = tiny;
       dum = 1/lu_decomp.ml->m[j][j];
       for(i=j+1; i <= cols()-1; i++)
-	lu_decomp.ml->m[i][j] *= dum;
+        lu_decomp.ml->m[i][j] *= dum;
     }
 
   }
@@ -1027,13 +1028,13 @@ void MatrixD::lu_back_subst(int* indx, MatrixD& b)  {
 // that B will begin with many zero elements, so it is efficient
 // for use in matrix inversion. See pp 36-37 in
 // Press & Flannery.
-  
+
   if(rows()  != cols()) {
-    throw( NotSquare( rows(), cols(), 
+    throw( NotSquare( rows(), cols(),
       "void MatrixD::lu_back_subst(int* indx, MatrixD& b)" )  );
   }
   if(rows()  != b.rows()) {
-    throw( Incompatible( rows(), cols(), b.rows(), b.cols(), 
+    throw( Incompatible( rows(), cols(), b.rows(), b.cols(),
       "void MatrixD::lu_back_subst(int* indx, MatrixD& b)" )  );
   }
 //  if(rows()  != indx.rows())
@@ -1049,10 +1050,10 @@ void MatrixD::lu_back_subst(int* indx, MatrixD& b)  {
     b.ml->m[ip][0] = b.ml->m[i][0];
     if (ii >= 0) {
       for(j = ii; j <= i-1; j++) {
-	tmp = ml->m[i][j] * b.ml->m[j][0];
-	sum -= tmp;
-	if(fabs(sum) < M_SMALL*fabs(tmp))
-	  sum = 0.0;
+        tmp = ml->m[i][j] * b.ml->m[j][0];
+        sum -= tmp;
+        if(fabs(sum) < M_SMALL*fabs(tmp))
+          sum = 0.0;
       }
     } else if(sum != 0)
       ii = i;
@@ -1062,10 +1063,10 @@ void MatrixD::lu_back_subst(int* indx, MatrixD& b)  {
     sum = b.ml->m[i][0];
     if (i < cols() -1) {
       for (j = i + 1; j <= rows()-1; j++) {
-	tmp = ml->m[i][j] * b.ml->m[j][0];
-	sum -= tmp;
-	if(fabs(sum) < M_SMALL*fabs(tmp))
-	  sum = 0.0;
+        tmp = ml->m[i][j] * b.ml->m[j][0];
+        sum -= tmp;
+        if(fabs(sum) < M_SMALL*fabs(tmp))
+          sum = 0.0;
       }
     }
     // store a component of the soln vector X:
@@ -1077,7 +1078,7 @@ void MatrixD::lu_back_subst(int* indx, MatrixD& b)  {
 
 // Implementation of exception subclasses
 
-MatrixD::IndexRange::IndexRange( int a, int b, int c, int d, const char* f ) 
+MatrixD::IndexRange::IndexRange( int a, int b, int c, int d, const char* f )
 : i(a), j(b), im(c), jm(d)
 {
   static bool firstTime = true;
@@ -1086,9 +1087,9 @@ MatrixD::IndexRange::IndexRange( int a, int b, int c, int d, const char* f )
             "\n*** ERROR *** " << f
          << "\n*** ERROR *** limits are " << im << " " << jm
          << "\n*** ERROR *** You asked for "<< i << " " << j
-         << "\n*** ERROR *** matrix limits exceeded " 
-            "\n*** ERROR *** " 
-            "\n*** ERROR *** This message is printed only once." 
+         << "\n*** ERROR *** matrix limits exceeded "
+            "\n*** ERROR *** "
+            "\n*** ERROR *** This message is printed only once."
          << endl;
     firstTime = false;
   }
@@ -1101,18 +1102,18 @@ const char* MatrixD::IndexRange::what() const throw()
 }
 
 
-MatrixD::NotVector::NotVector( int x, int y, int z, const char* f ) 
+MatrixD::NotVector::NotVector( int x, int y, int z, const char* f )
 : i(x), r(y), c(z)
 {
   static bool firstTime = true;
   if( firstTime ) {
     cerr << "\n*** ERROR *** "
             "\n*** ERROR *** " << f
-         << "\n*** ERROR *** Matrix is not a vector:" 
+         << "\n*** ERROR *** Matrix is not a vector:"
             "\n*** ERROR *** its dimenions are " << r << " x " << c
-         << "\n*** ERROR *** " 
-            "\n*** ERROR *** " 
-            "\n*** ERROR *** This message is printed only once." 
+         << "\n*** ERROR *** "
+            "\n*** ERROR *** "
+            "\n*** ERROR *** This message is printed only once."
          << endl;
     firstTime = false;
   }
@@ -1125,7 +1126,7 @@ const char* MatrixD::NotVector::what() const throw()
 }
 
 
-MatrixD::Incompatible::Incompatible( int x, int y, int z, int t, const char* f ) 
+MatrixD::Incompatible::Incompatible( int x, int y, int z, int t, const char* f )
   : ra(x), ca(y), rb(z), cb(t)
 {
   static bool firstTime = true;
@@ -1135,8 +1136,8 @@ MatrixD::Incompatible::Incompatible( int x, int y, int z, int t, const char* f )
          << "\n*** ERROR *** Incompatible dimensions between matrices."
             "\n*** ERROR *** First  argument is " << ra << " x " << ca
          << "\n*** ERROR *** Second argument is " << rb << " x " << cb
-         << "\n*** ERROR *** " 
-            "\n*** ERROR *** This message is printed only once." 
+         << "\n*** ERROR *** "
+            "\n*** ERROR *** This message is printed only once."
          << endl;
     firstTime = false;
   }
@@ -1149,7 +1150,7 @@ const char* MatrixD::Incompatible::what() const throw()
 }
 
 
-MatrixD::NotSquare::NotSquare( int x, int y, const char* f ) 
+MatrixD::NotSquare::NotSquare( int x, int y, const char* f )
   : r(x), c(y)
 {
   static bool firstTime = true;
@@ -1158,8 +1159,8 @@ MatrixD::NotSquare::NotSquare( int x, int y, const char* f )
             "\n*** ERROR *** " << f
          << "\n*** ERROR *** Matrix must be square: it's dimensions are "
          << r << " x " << c
-         << "\n*** ERROR *** " 
-            "\n*** ERROR *** This message is printed only once." 
+         << "\n*** ERROR *** "
+            "\n*** ERROR *** This message is printed only once."
          << endl;
     firstTime = false;
   }
@@ -1172,27 +1173,32 @@ const char* MatrixD::NotSquare::what() const throw()
 }
 
 
-MatrixD::Generic::Generic( int x, int y, const char* f, const char* m ) 
-  : r(x), c(y)
+MatrixD::GenericException::GenericException( int x, int y, 
+                                             const char* f, const char* m )
+: r(x), c(y)
 {
+  ostringstream uic;
+  uic << "\n*** ERROR *** "
+         "\n*** ERROR *** " << f
+      << "\n*** ERROR *** " << m
+      << "\n*** ERROR *** The dimensions are "
+      << r << " x " << c
+      << "\n*** ERROR *** ";
+  errorString = uic.str();
+
   static bool firstTime = true;
   if( firstTime ) {
-    cerr << "\n*** ERROR *** "
-            "\n*** ERROR *** " << f
-         << "\n*** ERROR *** " << m
-         << "\n*** ERROR *** The dimensions are "
-         << r << " x " << c
-         << "\n*** ERROR *** " 
-            "\n*** ERROR *** This message is printed only once." 
+    cerr << errorString;
+    cerr << "\n*** ERROR *** This message is printed only once."
          << endl;
     firstTime = false;
   }
 }
 
 
-const char* MatrixD::Generic::what() const throw()
+const char* MatrixD::GenericException::what() const throw()
 {
-  return "Unspecified error.";
+  return errorString.c_str();
 }
 
 
@@ -1211,20 +1217,20 @@ MatrixD::RandomOrthogonal::RandomOrthogonal( int n )
   }
 
   _lowerTheta = new double*[ _dim ];
-  for( i = 0; i < _dim; i++ ) { 
+  for( i = 0; i < _dim; i++ ) {
     _lowerTheta[i] = new double[ _dim ];
     for( j = 0; j < _dim; j++ ) { _lowerTheta[i][j] = 0.0; }
   }
 
   _upperTheta = new double*[ _dim ];
-  for( i = 0; i < _dim; i++ ) { 
+  for( i = 0; i < _dim; i++ ) {
     _upperTheta[i] = new double[ _dim ];
     for( j = 0; j < _dim; j++ ) { _upperTheta[i][j] = M_TWOPI; }
     _upperTheta[i][i] = 0.0;
   }
 
   _rangeTheta = new double*[ _dim ];
-  for( i = 0; i < _dim; i++ ) { 
+  for( i = 0; i < _dim; i++ ) {
     _rangeTheta[i] = new double[ _dim ];
     for( j = 0; j < _dim; j++ ) { _rangeTheta[i][j] = M_TWOPI; }
     _rangeTheta[i][i] = 0.0;
@@ -1250,7 +1256,7 @@ MatrixD::RandomOrthogonal::~RandomOrthogonal()
 
 void MatrixD::RandomOrthogonal::omitIndex( int i, int j )
 {
-  if( 0 <= i  &&  i < _dim  &&  0 <= j  &&  j < _dim ) { 
+  if( 0 <= i  &&  i < _dim  &&  0 <= j  &&  j < _dim ) {
     _omitted[i][j] = true;
     _omitted[j][i] = true;
   }
@@ -1259,15 +1265,15 @@ void MatrixD::RandomOrthogonal::omitIndex( int i, int j )
 
 void MatrixD::RandomOrthogonal::omitIndex( int n )
 {
-  for( int i = 0; i < _dim; i++ ) { 
-    this->omitIndex( n, i ); 
+  for( int i = 0; i < _dim; i++ ) {
+    this->omitIndex( n, i );
   }
 }
 
 
 void MatrixD::RandomOrthogonal::includeIndex( int i, int j )
 {
-  if( 0 <= i  &&  i < _dim  &&  0 <= j  &&  j < _dim ) { 
+  if( 0 <= i  &&  i < _dim  &&  0 <= j  &&  j < _dim ) {
     _omitted[i][j] = false;
     _omitted[j][i] = false;
   }
@@ -1276,8 +1282,8 @@ void MatrixD::RandomOrthogonal::includeIndex( int i, int j )
 
 void MatrixD::RandomOrthogonal::includeIndex( int n )
 {
-  for( int i = 0; i < _dim; i++ ) { 
-    this->includeIndex( n, i ); 
+  for( int i = 0; i < _dim; i++ ) {
+    this->includeIndex( n, i );
   }
 }
 
@@ -1291,9 +1297,9 @@ void MatrixD::RandomOrthogonal::setNumberOfPasses( int n )
 void MatrixD::RandomOrthogonal::setRange( int i, int j, double lo, double hi )
 {
   // Check and condition the arguments
-  if( i < 0  ||  _dim <= i  ||  
-      j < 0  ||  _dim <= j  ||  
-      hi <= lo ) 
+  if( i < 0  ||  _dim <= i  ||
+      j < 0  ||  _dim <= j  ||
+      hi <= lo )
   { return; }
 
   if( std::abs(lo) < 1.0e-12            ) { lo = 0.0;     }
@@ -1316,8 +1322,8 @@ void MatrixD::RandomOrthogonal::setRange( int i, int j, double lo, double hi )
 
 void MatrixD::RandomOrthogonal::setRange( int n, double lo, double hi )
 {
-  for( int i = 0; i < _dim; i++ ) { 
-    this->setRange( n, i, lo, hi ); 
+  for( int i = 0; i < _dim; i++ ) {
+    this->setRange( n, i, lo, hi );
   }
 }
 
@@ -1345,7 +1351,7 @@ MatrixD MatrixD::RandomOrthogonal::build()
           W(j,i) = -sn;  W(j,j) = cs;
           R = R*W;
           W = U;
-	}
+        }
       }
     }
   }
@@ -1404,9 +1410,9 @@ MatrixC::MatrixC(const char* flag, int dimension) {
   int i;
   float tmp_float = dimension/2.0;
   ml = new MLC(dimension,dimension,complex_0);
-  
+
   if(((dimension/2) != tmp_float) && (flag[0] == 'J')) {
-    throw( MatrixD::Generic( dimension, dimension
+    throw( MatrixD::GenericException( dimension, dimension
                     , "MatrixC::MatrixC(const char* flag, int dimension)"
                     , "Dimension must be even for J or I matrix") );
   }
@@ -1420,7 +1426,7 @@ MatrixC::MatrixC(const char* flag, int dimension) {
       ml->m[i][i-dimension/2] = -complex_1;
     }
   } else {
-      throw( MatrixD::Generic( dimension, dimension
+      throw( MatrixD::GenericException( dimension, dimension
                      , "MatrixC::MatrixC(const char* flag, int dimension)"
                      , strcat("Unknown flag: ", flag) ) );
   }
@@ -1461,7 +1467,7 @@ MatrixC& MatrixC::operator=(const MatrixC& x) {
 #endif
   }
  stacked = 0;   // ??? This line is probably unnecessary.
- return *this; 
+ return *this;
 }
 
 MatrixC& MatrixC::DeepCopy(const MatrixC& x) {
@@ -1471,7 +1477,7 @@ MatrixC& MatrixC::DeepCopy(const MatrixC& x) {
      *ml = *(x.ml);
  }
  stacked = 0;   // ??? This line is probably unnecessary.
- return *this; 
+ return *this;
 }
 
 char operator==( const MatrixC& x, const MatrixC& y ) {
@@ -1519,9 +1525,9 @@ MatrixC MatrixC::Square() const {
   MLC*    zPtr = z.ml;
 
   for( i = 0; i < d; i++ )
-    for( j = 0; j < d; j++ ) 
+    for( j = 0; j < d; j++ )
       zPtr->m[i][j] = ml->m[i][j];
-      
+
   return z;
 }
 
@@ -1565,7 +1571,7 @@ Complex MatrixC::determinant() {
   }
 
   int* indx = new int[cols()]; // create the "index vector
-			       // see pp 38. in Numerical Recipes
+                               // see pp 38. in Numerical Recipes
   int d;
   // perform the decomposition once:
 
@@ -1658,32 +1664,32 @@ MatrixC MatrixC::eigenValues() {
   delete []bi;
   delete []cr;
   delete []ci;
-  
+
   int sortFlag = 1;
   int counter = 0;
   while ((sortFlag == 1)&& (counter < 10)) {
     sortFlag = 0;
     for(i=1; i < oddEven; i++) {
       if(abs(z1(0,0)) < abs(z1(0,i))) {
-	z1.switch_columns(0,i); 
-	tmp.switch_columns(0,i); 
-	sortFlag = 1;
-	if((oddEven*2) == nm)
-	  z1.switch_columns(oddEven,oddEven+i);
-	  tmp.switch_columns(oddEven,oddEven+i);
+        z1.switch_columns(0,i);
+        tmp.switch_columns(0,i);
+        sortFlag = 1;
+        if((oddEven*2) == nm)
+          z1.switch_columns(oddEven,oddEven+i);
+          tmp.switch_columns(oddEven,oddEven+i);
       }
     }
     counter++;
   }
-  if(counter >= 10) 
+  if(counter >= 10)
     cerr << "MatrixC: Something is wrong with the eigenValue sort" << endl;
   for(i=2; i < oddEven; i++) {
     if(abs(z1(1,1)) < abs(z1(1,i))) {
       z1.switch_columns(1,i);
       tmp.switch_columns(1,i);
       if((oddEven*2) == nm)
-	z1.switch_columns(1+oddEven,oddEven+i);
-	tmp.switch_columns(1+oddEven,oddEven+i);
+        z1.switch_columns(1+oddEven,oddEven+i);
+        tmp.switch_columns(1+oddEven,oddEven+i);
     }
   }
   return tmp;
@@ -1744,28 +1750,28 @@ MatrixC MatrixC::eigenVectors() {
   delete []bi;
   delete []cr;
   delete []ci;
-  
+
   int sortFlag = 1;
   int counter = 0;
   while ((sortFlag == 1)&& (counter < 10)) {
     sortFlag = 0;
     for(i=1; i < oddEven; i++) {
       if(abs(z1(0,0)) < abs(z1(0,i))) {
-	z1.switch_columns(0,i); 
-	sortFlag = 1;
-	if((oddEven*2) == nm)
-	  z1.switch_columns(oddEven,oddEven+i);
+        z1.switch_columns(0,i);
+        sortFlag = 1;
+        if((oddEven*2) == nm)
+          z1.switch_columns(oddEven,oddEven+i);
       }
     }
     counter++;
   }
-  if(counter >= 10) 
+  if(counter >= 10)
     cerr << "MatrixC: Something is wrong with the eigenVector sort" << endl;
   for(i=2; i < oddEven; i++) {
     if(abs(z1(1,1)) < abs(z1(1,i))) {
       z1.switch_columns(1,i);
       if((oddEven*2) == nm)
-	z1.switch_columns(1+oddEven,oddEven+i);
+        z1.switch_columns(1+oddEven,oddEven+i);
     }
   }
   return z1;
@@ -1775,8 +1781,8 @@ MatrixC MatrixC::eigenVectors() {
 
 Complex& MatrixC::operator()(int i, int j) {
   if((i >= rows()) || (j >= cols()) ||
-     (i < 0      ) || (j < 0      )    ) 
-  { throw( MatrixD::IndexRange( i, j, rows()-1, cols()-1, 
+     (i < 0      ) || (j < 0      )    )
+  { throw( MatrixD::IndexRange( i, j, rows()-1, cols()-1,
                        "Complex& MatrixC::operator()(int i, int j)" ) );
   }
   else { return ml->m[i][j]; }
@@ -1784,33 +1790,33 @@ Complex& MatrixC::operator()(int i, int j) {
 
 Complex MatrixC::operator()(int i, int j) const {
   if((i >= rows()) || (j >= cols()) ||
-     (i < 0      ) || (j < 0      )    ) 
-  { throw( MatrixD::IndexRange( i, j, rows()-1, cols()-1, 
+     (i < 0      ) || (j < 0      )    )
+  { throw( MatrixD::IndexRange( i, j, rows()-1, cols()-1,
                        "Complex MatrixC::operator()(int i, int j) const" ) );
   }
   else { return ml->m[i][j]; }
 }
 
 Complex& MatrixC::operator()(int i) {
-  if( rows() == 1 ) { 
+  if( rows() == 1 ) {
     if( i >= 0 && i < cols() ) {
-      return ml->m[0][i]; 
+      return ml->m[0][i];
     }
     else {
-      throw( MatrixD::IndexRange( 0, i, 0, cols()-1, 
+      throw( MatrixD::IndexRange( 0, i, 0, cols()-1,
                        "Complex& MatrixC::operator()(int i)" ) );
     }
   }
-  else if( cols() == 1 ) { 
+  else if( cols() == 1 ) {
     if( i >= 0 && i < rows() ) {
-      return ml->m[i][0]; 
+      return ml->m[i][0];
     }
     else {
-      throw( MatrixD::IndexRange( i, 0, rows()-1, 0, 
+      throw( MatrixD::IndexRange( i, 0, rows()-1, 0,
                        "Complex& MatrixC::operator()(int i)" ) );
     }
   }
-  else { 
+  else {
     throw( MatrixD::NotVector( i, rows(), cols(),
                       "Complex& MatrixC::operator()(int i)" ) );
   }
@@ -1819,7 +1825,7 @@ Complex& MatrixC::operator()(int i) {
 ostream& operator<<(ostream& os, const MatrixC& x)
 {
   int i,j;
-  
+
   for(i=0; i< x.rows(); i++) {
     os << "( ";
     for(j=0; j< x.cols(); j++) {
@@ -1844,7 +1850,7 @@ MatrixC operator+(const MatrixC& x, const MatrixC& y) {
     for(int j = 0; j < x.cols(); j++) {
       zPtr->m[i][j] = xPtr->m[i][j] + yPtr->m[i][j];
       if(abs(zPtr->m[i][j]) < M_SMALL*abs(yPtr->m[i][j]))
-	zPtr->m[i][j] = complex_0;
+        zPtr->m[i][j] = complex_0;
     }
   }
   z.stacked = 1;
@@ -1852,7 +1858,7 @@ MatrixC operator+(const MatrixC& x, const MatrixC& y) {
 }
 
 MatrixC operator+(const MatrixC& x, const Complex& y) {
- MatrixC z; 
+ MatrixC z;
  z.DeepCopy( x );
  z += y;
  z.stacked = 1;
@@ -1893,7 +1899,7 @@ MatrixC operator-(const MatrixC& x, const MatrixC& y) {
     for(int j = 0; j < x.cols(); j++) {
       zPtr->m[i][j] = xPtr->m[i][j] - yPtr->m[i][j];
       if(abs(zPtr->m[i][j]) < M_SMALL*abs(yPtr->m[i][j]))
-	zPtr->m[i][j] = complex_0;
+        zPtr->m[i][j] = complex_0;
     }
   }
   z.stacked = 1;
@@ -1901,7 +1907,7 @@ MatrixC operator-(const MatrixC& x, const MatrixC& y) {
 }
 
 MatrixC operator-(const MatrixC& x, const Complex& y) {
- MatrixC z; 
+ MatrixC z;
  z.DeepCopy( x );
  z -= y;
  z.stacked = 1;
@@ -1958,10 +1964,10 @@ MatrixC operator*(const MatrixC& x, const MatrixC& y)  {
     for(int col = 0; col < y.cols(); col++){
       Complex sum = complex_0;
       for(int i = 0; i < x.cols(); i++) {
-	tmp = xPtr->m[row][i] * yPtr->m[i][col];
-	sum += tmp;
-	if(abs(sum) < M_SMALL*abs(tmp))
-	  sum = complex_0;
+        tmp = xPtr->m[row][i] * yPtr->m[i][col];
+        sum += tmp;
+        if(abs(sum) < M_SMALL*abs(tmp))
+          sum = complex_0;
       }
       zPtr->m[row][col] = sum;
     }
@@ -1984,10 +1990,10 @@ MatrixC operator*(const MatrixC& x, const MatrixD& y)  {
     for(int col = 0; col < y.cols(); col++){
       Complex sum = complex_0;
       for(int i = 0; i < x.cols(); i++) {
-	tmp = xPtr->m[row][i] * Complex(yPtr->m[i][col],0.0);
-	sum += tmp;
-	if(abs(sum) < M_SMALL*abs(tmp))
-	  sum = complex_0;
+        tmp = xPtr->m[row][i] * Complex(yPtr->m[i][col],0.0);
+        sum += tmp;
+        if(abs(sum) < M_SMALL*abs(tmp))
+          sum = complex_0;
       }
       zPtr->m[row][col] = sum;
     }
@@ -2010,10 +2016,10 @@ MatrixC operator*(const MatrixD& y, const MatrixC& x)  {
     for(int col = 0; col < x.cols(); col++){
       Complex sum = complex_0;
       for(int i = 0; i < y.cols(); i++) {
-	tmp = Complex(yPtr->m[row][i],0.0) * xPtr->m[i][col];
-	sum += tmp;
-	if(abs(sum) < M_SMALL*abs(tmp))
-	  sum = complex_0;
+        tmp = Complex(yPtr->m[row][i],0.0) * xPtr->m[i][col];
+        sum += tmp;
+        if(abs(sum) < M_SMALL*abs(tmp))
+          sum = complex_0;
       }
       zPtr->m[row][col] = sum;
     }
@@ -2082,7 +2088,7 @@ The private support functions for determinant & inverse:
 
 void MatrixC::copy_column(MatrixC& mm, int from_col, int to_col){
   if(rows()  != mm.rows()) {
-    throw( MatrixD::Incompatible( rows(), cols(), mm.rows(), mm.cols(), 
+    throw( MatrixD::Incompatible( rows(), cols(), mm.rows(), mm.cols(),
        "void MatrixC::copy_column(MatrixC& mm, int from_col, int to_col)" )  );
   }
   else {
@@ -2105,9 +2111,9 @@ void MatrixC::switch_columns(int col1, int col2) {
 
 void MatrixC::switch_rows(int row1, int row2) {
   MatrixC temp(cols());
-  
+
   int col; // O.K.
-  
+
   for( col = 0; col < cols(); col++)
     // temporarily store row 1:
     temp.ml->m[col][0] = ml->m[row1][col];
@@ -2123,7 +2129,7 @@ MatrixC MatrixC::scale()  {
   Complex temp;
 
   if (rows() <= 0 || cols() <= 0) {
-    throw( MatrixD::Generic( rows(), cols()
+    throw( MatrixD::GenericException( rows(), cols()
                    , "MatrixC MatrixC::scale()"
                    , "Bad MatrixC for scale()" ) );
   }
@@ -2132,22 +2138,22 @@ MatrixC MatrixC::scale()  {
   }
 
   MatrixC scale_vector(cols());
-  
+
   for (int row = 0; row < rows(); row++){
     double maximum = 0.0;
     for(int col = 0; col < cols(); col++) {
       temp = ml->m[row][col];
       if (abs(temp) > maximum)
-	maximum = abs(temp); 
+        maximum = abs(temp);
     }
     if(maximum == 0.0) {
       cerr << "\n*** ERROR *** Matrix = \n" << *this << endl;
-      throw( MatrixD::Generic( rows(), cols()
+      throw( MatrixD::GenericException( rows(), cols()
                      , "MatrixC MatrixC::scale()"
                      , "Singular MatrixC in scale()" ) );
     }
     // save scaling
-    scale_vector.ml->m[row][0] = Complex(1.0/maximum,0.0); 
+    scale_vector.ml->m[row][0] = Complex(1.0/maximum,0.0);
   }
   return scale_vector;
 }
@@ -2162,7 +2168,7 @@ MatrixC MatrixC::lu_decompose(int* indx, int& d ) {
  solve linear equations or invert a matrix.
 */
   if(rows()  != cols()) {
-    throw( MatrixD::NotSquare( rows(), cols(), 
+    throw( MatrixD::NotSquare( rows(), cols(),
       "MatrixC MatrixC::lu_decompose(int* indx, int& d ) const " )  );
   }
   d = 1; // parity check
@@ -2176,7 +2182,7 @@ MatrixC MatrixC::lu_decompose(int* indx, int& d ) {
   // make a direct copy of the original matrix:
   lu_decomp = *this;
   MatrixC scale_vector = lu_decomp.scale(); // scale the matrix
-  
+
   // The loop over columns of Crout's method:
   for(j = 0; j < rows(); j++) {
     if (j > 0) {
@@ -2184,38 +2190,38 @@ MatrixC MatrixC::lu_decompose(int* indx, int& d ) {
       for (i = 0; i <= j-1; i++) {
         sum = lu_decomp.ml->m[i][j];
         if(i > 0) {
-	  for(k = 0; k <= i-1; k++) {
-	    tmp = lu_decomp.ml->m[i][k]*lu_decomp.ml->m[k][j];
-	    sum -= tmp;
-	    if(abs(sum) < M_SMALL*abs(tmp))
-	      sum = complex_0;
-	  }
+          for(k = 0; k <= i-1; k++) {
+            tmp = lu_decomp.ml->m[i][k]*lu_decomp.ml->m[k][j];
+            sum -= tmp;
+            if(abs(sum) < M_SMALL*abs(tmp))
+              sum = complex_0;
+          }
           lu_decomp.ml->m[i][j] = sum;
         }
       }
     }
-    
+
 // Initialize the search for the largest pivot element:
     maximum = complex_0;
     // i=j of eq 2.3.12 & i=j+I..N of 2.3.13:
     for(i=j; i <= cols()-1; i++) {
       sum = lu_decomp.ml->m[i][j];
-      
+
       if(j > 0) {
-	for(k=0; k <= j-1; k++) {
-	  tmp =  lu_decomp.ml->m[i][k] * lu_decomp.ml->m[k][j];
-	  sum -= tmp;
-	  if(abs(sum) < M_SMALL*abs(tmp))
-	    sum = complex_0;
-	}
-	lu_decomp.ml->m[i][j] = sum;
+        for(k=0; k <= j-1; k++) {
+          tmp =  lu_decomp.ml->m[i][k] * lu_decomp.ml->m[k][j];
+          sum -= tmp;
+          if(abs(sum) < M_SMALL*abs(tmp))
+            sum = complex_0;
+        }
+        lu_decomp.ml->m[i][j] = sum;
       }
       // figure of merit for pivot:
       dum = scale_vector.ml->m[i][0] * sum;
       if (abs(dum) >= abs(maximum)){
-	// is it better than the best so far ?
-	col_max = i;
-	maximum = dum;
+        // is it better than the best so far ?
+        col_max = i;
+        maximum = dum;
       }
     }
     // Do we need to interchange rows?
@@ -2237,10 +2243,10 @@ MatrixC MatrixC::lu_decompose(int* indx, int& d ) {
       // algorithm). For some applications on singular
       // matrices, it is desirable to substitute tiny for 0
       if(lu_decomp.ml->m[j][j] == complex_0)
-	lu_decomp.ml->m[j][j] = tiny;
+        lu_decomp.ml->m[j][j] = tiny;
       dum = complex_1/lu_decomp.ml->m[j][j];
       for(i=j+1; i <= cols()-1; i++)
-	lu_decomp.ml->m[i][j] *= dum;
+        lu_decomp.ml->m[i][j] *= dum;
     }
 
   }
@@ -2262,13 +2268,13 @@ void MatrixC::lu_back_subst(int* indx, MatrixC& b)  {
 // that B will begin with many zero elements, so it is efficient
 // for use in matrix inversion. See pp 36-37 in
 // Press & Flannery.
-  
+
   if(rows()  != cols()) {
-    throw( MatrixD::NotSquare( rows(), cols(), 
+    throw( MatrixD::NotSquare( rows(), cols(),
       "void MatrixC::lu_back_subst(int* indx, MatrixC& b)" )  );
   }
   if(rows()  != b.rows()) {
-    throw( MatrixD::Incompatible( rows(), cols(), b.rows(), b.cols(), 
+    throw( MatrixD::Incompatible( rows(), cols(), b.rows(), b.cols(),
       "void MatrixC::lu_back_subst(int* indx, MatrixC& b)" )  );
   }
 
@@ -2286,10 +2292,10 @@ void MatrixC::lu_back_subst(int* indx, MatrixC& b)  {
     b.ml->m[ip][0] = b.ml->m[i][0];
     if (ii >= 0) {
       for(j = ii; j <= i-1; j++) {
-	tmp = ml->m[i][j] * b.ml->m[j][0];
-	sum -= tmp;
-	if(abs(sum) < M_SMALL*abs(tmp))
-	  sum = complex_0;
+        tmp = ml->m[i][j] * b.ml->m[j][0];
+        sum -= tmp;
+        if(abs(sum) < M_SMALL*abs(tmp))
+          sum = complex_0;
       }
     } else if(sum != complex_0)
       ii = i;
@@ -2299,10 +2305,10 @@ void MatrixC::lu_back_subst(int* indx, MatrixC& b)  {
     sum = b.ml->m[i][0];
     if (i < cols() -1) {
       for (j = i + 1; j <= rows()-1; j++) {
-	tmp = ml->m[i][j] * b.ml->m[j][0];
-	sum -= tmp;
-	if(abs(sum) < M_SMALL*abs(tmp))
-	  sum = complex_0;
+        tmp = ml->m[i][j] * b.ml->m[j][0];
+        sum -= tmp;
+        if(abs(sum) < M_SMALL*abs(tmp))
+          sum = complex_0;
       }
     }
     // store a component of the soln vector X:
@@ -2385,9 +2391,9 @@ MatrixI::MatrixI(const char* flag, int dimension) {
   int i;
   float tmp_float = dimension/2.0;
   ml = new MLI(dimension,dimension,0);
-  
+
   if(((dimension/2) != tmp_float) && (flag[0] == 'J')) {
-    throw( MatrixD::Generic( dimension, dimension
+    throw( MatrixD::GenericException( dimension, dimension
                      , "MatrixI::MatrixI(const char* flag, int dimension)"
                      , "Dimension must be even for J and I matrix") );
   }
@@ -2401,7 +2407,7 @@ MatrixI::MatrixI(const char* flag, int dimension) {
       ml->m[i][i-dimension/2] = -1;
     }
   } else {
-      throw( MatrixD::Generic( dimension, dimension
+      throw( MatrixD::GenericException( dimension, dimension
                      , "MatrixI::MatrixI(const char* flag, int dimension)"
                      , strcat("Unknown flag: ", flag) ) );
   }
@@ -2465,7 +2471,7 @@ MatrixI& MatrixI::operator=(const MatrixI& x) {
 #endif
   }
  stacked = 0;   // ??? This line is probably unnecessary.
- return *this; 
+ return *this;
 }
 
 MatrixI& MatrixI::DeepCopy(const MatrixI& x) {
@@ -2475,13 +2481,13 @@ MatrixI& MatrixI::DeepCopy(const MatrixI& x) {
      *ml = *(x.ml);
  }
  stacked = 0;   // ??? This line is probably unnecessary.
- return *this; 
+ return *this;
 }
 
 int& MatrixI::operator()(int i, int j) {
   if((i >= rows()) || (j >= cols()) ||
-     (i < 0      ) || (j < 0      )    ) 
-  { throw( MatrixD::IndexRange( i, j, rows()-1, cols()-1, 
+     (i < 0      ) || (j < 0      )    )
+  { throw( MatrixD::IndexRange( i, j, rows()-1, cols()-1,
                        "int& MatrixI::operator()(int i, int j)" ) );
   }
   else { return ml->m[i][j]; }
@@ -2489,33 +2495,33 @@ int& MatrixI::operator()(int i, int j) {
 
 int  MatrixI::operator()(int i, int j) const {
   if((i >= rows()) || (j >= cols()) ||
-     (i < 0      ) || (j < 0      )    ) 
-  { throw( MatrixD::IndexRange( i, j, rows()-1, cols()-1, 
+     (i < 0      ) || (j < 0      )    )
+  { throw( MatrixD::IndexRange( i, j, rows()-1, cols()-1,
                        "int MatrixI::operator()(int i, int j) const" ) );
   }
   else { return ml->m[i][j]; }
 }
 
 int& MatrixI::operator()(int i) {
-  if( rows() == 1 ) { 
+  if( rows() == 1 ) {
     if( i >= 0 && i < cols() ) {
-      return ml->m[0][i]; 
+      return ml->m[0][i];
     }
     else {
-      throw( MatrixD::IndexRange( 0, i, 0, cols()-1, 
+      throw( MatrixD::IndexRange( 0, i, 0, cols()-1,
                        "int& MatrixI::operator()(int i)" ) );
     }
   }
-  else if( cols() == 1 ) { 
+  else if( cols() == 1 ) {
     if( i >= 0 && i < rows() ) {
-      return ml->m[i][0]; 
+      return ml->m[i][0];
     }
     else {
-      throw( MatrixD::IndexRange( i, 0, rows()-1, 0, 
+      throw( MatrixD::IndexRange( i, 0, rows()-1, 0,
                        "int& MatrixI::operator()(int i)" ) );
     }
   }
-  else { 
+  else {
     throw( MatrixD::NotVector( i, rows(), cols(),
                       "int& MatrixI::operator()(int i)" ) );
   }
@@ -2544,7 +2550,7 @@ char operator==( const int& y, const MatrixI& x ){
 ostream& operator<<(ostream& os, const MatrixI& x)
 {
   int i,j;
-  
+
   for(i=0; i< x.rows(); i++) {
     os << "( ";
     for(j=0; j< x.cols(); j++) {
@@ -2575,7 +2581,7 @@ MatrixI operator+(const MatrixI& x, const MatrixI& y) {
 }
 
 MatrixI operator+(const MatrixI& x, const int& y) {
- MatrixI z; 
+ MatrixI z;
  z.DeepCopy( x );
  z += y;
  z.stacked = 1;
@@ -2616,7 +2622,7 @@ MatrixI operator-(const MatrixI& x, const MatrixI& y) {
     for(int j = 0; j < x.cols(); j++) {
       zPtr->m[i][j] = xPtr->m[i][j] - yPtr->m[i][j];
       if(abs(zPtr->m[i][j]) < M_SMALL*abs(yPtr->m[i][j]))
-	zPtr->m[i][j] = 0;
+        zPtr->m[i][j] = 0;
     }
   }
   z.stacked = 1;
@@ -2624,7 +2630,7 @@ MatrixI operator-(const MatrixI& x, const MatrixI& y) {
 }
 
 MatrixI operator-(const MatrixI& x, const int& y) {
- MatrixI z; 
+ MatrixI z;
  z.DeepCopy( x );
  z -= y;
  z.stacked = 1;
@@ -2681,8 +2687,8 @@ MatrixI operator*(const MatrixI& x, const MatrixI& y)  {
     for(int col = 0; col < y.cols(); col++){
       int sum = 0;
       for(int i = 0; i < x.cols(); i++) {
-	tmp = xPtr->m[row][i] * yPtr->m[i][col];
-	sum += tmp;
+        tmp = xPtr->m[row][i] * yPtr->m[i][col];
+        sum += tmp;
       }
       zPtr->m[row][col] = sum;
     }
