@@ -91,5 +91,6 @@ int QtMonitor::setAzimuth( const beamline& x )
 
 void QtMonitor::localPropagate( Particle& p )
 {
+  this->monitor::localPropagate( p );
   emit ping( _azimuth, p.State() );
 }

@@ -189,7 +189,13 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
 
     _editMenu->insertSeparator();
 
-    _editMenu->insertItem( "(Mis)align ...", this, SLOT(_editAlign()) );
+    _editMenu->insertItem( "Align ...", this, SLOT(_editAlign()) );
+    int id_Misalign = 
+    _editMenu->insertItem( "Misalign ...", this, SLOT(_editMisalign()) );
+    _editMenu->setItemEnabled( id_Misalign, false );
+
+    _editMenu->insertSeparator();
+
     _editMenu->insertItem( "Convert to Slots", this, SLOT(_editD2S()) );
     _editMenu->insertItem( "Partition", this, SLOT(_editPartition()) );
     _editMenu->insertItem( "Insert markers", this, SLOT(_editAddMarkers()) );
@@ -825,6 +831,9 @@ void CHEF::_toolAlignBends()
 
 void CHEF::_editAlign()
 {
+  bool handleSpace   = true;
+  bool handleSbend   = true;
+
   // Specify an offset and angle
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
@@ -895,18 +904,48 @@ void CHEF::_editAlign()
       theChosenOnes = _p_vwr->findAllSelected(dynamic_cast<QBmlRoot*>(_p_clickedQBml));
 
       // Convert to a BmlPtrList, for use by AlignVisitor
+      //   Weed out undesirable elements; this probably should
+      //   be done by AlignVisitor itself.
       BmlPtrList theOnes;
       bmlnElmnt* elementPtr;
       while( 0 != (elementPtr = theChosenOnes.take()) ) {
-        theOnes.append(elementPtr);
+        if( BmlUtil::isSpace(elementPtr) ) {
+          if(handleSpace) {
+            QMessageBox::warning( 0, "CHEF: WARNING", 
+              "This function will not align empty space."
+              "\nSend complaints to: michelotti@fnal.gov" );
+            handleSpace = false;
+          }
+        }
+        else if(    ( 0 == strcasecmp("sbend",elementPtr->Type())    ) 
+                 || ( 0 == strcasecmp("CF_sbend",elementPtr->Type()) ) ) {
+          if(handleSbend) {
+            QMessageBox::warning( 0, "CHEF: WARNING", 
+              "This function handles only transverse movements."
+              "\nIt is not written to manipulate sector bends."
+              "\nSend complaints to: michelotti@fnal.gov" );
+            handleSbend = false;
+          }
+        }
+        else {
+          theOnes.append(elementPtr);
+        }
       }
 
-      // Do the (mis)alignment
+      // Do the alignment
       AlignVisitor euclid( euclidData, theOnes );
       // REMOVE: _p_clickedCon->accept( euclid );
       if( 0 != _p_currBmlCon) { _p_currBmlCon->accept( euclid ); }
     }
   }
+}
+
+
+void CHEF::_editMisalign()
+{
+  QMessageBox::warning( 0, "CHEF: SORRY",
+                        "Sorry. This function is not written yet."
+                        "\nSend complaints to: michelotti@fnal.gov" );
 }
 
 
@@ -1919,13 +1958,6 @@ void CHEF::_launchRayTrace()
                               "Must select a beamline first." );
     return;
   }
-  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
-    QMessageBox::information( 0, "CHEF: ERROR",
-                              "Selected line is not periodic."
-                              "\nTry fixing with Edit/Mode function." );
-    return;
-  }
-
 
   _traceWidget = new RayTrace(_p_currBmlCon);
   _traceWidget->setCaption( "CHEF:: Orbit Trace" );

@@ -139,12 +139,26 @@ struct infoWriter : public ConstBmlVisitor
   void visitSlot       ( const Slot*       );
   void visitSbend      ( const sbend*      );
   void visitCF_sbend   ( const CF_sbend*   );
+  void visitRbend      ( const rbend*      );
   void visitCF_rbend   ( const CF_rbend*   );
   void visitQuadrupole ( const quadrupole* );
   void visitThinQuad   ( const thinQuad*   );
   void visitSextupole  ( const sextupole*  );
   void visitMarker     ( const marker*     );
   void visitSector     ( const sector*     );
+  void visitMonitor    ( const monitor*    );
+
+  BeamlineContext*     _contextPtr;
+};
+
+
+// Interface for editDialog subclass
+struct editDialog : public BmlVisitor 
+{
+  void visitBmlnElmnt  ( bmlnElmnt*  );
+  void visitRbend      ( rbend*      );
+  void visitQuadrupole ( quadrupole* );
+  void visitThinQuad   ( thinQuad*   );
 
   BeamlineContext*     _contextPtr;
 };

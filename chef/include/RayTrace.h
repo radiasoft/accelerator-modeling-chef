@@ -109,9 +109,7 @@ public slots:
   void   _fileClose       ();
   void   _do_nothing      ();
   void   _edit_clear      ();
-  void   _file_exit       ();
 
-  void   _view_rect       ();
   void   _view_zoom_out   ();
   void   _view_zoom_in    ();
   void   _view_zoom_reset ();
@@ -123,6 +121,8 @@ public slots:
   void   _opt_bg_black    ();
   void   _opt_bg_white    ();
   void   _opt_bg_yellow   ();
+  void   _opt_contmode    ();
+  void   _opt_snglmode    ();
 
   // Slots connected to PointEdit objects
   void   _new_x           ( double );
@@ -160,7 +160,8 @@ private:
 
   BeamlineContext* _bmlConPtr;
   bool             _deleteContext;
-  char             _isIterating;
+  bool             _continuous;
+  bool             _isIterating;
 };
 
 
