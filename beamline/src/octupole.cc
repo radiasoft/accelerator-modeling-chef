@@ -31,6 +31,7 @@ octupole::octupole( const octupole& x )
 }
 
 octupole::~octupole() {
+  p_bml_e = 0;
 }
 
 

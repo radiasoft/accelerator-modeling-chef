@@ -1,8 +1,7 @@
-#include <iomanip.h>
 #include "beamline.inc"
-
 // #include "combinedFunction.h"
 // #include "mwiremonitor.h"
+#include <iomanip.h>
 
 // **************************************************
 //   struct BMLN_posInfo
@@ -854,6 +853,7 @@ bmlnElmnt* read_istream(istream& is)
   const int SIZE=80;
   char type[SIZE], *name;
   double length, strength, x, y, t;
+  static char previousLine[200];
 
   name = new char[SIZE];
 
@@ -885,7 +885,7 @@ bmlnElmnt* read_istream(istream& is)
     element = driftPtr;
   }
   else if( strcasecmp(type, 		"hkick") == 0 ) {
-    hkickPtr = new hkick(name, length);
+    hkickPtr = new hkick(name, strength);
     element = hkickPtr;
   }
   else if( strcasecmp(type, 		"hmonitor") == 0 ) {
@@ -1006,7 +1006,13 @@ bmlnElmnt* read_istream(istream& is)
   }
   else {
     cerr << "read_istream(istream&): Unknown element type \"" << type << "\"\n";
+    cerr << "Previous line read in was: \n" << previousLine << endl;
   }
+
+  // Save away the current line in case we need to report something 
+  // unreadible next time.
+  sprintf(previousLine,"%s  %s  %lf  %lf  %lf  %lf  %lf",
+	  type,name,length,strength,x,y,t);
 
   // Get the rest of the description if we got a real element
   if ( element ) {
@@ -1025,3 +1031,4 @@ bmlnElmnt* read_istream(istream& is)
   delete name;
   return element;
 }
+

@@ -59,6 +59,10 @@ sbend::sbend( double l, double s, double alpha,
    exit(0);
  }
  angle    = alpha;
+ if(pf == 0) {
+   Propagator = sbend::P_Exact;
+   JetPropagator = sbend::J_Exact;
+ }
 }
 
 
@@ -73,6 +77,10 @@ sbend::sbend( char* n, double l, double s, double alpha,
    exit(0);
  }
  angle    = alpha;
+ if(pf == 0) {
+   Propagator = sbend::P_Exact;
+   JetPropagator = sbend::J_Exact;
+ }
 }
 
 
