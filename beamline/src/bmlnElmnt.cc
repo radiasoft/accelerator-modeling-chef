@@ -1115,12 +1115,12 @@ void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
   delete [] (*a)->ident;
   (*a)->ident = new char [ strlen(ident) + 6 ];
   strcpy( (*a)->ident, ident );
-  strcat( (*a)->ident, "_CL_A" );
+  strcat( (*a)->ident, "_1" );
 
   delete [] (*b)->ident;
   (*b)->ident = new char [ strlen(ident) + 6 ];
   strcpy( (*b)->ident, ident );
-  strcat( (*b)->ident, "_CL_B" );
+  strcat( (*b)->ident, "_2" );
   
   (*a)->strength = pc*strength;
   (*b)->strength = ( 1.0 - pc )*strength;

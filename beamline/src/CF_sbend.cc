@@ -441,11 +441,11 @@ void CF_sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
   newname = new char [ strlen(ident) + 6 ];
 
   strcpy( newname, ident );
-  strcat( newname, "_CL_A" );
+  strcat( newname, "_1" );
   (*a)->Rename( newname );
 
   strcpy( newname, ident );
-  strcat( newname, "_CL_B" );
+  strcat( newname, "_2" );
   (*b)->Rename( newname );
 
   delete [] newname;
