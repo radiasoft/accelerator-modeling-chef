@@ -1064,7 +1064,7 @@ void CHEF::_launchMoments()
   for( int i = 0; i < 1024; i++ ) {
     theCaption[i] = '\0';
   }
-  strcat( theCaption, "CHEF: Edwards-Teng Lattice Functions: " );
+  strcat( theCaption, "CHEF: Covariance Lattice Functions: " );
   strcat( theCaption, _p_currBmlCon->name() );
   _MMplotWidget->setCaption( theCaption );
 
