@@ -112,12 +112,9 @@ void CHEFPlotMain::exit( ){
   // This behavior should be changed to cover the case
   // when the widget is part of an MDI application 
 
-  std::cout << "DGN: Entering void CHEFPlotMain::exit( )" << std::endl;
   if ( ! parent() ) {
-    std::cout << "DGN: void CHEFPlotMain::exit( ): delete this;" << std::endl;
     delete this; 
   }
-  std::cout << "DGN: Leaving void CHEFPlotMain::exit( )" << std::endl;
 }
 
 void CHEFPlotMain::clear( ){
