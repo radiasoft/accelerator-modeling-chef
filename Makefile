@@ -52,7 +52,9 @@ SUBDIRS  = basic_toolkit/src \
 	server/src \
 	socket/src \
 	sybase/src \
-	tcl/src
+	tcl/src \
+	bmlfactory/src \
+	bmlfactory/tests
 
 APPDIRS  = filter/app \
 	machines/accumulator/app \
