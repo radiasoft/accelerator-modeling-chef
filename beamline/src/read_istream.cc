@@ -76,7 +76,9 @@
 #endif
 
 #include <combinedFunction.h>
+#if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
 #include <mwiremonitor.h>
+#endif
 #include <pinger.h>
 
 bmlnElmnt* read_istream(istream& is)
@@ -197,10 +199,12 @@ bmlnElmnt* read_istream(istream& is)
     monitorPtr = new monitor(name);
     element = monitorPtr;
   }
+#if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
   else if( strcasecmp(type, 		"mwireMonitor") == 0 ) {
     monitorPtr = new mwireMonitor(name);
     element = monitorPtr;
   }
+#endif
   else if( strcasecmp(type, 		"octupole") == 0 ) {
     octupolePtr = new octupole(name, length, strength);
     element = octupolePtr;
