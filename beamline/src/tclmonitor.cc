@@ -1,10 +1,13 @@
 #if !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(_EXCLUDE_MONITORS_)
 #include <iostream.h>
+#include <string.h>
 #include "pipestream.h"
 #include "ParticleBunch.h"
 #include "tclmonitor.h"
 #include <tk.h>
 #include "tclf.h"
+
+char formbuffer[256];
 
 int tclMonitor::color = 0;
 
@@ -202,8 +205,10 @@ void tclMonitor::on() {
      // Give the main window the name of the monitor.
      *p << "wm title . " << Name() << " \n" << flush; 
      // Place coordinates on the windows.
-     *p << ::form("place_limits %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f\n",
-	     axmax,aymax,bxmax,bymax,cxmax,cymax) << flush;
+     // *p << ::form("place_limits %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f\n",
+     //	     axmax,aymax,bxmax,bymax,cxmax,cymax) << flush;
+     sprintf(formbuffer,"place_limits %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f\n");
+       *p << formbuffer << flush;
    }
 }
 
@@ -219,8 +224,10 @@ void tclMonitor::on(char* whereToDisplay) {
      // Give the main window the name of the monitor.
      *p << "wm title . " << Name() << " \n" << flush; 
      // Place coordinates on the windows.
-     *p << ::form("place_limits %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f\n",
-	     axmax,aymax,bxmax,bymax,cxmax,cymax) << flush;
+     //*p << ::form("place_limits %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f\n",
+     //	     axmax,aymax,bxmax,bymax,cxmax,cymax) << flush;
+     sprintf(formbuffer,"place_limits %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f\n",axmax,aymax,bxmax,bymax,cxmax,cymax);
+     *p << formbuffer << flush;
    }
 }
 
@@ -262,14 +269,25 @@ void tclMonitor::localPropagate( Particle& part) {
 //   cout << " cdt= " << ParticleCoords(2) << " dp/p    = " 
 //        << ParticleCoords(5) << endl;
 
-   *p << ::form("update_plot %d %d %d %d %d %d %d\n",
-	   atopixx(ParticleCoords(0),axmax,axmin),
-	   atopixy(ParticleCoords(3),aymax,aymin),
-	   atopixx(ParticleCoords(1),bxmax,bxmin),
-	   atopixy(ParticleCoords(4),bymax,bymin),
-	   atopixx(ParticleCoords(2),cxmax,cxmin),
-	   atopixy(ParticleCoords(5),cymax,cymin),
-	   color) << flush;
+   //*p << ::form("update_plot %d %d %d %d %d %d %d\n",
+   //	   atopixx(ParticleCoords(0),axmax,axmin),
+   //   atopixy(ParticleCoords(3),aymax,aymin),
+   //   atopixx(ParticleCoords(1),bxmax,bxmin),
+   //   atopixy(ParticleCoords(4),bymax,bymin),
+   //   atopixx(ParticleCoords(2),cxmax,cxmin),
+   //   atopixy(ParticleCoords(5),cymax,cymin),
+   //   color) << flush;
+
+   sprintf(formbuffer,"update_plot %d %d %d %d %d %d %d\n",
+        atopixx(ParticleCoords(0),axmax,axmin),
+        atopixy(ParticleCoords(3),aymax,aymin),
+        atopixx(ParticleCoords(1),bxmax,bxmin),
+        atopixy(ParticleCoords(4),bymax,bymin),
+        atopixx(ParticleCoords(2),cxmax,cxmin),
+        atopixy(ParticleCoords(5),cymax,cymin),
+        color );
+
+   *p << formbuffer << flush;
 
    // Block now to receive the return message and whether the user has 
    // interrupted on the plots to give new initial conditions.
@@ -372,8 +390,11 @@ void tclMonitor::localPropagate( JetParticle& jpart) {
      // Give the main window the name of the monitor.
      *p << "wm title . " << Name() << " \n" << flush; 
      // Place coordinates on the windows.
-     *p << ::form("place_limits %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f\n",
-	     axmax,aymax,bxmax,bymax,cxmax,cymax) << flush;
+     //*p << ::form("place_limits %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f\n",
+     //     axmax,aymax,bxmax,bymax,cxmax,cymax) << flush;
+     sprintf(formbuffer,"place_limits %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f\n",
+             axmax,aymax,bxmax,bymax,cxmax,cymax);
+     *p << formbuffer << flush;
    }
 
    // Pull off the value of the particle position and send to the interpreter.
@@ -393,14 +414,24 @@ void tclMonitor::localPropagate( JetParticle& jpart) {
 //   cout << " ct= " << (JetParticleCoords[2]).standardPart() 
 //        << " E      = " << (JetParticleCoords[5]).standardPart() << endl;
 
-   *p << ::form("update_plot %d %d %d %d %d %d %d\n",
-	   atopixx((JetParticleCoords[0]).standardPart(),axmax,axmin),
-	   atopixy((JetParticleCoords[3]).standardPart(),aymax,aymin),
-	   atopixx((JetParticleCoords[1]).standardPart(),bxmax,bxmin),
-	   atopixy((JetParticleCoords[4]).standardPart(),bymax,bymin),
-	   atopixx((JetParticleCoords[2]).standardPart(),cxmax,cxmin),
-	   atopixy((JetParticleCoords[5]).standardPart(),cymax,cymin),
-	   color) << flush;
+   //*p << ::form("update_plot %d %d %d %d %d %d %d\n",
+   //	   atopixx((JetParticleCoords[0]).standardPart(),axmax,axmin),
+   //   atopixy((JetParticleCoords[3]).standardPart(),aymax,aymin),
+   //   atopixx((JetParticleCoords[1]).standardPart(),bxmax,bxmin),
+   //   atopixy((JetParticleCoords[4]).standardPart(),bymax,bymin),
+   //   atopixx((JetParticleCoords[2]).standardPart(),cxmax,cxmin),
+   //   atopixy((JetParticleCoords[5]).standardPart(),cymax,cymin),
+   //   color) << flush;
+
+   sprintf(formbuffer, "update_plot %d %d %d %d %d %d %d\n",
+        atopixx((JetParticleCoords[0]).standardPart(),axmax,axmin),
+        atopixy((JetParticleCoords[3]).standardPart(),aymax,aymin),
+        atopixx((JetParticleCoords[1]).standardPart(),bxmax,bxmin),
+        atopixy((JetParticleCoords[4]).standardPart(),bymax,bymin),
+        atopixx((JetParticleCoords[2]).standardPart(),cxmax,cxmin),
+        atopixy((JetParticleCoords[5]).standardPart(),cymax,cymin),
+        color);
+   *p << formbuffer << flush;
 
    // Block now to receive the return message and whether the user has 
    // interrupted on the plots to give new initial conditions.
