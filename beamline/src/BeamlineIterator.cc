@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 /*
 **
@@ -127,12 +127,9 @@ DeepBeamlineIterator::DeepBeamlineIterator( const beamline* x )
 
 DeepBeamlineIterator::DeepBeamlineIterator( const DeepBeamlineIterator& )
 {
-  cerr << "*** ERROR ***                                       \n"
-          "*** ERROR *** DeepBeamlineIterator::DeepBeamlineIterator( const DeepBeamlineIterator& ) \n"
-          "*** ERROR *** Copy constructor must not be called.  \n"
-          "*** ERROR ***                                       \n"
-       << endl;
-  exit(999);
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "DeepBeamlineIterator::DeepBeamlineIterator( const DeepBeamlineIterator& )", 
+         "Copy constructor must not be called." ) );
 }
 
 
@@ -240,14 +237,9 @@ void ReverseBeamlineIterator::reset()
 
 void ReverseBeamlineIterator::goBack( int n )
 {
-  cerr << "*** ERROR ***                                           \n"
-       << "*** ERROR *** void ReverseBeamlineIterator::goBack      \n"
-       << "*** ERROR *** Sorry. This function is not implemented   \n"
-       << "*** ERROR *** for ReverseBeamlineIterator.              \n"
-       << "*** ERROR ***                                           \n"
-       << endl;
-  exit(1);
-  // _getNext->GoBack(n);  <- not written for dlist_reverseIterator
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "void ReverseBeamlineIterator::goBack( int n )", 
+         "Not implemented." ) );
 }
 
 
@@ -268,12 +260,9 @@ DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( const beamline* x )
 
 DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( const DeepReverseBeamlineIterator& )
 {
-  cerr << "*** ERROR ***                                       \n"
-          "*** ERROR *** DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( const DeepReverseBeamlineIterator& ) \n"
-          "*** ERROR *** Copy constructor must not be called.  \n"
-          "*** ERROR ***                                       \n"
-       << endl;
-  exit(999);
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( const DeepReverseBeamlineIterator& )", 
+         "Copy constructor must not be called." ) );
 }
 
 

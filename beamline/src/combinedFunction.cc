@@ -47,9 +47,9 @@ using namespace std;
 combinedFunction::combinedFunction()
 : bmlnElmnt()
 {
-  cerr << "\n*** ERROR *** Cannot define combinedFunction without parameters.\n" 
-       << endl;
-  exit(1);
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "combinedFunction::combinedFunction()", 
+         "Proper instatiation requires parameters." ) );
 }
 
 combinedFunction::combinedFunction( const char* n ) : bmlnElmnt(n) 
@@ -434,13 +434,9 @@ double combinedFunction::AdjustPosition( const JetProton& arg_jp )
   m = ( myJP.State().Jacobian() )( x, x );
   m -= 1.0;
   if( fabs(m) < 1.0e-12 ) {
-    cerr << "*** ERROR ***                                       \n"
-         << "*** ERROR *** combinedFunction::AdjustPosition      \n"
-         << "*** ERROR *** A horrible, inexplicable error has    \n"
-         << "*** ERROR *** occurred. A multi-valued solution     \n"
-         << "*** ERROR *** is suspected.                         \n"
-         << "*** ERROR ***                                       \n";
-    exit(0);
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "double combinedFunction::AdjustPosition( const JetProton& arg_jp )", 
+         "Horrible, inexplicable error: a multi-valued solution is suspected." ) );
   }
   m = 1.0 / m;
 
