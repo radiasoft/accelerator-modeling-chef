@@ -950,11 +950,11 @@ T1 TJL<T1,T2>::operator()( const T1* x )  const
      ( _myEnv->_exponent[i] )--;
      // REMOVE: _myEnv->_monoCode();
      // REMOVE: term = _myEnv->_monomial[ _myEnv->_monoRank() ];
-     term = _myEnv->_monomial[ _myEnv->_offset( _myEnv->_exponent ) ];
+     term = _myEnv->_monomial[ _myEnv->_offset.index( _myEnv->_exponent ) ];
      ( _myEnv->_exponent[i] )++;
      // REMOVE: _myEnv->_monoCode();
      // REMOVE: _myEnv->_monomial[ _myEnv->_monoRank() ] = term * u[i];
-     _myEnv->_monomial[ _myEnv->_offset( _myEnv->_exponent ) ] = term * u[i];
+     _myEnv->_monomial[ _myEnv->_offset.index( _myEnv->_exponent ) ] = term * u[i];
  
    }
  
@@ -967,7 +967,7 @@ T1 TJL<T1,T2>::operator()( const T1* x )  const
    // REMOVE; for( i = 0; i < _myEnv->_numVar; i++ ) _myEnv->_exponent[i] = (p->_index)(i);
    // REMOVE: _myEnv->_monoCode();
    // REMOVE: v += ( p->_value ) * ( _myEnv->_monomial[ _myEnv->_monoRank() ] );
-   v += ( p->_value ) * ( _myEnv->_monomial[ _myEnv->_offset( p->_index ) ] );
+   v += ( p->_value ) * ( _myEnv->_monomial[ _myEnv->_offset.index( p->_index ) ] );
  }
  
  delete [] u;

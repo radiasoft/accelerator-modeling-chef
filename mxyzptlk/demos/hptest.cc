@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include "menu.h"
-#include "Jet"
+#include "Jet.h"
 
 #define	NUMREG 4
 
