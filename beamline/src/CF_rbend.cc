@@ -242,7 +242,9 @@ void CF_rbend::_finishConstructor(int n)
   _u = new bmlnElmnt* [ 121 ];    // Paranoia: should need only 109
   _v = _u;
 
-  *(_v++) = new rbend          ( inEdge  );
+  *(_v  ) = new rbend          ( inEdge  );
+  dynamic_cast<rbend*>(*_v)->setEntryAngle( _usAngle );
+    _v++;
   *(_v++) = new thinSextupole  ( ts      );
   *(_v++) = new thinQuad       ( tq      );
   *(_v++) = new rbend          ( body    );
@@ -271,6 +273,7 @@ void CF_rbend::_finishConstructor(int n)
   }
 
   *(_v  ) = new rbend          ( outEdge );
+  dynamic_cast<rbend*>(*_v)->setExitAngle( _dsAngle );
 
   // Paranoid test.
   if( (12*n + 1) != (1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) )) ) {
@@ -336,6 +339,7 @@ double CF_rbend::setEntryAngle( double phi /* radians */ )
   double ret = _usAngle;
   _usAngle = phi;
   _usTan = tan(phi);
+  dynamic_cast<rbend*>(*_u)->setEntryAngle(phi);
   return ret;
 }
 
@@ -345,6 +349,7 @@ double CF_rbend::setExitAngle( double phi /* radians */ )
   double ret = _dsAngle;
   _dsAngle = phi;  
   _dsTan  = tan(phi);
+  dynamic_cast<rbend*>(*_v)->setExitAngle(phi);
   return ret;
 }
 
@@ -597,7 +602,11 @@ void CF_rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
   // We assume "strength" means field, not field*length.
   // "length," "strength," and "_angle" are private data members.
   *a = new CF_rbend(         pc*length, strength, _usEdgeAngle, 0.0 );
+  dynamic_cast<CF_rbend*>(*a)->setEntryAngle( this->getEntryAngle() );
+  dynamic_cast<CF_rbend*>(*a)->setExitAngle( 0.0 );    // Will matter
   *b = new CF_rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle );
+  dynamic_cast<CF_rbend*>(*b)->setEntryAngle( 0.0 );   // Will matter
+  dynamic_cast<CF_rbend*>(*b)->setExitAngle( this->getExitAngle() );
 
 
   // Assign quadrupole strength

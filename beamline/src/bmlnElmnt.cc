@@ -1169,6 +1169,12 @@ double bmlnElmnt::setReferenceTime( const Particle& prtn )
 }
 
 
+double bmlnElmnt::getReferenceTime() const
+{
+  return _ctRef;
+}
+
+
 double bmlnElmnt::setReferenceTime( double x )
 {
   double oldValue = _ctRef;

@@ -164,7 +164,9 @@ void CF_sbend::_finishConstructor()
   _u = new bmlnElmnt* [ 13 ];
   _v = _u;
 
-  *(_v++) = new sbend          ( inEdge    );
+  *(_v  ) = new sbend          ( inEdge    );
+  dynamic_cast<sbend*>(*_v)->setEntryAngle( _usAngle );
+    _v++;
   *(_v++) = new thinSextupole  ( ts      );
   *(_v++) = new thinQuad       ( tq      );
   *(_v++) = new sbend          ( body    );
@@ -177,6 +179,7 @@ void CF_sbend::_finishConstructor()
   *(_v++) = new thinSextupole  ( ts      );
   *(_v++) = new thinQuad       ( tq      );
   *(_v  ) = new sbend          ( outEdge    );
+  dynamic_cast<sbend*>(*_v)->setExitAngle( _dsAngle );
 }
 
 
@@ -271,6 +274,7 @@ double CF_sbend::setEntryAngle( double phi /* radians */ )
   double ret = _usAngle;
   _usAngle = phi;
   _usTan = tan(phi);
+  dynamic_cast<sbend*>(*_u)->setEntryAngle(phi);
   return ret;
 }
 
@@ -280,6 +284,7 @@ double CF_sbend::setExitAngle( double phi /* radians */ )
   double ret = _dsAngle;
   _dsAngle = phi;  
   _dsTan  = tan(phi);
+  dynamic_cast<sbend*>(*_v)->setExitAngle(phi);
   return ret;
 }
 
@@ -538,7 +543,11 @@ void CF_sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
   // We assume "strength" means field, not field*length.
   // "length," "strength," and "_angle" are private data members.
   *a = new CF_sbend(         pc*length, strength,         pc*_angle, _usEdgeAngle, 0.0 );
+  dynamic_cast<CF_sbend*>(*a)->setEntryAngle( this->getEntryAngle() );
+  dynamic_cast<CF_sbend*>(*a)->setExitAngle( 0.0 );    // Will matter
   *b = new CF_sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle, 0.0, _dsEdgeAngle );
+  dynamic_cast<CF_sbend*>(*b)->setEntryAngle( 0.0 );   // Will matter
+  dynamic_cast<CF_sbend*>(*b)->setExitAngle( this->getExitAngle() );
 
 
   // Assign quadrupole strength

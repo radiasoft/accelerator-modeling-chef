@@ -84,10 +84,11 @@ class CF_rbend : public bmlnElmnt
                         // are as defined for rbends by MAD
             int = 1 );
 
-  CF_rbend( double,     // length  [ meters ]     // No entry angle assumed
-            double,     // field   [ tesla ]      // Must use a registration proton
+  CF_rbend( double,     // length  [ meters ]
+            double,     // field   [ tesla ]
                         // (assumed along the y-axis)
-            double,     // entry angle [radians]
+            double,     // entry angle [radians] RELATIVE TO parallel faces
+                        //   (assumes symmetric pssage unless reset)
             double,     // upstream edge angle [radians]
             double,     // downstream edge angle [radians]
                         // signs of previous two parameters
@@ -97,7 +98,8 @@ class CF_rbend : public bmlnElmnt
   CF_rbend( const char*,// name
             double,     // length  [ meters ]
             double,     // field   [ tesla ]
-            double,     // entry angle [radians]
+            double,     // entry angle [radians] RELATIVE TO parallel faces
+                        //   (assumes symmetric pssage unless reset)
             double,     // upstream edge angle [radians]
             double,     // downstream edge angle [radians]
                         // signs of previous two parameters
@@ -139,14 +141,17 @@ class CF_rbend : public bmlnElmnt
   // by default. Otherwise, use one of the following.
   double setEntryAngle( const Particle& ); 
   double setExitAngle( const Particle& ); 
-  double getEntryAngle() { return _usAngle; }
-  double getExitAngle()  { return _dsAngle; }
+  double getEntryAngle() const { return _usAngle; }
+  double getExitAngle() const { return _dsAngle; }
   double setEntryAngle( double /* radians */ ); 
   double setExitAngle( double /* radians */ ); 
+  double getEntryEdgeAngle() const { return _usEdgeAngle; }
+  double getExitEdgeAngle() const { return _dsEdgeAngle; }
 
   // Aliases, for the sake of backwards compatability
-  double PoleFaceAngle()    { return this->getEntryAngle(); }
-  double getPoleFaceAngle() { return this->getEntryAngle(); }
+  double PoleFaceAngle() const { return this->getEntryAngle(); }
+  double getPoleFaceAngle() const { return this->getEntryAngle(); }
+  double getTanPoleFaceAngle() const { return tan(this->getEntryAngle()); }
 
 
   double AdjustPosition( const Proton& );
@@ -187,8 +192,8 @@ class CF_rbend : public bmlnElmnt
 
 
  private:
-  bmlnElmnt** _u;
-  bmlnElmnt** _v;
+  bmlnElmnt** _u;           // Address of first internal bmlElmnt pointer
+  bmlnElmnt** _v;           // Address of final internal bmlElmnt pointer
 
 
   double _usEdgeAngle, _dsEdgeAngle;

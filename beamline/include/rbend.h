@@ -253,7 +253,8 @@ public:
 
   rbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
-         double,     // entry angle [radians]
+         double,     // entry angle [radians] RELATIVE TO parallel faces
+                     //   (assumes symmetric pssage unless reset)
          double,     // upstream edge angle [radians]
          double,     // downstream edge angle [radians]
                      // signs of previous two parameters
@@ -263,7 +264,8 @@ public:
   rbend( const char*,// name
          double,     // length  [ meters ]
          double,     // field   [ tesla ]
-         double,     // entry angle [radians]
+         double,     // entry angle [radians] RELATIVE TO parallel faces
+                     //   (assumes symmetric pssage unless reset)
          double,     // upstream edge angle [radians]
          double,     // downstream edge angle [radians]
                      // signs of previous two parameters
@@ -306,18 +308,19 @@ public:
   // by default. Otherwise, use one of the following.
   double setEntryAngle( const Particle& ); 
   double setExitAngle( const Particle& ); 
-  double getEntryAngle() { return _usAngle; }
-  double getExitAngle()  { return _dsAngle; }
+  double getEntryAngle() const { return _usAngle; }
+  double getExitAngle() const { return _dsAngle; }
   double setEntryAngle( double /* radians */ ); 
   double setExitAngle( double /* radians */ ); 
+  double getEntryEdgeAngle() const { return _usEdgeAngle; }
+  double getExitEdgeAngle() const { return _dsEdgeAngle; }
 
   // Aliases, for the sake of backwards compatability
   double setPoleFaceAngle( const Particle& x );
   double setPoleFaceAngle( const JetParticle& x );
-  double PoleFaceAngle()       const;
-  double getPoleFaceAngle()    const;
-  double getTanPoleFaceAngle() const;
-  double getEntryAngle()       const;
+  double PoleFaceAngle() const { return this->getEntryAngle(); }
+  double getPoleFaceAngle() const { return this->getEntryAngle(); }
+  double getTanPoleFaceAngle() const { return tan(this->getEntryAngle()); }
 
   void makeAsinApproximate( int /* number of terms */);
   void makeAsinExact();

@@ -227,10 +227,12 @@ public:
   // by default. Otherwise, use one of the following.
   double setEntryAngle( const Particle& ); 
   double setExitAngle( const Particle& ); 
-  double getEntryAngle() { return _usAngle; }
-  double getExitAngle()  { return _dsAngle; }
+  double getEntryAngle() const { return _usAngle; }
+  double getExitAngle()  const { return _dsAngle; }
   double setEntryAngle( double /* radians */ ); 
   double setExitAngle( double /* radians */ ); 
+  double getEntryEdgeAngle() const { return _usEdgeAngle; }
+  double getExitEdgeAngle()  const { return _dsEdgeAngle; }
 
   void makeAsinApproximate( int /* number of terms */);
   void makeAsinExact();

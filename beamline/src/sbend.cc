@@ -446,15 +446,23 @@ void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
   }
   else if( typeid(*Propagator) == typeid(Exact_Prop) ) {
     *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::InEdge );
+    dynamic_cast<sbend*>(*a)->setEntryAngle( this->getEntryAngle() );
+    dynamic_cast<sbend*>(*a)->setExitAngle( 0.0 );    // Should not matter
     *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::OutEdge );
+    dynamic_cast<sbend*>(*b)->setEntryAngle( 0.0 );   // Should not matter
+    dynamic_cast<sbend*>(*b)->setExitAngle( this->getExitAngle() );
   }
   else if( typeid(*Propagator) == typeid(InEdge_Prop) ) {
     *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, Propagator );
+    dynamic_cast<sbend*>(*a)->setEntryAngle( this->getEntryAngle() );
+    dynamic_cast<sbend*>(*a)->setExitAngle( 0.0 );    // Should not matter
     *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::NoEdge );
   }
   else if( typeid(*Propagator) == typeid(OutEdge_Prop) ) {
     *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::NoEdge );
     *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, Propagator );
+    dynamic_cast<sbend*>(*b)->setEntryAngle( 0.0 );   // Should not matter
+    dynamic_cast<sbend*>(*b)->setExitAngle( this->getExitAngle() );
   }
   // TO BE DONE: else if( typeid(*Propagator) == typeid(Real_Exact_Prop) ) {
   // TO BE DONE:   *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::RealInEdge );
