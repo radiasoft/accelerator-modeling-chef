@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "LinearAlgebra/OutputFormat.h"
+#include "OutputFormat.h"
 
 OutputFormat::OutputFormat( const char* pad )
 {
