@@ -96,13 +96,9 @@ int JetQuadrupole::MAD_Prop::operator()( bmlnElmnt* p_be, Particle& p ) {
  
 
     if( BMLN_dynDim != 6 ) {
-      cerr << "*** ERROR ***                                  "
-              "*** ERROR *** MADJetQuad::MAD_Prop::operator() "
-              "*** ERROR *** This was written for a phase     "
-              "*** ERROR *** space dimension of 6.            "
-              "*** ERROR ***                                  "
-           << endl;
-      exit(1);
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+             "int JetQuadrupole::MAD_Prop::operator()( bmlnElmnt* p_be, Particle& p ) {", 
+             "This was written for a phase space dimension of 6." ) );
     }
 
     inState[0] = p.get_x();
@@ -192,13 +188,9 @@ int JetQuadrupole::MAD_Prop::operator()( bmlnElmnt* p_be, JetParticle& p ) {
 
 
     if( BMLN_dynDim != 6 ) {
-      cerr << "*** ERROR ***                                  "
-              "*** ERROR *** MADJetQuad::MAD_Prop::operator() "
-              "*** ERROR *** This was written for a phase     "
-              "*** ERROR *** space dimension of 6.            "
-              "*** ERROR ***                                  "
-           << endl;
-      exit(1);
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+             "int JetQuadrupole::MAD_Prop::operator()( bmlnElmnt* p_be, JetParticle& p ) {", 
+             "This was written for a phase space dimension of 6." ) );
     }
 
     inState[0] = p.get_x();

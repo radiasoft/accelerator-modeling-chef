@@ -64,14 +64,9 @@ void InsertionList::Append( const InsertionListElement& x )
 void InsertionList::Append( const InsertionListElement* x )
 {
   if( x->q->OrbitLength( prtn ) != 0.0 ) {
-    cerr << "\n"
-            "*** ERROR ***                                          \n"
-            "*** ERROR *** InsertionList::Append                    \n"
-            "*** ERROR *** This version can only handle zero        \n"
-            "*** ERROR *** length elements.                         \n"
-            "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+           "void InsertionList::Append( const InsertionListElement* x )", 
+           "This version can only handle zero length elements." ) );
   }
 
   if( x->s > smax ) {
@@ -79,14 +74,11 @@ void InsertionList::Append( const InsertionListElement* x )
     smax = x->s;
     return;
   }
-  cerr << "\n"
-          "*** ERROR ***                                          \n"
-          "*** ERROR *** InsertionList::Append                    \n"
-          "*** ERROR *** Ordering is not correct.                 \n"
-          "*** ERROR *** " << smax << " < " << x->s << "          \n"
-          "*** ERROR ***                                          \n"
-       << endl;
-  exit(1);
+  ostringstream uic;
+  uic  << "Ordering is not correct: " << smax << " < " << (x->s);
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+         "void InsertionList::Append( const InsertionListElement* x )", 
+         uic.str().c_str() ) );
 }
 
 void InsertionList::Insert( const InsertionListElement& x )
@@ -97,14 +89,9 @@ void InsertionList::Insert( const InsertionListElement& x )
 void InsertionList::Insert( const InsertionListElement* x )
 {
   if( x->q->OrbitLength( prtn ) != 0.0 ) {
-    cerr << "\n"
-            "*** ERROR ***                                          \n"
-            "*** ERROR *** InsertionList::Insert                    \n"
-            "*** ERROR *** This version can only handle zero        \n"
-            "*** ERROR *** length elements.                         \n"
-            "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+           "void InsertionList::Insert( const InsertionListElement* x )", 
+           "This version can only handle zero length elements." ) );
   }
 
   if( IsEmpty() ) {
@@ -115,14 +102,11 @@ void InsertionList::Insert( const InsertionListElement* x )
 
   InsertionListElement* f = (InsertionListElement*) firstInfoPtr();
   if( f->s <= x->s ) {
-    cerr << "\n"
-            "*** ERROR ***                                          \n"
-            "*** ERROR *** InsertionList::Insert                    \n"
-            "*** ERROR *** Ordering is not correct.                 \n"
-            "*** ERROR *** " << f->s << " <= " << x->s << "         \n"
-            "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    ostringstream uic;
+    uic  << "Ordering is not correct. " << (f->s) << " <= " << (x->s);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+           "void InsertionList::Insert( const InsertionListElement* x )", 
+           uic.str().c_str() ) );
   }
 
   dlist::insert( (ent) x  );
