@@ -9,7 +9,7 @@ class iopipestream;
 class mwireMonitor : public monitor {  
 
   private:
-  const static int WISH_WAIT_TIME;
+
     int           windowInitialized;   // Flag for determining if the 
                                        // display window has been made.
     char*         display;             // Tcl parent window name.
@@ -23,10 +23,6 @@ class mwireMonitor : public monitor {
     int*          x_bins;              // Array to hold counts.
     double        y_fs;                // Full scale value on y-plane plot.
     double        y_fiducial;          // User-defined marker location on SWIC.
-    double        x_sum, y_sum;        // Sum of coordinates, for calculating sigma
-    double        x2_sum, y2_sum;      // Sum, squared, of coordinates.
-    double        x_sigma, y_sigma;
-    int           particle_count;
     int*          y_bins;              // Array to hold counts.
     int           size;                // Size in pixels of the widget.
     int           Xindex;              // The latest bin populated by calcBin()
@@ -80,16 +76,15 @@ class mwireMonitor : public monitor {
     void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
 
     char*      Type() const;
-   int isType(char* c) { if ( strcmp(c, "mwireMonitor") != 0 ) return monitor::isType(c); else return 1; }
     inline bmlnElmnt* Clone() const { return new mwireMonitor( *this ); }
 
     void on();                       // Turns monitor on.
     void on(char*);                  // Turns monitor on and defines where
                                      // to display it (like dudley.fnal.gov)
 
-    void   setSpacing(double a) { setWireSpacing(a); }
-    void   setWireSpacing(double);           // Set wire spacing.
+    void   setSpacing(double);                  // Set wire spacing.
     inline double getSpacing() { return wireSpacing; } // Return spacing.
+    void   setWireSpacing(double);           // Set wire spacing.
 
     void   resetXplot();             // Clears X-plane multiwire plot. 
     void   resetYplot();             // Clears Y-plane multiwire plot.
