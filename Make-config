@@ -38,12 +38,12 @@ gcc:
 	"C   = gcc" \
 	"C++ = g++" \
 	"CFLAGS =  " \
-	"C++FLAGS =  " \
+	"C++FLAGS =  -fpermissive" \
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
 	"XINC = /usr/local/ap/X11R6/include" \
-	"TKINC = /usr/include/tcl" \
+	"TKINC = /usr/local/TCL-TK/include" \
 	"LIBDIR = $(FNALROOT)/lib/gcc" \
 	"STL_CONFIG = "
 
@@ -111,9 +111,9 @@ irix-gcc-debug:
 solaris:
 	$(MAKE) targets \
 	"C   = cc" \
-	"C++ = /opt/SUNWspro/SC5.0/bin/CC" \
+	"C++ = /opt/SUNWspro/bin/CC" \
 	"CFLAGS = " \
-	"C++FLAGS = -ptr$(FNALROOT) -verbose=template " \
+	"C++FLAGS = -library=iostream -ptr$(FNALROOT) -verbose=template " \
 	"INLINE_FLAG = +d " \
 	"MAKELIB = CC -xar -o" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
@@ -121,7 +121,7 @@ solaris:
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = -I/opt/SUNWspro/SC5.0/include/CC"
+	"STL_CONFIG = "
 
 # the options "-fast" is close, but it includes the "-O4", which we don't really need.
 # So the options following "-O " here are the rest of the "-fast" macro.
@@ -130,7 +130,7 @@ ultra-opt:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = " \
-	"C++FLAGS = -DULTRA -O -native -dalign -fsimple=1 -fns -ftrap=%none -libmil -xlibmopt -xchip=ultra -xarch=v8plus -ptr$(FNALROOT) -verbose=template" \
+	"C++FLAGS = -DULTRA -O -native -dalign -fsimple=1 -fns -ftrap=%none -libmil -xlibmopt -xchip=ultra -xarch=v8plus -ptr$(FNALROOT) -verbose=template -library=iostream" \
 	"INLINE_FLAG = +d " \
 	"MAKELIB = CC -xar -o" \
 	"INCDIR = $(FNALROOT)/include" \
@@ -139,15 +139,14 @@ ultra-opt:
 	"XINC = /usr/local/ap/X11R6/include" \
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = -I/opt/SUNWspro/SC5.0/include/CC"
-
+	"STL_CONFIG = "
 
 solaris-debug:
 	$(MAKE) targets \
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = -g " \
-	"C++FLAGS = -g -sb -ptr$(FNALROOT) -verbose=template" \
+	"C++FLAGS = -g -library=iostream -sb -ptr$(FNALROOT) -verbose=template" \
 	"INLINE_FLAG = +d " \
 	"MAKELIB = CC -xar -o" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
@@ -155,14 +154,14 @@ solaris-debug:
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = -I/opt/SUNWspro/SC5.0/include/CC"
+	"STL_CONFIG = "
 
 solaris-devel:
 	$(MAKE) targets \
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = -g -DDEVEL " \
-	"C++FLAGS = -g -sb -DDEVEL -ptr$(FNALROOT) -verbose=template" \
+	"C++FLAGS = -library=iostream -g -sb -DDEVEL -ptr$(FNALROOT) -verbose=template" \
 	"INLINE_FLAG = +d " \
 	"MAKELIB = CC -xar -o" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
@@ -170,14 +169,14 @@ solaris-devel:
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = -I/opt/SUNWspro/SC5.0/include/CC"
+	"STL_CONFIG = 
 
 solaris-gcc:
 	$(MAKE) targets \
 	"C   = gcc -pipe" \
 	"C++ = g++ -pipe" \
 	"CFLAGS = " \
-	"C++FLAGS = " \
+	"C++FLAGS = -fpermissive" \
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"LIBDIR = $(FNALROOT)/lib/gcc" \
@@ -192,7 +191,7 @@ solaris-gcc-debug:
 	"C   = gcc -pipe" \
 	"C++ = g++ -pipe" \
 	"CFLAGS = -g " \
-	"C++FLAGS = -g " \
+	"C++FLAGS = -g -fpermissive" \
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"LIBDIR = $(FNALROOT)/lib/gcc" \
