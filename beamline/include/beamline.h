@@ -1140,6 +1140,7 @@ public:
   sectorData* image();
   void setFrequency( double (*)( double ) );
   void setFrequency( Jet (*)( const Jet& ) );
+  void setLength( double );
 
   char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "sector") != 0 ) return bmlnElmnt::isType(c); else return 1; }
