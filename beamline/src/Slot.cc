@@ -533,7 +533,6 @@ void Slot::localPropagate( JetParticle& p )
   else if( 0 != p_bml_e ) p_bml_e ->propagate( p );
 
   else {
-    // START HERE
     // Propagate as drift to the out-plane
     JetVector r(3);
     r(0) = p.get_x();
