@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "quadrupole.h"
 #include "drift.h"
@@ -46,22 +46,20 @@ using namespace std;
 quadrupole::quadrupole()
 : bmlnElmnt()
 {
-  cerr << "\n*** ERROR *** Cannot define quadrupole without parameters.\n" 
-       << endl;
-  exit(1);
+ throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+        "quadrupole::quadrupole()", 
+        "No default construction: Cannot define quadrupole without parameters." ) );
 }
 
 quadrupole::quadrupole( char* n, double l, double s, bmlnElmnt::PropFunc* pf )
 : bmlnElmnt( n, l, s, pf )
 {
  if( l<= 0.0 ) {
-  cerr << "*** ERROR ***                                   \n"
-          "*** ERROR *** quadrupole::quadrupole            \n"
-          "*** ERROR *** You ignorant cretin!  The length  \n"
-          "*** ERROR *** of a quadrupole must be positive! \n"
-          "*** ERROR ***                                   \n"
-       << endl;
-  exit(1);
+  ostringstream uic;
+  uic  << "Quadrupole length l = " << l << " is negative.";
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "quadrupole::quadrupole( char* n, double l, double s, bmlnElmnt::PropFunc* pf )", 
+         uic.str().c_str() ) );
  }
 
  if( 0 == strcmp( pf->Type(), "quadrupole::TPOT_Prop" ) ) 
@@ -79,13 +77,11 @@ quadrupole::quadrupole( double l, double s, bmlnElmnt::PropFunc* pf )
 : bmlnElmnt( l, s, pf )
 {
  if( l<= 0.0 ) {
-  cerr << "*** ERROR ***                                   \n"
-          "*** ERROR *** quadrupole::quadrupole            \n"
-          "*** ERROR *** You ignorant cretin!  The length  \n"
-          "*** ERROR *** of a quadrupole must be positive! \n"
-          "*** ERROR ***                                   \n"
-       << endl;
-  exit(1);
+  ostringstream uic;
+  uic  << "Quadrupole length l = " << l << " is negative.";
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "quadrupole::quadrupole( double l, double s, bmlnElmnt::PropFunc* pf )", 
+         uic.str().c_str() ) );
  }
 
  if( 0 == strcmp( pf->Type(), "quadrupole::TPOT_Prop" ) ) 
@@ -146,13 +142,9 @@ void quadrupole::setStrength( double s ) {
      if( 0 == strcmp( q->Type(), "thinQuad" ) )  counter++;
    }
    if( counter <= 0.0 ) {
-     cerr << "*** ERROR ***                                    \n"
-             "*** ERROR *** quadrupole::setStrength            \n"
-             "*** ERROR *** No thin quads in the internal      \n"
-             "*** ERROR *** beamline.                          \n"
-             "*** ERROR ***                                    \n"
-          << endl;
-     exit(1);
+     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+            "void quadrupole::setStrength( double s ) {", 
+            "No thin quads in the internal beamline." ) );
    }
    else if( counter == 1.0 ) {
      if(p_bml_e != 0) 
@@ -161,12 +153,9 @@ void quadrupole::setStrength( double s ) {
      }
      else 
      {
-       cerr << "*** ERROR ***                                    \n"
-               "*** ERROR *** quadrupole::setStrength            \n"
-               "*** ERROR *** p_bml_e not set.                   \n"
-               "*** ERROR ***                                    \n"
-            << endl;
-       exit(2);
+     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+            "void quadrupole::setStrength( double s ) {", 
+            "p_bml_e not set." ) );
      }
    }
    else {
@@ -182,9 +171,9 @@ void quadrupole::setStrength( double s ) {
 
 
 void quadrupole::setStrength( double, int ) {
- cerr << "\nCall to quadrupole::setStrength( double s, int index )"
-      << endl;
- exit(1);
+ throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+        "void quadrupole::setStrength( double, int ) {", 
+        "Not allowed." ) );
 }
 
 
@@ -203,14 +192,11 @@ const char* quadrupole::Type() const
 void quadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    cerr << "\n"
-            "*** ERROR ***                                    \n"
-            "*** ERROR *** quadrupole::Split                  \n"
-            "*** ERROR *** pc = " << pc << 
-                               "and is out of bounds.         \n"
-            "*** ERROR ***                                    \n"
-         << endl;
-    exit (1);
+    ostringstream uic;
+    uic  << "pc = " << pc << ": this should be within [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void quadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           uic.str().c_str() ) );
   }
 
   // We assume "strength" means field, not field*length.

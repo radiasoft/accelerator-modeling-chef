@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "sector.h"
 
@@ -48,16 +48,16 @@ sector::sector( double* bH,  double* aH,  double* pH, double* bV,  double* aV,  
  mapType  = 0;
 
  if( pH[1] <= pH[0] ) {
-   printf( "\n\n*** ERROR: sector::sector( double* bH,  ... )" );
-   printf(   "\n*** Horizontal phases inverted.\n" );
-   exit(1);
+   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+          "sector::sector( double*,  double*,  double*, double*,  double*,  double*, double )", 
+          "Horizontal phases inverted." ) );
  }
  else deltaPsiH = pH[1] - pH[0];
 
  if( pV[1] <= pV[0] ) {
-   printf( "\n\n*** ERROR: sector::sector( double* bH,  ... )" );
-   printf(   "\n*** Vertical phases inverted.\n" );
-   exit(1);
+   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+          "sector::sector( double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double l  ) : bmlnElmnt(l) {", 
+          "Vertical phases inverted." ) );
  }
  else deltaPsiV = pV[1] - pV[0];
 
@@ -106,16 +106,16 @@ sector::sector( char* n, double* bH,  double* aH,  double* pH, double* bV,  doub
  mapType  = 0;
 
  if( pH[1] <= pH[0] ) {
-   printf( "\n\n*** ERROR: sector::sector( double* bH,  ... )" );
-   printf(   "\n*** Horizontal phases inverted.\n" );
-   exit(1);
+   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+          "sector::sector( char* n, double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double l  ) : bmlnElmnt( n, l ) {", 
+          "Horizontal phases inverted." ) );
  }
  else deltaPsiH = pH[1] - pH[0];
 
  if( pV[1] <= pV[0] ) {
-   printf( "\n\n*** ERROR: sector::sector( double* bH,  ... )" );
-   printf(   "\n*** Vertical phases inverted.\n" );
-   exit(1);
+   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+          "sector::sector( char* n, double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double l  ) : bmlnElmnt( n, l ) {", 
+          "Vertical phases inverted." ) );
  }
  else deltaPsiV = pV[1] - pV[0];
 

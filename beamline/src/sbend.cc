@@ -47,13 +47,11 @@ using namespace std;
 sbend::sbend( double l, double s, double alpha, PropFunc* pf ) 
 : bmlnElmnt( l, s, pf ) {
  if ( fabs( alpha ) < 1.0e-9 ) {
-   cerr << "\n";
-   cerr << "*** ERROR ** sbend::sbend( double l, double s, double alpha )\n";
-   cerr << "             Bend angle = "
-        << alpha
-        << " < 1 nanoradian\n";
-   cerr << "             Program aborted.\n";
-   exit(0);
+   ostringstream uic;
+   uic  << "| bend angle | = " << fabs(alpha) << " < 1 nanoradian.";
+   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+          "sbend::sbend( double l, double s, double alpha, PropFunc* pf )",
+          uic.str().c_str() ) );
  }
  angle    = alpha;
  if(pf == 0) {
@@ -66,15 +64,11 @@ sbend::sbend( char* n, double l, double s, double alpha, PropFunc* pf )
 : bmlnElmnt( n, l, s, pf ) {
 
  if ( fabs( alpha ) < 1.0e-9 ) {
-   cerr << "\n";
-   cerr << "*** ERROR ** sbend::sbend( "
-        << n
-        << ", double l, double s, double alpha )\n";
-   cerr << "             Bend angle = "
-        << alpha
-        << " < 1 nanoradian\n";
-   cerr << "             Program aborted.\n";
-   exit(0);
+   ostringstream uic;
+   uic  << "| bend angle | = " << fabs(alpha) << " < 1 nanoradian.";
+   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+          "sbend::sbend( char* n, double l, double s, double alpha, PropFunc* pf )",
+          uic.str().c_str() ) );
  }
  angle    = alpha;
  if(pf == 0) {
@@ -132,14 +126,11 @@ void sbend::eliminate() {
 void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    cerr << "\n"
-            "*** ERROR ***                                    \n"
-            "*** ERROR *** sbend::Split                       \n"
-            "*** ERROR *** pc = " << pc << 
-                               " and is out of bounds.         \n"
-            "*** ERROR ***                                    \n"
-         << endl;
-    exit (1);
+    ostringstream uic;
+    uic  << "pc = " << pc << ": this should be within [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           uic.str().c_str() ) );
   }
 
   // We assume "strength" means field, not field*length.

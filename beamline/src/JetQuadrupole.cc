@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "JetQuadrupole.h"
 
@@ -45,9 +45,9 @@ using namespace std;
 JetQuadrupole::JetQuadrupole()
 : bmlnElmnt()
 {
-  cerr << "\n*** ERROR *** Cannot define JetQuadrupole without parameters.\n" 
-       << endl;
-  exit(1);
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "JetQuadrupole::JetQuadrupole()", 
+         "Cannot define JetQuadrupole without parameters." ) );
 }
 
 JetQuadrupole::JetQuadrupole( char* n, double l, double s, int index, int m,
@@ -55,13 +55,11 @@ JetQuadrupole::JetQuadrupole( char* n, double l, double s, int index, int m,
 : bmlnElmnt( n, l, s, pf )
 {
  if( l<= 0.0 ) {
-  cerr << "*** ERROR ***                                   \n"
-          "*** ERROR *** JetQuadrupole::JetQuadrupole            \n"
-          "*** ERROR *** You ignorant cretin!  The length  \n"
-          "*** ERROR *** of a JetQuadrupole must be positive! \n"
-          "*** ERROR ***                                   \n"
-       << endl;
-  exit(1);
+   ostringstream uic;
+   uic  << "Argument l, the length, is negative: l = " << l;
+   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+          "JetQuadrupole::JetQuadrupole( char* n, double l, double s, int index, int m,", 
+          uic.str().c_str() ) );
  }
 
  JetStrength.setVariable(index);
@@ -86,13 +84,11 @@ JetQuadrupole::JetQuadrupole( double l, double s, int index, int m,
  // This body is identical to that of the previous constructor.
 
  if( l<= 0.0 ) {
-  cerr << "*** ERROR ***                                   \n"
-          "*** ERROR *** JetQuadrupole::JetQuadrupole            \n"
-          "*** ERROR *** You ignorant cretin!  The length  \n"
-          "*** ERROR *** of a JetQuadrupole must be positive! \n"
-          "*** ERROR ***                                   \n"
-       << endl;
-  exit(1);
+  ostringstream uic;
+  uic  << "Argument l, the length, is negative: l = " << l;
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "JetQuadrupole::JetQuadrupole( double l, double s, int index, int m, PropFunc* pf ) ",
+         uic.str().c_str() ) );
  }
 
  JetStrength.setVariable(index);
@@ -112,11 +108,9 @@ JetQuadrupole::JetQuadrupole( double l, double s, int index, int m,
 JetQuadrupole::JetQuadrupole( bmlnElmntData& x ) 
 : bmlnElmnt( x ) 
 {
- cout << "*** ERROR *** \n"
-      << "*** ERROR *** JetQuadrupole::JetQuadrupole( bmlnElmntData& x ) \n"
-      << "*** ERROR *** Sorry, Jack!  You can't do this.\n"
-      << endl;
- exit (1);
+   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+          "JetQuadrupole::JetQuadrupole( bmlnElmntData& x ) ", 
+          "Not allowed." ) );
 }
 
 
@@ -166,14 +160,11 @@ const char* JetQuadrupole::Type() const
 void JetQuadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    cerr << "\n"
-            "*** ERROR ***                                    \n"
-            "*** ERROR *** JetQuadrupole::Split                  \n"
-            "*** ERROR *** pc = " << pc << 
-                               "and is out of bounds.         \n"
-            "*** ERROR ***                                    \n"
-         << endl;
-    exit (1);
+    ostringstream uic;
+    uic  << "pc = " << pc << ": this should be within [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void JetQuadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           uic.str().c_str() ) );
   }
 
   *a = new JetQuadrupole( ident,        pc  *length, strength,strengthIndex, 
@@ -241,11 +232,9 @@ JetthinQuad::JetthinQuad( char*  n,
 }
 
 JetthinQuad::JetthinQuad( bmlnElmntData& x ) : bmlnElmnt( x ) {
- cout << "*** ERROR *** \n"
-      << "*** ERROR *** JetthinQuad::JetthinQuad( bmlnElmntData& x ) \n"
-      << "*** ERROR *** Sorry, Jack!  You can't do this.\n"
-      << endl;
- exit (1);
+ throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+        "JetthinQuad::JetthinQuad( bmlnElmntData& x ) : bmlnElmnt( x ) {", 
+        "Not allowed." ) );
 }
 
 
