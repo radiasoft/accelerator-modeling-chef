@@ -573,7 +573,7 @@ TJet<Complex,double>::TJet<Complex,double>( const TJet<double,Complex>& x, TJetE
 
 TJL<Complex,double>::TJL<Complex,double>( const TJL<double,Complex>& x, TJetEnvironment<Complex,double>* pje ) 
 {
- dlist_iterator getNext( (dlist&) x );
+ dlist_iterator getNext( x._theList );
  TJLterm<double,Complex>* p;
  TJLterm<Complex,double>* q;
  
@@ -657,7 +657,7 @@ TJet<double,Complex>::TJet<double,Complex>( const TJet<Complex,double>& x, TJetE
 
 TJL<double,Complex>::TJL<double,Complex>( const TJL<Complex,double>& x, TJetEnvironment<double,Complex>* pje ) 
 {
- dlist_iterator getNext( (dlist&) x );
+ dlist_iterator getNext( x._theList );
  TJLterm<Complex,double>*  p;
  TJLterm<double,Complex>* q;
 
@@ -716,7 +716,7 @@ TJet<double,Complex> real( const TJet<Complex,double>& x )
   xPtr = x._jl;
   zPtr = z._jl;
  
-  dlist_iterator gx( *(dlist*) xPtr );
+  dlist_iterator gx( xPtr->_theList );
 
 
   // If the argument is void, then return ...
@@ -755,7 +755,7 @@ TJet<double,Complex> imag( const TJet<Complex,double>& x )
   xPtr = x._jl;
   zPtr = z._jl;
  
-  dlist_iterator gx( *(dlist*) xPtr );
+  dlist_iterator gx( xPtr->_theList );
 
 
   // If the argument is void, then return ...

@@ -16,7 +16,7 @@
 */
 
 #include <stdlib.h>
-#include "Mapping"
+#include "Mapping.h"
 
 int main( int argc, char** argv ) 
 {

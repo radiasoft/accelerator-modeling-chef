@@ -332,7 +332,7 @@ TJL<T1,T2>::TJL( const IntArray& e, const T1& x, TJetEnvironment<T1,T2>* pje )
 template<typename T1, typename T2>
 TJL<T1,T2>::TJL( const TJL& x ) 
 {
- dlist_iterator getNext( (dlist&) x );
+ dlist_iterator getNext( x._theList );
  TJLterm<T1,T2>* p;
  TJLterm<T1,T2>* q;
 
@@ -360,7 +360,7 @@ TJL<T1,T2>::TJL( const TJL& x )
 template<typename T1, typename T2>
 TJL<T1,T2>::TJL( const TJL* x ) 
 {
- dlist_iterator getNext( *(dlist*) x );
+ dlist_iterator getNext( x->_theList );
  TJLterm<T1,T2>* p;
  TJLterm<T1,T2>* q;
 
@@ -405,7 +405,7 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a)
    return;
  }
 
- dlist_traversor getNext( *(dlist*) this );
+ dlist_traversor getNext( _theList );
  dlink* p;
 
  //
@@ -603,7 +603,7 @@ void TJL<T1,T2>::getReference( T1* r ) const
 template<typename T1, typename T2>
 bool TJL<T1,T2>::isNilpotent() const 
 {
- dlist_iterator getNext( *(dlist*) this );
+ dlist_iterator getNext( _theList );
  TJLterm<T1,T2>* p = (TJLterm<T1,T2>*) getNext();
  if( p->_weight == 0 && std::abs(p->_value) > MX_SMALL ) 
    { return false; }
@@ -618,7 +618,7 @@ bool TJL<T1,T2>::isNilpotent() const
 template<typename T1, typename T2>
 void TJL<T1,T2>::writeToFile( ofstream& outStr ) const 
 {
- dlist_traversor getNext( *(dlist*) this );
+ dlist_traversor getNext( _theList );
  int i;
  TJLterm<T1,T2>* p;
  dlink* q;
@@ -659,7 +659,7 @@ template<typename T1, typename T2>
 void TJL<T1,T2>::scaleBy( T1 y ) 
 {
  TJLterm<T1,T2>* p;
- dlist_iterator getNext( *(dlist*) this );
+ dlist_iterator getNext( _theList );
  
  if ( this->_count < 1 ) {
    cout << "\n\n*** WARNING::TJL<T1,T2>::scaleBy: function invoked \n"
@@ -730,7 +730,7 @@ void TJL<T1,T2>::setVariable( const int& j,
 template<typename T1, typename T2>
 void TJL<T1,T2>::insert( TJLterm<T1,T2>* a) 
 {
- dlist::insert(a);
+ _theList.insert(a);
  _count++;
  if( _weight < (a->_weight) ) _weight = a->_weight;
 }
@@ -743,7 +743,7 @@ TJLterm<T1,T2>* TJL<T1,T2>::get()
 {
  TJLterm<T1,T2>* p;
  if( _count <= 0 ) return 0;
- p = ((TJLterm<T1,T2>*) dlist::get());
+ p = ((TJLterm<T1,T2>*) _theList.get());
  if( --_count == 0 ) _weight = -1;
  return p;
 }
@@ -754,7 +754,7 @@ TJLterm<T1,T2>* TJL<T1,T2>::get()
 template<typename T1, typename T2>
 TJLterm<T1,T2> TJL<T1,T2>::lowTerm() const 
 {
- dlist_iterator getNext( *(dlist*) this );
+ dlist_iterator getNext( _theList );
  static TJLterm<T1,T2>* p;
  static TJLterm<T1,T2>* result;
 
@@ -778,7 +778,7 @@ template<typename T1, typename T2>
 TJLterm<T1,T2> TJL<T1,T2>::firstTerm() const 
 {
  static TJLterm<T1,T2>* p;
- p = (TJLterm<T1,T2>*) ( ((dlist*) this)->firstInfoPtr() );
+ p = (TJLterm<T1,T2>*) ( _theList.firstInfoPtr() );
  if( 0 != p ) {
    return TJLterm<T1,T2>( *p );
  }
@@ -793,7 +793,7 @@ TJLterm<T1,T2> TJL<T1,T2>::firstTerm() const
 template<typename T1, typename T2>
 void TJL<T1,T2>::append( TJLterm<T1,T2>* a) 
 {
- dlist::append(a);
+ _theList.append(a);
  _count++;
  if( _weight < (a->_weight) ) _weight = a->_weight;
 }
@@ -813,7 +813,7 @@ TJLterm<T1,T2>* TJL<T1,T2>::remove( dlink* w )
  predecessor = w->prevPtr();
  successor   = w->nextPtr();
  
- a = (TJLterm<T1,T2>*) dlist::remove( w );
+ a = (TJLterm<T1,T2>*) _theList.remove( w );
  _count--;
  
  if( _count == 0 ) {
@@ -838,7 +838,7 @@ T1 TJL<T1,T2>::standardPart() const
 {
  TJLterm<T1,T2>* p; 
  if( _count < 1 ) { return 0.0; }
- dlist_iterator g( (dlist&) *this );
+ dlist_iterator g( _theList );
  p = (TJLterm<T1,T2>*) g();
  if( p->_weight  == 0 ) { return p->_value; }
  return 0.0;
@@ -853,7 +853,7 @@ void TJL<T1,T2>::clear()
  TJLterm<T1,T2>* p;
  while((  p = get()  ))  
    delete p;
- dlist::clear();
+ _theList.clear();
  _count   = 0;
  _weight  = -1;
  if( _myEnv ) _accuWgt = _myEnv->_maxWeight;
@@ -872,7 +872,7 @@ T1 TJL<T1,T2>::weightedDerivative( const int* ind ) const
  
  if( _count < 1 ) return 0.0;
  
- dlist_iterator getNext( (dlist&) *this );
+ dlist_iterator getNext( _theList );
 
  while((  p = (TJLterm<T1,T2>*) getNext()  )) {
    theOne = 1;
@@ -921,7 +921,7 @@ T1 TJL<T1,T2>::operator()( const T1* x )  const
  int i;
  T1 term;
  T1* u;
- dlist_iterator getNext( *(dlist*) this );
+ dlist_iterator getNext( _theList );
  
  u = new T1[ _myEnv->_numVar ];
  
@@ -1051,7 +1051,7 @@ istream& operator>>( istream& is,  TJL<T1,T2>& x )
 template<typename T1, typename T2>
 ostream& operator<<( ostream& os, const TJL<T1,T2>& x ) 
 {
- dlist_traversor getNext( (dlist&) x );
+ dlist_traversor getNext( x._theList );
  int i;
  TJLterm<T1,T2>* p;
  dlink* q;
@@ -1086,8 +1086,8 @@ bool operator==( const TJL<T1,T2>& x, const TJL<T1,T2>& y )
  
  if( x._myEnv != y._myEnv ) return false;
 
- dlist_iterator getNextX( (dlist&) x );
- dlist_iterator getNextY( (dlist&) y );
+ dlist_iterator getNextX( x._theList );
+ dlist_iterator getNextY( y._theList );
  TJLterm<T1,T2>* p;
  TJLterm<T1,T2>* q;
  
@@ -1120,7 +1120,7 @@ bool operator==( const TJL<T1,T2>& x, const T1& y )
   else           return false;
  }
 
- dlist_iterator getNext( (dlist&) x );
+ dlist_iterator getNext( x._theList );
 
  while((  p = (TJLterm<T1,T2>*) getNext()  )) 
   result = result && ( p->_weight == 0 ? p->_value == y : 
@@ -1202,7 +1202,7 @@ TJL<T1,T2>& TJL<T1,T2>::operator=( const TJL<T1,T2>& x )
  
  clear();
 
- dlist_iterator getNext( (dlist&) x );
+ dlist_iterator getNext( x._theList );
 
  while((  p = (TJLterm<T1,T2>*) getNext()  )) {
    q = new TJLterm<T1,T2>( p );
@@ -1224,12 +1224,12 @@ template<typename T1, typename T2>
 TJL<T1,T2>& TJL<T1,T2>::operator+=( const T1& x ) {   // ??? Untested!!
  static char firstNull = 1;
  int i;
- // ??? REMOVE dlist_iterator getNext( *(dlist*) this );
+ // ??? REMOVE dlist_iterator getNext( _theList );
  TJLterm<T1,T2>* p;                               
  TJLterm<T1,T2>* q;
 
  // ??? REMOVE if( p = (TJLterm<T1,T2>*) getNext() )
- if( p = (TJLterm<T1,T2>*) firstInfoPtr() )
+ if( p = (TJLterm<T1,T2>*) _theList.firstInfoPtr() )
  {
    if ( p->_weight == 0 ) { 
     p->_value += x;
