@@ -836,47 +836,27 @@ public:
 
   rbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
-         #ifdef __GNUG__
-         PROPFUNC    = 0,
-         JETPROPFUNC = 0 );
-         #else
          PROPFUNC    = rbend::P_Exact,
          JETPROPFUNC = rbend::J_Exact );
-         #endif
 
   rbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
          double,     // Pole face angle [ radians ]
-         #ifdef __GNUG__
-         PROPFUNC    = 0,
-         JETPROPFUNC = 0 );
-         #else
          PROPFUNC    = rbend::P_Exact,
          JETPROPFUNC = rbend::J_Exact );
-         #endif
 
   rbend( char*,      // name
          double,     // length  [ meters ]
          double,     // field   [ tesla ]
-         #ifdef __GNUG__
-         PROPFUNC    = 0,
-         JETPROPFUNC = 0 );
-         #else
          PROPFUNC    = rbend::P_Exact,
          JETPROPFUNC = rbend::J_Exact );
-         #endif
 
   rbend( char*,      // name
          double,     // length  [ meters ]
          double,     // field   [ tesla ]
          double,     // Pole face angle [ radians ]
-         #ifdef __GNUG__
-         PROPFUNC    = 0,
-         JETPROPFUNC = 0 );
-         #else
-         PROPFUNC    = rbend::P_Exact,
+	 PROPFUNC    = rbend::P_Exact,
          JETPROPFUNC = rbend::J_Exact );
-         #endif
 
   rbend( rbendData& );
   rbend( const rbend& );
@@ -951,25 +931,18 @@ public:
   sbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
          double,     // angle   [ radians ]
-#ifdef __GNUG__
-         PROPFUNC    = 0,
-         JETPROPFUNC = 0 );
-#else
+
          PROPFUNC    = sbend::P_Exact,
          JETPROPFUNC = sbend::J_Exact );
-#endif
 
   sbend( char*,      // name
          double,     // length  [ meters ]
          double,     // magnetic field [T]
          double,     // angle   [ radians ]
-#ifdef __GNUG__
-         PROPFUNC    = 0,
-         JETPROPFUNC = 0 );
-#else
+
          PROPFUNC    = sbend::P_Exact,
          JETPROPFUNC = sbend::J_Exact );
-#endif
+
 
   sbend( sbendData& );
   sbend( const sbend& );
@@ -1105,23 +1078,17 @@ public:
               double l,         // length,        in meters
               double s,         // strength = B', in Tesla-meters^-1
               int    m = 4,     // number of thinquad kicks
-#ifdef __GNUG__
-         PROPFUNC    = 0,
-         JETPROPFUNC = 0 );
-#else
+
               PROPFUNC    = quadrupole::P_LikeTPOT,
               JETPROPFUNC = quadrupole::J_LikeTPOT );
-#endif
+
   quadrupole( double l,         // length,        in meters
               double s,         // strength = B', in Tesla-meters^-1
               int    m = 4,     // number of thinquad kicks
-#ifdef __GNUG__
-         PROPFUNC    = 0,
-         JETPROPFUNC = 0 );
-#else
+
               PROPFUNC    = quadrupole::P_LikeTPOT,
               JETPROPFUNC = quadrupole::J_LikeTPOT );
-#endif
+
   quadrupole( bmlnElmntData& );
   quadrupole( const quadrupole& );
   ~quadrupole();
