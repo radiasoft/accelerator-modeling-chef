@@ -48,6 +48,37 @@ using namespace std;
 
 CF_rbend::CF_rbend( double        lng,  // length      [ meter    ]
                     double        fld,  // field       [ tesla    ]
+                    int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
+: bmlnElmnt( lng, fld )
+  , _usEdgeAngle(0.0)
+  , _dsEdgeAngle(0.0)
+  , _usAngle(M_TWOPI)
+  , _dsAngle(-M_TWOPI)
+  , _usTan(0.0)
+  , _dsTan(0.0)
+{
+  _finishConstructor(n);
+}
+
+
+CF_rbend::CF_rbend( const char*   nm,   // name
+                    double        lng,  // length      [ meter    ]
+                    double        fld,  // field       [ tesla    ]
+                    int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
+: bmlnElmnt( nm, lng, fld )
+  , _usEdgeAngle(0.0)
+  , _dsEdgeAngle(0.0)
+  , _usAngle(M_TWOPI)
+  , _dsAngle(-M_TWOPI)
+  , _usTan(0.0)
+  , _dsTan(0.0)
+{
+  _finishConstructor(n);
+}
+
+
+CF_rbend::CF_rbend( double        lng,  // length      [ meter    ]
+                    double        fld,  // field       [ tesla    ]
                     double        ang,  // entry angle [ radians  ]
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( lng, fld )

@@ -58,7 +58,7 @@ class CF_sbend : public bmlnElmnt
   CF_sbend( double,     // length  [ meters ]
             double,     // field   [ tesla ]
                         // (assumed along the y-axis)
-            double,     // bend angle   [ radians ]
+            double,     // geometric bend angle   [ radians ]
             double,     // upstream edge angle [radians]
             double,     // downstream edge angle [radians]
                         // signs of previous two parameters
@@ -68,7 +68,7 @@ class CF_sbend : public bmlnElmnt
   CF_sbend( const char*,// name
             double,     // length  [ meters ]
             double,     // field   [ tesla ]
-            double,     // bend angle   [ radians ]
+            double,     // geometric bend angle   [ radians ]
             double,     // upstream edge angle [radians]
             double,     // downstream edge angle [radians]
                         // signs of previous two parameters
