@@ -245,21 +245,21 @@ void CF_rbend::localPropagate( JetParticle& p )
 }
 
 
-double rbend::setEntryAngle( const Particle& p )
+double CF_rbend::setEntryAngle( const Particle& p )
 {
   return this->setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
 
-double rbend::setExitAngle( const Particle& p )
+double CF_rbend::setExitAngle( const Particle& p )
 {
   return this->setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
 
-double rbend::setEntryAngle( double phi /* radians */ )
+double CF_rbend::setEntryAngle( double phi /* radians */ )
 {
   double ret = _usAngle;
   _usAngle = phi;
@@ -268,7 +268,7 @@ double rbend::setEntryAngle( double phi /* radians */ )
 }
 
 
-double rbend::setExitAngle( double phi /* radians */ )
+double CF_rbend::setExitAngle( double phi /* radians */ )
 {
   double ret = _dsAngle;
   _dsAngle = phi;  
