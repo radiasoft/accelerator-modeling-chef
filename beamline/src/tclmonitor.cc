@@ -1,3 +1,4 @@
+#if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
 #include <stream.h>
 #include "tclmonitor.h"
 #include <tk.h>
@@ -10,7 +11,7 @@ tclMonitor::tclMonitor() : monitor(), origin( BMLN_dynDim ) {
   registerParticle = 0;
   for( int i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
 
-// Default scalings for the phase plot if the user provides nothing.
+  // Default scalings for the phase plot if the user provides nothing.
   outputFile = 0;
   axmin = -0.005;
   axmax =  0.005;
@@ -36,7 +37,7 @@ tclMonitor::tclMonitor(char* name) : monitor(name), origin( BMLN_dynDim )  {
   registerParticle = 0;
   for( int i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
 
-// Default scalings for the phase plot if the user provides nothing.
+  // Default scalings for the phase plot if the user provides nothing.
   outputFile = 0;
   axmin = -0.005;
   axmax =  0.005;
@@ -66,7 +67,7 @@ tclMonitor::tclMonitor(char* name, double x, double xp,
   registerParticle = 0;
   for( int i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
 
-// Default scalings for the phase plot if the user provides nothing.
+  // Default scalings for the phase plot if the user provides nothing.
   outputFile = 0;
   axmin =  -x;
   axmax =   x;
@@ -94,7 +95,7 @@ tclMonitor::tclMonitor( char* name, char* parent_wid )
   registerParticle = 0;
   for( int i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
 
-// Default scalings for the phase plot if the user provides nothing.
+  // Default scalings for the phase plot if the user provides nothing.
   outputFile = 0;
   axmin = -0.005;
   axmax =  0.005;
@@ -111,7 +112,7 @@ tclMonitor::tclMonitor( char* name, char* parent_wid )
   cymin = -0.002;
   cymax =  0.002;
   size = 200;        // Full width of the canvas.
-  display = new char[strlen(parent_wid)];
+  display = new char[strlen(parent_wid)+1];
   strcpy(display,parent_wid);
   windowInitialized = 0;
 }
@@ -123,7 +124,7 @@ tclMonitor::tclMonitor(char* name, char* parent_wid, FILE* out_file)
   registerParticle = 0;
   for( int i = 0; i < BMLN_dynDim; i++ ) origin(i) = 0.0;
 
-// Default scalings for the phase plot if the user provides nothing.
+  // Default scalings for the phase plot if the user provides nothing.
   axmin = -0.005;
   axmax =  0.005;
   aymin = -0.0001;
@@ -139,9 +140,28 @@ tclMonitor::tclMonitor(char* name, char* parent_wid, FILE* out_file)
   cymin = -0.002;
   cymax =  0.002;
   size = 200;        // Full width of the canvas.
-  display = new char[strlen(parent_wid)];
+  display = new char[strlen(parent_wid)+1];
   strcpy(display,parent_wid);
   windowInitialized = 0;
+}
+
+tclMonitor::tclMonitor( const tclMonitor& x ) : monitor( (monitor&) x) {
+  registerMode = x.registerMode;
+  origin = x.origin;
+  windowInitialized = x.windowInitialized;
+  axmin = x.axmin;
+  axmax = x.axmax;
+  aymin = x.aymin;
+  aymax = x.aymax;
+  bxmin = x.bxmin;
+  bxmax = x.bxmax;
+  bymin = x.bymin;
+  bymax = x.bymax;
+  cxmin = x.cxmin;
+  cxmax = x.cxmax;
+  cymin = x.cymin;
+  cymax = x.cymax;
+  size = x.size;
 }
 
 tclMonitor::~tclMonitor() {
@@ -171,9 +191,9 @@ void tclMonitor::on() {
      p = new iopipestream("wish");             // Start the child process.
      *p << "source $env(FNALROOT)/tcl/scripts/tclmonitor.tcl\n" 
         << flush; 
-// Give the main window the name of the monitor.
+     // Give the main window the name of the monitor.
      *p << "wm title . " << Name() << " \n" << flush; 
-// Place coordinates on the windows.
+     // Place coordinates on the windows.
      *p << ::form("place_limits %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f\n",
 	     axmax,aymax,bxmax,bymax,cxmax,cymax) << flush;
    }
@@ -188,9 +208,9 @@ void tclMonitor::on(char* whereToDisplay) {
      p = new iopipestream(processMsg);             // Start the child process.
      *p << "source $env(FNALROOT)/tcl/scripts/tclmonitor.tcl\n" 
         << flush; 
-// Give the main window the name of the monitor.
+     // Give the main window the name of the monitor.
      *p << "wm title . " << Name() << " \n" << flush; 
-// Place coordinates on the windows.
+     // Place coordinates on the windows.
      *p << ::form("place_limits %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f\n",
 	     axmax,aymax,bxmax,bymax,cxmax,cymax) << flush;
    }
@@ -217,7 +237,7 @@ void tclMonitor::propagate( Particle& part) {
  // --- Ordinary propagation ---------------------------------
  if ( onOff ) {
 
-// Pull off the value of the particle position and send to the interpreter.
+   // Pull off the value of the particle position and send to the interpreter.
    Vector ParticleCoords( part.State() );
    ParticleCoords -= origin;
 
@@ -243,8 +263,8 @@ void tclMonitor::propagate( Particle& part) {
 	   atopixy(ParticleCoords(5),cymax,cymin),
 	   color) << flush;
 
-// Block now to receive the return message and whether the user has 
-// interrupted on the plots to give new initial conditions.
+   // Block now to receive the return message and whether the user has 
+   // interrupted on the plots to give new initial conditions.
 
    char  result[80];
    char* tmpbuf;
@@ -252,7 +272,7 @@ void tclMonitor::propagate( Particle& part) {
    char* strPtr;
 
    if(p->getline(result,80) == 0) exit(0); 
-//   cout << "Wish sent back: " << result;
+   //   cout << "Wish sent back: " << result;
    if(strncmp(result,"done",strlen("done"))) {
      if(!strncmp(result,"stop",strlen("stop"))) {
        char* returnMsg;
@@ -341,14 +361,14 @@ void tclMonitor::propagate( JetParticle& jpart) {
      p = new iopipestream("wish");             // Start the child process.
      *p << "source $env(FNALROOT)/tcl/scripts/tclmonitor.tcl\n" 
         << flush; // init script to read.
-// Give the main window the name of the monitor.
+     // Give the main window the name of the monitor.
      *p << "wm title . " << Name() << " \n" << flush; 
-// Place coordinates on the windows.
+     // Place coordinates on the windows.
      *p << ::form("place_limits %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f\n",
 	     axmax,aymax,bxmax,bymax,cxmax,cymax) << flush;
    }
 
-// Pull off the value of the particle position and send to the interpreter.
+   // Pull off the value of the particle position and send to the interpreter.
    Jet    JetParticleCoords[6];
    double Coords[6];
    jpart.getState(JetParticleCoords);
@@ -374,14 +394,14 @@ void tclMonitor::propagate( JetParticle& jpart) {
 	   atopixy((JetParticleCoords[5]).standardPart(),cymax,cymin),
 	   color) << flush;
 
-// Block now to receive the return message and whether the user has 
-// interrupted on the plots to give new initial conditions.
+   // Block now to receive the return message and whether the user has 
+   // interrupted on the plots to give new initial conditions.
 
    char  result[80];
    char* tmpbuf = new char[80];
    char* strPtr;
    if(p->getline(result,80) == 0) exit(0); 
-//   cout << "Wish sent back: " << result;
+   //   cout << "Wish sent back: " << result;
    if(strncmp(result,"done",strlen("done"))) {
      strcpy(tmpbuf,result);
      strPtr = strtok(tmpbuf," ");
@@ -441,3 +461,5 @@ void tclMonitor::setColor( int newcolor) {
   }
   color = newcolor;
 }
+
+#endif // Exclude under Visual C++ and Borland builds.
