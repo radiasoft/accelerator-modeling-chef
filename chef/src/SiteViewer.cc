@@ -177,7 +177,9 @@ void SiteViewer::_finishConstructor()
 
   _myGLwindow = new Wndw( this );
   _myGLwindow->show();
-  _myGLwindow->setFixedSize(500,500);
+  _myGLwindow->setMinimumSize(QSize(500,500));
+  // _myGLwindow->setFixedSize(500,500);
+  this->adjustSize();
   // Note: _myGLwindow will be
   // deleted automatically by Qt.
 }
@@ -341,6 +343,9 @@ SiteViewer::Wndw::~Wndw()
 
 void SiteViewer::Wndw::paintGL()
 {
+  int w = this->width();
+  int h = this->height();
+
   if( !_zoomed ) {
     double xRange = _parent->_xmax - _parent->_xmin;
     double yRange = _parent->_ymax - _parent->_ymin;
@@ -351,10 +356,19 @@ void SiteViewer::Wndw::paintGL()
     if( zRange > range ) range = zRange;
     range *= 1.1;
 
-    _xHi = ( _parent->_xmin + _parent->_xmax + range )/2.0;
-    _xLo = ( _parent->_xmin + _parent->_xmax - range )/2.0;
-    _yHi = ( _parent->_ymin + _parent->_ymax + range )/2.0;
-    _yLo = ( _parent->_ymin + _parent->_ymax - range )/2.0;
+    if( h < w ) {
+      yRange = range;
+      xRange = (((double) w)/((double) h))*range;
+    }
+    else {
+      xRange = range;
+      yRange = (((double) h)/((double) w))*range;
+    }
+
+    _xHi = ( _parent->_xmin + _parent->_xmax + xRange )/2.0;
+    _xLo = ( _parent->_xmin + _parent->_xmax - xRange )/2.0;
+    _yHi = ( _parent->_ymin + _parent->_ymax + yRange )/2.0;
+    _yLo = ( _parent->_ymin + _parent->_ymax - yRange )/2.0;
   }
 
   bmlnElmnt* q;
@@ -363,6 +377,7 @@ void SiteViewer::Wndw::paintGL()
   glClear( GL_COLOR_BUFFER_BIT );
   glLoadIdentity();
   glOrtho( _xLo, _xHi, _yLo, _yHi, -1., 1. );
+  glViewport( 0, 0, w, h );
   glLineWidth(3);
   glBegin( GL_LINES );
 
