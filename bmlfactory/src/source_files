@@ -1,0 +1,1 @@
+libbmlfactory_la_SOURCES = bmlfactory.cc beam_element.c beam_line.c beamel_table.c bml_table.c cfg_output.c comment_arr.c const_table.c expression.c fb.c fb_allocator.c madparser.c matrix.c str_to_upper.c var_table.c yywrap.c mad_lex.l mad_yacc.y
