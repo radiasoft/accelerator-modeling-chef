@@ -920,15 +920,29 @@ public:
   double PoleFaceAngle()       const {return poleFaceAngle;} 
   double getPoleFaceAngle()    const {return poleFaceAngle;} 
   double getTanPoleFaceAngle() const {return tanPFAngle;}    
+  double getEntryAngle()       const {return poleFaceAngle;} 
+
   double setPoleFaceAngle( const Particle& );
   double setPoleFaceAngle( const JetParticle& );
-  double setAngle(double a)
+  void   setEntryAngle( const Particle& x )
+  {
+    this->setPoleFaceAngle( x );
+  }
+  void setEntryAngle( const JetParticle& x )
+  {
+    this->setPoleFaceAngle( x );
+  }
+  void setEntryAngle( double a )
   { 
      poleFaceAngle = a;
      tanPFAngle    = tan( poleFaceAngle );
      return poleFaceAngle;
   }
-
+  double setAngle(double a)
+  { 
+     this->setEntryAngle();
+     return poleFaceAngle;
+  }
 };
 
 struct rbendData : public bmlnElmntData {
