@@ -1174,8 +1174,6 @@ bool operator!=( const T1& x, const TJL<T1,T2>& y )
 template<typename T1, typename T2>
 TJL<T1,T2>& TJL<T1,T2>::operator=( const T1& x ) 
 {
- static int* ndx;
- 
  clear();
  _weight = 0;   // _rc is purposely left untouched!!
  _count  = 0;
@@ -1188,7 +1186,6 @@ TJL<T1,T2>& TJL<T1,T2>::operator=( const T1& x )
 
  insert( new TJLterm<T1,T2>( IntArray( _myEnv->_numVar ), x, _myEnv ) );
 
- delete [] ndx;
  return *this;
 }
 
