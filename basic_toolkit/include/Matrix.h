@@ -164,6 +164,10 @@ friend MatrixD operator/(MatrixD& ,MatrixD &);
   {
     // Miscellaneous other errors
     GenericException( int, int, const char*, const char* = "" );
+    // 1st argument: number of rows
+    // 2nd         : number of columns
+    // 3rd         : identifies function containing throw
+    // 4th         : identifies type of error
     ~GenericException() throw() {}
     const char* what() const throw();
     std::string errorString;
