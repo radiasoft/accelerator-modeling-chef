@@ -2,7 +2,7 @@
 #define LOOKUPTABLE_H
 #include <stdio.h>
 
-enum { false = 0, true = 1 };
+// "true" and "false" are defined elsewhere, it seems
 
 class Table {
   // This is SCREAMING to be a template!!  This would be Table<double>
