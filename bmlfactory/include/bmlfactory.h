@@ -8,6 +8,8 @@
    // from MXYZPLTK
 #include <beamline.h>
 
+using namespace std;
+
 #if !defined(beam_element_h)
 #include "beam_element.h"
 #endif /* beam_element.h */
