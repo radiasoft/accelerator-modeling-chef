@@ -100,7 +100,7 @@ double rbend::OrbitLength( const Particle& x )
 {
   static double tworho;
   tworho  = 2.0 * ( x.Momentum() / PH_CNV_brho_to_p ) / strength;
-  return tworho * atan( length / tworho );
+  return tworho * asin( length / tworho );
 }
 
 
