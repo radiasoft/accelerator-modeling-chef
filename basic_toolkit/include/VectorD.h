@@ -22,17 +22,22 @@
 
 #include <math.h>
 #include "Matrix.h"     // Needed only for final utility.
+#include "OutputFormat.h"
 
 class Vector 
 {
 private:
-  int     dim;
-  double* comp;
+  int           dim;
+  double*       comp;
+  OutputFormat* ofPtr;
+
+  static OutputFormat* defOFPtr;  // default OutputFormat
 
 public:
   // Constructors and the destructor ...
-  Vector(       int      /* dim */        = 3,
-          const double*  /* components */ = 0 );
+  Vector(       int      /* dimension */  = 3,
+          const double*  /* components */ = 0,
+                OutputFormat*             = 0 );
   Vector( const Vector& );
   ~Vector();
 
@@ -75,6 +80,11 @@ public:
   int  Dim() const { return dim; }
 
   // Utilities ..
+  static 
+  void        setDefaultFormat ( const OutputFormat& );
+  void        setOutputFormat  ( OutputFormat* x ) { ofPtr = x; }
+  OutputFormat* getOutputFormat()                  { return ofPtr; }
+
   Vector      Abs              () const;
   double      Norm             () const;
   Vector      Unit             () const;           // returns unit vector
