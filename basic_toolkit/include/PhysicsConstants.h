@@ -8,7 +8,7 @@
 #ifndef PHYSC_H
 #define PHYSC_H
 
-#define PH_NORM_mp         0.9382796          // Mass of proton  [GeV/c^2]
+#define PH_NORM_mp         0.93827231         // Mass of proton  [GeV/c^2]
 #define PH_NORM_me         0.5110034e-3       // Mass of electron [GeV/c^2]
 #define PH_NORM_mmu        0.105658387        // mass of muon [GeV/c^2]
 
