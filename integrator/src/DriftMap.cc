@@ -1,6 +1,7 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "DriftMap.h"
-
-using namespace std;
 
 /// ******************************************
 ///   class DriftMap

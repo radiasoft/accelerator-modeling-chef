@@ -1,0 +1,2 @@
+includedir = ${prefix}/include/integrator
+include_HEADERS = include/DriftMap.h include/Integrator.h include/KickMap.h include/ODE.h include/Oscillator.h include/RungeKutta.h include/Symplectic.h

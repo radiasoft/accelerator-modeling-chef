@@ -1,6 +1,7 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "KickMap.h"
-
-using namespace std;
 
 /// ******************************************
 ///   class KickMap
