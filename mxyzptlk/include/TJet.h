@@ -241,7 +241,7 @@ public:
   static TJetEnvironment<T1,T2>* EndEnvironment( double* = 0 /* scale array */ );
   static void EnlargeEnvironment( TJetEnvironment<T1,T2>* );
   static TJetEnvironment<T1,T2>* CreateEnvFrom( TJetEnvironment<T2,T1>* );
-  static TJetEnvironment<T1,T2>* CreateEnvFrom( const Vector& );
+  static TJetEnvironment<T1,T2>* CreateEnvFrom( const Vector&, int );
     // POSTCONDITION: The _lastEnv environment pointer is NOT changed.
 
   static const TJetEnvironment<T1,T2>* workEnvironment();
