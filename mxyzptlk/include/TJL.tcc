@@ -1353,9 +1353,16 @@ bool operator<=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b )
           "Dimensions don't match.") );
  }
  if( a._weight != b._weight ) { return ( a._weight < b._weight ); }
- for( i = 0; i < a._index.Dim(); i++ ) {
-   if( a._index(i) == b._index(i) ) continue;
-   return ( a._index(i) < b._index(i) );
+ // for( i = 0; i < a._index.Dim(); i++ ) {
+ //   if( a._index(i) == b._index(i) ) continue;
+ //   return ( a._index(i) < b._index(i) );
+ // }
+ i = a._index.Dim();
+ while( 0 < i ) {
+   i--;
+   if( a._index(i) != b._index(i) ) {
+     return ( a._index(i) < b._index(i) );
+   }
  }
  return true;  // when all indices are the same.
 }
