@@ -1,3 +1,4 @@
+#include <stream.h>
 #include "rastermonitor.h"
 #include "stdlib.h"
 #include "stdio.h"
