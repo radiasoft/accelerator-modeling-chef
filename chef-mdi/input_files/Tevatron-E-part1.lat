@@ -1,0 +1,46 @@
+! File: Tevatron-E-part1.lat
+!
+! 15 standard cells;
+! 2 low beta straight sections;  
+! 3 normal straight sections;    
+! 1 high beta straight section.  
+! 
+! Adjust 17 locations: remove two dipoles.
+! Include 11 dipoles in each straight section.
+!
+! Leo Michelotti
+! July 23, 2003
+! 
+! Patch 1: shifted dipoles in "17" locations upstream 
+!   by 16.50 inches
+! 
+! Leo Michelotti
+! July 26, 2004
+! 
+! Patch 2: shifted cell boundaries and moved long
+!   straight sections approx. 30 cm relative to the arcs.
+! 
+! Leo Michelotti
+! July 29, 2004
+
+
+momentum  := 150.0                ! GeV/c
+brho      := momentum/0.299792458 ! T-m
+
+twopi     := 6.2831853072
+nbends    := ((4.0*30.0)-2.0+11.0)*6.0  ! = 720 - 12 + 66 = 774
+!              |         |   |     |
+!              |         |   |     * 6 sectors
+!              |         |   11 bends in each straight section
+!              |         only 2 dipoles in the X17 half-cells
+!              4 dipoles in each of 30 standard half-cells per arc
+bendangle := twopi/nbends
+
+
+! Strengths of main bus quads.
+! Units are in m^-2 ( or kG/m / BRHO )
+! This corresponds to 76.0 T/m at 1 TeV.
+mainbusf := 0.0227724747
+mainbusd := -mainbusf
+
+!RETURN
