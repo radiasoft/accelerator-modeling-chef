@@ -2,7 +2,6 @@
 // Remove exit statements
 // Create streamPtrs, like a Sage
 // Final check: destructor
-// Rename this file Cascade.cc
 
 /*************************************************************************
 **************************************************************************
@@ -121,6 +120,53 @@ Cascade::Cascade( int weight, int numvar, bool verbosity )
   _verbose( verbosity ),
   _arrayOfSwitches((Switch*) 0),
   _startPoint((Switch**) 0)
+{
+  _finishConstructor();
+}
+
+
+Cascade::Cascade( const Cascade& x )
+: _maxWeight(x._maxWeight), 
+  _numVar(x._numVar),
+  _numberOfMonomials( bcfRec( x._maxWeight + x._numVar, x._numVar ) ),
+  _numberOfSwitches(0),
+  _verbose( x._verbose ),
+  _arrayOfSwitches((Switch*) 0),
+  _startPoint((Switch**) 0)
+{
+  _finishConstructor();
+}
+
+
+void Cascade::reconstruct( int weight, int numvar, bool verbosity )
+{
+  this->~Cascade();
+
+  _maxWeight         = weight;
+  _numVar            = numvar;
+  _numberOfMonomials = bcfRec( weight + numvar, numvar );
+  _numberOfSwitches  = 0;
+  _verbose           = verbosity;
+
+  _finishConstructor();
+}
+
+
+void Cascade::reconstruct( const Cascade& x )
+{
+  this->~Cascade();
+
+  _maxWeight         = x._maxWeight;
+  _numVar            = x._numVar;
+  _numberOfMonomials = bcfRec( _maxWeight + _numVar, _numVar );
+  _numberOfSwitches  = 0;
+  _verbose           = x._verbose;
+
+  _finishConstructor();
+}
+
+
+void Cascade::_finishConstructor()
 {
   // Construct an array of switches
   int f[_numVar], i;
@@ -392,6 +438,20 @@ int Cascade::index( const IntArray& e )
 }
 
 
+int Cascade::index( const int e[] )
+{
+  static int j;
+  static Switch* swPtr;
+
+  swPtr = _startPoint[e[0]];
+  for( j = 1; j < _numVar; j++ ) {
+    swPtr = (Switch*) (swPtr->_arrow[e[j]]);
+  }
+
+  return swPtr->_index;
+}
+
+
 IntArray Cascade::exponents( const IntArray& e )
 {
   static int j;
@@ -403,4 +463,57 @@ IntArray Cascade::exponents( const IntArray& e )
   }
 
   return swPtr->_xpt;
+}
+
+
+int Cascade::selfTest()
+{
+  std::cerr << "\nCascade::selfTest beginning test of all possible indices." 
+            << std::endl;
+  int ret = 0;
+  int i;
+  int n = _numVar;
+  int w = _maxWeight;
+  int f[n];
+  IntArray e(n);
+  for( i = 0; i < n; i++ ) { f[i] = 0; }
+
+  e.Set(f);
+  if( e != (this->exponents(e)) ) {
+    std::cerr << "Type 1 error: " << e << " != " << (this->exponents(e)) << endl;
+    ret = 1;
+  }
+  if( e != _arrayOfSwitches[this->index(e)]._xpt ) {
+    std::cerr << "Type 2 error: " << e << " != " 
+              << "_arrayOfSwitches["
+              << (this->index(e))
+              << "] = " 
+              << (_arrayOfSwitches[this->index(e)]._xpt)
+              << endl;
+    ret = 2;
+  }
+
+
+  for( i = 1; i <= w; i++ ) {
+    while( nexcom( i, n, f) ) {
+      e.Set(f);
+      if( e != (this->exponents(e)) ) {
+        std::cerr << "Type 1 error: " << e << " != " << (this->exponents(e)) << endl;
+        ret = 1;
+      }
+      if( e != _arrayOfSwitches[this->index(e)]._xpt ) {
+        std::cerr << "Type 2 error: " << e << " != " 
+                  << "_arrayOfSwitches["
+                  << (this->index(e))
+                  << "] = " 
+                  << (_arrayOfSwitches[this->index(e)]._xpt)
+                  << endl;
+        ret = 2;
+      }
+    }
+  }
+
+  std::cerr << "\nCascade::selfTest finished test of all possible indices." 
+            << std::endl;
+  return ret;
 }
