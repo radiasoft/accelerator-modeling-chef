@@ -504,7 +504,7 @@ void BeamlineContext::_createDSPS()
 }
 
 
-bool BeamlineContext::_onTransClosedOrbit( const Proton& arg ) const
+bool BeamlineContext::onTransClosedOrbit( const Proton& arg ) const
 {
   Proton probe( arg );
   
@@ -536,7 +536,7 @@ void BeamlineContext::_createClosedOrbit()
   _proton.SetReferenceEnergy( _p_co_p->ReferenceEnergy());
   _proton.setState( _p_co_p->State() );
 
-  if( (_onTransClosedOrbit( *_p_co_p )) ) 
+  if( (this->onTransClosedOrbit( *_p_co_p )) ) 
   {
     // Instantiate _p_jp on the closed orbit
     // and propagate it once.
