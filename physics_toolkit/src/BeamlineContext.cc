@@ -356,7 +356,8 @@ beamline* BeamlineContext::cloneBeamline() const
 
 Mapping BeamlineContext::getOneTurnMap()
 {
-  if( 0 == _p_jp ) { 
+  // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
+  if( ( 0 == _p_co_p ) || ( 0 == _p_jp ) ) {
     try {
       this->_createClosedOrbit(); 
     }
@@ -525,7 +526,7 @@ void BeamlineContext::_createClosedOrbit()
 {
   // Instantiates the closed orbit Proton and JetProton.
   // The JetProton is on the closed orbit and its environment
-  // is centered on the closed orbit. It's state corresponds
+  // is centered on the closed orbit. Its state corresponds
   // to the one turn map.
   
   // Eliminate previous information, if necessary
@@ -628,12 +629,15 @@ void BeamlineContext::_deleteClosedOrbit()
 void BeamlineContext::_createTunes()
 {
   // First, 
-  try {
-    _createClosedOrbit(); 
-  }
-  catch( const GenericException& ge ) {
-    _deleteClosedOrbit(); // Almost certainly not necessary.
-    throw ge;
+  // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
+  if( ( 0 == _p_co_p ) || ( 0 == _p_jp ) ) {
+    try {
+      _createClosedOrbit(); 
+    }
+    catch( const GenericException& ge ) {
+      _deleteClosedOrbit(); // Almost certainly not necessary.
+      throw ge;
+    }
   }
 
   // At this point, _p_jp's state is that after one-turn on the
@@ -700,12 +704,15 @@ double BeamlineContext::getVerticalFracTune()
 
 void BeamlineContext::_createEigentunes()
 {
-  try {
-    _createClosedOrbit(); 
-  }
-  catch( const GenericException& ge ) {
-    _deleteClosedOrbit(); // Almost certainly not necessary.
-    throw ge;
+  // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
+  if( ( 0 == _p_co_p ) || ( 0 == _p_jp ) ) {
+    try {
+      _createClosedOrbit(); 
+    }
+    catch( const GenericException& ge ) {
+      _deleteClosedOrbit(); // Almost certainly not necessary.
+      throw ge;
+    }
   }
   // At this point, _p_jp's state is that after one-turn on the
   //   closed orbit. It's environment is centered on the closed
@@ -853,7 +860,8 @@ const LBSage::Info* BeamlineContext::getLBFuncPtr( int i )
     this->_createLBS();
   }
   
-  if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
+  // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
+  if( ( 0 == _p_co_p ) || ( 0 == _p_jp ) ) {
     try {
       _createClosedOrbit(); 
     }
@@ -894,7 +902,8 @@ const DispersionSage::Info* BeamlineContext::getDispersionPtr( int i )
   }
   
   if( !_dispersionFuncsCalcd ) { 
-    if( 0 == _p_jp ) { 
+    // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
+    if( ( 0 == _p_co_p ) || ( 0 == _p_jp ) ) {
       try {
         this->_createClosedOrbit(); 
       }
@@ -948,7 +957,8 @@ MatrixD BeamlineContext::equilibriumCovariance( double eps_1, double eps_2 )
   const int index [] = { 0, 3, 1, 4 };
 
   // If necessary ...
-  if( 0 == _p_jp ) { 
+  // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
+  if( ( 0 == _p_co_p ) || ( 0 == _p_jp ) ) {
     try {
       _createClosedOrbit(); 
     }
