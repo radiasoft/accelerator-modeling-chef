@@ -64,7 +64,7 @@ APPDIRS  = filter/app \
 	sybase/app
 
 
-gcc egcs solaris-gcc solaris-gcc-debug solaris solaris-debug ultra-opt solaris-devel solaris-depend solaris-gcc-depend:
+gcc egcs solaris-gcc solaris-gcc-debug solaris solaris-debug ultra-opt solaris-devel solaris-depend solaris-gcc-depend kai kai-debug kai-opt kai-depend:
 	@set -x; for i in $(SUBDIRS); do \
 		(cd $$i; $(MAKE)  $@); \
 		done
@@ -85,6 +85,7 @@ lib-dir:
 	@if [ ! -d lib ] ; then \
 		mkdir lib;\
 		mkdir lib/sun; \
+		mkdir lib/kai; \
 		mkdir lib/ultra; \
 		mkdir lib/sgi; \
 		mkdir lib/gcc; \
