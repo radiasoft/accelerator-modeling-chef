@@ -25,14 +25,12 @@ void sbend::P_Exact( bmlnElmnt* p_be, Particle& p )
 
  double dphi   = - pbe->angle;
  double Rho    = - pbe->length / dphi;
- double Gamma  = p.gamma;
  double Omega  = csq_red * pbe->strength / p.E;
 
  Complex ui  ( 0.0, p.state[0] );
  Complex vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
 
  // Step 1.
- double gamma = p.Energy()/p.Mass();
  double omega  = csq_red * pbe->strength / p.Energy();
  Complex bi = ( complex_i*vui / omega ) - ui;
 
@@ -99,7 +97,6 @@ void sbend::J_Exact( bmlnElmnt* p_be, JetParticle& p )
 
  double dphi   = - pbe->angle;
  double Rho    = - pbe->length / dphi;
- double Gamma  = p.gamma;
  double Omega  = csq_red * pbe->strength / p.E;
 
  static JetC ui, vui;
@@ -107,9 +104,8 @@ void sbend::J_Exact( bmlnElmnt* p_be, JetParticle& p )
  vui = PH_MKS_c*( beta_3 + complex_i * beta_1 );
 
  // Step 1.
- static Jet gamma, omega;
+ static Jet omega;
  static JetC bi;
- gamma = p.Energy()/p.Mass();
  omega  = csq_red * pbe->strength / p.Energy();
  bi = ( complex_i*vui / omega ) - ui;
 
