@@ -13,13 +13,13 @@ MYLIBS = -lfilter -lphysics_toolkit -lbeamline -lmxyzptlk \
 SYBASELIBS = -lct -lcs -lcomn -lsybtcl -lsybintl -lblk
 XLIBS = -L/usr/local/ap/X11R6/lib -L/usr/local/TCL-TK/lib -ltcl -ltk \
         -lX11 -lICE -lSM 
-SYSLIBS = -lcomplex -lm -lsocket -lnsl -lintl
+SYSLIBS = -lm -lsocket -lnsl -lintl
 
 CC = cc
 C++ = CC
 
 CFLAGS   = 
-C++FLAGS = 
+C++FLAGS = -library=iostream -verbose=template
 
 .C.o:
 	$(C++) $(C++FLAGS) $(INCLUDE) -c $*.C

@@ -316,13 +316,6 @@ istream& Slot::readFrom( istream& is )
 }
 
 
-void Slot::image( int, slist*, BMLN_posInfo* )
-{
-  cerr << "*** ERROR *** Slot::image is not implemented." << endl;
-  exit(1);
-}
-
-
 void Slot::Split( double, bmlnElmnt**, bmlnElmnt** )
 {
   cerr << "*** ERROR *** Slot::Split is not implemented." << endl;

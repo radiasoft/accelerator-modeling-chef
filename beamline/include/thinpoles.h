@@ -90,8 +90,6 @@ public:
 
 class thinMultipole : public bmlnElmnt
 {
-// ??? REMOVE private:
-// ??? REMOVE   void image( int, slist*, BMLN_posInfo* );
 public:
   thinMultipole( double /* strength */ );
   thinMultipole( char*  /* name */,

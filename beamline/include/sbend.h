@@ -8,7 +8,6 @@ class sbend : public bmlnElmnt
 private:
   // bmlnElmnt::strength -> magnetic field [T]
   double angle;      // bend angle  [ radians ]
-  void image( int, slist*, BMLN_posInfo* );
   ostream& writeTo(ostream&);
   istream& readFrom(istream&);
 

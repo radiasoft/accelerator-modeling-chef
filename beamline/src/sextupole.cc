@@ -57,27 +57,6 @@ void sextupole::setCurrent( double s ) {
 }
 
 
-// ??? REMOVE void sextupole::image( int d, slist* s, BMLN_posInfo* cg ) {
-// ??? REMOVE  bmlnElmntData* p = bmlnElmnt::image();
-// ??? REMOVE 
-// ??? REMOVE  strcpy( p->type, Type() );
-// ??? REMOVE  p->address   = this;
-// ??? REMOVE  p->depth     = d;
-// ??? REMOVE 
-// ??? REMOVE  geomToEnd( *cg );
-// ??? REMOVE  cg->outPoint = geometry.outPoint;
-// ??? REMOVE  for( int j = 0; j < 3; j++ ) cg->outAxes[j] = geometry.outAxes[j];
-// ??? REMOVE 
-// ??? REMOVE      p->geometry.inPoint  = geometry.inPoint;
-// ??? REMOVE      p->geometry.outPoint = geometry.outPoint;
-// ??? REMOVE      for( j = 0; j < 3; j++ ) p->geometry.inAxes[j]  = geometry.inAxes[j];
-// ??? REMOVE      for( j = 0; j < 3; j++ ) p->geometry.outAxes[j] = geometry.outAxes[j];
-// ??? REMOVE 
-// ??? REMOVE  s->append( p );
-// ??? REMOVE }
-
-
-
 const char* sextupole::Type() const 
 { 
   return "sextupole"; 
@@ -143,25 +122,6 @@ thinSextupole::thinSextupole( const thinSextupole& x )
 
 thinSextupole::~thinSextupole() {
 }
-// ??? REMOVE 
-// ??? REMOVE void thinSextupole::image( int d, slist* s, BMLN_posInfo* cg ) {
-// ??? REMOVE  bmlnElmntData* p = bmlnElmnt::image();
-// ??? REMOVE 
-// ??? REMOVE  strcpy( p->type, Type() );
-// ??? REMOVE  p->address   = this;
-// ??? REMOVE  p->depth     = d;
-// ??? REMOVE 
-// ??? REMOVE  geomToEnd( *cg );
-// ??? REMOVE  cg->outPoint = geometry.outPoint;
-// ??? REMOVE  for( int j = 0; j < 3; j++ ) cg->outAxes[j] = geometry.outAxes[j];
-// ??? REMOVE 
-// ??? REMOVE      p->geometry.inPoint  = geometry.inPoint;
-// ??? REMOVE      p->geometry.outPoint = geometry.outPoint;
-// ??? REMOVE      for( j = 0; j < 3; j++ ) p->geometry.inAxes[j]  = geometry.inAxes[j];
-// ??? REMOVE      for( j = 0; j < 3; j++ ) p->geometry.outAxes[j] = geometry.outAxes[j];
-// ??? REMOVE 
-// ??? REMOVE  s->append( p );
-// ??? REMOVE }
 
 
 const char* thinSextupole::Type() const { 

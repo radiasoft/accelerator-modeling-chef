@@ -11,7 +11,6 @@ private:
   double strengthPos;    // kick in strength in radians for x > xWire
   double strengthNeg;	 // kick in strength in radians for x < xWire
   double xWire;		 // position of wire septum in meters
-  void image( int, slist*, BMLN_posInfo* );
   ostream& writeTo(ostream&);
   istream& readFrom(istream&);
 

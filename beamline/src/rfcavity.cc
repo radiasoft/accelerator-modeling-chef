@@ -85,3 +85,12 @@ istream& thinrfcavity::readFrom(istream& is)
   setStrength(e);
   return is;
 }
+
+
+
+const char* thinrfcavity::Type() const 
+{
+  return "thinrfcavity"; 
+}
+
+
