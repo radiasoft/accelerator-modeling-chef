@@ -1760,7 +1760,7 @@ public:
                                      // element. The optional integer
                                      // argument allows one to reset to
                                      // nth occurrence of the element.
-  int startAt( char*,                // Resets the "beginning" of the
+  int startAt( const char*,          // Resets the "beginning" of the
                int = 1 );            // beamline to the element whose
                                      // name is given by the argument.
 

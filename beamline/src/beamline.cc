@@ -1715,7 +1715,7 @@ int beamline::startAt( const bmlnElmnt* x, int n )
 }
 
 
-int beamline::startAt( char* s, int n )
+int beamline::startAt( const char* s, int n )
 {
   dlist_traversor getNext( *(dlist*) this );
   dlink* q;
