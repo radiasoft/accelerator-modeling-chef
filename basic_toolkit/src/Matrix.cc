@@ -643,6 +643,35 @@ double MatrixD::getElement(int i, int j) const {
 }
 
 double& MatrixD::operator()(int i) {
+  // This body must stay in synch with
+  // double MatrixD::operator()(int i) const
+  if( rows() == 1 ) {
+    if( i >= 0 && i < cols() ) {
+      return ml->m[0][i];
+    }
+    else {
+      throw( IndexRange( 0, i, 0, cols()-1,
+                       "double& MatrixD::operator()(int i)" ) );
+    }
+  }
+  else if( cols() == 1 ) {
+    if( i >= 0 && i < rows() ) {
+      return ml->m[i][0];
+    }
+    else {
+      throw( IndexRange( i, 0, rows()-1, 0,
+                       "double& MatrixD::operator()(int i)" ) );
+    }
+  }
+  else {
+    throw( NotVector( i, rows(), cols(),
+                      "double& MatrixD::operator()(int i)" ) );
+  }
+}
+
+double MatrixD::operator()(int i) const {
+  // This body must stay in synch with
+  // double& MatrixD::operator()(int i)
   if( rows() == 1 ) {
     if( i >= 0 && i < cols() ) {
       return ml->m[0][i];
@@ -1798,6 +1827,35 @@ Complex MatrixC::operator()(int i, int j) const {
 }
 
 Complex& MatrixC::operator()(int i) {
+  // This body must stay in synch with
+  // Complex MatrixC::operator()(int i) const
+  if( rows() == 1 ) {
+    if( i >= 0 && i < cols() ) {
+      return ml->m[0][i];
+    }
+    else {
+      throw( MatrixD::IndexRange( 0, i, 0, cols()-1,
+                       "Complex& MatrixC::operator()(int i)" ) );
+    }
+  }
+  else if( cols() == 1 ) {
+    if( i >= 0 && i < rows() ) {
+      return ml->m[i][0];
+    }
+    else {
+      throw( MatrixD::IndexRange( i, 0, rows()-1, 0,
+                       "Complex& MatrixC::operator()(int i)" ) );
+    }
+  }
+  else {
+    throw( MatrixD::NotVector( i, rows(), cols(),
+                      "Complex& MatrixC::operator()(int i)" ) );
+  }
+}
+
+Complex MatrixC::operator()(int i) const {
+  // This body must stay in synch with
+  // Complex& MatrixC::operator()(int i)
   if( rows() == 1 ) {
     if( i >= 0 && i < cols() ) {
       return ml->m[0][i];
@@ -2503,6 +2561,35 @@ int  MatrixI::operator()(int i, int j) const {
 }
 
 int& MatrixI::operator()(int i) {
+  // This body must stay in synch with 
+  // int MatrixI::operator()(int i) const
+  if( rows() == 1 ) {
+    if( i >= 0 && i < cols() ) {
+      return ml->m[0][i];
+    }
+    else {
+      throw( MatrixD::IndexRange( 0, i, 0, cols()-1,
+                       "int& MatrixI::operator()(int i)" ) );
+    }
+  }
+  else if( cols() == 1 ) {
+    if( i >= 0 && i < rows() ) {
+      return ml->m[i][0];
+    }
+    else {
+      throw( MatrixD::IndexRange( i, 0, rows()-1, 0,
+                       "int& MatrixI::operator()(int i)" ) );
+    }
+  }
+  else {
+    throw( MatrixD::NotVector( i, rows(), cols(),
+                      "int& MatrixI::operator()(int i)" ) );
+  }
+}
+
+int MatrixI::operator()(int i) const {
+  // This body must stay in synch with 
+  // int& MatrixI::operator()(int i)
   if( rows() == 1 ) {
     if( i >= 0 && i < cols() ) {
       return ml->m[0][i];
