@@ -69,7 +69,7 @@ friend  char operator==(const MLD&,const MLD&);
 
 struct MLC {
 
-  Complex **m;
+  FNAL::Complex **m;
   int r,c;			// number of rows and columns
   int rc;			// reference count
 
@@ -82,16 +82,16 @@ struct MLC {
   MLC();
   MLC(const MLD&);
   MLC(const MLC&);
-  MLC(int rows ,int columns , const Complex& initval);
-  MLC(int rows, int columns, Complex* initval);
+  MLC(int rows ,int columns , const FNAL::Complex& initval);
+  MLC(int rows, int columns, FNAL::Complex* initval);
   ~MLC();
 
   // Public member functions__________________________________________
 
  MLC& operator=(const MLC&);
- char operator==(const Complex&);
- MLC& operator+=(const Complex&);
- MLC& operator-=(const Complex&);
+ char operator==(const FNAL::Complex&);
+ MLC& operator+=(const FNAL::Complex&);
+ MLC& operator-=(const FNAL::Complex&);
 friend  char operator==(const MLC&,const MLC&);
 #ifdef OBJECT_DEBUG
   static int objectCount;
