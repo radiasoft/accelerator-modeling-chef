@@ -3,7 +3,7 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.0                    
+******  Version:   4.1                    
 ******                                    
 ******  File:      dlist.cc
 ******                                                                
@@ -469,6 +469,12 @@ void dlist_iterator::GoBack( int n )
 }
 
 
+void dlist_iterator::Terminate()
+{
+  ce = 0;
+}
+
+
 ent dlist_looper::operator()() 
 {
   ent ret = 0;
@@ -509,6 +515,13 @@ ent dlist_reverseIterator::operator()()
   }
   return ret;
 }
+
+
+void dlist_reverseIterator::Terminate()
+{
+  ce = 0;
+}
+
 
 /*
  *   Pool functions written by Michael Allen

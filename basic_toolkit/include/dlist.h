@@ -3,7 +3,7 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.0                    
+******  Version:   4.1                    
 ******                                    
 ******  File:      dlist.h
 ******                                                                
@@ -270,6 +270,7 @@ public:
   void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
   void GoBack( int = 1 );
+  void Terminate();
 } ;
 
 class dlist_looper {
@@ -292,6 +293,7 @@ public:
   dlink* operator()();
   void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
+  void Terminate();
 } ;
 
 class dlist_reverseIterator {
@@ -303,6 +305,7 @@ public:
   ent operator()();
   void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
+  void Terminate();
 } ;
 
 inline char dlist::Owns() { return owner; }
