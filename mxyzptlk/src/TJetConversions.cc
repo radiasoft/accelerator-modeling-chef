@@ -99,7 +99,8 @@ TJetEnvironment<Complex,double>::TJetEnvironment( const TJetEnvironment<double,C
   _numVar( x._numVar ), 
   _spaceDim( x._spaceDim ),
   // OBSOLETE _numPaths(0), _monomial(0), _TJLmonomial(0), _TJLmml(0), _maxTerms(0)
-  _monomial(0), _TJLmonomial(0), _TJLmml(0), _maxTerms(0)
+  _monomial(0), _TJLmonomial(0), _TJLmml(0), _maxTerms(0), 
+  _offset( x._maxWeight, x._numVar )
 {
   if( TJet<Complex,double>::_workEnv != 0 ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -261,7 +262,8 @@ TJetEnvironment<Complex,double>& TJetEnvironment<Complex,double>::operator=( con
 TJetEnvironment<double,Complex>::TJetEnvironment<double,Complex>( const TJetEnvironment<Complex,double>& x )
 : _maxWeight( x._maxWeight ), 
   _numVar( x._numVar ), 
-  _spaceDim( x._spaceDim )
+  _spaceDim( x._spaceDim ), 
+  _offset( x._maxWeight, x._numVar )
 {
   for( int ii = 0; ii < _numVar; ii++ ) {
     if( imag( x._refPoint[ii] ) != 0.0 ) {
