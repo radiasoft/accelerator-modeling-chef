@@ -1,7 +1,11 @@
 #include <boost/python.hpp>
 
+#ifdef FNAL_FIRST_ORDER
 #include <Jet.h>
 #include <JetC.h>
+#else
+#include <Jet.h>
+#endif
 
 using namespace boost::python;
 

@@ -2,7 +2,13 @@
 
 #include <bmlnElmnt.h>
 #include <beamline.h>
+
+#ifdef FNAL_FIRST_ORDER
 #include <Matrix.h>
+#else
+#include <TMatrix.h>
+#endif
+
 #include "BeamlineContext.h"
 #include <iostream>
 
