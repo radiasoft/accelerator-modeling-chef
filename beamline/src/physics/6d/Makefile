@@ -10,6 +10,7 @@ OBJS =  BBLensPhysics.o\
 	   combinedFuncPhys.o \
            hkickPhysics.o \
            hmonitorPhysics.o \
+	   kickPhysics.o \
            markerPhysics.o \
            monitorPhysics.o \
            octupolePhysics.o \
