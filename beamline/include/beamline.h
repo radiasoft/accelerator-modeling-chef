@@ -458,23 +458,56 @@ public:
 
 class hkick : public bmlnElmnt
 {
-// ??? REMOVE private:
-// ??? REMOVE   void image( int, slist*, BMLN_posInfo* );
 public:
-  hkick(        /* Assumes zero kick */ );
-  hkick( double /* kick size in radians */ );
-  hkick( char * /* name */  /* Assumes zero kick */ );
-  hkick( char * /* name */, double /* kick size in radians */ );
+  hkick();
+  hkick( double );   // kick size in radians
+  hkick( char* );    // name; assumes zero kick
+  hkick( char*,      // name
+         double );   // kick size in radians
+  hkick( char*,      // name
+         double,     // length
+         double );   // kick size in radians
   hkick( const hkick& );
   hkick( bmlnElmntData& );
+
   ~hkick();
+
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
+
   char* Type() const;
   bmlnElmnt* Clone() const { return new hkick( *this ); }
+
   void accept( BmlVisitor& v ) { v.visitHkick( this ); }
 };
+
+
+class vkick : public bmlnElmnt
+{
+public:
+  vkick();            // Assumes zero kick
+  vkick( double );    // kick size in radians
+  vkick( char* );     // name; assumes zero kick
+  vkick( char*,       // name
+         double  );   // kick size in radians
+  vkick( char*,       // name
+         double,      // length
+         double  );   // kick size in radians
+  vkick( const vkick& );
+  vkick( bmlnElmntData& );
+  ~vkick();
+
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
+
+  void accept( BmlVisitor& v ) { v.visitVkick( this ); }
+
+  char* Type() const;
+  bmlnElmnt* Clone() const { return new vkick( *this ); }
+};
+
 
 class octupole : public bmlnElmnt
 {
@@ -597,30 +630,6 @@ public:
 
   char* Type() const;
   bmlnElmnt* Clone() const { return new srot( *this ); }
-};
-
-
-class vkick : public bmlnElmnt
-{
-// ??? REMOVE private:
-// ??? REMOVE   void image( int, slist*, BMLN_posInfo* );
-public:
-  vkick(        /* Assumes zero kick */ );
-  vkick( double /* kick size in radians */ );
-  vkick( char * /* name */ /* Assumes zero kick */ );
-  vkick( char * /* name */, double /* kick size in radians */ );
-  vkick( const vkick& );
-  vkick( bmlnElmntData& );
-  ~vkick();
-
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
-
-  void accept( BmlVisitor& v ) { v.visitVkick( this ); }
-
-  char* Type() const;
-  bmlnElmnt* Clone() const { return new vkick( *this ); }
 };
 
 
@@ -1858,11 +1867,11 @@ public:
   int    howMany() const { return numElem; }
   int    countHowMany();
   int    howDeep();
-  bmlnElmnt* firstElement()
+  inline bmlnElmnt* firstElement()
     {
       return (bmlnElmnt*) ( ((dlist*) this)->lastInfoPtr() );
     }
-  bmlnElmnt* lastElement()
+  inline bmlnElmnt* lastElement()
     {
       return (bmlnElmnt*) ( ((dlist*) this)->firstInfoPtr() );
     }
