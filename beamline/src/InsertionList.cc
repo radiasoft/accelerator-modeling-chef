@@ -1,4 +1,5 @@
-#include "beamline.h"
+#include "bmlnElmnt.h"
+#include "PhysicsConstants.h"
 
 InsertionList::InsertionList( double p )
 : smax( -1.0e-20 ), prtn( sqrt( p*p + PH_NORM_mp*PH_NORM_mp ) )

@@ -16,8 +16,8 @@
 #define BEAMLINE_ITERATOR
 
 
-#ifndef BEAMLINE_H
-#include "beamline.h"
+#ifndef BMLNELMNT_H
+#include "bmlnElmnt.h"
 #endif
 
 

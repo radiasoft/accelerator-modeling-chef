@@ -1,7 +1,9 @@
 #ifndef CF_RBEND_H
 #define CF_RBEND_H
 
-#include "beamline.h"
+#ifndef BMLNELMNT_H
+#include "bmlnElmnt.h"
+#endif
 
 class CF_rbend : public bmlnElmnt
 {

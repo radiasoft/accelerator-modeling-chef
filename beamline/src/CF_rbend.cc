@@ -5,6 +5,11 @@
 #endif
 
 #include "CF_rbend.h"
+#include "quadrupole.h"
+#include "sextupole.h"
+#include "rbend.h"
+#include "octupole.h"
+#include "PhysicsConstants.h"
 
 CF_rbend::CF_rbend( double        lng,  // length     [ meter    ]
                     double        fld,  // field      [ tesla    ]

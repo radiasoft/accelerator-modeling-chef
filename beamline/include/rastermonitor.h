@@ -2,7 +2,10 @@
 #ifndef RASTERMONITOR_H
 #define RASTERMONITOR_H
 
-#include "beamline.h"
+#ifndef BMLNELMNT_H
+#include "bmlnElmnt.h"
+#endif
+
 class ParticleBunch;
 class Particle;
 class Vector;
