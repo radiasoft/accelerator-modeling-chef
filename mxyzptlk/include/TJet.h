@@ -185,7 +185,7 @@ template<typename T1, typename T2>
 TJet<T1,T2> tanh ( const TJet<T1,T2>& );
 
 TJet<double,FNAL::Complex> erf ( const TJet<double,FNAL::Complex>& );
-TJet<FNAL::Complex,double> erf ( const TJet<FNAL::Complex,double,>& );
+TJet<FNAL::Complex,double> erf ( const TJet<FNAL::Complex,double>& );
 
 template<typename T1, typename T2> 
 TJet<T1,T2> erfc ( const TJet<T1,T2>& );
