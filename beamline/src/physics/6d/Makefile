@@ -57,6 +57,7 @@ lib: $(OBJS)
 
 clean:
 	rm -f *.o *~*
+	rm -f core
 	rm -rf .sb
 
 real-clean: clean

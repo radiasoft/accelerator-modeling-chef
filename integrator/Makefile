@@ -18,5 +18,6 @@ link:
 		done
 
 clean:
+	rm -f core
 	rm -f *.o *~*
 
