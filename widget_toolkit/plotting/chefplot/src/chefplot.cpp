@@ -16,9 +16,9 @@
 //                                                                                            //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "chefplot.h" 
-#include "plot.h"
-#include "lego.h"
+#include <chefplot.h> 
+#include <plot.h>
+#include <lego.h>
 #include <qwt/qwt_plot_canvas.h>
 #include <qtoolbar.h>
 #include <qmenubar.h>
