@@ -61,6 +61,10 @@
 #include "const_table.h"
 #endif /* const_table_h */
 
+#if _WIN32
+#define M_PI 3.141592
+#define
+
 enum constant_kind current_constant = CONSTANT_UNKNOWN;
 
    /*
@@ -88,9 +92,11 @@ static gboolean
 const_free_func( gpointer key,
                  gpointer value,
                  gpointer user_data ) {
-  free( key );
-  const_delete( (constant*)value, (fb_allocator*)user_data );
-  return TRUE;
+
+   free( key );
+
+   const_delete( (constant*)value, (fb_allocator*)user_data );
+   return TRUE;
 }
 
    /*
@@ -114,11 +120,13 @@ static int
 const_add_predef( fb_allocator* expr_alloc,
                   fb_allocator* const_alloc,
                   GHashTable*   const_table ) {
-  
+
      /* Adding PI */
-  char*        name = (char*)malloc( 3 );
+  char*        name; 
   constant*    const_ptr;
   expr_struct* data;
+
+  name = (char*)malloc( 3 );
 
   PRIVATE_ALLOCATE( const_ptr, const_alloc );
   
@@ -129,6 +137,7 @@ const_add_predef( fb_allocator* expr_alloc,
   data->svalue_ = (char*)malloc( 24 );
   strcpy( data->svalue_, "3.14159265358979323846" );
   const_table_add( name, const_ptr, const_table );
+
 
   return CONST_OK;
 }
@@ -153,8 +162,8 @@ const_table_init( fb_allocator* expr_alloc,
      Deletes the hash table for constants and returns an OK value
     */
 int
-const_table_delete( GHashTable*   const_table,
-                    fb_allocator* expr_alloc ) {
+  const_table_delete( GHashTable*   const_table,
+                      fb_allocator* expr_alloc ) {
 
   assert( const_table != NULL );
   assert( expr_alloc != NULL );
@@ -467,6 +476,8 @@ const_delete( constant*     ptr,
     expr_node_delete( ptr->expr_, expr_alloc );
     ptr->expr_ = NULL;
   }
+ 
+ 
 
   return CONST_OK;
 }
