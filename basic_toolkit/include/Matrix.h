@@ -3,7 +3,7 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.1
+******  Version:   4.2
 ******                                    
 ******  File:      Matrix.h
 ******                                                                
@@ -31,6 +31,7 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
+#include <exception>
 #include "ML.h"
 
 class MatrixC;
@@ -113,7 +114,7 @@ friend MatrixD operator/(MatrixD& ,MatrixD &);
 #endif
 
   // Exception subclasses
-  struct IndexRange
+  struct IndexRange : public std::exception
   {
     // User has tried to access a matrix element with
     // out-of-range indices: M(i,j) with 
@@ -121,43 +122,48 @@ friend MatrixD operator/(MatrixD& ,MatrixD &);
     // or i > rows - 1
     // or j > cols - 1
     IndexRange( int, int, int, int, const char* );
-    ~IndexRange() {}
+    ~IndexRange() throw() {}
+    const char* what() const throw();
     int i,  j;   // Row and column indices called
     int im, jm;  // Maximum allowed values
   };
 
-  struct NotVector
+  struct NotVector : public std::exception
   {
     // Attempt to access a matrix element as a vector element,
     // with one index, when the matrix is not a vector.
     NotVector( int, int, int, const char* );
-    ~NotVector() {}
+    ~NotVector() throw() {}
+    const char* what() const throw();
     int i, r, c;  // index, rows, columns
   };
 
-  struct Incompatible
+  struct Incompatible : public std::exception
   {
     // Attempting operations on matrices who dimensions
     // are not compatible.
     Incompatible( int, int, int, int, const char* );
-    ~Incompatible() {}
+    ~Incompatible() throw() {}
+    const char* what() const throw();
     int ra, ca, rb, cb;
   };
 
-  struct NotSquare
+  struct NotSquare : public std::exception
   {
     // Non-square matrix handed over for square
     // matrix operations
     NotSquare( int, int, const char* );
-    ~NotSquare() {}
+    ~NotSquare() throw() {}
+    const char* what() const throw();
     int r, c;
   };
 
-  struct Generic
+  struct Generic : public std::exception
   {
     // Miscellaneous other errors
     Generic( int, int, const char*, const char* = "" );
-    ~Generic() {}
+    ~Generic() throw() {}
+    const char* what() const throw();
     int r, c;
   };
 

@@ -3,7 +3,7 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.1
+******  Version:   4.2
 ******                                    
 ******  File:      Matrix.cc
 ******                                                                
@@ -47,7 +47,8 @@ extern "C" { void cg_(int*, int*, double*, double*,double*,double*, int*,
 		      double*,double*,double*, double*, double*,int*); }
 
 
-using std::abs;
+using namespace std;
+// REMOVE: using std::abs;
 using FNAL::Complex;
 
 const double tiny = double(1e-20);
@@ -1094,6 +1095,12 @@ MatrixD::IndexRange::IndexRange( int a, int b, int c, int d, const char* f )
 }
 
 
+const char* MatrixD::IndexRange::what() const throw()
+{
+  return "Index out of range.";
+}
+
+
 MatrixD::NotVector::NotVector( int x, int y, int z, const char* f ) 
 : i(x), r(y), c(z)
 {
@@ -1109,6 +1116,12 @@ MatrixD::NotVector::NotVector( int x, int y, int z, const char* f )
          << endl;
     firstTime = false;
   }
+}
+
+
+const char* MatrixD::NotVector::what() const throw()
+{
+  return "Matrix is not a vector.";
 }
 
 
@@ -1130,6 +1143,12 @@ MatrixD::Incompatible::Incompatible( int x, int y, int z, int t, const char* f )
 }
 
 
+const char* MatrixD::Incompatible::what() const throw()
+{
+  return "Incompatible arguments.";
+}
+
+
 MatrixD::NotSquare::NotSquare( int x, int y, const char* f ) 
   : r(x), c(y)
 {
@@ -1144,6 +1163,12 @@ MatrixD::NotSquare::NotSquare( int x, int y, const char* f )
          << endl;
     firstTime = false;
   }
+}
+
+
+const char* MatrixD::NotSquare::what() const throw()
+{
+  return "Matrix is not square.";
 }
 
 
@@ -1162,6 +1187,12 @@ MatrixD::Generic::Generic( int x, int y, const char* f, const char* m )
          << endl;
     firstTime = false;
   }
+}
+
+
+const char* MatrixD::Generic::what() const throw()
+{
+  return "Unspecified error.";
 }
 
 
