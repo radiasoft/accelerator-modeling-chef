@@ -52,6 +52,7 @@ private:
 public:
   char        stacked;    // ??? Made public for convenience: no application
                           // ??? should touch this variable.
+  static Jet__environment* lastEnv;  // G++ needs this here.
 
   // Constructors and destructors_____________________________________
   Jet( Jet__environment* = Jet::lastEnv );
@@ -64,7 +65,6 @@ public:
   void Reconstruct();
   void Reconstruct( Jet__environment* pje );
 
-  static Jet__environment* lastEnv;
   static Jet__environment* workEnv;  // This probably doesn't belong with Jet.
   static void BeginEnvironment( int = 1 /* maximum weight */ );
   static void Parameters();
