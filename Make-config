@@ -9,6 +9,7 @@
 # RANLIB      "ranlib" = use ranlib, "echo" = don't use ranlib
 #
 
+AP_INC              = /usr/local/ap/include
 BASIC_TOOLKIT_INC   = $(FNALROOT)/basic_toolkit/include
 PHYSICS_TOOLKIT_INC = $(FNALROOT)/physics_toolkit/include
 WIDGET_TOOLKIT_INC  = $(FNALROOT)/widget_toolkit/include
@@ -46,7 +47,7 @@ gcc:
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
 	"XINC = /usr/local/ap/X11R6/include" \
-        "QTDIR = /usr/local/ap/qt" \
+        "QTDIR = /usr/local/ap/qt3" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"LIBDIR = $(FNALROOT)/lib/gcc" \
 	"STL_CONFIG = " \
@@ -122,7 +123,7 @@ solaris:
 	"C   = cc" \
 	"C++ = /opt/SUNWspro/bin/CC" \
 	"CFLAGS = " \
-	"C++FLAGS = -library=iostream -verbose=template " \
+	"C++FLAGS = -verbose=%all " \
 	"INLINE_FLAG = +d " \
 	"MAKELIB = CC -xar -o" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
