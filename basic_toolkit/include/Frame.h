@@ -43,7 +43,7 @@
 #define FRAME_H
 
 #include "VectorD.h"
-#include "Matrix.h"
+#include "TMatrix.h"
 
 // #include "MXBBML_bool.h" // For Sun compilers: bool
 #include "MathConstants.h" // For Sun compilers: bool

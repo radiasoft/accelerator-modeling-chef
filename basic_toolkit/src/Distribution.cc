@@ -98,7 +98,7 @@ MultiGaussian::MultiGaussian( const Vector& average,
   int i;
   int n = average.Dim();
   for( i = 0; i < n; i++ ) { _covariance(i,i) = deviation(i)*deviation(i); }
-  MatrixD::RandomOrthogonal generator( n );
+  RandomOrthogonal generator( n );
   _R = generator.build();
   _covariance = _R * _covariance * _R.transpose();
 }

@@ -55,7 +55,7 @@ class CLieOperator;
 
 #include "dlist.h"
 #include "complexAddon.h"
-#include "Matrix.h"
+#include "TMatrix.h"
 #include "JL.h"
 #include "Jet.h"
 #include "LieOperator.h"

@@ -51,7 +51,7 @@ using std::setprecision;
 #include <math.h>
 #include "JetC.h"
 #include "VectorD.h"
-#include "Matrix.h"
+#include "TMatrix.h"
 
 class JetVector;
 

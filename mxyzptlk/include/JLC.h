@@ -35,7 +35,7 @@
 
 #include "dlist.h"
 #include "IntArray.h"
-#include "Matrix.h"
+#include "TMatrix.h"
 // ??? REMOVE: #include "JetC.h"    // Needed for JetC::scratchFile
 #include "complexAddon.h"
 #include "JetC__environment.h"

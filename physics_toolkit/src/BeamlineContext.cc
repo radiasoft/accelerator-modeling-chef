@@ -35,6 +35,7 @@
 #endif
 
 
+#include "BmlUtil.h"
 #include "slist.h"  // This should not be necessary!!!
 #include "BeamlineContext.h"
 #include "beamline.h"
@@ -43,7 +44,6 @@
 #include "ClosedOrbitSage.h"
 #include "ChromaticityAdjuster.h"
 #include "TuneAdjuster.h"
-#include "BmlUtil.h"
 
 extern void BeamlineSpitout( int, BeamlineIterator& );
 

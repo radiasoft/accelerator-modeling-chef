@@ -33,7 +33,7 @@
 
 #include <cmath>
 #include <iostream>
-#include "Matrix.h"
+#include "TMatrix.h"
 
 using namespace std;
 
@@ -45,31 +45,31 @@ void mygaussj(MatrixD a,int n,MatrixD b,int m)
   double big,dum,pivinv;
   double temp;
 
-  MatrixI indxc(n);
-  MatrixI indxr(n);
-  MatrixI ipiv(n);
-  for (j=0;j<n;j++) ipiv(j)=0;
+  int indxc[n];
+  int indxr[n];
+  int ipiv[n];
+  for (j=0;j<n;j++) ipiv[j]=0;
   for (i=0;i<n;i++) {
     big=0.0;
     for (j=0;j<n;j++)
-      if (ipiv(j) != 1)
+      if (ipiv[j] != 1)
 	for (k=0;k<n;k++) {
-	  if (ipiv(k) == 0) {
+	  if (ipiv[k] == 0) {
 	    if (fabs(a(j,k)) >= big) {
 	      big=fabs(a(j,k));
 	      irow=j;
 	      icol=k;
 	    }
-	  } else if (ipiv(k) > 1) 
+	  } else if (ipiv[k] > 1) 
 	    cerr << "GAUSSJ: Singular Matrix-1 " << ipiv << endl;
 	}
-    ++(ipiv(icol));
+    ++(ipiv[icol]);
     if (irow != icol) {
       for (l=0;l<n;l++) SWAP(a(irow,l),a(icol,l))
 	for (l=0;l<m;l++) SWAP(b(irow,l),b(icol,l))
     }
-    indxr(i)=irow;
-    indxc(i)=icol;
+    indxr[i]=irow;
+    indxc[i]=icol;
     if (a(icol,icol) == 0.0) 
       cerr << "GAUSSJ: Singular Matrix-2 " << a << endl;
     pivinv=1.0/a(icol,icol);
@@ -85,9 +85,9 @@ void mygaussj(MatrixD a,int n,MatrixD b,int m)
       }
   }
   for (l=n-1;l>=0;l--) {
-    if (indxr(l) != indxc(l))
+    if (indxr[l] != indxc[l])
       for (k=0;k<n;k++)
-	SWAP(a(k,indxr(l)),a(k,indxc(l)));
+	SWAP(a(k,indxr[l]),a(k,indxc[l]));
   }
 }
 

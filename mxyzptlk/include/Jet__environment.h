@@ -31,7 +31,7 @@
 #ifndef JETENV_H
 #define JETENV_H
 
-#include "Matrix.h"
+#include "TMatrix.h"
 #include "IntArray.h"
 #include "slist.h"
 

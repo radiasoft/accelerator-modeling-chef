@@ -44,7 +44,7 @@
 #include <cstdlib>
 
 #include "VectorD.h"
-#include "Matrix.h"
+#include "TMatrix.h"
 
 class Distribution 
 {

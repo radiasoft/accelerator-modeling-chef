@@ -472,7 +472,7 @@ ostream& operator<<( ostream& os, const Vector& v )
 
 // Utilities
 
-Vector operator*( const MatrixD& A, const Vector& x )
+Vector operator*( const TMatrix<double>& A, const Vector& x )
 {
   static int r; 
   static int c;
@@ -483,7 +483,7 @@ Vector operator*( const MatrixD& A, const Vector& x )
   c = A.cols();
   if( c != x.Dim() ) {
     throw( Vector::GenericException( 
-                        "Vector operator*( const MatrixD& A, const Vector& x )",
+                        "Vector operator*( const TMatrix<double>& A, const Vector& x )",
                         "Incompatible dimensions.") );
   }
   Vector z( r );
