@@ -30,6 +30,13 @@ vkick::vkick( const vkick& x )
 {
 }
 
+
+vkick::vkick( char* n, double l, double s ) 
+: bmlnElmnt(n,l,s) 
+{
+}
+
+
 vkick::~vkick() {
 }
 

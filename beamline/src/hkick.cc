@@ -27,8 +27,16 @@ hkick::hkick( const hkick& x )
 {
 }
 
+
 hkick::hkick( bmlnElmntData& x ) : bmlnElmnt( x ) {
 }
+
+
+hkick::hkick( char* n, double l, double s ) 
+: bmlnElmnt(n,l,s) 
+{
+}
+
 
 hkick::~hkick() {
 }
