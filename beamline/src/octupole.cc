@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "octupole.h"
 #include "drift.h"
@@ -80,9 +80,9 @@ void octupole::setStrength( double s ) {
 
 
 void octupole::setStrength( double, int ) {
- cerr << "\nCall to octupole::setStrength( double s, int index )"
-      << endl;
- exit(1);
+ throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+        "void octupole::setStrength( double, int ) {", 
+        "Call to unwritten function." ) );
 }
 
 
@@ -100,14 +100,11 @@ const char* octupole::Type() const
 void octupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    cerr << "\n"
-            "*** ERROR ***                                    \n"
-            "*** ERROR *** octupole::Split                    \n"
-            "*** ERROR *** pc = " << pc << 
-                               "and is out of bounds.         \n"
-            "*** ERROR ***                                    \n"
-         << endl;
-    exit (1);
+    ostringstream uic;
+    uic  << "Requested percentage = " << pc << "; not within [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void octupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           uic.str().c_str() ) );
   }
 
   // We assume "strength" means field, not field*length.

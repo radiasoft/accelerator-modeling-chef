@@ -1097,7 +1097,7 @@ void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
-    uic  << "Requested percentage = " << pc << "; not with [0,1].";
+    uic  << "Requested percentage = " << pc << "; not within [0,1].";
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
            "void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
            uic.str().c_str() ) );

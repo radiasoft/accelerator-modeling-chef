@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iomanip>
 
@@ -45,9 +45,9 @@ using namespace std;
 // **************************************************
 
 thinSeptum::thinSeptum() : bmlnElmnt() {
-  cerr << "\n*** ERROR *** Cannot define thinSeptum without parameters.\n" 
-       << endl;
-  exit(1);
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "thinSeptum::thinSeptum() : bmlnElmnt() {", 
+         "Default construction not permitted in this version." ) );
 }
 
 thinSeptum::thinSeptum( char* n )
