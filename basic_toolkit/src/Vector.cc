@@ -11,21 +11,33 @@
  */
 
 
-
 #include "VectorD.h"
+
 #ifdef __VISUAL_CPP__
 using std::cout;
 #else
 #include <stdlib.h>
 #endif
 
+#include <iomanip.h>
+
 // ================================================================
-//      Global variables
+//      Globals
 //
 
 #ifdef OBJECT_DEBUG
 int Vector::objectCount = 0;
 #endif
+
+OutputFormat* Vector::defOFPtr = 0;
+
+void Vector::setDefaultFormat( const OutputFormat& x )
+{
+  if( ( (OutputFormat*) 0 ) != Vector::defOFPtr ) {
+    delete Vector::defOFPtr;
+  }
+  defOFPtr = new OutputFormat( x );
+}
 
 // ================================================================
 //      Constructors and the destructor ...
@@ -43,7 +55,7 @@ int Vector::objectCount = 0;
          exit(1);                           \
   }
 
-Vector::Vector( int n, const double* x )
+Vector::Vector( int n, const double* x, OutputFormat* q )
 {
   int i;
 
@@ -53,6 +65,8 @@ Vector::Vector( int n, const double* x )
   comp = new double [ dim ];
   if( x ) for ( i = 0; i < dim; i++ ) comp[i] = x[i];
   else    for ( i = 0; i < dim; i++ ) comp[i] = 0.0;
+
+  ofPtr = q;
 
 #ifdef OBJECT_DEBUG
  objectCount++;
@@ -367,11 +381,38 @@ void Vector::Rotate ( Vector& v, double theta ) const
 
 ostream& operator<<( ostream& os, const Vector& v )
 {
-  os << "( ";
-  for( int i = 0; i < v.dim - 1; i++ )
-    os << v.comp[i] << ", ";
-  os << v.comp[ v.dim - 1 ] << " )";
-  return os;
+  static OutputFormat* q;
+  q = v.ofPtr;
+  if( ( (OutputFormat*) 0 ) == q  ) {
+    q = Vector::defOFPtr;
+  }
+
+  if( ( (OutputFormat*) 0 ) == q  ) {
+    os << "( ";
+    for( int i = 0; i < v.dim - 1; i++ )
+      os << v.comp[i] << ", ";
+    os << v.comp[ v.dim - 1 ] << " )";
+    return os;
+  }
+
+  else {
+    os << "( ";
+    for( int i = 0; i < v.dim - 1; i++ ) {
+      os << setw(q->width) 
+         << setprecision(q->precision) 
+         << resetiosflags(014002 | 04) 
+         << setiosflags(q->flags) 
+         << v.comp[i] << ", "
+         << q->getPadding();
+    }
+    os << setw(q->width) 
+       << setprecision(q->precision) 
+       << resetiosflags(014002 | 04) 
+       << setiosflags(q->flags) 
+       << v.comp[ v.dim - 1 ] << " )";
+
+    return os;
+  }
 }
 
 

@@ -26,6 +26,7 @@ OBJS = Barnacle.o \
 	mygaussj.o \
         nearint.o \
         nexcom.o \
+        OutputFormat.o \
         parsef.o \
         rg.o \
         slist.o \
