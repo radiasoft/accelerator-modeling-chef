@@ -698,6 +698,8 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         slist_iterator getNext( _topTracker->_orbits );
         Vector z(3);
         double a, b, c;
+        double xc = ( _xLo + _xHi )/2.0;
+        double yc = ( _yLo + _yHi )/2.0;
         const Vector* vec = 0;
         Orbit* orbitPtr = 0;
         Orbit* newOrbitPtr = 0;
@@ -708,27 +710,34 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         while((  0 != orbitPtr )) {
 	  Orbit::Iterator oit( orbitPtr );
           vec = oit++;
-
-          _transformPtr->toDynamics( *vec, &a, &b, &c );
-          z(0) = a;
-          z(1) = b;
-          z(2) = c;
-
-          newOrbitPtr = new Orbit( z );
-          newOrbitPtr->setColor( orbitPtr->Red(), 
-                                 orbitPtr->Green(), 
-                                 orbitPtr->Blue()   );
-          vec = oit++;
           while( 0 != vec ) {
             _transformPtr->toDynamics( *vec, &a, &b, &c );
-            z(0) = a;
-            z(1) = b;
-            z(2) = c;
-            newOrbitPtr->add( z );
+
+            if( _xLo < a && a < _xHi && 
+                _yLo < b && b < _yHi    ) 
+            {
+              z(0) = a - xc;
+              z(1) = b - yc;
+              z(2) = c;
+
+              if( !newOrbitPtr ) 
+              {
+                newOrbitPtr = new Orbit( z );
+                newOrbitPtr->setColor( orbitPtr->Red(), 
+                                       orbitPtr->Green(), 
+                                       orbitPtr->Blue()   );
+	      }
+              else 
+              {
+                newOrbitPtr->add( z );
+	      }
+            }
+
             vec = oit++;
 	  }
 
           orbits3D.append( newOrbitPtr );
+          newOrbitPtr = 0;
           orbitPtr = (Orbit*) getNext();
 	}
 
