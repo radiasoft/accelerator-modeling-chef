@@ -2,6 +2,7 @@
    from the eispack library
 */
 
+#include <math.h>
 #include "f2c.h"
 
 /* Subroutine */ int cg_(nm, n, ar, ai, wr, wi, matz, zr, zi, fv1, fv2, fv3, 
