@@ -44,7 +44,7 @@ void rbend::J_OutEdge( bmlnElmnt* p_be, JetParticle& p )
 
 void rbend::P_Face( bmlnElmnt* p_be, Particle& p )
 {
-  static const enum { x = 0, y, cdt, xp, yp, dpop };
+  enum { x = 0, y, cdt, xp, yp, dpop };
   static rbend* pbe;
 
   pbe = (rbend*) p_be;  // ??? Why isn't the argument an rbend* ?
@@ -98,7 +98,7 @@ void rbend::P_Face( bmlnElmnt* p_be, Particle& p )
 
 void rbend::J_Face( bmlnElmnt* p_be, JetParticle& p )
 {
-  static const enum { x = 0, y, cdt, xp, yp, dpop };
+  enum { x = 0, y, cdt, xp, yp, dpop };
   static rbend* pbe;
 
   pbe = (rbend*) p_be;  // ??? Why isn't the argument an rbend* ?
