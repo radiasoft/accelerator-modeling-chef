@@ -108,7 +108,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
   else 
   { _p_currBmlCon = 0;
   }
-  _p_clickedCon = _p_currBmlCon;
+  // REMOVE: _p_clickedCon = _p_currBmlCon;
 
 
   bool kludged = false;
@@ -158,7 +158,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
       _edit_selectMenu->insertSeparator();
       _edit_selectMenu->insertItem( "All", this, SLOT(_editSelectAll()) );
       _edit_selectMenu->insertItem( "None", this, SLOT(_editSelectNone()) );
-      _edit_selectMenu->insertItem( "Line", this, SLOT(_editSelectLine()) );
+      // REMOVE: _edit_selectMenu->insertItem( "Line", this, SLOT(_editSelectLine()) );
     _id_EditSelectMenu =
     _editMenu->insertItem( "Select", _edit_selectMenu );
     _editMenu->setItemEnabled( _id_EditSelectMenu, false);
@@ -351,21 +351,24 @@ void CHEF::_editSelectNone()
 }
 
 
-void CHEF::_editSelectLine()
-{
-  _editSelectNone();
-  _p_vwr->setSelected( _p_clickedQBml, true );
-  _p_currBmlCon = _p_clickedCon;
-}
+// REMOVE: void CHEF::_editSelectLine()
+// REMOVE: {
+// REMOVE:   _editSelectNone();
+// REMOVE:   _p_vwr->setSelected( _p_clickedQBml, true );
+// REMOVE:   _p_currBmlCon = _p_clickedCon;
+// REMOVE: }
 
 
 void CHEF::_editCopyLine()
 {
   // Procedure copied from CHEF.builders.cc
   // and slightly modified.
-  if( 0 != _p_clickedCon ) { 
+  // REMOVE: if( 0 != _p_clickedCon ) { 
+  // REMOVE:   _p_currBmlCon = new BeamlineContext( false, 
+  // REMOVE:                                        _p_clickedCon->cloneBeamline() );
+  if( 0 != _p_currBmlCon ) { 
     _p_currBmlCon = new BeamlineContext( false, 
-                                         _p_clickedCon->cloneBeamline() );
+                                         _p_currBmlCon->cloneBeamline() );
     _p_currBmlCon->setClonedFlag( true );
     _contextList.insert( _p_currBmlCon );
     emit _new_beamline();
@@ -375,12 +378,13 @@ void CHEF::_editCopyLine()
 
 void CHEF::_editRemoveLine()
 {
-  if( 0 == _p_clickedCon ) { return; }
-  if( 0 == (_p_vwr->removeBeamline( _p_clickedCon )) )
+  if( 0 == _p_currBmlCon ) { return; }
+  if( 0 == (_p_vwr->removeBeamline( _p_currBmlCon )) )
   { // Note: Beamline has been eliminated as well.
-    _contextList.remove( _p_clickedCon );
-    if( _p_currBmlCon == _p_clickedCon ) { _p_currBmlCon = 0; }
-    _p_clickedCon = 0;
+    _contextList.remove( _p_currBmlCon );
+    // REMOVE: if( _p_currBmlCon == _p_clickedCon ) { _p_currBmlCon = 0; }
+    _p_currBmlCon = 0;
+    // REMOVE: _p_clickedCon = 0;
   }
   else 
   { QMessageBox::information( 0, "CHEF: ERROR",
@@ -786,7 +790,8 @@ void CHEF::_editAlign()
 
       // Do the (mis)alignment
       AlignVisitor euclid( euclidData, theOnes );
-      _p_clickedCon->accept( euclid );
+      // REMOVE: _p_clickedCon->accept( euclid );
+      if( 0 != _p_currBmlCon) { _p_currBmlCon->accept( euclid ); }
     }
   }
 }
@@ -1268,8 +1273,11 @@ void CHEF::_enterMapArg()
 {
   _pushArgs();
 
-  if( 0 != _p_clickedCon ) {
-    _toolArgs[0] = new MappingPtr( _p_clickedCon->getOneTurnMap() );
+  // REMOVE: if( 0 != _p_clickedCon ) {
+  // REMOVE:   _toolArgs[0] = new MappingPtr( _p_clickedCon->getOneTurnMap() );
+  // REMOVE: }
+  if( 0 != _p_currBmlCon ) {
+    _toolArgs[0] = new MappingPtr( _p_currBmlCon->getOneTurnMap() );
   }
   else {
     QMessageBox::information( 0, "CHEF",
@@ -1282,8 +1290,11 @@ void CHEF::_enterContextArg()
 {
   _pushArgs();
 
-  if( 0 != _p_clickedCon ) {
-    _toolArgs[0] = new BeamlineContextPtr( *_p_clickedCon );
+  // REMOVE: if( 0 != _p_clickedCon ) {
+  // REMOVE:   _toolArgs[0] = new BeamlineContextPtr( *_p_clickedCon );
+  // REMOVE: }
+  if( 0 != _p_currBmlCon ) {
+    _toolArgs[0] = new BeamlineContextPtr( *_p_currBmlCon );
   }
   else {
     QMessageBox::information( 0, "CHEF",
@@ -1462,13 +1473,15 @@ void CHEF::_openFile()
 
 void CHEF::_fileSaveAs()
 {
-  if( _p_clickedCon == 0 ) {
+  // REMOVE: if( _p_clickedCon == 0 ) {
+  if( _p_currBmlCon == 0 ) {
     QMessageBox::information( 0, "CHEF",
                 "Left click on a beamline first." );
     return;
   }
   
-  QString startName(_p_clickedCon->name());
+  // REMOVE: QString startName(_p_clickedCon->name());
+  QString startName(_p_currBmlCon->name());
   startName += ".bml";
 
   QString s = QFileDialog::getSaveFileName( 
@@ -1478,8 +1491,8 @@ void CHEF::_fileSaveAs()
                    0,
                    "Save File As" );
 
-  // const beamline* bmlPtr = _p_clickedCon->cheatBmlPtr();
-  beamline* bmlPtr = (beamline*) _p_clickedCon->cheatBmlPtr();
+  // REMOVE: beamline* bmlPtr = (beamline*) _p_clickedCon->cheatBmlPtr();
+  beamline* bmlPtr = (beamline*) _p_currBmlCon->cheatBmlPtr();
 
   if( s.length() > 0 ) {
     ofstream outStream( s.latin1() );
@@ -1558,7 +1571,8 @@ void CHEF::_launch_browser()
 
 void CHEF::_set_p_clickedContext( BeamlineContext* x )
 {
-  _p_clickedCon = x;
+  // REMOVE: _p_clickedCon = x;
+  _p_currBmlCon = x;
 }
 
 
