@@ -95,7 +95,7 @@ ultra:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = " \
-	"C++FLAGS = -DULTRA" \
+	"C++FLAGS = -DULTRA -ptr$(FNALROOT) -ptv" \
 	"MAKELIB = ar ruv" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/ultra" \
@@ -109,7 +109,7 @@ ultra-opt:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = -fast" \
-	"C++FLAGS = -DULTRA -fast  -xchip=ultra -xarch=v8plus" \
+	"C++FLAGS = -DULTRA -fast -xchip=ultra -xarch=v8plus -ptr$(FNALROOT) -ptv" \
 	"MAKELIB = ar ruv" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/ultra" \
@@ -123,7 +123,7 @@ ultra-debug:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = -g " \
-	"C++FLAGS = -DULTRA -g -sb " \
+	"C++FLAGS = -DULTRA -g -sb -ptr$(FNALROOT) -ptv" \
 	"MAKELIB = ar ruv" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/ultra" \
