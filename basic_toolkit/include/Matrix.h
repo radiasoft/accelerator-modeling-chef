@@ -3,7 +3,7 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.0                    
+******  Version:   4.1
 ******                                    
 ******  File:      Matrix.h
 ******                                                                
@@ -35,7 +35,8 @@
 
 class MatrixC;
 
-class MatrixD {
+class MatrixD 
+{
 private:
   MLD* ml;
 
@@ -110,6 +111,35 @@ friend MatrixD operator/(MatrixD& ,MatrixD &);
 #ifdef OBJECT_DEBUG
   static int objectCount;
 #endif
+
+  class RandomOrthogonal
+  {
+    public: 
+      RandomOrthogonal( int /* dimension */ );
+      ~RandomOrthogonal();
+
+      void omitIndex( int );  
+      void omitIndex( int, int );  
+      void includeIndex( int );
+      void includeIndex( int, int );
+      // By default, all are included
+      void setNumberOfPasses( int );
+      // By default, = 1.      
+
+      void setRange( int, double /* radians */, double );
+      void setRange( int, int, double /* radians */, double );
+      // Default range = [ 0, 2 pi ) for all indices
+
+      MatrixD build();
+    
+    private:
+      int      _dim;
+      int      _passes;
+      bool**   _omitted;        // owned
+      double** _lowerTheta;     // owned
+      double** _upperTheta;     // owned
+      double** _rangeTheta;     // owned
+  };
 };
 
 void operator-=( MatrixD&, const MatrixD& );
