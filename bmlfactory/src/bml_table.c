@@ -147,7 +147,7 @@ bml_table_init( void ) {
      Deletes the hash table for bmls and returns an OK value
    */
 int
-bml_table_delete( GHashTable* bml_table, fb_allocator* bml_alloc ) {
+bml_table_delete( GHashTable* bml_table, fb_allocator* bml_alloc) {
   
   g_hash_table_foreach_remove( bml_table, bml_free_func, (void*)bml_alloc );  
   g_hash_table_destroy( bml_table );
@@ -307,6 +307,7 @@ bml_remove_forward( beam_line*** bml_arr,
                     int          size,
                     GHashTable*  bml_table ) {
   int i;
+
   GList *bml_list = NULL, *bml_list_ptr = NULL, *ref_list = NULL;
   beam_line **new_arr;
   for ( i = 0; i < size; ++i ) {
@@ -354,5 +355,7 @@ bml_remove_forward( beam_line*** bml_arr,
   }
   free( *bml_arr );
   g_list_free( bml_list );
-  *bml_arr = new_arr;
+
+  *bml_arr = new_arr;   
+
 }
