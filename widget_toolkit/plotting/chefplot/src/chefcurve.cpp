@@ -115,9 +115,9 @@ CHEFCurve::CHEFCurve(const QwtData &data, const char* name): QwtPlotCurve(0,name
 
 
 CHEFCurve::~CHEFCurve() {
-
+  std::cout << "DGN: Entering CHEFCurve::~CHEFCurve()" << std::endl;
      // handled by the QwtPlotCurve destructor.
-
+  std::cout << "DGN: Leaving CHEFCurve::~CHEFCurve()" << std::endl;
 }
 
 

@@ -207,7 +207,7 @@ void SiteViewer::_fileSite()
     QString("CHEF: Site Coordinate File") );
 
   if( fileName.isNull() ) {
-    QMessageBox::information( 0, "CHEF::SiteViewer",
+    QMessageBox::information( 0, "CHEF::SiteViewer::_fileSite()",
                               "Sorry. It didn't work." );
   }
 

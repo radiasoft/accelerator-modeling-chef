@@ -14,8 +14,10 @@
 
 
 Plot::Plot(QWidget * parent, const char * name, Qt::WFlags f ): QwtPlot(parent, name), _bottom_wheel(0), _right_wheel(0), _left_wheel(0), 
-                                                                _xmax(0.0), _xmin(0.0) {
+                                                                _xmin(0.0), _xmax(0.0) {
  
+   d_curves->setAutoDelete(false);
+
    enableXBottomAxis(true);
    enableYLeftAxis(true);
    enableYRightAxis(true);
@@ -96,7 +98,9 @@ Plot::~Plot() {
      // Qt Widgets are automatically destroyed when their parent is destroyed.
      // QwtCurve objects will be destroyed too if they are children of the plot
 
+  std::cout << "DGN: Entering Plot::~Plot" << std::endl;
    removeCurves();
+  std::cout << "DGN: Leaving Plot::~Plot" << std::endl;
 
 }
 
