@@ -379,7 +379,7 @@ protected:
   JetParticle( const JetParticle& );
 
 public:
-  virtual Particle* ConvertToParticle() = 0;
+  virtual Particle* ConvertToParticle() const = 0;
   virtual ~JetParticle();
   virtual JetParticle* Clone() const = 0;
 
@@ -489,7 +489,7 @@ struct JetProton : public JetParticle {
   JetProton( const JetProton& );
   ~JetProton();
   JetParticle* Clone() const { return new JetProton( *this ); }
-  Particle* ConvertToParticle();
+  Particle* ConvertToParticle() const;
 };
 
 struct JetAntiProton : public JetParticle {
@@ -499,7 +499,7 @@ struct JetAntiProton : public JetParticle {
   JetAntiProton( const JetAntiProton& );
   ~JetAntiProton();
   JetParticle* Clone() const { return new JetAntiProton( *this ); }
-  Particle* ConvertToParticle();
+  Particle* ConvertToParticle() const;
 };
 
 struct JetElectron : public JetParticle {
@@ -509,7 +509,7 @@ struct JetElectron : public JetParticle {
   JetElectron( const JetElectron& );
   ~JetElectron();
   JetParticle* Clone() const { return new JetElectron( *this ); }
-  Particle* ConvertToParticle();
+  Particle* ConvertToParticle() const;
 };
 
 struct JetPositron : public JetParticle {
@@ -519,7 +519,7 @@ struct JetPositron : public JetParticle {
   JetPositron( const JetPositron& );
   ~JetPositron();
   JetParticle* Clone() const { return new JetPositron( *this ); }
-  Particle* ConvertToParticle();
+  Particle* ConvertToParticle() const;
 };
 
 struct JetMuon : public JetParticle {
@@ -529,7 +529,7 @@ struct JetMuon : public JetParticle {
   JetMuon( const JetMuon& );
   ~JetMuon();
   JetParticle* Clone() const { return new JetMuon( *this ); }
-  Particle* ConvertToParticle();
+  Particle* ConvertToParticle() const;
 };
 
 struct JetAntiMuon : public JetParticle {
@@ -539,7 +539,7 @@ struct JetAntiMuon : public JetParticle {
   JetAntiMuon( const JetAntiMuon& );
   ~JetAntiMuon();
   JetParticle* Clone() const { return new JetAntiMuon( *this ); }
-  Particle* ConvertToParticle();
+  Particle* ConvertToParticle() const;
 };
 
 #endif // PARTICLE_H

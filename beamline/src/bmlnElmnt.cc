@@ -59,8 +59,14 @@ const short bmlnElmnt::BF_OK         = 0;
 const short bmlnElmnt::BF_NULL_ARG   = 1;
 const short bmlnElmnt::BF_BAD_START  = 2;
 
-
 using namespace std;
+
+// **************************************************
+//   yes and no Criteria
+// **************************************************
+
+beamline::Aye beamline::yes;
+beamline::Nay beamline::no;
 
 // **************************************************
 //   struct BMLN_posInfo

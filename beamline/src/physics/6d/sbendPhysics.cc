@@ -46,11 +46,8 @@ sbend::Approx_Prop   sbend::Approx;
 
 int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
-  cout << "DGN: sbendPhysics:  static sbend* pbe;" << endl;
  static sbend* pbe;
- cout << "DGN: sbendPhysics:  pbe = (sbend*) p_be;" << endl;
  pbe = (sbend*) p_be;
- cout << "DGN: sbendPhysics:  static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;" << endl;
  static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
 
  // Preliminary filter from state coordinates
@@ -112,105 +109,66 @@ int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  int i;
 
  // Preliminary filter from state coordinates
- cout << "DGN: sbendPhysics:  Jet psq;" << endl;
  Jet psq;
- cout << "DGN: sbendPhysics:  psq = 1.0 + p.get_ndp();" << endl;
  psq = 1.0 + p.get_ndp();
- cout << "DGN: sbendPhysics:  psq = psq*psq;" << endl;
  psq = psq*psq;
 
- cout << "DGN: sbendPhysics:  Jet E_factor;" << endl;
  Jet E_factor;
- cout << "DGN: sbendPhysics:  E_factor = 1.0 / sqrt( psq + p.PNI2() );" << endl;
  E_factor = 1.0 / sqrt( psq + p.PNI2() );
 
- cout << "DGN: sbendPhysics:  Jet beta_1, beta_2, beta_3;" << endl;
  Jet beta_1, beta_2, beta_3;
- cout << "DGN: sbendPhysics:  beta_1 = E_factor*p.get_npx();" << endl;
  beta_1 = E_factor*p.get_npx();
- cout << "DGN: sbendPhysics:  beta_2 = E_factor*p.get_npy();" << endl;
  beta_2 = E_factor*p.get_npy();
- cout << "DGN: sbendPhysics:  beta_3 = E_factor*sqrt( psq - p.get_npx()*p.get_npx()" << endl;
  beta_3 = E_factor*sqrt( psq - p.get_npx()*p.get_npx()
                              - p.get_npy()*p.get_npy() );
 
  // REMOVE ??? double Rho    = p.bRho / pbe->strength;        // Fiducial parameters
  // REMOVE ??? double dphi   = - 2.0*asin( length / (2.0*Rho) );
 
- cout << "DGN: sbendPhysics:  double dphi   = - pbe->getAngle();" << endl;
  double dphi   = - pbe->getAngle();
- cout << "DGN: sbendPhysics:  double Rho    = - pbe->Length() / dphi;" << endl;
  double Rho    = - pbe->Length() / dphi;
- cout << "DGN: sbendPhysics:  double Omega  = csq_red * pbe->Strength() / p.ReferenceEnergy();" << endl;
  double Omega  = csq_red * pbe->Strength() / p.ReferenceEnergy();
 
- cout << "DGN: sbendPhysics:  JetC ui, vui;" << endl;
  JetC ui, vui;
- cout << "DGN: sbendPhysics:  ui  = complex_i * p.get_x();" << endl;
  ui  = complex_i * p.get_x();
- cout << "DGN: sbendPhysics:  vui = PH_MKS_c*( beta_3 + complex_i * beta_1 );" << endl;
  vui = PH_MKS_c*( beta_3 + complex_i * beta_1 );
 
  // Step 1.
- cout << "DGN: sbendPhysics:  Jet omega;" << endl;
  Jet omega;
- cout << "DGN: sbendPhysics:  JetC bi;" << endl;
  JetC bi;
- cout << "DGN: sbendPhysics:  omega  = csq_red * pbe->Strength() / p.Energy();" << endl;
  omega  = csq_red * pbe->Strength() / p.Energy();
- cout << "DGN: sbendPhysics:  bi = ( complex_i*vui / omega ) - ui;" << endl;
  bi = ( complex_i*vui / omega ) - ui;
 
  // Step 2.
- cout << "DGN: sbendPhysics:  FNAL::Complex expFactor( cos(dphi), - sin(dphi) );" << endl;
  FNAL::Complex expFactor( cos(dphi), - sin(dphi) );
- cout << "DGN: sbendPhysics:  JetC bf;" << endl;
  JetC bf;
- cout << "DGN: sbendPhysics:  bf = bi*expFactor +" << endl;
  bf = bi*expFactor +
       complex_i * Rho * ( 1.0 - expFactor );
 
  // Step 3.
- cout << "DGN: sbendPhysics:  Jet rho, dthmdphi;" << endl;
  Jet rho, dthmdphi;
- cout << "DGN: sbendPhysics:  rho      = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;" << endl;
  rho      = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
- cout << "DGN: sbendPhysics:  dthmdphi = asin( real(bi)/rho ) - asin( real(bf)/rho );" << endl;
  dthmdphi = asin( real(bi)/rho ) - asin( real(bf)/rho );
 
  // Step 4.
- cout << "DGN: sbendPhysics:  JetC expF, vuf, uf;" << endl;
  JetC expF, vuf, uf;
- cout << "DGN: sbendPhysics:  expF = cos(dthmdphi) + complex_i*sin(dthmdphi);" << endl;
  expF = cos(dthmdphi) + complex_i*sin(dthmdphi);
- cout << "DGN: sbendPhysics:  vuf  = vui*expF;" << endl;
  vuf  = vui*expF;
- cout << "DGN: sbendPhysics:  uf   = ( ui + bi )*expF - bf;" << endl;
  uf   = ( ui + bi )*expF - bf;
 
 
  // Final filter back to state coordinates
- cout << "DGN: sbendPhysics:  Jet dtheta, cdt, CDT;" << endl;
  Jet dtheta, cdt, CDT;
- cout << "DGN: sbendPhysics:  dtheta = dthmdphi + dphi;" << endl;
  dtheta = dthmdphi + dphi;
- cout << "DGN: sbendPhysics:  cdt    = - PH_MKS_c * dtheta / omega;" << endl;
  cdt    = - PH_MKS_c * dtheta / omega;
- cout << "DGN: sbendPhysics:  CDT.Reconstruct( cdt.Env() );" << endl;
  CDT.Reconstruct( cdt.Env() );
- cout << "DGN: sbendPhysics:  CDT    = - PH_MKS_c * dphi   / Omega;" << endl;
  CDT    = - PH_MKS_c * dphi   / Omega;
 
- cout << "DGN: sbendPhysics:  p.set_x    ( imag( uf ) );" << endl;
  p.set_x    ( imag( uf ) );
- cout << "DGN: sbendPhysics:  p.set_y    ( p.get_y() + beta_2*cdt );" << endl;
  p.set_y    ( p.get_y() + beta_2*cdt );
- cout << "DGN: sbendPhysics:  p.set_cdt  ( p.get_cdt() + ( cdt - CDT ) );" << endl;
  p.set_cdt  ( p.get_cdt() + ( cdt - CDT ) );
- cout << "DGN: sbendPhysics:  p.set_npx  ( imag( vuf )/( E_factor * PH_MKS_c ) );" << endl;
  p.set_npx  ( imag( vuf )/( E_factor * PH_MKS_c ) );
 
- cout << "DGN: sbendPhysics:  return 0;" << endl;
  return 0;
 }
 

@@ -536,6 +536,16 @@ public:
   };
   // Returns true if element matches the derived 
   // criterion; false, if not.
+  struct Aye : Criterion {
+    bool operator()( const bmlnElmnt* ) { return true; }
+    bool operator()( const bmlnElmnt& ) { return true; }
+  };
+  struct Nay : Criterion {
+    bool operator()( const bmlnElmnt* ) { return false; }
+    bool operator()( const bmlnElmnt& ) { return false; }
+  };
+  static Aye yes;
+  static Nay no;
 
   struct Action
   {

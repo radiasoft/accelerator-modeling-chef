@@ -61,22 +61,31 @@ class ClosedOrbitSage : public Sage
   void eraseAll();
   void setForcedCalc();
   void unsetForcedCalc();
+  void setIgnoreErrors( bool );
 
  private:
-  char _forced;
+  bool _forced;
+  bool _ignoreErrors;
+
+  int  _invokeFPSolver( JetParticle* );
+  
 };
 
 
 inline void ClosedOrbitSage::setForcedCalc()
 {
-  _forced = 1;
+  _forced = true;
 }
 
 inline void ClosedOrbitSage::unsetForcedCalc()
 {
-  _forced = 0;
+  _forced = false;
 }
 
+inline void ClosedOrbitSage::setIgnoreErrors( bool x )
+{
+  _ignoreErrors = x;
+}
 
 
 #endif // CLORB_SAGE_H

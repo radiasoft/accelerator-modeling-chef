@@ -68,6 +68,10 @@ typedef TMapping<double,FNAL::Complex> Mapping;
 #include "EdwardsTengSage.h"
 #endif
 
+#ifndef COVARIANCESAGE_H
+#include "CovarianceSage.h"
+#endif
+
 class BeamlineContext
 {
   public:
@@ -102,6 +106,14 @@ class BeamlineContext
     int processElements( beamline::Action& );
     // Returns number of elements processed.
 
+    void setAvgInvariantEmittance( double, double );
+    // Sets the parameters used to calculate
+    //   an equilibrium covariance matrix.
+    // Arguments are in units of pi mm-mr.
+    //   The first is "mostly horizontal"; 
+    //   the second, "mostly vertical."
+    // If not set, default values are: (40,40).
+
     double getEnergy() const;
     int countHowManyDeeply() const;
     alignmentData getAlignmentData( const bmlnElmnt* ) const;
@@ -120,16 +132,21 @@ class BeamlineContext
     double getVerticalEigenTune();
     const LattFuncSage::lattFunc* getLattFuncPtr( int );
     const EdwardsTengSage::Info* getETFuncPtr( int );
+    const CovarianceSage::Info* getCovFuncPtr( int );
 
+    MatrixD equilibriumCovariance();
     MatrixD equilibriumCovariance( double, double );
     // Arguments are the "invariant emittances" -
     //   essentially two scaled action coordinates -
     //   in pi mm-mr units. The first is "mostly horizontal," 
     //   the second, "mostly vertical."
+    //   (See notes on _eps_1 and _eps_2 below.)
     // This routine returns a covariance matrix over
     //   the full phase space, but only the transverse
-    //   components should be believed. It assumes tat
+    //   components should be believed. It assumes that
     //   the longitudinal actions are zero.
+    // In the first form, the values of member data
+    //   _eps_1 and _eps_2 are used for the arguments.
 
     // Adjuster methods
     int addHTuneCorrector( const bmlnElmnt* );
@@ -167,6 +184,8 @@ class BeamlineContext
     friend ostream& operator<<( ostream&, const BeamlineContext& );
     friend istream& operator>>( istream&,       BeamlineContext& );
 
+    Proton                _proton;
+
     // Status flags
     static const int OKAY;
     static const int NO_TUNE_ADJUSTER;
@@ -175,6 +194,7 @@ class BeamlineContext
     beamline*             _p_bml;
     LattFuncSage*         _p_lfs;
     EdwardsTengSage*      _p_ets;
+    CovarianceSage*       _p_covs;
     ClosedOrbitSage*      _p_cos;
     ChromaticityAdjuster* _p_ca;
     TuneAdjuster*         _p_ta;
@@ -182,12 +202,20 @@ class BeamlineContext
     double                _dpp;
     // value of dp/p used for dispersion calculation.
     // by default = 0.0001
-
+    double                _eps_1, _eps_2;
+    // Average invariant emittances in units of pi mm-mr.
+    //   Used for computing equilibrium covariance  matrix.
+    //   Default values: _eps_1 = 40, _eps_2 = 40.
+    // Relation to <I> = <aa*>: 
+    //   <I> [m]  =  1.0e-6 * (_eps [pi mm-mr]/2) / (beta*gamma)
+    //   Note: because units are pi mm-mr, I divide by 2, not M_TWOPI
+    // I assume that _eps_1 is "mostly horizontal" and _eps_2 is
+    //   "mostly vertical."
     Proton*               _p_co_p; 
     // once created, proton holds initial state for
     // (transverse) closed orbit.
     Proton*               _p_disp_p;
-    // save as above, but at reference energy*(1+dp/p)
+    // same as above, but at reference energy*(1+dp/p)
     JetProton*            _p_jp;
     // once created, its state always contains
     // one traversal of the beamline at the
@@ -207,6 +235,7 @@ class BeamlineContext
     bool                  _isCloned;
     bool                  _normalLattFuncsCalcd;
     bool                  _edwardstengFuncsCalcd;
+    bool                  _momentsFuncsCalcd;
     bool                  _dispCalcd;
 
     // Iterators
@@ -216,11 +245,13 @@ class BeamlineContext
     DeepReverseBeamlineIterator* _p_drbi;
 
     // Operations
+    void _createTunes();
     void _createLFS();
     void _deleteLFS();
-    void _createTunes();
     void _createETS();
     void _deleteETS();
+    void _createCOVS();
+    void _deleteCOVS();
     void _createEigentunes();
     void _createClosedOrbit();
     void _deleteClosedOrbit();

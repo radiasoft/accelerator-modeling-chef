@@ -58,7 +58,9 @@
 
 typedef char (*ET_CRITFUNC)( bmlnElmnt* );
 
-struct ETinfo : BarnacleData {
+struct ETinfo : BarnacleData 
+{
+ double arcLength;
  Mapping map;
  Mapping mapInv;
  struct {
@@ -72,13 +74,15 @@ struct ETinfo : BarnacleData {
  double phi;
  MatrixD D;
  MatrixC EV;
- ETinfo() : D(2,2), EV(6,6) { }
+
+ ETinfo() : D(2,2), EV(6,6), arcLength(-1.0) { }
  ETinfo( const ETinfo& );
  ~ETinfo(){}
 };
 
 
-struct ETtunes : BarnacleData {
+struct ETtunes : BarnacleData 
+{
  double hor;
  double ver;
  ETtunes() : hor(0.0), ver(0.0) {}
@@ -87,12 +91,13 @@ struct ETtunes : BarnacleData {
 };
 
 
-class EdwardsTeng {
+class EdwardsTeng 
+{
 private:
  beamline* myBeamline;
  static double csH, csV, snH, snV;
  static Mapping* theMap;
- friend int attachETLattFuncs( bmlnElmnt* );
+ static int attachETLattFuncs( bmlnElmnt* );
 public:
  EdwardsTeng( const beamline* );
  ~EdwardsTeng();
