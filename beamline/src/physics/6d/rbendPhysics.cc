@@ -5,7 +5,7 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.2
+******  Version:   2.3
 ******                                    
 ******  File:      rbendPhysics.cc
 ******                                                                
