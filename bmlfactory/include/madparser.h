@@ -51,8 +51,8 @@ typedef struct madparser_ madparser;
 extern "C" {
 #endif
 
-madparser*    madparser_init( const char* filename_in, const char* filename_out );
-int           madparser_parse( madparser* mp );
+madparser*    madparser_init( const char* filename_in, const char* filename_out);
+int           madparser_parse( madparser* mp, const char* stringbuffer);
 int           madparser_delete( madparser* mp );
 
 fb_allocator* madparser_expr_alloc( madparser* mp );
@@ -80,8 +80,8 @@ const char*   madparser_current_filename( const madparser* mp );
 void*         madparser_current_buffer( const madparser* mp );
 int           madparser_has_input( const madparser* mp );
 
-FILE*         madparser_new_yybuff( madparser* mp, const char* filename );
-void*         madparser_restore_yybuff( madparser* mp );
+void          madparser_new_yybuff( madparser* mp, const char* filename );
+void          madparser_restore_yybuff( madparser* mp );
 void          madparser_save_yybuff( madparser* mp, void* yyb );
 
 int           madparser_linenum( const madparser* mp );
@@ -100,6 +100,16 @@ beam_element* madparser_current_bel( madparser* mp );
 char*         madparser_current_bel_type( madparser* mp );
 void          madparser_set_bel_type(madparser* mp, const char* );
 void          madparser_new_bel( madparser* mp );
+
+
+FILE*         madparser_call_include( madparser* mp, char* newfile, void* yybuffer);
+void*         madparser_return_from_include(madparser* mp );
+
+void          madparser_push_input_buffer(madparser* mp, void* yybuffer); 
+void*         madparser_pop_input_buffer(madparser* mp);
+  int         madparser_is_reading_from_memory(madparser* mp);
+void          madparser_set_inmemory_flag(madparser* mp, int);
+
 
 #ifdef __cplusplus
 };
