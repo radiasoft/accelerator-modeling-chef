@@ -7,6 +7,19 @@
  *  
  *  Leo Michelotti
  *  December 17, 1998
+ *
+ *  Put in check for Slots and use of new 
+ *  LattFuncSage functions.
+ *
+ *  Leo Michelotti
+ *  December 16, 1999
+ *
+ *  Added functions to control only horizontal
+ *  or vertical tunes.
+ *
+ *  Leo Michelotti
+ *  January 19, 2001
+ *
  */
 
 #ifndef TUNEADJUST_H
@@ -33,6 +46,8 @@ public:
   int  numberOfCorrectors() const;
 
   int changeTunesBy ( double, double, const JetProton& );
+  int changeHorizontalTuneBy ( double, const JetProton& );
+  int changeVerticalTuneBy ( double, const JetProton& );
   MatrixD getControls();
 
   void eraseAll();
