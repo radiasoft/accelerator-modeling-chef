@@ -367,59 +367,46 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
  } 
  else align = 0;
 
- if( a.p_bml )   p_bml = (beamline*) a.p_bml->Clone();
- else            p_bml = 0;
-
- dlist_iterator* getNext;
- if( a.p_bml_e ) {
-   if( !p_bml ) {
-     cerr << "\n"
-             "*** ERROR ***                                       \n"
-             "*** ERROR *** bmlnElmnt::bmlnElmnt( bmlnElmnt& )    \n"
-             "*** ERROR *** p_bml_e is defined but p_bml is not!  \n"
-             "*** ERROR ***                                       \n"
-          << endl;
-     exit(1);
+ if( a.p_bml ) 
+ {
+   p_bml = (beamline*) a.p_bml->Clone();
+   if( a.p_bml_e ) {
+     int count = 0;
+     dlist_iterator getNext( *(dlist*) a.p_bml );
+     bmlnElmnt* q;
+     bool notFound = true;
+     while((  q = (bmlnElmnt*) getNext()  )) {
+       count++;
+       if( q == a.p_bml_e ) {
+         getNext.Reset( *(dlist*) p_bml );
+         for( int i = 0; i < count; i++ ) {
+           q = (bmlnElmnt*) getNext();
+	 }
+         p_bml_e = q;
+         notFound = false;
+         break;
+       }
+     }
+     if( notFound ) {
+       p_bml_e = a.p_bml_e->Clone();
+       cerr << "*** WARNING *** \n"
+            << "*** WARNING *** bmlnElmnt::bmlnElmnt( const bmlnElmnt& )\n"
+            << "*** WARNING *** The element pointed to by p_bml_e does not exist\n"
+            << "*** WARNING *** within the beamline pointed to by p_bml .\n"
+            << "*** WARNING *** "
+            << endl;
+     }
    }
-
-   getNext = new dlist_iterator( *(dlist*) p_bml );
-
-   if( strcasecmp( ((bmlnElmnt*) (getNext->operator()()))->Type(), "drift" ) ) {
-     cerr << "\n"
-             "*** ERROR ***                                       \n"
-             "*** ERROR *** bmlnElmnt::bmlnElmnt( bmlnElmnt& )    \n"
-             "*** ERROR *** First element of p_bml not a drift.   \n"
-             "*** ERROR ***                                       \n"
-          << endl;
-     exit(1);
+ }
+ else 
+ {
+   p_bml = 0;
+   if( a.p_bml_e ) {
+     p_bml_e = a.p_bml_e->Clone();
    }
-
-   p_bml_e = (bmlnElmnt*) (getNext->operator()());
-
-   if( strcasecmp( ((bmlnElmnt*) (getNext->operator()()))->Type(), "drift" ) ) {
-     cerr << "\n"
-             "*** ERROR ***                                       \n"
-             "*** ERROR *** bmlnElmnt::bmlnElmnt( bmlnElmnt& )    \n"
-             "*** ERROR *** Second element of p_bml not a drift.  \n"
-             "*** ERROR ***                                       \n"
-          << endl;
-     exit(1);
-   }
-
-   if( getNext->operator()() ) {
-     cerr << "\n"
-             "*** ERROR ***                                       \n"
-             "*** ERROR *** bmlnElmnt::bmlnElmnt( bmlnElmnt& )    \n"
-             "*** ERROR *** Too many elements in p_bml            \n"
-             "*** ERROR ***                                       \n"
-          << endl;
-     exit(1);
-   }
-
-   delete getNext;
+   else p_bml_e = 0;
  }
 
- else          p_bml_e = 0;
 
  geometry.inPoint  = a.geometry.inPoint;
  geometry.outPoint = a.geometry.outPoint;
@@ -520,7 +507,7 @@ void bmlnElmnt::setStrength( double s ) {
 }
 
 void bmlnElmnt::setStrength( double, int ) {
- cerr << "*** ERROR *** "
+ cerr << "*** ERROR *** \n"
       << "*** ERROR *** void bmlnElmnt::setStrength( double s, int index )\n"
       << "*** ERROR *** This virtual function should never \n"
       << "*** ERROR *** have been called in its base class version.\n"
