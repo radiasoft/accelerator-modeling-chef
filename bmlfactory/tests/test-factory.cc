@@ -1,5 +1,6 @@
 #include <beamline.h>
 #include <iostream>
+#include <fstream.h>
 
 #if !defined(bmlfactory_h)
 #include "bmlfactory.h"
@@ -9,14 +10,26 @@
 madparser* mp = NULL;
 
 int
-main() {
+main( int argc, char** argv ) {
   
-  // Initialize a beamline factory, using the MAD file "lattice.mad" and BRHO=123
-  bmlfactory* bf = new bmlfactory( "lattice.mad", 123 );
+  if( argc != 5 ) {
+    cout << "Usage: "
+         << argv[0]
+         << " <.mad file> <.bml file> <name of beamline> <momentum [GeV/c]>"
+         << endl;
+    return 1;
+  }
+
+  ofstream bmlStream( argv[2] );
+  double momentum = atof( argv[4] );
+
+  double brho = momentum/PH_CNV_brho_to_p;
+
+  bmlfactory bf( argv[1], brho );
   
   // The factory can create any beamline defined in the file. If the requested
   // beamline is not found, then NULL is returned.
-  beamline* bml = bf->create_beamline( "TEVB0R2" );
+  beamline* bml = bf.create_beamline( argv[3] );
   
   cout << "Energy is " << bml->Energy() << endl;
 
@@ -27,8 +40,11 @@ main() {
     cout << element->Type() << "; name: " << element->Name() << endl;
   }
   
+  bmlStream << (*bml);
+
   delete bml;
-  delete bf;
+
+  bmlStream.close();
   return 0;
 }
 
