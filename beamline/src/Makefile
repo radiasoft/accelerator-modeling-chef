@@ -3,6 +3,7 @@
 INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(BASIC_TOOLKIT_INC) -I$(PHYSICS_TOOLKIT_INC) -I$(SOCKET_INC) -I$(TKINC) -I$(XINC) $(STL_CONFIG)
 
 OBJS = BBLens.o \
+       BmlPtrList.o \
        BmlVisitor.o \
        CF_rbend.o \
        CF_sbend.o \

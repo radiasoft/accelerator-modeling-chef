@@ -486,6 +486,33 @@ struct InsertionListElement {
 };
 
 
+class BmlPtrList : private dlist
+{
+  //  A list of pointers to instances of bmlnElmnt objects.
+  //  The objects are not owned by the list; their memory
+  //    allocation must be handled elsewhere.
+  //  The objects may be changed by users of the list.
+
+public:
+  BmlPtrList();
+  BmlPtrList( const BmlPtrList& );
+  ~BmlPtrList();
+
+  BmlPtrList& operator=( const BmlPtrList& );
+
+  void append( bmlnElmnt& );
+  void append( bmlnElmnt* );
+  void insert( bmlnElmnt& );
+  void insert( bmlnElmnt* );
+
+  bmlnElmnt* get();   // Iterator; removes elements from list
+  bmlnElmnt* operator()( const int& ) const;
+
+  int size() const;
+  void clear();   // Preserves the bmlnElmnts
+};
+
+
 class InsertionList : private dlist
 {
 private:

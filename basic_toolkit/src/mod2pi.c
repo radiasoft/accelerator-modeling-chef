@@ -33,7 +33,7 @@
 
 #include <math.h>
 
-const double twopi = 2*M_PI;
+const double twopi = 2.0*M_PI;
 
 double mod2pi( x )
 double x;
