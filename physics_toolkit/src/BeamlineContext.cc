@@ -13,8 +13,17 @@ BeamlineContext::BeamlineContext( bool doClone, beamline* x )
   _p_lfs(0), _p_cos(0), 
   _p_ca(0), _p_ta(0),
   _isCloned(doClone),
-  _p_bi(0), _p_dbi(0), _p_rbi(0), _p_drbi(0)
+  _p_bi(0), _p_dbi(0), _p_rbi(0), _p_drbi(0),
+  _tunes(0), _p_jp(0), _normalLattFuncsCalcd(false)
 {
+  if( x == 0 ) {
+    cerr << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__ << ": "
+         << "\n*** ERROR *** BeamlineContext::BeamlineContext"
+            "\n*** ERROR *** Invoked with null beamline pointer."
+            "\n*** ERROR *** \n"
+         << endl;
+    exit(9);
+  }
   if( _isCloned && (x != 0) ) 
   { _p_bml = (beamline*) (x->Clone()); }
 }
@@ -39,6 +48,8 @@ BeamlineContext::~BeamlineContext()
   if( _p_dbi  )  delete _p_dbi;
   if( _p_rbi  )  delete _p_rbi;
   if( _p_drbi )  delete _p_drbi;
+
+  if( _p_jp   )  delete _p_jp;
 }
 
 
@@ -129,7 +140,7 @@ int BeamlineContext::setLength( bmlnElmnt* w, double l )
     { notFound = false;
       if( l != q->Length() ) 
       { q->setLength(l);
-        if( _p_lfs ) { delete _p_lfs; _p_lfs = 0; }  // This is extreme.
+        this->_deleteLFS();
         if( _p_cos ) { delete _p_cos; _p_cos = 0; }
         if( _p_ca  ) { delete _p_ca; _p_ca = 0;   }
         if( _p_ta  ) { delete _p_ta; _p_ta = 0;   }
@@ -143,9 +154,140 @@ int BeamlineContext::setLength( bmlnElmnt* w, double l )
 }
 
 
+double BeamlineContext::getEnergy() const
+{
+  return _p_bml->Energy();
+}
+
+
+int BeamlineContext::countHowManyDeeply() const
+{
+  return _p_bml->countHowManyDeeply();
+}
+
+
 const beamline* BeamlineContext::cheatBmlPtr() const
 {
   return _p_bml;
+}
+
+
+
+// Sage operations
+
+void BeamlineContext::_deleteLFS()
+{
+  if( 0 != _p_lfs )
+  {
+    _p_lfs->eraseAll();
+    if( _tunes ) { 
+      delete _tunes; 
+      _tunes = 0;
+    }
+    delete _p_lfs;
+    _p_lfs = 0;
+
+    _normalLattFuncsCalcd = false;
+  }
+}
+
+
+void BeamlineContext::_createLFS()
+{
+  this->_deleteLFS();
+  _p_lfs = new LattFuncSage( _p_bml, false );
+}
+
+
+void BeamlineContext::_createTunes()
+{
+  if( _p_jp != 0 ) {
+    delete _p_jp;
+  }
+  _p_jp = new JetProton( _p_bml->Energy() );
+
+  int lfs_result = _p_lfs->TuneCalc( _p_jp );
+  if( lfs_result != 0 ) {
+    cerr << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__ << ": "
+         << "BeamlineContext::_createTunes()"
+            "\n*** ERROR *** Something went wrong while calculating tune: error no. " 
+         << lfs_result 
+         << "\n*** ERROR *** \n"
+         << endl;
+    exit(0);
+  }
+    
+  // At this point, _p_jp's state is that after one-turn on the
+  // closed orbit, which has been found by LattFuncSage::TuneCalc.
+
+  if( _tunes == 0 ) {
+    _tunes = new LattFuncSage::tunes( *( dynamic_cast<LattFuncSage::tunes*>
+                                         (_p_bml->dataHook.find( "Tunes" )) 
+                                       ) 
+                                    );
+  }
+  else {
+    *_tunes = *( dynamic_cast<LattFuncSage::tunes*>(_p_bml->dataHook.find( "Tunes" )) );
+  }
+
+  _p_bml->dataHook.eraseAll( "Tunes" );
+}
+
+
+double BeamlineContext::getHorizontalFracTune()
+{
+  if( 0 == _p_lfs ) {
+    cout << "DGN: " << __FILE__ << " line " << __LINE__ 
+         << ": this->_createLFS();" << endl;
+    this->_createLFS();
+  }
+  
+  if( 0 == _tunes ) {
+    cout << "DGN: " << __FILE__ << " line " << __LINE__ 
+         << ": this->_createTunes();" << endl;
+    this->_createTunes();
+  }
+
+  cout << "DGN: " << __FILE__ << " line " << __LINE__ 
+       << ": return _tunes->hor;" << endl;
+  cout << "DGN: " << __FILE__ << " line " << __LINE__ 
+       << ": return "
+       << _tunes->hor
+       << ";" << endl;
+  return _tunes->hor;
+}
+
+
+double BeamlineContext::getVerticalFracTune()
+{
+  if( 0 == _p_lfs ) {
+    this->_createLFS();
+  }
+  
+  if( 0 == _tunes ) {
+    this->_createTunes();
+  }
+
+  return _tunes->ver;
+}
+
+
+const LattFuncSage::lattFunc* BeamlineContext::getLattFuncPtr( int i )
+{
+  if( 0 == _p_lfs ) {
+    this->_createLFS();
+  }
+  
+  if( 0 == _tunes ) {
+    this->_createTunes();
+  }
+
+  if( !_normalLattFuncsCalcd ) {
+    _p_lfs->NewSlow_CS_Calc( _p_jp );
+    _normalLattFuncsCalcd = true;
+  }
+
+  return (_p_lfs->get_lattFuncPtr(i));
 }
 
 
