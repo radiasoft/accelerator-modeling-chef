@@ -1,14 +1,22 @@
 #ifdef __VISUAL_CPP__
-#include <iomanip>
-using std::setprecision;
+  #include <iomanip>
+  using std::setprecision;
 #else
-#include <iomanip.h>
+  #include <iomanip.h>
 #endif
+
 #include "beamline.h"
 
 #ifdef OBJECT_DEBUG
 int bmlnElmnt::objectCount = 0;
 #endif
+
+
+// Error flags for _bitfield manipulation functions.
+const short bmlnElmnt::BF_OK         = 0;
+const short bmlnElmnt::BF_NULL_ARG   = 1;
+const short bmlnElmnt::BF_BAD_START  = 2;
+
 
 // **************************************************
 //   struct BMLN_posInfo
@@ -159,6 +167,10 @@ bmlnElmnt::bmlnElmnt( const char* n, PropFunc* pf ) {
  p_bml_e       = 0;
  Propagator    = pf;
 
+ for( int i = 0; i < BF_MAXCHAR; i++ ) {
+   _bitField[i] = '\0';
+ }
+
  // ...... Initialize geometry .................................
  geometry.inPoint.set   ( 0., 0., 0. );
  geometry.inAxes[0].set ( 1., 0., 0. );
@@ -169,9 +181,9 @@ bmlnElmnt::bmlnElmnt( const char* n, PropFunc* pf ) {
  geometry.outAxes[0].set ( 1., 0., 0. );
  geometry.outAxes[1].set ( 0., 1., 0. );
  geometry.outAxes[2].set ( 0., 0., 1. );
-#ifdef OBJECT_DEBUG
+ #ifdef OBJECT_DEBUG
  objectCount++;
-#endif
+ #endif
 }
 
 bmlnElmnt::bmlnElmnt( double l /* length */, PropFunc* pf ) {
@@ -192,6 +204,10 @@ bmlnElmnt::bmlnElmnt( double l /* length */, PropFunc* pf ) {
  p_bml_e       = 0;
  Propagator    = pf;
 
+ for( int i = 0; i < BF_MAXCHAR; i++ ) {
+   _bitField[i] = '\0';
+ }
+
  // ...... Initialize geometry .................................
  geometry.inPoint.set   ( 0., 0., 0. );
  geometry.inAxes[0].set ( 1., 0., 0. );
@@ -202,9 +218,9 @@ bmlnElmnt::bmlnElmnt( double l /* length */, PropFunc* pf ) {
  geometry.outAxes[0].set ( 1., 0., 0. );
  geometry.outAxes[1].set ( 0., 1., 0. );
  geometry.outAxes[2].set ( 0., 0., 1. );
-#ifdef OBJECT_DEBUG
+ #ifdef OBJECT_DEBUG
  objectCount++;
-#endif
+ #endif
 }
 
 bmlnElmnt::bmlnElmnt( double l /* length */, 
@@ -227,6 +243,10 @@ bmlnElmnt::bmlnElmnt( double l /* length */,
  p_bml_e       = 0;
  Propagator    = pf;
 
+ for( int i = 0; i < BF_MAXCHAR; i++ ) {
+   _bitField[i] = '\0';
+ }
+
  // ...... Initialize geometry .................................
  geometry.inPoint.set   ( 0., 0., 0. );
  geometry.inAxes[0].set ( 1., 0., 0. );
@@ -237,9 +257,9 @@ bmlnElmnt::bmlnElmnt( double l /* length */,
  geometry.outAxes[0].set ( 1., 0., 0. );
  geometry.outAxes[1].set ( 0., 1., 0. );
  geometry.outAxes[2].set ( 0., 0., 1. );
-#ifdef OBJECT_DEBUG
+ #ifdef OBJECT_DEBUG
  objectCount++;
-#endif
+ #endif
 }
 
 bmlnElmnt::bmlnElmnt( const char*  n /* name */, 
@@ -268,6 +288,10 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  p_bml_e       = 0;
  Propagator    = pf;
 
+ for( int i = 0; i < BF_MAXCHAR; i++ ) {
+   _bitField[i] = '\0';
+ }
+
  // ...... Initialize geometry .................................
  geometry.inPoint.set   ( 0., 0., 0. );
  geometry.inAxes[0].set ( 1., 0., 0. );
@@ -278,9 +302,9 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  geometry.outAxes[0].set ( 1., 0., 0. );
  geometry.outAxes[1].set ( 0., 1., 0. );
  geometry.outAxes[2].set ( 0., 0., 1. );
-#ifdef OBJECT_DEBUG
+ #ifdef OBJECT_DEBUG
  objectCount++;
-#endif
+ #endif
 }
 
 bmlnElmnt::bmlnElmnt( const char*  n /* name */, 
@@ -310,6 +334,10 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  p_bml_e       = 0;
  Propagator    = pf;
 
+ for( int i = 0; i < BF_MAXCHAR; i++ ) {
+   _bitField[i] = '\0';
+ }
+
  // ...... Initialize geometry .................................
  geometry.inPoint.set   ( 0., 0., 0. );
  geometry.inAxes[0].set ( 1., 0., 0. );
@@ -320,9 +348,9 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  geometry.outAxes[0].set ( 1., 0., 0. );
  geometry.outAxes[1].set ( 0., 1., 0. );
  geometry.outAxes[2].set ( 0., 0., 1. );
-#ifdef OBJECT_DEBUG
+ #ifdef OBJECT_DEBUG
  objectCount++;
-#endif
+ #endif
 }
 
 bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
@@ -340,6 +368,8 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
  shuntCurrent  = a.getShunt();
 
  Propagator = a.Propagator;
+
+ memcpy( (void*) _bitField, (const void*) a._bitField, BF_MAXCHAR*sizeof(char) );
 
  if(a.align != 0) {
    alignmentData data = a.align->getAlignment();
@@ -398,9 +428,9 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
     geometry.inAxes[i] = a.geometry.inAxes[i];
    geometry.outAxes[i] = a.geometry.outAxes[i];
  }
-#ifdef OBJECT_DEBUG
+ #ifdef OBJECT_DEBUG
  objectCount++;
-#endif
+ #endif
 
 }
 
@@ -438,9 +468,9 @@ bmlnElmnt::bmlnElmnt( bmlnElmntData& x ) {
     geometry.inAxes[i] = x.geometry.inAxes[i];
    geometry.outAxes[i] = x.geometry.outAxes[i];
  }
-#ifdef OBJECT_DEBUG
+ #ifdef OBJECT_DEBUG
  objectCount++;
-#endif
+ #endif
 }
 
 bmlnElmnt::~bmlnElmnt() {
@@ -456,9 +486,9 @@ bmlnElmnt::~bmlnElmnt() {
    p_bml_e = 0;
  }
  dataHook.eraseAll();
-#ifdef OBJECT_DEBUG
+ #ifdef OBJECT_DEBUG
  objectCount--;
-#endif
+ #endif
 }
 
 void bmlnElmnt::set( const bmlnElmntData& data ) {
@@ -485,6 +515,119 @@ void bmlnElmnt::set( const bmlnElmntData& data ) {
    align        = new alignment(data.align);
 
 }
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// Begin: Bit field routines
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+short bmlnElmnt::writeBitField ( const char* s, short start, short num )
+{
+  if( s == 0 ) {
+    return BF_NULL_ARG;
+  }
+  if( start < 0 || start + 1 > BF_MAXCHAR ) {
+    return BF_BAD_START;
+  }
+
+  if( start + num > BF_MAXCHAR ) {
+    num = BF_MAXCHAR - start;
+  }
+  memcpy( (void*) (_bitField + start), (const void*) s, num*sizeof(char) );
+  return BF_OK;
+}
+
+
+short bmlnElmnt::writeBitField ( const char* s )
+{
+  static int num;
+
+  if( s == 0 ) {
+    return BF_NULL_ARG;
+  }
+
+  num = strlen(s);
+  if( num > BF_MAXCHAR ) {
+    num = BF_MAXCHAR;
+  }
+  memcpy( (void*) _bitField, (const void*) s, num );
+  return BF_OK;
+}
+
+
+short  bmlnElmnt::writeBitField ( const String& s, short start, short  num )
+{
+  if( start < 0 || start + 1 > BF_MAXCHAR ) {
+    return BF_BAD_START;
+  }
+  if( start + num > BF_MAXCHAR ) {
+    num = BF_MAXCHAR - start;
+  }
+  s.copy( _bitField + start, num );
+  return BF_OK;
+}
+
+
+short  bmlnElmnt::writeBitField ( const String& s )
+{
+  static int num;
+
+  num = s.length();
+  if( num > BF_MAXCHAR ) {
+    num = BF_MAXCHAR;
+  }
+  s.copy( _bitField, num );
+  return BF_OK;
+}
+
+
+short bmlnElmnt::readBitField  ( char* s, short start, short num )
+{
+  if( s == 0 ) {
+    return BF_NULL_ARG;
+  }
+  if( start < 0 || start + 1 > BF_MAXCHAR ) {
+    return BF_BAD_START;
+  }
+  if( start + num > BF_MAXCHAR ) {
+    num = BF_MAXCHAR - start;
+  }
+  memcpy( (void*) s, (const void*) (_bitField + start), num*sizeof(char) );
+  return BF_OK;
+}
+
+
+short bmlnElmnt::readBitField( char* s )
+{
+  return this->readBitField( s, 0, BF_MAXCHAR );
+}
+
+
+String bmlnElmnt::readBitField( short start, short  num )
+{
+  String ret;
+  if( start < 0 || start + 1 > BF_MAXCHAR ) {
+    start = 0;
+  }
+  if( start + num > BF_MAXCHAR ) {
+    num = BF_MAXCHAR - start;
+  }
+  ret = ret.append( _bitField + start, num );
+  return ret;
+}
+
+
+String bmlnElmnt::readBitField()
+{
+  return this->readBitField( 0, BF_MAXCHAR );
+}
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// End: Bit field routines
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 
 void bmlnElmnt::setLength( double x ) {
   length = x;

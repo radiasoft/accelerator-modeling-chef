@@ -79,8 +79,15 @@
 #include <string.h>
 #endif
 
+#ifdef __SUNPRO_CC
+  #ifndef __STL_NEED_EXPLICIT
+    #define __STL_NEED_EXPLICIT
+  #endif
+#endif
+
 #include "PhysicsConstants.h"
 #include <math.h>
+// #include <string>   (More trouble than it's worth.)
 #include "MathConstants.h"
 #include "apstring.h"
 #include "mxyzptlk.h"
@@ -261,6 +268,9 @@ struct bmlnElmntData {
   virtual void* clone();
 };
 
+
+#define BF_MAXCHAR 8
+
 class beamline;
 class bmlnElmnt
 {
@@ -275,6 +285,9 @@ public:
 
   typedef char (*CRITFUNC)( bmlnElmnt* );
 
+  static const short BF_OK;
+  static const short BF_NULL_ARG;
+  static const short BF_BAD_START;
 
 protected:
   char*        ident;      // Name identifier of the element.
@@ -421,6 +434,32 @@ public:
                                    // eventually deleting these.
   virtual void peekAt( double& s, Particle* = 0 );
 
+  short  writeBitField ( const char*,   // characters to be written
+                         short,         // starting position in bit field
+                         short          // number of characters 
+                       );
+  short  writeBitField ( const char* );
+
+  short  writeBitField ( const String&,
+                         short,         // starting position in bit field
+                         short          // number of characters 
+                       );
+  short  writeBitField ( const String& );
+
+  short  readBitField  ( char*,         // returned characters
+                         short,         // starting position in bit field
+                         short          // number of characters
+                       );
+  short  readBitField  ( char* );
+
+  String readBitField  ( short,         // starting position in bit field
+                         short          // number of characters 
+                         );
+  String readBitField  ();
+
+  short  getBitFieldSize() 
+    { return BF_MAXCHAR; }
+
   virtual void setLength     ( double );
   virtual void setStrength   ( double );
   virtual void setStrength   ( double, int );  // for JetQuad
@@ -473,9 +512,9 @@ public:
   double& IToField() 		{ return iToField; }
   double  getShunt() const	{ return shuntCurrent; }
 
-#ifdef OBJECT_DEBUG
+  #ifdef OBJECT_DEBUG
   static int objectCount;
-#endif
+  #endif
 
 private:
   /* All the work is done in friend ostream& operator<<(),
@@ -486,6 +525,7 @@ private:
   friend bmlnElmnt* read_istream(istream&);
 
   apstring     flavor;     // Allows for "flavors" of types of elements.
+  char         _bitField[ BF_MAXCHAR ];
 };
 
 class hkick : public bmlnElmnt
