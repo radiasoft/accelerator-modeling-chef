@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -49,6 +52,7 @@
 #include "QBpropVisitor.h"
 
 using namespace std;
+using FNAL::Complex;
 
 extern int filterTransverseTunes( /* const */ MatrixD&, Vector& );
 

@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -48,6 +51,7 @@
 #define MLT1  1.0e-6
 
 using namespace std;
+using FNAL::Complex;
 
 char sh0( const IntArray& index, const Complex& /* value */ ) {
  if( index(0) != index(3) + 1 ) return 0;

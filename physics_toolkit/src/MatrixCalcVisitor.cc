@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -39,6 +42,7 @@ int MatrixCalcVisitor::INTEGER_TUNE = -2;
 int MatrixCalcVisitor::PHASE_ERROR  = -3;
 
 using namespace std;
+using FNAL::Complex;
 
 MatrixCalcVisitor::MatrixCalcVisitor( const Particle& x )
 : _numberOfElements(0), 
