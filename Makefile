@@ -107,7 +107,7 @@ lib-dir:
 	fi
 
 real-clean:
-	rm -f ./*~*
+	rm -f ./*~* core
 	@set -x; for i in $(SUBDIRS); do \
 		(cd $$i; $(MAKE)  $@); \
 		done
@@ -122,7 +122,7 @@ lib-clean:
 
 # Remove .o files, emacs backup files, etc.
 clean:
-	rm -f ./*~*
+	rm -f ./*~* core
 	@set -x; for i in $(SUBDIRS); do \
 		(cd $$i; $(MAKE)  $@); \
 		done
