@@ -1,4 +1,4 @@
-#include "beamline.inc"
+#include "marker.h"
 
 void marker::localPropagate( Particle& ) {
  // Markers don't do anything.

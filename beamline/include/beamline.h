@@ -104,8 +104,6 @@
 #define strcasecmp strcmpi
 #endif
 
-#define OSTREAM_DOUBLE_PREC setprecision(20)
-
 
 // Predefined class names ...
 class Particle;             // ??? These lines should not be
@@ -123,60 +121,9 @@ class JetParticle;          // =============================
 #include "bmlnElmnt.h"
 #endif
 
-class hkick : public bmlnElmnt
-{
-public:
-  hkick();
-  hkick( double );   // kick size in radians
-  hkick( char* );    // name; assumes zero kick
-  hkick( char*,      // name
-         double );   // kick size in radians
-  hkick( char*,      // name
-         double,     // length
-         double );   // kick size in radians
-  hkick( const hkick& );
-  hkick( bmlnElmntData& );
-
-  ~hkick();
-
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
-
-  const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "hkick") != 0 ) return bmlnElmnt::isType(c); else return 1; }
-  bmlnElmnt* Clone() const { return new hkick( *this ); }
-
-  void accept( BmlVisitor& v ) { v.visitHkick( this ); }
-};
-
-
-class vkick : public bmlnElmnt
-{
-public:
-  vkick();            // Assumes zero kick
-  vkick( double );    // kick size in radians
-  vkick( char* );     // name; assumes zero kick
-  vkick( char*,       // name
-         double  );   // kick size in radians
-  vkick( char*,       // name
-         double,      // length
-         double  );   // kick size in radians
-  vkick( const vkick& );
-  vkick( bmlnElmntData& );
-  ~vkick();
-
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
-
-  void accept( BmlVisitor& v ) { v.visitVkick( this ); }
-
-  const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "vkick") != 0 ) return bmlnElmnt::isType(c); else return 1; }
-  bmlnElmnt* Clone() const { return new vkick( *this ); }
-};
-
+#ifndef KICK_H
+#include "kick.h"
+#endif
 
 class octupole : public bmlnElmnt
 {
@@ -406,28 +353,9 @@ public:
   bmlnElmnt* Clone() const { return new vmonitor( *this ); }
 } ;
 
-class marker : public bmlnElmnt
-{
-// ??? REMOVE private:
-// ??? REMOVE   void image( int, slist*, BMLN_posInfo* );
-public:
-  marker();                   // Data to be written to standard output
-  marker( char* );            // Name identifier.
-  marker( const marker& );
-  marker( bmlnElmntData& );
-  ~marker();
-
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle&   );
-  void localPropagate( JetParticle& );
-
-  void accept( BmlVisitor& v ) { v.visitMarker( this ); }
-
-  const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "marker") != 0 ) return bmlnElmnt::isType(c); else return 1; }
-  bmlnElmnt* Clone() const { return new marker( *this ); }
-} ;
-
+#ifndef MARKER_H
+#include "marker.h"
+#endif
 
 #ifndef DRIFT_H
 #include "drift.h"
@@ -1555,13 +1483,5 @@ public:
   void append( bmlnElmnt* );
 
 };
-
-class beamlineOverseer
-{
-private:
-  dlist setOfBeamlines;
-  dlist setOfProbes;
-} ;
-
 
 #endif // BEAMLINE_H

@@ -9,6 +9,7 @@
 
 #define BF_MAXCHAR 8
 #define NOTKNOWN   -123456.789
+#define OSTREAM_DOUBLE_PREC setprecision(20)
 
 struct lattRing : public BarnacleData {
   struct {

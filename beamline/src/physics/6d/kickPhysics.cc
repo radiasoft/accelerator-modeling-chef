@@ -1,5 +1,87 @@
-#include "beamline.inc"
 #include "kick.h"
+
+// =================================================
+// vkick propagators
+// =================================================
+
+void vkick::localPropagate( Particle& p ) {
+  static double realLength;
+  if( length > 0.0 ) {
+    realLength = length;
+    length /= 2.0;
+
+    bmlnElmnt::localPropagate( p );   // Drift through half the length.
+    p.state[4] += strength;
+    bmlnElmnt::localPropagate( p );
+
+    length = realLength;
+  }
+  else {
+    p.state[4] += strength;
+  }
+}
+
+
+void vkick::localPropagate( JetParticle& p ) {
+  static double realLength;
+  if( length > 0.0 ) {
+    realLength = length;
+    length /= 2.0;
+
+    bmlnElmnt::localPropagate( p );   // Drift through half the length.
+    ( p.state ).SetComponent( 4, p.state(4) + strength );
+    bmlnElmnt::localPropagate( p );
+
+    length = realLength;
+  }
+  else {
+    ( p.state ).SetComponent( 4, p.state(4) + strength );
+  }
+}
+
+
+// =================================================
+// hkick propagators
+// =================================================
+
+void hkick::localPropagate( Particle& p ) {
+  static double realLength;
+  if( length > 0.0 ) {
+    realLength = length;
+    length /= 2.0;
+
+    bmlnElmnt::localPropagate( p );   // Drift through half the length.
+    p.state[3] += strength;
+    bmlnElmnt::localPropagate( p );
+
+    length = realLength;
+  }
+  else {
+    p.state[3] += strength;
+  }
+}
+
+
+void hkick::localPropagate( JetParticle& p ) {
+  static double realLength;
+  if( length > 0.0 ) {
+    realLength = length;
+    length /= 2.0;
+
+    bmlnElmnt::localPropagate( p );   // Drift through half the length.
+    ( p.state ).SetComponent( 3, p.state(3) + strength );
+    bmlnElmnt::localPropagate( p );
+
+    length = realLength;
+  }
+  else {
+    ( p.state ).SetComponent( 3, p.state(3) + strength );
+  }
+}
+
+// =================================================
+// kick propagators
+// =================================================
 
 void kick::localPropagate( Particle& p ) 
 {

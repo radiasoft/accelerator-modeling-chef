@@ -8,7 +8,6 @@ OBJS =  BBLensPhysics.o\
 	   JetthinSextPhysics.o\
 	   bmlnElmntPhysics.o \
 	   combinedFuncPhys.o \
-           hkickPhysics.o \
            hmonitorPhysics.o \
 	   kickPhysics.o \
            markerPhysics.o \
@@ -33,7 +32,6 @@ OBJS =  BBLensPhysics.o\
 	   thinSeptumPhysics.o\
            thinSextupolePhysics.o \
            thinrfcavityPhysics.o \
-           vkickPhysics.o \
            vmonitorPhysics.o
 
 SOURCES = $(OBJS:.o=.cc)
