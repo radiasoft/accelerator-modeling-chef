@@ -41,7 +41,7 @@ void bmlnElmnt::localPropagate( JetParticle& p ) {
 void bmlnElmnt::localPropagate( ParticleBunch& b ) {
  slist_iterator getNext( (slist&) b );
  Particle* p;
- while( p = (Particle) getNext() ) this->localPropagate( *p );
+ while( p = (Particle*) getNext() ) this->localPropagate( *p );
 }
  
 #endif
