@@ -77,7 +77,15 @@
 // bool a basic type, but it does make some code more readable
 // -- Elliott McCrory
 
-typedef enum { false = 0, true = 1 } bool;
+// typedef enum { false = 0, true = 1 } bool;
+
+// I've changed in order to avoid compiler warnings regarding 
+// initializing a bool with an int.
+// -- Leo Michelotti
+
+typedef char bool;
+bool false = ( 0 == 1 );
+bool true  = ( 1 == 1 );
 
 #endif // __SUNPRO_CC
 
