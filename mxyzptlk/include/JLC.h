@@ -3,7 +3,7 @@
 **************************************************************************
 ******                                                                
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
-******  Version:   4.1                    
+******  Version:   4.3
 ******                                    
 ******  File:      JLC.h
 ******                                                                
@@ -141,6 +141,40 @@ struct JLC : public dlist {
   JLC& operator=( const JLC& );
   JLC& operator=( const FNAL::Complex& );
   JLC& operator+=( const FNAL::Complex& );
+
+
+  // Exception subclasses____________________________________________
+  struct GenericException : public std::exception
+  {
+    // Miscellaneous other errors
+    GenericException( std::string, int, const char* = "", const char* = "" );
+    // 1st argument: name of file in which exception is thrown
+    // 2nd         : line from which exception is thrown
+    // 3rd         : identifies function containing throw
+    // 4th         : identifies type of error
+    ~GenericException() throw() {}
+    const char* what() const throw();
+    std::string errorString;
+  };
+
+  struct BadDimension: public std::exception
+  {
+    // Miscellaneous other errors
+    BadDimension( int, int, std::string, int, const char* = "", const char* = "" );
+    // A binary operator has detected mismatch between its two arguments 
+    // in number of Jet coordinates.
+    // 1st argument: IntArray dimension of operator's first argument
+    // 2nd         : IntArray dimension of operator's second argument
+    // 3rd         : name of file in which exception is thrown
+    // 4th         : line from which exception is thrown
+    // 5th         : identifies function containing throw
+    // 6th         : identifies type of error
+    ~BadDimension() throw() {}
+    const char* what() const throw();
+    std::string errorString;
+    int xdim, ydim;
+  };
+
 
 #ifdef OBJECT_DEBUG
   static int objectCount;
