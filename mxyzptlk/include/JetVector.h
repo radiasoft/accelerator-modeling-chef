@@ -138,12 +138,20 @@ public:
 
 
 
+// Multiplication of Jets and Vectors
+
+JetVector operator*( const Jet&, const Vector& );
+
+
 // Inline functions ...
 
-inline int  JetVector::Dim() const { return dim; }
+inline int JetVector::Dim() const 
+{ return dim; }
 
-inline Jet__environment* JetVector::Env() const { return myEnv; }
+inline Jet__environment* JetVector::Env() const 
+{ return myEnv; }
 
-
+inline JetVector operator*( const Vector& x, const Jet& y )
+{ return y*x; }
 
 #endif  // JETVECTOR_H
