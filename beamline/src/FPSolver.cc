@@ -609,9 +609,11 @@ double& FPSolver::JumpScale( int i ) {
 	 << "*** ERROR *** " << dimension << " <= " << i << " \n" 
 	 << "*** ERROR ***                                    \n" 
 	 << endl;
-    if( 1 + 1 == 2 ) exit(1);
+    exit(1);
   }
-	return jumpScale[i];
+
+  return jumpScale[i];  // This line will never be reached.
+                        // It is here to keep a compiler happy.
 }
 
 double& FPSolver::ZeroScale( int i ) { 
@@ -624,7 +626,9 @@ double& FPSolver::ZeroScale( int i ) {
 	 << "*** ERROR *** " << dimension << " <= " << i << " \n" 
 	 << "*** ERROR ***                                    \n" 
 	 << endl;
-    if( 1 + 1 == 2 ) exit(1);
+    exit(1);
   }
-  return zeroScale[i];
+
+  return zeroScale[i];  // This line will never be reached.
+                        // It is here to keep a compiler happy.
 }

@@ -260,7 +260,8 @@ Vector BBLens::NormalizedEField( double arg_x, double arg_y )
     }
     // ??? Just a guess; check this!
   }
-	return retvec;
+
+  return retvec; // This line should never be reached.
 }
 
 JetVector BBLens::NormalizedEField( const Jet& arg_x, const Jet& arg_y )
@@ -430,7 +431,8 @@ JetVector BBLens::NormalizedEField( const Jet& arg_x, const Jet& arg_y )
     }
     // ??? Just a guess; check this!
   }
-	return retvec;
+
+  return retvec;  // This line should never be reached.
 }
 
 Vector BBLens::Beta() 
