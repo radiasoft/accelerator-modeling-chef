@@ -216,20 +216,8 @@
 #include "combinedFunction.h"
 #endif
 
-// REMOVE: #ifndef MWIREMONITOR_H
-// REMOVE: #include "mwiremonitor.h"
-// REMOVE: #endif
-
 #ifndef PINGER_H
 #include "pinger.h"
 #endif
-
-// REMOVE: #ifndef RASTERMONITOR_H
-// REMOVE: #include "rastermonitor.h"
-// REMOVE: #endif
-
-// REMOVE: #ifndef TCLMONITOR_H
-// REMOVE: #include "tclmonitor.h"
-// REMOVE: #endif
 
 #endif // BEAMLINE_H

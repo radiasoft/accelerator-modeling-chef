@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -38,16 +35,16 @@
 ******                                                                ****
 ******  Principal author:  Elliott McCrory                            ****/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "beamline.h"
 #include <iomanip>
 
 #include "combinedFunction.h"
 #include "kick.h"
 #include "Slot.h"
-
-// REMOVE: #if !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(_EXCLUDE_MONITORS_)
-// REMOVE: #include "mwiremonitor.h"
-// REMOVE: #endif
 
 #include "pinger.h"
 #include "CF_rbend.h"
@@ -188,12 +185,6 @@ bmlnElmnt* read_istream(istream& is)
     monitorPtr = new monitor(name, length);
     element = monitorPtr;
   }
-// REMOVE: #if !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(_EXCLUDE_MONITORS_)
-// REMOVE:   else if( strcasecmp(type, 		"mwireMonitor") == 0 ) {
-// REMOVE:     monitorPtr = new mwireMonitor(name);
-// REMOVE:     element = monitorPtr;
-// REMOVE:   }
-// REMOVE: #endif
   else if( strcasecmp(type, 		"octupole") == 0 ) {
     octupolePtr = new octupole(name, length, strength);
     element = octupolePtr;
