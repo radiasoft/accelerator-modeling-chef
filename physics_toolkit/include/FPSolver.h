@@ -26,7 +26,8 @@ struct FPSolver {
   double& JumpScale( int ); 
   double& ZeroScale( int );
 
-  int  operator()( Proton*, const char*, FP_CRITFUNC = 0 );   
+  int  operator()( Proton*,    const char*, FP_CRITFUNC = 0 );
+  int  operator()( JetProton*, const char*, FP_CRITFUNC = 0 );   
                                                    // TransverseFixedPoint
   int  operator()( Proton*, FP_CRITFUNC = 0 );     // FixedPoint
   void operator()( JetProton*, FP_CRITFUNC = 0 );  // FixedPoint

@@ -192,6 +192,152 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
 
 }
 
+            /* ------------------------------------- */
+           /* ------------------------------------- */
+
+int FPSolver::operator()( JetProton* p_jpr, const char*, FP_CRITFUNC Crit )
+{
+  int ret = 0;
+  Proton* p = 0;
+
+  if( p_jpr ) 
+  {
+    p = (Proton*) p_jpr->ConvertToParticle();
+    p_jpr->setState( p->State() );  // Resets to identity.
+  }
+  else 
+  {
+    cerr << "*** ERROR ***                                          \n"
+            "*** ERROR *** FPSolver::operator()(JetProton*, char*)  \n"
+            "*** ERROR *** null argument for JetProton*             \n"
+            "*** ERROR ***                                          \n"
+         << endl;
+    ret = 1;
+  }
+
+  // :::::::::::::::::::::::::::::::::::::::::::
+
+  if( ret == 0 ) 
+  {
+    if( dimension != p_jpr->State().Dim() ) {
+      cerr << "*** ERROR ***                                         \n"
+              "*** ERROR *** FPSolver::operator()(JetProton*, char*) \n"
+              "*** ERROR *** Dimensions are not correct.             \n"
+              "*** ERROR ***  " << dimension << " != " << p->State().Dim() << "\n"
+              "*** ERROR ***                                         \n"
+           << endl;
+      ret = 2;
+    }
+  }
+
+  // :::::::::::::::::::::::::::::::::::::::::::
+
+  if( ret == 0 ) 
+  {
+    int i, j;
+    char jumpTest, zeroTest;
+  
+    Vector zs( dimension );
+    Vector z(4);
+    for( i = 0; i < 4; i++ ) z(i) = p->State( l[i] );
+  
+    bmLine->propagate( (*p_jpr) );
+  
+    MatrixD MM;
+    MM = p_jpr->State().Jacobian();
+  
+    MatrixD M( 4, 4 );
+    for( i = 0; i < 4; i++ ) 
+      for( j = 0; j < 4; j++ ) 
+        M( i, j ) = MM( l[i], l[j] );
+  
+    for( i = 0; i < 4; i++ ) M( i, i ) -= 1.0;
+    M = M.inverse();
+    
+    int iterCount = 0;
+    Vector eps(4);
+    do {
+      bmLine->propagate( *p );
+      for( i = 0; i < 4; i++ ) eps(i) = z(i) - p->State( l[i] );
+  
+      // --- Set up the tests --------------------------
+      jumpTest = zeroTest = 0;
+      for( i = 0; i < 4; i++ ) {
+        if((  DMAX(fabs( z(i) ),fabs( p->State( l[i] ) )) > zeroScale[i]  )) {
+          zeroTest = 1;
+          jumpTest = jumpTest || 
+            ( 
+              ( fabs( eps(i) ) >
+              jumpScale[i]*DMAX(fabs( z(i) ),fabs( p->State( l[i] ) )) )  
+            );
+        }
+      }    
+  
+      if( (!jumpTest) || (!zeroTest) ) break;
+  
+      // --- Correct orbit and repeat ------------------
+      z = z + M*eps;
+  
+      zs = p->State();
+      for( i = 0; i < 4; i++ ) zs( l[i] ) = z(i);
+      p->setState( zs );
+  
+      iterCount++;
+    } while ( iterCount < 200 );
+    
+  
+    if( iterCount >= 200 ) {
+      cerr << "FPSolver: More than 200 Newton's iterations attempted." << endl;
+      cerr << "FPSolver: Result may not be reliable!! " << endl;
+    }
+  
+  
+    if( !jumpTest || !zeroTest ) 
+      cerr << 
+        "FPSolver:: Convergence achieved after " << iterCount 
+                                                 << " iterations." << endl;
+    
+    // --- Store closed orbit if desired -------------------------------
+    double startLength( 0.0 );
+    if( Crit ) {
+      zs = p->State();
+    
+      dlist_iterator getNext ( *(dlist*) bmLine );
+      bmlnElmnt* q;
+      while ((  q = (bmlnElmnt*) getNext()  )) {
+         q->propagate( *p );
+         startLength += q->OrbitLength( *p );
+         if( (*Crit)( q ) ) {
+           q->dataHook.append( "FPS_orbit", new FPinfo( startLength, p->State() ) );
+         }
+      }
+    
+      p->setState( zs );
+    }
+  
+
+    // --- Reset JetProton* argument to contain the map ----------------
+    // --- on the closed orbit.                         ----------------
+
+    zs( p->cdtIndex() ) = 0.0;
+    p_jpr->setState( zs );
+    bmLine->propagate( (*p_jpr) );
+    Mapping oneTurn( p_jpr->State() );
+    for( i = 0; i < dimension; i++ ) {
+      oneTurn(i) += ( zs(i) - oneTurn(i).standardPart() );
+    }
+    p_jpr->setState( oneTurn );
+
+
+  } // End block: if( ret == 0 )
+
+
+  // --- Exit --------------------------------------------------------
+  if(p) delete p;
+  return ret;
+
+}
+
            /* ------------------------------------- */
            /* ------------------------------------- */
 
