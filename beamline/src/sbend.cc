@@ -1,4 +1,9 @@
+#ifdef __VISUAL_CPP__
+#include <iomanip>
+#else
 #include <iomanip.h>
+#endif
+
 #include "beamline.inc"
 
 // **************************************************
@@ -262,4 +267,3 @@ ostream& sbend::writeTo(ostream& os)
   os << "\n";
   return os;
 }
-

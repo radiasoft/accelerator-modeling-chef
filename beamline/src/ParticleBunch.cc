@@ -1,7 +1,11 @@
 #include "ParticleBunch.h"
-#include <string.h>
-#include <math.h>
 
+#include <math.h>
+#ifdef __VISUAL_CPP__
+#include "MathConstants.h"
+#else
+#include <string.h>
+#endif
 // #include "beamline.inc"
 
 extern "C" long lrand48( void ); // added by O.K.
@@ -31,7 +35,7 @@ ProtonBunch::ProtonBunch() : ParticleBunch() {
 ProtonBunch::ProtonBunch(int nm, double energy, double* widths,
 			 Distribution& distrib,
                          BunchPredicate* pBunchPredicate ): ParticleBunch() {
-#ifndef __GNUG__
+#ifdef __sparc
  const int false = 0;
  const int true  = 1;
 #endif

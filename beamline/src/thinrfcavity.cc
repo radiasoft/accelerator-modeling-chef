@@ -1,4 +1,9 @@
+#ifdef __VISUAL_CPP__
+#include <iomanip>
+#else
 #include <iomanip.h>
+#endif
+
 #include "beamline.inc"
 
 // **************************************************
@@ -181,11 +186,10 @@ ostream& thinrfcavity::writeTo(ostream& os)
 
 istream& thinrfcavity::readFrom(istream& is) 
 {
-  double w, e, p;
+  double w, e;
   is >> w >> e >> phi_s >> Q >> R;
   w_rf = w*MATH_TWOPI;
   eV   = e/1.0e9;
   sin_phi_s = sin(phi_s);
   return is;
 }
-

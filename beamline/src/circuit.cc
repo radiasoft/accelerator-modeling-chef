@@ -1,5 +1,7 @@
 #include "beamline.inc"
+#ifndef __VISUAL_CPP__
 #include <string.h>
+#endif
 
 // **************************************************
 //   class circuit

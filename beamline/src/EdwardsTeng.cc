@@ -7,7 +7,7 @@
  *       -- Leo Michelotti
  *          June 6, 1994   ( D-Day + 50 years )
  */
-#include <iomanip.h>
+
 #include "EdwardsTeng.h"
 
 
@@ -352,3 +352,4 @@ int EdwardsTeng::doCalc( void* arg,
  delete EdwardsTeng::theMap;
  return 0;
 }
+
