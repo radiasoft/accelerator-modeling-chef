@@ -145,9 +145,9 @@ TAR_FILES =	\
 
 tar:
 	cd .. ; \
-	tar -cvfFFX $(NAME).tar fnal/tar-exclude $(TAR_FILES) ; \
-	gzip $(NAME).tar ; \
-	mv $(NAME).tar.gz fnal
+	tar -cvfFFX /tmp/$(NAME).tar fnal/tar-exclude $(TAR_FILES) ; \
+	gzip /tmp/$(NAME).tar ; \
+	mv /tmp/$(NAME).tar.gz fnal
 
 tar_everything:
 	cd .. ; \
