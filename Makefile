@@ -20,13 +20,13 @@ default:
 
 LINKDIRS  = beamline mxyzptlk Machine tev tcl socket server sybase filter
 
-SUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src Machine/src tcl/src tcl/app socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app
+SUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app
 
 SUNSUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src
 
 SGISUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src sybase/src socket/src server/src filter/src
 
-gcc solaris-gcc solaris solaris-debug sunos4 sunos4-debug ultra ultra-opt  :
+gcc solaris-gcc solaris solaris-debug sunos4 sunos4-debug ultra ultra-opt ultra-debug :
 	@set -x; for i in $(SUNSUBDIRS); do \
 		(cd $$i; $(MAKE)  $@); \
 		done
@@ -97,6 +97,7 @@ TAR_FILES =	\
 	fnal/README \
 	fnal/Makefile	\
 	fnal/Make-config \
+	fnal/tar-exclude \
 	fnal/beamline	\
 	fnal/mxyzptlk	\
 	fnal/tev \
@@ -109,7 +110,7 @@ TAR_FILES =	\
 
 tar:
 	cd .. ; \
-	tar -cvf $(NAME).tar $(TAR_FILES) ; \
+	tar -cvfX $(NAME).tar fnal/tar-exclude $(TAR_FILES) ; \
 	gzip $(NAME).tar ; \
 	mv $(NAME).tar.gz fnal
 

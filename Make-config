@@ -116,6 +116,20 @@ ultra-opt:
 	"SYBASEINC = -I/usr/local/ap/sybase/include" \
 	"RANLIB = echo"
 
+ultra-debug:
+	$(MAKE) targets \
+	"C   = cc" \
+	"C++ = CC" \
+	"CFLAGS = -g -sb " \
+	"C++FLAGS = -DULTRA -g -sb " \
+	"MAKELIB = ar ruv" \
+	"INCDIR = $(FNALROOT)/include" \
+	"LIBDIR = $(FNALROOT)/lib/ultra" \
+	"TKINC = -I/usr/local/TCL-TK/include" \
+	"XINC = -I/usr/local/ap/X11R6/include" \
+	"SYBASEINC = -I/usr/local/ap/sybase/include" \
+	"RANLIB = echo"
+
 solaris-debug:
 	$(MAKE) targets \
 	"C   = cc" \
@@ -125,6 +139,7 @@ solaris-debug:
 	"MAKELIB = ar ruv" \
 	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/sun" \
+	"SYBASEINC = -I/usr/local/ap/sybase/include" \
 	"TKINC = -I/usr/local/TCL-TK/include" \
 	"XINC = -I/usr/local/ap/X11R6/include" \
 	"RANLIB = echo"
@@ -136,8 +151,9 @@ solaris-gcc:
 	"CFLAGS = " \
 	"C++FLAGS = " \
 	"MAKELIB = ar ruv" \
-	"LIBDIR = $(FNALROOT)/lib/gcc"\
-	"INCDIR = $(FNALROOT)/include"\
+	"LIBDIR = $(FNALROOT)/lib/gcc" \
+	"INCDIR = $(FNALROOT)/include" \
+	"SYBASEINC = -I/usr/local/ap/sybase/include" \
 	"TKINC = -I/usr/local/TCL-TK/include" \
 	"XINC = -I/usr/local/ap/X11R6/include" \
 	"RANLIB = echo"
@@ -149,8 +165,8 @@ sunos4:
 	"CFLAGS = " \
 	"C++FLAGS = " \
 	"MAKELIB = ar ruv" \
-	"INCDIR = $(FNALROOT)/include"\
-	"LIBDIR = $(FNALROOT)/lib/sunos4"\
+	"INCDIR = $(FNALROOT)/include" \
+	"LIBDIR = $(FNALROOT)/lib/sunos4" \
 	"RANLIB = ranlib"
 
 sunos4-debug:
@@ -161,6 +177,5 @@ sunos4-debug:
 	"C++FLAGS = -g -sb" \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
-	"INCDIR = $(FNALROOT)/include"\
+	"INCDIR = $(FNALROOT)/include" \
 	"LIBDIR = $(FNALROOT)/lib/sunos4"
-
