@@ -43,7 +43,7 @@ struct JetC__environment {
                           //   the JLC variable.
  int       SpaceDim;      // This is, if you will, the dimension of phase space.
  int       dof;           // The number of degrees of freedom = SpaceDim / 2.
- Complex*  refPoint;      // Reference point in phase space about which 
+ FNAL::Complex*  refPoint;      // Reference point in phase space about which 
                           //   derivatives are taken.
  double*   scale;         // An array containing numbers which scale the
                           //   problem's variables.  Each entry is a "typical
@@ -54,7 +54,7 @@ struct JetC__environment {
                           //   to be carried through calculations.
                           // ----------------------------------------------
                           // 
- Complex*  monomial;      // Storage area for monomials used in multinomial
+ FNAL::Complex*  monomial;      // Storage area for monomials used in multinomial
                           //   evaluation.  The area itself is defined by 
                           //   JLCSetup.
  JetC*     JLCmonomial;   // Storage area for JLC monomials used in concatenation.
