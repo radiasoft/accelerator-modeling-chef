@@ -47,7 +47,10 @@ gcc:
 	"XINC = /usr/local/ap/X11R6/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"LIBDIR = $(FNALROOT)/lib/gcc" \
-	"STL_CONFIG = "
+	"STL_CONFIG = " \
+        "MTFLAGS = -D_REENTRANT" \
+        "MTLIBS = -lpthread" \
+        "NETLIBS = -lsocket -lnsl"
 
 linux:
 	$(MAKE) targets \
@@ -63,7 +66,9 @@ linux:
 	"TKINC = /usr/include/tcl" \
 	"XINC = /usr/include" \
 	"LIBDIR = $(FNALROOT)/lib/linux" \
-	"STL_CONFIG = "
+	"STL_CONFIG = " \
+        "MTFLAGS = -D_REENTRANT" \ 
+        "MTLIBS = -lpthread" 
 
 irix:
 	pmake targets \
@@ -123,7 +128,11 @@ solaris:
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = "
+	"STL_CONFIG = " \
+        "MTFLAGS = -mt" \
+        "MTLIBS = " 
+
+
 
 # the options "-fast" is close, but it includes the "-O4", which we don't really need.
 # So the options following "-O " here are the rest of the "-fast" macro.
@@ -141,7 +150,11 @@ ultra-opt:
 	"XINC = /usr/local/ap/X11R6/include" \
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = "
+	"STL_CONFIG = " \
+        "MTFLAGS = -mt " \
+        "MTLIB = " \
+        "NETLIBS = -lsocket -lnsl"
+
 
 solaris-debug:
 	$(MAKE) targets \
@@ -156,7 +169,10 @@ solaris-debug:
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = "
+	"STL_CONFIG = " \
+        "MTFLAGS = -mt" \
+        "MTLIB = " \
+        "NETLIBS = -lsocket -lnsl"
 
 solaris-devel:
 	$(MAKE) targets \
@@ -171,7 +187,11 @@ solaris-devel:
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = 
+	"STL_CONFIG = \
+        "MTFLAGS = -mt" \ 
+        "MTLIB = " \
+        "NETLIBS = -lsocket -lnsl"
+
 
 solaris-gcc:
 	$(MAKE) targets \
@@ -186,7 +206,11 @@ solaris-gcc:
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = "
+	"STL_CONFIG = " \
+        "MTFLAGS = -D_REENTRANT" \
+        "MTLIBS = -lpthread" \
+        "NETLIBS = -lsocket -lnsl"
+
 
 solaris-gcc-debug:
 	$(MAKE) targets \
@@ -201,8 +225,10 @@ solaris-gcc-debug:
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = "
-
+	"STL_CONFIG = " \
+        "MTFLAGS = -D_REENTRANT" \
+        "MTLIBS = -lpthread" \
+        "NETLIBS = -lsocket -lnsl"
 
 solaris-gcc-depend:
 	$(MAKE) depend \
@@ -219,6 +245,7 @@ solaris-depend:
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include"
+        "MTFLAGS = -mt" 
 
 irix-depend:
 	pmake dpend \
@@ -241,7 +268,7 @@ kai-debug:
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo" \
-	"STL_CONFIG = "
+	"STL_CONFIG = " 
 
 kai-depend:
 	$(MAKE) depend \
