@@ -17,6 +17,7 @@ OBJS = BBLens.o \
        alignment.o \
        beamline.o \
        BeamlineIterator.o \
+       BeamlineExpressionTree.o \
        bmlnElmnt.o \
        circuit.o \
        ICircuit.o \
@@ -28,7 +29,6 @@ OBJS = BBLens.o \
        kick.o \
        marker.o \
        monitor.o \
-       mwiremonitor.o \
        octupole.o \
        pinger.o \
        quadrupole.o \
