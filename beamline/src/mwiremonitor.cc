@@ -1,12 +1,15 @@
 #if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <math.h>
 #include "ParticleBunch.h"
 #include "pipestream.h"
 #include "mwiremonitor.h"
 #include <tk.h>
 #include "tclf.h"
+
+const int mwireMonitor::WISH_WAIT_TIME = 1;
 
 mwireMonitor::mwireMonitor() : monitor() {
   binNumber = 48;
@@ -267,13 +270,18 @@ void mwireMonitor::on() {
   onOff = 1;
   if(!windowInitialized) {
     windowInitialized = 1;
-    p = new iopipestream("blt_wish1.9");      // Start the child process.
+    p = new iopipestream("blt_wish");      // Start the child process.
     *p << "source $env(FNALROOT)/tcl/scripts/mwiremonitor.tcl " 
        << endl; 
     // Give the main window the name of the monitor.
+    sleep(WISH_WAIT_TIME);
     *p << "wm title . " << Name() << ";";
+    sleep(WISH_WAIT_TIME);
     scaleCheck();
+    sleep(WISH_WAIT_TIME);
     setWireSpacing(wireSpacing);
+    x_sum = y_sum = x2_sum = y2_sum = 0.0;
+    particle_count = 0;
   }
 }
 
@@ -292,14 +300,19 @@ void mwireMonitor::on(char* whereToDisplay) {
     windowInitialized = 1;
     display = new char[strlen(whereToDisplay)+1];
     strcpy(display,whereToDisplay);
-    sprintf(processMsg,"blt_wish1.9 -display %s",whereToDisplay);
+    sprintf(processMsg,"blt_wish -display %s",whereToDisplay);
     p = new iopipestream(processMsg);         // Start the child process.
     *p << "source $env(FNALROOT)/tcl/scripts/mwiremonitor.tcl " 
        << endl; 
     // Give the main window the name of the monitor.
+    sleep(WISH_WAIT_TIME);
     *p << "wm title . " << Name() << ";"; 
+    sleep(WISH_WAIT_TIME);
     scaleCheck();
+    sleep(WISH_WAIT_TIME);
     setWireSpacing(wireSpacing);
+    x_sum = y_sum = x2_sum = y2_sum = 0.0;
+    particle_count = 0;
   }
 }
 
@@ -314,7 +327,7 @@ void mwireMonitor::localPropagate( Particle& part) {
   if ( onOff ) {
     if(!windowInitialized) {
       windowInitialized = 1;
-      p = new iopipestream("blt_wish1.9");         // Start the child process.
+      p = new iopipestream("blt_wish");         // Start the child process.
       *p << "source $env(FNALROOT)/tcl/scripts/mwiremonitor.tcl " 
          << endl; 
       scaleCheck();
@@ -326,10 +339,27 @@ void mwireMonitor::localPropagate( Particle& part) {
     calcBin(coords);
 
     char msg[80];
-    sprintf(msg,"set xVector(%d) %d; set yVector(%d) %d; update idletasks ",
+    sprintf(msg,"set xVector(%d) %d; set yVector(%d) %d ",
 	    Xindex,x_bins[Xindex],Yindex,y_bins[Yindex]);
     *p << msg << endl;
 
+    // Calculate interim sigma
+    x_sum  += coords[0];
+    x2_sum += coords[0]*coords[0];
+    y_sum  += coords[1];
+    y2_sum += coords[1]*coords[1];
+
+    particle_count++;
+    if ( particle_count%10 == 0 ) {
+      x_sigma = 1000.0 * sqrt( x2_sum/particle_count - (x_sum*x_sum)/(particle_count*particle_count) );
+      y_sigma = 1000.0 * sqrt( y2_sum/particle_count - (y_sum*y_sum)/(particle_count*particle_count) );
+      
+      sprintf(msg, "set xSigma %f; set ySigma %f ",
+	      x_sigma, y_sigma);
+      *p << msg << endl;
+    }
+
+    *p << "update idletasks " << endl;
     // If file I/O is enabled, let the base class do the work!
     if(outputFile != stdout && outputFile != 0){
       monitor::localPropagate(part);
@@ -347,7 +377,7 @@ void mwireMonitor::localPropagate( JetParticle& jpart) {
   if ( onOff ) {
     if(!windowInitialized) {
       windowInitialized = 1;
-      p = new iopipestream("blt_wish1.9");         // Start the child process.
+      p = new iopipestream("blt_wish");         // Start the child process.
       *p << "source $env(FNALROOT)/tcl/scripts/mwiremonitor.tcl " 
          << endl; // init script to read.
       scaleCheck();
@@ -399,26 +429,6 @@ void mwireMonitor::calcBin(const double *coordinates){
     Yindex = 0;
   }
   y_bins[Yindex]++;
-}
-
-void mwireMonitor::setSpacing(double spacing ) {
-//******************************************************
-// 
-//  Method to set the wire spacing of the mwireMonitor.
-//
-//******************************************************
-
-  if(spacing <= 0) { 
-    cerr << "\n";
-    cerr << "*** ERROR ***                                            \n";
-    cerr << "*** ERROR *** mwireMonitor::setSpacing( double )\n";
-    cerr << "*** ERROR *** Setting wire spacing to negative or zero.  \n";
-    cerr << "*** ERROR ***                                            \n";
-    cerr << "\n";
-    return;
-  }
-  wireSpacing = spacing;  
-  return;
 }
 
 void mwireMonitor::setWireSpacing(double spacing) {

@@ -3,11 +3,14 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 #include "ParticleBunch.h"
 #include "pipestream.h"
 #include "rastermonitor.h"
 #include <tk.h>
 #include "tclf.h"
+
+const int rasterMonitor::WISH_WAIT_TIME = 1;
 
 rasterMonitor::rasterMonitor() : monitor(), origin( BMLN_dynDim ) {
   registerMode    = 0;
@@ -270,6 +273,7 @@ void rasterMonitor::on() {
      // Give the main window the name of the monitor.
      *p << "wm title . " << Name() << " \n" << flush; 
      // Place coordinates on the windows: x xp y yp cdt dp
+     sleep(WISH_WAIT_TIME);
      setNewScaling();
    }
 }
@@ -286,6 +290,7 @@ void rasterMonitor::on(char* whereToDisplay) {
      // Give the main window the name of the monitor.
      *p << "wm title . " << Name() << " \n" << flush; 
      // Place coordinates on the windows.
+     sleep(WISH_WAIT_TIME);
      setNewScaling();
    }
 }
