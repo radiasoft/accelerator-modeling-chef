@@ -31,4 +31,6 @@
 *************************************************************************/
 
 
-#define TR_DEF_RANGE 0.002
+#define TR_DEF_RANGE     0.002
+#define TR_DEF_X_CENTER  0.000
+#define TR_DEF_Y_CENTER  0.000

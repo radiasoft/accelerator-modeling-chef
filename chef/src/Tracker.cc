@@ -6,7 +6,7 @@
 ******             interfaces to exercise the functionality        
 ******             of BEAMLINE.                                    
 ******                                                                
-******  Version:   3.0                    
+******  Version:   3.1
 ******                                    
 ******  File:      Tracker.cc
 ******                                                                
@@ -213,14 +213,40 @@ DrawSpace::~DrawSpace()
 }
 
 
+// REMOVE: void DrawSpace::multScaleBy( double x )
+// REMOVE: {
+// REMOVE:   double u = fabs(x);
+// REMOVE:   if( _myFunc != DrawSpace::drawPhiHPhiV ) {
+// REMOVE:     _xLo /= u;
+// REMOVE:     _xHi /= u;
+// REMOVE:     _yLo /= u;
+// REMOVE:     _yHi /= u;
+// REMOVE:   }
+// REMOVE: }
+
+
+// REMOVE: void DrawSpace::setScaleTo( double x )
+// REMOVE: {
+// REMOVE:   double u = fabs(x);
+// REMOVE:   _xLo = -u;
+// REMOVE:   _xHi =  u;
+// REMOVE:   _yLo = -u;
+// REMOVE:   _yHi =  u;
+// REMOVE: }
+
+
 void DrawSpace::multScaleBy( double x )
 {
   double u = fabs(x);
   if( _myFunc != DrawSpace::drawPhiHPhiV ) {
-    _xLo /= u;
-    _xHi /= u;
-    _yLo /= u;
-    _yHi /= u;
+    double xc = ( _xHi + _xLo )/2.0;
+    double yc = ( _yHi + _yLo )/2.0;
+    double dx = ( _xHi - _xLo )/2.0;
+    double dy = ( _yHi - _yLo )/2.0;
+    _xLo = xc - (dx/u);
+    _xHi = xc + (dx/u);
+    _yLo = yc - (dy/u);
+    _yHi = yc + (dy/u);
   }
 }
 
@@ -228,10 +254,23 @@ void DrawSpace::multScaleBy( double x )
 void DrawSpace::setScaleTo( double x )
 {
   double u = fabs(x);
-  _xLo = -u;
-  _xHi =  u;
-  _yLo = -u;
-  _yHi =  u;
+  double xc = ( _xHi + _xLo )/2.0;
+  double yc = ( _yHi + _yLo )/2.0;
+  _xLo = xc - u;
+  _xHi = xc + u;
+  _yLo = yc - u;
+  _yHi = yc + u;
+}
+
+
+void DrawSpace::setCenterTo( double x, double y )
+{
+  double xrange = (_xHi - _xLo)/2.0;
+  double yrange = (_yHi - _yLo)/2.0;
+  _xLo = x - xrange;
+  _xHi = x + xrange;
+  _yLo = y - yrange;
+  _yHi = y + yrange;
 }
 
 
@@ -666,6 +705,7 @@ void DrawSpace::resetZoom()
 {
   this->deactivateZoom();
   this->setScaleTo( TR_DEF_RANGE );
+  this->setCenterTo( TR_DEF_X_CENTER, TR_DEF_Y_CENTER );
   this->updateGL();
 }
 

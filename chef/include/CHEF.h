@@ -75,6 +75,7 @@ class QBmlRoot;
 class LattFncPlt;
 class ETFncPlt;
 class MomentsFncPlt;
+class DspnFncPlt;
 class Tracker;
 class RayTrace;
 class SiteViewer;
@@ -201,6 +202,7 @@ private:
   LattFncPlt*      _plotWidget;
   ETFncPlt*        _ETplotWidget;
   MomentsFncPlt*   _MMplotWidget;
+  DspnFncPlt*      _DspnplotWidget;
   Tracker*         _trackWidget;
   RayTrace*        _traceWidget;
   SiteViewer*      _siteWidget;
@@ -218,7 +220,8 @@ private:
   QPopupMenu*      _toolMenu;
   QPopupMenu*        _tool_calcMenu;
   QPopupMenu*          _calcEnterMenu;
-  QPopupMenu*          _calcLattFuncMenu;
+  QPopupMenu*          _calcCalcFuncMenu;
+  QPopupMenu*            _calcLattFuncMenu;
   QPopupMenu*        _tool_ctrlMenu;
   QPopupMenu*        _tool_dsgnMenu;
 
@@ -285,6 +288,7 @@ private slots:
   void _launchMoments();
   void _launchTrack();
   void _launchRayTrace();
+  void _launchDispersion();
   void _launchDilution();
   void _enterMapArg();
   void _enterContextArg();
