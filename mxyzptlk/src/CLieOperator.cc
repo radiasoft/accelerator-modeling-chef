@@ -119,7 +119,7 @@ CLieOperator::CLieOperator( JetC__environment* theEnv )
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CLieOperator::CLieOperator( CLieOperator& x ) 
+CLieOperator::CLieOperator( const CLieOperator& x ) 
 : JetCVector( x.myEnv->SpaceDim, 0, x.myEnv )
 {
  int i;

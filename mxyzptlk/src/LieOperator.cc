@@ -119,7 +119,7 @@ LieOperator::LieOperator( Jet__environment* theEnv )
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LieOperator::LieOperator( LieOperator& x ) 
+LieOperator::LieOperator( const LieOperator& x ) 
 : JetVector( x.myEnv->SpaceDim, 0, x.myEnv )
 {
  int i;

@@ -419,7 +419,7 @@ Jet::Jet( Jet__environment* pje )
 #endif
 }
 
-Jet::Jet( const double& x, Jet__environment* p_je ) 
+Jet::Jet( double x, Jet__environment* p_je ) 
 {
  jl = new JL( x, p_je );
  constIterPtr = 0;

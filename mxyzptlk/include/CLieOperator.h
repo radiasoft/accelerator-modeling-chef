@@ -89,7 +89,7 @@ public:
 
   // Constructors and destructors_____________________________________
   CLieOperator( JetC__environment* = JetC::lastEnv );
-  CLieOperator( CLieOperator& );
+  CLieOperator( const CLieOperator& );
   CLieOperator( const JetC& );     // Creates a Hamiltonian vector field.
   CLieOperator( char*, 
                 JetC__environment* = JetC::lastEnv ); // Creates the identity function.  
@@ -127,6 +127,9 @@ public:
                                 // componenet wise.
   JetCVector expMap( const JetC&, const JetCVector& );
 
+  JetC       expMap( const JetC& );
+  JetCVector expMap( const JetCVector& );
+
   // Lie bracket of two Lie operators
   friend CLieOperator operator^( /* const */ CLieOperator&,
                                  /* const */ CLieOperator& );
@@ -137,11 +140,21 @@ public:
 #endif
 } ;
 
-inline 
-CLieOperator& 
-CLieOperator::operator=( const JetCVector& x )
+inline CLieOperator& CLieOperator::operator=( const JetCVector& x )
 {
   return (CLieOperator&) JetCVector::operator=( x );
+}
+
+
+inline JetC CLieOperator::expMap( const JetC& x )
+{
+  return this->expMap( 1.0, x );
+}
+
+
+inline JetCVector CLieOperator::expMap( const JetCVector& x )
+{
+  return this->expMap( 1.0, x  );
 }
 
 #endif
