@@ -4,6 +4,7 @@
 #include "VectorD.h"
 #include "Matrix.h"
 
+
 class Frame
 {
  private:
@@ -20,6 +21,8 @@ class Frame
    short int setAxis     ( int, const Vector& );
    short int setDualAxis ( int, const Vector& );
 
+   bool  isOrthonormal() const;
+
    Vector getOrigin()        const;
    Vector getAxis( int )     const;
    Vector getDualAxis( int ) const;
@@ -32,5 +35,6 @@ class Frame
 
    Frame dual() const;
 };
+
 
 #endif  // FRAME_H
