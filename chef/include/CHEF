@@ -1,0 +1,7 @@
+#ifndef CHEF_HEADER
+#define CHEF_HEADER
+
+#include "CHEF.h"
+using namespace CHEF_domain;
+
+#endif // CHEF_HEADER
