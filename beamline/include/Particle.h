@@ -154,7 +154,7 @@ public:
   void set_npy ( double u )  { state[4] = u; }
   void set_ndp ( double u )  { state[5] = u; }
 
-  inline Vector State() 
+  inline Vector State() const
          {  return Vector( BMLN_dynDim, state ); } 
          // Returns the state as a Vector object.
 
