@@ -19,6 +19,7 @@ OBJS = BBLens.o \
        drift.o \
        hkick.o \
        hmonitor.o \
+       kick.o \
        marker.o \
        monitor.o \
        mwiremonitor.o \

@@ -49,6 +49,7 @@ class thinLamb;
 class Pinger;
 class HPinger;
 class VPinger;
+class kick;
 
 // ---------------------------
 
@@ -121,7 +122,9 @@ public:
   virtual void visitHPinger( HPinger* x )
 			 { visitBmlnElmnt( (bmlnElmnt*) x ); }
   virtual void visitVPinger( VPinger* x )
-			 { visitBmlnElmnt( (bmlnElmnt*) x ); }
+			  { visitBmlnElmnt( (bmlnElmnt*) x ); } 
+  virtual void visitKick( kick * x)
+			{ visitBmlnElmnt( (bmlnElmnt*) x); }
 
 protected:
   BmlVisitor() {}
