@@ -162,8 +162,6 @@ TJetEnvironment<T1,T2>::TJetEnvironment( const TJetEnvironment& x )
    _scale[i] = x._scale[i];
    _allZeroes(i) = 0;   // ??? Redundant and unnecessary.
   }
-
-  _myCoords = x._myCoords;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -267,8 +265,6 @@ TJetEnvironment<T1,T2>& TJetEnvironment<T1,T2>::operator=( const TJetEnvironment
    _scale[i] = x._scale[i];
    _allZeroes(i) = 0;   // ??? Redundant and unnecessary
   }
-
-  _myCoords = x._myCoords;  // Dangerous, but okay.
 
   return *this;
 }

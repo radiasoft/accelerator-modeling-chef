@@ -404,7 +404,6 @@ TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* scl )
     // and is, in any case, safe.
     p->setVariable( *q, p->Index(), _workEnv );  
        // This alters the environment!
-    _workEnv->_myCoords.append( p );
     delete q;
   }
   

@@ -81,7 +81,6 @@ struct TJetEnvironment
                           //   a weight  w  into  n  parts.
  IntArray  _allZeroes;    // An integer array containing zeroes.  Used to 
                           //   filter the standard part of a variable.
- slist     _myCoords;     // Coordinates of this environment.
 
 
  // Member functions -------------------------------------
