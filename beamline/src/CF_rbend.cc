@@ -52,7 +52,7 @@ CF_rbend::CF_rbend( double        lng,  // length     [ meter    ]
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( lng, fld ), _poleFaceAngle( ang  )
 {
-  #include "CF_rbendConstructor.ins"
+  _finishConstructor(n);
 }
 
 
@@ -63,7 +63,7 @@ CF_rbend::CF_rbend( const char*   nm,   // name
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( nm, lng, fld ), _poleFaceAngle( ang  )
 {
-  #include "CF_rbendConstructor.ins"
+  _finishConstructor(n);
 }
 
 
@@ -74,7 +74,7 @@ CF_rbend::CF_rbend( double lng,
                     int    n  )
 : bmlnElmnt( lng, fld ), _poleFaceAngle( ang  )
 {
-  #include "CF_rbendConstructor.ins"
+  _finishConstructor(n);
 }
 
 
@@ -86,7 +86,7 @@ CF_rbend::CF_rbend( const char*  nm,
                     int    n  )
 : bmlnElmnt( nm, lng, fld ), _poleFaceAngle( ang  )
 {
-  #include "CF_rbendConstructor.ins"
+  _finishConstructor(n);
 }
 
 
@@ -99,6 +99,85 @@ CF_rbend::CF_rbend( const CF_rbend& x )
   
   for( int k = 0; k < m; k++ ) {
     _u[k] = ( x._u[k] )->Clone();
+  }
+}
+
+
+void CF_rbend::_finishConstructor(int n)
+{
+// NOTE: If this code is ever modified, you 
+// must also modify CF_rbend::readFrom and
+// CF_rbend::writeTo
+
+// NOTE: n refers to the number of blocks of twelve pieces!
+
+  if( n < 1 || n > 9 ) {
+    cerr << "*** WARNING ***                                         \n"
+            "*** WARNING *** CF_rbend constructor                    \n"
+            "*** WARNING *** n = " << n << " is out of range [1-9].  \n"
+            "*** WARNING *** Constructor is resetting n = 1.         \n"
+            "*** WARNING ***                                         \n"
+         << endl;
+    n = 1;
+  }
+
+  double field       = this->strength;
+  double frontLength =  (6.0*(this->length/4.0)/15.0)/((double) n);
+  double sepLength   = (16.0*(this->length/4.0)/15.0)/((double) n);
+
+  rbend inEdge    ( frontLength,     field, _poleFaceAngle, &rbend::InEdge  );
+  rbend outEdge   ( frontLength,     field, _poleFaceAngle, &rbend::OutEdge );
+  rbend separator ( 2.0*frontLength, field, &rbend::NoEdge );
+  rbend body      ( sepLength,       field, &rbend::NoEdge );
+
+  thinSextupole ts( 0.0 );
+  thinQuad      tq( 0.0 );
+
+  _u = new bmlnElmnt* [ 121 ];    // Paranoia: should need only 109
+  _v = _u;
+
+  *(_v++) = new rbend          ( inEdge  );
+  *(_v++) = new thinSextupole  ( ts      );
+  *(_v++) = new thinQuad       ( tq      );
+  *(_v++) = new rbend          ( body    );
+  *(_v++) = new thinSextupole  ( ts      );
+  *(_v++) = new thinQuad       ( tq      );
+  *(_v++) = new rbend          ( body    );
+  *(_v++) = new thinSextupole  ( ts      );
+  *(_v++) = new thinQuad       ( tq      );
+  *(_v++) = new rbend          ( body    );
+  *(_v++) = new thinSextupole  ( ts      );
+  *(_v++) = new thinQuad       ( tq      );
+
+  for( int i = 1; i < n; i++ ) {
+    *(_v++) = new rbend          ( separator );
+    *(_v++) = new thinSextupole  ( ts      );
+    *(_v++) = new thinQuad       ( tq      );
+    *(_v++) = new rbend          ( body    );
+    *(_v++) = new thinSextupole  ( ts      );
+    *(_v++) = new thinQuad       ( tq      );
+    *(_v++) = new rbend          ( body    );
+    *(_v++) = new thinSextupole  ( ts      );
+    *(_v++) = new thinQuad       ( tq      );
+    *(_v++) = new rbend          ( body    );
+    *(_v++) = new thinSextupole  ( ts      );
+    *(_v++) = new thinQuad       ( tq      );
+  }
+
+  *(_v  ) = new rbend          ( outEdge );
+
+  // Paranoid test.
+  if( (12*n + 1) != (1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) )) ) {
+    cerr << "*** ERROR ***                                         \n"
+            "*** ERROR *** CF_rbend constructor                    \n"
+            "*** ERROR *** Impossible! "
+         << (11*n + 2)
+         << " != " 
+         << (1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) ))
+         << "\n*** ERROR *** Constructor is aborting program.        \n"
+            "*** ERROR ***                                         \n"
+         << endl;
+    exit(9);
   }
 }
 
@@ -406,7 +485,7 @@ istream& CF_rbend::readFrom( istream& is )
   _u = 0;
 
   // ... Then reconstruct
-  #include "CF_rbendConstructor.ins"
+  _finishConstructor(n);
 
 
   // Set multipoles
