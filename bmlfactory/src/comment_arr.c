@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -161,7 +164,7 @@ comment_arr_add_new( const char*   sptr,
 
   comment* ptr;
   
-  allocate( ptr, comment_alloc );
+  PRIVATE_ALLOCATE( ptr, comment_alloc );
   assert( comment_arr != NULL );
   
   ptr->svalue_ = (char*)malloc( strlen(sptr) + 1 );

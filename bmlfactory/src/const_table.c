@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -117,7 +120,7 @@ const_add_predef( fb_allocator* expr_alloc,
   constant*    const_ptr;
   expr_struct* data;
 
-  allocate( const_ptr, const_alloc );
+  PRIVATE_ALLOCATE( const_ptr, const_alloc );
   
   strcpy( name, "PI" );
   const_init_a( const_ptr, name, 0, NULL, 0, expr_alloc );
@@ -256,7 +259,7 @@ const_init_a( constant*     ptr,
   strcpy( ptr->name_, name );
   ptr->svalue_ = NULL;
 
-  allocate( data, expr_alloc );
+  PRIVATE_ALLOCATE( data, expr_alloc );
   data->kind_ = NUMBER_EXPR;
   data->dvalue_ = 0.0;
   data->svalue_ = (char*)malloc( 3 );
@@ -294,7 +297,7 @@ const_init_b( constant*     ptr,
 
   strcpy( ptr->name_, name );
 
-  allocate( data, expr_alloc );
+  PRIVATE_ALLOCATE( data, expr_alloc );
   data->kind_ = STRING_EXPR;
   data->svalue_  = (char*)malloc( ssize );
   if ( data->svalue_ != NULL ) {
@@ -341,7 +344,7 @@ const_init_c( constant*     ptr,
 
   strcpy( ptr->name_, name );
 
-  allocate( data, expr_alloc );
+  PRIVATE_ALLOCATE( data, expr_alloc );
   data->kind_ = STRING_EXPR;
   data->svalue_  = (char*)malloc( strlen(sptr) + 1 );
   if ( data->svalue_ != NULL ) {
@@ -421,7 +424,7 @@ const_init_e( constant*       dst,
   dst->filename_      = filename;
   dst->local_linenum_ = local_linenum;
 
-  allocate( data, expr_alloc );
+  PRIVATE_ALLOCATE( data, expr_alloc );
   data->svalue_ = (char*)src_name;
 
   if ( src->svalue_ == NULL ) {

@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -54,7 +57,7 @@ matrix_init( fb_allocator* matrix_alloc ) {
 
   assert( matrix_alloc != NULL );
   
-  allocate( mtx, matrix_alloc );
+  PRIVATE_ALLOCATE( mtx, matrix_alloc );
   if ( mtx != NULL ) {
     memset( mtx, 0, sizeof( matrix ) );
   }
@@ -110,6 +113,6 @@ matrix_delete( matrix*       mtx,
     }
   }
 
-  deallocate( mtx, matrix_alloc );
+  PRIVATE_DEALLOCATE( mtx, matrix_alloc );
   return 0;
 }

@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -75,7 +78,7 @@ beam_line*
 beam_line_init( fb_allocator* bml_alloc ) {
   beam_line* bml = NULL;
   
-  allocate( bml, bml_alloc );
+  PRIVATE_ALLOCATE( bml, bml_alloc );
   if ( bml != NULL ) {
     memset( bml, 0, sizeof(beam_line) );
   }
@@ -196,7 +199,7 @@ int
 beam_line_delete( beam_line*    bml,
                   fb_allocator* bml_alloc ) {
   g_list_free( bml->bel_list_ );
-  deallocate( bml, bml_alloc );
+  PRIVATE_DEALLOCATE( bml, bml_alloc );
   
   return BEAM_LINE_DELETE_OK;
 }
