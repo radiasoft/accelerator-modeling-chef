@@ -71,7 +71,7 @@ void thinSextupole::localPropagate( Particle& p ) {
 
 
 void thinSextupole::localPropagate( JetParticle& p ) {
- static Jet TrState[6], dummy[6];
+ static Jet TrState[6];
  double k;
  static Jet x, y;
  static int i;

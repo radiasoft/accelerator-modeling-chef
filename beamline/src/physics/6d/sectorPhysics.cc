@@ -97,10 +97,10 @@ int sector::JET_Prop::operator()( bmlnElmnt* b, Particle& p ) {
 
 
 int sector::JET_Prop::operator()( bmlnElmnt* b, JetParticle& p ) {
- static int  i, j; 
-        Jet  inState  [BMLN_dynDim];
- static Jet  outState;
- static Jet  zero;
+ int  i, j; 
+ Jet  inState  [BMLN_dynDim];
+ Jet  outState;
+ Jet  zero( (Jet__environment*) p.State().Env() );
 
  sector* s = dynamic_cast<sector*>(b);
 
