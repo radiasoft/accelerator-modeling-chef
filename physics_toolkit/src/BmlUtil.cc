@@ -1,32 +1,32 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                
-******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
-******             which facilitate calculations with the             
-******             BEAMLINE class library.                            
+******
+******  PHYSICS TOOLKIT: Library of utilites and Sage classes
+******             which facilitate calculations with the
+******             BEAMLINE class library.
 ******  Version:   2.0
-******                                    
+******
 ******  File:      BmlUtil.cc
 ******             Source code for Beamline utility methods.
-******                                                                
-******  Copyright (c) 2003  Universities Research Association, Inc.   
-******                All Rights Reserved                             
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
+******
+******  Copyright (c) 2003  Universities Research Association, Inc.
+******                All Rights Reserved
+******
+******  Author:    Leo Michelotti
+******
+******             Fermilab
+******             P.O.Box 500
+******             Mail Stop 220
+******             Batavia, IL   60510
+******
+******             Phone: (630) 840 4956
+******             Email: michelotti@fnal.gov
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License and the GNU General Public License, both of
 ******  which are supplied with this software.
-******                                                                
+******
 **************************************************************************
 *************************************************************************/
 
@@ -60,6 +60,87 @@ void setOutputStream( ostream* w )
 }
 
 
+
+bool BmlUtil::isKnown( const bmlnElmnt* x )
+{
+  return BmlUtil::isKnown( *x );
+}
+
+
+bool BmlUtil::isKnown( const bmlnElmnt& x )
+{
+  if( 0 == strcmp( "drift", x.Type() ))           { return true; }
+  if( 0 == strcmp( "marker", x.Type() ))          { return true; }
+  if( 0 == strcmp( "sbend", x.Type() ))           { return true; }
+  if( 0 == strcmp( "rbend", x.Type() ))           { return true; }
+  if( 0 == strcmp( "thinQuad", x.Type() ))        { return true; }
+  if( 0 == strcmp( "quadrupole", x.Type() ))      { return true; }
+  if( 0 == strcmp( "Slot", x.Type() ))            { return true; }
+  if( 0 == strcmp( "srot", x.Type() ))            { return true; }
+  if( 0 == strcmp( "BBLens", x.Type() ))          { return true; }
+  if( 0 == strcmp( "beamline", x.Type() ))        { return true; }
+  if( 0 == strcmp( "CF_rbend", x.Type() ))        { return true; }
+  if( 0 == strcmp( "CF_sbend", x.Type() ))        { return true; }
+  if( 0 == strcmp( "combinedFunction", x.Type() )){ return true; }
+  if( 0 == strcmp( "thinDecapole", x.Type() ))    { return true; }
+  if( 0 == strcmp( "ElSeparator", x.Type() ))     { return true; }
+  if( 0 == strcmp( "JetQuadrupole", x.Type() ))   { return true; }
+  if( 0 == strcmp( "JetthinQuad", x.Type() ))     { return true; }
+  if( 0 == strcmp( "hkick", x.Type() ))           { return true; }
+  if( 0 == strcmp( "vkick", x.Type() ))           { return true; }
+  if( 0 == strcmp( "kick", x.Type() ))            { return true; }
+  if( 0 == strcmp( "thinLamb", x.Type() ))        { return true; }
+  if( 0 == strcmp( "monitor", x.Type() ))         { return true; }
+  if( 0 == strcmp( "hmonitor", x.Type() ))        { return true; }
+  if( 0 == strcmp( "vmonitor", x.Type() ))        { return true; }
+  if( 0 == strcmp( "octupole", x.Type() ))        { return true; }
+  if( 0 == strcmp( "thinOctupole", x.Type() ))    { return true; }
+  if( 0 == strcmp( "Pinger", x.Type() ))          { return true; }
+  if( 0 == strcmp( "HPinger", x.Type() ))         { return true; }
+  if( 0 == strcmp( "VPinger", x.Type() ))         { return true; }
+  if( 0 == strcmp( "rfcavity", x.Type() ))        { return true; }
+  if( 0 == strcmp( "thinrfcavity", x.Type() ))    { return true; }
+  if( 0 == strcmp( "sector", x.Type() ))          { return true; }
+  if( 0 == strcmp( "thinSeptum", x.Type() ))      { return true; }
+  if( 0 == strcmp( "sextupole", x.Type() ))       { return true; }
+  if( 0 == strcmp( "thinSextupole", x.Type() ))   { return true; }
+  if( 0 == strcmp( "JetthinSext", x.Type() ))     { return true; }
+  if( 0 == strcmp( "thin12pole", x.Type() ))      { return true; }
+  if( 0 == strcmp( "thin14pole", x.Type() ))      { return true; }
+  if( 0 == strcmp( "thin16pole", x.Type() ))      { return true; }
+  if( 0 == strcmp( "thin18pole", x.Type() ))      { return true; }
+  if( 0 == strcmp( "thinMultipole", x.Type() ))   { return true; }
+
+  return false;
+}
+
+
+bool BmlUtil::isSpace( const bmlnElmnt* x )
+{
+  if( !BmlUtil::isKnown( x ) ) { 
+    ostringstream uic;
+    uic << "The type " << (x->Type()) << " is not recognized.";
+    throw( GenericException( __FILE__, __LINE__,
+           "bool BmlUtil::isSpace( const bmlnElmnt* x )",
+           uic.str().c_str() ) );
+    
+  }
+
+  return (    ( 0 == strcasecmp( "drift",  x->Type() ) )
+           || ( 0 == strcasecmp( "marker", x->Type() ) ) 
+           || ( 0 == strcasecmp( "Slot",   x->Type() ) )
+           || ( 0 == strcasecmp( "srot",   x->Type() ) ) 
+         );
+}
+
+
+bool BmlUtil::isSpace( const bmlnElmnt& x )
+{
+  return BmlUtil::isSpace( &x );
+}
+
+
+
 void BmlUtil::normalize( MatrixC& B )
 {
   // This code is lifted from emittanceDilution.cc,
@@ -74,17 +155,17 @@ void BmlUtil::normalize( MatrixC& B )
   Nx = ( B.transpose() * J * B * J ) * mi;
 
   for( i = 0; i < 6; i++ ) {
-   Nx( i, i ) = 1.0 / sqrt( abs( Nx(i,i) ) );  
+   Nx( i, i ) = 1.0 / sqrt( abs( Nx(i,i) ) );
    if( abs( ( (Complex) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) Nx(i,i) = 1.0;
 
        /* CAUTION */   for( j = 0; j < 6; j++ ) {
        /* CAUTION */    if( j == i ) continue;
        /* CAUTION */    else if( abs( Nx(i,j) ) > BmlUtil::mlt1 ) {
        /* CAUTION */          ostringstream uic;
-       /* CAUTION */          uic << "Nondiagonal element in BJB^TJ: abs( Nx( " 
-                                  << i << ", " << j << " ) ) = " 
+       /* CAUTION */          uic << "Nondiagonal element in BJB^TJ: abs( Nx( "
+                                  << i << ", " << j << " ) ) = "
                                   << std::abs(Nx(i,j));
-       /* CAUTION */          throw( GenericException( __FILE__, __LINE__, 
+       /* CAUTION */          throw( GenericException( __FILE__, __LINE__,
        /* CAUTION */                 "void BmlUtil::normalize( MatrixC& B )",
        /* CAUTION */                 uic.str().c_str() ) );
        /* CAUTION */    }
@@ -126,19 +207,19 @@ void BmlUtil::normalize( MatrixC& B )
 // ============================================================== //
 
 int BmlUtil::makeCovariance( CovarianceSage::Info& w,
-                             const Particle& prtn, 
+                             const Particle& prtn,
                              double eps_1, double eps_2, double eps_3 )
 {
   // Some of this code has been lifted from the function
   //   MatrixD BeamlineContext::equilibriumCovariance( double eps_1, double eps_2 )
   //   in the file BeamlineContext.cc.   - Leo Michelotti (October 29, 2004)
-  
+
   static bool firstTime = true;
   static const FNAL::Complex i( 0., 1. );
 
   if( firstTime ) {
     *_errorStreamPtr << "\n*** WARNING ***"
-                        "\n*** WARNING *** File: " << __FILE__ 
+                        "\n*** WARNING *** File: " << __FILE__
                      <<                  " Line: " << __LINE__
                      << "\n*** WARNING *** BmlUtil::makeCovariance"
                         "\n*** WARNING *** Current version of this function ignores"
@@ -163,14 +244,14 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w,
   int x   = Particle::_x();
   int y   = Particle::_y();
   int cdt = Particle::_cdt();    // not yet used
-  int xp  = Particle::_xp(); 
-  int yp  = Particle::_yp(); 
+  int xp  = Particle::_xp();
+  int yp  = Particle::_yp();
   int dpp = Particle::_dpop();   // not yet used
 
   int n = Particle::PSD;
   if( 6 != n ) {
     *_errorStreamPtr << "\n*** WARNING ***"
-                        "\n*** WARNING *** File: " << __FILE__ 
+                        "\n*** WARNING *** File: " << __FILE__
                      <<                  " Line: " << __LINE__
                      << "\n*** WARNING *** BmlUtil::makeCovariance"
                         "\n*** WARNING *** Current version of this function"
@@ -193,7 +274,7 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w,
   E(xp, 0) = - ( i + w.alpha.hor )/sqrt( 2.0*w.beta.hor );
   E(y , 1) = sqrt( w.beta.ver / 2.0 );
   E(yp, 1) = - ( i + w.alpha.ver )/sqrt( 2.0*w.beta.ver );
-  
+
   for( int j = 0; j < 2; j++ ) {
     int m = j + (n/2);
     for( int k = 0; k < n; k++ ) {
@@ -203,7 +284,7 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w,
 
   // This line is almost certainly not necessary.
   //   The matrix E already, has correct normalization,
-  //   at least, as I normalize on Oct.29, 2004. 
+  //   at least, as I normalize on Oct.29, 2004.
   //   But that may change. Who knows? So I'll retain the line.
 
   // DGN: Begin diagnostic section
@@ -226,7 +307,7 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w,
 
 
 int BmlUtil::makeCovariance( CovarianceSage::Info* wPtr,
-                             const Particle& prtn, 
+                             const Particle& prtn,
                              double eps_1, double eps_2, double eps_3 )
 {
   return BmlUtil::makeCovariance( *wPtr, prtn, eps_1, eps_2, eps_3 );
@@ -299,7 +380,7 @@ beamline* BmlUtil::cloneLineAndInsert( double          percent,
         targets.insert(trg);
       }
     }
-  }  
+  }
 
 
   // If there are elements left over, handle them.

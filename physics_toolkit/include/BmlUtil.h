@@ -116,6 +116,17 @@ class BmlUtil
   //   of <linePtr> is preserved.
 
 
+  static bool isSpace( const bmlnElmnt* );
+  static bool isSpace( const bmlnElmnt& );
+  // Returns true if the argument refers to an element
+  //   which acts like empty space: e.g. drifts, Slots, markers.
+
+
+  static bool isKnown( const bmlnElmnt* );
+  static bool isKnown( const bmlnElmnt& );
+  // Returns true if the argument's type is recognized.
+
+
   // Message streams
   static void setErrorStream( std::ostream* );
   static void setOutputStream( std::ostream* );

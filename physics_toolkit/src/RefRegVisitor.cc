@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -47,10 +44,15 @@
  */
 
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "RefRegVisitor.h"
 #include "CF_rbend.h"
 #include "CF_sbend.h"
 #include "rbend.h"
+#include "sbend.h"
 #include "Slot.h"
 #include "Particle.h"
 
@@ -119,24 +121,43 @@ void RefRegVisitor::visitCF_sbend( CF_sbend* x )
 }
 
 
-/*
+// REMOVE: void RefRegVisitor::visitSbend( sbend* x )
+// REMOVE: {
+// REMOVE:   x->setEntryAngle( *_prtnPtr );
+// REMOVE:   this->visitBmlnElmnt( ((bmlnElmnt*) x) );
+// REMOVE:   x->setExitAngle( *_prtnPtr );
+// REMOVE: }
+
+
+void RefRegVisitor::visitSbend( sbend* x )
+{
+  const bmlnElmnt::PropFunc* propPtr = x->getPropFunction();
+  x->setPropFunction( &sbend::NoEdge );
+  x->setEntryAngle( *_prtnPtr );
+  this->visitBmlnElmnt( ((bmlnElmnt*) x) );
+  x->setExitAngle( *_prtnPtr );
+  x->setPropFunction( propPtr );
+}
+
+
 void RefRegVisitor::visitRbend( rbend* x )
 {
-  x->setReferenceTime(0.0);
-  _prtnPtr->set_cdt(0.0);
-  x->propagate( *_prtnPtr );
-  x->setReferenceTime( _prtnPtr->get_cdt() );
+  const bmlnElmnt::PropFunc* propPtr = x->getPropFunction();
+  x->setPropFunction( &rbend::NoEdge );
+  x->setEntryAngle( *_prtnPtr );
+  this->visitBmlnElmnt( ((bmlnElmnt*) x) );
+  x->setExitAngle( *_prtnPtr );
+  x->setPropFunction( propPtr );
 }
 
 
-void RefRegVisitor::visitSlot( Slot* x )
-{
-  x->setReferenceTime(0.0);
-  _prtnPtr->set_cdt(0.0);
-  x->propagate( *_prtnPtr );
-  x->setReferenceTime( _prtnPtr->get_cdt() );
-
-  // x->setReferenceTime( *_prtnPtr );
-  // x->propagate( *_prtnPtr );
-}
-*/
+// REMOVE: void RefRegVisitor::visitSlot( Slot* x )
+// REMOVE: {
+// REMOVE:   x->setReferenceTime(0.0);
+// REMOVE:   _prtnPtr->set_cdt(0.0);
+// REMOVE:   x->propagate( *_prtnPtr );
+// REMOVE:   x->setReferenceTime( _prtnPtr->get_cdt() );
+// REMOVE: 
+// REMOVE:   // x->setReferenceTime( *_prtnPtr );
+// REMOVE:   // x->propagate( *_prtnPtr );
+// REMOVE: }
