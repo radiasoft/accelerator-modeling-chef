@@ -37,6 +37,7 @@ SUBDIRS  = basic_toolkit/src \
 	beamline/src/physics/6d \
 	beamline/src/physics/mad \
 	filter/src \
+	integrator/src \
 	mxyzptlk/src \
 	machines/accumulator/src \
 	machines/Machine/src \
