@@ -36,7 +36,7 @@ using std::cerr;
 using std::endl;
 #endif  // __VISUAL_CPP__
 
-#ifdef __sparc 
+#if defined(__sparc) || defined(__GNUG__)
 
 inline Complex operator+( const Complex& x, const double& y )
 {
