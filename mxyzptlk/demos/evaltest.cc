@@ -1,5 +1,3 @@
-#include "mxyzptlk.h"
-
 //************************************
 //************************************
 //************************************
@@ -8,7 +6,13 @@
 //      Test program.
 //
 
-main() {
+#include <iostream>
+#include "Jet"
+
+using namespace std;
+
+int main() 
+{
  double r[3], s[3];
  
  Jet::BeginEnvironment( 7 );
@@ -25,10 +29,11 @@ main() {
  r[2] = 0.0;   s[2] = 1.0 - s[0] - s[1];
  
  for( int w = 1; w <= 7; w++ ) {
-   printf( "%d: %lf   %lf  \n",
-           w,
-           (u.filter( 0, w ))( r ),
-           (v.filter( 0, w ))( s )
-         );
-   }
+   cout << w << "  " 
+        << ((u.filter( 0, w ))( r )) << "  "
+        << ((v.filter( 0, w ))( s ))
+        << endl;
+ }
+
+ return 0;
 }
