@@ -25,15 +25,16 @@ private:
   istream& readFrom( istream& );
 
 public:
+  sector( const char* = 0, double = 0.0 );
   sector( double* betaH,  double* alphaH,  double* psiH,
           double* betaV,  double* alphaV,  double* psiV, double length );
   sector( char*, double* betaH,  double* alphaH,  double* psiH,
                  double* betaV,  double* alphaV,  double* psiV, double length );
 
-  sector(             Jet*, double /* length */ );
-  sector( char* name, Jet*, double );
-  sector(             const Mapping&,  double /* length */ );
-  sector( char* name, const Mapping&,  double );
+  sector( Jet*, double /* length */ );
+  sector( char*, Jet*, double );
+  sector( const Mapping&,  double /* length */ );
+  sector( char*, const Mapping&,  double );
   sector( const sector& );
   ~sector();
 
