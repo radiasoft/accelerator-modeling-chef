@@ -98,7 +98,8 @@ TJetEnvironment<Complex,double>::TJetEnvironment( const TJetEnvironment<double,C
 : _maxWeight( x._maxWeight ), 
   _numVar( x._numVar ), 
   _spaceDim( x._spaceDim ),
-  _numPaths(0), _monomial(0), _TJLmonomial(0), _TJLmml(0), _maxTerms(0)
+  // OBSOLETE _numPaths(0), _monomial(0), _TJLmonomial(0), _TJLmml(0), _maxTerms(0)
+  _monomial(0), _TJLmonomial(0), _TJLmml(0), _maxTerms(0)
 {
   if( TJet<Complex,double>::_workEnv != 0 ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -121,9 +122,9 @@ TJetEnvironment<Complex,double>::TJetEnvironment( const TJetEnvironment<double,C
     _TJLmml             = 0;
     _maxTerms           = 0;
     _exponent           = 0;
-    _expCode            = 0;
+    // OBSOLETE _expCode            = 0;
     _pbok               = 0;
-    _numPaths           = 0;
+    // OBSOLETE _numPaths           = 0;
     _numVar             = 0;
     _maxWeight          = 0;
     _spaceDim           = -1;
@@ -139,13 +140,13 @@ TJetEnvironment<Complex,double>::TJetEnvironment( const TJetEnvironment<double,C
   int i, j, bcfr;
 
   _exponent   = new int[ n ];
-  _expCode    = new char[ w + n ];
+  // OBSOLETE _expCode    = new char[ w + n ];
   _pbok       = x._pbok;
 
-  _numPaths = new MatrixI( w+1, n );
-  for( i = 0; i <= w; i++ )
-    for( j = 1; j <= n; j++ )
-      (*_numPaths)( i, j-1 ) = bcfRec( i + j - 1, i );
+  // OBSOLETE _numPaths = new MatrixI( w+1, n );
+  // OBSOLETE for( i = 0; i <= w; i++ )
+  // OBSOLETE   for( j = 1; j <= n; j++ )
+  // OBSOLETE     (*_numPaths)( i, j-1 ) = bcfRec( i + j - 1, i );
 
   _dof                = x._dof;
 
@@ -195,9 +196,9 @@ TJetEnvironment<Complex,double>& TJetEnvironment<Complex,double>::operator=( con
     _TJLmml             = 0;
     _maxTerms           = 0;
     _exponent           = 0;
-    _expCode            = 0;
+    // OBSOLETE _expCode            = 0;
     _pbok               = 0;
-    _numPaths           = 0;
+    // OBSOLETE _numPaths           = 0;
     _numVar             = 0;
     _maxWeight          = 0;
     _spaceDim           = -1;
@@ -218,16 +219,16 @@ TJetEnvironment<Complex,double>& TJetEnvironment<Complex,double>::operator=( con
   int i, j, bcfr;
 
   delete [] _exponent;
-  delete [] _expCode;
+  // OBSOLETE delete [] _expCode;
   _exponent   = new int[ n ];
-  _expCode    = new char[ w + n ];
+  // OBSOLETE _expCode    = new char[ w + n ];
   _pbok       = x._pbok;
 
-  delete _numPaths;
-  _numPaths = new MatrixI( w+1, n );
-  for( i = 0; i <= w; i++ )
-    for( j = 1; j <= n; j++ )
-      (*_numPaths)( i, j-1 ) = bcfRec( i + j - 1, i );
+  // OBSOLETE delete _numPaths;
+  // OBSOLETE _numPaths = new MatrixI( w+1, n );
+  // OBSOLETE for( i = 0; i <= w; i++ )
+  // OBSOLETE   for( j = 1; j <= n; j++ )
+  // OBSOLETE     (*_numPaths)( i, j-1 ) = bcfRec( i + j - 1, i );
 
   _dof                = x._dof;
 
@@ -292,9 +293,9 @@ TJetEnvironment<double,Complex>::TJetEnvironment<double,Complex>( const TJetEnvi
     _TJLmml             = 0;
     _maxTerms           = 0;
     _exponent           = 0;
-    _expCode            = 0;
+    // OBSOLETE _expCode            = 0;
     _pbok               = 0;
-    _numPaths           = 0;
+    // OBSOLETE _numPaths           = 0;
     _numVar             = 0;
     _maxWeight          = 0;
     _spaceDim           = -1;
@@ -310,13 +311,13 @@ TJetEnvironment<double,Complex>::TJetEnvironment<double,Complex>( const TJetEnvi
   int i, j, bcfr;
 
   _exponent   = new int[ n ];
-  _expCode    = new char[ w + n ];
+  // OBSOLETE _expCode    = new char[ w + n ];
   _pbok       = x._pbok;
 
-  _numPaths = new MatrixI( w+1, n );
-  for( i = 0; i <= w; i++ )
-    for( j = 1; j <= n; j++ )
-      (*_numPaths)( i, j-1 ) = bcfRec( i + j - 1, i );
+  // OBSOLETE _numPaths = new MatrixI( w+1, n );
+  // OBSOLETE for( i = 0; i <= w; i++ )
+  // OBSOLETE   for( j = 1; j <= n; j++ )
+  // OBSOLETE     (*_numPaths)( i, j-1 ) = bcfRec( i + j - 1, i );
 
   _dof                = x._dof;
 
@@ -375,9 +376,9 @@ TJetEnvironment<double,Complex>& TJetEnvironment<double,Complex>::operator=( con
     _TJLmml             = 0;
     _maxTerms           = 0;
     _exponent           = 0;
-    _expCode            = 0;
+    // OBSOLETE _expCode            = 0;
     _pbok               = 0;
-    _numPaths           = 0;
+    // OBSOLETE _numPaths           = 0;
     _numVar             = 0;
     _maxWeight          = 0;
     _spaceDim           = -1;
@@ -398,16 +399,16 @@ TJetEnvironment<double,Complex>& TJetEnvironment<double,Complex>::operator=( con
   int i, j, bcfr;
 
   delete [] _exponent;
-  delete [] _expCode;
+  // OBSOLETE delete [] _expCode;
   _exponent   = new int[ n ];
-  _expCode    = new char[ w + n ];
+  // OBSOLETE _expCode    = new char[ w + n ];
   _pbok       = x._pbok;
 
-  delete _numPaths;
-  _numPaths = new MatrixI( w+1, n );
-  for( i = 0; i <= w; i++ )
-    for( j = 1; j <= n; j++ )
-      (*_numPaths)( i, j-1 ) = bcfRec( i + j - 1, i );
+  // OBSOLETE delete _numPaths;
+  // OBSOLETE _numPaths = new MatrixI( w+1, n );
+  // OBSOLETE for( i = 0; i <= w; i++ )
+  // OBSOLETE   for( j = 1; j <= n; j++ )
+  // OBSOLETE     (*_numPaths)( i, j-1 ) = bcfRec( i + j - 1, i );
 
   _dof                = x._dof;
 
