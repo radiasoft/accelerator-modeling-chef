@@ -250,8 +250,6 @@ int EdwardsTeng::doCalc( void* arg,
  ETinfo*         ETptr;
  ETtunes*        tuneptr;
 
- static const double twoPi = 2.0*M_PI;
-
  EdwardsTeng::theMap = new Mapping;
 
  // .......... Propagate a JetProton element by element
@@ -346,11 +344,11 @@ int EdwardsTeng::doCalc( void* arg,
 
  tuneptr = new ETtunes;
  t = atan2( EdwardsTeng::snH, EdwardsTeng::csH );
- if( t < 0.0 )   t += twoPi;
- tuneptr->hor = ( t / twoPi );
+ if( t < 0.0 )   t += M_TWOPI;
+ tuneptr->hor = ( t / M_TWOPI );
  t = atan2( EdwardsTeng::snV, EdwardsTeng::csV );
- if( t < 0.0 )   t += twoPi;
- tuneptr->ver = ( t / twoPi );
+ if( t < 0.0 )   t += M_TWOPI;
+ tuneptr->ver = ( t / M_TWOPI );
 
  myBeamline->dataHook.append( "Tunes", tuneptr );
 
