@@ -47,6 +47,8 @@
 
 #include <glib.h>
 
+extern void bmlfactory_exit();
+
 #if !defined(fb_allocator_h)
 #include "fb_allocator.h"
 #endif /* fb_allocator_h */
@@ -199,7 +201,7 @@ madparser_init( const char* filename_in,
           }
         } else {
           fprintf( stderr, "Input and output files are the same, quitting\n" );
-          exit( EXIT_FAILURE );
+          bmlfactory_exit();
         }
       }
 
@@ -436,11 +438,11 @@ madparser_new_yybuff( madparser*  mp,
       
     } else {
       fprintf( stderr, "Trying to switch to file with the same name as master out, quitting\n" );
-      exit( EXIT_FAILURE );
+      bmlfactory_exit();
     }
   } else {
     fprintf( stderr, "Trying to switch to file with the same name as master in, quitting\n" );
-    exit( EXIT_FAILURE );
+    bmlfactory_exit();
   }
   
   return r;

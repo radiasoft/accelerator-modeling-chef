@@ -278,6 +278,8 @@
 #define	MAD_CALL	527
 #define	MAD_FILENAME	528
 
+extern void bmlfactory_exit();
+
 #line 1 "mad.y"
 
 #include <assert.h>
@@ -4608,7 +4610,7 @@ case 382:
                                   if ( ptr != 0 ) {
                                     if ( ptr->svalue_ != NULL ) {
                                       fprintf(stderr, "fatal parser error ! string constant %s used in an algebraic expression\n", yyvsp[0].sval);
-                                      exit( EXIT_FAILURE );
+                                      bmlfactory_exit();
                                     }
                                     
                                     data->kind_ = NUM_IDENT_EXPR;

@@ -45,6 +45,8 @@
 
 #include <glib.h>
 
+extern void bmlfactory_exit();
+
 #if !defined(beamel_table_h)
 #include "beamel_table.h"
 #endif /* beamel_table_h */
@@ -189,7 +191,7 @@ var_def_output( FILE*       out,
     qsort( var_arr, size, sizeof(variable*), var_compare );
     if ( var_table_check_circ( var_arr, size, &i, var_table, bel_table ) != NULL ) {
       fprintf( stderr, "Variable %s is circullary defined, exiting\n", var_arr[i]->name_ );
-      exit( EXIT_FAILURE );
+      bmlfactory_exit();
     }
     var_remove_forward( &var_arr, size, var_table ); /* When removing forward references, line order isn't preserved */
   }

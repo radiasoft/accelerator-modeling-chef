@@ -21,6 +21,8 @@
 #include <map>
 #include <algorithm>
 
+extern "C" void bmlfactory_exit();
+
 const size_t buffsize = 2048;
 typedef map< string, pair<bool, string> > container_type;
 
@@ -139,12 +141,12 @@ main( void ) {
         list<string>::iterator i = find( varlist.begin(), varlist.end(), string( tmpbuf ) );
         if ( i == varlist.end() ) {
           cerr << "No variable stored in second pass\n";
-          exit(1);
+          bmlfactory_exit();
         } else {
           j = varmap.find( tmpbuf );
           if ( j == varmap.end() ) {
             cerr << "Variable in List but not in Map\n";
-            exit(1);
+            bmlfactory_exit();
           } else {
             var = true;
           }
@@ -161,12 +163,12 @@ main( void ) {
             list<string>::iterator i = find( varlist.begin(), varlist.end(), string( tmpbuf ) );
             if ( i == varlist.end() ) {
               cerr << "No variable stored in second pass\n";
-              exit(1);
+              bmlfactory_exit();
             } else {
               j = varmap.find( tmpbuf );
               if ( j == varmap.end() ) {
                 cerr << "Variable in List but not in Map\n";
-                exit(1);
+                bmlfactory_exit();
               } else {
                 var = true;
               }
@@ -196,7 +198,7 @@ main( void ) {
     container_type::iterator j = varmap.find( *i );
     if ( j == varmap.end() ) {
       cerr << "something wrong with map/list\n";
-      exit(1);
+      bmlfactory_exit();
     } else {
       if ( (j->second).first == false ) { // not yet printed
         cout << j->first;
@@ -242,12 +244,12 @@ main( void ) {
         list<string>::iterator i = find( varlist.begin(), varlist.end(), string( tmpbuf ) );
         if ( i == varlist.end() ) {
           cerr << "No variable stored in second pass\n";
-          exit(1);
+          bmlfactory_exit();
         } else {
           j = varmap.find( tmpbuf );
           if ( j == varmap.end() ) {
             cerr << "Variable in List but not in Map\n";
-            exit(1);
+            bmlfactory_exit();
           } else {
             var = true;
           }
@@ -264,12 +266,12 @@ main( void ) {
             list<string>::iterator i = find( varlist.begin(), varlist.end(), string( tmpbuf ) );
             if ( i == varlist.end() ) {
               cerr << "No variable stored in second pass\n";
-              exit(1);
+              bmlfactory_exit();
             } else {
               j = varmap.find( tmpbuf );
               if ( j == varmap.end() ) {
                 cerr << "Variable in List but not in Map\n";
-                exit(1);
+                bmlfactory_exit();
               } else {
                 var = true;
               }
