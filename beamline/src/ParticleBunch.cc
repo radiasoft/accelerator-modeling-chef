@@ -1,11 +1,7 @@
 #include "ParticleBunch.h"
 
 #include <math.h>
-#if defined(__VISUAL_CPP__) || defined (__SUNPRO_CC)
 #include "MathConstants.h"
-#else
-#include <string.h>
-#endif
 // #include "beamline.inc"
 
 extern "C" long lrand48( void ); // added by O.K.
