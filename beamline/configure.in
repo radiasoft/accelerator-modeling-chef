@@ -79,12 +79,12 @@ fi
 #fi
 #)
 
-AC_ARG_WITH(gxx_exception,AC_HELP_STRING([--with-gxx_exception],[Enable G++ exceptions]),,
-if test "x${GXX}" = "xyes" && test "x$set_CXXFLAGS" = "x"; then
-CXXFLAGS="-fno-exceptions ${CXXFLAGS}"
-AC_SUBST(CXXFLAGS)
-fi
-)
+#AC_ARG_WITH(gxx_exception,AC_HELP_STRING([--with-gxx_exception],[Enable G++ exceptions]),,
+#if test "x${GXX}" = "xyes" && test "x$set_CXXFLAGS" = "x"; then
+#CXXFLAGS="-fno-exceptions ${CXXFLAGS}"
+#AC_SUBST(CXXFLAGS)
+#fi
+#)
 
 AC_DEFINE(_EXCLUDE_MONITORS_,,excludemonitors)
 
