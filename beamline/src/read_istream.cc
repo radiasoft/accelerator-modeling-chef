@@ -181,11 +181,11 @@ bmlnElmnt* read_istream(istream& is)
     element = driftPtr;
   }
   else if( strcasecmp(type, 		"hkick") == 0 ) {
-    hkickPtr = new hkick(name, strength);
+    hkickPtr = new hkick(name, length, strength);
     element = hkickPtr;
   }
   else if( strcasecmp(type, 		"vkick") == 0 ) {
-    vkickPtr = new vkick(name, strength);
+    vkickPtr = new vkick(name, length, strength);
     element = vkickPtr;
   }
   else if( strcasecmp(type, 		"kick") == 0 ) {
