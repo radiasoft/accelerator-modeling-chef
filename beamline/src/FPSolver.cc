@@ -101,11 +101,7 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
   int iterCount = 0;
   Vector eps(4);
   do {
-    cout << "DGN> In FixedPoint: Begin bmLine->propagate(p)" << endl;  // DGN
     bmLine->propagate( *p );
-    cout << "DGN> In FixedPoint: End   bmLine->propagate(p)" << endl;  // DGN
-    for( i = 0; i < dimension; i++ ) cout << p->State(i) << "  ";     // DGN
-    cout << endl;                                                     // DGN
     for( i = 0; i < 4; i++ ) eps(i) = z(i) - p->State( l[i] );
 
     // --- Set up the tests --------------------------
@@ -166,7 +162,7 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
   }
 
   if( !jumpTest || !zeroTest ) 
-    cout << 
+    cerr << 
       "FixedPoint:: Convergence achieved after " << iterCount 
                                                  << " iterations." << endl;
 
@@ -237,17 +233,12 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
   MatrixD M;
   M = jpr .State() .Jacobian();
   for( i = 0; i < dimension; i++ ) M( i, i ) -= 1.0;
-  /* DGN cout << "DGN> Before inverting: M = \n" << M << endl; */
   M = M.inverse();
   
   int iterCount = 0;
   Vector eps;
   do {
-    /* DGN */ cout << "DGN> In FixedPoint: Begin bmLine->propagate(p)" << endl;
     bmLine->propagate( *p );
-    /* DGN */ cout << "DGN> In FixedPoint: End   bmLine->propagate(p)" << endl;
-    /* DGN */ for( i = 0; i < dimension; i++ ) cout << p->State(i) << "  ";
-    /* DGN */ cout << endl;
     eps = z - p->State();
 
     // --- Set up the tests --------------------------
@@ -304,7 +295,7 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
   }
 
   if( !jumpTest ) 
-    cout << 
+    cerr << 
       "FixedPoint:: Convergence achieved after " << iterCount 
                                                  << " iterations." << endl;
 
@@ -384,13 +375,9 @@ void FPSolver::operator()( JetProton* p, FP_CRITFUNC Crit )
       w.SetComponent( i, y );
     }
     p->setState(w);
-    /* DGN */ cout << "DGN> In FixedPoint: Begin bmLine->propagate(p)" << endl;
     bmLine->propagate( *p );
-    /* DGN */ cout << "DGN> In FixedPoint: End   bmLine->propagate(p)" << endl;
     p->getState(w);
     w.standardPart( u );
-    /* DGN */ for( i = 0; i < 6; i++ ) cout << u[i] << "  ";
-    /* DGN */ cout << endl;
 
     FORALL(i) m[i] = 0;
     FORALL(i) FORALL(j) {
@@ -446,7 +433,7 @@ void FPSolver::operator()( JetProton* p, FP_CRITFUNC Crit )
   }
 
   if( !jumpTest ) 
-    cout << 
+    cerr << 
       "FixedPoint:: Convergence achieved after " << iterCount 
                                                  << " iterations." << endl;
 
@@ -530,14 +517,10 @@ void FPSolver::operator()( double* result )
       w.SetComponent( i, y );
     }
     p.setState(w);
-    /* DGN */ cout << "DGN> In fixedPoint: Begin bmLine->propagate(p)" << endl;
     bmLine->propagate( p );
-    /* DGN */ cout << "DGN> In fixedPoint: End   bmLine->propagate(p)" << endl;
     p.getState(w);
     test = 1;
     w.standardPart( u );
-    /* DGN */ for( i = 0; i < 6; i++ ) cout << u[i] << "  ";
-    /* DGN */ cout << endl;
 
     FORALL(i) m[i] = 0;
     FORALL(i) FORALL(j) {
@@ -600,7 +583,7 @@ void FPSolver::operator()( double* result )
       "fixedPoint:: Mapping failed after " << iterCount << " iterations."
 					   << endl;
   if( !jumpTest ) 
-    cout << 
+    cerr << 
       "fixedPoint:: Convergence achieved after " << iterCount 
 						 << " iterations." << endl;
   FORALL(i) result[i] = particleCoord[i];
