@@ -33,7 +33,7 @@
 #ifndef DSPNFNCPLT_H
 #define DSPNFNCPLT_H
 
-#include <qwidget.h>
+#include <qobject.h>
 
 #include "beamline.h"
 #include "LattFuncSage.h"
@@ -46,7 +46,7 @@ class BeamlineContext;
 namespace CHEF_domain
 {
 
-class DspnFncPlt : public QWidget
+class DspnFncPlt : public QObject
 {
     Q_OBJECT
 

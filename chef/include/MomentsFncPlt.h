@@ -33,7 +33,7 @@
 #ifndef MOMENTSFNCPLT_H
 #define MOMENTSFNCPLT_H
 
-#include <qwidget.h>
+#include <qobject.h>
 
 #include "beamline.h"
 #include "LattFuncSage.h"
@@ -46,7 +46,7 @@ class BeamlineContext;
 namespace CHEF_domain
 {
 
-class MomentsFncPlt : public QWidget
+class MomentsFncPlt : public QObject
 {
     Q_OBJECT
 

@@ -33,7 +33,7 @@
 #ifndef LATTFNCPLT_H
 #define LATTFNCPLT_H
 
-#include <qwidget.h>
+#include <qobject.h>
 
 #include "beamline.h"
 #include "LattFuncSage.h"
@@ -46,7 +46,7 @@ class BeamlineContext;
 namespace CHEF_domain
 {
 
-class LattFncPlt : public QWidget
+class LattFncPlt : public QObject
 {
  Q_OBJECT
 

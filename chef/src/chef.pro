@@ -14,6 +14,7 @@ QMAKE_EXT_MOC = .cc
 
 DESTDIR = /home/michelotti/projects/CURRENT/first_order_jl/installed/lib
 
+CONFIG += debug
 CONFIG += qt
 CONFIG += thread
 CONFIG += opengl
