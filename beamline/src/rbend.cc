@@ -4,33 +4,9 @@
 #include <iomanip.h>
 #endif
 
-#include "beamline.h"
-
-// **************************************************
-//   struct rbendData 
-// **************************************************
-
-rbendData::rbendData() : bmlnElmntData() {
- more   = 1;
- angle  = 0.0;
-}
-
-rbendData::rbendData( rbendData& x ) : bmlnElmntData( (bmlnElmntData&) x ) {
- more   = x.more;
- angle  = x.angle;
-}
-
-rbendData::~rbendData() {
-}
-
-void rbendData::eliminate() {
- delete this;
-}
-
-void* rbendData::clone() {
- void* p = new rbendData( *this );
- return p;
-}
+#include "rbend.h"
+#include "MathConstants.h"
+#include "PhysicsConstants.h"
 
 // **************************************************
 //   class rbend
@@ -74,9 +50,6 @@ rbend::rbend( char* n, double l, double s, double angle, PropFunc* pf )
 }
 
 
-rbend::rbend( rbendData& x ) : bmlnElmnt( (bmlnElmntData&) x ) {
-}
-
 rbend::rbend( const rbend& x )
 : bmlnElmnt( (bmlnElmnt&) x )
 {
@@ -103,35 +76,6 @@ double rbend::OrbitLength( const Particle& x )
   tworho  = 2.0 * ( x.Momentum() / PH_CNV_brho_to_p ) / strength;
   return tworho * asin( length / tworho );
 }
-
-
-rbendData* rbend::image() {
- rbendData* p = new rbendData;
- bmlnElmnt::image( (bmlnElmntData*) p );
- p->more      = 1;
- p->angle     = poleFaceAngle;
- return p;
-}
- 
-void rbend::image( int d, slist* s, BMLN_posInfo* cg ) {
-  int j;
-  rbendData* p = new rbendData;
-  bmlnElmnt::image( (bmlnElmntData*) p );
- 
-  p->address   = this;
-  p->depth     = d;
-  geomToEnd( *cg );
-  cg->outPoint = geometry.outPoint;
-  for( j = 0; j < 3; j++ ) cg->outAxes[j] = geometry.outAxes[j];
- 
-      p->geometry.inPoint  = geometry.inPoint;
-      p->geometry.outPoint = geometry.outPoint;
-      for( j = 0; j < 3; j++ ) p->geometry.inAxes[j]  = geometry.inAxes[j];
-      for( j = 0; j < 3; j++ ) p->geometry.outAxes[j] = geometry.outAxes[j];
- 
-  s->append( p );
- }
- 
 
 
 void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )

@@ -1,4 +1,6 @@
-#include "beamline.h"
+#include "sbend.h"
+#include "PhysicsConstants.h"
+#include "JetC.h"
 
 sbend::Exact_Prop    sbend::Exact;
 sbend::Approx_Prop   sbend::Approx;

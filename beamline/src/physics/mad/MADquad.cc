@@ -5,7 +5,7 @@
 // 
 // Nov.4, 1998
 
-#include "beamline.h"
+#include "quadrupole.h"
 
 quadrupole::MAD_Prop   quadrupole::LikeMAD;
 

@@ -1,4 +1,4 @@
-#include "beamline.h"
+#include "JetQuadrupole.h"
 
 JetQuadrupole::MAD_Prop   JetQuadrupole::LikeMAD;
 

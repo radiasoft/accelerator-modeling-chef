@@ -1,4 +1,4 @@
-#include "beamline.h"
+#include "rbend.h"
 
 rbend::MAD_Prop   rbend::LikeMAD;
 
