@@ -3,28 +3,45 @@ accelerator physics C++ class libraries at Fermilab.
 
 The directories are:
 
-The enviroment variable FNALROOT must be set to the fnal directory
+The environment variable FNALROOT must be set to the fnal directory.
+A 'make setup' will setup the library directories and the proper links
+in the include directory.  See the Makefile for details on how to
+create the libraries.
+
+
+	bml      -- An accelerator object class library. This
+			was delevoped by Leo Michelotti.
+
+	mxb      -- An automatic differentiation class library This
+			was delevoped by Leo Michelotti.
 
 	beamline -- An accelerator object class library. This
-			was delevoped by Leo Michelotti.
+			was delevoped by Leo Michelotti.  USE bml INSTTEAD!
 
 	mxyzptlk -- An automatic differentiation class library This
-			was delevoped by Leo Michelotti.
+			was delevoped by Leo Michelotti.  USE mxb INSTEAD!
 
 	tev      -- A class library and applications for work with
 			the Fermilab Tevatron.
 
-	server  -- A class library and applications for the model server
+	server   -- A class library and applications for the model server.
 
-	sybase  -- A class libary and aplications for using the Sybase Open Client
-		   Libary
+	sybase   -- A class libary and aplications for using the Sybase Open 
+                        Client Libary.
 
-	socket  -- The socket++ class library
+	socket   -- The socket++ class library.
 
-	tcl     -- A class library and scripts to use tcl with c++
+	tcl      -- A class library and scripts to use tcl with c++.
 
-	mc      -- A class library and applications for beam loss monte carlo
+	mc       -- A class library and applications for beam loss monte carlo.
+
+        filter   -- A group of routines that can be applied to
+                        beamlines to modify them.
+
+	recycler -- A class library and applications for work with
+			the Fermilab Recycler.
+
+	swyd     -- A class library and applications for work with
+			the Fermilab Tevatron and Switchyard beamlines.
 
 
-
-See the Makefile for details on how to create the libraries.
