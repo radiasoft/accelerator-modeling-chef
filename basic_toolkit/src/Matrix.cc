@@ -1244,6 +1244,18 @@ MatrixC MatrixC::transpose() const {
   return z;
 }
 
+MatrixC MatrixC::dagger() const {
+  MatrixC z(cols(),rows(),complex_0);
+  MLC* zPtr = z.ml;
+
+  for (int row = 0; row < rows(); row++)  {
+    for(int col = 0; col < cols(); col++)
+      zPtr->m[col][row] = conj(ml->m[row][col]);
+  }
+  z.stacked = 1;
+  return z;
+}
+
 Complex MatrixC::trace() {
   Complex temp = complex_0;
 
@@ -1466,6 +1478,18 @@ MatrixC MatrixC::eigenVectors() {
 // operators
 
 Complex& MatrixC::operator()(int i, int j) {
+  if((i >= rows()) || (j >= cols())) {
+    cerr << "\n*** ERROR *** " << endl;
+    cerr << "*** ERROR *** Complex& MatrixC::operator()(int i, int j)" << endl;
+    cerr << "*** ERROR *** limits are " << rows() << " " << cols() << endl;
+    cerr << "*** ERROR *** You asked for "<< i << " " << j << endl;
+    cerr << "*** ERROR *** matrix limits exceeded " << endl;
+    exit(1);
+  }
+  return ml->m[i][j];
+}
+
+Complex MatrixC::operator()(int i, int j) const {
   if((i >= rows()) || (j >= cols())) {
     cerr << "\n*** ERROR *** " << endl;
     cerr << "*** ERROR *** Complex& MatrixC::operator()(int i, int j)" << endl;
@@ -1951,6 +1975,37 @@ void MatrixC::lu_back_subst(int* indx, MatrixC& b)  {
   }
 }
 
+
+MatrixD real( const MatrixC& x )
+{
+  int r = x.rows();
+  int c = x.cols();
+  MatrixD ret( r, c );
+  for( int i = 0; i < r; i++ ) {
+    for( int j = 0; j < c; j++ ) {
+      ret(i,j) = real((const FNAL::Complex&) (x(i,j)));
+    }
+  }
+  return ret;
+}
+
+
+MatrixD imag( const MatrixC& x )
+{
+  int r = x.rows();
+  int c = x.cols();
+  MatrixD ret( r, c );
+  for( int i = 0; i < r; i++ ) {
+    for( int j = 0; j < c; j++ ) {
+      ret(i,j) = imag((const FNAL::Complex&) (x(i,j)));
+    }
+  }
+  return ret;
+}
+
+
+
+
 MatrixI::MatrixI() : stacked(0) {
   ml = new MLI;
 
@@ -2090,6 +2145,18 @@ void MatrixI::error( const char* msg1, const char* msg2 ) const {
 }
 
 int& MatrixI::operator()(int i, int j) {
+  if((i >= rows()) || (j >= cols())) {
+    cerr << "\n*** ERROR *** " << endl;
+    cerr << "*** ERROR *** int& MatrixI::operator()(int i, int j) " << endl;
+    cerr << "*** ERROR *** limits are " << rows() << " " << cols() << endl;
+    cerr << "*** ERROR *** You asked for " << i << " " << j << endl;
+    cerr << "*** ERROR *** matrix limits exceeded " << endl;
+    exit(1);
+  }
+ return ml->m[i][j];
+}
+
+int  MatrixI::operator()(int i, int j) const {
   if((i >= rows()) || (j >= cols())) {
     cerr << "\n*** ERROR *** " << endl;
     cerr << "*** ERROR *** int& MatrixI::operator()(int i, int j) " << endl;
