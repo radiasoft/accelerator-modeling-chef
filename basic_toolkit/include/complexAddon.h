@@ -36,7 +36,7 @@ using std::cerr;
 using std::endl;
 #endif  // __VISUAL_CPP__
 
-#if defined(__sparc) || defined(__GNUG__)
+#if defined(__sparc) && !defined(__GNUG__) 
 
 inline Complex operator+( const Complex& x, const double& y )
 {
@@ -98,8 +98,25 @@ inline char operator> ( const Complex& x, const Complex& y )
  return real(x) > real(y)  &&  imag(x) > imag(y);
 }
 
-#endif // __sparc 
+#endif // __sparc and not __GNUG__
 
+#ifdef __GNUG__
+inline char operator>= ( const Complex& x, const Complex& y )
+{
+ return real(x) >= real(y)  &&  imag(x) >= imag(y);
+}
+
+inline char operator< ( const Complex& x, const Complex& y )
+{
+ return real(x) < real(y)  &&  imag(x) < imag(y);
+}
+
+inline char operator> ( const Complex& x, const Complex& y )
+{
+ return real(x) > real(y)  &&  imag(x) > imag(y);
+}
+
+#endif // __GNUG__
 
 #ifdef __BORLAND_CPP__
 
@@ -153,10 +170,10 @@ inline double abs(const Complex& x) {
 	return sqrt(real(x)*real(x) + imag(x)*imag(x));
 }
 
-ostream& operator<<(ostream& os, const Complex& x) {
-	os << "( " << real(x) << "," << imag(x) << " )" << std::endl;
-	return os;
-}
+//ostream& operator<<(ostream& os, const Complex& x) {
+//	os << "( " << real(x) << "," << imag(x) << " )" << std::endl;
+//	return os;
+//}
 inline char operator>= ( const Complex& x, const Complex& y )
 {
  return real(x) >= real(y)  &&  imag(x) >= imag(y);
@@ -166,7 +183,7 @@ inline char operator> ( const Complex& x, const Complex& y )
  return real(x) > real(y)  &&  imag(x) > imag(y);
 }
 
-#endif // __BORLAND_CPP__
+#endif // __VISUAL_CPP__
 
 const Complex complex_1( 1.0, 0.0 );
 const Complex complex_0( 0.0, 0.0 );
