@@ -150,7 +150,8 @@ void LookupTable::setXGrid(double *xg) {
   xstep = xGrid[1] - xGrid[0];
 
   if ( ABS(xstep - (xGrid[xsize-1] - xGrid[xsize-2])) > 1E-5 ) {
-    cerr << "LookupTable:setXGrid(): Non uniform grid being specified, all bets are off!\n";
+    cerr << "LookupTable:setXGrid(): Non uniform grid being specified, "
+	 << xGrid[xsize-1] << " " << xGrid[xsize-1] << " " << xstep << endl;
   }
 }
 
@@ -165,7 +166,8 @@ void LookupTable::setYGrid(double *yg) {
   ystep = yGrid[1] - yGrid[0];
 
   if ( ABS(ystep - (yGrid[ysize-1] - yGrid[ysize-2])) > 1E-5 ) {
-    cerr << "LookupTable:setYGrid(): Non uniform grid being specified, all bets are off!\n";
+    cerr << "LookupTable:setYGrid(): Non uniform grid being specified, "
+	 << yGrid[ysize-1] << " " << yGrid[ysize-1] << " " << ystep << endl;
   }
 }
 
