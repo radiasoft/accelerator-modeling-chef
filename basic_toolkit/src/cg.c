@@ -1217,7 +1217,7 @@ L1001:
 doublereal *xr, *xi, *yr, *yi;
 {
     /* Builtin functions */
-    double sqrt();
+    /*double sqrt(); */
 
     /* Local variables */
     static doublereal s, ti, tr;
@@ -1257,7 +1257,7 @@ doublereal *ar, *ai, *ortr, *orti;
     doublereal d_1, d_2;
 
     /* Builtin functions */
-    double sqrt();
+    /* double sqrt(); */
 
     /* Local variables */
     static doublereal f, g, h;
