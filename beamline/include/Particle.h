@@ -158,6 +158,9 @@ public:
   inline double ReferenceMomentum() const {
    return p; 
   }
+  inline double PNI2() const {
+   return pni2;
+  }
   inline double ReferenceEnergy() const {
    return E;
   }
@@ -404,6 +407,9 @@ public:
   }
   inline double ReferenceMomentum() const {
    return p; 
+  }
+  inline double PNI2() const {
+   return pni2;
   }
   inline double ReferenceEnergy() const {
    return E;

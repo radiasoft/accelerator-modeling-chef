@@ -4,7 +4,7 @@ using std::setprecision;
 #else
 #include <iomanip.h>
 #endif
-#include <beamline.inc>
+#include "beamline.h"
 
 // **************************************************
 //   struct BMLN_posInfo
@@ -127,28 +127,12 @@ void* bmlnElmntData::clone() {
  return p;
 }
 
-// ??? REMOVE void bmlnElmntData::writeTo( FILE* f ) {
-// ??? REMOVE  int sz = strlen( name );
-// ??? REMOVE  if( sz == 0 ) {
-// ??? REMOVE   printf( "\n" );
-// ??? REMOVE   printf( "*** ERROR ***                                        \n" );
-// ??? REMOVE   printf( "*** ERROR *** void bmlnElmntData::writeTo( FILE* )   \n" );
-// ??? REMOVE   printf( "*** ERROR *** Anomoly in ident.  Quitting.           \n" );
-// ??? REMOVE   printf( "*** ERROR ***                                        \n" );
-// ??? REMOVE   printf( "\n" );
-// ??? REMOVE   exit(0);
-// ??? REMOVE  }
-// ??? REMOVE 
-// ??? REMOVE  fwrite( this, sizeof( bmlnElmntData ), 1, f );
-// ??? REMOVE  fwrite( &sz, sizeof( int ), 1, f );
-// ??? REMOVE  fprintf( f, "%s ", name );
-// ??? REMOVE }
 
 // **************************************************
 //   class bmlnElmnt
 // **************************************************
 
-bmlnElmnt::bmlnElmnt( const char* n, PROPFUNC pf, JETPROPFUNC jpf ) {
+bmlnElmnt::bmlnElmnt( const char* n, PropFunc* pf ) {
  if( n ) {
   ident = new char [ strlen(n) + 1 ];
   strcpy( ident, n );
@@ -170,7 +154,6 @@ bmlnElmnt::bmlnElmnt( const char* n, PROPFUNC pf, JETPROPFUNC jpf ) {
  p_bml         = 0;
  p_bml_e       = 0;
  Propagator    = pf;
- JetPropagator = jpf;
 
  // ...... Initialize geometry .................................
  geometry.inPoint.set   ( 0., 0., 0. );
@@ -187,8 +170,7 @@ bmlnElmnt::bmlnElmnt( const char* n, PROPFUNC pf, JETPROPFUNC jpf ) {
 #endif
 }
 
-bmlnElmnt::bmlnElmnt( double l /* length */, 
-                      PROPFUNC pf, JETPROPFUNC jpf ) {
+bmlnElmnt::bmlnElmnt( double l /* length */, PropFunc* pf ) {
  ident        = new char [8];
                  strcpy( ident, "NONAME" );
  length       = l;
@@ -205,7 +187,6 @@ bmlnElmnt::bmlnElmnt( double l /* length */,
  p_bml         = 0;
  p_bml_e       = 0;
  Propagator    = pf;
- JetPropagator = jpf;
 
  // ...... Initialize geometry .................................
  geometry.inPoint.set   ( 0., 0., 0. );
@@ -224,7 +205,7 @@ bmlnElmnt::bmlnElmnt( double l /* length */,
 
 bmlnElmnt::bmlnElmnt( double l /* length */, 
                       double s /* strength */, 
-                      PROPFUNC pf, JETPROPFUNC jpf ) {
+                      PropFunc* pf ) {
  ident        = new char [8];
                  strcpy( ident, "NONAME" );
  length       = l;
@@ -241,7 +222,6 @@ bmlnElmnt::bmlnElmnt( double l /* length */,
  p_bml         = 0;
  p_bml_e       = 0;
  Propagator    = pf;
- JetPropagator = jpf;
 
  // ...... Initialize geometry .................................
  geometry.inPoint.set   ( 0., 0., 0. );
@@ -260,7 +240,7 @@ bmlnElmnt::bmlnElmnt( double l /* length */,
 
 bmlnElmnt::bmlnElmnt( const char*  n /* name */, 
                       double l       /* length */, 
-                      PROPFUNC pf, JETPROPFUNC jpf ) {
+                      PropFunc* pf ) {
  if( n ) {
   ident = new char [ strlen(n) + 1 ];
   strcpy( ident, n );
@@ -283,7 +263,6 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  p_bml         = 0;
  p_bml_e       = 0;
  Propagator    = pf;
- JetPropagator = jpf;
 
  // ...... Initialize geometry .................................
  geometry.inPoint.set   ( 0., 0., 0. );
@@ -303,7 +282,7 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
 bmlnElmnt::bmlnElmnt( const char*  n /* name */, 
                       double l       /* length */, 
                       double s       /* strength */, 
-                      PROPFUNC pf, JETPROPFUNC jpf ) {
+                      PropFunc* pf ) {
  if( n ) {
   ident = new char [ strlen(n) + 1 ];
   strcpy( ident, n );
@@ -326,7 +305,6 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  p_bml         = 0;
  p_bml_e       = 0;
  Propagator    = pf;
- JetPropagator = jpf;
 
  // ...... Initialize geometry .................................
  geometry.inPoint.set   ( 0., 0., 0. );
@@ -358,7 +336,6 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
  shuntCurrent  = a.getShunt();
 
  Propagator = a.Propagator;
- JetPropagator = a.JetPropagator;
 
  if(a.align != 0) {
    alignmentData data = a.align->getAlignment();

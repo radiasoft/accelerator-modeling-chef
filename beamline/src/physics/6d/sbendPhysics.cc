@@ -1,33 +1,34 @@
-#include "beamline.inc"
+#include "beamline.h"
 
-void sbend::P_Exact( bmlnElmnt* p_be, Particle& p )
+sbend::Exact_Prop  sbend::Exact;
+
+int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
- sbend* pbe = (sbend*) p_be;
- static double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
-
- double TrState[6];
+ static sbend* pbe;
+ pbe = (sbend*) p_be;
+ static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
 
  // Preliminary filter from state coordinates
- double psq = 1.0 + p.state[5];
+ double psq = 1.0 + p.get_ndp();
         psq = psq*psq;
- double E_factor = 1.0 / sqrt( psq + p.pni2 );
- double beta_1 = E_factor*p.state[3];
- double beta_2 = E_factor*p.state[4];
- double beta_3 = E_factor*sqrt( psq - p.state[3]*p.state[3]
-                                    - p.state[4]*p.state[4] );
+ double E_factor = 1.0 / sqrt( psq + p.PNI2() );
+ double beta_1 = E_factor*p.get_npx();
+ double beta_2 = E_factor*p.get_npy();
+ double beta_3 = E_factor*sqrt( psq - p.get_npx()*p.get_npx()
+                                    - p.get_npy()*p.get_npy() );
 
  // REMOVE ??? double Rho    = p.bRho / pbe->strength;        // Fiducial parameters
  // REMOVE ??? double dphi   = - 2.0*asin( length / (2.0*Rho) );
 
- double dphi   = - pbe->angle;
- double Rho    = - pbe->length / dphi;
- double Omega  = csq_red * pbe->strength / p.E;
+ double dphi   = - pbe->getAngle();
+ double Rho    = - pbe->Length() / dphi;
+ double Omega  = csq_red * pbe->Strength() / p.ReferenceEnergy();
 
- Complex ui  ( 0.0, p.state[0] );
+ Complex ui  ( 0.0, p.get_x() );
  Complex vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
 
  // Step 1.
- double omega  = csq_red * pbe->strength / p.Energy();
+ double omega  = csq_red * pbe->Strength() / p.Energy();
  Complex bi = ( complex_i*vui / omega ) - ui;
 
  // Step 2.
@@ -50,50 +51,50 @@ void sbend::P_Exact( bmlnElmnt* p_be, Particle& p )
  double cdt    = - PH_MKS_c * dtheta / omega;
  double CDT    = - PH_MKS_c * dphi   / Omega;
 
- p.state[0] = imag( uf );
- p.state[1] = p.state[1] + beta_2*cdt;
- p.state[2] = p.state[2] + ( cdt - CDT );
- p.state[3] = imag( vuf )/( E_factor * PH_MKS_c );
+ p.set_x    ( imag( uf ) );
+ p.set_y    ( p.get_y() + beta_2*cdt );
+ p.set_cdt  ( p.get_cdt() + ( cdt - CDT ) );
+ p.set_npx  ( imag( vuf )/( E_factor * PH_MKS_c ) );
 
+ return 0;
 }
 
-void sbend::J_Exact( bmlnElmnt* p_be, JetParticle& p ) 
+int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 {
- sbend* pbe = (sbend*) p_be;
- static double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
-
- Jet TrState[6];
+ static sbend* pbe;
+ pbe = (sbend*) p_be;
+ static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
  int i;
 
  // Preliminary filter from state coordinates
  static Jet psq;
- psq = 1.0 + p.state(5);
+ psq = 1.0 + p.get_ndp();
  psq = psq*psq;
 
  static Jet E_factor;
- E_factor = 1.0 / sqrt( psq + p.pni2 );
+ E_factor = 1.0 / sqrt( psq + p.PNI2() );
 
  static Jet beta_1, beta_2, beta_3;
- beta_1 = E_factor*p.state(3);
- beta_2 = E_factor*p.state(4);
- beta_3 = E_factor*sqrt( psq - p.state(3)*p.state(3)
-                             - p.state(4)*p.state(4) );
+ beta_1 = E_factor*p.get_npx();
+ beta_2 = E_factor*p.get_npy();
+ beta_3 = E_factor*sqrt( psq - p.get_npx()*p.get_npx()
+                             - p.get_npy()*p.get_npy() );
 
  // REMOVE ??? double Rho    = p.bRho / pbe->strength;        // Fiducial parameters
  // REMOVE ??? double dphi   = - 2.0*asin( length / (2.0*Rho) );
 
- double dphi   = - pbe->angle;
- double Rho    = - pbe->length / dphi;
- double Omega  = csq_red * pbe->strength / p.E;
+ double dphi   = - pbe->getAngle();
+ double Rho    = - pbe->Length() / dphi;
+ double Omega  = csq_red * pbe->Strength() / p.ReferenceEnergy();
 
  static JetC ui, vui;
- ui  = complex_i * p.state(0);
+ ui  = complex_i * p.get_x();
  vui = PH_MKS_c*( beta_3 + complex_i * beta_1 );
 
  // Step 1.
  static Jet omega;
  static JetC bi;
- omega  = csq_red * pbe->strength / p.Energy();
+ omega  = csq_red * pbe->Strength() / p.Energy();
  bi = ( complex_i*vui / omega ) - ui;
 
  // Step 2.
@@ -121,9 +122,10 @@ void sbend::J_Exact( bmlnElmnt* p_be, JetParticle& p )
  CDT.Reconstruct( cdt.Env() );
  CDT    = - PH_MKS_c * dphi   / Omega;
 
- ( p.state ).SetComponent( 0, imag( uf )                          );
- ( p.state ).SetComponent( 1, p.state(1) + beta_2*cdt             );
- ( p.state ).SetComponent( 2, p.state(2) + ( cdt - CDT )          );
- ( p.state ).SetComponent( 3, imag( vuf )/( E_factor * PH_MKS_c ) );
+ p.set_x    ( imag( uf ) );
+ p.set_y    ( p.get_y() + beta_2*cdt );
+ p.set_cdt  ( p.get_cdt() + ( cdt - CDT ) );
+ p.set_npx  ( imag( vuf )/( E_factor * PH_MKS_c ) );
 
+ return 0;
 }

@@ -1,10 +1,12 @@
-#include "beamline.inc"
+#include "beamline.h"
 
-void JetQuadrupole::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
+JetQuadrupole::MAD_Prop   JetQuadrupole::LikeMAD;
+
+int JetQuadrupole::MAD_Prop::operator()( bmlnElmnt* p_be, Particle& p ) {
   JetQuadrupole* pbe = (JetQuadrupole*) p_be;
   int     i, j;
   double  arg, factor;
-  double  inState[ BMLN_dynDim ];
+  double  inState[ BMLN_dynDim ], outState[ BMLN_dynDim ];
   double mapMatrix[BMLN_dynDim][BMLN_dynDim];
   double realStrength; 
   for   ( i = 0; i < BMLN_dynDim; i++ ) {
@@ -12,19 +14,19 @@ void JetQuadrupole::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
       mapMatrix[i][j] = 0.0;
     mapMatrix[i][i] = 1.0;
   }
-  realStrength = pbe->strength / p.BRho();
+  realStrength = pbe->Strength() / p.BRho();
  if ( realStrength == 0.0 )         // Zero-strength quad acts like a drift
  {
-   mapMatrix[0][0] = 1.0;  mapMatrix[0][3] = pbe->length;
+   mapMatrix[0][0] = 1.0;  mapMatrix[0][3] = pbe->Length();
    mapMatrix[3][0] = 0.0;  mapMatrix[3][3] = 1.0;
 
-   mapMatrix[1][1] = 1.0;  mapMatrix[1][4] = pbe->length;
+   mapMatrix[1][1] = 1.0;  mapMatrix[1][4] = pbe->Length();
    mapMatrix[4][1] = 0.0;  mapMatrix[4][4] = 1.0;
  }
  else if ( realStrength < 0.0 )     // Defocussing horizontally
  {                              // Focussing   vertically
    factor = sqrt( - realStrength );
-   arg    = factor * pbe->length;
+   arg    = factor * pbe->Length();
 
    mapMatrix[0][0] = mapMatrix[3][3] = cosh( arg );
    mapMatrix[0][3] = mapMatrix[3][0] = sinh( arg );
@@ -39,7 +41,7 @@ void JetQuadrupole::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
  else                      // Defocussing vertically
  {                         // Focussing   horizontally
    factor = sqrt( realStrength );
-   arg    = factor * pbe->length;
+   arg    = factor * pbe->Length();
 
    mapMatrix[0][0] = mapMatrix[3][3] = cos( arg );
    mapMatrix[0][3] = mapMatrix[3][0] = sin( arg );
@@ -52,20 +54,44 @@ void JetQuadrupole::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
    mapMatrix[4][1] *=  factor;
  }
 
- mapMatrix[2][5] = -pbe->length/p.Beta()/p.Gamma()/p.Gamma();
+ mapMatrix[2][5] = -pbe->Length()/p.Beta()/p.Gamma()/p.Gamma();
  
+
+    if( BMLN_dynDim != 6 ) {
+      cerr << "*** ERROR ***                                  "
+              "*** ERROR *** MADJetQuad::MAD_Prop::operator() "
+              "*** ERROR *** This was written for a phase     "
+              "*** ERROR *** space dimension of 6.            "
+              "*** ERROR ***                                  "
+           << endl;
+      exit(1);
+    }
+
+    inState[0] = p.get_x();
+    inState[1] = p.get_y();
+    inState[2] = p.get_cdt();
+    inState[3] = p.get_npx();
+    inState[4] = p.get_npy();
+    inState[5] = p.get_ndp();
+
  for( i = 0; i < BMLN_dynDim; i++  ) {
-   inState[i] = p.state[i];
- }
- for( i = 0; i < BMLN_dynDim; i++  ) {
-   p.state[i] = 0.0;
+   outState[i] = 0.0;
    for( j = 0; j < BMLN_dynDim; j++  ) 
-     p.state[i] += mapMatrix[i][j]*inState[j];
+     outState[i] += mapMatrix[i][j]*inState[j];
  }
+
+    p.set_x  ( outState[0] );
+    p.set_y  ( outState[1] );
+    p.set_cdt( outState[2] );
+    p.set_npx( outState[3] );
+    p.set_npy( outState[4] );
+    p.set_ndp( outState[5] );
+
+  return 0;
 }
 
 
-void JetQuadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
+int JetQuadrupole::MAD_Prop::operator()( bmlnElmnt* p_be, JetParticle& p ) {
   JetQuadrupole* pbe = (JetQuadrupole*) p_be;
   Jet    inState  [BMLN_dynDim];
   Jet    outState [BMLN_dynDim];
@@ -80,19 +106,19 @@ void JetQuadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
       mapMatrix[i][j] = 0.0;
     mapMatrix[i][i] = 1.0;
   }
-  realStrength = pbe->JetStrength / p.ReferenceBRho();
+  realStrength = pbe->getJetStrength() / p.ReferenceBRho();
   if ( realStrength.standardPart() == 0.0 ) // Zero-strength quad acts like a drift
     {
-      mapMatrix[0][0] = 1.0;  mapMatrix[0][3] = pbe->length;
+      mapMatrix[0][0] = 1.0;  mapMatrix[0][3] = pbe->Length();
       mapMatrix[3][0] = 0.0;  mapMatrix[3][3] = 1.0;
       
-      mapMatrix[1][1] = 1.0;  mapMatrix[1][4] = pbe->length;
+      mapMatrix[1][1] = 1.0;  mapMatrix[1][4] = pbe->Length();
       mapMatrix[4][1] = 0.0;  mapMatrix[4][4] = 1.0;
     }
   else if ( realStrength.standardPart() < 0.0 ) // Defocussing horizontally
     {                              // Focussing   vertically
       factor = sqrt( - realStrength );
-      arg    = factor * pbe->length;
+      arg    = factor * pbe->Length();
       
       mapMatrix[0][0] = mapMatrix[3][3] = cosh( arg );
       mapMatrix[0][3] = mapMatrix[3][0] = sinh( arg );
@@ -107,7 +133,7 @@ void JetQuadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
   else                      // Defocussing vertically
     {                         // Focussing   horizontally
       factor = sqrt( realStrength );
-      arg    = factor * pbe->length;
+      arg    = factor * pbe->Length();
       
       mapMatrix[0][0] = mapMatrix[3][3] = cos( arg );
       mapMatrix[0][3] = mapMatrix[3][0] = sin( arg );
@@ -121,15 +147,28 @@ void JetQuadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
     }
 
   
-  mapMatrix[2][5] = -pbe->length/p.ReferenceBeta()/p.ReferenceGamma()/
+  mapMatrix[2][5] = -pbe->Length()/p.ReferenceBeta()/p.ReferenceGamma()/
     p.ReferenceGamma();
 
   zero = 0.0;
-  // ??? REMOVE zero.fixReferenceAtStart( p.state );
 
-  for( i = 0; i < BMLN_dynDim; i++  ) {
-    inState[i] = p.state(i);
-  }
+
+    if( BMLN_dynDim != 6 ) {
+      cerr << "*** ERROR ***                                  "
+              "*** ERROR *** MADJetQuad::MAD_Prop::operator() "
+              "*** ERROR *** This was written for a phase     "
+              "*** ERROR *** space dimension of 6.            "
+              "*** ERROR ***                                  "
+           << endl;
+      exit(1);
+    }
+
+    inState[0] = p.get_x();
+    inState[1] = p.get_y();
+    inState[2] = p.get_cdt();
+    inState[3] = p.get_npx();
+    inState[4] = p.get_npy();
+    inState[5] = p.get_ndp();
 
   for( i = 0; i < BMLN_dynDim; i++  ) {
     outState[i] = zero;
@@ -137,7 +176,12 @@ void JetQuadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
       outState[i] = outState[i] + mapMatrix[i][j]*inState[j];
   }
 
-  for( i = 0; i < BMLN_dynDim; i++  ) {
-    ( p.state ).SetComponent( i, outState[i] );
-  }
+    p.set_x  ( outState[0] );
+    p.set_y  ( outState[1] );
+    p.set_cdt( outState[2] );
+    p.set_npx( outState[3] );
+    p.set_npy( outState[4] );
+    p.set_ndp( outState[5] );
+
+  return 0;
 }
