@@ -227,7 +227,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
       _tool_ctrlMenu->insertItem( "Misalign all...",    this, SLOT(_toolMisalign()) );
       _id_ctrlMenu = 
     _toolMenu->insertItem( "Control", _tool_ctrlMenu );
-      _toolMenu->setItemEnabled( _id_ctrlMenu, false );
+    _toolMenu->setItemEnabled( _id_ctrlMenu, false );
 
       _tool_dsgnMenu = new QPopupMenu;
       _id_dsgnMenu = 
@@ -235,9 +235,18 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
       _toolMenu->setItemEnabled( _id_dsgnMenu, false );
   _mainMenu->insertItem( "Tools", _toolMenu );
 
+    _helpMenu = new QPopupMenu;
+    _helpMenu->insertItem( "Contents", this, SLOT(_helpContents()) );
+    _helpMenu->insertItem( "About", this, SLOT(_helpAbout()) );
+    int id_helpMenu = 
+  _mainMenu->insertItem( "Help", _helpMenu );
+  _mainMenu->setItemEnabled( id_helpMenu, false );
+
+
   // Make connections
   connect( this, SIGNAL(_new_beamline()), 
            this, SLOT  (_launch_browser()) );
+
 
   // Set geometry and show _mainWindow
   _mainWindow->adjustSize();
@@ -1604,6 +1613,17 @@ void CHEF::_do_nothing()
                             "Sorry. This function is not implemented." );
 }
 
+
+void AESOP::_helpContents()
+{
+  this->_do_nothing();
+}
+
+
+void AESOP::_helpAbout()
+{
+  this->_do_nothing();
+}
 
 
 // *****************************************

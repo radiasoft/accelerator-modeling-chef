@@ -41,6 +41,8 @@
 #include <qptrlist.h>
 #endif
 
+#include "complexAddon.h"
+
 // Forward declarations
 class QMainWindow;
 class QApplication;
@@ -224,6 +226,7 @@ private:
   QPopupMenu*            _calcLattFuncMenu;
   QPopupMenu*        _tool_ctrlMenu;
   QPopupMenu*        _tool_dsgnMenu;
+  QPopupMenu*      _helpMenu;
 
   // Menu identifiers
   int              _id_FilePrint;
@@ -276,6 +279,8 @@ private slots:
   void _editPartAndSect();
   void _toolAlignBends();
   void _toolMisalign();
+  void _helpContents();
+  void _helpAbout();
   void _processFilter( const BoolNode& );
 
   void _slot_contextGenerated( BeamlineContext* );

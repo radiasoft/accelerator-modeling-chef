@@ -99,10 +99,7 @@ DspnFncPlt::DspnFncPlt( BeamlineContext* bcp, QWidget* p, const char* name )
 : QWidget( p, name ),  
   _bmlConPtr(bcp), _deleteContext(false),
   _arraySize(0), _azimuth(0),
-  _beta_H(0),  _beta_V(0),
-  _alpha_H(0), _alpha_V(0),
-  _inv_beta_H(0), _inv_beta_V(0),
-  _root_beta_H(0), _root_beta_V(0),
+  _clo_H(0), _clo_V(0), 
   _disp_H(0), _disp_V(0)
 {
   this->_finishConstructor();
@@ -113,10 +110,7 @@ DspnFncPlt::DspnFncPlt( /* const */ beamline* pBml, QWidget* p , const char* nam
 : QWidget( p, name ),
   _bmlConPtr(0), _deleteContext(true),
   _arraySize(0), _azimuth(0),
-  _beta_H(0),  _beta_V(0),
-  _alpha_H(0), _alpha_V(0),
-  _inv_beta_H(0), _inv_beta_V(0),
-  _root_beta_H(0), _root_beta_V(0),
+  _clo_H(0), _clo_V(0), 
   _disp_H(0), _disp_V(0)
 {
   _bmlConPtr = new BeamlineContext( false, pBml );
@@ -130,16 +124,10 @@ void DspnFncPlt::_finishConstructor()
   // Create the lattice function arrays.
   _arraySize   = bmlPtr->countHowManyDeeply();
   _azimuth     = new double[_arraySize];
-  _beta_H      = new double[_arraySize];
-  _alpha_H     = new double[_arraySize];
-  _beta_V      = new double[_arraySize];
-  _alpha_V     = new double[_arraySize];
-  _inv_beta_H  = new double[_arraySize];
-  _inv_beta_V  = new double[_arraySize];
-  _root_beta_H = new double[_arraySize];
-  _root_beta_V = new double[_arraySize];
   _disp_H      = new double[_arraySize];
   _disp_V      = new double[_arraySize];
+  _clo_H       = new double[_arraySize];
+  _clo_V       = new double[_arraySize];
 
 
   // Now do the widget stuff.
@@ -169,7 +157,7 @@ void DspnFncPlt::_finishConstructor()
 
     plt = new QwtPlot( theTitle, this );
     
-    // plt->enableAxis( QwtPlot::yRight, true );
+    plt->enableAxis( QwtPlot::yRight, true );
     // Set the bottom of the beta axis to zero.
     plt->setAxisReference( QwtPlot::yLeft, 0.0 );
     // plt->d_as[QwtPlot::yLeft].setOptions( QwtAutoscale::IncludeRef );
@@ -177,9 +165,13 @@ void DspnFncPlt::_finishConstructor()
 
     crv1 = plt->insertCurve( "H Dispersion" );
     crv2 = plt->insertCurve( "V Dispersion" );
+    crv3 = plt->insertCurve( "H Closed Orbit" );
+    crv4 = plt->insertCurve( "V Closed Orbit" );
 
     plt->setCurvePen(crv1, QPen(black,1));
     plt->setCurvePen(crv2, QPen(red,1));
+    plt->setCurvePen(crv3, QPen(blue,1));
+    plt->setCurvePen(crv4, QPen(darkGreen,1));
 
     plt->enableGridX(true);
     plt->enableGridXMin(false);
@@ -189,12 +181,15 @@ void DspnFncPlt::_finishConstructor()
     // plt->setGridMinPen(QPen(gray, 0 , DotLine));
 
     plt->setAxisTitle(QwtPlot::xBottom, "azimuth [m]");
-    plt->setAxisTitle(QwtPlot::yLeft,  "dispersion [m]");
+    plt->setAxisTitle(QwtPlot::yLeft,   "dispersion [m]");
+    plt->setAxisTitle(QwtPlot::yRight,  "closed orbit [mm]");
 
     // plt->setAxisScale( QwtPlot::xBottom, 0.0, 40.0, 2.0 );
     
     plt->setCurveYAxis(crv1, QwtPlot::yLeft);
     plt->setCurveYAxis(crv2, QwtPlot::yLeft);
+    plt->setCurveYAxis(crv3, QwtPlot::yRight);
+    plt->setCurveYAxis(crv4, QwtPlot::yRight);
     
     mrk1 = plt->insertMarker();
     plt->setMarkerLineStyle(mrk1, QwtMarker::VLine);
@@ -255,17 +250,11 @@ DspnFncPlt::~DspnFncPlt()
   delete _viewMenu;
   delete _myMenuPtr;
   
-  delete [] _azimuth;
-  delete [] _beta_H;
-  delete [] _alpha_H;
-  delete [] _beta_V;
-  delete [] _alpha_V;
-  delete [] _inv_beta_H;
-  delete [] _inv_beta_V;
-  delete [] _root_beta_H;
-  delete [] _root_beta_V;
-  delete [] _disp_H;
-  delete [] _disp_V;
+  delete [] _azimuth;  _azimuth = 0;
+  delete [] _disp_H;   _disp_H = 0;
+  delete [] _disp_V;   _disp_V = 0;
+  delete [] _clo_H;    _clo_H = 0;
+  delete [] _clo_V;    _clo_V = 0;
 
   if(_deleteContext) { delete _bmlConPtr; }
 }
@@ -313,9 +302,10 @@ void DspnFncPlt::_fileSaveAs()
         }
         else {
           outputFileStream << setw(10) << setprecision(3) << _azimuth[i]
-                           << setw(10) << setprecision(3) << _beta_H[i]
-                           << setw(10) << setprecision(3) << _beta_V[i]
+                           << setw(10) << setprecision(3) << _clo_H[i]
+                           << setw(10) << setprecision(3) << _clo_V[i]
                            << setw(10) << setprecision(3) << _disp_H[i]
+                           << setw(10) << setprecision(3) << _disp_V[i]
                            << endl;
         }
         i++;
@@ -358,11 +348,9 @@ void DspnFncPlt::_fileSaveAs()
           outputFileStream << setw(15) << q->Type() 
                            << setw(15) << q->Name()
                            << setw(10) << setprecision(3) << _azimuth[i]
-                           << setw(10) << setprecision(3) << _beta_H[i]
-                           << setw(10) << setprecision(3) << _alpha_H[i]
+                           << setw(10) << setprecision(3) << _clo_H[i]
+                           << setw(10) << setprecision(3) << _clo_V[i]
                            << setw(10) << setprecision(3) << _disp_H[i]
-                           << setw(10) << setprecision(3) << _beta_V[i]
-                           << setw(10) << setprecision(3) << _alpha_V[i]
                            << setw(10) << setprecision(3) << _disp_V[i]
                            << endl;
         }
@@ -529,6 +517,8 @@ void DspnFncPlt::plotMouseReleased(const QMouseEvent &e)
 
 void DspnFncPlt::recalc()
 {
+  const double mm = 0.001;
+
   _currentTune[0] = _bmlConPtr->getHorizontalEigenTune();
   _currentTune[1] = _bmlConPtr->getVerticalEigenTune();
 
@@ -553,8 +543,15 @@ void DspnFncPlt::recalc()
     }
     else {
       _azimuth[i]      = infoPtr->arcLength;
+      _clo_H[i]        = infoPtr->closedOrbit.hor / mm;
+      _clo_V[i]        = infoPtr->closedOrbit.ver / mm;
       _disp_H[i]       = infoPtr->dispersion.hor;
       _disp_V[i]       = infoPtr->dispersion.ver;
+
+      // Zero out closed orbits of less than 1 Angstrom
+      if( std::abs(_clo_H[i]) < 1.0e-7 ) { _clo_H[i] = 0.0; }
+      if( std::abs(_clo_V[i]) < 1.0e-7 ) { _clo_V[i] = 0.0; }
+
       infoPtr = _bmlConPtr->getDispersionPtr(++i);
     }
   }
@@ -574,6 +571,8 @@ void DspnFncPlt::recalc()
   // copies data (less efficient, but safe)
   plt->setCurveData( crv1, _azimuth, _disp_H, _arraySize );
   plt->setCurveData( crv2, _azimuth, _disp_V, _arraySize );
+  plt->setCurveData( crv3, _azimuth, _clo_H,  _arraySize );
+  plt->setCurveData( crv4, _azimuth, _clo_V,  _arraySize );
 
   // attaches data (more efficient, but dangerous)
   // plt->setCurveRawData(crv2, frequency, phase, ArraySize);

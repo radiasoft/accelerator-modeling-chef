@@ -84,14 +84,8 @@ class InputFrame : public QFrame
 
     int    _arraySize;
     double* _azimuth;
-    double* _beta_H;
-    double* _alpha_H;
-    double* _beta_V;
-    double* _alpha_V;
-    double* _inv_beta_H;
-    double* _inv_beta_V;
-    double* _root_beta_H;
-    double* _root_beta_V;
+    double* _clo_H;
+    double* _clo_V;
     double* _disp_H;
     double* _disp_V;
 
@@ -106,7 +100,7 @@ class InputFrame : public QFrame
     int d_zoom;
     int d_zoomActive;
 
-    long crv1, crv2;
+    long crv1, crv2, crv3, crv4;
     long mrk1, mrk2;
     
     void _finishConstructor();
