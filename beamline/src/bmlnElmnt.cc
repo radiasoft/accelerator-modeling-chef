@@ -1197,3 +1197,37 @@ bmlnElmnt::Discriminator::Discriminator( const Discriminator& )
        << endl;
   exit(1);
 }
+
+
+// Exceptions
+
+bmlnElmnt::GenericException::GenericException( string fileName, int lineNumber, 
+                                              const char* fcn, 
+                                              const char* msg )
+{
+  ostringstream uic;
+  uic << "\n*** ERROR *** "
+         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
+      << "\n*** ERROR *** " << fcn
+      << "\n*** ERROR *** " << msg
+      << "\n*** ERROR *** ";
+  errorString = uic.str();
+
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << errorString;
+    cerr << "\n*** ERROR *** This message is printed only once."
+            "\n*** ERROR *** "
+         << endl;
+    firstTime = false;
+  }
+}
+
+const char* bmlnElmnt::GenericException::what() const throw()
+{
+  return errorString.c_str();
+}
+
+
+
+

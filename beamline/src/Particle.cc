@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "Particle.h"
 #include "PhysicsConstants.h"
@@ -65,14 +65,11 @@ Particle::Particle( double mass, double energy ) {
  m = mass;
  E = energy;
  if( E < m ) {
-  cout << "\n"
-       << "*** ERROR ***  Particle::Particle( double )            \n"
-       << "*** ERROR ***  What the hell are you doing???          \n"
-       << "*** ERROR ***  The energy must be larger than the      \n"
-       << "*** ERROR ***  rest mass!!                             \n"
-       << "                                                       \n"
-       << endl;
-  exit(1);
+  ostringstream uic;
+  uic  << "Energy, " << E << " GeV, is less than mass, " << m << " GeV.";
+  throw( Particle::GenericException( __FILE__, __LINE__, 
+         "Particle::Particle( double, double )", 
+         uic.str().c_str() ) );
  }
  p = sqrt( E*E - m*m );
  bRho  = p / PH_CNV_brho_to_p;
@@ -89,14 +86,11 @@ Particle::Particle( double mass, double energy, double* s ) {
  m = mass;
  E = energy;
  if( E < m ) {
-  cout << "\n"
-       << "*** ERROR ***  Particle::Particle( double, double* )   \n"
-       << "*** ERROR ***  What the hell are you doing???          \n"
-       << "*** ERROR ***  The energy must be larger than the      \n"
-       << "*** ERROR ***  rest mass!!                             \n"
-       << "                                                       \n"
-       << endl;
-  exit(1);
+  ostringstream uic;
+  uic  << "Energy, " << E << " GeV, is less than mass, " << m << " GeV.";
+  throw( Particle::GenericException( __FILE__, __LINE__, 
+         "Particle::Particle( double, double, double* )", 
+         uic.str().c_str() ) );
  }
  p = sqrt( E*E - m*m );
  bRho  = p / PH_CNV_brho_to_p;
@@ -132,12 +126,12 @@ void Particle::setState( double* u ) {
 
 void Particle::setState( const Vector& u ) {
  if( u.Dim() != BMLN_dynDim ) {
-   cout << "*** ERROR ***                                     \n" 
-        << "*** ERROR *** Particle::setState( const Vector& ) \n" 
-        << "*** ERROR *** Dimension incorrect ...             \n" 
-        << "*** ERROR ***                                     \n" 
-        << endl;
-   exit(1);
+  ostringstream uic;
+  uic  << "Dimension of argument, " << u.Dim() << ", does not match "
+          "phase space dimension, " << BMLN_dynDim << "." << endl;
+  throw( Particle::GenericException( __FILE__, __LINE__, 
+         "void Particle::setState( const Vector& )", 
+         uic.str().c_str() ) );
  }
  for( int i = 0; i < BMLN_dynDim; i++ )  state[i] = u(i);
 } 
@@ -160,12 +154,12 @@ void Particle::getState( Vector& u ) {
     }
   }
   else {
-    cerr << "*** ERROR ***                                      \n"
-            "*** ERROR *** Particle::getState( Vector& )        \n"
-            "*** ERROR *** Dimension is not correct.            \n"
-            "*** ERROR ***                                      \n"
-         << endl;
-    exit(1);
+    ostringstream uic;
+    uic  << "Dimension of argument, " << u.Dim() << ", does not match "
+            "phase space dimension, " << BMLN_dynDim << "." << endl;
+    throw( Particle::GenericException( __FILE__, __LINE__, 
+           "void Particle::getState( Vector& )", 
+           uic.str().c_str() ) );
   }
 } 
 
@@ -177,12 +171,12 @@ void Particle::getState( Vector* u ) {
     }
   }
   else {
-    cerr << "*** ERROR ***                                      \n"
-            "*** ERROR *** Particle::getState( Vector* )        \n"
-            "*** ERROR *** Dimension is not correct.            \n"
-            "*** ERROR ***                                      \n"
-         << endl;
-    exit(1);
+    ostringstream uic;
+    uic  << "Dimension of argument, " << u->Dim() << ", does not match "
+            "phase space dimension, " << BMLN_dynDim << "." << endl;
+    throw( Particle::GenericException( __FILE__, __LINE__, 
+           "void Particle::getState( Vector* )", 
+           uic.str().c_str() ) );
   }
 } 
 
@@ -190,14 +184,11 @@ void Particle::getState( Vector* u ) {
 void Particle::SetReferenceEnergy( double energy ) {
  E = energy;
  if( E < m ) {
-  cout << "\n"
-       << "*** ERROR ***  Particle::SetReferenceEnergy()          \n"
-       << "*** ERROR ***  What the hell are you doing???          \n"
-       << "*** ERROR ***  The energy must be larger than the      \n"
-       << "*** ERROR ***  rest mass!!                             \n"
-       << "                                                       \n"
-       << endl;
-  exit(1);
+  ostringstream uic;
+  uic  << "Energy, " << E << " GeV, is less than mass, " << m << " GeV.";
+  throw( Particle::GenericException( __FILE__, __LINE__, 
+         "void Particle::SetReferenceEnergy( double )", 
+         uic.str().c_str() ) );
  }
  p = sqrt( E*E - m*m );
  bRho  = p / PH_CNV_brho_to_p;
@@ -274,6 +265,36 @@ Particle& Particle::operator=( const Particle& u ) {
  }
  return *this;
 }
+
+
+Particle::GenericException::GenericException( string fileName, int lineNumber, 
+                                              const char* fcn, 
+                                              const char* msg )
+{
+  ostringstream uic;
+  uic << "\n*** ERROR *** "
+         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
+      << "\n*** ERROR *** " << fcn
+      << "\n*** ERROR *** " << msg
+      << "\n*** ERROR *** ";
+  errorString = uic.str();
+
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << errorString;
+    cerr << "\n*** ERROR *** This message is printed only once."
+            "\n*** ERROR *** "
+         << endl;
+    firstTime = false;
+  }
+}
+
+const char* Particle::GenericException::what() const throw()
+{
+  return errorString.c_str();
+}
+
+
 
 
 // **************************************************
@@ -438,19 +459,15 @@ JetParticle::JetParticle( double mass ) {
 
 JetParticle::JetParticle( double mass, double energy ) {
  q = 0.0;
- // ??? REMOVE for( int i = 0; i < BMLN_dynDim; i++ )  state.SetComponent( i, 0.0 );
  state = Mapping( "id", Jet::lastEnv );
  m = mass;
  E = energy;
  if( E < m ) {
-  cout << "\n"
-       << "*** ERROR ***  JetParticle::JetParticle( double, double ) \n"
-       << "*** ERROR ***  What the hell are you doing???          \n"
-       << "*** ERROR ***  The energy must be larger than the      \n"
-       << "*** ERROR ***  rest mass!!                             \n"
-       << "                                                       \n"
-       << endl;
-  exit(1);
+  ostringstream uic;
+  uic  << "Energy, " << E << " GeV, is less than mass, " << m << " GeV.";
+  throw( Particle::GenericException( __FILE__, __LINE__, 
+         "JetParticle::JetParticle( double, double )",
+         uic.str().c_str() ) );
  }
  p = sqrt( E*E - m*m );
  bRho  = p / PH_CNV_brho_to_p;
@@ -466,18 +483,14 @@ JetParticle::JetParticle( double mass, double energy, double* s ) {
  state = Mapping( "id", Jet::lastEnv );
  for( int i = 0; i < state.Dim(); i++ )  
    state(i) = state(i) + ( s[i] - Jet::lastEnv->refPoint[i] );
- // ??? REMOVE for( int i = 0; i < BMLN_dynDim; i++ )  state.SetComponent( i, s[i] );
  m = mass;
  E = energy;
  if( E < m ) {
-  cout << "\n"
-       << "*** ERROR ***  JetParticle::JetParticle( double )      \n"
-       << "*** ERROR ***  What the hell are you doing???          \n"
-       << "*** ERROR ***  The energy must be larger than the      \n"
-       << "*** ERROR ***  rest mass!!                             \n"
-       << "                                                       \n"
-       << endl;
-  exit(1);
+  ostringstream uic;
+  uic  << "Energy, " << E << " GeV, is less than mass, " << m << " GeV.";
+  throw( Particle::GenericException( __FILE__, __LINE__, 
+         "JetParticle::JetParticle( double, double, double* )",
+         uic.str().c_str() ) );
  }
  p = sqrt( E*E - m*m );
  bRho  = p / PH_CNV_brho_to_p;
@@ -493,18 +506,14 @@ JetParticle::JetParticle( const Particle& u ) {
  state = Mapping( "id", Jet::lastEnv );
  for( int i = 0; i < state.Dim(); i++ )  
    state(i) = state(i) + ( u.State(i) - Jet::lastEnv->refPoint[i] );
- // ??? REMOVE for( int i = 0; i < BMLN_dynDim; i++ )  state.SetComponent( i, u.State(i) );
  m = u.Mass();
  E = u.ReferenceEnergy();
  if( E < m ) {
-  cout << "\n"
-       << "*** ERROR ***  JetParticle::JetParticle( double )      \n"
-       << "*** ERROR ***  What the hell are you doing???          \n"
-       << "*** ERROR ***  The energy must be larger than the      \n"
-       << "*** ERROR ***  rest mass!!                             \n"
-       << "                                                       \n"
-       << endl;
-  exit(1);
+  ostringstream uic;
+  uic  << "Energy, " << E << " GeV, is less than mass, " << m << " GeV.";
+  throw( Particle::GenericException( __FILE__, __LINE__, 
+         "JetParticle::JetParticle( const Particle& )",
+         uic.str().c_str() ) );
  }
  p = sqrt( E*E - m*m );
  bRho  = p / PH_CNV_brho_to_p;
@@ -533,29 +542,14 @@ JetParticle::~JetParticle() {
 }
 
 
-void JetParticle::errorHandler( const char* f, int l, const char* msg, int e )
-{
-  cerr << "*** ERROR *** JetParticle error occurred at line "
-       << l
-       << " in file "
-       << f
-       << ".\n*** ERROR *** "
-       << msg
-       << "\n*** ERROR *** Exit code = "
-       << e
-       << endl;
-  exit(e);
-}
-
-
 void JetParticle::setState( const Vector& u ) {
  if( u.Dim() != BMLN_dynDim ) {
-   cout << "*** ERROR ***                                     \n" 
-        << "*** ERROR *** JetParticle::setState( const Vector& ) \n" 
-        << "*** ERROR *** Dimension incorrect ...             \n" 
-        << "*** ERROR ***                                     \n" 
-        << endl;
-   exit(1);
+  ostringstream uic;
+  uic  << "Dimension of argument, " << u.Dim() << ", does not match "
+          "phase space dimension, " << BMLN_dynDim << "." << endl;
+  throw( Particle::GenericException( __FILE__, __LINE__, 
+         "void JetParticle::setState( const Vector& )", 
+         uic.str().c_str() ) );
  }
 
  Jet__environment* pje = state.Env();
@@ -588,6 +582,21 @@ void JetParticle::getState( Jet* u ) {
 } 
 
 
+Jet& JetParticle::State( int i )
+{
+  if( (0 <= i) && (i < 6) ) {
+    return state(i);
+  }
+  else { 
+    ostringstream uic;
+    uic  << "Argument = " << i << ": out of range.";
+    throw( Particle::GenericException( __FILE__, __LINE__, 
+           "inline Jet State( int ) const", 
+           uic.str().c_str() ) );
+  }
+}
+
+
 MatrixD JetParticle::SymplecticTest() {
  // Note: this assumes a 6x6 state: ( x, y, cdt; px/p, py/p, dp/p )
   MatrixD J( "J", 6 );
@@ -613,14 +622,11 @@ MatrixD JetParticle::SymplecticTest() {
 void JetParticle::SetReferenceEnergy( double energy ) {
  E = energy;
  if( E < m ) {
-  cout << "\n"
-       << "*** ERROR ***  JetParticle::SetReferenceEnergy()       \n"
-       << "*** ERROR ***  What the hell are you doing???          \n"
-       << "*** ERROR ***  The energy must be larger than the      \n"
-       << "*** ERROR ***  rest mass!!                             \n"
-       << "                                                       \n"
-       << endl;
-  exit(1);
+  ostringstream uic;
+  uic  << "Energy, " << E << " GeV, is less than mass, " << m << " GeV.";
+  throw( Particle::GenericException( __FILE__, __LINE__, 
+         "void JetParticle::SetReferenceEnergy( double )", 
+         uic.str().c_str() ) );
  }
  p = sqrt( E*E - m*m );
  bRho  = p / PH_CNV_brho_to_p;

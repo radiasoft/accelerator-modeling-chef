@@ -33,6 +33,8 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
+#include <exception>
+
 #include "VectorD.h"
 #include "Mapping.h"
 #include "Barnacle.h"
@@ -217,6 +219,19 @@ public:
   static int _yp();    //           p_y / p_ref
   static int _dpop();
 
+  // Exceptions
+  struct GenericException : public std::exception
+  {
+    GenericException( std::string, int, const char* = "", const char* = "" );
+    // Miscellaneous errors
+    // 1st argument: name of file in which exception is thrown
+    // 2nd         : line from which exception is thrown
+    // 3rd         : identifies function containing throw
+    // 4th         : identifies type of error
+    ~GenericException() throw() {}
+    const char* what() const throw();
+    std::string errorString;
+  };
 };
 
 
@@ -363,8 +378,6 @@ protected:
   JetParticle( const Particle& );
   JetParticle( const JetParticle& );
 
-  static void errorHandler( const char* f, int l, const char* msg, int e );
-
 public:
   virtual Particle* ConvertToParticle() = 0;
   virtual ~JetParticle();
@@ -403,11 +416,9 @@ public:
   void set_npy ( const Jet& u )  { state.SetComponent(4,u); }
   void set_ndp ( const Jet& u )  { state.SetComponent(5,u); }
 
-  inline Mapping State() { return state; } // ??? why doesn't const work?
-  inline Jet& State( int i ) {
-   if( (0 <= i) && (i <= 5) ) {return state(i);}
-   else {JetParticle::errorHandler( __FILE__, __LINE__, "Index out of range", -5 );}
-  }
+  inline Mapping State() const { return state; }
+  // inline Mapping& State() { return state; }
+  Jet& State( int );
 
   MatrixD SymplecticTest();  // Tests the state for the
                              // symplectic condition, 1 = - MJM^t; 

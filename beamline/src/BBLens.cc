@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,10 +29,13 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "JetC.h"
 #include "BBLens.h"
-#include "EdwardsTeng.h"
+#include "EdwardsTeng.h"  // ??? Doesn't belong.
 
 using namespace std;
 using FNAL::Complex;
@@ -125,12 +125,9 @@ void BBLens::AdjustSigma()
   ETinfo* infoPtr = (ETinfo*) dataHook.find( "EdwardsTeng" );
   
   if( !infoPtr ) {
-    cout << "*** ERROR ***                                    \n"
-            "*** ERROR *** BBLens::AdjustSigma                \n"
-            "*** ERROR *** Cannot find ETinfo                 \n"
-            "*** ERROR ***                                    \n"
-         << endl;
-    exit(1);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void BBLens::AdjustSigma()", 
+           "Cannot find ETinfo" ) );
   }
   
   sigma[0] = sqrt( infoPtr->beta.hor*emittance[0] );
@@ -159,13 +156,9 @@ Vector BBLens::NormalizedEField( double arg_x, double arg_y )
   if( ( sigmaX == 0.0 ) && ( sigmaY == 0.0 ) ) {
     r = x*x + y*y;
     if( r < 1.0e-20 ) {
-      cerr << "\n";
-      cerr << "*** ERROR ***                                 \n";
-      cerr << "*** ERROR *** BBLens::NormalizedEField        \n";
-      cerr << "*** ERROR *** Asymptotic limit                \n";
-      cerr << "*** ERROR *** r seems too small.              \n";
-      cerr << "*** ERROR ***                                 \n";
-      exit(1);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "Vector BBLens::NormalizedEField( double arg_x, double arg_y )", 
+           "Asymptotic limit r seems too small." ) );
     }
     retvec(0) = x/r;
     retvec(1) = y/r;
@@ -330,13 +323,9 @@ JetVector BBLens::NormalizedEField( const Jet& arg_x, const Jet& arg_y )
   if( ( sigmaX == 0.0 ) && ( sigmaY == 0.0 ) ) {
     r = x*x + y*y;
     if( r.standardPart() < 1.0e-20 ) {
-      cerr << "\n";
-      cerr << "*** ERROR ***                                 \n";
-      cerr << "*** ERROR *** BBLens::NormalizedEField        \n";
-      cerr << "*** ERROR *** Asymptotic limit                \n";
-      cerr << "*** ERROR *** r seems too small.              \n";
-      cerr << "*** ERROR ***                                 \n";
-      exit(1);
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "JetVector BBLens::NormalizedEField( const Jet&, const Jet& )", 
+           "Asymptotic limit r seems too small." ) );
     }
     retvec(0) = x/r;
     retvec(1) = y/r;
