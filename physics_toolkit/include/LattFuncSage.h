@@ -25,6 +25,7 @@ class LattFuncSage : public Sage
 {
 public:
  LattFuncSage( const beamline* );
+ LattFuncSage( const beamline& );
  ~LattFuncSage();
   
  int TuneCalc       ( JetParticle* );
