@@ -75,7 +75,7 @@
 #include "madparser.h"
 #endif /* madparser_h */
 
-#include "bel_inst_fns.c"
+#include "bel_inst_fns.h"
 
 #include <algorithm>
 #include <assert.h>
