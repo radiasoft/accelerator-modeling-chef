@@ -5,6 +5,7 @@ INCLUDEDIR = -I$(BASIC_TOOLKIT_INC)
 OBJS = Barnacle.o \
 	BubbleSort.o \
         Distribution.o \
+        Frame.o \
 	IntArray.o \
 	LookupTable.o \
 	ML.o \
