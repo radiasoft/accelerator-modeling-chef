@@ -315,7 +315,7 @@ istream& streamIn( istream& is, TJetEnvironment<T1,T2>** x )
   TJetEnvironment<T1,T2>* pje;
   int i(0), j(0);
 
-  pje = new TJetEnvironment<T2,T2>;
+  pje = new TJetEnvironment<T1,T2>;
   is >> pje->_numVar;
   is >> pje->_spaceDim;
 
@@ -361,7 +361,7 @@ istream& streamIn( istream& is, TJetEnvironment<T1,T2>** x )
   // --- Test to see if environment was already read
   TJetEnvironment<T1,T2>* q;
   bool found( false );
-  while((  !found && ( q = (TJetEnvironment<T2,T2>*) getNext()  ) )) 
+  while((  !found && ( q = (TJetEnvironment<T1,T2>*) getNext()  ) )) 
   {
     if( *pje == *q ) 
     {
@@ -454,3 +454,5 @@ int TJetEnvironment<T1,T2>::_monoRank() {
 
 template struct TJetEnvironment<double,FNAL::Complex>;
 template struct TJetEnvironment<FNAL::Complex,double>;
+
+#undef PREPFORCHANGE

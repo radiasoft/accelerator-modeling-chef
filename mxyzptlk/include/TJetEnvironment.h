@@ -35,8 +35,21 @@
 #include "IntArray.h"
 #include "slist.h"
 
-template<typename T1, typename T2> class TJet;
+// Forward declarations
+template<typename T1, typename T2> 
+class TJet;
 
+template<typename T1, typename T2> 
+class TJetEnvironment;
+
+template<typename T1, typename T2> 
+std::ostream& operator<<( std::ostream&, const TJetEnvironment<T1,T2>& );
+
+template<typename T1, typename T2> 
+std::istream& streamIn( std::istream&, TJetEnvironment<T1,T2>** );
+
+
+// Struct TJetEnvironment template
 template<typename T1, typename T2>
 struct TJetEnvironment
 {
@@ -96,9 +109,6 @@ struct TJetEnvironment
  // Static data members
  static bool _skipEnvEqTest;
 };
-
-template<typename T1,typename T2> std::ostream& operator<<( std::ostream&, const TJetEnvironment<T1,T2>& );
-template<typename T1,typename T2> std::istream& streamIn( std::istream&, TJetEnvironment<T1,T2>** );
 
 typedef TJetEnvironment<double,FNAL::Complex> Jet__environment;
 typedef TJetEnvironment<FNAL::Complex,double> JetC__environment;
