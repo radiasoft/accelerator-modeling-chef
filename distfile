@@ -6,18 +6,123 @@
 #		Distribute <you>@mrtumnus's FNALROOT to olmkeep@mrtumnus
 #	From mrtumnus, as you or olmkeep: "rdist narnia"
 #		Distribute olmkeep@mrtumnus to all machines in narnia.
+#
+# Note: This has been set up for use by E. McCrory, so I'm not really
+# sure if it will work for you!  For example, the variable GARBAGE_FILES_OMIT
+# (duh!) is set up to omit the files I have littered my copy of the
+# repository with.  You would have to change this if you wanted to run it
+# on your files.
 
 CARTOON_USER = mccrory
 NARNIA_USER  = mccrory
+FINAL_USER   = olmkeep
 # do not know what happens when these users aren't the same.
 
 CARTOON_ROOT  = /home/room1/${CARTOON_USER}/repository/fnal
 MRTUMNUS_ROOT = /export/home/mrtumnus/${NARNIA_USER}/fnal
+FINAL_ROOT    = /export/home/mrtumnus/${FINAL_USER}/fnal
 DEST = fnal
 
+# Specific files in mccrory's directory that don't belong on narnia
+GARBAGE_FILES_OMIT = (
+	${CARTOON_ROOT}/machines/mi/app/bpm_test_after_ansil
+	${CARTOON_ROOT}/machines/mi/app/errors
+	${CARTOON_ROOT}/machines/mi/app/mi.bml
+	${CARTOON_ROOT}/machines/mi/app/mi_19_twiss_after_slots_1
+	${CARTOON_ROOT}/machines/mi/app/orbit_bml
+	${CARTOON_ROOT}/machines/mi/app/orbit_cfg
+	${CARTOON_ROOT}/machines/mi/app/plot
+	${CARTOON_ROOT}/machines/mi/app/plotx
+	${CARTOON_ROOT}/machines/mi/app/ploty
+	${CARTOON_ROOT}/machines/mi/app/prop_for_olb_8gev
+	${CARTOON_ROOT}/machines/mi/app/regenMiTables
+	${CARTOON_ROOT}/machines/mi/app/test.sql
+	${CARTOON_ROOT}/machines/mi/app/twiss_bml
+	${CARTOON_ROOT}/machines/mi/app/twiss_bml_mi19
+	${CARTOON_ROOT}/machines/mi/app/twiss_cfg
+	${CARTOON_ROOT}/machines/mi/app/twiss_cfg_mi19
+	${CARTOON_ROOT}/machines/mi/app/x.bml
+	${CARTOON_ROOT}/machines/mi/include/change_location_table.sql
+	${CARTOON_ROOT}/machines/mi/include/quad_sn_list
+	${CARTOON_ROOT}/machines/mi/include/sybase_quad_sn_lost
+	${CARTOON_ROOT}/machines/mi/include/t.pl
+	${CARTOON_ROOT}/machines/mi/lattices/Original_mi_20_120GeV.bml
+	${CARTOON_ROOT}/machines/mi/lattices/Original_mi_20_150GeV.bml
+	${CARTOON_ROOT}/machines/mi/lattices/Original_mi_20_26GeV.bml
+	${CARTOON_ROOT}/machines/mi/lattices/Original_mi_20_50GeV.bml
+	${CARTOON_ROOT}/machines/mi/lattices/Original_mi_20_8GeV.bml
+	${CARTOON_ROOT}/machines/mi/lattices/Original_mi_20_oam.bml
+	${CARTOON_ROOT}/machines/mi/lattices/bpm_calibration_data_entry.sql
+	${CARTOON_ROOT}/machines/mi/lattices/concat_drift.pl
+	${CARTOON_ROOT}/machines/mi/lattices/convert_pi_di_to_pidi.pl
+	${CARTOON_ROOT}/machines/mi/lattices/create_bpm_sql.pl
+	${CARTOON_ROOT}/machines/mi/lattices/database_mi20
+	${CARTOON_ROOT}/machines/mi/lattices/dump_powered_elements.pl
+	${CARTOON_ROOT}/machines/mi/lattices/magnet_list.html
+	${CARTOON_ROOT}/machines/mi/lattices/make_calib_table.sql
+	${CARTOON_ROOT}/machines/mi/lattices/make_hvmon.pl
+	${CARTOON_ROOT}/machines/mi/lattices/mi_19_bothplanes.bml
+	${CARTOON_ROOT}/machines/mi/lattices/mi_19_o.bml
+	${CARTOON_ROOT}/machines/mi/lattices/mi_19_withthinsext.bml
+	${CARTOON_ROOT}/machines/mi/lattices/mi_20.bml_withmonitors
+	${CARTOON_ROOT}/machines/mi/lattices/mi_20_120GeV.bml_withmonitors
+	${CARTOON_ROOT}/machines/mi/lattices/mi_20_150GeV.bml_withmonitors
+	${CARTOON_ROOT}/machines/mi/lattices/mi_20_26GeV.bml_withmonitors
+	${CARTOON_ROOT}/machines/mi/lattices/mi_20_50GeV.bml_withmonitors
+	${CARTOON_ROOT}/machines/mi/lattices/mi_20_8GeV.bml_withmonitors
+	${CARTOON_ROOT}/machines/mi/lattices/mi_20_oam.bml_withmonitors
+	${CARTOON_ROOT}/machines/mi/lattices/mi_model_devices.sql
+	${CARTOON_ROOT}/machines/mi/lattices/mi_model_devices_tbt01.sql
+	${CARTOON_ROOT}/machines/mi/lattices/mi_pidi_list
+	${CARTOON_ROOT}/machines/mi/lattices/mi_pidi_list_tbt
+	${CARTOON_ROOT}/machines/mi/lattices/move_mi20_files.sh
+	${CARTOON_ROOT}/machines/mi/lattices/octupoles
+	${CARTOON_ROOT}/machines/mi/lattices/ping_device
+	${CARTOON_ROOT}/machines/mi/lattices/put_mi_model_transfer_constants.pl
+	${CARTOON_ROOT}/machines/mi/lattices/randomize_alignment.pl
+	${CARTOON_ROOT}/machines/mi/lattices/remove_extra_monitors.pl
+	${CARTOON_ROOT}/machines/mi/src/jj
+	${CARTOON_ROOT}/machines/mi_8gev/app/bml_file_orbit
+	${CARTOON_ROOT}/machines/mi_8gev/app/cfg_file_orbit
+	${CARTOON_ROOT}/machines/mi_8gev/app/database_model
+	${CARTOON_ROOT}/machines/mi_8gev/app/database_model_plot
+	${CARTOON_ROOT}/machines/mi_8gev/app/e_view.sql
+	${CARTOON_ROOT}/machines/mi_8gev/app/model_orbit
+	${CARTOON_ROOT}/machines/mi_8gev/app/model_orbit2
+	${CARTOON_ROOT}/machines/mi_8gev/app/model_orbit2_plot
+	${CARTOON_ROOT}/machines/mi_8gev/app/model_orbit_plot
+	${CARTOON_ROOT}/machines/mi_8gev/app/online_model_prediction
+	${CARTOON_ROOT}/machines/mi_8gev/app/plot1
+	${CARTOON_ROOT}/machines/mi_8gev/app/plot2
+	${CARTOON_ROOT}/machines/mi_8gev/app/propSigmas.cc
+	${CARTOON_ROOT}/machines/mi_8gev/app/sigma.dat
+	${CARTOON_ROOT}/machines/mi_8gev/lattices/p8_pmv10_test.bml
+	${CARTOON_ROOT}/machines/recycler/app/db_names
+	${CARTOON_ROOT}/machines/recycler/app/model_transfer_constants.sql
+	${CARTOON_ROOT}/machines/recycler/app/plot
+	${CARTOON_ROOT}/machines/recycler/app/r.bml
+	${CARTOON_ROOT}/machines/recycler/app/rr_beta_function
+	${CARTOON_ROOT}/machines/recycler/app/rrv18.twiss
+	${CARTOON_ROOT}/machines/recycler/app/rrv18.twiss_2
+	${CARTOON_ROOT}/machines/recycler/lattices/device_explaination
+	${CARTOON_ROOT}/machines/recycler/lattices/rrv18.bml_nonames
+	${CARTOON_ROOT}/machines/recycler/lattices/rrv18_test.bml
+	${CARTOON_ROOT}/machines/tev/lattices/mad/fit.lat
+	${CARTOON_ROOT}/server/app/miServer.3640
+	${CARTOON_ROOT}/server/app/output_orbit.txt
+	${CARTOON_ROOT}/server/app/plot.pl
+	${CARTOON_ROOT}/server/src/map-test.cc
+	${CARTOON_ROOT}/server/src/orig_MiOAM.cc
+	${CARTOON_ROOT}/server/src/recyclerServer
+	${CARTOON_ROOT}/server/src/test-cin.cxx
+	${CARTOON_ROOT}/sybase/sql/count.sql
+	${CARTOON_ROOT}/sybase/sql/location_table.txt
+	${CARTOON_ROOT}/sybase/sql/modify_dipole_columns.sql
+)
+
+
 # Directories to omit
-CARTOON_DIRS_OMIT = ( 
-	${CARTOON_ROOT}/lib 
+CARTOON_DIRS_OMIT = ( ${CARTOON_ROOT}/lib 
 	${CARTOON_ROOT}/machines/mi/bpm_calibration_data 
 	${CARTOON_ROOT}/machines/mi/oas_development
 	${CARTOON_ROOT}/www
@@ -31,34 +136,15 @@ MRTUMNUS_DIRS_OMIT = (
 	${MRTUMNUS_ROOT}/vms_side
 	${MRTUMNUS_ROOT}/machines/mr_8gev/app )
 
-#This is a list of the executables.  This list is made obsolete by the "noexec" option.
+FINAL_DIRS_OMIT = ( 
+	${FINAL_ROOT}/lib 
+	${FINAL_ROOT}/machines/mi/bpm_calibration_data 
+	${FINAL_ROOT}/www
+	${FINAL_ROOT}/vms_side
+	${FINAL_ROOT}/machines/mr_8gev/app )
 
-# sybase/app/addTest sybase/app/initTevFxt sybase/app/tstProcs
-# sybase/app/initRMat sybase/app/tstTev server/app/accumulatorServer
-# server/app/bl8OAServer server/app/masterServer server/app/mi8Server
-# server/app/miOAModel server/app/miOAModel_good server/app/miOAModel_old
-# server/app/miServer server/app/recyclerOAModel server/app/recyclerServer
-# server/app/tevExtractServer server/app/tevServer filter/app/concatDriftTest
-# filter/app/testIO filter/app/testInput filter/app/cfg2bml
-# filter/app/testDiff machines/accumulator/cfg2bml machines/accumulator/orbitCheck
-# machines/accumulator/twissCheck machines/accumulator/regenAccTables 
-# machines/mi/app/differentEnergies machines/mi/app/leos_test 
-# machines/mi/app/orbit_bml machines/mi/app/orbit_cfg machines/mi/app/testMIBPM
-# machines/mi/app/testMIBPM_before_ansil machines/mi/app/orbitCheck 
-# machines/mi/app/twissCheck machines/mi/app/regenMiTables 
-# machines/mi_8gev/app/checkShunts machines/mi_8gev/app/circuittest 
-# machines/mi_8gev/app/orbitCheck machines/mi_8gev/app/twissCheck 
-# machines/mi_8gev/app/regenMi8Tables machines/booster/app/makeBml
-# machines/booster/app/orbitCheck machines/booster/app/twissCheck
-# machines/booster/app/regenBoosterTables machines/recycler/app/edw
-# machines/recycler/app/dnudp machines/recycler/app/makeBml
-# machines/recycler/app/regenRecTables machines/recycler/app/twissCheck
-# machines/recycler/app/orbitCheck machines/recycler/app/regenMiTables
-# machines/tev/app/dat2bml machines/tev/app/orbitCheck
-# machines/tev/app/twissCheck machines/tev/app/helixCheck
-# machines/tev/app/tevbpmcross machines/tev/app/TevLattFuncs_B
-# machines/tev/app/nameCheck machines/tev/app/timing
-# machines/tev/app/normalTev machines/tev/app/track )
+# Total list of files to omit
+FILES_TO_OMIT = ( ${CARTOON_DIRS_OMIT} ${GARBAGE_FILES_OMIT} )
 
 # File name patterns to omit -- Be careful here! 
 # "CVS" matches any file that contains the chars CVS, like "abcCVSxyz.cc"
@@ -67,11 +153,12 @@ FILE_OMIT = ( \\.sb \\.o \\# \\~  \\.tar \\_orig \\_new \\.log \\-hold \\.cdf
 
 CARTOON_FILES = ( ${CARTOON_ROOT} )
 MRTUMNUS_FILES = ( ${MRTUMNUS_ROOT} )
+FINAL_FILES = ( ${FINAL_ROOT} )
 
 # Update from cartoon machine to mrtumnus only, based on "younger" comparison
 mrtumnus :	${CARTOON_FILES} -> ( mrtumnus )
 		install -onoexec,younger -h ${DEST} ;
-		except ${CARTOON_DIRS_OMIT} ;
+		except ${FILES_TO_OMIT} ;
 		except_pat ${FILE_OMIT} ;
 		notify ${CARTOON_USER}@bpmail.fnal.gov ;
 
@@ -82,7 +169,7 @@ mrtumnus :	${CARTOON_FILES} -> ( mrtumnus )
 # cause a whole lot of files to be updated needlessly.
 
 # Update from narnia:mrtumnus to the other machines
-narnia :	${MRTUMNUS_FILES} -> ( reepicheep trumpkin )
+narnia :	${FINAL_FILES} -> ( reepicheep trumpkin )
 		install -onoexec,compare -h ${DEST} ;
 		except ${MRTUMNUS_DIRS_OMIT} ;
 		except_pat ${FILE_OMIT} ;
