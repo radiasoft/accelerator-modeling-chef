@@ -1,3 +1,4 @@
+#include <stream.h>
 #include "tclmonitor.h"
 #include <tk.h>
 #include "tclf.h"
