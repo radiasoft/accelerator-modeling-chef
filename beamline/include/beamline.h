@@ -936,7 +936,6 @@ public:
   { 
      poleFaceAngle = a;
      tanPFAngle    = tan( poleFaceAngle );
-     return poleFaceAngle;
   }
   double setAngle( double a )
   { 
