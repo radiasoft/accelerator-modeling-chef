@@ -127,7 +127,7 @@ bmlfactory::~bmlfactory() {
   mp  = NULL;
   delete_bel_list();
   delete_bml_list();
-  delete fname_;
+  delete [] fname_;
 }
 
 beamline*
