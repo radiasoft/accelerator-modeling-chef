@@ -16,6 +16,10 @@
   typedef complex Complex;
 #endif
 
+#ifdef __BORLAND_CPP__
+  typedef complex Complex;
+#endif
+
 #ifdef __VISUAL_CPP__
 typedef std::complex<double> Complex;
 using std::real;
