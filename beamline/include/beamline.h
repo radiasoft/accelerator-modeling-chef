@@ -2041,7 +2041,12 @@ public:
 
   // ANALYSIS
 
-  int twiss( JetParticle&, double = 0.00001 /* dpp */ );
+  // ??? These three twiss functions should be eliminated.
+  // ??? They are hopelessly obsolete.
+
+  int twiss( JetParticle&, 
+             double = 0.00001 /* dpp */,
+             char   = 1       /* attachFlag */ );
                            // Computes lattice functions all the
                            // way around the ring.
                            // Attaches a lattRing Barnacle labelled 
@@ -2049,11 +2054,14 @@ public:
                            // Barnacle labelled "Twiss" to every element
                            // in the line.
 
-  int twiss( char, JetParticle& );
+  int twiss( char, 
+             JetParticle& );
                            // Only computes lattice functions at
                            // the beginning of the ring.
                            // Uses the same method as MAD.
-  int twiss(lattFunc&,JetParticle&);
+  int twiss( lattFunc&,
+             JetParticle&,
+             char  = 1        /* attachFlag */ );
                            // Computes lattice functions for a
                            // non-periodic beamline.
                            // Uses the same method as MAD.
