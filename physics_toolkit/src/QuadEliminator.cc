@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 /*
  * File: QuadEliminator.cc
@@ -48,6 +48,7 @@
 #include <iostream>
 #include <string>
 
+#include "GenericException.h"
 #include "QuadEliminator.h"
 #include "quadrupole.h"
 #include "BeamlineIterator.h"
@@ -62,12 +63,9 @@ QuadEliminator::QuadEliminator()
 
 QuadEliminator::QuadEliminator( const QuadEliminator& )
 {
-  cerr << "*** ERROR ***                                 \n"
-          "*** ERROR *** Never, never, never copy an     \n"
-          "*** ERROR *** QuadEliminator object!          \n"
-          "*** ERROR ***                                 \n"
-       << endl;
-  exit(1);
+  throw( GenericException( __FILE__, __LINE__, 
+         "QuadEliminator::QuadEliminator( const QuadEliminator& )", 
+         "Cannot copy QuadEliminator object." ) );
 }
 
 
@@ -82,14 +80,9 @@ void QuadEliminator::visitBeamline( const beamline* x )
 {
   // Quick check
   if( 0 != _bmlPtr ) {  // Paranoid check only
-    cerr << "\n*** ERROR ***                                 "
-            "\n*** ERROR *** File: " << __FILE__ << "  Line: " << __LINE__ 
-         << "\n*** ERROR ***  QuadEliminator::visitBeamline  "
-            "\n*** ERROR ***  A horrible, inexplicable       "
-            "\n*** ERROR ***  error has occurred!!           "
-            "\n*** ERROR ***                                 "
-         << endl;
-    exit(-1);
+    throw( GenericException( __FILE__, __LINE__, 
+           "void QuadEliminator::visitBeamline( const beamline* x )", 
+           "Impossible! Horrible, inexplicable error has occurred!!" ) );
   }
 
 
@@ -99,13 +92,9 @@ void QuadEliminator::visitBeamline( const beamline* x )
   strcpy( nuNam, x->Name() );
   strcat( nuNam, "_QuadMerged" );
   if( strlen(nuNam) != n-1 ) {  // More paranoia
-    cerr << "*** ERROR ***                             \n"
-            "*** ERROR ***  QuadEliminator::visitBeamline  \n"
-            "*** ERROR ***  An inexplicable, horrible  \n"
-            "*** ERROR ***  error has occurred!!       \n"
-            "*** ERROR ***                             \n"
-         << endl;
-    exit(-1);
+    throw( GenericException( __FILE__, __LINE__, 
+           "void QuadEliminator::visitBeamline( const beamline* x )", 
+           "Impossible! Horrible, inexplicable error has occurred!!" ) );
   }
 
   _bmlPtr = new beamline( nuNam );

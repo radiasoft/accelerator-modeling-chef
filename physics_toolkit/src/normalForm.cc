@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 /*
 **
@@ -46,6 +46,7 @@
 **
 */
 
+#include "GenericException.h"
 #include "mxyzptlk.h"
 
 #define MLT1  1.0e-6
@@ -103,12 +104,6 @@ void normalForm( const Mapping& theMapping, /* input */
                  CLieOperator*  N,
                  CLieOperator*  T ) {
 
- static const Complex FORIRIX_one( 1.0, 0.0 );    
-                                            // This is, I hope, temporary.
-                                            // It is done only to make
-                                            // this code compile on the
-                                            // SGI.
-
  // typedef char (*MX_R_FUNCCPTR)(const IntArray&, const Complex&);
  // typedef char (*CFUNCPTR)(const IntArray&, const Complex& );
  static MX_R_FUNCCPTR shear[] = { sh0, sh1, sh2, sh3, sh4, sh5 };
@@ -116,15 +111,9 @@ void normalForm( const Mapping& theMapping, /* input */
 
       /* CAUTION */  // A little test
       /* CAUTION */  if( !(theMapping.IsNilpotent()) ) {
-      /* CAUTION */  cout  << "\n"
-      /* CAUTION */        << "***                                        \n"
-      /* CAUTION */        << "*** SORRY:                                 \n"
-      /* CAUTION */        << "*** SORRY: void normalForm()               \n"
-      /* CAUTION */        << "*** SORRY: This version only supports      \n"
-      /* CAUTION */        << "*** SORRY: nilpotent maps.                 \n"
-      /* CAUTION */        << "*** SORRY:                                 \n"
-      /* CAUTION */        << endl;
-      /* CAUTION */   exit(0);
+      /* CAUTION */   throw( GenericException( __FILE__, __LINE__, 
+      /* CAUTION */          "void normalForm( const Mapping& theMapping, /* input */", 
+      /* CAUTION */          "This version only supports nilpotent maps." ) );
       /* CAUTION */  }
 
  // Establishing linear normal form coordinates
@@ -153,18 +142,15 @@ void normalForm( const Mapping& theMapping, /* input */
       /* CAUTION */   for( j = 0; j < 6; j++ ) {
       /* CAUTION */    if( j == i ) continue;
       /* CAUTION */    else if( abs( Nx(i,j) ) > MLT1) {
-      /* CAUTION */          cout << "\n"
-      /* CAUTION */               << "***                                        \n"
-      /* CAUTION */               << "*** ERROR:                                 \n"
-      /* CAUTION */               << "*** ERROR: void normalForm()               \n"
-      /* CAUTION */               << "*** ERROR: Nondiagonal element in BJB^TJ   \n"
-      /* CAUTION */               << "*** ERROR: abs( Nx( " << i << ", " << j 
-                                  << " ) ) = " << abs(Nx(i,j)) << "\n"
-      /* CAUTION */               << "*** ERROR:                                 \n"
-      /* CAUTION */               << endl;
-      /* CAUTION */          exit(0);
-      /* CAUTION */         }
-      /* CAUTION */        else Nx(i,j) = complex_0;
+      /* CAUTION */     ostringstream uic;
+      /* CAUTION */     uic  << "Nondiagonal element in BJB^TJ; abs( Nx( " 
+                             << i << ", " << j << " ) ) = " 
+                             << abs(Nx(i,j));
+      /* CAUTION */     throw( GenericException( __FILE__, __LINE__, 
+      /* CAUTION */            "void normalForm( const Mapping& theMapping, /* input */", 
+      /* CAUTION */            uic.str().c_str() ) );
+      /* CAUTION */    }
+      /* CAUTION */    else Nx(i,j) = complex_0;
       /* CAUTION */   }
  }
 
@@ -215,130 +201,59 @@ void normalForm( const Mapping& theMapping, /* input */
  for( i = 0; i < 6; i++ ) {
    lambda(i) = D(i,i);
  }
-
       /* CAUTION */  for( i = 0; i < 6; i++ ) {
       /* CAUTION */   if( fabs( abs(lambda(i)) - 1.0 ) > MLT1 ) {
-      /* CAUTION */    cout << "\n"
-      /* CAUTION */         << "***                                            \n"
-      /* CAUTION */         << "*** SORRY:                                     \n"
-      /* CAUTION */         << "*** SORRY: void normalForm()                   \n"
-      /* CAUTION */         << "*** SORRY: For now, I am only allowing         \n"
-      /* CAUTION */         << "*** SORRY: maps with an elliptic fixed point   \n"
-      /* CAUTION */         << "*** SORRY: at the origin.  This will be        \n"
-      /* CAUTION */         << "*** SORRY: loosened as soon as I'm sure        \n"
-      /* CAUTION */         << "*** SORRY: everything is working properly.     \n"
-      /* CAUTION */         << "*** SORRY:                                     \n"
-      /* CAUTION */         << "*** SORRY: lambda( " << i 
-                            <<                          " ) has magnitude = " 
-                            << abs(lambda(i)) << "    \n"
-      /* CAUTION */         << "*** SORRY: lambda( 0 ) has magnitude = " 
-                            << abs(lambda(0)) 
-                            << "  Distance from 1 = "
-                            << fabs( abs(lambda(0)) - 1.0 ) 
-                            << "    \n"
-      /* CAUTION */         << "*** SORRY: lambda( 1 ) has magnitude = " 
-                            << abs(lambda(1)) 
-                            << "  Distance from 1 = "
-                            << fabs( abs(lambda(1)) - 1.0 ) 
-                            << "    \n"
-      /* CAUTION */         << "*** SORRY: lambda( 2 ) has magnitude = " 
-                            << abs(lambda(2)) 
-                            << "  Distance from 1 = "
-                            << fabs( abs(lambda(2)) - 1.0 ) 
-                            << "    \n"
-      /* CAUTION */         << "*** SORRY: lambda( 3 ) has magnitude = " 
-                            << abs(lambda(3)) 
-                            << "  Distance from 1 = "
-                            << fabs( abs(lambda(3)) - 1.0 ) 
-                            << "    \n"
-      /* CAUTION */         << "*** SORRY: lambda( 4 ) has magnitude = " 
-                            << abs(lambda(4)) 
-                            << "  Distance from 1 = "
-                            << fabs( abs(lambda(4)) - 1.0 ) 
-                            << "    \n"
-      /* CAUTION */         << "*** SORRY: lambda( 5 ) has magnitude = " 
-                            << abs(lambda(5)) 
-                            << "  Distance from 1 = "
-                            << fabs( abs(lambda(5)) - 1.0 ) 
-                            << "    \n"
-      /* CAUTION */         << "*** SORRY:                                     \n"
-      /* CAUTION */         << endl;
-      /* CAUTION */    cout << "The eigenvector matrix follows: " 
-      /* CAUTION */         << endl;
-      /* CAUTION */    cout << B;
-      /* CAUTION */    exit(0);
+      /* CAUTION */    ostringstream uic;
+      /* CAUTION */    uic  << "For now, only elliptic fixed points allowed:"
+                               " |lambda( " << i <<  " )| = " 
+                            << std::abs(lambda(i));
+      /* CAUTION */    throw( GenericException( __FILE__, __LINE__, 
+      /* CAUTION */           "void normalForm( const Mapping& theMapping, /* input */", 
+      /* CAUTION */           uic.str().c_str() ) );
       /* CAUTION */   }
       /* CAUTION */  }
       /* CAUTION */  
       /* CAUTION */  // A little checking and cleaning.
       /* CAUTION */  for( i = 0; i < 6; i++ ) {
       /* CAUTION */   if( fabs( abs(Dinv(i,i)) - 1.0 ) > MLT1 ) {
-      /* CAUTION */    cout << "\n"
-      /* CAUTION */         << "***                                            \n"
-      /* CAUTION */         << "*** SORRY:                                     \n"
-      /* CAUTION */         << "*** SORRY: void normalForm()                   \n"
-      /* CAUTION */         << "*** SORRY: For now, I am only allowing         \n"
-      /* CAUTION */         << "*** SORRY: maps with an elliptic fixed point   \n"
-      /* CAUTION */         << "*** SORRY: at the origin.  This will be        \n"
-      /* CAUTION */         << "*** SORRY: loosened as soon as I'm sure        \n"
-      /* CAUTION */         << "*** SORRY: everything is working properly.     \n"
-      /* CAUTION */         << "*** SORRY:                                     \n"
-      /* CAUTION */         << "*** SORRY: Dinv( " << i << ", " << i
-                            << " ) has magnitude = " << abs(Dinv(i,i)) <<    " \n"
-      /* CAUTION */         << "*** SORRY:                                     \n"
-                            << endl;
-      /* CAUTION */    exit(0);
+      /* CAUTION */    ostringstream uic;
+      /* CAUTION */    uic  << "For now, only elliptic maps allowed: | Dinv( " 
+                            << i << ", " << i << " ) | = " 
+                            << std::abs(Dinv(i,i));
+      /* CAUTION */    throw( GenericException( __FILE__, __LINE__, 
+      /* CAUTION */           "void normalForm( const Mapping& theMapping, /* input */", 
+      /* CAUTION */           uic.str().c_str() ) );
       /* CAUTION */   }
       /* CAUTION */   for( j = 0; j < 6; j++ ) {
       /* CAUTION */    if( j == i ) continue;
       /* CAUTION */    else if( abs( Dinv(i,j) ) > MLT1) {
-      /* CAUTION */          cout << "\n"
-      /* CAUTION */               << "***                                        \n"
-      /* CAUTION */               << "*** ERROR:                                 \n"
-      /* CAUTION */               << "*** ERROR: void normalForm()               \n"
-      /* CAUTION */               << "*** ERROR: A horrible, inexplicable error  \n"
-      /* CAUTION */               << "*** ERROR: has occurred.                   \n"
-      /* CAUTION */               << "*** ERROR:                                 \n"
-      /* CAUTION */               << endl;
-      /* CAUTION */          exit(0);
-      /* CAUTION */         }
-      /* CAUTION */        else Dinv(i,j) = complex_0;
+      /* CAUTION */     throw( GenericException( __FILE__, __LINE__, 
+      /* CAUTION */            "void normalForm( const Mapping& theMapping, /* input */", 
+      /* CAUTION */            "Impossible error has occurred!" ) );
+      /* CAUTION */    }
+      /* CAUTION */    else Dinv(i,j) = complex_0;
       /* CAUTION */   }
       /* CAUTION */  }
       /* CAUTION */ 
       /* CAUTION */  for( i = 0; i < 6; i++ ) {
       /* CAUTION */   if( fabs( abs(D(i,i)) - 1.0 ) > MLT1 ) {
-      /* CAUTION */    cout << "\n"
-      /* CAUTION */         << "***                                          \n"
-      /* CAUTION */         << "*** SORRY:                                   \n"
-      /* CAUTION */         << "*** SORRY: void normalForm()                 \n"
-      /* CAUTION */         << "*** SORRY: For now, I am only allowing       \n"
-      /* CAUTION */         << "*** SORRY: maps with an elliptic fixed point \n"
-      /* CAUTION */         << "*** SORRY: at the origin.  This will be      \n"
-      /* CAUTION */         << "*** SORRY: loosened as soon as I'm sure      \n"
-      /* CAUTION */         << "*** SORRY: everything is working properly.   \n"
-      /* CAUTION */         << "*** SORRY:                                   \n"
-      /* CAUTION */         << "*** SORRY: D( " << i << ", " << i 
-                            << " ) has magnitude = " << abs(D(i,i))   << "   \n"
-      /* CAUTION */         << "*** SORRY:                                   \n"
-      /* CAUTION */         << endl;
-      /* CAUTION */    exit(0);
+      /* CAUTION */    ostringstream uic;
+      /* CAUTION */    uic  << "For now, only elliptic maps allowed: | D( " 
+                            << i << ", " << i << " ) | = " 
+                            << std::abs(D(i,i));
+      /* CAUTION */    throw( GenericException( __FILE__, __LINE__, 
+      /* CAUTION */           "void normalForm( const Mapping& theMapping, /* input */", 
+      /* CAUTION */           uic.str().c_str() ) );
       /* CAUTION */   }
       /* CAUTION */ 
       /* CAUTION */   for( j = 0; j < 6; j++ ) {
       /* CAUTION */    if( j == i ) continue;
       /* CAUTION */    else if( abs( D(i,j) ) > MLT1) {
-      /* CAUTION */          cout << "\n"
-      /* CAUTION */               << "***                                        \n"
-      /* CAUTION */               << "*** ERROR:                                 \n"
-      /* CAUTION */               << "*** ERROR: void normalForm()               \n"
-      /* CAUTION */               << "*** ERROR: A horrible, inexplicable error  \n"
-      /* CAUTION */               << "*** ERROR: has occurred.                   \n"
-      /* CAUTION */               << "*** ERROR:                                 \n"
-      /* CAUTION */               << endl;
-      /* CAUTION */          exit(0);
-      /* CAUTION */         }
-      /* CAUTION */        else D(i,j) = complex_0;
+      /* CAUTION */     throw( GenericException( __FILE__, __LINE__, 
+      /* CAUTION */            "void normalForm( const Mapping& theMapping, /* input */", 
+      /* CAUTION */            "An impossible error has occurred!" ) );
+      /* CAUTION */    }
+      /* CAUTION */    else D(i,j) = complex_0;
       /* CAUTION */   }
       /* CAUTION */  }
 
@@ -377,41 +292,27 @@ void normalForm( const Mapping& theMapping, /* input */
   for( i = 0; i < 6; i++ ) {
    scr.clear();
    doc(i).resetIterator();
-   // ??? REMOVE: dlist_iterator g( *(dlist*) doc(i).jl );
-   // ??? REMOVE: while((  q = (JLCterm*) g()  )) {
    while((  q = doc(i).stepIterator()  )) {
     factor = 1.0;
     for( j = 0; j < 6; j++ ) {
-     temp = FORIRIX_one / lambda(j);
-     for( l = 0; l < q->index(j); l++ ) {
+     temp = complex_1 / lambda(j);
+     for( l = 0; l < q->exponents()(j); l++ ) {
       factor *= temp;
      }
-     // REMOVE: factor *= pow( FORIRIX_one / lambda(j), q->index(j) );
-     // REMOVE: factor *= pow( 1.0 / lambda(j), q->index(j) );
+     // REMOVE: factor *= pow( complex_1 / lambda(j), q->exponents()(j) );
+     // REMOVE: factor *= pow( 1.0 / lambda(j), q->exponents()(j) );
     }
     factor *= lambda(i);
 
     // Either absorption or resonance subtraction ... 
-    denom = factor - FORIRIX_one;
-    // begin DGN-------------------------
-    // cerr <<  "DGN:(normalForm.cc) k = " << k 
-    //      << ", i = " << i 
-    //      << ", index = ( ";
-    // for( int dgn = 0; dgn < 5; dgn++ ) 
-    // {  
-    //   if( dgn != i ) { cerr << q->index(dgn) << ", "; }
-    //   else           { cerr << (q->index(dgn) - 1) << ", "; }
-    // }
-    // if( 5 != i ) { cerr << q->index(5) << ") "; }
-    // else         { cerr << (q->index(5) - 1) << ") "; }
-    // cerr << ", abs(denom) = " << abs(denom) 
-    //      << endl;
-    // end DGN-------------------------
+    denom = factor - complex_1;
     if( abs( denom ) <= 1.0e-7 ) {
-      N[k](i).addTerm( new JLCterm( q->index, - q->value, CL1.Env() ) );
+      N[k](i).addTerm( new JLCterm( q->exponents(), 
+                                    - q->coefficient(), 
+                                    CL1.Env() ) );
     }
     else {
-      q->value /= denom;
+      q->coefficient() /= denom;
       scr.addTerm( new JLCterm( *q ) );
     }
 

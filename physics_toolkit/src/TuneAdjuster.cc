@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 /*
  *  File: TuneAdjuster.cc
@@ -58,6 +58,7 @@
  */
 
 
+#include "GenericException.h"
 #include "TuneAdjuster.h"
 #include "LattFuncSage.h"
 
@@ -205,8 +206,9 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetProton& jp )
   {
     ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
     if(!ptr) {
-      cout << "No lattice functions." << endl;
-      exit(1);
+      throw( GenericException( __FILE__, __LINE__, 
+             "int TuneAdjuster::changeTunesBy ( double x, double y, const JetProton& jp )", 
+             "No lattice functions." ) );
     }
     beta(0,j) =   ptr->beta.hor;
     beta(1,j) = - ptr->beta.ver;
@@ -300,8 +302,9 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H,
 
     ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
     if(!ptr) {
-      cout << "No lattice functions." << endl;
-      exit(1);
+      throw( GenericException( __FILE__, __LINE__, 
+             "int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, ", 
+             "No lattice functions." ) );
     }
     beta(0,j) = ptr->beta.hor;
   }
@@ -393,8 +396,9 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V,
 
     ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
     if(!ptr) {
-      cout << "No lattice functions." << endl;
-      exit(1);
+      throw( GenericException( __FILE__, __LINE__, 
+             "int TuneAdjuster::changeVerticalTuneBy ( double delta_V, ", 
+             "No lattice functions." ) );
     }
     beta(0,j) = ptr->beta.ver;
   }
