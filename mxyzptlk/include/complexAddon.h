@@ -165,9 +165,10 @@ inline char operator> ( const Complex& x, const Complex& y )
  return real(x) > real(y)  &&  imag(x) > imag(y);
 }
 
-#endif // __VISUAL_CPP__
+#endif // __BORLAND_CPP__
 
-const Complex complex_1 = Complex(1.0,0.0);
-const Complex complex_0 = Complex(0.0,0.0);
+const Complex complex_1( 1.0, 0.0 );
+const Complex complex_0( 0.0, 0.0 );
+const Complex complex_i( 0.0, 1.0 );
 
 #endif // COMPLEXADDON_H
