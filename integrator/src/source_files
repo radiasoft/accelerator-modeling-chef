@@ -1,1 +1,0 @@
-libintegrator_la_SOURCES = Riemann.cc Simpson.cc Linterpoland.cc Splinterpoland.cc AkimaSplinterpoland.cc DriftMap.cc Integrator.cc KickMap.cc ODE.cc Oscillator.cc RungeKutta.cc Symplectic.cc
