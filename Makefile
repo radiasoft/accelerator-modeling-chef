@@ -9,42 +9,27 @@ default:
 	@echo "  make egcs              for a generic system with Gnu egcs"
 	@echo "  make linux             for Linux systems using GCC"
 	@echo "  make irix              for SGI systems with IRIX"
-	@echo "  make irix -gcc         for SGI systems with IRIX with GCC"
-	@echo "  make irix -debug       for SGI systems with IRIX with GCC debug on"
+	@echo "  make irix-gcc          for SGI systems with IRIX with GCC"
+	@echo "  make irix-debug        for SGI systems with IRIX with GCC debug on"
 	@echo "  make solaris           for Solaris systems and Sun compiler"
 
 	@echo "  make solaris-debug     for Solaris systems and Sun debug"
 	@echo "  make solaris-devel     for Solaris systems and Sun debug and devel on"
 	@echo "  make solaris-gcc       for Solaris systems with GCC"
 	@echo "  make solaris-gcc-debug for Solaris systems with GCC debug on"
+	@echo "  make solaris-depend    Creates the source depedencies using CC"
+	@echo "  make solaris-gcc-depend Creates the source depedencies using g++"
 	@echo "  make setup             Make include and lib dirs and links."
 	@echo "  make real-clean        Remove all .o,.sb,.~ files, libraries and links."
 	@echo "  make lib-clean         Remove all library (.a) files."
 	@echo "  make clean             Remove all .o,.sb,.~ files."
 	@echo "  make clean-app         Do a make clean in the app dirs, too"
 	@echo "  make clean-all         Do a make clean and a make clean-app"
-	@echo "  make link-clean        Remove all links in include directory."
 	@echo "  make tar               Tar up all source (*.cc,*.h) files."
 	@echo "  make tar_everything    Tar up ALL files."
 	@echo "  make app               Does a make (no args) in each app dir."
 	@echo "  make test-app          Make all the programs in the app directories."
 
-
-LINKDIRS  = beamline \
-	mxyzptlk \
-	machines/Machine \
-	machines/tev \
-	tcl \
-	socket \
-	server \
-	sybase \
-	filter \
-	machines/swyd \
-	machines/recycler \
-	machines/mi_8gev \
-	machines/mr_8gev \
-	machines/accumulator \
-	machines/mi
 
 SUBDIRS  = basic_toolkit/src \
 	beamline/src \
@@ -56,6 +41,7 @@ SUBDIRS  = basic_toolkit/src \
 	machines/Machine/src \
 	machines/mi/src \
 	machines/mi_8gev/src \
+	machines/mr_8gev/src \
 	machines/recycler/src \
 	machines/swyd/src \
 	machines/tev/src \
@@ -102,8 +88,12 @@ lib-dir:
 		mkdir lib/egcs; \
 		else true; \
 	fi
-
-real-clean: clean lib-clean
+real-clean:
+	rm -f ./*~*
+	@set -x; for i in $(SUBDIRS); do \
+		(cd $$i; $(MAKE)  $@); \
+		done
+	@echo "== REAL CLEAN COMPLETE =="
 
 lib-clean:
 	rm -f lib/sun/*.a;\
@@ -127,9 +117,6 @@ clean-app:
 
 clean-all: clean clean-app
 
-link-clean:
-	rm -f include/*
-
 export: real-clean
 	rm -rf lib;
 
@@ -141,9 +128,11 @@ TAR_FILES =	\
 	fnal/Make-config \
 	fnal/tar-exclude \
 	fnal/ChangeLog \
+	fnal/basic_toolkit \
 	fnal/beamline	\
 	fnal/mxyzptlk	\
 	fnal/machines \
+	fnal/physics_toolkit \
 	fnal/server \
 	fnal/socket \
 	fnal/sybase \
@@ -171,3 +160,4 @@ test-app:
 		(cd $$i; $(MAKE) clean; $(MAKE) all); \
 		done
 	@echo "== MAKE test-app COMPLETE =="
+
