@@ -63,6 +63,13 @@ using std::setprecision;
 #include <iomanip.h>
 #endif
 
+#ifdef  __PRIVATE_ALLOCATOR__
+#include <vmalloc.h>
+       int JLterm::_init=0;
+Vmalloc_t* JLterm::_vmem=0;
+#endif
+
+
 // ================================================================
 //      External routines
 //
@@ -1138,6 +1145,29 @@ JLterm::JLterm( const IntArray& l,
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#ifdef __PRIVATE_ALLOCATOR__
+
+void JLterm::meminit(size_t size) {
+
+  _vmem = vmopen(Vmdcsbrk,Vmpool,0);
+  //_vmem = vmopen(Vmdcsbrk,Vmpool,VM_TRACE);
+  //int fd =  creat("vmalloc.log", 666);
+  //vmtrace(fd);
+  vmalloc(_vmem,size);
+  _init = 1;
+};
+
+void* JLterm::operator new(size_t size){
+ if (_init ==0) meminit(size);
+ return vmalloc(_vmem,size);
+};
+
+void JLterm::operator delete(void* obj, size_t size){
+  vmfree(_vmem,obj);
+};
+#endif
+
 
 JLterm::JLterm( const JLterm* x ) 
 : index( x->index ), weight(x->weight), value(x->value)

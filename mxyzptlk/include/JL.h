@@ -74,8 +74,14 @@
 **************************************************************************
 *************************************************************************/
 
+// Private memory allocators
+// J.F. Ostiguy - Feb 11 1999
+//#define __PRIVATE_ALLOCATOR__
+
 #ifndef JL_HXX
 #define JL_HXX
+
+
 #ifdef __VISUAL_CPP__
 #include <iostream>
 #else
@@ -90,6 +96,13 @@
 // ??? REMOVE: #include "Jet.h"    // Needed for Jet::scratchFile
 #include "Jet__environment.h"
 
+#ifdef __PRIVATE_ALLOCATOR__
+#include <vmalloc.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#endif
+
 class  LieOperator;
 struct JLCterm;
 struct JLC;
@@ -97,6 +110,19 @@ struct JLC;
 // *******************************************************************
 
 struct JLterm {    
+
+#ifdef __PRIVATE_ALLOCATOR__
+  private:
+  
+  static int _init;
+  static Vmalloc_t* _vmem;
+  static void meminit(size_t size);
+  
+  public:
+
+  void* operator new(size_t size);
+  void  operator delete(void* obj, size_t size);
+#endif
 
   // Data
   IntArray index; // An integer array giving the derivatives associated
