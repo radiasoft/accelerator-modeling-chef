@@ -712,8 +712,9 @@ public:
 
   // ??? These three twiss functions should be eliminated.
   // ??? They are hopelessly obsolete.
+  // twiss no-longer virtual to eliminate
+  // circular library dependencies - FO
 
-  virtual
   int twiss( JetParticle&, 
              double = 0.00001 /* dpp */,
              short int = 1 /* attachFlag */ );
@@ -724,13 +725,11 @@ public:
                            // Barnacle labelled "Twiss" to every element
                            // in the line.
 
-  virtual
   int twiss( char, 
              JetParticle& );
                            // Only computes lattice functions at
                            // the beginning of the ring.
                            // Uses the same method as MAD.
-  virtual
   int twiss( lattFunc&,
              JetParticle&,
              short int = 1 /* attachFlag */ );
