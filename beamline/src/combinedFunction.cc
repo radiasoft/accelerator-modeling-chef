@@ -323,7 +323,9 @@ double combinedFunction::AdjustPosition( const JetProton& arg_jp )
 
   // Set the alignment of the internal beamline.
   // this->align->getAlignment().xOffset -= z;
-  alignmentData v( align->getAlignment() );
+  alignmentData v;	// Assumes zero alignment constructed this way.
+  if ( align != 0 )
+    v = align->getAlignment();
   v.xOffset -= z;
   // ??? Does not work: p_bml->setAlignment( v );
   // ??? The reason is that the alignment stategy is
