@@ -88,7 +88,7 @@ const char* IntArray::GenericException::what() const throw()
   }
 
 
-IntArray::IntArray( const int& n, const int* x )
+IntArray::IntArray( int n, const int* x )
 {
   static int i;
 #ifdef __PRIVATE_ALLOCATOR__
