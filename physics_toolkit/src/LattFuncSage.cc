@@ -25,13 +25,14 @@ extern int filterTransverseTunes( /* const */ MatrixD&, Vector& );
 
 
 // ... Globals:
-const int LattFuncSage::DONE           = 0;
-const int LattFuncSage::SLOTS_DETECTED = 1;
-const int LattFuncSage::UNSTABLE       = 2;
-const int LattFuncSage::INTEGER_TUNE   = 3;
-const int LattFuncSage::PHASE_ERROR    = 4;
-const int LattFuncSage::WRONG_COUNT    = 5;
-const int LattFuncSage::NOT_WRITTEN    = 6;
+const int LattFuncSage::DONE             = 0;
+const int LattFuncSage::SLOTS_DETECTED   = 1;
+const int LattFuncSage::UNSTABLE         = 2;
+const int LattFuncSage::INTEGER_TUNE     = 3;
+const int LattFuncSage::PHASE_ERROR      = 4;
+const int LattFuncSage::WRONG_COUNT      = 5;
+const int LattFuncSage::NOT_WRITTEN      = 6;
+const int LattFuncSage::TOO_MANY_VECTORS = 7;
 
 double LattFuncSage::_csH = 0.0;
 double LattFuncSage::_csV = 0.0;
@@ -1038,6 +1039,226 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp,
   if( p_jp )           delete p_jp;
   if( firstParticle )  delete firstParticle;
   if( secondParticle ) delete secondParticle;
+
+  if( this->_verbose ) {
+    cout << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
+    cout.flush();
+  }
+
+  return ret;
+}
+
+
+int LattFuncSage::FAD_Disp_Calc( /* const */ JetParticle* arg_jp, 
+                                 Sage::CRITFUNC Crit )
+{
+  // NOTE: This routine does not calculate chromaticity.
+  // 
+
+  if( this->_verbose ) {
+    cout << "LattFuncSage -- Entering LattFuncSage::FAD_Disp_Calc( map ) " 
+         << endl;
+    cout.flush();
+  }
+
+  int ret = 0;
+  Particle* firstParticle = 0;
+
+  short int i_x   =  arg_jp->xIndex();
+  short int i_y   =  arg_jp->yIndex();
+  short int i_z   =  arg_jp->cdtIndex();
+  short int i_px  =  arg_jp->npxIndex();
+  short int i_py  =  arg_jp->npyIndex();
+  short int i_dpp =  arg_jp->ndpIndex();
+
+  short int j_x   =  0;
+  short int j_px  =  1;
+  short int j_y   =  2;
+  short int j_py  =  3;
+  short int j_dpp =  4;
+
+  beamline* bml = this->_myBeamlinePtr;
+  MatrixD FADmap( 5, 5 );
+  MatrixD firstJacobian;
+
+  // Calculate the 5x5 matrix ...
+  JetParticle* p_jp = arg_jp->Clone();
+  firstJacobian  = p_jp->State().Jacobian();
+
+  FADmap( j_x,   j_x   ) = firstJacobian( i_x,   i_x   );
+  FADmap( j_x,   j_px  ) = firstJacobian( i_x,   i_px  );
+  FADmap( j_x,   j_y   ) = firstJacobian( i_x,   i_y   );
+  FADmap( j_x,   j_py  ) = firstJacobian( i_x,   i_py  );
+  FADmap( j_x,   j_dpp ) = firstJacobian( i_x,   i_dpp );
+
+  FADmap( j_px,  j_x   ) = firstJacobian( i_px,  i_x   );
+  FADmap( j_px,  j_px  ) = firstJacobian( i_px,  i_px  );
+  FADmap( j_px,  j_y   ) = firstJacobian( i_px,  i_y   );
+  FADmap( j_px,  j_py  ) = firstJacobian( i_px,  i_py  );
+  FADmap( j_px,  j_dpp ) = firstJacobian( i_px,  i_dpp );
+
+  FADmap( j_y,   j_x   ) = firstJacobian( i_y,   i_x   );
+  FADmap( j_y,   j_px  ) = firstJacobian( i_y,   i_px  );
+  FADmap( j_y,   j_y   ) = firstJacobian( i_y,   i_y   );
+  FADmap( j_y,   j_py  ) = firstJacobian( i_y,   i_py  );
+  FADmap( j_y,   j_dpp ) = firstJacobian( i_y,   i_dpp );
+
+  FADmap( j_py,  j_x   ) = firstJacobian( i_py,  i_x   );
+  FADmap( j_py,  j_px  ) = firstJacobian( i_py,  i_px  );
+  FADmap( j_py,  j_y   ) = firstJacobian( i_py,  i_y   );
+  FADmap( j_py,  j_py  ) = firstJacobian( i_py,  i_py  );
+  FADmap( j_py,  j_dpp ) = firstJacobian( i_py,  i_dpp );
+
+  FADmap( j_dpp, j_x   ) = 0.0;
+  FADmap( j_dpp, j_px  ) = 0.0;
+  FADmap( j_dpp, j_y   ) = 0.0;
+  FADmap( j_dpp, j_py  ) = 0.0;
+  FADmap( j_dpp, j_dpp ) = 1.0;
+
+  // Finds its eigenvectors....
+  int i, j;
+  MatrixC EV;
+  MatrixC lambda;
+  EV = FADmap.eigenVectors();
+  lambda = FADmap.eigenValues();   // Wildly inefficient. Does the same
+                                   // calculation twice. But this is only
+                                   // a 5x5, so it shouldn't matter much.
+  
+  // DGN: {
+  // DGN: cout << "DGN: FADmap: " << endl;
+  // DGN: cout << FADmap << endl;
+  // DGN: cout << "DGN: EV: " << endl;
+  // DGN: cout << EV << endl;
+  // DGN: for( i = 0; i < 5; i++ ) {
+  // DGN:   for( j = 0; j < 5; j++ ) {
+  // DGN:     cout << EV(i,j) << " || ";
+  // DGN:   }
+  // DGN:   cout << endl;
+  // DGN: }
+  // DGN: cout << endl;
+  // DGN: cout << "DGN: lambda: " << endl;
+  // DGN: cout << lambda << endl;
+  // DGN: 
+  // DGN: MatrixC LAMBDA( 5, 5 );
+  // DGN: for( int i = 0; i < 5; i++ ) {
+  // DGN:   LAMBDA(i,i) = lambda(0,i);
+  // DGN: }
+  // DGN: cout << "DGN: Difference: " << ( FADmap*EV - EV*LAMBDA ) << endl;
+  // DGN: }
+
+  int numberFound = 0;
+  static const Complex c_one( 1.0, 0.0 );
+  int theColumn;
+
+  for( i = 0; i < 5; i++ ) {
+    if( abs( EV(j_dpp,i) ) > 1.0e-6 ) {
+      numberFound++;
+      theColumn = i;
+      if( abs( EV(j_dpp,i) - c_one ) > 1.0e-6 ) {
+        for( j = 0; j < 5; j++ ) {
+          EV(j,i) = EV(j,i) / EV(j_dpp,i);
+        }
+      }
+    }
+  }
+
+  if( numberFound != 1 ) {
+    cerr << "*** ERROR ***                                            \n"
+            "*** ERROR *** LattFuncSage::FAD_Disp_Calc                \n"
+            "*** ERROR *** Exactly " << numberFound << " eigenvectors \n"
+            "*** ERROR *** were found matching the criterion.         \n"
+            "*** ERROR *** Results of this calculation will not be    \n"
+            "*** ERROR *** correct.                                   \n"
+            "*** ERROR ***                                            \n"
+         << endl;
+    ret = LattFuncSage::TOO_MANY_VECTORS;
+  }
+
+  else { // Continue
+
+     double lng = 0.0;
+
+     // Attach initial dispersion data to the beamline ...
+     LattFuncSage::lattFunc* lf;
+     lf = new LattFuncSage::lattFunc;
+     lf->dispersion.hor = real( EV( j_x,  theColumn ) );
+     lf->dPrime.hor     = real( EV( j_px, theColumn ) );
+     lf->dispersion.ver = real( EV( j_y,  theColumn ) );
+     lf->dPrime.ver     = real( EV( j_py, theColumn ) );
+     lf->arcLength      = lng;
+     
+     bml->dataHook.eraseAll( "Dispersion" );
+     bml->dataHook.insert( new Barnacle( "Dispersion", lf ) );
+   
+     // Attach dispersion data wherever desired ...
+     if( this->_verbose ) {
+       cout << "LattFuncSage --- Attaching dispersion data to the elements." << endl;
+       cout.flush();
+     }
+   
+   
+     bmlnElmnt* q = 0;
+     firstParticle  = p_jp->ConvertToParticle();
+     DeepBeamlineIterator getNext( bml );
+     double dpp = this->get_dpp();
+
+     firstParticle->set_x  ( dpp*real( EV( j_x,  theColumn ) ) );
+     firstParticle->set_y  ( dpp*real( EV( j_y,  theColumn ) ) );
+     firstParticle->set_cdt( 0.0 );
+     firstParticle->set_npx( dpp*real( EV( j_px, theColumn ) ) );
+     firstParticle->set_npy( dpp*real( EV( j_py, theColumn ) ) );
+     firstParticle->set_ndp( 0.0 );
+
+     firstParticle->SetReferenceMomentum( ( 1.0 + dpp )*(firstParticle->ReferenceMomentum()) );
+
+     while((  q = getNext++  )) 
+     {
+       q->propagate( *firstParticle );
+       lng += q->OrbitLength( *firstParticle );
+   
+       if( !Crit || Crit( q ) ) 
+       {
+         lf = new LattFuncSage::lattFunc;
+         lf->dispersion.hor = firstParticle->get_x()   /dpp;
+         lf->dPrime.hor     = firstParticle->get_npx() /dpp;
+         lf->dispersion.ver = firstParticle->get_y()   /dpp;
+         lf->dPrime.ver     = firstParticle->get_npy() /dpp;
+         lf->arcLength      = lng;
+     
+         q->dataHook.eraseAll( "Dispersion" );
+         q->dataHook.insert( new Barnacle( "Dispersion", lf ) );
+       }    
+     }  
+   
+
+     // Attach tune and chromaticity to the beamline ........
+     LattFuncSage::lattRing* latticeRing = new LattFuncSage::lattRing;
+     Vector firstNu(2);
+     if( ( 0 == filterTransverseTunes( firstJacobian, firstNu   ) ) )
+     {
+       latticeRing->tune.hor = firstNu(0);
+       latticeRing->tune.ver = firstNu(1);
+       latticeRing->chromaticity.hor = 12345.6789;  // Nonsense value.
+       latticeRing->chromaticity.ver = 12345.6789;
+       _myBeamlinePtr->dataHook.eraseAll( "Ring" );
+       _myBeamlinePtr->dataHook.insert( new Barnacle( "Ring", latticeRing ) );
+     }
+     else {
+       cerr << "*** ERROR ***                                        \n"
+               "*** ERROR *** LattFuncSage::Disp_Calc                \n"
+               "*** ERROR ***                                        \n"
+               "*** ERROR *** Horrible error occurred while trying   \n"
+               "*** ERROR *** to filter the tunes.                   \n"
+               "*** ERROR ***                                        \n"
+            << endl;
+       ret = 111;
+     }  
+
+  } // else continue
+
+  // Final operations ....................................
+  if( p_jp )           delete p_jp;
+  if( firstParticle )  delete firstParticle;
 
   if( this->_verbose ) {
     cout << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;

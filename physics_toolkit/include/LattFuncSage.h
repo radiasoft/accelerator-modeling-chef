@@ -100,6 +100,17 @@ public:
  int CS_Disp_Calc   (             JetParticle*, Sage::CRITFUNC = 0 );
                // If default value is used for Sage::CRITFUNC, then
                // information is attached to all elements.
+ int FAD_Disp_Calc  ( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
+               // Assumes no vertical dispersion.
+               // Uses the 5x5 matrix formalism that 
+               // everyone knows and loves, ignoring the
+               // closed orbit. 
+               // Attaches the lattRing "Ring" to the beamline
+               // but no information to the beamline elements.
+               // The purpose is to provide a quick, first order
+               // calculation of dispersion at the beginning of the
+               // beamline.
+               // By the way, "FAD" stands for "Fast and Dirty."
 
  int Twiss_Calc     ( const LattFuncSage::lattFunc&, JetParticle&, Sage::CRITFUNC = 0 ); 
  int Twiss_Calc     ( JetParticle& );
@@ -119,8 +130,7 @@ public:
  static const int PHASE_ERROR;
  static const int WRONG_COUNT;
  static const int NOT_WRITTEN;
-
-
+ static const int TOO_MANY_VECTORS;
 
 private:
  static double     _csH, _csV, _snH, _snV;
