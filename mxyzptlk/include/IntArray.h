@@ -1,7 +1,13 @@
 #ifndef INTARRAY_H
 #define INTARRAY_H
 
+#ifdef __VISUAL_CPP__
+#include <iostream>
+using std::istream;
+using std::ostream;
+#else
 #include <iostream.h>
+#endif
 
 class IntArray {
 protected:

@@ -1,5 +1,9 @@
 #include <math.h>
+#ifdef __VISUAL_CPP__
+#include <iostream>
+#else
 #include <iostream.h>
+#endif
 #include "Matrix.h"
 
 #define SWAP(a,b) { temp=(a);(a)=(b);(b)=temp;}

@@ -302,20 +302,6 @@ JetC operator+( const double& y, const JetC& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC operator-( const JetC& x, const double& y ) {
- return operator+( x, -y );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-JetC operator-( const double& y, const JetC& x ) {
- return operator+( y, -x );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 JetC operator-( const JetC& x, const Complex& y ) {
  return x + (-y);
 }
@@ -809,54 +795,6 @@ JetC operator/( const JetC& x, const Complex& y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetC operator/( const JetC& x, const double& y ) { 
- static JetC z;
- static JLCterm* p;
- static JLCterm* q;
- static JLC* xPtr;
- static JLC* zPtr;
- static int testWeight;
- 
- z.Reconstruct( x->myEnv ); 
-
- p    = 0;
- q    = 0;
- xPtr = x.jl;
- zPtr = z.jl;
-
- testWeight = z->accuWgt = x->accuWgt;
-
- // Check for division by zero ..
- if( y == 0.0 ) {
-   cerr << "\n*** JetC::operator/ ERROR *** "
-        << "Attempt to divide by a scalar zero.\n"
-        << endl;
-   exit(0);
- }
- 
- // If x is void, return it ..
- if( xPtr->count < 1 ) {    // This is done in this way so that
-   z.DeepCopy( x );         // what is returned does not own
-   z.stacked = 1;           // the same data as x.
-   return z;
- }
-
- dlist_iterator gx( *(dlist*) xPtr );
-
- while((  p = (JLCterm*) gx()  )) {
-   if( p->weight > testWeight ) break;
-   q = new JLCterm( p );
-   q->value /= y;
-   zPtr->addTerm( q );
- }
- 
- z.stacked = 1;
- return z;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 JetC operator/( const JetC& x, const int& j ) { 
  static JetC z;
  static JLCterm* p;
@@ -912,16 +850,6 @@ JetC operator/( const Complex& a, const JetC& b ) {
   static JetC u;
   u.Reconstruct( b->myEnv ); 
   u = a;
-  return u/b;
-} 
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-JetC operator/( const double& a, const JetC& b ) {
-  static JetC u;
-  u.Reconstruct( b->myEnv ); 
-  u = Complex( a, 0 );
   return u/b;
 } 
 

@@ -5,7 +5,7 @@
 #include "IntArray.h"
 #include "slist.h"
 
-class JetC__environment;
+struct JetC__environment;
 class Jet;
 
 struct Jet__environment {

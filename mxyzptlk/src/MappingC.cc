@@ -51,9 +51,13 @@
 **************************************************************************
 *************************************************************************/
 
-#include <stdlib.h>
 #include "MappingC.h"
 #include "JLC.h"
+#ifdef __VISUAL_CPP__
+using std::cout;
+#else
+#include <stdlib.h>
+#endif
 
 
 #ifndef MX_MAXITER
@@ -293,7 +297,7 @@ MappingC::Inverse() const
  for( j = 0; j < dim; j++ ) {
    if( !t2[j] ) { 
      p[j] = z.comp[j].get();
-     z.comp[j]->addTerm( new JLCterm( z.myEnv->AllZeroes, 0.0, z.myEnv ) );
+     z.comp[j]->addTerm( new JLCterm( z.myEnv->AllZeroes, complex_0, z.myEnv ) );
      // ??? This last line should not be necessary.
    }
  }

@@ -8,9 +8,15 @@
  * 
  */
 
-
+#ifdef __VISUAL_CPP__
+#include <iostream>
+using std::cerr;
+using std::endl;
+#else
 #include <stdlib.h>
 #include <string.h>
+#endif
+
 #include "IntArray.h"
 
 #ifdef OBJECT_DEBUG

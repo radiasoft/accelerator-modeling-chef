@@ -77,8 +77,13 @@
 #ifndef JLC_HXX
 #define JLC_HXX
 
+#ifdef __VISUAL_CPP__
+#include <iostream>
+#else
 #include <stdio.h>
 #include <iostream.h>
+#endif
+
 #include "dlist.h"
 #include "IntArray.h"
 #include "Matrix.h"
@@ -86,8 +91,8 @@
 #include "complexAddon.h"
 
 class LieOperator;
-class JLterm;
-class JL;
+struct JLterm;
+struct JL;
 
 // *******************************************************************
 

@@ -1,4 +1,8 @@
+#ifdef __VISUAL_CPP__
+#include <iomanip>
+#else
 #include <iomanip.h>
+#endif
 #include "mxyzptlk.h"
 #include "MathConstants.h"
 #include "JetVector.h"
@@ -46,7 +50,7 @@ void Jet::operator+=( const Jet& y ) {
 
  dlist_iterator gx( *(dlist*) xPtr );
  dlist_iterator gy( *(dlist*) yPtr );
- int i;
+
  
  // Check for consistency and set reference point of the sum.
  if( xPtr->myEnv != yPtr->myEnv )
@@ -213,7 +217,7 @@ Jet operator+( const Jet& x, const Jet& y ) {
 
  dlist_iterator gx( *(dlist*) x.jl );
  dlist_iterator gy( *(dlist*) y.jl );
- int i;
+
  
  // Check for consistency and set reference point of the sum.
  if( x->myEnv != y->myEnv ) {
@@ -369,7 +373,7 @@ Jet operator-( const Jet& x, const Jet& y ) {
 
  dlist_iterator gx( *(dlist*) x.jl );
  dlist_iterator gy( *(dlist*) y.jl );
- int i;
+
  
  // Check for consistency and set reference point of the difference.
  if( x->myEnv != y->myEnv ) {

@@ -129,7 +129,7 @@ char JetML::operator==(const Jet& x) {
 JetML& JetML::operator+=( const Jet& x) {
   for(int i = 0; i < r; i++) {
     m[i][i] += x;
-    if(abs(m[i][i]) < M_SMALL*abs(x))
+    if(fabs(m[i][i]) < M_SMALL*fabs(x))
       m[i][i] = 0.0;
   }
   return *this;
@@ -138,7 +138,7 @@ JetML& JetML::operator+=( const Jet& x) {
 JetML& JetML::operator-=( const Jet& x) {
   for(int i = 0; i < r; i++) {
     m[i][i] -= x;
-    if(abs(m[i][i]) < M_SMALL*abs(x))
+    if(fabs(m[i][i]) < M_SMALL*fabs(x))
       m[i][i] = 0.0;
   }
   return *this;

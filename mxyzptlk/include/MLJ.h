@@ -1,10 +1,18 @@
 #ifndef MLJ_H
 #define MLJ_H
 
-#include <iostream.h>
+
 #include <math.h>
+#ifdef __VISUAL_CPP__
+#include <iostream>
+#include <Complex>
+#else
+#include <iostream.h>
 #include <complex.h>
-//#include "complexAddon.h"
+#endif
+
+#include "complexAddon.h"
+
 #include "Jet.h"
 
 ///////////////////////////////////////////////////////////////////////
