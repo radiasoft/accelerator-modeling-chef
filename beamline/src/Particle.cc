@@ -171,6 +171,17 @@ void Particle::SetReferenceEnergy( double energy ) {
  else            pni2 = 1.0e33;
 }
 
+void Particle::SetReferenceMomentum( double new_p ) {
+ p = new_p;
+ E = sqrt( new_p*new_p + m*m );
+ bRho  = p / PH_CNV_brho_to_p;
+ gamma = E / m;
+ beta  = sqrt( 1.0 - 1.0 / ( gamma*gamma ) );
+ pn = beta*gamma;
+ if( pn != 0.0 ) pni2 = 1.0 / ( pn*pn );
+ else            pni2 = 1.0e33;
+}
+
 Vector Particle::VectorBeta() const
 {
  Vector ret(3);

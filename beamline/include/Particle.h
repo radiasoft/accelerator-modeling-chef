@@ -97,7 +97,8 @@ public:
   static const short int PSD;
   short int psd()        { return Particle::PSD; }
 
-  void SetReferenceEnergy( double /* Energy */ );
+  void SetReferenceEnergy( double /* energy [GeV] */ );
+  void SetReferenceMomentum( double /* momentum [GeV/c] */ );
   void setState      ( double* );
   void setState      ( const Vector& );
   void getState      ( double* );
