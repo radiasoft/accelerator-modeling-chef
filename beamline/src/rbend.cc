@@ -101,7 +101,7 @@ rbend::rbend( double l, double s, double entryangle, PropFunc* pf )
      cerr <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
-             "\n*** WARNING *** | upstream edge angle | = " 
+             "\n*** WARNING *** | upstream entry angle | = " 
           << fabs(entryangle) 
           << " < 1 microradian."
              "\n*** WARNING *** It will be reset to zero."
@@ -137,7 +137,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, PropFunc* pf
      cerr <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( char* n, ... PropFunc* pf )"
-             "\n*** WARNING *** | upstream edge angle | = " 
+             "\n*** WARNING *** | upstream entry angle | = " 
           << fabs(entryangle) 
           << " < 1 microradian."
              "\n*** WARNING *** It will be reset to zero."
@@ -279,7 +279,7 @@ rbend::rbend( double l, double s, double entryangle, double us, double ds, PropF
      cerr <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( char* n, ... PropFunc* pf )"
-             "\n*** WARNING *** | upstream edge angle | = " 
+             "\n*** WARNING *** | upstream entry angle | = " 
           << fabs(entryangle) 
           << " < 1 microradian."
              "\n*** WARNING *** It will be reset to zero."
@@ -350,7 +350,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, double us, d
      cerr <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( char* n, ... PropFunc* pf )"
-             "\n*** WARNING *** | upstream edge angle | = " 
+             "\n*** WARNING *** | upstream entry angle | = " 
           << fabs(entryangle) 
           << " < 1 microradian."
              "\n*** WARNING *** It will be reset to zero."
