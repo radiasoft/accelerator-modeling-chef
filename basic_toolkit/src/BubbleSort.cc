@@ -1,4 +1,8 @@
+#ifdef __VISUAL_CPP__
+#include <iostream>
+#else
 #include <iostream.h>
+#endif
 
 void BubbleSort( double x[], int n )
 {

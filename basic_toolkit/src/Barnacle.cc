@@ -1,7 +1,10 @@
-#include "Barnacle.h"
-#include <string.h>
+#ifdef __VISUAL_CPP__
+#include <iostream>
+#else
 #include <iostream.h>
-
+#endif
+#include <string.h>
+#include "Barnacle.h"
 // ================================================================
 //      Global variables
 //

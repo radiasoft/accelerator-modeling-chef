@@ -1,4 +1,7 @@
-#ifndef __VISUAL_CPP__
+#ifdef __VISUAL_CPP__
+#include <iostream>
+#include <iomanip>
+#else
 #include <stdlib.h>
 #include <iostream.h>
 #include <iomanip.h>
