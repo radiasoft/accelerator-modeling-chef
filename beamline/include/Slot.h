@@ -46,6 +46,11 @@ class Slot : public bmlnElmnt
 
    ~Slot();
  
+   void makeUpstreamHorizontal   ( double /* length */, double /* angle */ );
+   void makeDownstreamHorizontal ( double /* length */, double /* angle */ );
+   void makeUpstreamVertical     ( double /* length */, double /* angle */ );
+   void makeDownstreamVertical   ( double /* length */, double /* angle */ );
+
    short int checkFrame( const Frame& ) const;
 
    ostream& writeTo ( ostream& );

@@ -166,6 +166,63 @@ Slot::~Slot()
   }
 }
 
+
+void Slot::makeUpstreamHorizontal   ( double lng, double ang )
+{
+  length = lng;
+  in.reset();
+  out.reset();
+
+  static Vector driftOffset(3); 
+  driftOffset(2) = lng;
+  
+  out.rotate( - ang, out.getyAxis() );
+  out.translate( driftOffset );
+}
+
+
+void Slot::makeDownstreamHorizontal ( double lng, double ang )
+{
+  length = lng;
+  in.reset();
+  out.reset();
+
+  static Vector driftOffset(3); 
+  driftOffset(2) = lng;
+  
+  out.translate( driftOffset );
+  out.rotate( - ang, out.getyAxis() );
+}
+
+
+void Slot::makeUpstreamVertical   ( double lng, double ang )
+{
+  length = lng;
+  in.reset();
+  out.reset();
+
+  static Vector driftOffset(3); 
+  driftOffset(2) = lng;
+  
+  out.rotate( - ang, out.getxAxis() );
+  out.translate( driftOffset );
+}
+
+
+void Slot::makeDownstreamVertical ( double lng, double ang )
+{
+  length = lng;
+  in.reset();
+  out.reset();
+
+  static Vector driftOffset(3); 
+  driftOffset(2) = lng;
+  
+  out.translate( driftOffset );
+  out.rotate( - ang, out.getxAxis() );
+}
+
+
 const char*  Slot::Type()  const  
 { 
   return "Slot"; 
