@@ -67,9 +67,9 @@ class CF_sbend : public bmlnElmnt
   void Split( double, bmlnElmnt**, bmlnElmnt** );
 
 
-  int setQuadrupole ( double );  
-  int setSextupole  ( double );  
-  int setOctupole   ( double );  
+  int setQuadrupole  ( double );  
+  int setSextupole   ( double );  
+  int setOctupole    ( double );  
   // The argument is integrated multipole strength
   // i.e., .setQuadrupole ( B'l   )
   //       .setSextupole  ( B''l/2 )
@@ -79,6 +79,10 @@ class CF_sbend : public bmlnElmnt
   //         1 if there are no multipoles of required type.
   //           (this should never happen)
 
+  int setDipoleField ( double );  
+  // Here the argument is the dipole field, 
+  // NOT the integrated dipole field.
+
   double getQuadrupole();
   double getSextupole();
   double getOctupole();
@@ -86,6 +90,10 @@ class CF_sbend : public bmlnElmnt
   // i.e., .getQuadrupole() returns B'l
   //       .getSextupole()  returns B''l/2
   //       .getOctupole()   returns B'''l/6
+
+  double getDipoleField();  
+  // Returns the dipole field,
+  // NOT the integrated dipole field.
 
  private:
 
