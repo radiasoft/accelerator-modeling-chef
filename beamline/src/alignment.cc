@@ -131,8 +131,7 @@ alignment& alignment::operator=(const alignment& x) {
   return *this;
 }
 
-void alignment::misalign(const Particle& p, BMLN_posInfo /* geometry */, 
-			 double* inState) {
+void alignment::misalign(const Particle& p, double* inState) {
   int i;
 
   for( i = 0; i < BMLN_dynDim; i++  ) 
@@ -164,8 +163,7 @@ void alignment::misalign(const Particle& p, BMLN_posInfo /* geometry */,
 
 }
 
-void alignment::align(const Particle& p, BMLN_posInfo /* geometry */, 
-			 double* inState) {
+void alignment::align(const Particle& p, double* inState) {
   int i;
 
   for( i = 0; i < BMLN_dynDim; i++  ) 
@@ -198,8 +196,7 @@ void alignment::align(const Particle& p, BMLN_posInfo /* geometry */,
 
 }
 
-void alignment::align(double* p, BMLN_posInfo /* geometry */, 
-			 double* inState) {
+void alignment::align(double* p, double* inState) {
   int i;
 
   for( i = 0; i < BMLN_dynDim; i++  ) 
@@ -231,8 +228,7 @@ void alignment::align(double* p, BMLN_posInfo /* geometry */,
   // ??? REMOVE }
 }
 
-void alignment::misalign(JetParticle& p, BMLN_posInfo /* geometry */, 
-			 Jet* inState) {
+void alignment::misalign(JetParticle& p, Jet* inState) {
   int i;
 
   for( i = 0; i < BMLN_dynDim; i++  ) 
@@ -264,8 +260,7 @@ void alignment::misalign(JetParticle& p, BMLN_posInfo /* geometry */,
 
 }
 
-void alignment::align(JetParticle& p, BMLN_posInfo /* geometry */, 
-			 Jet* inState) {
+void alignment::align(JetParticle& p, Jet* inState) {
   int i;
 
   for( i = 0; i < BMLN_dynDim; i++  ) 
@@ -297,8 +292,7 @@ void alignment::align(JetParticle& p, BMLN_posInfo /* geometry */,
   // ??? REMOVE }
 }
 
-void alignment::align(Jet* p, BMLN_posInfo /* geometry */, 
-			 Jet* inState) {
+void alignment::align(Jet* p, Jet* inState) {
   int i;
 
   for( i = 0; i < BMLN_dynDim; i++  ) 

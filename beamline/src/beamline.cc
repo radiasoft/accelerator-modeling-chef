@@ -322,30 +322,6 @@ beamline::beamline( bmlnElmnt* q ) : bmlnElmnt(), dlist()
  numElem        = 1;
  nominalEnergy  = NOTKNOWN;
  depth          = q->depth + 1;
-
- // ...... Initialize geometry .................................
- printf( "\n" );
- printf( "*** WARNING ***  beamline::beamline( bmlnElmnt* ) ....        \n" );
- printf( "*** WARNING ***  Geometry may be set up incorrectly if the    \n" );
- printf( "*** WARNING ***  first element is not a drift or marker.      \n" );
- printf( "*** WARNING ***                                               \n" );
- printf( "\n" );
-
- geometry.outPoint(0) = 0.0;   // Works only for non-bending ???
- geometry.outPoint(1) = 0.0;   // objects.                   ???
- geometry.outPoint(2) = q->length;
-
- geometry.outAxes[0](0) = 1.0;
- geometry.outAxes[0](1) = 0.0;
- geometry.outAxes[0](2) = 0.0;
-
- geometry.outAxes[1](0) = 0.0;
- geometry.outAxes[1](1) = 1.0;
- geometry.outAxes[1](2) = 0.0;
-
- geometry.outAxes[2](0) = 0.0;
- geometry.outAxes[2](1) = 0.0;
- geometry.outAxes[2](2) = 1.0;
 }
 
 
@@ -358,30 +334,6 @@ beamline::beamline( char* n, bmlnElmnt* q ) : bmlnElmnt( n ), dlist() {
  depth          = q->depth + 1;
 
  twissDone      = 0;
-
- // ...... Initialize geometry .................................
- printf( "\n" );
- printf( "*** WARNING ***  beamline::beamline( bmlnElmnt* ) ....        " );
- printf( "*** WARNING ***  Geometry may be set up incorrectly if the    " );
- printf( "*** WARNING ***  first element is not a drift or marker.      " );
- printf( "*** WARNING ***                                               " );
- printf( "\n" );
-
- geometry.outPoint(0) = 0.0;   // Works only for non-bending ???
- geometry.outPoint(1) = 0.0;   // objects.                   ???
- geometry.outPoint(2) = q->length;
-
- geometry.outAxes[0](0) = 1.0;
- geometry.outAxes[0](1) = 0.0;
- geometry.outAxes[0](2) = 0.0;
-
- geometry.outAxes[1](0) = 0.0;
- geometry.outAxes[1](1) = 1.0;
- geometry.outAxes[1](2) = 0.0;
-
- geometry.outAxes[2](0) = 0.0;
- geometry.outAxes[2](1) = 0.0;
- geometry.outAxes[2](2) = 1.0;
 }
 
 
@@ -418,58 +370,6 @@ void beamline::clear() {
   this->dlist::clear();
   numElem = 0;
 }
-
-
-void beamline::geomToEnd( BMLN_posInfo& ) {
- static char firstCall = 1;
- if( firstCall ) {
-   firstCall = 0;
-   // ??? REMOVE: printf( "\n*** WARNING *** \n" );
-   // ??? REMOVE: printf(   "*** WARNING *** Inserting beamlines into beamlines provides\n" );
-   // ??? REMOVE: printf(   "*** WARNING *** unreliable geometry information.\n" );
-   // ??? REMOVE: printf(   "*** WARNING *** This will be fixed.\n" );
-   // ??? REMOVE: printf(   "*** WARNING *** \n" );
- }
-} 
-
-void beamline::geomToStart( BMLN_posInfo& ) {
- static char firstCall = 1;
- if( firstCall ) {
-   firstCall = 0;
-   // ??? REMOVE: printf( "\n*** WARNING *** \n" );
-   // ??? REMOVE: printf(   "*** WARNING *** Inserting beamlines into beamlines provides\n" );
-   // ??? REMOVE: printf(   "*** WARNING *** unreliable geometry information.\n" );
-   // ??? REMOVE: printf(   "*** WARNING *** This will be fixed.\n" );
-   // ??? REMOVE: printf(   "*** WARNING *** \n" );
- }
-} 
-
-
-
-void beamline::resetGeometry() {
-  dlist_iterator getNext ( *(dlist*) this );
-  bmlnElmnt* p;
-  bmlnElmnt* q;
-//  bmlnElmnt* r;
-  
-  if((  p = (bmlnElmnt*) getNext()  ))
-    while((  q = (bmlnElmnt*) getNext()  )) {
-    if((   p->geometry.outPoint   != q->geometry.inPoint   ) ||
-        ( p->geometry.outAxes[0] != q->geometry.inAxes[0] ) ||
-        ( p->geometry.outAxes[1] != q->geometry.inAxes[1] ) ||
-        ( p->geometry.outAxes[2] != q->geometry.inAxes[2] )    )
-    {
-     q->geomToEnd( p->geometry );
-    }
-    p = q;
-   }
-  else{
-    printf( "\n*** WARNING *** \n" );
-    printf(   "*** WARNING *** beamline::resetGeometry         \n" );
-    printf(   "*** WARNING *** Called with empty beamline.     \n" );
-    printf(   "*** WARNING *** \n" );
-  }
- }
 
 
 void beamline::localPropagate( Particle& x ) {
@@ -595,12 +495,6 @@ void beamline::insert( bmlnElmnt& q ) {
  if( strcmp( q.Type(), "beamline" ) == 0 )  
       numElem += ((beamline&) q).numElem;
  else numElem++;
-
- // ...... Adjust geometry
- int j;
- q.geomToStart( geometry );
- geometry.inPoint = q.geometry.inPoint;
- for( j = 0; j < 3; j++ ) geometry.inAxes[j] = q.geometry.inAxes[j];
 } 
 
 
@@ -615,12 +509,6 @@ void beamline::insert( bmlnElmnt* q ) {
  if( strcmp( q->Type(), "beamline" ) == 0 )  
       numElem += ((beamline*) q)->numElem;
  else numElem++;
-
- // ...... Adjust geometry
- int j;
- q->geomToStart( geometry );
- geometry.inPoint = q->geometry.inPoint;
- for( j = 0; j < 3; j++ ) geometry.inAxes[j] = q->geometry.inAxes[j];
 }  
 
 
@@ -715,7 +603,7 @@ void beamline::InsertElementsFromList( double& s,
     s += ( p_be_a->OrbitLength( prtn ) + p_ile->q->OrbitLength( prtn ) );
 
     if( ((ent) p_be) == this->lastInfoPtr() ) {
-      dlist::remove( (ent) p_be );      // ??? Screws up geometry, of course.
+      dlist::remove( (ent) p_be );
       getNext.Terminate();
       // This is required because of the way 
       // dlist_iterator::operator() is written.
@@ -874,12 +762,6 @@ void beamline::append( bmlnElmnt& q ) {
  if( strcmp( q.Type(), "beamline" ) == 0 )  
       numElem += ((beamline&) q).numElem;
  else numElem++;
-
- // ...... Adjust geometry
- int j;
- q.geomToEnd( geometry );
- geometry.outPoint = q.geometry.outPoint;
- for( j = 0; j < 3; j++ ) geometry.outAxes[j] = q.geometry.outAxes[j];
 } 
 
 
@@ -893,12 +775,6 @@ void beamline::append( bmlnElmnt* q ) {
  if( strcmp( q->Type(), "beamline" ) == 0 )  
       numElem += ((beamline*) q)->numElem;
  else numElem++;
-
- // ...... Adjust geometry
- int j;
- q->geomToEnd( geometry );
- geometry.outPoint = q->geometry.outPoint;
- for( j = 0; j < 3; j++ ) geometry.outAxes[j] = q->geometry.outAxes[j];
 } 
 
 
@@ -913,16 +789,6 @@ void beamline::Split( double, bmlnElmnt**, bmlnElmnt** )
 char beamline::putAbove( bmlnElmnt& x, bmlnElmnt& y ) 
 {
  // Insert y above (before; upstream of) x in the beamline
-
- static char firstCall = 1;
- if( firstCall ) {
-   firstCall = 0;
-   cerr << "\n*** WARNING ***                                             \n"
-             "*** WARNING *** beamline::putAbove                          \n"
-             "*** WARNING *** Geometry information will be corrupted.     \n"
-             "*** WARNING ***                                             \n"
-        << endl;
- }
 
  unTwiss();
 
@@ -946,16 +812,6 @@ char beamline::putAbove( bmlnElmnt& x, bmlnElmnt& y )
 char beamline::putBelow( bmlnElmnt& x, bmlnElmnt& y ) 
 {
  // Insert y below (after; downstream of) x in the beamline
-
- static char firstCall = 1;
- if( firstCall ) {
-   firstCall = 0;
-   cerr << "\n*** WARNING ***                                             \n"
-             "*** WARNING *** beamline::putBelow                          \n"
-             "*** WARNING *** Geometry information will be corrupted.     \n"
-             "*** WARNING ***                                             \n"
-        << endl;
- }
 
  unTwiss();
 
@@ -1278,13 +1134,6 @@ sector* beamline::makeSector( int degree, JetParticle& pd ) {
  
  s->pAperture     = pAperture;
 
- s->geometry.inPoint  = geometry.inPoint;
- s->geometry.outPoint = geometry.outPoint;
- for( i = 0; i < 3; i++ ) {
-    s->geometry.inAxes[i] = geometry.inAxes[i];
-   s->geometry.outAxes[i] = geometry.outAxes[i];
- }
-
  delete [] zd;
  return s;
 }
@@ -1435,10 +1284,6 @@ beamline beamline::remove( bmlnElmnt& x, bmlnElmnt& y ) {
 
  dlist_iterator getNext( dl );
  if((  p = (bmlnElmnt*) getNext()  )) {
-   a.geometry.inPoint = p->geometry.inPoint;
-   a.geometry.outPoint = a.geometry.inPoint;
-   for( i = 0; i < 3; i++ ) a.geometry.inAxes[i] = p->geometry.inAxes[i];
-   for( i = 0; i < 3; i++ ) a.geometry.outAxes[i] = a.geometry.inAxes[i];
    a.append( *p );
  }
  while ((  p = (bmlnElmnt*) getNext()  ))  a.append( *p );

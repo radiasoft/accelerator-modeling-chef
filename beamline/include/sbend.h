@@ -238,8 +238,6 @@ public:
   void makeAsinExact();
   bool isAsinExact();
 
-  void geomToEnd   ( BMLN_posInfo& );
-  void geomToStart ( BMLN_posInfo& );
   void eliminate();
 
   void enterLocalFrame( Particle&    ) const;

@@ -252,30 +252,6 @@ sector::~sector() {
 }
 
 
-void sector::geomToEnd( BMLN_posInfo& ) {
- static char firstCall = 1;
- if( firstCall ) {
-   firstCall = 0;
-   printf( "\n*** WARNING *** \n" );
-   printf(   "*** WARNING *** Inserting sectors into beamlines provides\n" );
-   printf(   "*** WARNING *** unreliable geometry information.\n" );
-   printf(   "*** WARNING *** This will be fixed.\n" );
-   printf(   "*** WARNING *** \n" );
- }
-} // End function void sector::geomToEnd( BMLN_posInfo& g )
-
-void sector::geomToStart( BMLN_posInfo& ) {
- static char firstCall = 1;
- if( firstCall ) {
-   firstCall = 0;
-   printf( "\n*** WARNING *** \n" );
-   printf(   "*** WARNING *** Inserting sectors into beamlines provides\n" );
-   printf(   "*** WARNING *** unreliable geometry information.\n" );
-   printf(   "*** WARNING *** This will be fixed.\n" );
-   printf(   "*** WARNING *** \n" );
- }
-} // End function void sector::geomToStart( BMLN_posInfo& g )
-
 void sector::eliminate() {
  delete this;
 }

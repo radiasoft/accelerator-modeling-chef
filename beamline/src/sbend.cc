@@ -359,41 +359,6 @@ bool sbend::isAsinExact()
 }
 
 
-void sbend::geomToEnd( BMLN_posInfo& g ) 
-{
- double cs, sn;
- double rho = length/_angle;
- cs = cos( _angle );
- sn = sin( _angle );
- for( int i = 0; i < 3; i++ ) geometry .inAxes[i] = g.outAxes[i];
- geometry.outAxes[0] =  cs*geometry.inAxes[0] + sn*geometry.inAxes[2];
- geometry.outAxes[1] =  geometry.inAxes[1];
- geometry.outAxes[2] = -sn*geometry.inAxes[0] + cs*geometry.inAxes[2];
- geometry.inPoint = g.outPoint;
- geometry.outPoint =
-       geometry.inPoint +
-       rho * ( ( cs - 1.0 )*geometry.inAxes[0] +
-                 sn        *geometry.inAxes[2] );
-}
-
-void sbend::geomToStart( BMLN_posInfo& g ) 
-{
- double cs, sn;
- double rho = length/_angle;
- cs = cos( _angle );
- sn = sin( _angle );
- for( int i = 0; i < 3; i++ ) geometry .outAxes[i] = g.inAxes[i];
- geometry.inAxes[0] =  cs*geometry.outAxes[0] - sn*geometry.outAxes[2];
- geometry.inAxes[1] =  geometry.outAxes[1];
- geometry.inAxes[2] =  sn*geometry.outAxes[0] + cs*geometry.outAxes[2];
- geometry.outPoint = g.inPoint;
- geometry.inPoint =
-       geometry.outPoint -
-       rho * ( ( cs - 1.0 )*geometry.inAxes[0] +
-                 sn        *geometry.inAxes[2] );
-}
-
-
 void sbend::eliminate() 
 {
  delete this;
