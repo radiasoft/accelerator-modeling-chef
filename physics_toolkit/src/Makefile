@@ -2,12 +2,17 @@
 
 INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(BASIC_TOOLKIT_INC) -I$(PHYSICS_TOOLKIT_INC) $(STL_CONFIG)
 
-OBJS = ClosedOrbitSage.o \
+OBJS = AdjustPosition.o \
+       BeamlineContext.o \
+       BeamlineSpitout.o \
+       ClosedOrbitSage.o \
        ConvertToTunes.o \
        DriftsToSlots.o \
+       DriftEliminator.o \
        EdwardsTeng.o \
        FPSolver.o \
        FindCovariance.o \
+       FramePusher.o \
        JacobianVisitor.o \
        LattFuncSage.o \
        MatrixCalcVisitor.o \

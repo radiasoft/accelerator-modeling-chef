@@ -7,17 +7,54 @@
  */
 
 
+#include <typeinfo>
 #include "Sage.h"
 
-Sage::Sage( const beamline* x )
+Sage::Sage( const beamline* x, bool doClone )
 : _verbose(0)
 {
-  _myBeamlinePtr = (beamline*) x;
+  // Preconditions: x is a valid pointer to a beamline
+  // Requirements:
+  // _arrayPtr must be deleted by destructor.
+
+  if( 0 == x ) {
+    cerr << "*** ERROR ***                             \n"
+            "*** ERROR *** Sage::Sage                  \n"
+            "*** ERROR *** Constructor invoked with    \n"
+            "*** ERROR *** null pointer.               \n"
+            "*** ERROR ***                             \n"
+         << endl;
+    exit(1);
+  }
+
+  if( typeid(*x) != typeid(beamline) ) {
+    cerr << "*** ERROR ***                             \n"
+            "*** ERROR *** Sage::Sage                  \n"
+            "*** ERROR *** Constructor invoked with    \n"
+            "*** ERROR *** pointer to something other  \n"
+            "*** ERROR *** than a beamline.            \n"
+            "*** ERROR ***                             \n"
+         << endl;
+    exit(1);
+  }
+
+
+  if( doClone ) {
+    _myBeamlinePtr = (beamline*) (x->Clone());
+  }
+  else {
+    _myBeamlinePtr = (beamline*) x;
+  }
+  _cloned = doClone;
+
+  _arrayPtr = new beamline::arrayRep( _myBeamlinePtr, false );
 }
 
 
 Sage::~Sage()
 {
+  delete _arrayPtr;
+  if( _cloned ) { _myBeamlinePtr->eliminate(); }
 }
 
 

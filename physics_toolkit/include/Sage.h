@@ -20,7 +20,14 @@
 class Sage 
 {
 public:
-  Sage( const beamline* );
+  Sage( const beamline*, bool = false );
+  // Second argument controls cloning.
+  // If true, then the Sage will clone
+  // its own copy of the beamline from
+  // the first argument, completely
+  // disconnecting it from the calling
+  // routine. By default, it just stores
+  // the pointer.
  ~Sage();
   
  void set_verbose();
@@ -31,8 +38,11 @@ public:
  typedef char (*CRITFUNC)( bmlnElmnt* );
 
 protected:
- beamline*  _myBeamlinePtr;
- char       _verbose;
+ beamline*           _myBeamlinePtr;
+ beamline::arrayRep* _arrayPtr;
+ char                _verbose;
+ bool                _cloned;
+ bmlnElmnt**         _element;
 
 public:
  static char no ( bmlnElmnt* );
