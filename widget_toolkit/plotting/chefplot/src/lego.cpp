@@ -1,3 +1,21 @@
+////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                            //
+// FILE:       lego.cpp                                                                       //
+//                                                                                            //
+// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+//             Accelerator Division / Accelerator Integration Dept                            //
+//             Fermi National Laboratory, Batavia, IL                                         //
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+// DATE:       September 2004                                                                 //
+//                                                                                            //
+// COPYRIGHT: Universities Research Association                                               //
+//                                                                                            //
+//                                                                                            //
+////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include <beamline.h>
 #include "lego.h"
 #include <qpainter.h>
@@ -20,25 +38,51 @@ LegoPlot::~LegoPlot() {
   if (!_pixmap)    delete _pixmap;
   if (!_painter)   delete _painter;
 
+  // delete the beamline elements using zap
+  // then delete the beamline itself
+  // The beamline is currently cloned. 
+  // This is wasteful - we need reference counting !
+
+  if (_beamline ) 
+  {
+    // std::cout << "lego: beamline destroyed." << std::endl;
+    _beamline->zap();
+    delete _beamline;
+  };
 }
 
 
-void LegoPlot::setBeamline(beamline* bml) {
+
+void 
+LegoPlot::setBeamline(const beamline* bml) {
   
-  _beamline = bml;
+  if (bml)
+     _beamline = (beamline*) bml->Clone();
+  else
+    _beamline =0;
+}
 
+const beamline* 
+LegoPlot::getBeamline() 
+{
+
+  return _beamline;
 
 }
 
-void LegoPlot::setBeamlineDisplayLimits(double x, double w) {
+
+void LegoPlot::setBeamlineDisplayLimits(double x, double w, int loffset, int roffset) {
   
-  _x0  = x;
-  _w   = w;
+  _x0     = x;
+  _w      = w;
+  _loffset = loffset; // loffset is the offset in screen coordinates on the canvas of x =  _xmin 
+  _roffset = roffset; // roffset is the offset in screen coordinates on the canvas of x =  _xmax 
 
 }
 
 
-void LegoPlot::resizeEvent ( QResizeEvent *event ){
+void 
+LegoPlot::resizeEvent ( QResizeEvent *event ){
 
      // this needs to be cleaned up. the pixmap should  be resized dynamically
 
@@ -53,7 +97,8 @@ void LegoPlot::resizeEvent ( QResizeEvent *event ){
 
 
 
-void LegoPlot::paintEvent ( QPaintEvent *event ){
+void 
+LegoPlot::paintEvent ( QPaintEvent *event ){
 
   if( !_beamline ) return;
 
@@ -66,7 +111,7 @@ void LegoPlot::paintEvent ( QPaintEvent *event ){
   
    _painter->setViewport(0, 0, legorect.width(), legorect.height() );
    _painter->setWindow(_painter->viewport());
-   _scale = double(legorect.width())/ _w ;
+   _scale = double( ( _roffset -_loffset ) / _w );
 
    DeepBeamlineIterator it(_beamline);
      
@@ -80,10 +125,6 @@ void LegoPlot::paintEvent ( QPaintEvent *event ){
        len = beptr->Length();
 
        if ( std::string(beptr->Type()) == std::string("sbend") ) {
-
-            if ( (s+len) >= _x0) drawBend(len, s);
-
-	}  else if ( std::string(beptr->Type()) == std::string("rbend") ) {
 
             if ( (s+len) >= _x0) drawBend(len, s);
   
@@ -119,12 +160,13 @@ void LegoPlot::paintEvent ( QPaintEvent *event ){
 
 }
 
-void LegoPlot::drawDrift( double l, double  s ) {
+void 
+LegoPlot::drawDrift( double l, double  s ) {
   
   int is, il, joff ;
 
 
-  is    =   int( ceil( (s - _x0)* _scale ) );
+  is    =   int( ceil( (s - _x0)* _scale) ) + _loffset;
   il    =   int( ceil( l* _scale )         );
   joff  =   _painter->viewport().height()/2;
 
@@ -136,10 +178,11 @@ void LegoPlot::drawDrift( double l, double  s ) {
  
 }
 
-void LegoPlot::drawBend( double l, double  s ) {
+void 
+LegoPlot::drawBend( double l, double  s ) {
 
   int is, il, joff;
-  is =   int( ceil( (s - _x0)* _scale ) );
+  is =   int( ceil( (s - _x0)* _scale ) ) + _loffset;
   il =   int( ceil( l* _scale )         );
   joff  =   _painter->viewport().height()/2;
 
@@ -150,10 +193,11 @@ void LegoPlot::drawBend( double l, double  s ) {
 }
 
 
-void LegoPlot::drawQuad( double l, double  s, bool focusing  ) {
+void 
+LegoPlot::drawQuad( double l, double  s, bool focusing  ) {
 
   int is, il, joff;
-  is =   int( ceil( (s - _x0)* _scale ) );
+  is =   int( ceil( (s - _x0)* _scale ) ) + _loffset;
   il =   int( ceil( l* _scale )         );
   il =   std::max(3,il);
   joff  =   _painter->viewport().height()/2;
@@ -170,10 +214,11 @@ void LegoPlot::drawQuad( double l, double  s, bool focusing  ) {
 }
 
 
-void LegoPlot::drawSext( double l, double  s,  bool focusing ) {
+void 
+LegoPlot::drawSext( double l, double  s,  bool focusing ) {
 
   int is, il, joff;
-  is =   int( ceil( (s - _x0)* _scale ) );
+  is =   int( ceil( (s - _x0)* _scale ) ) + _loffset;
   il =   int( ceil( l* _scale )         );
   il =   std::max(3,il);
   joff  =   _painter->viewport().height()/2;

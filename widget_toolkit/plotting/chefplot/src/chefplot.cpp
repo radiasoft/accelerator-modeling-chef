@@ -1,3 +1,21 @@
+////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                            //
+// FILE:       chefplot.cpp                                                                   //
+//                                                                                            //
+// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+//             Accelerator Division / Accelerator Integration Dept                            //
+//             Fermi National Laboratory, Batavia, IL                                         //
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+// DATE:       September 2004                                                                 //
+//                                                                                            //
+// COPYRIGHT: Universities Research Association                                               //
+//                                                                                            //
+//                                                                                            //
+////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "chefplot.h" 
 #include "plot.h"
 #include "lego.h"
@@ -17,7 +35,7 @@ CHEFPlot::CHEFPlot(QWidget * parent, const char* name, Qt::WFlags f): QWidget(pa
 
    _lego_height = 30;
 
-   _plot   = new Plot(this, 0, 0);
+   _plot   = new Plot(this);
    _lego   = new LegoPlot(this);
 
     connect(_plot, SIGNAL( scaleChangedSignal() ), this, SLOT( updateLatticeDisplay() ) );
@@ -28,13 +46,17 @@ CHEFPlot::CHEFPlot(QWidget * parent, const char* name, Qt::WFlags f): QWidget(pa
 
 
 CHEFPlot::~CHEFPlot() {
+
+
      // Qt widgets are automatically destroyed when their parent is destroyed 
+
 }
 
 
 
 
-void CHEFPlot::resizeEvent (QResizeEvent* event) {
+void 
+CHEFPlot::resizeEvent (QResizeEvent* event) {
   
   _plot->setGeometry(0, _lego_height,  width(), height()-_lego_height);
 
@@ -42,15 +64,21 @@ void CHEFPlot::resizeEvent (QResizeEvent* event) {
 
 }
 
-void CHEFPlot::resizeLego () {
+
+void 
+CHEFPlot::resizeLego () {
 
   _lego->setGeometry(_plot->canvas()->x(),  0,  _plot->canvas()->width(),  _lego_height );
+
+  updateLatticeDisplay();
+
 }
 
 
 
 
-void CHEFPlot::displayLattice(beamline* bml) {
+void 
+CHEFPlot::displayLattice(const beamline* bml) {
 
   _plot->setGeometry(0, _lego_height,  width(), height()- _lego_height);
   _lego->setGeometry(_plot->canvas()->x(), 0,  _plot->canvas()->width(),  _lego_height);
@@ -58,19 +86,33 @@ void CHEFPlot::displayLattice(beamline* bml) {
   
 }
 
-  
+const beamline*
+CHEFPlot::getBeamline()
+{
 
-void CHEFPlot::updateLatticeDisplay() {
 
-   double xmin =  _plot->getCurrentXmin();
-   double xmax =  _plot->getCurrentXmax();
+  return _lego->getBeamline();
+
+}
+
+
+void 
+CHEFPlot::updateLatticeDisplay() {
+
+  double xmin =  _plot->getCurrentXmin();
+  double xmax =  _plot->getCurrentXmax();
+
+  int loffset = _plot->transform( QwtPlot::xBottom, xmin);
+  int roffset = _plot->transform( QwtPlot::xBottom, xmax);
   
-  _lego->setBeamlineDisplayLimits(xmin, std::abs(xmax-xmin) );
+//  _lego->setBeamlineDisplayLimits(xmin, std::abs(xmax-xmin), loffset, roffset );
+    _lego->setBeamlineDisplayLimits(xmin, abs(xmax-xmin), loffset, roffset );
   _lego->update();
 
 }
 
-void CHEFPlot::enableGrid(bool set) {
+void 
+CHEFPlot::enableGrid(bool set) {
 
   _plot->enableGridX(set);
   _plot->enableGridY(set);
@@ -79,7 +121,8 @@ void CHEFPlot::enableGrid(bool set) {
 }
 
 
-void CHEFPlot::enableThumbWheels(bool set) {
+void 
+CHEFPlot::enableThumbWheels(bool set) {
 
   _plot->enableThumbWheels(set);
   QApplication::postEvent( _plot, new QResizeEvent( QSize(_plot->width(), _plot->height()), QSize( _plot->width(), _plot->height() ) ) );
@@ -88,7 +131,8 @@ void CHEFPlot::enableThumbWheels(bool set) {
 
 }
 
-void CHEFPlot::enableLegoPlot(bool set) {
+void 
+CHEFPlot::enableLegoPlot(bool set) {
 
   if (set) {
     
@@ -112,7 +156,8 @@ void CHEFPlot::enableLegoPlot(bool set) {
 }
 
 
-void CHEFPlot::zoomUseRightAxis() {
+void 
+CHEFPlot::zoomUseRightAxis() {
 
   _plot->setZoomer(true, QwtPlot::yRight);
   
@@ -120,7 +165,8 @@ void CHEFPlot::zoomUseRightAxis() {
 }
 
 
-void CHEFPlot::zoomUseLeftAxis(){
+void 
+CHEFPlot::zoomUseLeftAxis(){
   
   _plot->setZoomer(true, QwtPlot::yLeft);
   
@@ -129,10 +175,11 @@ void CHEFPlot::zoomUseLeftAxis(){
 
 
 
-void CHEFPlot::addData(CHEFPlotData& cpdata) {
+void 
+CHEFPlot::addData(CHEFPlotData& cpdata) {
 
 
-  beamline* bml = cpdata.getBeamline(); // beamline is owned by the CHEFPlotData object which is responsible to delete it;
+  const beamline* bml = cpdata.getBeamline(); 
    
    if (bml) {
       displayLattice(bml);
@@ -148,4 +195,28 @@ void CHEFPlot::addData(CHEFPlotData& cpdata) {
 
   _plot->addData(cpdata);
   
+}
+
+void 
+CHEFPlot::setLogScale( int axis) 
+{
+
+  _plot->setLogScale(axis); 
+
+}
+
+void 
+CHEFPlot::setLinScale( int axis) 
+{
+
+  _plot->setLinScale(axis); 
+
+}
+
+void
+CHEFPlot::clear() 
+{
+
+  _plot->clear(); 
+
 }

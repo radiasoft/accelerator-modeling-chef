@@ -1,3 +1,22 @@
+////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                            //
+// FILE:       chefplotzoomer.cpp                                                             //
+//                                                                                            //
+// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+//             Accelerator Division / Accelerator Integration Dept                            //
+//             Fermi National Laboratory, Batavia, IL                                         //
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+// DATE:       September 2004                                                                 //
+//                                                                                            //
+// COPYRIGHT: Universities Research Association                                               //
+//                                                                                            //
+//                                                                                            //
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 #include "chefplotzoomer.h"
 #include <qwt/qwt_double_rect.h>
 #include <qwt/qwt_plot_canvas.h>
@@ -33,7 +52,7 @@ void  CHEFPlotZoomer::rescale() {
 }
 
 
-QwtDoubleRect QwtPlotPicker::scaleRect() const
+QwtDoubleRect CHEFPlotZoomer::scaleRect() const
 {
 
  

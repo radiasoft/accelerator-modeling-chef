@@ -1,8 +1,8 @@
 /****************************************************************************
 ** Form implementation generated from reading ui file 'chefplotmainbase.ui'
 **
-** Created: Wed Jul 7 16:21:36 2004
-**      by: The User Interface Compiler ($Id: chefplotmainbase.cpp,v 1.2 2004/07/16 21:46:14 michelot Exp $)
+** Created: Sun Jan 9 21:19:43 2005
+**      by: The User Interface Compiler ($Id: chefplotmainbase.cpp,v 1.3 2005/01/25 17:31:18 ostiguy Exp $)
 **
 ** WARNING! All changes made in this file will be lost!
 ****************************************************************************/
@@ -20,7 +20,6 @@
 #include <qimage.h>
 #include <qpixmap.h>
 
-#include "chefplotmainbase.ui.h"
 static const unsigned char image0_data[] = { 
     0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
     0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00, 0x16,
@@ -391,17 +390,26 @@ CHEFPlotMainBase::CHEFPlotMainBase( QWidget* parent, const char* name, WFlags fl
     optionsAxis_Focus_Left_AxisAction = new QAction( this, "optionsAxis_Focus_Left_AxisAction" );
     optionsAxis_Focus_RightAction = new QAction( this, "optionsAxis_Focus_RightAction" );
     optionsto_PyCHEFAction = new QAction( this, "optionsto_PyCHEFAction" );
-    optionsShow_DataAction = new QAction( this, "optionsShow_DataAction" );
-    optionsShow_DataAction->setToggleAction( TRUE );
-    optionsShow_DataAction->setOn( FALSE );
+    optionsShowDataAction = new QAction( this, "optionsShowDataAction" );
+    optionsShowDataAction->setToggleAction( TRUE );
+    optionsShowDataAction->setOn( FALSE );
     optionsInterpolationAction = new QAction( this, "optionsInterpolationAction" );
     optionsInterpolationAction->setToggleAction( TRUE );
     optionsInterpolationAction->setOn( TRUE );
     optionsCoordinatesAction = new QAction( this, "optionsCoordinatesAction" );
     optionsCoordinatesAction->setToggleAction( TRUE );
-    Action = new QAction( this, "Action" );
     fileAttachAction = new QAction( this, "fileAttachAction" );
-    Action_2 = new QAction( this, "Action_2" );
+    dataShowDataAction = new QAction( this, "dataShowDataAction" );
+    dataPrintDataAction = new QAction( this, "dataPrintDataAction" );
+    dataShowTunesAction = new QAction( this, "dataShowTunesAction" );
+    optionsHorLogScaleAction = new QAction( this, "optionsHorLogScaleAction" );
+    optionsHorLogScaleAction->setToggleAction( TRUE );
+    optionsVerLogScaleAction = new QAction( this, "optionsVerLogScaleAction" );
+    optionsVerLogScaleAction->setToggleAction( FALSE );
+    optionsVerLogScaleRightAxisAction = new QAction( this, "optionsVerLogScaleRightAxisAction" );
+    optionsVerLogScaleRightAxisAction->setToggleAction( TRUE );
+    optionsVerLogScaleLeftAxisAction = new QAction( this, "optionsVerLogScaleLeftAxisAction" );
+    optionsVerLogScaleLeftAxisAction->setToggleAction( TRUE );
 
 
     // toolbars
@@ -424,9 +432,6 @@ CHEFPlotMainBase::CHEFPlotMainBase( QWidget* parent, const char* name, WFlags fl
     fileSaveAction->addTo( fileMenu );
     fileSaveAsAction->addTo( fileMenu );
     fileMenu->insertSeparator();
-    fileAttachAction->addTo( fileMenu );
-    Action->addTo( fileMenu );
-    fileMenu->insertSeparator();
     filePrintAction->addTo( fileMenu );
     fileMenu->insertSeparator();
     fileExitAction->addTo( fileMenu );
@@ -434,26 +439,35 @@ CHEFPlotMainBase::CHEFPlotMainBase( QWidget* parent, const char* name, WFlags fl
     MenuBar->insertItem( QString(""), fileMenu, 1 );
 
     Options = new QPopupMenu( this );
-    PopupMenuEditor_12 = new QPopupMenu( this );
-    Options->setAccel( tr( "" ), 
-        Options->insertItem( optionsZoomAction->iconSet(), tr( "Axis Focus" ), PopupMenuEditor_12 ) );
-    optionsAxis_Focus_Left_AxisAction->addTo( PopupMenuEditor_12 );
-    optionsAxis_Focus_RightAction->addTo( PopupMenuEditor_12 );
-    optionsShow_DataAction->addTo( Options );
+    popupMenu_9 = new QPopupMenu( this );
+    Options->insertItem( optionsZoomAction->iconSet(), tr( "Axis Focus" ), popupMenu_9 );
+    optionsAxis_Focus_Left_AxisAction->addTo( popupMenu_9 );
+    optionsAxis_Focus_RightAction->addTo( popupMenu_9 );
+    optionsShowDataAction->addTo( Options );
     optionsThumbWheelsAction->addTo( Options );
     optionsLego_PlotAction->addTo( Options );
     optionsGridAction->addTo( Options );
     optionsLegendAction->addTo( Options );
     optionsInterpolationAction->addTo( Options );
     optionsCoordinatesAction->addTo( Options );
+    optionsHorLogScaleAction->addTo( Options );
+    popupMenu_20 = new QPopupMenu( this );
+    Options->insertItem( optionsVerLogScaleAction->iconSet(), tr( "Ver Log Scale" ), popupMenu_20 );
+    optionsVerLogScaleRightAxisAction->addTo( popupMenu_20 );
+    optionsVerLogScaleLeftAxisAction->addTo( popupMenu_20 );
     MenuBar->insertItem( QString(""), Options, 2 );
+
+    Data = new QPopupMenu( this );
+    dataShowDataAction->addTo( Data );
+    dataShowTunesAction->addTo( Data );
+    MenuBar->insertItem( QString(""), Data, 3 );
 
     helpMenu = new QPopupMenu( this );
     helpContentsAction->addTo( helpMenu );
     helpIndexAction->addTo( helpMenu );
     helpMenu->insertSeparator();
     helpAboutAction->addTo( helpMenu );
-    MenuBar->insertItem( QString(""), helpMenu, 3 );
+    MenuBar->insertItem( QString(""), helpMenu, 4 );
 
     languageChange();
     resize( QSize(600, 480).expandedTo(minimumSizeHint()) );
@@ -472,9 +486,14 @@ CHEFPlotMainBase::CHEFPlotMainBase( QWidget* parent, const char* name, WFlags fl
     connect( optionsLego_PlotAction, SIGNAL( toggled(bool) ), this, SLOT( enableLegoPlot(bool) ) );
     connect( optionsAxis_Focus_RightAction, SIGNAL( activated() ), this, SLOT( zoomUseRightAxis() ) );
     connect( optionsAxis_Focus_Left_AxisAction, SIGNAL( activated() ), this, SLOT( zoomUseLeftAxis() ) );
-    connect( optionsShow_DataAction, SIGNAL( toggled(bool) ), this, SLOT( showDataPoints(bool) ) );
-    connect( optionsCoordinatesAction, SIGNAL( toggled(bool) ), this, SLOT( enableCoordinatesDisplay(bool) ) );
+    connect( optionsShowDataAction, SIGNAL( toggled(bool) ), this, SLOT( showDataPoints(bool) ) );
+    connect( optionsCoordinatesAction, SIGNAL( toggled(bool) ), this, SLOT( enableCoordinatesDisplay() ) );
     connect( fileExitAction, SIGNAL( activated() ), this, SLOT( exit() ) );
+    connect( dataShowDataAction, SIGNAL( activated() ), this, SLOT( _showdata() ) );
+    connect( dataShowTunesAction, SIGNAL( activated() ), this, SLOT( showTunes() ) );
+    connect( optionsVerLogScaleLeftAxisAction, SIGNAL( toggled(bool) ), this, SLOT( optionsVerLogScaleLeft(bool) ) );
+    connect( optionsVerLogScaleRightAxisAction, SIGNAL( toggled(bool) ), this, SLOT( optionsVerLogScaleRight(bool) ) );
+    connect( optionsHorLogScaleAction, SIGNAL( toggled(bool) ), this, SLOT( optionsHorLogScale(bool) ) );
 }
 
 /*
@@ -557,23 +576,163 @@ void CHEFPlotMainBase::languageChange()
     optionsAxis_Focus_RightAction->setMenuText( tr( "Right" ) );
     optionsto_PyCHEFAction->setText( tr( "to PyCHEF" ) );
     optionsto_PyCHEFAction->setMenuText( tr( "to PyCHEF" ) );
-    optionsShow_DataAction->setText( tr( "Show Data" ) );
-    optionsShow_DataAction->setMenuText( tr( "Show Data" ) );
+    optionsShowDataAction->setText( tr( "Show Data" ) );
+    optionsShowDataAction->setMenuText( tr( "Show Data" ) );
     optionsInterpolationAction->setText( tr( "Interpolation" ) );
     optionsInterpolationAction->setMenuText( tr( "Interpolation" ) );
     optionsCoordinatesAction->setText( tr( "Coordinates" ) );
     optionsCoordinatesAction->setMenuText( tr( "Coordinates" ) );
-    Action->setText( tr( "Detach" ) );
     fileAttachAction->setText( tr( "Attach" ) );
     fileAttachAction->setMenuText( tr( "Attach" ) );
-    Action_2->setText( tr( "Unnamed" ) );
+    dataShowDataAction->setText( tr( "Show Numerical Data" ) );
+    dataShowDataAction->setMenuText( tr( "Show Numerical Data" ) );
+    dataPrintDataAction->setText( tr( "Print Data" ) );
+    dataPrintDataAction->setMenuText( tr( "Print Data" ) );
+    dataShowTunesAction->setText( tr( "Show Tunes" ) );
+    dataShowTunesAction->setMenuText( tr( "Show Tunes" ) );
+    optionsHorLogScaleAction->setText( tr( "Hor Log Scale" ) );
+    optionsHorLogScaleAction->setMenuText( tr( "Hor Log Scale" ) );
+    optionsVerLogScaleAction->setText( tr( "Ver Log Scale" ) );
+    optionsVerLogScaleAction->setMenuText( tr( "Ver Log Scale" ) );
+    optionsVerLogScaleRightAxisAction->setText( tr( "Right Axis" ) );
+    optionsVerLogScaleRightAxisAction->setMenuText( tr( "Right Axis" ) );
+    optionsVerLogScaleLeftAxisAction->setText( tr( "Left Axis" ) );
+    optionsVerLogScaleLeftAxisAction->setMenuText( tr( "Left Axis" ) );
     toolBar->setLabel( tr( "Tools" ) );
     if (MenuBar->findItem(1))
         MenuBar->findItem(1)->setText( tr( "&File" ) );
     Options->changeItem( Options->idAt( 0 ), tr( "Axis Focus" ) );
+    Options->changeItem( Options->idAt( 9 ), tr( "Ver Log Scale" ) );
     if (MenuBar->findItem(2))
         MenuBar->findItem(2)->setText( tr( "Options" ) );
     if (MenuBar->findItem(3))
-        MenuBar->findItem(3)->setText( tr( "&Help" ) );
+        MenuBar->findItem(3)->setText( tr( "Data" ) );
+    if (MenuBar->findItem(4))
+        MenuBar->findItem(4)->setText( tr( "&Help" ) );
+}
+
+void CHEFPlotMainBase::fileNew()
+{
+    qWarning( "CHEFPlotMainBase::fileNew(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::fileOpen()
+{
+    qWarning( "CHEFPlotMainBase::fileOpen(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::fileSave()
+{
+    qWarning( "CHEFPlotMainBase::fileSave(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::fileSaveAs()
+{
+    qWarning( "CHEFPlotMainBase::fileSaveAs(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::filePrint()
+{
+    qWarning( "CHEFPlotMainBase::filePrint(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::fileExit()
+{
+    qWarning( "CHEFPlotMainBase::fileExit(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::exit()
+{
+    qWarning( "CHEFPlotMainBase::exit(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::enableCoordinatesDisplay(bool)
+{
+    qWarning( "CHEFPlotMainBase::enableCoordinatesDisplay(bool): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::enableLegoPlot(bool)
+{
+    qWarning( "CHEFPlotMainBase::enableLegoPlot(bool): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::enableInterpolation(bool)
+{
+    qWarning( "CHEFPlotMainBase::enableInterpolation(bool): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::enableLengend(bool)
+{
+    qWarning( "CHEFPlotMainBase::enableLengend(bool): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::helpIndex()
+{
+    qWarning( "CHEFPlotMainBase::helpIndex(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::helpContents()
+{
+    qWarning( "CHEFPlotMainBase::helpContents(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::helpAbout()
+{
+    qWarning( "CHEFPlotMainBase::helpAbout(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::enableGrid(bool)
+{
+    qWarning( "CHEFPlotMainBase::enableGrid(bool): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::enableThumbWheels(bool)
+{
+    qWarning( "CHEFPlotMainBase::enableThumbWheels(bool): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::zoomUseLeftAxis()
+{
+    qWarning( "CHEFPlotMainBase::zoomUseLeftAxis(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::zoomUseRightAxis()
+{
+    qWarning( "CHEFPlotMainBase::zoomUseRightAxis(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::showDataPoints(bool)
+{
+    qWarning( "CHEFPlotMainBase::showDataPoints(bool): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::_showdata()
+{
+    qWarning( "CHEFPlotMainBase::_showdata(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::showTunes()
+{
+    qWarning( "CHEFPlotMainBase::showTunes(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::enableCoordinatesDisplay()
+{
+    qWarning( "CHEFPlotMainBase::enableCoordinatesDisplay(): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::optionsVerLogScaleLeft(bool)
+{
+    qWarning( "CHEFPlotMainBase::optionsVerLogScaleLeft(bool): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::optionsVerLogScaleRight(bool)
+{
+    qWarning( "CHEFPlotMainBase::optionsVerLogScaleRight(bool): Not implemented yet" );
+}
+
+void CHEFPlotMainBase::optionsHorLogScale(bool)
+{
+    qWarning( "CHEFPlotMainBase::optionsHorLogScale(bool): Not implemented yet" );
 }
 

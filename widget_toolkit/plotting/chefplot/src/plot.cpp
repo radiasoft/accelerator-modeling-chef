@@ -1,55 +1,75 @@
+////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                            //
+// FILE:       plot.cpp                                                                       //
+//                                                                                            //
+// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+//             Accelerator Division / Accelerator Integration Dept                            //
+//             Fermi National Laboratory, Batavia, IL                                         //
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+// DATE:       September 2004                                                                 //
+//                                                                                            //
+// COPYRIGHT: Universities Research Association                                               //
+//                                                                                            //
+//                                                                                            //
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 #include "plot.h"
-#include "plotpropertiesdialog.h"
+#include "chefplotdata.h"
+#include "chefplotzoomer.h"
+
 #include <qlayout.h>
 #include <qcanvas.h>
 #include <qwhatsthis.h>
 #include <qwt/qwt_scale.h>
 #include <qwt/qwt_wheel.h>
-#include "chefplotzoomer.h"
 #include <qwt/qwt_plot_canvas.h>
 #include <qwt/qwt_plot_layout.h>
 #include <qwt/qwt_symbol.h>
 #include <qwt/qwt_legend.h>
+#include <qwt/qwt_scldiv.h>
 #include <iostream>
 
 
 Plot::Plot(QWidget * parent, const char * name, Qt::WFlags f ): QwtPlot(parent, name), _bottom_wheel(0), _right_wheel(0), _left_wheel(0), 
                                                                 _xmin(0.0), _xmax(0.0) {
  
-   d_curves->setAutoDelete(false);
 
    enableXBottomAxis(true);
    enableYLeftAxis(true);
    enableYRightAxis(true);
    
    QwtPlotLayout* layout = plotLayout();
-   layout->setMargin(5);
-   layout->setSpacing(20); 
+   layout->setMargin(15);
+   layout->setSpacing(10); 
 
 
-      //setAxisFont( QwtPlot::xBottom, QFont( "Courier", 9, QFont::Bold ) );
+   //setAxisFont( QwtPlot::xBottom, QFont( "Courier", 9, QFont::Bold ) );
    setAxisLabelFormat(QwtPlot::xBottom, 'g',  5, 8);               //  (int axis, char f, int prec, int fieldwidth=0)
    setAxisLabelAlignment(QwtPlot::xBottom, QwtPlot::AlignCenter);  // (int axis, int alignment)
    setAxisLabelRotation(QwtPlot::xBottom, 0.0);                    // (int axis, double rotation)
-   setAxisTitleFont( QwtPlot::xBottom, QFont( "Courier", 8, QFont::Bold   ) );
+   //setAxisTitleFont( QwtPlot::xBottom, QFont( "Courier", 8, QFont::Bold   ) );
    setAxisTitle(QwtPlot::xBottom, "X- Bottom Axis");               //(int axis, const QString &t)
 
-     //setAxisFont( QwtPlot::yLeft, QFont( "Helvetica", 9, QFont::Bold ) );
+   //setAxisFont( QwtPlot::yLeft, QFont( "Helvetica", 9, QFont::Bold ) );
    setAxisLabelFormat(QwtPlot::yLeft, 'g',  5,  8);        //  (int axis, char f, int prec, int fieldwidth=0)
-     //setAxisLabelAlignment(QwtPlot::yLeft, QwtPlot::AlignCenter);  // (int axis, int alignment)
+   //setAxisLabelAlignment(QwtPlot::yLeft, QwtPlot::AlignCenter);  // (int axis, int alignment)
    setAxisLabelRotation(QwtPlot::yLeft, 0.0);           // (int axis, double rotation)
-   setAxisTitleFont( QwtPlot::yLeft, QFont( "Courier", 8, QFont::Bold ) );
+   //setAxisTitleFont( QwtPlot::yLeft, QFont( "Courier", 8, QFont::Bold ) );
    setAxisTitle(QwtPlot::yLeft, "Y- Left Axis");      //(int axis, const QString &t)
 
-     //setAxisFont( QwtPlot::yRight, QFont( "Helvetica", 9, QFont::Bold ) );
+   //setAxisFont( QwtPlot::yRight, QFont( "Helvetica", 9, QFont::Bold ) );
    setAxisLabelFormat(QwtPlot::yRight, 'g',  5, 8);        //  (int axis, char f, int prec, int fieldwidth=0)
-      //setAxisLabelAlignment(QwtPlot::yRight, QwtPlot::AlignCenter);  // (int axis, int alignment)
+   //setAxisLabelAlignment(QwtPlot::yRight, QwtPlot::AlignCenter);  // (int axis, int alignment)
    setAxisLabelRotation(QwtPlot::yRight, 0.0);           // (int axis, double rotation)
-   setAxisTitleFont( QwtPlot::yRight, QFont( "Courier", 8, QFont::Bold   ) );
+   //setAxisTitleFont( QwtPlot::yRight, QFont( "Courier", 8, QFont::Bold   ) );
    setAxisTitle(QwtPlot::yRight, "Y- Right Axis");      //(int axis, const QString &t)
 
  
-     //setPaletteBackgroundColor( QColor("white") );
+  //setPaletteBackgroundColor( QColor("white") );
   
   setCanvasBackground(QColor("white"));
   _xrange = _xmax-_xmin;
@@ -86,8 +106,7 @@ Plot::Plot(QWidget * parent, const char * name, Qt::WFlags f ): QwtPlot(parent, 
   setAutoLegend(false);
   enableLegend(true);
     
-     //connect( this,  SIGNAL( legendClicked(long) ), this, SLOT( legendClicked( long ) ) );
-  
+  //connect( this,  SIGNAL( legendClicked(long) ), this, SLOT( legendClicked( long ) ) );
   
   return;
 
@@ -95,16 +114,16 @@ Plot::Plot(QWidget * parent, const char * name, Qt::WFlags f ): QwtPlot(parent, 
 
 Plot::~Plot() {
 
-     // Qt Widgets are automatically destroyed when their parent is destroyed.
-     // QwtCurve objects will be destroyed too if they are children of the plot
+  // Qt Widgets are automatically destroyed when their parent is destroyed.
+  // QwtCurve objects are also destroyed.
 
-   removeCurves();
+
 }
 
 
-bool Plot::eventFilter(QObject *object, QEvent *e)
+bool 
+Plot::eventFilter(QObject *object, QEvent *e)
 {
-
 
     if ( e->type() == QEvent::Resize )
     {
@@ -169,13 +188,12 @@ bool Plot::eventFilter(QObject *object, QEvent *e)
 
 }
 
-
-
-void Plot::addData(const CHEFPlotData& cpdata) {
+void 
+Plot::addData(const CHEFPlotData& cpdata) {
 
   long int curve_key;
 
-  CHEFCurve* c  = 0;
+  CHEFCurve* c = 0;
 
   // Get the data global min/max values
 
@@ -189,8 +207,28 @@ void Plot::addData(const CHEFPlotData& cpdata) {
   _yrmax = cpdata.yRMax();
 
   setAxisScale(QwtPlot::xBottom, _xmin,   _xmax,  0);
+
+  // turn on the appropriate y-axis(es)
+  
+  setAxisAutoScale(QwtPlot::yRight);  
   setAxisAutoScale(QwtPlot::yLeft);
-  setAxisAutoScale(QwtPlot::yRight);
+  
+  bool yright_enabled = false;
+  bool yleft_enabled  = false;
+
+  for (int i=0; i < cpdata.nCurves(); i++) {
+   
+    if ( cpdata[i].get()->yAxis() == QwtPlot::yLeft )
+    {
+        yleft_enabled = true;
+    }
+
+    if ( cpdata[i].get()->yAxis() == QwtPlot::yRight ) 
+    {  
+       yright_enabled = true;
+    };
+  };
+
 
   // add the curves to the plot ...
 
@@ -198,15 +236,33 @@ void Plot::addData(const CHEFPlotData& cpdata) {
   
   for (int i=0; i < cpdata.nCurves(); i++) {
     
-     c  = cpdata[i];
+     c  = new CHEFCurve(0,0,0,"undefined"); // an empty curve
+
+     c->copy( *cpdata[i].get());            // copy the curve since the widget destructor 
+                                            // destroys the curves
      c->reparent(this);
+
      curve_key = insertCurve( c );
+ 
      litem =  new PlotLegendItem( curve_key, curveSymbol(curve_key), curvePen(curve_key), curveTitle(curve_key), this, 0 );
      legend()->insertItem( litem, i );
      litem->setToggleButton(true);
      litem->setOn(true);
      connect( litem, SIGNAL( toggled(bool) ), litem, SLOT( toggleCurve(bool) ) );
    };
+
+  QwtPlotLayout* layout = plotLayout();
+
+   if ( !yright_enabled ) 
+   {
+      enableYRightAxis(false);
+   };
+   
+   if ( !yleft_enabled )
+   {  
+      enableYLeftAxis(false);
+   };
+ 
 
   // set the zoom bases ... 
 
@@ -220,8 +276,6 @@ void Plot::addData(const CHEFPlotData& cpdata) {
   _left_zoomer->setZoomBase();
   _right_zoomer->setZoomBase();
   
-
-
   setAxisTitle (QwtPlot::xBottom, cpdata.xLabel() );
   
   setAxisTitle (QwtPlot::yLeft,   cpdata.yLLabel());
@@ -232,21 +286,24 @@ void Plot::addData(const CHEFPlotData& cpdata) {
 }
 
 
-void Plot::leftWheelValueChanged(double value) {
+void 
+Plot::leftWheelValueChanged(double value) {
   double range = axisScale(QwtPlot::yLeft)->hBound() - axisScale(QwtPlot::yLeft)->lBound();
   setAxisScale(QwtPlot::yLeft, value, value+range, 0);
   emit scaleChangedSignal();
   replot();
 }
 
-void Plot::rightWheelValueChanged(double value){
+void 
+Plot::rightWheelValueChanged(double value){
   double range = axisScale(QwtPlot::yRight)->hBound() - axisScale(QwtPlot::yRight)->lBound();
   setAxisScale(QwtPlot::yRight, value, value+range, 0);
   emit scaleChangedSignal();
   replot();
 }
 
-void Plot::bottomWheelValueChanged(double value){
+void 
+Plot::bottomWheelValueChanged(double value){
 
    setAxisScale(QwtPlot::xBottom, value, value+_xrange, 0);
    emit scaleChangedSignal(); // to force a rescaleof the beamline lego display
@@ -255,19 +312,22 @@ void Plot::bottomWheelValueChanged(double value){
 }
 
 
-double Plot::getCurrentXmin() {
+double 
+Plot::getCurrentXmin() {
 
   return axisScale(QwtPlot::xBottom)->lBound();
 
 }
 
-double Plot::getCurrentXmax() {
+double
+Plot::getCurrentXmax() {
   
   return axisScale(QwtPlot::xBottom)->hBound();
 }
 
 
-double Plot::getCurrentYmin() {
+double 
+Plot::getCurrentYmin() {
 
      // test active axis
 
@@ -275,7 +335,8 @@ double Plot::getCurrentYmin() {
  return axisScale(QwtPlot::yLeft)->lBound();
 }
 
-double Plot::getCurrentYmax() {
+double 
+Plot::getCurrentYmax() {
 
      // test active axis
 
@@ -285,7 +346,8 @@ double Plot::getCurrentYmax() {
 }
 
  
-void Plot::scaleChanged( ){
+void 
+Plot::scaleChanged( ){
 
   double xmin  = axisScale(QwtPlot::xBottom)->lBound();
   double xmax  = axisScale(QwtPlot::xBottom)->hBound();
@@ -307,7 +369,8 @@ void Plot::scaleChanged( ){
 }
 
 
-void Plot::resizeEvent(QResizeEvent *e) {
+void 
+Plot::resizeEvent(QResizeEvent *e) {
   
   QwtPlot::resizeEvent(e);
   emit plotResizedSignal();
@@ -315,18 +378,26 @@ void Plot::resizeEvent(QResizeEvent *e) {
 }
 
 
-void Plot::enableThumbWheels(bool set) {
+void 
+Plot::enableThumbWheels(bool set) 
+{
   enableThumbWheel(set, QwtPlot::xBottom);
   enableThumbWheel(set, QwtPlot::yLeft);
   enableThumbWheel(set, QwtPlot::yRight);
+
   replot();
 }
 
 
-void Plot::enableThumbWheel(bool set, int axiscode) {
+void 
+Plot::enableThumbWheel(bool set, int axiscode) 
+{
 
 
 QwtScale*   scale =  (QwtScale*) axis(axiscode);
+
+if (scale == 0) return; // the axis is disabled.
+
 Qt::Orientation orientation;
 QwtWheel*  wheel;
  
@@ -489,5 +560,27 @@ void   PlotLegendItem::toggleCurve(bool set) {
 
 }
 
+
+
+void 
+Plot::setLogScale( int axis) 
+{
+
+ setAxisOptions(axis, QwtAutoScale::Logarithmic);
+ _left_zoomer->setZoomBase();
+ replot();
+
+ 
+}
+
+void 
+Plot::setLinScale( int axis) 
+{
+
+ setAxisOptions(axis, QwtAutoScale::None);
+ _left_zoomer->setZoomBase();
+ replot();
+
+}
 
 
