@@ -308,11 +308,26 @@ void Frame::reset()
 
 Frame Frame::relativeTo( const Frame& f ) const
 {
+  // Assumes orthonormal Frame
   Frame ret;
   MatrixD W( 3, 3 );
 
   W = ( f.e ).transpose();
   ret.o = W * ( this->o - f.o );
+  ret.e = W * ( this->e );
+
+  return ret;
+}
+
+
+Frame Frame::patchedOnto( const Frame& f ) const
+{
+  // Assumes orthonormal Frame
+  Frame ret;
+  MatrixD W( 3, 3 );
+
+  W = f.e;
+  ret.o = f.o + W * ( this->o );
   ret.e = W * ( this->e );
 
   return ret;
