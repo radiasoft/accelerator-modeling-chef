@@ -51,7 +51,6 @@ void JetC::operator+=( const JetC& y ) {
  JLC* xPtr =  jl;
  JLC* yPtr = y.jl;
 
- dlist_iterator gx( *(dlist*) xPtr );
  dlist_iterator gy( *(dlist*) yPtr );
  
  
