@@ -19,9 +19,9 @@
 main( int argc, char** argv ) {
 
  if( argc != 4 ) {
-  cout << "\nUsage: " << argv[0] 
-       << "  <r>  <theta (deg)>  <phi (deg)>\n"
-       << endl;
+  std::cout << "\nUsage: " << argv[0] 
+            << "  <r>  <theta (deg)>  <phi (deg)>\n"
+            << std::endl;
   exit(0);
  }
 
@@ -41,5 +41,5 @@ main( int argc, char** argv ) {
  position.SetComponent( 2, r * cos( theta )              );
 
  M = position.Jacobian();
- cout << M << "\n\n" << M.inverse() << endl;
+ std::cout << M << "\n\n" << M.inverse() << std::endl;
 }
