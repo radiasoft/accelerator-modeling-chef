@@ -50,7 +50,6 @@ class Slot : public bmlnElmnt
 
    ostream& writeTo ( ostream& );
    istream& readFrom( istream& );
-   void image( int, slist*, BMLN_posInfo* );
  
    void eliminate() 
      { delete this; }

@@ -18,7 +18,6 @@ private:
   // The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
   double Q;                     // quality factor
   double R;                     // shunt impedance
-  void image( int, slist*, BMLN_posInfo* );
   ostream& writeTo(ostream&);
   istream& readFrom(istream&);
 

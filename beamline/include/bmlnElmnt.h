@@ -194,10 +194,6 @@ protected:
 
   PropFunc*    Propagator;
 
-  virtual void image( int,           // depth of image
-                      slist*,        // list to append responses to
-                      BMLN_posInfo*  // current geometry, updated
-                    );
   virtual void geomToEnd   ( BMLN_posInfo& );
   virtual void geomToStart ( BMLN_posInfo& );
   virtual void eliminate();
@@ -301,9 +297,6 @@ public:
   // ??? To do (?): virtual void leaveLocalFrame( JetVector&               ) const;
   // ??? To do (?): virtual void leaveLocalFrame( const Particle&, double* ) const;
   // ??? To do (?): virtual void leaveLocalFrame( const JetParticle&, Jet* ) const;
-
-  bmlnElmntData* image();
-  void image( bmlnElmntData* );
 
   // Editing functions
   virtual bmlnElmnt* Clone() const = 0;  
@@ -472,14 +465,12 @@ InsertionList::operator()( const int& n ) const
 }
 
 
-class beamlineImage;
 class beamline : public bmlnElmnt, public dlist
 {
 private:
   double            nominalEnergy;    // In GeV
   int               numElem;          // Number of elements in the beamline
   char              twissDone;
-  void image( int, slist*, BMLN_posInfo* );
   ostream& writeTo(ostream&);
   istream& readFrom(istream&);
   friend istream& operator>>( istream&, beamline& );
@@ -492,15 +483,8 @@ public:
   beamline( const char* nm = "NONAME" );
   beamline( bmlnElmnt* );
   beamline( const beamline& );
-  beamline( beamlineImage* );         // Creates a beamline from the
-                                      //  list representation written
-                                      //  by beamline::image.  In the
-                                      //  process it empties the list.
   beamline( char*, bmlnElmnt* );
   beamline( char*, beamline* );
-  beamline( char*, slist* );          // Creates a beamline from the
-                                      //  list representation written
-                                      //  by beamline::image.  ??? UNWRITTEN
   beamline( FILE* );                  // Reading persistent object stored
                                       //  in a binary file.
 
@@ -657,7 +641,6 @@ public:
   // QUERIES
 
   void   peekAt( double& s, Particle* = 0 );
-  beamlineImage  image( int );
   lattFunc whatIsLattice( int );     // After element n, 0 <= n.
   lattFunc whatIsLattice( char* n ); // n is name of element 
   int    howMany() const { return numElem; }
@@ -724,27 +707,5 @@ struct beamlineData : public bmlnElmntData
 
 };
 
-
-class beamlineImage {
-private:
-  slist bak;
-
-  beamlineImage();
-  friend class beamline;
-
-public:
-  slist img;
-
-  // ??? REMOVE beamlineImage( FILE* );
-  beamlineImage( beamlineImage& );
-  ~beamlineImage();
-  void reset();    // If the user has manipulated img, the reset()
-                  //  method restores it to its original state.
-  void zap();      // Destroys all XXXXData objects.
-  beamlineImage& operator=( const beamlineImage& );
-                  // WARNING: there may be stray XXXXData objects
-                  //  hanging around after this if ::zap() is not
-                  //  used first.
-};
 
 #endif // BMLNELMNT_H

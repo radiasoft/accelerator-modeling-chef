@@ -741,43 +741,6 @@ bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( const PropFunc& a )
 }
 
 
-void bmlnElmnt::image( bmlnElmntData* p ) {
- strcpy( p->type, Type() );
- p->address   = this;
- p->name      = new char [ strlen(ident) + 1 ];
-                strcpy( p->name, ident );
- p->depth     = depth;
- p->length    = length;
- p->strength  = strength;
- p->more      = 0;
-   //
-   // O.K.
-   //
-   // p->aperture  = aperture;
- 
-// p->pAperture  = pAperture;
- p->pAperture = 0;
- if(pAperture != 0) 
-   p->pAperture = pAperture->Clone();
- 
- p->iToField  = iToField;
- p->shuntCurrent = shuntCurrent;
- if(align != 0)
-   p->align   = align->getAlignment();
- else {
-   p->align.xOffset = 0.0;
-   p->align.yOffset = 0.0;
-   p->align.tilt = 0.0;
- }
- p->geometry.inPoint  = geometry.inPoint;
- p->geometry.outPoint = geometry.outPoint;
- for( int j = 0; j < 3; j++ ) {
-   p->geometry.inAxes[j]  = geometry.inAxes[j];
-   p->geometry.outAxes[j] = geometry.outAxes[j];
- }
-}
-
-
 void bmlnElmnt::peekAt( double& s, Particle* p_prt ) {
  cout << s << "   ";
  s += OrbitLength( *p_prt );
@@ -789,71 +752,6 @@ void bmlnElmnt::peekAt( double& s, Particle* p_prt ) {
       << strength    << "  "
       << shuntCurrent
       << endl;
-}
-
-
-bmlnElmntData* bmlnElmnt::image() {
- bmlnElmntData* p = new bmlnElmntData;
- strcpy( p->type, Type() );
-
- p->address   = this;
- p->name      = new char [ strlen(ident) + 1 ];
-                   strcpy( p->name, ident );
- p->depth     = depth;
- p->length    = length;
- p->strength  = strength;
- p->more      = 0;
-   //
-   // O.K.
-   //
-   // p->aperture  = aperture;
-
-// p->pAperture  = pAperture;
- p->pAperture = 0;
- if(pAperture != 0) 
-   p->pAperture = pAperture->Clone();
- 
- p->iToField  = iToField;
- p->shuntCurrent = shuntCurrent;
-
- if(align != 0)
-   p->align     = align->getAlignment();
- else {
-   p->align.xOffset = 0.0;
-   p->align.yOffset = 0.0;
-   p->align.tilt = 0.0;
- }
-
- p->geometry.inPoint  = geometry.inPoint;
- p->geometry.outPoint = geometry.outPoint;
- for( int j = 0; j < 3; j++ ) {
-   p->geometry.inAxes[j]  = geometry.inAxes[j];
-   p->geometry.outAxes[j] = geometry.outAxes[j];
- }
-
- return p;
-}
-
-
-
-void bmlnElmnt::image( int d, slist* s, BMLN_posInfo* cg ) {
- bmlnElmntData* p = bmlnElmnt::image();
-
- strcpy( p->type, Type() );
- p->address   = this;
- p->depth     = d;
-
- geomToEnd( *cg );
- cg->outPoint = geometry.outPoint;
- int j;
- for( j = 0; j < 3; j++ ) cg->outAxes[j] = geometry.outAxes[j];
-
-     p->geometry.inPoint  = geometry.inPoint;
-     p->geometry.outPoint = geometry.outPoint;
-     for( j = 0; j < 3; j++ ) p->geometry.inAxes[j]  = geometry.inAxes[j];
-     for( j = 0; j < 3; j++ ) p->geometry.outAxes[j] = geometry.outAxes[j];
-
- s->append( p );
 }
 
 

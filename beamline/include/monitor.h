@@ -9,7 +9,6 @@ class monitor : public bmlnElmnt
   double driftFraction;
 protected:
   FILE*    outputFile;
-  void     image( int, slist*, BMLN_posInfo* );
   char     onOff;
   double*  rgr;
 

@@ -19,7 +19,6 @@ private:
   double alphaV    [2];
   double deltaPsiV;
   double mapMatrix[BMLN_dynDim][BMLN_dynDim];
-  void image( int, slist*, BMLN_posInfo* );
   double (*DeltaT) ( double );
   Jet    (*JetDeltaT) ( const Jet& );
 public:

@@ -12,7 +12,6 @@ private:
   double tanPFAngle;
 
   // bmlnElmnt::strength -> magnetic field [T]
-  void image( int, slist*, BMLN_posInfo* );
   ostream& writeTo(ostream&);
   istream& readFrom(istream&);
 

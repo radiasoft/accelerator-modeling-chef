@@ -8,14 +8,13 @@
 class thinLamb : public bmlnElmnt
 {
 private:
-  double    xSeptum;	   // position of Lambertson septum in meters.
+  double    xSeptum;       // position of Lambertson septum in meters.
   beamline* ExtBeamline;   // pointer to the beamline of extracted particles.
   double    RefState[6];   // A particle in the "field" region
                            // with phase space state of RefState()
                            // will be on the reference orbit of the
                            // extraction line.  The specified coordinates are 
                            // SUBTRACTED from the particle coordinates.
-  void image( int, slist*, BMLN_posInfo* );
   ostream& writeTo(ostream&);
   istream& readFrom(istream&);
 
@@ -25,13 +24,13 @@ public:
   thinLamb( char* n);      // name
   
   thinLamb( char*  n,      // name
-	   double x,       // x position of the septum.
-	   beamline* b,    // extracted beamline pointer.
-	   double* s );    // reference state for extraction beamline.
+            double x,      // x position of the septum.
+            beamline* b,   // extracted beamline pointer.
+            double* s );   // reference state for extraction beamline.
   
   thinLamb( double x,      // x position of the septum.
-	   beamline* b,    // extracted beamline pointer.
-	   double* s );    // reference state for extraction beamline.
+            beamline* b,   // extracted beamline pointer.
+            double* s );   // reference state for extraction beamline.
   
   thinLamb( const thinLamb& );
   ~thinLamb();
