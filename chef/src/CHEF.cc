@@ -6,9 +6,8 @@
 ******         interfaces to exercise the functionality        
 ******         of BEAMLINE.                                    
 ******                                                                
-******  Version:   3.2
-******                                    
 ******  File:      CHEF.cc
+******  Version:   3.2
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -23,7 +22,7 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License and the GNU General Public License, both of
 ******  which are supplied with this software.
 ******                                                                
@@ -1030,7 +1029,6 @@ void CHEF::_launchLatt()
 
   _plotWidget = new LattFncPlt(_p_currBmlCon);
 
-
   char theCaption[1024];
   for( int i = 0; i < 1024; i++ ) {
     theCaption[i] = '\0';
@@ -1038,9 +1036,6 @@ void CHEF::_launchLatt()
   strcat( theCaption, "CHEF: Uncoupled Lattice Functions: " );
   strcat( theCaption, _p_currBmlCon->name() );
   _plotWidget->setCaption( theCaption );
-
-  _plotWidget->resize( 540, 400 );
-  _plotWidget->show();
 }
 
 
@@ -1061,9 +1056,6 @@ void CHEF::_launchET()
   strcat( theCaption, "CHEF: Edwards-Teng Lattice Functions: " );
   strcat( theCaption, _p_currBmlCon->name() );
   _ETplotWidget->setCaption( theCaption );
-
-  _ETplotWidget->resize( 540, 400 );
-  _ETplotWidget->show();
 }
 
 
@@ -1084,9 +1076,6 @@ void CHEF::_launchMoments()
   strcat( theCaption, "CHEF: Covariance Lattice Functions: " );
   strcat( theCaption, _p_currBmlCon->name() );
   _MMplotWidget->setCaption( theCaption );
-
-  _MMplotWidget->resize( 540, 400 );
-  _MMplotWidget->show();
 }
 
 
@@ -1135,9 +1124,6 @@ void CHEF::_launchDispersion()
   strcat( theCaption, "CHEF: Dispersion: " );
   strcat( theCaption, _p_currBmlCon->name() );
   _DspnplotWidget->setCaption( theCaption );
-
-  _DspnplotWidget->resize( 540, 400 );
-  _DspnplotWidget->show();
 }
 
 

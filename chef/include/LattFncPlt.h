@@ -6,9 +6,8 @@
 ******             interfaces to exercise the functionality        
 ******             of BEAMLINE.                                    
 ******                                                                
-******  Version:   3.0                    
-******                                    
 ******  File:      LattFncPlt.h
+******  Version:   4.0                    
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -34,19 +33,13 @@
 #ifndef LATTFNCPLT_H
 #define LATTFNCPLT_H
 
-#include <qframe.h>
+#include <qwidget.h>
 
 #include "beamline.h"
 #include "LattFuncSage.h"
 
-class QMenuBar;
-class QPopupMenu;
-class QwtPlot;
-class QwtCounter;
-class QLabel;
-class QwtPlot;
-class QLineEdit;
-
+class CHEFPlotMain;
+class CHEFPlotData;
 class BeamlineContext;
 
 // ++----++++----++++----++++----++++----++++----++++----++
@@ -55,34 +48,18 @@ namespace CHEF_domain
 
 class LattFncPlt : public QWidget
 {
-    Q_OBJECT
-
- public:
-
-class InputFrame : public QFrame
-{
-
- public:
-
-    QLabel* _lbl_H_Tune;
-    QLabel* _lbl_V_Tune;
-    // REMOVE QwtCounter *cntDamp;
-    QLineEdit *_tuneEditor;
-    QLabel *lblInfo;
-
-    InputFrame(QWidget *p = 0, const char *name = 0);
-    ~InputFrame();
-
-};
+ Q_OBJECT
 
  private:
+    CHEFPlotMain*    _plotter;
+    CHEFPlotData*    _di;
     BeamlineContext* _bmlConPtr;
     bool             _deleteContext;
 
     double        _currentTune[2];
     double        _dnu_x;
 
-    int    _arraySize;
+    int     _arraySize;
     double* _azimuth;
     double* _beta_H;
     double* _alpha_H;
@@ -97,51 +74,44 @@ class InputFrame : public QFrame
     double* _disp_H;
     double* _disp_V;
 
-    // Widget set .....
-    enum { betaPlot=0, invPlot, rootPlot } _plotType;
+    char*   _name;
 
-    QMenuBar* _myMenuPtr;
-    QPopupMenu* _fileMenu;
-    QPopupMenu* _viewMenu;
-    QPopupMenu* _varMenu;
-    int         _zoomItemID;
-    QwtPlot *plt;
-    InputFrame *frmInp;
-    QPoint p1;
-    int d_zoom;
-    int d_zoomActive;
+    enum { betaPlot=0, invPlot, rootPlot } _plotType;
 
     long crv1, crv2, crv3, crv4;
     long mrk1, mrk2;
     
-    void _finishConstructor();
+    void _finishConstructor( const char* name );
+
+    void setErrorStream( ostream* );
+    void setOutputStream( ostream* );
 
 public:
-    
-    LattFncPlt( beamline*, QWidget* = 0, const char* = 0 );
-    LattFncPlt( BeamlineContext*, QWidget* = 0, const char* = 0 );
+    LattFncPlt( beamline*, const char* = 0 );
+    LattFncPlt( BeamlineContext*, const char* = 0 );
     ~LattFncPlt();
 
+    void setCaption( const char* );
+
 protected:
-    
-    void recalc();
-    void resizeEvent(QResizeEvent *e);
+    ostream* _errorStreamPtr;
+    ostream* _outputStreamPtr;
+    void _recalc();
 
-    private slots:
-
-    void plotMousePressed(const QMouseEvent &e);
-    void plotMouseReleased(const QMouseEvent &e);
-    void plotMouseMoved(const QMouseEvent &e);
-    
-    void _print();
-    void _fileClose();
-    void _zoom();
-    void _setBetaPlot();
-    void _setInvPlot();
-    void _setRootPlot();
-    void _fileSaveAs();
-    void _do_nothing();
+private slots:
+  void _selfDestruct();
 };
+
+
+inline void LattFncPlt::setErrorStream( ostream* x )
+{
+  _errorStreamPtr = x;
+}
+
+inline void LattFncPlt::setOutputStream( ostream* x )
+{
+  _outputStreamPtr = x;
+}
 
 }; // end namespace CHEF
 

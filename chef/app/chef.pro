@@ -8,6 +8,7 @@ INCLUDEPATH += /home/michelotti/projects/CURRENT/first_order_jl/installed/includ
 INCLUDEPATH += /home/michelotti/projects/CURRENT/first_order_jl/installed/include/beamline
 INCLUDEPATH += /home/michelotti/projects/CURRENT/first_order_jl/installed/include/integrator
 INCLUDEPATH += /home/michelotti/projects/CURRENT/first_order_jl/installed/include/physics_toolkit
+INCLUDEPATH += /home/michelotti/projects/CURRENT/first_order_jl/installed/include/widget_toolkit
 
 QMAKE_EXT_MOC = .cc
 
@@ -22,7 +23,7 @@ CONFIG += stl
 
 SOURCES = chef.cc
 HEADERS = 
-LIBS += -lchef -lqwt -lbasic_toolkit -lbeamline -lbmlfactory -lintegrator -lmxyzptlk -lphysics_toolkit
+LIBS += -lchef -lqwt -lbasic_toolkit -lbeamline -lbmlfactory -lintegrator -lmxyzptlk -lphysics_toolkit -lwidget_toolkit
 LIBS += -lglib
 QMAKE_LIBDIR += /home/michelotti/projects/CURRENT/first_order_jl/installed/lib
 QMAKE_LIBDIR += /usr/local/ap/lib

@@ -395,7 +395,7 @@ void beamline::zap() {
    if( 0 == strcmp( p->Type(), "beamline" ) ) {
     ((beamline*) p)->zap();
    }
-   delete p;  // ??? This will produce errors of *p is on the stack.
+   delete p;  // ??? This will produce errors if *p is on the stack.
  }
  this->dlist::clear();  // Wipes out all the links.  Probably unnecessary.
  numElem = 0;
