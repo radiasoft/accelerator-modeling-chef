@@ -24,6 +24,9 @@
                                               // of electron     [m]
 #define PH_MKS_rp          1.534698e-18       // Classical radius
                                               // of proton       [m]
+#define PH_MKS_d_earth     1.27563e7          // Diameter of earth [m]
+#define PH_MKS_r_earth     6.37815e6          // Radius of earth [m]
+
 
 // In each of the conversion factors below, the factor
 // converts a quantity from one system to another
