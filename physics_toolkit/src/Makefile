@@ -7,7 +7,9 @@ DEPEND_INC = $(INCLUDEDIR) -I$(COMPILER_DEPEND)
 OBJS = ConvertToTunes.o \
 	EdwardsTeng.o \
 	FPSolver.o \
-	normalForm.o
+	JacobianVisitor.o \
+	normalForm.o \
+	particleVisitor.o
 
 SOURCES = $(OBJS:.o=.cc)
 
