@@ -1,12 +1,14 @@
-#include "beamline.inc"
+#include "beamline.h"
+
+sbend::MAD_Prop   sbend::LikeMAD;
 
 const double changeMADConvention = - 1.0;
 
-void sbend::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
+int sbend::MAD_Prop::operator()( bmlnElmnt* p_be, Particle& p ) {
   sbend* pbe = (sbend*) p_be;
   static  int     i, j;
   static  double  matrix [ BMLN_dynDim ][BMLN_dynDim];
-  static  double  inState[ BMLN_dynDim ];
+  static  double  inState[ BMLN_dynDim ], outState[ BMLN_dynDim ];
   double rho;
   
   for   ( i = 0; i < BMLN_dynDim; i++ ) {
@@ -15,41 +17,65 @@ void sbend::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
     matrix[i][i] = 1.0;
   }
   
-  if(pbe->strength != 0.0) {
-    rho = p.BRho()/pbe->strength;
+  if(pbe->Strength() != 0.0) {
+    rho = p.BRho()/pbe->Strength();
 
-    matrix[0][0] = cos(pbe->angle);
-    matrix[0][3] = sin(pbe->angle)*rho;
-    matrix[0][5] = rho*(1.0 - cos(pbe->angle))/p.Beta();
-    matrix[1][4] = pbe->length;
-    matrix[2][0] = changeMADConvention*(-sin(pbe->angle)/p.Beta());
+    matrix[0][0] = cos(pbe->getAngle());
+    matrix[0][3] = sin(pbe->getAngle())*rho;
+    matrix[0][5] = rho*(1.0 - cos(pbe->getAngle()))/p.Beta();
+    matrix[1][4] = pbe->Length();
+    matrix[2][0] = changeMADConvention*(-sin(pbe->getAngle())/p.Beta());
     matrix[2][3] = changeMADConvention*(-matrix[0][5]);
-    matrix[2][5] = changeMADConvention *(pbe->length/p.Beta()/
+    matrix[2][5] = changeMADConvention *(pbe->Length()/p.Beta()/
                                          p.Gamma()/
 					 p.Gamma() - 
-					 (pbe->length - sin(pbe->angle)*rho)
+					 (pbe->Length() - sin(pbe->getAngle())*rho)
 					 /p.Beta());
-    matrix[3][0] = -sin(pbe->angle)/rho;
+    matrix[3][0] = -sin(pbe->getAngle())/rho;
     matrix[3][3] = matrix[0][0];
     matrix[3][5] = changeMADConvention*(-matrix[2][0]);
     // Finally .. the mapping ...............................
-    for( i = 0; i < BMLN_dynDim; i++  ) {
-      inState[i] = p.state[i];
+
+    if( BMLN_dynDim != 6 ) {
+      cerr << "*** ERROR ***                                  "
+              "*** ERROR *** sbend::MAD_Prop::operator()      "
+              "*** ERROR *** This was written for a phase     "
+              "*** ERROR *** space dimension of 6.            "
+              "*** ERROR ***                                  "
+           << endl;
+      exit(1);
     }
+
+    inState[0] = p.get_x();
+    inState[1] = p.get_y();
+    inState[2] = p.get_cdt();
+    inState[3] = p.get_npx();
+    inState[4] = p.get_npy();
+    inState[5] = p.get_ndp();
+
     for( i = 0; i < BMLN_dynDim; i++  ) {
-      p.state[i] = 0.0;
+      outState[i] = 0.0;
       for( j = 0; j < BMLN_dynDim; j++  ) 
-	p.state[i] += matrix[i][j]*inState[j];
+	outState[i] += matrix[i][j]*inState[j];
     }
+
+    p.set_x  ( outState[0] );
+    p.set_y  ( outState[1] );
+    p.set_cdt( outState[2] );
+    p.set_npx( outState[3] );
+    p.set_npy( outState[4] );
+    p.set_ndp( outState[5] );
 
   } else {
-    p.state[0] += pbe->length * p.state[3];
-    p.state[1] += pbe->length * p.state[4];
-    p.state[2] -= pbe->length/p.Beta()/p.Gamma()/p.Gamma() * p.state[5];
+    p.set_x  ( p.get_x() + pbe->Length() * p.get_npx() );
+    p.set_y  ( p.get_y() + pbe->Length() * p.get_npy() );
+    p.set_cdt( p.get_cdt() - pbe->Length()/p.Beta()/p.Gamma()/p.Gamma() * p.get_ndp() );
   }  
+
+  return 0;
 }
 
-void sbend::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
+int sbend::MAD_Prop::operator()( bmlnElmnt* p_be, JetParticle& p ) {
   sbend* pbe = (sbend*) p_be;
   Jet      inState  [BMLN_dynDim];
   Jet      outState [BMLN_dynDim];
@@ -66,30 +92,44 @@ void sbend::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
     matrix[i][i] = 1.0;
   }
   
-  if(pbe->strength != 0.0) {
-    rho = p.BRho().standardPart()/pbe->strength;
+  if(pbe->Strength() != 0.0) {
+    rho = p.BRho().standardPart()/pbe->Strength();
 
-    matrix[0][0] = cos(pbe->angle);
-    matrix[0][3] = sin(pbe->angle)*rho;
-    matrix[0][5] = rho*(1.0 - cos(pbe->angle))/p.Beta().standardPart();
-    matrix[1][4] = pbe->length;
-    matrix[2][0] = changeMADConvention*(-sin(pbe->angle)/p.Beta().standardPart());
+    matrix[0][0] = cos(pbe->getAngle());
+    matrix[0][3] = sin(pbe->getAngle())*rho;
+    matrix[0][5] = rho*(1.0 - cos(pbe->getAngle()))/p.Beta().standardPart();
+    matrix[1][4] = pbe->Length();
+    matrix[2][0] = changeMADConvention*(-sin(pbe->getAngle())/p.Beta().standardPart());
     matrix[2][3] = changeMADConvention*(-matrix[0][5]);
-    matrix[2][5] = changeMADConvention*(pbe->length/p.Beta().standardPart()/
+    matrix[2][5] = changeMADConvention*(pbe->Length()/p.Beta().standardPart()/
                                         p.Gamma().standardPart()/
                                         p.Gamma().standardPart() - 
-                                       (pbe->length - sin(pbe->angle)*rho)
+                                       (pbe->Length() - sin(pbe->getAngle())*rho)
                                        /p.Beta().standardPart());
-    matrix[3][0] = -sin(pbe->angle)/rho;
+    matrix[3][0] = -sin(pbe->getAngle())/rho;
     matrix[3][3] = matrix[0][0];
     matrix[3][5] = changeMADConvention*(-matrix[2][0]);
     
     // Finally .. the mapping ...............................
-    for( i = 0; i < BMLN_dynDim; i++  ) {
-      inState[i] = p.state(i);
+
+    if( BMLN_dynDim != 6 ) {
+      cerr << "*** ERROR ***                                  "
+              "*** ERROR *** sbend::MAD_Prop::operator()      "
+              "*** ERROR *** This was written for a phase     "
+              "*** ERROR *** space dimension of 6.            "
+              "*** ERROR ***                                  "
+           << endl;
+      exit(1);
     }
+
+    inState[0] = p.get_x();
+    inState[1] = p.get_y();
+    inState[2] = p.get_cdt();
+    inState[3] = p.get_npx();
+    inState[4] = p.get_npy();
+    inState[5] = p.get_ndp();
+
     zero = 0.0;
-    // ??? REMOVE zero.fixReferenceAtStart( p.state );
     
     for( i = 0; i < BMLN_dynDim; i++  ) {
       outState[i] = zero;
@@ -97,16 +137,18 @@ void sbend::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
 	outState[i] = outState[i] + matrix[i][j]*inState[j];
     }
 
-    for( i = 0; i < BMLN_dynDim; i++  ) {
-      ( p.state ).SetComponent( i, outState[i] );
-    }
+    p.set_x  ( outState[0] );
+    p.set_y  ( outState[1] );
+    p.set_cdt( outState[2] );
+    p.set_npx( outState[3] );
+    p.set_npy( outState[4] );
+    p.set_ndp( outState[5] );
 
   } else {
-    dummy = p.state(0) + pbe->length * p.state(3);
-    ( p.state ).SetComponent( 0, dummy );
-    dummy = p.state(1) + pbe->length * p.state(4);
-    ( p.state ).SetComponent( 1, dummy );
-    dummy = p.state(2) - pbe->length/p.Beta()/p.Gamma()/p.Gamma() * p.state(5);
-    ( p.state ).SetComponent( 2, dummy );
+    p.set_x  ( p.get_x() + pbe->Length() * p.get_npx() );
+    p.set_y  ( p.get_y() + pbe->Length() * p.get_npy() );
+    p.set_cdt( p.get_cdt() - pbe->Length()/p.Beta()/p.Gamma()/p.Gamma() * p.get_ndp() );
   }
+
+  return 0;
 }

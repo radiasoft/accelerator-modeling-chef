@@ -1,4 +1,4 @@
-#include "beamline.inc"
+#include "beamline.h"
 
 #ifdef MADPHYSICS
 
@@ -112,3 +112,4 @@ void bmlnElmnt::localPropagate( ParticleBunch& b ) {
 }
 
 #endif
+

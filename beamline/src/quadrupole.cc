@@ -1,4 +1,4 @@
-#include "beamline.inc"
+#include "beamline.h"
 
 // **************************************************
 //   class quadrupole
@@ -12,9 +12,8 @@ quadrupole::quadrupole()
   exit(1);
 }
 
-quadrupole::quadrupole( char* n, double l, double s, int m,
-                        PROPFUNC pf, JETPROPFUNC jpf ) 
-: bmlnElmnt( n, l, s, pf, jpf )
+quadrupole::quadrupole( char* n, double l, double s, bmlnElmnt::PropFunc* pf )
+: bmlnElmnt( n, l, s, pf )
 {
  if( l<= 0.0 ) {
   cerr << "*** ERROR ***                                   \n"
@@ -26,47 +25,19 @@ quadrupole::quadrupole( char* n, double l, double s, int m,
   exit(1);
  }
 
- double xm = m;
- double frontLength     = 6.0*(l/4.0)/15.0;
- double sepLength       = ( l - 2.0*frontLength ) / 3.0;
- double quarterStrength = strength*length/4.0;
- if(pf == quadrupole::P_LikeMAD)
+ if( 0 == strcmp( pf->Type(), "quadrupole::TPOT_Prop" ) ) 
+ {
+   ((quadrupole::TPOT_Prop*) pf)->setup( this );
+ }
+ else 
+ {
    p_bml = 0;
- else {
-   p_bml = new beamline;
-  
-   if( m == 1 ) {           // One thin element ..........
-     p_bml->append( new drift( length / 2.0 ) );
-     p_bml->append( p_bml_e = new thinQuad( strength*length ) );
-     p_bml->append( new drift( length / 2.0 ) );
-   }
-  
-   else if( m == 4 ) {      // TEAPOT-like schema .........
-     p_bml->append( new drift( frontLength ) );
-     p_bml->append( new thinQuad( quarterStrength ) );
-     for( int i = 0; i < 3; i++ ) {
-       p_bml->append( new drift( sepLength ) );
-       p_bml->append( new thinQuad( quarterStrength ) );
-     }
-     p_bml->append( new drift( frontLength ) );
-   }
-  
-   else {                   // Equal spacing ...............
-     p_bml->append( new drift( length / ( 2.0*xm ) ) );
-     p_bml->append( new thinQuad( strength*length/ xm ) );
-     for( int i = 0; i < m-1; i++ ) {
-       p_bml->append( new drift( length / xm ) );
-       p_bml->append( new thinQuad( strength*length/ xm ) );
-     }
-     p_bml->append( new drift( length / ( 2.0*xm ) ) );
-   }
  }
 }
 
 
-quadrupole::quadrupole( double l, double s, int m,
-                        PROPFUNC pf, JETPROPFUNC jpf ) 
-: bmlnElmnt( l, s, pf, jpf ) 
+quadrupole::quadrupole( double l, double s, bmlnElmnt::PropFunc* pf )
+: bmlnElmnt( l, s, pf )
 {
  if( l<= 0.0 ) {
   cerr << "*** ERROR ***                                   \n"
@@ -78,40 +49,13 @@ quadrupole::quadrupole( double l, double s, int m,
   exit(1);
  }
 
- double xm = m;
- double frontLength     = 6.0*(l/4.0)/15.0;
- double sepLength       = ( l - 2.0*frontLength ) / 3.0;
- double quarterStrength = strength*length/4.0;
- if(pf == quadrupole::P_LikeMAD)
+ if( 0 == strcmp( pf->Type(), "quadrupole::TPOT_Prop" ) ) 
+ {
+   ((quadrupole::TPOT_Prop*) pf)->setup( this );
+ }
+ else 
+ {
    p_bml = 0;
- else {
-   p_bml = new beamline;
-   
-   if( m == 1 ) {           // One thin element ..........
-     p_bml->append( new drift( length / 2.0 ) );
-     p_bml->append( p_bml_e = new thinQuad( strength*length ) );
-     p_bml->append( new drift( length / 2.0 ) );
-   }
-  
-   else if( m == 4 ) {      // TEAPOT-like schema .........
-     p_bml->append( new drift( frontLength ) );
-     p_bml->append( new thinQuad( quarterStrength ) );
-     for( int i = 0; i < 3; i++ ) {
-       p_bml->append( new drift( sepLength ) );
-       p_bml->append( new thinQuad( quarterStrength ) );
-     }
-     p_bml->append( new drift( frontLength ) );
-   }
-  
-   else {                   // Equal spacing ...............
-     p_bml->append( new drift( length / ( 2.0*xm ) ) );
-     p_bml->append( new thinQuad( strength*length/ xm ) );
-     for( int i = 0; i < m-1; i++ ) {
-       p_bml->append( new drift( length / xm ) );
-       p_bml->append( new thinQuad( strength*length/ xm ) );
-     }
-     p_bml->append( new drift( length / ( 2.0*xm ) ) );
-   }
  }
 }
 
@@ -119,6 +63,13 @@ quadrupole::quadrupole( double l, double s, int m,
 quadrupole::quadrupole( bmlnElmntData& x ) 
 : bmlnElmnt( x ) 
 {
+ // ??? GET RID OF THIS FUNCTION.
+  static char firstTime = 1;
+  if( firstTime ) {
+    cerr << "Warning: call to quadrupole::quadrupole( bmlnElmntData& x )" << endl;
+    firstTime = 0;
+  }
+
  double xm = 3.0;
  p_bml = new beamline;
 
@@ -221,6 +172,8 @@ void quadrupole::setStrength( double, int ) {
 // ??? REMOVE  s->append( p );
 // ??? REMOVE }
 // ??? REMOVE 
+
+
 void quadrupole::eliminate() {
  delete this;
 }
@@ -246,10 +199,8 @@ void quadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
   }
 
   // We assume "strength" means field, not field*length.
-  *a = new quadrupole(         pc  *length, strength, 
-                       4, Propagator, JetPropagator ); // ??? Fix
-  *b = new quadrupole( ( 1.0 - pc )*length, strength, 
-                       4, Propagator, JetPropagator ); // ??? this
+  *a = new quadrupole(         pc  *length, strength, Propagator ); // ??? Fix
+  *b = new quadrupole( ( 1.0 - pc )*length, strength, Propagator ); // ??? this
 
   // Rename
   char* newname;
@@ -272,45 +223,29 @@ istream& quadrupole::readFrom(istream& is)
 
   is >> prop_fun >> jet_prop_fun;
   if ( strcasecmp(prop_fun,             "quadrupole::P_LikeMAD" ) == 0 )
-    setPropFunction(&quadrupole::P_LikeMAD );
+    setPropFunction(&quadrupole::LikeMAD );
   else if ( strcasecmp(prop_fun,        "quadrupole::P_LikeTPOT" ) == 0 )
-    setPropFunction(&quadrupole::P_LikeTPOT );
+    setPropFunction(&quadrupole::LikeTPOT );
   else
     {
       cerr << " **** WARNING **** quadrupole::readFrom(istream)\n";
       cerr << " **** WARNING **** unknown propagator function specified:\n";
       cerr << " **** WARNING **** " << prop_fun << "\n";
       cerr << " **** WARNING **** Substituting quadrupole::P_LikeMAD\n";
-      setPropFunction(&quadrupole::P_LikeMAD);
+      setPropFunction(&quadrupole::LikeMAD);
     }
 
-  if ( strcasecmp(jet_prop_fun,         "quadrupole::J_LikeMAD" ) == 0 )
-    setJPropFunction(&quadrupole::J_LikeMAD);
-  else if ( strcasecmp(jet_prop_fun,    "quadrupole::J_LikeTPOT" ) == 0 )
-    setJPropFunction(&quadrupole::J_LikeTPOT);
-  else
-   {
-      cerr << " **** WARNING **** quadrupole::readFrom(istream)\n";
-      cerr << " **** WARNING **** unknown jet propagator function specified:\n";
-      cerr << " **** WARNING **** " << jet_prop_fun << "\n";
-      cerr << " **** WARNING **** Substituting quadrupole::J_LikeMAD\n";
-      setJPropFunction(&quadrupole::J_LikeMAD);
-    }
-  
   return is;
 }
 
 ostream& quadrupole::writeTo(ostream& os)
 {
-  if ( Propagator == 		&quadrupole::P_LikeMAD )
-    os << "quadrupole::P_LikeMAD ";
-  else if ( Propagator == 	&quadrupole::P_LikeTPOT )
-    os << "quadrupole::P_LikeTPOT ";
-
-  if ( JetPropagator == 	&quadrupole::J_LikeMAD )
-    os << "quadrupole::J_LikeMAD";
-  else if ( JetPropagator == 	&quadrupole::J_LikeTPOT )
-    os << "quadrupole::J_LikeTPOT";
+  if ( Propagator == 		&quadrupole::LikeMAD )
+    os << "quadrupole::P_LikeMAD   quadrupole::J_LikeMAD";
+  else if ( Propagator == 	&quadrupole::LikeTPOT )
+    os << "quadrupole::P_LikeTPOT  quadrupole::J_LikeTPOT";
+  else 
+    os << "UNKNOWN  UNKNOWN";
 
   os << "\n";
   return os;

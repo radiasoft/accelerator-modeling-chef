@@ -5,30 +5,32 @@
 // 
 // Nov.4, 1998
 
-#include "beamline.inc"
+#include "beamline.h"
 
-void quadrupole::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
+quadrupole::MAD_Prop   quadrupole::LikeMAD;
+
+int quadrupole::MAD_Prop::operator()( bmlnElmnt* p_be, Particle& p ) {
   quadrupole* pbe = (quadrupole*) p_be;
 
-  double length = pbe->length;
+  double length = pbe->Length();
 
-  if ( pbe->strength == 0.0 ) {
+  if ( pbe->Strength() == 0.0 ) {
 
     double D, p3divpbar, xpr, ypr;
 
-    p3divpbar = sqrt( ( 1.0 + p.state[5] ) * ( 1.0 + p.state[5] )
-		      - p.state[3]*p.state[3] 
-		      - p.state[4]*p.state[4] );
+    p3divpbar = sqrt( ( 1.0 + p.get_ndp() ) * ( 1.0 + p.get_ndp() )
+		      - p.get_npx()*p.get_npx() 
+		      - p.get_npy()*p.get_npy() );
 
-    xpr = p.state[3] / p3divpbar;
-    ypr = p.state[4] / p3divpbar; 
+    xpr = p.get_npx() / p3divpbar;
+    ypr = p.get_npy() / p3divpbar; 
     
-    p.state[0] += length * xpr;
-    p.state[1] += length * ypr;
+    p.set_x( p.get_x() + length * xpr );
+    p.set_y( p.get_y() + length * ypr );
     
     D = length*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
     
-    p.state[2] += ( D / p.Beta() ) - ( length / p.beta );
+    p.set_cdt( p.get_cdt() + ( D / p.Beta() ) - ( length / p.ReferenceBeta() ) );
 
   } else {
 
@@ -37,14 +39,14 @@ void quadrupole::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
     // 1) the reference momentum is q_o = p_0* (1.0 + delp/p)
     // 2) the "temporary" delp = 0
 
-    double q0divp0 = 1.0 + p.state[5]; // factor to convert reference momentum 
-    double K1 = pbe->strength / p.ReferenceBRho() / q0divp0;
+    double q0divp0 = 1.0 + p.get_ndp(); // factor to convert reference momentum 
+    double K1 = pbe->Strength() / p.ReferenceBRho() / q0divp0;
     double Beta = p.Beta();   // this is reference beta with changed ref p. 
     double Gamma = p.Gamma();
 
 
-    p.state[3] = p.state[3]/q0divp0;   // p_x/p_0 * p_0/q_0 = p_x/q_0 
-    p.state[4] = p.state[4]/q0divp0;   // p_y/p_0 * p_0/q_0 = p_y/q_0 
+    p.set_npx( p.get_npx()/q0divp0 );   // p_x/p_0 * p_0/q_0 = p_x/q_0 
+    p.set_npy( p.get_npy()/q0divp0 );   // p_y/p_0 * p_0/q_0 = p_y/q_0 
 
 
 
@@ -57,7 +59,7 @@ void quadrupole::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
     kxsqr = K1;
     kysqr = -K1;
     factor = ( K1 > 0.0 )? sqrt( K1 ): sqrt( -K1 );
-    arg = factor * pbe->length;
+    arg = factor * pbe->Length();
 
     if ( K1 > 0.0 )  {            // Focussing horizontally
       cx = cos( arg );
@@ -78,59 +80,58 @@ void quadrupole::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
     T214 =   sy * sy;
     T244 =   ( length + sy * cy );
  
-    outState[0] =          cx * p.state[0]  +  sx * p.state[3];
-    outState[3] = -kxsqr * sx * p.state[0]  +  cx * p.state[3];
-    outState[1] =          cy * p.state[1]  +  sy * p.state[4];
-    outState[4] = -kysqr * sy * p.state[1]  +  cy * p.state[4];
+    outState[0] =          cx * p.get_x()  +  sx * p.get_npx();
+    outState[3] = -kxsqr * sx * p.get_x()  +  cx * p.get_npx();
+    outState[1] =          cy * p.get_y()  +  sy * p.get_npy();
+    outState[4] = -kysqr * sy * p.get_y()  +  cy * p.get_npy();
     
     double Dist;
     Dist = ( 
-	    ( T200 * p.state[0] + 2.0 * T203 * p.state[3] ) * K1 * p.state[0]
-	    + T233 * p.state[3] * p.state[3]
-	    + ( T211 * p.state[1] + 2.0 * T214 * p.state[4] ) * K1 * p.state[1]
-	    + T244 * p.state[4] * p.state[4]
+	    ( T200 * p.get_x() + 2.0 * T203 * p.get_npx() ) * K1 * p.get_x()
+	    + T233 * p.get_npx() * p.get_npx()
+	    + ( T211 * p.get_y() + 2.0 * T214 * p.get_npy() ) * K1 * p.get_y()
+	    + T244 * p.get_npy() * p.get_npy()
 	    )/4.0;
   
     Dist += length;
 
-    p.state[2] += (Dist/Beta - length/p.ReferenceBeta() );
+    p.set_cdt( p.get_cdt() + (Dist/Beta - length/p.ReferenceBeta() ) );
 
 
-    p.state[0] = outState[0];          
-    p.state[1] = outState[1];          
-    p.state[3] = outState[3] * q0divp0;          
-    p.state[4] = outState[4] * q0divp0;          
+    p.set_x  ( outState[0] );
+    p.set_y  ( outState[1] );
+    p.set_npx( outState[3] * q0divp0 );
+    p.set_npy( outState[4] * q0divp0 );
 
   }
+
+  return 0;
 }
 
-void quadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
+int quadrupole::MAD_Prop::operator()( bmlnElmnt* p_be, JetParticle& p ) {
   quadrupole* pbe = (quadrupole*) p_be;
 
-  double length = pbe->length;
+  double length = pbe->Length();
 
-  if ( pbe->strength == 0.0 ) {
+  if ( pbe->Strength() == 0.0 ) {
 
     Jet D, p3divpbar;
     Jet xpr, ypr;
     Jet dummy;
 
-    p3divpbar = sqrt( ( 1.0 + p.state(5) ) * ( 1.0 + p.state(5) )
-		      - p.state(3)*p.state(3) 
-		      - p.state(4)*p.state(4) );
+    p3divpbar = sqrt( ( 1.0 + p.get_ndp() ) * ( 1.0 + p.get_ndp() )
+		      - p.get_npx()*p.get_npx() 
+		      - p.get_npy()*p.get_npy() );
 
-    xpr = p.state(3) / p3divpbar;
-    ypr = p.state(4) / p3divpbar; 
+    xpr = p.get_npx() / p3divpbar;
+    ypr = p.get_npy() / p3divpbar; 
     
-    dummy = p.state(0) + length * xpr;
-    ( p.state ).SetComponent( 0, dummy );
-    dummy = p.state(1) + length * ypr;
-    ( p.state ).SetComponent( 1, dummy );
+    p.set_x( p.get_x() + length * xpr );
+    p.set_y( p.get_y() + length * ypr );
 
     D = length*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
     
-    dummy =  p.state(2) + ( D / p.Beta() ) - ( length / p.beta );
-    ( p.state ).SetComponent( 2, dummy );
+    p.set_cdt( p.get_cdt() + ( D / p.Beta() ) - ( length / p.ReferenceBeta() ) );
     
   } else {
 
@@ -138,14 +139,14 @@ void quadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
     Jet K1;
     Jet Beta, Gamma;
 
-    q0divp0 = 1.0 + p.state(5); 
-    K1 = pbe->strength / p.ReferenceBRho() / q0divp0;
+    q0divp0 = 1.0 + p.get_ndp(); 
+    K1 = pbe->Strength() / p.ReferenceBRho() / q0divp0;
     Beta = p.Beta();   
     Gamma = p.Gamma();
 
 
-    p.state(3) = p.state(3)/q0divp0;   // p_x/p_0 * p_0/q_0 = p_x/q_0 
-    p.state(4) = p.state(4)/q0divp0;   // p_y/p_0 * p_0/q_0 = p_y/q_0 
+    p.set_npx( p.get_npx()/q0divp0 );   // p_x/p_0 * p_0/q_0 = p_x/q_0 
+    p.set_npy( p.get_npy()/q0divp0 );   // p_y/p_0 * p_0/q_0 = p_y/q_0 
 
 
 
@@ -157,10 +158,10 @@ void quadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
     
     kxsqr = K1;
     kysqr = -K1;
-    factor = ( pbe->strength > 0.0 )? sqrt( K1 ): sqrt( -K1 );
-    arg = factor * pbe->length;
+    factor = ( pbe->Strength() > 0.0 )? sqrt( K1 ): sqrt( -K1 );
+    arg = factor * pbe->Length();
 
-    if ( pbe->strength > 0.0 )  {            // Focussing horizontally
+    if ( pbe->Strength() > 0.0 )  {            // Focussing horizontally
       cx = cos( arg );
       sx = sin( arg )/factor;
       cy = cosh( arg );
@@ -179,30 +180,32 @@ void quadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
     T214 =   sy * sy;
     T244 =   ( length + sy * cy );
  
-    outState[0] =          cx * p.state(0)  +  sx * p.state(3);
-    outState[3] = -kxsqr * sx * p.state(0)  +  cx * p.state(3);
-    outState[1] =          cy * p.state(1)  +  sy * p.state(4);
-    outState[4] = -kysqr * sy * p.state(1)  +  cy * p.state(4);
+    outState[0] =          cx * p.get_x()  +  sx * p.get_npx();
+    outState[3] = -kxsqr * sx * p.get_x()  +  cx * p.get_npx();
+    outState[1] =          cy * p.get_y()  +  sy * p.get_npy();
+    outState[4] = -kysqr * sy * p.get_y()  +  cy * p.get_npy();
     
     Jet Dist;
     Dist = ( 
-	    ( T200 * p.state(0) + 2.0 * T203 * p.state(3) ) * K1 * p.state(0)
-	    + T233 * p.state(3) * p.state(3)
-	    + ( T211 * p.state(1) + 2.0 * T214 * p.state(4) ) * K1 * p.state(1)
-	    + T244 * p.state(4) * p.state(4)
+	    ( T200 * p.get_x() + 2.0 * T203 * p.get_npx() ) * K1 * p.get_x()
+	    + T233 * p.get_npx() * p.get_npx()
+	    + ( T211 * p.get_y() + 2.0 * T214 * p.get_npy() ) * K1 * p.get_y()
+	    + T244 * p.get_npy() * p.get_npy()
 	    )/4.0;
   
     Dist += length;
 
-    outState[2] = p.state(2) + ( Dist/Beta - length/p.ReferenceBeta() );
+    outState[2] = p.get_cdt() + ( Dist/Beta - length/p.ReferenceBeta() );
 
     outState[3] *= q0divp0;          
     outState[4] *= q0divp0;          
 
-    ( p.state ).SetComponent( 0, outState[0] );    
-    ( p.state ).SetComponent( 1, outState[1] );    
-    ( p.state ).SetComponent( 2, outState[2] );    
-    ( p.state ).SetComponent( 3, outState[3] );    
-    ( p.state ).SetComponent( 4, outState[4] );    
+    p.set_x   ( outState[0] );
+    p.set_y   ( outState[1] );
+    p.set_cdt ( outState[2] );
+    p.set_npx ( outState[3] );
+    p.set_npy ( outState[4] );
   }
+
+  return 0;
 }

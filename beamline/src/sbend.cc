@@ -4,7 +4,7 @@
 #include <iomanip.h>
 #endif
 
-#include "beamline.inc"
+#include "beamline.h"
 
 // **************************************************
 //   struct sbendData 
@@ -32,30 +32,13 @@ void* sbendData::clone() {
  return p;
 }
 
-// ??? REMOVE void sbendData::writeTo( FILE* f ) {
-// ??? REMOVE  int sz = strlen( name );
-// ??? REMOVE  if( sz == 0 ) {
-// ??? REMOVE   cerr << "\n";
-// ??? REMOVE   cerr << "*** ERROR ***                                        \n";
-// ??? REMOVE   cerr << "*** ERROR *** void sbendData::writeTo( FILE* )       \n";
-// ??? REMOVE   cerr << "*** ERROR *** Anomoly in ident.  Quitting.           \n";
-// ??? REMOVE   cerr << "*** ERROR ***                                        \n";
-// ??? REMOVE   cerr << "\n";
-// ??? REMOVE   exit(0);
-// ??? REMOVE  }
-// ??? REMOVE 
-// ??? REMOVE  fwrite( this, sizeof( sbendData ), 1, f );
-// ??? REMOVE  fwrite( &sz, sizeof( int ), 1, f );
-// ??? REMOVE  fprintf( f, "%s ", name );
-// ??? REMOVE }
-// ??? REMOVE 
-
+
 // **************************************************
 //   class sbend
 // **************************************************
 
-sbend::sbend( double l, double s, double alpha, 
-              PROPFUNC pf, JETPROPFUNC jpf ) : bmlnElmnt( l, s, pf, jpf ) {
+sbend::sbend( double l, double s, double alpha, PropFunc* pf ) 
+: bmlnElmnt( l, s, pf ) {
  if ( fabs( alpha ) < 1.0e-9 ) {
    cerr << "\n";
    cerr << "*** ERROR ** sbend::sbend( double l, double s, double alpha )\n";
@@ -65,14 +48,13 @@ sbend::sbend( double l, double s, double alpha,
  }
  angle    = alpha;
  if(pf == 0) {
-   Propagator = sbend::P_Exact;
-   JetPropagator = sbend::J_Exact;
+   Propagator = &sbend::Exact;
  }
 }
 
 
-sbend::sbend( char* n, double l, double s, double alpha, 
-              PROPFUNC pf, JETPROPFUNC jpf ) : bmlnElmnt( n, l, s, pf, jpf ) {
+sbend::sbend( char* n, double l, double s, double alpha, PropFunc* pf ) 
+: bmlnElmnt( n, l, s, pf ) {
 
  if ( fabs( alpha ) < 1.0e-9 ) {
    cerr << "\n";
@@ -83,8 +65,7 @@ sbend::sbend( char* n, double l, double s, double alpha,
  }
  angle    = alpha;
  if(pf == 0) {
-   Propagator = sbend::P_Exact;
-   JetPropagator = sbend::J_Exact;
+   Propagator = &sbend::Exact;
  }
 }
 
@@ -185,10 +166,8 @@ void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
   }
 
   // We assume "strength" means field, not field*length.
-  *a = new sbend( pc*length, strength, pc*angle,
-                  Propagator, JetPropagator );
-  *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*angle,
-                  Propagator, JetPropagator );
+  *a = new sbend( pc*length, strength, pc*angle, Propagator );
+  *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*angle, Propagator );
 
   // Rename
   char* newname;
@@ -212,35 +191,18 @@ istream& sbend::readFrom(istream& is)
 
   is >> a >> prop_fun >> jet_prop_fun;
   if ( strcasecmp(prop_fun,             "sbend::P_Exact") == 0 )
-    setPropFunction(&sbend::P_Exact); 
+    setPropFunction(&sbend::Exact); 
   else if ( strcasecmp(prop_fun,        "sbend::P_LikeMAD") == 0 )
-    setPropFunction(&sbend::P_LikeMAD); 
-  else if ( strcasecmp(prop_fun,        "sbend::P_Exact") == 0 )
-     setPropFunction(&sbend::P_Exact);
+    setPropFunction(&sbend::LikeMAD); 
   else
     {
       cerr << " **** WARNING **** sbend::readFrom(istream)\n";
       cerr << " **** WARNING **** unknown propagator function specified:\n";
       cerr << " **** WARNING **** " << prop_fun << "\n";
       cerr << " **** WARNING **** Substituting sbend::P_Exact\n";
-      setPropFunction(&sbend::P_Exact);
+      setPropFunction(&sbend::Exact);
     }
 
-  if ( strcasecmp(jet_prop_fun,         "sbend::J_Exact" ) == 0 )
-    setJPropFunction(&sbend::J_Exact);
-  else if ( strcasecmp(jet_prop_fun,    "sbend::J_LikeMAD" ) == 0 )
-    setJPropFunction(&sbend::J_LikeMAD);
-  else if ( strcasecmp(jet_prop_fun,    "sbend::J_Exact" ) == 0 )
-    setJPropFunction(&sbend::J_Exact);
-  else
-    {
-      cerr << " **** WARNING **** sbend::readFrom(istream)\n";
-      cerr << " **** WARNING **** unknown jet propagator function specified:\n";
-      cerr << " **** WARNING **** " << jet_prop_fun << "\n";
-      cerr << " **** WARNING **** Substituting sbend::J_Exact\n";
-      setJPropFunction(&sbend::J_Exact);
-    }
-  
   setAngle(a);
   return is;
 }
@@ -250,19 +212,12 @@ ostream& sbend::writeTo(ostream& os)
 {
   os << OSTREAM_DOUBLE_PREC << angle << " ";
   // Determine which propogators are being used, and make a note of it.
-  if ( Propagator == 		&sbend::P_Exact )
-    os << "sbend::P_Exact ";
-  else if ( Propagator == 	&sbend::P_LikeMAD )
-    os << "sbend::P_LikeMAD ";
-  else if ( Propagator == 	&sbend::P_Exact )
-    os << "sbend::P_Exact ";
-  
-  if ( JetPropagator == 	&sbend::J_Exact )
-    os << "sbend::J_Exact";
-  else if ( JetPropagator == 	&sbend::J_LikeMAD )
-    os << "sbend::J_LikeMAD";
-  else if ( JetPropagator == 	&sbend::J_Exact )
-    os << "sbend::J_Exact";
+  if ( Propagator == 		&sbend::Exact )
+    os << "sbend::P_Exact  sbend::J_Exact";
+  else if ( Propagator == 	&sbend::LikeMAD )
+    os << "sbend::P_LikeMAD  sbend::J_LikeMAD";
+  else 
+    os << "UNKNOWN  UNKNOWN";
   
   os << "\n";
   return os;

@@ -110,8 +110,8 @@ class ParticleBunch;        // ??? necessary.
 class JetParticle;          // =============================
 
 
-typedef void (*PROPFUNC)    ( bmlnElmnt*, Particle& );
-typedef void (*JETPROPFUNC) ( bmlnElmnt*, JetParticle& );
+// ??? REMOVE: typedef void (*PROPFUNC)    ( bmlnElmnt*, Particle& );
+// ??? REMOVE: typedef void (*JETPROPFUNC) ( bmlnElmnt*, JetParticle& );
 
 
 struct BMLN_posInfo {
@@ -264,15 +264,16 @@ struct bmlnElmntData {
 class beamline;
 class bmlnElmnt
 {
-private:
-  /* All the work is done in friend ostream& operator<<(),
-     placeholder for if descendants want to do somthing. */
-  virtual ostream& writeTo(ostream& os) 	{ return os; }
-  virtual istream& readFrom(istream& is)	{ return is; };
-  friend ostream& operator<<(ostream&, bmlnElmnt&);
-  friend bmlnElmnt* read_istream(istream&);
-
-  apstring     flavor;     // Allows for "flavors" of types of elements.
+public:
+  // --------------------------
+  class PropFunc
+  {
+    public:
+      virtual int operator()( bmlnElmnt*, Particle&    ) = 0;
+      virtual int operator()( bmlnElmnt*, JetParticle& ) = 0;
+      virtual const char* Type() const                   = 0;
+  };
+  // --------------------------
 
 protected:
   char*        ident;      // Name identifier of the element.
@@ -289,8 +290,7 @@ protected:
   beamline*    p_bml;      // The element may be composite.
   bmlnElmnt*   p_bml_e;    // with one active part.
 
-  PROPFUNC     Propagator;
-  JETPROPFUNC  JetPropagator;
+  PropFunc*    Propagator;
 
   virtual void image( int,           // depth of image
                       slist*,        // list to append responses to
@@ -304,39 +304,33 @@ protected:
   // friend class circuit;
   friend beamline& operator-( beamline& );
 
+
 public:
-  // ??? Why are these constructors public???
-  // 
   bmlnElmnt( const char*   n = "NONAME" /* name     */,
-             PROPFUNC        = 0,
-             JETPROPFUNC     = 0
+             PropFunc*       = 0 
            );		   
   bmlnElmnt( double  l       /* length   */,
-             PROPFUNC        = 0,
-             JETPROPFUNC     = 0
+             PropFunc*       = 0
            );		   
   bmlnElmnt( double  l       /* length   */,
              double  s       /* strength */,
-             PROPFUNC        = 0,
-             JETPROPFUNC     = 0
+             PropFunc*       = 0
            );		   
   bmlnElmnt( const char*   n /* name     */,
              double        l /* length   */,
-             PROPFUNC        = 0,
-             JETPROPFUNC     = 0
+             PropFunc*       = 0
            );		   
   bmlnElmnt( const char*   n /* name     */,
              double        l /* length   */,
              double        s /* strength */,
-             PROPFUNC        = 0,
-             JETPROPFUNC     = 0
+             PropFunc*       = 0
            );
   bmlnElmnt( const bmlnElmnt&  );
   bmlnElmnt( bmlnElmntData& );
 
   virtual ~bmlnElmnt();
 
-  // --------------------------
+  // ----------------------------------------------
   Aperture*    pAperture;  // O.K.
   
   BarnacleList dataHook;   // Carries data as service to application program.
@@ -345,8 +339,8 @@ public:
 
   virtual void accept( BmlVisitor& ) = 0;
 
-  void setPropFunction(PROPFUNC a)	{ Propagator = a; }
-  void setJPropFunction(JETPROPFUNC a)	{ JetPropagator = a; }
+  void setPropFunction ( const PropFunc* a ) { Propagator = (PropFunc*) a;  }
+  void setPropFunction ( const PropFunc& a ) { Propagator = (PropFunc*) &a; }
 
   void propagate( Particle& x ) 
   {
@@ -481,6 +475,15 @@ public:
   static int objectCount;
 #endif
 
+private:
+  /* All the work is done in friend ostream& operator<<(),
+     placeholder for if descendants want to do somthing. */
+  virtual ostream& writeTo(ostream& os) 	{ return os; }
+  virtual istream& readFrom(istream& is)	{ return is; };
+  friend ostream& operator<<(ostream&, bmlnElmnt&);
+  friend bmlnElmnt* read_istream(istream&);
+
+  apstring     flavor;     // Allows for "flavors" of types of elements.
 };
 
 class hkick : public bmlnElmnt
@@ -825,40 +828,72 @@ private:
   istream& readFrom(istream&);
 
 public:
-  static void P_LikeMAD    ( bmlnElmnt*, Particle& );
-  static void J_LikeMAD    ( bmlnElmnt*, JetParticle& );
-  static void P_Exact      ( bmlnElmnt*, Particle& );
-  static void J_Exact      ( bmlnElmnt*, JetParticle& );
-  static void P_NoEdge     ( bmlnElmnt*, Particle& );
-  static void J_NoEdge     ( bmlnElmnt*, JetParticle& );
-  static void P_InEdge     ( bmlnElmnt*, Particle& );
-  static void J_InEdge     ( bmlnElmnt*, JetParticle& );
-  static void P_OutEdge    ( bmlnElmnt*, Particle& );
-  static void J_OutEdge    ( bmlnElmnt*, JetParticle& );
+
+  class MAD_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "rbend::MAD_Prop"; }
+  };
+  static MAD_Prop LikeMAD;
+
+  class Exact_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "rbend::Exact_Prop"; }
+  };
+  static Exact_Prop Exact;
+
+  class NoEdge_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "rbend::NoEdge_Prop"; }
+  };
+  static NoEdge_Prop NoEdge;
+
+  class InEdge_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "rbend::InEdge_Prop"; }
+  };
+  static InEdge_Prop InEdge;
+
+  class OutEdge_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "rbend::OutEdge_Prop"; }
+  };
+  static OutEdge_Prop OutEdge;
+
 
   rbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
-         PROPFUNC    = rbend::P_Exact,
-         JETPROPFUNC = rbend::J_Exact );
+         PropFunc*    = &rbend::Exact );
 
   rbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
          double,     // Pole face angle [ radians ]
-         PROPFUNC    = rbend::P_Exact,
-         JETPROPFUNC = rbend::J_Exact );
+         PropFunc*    = &rbend::Exact );
 
   rbend( char*,      // name
          double,     // length  [ meters ]
          double,     // field   [ tesla ]
-         PROPFUNC    = rbend::P_Exact,
-         JETPROPFUNC = rbend::J_Exact );
+         PropFunc*    = &rbend::Exact );
 
   rbend( char*,      // name
          double,     // length  [ meters ]
          double,     // field   [ tesla ]
          double,     // Pole face angle [ radians ]
-	 PROPFUNC    = rbend::P_Exact,
-         JETPROPFUNC = rbend::J_Exact );
+         PropFunc*    = &rbend::Exact );
 
   rbend( rbendData& );
   rbend( const rbend& );
@@ -868,14 +903,9 @@ public:
 
   void accept( BmlVisitor& v ) { v.visitRbend( this ); }
 
-  // ??? REMOVE: void enterLocalFrame( Particle&    ) const;
-  // ??? REMOVE: void enterLocalFrame( JetParticle& ) const;
-  // ??? REMOVE: void leaveLocalFrame( Particle&    ) const;
-  // ??? REMOVE: void leaveLocalFrame( JetParticle& ) const;
-  // ??? REMOVE: 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle&    p ) {    Propagator( this, p ); }
-  void localPropagate( JetParticle& p ) { JetPropagator( this, p ); }
+  void localPropagate( Particle&    p ) { (*Propagator)( this, p ); }
+  void localPropagate( JetParticle& p ) { (*Propagator)( this, p ); }
 
   rbendData* image();
 
@@ -887,8 +917,9 @@ public:
   void Split( double, bmlnElmnt**, bmlnElmnt** );
 
 
-  double PoleFaceAngle()    {return poleFaceAngle;}
-  double getPoleFaceAngle() {return poleFaceAngle;}
+  double PoleFaceAngle()       const {return poleFaceAngle;} 
+  double getPoleFaceAngle()    const {return poleFaceAngle;} 
+  double getTanPoleFaceAngle() const {return tanPFAngle;}    
   double setPoleFaceAngle( const Particle& );
   double setPoleFaceAngle( const JetParticle& );
   double setAngle(double a)
@@ -923,28 +954,38 @@ private:
   istream& readFrom(istream&);
 
 public:
-  static void P_LikeMAD    ( bmlnElmnt*, Particle& );
-  static void J_LikeMAD    ( bmlnElmnt*, JetParticle& );
-  static void P_Exact      ( bmlnElmnt*, Particle& );
-  static void J_Exact      ( bmlnElmnt*, JetParticle& );
-         void P_Face       ( Particle&,    const double& /* psi */  ) const;
-         void J_Face       ( JetParticle&, const double& /* psi */  ) const;
+
+  class MAD_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "sbend::MAD_Prop"; }
+  };
+  static MAD_Prop LikeMAD;
+
+  class Exact_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "sbend::Exact_Prop"; }
+  };
+  static Exact_Prop Exact;
+
+  void P_Face ( Particle&,    const double& /* psi */  ) const;
+  void J_Face ( JetParticle&, const double& /* psi */  ) const;
   
   sbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
          double,     // angle   [ radians ]
-
-         PROPFUNC    = sbend::P_Exact,
-         JETPROPFUNC = sbend::J_Exact );
+         PropFunc*    = &sbend::Exact );
 
   sbend( char*,      // name
          double,     // length  [ meters ]
          double,     // magnetic field [T]
          double,     // angle   [ radians ]
-
-         PROPFUNC    = sbend::P_Exact,
-         JETPROPFUNC = sbend::J_Exact );
-
+         PropFunc*    = &sbend::Exact );
 
   sbend( sbendData& );
   sbend( const sbend& );
@@ -963,8 +1004,8 @@ public:
   void leaveLocalFrame( JetParticle& ) const;
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle&    p ) {    Propagator( this, p ); }
-  void localPropagate( JetParticle& p ) { JetPropagator( this, p ); }
+  void localPropagate( Particle&    p ) { (*Propagator)( this, p ); }
+  void localPropagate( JetParticle& p ) { (*Propagator)( this, p ); }
 
   void accept( BmlVisitor& v ) { v.visitSbend( this ); }
 
@@ -1070,26 +1111,42 @@ private:
   istream& readFrom(istream&);
 
 public:
-  static void P_LikeMAD    ( bmlnElmnt*, Particle& );
-  static void J_LikeMAD    ( bmlnElmnt*, JetParticle& );
-  static void P_LikeTPOT   ( bmlnElmnt*, Particle& );
-  static void J_LikeTPOT   ( bmlnElmnt*, JetParticle& );
+ 
+  class MAD_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "quadrupole::MAD_Prop"; }
+  };
+  static MAD_Prop LikeMAD;
+
+  class TPOT_Prop : public bmlnElmnt::PropFunc
+  {
+  private:
+    int _n;  // number of thinquad kicks
+  public:
+    TPOT_Prop( int /* _n */ = 4 );
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "quadrupole::TPOT_Prop"; }
+    int  get_n() const;
+    void set_n( int );
+    void setup( quadrupole* ) const;
+  };
+  friend class TPOT_Prop;
+  static TPOT_Prop LikeTPOT;
 
   quadrupole();
   quadrupole( char*  n,         // name
               double l,         // length,        in meters
               double s,         // strength = B', in Tesla-meters^-1
-              int    m = 4,     // number of thinquad kicks
-
-              PROPFUNC    = quadrupole::P_LikeTPOT,
-              JETPROPFUNC = quadrupole::J_LikeTPOT );
+              PropFunc*    = &quadrupole::LikeTPOT );
 
   quadrupole( double l,         // length,        in meters
               double s,         // strength = B', in Tesla-meters^-1
-              int    m = 4,     // number of thinquad kicks
+              PropFunc*    = &quadrupole::LikeTPOT );
 
-              PROPFUNC    = quadrupole::P_LikeTPOT,
-              JETPROPFUNC = quadrupole::J_LikeTPOT );
 
   quadrupole( bmlnElmntData& );
   quadrupole( const quadrupole& );
@@ -1099,8 +1156,8 @@ public:
   void setStrength( double, int );
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle&    p ) {    Propagator( this, p ); }
-  void localPropagate( JetParticle& p ) { JetPropagator( this, p ); }
+  void localPropagate( Particle&    p ) { (*Propagator)( this, p ); }
+  void localPropagate( JetParticle& p ) { (*Propagator)( this, p ); }
 
   void accept( BmlVisitor& v ) { v.visitQuadrupole( this ); }
 
@@ -1124,10 +1181,32 @@ class JetQuadrupole : public bmlnElmnt
   ostream& writeTo(ostream&);
 
 public:
-  static void P_LikeMAD    ( bmlnElmnt*, Particle& );
-  static void J_LikeMAD    ( bmlnElmnt*, JetParticle& );
-  static void P_LikeTPOT   ( bmlnElmnt*, Particle& );
-  static void J_LikeTPOT   ( bmlnElmnt*, JetParticle& );
+
+  class MAD_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "JetQuadrupole::MAD_Prop"; }
+  };
+  static MAD_Prop LikeMAD;
+
+  class TPOT_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+  private:
+    int _n;  // number of thinquad kicks
+  public:
+    TPOT_Prop( int /* _n */ = 4 );
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "JetQuadrupole::TPOT_Prop"; }
+    int  get_n() const;
+    void set_n( int );
+    void setup( JetQuadrupole* ) const;
+  };
+  friend class TPOT_Prop;
+  static TPOT_Prop LikeTPOT;
 
   JetQuadrupole();
   JetQuadrupole( char*  n,         // name
@@ -1135,24 +1214,23 @@ public:
               double s,         // strength = B', in Tesla-meters^-1
               int index,        // What jet index > 6
               int    m = 4,     // number of thinquad kicks
-              PROPFUNC = 0,
-              JETPROPFUNC = 0);
+              PropFunc* = 0 );
   JetQuadrupole( double l,         // length,        in meters
               double s,         // strength = B', in Tesla-meters^-1
               int index,        // What jet index > 6
               int    m = 4,     // number of thinquad kicks
-              PROPFUNC = 0,
-              JETPROPFUNC = 0);
+              PropFunc* = 0 );
   JetQuadrupole( bmlnElmntData& );
   JetQuadrupole( const JetQuadrupole& );
   ~JetQuadrupole();
 
   void setStrength( double );
   void setStrength( double, int );
+  Jet getJetStrength() { return JetStrength; }
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle&    p ) {    Propagator( this, p ); }
-  void localPropagate( JetParticle& p ) { JetPropagator( this, p ); }
+  void localPropagate( Particle&    p ) { (*Propagator)( this, p ); }
+  void localPropagate( JetParticle& p ) { (*Propagator)( this, p ); }
 
   void accept( BmlVisitor& v ) { v.visitJetQuadrupole( this ); }
 
