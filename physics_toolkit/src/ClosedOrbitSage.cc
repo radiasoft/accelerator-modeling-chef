@@ -115,8 +115,8 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
   // Set up an FPSolver ...
   int i;
-  double jumpScale [] = { 1.0e-3, 1.0e-3, 1.0e-4, 1.0e-4 };
-  double zeroScale [] = { 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-9 };
+  double jumpScale [] = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-4, 1.0e-4, 1.0e-4 };
+  double zeroScale [] = { 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-9 };
 
   FPSolver fp( bml );
   for( i = 0; i < 6; i++ ) fp.ZeroScale(i) = zeroScale[i];
