@@ -34,6 +34,10 @@ fnal/filter/CVS
 fnal/filter/app/CVS
 fnal/filter/src/CVS
 fnal/filter/include/CVS
+fnal/swyd/CVS
+fnal/swyd/app/CVS
+fnal/swyd/src/CVS
+fnal/swyd/include/CVS
 fnal/tcl/CVS
 fnal/tcl/src/CVS
 fnal/tcl/scripts/CVS

@@ -18,11 +18,11 @@ default:
 
 
 
-LINKDIRS  = beamline mxyzptlk Machine tev tcl socket server sybase filter
+LINKDIRS  = beamline mxyzptlk Machine tev tcl socket server sybase filter swyd
 
-SUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app
+SUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app swyd/src swyd/app
 
-SUNSUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src
+SUNSUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src
 
 SGISUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src sybase/src socket/src server/src filter/src
 
@@ -98,6 +98,7 @@ TAR_FILES =	\
 	fnal/Makefile	\
 	fnal/Make-config \
 	fnal/tar-exclude \
+	fnal/ChangeLog \
 	fnal/beamline	\
 	fnal/mxyzptlk	\
 	fnal/tev \
@@ -106,6 +107,7 @@ TAR_FILES =	\
 	fnal/socket \
 	fnal/sybase \
 	fnal/filter \
+	fnal/swyd \
 	fnal/tcl
 
 tar:
@@ -116,7 +118,7 @@ tar:
 
 tar_everything:
 	cd .. ; \
-	tar -cvf $(NAME).tar $(TAR_FILES) fnal/mc ; \
+	tar -cvf $(NAME).tar $(TAR_FILES) fnal/mc fnal/mxb ; \
 	gzip $(NAME).tar ; \
 	mv $(NAME).tar.gz fnal
 
