@@ -62,8 +62,18 @@ extern char curr_bel_type[];
 extern "C" {
 #endif
 
+
+typedef struct { 
+
+fb_allocator *   bel_alloc_;  
+fb_allocator *   expr_alloc_; 
+
+}  bel_expr_alloc_struct;
+
+
+
 GHashTable* bel_table_init( void );
-int         bel_table_delete( GHashTable* bel_table, fb_allocator* bel_alloc );
+int         bel_table_delete( GHashTable* bel_table, fb_allocator* bel_alloc,  fb_allocator* expr_alloc );
 void        bel_table_display( FILE* out, GHashTable* var_table, GHashTable* bel_table );
 
 gpointer    bel_table_lookup( char* bel_name, GHashTable* bel_table );
