@@ -1,0 +1,30 @@
+// Insertion for CF_sbend constructors
+// 
+  double field       = this->strength;
+  double frontLength =  6.0*(this->length/4.0)/15.0;
+  double sepLength   = 16.0*(this->length/4.0)/15.0;
+
+  sbend edge ( frontLength, field, (frontLength/this->length)*_angle, 
+               this->Propagator );
+  sbend body ( sepLength,   field, (sepLength/this->length)*_angle,
+               this->Propagator );
+
+  thinSextupole ts( 0.0 );
+  thinQuad      tq( 0.0 );
+
+  _u = new bmlnElmnt* [ 13 ];
+  _v = _u;
+
+  *(_v++) = new sbend          ( edge    );
+  *(_v++) = new thinSextupole  ( ts      );
+  *(_v++) = new thinQuad       ( tq      );
+  *(_v++) = new sbend          ( body    );
+  *(_v++) = new thinSextupole  ( ts      );
+  *(_v++) = new thinQuad       ( tq      );
+  *(_v++) = new sbend          ( body    );
+  *(_v++) = new thinSextupole  ( ts      );
+  *(_v++) = new thinQuad       ( tq      );
+  *(_v++) = new sbend          ( body    );
+  *(_v++) = new thinSextupole  ( ts      );
+  *(_v++) = new thinQuad       ( tq      );
+  *(_v  ) = new sbend          ( edge    );

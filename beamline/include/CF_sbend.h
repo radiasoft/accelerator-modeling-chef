@@ -1,28 +1,28 @@
-#ifndef CF_RBEND_H
-#define CF_RBEND_H
+#ifndef CF_SBEND_H
+#define CF_SBEND_H
 
 #ifndef BMLNELMNT_H
 #include "bmlnElmnt.h"
 #endif
 
-class CF_rbend : public bmlnElmnt
+class CF_sbend : public bmlnElmnt
 {
   public:
 
-  CF_rbend( double,     // length  [ meters ]
+  CF_sbend( double,     // length  [ meters ]
             double,     // field   [ tesla ]
-            double,     // Entry angle [ radians ]
+            double,     // angle   [ radians ]
             int = 4 );
  
 
-  CF_rbend( const char*,// name
+  CF_sbend( const char*,// name
             double,     // length  [ meters ]
             double,     // field   [ tesla ]
-            double,     // Entry angle [ radians ]
+            double,     // angle   [ radians ]
             int = 4 );
 
 
-  CF_rbend( double,         // length     [ meter    ]
+  CF_sbend( double,         // length     [ meter    ]
             double,         // field      [ tesla    ]
             double,         // angle      [ radians  ]
             const Vector&,  // multipoles [ meter^-n ]
@@ -35,7 +35,7 @@ class CF_rbend : public bmlnElmnt
             int = 4 );
 
 
-  CF_rbend( const char*,    // name
+  CF_sbend( const char*,    // name
             double,         // length     [ meter    ]
             double,         // field      [ tesla    ]
             double,         // angle      [ radians  ]
@@ -43,9 +43,9 @@ class CF_rbend : public bmlnElmnt
             int = 4 );
 
 
-  CF_rbend( const CF_rbend& );
+  CF_sbend( const CF_sbend& );
 
-  ~CF_rbend();
+  ~CF_sbend();
   void eliminate();
 
 
@@ -55,26 +55,16 @@ class CF_rbend : public bmlnElmnt
     { bmlnElmnt::localPropagate( x ); }
 
   void accept( BmlVisitor& v ) 
-    { v.visitCF_rbend( this ); }
+    { v.visitCF_sbend( this ); }
   
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "CF_rbend") != 0 )
+  virtual int isType(char* c) { if ( strcmp(c, "CF_sbend") != 0 )
     return bmlnElmnt::isType(c); else return 1; }
   
   bmlnElmnt* Clone() const 
-    { return new CF_rbend( *this ); }
+    { return new CF_sbend( *this ); }
   double OrbitLength( const Particle& );
   void Split( double, bmlnElmnt**, bmlnElmnt** );
-
-  double PoleFaceAngle()    
-    { return _poleFaceAngle; }
-  double getPoleFaceAngle() 
-    { return _poleFaceAngle; }
-  double getEntryAngle() 
-    { return _poleFaceAngle; }
-
-  double AdjustPosition( const Proton& );
-  double AdjustPosition( const JetProton& );
 
 
   int setQuadrupole ( double );  
@@ -94,19 +84,19 @@ class CF_rbend : public bmlnElmnt
   double getOctupole();
   // Returns integrated multipole strengths
   // i.e., .getQuadrupole() returns B'l
-  //       .getSextupole()  returns B"l/2
-
+  //       .getSextupole()  returns B''l/2
+  //       .getOctupole()   returns B'''l/6
 
  private:
 
   bmlnElmnt** _u;
   bmlnElmnt** _v;
 
-  double _poleFaceAngle;
+  double _angle; // total bend angle  [ radians ]
 
   ostream& writeTo(ostream&);
   istream& readFrom(istream&);
 };
 
 
-#endif // CF_RBEND
+#endif // CF_SBEND
