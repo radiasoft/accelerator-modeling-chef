@@ -5,7 +5,7 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   2.0
+******  Version:   2.0.1
 ******                                    
 ******  File:      BeamlineContext.cc
 ******                                                                
@@ -480,6 +480,8 @@ void BeamlineContext::_createClosedOrbit()
   _deleteClosedOrbit();
 
   _p_co_p   = new Proton( _p_bml->Energy() );
+  _proton.SetReferenceEnergy( _p_co_p->ReferenceEnergy());
+  _proton.setState( _p_co_p->State() );
 
   if( (_onTransClosedOrbit( *_p_co_p )) ) 
   {
@@ -509,6 +511,8 @@ void BeamlineContext::_createClosedOrbit()
     }
 
     _p_co_p = (dynamic_cast<Proton*>(_p_jp->ConvertToParticle()));
+    _proton.setState( _p_co_p->State() );
+    _proton.SetReferenceEnergy( _p_co_p->ReferenceEnergy());
   }
 
 
