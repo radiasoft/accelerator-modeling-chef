@@ -18,9 +18,11 @@
 class bmlnElmnt;
 class beamline;
 
+class combinedFunction;
 class hkick;
 class octupole;
 class thinrfcavity;
+class rfcavity;
 class srot;
 class vkick;
 class monitor;
@@ -67,6 +69,8 @@ public:
   virtual void visitOctupole( octupole* x ) 
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
   virtual void visitThinrfcavity( thinrfcavity* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitRfcavity( rfcavity* x ) 
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
   virtual void visitSrot( srot* x ) 
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
