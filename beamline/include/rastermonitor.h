@@ -1,4 +1,4 @@
-#if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
+#if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__) && !defined(_EXCLUDE_MONITORS_)
 #ifndef RASTERMONITOR_H
 #define RASTERMONITOR_H
 
@@ -72,7 +72,7 @@ class rasterMonitor : public monitor {
                                  // seen since last call to resetX/Y/Zplot().
     void setNewScaling();        // Sends plot limits to raster.
 
-
+    static int WISH_WAIT_TIME;
 
   public:
     //@Man: Constructors and Destructors
