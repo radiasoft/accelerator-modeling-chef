@@ -107,248 +107,250 @@ int dlist_iterator::objectCount = 0;
 
 dlist::dlist(  const dlist& x )
 {
-ent w;
-last = 0;
-dlist_iterator getNext( x );
-while((  w = getNext()  )) append( w );
-owner = 0;
-
-#ifdef OBJECT_DEBUG
-  objectCount++;
-#endif
+  ent w;
+  last = 0;
+  dlist_iterator getNext( x );
+  while((  w = getNext()  )) append( w );
+  owner = 0;
+  
+  #ifdef OBJECT_DEBUG
+    objectCount++;
+  #endif
 }
 
-void dlink::putAbove( dlink* a ) {
-a -> prev = prev;
-a -> next = this;
-prev -> next = a;
-prev = a;
+void dlink::putAbove( dlink* a ) 
+{
+  a -> prev = prev;
+  a -> next = this;
+  prev -> next = a;
+  prev = a;
 }
 
 dlist& dlist::operator=( const dlist& x )
 {
-dlist_iterator getNext( x );
-ent p;
-clear();
-while((  p = getNext()  )) append( p );
-return *this;
-}
-
-void dlink::putBelow( dlink* a ) {
-a -> prev = this;
-a -> next = next;
-next -> prev = a;
-next = a;
-}
-
-ent dlist::remove( dlink* p ) {
-ent a;
-
-// NOTE:  This method assumes that *p is actually in the dlist;
-//        it does not double-check to see that this is true.
-//        This method purposely does not use dlist_iterator
-
-// If p is the first element in the list ...
-if ( p == last -> next ) {
-  a = get();
-  return a;
+  dlist_iterator getNext( x );
+  ent p;
+  clear();
+  while((  p = getNext()  )) append( p );
+  return *this;
   }
+  
+  void dlink::putBelow( dlink* a ) {
+  a -> prev = this;
+  a -> next = next;
+  next -> prev = a;
+  next = a;
+}
 
-// If p is the last element in the list ...
-if ( p == last ) {
-  // .. and there is only one element ..
-  if( last->prev == last ) {
+ent dlist::remove( dlink* p ) 
+{
+  ent a;
+  
+  // NOTE:  This method assumes that *p is actually in the dlist;
+  //        it does not double-check to see that this is true.
+  //        This method purposely does not use dlist_iterator
+  
+  // If p is the first element in the list ...
+  if ( p == last -> next ) {
     a = get();
     return a;
     }
-  // .. or there is more then one element ..
-  last = p->prev;
-  }
-
-// If p is neither the first nor the last element
-// in the list, or p is the last element in a list
-// with more than one element ..
-( p -> prev ) -> next  =  p -> next;
-( p -> next ) -> prev  =  p -> prev;
-a = p -> e;
-delete p;
-return a;
-
+  
+  // If p is the last element in the list ...
+  if ( p == last ) {
+    // .. and there is only one element ..
+    if( last->prev == last ) {
+      a = get();
+      return a;
+      }
+    // .. or there is more then one element ..
+    last = p->prev;
+    }
+  
+  // If p is neither the first nor the last element
+  // in the list, or p is the last element in a list
+  // with more than one element ..
+  ( p -> prev ) -> next  =  p -> next;
+  ( p -> next ) -> prev  =  p -> prev;
+  a = p -> e;
+  delete p;
+  return a;
 }
 
 
 char dlist::remove( ent a )
 {
-dlist_traversor getNext( *this );
-dlink* p;
-ent w;
-while((  p = getNext()  ))  if( p->e == a ) {
-                          w = remove( p );
-                          return 1;
-                          }
-return 0;
+  dlist_traversor getNext( *this );
+  dlink* p;
+  ent w;
+  while((  p = getNext()  ))  if( p->e == a ) {
+			    w = remove( p );
+			    return 1;
+			    }
+  return 0;
 } // End function char dlist::remove( ent a )
 
 
 ent dlist::remove( int n )
 {
-dlist_traversor getNext( *this );
-dlink* p;
-ent w;
-int i = 0;
-while((  p = getNext()  ))  if( i++ == n ) {
-                          w = remove( p );
-                          return w;
-                          }
-return 0;
+  dlist_traversor getNext( *this );
+  dlink* p;
+  ent w;
+  int i = 0;
+  while((  p = getNext()  ))  if( i++ == n ) {
+			    w = remove( p );
+			    return w;
+			    }
+  return 0;
 } // End function char dlist::remove( ent a )
 
 
 dlist dlist::remove( ent a, ent b )
 {
-dlist  ret;
-dlink* p;
-dlink* pr;
-ent    w;
-ent    wd;
-ent    y;
-dlist_traversor getNext ( *this );
-
-do { p = getNext();
-     w = p->e;
-   } while ( p != 0 && w != a && w != b );
-
-if( p == 0 ) {
-  cerr << "\n*** ERROR ***                              \n";
-  cerr <<   "*** ERROR *** dlist::remove( ent, ent )    \n";
-  cerr <<   "*** ERROR *** Reached the end of the list  \n";
-  cerr <<   "*** ERROR *** without finding markers.     \n";
-  cerr <<   "*** ERROR ***                              \n";
-  exit(1);
-}
-
-if( w == a ) y = b;
-else  {      y = a;
-             if( w != b ) {
-               cerr << "\n*** IMPOSSIBLE ERROR!\n" ;
-               exit(1);
-             }
-}
-
-p = getNext();
-w = ( pr = p )->e;
-if( w == y || p == 0 ) {
-  cerr << "\n*** WARNING ***                                     \n";
-  cerr <<   "*** WARNING *** dlist::remove( ent, ent )           \n";
-  cerr <<   "*** WARNING *** No elements available for removal.  \n";
-  cerr <<   "*** WARNING ***                                     \n";
-  return *this;
-}
-
-do {
+  dlist  ret;
+  dlink* p;
+  dlink* pr;
+  ent    w;
+  ent    wd;
+  ent    y;
+  dlist_traversor getNext ( *this );
+  
+  do { p = getNext();
+       w = p->e;
+     } while ( p != 0 && w != a && w != b );
+  
+  if( p == 0 ) {
+    cerr << "\n*** ERROR ***                              \n";
+    cerr <<   "*** ERROR *** dlist::remove( ent, ent )    \n";
+    cerr <<   "*** ERROR *** Reached the end of the list  \n";
+    cerr <<   "*** ERROR *** without finding markers.     \n";
+    cerr <<   "*** ERROR ***                              \n";
+    exit(1);
+  }
+  
+  if( w == a ) y = b;
+  else  {      y = a;
+	       if( w != b ) {
+		 cerr << "\n*** IMPOSSIBLE ERROR!\n" ;
+		 exit(1);
+	       }
+  }
+  
   p = getNext();
-  wd = remove( pr );
-  ret.append( w );
   w = ( pr = p )->e;
-} while ( ( p != 0 ) && ( w != y ) );
-
-if( p == 0 ) {
-  cerr << "\n*** WARNING ***                                \n";
-  cerr <<   "*** WARNING *** dlist::remove( ent, ent )      \n";
-  cerr <<   "*** WARNING *** Reached the end of the list.   \n";
-  cerr <<   "*** WARNING ***                                \n";
-}
-
-return ret;
+  if( w == y || p == 0 ) {
+    cerr << "\n*** WARNING ***                                     \n";
+    cerr <<   "*** WARNING *** dlist::remove( ent, ent )           \n";
+    cerr <<   "*** WARNING *** No elements available for removal.  \n";
+    cerr <<   "*** WARNING ***                                     \n";
+    return *this;
+  }
+  
+  do {
+    p = getNext();
+    wd = remove( pr );
+    ret.append( w );
+    w = ( pr = p )->e;
+  } while ( ( p != 0 ) && ( w != y ) );
+  
+  if( p == 0 ) {
+    cerr << "\n*** WARNING ***                                \n";
+    cerr <<   "*** WARNING *** dlist::remove( ent, ent )      \n";
+    cerr <<   "*** WARNING *** Reached the end of the list.   \n";
+    cerr <<   "*** WARNING ***                                \n";
+  }
+  
+  return ret;
 } // End function dlist dlist::remove( ent a, ent b )
 
 
 dlist dlist::remove( int x, int y )     // ??? This is a kludged version. Rewrite!!
 {
-ent   a;
-ent   b;
-dlist c;
-a = operator[]( x );
-b = operator[]( y );
-return remove( a, b );
+  ent   a;
+  ent   b;
+  dlist c;
+  a = operator[]( x );
+  b = operator[]( y );
+  return remove( a, b );
 }
 
-void dlist::insert( ent a) {
-if( last ) {
-  last->next = new dlink( a, last, last->next );
-  ((last->next)->next)->prev = last->next;
+void dlist::insert( ent a) 
+{
+  if( last ) {
+    last->next = new dlink( a, last, last->next );
+    ((last->next)->next)->prev = last->next;
+    }
+  else {
+    last = new dlink( a, 0, 0 );
+    last->next = last;
+    last->prev = last;
+    }
   }
-else {
-  last = new dlink( a, 0, 0 );
-  last->next = last;
-  last->prev = last;
-  }
-}
-
-void dlist::append( ent a ) {
-if( last ) {
-  last = last->next = new dlink( a, last, last->next );
-  (last->next)->prev = last;
-  }
-else {
-  last = new dlink( a, 0, 0 );
-  last->next = last;
-  last->prev = last;
-  }
+  
+  void dlist::append( ent a ) {
+  if( last ) {
+    last = last->next = new dlink( a, last, last->next );
+    (last->next)->prev = last;
+    }
+  else {
+    last = new dlink( a, 0, 0 );
+    last->next = last;
+    last->prev = last;
+    }
 }
 
 
 char dlist::putAbove( ent a, ent b )    // Untested???
 {
-char   found;
-dlink* w;
-dlink* z;
-dlist_traversor getNext( *this );
-found = 0;
-while((  w = getNext()  ))
-  if( w->e == a ) {
-    found = 1;
-    break;
-    }
-if( !found ) return 0;
-z = new dlink( b, 0, 0 );
-w->putAbove( z );
-return 1;
+  char   found;
+  dlink* w;
+  dlink* z;
+  dlist_traversor getNext( *this );
+  found = 0;
+  while((  w = getNext()  ))
+    if( w->e == a ) {
+      found = 1;
+      break;
+      }
+  if( !found ) return 0;
+  z = new dlink( b, 0, 0 );
+  w->putAbove( z );
+  return 1;
 }
 
 
 char dlist::putBelow( ent a, ent b )    // Untested???
 {
-char   found;
-dlink* w;
-dlink* z;
-dlist_traversor getNext( *this );
-found = 0;
-while((  w = getNext()  ))
-  if( w->e == a ) {
-    found = 1;
-    break;
-    }
-if( !found ) return 0;
-z = new dlink( b, 0, 0 );
-w->putBelow( z );
-if( w == last ) last = z;
-return 1;
+  char   found;
+  dlink* w;
+  dlink* z;
+  dlist_traversor getNext( *this );
+  found = 0;
+  while((  w = getNext()  ))
+    if( w->e == a ) {
+      found = 1;
+      break;
+      }
+  if( !found ) return 0;
+  z = new dlink( b, 0, 0 );
+  w->putBelow( z );
+  if( w == last ) last = z;
+  return 1;
 }
 
 
 ent dlist::get() {
-if ( last == 0 ) return 0;   // In case the list is empty.
-dlink* f = last->next;
-ent r = f->e;
-if ( f == last )
-  last = 0;
-else {
-  last->next = f->next;
-  (last->next)->prev = last;
-  }
-delete f;
-return r;
+  if ( last == 0 ) return 0;   // In case the list is empty.
+  dlink* f = last->next;
+  ent r = f->e;
+  if ( f == last )
+    last = 0;
+  else {
+    last->next = f->next;
+    (last->next)->prev = last;
+    }
+  delete f;
+  return r;
 }
 
 
@@ -383,51 +385,53 @@ void dlist::riskStartAt( const dlink* x )
 
 ent dlist::operator[]( int n ) const
 {
-dlist_iterator getNext( *this );
-int i = 0;
-ent p = 0;
-while( ( i++ <= n ) && ( p = getNext() ) ) ;
-return p;
+  dlist_iterator getNext( *this );
+  int i = 0;
+  ent p = 0;
+  while( ( i++ <= n ) && ( p = getNext() ) ) ;
+  return p;
 }
 
 
 int dlist::size() const
 {
-dlist_iterator getNext( *this );
-int i = 0;
-ent p;
-while((  p = getNext()  )) i++;
-return i;
+  dlist_iterator getNext( *this );
+  int i = 0;
+  ent p;
+  while((  p = getNext()  )) i++;
+  return i;
 }
 
 
-void dlist::clear() {
-dlink* l = last;
-if( l == 0 ) return;
-do {
-  dlink* ll = l;
-  l = l->next;
-  delete ll;
-  }
-while( l != last );
-last = 0;
+void dlist::clear() 
+{
+  dlink* l = last;
+  if( l == 0 ) return;
+  do {
+    dlink* ll = l;
+    l = l->next;
+    delete ll;
+    }
+  while( l != last );
+  last = 0;
 }
 
-void dlist::zap(){
-dlink* l;
-dlink* ll;
-l = last;
-if( l == 0 ) return;
-do {
-  ll = l;
-  l = l->next;
-  delete ll->e;
-  delete ll;
-  }
-while( l != last );
-delete l->e;
-delete l;
-last = 0;
+void dlist::zap()
+{
+  dlink* l;
+  dlink* ll;
+  l = last;
+  if( l == 0 ) return;
+  do {
+    ll = l;
+    l = l->next;
+    delete ll->e;
+    delete ll;
+    }
+  while( l != last );
+  delete l->e;
+  delete l;
+  last = 0;
 }
 
 
@@ -485,63 +489,68 @@ char dlist::SetFirst( DLIST_CRITFUNC f ) {   // Warning: not tested!!
 
 
 
-ent dlist_iterator::operator()() {
-ent ret = 0;
-if( cs->last )
-{ 
-  ret = ce ? ( ce = ce->next )->e : 0;
-  if( ce == cs->last ) ce = 0;
-}
-return ret;
-}
-
-
-void dlist_iterator::GoBack( int n ) {
-static int j;
-
-if( n < 1 ) n = 1;
-if( ce == 0 ) ce = cs->last;  // Cancels interference from 
-                              // dlist_iterator::operator()
-for( j = 0; j < n; j++ ) ce = ce->prev;
-}
-
-
-ent dlist_looper::operator()() {
-ent ret = 0;
-if( cs->last )
+ent dlist_iterator::operator()() 
 {
-  ret = ce;
-  if( ret != 0 ) {
-    ret = ( ce = ce->next )->e;
+  ent ret = 0;
+  if( cs->last )
+  { 
+    ret = ce ? ( ce = ce->next )->e : 0;
     if( ce == cs->last ) ce = 0;
-    }
-  else {
-    ce = cs->last;
-    }
-}
-return ret;
+  }
+  return ret;
 }
 
-dlink* dlist_traversor::operator()() {
-dlink* ret = 0;
-if( cs->last )
+
+void dlist_iterator::GoBack( int n ) 
 {
-  if( ce != 0 ) ret = ( ce = ce->next );
-  else          ret = 0;
-  if( ce == cs->last ) ce = 0;
-}
-return ret;
+  static int j;
+  
+  if( n < 1 ) n = 1;
+  if( ce == 0 ) ce = cs->last;  // Cancels interference from 
+				// dlist_iterator::operator()
+  for( j = 0; j < n; j++ ) ce = ce->prev;
 }
 
-ent dlist_reverseIterator::operator()() {
-if( ce == 0 ) return 0;
-ent ret = 0;
-if( cs->last )
+
+ent dlist_looper::operator()() 
 {
-  ret = ce->e;
-  if( ( ce = ce->prev ) == cs->last ) ce = 0;
+  ent ret = 0;
+  if( cs->last )
+  {
+    ret = ce;
+    if( ret != 0 ) {
+      ret = ( ce = ce->next )->e;
+      if( ce == cs->last ) ce = 0;
+      }
+    else {
+      ce = cs->last;
+      }
+  }
+  return ret;
 }
-return ret;
+
+dlink* dlist_traversor::operator()() 
+{
+  dlink* ret = 0;
+  if( cs->last )
+  {
+    if( ce != 0 ) ret = ( ce = ce->next );
+    else          ret = 0;
+    if( ce == cs->last ) ce = 0;
+  }
+  return ret;
+}
+
+ent dlist_reverseIterator::operator()() 
+{
+  if( ce == 0 ) return 0;
+  ent ret = 0;
+  if( cs->last )
+  {
+    ret = ce->e;
+    if( ( ce = ce->prev ) == cs->last ) ce = 0;
+  }
+  return ret;
 }
 
 /*
