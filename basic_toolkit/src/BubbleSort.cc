@@ -28,13 +28,9 @@
 *************************************************************************/
 
 
-#ifdef  _MSC_VER
 #include <iostream>
 using std::cerr;
 using std::endl;
-#else
-#include <iostream.h>
-#endif
 
 void BubbleSort( double x[], int n )
 {

@@ -94,8 +94,8 @@ class Frame
                                   // inverse operation of relativeTo.
                                   // Assumes an orthonormal Frame.
 
-   friend ostream& operator<< ( ostream& os, /* const */ Frame& );
-   friend istream& operator>> ( istream& is, /* const */ Frame& );
+   friend std::ostream& operator<< ( std::ostream& os, /* const */ Frame& );
+   friend std::istream& operator>> ( std::istream& is, /* const */ Frame& );
 };
 
 

@@ -31,13 +31,8 @@
 #ifndef ML_H
 #define ML_H
 
-#ifdef __VISUAL_CPP__
 #include <iostream>
 #include <complex>
-#else
-#include <iostream.h>
-#include <complex>
-#endif
 #include <math.h>
 
 #include "complexAddon.h"

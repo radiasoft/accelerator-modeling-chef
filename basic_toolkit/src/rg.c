@@ -6,11 +6,11 @@
 ******  Version:   4.0                    
 ******                                    
 ******  File:      rg.c
+******             Converted from rg.f by f2c on February 3, 1990.
+******             rg.f was taken from the EISPACK library
+******             of that time.
 ******                                                                
-******  Copyright (c) 1990 Universities Research Association, Inc.    
-******                All Rights Reserved                             
-******                                                                
-******  Author:    Leo Michelotti                                     
+******  Contact:   Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
 ******             P.O.Box 500                                        

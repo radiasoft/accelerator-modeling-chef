@@ -120,7 +120,7 @@ public:
   int size() const;
   char IsEmpty() { return last == 0; }
   void clear();   // Preserves the data 
-  void zap();     // Destroys the data
+  // void zap();     // Destroys the data
   ent lastInfoPtr() { if( last ) return last->e;
                       else       return 0;
                     }

@@ -52,6 +52,8 @@
 
 #include "Frame.h"
 
+using namespace std;
+
 Frame::Frame()
 : o(3), e(3,3)
 {

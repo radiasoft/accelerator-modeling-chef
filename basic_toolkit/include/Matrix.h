@@ -35,10 +35,6 @@
 
 class MatrixC;
 
-
-//class ostream;
-
-
 class MatrixD {
 private:
   MLD* ml;
@@ -94,7 +90,7 @@ public:
 friend char operator==( const MatrixD&, const MatrixD& );
 friend char operator==( const MatrixD&, const double& );
 friend char operator==( const double&, const MatrixD& );
-friend ostream& operator<<(ostream&, const MatrixD&);
+friend std::ostream& operator<<(std::ostream&, const MatrixD&);
 //friend istream& operator>>(istream&, MatrixD&);
 friend MatrixD operator+ (const MatrixD &,const MatrixD &);
 friend MatrixD operator+ (const MatrixD &,const double&); 
@@ -176,7 +172,7 @@ public:
 friend char operator==( const MatrixC&, const MatrixC& );
 friend char operator==( const MatrixC&, const Complex& );
 friend char operator==( const Complex&, const MatrixC& );
-friend ostream& operator<<(ostream&, const MatrixC&);
+friend std::ostream& operator<<(std::ostream&, const MatrixC&);
 //friend istream& operator>>(istream&, MatrixC&);
 friend MatrixC operator+ (const MatrixC &,const MatrixC &);
 friend MatrixC operator+ (const MatrixC &,const Complex&); 
@@ -246,7 +242,7 @@ public:
 friend char operator==( const MatrixI&, const MatrixI& );
 friend char operator==( const MatrixI&, const int& );
 friend char operator==( const int&, const MatrixI& );
-friend ostream& operator<<(ostream&, const MatrixI&);
+friend std::ostream& operator<<(std::ostream&, const MatrixI&);
 //friend istream& operator>>(istream&, MatrixI&);
 friend MatrixI operator+ (const MatrixI &,const MatrixI &);
 friend MatrixI operator+ (const MatrixI &,const int&); 

@@ -215,7 +215,7 @@ public:
   int size() const;
   char IsEmpty() { return last == 0; }
   void clear();
-  void zap();
+  // void zap();
 
   char SetLast( ent );
   char SetFirst( ent );

@@ -28,12 +28,8 @@
 *************************************************************************/
 
 
-#ifdef __VISUAL_CPP__
 #include <iostream>
-#else
-#include <iostream.h>
-#endif
-#include <string.h>
+#include <string>
 #include "Barnacle.h"
 // ================================================================
 //      Global variables
