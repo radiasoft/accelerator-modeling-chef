@@ -55,6 +55,7 @@ SUBDIRS  = basic_toolkit/src \
 
 APPDIRS  = filter/app \
 	machines/accumulator/app \
+	machines/booster/app \
 	machines/mi/app \
 	machines/mi_8gev/app \
 	machines/recycler/app \
@@ -84,14 +85,26 @@ setup:
 lib-dir:
 	@if [ ! -d lib ] ; then \
 		mkdir lib;\
-		mkdir lib/sun; \
-		mkdir lib/kai; \
-		mkdir lib/ultra; \
-		mkdir lib/sgi; \
-		mkdir lib/gcc; \
-		mkdir lib/egcs; \
-		else true; \
 	fi
+	@if [ ! -d lib/sun ] ; then \
+		mkdir lib/sun; \
+	fi
+	@if [ ! -d lib/kai ] ; then \
+		mkdir lib/kai; \
+	fi
+	@if [ ! -d lib/ultra ] ; then \
+		mkdir lib/ultra; \
+	fi
+	@if [ ! -d lib/sgi ] ; then \
+		mkdir lib/sgi; \
+	fi
+	@if [ ! -d lib/gcc ] ; then \
+		mkdir lib/gcc; \
+	fi
+	@if [ ! -d lib/egcs ] ; then \
+		mkdir lib/egcs; \
+	fi
+
 real-clean:
 	rm -f ./*~*
 	@set -x; for i in $(SUBDIRS); do \
@@ -103,7 +116,8 @@ lib-clean:
 	rm -f lib/sun/*.a;\
 	rm -f lib/sgi/*.a;\
 	rm -f lib/egcs/*.a;\
-	rm -f lib/gcc/*.a;
+	rm -f lib/gcc/*.a;\
+	rm -f lib/kai/*.a
 
 # Remove .o files, emacs backup files, etc.
 clean:
