@@ -986,6 +986,18 @@ public:
   };
   static Exact_Prop Exact;
 
+  class Approx_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "sbend::Fast_Prop"; }
+  private:
+    double fastArcsin( double x     ) const;
+    Jet    fastArcsin( const Jet& x ) const;
+  };
+  static Approx_Prop Approx;
+
   void P_Face ( Particle&,    const double& /* psi */  ) const;
   void J_Face ( JetParticle&, const double& /* psi */  ) const;
   
