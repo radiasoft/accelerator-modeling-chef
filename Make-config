@@ -39,8 +39,8 @@ gcc:
 	$(MAKE) targets \
 	"C   = gcc" \
 	"C++ = g++" \
-	"CFLAGS =  " \
-	"C++FLAGS =  -fpermissive" \
+	"CFLAGS =  -pipe" \
+	"C++FLAGS =  -pipe -fpermissive" \
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
@@ -52,9 +52,9 @@ gcc:
 linux:
 	$(MAKE) targets \
 	"C   = gcc" \
-	"C++ = egcs" \
-	"CFLAGS =  " \
-	"C++FLAGS =  " \
+	"C++ = g++" \
+	"CFLAGS =  -pipe " \
+	"C++FLAGS  -pipe " \
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
@@ -62,7 +62,7 @@ linux:
 	"INCDIR = $(FNALROOT)/include" \
 	"TKINC = /usr/include/tcl" \
 	"XINC = /usr/include" \
-	"LIBDIR = $(FNALROOT)/lib/egcs" \
+	"LIBDIR = $(FNALROOT)/lib/linux" \
 	"STL_CONFIG = "
 
 irix:
@@ -84,8 +84,8 @@ irix-gcc:
 	pmake targets \
 	"C   = gcc" \
 	"C++ = g++" \
-	"CFLAGS = " \
-	"C++FLAGS = " \
+	"CFLAGS = -pipe" \
+	"C++FLAGS = -pipe" \
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
@@ -99,8 +99,8 @@ irix-gcc-debug:
 	pmake targets \
 	"C   = gcc" \
 	"C++ = g++" \
-	"CFLAGS = -g " \
-	"C++FLAGS = -g " \
+	"CFLAGS = -g -pipe" \
+	"C++FLAGS = -g -pipe" \
 	"INLINE_FLAG = " \
 	"MAKELIB = ar ruv" \
 	"RANLIB = ranlib" \
@@ -132,7 +132,7 @@ ultra-opt:
 	"C   = cc" \
 	"C++ = CC" \
 	"CFLAGS = " \
-	"C++FLAGS = -DULTRA -O -native -dalign -fsimple=1 -fns -ftrap=%none -libmil -xlibmopt -xchip=ultra -xarch=v8plus -ptr$(FNALROOT) -verbose=template -library=iostream" \
+	"C++FLAGS = -DULTRA -O -native -dalign -fsimple=1 -fns -ftrap=%none -libmil -xlibmopt -xchip=ultra -xarch=v8plus -verbose=template -library=iostream" \
 	"INLINE_FLAG = +d " \
 	"MAKELIB = CC -xar -o" \
 	"INCDIR = $(FNALROOT)/include" \
@@ -228,37 +228,6 @@ irix-depend:
 	"XINC = /usr/include" \
 	"LIBDIR = $(FNALROOT)/lib/sgi"
 
-egcs:
-	$(MAKE) targets \
-	"C   = /usr/local/ap/egcs/bin/gcc" \
-	"C++ = /usr/local/ap/egcs/bin/g++" \
-	"CFLAGS =  " \
-	"C++FLAGS =  " \
-	"INLINE_FLAG = " \
-	"MAKELIB = ar ruv" \
-	"RANLIB = ranlib" \
-	"XINC = /usr/local/ap/X11R6/include" \
-	"SYBASEINC = /usr/local/ap/sybase/include" \
-	"TKINC = /usr/local/TCL-TK/include" \
-	"LIBDIR = $(FNALROOT)/lib/egcs" \
-	"STL_CONFIG = "
-
-
-linux-egcs:
-	$(MAKE) targets \
-	"C   = /usr/bin/gcc" \
-	"C++ = /usr/bin/egcs" \
-	"CFLAGS =  " \
-	"C++FLAGS =  " \
-	"INLINE_FLAG = " \
-	"MAKELIB = ar ruv" \
-	"RANLIB = ranlib" \
-	"XINC = /usr/X11R6/include" \
-	"SYBASEINC = /home/sybase/sybase/include" \
-	"TKINC = /usr/local/TCL-TK/include" \
-	"LIBDIR = $(FNALROOT)/lib/egcs" \
-	"STL_CONFIG = "
-
 kai-debug:
 	$(MAKE) targets \
 	"C   = cc" \
@@ -311,4 +280,5 @@ kai:
 	"XINC = /usr/local/ap/X11R6/include" \
 	"RANLIB = echo" \
 	"STL_CONFIG = "
+
 
