@@ -3,7 +3,7 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.0                    
+******  Version:   4.1                    
 ******                                    
 ******  File:      slist.h
 ******                                                                
@@ -35,8 +35,6 @@
 ******                                                               *****
 ******  Taken from Stroustrup's book,                                *****
 ******  The C++ Programming Language                                 *****
-******                                                               *****
-******  5/15/96  Added "owner"    (LM)                               *****
 ******                                                               *****
 **************************************************************************
 **************************************************************************
@@ -162,6 +160,7 @@ public:
 
   void Reset    ( const slist& s ) { cs = (slist*) &s; ce = cs->last; }
   void Reset()  { ce = cs->last; }
+  void Terminate();
 
   ent operator()();
 } ;
@@ -185,6 +184,7 @@ public:
   slink* operator()();
   void Reset( const slist& s ) { cs = (slist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
+  void Terminate();
 } ;
 
 
