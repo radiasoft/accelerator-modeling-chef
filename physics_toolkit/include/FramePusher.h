@@ -5,7 +5,7 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
+******  Version:   2.0
 ******                                    
 ******  File:      FramePusher.h
 ******                                                                
@@ -68,6 +68,8 @@ class FramePusher : public ConstBmlVisitor
   void visitSlot     ( const Slot*     );
   void visitSbend    ( const sbend*    );
   void visitCF_sbend ( const CF_sbend* );
+  void visitRbend    ( const rbend*    );
+  void visitCF_rbend ( const CF_rbend* );
   void visitSector   ( const sector*   );
 
   Frame getFrame();
