@@ -9,14 +9,19 @@ fnal/machines/accumulator/app/CVS
 fnal/machines/accumulator/app/twissCheck
 fnal/machines/accumulator/include/CVS
 fnal/machines/accumulator/lattices/CVS
+fnal/machines/accumulator/lattices/mad/CVS
 fnal/machines/accumulator/src/.sb
 fnal/machines/accumulator/src/CVS
 fnal/machines/booster/CVS
 fnal/machines/booster/app/.sb
 fnal/machines/booster/app/CVS
 fnal/machines/booster/app/twissCheck
+fnal/machines/booster/app/orbitCheck
+fnal/machines/booster/app/makeBml
+fnal/machines/booster/app/regenBoosterTables
 fnal/machines/booster/include/CVS
 fnal/machines/booster/lattices/CVS
+fnal/machines/booster/lattices/mad/CVS
 fnal/machines/booster/src/.sb
 fnal/machines/booster/src/CVS
 fnal/beamline/CVS
@@ -31,6 +36,7 @@ fnal/beamline/src/physics/6d/.sb
 fnal/beamline/src/physics/CVS
 fnal/beamline/src/physics/mad/.sb
 fnal/beamline/src/physics/mad/CVS
+fnal/beamline/test
 fnal/filter/CVS
 fnal/filter/app/.sb
 fnal/filter/app/CVS
@@ -57,6 +63,7 @@ fnal/machines/mi_8gev/app/checkShunts
 fnal/machines/mi_8gev/app/regenMi8Tables
 fnal/machines/mi_8gev/app/twissCheck
 fnal/machines/mi_8gev/include/CVS
+fnal/machines/mi_8gev/gui
 fnal/machines/mi_8gev/lattices/CVS
 fnal/machines/mi_8gev/lattices/mad/p8_pmv9.log
 fnal/machines/mi_8gev/lattices/mad/stripped.log
@@ -88,6 +95,7 @@ fnal/machines/recycler/app/orbitCheck
 fnal/machines/recycler/app/twissCheck
 fnal/machines/recycler/include/CVS
 fnal/machines/recycler/lattices/CVS
+fnal/machines/recycler/lattices/mad/CVS
 fnal/machines/recycler/src/.sb
 fnal/machines/recycler/src/CVS
 fnal/server/CVS
@@ -153,6 +161,7 @@ fnal/machines/tev/app/track
 fnal/machines/tev/app/twissCheck
 fnal/machines/tev/include/CVS
 fnal/machines/tev/lattices/CVS
+fnal/machines/tev/lattices/mad/CVS
 fnal/machines/tev/lattices/mad/fit.echo
 fnal/machines/tev/lattices/mad/fit.lat
 fnal/machines/tev/lattices/mad/fit.log
@@ -169,3 +178,9 @@ fnal/physics_toolkit/CVS
 fnal/physics_toolkit/include/CVS
 fnal/physics_toolkit/src/.sb
 fnal/physics_toolkit/src/CVS
+fnal/integrator/CVS
+fnal/integrator/demos/.sb
+fnal/integrator/demos/CVS
+fnal/integrator/include/CVS
+fnal/integrator/src/.sb
+fnal/integrator/src/CVS
