@@ -21,7 +21,6 @@ OBJS = BBLens.o \
        circuit.o \
        combinedFunction.o \
        drift.o \
-       hkick.o \
        hmonitor.o \
        kick.o \
        marker.o \
@@ -47,7 +46,6 @@ OBJS = BBLens.o \
        thinSeptum.o \
        thinSextupole.o \
        thinrfcavity.o \
-       vkick.o \
        vmonitor.o \
        read_istream.o
 

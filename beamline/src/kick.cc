@@ -6,6 +6,101 @@
 
 #include "kick.h"
 
+// **************************************************
+//   class vkick 
+// **************************************************
+
+vkick::vkick() : bmlnElmnt() {
+}
+
+vkick::vkick( double k ) : bmlnElmnt() {
+                      // Unfortunately, this is a
+ strength = k;        // special case. Normally a
+                      // single "double" argument
+}                     // indicates length.
+
+vkick::vkick( char* n ) : bmlnElmnt(n) {
+}
+
+vkick::vkick( char* n, double k ) : bmlnElmnt(n) {
+                      // Unfortunately, this is a
+ strength = k;        // special case. Normally a
+                      // single "double" argument
+}                     // indicates length.
+
+vkick::vkick( bmlnElmntData& x ) : bmlnElmnt( x ) {
+}
+
+vkick::vkick( const vkick& x )
+: bmlnElmnt( (bmlnElmnt&) x )
+{
+}
+
+
+vkick::vkick( char* n, double l, double s ) 
+: bmlnElmnt(n,l,s) 
+{
+}
+
+
+vkick::~vkick() {
+}
+
+
+const char* vkick::Type() const 
+{ 
+  return "vkick"; 
+}
+
+
+// **************************************************
+//   class hkick
+// **************************************************
+
+hkick::hkick() : bmlnElmnt() {
+}
+
+hkick::hkick( double k ) : bmlnElmnt() {
+ strength = k;
+}
+
+hkick::hkick( char* n ) : bmlnElmnt(n) {
+}
+
+hkick::hkick( char* n, double k ) 
+: bmlnElmnt( n ) 
+{
+ strength = k;      // Unfortunately, this is a
+                    // special case. Normally a
+}                   // single "double" argument
+                    // indicates length.
+
+hkick::hkick( const hkick& x ) 
+: bmlnElmnt( (bmlnElmnt&) x )
+{
+}
+
+
+hkick::hkick( bmlnElmntData& x ) : bmlnElmnt( x ) {
+}
+
+
+hkick::hkick( char* n, double l, double s ) 
+: bmlnElmnt(n,l,s) 
+{
+}
+
+
+hkick::~hkick() {
+}
+
+
+const char* hkick::Type() const 
+{ 
+  return "hkick"; 
+}
+
+
 // ************************************************
 //   class kick
 // ************************************************
