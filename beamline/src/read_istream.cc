@@ -189,7 +189,7 @@ bmlnElmnt* read_istream(istream& is)
     element = vkickPtr;
   }
   else if( strcasecmp(type, 		"kick") == 0 ) {
-    vkickPtr = new vkick(name);
+    kickPtr = new kick(name);
     element = kickPtr;
   }
   else if( strcasecmp(type, 		"vpinger") == 0 ) {
