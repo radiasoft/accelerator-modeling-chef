@@ -98,10 +98,7 @@ Plot::~Plot() {
      // Qt Widgets are automatically destroyed when their parent is destroyed.
      // QwtCurve objects will be destroyed too if they are children of the plot
 
-  std::cout << "DGN: Entering Plot::~Plot" << std::endl;
    removeCurves();
-  std::cout << "DGN: Leaving Plot::~Plot" << std::endl;
-
 }
 
 

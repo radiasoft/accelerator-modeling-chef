@@ -6,9 +6,8 @@
 ******             interfaces to exercise the functionality        
 ******             of BEAMLINE.                                    
 ******                                                                
-******  Version:   3.0                    
-******                                    
 ******  File:      Tracker.h
+******  Version:   4.0
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -74,6 +73,7 @@ class PointEdit;
 
 typedef void (*DrawFunc) ( DrawSpace* );
 
+
 class Orbit
 {
   public: 
@@ -119,6 +119,110 @@ class Orbit
 };
 
 
+class OrbitTransformer
+{
+  public: 
+    OrbitTransformer() {}
+    virtual ~OrbitTransformer() {}
+
+    virtual void toState( double, double, Proton* ) const = 0;
+    virtual void toDynamics( const Vector&, double*, double*, double* ) const = 0;
+    // This assumes, without checking, that the dimension
+    //   of the Vector is correct: i.e. it is the same as the
+    //   dimension of a proton state.
+};
+
+
+class RectH : public OrbitTransformer
+{
+  public: 
+    RectH() {}
+    ~RectH() {}
+
+    void toState( double, double, Proton* ) const;
+    void toDynamics( const Vector&, double*, double*, double* ) const;
+};
+
+
+class RectV : public OrbitTransformer
+{
+  public: 
+    RectV() {}
+    ~RectV() {}
+
+    void toState( double, double, Proton* ) const;
+    void toDynamics( const Vector&, double*, double*, double* ) const;
+};
+
+
+class NormH : public OrbitTransformer
+{
+  public: 
+    NormH() : _alpha(0.0), _beta(1.0) {}
+    NormH( double a, double b ) : _alpha(a), _beta(b) {}
+
+    void toState( double, double, Proton* ) const;
+    void toDynamics( const Vector&, double*, double*, double* ) const;
+
+  private:
+    double _alpha;
+    double _beta;
+};
+
+
+class NormV : public OrbitTransformer
+{
+  public: 
+    NormV() : _alpha(0.0), _beta(1.0) {}
+    NormV( double a, double b ) : _alpha(a), _beta(b) {}
+
+    void toState( double, double, Proton* ) const;
+    void toDynamics( const Vector&, double*, double*, double* ) const;
+
+  private:
+    double _alpha;
+    double _beta;
+};
+
+
+class IHIV : public OrbitTransformer
+{
+  public: 
+    IHIV( double a1, double b1, double a2, double b2) 
+    : _alphaH(a1), _betaH(b1), _alphaV(a2), _betaV(b2) {}
+    IHIV() : _alphaH(0.0), _betaH(1.0), _alphaV(0.0), _betaV(1.0) {}
+    ~IHIV() {}
+
+    void toState( double, double, Proton* ) const;
+    void toDynamics( const Vector&, double*, double*, double* ) const;
+
+  private:
+    double _alphaH;
+    double _betaH;
+    double _alphaV;
+    double _betaV;
+};
+
+
+class PhiHPhiV : public OrbitTransformer
+{
+  public: 
+    PhiHPhiV( double a1, double b1, double a2, double b2) 
+    : _alphaH(a1), _betaH(b1), _alphaV(a2), _betaV(b2) {}
+    PhiHPhiV() : _alphaH(0.0), _betaH(1.0), _alphaV(0.0), _betaV(1.0) {}
+    ~PhiHPhiV() {}
+
+    void toState( double, double, Proton* ) const;
+    void toDynamics( const Vector&, double*, double*, double* ) const;
+
+  private:
+    double _alphaH;
+    double _betaH;
+    double _alphaV;
+    double _betaV;
+};
+
+
 class Tracker : public QVBox
 {
 Q_OBJECT
@@ -140,12 +244,7 @@ public:
 
 public slots:
   // Conversion slots: connected to DrawSpaces
-  void   _cnvFromHViewRect( double, double );
-  void   _cnvFromVViewRect( double, double );
-  void   _cnvFromHViewNorm( double, double );
-  void   _cnvFromVViewNorm( double, double );
-  void   _cnvFromIHIV     ( double, double );
-  void   _cnvFromPhiHPhiV ( double, double );
+  void   _cnvFromView( double, double, const OrbitTransformer* );
 
   // Slot connected to track button
   void   _start_callback();
@@ -165,6 +264,7 @@ public slots:
   void   _view_zoom_s     ();
   void   _view_zoom_reset ();
   void   _view_zoom       ();
+  void   _view_center     ();
 
   void   _opt_largePoints ();
   void   _opt_smallPoints ();
@@ -227,15 +327,12 @@ public:
 
   void setColors( GLdouble, GLdouble, GLdouble );
   void setClearColor( GLclampf, GLclampf, GLclampf, GLclampf );
-  void setDraw( DrawFunc );
+  void setTransformer( OrbitTransformer* );
+  // DrawSpace takes responsibility for the argument.
+  //   It must not be deleted or go out of scope after
+  //   calling this function.
+  void setCenterOn( const Proton& );
   void paintGL();
-
-  static void drawH_ViewRect( DrawSpace* );
-  static void drawV_ViewRect( DrawSpace* );
-  static void drawH_ViewNorm( DrawSpace* );
-  static void drawV_ViewNorm( DrawSpace* );
-  static void drawIHIV      ( DrawSpace* );
-  static void drawPhiHPhiV  ( DrawSpace* );
 
   void multScaleBy( double );
   void setScaleTo ( double );
@@ -244,13 +341,12 @@ public:
   void setRange( double, double, double, double );
 
   // REMOVE: int handle( int );
-  bool ViewIs( DrawFunc );
+  const OrbitTransformer* getTransformer();
 
   void activateZoom();
   void resetZoom();
 
 public:
-
   static const double DEF_RANGE;
   static const double DEF_X_CENTER;
   static const double DEF_Y_CENTER;
@@ -259,16 +355,16 @@ public slots:
   void deactivateZoom();
 
 signals:
-  void _new_point( double, double );
+  void _new_point( double, double, const OrbitTransformer* );
   void _startedZoom();
 
 private:
-  Tracker*   _topTracker;
-  DrawFunc _myFunc;
-  int      _pointSize;
-  GLdouble _r, _g, _b;
-  GLclampf _rClr, _gClr, _bClr, _aClr;
-  char _myName[20];
+  Tracker*     _topTracker;
+  OrbitTransformer* _transformPtr;
+  int          _pointSize;
+  GLdouble     _r, _g, _b;
+  GLclampf     _rClr, _gClr, _bClr, _aClr;
+  char         _myName[20];
 
   bool   _isZooming;
   bool   _zoomActive;
@@ -305,6 +401,11 @@ inline GLdouble Orbit::Blue() const
 inline bool Tracker::isIterating()
 {
   return _isIterating;
+}
+
+inline const OrbitTransformer* DrawSpace::getTransformer()
+{
+  return _transformPtr;
 }
 
 };  // end namespace CHEF
