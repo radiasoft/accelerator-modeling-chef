@@ -8,6 +8,7 @@
  * 
  */
 
+
 #ifdef __VISUAL_CPP__
 #include <iostream>
 using std::cerr;
@@ -18,6 +19,21 @@ using std::endl;
 #endif
 
 #include "IntArray.h"
+
+#ifdef __PRIVATE_ALLOCATOR__
+#include <iostream.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+       int IntArray::_init = 0;
+Vmalloc_t* IntArray::_vmem = 0;
+#endif
+
+
 
 #ifdef OBJECT_DEBUG
 int IntArray::objectCount = 0;
@@ -38,11 +54,17 @@ int IntArray::objectCount = 0;
 IntArray::IntArray( const int& n, const int* x )
 {
   static int i;
-
+#ifdef __PRIVATE_ALLOCATOR__
+#endif
   CHECKOUT(n <= 0, "IntArray::IntArray", "Dimension must be positive.")
 
   dim = n;
+#ifdef __PRIVATE_ALLOCATOR__
+  if (_init == 0) meminit();
+  comp = (int *) vmalloc( (Vmalloc_t *)_vmem, 32); 
+#else
   comp = new int [ dim ];
+#endif
   if( x ) for ( i = 0; i < dim; i++ ) comp[i] = x[i];
   else    for ( i = 0; i < dim; i++ ) comp[i] = 0;
 #ifdef OBJECT_DEBUG
@@ -54,7 +76,12 @@ IntArray::IntArray( const IntArray& x )
 {
   static int i;
   dim = x.dim;
+#ifdef __PRIVATE_ALLOCATOR__
+  if (_init == 0) meminit();
+  comp = (int *) vmalloc((Vmalloc_t *) _vmem,32); 
+#else
   comp = new int [ dim ];
+#endif
   for ( i = 0; i < dim; i++ ) comp[i] = x.comp[i];
 #ifdef OBJECT_DEBUG
   objectCount++;
@@ -103,8 +130,13 @@ void IntArray::Reconstruct( const int& n, const int* x )
 
   if( n > 0 ) { 
     dim = n;
+#ifdef __PRIVATE_ALLOCATOR__    
+    if( comp ) vmfree((Vmalloc_t *)_vmem, comp);
+    comp = (int *) vmalloc((Vmalloc_t *)_vmem, 32);
+#else
     if( comp ) delete [] comp;
     comp = new int [ dim ];
+#endif
   }
 
   if( x ) for ( i = 0; i < dim; i++ ) comp[i] = x[i];
@@ -214,8 +246,6 @@ char IntArray::IsNull() const
   return 1;
 }
 
-
-
 // Streams
 
 ostream& operator<<( ostream& os, const IntArray& x )
@@ -271,4 +301,36 @@ istream& operator>>( istream& is, IntArray& x )
 
   return is;
 }
+
+IntArray::~IntArray()
+{
+#ifdef __PRIVATE_ALLOCATOR__
+  vmfree((Vmalloc_t *)_vmem, comp);
+#else
+  delete [] comp;
+#endif
+
+#ifdef OBJECT_DEBUG
+  objectCount--;
+#endif
+}
+
+#ifdef __PRIVATE_ALLOCATOR__
+
+void IntArray::meminit() {
+
+  _vmem = vmopen(Vmdcsbrk,Vmpool,0);
+  // _vmem = vmopen(Vmdcsbrk,Vmpool,VM_TRACE);
+  // int fd =  creat("vmalloc.log", 666);
+  // vmtrace(fd);
+
+  vmalloc(_vmem,32);
+  _init = 1;
+};
+
+#endif
+
+
+
+
 
