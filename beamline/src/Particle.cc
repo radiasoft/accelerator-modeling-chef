@@ -392,6 +392,8 @@ JetParticle::JetParticle( const Particle& x ) {
  if( pn != 0.0 ) pni2 = 1.0 / ( pn*pn );
  else            pni2 = 1.0e33;
 }
+
+
 JetParticle::JetParticle(const JetParticle& x) {
   state = x.state;
   q = x.q;

@@ -114,16 +114,16 @@ public:
   inline double Beta() const {
    return Momentum() / Energy();
   }
-  inline double ReferenceBRho() {
+  inline double ReferenceBRho() const {
    return bRho;
   }
-  inline double ReferenceBeta() {
+  inline double ReferenceBeta() const {
    return beta;
   }
-  inline double ReferenceGamma() {
+  inline double ReferenceGamma() const {
    return gamma;
   }
-  inline double ReferenceMomentum() {
+  inline double ReferenceMomentum() const {
    return p; 
   }
   inline double ReferenceEnergy() const {
@@ -320,17 +320,23 @@ public:
   inline double Mass() const {
    return m;
   }
-  inline double ReferenceBRho() {
+  inline double ReferenceBRho() const {
    return bRho;
   }
-  inline double ReferenceBeta() {
+  inline double ReferenceBeta() const {
    return beta;
   }
-  inline double ReferenceGamma() {
+  inline double ReferenceGamma() const {
    return gamma;
   }
   inline Jet Gamma() const {
    return Energy() / m;
+  }
+  inline double ReferenceMomentum() const {
+   return p; 
+  }
+  inline double ReferenceEnergy() const {
+   return E;
   }
   inline double Charge() const {
    return q;
