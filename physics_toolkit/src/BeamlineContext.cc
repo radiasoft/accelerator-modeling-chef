@@ -1,4 +1,9 @@
 #include "BeamlineContext.h"
+#include "beamline.h"
+#include "LattFuncSage.h"
+#include "ClosedOrbitSage.h"
+#include "ChromaticityAdjuster.h"
+#include "TuneAdjuster.h"
 
 BeamlineContext::BeamlineContext( beamline* x, bool doClone )
 : _p_bml(x), 
@@ -7,13 +12,13 @@ BeamlineContext::BeamlineContext( beamline* x, bool doClone )
   _isCloned(doClone)
 {
   if( _isCloned ) {
-    _p_bml = x->Clone();
+    _p_bml = (beamline*) (x->Clone());
   }
 }
 
 BeamlineContext::~BeamlineContext()
 {
-  if( _isCloned ) _p_bml->eliminate;
+  if( _isCloned ) _p_bml->eliminate();
 
   if( _p_lfs ) delete _p_lfs;
   if( _p_cos ) delete _p_cos;
