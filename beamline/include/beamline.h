@@ -1952,6 +1952,8 @@ public:
 
   beamline remove( bmlnElmnt&, bmlnElmnt& );
   char     remove( void * );
+  char     remove( const bmlnElmnt& );
+  char     remove( const bmlnElmnt* );
 
   // GEOMETRY
 
