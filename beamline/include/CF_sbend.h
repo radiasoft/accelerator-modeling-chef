@@ -110,10 +110,12 @@ class CF_sbend : public bmlnElmnt
   // by default. Otherwise, use one of the following.
   double setEntryAngle( const Particle& ); 
   double setExitAngle( const Particle& ); 
-  double getEntryAngle() { return _usAngle; }
-  double getExitAngle()  { return _dsAngle; }
+  double getEntryAngle() const { return _usAngle; }
+  double getExitAngle() const { return _dsAngle; }
   double setEntryAngle( double /* radians */ ); 
   double setExitAngle( double /* radians */ ); 
+  double getEntryEdgeAngle() const { return _usEdgeAngle; }
+  double getExitEdgeAngle() const { return _dsEdgeAngle; }
 
 
 
@@ -158,8 +160,8 @@ class CF_sbend : public bmlnElmnt
   double Angle()        const { return this->getBendAngle(); }
 
  private:
-  bmlnElmnt** _u;
-  bmlnElmnt** _v;
+  bmlnElmnt** _u;           // Address of first internal bmlElmnt pointer
+  bmlnElmnt** _v;           // Address of final internal bmlElmnt pointer
 
   double _angle;            // total bend angle  [ radians ]
   double _usEdgeAngle, _dsEdgeAngle;

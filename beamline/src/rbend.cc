@@ -502,15 +502,23 @@ void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
   }
   else if( typeid(*Propagator) == typeid(Exact_Prop) ) {
     *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, &rbend::InEdge );
+    dynamic_cast<rbend*>(*a)->setEntryAngle( this->getEntryAngle() );
+    dynamic_cast<rbend*>(*a)->setExitAngle( 0.0 );    // Should not matter
     *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, &rbend::OutEdge );
+    dynamic_cast<rbend*>(*b)->setEntryAngle( 0.0 );   // Should not matter
+    dynamic_cast<rbend*>(*b)->setExitAngle( this->getExitAngle() );
   }
   else if( typeid(*Propagator) == typeid(InEdge_Prop) ) {
     *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, Propagator );
+    dynamic_cast<rbend*>(*a)->setEntryAngle( this->getEntryAngle() );
+    dynamic_cast<rbend*>(*a)->setExitAngle( 0.0 );    // Should not matter
     *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, &rbend::NoEdge );
   }
   else if( typeid(*Propagator) == typeid(OutEdge_Prop) ) {
     *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, &rbend::NoEdge );
     *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, Propagator );
+    dynamic_cast<rbend*>(*b)->setEntryAngle( 0.0 );   // Should not matter
+    dynamic_cast<rbend*>(*b)->setExitAngle( this->getExitAngle() );
   }
   else if( typeid(*Propagator) == typeid(Real_Exact_Prop) ) {
     *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, &rbend::RealInEdge );

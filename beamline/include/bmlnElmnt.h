@@ -441,7 +441,8 @@ public:
   void setShunt(double a);
 
 
-  virtual double getReferenceTime() const {return _ctRef;}
+  // REMOVE: virtual double getReferenceTime() const {return _ctRef;}
+  virtual double getReferenceTime() const;
   virtual double setReferenceTime( const Particle& );  // returns _ctRef
   virtual double setReferenceTime( double );  // returns previous _ctRef
 
