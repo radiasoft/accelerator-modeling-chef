@@ -1,2 +1,2 @@
 includedir = ${prefix}/include/mxyzptlk
-include_HEADERS = include/CLieOperator.h include/JL.h include/JLC.h include/Jet.h include/JetC.h include/JetCVector.h include/JetC__environment.h include/JetUtilities.h include/JetVector.h include/Jet__environment.h include/LieOperator.h include/MLJ.h include/Mapping.h include/MappingC.h include/MatrixJ.h include/mxyzptlk.h
+include_HEADERS = include/CLieOperator.h include/JL.h include/JLC.h include/Jet.h include/JetC.h include/JetCVector.h include/JetC__environment.h include/JetUtilities.h include/JetVector.h include/Jet__environment.h include/LieOperator.h include/MLJ.h include/Mapping.h include/MappingC.h include/mxyzptlk.h

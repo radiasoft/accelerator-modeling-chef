@@ -1,1 +1,1 @@
-libmxyzptlk_la_SOURCES = CLieOperator.cc JL.cc JLC.cc Jet.cc JetC.cc JetCFcns.cc JetCVector.cc JetConversions.cc JetFcns.cc JetVector.cc LieOperator.cc MLJ.cc Mapping.cc MappingC.cc MatrixJ.cc
+libmxyzptlk_la_SOURCES = CLieOperator.cc JL.cc JLC.cc Jet.cc JetC.cc JetCFcns.cc JetCVector.cc JetConversions.cc JetFcns.cc JetVector.cc LieOperator.cc MLJ.cc Mapping.cc MappingC.cc
