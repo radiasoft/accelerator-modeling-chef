@@ -72,6 +72,7 @@ public:
   const QPixmap *pixmap( int i ) const;
   void  setPixmap( QPixmap *p );
   const QBmlRoot* bmlParent();
+  const QBmlRoot* topBmlParent();  // Does not return null pointer.
 
   virtual QString fullName() const = 0;
 

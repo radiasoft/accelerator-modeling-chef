@@ -428,6 +428,23 @@ const QBmlRoot* QBml::bmlParent()
 }
 
 
+const QBmlRoot* QBml::topBmlParent()
+{
+  // Must not return null pointer.
+  if( !_p ) { return dynamic_cast<QBmlRoot*>(this); }
+
+  QBmlRoot* ret   = _p;
+  QBmlRoot* tsts  = ret->_p;
+
+  while( tsts ) {
+    ret = tsts;
+    tsts  = ret->_p;
+  }
+
+  return ret;
+}
+
+
 // *****************************************************************************
 // *
 // * Class QBmlElmt
@@ -925,7 +942,9 @@ void BeamlineBrowser::contentsMousePressEvent( QMouseEvent* e )
   else if( e->button() == Qt::LeftButton ) 
   { if( typeid(*j) == typeid(QBmlRoot) ) 
     { _lastClickedRootPtr = dynamic_cast<QBmlRoot*>(j);
-      emit sig_bmlLeftClicked( ((QBmlRoot*) j) -> _myBmlCon );
+      if( 0 != ( ((QBmlRoot*) j) -> _myBmlCon ) ) {
+        emit sig_bmlLeftClicked( ((QBmlRoot*) j) -> _myBmlCon );
+      }
     }
     emit sig_bmlLeftClicked( j );
   }
@@ -1122,7 +1141,20 @@ void BeamlineBrowser::displayBeamline( const BeamlineContext* ptr )
   root->setText( 2, str1 + "-" + str2 );
 
   this->setSelected ( root, true );
-  emit sig_bmlLeftClicked( root->_myBmlCon );
+  this->setCurrentItem( root );
+  this->ensureItemVisible( root );
+
+  if( 0 != ( root->_myBmlCon ) ) {
+    emit sig_bmlLeftClicked( root->_myBmlCon );
+  }
+  else {
+    ostringstream uic;
+    uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
+           "\nBeamlineBrowser::displayBeamline"
+           "\nAn impossibility has occurred:"
+           "\ncreation of a null BeamlineContext.";
+    QMessageBox::information( 0, "BeamlineBrowser: WARNING", uic.str().c_str() );
+  }
   emit sig_bmlLeftClicked( root );
 
   if ( childCount() == 1 ) emit sig_browserIsNotEmpty();
@@ -1330,6 +1362,14 @@ QPtrList<bmlnElmnt> BeamlineBrowser::findAllSelected( QBmlRoot* startpoint ) con
   QBml*      qbmlPtr;
   QBmlElmt*  qbmlelmtPtr;
   bool started = false;
+
+  if( 0 == startpoint ) {
+    ostringstream uic;
+    uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
+           "\nNull argument passed to function findAllSelected.";
+    QMessageBox::information( 0, "BeamlineBrowser: WARNING", uic.str().c_str() );
+    return ret;
+  }
 
   QListViewItemIterator looker( dynamic_cast<QListViewItem*>(startpoint) );
   while( 0 != ( qbmlPtr = dynamic_cast<QBml*>(looker.current()) )) {

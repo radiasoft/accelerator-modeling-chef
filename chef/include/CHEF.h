@@ -279,8 +279,10 @@ private slots:
   void _editAlign();
   void _editMergeQuads();
   void _editD2S();
+  void _editAddMarkers();
   void _editAddQtMons();
   void _editMode();
+  void _editPartition();
   void _editPartAndSect();
   void _toolAlignBends();
   void _toolMisalign();
