@@ -4,6 +4,7 @@
 #include <qwt/qwt_plot.h> 
 #include <qwt/qwt_plot_classes.h> 
 #include "chefplotdata.h" 
+#include <list>
 
 class QwtWheel;
 class CHEFPlotZoomer;
@@ -48,8 +49,8 @@ class Plot: public QwtPlot {
       void enableThumbWheels(bool set);
       void setZoomer(bool set, int axis);
       void toggleCurve(long key, bool set);
-
-
+      void setLogScale(int axis);
+      void setLinScale(int axis);
       
   protected:
 

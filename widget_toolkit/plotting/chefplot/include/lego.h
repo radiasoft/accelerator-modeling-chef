@@ -10,14 +10,16 @@ class  QPixmap;
 class LegoPlot: public QWidget {
 
   Q_OBJECT
+
   public:
 
   
   LegoPlot(QWidget * parent = 0, const char * name = 0, WFlags f = 0 );
   ~LegoPlot();
   
-  void setBeamline(beamline* bml);
-  void setBeamlineDisplayLimits(double x, double w);
+  void setBeamline(const beamline* bml);
+  const beamline* getBeamline();
+  void setBeamlineDisplayLimits(double x, double w, int loffset, int roffset);
   void enableBeamlineDisplay(bool enabled);
   
   protected:
@@ -39,8 +41,9 @@ class LegoPlot: public QWidget {
   double     _x0;           // the beamline display origin in physical coordinates
   double     _w;            // the beamline display extent in physical coordinates
   double     _scale;        
-  
-  
+  int        _loffset;  
+  int        _roffset;  
+   
   
 };
 

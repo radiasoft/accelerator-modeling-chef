@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                            //
-// FILE:       chefplotmain.h                                                                 //
+// FILE:       datadisplay.h                                                                  //
 //                                                                                            //
 // AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
 //             ostiguy@fnal.gov                                                               //
@@ -17,61 +17,33 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef CHEFPLOTMAIN_H
-#define CHEFPLOTMAIN_H
+#ifndef DATADISPLAY_H
+#define DATADISPLAY_H
 
-#include "chefplotmainbase.h" 
-#include "chefplotdata.h" 
-#include <qcanvas.h>
-#include <qwmatrix.h>
+#include "datadisplaybase.h"
+#include <ostream>
 
-class CHEFPlot;
-class beamline;
-class bmlnElmnt;
-class LegoPlot;
-class TuneDialog;
+class DataDisplay: public DataDisplayBase {
+ 
+ Q_OBJECT
 
-class CHEFPlotMain: public CHEFPlotMainBase {
+public:
 
-  Q_OBJECT
-    
-  public:
-  
-  CHEFPlotMain(QWidget * parent = 0, const char* name = 0, WFlags f=0);
+ DataDisplay::DataDisplay(QWidget* parent, const char* name, WFlags f, bool showbml=false);
+~DataDisplay();
 
-  virtual ~CHEFPlotMain();
+public slots:
 
-  void displayLattice(beamline* bml);
-  void addData(CHEFPlotData& cpdata);
-  void showDataPoints(bool set);
-  void enableLegend(bool set);
-  void enableInterpolation(bool set);
-  void enableCoordinatesDisplay(bool set);
-  void clear(); 
-  void setAutoClear(bool set); 
-    
-  public slots:
+ void filePrint();
+ void fileSaveAs();
+ void fileSave();
+ void fileExit();
+ void viewMerge(bool set);
 
-  virtual void filePrint();
-  virtual void enableGrid(bool set);
-  virtual void enableThumbWheels(bool set);
-  virtual void enableLegoPlot(bool set);
-  virtual void zoomUseRightAxis();
-  virtual void zoomUseLeftAxis();
-  virtual void exit();
-  virtual void optionsVerLogScaleLeft(bool set);
-  virtual void optionsVerLogScaleRight(bool set);
-  virtual void optionsHorLogScale(bool set);
-  virtual void _showdata();
-  virtual void showTunes();
-  virtual void optionsPersistent(bool set);
-  
-  private:
+ private:
 
-  CHEFPlot*      _chefplot;
-  TuneDialog*    _tunedialog;
-  bool           _auto_clear;
-
+ void _output( std::ostream& os);
+ bool _showbml;
 
 };
 
