@@ -39,13 +39,32 @@ class sbend : public bmlnElmnt
 {
 private:
   // bmlnElmnt::strength -> magnetic field [T]
-  double angle;      // bend angle  [ radians ]
+  double _angle;            // [radians] bend angle
+  double _usEdgeAngle, _dsEdgeAngle;
+                            // [radians] as defined in MAD for sbends.
+  double _usAngle, _dsAngle;// [radians] entry (upstream) and exit (downstream) 
+                            // angles of the fiducial orbit referenced
+                            // to the physical edge of the magnet. If no
+                            // registration particle is used, default
+                            // values depend only on edge angles (see
+                            // below).
+  double _usTan, _dsTan;    // tangents of the entry and exit angles:
+                            // px/pz of a reference particle at the
+                            // upstream and downstream edges of the magnet.
+                            // For a (usual) symmetric bend,
+                            // sgn( _usTan ) = - sgn( _dsTan )
+  FNAL::Complex _propPhase, _propTerm;
+                            // Used to propagate through constant magnetic
+                            // field using bend angle and edge angle data.
+
+  bmlnElmnt::AsinFunctor  _myArcsin;
+  void _calcPropParams();
+
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 
 public:
-
-  class MAD_Prop : public bmlnElmnt::PropFunc
+  friend class MAD_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -54,46 +73,168 @@ public:
   };
   static MAD_Prop LikeMAD;
 
-  class Exact_Prop : public bmlnElmnt::PropFunc
+  friend class NoEdge_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "sbend::NoEdge_Prop"; }
+
+    NoEdge_Prop();
+    ~NoEdge_Prop();
+    // REMOVE: char isApproximate();
+    // REMOVE: void makeApproximate();
+    // REMOVE: void makeExact();
+  private:
+    double _fastArcsin( double x     ) const;
+    Jet    _fastArcsin( const Jet& x ) const;
+    // REMOVE: char   _approx;
+  };
+  static NoEdge_Prop NoEdge;
+
+  friend class Exact_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
     int operator()( bmlnElmnt*, JetParticle& );
     const char* Type() const { return "sbend::Exact_Prop"; }
+
+    Exact_Prop();
+    ~Exact_Prop();
+    void setPropagator( NoEdge_Prop* );
+  private:
+    NoEdge_Prop* _myPropagator;
   };
   static Exact_Prop Exact;
 
-  class Approx_Prop : public bmlnElmnt::PropFunc
+  friend class InEdge_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
     int operator()( bmlnElmnt*, JetParticle& );
-    const char* Type() const { return "sbend::Fast_Prop"; }
+    const char* Type() const { return "sbend::InEdge_Prop"; }
+
+    InEdge_Prop();
+    ~InEdge_Prop();
+    // REMOVE: char isApproximate();
+    // REMOVE: void makeApproximate();
+    // REMOVE: void makeExact();
+    void setPropagator( NoEdge_Prop* );
   private:
-    double fastArcsin( double x     ) const;
-    Jet    fastArcsin( const Jet& x ) const;
+    NoEdge_Prop* _myPropagator;
   };
-  static Approx_Prop Approx;
+  static InEdge_Prop InEdge;
+
+  friend class OutEdge_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "sbend::OutEdge_Prop"; }
+
+    OutEdge_Prop();
+    ~OutEdge_Prop();
+    // REMOVE: char isApproximate();
+    // REMOVE: void makeApproximate();
+    // REMOVE: void makeExact();
+    void setPropagator( NoEdge_Prop* );
+  private:
+    NoEdge_Prop* _myPropagator;
+  };
+  static OutEdge_Prop OutEdge;
+
+  // REMOVE: friend class Null_Prop : public bmlnElmnt::PropFunc
+  // REMOVE: {
+  // REMOVE: public:
+  // REMOVE:   int operator()( bmlnElmnt*, Particle&    );
+  // REMOVE:   int operator()( bmlnElmnt*, JetParticle& );
+  // REMOVE:   const char* Type() const { return "sbend::Null_Prop"; }
+  // REMOVE: 
+  // REMOVE:   Null_Prop();
+  // REMOVE:   ~Null_Prop();
+  // REMOVE:   // REMOVE: char isApproximate();
+  // REMOVE:   // REMOVE: void makeApproximate();
+  // REMOVE:   // REMOVE: void makeExact();
+  // REMOVE:   void setPropagator( NoEdge_Prop* );
+  // REMOVE: private:
+  // REMOVE:   NoEdge_Prop* _myPropagator;
+  // REMOVE: };
+  // REMOVE: static Null_Prop AbortProp;
+
+  // REMOVE: friend class Approx_Prop : public bmlnElmnt::PropFunc
+  // REMOVE: {
+  // REMOVE: public:
+  // REMOVE:   int operator()( bmlnElmnt*, Particle&    );
+  // REMOVE:   int operator()( bmlnElmnt*, JetParticle& );
+  // REMOVE:   const char* Type() const { return "sbend::Fast_Prop"; }
+  // REMOVE: private:
+  // REMOVE:   double _fastArcsin( double x     ) const;
+  // REMOVE:   Jet    _fastArcsin( const Jet& x ) const;
+  // REMOVE: };
+  // REMOVE: static Approx_Prop Approx;
 
   void P_Face ( Particle&,    const double& /* psi */  ) const;
   void J_Face ( JetParticle&, const double& /* psi */  ) const;
   
-  sbend( double,     // length  [ meters ]
-         double,     // field   [ tesla ]
-         double,     // angle   [ radians ]
+
+  // Constructors 
+  sbend( double,     // (orbit) length [meters]
+         double,     // magnetic field [tesla]
+                     // (assumed along the y-axis)
+         double,     // bend angle [radians]
+                     // sign( bend angle ) = sign( field )
          PropFunc*    = &sbend::Exact );
 
-  sbend( char*,      // name
-         double,     // length  [ meters ]
-         double,     // magnetic field [T]
-         double,     // angle   [ radians ]
+  sbend( const char*,// name
+         double,     // (orbit) length  [meters]
+         double,     // magnetic field [tesla]
+         double,     // angle   [radians]
+         PropFunc*    = &sbend::Exact );
+
+  sbend( double,     // (orbit) length  [meters]
+         double,     // field   [tesla]
+         double,     // bend angle [radians]
+         double,     // upstream edge angle [radians]
+         double,     // downstream edge angle [radians]
+                     // signs of previous two parameters
+                     // are as defined for sbends by MAD
+         PropFunc*    = &sbend::Exact );
+
+  sbend( const char*,// name
+         double,     // (orbit) length  [meters]
+         double,     // field   [tesla]
+         double,     // bend angle [radians]
+         double,     // upstream edge angle [radians]
+         double,     // downstream edge angle [radians]
+                     // signs of previous two parameters
+                     // are as defined for sbends by MAD
          PropFunc*    = &sbend::Exact );
 
   sbend( const sbend& );
   ~sbend();
 
-  double setAngle(double a) { return (angle = a); }
-  double getAngle() const   { return angle; }
+
+  // Public methods
+  double setAngle(double a) { return (_angle = a); }
+  double getAngle() const   { return _angle; }
+  // aliassed
+  double setBendAngle(double a) { return (_angle = a); }
+  double getBendAngle() const   { return _angle; }
+  
+
+  // Note: entry and exit angles are not arguments
+  // in the sbend constructors. A symmetric bend is assumed
+  // by default. Otherwise, use one of the following.
+  double setEntryAngle( const Particle& ); 
+  double setExitAngle( const Particle& ); 
+  double getEntryAngle() { return _usAngle; }
+  double getExitAngle()  { return _dsAngle; }
+  double setEntryAngle( double /* radians */ ); 
+  double setExitAngle( double /* radians */ ); 
+
+  void makeAsinApproximate( int /* number of terms */);
+  void makeAsinExact();
+  bool isAsinExact();
 
   void geomToEnd   ( BMLN_posInfo& );
   void geomToStart ( BMLN_posInfo& );
@@ -115,7 +256,6 @@ public:
   virtual int isType(char* c) { if ( strcmp(c, "sbend") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new sbend( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** );
-
-} ;
+};
 
 #endif // SBEND_H

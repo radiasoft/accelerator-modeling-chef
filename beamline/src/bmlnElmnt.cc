@@ -68,6 +68,110 @@ using namespace std;
 beamline::Aye beamline::yes;
 beamline::Nay beamline::no;
 
+
+// **************************************************
+//   class bmlnElmnt::AsinFunctor
+// **************************************************
+
+const int bmlnElmnt::AsinFunctor::_size = 13;
+const double bmlnElmnt::AsinFunctor::_coeff [] = {
+  1.0, 
+  0.16666666666667,   0.075, 
+  0.044642857142857,  0.030381944444444, 
+  0.022372159090909,  0.017352764423077, 
+  0.01396484375,      0.01155180089614, 
+  0.0097616095291941, 0.0083903358096168, 
+  0.0073125258735988, 0.0064472103118896
+};
+
+
+bmlnElmnt::AsinFunctor::AsinFunctor( bool m, int d )
+: _n(d), _exactMode(m)
+{
+}
+
+
+bmlnElmnt::AsinFunctor::AsinFunctor( const bmlnElmnt::AsinFunctor& x )
+: _n(x._n), _exactMode(x._exactMode)
+{
+}
+
+
+int bmlnElmnt::AsinFunctor::setNumTerms( int d )
+{
+  int ret = _n;
+  _n = d;
+  if( _n < 1 ) { _n = 1; }
+  if( _size < _n ) { _n = _size; }
+  return ret;
+}
+
+
+int bmlnElmnt::AsinFunctor::getNumTerms()
+{
+  return _n;
+}
+
+
+bool bmlnElmnt::AsinFunctor::isExact()
+{
+  return _exactMode;
+}
+
+
+bool bmlnElmnt::AsinFunctor::makeExact()
+{
+  bool ret = _exactMode;
+  _exactMode = true;
+  return ret;
+}
+
+
+bool bmlnElmnt::AsinFunctor::makeApproximate()
+{
+  bool ret = _exactMode;
+  _exactMode = false;
+  return ret;
+}
+
+
+double bmlnElmnt::AsinFunctor::operator()( double x ) const 
+{
+  double ret;
+  if( _exactMode ) { ret = asin(x); }
+  else {
+    double u = x*x;
+    int i = _n-1;
+    double multiplier = _coeff[i--];
+    while( i >= 0 ) {
+      multiplier *= u;
+      multiplier += _coeff[i--];
+    }
+    ret = x*multiplier;
+  }
+  return ret;
+}
+
+
+Jet bmlnElmnt::AsinFunctor::operator()( const Jet& x ) const
+{
+  if( _exactMode ) { return asin(x); }
+  else {
+    Jet__environment* envPtr = x.Env();
+    Jet u(envPtr); 
+    Jet multiplier(envPtr);
+    u = x*x;
+    int i = _n-1;
+    multiplier = _coeff[i--];
+    while( i >= 0 ) {
+      multiplier = u*multiplier;
+      multiplier = multiplier + _coeff[i--];
+    }
+    return (x*multiplier);
+  }
+}
+
+
 // **************************************************
 //   struct BMLN_posInfo
 // **************************************************

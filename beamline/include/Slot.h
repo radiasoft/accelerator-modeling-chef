@@ -85,9 +85,6 @@ class Slot : public bmlnElmnt
 
    short int checkFrame( const Frame& ) const;
 
-   std::ostream& writeTo ( std::ostream& );
-   std::istream& readFrom( std::istream& );
- 
    void eliminate() 
      { delete this; }
  
@@ -138,6 +135,9 @@ class Slot : public bmlnElmnt
 
    void processFrame( const Frame&, Particle& ) const;
    void processFrame( const Frame&, JetParticle& ) const;
+
+   std::ostream& writeTo ( std::ostream& );
+   std::istream& readFrom( std::istream& );
 };
 
 #endif // SLOT_H

@@ -77,7 +77,7 @@ public:
   virtual std::ostream& writeTo(std::ostream&); 
   virtual std::istream& readFrom(std::istream&);
 
-  void getState(double *s) 
+  void getState(double *s) const
   { for ( int i=0; i<6; i++ ) s[i] = _rgr[i]; } // DANGEROUS!!
 
   // ---------------------

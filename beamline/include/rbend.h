@@ -38,18 +38,33 @@
 class rbend : public bmlnElmnt
 {
 private:
-  // ??? REMOVE: static void P_Face    ( const bmlnElmnt*, Particle& );
-  // ??? REMOVE: static void J_Face    ( const bmlnElmnt*, JetParticle& );
-  double poleFaceAngle;
-  double tanPFAngle;
-  double _CT;   // Reference time of traversal, in meters.
-
   // bmlnElmnt::strength -> magnetic field [T]
+
+  double _usEdgeAngle, _dsEdgeAngle;
+                            // [radians] as defined in MAD for rbends.
+  double _usAngle, _dsAngle;// [radians] entry (upstream) and exit (downstream) 
+                            // angles of the fiducial orbit referenced
+                            // to the physical edge of the magnet. If no
+                            // registration particle is used, default
+                            // values depend only on edge angles (see
+                            // below).
+  double _usTan, _dsTan;    // tangents of the entry and exit angles:
+                            // px/pz of a reference particle at the
+                            // upstream and downstream edges of the magnet.
+                            // For a (usual) symmetric bend,
+                            // sgn( _usTan ) = - sgn( _dsTan )
+  FNAL::Complex _propPhase, _propTerm;
+                            // Used to propagate through constant magnetic
+                            // field using bend angle and edge angle data.
+
+  bmlnElmnt::AsinFunctor  _myArcsin;
+  void _calcPropParams();
+
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 
 public:
-  class MAD_Prop : public bmlnElmnt::PropFunc
+  friend class MAD_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -58,7 +73,7 @@ public:
   };
   static MAD_Prop LikeMAD;
 
-  class NoEdge_Prop : public bmlnElmnt::PropFunc
+  friend class NoEdge_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -67,17 +82,17 @@ public:
 
     NoEdge_Prop();
     ~NoEdge_Prop();
-    char isApproximate();
-    void makeApproximate();
-    void makeExact();
+    // REMOVE: char isApproximate();
+    // REMOVE: void makeApproximate();
+    // REMOVE: void makeExact();
   private:
     double _fastArcsin( double x     ) const;
     Jet    _fastArcsin( const Jet& x ) const;
-    char   _approx;
+    // REMOVE: char   _approx;
   };
   static NoEdge_Prop NoEdge;
 
-  class Exact_Prop : public bmlnElmnt::PropFunc
+  friend class Exact_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -86,16 +101,13 @@ public:
 
     Exact_Prop();
     ~Exact_Prop();
-    char isApproximate();
-    void makeApproximate();
-    void makeExact();
     void setPropagator( NoEdge_Prop* );
   private:
     NoEdge_Prop* _myPropagator;
   };
   static Exact_Prop Exact;
 
-  class InEdge_Prop : public bmlnElmnt::PropFunc
+  friend class InEdge_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -104,16 +116,16 @@ public:
 
     InEdge_Prop();
     ~InEdge_Prop();
-    char isApproximate();
-    void makeApproximate();
-    void makeExact();
+    // REMOVE: char isApproximate();
+    // REMOVE: void makeApproximate();
+    // REMOVE: void makeExact();
     void setPropagator( NoEdge_Prop* );
   private:
     NoEdge_Prop* _myPropagator;
   };
   static InEdge_Prop InEdge;
 
-  class OutEdge_Prop : public bmlnElmnt::PropFunc
+  friend class OutEdge_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -122,16 +134,34 @@ public:
 
     OutEdge_Prop();
     ~OutEdge_Prop();
-    char isApproximate();
-    void makeApproximate();
-    void makeExact();
+    // REMOVE: char isApproximate();
+    // REMOVE: void makeApproximate();
+    // REMOVE: void makeExact();
     void setPropagator( NoEdge_Prop* );
   private:
     NoEdge_Prop* _myPropagator;
   };
   static OutEdge_Prop OutEdge;
 
-  class Real_Exact_Prop : public bmlnElmnt::PropFunc
+  friend class Null_Prop : public bmlnElmnt::PropFunc
+  {
+  public:
+    int operator()( bmlnElmnt*, Particle&    );
+    int operator()( bmlnElmnt*, JetParticle& );
+    const char* Type() const { return "rbend::Null_Prop"; }
+
+    Null_Prop();
+    ~Null_Prop();
+    // REMOVE: char isApproximate();
+    // REMOVE: void makeApproximate();
+    // REMOVE: void makeExact();
+    void setPropagator( NoEdge_Prop* );
+  private:
+    NoEdge_Prop* _myPropagator;
+  };
+  static Null_Prop AbortProp;
+
+  friend class Real_Exact_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -176,75 +206,108 @@ public:
   };
   static Real_OutEdge_Prop RealOutEdge;
 
-  // ------------------------------------------------------
-
+  // Constructors 
   rbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
+                     // (assumed along the y-axis)
          PropFunc*    = &rbend::RealExact );
 
-  rbend( double,     // length  [ meters ]
-         double,     // field   [ tesla ]
-         double,     // Pole face angle [ radians ]
-         PropFunc*    = &rbend::Exact );
-
-  rbend( char*,      // name
+  rbend( const char*,// name
          double,     // length  [ meters ]
          double,     // field   [ tesla ]
          PropFunc*    = &rbend::RealExact );
 
-  rbend( char*,      // name
+  rbend( double,     // length  [ meters ]      // Symmetric bend
+         double,     // field   [ tesla ]       // with parallel faces.
+         double,     // entry angle [ radians ]
+         PropFunc*    = &rbend::Exact );
+
+  rbend( const char*,// name
          double,     // length  [ meters ]
          double,     // field   [ tesla ]
-         double,     // Pole face angle [ radians ]
+         double,     // entry angle [ radians ]
          PropFunc*    = &rbend::Exact );
+
+  rbend( double,     // length  [ meters ]     // No entry angle assumed
+         double,     // field   [ tesla ]      // Must use a registration proton
+                     // (assumed along the y-axis)
+         double,     // upstream edge angle [radians]
+         double,     // downstream edge angle [radians]
+                     // signs of previous two parameters
+                     // are as defined for rbends by MAD
+         PropFunc*    = &rbend::RealExact );
+
+  rbend( const char*,// name
+         double,     // length  [ meters ]
+         double,     // field   [ tesla ]
+         double,     // upstream edge angle [radians]
+         double,     // downstream edge angle [radians]
+                     // signs of previous two parameters
+                     // are as defined for rbends by MAD
+         PropFunc*    = &rbend::RealExact );
+
+  // REMOVE: rbend( double,     // length  [ meters ]
+  // REMOVE:        double,     // field   [ tesla ]
+  // REMOVE:        double,     // entry angle [ radians ]
+  // REMOVE:        double,     // upstream edge angle [radians]
+  // REMOVE:        double,     // downstream edge angle [radians]
+  // REMOVE:                    // signs of previous two parameters
+  // REMOVE:                    // are as defined for rbends by MAD
+  // REMOVE:        PropFunc*    = &rbend::Exact );
+  // REMOVE: 
+  // REMOVE: rbend( const char*,// name
+  // REMOVE:        double,     // length  [ meters ]
+  // REMOVE:        double,     // field   [ tesla ]
+  // REMOVE:        double,     // entry angle [ radians ]
+  // REMOVE:        double,     // upstream edge angle [radians]
+  // REMOVE:        double,     // downstream edge angle [radians]
+  // REMOVE:                    // signs of previous two parameters
+  // REMOVE:                    // are as defined for rbends by MAD
+  // REMOVE:        PropFunc*    = &rbend::Exact );
 
   rbend( const rbend& );
   ~rbend();
 
   void eliminate();
 
-  void accept( BmlVisitor& v ) { v.visitRbend( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitRbend( this ); }
-
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle&    p ) { (*Propagator)( this, p ); }
   void localPropagate( JetParticle& p ) { (*Propagator)( this, p ); }
+
+  void accept( BmlVisitor& v ) { v.visitRbend( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitRbend( this ); }
+
+  // Note: entry and exit angles are not arguments
+  // in the rbend constructors. A symmetric bend is assumed
+  // by default. Otherwise, use one of the following.
+  double setEntryAngle( const Particle& ); 
+  double setExitAngle( const Particle& ); 
+  double getEntryAngle() { return _usAngle; }
+  double getExitAngle()  { return _dsAngle; }
+  double setEntryAngle( double /* radians */ ); 
+  double setExitAngle( double /* radians */ ); 
+
+  // Aliases, for the sake of backwards compatability
+  double setPoleFaceAngle( const Particle& x );
+  double setPoleFaceAngle( const JetParticle& x );
+  double PoleFaceAngle()       const;
+  double getPoleFaceAngle()    const;
+  double getTanPoleFaceAngle() const;
+  double getEntryAngle()       const;
+
+  void makeAsinApproximate( int /* number of terms */);
+  void makeAsinExact();
+  bool isAsinExact();
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "rbend") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new rbend( *this ); }
   double OrbitLength( const Particle& );
+    // Computes arclength of orbit assuming a symmetric bend.
+    // WARNING: This is not the true arclength under all conditions.
   void Split( double, bmlnElmnt**, bmlnElmnt** );
-
-
-  double getReferenceTime()    const {return _CT;}
-  double PoleFaceAngle()       const {return poleFaceAngle;} 
-  double getPoleFaceAngle()    const {return poleFaceAngle;} 
-  double getTanPoleFaceAngle() const {return tanPFAngle;}    
-  double getEntryAngle()       const {return poleFaceAngle;} 
-
-  double setReferenceTime( const Particle& );  // returns _CT
-  double setReferenceTime( double );           // returns previous _CT
-  double setPoleFaceAngle( const Particle& );
-  double setPoleFaceAngle( const JetParticle& );
-  void   setEntryAngle( const Particle& x )
-  {
-    this->setPoleFaceAngle( x );
-  }
-  void setEntryAngle( const JetParticle& x )
-  {
-    this->setPoleFaceAngle( x );
-  }
-  void setEntryAngle( double a )
-  { 
-     poleFaceAngle = a;
-     tanPFAngle    = tan( poleFaceAngle );
-  }
-  double setAngle( double a )
-  { 
-     this->setEntryAngle(a);
-     return poleFaceAngle;
-  }
+    // WARNING: After the Split function is used, the new elements 
+    // must be commissioned with RefRegVisitor.
 };
 
 #endif // RBEND_H
