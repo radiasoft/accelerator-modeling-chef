@@ -84,7 +84,7 @@ protected:
   friend class VPinger;
   friend class kick;
   friend class Slot;
-  friend class jetprop;
+  friend class jetprop;  // ??? Why is this here ???
 
   double   state [ BMLN_dynDim ];
                       // state[0] = x

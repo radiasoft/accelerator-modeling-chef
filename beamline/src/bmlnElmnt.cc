@@ -1114,3 +1114,21 @@ double bmlnElmnt::Length() const
 }
 
 
+bmlnElmnt::Discriminator::Discriminator()
+{
+  // This does nothing, but its presence seems
+  // to be needed by constructors of derived classes.
+  // Go figure!
+}
+
+
+bmlnElmnt::Discriminator::Discriminator( const Discriminator& )
+{
+  cerr << "\n*** ERROR *** "
+          "\n*** ERROR *** Copy constructor invoked for"
+          "\n*** ERROR *** a Discriminator object. Your program"
+          "\n*** ERROR *** will probably abort soon."
+          "\n*** ERROR *** "
+       << endl;
+  exit(1);
+}
