@@ -278,7 +278,7 @@ double combinedFunction::AdjustPosition( const Proton& arg_p )
 
 double combinedFunction::AdjustPosition( const JetProton& arg_jp )
 {
-  static const enum { x = 0, y, cdt, xp, yp, dpop };
+  /* static */ const enum { x = 0, y, cdt, xp, yp, dpop };
   JetProton  myJP( arg_jp );
   Proton*    p_myP = (Proton*) myJP.ConvertToParticle();
   // This is deleted before returning.
@@ -322,8 +322,9 @@ double combinedFunction::AdjustPosition( const JetProton& arg_jp )
 
 
   // Set the alignment of the internal beamline.
-  alignmentData v;
-  v.xOffset = - z;
+  // this->align->getAlignment().xOffset -= z;
+  alignmentData v( align->getAlignment() );
+  v.xOffset -= z;
   // ??? Does not work: p_bml->setAlignment( v );
   // ??? The reason is that the alignment stategy is
   // ??? not correct for elements whose faces are not
