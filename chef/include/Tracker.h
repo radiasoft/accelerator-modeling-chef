@@ -121,7 +121,7 @@ class Orbit
 class OrbitTransformer
 {
   public: 
-    OrbitTransformer() {}
+    OrbitTransformer();
     virtual ~OrbitTransformer() {}
 
     virtual void toState( double, double, Proton* ) const = 0;
@@ -129,6 +129,34 @@ class OrbitTransformer
     // This assumes, without checking, that the dimension
     //   of the Vector is correct: i.e. it is the same as the
     //   dimension of a proton state.
+
+    inline void set_x_center  ( double u ) { _x_o   = u; }
+    inline void set_xp_center ( double u ) { _xp_o  = u; }
+    inline void set_y_center  ( double u ) { _y_o   = u; }
+    inline void set_yp_center ( double u ) { _yp_o  = u; }
+    inline void set_cdt_center( double u ) { _cdt_o = u; }
+    inline void set_dpp_center( double u ) { _dpp_o = u; }
+
+    inline double get_x_center()   { return _x_o;   }
+    inline double get_xp_center()  { return _xp_o;  }
+    inline double get_y_center()   { return _y_o;   }
+    inline double get_yp_center()  { return _yp_o;  }
+    inline double get_cdt_center() { return _cdt_o; }
+    inline double get_dpp_center() { return _dpp_o; }
+
+    void copyCenterFrom( const OrbitTransformer* );
+    void copyCenterFrom( const OrbitTransformer& );
+
+  protected:
+    // Central values of the proton state. 
+    //   Typically, these represent a closed or periodic orbit.
+    //   The last two are added in anticipation of future upgrades.
+    double _x_o;
+    double _xp_o;
+    double _y_o;
+    double _yp_o;
+    double _cdt_o;
+    double _dpp_o;
 };
 
 
@@ -320,6 +348,15 @@ class DrawSpace : public QGLWidget
 {
 Q_OBJECT
 
+  struct Context {
+    double _xLo, _yLo, _xHi, _yHi;
+    OrbitTransformer* _transformPtr;
+    // Not owned; just held for future reference.
+
+    Context() : _xLo(0.),_yLo(0.),_xHi(0.),_yHi(0.),_transformPtr(0) {}
+    ~Context() { _transformPtr = 0; }
+  };
+
 public:
   DrawSpace( Tracker*, QHBox*, const char* = 0 );
   ~DrawSpace();
@@ -330,7 +367,7 @@ public:
   // DrawSpace takes responsibility for the argument.
   //   It must not be deleted or go out of scope after
   //   calling this function.
-  void setCenterOn( const Proton& );
+  void setCenterOn( const Particle& );
   void paintGL();
 
   void multScaleBy( double );
@@ -341,6 +378,11 @@ public:
 
   // REMOVE: int handle( int );
   const OrbitTransformer* getTransformer();
+
+  void storeCurrentContext();
+  void setRectContext();
+  void setNormContext();
+  void setActAngContext();
 
   void activateZoom();
   void resetZoom();
@@ -360,6 +402,13 @@ signals:
 private:
   Tracker*     _topTracker;
   OrbitTransformer* _transformPtr;
+
+  Context _rectContext;
+  Context _normContext;
+  Context _actangContext;
+  Context* _currentContextPtr;
+  // Not to be deleted: points to one of the above.
+
   int          _pointSize;
   GLdouble     _r, _g, _b;
   GLclampf     _rClr, _gClr, _bClr, _aClr;
