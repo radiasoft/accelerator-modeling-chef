@@ -1,12 +1,16 @@
 #ifndef INTEGRATOR_H
 #define INTEGRATOR_H
 
+#ifndef __VISUAL_CPP__
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#endif
+
 #include <math.h>
-#include <ODE.h>
-#include <Vector.h>
+
+#include "ODE.h"
+#include "VectorD.h"
 
 class Integrator{
 

@@ -1,11 +1,15 @@
 #ifndef ODE_H
 #define ODE_H
 
+#ifndef __VISUAL_CPP__
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#endif
+
 #include <math.h>
-#include <Vector.h>
+
+#include "VectorD.h"
 
 class ODE{
 

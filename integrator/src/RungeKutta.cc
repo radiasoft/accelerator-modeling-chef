@@ -1,5 +1,10 @@
 #include "RungeKutta.h"
 
+#ifdef __VISUAL_CPP__
+using std::cout;
+using std::endl;
+#endif
+
 /// ******************************************
 ///   class RungeKutta
 /// ******************************************
