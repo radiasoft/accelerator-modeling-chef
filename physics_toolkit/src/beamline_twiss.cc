@@ -154,7 +154,6 @@ int beamline::twiss( JetParticle& p, double dpp )
 
 int beamline::twiss( char, JetParticle& p ) {
   Jet*             z;
-  dlist_iterator  getNext ( *(dlist*) this );
   double          csH, csV, snH, snV, t;
   double*         zero;
   int             i;
@@ -279,7 +278,7 @@ int beamline::twiss( char, JetParticle& p ) {
   return 0;
 } 
 
-int beamline::twiss( lattFunc& W, JetParticle& p) {
+int beamline::twiss( lattFunc& W_arg, JetParticle& p) {
   static char firstTime = 1;
 
   if( firstTime ) {
@@ -295,6 +294,21 @@ int beamline::twiss( lattFunc& W, JetParticle& p) {
 
   int ret;
   LattFuncSage et( this );
+
+  // This is a stupid conversion necessary because
+  // LattFunc exists outside of LattFuncSage.
+  LattFuncSage::lattFunc W;
+  W.arcLength       = W_arg.arcLength;
+  W.dispersion.hor  = W_arg.dispersion.hor;
+  W.dispersion.ver  = W_arg.dispersion.ver;
+  W.dPrime.hor      = W_arg.dPrime.hor;
+  W.dPrime.ver      = W_arg.dPrime.ver;
+  W.beta.hor        = W_arg.beta.hor;
+  W.beta.ver        = W_arg.beta.ver;
+  W.alpha.hor       = W_arg.alpha.hor;
+  W.alpha.ver       = W_arg.alpha.ver;
+  W.psi.hor         = W_arg.psi.hor;
+  W.psi.ver         = W_arg.psi.ver;
 
   if( ! twissDone ) {  // .... Check to see if this was done already.
     ret = et.Twiss_Calc( W, p );
