@@ -96,7 +96,7 @@ targets: lib
 
 lib: $(OBJS)
 	$(MAKELIB) $(LIBDIR)/libcxxlibr.a $(CCOBJS)
-	$(MAKELIB) $(LIBDIR)/libmxyxptlk.a $(MXOBJS)
+	$(MAKELIB) $(LIBDIR)/libmxyzptlk.a $(MXOBJS)
 	$(RANLIB) $(LIBDIR)/libcxxlibr.a
 	$(RANLIB) $(LIBDIR)/libmxyzptlk.a
 
