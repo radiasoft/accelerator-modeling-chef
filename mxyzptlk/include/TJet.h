@@ -47,12 +47,6 @@ class TJet;
 template<typename T1, typename T2> 
 class TJetVector;
 
-template<typename T1, typename T2> 
-class TMapping;
-
-template<typename T1, typename T2> 
-class TLieOperator;
-
 TJet<double,FNAL::Complex> fabs( const TJet<double,FNAL::Complex>& );
 TJet<double,FNAL::Complex> real( const TJet<FNAL::Complex,double>& );
 TJet<double,FNAL::Complex> imag( const TJet<FNAL::Complex,double>& );
