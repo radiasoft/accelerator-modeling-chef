@@ -361,10 +361,13 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       expr_struct *k3   = (expr_struct*)bel->params_[BEL_SBEND_K3]->data;
       expr_struct *tilt = (expr_struct*)bel->params_[BEL_SBEND_TILT]->data;
       
+      double e1 = expr_evaluate( bel->params_[BEL_SBEND_E1], var_table_, bel_table_ );
+      double e2 = expr_evaluate( bel->params_[BEL_SBEND_E2], var_table_, bel_table_ );
+
       simple = (k1->kind_ == NUMBER_EXPR && k1->dvalue_ == 0.0 && k2->kind_ == NUMBER_EXPR && k2->dvalue_ == 0.0 && k3->kind_ == NUMBER_EXPR && k3->dvalue_ == 0.0 && tilt->kind_ == NUMBER_EXPR && tilt->dvalue_ == 0.0);
 
       if( true == simple ) {
-        lbel = new sbend( bel->name_, length, BRHO_*angle/length, angle );
+        lbel = new sbend( bel->name_, length, BRHO_*angle/length, angle, e1, e2 );
         if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
           aligner->xOffset = 0.0;
           aligner->yOffset = 0.0;
@@ -375,7 +378,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
         break;
       }
       else {
-        lbel = new CF_sbend( bel->name_, length, BRHO_*angle/length, angle );
+        lbel = new CF_sbend( bel->name_, length, BRHO_*angle/length, angle, e1, e2 );
 
         double multipoleStrength;
 
@@ -408,10 +411,18 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       expr_struct *k3   = (expr_struct*)bel->params_[BEL_RBEND_K3]->data;
       expr_struct *tilt = (expr_struct*)bel->params_[BEL_RBEND_TILT]->data;
       
+      double e1 = expr_evaluate( bel->params_[BEL_RBEND_E1], var_table_, bel_table_ );
+      double e2 = expr_evaluate( bel->params_[BEL_RBEND_E2], var_table_, bel_table_ );
+
       simple = (k1->kind_ == NUMBER_EXPR && k1->dvalue_ == 0.0 && k2->kind_ == NUMBER_EXPR && k2->dvalue_ == 0.0 && k3->kind_ == NUMBER_EXPR && k3->dvalue_ == 0.0 && tilt->kind_ == NUMBER_EXPR && tilt->dvalue_ == 0.0);
 
       if( true == simple ) {
-        lbel = new rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) );
+        if( (0.0 == e1) && (0.0 == e2) ) {
+          lbel = new rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) );
+	}
+        else {
+          lbel = new rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
+	}
         if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
           aligner->xOffset = 0.0;
           aligner->yOffset = 0.0;
@@ -422,7 +433,12 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
         break;
       }
       else {
-        lbel = new CF_rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) );
+        if( (0.0 == e1) && (0.0 == e2) ) {
+          lbel = new CF_rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) );
+	}
+        else {
+          lbel = new CF_rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
+	}
 
         double multipoleStrength;
 
