@@ -87,6 +87,17 @@ Sage::Sage( const beamline* x, bool doClone )
 }
 
 
+Sage::Sage( const Sage& )
+: _verbose(false),
+  _errorStreamPtr( &std::cerr ),
+  _outputStreamPtr( &std::cout )
+{
+  throw( GenericException( __FILE__, __LINE__, 
+         "Sage::Sage( const Sage& )",
+         "A Sage should never be copied." ) );
+}
+
+
 Sage::~Sage()
 {
   delete _arrayPtr;
