@@ -250,7 +250,13 @@ DrawSpace::~DrawSpace()
 void DrawSpace::multScaleBy( double x )
 {
   double u = fabs(x);
-  if( _myFunc != DrawSpace::drawPhiHPhiV ) {
+  if( _myFunc == DrawSpace::drawIHIV ) {
+    _xLo /= u;
+    _xHi /= u;
+    _yLo /= u;
+    _yHi /= u;
+  }
+  else if( _myFunc != DrawSpace::drawPhiHPhiV ) {
     double xc = ( _xHi + _xLo )/2.0;
     double yc = ( _yHi + _yLo )/2.0;
     double dx = ( _xHi - _xLo )/2.0;
@@ -266,12 +272,20 @@ void DrawSpace::multScaleBy( double x )
 void DrawSpace::setScaleTo( double x )
 {
   double u = fabs(x);
-  double xc = ( _xHi + _xLo )/2.0;
-  double yc = ( _yHi + _yLo )/2.0;
-  _xLo = xc - u;
-  _xHi = xc + u;
-  _yLo = yc - u;
-  _yHi = yc + u;
+  if( _myFunc != DrawSpace::drawIHIV ) {
+    double xc = ( _xHi + _xLo )/2.0;
+    double yc = ( _yHi + _yLo )/2.0;
+    _xLo = xc - u;
+    _xHi = xc + u;
+    _yLo = yc - u;
+    _yHi = yc + u;
+  }
+  else {
+    _xLo = -u;
+    _xHi =  u;
+    _yLo = -u;
+    _yHi =  u;
+  }
 }
 
 
