@@ -4,10 +4,11 @@ using std::setprecision;
 #else
 #include <iomanip.h>
 #endif
-#include "beamline.inc"
+#include <beamline.inc>
 
-#include "combinedFunction.h"
-#include "mwiremonitor.h"
+#include <combinedFunction.h>
+#include <mwiremonitor.h>
+#include <pinger.h>
 
 // **************************************************
 //   struct BMLN_posInfo
@@ -67,7 +68,7 @@ ostream& operator<<(ostream& os, BMLN_posInfo& x) {
   }
  return os << "\n" << endl;
 }
-
+
 // **************************************************
 //   struct bmlnElmntData
 // **************************************************
@@ -811,7 +812,6 @@ ostream& operator<<(ostream& os, bmlnElmnt& b)
 }
 
 
-
 bmlnElmnt* read_istream(istream& is)
 {
   // Read in a bmlnElmnt.  Recurses when a beamline is found.
@@ -854,6 +854,9 @@ bmlnElmnt* read_istream(istream& is)
   thinrfcavity		* cavityPtr;
   vkick			* vkickPtr;
   vmonitor		* vmonitorPtr;
+  Pinger                * PingerPtr;
+  HPinger               * hPingerPtr;
+  VPinger               * vPingerPtr;
 
   const double MIN_ANGLE = 2.0E-9;
   const int SIZE=80;
@@ -893,6 +896,22 @@ bmlnElmnt* read_istream(istream& is)
   else if( strcasecmp(type, 		"hkick") == 0 ) {
     hkickPtr = new hkick(name, strength);
     element = hkickPtr;
+  }
+  else if( strcasecmp(type, 		"vkick") == 0 ) {
+    vkickPtr = new vkick(name, strength);
+    element = vkickPtr;
+  }
+  else if( strcasecmp(type, 		"vpinger") == 0 ) {
+    vPingerPtr = new VPinger(name, strength);
+    element = vPingerPtr;
+  }
+  else if( strcasecmp(type, 		"hpinger") == 0 ) {
+    hPingerPtr = new HPinger(name, strength);
+    element = hPingerPtr;
+  }
+  else if( strcasecmp(type, 		"pinger") == 0 ) {
+    PingerPtr = new Pinger(name, strength);
+    element = PingerPtr;
   }
   else if( strcasecmp(type, 		"hmonitor") == 0 ) {
     hmonitorPtr = new hmonitor(name);
@@ -965,10 +984,6 @@ bmlnElmnt* read_istream(istream& is)
   else if( strcasecmp(type, 		"thinrfcavity") == 0 ) {
     cavityPtr = new thinrfcavity(name);
     element = cavityPtr;
-  }
-  else if( strcasecmp(type, 		"vkick") == 0 ) {
-    vkickPtr = new vkick(name, strength);
-    element = vkickPtr;
   }
   else if( strcasecmp(type, 		"vmonitor" ) == 0 ) {
     vmonitorPtr = new vmonitor(name);

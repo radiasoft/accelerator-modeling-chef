@@ -46,6 +46,9 @@ class sextupole;
 class BBLens;
 class thinSeptum;
 class thinLamb;
+class Pinger;
+class HPinger;
+class VPinger;
 
 // ---------------------------
 
@@ -113,6 +116,12 @@ public:
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
   virtual void visitCombinedFunction( combinedFunction* x )
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitPinger( Pinger* x )
+			 { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitHPinger( HPinger* x )
+			 { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitVPinger( VPinger* x )
+			 { visitBmlnElmnt( (bmlnElmnt*) x ); }
 
 protected:
   BmlVisitor() {}

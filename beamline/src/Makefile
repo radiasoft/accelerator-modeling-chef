@@ -25,6 +25,7 @@ OBJS = BBLens.o \
        monitor.o \
        mwiremonitor.o \
        octupole.o \
+       pinger.o \
        quadrupole.o \
        rastermonitor.o \
        rbend.o \
