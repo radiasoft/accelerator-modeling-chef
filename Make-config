@@ -46,8 +46,8 @@ gcc:
 
 linux:
 	$(MAKE) targets \
-	"C   = gcc5" \
-	"C++ = g++5" \
+	"C   = gcc" \
+	"C++ = egcs" \
 	"CFLAGS =  " \
 	"C++FLAGS =  " \
 	"INLINE_FLAG = " \
@@ -57,7 +57,7 @@ linux:
 	"INCDIR = $(FNALROOT)/include" \
 	"TKINC = /usr/include/tcl" \
 	"XINC = /usr/include" \
-	"LIBDIR = $(FNALROOT)/lib/gcc"
+	"LIBDIR = $(FNALROOT)/lib/egcs"
 
 irix:
 	pmake targets \
@@ -223,6 +223,20 @@ egcs:
 	"RANLIB = ranlib" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"SYBASEINC = /usr/local/ap/sybase/include" \
+	"TKINC = /usr/local/TCL-TK/include" \
+	"LIBDIR = $(FNALROOT)/lib/egcs"
+
+linux-egcs:
+	$(MAKE) targets \
+	"C   = /usr/bin/gcc" \
+	"C++ = /usr/bin/egcs" \
+	"CFLAGS =  " \
+	"C++FLAGS =  " \
+	"INLINE_FLAG = " \
+	"MAKELIB = ar ruv" \
+	"RANLIB = ranlib" \
+	"XINC = /usr/X11R6/include" \
+	"SYBASEINC = /home/sybase/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"LIBDIR = $(FNALROOT)/lib/egcs"
 
