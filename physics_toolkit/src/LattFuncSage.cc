@@ -79,13 +79,14 @@ int LattFuncSage::Orig_RX_Calc( JetParticle*   ptr_jp,
 }
 
 
-int LattFuncSage::Fast_CS_Calc( JetParticle* arg_jp, ET_CRITFUNC Crit )
+int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Crit )
 {
   // PRECONDITIONS: 
   // *arg_jp  is already on the closed orbit and its
   //        state is the one-turn map.
   //
-  // *_myBeamlinePtr  is an uncoupled ring.
+  // *_myBeamlinePtr  is an uncoupled ring containing
+  //                  no Slots.
   // 
   // POSTCONDITIONS:
   // On every element filtered by Crit is attached a lattFunc
@@ -95,6 +96,29 @@ int LattFuncSage::Fast_CS_Calc( JetParticle* arg_jp, ET_CRITFUNC Crit )
     cout << "LattFuncSage -- Entering LattFuncSage::Fast_CS_Calc" << endl;
     cout.flush();
   }
+
+  // Initial check for Slots
+  // This may be a redundant check, but it is fast.
+  // ??? Perhaps a LattFuncSage variable can toggle
+  // ??? this test on or off.
+  {
+      DeepBeamlineIterator dbi( _myBeamlinePtr );
+      bmlnElmnt* q;
+      while((  q = dbi++  )) {
+        if( strstr( "CF_rbend|rbend|Slot", q->Type() ) ) {
+          cerr << "*** ERROR ***                                     \n"
+                  "*** ERROR *** LattFuncSage::Fast_CS_Calc          \n"
+                  "*** ERROR *** This method  will not work          \n"
+                  "*** ERROR *** with Slots.                         \n"
+                  "*** ERROR ***                                     \n"
+                  "*** ERROR *** Try using another method.           \n"
+                  "*** ERROR ***                                     \n"
+               << endl;
+          exit(2);
+        }
+      }
+  }
+
 
   MatrixD mtrx;
   lattFunc* infoPtr;
@@ -266,12 +290,19 @@ int LattFuncSage::Fast_CS_Calc( JetParticle* arg_jp, ET_CRITFUNC Crit )
                 resizeFactor*resizeFactor )
         > resizeFactor*resizeFactor*0.01 )
     {
-  	cout << "Phase error in horizontal plane." << endl;
-  	cout << "imag( outState[i_px] ) = " << imag( outState[i_px] ) << endl;
-  	cout << outState[i_px]/resizeFactor << endl;
+  	cout << "*** ERROR *** Phase error in horizontal plane at " 
+             << lbe->Type() << "  " << lbe->Name()
+             << endl;
+  	cout << "*** ERROR *** imag( outState[i_px] ) = " 
+             << imag( outState[i_px] ) 
+             << endl;
+  	cout << "*** ERROR *** " 
+             << outState[i_px]/resizeFactor 
+             << endl;
   	exit(1);
     }
     dpsi_x = atan2( imag(phase), real(phase) );
+    while( dpsi_x < psi_x ) dpsi_x += M_TWOPI;
   
     phase = outState[i_y] / abs( outState[i_y] );
     outState[i_y] /= phase;
@@ -280,12 +311,19 @@ int LattFuncSage::Fast_CS_Calc( JetParticle* arg_jp, ET_CRITFUNC Crit )
                 resizeFactor*resizeFactor )
         > resizeFactor*resizeFactor*0.01 )
     {
-  	cout << "Phase error in vertical plane." << endl;
-  	cout << "imag( outState[i_py] ) = " << imag( outState[i_py] ) << endl;
-  	cout << outState[i_py]/resizeFactor << endl;
+  	cout << "*** ERROR *** Phase error in vertical plane at " 
+             << lbe->Type() << "  " << lbe->Name()
+             << endl;
+  	cout << "*** ERROR *** imag( outState[i_py] ) = " 
+             << imag( outState[i_py] ) 
+             << endl;
+  	cout << "*** ERROR *** " 
+             << outState[i_py]/resizeFactor 
+             << endl;
   	exit(1);
     }
     dpsi_y = atan2( imag(phase), real(phase) );
+    while( dpsi_y < psi_y ) dpsi_y += M_TWOPI;
   
 
     // Calculate lattice functions ...
@@ -303,8 +341,8 @@ int LattFuncSage::Fast_CS_Calc( JetParticle* arg_jp, ET_CRITFUNC Crit )
         ( 0 != strcmp( lbe->Type(), "CF_rbend" ) ) && 
         ( 0 != strcmp( lbe->Type(), "Slot"     ) ) )
     {
-      psi_x += dpsi_x;
-      psi_y += dpsi_y;
+      psi_x = dpsi_x;
+      psi_y = dpsi_y;
     } // ??? This is a real kludge!!
     
 
@@ -336,6 +374,240 @@ int LattFuncSage::Fast_CS_Calc( JetParticle* arg_jp, ET_CRITFUNC Crit )
 
   delete p_1;
   delete p_2;
+
+  return ret;
+}
+
+
+int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, ET_CRITFUNC Crit )
+{
+  // PRECONDITIONS: 
+  // *arg_jp  is already on the closed orbit and its
+  //        state is the one-turn map.
+  //
+  // *_myBeamlinePtr  is an uncoupled ring.
+  // 
+  // POSTCONDITIONS:
+  // On every element filtered by Crit is attached a lattFunc
+  // Barnacle.
+
+  if( this->_verbose ) {
+    cout << "LattFuncSage -- Entering LattFuncSage::Slow_CS_Calc" << endl;
+    cout.flush();
+  }
+
+  MatrixD mtrx;
+  lattFunc* infoPtr;
+
+  JetParticle* jprt = arg_jp->Clone();
+  Particle*     prt = arg_jp->ConvertToParticle();
+
+  short int i_x   =  arg_jp->xIndex();
+  short int i_y   =  arg_jp->yIndex();
+  short int i_z   =  arg_jp->cdtIndex();
+  short int i_px  =  arg_jp->npxIndex();
+  short int i_py  =  arg_jp->npyIndex();
+  short int i_dpp =  arg_jp->ndpIndex();
+
+  int ret = 0;
+  int i   = 0;
+  double cs = 0.0;
+  double sn = 0.0;
+
+  // .......... Check coupling ............................
+  mtrx = ( arg_jp->State() ).Jacobian();
+  
+  if( ( mtrx( i_y,  i_x  ) != 0.0 )  ||
+      ( mtrx( i_x,  i_y  ) != 0.0 )  ||
+      ( mtrx( i_x,  i_py ) != 0.0 )  ||
+      ( mtrx( i_y,  i_px ) != 0.0 )  ||
+      ( mtrx( i_py, i_x  ) != 0.0 )  ||
+      ( mtrx( i_px, i_y  ) != 0.0 )  ||
+      ( mtrx( i_py, i_px ) != 0.0 )  ||
+      ( mtrx( i_px, i_py ) != 0.0 )     )
+  {
+    cerr << "*** WARNING ***                                     \n"
+            "*** WARNING *** LattFuncSage::Slow_CS_Calc          \n"
+            "*** WARNING *** Coupling detected. Calculation is   \n"
+            "*** WARNING *** proceeding but results are suspect. \n"
+            "*** WARNING ***                                     \n"
+            "*** WARNING *** Suggest you use EdwardsTeng         \n"
+            "*** WARNING *** instead.                            \n"
+            "*** WARNING ***                                     \n"
+         << endl;
+  }
+
+
+  // Calculate initial lattice functions ...
+  // ... first horizontal
+  double alpha_x, beta_x;
+  cs = ( mtrx( i_x, i_x ) + mtrx( i_px, i_px ) )/2.0;
+  if( fabs( cs ) <= 1.0 ) {
+    if( mtrx( i_x, i_px ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
+    else                           sn = - sqrt( 1.0 - cs*cs );
+  }
+  else {
+    cerr << "*** ERROR ***                                     \n"
+            "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
+            "*** ERROR *** cos( psi_H ) = "
+         << cs
+         << "\n"
+            "*** ERROR *** Lattice is unstable.                \n"
+            "*** ERROR *** Cannot continue with calculation.   \n"
+            "*** ERROR ***                                     \n"
+         << endl;
+    exit(1);
+  }
+
+  if( sn == 0.0 ) {
+    cerr << "*** ERROR ***                                     \n"
+            "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
+            "*** ERROR *** Integer horizontal tune.            \n"
+            "*** ERROR ***                                     \n"
+         << endl;
+    exit(1);
+  }
+
+  beta_x  = mtrx( i_x, i_px ) / sn;
+  alpha_x = ( mtrx( i_x, i_x ) - mtrx( i_px, i_px ) ) / ( 2.0*sn );
+
+
+  // ... then vertical.
+  double alpha_y, beta_y;
+  cs = ( mtrx( i_y, i_y ) + mtrx( i_py, i_py ) )/2.0;
+  if( fabs( cs ) <= 1.0 ) {
+    if( mtrx( i_y, i_py ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
+    else                           sn = - sqrt( 1.0 - cs*cs );
+  }
+  else {
+    cerr << "*** ERROR ***                                     \n"
+            "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
+            "*** ERROR *** cos( psi_V ) = "
+         << cs
+         << "\n"
+            "*** ERROR *** Lattice is unstable.                \n"
+            "*** ERROR *** Cannot continue with calculation.   \n"
+            "*** ERROR ***                                     \n"
+         << endl;
+    exit(1);
+  }
+
+  if( sn == 0.0 ) {
+    cerr << "*** ERROR ***                                     \n"
+            "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
+            "*** ERROR *** Integer vertical tune.              \n"
+            "*** ERROR ***                                     \n"
+         << endl;
+    exit(1);
+  }
+
+  beta_y  = mtrx( i_y, i_py ) / sn;
+  alpha_y = ( mtrx( i_y, i_y ) - mtrx( i_py, i_py ) ) / ( 2.0*sn );
+
+
+  // ++++++++++++++++++++++++++++++++++++++++++++++++++++
+  // The following is more or less copied from the
+  // old beamline::twiss, with some modifications
+  // 
+
+  DeepBeamlineIterator getNext( _myBeamlinePtr );
+  bmlnElmnt* lbe;
+  
+  double beta0H  = beta_x;
+  double beta0V  = beta_y;
+  double alpha0H = alpha_x;
+  double alpha0V = alpha_y;
+
+  double oldpsiH = 0.0;
+  double oldpsiV = 0.0;
+
+  double tb      = 0.0;
+  double t       = 0.0;
+  double lng     = 0.0;
+  double psi_x   = 0.0;
+  double psi_y   = 0.0;
+
+  jprt->setState( prt->State() );
+
+  while( lbe = getNext++ ) 
+  {
+    lng += lbe->OrbitLength( *prt );
+    lbe -> propagate( *jprt );
+
+    mtrx = jprt->State().Jacobian();
+    
+    if( ( 0 != strcmp( lbe->Type(), "rbend"    ) ) && 
+        ( 0 != strcmp( lbe->Type(), "CF_rbend" ) ) && 
+        ( 0 != strcmp( lbe->Type(), "Slot"     ) ) )
+    {
+      tb = mtrx(0,0) * beta0H -  mtrx(0,3) * alpha0H;
+      beta_x = ( tb * tb + mtrx(0,3) * mtrx(0,3))/beta0H;
+    
+      alpha_x = -1.0*(tb * (mtrx(3,0)*beta0H - mtrx(3,3)*alpha0H) +
+    			     mtrx(0,3)*mtrx(3,3))/beta0H;
+    
+      t = atan2(mtrx(0,3),tb);
+      while(t < oldpsiH) t += M_TWOPI;
+      psi_x = oldpsiH = t;
+    
+      tb = mtrx(1,1) * beta0V -  mtrx(1,4) * alpha0V;
+      beta_y = (tb * tb + mtrx(1,4) * mtrx(1,4))/beta0V;
+    
+      alpha_y = -1.0*(tb * (mtrx(4,1)*beta0V - mtrx(4,4)*alpha0V) +
+    			     mtrx(1,4)*mtrx(4,4))/beta0V;
+    
+      t = atan2(mtrx(1,4),tb);
+      while(t < oldpsiV) t += M_TWOPI;
+      psi_y = oldpsiV = t;
+    }
+    
+    else { // ??? This is a kludge.
+      tb = mtrx(0,0) * beta0H -  mtrx(0,3) * alpha0H;
+      beta_x = ( tb * tb + mtrx(0,3) * mtrx(0,3))/beta0H;
+    
+      alpha_x = -1.0*(tb * (mtrx(3,0)*beta0H - mtrx(3,3)*alpha0H) +
+    			     mtrx(0,3)*mtrx(3,3))/beta0H;
+    
+      psi_x = oldpsiH;
+    
+      tb = mtrx(1,1) * beta0V -  mtrx(1,4) * alpha0V;
+      beta_y = (tb * tb + mtrx(1,4) * mtrx(1,4))/beta0V;
+    
+      alpha_y = -1.0*(tb * (mtrx(4,1)*beta0V - mtrx(4,4)*alpha0V) +
+    			     mtrx(1,4)*mtrx(4,4))/beta0V;
+    
+      psi_y = oldpsiV;
+    }
+    
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    // Attach the calculation to the element ...
+    if( ( Crit == 0 ) || ( Crit( lbe ) ) )
+    {
+      if( 0 == ( infoPtr = (lattFunc*) (lbe->dataHook.find("Twiss")) ) ) {
+    	infoPtr = new lattFunc;
+    	lbe->dataHook.insert( new Barnacle( "Twiss", infoPtr ) );
+      }
+      infoPtr->arcLength = lng;
+      infoPtr->beta.hor  = beta_x;
+      infoPtr->beta.ver  = beta_y;
+      infoPtr->alpha.hor = alpha_x;
+      infoPtr->alpha.ver = alpha_y;
+      infoPtr->psi.hor   = psi_x;
+      infoPtr->psi.ver   = psi_y;
+    }
+
+  }  // End loop on lbe ...
+
+
+  // Finished....
+  if( this->_verbose ) {
+    cout << "LattFuncSage -- Leaving LattFuncSage::Slow_CS_Calc" << endl;
+    cout.flush();
+  }
+
+  delete prt;
+  delete jprt;
 
   return ret;
 }

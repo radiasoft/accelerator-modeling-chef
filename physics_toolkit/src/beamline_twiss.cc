@@ -62,8 +62,25 @@ int beamline::twiss( JetParticle& p, double dpp )
     }
   
   
-    ret = lfs.Fast_CS_Calc( &p );
-  
+    // Initial check for Slots
+    DeepBeamlineIterator dbi( this );
+    bmlnElmnt* q;
+    char slotFound = 0;
+    while((  q = dbi++  )) {
+      if( strstr( "CF_rbend|rbend|Slot", q->Type() ) ) {
+        slotFound = 1;
+        break;
+      }
+    }
+    dbi.reset();
+
+    if( slotFound ) {
+      ret = lfs.Slow_CS_Calc( &p );
+    }
+    else {
+      ret = lfs.Fast_CS_Calc( &p );
+    }  
+
     if( ret != 0 ) {
       cerr << "beamline::twiss: Problem calculating the Twiss \n"
   	   << "parameters." << endl;
@@ -85,10 +102,8 @@ int beamline::twiss( JetParticle& p, double dpp )
   
   
     // Combine dispersion and lattice function information ...
-    bmlnElmnt* q;
     lattFunc*  plf;
     lattFunc*  qlf;
-    DeepBeamlineIterator dbi( this );
     while( q = dbi++ ) {
       if( 0 != ( plf = (lattFunc*) q->dataHook.find("Twiss") ) ) {
   	if( 0 != ( qlf = (lattFunc*) q->dataHook.find("Dispersion") ) ) {
