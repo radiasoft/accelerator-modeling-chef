@@ -1,0 +1,317 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+
+\begin{document}
+
+\title{\textbf{Summer Work Report}}
+\author{Dmitri Mokhov \\
+        \small{(mokhovd@fnal.gov, mokhov@students.uiuc.edu)} \\
+        \vspace{3mm}
+        \textit{University of Illinois at Urbana-Champaign} \\
+        Francois Ostiguy (supervisor) \\
+        \textit{Fermi National Accelerator Laboratory} }
+\date{August 6, 1999}
+
+\maketitle
+
+\begin{abstract}
+The report summarizes the work that was done while working at Fermilab
+during the summer of 1999. The main task was the creation of a parser of
+the command language of MAD program and a converter from that language to
+C++ definitions in CFG format. In addition to a summary of what was done,
+the report contains some relevant details about the parser and examples of
+converted code. It also describes some of the problems that were encountered
+and the solutions found for them.
+\end{abstract}
+
+\section{Introduction}
+During the summer of 1999 I have worked as a summer student at the Beam
+Physics Department at Fermi National Accelerator Laboratory under the
+supervision of Dr.~Francois Ostiguy. The job involved working on single
+extensive project. The project consisted of working on a program that
+would parse MAD (Methodical Accelerator Design) definitions and commands,
+store the defined objects in the memory while ignoring the commands, and
+output the definitions in the CFG format (code to be included in the
+\texttt{init} method of the Accelerator class), which uses classes from a C++
+library called Beamline/Mxyzptlk. Significant advice and collaboration
+during the work on the parser was provided by Dr.~Oleg Krivosheev
+(kriol@fnal.gov).
+
+\section{Parser Requirements}
+Several tools were used for developing the MAD parser. The C-language part
+of the parser code was written in and tested with GCC v.2.8.1 compiler.
+However, the code is fairly portable and should work with any
+ANSI-C-compatible compiler. The lexer was created using Flex v.2.5.4
+scanner generator. It should be fairly compatible with AT\&T Lex but
+requires minor code changes. Bison v.1.27 parser generator was used to
+create the parser. Again, it should be quite compatible with AT\&T Yacc,
+but some small changes in the code might also be required. The program
+consists of many files which can be compiled and linked using a provided
+makefile, which is written for GNU Make v.3.77. In addition, C data structures
+for storing the information about MAD objects were created using the library
+Glib v.1.2.3, found on the GIMP Toolkit site (http://www.gtk.org). All the
+tools mentioned above were made by GNU (http://www.gnu.org).
+
+\section{Design Issues}
+\subsection{Reading MAD Structure Into Memory}
+The lexer that is built by Flex from regular-expression-based rules
+recognizes MAD keywords, identifiers, numbers, strings, and comments. It
+returns corresponding tokens and semantic values to the parser. The parser
+contains the grammar for MAD definitions and uses it to recognize those
+definitions and store them into internal data structures.
+
+\subsection{Internal Massage}
+After MAD definitions are stored into internal data structures and before
+the actual CFG output takes place, there are several actions that need to
+taken: checking for variable loops, sorting, and dependence resolutions.
+Before the output takes place, constants, variables, beam elements, and beam
+lines are sorted by the line number on which they were defined in the MAD file.
+Then dependences are also checked and resolved by re-arranging the order
+of the corresponding objects. At the time of the writing, a circular
+definition (that is, a loop) can be detected by running the dependency
+check, which will not properly terminate in case of such a definition.
+
+\subsection{CFG Output}
+A CFG file is created for the output of the definitions. All the CFG
+output is done into this file. It is performed in four steps. First,
+all the constants are output, then the variables, then the beam elements,
+and finally the beam lines. This is done both for easier usage of the
+resultant CFG file and to better reflect the language structure of MAD,
+even though the definitions might not be in such separate blocks in
+the original MAD file. In addition, comments (changed from MAD to C++
+style) are also printed in all sections.
+
+\section{Parser Internals}
+As was mentioned above, almost all of the data structures that are
+created by the parser to store MAD definitions come from the Glib library.
+Hash tables are kept for storing information about constants, variables,
+beam elements, and beam lines. In each hash table, the key is a pointer
+to the name of the object and the value is a pointer to the corresponding
+structure. The tables below show all these structures.
+
+\begin{center}
+\begin{tabular}{||l||}\hline\hline
+Constant             \\ \hline
+name                 \\
+string value         \\
+algebraic expression \\
+line number          \\ \hline\hline
+\end{tabular}
+\hspace{2em}
+\begin{tabular}{||l||}\hline\hline
+Variable             \\ \hline
+name                 \\
+algebraic expression \\
+line number          \\ \hline\hline
+\end{tabular}
+\\
+\vspace{2em}
+\begin{tabular}{||l||}\hline\hline
+Beam Element \\ \hline
+name         \\
+kind         \\
+length       \\
+parameters   \\
+line number  \\ \hline\hline
+\end{tabular}
+\hspace{2em}
+\begin{tabular}{||l||}\hline\hline
+Beam Line         \\ \hline
+name              \\
+beam element list \\
+counter           \\
+line number       \\ \hline\hline
+\end{tabular}
+\end{center}
+
+Trees (GNode pointers in Glib) are employed by the parser for storing
+algebraic expressions used by constants, variables, and beam elements.
+Doubly-linked lists (GList pointers in Glib) are used for storing
+information about the elements of a beam line. Finally, arrays of pointers
+(GPtrArray pointers in Glib) are used for comments.
+
+\section{What In MAD Is Handled}
+MAD constant definitions are parsed and output to the CFG file. Constants
+can be assigned algebraic expressions as well as string values. Built-in
+constants from MAD ($\pi$, etc.) are predefined. All variables with arbitrary
+algebraic expressions as allowed by MAD syntax are also parsed and output.
+All beam element definitions are parsed, except for matrix and lump elements,
+which are not fully parsed, meaning that they are recognized, but not all their
+parameters are stored into memory. (For more details about what is not handled,
+see the next section.) Beam line definitions are parsed and output as well,
+including beam line expressions: inversion, inclusion, and replication.
+Finally, MAD comments are handled by associating a comment that is on the same
+line as a statement with that statement and by associating full-line comments
+with the statement right after it.
+
+\section{What In MAD Is NOT Handled}
+Most importantly, the parser is designed for handling definitions only. Hence,
+MAD commands are not interpreted. The lexer understands them, but the parser
+essentially throws them away by simply outputting a message to the log file.
+Multiple input files are also not handled. However, the user can concatenate
+them by hand and use the result as the input for the parser. Another important
+issue is short versions of keywords (for example, HMON instead of HMONITOR).
+To successfully parse a MAD file the short versions should be converted to
+their canonical names. Finally, as was briefly mentioned above, matrix and
+lump beam elements are not fully handled because they do not fit into beam
+element scheme and do not have direct Beamline/Mxyzptlk equivalents.
+
+\section{Conversion Problems}
+There are three main problems with converting from MAD to CFG, which are
+results of the absence of direct correspondence between their elements.
+First, some elements (for example, MULTIPOLE and YROT) are correctly stored in
+the memory but are printed as comments to the CFG file. Second, other elements
+(for example, SOLENOID) are correctly stored in the memory but are printed as
+instances of fictitious classes. Third, elements like ELSEPARATOR and the
+collimators are replaced by drifts. Output for the most elements includes
+comments that tell about the above problems and changes. The comments also
+list the values of parameters that don't have equivalents.
+
+\section{A Conversion Example}
+The converter was tested using version 18 of the Recycler lattice (r18). The
+input is a 56KB MAD file. The only preliminary work that needed to be done was
+the conversion of shortened beam element names into standard ones. A 100KB
+output file was produced, and it looks valid. Notice that all the identifiers
+are in upper case. This is because C++ is case-sensitive, while MAD is not.
+Thus all MAD identifiers have to be converted to the same case.
+
+\subsection{Constants}
+No new MAD constants were declared in r18. Therefore, the converter produced
+only one line:
+
+\begin{verbatim}
+
+// *** Constants ***
+
+const double PI = 3.14159265358979323846;
+
+\end{verbatim}
+
+\subsection{Variables}
+This is how these three variables were defined in the r18 MAD file:
+
+\begin{verbatim}
+
+! Define cell lengths for arc,dispersion suppressor and
+! straight section
+!
+larccell = 17.288177764 !17.288180764-0.000003
+lsscell = 17.288639
+ldiscell = 12.96643319
+
+\end{verbatim}
+
+\noindent and how they were converted into CFG output:
+
+\begin{verbatim}
+
+// Define cell lengths for arc,dispersion suppressor and
+// straight section
+//
+// 17.288180764-0.000003
+double LARCCELL = 17.288177764;
+double LSSCELL = 17.288639;
+double LDISCELL = 12.96643319;
+
+\end{verbatim}
+
+\subsection{Beam Elements}
+A beam element from r18 in MAD:
+
+\begin{verbatim}
+
+! Simulate magnet moves by placing H and V correctors at the
+! end of the CFM magnets.
+!
+HC: hkicker, l=0.0, kick = 0.0, type=khka
+
+\end{verbatim}
+
+\noindent and the corresponding CFG output:
+
+\begin{verbatim}
+
+// Simulate magnet moves by placing H and V correctors at the
+// end of the CFM magnets.
+//
+hkick HC ( (char*)"HC:khka", 0.0, 0.0 );
+
+\end{verbatim}
+
+\subsection{Beam Lines}
+R18 beam lines in MAD:
+
+\begin{verbatim}
+
+IJHB30DS: line=(-IJHB30US)
+IJHBINSRT: line=(IJHB30US,IJHB30DS)
+
+\end{verbatim}
+
+\noindent and in the CFG output file:
+
+\begin{verbatim}
+
+beamline IJHB30DS ( "IJHB30DS" );
+         IJHB30DS.append( -IJHB30US );
+beamline IJHBINSRT ( "IJHBINSRT" );
+         IJHBINSRT.append( IJHB30US );
+         IJHBINSRT.append( IJHB30DS );
+
+\end{verbatim}
+
+
+\section{How To Run The Converter}
+After compilation there is only one executable to run, which is called
+\texttt{mad2cfg}. If executed with no arguments, it prints out a message
+telling how to use it:
+
+\begin{verbatim}
+Usage: mad2cfg [options] mad_file [cfg_file]
+\end{verbatim}
+
+There is only one option now, namely \texttt{-l}, which, if selected, commands
+the program to create a log file called \texttt{madparser.log}. The input
+file always has to be specified, while the output file argument is optional.
+If it is not specified, the CFG output will go to STDOUT.
+
+\section{Code Availability}
+The code for the parser is available via read-only anonymous CVS from
+the server reboot.fnal.gov. In order to be able to connect, set your
+CVSROOT environment variable to \\
+
+:pserver:anoncvs@reboot.fnal.gov:/usr/local/cvsroot \\
+
+\noindent Then execute ``cvs login'' with password ``guest''. After the
+login is successfully performed, you can get your private copy of the source
+files by executing ``cvs checkout madparser''. Then you should check
+GNUmakefile to see how include parameters are set, since you might need to
+change them. Finally, run ``make'' to compile and build the MAD parser.
+
+\section{Conclusion}
+The MAD parser is fully functional, but there are certainly many features
+that can be added to it. Handling multiple included files and outputting
+in a number of different formats are two such features. Adding them requires
+a little thought but can be done without a problem. Also, one might consider
+using the parser to create a C++ factory that will produce instances of the
+classes of the Beamline library. Finally, this summer has allowed me to learn
+a great deal about construction of a lexer, a parser, an analyzer, and a
+translator, as well as to obtain good experience in writing in ANSI C and
+utilizing data structures in it.
+
+\vspace{30mm}
+\noindent Distribution:
+
+O.~Krivosheev
+
+E.~McCrory
+
+L.~Michelotti
+
+N.~Mokhov
+
+F.~Ostiguy
+
+M.~Syphers
+
+\end{document}
