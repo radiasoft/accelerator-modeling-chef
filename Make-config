@@ -31,6 +31,7 @@ BASIC_TOOLKIT_INC = $(FNALROOT)/basic_toolkit/include
 PHYSICS_TOOLKIT_INC = $(FNALROOT)/physics_toolkit/include
 INTEGRATOR_INC = $(FNALROOT)/integrator/include
 VMALLOC_INC    = $(FNALROOT)/vmalloc
+# REC_BL_30_INC  = $(FNALROOT)/machines/rec_beamline_30/include
 
 gcc:
 	$(MAKE) targets \
@@ -43,7 +44,8 @@ gcc:
 	"RANLIB = ranlib" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"TKINC = /usr/include/tcl" \
-	"LIBDIR = $(FNALROOT)/lib/gcc"
+	"LIBDIR = $(FNALROOT)/lib/gcc" \
+	"STL_CONFIG = "
 
 linux:
 	$(MAKE) targets \
@@ -58,7 +60,8 @@ linux:
 	"INCDIR = $(FNALROOT)/include" \
 	"TKINC = /usr/include/tcl" \
 	"XINC = /usr/include" \
-	"LIBDIR = $(FNALROOT)/lib/egcs"
+	"LIBDIR = $(FNALROOT)/lib/egcs" \
+	"STL_CONFIG = "
 
 irix:
 	pmake targets \
@@ -72,7 +75,8 @@ irix:
 	"SYBASEINC = /usr/local/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/include/X11" \
-	"LIBDIR = $(FNALROOT)/lib/sgi"
+	"LIBDIR = $(FNALROOT)/lib/sgi" \
+	"STL_CONFIG = "
 
 irix-gcc:
 	pmake targets \
@@ -86,7 +90,8 @@ irix-gcc:
 	"SYBASEINC = /usr/local/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/include" \
-	"LIBDIR = $(FNALROOT)/lib/sgi"
+	"LIBDIR = $(FNALROOT)/lib/sgi" \
+	"STL_CONFIG = "
 
 irix-gcc-debug:
 	pmake targets \
@@ -100,7 +105,8 @@ irix-gcc-debug:
 	"SYBASEINC = /usr/local/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/include" \
-	"LIBDIR = $(FNALROOT)/lib/sgi"
+	"LIBDIR = $(FNALROOT)/lib/sgi" \
+	"STL_CONFIG = "
 
 solaris:
 	$(MAKE) targets \
@@ -114,7 +120,9 @@ solaris:
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
-	"RANLIB = echo"
+	"RANLIB = echo" \
+	"STL_CONFIG = -I/opt/SUNWspro/include/stl"
+
 
 # the options "-fast" is close, but it includes the "-O4", which we don't really need.
 # So the options following "-O " here are the rest of the "-fast" macro.
@@ -131,7 +139,9 @@ ultra-opt:
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
 	"SYBASEINC = /usr/local/ap/sybase/include" \
-	"RANLIB = echo"
+	"RANLIB = echo" \
+	"STL_CONFIG = -I/opt/SUNWspro/include/stl"
+
 
 solaris-debug:
 	$(MAKE) targets \
@@ -145,7 +155,8 @@ solaris-debug:
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
-	"RANLIB = echo"
+	"RANLIB = echo" \
+	"STL_CONFIG = -I/opt/SUNWspro/include/stl"
 
 solaris-devel:
 	$(MAKE) targets \
@@ -159,7 +170,8 @@ solaris-devel:
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
-	"RANLIB = echo"
+	"RANLIB = echo" \
+	"STL_CONFIG = -I/opt/SUNWspro/include/stl"
 
 solaris-gcc:
 	$(MAKE) targets \
@@ -173,7 +185,8 @@ solaris-gcc:
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
-	"RANLIB = echo"
+	"RANLIB = echo" \
+	"STL_CONFIG = "
 
 solaris-gcc-debug:
 	$(MAKE) targets \
@@ -187,7 +200,9 @@ solaris-gcc-debug:
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
-	"RANLIB = echo"
+	"RANLIB = echo" \
+	"STL_CONFIG = "
+
 
 solaris-gcc-depend:
 	$(MAKE) depend \
@@ -225,7 +240,9 @@ egcs:
 	"XINC = /usr/local/ap/X11R6/include" \
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
-	"LIBDIR = $(FNALROOT)/lib/egcs"
+	"LIBDIR = $(FNALROOT)/lib/egcs" \
+	"STL_CONFIG = "
+
 
 linux-egcs:
 	$(MAKE) targets \
@@ -239,7 +256,8 @@ linux-egcs:
 	"XINC = /usr/X11R6/include" \
 	"SYBASEINC = /home/sybase/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
-	"LIBDIR = $(FNALROOT)/lib/egcs"
+	"LIBDIR = $(FNALROOT)/lib/egcs" \
+	"STL_CONFIG = "
 
 kai-debug:
 	$(MAKE) targets \
@@ -253,7 +271,8 @@ kai-debug:
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
-	"RANLIB = echo"
+	"RANLIB = echo" \
+	"STL_CONFIG = "
 
 kai-depend:
 	$(MAKE) depend \
@@ -275,7 +294,8 @@ kai-opt:
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
-	"RANLIB = echo"
+	"RANLIB = echo" \
+	"STL_CONFIG = "
 
 kai:
 	$(MAKE) targets \
@@ -289,5 +309,6 @@ kai:
 	"SYBASEINC = /usr/local/ap/sybase/include" \
 	"TKINC = /usr/local/TCL-TK/include" \
 	"XINC = /usr/local/ap/X11R6/include" \
-	"RANLIB = echo"
+	"RANLIB = echo" \
+	"STL_CONFIG = "
 
