@@ -1,4 +1,9 @@
+#ifdef __VISUAL_CPP__
+#include <iomanip>
+#else
 #include <iomanip.h>
+#endif
+
 #include "beamline.inc"
 
 
@@ -145,4 +150,3 @@ ostream& thinSeptum::writeTo(ostream& os)
   os << OSTREAM_DOUBLE_PREC << strengthPos << " " << strengthNeg << " " << xWire << "\n";
   return os;
 }
-

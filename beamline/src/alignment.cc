@@ -1,4 +1,9 @@
+#ifdef __VISUAL_CPP__
+#include <iomanip>
+#else
 #include <iomanip.h>
+#endif
+
 #include "beamline.inc"
 #include "VectorD.h"
 
@@ -288,4 +293,3 @@ ostream& operator<<(ostream& os, alignment& align)
 
   return os;
 }
-

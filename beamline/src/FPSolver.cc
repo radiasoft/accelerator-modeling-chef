@@ -611,6 +611,7 @@ double& FPSolver::JumpScale( int i ) {
 	 << endl;
     if( 1 + 1 == 2 ) exit(1);
   }
+	return jumpScale[i];
 }
 
 double& FPSolver::ZeroScale( int i ) { 
@@ -625,4 +626,5 @@ double& FPSolver::ZeroScale( int i ) {
 	 << endl;
     if( 1 + 1 == 2 ) exit(1);
   }
+  return zeroScale[i];
 }

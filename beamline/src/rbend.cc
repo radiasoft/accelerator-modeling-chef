@@ -1,4 +1,10 @@
+<<<<<<< rbend.cc
+#ifdef __VISUAL_CPP__
+#include <iomanip>
+#else
 #include <iomanip.h>
+#endif
+
 #include "beamline.inc"
 
 // **************************************************
@@ -256,4 +262,3 @@ istream& rbend::readFrom(istream& is)
 
   return is;
 }
-

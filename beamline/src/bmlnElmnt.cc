@@ -1,7 +1,14 @@
+<<<<<<< bmlnElmnt.cc
+#ifdef __VISUAL_CPP__
+#include <iomanip>
+using std::setprecision;
+#else
+#include <iomanip.h>
+#endif
 #include "beamline.inc"
+
 // #include "combinedFunction.h"
 // #include "mwiremonitor.h"
-#include <iomanip.h>
 
 // **************************************************
 //   struct BMLN_posInfo
@@ -1031,4 +1038,3 @@ bmlnElmnt* read_istream(istream& is)
   delete name;
   return element;
 }
-
