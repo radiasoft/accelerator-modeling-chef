@@ -65,19 +65,19 @@ public:
 
  typedef bool (*CRITFUNC)( bmlnElmnt* );
 
+ static bool no ( bmlnElmnt* );
+ static bool yes( bmlnElmnt* );
+
+ void setErrorStream( ostream* );
+ void setOutputStream( ostream* );
+
 protected:
  beamline*           _myBeamlinePtr;
  beamline::arrayRep* _arrayPtr;
  bool                _verbose;
  bool                _cloned;
- ostream&            _errorStream;  
- ostream&            _outputStream;  
-
-
-public:
- static bool no ( bmlnElmnt* );
- static bool yes( bmlnElmnt* );
-
+ ostream*            _errorStreamPtr;
+ ostream*            _outputStreamPtr;
 };
 
 
@@ -89,6 +89,16 @@ inline void Sage::set_verbose()
 inline void Sage::unset_verbose()
 {
   _verbose = 0;
+}
+
+inline void Sage::setErrorStream( ostream* x )
+{
+  _errorStreamPtr = x;
+}
+
+inline void Sage::setOutputStream( ostream* x )
+{
+  _outputStreamPtr = x;
 }
 
 
