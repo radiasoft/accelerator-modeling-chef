@@ -12,7 +12,8 @@
   typedef complex<double> Complex;
 #endif
 
-#ifdef __sparc
+// Check for Solaris.
+#if defined(__sparc) && !defined(__GNUG__) 
   typedef complex Complex;
 #endif
 
