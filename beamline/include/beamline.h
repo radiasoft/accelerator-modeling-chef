@@ -928,6 +928,8 @@ public:
   ~sbend();
 
   double setAngle(double a)	{ return (angle = a); }
+  double getAngle() { return angle; }
+
   void geomToEnd   ( BMLN_posInfo& );
   void geomToStart ( BMLN_posInfo& );
   void eliminate();
@@ -1869,11 +1871,11 @@ public:
   int    howDeep();
   inline bmlnElmnt* firstElement()
     {
-      return (bmlnElmnt*) ( ((dlist*) this)->lastInfoPtr() );
+      return (bmlnElmnt*) ( ((dlist*) this)->firstInfoPtr() );
     }
   inline bmlnElmnt* lastElement()
     {
-      return (bmlnElmnt*) ( ((dlist*) this)->firstInfoPtr() );
+      return (bmlnElmnt*) ( ((dlist*) this)->lastInfoPtr() );
     }
   double Energy() const { return nominalEnergy; }
   char*  Type() const;
