@@ -352,6 +352,32 @@ return r;
 }
 
 
+
+int dlist::startAt( const ent x )
+{
+  dlist_traversor getNext( *(dlist*) this );
+  dlink* q;
+
+  while((  q = getNext()  )) 
+  {
+    if( q->e == x ) 
+    {
+      last = q->prev;
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
+void dlist::riskStartAt( const dlink* x )
+{
+  // Dangerous routine!!
+  last = x->prev;
+}
+
+
+
 ent dlist::operator[]( int n ) const
 {
 dlist_iterator getNext( *this );
