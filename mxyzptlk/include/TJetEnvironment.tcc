@@ -38,6 +38,7 @@
 #include "GenericException.h"
 #include "TJetEnvironment.h"
 #include "TJet.h"
+#include "VectorD.h"   // Used by .approxEq
 
 using namespace std;
 
@@ -285,6 +286,87 @@ bool TJetEnvironment<T1,T2>::operator==( const TJetEnvironment& x ) const
     if( _scale[i] != x._scale[i] ) return false;
   }
   return true;  
+}
+
+
+template<typename T1, typename T2>
+bool TJetEnvironment<T1,T2>::approxEq( const TJetEnvironment& x, const Vector& tolerance ) const
+{
+  int i;
+  if( x._numVar != _numVar ) return false;
+  if( x._spaceDim != _spaceDim ) return false;
+  if( x._maxWeight != _maxWeight ) return false;
+  for( i = 0; i < _numVar; i++ ) {
+    if( std::abs(_refPoint[i] - x._refPoint[i]) > std::abs(tolerance(i)) ) 
+    { return false; }
+    // Note: unlike operator=, there is no test for _scale here.
+  }
+  return true;  
+}
+
+
+template<typename T1, typename T2>
+bool TJetEnvironment<T1,T2>::approxEq( const TJetEnvironment& x, const double* tolerance ) const
+{
+  Vector w( _numVar, tolerance );
+  return this->approxEq( x, w );
+}
+
+
+template<typename T1, typename T2>
+bool TJetEnvironment<T1,T2>::hasReferencePoint( const Vector& x ) const
+{
+  if( x.Dim() != _numVar ) { return false; }
+  for( int i = 0; i < _numVar; i++ ) {
+    if( _refPoint[i] != x(i) ) return false;
+  }
+  return true;  
+}
+
+
+template<typename T1, typename T2>
+bool TJetEnvironment<T1,T2>::hasReferencePoint( const double* x ) const
+{
+  Vector w( _numVar, x );
+  return this->hasReferencePoint( w );
+}
+
+
+template<typename T1, typename T2>
+bool TJetEnvironment<T1,T2>::hasApproxReferencePoint( const Vector& x, const Vector& tolerance ) const
+{
+  if( x.Dim() != _numVar || tolerance.Dim() != _numVar ) 
+  { return false; }
+  for( int i = 0; i < _numVar; i++ ) {
+    if( std::abs(_refPoint[i] - x(i)) > std::abs(tolerance(i)) ) 
+    { return false; }
+  }
+  return true;  
+}
+
+
+template<typename T1, typename T2>
+bool TJetEnvironment<T1,T2>::hasApproxReferencePoint( const double* x, const Vector& tolerance ) const
+{
+  Vector w( _numVar, x );
+  return this->hasApproxReferencePoint( w, tolerance );
+}
+
+
+template<typename T1, typename T2>
+bool TJetEnvironment<T1,T2>::hasApproxReferencePoint( const Vector& x, const double* tolerance ) const
+{
+  Vector w( _numVar, tolerance );
+  return this->hasApproxReferencePoint( x, w );
+}
+
+
+template<typename T1, typename T2>
+bool TJetEnvironment<T1,T2>::hasApproxReferencePoint( const double* x, const double* tolerance ) const
+{
+  Vector w( _numVar, x );
+  Vector z( _numVar, tolerance );
+  return this->hasApproxReferencePoint( w, z );
 }
 
 
