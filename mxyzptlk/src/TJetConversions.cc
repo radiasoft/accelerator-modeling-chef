@@ -475,7 +475,7 @@ TJetEnvironment<Complex,double>* TJet<Complex,double>::CreateEnvFrom( TJetEnviro
     if( EnvEquivalent( x, pje ) ) return pje;
   }
  
-  // If not, then create a new TJetEnvironment<Complex,double> .........................
+  // If not, then create a new TJetEnvironment<Complex,double> ...........
   TJetEnvironment<Complex,double>* pje_new = new TJetEnvironment<Complex,double>( *x );
   TJet<Complex,double>::_environments.append( pje_new );
   return pje_new;
@@ -493,10 +493,51 @@ TJetEnvironment<double,Complex>* TJet<double,Complex>::CreateEnvFrom( TJetEnviro
     if( EnvEquivalent( pje, x ) ) return pje;
   }
  
-  // If not, then create a new TJetEnvironment<double,Complex> .........................
+  // If not, then create a new TJetEnvironment<double,Complex> ............
   TJetEnvironment<double,Complex>* pje_new = new TJetEnvironment<double,Complex>( *x );
   TJet<double,Complex>::_environments.append( pje_new );
   return pje_new;
+}
+
+// ----------------------------------------------------------
+// ----------------------------------------------------------
+
+TJetEnvironment<double,Complex>* TJet<double,Complex>::CreateEnvFrom( const Vector& x )
+{
+  // POSTCONDITIONS: The _lastEnv static pointer is not changed.
+  //
+  // Check to see if an appropriate environment already exists
+  int n = x.Dim();
+  int i = 0;
+  slist_iterator g( TJet<double,Complex>::_environments );
+  TJetEnvironment<double,Complex>* pje;
+  Tcoord<double,Complex>* q = 0;
+  while( pje = (TJetEnvironment<double,Complex>*) g() ) {
+    bool passed = ( ( n == pje->_spaceDim            ) && 
+                    ( pje->_spaceDim == pje->_numVar )    );
+    slist_iterator w( pje->_myCoords );
+    i = 0;
+    while( passed && (0 != (q = (Tcoord<double,Complex>*) w())) ) {
+      if( std::abs(x(i) - q->standardPart()) > 1.0e-8 ) { passed = false; }
+      i++;
+    }
+    if( passed ) { return pje; }
+  }
+ 
+  // If not, then create a new TJetEnvironment<double,Complex> ...........
+  TJetEnvironment<double,Complex>* storedEnv = TJet<double,Complex>::_lastEnv;
+  TJet<double,Complex>::BeginEnvironment( n );
+  for( int i = 0; i < n; i++ ) {
+    new Tcoord<double,Complex>( x(i) );
+    // Unfortunately, these cannot be deleted because
+    // the TJetEnvironment stores the original pointers, 
+    // not the copies.
+    // This is very bad!!
+  }
+  pje = TJet<double,Complex>::EndEnvironment();
+  TJet<double,Complex>::_lastEnv = storedEnv;
+
+  return pje;
 }
 
 // ----------------------------------------------------------
