@@ -13,23 +13,14 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
 {
   static char firstTime = 1;
   if( firstTime ) {
-    cout << "*** WARNING ***                                      \n"
+    firstTime = 0;
+    cerr << "*** WARNING ***                                      \n"
             "*** WARNING *** beamline::twiss                      \n"
             "*** WARNING ***                                      \n"
             "*** WARNING *** This member function is obsolete.    \n"
             "*** WARNING *** Use a LattFuncSage instead.          \n"
             "*** WARNING ***                                      \n"
          << endl;
-    if( cerr != cout ) {
-      cerr << "*** WARNING ***                                      \n"
-              "*** WARNING *** beamline::twiss                      \n"
-              "*** WARNING ***                                      \n"
-              "*** WARNING *** This member function is obsolete.    \n"
-              "*** WARNING *** Use a LattFuncSage instead.          \n"
-              "*** WARNING ***                                      \n"
-           << endl;
-    }
-    firstTime = 0;
   }
 
   int ret = 0;
