@@ -15,7 +15,7 @@ private:
 public:
  Barnacle( const char*         /* identifier tag  */,
            const BarnacleData* /* the information */ );
- ~Barnacle();
+ virtual ~Barnacle();
  BarnacleData* info;
 
 #ifdef OBJECT_DEBUG
