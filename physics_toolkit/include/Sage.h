@@ -56,6 +56,7 @@ public:
   // disconnecting it from the calling
   // routine. By default, it just stores
   // the pointer.
+  Sage( const Sage& );
  ~Sage();
   
  void set_verbose();
