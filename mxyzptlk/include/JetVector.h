@@ -45,6 +45,7 @@ public:
   void        Reconstruct();
   void        Reconstruct( const int&, Jet__environment* pje );
   void        Reconstruct( const int& );
+  void        CopyFrom( const JetVector& );
 
   // Assignment ...
   void             Set              ( const Jet* );
