@@ -618,6 +618,8 @@ double JL::derivative( int* ind ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double JL::operator()( double* x ) {
+ // This routine is linked to double JL::operator()( const Vector& x ) const
+ // Any change made to this must be reflected in the other.
  JLterm* p;
  double v;
  int w;
@@ -630,6 +632,70 @@ double JL::operator()( double* x ) {
  
  // Subtract off the reference point.
  for( i = 0; i < myEnv->NumVar; i++ ) u[i] = x[i] - myEnv->refPoint[i];
+ 
+ // Evaluate and store monomials.
+ 
+ // The zeroth one.
+ myEnv->monomial[0] = 1.0;
+ 
+ // For all higher weights ...
+ for( w = 1; w <= weight; w++ )
+ 
+   // Get the next set of exponents of weight w.
+   while( nexcom( w, myEnv->NumVar, myEnv->exponent ) ) {
+ 
+     // Find the first non-zero exponent.
+     i = 0;
+     while( !( myEnv->exponent[i++] ) ) ;
+     i--;
+ 
+     // The value of the monomial associated with this composition
+     // is obtained by multiplying a factor into a previously
+     // computed monomial.
+     ( myEnv->exponent[i] )--;
+     myEnv->monoCode();
+     term = myEnv->monomial[ myEnv->monoRank() ];
+     ( myEnv->exponent[i] )++;
+     myEnv->monoCode();
+     myEnv->monomial[ myEnv->monoRank() ] = term * u[i];
+ 
+   }
+ 
+ // Monomials have been now stored at this point.
+ // Now traverse the JL variable and evaluate.
+ 
+ v = 0.0;
+ 
+ while((  p = (JLterm*) getNext()  )) {
+   for( i = 0; i < myEnv->NumVar; i++ ) myEnv->exponent[i] = (p->index)(i);
+   myEnv->monoCode();
+   v += ( p->value ) * ( myEnv->monomial[ myEnv->monoRank() ] );
+ }
+ 
+ delete [] u;
+ 
+ return v;
+ 
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double JL::operator()( const Vector& x ) const {
+ // This routine is linked to double JL::operator()( double* x ) 
+ // Any change made to this must be reflected in the other.
+ JLterm* p;
+ double v;
+ int w;
+ int i;
+ double term;
+ double* u;
+ dlist_iterator getNext( *(dlist*) this );
+ 
+ u = new double[ myEnv->NumVar ];
+ 
+ // Subtract off the reference point.
+ for( i = 0; i < myEnv->NumVar; i++ ) u[i] = x(i) - myEnv->refPoint[i];
  
  // Evaluate and store monomials.
  

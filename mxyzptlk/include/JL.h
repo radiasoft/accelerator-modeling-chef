@@ -82,6 +82,7 @@
 #include "dlist.h"
 #include "IntArray.h"
 #include "Matrix.h"
+#include "VectorD.h"
 #include "Jet.h"    // Needed for Jet::scratchFile
 
 class LieOperator;
@@ -166,11 +167,15 @@ struct JL : public dlist {
   void clear();
   double weightedDerivative( int* );
   double derivative( int* );
+
+  double operator()( const Vector& ) const;
   double operator()( double* );	   // Performs a multinomial evaluation of 
 				   // the JL variable.  Essentially acts as a 
 				   // power series expansion.
   JL& operator()( JL* );           // Self explanatory ...
+
   // ??? REMOVE JL& operator()( LieOperator& );  // Self explanatory ...
+
   JL& D( int* )const ;		   // Performs differentiation of a JL variable.
 
   JL& operator=( const JL& );
