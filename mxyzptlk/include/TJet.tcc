@@ -374,8 +374,10 @@ TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* scl )
   int n = _workEnv->_numVar;
   int bcfr = bcfRec( w + n, n );
 
+  _workEnv->_offset.reconstruct( w, n, false );
+
   _workEnv->_exponent    = new int[ n ];
-  _workEnv->_expCode     = new char[ w + n ];
+  // REMOVE: _workEnv->_expCode     = new char[ w + n ];
   // REMOVE: _workEnv->_monomial    = new T1 [ bcfr ];
   // REMOVE: _workEnv->_TJLmonomial = new TJet<T1,T2> [ bcfr ];
   // REMOVE: for( i = 0; i < bcfr; i++ ) { _workEnv->_TJLmonomial[i].Reconstruct( _workEnv ); }
@@ -396,14 +398,14 @@ TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* scl )
   _workEnv->_allZeroes.Reconstruct(n);
   for( i = 0; i < n; i++ ) _workEnv->_allZeroes(i) = 0;
  
-  // Load the _numPaths array with binomial coefficients;
-  // required by Wilf's algorithm for ranking monomials.
-  _workEnv->_numPaths = new MatrixI( w+1, n );
-  for( i = 0; i <= w; i++ ) {
-    for( j = 1; j <= n; j++ ) {
-      (*(_workEnv->_numPaths))( i, j-1 ) = bcfRec( i + j - 1, i );
-    }
-  }
+  // OBSOLETE // Load the _numPaths array with binomial coefficients;
+  // OBSOLETE // required by Wilf's algorithm for ranking monomials.
+  // OBSOLETE _workEnv->_numPaths = new MatrixI( w+1, n );
+  // OBSOLETE for( i = 0; i <= w; i++ ) {
+  // OBSOLETE   for( j = 1; j <= n; j++ ) {
+  // OBSOLETE     (*(_workEnv->_numPaths))( i, j-1 ) = bcfRec( i + j - 1, i );
+  // OBSOLETE   }
+  // OBSOLETE }
 
   // Initialize the coordinates
   i = 0;
@@ -1318,7 +1320,7 @@ TJet<T1,T2> operator*( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
 
    // REMOVE: pje->_monoCode( p->_index + q->_index );
    // REMOVE: indy = pje->_monoRank();
-   indy = pje->_offset( p->_index + q->_index );
+   indy = pje->_offset.index( p->_index + q->_index );
    // Will work even when the exponents are all zero.
 
    product = p->_value * q->_value;
@@ -1607,7 +1609,7 @@ TJet<T1,T2> TJet<T1,T2>::_truncMult( const TJet<T1,T2>& v, const int& wl ) const
    // REMOVE: z.addTerm( r );
    // REMOVE: pje->_monoCode( p->_index + q->_index );
    // REMOVE: indy = pje->_monoRank();
-   indy = pje->_offset( p->_index + q->_index );
+   indy = pje->_offset.index( p->_index + q->_index );
    // Will work even when the exponents are all zero.
 
    product = p->_value * q->_value;
@@ -2750,7 +2752,7 @@ TJet<T1,T2> TJet<T1,T2>::_concat() const
    // REMOVE:   theEnv->_exponent[i] = (p->_index)(i);
    // REMOVE: theEnv->_monoCode();
    // REMOVE: v += ( p->_value ) * ( theEnv->_TJLmonomial[ theEnv->_monoRank() ] );
-   v += ( p->_value ) * ( theEnv->_TJLmonomial[ theEnv->_offset(p->_index) ] );
+   v += ( p->_value ) * ( theEnv->_TJLmonomial[ theEnv->_offset.index(p->_index) ] );
  }
  
  return v;
@@ -2827,11 +2829,11 @@ TJet<T1,T2> TJet<T1,T2>::operator() ( const TJet<T1,T2>* y ) const
      ( theEnv->_exponent[i] )--;
      // REMOVE: theEnv->_monoCode();
      // REMOVE: term = theEnv->_TJLmonomial[ theEnv->_monoRank() ];
-     term = theEnv->_TJLmonomial[ theEnv->_offset( theEnv->_exponent ) ];
+     term = theEnv->_TJLmonomial[ theEnv->_offset.index( theEnv->_exponent ) ];
      ( theEnv->_exponent[i] )++;
      // REMOVE: theEnv->_monoCode();
      // REMOVE: theEnv->_TJLmonomial[ theEnv->_monoRank() ] = term * u[i]; // ??? Is this OK???
-     theEnv->_TJLmonomial[ theEnv->_offset( theEnv->_exponent ) ] = term * u[i];
+     theEnv->_TJLmonomial[ theEnv->_offset.index( theEnv->_exponent ) ] = term * u[i];
  
    } // End while loop.
  
@@ -2855,7 +2857,7 @@ TJet<T1,T2> TJet<T1,T2>::operator() ( const TJet<T1,T2>* y ) const
     // REMOVE:   theEnv->_exponent[i] = (p->_index)(i);
     // REMOVE: theEnv->_monoCode();
     // REMOVE: z += ( p->_value ) * ( theEnv->_TJLmonomial[ theEnv->_monoRank() ] );
-    z += ( p->_value ) * ( theEnv->_TJLmonomial[ theEnv->_offset(p->_index) ] );
+    z += ( p->_value ) * ( theEnv->_TJLmonomial[ theEnv->_offset.index(p->_index) ] );
   }
  }
 

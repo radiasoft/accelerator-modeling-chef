@@ -131,9 +131,9 @@ TJetEnvironment<T1,T2>::TJetEnvironment( const TJetEnvironment& x )
     _TJLmonomial = 0;
     _TJLmml      = 0;
     _exponent    = 0;
-    _expCode     = 0;
+    // OBSOLETE _expCode     = 0;
     _pbok        = 0;
-    _numPaths    = 0;
+    // OBSOLETE _numPaths    = 0;
     _numVar      = 0;
     _maxWeight   = 0;
     _spaceDim    = -1;
@@ -178,9 +178,10 @@ TJetEnvironment<T1,T2>::TJetEnvironment( const TJetEnvironment& x )
 template<typename T1, typename T2>
 void TJetEnvironment<T1,T2>::_buildScratchPads()
 {
-  if(    0 < _maxWeight && 0 < _numVar 
-      && 0 != _exponent && 0 != _expCode ) {
-
+  // OBSOLETE if(    0 < _maxWeight && 0 < _numVar 
+  // OBSOLETE     && 0 != _exponent && 0 != _expCode ) {
+  // OBSOLETE 
+  if(    0 < _maxWeight && 0 < _numVar && 0 != _exponent ) {
     int w = _maxWeight;
     int n = _numVar;
     _maxTerms = bcfRec( w + n, n );
@@ -234,8 +235,8 @@ TJetEnvironment<T1,T2>::~TJetEnvironment()
   if( _TJLmonomial ) { delete [] _TJLmonomial; _TJLmonomial = 0; }
   if( _TJLmml     )  { delete [] _TJLmml;      _TJLmml = 0;      }
   if( _exponent   )  { delete [] _exponent;    _exponent = 0;    }
-  if( _expCode    )  { delete [] _expCode;     _expCode = 0;     }
-  if( _numPaths   )  { delete    _numPaths;    _numPaths = 0;    }
+  // OBSOLETE if( _expCode    )  { delete [] _expCode;     _expCode = 0;     }
+  // OBSOLETE if( _numPaths   )  { delete    _numPaths;    _numPaths = 0;    }
   if( _refPoint   )  { delete [] _refPoint;    _refPoint = 0;    }
   if( _scale      )  { delete [] _scale;       _scale = 0;       }
 }
@@ -275,9 +276,9 @@ TJetEnvironment<T1,T2>& TJetEnvironment<T1,T2>::operator=( const TJetEnvironment
     _TJLmonomial        = 0;
     _TJLmml             = 0;
     _exponent           = 0;
-    _expCode            = 0;
+    // OBSOLETE _expCode            = 0;
     _pbok               = 0;
-    _numPaths           = 0;
+    // OBSOLETE _numPaths           = 0;
     _numVar             = 0;
     _maxWeight          = 0;
     _spaceDim           = -1;
@@ -298,18 +299,18 @@ TJetEnvironment<T1,T2>& TJetEnvironment<T1,T2>::operator=( const TJetEnvironment
   if( _exponent ) { delete [] _exponent; }
   _exponent   = new int[ n ];
 
-  if( _expCode ) { delete [] _expCode; }
-  _expCode    = new char[ w + n ];
+  // OBSOLETE if( _expCode ) { delete [] _expCode; }
+  // OBSOLETE _expCode    = new char[ w + n ];
 
   _pbok       = x._pbok;
 
-  if( _numPaths ) { delete  _numPaths; }
-  _numPaths = new MatrixI( w+1, n );
-  for( i = 0; i <= w; i++ ) {
-    for( j = 1; j <= n; j++ ) {
-      (*_numPaths)( i, j-1 ) = bcfRec( i + j - 1, i );
-    }
-  }
+  // OBSOLETE if( _numPaths ) { delete  _numPaths; }
+  // OBSOLETE _numPaths = new MatrixI( w+1, n );
+  // OBSOLETE for( i = 0; i <= w; i++ ) {
+  // OBSOLETE   for( j = 1; j <= n; j++ ) {
+  // OBSOLETE     (*_numPaths)( i, j-1 ) = bcfRec( i + j - 1, i );
+  // OBSOLETE   }
+  // OBSOLETE }
 
   _dof                = x._dof;
 
@@ -485,19 +486,19 @@ istream& streamIn( istream& is, TJetEnvironment<T1,T2>** x )
   pje->_offset.reconstruct( w, n );
 
   pje->_exponent   = new int[ n ];
-  pje->_expCode    = new char[ w + n ];
+  // OBSOLETE pje->_expCode    = new char[ w + n ];
 
   pje->_allZeroes.Reconstruct(n);
   for( i = 0; i < n; i++ ) pje->_allZeroes(i) = 0;
 
-  // Load the _numPaths array with binomial coefficients;
-  // required by Wilf's algorithm for ranking _monomials.
-  pje->_numPaths = new MatrixI( w+1, n );
-  for( i = 0; i <= w; i++ ) {
-    for( j = 1; j <= n; j++ ) {
-      (*(pje->_numPaths))( i, j-1 ) = bcfRec( i + j - 1, i );
-    }
-  }
+  // OBSOLETE // Load the _numPaths array with binomial coefficients;
+  // OBSOLETE // required by Wilf's algorithm for ranking _monomials.
+  // OBSOLETE pje->_numPaths = new MatrixI( w+1, n );
+  // OBSOLETE for( i = 0; i <= w; i++ ) {
+  // OBSOLETE   for( j = 1; j <= n; j++ ) {
+  // OBSOLETE     (*(pje->_numPaths))( i, j-1 ) = bcfRec( i + j - 1, i );
+  // OBSOLETE   }
+  // OBSOLETE }
 
   pje->_buildScratchPads();
 
