@@ -620,6 +620,22 @@ short bmlnElmnt::readTag( char* s )
 }
 
 
+char bmlnElmnt::readTag( short pos )
+{
+  if( (pos < 0) || (pos + 1 > BF_MAXCHAR) ) {
+    pos = 0;
+    cerr << "*** WARNING ***                              \n"
+         << "*** WARNING *** bmlnElmnt::readTag           \n"
+         << "*** WARNING *** Character position out of    \n"
+         << "*** WARNING *** bounds. Will return first    \n"
+         << "*** WARNING *** character of tag.            \n"
+         << "*** WARNING ***                              \n"
+         << endl;
+  }
+  return _tag[pos];
+}
+
+
 String bmlnElmnt::readTag( short start, short  num )
 {
   String ret;
