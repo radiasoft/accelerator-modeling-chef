@@ -71,6 +71,8 @@ public:
 public:
   CovarianceSage( const beamline*, bool = false );
   CovarianceSage( const beamline&, bool = false );
+  // Second argument is used by class Sage
+  // to control cloning. (See Sage.h)
   ~CovarianceSage();
 
   int doCalc( JetParticle*, MatrixD, beamline::Criterion& = beamline::yes ); 
