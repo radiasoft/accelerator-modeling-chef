@@ -749,6 +749,8 @@ void beamline::unTwiss() {
    p->dataHook.eraseFirst( "Twiss" );
  twissDone = 0;   // ??? Remove this eventually.
 }
+
+
 int beamline::twiss( JetParticle& p ) {
  bmlnElmnt*      be;
  Jet*            z;
@@ -913,25 +915,48 @@ int beamline::twiss( JetParticle& p ) {
      mtrx = map.Jacobian();
      dispFinal = mtrx * dispVector;
 
-     tb = mtrx(0,0) * beta0H -  mtrx(0,3) * alpha0H;
-     lf->beta.hor = ( tb * tb + mtrx(0,3) * mtrx(0,3))/beta0H;
+     if( ( 0 != strcmp( be->Type(), "rbend"    ) ) && 
+         ( 0 != strcmp( be->Type(), "CF_rbend" ) ) && 
+         ( 0 != strcmp( be->Type(), "Slot"     ) ) )
+     {
+       tb = mtrx(0,0) * beta0H -  mtrx(0,3) * alpha0H;
+       lf->beta.hor = ( tb * tb + mtrx(0,3) * mtrx(0,3))/beta0H;
+  
+       lf->alpha.hor = -1.0*(tb * (mtrx(3,0)*beta0H - mtrx(3,3)*alpha0H) +
+     			     mtrx(0,3)*mtrx(3,3))/beta0H;
+  
+       t = atan2(mtrx(0,3),tb);
+       while(t < oldpsiH) t += twoPi;
+       lf->psi.hor = oldpsiH = t;
+  
+       tb = mtrx(1,1) * beta0V -  mtrx(1,4) * alpha0V;
+       lf->beta.ver = (tb * tb + mtrx(1,4) * mtrx(1,4))/beta0V;
+  
+       lf->alpha.ver = -1.0*(tb * (mtrx(4,1)*beta0V - mtrx(4,4)*alpha0V) +
+     			     mtrx(1,4)*mtrx(4,4))/beta0V;
+  
+       t = atan2(mtrx(1,4),tb);
+       while(t < oldpsiV) t += twoPi;
+       lf->psi.ver = oldpsiV = t;
+     }
 
-     lf->alpha.hor = -1.0*(tb * (mtrx(3,0)*beta0H - mtrx(3,3)*alpha0H) +
-                           mtrx(0,3)*mtrx(3,3))/beta0H;
-
-     t = atan2(mtrx(0,3),tb);
-     while(t < oldpsiH) t += twoPi;
-     lf->psi.hor = oldpsiH = t;
-
-     tb = mtrx(1,1) * beta0V -  mtrx(1,4) * alpha0V;
-     lf->beta.ver = (tb * tb + mtrx(1,4) * mtrx(1,4))/beta0V;
-
-     lf->alpha.ver = -1.0*(tb * (mtrx(4,1)*beta0V - mtrx(4,4)*alpha0V) +
-                           mtrx(1,4)*mtrx(4,4))/beta0V;
-
-     t = atan2(mtrx(1,4),tb);
-     while(t < oldpsiV) t += twoPi;
-     lf->psi.ver = oldpsiV = t;
+     else { // ??? This is a kludge.
+       tb = mtrx(0,0) * beta0H -  mtrx(0,3) * alpha0H;
+       lf->beta.hor = ( tb * tb + mtrx(0,3) * mtrx(0,3))/beta0H;
+  
+       lf->alpha.hor = -1.0*(tb * (mtrx(3,0)*beta0H - mtrx(3,3)*alpha0H) +
+     			     mtrx(0,3)*mtrx(3,3))/beta0H;
+  
+       lf->psi.hor = oldpsiH;
+  
+       tb = mtrx(1,1) * beta0V -  mtrx(1,4) * alpha0V;
+       lf->beta.ver = (tb * tb + mtrx(1,4) * mtrx(1,4))/beta0V;
+  
+       lf->alpha.ver = -1.0*(tb * (mtrx(4,1)*beta0V - mtrx(4,4)*alpha0V) +
+     			     mtrx(1,4)*mtrx(4,4))/beta0V;
+  
+       lf->psi.ver = oldpsiV;
+     }
 
      lf->dispersion.hor = dispFinal(0,0);
      lf->dPrime.hor = dispFinal(3,0);
@@ -1178,25 +1203,48 @@ int beamline::twiss( lattFunc& W, JetParticle& p) {
      mtrx = map.Jacobian();
      dispFinal = mtrx * dispVector;
 
-     tb = mtrx(0,0) * beta0H -  mtrx(0,3) * alpha0H;
-     lf->beta.hor = ( tb * tb + mtrx(0,3) * mtrx(0,3))/beta0H;
+     if( ( 0 != strcmp( be->Type(), "rbend"    ) ) && 
+         ( 0 != strcmp( be->Type(), "CF_rbend" ) ) && 
+         ( 0 != strcmp( be->Type(), "Slot"     ) ) )
+     {
+       tb = mtrx(0,0) * beta0H -  mtrx(0,3) * alpha0H;
+       lf->beta.hor = ( tb * tb + mtrx(0,3) * mtrx(0,3))/beta0H;
 
-     lf->alpha.hor = -1.0*(tb * (mtrx(3,0)*beta0H - mtrx(3,3)*alpha0H) +
-                           mtrx(0,3)*mtrx(3,3))/beta0H;
+       lf->alpha.hor = -1.0*(tb * (mtrx(3,0)*beta0H - mtrx(3,3)*alpha0H) +
+                             mtrx(0,3)*mtrx(3,3))/beta0H;
 
-     t = atan2(mtrx(0,3),tb);
-     while(t < oldpsiH) t += twoPi;
-     lf->psi.hor = oldpsiH = t;
+       t = atan2(mtrx(0,3),tb);
+       while(t < oldpsiH) t += twoPi;
+       lf->psi.hor = oldpsiH = t;
 
-     tb = mtrx(1,1) * beta0V -  mtrx(1,4) * alpha0V;
-     lf->beta.ver = (tb * tb + mtrx(1,4) * mtrx(1,4))/beta0V;
+       tb = mtrx(1,1) * beta0V -  mtrx(1,4) * alpha0V;
+       lf->beta.ver = (tb * tb + mtrx(1,4) * mtrx(1,4))/beta0V;
+ 
+       lf->alpha.ver = -1.0*(tb * (mtrx(4,1)*beta0V - mtrx(4,4)*alpha0V) +
+                             mtrx(1,4)*mtrx(4,4))/beta0V;
 
-     lf->alpha.ver = -1.0*(tb * (mtrx(4,1)*beta0V - mtrx(4,4)*alpha0V) +
-                           mtrx(1,4)*mtrx(4,4))/beta0V;
+       t = atan2(mtrx(1,4),tb);
+       while(t < oldpsiV) t += twoPi;
+       lf->psi.ver = oldpsiV = t;
+     }
 
-     t = atan2(mtrx(1,4),tb);
-     while(t < oldpsiV) t += twoPi;
-     lf->psi.ver = oldpsiV = t;
+     else { // ??? This is a kludge.
+       tb = mtrx(0,0) * beta0H -  mtrx(0,3) * alpha0H;
+       lf->beta.hor = ( tb * tb + mtrx(0,3) * mtrx(0,3))/beta0H;
+
+       lf->alpha.hor = -1.0*(tb * (mtrx(3,0)*beta0H - mtrx(3,3)*alpha0H) +
+                             mtrx(0,3)*mtrx(3,3))/beta0H;
+
+       lf->psi.hor = oldpsiH;
+
+       tb = mtrx(1,1) * beta0V -  mtrx(1,4) * alpha0V;
+       lf->beta.ver = (tb * tb + mtrx(1,4) * mtrx(1,4))/beta0V;
+ 
+       lf->alpha.ver = -1.0*(tb * (mtrx(4,1)*beta0V - mtrx(4,4)*alpha0V) +
+                             mtrx(1,4)*mtrx(4,4))/beta0V;
+
+       lf->psi.ver = oldpsiV;
+     }
 
      lf->dispersion.hor = dispFinal(0,0);
      lf->dPrime.hor = dispFinal(3,0);
