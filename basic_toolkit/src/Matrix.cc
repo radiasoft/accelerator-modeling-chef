@@ -2151,7 +2151,7 @@ MatrixI operator-(const MatrixI& x, const MatrixI& y) {
   for(int i = 0; i< x.rows() ; i++) {
     for(int j = 0; j < x.cols(); j++) {
       zPtr->m[i][j] = xPtr->m[i][j] - yPtr->m[i][j];
-      if(fabs(zPtr->m[i][j]) < M_SMALL*fabs(yPtr->m[i][j]))
+      if(abs(zPtr->m[i][j]) < M_SMALL*abs(yPtr->m[i][j]))
 	zPtr->m[i][j] = 0;
     }
   }
