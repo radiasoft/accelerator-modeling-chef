@@ -75,7 +75,7 @@ thinrfcavity::thinrfcavity(double w_rf_arg,   // rf frequency [Hz]
                    	   double Q_arg,      // Quality factor 
                    	   double R_arg       // shunt impedance 
                    	   ) 
-: bmlnElmnt( 0.0, eV_arg )
+: bmlnElmnt( 0.0, eV_arg*1.0e-9 )
 {
   w_rf = MATH_TWOPI*w_rf_arg;
   phi_s = phi_s_arg;
@@ -91,7 +91,7 @@ thinrfcavity::thinrfcavity(char * name_arg,   // name
                    	   double Q_arg,      // Quality factor 
                    	   double R_arg       // shunt impedance 
                    	   ) 
-: bmlnElmnt( name_arg, 0.0, eV_arg ) 
+: bmlnElmnt( name_arg, 0.0, eV_arg*1.0e-9 ) 
 {
   w_rf = MATH_TWOPI*w_rf_arg;
   phi_s = phi_s_arg;
