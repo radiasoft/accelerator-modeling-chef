@@ -11,6 +11,14 @@ fnal/machines/accumulator/include/CVS
 fnal/machines/accumulator/lattices/CVS
 fnal/machines/accumulator/src/.sb
 fnal/machines/accumulator/src/CVS
+fnal/machines/booster/CVS
+fnal/machines/booster/app/.sb
+fnal/machines/booster/app/CVS
+fnal/machines/booster/app/twissCheck
+fnal/machines/booster/include/CVS
+fnal/machines/booster/lattices/CVS
+fnal/machines/booster/src/.sb
+fnal/machines/booster/src/CVS
 fnal/beamline/CVS
 fnal/beamline/demos/.sb
 fnal/beamline/demos/CVS
@@ -19,7 +27,7 @@ fnal/beamline/src/.sb
 fnal/beamline/src/CVS
 fnal/beamline/src/physics/.sb
 fnal/beamline/src/physics/6d/CVS
-fnal/beamline/src/physics/6d/sb
+fnal/beamline/src/physics/6d/.sb
 fnal/beamline/src/physics/CVS
 fnal/beamline/src/physics/mad/.sb
 fnal/beamline/src/physics/mad/CVS
