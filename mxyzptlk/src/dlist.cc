@@ -79,8 +79,15 @@
 **************************************************************************
 *************************************************************************/
 
+#ifdef __VISUAL_CPP__
+#include <iostream>
+using std::cerr;
+using std::endl;
+#else
 #include <stdlib.h>
-#include <stdio.h>
+#include <iostream.h>
+#endif
+
 #include "dlist.h"
 
 // ================================================================
@@ -212,18 +219,18 @@ do { p = getNext();
    } while ( p != 0 && w != a && w != b );
 
 if( p == 0 ) {
-  printf( "\n*** ERROR ***                              \n" );
-  printf(   "*** ERROR *** dlist::remove( ent, ent )    \n" );
-  printf(   "*** ERROR *** Reached the end of the list  \n" );
-  printf(   "*** ERROR *** without finding markers.     \n" );
-  printf(   "*** ERROR ***                              \n" );
+  cerr << "\n*** ERROR ***                              \n";
+  cerr <<   "*** ERROR *** dlist::remove( ent, ent )    \n";
+  cerr <<   "*** ERROR *** Reached the end of the list  \n";
+  cerr <<   "*** ERROR *** without finding markers.     \n";
+  cerr <<   "*** ERROR ***                              \n";
   exit(1);
 }
 
 if( w == a ) y = b;
 else  {      y = a;
              if( w != b ) {
-               printf( "\n*** IMPOSSIBLE ERROR!\n" );
+               cerr << "\n*** IMPOSSIBLE ERROR!\n" ;
                exit(1);
              }
 }
@@ -231,10 +238,10 @@ else  {      y = a;
 p = getNext();
 w = ( pr = p )->e;
 if( w == y || p == 0 ) {
-  printf( "\n*** WARNING ***                                     \n" );
-  printf(   "*** WARNING *** dlist::remove( ent, ent )           \n" );
-  printf(   "*** WARNING *** No elements available for removal.  \n" );
-  printf(   "*** WARNING ***                                     \n" );
+  cerr << "\n*** WARNING ***                                     \n";
+  cerr <<   "*** WARNING *** dlist::remove( ent, ent )           \n";
+  cerr <<   "*** WARNING *** No elements available for removal.  \n";
+  cerr <<   "*** WARNING ***                                     \n";
   return *this;
 }
 
@@ -246,10 +253,10 @@ do {
 } while ( ( p != 0 ) && ( w != y ) );
 
 if( p == 0 ) {
-  printf( "\n*** WARNING ***                                \n" );
-  printf(   "*** WARNING *** dlist::remove( ent, ent )      \n" );
-  printf(   "*** WARNING *** Reached the end of the list.   \n" );
-  printf(   "*** WARNING ***                                \n" );
+  cerr << "\n*** WARNING ***                                \n";
+  cerr <<   "*** WARNING *** dlist::remove( ent, ent )      \n";
+  cerr <<   "*** WARNING *** Reached the end of the list.   \n";
+  cerr <<   "*** WARNING ***                                \n";
 }
 
 return ret;
