@@ -32,7 +32,7 @@ class Frame
 
    short int rotate    ( double,        // rotation angle [ radians ]
                          const Vector&, // axis of rotation (right-hand sense)
-                         bool = true    // 0 -> do not rotate origin
+                         bool = true    // false -> do not rotate origin
                        );
    short int translate ( const Vector&  // displacement of origin
                        );
