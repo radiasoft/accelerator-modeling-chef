@@ -66,6 +66,10 @@ class CF_rbend : public bmlnElmnt
   double getPoleFaceAngle() 
     { return _poleFaceAngle; }
 
+  double AdjustPosition( const Proton& );
+  double AdjustPosition( const JetProton& );
+
+
   int setQuadrupole( double );  
   int setSextupole( double );  
   // The argument is integrated multipole strength
