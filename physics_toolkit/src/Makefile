@@ -35,6 +35,7 @@ lib: $(OBJS)
 
 clean:
 	rm -f *.o *~*
+	rm -f core
 	rm -f  ../include/*~*
 	rm -f  ../*~*
 	rm -rf .sb

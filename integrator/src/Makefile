@@ -26,6 +26,7 @@ lib: $(OBJS)
 	$(RANLIB) $(LIBDIR)/libintegrator.a
 
 clean:
+	rm -f core
 	rm -f *.o *~*
 	rm -f  ../include/*~*
 	rm -f  ../*~*
