@@ -370,6 +370,8 @@ Frame Frame::tween(   const Frame& one, const Frame& two
                     , double pct, bool doChecks )
 {
   static bool firstTime = true;
+  const FNAL::Complex c_zero(0.,0.);
+  const FNAL::Complex c_one(1.,0.);
 
   // Trim the pct argument
   if( doChecks ) {
@@ -420,16 +422,19 @@ Frame Frame::tween(   const Frame& one, const Frame& two
 
 
   // Construct mid Frame
-  Frame middle;
-  middle.setOrigin( (1.0 - pct)*one.getOrigin() +  pct*two.getOrigin() );
+  // REMOVE: Frame middle;
+  // REMOVE: middle.setOrigin( (1.0 - pct)*one.getOrigin() +  pct*two.getOrigin() );
+  Frame middle( two.relativeTo(one) );
 
-  MatrixD E1(3,3), E2(3,3), W(3,3);
+  // REMOVE: MatrixD E1(3,3), E2(3,3), W(3,3);
+  MatrixD W(3,3);
   MatrixC U(3,3), UI(3,3), lambda(3,3);
 
   // ... the rotation matrix
-  E1 = one.getAxes();
-  E2 = two.getAxes();
-  W = E1.transpose() * E2;
+  // REMOVE: E1 = one.getAxes();
+  // REMOVE: E2 = two.getAxes();
+  // REMOVE: W = E1.transpose() * E2;
+  W = middle.getAxes();
   
   // ... eigenvalues and eigenvectors
   U = W.eigenVectors();
@@ -443,9 +448,6 @@ Frame Frame::tween(   const Frame& one, const Frame& two
       for( j = 0; j < 3; j++ ) {
         if( i == j ) {
           if( 1.0e-8 < std::abs( 1.0 - std::abs(lambda(i,i)) ) ) {
-            continue;
-	  }
-          else {
             throw( GenericException( __FILE__, __LINE__
                    , "Frame::tween"
                    , "Horrible! Inexplicable!! Rotation matrix failed test!!!") );
@@ -453,9 +455,6 @@ Frame Frame::tween(   const Frame& one, const Frame& two
 	}
         else {
           if( 1.0e-8 < std::abs(lambda(i,j)) ) {
-            continue;
-	  }
-          else {
             throw( GenericException( __FILE__, __LINE__
                    , "Frame::tween"
                    , "Horrible! Inexplicable!! Rotation matrix failed test!!!") );
@@ -477,23 +476,41 @@ Frame Frame::tween(   const Frame& one, const Frame& two
   for( i = 0; i < 3; i++ ) {
     for( j = 0; j < 3; j++ ) {
       if( i == j ) {
-        theta = pct*atan2( imag(lambda(i,i)), real(lambda(i,i)) );
-        lambda(i,i) = FNAL::Complex( cos(theta), sin(theta) );
+        if( std::abs(imag(lambda(i,i))) < 1.0e-9*std::abs(real(lambda(i,i))) ) {
+          lambda(i,i) = c_one;
+	}
+        else {
+          theta = pct*atan2( imag(lambda(i,i)), real(lambda(i,i)) );
+          lambda(i,i) = FNAL::Complex( cos(theta), sin(theta) );
+	}
       }
       else {
-        lambda(i,j) = 0.0;
+        lambda(i,j) = c_zero;
       }
     }
   }
   
 
-  // Construct the "tweened" axes.
-  // Exuding confidence; no paranoia.
+  // REMOVE: // Construct the "tweened" axes.
+  // REMOVE: // Exuding confidence; no paranoia.
+  // REMOVE: middle.setOrthonormalAxes( E1*real( U*lambda*UI ) );
+  // REMOVE: 
+  // REMOVE: 
+  // REMOVE: // Finished
+  // REMOVE: return middle;
+
+  // Finish
+  middle.setOrigin( pct*middle.getOrigin() );
   middle.setOrthonormalAxes( real( U*lambda*UI ) );
+  return middle.patchedOnto(one);
+}
 
 
-  // Finished
-  return middle;
+void Frame::convertInPlace( Vector& p, Vector& v ) const
+{
+  MatrixD U( e.transpose() );
+  p = U*(p-o);
+  v = U*v;
 }
 
 

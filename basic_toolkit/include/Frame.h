@@ -108,6 +108,13 @@ class Frame
                                   //  its similarity to the "tweening"
                                   //  done in cartoon animation.
 
+   void convertInPlace( Vector& p, Vector& v ) const;
+                                  // Converts the input arguments - which
+                                  //  model an element of a tangent bundle;
+                                  //  i.e. the vector v is "attached" to 
+                                  //  the point p - to their values as
+                                  //  viewed by the frame.
+
    friend std::ostream& operator<< ( std::ostream& os, /* const */ Frame& );
    friend std::istream& operator>> ( std::istream& is, /* const */ Frame& );
 };
