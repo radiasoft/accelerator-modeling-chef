@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -39,7 +42,9 @@
  */
 
 
+#ifndef NO_RTTI
 #include <typeinfo>
+#endif
 #include "Sage.h"
 
 using namespace std;
@@ -61,6 +66,7 @@ Sage::Sage( const beamline* x, bool doClone )
     exit(1);
   }
 
+#ifndef NO_RTTI
   if( typeid(*x) != typeid(beamline) ) {
     cerr << "*** ERROR ***                             \n"
             "*** ERROR *** Sage::Sage                  \n"
@@ -71,7 +77,7 @@ Sage::Sage( const beamline* x, bool doClone )
          << endl;
     exit(1);
   }
-
+#endif
 
   if( doClone ) {
     _myBeamlinePtr = (beamline*) (x->Clone());

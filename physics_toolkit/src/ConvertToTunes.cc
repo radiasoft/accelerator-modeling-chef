@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -56,6 +59,7 @@
 #include <iomanip>
 
 using namespace std;
+using FNAL::Complex;
 
 int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
 {
