@@ -270,7 +270,7 @@ public:
   void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
   void GoBack( int = 1 );
-  void Terminate();
+  void Terminate() { ce = 0; }
 } ;
 
 class dlist_looper {
@@ -293,7 +293,8 @@ public:
   dlink* operator()();
   void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
-  void Terminate();
+  void GoBack( int = 1 );
+  void Terminate() { ce = 0; }
 } ;
 
 class dlist_reverseIterator {
@@ -305,7 +306,7 @@ public:
   ent operator()();
   void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
-  void Terminate();
+  void Terminate() { ce = 0; }
 } ;
 
 inline char dlist::Owns() { return owner; }
