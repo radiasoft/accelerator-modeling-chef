@@ -1,3 +1,6 @@
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -30,11 +33,7 @@
 
 #include "MappingC.h"
 #include "JLC.h"
-#ifdef __VISUAL_CPP__
 using std::cout;
-#else
-#include <stdlib.h>
-#endif
 
 
 #ifndef MX_MAXITER
@@ -52,6 +51,7 @@ int MappingC::objectCount = 0;
 
 
 using namespace std;
+using FNAL::Complex;
 
 //    Constructors and destructors    |||||||||||||||||||||||||||
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
