@@ -36,6 +36,8 @@
 #include "slist.h"
 
 // Forward declarations
+class Vector;
+
 template<typename T1, typename T2> 
 class TJet;
 
@@ -90,8 +92,24 @@ struct TJetEnvironment
 
  TJetEnvironment& operator=( const TJetEnvironment& );
  TJetEnvironment& operator=( const TJetEnvironment<T2,T1>& );
+
  bool operator==( const TJetEnvironment& ) const;
  bool operator!=( const TJetEnvironment& ) const;
+ bool approxEq( const TJetEnvironment&, const Vector& tolerance ) const;
+ bool approxEq( const TJetEnvironment&, const double* tolerance ) const;
+     // Second argument is a "tolerance" Vector. There is
+     //   no default: the invoking program must declare
+     //   its tolerance.
+     // The function returns "true" if the reference points
+     //   match within the tolerance. 
+     // The second version is riskier. There is no guarantee
+     //   that the array of doubles will not be overrun.
+ bool hasReferencePoint( const Vector& ) const;
+ bool hasReferencePoint( const double* ) const;
+ bool hasApproxReferencePoint( const Vector&, const Vector& tolerance ) const;
+ bool hasApproxReferencePoint( const double*, const Vector& tolerance ) const;
+ bool hasApproxReferencePoint( const Vector&, const double* tolerance ) const;
+ bool hasApproxReferencePoint( const double*, const double* tolerance ) const;
 
 
  // Monomial ranking routines based on Wilf's algorithm
