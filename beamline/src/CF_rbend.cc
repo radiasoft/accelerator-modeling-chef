@@ -324,7 +324,7 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
   f = ( p_myP->State() )( xp ) + xp_i;
 
   int i = 0;
-  while( ( 5 < i ) || ( ( i < 10 ) && (fabs(f) > 1.0e-9) ) ) 
+  while( ( i < 5 ) || ( ( i < 10 ) && (fabs(f) > 1.0e-9) ) ) 
   {
     i++;
 
