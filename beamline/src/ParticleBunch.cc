@@ -1,7 +1,7 @@
 #include "ParticleBunch.h"
 
 #include <math.h>
-#ifdef __VISUAL_CPP__
+#if defined(__VISUAL_CPP__) || defined (__SUNPRO_CC)
 #include "MathConstants.h"
 #else
 #include <string.h>
