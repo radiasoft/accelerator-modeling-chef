@@ -39,7 +39,7 @@ FramePusher::FramePusher( const Frame& f )
 }
 
 FramePusher::FramePusher( const FramePusher& x )
-: _frame( x._frame ), _errorCode(OKAY)
+: _frame( x._frame ), _errorCode(x._errorCode)
 {
 }
 
