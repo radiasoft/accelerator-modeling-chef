@@ -52,6 +52,19 @@ else {
   }
 }
 
+
+bool slist::contains( const ent x ) const
+{
+  bool ret = false;
+  slist_iterator getNext( *this );
+  ent q;
+  while((  !ret && (q = getNext())  )) 
+  { ret = ( q == x );
+  }
+  return ret;
+}
+
+
 ent slist::remove( ent NeedToRemove ) {
 
   // If the list is not empty ...
