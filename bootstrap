@@ -1,0 +1,14 @@
+#! /bin/sh
+
+set -x
+
+for dir in basic_toolkit beamline bmlfactory mxyzptlk physics_toolkit 
+do
+  cd $dir
+  aclocal -I config
+  autoheader
+  automake --add-missing --foreign --copy
+  autoconf
+  libtoolize --force --copy
+  cd ..
+done
