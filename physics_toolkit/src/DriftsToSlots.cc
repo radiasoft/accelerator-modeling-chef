@@ -258,22 +258,25 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   // This routine creates and returns a beamline
   //   for which the invoker must take responsibility.
 
-  bmlnElmnt* elPtr;
-  bmlnElmnt* el2Ptr;
-  const bmlnElmnt* firstPtr = original.firstElement();
-  const bmlnElmnt* lastPtr  = original.lastElement();
-
-
   // There should be more than one element
-  if( firstPtr == lastPtr ) {
+  if( original.countHowManyDeeply() < 3 ) {
     cerr << "*** WARNING ***                                        \n"
+         << "*** WARNING *** File: " << "  " << __FILE__ 
+         <<                               ", line " << __LINE__ << "\n"
             "*** WARNING *** DriftsToSlots                          \n"
-            "*** WARNING *** Beamline contains only one element.    \n"
+            "*** WARNING *** Beamline contains only "
+         << (original.countHowManyDeeply()) <<       " elements.    \n"
             "*** WARNING *** Original line will be returned.        \n"
             "*** WARNING ***                                        \n"
          << endl;
     return &original;
   }
+
+
+  bmlnElmnt* elPtr;
+  bmlnElmnt* el2Ptr;
+  const bmlnElmnt* firstPtr = original.firstElement();
+  const bmlnElmnt* lastPtr  = original.lastElement();
 
 
   // Check if Slots are already present ...
