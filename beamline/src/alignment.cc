@@ -4,7 +4,7 @@
 #include <iomanip.h>
 #endif
 
-#include "beamline.inc"
+#include "bmlnElmnt.h"
 #include "VectorD.h"
 
 alignmentData::alignmentData() {

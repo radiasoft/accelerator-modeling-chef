@@ -7,7 +7,7 @@ void octupole::localPropagate( Particle& p ) {
 void octupole::localPropagate( JetParticle& p ) {
   p_bml->propagate( p );
 }
-#include "beamline.inc"
+
 
 void thinOctupole::localPropagate( Particle& p ) {
  static double x, y, k;

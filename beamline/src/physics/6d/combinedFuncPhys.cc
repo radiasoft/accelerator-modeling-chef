@@ -1,4 +1,3 @@
-#include "beamline.inc"
 #include "combinedFunction.h"
 
 void combinedFunction::localPropagate( Particle& p ) {

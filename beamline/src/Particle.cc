@@ -1,4 +1,5 @@
-#include "beamline.inc"
+#include "Particle.h"
+#include "PhysicsConstants.h"
 
 // **************************************************
 //   class Particle

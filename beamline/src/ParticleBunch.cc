@@ -2,7 +2,6 @@
 
 #include <math.h>
 #include "MathConstants.h"
-// #include "beamline.inc"
 
 extern "C" long lrand48( void ); // added by O.K.
 

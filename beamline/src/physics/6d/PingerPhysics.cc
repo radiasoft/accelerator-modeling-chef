@@ -1,5 +1,4 @@
-#include "beamline.inc"
-#include <pinger.h>
+#include "pinger.h"
 
 /* ********** Pinger propagators **********
    Note that these are also the propagators for HPinger and VPinger
