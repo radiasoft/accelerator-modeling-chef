@@ -110,6 +110,11 @@ void BeamlineIterator::goBack( int n )
 }
 
 
+bool BeamlineIterator::isFinished()
+{
+  return _getNext->isFinished();
+}
+
 
 DeepBeamlineIterator::DeepBeamlineIterator( const beamline& x )
 {
