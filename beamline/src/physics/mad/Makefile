@@ -1,15 +1,22 @@
 .SUFFIXES: .o .C .c .cc
 
-INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC)
+INCLUDEDIR = -I$(BEAMLINE_INC) -I$(MXYZPTLK_INC) -I$(BASIC_TOOLKIT_INC)
 
 DEPEND_INC = $(INCLUDEDIR) -I$(COMPILER_DEPEND)
 
 
-OBJS =  MADquad.o MADsbend.o MADrbend.o MADJetQuad.o
+OBJS =  MADquad.o \
+	MADsbend.o \
+	MADrbend.o \
+	MADJetQuad.o
 
-SOURCES = $(OBJS:.o=.cc)
+SOURCES = MADquad.cc \
+	MADsbend.cc \
+	MADrbend.cc \
+	MADJetQuad.cc
 
 include $(FNALROOT)/Make-config
+
 
 .cc.o:
 	$(C++) $(C++FLAGS) $(INCLUDEDIR) -c $*.cc
