@@ -1,7 +1,7 @@
 #include "beamline.h"
 #include "FPSolver.h"
 
-mygaussj( MatrixD, int, MatrixD, int );
+void mygaussj( MatrixD, int, MatrixD, int );
 
 #define DMAX(a,b) (a>b?a:b)
 #define FORALL(q)  for ( q = 0; q < dimension; q++ )

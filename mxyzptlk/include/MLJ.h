@@ -5,7 +5,7 @@
 #include <math.h>
 #ifdef __VISUAL_CPP__
 #include <iostream>
-#include <Complex>
+#include <complex>
 #else
 #include <iostream.h>
 #include <complex.h>
