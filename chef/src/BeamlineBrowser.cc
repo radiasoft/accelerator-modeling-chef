@@ -53,6 +53,7 @@
 #include <qvbox.h>
 #include <qlabel.h>
 #include <qlineedit.h>
+#include <qlayout.h>
 #include <qtextbrowser.h>
 
 #include "PhysicsConstants.h"
@@ -1321,12 +1322,31 @@ int BeamlineBrowser::findElement( QBml*                startpoint,
         foundElements.append( elementPtr );
         qbmlPtr->setSelected(true);
         this->ensureItemVisible( qbmlPtr );
+        qbmlPtr->repaint();  // See note below.
         ret = 0;
       }
     }
     ++looker;
 
   }
+
+  // Note: Repainting each individual item is necessary. 
+  //   Without it, if the tree structure has been expanded,
+  //   not all selected items get painted correctly, and
+  //   those that do are painted sloppily. This must be a
+  //   bug in the Qt graphics widget.
+  // I tried adding a line at the end: either either
+  //   "this->repaint();" or "this->update();" Neither one
+  //   fixed the problem. It was fixed only by repainting each
+  //   individual item as it was selected.
+  // The Qt manual advises using update() rather than
+  //   repaint(). The latter is more immediate, but the
+  //   former is less dangerous and allegedly has reduced 
+  //   flicker. However, repaint() seems to work fine.
+  // 
+  // - Leo Michelotti  
+  //   December 10, 2004
+
   return ret;
 }
 
@@ -1403,9 +1423,9 @@ QPtrList<bmlnElmnt> BeamlineBrowser::findAllSelected( QBmlRoot* startpoint ) con
 }
 
 
-//
+//////////////////////////////////////////////////
 // BeamlineBrowser::infoWriter implementation
-// 
+/////////////////////////////////////////////////
 
 void BeamlineBrowser::infoWriter::visitBeamline( const beamline* x )
 {
@@ -1449,30 +1469,26 @@ void BeamlineBrowser::infoWriter::visitBmlnElmnt( const bmlnElmnt* x )
 void BeamlineBrowser::infoWriter::visitDrift( const drift* x )
 {
   QDialog* wpu = new QDialog( 0, 0, true );
-  // QDialog* wpu = new QDialog( 0, 0, true, Qt::WDestructiveClose );
     QVBox* qvb = new QVBox( wpu );
       QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( "Length", qhb1 );
+        new QLabel( "Length [m] = ", qhb1 );
         QString stl;
         stl.setNum( x->Length() );
-        QLineEdit* qle = new QLineEdit( stl, qhb1 );
+        new QLabel( stl, qhb1 );
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
       qhb1->adjustSize();
       QHBox* qhb2 = new QHBox( qvb );
-        QPushButton* okayBtn = new QPushButton( "Okay", qhb2 );
-          okayBtn->setDefault( true );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
-        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb2 );
+        QPushButton* cancelBtn = new QPushButton( "Close", qhb2 );
           connect( cancelBtn, SIGNAL(pressed()),
                    wpu,       SLOT(reject()) );
-      qhb2->setMargin(5);
+      qhb2->setMargin(10);
       qhb2->setSpacing(3);
       qhb2->adjustSize();
     qvb->adjustSize();
+
   // Note: when reject is activated, wpu and all its subwidgets
-  //       will be deleted, because of the flag Qt::WDestructiveClose.
+  //       will be deleted, if created with flag Qt::WDestructiveClose.
   //       This is confirmed by changing these from pointers to objects.
   //       A warning message is issued, when exiting this scope, that
   //       the objects are deleted twice.
@@ -1480,23 +1496,6 @@ void BeamlineBrowser::infoWriter::visitDrift( const drift* x )
   wpu->adjustSize();
 
   int returnCode = wpu->exec();
-
-  if( returnCode == QDialog::Accepted ) {
-    if( stl != qle->text() ) {
-      bool ok;
-      double newLength = (qle->text()).toDouble( &ok );
-      if( ok ) {
-        if( 0 != _contextPtr->setLength( (drift*) x, newLength ) ) {
-          cerr << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": drift not found in context."
-               << endl;
-	}
-      }
-    }
-  }
 
   delete wpu;
 }
@@ -1514,6 +1513,7 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
           );
   */
 
+  { // Old version
   QString sts;
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
@@ -1525,11 +1525,11 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
       	  QHBox* qhboIn = new QHBox( qvbIn );
       	    new QLabel( QString("O: "), qhboIn );
       	    sts.setNum( (x->getInFrame().getOrigin()) (0) );
-      	    new QLineEdit( sts, qhboIn );
+      	    new QLabel( sts, qhboIn );
       	    sts.setNum( (x->getInFrame().getOrigin()) (1) );
-      	    new QLineEdit( sts, qhboIn );
+      	    new QLabel( sts, qhboIn );
       	    sts.setNum( (x->getInFrame().getOrigin()) (2) );
-      	    new QLineEdit( sts, qhboIn );
+      	    new QLabel( sts, qhboIn );
       	  qhboIn->setMargin(5);
       	  qhboIn->setSpacing(3);
       	  qhboIn->adjustSize();
@@ -1581,13 +1581,13 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
           new QLabel( "Downstream frame", qvbOut );
 
       	  QHBox* qhbo = new QHBox( qvbOut );
-      	    QLabel* qlbo = new QLabel( QString("O: "), qhbo );
+      	    new QLabel( QString("O: "), qhbo );
       	    sts.setNum( (x->getOutFrame().getOrigin()) (0) );
-      	    QLineEdit* qleo0 = new QLineEdit( sts, qhbo );
+      	    new QLabel( sts, qhbo );
       	    sts.setNum( (x->getOutFrame().getOrigin()) (1) );
-      	    QLineEdit* qleo1 = new QLineEdit( sts, qhbo );
+      	    new QLabel( sts, qhbo );
       	    sts.setNum( (x->getOutFrame().getOrigin()) (2) );
-      	    QLineEdit* qleo2 = new QLineEdit( sts, qhbo );
+      	    new QLabel( sts, qhbo );
       	  qhbo->setMargin(5);
       	  qhbo->setSpacing(3);
       	  qhbo->adjustSize();
@@ -1600,7 +1600,7 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
       	    sts0 = sts0 + sts + ", ";
       	    sts.setNum( (x->getOutFrame().getxAxis()) (2) );
       	    sts0 = sts0 + sts + " )";
-      	    QLabel* qlb0 = new QLabel( sts0, qhb0 );
+      	    new QLabel( sts0, qhb0 );
       	  qhb0->setMargin(5);
       	  qhb0->setSpacing(3);
       	  qhb0->adjustSize();
@@ -1613,7 +1613,7 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
       	    sts1 = sts1 + sts + ", ";
       	    sts.setNum( (x->getOutFrame().getyAxis()) (2) );
       	    sts1 = sts1 + sts + " )";
-      	    QLabel* qlb1 = new QLabel( sts1, qhb1 );
+      	    new QLabel( sts1, qhb1 );
       	  qhb1->setMargin(5);
       	  qhb1->setSpacing(3);
       	  qhb1->adjustSize();
@@ -1626,7 +1626,7 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
       	    sts2 = sts2 + sts + ", ";
       	    sts.setNum( (x->getOutFrame().getzAxis()) (2) );
       	    sts2 = sts2 + sts + " )";
-      	    QLabel* qlb2 = new QLabel( sts2, qhb2 );
+      	    new QLabel( sts2, qhb2 );
       	  qhb2->setMargin(5);
       	  qhb2->setSpacing(3);
       	  qhb2->adjustSize();
@@ -1640,11 +1640,7 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
       qhbFrames->adjustSize();
 
       QHBox* qhb99 = new QHBox( qvb );
-        QPushButton* okayBtn = new QPushButton( "Okay", qhb99 );
-          okayBtn->setDefault( true );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
-        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb99 );
+        QPushButton* cancelBtn = new QPushButton( "Close", qhb99 );
           connect( cancelBtn, SIGNAL(pressed()),
                    wpu,       SLOT(reject()) );
       qhb99->setMargin(5);
@@ -1656,16 +1652,93 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
   wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
   wpu->adjustSize();
 
-  int returnCode = wpu->exec();
-
-  if( returnCode == QDialog::Accepted ) {
-    cout << "Dialog accepted!" << endl;
-  }
-  else {
-    cout << "Dialog rejected!" << endl;
-  }  
+  wpu->exec();
 
   delete wpu;
+  }
+
+  { // New version  START HERE
+  QString xstr, ystr, zstr;
+  QString lparen("( ");
+  QString rparen(" )");
+  QString comma(", ");
+  
+  QDialog* wpu = new QDialog( 0, 0, true );
+
+    QVBox* qvb = new QVBox( wpu );
+      QWidget* qwa = new QWidget( qvb );
+      	 QGridLayout* qgl = new QGridLayout( qwa, 5, 3, 5, 10 );
+
+      	 qgl->addWidget( new QLabel( QString("Upstream"),   qwa ), 0, 1 );
+      	 qgl->addWidget( new QLabel( QString("Downstream"), qwa ), 0, 2 );
+         
+      	 qgl->addWidget( new QLabel( QString("Origin   "), qwa ), 1, 0 );
+      	 qgl->addWidget( new QLabel( QString("U   "), qwa ), 2, 0 );
+      	 qgl->addWidget( new QLabel( QString("V   "), qwa ), 3, 0 );
+      	 qgl->addWidget( new QLabel( QString("W   "), qwa ), 4, 0 );
+
+         xstr.setNum( (x->getInFrame().getOrigin())(0) );
+         ystr.setNum( (x->getInFrame().getOrigin())(1) );
+         zstr.setNum( (x->getInFrame().getOrigin())(2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 1, 1 );
+         xstr.setNum( (x->getOutFrame().getOrigin())(0) );
+         ystr.setNum( (x->getOutFrame().getOrigin())(1) );
+         zstr.setNum( (x->getOutFrame().getOrigin())(2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 1, 2 );
+
+         xstr.setNum( (x->getInFrame().getxAxis()) (0) );
+         ystr.setNum( (x->getInFrame().getxAxis()) (1) );
+         zstr.setNum( (x->getInFrame().getxAxis()) (2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 2, 1 );
+         xstr.setNum( (x->getInFrame().getyAxis()) (0) );
+         ystr.setNum( (x->getInFrame().getyAxis()) (1) );
+         zstr.setNum( (x->getInFrame().getyAxis()) (2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 3, 1 );
+         xstr.setNum( (x->getInFrame().getzAxis()) (0) );
+         ystr.setNum( (x->getInFrame().getzAxis()) (1) );
+         zstr.setNum( (x->getInFrame().getzAxis()) (2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 4, 1 );
+    
+         xstr.setNum( (x->getOutFrame().getxAxis()) (0) );
+         ystr.setNum( (x->getOutFrame().getxAxis()) (1) );
+         zstr.setNum( (x->getOutFrame().getxAxis()) (2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 2, 2 );
+         xstr.setNum( (x->getOutFrame().getyAxis()) (0) );
+         ystr.setNum( (x->getOutFrame().getyAxis()) (1) );
+         zstr.setNum( (x->getOutFrame().getyAxis()) (2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 3, 2 );
+         xstr.setNum( (x->getOutFrame().getzAxis()) (0) );
+         ystr.setNum( (x->getOutFrame().getzAxis()) (1) );
+         zstr.setNum( (x->getOutFrame().getzAxis()) (2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 4, 2 );
+    
+      qwa->adjustSize();
+
+      QHBox* qhb99 = new QHBox( qvb );
+        QPushButton* cancelBtn = new QPushButton( "Close", qhb99 );
+          connect( cancelBtn, SIGNAL(pressed()),
+                   wpu,       SLOT(reject()) );
+      qhb99->setMargin(5);
+      qhb99->setSpacing(3);
+      qhb99->adjustSize();
+
+    qvb->adjustSize();
+
+  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->adjustSize();
+
+  wpu->exec();
+
+  delete wpu;
+  }
 }
 
 
@@ -1675,29 +1748,25 @@ void BeamlineBrowser::infoWriter::visitSbend( const sbend* x )
     QVBox* qvb = new QVBox( wpu );
 
       QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb2 = new QLabel( QString("Length [m]: "), qhb1 );
+        new QLabel( QString("Length [m]: "), qhb1 );
         QString stlen;
         stlen.setNum( x->Length() );
-        QLineEdit* qle1 = new QLineEdit( stlen, qhb1 );
+        new QLabel( stlen, qhb1 );
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
       qhb1->adjustSize();
 
       QHBox* qhb2 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( QString("Magnetic field [T]: "), qhb2 );
+        new QLabel( QString("Magnetic field [T]: "), qhb2 );
         QString sts;
         sts.setNum( x->Strength() );
-        QLineEdit* qle2 = new QLineEdit( sts, qhb2 );
+        new QLabel( sts, qhb2 );
       qhb2->setMargin(5);
       qhb2->setSpacing(3);
       qhb2->adjustSize();
 
       QHBox* qhb3 = new QHBox( qvb );
-        QPushButton* okayBtn = new QPushButton( "Okay", qhb3 );
-          okayBtn->setDefault( true );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
-        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb3 );
+        QPushButton* cancelBtn = new QPushButton( "Close", qhb3 );
           connect( cancelBtn, SIGNAL(pressed()),
                    wpu,       SLOT(reject()) );
       qhb3->setMargin(5);
@@ -1713,51 +1782,9 @@ void BeamlineBrowser::infoWriter::visitSbend( const sbend* x )
   wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
   wpu->adjustSize();
 
-  int returnCode = wpu->exec();
-
-  if( returnCode == QDialog::Accepted ) {
-    if( stlen != qle1->text() ) {
-      bool ok;
-      double newLength = (qle1->text()).toDouble( &ok );
-      if( ok ) {
-        if( 0 != _contextPtr->setLength( (sbend*) x, newLength ) ) { 
-          cerr << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": sbend not found in context."
-               << endl;
-	}
-      }
-    }
-    if( sts != qle2->text() ) {
-      bool ok;
-      double newStrength = (qle2->text()).toDouble( &ok );
-      if( ok ) {
-        if( 0 != _contextPtr->setStrength( (sbend*) x, newStrength ) ) { 
-          cerr << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": sbend not found in context."
-               << endl;
-	}
-      }
-    }
-  }
+  wpu->exec();
 
   delete wpu;
-
-  // =========================================================
-  // QString stl;
-  // QString sts;
-  // stl.setNum( x->Length() );
-  // sts.setNum( x->Strength() );
-  // QMessageBox::information( 
-  //         0, 
-  //         QString(x->Type())+QString(": ")+QString(x->Name()),
-  //         QString("Length [m]: ")+stl+QString("  Bend field [T]: ")+sts
-  //         );
 }
 
 
@@ -1797,246 +1824,44 @@ void BeamlineBrowser::infoWriter::visitCF_sbend( const CF_sbend* x )
 // REMOVE: }
 
 
-// ??? The argument is not const. It's not supposed to be.
-// ??? Change the argument???
-void BeamlineBrowser::infoWriter::visitCF_rbend( const CF_rbend* x )
+void BeamlineBrowser::infoWriter::visitRbend( const rbend* x )
 {
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
+      QWidget* qwa = new QWidget( qvb );
+      	 QGridLayout* qgl = new QGridLayout( qwa, 3, 3, 5 );
 
-      QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( QString("Field [T]: "), qhb1 );
-        QString sts;
-        sts.setNum( x->Strength() );
-        QLineEdit* qle = new QLineEdit( sts, qhb1 );
-      qhb1->setMargin(5);
-      qhb1->setSpacing(3);
-      qhb1->adjustSize();
+      	 qgl->addWidget( new QLabel( QString("Length"), qwa ), 0, 0 );
+      	 qgl->addWidget( new QLabel( QString(" [m]: "), qwa ), 0, 1 );
+      	   QString stlen;
+      	   stlen.setNum( x->Length() );
+      	 qgl->addWidget( new QLabel( stlen, qwa ), 0, 2 );
+
+      	 qgl->addWidget( new QLabel( QString("Magnetic field"), qwa ), 1, 0 );
+      	 qgl->addWidget( new QLabel( QString(" [T]: "), qwa ), 1, 1 );
+      	   QString sts;
+      	   sts.setNum( x->Strength() );
+      	 qgl->addWidget( new QLabel( sts, qwa ), 1, 2 );
+
+      	 qgl->addWidget( new QLabel( QString("Nominal entry angle"), qwa ), 2, 0 );
+      	 qgl->addWidget( new QLabel( QString(" [mrad]: "), qwa ), 2, 1 );
+      	   sts.setNum( 1000.0 * x->getPoleFaceAngle() );
+      	 qgl->addWidget( new QLabel( sts, qwa ), 2, 2 );
+
+       qwa->adjustSize();
 
       QHBox* qhb4 = new QHBox( qvb );
-        QLabel* qlb4 = new QLabel( QString("Gradient [T/m]: "), qhb4 );
-        QString stg;
-        stg.setNum( x->getQuadrupole() / x->Length() );
-        QLineEdit* qle4 = new QLineEdit( stg, qhb4 );
+        QPushButton* closeBtn = new QPushButton( "Close", qhb4 );
+          closeBtn->setDefault( true );
+          connect( closeBtn,  SIGNAL(pressed()),
+                   wpu,       SLOT(reject()) );
+        QPushButton* editBtn = new QPushButton( "Edit", qhb4 );
+          connect( editBtn, SIGNAL(pressed()),
+                   wpu,     SLOT(accept()) );
+
       qhb4->setMargin(5);
       qhb4->setSpacing(3);
       qhb4->adjustSize();
-
-      QHBox* qhb2 = new QHBox( qvb );
-        QLabel* qlb2 = new QLabel( QString("Roll angle [mrad]: "), qhb2 );
-        alignmentData ad(x->Alignment());
-        QString str;
-        str.setNum( 1000.*(ad.tilt /*[rad]*/) );
-        QLineEdit* qle2 = new QLineEdit( str, qhb2 );
-      qhb2->setMargin(5);
-      qhb2->setSpacing(3);
-      qhb2->adjustSize();
-
-      QHBox* qhb3 = new QHBox( qvb );
-        QPushButton* okayBtn = new QPushButton( "Okay", qhb3 );
-          okayBtn->setDefault( true );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
-        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb3 );
-          connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
-      qhb3->setMargin(5);
-      qhb3->setSpacing(3);
-      qhb3->adjustSize();
-
-    qvb->adjustSize();
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
-  wpu->adjustSize();
-
-  int returnCode = wpu->exec();
-
-
-  // Change dipole field
-  if( returnCode == QDialog::Accepted ) {
-    if( sts != qle->text() ) {
-      bool ok;
-      double newStrength = (qle->text()).toDouble( &ok );
-      if( ok ) {
-        // if( 0 != _contextPtr->setStrength( (quadrupole*) x, newStrength ) ) {
-        //   cerr << "*** WARNING *** File "
-        //        << __FILE__ 
-        //        << ", Line "
-        //        << __LINE__
-        //        << ": quadrupole not found in context."
-        //        << endl;
-        // }
-        
-        QMessageBox::information( 0, "CHEF: SORRY",
-                                  "Field change not implemented." );
-      }
-    }
-
-    // Change quadrupole field
-    if( stg != qle4->text() ) {
-      bool ok;
-      double newQuadStrength = (qle4->text()).toDouble( &ok );
-      newQuadStrength *= x->Length();
-      if( ok ) {
-        // if( 0 != _contextPtr->setQuadrupole( (quadrupole*) x, newStrength ) ) {
-        //   cerr << "*** WARNING *** File "
-        //        << __FILE__ 
-        //        << ", Line "
-        //        << __LINE__
-        //        << ": quadrupole not found in context."
-        //        << endl;
-        // }
-        
-        QMessageBox::information( 0, "CHEF: SORRY",
-                                  "Field change not implemented." );
-      }
-    }
-
-    // Change alignment
-    if( str != qle2->text() ) {
-      bool ok;
-      ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
-      if( ok ) {
-        if( 0 != _contextPtr->setAlignment( (CF_rbend*) x,  ad ) ) {
-          cerr << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": CF_rbend not found in context."
-               << endl;
-	}
-      }
-    }
-
-  }
-
-  delete wpu;
-}
-
-
-void BeamlineBrowser::infoWriter::visitQuadrupole( const quadrupole* x )
-{
-  // QString stl;
-  // QString sts;
-  // stl.setNum( x->Length() );
-  // sts.setNum( x->Strength() );
-  // QMessageBox::information( 
-  //         0, 
-  //         QString(x->Type())+QString(": ")+QString(x->Name()),
-  //         QString("Length: ")+stl+QString("\nGradient [T/m]: ")+sts
-  //         );
-
-  QDialog* wpu = new QDialog( 0, 0, true );
-    QVBox* qvb = new QVBox( wpu );
-
-      QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( QString("Gradient [T/m]: "), qhb1 );
-        QString sts;
-        sts.setNum( x->Strength() );
-        QLineEdit* qle = new QLineEdit( sts, qhb1 );
-      qhb1->setMargin(5);
-      qhb1->setSpacing(3);
-      qhb1->adjustSize();
-
-      QHBox* qhb2 = new QHBox( qvb );
-        QLabel* qlb2 = new QLabel( QString("Roll angle [mrad]: "), qhb2 );
-        alignmentData ad(x->Alignment());
-        QString str;
-        str.setNum( 1000.*(ad.tilt /*[rad]*/) );
-        QLineEdit* qle2 = new QLineEdit( str, qhb2 );
-      qhb2->setMargin(5);
-      qhb2->setSpacing(3);
-      qhb2->adjustSize();
-
-      QHBox* qhb3 = new QHBox( qvb );
-        QPushButton* okayBtn = new QPushButton( "Okay", qhb3 );
-          okayBtn->setDefault( true );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
-        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb3 );
-          connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
-      qhb3->setMargin(5);
-      qhb3->setSpacing(3);
-      qhb3->adjustSize();
-
-    qvb->adjustSize();
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
-  wpu->adjustSize();
-
-  int returnCode = wpu->exec();
-
-  if( returnCode == QDialog::Accepted ) {
-    if( sts != qle->text() ) {
-      bool ok;
-      double newStrength = (qle->text()).toDouble( &ok );
-      if( ok ) {
-        if( 0 != _contextPtr->setStrength( (quadrupole*) x, newStrength ) ) {
-          cerr << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": quadrupole not found in context."
-               << endl;
-	}
-      }
-    }
-
-    if( str != qle2->text() ) {
-      bool ok;
-      ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
-      if( ok ) {
-        if( 0 != _contextPtr->setAlignment( (quadrupole*) x,  ad ) ) {
-          cerr << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": quadrupole not found in context."
-               << endl;
-	}
-      }
-    }
-
-  }
-
-  delete wpu;
-}
-
-
-void BeamlineBrowser::infoWriter::visitThinQuad( const thinQuad* x )
-{
-  QDialog* wpu = new QDialog( 0, 0, true );
-    QVBox* qvb = new QVBox( wpu );
-
-      QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( QString("Integrated gradient [T]: "), qhb1 );
-        QString sts;
-        sts.setNum( x->Strength() );
-        QLineEdit* qle = new QLineEdit( sts, qhb1 );
-      qhb1->setMargin(5);
-      qhb1->setSpacing(3);
-      qhb1->adjustSize();
-
-      QHBox* qhb2 = new QHBox( qvb );
-        QLabel* qlb2 = new QLabel( QString("Roll angle [mrad]: "), qhb2 );
-        alignmentData ad(x->Alignment());
-        QString str;
-        str.setNum( 1000.*(ad.tilt /*[rad]*/) );
-        QLineEdit* qle2 = new QLineEdit( str, qhb2 );
-      qhb2->setMargin(5);
-      qhb2->setSpacing(3);
-      qhb2->adjustSize();
-
-      QHBox* qhb3 = new QHBox( qvb );
-        QPushButton* okayBtn = new QPushButton( "Okay", qhb3 );
-          okayBtn->setDefault( true );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
-        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb3 );
-          connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
-      qhb3->setMargin(5);
-      qhb3->setSpacing(3);
-      qhb3->adjustSize();
 
     qvb->adjustSize();
   // Note: when reject is activated, wpu and all its subwidgets
@@ -2050,36 +1875,180 @@ void BeamlineBrowser::infoWriter::visitThinQuad( const thinQuad* x )
   int returnCode = wpu->exec();
 
   if( returnCode == QDialog::Accepted ) {
-    if( sts != qle->text() ) {
-      bool ok;
-      double newStrength = (qle->text()).toDouble( &ok );
-      if( ok ) {
-        if( 0 != _contextPtr->setStrength( (thinQuad*) x, newStrength ) ) {
-          cerr << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": thinQuad not found in context."
-               << endl;
-	}
-      }
-    }
+    editDialog edg;
+    edg._contextPtr = _contextPtr;
+    ((rbend*) x)->accept(edg);
+  }
 
-    if( str != qle2->text() ) {
-      bool ok;
-      ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
-      if( ok ) {
-        if( 0 != _contextPtr->setAlignment( (thinQuad*) x, ad ) ) {
-          cerr << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": thinQuad not found in context."
-               << endl;
-	}
-      }
-    }
+  delete wpu;
+}
 
+
+// ??? The argument is not const. It's not supposed to be.
+// ??? Change the argument???
+void BeamlineBrowser::infoWriter::visitCF_rbend( const CF_rbend* x )
+{
+  QDialog* wpu = new QDialog( 0, 0, true );
+    QVBox* qvb = new QVBox( wpu );
+
+      QHBox* qhb1 = new QHBox( qvb );
+        new QLabel( QString("Field [T]: "), qhb1 );
+        QString sts;
+        sts.setNum( x->Strength() );
+        new QLabel( sts, qhb1 );
+      qhb1->setMargin(5);
+      qhb1->setSpacing(3);
+      qhb1->adjustSize();
+
+      QHBox* qhb4 = new QHBox( qvb );
+        new QLabel( QString("Gradient [T/m]: "), qhb4 );
+        QString stg;
+        stg.setNum( x->getQuadrupole() / x->Length() );
+        new QLabel( stg, qhb4 );
+      qhb4->setMargin(5);
+      qhb4->setSpacing(3);
+      qhb4->adjustSize();
+
+      QHBox* qhb2 = new QHBox( qvb );
+        new QLabel( QString("Roll angle [mrad]: "), qhb2 );
+        alignmentData ad(x->Alignment());
+        QString str;
+        str.setNum( 1000.*(ad.tilt /*[rad]*/) );
+        new QLabel( str, qhb2 );
+      qhb2->setMargin(5);
+      qhb2->setSpacing(3);
+      qhb2->adjustSize();
+
+      QHBox* qhb3 = new QHBox( qvb );
+        QPushButton* cancelBtn = new QPushButton( "Close", qhb3 );
+          connect( cancelBtn, SIGNAL(pressed()),
+                   wpu,       SLOT(reject()) );
+      qhb3->setMargin(5);
+      qhb3->setSpacing(3);
+      qhb3->adjustSize();
+
+    qvb->adjustSize();
+  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->adjustSize();
+
+  wpu->exec();
+
+  delete wpu;
+}
+
+
+void BeamlineBrowser::infoWriter::visitQuadrupole( const quadrupole* x )
+{
+  QString theValue;
+  QDialog* wpu = new QDialog( 0, 0, true );
+    QVBox* qvb = new QVBox( wpu );
+
+      QHBox* qhb1 = new QHBox( qvb );
+        new QLabel( QString("Gradient [T/m]: "), qhb1 );
+        theValue.setNum( x->Strength() );
+        new QLabel( theValue, qhb1 );
+      qhb1->setMargin(5);
+      qhb1->setSpacing(3);
+      qhb1->adjustSize();
+
+      QHBox* qhb2 = new QHBox( qvb );
+        new QLabel( QString("Length: "), qhb2 );
+        theValue.setNum( x->Length() );
+        new QLabel( theValue, qhb2 );
+      qhb2->setMargin(5);
+      qhb2->setSpacing(3);
+      qhb2->adjustSize();
+
+      QHBox* qhb3 = new QHBox( qvb );
+        new QLabel( QString("Roll angle [mrad]: "), qhb3 );
+        alignmentData ad(x->Alignment());
+        theValue.setNum( 1000.*(ad.tilt /*[rad]*/) );
+        new QLabel( theValue, qhb3 );
+      qhb3->setMargin(5);
+      qhb3->setSpacing(3);
+      qhb3->adjustSize();
+
+      QHBox* qhb4 = new QHBox( qvb );
+        QPushButton* closeBtn = new QPushButton( "Close", qhb4 );
+          closeBtn->setDefault( true );
+          connect( closeBtn,  SIGNAL(pressed()),
+                   wpu,       SLOT(reject()) );
+        QPushButton* editBtn = new QPushButton( "Edit", qhb4 );
+          connect( editBtn, SIGNAL(pressed()),
+                   wpu,     SLOT(accept()) );
+      qhb4->setMargin(5);
+      qhb4->setSpacing(3);
+      qhb4->adjustSize();
+
+    qvb->adjustSize();
+  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->adjustSize();
+
+  int returnCode = wpu->exec();
+  // Note: when reject is activated, wpu and all its subwidgets
+  //       will be deleted, if the flag Qt::WDestructiveClose is used.
+  //       This is confirmed by changing these from pointers to objects.
+  //       A warning message is issued, when exiting this scope, that
+  //       the objects are deleted twice.
+
+  if( returnCode == QDialog::Accepted ) {
+    editDialog edg;
+    edg._contextPtr = _contextPtr;
+    ((quadrupole*) x)->accept(edg);
+  }
+
+  delete wpu;
+}
+
+
+void BeamlineBrowser::infoWriter::visitThinQuad( const thinQuad* x )
+{
+  QString theValue;
+  QDialog* wpu = new QDialog( 0, 0, true );
+    QVBox* qvb = new QVBox( wpu );
+
+      QWidget* qwa = new QWidget( qvb );
+      	 QGridLayout* qgl = new QGridLayout( qwa, 2, 3, 5 );
+
+      	 qgl->addWidget( new QLabel( QString("Integrated gradient"), qwa ), 0, 0 );
+      	 qgl->addWidget( new QLabel( QString(" [T]  "), qwa ), 0, 1 );
+      	   theValue.setNum( x->Strength() );
+      	 qgl->addWidget( new QLabel( theValue, qwa ), 0, 2 );
+
+      	 qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 1, 0 );
+      	 qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 1, 1 );
+      	   theValue.setNum( 1000.*(x->Alignment().tilt /*[rad]*/) );
+      	 qgl->addWidget( new QLabel( theValue, qwa ), 1, 2 );
+      qwa->adjustSize();
+
+      QHBox* qhb = new QHBox( qvb );
+        QPushButton* closeBtn = new QPushButton( "Close", qhb );
+          closeBtn->setDefault( true );
+          connect( closeBtn,  SIGNAL(pressed()),
+                   wpu,       SLOT(reject()) );
+        QPushButton* editBtn = new QPushButton( "Edit", qhb );
+          connect( editBtn, SIGNAL(pressed()),
+                   wpu,     SLOT(accept()) );
+      qhb->setMargin(5);
+      qhb->setSpacing(3);
+      qhb->adjustSize();
+
+    qvb->adjustSize();
+
+  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->adjustSize();
+
+  int returnCode = wpu->exec();
+  // Note: when reject is activated, wpu and all its subwidgets
+  //       will be deleted, if the flag Qt::WDestructiveClose is used.
+  //       This is confirmed by changing these from pointers to objects.
+  //       A warning message is issued, when exiting this scope, that
+  //       the objects are deleted twice.
+
+  if( returnCode == QDialog::Accepted ) {
+    editDialog edg;
+    edg._contextPtr = _contextPtr;
+    ((thinQuad*) x)->accept(edg);
   }
 
   delete wpu;
@@ -2114,50 +2083,50 @@ void BeamlineBrowser::infoWriter::visitMarker( const marker* x )
 }
 
 
-// void BeamlineBrowser::infoWriter::visitSector( const sector* x )
-// {
-//   MatrixD M( x->getMap().Jacobian() );
-// 
-//   QString matrixElement;
-//   QString matrixDisplay;
-//   const QString spacer("  "); 
-//   const QString eol("\n");
-// 
-//   for( int i = 0; i < M.rows(); i++ ) {
-//     for( int j = 0; j < M.cols(); j++ ) {
-//       matrixElement.setNum( M(i,j) );
-//       matrixDisplay = matrixDisplay + matrixElement + spacer;
-//     }
-//     matrixDisplay = matrixDisplay + eol;
-//   }
-// 
-//   QDialog* wpu = new QDialog( 0, 0, true );
-// 
-//     QVBox* qvb = new QVBox( wpu );
-// 
-//       QTextView* qtv = new QTextView( matrixDisplay, QString::null, qvb );
-//       int drawArea = (50*QApplication::desktop()->height()*
-//                          QApplication::desktop()->width())/100;
-//       int fixedWidth = (int) sqrt( (double) drawArea );
-//       qtv->setFixedSize( fixedWidth, fixedWidth );
-// 
-//       QHBox* qhb3 = new QHBox( qvb );
-//         QPushButton* doneBtn = new QPushButton( "Done", qhb3 );
-//           doneBtn->setDefault( true );
-//           connect( doneBtn, SIGNAL(pressed()),
-//                    wpu,     SLOT(accept()) );
-//       qhb3->setMargin(5);
-//       qhb3->setSpacing(3);
-//       qhb3->adjustSize();
-// 
-//     qvb->adjustSize();
-// 
-//   wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
-//   wpu->adjustSize();
-// 
-//   wpu->exec();
-//   delete wpu;
-// }
+// REMOVE:  void BeamlineBrowser::infoWriter::visitSector( const sector* x )
+// REMOVE:  {
+// REMOVE:    MatrixD M( x->getMap().Jacobian() );
+// REMOVE:  
+// REMOVE:    QString matrixElement;
+// REMOVE:    QString matrixDisplay;
+// REMOVE:    const QString spacer("  "); 
+// REMOVE:    const QString eol("\n");
+// REMOVE:  
+// REMOVE:    for( int i = 0; i < M.rows(); i++ ) {
+// REMOVE:      for( int j = 0; j < M.cols(); j++ ) {
+// REMOVE:        matrixElement.setNum( M(i,j) );
+// REMOVE:        matrixDisplay = matrixDisplay + matrixElement + spacer;
+// REMOVE:      }
+// REMOVE:      matrixDisplay = matrixDisplay + eol;
+// REMOVE:    }
+// REMOVE:  
+// REMOVE:    QDialog* wpu = new QDialog( 0, 0, true );
+// REMOVE:  
+// REMOVE:      QVBox* qvb = new QVBox( wpu );
+// REMOVE:  
+// REMOVE:        QTextView* qtv = new QTextView( matrixDisplay, QString::null, qvb );
+// REMOVE:        int drawArea = (50*QApplication::desktop()->height()*
+// REMOVE:                           QApplication::desktop()->width())/100;
+// REMOVE:        int fixedWidth = (int) sqrt( (double) drawArea );
+// REMOVE:        qtv->setFixedSize( fixedWidth, fixedWidth );
+// REMOVE:  
+// REMOVE:        QHBox* qhb3 = new QHBox( qvb );
+// REMOVE:          QPushButton* doneBtn = new QPushButton( "Done", qhb3 );
+// REMOVE:            doneBtn->setDefault( true );
+// REMOVE:            connect( doneBtn, SIGNAL(pressed()),
+// REMOVE:                     wpu,     SLOT(accept()) );
+// REMOVE:        qhb3->setMargin(5);
+// REMOVE:        qhb3->setSpacing(3);
+// REMOVE:        qhb3->adjustSize();
+// REMOVE:  
+// REMOVE:      qvb->adjustSize();
+// REMOVE:  
+// REMOVE:    wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+// REMOVE:    wpu->adjustSize();
+// REMOVE:  
+// REMOVE:    wpu->exec();
+// REMOVE:    delete wpu;
+// REMOVE:  }
 
 
 void BeamlineBrowser::infoWriter::visitSector( const sector* x )
@@ -2211,3 +2180,380 @@ void BeamlineBrowser::infoWriter::visitSector( const sector* x )
   wpu->exec();
   delete wpu;
 }
+
+
+// REMOVE: void BeamlineBrowser::infoWriter::visitMonitor( const monitor* x )
+// REMOVE: {
+// REMOVE:   QString cap( "monitor: " );
+// REMOVE:   cap += QString( x->Name() );
+// REMOVE: 
+// REMOVE:   if( 6 != Particle::PSD ) {
+// REMOVE:     cap += ": *** ERROR *** ";
+// REMOVE:     QMessageBox::information( 0, cap,
+// REMOVE:                               "SORRY: Current version of software"
+// REMOVE:                               "\nrequires 6 dimensional phase space." );
+// REMOVE:     return;
+// REMOVE:   }
+// REMOVE: 
+// REMOVE:   int n = Particle::PSD;
+// REMOVE:   double w[n];
+// REMOVE:   x->getState(w);  // This is the only statement that requires
+// REMOVE:                    //   six-dimensional phase space. 
+// REMOVE: 
+// REMOVE:   ostringstream uic;
+// REMOVE:   uic << "x     [mm]  : " << 1000.0*w[ Particle::_x()  ] << endl;
+// REMOVE:   uic << "y     [mm]  : " << 1000.0*w[ Particle::_y()  ] << endl;
+// REMOVE:   uic << "p_x/p [mrad]: " << 1000.0*w[ Particle::_xp() ] << endl;
+// REMOVE:   uic << "p_y/p [mrad]: " << 1000.0*w[ Particle::_yp() ] << endl;
+// REMOVE: 
+// REMOVE:   cap += ": registers";
+// REMOVE:   QMessageBox::information( 0, cap, uic.str().c_str() );
+// REMOVE: }
+
+
+void BeamlineBrowser::infoWriter::visitMonitor( const monitor* x )
+{
+  if( 6 != Particle::PSD ) {
+    QMessageBox::warning( 0, QString( "monitor: " ) + QString( x->Name() ),
+                             "SORRY: Current version of software"
+                             "\nrequires 6 dimensional phase space." );
+    return;
+  }
+
+  // Load the coordinates into an array
+  int n = Particle::PSD;
+  double w[n];
+  x->getState(w);  // This is the only statement that requires
+                   //   six-dimensional phase space. 
+
+  // Set up the display widget
+  QString theValue;
+  QDialog* wpu = new QDialog( 0, 0, true );
+    QVBox* qvb = new QVBox( wpu );
+      QWidget* qwa = new QWidget( qvb );
+      	 QGridLayout* qgl = new QGridLayout( qwa, 4, 4, 5 );
+
+      	 qgl->addWidget( new QLabel( QString("x"),     qwa ), 0, 0 );
+      	 qgl->addWidget( new QLabel( QString("[mm]"),  qwa ), 0, 1 );
+      	 qgl->addWidget( new QLabel( QString("="),     qwa ), 0, 2 );
+      	   theValue.setNum( 1000.0*w[ Particle::_x()  ] );
+      	 qgl->addWidget( new QLabel( theValue,         qwa ), 0, 3 );
+
+      	 qgl->addWidget( new QLabel( QString("y"),     qwa ), 1, 0 );
+      	 qgl->addWidget( new QLabel( QString("[mm]"),  qwa ), 1, 1 );
+      	 qgl->addWidget( new QLabel( QString("="),     qwa ), 1, 2 );
+      	   theValue.setNum( 1000.0*w[ Particle::_y()  ] );
+      	 qgl->addWidget( new QLabel( theValue,         qwa ), 1, 3 );
+
+      	 qgl->addWidget( new QLabel( QString("p_x/p"), qwa ), 2, 0 );
+      	 qgl->addWidget( new QLabel( QString("[mrad]"),qwa ), 2, 1 );
+      	 qgl->addWidget( new QLabel( QString("="),     qwa ), 2, 2 );
+      	   theValue.setNum( 1000.0*w[ Particle::_xp() ] );
+      	 qgl->addWidget( new QLabel( theValue,         qwa ), 2, 3 );
+
+      	 qgl->addWidget( new QLabel( QString("p_y/p"), qwa ), 3, 0 );
+      	 qgl->addWidget( new QLabel( QString("[mrad]"),qwa ), 3, 1 );
+      	 qgl->addWidget( new QLabel( QString("="),     qwa ), 3, 2 );
+      	   theValue.setNum( 1000.0*w[ Particle::_yp() ] );
+      	 qgl->addWidget( new QLabel( theValue,         qwa ), 3, 3 );
+
+       qwa->adjustSize();
+
+      QHBox* qhb4 = new QHBox( qvb );
+        QPushButton* cancelBtn = new QPushButton( "Close", qhb4 );
+          connect( cancelBtn, SIGNAL(pressed()),
+                   wpu,       SLOT(reject()) );
+
+      qhb4->setMargin(5);
+      qhb4->setSpacing(3);
+      qhb4->adjustSize();
+
+    qvb->adjustSize();
+  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->adjustSize();
+
+  // Show the information and exit
+  wpu->exec();
+  delete wpu;
+}
+
+
+//////////////////////////////////////////////////
+// BeamlineBrowser::editDialog implementation
+/////////////////////////////////////////////////
+
+void BeamlineBrowser::editDialog::visitBmlnElmnt( bmlnElmnt* x )
+{
+  QMessageBox::warning( 0, "BeamlineBrowser", 
+                        "Sorry. You may not edit this element." );
+}
+
+
+void BeamlineBrowser::editDialog::visitRbend( rbend* x )
+{
+  QDialog* wpu = new QDialog( 0, 0, true );
+    QVBox* qvb = new QVBox( wpu );
+      QWidget* qwa = new QWidget( qvb );
+      	 QGridLayout* qgl = new QGridLayout( qwa, 2, 3, 5 );
+
+      	 qgl->addWidget( new QLabel( QString("Length"), qwa ), 0, 0 );
+      	 qgl->addWidget( new QLabel( QString("[m]"), qwa ), 0, 1 );
+           QString stlen;
+      	   stlen.setNum( x->Length() );
+           // QLineEdit* qle1 = new QLineEdit( stlen, qwa );
+         // qgl->addWidget( qle1, 0, 2 );
+      	 qgl->addWidget( new QLabel( stlen, qwa ), 0, 2 );
+
+      	 qgl->addWidget( new QLabel( QString("Magnetic field"), qwa ), 1, 0 );
+      	 qgl->addWidget( new QLabel( QString("[T]"), qwa ), 1, 1 );
+           QString sts;
+      	   sts.setNum( x->Strength() );
+           QLineEdit* qle2 = new QLineEdit( sts, qwa );
+      	 qgl->addWidget( qle2, 1, 2 );
+
+       qwa->adjustSize();
+
+      QHBox* qhb = new QHBox( qvb );
+        QPushButton* okayBtn = new QPushButton( "Okay", qhb );
+          connect( okayBtn, SIGNAL(pressed()),
+                   wpu,     SLOT(accept()) );
+        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb );
+          cancelBtn->setDefault( true );
+          connect( cancelBtn,  SIGNAL(pressed()),
+                   wpu,        SLOT(reject()) );
+      qhb->setMargin(5);
+      qhb->setSpacing(3);
+      qhb->adjustSize();
+
+    qvb->adjustSize();
+
+  // Note: when reject is activated, wpu and all its subwidgets
+  //       will be deleted, if the flag Qt::WDestructiveClose is used.
+  //       This is confirmed by changing these from pointers to objects.
+  //       A warning message is issued, when exiting this scope, that
+  //       the objects are deleted twice.
+
+  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->adjustSize();
+
+  int returnCode = wpu->exec();
+
+  if( returnCode == QDialog::Accepted ) {
+    // if( stlen != qle1->text() ) {
+    //   bool ok;
+    //   double newLength = (qle1->text()).toDouble( &ok );
+    //   if( ok ) {
+    //     if( 0 != _contextPtr->setLength( (rbend*) x, newLength ) ) { 
+    //       cerr << "*** WARNING *** File "
+    //            << __FILE__ 
+    //            << ", Line "
+    //            << __LINE__
+    //            << ": rbend not found in context."
+    //            << endl;
+    //     }
+    //   }
+    // }
+    if( sts != qle2->text() ) {
+      bool ok;
+      double newStrength = (qle2->text()).toDouble( &ok );
+      if( ok ) {
+        if( 0 != _contextPtr->setStrength( (rbend*) x, newStrength ) ) { 
+          cerr << "*** WARNING *** File "
+               << __FILE__ 
+               << ", Line "
+               << __LINE__
+               << ": rbend not found in context."
+               << endl;
+	}
+      }
+    }
+  }
+
+  delete wpu;
+}
+
+
+void BeamlineBrowser::editDialog::visitQuadrupole( quadrupole* x )
+{
+  QDialog* wpu = new QDialog( 0, 0, true );
+    QVBox* qvb = new QVBox( wpu );
+
+      QWidget* qwa = new QWidget( qvb );
+      	 QGridLayout* qgl = new QGridLayout( qwa, 3, 3, 5 );
+
+      	 qgl->addWidget( new QLabel( QString("Gradient"), qwa ), 0, 0 );
+      	 qgl->addWidget( new QLabel( QString(" [T/m]  "), qwa ), 0, 1 );
+  	   QString st1;
+      	   st1.setNum( x->Strength() );
+           QLineEdit* qle1 = new QLineEdit( st1, qwa );
+      	 qgl->addWidget( qle1, 0, 2 );
+
+      	 qgl->addWidget( new QLabel( QString("Length"), qwa ), 1, 0 );
+      	 qgl->addWidget( new QLabel( QString(" [m]  "), qwa ), 1, 1 );
+  	   QString stl;
+      	   stl.setNum( x->Length() );
+      	 qgl->addWidget( new QLabel( QString(stl), qwa ), 1, 2 );
+
+      	 qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 2, 0 );
+      	 qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 2, 1 );
+	   QString st2;
+           alignmentData ad(x->Alignment());
+      	   st2.setNum( 1000.*(ad.tilt /*[rad]*/) );
+           QLineEdit* qle2 = new QLineEdit( st2, qwa );
+      	 qgl->addWidget( qle2, 2, 2 );
+      qwa->adjustSize();
+
+      QHBox* qhb = new QHBox( qvb );
+        QPushButton* okayBtn = new QPushButton( "Okay", qhb );
+          connect( okayBtn, SIGNAL(pressed()),
+                   wpu,     SLOT(accept()) );
+        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb );
+          cancelBtn->setDefault( true );
+          connect( cancelBtn,  SIGNAL(pressed()),
+                   wpu,        SLOT(reject()) );
+      qhb->setMargin(5);
+      qhb->setSpacing(3);
+      qhb->adjustSize();
+
+    qvb->adjustSize();
+
+  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->adjustSize();
+
+  int returnCode = wpu->exec();
+  // Note: when reject is activated, wpu and all its subwidgets
+  //       will be deleted, if the flag Qt::WDestructiveClose is used.
+  //       This is confirmed by changing these from pointers to objects.
+  //       A warning message is issued, when exiting this scope, that
+  //       the objects are deleted twice.
+
+  if( returnCode == QDialog::Accepted ) {
+    if( st1 != qle1->text() ) {
+      bool ok;
+      double newStrength = (qle1->text()).toDouble( &ok );
+      if( ok ) {
+        if( 0 != _contextPtr->setStrength( x, newStrength ) ) {
+          ostringstream uic;
+          uic  << "*** WARNING *** File "
+               << __FILE__ 
+               << ", Line "
+               << __LINE__
+               << ": "
+               << x->Type()
+               << " not found in context."
+               << endl;
+          QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
+	}
+      }
+    }
+
+    if( st2 != qle2->text() ) {
+      bool ok;
+      ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
+      if( ok ) {
+        if( 0 != _contextPtr->setAlignment( x, ad ) ) {
+          ostringstream uic;
+          uic  << "*** WARNING *** File "
+               << __FILE__ 
+               << ", Line "
+               << __LINE__
+               << ": "
+               << x->Type()
+               << " not found in context."
+               << endl;
+          QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
+	}
+      }
+    }
+
+  }
+
+  delete wpu;
+}
+
+
+void BeamlineBrowser::editDialog::visitThinQuad( thinQuad* x )
+{
+  QDialog* wpu = new QDialog( 0, 0, true );
+    QVBox* qvb = new QVBox( wpu );
+
+      QWidget* qwa = new QWidget( qvb );
+      	 QGridLayout* qgl = new QGridLayout( qwa, 2, 3, 5 );
+
+      	 qgl->addWidget( new QLabel( QString("Integrated gradient"), qwa ), 0, 0 );
+      	 qgl->addWidget( new QLabel( QString(" [T]  "), qwa ), 0, 1 );
+  	   QString st1;
+      	   st1.setNum( x->Strength() );
+           QLineEdit* qle1 = new QLineEdit( st1, qwa );
+      	 qgl->addWidget( qle1, 0, 2 );
+
+      	 qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 1, 0 );
+      	 qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 1, 1 );
+	   QString st2;
+           alignmentData ad(x->Alignment());
+      	   st2.setNum( 1000.*(ad.tilt /*[rad]*/) );
+           QLineEdit* qle2 = new QLineEdit( st2, qwa );
+      	 qgl->addWidget( qle2, 1, 2 );
+      qwa->adjustSize();
+
+      QHBox* qhb = new QHBox( qvb );
+        QPushButton* okayBtn = new QPushButton( "Okay", qhb );
+          connect( okayBtn, SIGNAL(pressed()),
+                   wpu,     SLOT(accept()) );
+        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb );
+          cancelBtn->setDefault( true );
+          connect( cancelBtn,  SIGNAL(pressed()),
+                   wpu,        SLOT(reject()) );
+      qhb->setMargin(5);
+      qhb->setSpacing(3);
+      qhb->adjustSize();
+
+    qvb->adjustSize();
+
+  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->adjustSize();
+
+  int returnCode = wpu->exec();
+  // Note: when reject is activated, wpu and all its subwidgets
+  //       will be deleted, if the flag Qt::WDestructiveClose is used.
+  //       This is confirmed by changing these from pointers to objects.
+  //       A warning message is issued, when exiting this scope, that
+  //       the objects are deleted twice.
+
+  if( returnCode == QDialog::Accepted ) {
+    if( st1 != qle1->text() ) {
+      bool ok;
+      double newStrength = (qle1->text()).toDouble( &ok );
+      if( ok ) {
+        if( 0 != _contextPtr->setStrength( x, newStrength ) ) {
+          cerr << "*** WARNING *** File "
+               << __FILE__ 
+               << ", Line "
+               << __LINE__
+               << ": thinQuad not found in context."
+               << endl;
+	}
+      }
+    }
+
+    if( st2 != qle2->text() ) {
+      bool ok;
+      ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
+      if( ok ) {
+        if( 0 != _contextPtr->setAlignment( x, ad ) ) {
+          cerr << "*** WARNING *** File "
+               << __FILE__ 
+               << ", Line "
+               << __LINE__
+               << ": thinQuad not found in context."
+               << endl;
+	}
+      }
+    }
+
+  }
+
+  delete wpu;
+}
+
+
