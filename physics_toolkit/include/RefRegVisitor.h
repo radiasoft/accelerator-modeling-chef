@@ -63,10 +63,9 @@ class RefRegVisitor : public BmlVisitor
   RefRegVisitor( const RefRegVisitor& );
   ~RefRegVisitor();
 
-  void visitBeamline( beamline* x );
+  void visitBeamline( beamline* );
   void visitBmlnElmnt( bmlnElmnt* );
-  // void visitRbend( rbend* );
-  // void visitSlot( Slot* );
+  void visitCF_rbend( CF_rbend* );
 
   int  getErrorCode() const;
 
