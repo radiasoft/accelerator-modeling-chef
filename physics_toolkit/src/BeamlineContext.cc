@@ -1,3 +1,36 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
+******             which facilitate calculations with the             
+******             BEAMLINE class library.                            
+******  Version:   1.0                    
+******                                    
+******  File:      BeamlineContext.cc
+******                                                                
+******  Copyright (c) 2001  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
+#include "slist.h"  // This should not be necessary!!!
 #include "BeamlineContext.h"
 #include "beamline.h"
 #include "BeamlineIterator.h"
@@ -8,13 +41,24 @@
 
 extern void BeamlineSpitout( int, BeamlineIterator& );
 
+const int BeamlineContext::OKAY = 0;
+const int BeamlineContext::NO_TUNE_ADJUSTER = 1;
+
+const double BeamlineContext::_smallClosedOrbitXError   /* [m] */ = 1.0e-9;
+const double BeamlineContext::_smallClosedOrbitYError   /* [m] */ = 1.0e-9;
+const double BeamlineContext::_smallClosedOrbitNPXError /*[rad]*/ = 1.0e-9;
+const double BeamlineContext::_smallClosedOrbitNPYError /*[rad]*/ = 1.0e-9;
+
+using namespace std;
+
 BeamlineContext::BeamlineContext( bool doClone, beamline* x )
-: _p_bml(x), 
+: _p_bml(x), _proton( x->Energy() ),
   _p_lfs(0), _p_cos(0), 
   _p_ca(0), _p_ta(0),
+  _p_co_p(0), _p_disp_p(0), _dpp(0.0001),
   _isCloned(doClone),
   _p_bi(0), _p_dbi(0), _p_rbi(0), _p_drbi(0),
-  _tunes(0), _p_jp(0), _normalLattFuncsCalcd(false)
+  _tunes(0), _p_jp(0), _normalLattFuncsCalcd(false), _dispCalcd(false)
 {
   if( x == 0 ) {
     cerr << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__ << ": "
@@ -24,7 +68,8 @@ BeamlineContext::BeamlineContext( bool doClone, beamline* x )
          << endl;
     exit(9);
   }
-  if( _isCloned && (x != 0) ) 
+
+  if( _isCloned ) 
   { _p_bml = (beamline*) (x->Clone()); }
 }
 
@@ -39,8 +84,10 @@ BeamlineContext::~BeamlineContext()
   if( _isCloned && (_p_bml != 0) ) 
   { _p_bml->eliminate(); }
 
-  if( _p_lfs ) delete _p_lfs;
-  if( _p_cos ) delete _p_cos;
+  this->_deleteLFS();
+  this->_deleteClosedOrbit();
+
+  // if( _p_lfs ) delete _p_lfs;
   if( _p_ca  ) delete _p_ca;
   if( _p_ta  ) delete _p_ta;
 
@@ -48,8 +95,6 @@ BeamlineContext::~BeamlineContext()
   if( _p_dbi  )  delete _p_dbi;
   if( _p_rbi  )  delete _p_rbi;
   if( _p_drbi )  delete _p_drbi;
-
-  if( _p_jp   )  delete _p_jp;
 }
 
 
@@ -123,7 +168,9 @@ double BeamlineContext::sumLengths() const
   double ret = 0.0;
   DeepBeamlineIterator dbi( _p_bml );
   bmlnElmnt* q;
-  while( q = dbi++ ) { ret += q->Length(); }
+  while( q = dbi++ ) { 
+    ret += q->Length(); 
+  }
   return ret;
 }
 
@@ -141,6 +188,34 @@ int BeamlineContext::setLength( bmlnElmnt* w, double l )
       if( l != q->Length() ) 
       { q->setLength(l);
         this->_deleteLFS();
+        // if( _p_lfs ) { delete _p_lfs; _p_lfs = 0; }  // This is extreme.
+        if( _p_cos ) { delete _p_cos; _p_cos = 0; }
+        if( _p_ca  ) { delete _p_ca; _p_ca = 0;   }
+        if( _p_ta  ) { delete _p_ta; _p_ta = 0;   }
+      }
+    }
+  }
+
+  if(notFound) { ret = 1; }
+
+  return ret;
+}
+
+
+int BeamlineContext::setStrength( bmlnElmnt* w, double s )
+{
+  static bool notFound; notFound = true;
+  static int ret;       ret = 0;
+
+  DeepBeamlineIterator dbi( _p_bml );
+  bmlnElmnt* q;
+  while( notFound && (q = dbi++) ) 
+  { if( q == w ) 
+    { notFound = false;
+      if( s != q->Strength() ) 
+      { q->setStrength(s);
+        this->_deleteLFS();
+        // if( _p_lfs ) { delete _p_lfs; _p_lfs = 0; }  // This is extreme.
         if( _p_cos ) { delete _p_cos; _p_cos = 0; }
         if( _p_ca  ) { delete _p_ca; _p_ca = 0;   }
         if( _p_ta  ) { delete _p_ta; _p_ta = 0;   }
@@ -166,6 +241,83 @@ int BeamlineContext::countHowManyDeeply() const
 }
 
 
+int BeamlineContext::setAlignment( bmlnElmnt* v, const alignmentData& u )
+{
+  static int errCode_nullArg  = 1;
+  static int errCode_notFound = 2;
+  if( v == 0 )                   { return errCode_nullArg; }
+  if( 0 == _p_bml->contains(v) ) { return errCode_notFound; }
+
+  v->setAlignment( u );
+  // ??? Check for passive element!!!
+
+  this->_deleteLFS(); // ??? Too conservative
+  this->_deleteClosedOrbit();
+  return 0;
+}
+
+
+int BeamlineContext::setAlignment( beamline::Criterion& cf, const alignmentData& u )
+{
+  int ret = 0;
+
+  DeepBeamlineIterator dbi( _p_bml );
+  bmlnElmnt* q;
+  while((  q = dbi++  )) {
+    if( cf(q) ) {
+      ret++;
+      q->setAlignment( u );
+    }
+  }
+
+  if( ret != 0 ) {
+    this->_deleteLFS(); // ??? Too conservative
+    this->_deleteClosedOrbit();
+  }
+
+  return ret;
+}
+
+
+int BeamlineContext::processElements( beamline::Action& cf )
+{
+  int ret = 0;
+
+  DeepBeamlineIterator dbi( _p_bml );
+  bmlnElmnt* q;
+  while((  q = dbi++  )) {
+    if( 0 == cf(q) ) {
+      ret++;
+    }
+  }
+
+  if( ret != 0 ) {
+    this->_deleteLFS(); // ??? Too conservative
+    this->_deleteClosedOrbit();
+  }
+
+  return ret;
+}
+
+
+alignmentData BeamlineContext::getAlignmentData( const bmlnElmnt* v ) const
+{
+  static const alignment err1Ret(  137.,  137.,  137. );
+  static const alignment err2Ret( -137., -137., -137. );
+  if( v == 0 )                   { return err1Ret.getAlignment(); }
+  if( 0 == _p_bml->contains(v) ) { return err2Ret.getAlignment(); }
+
+  return v->Alignment();
+}
+
+
+beamline* BeamlineContext::cloneBeamline() const
+{
+  // Creates new beamline, for which the invoker is responsible.
+  return dynamic_cast<beamline*>(_p_bml->Clone());
+}
+
+
 const beamline* BeamlineContext::cheatBmlPtr() const
 {
   return _p_bml;
@@ -188,6 +340,7 @@ void BeamlineContext::_deleteLFS()
     _p_lfs = 0;
 
     _normalLattFuncsCalcd = false;
+    _dispCalcd = false;
   }
 }
 
@@ -199,16 +352,114 @@ void BeamlineContext::_createLFS()
 }
 
 
+bool BeamlineContext::_onTransClosedOrbit( const Proton& arg ) const
+{
+  Proton probe( arg );
+  
+  _p_bml->propagate( probe );
+
+  if(    ( fabs( arg.get_x()   - probe.get_x()  ) < _smallClosedOrbitXError   )
+      && ( fabs( arg.get_y()   - probe.get_y()  ) < _smallClosedOrbitYError   )
+      && ( fabs( arg.get_npx() - probe.get_npx()) < _smallClosedOrbitNPXError )
+      && ( fabs( arg.get_npy() - probe.get_npy()) < _smallClosedOrbitNPYError ) ) 
+  {
+    return true;
+  }
+
+  return false;
+}
+
+
+void BeamlineContext::_createClosedOrbit()
+{
+  // Instantiates the closed orbit Proton and JetProton.
+  
+  // Eliminate previous information, if necessary
+  _deleteClosedOrbit();
+
+
+  _p_co_p   = new Proton( _p_bml->Energy() );
+
+  if( (_onTransClosedOrbit( *_p_co_p )) ) 
+  {
+    // Instantiate _p_jp on the closed orbit
+    // and propagate it once.
+
+    _p_jp = new JetProton( *_p_co_p );
+    _p_bml->propagate( *_p_jp );
+  }
+
+  else 
+  {
+    // Instantiate _p_jp 
+    // and use a ClosedOrbitSage
+
+    delete _p_co_p;
+    _p_co_p = 0;
+
+    _p_jp = new JetProton( _p_bml->Energy() );
+    _p_cos = new ClosedOrbitSage( _p_bml, false );
+    int err;
+
+    if( 0 != ( err = _p_cos->findClosedOrbit( _p_jp ) ) ) {
+      cerr << "\n*** ERROR *** " << __FILE__ << ", line " << __LINE__ << ": "
+           << "BeamlineContext::_createTunes()"
+              "\n*** ERROR *** Closed orbit calculation exited with error "
+           << err
+           << "\n*** ERROR *** \n"
+           << endl;
+    }
+
+    _p_co_p = ((Proton*) _p_jp->ConvertToParticle());
+  }
+}
+
+
+void BeamlineContext::_deleteClosedOrbit()
+{
+  if( _p_cos ) {
+    delete _p_cos;
+    _p_cos = 0;
+  }
+
+  if( _p_co_p ) {
+    delete _p_co_p;
+    _p_co_p = 0;
+  }
+
+  if( _p_jp ) {
+    delete _p_jp;
+    _p_jp = 0;
+
+    // !!! if( 1 < Jet::environments.size() ) {
+    // !!!   Jet__environment* q = (Jet__environment*) Jet::environments.get();
+    // !!!   delete q;
+    // !!!   Jet::lastEnv = (Jet__environment*) Jet::environments.firstPtr();
+    // !!! }
+    // !!! or
+    // !!! Jet::popEnvironment();  <-- preferred!
+  }
+}
+
+
 void BeamlineContext::_createTunes()
 {
-  if( _p_jp != 0 ) {
-    delete _p_jp;
-  }
-  _p_jp = new JetProton( _p_bml->Energy() );
+  // First, 
+  _createClosedOrbit();
 
-  int lfs_result = _p_lfs->TuneCalc( _p_jp );
+  // At this point, _p_jp's state is that after one-turn on the
+  // closed orbit.
+
+
+  // A little paranoia never hurt.
+  if( 0 == _p_lfs ) {
+    this->_createLFS();
+  }
+  
+
+  int lfs_result = _p_lfs->TuneCalc( _p_jp, false );
   if( lfs_result != 0 ) {
-    cerr << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__ << ": "
+    cerr << "\n*** ERROR *** " << __FILE__ << ", line " << __LINE__ << ": "
          << "BeamlineContext::_createTunes()"
             "\n*** ERROR *** Something went wrong while calculating tune: error no. " 
          << lfs_result 
@@ -217,9 +468,6 @@ void BeamlineContext::_createTunes()
     exit(0);
   }
     
-  // At this point, _p_jp's state is that after one-turn on the
-  // closed orbit, which has been found by LattFuncSage::TuneCalc.
-
   if( _tunes == 0 ) {
     _tunes = new LattFuncSage::tunes( *( dynamic_cast<LattFuncSage::tunes*>
                                          (_p_bml->dataHook.find( "Tunes" )) 
@@ -237,23 +485,13 @@ void BeamlineContext::_createTunes()
 double BeamlineContext::getHorizontalFracTune()
 {
   if( 0 == _p_lfs ) {
-    cout << "DGN: " << __FILE__ << " line " << __LINE__ 
-         << ": this->_createLFS();" << endl;
     this->_createLFS();
   }
   
   if( 0 == _tunes ) {
-    cout << "DGN: " << __FILE__ << " line " << __LINE__ 
-         << ": this->_createTunes();" << endl;
     this->_createTunes();
   }
 
-  cout << "DGN: " << __FILE__ << " line " << __LINE__ 
-       << ": return _tunes->hor;" << endl;
-  cout << "DGN: " << __FILE__ << " line " << __LINE__ 
-       << ": return "
-       << _tunes->hor
-       << ";" << endl;
   return _tunes->hor;
 }
 
@@ -287,7 +525,67 @@ const LattFuncSage::lattFunc* BeamlineContext::getLattFuncPtr( int i )
     _normalLattFuncsCalcd = true;
   }
 
+  if( !_dispCalcd ) {
+    _p_lfs->NewDisp_Calc( _p_jp, true );
+    _dispCalcd = true;
+  }
+
   return (_p_lfs->get_lattFuncPtr(i));
+}
+
+
+// Adjuster methods
+
+int BeamlineContext::addHTuneCorrector( const bmlnElmnt* x ) 
+{
+  if( 0 == _p_ta ) {
+    _p_ta = new TuneAdjuster( _p_bml, false );
+  }
+    
+  if( 0 == strcmp( x->Type(), "quadrupole" ) ) {
+    _p_ta->addCorrector( dynamic_cast<const quadrupole*>(x), 1.0, 0.0 );
+  }  
+  else if( 0 == strcmp( x->Type(), "thinQuad"   ) ) {
+    _p_ta->addCorrector( dynamic_cast<const thinQuad*>(x), 1.0, 0.0 );
+  }  
+  else {
+    return 1;
+  }
+
+  return 0;
+}
+
+int BeamlineContext::addVTuneCorrector( const bmlnElmnt* x ) 
+{
+  if( 0 == _p_ta ) {
+    _p_ta = new TuneAdjuster( _p_bml, false );
+  }
+    
+  if( 0 == strcmp( x->Type(), "quadrupole" ) ) {
+    _p_ta->addCorrector( dynamic_cast<const quadrupole*>(x), 0.0, 1.0 );
+  }  
+  else if( 0 == strcmp( x->Type(), "thinQuad"   ) ) {
+    _p_ta->addCorrector( dynamic_cast<const thinQuad*>(x), 0.0, 1.0 );
+  }  
+  else {
+    return 1;
+  }
+
+  return 0;
+}
+
+
+int BeamlineContext::changeTunesBy( double dnuh, double dnuv )
+{
+  if( 0 == _p_ta ) {
+    return NO_TUNE_ADJUSTER;
+  }
+
+  JetProton jp( _p_bml->Energy() );
+  _p_ta->changeTunesBy( dnuh, dnuv, jp );
+
+  _deleteLFS();
+  return OKAY;
 }
 
 

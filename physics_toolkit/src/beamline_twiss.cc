@@ -1,13 +1,41 @@
-#include "bmlnElmnt.h"
-#ifdef __VISUAL_CPP__
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
+******             which facilitate calculations with the             
+******             BEAMLINE class library.                            
+******  Version:   1.0                    
+******                                    
+******  File:      beamline_twiss.cc
+******                                                                
+******  Copyright (c) 2001  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 #include <iomanip>
-#else
-#include <iomanip.h>
-#endif
 
 #include "LattFuncSage.h"    // ??? Only temporary, until beamline::twiss functions vanish.
 #include "ClosedOrbitSage.h" // 
 
+using namespace std;
 
 int beamline::twiss( JetParticle& p, double dpp, short int flag ) 
 {

@@ -57,6 +57,7 @@
 #include "CF_rbend.h"
 #include "Slot.h"
 
+using namespace std;
 
 char d2S_LookUpStream ( bmlnElmnt*&      el2Ptr, 
                         char&            rb, 

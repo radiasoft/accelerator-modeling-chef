@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
+******  Version:   1.1
 ******                                    
-******  File:      BeamlineSpitout.cc
+******  File:      QuadEliminator.h
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -30,35 +30,51 @@
 *************************************************************************/
 
 
-#include "bmlnElmnt.h"
-#include "BeamlineIterator.h"
+/*
+ * File: DriftEliminator.h
+ * 
+ * Header for class DriftEliminator
+ * 
+ * Concatenates drifts and removes passive
+ * elements of zero length.
+ * 
+ * Leo Michelotti
+ * May 17, 2001
+ * 
+ */
 
-using namespace std;
+#ifndef QUADELIMINATOR_H
+#define QUADELIMINATOR_H
 
-void BeamlineSpitout( int numspaces, BeamlineIterator& bi )
+#ifndef BMLVISITOR_H
+#include "BmlVisitor.h"
+#endif
+
+class QuadEliminator : public ConstBmlVisitor
 {
-  static bmlnElmnt* q;
-  static int i;
+ public:
+  QuadEliminator();
+  QuadEliminator( const QuadEliminator& );
+  ~QuadEliminator();
 
-  while( true ) {
-    q = bi++;
-    if( 0 == q ) {return;}
+  void visitBeamline  ( const beamline*   );
+  void visitBmlnElmnt ( const bmlnElmnt*  );
+  void visitQuadrupole( const quadrupole* ); 
 
-    for( i = 0; i < numspaces; i++ ) {
-      cout << " ";
-    }
-    cout << q->Type() << "  " << q->Name() << endl;
+  beamline* beamlinePtr();
+  // Invoking routine is responsible for
+  // using this beamline before the 
+  // QuadEliminator goes out of scope.
 
-    if( 0 == strcmp("beamline",q->Type()) ) {
-      BeamlineIterator newbi( (beamline*) q );
-      BeamlineSpitout(numspaces+3,newbi);
-    }
-  }
-}
+  beamline* clonedBeamlinePtr();
+  // Invoking routine is responsible for
+  // eliminating the cloned beamline.
 
 
-void BeamlineSpitout( const beamline& bml )
-{
-  BeamlineIterator bi( bml );
-  BeamlineSpitout( 0, bi );
-}
+ private: 
+  beamline*   _bmlPtr;
+  quadrupole* _quadPtr;
+};
+
+
+#endif // QUADELIMINATOR_H

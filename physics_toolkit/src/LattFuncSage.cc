@@ -1,3 +1,35 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
+******             which facilitate calculations with the             
+******             BEAMLINE class library.                            
+******  Version:   1.0                    
+******                                    
+******  File:      LattFuncSage.cc
+******                                                                
+******  Copyright (c) 2001  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 /*
  *  File: LattFuncSage.cc
  *  
@@ -9,17 +41,14 @@
  *  Nov. 19, 1998
  */
 
-#ifdef __VISUAL_CPP__
 #include <iomanip>
-#else
-#include <iomanip.h>
-#endif
 
 #include "LattFuncSage.h"
 #include "ClosedOrbitSage.h"
 #include "FPSolver.h"
 #include "QBpropVisitor.h"
 
+using namespace std;
 
 extern int filterTransverseTunes( /* const */ MatrixD&, Vector& );
 
@@ -932,7 +961,7 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
 }
 
 
-int LattFuncSage::TuneCalc( JetParticle* arg_jp )
+int LattFuncSage::TuneCalc( JetParticle* arg_jp, bool forceClosedOrbitCalc )
 {
   if( this->_verbose ) {
     cout << "LattFuncSage -- Entering LattFuncSage::TuneCalc" << endl;
@@ -956,7 +985,7 @@ int LattFuncSage::TuneCalc( JetParticle* arg_jp )
 
   // Check for closed orbit ...
   ClosedOrbitSage clsg( this->_myBeamlinePtr );
-  clsg.setForcedCalc();
+  if( forceClosedOrbitCalc ) { clsg.setForcedCalc(); }
   if( this->_verbose ) clsg.set_verbose();
   else                 clsg.unset_verbose();  // Unnecessary line.
 
@@ -1265,15 +1294,24 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp,
     {
       d = ( secondParticle->State()  -  firstParticle->State() ) / dpp;
   
-      lf = new LattFuncSage::lattFunc;
-      lf->dispersion.hor = d( i_x  );
-      lf->dPrime.hor     = d( i_px );
-      lf->dispersion.ver = d( i_y  );
-      lf->dPrime.ver     = d( i_py );
-      lf->arcLength      = lng;
+      lf = dynamic_cast<LattFuncSage::lattFunc*>(q->dataHook.find("Twiss"));
+      if( lf == 0 ) {
+        lf = new LattFuncSage::lattFunc;
+        lf->dispersion.hor = d( i_x  );
+        lf->dPrime.hor     = d( i_px );
+        lf->dispersion.ver = d( i_y  );
+        lf->dPrime.ver     = d( i_py );
+        lf->arcLength      = lng;
   
-      q->dataHook.eraseAll( "Dispersion" );
-      q->dataHook.insert( new Barnacle( "Dispersion", lf ) );
+        q->dataHook.eraseAll( "Dispersion" );
+        q->dataHook.insert( new Barnacle( "Dispersion", lf ) );
+      }
+      else {
+        lf->dispersion.hor = d( i_x  );
+        lf->dPrime.hor     = d( i_px );
+        lf->dispersion.ver = d( i_y  );
+        lf->dPrime.ver     = d( i_py );
+      }
     }    
   }  
 
@@ -1323,7 +1361,7 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp,
 
 
 int LattFuncSage::NewDisp_Calc( /* const */ JetParticle* arg_jp, 
-                                Sage::CRITFUNC  Crit )
+                                bool onClosedOrbit )
 {
   if( this->_verbose ) {
     cout << "LattFuncSage -- Entering LattFuncSage::Disp_Calc" << endl;
@@ -1360,9 +1398,11 @@ int LattFuncSage::NewDisp_Calc( /* const */ JetParticle* arg_jp,
     clsg.set_verbose();
   }
 
-  clsg.setForcedCalc();
-  ret = clsg.findClosedOrbit( p_jp );
-  clsg.unsetForcedCalc();
+  if( !onClosedOrbit ) { 
+    clsg.setForcedCalc(); 
+    ret = clsg.findClosedOrbit( p_jp );
+    clsg.unsetForcedCalc();
+  }
 
   if( ret == 0 ) {
     if( this->_verbose ) {
@@ -1370,6 +1410,7 @@ int LattFuncSage::NewDisp_Calc( /* const */ JetParticle* arg_jp,
       cout.flush();
     }
   }
+
   else {
     if( this->_verbose ) {
       cout << "LattFuncSage -- Closed orbit not successfully calculated." << endl;
@@ -1454,16 +1495,13 @@ int LattFuncSage::NewDisp_Calc( /* const */ JetParticle* arg_jp,
 
     lng += q->OrbitLength( *firstParticle );
 
-    if( !Crit || Crit( q ) ) 
-    {
-      d = ( secondParticle->State()  -  firstParticle->State() ) / dpp;
+    d = ( secondParticle->State()  -  firstParticle->State() ) / dpp;
   
-      _lf[counter].dispersion.hor = d( i_x  );
-      _lf[counter].dPrime.hor     = d( i_px );
-      _lf[counter].dispersion.ver = d( i_y  );
-      _lf[counter].dPrime.ver     = d( i_py );
-      _lf[counter].arcLength      = lng;
-    }    
+    _lf[counter].dispersion.hor = d( i_x  );
+    _lf[counter].dPrime.hor     = d( i_px );
+    _lf[counter].dispersion.ver = d( i_y  );
+    _lf[counter].dPrime.ver     = d( i_py );
+    _lf[counter].arcLength      = lng;
   }  
 
 

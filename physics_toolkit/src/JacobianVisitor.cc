@@ -1,3 +1,35 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
+******             which facilitate calculations with the             
+******             BEAMLINE class library.                            
+******  Version:   1.0                    
+******                                    
+******  File:      JacobianVisitor.cc
+******                                                                
+******  Copyright (c) 2001  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 #include "beamline.h"
 #include "JacobianVisitor.h"
 
@@ -6,6 +38,7 @@ const MatrixD identityMatrix("I",6);
 char* LOCAL_JACOBIAN_STRING = "Local_Jacobian";
 char* CUMULATIVE_JACOBIAN_STRING = "Cumulative_Jacobian";
 
+using namespace std;
 
 JacobianData::JacobianData() : BarnacleData(),jac(6,6,0.0) {
 }

@@ -1,5 +1,39 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
+******             which facilitate calculations with the             
+******             BEAMLINE class library.                            
+******  Version:   1.0                    
+******                                    
+******  File:      FPSolver.cc
+******                                                                
+******  Copyright (c) 2001  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 #include "beamline.h"
 #include "FPSolver.h"
+
+using namespace std;
 
 void mygaussj( MatrixD, int, MatrixD, int );
 
@@ -66,17 +100,6 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
   char jumpTest, zeroTest;
 
 
-  // --- Conserve the reference point --------------  
-  // ??? REMOVE double* oldRefPoint = new double[Jet::oneEnv.NumVar];
-  // ??? REMOVE double* newRefPoint = new double[Jet::oneEnv.NumVar];
-  // ??? REMOVE Jet  y;
-  // ??? REMOVE y.getReference(oldRefPoint);
-  // ??? REMOVE for( i = 0; i < dimension; i++ ) newRefPoint[i] = p->State(i);
-  // ??? REMOVE for( i = dimension + 1; i < Jet::oneEnv.NumVar; i++ )
-  // ??? REMOVE                                  newRefPoint[i] = oldRefPoint[i];
-  // ??? REMOVE Jet::FixReference( newRefPoint );
-
-
   // -----------------------------------------------  
 
 
@@ -119,25 +142,6 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
 
     if( (!jumpTest) || (!zeroTest) ) break;
 
-    // ??? REMOVE // --- Set up the tests --------------------------
-    // ??? REMOVE jumpTest = 0;
-    // ??? REMOVE for( i = 0; i < 4; i++ ) {
-    // ??? REMOVE   jumpTest = jumpTest || 
-    // ??? REMOVE     (  
-    // ??? REMOVE       ( fabs( eps(i) ) >
-    // ??? REMOVE       jumpScale[i]*DMAX(fabs( z(i) ),fabs( p->State( l[i] ) )) )  
-    // ??? REMOVE     );
-    // ??? REMOVE }
-    // ??? REMOVE if( !jumpTest ) break;
-    // ??? REMOVE 
-    // ??? REMOVE zeroTest = 0;
-    // ??? REMOVE for( i = 0; i < 4; i++ )  {
-    // ??? REMOVE   zeroTest = zeroTest || 
-    // ??? REMOVE     ( DMAX(fabs( z(i) ),fabs( p->State( l[i] ) )) > zeroScale[i] );
-    // ??? REMOVE }
-    // ??? REMOVE if( !zeroTest ) break;
-    // ??? REMOVE 
-    // ??? REMOVE 
     // --- Correct orbit and repeat ------------------
     z = z + M*eps;
 
@@ -155,9 +159,6 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
       "FixedPoint:: More than 200 Newton's iterations attempted." << endl;
     cerr << "FixedPoint:: Result may not be reliable!! " << endl;
 
-    // ??? REMOVE Jet::FixReference( oldRefPoint );   //restore reference point
-    // ??? REMOVE delete [] oldRefPoint;
-    // ??? REMOVE delete [] newRefPoint;
     return 1;
   }
 
@@ -185,9 +186,6 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
   }
 
   // --- Exit --------------------------------------------------------
-  // ??? REMOVE Jet::FixReference( oldRefPoint );   //restore reference point
-  // ??? REMOVE delete [] oldRefPoint;
-  // ??? REMOVE delete [] newRefPoint;
   return 0;
 
 }
@@ -359,17 +357,6 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
   char jumpTest, zeroTest;
 
 
-  // --- Conserve the reference point --------------  
-  // ??? REMOVE double* oldRefPoint = new double[Jet::oneEnv.NumVar];
-  // ??? REMOVE double* newRefPoint = new double[Jet::oneEnv.NumVar];
-  // ??? REMOVE Jet  y;
-  // ??? REMOVE y.getReference(oldRefPoint);
-  // ??? REMOVE for( i = 0; i < dimension; i++ ) newRefPoint[i] = p->State(i);
-  // ??? REMOVE for( i = dimension + 1; i < Jet::oneEnv.NumVar; i++ ) 
-  // ??? REMOVE      newRefPoint[i] = oldRefPoint[i];
-  // ??? REMOVE Jet::FixReference( newRefPoint );
-
-
   // -----------------------------------------------  
 
 
@@ -402,24 +389,6 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
 
     if( (!jumpTest) || (!zeroTest) ) break;
 
-    // ??? REMOVE  // --- Set up the tests --------------------------
-    // ??? REMOVE  jumpTest = 0;
-    // ??? REMOVE  FORALL(i) 
-    // ??? REMOVE    jumpTest = jumpTest || 
-    // ??? REMOVE      (  
-    // ??? REMOVE        ( fabs( eps(i) ) >
-    // ??? REMOVE        jumpScale[i]*DMAX(fabs( z(i) ),fabs( p->State(i) )) )  
-    // ??? REMOVE      );
-    // ??? REMOVE  if( !jumpTest ) break;
-    // ??? REMOVE  
-    // ??? REMOVE  zeroTest = 0;
-    // ??? REMOVE  FORALL(i)  {
-    // ??? REMOVE    zeroTest = zeroTest || 
-    // ??? REMOVE      ( DMAX(fabs( z(i) ),fabs( p->State(i) )) > zeroScale[i] );
-    // ??? REMOVE  }
-    // ??? REMOVE  if( !zeroTest ) break;
-    // ??? REMOVE  
-    // ??? REMOVE  
     // --- Correct orbit and repeat ------------------
     z = z + M*eps;
     p->setState( z );
@@ -434,9 +403,6 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
       "FixedPoint:: More than 200 Newton's iterations attempted." << endl;
     cerr << "FixedPoint:: Result may not be reliable!! " << endl;
 
-    // ??? REMOVE Jet::FixReference( oldRefPoint );   //restore reference point
-    // ??? REMOVE delete [] oldRefPoint;
-    // ??? REMOVE delete [] newRefPoint;
     return 1;
   }
 
@@ -463,9 +429,6 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
   }
 
   // --- Exit --------------------------------------------------------
-  // ??? REMOVE Jet::FixReference( oldRefPoint );   //restore reference point
-  // ??? REMOVE delete [] oldRefPoint;
-  // ??? REMOVE delete [] newRefPoint;
   return 0;
 
 }
@@ -476,7 +439,6 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
 void FPSolver::operator()( JetProton* p, FP_CRITFUNC Crit )
 {
   dimension = 6;
-  // ??? REMOVE double* oldRefPoint;
   
   double particleCoord[6];
   double u[6];
@@ -488,12 +450,10 @@ void FPSolver::operator()( JetProton* p, FP_CRITFUNC Crit )
     zero[i] = 0.0;
   }
   
-  // ??? REMOVE oldRefPoint = new double[Jet::oneEnv.NumVar];
   Jet         y;
   Mapping     w;
   int     jumpTest, zeroTest;
   int      iterCount;
-  // ??? REMOVE y.getReference(oldRefPoint);
   
   iterCount = 0;
   MatrixD hessian(dimension,dimension);
@@ -511,10 +471,6 @@ void FPSolver::operator()( JetProton* p, FP_CRITFUNC Crit )
 
   do{
     FORALL(i) particleCoord[i] += eps(i,0);
-
-    // ??? REMOVE Jet::FixReference( particleCoord );   // Reference point will be 
-                                          // restored at the end
-    // ??? REMOVE w.fixReference();
 
     FORALL(i) {
       y.setVariable( i, p->State().Env() );
@@ -602,9 +558,6 @@ void FPSolver::operator()( JetProton* p, FP_CRITFUNC Crit )
   }
 
   // --- Exit --------------------------------------------------------
-  // ??? REMOVE Jet::FixReference( oldRefPoint );   //restore reference point
-
-  // ??? REMOVE delete [] oldRefPoint;
 }
 
            /* ------------------------------------- */
@@ -615,34 +568,21 @@ void FPSolver::operator()( double* result )
   JetProton      p(bmLine->Energy());
   LieOperator   map;
   dimension = 6;
-  // ??? REMOVE double* oldRefPoint;
   
   double particleCoord[6];
   double u[6];
   int m[6];
   double zero[6];
-  // ??? REMOVE double zeroScale[6];
   int      i,j;
   for(i=0; i<6; i++) {
     particleCoord[i] = 0.0;
     zero[i] = 0.0;
-    // ??? REMOVE zeroScale[i] = ZEROSCALE;
   }
   
-  // ??? REMOVE static double zeroScale [] = { 1.0e-9, 1.0e-9, 1.0e-6, 
-  // ??? REMOVE                                1.0e-9, 1.0e-9, 1.0e-6
-  // ??? REMOVE                              };
-  // ??? REMOVE static double jumpScale [] = { 1.0e-9, 1.0e-9, 0.01,
-  // ??? REMOVE                                1.0e-9, 1.0e-9, 0.01
-  // ??? REMOVE                              };
-
-  // ??? REMOVE oldRefPoint = new double[Jet::oneEnv.NumVar];
   Jet       y;
   Mapping   w;
   int     test, jumpTest, zeroTest;
   int      iterCount;
-  // ??? REMOVE double   changeNorm, scaleNorm;
-  // ??? REMOVE y.getReference(oldRefPoint);
   
   iterCount = 0;
   MatrixD hessian(dimension,dimension);
@@ -654,10 +594,6 @@ void FPSolver::operator()( double* result )
   
 
   do{
-    // ??? REMOVE Jet::FixReference( particleCoord );   // Reference point will be 
-					  // restored at the end
-    // ??? REMOVE w.fixReference();
-
     FORALL(i) {
       y.setVariable( i, p.State().Env() );
       w.SetComponent( i, y );
@@ -691,15 +627,6 @@ void FPSolver::operator()( double* result )
     
     eps = zzeps;
     
-    // ??? REMOVE changeNorm = 0.0;
-    // ??? REMOVE FORALL(i) changeNorm +=  eps(i,0) * eps(i,0) ;
-    // ??? REMOVE changeNorm = sqrt( changeNorm );
-    // ??? REMOVE scaleNorm = 0.0;
-    // ??? REMOVE FORALL(i) scaleNorm +=  particleCoord[i] * particleCoord[i];
-    // ??? REMOVE scaleNorm = sqrt( scaleNorm );
-    // ??? REMOVE if( changeNorm <= (5.0e-11)*scaleNorm ) jumpTest = 0;
-    // ??? REMOVE else jumpTest = 1;
-
     jumpTest = 0;
     FORALL(i) 
       jumpTest = jumpTest || 
@@ -733,8 +660,6 @@ void FPSolver::operator()( double* result )
       "fixedPoint:: Convergence achieved after " << iterCount 
 						 << " iterations." << endl;
   FORALL(i) result[i] = particleCoord[i];
-  // ??? REMOVE Jet::FixReference( oldRefPoint );   //restore reference point
-  // ??? REMOVE delete [] oldRefPoint;
 }
 
 
