@@ -1,3 +1,35 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE:  C++ objects for design and analysis
+******             of beamlines, storage rings, and   
+******             synchrotrons.                      
+******  Version:   2.0                    
+******                                    
+******  File:      Particle.h
+******                                                                
+******  Copyright (c) 1991 Universities Research Association, Inc.    
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
@@ -107,12 +139,12 @@ public:
   void getState      ( Vector* );
   void setStateToZero();
 
-  double get_x()     { return state[0]; }
-  double get_y()     { return state[1]; }
-  double get_cdt()   { return state[2]; }
-  double get_npx()   { return state[3]; }
-  double get_npy()   { return state[4]; }
-  double get_ndp()   { return state[5]; }
+  inline double get_x()     const { return state[0]; }
+  inline double get_y()     const { return state[1]; }
+  inline double get_cdt()   const { return state[2]; }
+  inline double get_npx()   const { return state[3]; }
+  inline double get_npy()   const { return state[4]; }
+  inline double get_ndp()   const { return state[5]; }
 
   void set_x   ( double u )  { state[0] = u; }
   void set_y   ( double u )  { state[1] = u; }
@@ -358,12 +390,12 @@ public:
   void getState( Mapping& );
   void getState( Jet* );
 
-  Jet get_x()     { return state(0); }
-  Jet get_y()     { return state(1); }
-  Jet get_cdt()   { return state(2); }
-  Jet get_npx()   { return state(3); }
-  Jet get_npy()   { return state(4); }
-  Jet get_ndp()   { return state(5); }
+  inline Jet get_x()     const { return state(0); }
+  inline Jet get_y()     const { return state(1); }
+  inline Jet get_cdt()   const { return state(2); }
+  inline Jet get_npx()   const { return state(3); }
+  inline Jet get_npy()   const { return state(4); }
+  inline Jet get_ndp()   const { return state(5); }
 
   void set_x   ( const Jet& u )  { state.SetComponent(0,u); }
   void set_y   ( const Jet& u )  { state.SetComponent(1,u); }

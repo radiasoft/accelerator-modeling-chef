@@ -1,11 +1,41 @@
-#ifdef __VISUAL_CPP__
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE:  C++ objects for design and analysis
+******             of beamlines, storage rings, and   
+******             synchrotrons.                      
+******  Version:   2.0                    
+******                                    
+******  File:      alignment.cc
+******                                                                
+******  Copyright (c) 1991 Universities Research Association, Inc.    
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
 #include <iomanip>
-#else
-#include <iomanip.h>
-#endif
 
 #include "bmlnElmnt.h"
 #include "VectorD.h"
+
+using namespace std;
 
 alignmentData::alignmentData() {
   xOffset = 0.0;
@@ -28,6 +58,15 @@ alignmentData& alignmentData::operator=(const alignmentData& x) {
   tilt    = x.tilt;
   return *this;
 }
+
+bool alignmentData::operator==( const alignmentData& x ) const
+{
+  return ( (yOffset == x.yOffset) && 
+           (xOffset == x.xOffset) && 
+           (tilt    == x.tilt   ) );
+}
+
+
 
 alignment::alignment() {
   xOffset = 0.0;
@@ -63,6 +102,21 @@ alignment::alignment(const alignmentData& x) {
 
 alignment::~alignment() {
 }
+
+
+bool alignment::isNull() const
+{
+  return ( (yOffset == 0.0) && (xOffset == 0.0) && (tilt == 0.0) );
+}
+
+
+bool alignment::operator==( const alignment& x ) const
+{
+  return ( (yOffset == x.yOffset) && 
+           (xOffset == x.xOffset) && 
+           (tilt    == x.tilt   ) );
+}
+
 
 alignment& alignment::operator=(const alignment& x) {
   xOffset = x.xOffset;
@@ -280,7 +334,7 @@ void alignment::setAlignment(const alignmentData& x) {
   sinTilt = sin(tilt);
 }
 
-alignmentData alignment::getAlignment() {
+alignmentData alignment::getAlignment()  const {
   alignmentData z;
 
   z.xOffset = xOffset;

@@ -1,9 +1,40 @@
-#ifdef __VISUAL_CPP__
-  #include <iomanip>
-  using std::setprecision;
-#else
-  #include <iomanip.h>
-#endif
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE:  C++ objects for design and analysis
+******             of beamlines, storage rings, and   
+******             synchrotrons.                      
+******  Version:   2.0                    
+******                                    
+******  File:      bmlnElmnt.cc
+******                                                                
+******  Copyright (c) 1991 Universities Research Association, Inc.    
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
+**************************************************************************
+*************************************************************************/
+
+
+#include <typeinfo>
+#include <string>
+// REMOVE: #include <string.h>
+
+#include <iomanip>
 
 #ifdef __SUNPRO_CC
   #ifndef __STL_NEED_EXPLICIT
@@ -23,6 +54,8 @@ const short bmlnElmnt::BF_OK         = 0;
 const short bmlnElmnt::BF_NULL_ARG   = 1;
 const short bmlnElmnt::BF_BAD_START  = 2;
 
+
+using namespace std;
 
 // **************************************************
 //   struct BMLN_posInfo
@@ -572,7 +605,7 @@ short bmlnElmnt::writeTag ( const char* s )
 }
 
 
-short  bmlnElmnt::writeTag ( const String& s, short start, short  num )
+short  bmlnElmnt::writeTag ( const std::string& s, short start, short  num )
 {
   if( start < 0 || start + 1 > BF_MAXCHAR ) {
     return BF_BAD_START;
@@ -585,7 +618,7 @@ short  bmlnElmnt::writeTag ( const String& s, short start, short  num )
 }
 
 
-short  bmlnElmnt::writeTag ( const String& s )
+short  bmlnElmnt::writeTag ( const std::string& s )
 {
   static int num;
 
@@ -636,9 +669,9 @@ char bmlnElmnt::readTag( short pos )
 }
 
 
-String bmlnElmnt::readTag( short start, short  num )
+std::string bmlnElmnt::readTag( short start, short  num )
 {
-  String ret;
+  std::string ret;
   if( start < 0 || start + 1 > BF_MAXCHAR ) {
     start = 0;
   }
@@ -650,7 +683,7 @@ String bmlnElmnt::readTag( short start, short  num )
 }
 
 
-String bmlnElmnt::readTag()
+std::string bmlnElmnt::readTag()
 {
   return this->readTag( 0, BF_MAXCHAR );
 }
@@ -787,6 +820,31 @@ void bmlnElmnt::peekAt( double& s, Particle* p_prt ) {
 }
 
 
+bool bmlnElmnt::equivTo( const bmlnElmnt& x ) const 
+{
+  static double maxLength;
+  static double maxStrength;
+
+  if( typeid(*this) !=  typeid(x) ) {
+    return false;
+  }
+
+  if( length   < x.length   ) { maxLength   = x.length;   }
+  else                        { maxLength   =   length;   }
+  if( strength < x.strength ) { maxStrength = x.strength; }
+  else                        { maxStrength =   strength; }
+
+  return ( ( fabs( length   - x.length   ) < 1.0e-6 * maxLength   )  &&
+           ( fabs( strength - x.strength ) < 1.0e-6 * maxStrength )     );
+}
+
+
+bool bmlnElmnt::equivTo( const bmlnElmnt* x ) const 
+{
+  return this->equivTo( *x );
+}
+
+
 void bmlnElmnt::setAlignment(const alignmentData& a) {
   if(align != 0) {
     delete align;
@@ -796,7 +854,7 @@ void bmlnElmnt::setAlignment(const alignmentData& a) {
     align = new alignment(a);
 }
 
-alignmentData bmlnElmnt::Alignment() {
+alignmentData bmlnElmnt::Alignment() const {
   alignmentData x;
   if(align != 0) {
     x = align->getAlignment();
@@ -1008,3 +1066,11 @@ ostream& operator<<(ostream& os, bmlnElmnt& b)
   }
   return os;
 }
+
+
+double bmlnElmnt::Length() const
+{
+  return length;
+}
+
+

@@ -1,107 +1,45 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                ****
-******  BEAMLINE:  C++ objects for design and analysis  .             ****
-******             of beamlines, storage rings, and                   ****
-******             synchrotrons.                                      ****
-******                                                                ****
-******  Copyright (c) 1991  Universities Research Association, Inc.   ****
-******                All Rights Reserved                             ****
-******                                                                ****
-******  Author:    Leo Michelotti                                     ****
-******                                                                ****
-******             Fermilab                                           ****
-******             P.O.Box 500                                        ****
-******             Mail Stop 345                                      ****
-******             Batavia, IL   60510                                ****
-******                                                                ****
-******             Phone: (708) 840 4956                              ****
-******             Email: michelot@hazel.fnal.gov                     ****
-******                    michelotti@adcalc.fnal.gov                  ****
-******                    almond::michelotti                          ****
-******                                                                ****
-******  Release    Version 1.0 : << not released >>                   ****
-******  Dates:                                                        ****
-******                                                                ****
-**************************************************************************
-**************************************************************************
-******                                                                ****
-******  This material resulted from work developed under a            ****
-******  Government Contract and is subject to the following           ****
-******  license: The Government retains a paid-up, nonexclusive,      ****
-******  irrevocable worldwide license to reproduce, prepare           ****
-******  derivative works, perform publicly and display publicly       ****
-******  by or for the Government, including the right to distribute   ****
-******  to other Government contractors.  Neither the United          ****
-******  States nor the United States Department of Energy, nor        ****
-******  any of their employees, makes any warranty, express or        ****
-******  implied, or assumes any legal liability or responsibility     ****
-******  for the accuracy, completeness or usefulness of any           ****
-******  information, apparatus, product, or process disclosed, or     ****
-******  represents that its use would not infringe privately owned    ****
-******  rights.                                                       ****
-******                                                                ****
-******  These files are made avaliable for use by specific            ****
-******  individuals or a specific group.  They are not to be          ****
-******  reproduced or redistributed.                                  ****
-******                                                                ****
-******  These files are provided "as is" with no warranties of any    ****
-******  kind including the warranties of design,                      ****
-******  merchantibility and fitness for a particular purpose,         ****
-******  or arising from a course of dealing, usage or trade           ****
-******  practice.                                                     ****
-******                                                                ****
-******  These files are provided with no support or obligation on     ****
-******  the part of U.R.A. or Fermilab to assist in their use,        ****
-******  correction, modification or enhancement.                      ****
-******                                                                ****
-******  Neither U.R.A. nor Fermilab shall be liable with              ****
-******  respect to the infringement of copyrights, trade              ****
-******  secrets or any patents by these files or any part             ****
-******  thereof.                                                      ****
-******                                                                ****
-******  In no event will U.R.A., Fermilab, or the author(s) be        ****
-******  liable for any lost revenue or profits or other               ****
-******  special, indirect and consequential damages, even if          ****
-******  they have been advised of the possibility of such             ****
-******  damages.                                                      ****
-******                                                                ****
-**************************************************************************
-**************************************************************************
-******                                                                ****
-******  September 15, 1992                                            ****
-******  First implementation and test of geometry functions.          ****
-******  Both ::append and ::insert methods programmed.                ****
-******  Todo: (a) ::image function should record the geometry         ****
-******        (b) appending and inserting beamlines and sectors.      ****
-******                                                                ****
-******  December 17, 1992                                             ****
-******  Jim Holt changed the ident member of the                      ****
-******  circuit class so that it is a pointer.                        ****
-******  He also added some "get" functions                            ****
-******  to the class.                                                 ****
-******                                                                ****
-******  January 15, 1993                                              ****
-******  The XXXData structs and XXXX::image functions have been       ****
-******  rewritten to take better advantage of inheritance.            ****
-******                                                                ****
-******  September 7, 2001                                             ****
-******  Corrected error in method beamline::InsertElementsFromList    ****
-******                                                                ****
+******                                                                
+******  BEAMLINE:  C++ objects for design and analysis
+******             of beamlines, storage rings, and   
+******             synchrotrons.                      
+******  Version:   2.1
+******                                    
+******  File:      beamline.cc
+******                                                                
+******  Copyright (c) 1991 Universities Research Association, Inc.    
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
+******                                                                
 **************************************************************************
 *************************************************************************/
 
+
 #include <typeinfo>
+#include <string>
+
 #include "bmlnElmnt.h"
 #include "sector.h"
 #include "BeamlineIterator.h"
 
-#ifdef __VISUAL_CPP__
 #include <iomanip>
-#else
-#include <iomanip.h>
-#endif
+
+using namespace std;
 
 // **************************************************
 //   struct lattFunc
@@ -686,6 +624,7 @@ void beamline::InsertElementsFromList( double& s,
  bmlnElmnt* p_be_b = 0;
  InsertionListElement* p_ile = inList(0);  // top element; not removed
  Proton prtn;
+ bool   firstWarning = true;
 
  prtn = inList.GetParticle();
 
@@ -730,10 +669,26 @@ void beamline::InsertElementsFromList( double& s,
     p_ile = inList(0); // accesses new top element
   }
 
-  else if ( p_be->p_bml ) {
+  // else if ( p_be->p_bml ) {
+  //   p_be->p_bml->InsertElementsFromList( s, inList, removedElements );
+  //   p_ile = inList(0);   // this may have changed
+  //   p_be = (bmlnElmnt*) getNext();
+  // }
+
+  else if (  0 == strcmp( p_be->Type(), "combinedFunction" )  ) {
     p_be->p_bml->InsertElementsFromList( s, inList, removedElements );
     p_ile = inList(0);   // this may have changed
     p_be = (bmlnElmnt*) getNext();
+
+    if( firstWarning ) {
+      cerr << "\n*** WARNING:                                   *** "
+              "\n*** WARNING: Insertion into a combinedFunction *** "
+              "\n*** WARNING: element will hide what is being   *** "
+              "\n*** WARNING: inserted.                         *** "
+              "\n*** WARNING:                                   *** "
+           << endl;
+      firstWarning = false;
+    }
   }
 
   else if ( ( s < p_ile->s ) && ( p_ile->s < s + p_be->OrbitLength( prtn ) ) ) {
@@ -1439,6 +1394,18 @@ int beamline::howDeep() {
 }
 
 
+int beamline::contains( const bmlnElmnt* x ) const
+{
+  DeepBeamlineIterator dbi( this );
+  int ret = 0;
+  bmlnElmnt* p_be;
+  while((  p_be = dbi++  )) {
+    if( p_be == x ) { ret++; }
+  }
+  return ret;
+}
+
+
 beamline beamline::remove( bmlnElmnt& x, bmlnElmnt& y ) {
  beamline a;
  dlist dl;
@@ -1581,4 +1548,30 @@ void beamline::leaveLocalFrame( Particle& p ) const
 void beamline::leaveLocalFrame( JetParticle& p ) const
 {
   bmlnElmnt::leaveLocalFrame( p );
+}
+
+
+
+
+bool beamline::Criterion::operator()( const bmlnElmnt* x )
+{
+  return false;
+}
+
+
+bool beamline::Criterion::operator()( const bmlnElmnt& x )
+{
+  return operator()( &x );
+}
+
+
+int beamline::Action::operator()( bmlnElmnt* x )
+{
+  return -1;
+}
+
+
+int beamline::Action::operator()( bmlnElmnt& x )
+{
+  return operator()( &x );
 }
