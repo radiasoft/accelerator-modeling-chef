@@ -89,8 +89,6 @@ fi
 AC_DEFINE(_EXCLUDE_MONITORS_,,excludemonitors)
 
 
-AC_INC_X
-
 if test "x$CXX" = "xpgCC"; then
 	enable_shared=yes
 fi
