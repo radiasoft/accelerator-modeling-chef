@@ -40,6 +40,29 @@ using std::cerr;
 using std::endl;
 #endif 
 
+// -----------------------------------------------------------
+// The following operators are used by the mxyzptlk library
+// They define a partial ordering that is used to sort 
+// DA variables. DO NOT modify this unless you understand
+// what you are doing !
+
+inline char operator>= ( const Complex& x, const Complex& y )
+{
+ return real(x) >= real(y)  &&  imag(x) >= imag(y);
+}
+
+inline char operator< ( const Complex& x, const Complex& y )
+{
+ return real(x) < real(y)  &&  imag(x) < imag(y);
+}
+
+inline char operator> ( const Complex& x, const Complex& y )
+{
+ return real(x) > real(y)  &&  imag(x) > imag(y);
+}
+
+// -----------------------------------------------------------
+
 #if defined(__SUNPRO_CC)
 
 // this is a kludge to allow the std::complex type to be used in conjunction 
@@ -62,23 +85,6 @@ inline istream& operator>>(istream& is, Complex& x) {
 }
 #endif 
 
-#ifdef __GNUC__
-inline char operator>= ( const Complex& x, const Complex& y )
-{
- return real(x) >= real(y)  &&  imag(x) >= imag(y);
-}
-
-inline char operator< ( const Complex& x, const Complex& y )
-{
- return real(x) < real(y)  &&  imag(x) < imag(y);
-}
-
-inline char operator> ( const Complex& x, const Complex& y )
-{
- return real(x) > real(y)  &&  imag(x) > imag(y);
-}
-
-#endif // __GNUC__
 
 #ifdef __BORLANDC__
 
@@ -114,21 +120,6 @@ inline bool operator!=( const double& y, const Complex& x )
   return !( operator==( x, y ) );
 }
 
-inline char operator>= ( const Complex& x, const Complex& y )
-{
- return real(x) >= real(y)  &&  imag(x) >= imag(y);
-}
-
-inline char operator< ( const Complex& x, const Complex& y )
-{
- return real(x) < real(y)  &&  imag(x) < imag(y);
-}
-
-inline char operator> ( const Complex& x, const Complex& y )
-{
- return real(x) > real(y)  &&  imag(x) > imag(y);
-}
-
 #endif // __BORLANDC__
 
 #ifdef _MSC_VER
@@ -141,16 +132,8 @@ inline double abs(const Complex& x) {
 //	os << "( " << real(x) << "," << imag(x) << " )" << std::endl;
 //	return os;
 //}
-inline char operator>= ( const Complex& x, const Complex& y )
-{
- return real(x) >= real(y)  &&  imag(x) >= imag(y);
-}
-inline char operator> ( const Complex& x, const Complex& y )
-{
- return real(x) > real(y)  &&  imag(x) > imag(y);
-}
 
-#endif // __VISUAL_CPP__
+#endif // _MSC_VER
 
 const Complex complex_1( 1.0, 0.0 );
 const Complex complex_0( 0.0, 0.0 );
