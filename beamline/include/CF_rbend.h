@@ -67,15 +67,27 @@ class CF_rbend : public bmlnElmnt
   double getPoleFaceAngle() 
     { return _poleFaceAngle; }
 
+  int setQuadrupole( double );  
   int setSextupole( double );  
-  // Returns 0 if sextupole is set correctly.
-  //         1 if there are no sextupoles.
+  // The argument is integrated multipole strength
+  // i.e., .setQuadrupole ( B'l   )
+  //       .setSextupole  ( B"l/2 )
+  // 
+  // Returns 0 if multipole is set correctly.
+  //         1 if there are no multipoles of required type.
+  //           (this should never happen)
+
+  double getQuadrupole();
+  double getSextupole();
+  // Returns integrated multipole strengths
+  // i.e., .getQuadrupole() returns B'l
+  //       .getSextupole()  returns B"l/2
+
 
  private:
 
   bmlnElmnt** _u;
   bmlnElmnt** _v;
-  // bmlnElmnt* u[52];
 
   double _poleFaceAngle;
 
