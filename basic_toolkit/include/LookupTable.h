@@ -2,8 +2,6 @@
 #define LOOKUPTABLE_H
 #include <stdio.h>
 
-// "true" and "false" are defined elsewhere, it seems
-
 class Table {
   // This is SCREAMING to be a template!!  This would be Table<double>
   double **table;

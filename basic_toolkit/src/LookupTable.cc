@@ -1,5 +1,6 @@
 #include <LookupTable.h>
 #include <stream.h>
+#include <MathConstants.h>
 
 #ifndef ABS
 inline double ABS(double x) {
