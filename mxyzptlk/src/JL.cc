@@ -168,6 +168,37 @@ const char* JL::BadEnvironment::what() const throw()
   return errorString.c_str();
 }
 
+JL::BadReference::BadReference( int ndx, double u,
+                                string fileName, int lineNumber, 
+                                const char* fcn, 
+                                const char* msg )
+: i(ndx), im(u)
+{
+  ostringstream uic;
+  uic << "\n*** ERROR *** "
+         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
+      << "\n*** ERROR *** " << fcn
+      << "\n*** ERROR *** " << msg
+      << "\n*** ERROR *** The imaginary part of refPoint[ " << i << " ]"
+      << "\n*** ERROR *** is equal to " << im <<  ", which is not zero."
+      << "\n*** ERROR *** ";
+  errorString = uic.str();
+
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << errorString;
+    cerr << "\n*** ERROR *** This message is printed only once."
+            "\n*** ERROR *** "
+         << endl;
+    firstTime = false;
+  }
+}
+
+const char* JL::BadReference::what() const throw()
+{
+  return errorString.c_str();
+}
+
 JL::HorribleException::HorribleException( int i, int j, int k, 
                                 string fileName, int lineNumber, 
                                 const char* fcn, 

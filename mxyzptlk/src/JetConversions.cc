@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -30,15 +27,13 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "mxyzptlk.h"
 
 using FNAL::Complex;
-
-// #include "Jet__environment.h"
-// #include "JetC__environment.h"
-// #include "Jet.h"
-// #include "JetC.h"
 
 // ================================================================
 //      External routines
@@ -89,16 +84,9 @@ JetC__environment::JetC__environment( const Jet__environment& x )
   SpaceDim( x.SpaceDim )
 {
   if( JetC::workEnv != 0 ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** JetC__environment::JetC__environment     \n"
-         << "*** ERROR *** ( const Jet__environment& )              \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** You must close the open environment      \n"
-         << "*** ERROR *** before attempting to copy an environment.\n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JL::GenericException( __FILE__, __LINE__, 
+           "JetC__environment::JetC__environment( const Jet__environment& )",
+           "Close open JetC environment before copying." ) );
   }
 
   if( NumVar == 0 ) {
@@ -172,16 +160,9 @@ JetC__environment::JetC__environment( const Jet__environment& x )
 JetC__environment& JetC__environment::operator=( const Jet__environment& x )
 {
   if( JetC::workEnv != 0 ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** JetC__environment::JetC__environment     \n"
-         << "*** ERROR *** ( const Jet__environment& )              \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** You must close the open environment      \n"
-         << "*** ERROR *** before attempting to copy an environment.\n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JL::GenericException( __FILE__, __LINE__, 
+           "JetC__environment& JetC__environment::operator=( const Jet__environment& )",
+           "Close the open JetC environment first." ) );
   }
 
   if( NumVar == 0 ) {
@@ -281,32 +262,17 @@ Jet__environment::Jet__environment( const JetC__environment& x )
 {
   for( int ii = 0; ii < NumVar; ii++ ) {
     if( imag( x.refPoint[ii] ) != 0.0 ) {
-      cerr << "\n\n"
-           << "*** ERROR ***                                          \n"
-           << "*** ERROR *** Jet__environment::Jet__environment       \n"
-           << "*** ERROR *** ( const JetC__environment& )             \n"
-           << "*** ERROR ***                                          \n"
-           << "*** ERROR *** The imaginary part of refPoint[ " << ii  
-           <<                                                " ]      \n"
-           << "*** ERROR *** is equal to " << imag( x.refPoint[ii] ) 
-           <<                            ", which is not zero.        \n"
-           << "*** ERROR ***                                          \n"
-           << endl;
-      exit(1);
+      throw( JL::BadReference ( ii, imag( x.refPoint[ii] ), 
+                                __FILE__, __LINE__, 
+                                "Jet__environment::Jet__environment( const JetC__environment& )", 
+                                "Cannot copy complex environment to real one." ) );
     }
   }
 
   if( Jet::workEnv != 0 ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** Jet__environment::Jet__environment       \n"
-         << "*** ERROR *** ( const JetC__environment& )             \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** You must close the open environment      \n"
-         << "*** ERROR *** before attempting to copy an environment.\n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JL::GenericException( __FILE__, __LINE__, 
+           "Jet__environment::Jet__environment( const JetC__environment& )",
+           "Close open Jet environment before copying." ) );
   }
 
   if( NumVar == 0 ) {
@@ -381,32 +347,17 @@ Jet__environment& Jet__environment::operator=( const JetC__environment& x )
 {
   for( int ii = 0; ii < NumVar; ii++ ) {
     if( imag( x.refPoint[ii] ) != 0.0 ) {
-      cerr << "\n\n"
-           << "*** ERROR ***                                          \n"
-           << "*** ERROR *** Jet__environment::operator=              \n"
-           << "*** ERROR *** ( const JetC__environment& )             \n"
-           << "*** ERROR ***                                          \n"
-           << "*** ERROR *** The imaginary part of refPoint[ " << ii  
-           <<                                                " ]      \n"
-           << "*** ERROR *** is equal to " << imag( x.refPoint[ii] ) 
-           <<                            ", which is not zero.        \n"
-           << "*** ERROR ***                                          \n"
-           << endl;
-      exit(1);
+      throw( JL::BadReference ( ii, imag( x.refPoint[ii] ), 
+                                __FILE__, __LINE__, 
+                                "Jet__environment& Jet__environment::operator=( const JetC__environment& )", 
+                                "Cannot assign complex environment to real one." ) );
     }
   }
 
   if( Jet::workEnv != 0 ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** JetC__environment::operator=             \n"
-         << "*** ERROR *** ( const JetC__environment& )             \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** You must close the open environment      \n"
-         << "*** ERROR *** before attempting to copy an environment.\n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+    throw( JL::GenericException( __FILE__, __LINE__, 
+           "Jet__environment& Jet__environment::operator=( const JetC__environment& )",
+           "Close the open Jet environment first." ) );
   }
 
   if( NumVar == 0 ) {
