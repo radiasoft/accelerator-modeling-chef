@@ -1,5 +1,5 @@
 #include "beamline.inc"
-#include "Vector.h"
+#include "VectorD.h"
 
 void BBLens::propagate( Particle& p ) {
 
