@@ -113,14 +113,18 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
 
   _userOptions.couplingOption = Options::ignore_coupling;
 
+
+  // ??? This needs to be fixed.
   if( 0 != xbml ) 
   { _p_currBmlCon = new BeamlineContext( true, xbml );
     _contextList.append( _p_currBmlCon );
   }
   else 
-  { _p_currBmlCon = 0;
+  { _p_currBmlCon  = 0;
   }
   // REMOVE: _p_clickedCon = _p_currBmlCon;
+  _p_currQBmlRoot = 0;
+  _p_clickedQBml = 0;
 
 
   bool kludged = false;
@@ -176,11 +180,11 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
 
     _editMenu->insertSeparator();
     
+    _editMenu->insertItem( "Rename line", this, SLOT(_editRenameLine()) );
     _editMenu->insertItem( "Remove line", this, SLOT(_editRemoveLine()) );
     _editMenu->insertItem( "Duplicate line", this, SLOT(_editCopyLine()) );
     _editMenu->insertItem( "Condense line", this, SLOT(_editCondense()) );
     _editMenu->insertItem( "Merge equivalent quads", this, SLOT(_editMergeQuads()) );
-    _editMenu->insertItem( "Insert markers", this, SLOT(_editAddMarkers()) );
     _editMenu->insertItem( "Insert monitors", this, SLOT(_editAddQtMons()) );
 
     _editMenu->insertSeparator();
@@ -188,6 +192,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
     _editMenu->insertItem( "(Mis)align ...", this, SLOT(_editAlign()) );
     _editMenu->insertItem( "Convert to Slots", this, SLOT(_editD2S()) );
     _editMenu->insertItem( "Partition", this, SLOT(_editPartition()) );
+    _editMenu->insertItem( "Insert markers", this, SLOT(_editAddMarkers()) );
     int id_PartSect = 
     _editMenu->insertItem( "Partition and sectorize", this, SLOT(_editPartAndSect()) );
     _editMenu->setItemEnabled( id_PartSect, false );
@@ -198,7 +203,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
   _mainMenu->insertItem( "Edit", _editMenu );
 
     _mach_imagMenu = new QPopupMenu;
-    _mach_imagMenu->insertItem( "FODO Cell", this, SLOT(_makeFODO()) );
+    _mach_imagMenu->insertItem( "FODO Cells", this, SLOT(_makeFODO()) );
     _mach_imagMenu->insertItem( "Single Sextupole", this, SLOT(_makeSingSext()) );
   _mainMenu->insertItem( "Examples", _mach_imagMenu );
 
@@ -403,16 +408,60 @@ void CHEF::_editCopyLine()
 }
 
 
+void CHEF::_editRenameLine()
+{
+  if( 0 == _p_currBmlCon ) { 
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+
+  QDialog* wpu = new QDialog( 0, 0, true );
+    QVBox* qvb = new QVBox( wpu );
+
+      QHBox* qhb1 = new QHBox( qvb );
+        new QLabel( "Name: ", qhb1 );
+        QLineEdit* qle = new QLineEdit( _p_currBmlCon->name(), qhb1 );
+      qhb1->setMargin(5);
+      qhb1->setSpacing(3);
+      qhb1->adjustSize();
+  
+      QHBox* qhb2 = new QHBox( qvb );
+        QPushButton* okayBtn = new QPushButton( "Okay", qhb2 );
+          okayBtn->setDefault( true );
+          connect( okayBtn, SIGNAL(pressed()),
+                   wpu,     SLOT(accept()) );
+        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb2 );
+          connect( cancelBtn, SIGNAL(pressed()),
+                   wpu,       SLOT(reject()) );
+      qhb2->setMargin(5);
+      qhb2->setSpacing(3);
+      qhb2->adjustSize();
+  
+    qvb->adjustSize();
+
+  wpu->setCaption( "CHEF: Rename beamline" );
+  wpu->adjustSize();
+
+  int returnCode = wpu->exec();
+
+  if( returnCode == QDialog::Accepted ) {
+    _p_currBmlCon->rename( qle->text().ascii() );
+    _p_currQBmlRoot->setText( 0, qle->text() );
+  }
+
+  delete wpu;
+}
+
+
 void CHEF::_editRemoveLine()
 {
   if( 0 == _p_currBmlCon ) { return; }
   if( 0 == (_p_vwr->removeBeamline( _p_currBmlCon )) )
   { // Note: Beamline has been eliminated as well.
     _contextList.remove( _p_currBmlCon );
-    // REMOVE: if( _p_currBmlCon == _p_clickedCon ) { _p_currBmlCon = 0; }
     delete _p_currBmlCon;
     _p_currBmlCon = 0;
-    // REMOVE: _p_clickedCon = 0;
+    _p_currQBmlRoot = 0;
   }
   else 
   { QMessageBox::information( 0, "CHEF: ERROR",
@@ -2385,8 +2434,8 @@ void CHEF::_launch_browser()
 
     connect( this,   SIGNAL(_modeChanged( const BeamlineContext* )),
              _p_vwr, SLOT(resetPixmap( const BeamlineContext* ))        );
-    connect( _p_vwr, SIGNAL(sig_bmlLeftClicked( BeamlineContext* )),
-             this,   SLOT(_set_p_clickedContext( BeamlineContext* ))    );
+    connect( _p_vwr, SIGNAL(sig_bmlLeftClicked( BeamlineContext*, QBmlRoot* )),
+             this,   SLOT(_set_p_clickedContext( BeamlineContext*, QBmlRoot* )) );
     connect( _p_vwr, SIGNAL(sig_bmlLeftClicked( QBml* )),
              this,   SLOT(_set_p_clickedQBml( QBml* ))    );
     connect( _p_vwr, SIGNAL(sig_newContext( BeamlineContext* )),
@@ -2407,10 +2456,11 @@ void CHEF::_launch_browser()
 }
 
 
-void CHEF::_set_p_clickedContext( BeamlineContext* x )
+void CHEF::_set_p_clickedContext( BeamlineContext* x, QBmlRoot* y )
 {
-  // REMOVE: _p_clickedCon = x;
-  _p_currBmlCon = x;
+  _p_currBmlCon   = x;
+  _p_currQBmlRoot = y;
+  _p_clickedQBml  = y;
 }
 
 

@@ -248,8 +248,9 @@ private:
                                     // by the editor.
   dlist             _contextList;
   BeamlineContext*  _p_currBmlCon;  // Currently selected beamline
+  QBmlRoot*         _p_currQBmlRoot;// ... and its widget
   // REMOVE: BeamlineContext*  _p_clickedCon;  // Last context clicked on ...
-  QBml*             _p_clickedQBml; // ... and its QBml
+  QBml*             _p_clickedQBml; // Most recently clicked item in BeamlineBrowser
 
   BeamlineBrowser*  _p_vwr;
 
@@ -274,6 +275,7 @@ private slots:
   void _editSelectNone();
   // REMOVE: void _editSelectLine();
   void _editCopyLine();
+  void _editRenameLine();
   void _editRemoveLine();
   void _editCondense();
   void _editAlign();
@@ -317,7 +319,7 @@ private slots:
   void _tuneCtrl();
   void _chromCtrl();
 
-  void _set_p_clickedContext( BeamlineContext* );
+  void _set_p_clickedContext( BeamlineContext*, QBmlRoot* );
   void _set_p_clickedQBml( QBml* );
   void _do_nothing();
 

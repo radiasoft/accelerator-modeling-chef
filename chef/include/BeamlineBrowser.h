@@ -194,7 +194,7 @@ public slots:
 
 signals:
     void folderSelected( const QString & );
-    void sig_bmlLeftClicked( BeamlineContext* );
+    void sig_bmlLeftClicked( BeamlineContext*, QBmlRoot* );
     void sig_bmlLeftClicked( QBml* );
     void sig_newContext( BeamlineContext* );
     void sig_browserIsEmpty();

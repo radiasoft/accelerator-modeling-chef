@@ -282,6 +282,12 @@ const char* BeamlineContext::name() const
 }
 
 
+void BeamlineContext::rename( const char* newname )
+{
+  _p_bml->Rename( newname );
+}
+
+
 void BeamlineContext::peekAt( double& s, Particle* p ) const
 {
   _p_bml->peekAt( s, p );
