@@ -8,6 +8,8 @@
 // Leo Michelotti
 // Dec 16, 1994    (Battle of the Bulge + 50 years)
 
+#include <math.h>
+
 #ifdef __GNUG__
   typedef complex<double> Complex;
 #endif
@@ -121,6 +123,11 @@ inline char operator> ( const Complex& x, const Complex& y )
 #ifdef __BORLAND_CPP__
 
 inline Complex pow ( const Complex& x, int n )
+{
+  return pow( x, (double) n );
+}
+
+inline double pow( const double& x, int n )
 {
   return pow( x, (double) n );
 }
