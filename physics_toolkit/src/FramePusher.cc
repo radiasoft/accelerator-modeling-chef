@@ -66,7 +66,8 @@ void FramePusher::visitSbend    ( sbend* x    )
 
   angle = x->getAngle();
   rho = x->Length() / angle;
-  displacement = 2.0*rho*sin(angle/2.0);
+  angle /= 2.0;
+  displacement = 2.0*rho*sin(angle);
 
   _frame.rotate( - angle, _frame.getyAxis(), false );
   _frame.translate( displacement*_frame.getzAxis() );
@@ -82,7 +83,8 @@ void FramePusher::visitCF_sbend ( CF_sbend* x )
 
   angle = x->getAngle();
   rho = x->Length() / angle;
-  displacement = 2.0*rho*sin(angle/2.0);
+  angle /= 2.0;
+  displacement = 2.0*rho*sin(angle);
 
   _frame.rotate( - angle, _frame.getyAxis(), false );
   _frame.translate( displacement*_frame.getzAxis() );
