@@ -146,6 +146,14 @@
 #include "sbend.h"
 #endif
 
+#ifndef CF_SBEND_H
+#include "CF_sbend.h"
+#endif
+
+#ifndef CF_RBEND_H
+#include "CF_rbend.h"
+#endif
+
 #ifndef SECTOR_H
 #include "sector.h"
 #endif
