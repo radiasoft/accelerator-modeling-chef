@@ -1,5 +1,5 @@
 /* XPM */
-static char * chef_logo_xpm[] = {
+static const char * chef_logo_xpm[] = {
 "450 150 636 2",
 "  	c None",
 ". 	c #3636DF",
