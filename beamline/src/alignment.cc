@@ -49,6 +49,8 @@ alignment::alignment(const alignment& x) {
   xOffset = x.xOffset;
   yOffset = x.yOffset;
   tilt    = x.tilt;
+  cosTilt = cos(tilt);
+  sinTilt = sin(tilt);
 }
 
 alignment::alignment(const alignmentData& x) {
