@@ -316,19 +316,30 @@ void CF_rbend::Split( double, bmlnElmnt**, bmlnElmnt** )
 
 void CF_rbend::acceptInner( BmlVisitor& v )
 {
+  _ctRef = 0.0;
   bmlnElmnt** x = _u;
   while( x <= _v ) {
-    (*(x++))->accept( v );
+    (*x)->accept( v );
+    _ctRef += (*x)->getReferenceTime();
+    x++;
   }
 }
 
 
 void CF_rbend::acceptInner( ConstBmlVisitor& v )
 {
+  _ctRef = 0.0;
   bmlnElmnt** x = _u;
   while( x <= _v ) {
-    (*(x++))->accept( v );
+    (*x)->accept( v );
+    _ctRef += (*x)->getReferenceTime();
+    x++;
   }
+
+  // REMOVE: bmlnElmnt** x = _u;
+  // REMOVE: while( x <= _v ) {
+  // REMOVE:   (*(x++))->accept( v );
+  // REMOVE: }
 }
 
 

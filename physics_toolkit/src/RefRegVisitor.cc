@@ -46,6 +46,7 @@
 
 #include "RefRegVisitor.h"
 #include "CF_rbend.h"
+#include "CF_sbend.h"
 #include "rbend.h"
 #include "Slot.h"
 #include "Particle.h"
@@ -104,6 +105,12 @@ void RefRegVisitor::visitBmlnElmnt( bmlnElmnt* x )
 
 
 void RefRegVisitor::visitCF_rbend( CF_rbend* x ) 
+{
+  x->acceptInner( *this );
+}
+
+
+void RefRegVisitor::visitCF_sbend( CF_sbend* x ) 
 {
   x->acceptInner( *this );
 }
