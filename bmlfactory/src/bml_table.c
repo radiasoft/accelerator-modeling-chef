@@ -20,6 +20,59 @@
 #include "pair.h"
 #endif /* pair_h */
 
+/* Begin DGN section ------
+#if !defined(madparser_h)
+#include "madparser.h"
+#endif 
+typedef struct {
+    void* yybuff_;
+    char* filename_;
+    FILE* yyfile_;
+    int   linenum_;
+} yybuff;
+
+struct madparser_ {
+    char*           filename_in_;
+    char*           filename_out_;
+    
+    fb_allocator*   expr_alloc_;
+    fb_allocator*   ident_alloc_;
+
+    fb_allocator*   const_alloc_;
+    GHashTable*     const_table_;
+    
+    fb_allocator*   var_alloc_;
+    GHashTable*     var_table_;
+
+    fb_allocator*   bel_alloc_;
+    fb_allocator*   matrix_alloc_;
+    GHashTable*     bel_table_;
+
+    GHashTable*     bml_table_;
+    fb_allocator*   bml_alloc_;
+
+    GPtrArray*      comment_arr_;
+    fb_allocator*   comment_alloc_;
+
+    GSList*         yybuff_list_;
+    GSList*         filenames_list_;
+    fb_allocator*   yybuff_alloc_;
+
+    const char*     current_filename_;
+    yybuff*         current_yybuff_;
+
+    int             linenum_;
+
+    int             comment_at_eof_;
+    int             comment_mode_;
+
+    beam_element*   current_bel_;
+    char            current_bel_type_[BEL_NAME_LENGTH];
+};
+extern madparser* mp;
+extern void mpwatch();
+--------   DGN section */
+
    /*
      Takes a string and returns its hash table index
    */
@@ -38,22 +91,31 @@ bml_comp_func( gconstpointer left,
 }
 
    /*
-     Takes a char pointer "key", bml "value", and "user_data" (not used), 
+     Takes a char pointer "key", bml "value", and "user_data" (allocator), 
      and frees the memory for "key" and "value"
    */
-static void
+static gboolean
 bml_free_func( gpointer key,
                gpointer value,
                gpointer user_data ) {
+  /* DGN  fprintf( stderr, "DGN: Entering bml_free_func\n" );*/
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN: free( key );\n" );*/
   free( key );
-  beam_line_delete( (beam_line*)value, (fb_allocator*)user_data );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN: beam_line_delete( (beam_line*)value, (fb_allocator*)user_data );\n" );*/
+  beam_line_delete( value, (fb_allocator*)user_data );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN: return TRUE;\n" );*/
+  /* DGN  fprintf( stderr, "DGN: Exiting bml_free_func\n" );*/
+  return TRUE;
 }
 
    /*
      Takes a char pointer "key", bml "value", and arr_ptr address "user_data", 
      and makes the array element at "user_data" point to "value"
    */
-static void
+static gboolean
 bml_table_el_to_array_el( gpointer key,
                           gpointer value,
                           gpointer user_data ) {
@@ -64,6 +126,7 @@ bml_table_el_to_array_el( gpointer key,
   
   *ptr = (beam_line*)value;
   *((beam_line***)user_data) = ++ptr;
+  return TRUE;
 }
 
    /*
@@ -108,8 +171,18 @@ bml_table_init( void ) {
    */
 int
 bml_table_delete( GHashTable* bml_table, fb_allocator* bml_alloc ) {
-  g_hash_table_foreach( bml_table, (GHFunc)bml_free_func, (void*)bml_alloc );
+  
+  /* DGN  fprintf( stderr, "DGN: Entering bml_table_delete\n" );*/
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN: g_hash_table_foreach_remove( bml_table, (GHFunc)bml_free_func, (void*)bml_alloc );\n" );*/
+  g_hash_table_foreach_remove( bml_table, bml_free_func, (void*)bml_alloc );  
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN: g_hash_table_destroy( bml_table );\n" );*/
   g_hash_table_destroy( bml_table );
+  
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN: return BML_TABLE_OK;\n" );*/
+  /* DGN  fprintf( stderr, "DGN: Exiting bml_table_delete\n" );*/
   return BML_TABLE_OK;
 }
 
@@ -172,7 +245,7 @@ bml_table_to_array( beam_line*** bml_arr,
   size = g_hash_table_size( bml_table );
   
   arr_ptr = *bml_arr = (beam_line**)malloc( size*sizeof(beam_line*) );
-  g_hash_table_foreach( bml_table, (GHFunc)bml_table_el_to_array_el, &arr_ptr );
+  g_hash_table_foreach_remove( bml_table, bml_table_el_to_array_el, &arr_ptr );
 
   return size;
 }

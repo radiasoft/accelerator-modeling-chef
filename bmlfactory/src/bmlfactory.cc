@@ -80,6 +80,8 @@ bmlfactory::bmlfactory( const char* fname,
 
 bmlfactory::~bmlfactory() {
   madparser_delete( mp_ );
+  mp_ = NULL;
+  mp  = NULL;
   delete_bel_list();
   delete_bml_list();
   delete fname_;
@@ -125,26 +127,55 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       break;
     }
     case BEL_MARKER: {
-      double length = 0.0;
-      lbel = new drift( bel->name_, length );
+      lbel = new marker( bel->name_ );
       break;
     }
     case BEL_SBEND: {
+      bool simple = false;
       double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
       double angle  = expr_evaluate( bel->params_[BEL_SBEND_ANGLE], var_table_, bel_table_ );
+      expr_struct *k1   = (expr_struct*)bel->params_[BEL_SBEND_K1]->data;
+      expr_struct *k2   = (expr_struct*)bel->params_[BEL_SBEND_K2]->data;
+      expr_struct *k3   = (expr_struct*)bel->params_[BEL_SBEND_K3]->data;
       expr_struct *tilt = (expr_struct*)bel->params_[BEL_SBEND_TILT]->data;
       
-      lbel = new sbend( bel->name_, length, BRHO_*angle/length, angle );
-      if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
-        aligner->xOffset = 0.0;
-        aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( bel->params_[BEL_SBEND_TILT], var_table_, bel_table_ );
-        lbel->setAlignment( *aligner );
+      simple = (k1->kind_ == NUMBER_EXPR && k1->dvalue_ == 0.0 && k2->kind_ == NUMBER_EXPR && k2->dvalue_ == 0.0 && k3->kind_ == NUMBER_EXPR && k3->dvalue_ == 0.0 && tilt->kind_ == NUMBER_EXPR && tilt->dvalue_ == 0.0);
+
+      if( true == simple ) {
+        lbel = new sbend( bel->name_, length, BRHO_*angle/length, angle );
+        if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
+          aligner->xOffset = 0.0;
+          aligner->yOffset = 0.0;
+          aligner->tilt    = expr_evaluate( bel->params_[BEL_SBEND_TILT], var_table_, bel_table_ );
+          lbel->setAlignment( *aligner );
+          // Ignored parameters: K1, K2, K3, E1, E2, TILT, H1, H2, HGAP, FINT
+	}
+        break;
       }
-      
-         // Ignored parameters: K1, K2, K3, E1, E2, TILT, H1, H2, HGAP, FINT
-      
-      break;
+      else {
+        lbel = new CF_sbend( bel->name_, length, BRHO_*angle/length, angle );
+
+        double multipoleStrength;
+
+        multipoleStrength = expr_evaluate( bel->params_[BEL_SBEND_K1], var_table_, bel_table_ );
+        multipoleStrength = multipoleStrength*BRHO_*length;
+        if( multipoleStrength != 0.0 ) {
+          ((CF_sbend*) lbel)->setQuadrupole( multipoleStrength );
+	}
+
+        multipoleStrength = expr_evaluate( bel->params_[BEL_SBEND_K2], var_table_, bel_table_ );
+        multipoleStrength = multipoleStrength*BRHO_*length/2.0;
+        if( multipoleStrength != 0.0 ) {
+          ((CF_sbend*) lbel)->setSextupole( multipoleStrength );
+	}
+
+        multipoleStrength = expr_evaluate( bel->params_[BEL_SBEND_K3], var_table_, bel_table_ );
+        multipoleStrength = multipoleStrength*BRHO_*length/6.0;
+        if( multipoleStrength != 0.0 ) {
+          ((CF_sbend*) lbel)->setOctupole( multipoleStrength );
+	}
+        break;
+      }
     }
     case BEL_RBEND: {
       double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
@@ -301,34 +332,55 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       break;
     case BEL_HMONITOR: {
       double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
-      char   name[BEL_NAME_LENGTH];
+      // REMOVE: char   name[BEL_NAME_LENGTH];
       
-      lbel = new beamline( bel->name_ );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new hmonitor( add_str( name, bel->name_, "center" ) ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
+      if( length > 0.0 ) {
+        lbel = new hmonitor( bel->name_, length );
+      }
+      else {
+        lbel = new hmonitor( bel->name_ );
+      }
+
+      // REMOVE: lbel = new beamline( bel->name_ );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new hmonitor( add_str( name, bel->name_, "center" ) ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
       
       break;
     }
     case BEL_VMONITOR: {
       double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
-      char   name[BEL_NAME_LENGTH];
+      // REMOVE: char   name[BEL_NAME_LENGTH];
       
-      lbel = new beamline( bel->name_ );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new vmonitor( add_str( name, bel->name_, "center" ) ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
+      if( length > 0.0 ) {
+        lbel = new vmonitor( bel->name_, length );
+      }
+      else {
+        lbel = new vmonitor( bel->name_ );
+      }
+
+      // REMOVE: lbel = new beamline( bel->name_ );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new vmonitor( add_str( name, bel->name_, "center" ) ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
       
       break;
     }
     case BEL_MONITOR: {
       double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
-      char   name[BEL_NAME_LENGTH];
+      // REMOVE: char   name[BEL_NAME_LENGTH];
       
-      lbel = new beamline( bel->name_ );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new monitor( add_str( name, bel->name_, "center" ) ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
+      if( length > 0.0 ) {
+        lbel = new monitor( bel->name_, length );
+      }
+      else {
+        lbel = new monitor( bel->name_ );
+      }
+
+      // REMOVE: lbel = new beamline( bel->name_ );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new monitor( add_str( name, bel->name_, "center" ) ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
       
       break;
     }

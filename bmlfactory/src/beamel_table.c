@@ -41,19 +41,20 @@ bel_comp_func( gconstpointer left,
      Takes a char pointer "key", bel "value", and "user_data" (not used),
      and frees the memory for "key" and "value"
    */
-static void
+static gboolean
 bel_free_func( gpointer key,
                gpointer value,
                gpointer user_data ) {
   free( key );
   beam_element_delete( (beam_element*)value,  (fb_allocator*)user_data );
+  return TRUE;
 }
 
    /*
      Takes a char pointer "key", bel "value", and arr_ptr address "user_data", 
      and makes the array element at "user_data" point to "value"
    */
-static void
+static gboolean
 bel_table_el_to_array_el( gpointer key,
                           gpointer value,
                           gpointer user_data ) {
@@ -64,6 +65,7 @@ bel_table_el_to_array_el( gpointer key,
   
   *ptr = (beam_element*)value;
   *((beam_element***)user_data) = ++ptr;
+  return TRUE;
 }
 
    /*
@@ -102,7 +104,7 @@ bel_table_delete( GHashTable*   bel_table,
 
   assert( bel_table != NULL );
   
-  g_hash_table_foreach( bel_table, (GHFunc)bel_free_func, bel_alloc );
+  g_hash_table_foreach_remove( bel_table, bel_free_func, bel_alloc );
   g_hash_table_destroy( bel_table );
   
   return BEL_OK;
@@ -160,7 +162,7 @@ bel_table_to_array( beam_element*** bel_arr,
   beam_element** arr_ptr;
   size_t size = g_hash_table_size( bel_table );
   arr_ptr = *bel_arr = (beam_element**)malloc( size*sizeof(beam_element*) );
-  g_hash_table_foreach( bel_table, (GHFunc)bel_table_el_to_array_el, &arr_ptr );
+  g_hash_table_foreach_remove( bel_table, bel_table_el_to_array_el, &arr_ptr );
 
   return size;
 }

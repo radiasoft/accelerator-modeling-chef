@@ -59,19 +59,20 @@ var_comp_func( gconstpointer left,
      Takes a char pointer "key", variable "value", and "user_data" (not used),
      and frees the memory for "key" and "value"
    */
-static void
+static gboolean
 var_free_func( gpointer key,
                gpointer value,
                gpointer user_data ) {
   free( key );
   var_delete( (variable*)value, (fb_allocator*)user_data );
+  return TRUE;
 }
 
    /*
      Takes a char pointer "key", variable "value", and arr_ptr address "user_data",
      and makes the array element at "user_data" point to "value"
    */
-static void
+static gboolean
 var_table_el_to_array_el( gpointer key,
                           gpointer value,
                           gpointer user_data ) {
@@ -79,6 +80,7 @@ var_table_el_to_array_el( gpointer key,
   variable **ptr = *((variable***)user_data);
   *ptr = (variable*)value;
   *((variable***)user_data) = ++ptr;
+  return TRUE;
 }
 
 
@@ -138,7 +140,7 @@ var_table_delete( GHashTable*   var_table,
   assert( var_table != NULL );
   assert( expr_alloc != NULL );
   
-  g_hash_table_foreach( var_table, (GHFunc)var_free_func, expr_alloc );
+  g_hash_table_foreach_remove( var_table, var_free_func, expr_alloc );
   g_hash_table_destroy( var_table );  
   
   return VAR_OK;
@@ -270,7 +272,7 @@ var_table_to_array( variable***  var_arr,
   variable **arr_ptr;
   size_t size = g_hash_table_size( var_table );
   arr_ptr = *var_arr = (variable**)malloc( size*sizeof(variable*) );
-  g_hash_table_foreach( var_table, (GHFunc)var_table_el_to_array_el, &arr_ptr );
+  g_hash_table_foreach_remove( var_table, var_table_el_to_array_el, &arr_ptr );
 
   return size;
 }

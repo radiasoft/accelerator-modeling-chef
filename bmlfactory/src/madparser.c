@@ -126,6 +126,19 @@ struct madparser_ {
     char            current_bel_type_[BEL_NAME_LENGTH];
 };
 
+/* extern madparser* mp;               DGN */
+/* typedef struct link_ {              DGN */
+/*     struct link_* next_;            DGN */
+/* } link;                             DGN */
+/* struct fb_allocator_ {              DGN */
+/*     link*        pool_head_;        DGN */
+/*     char*        block_head_;       DGN */
+/*     size_t       esize_;            DGN */
+/*     size_t       alignment_;        DGN */
+/*     unsigned int nelems_;           DGN */
+/* };                                  DGN */
+
+
 madparser*
 madparser_init( const char* filename_in,
                 const char* filename_out ) {
@@ -465,40 +478,109 @@ free_yybuff( gpointer data,
   deallocate( data, (fb_allocator*)user_data );
 }
 
+   /*
+     diagnostic routine: remove this when finished
+   */
+
+
+/* DGN  void*/
+/* DGN  mpwatch()*/
+/* DGN  {*/
+/* DGN    char* ptr;*/
+/* DGN    fprintf( stderr, "DGN: mpwatch: " );*/
+/* DGN    ptr = mp->ident_alloc_->block_head_;*/
+/* DGN    fprintf( stderr, "%i  ", ptr );*/
+/* DGN    while ( ptr != 0 ) {*/
+/* DGN      memcpy( &ptr, ptr+(mp->ident_alloc_->esize_)*(mp->ident_alloc_->nelems_), sizeof(char*) );*/
+/* DGN      fprintf( stderr, "%i  ", ptr );*/
+/* DGN    }*/
+/* DGN    fprintf( stderr, "\n" );*/
+/* DGN  }*/
+
+
 int
 madparser_delete( madparser* mp ) {
 
+  /* DGN  fprintf( stderr, "DGN: Entering madparser_delete\n" );*/
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN: comment_arr_delete( mp->comment_arr_ );\n" );*/
   comment_arr_delete( mp->comment_arr_ );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   bml_table_delete( mp->bml_table_, mp->bml_alloc_ );\n" );*/
   bml_table_delete( mp->bml_table_, mp->bml_alloc_ );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   bel_table_delete( mp->bel_table_, mp->bel_alloc_ );\n" );*/
   bel_table_delete( mp->bel_table_, mp->bel_alloc_ );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   var_table_delete( mp->var_table_, mp->expr_alloc_ );\n" );*/
   var_table_delete( mp->var_table_, mp->expr_alloc_ );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   const_table_delete( mp->const_table_, mp->expr_alloc_ );\n" );*/
   const_table_delete( mp->const_table_, mp->expr_alloc_ );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   expression_delete();\n" );*/
   expression_delete();
 
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   g_slist_foreach( mp->filenames_list_, free_filename, NULL );\n" );*/
   g_slist_foreach( mp->filenames_list_, free_filename, NULL );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   g_slist_free( mp->filenames_list_ );\n" );*/
   g_slist_free( mp->filenames_list_ );
 
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   g_slist_foreach( mp->yybuff_list_, free_yybuff, mp->yybuff_alloc_ );\n" );*/
   g_slist_foreach( mp->yybuff_list_, free_yybuff, mp->yybuff_alloc_ );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   g_slist_free( mp->yybuff_list_ );\n" );*/
   g_slist_free( mp->yybuff_list_ );
   
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   fb_alloc_delete( mp->yybuff_alloc_ );\n" );*/
   fb_alloc_delete( mp->yybuff_alloc_ );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   fb_alloc_delete( mp->comment_alloc_ );\n" );*/
   fb_alloc_delete( mp->comment_alloc_ );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   fb_alloc_delete( mp->bml_alloc_ );\n" );*/
   fb_alloc_delete( mp->bml_alloc_ );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   fb_alloc_delete( mp->matrix_alloc_ );\n" );*/
   fb_alloc_delete( mp->matrix_alloc_ );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   fb_alloc_delete( mp->bel_alloc_ );\n" );*/
   fb_alloc_delete( mp->bel_alloc_ );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   fb_alloc_delete( mp->const_alloc_ );\n" );*/
   fb_alloc_delete( mp->const_alloc_ );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   fb_alloc_delete( mp->expr_alloc_ );\n" );*/
   fb_alloc_delete( mp->expr_alloc_ );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   fb_alloc_delete( mp->ident_alloc_ );\n" );*/
+  /* DGN  fprintf( stderr, "DGN:   fb_alloc_delete( %i );\n", ((int)(mp->ident_alloc_)) );*/
   fb_alloc_delete( mp->ident_alloc_ );
 
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   if ( mp->filename_out_ != NULL ) {\n" );*/
   if ( mp->filename_out_ != NULL ) {
+    /* DGN  fprintf( stderr, "DGN:     free( mp->filename_out_ );\n" );*/
     free( mp->filename_out_ );
   }
 
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   free( mp );\n" );*/
   free( mp );
 
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   fclose( yyin );\n" );*/
   fclose( yyin );
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN:   fclose( yyout );\n" );*/
   fclose( yyout );
   
+  /* DGN  mpwatch();*/
+  /* DGN  fprintf( stderr, "DGN: Exiting madparser_delete\n" );*/
   return 0;
 }
 
