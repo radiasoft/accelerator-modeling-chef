@@ -39,6 +39,10 @@ ProtonBunch::ProtonBunch(int nm, double energy, double* widths,
  const int false = 0;
  const int true  = 1;
 #endif
+#if defined(__mips) && !defined(__GNUG__)
+ const int false = 0;
+ const int true  = 1;
+#endif
 
  Proton* p;
  double x[ BMLN_dynDim ];
@@ -181,7 +185,7 @@ ProtonBunch::ProtonBunch( int, int nm, char t,
   case 'R':
     random =  lrand48()/MAX_RANDOM;
     rad_fract = sqrt(1. - pow(1. - random, 2./3.) );
-    theta = 2.0 * M_PI * lrand48()/MAX_RANDOM;
+    theta = M_TWOPI * lrand48()/MAX_RANDOM;
 
     x[2] = time_h * rad_fract * cos(theta);
     x[5] = energy_h * rad_fract * sin(theta);
