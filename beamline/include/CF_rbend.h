@@ -65,6 +65,8 @@ class CF_rbend : public bmlnElmnt
     { return _poleFaceAngle; }
   double getPoleFaceAngle() 
     { return _poleFaceAngle; }
+  double getEntryAngle() 
+    { return _poleFaceAngle; }
 
   double AdjustPosition( const Proton& );
   double AdjustPosition( const JetProton& );
