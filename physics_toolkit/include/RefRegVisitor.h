@@ -66,6 +66,7 @@ class RefRegVisitor : public BmlVisitor
   void visitBeamline( beamline* );
   void visitBmlnElmnt( bmlnElmnt* );
   void visitCF_rbend( CF_rbend* );
+  void visitCF_sbend( CF_sbend* );
 
   int  getErrorCode() const;
 

@@ -109,6 +109,30 @@ CF_sbend::~CF_sbend()
 }
 
 
+void CF_sbend::acceptInner( BmlVisitor& v )
+{
+  _ctRef = 0.0;
+  bmlnElmnt** x = _u;
+  while( x <= _v ) {
+    (*x)->accept( v );
+    _ctRef += (*x)->getReferenceTime();
+    x++;
+  }
+}
+
+
+void CF_sbend::acceptInner( ConstBmlVisitor& v )
+{
+  _ctRef = 0.0;
+  bmlnElmnt** x = _u;
+  while( x <= _v ) {
+    (*x)->accept( v );
+    _ctRef += (*x)->getReferenceTime();
+    x++;
+  }
+}
+
+
 void CF_sbend::peekAt( double& s, Particle* p_prt )
 {
  cout << setw(12) << s;
