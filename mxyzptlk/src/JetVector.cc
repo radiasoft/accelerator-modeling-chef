@@ -644,6 +644,14 @@ JetVector::Reconstruct( const int& n, Jet__environment* pje )
 }
 
 
+void 
+JetVector::CopyFrom( const JetVector& x )
+{
+  this->Reconstruct( x.Dim(), x.Env() );
+  this->operator=( x );
+}
+
+
 void JetVector::peekAt() const
 {
   cout << "\n\nBegin JetVector::peekAt() ......\n";
