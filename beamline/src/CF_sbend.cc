@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iomanip>
 
@@ -414,14 +414,11 @@ void CF_sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
   }
 
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    cerr << "\n"
-            "*** ERROR ***                                    \n"
-            "*** ERROR *** sbend::Split                       \n"
-            "*** ERROR *** pc = " << pc << 
-                               " and is out of bounds.        \n"
-            "*** ERROR ***                                    \n"
-         << endl;
-    exit (1);
+    ostringstream uic;
+    uic << "Requested percentage = " << pc << "; should be in [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void CF_sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           uic.str().c_str() ) );
   }
 
 
