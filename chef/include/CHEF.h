@@ -53,9 +53,21 @@ class QPixmap;
 class BeamlineContext;
 class ReverseBeamlineIterator;
 
+// The following forward class declarations should be removed eventually
+#ifdef FIRST_ORDER
 class Jet__environment;
 class JetC__environment;
 class Mapping;
+#else
+template<typename T1, typename T2> 
+class TJetEnvironment;
+template<typename T1, typename T2>
+class TMapping;
+typedef TJetEnvironment<double,FNAL::Complex> Jet__environment;
+typedef TJetEnvironment<FNAL::Complex,double> JetC__environment;
+typedef TMapping<double,FNAL::Complex> Mapping;
+#endif
+
 
 #ifndef BEAMLINEBROWSER_H
 #include "BeamlineBrowser.h"

@@ -96,7 +96,7 @@
 extern beamline* DriftsToSlots( /* const */ beamline& original );
 
 using namespace CHEF_domain;
-using namespace std;
+
 
 // 
 // Constructors and destructor
@@ -314,7 +314,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
   _p_JetCEnv = JetC::_lastEnv = JetC::CreateEnvFrom( _p_JetEnv );
  
   if( _p_JetEnv != Jet::_lastEnv ) {
-    ostringstream uic;
+    std::ostringstream uic;
     uic << "An impossibility has occurred\nin file "
         << __FILE__
         << " at line " << __LINE__
@@ -597,7 +597,7 @@ void CHEF::_testFC( ACTFUNC11 actfcn ) const
     }
 
     else {
-      ostringstream uic;
+      std::ostringstream uic;
       uic << "An impossibility has occurred\nin file "
           << __FILE__
           << " at line " << __LINE__ ;
@@ -634,7 +634,7 @@ void CHEF::_traverseTree( const QBmlRoot* x, ACTFUNC11 actfcn ) const
     }
 
     else {
-      ostringstream uic;
+      std::ostringstream uic;
       uic << "An impossibility has occurred\nin file "
           << __FILE__
           << " at line " << __LINE__ ;
@@ -1066,7 +1066,7 @@ void CHEF::_editAddMarkers()
     QPtrList<bmlnElmnt> theChosenOnes;
     theChosenOnes = _p_vwr->findAllSelected( theRoot );
     if( theChosenOnes.isEmpty() ) {
-      ostringstream uic;
+      std::ostringstream uic;
       uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
              "\nIn function: void CHEF::_editAddMarkers():"
              "\nNo elements selected; no action will be taken.";
@@ -1245,7 +1245,7 @@ void CHEF::_editPartition()
   QPtrList<bmlnElmnt> theChosenOnes;
   theChosenOnes = _p_vwr->findAllSelected( theRoot );
   if( theChosenOnes.isEmpty() ) {
-    ostringstream uic;
+    std::ostringstream uic;
     uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
            "\nIn function: void CHEF::_editPartition():"
            "\nSelection list is empty; no action taken.";
@@ -1481,7 +1481,7 @@ void CHEF::_launchLatt()
     lfd->makeCurves();
   }
   catch( const std::exception& ge ) {
-    ostringstream uic;
+    std::ostringstream uic;
     uic << __FILE__ << ", line " << __LINE__ << ": "
         << "Exception was thrown by LattFncData.\n"
            "The message was:\n"
@@ -1498,7 +1498,7 @@ void CHEF::_launchLatt()
   }
 
   if( lfd ) {
-    _plotWidget  =  new CHEFPlotMain( 0, "plotWidget", Qt::WDestructiveClose );  
+    _plotWidget  =  new CHEFPlotMain( 0, "plotWidget", Qt::WDestructiveClose );
     // destructive close needed !
     // *_plotWidget will delete itself upon closing.
     //   The problem is: _plotWidget is not reset to zero.
@@ -1539,7 +1539,7 @@ void CHEF::_launchET()
     etfd->makeCurves();
   }
   catch( const std::exception& ge ) {
-    ostringstream uic;
+    std::ostringstream uic;
     uic << __FILE__ << ", line " << __LINE__ << ": "
         << "Exception was thrown by ETFncData.\n"
            "The message was:\n"
@@ -1556,8 +1556,7 @@ void CHEF::_launchET()
   }
 
   if( etfd ) {
-    _ETplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
-                                                      Qt::WDestructiveClose); 
+    _ETplotWidget = new CHEFPlotMain( 0, "plotWidget", Qt::WDestructiveClose); 
     // destructive close needed !
     _ETplotWidget->addData( *etfd );
 
@@ -1595,7 +1594,7 @@ void CHEF::_launchLB()
     lbfd->makeCurves(); 
   }
   catch( const std::exception& ge ) {
-    ostringstream uic;
+    std::ostringstream uic;
     uic << __FILE__ << ", line " << __LINE__ << ": "
         << "Exception was thrown by LBFncData.\n"
            "The message was:\n"
@@ -1612,7 +1611,7 @@ void CHEF::_launchLB()
   }
 
   if( lbfd ) {
-    _LBplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", Qt::WDestructiveClose); // destructive close needed !
+    _LBplotWidget = new CHEFPlotMain( 0, "plotWidget", Qt::WDestructiveClose); // destructive close needed !
     _LBplotWidget->addData( *lbfd );
   
     char theCaption[1024];
@@ -1650,7 +1649,7 @@ void CHEF::_launchMoments()
     mfd->makeCurves();
   }
   catch( const std::exception& ge ) {
-    ostringstream uic;
+    std::ostringstream uic;
     uic << __FILE__ << ", line " << __LINE__ << ": "
         << "Exception was thrown by MomentsFncData.\n"
            "The message was:\n"
@@ -1667,8 +1666,7 @@ void CHEF::_launchMoments()
   }
 
   if( mfd ) {
-    _MMplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
-                                                      Qt::WDestructiveClose);  
+    _MMplotWidget = new CHEFPlotMain( 0, "plotWidget", Qt::WDestructiveClose);  
     // destructive close needed !
     _MMplotWidget->addData( *mfd );
   
@@ -1735,7 +1733,7 @@ void CHEF::_pushMoments()
       mfd->makeCurves();
     }
     catch( const std::exception& ge ) {
-      ostringstream uic;
+      std::ostringstream uic;
       uic << __FILE__ << ", line " << __LINE__ << ": "
           << "Exception was thrown by MomentsFncData.\n"
              "The message was:\n"
@@ -1816,7 +1814,7 @@ void CHEF::_pushDispersion()
       dfd->makeCurves();
     }
     catch( const std::exception& ge ) {
-      ostringstream uic;
+      std::ostringstream uic;
       uic << __FILE__ << ", line " << __LINE__ << ": "
           << "Exception was thrown by DspnFncData.\n"
              "The message was:\n"
@@ -1890,7 +1888,7 @@ void CHEF::_pushULF()
       lfd->makeCurves();
     }
     catch( const std::exception& ge ) {
-      ostringstream uic;
+      std::ostringstream uic;
       uic << __FILE__ << ", line " << __LINE__ << ": "
           << "Exception was thrown by LattFncData.\n"
              "The message was:\n"
@@ -1986,7 +1984,7 @@ void CHEF::_launchDispersion()
     dfd->makeCurves();
   }
   catch( const std::exception& ge ) {
-    ostringstream uic;
+    std::ostringstream uic;
     uic << __FILE__ << ", line " << __LINE__ << ": "
         << "Exception was thrown by DspnFncData.\n"
            "The message was:\n"
@@ -2003,8 +2001,7 @@ void CHEF::_launchDispersion()
   }
 
   if( dfd ) {
-    _DspnplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
-                                                        Qt::WDestructiveClose); 
+    _DspnplotWidget = new CHEFPlotMain( 0, "plotWidget", Qt::WDestructiveClose); 
     // destructive close needed !
     _DspnplotWidget->addData( *dfd  );
   
@@ -2263,7 +2260,7 @@ void CHEF::_openFile()
       (QString(".lat") != s.right(4)) &&
       (QString(".bml") != s.right(4))    )
   {
-    ostringstream uic;
+    std::ostringstream uic;
     uic <<   "You are attempting to read a file with"
            "\nnon-standard suffix:  " << s.right(4)
         << "\nI will proceed under the assumptions that"
@@ -2341,7 +2338,7 @@ void CHEF::_openFile()
         brho = ( fabs( atof( brhoText ) )/PH_CNV_brho_to_p );
       }
       else {
-        ostringstream uic;
+        std::ostringstream uic;
         uic << "An impossibility has occurred\nin file "
             << __FILE__
             << " at line " << __LINE__ ;
@@ -2371,7 +2368,7 @@ void CHEF::_openFile()
 
   else if( bmlFile ) { 
     beamline* bmlPtr = new beamline;
-    ifstream inputStream( s );
+    std::ifstream inputStream( s );
     inputStream >> (*bmlPtr);
     inputStream.close();
 
@@ -2412,7 +2409,7 @@ void CHEF::_fileSaveAs()
   beamline* bmlPtr = (beamline*) _p_currBmlCon->cheatBmlPtr();
 
   if( s.length() > 0 ) {
-    ofstream outStream( s.latin1() );
+    std::ofstream outStream( s.latin1() );
     outStream << *bmlPtr;
     outStream.close();
   }
