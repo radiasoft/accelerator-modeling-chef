@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -30,6 +27,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <stdlib.h>
 #include "CLieOperator.h"
@@ -86,10 +86,9 @@ CLieOperator::CLieOperator( JetC__environment* theEnv )
  myEnv = theEnv;
  
  if( theEnv->SpaceDim == 0 ) {
-   cerr << "\n*** ERROR *** CLieOperator::CLieOperator called, \n"
-        <<   "*** ERROR *** for a zero-dimensional phase space.\n"
-        << endl;
-   exit(0);
+   throw( JLC::GenericException(__FILE__, __LINE__, 
+          "CLieOperator::CLieOperator( JetC__environment* ) ",
+          "Phase space has dimension zero." ) );
  }
 
 #ifdef OBJECT_DEBUG
@@ -137,20 +136,17 @@ CLieOperator::CLieOperator( const JetC& x )
  int* ndx = new int [n];
 
  if( s == 0 ) {
-  cerr << "\n*** ERROR: CLieOperator::CLieOperator( JetC ) called "
-       << "with zero-dimensional phase space."
-       << endl;
-  exit(0);
+   throw( JLC::GenericException(__FILE__, __LINE__, 
+          "CLieOperator::CLieOperator( const JetC& ) ",
+          "Phase space has dimension zero." ) );
  }
  
  if( 2*(s/2) != s ) {
-  cerr << "*** ERROR ***                                           \n"
-          "*** ERROR *** CLieOperator::CLieOperator( const JetC& )    \n"
-          "*** ERROR *** Phase space has odd dimension = " << s
-                                                           << "    \n"
-          "*** ERROR ***                                           \n"
-       << endl;
-  exit(0);
+   ostringstream uic;
+   uic  << "Phase space has odd dimension = " << s;
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "CLieOperator::CLieOperator( const JetC& ) ",
+          uic.str().c_str() ) );
  }
 
  for( i = 0; i < n; i++ ) ndx[i] = 0;
@@ -187,15 +183,15 @@ CLieOperator::CLieOperator( char*, JetC__environment* pje  )
  int i;
  
  if( pje->SpaceDim == 0 ) {
-   cerr << "\n*** ERROR: CLieOperator::CLieOperator called " << endl;
-   cerr << "but phase space has dimension 0.\n" << endl;
-   exit(0);
+   throw( JLC::GenericException(__FILE__, __LINE__, 
+          "CLieOperator::CLieOperator( char*, JetC__environment* ) ",
+          "Phase space has dimension zero." ) );
    }
  
  if( !pje ) {
-   cerr << "\n*** CLieOperator::CLieOperator( char* ) ERROR *** " << endl;
-   cerr << "No environment defined." << endl;
-   exit(0);
+   throw( JLC::GenericException(__FILE__, __LINE__, 
+          "CLieOperator::CLieOperator( char*, JetC__environment* ) ",
+          "Jet__environment pointer is null." ) );
    }
  
  myEnv = pje;
@@ -224,26 +220,20 @@ void CLieOperator::setVariable( const JetC& x, int j ) {
 
  
  if( myEnv != x.Env() ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** CLieOperator::setVariable( JetC, int )     \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** Inconsistent environments.               \n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+   throw( JLC::GenericException(__FILE__, __LINE__, 
+          "void CLieOperator::setVariable( const JetC&, int ) ",
+          "Inconsistent environments." ) );
  }
 
  if( j < 0 || myEnv->SpaceDim <= j ) {
-  cerr << "\n***ERROR ***                                            \n" << endl;
-  cerr << "***ERROR *** CLieOperator::setVariable( JetC&, int )        \n" << endl;
-  cerr << "***ERROR *** It is certainly not true                     \n" << endl;
-  cerr << "***ERROR *** that 0 <= " << j << " < " 
-                                    << myEnv->SpaceDim << "            \n" << endl;
-  cerr << "***ERROR ***                                              \n" << endl;
-  cerr << "***ERROR *** Sorry.  Good bye.                            \n" << endl;
-  cerr << "***ERROR ***                                              \n" << endl;
-  exit(0);
+   ostringstream uic;
+   uic  << "Argument j = " << j
+        << ": it should be within [ 0, "
+        << myEnv->SpaceDim
+        << " ].";
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "void CLieOperator::setVariable( const JetC& x, int j ) ",
+          uic.str().c_str() ) );
  }
  
  comp[j] = x;
@@ -254,15 +244,14 @@ void CLieOperator::setVariable( const JetC& x, int j ) {
 void CLieOperator::setVariable( const Complex& x, const int& j ) {
 
  if( j < 0 || dim <= j ) {
-  printf( "\n***ERROR ***                                              \n" );
-  printf(   "***ERROR *** CLieOperator::setVariable( Complex, int )      \n" );
-  printf(   "***ERROR *** It is certainly not true                     \n" );
-  printf(   "***ERROR *** that 0 <= %d < %d                            \n",
-            j, dim );
-  printf(   "***ERROR ***                                              \n" );
-  printf(   "***ERROR *** Sorry.  Good bye.                            \n" );
-  printf(   "***ERROR ***                                              \n" );
-  exit(0);
+   ostringstream uic;
+   uic  << "Argument j = " << j
+        << ": it should be within [ 0, "
+        << dim
+        << " ].";
+   throw( JLC::GenericException( __FILE__, __LINE__, 
+          "void CLieOperator::setVariable( const Complex& x, const int& j )",
+          uic.str().c_str() ) );
  }
  
  myEnv->refPoint[j] = x;  // WARNING: The environment is altered!
@@ -397,14 +386,9 @@ JetC CLieOperator::operator^( const JetC& x ) const
 { 
 
  if( myEnv != x.Env() ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                   \n"
-         << "*** ERROR *** CLieOperator::operator^( JetC )   \n"
-         << "*** ERROR ***                                   \n"
-         << "*** ERROR *** Inconsistent environments.        \n"
-         << "*** ERROR ***                                   \n"
-         << endl;
-    exit(1);
+   throw( JLC::GenericException(__FILE__, __LINE__, 
+          "JetC CLieOperator::operator^( const JetC& ) const ",
+          "Inconsistent environments." ) );
  }
 
  static JetC__environment* pje;
@@ -437,22 +421,16 @@ JetC CLieOperator::operator^( const JetC& x ) const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CLieOperator operator^( /* const */ CLieOperator& x, 
-                        /* const */ CLieOperator& y ) 
+CLieOperator operator^( /* const */ CLieOperator& x, /* const */ CLieOperator& y )
 {
+ // ??? const has to be systematically fixed throughout MXYZPTLK
+
  if( x.myEnv != y.myEnv ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                    \n"
-        << "*** ERROR *** CLieOperator operator^( CLieOp CLieOp ) \n"
-        << "*** ERROR ***                                    \n"
-        << "*** ERROR *** Arguments have different           \n"
-        << "*** ERROR *** environments.                      \n"
-        << "*** ERROR ***                                    \n"
-        << endl;
-   exit(1);
+   throw( JLC::GenericException(__FILE__, __LINE__, 
+          "CLieOperator operator^( const CLieOperator& , const CLieOperator& y )",
+          "Arguments have different environments." ) );
  }
 
- // ??? const has to be systematically fixed throughout MXYZPTLK
  CLieOperator z( x.myEnv );
  int i;
  for( i = 0; i < x.dim; i++ ) 

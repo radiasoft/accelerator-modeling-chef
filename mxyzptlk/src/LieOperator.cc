@@ -84,10 +84,9 @@ LieOperator::LieOperator( Jet__environment* theEnv )
  myEnv = theEnv;
  
  if( theEnv->SpaceDim == 0 ) {
-   cerr << "\n*** ERROR *** LieOperator::LieOperator called, \n"
-        <<   "*** ERROR *** for a zero-dimensional phase space.\n"
-        << endl;
-   exit(0);
+   throw( JL::GenericException(__FILE__, __LINE__, 
+          "LieOperator::LieOperator( Jet__environment* ) ",
+          "Phase space has dimension zero." ) );
  }
 
 #ifdef OBJECT_DEBUG
@@ -135,20 +134,17 @@ LieOperator::LieOperator( const Jet& x )
  int* ndx = new int [n];
 
  if( s == 0 ) {
-  cerr << "\n*** ERROR: LieOperator::LieOperator( Jet ) called "
-       << "with zero-dimensional phase space."
-       << endl;
-  exit(0);
+   throw( JL::GenericException(__FILE__, __LINE__, 
+          "LieOperator::LieOperator( const Jet& ) ",
+          "Phase space has dimension zero." ) );
  }
  
  if( 2*(s/2) != s ) {
-  cerr << "*** ERROR ***                                           \n"
-          "*** ERROR *** LieOperator::LieOperator( const Jet& )    \n"
-          "*** ERROR *** Phase space has odd dimension = " << s
-                                                           << "    \n"
-          "*** ERROR ***                                           \n"
-       << endl;
-  exit(0);
+   ostringstream uic;
+   uic  << "Phase space has odd dimension = " << s;
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "LieOperator::LieOperator( const Jet& ) ",
+          uic.str().c_str() ) );
  }
 
  for( i = 0; i < n; i++ ) ndx[i] = 0;
@@ -185,15 +181,15 @@ LieOperator::LieOperator( char*, Jet__environment* pje  )
  int i;
  
  if( pje->SpaceDim == 0 ) {
-   cerr << "\n*** ERROR: LieOperator::LieOperator called " << endl;
-   cerr << "but phase space has dimension 0.\n" << endl;
-   exit(0);
+   throw( JL::GenericException(__FILE__, __LINE__, 
+          "LieOperator::LieOperator( char*, Jet__environment* ) ",
+          "Phase space has dimension zero." ) );
    }
  
  if( !pje ) {
-   cerr << "\n*** LieOperator::LieOperator( char* ) ERROR *** " << endl;
-   cerr << "No environment defined." << endl;
-   exit(0);
+   throw( JL::GenericException(__FILE__, __LINE__, 
+          "LieOperator::LieOperator( char*, Jet__environment* ) ",
+          "Jet__environment pointer is null." ) );
    }
  
  myEnv = pje;
@@ -218,30 +214,23 @@ LieOperator::~LieOperator() {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LieOperator::setVariable( const Jet& x, int j ) {
-
- 
+void LieOperator::setVariable( const Jet& x, int j ) 
+{
  if( myEnv != x.Env() ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** LieOperator::setVariable( Jet, int )     \n"
-         << "*** ERROR ***                                          \n"
-         << "*** ERROR *** Inconsistent environments.               \n"
-         << "*** ERROR ***                                          \n"
-         << endl;
-    exit(1);
+   throw( JL::GenericException(__FILE__, __LINE__, 
+          "void LieOperator::setVariable( const Jet&, int ) ",
+          "Inconsistent environments." ) );
  }
 
  if( j < 0 || myEnv->SpaceDim <= j ) {
-  cerr << "\n***ERROR ***                                            \n" << endl;
-  cerr << "***ERROR *** LieOperator::setVariable( Jet&, int )        \n" << endl;
-  cerr << "***ERROR *** It is certainly not true                     \n" << endl;
-  cerr << "***ERROR *** that 0 <= " << j << " < " 
-                                    << myEnv->SpaceDim << "            \n" << endl;
-  cerr << "***ERROR ***                                              \n" << endl;
-  cerr << "***ERROR *** Sorry.  Good bye.                            \n" << endl;
-  cerr << "***ERROR ***                                              \n" << endl;
-  exit(0);
+   ostringstream uic;
+   uic  << "Argument j = " << j
+        << ": it should be within [ 0, "
+        << myEnv->SpaceDim
+        << " ].";
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "void LieOperator::setVariable( const Jet& x, int j ) ",
+          uic.str().c_str() ) );
  }
  
  comp[j] = x;
@@ -252,15 +241,14 @@ void LieOperator::setVariable( const Jet& x, int j ) {
 void LieOperator::setVariable( const double& x, const int& j ) {
 
  if( j < 0 || dim <= j ) {
-  printf( "\n***ERROR ***                                              \n" );
-  printf(   "***ERROR *** LieOperator::setVariable( double, int )      \n" );
-  printf(   "***ERROR *** It is certainly not true                     \n" );
-  printf(   "***ERROR *** that 0 <= %d < %d                            \n",
-            j, dim );
-  printf(   "***ERROR ***                                              \n" );
-  printf(   "***ERROR *** Sorry.  Good bye.                            \n" );
-  printf(   "***ERROR ***                                              \n" );
-  exit(0);
+   ostringstream uic;
+   uic  << "Argument j = " << j
+        << ": it should be within [ 0, "
+        << dim
+        << " ].";
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "void LieOperator::setVariable( const double& x, const int& j )",
+          uic.str().c_str() ) );
  }
  
  myEnv->refPoint[j] = x;  // WARNING: The environment is altered!
@@ -395,14 +383,9 @@ Jet LieOperator::operator^( const Jet& x ) const
 { 
 
  if( myEnv != x.Env() ) {
-    cerr << "\n\n"
-         << "*** ERROR ***                                   \n"
-         << "*** ERROR *** LieOperator::operator^( Jet )     \n"
-         << "*** ERROR ***                                   \n"
-         << "*** ERROR *** Inconsistent environments.        \n"
-         << "*** ERROR ***                                   \n"
-         << endl;
-    exit(1);
+   throw( JL::GenericException(__FILE__, __LINE__, 
+          "Jet LieOperator::operator^( const Jet& ) const ",
+          "Inconsistent environments." ) );
  }
 
  static Jet__environment* pje;
@@ -435,22 +418,16 @@ Jet LieOperator::operator^( const Jet& x ) const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LieOperator operator^( /* const */ LieOperator& x, 
-                       /* const */ LieOperator& y ) 
+LieOperator operator^( /* const */ LieOperator& x, /* const */ LieOperator& y )
 {
+ // ??? const has to be systematically fixed throughout MXYZPTLK
+
  if( x.myEnv != y.myEnv ) {
-   cerr << "\n\n"
-        << "*** ERROR ***                                    \n"
-        << "*** ERROR *** LieOperator operator^( LieOp LieOp ) \n"
-        << "*** ERROR ***                                    \n"
-        << "*** ERROR *** Arguments have different           \n"
-        << "*** ERROR *** environments.                      \n"
-        << "*** ERROR ***                                    \n"
-        << endl;
-   exit(1);
+   throw( JL::GenericException(__FILE__, __LINE__, 
+          "LieOperator operator^( const LieOperator& , const LieOperator& y )",
+          "Arguments have different environments." ) );
  }
 
- // ??? const has to be systematically fixed throughout MXYZPTLK
  LieOperator z( x.myEnv );
  int i;
  for( i = 0; i < x.dim; i++ ) 
