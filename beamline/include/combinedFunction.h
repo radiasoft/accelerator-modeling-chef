@@ -23,6 +23,7 @@ private:
   void propagate( ParticleBunch& x ) { bmlnElmnt::propagate( x ); }
   void propagate( Particle& );
   void propagate( JetParticle& );
+  void accept( BmlVisitor& v ) { v.visitCombinedFunction( this ); }
   
   void setField(WHICH_MULTIPOLE, double field);
   double Field(WHICH_MULTIPOLE);

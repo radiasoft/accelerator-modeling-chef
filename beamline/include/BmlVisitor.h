@@ -113,6 +113,8 @@ public:
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
   virtual void visitThinLamb( thinLamb* x ) 
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitCombinedFunction( combinedFunction* x )
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
 
 protected:
   BmlVisitor() {}
