@@ -1852,7 +1852,6 @@ JetC epsPow( const JetC& epsilon, const double& s ) {
  static JetC term;
  static double f;
  static double n;
- static int i;
 
  z->myEnv = epsilon->myEnv;
  z = complex_1;
