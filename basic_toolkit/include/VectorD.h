@@ -49,7 +49,7 @@
 #include <string>
 
 #include <math.h>
-#include "Matrix.h"     // Needed only for final utility.
+#include "TMatrix.h"     // Needed only for final utility.
 #include "OutputFormat.h"
 
 class Vector 
@@ -143,6 +143,6 @@ public:
 
 
 // Utilities
-Vector operator*( const MatrixD&, const Vector& );
+Vector operator*( const TMatrix<double>&, const Vector& );
 
 #endif  // VECTOR_H

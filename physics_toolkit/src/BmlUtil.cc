@@ -35,7 +35,7 @@
 #endif
 
 #include "BmlUtil.h"
-#include "Matrix.h"
+#include "TMatrix.h"
 
 using FNAL::Complex;
 using namespace std;

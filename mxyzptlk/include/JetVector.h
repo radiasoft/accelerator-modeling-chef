@@ -47,7 +47,7 @@
 #include <math.h>
 #include "Jet.h"
 #include "VectorD.h"
-#include "Matrix.h"
+#include "TMatrix.h"
 
 class JetCVector;
 

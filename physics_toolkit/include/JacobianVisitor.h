@@ -36,7 +36,6 @@
 #include "particleVisitor.h"
 
 class beamline;
-class MatrixD;
 
 /// The JacobianVisitor class is a Visitor Pattern class which calculates
 /// the Jacobian for each beamline and beamline element recursively. A

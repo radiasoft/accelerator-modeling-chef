@@ -40,7 +40,7 @@
 
 #include "dlist.h"
 #include "IntArray.h"
-#include "Matrix.h"
+#include "TMatrix.h"
 #include "VectorD.h"
 // ??? REMOVE: #include "Jet.h"    // Needed for Jet::scratchFile
 #include "Jet__environment.h"
