@@ -112,6 +112,13 @@ public:
   double get_npy()   { return state[4]; }
   double get_ndp()   { return state[5]; }
 
+  void set_x   ( double u )  { state[0] = u; }
+  void set_y   ( double u )  { state[1] = u; }
+  void set_cdt ( double u )  { state[2] = u; }
+  void set_npx ( double u )  { state[3] = u; }
+  void set_npy ( double u )  { state[4] = u; }
+  void set_ndp ( double u )  { state[5] = u; }
+
   inline Vector State() 
          {  return Vector( BMLN_dynDim, state ); } 
          // Returns the state as a Vector object.
