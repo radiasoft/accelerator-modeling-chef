@@ -6,22 +6,26 @@
 #endif
 
 class beamline;
-class LattFuncSage;
 class ClosedOrbitSage;
 class ChromaticityAdjuster;
 class TuneAdjuster;
 class ConstBmlVisitor;
 class Particle;
+class JetProton;
 class bmlnElmnt;
 class BeamlineIterator;
 class DeepBeamlineIterator;
 class ReverseBeamlineIterator;
 class DeepReverseBeamlineIterator;
 
+#ifndef LATTFUNCSAGE_H
+#include "LattFuncSage.h"
+#endif
+
 class BeamlineContext
 {
   public:
-    BeamlineContext( bool=false, beamline* = 0 );
+    BeamlineContext( bool = false, beamline* = 0 );
     BeamlineContext( const BeamlineContext& );
     // If first argument is true, the
     // beamline is cloned, and therefore
@@ -41,6 +45,15 @@ class BeamlineContext
     void peekAt( double& s, Particle* = 0 ) const;
     double sumLengths() const;
     int setLength( bmlnElmnt*, double );
+    double getEnergy() const;
+    int countHowManyDeeply() const;
+
+
+    // Sage operations
+    double getHorizontalFracTune();
+    double getVerticalFracTune();
+    const LattFuncSage::lattFunc* getLattFuncPtr( int );
+
 
     // Iterator functions
     int beginIterator();
@@ -77,12 +90,23 @@ class BeamlineContext
     ChromaticityAdjuster* _p_ca;
     TuneAdjuster*         _p_ta;
 
+    JetProton*            _p_jp;
+    // once created, its state always contains
+    // one traversal of the beamline.
+
+    LattFuncSage::tunes*  _tunes;
+
     bool                  _isCloned;
+    bool                  _normalLattFuncsCalcd;
 
     BeamlineIterator*            _p_bi;
     DeepBeamlineIterator*        _p_dbi;
     ReverseBeamlineIterator*     _p_rbi;
     DeepReverseBeamlineIterator* _p_drbi;
+
+    void _createLFS();
+    void _deleteLFS();
+    void _createTunes();
 };
 
 #endif // BEAMLINECONTEXT_H
