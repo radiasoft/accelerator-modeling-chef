@@ -34,7 +34,7 @@
 #define JETQUADRUPOLE_H
 
 #include "bmlnElmnt.h"
-#include "Jet"
+#include "Jet.h"
 
 class JetQuadrupole : public bmlnElmnt
 {

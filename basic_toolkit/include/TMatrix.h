@@ -176,7 +176,7 @@ public:
 };
 
 
-// Special subclass RandomOrthogonal
+// Special class RandomOrthogonal
 class RandomOrthogonal
 {
   public: 

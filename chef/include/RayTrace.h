@@ -83,8 +83,8 @@ class RayTrace : public QVBox
 Q_OBJECT
 
 public:
-  RayTrace( beamline* );
-  RayTrace( BeamlineContext* );
+  RayTrace( beamline* ,       QWidget* parent=0, const char* name=0, WFlags f=0);
+  RayTrace( BeamlineContext*, QWidget* parent=0, const char* name=0, WFlags f=0);
   ~RayTrace();
   int run();
 

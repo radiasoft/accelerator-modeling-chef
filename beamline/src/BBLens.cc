@@ -33,7 +33,7 @@
 #include <config.h>
 #endif
 
-#include "Jet"
+#include "Jet.h"
 #include "BBLens.h"
 #include "EdwardsTeng.h"  // ??? Doesn't belong.
 

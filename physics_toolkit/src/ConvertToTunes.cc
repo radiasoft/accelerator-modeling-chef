@@ -52,8 +52,8 @@
 #include <config.h>
 #endif
 
-#include "LieOperator"
-#include "Mapping"
+#include "LieOperator.h"
+#include "Mapping.h"
 #include "MathConstants.h"
 
 #include <iomanip>

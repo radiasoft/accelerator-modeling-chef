@@ -37,7 +37,7 @@
 #include "bmlnElmnt.h"
 #endif
 
-#include "Mapping"
+#include "Mapping.h"
 #include "Particle.h"
 
 class sector : public bmlnElmnt

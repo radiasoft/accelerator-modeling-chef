@@ -31,10 +31,10 @@
 #ifndef T_MXYZPTLK
 #define T_MXYZPTLK
 
-#include "Jet"
-#include "JetVector"
-#include "LieOperator"
-#include "Mapping"
+#include "Jet.h"
+#include "JetVector.h"
+#include "LieOperator.h"
+#include "Mapping.h"
 
 
 #endif // T_MXYZPTLK

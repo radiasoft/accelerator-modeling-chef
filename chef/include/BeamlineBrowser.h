@@ -191,6 +191,8 @@ signals:
     void sig_bmlLeftClicked( BeamlineContext* );
     void sig_bmlLeftClicked( QBml* );
     void sig_newContext( BeamlineContext* );
+    void sig_browserIsEmpty();
+    void sig_browserIsNotEmpty();
 
 protected slots:
     void slotFolderSelected( QListViewItem * );

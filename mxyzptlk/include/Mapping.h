@@ -32,11 +32,11 @@
 #define TMAPPING
 
 #ifndef TJET
-#include "Jet"
+#include "Jet.h"
 #endif
 
 #ifndef TJETVECTOR
-#include "JetVector"
+#include "JetVector.h"
 #endif
 
 #include "TMapping.tcc"
