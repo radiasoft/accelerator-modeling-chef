@@ -112,6 +112,10 @@ main( int argc, char** argv ) {
       << endl;
 
 
+ cout << "The control:\n"
+      << adj.getControls()
+      << endl;
+
  // Clean up before exiting
  cell.zap();
 }

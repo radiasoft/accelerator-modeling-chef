@@ -14,14 +14,14 @@
 #include "LattFuncSage.h"
 
 ChromaticityAdjuster::ChromaticityAdjuster( const beamline* x ) 
-: Sage( x ), _numberOfCorrectors(0)
+: Sage( x ), _numberOfCorrectors(0), _c(2,1)
 {
   _correctors = 0;
   _f = 0;
 }
 
 ChromaticityAdjuster::ChromaticityAdjuster( const beamline& x ) 
-: Sage( &x ), _numberOfCorrectors(0)
+: Sage( &x ), _numberOfCorrectors(0), _c(2,1)
 {
   _correctors = 0;
   _f = 0;
@@ -99,7 +99,7 @@ void ChromaticityAdjuster::addCorrector( const thinSextupole* x, double a, doubl
 }
 
 
-int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetProton& jp ) const
+int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetProton& jp )
 {
   int j;
   double delta_H = x;
@@ -123,9 +123,8 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPr
   int N = this->numberOfCorrectors();
   MatrixD beta      (2,N);
   MatrixD delta_xi  (2,1);
-  MatrixD c         (2,1);
   MatrixD w         (N,1);
-  MatrixD dsp       (N,1);
+  double  dsp;
   // delta_xi = beta*_f*c
   // w = _f*c
   // delta strength_k = 2 pi * brho * w_k / dps_k
@@ -134,19 +133,20 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPr
   bmlnElmnt* q; 
   for( j = 0; j < N; j++ ) 
   {
-    ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
-    if(!ptr) {
-      cout << "No lattice functions." << endl;
-      exit(1);
-    }
-    beta(0,j) =   ptr->beta.hor;
-    beta(1,j) = - ptr->beta.ver;
     ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Dispersion" );
     if(!ptr) {
       cout << "No dispersion." << endl;
       exit(1);
     }
-    dsp(j,0)  =   ptr->dispersion.hor;
+    dsp       =   ptr->dispersion.hor;
+
+    ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
+    if(!ptr) {
+      cout << "No lattice functions." << endl;
+      exit(1);
+    }
+    beta(0,j) =   ptr->beta.hor * dsp;
+    beta(1,j) = - ptr->beta.ver * dsp;
   }
   
 
@@ -154,18 +154,18 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPr
   delta_xi(0,0) = delta_H;
   delta_xi(1,0) = delta_V;
  
-  c = (beta*(*_f)).inverse() * delta_xi;
-  w = (*_f)*c;
- 
   double brho = jpr.ReferenceBRho();
+  _c = (M_TWOPI*brho)*( (beta*(*_f)).inverse() * delta_xi );
+  w = (*_f)*_c;
+ 
   for( j = 0; j < _numberOfCorrectors; j++ ) 
   {
     q = _correctors[j];
     if( _isaThinSextupole(q) ) {
-      q->setStrength( q->Strength() + (M_TWOPI*brho*w(j,0)/dsp(j,0)) );
+      q->setStrength( q->Strength() + w(j,0) );
     }
     else {
-      q->setStrength( q->Strength() + ((M_TWOPI*brho*w(j,0)/dsp(j,0))/q->Length()) );
+      q->setStrength( q->Strength() + (w(j,0)/q->Length()) );
     }
   }
 

@@ -1,3 +1,19 @@
+/*
+ *  File: ChromaticityAdjuster.icc
+ *  
+ *  Implementation for a sage that adjusts
+ *  chromaticities given a collection of "correction"
+ *  sextupoles
+ *  
+ *  Leo Michelotti
+ *  February 1, 1999
+ *
+ */
+
+#ifndef CHROMADJUST_ICC
+#define CHROMADJUST_ICC
+
+
 inline int  ChromaticityAdjuster::numberOfCorrectors() const
 {
   return _numberOfCorrectors;
@@ -8,3 +24,12 @@ inline char ChromaticityAdjuster::_isaThinSextupole( const bmlnElmnt* q ) const
 {
   return ( 0 == strcmp( q->Type(), "thinSextupole" ) );
 }
+
+
+inline MatrixD ChromaticityAdjuster::getControls()
+{
+  return _c;
+}
+
+
+#endif // CHROMADJUST_ICC
