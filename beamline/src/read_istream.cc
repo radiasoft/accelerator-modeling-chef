@@ -406,9 +406,17 @@ istream& operator>>(istream& is, beamline& bl)
 ostream& operator<<(ostream& os, bmlnElmnt& b)
 {
   if ( &b ) {
-    os << OSTREAM_DOUBLE_PREC << b.Type() << " " << b.Name() << " " << b.Length() << " " << b.Strength() << " " ;
+    os << OSTREAM_DOUBLE_PREC 
+       << b.Type() 
+       << " " 
+       << b.Name() 
+       << " " 
+       << b.Length() 
+       << " " 
+       << b.Strength() 
+       << " " ;
     os << (*b.align) << "\n";
-    b.writeTo(os);		// Polymorphically call the appropriate writeTo().
+    b.writeTo(os); // Polymorphically call the appropriate writeTo().
   }
   return os;
 }

@@ -96,6 +96,11 @@ void rbend::eliminate() {
 }
 
 
+char* rbend::Type() const { 
+  return "rbend"; 
+}
+
+
 double rbend::OrbitLength( const Particle& x )
 {
   static double tworho;

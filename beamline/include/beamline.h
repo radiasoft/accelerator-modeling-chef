@@ -841,7 +841,8 @@ public:
 
   rbendData* image();
 
-  char* Type() const { return "rbend"; }
+  // ??? REMOVE: char* Type() const { return "rbend"; }
+  char* Type() const;
   bmlnElmnt* Clone() const { return new rbend( *this ); }
   double OrbitLength( const Particle& );
   void Split( double, bmlnElmnt**, bmlnElmnt** );
@@ -1161,7 +1162,8 @@ public:
 
   void accept( BmlVisitor& v ) { v.visitThinQuad( this ); }
 
-  char* Type() const { return "thinQuad"; }
+  // ??? REMOVE: char* Type() const { return "thinQuad"; }
+  char* Type() const;
   bmlnElmnt* Clone() const { return new thinQuad( *this ); }
 } ;
 
@@ -1218,7 +1220,8 @@ public:
 
   void accept( BmlVisitor& v ) { v.visitThinSextupole( this ); }
 
-  char* Type() const { return "thinSextupole"; }
+  // ??? REMOVE: char* Type() const { return "thinSextupole"; }
+  char* Type() const;
   bmlnElmnt* Clone() const { return new thinSextupole( *this ); }
 } ;
 
