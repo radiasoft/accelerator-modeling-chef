@@ -206,7 +206,7 @@ void           beam_element_set_udata( beam_element* bel, void* udata );
   
 void           beam_element_set_linenum( beam_element* bel, int linenum, const char* filename, int local_linenum );
 
-int            beam_element_delete( beam_element* bel, fb_allocator* bel_alloc );
+int            beam_element_delete( beam_element* bel, fb_allocator* bel_alloc, fb_allocator* expr_alloc );
 
 beam_element*  beam_element_copy( beam_element* bel, fb_allocator* bel_alloc );
 
@@ -217,4 +217,4 @@ void           beam_element_display( FILE* out, beam_element* bel, GHashTable* v
 };
 #endif
 
-#endif // beam_element_h
+#endif /*beam_element_h */
