@@ -1,125 +1,29 @@
 // Insertion for CF_rbend constructors
 // 
-  double rho         = lng / ( 2.0*sin( ang/2.0 ) );
-  double brho        = fld*rho;
-  // ??? REMOVE double arcLength   = rho*ang;
+  double field       = this->strength;
+  double frontLength =  6.0*(this->length/4.0)/15.0;
+  double sepLength   = 16.0*(this->length/4.0)/15.0;
 
-  // ??? REMOVE What convoluted code! ....
-  // ??? REMOVE double brho        = fld / ( 2.0*sin( ang/2.0 )/lng );
-  // ??? REMOVE double rho         = brho / fld;
-  // ??? REMOVE double arcLength   = ( 2.0*rho )*asin( lng/( 2.0*rho ) );
+  rbend inEdge  ( frontLength, field, ang,
+                  rbend::P_InEdge, rbend::J_InEdge   );
+  rbend outEdge ( frontLength, field, ang,
+                  rbend::P_OutEdge, rbend::J_OutEdge );
+  rbend body    ( sepLength, field,
+                  rbend::P_NoEdge, rbend::J_NoEdge   );
+  // rbend* inner   = new rbend ( frontLength, field,
+  //                              rbend::P_NoEdge, rbend::J_NoEdge   );
 
-  double frontLength =  6.0*(lng/4.0)/15.0;
-  double sepLength   = 16.0*(lng/4.0)/15.0;
+  thinSextupole eddyCurrentSex( 0.0 );
 
-  // ??? Where were these written in terms of the arcLength???
-  // ??? REMOVE double frontLength = 6.0*(arcLength/4.0)/15.0;
-  // ??? REMOVE double sepLength   = 16.0*(arcLength/4.0)/15.0;
+  _u = new bmlnElmnt* [ 9 ];
+  _v = _u;
 
-  int    xmltDim     = xmlt.Dim();
-
-  if( 0 != xmltDim % 2 ) {
-    cerr << "*** ERROR ***                                 \n"
-            "*** ERROR *** CF_rbend::CF_rbend              \n"
-            "*** ERROR *** There must be an even number of \n"
-            "*** ERROR *** components in the multipole     \n"
-            "*** ERROR *** vector.                         \n"
-            "*** ERROR ***                                 \n"
-         << endl;
-    exit(1);
-  }
-  
-  double quadStrength;
-  double sextStrength;
-
-  // ??? Where were these written in terms of the arcLength???
-  // ??? REMOVE if( xmltDim > 2 ) quadStrength = brho*xmlt(2)*arcLength;
-  // ??? REMOVE else              quadStrength = 0.0;
-  // ??? REMOVE if( xmltDim > 4 ) sextStrength = brho*xmlt(4)*arcLength/2.0;
-  // ??? REMOVE else              sextStrength = 0.0;
-
-  if( xmltDim > 2 ) quadStrength = brho*xmlt(2)*lng;
-  else              quadStrength = 0.0;
-  if( xmltDim > 4 ) sextStrength = brho*xmlt(4)*lng/2.0;
-  else              sextStrength = 0.0;
-
-  rbend*         ARCF_BODY  = new rbend         ( sepLength/4.0, fld,
-                                                   rbend::P_NoEdge, rbend::J_NoEdge    );
-  rbend*         ARCF_INNER = new rbend         ( frontLength/4.0, fld,
-                                                   rbend::P_NoEdge, rbend::J_NoEdge    );
-  thinQuad*      ARCF_QUAD  = new thinQuad      ( quadStrength/16.0 );
-  thinSextupole* ARCF_SEX   = new thinSextupole ( sextStrength/16.0 );
-
-  bmlnElmnt** v = u;
-
-  *(v++) = ARCF_INNER;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_BODY;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_BODY;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_BODY;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_INNER;
-
-  *(v++) = ARCF_INNER;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_BODY;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_BODY;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_BODY;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_INNER;
-
-  *(v++) = ARCF_INNER;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_BODY;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_BODY;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_BODY;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_INNER;
-
-  *(v++) = ARCF_INNER;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_BODY;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_BODY;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_BODY;
-  *(v++) = ARCF_QUAD;
-  *(v++) = ARCF_SEX;
-  *(v++) = ARCF_INNER;
-
-  // ??? This needs to be changed.
-  alignmentData tmpAlign;
-  tmpAlign.xOffset = -0.007833;
-  tmpAlign.yOffset = 0.0;
-  tmpAlign.tilt = 0.0;
-
-  // The following code is identical to 
-  // bmlnElmnt::setAlignment
-  if(align != 0) {
-    delete align;
-    align = 0;
-  }
-  if((tmpAlign.xOffset != 0.0) || (tmpAlign.yOffset != 0.0) || (tmpAlign.tilt != 0.0)) {
-    align = new alignment(tmpAlign);
-  }
+  *(_v++) = new rbend          ( inEdge         );
+  *(_v++) = new thinSextupole  ( eddyCurrentSex );
+  *(_v++) = new rbend          ( body           );
+  *(_v++) = new thinSextupole  ( eddyCurrentSex );
+  *(_v++) = new rbend          ( body           );
+  *(_v++) = new thinSextupole  ( eddyCurrentSex );
+  *(_v++) = new rbend          ( body           );
+  *(_v++) = new thinSextupole  ( eddyCurrentSex );
+  *(_v  ) = new rbend          ( outEdge        );
