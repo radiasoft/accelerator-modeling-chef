@@ -997,16 +997,17 @@ beamline* beamline::flatten() const {
  bmlnElmnt*      q;
 
  r = new beamline;
- r->setEnergy(nominalEnergy);
+
  while ((  p = (bmlnElmnt*) getNext()  ))  {
    if( strcasecmp( p->Type(), "beamline" ) == 0 )
    { 
      s = ( (beamline*) p ) -> flatten();
      getNew = new dlist_iterator( *(dlist*) s );
-     while ((  q = (bmlnElmnt*) (*getNew)()  ))
+     while ((  q = (bmlnElmnt*) (*getNew)()  )) {
        r->append( q );
+     }
      delete getNew;
-     delete s; // ??? s->eliminate() ???
+     delete s;
    }
    else
    { // Only beamlines are composite objects
@@ -1014,9 +1015,11 @@ beamline* beamline::flatten() const {
    }
  }
 
+ r->setEnergy( this->Energy() );
+ r->Rename( this->Name() );
+ r->setLineMode( _mode );
  return r;
 } 
-
 
 
 int beamline::startAt( const bmlnElmnt* x, int n )
