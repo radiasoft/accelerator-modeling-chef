@@ -19,6 +19,7 @@ default:
 	@echo "  make solaris-gcc-debug for Solaris systems with GCC debug on"
 	@echo "  make solaris-depend    Creates the source depedencies using CC"
 	@echo "  make solaris-gcc-depend Creates the source depedencies using g++"
+	@echo "  make ultra-opt         for Solaris UltraSPARC systems, optimized"
 	@echo "  make setup             Make include and lib dirs and links."
 	@echo "  make real-clean        Remove all .o,.sb,.~ files, libraries and links."
 	@echo "  make lib-clean         Remove all library (.a) files."
@@ -62,7 +63,7 @@ APPDIRS  = filter/app \
 	sybase/app
 
 
-gcc egcs solaris-gcc solaris-gcc-debug solaris solaris-debug solaris-devel solaris-depend solaris-gcc-depend:
+gcc egcs solaris-gcc solaris-gcc-debug solaris solaris-debug ultra-opt solaris-devel solaris-depend solaris-gcc-depend:
 	@set -x; for i in $(SUBDIRS); do \
 		(cd $$i; $(MAKE)  $@); \
 		done
