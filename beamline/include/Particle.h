@@ -20,6 +20,7 @@ protected:
   friend class hkick;
   friend class octupole;
   friend class thinrfcavity;
+  friend class rfcavity;
   friend class srot;
   friend class vkick;
   friend class monitor;
@@ -86,12 +87,12 @@ public:
   virtual Particle* Clone() const = 0;
   
   // Phase space indices
-  short int xIndex()     { return 0; }
-  short int yIndex()     { return 1; }
-  short int cdtIndex()   { return 2; }
-  short int npxIndex()   { return 3; }
-  short int npyIndex()   { return 4; }
-  short int ndpIndex()   { return 5; }
+  short int xIndex()   const  { return 0; }
+  short int yIndex()   const  { return 1; }
+  short int cdtIndex() const  { return 2; }
+  short int npxIndex() const  { return 3; }
+  short int npyIndex() const  { return 4; }
+  short int ndpIndex() const  { return 5; }
 
   // Dimension of phase space
   static const short int PSD;
@@ -269,6 +270,7 @@ protected:
   friend class hkick;
   friend class octupole;
   friend class thinrfcavity;
+  friend class rfcavity;
   friend class srot;
   friend class vkick;
   friend class monitor;
@@ -336,12 +338,12 @@ public:
   virtual JetParticle* Clone() const = 0;
 
   // Phase space indices
-  short int xIndex()     { return 0; }
-  short int yIndex()     { return 1; }
-  short int cdtIndex()   { return 2; }
-  short int npxIndex()   { return 3; }
-  short int npyIndex()   { return 4; }
-  short int ndpIndex()   { return 5; }
+  short int xIndex()   const   { return 0; }
+  short int yIndex()   const   { return 1; }
+  short int cdtIndex() const   { return 2; }
+  short int npxIndex() const   { return 3; }
+  short int npyIndex() const   { return 4; }
+  short int ndpIndex() const   { return 5; }
 
   // Dimension of phase space
   short int psd()        { return Particle::PSD; }
