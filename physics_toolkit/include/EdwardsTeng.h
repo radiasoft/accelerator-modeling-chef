@@ -11,7 +11,14 @@
 #ifndef EDWARDSTENG_H
 #define EDWARDSTENG_H
 
-#include "beamline.h"
+#ifndef BMLNELMNT_H
+#include "bmlnElmnt.h"
+#endif
+
+#ifndef MATHCONS_H
+#include "MathConstants.h"
+#endif
+
 
 typedef char (*ET_CRITFUNC)( bmlnElmnt* );
 
