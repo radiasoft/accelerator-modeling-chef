@@ -40,6 +40,7 @@
 #include "beamline.h"
 #include "BeamlineContext.h"
 #include "bmlfactory.h"
+#include "QtMonitor.h"
 
 
 // FIX THIS:
@@ -66,13 +67,20 @@ void CHEF::_makeFODO()
   thinQuad F ( "F",    pr.ReferenceBRho() / f );
   thinQuad D ( "D",  - pr.ReferenceBRho() / f );
  
+  QtMonitor M( "Qt_monitor" );
+
+  bmlPtr->append( M.Clone() );
   for( int i = 0; i < 5; i++ ) {
     bmlPtr->append( O.Clone() );
     bmlPtr->append( F.Clone() );
+    bmlPtr->append( M.Clone() );
     bmlPtr->append( O.Clone() );
+    bmlPtr->append( M.Clone() );
     bmlPtr->append( O.Clone() );
     bmlPtr->append( D.Clone() );
+    bmlPtr->append( M.Clone() );
     bmlPtr->append( O.Clone() );
+    bmlPtr->append( M.Clone() );
   }
    
   bmlPtr->setEnergy( energy );
@@ -101,13 +109,20 @@ void CHEF::_makeSingSext()
   thinQuad      D ( "D",  - pr.ReferenceBRho() / f );
   thinSextupole S ( "S", 100.0*F.Strength() );
  
+  QtMonitor M( "Qt monitor" );
+
+  bmlPtr->append( M.Clone() );
   bmlPtr->append( O.Clone() );
   bmlPtr->append( F.Clone() );
+  bmlPtr->append( M.Clone() );
   bmlPtr->append( O.Clone() );
+  bmlPtr->append( M.Clone() );
   bmlPtr->append( S.Clone() );
   bmlPtr->append( O.Clone() );
   bmlPtr->append( D.Clone() );
+  bmlPtr->append( M.Clone() );
   bmlPtr->append( O.Clone() );
+  bmlPtr->append( M.Clone() );
    
   bmlPtr->setEnergy( energy );
   

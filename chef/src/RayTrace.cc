@@ -49,6 +49,7 @@
 #include <qmessagebox.h>
 #include <typeinfo>
 
+#include "GenericException.h"
 #include "RayTrace.h"
 #include "PointEdit.h"
 #include "Tracker.h"
@@ -191,12 +192,11 @@ void RayDrawSpace::drawH_ViewRect( RayDrawSpace* x )
       q = (Ray*) getNext();
       if(q) { glVertex3f( q->s, (q->z)(0), 0.0 ); }
       else {
-        cerr << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__
-             << "\n*** ERROR *** RayDrawSpace::drawH_ViewRect"
-             << "\n*** ERROR *** Impossible error 137 has occurred."
-             << "\n*** ERROR *** \n"
-             << endl;
-        exit(7);
+        ostringstream uic;
+        uic << "An impossibility has occurred\nin file "
+            << __FILE__
+            << " at line " << __LINE__ ;
+        QMessageBox::information( 0, "CHEF: ERROR", uic.str().c_str() );
       }
     }
     glEnd();
@@ -211,12 +211,11 @@ void RayDrawSpace::drawH_ViewRect( RayDrawSpace* x )
       q = (Ray*) getNext();
       if(q) { glVertex3f( q->s, (q->z)(0), 0.0 ); }
       else {
-        cerr << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__
-             << "\n*** ERROR *** RayDrawSpace::drawH_ViewRect"
-             << "\n*** ERROR *** Impossible error 137 has occurred."
-             << "\n*** ERROR *** \n"
-             << endl;
-        exit(7);
+        ostringstream uic;
+        uic << "An impossibility has occurred\nin file "
+            << __FILE__
+            << " at line " << __LINE__ ;
+        QMessageBox::information( 0, "CHEF: ERROR", uic.str().c_str() );
       }
     }
     glEnd();
@@ -254,12 +253,11 @@ void RayDrawSpace::drawV_ViewRect( RayDrawSpace* x )
       q = (Ray*) getNext();
       if(q) { glVertex3f( q->s, (q->z)(1), 0.0 ); }
       else {
-        cerr << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__
-             << "\n*** ERROR *** RayDrawSpace::drawV_ViewRect"
-             << "\n*** ERROR *** Impossible error 137 has occurred."
-             << "\n*** ERROR *** \n"
-             << endl;
-        exit(7);
+        ostringstream uic;
+        uic << "An impossibility has occurred\nin file "
+            << __FILE__
+            << " at line " << __LINE__ ;
+        QMessageBox::information( 0, "CHEF: ERROR", uic.str().c_str() );
       }
     }
     glEnd();
@@ -274,12 +272,11 @@ void RayDrawSpace::drawV_ViewRect( RayDrawSpace* x )
       q = (Ray*) getNext();
       if(q) { glVertex3f( q->s, (q->z)(1), 0.0 ); }
       else {
-        cerr << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__
-             << "\n*** ERROR *** RayDrawSpace::drawV_ViewRect"
-             << "\n*** ERROR *** Impossible error 137 has occurred."
-             << "\n*** ERROR *** \n"
-             << endl;
-        exit(7);
+        ostringstream uic;
+        uic << "An impossibility has occurred\nin file "
+            << __FILE__
+            << " at line " << __LINE__ ;
+        QMessageBox::information( 0, "CHEF: ERROR", uic.str().c_str() );
       }
     }
     glEnd();
@@ -326,16 +323,13 @@ RayTrace::RayTrace( /* const */ beamline* x )
   _deleteContext( true )
 {
   if( 0 == x ) {
-    cerr << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__
-         << "\n*** ERROR *** RayTrace::RayTrace( beamline* )"
-         << "\n*** ERROR *** null argument passed to constructor."
-         << "\n*** ERROR *** \n"
-         << endl;
-    exit(9);
+    throw( GenericException( __FILE__, __LINE__, 
+           "RayTrace::RayTrace( /* const */ beamline* x )", 
+           "null argument passed to constructor." ) );
   }
 
-  _bmlConPtr = new BeamlineContext( false, x );
-  this->_finishConstructor();
+    _bmlConPtr = new BeamlineContext( false, x );
+    this->_finishConstructor();
 }
 
 
@@ -534,7 +528,6 @@ RayTrace::~RayTrace()
 
 void RayTrace::_file_exit()
 {
-  cout << "DGN> Entered RayTrace::_file_exit" << endl;
 }
 
 
@@ -718,12 +711,16 @@ void RayTrace::_appendToHistory( double az, const Vector& state )
 
 void RayTrace::setState( const Vector& s )
 {
-  if( s.Dim() != 6 ) {
-    cout << "Error 988" << endl;
-    exit(988);
+  if( s.Dim() == 6 ) {
+    _bmlConPtr->_proton.setState( s );
   }
-
-  _bmlConPtr->_proton.setState( s );
+  else {
+    ostringstream uic;
+    uic  << "File: " << __FILE__ << ", Line: " << __LINE__
+         << "\nvoid RayTrace::setState( const Vector& s )"
+         << "\nArgument s has dimension " << (s.Dim()) << " != 6";
+    QMessageBox::information( this, "AESOP::Tracker", uic.str().c_str() );
+  }
 }
 
 

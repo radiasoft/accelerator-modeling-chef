@@ -6,7 +6,7 @@
 ******             interfaces to exercise the functionality        
 ******             of BEAMLINE.                                    
 ******                                                                
-******  Version:   3.0                    
+******  Version:   3.2
 ******                                    
 ******  File:      ExpressionBrowser.cc
 ******                                                                
@@ -32,6 +32,7 @@
 
 #include <iostream>
 
+#include "GenericException.h"
 #include "ExpressionBrowser.h"
 #include "ExpressionBrowser.xpm"
 
@@ -60,8 +61,9 @@ QBoolNode::QBoolNode( QPixmap* px, QBoolOpNode* parent, const char* s1, const ch
 QBoolNode::QBoolNode( const QBoolNode& x ) 
 : QListViewItem( x )
 {
-  cerr << "*** ERROR *** QBoolNode copy constructor called." << endl;
-  exit(137);
+  throw( GenericException( __FILE__, __LINE__, 
+         "QBoolNode::QBoolNode( const QBoolNode& x ) ", 
+         "QBoolNode copy constructor called." ) );
 }
 
 
@@ -130,8 +132,9 @@ QBoolEndNode::QBoolEndNode( const QBoolEndNode& x )
   : QBoolNode( x ),
   _value(x._value)
 {
-  cerr << "*** ERROR *** QBoolEndNode copy constructor called" << endl;
-  exit(1);
+  throw( GenericException( __FILE__, __LINE__, 
+         "QBoolEndNode::QBoolEndNode( const QBoolEndNode& x )", 
+         "QBoolEndNode copy constructor called" ) );
 }
 
 
@@ -224,8 +227,9 @@ QBoolOpNode::QBoolOpNode( QPixmap* px, QBoolOpNode* parent,
 QBoolOpNode::QBoolOpNode( const QBoolOpNode& x )
 : QBoolNode( x )
 {
-  cerr << "*** ERROR *** QBoolOpNode copy constructor called" << endl;
-  exit(1);
+  throw( GenericException( __FILE__, __LINE__, 
+         "QBoolOpNode::QBoolOpNode( const QBoolOpNode& x )", 
+         "QBoolOpNode copy constructor called" ) );
 }
 
 QBoolOpNode::~QBoolOpNode()
@@ -257,8 +261,9 @@ QAndNode::QAndNode( QBoolOpNode* parent, const QBoolNode& l, const QBoolNode& r 
 QAndNode::QAndNode( const QAndNode& x )
 : QBoolOpNode( x )
 {
-  cerr << "*** ERROR *** QAndNode copy constructor called" << endl;
-  exit(1);
+  throw( GenericException( __FILE__, __LINE__, 
+         "QAndNode::QAndNode( const QAndNode& x )", 
+         "QAndNode copy constructor called" ) );
 }
 
 
@@ -308,8 +313,9 @@ QOrNode::QOrNode( QBoolOpNode* parent, const QBoolNode& l, const QBoolNode& r )
 QOrNode::QOrNode( const QOrNode& x )
 : QBoolOpNode( x )
 {
-  cerr << "*** ERROR *** QOrNode copy constructor called" << endl;
-  exit(1);
+  throw( GenericException( __FILE__, __LINE__, 
+         "QOrNode::QOrNode( const QOrNode& x )", 
+         "QOrNode copy constructor called" ) );
 }
 
 
@@ -358,8 +364,9 @@ QNotNode::QNotNode( QBoolOpNode* parent, const QBoolNode& l )
 QNotNode::QNotNode( const QNotNode& x )
 : QBoolOpNode( x )
 {
-  cerr << "*** ERROR *** QNotNode copy constructor called" << endl;
-  exit(1);
+  throw( GenericException( __FILE__, __LINE__, 
+         "QNotNode::QNotNode( const QNotNode& x )", 
+         "QNotNode copy constructor called" ) );
 }
 
 
@@ -421,13 +428,9 @@ QBoolNode* QNotNode::clone( QListView* parent ) const
 ExpressionBrowser::ExpressionBrowser( QWidget *parent, const char *name, bool sdo )
 {
   if( 0 == andSymbol ) {
-    cout << "DGN:    andSymbol = new QPixmap( and_xpm );" << endl;
     andSymbol = new QPixmap( and_xpm );
-    cout << "DGN:    orSymbol  = new QPixmap( or_xpm  );" << endl;
     orSymbol  = new QPixmap( or_xpm  );
-    cout << "DGN:    notSymbol = new QPixmap( not_xpm );" << endl;
     notSymbol = new QPixmap( not_xpm );
-    cout << "DGN:    endSymbol = new QPixmap( end_xpm );" << endl;
     endSymbol = new QPixmap( end_xpm );
   }
 
@@ -442,7 +445,7 @@ ExpressionBrowser::ExpressionBrowser( QWidget *parent, const char *name, bool sd
   
   this->setSelectionMode( QListView::Extended );
   this->resize( 400, 400 );
-  this->setCaption( "CHEF (prototype #1): Expression Browser" );
+  this->setCaption( "CHEF (prototype #2): Expression Browser" );
   this->setAllColumnsShowFocus( TRUE );
   this->show();
 }

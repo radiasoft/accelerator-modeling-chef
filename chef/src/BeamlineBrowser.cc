@@ -6,7 +6,7 @@
 ******             interfaces to exercise the functionality        
 ******             of BEAMLINE.                                    
 ******                                                                
-******  Version:   3.0                    
+******  Version:   3.2
 ******                                    
 ******  File:      BeamlineBrowser.cc
 ******                                                                
@@ -56,6 +56,7 @@
 #include <qtextbrowser.h>
 
 #include "PhysicsConstants.h"
+#include "GenericException.h"
 #include "BeamlineIterator.h"
 #include "bmlfactory.h"
 #include "BeamlineBrowser.h"
@@ -297,8 +298,14 @@ QBml::QBml( QPixmap* px, QListView* parent, const char* s1, const char* s2 )
 QBml::QBml( const QBml& x ) 
 : QListViewItem( x )
 {
-  cerr << "*** ERROR *** QBml copy constructor called." << endl;
-  exit(137);
+  QMessageBox::information( 
+          0, 
+          "CHEF ERROR",
+          "QBml Copy constructor called."
+          );
+  throw( GenericException( __FILE__, __LINE__, 
+         "QBml::QBml( const QBml& x ) ", 
+         "QBml copy constructor called." ) );
 }
 
 
@@ -409,9 +416,12 @@ QBmlRoot::~QBmlRoot()
   if( -1 != ((int) _myBeamline) )
   { if( 0 != _myBmlCon   ) 
     { delete _myBmlCon;   
-      if( 0 != _myBeamline ) 
-	{ cerr << "*** ERROR *** QBmlRoot destructor impossibility." << endl;
-          exit(1);
+      if( 0 != _myBeamline ) { 
+        ostringstream uic;
+        uic << "An impossibility has occurred\nin file "
+            << __FILE__
+            << " at line " << __LINE__ ;
+        QMessageBox::information( 0, "CHEF: ERROR", uic.str().c_str() );
       }
     }
   }
@@ -479,11 +489,14 @@ const QBmlElmt* QBmlRoot::findSelectedElement() const
     }
 
     else {
-      cout << "*** ERROR *** Impossible! " 
-           << __FILE__ << ", line " << __LINE__ << ": "
-              "Neither QBmlElmt nor QBmlRoot!!"
-           << endl;
-      exit(1);
+      ostringstream uic;
+      uic << "An impossibility has occurred\nin file "
+          << __FILE__
+          << " at line " << __LINE__ ;
+      QMessageBox::information( 0, "CHEF: ERROR", uic.str().c_str() );
+      throw( GenericException( __FILE__, __LINE__, 
+             "const QBmlElmt* QBmlRoot::findSelectedElement() const", 
+             "Impossible! Neither QBmlElmt nor QBmlRoot!!" ) );
     }
     
     fc = fc->nextSibling();
@@ -538,7 +551,7 @@ BeamlineBrowser::BeamlineBrowser( QWidget *parent, const char *name, bool sdo )
 
   this->setSelectionMode( QListView::Extended );
   this->resize( 400, 400 );
-  this->setCaption( "CHEF (prototype #1): Beamline Browser" );
+  this->setCaption( "CHEF: Beamline Browser" );
   this->setAllColumnsShowFocus( TRUE );
   this->show();
 }

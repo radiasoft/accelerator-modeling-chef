@@ -692,19 +692,15 @@ Tracker::Tracker( /* const */ beamline* x )
   _myWheel(0.0)
 {
   if( 0 == x ) {
-    cerr << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__
-         << "\n*** ERROR *** Tracker::Tracker( beamline* )"
-         << "\n*** ERROR *** null argument passed to constructor."
-         << "\n*** ERROR *** \n"
-         << endl;
-    exit(9);
+    QMessageBox::information( 0, "CHEF::Tracker",
+                              "Must specify a beamline first." );
   }
-
-  // *** _myWheel.setIncrement( 252.0 );  // = 7*36, will provide ten colors
-  _myWheel.setIncrement( 195.0 ); 
-
-  _bmlConPtr = new BeamlineContext( false, x );
-  this->_finishConstructor();
+  else {
+    // *** _myWheel.setIncrement( 252.0 );  // = 7*36, will provide ten colors
+    _myWheel.setIncrement( 195.0 ); 
+    _bmlConPtr = new BeamlineContext( false, x );
+    this->_finishConstructor();
+  }
 }
 
 
@@ -903,7 +899,6 @@ Tracker::~Tracker()
 
 void Tracker::_file_exit()
 {
-  cout << "DGN> Entered Tracker::_file_exit" << endl;
 }
 
 
@@ -915,7 +910,7 @@ void Tracker::_fileClose()
 
 void Tracker::_do_nothing()
 {
-  QMessageBox::information( this, "Tracker",
+  QMessageBox::information( this, "CHEF::Tracker",
                             "Sorry. This function is not implemented." );
 }
 
@@ -1343,7 +1338,7 @@ void Tracker::_tool_pdicOrb()
   
 
     beamline* bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
-    Jet__environment* storedEnv = Jet::lastEnv;
+    Jet__environment* storedEnv = Jet::_lastEnv;
     double energy = _bmlConPtr->_proton.Energy();
   
 
@@ -1379,18 +1374,15 @@ void Tracker::_tool_pdicOrb()
       for( i = 0; i < 6; i++ ) M( i, i ) -= 1.0;
       M = M.inverse();
   
-      cout << "M = " << M << endl;
-      cout << "w = " << w << endl;
       Vector z(w);
       z = stuff(z);
-      cout << "stuff(w) = " << z << endl;
   
       w = w + M*( w - stuff(w) );
   
       cout << w << endl;
     }
 
-    Jet::lastEnv = storedEnv;
+    Jet::_lastEnv = storedEnv;
 
   
     // A final test ...
@@ -1664,12 +1656,16 @@ void Tracker::_cnvFromPhiHPhiV( double phiH, double phiV )
 
 void Tracker::setState( const Vector& s )
 {
-  if( s.Dim() != 6 ) {
-    cout << "Error 988" << endl;
-    exit(988);
+  if( s.Dim() == 6 ) {
+    _bmlConPtr->_proton.setState( s );
   }
-
-  _bmlConPtr->_proton.setState( s );
+  else {
+    ostringstream uic;
+    uic  << "File: " << __FILE__ << ", Line: " << __LINE__
+         << "\nvoid Tracker::setState( const Vector& s )"
+         << "\nArgument s has dimension " << (s.Dim()) << " != 6";
+    QMessageBox::information( this, "CHEF::Tracker", uic.str().c_str() );
+  }
 }
 
 
