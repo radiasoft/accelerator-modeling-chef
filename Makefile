@@ -33,9 +33,9 @@ default:
 
 LINKDIRS  = bml mxb mi Machine tev tcl socket server sybase filter swyd recycler
 
-SUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app swyd/src swyd/app recycler/app recycler/src
+SUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app swyd/src swyd/app recycler/app recycler/src mi_8gev/src mi_8gev/app 
 
-SUNSUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src recycler/src
+SUNSUBDIRS  = bml/src bml/src/physics/6d  bml/src/physics/mad mxb/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src recycler/src mi_8gev/src
 
 SGISUBDIRS  = $(SUNSUBDIRS)
 
@@ -122,7 +122,10 @@ TAR_FILES =	\
 	fnal/filter \
 	fnal/swyd \
 	fnal/recycler \
-	fnal/tcl
+	fnal/tcl \
+	fnal/mi \
+	fnal/mi_8gev \
+	fnal/mr_8gev 
 
 tar:
 	cd .. ; \
