@@ -79,18 +79,18 @@ void quadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
   Jet    outState [BMLN_dynDim];
   Jet    zero;
   int    i, j;
-  double arg, factor;
-  double realStrength;
-  double mapMatrix[BMLN_dynDim][BMLN_dynDim];
+  Jet    arg, factor;
+  Jet    realStrength;
+  Jet    mapMatrix[BMLN_dynDim][BMLN_dynDim];
  
   for   ( i = 0; i < BMLN_dynDim; i++ ) {
     for ( j = 0; j < BMLN_dynDim; j++ )
       mapMatrix[i][j] = 0.0;
     mapMatrix[i][i] = 1.0;
   }
-  realStrength = pbe->strength / p.BRho().standardPart();
+  realStrength = pbe->strength / p.BRho();
   
-  if ( realStrength == 0.0 )         // Zero-strength quad acts like a drift
+  if ( realStrength.standardPart() == 0.0 )         // Zero-strength quad acts like a drift
     {
       mapMatrix[0][0] = 1.0;  mapMatrix[0][3] = pbe->length;
       mapMatrix[3][0] = 0.0;  mapMatrix[3][3] = 1.0;
@@ -98,7 +98,7 @@ void quadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
       mapMatrix[1][1] = 1.0;  mapMatrix[1][4] = pbe->length;
       mapMatrix[4][1] = 0.0;  mapMatrix[4][4] = 1.0;
     }
-  else if ( realStrength < 0.0 )     // Defocussing horizontally
+  else if ( realStrength.standardPart() < 0.0 )     // Defocussing horizontally
     {                              // Focussing   vertically
       factor = sqrt( - realStrength );
       arg    = factor * pbe->length;

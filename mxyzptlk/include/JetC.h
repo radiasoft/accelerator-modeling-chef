@@ -255,6 +255,16 @@ char operator!=( const JetC&, const JetC& );
 char operator!=( const JetC&, const Complex& );
 char operator!=( const Complex&, const JetC& );
 
+
+JetC operator+( const Complex&, const Jet& );
+JetC operator+( const Jet&, const Complex& );
+JetC operator-( const Complex&, const Jet& );
+JetC operator-( const Jet&, const Complex& );
+JetC operator*( const Complex&, const Jet& );
+JetC operator*( const Jet&, const Complex& );
+JetC operator/( const Complex&, const Jet& );
+JetC operator/( const Jet&, const Complex& );
+
 // *******************************************************************
 
 class coordC : public JetC {
