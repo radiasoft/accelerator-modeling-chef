@@ -1,144 +1,208 @@
+// This version of the LikeMAD propagators
+// was written by Mike Martens, who corrected
+// higher order errors present in the 
+// previous version.
+// 
+// Nov.4, 1998
+
 #include "beamline.inc"
 
 void quadrupole::P_LikeMAD( bmlnElmnt* p_be, Particle& p ) {
   quadrupole* pbe = (quadrupole*) p_be;
-  int     i, j;
-  double  arg, factor;
-  double  inState[ BMLN_dynDim ];
-  static double mapMatrix[BMLN_dynDim][BMLN_dynDim];
-  static double I_Matrix[BMLN_dynDim][BMLN_dynDim];
-  double realStrength; 
-  if(I_Matrix[0][0] != 1.0) {
-    for   ( i = 0; i < BMLN_dynDim; i++ ) {
-      for ( j = 0; j < BMLN_dynDim; j++ )
-	I_Matrix[i][j] = 0.0;
-      I_Matrix[i][i] = 1.0;
-    }
-  }
-  memcpy((void *)mapMatrix, (const void *)I_Matrix, 
-	 BMLN_dynDim * BMLN_dynDim * sizeof(double));
 
-  realStrength = pbe->strength / p.BRho();
- if ( realStrength == 0.0 )         // Zero-strength quad acts like a drift
- {
-   mapMatrix[0][3] = pbe->length;
-   mapMatrix[1][4] = pbe->length;
- }
- else if ( realStrength < 0.0 )     // Defocussing horizontally
- {                              // Focussing   vertically
-   factor = sqrt( - realStrength );
-   arg    = factor * pbe->length;
+  double length = pbe->length;
 
-   mapMatrix[0][0] = mapMatrix[3][3] = cosh( arg );
-   mapMatrix[0][3] = mapMatrix[3][0] = sinh( arg );
-   mapMatrix[0][3] /=  factor;
-   mapMatrix[3][0] *=  factor;
+  if ( pbe->strength == 0.0 ) {
 
-   mapMatrix[1][1] = mapMatrix[4][4] = cos( arg );
-   mapMatrix[1][4] = mapMatrix[4][1] = sin( arg );
-   mapMatrix[1][4] /=  factor;
-   mapMatrix[4][1] *= -factor;
- }
- else                      // Defocussing vertically
- {                         // Focussing   horizontally
-   factor = sqrt( realStrength );
-   arg    = factor * pbe->length;
+    double D, p3divpbar, xpr, ypr;
 
-   mapMatrix[0][0] = mapMatrix[3][3] = cos( arg );
-   mapMatrix[0][3] = mapMatrix[3][0] = sin( arg );
-   mapMatrix[0][3] /=  factor;
-   mapMatrix[3][0] *= -factor;
+    p3divpbar = sqrt( ( 1.0 + p.state[5] ) * ( 1.0 + p.state[5] )
+		      - p.state[3]*p.state[3] 
+		      - p.state[4]*p.state[4] );
 
-   mapMatrix[1][1] = mapMatrix[4][4] = cosh( arg );
-   mapMatrix[1][4] = mapMatrix[4][1] = sinh( arg );
-   mapMatrix[1][4] /=  factor;
-   mapMatrix[4][1] *=  factor;
- }
+    xpr = p.state[3] / p3divpbar;
+    ypr = p.state[4] / p3divpbar; 
+    
+    p.state[0] += length * xpr;
+    p.state[1] += length * ypr;
+    
+    D = length*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
+    
+    p.state[2] += ( D / p.Beta() ) - ( length / p.beta );
 
- mapMatrix[2][5] = -pbe->length/p.Beta()/p.Gamma()/p.Gamma();
+  } else {
+
+
+    // Scale variable so 
+    // 1) the reference momentum is q_o = p_0* (1.0 + delp/p)
+    // 2) the "temporary" delp = 0
+
+    double q0divp0 = 1.0 + p.state[5]; // factor to convert reference momentum 
+    double K1 = pbe->strength / p.ReferenceBRho() / q0divp0;
+    double Beta = p.Beta();   // this is reference beta with changed ref p. 
+    double Gamma = p.Gamma();
+
+
+    p.state[3] = p.state[3]/q0divp0;   // p_x/p_0 * p_0/q_0 = p_x/q_0 
+    p.state[4] = p.state[4]/q0divp0;   // p_y/p_0 * p_0/q_0 = p_y/q_0 
+
+
+
+    double outState[6];
+
+    // Now compute terms in second order expansion as per MAD manual
+    double arg, factor, kxsqr, kysqr, cx, sx, cy, sy;
+    double T200, T203, T233, T211, T214, T244;
+    
+    kxsqr = K1;
+    kysqr = -K1;
+    factor = ( K1 > 0.0 )? sqrt( K1 ): sqrt( -K1 );
+    arg = factor * pbe->length;
+
+    if ( K1 > 0.0 )  {            // Focussing horizontally
+      cx = cos( arg );
+      sx = sin( arg )/factor;
+      cy = cosh( arg );
+      sy = sinh( arg )/factor;
+    } else {                      // Defocussing horizontally
+      cx = cosh( arg );
+      sx = sinh( arg )/factor;
+      cy = cos( arg );
+      sy = sin( arg )/factor;
+    } 
+  
+    T200 =   ( length - sx * cx );
+    T203 = -  sx * sx;
+    T233 =   (length + sx * cx );
+    T211 = - ( length - sy * cy );
+    T214 =   sy * sy;
+    T244 =   ( length + sy * cy );
  
- for( i = 0; i < BMLN_dynDim; i++  ) {
-   inState[i] = p.state[i];
- }
- for( i = 0; i < BMLN_dynDim; i++  ) {
-   p.state[i] = 0.0;
-   for( j = 0; j < BMLN_dynDim; j++  ) 
-     p.state[i] += mapMatrix[i][j]*inState[j];
- }
+    outState[0] =          cx * p.state[0]  +  sx * p.state[3];
+    outState[3] = -kxsqr * sx * p.state[0]  +  cx * p.state[3];
+    outState[1] =          cy * p.state[1]  +  sy * p.state[4];
+    outState[4] = -kysqr * sy * p.state[1]  +  cy * p.state[4];
+    
+    double Dist;
+    Dist = ( 
+	    ( T200 * p.state[0] + 2.0 * T203 * p.state[3] ) * K1 * p.state[0]
+	    + T233 * p.state[3] * p.state[3]
+	    + ( T211 * p.state[1] + 2.0 * T214 * p.state[4] ) * K1 * p.state[1]
+	    + T244 * p.state[4] * p.state[4]
+	    )/4.0;
+  
+    Dist += length;
 
+    p.state[2] += (Dist/Beta - length/p.ReferenceBeta() );
+
+
+    p.state[0] = outState[0];          
+    p.state[1] = outState[1];          
+    p.state[3] = outState[3] * q0divp0;          
+    p.state[4] = outState[4] * q0divp0;          
+
+  }
 }
-
 
 void quadrupole::J_LikeMAD( bmlnElmnt* p_be, JetParticle& p ) {
   quadrupole* pbe = (quadrupole*) p_be;
-  Jet    inState  [BMLN_dynDim];
-  Jet    outState [BMLN_dynDim];
-  Jet    zero;
-  int    i, j;
-  Jet    arg, factor;
-  Jet    realStrength;
-  Jet    mapMatrix[BMLN_dynDim][BMLN_dynDim];
+
+  double length = pbe->length;
+
+  if ( pbe->strength == 0.0 ) {
+
+    Jet D, p3divpbar;
+    Jet xpr, ypr;
+    Jet dummy;
+
+    p3divpbar = sqrt( ( 1.0 + p.state(5) ) * ( 1.0 + p.state(5) )
+		      - p.state(3)*p.state(3) 
+		      - p.state(4)*p.state(4) );
+
+    xpr = p.state(3) / p3divpbar;
+    ypr = p.state(4) / p3divpbar; 
+    
+    dummy = p.state(0) + length * xpr;
+    ( p.state ).SetComponent( 0, dummy );
+    dummy = p.state(1) + length * ypr;
+    ( p.state ).SetComponent( 1, dummy );
+
+    D = length*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
+    
+    dummy =  p.state(2) + ( D / p.Beta() ) - ( length / p.beta );
+    ( p.state ).SetComponent( 2, dummy );
+    
+  } else {
+
+    Jet q0divp0;
+    Jet K1;
+    Jet Beta, Gamma;
+
+    q0divp0 = 1.0 + p.state(5); 
+    K1 = pbe->strength / p.ReferenceBRho() / q0divp0;
+    Beta = p.Beta();   
+    Gamma = p.Gamma();
+
+
+    p.state(3) = p.state(3)/q0divp0;   // p_x/p_0 * p_0/q_0 = p_x/q_0 
+    p.state(4) = p.state(4)/q0divp0;   // p_y/p_0 * p_0/q_0 = p_y/q_0 
+
+
+
+    Jet outState[6];
+
+    // Now compute terms in second order expansion as per MAD manual
+    Jet arg, factor, kxsqr, kysqr, cx, sx, cy, sy;
+    Jet T200, T203, T233, T211, T214, T244;
+    
+    kxsqr = K1;
+    kysqr = -K1;
+    factor = ( pbe->strength > 0.0 )? sqrt( K1 ): sqrt( -K1 );
+    arg = factor * pbe->length;
+
+    if ( pbe->strength > 0.0 )  {            // Focussing horizontally
+      cx = cos( arg );
+      sx = sin( arg )/factor;
+      cy = cosh( arg );
+      sy = sinh( arg )/factor;
+    } else {                      // Defocussing horizontally
+      cx = cosh( arg );
+      sx = sinh( arg )/factor;
+      cy = cos( arg );
+      sy = sin( arg )/factor;
+    } 
+  
+    T200 =   ( length - sx * cx );
+    T203 = -  sx * sx;
+    T233 =   (length + sx * cx );
+    T211 = - ( length - sy * cy );
+    T214 =   sy * sy;
+    T244 =   ( length + sy * cy );
  
-  for   ( i = 0; i < BMLN_dynDim; i++ ) {
-    for ( j = 0; j < BMLN_dynDim; j++ )
-      mapMatrix[i][j] = 0.0;
-    mapMatrix[i][i] = 1.0;
-  }
-  realStrength = pbe->strength / p.BRho();
+    outState[0] =          cx * p.state(0)  +  sx * p.state(3);
+    outState[3] = -kxsqr * sx * p.state(0)  +  cx * p.state(3);
+    outState[1] =          cy * p.state(1)  +  sy * p.state(4);
+    outState[4] = -kysqr * sy * p.state(1)  +  cy * p.state(4);
+    
+    Jet Dist;
+    Dist = ( 
+	    ( T200 * p.state(0) + 2.0 * T203 * p.state(3) ) * K1 * p.state(0)
+	    + T233 * p.state(3) * p.state(3)
+	    + ( T211 * p.state(1) + 2.0 * T214 * p.state(4) ) * K1 * p.state(1)
+	    + T244 * p.state(4) * p.state(4)
+	    )/4.0;
   
-  if ( realStrength.standardPart() == 0.0 )         // Zero-strength quad acts like a drift
-    {
-      mapMatrix[0][3] = pbe->length;
-      mapMatrix[1][4] = pbe->length;
-    }
-  else if ( realStrength.standardPart() < 0.0 )     // Defocussing horizontally
-    {                              // Focussing   vertically
-      factor = sqrt( - realStrength );
-      arg    = factor * pbe->length;
-      
-      mapMatrix[0][0] = mapMatrix[3][3] = cosh( arg );
-      mapMatrix[0][3] = mapMatrix[3][0] = sinh( arg );
-      mapMatrix[0][3] /=  factor;
-      mapMatrix[3][0] *=  factor;
-      
-      mapMatrix[1][1] = mapMatrix[4][4] = cos( arg );
-      mapMatrix[1][4] = mapMatrix[4][1] = sin( arg );
-      mapMatrix[1][4] /=  factor;
-      mapMatrix[4][1] *= -factor;
-    }
-  else                      // Defocussing vertically
-    {                         // Focussing   horizontally
-      factor = sqrt( realStrength );
-      arg    = factor * pbe->length;
-      
-      mapMatrix[0][0] = mapMatrix[3][3] = cos( arg );
-      mapMatrix[0][3] = mapMatrix[3][0] = sin( arg );
-      mapMatrix[0][3] /=  factor;
-      mapMatrix[3][0] *= -factor;
-      
-      mapMatrix[1][1] = mapMatrix[4][4] = cosh( arg );
-      mapMatrix[1][4] = mapMatrix[4][1] = sinh( arg );
-      mapMatrix[1][4] /=  factor;
-      mapMatrix[4][1] *=  factor;
-    }
+    Dist += length;
 
-  
-  mapMatrix[2][5] = -pbe->length/p.ReferenceBeta()/p.ReferenceGamma()/
-    p.ReferenceGamma();
-  zero = 0.0;
-  // ??? REMOVE zero.fixReferenceAtStart( p.state );
+    outState[2] = p.state(2) + ( Dist/Beta - length/p.ReferenceBeta() );
 
-  for( i = 0; i < BMLN_dynDim; i++  ) {
-    inState[i] = p.state(i);
-  }
+    outState[3] *= q0divp0;          
+    outState[4] *= q0divp0;          
 
-  for( i = 0; i < BMLN_dynDim; i++  ) {
-    outState[i] = zero;
-    for( j = 0; j < BMLN_dynDim; j++  ) 
-      outState[i] = outState[i] + mapMatrix[i][j]*inState[j];
-  }
-
-  for( i = 0; i < BMLN_dynDim; i++  ) {
-    ( p.state ).SetComponent( i, outState[i] );
+    ( p.state ).SetComponent( 0, outState[0] );    
+    ( p.state ).SetComponent( 1, outState[1] );    
+    ( p.state ).SetComponent( 2, outState[2] );    
+    ( p.state ).SetComponent( 3, outState[3] );    
+    ( p.state ).SetComponent( 4, outState[4] );    
   }
 }
