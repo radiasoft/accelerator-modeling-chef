@@ -121,7 +121,6 @@ Jet__environment::Jet__environment( Jet__environment& x )
 
   int w = MaxWeight;
   int n = NumVar;
-  int s = SpaceDim;
   int i, j;
 
   j = bcfRec( w + n, n );
@@ -229,7 +228,6 @@ Jet__environment& Jet__environment::operator=( const Jet__environment& x )
 
   int w = MaxWeight;
   int n = NumVar;
-  int s = SpaceDim;
   int i, j;
 
   if( monomial ) delete [] monomial;
@@ -354,7 +352,6 @@ operator>>( istream& is, Jet__environment* x )
   // --- Calculations, just as in Jet::EndEnvironment
   int n = pje->NumVar;
   int w = pje->MaxWeight;
-  int s = pje->SpaceDim;
 
   pje->exponent   = new int[ n ];
   pje->expCode    = new char[ w + n ];
@@ -658,7 +655,6 @@ Jet::EndEnvironment( double* scl )
   
   int w = workEnv->MaxWeight;
   int n = workEnv->NumVar;
-  int s = workEnv->SpaceDim;
   int bcfr = bcfRec( w + n, n );
 
   workEnv->exponent   = new int[ n ];

@@ -92,7 +92,6 @@ JetC__environment::JetC__environment( const Jet__environment& x )
 
   int w = MaxWeight;
   int n = NumVar;
-  int s = SpaceDim;
   int i, j, bcfr;
 
   exponent   = new int[ n ];
@@ -181,7 +180,6 @@ JetC__environment& JetC__environment::operator=( const Jet__environment& x )
 
   int w = MaxWeight;
   int n = NumVar;
-  int s = SpaceDim;
   int i, j, bcfr;
 
   delete [] exponent;
@@ -302,7 +300,6 @@ Jet__environment::Jet__environment( const JetC__environment& x )
 
   int w = MaxWeight;
   int n = NumVar;
-  int s = SpaceDim;
   int i, j, bcfr;
 
   exponent   = new int[ n ];
@@ -408,7 +405,6 @@ Jet__environment& Jet__environment::operator=( const JetC__environment& x )
 
   int w = MaxWeight;
   int n = NumVar;
-  int s = SpaceDim;
   int i, j, bcfr;
 
   delete [] exponent;
