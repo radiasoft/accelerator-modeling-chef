@@ -114,7 +114,7 @@ bmlnElmnt* DeepBeamlineIterator::operator++( int )
     {
       if( 0 == strcmp( ret->Type(), "beamline" ) ) 
       {
-        _subIterator = new DeepBeamlineIterator( ret );
+        _subIterator = new DeepBeamlineIterator( (beamline*) ret );
         ret = (*this)++;
       }
     }    
