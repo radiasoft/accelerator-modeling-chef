@@ -223,3 +223,31 @@ void sector::setLength( double )
        << endl;
 }
 
+
+ostream& sector::writeTo ( ostream& os )
+{
+  if( mapType )
+  {
+    os << myMap;
+  }
+  else 
+  {
+    cerr << "*** ERROR ***                                    \n"
+         << "*** ERROR *** sector::writeTo                    \n"
+         << "*** ERROR *** This is written only to handle     \n"
+         << "*** ERROR *** mapType = 0.                       \n"
+         << "*** ERROR ***                                    \n"
+         << "*** ERROR *** The sector is not streamed.        \n"
+         << "*** ERROR ***                                    \n"
+         << endl;
+  }
+  
+  return os;
+}
+
+istream& sector::readFrom( istream& is )
+{
+  mapType = 1;
+  is >> myMap;
+  return is;
+}

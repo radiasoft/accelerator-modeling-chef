@@ -10,8 +10,7 @@ class sector : public bmlnElmnt
 {
 private:
   char   mapType;        // ??? Unnecessary. Get rid of this!
-  // ??? REMOVE Jet*   map;
-  /* NEW */ Mapping    myMap;
+  Mapping    myMap;
   double betaH     [2];  // 0 = entry;  1 = exit
   double alphaH    [2];
   double deltaPsiH;
@@ -21,6 +20,10 @@ private:
   double mapMatrix[BMLN_dynDim][BMLN_dynDim];
   double (*DeltaT) ( double );
   Jet    (*JetDeltaT) ( const Jet& );
+
+  ostream& writeTo ( ostream& );
+  istream& readFrom( istream& );
+
 public:
   sector( double* betaH,  double* alphaH,  double* psiH,
           double* betaV,  double* alphaV,  double* psiV, double length );
