@@ -33,11 +33,11 @@ default:
 	@echo "  make tar_everything    Tar up ALL files."
 
 
-LINKDIRS  = beamline mxyzptlk Machine tev tcl socket server sybase filter swyd
+LINKDIRS  = beamline mxyzptlk Machine tev tcl socket server sybase filter swyd recycler
 
-SUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app swyd/src swyd/app
+SUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src Machine/src tcl/src  socket/src sybase/src sybase/app tev/app server/app server/src filter/src filter/app swyd/src swyd/app recycler/app recycler/src
 
-SUNSUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src
+SUNSUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src tcl/src socket/src sybase/src server/src filter/src swyd/src recycler/src
 
 SGISUBDIRS  = beamline/src beamline/src/physics/6d  beamline/src/physics/mad mxyzptlk/src Machine/src tev/src sybase/src socket/src server/src filter/src
 
