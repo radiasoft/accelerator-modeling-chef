@@ -5,7 +5,7 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
+******  Version:   1.0.2
 ******                                    
 ******  File:      EdwardsTeng.cc
 ******                                                                
@@ -111,7 +111,7 @@ int attachETLattFuncs( bmlnElmnt* lbe ) {
  else {                                // Coupled lattice
 
   if( fabs( EdwardsTeng::csH - EdwardsTeng::csV ) < 1.0e-4 ) {
-    cout << "\n"
+    cerr << "\n"
          << "*** ERROR *** EdwardsTeng()                        \n"
          << "*** ERROR *** \"Horizontal\" and \"vertical\" tunes\n"
          << "*** ERROR *** are too near each other for          \n"
@@ -128,7 +128,7 @@ int attachETLattFuncs( bmlnElmnt* lbe ) {
   if( fabs( cos2phi + 1.0 ) < 1.0e-4 ) cos2phi = - 1.0;  // ??? isn't it?
 
   if( fabs( cos2phi ) > 1.0 ) {
-   cout << "\n"
+   cerr << "\n"
         << "*** ERROR: EdwardsTeng()                        \n"
         << "*** ERROR: cos( 2 phi ) = " 
         <<           setprecision(10) << cos2phi 
@@ -158,7 +158,7 @@ int attachETLattFuncs( bmlnElmnt* lbe ) {
   }
 
   if( fabs( D.determinant() - 1.0 ) > 1.0e-4 ) {
-    cout << "\n"
+    cerr << "\n"
          << "*** ERROR *** EdwardsTeng()                        \n"
          << "*** ERROR *** The matrix D is non-symplectic.      \n"
          << "*** ERROR *** |D| = " << D.determinant() << "      \n"
@@ -197,18 +197,18 @@ int attachETLattFuncs( bmlnElmnt* lbe ) {
  // .......... A little test to keep everyone honest .....
  if( JH( 0, 0 ) != 0.0 )
   if( fabs( ( JH(0,0) + JH(1,1) ) / ( JH(0,0) - JH(1,1) ) ) > 1.0e-4 ) {
-   cout << endl;
-   cout << "*** WARNING ***                                " << endl;
-   cout << "*** WARNING *** EdwardsTeng()                  " << endl;
-   cout << "*** WARNING *** \"Horizontal\" matrix does not " << endl;
-   cout << "*** WARNING *** pass symplecticity test.       " << endl;
-   cout << "*** WARNING *** JH( 0, 0 ) = " << JH( 0, 0 )     << endl;
-   cout << "*** WARNING *** JH( 1, 1 ) = " << JH( 1, 1 )     << endl;
-   cout << "*** WARNING ***                                " << endl;
-   cout << "*** WARNING *** The ratio is " 
+   cerr << endl;
+   cerr << "*** WARNING ***                                " << endl;
+   cerr << "*** WARNING *** EdwardsTeng()                  " << endl;
+   cerr << "*** WARNING *** \"Horizontal\" matrix does not " << endl;
+   cerr << "*** WARNING *** pass symplecticity test.       " << endl;
+   cerr << "*** WARNING *** JH( 0, 0 ) = " << JH( 0, 0 )     << endl;
+   cerr << "*** WARNING *** JH( 1, 1 ) = " << JH( 1, 1 )     << endl;
+   cerr << "*** WARNING ***                                " << endl;
+   cerr << "*** WARNING *** The ratio is " 
         << fabs( ( JH(0,0) + JH(1,1) ) / ( JH(0,0) - JH(1,1) ) )
         << endl;
-   cout << "*** WARNING ***                                " << endl;
+   cerr << "*** WARNING ***                                " << endl;
    // return 5;
   }
 
@@ -228,18 +228,18 @@ int attachETLattFuncs( bmlnElmnt* lbe ) {
  // .......... A little test to keep everyone honest .....
  if( JV( 0, 0 ) != 0.0 )
   if( fabs( ( JV(0,0) + JV(1,1) ) / ( JV(0,0) - JV(1,1) ) ) > 1.0e-4 ) {
-   cout << endl;
-   cout << "*** WARNING ***                                " << endl;
-   cout << "*** WARNING *** EdwardsTeng()                  " << endl;
-   cout << "*** WARNING *** \"Vertical\" matrix does not   " << endl;
-   cout << "*** WARNING *** pass symplecticity test.       " << endl;
-   cout << "*** WARNING *** JV( 0, 0 ) = " << JV( 0, 0 )     << endl;
-   cout << "*** WARNING *** JV( 1, 1 ) = " << JV( 1, 1 )     << endl;
-   cout << "*** WARNING ***                                " << endl;
-   cout << "*** WARNING *** The ratio is " 
+   cerr << endl;
+   cerr << "*** WARNING ***                                " << endl;
+   cerr << "*** WARNING *** EdwardsTeng()                  " << endl;
+   cerr << "*** WARNING *** \"Vertical\" matrix does not   " << endl;
+   cerr << "*** WARNING *** pass symplecticity test.       " << endl;
+   cerr << "*** WARNING *** JV( 0, 0 ) = " << JV( 0, 0 )     << endl;
+   cerr << "*** WARNING *** JV( 1, 1 ) = " << JV( 1, 1 )     << endl;
+   cerr << "*** WARNING ***                                " << endl;
+   cerr << "*** WARNING *** The ratio is " 
         << fabs( ( JV(0,0) + JV(1,1) ) / ( JV(0,0) - JV(1,1) ) )
         << endl;
-   cout << "*** WARNING ***                                " << endl;
+   cerr << "*** WARNING ***                                " << endl;
    // return 6;
  }
 
@@ -274,9 +274,8 @@ int EdwardsTeng::doCalc( void* arg,
 {
  int             ret;
  bmlnElmnt*      be;
- JetProton*      ptr_p;
+ JetProton*      ptr_jp;
  dlist_looper    getNext ( *(dlist*) myBeamline );
- double*         zero = new double[ BMLN_dynDim ];
  double          t;
  int             i;
  MatrixD         mtrx( BMLN_dynDim, BMLN_dynDim );
@@ -287,36 +286,33 @@ int EdwardsTeng::doCalc( void* arg,
 
  // .......... Propagate a JetProton element by element
  // .......... It is assumed to be on a closed orbit!!
- ptr_p = (JetProton*) arg;
- for( i = 0; i < BMLN_dynDim; i++ ) 
-   zero[i] = ptr_p->State(i).standardPart();
- // ??? REMOVE Jet::FixReference( zero );
+ ptr_jp = (JetProton*) arg;
 
  while (( be = (bmlnElmnt*) getNext() )) {
-   be->propagate( *ptr_p );
+   be->propagate( *ptr_jp );
    if( !Crit ) {
      ETptr = new ETinfo;
-     ptr_p->getState( ETptr->map );   // ??? Change statements?  Use pointer?
+     ptr_jp->getState( ETptr->map );   // ??? Change statements?  Use pointer?
      ETptr->mapInv = ETptr->map.Inverse();
      be->dataHook.append( "EdwardsTeng", ETptr );
    }
    else if( (*Crit)( be ) ) {
      ETptr = new ETinfo;
-     ptr_p->getState( ETptr->map );   // ??? Change statements?  Use pointer?
+     ptr_jp->getState( ETptr->map );   // ??? Change statements?  Use pointer?
      ETptr->mapInv = ETptr->map.Inverse();
      be->dataHook.append( "EdwardsTeng", ETptr );
    }
  }
 
  // .......... Calculating tunes .........................
- ptr_p->getState( *EdwardsTeng::theMap );
+ ptr_jp->getState( *EdwardsTeng::theMap );
  mtrx = EdwardsTeng::theMap->Jacobian();
  MatrixC lambda;
  lambda = mtrx.eigenValues();
 
  for( i = 0; i < BMLN_dynDim; i++ )
   if( fabs( abs(lambda(i)) - 1.0 ) > 1.0e-4 ) {
-   cout << "\n"
+   cerr << "\n"
         << "*** ERROR ***                                     \n"
         << "*** ERROR ***                                     \n"
         << "*** ERROR *** EdwardsTeng()                       \n"
@@ -326,7 +322,6 @@ int EdwardsTeng::doCalc( void* arg,
         << "\n"
         << "*** ERROR ***                                     \n"
         << endl;
-   delete [] zero;
    delete EdwardsTeng::theMap;
    eraseAll();
    return 10;
@@ -335,13 +330,12 @@ int EdwardsTeng::doCalc( void* arg,
  if( ( abs( lambda(0) - conj( lambda(3) ) ) > 1.0e-4 )  ||
      ( abs( lambda(1) - conj( lambda(4) ) ) > 1.0e-4 )
    ) {
-   cout << "\n"
+   cerr << "\n"
         << "*** ERROR *** EdwardsTeng()                        \n"
         << "*** ERROR *** Conjugacy condition has been violated\n"
         << "*** ERROR *** The lattice may be linearly unstable.\n"
         << "*** ERROR *** Eigenvalues =                        \n"
         << "*** ERROR *** " << lambda << endl;
-   delete [] zero;
    delete EdwardsTeng::theMap;
    eraseAll();
    return 11;
@@ -359,7 +353,6 @@ int EdwardsTeng::doCalc( void* arg,
 
   if( !Crit ) {
    if( ( ret = attachETLattFuncs( be ) ) != 0 ) {
-    delete [] zero;
     delete EdwardsTeng::theMap;
     eraseAll();
     return ret;
@@ -367,7 +360,6 @@ int EdwardsTeng::doCalc( void* arg,
   }
   else if( (*Crit)( be ) ) {
    if( ( ret = attachETLattFuncs( be ) ) != 0 ) {
-    delete [] zero;
     delete EdwardsTeng::theMap;
     eraseAll();
     return ret;
@@ -385,7 +377,6 @@ int EdwardsTeng::doCalc( void* arg,
 
  myBeamline->dataHook.append( "Tunes", tuneptr );
 
- delete [] zero;
  delete EdwardsTeng::theMap;
  return 0;
 }
