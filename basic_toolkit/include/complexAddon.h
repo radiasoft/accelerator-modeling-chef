@@ -71,7 +71,7 @@ inline char operator> ( const Complex& x, const Complex& y )
 using std::abs;
 
 inline ostream& operator<<(ostream& os, const Complex& x) {
-	os << "( " << std::real(x) << "," << std::imag(x) << " )" << endl;
+	os << "( " << std::real(x) << "," << std::imag(x) << " )";
 	return os;
 }
 
