@@ -8,15 +8,16 @@
 ******  BEAMLINE FACTORY:  Interprets MAD input files and             
 ******             creates instances of class beamline.                 
 ******                                                
-******  Version:   1.3
+******  Version:   1.5
 ******                                    
 ******  File:      bmlfactory.cc
 ******                                                                
 ******  Copyright (c) 1999  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
 ******                                                                
-******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
-******                                                                
+******  Authors:    Dmitri Mokhov and Oleg Krivosheev                  
+******              Jean-Francois Ostiguy 
+******                                                
 ******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
 ******                                                                
 ******             Fermilab                                           
@@ -34,15 +35,29 @@
 ******  which are supplied with this software.
 ******                                                                
 **************************************************************************
-*************************************************************************/
+**************************************************************************
+* Revision History: 
+*
+*  Version 1.5: August 2004 
+*
+*  ostiguy@fnal.gov: 
+*
+*  -Numerous and **severe** memory leaks eliminated. 
+*  -MAD CALL and RETURN statements now properly interpreted
+*  -improved error recovery
+*  -Expressions associated with MAD type parameters are now properly deleted.  
+*  -Added member function allow external access list of beamline identifiers.
+*  -Added member function to allow external evaluation of a variable expression. 
+*  -Added member function to allow parsing from in-memory buffer
+*****************************************************************************/
 
+#include <iostream>
+using namespace std;
 
 #undef allocate
 #undef deallocate
 
 #include <functional>
-
-// #include <list>
 
    // from MXYZPLTK
 #include <beamline.h>
@@ -75,23 +90,90 @@
 #include "madparser.h"
 #endif /* madparser_h */
 
+#include "var_table.h"
+
 #include "bel_inst_fns.h"
+
+#include <GenericException.h>
 
 #include <algorithm>
 #include <assert.h>
 #include <cmath>
 #include <iostream>
 
+
 extern struct madparser_* mp;
 
 using namespace std;
 
-bmlfactory::bmlfactory( const char* fname,
-                        double BRHO ) {
-  
+bmlfactory::bmlfactory( const char* fname, double BRHO, const char* stringbuffer) {
+
   BRHO_ = BRHO;
-  mp_ = NULL;
-  fname_ = NULL;
+  try 
+  {
+     bmlfactory_init(fname, stringbuffer);
+
+  }
+  catch (GenericException& e)
+  {
+    /* this is a constructor so the destructor will not be called when an exception is thrown. 
+      We need to clean up here in order to avoid leaks and ensure that flex is reset to a sane state.
+    */
+
+     madparser_delete(mp);
+
+     delete_bel_list();
+     delete_bml_list();
+
+     if (fname_) delete [] fname_;
+  
+     if ( bel_arr_) free(bel_arr_);  // memory allocated by call to bel_table_to_array in constructor
+     if ( bml_arr_) free(bml_arr_);  // memory allocated by call to bml_table_to_array in constructor
+
+     throw e;
+  }
+
+}
+
+
+bmlfactory::bmlfactory( const char* fname, const char* stringbuffer) {
+
+  BRHO_ = 0;
+  try 
+  {
+
+     bmlfactory_init(fname, stringbuffer);
+
+  }
+  catch (GenericException& e)
+  {
+    /* this is a constructor so the destructor will not be called when an exception is thrown. 
+      We need to clean up here in order to avoid leaks and ensure that flex is reset to a sane state.
+    */
+  
+      madparser_delete(mp);
+   
+      delete_bel_list();
+      delete_bml_list();
+
+      if (fname_) delete [] fname_;
+  
+      if (bel_arr_) free(bel_arr_);  // memory allocated by call to bel_table_to_array in constructor
+      if (bml_arr_) free(bml_arr_);  // memory allocated by call to bml_table_to_array in constructor
+
+    throw e;
+  }
+
+}
+
+
+void 
+bmlfactory::bmlfactory_init(const char* fname, const char* stringbuffer) {
+
+  mp_      = NULL;
+  fname_   = NULL;
+  bel_arr_ = NULL;
+  bml_arr_ = NULL;
   
   assert( fname != NULL );
   
@@ -102,40 +184,133 @@ bmlfactory::bmlfactory( const char* fname,
   assert( fname_ != NULL );
   strcpy( fname_, fname );
   
-  mp_ = madparser_init( fname_, NULL );
+  mp_ = madparser_init( fname_, NULL);
+
   assert( mp_ != NULL );
   
   mp = mp_; // set the global variable mp to point to the same parser structure as mp_
-  madparser_parse( mp_ );
-  
+
   var_table_ = madparser_var_table( mp_ );
   bel_table_ = madparser_bel_table( mp_ );
-  
-  bel_arr_size_ = bel_table_to_array( &bel_arr_, bel_table_ );
+
+  create_bel_list();
+  create_bml_list();
+
+  try 
+  { 
+    madparser_parse( mp_ , stringbuffer);
+  }
+  catch(GenericException& e) 
+  {
+    throw e;
+  }
+
+  bel_arr_size_ = bel_table_to_array( &bel_arr_, bel_table_ );        /* bel_arr is allocated here */
   qsort( bel_arr_, bel_arr_size_, sizeof(beam_element*), bel_compare );
   
-  bml_arr_size_ = bml_table_to_array( &bml_arr_, madparser_bml_table( mp_ ) );
+  bml_arr_size_ = bml_table_to_array( &bml_arr_, madparser_bml_table( mp_ ) ); /* bml_arr is allocated here */
   if ( bml_arr_size_ > 1 ) {
     qsort( bml_arr_, bml_arr_size_, sizeof(beam_line*), bml_compare );    
     bml_remove_forward( &bml_arr_, bml_arr_size_, madparser_bml_table( mp_ ) ); // When removing forward references, line order isn't preserved
   }
   
-  create_bel_list();
-  create_bml_list();
 }
 
 bmlfactory::~bmlfactory() {
+
   madparser_delete( mp_ );
+
   mp_ = NULL;
   mp  = NULL;
+
   delete_bel_list();
   delete_bml_list();
+
   delete [] fname_;
+  
+  free(bel_arr_);  // memory allocated by call to bel_table_to_array in constructor
+  free(bml_arr_);  // memory allocated by call to bml_table_to_array in constructor
+
+  // delete the bmlnElmnt beamline objects created by the parser. 
+  // Note: the create_beamline function returns a Cloned() beamline and bmlnElmnts, 
+  // so that ownership of these objects is that of the bmlfactory object instance.
+
+  // the code below is for debugging only
+
+#if 0 
+  for ( std::list<beamline*>::iterator it=_beamline_objects_list.begin(); 
+        it != _beamline_objects_list.end() );
+        it++) 
+  {
+
+  };
+
+  for ( std::list<bmlnElmnt*>::iterator it=_bmlnElmnt_objects_list.begin(); 
+        it != _bmlnElmnt_objects_list.end() );
+        it++) 
+  {
+
+  };
+
+#endif
+
+}
+
+// Deprecated function 
+
+beamline* 
+bmlfactory::create_beamline( const char* bmlname) {
+  
+ beamline* bml = create_beamline_private(bmlname);
+
+ if ( bml == 0)
+ { 
+   throw GenericException(__FILE__, __LINE__, 
+                                "bmlfactory::create_beamline( const char* bmlname)",
+                                "Beamline not found");
+ }  
+ else
+ {
+    return static_cast<beamline*>( bml->Clone() );
+ }
+}
+
+
+beamline* 
+bmlfactory::create_beamline( const char* bmlname, double brho   ) 
+{
+
+ beamline* bml = create_beamline_private(bmlname, brho);
+ 
+ if ( bml == 0)
+ { 
+   throw GenericException(__FILE__, __LINE__, 
+                                "bmlfactory::create_beamline( const char* bmlname, brho)",
+                                "Beamline not found");
+ }  
+ else
+ {
+    return static_cast<beamline*>( bml->Clone() );
+  } 
+}
+
+
+
+// Deprecated function 
+
+beamline*
+bmlfactory::create_beamline_private( const char* bmlname) {
+
+  return create_beamline_private( bmlname, BRHO_); 
+
 }
 
 beamline*
-bmlfactory::create_beamline( const char* bmlname ) {
+bmlfactory::create_beamline_private( const char* bmlname, double brho ) {
   
+  BRHO_ = brho;
+
+  beamline* bml_ptr = 0;  
   int i;
   for ( i = 0; i < bml_arr_size_; ++i ) {
     if ( strcasecmp( (*(bml_arr_+i))->name_, bmlname ) == 0 ) {
@@ -146,7 +321,8 @@ bmlfactory::create_beamline( const char* bmlname ) {
     cerr << "Beam line \"" << bmlname << "\" not found." << endl;
     return NULL;
   } else {
-    return (beamline*)(beam_line_instantiate( *(bml_arr_+i) )->Clone());
+    bml_ptr = (beamline*)(beam_line_instantiate( *(bml_arr_+i) ));
+    return bml_ptr;
   }
 }
 
@@ -643,6 +819,9 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
   bel_list_->push_back( p );
   
   delete aligner;
+
+  _bmlnElmnt_objects_list.push_back(lbel);
+
   return lbel;
 }
 
@@ -690,6 +869,7 @@ bmlfactory::beam_line_instantiate( beam_line* bml ) {
     p.lbml_ptr_ = lbml;
     
     bml_list_->push_back( p );
+
   }
   
   double energy;
@@ -697,6 +877,9 @@ bmlfactory::beam_line_instantiate( beam_line* bml ) {
   energy = energy*energy + PH_NORM_mp*PH_NORM_mp;
   energy = sqrt( energy );
   lbml->setEnergy( energy );
+
+  _beamline_objects_list.push_back(lbml);
+
   return lbml;
 }
 
@@ -715,7 +898,7 @@ bmlfactory::find_beam_line( char* ptr ) {
 
 void
 bmlfactory::append_bml_element( char* ptr, beamline* lbml ) {
-  
+
      // search in the beam element table
   int i;
   char label[BEL_NAME_LENGTH];
@@ -726,10 +909,12 @@ bmlfactory::append_bml_element( char* ptr, beamline* lbml ) {
     }
   }
   if ( i < bel_arr_size_ ) {
+    
     lbml->append( beam_element_instantiate( *(bel_arr_+i) ) );
+
   } else {
        // create the beam line, if it is the table
-    beamline* subbml = create_beamline( ptr+1 );
+    beamline* subbml = create_beamline_private( ptr+1, BRHO_ );
     if ( subbml != NULL ) {
       if ( *ptr == '-' ) {
         lbml->append( -(*subbml) );
@@ -757,4 +942,51 @@ bmlfactory::delete_bml_list() {
     delete i->lbml_ptr_;
   }
   delete bml_list_;
+}
+
+
+
+std::list<std::string>& 
+bmlfactory::getBeamlineList() {
+
+  beam_line** bml_arr_ptr = bml_arr_;
+  
+  for (int i = 0; i< bml_arr_size_; i++) {
+    
+    _beamline_identifiers_list.push_back( std::string( (*(bml_arr_ptr++))->name_ ) );
+   
+  };
+
+  return _beamline_identifiers_list;
+
+}
+
+
+double
+bmlfactory::getVariableValue(const char* var_name) const
+{
+   
+  double value;  
+
+  char* tmp_name = new char[ strlen(var_name)+ 1 ];
+  strcpy(tmp_name, var_name);
+  variable* var = (variable*) var_table_lookup( tmp_name, var_table_ );
+  return expr_evaluate( var->expr_, var_table_, bel_table_ );
+
+  delete[] tmp_name;
+
+}
+
+bool  
+bmlfactory::variableIsDefined(const char* var_name) const
+{
+ 
+  char* tmp_name = new char[ strlen(var_name)+ 1 ]; 
+  strcpy(tmp_name, var_name);
+  if  ( variable* var = (variable*) var_table_lookup( tmp_name, var_table_ ) )
+    return true; 
+  else
+    return false;
+  delete[] tmp_name;
+  
 }
