@@ -252,21 +252,21 @@ void CF_sbend::localPropagate( JetParticle& p )
 }
 
 
-double sbend::setEntryAngle( const Particle& p )
+double CF_sbend::setEntryAngle( const Particle& p )
 {
   return this->setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
 
-double sbend::setExitAngle( const Particle& p )
+double CF_sbend::setExitAngle( const Particle& p )
 {
   return this->setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
 
-double sbend::setEntryAngle( double phi /* radians */ )
+double CF_sbend::setEntryAngle( double phi /* radians */ )
 {
   double ret = _usAngle;
   _usAngle = phi;
@@ -275,7 +275,7 @@ double sbend::setEntryAngle( double phi /* radians */ )
 }
 
 
-double sbend::setExitAngle( double phi /* radians */ )
+double CF_sbend::setExitAngle( double phi /* radians */ )
 {
   double ret = _dsAngle;
   _dsAngle = phi;  
