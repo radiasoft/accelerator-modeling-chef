@@ -5,7 +5,7 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
+******  Version:   2.0
 ******                                    
 ******  File:      BeamlineContext.cc
 ******                                                                
@@ -45,6 +45,7 @@
 #include "ClosedOrbitSage.h"
 #include "ChromaticityAdjuster.h"
 #include "TuneAdjuster.h"
+#include "RefRegVisitor.h"
 
 extern void BeamlineSpitout( int, BeamlineIterator& );
 
@@ -59,13 +60,17 @@ const double BeamlineContext::_smallClosedOrbitNPYError /*[rad]*/ = 1.0e-9;
 using namespace std;
 
 BeamlineContext::BeamlineContext( bool doClone, beamline* x )
-: _p_bml(x), _proton( x->Energy() ),
-  _p_lfs(0), _p_cos(0), 
+: _p_bml(x), 
+  _p_lfs(0), _p_ets(0), _p_cos(0), 
   _p_ca(0), _p_ta(0),
   _p_co_p(0), _p_disp_p(0), _dpp(0.0001),
   _isCloned(doClone),
   _p_bi(0), _p_dbi(0), _p_rbi(0), _p_drbi(0),
-  _tunes(0), _p_jp(0), _normalLattFuncsCalcd(false), _dispCalcd(false)
+  _tunes(0), _eigentunes(0), 
+  _p_jp(0), 
+  _normalLattFuncsCalcd(false), 
+  _edwardstengFuncsCalcd(false), 
+  _dispCalcd(false)
 {
   if( x == 0 ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -385,6 +390,31 @@ void BeamlineContext::_createLFS()
 }
 
 
+void BeamlineContext::_deleteETS()
+{
+  if( 0 != _p_ets )
+  {
+    _p_ets->eraseAll();
+    if( _eigentunes ) { 
+      delete _eigentunes; 
+      _eigentunes = 0;
+    }
+    delete _p_ets;
+    _p_ets = 0;
+
+    _edwardstengFuncsCalcd = false;
+    _dispCalcd = false;
+  }
+}
+
+
+void BeamlineContext::_createETS()
+{
+  this->_deleteETS();
+  _p_ets = new EdwardsTengSage( _p_bml, false );
+}
+
+
 bool BeamlineContext::_onTransClosedOrbit( const Proton& arg ) const
 {
   Proton probe( arg );
@@ -406,10 +436,12 @@ bool BeamlineContext::_onTransClosedOrbit( const Proton& arg ) const
 void BeamlineContext::_createClosedOrbit()
 {
   // Instantiates the closed orbit Proton and JetProton.
+  // The JetProton is on the closed orbit and its environment
+  // is centered on the closed orbit. It's state corresponds
+  // to the one turn map.
   
   // Eliminate previous information, if necessary
   _deleteClosedOrbit();
-
 
   _p_co_p   = new Proton( _p_bml->Energy() );
 
@@ -417,16 +449,13 @@ void BeamlineContext::_createClosedOrbit()
   {
     // Instantiate _p_jp on the closed orbit
     // and propagate it once.
-
     _p_jp = new JetProton( *_p_co_p );
     _p_bml->propagate( *_p_jp );
   }
-
   else 
   {
     // Instantiate _p_jp 
     // and use a ClosedOrbitSage
-
     delete _p_co_p;
     _p_co_p = 0;
 
@@ -443,8 +472,33 @@ void BeamlineContext::_createClosedOrbit()
              uic.str().c_str() ) );
     }
 
-    _p_co_p = ((Proton*) _p_jp->ConvertToParticle());
+    _p_co_p = (dynamic_cast<Proton*>(_p_jp->ConvertToParticle()));
   }
+
+
+  // As a final step, register the closed orbit proton
+  //   to initialize the reference times correctly
+  //   in the elements.
+  Proton dummyProton( *_p_co_p );
+  RefRegVisitor registrar( dummyProton );
+  _p_bml->accept( registrar );
+  
+ 
+  // If necessary, create a new Jet environment, 
+  // centered on the closed orbit, for the Jet proton.
+  Jet__environment* storedEnv = Jet::_lastEnv;
+  Jet__environment* pje = Jet::CreateEnvFrom( _p_co_p->State(), 
+                                              storedEnv->_maxWeight );
+  // ... Note: this method does not reset Jet::_lastEnv;
+  // ...       thus the (possible) necessity of the next line.
+  Jet::_lastEnv = pje;
+  delete _p_jp;
+  _p_jp = new JetProton( *_p_co_p );
+  _p_bml->propagate( *_p_jp );
+
+
+  // Before returning, restore Jet::_lastEnv
+  Jet::_lastEnv = storedEnv;
 }
 
 
@@ -542,6 +596,58 @@ double BeamlineContext::getVerticalFracTune()
 }
 
 
+void BeamlineContext::_createEigentunes()
+{
+  _createClosedOrbit();
+  // At this point, _p_jp's state is that after one-turn on the
+  //   closed orbit. It's environment is centered on the closed
+  //   orbit and may be out of synch with the current environment.
+
+  if( _eigentunes == 0 ) {
+    _eigentunes = new EdwardsTengSage::Tunes;
+  }
+					     
+  int ets_result = EdwardsTengSage::eigenTuneCalc( *_p_jp, *_eigentunes );
+
+  if( 0 != ets_result ) {
+    ostringstream uic;
+    uic  << "Error number " << ets_result
+         << " returned by EdwardsTengSage::eigenTuneCalc.";
+    throw( GenericException( __FILE__, __LINE__, 
+           "void BeamlineContext::_createEigenTunes()", 
+           uic.str().c_str() ) );
+  }
+}
+
+
+double BeamlineContext::getHorizontalEigenTune()
+{
+  if( 0 == _p_ets ) {
+    this->_createETS();
+  }
+  
+  if( 0 == _eigentunes ) {
+    this->_createEigentunes();
+  }
+
+  return _eigentunes->hor;
+}
+
+
+double BeamlineContext::getVerticalEigenTune()
+{
+  if( 0 == _p_ets ) {
+    this->_createETS();
+  }
+  
+  if( 0 == _eigentunes ) {
+    this->_createEigentunes();
+  }
+
+  return _eigentunes->ver;
+}
+
+
 const LattFuncSage::lattFunc* BeamlineContext::getLattFuncPtr( int i )
 {
   if( 0 == _p_lfs ) {
@@ -563,6 +669,44 @@ const LattFuncSage::lattFunc* BeamlineContext::getLattFuncPtr( int i )
   }
 
   return (_p_lfs->get_lattFuncPtr(i));
+}
+
+
+const EdwardsTengSage::Info* BeamlineContext::getETFuncPtr( int i )
+{
+  if( 0 == _p_ets ) {
+    this->_createETS();
+  }
+  
+  if( 0 == _eigentunes ) {
+    this->_createEigentunes();
+  }
+
+  if( !_edwardstengFuncsCalcd ) {
+    // This is inefficient! _p_jp is already on the closed
+    //   orbit, which means it has traversed the beamline.
+    //   This information should have been preserved.
+
+    // Preserve/reset the current Jet environment
+    Jet__environment*  storedEnv  = Jet::_lastEnv;
+    JetC__environment* storedEnvC = JetC::_lastEnv;
+    Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
+    JetC::_lastEnv = JetC::CreateEnvFrom( Jet::_lastEnv );
+
+    JetParticle* ptr_arg = _p_jp->Clone();
+    Mapping id( "identity" );
+    ptr_arg->setState( id );
+    int errorFlag = _p_ets->doCalc( ptr_arg, beamline::yes );
+    _edwardstengFuncsCalcd = ( 0 == errorFlag );
+    delete ptr_arg;
+
+    // Restore current environment
+    Jet::_lastEnv = storedEnv;
+    JetC::_lastEnv = storedEnvC;
+  }
+
+  if( _edwardstengFuncsCalcd ) { return (_p_ets->get_ETFuncPtr(i)); }
+  else                         { return 0;                          }
 }
 
 

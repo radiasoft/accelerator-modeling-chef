@@ -5,7 +5,7 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.1
+******  Version:   2.0
 ******                                    
 ******  File:      BeamlineContext.h
 ******                                                                
@@ -62,7 +62,11 @@ typedef TMapping<double,FNAL::Complex> Mapping;
 #include "LattFuncSage.h"
 #endif
 // The way that LattFuncSage.h is currently written,
-// it #includes beamline.h.  Bad form.
+// it #includes bmlnElmnt.h.  Bad form.
+
+#ifndef EDWARDSTENGSAGE_H
+#include "EdwardsTengSage.h"
+#endif
 
 class BeamlineContext
 {
@@ -112,7 +116,10 @@ class BeamlineContext
     // Sage methods ... and others
     double getHorizontalFracTune();
     double getVerticalFracTune();
+    double getHorizontalEigenTune();
+    double getVerticalEigenTune();
     const LattFuncSage::lattFunc* getLattFuncPtr( int );
+    const EdwardsTengSage::Info* getETFuncPtr( int );
 
     MatrixD equilibriumCovariance( double, double );
     // Arguments are the "invariant emittances" -
@@ -160,8 +167,6 @@ class BeamlineContext
     friend ostream& operator<<( ostream&, const BeamlineContext& );
     friend istream& operator>>( istream&,       BeamlineContext& );
 
-    Proton                _proton;
-
     // Status flags
     static const int OKAY;
     static const int NO_TUNE_ADJUSTER;
@@ -169,6 +174,7 @@ class BeamlineContext
   private:
     beamline*             _p_bml;
     LattFuncSage*         _p_lfs;
+    EdwardsTengSage*      _p_ets;
     ClosedOrbitSage*      _p_cos;
     ChromaticityAdjuster* _p_ca;
     TuneAdjuster*         _p_ta;
@@ -194,20 +200,28 @@ class BeamlineContext
     const static double _smallClosedOrbitNPYError;
 
 
-    LattFuncSage::tunes*  _tunes;
+    LattFuncSage::tunes*     _tunes;
+    EdwardsTengSage::Tunes*  _eigentunes;
 
+    // Status flags
     bool                  _isCloned;
     bool                  _normalLattFuncsCalcd;
+    bool                  _edwardstengFuncsCalcd;
     bool                  _dispCalcd;
 
+    // Iterators
     BeamlineIterator*            _p_bi;
     DeepBeamlineIterator*        _p_dbi;
     ReverseBeamlineIterator*     _p_rbi;
     DeepReverseBeamlineIterator* _p_drbi;
 
+    // Operations
     void _createLFS();
     void _deleteLFS();
     void _createTunes();
+    void _createETS();
+    void _deleteETS();
+    void _createEigentunes();
     void _createClosedOrbit();
     void _deleteClosedOrbit();
 
