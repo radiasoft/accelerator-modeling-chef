@@ -238,7 +238,7 @@ template<typename T> TMatrix<T> operator/(const T, TMatrix<T>&);
 template<typename T> TMatrix<T> operator/(TMatrix<T>&, TMatrix<T>&);
 
 
-// Cerived class MatrixC
+// Derived class MatrixC
 // Done to replicate member functions dagger() and MatrixC(const TMatrix<double>&)
 
 struct MatrixC : public TMatrix<FNAL::Complex>
