@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+#if 0
 double drand48(int* idum)
 {
   static double y,maxran,v[98];
@@ -60,3 +61,4 @@ double drand48(int* idum)
   v[j]=rand();
   return y/maxran;
 }
+#endif
