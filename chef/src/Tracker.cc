@@ -270,18 +270,56 @@ void NormV::toState( double a, double b, Proton* ptrPtr ) const
 }
 
 
+IHIV::IHIV( double a1, double b1, double a2, double b2 )
+: _alphaH(a1), _betaH(b1), _alphaV(a2), _betaV(b2)
+{
+}
+
+
+IHIV::IHIV( double a1, double b1, double a2, double b2, const Particle& u )
+: _alphaH(a1), _betaH(b1), _alphaV(a2), _betaV(b2)
+{
+  this->set_center( u );
+}
+
+
+IHIV::IHIV()
+: _alphaH(0.0), _betaH(1.0), _alphaV(0.0), _betaV(1.0)
+{
+}
+
+
+PhiHPhiV::PhiHPhiV( double a1, double b1, double a2, double b2 )
+: _alphaH(a1), _betaH(b1), _alphaV(a2), _betaV(b2)
+{
+}
+
+
+PhiHPhiV::PhiHPhiV( double a1, double b1, double a2, double b2, const Particle& u )
+: _alphaH(a1), _betaH(b1), _alphaV(a2), _betaV(b2)
+{
+  this->set_center( u );
+}
+
+
+PhiHPhiV::PhiHPhiV()
+: _alphaH(0.0), _betaH(1.0), _alphaV(0.0), _betaV(1.0)
+{
+}
+
+
 void IHIV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
   static double u, v;
 
   // Horizontal
-  u = state(Particle::_x());
-  v = _alphaH*u + _betaH*state(Particle::_xp());
+  u = state(Particle::_x()) - _x_o;
+  v = _alphaH*u + _betaH*( state(Particle::_xp()) - _xp_o );
   *xPtr = ( u*u + v*v )/( 2.0*_betaH );
   
   // Vertical
-  u = state(Particle::_y());
-  v = _alphaV*u + _betaV*state(Particle::_yp());
+  u = state(Particle::_y()) - _y_o;
+  v = _alphaV*u + _betaV*( state(Particle::_yp()) - _yp_o );
   *yPtr = ( u*u + v*v )/( 2.0*_betaV );
 
   *zPtr = 0.0;
@@ -310,8 +348,8 @@ void IHIV::toState( double IH, double IV, Proton* protonPtr ) const
   beta  = _betaH;
   alpha = _alphaH;
 
-  u = protonPtr->get_x();
-  v = alpha*u + beta*protonPtr->get_npx();
+  u = protonPtr->get_x() - _x_o;
+  v = alpha*u + beta*( protonPtr->get_npx() - _xp_o );
   phi = atan2(u,v);
   if( phi > M_PI ) phi -= M_TWOPI;
 
@@ -319,8 +357,8 @@ void IHIV::toState( double IH, double IV, Proton* protonPtr ) const
     amp = sqrt(2.0*beta*IH);
     u = amp*sin(phi);
     v = amp*cos(phi);
-    protonPtr->set_x( u );
-    protonPtr->set_npx( ( v - alpha*u )/beta );
+    protonPtr->set_x( _x_o + u );
+    protonPtr->set_npx( _xp_o + (( v - alpha*u )/beta) );
   }
   else {
     protonPtr->set_x( 0. );
@@ -331,8 +369,8 @@ void IHIV::toState( double IH, double IV, Proton* protonPtr ) const
   beta  = _betaV;
   alpha = _alphaV;
 
-  u = protonPtr->get_y();
-  v = alpha*u + beta*protonPtr->get_npy();
+  u = protonPtr->get_y() - _y_o;
+  v = alpha*u + beta*( protonPtr->get_npy() - _yp_o );
   phi = atan2(u,v);
   if( phi > M_PI ) phi -= M_TWOPI;
 
@@ -340,8 +378,8 @@ void IHIV::toState( double IH, double IV, Proton* protonPtr ) const
     amp = sqrt(2.0*beta*IV);
     u = amp*sin(phi);
     v = amp*cos(phi);
-    protonPtr->set_y( u );
-    protonPtr->set_npy( ( v - alpha*u )/beta );
+    protonPtr->set_y( _y_o + u );
+    protonPtr->set_npy( _yp_o + (( v - alpha*u )/beta) );
   }
   else {
     protonPtr->set_y( 0. );
@@ -355,14 +393,14 @@ void PhiHPhiV::toDynamics( const Vector& state, double* xPtr, double* yPtr, doub
   static double u, v, phiH, phiV;
 
   // Horizontal
-  u = state(Particle::_x());
-  v = _alphaH*u + _betaH*state(Particle::_xp());
+  u = state(Particle::_x()) - _x_o;
+  v = _alphaH*u + _betaH*( state(Particle::_xp()) - _xp_o );
   phiH = atan2(u,v);
   if( phiH > M_PI ) phiH -= M_TWOPI;
   
   // Vertical
-  u = state(Particle::_y());
-  v = _alphaV*u + _betaV*state(Particle::_yp());
+  u = state(Particle::_y()) - _y_o;
+  v = _alphaV*u + _betaV*( state(Particle::_yp()) - _yp_o );
   phiV = atan2(u,v);
   if( phiV > M_PI ) phiV -= M_TWOPI;
   
@@ -400,27 +438,27 @@ void PhiHPhiV::toState( double phiH, double phiV, Proton* protonPtr ) const
   beta  = _betaH;
   alpha = _alphaH;
 
-  u = protonPtr->get_x();
-  v = alpha*u + beta*protonPtr->get_npx();
+  u = protonPtr->get_x() - _x_o;
+  v = alpha*u + beta*( protonPtr->get_npx() - _xp_o );
 
   amp = sqrt( u*u + v*v );
   u = amp*sin(phiH);
   v = amp*cos(phiH);
-  protonPtr->set_x( u );
-  protonPtr->set_npx( ( v - alpha*u )/beta );
+  protonPtr->set_x( _x_o + u );
+  protonPtr->set_npx( _xp_o + (( v - alpha*u )/beta) );
 
   // Vertical
   beta  = _betaV;
   alpha = _alphaV;
 
-  u = protonPtr->get_y();
-  v = alpha*u + beta*protonPtr->get_npy();
+  u = protonPtr->get_y() - _y_o;
+  v = alpha*u + beta*( protonPtr->get_npy() - _yp_o );
 
   amp = sqrt( u*u + v*v );
   u = amp*sin(phiV);
   v = amp*cos(phiV);
-  protonPtr->set_y( u );
-  protonPtr->set_npy( ( v - alpha*u )/beta );
+  protonPtr->set_y( _y_o + u );
+  protonPtr->set_npy( _yp_o + (( v - alpha*u )/beta) );
 }
 
 
@@ -443,6 +481,70 @@ void OrbitTransformer::copyCenterFrom( const OrbitTransformer& u )
   _yp_o  = u._yp_o;
   _cdt_o = u._cdt_o;
   _dpp_o = u._dpp_o;
+}
+
+
+void OrbitTransformer::set_center( const Vector& u )
+{
+  if( 6 == u.Dim() ) {
+    _x_o   = u( Particle::_x());
+    _xp_o  = u( Particle::_xp());
+    _y_o   = u( Particle::_y());
+    _yp_o  = u( Particle::_yp());
+    _cdt_o = u( Particle::_cdt());
+    _dpp_o = u( Particle::_dpop());
+  }
+  else {
+    ostringstream uic;
+    uic << __FILE__ << ", line " << __LINE__
+        << "\nvoid OrbitTransformer::set_center( const Vector& u )"
+        << "\nArgument u has dimension = "
+        << (u.Dim())
+        << " != 6."
+        << "\nNo action taken";
+    QMessageBox::information( 0, "CHEF: ERROR", uic.str().c_str() );
+  }
+}
+
+
+void OrbitTransformer::set_center( const Particle& u )
+{
+  _x_o   = u.get_x();
+  _xp_o  = u.get_npx();
+  _y_o   = u.get_y();
+  _yp_o  = u.get_npy();
+  _cdt_o = u.get_cdt();
+  _dpp_o = u.get_ndp();
+}
+
+
+Vector OrbitTransformer::get_center() const
+{
+  Vector u(6);
+  u( Particle::_x())    = _x_o  ;
+  u( Particle::_xp())   = _xp_o ;
+  u( Particle::_y())    = _y_o  ;
+  u( Particle::_yp())   = _yp_o ;
+  u( Particle::_cdt())  = _cdt_o;
+  u( Particle::_dpop()) = _dpp_o;
+  return u;
+}
+
+
+void OrbitTransformer::load_center_into( Particle* u ) const
+{
+  this->load_center_into( *u );
+}
+
+
+void OrbitTransformer::load_center_into( Particle& u ) const
+{
+  u.set_x(_x_o);
+  u.set_npx(_xp_o);
+  u.set_y(_y_o);
+  u.set_npy(_yp_o);
+  u.set_cdt(_cdt_o);
+  u.set_ndp(_dpp_o);
 }
 
 
@@ -977,8 +1079,9 @@ void DrawSpace::setActAngContext()
 // -----------------------------
 
 Tracker::Tracker( BeamlineContext* bmlCP, QWidget* parent, const char* name, WFlags f)
-  : QVBox(parent, name, f),
-  _bmlConPtr( bmlCP ), _isIterating(false), _p_info(0), _number(1),
+: QVBox(parent, name, f),
+  _bmlConPtr( bmlCP ), _centralParticlePtr(0),
+  _isIterating(false), _p_info(0), _number(1),
   _deleteContext( false ), _p_currOrb(0),
   _myWheel(0.0)
 {
@@ -991,7 +1094,8 @@ Tracker::Tracker( BeamlineContext* bmlCP, QWidget* parent, const char* name, WFl
 
 Tracker::Tracker( /* const */ beamline* x,  QWidget* parent, const char* name, WFlags f)
 : QVBox(parent, name, f),
-  _bmlConPtr( 0 ), _isIterating(false), _p_info(0), _number(1),
+  _bmlConPtr( 0 ), _centralParticlePtr(0),
+  _isIterating(false), _p_info(0), _number(1),
   _deleteContext( true ), _p_currOrb(0),
   _myWheel(0.0)
 {
@@ -1181,7 +1285,10 @@ void Tracker::_finishConstructor()
 
 Tracker::~Tracker()
 {
-  if( _p_info ) delete _p_info;
+  if( _p_info ) 
+  { delete _p_info; _p_info = 0; }
+  if( _centralParticlePtr ) 
+  { delete _centralParticlePtr; _centralParticlePtr = 0; }
 
   delete _p_yp_input;
   delete _p_yp_label;
@@ -1354,14 +1461,26 @@ void Tracker::_view_actang()
   _p_leftWindow->storeCurrentContext();
   _p_leftWindow->setActAngContext();
   if( 0 == _p_leftWindow->getTransformer() ) {
-    _p_leftWindow->setTransformer( new IHIV( a1, b1, a2, b2 ) );
+    if( _centralParticlePtr ) {
+      _p_leftWindow->setTransformer( new IHIV( a1, b1, a2, b2, 
+                                               *_centralParticlePtr ) );
+    }
+    else {
+      _p_leftWindow->setTransformer( new IHIV( a1, b1, a2, b2 ) );
+    }
     _p_leftWindow->setRange( 0.0, 1.e-6, 0.0, 1.e-6 );
   }
   
   _p_rightWindow->storeCurrentContext();
   _p_rightWindow->setActAngContext();
   if( 0 == _p_rightWindow->getTransformer() ) {
-    _p_rightWindow->setTransformer( new PhiHPhiV( a1, b1, a2, b2 ) );
+    if( _centralParticlePtr ) {
+      _p_rightWindow->setTransformer( new PhiHPhiV( a1, b1, a2, b2,
+                                               *_centralParticlePtr ) );
+    }
+    else {
+      _p_rightWindow->setTransformer( new PhiHPhiV( a1, b1, a2, b2 ) );
+    }
     _p_rightWindow->setRange( -M_PI, M_PI, -M_PI, M_PI );
   }
 
@@ -1453,6 +1572,9 @@ void Tracker::_view_zoom_s()
 
 void Tracker::_view_zoom_reset()
 {
+  if( _centralParticlePtr ) 
+  { delete _centralParticlePtr; _centralParticlePtr = 0; }
+
   _p_leftWindow->resetZoom();
   _p_rightWindow->resetZoom();
 }
@@ -1460,6 +1582,9 @@ void Tracker::_view_zoom_reset()
 
 void Tracker::_view_center()
 {
+  if( _centralParticlePtr ) { delete _centralParticlePtr; }
+  _centralParticlePtr = _bmlConPtr->_proton.Clone();
+
   _p_leftWindow->setCenterOn( _bmlConPtr->_proton );
   _p_rightWindow->setCenterOn( _bmlConPtr->_proton );
 

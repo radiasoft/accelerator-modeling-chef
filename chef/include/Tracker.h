@@ -136,13 +136,18 @@ class OrbitTransformer
     inline void set_yp_center ( double u ) { _yp_o  = u; }
     inline void set_cdt_center( double u ) { _cdt_o = u; }
     inline void set_dpp_center( double u ) { _dpp_o = u; }
+    void set_center( const Vector& );
+    void set_center( const Particle& );
 
-    inline double get_x_center()   { return _x_o;   }
-    inline double get_xp_center()  { return _xp_o;  }
-    inline double get_y_center()   { return _y_o;   }
-    inline double get_yp_center()  { return _yp_o;  }
-    inline double get_cdt_center() { return _cdt_o; }
-    inline double get_dpp_center() { return _dpp_o; }
+    inline double get_x_center()   const { return _x_o;   }
+    inline double get_xp_center()  const { return _xp_o;  }
+    inline double get_y_center()   const { return _y_o;   }
+    inline double get_yp_center()  const { return _yp_o;  }
+    inline double get_cdt_center() const { return _cdt_o; }
+    inline double get_dpp_center() const { return _dpp_o; }
+    Vector get_center() const;
+    void load_center_into( Particle* ) const;
+    void load_center_into( Particle& ) const;
 
     void copyCenterFrom( const OrbitTransformer* );
     void copyCenterFrom( const OrbitTransformer& );
@@ -215,9 +220,11 @@ class NormV : public OrbitTransformer
 class IHIV : public OrbitTransformer
 {
   public: 
-    IHIV( double a1, double b1, double a2, double b2) 
-    : _alphaH(a1), _betaH(b1), _alphaV(a2), _betaV(b2) {}
-    IHIV() : _alphaH(0.0), _betaH(1.0), _alphaV(0.0), _betaV(1.0) {}
+    IHIV( double a1, double b1, double a2, double b2 );
+    IHIV( double a1, double b1, double a2, double b2, const Particle& );
+    // _alphaH(a1), _betaH(b1), _alphaV(a2), _betaV(b2)
+    // Last argument used as central particle to determine origin.
+    IHIV(); 
     ~IHIV() {}
 
     void toState( double, double, Proton* ) const;
@@ -234,9 +241,9 @@ class IHIV : public OrbitTransformer
 class PhiHPhiV : public OrbitTransformer
 {
   public: 
-    PhiHPhiV( double a1, double b1, double a2, double b2) 
-    : _alphaH(a1), _betaH(b1), _alphaV(a2), _betaV(b2) {}
-    PhiHPhiV() : _alphaH(0.0), _betaH(1.0), _alphaV(0.0), _betaV(1.0) {}
+    PhiHPhiV( double a1, double b1, double a2, double b2 );
+    PhiHPhiV( double a1, double b1, double a2, double b2, const Particle& );
+    PhiHPhiV();
     ~PhiHPhiV() {}
 
     void toState( double, double, Proton* ) const;
@@ -338,6 +345,7 @@ private:
   QLabel*          _p_yp_label;
 
   BeamlineContext* _bmlConPtr;
+  Particle*        _centralParticlePtr;
   bool             _deleteContext;
   bool             _isIterating;
   Orbit*           _p_currOrb;
