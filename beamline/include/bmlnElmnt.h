@@ -472,7 +472,7 @@ private:
   int               numElem;          // Number of elements in the beamline
   char              twissDone;
   ostream& writeTo(ostream&);
-  istream& readFrom(istream&);
+  // ??? REMOVE: istream& readFrom(istream&);
   friend istream& operator>>( istream&, beamline& );
 
 public:
