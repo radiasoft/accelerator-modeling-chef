@@ -995,7 +995,6 @@ int beamline::twiss( char, JetParticle& p ) {
   dlist_iterator  getNext ( *(dlist*) this );
   double          csH, csV, snH, snV, t;
   double*         zero;
-  MatrixD        mtrx;
   int             i;
 
  // .......... Propagate a JetProton to get transfer matrix
@@ -1114,7 +1113,7 @@ int beamline::twiss( char, JetParticle& p ) {
     dataHook.insert( new Barnacle( "Twiss", latticeFunctions ) );
     dataHook.eraseFirst( "Ring" );
     dataHook.insert( new Barnacle( "Ring", latticeRing ) );
-  } 
+  }
   return 0;
 } 
 
