@@ -1081,13 +1081,21 @@ void bmlnElmnt::setShunt(double a)
   shuntCurrent = a;
 }
 
-bmlnElmnt* bmlnElmnt::Clone(char* name) {
+bmlnElmnt* bmlnElmnt::clone() const
+{
+  return this->Clone();  // should call virtual function
+}
+
+bmlnElmnt* bmlnElmnt::Clone(const char* name) {
   // Clone this bmlnElmnt, changing the name to my argument.
   bmlnElmnt *temp = Clone();
   temp->Rename(name);
   return temp;
 }
 
+bmlnElmnt* bmlnElmnt::clone(const char* name) {
+  return this->Clone(name);
+}
 
 ostream& operator<<(ostream& os, bmlnElmnt& b)
 {
