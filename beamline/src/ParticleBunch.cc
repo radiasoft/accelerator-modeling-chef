@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "ParticleBunch.h"
 
@@ -42,40 +42,173 @@
 
 using namespace std;
 
-ParticleBunch::ParticleBunch() : slist(), iNOfTracked_( 0 ), iNOfTotal_( 0 ) {
+ParticleBunch::Discriminator::Discriminator( const ParticleBunch* x )
+: _within(x)
+{
 }
 
-ParticleBunch::~ParticleBunch() {
- slist_iterator getNext( *(slist*) this );
- Particle* p;
- while( (p = (Particle*) getNext()) ) delete p;
+
+ParticleBunch::Discriminator::Discriminator( const Discriminator& x )
+: _within( x._within )
+{
 }
 
-void ParticleBunch::recreate(int,double,double*,Distribution&, BunchPredicate*) {
-  cerr << "ParticleBunch::recreate -- This method doesn't know what to do!" << endl;
+
+ParticleBunch::ParticleBunch()
+{
 }
 
-void ParticleBunch::recreate(int,double,double*,double*,Distribution&,BunchPredicate*) {
-  cerr << "ParticleBunch::recreate -- This method doesn't know what to do!" << endl;
+
+ParticleBunch::~ParticleBunch() 
+{
+  list<Particle*>::iterator cur;
+  for( cur  = _bag.begin();
+       cur != _bag.end();
+       cur++                ) 
+  {
+    delete (*cur);
+  }
 }
 
-ProtonBunch::ProtonBunch() : ParticleBunch() {
+
+void ParticleBunch::append( const Particle& x )
+{
+  Particle* ptr = x.Clone();
+  _bag.push_back( ptr );
+}
+
+
+list<Particle*> ParticleBunch::remove( Discriminator& dsc )
+{
+  //list<Particle*>::iterator collector 
+  //    = remove_if ( _bag.begin(), _bag.end(), dsc );
+
+  // This is kludged, until I can figure out how
+  // to make std algorithms do what I want them to do.
+  // This really seems horribly inefficient
+  // compared to using a dlist_traversor
+
+  list<Particle*> marked;
+  list<Particle*>::iterator cur;
+  for( cur  = _bag.begin();
+       cur != _bag.end();
+       cur++                ) 
+  {
+    if( dsc( *cur ) ) { 
+      marked.push_back( *cur ); 
+    }
+  }
+
+  for( cur  = marked.begin();
+       cur != marked.end();
+       cur++                  )
+  {
+    list<Particle*>::iterator new_end 
+      = _bag.erase( std::remove( _bag.begin(), _bag.end(), *cur ), _bag.end() );
+  }
+  
+  return marked;
+}
+
+
+int ParticleBunch::size() const
+{
+  return _bag.size();
+}
+
+
+bool ParticleBunch::isEmpty() const
+{
+  return _bag.empty();
+}
+
+
+// FAILS: list<Particle*> ParticleBunch::remove( Discriminator& dsc )
+// FAILS: {
+// FAILS:   list<Particle*>::iterator new_end
+// FAILS:     = remove_if( _bag.begin(), _bag.end(), dsc );
+// FAILS:   // Contrary to its name, remove_if actually removes nothing.
+// FAILS: 
+// FAILS:   list<Particle*> ret;
+// FAILS:   list<Particle*>::iterator cur;
+// FAILS:   for( cur  = new_end; cur != _bag.end(); cur++ ) {
+// FAILS:     ret.push_back( *cur ); 
+// FAILS:   }
+// FAILS:   _bag.erase( new_end, _bag.end() );
+// FAILS: 
+// FAILS:   return ret;
+// FAILS: }
+
+
+
+ParticleBunch::Iterator::Iterator( ParticleBunch& x )
+{
+  _cur = x._bag.begin();
+  _ref = &x;
+}
+
+
+ParticleBunch::Iterator::Iterator( const Iterator& )
+{
+  cerr << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
+       << "\n*** ERROR *** ParticleBunch::Iterator::Iterator( const Iterator& );"
+          "\n*** ERROR *** Copy constructor may not be called for this object."
+       << endl;
+  exit(99);
+}
+
+
+ParticleBunch::Iterator::~Iterator()
+{
+}
+
+
+
+const Particle* ParticleBunch::Iterator::next()
+{
+  Particle* ret;
+  if( _cur == _ref->_bag.end() ) { 
+    ret = 0;
+  }
+  else {
+    ret = *_cur;
+    _cur++;
+  }
+  return ret;
+}
+
+
+void ParticleBunch::Iterator::reset()
+{
+  _cur = _ref->_bag.begin();
+}
+
+
+
+ProtonBunch::ProtonBunch() : ParticleBunch() 
+{
 }
  
+
+ProtonBunch::~ProtonBunch()
+{
+}
+ 
+
+void ProtonBunch::append( const Proton& x )
+{
+  // Assures that only protons are added
+  // to the bunch.
+  ParticleBunch::append( x );
+}
+
+
+
+/*** OLD CODE ***
 ProtonBunch::ProtonBunch(int nm, double energy, double* widths,
 			 Distribution& distrib,
-                         BunchPredicate* pBunchPredicate ): ParticleBunch() {
-
-/* #if defined(__sparc) && !defined(__GNUG__) && !defined(__KCC)
-   const int false = 0;
-   const int true  = 1;
-   #endif
-*/
-#if defined(__mips) && !defined(__GNUG__)
- const int false = 0;
- const int true  = 1;
-#endif
-
+                         BunchPredicate* pBunchPredicate ): ParticleBunch() 
+{
  Proton* p;
  double x[ BMLN_dynDim ];
 
@@ -233,9 +366,6 @@ ProtonBunch::ProtonBunch( int, int nm, char t,
  }
 }
 
-ProtonBunch::~ProtonBunch() {
-}
-
 ElectronBunch::ElectronBunch() : ParticleBunch() {
 }
  
@@ -363,3 +493,4 @@ void ElectronBunch::recreate(int nm, double energy, double* widths, double* offs
    iNOfTotal_++;
  }
 }
+*/

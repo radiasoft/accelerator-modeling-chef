@@ -33,7 +33,9 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
+
 #include "sextupole.h"
+#include "Particle.h"
 
 void sextupole::localPropagate( Particle& p ) {
   p_bml->propagate( p );

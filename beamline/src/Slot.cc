@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,9 +29,14 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "marker.h"
 #include "Slot.h"
+#include "Particle.h"
+#include "ParticleBunch.h"
 
 using namespace std;
 
@@ -840,15 +842,12 @@ void Slot::localPropagate( JetParticle& p )
 
 void Slot::localPropagate( ParticleBunch& x )
 {
-  if     ( 0 != p_bml   ) p_bml   ->propagate( x );
-  else if( 0 != p_bml_e ) p_bml_e ->propagate( x );
-
+  if     ( 0 != p_bml   ) { p_bml   ->propagate( x ); }
+  else if( 0 != p_bml_e ) { p_bml_e ->propagate( x ); }
   else {
     Particle* p;
-    slist_iterator getNext( (slist&) x );
-    while((  p = (Particle*) getNext()  )) {
-      this->localPropagate( *p );
-    }
+    ParticleBunch::Iterator get( x );
+    while((  p = (Particle*) get.next()  )) { this->localPropagate( *p ); }
   }
 }
 

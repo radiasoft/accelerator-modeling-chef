@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,7 +29,12 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
+#include "Particle.h"
+#include "ParticleBunch.h"
 #include "pinger.h"
 
 /* ********** Pinger propagators **********
@@ -62,3 +64,17 @@ void Pinger::localPropagate( JetParticle& p ) {
   }
 }
 
+void Pinger::localPropagate( ParticleBunch& b ) {
+  if ( isArmed() ) {
+    if( 0 == _counter ) {
+      Particle* p;
+      ParticleBunch::Iterator get( b );
+      while((  p = (Particle*) get.next()  )) {
+        p->state[3] += cos(_kick_direction)*strength;
+        p->state[4] += sin(_kick_direction)*strength;
+      }
+    }
+    _counter--;
+  }
+}
+ 

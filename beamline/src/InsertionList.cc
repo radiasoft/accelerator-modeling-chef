@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -33,8 +30,13 @@
 *************************************************************************/
 
 
-#include "bmlnElmnt.h"
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "PhysicsConstants.h"
+#include "bmlnElmnt.h"
+#include "InsertionList.h"
 
 using namespace std;
 
