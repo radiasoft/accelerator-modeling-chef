@@ -339,8 +339,8 @@ public:
 
   virtual void accept( BmlVisitor& ) = 0;
 
-  void setPropFunction ( const PropFunc* a ) { Propagator = (PropFunc*) a;  }
-  void setPropFunction ( const PropFunc& a ) { Propagator = (PropFunc*) &a; }
+  PropFunc* setPropFunction ( const PropFunc* a );  // return previous
+  PropFunc* setPropFunction ( const PropFunc& a );  // Propagator
   PropFunc* getPropFunction() { return Propagator; }
 
   void propagate( Particle& x ) 
