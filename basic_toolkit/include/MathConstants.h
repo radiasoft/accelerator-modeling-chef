@@ -69,4 +69,17 @@
   #define M_SQRT_2    0.707106781186547524401
 #endif /* M_SQRT_2 */
 
+
+#ifdef __SUNPRO_CC
+
+// The following code is for the Solaris native compiler.  It does not
+// have any boolean basic data type.  Note that this does *not* make
+// bool a basic type, but it does make some code more readable
+// -- Elliott McCrory
+
+typedef enum { false = 0, true = 1 } bool;
+
+#endif __SUNPRO_CC
+
+
 #endif // MATHCONS_H
