@@ -41,9 +41,11 @@
 #include "combinedFunction.h"
 #include "kick.h"
 #include "Slot.h"
-#if !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(_EXCLUDE_MONITORS_)
-#include "mwiremonitor.h"
-#endif
+
+// REMOVE: #if !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(_EXCLUDE_MONITORS_)
+// REMOVE: #include "mwiremonitor.h"
+// REMOVE: #endif
+
 #include "pinger.h"
 #include "CF_rbend.h"
 
@@ -183,12 +185,12 @@ bmlnElmnt* read_istream(istream& is)
     monitorPtr = new monitor(name, length);
     element = monitorPtr;
   }
-#if !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(_EXCLUDE_MONITORS_)
-  else if( strcasecmp(type, 		"mwireMonitor") == 0 ) {
-    monitorPtr = new mwireMonitor(name);
-    element = monitorPtr;
-  }
-#endif
+// REMOVE: #if !defined(_MSC_VER) && !defined(__BORLANDC__) && !defined(_EXCLUDE_MONITORS_)
+// REMOVE:   else if( strcasecmp(type, 		"mwireMonitor") == 0 ) {
+// REMOVE:     monitorPtr = new mwireMonitor(name);
+// REMOVE:     element = monitorPtr;
+// REMOVE:   }
+// REMOVE: #endif
   else if( strcasecmp(type, 		"octupole") == 0 ) {
     octupolePtr = new octupole(name, length, strength);
     element = octupolePtr;

@@ -210,8 +210,11 @@ public:
   typedef char (*CRITFUNC)( bmlnElmnt* );
   struct Discriminator
   {
-    virtual bool operator()( const bmlnElmnt* ) const = 0;
+    Discriminator();   // Needed by constructors of derived classes.
+    Discriminator( const Discriminator& );  // Aborts program.
     virtual ~Discriminator() {}
+    virtual bool operator()( const bmlnElmnt* ) const = 0;
+    virtual Discriminator* Clone() const = 0;
   };
 
   static const short BF_OK;
