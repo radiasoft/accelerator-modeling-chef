@@ -116,7 +116,7 @@ void rfcavity::localPropagate( Particle& p )
 
 void rfcavity::localPropagate( JetParticle& p ) 
 {
-  static Jet E;
+  Jet E( (Jet__environment*) p.State().Env() );
   static double oldRefP, newRefP;
   static double oldLength;
   static double referenceEnergyGain;
@@ -209,7 +209,7 @@ void thinrfcavity::localPropagate( Particle& p )
 
 void thinrfcavity::localPropagate( JetParticle& p ) 
 {
-  static Jet E;
+  Jet E( (Jet__environment*) p.State().Env() );
   static double oldRefP, newRefP;
 
   if( 0.0 != this->strength ) {

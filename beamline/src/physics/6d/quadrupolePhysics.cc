@@ -111,7 +111,7 @@ quadrupole::TPOT_Prop  quadrupole::LikeTPOT(4);
 
 void thinQuad::localPropagate( Particle& p ) {
  // "Strength" is B'l in Tesla
- static double TrState[6], dummy[6];
+ static double TrState[6];
  static double k;
 
  if( strength != 0.0 ) 
@@ -129,7 +129,7 @@ void thinQuad::localPropagate( Particle& p ) {
 }
 
 void thinQuad::localPropagate( JetParticle& p ) {
- static Jet TrState[6], dummy[6];
+ static Jet TrState[6];
  static int i;
  static double k;
 

@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -32,7 +29,6 @@
 **************************************************************************
 *************************************************************************/
 
-
 /*
  *  File: LattFuncSage.cc
  *  
@@ -43,6 +39,10 @@
  *  Leo Michelotti
  *  Nov. 19, 1998
  */
+
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iomanip>
 
@@ -119,6 +119,10 @@ LattFuncSage::~LattFuncSage() {
 LattFuncSage::lattFunc* LattFuncSage::get_lattFuncPtr( int j )
 {
   // DANGEROUS: Returns pointer!!
+
+  // PRECONDITION: Assumes existence of the beamline::arrayRep 
+  //   *_arrayPtr held by the base class Sage.
+
   if( 0 <= j  &&  j < _arrayPtr->size() ) {
     return &(_lf[j]);
   }
@@ -143,14 +147,6 @@ void LattFuncSage::eraseAll()
     be->dataHook.eraseAll( "LattFuncSage" );
  }
 }
-
-
-// void LattFuncSage::eraseAll() {
-//  dlist_iterator getNext ( *(dlist*) _myBeamlinePtr );
-//  bmlnElmnt*      be;
-//  while((  be = (bmlnElmnt*) getNext()  )) 
-//   be->dataHook.eraseAll( "LattFuncSage" );
-// }
 
 
 int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC Crit )
@@ -734,6 +730,14 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
     cout.flush();
   }
 
+  // Preserve the current Jet environment
+  Jet__environment*  storedEnv  = Jet::_lastEnv;
+  JetC__environment* storedEnvC = JetC::_lastEnv;
+
+  // Reset current environment
+  Jet::_lastEnv = (Jet__environment*) (arg_jp->State().Env());
+  JetC::_lastEnv = JetC::CreateEnvFrom( Jet::_lastEnv );
+
   MatrixD mtrx;
   LattFuncSage::lattFunc* infoPtr;
 
@@ -797,6 +801,8 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
 
     delete prt;
     delete jprt;
+    Jet::_lastEnv = storedEnv;
+    JetC::_lastEnv = storedEnvC;
     return LattFuncSage::UNSTABLE;
   }
 
@@ -809,6 +815,8 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
 
     delete prt;
     delete jprt;
+    Jet::_lastEnv = storedEnv;
+    JetC::_lastEnv = storedEnvC;
     return LattFuncSage::INTEGER_TUNE;
   }
 
@@ -836,6 +844,8 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
 
     delete prt;
     delete jprt;
+    Jet::_lastEnv = storedEnv;
+    JetC::_lastEnv = storedEnvC;
     return LattFuncSage::UNSTABLE;
   }
 
@@ -848,6 +858,8 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
 
     delete prt;
     delete jprt;
+    Jet::_lastEnv = storedEnv;
+    JetC::_lastEnv = storedEnvC;
     return LattFuncSage::INTEGER_TUNE;
   }
 
@@ -876,15 +888,19 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
   double psi_x   = 0.0;
   double psi_y   = 0.0;
 
+  cout << "DGN:   jprt->setState( prt->State() );" << endl;
   jprt->setState( prt->State() );
 
+  cout << "DGN:   for( int counter = 0; counter < _arrayPtr->size(); counter++ ) " << endl;
   for( int counter = 0; counter < _arrayPtr->size(); counter++ ) 
   {
     lbe = _arrayPtr->e( counter );
 
     lng += lbe->OrbitLength( *prt );
+    cout << "DGN:     lbe -> propagate( *jprt );" << endl;
     lbe -> propagate( *jprt );
 
+    cout << "DGN:     mtrx = jprt->State().Jacobian();" << endl;
     mtrx = jprt->State().Jacobian();
     
     if( ( 0 != strcmp( lbe->Type(), "rbend"    ) ) && 
@@ -961,12 +977,38 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
   delete prt;
   delete jprt;
 
+  Jet::_lastEnv = storedEnv;
+  JetC::_lastEnv = storedEnvC;
   return ret;
 }
 
 
 int LattFuncSage::TuneCalc( JetParticle* arg_jp, bool forceClosedOrbitCalc )
 {
+  // This method does the following:
+  // 
+  // (1) Puts *arg_jp on the closed orbit by
+  //     (1.a) instantiating a ClosedOrbitSage
+  //     (1.b) invoking ClosedOrbitSage::findClosedOrbit.
+  //     (1.c) Note: if forceClosedOrbitCalc is false, the
+  //           ClosedOrbitSage first checks to see if *arg_jp
+  //           is already on a closed orbit. 
+  // 
+  // (2) Calculates tunes:
+  //     (2.a) projects separately the x-x' and y-y' sectors
+  //           of the one-turn matrix onto 2x2 matrices
+  //     (2.b) separately obtains "horizontal" and "vertical"
+  //           tunes from the eigenvalues of those matrices.
+  //     (2.c) stores the results on its beamline's dataHook
+  //           with a Barnacle labelled "Tunes."
+  //     (2.d) Note: this implicitly assumes an uncoupled machine!
+  // 
+  // (3) Upon returning, 
+  //     (3.a) *arg_jp is on the closed orbit 
+  //     (3.b) its state is the one-turn mapping.
+  //     (3.c) the object's beamline contains a barnacle
+  //           with the (uncoupled) tune information
+
   if( this->_verbose ) {
     cout << "LattFuncSage -- Entering LattFuncSage::TuneCalc" << endl;
     cout.flush();
@@ -1155,8 +1197,7 @@ int LattFuncSage::TuneCalc( JetParticle* arg_jp, bool forceClosedOrbitCalc )
 
 
 
-int LattFuncSage::Disp_Calc( JetParticle* arg_jp, 
-                             Sage::CRITFUNC  Crit )
+int LattFuncSage::Disp_Calc( JetParticle* arg_jp, Sage::CRITFUNC  Crit )
 {
   if( this->_verbose ) {
     cout << "LattFuncSage -- Entering LattFuncSage::Disp_Calc" << endl;
@@ -1768,20 +1809,6 @@ int LattFuncSage::FAD_Disp_Calc( /* const */ JetParticle* arg_jp,
 
   return ret;
 }
-
-
-int LattFuncSage::ET_Disp_Calc( JetParticle*, Sage::CRITFUNC )
-{
-  return LattFuncSage::NOT_WRITTEN;
-}
-
-
-int LattFuncSage::CS_Disp_Calc( JetParticle*, Sage::CRITFUNC )
-{
-  return LattFuncSage::NOT_WRITTEN;
-}
-
-
 
 
 int LattFuncSage::Twiss_Calc ( JetParticle& p )
