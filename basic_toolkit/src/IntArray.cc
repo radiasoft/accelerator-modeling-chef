@@ -345,14 +345,13 @@ istream& operator>>( istream& is, IntArray& x )
   
   i = 0;
   is >> buf;
-  x.comp[i] = atoi( buf );
 
   while( buf[ strlen(buf) - 1 ] != ')' ) {
+    x.comp[i++] = atoi( buf );
     is >> buf;
-    x.comp[++i] = atoi( buf );
   }
 
-  if( x.dim != ++i ) {
+  if( x.dim != i ) {
     throw( IntArray::GenericException(
                                 "istream& operator>>( istream& is, IntArray& x )",
                                 "Incorrect number of components were read.") );
