@@ -1,9 +1,9 @@
 #include "beamline.inc"
 #include "ParticleBunch.h"
 
-void thinLamb::propagate( Particle& p ) { }
+void thinLamb::propagate( Particle& ) { }
 
-void thinLamb::propagate( JetParticle& p ) { }
+void thinLamb::propagate( JetParticle& ) { }
 
 void thinLamb::propagate( ParticleBunch& PB ) {
   static int i;
