@@ -1,13 +1,16 @@
 #include <boost/python.hpp>
 
+#ifdef FNAL_FIRST_ORDER
 #include <JetVector.h>
 #include <JetCVector.h>
 #include <Mapping.h>
 #include <MappingC.h>
-
+#else
+#include <JetVector.h>
+#include <Mapping.h>
+#endif
 
 using namespace boost::python;
-
 
 void wrap_mxyzptlk_mapping() {
 
@@ -20,8 +23,6 @@ void wrap_mxyzptlk_mappingc() {
   class_<MappingC, bases<JetCVector> >("MappingC", init<>() );
 
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 #if  0
