@@ -444,7 +444,7 @@ private:
   double w_rf;                  // RF frequency [MHz]  // ??? What??
   double phi_s;                 // synchronous phase
   double sin_phi_s;             // sine of synchronous phase
-  // The max energy gain per turn [eV] is represented by bmlnELmnt::strength
+  // The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
   double Q;                     // quality factor
   double R;                     // shunt impedance
   void image( int, slist*, BMLN_posInfo* );
@@ -488,7 +488,7 @@ struct thinrfcavityData : public bmlnElmntData {
   double w_rf;                  // RF frequency [MHz]  // ??? What??
   double phi_s;                 // synchronous phase
   double sin_phi_s;             // sine of synchronous phase
-  // The max energy gain per turn [eV] is represented by bmlnELmnt::strength
+  // The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
   double Q;                     // quality factor
   double R;                     // shunt impedance
 
