@@ -19,6 +19,7 @@ OBJS = AdjustPosition.o \
        LayoutVisitor.o \
        MatrixCalcVisitor.o \
        QBpropVisitor.o \
+       RefRegVisitor.o \
        Sage.o \
        TransitionVisitor.o \
        TuneAdjuster.o \
