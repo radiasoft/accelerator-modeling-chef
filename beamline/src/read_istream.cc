@@ -77,6 +77,7 @@
 
 #include "combinedFunction.h"
 #include "kick.h"
+#include "Slot.h"
 #if !defined(__VISUAL_CPP__) && !defined(__BORLAND_CPP__)
 #include "mwiremonitor.h"
 #endif
@@ -132,6 +133,7 @@ bmlnElmnt* read_istream(istream& is)
   HPinger               * hPingerPtr;
   VPinger               * vPingerPtr;
   kick                  * kickPtr;
+  Slot			* slot;
 
   const double MIN_ANGLE = 2.0E-9;
   const int SIZE=80;
@@ -155,16 +157,23 @@ bmlnElmnt* read_istream(istream& is)
     bl = new beamline(name);
     element = bl;
   }
+  else if ( strcasecmp(type,            "Slot") == 0 ) {
+    slot = new Slot(name);
+    element = slot;
+  }
   else if ( strcasecmp(type, 		"beamline_END") == 0 ) {
     element = NULL;
   }
   else if ( strcasecmp(type, 		"combinedFunction_END") == 0 ) {
     element = NULL;
   }
-  // else if ( strcasecmp(type, 		"combinedFunction") == 0 ) {
-  //   cmbPtr = new combinedFunction(name);
-  //   element = cmbPtr;
-  // }
+  else if ( strcasecmp(type,            "slot_END") == 0 ) {
+    element = NULL;
+  }
+  else if ( strcasecmp(type, 		"combinedFunction") == 0 ) {
+    cmbPtr = new combinedFunction(name);
+    element = cmbPtr;
+  }
   else if( strcasecmp(type, 		"drift") == 0 ) {
     driftPtr = new drift(name, length);
     element = driftPtr;
@@ -331,7 +340,7 @@ bmlnElmnt* read_istream(istream& is)
     }
   }
 
-  delete name;
+  delete [] name;
   return element;
 }
  
@@ -346,6 +355,7 @@ istream& beamline::readFrom(istream& is)
   is >> nominalEnergy;
   // cerr << "Beamline " << Name() << " has energy of " << nominalEnergy << "\n";
   // Now, continue reading is until we see the end of this beamline
+  length = 0;
   do {
     e = read_istream(is);	// (Recursion)
     // read_istream will return NULL when end of file or end of beamline is reached.

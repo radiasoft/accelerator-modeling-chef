@@ -140,7 +140,10 @@ Slot::Slot( const Slot& x )
 {
   p_bml   = 0;
   p_bml_e = 0;
-  align = new alignment( *(x.align) );
+  if ( x.align != 0 )
+    align = new alignment( *(x.align) );
+  else 
+    align = NULL;
 
   if     ( 0 != x.p_bml   ) p_bml   = (beamline*) x.p_bml   ->Clone();
   else if( 0 != x.p_bml_e ) p_bml_e = x.p_bml_e ->Clone();
@@ -239,19 +242,71 @@ short int Slot::checkFrame( const Frame& f ) const
 
 
 // --------------------------------------------------
-// --- Functions not implemented --------------------
+// --- Istream and Ostream support ------------------
 // --------------------------------------------------
 
 ostream& Slot::writeTo ( ostream& os )
 {
-  cerr << "*** ERROR *** Slot::writeTo is not implemented." << endl;
+  // Write out private attributes, which are the "in" and "out" Frame's.
+  os << in ;
+  if ( p_bml != NULL ) {
+    // print out the beamline contained in this slot
+    os << "slot_BEGIN " << Name() << " 0 0 0 0 0\n";
+    os << (*p_bml);
+    os << "slot_END " << Name() << " 0 0 0 0 0\n";
+  } else if ( p_bml_e != NULL ) {
+    os << "slot_BEGIN " << Name() << " 0 0 0 0 0\n";
+    os << (*p_bml_e);
+    os << "slot_END " << Name() << " 0 0 0 0 0\n";
+  } else {
+    os << "no_slot_contents " << Name() << " 0 0 0 0 0\n";
+  }
+  os << out ;
   return os;
 }
 
 
 istream& Slot::readFrom( istream& is )
 {
-  cerr << "*** ERROR *** Slot::readFrom is not implemented." << endl;
+  // Read in my private attributes
+
+  cerr << "Slot::readFrom(): begin " << Name() << endl;
+  // First, get the "in" frame"
+  is >> in;
+
+  // Second, read in the stuff contained in the Slot.
+  char type[30], name[60];
+  double Length, Strength, x, y, t;
+
+  // Now read in the bmlnElmnt, if there is one
+  p_bml   = 0;
+  p_bml_e = 0;
+
+  is >> type >> name >> Length >> Strength >> x >> y >> t;
+  if ( strcasecmp(type, "slot_BEGIN") == 0 ) {
+    p_bml_e = read_istream(is);	// Recursively read the bmlnElmnt.
+    if ( p_bml_e != 0 && strcasecmp(p_bml_e->Type(), "beamline") == 0 ) 
+      p_bml = (beamline*) p_bml_e;
+    // The only element in this Slot is a single bmlnElmnt.  There is a 
+    // "slot_END" line to read in.
+    is >> type >> name >> Length >> Strength >> x >> y >> t;
+    if ( strcasecmp(type, "slot_END") != 0 ) {
+      cerr << " **** ERROR ****" << endl;
+      cerr << " **** ERROR **** Slot:readFrom(istream&): Expecting \"slot_END\"" << endl;
+      cerr << " **** ERROR **** but got \"" << type << "\"\n";
+      cerr << " **** ERROR ****" << endl;
+      exit(1);
+    }
+  } else {
+    // Skip the next line--it is not "slot_BEGIN" (assume it is "slot_empty")
+    ;
+  }
+    
+  // Finally, read in the "out" frame information.
+  is >> out;
+  length = out.getOrigin() .Norm();
+
+  cerr << "Slot::readFrom(): end\n";
   return is;
 }
 
@@ -384,7 +439,6 @@ void Slot::processFrame( const Frame& frm, JetParticle& p ) const
     u_y(0) = 0.0; u_y(1) = 1.0; u_y(2) = 0.0;
     u_z(0) = 0.0; u_z(1) = 0.0; u_z(2) = 1.0;
   }
-
 
   // Yaw -------------------------------------
   if( ( frm.getAxis(1) == u_y ) && ( frm.getAxis(2) != u_z ) ) 
