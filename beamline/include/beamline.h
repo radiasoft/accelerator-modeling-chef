@@ -1858,10 +1858,14 @@ public:
 
   // ANALYSIS
 
-  int twiss( JetParticle& );
+  int twiss( JetParticle&, double = 0.00001 /* dpp */ );
                            // Computes lattice functions all the
                            // way around the ring.
-                           // Uses the same method as MAD.
+                           // Attaches a lattRing Barnacle labelled 
+                           // "Ring" to the beamline, and a lattFunc
+                           // Barnacle labelled "Twiss" to every element
+                           // in the line.
+
   int twiss( char, JetParticle& );
                            // Only computes lattice functions at
                            // the beginning of the ring.
@@ -1880,6 +1884,7 @@ public:
   lattFunc whatIsLattice( char* n ); // n is name of element 
   int    howMany() const { return numElem; }
   int    countHowMany();
+  int    countHowManyDeeply();
   int    howDeep();
   inline bmlnElmnt* firstElement()
     {
@@ -1888,6 +1893,18 @@ public:
   inline bmlnElmnt* lastElement()
     {
       return (bmlnElmnt*) ( ((dlist*) this)->lastInfoPtr() );
+    }
+  char twissIsDone()
+    {
+      return twissDone;
+    }
+  void setTwissIsDone()
+    {
+      twissDone = 1;
+    }
+  void unsetTwissIsDone()
+    {
+      twissDone = 0;
     }
   double Energy() const { return nominalEnergy; }
   char*  Type() const;
@@ -1949,6 +1966,13 @@ public:
                   //  hanging around after this if ::zap() is not
                   //  used first.
 };
+
+
+
+#ifndef BEAMLINE_ITERATOR
+#include "BeamlineIterator.h"
+#endif
+
 
 class circuit : public dlist
 {
