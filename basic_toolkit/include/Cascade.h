@@ -50,6 +50,7 @@ class Switch
     // bool     _terminator;
     Switch** _arrow;
 
+    void _clean();
     void _finishConstructor();
 };
 
@@ -92,5 +93,6 @@ class Cascade
     Switch*    _arrayOfSwitches;
     Switch**   _startPoint;
 
+    void _clean();
     void _finishConstructor();
 };
