@@ -35,7 +35,7 @@ ProtonBunch::ProtonBunch() : ParticleBunch() {
 ProtonBunch::ProtonBunch(int nm, double energy, double* widths,
 			 Distribution& distrib,
                          BunchPredicate* pBunchPredicate ): ParticleBunch() {
-#ifdef __sparc
+#if defined(__sparc) && !defined(__GNUG__)
  const int false = 0;
  const int true  = 1;
 #endif
