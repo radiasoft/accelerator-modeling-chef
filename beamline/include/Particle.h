@@ -309,6 +309,12 @@ public:
    else                       return 123.456789; 
   }
 
+  MatrixD SymplecticTest();  // Tests the state for the
+                             // symplectic condition, 1 = - MJM^t; 
+                             // returns unit matrix if all is well.
+                             // Note: this assumes a 6x6 state: 
+                             // ( x, y, cdt; px/p, py/p, dp/p )
+
   inline Jet Energy() const {
    Jet dum;
    dum = p*(state(5) + 1.0);

@@ -431,6 +431,29 @@ void JetParticle::getState( Jet* x ) {
  for( int i = 0; i < BMLN_dynDim; i++ ) x[i] = state(i);
 } 
 
+
+MatrixD JetParticle::SymplecticTest() {
+ // Note: this assumes a 6x6 state: ( x, y, cdt; px/p, py/p, dp/p )
+  MatrixD J( "J", 6 );
+  MatrixD M( 6, 6 );
+  MatrixD T( "I", 6 ), Ti( "I", 6 );
+
+  T( 2, 2 ) = 1.0 / PH_MKS_c;
+  T( 3, 3 ) = this->ReferenceMomentum() / PH_MKS_c;
+  T( 4, 4 ) = this->ReferenceMomentum() / PH_MKS_c;
+  T( 5, 5 ) = - ( this->ReferenceMomentum() 
+                * ( this->Momentum() ).standardPart() )
+                / ( this->Energy() ).standardPart();
+  Ti( 2, 2 ) = 1.0 / T( 2, 2 );
+  Ti( 3, 3 ) = 1.0 / T( 3, 3 );
+  Ti( 4, 4 ) = 1.0 / T( 4, 4 );
+  Ti( 5, 5 ) = 1.0 / T( 5, 5 );
+  M = (this->state) .Jacobian();
+  M = T*M*Ti;
+  return  - M*J*M.transpose()*J;
+}
+
+
 void JetParticle::SetReferenceEnergy( const double energy ) {
  E = energy;
  if( E < m ) {
