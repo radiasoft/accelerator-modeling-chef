@@ -1052,7 +1052,7 @@ void CHEF::_launchLatt()
   for( int i = 0; i < 1024; i++ ) {
     theCaption[i] = '\0';
   }
-  strcat( theCaption, "CHEF: Uncoupled Lattice Functions: " );
+  strcat( theCaption, "CHEF: Lattice Functions (uncoupled): " );
   strcat( theCaption, _p_currBmlCon->name() );
   _plotWidget->setCaption( theCaption );
 }
@@ -1084,7 +1084,7 @@ void CHEF::_launchET()
   for( int i = 0; i < 1024; i++ ) {
     theCaption[i] = '\0';
   }
-  strcat( theCaption, "CHEF: Edwards-Teng Lattice Functions: " );
+  strcat( theCaption, "CHEF: Lattice Functions (factorization): " );
   strcat( theCaption, _p_currBmlCon->name() );
   _ETplotWidget->setCaption( theCaption );
 }
@@ -1116,7 +1116,7 @@ void CHEF::_launchLB()
   for( int i = 0; i < 1024; i++ ) {
     theCaption[i] = '\0';
   }
-  strcat( theCaption, "CHEF: Lebedev-Bogacz Lattice Functions: " );
+  strcat( theCaption, "CHEF: Lattice Functions (eigenvectors): " );
   strcat( theCaption, _p_currBmlCon->name() );
   _LBplotWidget->setCaption( theCaption );
 }
@@ -1148,7 +1148,7 @@ void CHEF::_launchMoments()
   for( int i = 0; i < 1024; i++ ) {
     theCaption[i] = '\0';
   }
-  strcat( theCaption, "CHEF: Covariance Lattice Functions: " );
+  strcat( theCaption, "CHEF: Lattice Functions (covariance): " );
   strcat( theCaption, _p_currBmlCon->name() );
   _MMplotWidget->setCaption( theCaption );
 }
