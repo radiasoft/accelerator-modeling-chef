@@ -269,3 +269,71 @@ istream& combinedFunction::readFrom(istream& is)
   return is;
 }
 
+
+double combinedFunction::AdjustPosition( const Proton& arg_p )
+{
+  JetProton myJP( arg_p );  // This probably won't work properly.
+  return AdjustPosition( myJP );
+}
+
+double combinedFunction::AdjustPosition( const JetProton& arg_jp )
+{
+  enum { x, y, cdt, xp, yp, dpop };
+  JetProton  myJP( arg_jp );
+  Proton*    p_myP = (Proton*) myJP.ConvertToParticle();
+  // This is deleted before returning.
+
+  double x_i  = p_myP->State( x  );
+  double xp_i = p_myP->State( xp );
+
+  double inState [] = { 0, 0, 0, 0, 0, 0 };
+  inState[x]  = x_i;
+  inState[xp] = xp_i;
+
+  myJP  .setState( inState );
+  p_myP->setState( inState );
+
+  this->propagate( myJP );
+
+  double f, m, z;
+
+  m = ( myJP.State().Jacobian() )( x, x );
+  m -= 1.0;
+  if( fabs(m) < 1.0e-12 ) {
+    cerr << "*** ERROR ***                                       \n"
+         << "*** ERROR *** combinedFunction::AdjustPosition      \n"
+         << "*** ERROR *** A horrible, inexplicable error has    \n"
+         << "*** ERROR *** occurred. A multi-valued solution     \n"
+         << "*** ERROR *** is suspected.                         \n"
+         << "*** ERROR ***                                       \n";
+    exit(0);
+  }
+  m = 1.0 / m;
+
+  z = x_i;
+  int i;
+  for( i = 0; i < 75; i++ ) {
+    inState[x] = z;
+    p_myP->setState( inState );
+    this->propagate( *p_myP );
+    f = ( p_myP->State() )( x ) - z;
+    z -= m*f;
+  }
+
+
+  // Set the alignment of the internal beamline.
+  alignmentData v;
+  v.xOffset = - z;
+  // ??? Does not work: p_bml->setAlignment( v );
+  // ??? The reason is that the alignment stategy is
+  // ??? not correct for elements whose faces are not
+  // ??? parallel.
+  this->setAlignment( v );
+  // ??? This will work only if the in and out faces
+  // ??? of the combinedFunction element are parallel.
+
+
+  // Clean up and return.
+  delete p_myP;
+  return z;
+}
