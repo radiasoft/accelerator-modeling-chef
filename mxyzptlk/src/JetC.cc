@@ -682,6 +682,11 @@ JetC__environment* JetC::EndEnvironment( Complex* scl )
   i = 0;
   while((  p = (coordC*) newCoordCs.get()  )) {
     q = (Complex*) newValues.get();
+    p->Reconstruct( workEnv );
+    // This reconstruction is not strictly necessary
+    // when the data is represented by a list - which
+    // can be empty. It is needed by other representations,
+    // and is, in any case, safe.
     p->setVariable( *q, p->Index(), workEnv );  
        // This alters the environment!
     workEnv->myCoords.append( p );
