@@ -6,7 +6,13 @@
 ** 
 */
 
+#ifdef __VISUAL_CPP__
+#include <Complex>
+#include <iostream>
+using std::cerr;
+#else
 #include <complex.h>
+#endif
 #include "complexAddon.h"
 #include "MathConstants.h"
 

@@ -1,5 +1,11 @@
+#ifdef __VISUAL_CPP__
+#include <iomanip>
+using std::setprecision;
+#else
 #include <stdlib.h>
 #include <iomanip.h>
+#endif
+
 #include "JetC.h"
 #include "JetCVector.h"
 #include "MathConstants.h"
@@ -47,7 +53,7 @@ void JetC::operator+=( const JetC& y ) {
 
  dlist_iterator gx( *(dlist*) xPtr );
  dlist_iterator gy( *(dlist*) yPtr );
- int i;
+ 
  
  // Check for consistency and set reference point of the sum.
  if( xPtr->myEnv != yPtr->myEnv )
@@ -213,7 +219,7 @@ JetC operator+( const JetC& x, const JetC& y ) {
 
  dlist_iterator gx( *(dlist*) x.jl );
  dlist_iterator gy( *(dlist*) y.jl );
- int i;
+
  
  // Check for consistency and set reference point of the sum.
  if( x->myEnv != y->myEnv ) {
@@ -297,6 +303,20 @@ JetC operator+( const double& y, const JetC& x ) {
  z += Complex( y, 0.0 );
  z.stacked = 1;
  return z;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JetC operator-( const JetC& x, const double& y ) {
+ return operator+( x, -y );
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JetC operator-( const double& y, const JetC& x ) {
+ return operator+( y, -x );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -391,7 +411,7 @@ JetC operator-( const JetC& x, const JetC& y ) {
 
  dlist_iterator gx( *(dlist*) x.jl );
  dlist_iterator gy( *(dlist*) y.jl );
- int i;
+
  
  // Check for consistency and set reference point of the difference.
  if( x->myEnv != y->myEnv ) {
@@ -795,6 +815,54 @@ JetC operator/( const JetC& x, const Complex& y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+JetC operator/( const JetC& x, const double& y ) { 
+ static JetC z;
+ static JLCterm* p;
+ static JLCterm* q;
+ static JLC* xPtr;
+ static JLC* zPtr;
+ static int testWeight;
+ 
+ z.Reconstruct( x->myEnv ); 
+
+ p    = 0;
+ q    = 0;
+ xPtr = x.jl;
+ zPtr = z.jl;
+
+ testWeight = z->accuWgt = x->accuWgt;
+
+ // Check for division by zero ..
+ if( y == 0.0 ) {
+   cerr << "\n*** JetC::operator/ ERROR *** "
+        << "Attempt to divide by a scalar zero.\n"
+        << endl;
+   exit(0);
+ }
+ 
+ // If x is void, return it ..
+ if( xPtr->count < 1 ) {    // This is done in this way so that
+   z.DeepCopy( x );         // what is returned does not own
+   z.stacked = 1;           // the same data as x.
+   return z;
+ }
+
+ dlist_iterator gx( *(dlist*) xPtr );
+
+ while((  p = (JLCterm*) gx()  )) {
+   if( p->weight > testWeight ) break;
+   q = new JLCterm( p );
+   q->value /= y;
+   zPtr->addTerm( q );
+ }
+ 
+ z.stacked = 1;
+ return z;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 JetC operator/( const JetC& x, const int& j ) { 
  static JetC z;
  static JLCterm* p;
@@ -850,6 +918,16 @@ JetC operator/( const Complex& a, const JetC& b ) {
   static JetC u;
   u.Reconstruct( b->myEnv ); 
   u = a;
+  return u/b;
+} 
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JetC operator/( const double& a, const JetC& b ) {
+  static JetC u;
+  u.Reconstruct( b->myEnv ); 
+  u = Complex( a, 0 );
   return u/b;
 } 
 
@@ -1401,7 +1479,7 @@ JetC pow( const JetC& x, const double& s ) {
           << endl;
      exit(1);
      }
-   epsilon = 1.0;
+   epsilon = complex_1;
    if ( u == 0 ) {
      epsilon.stacked = 1;
      return epsilon;
@@ -1431,7 +1509,7 @@ JetC pow( const JetC& x, int n ) {
   z.Reconstruct( x->myEnv );
   i = 0;
 
-  if( n == 0 ) z = 1.0;
+  if( n == 0 ) z = complex_1;
   else if( n > 0 ) {
     z.DeepCopy( x );
     for( i = 2; i <= n; i++ ) z *= x;
@@ -1594,7 +1672,7 @@ JetC fabs( const JetC& x ) {
  
  if( (u = x.standardPart()) != 0.0 ) 
  {
-   if( u > 0.0 ) return x;
+   if( u > complex_0 ) return x;
    else          return -x;
  }
  else
@@ -1630,12 +1708,12 @@ JetC erf( const JetC& z )
   static double  fctr_x;
   static int     counter;
 
-  series        = 1.0;
+  series        = complex_1;
   oldseries     = complex_0;  // ??? Why necessary?
   // ??? REMOVE oldseries     = 0.0;
   arg           = - z*z;
   den           = 1.0;
-  term          = 1.0;
+  term          = complex_1;
   fctr_x        = 0.0;
 
   counter = 0;
@@ -1719,7 +1797,7 @@ JetC epsCos( const JetC& epsilon ) {
  static double n;
 
  z->myEnv = epsilon->myEnv;
- z = 1.0;
+ z = complex_1;
  
  epsq = - epsilon*epsilon;
  
@@ -1748,7 +1826,7 @@ JetC epsExp( const JetC& epsilon ) {
  static double n;
  
  z->myEnv = epsilon->myEnv;
- z = 1.0;
+ z = complex_1;
  
  term = epsilon;
  n = 1.0;
@@ -1777,7 +1855,7 @@ JetC epsPow( const JetC& epsilon, const double& s ) {
  static int i;
 
  z->myEnv = epsilon->myEnv;
- z = 1.0;
+ z = complex_1;
  
  f = s;
  n = 1.0;
@@ -1832,7 +1910,7 @@ JetC epsSqrt( const JetC& epsilon ) {  // This function is identical to epsPow
  static double   n;
  
  z->myEnv = epsilon->myEnv;
- z = 1.0;
+ z = complex_1;
  
  f    = 1.0 / 2.0;
  n    = 1.0;
@@ -2233,7 +2311,7 @@ JetC JetC::operator() ( JetC* y ) const {
  // The zeroth one.
  ( ( jl->myEnv->JLCmonomial )[0] )->myEnv = y[0]->myEnv; // Needed by 
                                                         // JetC::concat
- jl->myEnv->JLCmonomial[0] = 1.0;
+ jl->myEnv->JLCmonomial[0] = complex_1;
 
  // For all higher weights ...
  for( w = 1; w <= jl->accuWgt; w++ )

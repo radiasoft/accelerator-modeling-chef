@@ -1,5 +1,11 @@
+#ifdef __VISUAL_CPP__
+#include <iomanip>
+using std::setprecision;
+#else
 #include <stdlib.h>
 #include <iomanip.h>
+#endif
+
 #include "Jet.h"
 
 // ================================================================
