@@ -1,4 +1,3 @@
-// emacs -*- C++ -*- mode
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
@@ -357,6 +356,13 @@ public:
   Jet get_npx()   { return state(3); }
   Jet get_npy()   { return state(4); }
   Jet get_ndp()   { return state(5); }
+
+  void set_x   ( const Jet& u )  { state.SetComponent(0,u); }
+  void set_y   ( const Jet& u )  { state.SetComponent(1,u); }
+  void set_cdt ( const Jet& u )  { state.SetComponent(2,u); }
+  void set_npx ( const Jet& u )  { state.SetComponent(3,u); }
+  void set_npy ( const Jet& u )  { state.SetComponent(4,u); }
+  void set_ndp ( const Jet& u )  { state.SetComponent(5,u); }
 
   inline Mapping State() { return state; } // ??? why doesn't const work?
   inline Jet State( int i ) {
