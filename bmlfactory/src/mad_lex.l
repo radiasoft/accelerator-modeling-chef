@@ -17,7 +17,7 @@
 #include "madparser.h"
 #endif /* madparser_h */  
   
-#include "mad.tab.h"
+#include "mad_yacc.tab.h"
 
 #define MAX_ERR_MSG_LENGTH 256
 
