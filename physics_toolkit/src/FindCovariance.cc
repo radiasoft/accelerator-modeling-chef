@@ -40,7 +40,8 @@ MatrixD FindCovariance( const beamline& line,
 //        JetProton jp         :  A suitable particle to propagate.
 //******************************************************************
 
-  dlist_iterator NextElement( (dlist&) line );
+  // dlist_iterator NextElement( (dlist&) line );
+  BeamlineIterator bi( line );
   slist_iterator NextSample ( sampleSites );
   bmlnElmnt* pbe_line;
   bmlnElmnt* pbe_sample;
@@ -65,9 +66,7 @@ MatrixD FindCovariance( const beamline& line,
 
     // Load the measurement matrix  ..................
 
-    while( ( pbe_sample                            ) && 
-           ( pbe_line = (bmlnElmnt*) NextElement() ) 
-         ) {
+    while( ( pbe_sample ) && ( pbe_line = bi++ ) ) {
 
       pbe_line->propagate( jp );
       
@@ -100,6 +99,7 @@ MatrixD FindCovariance( const beamline& line,
               "*** ERROR *** FindCovariance                   \n"
               "*** ERROR *** Not all data samples were found. \n"
               "*** ERROR ***                                  \n"
+	" Found " << count << " marked bmlnElmnts but expected " << rows
            << endl;
       exit(1);
     }
