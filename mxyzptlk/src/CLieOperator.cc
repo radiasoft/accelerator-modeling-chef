@@ -237,7 +237,7 @@ CLieOperator::~CLieOperator() {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CLieOperator::setVariable( const JetC& x, int j ) {
- int i;
+
  
  if( myEnv != x->myEnv ) {
     cerr << "\n\n"
@@ -291,7 +291,7 @@ void CLieOperator::setVariable( const Complex& x, const int& j ) {
 
  comp[j]->insert( new JLCterm( ndx, x, myEnv ) );
  ndx(j) = 1;
- comp[j]->append( new JLCterm( ndx, 1.0, myEnv ) );
+ comp[j]->append( new JLCterm( ndx, complex_1, myEnv ) );
 
  for( int i = 0; i < dim; i++ ) comp[i]->myEnv = myEnv;
 }
