@@ -37,8 +37,8 @@
 #ifndef DISTRIBUTION_HXX
 #define DISTRIBUTION_HXX
 
-extern "C" void   srand48( long );
-extern "C" double drand48( void );
+#include <cstdlib>
+
 
 class Distribution {
 protected:
