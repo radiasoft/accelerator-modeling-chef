@@ -15,11 +15,16 @@
 
 #ifdef __VISUAL_CPP__
 using std::cout;
+#include <iomanip>
+using std::setw;
+using std::setprecision;
+using std::resetiosflags;
+using std::setiosflags;
 #else
 #include <stdlib.h>
+#include <iomanip.h>
 #endif
 
-#include <iomanip.h>
 
 // ================================================================
 //      Globals

@@ -1,6 +1,13 @@
 #ifndef LOOKUPTABLE_H
 #define LOOKUPTABLE_H
+
+#ifdef __VISUAL_CPP__
+#define NULL    0
+#endif
+
+#ifndef __VISUAL_CPP__
 #include <stdio.h>
+#endif
 
 class Table {
   // This is SCREAMING to be a template!!  This would be Table<double>
