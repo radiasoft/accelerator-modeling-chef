@@ -205,6 +205,12 @@ void Orbit::Iterator::goBack( int n )
 // ---------------------------
 
 
+OrbitTransformer::OrbitTransformer()
+: _x_o(0.0),_xp_o(0.0),_y_o(0.0),_yp_o(0.0),_cdt_o(0.0),_dpp_o(0.0)
+{
+}
+
+
 void RectH::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
   *xPtr = state(Particle::_x());
@@ -418,6 +424,28 @@ void PhiHPhiV::toState( double phiH, double phiV, Proton* protonPtr ) const
 }
 
 
+void OrbitTransformer::copyCenterFrom( const OrbitTransformer* u )
+{
+  _x_o   = u->_x_o;
+  _xp_o  = u->_xp_o;
+  _y_o   = u->_y_o;
+  _yp_o  = u->_yp_o;
+  _cdt_o = u->_cdt_o;
+  _dpp_o = u->_dpp_o;
+}
+
+
+void OrbitTransformer::copyCenterFrom( const OrbitTransformer& u )
+{
+  _x_o   = u._x_o;
+  _xp_o  = u._xp_o;
+  _y_o   = u._y_o;
+  _yp_o  = u._yp_o;
+  _cdt_o = u._cdt_o;
+  _dpp_o = u._dpp_o;
+}
+
+
 // -------------------------------
 // Implementation: class DrawSpace
 // -------------------------------
@@ -428,21 +456,34 @@ const double DrawSpace::DEF_Y_CENTER = 0.000;
 
 
 DrawSpace::DrawSpace( Tracker* p, QHBox* parent, const char* m )
-: QGLWidget(parent), _topTracker(p), _r(1.0), _g(1.0), _b(1.0),
+: QGLWidget(parent), _topTracker(p), 
+  _transformPtr(0), 
+  _pointSize(3),
+  _r(1.0), _g(1.0), _b(1.0),
   _xLo( - DEF_RANGE ), _xHi( DEF_RANGE ), 
   _yLo( - DEF_RANGE ), _yHi( DEF_RANGE ),
-  _pointSize(3),
   _zoomActive( false ), _isZooming( false ), _zoomed( false )
 {
   _transformPtr = 0;         // This must be changed in the 
-                             // Tracker constructor
+  _currentContextPtr = 0;    // Tracker constructor
   strcpy( _myName, m );
 }
 
 
 DrawSpace::~DrawSpace()
 {
-  if( 0 != _transformPtr ) { delete _transformPtr; }
+  if( 0 != _rectContext._transformPtr )   
+  { delete _rectContext._transformPtr;
+    _rectContext._transformPtr = 0;      
+  }
+  if( 0 != _normContext._transformPtr )   
+  { delete _normContext._transformPtr;
+    _normContext._transformPtr = 0;      
+  }
+  if( 0 != _actangContext._transformPtr )   
+  { delete _actangContext._transformPtr;
+    _actangContext._transformPtr = 0;      
+  }
 }
 
 
@@ -508,19 +549,7 @@ void DrawSpace::setCenterTo( double x, double y )
 }
 
 
-
-
-void DrawSpace::setTransformer( OrbitTransformer* x )
-{
-  // Responsibility for x is handed over to the DrawSpace.
-  if( 0 != x ) {
-    if( 0 != _transformPtr ) { delete _transformPtr; }
-    _transformPtr = x;
-  }
-}
-
-
-void DrawSpace::setCenterOn( const Proton& x )
+void DrawSpace::setCenterOn( const Particle& x )
 {
   if( (typeid(*_transformPtr) != typeid(IHIV)) && 
       (typeid(*_transformPtr) != typeid(PhiHPhiV))    ) 
@@ -528,6 +557,52 @@ void DrawSpace::setCenterOn( const Proton& x )
     double xc, yc, dummy;
     _transformPtr->toDynamics( x.State(), &xc, &yc, &dummy );
     this->setCenterTo( xc, yc );
+  }
+}
+
+
+void DrawSpace::setTransformer( OrbitTransformer* x )
+{
+  // Responsibility for x is handed over to the DrawSpace.
+  if( 0 != x ) {
+    if( (typeid(*x) == typeid(RectH)) || 
+        (typeid(*x) == typeid(RectV))    ) 
+    {
+      if( _rectContext._transformPtr == 0 ) {
+        _rectContext._transformPtr = x;
+      }
+      else {
+        delete _rectContext._transformPtr;
+        _rectContext._transformPtr = x;
+      }
+      _transformPtr = _rectContext._transformPtr;
+    }
+
+    else if( (typeid(*x) == typeid(NormH)) ||
+             (typeid(*x) == typeid(NormV))    ) 
+    {
+      if( _normContext._transformPtr == 0 ) {
+        _normContext._transformPtr = x;
+      }
+      else {
+        delete _normContext._transformPtr;
+        _normContext._transformPtr = x;
+      }
+      _transformPtr = _normContext._transformPtr;
+    }
+
+    else if( (typeid(*x) == typeid(IHIV)) ||
+             (typeid(*x) == typeid(PhiHPhiV))    ) 
+    {
+      if( _actangContext._transformPtr == 0 ) {
+        _actangContext._transformPtr = x;
+      }
+      else {
+        delete _actangContext._transformPtr;
+        _actangContext._transformPtr = x;
+      }
+      _transformPtr = _actangContext._transformPtr;
+    }
   }
 }
 
@@ -854,6 +929,49 @@ void DrawSpace::resetZoom()
 }
 
 
+void DrawSpace::storeCurrentContext()
+{
+  _currentContextPtr->_xLo = _xLo;
+  _currentContextPtr->_xHi = _xHi;
+  _currentContextPtr->_yLo = _yLo;
+  _currentContextPtr->_yHi = _yHi;
+  _currentContextPtr->_transformPtr = _transformPtr;
+}
+
+
+void DrawSpace::setRectContext()
+{
+  _currentContextPtr = &_rectContext;
+  _xLo = _currentContextPtr->_xLo;
+  _xHi = _currentContextPtr->_xHi;
+  _yLo = _currentContextPtr->_yLo;
+  _yHi = _currentContextPtr->_yHi;
+  _transformPtr = _currentContextPtr->_transformPtr;
+}
+
+
+void DrawSpace::setNormContext()
+{
+  _currentContextPtr = &_normContext;
+  _xLo = _currentContextPtr->_xLo;
+  _xHi = _currentContextPtr->_xHi;
+  _yLo = _currentContextPtr->_yLo;
+  _yHi = _currentContextPtr->_yHi;
+  _transformPtr = _currentContextPtr->_transformPtr;
+}
+
+
+void DrawSpace::setActAngContext()
+{
+  _currentContextPtr = &_actangContext;
+  _xLo = _currentContextPtr->_xLo;
+  _xHi = _currentContextPtr->_xHi;
+  _yLo = _currentContextPtr->_yLo;
+  _yHi = _currentContextPtr->_yHi;
+  _transformPtr = _currentContextPtr->_transformPtr;
+}
+
+
 // -----------------------------
 // Implementation: class Tracker
 // -----------------------------
@@ -957,7 +1075,10 @@ void Tracker::_finishConstructor()
 
   _p_leftWindow = new DrawSpace( this, _p_phaseSpaceViews, "First" );
     _p_leftWindow->show();
+    _p_leftWindow->setRectContext();
     _p_leftWindow->setTransformer( new RectH );
+    _p_leftWindow->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
+                             - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
     _p_leftWindow->setColors( 1., 0., 1. );
     // _p_leftWindow->qglColor( QColor(255,0,255) );
     int drawArea = (25*QApplication::desktop()->height()*
@@ -971,7 +1092,10 @@ void Tracker::_finishConstructor()
 
   _p_rightWindow = new DrawSpace( this, _p_phaseSpaceViews, "Second" );
     _p_rightWindow->show();
+    _p_rightWindow->setRectContext();
     _p_rightWindow->setTransformer( new RectV );
+    _p_rightWindow->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
+                              - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
     _p_rightWindow->setColors( 0., 1., 0. );
     // _p_rightWindow->qglColor( QColor(0,255,0) );
     _p_rightWindow->setFixedSize( fixedWidth, fixedWidth );
@@ -1134,18 +1258,23 @@ void Tracker::_view_rect()
     return;
   }
 
-  if( _p_info ) {
-    delete _p_info;
-    _p_info = 0;
+  if( _p_info ) { delete _p_info; _p_info = 0; }
+
+  _p_leftWindow->storeCurrentContext();
+  _p_leftWindow->setRectContext();
+  if( 0 == _p_leftWindow->getTransformer() ) {
+    _p_leftWindow->setTransformer( new RectH );
+    _p_leftWindow->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
+                             - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
   }
-
-  _p_leftWindow->setTransformer( new RectH );
-  _p_rightWindow->setTransformer( new RectV );
-
-  _p_leftWindow  ->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
-                             - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
-  _p_rightWindow ->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
-                             - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
+  
+  _p_rightWindow->storeCurrentContext();
+  _p_rightWindow->setRectContext();
+  if( 0 == _p_rightWindow->getTransformer() ) {
+    _p_rightWindow->setTransformer( new RectV );
+    _p_rightWindow->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
+                              - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
+  }
 
   _p_leftWindow->updateGL();
   _p_rightWindow->updateGL();
@@ -1154,7 +1283,7 @@ void Tracker::_view_rect()
 
 void Tracker::_view_norm()
 {
-  if( typeid(*(_p_leftWindow->getTransformer())) == typeid(RectV) ) {
+  if( typeid(*(_p_leftWindow->getTransformer())) == typeid(NormH) ) {
     return;
   }
 
@@ -1174,14 +1303,21 @@ void Tracker::_view_norm()
     return;
   }
 
-
-  _p_leftWindow->setTransformer( new NormH( _p_info->alpha.hor, _p_info->beta.hor ) );
-  _p_rightWindow->setTransformer( new NormV( _p_info->alpha.ver, _p_info->beta.ver ) );
-
-  _p_leftWindow  ->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
+  _p_leftWindow->storeCurrentContext();
+  _p_leftWindow->setNormContext();
+  if( 0 == _p_leftWindow->getTransformer() ) {
+    _p_leftWindow->setTransformer( new NormH( _p_info->alpha.hor, _p_info->beta.hor ) );
+    _p_leftWindow->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
                              - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
-  _p_rightWindow ->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
-                             - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
+  }
+  
+  _p_rightWindow->storeCurrentContext();
+  _p_rightWindow->setNormContext();
+  if( 0 == _p_rightWindow->getTransformer() ) {
+    _p_rightWindow->setTransformer( new NormV( _p_info->alpha.ver, _p_info->beta.ver ) );
+    _p_rightWindow->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
+                              - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
+  }
 
   _p_leftWindow->updateGL();
   _p_rightWindow->updateGL();
@@ -1196,7 +1332,7 @@ void Tracker::_view_actang()
 
   if( _p_info ) { delete _p_info; _p_info = 0; }
   int n = _bmlConPtr->countHowManyDeeply();
-  
+
   try {
     _p_info = new LattFuncSage::lattFunc( *(_bmlConPtr->getLattFuncPtr(n-1)) );
   }
@@ -1215,11 +1351,19 @@ void Tracker::_view_actang()
   double a2 = _p_info->alpha.ver;
   double b2 = _p_info->beta.ver;
 
-  _p_leftWindow->setTransformer( new IHIV( a1, b1, a2, b2 ) );
-  _p_rightWindow->setTransformer( new PhiHPhiV( a1, b1, a2, b2 ) );
-
-  _p_leftWindow  ->setRange( 0.0, 1.e-6, 0.0, 1.e-6 );
-  _p_rightWindow ->setRange( -M_PI, M_PI, -M_PI, M_PI );
+  _p_leftWindow->storeCurrentContext();
+  _p_leftWindow->setActAngContext();
+  if( 0 == _p_leftWindow->getTransformer() ) {
+    _p_leftWindow->setTransformer( new IHIV( a1, b1, a2, b2 ) );
+    _p_leftWindow->setRange( 0.0, 1.e-6, 0.0, 1.e-6 );
+  }
+  
+  _p_rightWindow->storeCurrentContext();
+  _p_rightWindow->setActAngContext();
+  if( 0 == _p_rightWindow->getTransformer() ) {
+    _p_rightWindow->setTransformer( new PhiHPhiV( a1, b1, a2, b2 ) );
+    _p_rightWindow->setRange( -M_PI, M_PI, -M_PI, M_PI );
+  }
 
   _p_leftWindow->updateGL();
   _p_rightWindow->updateGL();
@@ -1332,6 +1476,7 @@ void Tracker::_opt_largePoints()
   _p_leftWindow->updateGL();
   _p_rightWindow->updateGL();
 }
+
 
 void Tracker::_opt_smallPoints()
 {
