@@ -28,11 +28,7 @@ CHEFPlot::CHEFPlot(QWidget * parent, const char* name, Qt::WFlags f): QWidget(pa
 
 
 CHEFPlot::~CHEFPlot() {
-    disconnect(_plot, SIGNAL( scaleChangedSignal() ), this, SLOT( updateLatticeDisplay() ) );
-    disconnect(_plot, SIGNAL( plotResizedSignal() ),  this, SLOT( resizeLego() ) );
-
      // Qt widgets are automatically destroyed when their parent is destroyed 
-
 }
 
 

@@ -6,9 +6,8 @@
 ******             interfaces to exercise the functionality        
 ******             of BEAMLINE.                                    
 ******                                                                
-******  Version:   3.1
-******                                    
 ******  File:      Tracker.cc
+******  Version:   4.0
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -201,6 +200,224 @@ void Orbit::Iterator::goBack( int n )
 
 
 
+// ---------------------------
+// Implementation: class OrbitTransformer
+// ---------------------------
+
+
+void RectH::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
+{
+  *xPtr = state(Particle::_x());
+  *yPtr = state(Particle::_xp());
+  *zPtr = 0.0;
+}
+
+
+void RectH::toState( double a, double b, Proton* ptrPtr ) const
+{
+  ptrPtr->set_x(a);
+  ptrPtr->set_npx(b);
+}
+
+void RectV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
+{
+  *xPtr = state(Particle::_y());
+  *yPtr = state(Particle::_yp());
+  *zPtr = 0.0;
+}
+
+
+void RectV::toState( double a, double b, Proton* ptrPtr ) const
+{
+  ptrPtr->set_y(a);
+  ptrPtr->set_npy(b);
+}
+
+
+void NormH::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
+{
+  *xPtr = state(Particle::_x());
+  *yPtr = _alpha*state(Particle::_x()) + _beta*state(Particle::_xp());
+  *zPtr = 0.0;
+}
+
+
+void NormH::toState( double a, double b, Proton* ptrPtr ) const
+{
+  ptrPtr->set_x(a);
+  ptrPtr->set_npx(( b - a*_alpha )/_beta);
+}
+
+
+void NormV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
+{
+  *xPtr = state(Particle::_y());
+  *yPtr = _alpha*state(Particle::_y()) + _beta*state(Particle::_yp());
+  *zPtr = 0.0;
+}
+
+
+void NormV::toState( double a, double b, Proton* ptrPtr ) const
+{
+  ptrPtr->set_y(a);
+  ptrPtr->set_npy(( b - a*_alpha )/_beta);
+}
+
+
+void IHIV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
+{
+  static double u, v;
+
+  // Horizontal
+  u = state(Particle::_x());
+  v = _alphaH*u + _betaH*state(Particle::_xp());
+  *xPtr = ( u*u + v*v )/( 2.0*_betaH );
+  
+  // Vertical
+  u = state(Particle::_y());
+  v = _alphaV*u + _betaV*state(Particle::_yp());
+  *yPtr = ( u*u + v*v )/( 2.0*_betaV );
+
+  *zPtr = 0.0;
+}
+
+
+void IHIV::toState( double IH, double IV, Proton* protonPtr ) const
+{
+  static double  u, v, amp, phi;
+  static double  alpha, beta;
+
+  // If orbit has diverged, bring it back.
+  if( isnan(protonPtr->get_x()) || isnan(protonPtr->get_npx()) || 
+      isnan(protonPtr->get_y()) || isnan(protonPtr->get_npy())    ) 
+  {
+    protonPtr->set_x  (0.);
+    protonPtr->set_y  (0.);
+    protonPtr->set_cdt(0.);
+    protonPtr->set_npx(0.);
+    protonPtr->set_npy(0.);
+    protonPtr->set_ndp(0.);
+    return;
+  }
+
+  // Horizontal
+  beta  = _betaH;
+  alpha = _alphaH;
+
+  u = protonPtr->get_x();
+  v = alpha*u + beta*protonPtr->get_npx();
+  phi = atan2(u,v);
+  if( phi > M_PI ) phi -= M_TWOPI;
+
+  if( IH >= 0.0 ) {
+    amp = sqrt(2.0*beta*IH);
+    u = amp*sin(phi);
+    v = amp*cos(phi);
+    protonPtr->set_x( u );
+    protonPtr->set_npx( ( v - alpha*u )/beta );
+  }
+  else {
+    protonPtr->set_x( 0. );
+    protonPtr->set_npx( 0. );
+  }
+
+  // Vertical
+  beta  = _betaV;
+  alpha = _alphaV;
+
+  u = protonPtr->get_y();
+  v = alpha*u + beta*protonPtr->get_npy();
+  phi = atan2(u,v);
+  if( phi > M_PI ) phi -= M_TWOPI;
+
+  if( IV >= 0.0 ) {
+    amp = sqrt(2.0*beta*IV);
+    u = amp*sin(phi);
+    v = amp*cos(phi);
+    protonPtr->set_y( u );
+    protonPtr->set_npy( ( v - alpha*u )/beta );
+  }
+  else {
+    protonPtr->set_y( 0. );
+    protonPtr->set_npy( 0. );
+  }
+}
+
+
+void PhiHPhiV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
+{
+  static double u, v, phiH, phiV;
+
+  // Horizontal
+  u = state(Particle::_x());
+  v = _alphaH*u + _betaH*state(Particle::_xp());
+  phiH = atan2(u,v);
+  if( phiH > M_PI ) phiH -= M_TWOPI;
+  
+  // Vertical
+  u = state(Particle::_y());
+  v = _alphaV*u + _betaV*state(Particle::_yp());
+  phiV = atan2(u,v);
+  if( phiV > M_PI ) phiV -= M_TWOPI;
+  
+  *xPtr = phiH;
+  *yPtr = phiV;
+  *zPtr = 0.0;
+}
+
+
+void PhiHPhiV::toState( double phiH, double phiV, Proton* protonPtr ) const
+{
+  static double u, v, amp;
+  static double alpha, beta;
+
+  // If orbit has diverged, bring it back.
+  if( isnan(protonPtr->get_x()) || isnan(protonPtr->get_npx()) || 
+      isnan(protonPtr->get_y()) || isnan(protonPtr->get_npy())    ) 
+  {
+    protonPtr->set_x  (0.);
+    protonPtr->set_y  (0.);
+    protonPtr->set_cdt(0.);
+    protonPtr->set_npx(0.);
+    protonPtr->set_npy(0.);
+    protonPtr->set_ndp(0.);
+    return;
+  }
+
+  // Check angle domain
+  while( phiH >   M_PI ) phiH -= M_TWOPI;
+  while( phiH < - M_PI ) phiH += M_TWOPI;
+  while( phiV >   M_PI ) phiV -= M_TWOPI;
+  while( phiV < - M_PI ) phiV += M_TWOPI;
+
+  // Horizontal
+  beta  = _betaH;
+  alpha = _alphaH;
+
+  u = protonPtr->get_x();
+  v = alpha*u + beta*protonPtr->get_npx();
+
+  amp = sqrt( u*u + v*v );
+  u = amp*sin(phiH);
+  v = amp*cos(phiH);
+  protonPtr->set_x( u );
+  protonPtr->set_npx( ( v - alpha*u )/beta );
+
+  // Vertical
+  beta  = _betaV;
+  alpha = _alphaV;
+
+  u = protonPtr->get_y();
+  v = alpha*u + beta*protonPtr->get_npy();
+
+  amp = sqrt( u*u + v*v );
+  u = amp*sin(phiV);
+  v = amp*cos(phiV);
+  protonPtr->set_y( u );
+  protonPtr->set_npy( ( v - alpha*u )/beta );
+}
+
+
 // -------------------------------
 // Implementation: class DrawSpace
 // -------------------------------
@@ -217,7 +434,7 @@ DrawSpace::DrawSpace( Tracker* p, QHBox* parent, const char* m )
   _pointSize(3),
   _zoomActive( false ), _isZooming( false ), _zoomed( false )
 {
-  _myFunc = drawH_ViewRect;  // This must be changed in the 
+  _transformPtr = 0;         // This must be changed in the 
                              // Tracker constructor
   strcpy( _myName, m );
 }
@@ -225,42 +442,20 @@ DrawSpace::DrawSpace( Tracker* p, QHBox* parent, const char* m )
 
 DrawSpace::~DrawSpace()
 {
-  // cout << _myName << " destructor called." << endl;
+  if( 0 != _transformPtr ) { delete _transformPtr; }
 }
-
-
-// REMOVE: void DrawSpace::multScaleBy( double x )
-// REMOVE: {
-// REMOVE:   double u = fabs(x);
-// REMOVE:   if( _myFunc != DrawSpace::drawPhiHPhiV ) {
-// REMOVE:     _xLo /= u;
-// REMOVE:     _xHi /= u;
-// REMOVE:     _yLo /= u;
-// REMOVE:     _yHi /= u;
-// REMOVE:   }
-// REMOVE: }
-
-
-// REMOVE: void DrawSpace::setScaleTo( double x )
-// REMOVE: {
-// REMOVE:   double u = fabs(x);
-// REMOVE:   _xLo = -u;
-// REMOVE:   _xHi =  u;
-// REMOVE:   _yLo = -u;
-// REMOVE:   _yHi =  u;
-// REMOVE: }
 
 
 void DrawSpace::multScaleBy( double x )
 {
   double u = fabs(x);
-  if( _myFunc == DrawSpace::drawIHIV ) {
+  if( typeid(*_transformPtr) == typeid(IHIV) ) {
     _xLo /= u;
     _xHi /= u;
     _yLo /= u;
     _yHi /= u;
   }
-  else if( _myFunc != DrawSpace::drawPhiHPhiV ) {
+  else if( typeid(*_transformPtr) != typeid(PhiHPhiV) ) {
     double xc = ( _xHi + _xLo )/2.0;
     double yc = ( _yHi + _yLo )/2.0;
     double dx = ( _xHi - _xLo )/2.0;
@@ -276,7 +471,7 @@ void DrawSpace::multScaleBy( double x )
 void DrawSpace::setScaleTo( double x )
 {
   double u = fabs(x);
-  if( _myFunc != DrawSpace::drawIHIV ) {
+  if( typeid(*_transformPtr) != typeid(IHIV) ) {
     double xc = ( _xHi + _xLo )/2.0;
     double yc = ( _yHi + _yLo )/2.0;
     _xLo = xc - u;
@@ -313,9 +508,27 @@ void DrawSpace::setCenterTo( double x, double y )
 }
 
 
-void DrawSpace::setDraw( DrawFunc x )
+
+
+void DrawSpace::setTransformer( OrbitTransformer* x )
 {
-  _myFunc = x;
+  // Responsibility for x is handed over to the DrawSpace.
+  if( 0 != x ) {
+    if( 0 != _transformPtr ) { delete _transformPtr; }
+    _transformPtr = x;
+  }
+}
+
+
+void DrawSpace::setCenterOn( const Proton& x )
+{
+  if( (typeid(*_transformPtr) != typeid(IHIV)) && 
+      (typeid(*_transformPtr) != typeid(PhiHPhiV))    ) 
+  {
+    double xc, yc, dummy;
+    _transformPtr->toDynamics( x.State(), &xc, &yc, &dummy );
+    this->setCenterTo( xc, yc );
+  }
 }
 
 
@@ -340,267 +553,41 @@ void DrawSpace::setClearColor( GLclampf r, GLclampf g, GLclampf b, GLclampf a )
 
 void DrawSpace::paintGL()
 {
-  _myFunc( this );
-}
-
-
-void DrawSpace::drawH_ViewRect( DrawSpace* dsPtr )
-{
   Orbit* q;
-  slist_iterator getNext( dsPtr->_topTracker->_orbits );
-  
-  glClearColor( dsPtr->_rClr, dsPtr->_gClr, dsPtr->_bClr, dsPtr->_aClr );
+
+  slist_iterator getNext( _topTracker->_orbits );
+
+  glClearColor( _rClr, _gClr, _bClr, _aClr );
   glClear( GL_COLOR_BUFFER_BIT );
   glLoadIdentity();
-  glOrtho( dsPtr->_xLo, dsPtr->_xHi, dsPtr->_yLo, dsPtr->_yHi, -1., 1. );
-  // REMOVE glColor3f( dsPtr->_r, dsPtr->_g, dsPtr->_b );
-  glPointSize(dsPtr->_pointSize);
+  glOrtho( _xLo, _xHi, _yLo, _yHi, -1., 1. );
+  glPointSize(_pointSize);
   glBegin( GL_POINTS );
 
   const Vector* vec;
+  double a, b, c;
   while( q = (Orbit*) getNext() ) 
   {
     glColor3f( q->Red(), q->Green(), q->Blue() );
     Orbit::Iterator oi( q );
     while((  vec = oi++  )) {
-      glVertex3f( (*vec)(0), (*vec)(3), 0.0 );
+      _transformPtr->toDynamics( *vec, &a, &b, &c );
+      glVertex3f( a, b, c );
     }
   }
 
   // Paint one white point
-  q = (Orbit*) ( dsPtr->_topTracker->_orbits ).lastInfoPtr();
-  if(q) { 
-    vec = q->lastPoint();
-    glColor3f( 1., 1., 1. );
-    glVertex3f( (*vec)(0), (*vec)(3), 0.0 );
-  }
-
-  glEnd();
-  glFlush();
-};
-
-
-void DrawSpace::drawV_ViewRect( DrawSpace* dsPtr )
-{
-  Orbit* q;
-  slist_iterator getNext( dsPtr->_topTracker->_orbits );
-
-  glClearColor( dsPtr->_rClr, dsPtr->_gClr, dsPtr->_bClr, dsPtr->_aClr );
-  glClear( GL_COLOR_BUFFER_BIT );
-  glLoadIdentity();
-  glOrtho( dsPtr->_xLo, dsPtr->_xHi, dsPtr->_yLo, dsPtr->_yHi, -1., 1. );
-  // REMOVE glColor3f( dsPtr->_r, dsPtr->_g, dsPtr->_b );
-  glPointSize(dsPtr->_pointSize);
-  glBegin( GL_POINTS );
-
-  const Vector* vec;
-  while( q = (Orbit*) getNext() ) 
-  {
-    glColor3f( q->Red(), q->Green(), q->Blue() );
-    Orbit::Iterator oi( q );
-    while((  vec = oi++  )) {
-      glVertex3f( (*vec)(1), (*vec)(4), 0.0 );
-    }
-  }
-
-  // Paint one white point
-  q = (Orbit*) ( dsPtr->_topTracker->_orbits ).lastInfoPtr();
+  q = (Orbit*) ( _topTracker->_orbits ).lastInfoPtr();
   if(q) {
     vec = q->lastPoint();
     glColor3f( 1., 1., 1. );
-    glVertex3f( (*vec)(1), (*vec)(4), 0.0 );
+    _transformPtr->toDynamics( *vec, &a, &b, &c );
+    glVertex3f( a, b, c );
   }
-
-  glEnd();
-  glFlush();
-};
-
-
-void DrawSpace::drawH_ViewNorm( DrawSpace* dsPtr )
-{
-  Orbit* q;
-
-  double alpha, beta;
-  alpha = ( dsPtr->_topTracker->_p_info->alpha ).hor;
-  beta  = ( dsPtr->_topTracker->_p_info->beta  ).hor;
-
-  slist_iterator getNext( dsPtr->_topTracker->_orbits );
-
-  glClearColor( dsPtr->_rClr, dsPtr->_gClr, dsPtr->_bClr, dsPtr->_aClr );
-  glClear( GL_COLOR_BUFFER_BIT );
-  glLoadIdentity();
-  glOrtho( dsPtr->_xLo, dsPtr->_xHi, dsPtr->_yLo, dsPtr->_yHi, -1., 1. );
-  // REMOVE glColor3f( dsPtr->_r, dsPtr->_g, dsPtr->_b );
-  glPointSize(dsPtr->_pointSize);
-  glBegin( GL_POINTS );
-
-  const Vector* vec;
-  while( q = (Orbit*) getNext() ) 
-  {
-    glColor3f( q->Red(), q->Green(), q->Blue() );
-    Orbit::Iterator oi( q );
-    while((  vec = oi++  )) {
-      glVertex3f( (*vec)(0), alpha*(*vec)(0) + beta*(*vec)(3), 0.0 );
-    }
-  }
-
-  // Paint one white point
-  q = (Orbit*) ( dsPtr->_topTracker->_orbits ).lastInfoPtr();
-  if(q) {
-    vec = q->lastPoint();
-    glColor3f( 1., 1., 1. );
-    glVertex3f( (*vec)(0), alpha*(*vec)(0) + beta*(*vec)(3), 0.0 );
-  }
-
-  glEnd();
-  glFlush();
-};
-
-void DrawSpace::drawV_ViewNorm( DrawSpace* dsPtr )
-{
-  Orbit* q;
-  
-  double alpha, beta;
-  alpha = ( dsPtr->_topTracker->_p_info->alpha ).ver;
-  beta  = ( dsPtr->_topTracker->_p_info->beta  ).ver;
-
-  slist_iterator getNext( dsPtr->_topTracker->_orbits );
-
-  glClearColor( dsPtr->_rClr, dsPtr->_gClr, dsPtr->_bClr, dsPtr->_aClr );
-  glClear( GL_COLOR_BUFFER_BIT );
-  glLoadIdentity();
-  glOrtho( dsPtr->_xLo, dsPtr->_xHi, dsPtr->_yLo, dsPtr->_yHi, -1., 1. );
-  // REMOVE glColor3f( dsPtr->_r, dsPtr->_g, dsPtr->_b );
-  glPointSize(dsPtr->_pointSize);
-  glBegin( GL_POINTS );
-
-  const Vector* vec;
-  while( q = (Orbit*) getNext() ) 
-  {
-    glColor3f( q->Red(), q->Green(), q->Blue() );
-    Orbit::Iterator oi( q );
-    while((  vec = oi++  )) {
-      glVertex3f( (*vec)(1), alpha*(*vec)(1) + beta*(*vec)(4), 0.0 );
-    }
-  }
-
-  // Paint one white point
-  q = (Orbit*) ( dsPtr->_topTracker->_orbits ).lastInfoPtr();
-  if(q) {
-    vec = q->lastPoint();
-    glColor3f( 1., 1., 1. );
-    glVertex3f( (*vec)(1), alpha*(*vec)(1) + beta*(*vec)(4), 0.0 );
-  }
-
-  glEnd();
-  glFlush();
-};
-
-
-
-void DrawSpace::drawIHIV( DrawSpace* dsPtr )
-{
-  Orbit* q;
-  static double alphaH, betaH, alphaV, betaV;
-  static double u, v, IH, IV;
-
-  alphaH = ( dsPtr->_topTracker->_p_info->alpha ).hor;
-  betaH  = ( dsPtr->_topTracker->_p_info->beta  ).hor;
-  alphaV = ( dsPtr->_topTracker->_p_info->alpha ).ver;
-  betaV  = ( dsPtr->_topTracker->_p_info->beta  ).ver;
-
-  slist_iterator getNext( dsPtr->_topTracker->_orbits );
-
-  glClearColor( dsPtr->_rClr, dsPtr->_gClr, dsPtr->_bClr, dsPtr->_aClr );
-  glClear( GL_COLOR_BUFFER_BIT );
-  glLoadIdentity();
-  glOrtho( dsPtr->_xLo, dsPtr->_xHi, dsPtr->_yLo, dsPtr->_yHi, -1., 1. );
-  // REMOVE glColor3f( dsPtr->_r, dsPtr->_g, dsPtr->_b );
-  glPointSize(dsPtr->_pointSize);
-  glBegin( GL_POINTS );
-
-  const Vector* vec;
-  while( q = (Orbit*) getNext() ) 
-  {
-    glColor3f( q->Red(), q->Green(), q->Blue() );
-    Orbit::Iterator oi( q );
-    while((  vec = oi++  )) {
-      // Horizontal
-      u = (*vec)(0);
-      v = alphaH*u + betaH*(*vec)(3);
-      IH = ( u*u + v*v )/( 2.0*betaH );
-  
-      // Vertical
-      u = (*vec)(1);
-      v = alphaV*u + betaV*(*vec)(4);
-      IV = ( u*u + v*v )/( 2.0*betaV );
-  
-      // Draw
-      glVertex3f( IH, IV, 0.0 );
-    }
-  }
-
-  // Paint one white point
-  glColor3f( 1., 1., 1. );
-  glVertex3f( IH, IV, 0.0 );
 
   glEnd();
   glFlush();
 }
-
-
-void DrawSpace::drawPhiHPhiV( DrawSpace* dsPtr )
-{
-  Orbit* q;
-  static double alphaH, betaH, alphaV, betaV;
-  static double u, v, amp, phiH, phiV;
-
-  alphaH = ( dsPtr->_topTracker->_p_info->alpha ).hor;
-  betaH  = ( dsPtr->_topTracker->_p_info->beta  ).hor;
-  alphaV = ( dsPtr->_topTracker->_p_info->alpha ).ver;
-  betaV  = ( dsPtr->_topTracker->_p_info->beta  ).ver;
-
-  slist_iterator getNext( dsPtr->_topTracker->_orbits );
-
-  glClearColor( dsPtr->_rClr, dsPtr->_gClr, dsPtr->_bClr, dsPtr->_aClr );
-  glClear( GL_COLOR_BUFFER_BIT );
-  glLoadIdentity();
-  glOrtho( dsPtr->_xLo, dsPtr->_xHi, dsPtr->_yLo, dsPtr->_yHi, -1., 1. );
-  // REMOVE glColor3f( dsPtr->_r, dsPtr->_g, dsPtr->_b );
-  glPointSize(dsPtr->_pointSize);
-  glBegin( GL_POINTS );
-
-  const Vector* vec;
-  while( q = (Orbit*) getNext() ) 
-  {
-    glColor3f( q->Red(), q->Green(), q->Blue() );
-    Orbit::Iterator oi( q );
-    while((  vec = oi++  )) {
-      // Horizontal
-      u = (*vec)(0);
-      v = alphaH*u + betaH*(*vec)(3);
-      phiH = atan2(u,v);
-      if( phiH > M_PI ) phiH -= M_TWOPI;
-  
-      // Vertical
-      u = (*vec)(1);
-      v = alphaV*u + betaV*(*vec)(4);
-      phiV = atan2(u,v);
-      if( phiV > M_PI ) phiV -= M_TWOPI;
-  
-      // Draw
-      glVertex3f( phiH, phiV, 0.0 );
-    }
-  }
-
-  // Paint one white point
-  glColor3f( 1., 1., 1. );
-  glVertex3f( phiH, phiV, 0.0 );
-
-  glEnd();
-  glFlush();
-}
-
 
 
 void DrawSpace::mousePressEvent( QMouseEvent* qme )
@@ -623,13 +610,14 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
       emit _startedZoom();
     }
     else {
-      emit _new_point( _xbf, _ybf );
+      emit _new_point( _xbf, _ybf, _transformPtr );
     }
   }
 
   else { // Right button pressed
     if( !(_topTracker->isIterating()) ) {
-      if(_myFunc == DrawSpace::DrawSpace::drawPhiHPhiV) {
+      if( typeid(*_transformPtr) == typeid(PhiHPhiV) ) 
+      {
         // These transformations should be done in
         //   a separate routine!!
 
@@ -703,12 +691,12 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         trbPtr->show();
       }
 
-      else if( (_myFunc == DrawSpace::drawH_ViewNorm) || 
-          (_myFunc == DrawSpace::drawV_ViewNorm)    ) {
-
+      else if( (typeid(*_transformPtr) == typeid(NormH)) ||
+               (typeid(*_transformPtr) == typeid(NormV))    )
+      {
         // These transformations should be done in
         //   a separate routine!!
-        bool isHorizontal = (_myFunc == DrawSpace::drawH_ViewNorm);
+        bool isHorizontal = (typeid(*_transformPtr) == typeid(NormH));
         double alpha, beta;
         if( isHorizontal ) {
           alpha = ( _topTracker->_p_info->alpha ).hor;
@@ -860,12 +848,6 @@ void DrawSpace::setPointSize( int x )
 }
 
 
-bool DrawSpace::ViewIs( DrawFunc df ) 
-{
-  return (df == _myFunc);
-}
-
-
 void DrawSpace::activateZoom()
 {
   _zoomActive = true;
@@ -947,6 +929,7 @@ void Tracker::_finishConstructor()
     viewMenu->insertItem( "Rectangular", this, SLOT(_view_rect()) );
     viewMenu->insertItem( "Normal", this, SLOT(_view_norm()) );
     viewMenu->insertItem( "Action-angle", this, SLOT(_view_actang()) );
+    viewMenu->insertSeparator();
       QPopupMenu*  zoomMenu  = new QPopupMenu;
       zoomMenu->insertItem( "Out (x 2)",  this, SLOT(_view_zoom_out()) );
       zoomMenu->insertItem( "In  (/ 2)",  this, SLOT(_view_zoom_in()) );
@@ -954,6 +937,7 @@ void Tracker::_finishConstructor()
       zoomMenu->insertItem( "Mouse", this, SLOT(_view_zoom()) );
       zoomMenu->insertItem( "Reset", this, SLOT(_view_zoom_reset()) );
     viewMenu->insertItem( "Zoom...", zoomMenu );
+    viewMenu->insertItem( "Center", this, SLOT(_view_center()) );
   myMenuPtr->insertItem( "View", viewMenu );
 
     QPopupMenu*  optionMenu = new QPopupMenu;
@@ -988,7 +972,7 @@ void Tracker::_finishConstructor()
 
   _p_leftWindow = new DrawSpace( this, _p_phaseSpaceViews, "First" );
     _p_leftWindow->show();
-    _p_leftWindow->setDraw( DrawSpace::drawH_ViewRect );
+    _p_leftWindow->setTransformer( new RectH );
     _p_leftWindow->setColors( 1., 0., 1. );
     // _p_leftWindow->qglColor( QColor(255,0,255) );
     int drawArea = (25*QApplication::desktop()->height()*
@@ -1002,7 +986,7 @@ void Tracker::_finishConstructor()
 
   _p_rightWindow = new DrawSpace( this, _p_phaseSpaceViews, "Second" );
     _p_rightWindow->show();
-    _p_rightWindow->setDraw( DrawSpace::drawV_ViewRect );
+    _p_rightWindow->setTransformer( new RectV );
     _p_rightWindow->setColors( 0., 1., 0. );
     // _p_rightWindow->qglColor( QColor(0,255,0) );
     _p_rightWindow->setFixedSize( fixedWidth, fixedWidth );
@@ -1059,19 +1043,19 @@ void Tracker::_finishConstructor()
   connect( _p_yp_input, SIGNAL(_new_value( double )),
                   this, SLOT(_new_yp( double )) );
 
-  connect( _p_leftWindow, SIGNAL(_new_point (double,double)),
+  connect( _p_leftWindow, SIGNAL(_new_point (double,double,const OrbitTransformer*)),
            _p_x_input,    SLOT  (_set_first (double,double)) );
-  connect( _p_leftWindow, SIGNAL(_new_point (double,double)),
+  connect( _p_leftWindow, SIGNAL(_new_point (double,double,const OrbitTransformer*)),
            _p_xp_input,   SLOT  (_set_second(double,double)) );
-  connect( _p_rightWindow,SIGNAL(_new_point (double,double)),
+  connect( _p_rightWindow,SIGNAL(_new_point (double,double,const OrbitTransformer*)),
            _p_y_input,    SLOT  (_set_first (double,double)) );
-  connect( _p_rightWindow,SIGNAL(_new_point (double,double)),
+  connect( _p_rightWindow,SIGNAL(_new_point (double,double,const OrbitTransformer*)),
            _p_yp_input,   SLOT  (_set_second(double,double)) );
 
-  connect( _p_leftWindow, SIGNAL(_new_point       (double,double)),
-           this,          SLOT  (_cnvFromHViewRect(double,double)) );
-  connect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
-           this,          SLOT  (_cnvFromVViewRect(double,double)) );
+  connect( _p_leftWindow, SIGNAL(_new_point  (double,double,const OrbitTransformer*)),
+           this,          SLOT  (_cnvFromView(double,double,const OrbitTransformer*)) );
+  connect( _p_rightWindow,SIGNAL(_new_point  (double,double,const OrbitTransformer*)),
+           this,          SLOT  (_cnvFromView(double,double,const OrbitTransformer*)) );
 
   connect( _p_leftWindow, SIGNAL(_startedZoom()),
            _p_rightWindow,SLOT  (deactivateZoom()) );
@@ -1161,7 +1145,7 @@ void Tracker::_edit_select()
 
 void Tracker::_view_rect()
 {
-  if( _p_leftWindow->ViewIs(DrawSpace::drawH_ViewRect) ) {
+  if( typeid(*(_p_leftWindow->getTransformer())) == typeid(RectH) ) {
     return;
   }
 
@@ -1170,22 +1154,8 @@ void Tracker::_view_rect()
     _p_info = 0;
   }
 
-  _p_leftWindow->setDraw( DrawSpace::drawH_ViewRect );
-  _p_rightWindow->setDraw( DrawSpace::drawV_ViewRect );
-
-  disconnect( _p_leftWindow, SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromHViewNorm(double,double)) );
-  disconnect( _p_leftWindow, SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromIHIV     (double,double)) );
-     connect( _p_leftWindow, SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromHViewRect(double,double)) );
-
-  disconnect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromVViewNorm(double,double)) );
-  disconnect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromPhiHPhiV (double,double)) );
-     connect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromVViewRect(double,double)) );
+  _p_leftWindow->setTransformer( new RectH );
+  _p_rightWindow->setTransformer( new RectV );
 
   _p_leftWindow  ->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
                              - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
@@ -1199,35 +1169,20 @@ void Tracker::_view_rect()
 
 void Tracker::_view_norm()
 {
-  if( _p_leftWindow->ViewIs(DrawSpace::drawH_ViewNorm) ) {
+  if( typeid(*(_p_leftWindow->getTransformer())) == typeid(RectV) ) {
     return;
   }
-
-  int n = _bmlConPtr->countHowManyDeeply();
 
   if( _p_info ) {
     delete _p_info;
     _p_info = 0;
   }
+  int n = _bmlConPtr->countHowManyDeeply();
   _p_info = new LattFuncSage::lattFunc( *(_bmlConPtr->getLattFuncPtr(n-1)) );
 
 
-  _p_leftWindow->setDraw( DrawSpace::drawH_ViewNorm );
-  _p_rightWindow->setDraw( DrawSpace::drawV_ViewNorm );
-
-  disconnect( _p_leftWindow, SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromHViewRect(double,double)) );
-  disconnect( _p_leftWindow, SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromIHIV     (double,double)) );
-     connect( _p_leftWindow, SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromHViewNorm(double,double)) );
-
-  disconnect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromVViewRect(double,double)) );
-  disconnect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromPhiHPhiV (double,double)) );
-     connect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromVViewNorm(double,double)) );
+  _p_leftWindow->setTransformer( new NormH( _p_info->alpha.hor, _p_info->beta.hor ) );
+  _p_rightWindow->setTransformer( new NormV( _p_info->alpha.ver, _p_info->beta.ver ) );
 
   _p_leftWindow  ->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
                              - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
@@ -1239,89 +1194,26 @@ void Tracker::_view_norm()
 }
 
 
-// void Tracker::_view_norm()
-// {
-//   Jet::BeginEnvironment( 1 );
-//   coord x(0.0),  y(0.0),  z(0.0),
-//        px(0.0), py(0.0), pz(0.0);
-//   Jet::EndEnvironment();
-// 
-//   if( _p_etinfo ) {
-//     delete _p_etinfo;
-//     _p_etinfo = 0;
-//   }
-// 
-//   EdwardsTeng ET( _p_bml );
-//   JetProton jp( _p_bml->Energy() );
-//   ET.eraseAll();
-//   int ok = ET.doCalc( &jp );
-// 
-//   if( ok == 0 ) {
-//     bmlnElmnt* pbe = (bmlnElmnt*) ( ((dlist*) (_p_bml))->lastInfoPtr() );
-// 
-//     ETinfo* www = (ETinfo*) ( pbe->dataHook.find("EdwardsTeng"));
-//     
-//     _p_etinfo = 
-//       new ETinfo( *(ETinfo*) 
-//                   ( pbe->dataHook.find("EdwardsTeng") ) 
-//                 );
-// 
-//     ETtunes* tunes = (ETtunes*) _p_bml->dataHook.find( "Tunes" );
-//     // Why is this line here???
-//   }
-//   else {
-//     cout << "*** ERROR ***  doCalc didn't work." << endl;
-//   }
-// 
-//   _p_leftWindow->setDraw( DrawSpace::drawH_ViewNorm );
-//   _p_rightWindow->setDraw( DrawSpace::drawV_ViewNorm );
-// 
-//   disconnect( _p_leftWindow, SIGNAL(_new_point       (double,double)),
-//               this,          SLOT  (_cnvFromHViewRect(double,double)) );
-//   disconnect( _p_leftWindow, SIGNAL(_new_point       (double,double)),
-//               this,          SLOT  (_cnvFromIHIV     (double,double)) );
-//      connect( _p_leftWindow, SIGNAL(_new_point       (double,double)),
-//               this,          SLOT  (_cnvFromHViewNorm(double,double)) );
-// 
-//   disconnect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
-//               this,          SLOT  (_cnvFromVViewRect(double,double)) );
-//   disconnect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
-//               this,          SLOT  (_cnvFromPhiHPhiV (double,double)) );
-//      connect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
-//               this,          SLOT  (_cnvFromVViewNorm(double,double)) );
-// 
-//   _p_leftWindow->updateGL();
-//   _p_rightWindow->updateGL();
-// }
-
-
 void Tracker::_view_actang()
 {
-  if( _p_leftWindow->ViewIs(DrawSpace::drawIHIV) ) {
+  if( typeid(*(_p_leftWindow->getTransformer())) == typeid(IHIV) ) {
     return;
   }
 
-  if( 0 == _p_info ) {
-    int n = _bmlConPtr->countHowManyDeeply();
-    _p_info = new LattFuncSage::lattFunc( *(_bmlConPtr->getLattFuncPtr(n-1)) );
+  if( _p_info ) {
+    delete _p_info;
+    _p_info = 0;
   }
+  int n = _bmlConPtr->countHowManyDeeply();
+  _p_info = new LattFuncSage::lattFunc( *(_bmlConPtr->getLattFuncPtr(n-1)) );
 
-  _p_leftWindow->setDraw( DrawSpace::drawIHIV );
-  _p_rightWindow->setDraw( DrawSpace::drawPhiHPhiV );
+  double a1 = _p_info->alpha.hor;
+  double b1 = _p_info->beta.hor;
+  double a2 = _p_info->alpha.ver;
+  double b2 = _p_info->beta.ver;
 
-  disconnect( _p_leftWindow, SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromHViewRect(double,double)) );
-  disconnect( _p_leftWindow, SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromHViewNorm(double,double)) );
-     connect( _p_leftWindow, SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromIHIV     (double,double)) );
-
-  disconnect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromVViewRect(double,double)) );
-  disconnect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromVViewNorm(double,double)) );
-     connect( _p_rightWindow,SIGNAL(_new_point       (double,double)),
-              this,          SLOT  (_cnvFromPhiHPhiV (double,double)) );
+  _p_leftWindow->setTransformer( new IHIV( a1, b1, a2, b2 ) );
+  _p_rightWindow->setTransformer( new PhiHPhiV( a1, b1, a2, b2 ) );
 
   _p_leftWindow  ->setRange( 0.0, 1.e-6, 0.0, 1.e-6 );
   _p_rightWindow ->setRange( -M_PI, M_PI, -M_PI, M_PI );
@@ -1416,6 +1308,16 @@ void Tracker::_view_zoom_reset()
 {
   _p_leftWindow->resetZoom();
   _p_rightWindow->resetZoom();
+}
+
+
+void Tracker::_view_center()
+{
+  _p_leftWindow->setCenterOn( _bmlConPtr->_proton );
+  _p_rightWindow->setCenterOn( _bmlConPtr->_proton );
+
+  _p_leftWindow->updateGL();
+  _p_rightWindow->updateGL();
 }
 
 
@@ -1717,162 +1619,9 @@ void Tracker::_makeNewOrbit()
 }
 
 
-void Tracker::_cnvFromHViewRect( double a, double b )
+void Tracker::_cnvFromView( double a, double b, const OrbitTransformer* otPtr )
 {
-  _bmlConPtr->_proton.set_x(a);
-  _bmlConPtr->_proton.set_npx(b);
-  _makeNewOrbit();
-}
-
-
-void  Tracker::_cnvFromVViewRect( double a, double b )
-{
-  _bmlConPtr->_proton.set_y(a);
-  _bmlConPtr->_proton.set_npy(b);
-  _makeNewOrbit();
-}
-
-
-void  Tracker::_cnvFromHViewNorm( double a, double b )
-{
-  b = ( b - a*( this->_p_info->alpha ).hor )/( this->_p_info->beta  ).hor;
-
-  _bmlConPtr->_proton.set_x(a);
-  _bmlConPtr->_proton.set_npx(b);
-  _makeNewOrbit();
-}
-
-
-void  Tracker::_cnvFromVViewNorm( double a, double b )
-{
-  b = ( b - a*( this->_p_info->alpha ).ver )/( this->_p_info->beta  ).ver;
-
-  _bmlConPtr->_proton.set_y(a);
-  _bmlConPtr->_proton.set_npy(b);
-  _makeNewOrbit();
-}
-
-
-void Tracker::_cnvFromIHIV( double IH, double IV )
-{
-  static double  u, v, amp, phi;
-  static double  alpha, beta;
-  static Proton* protonPtr;
-
-  protonPtr = &(_bmlConPtr->_proton);
-
-  // If orbit has diverged, bring it back.
-  if( isnan(protonPtr->get_x()) || isnan(protonPtr->get_npx()) || 
-      isnan(protonPtr->get_y()) || isnan(protonPtr->get_npy())    ) 
-  {
-    protonPtr->set_x  (0.);
-    protonPtr->set_y  (0.);
-    protonPtr->set_cdt(0.);
-    protonPtr->set_npx(0.);
-    protonPtr->set_npy(0.);
-    protonPtr->set_ndp(0.);
-    return;
-  }
-
-  // Horizontal
-  beta  = _p_info->beta.hor;
-  alpha = _p_info->alpha.hor;
-
-  u = protonPtr->get_x();
-  v = alpha*u + beta*protonPtr->get_npx();
-  phi = atan2(u,v);
-  if( phi > M_PI ) phi -= M_TWOPI;
-
-  if( IH >= 0.0 ) {
-    amp = sqrt(2.0*beta*IH);
-    u = amp*sin(phi);
-    v = amp*cos(phi);
-    protonPtr->set_x( u );
-    protonPtr->set_npx( ( v - alpha*u )/beta );
-  }
-  else {
-    protonPtr->set_x( 0. );
-    protonPtr->set_npx( 0. );
-  }
-
-  // Vertical
-  beta  = _p_info->beta.ver;
-  alpha = _p_info->alpha.ver;
-
-  u = protonPtr->get_y();
-  v = alpha*u + beta*protonPtr->get_npy();
-  phi = atan2(u,v);
-  if( phi > M_PI ) phi -= M_TWOPI;
-
-  if( IV >= 0.0 ) {
-    amp = sqrt(2.0*beta*IV);
-    u = amp*sin(phi);
-    v = amp*cos(phi);
-    protonPtr->set_y( u );
-    protonPtr->set_npy( ( v - alpha*u )/beta );
-  }
-  else {
-    protonPtr->set_y( 0. );
-    protonPtr->set_npy( 0. );
-  }
-
-  _makeNewOrbit();
-}
-
-
-void Tracker::_cnvFromPhiHPhiV( double phiH, double phiV )
-{
-  static double u, v, amp;
-  static double alpha, beta;
-  static Proton* protonPtr;
-
-  protonPtr = &(_bmlConPtr->_proton);
-
-  // If orbit has diverged, bring it back.
-  if( isnan(protonPtr->get_x()) || isnan(protonPtr->get_npx()) || 
-      isnan(protonPtr->get_y()) || isnan(protonPtr->get_npy())    ) 
-  {
-    protonPtr->set_x  (0.);
-    protonPtr->set_y  (0.);
-    protonPtr->set_cdt(0.);
-    protonPtr->set_npx(0.);
-    protonPtr->set_npy(0.);
-    protonPtr->set_ndp(0.);
-    return;
-  }
-
-  // Check angle domain
-  while( phiH >   M_PI ) phiH -= M_TWOPI;
-  while( phiH < - M_PI ) phiH += M_TWOPI;
-  while( phiV >   M_PI ) phiV -= M_TWOPI;
-  while( phiV < - M_PI ) phiV += M_TWOPI;
-
-  // Horizontal
-  beta  = _p_info->beta.hor;
-  alpha = _p_info->alpha.hor;
-
-  u = protonPtr->get_x();
-  v = alpha*u + beta*protonPtr->get_npx();
-
-  amp = sqrt( u*u + v*v );
-  u = amp*sin(phiH);
-  v = amp*cos(phiH);
-  protonPtr->set_x( u );
-  protonPtr->set_npx( ( v - alpha*u )/beta );
-
-  // Vertical
-  beta  = _p_info->beta.ver;
-  alpha = _p_info->alpha.ver;
-
-  u = protonPtr->get_y();
-  v = alpha*u + beta*protonPtr->get_npy();
-
-  amp = sqrt( u*u + v*v );
-  u = amp*sin(phiV);
-  v = amp*cos(phiV);
-  protonPtr->set_y( u );
-  protonPtr->set_npy( ( v - alpha*u )/beta );
-
+  otPtr->toState( a, b, &(_bmlConPtr->_proton) );
   _makeNewOrbit();
 }
 
