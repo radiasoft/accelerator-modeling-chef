@@ -33,6 +33,8 @@
 
 #include <iomanip>
 
+using FNAL::Complex;
+ 
 // ================================================================
 //      External routines
 //
