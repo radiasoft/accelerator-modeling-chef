@@ -14,17 +14,17 @@
 #include <string.h>   // for memcpy()
 #include "VectorD.h"
 
-// #ifdef __VISUAL_CPP__
+#ifdef _MSC_VER
 using std::cout;
 #include <iomanip>
 using std::setw;
 using std::setprecision;
 using std::resetiosflags;
 using std::setiosflags;
-// #else
-// #include <stdlib.h>
-// #include <iomanip>
-// #endif
+#else
+#include <stdlib.h>
+#include <iomanip.h>
+#endif
 
 
 // ================================================================

@@ -11,20 +11,21 @@
 #include <math.h>
 #include <complex>
 
-#ifdef __GNUG__
+#ifdef __GNUC__
   typedef complex<double> Complex;
 #endif
 
 // Check for Solaris.
-#if defined(__sparc) && !defined(__GNUG__) && !defined(__KCC)
+#if defined(__SUNPRO_CC) 
+#include <iostream.h>  
   typedef std::complex<double> Complex;
 #endif
 
-#ifdef __BORLAND_CPP__
+#ifdef __BORLANDC__
   typedef complex Complex;
 #endif
 
-#ifdef __VISUAL_CPP__
+#ifdef _MSC_VER
 typedef std::complex<double> Complex;
 using std::real;
 using std::imag;
@@ -37,9 +38,19 @@ using std::sqrt;
 using  std::ostream;
 using std::cerr;
 using std::endl;
-#endif  // __VISUAL_CPP__
+#endif 
 
-#if defined(__sparc) && !defined(__GNUG__) && !defined(__KCC) 
+#if defined(__SUNPRO_CC)
+
+inline ostream& operator<<(ostream& os, const Complex& x) {
+	os << "( " << real(x) << "," << imag(x) << " )" << endl;
+	return os;
+}
+
+inline istream& operator>>(istream& is, const Complex& x) {
+	is  >> real(x) >> imag(x);
+	return is;
+}
 
 inline Complex operator+( const Complex& x, const double& y )
 {
@@ -108,7 +119,7 @@ inline char operator> ( const Complex& x, const Complex& y )
 
 #endif // __sparc and not __GNUG__
 
-#ifdef __GNUG__
+#ifdef __GNUC__
 inline char operator>= ( const Complex& x, const Complex& y )
 {
  return real(x) >= real(y)  &&  imag(x) >= imag(y);
@@ -124,9 +135,9 @@ inline char operator> ( const Complex& x, const Complex& y )
  return real(x) > real(y)  &&  imag(x) > imag(y);
 }
 
-#endif // __GNUG__
+#endif // __GNUC__
 
-#ifdef __BORLAND_CPP__
+#ifdef __BORLANDC__
 
 inline Complex pow ( const Complex& x, int n )
 {
@@ -175,9 +186,9 @@ inline char operator> ( const Complex& x, const Complex& y )
  return real(x) > real(y)  &&  imag(x) > imag(y);
 }
 
-#endif // __BORLAND_CPP__
+#endif // __BORLANDC__
 
-#ifdef __VISUAL_CPP__
+#ifdef _MSC_VER
 
 inline double abs(const Complex& x) {
 	return sqrt(real(x)*real(x) + imag(x)*imag(x));
