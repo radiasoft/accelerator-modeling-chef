@@ -38,7 +38,9 @@ SOURCES = CHEF.builders.cc \
           RayTrace.cc \
           SiteViewer.cc \
           Tracker.cc \
-          TrbWidget.cc
+          TrbWidget.cc \
+          InitCondDialogLF.cc \
+          initconddialoglfbase.cc
 
 HEADERS = ../include/CHEF.h \
           ../include/BeamlineBrowser.h \
@@ -54,4 +56,6 @@ HEADERS = ../include/CHEF.h \
           ../include/RayTrace.h \
           ../include/SiteViewer.h \
           ../include/Tracker.h \
-          ../include/TrbWidget.h
+          ../include/TrbWidget.h \
+          ../include/InitCondDialogLF.h \
+          ../include/initconddialoglfbase.h

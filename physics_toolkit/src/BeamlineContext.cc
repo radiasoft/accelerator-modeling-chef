@@ -63,7 +63,9 @@ BeamlineContext::BeamlineContext( bool doClone, beamline* x )
 : _p_bml(x), _proton( x->Energy() ),
   _p_lfs(0), _p_ets(0), _p_covs(0), _p_lbs(0), _p_cos(0), _p_dsps(0),
   _p_ca(0), _p_ta(0),
-  _p_co_p(0), _p_disp_p(0), _dpp(0.0001),
+  _p_co_p(0), _p_disp_p(0), 
+  _initialLattFuncPtr(0), _initialDispersionPtr(0),
+  _dpp(0.0001),
   _isCloned(doClone),
   _p_bi(0), _p_dbi(0), _p_rbi(0), _p_drbi(0),
   _tunes(0), _eigentunes(0), 
@@ -82,8 +84,10 @@ BeamlineContext::BeamlineContext( bool doClone, beamline* x )
            "Invoked with null beamline pointer." ) );
   }
 
-  if( _isCloned ) 
-  { _p_bml = (beamline*) (x->Clone()); }
+  if( _isCloned ) { _p_bml = (beamline*) (x->Clone()); }
+
+  if( Sage::isRing(_p_bml) ) { this->handleAsRing(); }
+  else                       { this->handleAsLine(); }
 }
 
 BeamlineContext::BeamlineContext( const BeamlineContext& )
@@ -98,20 +102,31 @@ BeamlineContext::~BeamlineContext()
   if( _isCloned && (_p_bml != 0) ) 
   { _p_bml->eliminate(); }
 
+  this->reset();
+}
+
+
+void BeamlineContext::reset()
+{
   _deleteLFS();
   _deleteETS();
   _deleteCOVS();
   _deleteLBS();
+  _deleteDSPS();
   _deleteClosedOrbit();
 
-  // if( _p_lfs ) delete _p_lfs;
-  if( _p_ca  ) delete _p_ca;
-  if( _p_ta  ) delete _p_ta;
+  if( _p_ca  ) { delete _p_ca; _p_ca = 0; }
+  if( _p_ta  ) { delete _p_ta; _p_ta = 0; }
 
-  if( _p_bi   )  delete _p_bi;
-  if( _p_dbi  )  delete _p_dbi;
-  if( _p_rbi  )  delete _p_rbi;
-  if( _p_drbi )  delete _p_drbi;
+  if( _p_bi   )  { delete _p_bi;   _p_bi   = 0; }
+  if( _p_dbi  )  { delete _p_dbi;  _p_dbi  = 0; }
+  if( _p_rbi  )  { delete _p_rbi;  _p_rbi  = 0; }
+  if( _p_drbi )  { delete _p_drbi; _p_drbi = 0; }
+
+  if( _initialLattFuncPtr ) 
+  { delete _initialLattFuncPtr;   _initialLattFuncPtr = 0;   } 
+  if( _initialDispersionPtr ) 
+  { delete _initialDispersionPtr; _initialDispersionPtr = 0; }
 }
 
 
@@ -166,6 +181,59 @@ void BeamlineContext::setClonedFlag( bool x )
 bool BeamlineContext::getClonedFlag()
 {
   return _isCloned;
+}
+
+
+void BeamlineContext::setInitial( const DispersionSage::Info& u )
+{
+  if( _initialDispersionPtr ) { delete _initialDispersionPtr; }
+  _initialDispersionPtr = new DispersionSage::Info(u);
+}
+
+
+void BeamlineContext::setInitial( const DispersionSage::Info* u )
+{
+  if( _initialDispersionPtr ) { delete _initialDispersionPtr; }
+  _initialDispersionPtr = new DispersionSage::Info(*u);
+}
+
+
+void BeamlineContext::getInitial( DispersionSage::Info* u )
+{
+  if( _initialDispersionPtr ) { 
+    throw( GenericException( __FILE__, __LINE__, 
+             "BeamlineContext::getInitial( DispersionSage::Info* )",
+             "Initial conditions for dispersion are not available." ) );
+  }
+
+  (*u) = (*_initialDispersionPtr);
+}
+
+
+void BeamlineContext::setInitial( const LattFuncSage::lattFunc& u )
+{
+  if( _initialLattFuncPtr ) { delete _initialLattFuncPtr; }
+  _initialLattFuncPtr = new LattFuncSage::lattFunc(u);
+}
+
+
+void BeamlineContext::setInitial( const LattFuncSage::lattFunc* u )
+{
+  if( _initialLattFuncPtr ) { delete _initialLattFuncPtr; }
+  _initialLattFuncPtr = new LattFuncSage::lattFunc(*u);
+}
+
+
+void BeamlineContext::getInitial( LattFuncSage::lattFunc* u )
+{
+  if( _initialLattFuncPtr ) { 
+    throw( GenericException( __FILE__, __LINE__, 
+             "BeamlineContext::getInitial( LattFuncSage::lattFunc* )",
+             "Initial conditions for uncoupled \n"
+             "lattice functions are not available." ) );
+  }
+
+  (*u) = (*_initialLattFuncPtr);
 }
 
 
@@ -529,6 +597,14 @@ void BeamlineContext::_createClosedOrbit()
   // is centered on the closed orbit. Its state corresponds
   // to the one turn map.
   
+  if( !(this->isTreatedAsRing()) ) {
+    ostringstream uic;
+    uic  <<   "Cannot find closed orbit: line is not a ring.";
+    throw( GenericException( __FILE__, __LINE__, 
+           "void BeamlineContext::_createClosedOrbit()", 
+           uic.str().c_str() ) );
+  }
+
   // Eliminate previous information, if necessary
   _deleteClosedOrbit();
 
@@ -759,18 +835,40 @@ const LattFuncSage::lattFunc* BeamlineContext::getLattFuncPtr( int i )
     this->_createLFS();
   }
   
-  if( 0 == _tunes ) {
-    this->_createTunes();
-  }
+  if( !_normalLattFuncsCalcd ) 
+  {
+    if( this->isTreatedAsRing() ) 
+    {
+      if( 0 == _tunes ) {
+        this->_createTunes();
+      }
 
-  if( !_normalLattFuncsCalcd ) {
-    _p_lfs->NewSlow_CS_Calc( _p_jp );
-    _normalLattFuncsCalcd = true;
-  }
+      if( !_normalLattFuncsCalcd ) {
+        _p_lfs->NewSlow_CS_Calc( _p_jp );
+        _normalLattFuncsCalcd = true;
+      }
 
-  if( !_dispCalcd ) {
-    _p_lfs->NewDisp_Calc( _p_jp, true );
-    _dispCalcd = true;
+      if( !_dispCalcd ) {
+        _p_lfs->NewDisp_Calc( _p_jp, true );
+        _dispCalcd = true;
+      }
+    }
+
+    // If the line is not treated as periodic, do the following:
+    else
+    {
+      if( 0 != _initialLattFuncPtr ) {
+        int errorFlag = _p_lfs->pushCalc( _proton, *_initialLattFuncPtr );
+        _normalLattFuncsCalcd = ( 0 == errorFlag );
+      }
+      else {
+        _normalLattFuncsCalcd = false;
+        throw( GenericException( __FILE__, __LINE__, 
+               "BeamlineContext::getLattFuncPtr( int i )", 
+               "You must first provide initial conditions"
+               "\nfor a non-periodic line." ) );
+      }
+    }
   }
 
   return (_p_lfs->get_lattFuncPtr(i));
@@ -901,36 +999,54 @@ const DispersionSage::Info* BeamlineContext::getDispersionPtr( int i )
     this->_createDSPS();
   }
   
-  if( !_dispersionFuncsCalcd ) { 
-    // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
-    if( ( 0 == _p_co_p ) || ( 0 == _p_jp ) ) {
-      try {
-        this->_createClosedOrbit(); 
+  if( !_dispersionFuncsCalcd ) 
+  { 
+    if( this->isTreatedAsRing() ) {
+      // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
+      if( ( 0 == _p_co_p ) || ( 0 == _p_jp ) ) {
+        try {
+          this->_createClosedOrbit(); 
+        }
+        catch( const GenericException& ge ) {
+          this->_deleteDSPS(); 
+          this->_deleteClosedOrbit();
+          throw ge;
+        }
       }
-      catch( const GenericException& ge ) {
-        this->_deleteDSPS(); 
-        this->_deleteClosedOrbit();
-        throw ge;
-      }
+
+      // Preserve/reset the current Jet environment
+      Jet__environment*  storedEnv  = Jet::_lastEnv;
+      JetC__environment* storedEnvC = JetC::_lastEnv;
+      Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
+      JetC::_lastEnv = JetC::CreateEnvFrom( Jet::_lastEnv );
+
+      // DispersionSage::Options newOptions;
+      // newOptions.onClosedOrbit = true;
+      // _p_dsps->set_options( newOptions );
+    
+      _p_dsps->flags.onClosedOrbit = true;
+      int errorFlag = _p_dsps->doCalc( _p_jp, beamline::yes );
+      _dispersionFuncsCalcd = ( 0 == errorFlag );
+
+      // Restore current environment
+      Jet::_lastEnv = storedEnv;
+      JetC::_lastEnv = storedEnvC;
     }
 
-    // Preserve/reset the current Jet environment
-    Jet__environment*  storedEnv  = Jet::_lastEnv;
-    JetC__environment* storedEnvC = JetC::_lastEnv;
-    Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
-    JetC::_lastEnv = JetC::CreateEnvFrom( Jet::_lastEnv );
-
-    // DispersionSage::Options newOptions;
-    // newOptions.onClosedOrbit = true;
-    // _p_dsps->set_options( newOptions );
-    
-    _p_dsps->flags.onClosedOrbit = true;
-    int errorFlag = _p_dsps->doCalc( _p_jp, beamline::yes );
-    _dispersionFuncsCalcd = ( 0 == errorFlag );
-
-    // Restore current environment
-    Jet::_lastEnv = storedEnv;
-    JetC::_lastEnv = storedEnvC;
+    // If the line is not treated as periodic, do the following:
+    else {
+      if( 0 != _initialDispersionPtr ) {
+        int errorFlag = _p_dsps->pushCalc( _proton, *_initialDispersionPtr );
+        _dispersionFuncsCalcd = ( 0 == errorFlag );
+      }
+      else {
+        _dispersionFuncsCalcd = false;
+        throw( GenericException( __FILE__, __LINE__, 
+               "BeamlineContext::getDispersionPtr( int i )", 
+               "You must first provide initial conditions"
+               "\nfor a non-periodic line." ) );
+      }
+    }
   }
 
   if( _dispersionFuncsCalcd ) { return (_p_dsps->getInfoPtr(i)); }

@@ -69,15 +69,17 @@ class Mapping;
 
 // ++----++++----++++----++++----++++----++++----++++----++
 
+class CHEFPlotMain;
+
 namespace CHEF_domain
 {
 class QBml;
 class QBmlRoot;
-class LattFncPlt;
-class ETFncPlt;
-class MomentsFncPlt;
-class LBFncPlt;
-class DspnFncPlt;
+// class LattFncPlt;
+// class ETFncPlt;
+// class MomentsFncPlt;
+// class LBFncPlt;
+// class DspnFncPlt;
 class Tracker;
 class RayTrace;
 class SiteViewer;
@@ -201,11 +203,11 @@ private:
   QApplication*    _appl;
   QMainWindow*     _mainWindow;
   QLabel*          _centralWidget;
-  LattFncPlt*      _plotWidget;
-  ETFncPlt*        _ETplotWidget;
-  MomentsFncPlt*   _MMplotWidget;
-  LBFncPlt*        _LBplotWidget;
-  DspnFncPlt*      _DspnplotWidget;
+  CHEFPlotMain*    _plotWidget;
+  CHEFPlotMain*    _ETplotWidget;
+  CHEFPlotMain*    _MMplotWidget;
+  CHEFPlotMain*    _LBplotWidget;
+  CHEFPlotMain*    _DspnplotWidget;
   Tracker*         _trackWidget;
   RayTrace*        _traceWidget;
   SiteViewer*      _siteWidget;
@@ -225,6 +227,7 @@ private:
   QPopupMenu*          _calcEnterMenu;
   QPopupMenu*          _calcCalcFuncMenu;
   QPopupMenu*            _calcLattFuncMenu;
+  QPopupMenu*            _calcPushMenu;
   QPopupMenu*        _tool_ctrlMenu;
   QPopupMenu*        _tool_dsgnMenu;
   QPopupMenu*      _helpMenu;
@@ -277,6 +280,7 @@ private slots:
   void _editMergeQuads();
   void _editD2S();
   void _editAddQtMons();
+  void _editMode();
   void _editPartAndSect();
   void _toolAlignBends();
   void _toolMisalign();
@@ -293,6 +297,9 @@ private slots:
   void _launchET();
   void _launchMoments();
   void _launchLB();
+  void _pushDispersion();
+  void _pushMoments();
+  void _pushULF();
   void _launchTrack();
   void _launchRayTrace();
   void _launchDispersion();

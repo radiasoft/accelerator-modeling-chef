@@ -63,6 +63,8 @@ class ClosedOrbitSage : public Sage
   void unsetForcedCalc();
   void setIgnoreErrors( bool );
 
+  static int ERR_NOTRING;
+
  private:
   bool _forced;
   bool _ignoreErrors;

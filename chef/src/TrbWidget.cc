@@ -305,7 +305,6 @@ void TrbWidget::_light_sel()
 
 void TrbWidget::_do_nothing()
 {
-  cout << "DGN> Entered TrbWidget::_do_nothing" << endl;
 }
 
 

@@ -39,17 +39,23 @@
  * 
  */
 
-inline int Frame::xAxisIndex()
+inline int Frame::xAxisIndex() const
 { 
   return 0; 
 }
 
-inline int Frame::yAxisIndex()
+inline int Frame::yAxisIndex() const
 { 
   return 1; 
 }
 
-inline int Frame::zAxisIndex()
+inline int Frame::zAxisIndex() const
 { 
   return 2; 
 }
+
+inline MatrixD Frame::getAxes() const
+{
+  return e;
+}
+

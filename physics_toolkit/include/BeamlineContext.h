@@ -97,6 +97,13 @@ class BeamlineContext
     void setClonedFlag( bool );
     bool getClonedFlag();
 
+    void setInitial( const DispersionSage::Info& );
+    void setInitial( const DispersionSage::Info* );
+    void getInitial( DispersionSage::Info* );
+    void setInitial( const LattFuncSage::lattFunc& );
+    void setInitial( const LattFuncSage::lattFunc* );
+    void getInitial( LattFuncSage::lattFunc* );
+
     void writeTree();
 
 
@@ -133,6 +140,16 @@ class BeamlineContext
     // already done.
     bool onTransClosedOrbit( const Proton& ) const;
 
+    bool isRing() const;
+    bool isTreatedAsRing() const;
+    void handleAsRing();
+    void handleAsLine();
+
+
+    void reset();
+    // This is a drastic function which almost acts
+    //   like a destructor. Effectively, all information
+    //   about previous calculations is eliminated.
 
     // Sage methods ... and others
     double getHorizontalFracTune();
@@ -212,6 +229,10 @@ class BeamlineContext
     ChromaticityAdjuster* _p_ca;
     TuneAdjuster*         _p_ta;
 
+    // Initial conditions
+    LattFuncSage::lattFunc* _initialLattFuncPtr;
+    DispersionSage::Info*   _initialDispersionPtr;
+
     double                _dpp;
     // value of dp/p used for dispersion calculation.
     // by default = 0.0001
@@ -275,5 +296,30 @@ class BeamlineContext
     void _createClosedOrbit();
     void _deleteClosedOrbit();
 };
+
+
+inline bool BeamlineContext::isRing() const
+{
+  return (Sage::isRing(_p_bml));
+}
+
+
+inline bool BeamlineContext::isTreatedAsRing() const
+{
+  return ( beamline::ring == _p_bml->getLineMode() );
+}
+
+
+inline void BeamlineContext::handleAsRing()
+{
+  _p_bml->setLineMode( beamline::ring );
+}
+
+
+inline void BeamlineContext::handleAsLine()
+{
+  _p_bml->setLineMode( beamline::line );
+}
+
 
 #endif // BEAMLINECONTEXT_H

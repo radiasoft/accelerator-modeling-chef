@@ -39,6 +39,9 @@
 #include "Mapping.h"
 #include "Barnacle.h"
 
+// Forward declaration
+class JetParticle;
+
 const int BMLN_dynDim  = 6;   // ??? Doesn't this imply that BMLN_dynDim
                               // ??? can be defined in several modules?
 
@@ -115,8 +118,9 @@ protected:
   Particle( const Particle& );
 
 public:
+  virtual JetParticle* ConvertToJetParticle() const = 0;
+  
   virtual ~Particle();
-
   virtual Particle* Clone() const = 0;
   
   // Phase space indices
@@ -254,6 +258,7 @@ public:
   Proton( double /* energy [GeV] */, double* /* state */ );
   Proton( const Proton& );
   ~Proton();
+  JetParticle* ConvertToJetParticle() const;
   Particle* Clone() const { return new Proton( *this ); }
 };
 
@@ -264,6 +269,7 @@ public:
   AntiProton( double /* energy [GeV] */, double* /* state */ );
   AntiProton( const AntiProton& );
   ~AntiProton();
+  JetParticle* ConvertToJetParticle() const;
   Particle* Clone() const { return new AntiProton( *this ); }
 };
 
@@ -274,6 +280,7 @@ public:
   Electron( double /* energy [GeV] */, double* /* state */ );
   Electron( const Electron& );
   ~Electron();
+  JetParticle* ConvertToJetParticle() const;
   Particle* Clone() const { return new Electron( *this ); }
 };
 
@@ -284,6 +291,7 @@ public:
   Positron( double /* energy [GeV] */, double* /* state */ );
   Positron( const Positron& );
   ~Positron();
+  JetParticle* ConvertToJetParticle() const;
   Particle* Clone() const { return new Positron( *this ); }
 };
 
@@ -294,6 +302,7 @@ public:
   Muon( double /* energy [GeV] */, double* /* state */ );
   Muon( const Muon& );
   ~Muon();
+  JetParticle* ConvertToJetParticle() const;
   Particle* Clone() const { return new Muon( *this ); }
 };
 
@@ -304,6 +313,7 @@ public:
   AntiMuon( double /* energy [GeV] */, double* /* state */ );
   AntiMuon( const AntiMuon& );
   ~AntiMuon();
+  JetParticle* ConvertToJetParticle() const;
   Particle* Clone() const { return new AntiMuon( *this ); }
 };
 

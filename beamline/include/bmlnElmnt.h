@@ -5,7 +5,7 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.1
+******  Version:   2.2
 ******                                    
 ******  File:      bmlnElmnt.h
 ******                                                                
@@ -512,6 +512,8 @@ public:
 class beamline : public bmlnElmnt, public dlist
 {
 public:
+  enum LineMode { line, ring, unknown };
+
   class arrayRep
   {
   public:
@@ -556,6 +558,7 @@ public:
   // performed successfully on the element. All other
   // values indicate error.
 
+
 private:
   double            nominalEnergy;    // In GeV
   int               numElem;          // Number of elements in the beamline
@@ -563,6 +566,7 @@ private:
   std::ostream& writeTo(std::ostream&);
   // ??? REMOVE: istream& readFrom(istream&);
   friend std::istream& operator>>( std::istream&, beamline& );
+  LineMode          _mode;
 
 public:
 
@@ -697,6 +701,14 @@ public:
 
   // EDIT PROPERTIES
 
+  inline beamline::LineMode getLineMode() const
+  { return _mode; }
+  inline void setLineMode( beamline::LineMode x )
+  { _mode = x; }
+  // _mode doesn't affect behavior at the beamline level
+  //    but carries information for higher level code,
+  //    like _dataHook.
+
   void setEnergy( double /* Nominal energy in GeV */ );
   void unTwiss();
 
@@ -745,28 +757,22 @@ public:
   // Returns the number of times the argument appears.
 
   inline bmlnElmnt* firstElement()
-    {
-      return (bmlnElmnt*) ( ((dlist*) this)->firstInfoPtr() );
-    }
+  { return (bmlnElmnt*) ( ((dlist*) this)->firstInfoPtr() ); }
   inline bmlnElmnt* lastElement()
-    {
-      return (bmlnElmnt*) ( ((dlist*) this)->lastInfoPtr() );
-    }
-  char twissIsDone()
-    {
-      return twissDone;
-    }
-  void setTwissIsDone()
-    {
-      twissDone = 1;
-    }
-  void unsetTwissIsDone()
-    {
-      twissDone = 0;
-    }
-  double Energy() const { return nominalEnergy; }
+  { return (bmlnElmnt*) ( ((dlist*) this)->lastInfoPtr() ); }
+  inline char twissIsDone()
+  { return twissDone; }
+  inline void setTwissIsDone()
+  { twissDone = 1; }
+  inline void unsetTwissIsDone()
+  { twissDone = 0; }
+  double Energy() const 
+  { return nominalEnergy; }
   const char*  Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "beamline") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual int isType(char* c) 
+  { if ( strcmp(c, "beamline") != 0 ) return bmlnElmnt::isType(c); 
+    else return 1; 
+  }
 
   bmlnElmnt* Clone() const;
 
@@ -784,6 +790,7 @@ public:
   void   writeLattFunc( char* );
 
 } ;
+
 
 extern beamline& operator*( int, beamline& );
 extern beamline& operator*( int, bmlnElmnt& );

@@ -156,6 +156,8 @@ public:
                // These reproduce the old beamline::twiss
                // and therefore are both obsolete and wrong.
 
+ int pushCalc       ( const Particle&, const LattFuncSage::lattFunc& );
+
  void eraseAll();
 
  lattFunc* get_lattFuncPtr( int );
@@ -184,6 +186,9 @@ private:
 
  lattFunc* _lf;
  lattRing* _lr;
+
+ void _deleteCalcs();
+ void _finishConstructor();
 };
 
 

@@ -77,6 +77,8 @@ public:
     
     DspnFncPlt( beamline*, const char* = 0 );
     DspnFncPlt( BeamlineContext*, const char* = 0 );
+    DspnFncPlt( beamline*, const DispersionSage::Info&, const char* = 0 );
+    DspnFncPlt( BeamlineContext*, const DispersionSage::Info&, const char* = 0 );
     ~DspnFncPlt();
 
     void setCaption( const char* );

@@ -67,16 +67,17 @@ class Frame
    Frame dual() const;
    bool  isOrthonormal() const;
 
-   int xAxisIndex();
-   int yAxisIndex();
-   int zAxisIndex();
+   int xAxisIndex() const;
+   int yAxisIndex() const;
+   int zAxisIndex() const;
 
-   Vector getOrigin()        const;
-   Vector getAxis( int )     const;
-   Vector getxAxis()         const;
-   Vector getyAxis()         const;
-   Vector getzAxis()         const;
-   Vector getDualAxis( int ) const;
+   Vector  getOrigin()        const;
+   Vector  getAxis( int )     const;
+   Vector  getDualAxis( int ) const;
+   Vector  getxAxis()         const;
+   Vector  getyAxis()         const;
+   Vector  getzAxis()         const;
+   MatrixD getAxes()          const;
 
    short int rotate    ( double,        // rotation angle [ radians ]
                          const Vector&, // axis of rotation (right-hand sense)
