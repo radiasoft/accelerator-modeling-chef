@@ -1,12 +1,14 @@
 #include <LookupTable.h>
 #include <stream.h>
 
+#ifndef ABS
 inline double ABS(double x) {
   if ( x < 0 )
     return -x;
   else
     return x;
 }
+#endif
 
 // ----------------------------------------------------------------------
 // Table methods
@@ -277,7 +279,7 @@ double LookupTable::evaluate4(double x, double y) {
 
   if ( xstep == 0 || ystep == 0 )
     cerr << "LookupTable::evaluate4: Expecting non-zero step size and failed test\n";
-  ix1 = ((x - xGrid[0])/xstep);
+  ix1 = (int) ((x - xGrid[0])/xstep);
   ix0 = ix1 - 1;
   ix2 = ix1 + 1;
   ix3 = ix1 + 2;
@@ -296,7 +298,7 @@ double LookupTable::evaluate4(double x, double y) {
     ix0 -= diff;
   }
 
-  iy1 = ((y - yGrid[0])/ystep);
+  iy1 = (int) ((y - yGrid[0])/ystep);
   iy0 = iy1 - 1;
   iy2 = iy1 + 1;
   iy3 = iy1 + 2;
