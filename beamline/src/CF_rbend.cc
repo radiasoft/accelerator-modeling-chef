@@ -142,6 +142,65 @@ int CF_rbend::setQuadrupole( double arg_x )
   return 0;
 }
 
+double CF_rbend::getSextupole()
+{
+  int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  thinSextupole** w = new thinSextupole* [ m ];
+  int counter = -1;
+  bmlnElmnt** x = _u;
+
+  while( x <= _v ) {
+    if( 0 == strcmp( (*x)->Type(), "thinSextupole" ) ) {
+      // w[++counter] = dynamic_cast<thinSextupole*>(*x);
+      w[++counter] = (thinSextupole*)(*x);
+    }
+    x++;
+  }
+
+  if( counter < 0 ) {
+    delete [] w;
+    return 1;
+  }
+  
+  double ret = 0.0;
+  for( int i = 0; i <= counter; i++ ) {
+    ret += w[i]->Strength();
+  }
+  
+  delete [] w;
+  return ret;
+}
+
+double CF_rbend::getQuadrupole()
+{
+  int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  thinQuad** w = new thinQuad* [ m ];
+  int counter = -1;
+  bmlnElmnt** x = _u;
+
+  while( x <= _v ) {
+    if( 0 == strcmp( (*x)->Type(), "thinQuad" ) ) {
+      // w[++counter] = dynamic_cast<thinQuad*>(*x);
+      w[++counter] = (thinQuad*)(*x);
+    }
+    x++;
+  }
+
+  if( counter < 0 ) {
+    delete [] w;
+    return 1;
+  }
+  
+  double ret = 0.0;
+  for( int i = 0; i <= counter; i++ ) {
+    ret += w[i]->Strength();
+  }
+  
+  delete [] w;
+  return ret;
+}
+
+
 void CF_rbend::Split( double, bmlnElmnt**, bmlnElmnt** )
 {
   cerr << "*** ERROR ***                                 \n" 
