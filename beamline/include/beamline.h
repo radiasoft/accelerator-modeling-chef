@@ -442,7 +442,7 @@ private:
   double w_rf;                  // RF frequency [MHz]  // ??? What??
   double phi_s;                 // synchronous phase
   double sin_phi_s;             // sine of synchronous phase
-  double eV;                    // max energy gain per turn [eV]
+  // The max energy gain per turn [eV] is represented by bmlnELmnt::strength
   double Q;                     // quality factor
   double R;                     // shunt impedance
   void image( int, slist*, BMLN_posInfo* );
@@ -452,14 +452,14 @@ private:
 public:
   thinrfcavity( char * ); // Name
   thinrfcavity( double,   // RF frequency [MHz]
-                double,   // max energy gain per turn [eV]
+                double,   // max energy gain per turn [eV] (strength)
                 double,   // synchronous phase [radians]
                 double,   // Q
                 double    // R shunt impedance
                 );
   thinrfcavity( char *,   // Name
                 double,   // RF frequency [MHz]
-                double,   // max energy gain per turn [eV]
+                double,   // max energy gain per turn [eV] (strength)
                 double,   // synchronous phase [radians]
                 double,   // Q
                 double    // R shunt impedance
@@ -486,7 +486,7 @@ struct thinrfcavityData : public bmlnElmntData {
   double w_rf;                  // RF frequency [MHz]  // ??? What??
   double phi_s;                 // synchronous phase
   double sin_phi_s;             // sine of synchronous phase
-  double eV;                    // max energy gain per turn [eV]
+  // The max energy gain per turn [eV] is represented by bmlnELmnt::strength
   double Q;                     // quality factor
   double R;                     // shunt impedance
 
@@ -1472,9 +1472,9 @@ class thinLamb : public bmlnElmnt
 private:
   double    xSeptum;	   // position of Lambertson septum in meters.
   beamline* ExtBeamline;   // pointer to the beamline of extracted particles.
-  double    RefState[6];   // A particle in the "field-free" region 
-                           // with phase space state of RefState() 
-                           // will be on the reference orbit of the 
+  double    RefState[6];   // A particle in the "field" region
+                           // with phase space state of RefState()
+                           // will be on the reference orbit of the
                            // extraction line.
   void image( int, slist*, BMLN_posInfo* );
   ostream& writeTo(ostream&);
@@ -1483,16 +1483,16 @@ private:
 public:
   
   thinLamb();
-  thinLamb( char* n);
+  thinLamb( char* n);      // name
   
   thinLamb( char*  n,      // name
-	   double x,
-	   beamline* b,
-	   double* s );     
+	   double x,       // x position of the septum.
+	   beamline* b,    // extracted beamline pointer.
+	   double* s );    // reference state for extraction beamline.
   
-  thinLamb( double x,
-	   beamline* b,    
-	   double* s );      
+  thinLamb( double x,      // x position of the septum.
+	   beamline* b,    // extracted beamline pointer.
+	   double* s );    // reference state for extraction beamline.
   
   thinLamb( thinLambData& );
   thinLamb( const thinLamb& );
@@ -1501,7 +1501,7 @@ public:
   void setSeptum( const double x); 
   void setBeamline( beamline* b); 
   void setRefState( const double* s);
-  
+
   void propagate( ParticleBunch& x );
   void propagate( Particle&    p );
   void propagate( JetParticle& p );
@@ -1513,7 +1513,6 @@ public:
   
   char* Type() { return "thinLamb"; }
   bmlnElmnt* Clone() { return new thinLamb( *this ); }
-
 };
  
 
