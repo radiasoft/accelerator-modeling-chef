@@ -1728,17 +1728,17 @@ void beamline::setAlignment( const alignmentData& al ) {
 
 char beamline::remove( void * Element2remove){
   if(numElem > 0) numElem--;
-  return dlist::remove( Element2remove );
+  return !dlist::remove( Element2remove );
 }
 
 char beamline::remove( const bmlnElmnt& x ){
   if(numElem > 0) numElem--;
-  return dlist::remove( (void*) &x );
+  return !dlist::remove( (void*) &x );
 }
 
 char beamline::remove( const bmlnElmnt* x ) {
   if(numElem > 0) numElem--;
-  return dlist::remove( (void*) x );
+  return !dlist::remove( (void*) x );
 }
 
 ostream& beamline::writeTo(ostream& os) {
