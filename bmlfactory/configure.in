@@ -158,9 +158,9 @@ AM_LFLAGS="-B -8"
 AC_SUBST(AM_LFLAGS)
 
 AC_ARG_ENABLE(private-allocator,AC_HELP_STRING([--disable-private-allocator],[Use malloc and free instead]),
-AC_DEFINE(malloc,allocate__,allocate)
+AC_DEFINE(malloc,allocate_block__,allocate)
 AC_DEFINE(free,deallocate__,deallocate),
-AC_DEFINE(PRIVATE_ALLOCATE,allocate__,allocate)
+AC_DEFINE(PRIVATE_ALLOCATE,allocate_block__,allocate)
 AC_DEFINE(PRIVATE_DEALLOCATE,deallocate__,deallocate))
 if test "x$CXX" = "xpgCC"; then
 	enable_shared=yes
