@@ -153,3 +153,11 @@ fnal/machines/tev/lattices/mad/temp1.1000.lat
 fnal/machines/tev/lattices/mad/temp1.900.lat
 fnal/machines/tev/src/.sb
 fnal/machines/tev/src/CVS
+fnal/basic_toolkit/CVS
+fnal/basic_toolkit/include/CVS
+fnal/basic_toolkit/src/.sb
+fnal/basic_toolkit/src/CVS
+fnal/physics_toolkit/CVS
+fnal/physics_toolkit/include/CVS
+fnal/physics_toolkit/src/.sb
+fnal/physics_toolkit/src/CVS
