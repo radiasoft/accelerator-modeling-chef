@@ -57,27 +57,40 @@ class Switch
 class Cascade
 {
   public:
-    Cascade( int w, int n, bool v = false );
+    Cascade( int w = 2, int n = 2, bool v = false );
     // Arguments: w = maximum weight of possible IntArrays
     //            n = number of components in the IntArrays
     //            v = "verbosity." If true, the constructor
     //                will write to std::cout as it progresses.
     // Restrictions: w >= 0
     //               n >= 1
+    Cascade( const Cascade& );
+    void reconstruct( int w = 2, int n = 2, bool v = false );
+    void reconstruct( const Cascade& );
     ~Cascade();
 
     int index( const IntArray& );
+    // Warning: for purposes of speed, this assumes that 
+    //   the argument has the correct dimension.
+    int index( const int [] );
+    // Warning: this assumes that the argument is an array
+    //   of the appropriate dimension. It is provided
+    //   for backwards compatability of old code.
     IntArray exponents( const IntArray& );
     // This is just for diagnostic purposes.
     //   The returned value should be the same as
     //   the input argument.
 
+    int selfTest();
+
   private:
-    const int  _maxWeight;
-    const int  _numVar;
+    int        _maxWeight;
+    int        _numVar;
     int        _numberOfMonomials;
     int        _numberOfSwitches;
     bool       _verbose;
     Switch*    _arrayOfSwitches;
     Switch**   _startPoint;
+
+    void _finishConstructor();
 };
