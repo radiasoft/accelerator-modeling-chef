@@ -306,8 +306,8 @@ void normalForm( const Mapping& theMapping, /* input */
  /* DGN  cout << endl;*/
 
  // And the rest ...
- Complex          factor, denom;
- int              ll;
+ Complex          factor, denom, temp;
+ int              l, ll;
  JLCterm*         q;
  JetC             scr;
  MappingC         reg;
@@ -329,8 +329,12 @@ void normalForm( const Mapping& theMapping, /* input */
    while((  q = (JLCterm*) g()  )) {
     factor = 1.0;
     for( j = 0; j < 6; j++ ) {
-         factor *= pow( FORIRIX_one / lambda(j), q->index(j) );
-      // factor *= pow( 1.0 / lambda(j), q->index(j) );
+     temp = FORIRIX_one / lambda(j);
+     for( l = 0; l < q->index(j); l++ ) {
+      factor *= temp;
+     }
+     // REMOVE: factor *= pow( FORIRIX_one / lambda(j), q->index(j) );
+     // REMOVE: factor *= pow( 1.0 / lambda(j), q->index(j) );
     }
     factor *= lambda(i);
 
