@@ -58,6 +58,11 @@ class Frame
 
    Frame relativeTo( const Frame& ) const;   // Returns "this" Frame
                                   // "as seen by" the argument Frame.
+                                  // Assumes an orthonormal Frame.
+   Frame patchedOnto( const Frame& ) const;   // Patches "this" Frame
+                                  // onto the argument Frame: the
+                                  // inverse operation of relativeTo.
+                                  // Assumes an orthonormal Frame.
 
    friend ostream& operator<< ( ostream& os, /* const */ Frame& );
    friend istream& operator>> ( istream& is, /* const */ Frame& );
