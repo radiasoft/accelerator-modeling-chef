@@ -328,8 +328,8 @@ RayTrace::RayTrace( /* const */ beamline* x )
            "null argument passed to constructor." ) );
   }
 
-    _bmlConPtr = new BeamlineContext( false, x );
-    this->_finishConstructor();
+  _bmlConPtr = new BeamlineContext( false, x );
+  this->_finishConstructor();
 }
 
 

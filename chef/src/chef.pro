@@ -52,5 +52,4 @@ HEADERS = ../include/CHEF.h \
           ../include/RayTrace.h \
           ../include/SiteViewer.h \
           ../include/Tracker.h \
-          ../include/TrbWidget.h \
-          ../include/TrackerDefs.h
+          ../include/TrbWidget.h

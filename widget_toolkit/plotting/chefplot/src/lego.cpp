@@ -82,6 +82,10 @@ void LegoPlot::paintEvent ( QPaintEvent *event ){
        if ( std::string(beptr->Type()) == std::string("sbend") ) {
 
             if ( (s+len) >= _x0) drawBend(len, s);
+
+	}  else if ( std::string(beptr->Type()) == std::string("rbend") ) {
+
+            if ( (s+len) >= _x0) drawBend(len, s);
   
        } else if ( std::string(beptr->Type()) == std::string("quadrupole") ) {
 
@@ -157,7 +161,7 @@ void LegoPlot::drawQuad( double l, double  s, bool focusing  ) {
  _painter->setPen(QPen(black, 1,  SolidLine));
  _painter->setBrush(QBrush(red, SolidPattern));
 
- if (focusing) {
+ if (!focusing) {
     _painter->drawRect(is, -12+joff, il,  12);
  } else {
    _painter->drawRect(is,  joff,   il,  12); 
@@ -176,7 +180,7 @@ void LegoPlot::drawSext( double l, double  s,  bool focusing ) {
 
  _painter->setPen(QPen(black, 1,  SolidLine));
  _painter->setBrush(QBrush(blue, SolidPattern));
- if (focusing) {
+ if (!focusing) {
     _painter->drawRect(is, -10+joff, il,  10);
  } else {
    _painter->drawRect(is,  0+joff,  il,  10); 
