@@ -6,9 +6,8 @@
 ******             interfaces to exercise the functionality        
 ******             of BEAMLINE.                                    
 ******                                                                
-******  Version:   3.1
-******                                    
 ******  File:      SiteViewer.cc
+******  Version:   3.2
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -31,6 +30,7 @@
 *************************************************************************/
 
 
+#include <values.h>
 #include <fstream>
 #include <iomanip>
 
@@ -515,18 +515,20 @@ void SiteViewer::Wndw::mousePressEvent( QMouseEvent* pme )
   // then search for nearest beamline element.
   // if( !_zoomActive ) {
   if( pme->button() == RightButton ) {
+    const Particle& particleRef = _parent->_bmlConPtr->_proton;
     j = 0;
     s = 0.0;
-    dmin = 1.0e20;
+    dmin = MAXFLOAT;
     xx = 0.0;
     yy = 0.0;
     for( i = 0; i < _parent->_n; i++ ) {
       x = _parent->_x[i];
       y = _parent->_y[i];
 
-      dx = x - xx;
-      dy = y - yy;
-      s += sqrt( dx*dx + dy*dy );
+      // REMOVE: dx = x - xx;
+      // REMOVE: dy = y - yy;
+      // REMOVE: s += sqrt( dx*dx + dy*dy );
+      s += _parent->_element[i]->OrbitLength( particleRef );
 
       dx = _xbf - ((x+xx)/2.);
       dy = _ybf - ((y+yy)/2.);
