@@ -11,7 +11,6 @@ OBJS = ClosedOrbitSage.o \
        JacobianVisitor.o \
        LattFuncSage.o \
        MatrixCalcVisitor.o \
-       ParameterList.o \
        QBpropVisitor.o \
        Sage.o \
        TuneAdjuster.o \
