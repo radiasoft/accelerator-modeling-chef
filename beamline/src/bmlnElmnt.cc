@@ -502,6 +502,10 @@ void bmlnElmnt::set( const bmlnElmntData& data ) {
 
 }
 
+void bmlnElmnt::setLength( double x ) {
+  length = x;
+}
+
 void bmlnElmnt::setStrength( double s ) {
   strength = s - getShunt()*IToField(); 
 }
