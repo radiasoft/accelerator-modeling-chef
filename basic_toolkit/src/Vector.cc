@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -30,12 +27,14 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <stdlib.h>
 #include <string.h>   // for memcpy()
 #include "VectorD.h"
 
-using std::cout;
 #include <iomanip>
  
 using namespace std;
@@ -60,20 +59,39 @@ void Vector::setDefaultFormat( const OutputFormat& x )
 }
 
 // ================================================================
+//      Exception handlers
+//
+
+Vector::GenericException::GenericException( const char* fcn, const char* msg )
+: w( msg )
+{
+  static bool firstTime = true;
+  if( firstTime ) {
+    cerr << "\n*** ERROR *** "
+            "\n*** ERROR *** " << fcn
+         << "\n*** ERROR *** " << msg
+         << "\n*** ERROR *** This message is printed only once." 
+         << endl;
+    firstTime = false;
+  }
+}
+
+
+const char* Vector::GenericException::what() const throw()
+{
+  return strcat( "Vector::GenericException: ", w.c_str() );
+}
+
+
+// ================================================================
 //      Constructors and the destructor ...
 //
 
-#define CHECKOUT(test,fcn,message)          \
-  if( test ) {                              \
-    cout << "\n\n"                          \
-            "*** ERROR ***\n"               \
-            "*** ERROR ***" fcn "\n"        \
-            "*** ERROR ***" message "\n"    \
-            "*** ERROR ***\n"               \
-            "*** ERROR ***"                 \
-         << endl;                           \
-         exit(1);                           \
+#define CHECKOUT(test,fcn,message)                       \
+  if( test ) {                                           \
+    throw( Vector::GenericException( fcn, message ) ); \
   }
+
 
 Vector::Vector( int n, const double* x, OutputFormat* q )
 {
@@ -144,11 +162,22 @@ void Vector::set( double x, double y, double z )
   else for( int i = 0; i < dim; i++ ) comp[i] = 0.0;
 }
 
-double& Vector::operator() ( int i ) const
+double Vector::operator() ( int i ) const
 {
-  static double dummy = - 1. / 137.;
-  if ( ( 0 <= i ) && ( i < dim ) ) return comp[i];
-  else                             return dummy;
+  if ( ( 0 <= i ) && ( i < dim ) ) { return comp[i]; }
+  else {
+    throw( GenericException( "double Vector::operator() ( int i ) const",
+                             "Index out of range.") );
+  }
+}
+
+double& Vector::operator() ( int i )
+{
+  if ( ( 0 <= i ) && ( i < dim ) ) { return comp[i]; }
+  else {
+    throw( GenericException( "double& Vector::operator() ( int i )",
+                             "Index out of range.") );
+  }
 }
 
 
@@ -453,12 +482,9 @@ Vector operator*( const MatrixD& A, const Vector& x )
   r = A.rows();
   c = A.cols();
   if( c != x.Dim() ) {
-    cout << "*** ERROR ***                                   \n" 
-         << "*** ERROR *** Vector operator*( MatrixD, Vector ) \n" 
-         << "*** ERROR *** Incompatible dimensions.          \n" 
-         << "*** ERROR ***                                   \n" 
-         << endl;
-    exit(1);
+    throw( Vector::GenericException( 
+                        "Vector operator*( const MatrixD& A, const Vector& x )",
+                        "Incompatible dimensions.") );
   }
   Vector z( r );
   for( i = 0; i < r; i++ ) {

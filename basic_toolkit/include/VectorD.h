@@ -45,6 +45,8 @@
 #define VECTOR_H
 
 #include <iostream>
+#include <exception>
+#include <string>
 
 #include <math.h>
 #include "Matrix.h"     // Needed only for final utility.
@@ -70,8 +72,9 @@ public:
   // Assignment ...
   void        Set              ( const double* );
   void        set              ( double, double, double );  // anachronistic
-  double&     operator()       ( int ) const; // return or set
-                                              // component
+  double      operator()       ( int ) const; // return component
+  double&     operator()       ( int );       // set    component
+
   // Algebraic functions ...
   Vector&       operator=      ( const Vector& );
 
@@ -121,6 +124,17 @@ public:
                                                    // *this as the axis
 
   friend std::ostream& operator<<( std::ostream&, const Vector& );
+
+  // Exceptions ...
+  struct GenericException : public std::exception
+  {
+    GenericException( const char* fcn, const char* msg );
+    // 1st argument: identifies function containing throw
+    // 2nd         : identifies type of error
+    ~GenericException() throw() {}
+    const char* what() const throw();
+    std::string w;
+  };
 
 #ifdef OBJECT_DEBUG
   static int objectCount;

@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -30,6 +27,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 /*
  * Implementation of class JetVector
@@ -62,16 +62,11 @@ int JetVector::objectCount = 0;
 //      Constructors and the destructor ...
 //
 
-#define CHECKOUT(test,fcn,message)          \
-  if( test ) {                              \
-    cerr << "\n\n"                          \
-            "*** ERROR ***\n"               \
-            "*** ERROR ***" fcn "\n"        \
-            "*** ERROR ***" message "\n"    \
-            "*** ERROR ***\n"               \
-            "*** ERROR ***"                 \
-         << endl;                           \
-         exit(1);                           \
+#define CHECKOUT(test,fcn,message)    \
+  if( test ) {                        \
+    throw( JL::GenericException       \
+           ( __FILE__, __LINE__,      \
+             fcn, message        ) ); \
   }
 
 JetVector::JetVector( const int& n, 
@@ -105,12 +100,6 @@ JetVector::JetVector( const JetVector& x )
   myEnv = x.myEnv;
   dim = x.dim;
   comp = new Jet [ dim ];
-
-  // ??? REMOVE: for ( i = 0; i < dim; i++ ) {
-  // ??? REMOVE:   if( --((comp[i].jl)->rc) == 0 ) delete comp[i].jl;
-  // ??? REMOVE:   comp[i].jl = x.comp[i].jl;    // Perform shallow copy.
-  // ??? REMOVE:   ( comp[i]->rc )++;            // Increase reference counter.
-  // ??? REMOVE: }
 
   for ( i = 0; i < dim; i++ ) {
     comp[i] = x.comp[i];    // Shallow copy is automatic because
@@ -519,14 +508,9 @@ JetVector operator*(  /* const */ MatrixD& M,
  c = M.cols();
 
  if( M.cols() != x.dim ) {
-  cerr << "\n" 
-       << "*** ERROR ***                                           \n" 
-       << "*** ERROR *** JetVector& operator*(  MatrixD& M, JetVector& x ) \n" 
-       << "*** ERROR *** Rows and/or columns of the matrix         \n" 
-       << "*** ERROR *** are not correct.                          \n" 
-       << "*** ERROR ***                                           \n" 
-       << endl;
-  exit(0);
+   throw( JL::GenericException( __FILE__, __LINE__, 
+          "JetVector operator*(  /* const */ MatrixD&, const JetVector& )",
+          "Rows and/or columns of the matrix are not correct." ) );
  }
 
  for( i = 0; i < r; i++ ) {
