@@ -254,23 +254,6 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator* ( const T1& c ) const
   return z;
 }
 
-// REMOVE: TJetVector<double,FNAL::Complex> TJetVector<double,FNAL::Complex>::operator*<>( const FNAL::Complex& c ) const
-// REMOVE: {
-// REMOVE:   static bool firstTime = true;
-// REMOVE:   if( firstTime ) {
-// REMOVE:     cerr << "\n*** WARNING *** "
-// REMOVE:             "\n*** WARNING *** File: " << __FILE__ << " Line: " << __LINE__
-// REMOVE:          << "\n*** WARNING *** JetVector JetVector::operator*( const Complex& ) const"
-// REMOVE:             "\n*** WARNING *** Casting from a complex to a real will project out"
-// REMOVE:             "\n*** WARNING *** the imaginary part."
-// REMOVE:          << endl;
-// REMOVE:     firstTime = false;
-// REMOVE:   }
-// REMOVE:   TJetVector<double,FNAL::Complex> z( _dim, 0, _myEnv );
-// REMOVE:   for ( int i = 0; i < _dim; i++ ) z._comp[i] = real(c) * _comp[i];
-// REMOVE:   return z;
-// REMOVE: }
-
 TJetVector<FNAL::Complex,double> operator*( const TJetVector<FNAL::Complex,double>& x, const double& c )
 {
   return x.operator*( FNAL::Complex(c,0.0) );
@@ -296,11 +279,6 @@ TJetVector<T1,T2> operator* ( const T1& c, const TJetVector<T1,T2>& x )
   for ( int i = 0; i < x._dim; i++ ) z._comp[i] = c * x._comp[i];
   return z;
 }
-
-// REMOVE: TJetVector<double,FNAL::Complex> operator*( const FNAL::Complex& c, const TJetVector<double,FNAL::Complex>& x )
-// REMOVE: {
-// REMOVE:   return x*c;  // it's commutative
-// REMOVE: }
 
 template<typename T1, typename T2>
 TJetVector<T1,T2> TJetVector<T1,T2>::operator*=( const TJet<T1,T2>& c ) 

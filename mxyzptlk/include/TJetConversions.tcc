@@ -44,8 +44,6 @@
 #include "TLieOperator.h"
 #include "TMapping.h"
 
-using FNAL::Complex;
-
 // ================================================================
 //      External routines
 //
