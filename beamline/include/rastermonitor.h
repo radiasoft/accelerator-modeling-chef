@@ -28,7 +28,8 @@ rasterMonitor, they must use one of the set?plotScaling() methods.
 
 class rasterMonitor : public monitor {  
 
-  private:
+private:
+  const static int WISH_WAIT_TIME;
     char          registerMode;             // 
     Particle*     registerParticle;         // Particle used to set origin.
     Vector        origin;                   // Origin of plot.
@@ -154,6 +155,7 @@ class rasterMonitor : public monitor {
 
     ///  Returns a string describing the type of the element ("rasterMonitor")
     char* Type() const;
+  int isType(char* c) { if ( strcmp(c, "rasterMonitor") != 0 ) return monitor::isType(c); else return 1; }
 
     ///
     bmlnElmnt* Clone() const { return new rasterMonitor( *this ); }
