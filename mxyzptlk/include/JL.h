@@ -220,6 +220,24 @@ struct JL : public dlist {
     int i, env_1, env_2;
   };
 
+  struct BadReference: public std::exception
+  {
+    BadReference( int, double, std::string, int, const char* = "", const char* = "" );
+    // Attempt to convert a JetC__environment with non-real
+    // reference point into a Jet__environment.
+    // 1st argument: reference point component index
+    // 2nd         : imaginary part of component
+    // 3rd         : name of file in which exception is thrown
+    // 4th         : line from which exception is thrown
+    // 5th         : identifies function containing throw
+    // 6th         : identifies type of error
+    ~BadReference() throw() {}
+    const char* what() const throw();
+    std::string errorString;
+    int i;
+    double im;
+  };
+
   struct HorribleException : public std::exception
   {
     HorribleException( int, int, int, 
