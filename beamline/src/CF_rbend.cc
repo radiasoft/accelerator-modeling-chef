@@ -149,6 +149,47 @@ CF_rbend::CF_rbend( const char*   nm,   // name
 }
 
 
+CF_rbend::CF_rbend( double        lng,  // length      [meter]
+                    double        fld,  // field       [tesla]
+                    double        ang,  // entry angle [radians]
+                    double        us,   // upstream edge angle [radians]
+                    double        ds,   // downstream edge angle [radians]
+                                        // signs of previous two parameters
+                                        // are as defined for rbends by MAD
+                    int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
+: bmlnElmnt( lng, fld )
+  , _usEdgeAngle(us)
+  , _dsEdgeAngle(ds)
+  , _usAngle(ang + us)
+  , _dsAngle(-(ang + ds))
+  , _usTan(tan(ang + us))
+  , _dsTan(-tan(ang + ds))
+{
+  _finishConstructor(n);
+}
+
+
+CF_rbend::CF_rbend( const char*   nm,   // name
+                    double        lng,  // length      [meter]
+                    double        fld,  // field       [tesla]
+                    double        ang,  // entry angle [radians]
+                    double        us,   // upstream edge angle [radians]
+                    double        ds,   // downstream edge angle [radians]
+                                        // signs of previous two parameters
+                                        // are as defined for rbends by MAD
+                    int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
+: bmlnElmnt( nm, lng, fld )
+  , _usEdgeAngle(us)
+  , _dsEdgeAngle(ds)
+  , _usAngle(ang + us)
+  , _dsAngle(-(ang + ds))
+  , _usTan(tan(ang + us))
+  , _dsTan(-tan(ang + ds))
+{
+  _finishConstructor(n);
+}
+
+
 CF_rbend::CF_rbend( const CF_rbend& x )
 : bmlnElmnt( (const bmlnElmnt&) x )
   , _usEdgeAngle(x._usEdgeAngle)
