@@ -13,15 +13,15 @@
 #include "ChromaticityAdjuster.h"
 #include "LattFuncSage.h"
 
-ChromaticityAdjuster::ChromaticityAdjuster( const beamline* x ) 
-: Sage( x ), _numberOfCorrectors(0), _c(2,1)
+ChromaticityAdjuster::ChromaticityAdjuster( const beamline* x, bool doClone ) 
+: Sage( x, doClone ), _numberOfCorrectors(0), _c(2,1)
 {
   _correctors = 0;
   _f = 0;
 }
 
-ChromaticityAdjuster::ChromaticityAdjuster( const beamline& x ) 
-: Sage( &x ), _numberOfCorrectors(0), _c(2,1)
+ChromaticityAdjuster::ChromaticityAdjuster( const beamline& x, bool doClone ) 
+: Sage( &x, doClone ), _numberOfCorrectors(0), _c(2,1)
 {
   _correctors = 0;
   _f = 0;
@@ -117,7 +117,8 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPr
   LattFuncSage lfs( _myBeamlinePtr );
  
   _myBeamlinePtr->propagate( jpr );
-  lfs.Fast_CS_Calc( &jpr  );
+  // lfs.Fast_CS_Calc( &jpr  );
+  lfs.Slow_CS_Calc( &jpr  );
   lfs.Disp_Calc   ( &jpr2 );
  
   int N = this->numberOfCorrectors();
