@@ -42,82 +42,25 @@ using std::endl;
 
 #if defined(__SUNPRO_CC)
 
+// this is a kludge to allow the std::complex type to be used in conjunction 
+// with the old style AT&T iostream library
+ 
+using std::abs;
+
 inline ostream& operator<<(ostream& os, const Complex& x) {
-	os << "( " << real(x) << "," << imag(x) << " )" << endl;
+	os << "( " << std::real(x) << "," << std::imag(x) << " )" << endl;
 	return os;
 }
 
-inline istream& operator>>(istream& is, const Complex& x) {
-	is  >> real(x) >> imag(x);
+inline istream& operator>>(istream& is, Complex& x) {
+ double u,v;
+	is  >> u; 
+        is  >> v;
+        std::complex<double> z(u,v);
+        x = z;
 	return is;
 }
-
-inline Complex operator+( const Complex& x, const double& y )
-{
- return x + (Complex) y;
-}
-
-inline Complex operator+( const double& x,  const Complex& y )
-{
- return (Complex) x + y;
-}
-
-inline Complex operator-( const Complex& x, const double&  y )
-{
- return x - (Complex) y;
-}
-
-inline Complex operator-( const double& x,  const Complex& y )
-{
- return (Complex) x - y;
-}
-
-inline Complex operator*( const Complex& x, const double& y )
-{
- return x * (Complex) y;
-}
-
-inline Complex operator*( const double& x,  const Complex& y )
-{
- return (Complex) x * y;
-}
-
-inline Complex operator/( const Complex& x, const double& y )
-{
- return x / (Complex) y;
-}
-
-inline Complex operator/( const double& x,  const Complex& y )
-{
- return (Complex) x / y;
-}
-
-inline double abs(const Complex& x) 
-{
- return sqrt(real(x)*real(x) + imag(x)*imag(x));
-}
-
-inline double fabs( const Complex& x )
-{
- return abs(x);
-}
-
-inline char operator>= ( const Complex& x, const Complex& y )
-{
- return real(x) >= real(y)  &&  imag(x) >= imag(y);
-}
-
-inline char operator< ( const Complex& x, const Complex& y )
-{
- return real(x) < real(y)  &&  imag(x) < imag(y);
-}
-
-inline char operator> ( const Complex& x, const Complex& y )
-{
- return real(x) > real(y)  &&  imag(x) > imag(y);
-}
-
-#endif // __sparc and not __GNUG__
+#endif 
 
 #ifdef __GNUC__
 inline char operator>= ( const Complex& x, const Complex& y )
