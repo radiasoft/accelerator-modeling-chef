@@ -9,6 +9,7 @@ DEPEND_INC = $(INCLUDEDIR) -I$(COMPILER_DEPEND)
 OBJS = Barnacle.o \
 	BubbleSort.o \
         Distribution.o \
+	IntArray.o \
 	ML.o \
         Matrix.o \
         Matrix_SVD.o \
