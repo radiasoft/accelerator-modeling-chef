@@ -1,4 +1,26 @@
+/**********************************************************************/
+/*                                                                    */
+/* File:           CHEFGUI.cpp                                        */
+/* Authors:                                                           */
+/*                 Leo Michelotti                                     */
+/*                 michelotti@fnal.gov                                */     
+/*                                                                    */ 
+/*                 Jean-Francois Ostiguy                              */
+/*                 ostiguy@fnal.gov                                   */
+/*                                                                    */
+/*                                                                    */
+/* Creation Date:  August 2004                                        */
+/*                                                                    */ 
+/* Copyright:      (C) URA/Fermilab                                   */
+/*                                                                    */
+/**********************************************************************/
 #include <iostream>
+#include <sstream>
+#include <fstream>
+#include <ostream>
+#include <istream>
+#include <streambuf>
+
 #include "CHEFGUI.h"
 #include "filters.h"
 #include "BeamlineBrowser.h"
@@ -19,17 +41,7 @@
 #include <qsizepolicy.h>
 #include <qassistantclient.h>
 #include <qaction.h>
-#include <qextscintilla.h>
 #include <CF_Editor.h>
-#include <qextscintillalexerpython.h>
-
-
-#include <sstream>
-#include <fstream>
-#include <ostream>
-#include <istream>
-#include <streambuf>
-
 #include <qpychef.h>
 #include <devicetable.h>
 
@@ -39,7 +51,7 @@
 #include <DspnFncData.h>
 #include <MomentsFncData.h>
 
-#include "chefplotmain.h"
+#include <chefplotmain.h>
 
 extern beamline* DriftsToSlots( /* const */ beamline& original );
 using namespace CHEF_domain;
@@ -47,7 +59,12 @@ using namespace CHEF_domain;
 
 
 CHEFGUI::CHEFGUI(QWidget* parent, const char* name, WFlags f): 
-CHEFGUIBase(parent,name,f), _plotWidget(0),  _p_vwr(0)
+CHEFGUIBase(parent,name,f), _plotWidget(0), 
+                            _DspnplotWidget(0), 
+                            _ETplotWidget(0), 
+                            _LBplotWidget(0), 
+                            _MMplotWidget(0), 
+                            _p_vwr(0)
 
 {
 
@@ -60,10 +77,6 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),  _p_vwr(0)
   // Create an initial Jet environment 
   double scale[]  = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3 };
   Jet::BeginEnvironment( 1 );
-
-  // coord x(0.0),  y(0.0),  z(0.0),
-  //      px(0.0), py(0.0), pz(0.0);
-  // ??? This needs to be fixed!!!
 
   _x   = new coord(0.0);
   _y   = new coord(0.0);
@@ -89,6 +102,9 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),  _p_vwr(0)
   connect( this, SIGNAL(_new_beamline()), 
            this, SLOT  (_launch_browser()) );
 
+  
+ 
+  
 
   _centralWidget = new AppWorkspace(this, "AppWorkspace"); 
   
@@ -107,12 +123,13 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),  _p_vwr(0)
 
    _p_vwr = new BeamlineBrowser( centralWidget(), "BeamlineBrowser" );
    
+   _p_vwr->hide();
    _p_vwr->installEventFilter( _eventfilter );
 
    windowsTree_BrowserAction->setOn(true);
    _p_vwr->setAllColumnsShowFocus( true );
 
-   _p_vwr->hide();
+  
 
     connect( this,   SIGNAL(_modeChanged( const BeamlineContext* )),
              _p_vwr, SLOT(resetPixmap( const BeamlineContext* ))        );
@@ -133,49 +150,48 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),  _p_vwr(0)
      _messages->setCaption("Messages");
      _messages->setFont(QFont("MiscFixed"));
      _messages->hide();
+     _messages->installEventFilter(_eventfilter);
 
-     _messages_stdout = new Messages<>(_messages);
-     _messages_stderr = new Messages<>(_messages);
 
-     _p_messages_stdout_stream = new std::ostream( _messages_stdout ); 
-     _p_messages_stderr_stream = new std::ostream( _messages_stderr );
+     //_messages_stdout = new Messages<>(_messages);
+     //_messages_stderr = new Messages<>(_messages);
+
+     //_p_messages_stdout_stream = new std::ostream( _messages_stdout ); 
+     //_p_messages_stderr_stream = new std::ostream( _messages_stderr );
   
-     _messages->append( QString("CHEF Version 1.0 (Beta)") );
+     _messages->append( QString("CHEF (Win32) Version 1.0 (Beta)") );
      _messages->append( QString("URA/Fermilab, All Rights Reserved.\n") );
  
      // *_p_messages_stdout_stream  << "This is a test message to stdout !!!!" << std::endl;
      // *_p_messages_stderr_stream  << "This is a test message to stderr !!!!" << std::endl;
 
      windowsMessagesAction->setOn(true);
-    _messages->installEventFilter(_eventfilter);
-
+    
 
    // initialize the Python Interpreter window
    // ------------------------------------------
-
-    _interpreter = new QPyCHEF(_centralWidget , "Interpreter");  
-    _interpreter->installEventFilter(_eventfilter);
+      
+     _interpreter = 0;
+     _interpreter = new QPyCHEF(_centralWidget , "Interpreter");  
+     _interpreter->hide();
+     _interpreter->installEventFilter(_eventfilter);
      windowsInterpreterAction->setOn(true);
-    _interpreter->hide();
 
 
    // initialize the ACNET Devices Monitor window
    // ------------------------------------------
  
     _devices = new DeviceTable(_centralWidget, "Devices"); 
+    _devices->hide();
     _devices->installEventFilter(_eventfilter);
      windowsDevicesAction->setOn(true);
-    _devices->hide();
 
 
-   // initialize the QextScintilla Text Editor
-   // ------------------------------------------
 
-#if 0
-    _editor       = new CF_Editor( _centralWidget, "QextScintilla", 0);
-    _python_lexer = new CF_EditorLexerPython(_editor,"QScintillaLexerPython");
-    _editor->hide();
-#endif
+   // initialize the Text Editor
+   // --------------------------
+
+
 
     // initialize the help window
     //----------------------------
@@ -228,18 +244,18 @@ CHEFGUI::~CHEFGUI()
 
     // delete the message window ostream and streambuf objects
 
-    delete _p_messages_stdout_stream; 
-    delete _p_messages_stderr_stream; 
+    //if (_p_messages_stdout_stream) delete _p_messages_stdout_stream; 
+    //if (_p_messages_stderr_stream) delete _p_messages_stderr_stream; 
 
-    delete _messages_stdout; 
-    delete _messages_stderr; 
+    //if (_messages_stdout) delete _messages_stdout; 
+    //if (_messages_stderr) delete _messages_stderr; 
 
-    delete _x;
-    delete _y;
-    delete _z;
-    delete _px;
-    delete _py;
-    delete _pz;
+    if (_x)  delete _x;
+    if (_y)  delete _y;
+    if (_z)  delete _z;
+    if (_px) delete _px;
+    if (_py) delete _py;
+    if (_pz) delete _pz;
 
 }
 
@@ -356,7 +372,7 @@ void CHEFGUI::_openScriptFile()
 
   if ( s.isEmpty() ) return;
 
- _interpreter->readFile( s.ascii() );
+  _interpreter->readFile( s.ascii() );
 
 } 
 
@@ -487,9 +503,8 @@ CHEFGUI::editParse()
     mb.show();
     while (mb.isVisible())  qApp->processEvents(); 
  
-    editor->ensureLineVisible(e.lineNumber());
-    editor->setSelection( e.lineNumber()-1, 0, e.lineNumber(), 0); 
-    editor->setSelectionBackgroundColor( QColor("Red") );
+    editor->setSelectionAttributes ( 1, QColor("Red"), true ); // last argument for inverted text
+    editor->setSelection( e.lineNumber()-1, 0, e.lineNumber(), 0, 1); // last argument is selection no 
 
     return;
   }
@@ -1474,9 +1489,8 @@ void
 CHEFGUI::_helpAbout()
 {
   
-  QWidget* helpabout = new About( this,"About CHEF", 0);
+  QWidget* helpabout = new About( this,"About CHEF", Qt::WDestructiveClose );
   helpabout->show();
-  while ( helpabout->isVisible() ) qApp->processEvents();
 
 }
 
@@ -1580,22 +1594,24 @@ CHEFGUI::_launchLatt()
   }
 
   if( lfd ) {
-    _plotWidget  =  new CHEFPlotMain( _centralWidget, "plotWidget", Qt::WDestructiveClose );  
-    // destructive close needed !
-    // *_plotWidget will delete itself upon closing.
-    //   The problem is: _plotWidget is not reset to zero.
-    _plotWidget->addData( *lfd );
 
-    char theCaption[1024];
-    for( int i = 0; i < 1024; i++ ) {
-      theCaption[i] = '\0';
-    }
-    strcat( theCaption, "CHEF: Lattice Functions (uncoupled): " );
-    strcat( theCaption, _p_currBmlCon->name() );
-    _plotWidget->setCaption( theCaption );
-    _plotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
-    _plotWidget->show();
-  
+    if (!_plotWidget) 
+    { 
+      _plotWidget  =  new CHEFPlotMain( _centralWidget, "plotWidget", Qt::WDestructiveClose );  
+       char theCaption[1024];
+       for( int i = 0; i < 1024; i++ ) {
+          theCaption[i] = '\0';
+       }
+       strcat( theCaption, "CHEF: Lattice Functions (uncoupled): " );
+       strcat( theCaption, _p_currBmlCon->name() );
+       _plotWidget->setCaption( theCaption );
+       _plotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
+       _plotWidget->setAutoClear(true);
+       _plotWidget->show();    
+
+    };
+ 
+    _plotWidget->addData( *lfd );
     delete lfd; 
     lfd = 0;
   }
@@ -1642,20 +1658,24 @@ void CHEFGUI::_launchLB()
   }
 
   if( lbfd ) {
-    _LBplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", Qt::WDestructiveClose); // destructive close needed !
-    _LBplotWidget->addData( *lbfd );
-  
-    char theCaption[1024];
-    for( int i = 0; i < 1024; i++ ) {
-      theCaption[i] = '\0';
-    }
-    strcat( theCaption, "CHEF: Lattice Functions (eigenvectors): " );
-    strcat( theCaption, _p_currBmlCon->name() );
-    _LBplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
-    _LBplotWidget->setCaption( theCaption );
-    _LBplotWidget->show();
+    if (!_LBplotWidget)
+    {
+       _LBplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", Qt::WDestructiveClose); // destructive close needed !
 
+       char theCaption[1024];
+       for( int i = 0; i < 1024; i++ ) {
+         theCaption[i] = '\0';
+       }
+       strcat( theCaption, "CHEF: Lattice Functions (eigenvectors): " );
+       strcat( theCaption, _p_currBmlCon->name() );
+       _LBplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
+       _LBplotWidget->setCaption( theCaption );
+       _LBplotWidget->setAutoClear(true);
+       _LBplotWidget->show();
+    };
+    _LBplotWidget->addData( *lbfd );
     delete lbfd;
+    lbfd = 0;
   }
 }
 
@@ -1701,22 +1721,28 @@ CHEFGUI::_launchET()
   }
 
   if( etfd ) {
-    _ETplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
+    if (!_ETplotWidget)
+    {
+       _ETplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
                                                       Qt::WDestructiveClose); 
-    // destructive close needed !
+       // destructive close needed !
+
+
+     char theCaption[1024];
+     for( int i = 0; i < 1024; i++ ) {
+       theCaption[i] = '\0';
+     };
+     strcat( theCaption, "CHEF: Lattice Functions (factorization): " );
+     strcat( theCaption, _p_currBmlCon->name() );
+     _ETplotWidget->setCaption( theCaption );
+     _ETplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
+     _ETplotWidget->setAutoClear(true);
+     _ETplotWidget->show();
+    };
+
     _ETplotWidget->addData( *etfd );
-
-    char theCaption[1024];
-    for( int i = 0; i < 1024; i++ ) {
-      theCaption[i] = '\0';
-    }
-    strcat( theCaption, "CHEF: Lattice Functions (factorization): " );
-    strcat( theCaption, _p_currBmlCon->name() );
-    _ETplotWidget->setCaption( theCaption );
-    _ETplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
-    _ETplotWidget->show();
-
     delete etfd;
+    etfd = 0;
   }
 }
 
@@ -1762,22 +1788,27 @@ CHEFGUI::_launchMoments()
   }
 
   if( mfd ) {
-    _MMplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
+    if (!_MMplotWidget)
+    {
+       _MMplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
                                                       Qt::WDestructiveClose);  
-    // destructive close needed !
-    _MMplotWidget->addData( *mfd );
-  
-    char theCaption[1024];
-    for( int i = 0; i < 1024; i++ ) {
-      theCaption[i] = '\0';
-    }
-    strcat( theCaption, "CHEF: Lattice Functions (covariance): " );
-    strcat( theCaption, _p_currBmlCon->name() );
-    _MMplotWidget->setCaption( theCaption );
-    _MMplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
-    _MMplotWidget->show();
+       // destructive close needed !
+ 
+       char theCaption[1024];
+       for( int i = 0; i < 1024; i++ ) {
+        theCaption[i] = '\0';
+       }
+      strcat( theCaption, "CHEF: Lattice Functions (covariance): " );
+      strcat( theCaption, _p_currBmlCon->name() );
+      _MMplotWidget->setCaption( theCaption );
+      _MMplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
+      _MMplotWidget->setAutoClear(true);
+      _MMplotWidget->show();
+   };
 
+   _MMplotWidget->addData( *mfd );
     delete mfd;
+    mfd = 0;
   }
 
 }
@@ -1850,20 +1881,26 @@ CHEFGUI::_pushMoments()
     }
 
     if(mfd) {
-      _MMplotWidget = new CHEFPlotMain( _centralWidget, "MMplotWidget", Qt::WDestructiveClose ); 
-      // destructive close needed !
-      _MMplotWidget->addData( *mfd  );
-  
-       char theCaption[1024];
-       for( int i = 0; i < 1024; i++ ) {
-        theCaption[i] = '\0';
-      }
-      strcat( theCaption, "CHEF: Lattice Functions (covariance): " );
-      strcat( theCaption, _p_currBmlCon->name() );
-      _MMplotWidget->setCaption( theCaption );
-      _MMplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
-      _MMplotWidget->show();
+      if (!_MMplotWidget)
+      {
+         _MMplotWidget = new CHEFPlotMain( _centralWidget, "MMplotWidget", Qt::WDestructiveClose ); 
+         // destructive close needed !
 
+  
+         char theCaption[1024];
+         for( int i = 0; i < 1024; i++ ) {
+           theCaption[i] = '\0';
+         }
+         strcat( theCaption, "CHEF: Lattice Functions (covariance): " );
+         strcat( theCaption, _p_currBmlCon->name() );
+
+         _MMplotWidget->setCaption( theCaption );
+         _MMplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
+         _MMplotWidget->setAutoClear(true);
+         _MMplotWidget->show();
+      }; 
+
+      _MMplotWidget->addData( *mfd  );
       delete mfd; 
       mfd = 0;
     }
@@ -1931,20 +1968,27 @@ CHEFGUI::_pushDispersion()
     }
 
     if(dfd) {
-      _DspnplotWidget = new CHEFPlotMain( _centralWidget, "DspnplotWidget", Qt::WDestructiveClose ); 
-      // destructive close needed !
-      _DspnplotWidget->addData( *dfd  );
-  
-       char theCaption[1024];
-       for( int i = 0; i < 1024; i++ ) {
-        theCaption[i] = '\0';
-      }
-      strcat( theCaption, "CHEF: Dispersion: " );
-      strcat( theCaption, _p_currBmlCon->name() );
-      _DspnplotWidget->setCaption( theCaption );
-      _DspnplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
-      _DspnplotWidget->show();
+      if (!_DspnplotWidget)
+      {
+         _DspnplotWidget = new CHEFPlotMain( _centralWidget, "DspnplotWidget", Qt::WDestructiveClose ); 
+         // destructive close needed !
 
+  
+         char theCaption[1024];
+         for( int i = 0; i < 1024; i++ ) {
+           theCaption[i] = '\0';
+         };
+
+         strcat( theCaption, "CHEF: Dispersion: " );
+         strcat( theCaption, _p_currBmlCon->name() );
+         _DspnplotWidget->setCaption( theCaption );
+         _DspnplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
+         _DspnplotWidget->setAutoClear(true);
+         _DspnplotWidget->show();
+
+      };
+
+      _DspnplotWidget->addData( *dfd  );
       delete dfd; 
       dfd = 0;
     }
@@ -2006,20 +2050,25 @@ CHEFGUI::_pushULF()
     }
 
     if(lfd) {
-      _plotWidget = new CHEFPlotMain( _centralWidget, "PlotWidget", Qt::WDestructiveClose ); 
-      // destructive close needed !
-      _plotWidget->addData( *lfd  );
+      if (!_plotWidget) 
+      { 
+         _plotWidget = new CHEFPlotMain( _centralWidget, "PlotWidget", Qt::WDestructiveClose ); 
+         // destructive close needed !
+ 
   
-       char theCaption[1024];
-       for( int i = 0; i < 1024; i++ ) {
-        theCaption[i] = '\0';
-      }
-      strcat( theCaption, "CHEF: Uncoupled Lattice Functions: " );
-      strcat( theCaption, _p_currBmlCon->name() );
-      _plotWidget->setCaption( theCaption );
-      _plotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
-      _plotWidget->show();
+         char theCaption[1024];
+         for( int i = 0; i < 1024; i++ ) {
+           theCaption[i] = '\0';
+         };
 
+         strcat( theCaption, "CHEF: Uncoupled Lattice Functions: " );
+         strcat( theCaption, _p_currBmlCon->name() );
+         _plotWidget->setCaption( theCaption );
+         _plotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
+         _plotWidget->show();
+      };
+
+      _plotWidget->addData( *lfd  );
       delete lfd; 
       lfd = 0;
     }
@@ -2112,22 +2161,29 @@ void CHEFGUI::_launchDispersion()
   }
 
   if( dfd ) {
-    _DspnplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
+    if (!_DspnplotWidget)
+    {
+       _DspnplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
                                                         Qt::WDestructiveClose); 
-    // destructive close needed !
-    _DspnplotWidget->addData( *dfd  );
+       // destructive close needed !
+ 
   
-    char theCaption[1024];
-    for( int i = 0; i < 1024; i++ ) {
-      theCaption[i] = '\0';
-    }
-    strcat( theCaption, "CHEF: Dispersion: " );
-    strcat( theCaption, _p_currBmlCon->name() );
-    _DspnplotWidget->setCaption( theCaption );
-    _DspnplotWidget->setGeometry( 0, 0, _centralWidget->width(), _centralWidget->height() );
-    _DspnplotWidget->show();
+       char theCaption[1024];
+       for( int i = 0; i < 1024; i++ ) {
+         theCaption[i] = '\0';
+       };
 
-    delete dfd;
+       strcat( theCaption, "CHEF: Dispersion: " );
+       strcat( theCaption, _p_currBmlCon->name() );
+       _DspnplotWidget->setCaption( theCaption );
+       _DspnplotWidget->setGeometry( 0, 0, _centralWidget->width(), _centralWidget->height() );
+       _DspnplotWidget->setAutoClear(true);
+       _DspnplotWidget->show();
+     };
+
+      _DspnplotWidget->addData( *dfd  );
+      delete dfd;
+      dfd=0;
   }
 
 }
@@ -2609,7 +2665,6 @@ else
 
 void CHEFGUI::windowsInterpreterAction_toggled( bool  set){
 
-
 if (set) 
   _interpreter->show();
 else
@@ -2775,9 +2830,6 @@ if( s.isEmpty() ) return;
 is.open(s);   
 
  CF_Editor* editor = new CF_Editor( _centralWidget, "Python Editor", Qt::WDestructiveClose);
- _python_lexer = new QextScintillaLexerPython(editor,"QScintillaLexerPython");
-
- editor->setLexer( _python_lexer );
  editor->hide();
 
 
@@ -2788,10 +2840,16 @@ while ( ! is.eof() )
     theText += "\n";
  }
 
+ // the "magic numbers" used in the args for resize() and move() reflect the fact 
+ // that widget dimensions and positions *do not* include the frame. Since the decorations
+ // are handled by the wmgr in X11 and since there is no universal reliable way of querying,
+ // the wmgr,  there is no reliable way of obtaining info about the 
+ // decoration geometry. 
+   
  editor->setCaption(s);
  editor->setText( theText ); 
- editor->resize(width()-_p_vwr->width(),height() );
- editor->move(_p_vwr->width(), 0);
+ editor->resize(_centralWidget->width()-_p_vwr->width()-20, _centralWidget->height()-30);
+ editor->move(_p_vwr->width()+10, 0);
  editor->show(); 
 
 }
@@ -2811,8 +2869,8 @@ QString s = QFileDialog::getOpenFileName( QString::null,
 if( s.isEmpty() ) return;
 
  CF_Editor* editor = new CF_Editor( _centralWidget , "MAD8 Editor", Qt::WDestructiveClose);
- editor->setMarginLineNumbers(1,1);
- editor->setLexer(0); // this should eventually be a MAD8 Lexer
+ //editor->setMarginLineNumbers(1,1);
+ //editor->setLexer(0); // this should eventually be a MAD8 Lexer
  editor->hide();
 
 is.open(s);   
@@ -2826,13 +2884,15 @@ while ( ! is.eof() )
 
     editor->setCaption(s);
     editor->setText( theText ); 
-    // there seems to be a geometry bug when QextScintintilla is used inside a Workspace. 
-    // the -20 below is a hack.   
-    editor->resize(width()-_p_vwr->width(), _centralWidget->height()-20); 
-    editor->move( _p_vwr->width(), 0);
+    // the correction is for the dimensions **with** the frame.
+    // width() is 
+    editor->resize(width()-_p_vwr->frameGeometry().width()-20, 
+                   _centralWidget->height()-30); 
+    editor->move( _p_vwr->frameGeometry().width()+10, 0);
     editor->show(); 
 
 }
+
 
 
 // *****************************************
