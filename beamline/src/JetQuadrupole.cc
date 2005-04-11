@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      JetQuadrupole.cc
+******  Version:   2.2
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -65,15 +65,16 @@ JetQuadrupole::JetQuadrupole( char* n, double l, double s, int index, int m,
  JetStrength.setVariable(index);
  strengthIndex = index;
 
- if( 0 == strcmp( pf->Type(), "JetQuadrupole::TPOT_Prop" ) ) 
- {
-   ((JetQuadrupole::TPOT_Prop*) pf)->setup( this );
- }
- else 
- {
-   p_bml = 0;
- }
+ this->setupPropFunc();
 
+ // REMOVE: if( 0 == strcmp( pf->Type(), "JetQuadrupole::TPOT_Prop" ) ) 
+ // REMOVE: {
+ // REMOVE:   ((JetQuadrupole::TPOT_Prop*) pf)->setup( this );
+ // REMOVE: }
+ // REMOVE: else 
+ // REMOVE: {
+ // REMOVE:   p_bml = 0;
+ // REMOVE: }
 }
 
 
@@ -94,14 +95,16 @@ JetQuadrupole::JetQuadrupole( double l, double s, int index, int m,
  JetStrength.setVariable(index);
  strengthIndex = index;
 
- if( 0 == strcmp( pf->Type(), "JetQuadrupole::TPOT_Prop" ) ) 
- {
-   ((JetQuadrupole::TPOT_Prop*) pf)->setup( this );
- }
- else 
- {
-   p_bml = 0;
- }
+ this->setupPropFunc();
+
+ // REMOVE: if( 0 == strcmp( pf->Type(), "JetQuadrupole::TPOT_Prop" ) ) 
+ // REMOVE: {
+ // REMOVE:   ((JetQuadrupole::TPOT_Prop*) pf)->setup( this );
+ // REMOVE: }
+ // REMOVE: else 
+ // REMOVE: {
+ // REMOVE:   p_bml = 0;
+ // REMOVE: }
 }
 
 
@@ -119,11 +122,13 @@ JetQuadrupole::JetQuadrupole( const JetQuadrupole& x )
 {
   JetStrength = x.JetStrength;
   strengthIndex = x.strengthIndex;
-//  cout << "Copy constructor " << JetStrength << endl;
+  this->setupPropFunc();
 }
 
 
-JetQuadrupole::~JetQuadrupole() {
+JetQuadrupole::~JetQuadrupole() 
+{
+  this->releasePropFunc();
 }
 
 
@@ -145,6 +150,44 @@ void JetQuadrupole::setStrength( double s, int index) {
 }
 
 
+void JetQuadrupole::releasePropFunc()
+{
+  if( 0 != Propagator ) {
+    if( 0 != p_bml ) {
+      delete p_bml;
+      p_bml = 0;
+    }
+  }
+  Propagator = 0;
+}
+
+
+
+void JetQuadrupole::setupPropFunc()
+{
+  if( 0 != Propagator ) {
+    if( 0 != p_bml ) {
+      delete p_bml;
+      p_bml = 0;
+    }
+    if( 0 == strcmp( Propagator->Type(), "JetQuadrupole::TPOT_Prop" ) ) 
+    {
+      ((JetQuadrupole::TPOT_Prop*) Propagator)->setup( this );
+      // This method will create *p_bml
+    }
+  }
+  else {
+    cerr << "\n**** WARNING **** "
+            "\n**** WARNING **** void quadrupole::setupPropFunc()"
+            "\n**** WARNING **** Invoked with a null propagator functor."
+            "\n**** WARNING **** No action taken, but your program will"
+            "\n**** WARNING **** probably crash soon."
+            "\n**** WARNING **** "
+         << endl;
+  }
+}
+
+
 void JetQuadrupole::eliminate() {
  delete this;
 }
@@ -157,7 +200,7 @@ const char* JetQuadrupole::Type() const
 }
 
 
-void JetQuadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
+void JetQuadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;

@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      quadrupole.cc
+******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -62,14 +62,16 @@ quadrupole::quadrupole( char* n, double l, double s, bmlnElmnt::PropFunc* pf )
          uic.str().c_str() ) );
  }
 
- if( 0 == strcmp( pf->Type(), "quadrupole::TPOT_Prop" ) ) 
- {
-   ((quadrupole::TPOT_Prop*) pf)->setup( this );
- }
- else 
- {
-   p_bml = 0;
- }
+ this->setupPropFunc();
+
+ // REMOVE: if( 0 == strcmp( pf->Type(), "quadrupole::TPOT_Prop" ) ) 
+ // REMOVE: {
+ // REMOVE:   ((quadrupole::TPOT_Prop*) pf)->setup( this );
+ // REMOVE: }
+ // REMOVE: else 
+ // REMOVE: {
+ // REMOVE:   p_bml = 0;
+ // REMOVE: }
 }
 
 
@@ -84,14 +86,16 @@ quadrupole::quadrupole( double l, double s, bmlnElmnt::PropFunc* pf )
          uic.str().c_str() ) );
  }
 
- if( 0 == strcmp( pf->Type(), "quadrupole::TPOT_Prop" ) ) 
- {
-   ((quadrupole::TPOT_Prop*) pf)->setup( this );
- }
- else 
- {
-   p_bml = 0;
- }
+ this->setupPropFunc();
+
+ // REMOVE: if( 0 == strcmp( pf->Type(), "quadrupole::TPOT_Prop" ) ) 
+ // REMOVE: {
+ // REMOVE:   ((quadrupole::TPOT_Prop*) pf)->setup( this );
+ // REMOVE: }
+ // REMOVE: else 
+ // REMOVE: {
+ // REMOVE:   p_bml = 0;
+ // REMOVE: }
 }
 
 
@@ -122,10 +126,13 @@ quadrupole::quadrupole( bmlnElmntData& x )
 quadrupole::quadrupole( const quadrupole& x ) 
 : bmlnElmnt( (bmlnElmnt&) x )
 {
+  this->setupPropFunc();
 }
 
 
-quadrupole::~quadrupole() {
+quadrupole::~quadrupole() 
+{
+  this->releasePropFunc();
 }
 
 
@@ -178,6 +185,44 @@ void quadrupole::setStrength( double, int ) {
 
 
 
+void quadrupole::releasePropFunc()
+{
+  if( 0 != Propagator ) {
+    if( 0 != p_bml ) {
+      delete p_bml;
+      p_bml = 0;
+    }
+  }
+  Propagator = 0;
+}
+
+
+
+void quadrupole::setupPropFunc()
+{
+  if( 0 != Propagator ) {
+    if( 0 != p_bml ) {
+      delete p_bml;
+      p_bml = 0;
+    }
+    if( 0 == strcmp( Propagator->Type(), "quadrupole::TPOT_Prop" ) ) 
+    {
+      ((quadrupole::TPOT_Prop*) Propagator)->setup( this );
+      // This method will create *p_bml
+    }
+  }
+  else {
+    cerr << "\n**** WARNING **** "
+            "\n**** WARNING **** void quadrupole::setupPropFunc()"
+            "\n**** WARNING **** Invoked with a null propagator functor."
+            "\n**** WARNING **** No action taken, but your program will"
+            "\n**** WARNING **** probably crash soon."
+            "\n**** WARNING **** "
+         << endl;
+  }
+}
+
+
 void quadrupole::eliminate() {
  delete this;
 }
@@ -189,7 +234,7 @@ const char* quadrupole::Type() const
 }
 
 
-void quadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
+void quadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;

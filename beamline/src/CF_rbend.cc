@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      CF_rbend.cc
+******  Version:   3.0
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -412,6 +412,19 @@ int CF_rbend::setSextupole( double arg_x )
   return 0;
 }
 
+
+bool CF_rbend::hasParallelFaces() const
+{
+  return ( std::abs( _usEdgeAngle + _dsEdgeAngle ) <  1.0e-9 );
+}
+
+
+bool CF_rbend::hasStandardFaces() const
+{
+  return ( (std::abs(_usEdgeAngle) < 1.0e-9) && (std::abs(_dsEdgeAngle) < 0.5e-9) );
+}
+
+
 int CF_rbend::setQuadrupole( double arg_x )
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
@@ -568,7 +581,7 @@ double CF_rbend::getDipoleField() const
 }
 
 
-void CF_rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
+void CF_rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   static bool firstTime = true;
   if( firstTime ) {

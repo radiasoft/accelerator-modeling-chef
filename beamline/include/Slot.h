@@ -103,7 +103,7 @@ class Slot : public bmlnElmnt
    bmlnElmnt* Clone() const
      { return new Slot( *this ); }
 
-   void Split( double s, bmlnElmnt**, bmlnElmnt** );
+   void Split( double s, bmlnElmnt**, bmlnElmnt** ) const;
 
    const char*  Type()  const;
 
@@ -123,7 +123,7 @@ class Slot : public bmlnElmnt
    void setStrength   ( double );
    void setStrength   ( double, int );
    void setCurrent    ( double );
-   void setAlignment  ( const alignmentData& );
+   bool setAlignment  ( const alignmentData& );
    double Current() const;
    double OrbitLength( const Particle& );
    const char* Name() const;

@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.2
 ******                                    
 ******  File:      rbend.h
+******  Version:   2.3
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -294,6 +294,8 @@ public:
   rbend( const rbend& );
   ~rbend();
 
+  void releasePropFunc();
+  void setupPropFunc();
   void eliminate();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -322,6 +324,9 @@ public:
   double getPoleFaceAngle() const { return this->getEntryAngle(); }
   double getTanPoleFaceAngle() const { return tan(this->getEntryAngle()); }
 
+  bool hasParallelFaces() const;
+  bool hasStandardFaces() const;
+
   void makeAsinApproximate( int /* number of terms */);
   void makeAsinExact();
   bool isAsinExact();
@@ -332,7 +337,7 @@ public:
   double OrbitLength( const Particle& );
     // Computes arclength of orbit assuming a symmetric bend.
     // WARNING: This is not the true arclength under all conditions.
-  void Split( double, bmlnElmnt**, bmlnElmnt** );
+  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
     // WARNING: After the Split function is used, the new elements 
     // must be commissioned with RefRegVisitor.
 };

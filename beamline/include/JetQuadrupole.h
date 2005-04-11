@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.1
 ******                                    
 ******  File:      JetQuadrupole.h
+******  Version:   2.2
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -99,14 +99,15 @@ public:
   void accept( BmlVisitor& v ) { v.visitJetQuadrupole( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitJetQuadrupole( this ); }
 
+  void releasePropFunc();
+  void setupPropFunc();
   void eliminate();
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "JetQuadrupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
 
   bmlnElmnt* Clone() const { return new JetQuadrupole( *this ); }
-  void Split( double, bmlnElmnt**, bmlnElmnt** );
-
+  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 } ;
 
 

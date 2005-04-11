@@ -156,6 +156,9 @@ void QuadEliminator::visitQuadrupole( const quadrupole* x )
   else {
      _bmlPtr->append( _quadPtr->Clone() );
      delete _quadPtr;
+     // Note: the above two lines could be replaced by
+     // _bmlPtr->append( _quadPtr );
+     // I'm not sure why I used Clone() here.
      _quadPtr = new quadrupole( *x );
   }
 }

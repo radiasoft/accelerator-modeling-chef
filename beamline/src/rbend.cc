@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.2
 ******                                    
 ******  File:      rbend.cc
+******  Version:   3.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -57,9 +57,11 @@ rbend::rbend( double l, double s, PropFunc* pf )
   , _dsTan(0.0)
   , _myArcsin(true)
 {
+ // This should never happen, but in case it does.
  if(pf == 0) {
    Propagator = &rbend::Exact;
  }
+
  _calcPropParams();
 }
 
@@ -74,9 +76,11 @@ rbend::rbend( const char* n, double l, double s, PropFunc* pf )
   , _dsTan(0.0)
   , _myArcsin(true)
 {
+ // This should never happen, but in case it does.
  if(pf == 0) {
    Propagator = &rbend::Exact;
  }
+
  _calcPropParams();
 }
 
@@ -110,9 +114,12 @@ rbend::rbend( double l, double s, double entryangle, PropFunc* pf )
      firstTime = false;
    }
  }
+
+ // This should never happen, but in case it does.
  if(pf == 0) {
    Propagator = &rbend::Exact;
  }
+
  _calcPropParams();
 }
 
@@ -146,9 +153,12 @@ rbend::rbend( const char* n, double l, double s, double entryangle, PropFunc* pf
      firstTime = false;
    }
  }
+
+ // This should never happen, but in case it does.
  if(pf == 0) {
    Propagator = &rbend::Exact;
  }
+
  _calcPropParams();
 }
 
@@ -198,6 +208,8 @@ rbend::rbend( double l, double s, double us, double ds, PropFunc* pf )
      firstTime = false;
    }
  }
+
+ // This should never happen, but in case it does.
  if(pf == 0) {
    Propagator = &rbend::Exact;
  }
@@ -251,6 +263,8 @@ rbend::rbend( const char* n, double l, double s, double us, double ds, PropFunc*
      firstTime = false;
    }
  }
+
+ // This should never happen, but in case it does.
  if(pf == 0) {
    Propagator = &rbend::Exact;
  }
@@ -322,6 +336,8 @@ rbend::rbend( double l, double s, double entryangle, double us, double ds, PropF
      firstTime = false;
    }
  }
+
+ // This should never happen, but in case it does.
  if(pf == 0) {
    Propagator = &rbend::Exact;
  }
@@ -393,6 +409,8 @@ rbend::rbend( const char* n, double l, double s, double entryangle, double us, d
      firstTime = false;
    }
  }
+
+ // This should never happen, but in case it does.
  if(pf == 0) {
    Propagator = &rbend::Exact;
  }
@@ -413,6 +431,8 @@ void rbend::_calcPropParams()
 
   _propTerm =   this->Length()
               * FNAL::Complex( cos(_dsEdgeAngle), -sin(_dsEdgeAngle) );
+
+  this->setupPropFunc();
 }
 
 
@@ -428,11 +448,25 @@ rbend::rbend( const rbend& x )
   , _propTerm(x._propTerm)
   , _myArcsin(x._myArcsin)
 {
+  this->setupPropFunc();
 }
 
 
 rbend::~rbend() 
 {
+  this->releasePropFunc();
+}
+
+
+void rbend::releasePropFunc()
+{
+  // Nothing needs to be done.
+}
+
+
+void rbend::setupPropFunc()
+{
+  // Nothing need to be done.
 }
 
 
@@ -456,7 +490,7 @@ double rbend::OrbitLength( const Particle& x )
 }
 
 
-void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
+void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   static bool firstTime = true;
   if( firstTime ) {
@@ -619,6 +653,18 @@ double rbend::setExitAngle( double phi /* radians */ )
   _dsAngle = phi;  
   _calcPropParams();
   return ret;
+}
+
+
+bool rbend::hasParallelFaces() const
+{
+  return ( std::abs( _usEdgeAngle + _dsEdgeAngle ) <  1.0e-9 );
+}
+
+
+bool rbend::hasStandardFaces() const
+{
+  return ( (std::abs(_usEdgeAngle) < 1.0e-9) && (std::abs(_dsEdgeAngle) < 0.5e-9) );
 }
 
 

@@ -3,7 +3,7 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.1                    
+******  Version:   4.2
 ******                                    
 ******  File:      dlist.cc
 ******                                                                
@@ -56,7 +56,7 @@ int dlist_iterator::objectCount = 0;
 
 dlist::dlist(  const dlist& x )
 {
-  ent w;
+  void* w;
   last = 0;
   dlist_iterator getNext( x );
   while((  w = getNext()  )) append( w );
@@ -78,7 +78,7 @@ void dlink::putAbove( dlink* a )
 dlist& dlist::operator=( const dlist& x )
 {
   dlist_iterator getNext( x );
-  ent p;
+  void* p;
   clear();
   while((  p = getNext()  )) append( p );
   return *this;
@@ -91,11 +91,11 @@ void dlink::putBelow( dlink* a ) {
   next = a;
 }
 
-bool dlist::contains( const ent x ) const
+bool dlist::contains( const void* x ) const
 {
   bool ret = false;
   dlist_iterator getNext( *this );
-  ent q;
+  void* q;
   while((  !ret && (q = getNext())  )) 
   { ret = ( q == x );
   }
@@ -103,9 +103,9 @@ bool dlist::contains( const ent x ) const
 }
 
 
-ent dlist::remove( dlink* p ) 
+void* dlist::remove( dlink* p ) 
 {
-  ent a;
+  void* a;
   
   // NOTE:  This method assumes that *p is actually in the dlist;
   //        it does not double-check to see that this is true.
@@ -139,41 +139,41 @@ ent dlist::remove( dlink* p )
 }
 
 
-char dlist::remove( ent a )
+char dlist::remove( void* a )
 {
   dlist_traversor getNext( *this );
   dlink* p;
-  ent w;
+  void* w;
   while((  p = getNext()  ))  if( p->e == a ) {
 			    w = remove( p );
 			    return 1;
 			    }
   return 0;
-} // End function char dlist::remove( ent a )
+} // End function char dlist::remove( void* a )
 
 
-ent dlist::remove( int n )
+void* dlist::remove( int n )
 {
   dlist_traversor getNext( *this );
   dlink* p;
-  ent w;
+  void* w;
   int i = 0;
   while((  p = getNext()  ))  if( i++ == n ) {
 			    w = remove( p );
 			    return w;
 			    }
   return 0;
-} // End function char dlist::remove( ent a )
+} // End function char dlist::remove( void* a )
 
 
-dlist dlist::remove( ent a, ent b )
+dlist dlist::remove( void* a, void* b )
 {
   dlist  ret;
   dlink* p;
   dlink* pr;
-  ent    w;
-  ent    wd;
-  ent    y;
+  void*  w;
+  void*  wd;
+  void*  y;
   dlist_traversor getNext ( *this );
   
   do { p = getNext();
@@ -182,7 +182,7 @@ dlist dlist::remove( ent a, ent b )
   
   if( p == 0 ) {
     cerr << "\n*** WARNING ***                              \n";
-    cerr <<   "*** WARNING *** dlist::remove( ent, ent )    \n";
+    cerr <<   "*** WARNING *** dlist::remove( void*, void* )    \n";
     cerr <<   "*** WARNING *** Reached the end of the list  \n";
     cerr <<   "*** WARNING *** without finding markers.     \n";
     cerr <<   "*** WARNING ***                              \n";
@@ -194,7 +194,7 @@ dlist dlist::remove( ent a, ent b )
   else  {      y = a;
                if( w != b ) {
                  cerr << "\n*** WARNING*** IMPOSSIBLE ERROR!";
-                 cerr << "\n*** WARNING *** dlist::remove( ent, ent )";
+                 cerr << "\n*** WARNING *** dlist::remove( void*, void* )";
                  cerr << endl;
                  return *this;
                }
@@ -204,7 +204,7 @@ dlist dlist::remove( ent a, ent b )
   w = ( pr = p )->e;
   if( w == y || p == 0 ) {
     cerr << "\n*** WARNING ***                                     \n";
-    cerr <<   "*** WARNING *** dlist::remove( ent, ent )           \n";
+    cerr <<   "*** WARNING *** dlist::remove( void*, void* )           \n";
     cerr <<   "*** WARNING *** No elements available for removal.  \n";
     cerr <<   "*** WARNING ***                                     \n";
     cerr << endl;
@@ -220,27 +220,27 @@ dlist dlist::remove( ent a, ent b )
   
   if( p == 0 ) {
     cerr << "\n*** WARNING ***                                \n";
-    cerr <<   "*** WARNING *** dlist::remove( ent, ent )      \n";
+    cerr <<   "*** WARNING *** dlist::remove( void*, void* )      \n";
     cerr <<   "*** WARNING *** Reached the end of the list.   \n";
     cerr <<   "*** WARNING ***                                \n";
     cerr << endl;
   }
   
   return ret;
-} // End function dlist dlist::remove( ent a, ent b )
+} // End function dlist dlist::remove( void* a, void* b )
 
 
 dlist dlist::remove( int x, int y )     // ??? This is a kludged version. Rewrite!!
 {
-  ent   a;
-  ent   b;
+  void*   a;
+  void*   b;
   dlist c;
   a = operator[]( x );
   b = operator[]( y );
   return remove( a, b );
 }
 
-void dlist::insert( ent a) 
+void dlist::insert( void* a) 
 {
   if( last ) {
     last->next = new dlink( a, last, last->next );
@@ -253,7 +253,7 @@ void dlist::insert( ent a)
     }
   }
   
-  void dlist::append( ent a ) {
+  void dlist::append( void* a ) {
   if( last ) {
     last = last->next = new dlink( a, last, last->next );
     (last->next)->prev = last;
@@ -266,7 +266,7 @@ void dlist::insert( ent a)
 }
 
 
-char dlist::putAbove( ent a, ent b )    // Untested???
+char dlist::putAbove( const void* a, const void* b )    // Untested???
 {
   char   found;
   dlink* w;
@@ -279,13 +279,13 @@ char dlist::putAbove( ent a, ent b )    // Untested???
       break;
       }
   if( !found ) return 0;
-  z = new dlink( b, 0, 0 );
+  z = new dlink( ((void*) b), 0, 0 );
   w->putAbove( z );
   return 1;
 }
 
 
-char dlist::putBelow( ent a, ent b )    // Untested???
+char dlist::putBelow( const void* a, const void* b )    // Untested???
 {
   char   found;
   dlink* w;
@@ -298,17 +298,17 @@ char dlist::putBelow( ent a, ent b )    // Untested???
       break;
       }
   if( !found ) return 0;
-  z = new dlink( b, 0, 0 );
+  z = new dlink( ((void*) b), 0, 0 );
   w->putBelow( z );
   if( w == last ) last = z;
   return 1;
 }
 
 
-ent dlist::get() {
+void* dlist::get() {
   if ( last == 0 ) return 0;   // In case the list is empty.
   dlink* f = last->next;
-  ent r = f->e;
+  void* r = f->e;
   if ( f == last )
     last = 0;
   else {
@@ -321,7 +321,7 @@ ent dlist::get() {
 
 
 
-int dlist::startAt( const ent x, int n )
+int dlist::startAt( const void* x, int n )
 {
   dlist_traversor getNext( *(dlist*) this );
   dlink* q;
@@ -349,11 +349,11 @@ void dlist::riskStartAt( const dlink* x )
 
 
 
-ent dlist::operator[]( int n ) const
+void* dlist::operator[]( int n ) const
 {
   dlist_iterator getNext( *this );
   int i = 0;
-  ent p = 0;
+  void* p = 0;
   while( ( i++ <= n ) && ( p = getNext() ) ) ;
   return p;
 }
@@ -363,7 +363,7 @@ int dlist::size() const
 {
   dlist_iterator getNext( *this );
   int i = 0;
-  ent p;
+  void* p;
   while((  p = getNext()  )) i++;
   return i;
 }
@@ -401,7 +401,7 @@ void dlist::clear()
 // }
 
 
-char dlist::SetLast( ent x ) {   // Warning: not tested!!
+char dlist::SetLast( void* x ) {   // Warning: not tested!!
   dlink* ce = last;
   char found = 0;
   char done  = 0;
@@ -427,7 +427,7 @@ char dlist::SetLast( DLIST_CRITFUNC f ) {   // Warning: not tested!!
   return found;
 }
 
-char dlist::SetFirst( ent x ) {   // Warning: not tested!!
+char dlist::SetFirst( void* x ) {   // Warning: not tested!!
   dlink* ce = last;
   char found = 0;
   char done  = 0;
@@ -455,9 +455,9 @@ char dlist::SetFirst( DLIST_CRITFUNC f ) {   // Warning: not tested!!
 
 
 
-ent dlist_iterator::operator()() 
+void* dlist_iterator::operator()() 
 {
-  ent ret = 0;
+  void* ret = 0;
   if( cs->last )
   { 
     ret = ce ? ( ce = ce->next )->e : 0;
@@ -478,9 +478,9 @@ void dlist_iterator::GoBack( int n )
 }
 
 
-ent dlist_looper::operator()() 
+void* dlist_looper::operator()() 
 {
-  ent ret = 0;
+  void* ret = 0;
   if( cs->last )
   {
     ret = ce;
@@ -518,10 +518,10 @@ void dlist_traversor::GoBack( int n )
 }
 
 
-ent dlist_reverseIterator::operator()() 
+void* dlist_reverseIterator::operator()() 
 {
   if( ce == 0 ) return 0;
-  ent ret = 0;
+  void* ret = 0;
   if( cs->last )
   {
     ret = ce->e;

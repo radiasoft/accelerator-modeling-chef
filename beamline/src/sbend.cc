@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      sbend.cc
+******  Version:   3.0
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -75,9 +75,12 @@ sbend::sbend( double l, double s, double alpha, PropFunc* pf )
         << endl;
    _angle = - _angle;
  }
+
+ // This should never happen, but in case it does.
  if(pf == 0) {
    Propagator = &sbend::Exact;
  }
+
  _calcPropParams();
 }
 
@@ -149,9 +152,12 @@ sbend::sbend( double l, double s, double alpha,
      firstTime = false;
    }
  }
+
+ // This should never happen, but in case it does.
  if(pf == 0) {
    Propagator = &sbend::Exact;
  }
+
  _calcPropParams();
 }
 
@@ -187,9 +193,12 @@ sbend::sbend( const char* n, double l, double s, double alpha, PropFunc* pf )
         << endl;
    _angle = - _angle;
  }
+
+ // This should never happen, but in case it does.
  if(pf == 0) {
    Propagator = &sbend::Exact;
  }
+
  _calcPropParams();
 }
 
@@ -263,9 +272,12 @@ sbend::sbend( const char* n, double l, double s, double alpha,
      firstTime = false;
    }
  }
+
+ // This should never happen, but in case it does.
  if(pf == 0) {
    Propagator = &sbend::Exact;
  }
+
  _calcPropParams();
 }
 
@@ -285,6 +297,8 @@ void sbend::_calcPropParams()
   _propTerm =     FNAL::Complex( 0.0, rho )
                 * FNAL::Complex( 1.0 - cos(_angle), -sin(_angle) )
                 * FNAL::Complex( cos(_dsEdgeAngle), -sin(_dsEdgeAngle) );
+
+  this->setupPropFunc();
 }
 
 
@@ -301,10 +315,13 @@ sbend::sbend( const sbend& x )
   , _propTerm(x._propTerm)
   , _myArcsin(x._myArcsin)
 {
+  this->setupPropFunc();
 }
 
 
-sbend::~sbend() {
+sbend::~sbend() 
+{
+  this->releasePropFunc();
 }
 
 
@@ -340,6 +357,18 @@ double sbend::setExitAngle( double phi /* radians */ )
 }
 
 
+bool sbend::hasParallelFaces() const
+{
+  return ( std::abs( _usEdgeAngle - _dsEdgeAngle ) <  1.0e-9 );
+}
+
+
+bool sbend::hasStandardFaces() const
+{
+  return ( (std::abs(_usEdgeAngle) < 1.0e-9) && (std::abs(_dsEdgeAngle) < 0.5e-9) );
+}
+
+
 void sbend::makeAsinApproximate( int n )
 {
   _myArcsin.makeApproximate();
@@ -359,13 +388,25 @@ bool sbend::isAsinExact()
 }
 
 
+void sbend::releasePropFunc()
+{
+  // Nothing needs to be done.
+}
+
+
+void sbend::setupPropFunc()
+{
+  // Nothing need to be done.
+}
+
+
 void sbend::eliminate() 
 {
  delete this;
 }
 
 
-void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
+void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   static bool firstTime = true;
   if( firstTime ) {
@@ -466,24 +507,6 @@ void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
   (*b)->Rename( newname );
 
   delete [] newname;
-
-  // REMOVE: // We assume "strength" means field, not field*length.
-  // REMOVE: *a = new sbend( pc*length, strength, pc*_angle, Propagator );
-  // REMOVE: *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle, Propagator );
-  // REMOVE:
-  // REMOVE: // Rename
-  // REMOVE: char* newname;
-  // REMOVE: newname = new char [ strlen(ident) + 6 ];
-  // REMOVE:
-  // REMOVE: strcpy( newname, ident );
-  // REMOVE: strcat( newname, "_1" );
-  // REMOVE: (*a)->Rename( newname );
-  // REMOVE:
-  // REMOVE: strcpy( newname, ident );
-  // REMOVE: strcat( newname, "_2" );
-  // REMOVE: (*b)->Rename( newname );
-  // REMOVE:
-  // REMOVE: delete [] newname;
 }
 
 

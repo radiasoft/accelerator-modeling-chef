@@ -3,7 +3,7 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.1                    
+******  Version:   4.3
 ******                                    
 ******  File:      slist.h
 ******                                                                
@@ -43,8 +43,6 @@
 #ifndef SLIST_HXX
 #define SLIST_HXX
 
-typedef void* ent;
-
 class slink {
 public:
 #ifdef OBJECT_DEBUG
@@ -57,9 +55,9 @@ friend class slist_iterator;
 friend class slist_looper;
 friend class slist_traversor;
   slink* next;
-  ent e;
+  void*  e;
 
-  slink( ent a, slink* p ) { 
+  slink( void* a, slink* p ) { 
     e=a; 
     next=p; 
 #ifdef OBJECT_DEBUG
@@ -86,7 +84,7 @@ public:
   objectCount++;
 #endif
   }
-  slist( ent a, char x = 0  ) { 
+  slist( void* a, char x = 0  ) { 
     last = new slink(a,0); 
     last->next = last; 
     owner = x; 
@@ -102,29 +100,29 @@ public:
 #endif
   }
 
-  bool contains( const ent ) const;
+  bool contains( const void* ) const;
 
-  void insert( ent );
-  void append( ent );
-  ent remove( ent );
-  ent get();
+  void insert( void* );
+  void append( void* );
+  void* remove( void* );
+  void* get();
 
   char Owns();
   void DoesOwn()    { owner = 1; }
   void DoesNotOwn() { owner = 0; }
   
   slist& operator=( const slist& );
-  ent operator[]( int );
+  void* operator[]( int );
   int size() const;
   char IsEmpty() { return last == 0; }
   void clear();   // Preserves the data 
   // void zap();     // Destroys the data
-  ent lastInfoPtr() { if( last ) return last->e;
-                      else       return 0;
-                    }
-  ent firstInfoPtr() { if( last ) return last->next->e;
-                       else       return 0;
-                     }
+  void* lastInfoPtr() const { if( last ) return last->e;
+                              else       return 0;
+                            }
+  void* firstInfoPtr() const { if( last ) return last->next->e;
+                               else       return 0;
+                             }
 
   friend class slist_iterator;
   friend class slist_looper;
@@ -162,7 +160,7 @@ public:
   void Reset()  { ce = cs->last; }
   void Terminate() { ce = 0; }
 
-  ent operator()();
+  void* operator()();
 } ;
 
 
@@ -171,7 +169,7 @@ class slist_looper {
   slist* cs;
 public:
   slist_looper( slist& s ) { cs = &s; ce = cs->last; }
-  ent operator()();
+  void* operator()();
   void Reset( const slist& s ) { cs = (slist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
 } ;

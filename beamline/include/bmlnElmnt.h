@@ -7,9 +7,9 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      bmlnElmnt.h
-******  Version:   2.2
-******                                                                
-******  Copyright (c) 1991 Universities Research Association, Inc.    
+******  Version:   3.1
+******
+******  Copyright (c) 1991 Universities Research Association, Inc.
 ******                All Rights Reserved                             
 ******                                                                
 ******  Author:    Leo Michelotti                                     
@@ -195,7 +195,7 @@ struct bmlnElmntData {
   
   alignmentData   align;
   double          iToField;
-  double	  shuntCurrent;
+  double          shuntCurrent;
   char            more;
 
   bmlnElmntData();
@@ -286,6 +286,8 @@ protected:
 
   PropFunc*    Propagator;
 
+  virtual void releasePropFunc();
+  virtual void setupPropFunc();
   virtual void eliminate();
 
   friend class beamline;
@@ -301,18 +303,18 @@ protected:
 public:
   bmlnElmnt( const char*   n = "NONAME" /* name     */,
              PropFunc*       = 0 
-           );		   
+           );              
   bmlnElmnt( double  l       /* length   */,
              PropFunc*       = 0
-           );		   
+           );              
   bmlnElmnt( double  l       /* length   */,
              double  s       /* strength */,
              PropFunc*       = 0
-           );		   
+           );              
   bmlnElmnt( const char*   n /* name     */,
              double        l /* length   */,
              PropFunc*       = 0
-           );		   
+           );              
   bmlnElmnt( const char*   n /* name     */,
              double        l /* length   */,
              double        s /* strength */,
@@ -328,13 +330,13 @@ public:
   
   BarnacleList dataHook;   // Carries data as service to application program.
   // ??? REMOVE:  lattFunc     lattInfo;   // Information on maps and lattice functions.
-  bmlnElmnt& operator=( const bmlnElmnt& );
+  // REMOVE: bmlnElmnt& operator=( const bmlnElmnt& );
 
   virtual void accept( BmlVisitor& ) = 0;
   virtual void accept( ConstBmlVisitor& ) const = 0;
 
-  PropFunc* setPropFunction ( const PropFunc* a );  // return previous
-  PropFunc* setPropFunction ( const PropFunc& a );  // Propagator
+  virtual PropFunc* setPropFunction ( const PropFunc* a );  // return previous
+  virtual PropFunc* setPropFunction ( const PropFunc& a );  // Propagator
   PropFunc* getPropFunction() { return Propagator; }
 
   void propagate( Particle& );
@@ -344,6 +346,25 @@ public:
   virtual void localPropagate( Particle& );
   virtual void localPropagate( JetParticle& );
   virtual void localPropagate( ParticleBunch& );
+
+
+  // Methods to set alignment without 
+  // (a little overkill, but so what?)
+  virtual bool alignRelX( double /*[m]*/ );
+  virtual bool alignRelY( double /*[m]*/ );
+  virtual bool alignAbsX( double /*[m]*/ );
+  virtual bool alignAbsY( double /*[m]*/ );
+  virtual bool alignRelXmm( double /*[mm]*/ );
+  virtual bool alignRelYmm( double /*[mm]*/ );
+  virtual bool alignAbsXmm( double /*[mm]*/ );
+  virtual bool alignAbsYmm( double /*[mm]*/ );
+  virtual bool alignRelRoll( double /*[radians]*/ );
+  virtual bool alignAbsRoll( double /*[radians]*/ );
+  virtual bool alignRelRollmrad( double /*[milliradians]*/ );
+  virtual bool alignAbsRollmrad( double /*[milliradians]*/ );
+  virtual bool setAlignment( const alignmentData& );
+  virtual void realign();
+
 
   virtual void enterLocalFrame( Particle&                ) const;
   virtual void enterLocalFrame( JetParticle&             ) const;
@@ -369,9 +390,9 @@ public:
   bmlnElmnt* Clone(const char* name);  // Clone it and change the name.
   bmlnElmnt* clone(const char* name);
 
-  virtual void Split( double s, bmlnElmnt**, bmlnElmnt** );
+  virtual void Split( double pct, bmlnElmnt**, bmlnElmnt** ) const;
                                    // Splits the element at percent orbitlength
-                                   // s from the in-face and returns
+                                   // pct from the in-face and returns
                                    // addresses to the two pieces
                                    // in the second and third arguments.
                                    // The user has responsibility for
@@ -380,6 +401,9 @@ public:
   virtual void peekAt( double& s, Particle* = 0 );
   virtual bool equivTo( const bmlnElmnt& ) const;
   virtual bool equivTo( const bmlnElmnt* ) const;
+  virtual bool hasParallelFaces() const;
+  virtual bool hasStandardFaces() const;
+  virtual bool isSimple() const;
 
   short  writeTag ( char,          // character to be written
                     short = 0      // position in tag
@@ -417,11 +441,10 @@ public:
   virtual void setStrength   ( double );
   virtual void setStrength   ( double, int );  // for JetQuad
   virtual void setCurrent    ( double );
-  virtual void setAlignment  ( const alignmentData& );
           void set           ( const bmlnElmntData& );
           void setAperture   ( Aperture* );
           void Rename        ( const char* );
-  void setShunt(double a);
+  virtual void setShunt(double a);
 
 
   // REMOVE: virtual double getReferenceTime() const {return _ctRef;}
@@ -432,11 +455,11 @@ public:
 
   // Query functions ...
   alignmentData  Alignment( void ) const;
-  Aperture*      getAperture( void );	// returns a clone of the aperture class
+  Aperture*      getAperture( void );   // returns a clone of the aperture class
   inline int     hasAperture( void ) const { return  ( pAperture ? 1 : 0 ); }
-  inline double  Strength() 	const { return strength; }
+  inline double  Strength()     const { return strength; }
   double  Length() const;
-  virtual double Current() 	const { return strength/iToField; }
+  virtual double Current()      const { return strength/iToField; }
   inline char    IsYourName( const char* x ) { return strcmp( x, ident ); }
   char hasName( const char* x ) const
     { return ( 0 == strcmp( ident, x ) ); }
@@ -469,8 +492,8 @@ public:
                                    // segment through the element.
                                    // Will be different from "length"
                                    // for rbends.
-  double& IToField() 		{ return iToField; }
-  double  getShunt() const	{ return shuntCurrent; }
+  double& IToField()            { return iToField; }
+  double  getShunt() const      { return shuntCurrent; }
 
   #ifdef OBJECT_DEBUG
   static int objectCount;
@@ -479,8 +502,8 @@ public:
 private:
   /* All the work is done in friend ostream& operator<<(),
      placeholder for if descendants want to do somthing. */
-  virtual std::ostream& writeTo(std::ostream& os) 	{ return os; }
-  virtual std::istream& readFrom(std::istream& is)	{ return is; }
+  virtual std::ostream& writeTo(std::ostream& os)       { return os; }
+  virtual std::istream& readFrom(std::istream& is)      { return is; }
   friend std::ostream& operator<<(std::ostream&, bmlnElmnt&);
   friend bmlnElmnt* read_istream(std::istream&);
 
@@ -568,13 +591,26 @@ public:
 
 
 private:
+  // Data
   double            nominalEnergy;    // In GeV
   int               numElem;          // Number of elements in the beamline
   char              twissDone;
-  std::ostream& writeTo(std::ostream&);
-  // ??? REMOVE: istream& readFrom(istream&);
-  friend std::istream& operator>>( std::istream&, beamline& );
   LineMode          _mode;
+
+  // Methods
+  void _moveRel(   int axis, double u
+                 , const bmlnElmnt* thePtr
+                 , int* errorCodePtr, BmlPtrList* recycleBinPtr
+                 , std::string invoker );
+  void _rotateRel(   int axis, double angle
+                   , const bmlnElmnt* thePtr
+                   , double pct
+                   , int* errorCodePtr, BmlPtrList* recycleBinPtr
+                   , std::string invoker );
+
+  std::ostream& writeTo(std::ostream&);
+  friend std::istream& operator>>( std::istream&, beamline& );
+
 
 public:
 
@@ -588,7 +624,7 @@ public:
   beamline( FILE* );                  // Reading persistent object stored
                                       //  in a binary file.
 
-  ~beamline(); 	       	       	       // Notice that this destructor does not destroy
+  ~beamline();                         // Notice that this destructor does not destroy
                                        // the beamline elements.  To do that, use
                                        // beamline::zap().
   void zap();                          // Destroys the beamline elements
@@ -605,7 +641,7 @@ public:
   void append( bmlnElmnt& );
   void append( bmlnElmnt* );
 
-  void Split( double, bmlnElmnt**, bmlnElmnt** );
+  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 
   void InsertElementAt( double s_0, double s, const bmlnElmnt& q );
   void InsertElementAt( double s_0, double s, const bmlnElmnt* q );
@@ -619,7 +655,7 @@ public:
 
   void InsertElementsFromList( double& s_0, InsertionList&, slist& );
 
-				      // Will insert elements from the list into
+                                      // Will insert elements from the list into
                                       // the beamline at locations specified in
                                       // the list.  Removed elements are stored
                                       // in the final argument, in case they
@@ -652,9 +688,9 @@ public:
                                      // beamline.  The argument is the
                                      // degree of the map.
   sector* MakeSector ( const bmlnElmnt&,   // Returns a pointer to a new sector
-		      const bmlnElmnt&,   // equivalent to everything between
-		      int,                // the first two arguments( exclusive).
-		      JetParticle& );
+                      const bmlnElmnt&,   // equivalent to everything between
+                      int,                // the first two arguments( exclusive).
+                      JetParticle& );
   sector* MakeSectorFromStart 
     ( const bmlnElmnt&,   
      int,                
@@ -670,15 +706,23 @@ public:
                        int,          // <-- This argument is the degree of the map.
                        JetParticle&, 
                        const char* = "NONAME" );
-  char putAbove( bmlnElmnt& x, bmlnElmnt& y ); // Insert y above (before;  upstream of) x
-  char putBelow( bmlnElmnt& x, bmlnElmnt& y ); // Insert y below (after, downstream of) x
+  char putAbove( const bmlnElmnt& x, const bmlnElmnt& y ); // Insert y above (before;  upstream of) x
+  char putBelow( const bmlnElmnt& x, const bmlnElmnt& y ); // Insert y below (after, downstream of) x
 
-  beamline remove( bmlnElmnt&, bmlnElmnt& );
   char     remove( void * );
+  beamline remove( const bmlnElmnt&, const bmlnElmnt& );
   char     remove( const bmlnElmnt& );
   char     remove( const bmlnElmnt* );
 
-  void setAlignment ( const alignmentData& );
+
+  // Change geometry of the line
+  bool setAlignment ( const alignmentData& );
+  BmlPtrList moveRelX( const bmlnElmnt*, double, int* = 0 );
+  BmlPtrList moveRelY( const bmlnElmnt*, double, int* = 0 );
+  BmlPtrList moveRelZ( const bmlnElmnt*, double, int* = 0 );
+  BmlPtrList pitch( const bmlnElmnt*, double, double, int* );
+  BmlPtrList   yaw( const bmlnElmnt*, double, double, int* );
+  BmlPtrList  roll( const bmlnElmnt*, double, double, int* );
 
 
   // PROPAGATE PARTICLES
@@ -748,20 +792,51 @@ public:
 
 
   // QUERIES
-
   void   peekAt( double& s, Particle* = 0 );
   lattFunc whatIsLattice( int );     // After element n, 0 <= n.
   lattFunc whatIsLattice( char* n ); // n is name of element 
-  int    howMany() const { return numElem; }
+  int    howMany() const { return numElem; }  // WARNING: not reliable!
   int    countHowMany( CRITFUNC = 0, slist* = 0 ) const;
   int    countHowManyDeeply( CRITFUNC = 0, slist* = 0 ) const;
   int    howDeep();
+
   int    contains( const bmlnElmnt*) const;
   // Returns the number of times the argument appears.
 
-  inline bmlnElmnt* firstElement()
+  bool find( bmlnElmnt* u, const bmlnElmnt* v, bmlnElmnt* w ) const;
+  // Upon entry: u and w should have null value but can, in fact
+  //               be anything. 
+  //               WARNING: they will be reset, so don't use addresses
+  //               of valid elements.
+  //             *v is the element to be searched for.
+  // Upon exit:  u points to the element upstream of v
+  //             w points to the element downstream of v
+  //               Return value of u or w can be null (i.e. 0) if
+  //               this beamline is not treated as a ring and *v is
+  //               either the first or last element, respectively.
+  //
+  //             Value returned: true,  if *v is found
+  //                             false, if *v is not found
+  //               If false is returned, then return values of 
+  //               u and w are unspecified.
+  // 
+  // Comments:   Only one instance, the first instance, of *v is found.
+  //             This routine is meant to work on lines containing
+  //               unique elements. For some cases, it may work with
+  //               multiple instances of the same element.
+  // 
+  // Example:    beamline A; ...
+  //             bmlnElmnt* u = 0; bmlnElmnt* w = 0;
+  //             rbend B; ...
+  //             if( A.find( u, &B, w ) ) { ... }
+  // 
+
+
+
+
+  inline bmlnElmnt* firstElement() const
   { return (bmlnElmnt*) ( ((dlist*) this)->firstInfoPtr() ); }
-  inline bmlnElmnt* lastElement()
+  inline bmlnElmnt* lastElement() const
   { return (bmlnElmnt*) ( ((dlist*) this)->lastInfoPtr() ); }
   inline char twissIsDone()
   { return twissDone; }
@@ -785,7 +860,7 @@ public:
 
   // CLONING AND STORING
 
-  beamline& operator=( const beamline& );
+  // REMOVE: beamline& operator=( const beamline& );
   beamline* flatten() const;    // Produces a flattened version of itself.
 
   void   writeLattFunc( );

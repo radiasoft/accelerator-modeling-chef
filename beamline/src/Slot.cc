@@ -452,7 +452,7 @@ istream& Slot::readFrom( istream& is )
 }
 
 
-void Slot::Split( double pct, bmlnElmnt** a, bmlnElmnt** b )
+void Slot::Split( double pct, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   if( pct < 0.0 || 1.0 < pct ) {
     cerr << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
@@ -844,10 +844,25 @@ void Slot::setCurrent    ( double x )
   else if( 0 != p_bml_e ) p_bml_e ->setStrength( x );
 }
 
-void Slot::setAlignment  ( const alignmentData& x )
+bool Slot::setAlignment  ( const alignmentData& x )
 {
-  if     ( 0 != p_bml   ) p_bml   ->setAlignment( x );
-  else if( 0 != p_bml_e ) p_bml_e ->setAlignment( x );
+  bool ret = true;
+  if     ( 0 != p_bml   ) {
+    ret = p_bml->setAlignment( x );
+  }
+  else if( 0 != p_bml_e ) {
+    ret = p_bml_e->setAlignment( x );
+  }
+  if( !ret ) {
+    cerr << "\n*** ERROR *** "
+         << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** ERROR *** bool Slot::setAlignment  ( const alignmentData& x )"
+            "\n*** ERROR *** Unable to perform operation on internal elements."
+            "\n*** ERROR *** Subsequent calculations prone to error."
+            "\n*** ERROR *** "
+         << endl;
+  }
+  return ret;
 }
 
 

@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      quadrupole.h
+******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -42,7 +42,6 @@ private:
   std::istream& readFrom(std::istream&);
 
 public:
- 
   class MAD_Prop : public bmlnElmnt::PropFunc
   {
   public:
@@ -93,14 +92,15 @@ public:
   void accept( BmlVisitor& v ) { v.visitQuadrupole( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitQuadrupole( this ); }
 
+  void releasePropFunc();
+  void setupPropFunc();
   void eliminate();
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "quadrupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
 
   bmlnElmnt* Clone() const { return new quadrupole( *this ); }
-  void Split( double, bmlnElmnt**, bmlnElmnt** );
-
+  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 } ;
 
 class thinQuad : public bmlnElmnt

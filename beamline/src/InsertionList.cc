@@ -70,7 +70,7 @@ void InsertionList::Append( const InsertionListElement* x )
   }
 
   if( x->s > smax ) {
-    dlist::append( (ent) x );
+    dlist::append( (void*) x );
     smax = x->s;
     return;
   }
@@ -95,7 +95,7 @@ void InsertionList::Insert( const InsertionListElement* x )
   }
 
   if( IsEmpty() ) {
-    dlist::insert( (ent) x  );
+    dlist::insert( (void*) x  );
     smax = x->s;
     return;
   }
@@ -109,7 +109,7 @@ void InsertionList::Insert( const InsertionListElement* x )
            uic.str().c_str() ) );
   }
 
-  dlist::insert( (ent) x  );
+  dlist::insert( (void*) x  );
   return;
 }
 
@@ -131,7 +131,7 @@ void InsertionList::MergeUnique( InsertionList& x )
         break;
       }
       if( p_ile_t->s > p_ile_x->s ) {
-	dlist::putAbove( (ent) p_ile_t, (ent) p_ile_x );
+	dlist::putAbove( (void*) p_ile_t, (void*) p_ile_x );
         inserted = 1;
         break;
       }
@@ -153,12 +153,12 @@ void InsertionList::MergeAll( InsertionList& x )
     char inserted = 0;
     while((  p_ile_t = (InsertionListElement*) gt()  ))
       if( p_ile_t->s > p_ile_x->s ) {
-	dlist::putAbove( (ent) p_ile_t, (ent) p_ile_x );
+	dlist::putAbove( (void*) p_ile_t, (void*) p_ile_x );
         inserted = 1;
         break;
       }
     if( !inserted ) {
-      dlist::append( (ent) p_ile_x );
+      dlist::append( (void*) p_ile_x );
       smax = p_ile_x->s;
     }
   }

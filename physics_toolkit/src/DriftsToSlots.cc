@@ -7,7 +7,7 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      DriftsToSlots.cc
-******  Version:   3.0
+******  Version:   3.1
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -105,12 +105,6 @@ bool d2S_LookUpStream ( bmlnElmnt*&      el2Ptr,
     if( 0 == strcmp( "drift", el2Ptr->Type() ) ) {
       return false;
     }
-    if( 0.0 != el2Ptr->Length() ) {
-      throw( GenericException( __FILE__, __LINE__, 
-             "beamline* DriftsToSlots( beamline& original )", 
-             "This routine works when only thin elements lie between"
-             " drifts and bends." ) );
-    }
 
     bi.goBack();
     bi.goBack();
@@ -162,12 +156,6 @@ bool d2S_LookDownStream ( bmlnElmnt*&      el2Ptr,
   {
     if( 0 == strcmp( "drift", el2Ptr->Type() ) ) {
       return false;
-    }
-    if( 0.0 != el2Ptr->Length() ) {
-      throw( GenericException( __FILE__, __LINE__, 
-             "beamline* DriftsToSlots( beamline& original )", 
-             "This routine works when only thin elements lie between"
-             " drifts and bends." ) );
     }
 
     el2Ptr = bi++;
@@ -257,6 +245,10 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   // This routine creates and returns a beamline
   //   for which the invoker must take responsibility.
 
+  // Preliminary tests for a valid argument.
+
+  const bool originalRing = ( beamline::ring == original.getLineMode() );
+
   // There should be more than one element
   if( original.countHowManyDeeply() < 3 ) {
     cerr << "*** WARNING ***                                        \n"
@@ -271,11 +263,78 @@ beamline* DriftsToSlots( /* const */ beamline& original )
     return &original;
   }
 
+  // Bends with parallel faces should not be adjacent.
+  DeepBeamlineIterator dbi( original );
+  bmlnElmnt* q;
+  bool triggered = false;
+  while((  q = dbi++  )) {
+    if( d2S_rbendLike( q ) ) {
+      if( triggered ) {
+        cerr << "\n*** WARNING ***                                        "
+             << "\n*** WARNING *** File: " << "  " << __FILE__ 
+             <<                          ", line " << __LINE__
+             << "\n*** WARNING *** DriftsToSlots                          "
+                "\n*** WARNING *** Adjacent bends with parallel faces is forbidden."
+                "\n*** WARNING *** Original line will be returned.        "
+                "\n*** WARNING ***                                        "
+             << endl;
+        return &original;
+      }
+      else {
+        triggered = true;
+      }
+    }
+    else {
+      triggered = false;
+    }
+  }  
+  q = 0;
+  dbi.reset();
+
+  if( triggered && originalRing ) {
+    q = dbi++;
+    if( d2S_rbendLike( q ) ) {
+        cerr << "\n*** WARNING ***                                        "
+             << "\n*** WARNING *** File: " << "  " << __FILE__ 
+             <<                          ", line " << __LINE__
+             << "\n*** WARNING *** DriftsToSlots                          "
+                "\n*** WARNING *** Adjacent bends with parallel faces is forbidden."
+                "\n*** WARNING *** Original line will be returned.        "
+                "\n*** WARNING ***                                        "
+             << endl;
+        return &original;
+    }
+    q = 0;
+    dbi.reset();
+  }
+
+
+  // rbend-like elements can only be sandwiched by thin, 
+  //   passive elements
+  // bool passedRbend = false;
+  // triggered = false;
+  // while((  q = dbi++  )) {
+  //   if( d2S_rbendLike( q ) {
+  //     if( triggered ) {
+  //    }
+  //   }
+  // }
+
+  cerr << "\n*** WARNING ***                                        "
+       << "\n*** WARNING *** File: " << "  " << __FILE__ 
+       <<                          ", line " << __LINE__
+       << "\n*** WARNING *** DriftsToSlots                          "
+          "\n*** WARNING *** Second preliminary test not yet written."
+          "\n*** WARNING *** Procedure is proceeding notwithstanding."
+          "\n*** WARNING *** Keep your fingers crossed."
+          "\n*** WARNING ***                                        "
+       << endl;
+  
+  
+  // Tests passed. Proceeding ...
 
   bmlnElmnt* elPtr;
   bmlnElmnt* el2Ptr;
-
-  DeepBeamlineIterator dbi( original );
 
   // Check if Slots are already present ...
   while((  elPtr = dbi++  )) 
@@ -335,30 +394,30 @@ beamline* DriftsToSlots( /* const */ beamline& original )
       // Search upstream and downstream for the closest rbend, sbend, 
       // CF_rbend, or CF_sbend
       try {
-      	if( isRing ) {
-      	  isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, bi );
-      	  isUpStream    = d2S_LookDownStream ( c, c_rb, c_CFrb, c_sb, c_CFsb, bi );
-      	}
-      	else {
-      	  if( isFirstPtr ) {
-      	    isDownStream  = false;
-      	    isUpStream    = d2S_LookDownStream ( c, c_rb, c_CFrb, c_sb, c_CFsb, bi );
+        if( isRing ) {
+          isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, bi );
+          isUpStream    = d2S_LookDownStream ( c, c_rb, c_CFrb, c_sb, c_CFsb, bi );
+        }
+        else {
+          if( isFirstPtr ) {
+            isDownStream  = false;
+            isUpStream    = d2S_LookDownStream ( c, c_rb, c_CFrb, c_sb, c_CFsb, bi );
             isFirstPtr    = false;
-      	  }
-      	  else if( isLastPtr ) {
-      	    isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, bi );
-      	    isUpStream    = false;
-      	  }
-      	  else {
-      	    isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, bi );
-      	    isUpStream    = d2S_LookDownStream ( c, c_rb, c_CFrb, c_sb, c_CFsb, bi );
-      	  }
-      	}
+          }
+          else if( isLastPtr ) {
+            isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, bi );
+            isUpStream    = false;
+          }
+          else {
+            isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, bi );
+            isUpStream    = d2S_LookDownStream ( c, c_rb, c_CFrb, c_sb, c_CFsb, bi );
+          }
+        }
       }
       catch( const std::exception& ge ) {
         ostringstream uic;
         uic << "File: " << "  " << __FILE__ << ", line " << __LINE__ << ": "
-            << "Exception was thrown by DriftsToSlots.\n"
+            << "Exception was thrown within DriftsToSlots.\n"
                "The message was:\n"
             << ge.what();
         cerr << "\n--- BEGIN EXCEPTION ---\n" 
@@ -385,7 +444,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
           delete flatRing;
           ret->eliminate();
           return &original;
-	}
+        }
       }
       if( isUpStream ) {
         if( ( c_rb || c_CFrb ) && !d2S_rbendLike( c ) ) {
@@ -399,7 +458,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
           delete flatRing;
           ret->eliminate();
           return &original;
-	}
+        }
       }
 
 
@@ -413,7 +472,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
       {
         if( d2S_sbendLike( c ) ) {
           ret->append( elPtr->Clone() );
-	}
+        }
         else if( d2S_rbendLike(c) ) {
           arcFrame.reset();  
           if( c_sb ) {
@@ -445,7 +504,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
           fd(z) = elPtr->Length();
           arcFrame.translate(fd);
           ret->append( new Slot(elPtr->Name(), arcFrame) );
-	}
+        }
         else {
           cerr << "\n*** WARNING: *** "
                << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
@@ -456,14 +515,14 @@ beamline* DriftsToSlots( /* const */ beamline& original )
           delete flatRing;
           ret->eliminate();
           return &original;
-	}
+        }
       }
   
       else if( !isUpStream && isDownStream )
       {
         if( d2S_sbendLike( a ) ) {
           ret->append( elPtr->Clone() );
-	}
+        }
         else if( d2S_rbendLike( a ) ) {
           arcFrame.reset(); 
           fd(x) = 0.0;
@@ -495,7 +554,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
             return &original;
           }
           ret->append( new Slot(elPtr->Name(), arcFrame) );
-	}
+        }
         else {
           cerr << "\n*** WARNING: *** "
                << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
@@ -513,7 +572,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
       {
         if( d2S_sbendLike( a ) && d2S_sbendLike( c ) ) {
           ret->append( elPtr->Clone() );
-	}
+        }
         else {
           arcFrame.reset();  
           if( d2S_rbendLike(c) ) {
@@ -569,9 +628,9 @@ beamline* DriftsToSlots( /* const */ beamline& original )
               ret->eliminate();
               return &original;
             }
-	  }
+          }
           ret->append( new Slot(elPtr->Name(), arcFrame) );
-	}
+        }
       }
   
     } // End processing element
