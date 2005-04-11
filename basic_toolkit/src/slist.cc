@@ -1,12 +1,9 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.1                    
+******  Version:   4.3
 ******                                    
 ******  File:      slist.cc
 ******                                                                
@@ -30,6 +27,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 /* 
 Implementation of the class slist, as detailed in Section 7.3.2
@@ -56,7 +56,7 @@ int slist_iterator::objectCount = 0;
 
 slist::slist( const slist& x )
 {
-ent w;
+void* w;
 last = 0;
 slist_iterator getNext( x );
 while((  w = getNext()  )) append( w );
@@ -67,7 +67,7 @@ owner = 0;
 #endif
 }
 
-void slist::insert( ent a) {
+void slist::insert( void* a) {
 if( last )
   last->next = new slink( a, last->next );
 else {
@@ -76,7 +76,7 @@ else {
   }
 }
 
-void slist::append( ent a ) {
+void slist::append( void* a ) {
 if( last )
   last = last->next = new slink( a, last->next );
 else {
@@ -86,11 +86,11 @@ else {
 }
 
 
-bool slist::contains( const ent x ) const
+bool slist::contains( const void* x ) const
 {
   bool ret = false;
   slist_iterator getNext( *this );
-  ent q;
+  void* q;
   while((  !ret && (q = getNext())  )) 
   { ret = ( q == x );
   }
@@ -98,7 +98,7 @@ bool slist::contains( const ent x ) const
 }
 
 
-ent slist::remove( ent NeedToRemove ) {
+void* slist::remove( void* NeedToRemove ) {
 
   // If the list is not empty ...
   if ( last ) {
@@ -112,7 +112,7 @@ ent slist::remove( ent NeedToRemove ) {
     // Otherwise ...
     slink* curEl = last;
     slink* nxtEl = last;
-    ent    curEn = 0;
+    void*  curEn = 0;
 
     do {
       nxtEl = curEl->next;
@@ -129,7 +129,7 @@ ent slist::remove( ent NeedToRemove ) {
       curEl        = nxtEl;
     } while ( curEl != last );
 
-    // If the desired ent is not found, then...
+    // If the desired void* is not found, then...
     return 0;
  }
 
@@ -137,14 +137,14 @@ ent slist::remove( ent NeedToRemove ) {
  else return 0;
 }
 
-ent slist::get() {
+void* slist::get() {
 if ( last == 0 ) return 0;   // In case the list is empty.
 // if ( last == 0 ) { 
 //   printf( "ERROR:SLIST> get from empty slist." );
 //   exit(0);
 //   }
 slink* f = last->next;
-ent r = f->e;
+void* r = f->e;
 if ( f == last )
   last = 0;
 else
@@ -156,17 +156,17 @@ return r;
 slist& slist::operator=( const slist& x )
 {
 slist_iterator getNext( x );
-ent p;
+void* p;
 clear();
 while((  p = getNext()  )) append( p );
 return *this;
 }
 
-ent slist::operator[]( int n )
+void* slist::operator[]( int n )
 {
 slist_iterator getNext( *this );
 int i = 0;
-ent p = 0;
+void* p = 0;
 while( ( i++ <= n ) && ( p = getNext() ) ) ;
 return p;
 }
@@ -175,7 +175,7 @@ int slist::size() const
 {
 slist_iterator getNext( *this );
 int i = 0;
-ent p;
+void* p;
 while((  p = getNext()  )) i++;
 return i;
 }
@@ -211,8 +211,8 @@ last = 0;
 // last = 0;
 // }
 
-ent slist_iterator::operator()() {
-ent ret = 0;
+void* slist_iterator::operator()() {
+void* ret = 0;
 if( cs->last )
 { 
   ret = ce ? ( ce = ce->next )->e : 0;
@@ -222,8 +222,8 @@ return ret;
 }
 
 
-ent slist_looper::operator()() {
-ent ret = 0;
+void* slist_looper::operator()() {
+void* ret = 0;
 if( cs->last )
 {
   ret = ce;

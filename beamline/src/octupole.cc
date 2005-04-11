@@ -97,7 +97,7 @@ const char* octupole::Type() const
 }
 
 
-void octupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
+void octupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;

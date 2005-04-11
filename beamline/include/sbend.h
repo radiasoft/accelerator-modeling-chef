@@ -234,10 +234,15 @@ public:
   double getEntryEdgeAngle() const { return _usEdgeAngle; }
   double getExitEdgeAngle()  const { return _dsEdgeAngle; }
 
+  bool hasParallelFaces() const;
+  bool hasStandardFaces() const;
+
   void makeAsinApproximate( int /* number of terms */);
   void makeAsinExact();
   bool isAsinExact();
 
+  void releasePropFunc();
+  void setupPropFunc();
   void eliminate();
 
   void enterLocalFrame( Particle&    ) const;
@@ -255,7 +260,7 @@ public:
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "sbend") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new sbend( *this ); }
-  void Split( double, bmlnElmnt**, bmlnElmnt** );
+  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 };
 
 #endif // SBEND_H

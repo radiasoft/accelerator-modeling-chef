@@ -64,7 +64,7 @@ public:
   virtual int isType(char* c) { if ( strcmp(c, "sextupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
 
   bmlnElmnt* Clone() const { return new sextupole( *this ); }
-  void Split( double, bmlnElmnt**, bmlnElmnt** );
+  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 } ;
 
 

@@ -3,7 +3,7 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.1                    
+******  Version:   4.3
 ******                                    
 ******  File:      dlist.h
 ******                                                                
@@ -31,20 +31,20 @@
 #ifndef DLIST_HXX
 #define DLIST_HXX
 
-typedef void* ent;
-typedef char (*DLIST_CRITFUNC)( ent );
+// REMOVE: typedef void* ent;
+typedef char (*DLIST_CRITFUNC)( void* );
 
 class dlink {
 private:
   dlink* next;
   dlink* prev;
-  ent e;
+  void*  e;
 public:
 #ifdef OBJECT_DEBUG
   static int objectCount;
 #endif
 
-  dlink( ent a, dlink* p, dlink* q ) { 
+  dlink( void* a, dlink* p, dlink* q ) { 
     e=a; 
     prev=p; 
     next=q; 
@@ -63,7 +63,7 @@ public:
   void putBelow( dlink* );
   dlink* nextPtr() {return next;}
   dlink* prevPtr() {return prev;}
-  ent info() {return e;}
+  void* info() {return e;}
 
   friend class dlist;
   friend class dlist_iterator;
@@ -169,7 +169,7 @@ public:
 #endif
   }
 
-  dlist( ent a, char x = 0   ) { 
+  dlist( void* a, char x = 0   ) { 
     last = new dlink(a,0,0); 
     last->prev = last; 
     last->next = last; 
@@ -188,22 +188,24 @@ public:
 #endif
   }
 
-  bool contains( const ent ) const;
+  bool contains( const void* ) const;
 
-  ent remove( dlink* );            // Removes the single argument.
-  char remove( ent );              // Ditto 
-  ent remove( int );               // Returns the ent removed from the dlist
+  void* remove( dlink* );          // Removes the single argument.
+  char remove( void* );            // Ditto 
+  void* remove( int );             // Returns the void* removed from the dlist
                                    // Failure -> returns null pointer
-  dlist remove( ent, ent );        // Removes everything between its arguments
+  dlist remove( void*, void* );    // Removes everything between its arguments
                                    // (exclusively) and returns the removed chain.
   dlist remove( int, int );
-  void insert( ent a );
-  void append( ent a );
-  char putAbove( ent a, ent b );   // Installs b above a in the list
-  char putBelow( ent a, ent b );   // Installs b below a in the list
-  ent get();
+  void insert( void* a );
+  void append( void* a );
+  char putAbove( const void* a, const void* b );
+                                   // Installs b above (before) a in the list
+  char putBelow( const void* a, const void* b );
+                                   // Installs b below (after)  a in the list
+  void* get();
 
-  int  startAt( const ent, int=1 );
+  int  startAt( const void*, int=1 );
   void riskStartAt( const dlink* );
                                    // Does not check whether the argument
                                    // is in the list.
@@ -211,22 +213,22 @@ public:
   void DoesOwn()    { owner = 1; }
   void DoesNotOwn() { owner = 0; }
 
-  ent operator[]( int ) const;
+  void* operator[]( int ) const;
   int size() const;
   char IsEmpty() { return last == 0; }
   void clear();
   // void zap();
 
-  char SetLast( ent );
-  char SetFirst( ent );
+  char SetLast( void* );
+  char SetFirst( void* );
   char SetLast( DLIST_CRITFUNC );
   char SetFirst( DLIST_CRITFUNC );
   const dlink* lastPtr() {return last;}
-  ent lastInfoPtr() { if( last ) return last->e;
-                      else       return 0;
+  void* lastInfoPtr() const { if( last ) return last->e;
+                              else       return 0;
                     }
-  ent firstInfoPtr() { if( last ) return last->next->e;
-                       else       return 0;
+  void* firstInfoPtr() const { if( last ) return last->next->e;
+                               else       return 0;
                     }
   dlist& operator=( const dlist& );
 
@@ -266,7 +268,7 @@ public:
     #endif
   }
 
-  ent operator()();
+  void* operator()();
   void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
   void GoBack( int = 1 );
@@ -280,7 +282,7 @@ class dlist_looper {
 public:
   dlist_looper( dlist& s ) { cs = &s; ce = cs->last; }
   dlist_looper( const dlist_looper& x ) { cs = x.cs; ce = x.ce; }
-  ent operator()();
+  void* operator()();
   void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
 } ;
@@ -304,7 +306,7 @@ class dlist_reverseIterator {
 public:
   dlist_reverseIterator( dlist& s ) { cs = &s; ce = cs->last; }
   dlist_reverseIterator( const dlist_reverseIterator& x ) { cs = x.cs; ce = x.ce; }
-  ent operator()();
+  void* operator()();
   void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
   void Terminate() { ce = 0; }

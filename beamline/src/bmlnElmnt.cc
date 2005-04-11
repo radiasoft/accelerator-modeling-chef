@@ -5,7 +5,7 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.1
+******  Version:   2.2
 ******                                    
 ******  File:      bmlnElmnt.cc
 ******                                                                
@@ -252,6 +252,9 @@ bmlnElmnt::bmlnElmnt( const char* n, PropFunc* pf ) {
  p_bml         = 0;
  p_bml_e       = 0;
  Propagator    = pf;
+ // WARNING: I'm assuming that any derived class will 
+ //          initialize its propagator functor within
+ //          its constructor.
 
  for( int i = 0; i < BF_MAXCHAR; i++ ) {
    _tag[i] = '\0';
@@ -281,6 +284,9 @@ bmlnElmnt::bmlnElmnt( double l /* length */, PropFunc* pf ) {
  p_bml         = 0;
  p_bml_e       = 0;
  Propagator    = pf;
+ // WARNING: I'm assuming that any derived class will 
+ //          initialize its propagator functor within
+ //          its constructor.
 
  for( int i = 0; i < BF_MAXCHAR; i++ ) {
    _tag[i] = '\0';
@@ -312,6 +318,9 @@ bmlnElmnt::bmlnElmnt( double l /* length */,
  p_bml         = 0;
  p_bml_e       = 0;
  Propagator    = pf;
+ // WARNING: I'm assuming that any derived class will 
+ //          initialize its propagator functor within
+ //          its constructor.
 
  for( int i = 0; i < BF_MAXCHAR; i++ ) {
    _tag[i] = '\0';
@@ -349,6 +358,9 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  p_bml         = 0;
  p_bml_e       = 0;
  Propagator    = pf;
+ // WARNING: I'm assuming that any derived class will 
+ //          initialize its propagator functor within
+ //          its constructor.
 
  for( int i = 0; i < BF_MAXCHAR; i++ ) {
    _tag[i] = '\0';
@@ -387,6 +399,9 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  p_bml         = 0;
  p_bml_e       = 0;
  Propagator    = pf;
+ // WARNING: I'm assuming that any derived class will 
+ //          initialize its propagator functor within
+ //          its constructor.
 
  for( int i = 0; i < BF_MAXCHAR; i++ ) {
    _tag[i] = '\0';
@@ -414,6 +429,9 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
  shuntCurrent  = a.getShunt();
 
  Propagator = a.Propagator;
+ // WARNING: I'm assuming that any derived class will 
+ //          initialize its propagator functor within
+ //          its own copy constructor.
 
  memcpy( (void*) _tag, (const void*) a._tag, BF_MAXCHAR*sizeof(char) );
 
@@ -521,6 +539,9 @@ bmlnElmnt::~bmlnElmnt() {
    delete p_bml_e;
    p_bml_e = 0;
  }
+ // virtual method releasePropFunc() must
+ //   be invoked within the derived class's destructor
+ //   if it is necessary.
  dataHook.eraseAll();
  #ifdef OBJECT_DEBUG
  objectCount--;
@@ -760,10 +781,14 @@ void bmlnElmnt::setLength( double x ) {
   else {
     length = x;
   }
+
+  if( 0 != Propagator ) { this->setupPropFunc(); }
 }
+
 
 void bmlnElmnt::setStrength( double s ) {
   strength = s - getShunt()*IToField(); 
+  if( 0 != Propagator ) { this->setupPropFunc(); }
 }
 
 void bmlnElmnt::setStrength( double, int ) {
@@ -777,52 +802,87 @@ void bmlnElmnt::setCurrent( double I ) {
   setStrength((I-getShunt()) * IToField());
 }
 
+
+void bmlnElmnt::releasePropFunc()
+{
+  ostringstream uic;
+  uic  << "Base class method called by "
+       << this->Type()
+       << " object.";
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__
+         , "void bmlnElmnt::releasePropFunc()"
+         , uic.str().c_str() ) );
+}
+
+
+void bmlnElmnt::setupPropFunc()
+{
+  ostringstream uic;
+  uic  << "Base class method called by "
+       << this->Type()
+       << " object.";
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__
+         , "void bmlnElmnt::setupPropFunc()"
+         , uic.str().c_str() ) );
+}
+
+
 void bmlnElmnt::eliminate() {
  delete this;
 }
 
-bmlnElmnt& bmlnElmnt::operator=( const bmlnElmnt& a ) {
- strcpy( ident, a.ident );
- length        = a.length;
- strength      = a.strength;
- depth         = a.depth;
-   //
-   // O.K.
-   //
-   // aperture      = a.aperture;
-
-// pAperture     = a.pAperture;
- pAperture = 0;
- if(a.pAperture != 0) 
-   pAperture = a.pAperture->Clone();
- 
- iToField      = a.iToField;
- shuntCurrent  = a.getShunt();
- if(align != 0) {
-   delete align;
-   align = 0;
- }
- if(a.align != 0) {
-   alignmentData data = a.align->getAlignment();
-   if((data.xOffset != 0.0) || (data.yOffset != 0.0) || (data.tilt != 0.0))
-     align         =  new alignment(data);
- }
- return *this;
-}
+// REMOVE: bmlnElmnt& bmlnElmnt::operator=( const bmlnElmnt& a ) {
+// REMOVE:  strcpy( ident, a.ident );
+// REMOVE:  length        = a.length;
+// REMOVE:  strength      = a.strength;
+// REMOVE:  depth         = a.depth;
+// REMOVE:    //
+// REMOVE:    // O.K.
+// REMOVE:    //
+// REMOVE:    // aperture      = a.aperture;
+// REMOVE: 
+// REMOVE: // pAperture     = a.pAperture;
+// REMOVE:  pAperture = 0;
+// REMOVE:  if(a.pAperture != 0) 
+// REMOVE:    pAperture = a.pAperture->Clone();
+// REMOVE:  
+// REMOVE:  iToField      = a.iToField;
+// REMOVE:  shuntCurrent  = a.getShunt();
+// REMOVE:  if(align != 0) {
+// REMOVE:    delete align;
+// REMOVE:    align = 0;
+// REMOVE:  }
+// REMOVE:  if(a.align != 0) {
+// REMOVE:    alignmentData data = a.align->getAlignment();
+// REMOVE:    if((data.xOffset != 0.0) || (data.yOffset != 0.0) || (data.tilt != 0.0))
+// REMOVE:      align         =  new alignment(data);
+// REMOVE:  }
+// REMOVE:   return *this;
+// REMOVE:  }
 
 
 bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( const PropFunc* a ) 
 { 
   bmlnElmnt::PropFunc* ret = this->Propagator;
-  this->Propagator = (PropFunc*) a;  
+
+  if( 0 == a ) {
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "bmlnElmnt::setPropFunction(const PropFunc* a)",
+           "Argument is null." ) );
+  }
+  else {
+    this->releasePropFunc();  // virtual
+    this->Propagator = const_cast<PropFunc*>(a);
+    this->setupPropFunc();    // virtual
+  }
+
   return ret;
 }
 
+
 bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( const PropFunc& a ) 
 { 
-  bmlnElmnt::PropFunc* ret = this->Propagator;
-  this->Propagator = (PropFunc*) &a; 
-  return ret;
+  return this->setPropFunction( &a );
 }
 
 
@@ -866,22 +926,302 @@ bool bmlnElmnt::equivTo( const bmlnElmnt* x ) const
 }
 
 
-void bmlnElmnt::setAlignment(const alignmentData& a) {
-  if(align != 0) {
+bool bmlnElmnt::hasParallelFaces() const
+{
+  return true;
+}
+
+
+bool bmlnElmnt::hasStandardFaces() const
+{
+  return true;
+}
+
+
+bool bmlnElmnt::isSimple() const
+{
+  return ( (0 == p_bml) && (0 == p_bml_e)  );
+}
+
+
+// --- Local, small alignment routines.
+// --- Changes alignment struct.
+// --- Should not disturb neighboring elements.
+
+bool bmlnElmnt::alignRelX( double u )
+{
+  bool ret = true;
+  if( this->hasParallelFaces() ) {
+    if( 0 == align ) {
+      align = new alignment(u, 0.0, 0.0);
+    }
+    else {
+      // This is stupid!
+      alignmentData w(this->Alignment());
+      w.xOffset += u;
+      this->setAlignment( w );
+    }
+  }
+  else {
+    cerr << "\n*** WARNING *** "
+         << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
+            "\n*** WARNING *** Cannot use this method on an element "
+         << this->Type() << "  " << this->Name()
+         << "\n*** WARNING *** without affecting its neighbors."
+            "\n*** WARNING *** Nothing will be done."
+            "\n*** WARNING *** "
+         << endl;
+    ret = false;
+  }
+  return ret;
+}
+
+
+bool bmlnElmnt::alignRelY( double u )
+{
+  bool ret = true;
+  if( this->hasParallelFaces() ) {
+    if( 0 == align ) {
+      align = new alignment(0.0, u, 0.0);
+    }
+    else {
+      // This is stupid!
+      alignmentData w(this->Alignment());
+      w.yOffset += u;
+      this->setAlignment( w );
+    }
+  }
+  else {
+    cerr << "\n*** WARNING *** "
+         << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
+            "\n*** WARNING *** Cannot use this method on an element "
+         << this->Type() << "  " << this->Name()
+         << "\n*** WARNING *** without affecting its neighbors."
+            "\n*** WARNING *** Nothing will be done."
+            "\n*** WARNING *** "
+         << endl;
+    ret = false;
+  }
+  return ret;
+}
+
+
+bool bmlnElmnt::alignAbsX( double u )
+{
+  bool ret = true;
+  if( this->hasParallelFaces() ) {
+    if( 0 == align ) {
+      align = new alignment(u, 0.0, 0.0);
+    }
+    else {
+      // This is stupid!
+      alignmentData w(this->Alignment());
+      w.xOffset = u;
+      this->setAlignment( w );
+    }
+  }
+  else {
+    cerr << "\n*** WARNING *** "
+         << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
+            "\n*** WARNING *** Cannot use this method on an element "
+         << this->Type() << "  " << this->Name()
+         << "\n*** WARNING *** without affecting its neighbors."
+            "\n*** WARNING *** Nothing will be done."
+            "\n*** WARNING *** "
+         << endl;
+    ret = false;
+  }
+  return ret;
+}
+
+
+bool bmlnElmnt::alignAbsY( double u )
+{
+  bool ret = true;
+  if( this->hasParallelFaces() ) {
+    if( 0 == align ) {
+      align = new alignment(0.0, u, 0.0);
+    }
+    else {
+      // This is stupid!
+      alignmentData w(this->Alignment());
+      w.yOffset = u;
+      this->setAlignment( w );
+    }
+  }
+  else {
+    cerr << "\n*** WARNING *** "
+         << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
+            "\n*** WARNING *** Cannot use this method on an element "
+         << this->Type() << "  " << this->Name()
+         << "\n*** WARNING *** without affecting its neighbors."
+            "\n*** WARNING *** Nothing will be done."
+            "\n*** WARNING *** "
+         << endl;
+    ret = false;
+  }
+  return ret;
+}
+
+
+bool bmlnElmnt::alignRelXmm( double u )
+{
+  return (this->alignRelX( 0.001*u ));
+}
+
+
+bool bmlnElmnt::alignRelYmm( double u )
+{
+  return (this->alignRelY( 0.001*u ));
+}
+
+
+bool bmlnElmnt::alignAbsXmm( double u )
+{
+  return (this->alignAbsX( 0.001*u ));
+}
+
+
+bool bmlnElmnt::alignAbsYmm( double u )
+{
+  return (this->alignAbsY( 0.001*u ));
+}
+
+
+bool bmlnElmnt::alignRelRoll( double u )
+{
+  bool ret = true;
+  if( this->hasParallelFaces() && this->hasStandardFaces() ) {
+    if( 0 == align ) {
+      align = new alignment(0.0, 0.0, u);
+    }
+    else {
+      // This is stupid!
+      alignmentData w(this->Alignment());
+      w.tilt += u;
+      this->setAlignment( w );
+    }
+  }
+  else {
+    cerr << "\n*** WARNING *** "
+         << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
+            "\n*** WARNING *** Cannot use this method on an element "
+         << this->Type() << "  " << this->Name()
+         << "\n*** WARNING *** without affecting its neighbors."
+            "\n*** WARNING *** Nothing will be done."
+            "\n*** WARNING *** "
+         << endl;
+    ret = false;
+  }
+  return ret;
+}
+
+
+bool bmlnElmnt::alignAbsRoll( double u )
+{
+  bool ret = true;
+  if( this->hasParallelFaces() && this->hasStandardFaces() ) {
+    if( 0 == align ) {
+      align = new alignment(0.0, 0.0, u);
+    }
+    else {
+      // This is stupid!
+      alignmentData w(this->Alignment());
+      w.tilt = u;
+      this->setAlignment( w );
+    }
+  }
+  else {
+    cerr << "\n*** WARNING *** "
+         << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
+            "\n*** WARNING *** Cannot use this method on an element "
+         << this->Type() << "  " << this->Name()
+         << "\n*** WARNING *** without affecting its neighbors."
+            "\n*** WARNING *** Nothing will be done."
+            "\n*** WARNING *** "
+         << endl;
+    ret = false;
+  }
+  return ret;
+}
+
+
+bool bmlnElmnt::alignRelRollmrad( double u )
+{
+  return (this->alignRelRoll( 0.001*u ));
+}
+
+
+bool bmlnElmnt::alignAbsRollmrad( double u )
+{
+  return (this->alignAbsRoll( 0.001*u ));
+}
+
+
+void bmlnElmnt::realign()
+{
+  if(0 != align ) {
     delete align;
     align = 0;
   }
-  if((a.xOffset != 0.0) || (a.yOffset != 0.0) || (a.tilt != 0.0))
-    align = new alignment(a);
 }
+
+
+bool bmlnElmnt::setAlignment(const alignmentData& a) {
+  bool ret = true;
+
+  if( this->hasParallelFaces() ) {
+    if( 0.0 == a.tilt ) {
+      if( (a.xOffset != 0.0) || (a.yOffset != 0.0) ) {
+        if(0 != align) { delete align; align = 0; }
+        align = new alignment(a);
+      }
+    }
+    else if( this->hasStandardFaces() ) {
+      if(0 != align) { delete align; align = 0; }
+      align = new alignment(a);
+    }
+    else { 
+      ret = false;
+    }
+  }
+  else {
+    ret = false;
+  }
+
+  if( !ret ) {
+    cerr << "\n*** WARNING *** "
+         << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
+            "\n*** WARNING *** Cannot use this method on an element "
+         << this->Type() << "  " << this->Name()
+         << "\n*** WARNING *** without affecting its neighbors."
+            "\n*** WARNING *** Nothing has been done."
+            "\n*** WARNING *** "
+         << endl;
+    ret = false;
+  }
+
+  return ret;
+}
+
 
 alignmentData bmlnElmnt::Alignment() const {
   alignmentData x;
-  if(align != 0) {
+  if(0 != align) {
     x = align->getAlignment();
   }
   return x;
 }
+
+
+// --- End of local, small alignment routines.
 
 void bmlnElmnt::enterLocalFrame( Particle& p ) const
 {
@@ -1044,7 +1384,7 @@ Aperture* bmlnElmnt::getAperture() {
   return app;
 }
 
-void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
+void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   if( p_bml || p_bml_e ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
@@ -1081,7 +1421,8 @@ void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )
 
 void bmlnElmnt::setShunt(double a) 
 {               // Set the value of the shunt, creating it if necessary
-  strength += ( shuntCurrent - a ) * IToField();
+  // REMOVE: strength += ( shuntCurrent - a ) * IToField();
+  this->setStrength( strength + ( shuntCurrent - a ) * IToField() );
   shuntCurrent = a;
 }
 

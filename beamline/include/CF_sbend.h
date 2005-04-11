@@ -100,7 +100,7 @@ class CF_sbend : public bmlnElmnt
   bmlnElmnt* Clone() const 
     { return new CF_sbend( *this ); }
   double OrbitLength( const Particle& );
-  void Split( double, bmlnElmnt**, bmlnElmnt** );
+  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
     // WARNING: After the Split function is used, the new elements 
     // must be commissioned with RefRegVisitor.
 
@@ -116,6 +116,9 @@ class CF_sbend : public bmlnElmnt
   double setExitAngle( double /* radians */ ); 
   double getEntryEdgeAngle() const { return _usEdgeAngle; }
   double getExitEdgeAngle() const { return _dsEdgeAngle; }
+
+  bool hasParallelFaces() const;
+  bool hasStandardFaces() const;
 
 
 

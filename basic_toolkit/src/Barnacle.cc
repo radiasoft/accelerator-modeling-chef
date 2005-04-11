@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -30,6 +27,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iostream>
 
@@ -61,22 +61,22 @@ BarnacleList::~BarnacleList() {
 }
  
 void BarnacleList::append( const Barnacle* x ) {
- theList.append( (ent) x );
+ theList.append( (void*) x );
 }
 
 
 void BarnacleList::insert( const Barnacle* x ) {
- theList.insert( (ent) x );
+ theList.insert( (void*) x );
 }
 
 
 void BarnacleList::append( const char* ident, const BarnacleData* w ) {
- theList.append( (ent) new Barnacle( ident, w ) );
+ theList.append( (void*) new Barnacle( ident, w ) );
 }
 
 
 void BarnacleList::insert( const char* ident, const BarnacleData* w ) {
- theList.insert( (ent) new Barnacle( ident, w ) );
+ theList.insert( (void*) new Barnacle( ident, w ) );
 }
 
 
@@ -85,7 +85,7 @@ char BarnacleList::eraseFirst( const char* ident ) {
  Barnacle* p;
  while( 0 != (  p = (Barnacle*) getNext()  )) {
   if( strcmp( ident, p->id ) == 0 ) {
-   theList.remove( (ent) p );   // ??? This is REALLY stupid!
+   theList.remove( (void*) p );   // ??? This is REALLY stupid!
    delete p;
    return 0;   // All OK
   }
@@ -101,7 +101,7 @@ char BarnacleList::eraseAll( const char* ident ) {
   while( 0 != (  p = (Barnacle*) getNext()  )) {
    if( strcmp( ident, p->id ) == 0 ) {
     getNext.GoBack();
-    theList.remove( (ent) p );   // ??? This is REALLY stupid!
+    theList.remove( (void*) p );   // ??? This is REALLY stupid!
     delete p;
    }
   }
@@ -109,7 +109,7 @@ char BarnacleList::eraseAll( const char* ident ) {
  else {
   while( 0 != (  p = (Barnacle*) getNext()  )) {
    getNext.GoBack();
-   theList.remove( (ent) p );   // ??? This is REALLY stupid!
+   theList.remove( (void*) p );   // ??? This is REALLY stupid!
    delete p;
   }
  }
@@ -135,7 +135,7 @@ Barnacle* BarnacleList::lift( const char* ident, int n ) {
  while( 0 != (  p = (Barnacle*) getNext()  )) 
   if( strcmp( ident, p->id ) == 0 ) {
    if( n == i++ ) {
-    theList.remove( (ent) p );   // ??? This is REALLY stupid!
+    theList.remove( (void*) p );   // ??? This is REALLY stupid!
     return p;
    }
   }
