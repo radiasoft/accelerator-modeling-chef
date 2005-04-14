@@ -7,7 +7,7 @@
 ******             of BEAMLINE.                                    
 ******                                    
 ******  File:      TrbWidget.cc
-******  Version:   2.0
+******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -45,13 +45,15 @@
 //
 //
 
-#define MAXFLOAT 1.0e32
-
 #include <values.h>
 #include <stdlib.h>
 #include <iostream>  // Amazingly, without *this* line, cout is undeclared,
 #include <sstream>   //   even though *this* line is here.
 #include <math.h>
+
+#ifndef MAXFLOAT
+#define MAXFLOAT 1.0e32
+#endif
 
 #include <qapplication.h>
 #include <qtimer.h>
@@ -246,9 +248,9 @@ void TrbWidget::_light_sel()
         stl1.setNum( ((180./M_PI)*_p_glWindow->getTheta()) );
         QLineEdit* qle1 = new QLineEdit( stl1, qgr );
         QLabel* qlb2 = new QLabel( "Phi [deg]", qgr );
-        qlb2->setTextFormat( Qt::PlainText );
-        qlb2->setFixedSize(qlb1->size());
-        qlb2->resize(qlb1->size());
+        // qlb2->setTextFormat( Qt::PlainText );
+        // qlb2->setFixedSize(qlb1->size());
+        // qlb2->resize(qlb1->size());
         QString stl2;
         stl2.setNum( ((180./M_PI)*_p_glWindow->getPhi()) );
         QLineEdit* qle2 = new QLineEdit( stl2, qgr );
@@ -483,7 +485,6 @@ void DrawSpace3D::_drawOneLine( double x1, double y1, double x2, double y2 )
 
 void DrawSpace3D::_output(double x, double y, double u)
 {
-
   glRasterPos2f(x, y);
   stringstream ss;
   ss << u << '\0';
@@ -515,7 +516,7 @@ void DrawSpace3D::_choutput( double x, double y, char *str )
   len = (int) strlen(str);
   for (j = 0; j < len; j++)
   {
-    //glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, str[j]);
+    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, str[j]);
   }
 }
 
