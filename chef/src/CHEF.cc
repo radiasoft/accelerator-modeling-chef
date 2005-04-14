@@ -1952,7 +1952,7 @@ void CHEF::_launchTrack()
     return;
   }
 
-  _trackWidget = new Tracker(_p_currBmlCon);
+  _trackWidget = new Tracker(_p_currBmlCon,Qt::WDestructiveClose);
   _trackWidget->setCaption( "CHEF:: Phase Space Tracking" );
   _trackWidget->show();
 }
