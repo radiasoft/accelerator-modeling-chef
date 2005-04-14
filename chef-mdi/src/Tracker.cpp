@@ -1454,7 +1454,7 @@ void Tracker::_view_actang()
 
   if( _p_info ) { delete _p_info; _p_info = 0; }
   int n = _bmlConPtr->countHowManyDeeply();
-  
+
   try {
     _p_info = new LattFuncSage::lattFunc( *(_bmlConPtr->getLattFuncPtr(n-1)) );
   }
@@ -1750,11 +1750,9 @@ void Tracker::_tool_pdicOrb()
   
     Vector z(w);
   
-
     beamline* bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
     Jet__environment* storedEnv = Jet::_lastEnv;
     double energy = _bmlConPtr->_proton.Energy();
-  
 
     for( int iterCount = 0; iterCount < ul; iterCount++ ) {
       Jet::BeginEnvironment( order );

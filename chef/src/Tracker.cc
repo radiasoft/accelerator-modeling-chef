@@ -562,9 +562,14 @@ DrawSpace::DrawSpace( Tracker* p, QHBox* parent, const char* m )
   _transformPtr(0), 
   _pointSize(3),
   _r(1.0), _g(1.0), _b(1.0),
-  _xLo( - DEF_RANGE ), _xHi( DEF_RANGE ), 
-  _yLo( - DEF_RANGE ), _yHi( DEF_RANGE ),
-  _zoomActive( false ), _isZooming( false ), _zoomed( false )
+  _isZooming( false ), 
+  _zoomActive( false ), 
+  _zoomed( false ),
+  _xLo( - DEF_RANGE ), 
+  _yLo( - DEF_RANGE ), 
+  _xHi( DEF_RANGE ), 
+  _yHi( DEF_RANGE )
+
 {
   _transformPtr = 0;         // This must be changed in the 
   _currentContextPtr = 0;    // Tracker constructor
@@ -657,7 +662,7 @@ void DrawSpace::setCenterOn( const Particle& x )
       (typeid(*_transformPtr) != typeid(PhiHPhiV))    ) 
   {
     double xc, yc, dummy;
-    _transformPtr->toDynamics( x.State(), &xc, &yc, &dummy );
+    _transformPtr->toDynamics( const_cast<Particle&>(x).State(), &xc, &yc, &dummy );
     this->setCenterTo( xc, yc );
   }
 }
@@ -1323,7 +1328,8 @@ void Tracker::_file_exit()
 
 void Tracker::_fileClose()
 {
-  delete this;
+  close();
+  // REMOVE: delete this;
 }
 
 
