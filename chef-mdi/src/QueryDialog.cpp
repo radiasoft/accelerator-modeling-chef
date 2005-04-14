@@ -411,7 +411,7 @@ void QueryDialog::_updateDisplay()
       if( 0 != _queryPtr[i] ) { _queryPtr[i]->writeTo( writer ); }
       writer << "\n";
     }
-    _displayPtr->setText( QString(writer.str().c_str() ) );
+    _displayPtr->setText( QString(writer.str() ) );
   }
 }
 
