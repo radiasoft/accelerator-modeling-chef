@@ -7,7 +7,7 @@
 ******             of BEAMLINE.                                    
 ******                                    
 ******  File:      TrbWidget.cc
-******  Version:   2.0
+******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -50,6 +50,10 @@
 #include <iostream>  // Amazingly, without *this* line, cout is undeclared,
 #include <sstream>   //   even though *this* line is here.
 #include <math.h>
+
+#ifndef MAXFLOAT
+#define MAXFLOAT 1.0e32
+#endif
 
 #include <qapplication.h>
 #include <qtimer.h>
