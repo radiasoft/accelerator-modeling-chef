@@ -70,7 +70,6 @@ class Wndw : public QGLWidget
   void toggleHighlight();
 
  private:
-
   SiteViewer* _parent;
   double _xLo, _xHi, _yLo, _yHi;
   double _xbf, _ybf;
@@ -93,8 +92,8 @@ class Wndw : public QGLWidget
 
 
 public:
-  SiteViewer( beamline* bml,    QWidget* parent =0, const char* name=0,  WFlags f=0 );
-  SiteViewer( BeamlineContext&, QWidget* parent =0, const char* name=0,  WFlags f=0 );
+  SiteViewer( beamline*, QWidget* = 0, const char* = 0, WFlags = 0 );
+  SiteViewer( BeamlineContext&, QWidget* = 0, const char* = 0, WFlags = 0 );
   ~SiteViewer();
 
   bool filter( const bmlnElmnt* ) const;

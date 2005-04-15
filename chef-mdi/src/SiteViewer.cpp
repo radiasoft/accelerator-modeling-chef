@@ -29,8 +29,6 @@
 **************************************************************************
 *************************************************************************/
 
-#define MAXFLOAT 1.0e30
-
 #include <values.h>
 #include <fstream>
 #include <iomanip>
@@ -41,6 +39,10 @@
 #include <qstring.h>
 #include <qpixmap.h>
 #include <qpainter.h>
+
+#ifndef MAXFLOAT
+#define MAXFLOAT 1.0e30
+#endif
 
 #include "SiteViewer.h"
 #include "beamline.h"
@@ -178,15 +180,10 @@ void SiteViewer::_finishConstructor()
 
   _myGLwindow = new Wndw( this );
   _myGLwindow->show();
-
-  // _myGLwindow->setFixedSize(500,500);
   _myGLwindow->resize(width(), height());
-
-
   // Note: _myGLwindow will be
   // deleted automatically by Qt.
 }
-
 
 
 SiteViewer::~SiteViewer()
@@ -198,7 +195,6 @@ SiteViewer::~SiteViewer()
   if(_deleteContext) { delete _bmlConPtr; _bmlConPtr = 0; }
   if(_filterPtr)     { _filterPtr->eliminate(); _filterPtr = 0; }
 }
-
 
 
 bool SiteViewer::filter( const bmlnElmnt* x ) const
@@ -266,7 +262,6 @@ void SiteViewer::_fileSite()
 
 void SiteViewer::_fileClose()
 {
-
   close();
 }
 
