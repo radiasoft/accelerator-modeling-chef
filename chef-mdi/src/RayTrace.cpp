@@ -51,7 +51,7 @@
 #include "GenericException.h"
 #include "RayTrace.h"
 #include "PointEdit.h"
-#include "Tracker.h"
+#include "Tracker.h"   // ??? Is this needed?
 #include "QtMonitor.h"
 
 #include "Particle.h"  // This line should not be necessary!!!
@@ -92,7 +92,7 @@ RayDrawSpace::RayDrawSpace( RayTrace* p, QHBox* parent, const char* m )
   _yLo( -0.0020 ), 
   _xHi( 0.0020 ), 
   _yHi( 0.0020 ),
-  _myWheel(0.0) 
+  _myWheel(0.0)
 {
   // *** _myWheel.setIncrement( 252.0 );  // = 7*36, will provide ten colors
   _myWheel.setIncrement( 30.0 ); 
@@ -342,7 +342,8 @@ RayTrace::RayTrace( BeamlineContext* bmlCP, QWidget* parent, const char* name, W
   _maxHistory(64),
   _bmlConPtr( bmlCP ), 
   _deleteContext( false ),
-  _isIterating(0)
+  _continuous(true),
+  _isIterating(false)
 {
   this->_finishConstructor();
 }
@@ -355,7 +356,8 @@ RayTrace::RayTrace( /* const */ beamline* x, QWidget* parent, const char* name, 
   _maxHistory(64),
   _bmlConPtr( 0 ), 
   _deleteContext( true ),
-  _isIterating(0) 
+  _continuous(true),
+  _isIterating(false) 
 {
   if( 0 == x ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -382,6 +384,12 @@ void RayTrace::_finishConstructor()
          << endl;
   }
 
+
+  // Set mode based on beamline mode
+  _continuous = _bmlConPtr->isTreatedAsRing();
+
+
+  // Connect QtMonitor signals to the _appendToHistory slot
   DeepBeamlineIterator dbi( _bmlConPtr->cheatBmlPtr() );
   bmlnElmnt* q;
   while((  q = dbi++  )) {
@@ -413,27 +421,28 @@ void RayTrace::_finishConstructor()
   myMenuPtr->insertItem( "Edit", editMenu );
  
     QPopupMenu*  optionMenu = new QPopupMenu;
-      QPopupMenu*  viewMenu  = new QPopupMenu;
-      viewMenu->insertItem( "Rectangular", this, SLOT(_view_rect()) );
-        QPopupMenu*  zoomMenu  = new QPopupMenu;
-        zoomMenu->insertItem( "Out", this, SLOT(_view_zoom_out()) );
-        zoomMenu->insertItem( "In",  this, SLOT(_view_zoom_in()) );
-        zoomMenu->insertItem( "Reset", this, SLOT(_view_zoom_reset()) );
-      viewMenu->insertItem( "Zoom", zoomMenu );
-    optionMenu->insertItem( "View", viewMenu );
+      QPopupMenu*  zoomMenu  = new QPopupMenu;
+      zoomMenu->insertItem( "Out", this, SLOT(_view_zoom_out()) );
+      zoomMenu->insertItem( "In",  this, SLOT(_view_zoom_in()) );
+      zoomMenu->insertItem( "Reset", this, SLOT(_view_zoom_reset()) );
+    optionMenu->insertItem( "Zoom", zoomMenu );
     //   ----------------------
     //   QPopupMenu* pointsizeMenu = new QPopupMenu;
     //   pointsizeMenu->insertItem( "Large", this, SLOT(_opt_largePoints()) );
     //   pointsizeMenu->insertItem( "Small", this, SLOT(_opt_smallPoints()) );
     // optionMenu->insertItem( "Point Size", pointsizeMenu );
     // ---------------------------------------------
-    optionMenu->insertItem( "Maximum Traces", this, SLOT(_opt_setHistory()) );
-    optionMenu->insertItem( "Strobe", this, SLOT(_opt_setIter()) );
+      QPopupMenu* modeMenu = new QPopupMenu;
+      modeMenu->insertItem( "Continuous  ",  this, SLOT(_opt_contmode()) );
+      modeMenu->insertItem( "Single shot  ", this, SLOT(_opt_snglmode()) );
+    optionMenu->insertItem( "Mode  ", modeMenu );
+    optionMenu->insertItem( "Maximum Traces  ", this, SLOT(_opt_setHistory()) );
+    optionMenu->insertItem( "Strobe Period  ", this, SLOT(_opt_setIter()) );
       QPopupMenu* bgColorMenu = new QPopupMenu;
       bgColorMenu->insertItem( "Black",  this, SLOT(_opt_bg_black()) );
       bgColorMenu->insertItem( "White",  this, SLOT(_opt_bg_white()) );
       bgColorMenu->insertItem( "Yellow", this, SLOT(_opt_bg_yellow()) );
-    optionMenu->insertItem( "Background Color", bgColorMenu );
+    optionMenu->insertItem( "Background Color  ", bgColorMenu );
   myMenuPtr->insertItem( "Options", optionMenu );
 
   // Construct tracking toggle button; align it to left.
@@ -487,6 +496,12 @@ void RayTrace::_finishConstructor()
   _p_y_input  = new PointEdit( "0.0"  , _p_numberDisplay );
   _p_yp_label = new QLabel   ( "  y' ", _p_numberDisplay );
   _p_yp_input = new PointEdit( "0.0"  , _p_numberDisplay );
+
+  const Proton* protonPtr = &(_bmlConPtr->_proton);
+  _p_x_input ->_set_first ( protonPtr->get_x(), protonPtr->get_npx() ); // Probably should
+  _p_xp_input->_set_second( protonPtr->get_x(), protonPtr->get_npx() ); // be done by emitting
+  _p_y_input ->_set_first ( protonPtr->get_y(), protonPtr->get_npy() ); // a signal of some
+  _p_yp_input->_set_second( protonPtr->get_y(), protonPtr->get_npy() ); // sort.
 
   _p_x_input ->setMaxLength( 14 );
   _p_xp_input->setMaxLength( 14 );
@@ -553,7 +568,7 @@ RayTrace::~RayTrace()
   delete _p_trackBox;
 
   Ray* q;
-  while( (q = (Ray*) _history.get()) ) {
+  while(( q = (Ray*) _history.get() )) {
     delete q;
   }
 
@@ -561,14 +576,8 @@ RayTrace::~RayTrace()
 }
 
 
-void RayTrace::_file_exit()
-{
-}
-
-
 void RayTrace::_fileClose()
 {
-
   close();
 }
 
@@ -582,22 +591,16 @@ void RayTrace::_do_nothing()
 
 void RayTrace::_edit_clear()
 {
-  _isIterating = 0;
+  _isIterating = false;
 
   Ray* q;
-  while( (q = (Ray*) _history.get()) ) {
+  while(( q = (Ray*) _history.get() )) {
     delete q;
   }
 
   _p_leftWindow->updateGL();
   _p_rightWindow->updateGL();
 }
-
-
-void RayTrace::_view_rect()
-{
-}
-
 
 
 void RayTrace::_view_zoom_out()
@@ -755,6 +758,18 @@ void RayTrace::_opt_bg_yellow()
 }
 
 
+void RayTrace::_opt_contmode()
+{
+  _continuous = true;
+}
+
+
+void RayTrace::_opt_snglmode()
+{
+  _continuous = false;
+}
+
+
 void RayTrace::_new_x( double x )
 {
   _bmlConPtr->_proton.set_x(x);
@@ -798,7 +813,7 @@ void RayTrace::setState( const Vector& s )
     uic  << "File: " << __FILE__ << ", Line: " << __LINE__
          << "\nvoid RayTrace::setState( const Vector& s )"
          << "\nArgument s has dimension " << (s.Dim()) << " != 6";
-    QMessageBox::information( this, "CHEF::Tracker", uic.str().c_str() );
+    QMessageBox::information( this, "CHEF::Tracker", uic.str() );
   }
 }
 
@@ -810,24 +825,51 @@ void RayTrace::_iterate()
   bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
   protonPtr = &(_bmlConPtr->_proton);
 
-  if( _isIterating ) 
+  // Continuous operation
+  if( _continuous ) 
   {
-    for( int i = 0; i < _number; i++ ) {
-      bmlPtr->propagate( *protonPtr );
+    if( _isIterating ) 
+    {
+      for( int i = 0; i < _number; i++ ) {
+        bmlPtr->propagate( *protonPtr );
+      }
+
+      _p_leftWindow->updateGL();
+      _p_rightWindow->updateGL();
+
+      _p_timer->start( 100, true );
     }
+    else {
+      _p_timer->stop();
 
-    _p_leftWindow->updateGL();
-    _p_rightWindow->updateGL();
-
-    _p_timer->start( 100, true );
+      _p_x_input ->_set_first ( protonPtr->get_x(), protonPtr->get_npx() ); // Probably should
+      _p_xp_input->_set_second( protonPtr->get_x(), protonPtr->get_npx() ); // be done by emitting
+      _p_y_input ->_set_first ( protonPtr->get_y(), protonPtr->get_npy() ); // a signal of some
+      _p_yp_input->_set_second( protonPtr->get_y(), protonPtr->get_npy() ); // sort.
+    }
   }
-  else {
-    _p_timer->stop();
 
-    _p_x_input ->_set_first ( protonPtr->get_x(), protonPtr->get_npx() ); // Probably should
-    _p_xp_input->_set_second( protonPtr->get_x(), protonPtr->get_npx() ); // be done by emitting
-    _p_y_input ->_set_first ( protonPtr->get_y(), protonPtr->get_npy() ); // a signal of some
-    _p_yp_input->_set_second( protonPtr->get_y(), protonPtr->get_npy() ); // sort.
+  // Single shot operation
+  else
+  {
+    if( _isIterating ) 
+    {
+       bmlPtr->propagate( *protonPtr );
+
+      _p_leftWindow->updateGL();
+      _p_rightWindow->updateGL();
+
+      _isIterating = false;
+      _p_timer->stop();  // Probably unnecessary
+      _p_startBtn->setOn(false);
+      _p_startBtn->setText( "Trace" );
+
+      _p_x_input ->_set_first ( protonPtr->get_x(), protonPtr->get_npx() ); // Probably should
+      _p_xp_input->_set_second( protonPtr->get_x(), protonPtr->get_npx() ); // be done by emitting
+      _p_y_input ->_set_first ( protonPtr->get_y(), protonPtr->get_npy() ); // a signal of some
+      _p_yp_input->_set_second( protonPtr->get_y(), protonPtr->get_npy() ); // sort.
+
+    }
   }
 }
 
