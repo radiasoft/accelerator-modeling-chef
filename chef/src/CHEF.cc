@@ -1952,7 +1952,7 @@ void CHEF::_launchTrack()
     return;
   }
 
-  _trackWidget = new Tracker(_p_currBmlCon,Qt::WDestructiveClose);
+  _trackWidget = new Tracker(_p_currBmlCon,0,0,Qt::WDestructiveClose);
   _trackWidget->setCaption( "CHEF:: Phase Space Tracking" );
   _trackWidget->show();
 }
@@ -2230,7 +2230,8 @@ void CHEF::_launchSiteVu()
     return;
   }
 
-  _siteWidget = new SiteViewer( *(_p_currBmlCon) );
+  _siteWidget = new SiteViewer( *(_p_currBmlCon) , 0, 0, Qt::WDestructiveClose );
+  // REMOVE: _siteWidget = new SiteViewer( *(_p_currBmlCon) );
   // Must be deleted by itself.
   _siteWidget->setCaption( QString("CHEF:: Site Viewer")+
                            QString("    ")+ 
