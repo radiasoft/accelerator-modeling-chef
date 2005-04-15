@@ -181,13 +181,15 @@ void SiteViewer::_finishConstructor()
 
   _myGLwindow = new Wndw( this );
   _myGLwindow->show();
+
   // ------------------------------------------------------
   // From chef-mdi/src/SiteViewer.cpp:
   // _myGLwindow->resize(width(), height());
   // ------------------------------------------------------
-  _myGLwindow->setMinimumSize(QSize(  QApplication::desktop()->height()/2
-                                    , QApplication::desktop()->height()/2 ));
+  _myGLwindow->setMinimumSize(QSize(  (2*QApplication::desktop()->height())/3
+                                    , (2*QApplication::desktop()->height())/3 ));
   this->adjustSize();
+  _myGLwindow->setMinimumSize(QSize( 10, 10 ));
   // ------------------------------------------------------
   // Note: _myGLwindow will be
   // deleted automatically by Qt.
