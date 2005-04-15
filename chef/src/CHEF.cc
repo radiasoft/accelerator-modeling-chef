@@ -1966,7 +1966,7 @@ void CHEF::_launchRayTrace()
     return;
   }
 
-  _traceWidget = new RayTrace(_p_currBmlCon);
+  _traceWidget = new RayTrace(_p_currBmlCon,0,0,Qt::WDestructiveClose);
   _traceWidget->setCaption( "CHEF:: Orbit Trace" );
   _traceWidget->show();
 }

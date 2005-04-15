@@ -51,7 +51,7 @@
 #include "GenericException.h"
 #include "RayTrace.h"
 #include "PointEdit.h"
-#include "Tracker.h"
+#include "Tracker.h"   // ??? Is this needed?
 #include "QtMonitor.h"
 
 #include "Particle.h"  // This line should not be necessary!!!
@@ -84,9 +84,15 @@ Ray::~Ray()
 // -------------------------------
 
 RayDrawSpace::RayDrawSpace( RayTrace* p, QHBox* parent, const char* m )
-: QGLWidget(parent), _topRayTrace(p), _r(1.0), _g(1.0), _b(1.0),
-  _xLo( -0.0020 ), _xHi( 0.0020 ), _yLo( -0.0020 ), _yHi( 0.0020 ),
-  _myWheel(0.0), _pointSize(3)
+: QGLWidget(parent), 
+  _topRayTrace(p), 
+  _pointSize(3),
+  _r(1.0), _g(1.0), _b(1.0),
+  _xLo( -0.0020 ), 
+  _yLo( -0.0020 ), 
+  _xHi( 0.0020 ), 
+  _yHi( 0.0020 ),
+  _myWheel(0.0)
 {
   // *** _myWheel.setIncrement( 252.0 );  // = 7*36, will provide ten colors
   _myWheel.setIncrement( 30.0 ); 
@@ -572,7 +578,7 @@ RayTrace::~RayTrace()
 
 void RayTrace::_fileClose()
 {
-  delete this;
+  close();
 }
 
 
@@ -807,7 +813,7 @@ void RayTrace::setState( const Vector& s )
     uic  << "File: " << __FILE__ << ", Line: " << __LINE__
          << "\nvoid RayTrace::setState( const Vector& s )"
          << "\nArgument s has dimension " << (s.Dim()) << " != 6";
-    QMessageBox::information( this, "CHEF::Tracker", uic.str().c_str() );
+    QMessageBox::information( this, "CHEF::Tracker", uic.str() );
   }
 }
 
