@@ -4,11 +4,10 @@
 #include <qlineedit.h>
 
 
-InitCondDialogLF::InitCondDialogLF( QWidget* parent, const char* name, WFlags f):
+InitCondDialogLF::InitCondDialogLF(QWidget* parent, const char* name, WFlags f):
 
 InitCondDialogLFBase(parent,name,f)
 {
- 
   QDoubleValidator* positiveValidator = new QDoubleValidator(0.0, 1.0e9, 6, this, "betaValidator");  
   QDoubleValidator* dbleValidator     = new QDoubleValidator(this, "dbleValidator");  
 
@@ -25,34 +24,31 @@ InitCondDialogLFBase(parent,name,f)
   vEtaPrimeLineEdit->setValidator( dbleValidator );
 
   hPsiLineEdit->setValidator( dbleValidator );
-  vPsiLineEdit->setValidator( dbleValidator );}
+  vPsiLineEdit->setValidator( dbleValidator );
+}
 
 void InitCondDialogLF::readInputValues()
 {
-
   _lf.beta.hor       = hBetaLineEdit->text().toDouble();
   _lf.beta.ver       = vBetaLineEdit->text().toDouble();
   _lf.alpha.hor      = hAlphaLineEdit->text().toDouble();
   _lf.alpha.ver      = vAlphaLineEdit->text().toDouble();
-		       						       
+
   _lf.dispersion.hor = hEtaLineEdit->text().toDouble();
   _lf.dispersion.ver = vEtaLineEdit->text().toDouble();
-		       						       
+
   _lf.dPrime.hor     = hEtaPrimeLineEdit->text().toDouble();
   _lf.dPrime.ver     = vEtaPrimeLineEdit->text().toDouble();
-		       						       
+
   _lf.psi.hor        = hPsiLineEdit->text().toDouble();
   _lf.psi.ver        = vPsiLineEdit->text().toDouble();
-
 }
 
 
-LattFuncSage::lattFunc& 
-InitCondDialogLF:: getInitCond() 
+const LattFuncSage::lattFunc& 
+InitCondDialogLF::getInitCond() const
 {
-
   return _lf;
-
 }
 
 void
@@ -138,9 +134,3 @@ InitCondDialogLF::momentsMode()
  vPsiLineEdit->setEnabled(false);
 
 }
-
-
-
-
-
-//void QLineEdit::returnPressed ()

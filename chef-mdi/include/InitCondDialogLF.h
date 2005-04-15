@@ -12,6 +12,7 @@ Q_OBJECT
  public:
   
    InitCondDialogLF(QWidget* parent, const char* name, WFlags f=0);
+
    void dispersionMode();
    void ULFMode();
    void momentsMode();
@@ -19,7 +20,7 @@ Q_OBJECT
  public slots:
 
    void readInputValues();
-   LattFuncSage::lattFunc& getInitCond();
+   const LattFuncSage::lattFunc& getInitCond() const;
    void setInitCond( const LattFuncSage::lattFunc& lf );
   
  private:
