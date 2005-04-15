@@ -29,17 +29,21 @@
 **************************************************************************
 *************************************************************************/
 
-
 #include <values.h>
 #include <fstream>
 #include <iomanip>
 
+#include <qapplication.h>
 #include <qmenubar.h>
 #include <qmessagebox.h>
 #include <qfiledialog.h>
 #include <qstring.h>
 #include <qpixmap.h>
 #include <qpainter.h>
+
+#ifndef MAXFLOAT
+#define MAXFLOAT 1.0e30
+#endif
 
 #include "SiteViewer.h"
 #include "beamline.h"
@@ -177,9 +181,14 @@ void SiteViewer::_finishConstructor()
 
   _myGLwindow = new Wndw( this );
   _myGLwindow->show();
-  _myGLwindow->setMinimumSize(QSize(500,500));
-  // _myGLwindow->setFixedSize(500,500);
+  // ------------------------------------------------------
+  // From chef-mdi/src/SiteViewer.cpp:
+  // _myGLwindow->resize(width(), height());
+  // ------------------------------------------------------
+  _myGLwindow->setMinimumSize(QSize(  QApplication::desktop()->height()/2
+                                    , QApplication::desktop()->height()/2 ));
   this->adjustSize();
+  // ------------------------------------------------------
   // Note: _myGLwindow will be
   // deleted automatically by Qt.
 }
@@ -261,7 +270,8 @@ void SiteViewer::_fileSite()
 
 void SiteViewer::_fileClose()
 {
-  delete this;
+  // REMOVE: delete this;
+  close();
 }
 
 
