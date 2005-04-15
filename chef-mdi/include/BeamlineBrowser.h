@@ -6,9 +6,8 @@
 ******             interfaces to exercise the functionality        
 ******             of BEAMLINE.                                    
 ******                                                                
-******  Version:   3.0                    
-******                                    
 ******  File:      BeamlineBrowser.h
+******  Version:   3.3
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -56,9 +55,10 @@ class BeamlineContext;
 class ReverseBeamlineIterator;
 class BoolNode;
 
-namespace CHEF_domain {
-
+namespace CHEF_domain
+{
 class QBmlRoot;
+
 
 class QBml : public QListViewItem
 {
@@ -138,12 +138,26 @@ struct infoWriter : public ConstBmlVisitor
   void visitSlot       ( const Slot*       );
   void visitSbend      ( const sbend*      );
   void visitCF_sbend   ( const CF_sbend*   );
+  void visitRbend      ( const rbend*      );
   void visitCF_rbend   ( const CF_rbend*   );
   void visitQuadrupole ( const quadrupole* );
   void visitThinQuad   ( const thinQuad*   );
   void visitSextupole  ( const sextupole*  );
   void visitMarker     ( const marker*     );
   void visitSector     ( const sector*     );
+  void visitMonitor    ( const monitor*    );
+
+  BeamlineContext*     _contextPtr;
+};
+
+
+// Interface for editDialog subclass
+struct editDialog : public BmlVisitor 
+{
+  void visitBmlnElmnt  ( bmlnElmnt*  );
+  void visitRbend      ( rbend*      );
+  void visitQuadrupole ( quadrupole* );
+  void visitThinQuad   ( thinQuad*   );
 
   BeamlineContext*     _contextPtr;
 };
@@ -183,9 +197,9 @@ struct infoWriter : public ConstBmlVisitor
   void displayBeamline( const BeamlineContext* );
   int removeBeamline( BeamlineContext* );   // eliminates the beamline as well
   // REMOVE int findElement( QBml*, const QString& );
-  int findElement( QBml*, const BoolNode&, QPtrList<bmlnElmnt>& );
-  int findElement( QBml*, const BoolNode*, QPtrList<bmlnElmnt>& );
-  QPtrList<bmlnElmnt> findAllSelected( QBmlRoot* ) const;
+  int findElement( CHEF_domain::QBml*, const BoolNode&, QPtrList<bmlnElmnt>& );
+  int findElement( CHEF_domain::QBml*, const BoolNode*, QPtrList<bmlnElmnt>& );
+  QPtrList<bmlnElmnt> findAllSelected( CHEF_domain::QBmlRoot* ) const;
 
 public slots:
     void setDir( const QString & );
@@ -202,7 +216,7 @@ signals:
 protected slots:
     void slotFolderSelected( QListViewItem * );
     // void slotShowData( QListViewItem* );
-    void slotShowData( QBmlRoot*, CHEF_domain::QBml* );
+    void slotShowData( CHEF_domain::QBmlRoot*, CHEF_domain::QBml* );
     void openFolder();
 
 protected:
@@ -222,11 +236,12 @@ private:
     QPoint presspos;
     bool mousePressed;
 
-    static void _displayLine( QBmlRoot*, ReverseBeamlineIterator&, double& );
+    static void _displayLine( CHEF_domain::QBmlRoot*, ReverseBeamlineIterator&, double& );
     slist _topLevelItems;
-    QBmlRoot* _lastClickedRootPtr;
+    CHEF_domain::QBmlRoot* _lastClickedRootPtr;
 };
 
-}  // CHEF_domain 
+
+}; // end namespace CHEF
 
 #endif // BEAMLINEBROWSER_H
