@@ -32,7 +32,7 @@
 *************************************************************************/
 
 
-#include "CHEF"
+#include "CHEF.h"
 
 int main( int argc, char** argv )
 {

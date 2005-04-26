@@ -60,8 +60,6 @@
 
 #include "slist.h"
 
-namespace CHEF_domain
-{
 // typedef void (*DrawFunc) ( DrawSpace3D* );
 
 // Forward declaration
@@ -179,7 +177,5 @@ private:
   bool             _isIterating;
 };
 
-
-};  // end namespace CHEF
 
 #endif // TRBWIDGET_H

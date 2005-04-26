@@ -48,9 +48,6 @@ class QMouseEvent;
 #include "BeamlineExpressionTree.h"
 #endif
 
-namespace CHEF_domain
-{
-
 class SiteViewer : public QVBox
 {
 Q_OBJECT
@@ -148,8 +145,5 @@ private:
 
 
 #include "SiteViewer.icc"
-
-};  // end namespace CHEF_domain
-
 
 #endif // SITEVIEWER_H

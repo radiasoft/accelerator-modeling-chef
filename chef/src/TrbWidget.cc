@@ -69,7 +69,6 @@
 #include "Tracker.h"  // ??? Needed only for class Orbit
 #include "TrbWidget.h"
 
-using namespace CHEF_domain;
 using namespace std;
 
 

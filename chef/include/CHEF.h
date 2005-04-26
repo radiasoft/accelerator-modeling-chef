@@ -83,8 +83,6 @@ typedef TMapping<double,FNAL::Complex> Mapping;
 
 class CHEFPlotMain;
 
-namespace CHEF_domain
-{
 class QBml;
 class QBmlRoot;
 // class LattFncPlt;
@@ -341,7 +339,5 @@ signals:
   void _new_beamline();
   void _modeChanged( const BeamlineContext* );
 };
-
-}; // end namespace CHEF
 
 #endif // CHEF_H
