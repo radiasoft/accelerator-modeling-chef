@@ -54,7 +54,6 @@
 #include <chefplotmain.h>
 
 extern beamline* DriftsToSlots( /* const */ beamline& original );
-using namespace CHEF_domain;
 
 
 
@@ -134,11 +133,11 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
     connect( this,   SIGNAL(_modeChanged( const BeamlineContext* )),
              _p_vwr, SLOT(resetPixmap( const BeamlineContext* ))        );
 
-    connect( _p_vwr, SIGNAL(sig_bmlLeftClicked( BeamlineContext*,   CHEF_domain::QBmlRoot* )),
-             this,   SLOT( _set_p_clickedContext( BeamlineContext*, CHEF_domain::QBmlRoot* ))    );
+    connect( _p_vwr, SIGNAL(sig_bmlLeftClicked( BeamlineContext*,   QBmlRoot* )),
+             this,   SLOT( _set_p_clickedContext( BeamlineContext*, QBmlRoot* ))    );
 
-    connect( _p_vwr, SIGNAL( sig_bmlLeftClicked( CHEF_domain::QBml* )), 
-             this,   SLOT(_set_p_clickedQBml( CHEF_domain::QBml* ))    );
+    connect( _p_vwr, SIGNAL( sig_bmlLeftClicked( QBml* )), 
+             this,   SLOT(_set_p_clickedQBml( QBml* ))    );
 
     connect( _p_vwr, SIGNAL( sig_newContext( BeamlineContext* )),
              this,   SLOT(_slot_contextGenerated( BeamlineContext* ))    );
@@ -2093,7 +2092,7 @@ void CHEFGUI::_launchTrack()
     return;
   }
 
-  _trackWidget = new CHEF_domain::Tracker( _p_currBmlCon, _centralWidget, "Tracker", Qt::WDestructiveClose);
+  _trackWidget = new Tracker( _p_currBmlCon, _centralWidget, "Tracker", Qt::WDestructiveClose);
   _trackWidget->setCaption( "CHEF:: Phase Space Tracking" );
   _trackWidget->setGeometry(0, 0,_centralWidget->width(), _centralWidget->height());
   _trackWidget->show();
@@ -2115,7 +2114,7 @@ void CHEFGUI::_launchRayTrace()
     return;
   }
 
-  _traceWidget = new CHEF_domain::RayTrace(_p_currBmlCon, _centralWidget, "RayTrace", Qt::WDestructiveClose );
+  _traceWidget = new RayTrace(_p_currBmlCon, _centralWidget, "RayTrace", Qt::WDestructiveClose );
   _traceWidget->setCaption( "CHEF:: Orbit Trace" );
   _traceWidget->setGeometry(0,0, _centralWidget->width(), _centralWidget->height() );
   _traceWidget->show();
@@ -2391,7 +2390,7 @@ void CHEFGUI::_launchSiteVu()
     return;
   }
 
-  _siteWidget = new CHEF_domain::SiteViewer( *(_p_currBmlCon) , _centralWidget, "SiteViewer", Qt::WDestructiveClose );
+  _siteWidget = new SiteViewer( *(_p_currBmlCon) , _centralWidget, "SiteViewer", Qt::WDestructiveClose );
   // Must be deleted by itself.
   _siteWidget->setCaption( QString("CHEF:: Site Viewer")+
                            QString("    ")+ 
@@ -2514,7 +2513,7 @@ CHEFGUI::_set_p_clickedContext( BeamlineContext* x, QBmlRoot* y )
 }
 
 
-void CHEFGUI::_set_p_clickedQBml( CHEF_domain::QBml* x )
+void CHEFGUI::_set_p_clickedQBml( QBml* x )
 {
   _p_clickedQBml = x;
 }

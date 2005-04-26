@@ -49,7 +49,6 @@
 
 #include "PointEdit.h"
 
-using namespace CHEF_domain;
 
 // -------------------------------
 // Implementation: class PointEdit

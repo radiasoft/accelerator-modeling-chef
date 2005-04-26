@@ -38,8 +38,6 @@
 
 class QHBox;
 
-namespace CHEF_domain
-{
 class PointEdit : public QLineEdit
 {
 Q_OBJECT
@@ -58,7 +56,5 @@ signals:
   void _new_value( double );
 
 };
-
-};  // end namespace CHEF
 
 #endif // POINTEDIT_H

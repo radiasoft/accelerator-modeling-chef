@@ -51,7 +51,6 @@
 #include "QueryDialog.h"
 
 using namespace std;
-using namespace CHEF_domain;
 
 QueryDialog::QueryDialog( QWidget* p, const char* n, 
                           bool m, WFlags f )
