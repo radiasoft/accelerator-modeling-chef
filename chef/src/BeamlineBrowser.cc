@@ -66,7 +66,6 @@
 // This undef is needed because of the compiler.
 // #undef connect
 
-using namespace CHEF_domain;
 using namespace std;
 
 const char* BeamlineBrowser::drift_xpm[19]={

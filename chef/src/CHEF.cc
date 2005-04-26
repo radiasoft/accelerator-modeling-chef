@@ -95,7 +95,6 @@
 
 extern beamline* DriftsToSlots( /* const */ beamline& original );
 
-using namespace CHEF_domain;
 
 
 // 

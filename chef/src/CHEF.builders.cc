@@ -49,7 +49,6 @@ madparser* mp = 0;
 
 #include "CHEF.h"
 
-using namespace CHEF_domain;
 using namespace std;
 
 void CHEF::_makeFODO()

@@ -63,7 +63,6 @@
 #undef connect
 
 
-using namespace CHEF_domain;
 using namespace std;
 
 // --------------------------
