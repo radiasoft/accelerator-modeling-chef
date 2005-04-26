@@ -60,8 +60,6 @@ class BeamlineContext;
 #endif
 
 
-namespace CHEF_domain
-{
 class RayDrawSpace;
 class RayTrace;
 class PointEdit;
@@ -219,8 +217,6 @@ inline int RayTrace::maxHistory() const
   return _maxHistory;
 }
 
-
-};  // end namespace CHEF
 
 #endif // RAYTRACE_H
 

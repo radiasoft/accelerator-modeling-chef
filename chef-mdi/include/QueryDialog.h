@@ -45,9 +45,6 @@ class QLineEdit;
 class QHButtonGroup;
 class QTextEdit;
 
-namespace CHEF_domain
-{
-
 class QueryDialog : public QObject
 {
 Q_OBJECT
@@ -86,7 +83,5 @@ private:
 
   void           _updateDisplay();
 };
-
-};  // end namespace CHEF
 
 #endif  // QUERYDIALOG_H

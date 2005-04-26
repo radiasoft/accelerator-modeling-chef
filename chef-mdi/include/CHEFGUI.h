@@ -51,9 +51,8 @@ class Jet__environment;
 class JetC__environment;
 class Mapping;
 
-
-class CHEF_domain::QBml;
-class CHEF_domain::QBmlRoot;
+class QBml;
+class QBmlRoot;
 class CHEFPlotMain;
 class Tracker;
 class RayTrace;
@@ -213,9 +212,9 @@ private:
   QGuardedPtr<CHEFPlotMain>                   _DspnplotWidget;
   
 
-  CHEF_domain::Tracker*            _trackWidget;
-  CHEF_domain::RayTrace*           _traceWidget;
-  CHEF_domain::SiteViewer*         _siteWidget;
+  Tracker*            _trackWidget;
+  RayTrace*           _traceWidget;
+  SiteViewer*         _siteWidget;
  
   Messages<>*                      _messages_stdout;
   Messages<>*                      _messages_stderr;
@@ -232,7 +231,7 @@ private:
   QAssistantClient*                _assistanthelp;
   BmlSelectionDialog*              _bmlSelectionDialog;
 
-  CHEF_domain::BeamlineBrowser*    _p_vwr;
+  BeamlineBrowser*                 _p_vwr;
   QPyCHEF*                         _interpreter;
 
 
@@ -242,15 +241,15 @@ private:
 
 
   
-  QPtrList<CHEF_domain::QBml>    _selListItems;  // selected QListViewItems
+  QPtrList<QBml>    _selListItems;  // selected QListViewItems
                                     // Doesn't seem to be used so far
                                     // (9/24/03)
   QPtrList<bmlnElmnt> _foundList;   // List of beamline elements found by the editor.
 
   dlist                  _contextList;
   BeamlineContext*       _p_currBmlCon;  // Currently selected beamline
-  CHEF_domain::QBmlRoot* _p_currQBmlRoot;// ... and its widget
-  CHEF_domain::QBml*     _p_clickedQBml; // ... and its QBml
+  QBmlRoot*              _p_currQBmlRoot;// ... and its widget
+  QBml*                  _p_clickedQBml; // ... and its QBml
   
  
 
@@ -263,7 +262,7 @@ private:
   static int _buildHTuneCircuit( const CHEFGUI*, const bmlnElmnt* );
 
   void _testFC( ACTFUNC11 ) const;
-  void _traverseTree( const CHEF_domain::QBmlRoot*, ACTFUNC11 ) const;
+  void _traverseTree( const QBmlRoot*, ACTFUNC11 ) const;
   void _pushArgs();
   void _enableMenus(bool set);
   
@@ -342,8 +341,8 @@ signals:
    void _verTuneCtrl();
    void _tuneCtrl();
    void _chromCtrl();
-   void _set_p_clickedContext(BeamlineContext*, CHEF_domain::QBmlRoot*);
-   void _set_p_clickedQBml( CHEF_domain::QBml* );
+   void _set_p_clickedContext(BeamlineContext*, QBmlRoot*);
+   void _set_p_clickedQBml( QBml* );
    void _windowsCascade();
    void _windowsMinimizeAll();
    void _windowsTile();

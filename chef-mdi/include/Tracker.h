@@ -65,8 +65,6 @@ class BeamlineContext;
 #endif
 
 
-namespace CHEF_domain
-{
 class DrawSpace;
 class Tracker;
 class PointEdit;
@@ -463,7 +461,5 @@ inline const OrbitTransformer* DrawSpace::getTransformer()
 {
   return _transformPtr;
 }
-
-};  // end namespace CHEF
 
 #endif // TRACKER_H
