@@ -36,10 +36,9 @@
 #include <cstdlib>
 #include <string>
 
-using std::cerr;
-using std::endl;
-
 #include "IntArray.h"
+
+using namespace std;
 
 #ifdef __PRIVATE_ALLOCATOR__
 #include <iostream.h>

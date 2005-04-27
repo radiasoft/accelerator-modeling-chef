@@ -39,9 +39,6 @@
 #include <exception>
 #include <string>
 
-using std::istream;
-using std::ostream;
-
 #ifdef __PRIVATE_ALLOCATOR__
 #include <vmalloc.h>
 #endif
@@ -102,8 +99,8 @@ public:
   //  void  operator delete(void* obj, size_t size);
 
   // Utilities ..
-  friend ostream& operator<<( ostream&, const IntArray& );
-  friend istream& operator>>( istream&, IntArray& );
+  friend std::ostream& operator<<( std::ostream&, const IntArray& );
+  friend std::istream& operator>>( std::istream&, IntArray& );
 
   // Exceptions ...
   struct GenericException : public std::exception
