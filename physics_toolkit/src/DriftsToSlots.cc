@@ -481,7 +481,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
           else if( c_CFsb ) {
             arcFrame.rotate( - ((CF_sbend*) c)->getEntryAngle(), arcFrame.getyAxis() );
           }
-          if( c_rb ) {
+          else if( c_rb ) {
             arcFrame.rotate( - ((rbend*) c)->getEntryAngle(), arcFrame.getyAxis() );
           }
           else if( c_CFrb ) {
@@ -535,7 +535,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
           else if( a_CFsb ) {
             arcFrame.rotate( ((CF_sbend*) a)->getExitAngle(), arcFrame.getyAxis() );
           }
-          if( a_rb ) {
+          else if( a_rb ) {
             arcFrame.rotate( ((rbend*) a)->getExitAngle(), arcFrame.getyAxis() );
           }
           else if( a_CFrb ) {
@@ -582,7 +582,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
             else if( c_CFsb ) {
               arcFrame.rotate( - ((CF_sbend*) c)->getEntryAngle(), arcFrame.getyAxis() );
             }
-            if( c_rb ) {
+            else if( c_rb ) {
               arcFrame.rotate( - ((rbend*) c)->getEntryAngle(), arcFrame.getyAxis() );
             }
             else if( c_CFrb ) {
@@ -611,7 +611,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
             else if( a_CFsb ) {
               arcFrame.rotate( ((CF_sbend*) a)->getExitAngle(), arcFrame.getyAxis() );
             }
-            if( a_rb ) {
+            else if( a_rb ) {
               arcFrame.rotate( ((rbend*) a)->getExitAngle(), arcFrame.getyAxis() );
             }
             else if( a_CFrb ) {
