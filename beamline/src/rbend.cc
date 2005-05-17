@@ -7,7 +7,7 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      rbend.cc
-******  Version:   3.1
+******  Version:   3.2
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -174,7 +174,7 @@ rbend::rbend( double l, double s, double us, double ds, PropFunc* pf )
   , _myArcsin(true)
 {
  static bool firstTime = true;
- if ( (0.0 != us) && (fabs( us ) < 1.0e-6) ) {
+ if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
    _usEdgeAngle = 0.0;
    _usAngle = 0.0;
    _usTan = 0.0;
@@ -191,7 +191,7 @@ rbend::rbend( double l, double s, double us, double ds, PropFunc* pf )
      firstTime = false;
    }
  }
- if ( (0.0 != ds) && (fabs( ds ) < 1.0e-6) ) {
+ if ( (0.0 < fabs(ds)) && (fabs( ds ) < 1.0e-6) ) {
    _dsEdgeAngle = 0.0;
    _dsAngle = 0.0;
    _dsTan = 0.0;
@@ -229,7 +229,7 @@ rbend::rbend( const char* n, double l, double s, double us, double ds, PropFunc*
   , _myArcsin(true)
 {
  static bool firstTime = true;
- if ( (0.0 != us) && (fabs( us ) < 1.0e-6) ) {
+ if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
    _usEdgeAngle = 0.0;
    _usAngle = 0.0;
    _usTan = 0.0;
@@ -246,7 +246,7 @@ rbend::rbend( const char* n, double l, double s, double us, double ds, PropFunc*
      firstTime = false;
    }
  }
- if ( (0.0 != ds) && (fabs( ds ) < 1.0e-6) ) {
+ if ( (0.0 < fabs(ds)) && (fabs( ds ) < 1.0e-6) ) {
    _dsEdgeAngle = 0.0;
    _dsAngle = 0.0;
    _dsTan = 0.0;
@@ -302,7 +302,7 @@ rbend::rbend( double l, double s, double entryangle, double us, double ds, PropF
      firstTime = false;
    }
  }
- if ( (0.0 != us) && (fabs( us ) < 1.0e-6) ) {
+ if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
    _usEdgeAngle = 0.0;
    _usAngle = entryangle;
    _usTan = tan(entryangle);
@@ -319,7 +319,7 @@ rbend::rbend( double l, double s, double entryangle, double us, double ds, PropF
      firstTime = false;
    }
  }
- if ( (0.0 != ds) && (fabs( ds ) < 1.0e-6) ) {
+ if ( (0.0 < fabs(ds)) && (fabs( ds ) < 1.0e-6) ) {
    _dsEdgeAngle = 0.0;
    _dsAngle = -entryangle;
    _dsTan = -tan(entryangle);
@@ -375,7 +375,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, double us, d
      firstTime = false;
    }
  }
- if ( (0.0 != us) && (fabs( us ) < 1.0e-6) ) {
+ if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
    _usEdgeAngle = 0.0;
    _usAngle = entryangle;
    _usTan = tan(entryangle);
@@ -392,7 +392,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, double us, d
      firstTime = false;
    }
  }
- if ( (0.0 != ds) && (fabs( ds ) < 1.0e-6) ) {
+ if ( (0.0 < fabs(ds)) && (fabs( ds ) < 1.0e-6) ) {
    _dsEdgeAngle = 0.0;
    _dsAngle = -entryangle;
    _dsTan = -tan(entryangle);
@@ -427,6 +427,7 @@ void rbend::_calcPropParams()
 
   // Geometric parameters
   double psi = - (_usEdgeAngle + _dsEdgeAngle);
+  _dphi = - psi;
   _propPhase = FNAL::Complex( cos(psi), sin(psi) );
 
   _propTerm =   this->Length()
@@ -444,6 +445,7 @@ rbend::rbend( const rbend& x )
   , _dsAngle(x._dsAngle)
   , _usTan(x._usTan)
   , _dsTan(x._dsTan)
+  , _dphi(x._dphi)
   , _propPhase(x._propPhase)
   , _propTerm(x._propTerm)
   , _myArcsin(x._myArcsin)
