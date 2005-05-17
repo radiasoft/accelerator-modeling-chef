@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      sbend.h
+******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -53,6 +53,8 @@ private:
                             // upstream and downstream edges of the magnet.
                             // For a (usual) symmetric bend,
                             // sgn( _usTan ) = - sgn( _dsTan )
+  double _dphi;             // angle between in- and out-frames: a derived 
+                            // quantity
   FNAL::Complex _propPhase, _propTerm;
                             // Used to propagate through constant magnetic
                             // field using bend angle and edge angle data.

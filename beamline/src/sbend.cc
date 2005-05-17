@@ -7,7 +7,7 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      sbend.cc
-******  Version:   3.0
+******  Version:   3.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -118,7 +118,7 @@ sbend::sbend( double l, double s, double alpha,
         << endl;
    _angle = - _angle;
  }
- if ( fabs( us ) < 1.0e-6 ) {
+ if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
    _usEdgeAngle = 0.0;
    _usAngle = 0.0;
    _usTan = 0.0;
@@ -135,7 +135,7 @@ sbend::sbend( double l, double s, double alpha,
      firstTime = false;
    }
  }
- if ( fabs( ds ) < 1.0e-6 ) {
+ if ( (0.0 < fabs(ds)) && (fabs( ds ) < 1.0e-6) ) {
    _dsEdgeAngle = 0.0;
    _dsAngle = 0.0;
    _dsTan = 0.0;
@@ -236,7 +236,7 @@ sbend::sbend( const char* n, double l, double s, double alpha,
         << endl;
    _angle = - _angle;
  }
- if ( fabs( us ) < 1.0e-6 ) {
+ if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
    us = 0.0;
    _usEdgeAngle = 0.0;
    _usAngle = 0.0;
@@ -246,7 +246,7 @@ sbend::sbend( const char* n, double l, double s, double alpha,
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** sbend::sbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
-          << fabs(ds) 
+          << fabs(us) 
           << " < 1 microradian."
              "\n*** WARNING *** It will be reset to zero."
              "\n*** WARNING *** This message is written once only."
@@ -254,7 +254,7 @@ sbend::sbend( const char* n, double l, double s, double alpha,
      firstTime = false;
    }
  }
- if ( fabs( ds ) < 1.0e-6 ) {
+ if ( (0.0 < fabs(ds)) && (fabs( ds ) < 1.0e-6) ) {
    ds = 0.0;
    _dsEdgeAngle = 0.0;
    _dsAngle = 0.0;
@@ -290,6 +290,7 @@ void sbend::_calcPropParams()
 
   // Geometric parameters
   double psi = _angle - (_usEdgeAngle + _dsEdgeAngle);
+  _dphi = - psi;
   _propPhase = FNAL::Complex( cos(psi), sin(psi) );
 
   double rho = this->Length()/_angle;
@@ -311,6 +312,7 @@ sbend::sbend( const sbend& x )
   , _dsAngle(x._dsAngle)
   , _usTan(x._usTan)
   , _dsTan(x._dsTan)
+  , _dphi(x._dphi)
   , _propPhase(x._propPhase)
   , _propTerm(x._propTerm)
   , _myArcsin(x._myArcsin)

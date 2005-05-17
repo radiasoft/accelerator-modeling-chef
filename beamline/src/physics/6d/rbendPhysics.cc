@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.3
 ******                                    
 ******  File:      rbendPhysics.cc
+******  Version:   2.4
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -296,8 +296,8 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  FNAL::Complex uf  = ( ui + bi )*expFactor - bf;
 
  // Final filter back to state coordinates
- double dphi   = 0.0;
- double dtheta = dthmdphi + dphi;
+ // REMOVE: double dphi   = 0.0;
+ double dtheta = dthmdphi + pbe->_dphi;
  double cdt    = - PH_MKS_c * dtheta / omega;
  double CDT    = pbe->getReferenceTime();
 
@@ -358,8 +358,8 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 
  // Final filter back to state coordinates
  Jet dtheta, cdt;
- double dphi   = 0.0;
- dtheta = dthmdphi + dphi;
+ // REMOVE: double dphi   = 0.0;
+ dtheta = dthmdphi + pbe->_dphi;
  cdt    = - PH_MKS_c * dtheta / omega;
  double CDT = pbe->getReferenceTime();
 

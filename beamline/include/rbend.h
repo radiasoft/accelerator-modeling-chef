@@ -7,7 +7,7 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      rbend.h
-******  Version:   2.3
+******  Version:   2.4
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -58,6 +58,8 @@ private:
                             // upstream and downstream edges of the magnet.
                             // For a (usual) symmetric bend,
                             // sgn( _usTan ) = - sgn( _dsTan )
+  double _dphi;             // angle between in- and out-frames: a derived 
+                            // quantity.
   FNAL::Complex _propPhase, _propTerm;
                             // Used to propagate through constant magnetic
                             // field using bend angle and edge angle data.

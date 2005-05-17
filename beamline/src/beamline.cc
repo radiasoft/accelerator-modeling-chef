@@ -7,7 +7,7 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      beamline.cc
-******  Version:   3.0
+******  Version:   3.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.
 ******                All Rights Reserved                             
@@ -429,13 +429,13 @@ lattRing beamline::whatIsRing() {
   lattRing* ringPtr = (lattRing*)dataHook.find( "Ring" );
   if(ringPtr != 0)
     return *ringPtr;
-  cout << endl;
-  cout << "*** WARNING ***                               \n"
-    << "*** WARNING *** beamline::whatIsRing       \n"
-      << "*** WARNING *** Entry was not found.          \n"
-        << "*** WARNING *** Meaningless value being       \n"
-          << "*** WARNING *** returned.                     \n"
-            << "*** WARNING ***                               \n" << endl;
+    cout << endl;
+    cout << "*** WARNING ***                            \n"
+         << "*** WARNING *** beamline::whatIsRing       \n"
+         << "*** WARNING *** Entry was not found.       \n"
+         << "*** WARNING *** Meaningless value being    \n"
+         << "*** WARNING *** returned.                  \n"
+         << "*** WARNING ***                            \n" << endl;
   return errRet;
 }
 
