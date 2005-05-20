@@ -644,6 +644,21 @@ void DrawSpace::setRange( double xl, double xh, double yl, double yh )
 }
 
 
+void DrawSpace::uploadBuffer()
+{
+  int myW = this->width();
+  int myH = this->height();
+  _pic.resize( myW, myH );
+  bitBlt( &_pic, 0, 0, this, 0, 0, myW, myH, Qt::CopyROP );
+}
+
+
+void DrawSpace::downloadBuffer()
+{
+  bitBlt( this, 0, 0, &_pic, 0, 0, this->width(), this->height(), Qt::CopyROP );
+}
+
+
 void DrawSpace::setCenterTo( double x, double y )
 {
   double xrange = (_xHi - _xLo)/2.0;
@@ -791,6 +806,19 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
       emit _startedZoom();
     }
     else {
+      if( !(_topTracker->isIterating()) ) {
+      	QPen myPen;
+      	myPen.setStyle ( Qt::SolidLine );
+      	myPen.setColor ( Qt::gray );
+      	myPen.setWidth ( 1 );
+
+      	QPainter paint ( this );
+      	paint.setPen ( myPen );
+
+      	this->downloadBuffer();
+      	paint.drawEllipse (  _ixbf - 3, _iybf - 3, 6, 6 );
+      }
+
       emit _new_point( _xbf, _ybf, _transformPtr );
     }
   }
@@ -959,7 +987,7 @@ void DrawSpace::mouseMoveEvent( QMouseEvent* qme )
   
     w = qme->pos().x() - _ixbf;
     h = qme->pos().y() - _iybf;
-  
+
     QPainter paint( this );
     paint.setPen( Qt::blue );
     paint.drawRect( _ixbf, _iybf, w, h );
@@ -1197,6 +1225,7 @@ void Tracker::_finishConstructor()
 
     _p_leftWindow->setClearColor( 0.0, 0.0, 0.0, 1.0 );
     _p_leftWindow->update();
+    _p_leftWindow->uploadBuffer();
 
   _p_rightWindow = new DrawSpace( this, _p_phaseSpaceViews, "Second" );
     _p_rightWindow->show();
@@ -1211,6 +1240,7 @@ void Tracker::_finishConstructor()
 
     _p_rightWindow->setClearColor( 0.0, 0.0, 0.0, 1.0 );
     _p_rightWindow->update();
+    _p_rightWindow->uploadBuffer();
 
 
   // Construct text displays
@@ -1984,6 +2014,8 @@ void Tracker::_start_callback()
     _p_timer->start( 100, true );
   }
   else {
+    _p_leftWindow->uploadBuffer();
+    _p_rightWindow->uploadBuffer();
     _p_startBtn->setText( "Track" );
   }
 }
