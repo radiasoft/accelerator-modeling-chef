@@ -382,6 +382,9 @@ public:
   void setPointSize( int );
   void setRange( double, double, double, double );
 
+  void uploadBuffer();
+  void downloadBuffer();
+
   // REMOVE: int handle( int );
   const OrbitTransformer* getTransformer();
 
@@ -415,6 +418,7 @@ private:
   Context* _currentContextPtr;
   // Not to be deleted: points to one of the above.
 
+  QPixmap      _pic;
   int          _pointSize;
   GLdouble     _r, _g, _b;
   GLclampf     _rClr, _gClr, _bClr, _aClr;
