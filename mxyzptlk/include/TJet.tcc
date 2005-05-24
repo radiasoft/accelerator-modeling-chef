@@ -1574,22 +1574,91 @@ TJet<T1,T2> acos( const TJet<T1,T2>& x )
 template<typename T1, typename T2>
 TJet<T1,T2> asin( const TJet<T1,T2>& x ) 
 { 
- TJet<T1,T2> z;
- TJet<T1,T2> dz;
- int iter = 0;
 
- z.DeepCopy( x );
+ const T1 zero = ((T1) 0.0); 	 
+ TJetEnvironment<T1,T2>* pje = x.Env(); 	 
+  	 
+ // Initial Newton's step 	 
+ 
+ TJet<T1,T2> z;	        
+ TJet<T1,T2> dz
 
- dz = ( sin(z) - x ) / cos(z);
+ z.DeepCopy( x ); 	 
+ dz = ( sin(z) - x ) / cos(z); 	 
+  	 
+ // Setting up the iteration 	 
+ int upperBound = 8; 	 
+ 
+ int iter = 0;	   
+ int indy = 0; 	 
+ double compValue; 	 
+ bool repeat = true; 	 
+ 
+ TJLterm<T1,T2>* pz = 0; 	 
+ 	 
+ // Iterated Newton's steps
+ 
+ while( repeat && (iter < MX_MAXITER) ) 	 
+ { 	 
+     while( iter++ < upperBound ) { 	 
+      // These two lines are the heart of the calculation: 	 
+      z -= dz; 	 
+      dz = ( sin(z) - x ) / cos(z);	      
+     }
 
- while( ( ( dz != T1(0.0) ) && ( iter++ < MX_MAXITER ) )) {
+	 
+     // The rest is just determining when to stop. 	  
+     //   This procedure could be improved, but it's better 	 
+     //   than the previous one, which was just comparing 	 
+     //   dz to zero. 	 
+     repeat = false; 	 
+ 	 
+     // Load the current answer into a scratchpad 	   
 
-  z -= (1.0 - (1.0/double(iter*iter+2))) * dz; // FIX ME ! This is a simple kludge to improve convergence -JFO
-
-  // z -= dz;
-  dz = ( sin(z) - x ) / cos(z);
-  
- }
+     z.resetIterator(); 	 
+     pz = z.stepIterator(); 	 
+     while( 0 != pz ) { 	 
+       indy = pje->_offset.index(pz->_index); 	 
+       pje->_TJLmml[indy]._value = pz->_value; 	 
+       pz = z.stepIterator(); 	 
+     } 	 
+ 	 
+     // Compare to the increment, one coefficient at a time 	   
+     dz.resetIterator(); 	   
+     pz = dz.stepIterator(); 	 
+     while( 0 != pz ) { 	 
+       indy = pje->_offset.index(pz->_index); 	 
+       compValue = std::abs( pje->_TJLmml[indy]._value ); 	 
+       if( compValue < MX_SMALL ) { 	 
+         if( std::abs(pz->_value) > MX_SMALL ) { 	 
+           repeat = true; 	 
+           break; 	 
+         } 	 
+       } 	 
+       else { 	 
+         if( std::abs(pz->_value) > MX_SMALL*compValue ) { 	 
+           repeat = true; 	 
+           break; 	 
+         } 	 
+       } 	 
+       pz = dz.stepIterator(); 	 
+     } 	 
+ 	 
+     // Clean the scratchpad. 	 
+     z.resetIterator(); 	 
+     pz = z.stepIterator(); 	 
+     while( 0 != pz ) { 	 
+       indy = pje->_offset.index(pz->_index); 	 
+       pje->_TJLmml[indy]._value = zero; 	 
+       pz = z.stepIterator(); 	 
+     }
+ 	 
+     // And continue 	 
+     upperBound += 8; 	 
+ } 	 
+ 
+ // If stopped because too many iterations,
+ // print a warning message
 
  if( iter >= MX_MAXITER ) {
   (*pcerr) << "*** WARNING ***                             \n";
