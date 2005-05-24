@@ -604,6 +604,35 @@ TJLterm<T1,T2> TJet<T1,T2>::stepConstIterator()  const
   }
 }
 
+
+template<typename T1, typename T2>
+const TJLterm<T1,T2>& TJet<T1,T2>::stepConstIteratorRef()  const
+{
+  if( _constIterPtr ) {
+    return *( (TJLterm<T1,T2>*)( _constIterPtr->operator()() ) );
+  }
+  else {
+    throw( GenericException( __FILE__, __LINE__, 
+           "const TJLterm<T1,T2>& TJet<T1,T2>::stepConstIterator()  const",
+           "You must first resetConstIterator." ) );
+  }
+}
+
+
+template<typename T1, typename T2>
+const TJLterm<T1,T2>* TJet<T1,T2>::stepConstIteratorPtr()  const
+{
+  if( _constIterPtr ) {
+    return ( (const TJLterm<T1,T2>*) ( _constIterPtr->operator()() ) );
+  }
+  else {
+    throw( GenericException( __FILE__, __LINE__, 
+           "const TJLterm<T1,T2>& TJet<T1,T2>::stepConstIterator()  const",
+           "You must first resetConstIterator." ) );
+  }
+}
+
+
 template<typename T1, typename T2>
 void TJet<T1,T2>::resetIterator()
 {
@@ -1817,45 +1846,111 @@ TJet<T1,T2> acos( const TJet<T1,T2>& x )
 template<typename T1, typename T2>
 TJet<T1,T2> asin( const TJet<T1,T2>& x ) 
 { 
- static TJet<T1,T2> z;
- static TJet<T1,T2> dz;
- static int iter;
+  const T1 zero = ((T1) 0.0);
+  TJetEnvironment<T1,T2>* pje = x.Env();
 
- iter = 0;
-
- z.DeepCopy( x );
- dz = ( sin(z) - x ) / cos(z);
-
- while( ( dz != ((T1) 0.0) ) && ( iter++ < MX_MAXITER ) ) {
-  z -= dz;
+  // Initial Newton's step
+  TJet<T1,T2> z;
+  TJet<T1,T2> dz;
+  z.DeepCopy( x );
   dz = ( sin(z) - x ) / cos(z);
- }
 
- if( iter >= MX_MAXITER ) {
-  cerr << "*** WARNING ***                             \n";
-  cerr << "*** WARNING *** TJL<T1,T2>& asin( TJL<T1,T2>& x ) {         \n";
-  cerr << "*** WARNING *** Over " 
-       << MX_MAXITER 
-       << " iterations used;    \n";
-  cerr << "*** WARNING *** result may be incorrect.    \n";
-  cerr << "*** WARNING ***                             \n";
-  cerr << "*** WARNING *** Initial value:              \n";
-  cerr << "*** WARNING ***                             \n"
-       << endl;
-  x.printCoeffs();
-  cerr << "*** WARNING *** A few iterations:             " << endl;
-  for( iter = 0; iter < 4; iter++ ) {
-   cerr << "*** WARNING *** Iteration No. " << ( iter+1 ) << endl;
-   z -= dz;
-   dz = ( sin(z) - x ) / cos(z);
-   cerr << "*** WARNING *** dz = " << endl;
-   dz.printCoeffs();
-   cerr << "*** WARNING *** z = " << endl;
-   z.printCoeffs();
+  // Setting up the iteration
+  int upperBound = 8;
+  // REMOVE: if( upperBound > MX_MAXITER ) { upperBound = MX_MAXITER; }
+  int iter = 0;
+  int indy = 0;
+  double compValue;
+  bool repeat = true; 
+  TJLterm<T1,T2>* pz = 0;
+
+  // Iterated Newton's steps
+  while( repeat && (iter < MX_MAXITER) ) 
+  {
+    while( iter++ < upperBound ) {
+     // These two lines are the heart of the calculation:
+     z -= dz;
+     dz = ( sin(z) - x ) / cos(z);
+    }
+
+    // The rest is just determining when to stop.
+    //   This procedure could be improved, but it's better
+    //   than the previous one, which was just comparing
+    //   dz to zero.
+    repeat = false;
+
+    // Load the current answer into a scratchpad
+    z.resetIterator();
+    pz = z.stepIterator();
+    while( 0 != pz ) {
+      indy = pje->_offset.index(pz->_index);
+      pje->_TJLmml[indy]._value = pz->_value;
+      pz = z.stepIterator();
+    }
+
+    // Compare to the increment, one coefficient at a time
+    dz.resetIterator();
+    pz = dz.stepIterator();
+    while( 0 != pz ) {
+      indy = pje->_offset.index(pz->_index);
+      compValue = std::abs( pje->_TJLmml[indy]._value );
+      if( compValue < MX_SMALL ) {
+        if( std::abs(pz->_value) > MX_SMALL ) { 
+          repeat = true; 
+          break;
+        }
+      }
+      else {
+        if( std::abs(pz->_value) > MX_SMALL*compValue ) {
+          repeat = true;
+          break;
+        }
+      }
+      pz = dz.stepIterator();
+    }
+    
+    // Clean the scratchpad.
+    z.resetIterator();
+    pz = z.stepIterator();
+    while( 0 != pz ) {
+      indy = pje->_offset.index(pz->_index);
+      pje->_TJLmml[indy]._value = zero;
+      pz = z.stepIterator();
+    }
+
+    // And continue
+    upperBound += 8;
   }
- }
 
- return z;
+
+  // If stopped because too many iterations,
+  // print a warning message
+  if( iter >= MX_MAXITER ) {
+    cerr << "*** WARNING ***\n";
+    cerr << "*** WARNING *** TJL<T1,T2>& asin( TJL<T1,T2>& x ) {\n";
+    cerr << "*** WARNING *** Over " 
+         << MX_MAXITER 
+         << " iterations used;    \n";
+    cerr << "*** WARNING *** result may be incorrect.    \n";
+    cerr << "*** WARNING ***                             \n";
+    cerr << "*** WARNING *** Initial value:              \n";
+    cerr << "*** WARNING ***                             \n"
+         << endl;
+    x.printCoeffs();
+    cerr << "*** WARNING *** A few iterations:             " << endl;
+    for( iter = 0; iter < 4; iter++ ) {
+      cerr << "*** WARNING *** Iteration No. " << ( iter+1 ) << endl;
+      z -= dz;
+      dz = ( sin(z) - x ) / cos(z);
+      cerr << "*** WARNING *** dz = " << endl;
+      dz.printCoeffs();
+      cerr << "*** WARNING *** z = " << endl;
+      z.printCoeffs();
+    }
+  }
+
+  // Finished
+  return z;
 }
  
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -272,10 +272,12 @@ public:
                                      // non-zero term of lowest weight.
   void addTerm( TJLterm<T1,T2>* );   // Public only for diagnostic purposes.
 
-  void            resetConstIterator();
-  TJLterm<T1,T2>  stepConstIterator()  const;
-  void            resetIterator();
-  TJLterm<T1,T2>* stepIterator();
+  void                  resetConstIterator();
+  TJLterm<T1,T2>        stepConstIterator()     const;
+  const TJLterm<T1,T2>& stepConstIteratorRef()  const;
+  const TJLterm<T1,T2>* stepConstIteratorPtr()  const;
+  void                  resetIterator();
+  TJLterm<T1,T2>*       stepIterator();
 
   bool isNilpotent() const;
 
