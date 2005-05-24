@@ -7,7 +7,7 @@
 ******                                    
 ******  File:      Jet__environment.h
 ******                                                                
-******  Copyright (c) 1990 Universities Research Association, Inc.    
+******  Copyright (c) Universities Research Association, Inc.    
 ******                All Rights Reserved                             
 ******                                                                
 ******  Author:    Leo Michelotti                                     
@@ -19,90 +19,34 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
+****** 
+******  Revision History:
+******                                                               
+******  May 2005 -  Jean-Francois Ostiguy
+******              ostiguy@fnal.gov
+******              Stub file to preserve source compatibility with 
+******              code developed with the non-templated version 
+******              of mxyzptlk.  
+******  
+******  COPYRIGHT STATUS
+******  
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
 **************************************************************************
 *************************************************************************/
 
+#ifndef JET__ENV_H
+#define JET__ENV_H
 
-#ifndef JETENV_H
-#define JETENV_H
-
-#include "TMatrix.h"
-#include "IntArray.h"
-#include "slist.h"
-
-struct JetC__environment;
-class Jet;
-
-struct Jet__environment {
- int     NumVar;        // Number of scalar variables associated with 
-			//   the JL variable.
- int     SpaceDim;      // This is, if you will, the dimension of phase space.
- int     dof;           // The number of degrees of freedom = SpaceDim / 2.
- double* refPoint;      // Reference point in phase space about which 
-			//   derivatives are taken.
- double* scale;         // An array containing numbers which scale the
-                        //   problem's variables.  Each entry is a "typical
-                        //   size" for the variable of the same index.
-                        // 
- int     MaxWeight;     // Maximum acceptable weight of a JL variable,
-			//   equivalent to the maximum order of derivatives
-			//   to be carried through calculations.
-                        // ----------------------------------------------
-                        // 
- double* monomial;      // Storage area for monomials used in multinomial
-			//   evaluation.  The area itself is defined by 
-			//   JLSetup.
- Jet*    JLmonomial;    // Storage area for JL monomials used in concatenation.
-			//   The area itself is defined by JLSetup.
- int*    exponent;      // Used by nexcom (as called by JL::operator()
-			//   when storing monomials. The array exponent 
-			//   is allocated by JLSetup.
- char*   expCode;       // The Wilf code of a monomial. 
- short   PBOK;          // Taking Poisson brackets is OK: the dimension of 
-			//   phase space is even.
- MatrixI* numPaths;     // An array counting the number of paths to a vertex 
-			//   in the Wilf graph.  JLSetup arranges that 
-			//   numPaths[w][n] = number of compositions of
-			//   a weight  w  into  n  parts.
- IntArray AllZeroes;    // An integer array containing zeroes.  Used to 
-			//   filter the standard part of a JL variable.
- slist   myCoords;      // Coordinates of this environment.
-
- // Member functions -------------------------------------
- Jet__environment();
- Jet__environment( Jet__environment& );
- Jet__environment( const JetC__environment& );
- ~Jet__environment();
-
- Jet__environment& operator=( const Jet__environment& );
- Jet__environment& operator=( const JetC__environment& );
- char operator==( const Jet__environment& ) const;
- char operator!=( const Jet__environment& ) const;
-
- // Monomial ranking routines based on Wilf's algorithm
- void monoCode();     // Computes the code of a monomial from its
-                      // exponents.
- void monoDecode();   // The inverse operation to monoCode.
- int  monoRank();     // Computes the rank of a monomial.
-
- // Streams
- friend ostream& operator<<( ostream&, const Jet__environment& );
- friend istream& streamIn( istream&, Jet__environment** );
- // friend ostream& operator>>( ostream&, const Jet__environment* );
- // will not work properly.
-
- // A global
- static char SkipEnvEqTest;
-
-#ifdef OBJECT_DEBUG
-  static int objectCount;
-#endif
-};
-
+#include <Jet.h>
 
 #endif
