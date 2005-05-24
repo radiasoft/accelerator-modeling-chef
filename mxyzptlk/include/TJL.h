@@ -7,7 +7,7 @@
 ******  File:      TJL.h
 ******  Version:   1.0
 ******
-******  Copyright (c) 1990, 2004 Universities Research Association, Inc.
+******  Copyright (c) Universities Research Association, Inc.
 ******                All Rights Reserved
 ******
 ******  Author:    Leo Michelotti
@@ -20,10 +20,28 @@
 ******             Phone: (630) 840 4956
 ******             Email: michelotti@fnal.gov
 ******
-******  Usage, modification, and redistribution are subject to terms
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  Revision History:
 ******
+******  Feb 2005 - Jean-Francois Ostiguy
+*****              ostiguy@fnal.gov
+******  
+******  Efficiency improvements
+******  - Major memory management redesign. 
+******  
+****** 
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
+**************************************************************************
+**************************************************************************
 **************************************************************************
 *************************************************************************/
 
@@ -31,37 +49,19 @@
 #ifndef TJL_H
 #define TJL_H
 
-#include "dlist.h"
-#include "IntArray.h"
-#include "TMatrix.h"
-#include "VectorD.h"
-#include "TJetEnvironment.h"
-
-// Private memory allocators
-// J.F. Ostiguy - Feb 11 1999
-//#define __PRIVATE_ALLOCATOR__
-#ifdef __PRIVATE_ALLOCATOR__
-#include <vmalloc.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#endif
+#include <dlist.h>
+#include <IntArray.h>
+#include <TMatrix.h>
+#include <VectorD.h>
+#include <TJetEnvironment.h>
+#include <FastPODAllocator.h>
+#include <vector>
 
 // *******************************************************************
 
 template<typename T1, typename T2>
-struct TJLterm 
+struct TJLterm: public gms::FastPODAllocator<TJLterm<T1,T2> >  
 {
-// Private memory allocators
-// J.F. Ostiguy - Feb 11 1999
-#ifdef __PRIVATE_ALLOCATOR__
-  static int _init;
-  static Vmalloc_t* _vmem;
-  static void meminit(size_t size);
-
-  void* operator new(size_t size);
-  void  operator delete(void* obj, size_t size);
-#endif
 
   // Data
   IntArray _index; // An integer array giving the derivatives associated
@@ -70,6 +70,8 @@ struct TJLterm
   int _weight;     // The sum of the values in index.  For the above example,
                    //   this would be 4.
   T1 _value;       // The value associated with the JLterm.
+
+  bool _deleted;   // true if the term has been deleted
 
   // Constructors and destructors
   TJLterm();
@@ -88,14 +90,14 @@ struct TJLterm
   TJLterm( const TJLterm& );
   TJLterm( const TJLterm<T2,T1>& );
   TJLterm( const TJLterm<T2,T1>* );
-  ~TJLterm();
+
+  // ~TJLterm();  NOT NEEDED ! 
 
   // Operators
   TJLterm& operator=( const TJLterm& );
   TJLterm  operator*( const TJLterm& );
   TJLterm  operator+( const TJLterm& );
-
-
+  
   // Accessors
   IntArray& exponents()         { return _index; }
   IntArray  exponents()   const { return _index; }
@@ -106,8 +108,8 @@ struct TJLterm
 
 
 // *******************************************************************
-template<typename T1, typename T2>
-struct TJL
+
+template<typename T1, typename T2> struct TJL
 {
 
   dlist _theList;    // Data structure to hold all the information.
@@ -120,12 +122,22 @@ struct TJL
                     // Environment of the jet.
 
   int _rc;           // Reference counting for garbage collection
+  
+  TJLterm<T1,T2>*                     _jltermStore;
+  TJLterm<T1,T2>*                     _jltermStoreCurrentPtr;
+  int                                 _jltermStoreCapacity;
+
+  void initStore();                // setup and initialize the jlterm store using default capacity 
+  void initStore(int capacity);    // setup and initialize the jlterm store 
 
   void insert( TJLterm<T1,T2>* );
   void append( TJLterm<T1,T2>* );
   TJLterm<T1,T2>* remove( dlink* );
 
   // Constructors and destructors_____________________________________
+
+ private:
+
   TJL( TJetEnvironment<T1,T2>* = 0 );
   TJL( const T1&, TJetEnvironment<T1,T2>* );
   TJL( const IntArray&, const T1&, TJetEnvironment<T1,T2>*  );
@@ -134,7 +146,23 @@ struct TJL
   TJL( const TJL<T2,T1>&, TJetEnvironment<T1,T2>* );
   ~TJL();
 
+  static std::vector<TJL<T1,T2>* >  _thePool;
+
+ public:
+ 
+  // factory functions 
+
+  static TJL<T1,T2>* makeTJL( TJetEnvironment<T1,T2>* = 0 );
+  static TJL<T1,T2>* makeTJL( const T1&, TJetEnvironment<T1,T2>* );
+  static TJL<T1,T2>* makeTJL( const IntArray&, const T1&, TJetEnvironment<T1,T2>*  );
+  static TJL<T1,T2>* makeTJL( const TJL& );
+  static TJL<T1,T2>* makeTJL( const TJL* );
+  static TJL<T1,T2>* makeTJL( const TJL<T2,T1>&, TJetEnvironment<T1,T2>* );
+
+  static void discardTJL( TJL<T1,T2>* p);  
+
   // Public member functions__________________________________________
+
   TJLterm<T1,T2>* get();        // Pops the top term, which should be the
                                 // one of lowest weight.
   TJLterm<T1,T2>  firstTerm() const;    
@@ -147,6 +175,8 @@ struct TJL
   void addTerm( TJLterm<T1,T2>* ); // Public only for diagnostic purposes.
   void addTerm( TJLterm<T1,T2>*, dlist_traversor& ); 
                                    // Public only for diagnostic purposes.
+ 
+  TJLterm<T1,T2>* storePtr();   // return a ptr to the next available block in the JLterm store;
 
   bool isNilpotent() const;
   void writeToFile( std::ofstream& ) const;
