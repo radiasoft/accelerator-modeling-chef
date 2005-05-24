@@ -10,6 +10,16 @@
 ******  Copyright (c) 1990, 2004 Universities Research Association, Inc.
 ******                All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -20,10 +30,14 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
+******  Revision History:
+******
+******  Feb 2005 - Jean-Francois Ostiguy
+******              ostiguy@fnal.gov
+******
+****** Efficiency improvements.
+****** - new memory management  
+******
 **************************************************************************
 *************************************************************************/
 
@@ -36,8 +50,9 @@
 
 #include <stdlib.h>
 
-#include "GenericException.h"
-#include "TLieOperator.h"
+#include <iosetup.h>
+#include <GenericException.h>
+#include <TLieOperator.h>
 
 // ================================================================
 //      External routines
@@ -70,6 +85,9 @@ extern "C" {
 
 using namespace std;
 
+using FNAL::pcerr;
+using FNAL::pcout;
+
 // ***************************************************************
 // ***************************************************************
 // ***************************************************************
@@ -84,7 +102,7 @@ template<typename T1, typename T2>
 TLieOperator<T1,T2>::TLieOperator<T1,T2>( TJetEnvironment<T1,T2>* theEnv ) 
 : TJetVector<T1,T2>( theEnv->_spaceDim, 0, theEnv )
 {
- _myEnv = theEnv;
+ TLieOperator<T1,T2>::_myEnv = theEnv;
  
  if( theEnv->_spaceDim == 0 ) {
    throw( GenericException(__FILE__, __LINE__, 
@@ -101,10 +119,10 @@ TLieOperator<T1,T2>::TLieOperator<T1,T2>( const TLieOperator<T1,T2>& x )
 {
  int i;
  
- _myEnv = x._myEnv;
+ TLieOperator<T1,T2>::_myEnv = x._myEnv;
 
- for ( i = 0; i < _myEnv->_spaceDim; i++ ) {
-   _comp[i] = x._comp[i];
+ for ( i = 0; i < TLieOperator<T1,T2>::_myEnv->_spaceDim; i++ ) {
+   TLieOperator<T1,T2>::_comp[i] = x._comp[i];
  }
 }
 
@@ -139,19 +157,19 @@ TLieOperator<T1,T2>::TLieOperator<T1,T2>( const TJet<T1,T2>& x )
 
  for( i = 0; i < s/2; i++ ) {
   ndx[i + s/2] = 1;
-  _comp[i] = x.D( ndx );
+  TLieOperator<T1,T2>::_comp[i] = x.D( ndx );
   ndx[i + s/2] = 0;
  }
 
  for( i = s/2; i < s; i++ ) {
   ndx[i - s/2] = 1;
-  _comp[i] = - x.D( ndx );
+  TLieOperator<T1,T2>::_comp[i] = - x.D( ndx );
   ndx[i - s/2] = 0;
  }
 
  for( i = s; i < n; i++ ) {
-   _comp[i].setEnvTo( pje );
-   _comp[i] = ((T1) 0.0);
+  TLieOperator<T1,T2>::_comp[i].setEnvTo( pje );
+  TLieOperator<T1,T2>::_comp[i] = ((T1) 0.0);
  }
 
  delete [] ndx;
@@ -175,10 +193,10 @@ TLieOperator<T1,T2>::TLieOperator<T1,T2>( char*, TJetEnvironment<T1,T2>* pje  )
           "TLieOperator<T1,T2>::TLieOperator<T1,T2>( char*, TJetEnvironment<T1,T2>* ) ",
           "Phase space has dimension zero." ) );
    }
- _myEnv = pje;
+ TLieOperator<T1,T2>::_myEnv = pje;
 
  for( i = 0; i < pje->_spaceDim; i++ ) 
-  _comp[i].setVariable( i, pje );
+  TLieOperator<T1,T2>::_comp[i].setVariable( i, pje );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -194,23 +212,23 @@ TLieOperator<T1,T2>::~TLieOperator<T1,T2>()
 template<typename T1, typename T2>
 void TLieOperator<T1,T2>::setVariable( const TJet<T1,T2>& x, int j ) 
 {
- if( _myEnv != x.Env() ) {
+ if( TLieOperator<T1,T2>::_myEnv != x.Env() ) {
    throw( GenericException(__FILE__, __LINE__, 
           "void TLieOperator<T1,T2>::setVariable( const TJet<T1,T2>&, int ) ",
           "Inconsistent environments." ) );
  }
- if( j < 0 || _myEnv->_spaceDim <= j ) {
+ if( j < 0 || TLieOperator<T1,T2>::_myEnv->_spaceDim <= j ) {
    ostringstream uic;
    uic  << "Argument j = " << j
         << ": it should be within [ 0, "
-        << _myEnv->_spaceDim
+        << TLieOperator<T1,T2>::_myEnv->_spaceDim
         << " ].";
    throw( GenericException( __FILE__, __LINE__, 
           "void TLieOperator<T1,T2>::setVariable( const TJet<T1,T2>& x, int j ) ",
           uic.str().c_str() ) );
  }
  
- _comp[j] = x;
+ TLieOperator<T1,T2>::_comp[j] = x;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -219,30 +237,30 @@ template<typename T1, typename T2>
 void TLieOperator<T1,T2>::setVariable( const T1& x, int j ) 
 {
 
- if( j < 0 || _dim <= j ) {
+ if( (j < 0) || (TLieOperator<T1,T2>::_dim <= j ) ) {
    ostringstream uic;
    uic  << "Argument j = " << j
         << ": it should be within [ 0, "
-        << _dim
+        << TLieOperator<T1,T2>::_dim
         << " ].";
    throw( GenericException( __FILE__, __LINE__, 
           "void TLieOperator<T1,T2>::setVariable( const T1& x, const int& j )",
           uic.str().c_str() ) );
  }
  
- _myEnv->_refPoint[j] = x;  // WARNING: The environment is altered!
- _comp[j].Reconstruct( _myEnv );
+ TLieOperator<T1,T2>::_myEnv->_refPoint[j] = x;  // WARNING: The environment is altered!
+ TLieOperator<T1,T2>::_comp[j].Reconstruct( TLieOperator<T1,T2>::_myEnv );
  
- int n = _myEnv->_numVar;
+ int n = TLieOperator<T1,T2>::_myEnv->_numVar;
  
  static IntArray ndx;
  ndx.Reconstruct( n );
 
- _comp[j].addTerm( new TJLterm<T1,T2>( ndx, x, _myEnv ) );
+ TLieOperator<T1,T2>::_comp[j].addTerm( new( TLieOperator<T1,T2>::_comp[j]->_jl->storePtr() ) TJLterm<T1,T2>( ndx, x, TLieOperator<T1,T2>::_myEnv ) );
  ndx(j) = 1;
- _comp[j].addTerm( new TJLterm<T1,T2>( ndx, ((T1) 1.0), _myEnv ) );
+ TLieOperator<T1,T2>::_comp[j].addTerm( new( TLieOperator<T1,T2>::_comp[j]->_jl->storePtr() ) TJLterm<T1,T2>( ndx, ((T1) 1.0), TLieOperator<T1,T2>::_myEnv ) );
 
- for( int i = 0; i < _dim; i++ ) _comp[i].setEnvTo( _myEnv );
+ for( int i = 0; i < TLieOperator<T1,T2>::_dim; i++ ) TLieOperator<T1,T2>::_comp[i].setEnvTo(TLieOperator<T1,T2>::_myEnv );
 }
 
 
@@ -294,7 +312,7 @@ template<typename T1, typename T2>
 TJet<T1,T2> TLieOperator<T1,T2>::operator^( const TJet<T1,T2>& x ) const 
 { 
 
- if( _myEnv != x.Env() ) {
+ if( TLieOperator<T1,T2>::_myEnv != x.Env() ) {
    throw( GenericException(__FILE__, __LINE__, 
           "TJet<T1,T2> TLieOperator<T1,T2>::operator^( const TJet<T1,T2>& ) const ",
           "Inconsistent environments." ) );
@@ -307,7 +325,7 @@ TJet<T1,T2> TLieOperator<T1,T2>::operator^( const TJet<T1,T2>& x ) const
  static IntArray ndx;
  static char adjustWeight;
 
- pje = _myEnv;
+ pje = TLieOperator<T1,T2>::_myEnv;
  answer.Reconstruct( pje );
  s = pje->_spaceDim;
  ndx.Reconstruct( pje->_numVar );
@@ -315,12 +333,12 @@ TJet<T1,T2> TLieOperator<T1,T2>::operator^( const TJet<T1,T2>& x ) const
  i = 0;
 
  ndx(0) = 1; 
- answer = _comp[0]*x.D( ndx );
+ answer = TLieOperator<T1,T2>::_comp[0]*x.D( ndx );
  ndx(0) = 0;
 
  if( s > 1 ) for( i = 1; i < s; i++ ) {
   ndx(i) = 1;
-  answer += _comp[i]*x.D( ndx );
+  answer += TLieOperator<T1,T2>::_comp[i]*x.D( ndx );
   ndx(i) = 0;
  }
 
@@ -371,7 +389,7 @@ TJet<T1,T2> TLieOperator<T1,T2>::expMap( const T1& t, const TJet<T1,T2>& x )
  }
 
  if( count >= MX_MAXITER ) {
-  cerr << "\n" 
+  (*pcerr) << "\n" 
        << "*** WARNING ***                                         \n" 
        << "*** WARNING *** TJet<T1,T2> TLieOperator<T1,T2>::expMap()               \n" 
        << "*** WARNING *** Number of iterations has exceeded " << MX_MAXITER << "\n"
@@ -407,7 +425,7 @@ TJet<T1,T2> TLieOperator<T1,T2>::expMap( const TJet<T1,T2>& t, const TJet<T1,T2>
  }
 
  if( count >= MX_MAXITER ) {
-  cerr << "\n" 
+  (*pcerr) << "\n" 
        << "*** WARNING ***                                         \n" 
        << "*** WARNING *** TJet<T1,T2> TLieOperator<T1,T2>::expMap()               \n" 
        << "*** WARNING *** Number of iterations has exceeded " << MX_MAXITER  << "\n"
@@ -430,7 +448,7 @@ TJetVector<T1,T2> TLieOperator<T1,T2>::expMap( const T1& t , const TJetVector<T1
  
  int i; // O.K.
  
- for(  i = 0; i < _dim; i++ ) 
+ for(  i = 0; i < TLieOperator<T1,T2>::_dim; i++ ) 
   z(i) = expMap( t, x(i) );
 
  return z;
@@ -444,7 +462,7 @@ TJetVector<T1,T2> TLieOperator<T1,T2>::expMap( const TJet<T1,T2>& t, const TJetV
  TJetVector<T1,T2> z;
  int i; // O.K.
  
- for(  i = 0; i < _dim; i++ ) 
+ for(  i = 0; i <TLieOperator<T1,T2>:: _dim; i++ ) 
   z(i) = expMap( t, x(i) );
 
  return z;
