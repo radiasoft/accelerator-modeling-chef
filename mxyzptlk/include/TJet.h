@@ -7,8 +7,18 @@
 ******  File:      TJet.h
 ******  Version:   1.0
 ******                                                                
-******  Copyright (c) 1990, 2004 Universities Research Association, Inc.    
+******  Copyright (c) Universities Research Association, Inc. / Fermilab     
 ******                All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -19,11 +29,15 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
+******  
+******  Revision History:
+******
+******  Feb 2005 - Jean-Francois Ostiguy
+******             ostiguy@fnal.gov
+******
+******  Efficiency improvements.
+******  - New memory management.
+******  
 **************************************************************************
 *************************************************************************/
 
@@ -184,16 +198,15 @@ TJet<T1,T2> tan  ( const TJet<T1,T2>& );
 template<typename T1, typename T2> 
 TJet<T1,T2> tanh ( const TJet<T1,T2>& );
 
-TJet<double,FNAL::Complex> erf ( const TJet<double,FNAL::Complex>& );
-TJet<FNAL::Complex,double> erf ( const TJet<FNAL::Complex,double>& );
-
 template<typename T1, typename T2> 
 TJet<T1,T2> erfc ( const TJet<T1,T2>& );
 
+TJet<FNAL::Complex,double> erf    ( const TJet<FNAL::Complex,double>& );
+TJet<double,FNAL::Complex> erf    ( const TJet<double,FNAL::Complex>& );
 
 // Class TJet template
 template<typename T1,typename T2>
-class TJet 
+class TJet: public gms::FastAllocator 
 {
 private:
   TJL<T1,T2>*     _jl;
@@ -264,6 +277,9 @@ public:
   TJL<T2,T1>* newJLOpp( TJetEnvironment<T2,T1>* ) const;
 
   // Public member functions__________________________________________
+
+  TJLterm<T1,T2>* storePtr() {return _jl->storePtr();}  // reserve and get a ptr to the next available free block  
+  
   TJLterm<T1,T2>* get();             // Pops the top term, which should be the 
                                      // one of lowest weight.
   TJLterm<T1,T2> firstTerm() const;  // Returns a JLterm equivalent to the top term,
@@ -272,12 +288,12 @@ public:
                                      // non-zero term of lowest weight.
   void addTerm( TJLterm<T1,T2>* );   // Public only for diagnostic purposes.
 
-  void                  resetConstIterator();
-  TJLterm<T1,T2>        stepConstIterator()     const;
+  void            resetConstIterator();
+  TJLterm<T1,T2>  stepConstIterator()  const;
   const TJLterm<T1,T2>& stepConstIteratorRef()  const;
   const TJLterm<T1,T2>* stepConstIteratorPtr()  const;
-  void                  resetIterator();
-  TJLterm<T1,T2>*       stepIterator();
+  void            resetIterator();
+  TJLterm<T1,T2>* stepIterator();
 
   bool isNilpotent() const;
 
@@ -393,10 +409,9 @@ public:
   friend TJet<T1,T2> sqrt<> ( const TJet<T1,T2>& );
   friend TJet<T1,T2> tan<>  ( const TJet<T1,T2>& );
   friend TJet<T1,T2> tanh<> ( const TJet<T1,T2>& );
-  friend TJet<double,FNAL::Complex> erf  ( const TJet<double,FNAL::Complex>& );
-  friend TJet<FNAL::Complex,double> erf  ( const TJet<FNAL::Complex,double>& );
   friend TJet<T1,T2> erfc<> ( const TJet<T1,T2>& );
-
+  friend TJet<FNAL::Complex,double> erf    ( const TJet<FNAL::Complex,double>& );
+  friend TJet<double,FNAL::Complex> erf    ( const TJet<double,FNAL::Complex>& );
   friend TJet<FNAL::Complex,double> w ( const TJet<FNAL::Complex,double>& );
 
 
