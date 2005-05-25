@@ -26,8 +26,8 @@ AC_PROG_LIBTOOL
 
 AC_ARG_ENABLE(debug,AC_HELP_STRING([--enable-debug],[Debugging. Turns off Optimization]),
 if test "x$set_CXXFLAGS" != "x" && test "x$set_CFLAGS" != "x"; then
-	CXXFLAGS=set_CXXFLAGS
-	CFLAGS=set_CFLAGS
+	CXXFLAGS=$set_CXXFLAGS
+	CFLAGS=$set_CFLAGS
 	AC_SUBST(CFLAGS)
 	AC_SUBST(CXXFLAGS)
 elif test "x${GXX}" = "xyes" || test "x${GCC}" = "xyes"; then
@@ -47,13 +47,13 @@ elif test "x${CXX}" = "xpgCC"; then
      AC_SUBST(AM_CPPFLAGS)
 fi,
 if test "x$set_CXXFLAGS" != "x" && test "x$set_CFLAGS" != "x"; then
-	CXXFLAGS=set_CXXFLAGS
-	CFLAGS=set_CFLAGS
-	AC_SUBST(CFLAGS)
-	AC_SUBST(CXXFLAGS)
+	CXXFLAGS=$set_CXXFLAGS
+	CFLAGS=$set_CFLAGS
+##	AC_SUBST(CFLAGS)
+##	AC_SUBST(CXXFLAGS)
 elif test "x${GXX}" = "xyes" || test "x${GCC}" = "xyes"; then
-   CFLAGS="-g -O2"
-   CXXFLAGS="-g -O2 -pipe -fpermissive -Wno-deprecated"
+   CFLAGS=${CFLAGS} "-g -O2"
+   CXXFLAGS=${CXXFLAGS} "-g -O2 -pipe -fpermissive -Wno-deprecated"
    AC_SUBST(CFLAGS)
    AC_SUBST(CXXFLAGS)
 elif test "x${CXX}" = "xCC"; then
@@ -100,6 +100,42 @@ fi
 AC_HEADER_STDC
 AC_CHECK_HEADERS([fcntl.h stddef.h stdlib.h string.h strings.h])
 
+
+AC_ARG_VAR([BOOST_INC],    [BOOST include directory])dnl
+AC_CHECK_HEADER(shared_ptr.hpp,,[
+if test ${BOOST_INC} && test -r ${BOOST_INC}; then
+        AC_SUBST(BOOST_INC)
+        AC_MSG_RESULT([Location specified: ${BOOST_INC}])
+else
+# Try to guess the location based on the location of gcc 
+        boost_inc=`which gcc | sed "s#bin\/gcc#include#"`
+        if test -r $boost_inc/boost/shared_ptr.hpp; then
+                BOOST_INC=$boost_inc
+                AC_SUBST(BOOST_INC)
+                AC_MSG_RESULT([Header file located in $BOOST_INC])
+        else
+		if test -r /usr/include/boost/shared_ptr.hpp; then
+		    BOOST_INC="/usr/include"
+		    AC_SUBST(BOOST_INC)
+		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+		elif test -r /usr/local/include/boost/shared_ptr.hpp; then
+		    BOOST_INC="/usr/local/include"
+		    AC_SUBST(BOOST_INC)
+		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+		elif test -r /usr/local/include/boost-1_32/boost/shared_ptr.hpp; then
+		    BOOST_INC="/usr/local/include/boost-1_32"
+		    AC_SUBST(BOOST_INC)
+		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+		elif test -r /usr/local/ap/include/boost-1_32/boost/shared_ptr.hpp; then
+		    BOOST_INC="/usr/local/ap/include/boost-1_32"
+		    AC_SUBST(BOOST_INC)
+		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+                else
+		AC_MSG_ERROR([BOOST includes not found, please define BOOST_INC.]);
+		fi
+	fi
+fi
+])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
