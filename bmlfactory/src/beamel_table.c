@@ -43,22 +43,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if !defined(str_to_upper_h)
-#include "str_to_upper.h"
-#endif /* str_to_upper_h */
-
-#if !defined(var_table_h)
-#include "var_table.h"
-#endif /* var_table_h */
-
-#if !defined(troika_h)
-#include "troika.h"
-#endif /* troika_h */
-
-#if !defined(beamel_table_h)
-#include "beamel_table.h"
-#endif /* beamel_table_h */
-
+#include <str_to_upper.h>
+#include <var_table.h>
+#include <troika.h>
+#include <beamel_table.h>
 
    /*
      Takes a string and returns its hash table index
