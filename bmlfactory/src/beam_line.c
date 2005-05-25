@@ -45,21 +45,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if !defined(beamel_table_h)
-#include "beamel_table.h"
-#endif /* beamel_table_h */
 
-#if !defined(bml_table_h)
-#include "bml_table.h"
-#endif /* bml_table_h */
+#include <beamel_table.h>
+#include <bml_table.h>
+#include <troika.h>
+#include <beam_line.h>
 
-#if !defined(troika_h)
-#include "troika.h"
-#endif /* troika_h */
-
-#if !defined(beam_line_h)
-#include "beam_line.h"
-#endif /* beam_line_h */
 
    /*
      Takes a beam line name, manipulates it, and returns the result. 
