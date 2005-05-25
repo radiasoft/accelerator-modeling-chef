@@ -3,13 +3,23 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.3
+******  Version:   4.3                  
 ******                                    
 ******  File:      dlist.h
 ******                                                                
-******  Copyright (c) 1990 Universities Research Association, Inc.    
+******  Copyright (c) Universities Research Association, Inc / Fermilab.    
 ******                All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws.                                                                
+******
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -19,11 +29,13 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
+******
+******  Revision History:
+******
+******  March 2005 : ostiguy@fnal.gov
+******  
+******  Pool allocators.
+******                                                              
 **************************************************************************
 *************************************************************************/
 
@@ -31,14 +43,16 @@
 #ifndef DLIST_HXX
 #define DLIST_HXX
 
-// REMOVE: typedef void* ent;
+#include <FastAllocator.h>
+#include <FastPODAllocator.h>
+
 typedef char (*DLIST_CRITFUNC)( void* );
 
-class dlink {
+class dlink : public gms::FastPODAllocator<dlink> {
 private:
   dlink* next;
   dlink* prev;
-  void*  e;
+  void* e;
 public:
 #ifdef OBJECT_DEBUG
   static int objectCount;
@@ -71,86 +85,9 @@ public:
   friend class dlist_looper;
   friend class dlist_reverseIterator;
 
-/*
- *   Pool functions written by Michael Allen
- *   February, 1993
- */
-#ifdef POOLED
-  inline void* operator new(size_t);
-  inline void operator delete(void*, size_t);
-#endif // POOLED
-} ;
-
-
-/*
- *   Pool functions written by Michael Allen
- *   February, 1993
- */
-#ifdef POOLED
-class _dlink_Shell
-{
-friend class _dlink_Pool;
-
- private:
- 
-  union
-  {
-    _dlink_Shell* next;
-    char  dummy[sizeof(dlink)];
-  };
 };
 
-#define _dlink_BLOCK_COUNT 1024
-
-class _dlink_Pool
-{
-friend class dlink;
-  
- private:
-  _dlink_Pool();
-  
-  inline static void* alloc();
-  inline static void free(void*);
-  
-  _dlink_Shell slot[_dlink_BLOCK_COUNT];
-  static _dlink_Shell* top;
-  static int num_made;
-};
-
-inline void*
-dlink::operator new(size_t)
-{
-  return _dlink_Pool::alloc();
-}
-
-inline void
-dlink::operator delete(void* p, size_t)
-{
-  _dlink_Pool::free(p);
-}
-
-inline void*
-_dlink_Pool::alloc()
-{
-  if (0 == top)
-    {
-      new _dlink_Pool;
-    }
-  void* ans = top;
-  top = top->next;
-  return ans;
-}
-
-inline void
-_dlink_Pool::free(void* p)
-{
-  ((_dlink_Shell*)p)->next = top;
-  top = (_dlink_Shell*)p;
-}
-
-#endif  // POOLED
-
-class dlist {
+class dlist: public gms::FastAllocator {
 
 private:
   dlink* last;
@@ -182,7 +119,7 @@ public:
   dlist( const dlist& );
 
   virtual ~dlist() { 
-    clear(); 
+    clear();       
 #ifdef OBJECT_DEBUG
   objectCount--;
 #endif
@@ -190,19 +127,17 @@ public:
 
   bool contains( const void* ) const;
 
-  void* remove( dlink* );          // Removes the single argument.
-  char remove( void* );            // Ditto 
-  void* remove( int );             // Returns the void* removed from the dlist
+  void* remove( dlink* );            // Removes the single argument.
+  char remove( void* );              // Ditto 
+  void* remove( int );               // Returns the ent removed from the dlist
                                    // Failure -> returns null pointer
-  dlist remove( void*, void* );    // Removes everything between its arguments
+  dlist remove( void*, void* );        // Removes everything between its arguments
                                    // (exclusively) and returns the removed chain.
   dlist remove( int, int );
   void insert( void* a );
   void append( void* a );
-  char putAbove( const void* a, const void* b );
-                                   // Installs b above (before) a in the list
-  char putBelow( const void* a, const void* b );
-                                   // Installs b below (after)  a in the list
+  char putAbove( void* a, void* b );   // Installs b above a in the list
+  char putBelow( void* a, void* b );   // Installs b below a in the list
   void* get();
 
   int  startAt( const void*, int=1 );
@@ -223,12 +158,12 @@ public:
   char SetFirst( void* );
   char SetLast( DLIST_CRITFUNC );
   char SetFirst( DLIST_CRITFUNC );
-  const dlink* lastPtr() {return last;}
-  void* lastInfoPtr() const { if( last ) return last->e;
-                              else       return 0;
+  dlink* lastPtr() {return last;}
+  void* lastInfoPtr() { if( last ) return last->e;
+                      else       return 0;
                     }
-  void* firstInfoPtr() const { if( last ) return last->next->e;
-                               else       return 0;
+  void* firstInfoPtr() { if( last ) return last->next->e;
+                       else       return 0;
                     }
   dlist& operator=( const dlist& );
 
