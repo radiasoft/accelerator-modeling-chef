@@ -5,15 +5,26 @@
 ******  BEAMLINE FACTORY:  Interprets MAD input files and             
 ******             creates instances of class beamline.                 
 ******                                                
-******  File:      bmlfactory.cc
 ******  Version:   1.6
+******                                    
+******  File:      bmlfactory.cc
 ******                                                                
-******  Copyright (c) 1999  Universities Research Association, Inc.   
+******  Copyright (c) Universities Research Association, Inc.   
 ******                All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
-******  Authors:    Dmitri Mokhov and Oleg Krivosheev                  
+******  Authors:    Dmitri Mokhov, Oleg Krivosheev                  
 ******              Jean-Francois Ostiguy 
-******                                                
+******
 ******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
 ******                                                                
 ******             Fermilab                                           
@@ -25,11 +36,7 @@
 ******                    (630) 840 2231                              
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
-******                                                                
-******  Usage, modification, and redistribution are subject to terms    
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
+******
 **************************************************************************
 **************************************************************************
 * Revision History: 
@@ -38,7 +45,7 @@
 *
 *  ostiguy@fnal.gov: 
 *
-*  -Numerous and **severe** memory leaks eliminated. 
+*  -Numerous **severe** memory leaks eliminated. 
 *  -MAD CALL and RETURN statements now properly interpreted
 *  -improved error recovery
 *  -Expressions associated with MAD type parameters are now properly deleted.  
@@ -57,50 +64,14 @@ using namespace std;
 #undef allocate
 #undef deallocate
 
-#include <functional>
-
-   // from MXYZPLTK
 #include <beamline.h>
-
-#if !defined(beam_element_h)
-#include "beam_element.h"
-#endif /* beam_element_h */
-
-#if !defined(beamel_table_h)
-#include "beamel_table.h"
-#endif /* beamel_table_h */
-
-#if !defined(beam_line_h)
-#include "beam_line.h"
-#endif /* beam_line_h */
-
-#if !defined(bml_table_h)
-#include "bml_table.h"
-#endif /* bml_table_h */
-
-#if !defined(bmlfactory_h)
-#include "bmlfactory.h"
-#endif /* bmlfactory_h */
-
-#if !defined(expression_h)
-#include "expression.h"
-#endif /* expression_h */
-
-#if !defined(madparser_h)
-#include "madparser.h"
-#endif /* madparser_h */
-
-#include "var_table.h"
-
-#include "bel_inst_fns.h"
-
 #include <GenericException.h>
 
+#include <functional>
 #include <algorithm>
 #include <assert.h>
 #include <cmath>
 #include <iostream>
-
 
 extern struct madparser_* mp;
 
@@ -205,12 +176,12 @@ bmlfactory::bmlfactory_init(const char* fname, const char* stringbuffer) {
     throw e;
   }
 
-  bel_arr_size_ = bel_table_to_array( &bel_arr_, bel_table_ );        /* bel_arr is allocated here */
-  qsort( bel_arr_, bel_arr_size_, sizeof(beam_element*), bel_compare );
+  bel_arr_size_ = bel_table_to_array( &bel_arr_, bel_table_ );              /* bel_arr is allocated here */
+  qsort( bel_arr_, bel_arr_size_, sizeof(beam_element*), bel_compare );     // sorting w/r to declaration line number
   
   bml_arr_size_ = bml_table_to_array( &bml_arr_, madparser_bml_table( mp_ ) ); /* bml_arr is allocated here */
   if ( bml_arr_size_ > 1 ) {
-    qsort( bml_arr_, bml_arr_size_, sizeof(beam_line*), bml_compare );    
+    qsort( bml_arr_, bml_arr_size_, sizeof(beam_line*), bml_compare );          // sorting w/r to declartion line number 
     bml_remove_forward( &bml_arr_, bml_arr_size_, madparser_bml_table( mp_ ) ); // When removing forward references, line order isn't preserved
   }
   
@@ -235,31 +206,11 @@ bmlfactory::~bmlfactory() {
   // Note: the create_beamline function returns a Cloned() beamline and bmlnElmnts, 
   // so that ownership of these objects is that of the bmlfactory object instance.
 
-  // the code below is for debugging only
-
-#if 0 
-  for ( std::list<beamline*>::iterator it=_beamline_objects_list.begin(); 
-        it != _beamline_objects_list.end() );
-        it++) 
-  {
-
-  };
-
-  for ( std::list<bmlnElmnt*>::iterator it=_bmlnElmnt_objects_list.begin(); 
-        it != _bmlnElmnt_objects_list.end() );
-        it++) 
-  {
-
-  };
-
-#endif
-
 }
 
-// Deprecated function 
 
 beamline* 
-bmlfactory::create_beamline( const char* bmlname) {
+bmlfactory::create_beamline( const char* bmlname) {   // *** DEPRECATED ***
   
  beamline* bml = create_beamline_private(bmlname);
 
@@ -296,10 +247,8 @@ bmlfactory::create_beamline( const char* bmlname, double brho   )
 
 
 
-// Deprecated function 
-
 beamline*
-bmlfactory::create_beamline_private( const char* bmlname) {
+bmlfactory::create_beamline_private( const char* bmlname) { // *** DEPRECATED ****
 
   return create_beamline_private( bmlname, BRHO_); 
 
@@ -364,7 +313,11 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       double e1 = expr_evaluate( bel->params_[BEL_SBEND_E1], var_table_, bel_table_ );
       double e2 = expr_evaluate( bel->params_[BEL_SBEND_E2], var_table_, bel_table_ );
 
-      simple = (k1->kind_ == NUMBER_EXPR && k1->dvalue_ == 0.0 && k2->kind_ == NUMBER_EXPR && k2->dvalue_ == 0.0 && k3->kind_ == NUMBER_EXPR && k3->dvalue_ == 0.0 && tilt->kind_ == NUMBER_EXPR && tilt->dvalue_ == 0.0);
+
+      simple = (k1->kind_ == NUMBER_EXPR && k1->dvalue_ == 0.0 && 
+                k2->kind_ == NUMBER_EXPR && k2->dvalue_ == 0.0 && 
+                k3->kind_ == NUMBER_EXPR && k3->dvalue_ == 0.0 && 
+                tilt->kind_ == NUMBER_EXPR && tilt->dvalue_ == 0.0);
 
       if( true == simple ) {
         lbel = new sbend( bel->name_, length, BRHO_*angle/length, angle, e1, e2 );
@@ -410,11 +363,18 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       expr_struct *k2   = (expr_struct*)bel->params_[BEL_RBEND_K2]->data;
       expr_struct *k3   = (expr_struct*)bel->params_[BEL_RBEND_K3]->data;
       expr_struct *tilt = (expr_struct*)bel->params_[BEL_RBEND_TILT]->data;
-      
-      double e1 = expr_evaluate( bel->params_[BEL_RBEND_E1], var_table_, bel_table_ );
-      double e2 = expr_evaluate( bel->params_[BEL_RBEND_E2], var_table_, bel_table_ );
 
-      simple = (k1->kind_ == NUMBER_EXPR && k1->dvalue_ == 0.0 && k2->kind_ == NUMBER_EXPR && k2->dvalue_ == 0.0 && k3->kind_ == NUMBER_EXPR && k3->dvalue_ == 0.0 && tilt->kind_ == NUMBER_EXPR && tilt->dvalue_ == 0.0);
+      double e1 = expr_evaluate( bel->params_[BEL_RBEND_E1], var_table_, bel_table_ );
+      double e2 = expr_evaluate( bel->params_[BEL_RBEND_E2], var_table_, bel_table_ ); 
+    
+      simple = (k1->kind_ == NUMBER_EXPR && 
+                k1->dvalue_ == 0.0 && 
+                k2->kind_ == NUMBER_EXPR && 
+                k2->dvalue_ == 0.0 && 
+                k3->kind_ == NUMBER_EXPR && 
+                k3->dvalue_ == 0.0 && 
+                tilt->kind_ == NUMBER_EXPR && 
+                tilt->dvalue_ == 0.0);
 
       if( true == simple ) {
         if( (0.0 == e1) && (0.0 == e2) ) {
@@ -422,7 +382,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
 	}
         else {
           lbel = new rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
-	}
+        }
         if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
           aligner->xOffset = 0.0;
           aligner->yOffset = 0.0;
@@ -522,7 +482,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       double energy   = sqrt( momentum*momentum + PH_NORM_mp*PH_NORM_mp );
       bmlnElmnt* q    = 0;
       beamline* temp  = new beamline( bel->name_ );
-      temp->setEnergy( energy );
+      temp->setEnergy( energy ); 
 
       double k0l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K0L], var_table_, bel_table_ );
       if( k0l != 0.0 ) {
@@ -892,7 +852,8 @@ bmlfactory::beam_line_instantiate( beam_line* bml ) {
   energy = PH_CNV_brho_to_p*BRHO_;
   energy = energy*energy + PH_NORM_mp*PH_NORM_mp;
   energy = sqrt( energy );
-  lbml->setEnergy( energy );
+   
+  lbml->setEnergy( energy ); 
 
   _beamline_objects_list.push_back(lbml);
 
@@ -1006,3 +967,18 @@ bmlfactory::variableIsDefined(const char* var_name) const
   delete[] tmp_name;
   
 }
+
+const char* 
+bmlfactory::getUseStatementBeamlineName() {
+
+  return madparser_get_use_statement_beamline_name( mp ); 
+
+}
+
+double 
+bmlfactory::getBrho( ) const {
+
+  return madparser_get_brho( mp ); 
+
+}
+
