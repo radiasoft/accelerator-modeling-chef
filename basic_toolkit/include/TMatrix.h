@@ -33,8 +33,39 @@
 
 #include <exception>
 #include <string>
+#include <complex>
+#include <complexAddon.h>
 
 #include "TML.h"
+
+template<typename T> class TMatrix; 
+
+
+// Friend functions
+template<typename T> char operator==( const TMatrix<T>&, const TMatrix<T>& );
+template<typename T> char operator==( const TMatrix<T>&, const T& );
+template<typename T> char operator==( const T&, const TMatrix<T>& );
+
+template<typename T> std::ostream& operator<<(std::ostream&, const TMatrix<T>&);
+
+template<typename T> TMatrix<T> operator+(const TMatrix<T>&, const TMatrix<T>&);
+template<typename T> TMatrix<T> operator+(const TMatrix<T>&, const T&); 
+template<typename T> TMatrix<T> operator+(const T&, const TMatrix<T>&); 
+
+template<typename T> TMatrix<T> operator-(const TMatrix<T>&); 
+template<typename T> TMatrix<T> operator-(const TMatrix<T>&, const TMatrix<T>&); 
+template<typename T> TMatrix<T> operator-(const TMatrix<T>&, const T&); 
+template<typename T> TMatrix<T> operator-(const T&, const TMatrix<T>&); 
+
+template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const TMatrix<T>&); 
+template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const T);
+template<typename T> TMatrix<T> operator*(const T, const TMatrix<T>&);
+
+template<typename T> TMatrix<T> operator/(const TMatrix<T>&, const T);
+template<typename T> TMatrix<T> operator/(const T, TMatrix<T>&);
+template<typename T> TMatrix<T> operator/(TMatrix<T>&, TMatrix<T>&);
+
+
 
 template<typename T>
 class TMatrix
@@ -217,25 +248,6 @@ template<typename T> char operator!=( const TMatrix<T>&, const T& );
 
 template<typename T> char operator!=( const T&, const TMatrix<T>& );
 
-
-// Friend functions
-template<typename T> char operator==( const TMatrix<T>&, const TMatrix<T>& );
-template<typename T> char operator==( const TMatrix<T>&, const T& );
-template<typename T> char operator==( const T&, const TMatrix<T>& );
-template<typename T> std::ostream& operator<<(std::ostream&, const TMatrix<T>&);
-template<typename T> TMatrix<T> operator+(const TMatrix<T>&, const TMatrix<T>&);
-template<typename T> TMatrix<T> operator+(const TMatrix<T>&, const T&); 
-template<typename T> TMatrix<T> operator+(const T&, const TMatrix<T>&); 
-template<typename T> TMatrix<T> operator-(const TMatrix<T>&); 
-template<typename T> TMatrix<T> operator-(const TMatrix<T>&, const TMatrix<T>&); 
-template<typename T> TMatrix<T> operator-(const TMatrix<T>&, const T&); 
-template<typename T> TMatrix<T> operator-(const T&, const TMatrix<T>&); 
-template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const TMatrix<T>&); 
-template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const T);
-template<typename T> TMatrix<T> operator*(const T, const TMatrix<T>&);
-template<typename T> TMatrix<T> operator/(const TMatrix<T>&, const T);
-template<typename T> TMatrix<T> operator/(const T, TMatrix<T>&);
-template<typename T> TMatrix<T> operator/(TMatrix<T>&, TMatrix<T>&);
 
 
 // Derived class MatrixC
