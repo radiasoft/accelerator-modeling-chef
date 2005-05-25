@@ -179,8 +179,8 @@ void Cascade::reconstruct( const Cascade& x )
 void Cascade::_finishConstructor()
 {
   // Construct an array of switches
-  int f[_numVar], i;
-  for( i = 0; i < _numVar; i++ ) { f[i] = 0; }
+  int f[_numVar];
+  for( int i = 0; i < _numVar; i++ ) { f[i] = 0; }
   IntArray e(_numVar);
   e.Set(f);
 
@@ -225,7 +225,7 @@ void Cascade::_finishConstructor()
 
 
   // Initialize remaining Switches
-  for( i = 1; i <= _maxWeight; i++ ) {
+  for( int i = 1; i <= _maxWeight; i++ ) {
     while( nexcom( i, _numVar, f) ) {
       e.Set(f);
       if( _verbose ) { cout << "Making: " << e << endl; }
@@ -276,7 +276,9 @@ void Cascade::_finishConstructor()
     while((  targetPtr = (Switch*) targetSwitches.get()  )) {
       m = targetDim - 1;
       IntArray dummy(m);
-      for( i = 0; i < m; i++ ) { dummy(i) = targetPtr->_xpt(i); }
+
+      for( int i = 0; i < m; i++ ) { dummy(i) = targetPtr->_xpt(i); }
+
       Switch* probePtr = 0;
       Switch* foundPtr = 0;
       slist_iterator sli( newSwitches );
@@ -341,7 +343,7 @@ void Cascade::_finishConstructor()
   slist_iterator sli( setOfSwitches );
   if( _verbose ) { 
     cout << "All the switches:" << endl;
-    i = 0;
+    int i = 0;
     while((  swPtr = (Switch*) sli()  )) {
       cout << swPtr->_xpt << " : " << ++i << endl;
     }
@@ -370,7 +372,7 @@ void Cascade::_finishConstructor()
   const int n = _numVar;
 
   _startPoint = new Switch* [w+1];
-  i = 1;
+  int i = 1;
   // REMOVE: sli.Reset(); // Unnecessary; already done.
   while( i <= (_numberOfSwitches - w - 1) ) { sli(); i++; }
   for( i = 0; i < w+1; i++ ) { 
@@ -391,7 +393,7 @@ void Cascade::_finishConstructor()
   if( _verbose ) { cout << "\nTesting accuracy." << endl; }
 
   // Do the first monomial by hand
-  for( i = 0; i < n; i++ ) { f[i] = 0; }
+  for( int i = 0; i < n; i++ ) { f[i] = 0; }
   e.Set(f);
   if( _verbose ) { cout << e << endl; }
   swPtr = _startPoint[e(0)];
@@ -409,7 +411,7 @@ void Cascade::_finishConstructor()
   }
 
   // ... and then all subsequent monomials
-  for( i = 1; i <= w; i++ ) {
+  for( int i = 1; i <= w; i++ ) {
     while( nexcom( i, n, f) ) {
       e.Set(f);
       if( _verbose ) { cout << e << endl; }
@@ -442,12 +444,19 @@ void Cascade::_clean()
 
 int Cascade::index( const IntArray& e )
 {
-  static int j;
-  static Switch* swPtr;
 
-  swPtr = _startPoint[e(0)];
-  for( j = 1; j < _numVar; j++ ) {
-    swPtr = (Switch*) (swPtr->_arrow[e(j)]);
+  IntArrayIterator getNext( e );
+
+  // Switch* swPtr = _startPoint[e(0)];
+
+  Switch* swPtr = _startPoint[ getNext() ];
+
+  
+  for( int j = 1; j < _numVar; ++j ) {
+
+    // swPtr = (Switch*) (swPtr->_arrow[e(j)]); 
+
+    swPtr = (Switch*) ( swPtr->_arrow[ getNext() ] ); 
   }
 
   return swPtr->_index;
@@ -456,12 +465,15 @@ int Cascade::index( const IntArray& e )
 
 int Cascade::index( const int e[] )
 {
-  static int j;
-  static Switch* swPtr;
 
-  swPtr = _startPoint[e[0]];
-  for( j = 1; j < _numVar; j++ ) {
-    swPtr = (Switch*) (swPtr->_arrow[e[j]]);
+  const int* idx = &e[0] - 1;
+  
+//  Switch* swPtr = _startPoint[e[0]];
+  Switch* swPtr = _startPoint[ *(++idx) ];
+  
+  for( int j = 1; j < _numVar; j++ ) {
+    //    swPtr = (Switch*) (swPtr->_arrow[e[j]]);
+    swPtr = (Switch*) (swPtr->_arrow[*(++idx)]);
   }
 
   return swPtr->_index;
@@ -470,14 +482,17 @@ int Cascade::index( const int e[] )
 
 IntArray Cascade::exponents( const IntArray& e )
 {
-  static int j;
-  static Switch* swPtr;
 
-  swPtr = _startPoint[e(0)];
-  for( j = 1; j < _numVar; j++ ) {
-    swPtr = (Switch*) (swPtr->_arrow[e(j)]);
+  IntArrayIterator getNext( e );
+
+  //  Switch* swPtr = _startPoint[e(0)];
+
+  Switch* swPtr = _startPoint[ getNext()];
+
+  for( int j = 1; j < _numVar; j++ ) {
+    //    swPtr = (Switch*) (swPtr->_arrow[e(j)]);
+    swPtr = (Switch*) (swPtr->_arrow[ getNext() ] );
   }
-
   return swPtr->_xpt;
 }
 
@@ -487,12 +502,11 @@ int Cascade::selfTest()
   std::cerr << "\nCascade::selfTest beginning test of all possible indices." 
             << std::endl;
   int ret = 0;
-  int i;
   int n = _numVar;
   int w = _maxWeight;
   int f[n];
   IntArray e(n);
-  for( i = 0; i < n; i++ ) { f[i] = 0; }
+  for( int i = 0; i < n; i++ ) { f[i] = 0; }
 
   e.Set(f);
   if( e != (this->exponents(e)) ) {
@@ -510,7 +524,7 @@ int Cascade::selfTest()
   }
 
 
-  for( i = 1; i <= w; i++ ) {
+  for( int i = 1; i <= w; i++ ) {
     while( nexcom( i, n, f) ) {
       e.Set(f);
       if( e != (this->exponents(e)) ) {
