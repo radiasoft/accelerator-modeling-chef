@@ -45,13 +45,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if !defined(beam_element_h)
-#include "beam_element.h"
-#endif /* beam_element_h */
+#include <beam_element.h>
+#include <expression.h>
 
-#if !defined(expression_h)
-#include "expression.h"
-#endif /* expression_h */
 
    /*
      Takes a bel name, manipulates it, and returns the result. Used for outputting
