@@ -58,6 +58,7 @@
 #include <config.h>
 #endif
 
+
 #include <iostream>
 using namespace std;
 
@@ -72,6 +73,16 @@ using namespace std;
 #include <assert.h>
 #include <cmath>
 #include <iostream>
+
+#include <beam_element.h>
+#include <beamel_table.h>
+#include <beam_line.h>
+#include <bml_table.h>
+#include <bmlfactory.h>
+#include <expression.h>
+#include <madparser.h>
+#include <var_table.h>
+#include <bel_inst_fns.h>
 
 extern struct madparser_* mp;
 
