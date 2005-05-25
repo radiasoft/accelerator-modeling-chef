@@ -7,7 +7,7 @@ echo ${rootdir}
 
 find . -name autom4te\.cache -exec \rm -rf {} \; -print 
 
-for dir in basic_toolkit bmlfactory mxyzptlk physics_toolkit integrator
+for dir in basic_toolkit bmlfactory mxyzptlk physics_toolkit integrator gms
 do
   cd   $dir
   ${rootdir}/updateheaders
@@ -33,7 +33,7 @@ autoconf
 #libtoolize --force --copy
 
 
-for dir in basic_toolkit beamline bmlfactory mxyzptlk physics_toolkit integrator
+for dir in basic_toolkit beamline bmlfactory mxyzptlk physics_toolkit integrator gms
 do
   cd $dir
   aclocal -I config

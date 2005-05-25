@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 AC_INIT
 AC_CONFIG_AUX_DIR(config)
-AC_CONFIG_SUBDIRS(basic_toolkit beamline bmlfactory integrator mxyzptlk physics_toolkit)
+AC_CONFIG_SUBDIRS(basic_toolkit beamline bmlfactory integrator mxyzptlk physics_toolkit gms)
 AM_INIT_AUTOMAKE(fnal, 1.0, no-define)
 
 AC_CONFIG_FILES(Makefile)
