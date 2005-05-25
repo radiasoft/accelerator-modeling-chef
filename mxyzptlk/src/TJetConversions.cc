@@ -7,9 +7,19 @@
 ******  File:      TJetConversions.cc
 ******  Version:   1.0
 ******                                                                
-******  Copyright (c) 1990, 2004 Universities Research Association, Inc.    
-******                All Rights Reserved                             
-******                                                                
+******  Copyright (c) Universities Research Association, Inc. / Fermilab   
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -19,11 +29,15 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
+******
+******  Revision History:
+******                             
+******  Feb 2005 - Jean-Francois Ostiguy
+*****              ostiguy@fnal.gov
+******  
+******  Efficiency improvements.
+******  - new memory management 
+******
 **************************************************************************
 *************************************************************************/
 
@@ -31,16 +45,16 @@
 #include <config.h>
 #endif
 
-#include "GenericException.h"
-#include "complexAddon.h"
-#include "VectorD.h"
+#include <GenericException.h>
+#include <complexAddon.h>
+#include <VectorD.h>
 
-#include "TJL.tcc"
-#include "TJetEnvironment.tcc"
-#include "TJet.tcc"
-#include "TJetVector.tcc"
-#include "TLieOperator.tcc"
-#include "TMapping.tcc"
+#include <TJL.tcc>
+#include <TJetEnvironment.tcc>
+#include <TJet.tcc>
+#include <TJetVector.tcc>
+#include <TLieOperator.tcc>
+#include <TMapping.tcc>
 
 // ================================================================
 //      External routines
@@ -60,6 +74,13 @@ extern "C" {
 
 using namespace std;
 using FNAL::Complex;
+
+
+template<> TJL<Complex,double>* TJet<double,Complex>::newJLOpp() const;
+template<> TJL<double,Complex>* TJet<Complex,double>::newJLOpp() const;
+template<> TJL<Complex,double>* TJet<double,Complex>::newJLOpp( TJetEnvironment<Complex,double>* pje ) const;
+template<> TJL<double,Complex>* TJet<Complex,double>::newJLOpp( TJetEnvironment<double,Complex>* pje ) const;
+
 
 // ================================================================
 
@@ -515,39 +536,6 @@ TJetEnvironment<double,Complex>* TJet<double,Complex>::CreateEnvFrom( const Vect
   return pje;
 }
 
-// ----------------------------------------------------------
-// ----------------------------------------------------------
-
-
-TJL<Complex,double>* TJet<double,Complex>::newJLOpp() const
-{
-  return new TJL<Complex,double>
-    ( *(this->_jl), TJet<Complex,double>::CreateEnvFrom( this->_jl->_myEnv ) );
-}
-
-
-TJL<double,Complex>* TJet<Complex,double>::newJLOpp() const
-{
-  return new TJL<double,Complex>
-    ( *(this->_jl), TJet<double,Complex>::CreateEnvFrom( this->_jl->_myEnv ) );
-}
-
-TJL<Complex,double>* TJet<double,Complex>::newJLOpp( TJetEnvironment<Complex,double>* pje ) const
-{
-  return new TJL<Complex,double>( *(this->_jl), pje );
-}
-
-
-TJL<double,Complex>* TJet<Complex,double>::newJLOpp( TJetEnvironment<double,Complex>* pje ) const
-{
-  return new TJL<double,Complex>( *(this->_jl), pje );
-}
-
-
-
-// ----------------------------------------------------------
-// ----------------------------------------------------------
-
 TJet<Complex,double>::TJet<Complex,double>( const TJet<double,Complex>& x )
 {
   _jl = x.newJLOpp();
@@ -558,7 +546,7 @@ TJet<Complex,double>::TJet<Complex,double>( const TJet<double,Complex>& x )
 
 TJet<Complex,double>& TJet<Complex,double>::operator=( const TJet<double,Complex>& x )
 {
-  if( --(_jl->_rc) == 0 ) delete _jl;
+  if( --(_jl->_rc) == 0 ) TJL<Complex,double>::discardTJL(_jl); // delete _jl;
   _jl = x.newJLOpp();
   return *this; 
 }
@@ -579,31 +567,80 @@ TJL<Complex,double>::TJL<Complex,double>( const TJL<double,Complex>& x, TJetEnvi
  dlist_iterator getNext( x._theList );
  TJLterm<double,Complex>* p;
  TJLterm<Complex,double>* q;
- 
+
+ initStore( x._jltermStoreCapacity );
  
  _count = 0;   // Certain compilers need these initialized.
  _weight = 0;
- while((  p = (TJLterm<double,Complex>*) getNext()  )) {
-   q = new TJLterm<Complex,double>( *p );
-   append( q );
- }
 
- _count    = x._count;
+ // NOTE: we cannot do a memcpy here because x._value is of type real and _value is of type complex !
+
+ while ( p = (TJLterm<double,Complex>*) getNext() ) {
+    q = new ( storePtr() )  TJLterm<Complex,double> ( p->_index, FNAL::Complex(p->_value, 0.0), pje  );
+    q->_deleted    = p->_deleted;// ??     
+    q->_weight     = p->_weight; // ??     
+    append(q);
+ }
+  
+ _count    = x._count;  
  _weight   = x._weight;
  _accuWgt  = x._accuWgt;
  _myEnv    = pje;
  _rc       = 1;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 TJLterm<Complex,double>::TJLterm<Complex,double>( const TJLterm<double,Complex>& x )
-: _index( x._index ), _weight( x._weight ), _value( x._value, 0.0 )
+: _deleted(x._deleted), _index( x._index ), _weight( x._weight ), _value( x._value, 0.0 )
 {
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 TJLterm<Complex,double>::TJLterm<Complex,double>( const TJLterm<double,Complex>* x )
-: _index( x->_index ), _weight( x->_weight ), _value( x->_value, 0.0 )
+: _deleted(x->_deleted), _index( x->_index ), _weight( x->_weight ), _value( x->_value, 0.0 )
 {
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+TJL<Complex,double>* TJL<Complex,double>::makeTJL( const TJL<double,Complex>& x, TJetEnvironment<Complex,double>* pje ) 
+{
+
+ if ( _thePool.empty() ) return new TJL<Complex,double>( x,pje); 
+
+ TJL<Complex,double>* p = _thePool.back(); _thePool.pop_back();
+
+ if ( (p->_jltermStoreCapacity) < (x._jltermStoreCapacity) ) {
+
+   delete[] p->_jltermStore; 
+   p->initStore( x._jltermStoreCapacity );
+
+ }; 
+
+  // NOTE: we cannot do a memcpy here because x._value is of type real and _value is of type complex !
+
+ dlist_iterator getNext( x._theList );
+ TJLterm<double,Complex>* q;
+ TJLterm<Complex,double>* r;
+
+  while ( q = (TJLterm<double,Complex>*) getNext() ) {
+    r = new ( p->storePtr() )  TJLterm<Complex,double> ( q->_index, FNAL::Complex(q->_value, 0.0), pje  );
+    r->_deleted    = q->_deleted;// ??     
+    r->_weight     = q->_weight; // ??     
+    p->append(r);
+ }
+  
+ // p->_count    = x._count;  
+ p->_weight   = x._weight;
+ p->_accuWgt  = x._accuWgt;
+ p->_myEnv    = pje; 
+ p->_rc       = 1;
+
+ return p;
+}
+
 
 // ----------------------------------------------------------
 
@@ -642,7 +679,7 @@ TJet<double,Complex>::TJet<double,Complex>( const TJet<Complex,double>& x )
 
 TJet<double,Complex>& TJet<double,Complex>::operator=( const TJet<Complex,double>& x )
 {
-  if( --(_jl->_rc) == 0 ) delete _jl;
+  if( --(_jl->_rc) == 0 )  TJL<double,Complex>::discardTJL(_jl); // delete _jl;
   _jl = x.newJLOpp();
   return *this; 
 }
@@ -656,21 +693,27 @@ TJet<double,Complex>::TJet<double,Complex>( const TJet<Complex,double>& x, TJetE
 }
 
 
-// ----------------------------------------------------------
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 TJL<double,Complex>::TJL<double,Complex>( const TJL<Complex,double>& x, TJetEnvironment<double,Complex>* pje ) 
 {
  dlist_iterator getNext( x._theList );
- TJLterm<Complex,double>*  p;
- TJLterm<double,Complex>* q;
+ TJLterm<Complex,double>*  p = 0;
+ TJLterm<double,Complex>*  q = 0;
 
- 
+ initStore( x._jltermStoreCapacity );
+  
  _count = 0;   // Certain compilers need these initialized.
  _weight = 0;
- while((  p = (TJLterm<Complex,double>*) getNext()  )) {
-   q = new TJLterm<double,Complex>( *p );
-   append( q );
- }
+
+// note: cannot use memcpy here since q->_value is real and p->_value is complex !
+
+   while ( p = (TJLterm<Complex,double>*) getNext() ) {
+    q = new ( storePtr() ) TJLterm<double,Complex> ( p->_index, (p->_value).real(), pje); 
+    q->_deleted = p->_deleted;
+    q->_weight  = p->_weight;     
+    append(q);
+ };
 
  _count    = x._count;
  _weight   = x._weight;
@@ -679,11 +722,82 @@ TJL<double,Complex>::TJL<double,Complex>( const TJL<Complex,double>& x, TJetEnvi
  _rc       = 1;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+TJL<double,Complex>* TJL<double,Complex>::makeTJL( const TJL<Complex,double>& x, TJetEnvironment<double,Complex>* pje ) 
+{
+
+ if ( _thePool.empty() ) return (new TJL<double,Complex>(x,pje) );
+
+ TJL<double,Complex>* p = TJL<double,Complex>::_thePool.back();  TJL<double,Complex>::_thePool.pop_back();
+
+ if ( p->_jltermStoreCapacity < x._jltermStoreCapacity ) {
+
+   delete[] p->_jltermStore;
+   p->initStore( x._jltermStoreCapacity );     
+
+ }
+
+ dlist_iterator getNext( x._theList );
+ TJLterm<Complex,double>*  q = 0;
+ TJLterm<double,Complex>*  r = 0;
+
+
+  
+// note: cannot use memcpy here since q->_value is real and p->_value is complex !
+
+   while ( q = (TJLterm<Complex,double>*) getNext() ) {
+    r = new ( p->storePtr() ) TJLterm<double,Complex> ( q->_index, (q->_value).real(), pje); 
+    r->_deleted = q->_deleted;
+    r->_weight  = q->_weight;     
+    p->append(r);
+ };
+
+  // p->_count    = x._count;
+  p->_weight   = x._weight;
+  p->_accuWgt  = x._accuWgt;
+  p->_myEnv    = pje;
+  p->_rc       = 1;
+
+  return p;
+
+}
+
+
 TJLterm<double,Complex>::TJLterm<double,Complex>( const TJLterm<Complex,double>& x )
-: _index( x._index ), _weight( x._weight ), _value( real( x._value ) )
+: _deleted(x._deleted), _index( x._index ), _weight( x._weight ), _value( real( x._value ) )
 {
 }
 
+// ----------------------------------------------------------
+// ----------------------------------------------------------
+
+
+TJL<Complex,double>* TJet<double,Complex>::newJLOpp() const
+{
+  return TJL<Complex,double>::makeTJL( *(this->_jl), TJet<Complex,double>::CreateEnvFrom( this->_jl->_myEnv ) );
+}
+
+
+TJL<double,Complex>* TJet<Complex,double>::newJLOpp() const
+{
+  return TJL<double,Complex>::makeTJL( *(this->_jl), TJet<double,Complex>::CreateEnvFrom( this->_jl->_myEnv ) );
+}
+
+TJL<Complex,double>* TJet<double,Complex>::newJLOpp( TJetEnvironment<Complex,double>* pje ) const
+{
+  return TJL<Complex,double>::makeTJL( *(this->_jl), pje );
+}
+
+
+TJL<double,Complex>* TJet<Complex,double>::newJLOpp( TJetEnvironment<double,Complex>* pje ) const
+{
+  return TJL<double,Complex>::makeTJL( *(this->_jl), pje );
+}
+
+
+// ----------------------------------------------------------
 // ----------------------------------------------------------
 
 TJetVector<double,Complex>& TJetVector<double,Complex>::operator=( const TJetVector<Complex,double>& x ) 
@@ -730,7 +844,7 @@ TJet<double,Complex> real( const TJet<Complex,double>& x )
  
   // .. otherwise, continue normal operations.
   while((  p = (TJLterm<Complex,double>*) gx()  )) {
-   q = new TJLterm<double,Complex>( p->_index, real( p->_value ), pje_new );
+   q = new( zPtr->storePtr() ) TJLterm<double,Complex>( p->_index, real( p->_value ), pje_new );
    zPtr->addTerm( q );
   }
  
@@ -769,7 +883,7 @@ TJet<double,Complex> imag( const TJet<Complex,double>& x )
  
   // .. otherwise, continue normal operations.
   while((  p = (TJLterm<Complex,double>*) gx()  )) {
-   q = new TJLterm<double,Complex>( p->_index, imag( p->_value ), pje_new );
+   q = new ( zPtr->storePtr() ) TJLterm<double,Complex>( p->_index, imag( p->_value ), pje_new );
    zPtr->addTerm( q );
   }
  
@@ -933,7 +1047,9 @@ TJet<Complex,double> operator*( const TJet<Complex,double>& x, const double& y )
 
 TJet<Complex,double> operator/( const TJet<double,Complex>& x, const TJet<Complex,double>& y ) 
 {
+
   return TJet<Complex,double>(x)/y;
+
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1085,9 +1201,9 @@ TJet<FNAL::Complex,double> erf( const TJet<FNAL::Complex,double>& z )
 
 TJet<FNAL::Complex,double> w( const TJet<FNAL::Complex,double>& z ) 
 {
-  static const FNAL::Complex mi( 0., -1. );
-  static double x;
-  static double y;
+  const FNAL::Complex mi( 0., -1. );
+  double x;
+  double y;
   TJet<FNAL::Complex,double>  answer( z.Env() );
   
   x = real( z.standardPart() );
@@ -1114,7 +1230,7 @@ TJet<FNAL::Complex,double> w( const TJet<FNAL::Complex,double>& z )
                           ) 
              );
 
-  else answer = exp( -z*z )*( 1.0 - erf( mi*z ) );
+  else answer = exp( -z*z )*(  1.0 -erf( mi*z ) );
 
   return answer;
 }
@@ -1275,5 +1391,7 @@ Vector TMapping<Complex,double>::operator()( const Vector& x ) const
          "Vector TMapping<Complex,double>::operator()( const Vector& x ) const", 
          "This specialization is meaningless. It should not be invoked." ) );
 }
+
+
 
 
