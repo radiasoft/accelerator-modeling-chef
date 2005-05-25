@@ -43,21 +43,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if !defined(str_to_upper_h)
-#include "str_to_upper.h"
-#endif /* str_to_upper_h */
-
-#if !defined(beam_element_h)
-#include "beam_element.h"
-#endif /* beam_element_h */
-
-#if !defined(bml_table_h)
-#include "bml_table.h"
-#endif /* bml_table_h */
-
-#if !defined(pair_h)
-#include "pair.h"
-#endif /* pair_h */
+#include <str_to_upper.h>
+#include <beam_element.h>
+#include <bml_table.h>
+#include <pair.h>
 
    /*
      Takes a string and returns its hash table index

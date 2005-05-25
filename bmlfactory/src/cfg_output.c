@@ -47,37 +47,15 @@
 
 extern void bmlfactory_exit();
 
-#if !defined(beamel_table_h)
-#include "beamel_table.h"
-#endif /* beamel_table_h */
+#include <beamel_table.h>
+#include <bml_table.h>
+#include <comment_arr.h>
+#include <const_table.h>
+#include <var_table.h>
+#include <expression.h>
+#include <pair.h>
+#include <cfg_output.h>
 
-#if !defined(bml_table_h)
-#include "bml_table.h"
-#endif /* bml_table_h */
-
-#if !defined(comment_arr_h)
-#include "comment_arr.h"
-#endif /* comment_arr_h */
-
-#if !defined(const_table_h)
-#include "const_table.h"
-#endif /* const_table_h */
-
-#if !defined(var_table_h)
-#include "var_table.h"
-#endif /* var_table_h */
-
-#if !defined(expression_h)
-#include "expression.h"
-#endif /* expression_h */
-
-#if !defined(pair_h)
-#include "pair.h"
-#endif /* pair_h */
-
-#if !defined(cfg_output_h)
-#include "cfg_output.h"
-#endif /* cfg_output_h */
 
    /*
      Takes a line number, and if there are comments associated with that line, 
