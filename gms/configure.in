@@ -1,0 +1,8 @@
+# Process this file with autoconf to produce a configure script.
+AC_INIT(include/FastAllocator.h)
+AC_CONFIG_AUX_DIR(config)
+##AM_CONFIG_HEADER([config.h])
+AM_INIT_AUTOMAKE(gms, 1.0, no-define)
+
+#AC_CONFIG_FILES( [ Makefile ] )
+AC_OUTPUT( [Makefile] ) 
