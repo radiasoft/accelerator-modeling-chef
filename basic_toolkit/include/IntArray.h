@@ -7,8 +7,18 @@
 ******                                    
 ******  File:      IntArray.h
 ******                                                                
-******  Copyright (c) 1990 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
+*******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -18,19 +28,26 @@
 ******             Batavia, IL   60510                                
 ******                                                                
 ******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
+******             Email: michelotti@fnal.gov
+******
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
-**************************************************************************
+****** Revision History:
+******
+******  Mar 2005  
+******
+******  Jean-Francois Ostiguy, ostiguy@fnal.gov
+******
+******  Efficiency improvements. 
+******  - Data is no longer dynamically allocated, 
+******    resulting in fixed size TJLterm<>.  
+******  - exponents are represented by exponent_t type variables. 
+******    exponent_t is defined by default as signed char (8 bits) 
+******  - no explicit destructor 
+******  - added iterator classes
+******  - eliminated inefficient array style 
+******    dereferencing 
+******   
 *************************************************************************/
-
-
-// Private allocators
-// J.F. Ostiguy Beam Physics - Feb 11 1999
-//#define __PRIVATE_ALLOCATOR__
 
 #ifndef INTARRAY_H
 #define INTARRAY_H
@@ -39,51 +56,71 @@
 #include <exception>
 #include <string>
 
-#ifdef __PRIVATE_ALLOCATOR__
-#include <vmalloc.h>
-#endif
+// ***  Note:
+// ***  Default max is set 8 variables (6 phase space vars + 2). 
+// ***  Increase intarray_max_variables if more variables are needed.
+
+const int intarray_max_variables = 8;
+
+// ***  Note:
+// *** The following typedef can be safely redefined without 
+// *** breaking mxyzptlk. 
+ 
+typedef signed char exponent_t;
+
+
+// **************************************************************************
+
+class IntArrayIterator;
+class IntArrayReverseIterator;
 
 class IntArray {
-#ifdef __PRIVATE_ALLOCATOR__
-private:
-  static int         _init;  // private pool memory manager initialization status flag
-  static Vmalloc_t*  _vmem;  // private pool memory manager heap
-  static             void meminit();
-#endif
+
+  friend class IntArrayIterator;
+  friend class IntArrayReverseIterator;
+
 protected:
-  int  dim;    // Number of components
-  int* comp;   // Data
+
+  int         _dim;                            // Number of components
+  exponent_t _comp[intarray_max_variables];    
+           
 public:
 
   // Constructors and the destructor ...
-  IntArray(       int    /* dim */        = 3,
-            const int*   /* components */ = 0 );
+  IntArray( int         _dim = intarray_max_variables,
+            const int*  components = 0 );
   IntArray( const IntArray& );
-  ~IntArray();
+
+  // ~IntArray();  MUST NOT BE DEFINED !
 
   // Assignment ...
   void     Set              ( const int* );
-  void     Set              ( const int& );
-  int      operator()       ( const int& ) const;    // return component
-  int&     operator()       ( const int& );          // set    component
-  void     Reconstruct( const int& = 0, const int* = 0 );  
+  void     Set              ( int  );
+
+  inline int     operator()       (  int i) const
+     { return (int) _comp[i]; }    // return component
+
+  inline exponent_t&  operator()       ( int  i)
+     { return _comp[i]; }    // set    component
+
+  void     Reconstruct( int = 0, const int* = 0 );  
   void     Reconstruct( const IntArray& );  
            // Just like constructor
 
   // Functions ...
   IntArray&     operator=      ( const IntArray& );
 
-  char          operator==     ( const IntArray& ) const;
-  char          operator!=     ( const IntArray& ) const;
-  char          operator<      ( const IntArray& ) const;
-  char          operator<=     ( const IntArray& ) const;
-  char          operator>      ( const IntArray& ) const;
-  char          operator>=     ( const IntArray& ) const;
+  bool          operator==     ( const IntArray& ) const;
+  bool          operator!=     ( const IntArray& ) const;
+  bool          operator<      ( const IntArray& ) const;
+  bool          operator<=     ( const IntArray& ) const;
+  bool          operator>      ( const IntArray& ) const;
+  bool          operator>=     ( const IntArray& ) const;
 
-  char          operator==     ( const int& ) const;
-  char          operator!=     ( const int& ) const;
+  bool          operator==     ( int ) const;
+  bool          operator!=     ( int ) const;
 
-  char          IsNull         () const;
+  bool          IsNull         () const;
 
   // This operator+ does not belong here, because an "array"
   //   is not a "vector." The proper approach would be to
@@ -91,14 +128,11 @@ public:
   IntArray      operator+( const IntArray& );
 
   // Queries ...
-  int  Dim() const;
-  int  Sum() const;
-
-
-  //  void* operator new(size_t bytes_to_allocate);
-  //  void  operator delete(void* obj, size_t size);
+   int  Dim() const { return _dim; }
+   int  Sum() const;
 
   // Utilities ..
+
   friend std::ostream& operator<<( std::ostream&, const IntArray& );
   friend std::istream& operator>>( std::istream&, IntArray& );
 
@@ -117,10 +151,40 @@ public:
   static int objectCount;
 #endif
 };
+ 
+// -----------------------------------------------------------------
+// Iterator classes with all inline member functions for efficiency. 
+//------------------------------------------------------------------
 
-inline int IntArray::Dim() const
-{
-  return dim;
-}
+class IntArrayIterator{
+
+ public:
+
+  IntArrayIterator( const IntArray& a): _origin(&a._comp[0] - 1), _current_index(_origin) { }
+  int operator()() { return *(++_current_index); }
+  void reset(){ _current_index = _origin; }
+
+ protected:
+
+   const exponent_t* _origin;
+   const exponent_t* _current_index;
+	   
+};
+
+class IntArrayReverseIterator{
+
+ public:
+
+  IntArrayReverseIterator( const IntArray& a): _origin(&a._comp[a._dim]), _current_index(_origin) { }
+  int operator()() { return *(--_current_index); }
+  void reset(){ _current_index = _origin; }
+
+ protected:
+
+   const exponent_t* _origin;
+   const exponent_t* _current_index;
+	   
+};
+
 
 #endif // INTARRAY_H
