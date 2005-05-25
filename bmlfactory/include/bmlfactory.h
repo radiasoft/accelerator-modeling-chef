@@ -9,10 +9,22 @@
 ******                                    
 ******  File:      bmlfactory.h
 ******                                                                
-******  Copyright (c) 1999  Universities Research Association, Inc.   
-******                All Rights Reserved                             
+******  Copyright (c) Universities Research Association, Inc. / Fermilab  
+******                All Rights Reserved 
+******                            
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******                                   
 ******                                                                
-******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******  Authors:   Dmitri Mokhov, Oleg Krivosheev
+******             Jean-Francois Ostiguy      
 ******                                                                
 ******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
 ******                                                                
@@ -26,14 +38,8 @@
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
 **************************************************************************
 *************************************************************************/
-
-
 #ifndef BMLFACTORY_H
 #define BMLFACTORY_H
 
@@ -42,7 +48,7 @@
 #include <list>
 #include <string>
 
-   // from MXYZPLTK
+// from MXYZPLTK
 #include <beamline.h>
 
 #if !defined(beam_element_h)
@@ -143,11 +149,13 @@ class bmlfactory {
     beamline* create_beamline( const char* beamline,  double brho);
     beamline* create_beamline( const char* beamline); // deprecated 
         
-    std::list<std::string>&  getBeamlineList();   
+    std::list<std::string>&  getBeamlineList();       // list of all instanciated beamlines  
+    const char* getUseStatementBeamlineName();        // get beamline name from USE statement, 0 if none found 
 
     bool    variableIsDefined(const char* varname) const;
     double  getVariableValue(const char* varname) const;   
 
+    double getBrho() const;
 };
 
 #endif // BMLFACTORY_H
