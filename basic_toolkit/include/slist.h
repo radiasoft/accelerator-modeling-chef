@@ -3,13 +3,23 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.3
+******  Version:   4.3                   
 ******                                    
 ******  File:      slist.h
 ******                                                                
-******  Copyright (c) 1990 Universities Research Association, Inc.    
+******  Copyright (c) Universities Research Association, Inc.    
 ******                All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws.                                                                
+******
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -20,13 +30,14 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
+****** Revision History:
+******
+****** March 2005: ostiguy@fnal.gov
+******  
+****** Memory management improvements. Pooled slist node allocation.
+******
 **************************************************************************
 *************************************************************************/
-
 
 /*************************************************************************
 **************************************************************************
@@ -43,7 +54,11 @@
 #ifndef SLIST_HXX
 #define SLIST_HXX
 
-class slink {
+#include <FastPODAllocator.h>
+
+typedef void* ent;
+
+class slink: public gms::FastPODAllocator<slink> {
 public:
 #ifdef OBJECT_DEBUG
   static int objectCount;
@@ -55,7 +70,7 @@ friend class slist_iterator;
 friend class slist_looper;
 friend class slist_traversor;
   slink* next;
-  void*  e;
+  void* e;
 
   slink( void* a, slink* p ) { 
     e=a; 
@@ -72,7 +87,7 @@ friend class slist_traversor;
   }
 } ;
 
-class slist {
+class slist: public gms::FastPODAllocator<slist> {
 private:
   slink* last;
   char   owner;
@@ -117,12 +132,12 @@ public:
   char IsEmpty() { return last == 0; }
   void clear();   // Preserves the data 
   // void zap();     // Destroys the data
-  void* lastInfoPtr() const { if( last ) return last->e;
-                              else       return 0;
-                            }
-  void* firstInfoPtr() const { if( last ) return last->next->e;
-                               else       return 0;
-                             }
+  void* lastInfoPtr() { if( last ) return last->e;
+                      else       return 0;
+                    }
+  void* firstInfoPtr() { if( last ) return last->next->e;
+                       else       return 0;
+                     }
 
   friend class slist_iterator;
   friend class slist_looper;
@@ -131,7 +146,7 @@ public:
 #ifdef OBJECT_DEBUG
   static int objectCount;
 #endif
-} ;
+};
 
 class slist_iterator {
   slink* ce;
@@ -178,7 +193,7 @@ class slist_traversor {
   slink* ce;
   slist* cs;
 public:
-  slist_traversor( const slist& s ) { cs = const_cast<slist*>(&s); ce = cs->last; }
+  slist_traversor( slist& s ) { cs = &s; ce = cs->last; }
   slink* operator()();
   void Reset( const slist& s ) { cs = (slist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
