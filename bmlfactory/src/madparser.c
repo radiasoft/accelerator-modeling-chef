@@ -11,9 +11,20 @@
 ******
 ******  File:      madparser.c
 ******                                                                
-******  Copyright (c) 1999-2004  
+******  Copyright (c) 
 ******                Universities Research Association, Inc.   
 ******                All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******                                                            
 ******                                                                
 ******  Authors:   Dmitri Mokhov, Oleg Krivosheev                  
 ******             and Jean-Francois Ostiguy
@@ -29,10 +40,6 @@
 ******                    (630) 840 2231                              
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -101,6 +108,8 @@ extern void  reset_input_buffer();
 #include "madparser.h"
 #endif /* madparser_h */
 
+#include <PhysicsConstants.h>
+
    /*
     *  prototypes
     */
@@ -135,6 +144,29 @@ typedef struct {
     FILE*           yyfile_;
     int             linenum_;
 } yybuff;
+
+typedef struct {
+    char*       particle_type_;  
+    double      mass_;           /* mass [GeV/c**2]           */
+    double      charge_;         /* charge in units of e      */
+    double      energy_;         /* total energy   [GeV]      */
+    double      kenergy_;        /* kinetic energy [GeV]      */
+    double      pc_;             /* momentum [GeV/c]          */
+    double      gamma_;          /* relativistic gamma        */
+    double      brho_;
+    double      ex_;             /* horizontal emittance [m]  */
+    double      ey_;             /* vertical emittance [m]    */
+    double      exn_;            /* normalized hor emittance  */
+    double      eyn_;            /* normalized ver emittance  */
+    double      et_;             /* longitudinal emittance    */
+    double      sigt_;           /* rms bunch length          */
+    double      sige_;           /* relative energy spread    */
+    int         kbunch_;         /* the number of bunches     */
+    double      npart_;          /* number of particles/bunch */
+    double      bcurrent_;       /* bunch current             */
+    char        bunched_;        /* logical, true = the beam is bunched */ 
+    char        radiate_;        /* logical, true = the beam is allowed to radiate photons */
+} beam_params;
 
 struct madparser_ {
   
@@ -183,6 +215,8 @@ struct madparser_ {
     beam_element*   current_bel_;
     char            current_bel_type_[BEL_NAME_LENGTH];
 
+    char*           use_statement_beamline_name_;
+    beam_params     beam_params_;
 
 };
 
@@ -311,6 +345,31 @@ madparser_init( const char* filename_in,
 
       mp->current_bel_type_[0] = '\0';
 
+          /*
+          beam parameters 
+	  */ 
+      
+      mp->use_statement_beamline_name_ = NULL;
+
+      mp->beam_params_.particle_type_ = "PROTON";  
+      mp->beam_params_.mass_          = 0.93827231;  /* THIS DOES NOT BELONG HERE */
+      mp->beam_params_.charge_        = 1.0;         
+      mp->beam_params_.energy_        = 1.0;         
+      mp->beam_params_.pc_            = 1.0;         
+      mp->beam_params_.gamma_         = 1.0;         
+      mp->beam_params_.ex_            = 1.0;         
+      mp->beam_params_.ey_            = 1.0;         
+      mp->beam_params_.exn_           = 1.0;         
+      mp->beam_params_.eyn_           = 1.0;         
+      mp->beam_params_.et_            = 1.0;         
+      mp->beam_params_.sigt_          = 1.0;         
+      mp->beam_params_.sige_          = 1.0;         
+      mp->beam_params_.kbunch_        = 1;         
+      mp->beam_params_.npart_         = 1.0;         
+      mp->beam_params_.bcurrent_      = 0;         
+      mp->beam_params_.bunched_       = 0;         
+      mp->beam_params_.radiate_       = 0;         
+
     }
   }
   return mp;
@@ -356,7 +415,7 @@ madparser_parse( madparser* mp, const char* stringbuffer) {
     }
 
 #else
-    strcpy(mp->working_dir_, dirname(tmpfilename) ); 
+    strcpy( mp->working_dir_, (const char*) dirname(tmpfilename) ); 
 #endif
 
   if (mp->inmemory_ != 0)
@@ -382,7 +441,7 @@ madparser_parse( madparser* mp, const char* stringbuffer) {
 
       mp->current_yybuff_->yyfile_ = yyin; /* important ! */
 
-      if ( (mp->filename_out_ != NULL) && ( mp->filename_out_ != stderr) ) {
+      if (mp->filename_out_ != NULL) {
         yyout = fopen( mp->filename_out_, "w" );
         assert( yyout != NULL );      
       }
@@ -570,6 +629,9 @@ void
 madparser_restore_yybuff( madparser* mp ) {
   assert( mp != NULL );
   
+  if  ( g_slist_length( mp->yybuff_list_) == 1 ) return; /*  this means the list only contains the current buffer */
+                                                         /*  note: yybuff_list_ needs to go away ! */
+
   mp->yybuff_list_ = g_slist_remove( mp->yybuff_list_, mp->current_yybuff_ );
   PRIVATE_DEALLOCATE( mp->current_yybuff_, mp->yybuff_alloc_ );
 
@@ -628,6 +690,9 @@ madparser_delete( madparser* mp ) {
     free( mp->working_dir_ );
   }
 
+  if ( mp->use_statement_beamline_name_ != NULL ) { 
+     free(mp->use_statement_beamline_name_);
+  }
 
   reset_input_buffer();
  
@@ -635,10 +700,12 @@ madparser_delete( madparser* mp ) {
   { 
     if ( yyin != stdin)  
         fclose( yyin ); 
-    if (( yyout != stdout ) && (yyout =! stderr) ) 
+    if (( yyout != stdout ) && (yyout != stderr) ) 
        fclose( yyout );
   }
    
+  
+
   free( mp );
 
   return 0;
@@ -731,6 +798,7 @@ madparser_new_bel( madparser* mp ) {
   mp->current_bel_ = beam_element_init( mp->expr_alloc_, mp->bel_alloc_ );
   assert( mp->current_bel_ != NULL );
   mp->current_bel_type_[0] = '\0';
+  mp->current_bel_->reference_energy_ = mp->beam_params_.energy_; /* set reference to current energy (set by BEAM statement) */
 }
 
 
@@ -804,6 +872,18 @@ madparser_return_from_include( madparser* mp ) {
  
 }
 
+int 
+madparser_includestack_empty( madparser* mp ) {
+
+  if ( mp->input_buffers_list_) { 
+    return 0;
+  }
+  else {
+    return 1;
+  }
+}
+
+
 void
 madparser_push_input_buffer(madparser* mp, void* yybuffer) 
 {
@@ -850,3 +930,152 @@ madparser_get_default_buffer(madparser* mp)
   return mp->default_buffer_;
 
 }
+
+
+void
+madparser_use_parameters ( madparser* mp, const char* s) {
+
+  if ( mp->use_statement_beamline_name_ != NULL ) free(mp->use_statement_beamline_name_);
+
+  mp->use_statement_beamline_name_  = (char*) malloc( (strlen(s)+1)*sizeof(char) );
+  strcpy(  mp->use_statement_beamline_name_ ,s );  
+}
+
+
+const char* 
+madparser_get_use_statement_beamline_name(  madparser* mp ) { 
+
+   return mp->use_statement_beamline_name_;
+
+}
+
+
+void  
+madparser_set_beam_particle_mass( madparser* mp, double mass) {
+
+  mp->beam_params_.mass_ = mass;
+
+}
+
+void  
+madparser_set_beam_particle_charge( madparser* mp, double charge){
+
+  mp->beam_params_.charge_ = charge;
+
+}
+
+void  
+madparser_set_beam_energy( madparser* mp, double value){
+
+  double pc, m_p, et, ek, brho, gamma; 
+
+  m_p      = mp->beam_params_.mass_;
+
+  et        = value;
+  ek        = et - m_p;
+  gamma     = et/m_p;
+  pc        = sqrt((et*et)-(m_p*m_p));
+  brho      = pc/PH_CNV_brho_to_p;
+
+  mp->beam_params_.pc_      = pc;
+  mp->beam_params_.energy_  = et;
+  mp->beam_params_.kenergy_ = ek;
+  mp->beam_params_.brho_    = brho;
+  mp->beam_params_.gamma_   = gamma;
+
+} 
+
+void  
+madparser_set_beam_momentum( madparser* mp, double value){
+
+  double pc, m_p, et, ek, brho, gamma; 
+
+  m_p      = mp->beam_params_.mass_;
+
+  pc      = value;  
+  et      = sqrt( (pc*pc)+(m_p*m_p) );
+  ek      = et - m_p;
+  gamma   = et/m_p;
+  brho    = pc/PH_CNV_brho_to_p;
+
+  mp->beam_params_.pc_      = pc;
+  mp->beam_params_.energy_  = et;
+  mp->beam_params_.kenergy_ = ek;
+  mp->beam_params_.brho_    = brho;
+  mp->beam_params_.gamma_   = gamma;
+
+
+}
+
+void  
+madparser_set_beam_gamma( madparser* mp, double value){
+
+  double pc, m_p, et, ek, brho, gamma; 
+
+  m_p      = mp->beam_params_.mass_;
+
+  gamma     = value;
+  et        = gamma*m_p;
+  ek        = et-m_p;
+  pc        = sqrt((et*et)-(m_p*m_p));
+  brho      = pc/PH_CNV_brho_to_p;
+
+  mp->beam_params_.pc_      = pc;
+  mp->beam_params_.energy_  = et;
+  mp->beam_params_.kenergy_ = ek;
+  mp->beam_params_.brho_    = brho;
+  mp->beam_params_.gamma_   = gamma;
+
+}
+
+
+void  
+madparser_set_beam_particle_type( madparser* mp, char* type){
+
+  char* s;
+  s = (char*) malloc( ( strlen(type)+1 )*sizeof(char) ); 
+  strcpy( s, type);
+
+  mp->beam_params_.particle_type_ = s;
+
+}
+
+double
+madparser_get_brho(  madparser* mp ) { 
+
+  return mp->beam_params_.brho_;
+
+}
+
+
+void
+madparser_set_bml_ref_energy(madparser* mp, beam_line* bml) {
+
+  bml->reference_energy_ = mp->beam_params_.energy_;
+ 
+}
+
+
+#if 0
+   case EK: 
+ 
+   _ek        = value;
+   _et        = m_p + _ek;
+   _gamma     = _et/m_p;
+   _momentum  = sqrt((_et*_et)-(m_p*m_p));
+   _brho      = _momentum/PH_CNV_brho_to_p;
+  
+   break;
+
+ case BRHO:
+
+   _brho      =  value;
+   _momentum  =  _brho*PH_CNV_brho_to_p;
+   _et        =  sqrt( (_momentum*_momentum)+(m_p*m_p) );
+   _ek        =  _et - m_p;
+   _gamma     =  _et/m_p;
+
+   break;
+
+ }
+#endif
