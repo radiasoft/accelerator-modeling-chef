@@ -9,8 +9,15 @@
 ******                                    
 ******  File:      beam_element.h
 ******                                                                
-******  Copyright (c) 1999  Universities Research Association, Inc.   
+******  Copyright (c) Universities Research Association, Inc.   
 ******                All Rights Reserved                             
+******
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
 ******                                                                
@@ -26,9 +33,6 @@
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -188,6 +192,7 @@ typedef struct beam_element_ {
     char        name_[BEL_NAME_LENGTH];
     GNode*      length_;
     GNode*      params_[BEL_NOF_PARAMS];
+    double      reference_energy_;
     void*       udata_;
 } beam_element;
 
