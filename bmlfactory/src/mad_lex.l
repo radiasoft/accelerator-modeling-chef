@@ -1,3 +1,31 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE FACTORY:  Interprets MAD input files and             
+******             creates instances of class beamline.                 
+******                                                
+******  File:      mad_lex.l
+******                                                                
+******  Copyright (c) Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******                                                                
+******  Authors:    Dmitri Mokhov, Oleg Krivosheev                  
+******              Jean-Francois Ostiguy 
+******
+******
+**************************************************************************
+**************************************************************************
 %{
 #include <assert.h>
 #include <errno.h>
@@ -5,19 +33,10 @@
 #include <string.h>
 #include <glib.h>
 
-#if !defined(str_to_upper_h)
-#include "str_to_upper.h"
-#endif /* str_to_upper_h */
-
-#if !defined(const_table_h)
-#include "const_table.h"
-#endif /* const_table_h */
-
-#if !defined(madparser_h)
-#include "madparser.h"
-#endif /* madparser_h */  
-
-#include "mad_yacc.h"
+#include <str_to_upper.h>
+#include <const_table.h>
+#include <madparser.h>
+#include <mad_yacc.h>
 
 #define MAX_ERR_MSG_LENGTH 256
 
