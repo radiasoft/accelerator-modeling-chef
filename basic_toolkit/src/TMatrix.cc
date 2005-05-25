@@ -69,13 +69,13 @@ TMatrix<T>::TMatrix() : _stacked(false)
 template<typename T>
 TMatrix<T>::TMatrix(int rows) : _stacked(false)
 {
-  _ml = new TML<T>(rows,1,0.0);
+  _ml = new TML<T>(rows,1,T());
 }
 
 template<typename T>
 TMatrix<T>::TMatrix(int rows, int columns) : _stacked(false)
 {
-  _ml = new TML<T>(rows,columns,0.0);
+  _ml = new TML<T>(rows,columns,T());
 }
 
 template<typename T>
@@ -96,7 +96,7 @@ TMatrix<T>::TMatrix(const char* flag, int dimension) : _stacked(false)
   int    i;
   double tmp_float = dimension;
 
-  _ml = new TML<T>(dimension,dimension,0.0);
+  _ml = new TML<T>(dimension,dimension,T());
 
   if( ((double) (dimension/2) != tmp_float/2.0) &&
       (flag[0] == 'J') ) {
@@ -107,12 +107,12 @@ TMatrix<T>::TMatrix(const char* flag, int dimension) : _stacked(false)
 
   if (flag[0]  == 'I') {
     for (i = 0; i< dimension; i++) {
-      _ml->_m[i][i] = 1.0;
+      _ml->_m[i][i] = T(1); //// consider using boost::value_initialized lib ! 
     }
   } else if (flag[0] == 'J') {
     for (i = dimension/2; i< dimension; i++) {
-      _ml->_m[i-dimension/2][i] = 1;
-      _ml->_m[i][i-dimension/2] = -1;
+      _ml->_m[i-dimension/2][i] = T(1); //// consider using boost::value_initialized lib !
+      _ml->_m[i][i-dimension/2] = T(-1);//// consider using boost::value_initialized lib !
     }
   } else {
       throw( GenericException( dimension, dimension
@@ -227,7 +227,7 @@ TMatrix<T> TMatrix<T>::Square() const
   else                  d = cols();
 
   int     i, j;
-  TMatrix<T> z( d, d, 0.0 );
+  TMatrix<T> z( d, d, T() );
   TML<T>*    zPtr = z._ml;
 
   for( i = 0; i < d; i++ )
@@ -240,7 +240,7 @@ TMatrix<T> TMatrix<T>::Square() const
 template<typename T>
 TMatrix<T> TMatrix<T>::transpose() const 
 {
-  TMatrix<T> z(cols(),rows(),0.0);
+  TMatrix<T> z(cols(),rows(),T());
   TML<T>* zPtr = z._ml;
 
   for (int row = 0; row < rows(); row++)  {
@@ -254,7 +254,7 @@ TMatrix<T> TMatrix<T>::transpose() const
 template<typename T>
 T TMatrix<T>::trace() 
 {
-  T temp = 0.0;
+  T temp = T();
   if(rows()  != cols()) {
     throw( NotSquare( rows(), cols(), "T TMatrix<T>::trace()" )  );
   }
@@ -289,7 +289,7 @@ bool TMatrix<T>::isOrthogonal() const
 template<typename T>
 T TMatrix<T>::determinant() 
 {
-  T det = 0.0;
+  T det = T();
   if(rows() != cols()) {
     throw( NotSquare( rows(), cols(), "T TMatrix<T>::determinant()" )  );
   }
@@ -439,19 +439,19 @@ ostream& operator<<(ostream& os, const TMatrix<T>& x)
 template<typename T>
 TMatrix<T> operator+(const TMatrix<T>& x, const TMatrix<T>& y) 
 {
-  TMatrix<T> z(x.rows(),x.cols(),0.0);
+  TMatrix<T> z(x.rows(),x.cols(),T());
   TML<T>* xPtr = x._ml;
   TML<T>* yPtr = y._ml;
   TML<T>* zPtr = z._ml;
   if( (x.rows() != y.rows()) || (x.cols() != y.cols()) ) {
-    throw( TMatrix<T>::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+    throw( typename TMatrix<T>::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
            "TMatrix<T> operator+(const TMatrix<T>& x, const TMatrix<T>& y)" ) );
   }
   for(int i = 0; i< x.rows() ; i++) {
     for(int j = 0; j < x.cols(); j++) {
       zPtr->_m[i][j] = xPtr->_m[i][j] + yPtr->_m[i][j];
       if(std::abs(zPtr->_m[i][j]) < M_SMALL*std::abs(yPtr->_m[i][j]))
-        zPtr->_m[i][j] = 0.0;
+        zPtr->_m[i][j] = T();
     }
   }
   z._stacked = true;
@@ -481,7 +481,7 @@ TMatrix<T> operator+( const T& y, const TMatrix<T>& x )
 template<typename T>
 TMatrix<T> operator-(const TMatrix<T>& x) 
 {
-  TMatrix<T> z(x.rows(),x.cols(),0.0);
+  TMatrix<T> z(x.rows(),x.cols(),T());
   TML<T>* xPtr = x._ml;
   TML<T>* zPtr = z._ml;
   for(int i = 0; i< x.rows() ; i++) {
@@ -496,19 +496,19 @@ TMatrix<T> operator-(const TMatrix<T>& x)
 template<typename T>
 TMatrix<T> operator-(const TMatrix<T>& x, const TMatrix<T>& y) 
 {
-  TMatrix<T> z(x.rows(),x.cols(),0.0);
+  TMatrix<T> z(x.rows(),x.cols(),T());
   TML<T>* xPtr = x._ml;
   TML<T>* yPtr = y._ml;
   TML<T>* zPtr = z._ml;
   if(( x.rows() != y.rows()) || (x.cols() != y.cols())) {
-    throw( TMatrix<T>::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+    throw( typename TMatrix<T>::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
            "TMatrix<T> operator-(const TMatrix<T>& x, const TMatrix<T>& y)" ) );
   }
   for(int i = 0; i< x.rows() ; i++) {
     for(int j = 0; j < x.cols(); j++) {
       zPtr->_m[i][j] = xPtr->_m[i][j] - yPtr->_m[i][j];
       if(std::abs(zPtr->_m[i][j]) < M_SMALL*std::abs(yPtr->_m[i][j]))
-        zPtr->_m[i][j] = 0.0;
+        zPtr->_m[i][j] = T();
     }
   }
   z._stacked = true;
@@ -538,7 +538,7 @@ TMatrix<T> operator-( const T& y, const TMatrix<T>& x )
 template<typename T>
 TMatrix<T> operator*( const TMatrix<T>& x, const T y) 
 {
-  TMatrix<T> z(x.rows(),x.cols(),0.0);
+  TMatrix<T> z(x.rows(),x.cols(),T());
   TML<T>* xPtr = x._ml;
   TML<T>* zPtr = z._ml;
 
@@ -554,7 +554,7 @@ TMatrix<T> operator*( const TMatrix<T>& x, const T y)
 template<typename T>
 TMatrix<T> operator*( const T y, const TMatrix<T>& x) 
 {
-  TMatrix<T> z(x.rows(),x.cols(),0.0);
+  TMatrix<T> z(x.rows(),x.cols(),T());
   TML<T>* xPtr = x._ml;
   TML<T>* zPtr = z._ml;
 
@@ -570,23 +570,23 @@ TMatrix<T> operator*( const T y, const TMatrix<T>& x)
 template<typename T>
 TMatrix<T> operator*(const TMatrix<T>& x, const TMatrix<T>& y)  
 {
-  TMatrix<T> z(x.rows(),y.cols(),0.0);
+  TMatrix<T> z(x.rows(),y.cols(),T());
   TML<T>* xPtr = x._ml;
   TML<T>* yPtr = y._ml;
   TML<T>* zPtr = z._ml;
   if( x.cols() != y.rows()) {
-    throw( TMatrix<T>::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
+    throw( typename TMatrix<T>::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
            "TMatrix<T> operator*(const TMatrix<T>& x, const TMatrix<T>& y)" ) );
   }
   T tmp;
   for(int row = 0; row < x.rows(); row++) {
     for(int col = 0; col < y.cols(); col++){
-      T sum = 0.0;
+      T sum = T();
       for(int i = 0; i < x.cols(); i++) {
         tmp = xPtr->_m[row][i] * yPtr->_m[i][col];
         sum += tmp;
         if(std::abs(sum) < M_SMALL*std::abs(tmp))
-          sum = 0.0;
+          sum = T();
       }
       zPtr->_m[row][col] = sum;
     }
@@ -598,10 +598,10 @@ TMatrix<T> operator*(const TMatrix<T>& x, const TMatrix<T>& y)
 template<typename T>
 TMatrix<T> operator/( const TMatrix<T>& x, const T y) 
 {
-  TMatrix<T> z(x.rows(),x.cols(),0.0);
+  TMatrix<T> z(x.rows(),x.cols(), T());
   TML<T>* xPtr = x._ml;
   TML<T>* zPtr = z._ml;
-  if(y == 0.0)
+  if(y == T())
     cerr << "TMatrix<T>:operator/ divide by zero" << endl;
   for(int i = 0; i< x.rows() ; i++) {
     for(int j = 0; j < x.cols(); j++) {
@@ -697,14 +697,14 @@ TMatrix<T> TMatrix<T>::_scale()
       if (std::abs(temp) > maximum)
         maximum = std::abs(temp);
     }
-    if(maximum == 0.0) {
+    if(maximum == 0.0 ) {
       cerr << "\n*** ERROR *** Matrix = \n" << *this << endl;
       throw( GenericException( rows(), cols()
                      , "TMatrix<T> TMatrix<T>::_scale()"
                      , "Singular TMatrix<T> in _scale()" ) );
     }
     // save scaling
-    scale_vector._ml->_m[row][0] = ((T)(1.0/maximum));
+    scale_vector._ml->_m[row][0] = T(1)/maximum;
   }
   return scale_vector;
 }
@@ -746,7 +746,7 @@ TMatrix<T> TMatrix<T>::_lu_decompose(int* indx, int& d ) const
             tmp = lu_decomp._ml->_m[i][k]*lu_decomp._ml->_m[k][j];
             sum -= tmp;
             if(std::abs(sum) < M_SMALL*std::abs(tmp))
-              sum = 0.0;
+              sum = T();
           }
           lu_decomp._ml->_m[i][j] = sum;
         }
@@ -754,7 +754,7 @@ TMatrix<T> TMatrix<T>::_lu_decompose(int* indx, int& d ) const
     }
 
 // Initialize the search for the largest pivot element:
-    maximum = 0.0;
+    maximum = T();
     // i=j of eq 2.3.12 & i=j+I..N of 2.3.13:
     for(i=j; i <= cols()-1; i++) {
       sum = lu_decomp._ml->_m[i][j];
@@ -764,7 +764,7 @@ TMatrix<T> TMatrix<T>::_lu_decompose(int* indx, int& d ) const
           tmp =  lu_decomp._ml->_m[i][k] * lu_decomp._ml->_m[k][j];
           sum -= tmp;
           if(std::abs(sum) < M_SMALL*std::abs(tmp))
-            sum = 0.0;
+            sum = T();
         }
         lu_decomp._ml->_m[i][j] = sum;
       }
@@ -773,7 +773,7 @@ TMatrix<T> TMatrix<T>::_lu_decompose(int* indx, int& d ) const
       if (dum >= maximum){
         // is it better than the best so far ?
         col_max = i;
-        maximum = dum;
+        maximum = std::abs(dum);
       }
     }
     // Do we need to interchange rows?
@@ -794,16 +794,17 @@ TMatrix<T> TMatrix<T>::_lu_decompose(int* indx, int& d ) const
       // singular (at least to the precision of the
       // algorithm). For some applications on singular
       // matrices, it is desirable to substitute tiny for 0
-      if(lu_decomp._ml->_m[j][j] == 0.0)
-        lu_decomp._ml->_m[j][j] = tiny;
-      dum = 1.0/lu_decomp._ml->_m[j][j];
+      if(lu_decomp._ml->_m[j][j] == T())
+        lu_decomp._ml->_m[j][j] = T(tiny); /// this may not work for all types
+                                            
+      dum = T(1)/lu_decomp._ml->_m[j][j];
       for(i=j+1; i <= cols()-1; i++)
         lu_decomp._ml->_m[i][j] *= dum;
     }
 
   }
-  if(lu_decomp._ml->_m[rows()-1][cols()-1] == 0.0)
-    lu_decomp._ml->_m[rows()-1][cols()-1] = tiny;
+  if(lu_decomp._ml->_m[rows()-1][cols()-1] == T())
+    lu_decomp._ml->_m[rows()-1][cols()-1] = T(tiny);
 
   return lu_decomp;
 }
@@ -846,9 +847,9 @@ void TMatrix<T>::_lu_back_subst(int* indx, TMatrix<T>& b)
         tmp = _ml->_m[i][j] * b._ml->_m[j][0];
         sum -= tmp;
         if(std::abs(sum) < M_SMALL*std::abs(tmp))
-          sum = 0.0;
+          sum = T ();
       }
-    } else if(sum != 0.0)
+    } else if(sum != T() )
       ii = i;
     b._ml->_m[i][0] = sum;
   }
@@ -859,7 +860,7 @@ void TMatrix<T>::_lu_back_subst(int* indx, TMatrix<T>& b)
         tmp = _ml->_m[i][j] * b._ml->_m[j][0];
         sum -= tmp;
         if(std::abs(sum) < M_SMALL*std::abs(tmp))
-          sum = 0.0;
+          sum = T();
       }
     }
     // store a component of the soln vector X:
@@ -1834,15 +1835,15 @@ template TMatrix<FNAL::Complex> operator/(const FNAL::Complex, TMatrix<FNAL::Com
 template TMatrix<FNAL::Complex> operator/(TMatrix<FNAL::Complex>&, TMatrix<FNAL::Complex>&);
 
 
-TMatrix<FNAL::Complex> operator*(const TMatrix<FNAL::Complex>& x, const TMatrix<double>& y)
+TMatrix<FNAL::Complex > operator*(const TMatrix<FNAL::Complex >& x, const TMatrix<double>& y)
 {
-  TMatrix<FNAL::Complex> z(x.rows(),y.cols(),complex_0);
-  TML<FNAL::Complex>* xPtr = x._ml;
+  TMatrix<FNAL::Complex > z(x.rows(),y.cols(),complex_0);
+  TML<FNAL::Complex >* xPtr = x._ml;
   TML<double>* yPtr = y._ml;
-  TML<FNAL::Complex>* zPtr = z._ml;
+  TML<FNAL::Complex >* zPtr = z._ml;
   if( x.cols() != y.rows()) {
     throw( TMatrix<double>::Incompatible( x.rows(), x.cols(), y.rows(), y.cols(),
-           "TMatrix<FNAL::Complex> operator*(const TMatrix<FNAL::Complex>& x, const TMatrix<double>& y)" ) );
+           "TMatrix<FNAL::Complex > operator*(const TMatrix<FNAL::Complex >& x, const TMatrix<double>& y)" ) );
   }
   FNAL::Complex tmp;
   for(int row = 0; row < x.rows(); row++) {
