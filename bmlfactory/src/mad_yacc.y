@@ -1,3 +1,31 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE FACTORY:  Interprets MAD input files and             
+******             creates instances of class beamline.                 
+******                                                
+******  File:      mad_yacc.y
+******                                                                
+******  Copyright (c) Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******                                                                
+******  Authors:    Dmitri Mokhov, Oleg Krivosheev                  
+******              Jean-Francois Ostiguy 
+******
+******
+**************************************************************************
+**************************************************************************
 %{
 #include <config.h>
 #include <assert.h>
@@ -6,48 +34,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#if !defined(fb_allocator_h)
-#include "fb_allocator.h"
-#endif /*fb_allocator_h*/
-
-#if !defined(str_to_upper_h)
-#include "str_to_upper.h"
-#endif /* str_to_upper_h */
-
-#if !defined(beamel_table_h)
-#include "beamel_table.h"
-#endif /* beamel_table_h */
-  
-#if !defined(bml_table_h)
-#include "bml_table.h"
-#endif /* bml_table_h */
-  
-#if !defined(comment_arr_h)
-#include "comment_arr.h"
-#endif /* comment_arr_h */
-  
-#if !defined(const_table_h)
-#include "const_table.h"
-#endif /* const_table_h */
-  
-#if !defined(var_table_h)
-#include "var_table.h"
-#endif /* var_table_h */
-
-#if !defined(matrix_h)
-#include "matrix.h"
-#endif /* matrix_h */
-
-#if !defined(expression_h)
-#include "expression.h"
-#endif /* expression_h */
-  
-#if !defined(madparser_h)
-#include "madparser.h"
-#endif /* madparser_h */
-
-/**** this should be undefined for the production version ***/
-#define YYDEBUG 1 
+/**** this should be defined only for debugging ***/
+/* #define YYDEBUG 1 */ 
 
 /************** is this really needed ? *********************/
 extern FILE* yyin;
@@ -56,8 +44,12 @@ extern int get_yy_buf_size();
 
 void yyerror( char* s );
 int  yylex( void );
- void bmlfactory_exit(const char* filename, int lineno, const char* errmessage);
- void bmlfactory_parse_error(const char* input_filename, int input_file_lineno, const char* parser_message);
+void bmlfactory_exit(const char*, int, const char*);
+void bmlfactory_parse_error(int, const char*, int, const char*);
+#if 0
+void bmlfactory_exit(const char* filename, int lineno, const char* errmessage);
+void bmlfactory_parse_error(const char* input_filename, int input_file_lineno, const char* parser_message);
+#endif
 extern struct madparser_* mp;
  
 %}
@@ -175,7 +167,7 @@ statement			: command
 comment                         : MAD_COMMENT { madparser_comment_mode_inc(mp); }
 				| MAD_ENDCOMMENT
                                   { if (!madparser_comment_mode(mp) ) {
-				    fprintf( stderr, "Error: an unmatched ENDCOMMENT.\n" );
+				    fprintf( stderr, "Error: Unmatched ENDCOMMENT.\n" );
 				  } else {
 				    madparser_comment_mode_dec(mp);
                                   }
@@ -216,9 +208,11 @@ call_attr			: MAD_FILENAME '=' MAD_STRING_LITERAL
                                 ; 
  
 return                          : MAD_RETURN { 
-
+                                 if ( madparser_includestack_empty( mp ) ) {
+                                   fprintf(stderr, "WARNING: Included files stack is empty. Ignoring RETURN statement.\n");
+                                   return;
+				 }
                                  yy_delete_buffer( get_current_buffer() );
-                                 /*** yy_switch_to_buffer( (YY_BUFFER_STATE) madparser_return_from_include( mp ) ); ***/
                                  yy_switch_to_buffer( madparser_return_from_include( mp ) );
 				
                                 }
@@ -1605,6 +1599,7 @@ beam_line_elements		: beam_line_element
 
 beam_line_element		: identifier {
                                   beam_line* bml = beam_line_init( madparser_bml_alloc(mp) );
+                                  madparser_set_bml_ref_energy(mp, bml);
                                   assert( bml != NULL );
                                   beam_line_add_bel( bml, $<sval>1, madparser_bel_table(mp), madparser_bml_table(mp) );
                                   free( $<sval>1 );
@@ -1617,6 +1612,7 @@ beam_line_element		: identifier {
                                   int i;
                                   int n = (int)atof( $<sval>1 );
                                   beam_line* bml = beam_line_init( madparser_bml_alloc(mp) );
+                                  madparser_set_bml_ref_energy( mp, bml);
                                   assert( bml != NULL );
                                   for ( i = 0; i < n; ++i ) {
                                     beam_line_add_bml( bml, (beam_line*)$<ptr>3 );
@@ -1629,6 +1625,7 @@ beam_line_element		: identifier {
                                   GList* list = ((beam_line*)$<ptr>2)->bel_list_;
                                   GList* last = NULL;
                                   beam_line* bml = beam_line_init( madparser_bml_alloc(mp) );
+                                  madparser_set_bml_ref_energy(mp, bml);
                                   assert( bml != NULL );
 
                                   while (list) {
@@ -2183,7 +2180,10 @@ use_attrs			: use_attr
 				| use_attrs ',' use_attr
 				;
 
-use_attr			: identifier { printf("USE %s.\n",yylval.sval); }
+use_attr			: identifier { 
+                                      printf("USE %s.\n",yylval.sval); 
+                                      madparser_use_parameters(mp,yylval.sval); 
+				  } 
 				| MAD_PERIOD '=' identifier { printf("USE with period line=%s.\n",yylval.sval); }
 				| MAD_PERIOD '=' '(' beam_line_elements ')' { printf("USE with period.\n"); }
 				| MAD_RANGE '=' range_expr { printf("USE with range.\n"); }
@@ -2203,39 +2203,136 @@ element_occurence		: '#' identifier
 
 /* Beam */
 
-beam				: MAD_BEAM ',' beam_attrs
-				;
+beam				: MAD_BEAM ',' beam_attrs 
+                                ;
 
 beam_attrs			: beam_attr
 				| beam_attrs ',' beam_attr
 				;
 
 beam_attr			: MAD_PARTICLE '=' particle_name
-				| MAD_MASS     '=' const_expression { printf("BEAM with particle mass=expr.\n"); }
-				| MAD_CHARGE   '=' const_expression { printf("BEAM with particle charge=expr.\n"); }
-				| MAD_ENERGY   '=' const_expression { printf("BEAM with energy=expr.\n"); }
-				| MAD_PC       '=' const_expression { printf("BEAM with pc=expr.\n"); }
-				| MAD_GAMMA    '=' const_expression { printf("BEAM with gamma=expr.\n"); }
-				| MAD_EX       '=' const_expression { printf("BEAM with ex=expr.\n"); }
-				| MAD_EXN      '=' const_expression { printf("BEAM with exn=expr.\n"); }
-				| MAD_EY       '=' const_expression { printf("BEAM with ey=expr.\n"); }
-				| MAD_EYN      '=' const_expression { printf("BEAM with eyn=expr.\n"); }
-				| MAD_ET       '=' const_expression { printf("BEAM with et=expr.\n"); }
-				| MAD_SIGT     '=' const_expression { printf("BEAM with sigt=expr.\n"); }
-				| MAD_SIGE     '=' const_expression { printf("BEAM with sige=expr.\n"); }
-				| MAD_KBUNCH   '=' const_expression { printf("BEAM with kbunch=expr.\n"); }
-				| MAD_NPART    '=' const_expression { printf("BEAM with npart=expr.\n"); }
-				| MAD_BCURRENT '=' const_expression { printf("BEAM with bcurrent=expr.\n"); }
-				| MAD_BUNCHED { printf("BEAM with BUNCHED true.\n"); }
-				| '-' MAD_BUNCHED { printf("BEAM with BUNCHED false.\n"); }
-				| MAD_RADIATE { printf("BEAM with RADIATE true.\n"); }
-				| '-' MAD_RADIATE { printf("BEAM with RADIATE false.\n"); }
+				| MAD_MASS     '=' var_expression 
+                                                   {       
+                                                     printf("BEAM with particle mass=%g\n",  
+                                                       expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                     madparser_set_beam_particle_mass(mp,
+                                                       expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) ));  
+                                                   }
+				| MAD_CHARGE   '='  var_expression  
+                                                   {
+						     printf("BEAM with particle charge=%g\n",
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                     madparser_set_beam_particle_charge(mp,
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+ 
+                                                   }
+				| MAD_ENERGY   '=' var_expression 
+                                                   { 
+                                                     printf("BEAM with energy=%g\n",
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                     madparser_set_beam_energy(mp,
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                   }
+				| MAD_PC       '=' var_expression 
+                                                   {  
+                                                     printf("BEAM with pc=%g\n",
+                                                       expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                     madparser_set_beam_momentum(mp,
+                                                       expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                     
+ 
+                                                   }
+				| MAD_GAMMA    '=' var_expression 
+                                                   { 
+						     printf("BEAM with gamma=%g\n", 
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                     madparser_set_beam_gamma(mp,
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+
+                                                   }
+				| MAD_EX       '=' var_expression 
+                                                   {  
+                                                      printf("BEAM with ex=%g\n", 
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                   }
+				| MAD_EXN      '=' var_expression 
+                                                   {
+                                                      printf("BEAM with exn=e%g\n", 
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                   }
+				| MAD_EY       '=' var_expression 
+                                                   { 
+                                                      printf("BEAM with ey=%g\n", 
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                   }
+				| MAD_EYN      '=' var_expression 
+                                                   { 
+                                                      printf("BEAM with eyn=%g\n", 
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                   }
+				| MAD_ET       '=' var_expression 
+                                                   { 
+                                                      printf("BEAM with et=%g\n", 
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                   }
+				| MAD_SIGT     '=' var_expression 
+                                                   {  
+                                                      printf("BEAM with sigt=%g\n", 
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                   }
+				| MAD_SIGE     '=' var_expression 
+                                                   { 
+                                                      printf("BEAM with sige=%g\n", 
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                   }
+				| MAD_KBUNCH   '=' var_expression 
+                                                   {  
+                                                      printf("BEAM with kbunch=%g\n", 
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                   }
+				| MAD_NPART    '=' var_expression 
+                                                   { 
+                                                      printf("BEAM with npart=%g\n", 
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                   }
+				| MAD_BCURRENT '=' var_expression 
+                                                   { 
+                                                      printf("BEAM with bcurrent=%g\n", 
+                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                   }
+				| MAD_BUNCHED      { 
+                                                     printf("BEAM with BUNCHED true.\n"); 
+                                                   }
+				| '-' MAD_BUNCHED  { 
+                                                     printf("BEAM with BUNCHED false.\n"); 
+                                                   }
+				| MAD_RADIATE      { 
+                                                     printf("BEAM with RADIATE true.\n"); 
+                                                   }
+				| '-' MAD_RADIATE  {  
+                                                     printf("BEAM with RADIATE false.\n"); 
+
+                                                   }
 				;
 
-particle_name			: MAD_POSITRON { printf("BEAM with positrons.\n"); }
-				| MAD_ELECTRON { printf("BEAM with electrons.\n"); }
-				| MAD_PROTON { printf("BEAM with protons.\n"); }
-				| MAD_ANTI_PROTON { printf("BEAM with anti-protons.\n"); }
+particle_name			: MAD_POSITRON    { 
+                                                    printf("BEAM with positrons.\n");
+                                                    madparser_set_beam_particle_type(mp, "POSITRON"); 
+                                                  }
+				| MAD_ELECTRON    { 
+                                                    printf("BEAM with electrons.\n"); 
+                                                    madparser_set_beam_particle_type(mp, "ELECTRON"); 
+				                  }
+
+				| MAD_PROTON      { 
+                                                    printf("BEAM with protons.\n"); 
+                                                    madparser_set_beam_particle_type(mp, "PROTON"); 
+                                                  }
+
+				| MAD_ANTI_PROTON { 
+                                                    printf("BEAM with anti-protons.\n"); 
+                                                    madparser_set_beam_particle_type(mp, "ANTIPROTON"); 
+                                                  }
 				;
 /* Beam */
 
@@ -2578,9 +2675,17 @@ void
 yyerror( char* s ) {
 
   fprintf( stderr, "Line %d: %s\n" , madparser_linenum(mp), s );
-  if (  madparser_is_reading_from_memory(mp) != 0 )
-        bmlfactory_parse_error( "Current Editor Window", madparser_linenum(mp), s);
-  else
-        bmlfactory_parse_error( madparser_current_filename(mp), madparser_linenum(mp), s);
 
+  printf("madparser_is_reading_from_memory(mp) = %d\n", madparser_is_reading_from_memory(mp));
+  printf("madparser_current_filename(mp) = %s\n", madparser_current_filename(mp));
+  printf("madparser_linenum(mp) = %d\n",  madparser_linenum(mp) );
+  bmlfactory_parse_error( madparser_is_reading_from_memory(mp), madparser_current_filename(mp) , madparser_linenum(mp), s);
+
+#if  0
+    fprintf( stderr, "Line %d: %s\n" , madparser_linenum(mp), s );
+    if (  madparser_is_reading_from_memory(mp) != 0 )
+         bmlfactory_parse_error( "Current Editor Window", madparser_linenum(mp), s);
+   else
+         bmlfactory_parse_error( madparser_current_filename(mp), madparser_linenum(mp), s);
+#endif
 }
