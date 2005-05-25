@@ -5,15 +5,27 @@
 ******  BEAMLINE FACTORY:  Interprets MAD input files and             
 ******             creates instances of class beamline.                       
 ******                                                
-******  Version:   1.2
+******  Version:   1.3
 ******                                    
 ******  File:      madparser.h
 ******                                                                
-******  Copyright (c) 1999  Universities Research Association, Inc.   
+******  Copyright (c) Universities Research Association, Inc./Fermilab   
 ******                All Rights Reserved                             
 ******                                                                
-******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******
+
+******  Authors:   Dmitri Mokhov, Oleg Krivosheev, Jean-Francois Ostiguy                  
 ******                                                                
+******
 ******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
 ******                                                                
 ******             Fermilab                                           
@@ -26,9 +38,6 @@
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -45,6 +54,10 @@
 #include "beam_element.h"
 #endif /* beam_element_h */
 
+#if !defined(beam_line_h)
+#include "beam_line.h"
+#endif /* beam_line_h */
+
 typedef struct madparser_ madparser;
 
 #ifdef __cplusplus
@@ -52,6 +65,7 @@ extern "C" {
 #endif
 
 madparser*    madparser_init( const char* filename_in, const char* filename_out);
+
 int           madparser_parse( madparser* mp, const char* stringbuffer);
 int           madparser_delete( madparser* mp );
 
@@ -70,10 +84,23 @@ fb_allocator* madparser_matrix_alloc( madparser* mp );
 
 GHashTable*   madparser_bml_table( madparser* mp );
 fb_allocator* madparser_bml_alloc( madparser* mp );
+void          madparser_set_bml_ref_energy(madparser* mp, beam_line* bml);
 
 GPtrArray*    madparser_comment_arr( madparser* mp );
 fb_allocator* madparser_comment_alloc( madparser* mp );
-  
+
+void          madparser_use_parameters ( madparser* mp, const char* s);
+const char*   madparser_get_use_statement_beamline_name( madparser* mp );
+
+void          madparser_set_beam_particle_mass( madparser* mp, double mass);
+void          madparser_set_beam_particle_charge( madparser* mp, double charge); 
+void          madparser_set_beam_energy( madparser* mp, double energy); 
+void          madparser_set_beam_momentum( madparser* mp, double momentum);
+void          madparser_set_beam_gamma( madparser* mp, double gamma);
+void          madparser_set_beam_particle_type( madparser* mp, char* type);
+
+double        madparser_get_brho( madparser* mp );  
+
 FILE*         madparser_file_out( madparser* mp );
 
 const char*   madparser_current_filename( const madparser* mp );
@@ -105,6 +132,7 @@ void          madparser_new_bel( madparser* mp );
 FILE*         madparser_call_include( madparser* mp, char* newfile, void* yybuffer);
 void*         madparser_return_from_include(madparser* mp );
 
+  int         madparser_includestack_empty( madparser* mp );
 void          madparser_push_input_buffer(madparser* mp, void* yybuffer); 
 void*         madparser_pop_input_buffer(madparser* mp);
   int         madparser_is_reading_from_memory(madparser* mp);
