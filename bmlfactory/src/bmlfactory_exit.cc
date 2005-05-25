@@ -7,8 +7,17 @@
 ******                                                
 ******  File:      bmlfactory_exit.cc
 ******                                                                
-******  Copyright (c) 2004  Universities Research Association, Inc.   
+******  Copyright (c) Universities Research Association, Inc.   
 ******                All Rights Reserved                             
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Authors:    Leo Michelotti
 ******              Jean-Francois Ostiguy
@@ -37,14 +46,16 @@
 // function that throws. With GNU gcc, everything works correctly *only* if the C 
 // code is compiled with the -fexceptions flag.   
 
-#include "GenericException.h"
+#include <GenericException.h>
+#include <ParserException.h>
 #include <strstream>
+#include <iostream>
 
 extern "C" 
 {
 
   void bmlfactory_exit(const char* filename, int lineno, const char* errmessage);
-  void bmlfactory_parse_error(const char* input_filename, int input_file_lineno, const char* parser_message);
+  void bmlfactory_parse_error(int inmemory, const char* input_filename, int input_file_lineno, const char* parser_message);
 
 }
 
@@ -57,16 +68,17 @@ bmlfactory_exit(const char* filename, int lineno, const char* errmessage)
 }
 
 void 
-bmlfactory_parse_error(const char* input_filename, int input_file_lineno, const char* parser_message) 
+bmlfactory_parse_error(int inmemory, const char* input_filename, int input_file_lineno, const char* parser_message) 
 {
-  
+
+  std::cout << "Entering  bmlfactory_parse_error" << std::endl;  
   std::stringstream errs;
   errs <<" The MAD parser encountered an error while parsing line ";
   errs <<  input_file_lineno << std::endl;
   errs <<" in file " << input_filename << std::endl;
   errs <<" The error message was: " <<  parser_message << std::ends;   
 
-  throw( GenericException( __FILE__, input_file_lineno, errs.str().c_str()) );
+  throw( ParserException( inmemory, input_filename, input_file_lineno, errs.str().c_str()) );
 }
 
 
