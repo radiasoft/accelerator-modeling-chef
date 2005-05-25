@@ -628,6 +628,34 @@ TJLterm<T1,T2> TJet<T1,T2>::stepConstIterator()  const
 }
 
 template<typename T1, typename T2>
+const TJLterm<T1,T2>& TJet<T1,T2>::stepConstIteratorRef()  const
+{
+  if( _constIterPtr ) {
+    return *( (TJLterm<T1,T2>*)( _constIterPtr->operator()() ) );
+  }
+  else {
+    throw( GenericException( __FILE__, __LINE__, 
+           "const TJLterm<T1,T2>& TJet<T1,T2>::stepConstIterator()  const",
+           "You must first resetConstIterator." ) );
+  }
+}
+
+
+template<typename T1, typename T2>
+const TJLterm<T1,T2>* TJet<T1,T2>::stepConstIteratorPtr()  const
+{
+  if( _constIterPtr ) {
+    return ( (const TJLterm<T1,T2>*) ( _constIterPtr->operator()() ) );
+  }
+  else {
+    throw( GenericException( __FILE__, __LINE__, 
+           "const TJLterm<T1,T2>& TJet<T1,T2>::stepConstIterator()  const",
+           "You must first resetConstIterator." ) );
+  }
+}
+
+
+template<typename T1, typename T2>
 void TJet<T1,T2>::resetIterator()
 {
   if( 0 == _iterPtr ) {
@@ -656,6 +684,10 @@ TJLterm<T1,T2>* TJet<T1,T2>::stepIterator()
            "You must first resetIterator." ) );
   }
 }
+
+
+
+
 
 
 // --------------------------------------------------------------------
