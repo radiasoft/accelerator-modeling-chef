@@ -25,7 +25,8 @@
 ******
 ******
 **************************************************************************
-**************************************************************************
+**************************************************************************/
+
 %{
 #include <config.h>
 #include <assert.h>
@@ -33,6 +34,17 @@
 #include <stdlib.h>  
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
+#include <fb_allocator.h>
+#include <str_to_upper.h>
+#include <beamel_table.h>
+#include <bml_table.h>
+#include <comment_arr.h>
+#include <const_table.h>
+#include <var_table.h>
+#include <matrix.h>
+#include <expression.h>
+#include <madparser.h>
 
 /**** this should be defined only for debugging ***/
 /* #define YYDEBUG 1 */ 
