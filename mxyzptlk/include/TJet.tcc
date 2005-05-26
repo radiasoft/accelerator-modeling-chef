@@ -1613,7 +1613,7 @@ TJet<T1,T2> asin( const TJet<T1,T2>& x )
  // Initial Newton's step 	 
  
  TJet<T1,T2> z;	        
- TJet<T1,T2> dz
+ TJet<T1,T2> dz;
 
  z.DeepCopy( x ); 	 
  dz = ( sin(z) - x ) / cos(z); 	 
