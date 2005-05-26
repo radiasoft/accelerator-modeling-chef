@@ -71,7 +71,7 @@ private:
   std::istream& readFrom(std::istream&);
 
 public:
-  friend class MAD_Prop : public bmlnElmnt::PropFunc
+   class MAD_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -80,7 +80,7 @@ public:
   };
   static MAD_Prop LikeMAD;
 
-  friend class NoEdge_Prop : public bmlnElmnt::PropFunc
+   class NoEdge_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -99,7 +99,7 @@ public:
   };
   static NoEdge_Prop NoEdge;
 
-  friend class Exact_Prop : public bmlnElmnt::PropFunc
+   class Exact_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -114,7 +114,7 @@ public:
   };
   static Exact_Prop Exact;
 
-  friend class InEdge_Prop : public bmlnElmnt::PropFunc
+   class InEdge_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -132,7 +132,7 @@ public:
   };
   static InEdge_Prop InEdge;
 
-  friend class OutEdge_Prop : public bmlnElmnt::PropFunc
+   class OutEdge_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -150,7 +150,7 @@ public:
   };
   static OutEdge_Prop OutEdge;
 
-  friend class Null_Prop : public bmlnElmnt::PropFunc
+   class Null_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -168,7 +168,7 @@ public:
   };
   static Null_Prop AbortProp;
 
-  friend class Real_Exact_Prop : public bmlnElmnt::PropFunc
+   class Real_Exact_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -212,6 +212,14 @@ public:
     NoEdge_Prop* _myPropagator;
   };
   static Real_OutEdge_Prop RealOutEdge;
+
+  friend class MAD_Prop;
+  friend class NoEdge_Prop;
+  friend class Exact_Prop;
+  friend class InEdge_Prop;
+  friend class OutEdge_Prop;
+  friend class Null_Prop;
+  friend class Real_Exact_Prop;
 
   // Constructors 
   rbend( double,     // length  [ meters ]
