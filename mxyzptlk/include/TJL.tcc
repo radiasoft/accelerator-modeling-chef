@@ -1873,15 +1873,20 @@ bool operator<=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b )
 
  if( a._weight != b._weight ) { return ( a._weight < b._weight ); }
  
- return (a._index <= b._index) ;
+// this should work, but at the moment it does not. 
 
-#if  0
-////////////////////////////////////////////////////////////
+#if 0
+ return (a._index <= b._index) ;
+#endif
+
+// do this instead ... 
+
+#if 1
+
  // for( i = 0; i < a._index.Dim(); i++ ) {
  //   if( a._index(i) == b._index(i) ) continue;
  //   return ( a._index(i) < b._index(i) );
  // }
-
 
  i = a._index.Dim();
  
