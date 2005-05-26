@@ -39,17 +39,17 @@
  * 
  */
 
-inline int Frame::xAxisIndex() const
+inline int Frame::xAxisIndex()
 { 
   return 0; 
 }
 
-inline int Frame::yAxisIndex() const
+inline int Frame::yAxisIndex()
 { 
   return 1; 
 }
 
-inline int Frame::zAxisIndex() const
+inline int Frame::zAxisIndex()
 { 
   return 2; 
 }
