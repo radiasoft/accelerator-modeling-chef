@@ -92,7 +92,7 @@ TJetVector<T1,T2>::TJetVector<T1,T2>( const TJetVector<T1,T2>& x )
                             // of lazy evaluation.
     #ifndef NOCHECKS
     if( _comp[i].Env() != _myEnv ) {
-      throw( TJL<T1,T2>::BadEnvironment( 
+      throw( typename TJL<T1,T2>::BadEnvironment( 
                i, (int) _comp[i].Env(), (int) _myEnv, 
                __FILE__, __LINE__, 
                "TJetVector<T1,T2>::TJetVector<T1,T2>( const TJetVector<T1,T2>& )",
@@ -217,7 +217,7 @@ template<typename T1, typename T2>
 TJetVector<T1,T2> TJetVector<T1,T2>::operator+= ( const Vector& x )
 {
 #ifndef NOCHECKS
-  CHECKOUT(dim != x.Dim(), "JetVector::operator-=", "Incompatible dimensions.")
+  CHECKOUT(_dim != x.Dim(), "JetVector::operator-=", "Incompatible dimensions.")
 #endif
 
   for ( int i = 0; i < _dim; i++ ) {
