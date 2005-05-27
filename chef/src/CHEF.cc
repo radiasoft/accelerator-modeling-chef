@@ -183,6 +183,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
     _editMenu->insertItem( "Remove line", this, SLOT(_editRemoveLine()) );
     _editMenu->insertItem( "Duplicate line", this, SLOT(_editCopyLine()) );
     _editMenu->insertItem( "Condense line", this, SLOT(_editCondense()) );
+    _editMenu->insertItem( "Flatten", this, SLOT(_editFlatten()) );
     _editMenu->insertItem( "Merge equivalent quads", this, SLOT(_editMergeQuads()) );
     _editMenu->insertItem( "Insert monitors", this, SLOT(_editAddQtMons()) );
 
@@ -964,6 +965,26 @@ void CHEF::_editCondense()
 
 
   beamline* bmlPtr = de.clonedBeamlinePtr();
+  _p_currBmlCon = new BeamlineContext( false, bmlPtr );
+  // _p_currBmlCon = new BeamlineContext( false, de.clonedBeamlinePtr() );
+
+
+  _p_currBmlCon->setClonedFlag( true );
+  _contextList.insert( _p_currBmlCon );
+
+  emit _new_beamline();
+}
+
+
+void CHEF::_editFlatten()
+{
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF: INFO",
+                              "You must select a beamline first." );
+    return;
+  }
+
+  beamline* bmlPtr = _p_currBmlCon->cheatBmlPtr()->flatten();
   _p_currBmlCon = new BeamlineContext( false, bmlPtr );
   // _p_currBmlCon = new BeamlineContext( false, de.clonedBeamlinePtr() );
 
