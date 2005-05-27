@@ -276,13 +276,16 @@ short int Slot::setInFrame( const Frame& frm )
 
 short int Slot::setOutFrame( const Frame& frm )
 {
-  short int ret = checkFrame( frm );
+  // REMOVE: short int ret = checkFrame( frm );
 
-  if( 0 == ret ) {
-    out = frm;
+  if( frm.isOrthonormal() ) { 
+    out = frm;   
+    return 0;
   }
 
-  return ret;
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+         "short int Slot::setOutFrame( const Frame& frm )", 
+         "Current implementation requires that frames be orthonormal." ) );
 }
 
 
