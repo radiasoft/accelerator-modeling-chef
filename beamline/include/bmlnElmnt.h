@@ -803,7 +803,7 @@ public:
   int    contains( const bmlnElmnt*) const;
   // Returns the number of times the argument appears.
 
-  bool find( bmlnElmnt* u, const bmlnElmnt* v, bmlnElmnt* w ) const;
+  bool find( bmlnElmnt*& u, const bmlnElmnt*& v, bmlnElmnt*& w ) const;
   // Upon entry: u and w should have null value but can, in fact
   //               be anything. 
   //               WARNING: they will be reset, so don't use addresses
