@@ -1297,7 +1297,7 @@ beamline beamline::remove( const bmlnElmnt& x, const bmlnElmnt& y ) {
 }
 
 
-bool beamline::find( bmlnElmnt* u, const bmlnElmnt* v, bmlnElmnt* w ) const
+bool beamline::find( bmlnElmnt*& u, const bmlnElmnt*& v, bmlnElmnt*& w ) const
 {
   // Upon entry: u and w should have null value but can, in fact
   //               be anything. 
