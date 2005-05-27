@@ -290,6 +290,7 @@ private slots:
   void _editCondense();
   void _editAlign();
   void _editMisalign();
+  void _editFlatten();
   void _editMergeQuads();
   void _editD2S();
   void _editAddMarkers();
