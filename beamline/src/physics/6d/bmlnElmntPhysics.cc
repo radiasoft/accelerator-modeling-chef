@@ -33,9 +33,14 @@
 #include <config.h>
 #endif
 
-#include "Particle.h"
-#include "ParticleBunch.h"
-#include "bmlnElmnt.h"
+#include <iosetup.h>
+#include <Particle.h>
+#include <ParticleBunch.h>
+#include <bmlnElmnt.h>
+
+using FNAL::pcerr;
+using FNAL::pcout;
+
 
 #ifdef MADPHYSICS
 
@@ -43,7 +48,7 @@ void bmlnElmnt::localPropagate( Particle& p ) {
 
  static char firstCall = 1;
  if( firstCall ) {
-  std::cout << "*** WARNING ***  bmlnElmnt::localPropagate( Particle& ): This\n"
+  (*pcout) << "*** WARNING ***  bmlnElmnt::localPropagate( Particle& ): This\n"
             << "*** WARNING ***  routine was written using a linear\n"
             << "*** WARNING ***  approximation." << std::endl;
   firstCall = 0;
@@ -59,7 +64,7 @@ void bmlnElmnt::localPropagate( JetParticle& p ) {
 
  static char firstCall = 1;
  if( firstCall ) {
-  std::cout << "*** WARNING ***  bmlnElmnt::localPropagate( JetParticle& ): This\n"
+  (*pcout) << "*** WARNING ***  bmlnElmnt::localPropagate( JetParticle& ): This\n"
             << "*** WARNING ***  routine was written using a linear\n"
             << "*** WARNING ***  approximation." << std::endl;
   firstCall = 0;

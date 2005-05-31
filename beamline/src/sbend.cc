@@ -35,10 +35,15 @@
 
 #include <iomanip>
 
-#include "sbend.h"
-#include "Particle.h"
+#include <iosetup.h>
+#include <sbend.h>
+#include <Particle.h>
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
+
+
 
 // **************************************************
 //   class sbend
@@ -63,7 +68,7 @@ sbend::sbend( double l, double s, double alpha, PropFunc* pf )
           uic.str().c_str() ) );
  }
  if( (0.0 > s ) != (0.0 > alpha ) ) {
-   cerr << "\n*** WARNING *** "
+   (*pcerr) << "\n*** WARNING *** "
            "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
         << "\n*** WARNING *** sbend::sbend( ... )"
            "\n*** WARNING *** Magnetic field and bend angle arguments"
@@ -106,7 +111,7 @@ sbend::sbend( double l, double s, double alpha,
           uic.str().c_str() ) );
  }
  if( (0.0 > s ) != (0.0 > alpha ) ) {
-   cerr << "\n*** WARNING *** "
+   (*pcerr) << "\n*** WARNING *** "
            "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
         << "\n*** WARNING *** sbend::sbend( ... )"
            "\n*** WARNING *** Magnetic field and bend angle arguments"
@@ -123,7 +128,7 @@ sbend::sbend( double l, double s, double alpha,
    _usAngle = 0.0;
    _usTan = 0.0;
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** sbend::sbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
@@ -140,7 +145,7 @@ sbend::sbend( double l, double s, double alpha,
    _dsAngle = 0.0;
    _dsTan = 0.0;
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** sbend::sbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
@@ -181,7 +186,7 @@ sbend::sbend( const char* n, double l, double s, double alpha, PropFunc* pf )
           uic.str().c_str() ) );
  }
  if( (0.0 > s ) != (0.0 > alpha ) ) {
-   cerr << "\n*** WARNING *** "
+   (*pcerr) << "\n*** WARNING *** "
            "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
         << "\n*** WARNING *** sbend::sbend( ... )"
            "\n*** WARNING *** Magnetic field and bend angle arguments"
@@ -224,7 +229,7 @@ sbend::sbend( const char* n, double l, double s, double alpha,
           uic.str().c_str() ) );
  }
  if( (0.0 > s ) != (0.0 > alpha ) ) {
-   cerr << "\n*** WARNING *** "
+   (*pcerr) << "\n*** WARNING *** "
            "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
         << "\n*** WARNING *** sbend::sbend( ... )"
            "\n*** WARNING *** Magnetic field and bend angle arguments"
@@ -242,7 +247,7 @@ sbend::sbend( const char* n, double l, double s, double alpha,
    _usAngle = 0.0;
    _usTan = 0.0;
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** sbend::sbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
@@ -260,7 +265,7 @@ sbend::sbend( const char* n, double l, double s, double alpha,
    _dsAngle = 0.0;
    _dsTan = 0.0;
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** sbend::sbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
@@ -413,7 +418,7 @@ void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
   static bool firstTime = true;
   if( firstTime ) {
     firstTime = false;
-    cerr << "\n"
+    (*pcerr) << "\n"
             "\n*** WARNING ***"
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
@@ -432,7 +437,7 @@ void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
   }
 
   if( typeid(*Propagator) == typeid(MAD_Prop) ) {
-    cerr << "\n*** WARNING *** "
+    (*pcerr) << "\n*** WARNING *** "
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
             "\n*** WARNING *** Splitting sbend with MAD-like propagator."
@@ -485,7 +490,7 @@ void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
   // TO BE DONE:   *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, Propagator );
   // TO BE DONE: }
   else {
-    cerr << "\n*** WARNING *** "
+    (*pcerr) << "\n*** WARNING *** "
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
             "\n*** WARNING *** Propagator type unrecognized."
@@ -559,10 +564,10 @@ istream& sbend::readFrom(istream& is)
     setPropFunction(&sbend::OutEdge );
   else
     {
-      cerr << " **** WARNING **** sbend::readFrom(istream)\n";
-      cerr << " **** WARNING **** unknown propagator function specified:\n";
-      cerr << " **** WARNING **** " << prop_fun << "\n";
-      cerr << " **** WARNING **** Substituting sbend::P_Exact\n";
+      (*pcerr) << " **** WARNING **** sbend::readFrom(istream)\n";
+      (*pcerr) << " **** WARNING **** unknown propagator function specified:\n";
+      (*pcerr) << " **** WARNING **** " << prop_fun << "\n";
+      (*pcerr) << " **** WARNING **** Substituting sbend::P_Exact\n";
       setPropFunction(&sbend::Exact);
     }
   

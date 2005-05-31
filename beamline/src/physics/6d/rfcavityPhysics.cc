@@ -33,9 +33,14 @@
 #include <config.h>
 #endif
 
-#include "Particle.h"
-#include "rfcavity.h"
-#include "PhysicsConstants.h"
+#include <iosetup.h>
+#include <Particle.h>
+#include <rfcavity.h>
+#include <PhysicsConstants.h>
+
+using FNAL::pcerr;
+using FNAL::pcout;
+
 
 #ifndef MADPHYSICS
 
@@ -235,7 +240,7 @@ void thinrfcavity::localPropagate( Particle& p)
 {
  static char firstCall = 1;
  if( firstCall ) {
-  cout << "*** WARNING ***  thinrfcavity::localPropagate( Particle& ): This\n"
+  (*pcout) << "*** WARNING ***  thinrfcavity::localPropagate( Particle& ): This\n"
        << "*** WARNING ***  routine was written using a linear\n"
        << "*** WARNING ***  approximation.  Eventually it will be\n"
        << "*** WARNING ***  fixed so as to represent an RF kick more\n"
@@ -252,7 +257,7 @@ void thinrfcavity::localPropagate( JetParticle& p)
 {
  static char firstCall = 1;
  if( firstCall ) {
-  cout << "*** WARNING ***  thinrfcavity::localPropagate( JetParticle& ): This\n"
+  (*pcout) << "*** WARNING ***  thinrfcavity::localPropagate( JetParticle& ): This\n"
        << "*** WARNING ***  routine was written using a linear\n"
        << "*** WARNING ***  approximation.  Eventually it will be\n"
        << "*** WARNING ***  fixed so as to represent an RF kick more\n"

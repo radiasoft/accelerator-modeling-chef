@@ -33,10 +33,14 @@
 #include <config.h>
 #endif
 
-#include "sextupole.h"
-#include "drift.h"
+#include <iosetup.h>
+#include <sextupole.h>
+#include <drift.h>
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
+
 
 // **************************************************
 //   class sextupole 

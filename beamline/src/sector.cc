@@ -33,9 +33,13 @@
 #include <config.h>
 #endif
 
-#include "sector.h"
+#include <iosetup.h>
+#include <sector.h>
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
+
 
 // **************************************************
 //   class sector
@@ -280,7 +284,7 @@ const char* sector::Type() const
 
 void sector::setLength( double )
 {
-  cerr << "*** WARNING ***                                \n"
+  (*pcerr) << "*** WARNING ***                                \n"
           "*** WARNING *** sector::setLength does nothing.\n"
           "*** WARNING ***                                \n"
        << endl;
@@ -295,7 +299,7 @@ ostream& sector::writeTo ( ostream& os )
   }
   else 
   {
-    cerr << "*** ERROR ***                                    \n"
+    (*pcerr) << "*** ERROR ***                                    \n"
          << "*** ERROR *** sector::writeTo                    \n"
          << "*** ERROR *** This is written only to handle     \n"
          << "*** ERROR *** mapType = 0.                       \n"
