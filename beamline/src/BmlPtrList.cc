@@ -30,8 +30,12 @@
 *************************************************************************/
 
 
-#include "bmlnElmnt.h"
-#include "PhysicsConstants.h"
+#include <iosetup.h>
+#include <bmlnElmnt.h>
+#include <PhysicsConstants.h>
+
+using FNAL::pcout;
+using FNAL::pcerr;
 
 BmlPtrList::BmlPtrList()
 {
@@ -58,7 +62,7 @@ void BmlPtrList::append( bmlnElmnt* x )
     this->dlist::append( (void*) x );
   }
   else {
-    cerr << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
+    (*pcerr) << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** ERROR *** void BmlPtrList::append( bmlnElmnt* x )"
             "\n*** ERROR *** Attempt to append null pointer."
          << endl;
@@ -78,7 +82,7 @@ void BmlPtrList::insert( bmlnElmnt* x )
     this->dlist::insert( (void*) x );
   }
   else {
-    cerr << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
+    (*pcerr) << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** ERROR *** void BmlPtrList::insert( bmlnElmnt* x )"
             "\n*** ERROR *** Attempt to append null pointer."
          << endl;
