@@ -41,8 +41,8 @@
 #include <Aperture.h>
 #include <BmlVisitor.h>
 
-using FNAL:pcerr;
-using FNAL:pcout;
+using FNAL::pcerr;
+using FNAL::pcout;
 
 #ifdef OBJECT_DEBUG
 int bmlnElmnt::objectCount = 0;
