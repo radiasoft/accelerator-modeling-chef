@@ -36,7 +36,7 @@
 struct FDPolarity : public BarnacleData {
   double polarity;
   FDPolarity(double x) : polarity(x) {}
-  FDPolarity(const FDPolarity& x){polarity = x.polarity;}
+  FDPolarity(const FDPolarity& x): BarnacleData() {polarity = x.polarity;}
   ~FDPolarity() {}
 };
 
