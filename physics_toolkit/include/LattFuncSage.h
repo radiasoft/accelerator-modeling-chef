@@ -57,7 +57,7 @@ public:
  LattFuncSage( const beamline&, bool = false );
  // Second argument is used by class Sage
  // to control cloning. (See Sage.h)
- ~LattFuncSage();
+ virtual ~LattFuncSage();
   
  struct tunes : BarnacleData {
    double hor;
@@ -68,15 +68,15 @@ public:
  };
 
  struct lattRing : public BarnacleData {
-   struct {
+   struct tune_type{
      double hor;
      double ver;
    } tune;
-   struct {
+   struct chromaticity_type {
      double hor;
      double ver;
    } chromaticity;
-   lattRing() 
+   lattRing(): BarnacleData()
      { tune.hor = 0.;
        tune.ver = 0.;
        chromaticity.hor = 0.;
@@ -96,23 +96,23 @@ public:
 
  struct lattFunc : public BarnacleData {
    double arcLength;
-   struct {
+   struct dispersion_type {
      double hor;
      double ver;
    } dispersion;
-   struct {
+   struct dPrime_type {
      double hor;
      double ver;
    } dPrime;
-   struct {
+   struct beta_type {
      double hor;
      double ver;
    } beta;
-   struct {
+   struct alpha_type {
      double hor;
      double ver;
    } alpha;
-   struct {
+   struct psi_type {
      double hor;
      double ver;
    } psi;
