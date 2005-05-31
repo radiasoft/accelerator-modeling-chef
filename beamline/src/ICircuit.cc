@@ -33,9 +33,14 @@
 *************************************************************************/
 
 
-#include "ICircuit.h"
+#include <iosetup.h>
+#include <ICircuit.h>
 
 using namespace std;
+
+using FNAL::pcout;
+using FNAL::pcerr;
+
 
 ICircuit::ICircuit() : circuit () {
   current = 0.0;

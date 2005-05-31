@@ -33,11 +33,16 @@
 #include <config.h>
 #endif
 
-#include "quadrupole.h"
-#include "drift.h"
-#include "BeamlineIterator.h"
+#include <iosetup.h>
+#include <quadrupole.h>
+#include <drift.h>
+#include <BeamlineIterator.h>
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
+
+
 
 // **************************************************
 //   class quadrupole
@@ -105,7 +110,7 @@ quadrupole::quadrupole( bmlnElmntData& x )
  // ??? GET RID OF THIS FUNCTION.
   static char firstTime = 1;
   if( firstTime ) {
-    cerr << "Warning: call to quadrupole::quadrupole( bmlnElmntData& x )" << endl;
+    (*pcerr) << "Warning: call to quadrupole::quadrupole( bmlnElmntData& x )" << endl;
     firstTime = 0;
   }
 
@@ -212,7 +217,7 @@ void quadrupole::setupPropFunc()
     }
   }
   else {
-    cerr << "\n**** WARNING **** "
+    (*pcerr) << "\n**** WARNING **** "
             "\n**** WARNING **** void quadrupole::setupPropFunc()"
             "\n**** WARNING **** Invoked with a null propagator functor."
             "\n**** WARNING **** No action taken, but your program will"
@@ -274,10 +279,10 @@ istream& quadrupole::readFrom(istream& is)
     setPropFunction(&quadrupole::LikeTPOT );
   else
     {
-      cerr << " **** WARNING **** quadrupole::readFrom(istream)\n";
-      cerr << " **** WARNING **** unknown propagator function specified:\n";
-      cerr << " **** WARNING **** " << prop_fun << "\n";
-      cerr << " **** WARNING **** Substituting quadrupole::P_LikeMAD\n";
+      (*pcerr) << " **** WARNING **** quadrupole::readFrom(istream)\n";
+      (*pcerr) << " **** WARNING **** unknown propagator function specified:\n";
+      (*pcerr) << " **** WARNING **** " << prop_fun << "\n";
+      (*pcerr) << " **** WARNING **** Substituting quadrupole::P_LikeMAD\n";
       setPropFunction(&quadrupole::LikeMAD);
     }
 

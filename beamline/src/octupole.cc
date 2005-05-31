@@ -33,10 +33,14 @@
 #include <config.h>
 #endif
 
-#include "octupole.h"
-#include "drift.h"
+#include <iosetup.h>
+#include <octupole.h>
+#include <drift.h>
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
+
 
 // **************************************************
 //   class octupole

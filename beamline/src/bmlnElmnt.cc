@@ -32,22 +32,17 @@
 
 #include <typeinfo>
 #include <string>
-// REMOVE: #include <string.h>
 
 #include <iomanip>
+#include <iosetup.h>
+#include <bmlnElmnt.h>
+#include <Particle.h>
+#include <ParticleBunch.h>
+#include <Aperture.h>
+#include <BmlVisitor.h>
 
-#ifdef __SUNPRO_CC
-  #ifndef __STL_NEED_EXPLICIT
-    #define __STL_NEED_EXPLICIT
-  #endif
-#endif
-
-#include "bmlnElmnt.h"
-#include "Particle.h"
-#include "ParticleBunch.h"
-#include "Aperture.h"
-#include "BmlVisitor.h"
-
+using FNAL:pcerr;
+using FNAL:pcout;
 
 #ifdef OBJECT_DEBUG
 int bmlnElmnt::objectCount = 0;
@@ -464,7 +459,7 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
      }
      if( notFound ) {
        p_bml_e = a.p_bml_e->Clone();
-       cerr << "*** WARNING *** \n"
+       (*pcerr) << "*** WARNING *** \n"
             << "*** WARNING *** bmlnElmnt::bmlnElmnt( const bmlnElmnt& )\n"
             << "*** WARNING *** The element pointed to by p_bml_e does not exist\n"
             << "*** WARNING *** within the beamline pointed to by p_bml .\n"
@@ -513,7 +508,7 @@ bmlnElmnt::bmlnElmnt( bmlnElmntData& x ) {
      (x.align.tilt != 0.0) )
  align         = new alignment(x.align);
 
- cerr << "*** WARNING ***                                    \n"
+ (*pcerr) << "*** WARNING ***                                    \n"
          "*** WARNING *** bmlnElmnt::bmlnElmnt( bmlnElmntData& ) \n"
          "*** WARNING *** p_bml and p_bml_e are not going    \n"
          "*** WARNING *** to be copied.  Sorry.              \n"
@@ -727,7 +722,7 @@ char bmlnElmnt::readTag( short pos )
 {
   if( (pos < 0) || (pos + 1 > BF_MAXCHAR) ) {
     pos = 0;
-    cerr << "*** WARNING ***                              \n"
+    (*pcerr) << "*** WARNING ***                              \n"
          << "*** WARNING *** bmlnElmnt::readTag           \n"
          << "*** WARNING *** Character position out of    \n"
          << "*** WARNING *** bounds. Will return first    \n"
@@ -766,7 +761,7 @@ std::string bmlnElmnt::readTag()
 
 void bmlnElmnt::setLength( double x ) {
   if( length < 0.0 ) {
-    cerr << "*** WARNING ***                       \n"
+    (*pcerr) << "*** WARNING ***                       \n"
             "*** WARNING *** bmlnElmnt::setLength  \n"
             "*** WARNING *** Lengths must be positive.  \n"
             "*** WARNING *** You have entered "
@@ -887,9 +882,9 @@ bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( const PropFunc& a )
 
 
 void bmlnElmnt::peekAt( double& s, Particle* p_prt ) {
- cout << setw(12) << s;
+ (*pcout) << setw(12) << s;
  s += OrbitLength( *p_prt );
- cout << setw(12) << s           
+ (*pcout) << setw(12) << s           
                   << " : " 
       << setw(10) << (int) this  
       << setw(15) << ident       
@@ -963,7 +958,7 @@ bool bmlnElmnt::alignRelX( double u )
     }
   }
   else {
-    cerr << "\n*** WARNING *** "
+    (*pcerr) << "\n*** WARNING *** "
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
             "\n*** WARNING *** Cannot use this method on an element "
@@ -993,7 +988,7 @@ bool bmlnElmnt::alignRelY( double u )
     }
   }
   else {
-    cerr << "\n*** WARNING *** "
+    (*pcerr) << "\n*** WARNING *** "
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
             "\n*** WARNING *** Cannot use this method on an element "
@@ -1023,7 +1018,7 @@ bool bmlnElmnt::alignAbsX( double u )
     }
   }
   else {
-    cerr << "\n*** WARNING *** "
+    (*pcerr) << "\n*** WARNING *** "
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
             "\n*** WARNING *** Cannot use this method on an element "
@@ -1053,7 +1048,7 @@ bool bmlnElmnt::alignAbsY( double u )
     }
   }
   else {
-    cerr << "\n*** WARNING *** "
+    (*pcerr) << "\n*** WARNING *** "
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
             "\n*** WARNING *** Cannot use this method on an element "
@@ -1107,7 +1102,7 @@ bool bmlnElmnt::alignRelRoll( double u )
     }
   }
   else {
-    cerr << "\n*** WARNING *** "
+    (*pcerr) << "\n*** WARNING *** "
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
             "\n*** WARNING *** Cannot use this method on an element "
@@ -1137,7 +1132,7 @@ bool bmlnElmnt::alignAbsRoll( double u )
     }
   }
   else {
-    cerr << "\n*** WARNING *** "
+    (*pcerr) << "\n*** WARNING *** "
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
             "\n*** WARNING *** Cannot use this method on an element "
@@ -1196,7 +1191,7 @@ bool bmlnElmnt::setAlignment(const alignmentData& a) {
   }
 
   if( !ret ) {
-    cerr << "\n*** WARNING *** "
+    (*pcerr) << "\n*** WARNING *** "
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
             "\n*** WARNING *** Cannot use this method on an element "
@@ -1339,7 +1334,7 @@ double bmlnElmnt::setReferenceTime( const Particle& prtn )
 {
   static bool firstTime = true;
   if( firstTime ) {
-    cerr << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+    (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** double bmlnElmnt::setReferenceTime( const Particle& )"
             "\n*** WARNING *** Invoked on base class. Nothing will happen."
             "\n*** WARNING *** This warning is issued only once."
@@ -1499,8 +1494,8 @@ bmlnElmnt::GenericException::GenericException( string fileName, int lineNumber,
 
   static bool firstTime = true;
   if( firstTime ) {
-    cerr << errorString;
-    cerr << "\n*** ERROR *** This message is printed only once."
+    (*pcerr) << errorString;
+    (*pcerr) << "\n*** ERROR *** This message is printed only once."
             "\n*** ERROR *** "
          << endl;
     firstTime = false;

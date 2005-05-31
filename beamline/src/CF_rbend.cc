@@ -35,16 +35,20 @@
 
 #include <iomanip>
 
-#include "PhysicsConstants.h"
-#include "CF_rbend.h"
-#include "quadrupole.h"
-#include "sextupole.h"
-#include "rbend.h"
-#include "octupole.h"
-#include "Particle.h"
+#include <iosetup.h>
+#include <PhysicsConstants.h>
+#include <CF_rbend.h>
+#include <quadrupole.h>
+#include <sextupole.h>
+#include <rbend.h>
+#include <octupole.h>
+#include <Particle.h>
 
 
 using namespace std;
+
+using FNAL::pcout;
+using FNAL::pcerr;
 
 CF_rbend::CF_rbend( double        lng,  // length      [ meter    ]
                     double        fld,  // field       [ tesla    ]
@@ -218,7 +222,7 @@ void CF_rbend::_finishConstructor(int n)
 // NOTE: n refers to the number of blocks of twelve pieces!
 
   if( n < 1 || n > 9 ) {
-    cerr << "*** WARNING ***                                         \n"
+    (*pcerr) << "*** WARNING ***                                         \n"
             "*** WARNING *** CF_rbend constructor                    \n"
             "*** WARNING *** n = " << n << " is out of range [1-9].  \n"
             "*** WARNING *** Constructor is resetting n = 1.         \n"
@@ -277,7 +281,7 @@ void CF_rbend::_finishConstructor(int n)
 
   // Paranoid test.
   if( (12*n + 1) != (1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) )) ) {
-    cerr << "*** ERROR ***                                         \n"
+    (*pcerr) << "*** ERROR ***                                         \n"
             "*** ERROR *** CF_rbend constructor                    \n"
             "*** ERROR *** Impossible! "
          << (11*n + 2)
@@ -586,7 +590,7 @@ void CF_rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
   static bool firstTime = true;
   if( firstTime ) {
     firstTime = false;
-    cerr << "\n"
+    (*pcerr) << "\n"
             "\n*** WARNING ***"
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
@@ -594,7 +598,7 @@ void CF_rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
             "\n*** WARNING *** RefRegVisitor before being used."
             "\n*** WARNING *** "
          << endl;
-    cerr << "\n*** WARNING ***                             "
+    (*pcerr) << "\n*** WARNING ***                             "
             "\n*** WARNING *** void CF_rbend::Split        "
             "\n*** WARNING *** Combined split elements     "
             "\n*** WARNING *** are not identical to the    "
@@ -672,9 +676,9 @@ void CF_rbend::acceptInner( ConstBmlVisitor& v )
 
 void CF_rbend::peekAt( double& s, Particle* p_prt )
 {
- cout << setw(12) << s;
+ (*pcout) << setw(12) << s;
  s += OrbitLength( *p_prt );
- cout << setw(12) << s           
+ (*pcout) << setw(12) << s           
                   << " : " 
       << setw(10) << (int) this  
       << setw(15) << ident       
@@ -849,7 +853,7 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
 
   // Step procedure when Newton's method fails ...
   if( i >= 15 ) {
-    cerr << "*** WARNING ***                                      \n"
+    (*pcerr) << "*** WARNING ***                                      \n"
             "*** WARNING *** CF_rbend::AdjustPosition             \n"
             "*** WARNING *** No convergence within 15 Newton      \n"
             "*** WARNING *** iterations for magnet "
@@ -898,7 +902,7 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
       delta      *= (-0.1);
     }
 
-    cerr << "*** WARNING ***                                      \n"
+    (*pcerr) << "*** WARNING ***                                      \n"
             "*** WARNING *** CF_rbend::AdjustPosition             \n"
             "*** WARNING *** The step procedure suggests a best   \n"
             "*** WARNING *** solution with magnet displacement "

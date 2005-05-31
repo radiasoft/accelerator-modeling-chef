@@ -33,10 +33,16 @@
 #include <config.h>
 #endif
 
-#include "circuit.h"
 #include <string>
 
+#include <iosetup.h>
+#include <circuit.h>
+
 using namespace std;
+
+using FNAL::pcout;
+using FNAL::pcerr;
+
 
 // **************************************************
 //   class circuit
@@ -98,15 +104,15 @@ void circuit::append( bmlnElmnt* q ) {
 
 void circuit::switchOn() {
    onOffSwitch = 1;
-   cerr << "*** ERROR *** circuit::switchOn(): This doesn't set anything!!" << endl;
+   (*pcerr) << "*** ERROR *** circuit::switchOn(): This doesn't set anything!!" << endl;
 }
 void circuit::switchOff() {
    onOffSwitch = 0;
-   cerr << "*** ERROR *** circuit::switchOff():  This doesn't set anything!!" << endl;
+   (*pcerr) << "*** ERROR *** circuit::switchOff():  This doesn't set anything!!" << endl;
 }
 
 void circuit::set( void* ) {
-  cerr << " This should never be called!! " << endl;
+  (*pcerr) << " This should never be called!! " << endl;
 }
 
 char* circuit::getName() {
@@ -114,6 +120,6 @@ char* circuit::getName() {
 }
 
 void circuit::get(void* ) {
-  cerr << " This should never be called!! " << endl;
+  (*pcerr) << " This should never be called!! " << endl;
 }
 

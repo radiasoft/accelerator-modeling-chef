@@ -35,15 +35,19 @@
 
 #include <iomanip>
 
-#include "PhysicsConstants.h"
-#include "CF_sbend.h"
-#include "quadrupole.h"
-#include "sextupole.h"
-#include "sbend.h"
-#include "octupole.h"
-#include "Particle.h"
+#include <iosetup.h>
+#include <PhysicsConstants.h>
+#include <CF_sbend.h>
+#include <quadrupole.h>
+#include <sextupole.h>
+#include <sbend.h>
+#include <octupole.h>
+#include <Particle.h>
 
 using namespace std;
+
+using FNAL::pcout;
+using FNAL::pcerr;
 
 CF_sbend::CF_sbend( double        lng,  // length     [ meter    ]
                     double        fld,  // field      [ tesla    ]
@@ -220,9 +224,9 @@ void CF_sbend::acceptInner( ConstBmlVisitor& v )
 
 void CF_sbend::peekAt( double& s, Particle* p_prt )
 {
- cout << setw(12) << s;
+ (*pcout) << setw(12) << s;
  s += OrbitLength( *p_prt );
- cout << setw(12) << s           
+ (*pcout) << setw(12) << s           
                   << " : " 
       << setw(10) << (int) this  
       << setw(15) << ident       
@@ -527,7 +531,7 @@ void CF_sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
   static bool firstTime = true;
   if( firstTime ) {
     firstTime = false;
-    cerr << "\n"
+    (*pcerr) << "\n"
             "\n*** WARNING ***"
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
@@ -535,7 +539,7 @@ void CF_sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
             "\n*** WARNING *** RefRegVisitor before being used."
             "\n*** WARNING *** "
          << endl;
-    cerr << "\n*** WARNING ***                             "
+    (*pcerr) << "\n*** WARNING ***                             "
             "\n*** WARNING *** void CF_sbend::Split        "
             "\n*** WARNING *** Combined split elements     "
             "\n*** WARNING *** are not identical to the    "
