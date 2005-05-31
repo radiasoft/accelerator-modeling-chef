@@ -52,9 +52,10 @@
 #include <config.h>
 #endif
 
-#include "LieOperator.h"
-#include "Mapping.h"
-#include "MathConstants.h"
+#include <iosetup.h>
+#include <LieOperator.h>
+#include <Mapping.h>
+#include <MathConstants.h>
 
 #include <iomanip>
 
@@ -64,7 +65,7 @@ using FNAL::Complex;
 int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
 {
   if( mtrx.rows() != 6  ||  mtrx.cols() != 6  ||  nu.Dim() != 2 ) {
-    cerr << "*** ERROR ***                                    \n"
+    (*pcerr) << "*** ERROR ***                                    \n"
             "*** ERROR *** ConvertToTunes                     \n"
             "*** ERROR *** Dimensions are not correct.        \n"
             "*** ERROR ***                                    \n"
@@ -100,7 +101,7 @@ int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
    
     for( i = 0; i < 6; i++ )
      if( fabs( abs(lambda(i)) - 1.0 ) > 1.0e-4 ) {
-      cout << "\n"
+      (*pcout) << "\n"
  	   << "*** ERROR ***                                     \n"
  	   << "*** ERROR ***                                     \n"
  	   << "*** ERROR *** filterTransverseTunes               \n"
@@ -116,7 +117,7 @@ int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
     if( ( abs( lambda(0) - conj( lambda(3) ) ) > 1.0e-4 )  ||
  	( abs( lambda(1) - conj( lambda(4) ) ) > 1.0e-4 )
       ) {
-      cout << "\n"
+      (*pcout) << "\n"
  	   << "*** ERROR *** filterTransverseTunes                \n"
  	   << "*** ERROR *** Conjugacy condition has been violated\n"
  	   << "*** ERROR *** The lattice may be linearly unstable.\n"
@@ -148,7 +149,7 @@ int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
    
    
     if( fabs( csH - csV ) < 1.0e-4 ) {
-      cout << "\n"
+      (*pcout) << "\n"
     	    << "*** ERROR *** filterTransverseTunes                \n"
     	    << "*** ERROR *** \"Horizontal\" and \"vertical\" tunes\n"
     	    << "*** ERROR *** are too near each other for          \n"
@@ -165,7 +166,7 @@ int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
     if( fabs( cos2phi + 1.0 ) < 1.0e-4 ) cos2phi = - 1.0;  // ??? isn't it?
     
     if( fabs( cos2phi ) > 1.0 ) {
-     cout << "\n"
+     (*pcout) << "\n"
     	   << "*** ERROR: filterTransverseTunes                \n"
     	   << "*** ERROR: cos( 2 phi ) = " 
     	   <<           setprecision(10) << cos2phi 
@@ -195,7 +196,7 @@ int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
     }
     
     if( fabs( D.determinant() - 1.0 ) > 1.0e-4 ) {
-      cout << "\n"
+      (*pcout) << "\n"
     	    << "*** ERROR *** filterTransverseTunes                \n"
     	    << "*** ERROR *** The matrix D is non-symplectic.      \n"
     	    << "*** ERROR *** |D| = " << D.determinant() << "      \n"
@@ -225,18 +226,18 @@ int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
     // .......... A little test to keep everyone honest .....
     if( JH( 0, 0 ) != 0.0 )
      if( fabs( ( JH(0,0) + JH(1,1) ) / ( JH(0,0) - JH(1,1) ) ) > 1.0e-4 ) {
-      cout << endl;
-      cout << "*** WARNING ***                                " << endl;
-      cout << "*** WARNING *** filterTransverseTunes          " << endl;
-      cout << "*** WARNING *** \"Horizontal\" matrix does not " << endl;
-      cout << "*** WARNING *** pass symplecticity test.       " << endl;
-      cout << "*** WARNING *** JH( 0, 0 ) = " << JH( 0, 0 )     << endl;
-      cout << "*** WARNING *** JH( 1, 1 ) = " << JH( 1, 1 )     << endl;
-      cout << "*** WARNING ***                                " << endl;
-      cout << "*** WARNING *** The ratio is " 
+      (*pcout) << endl;
+      (*pcout) << "*** WARNING ***                                " << endl;
+      (*pcout) << "*** WARNING *** filterTransverseTunes          " << endl;
+      (*pcout) << "*** WARNING *** \"Horizontal\" matrix does not " << endl;
+      (*pcout) << "*** WARNING *** pass symplecticity test.       " << endl;
+      (*pcout) << "*** WARNING *** JH( 0, 0 ) = " << JH( 0, 0 )     << endl;
+      (*pcout) << "*** WARNING *** JH( 1, 1 ) = " << JH( 1, 1 )     << endl;
+      (*pcout) << "*** WARNING ***                                " << endl;
+      (*pcout) << "*** WARNING *** The ratio is " 
  	   << fabs( ( JH(0,0) + JH(1,1) ) / ( JH(0,0) - JH(1,1) ) )
  	   << endl;
-      cout << "*** WARNING ***                                " << endl;
+      (*pcout) << "*** WARNING ***                                " << endl;
      }
    
    
@@ -252,18 +253,18 @@ int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
     // .......... A little test to keep everyone honest .....
     if( JV( 0, 0 ) != 0.0 )
      if( fabs( ( JV(0,0) + JV(1,1) ) / ( JV(0,0) - JV(1,1) ) ) > 1.0e-4 ) {
-      cout << endl;
-      cout << "*** WARNING ***                                " << endl;
-      cout << "*** WARNING *** filterTransverseTunes          " << endl;
-      cout << "*** WARNING *** \"Vertical\" matrix does not   " << endl;
-      cout << "*** WARNING *** pass symplecticity test.       " << endl;
-      cout << "*** WARNING *** JV( 0, 0 ) = " << JV( 0, 0 )     << endl;
-      cout << "*** WARNING *** JV( 1, 1 ) = " << JV( 1, 1 )     << endl;
-      cout << "*** WARNING ***                                " << endl;
-      cout << "*** WARNING *** The ratio is " 
+      (*pcout) << endl;
+      (*pcout) << "*** WARNING ***                                " << endl;
+      (*pcout) << "*** WARNING *** filterTransverseTunes          " << endl;
+      (*pcout) << "*** WARNING *** \"Vertical\" matrix does not   " << endl;
+      (*pcout) << "*** WARNING *** pass symplecticity test.       " << endl;
+      (*pcout) << "*** WARNING *** JV( 0, 0 ) = " << JV( 0, 0 )     << endl;
+      (*pcout) << "*** WARNING *** JV( 1, 1 ) = " << JV( 1, 1 )     << endl;
+      (*pcout) << "*** WARNING ***                                " << endl;
+      (*pcout) << "*** WARNING *** The ratio is " 
  	   << fabs( ( JV(0,0) + JV(1,1) ) / ( JV(0,0) - JV(1,1) ) )
  	   << endl;
-      cout << "*** WARNING ***                                " << endl;
+      (*pcout) << "*** WARNING ***                                " << endl;
     }
    
    
@@ -287,7 +288,7 @@ int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
       else                           sn = - sqrt( 1.0 - cs*cs );
     }
     else {
-      cerr << "*** ERROR ***                                     \n"
+      (*pcerr) << "*** ERROR ***                                     \n"
   	      "*** ERROR *** filterTransverseTunes               \n"
   	      "*** ERROR *** cos( psi_H ) = "
   	   << cs
@@ -311,7 +312,7 @@ int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
       else                           sn = - sqrt( 1.0 - cs*cs );
     }
     else {
-      cerr << "*** ERROR ***                                     \n"
+      (*pcerr) << "*** ERROR ***                                     \n"
   	      "*** ERROR *** filterTransverseTunes               \n"
   	      "*** ERROR *** cos( psi_V ) = "
   	   << cs
@@ -364,17 +365,17 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
 
         // Reality check ...
         if( fabs( real(v) ) > 1.0e-10 * fabs( imag(v) ) ) {
-          cerr << "WARNING:                              " << endl;
-          cerr << "WARNING: ConvertNToTunes              " << endl;
-          cerr << "WARNING: Reality check was violated.  " << endl;
-          cerr << "WARNING: Offending ratio is ";
+          (*pcerr) << "WARNING:                              " << endl;
+          (*pcerr) << "WARNING: ConvertNToTunes              " << endl;
+          (*pcerr) << "WARNING: Reality check was violated.  " << endl;
+          (*pcerr) << "WARNING: Offending ratio is ";
           if( fabs( imag(v) ) == 0.0 ) {
-            cerr << "infinite." << endl;
+            (*pcerr) << "infinite." << endl;
           }
           else {
-            cerr << fabs( real(v) )/fabs( imag(v) ) << endl;
+            (*pcerr) << fabs( real(v) )/fabs( imag(v) ) << endl;
           }
-          cerr << "WARNING:                              " << endl;
+          (*pcerr) << "WARNING:                              " << endl;
           returnValue = 140;
         }
 
@@ -416,7 +417,7 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
 //     // A quick check
 //     int sd = N.Env()->SpaceDim;
 //     if( ( sd%2 != 0 ) || ( sd != N.Dim() ) ) {
-//       cerr << "*** ERROR ***                                 \n"
+//       (*pcerr) << "*** ERROR ***                                 \n"
 //            << "*** ERROR ***  ConvertToTunes                 \n"
 //            << "*** ERROR ***                                 \n"
 //            << "*** ERROR ***  Phase space dimension in N is not correct.\n"

@@ -73,12 +73,16 @@
 #include <config.h>
 #endif
 
-#include "GenericException.h"
-#include "beamline.h"
-#include "CF_rbend.h"
-#include "Slot.h"
+#include <iosetup.h>
+#include <GenericException.h>
+#include <beamline.h>
+#include <CF_rbend.h>
+#include <Slot.h>
 
 using namespace std;
+using FNAL::pcout;
+using FNAL::pcerr;
+
 
 bool d2S_LookUpStream ( bmlnElmnt*&      el2Ptr, 
                         bool&            rb, 
@@ -251,7 +255,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
 
   // There should be more than one element
   if( original.countHowManyDeeply() < 3 ) {
-    cerr << "*** WARNING ***                                        \n"
+    (*pcerr) << "*** WARNING ***                                        \n"
          << "*** WARNING *** File: " << "  " << __FILE__ 
          <<                               ", line " << __LINE__ << "\n"
             "*** WARNING *** DriftsToSlots                          \n"
@@ -270,7 +274,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   while((  q = dbi++  )) {
     if( d2S_rbendLike( q ) ) {
       if( triggered ) {
-        cerr << "\n*** WARNING ***                                        "
+        (*pcerr) << "\n*** WARNING ***                                        "
              << "\n*** WARNING *** File: " << "  " << __FILE__ 
              <<                          ", line " << __LINE__
              << "\n*** WARNING *** DriftsToSlots                          "
@@ -294,7 +298,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   if( triggered && originalRing ) {
     q = dbi++;
     if( d2S_rbendLike( q ) ) {
-        cerr << "\n*** WARNING ***                                        "
+        (*pcerr) << "\n*** WARNING ***                                        "
              << "\n*** WARNING *** File: " << "  " << __FILE__ 
              <<                          ", line " << __LINE__
              << "\n*** WARNING *** DriftsToSlots                          "
@@ -320,7 +324,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   //   }
   // }
 
-  cerr << "\n*** WARNING ***                                        "
+  (*pcerr) << "\n*** WARNING ***                                        "
        << "\n*** WARNING *** File: " << "  " << __FILE__ 
        <<                          ", line " << __LINE__
        << "\n*** WARNING *** DriftsToSlots                          "
@@ -340,7 +344,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   while((  elPtr = dbi++  )) 
   {
     if( 0 == strcmp( elPtr->Type(), "Slot" ) ) {
-      cerr << "*** WARNING ***                                        \n"
+      (*pcerr) << "*** WARNING ***                                        \n"
               "*** WARNING *** DriftsToSlots                          \n"
               "*** WARNING *** Slots already exist in this beamline.  \n"
               "*** WARNING *** Original line will be returned.        \n"
@@ -420,7 +424,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
             << "Exception was thrown within DriftsToSlots.\n"
                "The message was:\n"
             << ge.what();
-        cerr << "\n--- BEGIN EXCEPTION ---\n" 
+        (*pcerr) << "\n--- BEGIN EXCEPTION ---\n" 
              << uic.str()
              << "\n Original argument will be returned."
              << "\n--- END EXCEPTION -----\n" 
@@ -434,7 +438,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
       // Check viability of continuing the calculation
       if( isDownStream ) {
         if( ( a_rb || a_CFrb ) && !d2S_rbendLike( a ) ) {
-          cerr << "\n*** WARNING: *** "
+          (*pcerr) << "\n*** WARNING: *** "
                << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
                << "\n*** WARNING: *** Calculation discontinued."
                << "\n*** WARNING: *** Assumptions regarding rbends violated."
@@ -448,7 +452,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
       }
       if( isUpStream ) {
         if( ( c_rb || c_CFrb ) && !d2S_rbendLike( c ) ) {
-          cerr << "\n*** WARNING: *** "
+          (*pcerr) << "\n*** WARNING: *** "
                << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
                << "\n*** WARNING: *** Calculation discontinued."
                << "\n*** WARNING: *** Assumptions regarding rbends violated."
@@ -488,7 +492,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
             arcFrame.rotate( - ((CF_rbend*) c)->getEntryAngle(), arcFrame.getyAxis() );
           }
           else {
-            cerr << "\n*** WARNING: *** "
+            (*pcerr) << "\n*** WARNING: *** "
                  << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
                  << "\n*** WARNING: *** Calculation discontinued."
                  << "\n*** WARNING: *** Both c_rb and c_CF are false."
@@ -506,7 +510,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
           ret->append( new Slot(elPtr->Name(), arcFrame) );
         }
         else {
-          cerr << "\n*** WARNING: *** "
+          (*pcerr) << "\n*** WARNING: *** "
                << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
                << "\n*** WARNING: *** Calculation cannot be continued."
                << "\n*** WARNING: *** Function will return original argument."
@@ -542,7 +546,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
             arcFrame.rotate( ((CF_rbend*) a)->getExitAngle(), arcFrame.getyAxis() );
           }
           else {
-            cerr << "\n*** WARNING: *** "
+            (*pcerr) << "\n*** WARNING: *** "
                  << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
                  << "\n*** WARNING: *** Calculation discontinued."
                  << "\n*** WARNING: *** Both a_rb and a_CF are false."
@@ -556,7 +560,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
           ret->append( new Slot(elPtr->Name(), arcFrame) );
         }
         else {
-          cerr << "\n*** WARNING: *** "
+          (*pcerr) << "\n*** WARNING: *** "
                << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
                << "\n*** WARNING: *** Calculation cannot be continued."
                << "\n*** WARNING: *** Function will return original argument."
@@ -589,7 +593,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
               arcFrame.rotate( - ((CF_rbend*) c)->getEntryAngle(), arcFrame.getyAxis() );
             }
             else {
-              cerr << "\n*** WARNING: *** "
+              (*pcerr) << "\n*** WARNING: *** "
                    << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
                    << "\n*** WARNING: *** Calculation discontinued."
                    << "\n*** WARNING: *** Both c_rb and c_CF are false."
@@ -618,7 +622,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
               arcFrame.rotate( ((CF_rbend*) a)->getExitAngle(), arcFrame.getyAxis() );
             }
             else {
-              cerr << "\n*** WARNING: *** "
+              (*pcerr) << "\n*** WARNING: *** "
                    << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
                    << "\n*** WARNING: *** Calculation discontinued."
                    << "\n*** WARNING: *** Both a_rb and a_CF are false."

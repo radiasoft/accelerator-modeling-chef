@@ -46,13 +46,17 @@
 
 #include <iomanip>
 
-#include "LattFuncSage.h"
-#include "ClosedOrbitSage.h"
-#include "FPSolver.h"
-#include "QBpropVisitor.h"
+#include <iosetup.h>
+#include <LattFuncSage.h>
+#include <ClosedOrbitSage.h>
+#include <FPSolver.h>
+#include <QBpropVisitor.h>
 
 using namespace std;
 using FNAL::Complex;
+
+using FNAL::pcout;
+using FNAL::pcerr;
 
 extern int filterTransverseTunes( /* const */ MatrixD&, Vector& );
 
@@ -81,7 +85,7 @@ void LattFuncSage::set_dpp( double x )
     _dpp = x;
   }
   else {
-    cerr << "*** WARNING ***                        \n"
+    (*pcerr) << "*** WARNING ***                        \n"
             "*** WARNING *** LattFuncSage::set_dpp   \n"
             "*** WARNING *** Non-positive argument  \n"
             "*** WARNING *** changed.               \n"
@@ -300,8 +304,8 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   // Barnacle.
 
   if( this->_verbose ) {
-    cout << "LattFuncSage -- Entering LattFuncSage::Fast_CS_Calc" << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage -- Entering LattFuncSage::Fast_CS_Calc" << endl;
+    (*pcout).flush();
   }
 
   // Initial check for Slots
@@ -313,7 +317,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
       bmlnElmnt* q;
       while((  q = dbi++  )) {
         if( strstr( "CF_rbend|rbend|Slot", q->Type() ) ) {
-          cerr << "*** ERROR ***                                     \n"
+          (*pcerr) << "*** ERROR ***                                     \n"
                   "*** ERROR *** LattFuncSage::Fast_CS_Calc          \n"
                   "*** ERROR *** This method  will not work          \n"
                   "*** ERROR *** with Slots.                         \n"
@@ -357,7 +361,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
       ( mtrx( i_py, i_px ) != 0.0 )  ||
       ( mtrx( i_px, i_py ) != 0.0 )     )
   {
-    cerr << "*** WARNING ***                                     \n"
+    (*pcerr) << "*** WARNING ***                                     \n"
             "*** WARNING *** LattFuncSage::Fast_CS_Calc          \n"
             "*** WARNING *** Coupling detected. Calculation is   \n"
             "*** WARNING *** proceeding but results are suspect. \n"
@@ -378,7 +382,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
     else                           sn = - sqrt( 1.0 - cs*cs );
   }
   else {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** LattFuncSage::Fast_CS_Calc          \n"
             "*** ERROR *** cos( psi_H ) = "
          << cs
@@ -393,7 +397,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   }
 
   if( sn == 0.0 ) {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** LattFuncSage::Fast_CS_Calc          \n"
             "*** ERROR *** Integer horizontal tune.            \n"
             "*** ERROR ***                                     \n"
@@ -416,7 +420,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
     else                           sn = - sqrt( 1.0 - cs*cs );
   }
   else {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** LattFuncSage::Fast_CS_Calc          \n"
             "*** ERROR *** cos( psi_V ) = "
          << cs
@@ -431,7 +435,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   }
 
   if( sn == 0.0 ) {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** LattFuncSage::Fast_CS_Calc          \n"
             "*** ERROR *** Integer vertical tune.              \n"
             "*** ERROR ***                                     \n"
@@ -509,13 +513,13 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
                 resizeFactor*resizeFactor )
         > resizeFactor*resizeFactor*0.01 )
     {
-  	cout << "*** ERROR *** Phase error in horizontal plane at " 
+  	(*pcout) << "*** ERROR *** Phase error in horizontal plane at " 
              << lbe->Type() << "  " << lbe->Name()
              << endl;
-  	cout << "*** ERROR *** imag( outState[i_px] ) = " 
+  	(*pcout) << "*** ERROR *** imag( outState[i_px] ) = " 
              << imag( outState[i_px] ) 
              << endl;
-  	cout << "*** ERROR *** " 
+  	(*pcout) << "*** ERROR *** " 
              << outState[i_px]/resizeFactor 
              << endl;
 
@@ -533,13 +537,13 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
                 resizeFactor*resizeFactor )
         > resizeFactor*resizeFactor*0.01 )
     {
-  	cout << "*** ERROR *** Phase error in vertical plane at " 
+  	(*pcout) << "*** ERROR *** Phase error in vertical plane at " 
              << lbe->Type() << "  " << lbe->Name()
              << endl;
-  	cout << "*** ERROR *** imag( outState[i_py] ) = " 
+  	(*pcout) << "*** ERROR *** imag( outState[i_py] ) = " 
              << imag( outState[i_py] ) 
              << endl;
-  	cout << "*** ERROR *** " 
+  	(*pcout) << "*** ERROR *** " 
              << outState[i_py]/resizeFactor 
              << endl;
 
@@ -593,8 +597,8 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
 
   // Finished....
   if( this->_verbose ) {
-    cout << "LattFuncSage -- Leaving LattFuncSage::Fast_CS_Calc" << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Fast_CS_Calc" << endl;
+    (*pcout).flush();
   }
 
   delete p_1;
@@ -617,8 +621,8 @@ int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   // Barnacle.
 
   if( this->_verbose ) {
-    cout << "LattFuncSage -- Entering LattFuncSage::Slow_CS_Calc" << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage -- Entering LattFuncSage::Slow_CS_Calc" << endl;
+    (*pcout).flush();
   }
 
   MatrixD mtrx;
@@ -651,7 +655,7 @@ int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
       ( mtrx( i_py, i_px ) != 0.0 )  ||
       ( mtrx( i_px, i_py ) != 0.0 )     )
   {
-    cerr << "*** WARNING ***                                     \n"
+    (*pcerr) << "*** WARNING ***                                     \n"
             "*** WARNING *** LattFuncSage::Slow_CS_Calc          \n"
             "*** WARNING *** Coupling detected. Calculation is   \n"
             "*** WARNING *** proceeding but results are suspect. \n"
@@ -672,7 +676,7 @@ int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
     else                           sn = - sqrt( 1.0 - cs*cs );
   }
   else {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
             "*** ERROR *** cos( psi_H ) = "
          << cs
@@ -688,7 +692,7 @@ int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   }
 
   if( sn == 0.0 ) {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
             "*** ERROR *** Integer horizontal tune.            \n"
             "*** ERROR ***                                     \n"
@@ -711,7 +715,7 @@ int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
     else                           sn = - sqrt( 1.0 - cs*cs );
   }
   else {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
             "*** ERROR *** cos( psi_V ) = "
          << cs
@@ -727,7 +731,7 @@ int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   }
 
   if( sn == 0.0 ) {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
             "*** ERROR *** Integer vertical tune.              \n"
             "*** ERROR ***                                     \n"
@@ -839,8 +843,8 @@ int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
 
   // Finished....
   if( this->_verbose ) {
-    cout << "LattFuncSage -- Leaving LattFuncSage::Slow_CS_Calc" << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Slow_CS_Calc" << endl;
+    (*pcout).flush();
   }
 
   delete prt;
@@ -863,8 +867,8 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
   // Barnacle.
 
   if( this->_verbose ) {
-    cout << "LattFuncSage -- Entering LattFuncSage::Slow_CS_Calc" << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage -- Entering LattFuncSage::Slow_CS_Calc" << endl;
+    (*pcout).flush();
   }
 
   // Preserve the current Jet environment
@@ -905,7 +909,7 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
       ( mtrx( i_py, i_px ) != 0.0 )  ||
       ( mtrx( i_px, i_py ) != 0.0 )     )
   {
-    cerr << "*** WARNING ***                                     \n"
+    (*pcerr) << "*** WARNING ***                                     \n"
             "*** WARNING *** LattFuncSage::Slow_CS_Calc          \n"
             "*** WARNING *** Coupling detected. Calculation is   \n"
             "*** WARNING *** proceeding but results are suspect. \n"
@@ -926,7 +930,7 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
     else                           sn = - sqrt( 1.0 - cs*cs );
   }
   else {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
             "*** ERROR *** cos( psi_H ) = "
          << cs
@@ -944,7 +948,7 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
   }
 
   if( sn == 0.0 ) {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
             "*** ERROR *** Integer horizontal tune.            \n"
             "*** ERROR ***                                     \n"
@@ -969,7 +973,7 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
     else                           sn = - sqrt( 1.0 - cs*cs );
   }
   else {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
             "*** ERROR *** cos( psi_V ) = "
          << cs
@@ -987,7 +991,7 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
   }
 
   if( sn == 0.0 ) {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
             "*** ERROR *** Integer vertical tune.              \n"
             "*** ERROR ***                                     \n"
@@ -1103,8 +1107,8 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
 
   // Finished....
   if( this->_verbose ) {
-    cout << "LattFuncSage -- Leaving LattFuncSage::Slow_CS_Calc" << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Slow_CS_Calc" << endl;
+    (*pcout).flush();
   }
 
   delete prt;
@@ -1143,8 +1147,8 @@ int LattFuncSage::TuneCalc( JetParticle* arg_jp, bool forceClosedOrbitCalc )
   //           with the (uncoupled) tune information
 
   if( this->_verbose ) {
-    cout << "LattFuncSage -- Entering LattFuncSage::TuneCalc" << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage -- Entering LattFuncSage::TuneCalc" << endl;
+    (*pcout).flush();
   }
 
   MatrixD mtrx;
@@ -1172,15 +1176,15 @@ int LattFuncSage::TuneCalc( JetParticle* arg_jp, bool forceClosedOrbitCalc )
   if( ( ret = clsg.findClosedOrbit( arg_jp ) ) == 0 )
   {
     if( this->_verbose ) {
-      cout << "LattFuncSage -- Closed orbit successfully calculated." << endl;
-      cout.flush();
+      (*pcout) << "LattFuncSage -- Closed orbit successfully calculated." << endl;
+      (*pcout).flush();
     }
   }
   else
   {
     if( this->_verbose ) {
-      cout << "LattFuncSage -- Closed orbit not successfully calculated." << endl;
-      cout.flush();
+      (*pcout) << "LattFuncSage -- Closed orbit not successfully calculated." << endl;
+      (*pcout).flush();
     }
   }
 
@@ -1202,7 +1206,7 @@ int LattFuncSage::TuneCalc( JetParticle* arg_jp, bool forceClosedOrbitCalc )
       	( mtrx( i_py, i_px ) != 0.0 )  ||
       	( mtrx( i_px, i_py ) != 0.0 )     )
     {
-      cerr << "*** WARNING ***                                     \n"
+      (*pcerr) << "*** WARNING ***                                     \n"
               "*** WARNING *** LattFuncSage::tuneCalc              \n"
               "*** WARNING *** Coupling detected. Calculation is   \n"
               "*** WARNING *** proceeding but results are suspect. \n"
@@ -1222,7 +1226,7 @@ int LattFuncSage::TuneCalc( JetParticle* arg_jp, bool forceClosedOrbitCalc )
 
     lambda = M.eigenValues();
     if( fabs( abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
-      cout << "\n"
+      (*pcout) << "\n"
            << "*** ERROR ***                                     \n"
            << "*** ERROR ***                                     \n"
            << "*** ERROR *** LattFuncSage::TuneCalc              \n"
@@ -1241,7 +1245,7 @@ int LattFuncSage::TuneCalc( JetParticle* arg_jp, bool forceClosedOrbitCalc )
   if( ret == 0 ) {
     if( ( abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
     {
-  	cout << "\n"
+  	(*pcout) << "\n"
   	     << "*** ERROR *** LattFuncSage::TuneCalc               \n"
   	     << "*** ERROR *** Conjugacy condition has been violated\n"
   	     << "*** ERROR *** The lattice may be linearly unstable.\n"
@@ -1267,7 +1271,7 @@ int LattFuncSage::TuneCalc( JetParticle* arg_jp, bool forceClosedOrbitCalc )
 
     lambda = M.eigenValues();
     if( fabs( abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
-      cout << "\n"
+      (*pcout) << "\n"
            << "*** ERROR ***                                     \n"
            << "*** ERROR ***                                     \n"
            << "*** ERROR *** LattFuncSage::TuneCalc              \n"
@@ -1286,7 +1290,7 @@ int LattFuncSage::TuneCalc( JetParticle* arg_jp, bool forceClosedOrbitCalc )
   if( ret == 0 ) {
     if( ( abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
     {
-  	cout << "\n"
+  	(*pcout) << "\n"
   	     << "*** ERROR *** LattFuncSage::TuneCalc               \n"
   	     << "*** ERROR *** Conjugacy condition has been violated\n"
   	     << "*** ERROR *** The lattice may be linearly unstable.\n"
@@ -1321,8 +1325,8 @@ int LattFuncSage::TuneCalc( JetParticle* arg_jp, bool forceClosedOrbitCalc )
 
   // Final operations ....................................
   if( this->_verbose ) {
-    cout << "LattFuncSage -- Leaving LattFuncSage::TuneCalc" << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage -- Leaving LattFuncSage::TuneCalc" << endl;
+    (*pcout).flush();
   }
 
   return ret;
@@ -1333,8 +1337,8 @@ int LattFuncSage::TuneCalc( JetParticle* arg_jp, bool forceClosedOrbitCalc )
 int LattFuncSage::Disp_Calc( JetParticle* arg_jp, Sage::CRITFUNC  Crit )
 {
   if( this->_verbose ) {
-    cout << "LattFuncSage -- Entering LattFuncSage::Disp_Calc" << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage -- Entering LattFuncSage::Disp_Calc" << endl;
+    (*pcout).flush();
   }
 
   JetParticle* p_jp = arg_jp->Clone();
@@ -1373,15 +1377,15 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp, Sage::CRITFUNC  Crit )
 
   if( ret == 0 ) {
     if( this->_verbose ) {
-      cout << "LattFuncSage -- Closed orbit successfully calculated." << endl;
-      cout.flush();
+      (*pcout) << "LattFuncSage -- Closed orbit successfully calculated." << endl;
+      (*pcout).flush();
     }
   }
   else {
     if( this->_verbose ) {
-      cout << "LattFuncSage -- Closed orbit not successfully calculated." << endl;
-      cout << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
-      cout.flush();
+      (*pcout) << "LattFuncSage -- Closed orbit not successfully calculated." << endl;
+      (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
+      (*pcout).flush();
     }
     if( p_jp )           delete p_jp;
     if( firstParticle )  delete firstParticle;
@@ -1395,8 +1399,8 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp, Sage::CRITFUNC  Crit )
 
   // Calculate the closed orbit for an off-momentum particle ...
   if( this->_verbose ) {
-    cout << "LattFuncSage --- Starting calculation of offset closed orbit." << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage --- Starting calculation of offset closed orbit." << endl;
+    (*pcout).flush();
   }
 
   dpp = this->get_dpp();
@@ -1413,15 +1417,15 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp, Sage::CRITFUNC  Crit )
 
   if( ret == 0 ) {
     if( this->_verbose ) {
-      cout << "LattFuncSage -- Offset closed orbit successfully calculated." << endl;
-      cout.flush();
+      (*pcout) << "LattFuncSage -- Offset closed orbit successfully calculated." << endl;
+      (*pcout).flush();
     }
   }
   else {
     if( this->_verbose ) {
-      cout << "LattFuncSage -- Off-momentum closed orbit not successfully calculated." << endl;
-      cout << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
-      cout.flush();
+      (*pcout) << "LattFuncSage -- Off-momentum closed orbit not successfully calculated." << endl;
+      (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
+      (*pcout).flush();
     }
     if( p_jp )           delete p_jp;
     if( firstParticle )  delete firstParticle;
@@ -1454,8 +1458,8 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp, Sage::CRITFUNC  Crit )
 
   // Attach dispersion data wherever desired ...
   if( this->_verbose ) {
-    cout << "LattFuncSage --- Attaching dispersion data to the elements." << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage --- Attaching dispersion data to the elements." << endl;
+    (*pcout).flush();
   }
 
 
@@ -1509,7 +1513,7 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp, Sage::CRITFUNC  Crit )
     _myBeamlinePtr->dataHook.insert( new Barnacle( "Ring", latticeRing ) );
   }
   else {
-    cerr << "*** ERROR ***                                        \n"
+    (*pcerr) << "*** ERROR ***                                        \n"
             "*** ERROR *** LattFuncSage::Disp_Calc                \n"
             "*** ERROR ***                                        \n"
             "*** ERROR *** Horrible error occurred while trying   \n"
@@ -1530,8 +1534,8 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp, Sage::CRITFUNC  Crit )
   if( secondParticle ) delete secondParticle;
 
   if( this->_verbose ) {
-    cout << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
+    (*pcout).flush();
   }
 
   return ret;
@@ -1542,8 +1546,8 @@ int LattFuncSage::NewDisp_Calc( /* const */ JetParticle* arg_jp,
                                 bool onClosedOrbit )
 {
   if( this->_verbose ) {
-    cout << "LattFuncSage -- Entering LattFuncSage::Disp_Calc" << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage -- Entering LattFuncSage::Disp_Calc" << endl;
+    (*pcout).flush();
   }
 
   JetParticle* p_jp = arg_jp->Clone();
@@ -1584,16 +1588,16 @@ int LattFuncSage::NewDisp_Calc( /* const */ JetParticle* arg_jp,
 
   if( ret == 0 ) {
     if( this->_verbose ) {
-      cout << "LattFuncSage -- Closed orbit successfully calculated." << endl;
-      cout.flush();
+      (*pcout) << "LattFuncSage -- Closed orbit successfully calculated." << endl;
+      (*pcout).flush();
     }
   }
 
   else {
     if( this->_verbose ) {
-      cout << "LattFuncSage -- Closed orbit not successfully calculated." << endl;
-      cout << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
-      cout.flush();
+      (*pcout) << "LattFuncSage -- Closed orbit not successfully calculated." << endl;
+      (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
+      (*pcout).flush();
     }
     if( p_jp )           delete p_jp;
     if( firstParticle )  delete firstParticle;
@@ -1607,8 +1611,8 @@ int LattFuncSage::NewDisp_Calc( /* const */ JetParticle* arg_jp,
 
   // Calculate the closed orbit for an off-momentum particle ...
   if( this->_verbose ) {
-    cout << "LattFuncSage --- Starting calculation of offset closed orbit." << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage --- Starting calculation of offset closed orbit." << endl;
+    (*pcout).flush();
   }
 
   dpp = this->get_dpp();
@@ -1625,15 +1629,15 @@ int LattFuncSage::NewDisp_Calc( /* const */ JetParticle* arg_jp,
 
   if( ret == 0 ) {
     if( this->_verbose ) {
-      cout << "LattFuncSage -- Offset closed orbit successfully calculated." << endl;
-      cout.flush();
+      (*pcout) << "LattFuncSage -- Offset closed orbit successfully calculated." << endl;
+      (*pcout).flush();
     }
   }
   else {
     if( this->_verbose ) {
-      cout << "LattFuncSage -- Off-momentum closed orbit not successfully calculated." << endl;
-      cout << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
-      cout.flush();
+      (*pcout) << "LattFuncSage -- Off-momentum closed orbit not successfully calculated." << endl;
+      (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
+      (*pcout).flush();
     }
     if( p_jp )           delete p_jp;
     if( firstParticle )  delete firstParticle;
@@ -1659,8 +1663,8 @@ int LattFuncSage::NewDisp_Calc( /* const */ JetParticle* arg_jp,
 
   // Attach dispersion data wherever desired ...
   if( this->_verbose ) {
-    cout << "LattFuncSage --- Attaching dispersion data to the elements." << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage --- Attaching dispersion data to the elements." << endl;
+    (*pcout).flush();
   }
 
 
@@ -1695,7 +1699,7 @@ int LattFuncSage::NewDisp_Calc( /* const */ JetParticle* arg_jp,
     _lr->chromaticity.ver = ( secondNu(1) - firstNu(1) ) / dpp;
   }
   else {
-    cerr << "*** ERROR ***                                        \n"
+    (*pcerr) << "*** ERROR ***                                        \n"
             "*** ERROR *** LattFuncSage::Disp_Calc                \n"
             "*** ERROR ***                                        \n"
             "*** ERROR *** Horrible error occurred while trying   \n"
@@ -1716,8 +1720,8 @@ int LattFuncSage::NewDisp_Calc( /* const */ JetParticle* arg_jp,
   if( secondParticle ) delete secondParticle;
 
   if( this->_verbose ) {
-    cout << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
+    (*pcout).flush();
   }
 
   return ret;
@@ -1731,9 +1735,9 @@ int LattFuncSage::FAD_Disp_Calc( /* const */ JetParticle* arg_jp,
   // 
 
   if( this->_verbose ) {
-    cout << "LattFuncSage -- Entering LattFuncSage::FAD_Disp_Calc( map ) " 
+    (*pcout) << "LattFuncSage -- Entering LattFuncSage::FAD_Disp_Calc( map ) " 
          << endl;
-    cout.flush();
+    (*pcout).flush();
   }
 
   int ret = 0;
@@ -1816,7 +1820,7 @@ int LattFuncSage::FAD_Disp_Calc( /* const */ JetParticle* arg_jp,
   }
 
   if( numberFound != 1 ) {
-    cerr << "*** ERROR ***                                            \n"
+    (*pcerr) << "*** ERROR ***                                            \n"
             "*** ERROR *** LattFuncSage::FAD_Disp_Calc                \n"
             "*** ERROR *** Exactly " << numberFound << " eigenvectors \n"
             "*** ERROR *** were found matching the criterion.         \n"
@@ -1845,8 +1849,8 @@ int LattFuncSage::FAD_Disp_Calc( /* const */ JetParticle* arg_jp,
    
      // Attach dispersion data wherever desired ...
      if( this->_verbose ) {
-       cout << "LattFuncSage --- Attaching dispersion data to the elements." << endl;
-       cout.flush();
+       (*pcout) << "LattFuncSage --- Attaching dispersion data to the elements." << endl;
+       (*pcout).flush();
      }
    
    
@@ -1897,7 +1901,7 @@ int LattFuncSage::FAD_Disp_Calc( /* const */ JetParticle* arg_jp,
        _myBeamlinePtr->dataHook.insert( new Barnacle( "Ring", latticeRing ) );
      }
      else {
-       cerr << "*** ERROR ***                                        \n"
+       (*pcerr) << "*** ERROR ***                                        \n"
                "*** ERROR *** LattFuncSage::Disp_Calc                \n"
                "*** ERROR ***                                        \n"
                "*** ERROR *** Horrible error occurred while trying   \n"
@@ -1914,8 +1918,8 @@ int LattFuncSage::FAD_Disp_Calc( /* const */ JetParticle* arg_jp,
   if( firstParticle )  delete firstParticle;
 
   if( this->_verbose ) {
-    cout << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
-    cout.flush();
+    (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
+    (*pcout).flush();
   }
 
   return ret;
@@ -1959,12 +1963,12 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
    csV = ( mtrx(1,1) + mtrx(4,4) ) / 2.0;  // cosine vertical   tune
 
    if( fabs(csH) > 1.0 || fabs(csV) > 1.0 ) {
-     cerr << "\n*** WARNING *** " << endl ;
-     cerr << "*** WARNING *** beamline::twiss()  Lattice is unstable."   << endl;
-     cerr << "*** WARNING *** beamline::twiss()  csH = " << csH
+     (*pcerr) << "\n*** WARNING *** " << endl ;
+     (*pcerr) << "*** WARNING *** beamline::twiss()  Lattice is unstable."   << endl;
+     (*pcerr) << "*** WARNING *** beamline::twiss()  csH = " << csH
           <<                                 "   csV = " << csV          << endl;
-     cerr << "*** WARNING *** beamline::twiss()  did not exit properly." << endl;
-     cerr << "*** WARNING *** " << endl;
+     (*pcerr) << "*** WARNING *** beamline::twiss()  did not exit properly." << endl;
+     (*pcerr) << "*** WARNING *** " << endl;
 
      delete [] zero;
      delete [] z;
@@ -2147,12 +2151,12 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
 
    // .......... A little test to keep everyone honest .....
    if ( count != _myBeamlinePtr->howMany() ) {
-     cerr << "*** ERROR: beamline::twiss(JetParticle): "<< endl;
-     cerr << "*** ERROR: A horrible, inexplicable error has occurred!" << endl;
-     cerr << "*** ERROR: num elements seen, " << count << endl;
-     cerr << "*** ERROR:  not equal to num elements expected, " 
+     (*pcerr) << "*** ERROR: beamline::twiss(JetParticle): "<< endl;
+     (*pcerr) << "*** ERROR: A horrible, inexplicable error has occurred!" << endl;
+     (*pcerr) << "*** ERROR: num elements seen, " << count << endl;
+     (*pcerr) << "*** ERROR:  not equal to num elements expected, " 
           << _myBeamlinePtr->howMany() << endl;
-     cerr << "*** ERROR: Bailing out" << endl;
+     (*pcerr) << "*** ERROR: Bailing out" << endl;
 
      delete [] zero;
      delete [] z;
@@ -2313,12 +2317,12 @@ int LattFuncSage::Twiss_Calc( const LattFuncSage::lattFunc& W, JetParticle& p, S
 
   // .......... A little test to keep everyone honest .....
   if ( count != _myBeamlinePtr->countHowMany() ) {
-    cerr << "*** ERROR: beamline::twiss(LatticeFunct, JetParticle):" << endl;
-    cerr << "*** ERROR: A horrible, inexplicable error has occurred!" << endl;
-    cerr << "*** ERROR: num elements seen, " << count << endl;
-    cerr << "*** ERROR: is not equal to num elements expected, " 
+    (*pcerr) << "*** ERROR: beamline::twiss(LatticeFunct, JetParticle):" << endl;
+    (*pcerr) << "*** ERROR: A horrible, inexplicable error has occurred!" << endl;
+    (*pcerr) << "*** ERROR: num elements seen, " << count << endl;
+    (*pcerr) << "*** ERROR: is not equal to num elements expected, " 
          << _myBeamlinePtr->countHowMany() << endl;
-    cerr << "*** ERROR: Bailing out" << endl;
+    (*pcerr) << "*** ERROR: Bailing out" << endl;
 
     delete [] zero;
     delete [] z;
