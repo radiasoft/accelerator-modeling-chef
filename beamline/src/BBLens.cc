@@ -396,9 +396,9 @@ JetVector BBLens::NormalizedEField( const Jet& arg_x, const Jet& arg_y )
 
   // The calculation ...
   ds = sqrt(2.0*(sigmaX*sigmaX - sigmaY*sigmaY));
-  arg1 = ((JetC) (x/ds)) + complex_i*((JetC) (y/ds) );
+  arg1 = ( (x/ds) + complex_i* (y/ds) );
   ratio = sigmaY/sigmaX;
-  arg2 = ((JetC) ((x*ratio)/ds)) + complex_i*((JetC) ((y/ratio)/ds));
+  arg2 = ( (x*ratio)/ds ) + complex_i*( (y/ratio)/ds );
 
   retarg1 = w( arg1 );
   retarg2 = w( arg2 );
