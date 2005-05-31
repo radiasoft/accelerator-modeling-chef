@@ -48,6 +48,8 @@ public:
                                  // on the heap. Should not be
                                  // used otherwise.
   virtual BoolNode* Clone() const = 0;
+  virtual bool isNull() const {return false; }
+
 };
 
 
@@ -60,6 +62,8 @@ public:
   void writeTo( std::ostream& ) const {}
   void eliminate() { delete this; }
   BoolNode* Clone() const { return new BoolNullNode; }
+  virtual bool isNull() const {return true; }
+
 };
 
 
