@@ -36,12 +36,16 @@
 #include <iomanip>
 #include <typeinfo>
 
-#include "MathConstants.h"
-#include "PhysicsConstants.h"
-#include "rbend.h"
-#include "Particle.h"
+#include <iosetup.h>
+#include <MathConstants.h>
+#include <PhysicsConstants.h>
+#include <rbend.h>
+#include <Particle.h>
 
 using namespace std;
+using FNAL::pcout;
+using FNAL::pcerr;
+;
 
 // **************************************************
 //   class rbend
@@ -102,7 +106,7 @@ rbend::rbend( double l, double s, double entryangle, PropFunc* pf )
    _dsAngle = 0.0;
    _dsTan   = 0.0;
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream entry angle | = " 
@@ -141,7 +145,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, PropFunc* pf
    _dsAngle = 0.0;
    _dsTan   = 0.0;
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( char* n, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream entry angle | = " 
@@ -179,7 +183,7 @@ rbend::rbend( double l, double s, double us, double ds, PropFunc* pf )
    _usAngle = 0.0;
    _usTan = 0.0;
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
@@ -196,7 +200,7 @@ rbend::rbend( double l, double s, double us, double ds, PropFunc* pf )
    _dsAngle = 0.0;
    _dsTan = 0.0;
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
@@ -234,7 +238,7 @@ rbend::rbend( const char* n, double l, double s, double us, double ds, PropFunc*
    _usAngle = 0.0;
    _usTan = 0.0;
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
@@ -251,7 +255,7 @@ rbend::rbend( const char* n, double l, double s, double us, double ds, PropFunc*
    _dsAngle = 0.0;
    _dsTan = 0.0;
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
@@ -290,7 +294,7 @@ rbend::rbend( double l, double s, double entryangle, double us, double ds, PropF
    _dsAngle = -ds;
    _dsTan   = -tan(ds);
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( char* n, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream entry angle | = " 
@@ -307,7 +311,7 @@ rbend::rbend( double l, double s, double entryangle, double us, double ds, PropF
    _usAngle = entryangle;
    _usTan = tan(entryangle);
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
@@ -324,7 +328,7 @@ rbend::rbend( double l, double s, double entryangle, double us, double ds, PropF
    _dsAngle = -entryangle;
    _dsTan = -tan(entryangle);
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
@@ -363,7 +367,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, double us, d
    _dsAngle = -ds;
    _dsTan   = -tan(ds);
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( char* n, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream entry angle | = " 
@@ -380,7 +384,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, double us, d
    _usAngle = entryangle;
    _usTan = tan(entryangle);
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
@@ -397,7 +401,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, double us, d
    _dsAngle = -entryangle;
    _dsTan = -tan(entryangle);
    if( firstTime) {
-     cerr <<   "*** WARNING *** "
+     (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
@@ -497,7 +501,7 @@ void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
   static bool firstTime = true;
   if( firstTime ) {
     firstTime = false;
-    cerr << "\n"
+    (*pcerr) << "\n"
             "\n*** WARNING ***"
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
@@ -516,7 +520,7 @@ void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
   }
 
   if( typeid(*Propagator) == typeid(MAD_Prop) ) {
-    cerr << "\n*** WARNING *** "
+    (*pcerr) << "\n*** WARNING *** "
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
             "\n*** WARNING *** Splitting rbend with MAD-like propagator."
@@ -569,7 +573,7 @@ void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
     *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, Propagator );
   }
   else {
-    cerr << "\n*** WARNING *** "
+    (*pcerr) << "\n*** WARNING *** "
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
             "\n*** WARNING *** Propagator type unrecognized."
@@ -755,10 +759,10 @@ istream& rbend::readFrom(istream& is)
     setPropFunction(&rbend::OutEdge );
   else
     {
-      cerr << " **** WARNING **** rbend::readFrom(istream)\n";
-      cerr << " **** WARNING **** unknown propagator function specified:\n";
-      cerr << " **** WARNING **** " << prop_fun << "\n";
-      cerr << " **** WARNING **** Substituting rbend::P_Exact\n";
+      (*pcerr) << " **** WARNING **** rbend::readFrom(istream)\n";
+      (*pcerr) << " **** WARNING **** unknown propagator function specified:\n";
+      (*pcerr) << " **** WARNING **** " << prop_fun << "\n";
+      (*pcerr) << " **** WARNING **** Substituting rbend::P_Exact\n";
       setPropFunction(&rbend::Exact);
     }
   
