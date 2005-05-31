@@ -111,10 +111,13 @@ public:
   TJetVector        operator-      ( const Vector& ) const;
   TJetVector        operator-=     ( const TJetVector& );
   TJetVector        operator-=     ( const Vector& );
-  TJetVector        operator*      ( const TJet<T1,T2>&    ) const;
-  TJetVector        operator*      ( const T1& ) const;
+
   friend TJetVector operator*<>    ( const TJet<T1,T2>&, const TJetVector& );
   friend TJetVector operator*<>    ( const T1&, const TJetVector& );
+  friend TJetVector operator*<>    ( const TMatrix<T1>&, const TJetVector& );
+
+  TJetVector        operator*      ( const TJet<T1,T2>&    ) const;
+  TJetVector        operator*      ( const T1& ) const;
   TJetVector        operator*=     ( const TJet<T1,T2>&    );
   TJetVector        operator*=     (       T1  );
   TJetVector        operator/      ( const TJet<T1,T2>&    ) const;
@@ -125,14 +128,15 @@ public:
 
   TJet<T1,T2>       operator*      ( const TJetVector& ) const; // dot product
   TJet<T1,T2>       operator*      ( const Vector& )     const; // dot product
+
+  friend TJetVector operator^<>    ( const Vector&, const TJetVector& );
+
   TJetVector        operator^      ( const TJetVector& ) const; // cross product:
                                                                 // only works if
                                                                 // the vector is
                                                                 // three-dimensional
   TJetVector        operator^      ( const Vector& ) const;
-  friend TJetVector operator^<>    ( const Vector&, const TJetVector& );
 
-  friend TJetVector operator*<>    ( const TMatrix<T1>&, const TJetVector& );
 
   // Boolean functions ...
   bool operator==     ( const TJetVector& ) const;
