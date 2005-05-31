@@ -107,6 +107,12 @@ void BeamlineIterator::reset()
   _getNext->Reset();
 }
 
+ 	 
+bool BeamlineIterator::isFinished() 	 
+{ 	 
+   return _getNext->isFinished(); 	 
+}
+
 
 void BeamlineIterator::goBack( int n )
 {
