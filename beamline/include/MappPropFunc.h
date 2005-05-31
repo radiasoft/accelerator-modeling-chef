@@ -51,7 +51,7 @@ class MappPropFunc : public bmlnElmnt::PropFunc
     MappPropFunc( JetParticle&, bmlnElmnt& );
     MappPropFunc( const Mapping& );
     MappPropFunc( const MappPropFunc& );
-    ~MappPropFunc(){}
+    virtual ~MappPropFunc(){}
 
     void setMapping( const Mapping& );
     Mapping getMapping();
