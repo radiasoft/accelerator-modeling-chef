@@ -47,9 +47,13 @@
 */
 
 
-#include "BeamlineIterator.h"
+#include <iosetup.h>
+#include <BeamlineIterator.h>
 
 using namespace std;
+
+using FNAL::pcout;
+using FNAL::pcerr;
 
 // 
 // Forward iterator
@@ -71,7 +75,7 @@ BeamlineIterator::BeamlineIterator( const BeamlineIterator& x )
 {
   static char firstTime = 1;
   if( firstTime ) {
-    cerr << "*** WARNING ***                                       \n"
+    (*pcerr) << "*** WARNING ***                                       \n"
             "*** WARNING *** BeamlineIterator::BeamlineIterator( const BeamlineIterator& ) \n"
             "*** WARNING *** Copy constructor has been called.     \n"
             "*** WARNING ***                                       \n"
@@ -109,11 +113,6 @@ void BeamlineIterator::goBack( int n )
   _getNext->GoBack(n);
 }
 
-
-bool BeamlineIterator::isFinished()
-{
-  return _getNext->isFinished();
-}
 
 
 DeepBeamlineIterator::DeepBeamlineIterator( const beamline& x )
@@ -207,7 +206,7 @@ ReverseBeamlineIterator::ReverseBeamlineIterator( const ReverseBeamlineIterator&
 {
   static char firstTime = 1;
   if( firstTime ) {
-    cerr << "*** WARNING ***                                       \n"
+    (*pcerr) << "*** WARNING ***                                       \n"
             "*** WARNING *** ReverseBeamlineIterator::ReverseBeamlineIterator( const ReverseBeamlineIterator& ) \n"
             "*** WARNING *** Copy constructor has been called.     \n"
             "*** WARNING ***                                       \n"

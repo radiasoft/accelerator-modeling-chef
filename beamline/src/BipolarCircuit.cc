@@ -33,9 +33,13 @@
 *************************************************************************/
 
 
-#include "BipolarCircuit.h"
+#include <iosetup.h>
+#include <BipolarCircuit.h>
 
 using namespace std;
+
+using FNAL::pcout;
+using FNAL::pcerr;
 
 BipolarCircuit::BipolarCircuit() : circuit () {
   field = 0.0;
@@ -80,7 +84,7 @@ void BipolarCircuit::set(void* x) {
   while ( (p = (bmlnElmnt*) getNext()) ) {
     pol = (PolarityBarn*)p->dataHook.find("Polarity");
     if(pol == 0) {
-      cerr << "BipolarCircuit: no polarity information for " <<
+      (*pcerr) << "BipolarCircuit: no polarity information for " <<
 	p->Name() << " Assuming +1 " << endl;
       p -> setStrength( *curr );
 
