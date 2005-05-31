@@ -40,7 +40,7 @@
 struct PolarityBarn : public BarnacleData {
   double polarity;
   PolarityBarn(double x) : polarity(x) {}
-  PolarityBarn(const PolarityBarn& x){polarity = x.polarity;}
+  PolarityBarn(const PolarityBarn& x): BarnacleData() {polarity = x.polarity;}
   ~PolarityBarn() {}
 };
 
