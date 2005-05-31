@@ -79,6 +79,10 @@ public:
   friend std::istream& operator>><>( std::istream&, TLieOperator& );
 
   // Lie operations ...................................
+
+  // Lie bracket of two Lie operators
+  friend TLieOperator operator^<>( const TLieOperator&, const TLieOperator& );
+
   TJet<T1,T2> operator^( const TJet<T1,T2>& ) const ;      
                                 // Action as a Lie operator
   TJet<T1,T2> expMap( const T1&, const TJet<T1,T2>& );    
@@ -95,8 +99,6 @@ public:
   TJet<T1,T2>       expMap( const TJet<T1,T2>& );
   TJetVector<T1,T2> expMap( const TJetVector<T1,T2>& );
 
-  // Lie bracket of two Lie operators
-  friend TLieOperator operator^<>( const TLieOperator&, const TLieOperator& );
 };
 
 
