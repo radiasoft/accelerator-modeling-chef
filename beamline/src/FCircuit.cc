@@ -33,9 +33,13 @@
 *************************************************************************/
 
 
-#include "FCircuit.h"
+#include <iosetup.h>
+#include <FCircuit.h>
 
 using namespace std;
+
+using FNAL::pcout;
+using FNAL::pcerr;
 
 FCircuit::FCircuit() : circuit () {
   field = 0.0;
@@ -106,7 +110,7 @@ void FCircuit::getCurrent(void* x) {
     *curr = field/ItoFieldvalue;
     return;
   } else {
-    cerr << "FCircuit::getCurrent(): ItoField conversion is zero for " 
+    (*pcerr) << "FCircuit::getCurrent(): ItoField conversion is zero for " 
          << getName() << endl;
     *curr = 0.0;
     return;
@@ -124,13 +128,13 @@ void FCircuit::setCurrent(void* x) {
     if(ItoFieldvalue != 0.0) {
       field = current * ItoFieldvalue;
     } else {
-      cerr << "FCircuit::setCurrent(): ItoField conversion is zero for " 
+      (*pcerr) << "FCircuit::setCurrent(): ItoField conversion is zero for " 
 	   << p->Name() << endl;
       current = field;
       return;
     }
     p->setCurrent(current);
-    cout << p->Name() << " Strength= " << p->Strength() << " Current= "
+    (*pcout) << p->Name() << " Strength= " << p->Strength() << " Current= "
          << current  << " I2F= " << p->IToField() << endl;
   };
 }

@@ -33,12 +33,15 @@
 #include <config.h>
 #endif
 
-#include "combinedFunction.h"
-#include "BeamlineIterator.h"
-#include "Particle.h"
-
+#include <iosetup.h>
+#include <combinedFunction.h>
+#include <BeamlineIterator.h>
+#include <Particle.h>
 
 using namespace std;
+
+using FNAL::pcout;
+using FNAL::pcerr;
 
 // **************************************************
 //   class combinedFunction
@@ -391,8 +394,8 @@ istream& combinedFunction::readFrom(istream& is)
   length = p_bml->Length();
   bmlnElmnt *e = read_istream(is);
   if ( e ) {
-    cerr << " **** WARNING **** Expecting an end of combinedFunction but got another bmlnElmnt\n";
-    cerr << " **** WARNING **** Will attempt to proceed, but all bets are off!\n";
+    (*pcerr) << " **** WARNING **** Expecting an end of combinedFunction but got another bmlnElmnt\n";
+    (*pcerr) << " **** WARNING **** Will attempt to proceed, but all bets are off!\n";
     delete e;
   }
   return is;

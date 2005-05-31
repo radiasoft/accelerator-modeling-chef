@@ -33,12 +33,16 @@
 #include <config.h>
 #endif
 
-#include "marker.h"
-#include "Slot.h"
-#include "Particle.h"
-#include "ParticleBunch.h"
+#include <iosetup.h>
+#include <marker.h>
+#include <Slot.h>
+#include <Particle.h>
+#include <ParticleBunch.h>
 
 using namespace std;
+
+using FNAL::pcerr;
+using FNAL::pcout;
 
 // --------------------------------------------------
 // --- Constructors ---------------------------------
@@ -364,16 +368,16 @@ double Slot::setReferenceTime( const Particle& prtn )
     _ctRef = ( q - r )*u_3 / betaParallel;
   }
   else {
-    cerr << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+    (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** double Slot::setReferenceTime( const Particle& prtn )"
             "\n*** WARNING *** Velocity is not forward.        "
             "\n*** WARNING ***                                 ";
-    cerr << "\n*** WARNING *** " << this->Name();
-    cerr << "\n*** WARNING *** " << in;
-    cerr << "\n*** WARNING *** " << out;
-    cerr << "\n*** WARNING *** " << "VectorBeta(): " << localParticle->VectorBeta();
-    cerr << "\n*** WARNING *** " << "betaParallel: " << betaParallel;
-    cerr << endl;
+    (*pcerr) << "\n*** WARNING *** " << this->Name();
+    (*pcerr) << "\n*** WARNING *** " << in;
+    (*pcerr) << "\n*** WARNING *** " << out;
+    (*pcerr) << "\n*** WARNING *** " << "VectorBeta(): " << localParticle->VectorBeta();
+    (*pcerr) << "\n*** WARNING *** " << "betaParallel: " << betaParallel;
+    (*pcerr) << endl;
 
     _ctRef = 0.0;
   }
@@ -458,7 +462,7 @@ istream& Slot::readFrom( istream& is )
 void Slot::Split( double pct, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   if( pct < 0.0 || 1.0 < pct ) {
-    cerr << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+    (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** void Slot::Split( double, bmlnElmnt**, bmlnElmnt** )"
          << "\n*** WARNING *** Function called with first argument = " 
          << pct <<             ", outside [0,1]."
@@ -857,7 +861,7 @@ bool Slot::setAlignment  ( const alignmentData& x )
     ret = p_bml_e->setAlignment( x );
   }
   if( !ret ) {
-    cerr << "\n*** ERROR *** "
+    (*pcerr) << "\n*** ERROR *** "
          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** ERROR *** bool Slot::setAlignment  ( const alignmentData& x )"
             "\n*** ERROR *** Unable to perform operation on internal elements."
@@ -886,7 +890,7 @@ double Slot::OrbitLength( const Particle& x )
   else {
     if( firstTime ) {
       firstTime = false;
-      cerr << "*** WARNING ***                                 \n"
+      (*pcerr) << "*** WARNING ***                                 \n"
               "*** WARNING *** Slot::OrbitLength               \n"
               "*** WARNING *** Returning the design length of  \n"
               "*** WARNING *** empty slots rather then the     \n"
