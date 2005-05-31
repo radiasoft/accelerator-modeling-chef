@@ -6,7 +6,7 @@
 
 // For debugging purposes, define this
 
-/* #define PODALLOCATOR_DEBUG */
+#define PODALLOCATOR_DEBUG 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Make the allocation/deallocation faster for small NON-POLYMORPHIC objects or arrays of such objects
@@ -31,7 +31,7 @@
 //  
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+#define PODALLOCATOR_DEBUG
 
 namespace gms {
 
@@ -58,17 +58,16 @@ namespace gms {
 		return malloc( size );
 #else
                         // NOTE: size%sizeof(T) will not be 0 if the class T
-                        // has an explicitly defined destructor. This is because in that case, 
-                        // the compiler needs to remember how many instances of T have 
-                        // to have their (individaul) detructor called. The extra requested bytes 
+                        // has an explicitly defined destructor !!!!
+                        // This is because in that case, the compiler needs to remember how many instances of T have 
+                        // to have their (individual) destructor called. The extra requested bytes 
                         // are used **by delete[] ** when it need to retrieve the array size. 
-                        // Note that  "delete [](void * p) " calls "operator delete[]" when it needs 
-                        // to deallocate the memory. However," delete [](void * p)" does additional 
-                        // work before calling "operator[] delete": it calls destructors for
-                        // the individual elements. Unfortunately, this last behavior *cannot*
-                        // be overriden.  
+                        // "delete [](void * p) " calls "operator delete[]" when it needs 
+                        // to deallocate the memory. However, is also also does additional 
+                        // work before calling "operator[] delete": it calls individual 
+                        // destructor. Alas, this behavior *cannot be overriden.  
                       
-                        // Since we assume here that for effciency that memory is allocated 
+                        // Since we assume here that memory is allocated 
                         // only in chunks of size(T), some "hokus pokus" is needed ;- )
                        
 		        int m = 1;
