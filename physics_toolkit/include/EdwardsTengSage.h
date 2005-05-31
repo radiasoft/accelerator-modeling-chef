@@ -111,7 +111,7 @@ private:
 public:
   EdwardsTengSage( const beamline*, bool = false );
   EdwardsTengSage( const beamline&, bool = false );
-  ~EdwardsTengSage();
+  virtual ~EdwardsTengSage();
 
   // vestigial: need to retain???
   int doCalc( JetParticle*, beamline::Criterion& = beamline::yes ); 
