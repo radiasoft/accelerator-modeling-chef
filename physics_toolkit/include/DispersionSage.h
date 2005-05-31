@@ -95,7 +95,7 @@ public:
   DispersionSage( const beamline&, bool = false );
   // Second argument is used by class Sage
   // to control cloning. (See Sage.h)
-  ~DispersionSage();
+  virtual ~DispersionSage();
 
 
   // Public member functions
