@@ -1,7 +1,29 @@
+/***************************************************************************                                                               
+******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+******  
+******                                    
+******  File:      py-bmlnelmnt.cpp
+******                                                                
+******  Copyright (c) Universities Research Association, Inc./ Fermilab    
+******                All Rights Reserved                             
+******
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
+******                                                                
+******  Author:    Jean-Francois Ostiguy                                     
+******                                                                
+******             Fermi National Laboratory, Batavia, IL   60510                                
+******             ostiguy@fnal.gov                         
+******
+****************************************************************************/
 #include <string>
 #include <Particle.h>
 #include <ParticleBunch.h>
-#include "bmlnElmnt.h"
+#include <bmlnElmnt.h>
 #include <boost/python.hpp>
 
 class PropFunc;
@@ -167,7 +189,7 @@ class_<beamline>("beamline", init<>() )
      //beamline& operator+( beamline& );
      //beamline& operator-( beamline& );
      //friend beamline& operator-( beamline& );
-  .def("resetGeometry",  &beamline::resetGeometry)
+  //.def("resetGeometry",  &beamline::resetGeometry)
   // PROPAGATE PARTICLES
   .def("setEnergy",      &beamline::setEnergy)
   .def("unTwiss",        &beamline::unTwiss)

@@ -1,133 +1,72 @@
-#include <boost/python.hpp>
-#include <CF_rbend.h>
-#include <iostream>
+/***************************************************************************                                                               
+******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+******  
+******                                    
+******  File:      py-cf_rbend.h
+******                                                                
+******  Copyright (c) Universities Research Association, Inc./ Fermilab    
+******                All Rights Reserved                             
+******
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
+******                                                                
+******  Author:    Jean-Francois Ostiguy                                     
+******                                                                
+******             Fermi National Laboratory, Batavia, IL   60510                                
+******             ostiguy@fnal.gov                         
+******
+****************************************************************************/
 
-void wrap_cf_rbend () {
-  
+#include <boost/python.hpp>
+#include <bmlnElmnt.h>
+#include <CF_rbend.h>
+#include <Particle.h>
 
 using namespace boost::python;
 
+double (CF_rbend::*setEntryAngleParticle_Ptr)   (const Particle&      ) = &CF_rbend::setEntryAngle;
+double (CF_rbend::*setExitAngleParticle_Ptr)    (const Particle&      ) = &CF_rbend::setExitAngle;
+double (CF_rbend::*setEntryAngleDouble_Ptr)     (double               ) = &CF_rbend::setEntryAngle;
+double (CF_rbend::*setExitAngleDouble_Ptr)      (double               ) = &CF_rbend::setExitAngle;
+double (CF_rbend::*AdjustPositionProton_Ptr)    (const Proton&        ) = &CF_rbend::AdjustPosition;
+double (CF_rbend::*AdjustPositionJetProton_Ptr) (const JetProton&     ) = &CF_rbend::AdjustPosition;
 
- class_<CF_rbend, bases<bmlnElmnt> >("CF_rbend", init<double, double, double>())
-  .def(init<const char*, double, double, double>())
-  .def(init<double, double, double, int>())
-  .def(init<const char*, double, double, double, int>())
-  .def(init<double, double, double, const Vector&, int>() );
- 
+
+void wrap_cf_rbend () {
+
+  class_<CF_rbend, bases<bmlnElmnt> >("CF_rbend", init<double, double, double>() )
+
+  .def(init<const char*, double, double, double>() )
+  .def(init<double,      double, double, int>() )
+  .def(init<const char*, double, double, double, int>() )
+  .def(init<double,      double, double, double, double, int>() )
+  .def(init<const char*, double, double, double, double, double, int>() )
+  .def("eliminate",               &CF_rbend::eliminate)
+  .def("setQuadrupole",           &CF_rbend::setQuadrupole)
+  .def("setSextupole",            &CF_rbend::setSextupole)
+  .def("setOctupole",             &CF_rbend::setOctupole) 
+  .def("setDipoleField",          &CF_rbend::setDipoleField)
+  .def("getQuadrupole",           &CF_rbend::getQuadrupole) 
+  .def("getSextupole",            &CF_rbend::getSextupole)  
+  .def("getOctupole",             &CF_rbend::getOctupole)
+  .def("getDipoleField",          &CF_rbend::getDipoleField) 
+  .def("setEntryAngle",           setEntryAngleDouble_Ptr)
+  .def("setExitAngle",            setExitAngleDouble_Ptr)
+  .def("setEntryAngleParticle",   setEntryAngleParticle_Ptr)
+  .def("setExitAngleParticle",    setExitAngleParticle_Ptr)
+  .def("getEntryAngle",           &CF_rbend::getEntryAngle)
+  .def("getExitAngle",            &CF_rbend::getExitAngle)
+  .def("getEntryEdgeAngle",       &CF_rbend::getEntryEdgeAngle)
+  .def("getExitEdgeAngle",        &CF_rbend::getExitEdgeAngle)
+  .def("hasParallelFaces",        &CF_rbend::hasParallelFaces)
+  .def("hasStandardFaces",        &CF_rbend::hasStandardFaces) 
+  .def("AdjustPositionProton",    AdjustPositionProton_Ptr)
+  .def("AdjustPositionJetProton", AdjustPositionJetProton_Ptr )
+  .def("OrbitLength",             &CF_rbend::OrbitLength);
+
 }
 
-
-#if 0
-
-class Proton;
-class JetProton;
-
-class CF_rbend : public bmlnElmnt
-{
-  public:
-
-  CF_rbend( double,     // length  [ meters ]
-            double,     // field   [ tesla ]
-            double,     // Entry angle [ radians ]
-            int = 1 );
- 
-
-  CF_rbend( const char*,// name
-            double,     // length  [ meters ]
-            double,     // field   [ tesla ]
-            double,     // Entry angle [ radians ]
-            int = 1 );
-
-
-  CF_rbend( double,         // length     [ meter    ]
-            double,         // field      [ tesla    ]
-            double,         // angle      [ radians  ]
-            const Vector&,  // multipoles [ meter^-n ]
-            // Normal and skew multipoles alternate.
-            // xmlt(0)       = b_0    xmlt(1)     = a_0
-            // xmlt(2)       = b_1    xmlt(3)     = a_1
-            // xmlt(4)       = b_2    xmlt(5)     = a_2
-            // ...
-            // xmlt(2*m)     = b_[m]  xmlt(2*m+1) = a_[m]
-            int = 1 );
-
-
-  CF_rbend( const char*,    // name
-            double,         // length     [ meter    ]
-            double,         // field      [ tesla    ]
-            double,         // angle      [ radians  ]
-            const Vector&,  // multipoles [ meter^-n ]
-            int = 1 );
-
-
-  CF_rbend( const CF_rbend& );
-
-  ~CF_rbend();
-  void eliminate();
-
-
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
-  void localPropagate( ParticleBunch& x ) 
-    { bmlnElmnt::localPropagate( x ); }
-
-  void accept( BmlVisitor& v ) { v.visitCF_rbend( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitCF_rbend( this ); }
-  void acceptInner( BmlVisitor& v );
-  void acceptInner( ConstBmlVisitor& v );
-  
-  void peekAt( double& s, Particle* = 0 );
-
-  const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "CF_rbend") != 0 )
-    return bmlnElmnt::isType(c); else return 1; }
-  
-  bmlnElmnt* Clone() const 
-    { return new CF_rbend( *this ); }
-  double OrbitLength( const Particle& );
-  void Split( double, bmlnElmnt**, bmlnElmnt** );
-
-  double PoleFaceAngle()    
-    { return _poleFaceAngle; }
-  double getPoleFaceAngle() 
-    { return _poleFaceAngle; }
-  double getEntryAngle() 
-    { return _poleFaceAngle; }
-
-  double AdjustPosition( const Proton& );
-  double AdjustPosition( const JetProton& );
-
-
-  int setQuadrupole ( double );  
-  int setSextupole  ( double );  
-  int setOctupole   ( double );  
-  // The argument is integrated multipole strength
-  // i.e., .setQuadrupole ( B'l   )
-  //       .setSextupole  ( B''l/2 )
-  //       .setOctupole   ( B'''l/6 )
-  // 
-  // Returns 0 if multipole is set correctly.
-  //         1 if there are no multipoles of required type.
-  //           (this should never happen)
-
-  double getQuadrupole() const;
-  double getSextupole()  const;
-  double getOctupole()   const;
-  // Returns integrated multipole strengths
-  // i.e., .getQuadrupole() returns B'l
-  //       .getSextupole()  returns B"l/2
-
-
- private:
-
-  bmlnElmnt** _u;
-  bmlnElmnt** _v;
-
-  double _poleFaceAngle;
-
-  std::ostream& writeTo(std::ostream&);
-  std::istream& readFrom(std::istream&);
-};
-
-
-#endif // CF_RBEND
