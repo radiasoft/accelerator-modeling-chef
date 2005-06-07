@@ -136,8 +136,10 @@ public:
   dlist remove( int, int );
   void insert( void* a );
   void append( void* a );
-  char putAbove( const void* a, const void* b );   // Installs b above a in the list
-  char putBelow( const void* a, const void* b );   // Installs b below a in the list
+  char putAbove( const void* a, const void* b );
+                                   // Installs b above (before) a in the list
+  char putBelow( const void* a, const void* b );
+                                   // Installs b below (after)  a in the list
   void* get();
 
   int  startAt( const void*, int=1 );
