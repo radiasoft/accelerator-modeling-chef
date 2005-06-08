@@ -182,7 +182,6 @@ struct bmlnElmntData {
   char            type[80];
   bmlnElmnt*      address;
   char*           name;
-  int             depth;
   double          length;
   double          strength;
 
@@ -274,7 +273,6 @@ protected:
   char*        ident;      // Name identifier of the element.
   double       length;     // Length of object [ meters ]
   double       strength;   // Interpretation depends on object.
-  int          depth;      // Depth of objects below this element.
   
   alignment*   align;
   double       iToField;   // Conversion factor for current through
@@ -798,7 +796,11 @@ public:
   int    howMany() const { return numElem; }  // WARNING: not reliable!
   int    countHowMany( CRITFUNC = 0, slist* = 0 ) const;
   int    countHowManyDeeply( CRITFUNC = 0, slist* = 0 ) const;
-  int    howDeep();
+  int    depth() const;  // Returns -1 if beamline is empty.
+                         // Returns  0 if beamline is flat
+                         //   or all its subbeamlines are empty.
+                         // Otherwise returns 1 + largest
+                         //   depth of all subbeamlines.
 
   int    contains( const bmlnElmnt*) const;
   // Returns the number of times the argument appears.

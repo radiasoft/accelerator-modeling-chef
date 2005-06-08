@@ -175,7 +175,6 @@ bmlnElmntData::bmlnElmntData() {
  strcpy( type, "" );
  address  = 0;
  name     = 0;  // ??? START HERE, LEO ... Is this a problem?
- depth    = 0;
  length   = 0.0;
  strength = 0.0;
  pAperture = 0;
@@ -191,7 +190,6 @@ bmlnElmntData::bmlnElmntData( bmlnElmntData& x ) {
  address   = x.address;
  name      = new char [ strlen(x.name) + 1 ];
              strcpy( name, x.name );
- depth     = x.depth;
  length    = x.length;
  strength  = x.strength;
  more      = x.more;
@@ -236,7 +234,6 @@ bmlnElmnt::bmlnElmnt( const char* n, PropFunc* pf ) {
 
  length       = 0.0;
  strength     = 0.0;
- depth        = 0;
  pAperture = 0;
  
  iToField     = 1.0;
@@ -265,7 +262,6 @@ bmlnElmnt::bmlnElmnt( double l /* length */, PropFunc* pf ) {
                  strcpy( ident, "NONAME" );
  length       = l;
  strength     = 0.0;
- depth        = 0;
 
  pAperture = 0;
  
@@ -299,7 +295,6 @@ bmlnElmnt::bmlnElmnt( double l /* length */,
                  strcpy( ident, "NONAME" );
  length       = l;
  strength     = s;
- depth        = 0;
 
  _ctRef = 0.0;
 
@@ -339,7 +334,6 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  }
  length       = l;
  strength     = 0.0;
- depth        = 0;
 
  _ctRef = 0.0;
 
@@ -380,7 +374,6 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  }
  length       = l;
  strength     = s;
- depth        = 0;
 
  _ctRef = 0.0;
 
@@ -412,7 +405,6 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
                  strcpy( ident, a.ident );
  length        = a.length;
  strength      = a.strength;
- depth         = a.depth;
 
  _ctRef = a._ctRef;
 
@@ -492,7 +484,6 @@ bmlnElmnt::bmlnElmnt( bmlnElmntData& x ) {
                  strcpy( ident, x.name );
  length        = x.length;
  strength      = x.strength;
- depth         = x.depth;  // ??? This is meaningless.
 
  _ctRef = 0.0;  // not kosher, but I should eliminate bmlnElmntData anyway.
 
@@ -825,35 +816,6 @@ void bmlnElmnt::setupPropFunc()
 void bmlnElmnt::eliminate() {
  delete this;
 }
-
-// REMOVE: bmlnElmnt& bmlnElmnt::operator=( const bmlnElmnt& a ) {
-// REMOVE:  strcpy( ident, a.ident );
-// REMOVE:  length        = a.length;
-// REMOVE:  strength      = a.strength;
-// REMOVE:  depth         = a.depth;
-// REMOVE:    //
-// REMOVE:    // O.K.
-// REMOVE:    //
-// REMOVE:    // aperture      = a.aperture;
-// REMOVE: 
-// REMOVE: // pAperture     = a.pAperture;
-// REMOVE:  pAperture = 0;
-// REMOVE:  if(a.pAperture != 0) 
-// REMOVE:    pAperture = a.pAperture->Clone();
-// REMOVE:  
-// REMOVE:  iToField      = a.iToField;
-// REMOVE:  shuntCurrent  = a.getShunt();
-// REMOVE:  if(align != 0) {
-// REMOVE:    delete align;
-// REMOVE:    align = 0;
-// REMOVE:  }
-// REMOVE:  if(a.align != 0) {
-// REMOVE:    alignmentData data = a.align->getAlignment();
-// REMOVE:    if((data.xOffset != 0.0) || (data.yOffset != 0.0) || (data.tilt != 0.0))
-// REMOVE:      align         =  new alignment(data);
-// REMOVE:  }
-// REMOVE:   return *this;
-// REMOVE:  }
 
 
 bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( const PropFunc* a ) 

@@ -251,7 +251,6 @@ beamline::beamline( const char* nm )
  _mode          = unknown;
  numElem        = 0;
  nominalEnergy  = NOTKNOWN;
- depth          = 0;
  twissDone      = 0;
 } 
 
@@ -273,7 +272,6 @@ bmlnElmnt* beamline::Clone() const {
  // ??? REMOVE                      strcpy( ret->ident, ident );
  ret->length        = length;
  ret->strength      = strength;
- ret->depth         = depth;
 
  ret->_mode         = _mode;
    //
@@ -324,7 +322,6 @@ beamline::beamline( bmlnElmnt* q ) : bmlnElmnt(), dlist()
  _mode          = unknown;
  numElem        = 1;
  nominalEnergy  = NOTKNOWN;
- depth          = q->depth + 1;
 }
 
 
@@ -334,7 +331,6 @@ beamline::beamline( char* n, bmlnElmnt* q ) : bmlnElmnt( n ), dlist() {
  _mode          = unknown;
  numElem        = 1;
  nominalEnergy  = NOTKNOWN;
- depth          = q->depth + 1;
 
  twissDone      = 0;
 }
@@ -489,7 +485,6 @@ lattFunc beamline::whatIsLattice( char* n ) {
 
 void beamline::insert( bmlnElmnt& q ) {
  dlist::insert( &q );
- if( q.depth + 1 > depth ) depth = q.depth + 1;
 
  if( twissDone ) unTwiss();
 
@@ -503,7 +498,6 @@ void beamline::insert( bmlnElmnt& q ) {
 
 void beamline::insert( bmlnElmnt* q ) {
  dlist::insert( q );
- if( q->depth + 1 > depth ) depth = q->depth + 1;
 
  if( twissDone ) unTwiss();
 
@@ -757,7 +751,6 @@ beamline& operator*( bmlnElmnt& x, int c ) {
 
 void beamline::append( bmlnElmnt& q ) {
  dlist::append( &q );
- if( q.depth + 1 > depth ) depth = q.depth + 1;
 
  if( twissDone ) unTwiss();
 
@@ -770,7 +763,6 @@ void beamline::append( bmlnElmnt& q ) {
 
 void beamline::append( bmlnElmnt* q ) {
  dlist::append( q );
- if( q->depth + 1 > depth ) depth = q->depth + 1;
 
  if( twissDone ) unTwiss();
 
@@ -805,7 +797,6 @@ char beamline::putAbove( const bmlnElmnt& x, const bmlnElmnt& y )
  }
 
  length += y.length;
- if( y.depth + 1 > depth ) depth = y.depth + 1;
  numElem++;
 
  return 0;
@@ -828,7 +819,6 @@ char beamline::putBelow( const bmlnElmnt& x, const bmlnElmnt& y )
  }
 
  length += y.length;
- if( y.depth + 1 > depth ) depth = y.depth + 1;
  numElem++;
 
  return 0;
@@ -1128,7 +1118,6 @@ sector* beamline::makeSector( int degree, JetParticle& pd ) {
  // ??? REMOVE strcpy( s->ident, ident );
  s->length       = length;
  s->strength     = strength;
- s->depth        = 0;
  s->align        = align;
    //
    // O.K.
@@ -1149,7 +1138,6 @@ void beamline::sectorize( int degree, JetParticle& pd ) {
  unTwiss();
  numElem      = 0;
  length       = 0.0;
- depth        = 0;
  strength     = 0.0;
  align        = 0;
  append( *s );
@@ -1259,8 +1247,30 @@ int beamline::countHowManyDeeply( CRITFUNC query, slist* listPtr ) const {
  return ret;
 }
 
-int beamline::howDeep() {
- return depth;
+
+int beamline::depth() const
+{
+  // Returns -1 if beamline is empty.
+  // Returns  0 if beamline is flat
+  //   or all its subbeamlines are empty.
+  // Otherwise returns 1 + largest
+  //   depth of all subbeamlines.
+
+  int ret = -1;
+  int maxSubDepth = -1;
+  
+  BeamlineIterator bi(this);
+  bmlnElmnt* p_be;
+  while( 0 != (p_be = bi++) ) {
+    ret = 0;
+    if( 0 == strcmp("beamline",p_be->Type()) ) {
+      int subDepth = (dynamic_cast<const beamline*>(p_be))->depth();
+      if( maxSubDepth < subDepth ) { maxSubDepth = subDepth; }
+    }
+  }
+
+  if( 0 == ret ) { ret = maxSubDepth + 1; }
+  return ret;
 }
 
 
@@ -1292,7 +1302,7 @@ beamline beamline::remove( const bmlnElmnt& x, const bmlnElmnt& y ) {
  while ((  p = (bmlnElmnt*) getNext()  ))  a.append( *p );
 
  a.nominalEnergy = nominalEnergy;
- numElem = numElem - a.numElem; // ??? What about depth?
+ numElem = numElem - a.numElem;
  return a;
 }
 
