@@ -4,9 +4,19 @@
 #include <boost/pool/pool.hpp>
 #include <cassert>
 
-// For debugging purposes, define this
 
-#define PODALLOCATOR_DEBUG 
+// 
+
+#ifdef __sparc 
+#define ARRAY_SIZE_OFFSET 8 
+#else
+#define ARRAY_SIZE_OFFSET 4 
+#endif
+
+//
+// For debugging purposes, this can be defined. In that case, all allocations are done using the std malloc call.
+// 
+// #define PODALLOCATOR_DEBUG 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Make the allocation/deallocation faster for small NON-POLYMORPHIC objects or arrays of such objects
@@ -20,7 +30,7 @@
 // Original version for individual objects authored by 
 // Hannu Kankaanp‰‰ (hkankaan@cc.hut.fi)
 //
-// This version, modifications to handle arrays authored by
+// This version, modified to handle array allocation by
 // Jean-Francois Ostiguy (ostiguy@fnal.gov)
 // Fermi National Accelerator Laboratory, Batavia, IL, USA 
 //
@@ -31,7 +41,7 @@
 //  
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define PODALLOCATOR_DEBUG
+
 
 namespace gms {
 
@@ -44,34 +54,39 @@ namespace gms {
 
 		static void* operator new(size_t size) {
 			//just in case someone tries to misuse this class, at least a run-time error is shown
-			// assert(size == sizeof(T));
+			 assert(size == sizeof(T));
 #ifdef PODALLOCATOR_DEBUG 
-			return malloc(sizeof(T));
+			return malloc( size );
 #else
 			return s_memPool.malloc();
 #endif
 		}
+
 
 		static void* operator new[] (size_t size) {
 
 #ifdef PODALLOCATOR_DEBUG 
 		return malloc( size );
 #else
-                        // NOTE: size%sizeof(T) will not be 0 if the class T
-                        // has an explicitly defined destructor !!!!
-                        // This is because in that case, the compiler needs to remember how many instances of T have 
+                        // NOTE: In general, size%sizeof(T) will not be 0 if the class T
+                        // has an explicitly defined destructor. This is because 
+                        // the compiler needs to know how many instances of T have 
                         // to have their (individual) destructor called. The extra requested bytes 
                         // are used **by delete[] ** when it need to retrieve the array size. 
-                        // "delete [](void * p) " calls "operator delete[]" when it needs 
-                        // to deallocate the memory. However, is also also does additional 
-                        // work before calling "operator[] delete": it calls individual 
-                        // destructor. Alas, this behavior *cannot be overriden.  
+                        // Note that  "delete [](void * p) " calls "operator delete[]" when it needs 
+                        // to deallocate the memory. However," delete [](void * p)" does additional 
+                        // work before calling "operator[] delete": it calls destructors for
+                        // the individual elements. Unfortunately, this behavior *cannot*
+                        // be overriden.  
                       
-                        // Since we assume here that memory is allocated 
-                        // only in chunks of size(T), some "hokus pokus" is needed ;- )
+                        // We assume here that, for efficiency, memory can only be allocated 
+                        // in chunks of size(T). The ugly code below preserves the storage normally
+                        // used by the compiler to store the array size. In addition, an extra block of memory
+                        // is allocated to store our own copy of that same size.  
+                   
                        
 		        int m = 1;
-                        while ( (m*sizeof(T)) <= sizeof(size_t) ) ++m;   
+                        while ( (m*sizeof(T)) <= ARRAY_SIZE_OFFSET ) ++m;   
                         ++m; 
 
                         // In case T has an explicit destructor, we need to add m extra blocks to allow the compiler
@@ -87,14 +102,16 @@ namespace gms {
                         int* nsave =  (int*) p;
                         *nsave = n; 
 
-                        return (  p + m*sizeof(T) - sizeof(size_t)  );  //  p + n*sizeof(T) is the offset of the first usable block 
+                        return (  p + m*sizeof(T) - ARRAY_SIZE_OFFSET  );  //  p + n*sizeof(T) is the offset of the first usable block 
  #endif
 		}
 
 		static void operator delete(void* deletable) {
  			//don't delete null pointers
 #ifdef PODALLOCATOR_DEBUG 
-  		        free(deletable);
+		  if (deletable) {
+    		        free(deletable);
+		  }
 
 #else
 			if (deletable)
@@ -102,21 +119,23 @@ namespace gms {
 #endif
 		}
 
+
 		static void operator delete[] (void* deletable) {
 
 #ifdef PODALLOCATOR_DEBUG 
-                  free(deletable);
+
+		 if (deletable)
+                     free(deletable);
 #else
 		  char* p = (char*) deletable;
 
                   int m =1;
-                  while (  (m * sizeof(T)) <= sizeof(size_t)) ++m;
+                  while (  (m * sizeof(T)) <= ARRAY_SIZE_OFFSET ) ++m;
                   ++m;
 
-                  p = p + sizeof(size_t) - m * sizeof(T); 
+                  p = p + ARRAY_SIZE_OFFSET - m * sizeof(T); 
 
                   int n = *((int*) p);
-
                   s_ordered_memPool.ordered_free( p, n); 
 
 #endif
