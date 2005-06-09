@@ -184,6 +184,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
     _editMenu->insertItem( "Duplicate line", this, SLOT(_editCopyLine()) );
     _editMenu->insertItem( "Condense line", this, SLOT(_editCondense()) );
     _editMenu->insertItem( "Flatten", this, SLOT(_editFlatten()) );
+    _editMenu->insertItem( "New injection point", this, SLOT(_editNewOrder()) );
     _editMenu->insertItem( "Merge equivalent quads", this, SLOT(_editMergeQuads()) );
     _editMenu->insertItem( "Insert monitors", this, SLOT(_editAddQtMons()) );
 
@@ -386,6 +387,9 @@ void CHEF::_editSelectAll()
 void CHEF::_editSelectNone()
 {
   _p_vwr->clearSelection();
+  _p_currBmlCon   = 0;
+  _p_currQBmlRoot = 0;
+  _p_clickedQBml  = 0;
 }
 
 
@@ -984,7 +988,15 @@ void CHEF::_editFlatten()
     return;
   }
 
-  beamline* bmlPtr = _p_currBmlCon->cheatBmlPtr()->flatten();
+  // Create a cloned, flattened beamline
+  beamline* tempPtr = _p_currBmlCon->cheatBmlPtr()->flatten();
+  beamline* bmlPtr  = dynamic_cast<beamline*>(tempPtr->Clone());
+    // This step is necessary,
+    //   because the same objects exist both
+    //   the original and flattened beamlines.
+  delete tempPtr;  
+    // Does not delete beamline elements.
+
   _p_currBmlCon = new BeamlineContext( false, bmlPtr );
   // _p_currBmlCon = new BeamlineContext( false, de.clonedBeamlinePtr() );
 
@@ -993,6 +1005,22 @@ void CHEF::_editFlatten()
   _contextList.insert( _p_currBmlCon );
 
   emit _new_beamline();
+}
+
+
+void CHEF::_editNewOrder()
+{
+  if( 0 == _p_clickedQBml ) {
+    QMessageBox::warning( 0, "CHEF: WARNING", 
+			  "A single beamline element must be chosen first." );
+    return;
+  }
+
+  // Locate the root beamline
+  QBmlRoot* theRoot = const_cast<QBmlRoot*>(_p_clickedQBml->topBmlParent());
+
+  // Invoke this slot to reset the current settings.
+  _set_p_clickedContext( const_cast<BeamlineContext*>(theRoot->cheatContextPtr()), theRoot );
 }
 
 
