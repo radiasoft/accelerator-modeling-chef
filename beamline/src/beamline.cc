@@ -838,6 +838,10 @@ char beamline::putBelow( const bmlnElmnt& x, const bmlnElmnt& y )
 // REMOVE: } 
 
 beamline* beamline::flatten() const {
+ // Produces a flattened version of itself.
+ // WARNING: the elements are not cloned.
+ //   Thus the flattened line contains the
+ //   same objects as its original.
  dlist_iterator  getNext( *(dlist*) this );
  dlist_iterator* getNew;
  beamline*       r;

@@ -115,6 +115,9 @@ public:
 
     friend class BeamlineBrowser;
 
+    // Must get rid of this eventually!!
+    inline const BeamlineContext* cheatContextPtr() const { return _myBmlCon; }
+
 private:
     BeamlineContext* _myBmlCon;      // if there is no QBmlRoot parent
     beamline*        _myBeamline;    // if there is a  QBmlRoot parent
