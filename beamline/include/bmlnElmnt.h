@@ -864,6 +864,9 @@ public:
 
   // REMOVE: beamline& operator=( const beamline& );
   beamline* flatten() const;    // Produces a flattened version of itself.
+                                // WARNING: the elements are not cloned.
+                                //   Thus the flattened line contains the
+                                //   same objects as its original.
 
   void   writeLattFunc( );
   void   writeLattFunc( FILE* );
