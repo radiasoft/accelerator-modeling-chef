@@ -28,12 +28,16 @@
 
 using namespace boost::python;
 
-double (CF_sbend::*setEntryAngleParticle_Ptr)   (const Particle&      ) = &CF_sbend::setEntryAngle;
-double (CF_sbend::*setExitAngleParticle_Ptr)    (const Particle&      ) = &CF_sbend::setExitAngle;
-double (CF_sbend::*setEntryAngleDouble_Ptr)     (double               ) = &CF_sbend::setEntryAngle;
-double (CF_sbend::*setExitAngleDouble_Ptr)      (double               ) = &CF_sbend::setExitAngle;
-double (CF_sbend::*AdjustPositionProton_Ptr)    (const Proton&        ) = &CF_sbend::AdjustPosition;
-double (CF_sbend::*AdjustPositionJetProton_Ptr) (const JetProton&     ) = &CF_sbend::AdjustPosition;
+static double (CF_sbend::*setEntryAngleDouble_Ptr)     (double               ) = &CF_sbend::setEntryAngle;
+static double (CF_sbend::*setEntryAngleParticle_Ptr)   (const Particle&      ) = &CF_sbend::setEntryAngle;
+
+static double (CF_sbend::*setExitAngleDouble_Ptr)      (double               ) = &CF_sbend::setExitAngle;
+static double (CF_sbend::*setExitAngleParticle_Ptr)    (const Particle&      ) = &CF_sbend::setExitAngle;
+
+// The following functions exist in the header file CF_sbend.h but currently have no implementation.
+
+//static double (CF_sbend::*AdjustPositionProton_Ptr)    (const Proton&        ) = &CF_sbend::AdjustPosition;
+//static double (CF_sbend::*AdjustPositionJetProton_Ptr) (const JetProton&     ) = &CF_sbend::AdjustPosition;
 
 
 void wrap_cf_sbend () {
@@ -66,8 +70,8 @@ void wrap_cf_sbend () {
   .def("getExitEdgeAngle",        &CF_sbend::getExitEdgeAngle)
   .def("hasParallelFaces",        &CF_sbend::hasParallelFaces)
   .def("hasStandardFaces",        &CF_sbend::hasStandardFaces) 
-  .def("AdjustPositionProton",    AdjustPositionProton_Ptr)
-  .def("AdjustPositionJetProton", AdjustPositionJetProton_Ptr )
+//.def("AdjustPositionProton",    AdjustPositionProton_Ptr)
+//.def("AdjustPositionJetProton", AdjustPositionJetProton_Ptr )
   .def("OrbitLength",             &CF_sbend::OrbitLength);
 
 }
