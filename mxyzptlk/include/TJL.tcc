@@ -297,6 +297,7 @@ void TJL<T1,T2>::initStore( ) {
   _jltermStore            = new TJLterm<T1,T2>[ _jltermStoreCapacity ]; 
   _jltermStoreCurrentPtr  = _jltermStore;
 
+
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1679,8 +1680,10 @@ TJLterm<T1,T2> TJLterm<T1,T2>::operator+( const TJLterm<T1,T2>& y )
 
 template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm<T1,T2>() 
-: _deleted(false), _index(6), _weight(0), _value(0.0)  /// index argument necessary ???
+: _index(6), _weight(0), _value(T1()), _deleted(false) /// index argument necessary ???
 {
+
+
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1688,7 +1691,7 @@ TJLterm<T1,T2>::TJLterm<T1,T2>()
 
 template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm<T1,T2>( TJetEnvironment<T1,T2>* pje ) 
-: _deleted(false), _index( pje->_numVar ), _weight(0), _value(0.0)
+: _index( pje->_numVar ), _weight(0), _value(T1()), _deleted(false) 
 {
 }
 
@@ -1699,7 +1702,7 @@ template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l, 
                 const T1& x, 
                 TJetEnvironment<T1,T2>* pje ) 
-: _deleted(false), _index( l )
+:   _index( l ), _deleted(false)
 {
 
  // I think that it is not necessary to use a try block
@@ -1767,7 +1770,7 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l,
 
 template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l, const T1& x )
-: _deleted(false), _index(l), _weight(l.Sum()), _value(x)
+: _index(l), _weight(l.Sum()), _value(x),_deleted(false)
 {
 }
 
@@ -1777,7 +1780,7 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l, const T1& x )
 
 template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm<T1,T2>( const TJLterm<T1,T2>* x ) 
-: _deleted(x->_deleted), _index( x->_index ), _weight(x->_weight), _value(x->_value)
+: _index( x->_index ), _weight(x->_weight), _value(x->_value), _deleted(x->_deleted)
 {
 }
 
@@ -1786,7 +1789,7 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const TJLterm<T1,T2>* x )
 
 template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm<T1,T2>( const TJLterm<T1,T2>& x ) 
-: _deleted(x._deleted), _index( x._index ), _weight(x._weight), _value(x._value)
+: _index( x._index ), _weight(x._weight), _value(x._value), _deleted(x._deleted)
 {
 }
 
@@ -1807,15 +1810,14 @@ void TJLterm<T1,T2>::Reconstruct( const IntArray& e, const T1& x )
 // This destructor should never be called 
 
 #if  0
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 template<typename T1, typename T2>
 TJLterm<T1,T2>::~TJLterm<T1,T2>() 
 {
  
-// this destructor is not called for TJLterm belonging
-// to Jets. However, it is used for the scrachpad TJLterms (allocated 
-// in TJetEnvironment.tcc)
 
 }
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #endif 
 
 
