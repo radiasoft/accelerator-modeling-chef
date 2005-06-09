@@ -7,7 +7,7 @@
 ******             of BEAMLINE.                                    
 ******                                                                
 ******  File:      CHEF.h
-******  Version:   3.0                    
+******  Version:   3.1
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -257,6 +257,7 @@ private:
   QPtrList<bmlnElmnt> _foundList;   // List of beamline elements found
                                     // by the editor.
   dlist             _contextList;
+
   BeamlineContext*  _p_currBmlCon;  // Currently selected beamline
   QBmlRoot*         _p_currQBmlRoot;// ... and its widget
   // REMOVE: BeamlineContext*  _p_clickedCon;  // Last context clicked on ...
@@ -291,6 +292,7 @@ private slots:
   void _editAlign();
   void _editMisalign();
   void _editFlatten();
+  void _editNewOrder();
   void _editMergeQuads();
   void _editD2S();
   void _editAddMarkers();
