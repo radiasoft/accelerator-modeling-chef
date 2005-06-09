@@ -83,7 +83,7 @@ public:
     const char* Type() const { return "sbend::NoEdge_Prop"; }
 
     NoEdge_Prop();
-    ~NoEdge_Prop();
+    virtual ~NoEdge_Prop();
     // REMOVE: char isApproximate();
     // REMOVE: void makeApproximate();
     // REMOVE: void makeExact();
@@ -102,7 +102,7 @@ public:
     const char* Type() const { return "sbend::Exact_Prop"; }
 
     Exact_Prop();
-    ~Exact_Prop();
+    virtual ~Exact_Prop();
     void setPropagator( NoEdge_Prop* );
   private:
     NoEdge_Prop* _myPropagator;
@@ -117,7 +117,7 @@ public:
     const char* Type() const { return "sbend::InEdge_Prop"; }
 
     InEdge_Prop();
-    ~InEdge_Prop();
+    virtual ~InEdge_Prop();
     // REMOVE: char isApproximate();
     // REMOVE: void makeApproximate();
     // REMOVE: void makeExact();
@@ -135,7 +135,7 @@ public:
     const char* Type() const { return "sbend::OutEdge_Prop"; }
 
     OutEdge_Prop();
-    ~OutEdge_Prop();
+    virtual ~OutEdge_Prop();
     // REMOVE: char isApproximate();
     // REMOVE: void makeApproximate();
     // REMOVE: void makeExact();

@@ -88,7 +88,7 @@ public:
     const char* Type() const { return "rbend::NoEdge_Prop"; }
 
     NoEdge_Prop();
-    ~NoEdge_Prop();
+    virtual ~NoEdge_Prop();
     // REMOVE: char isApproximate();
     // REMOVE: void makeApproximate();
     // REMOVE: void makeExact();
@@ -107,7 +107,7 @@ public:
     const char* Type() const { return "rbend::Exact_Prop"; }
 
     Exact_Prop();
-    ~Exact_Prop();
+    virtual ~Exact_Prop();
     void setPropagator( NoEdge_Prop* );
   private:
     NoEdge_Prop* _myPropagator;
@@ -122,7 +122,7 @@ public:
     const char* Type() const { return "rbend::InEdge_Prop"; }
 
     InEdge_Prop();
-    ~InEdge_Prop();
+    virtual ~InEdge_Prop();
     // REMOVE: char isApproximate();
     // REMOVE: void makeApproximate();
     // REMOVE: void makeExact();
@@ -140,7 +140,7 @@ public:
     const char* Type() const { return "rbend::OutEdge_Prop"; }
 
     OutEdge_Prop();
-    ~OutEdge_Prop();
+    virtual ~OutEdge_Prop();
     // REMOVE: char isApproximate();
     // REMOVE: void makeApproximate();
     // REMOVE: void makeExact();
@@ -158,7 +158,7 @@ public:
     const char* Type() const { return "rbend::Null_Prop"; }
 
     Null_Prop();
-    ~Null_Prop();
+    virtual ~Null_Prop();
     // REMOVE: char isApproximate();
     // REMOVE: void makeApproximate();
     // REMOVE: void makeExact();
@@ -176,7 +176,7 @@ public:
     const char* Type() const { return "rbend::Real_Exact_Prop"; }
 
     Real_Exact_Prop();
-    ~Real_Exact_Prop();
+    virtual ~Real_Exact_Prop();
     void setPropagator( NoEdge_Prop* );
   private:
     NoEdge_Prop* _myPropagator;
@@ -191,7 +191,7 @@ public:
     const char* Type() const { return "rbend::Real_InEdge_Prop"; }
 
     Real_InEdge_Prop();
-    ~Real_InEdge_Prop();
+    virtual ~Real_InEdge_Prop();
     void setPropagator( NoEdge_Prop* );
   private:
     NoEdge_Prop* _myPropagator;
@@ -206,7 +206,7 @@ public:
     const char* Type() const { return "rbend::Real_OutEdge_Prop"; }
 
     Real_OutEdge_Prop();
-    ~Real_OutEdge_Prop();
+    virtual ~Real_OutEdge_Prop();
     void setPropagator( NoEdge_Prop* );
   private:
     NoEdge_Prop* _myPropagator;
