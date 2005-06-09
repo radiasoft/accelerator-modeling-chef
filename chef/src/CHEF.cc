@@ -7,7 +7,7 @@
 ******         of BEAMLINE.                                    
 ******                                                                
 ******  File:      CHEF.cc
-******  Version:   3.2
+******  Version:   3.3
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -1010,17 +1010,59 @@ void CHEF::_editFlatten()
 
 void CHEF::_editNewOrder()
 {
+  // One quick test ...
   if( 0 == _p_clickedQBml ) {
     QMessageBox::warning( 0, "CHEF: WARNING", 
 			  "A single beamline element must be chosen first." );
     return;
   }
 
-  // Locate the root beamline
+  // Locate the element and its root beamline
+  QBmlElmt* qbmlElPtr = dynamic_cast<QBmlElmt*>(_p_clickedQBml);
+
+  // This test should be made more flexible after
+  //   allowing non-flat beamlines to be processed.
+  if( 0 == qbmlElPtr ) {
+    std::ostringstream uic;
+    uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
+           "\nIn function void CHEF::_editNewOrder():"
+           "\nFailure: beamline element not chosen correctly.";
+           "\nOperation will abort.";
+    QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
+    return;
+  }
+  const bmlnElmnt* elmntPtr = qbmlElPtr->cheatElementPtr();
   QBmlRoot* theRoot = const_cast<QBmlRoot*>(_p_clickedQBml->topBmlParent());
 
   // Invoke this slot to reset the current settings.
-  _set_p_clickedContext( const_cast<BeamlineContext*>(theRoot->cheatContextPtr()), theRoot );
+  BeamlineContext* contextPtr = const_cast<BeamlineContext*>(theRoot->cheatContextPtr());
+  _set_p_clickedContext( contextPtr, theRoot );
+  beamline* bmlPtr = const_cast<beamline*>(_p_currBmlCon->cheatBmlPtr());
+
+  // This restriction should be removed ... but it isn't:
+  //   a test for a flat beamline.
+  int bmlLevel = bmlPtr->depth();
+  if( bmlLevel != 0 ) {
+    QMessageBox::warning( 0, "CHEF: WARNING", 
+			  "SORRY: Current implementation requires flat beamline." );
+    return;
+  }
+
+  // Do the operation.
+  if( 0 == (_p_vwr->removeBeamline( contextPtr )) ) {
+    bmlPtr->startAt(elmntPtr);
+    contextPtr->reset();
+    emit _new_beamline();
+  }
+  else { 
+    std::ostringstream uic;
+    uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
+           "\nIn function void CHEF::_editNewOrder():"
+           "\nFailure: Unable to remove old beamline.";
+           "\nOperation will abort.";
+    QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
+    return;
+  }
 }
 
 
