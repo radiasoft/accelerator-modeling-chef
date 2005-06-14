@@ -7,7 +7,7 @@
 ******             of BEAMLINE.                                    
 ******                                                                
 ******  File:      RayTrace.cc
-******  Version:   3.1
+******  Version:   3.2
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -22,6 +22,12 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+******  Partial Revision History:
+******
+******  June, 2005 
+******  - Axes, grids, and tic labels added with the assistance
+******  of Summer student employee Oleg Mokhov.
+******  
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License and the GNU General Public License, both of
 ******  which are supplied with this software.
@@ -53,6 +59,9 @@
 #include "PointEdit.h"
 #include "Tracker.h"   // ??? Is this needed?
 #include "QtMonitor.h"
+
+#include <GL/glut.h>
+#include <qwt/qwt_math.h>
 
 #include "Particle.h"  // This line should not be necessary!!!
 #include "beamline.h"
@@ -91,7 +100,10 @@ RayDrawSpace::RayDrawSpace( RayTrace* p, QHBox* parent, const char* m )
   _yLo( -0.0020 ), 
   _xHi( 0.0020 ), 
   _yHi( 0.0020 ),
-  _myWheel(0.0)
+  _myWheel(0.0),
+  _drawAxes(false),
+  _drawGrid(false),
+  _drawNums(false)
 {
   // *** _myWheel.setIncrement( 252.0 );  // = 7*36, will provide ten colors
   _myWheel.setIncrement( 30.0 ); 
@@ -134,6 +146,29 @@ void RayDrawSpace::setDraw( RayDrawFunc x )
 }
 
 
+void RayDrawSpace::toggleAxisDisplay()
+{
+  _drawAxes = !_drawAxes;
+  if( !_drawAxes ) { _drawNums = false; }
+  updateGL();
+}
+
+
+void RayDrawSpace::toggleGridDisplay()
+{
+  _drawGrid = !_drawGrid;
+  updateGL();
+}
+
+
+void RayDrawSpace::toggleNumberDisplay()
+{
+  _drawNums = !_drawNums;
+  if( !_drawAxes ) { _drawNums = false; }
+  updateGL();
+}
+
+
 void RayDrawSpace::setColors( GLdouble r, GLdouble g, GLdouble b )
 {
   if( 0.0 <= r && r <= 1.0 ) _r = r;
@@ -165,6 +200,190 @@ void RayDrawSpace::_incrementColor()
 void RayDrawSpace::paintGL()
 {
   _myFunc( this );
+}
+
+
+void RayDrawSpace::doDrawAxes()
+{
+  double xPos;
+  double yPos;
+  double xGridMin, xGridMax, yGridMin, yGridMax;
+  double interval, xInterval, yInterval;
+
+  _computeGridBounds( xGridMin, xGridMax,
+                      yGridMin, yGridMax,
+		      interval, xInterval, yInterval );
+
+  glLineWidth( 2 );
+  glColor3f( 0.5, 0.5, 0.5 );
+
+  // X-axis line
+  glBegin( GL_LINES );
+    glVertex3d( _xLo, (_yLo + _yHi) / 2.0, 1.0 );
+    glVertex3d( _xHi, (_yLo + _yHi) / 2.0, 1.0 );
+  glEnd();
+
+  // Y-axis line
+  glBegin( GL_LINES );
+    glVertex3d( (_xLo + _xHi) / 2.0, _yLo, 1.0 );
+    glVertex3d( (_xLo + _xHi) / 2.0, _yHi, 1.0 );
+  glEnd();
+
+  // X-axis tic marks
+  for( xPos = (_xHi + _xLo) / 2.0 - xInterval * 1.5 * interval; xPos < _xHi; xPos += xInterval )
+  {
+    if( xPos != (_xLo + _xHi) / 2.0 )
+    {
+      glLineWidth( 3 );
+      glColor3f( 0.5, 0.5, 0.5 );
+
+      glBegin( GL_LINES );
+        glVertex3d( xPos, (_yLo + _yHi) / 2.0 + _yLo * (1.0 / 30.0), 1.0 );
+        glVertex3d( xPos, (_yLo + _yHi) / 2.0 + _yHi * (1.0 / 30.0), 1.0 );
+      glEnd();
+    }   
+  }
+
+  // Y-axis tic marks
+  //for( yPos = (_yLo + _yHi) / 2.0 - yInterval * interval; yPos < _yHi; yPos += yInterval )
+  for( yPos = (_yLo + _yHi) / 2.0 - yInterval * interval - yGridMax * 1.5; yPos < _yHi; yPos += yInterval )
+  {
+    if( yPos != (_yLo + _yHi) / 2.0 )
+    {
+      glLineWidth( 3 );
+      glColor3f( 0.5, 0.5, 0.5 );
+
+      glBegin( GL_LINES );
+        glVertex3d( (_xLo + _xHi) / 2.0 - _xHi * (1.0 / 50.0), yPos, 1.0 );
+        glVertex3d( (_xLo + _xHi) / 2.0 + _xHi * (1.0 / 50.0), yPos, 1.0 );
+      glEnd(); 
+    }
+  }
+}
+
+
+void RayDrawSpace::doDrawGrid()
+{
+  double xPos, yPos;
+  double xGridMin, xGridMax, yGridMin, yGridMax;
+  double interval, xInterval, yInterval;
+
+  _computeGridBounds( xGridMin, xGridMax,
+                      yGridMin, yGridMax,
+		      interval, xInterval, yInterval );
+
+  glLineWidth( 1 );
+  glColor3f( 0.5, 0.5, 0.5 );
+
+  // Vertical grid lines
+  for( xPos = (_xHi + _xLo) / 2.0 - xInterval * 1.5 * interval; xPos < _xHi; xPos += xInterval )
+  {  
+    glEnable( GL_LINE_STIPPLE );
+    glLineStipple( 1, 0x00FF );
+
+    glBegin( GL_LINES );
+      glVertex3d( xPos, _yLo, 1.0 );
+      glVertex3d( xPos, _yHi, 1.0 );
+    glEnd();
+
+    glDisable( GL_LINE_STIPPLE );   
+  }
+
+  // Horizontal grid lines
+  //for( yPos = (_yLo + _yHi) / 2.0 - yInterval * interval; yPos < _yHi; yPos += yInterval )
+  for( yPos = (_yLo + _yHi) / 2.0 - yInterval * interval - yGridMax * 1.5; yPos < _yHi; yPos += yInterval )
+  {
+    glEnable( GL_LINE_STIPPLE );
+    glLineStipple( 1, 0x00FF );
+
+    glBegin( GL_LINES );
+      glVertex3d( _xLo, yPos, 1.0 );
+      glVertex3d( _xHi, yPos, 1.0 );
+    glEnd();
+
+    glDisable( GL_LINE_STIPPLE );
+  }
+}
+
+
+void RayDrawSpace::doDrawNums()
+{
+  double xPos;
+  double yPos;
+  
+  stringstream ss;
+  char c;
+
+  double xGridMin, xGridMax, yGridMin, yGridMax;
+  double interval, xInterval, yInterval;
+
+  _computeGridBounds( xGridMin, xGridMax,
+                      yGridMin, yGridMax,
+		      interval, xInterval, yInterval );
+
+  glColor3f ( 1.0, 1.0, 0.0 );
+
+  // X-axis numbers
+  for( xPos = (_xHi + _xLo) / 2.0 - xInterval * 1.5 * interval; xPos < _xHi; xPos += xInterval )
+  {
+    // if( xPos != (_xHi + _xLo) / 2.0 )
+    if( 1.0e-14 < std::abs( xPos - (_xHi + _xLo) / 2.0) )
+    {
+      glRasterPos3d( xPos, (_yLo * (9.0 / 10.0) + _yHi) / 2.0, 1.0 );
+      ss << xPos << '\0';
+      c = ss.get();
+      while (c != '\0' )
+      {
+        glutBitmapCharacter( GLUT_BITMAP_HELVETICA_12, c );
+        c = ss.get();
+      }
+    }
+  }
+
+  // Y-axis numbers
+  //for( yPos = (_yLo + _yHi) / 2.0 - yInterval * interval; yPos < _yHi; yPos += yInterval )
+  for( yPos = (_yLo + _yHi) / 2.0 - yInterval * interval - yGridMax * 1.5; yPos < _yHi; yPos += yInterval )
+  {
+    // if( yPos != (_yLo + _yHi) / 2.0 )
+    if( 1.0e-14 < std::abs( yPos - (_yHi + _yLo) / 2.0) )
+    {
+      glRasterPos3d( (_xLo + _xHi) / 2.0, yPos, 1.0 );
+      ss <<  "    " << yPos << '\0';
+      c = ss.get();
+      while( c != '\0' )
+      {
+        glutBitmapCharacter( GLUT_BITMAP_HELVETICA_12, c );
+        c = ss.get();
+      }    
+    }
+  }
+}
+
+
+void RayDrawSpace::_computeGridBounds( double& xGridMin, double& xGridMax,
+                                       double& yGridMin, double& yGridMax,
+                                       double& interval, double& xInterval, double& yInterval ) const
+{
+  // The interval between every tick, grid line and number
+  interval = 4.0;
+
+  xGridMin = 0.9 * _xLo;
+  xGridMax = 0.9 * _xHi;
+  yGridMin = 0.9 * _yLo;
+  yGridMax = 0.9 * _yHi;
+            
+  xInterval = qwtFloor125( ((xGridMax - xGridMin) / 2.0) / interval);
+  yInterval = qwtFloor125( ((yGridMax - yGridMin) / 2.0) / interval);
+  // xInterval = (xGridMax - xGridMin) / 2.0 / interval;
+  // yInterval = (yGridMax - yGridMin) / 2.0 / interval;
+
+  double xAverage = (xGridMin + xGridMax) / 2.0;
+  double yAverage = (yGridMin + yGridMax) / 2.0;
+
+  xGridMin = xAverage - interval * xInterval;
+  xGridMax = xAverage + interval * xInterval;
+  yGridMin = yAverage - interval * yInterval;
+  yGridMax = yAverage + interval * yInterval;
 }
 
 
@@ -215,6 +434,11 @@ void RayDrawSpace::drawH_ViewRect( RayDrawSpace* x )
     }
     glEnd();
   }
+
+  // Draw axes, tic-marks, and grids
+  if( x->_drawAxes ) { x->doDrawAxes(); }
+  if( x->_drawGrid ) { x->doDrawGrid(); }
+  if( x->_drawNums ) { x->doDrawNums(); }
 
   // The last ray is painted white.
   if( m > 0 ) {
@@ -287,6 +511,11 @@ void RayDrawSpace::drawV_ViewRect( RayDrawSpace* x )
     glEnd();
   }
 
+  // Draw axes, tic-marks, and grids
+  if( x->_drawAxes ) { x->doDrawAxes(); }
+  if( x->_drawGrid ) { x->doDrawGrid(); }
+  if( x->_drawNums ) { x->doDrawNums(); }
+
   // The last ray is painted white.
   if( m > 0 ) {
     glColor3f( 1, 1, 1 );
@@ -356,7 +585,7 @@ RayTrace::RayTrace( /* const */ beamline* x, QWidget* parent, const char* name, 
   _bmlConPtr( 0 ), 
   _deleteContext( true ),
   _continuous(true),
-  _isIterating(false) 
+  _isIterating(false)
 {
   if( 0 == x ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -437,6 +666,11 @@ void RayTrace::_finishConstructor()
     optionMenu->insertItem( "Mode  ", modeMenu );
     optionMenu->insertItem( "Maximum Traces  ", this, SLOT(_opt_setHistory()) );
     optionMenu->insertItem( "Strobe Period  ", this, SLOT(_opt_setIter()) );
+      QPopupMenu* displayMenu = new QPopupMenu;
+      displayMenu->insertItem( "Axes", this, SLOT(_opt_dsp_axes()) );
+      displayMenu->insertItem( "Grid", this, SLOT(_opt_dsp_grid()) );
+      displayMenu->insertItem( "Numbers", this, SLOT(_opt_dsp_nums()) );
+    optionMenu->insertItem( "Display", displayMenu );
       QPopupMenu* bgColorMenu = new QPopupMenu;
       bgColorMenu->insertItem( "Black",  this, SLOT(_opt_bg_black()) );
       bgColorMenu->insertItem( "White",  this, SLOT(_opt_bg_white()) );
@@ -735,6 +969,27 @@ void RayTrace::_opt_setIter()
   }
 
   delete wpu;
+}
+
+
+void RayTrace::_opt_dsp_axes()
+{
+  _p_leftWindow->toggleAxisDisplay();
+  _p_rightWindow->toggleAxisDisplay();
+}
+
+
+void RayTrace::_opt_dsp_grid()
+{
+  _p_leftWindow->toggleGridDisplay();
+  _p_rightWindow->toggleGridDisplay();
+}
+
+
+void RayTrace::_opt_dsp_nums()
+{
+  _p_leftWindow->toggleNumberDisplay();
+  _p_rightWindow->toggleNumberDisplay();
 }
 
 
