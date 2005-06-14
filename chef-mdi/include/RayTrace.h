@@ -7,7 +7,7 @@
 ******             of BEAMLINE.                                    
 ******                                                                
 ******  File:      RayTrace.h
-******  Version:   3.1
+******  Version:   3.2
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -22,7 +22,13 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
+******  Partial Revision History:
+******
+******  June, 2005 
+******  - Axes, grids, and tic labels added with the assistance
+******  of Summer student employee Oleg Mokhov.
+******  
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License and the GNU General Public License, both of
 ******  which are supplied with this software.
 ******                                                                
@@ -112,6 +118,9 @@ public slots:
   void   _view_zoom_in    ();
   void   _view_zoom_reset ();
 
+  void   _opt_dsp_axes    ();
+  void   _opt_dsp_grid    ();
+  void   _opt_dsp_nums    ();
   void   _opt_largePoints ();
   void   _opt_smallPoints ();
   void   _opt_setIter     ();
@@ -174,10 +183,19 @@ public:
   void setColors( GLdouble, GLdouble, GLdouble );
   void setClearColor( GLclampf, GLclampf, GLclampf, GLclampf );
   void setDraw( RayDrawFunc );
+
+  void toggleAxisDisplay();
+  void toggleGridDisplay();
+  void toggleNumberDisplay();
+
   void paintGL();
 
   static void drawH_ViewRect( RayDrawSpace* );
   static void drawV_ViewRect( RayDrawSpace* );
+
+  void doDrawAxes();
+  void doDrawGrid();
+  void doDrawNums();
 
   void multScaleBy( double );
   void setScaleTo ( double );
@@ -202,6 +220,13 @@ private:
   ColorWheel _myWheel;
 
   void mousePressEvent( QMouseEvent* );
+
+  void _computeGridBounds( double&, double&, double&, double&,
+			   double&, double&, double& ) const;
+
+  bool _drawAxes;
+  bool _drawGrid;
+  bool _drawNums;
 };
 
 
