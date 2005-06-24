@@ -1418,8 +1418,7 @@ ostream& operator<<( ostream& os, const TJL<T1,T2>& x )
  while((  q = getNext()  )) {
    p = (TJLterm<T1,T2>*) q->info();
    os << "Index: ";
-   for( i = 0; i < x._myEnv->_numVar; i++ )
-     os << p -> _index(i) << " ";
+   os << p->_index << " ";
    os << "   Value: " << setprecision(30) << p -> _value << endl;
    // os << "   Value: " << p -> _value << endl;
  }
