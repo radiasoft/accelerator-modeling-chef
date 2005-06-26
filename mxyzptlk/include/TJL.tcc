@@ -297,7 +297,6 @@ void TJL<T1,T2>::initStore( ) {
   _jltermStore            = new TJLterm<T1,T2>[ _jltermStoreCapacity ]; 
   _jltermStoreCurrentPtr  = _jltermStore;
 
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1681,8 +1680,6 @@ template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm<T1,T2>() 
 : _index(6), _weight(0), _value(T1()), _deleted(false) /// index argument necessary ???
 {
-
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
