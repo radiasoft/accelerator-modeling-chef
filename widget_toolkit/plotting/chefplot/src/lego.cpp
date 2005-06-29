@@ -119,12 +119,16 @@ LegoPlot::paintEvent ( QPaintEvent *event ){
       double len = 0;
       bmlnElmnt* beptr = 0;
       
-     
+       
      while ( (beptr= it++) ) {
 
        len = beptr->Length();
 
        if ( std::string(beptr->Type()) == std::string("sbend") ) {
+
+            if ( (s+len) >= _x0) drawBend(len, s);
+  
+       } else  if ( std::string(beptr->Type()) == std::string("rbend") ) {
 
             if ( (s+len) >= _x0) drawBend(len, s);
   
