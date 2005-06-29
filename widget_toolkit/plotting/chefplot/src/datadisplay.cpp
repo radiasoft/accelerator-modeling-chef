@@ -18,7 +18,7 @@
 
 
 
-#include "datadisplay.h"
+#include <datadisplay.h>
 #include <qtable.h>
 #include <qfiledialog.h>
 #include <qdatetime.h>
@@ -57,29 +57,59 @@ void
 DataDisplay::_output( std::ostream& os)
 {
 
-os.width(16);
-os.setf(std::ios_base::right | std::ios_base::scientific);
-
- for (int i=0; i< DataTable->horizontalHeader( )->count(); i++)
- {
-   os << DataTable->horizontalHeader( )->label(i) << "      " ;
- };
-
- os << std::endl;
- 
  int rows = DataTable->numRows(); 
  int cols = DataTable->numCols(); 
+
+
+ os << "! LEGEND:"<< std::endl;
+ os << "! "       << std::endl;
+ 
+ int k = 0;
+ for (int i=0; i<cols; i++)
+ {
+   if  ( ! DataTable->isColumnHidden(i) ) {
+     os << "! Column " << ++k << " : " 
+        << DataTable->horizontalHeader( )->label(i).replace('\n', ',') << std::endl;
+   }
+ }
+
+ os << "!" << std::endl;
+
+ k = 0 ;
+ QString tmp_heading;
+ 
+ for ( int i=0; i <cols; i++)
+ {
+   if  ( ! DataTable->isColumnHidden(i) ) {
+     tmp_heading = "Column " + QString::number(++k); 
+
+     if ( k == 1){
+       os.width(1); os <<"!"; os.width(17);
+       os << tmp_heading;            
+     }
+     else {
+       os.width(18);
+       os.setf(std::ios_base::right | std::ios_base::scientific);
+       os << tmp_heading;       
+     }
+   }
+ }
+
+ os << std::endl;
+ os << "!" << std::endl;
+
+ 
 
  for (int i=0; i< rows; i++)
  {
    for (int j=0; j< cols; j++)
    {
-     if  ( !DataTable->isColumnHidden(j) )
-     {
-       os.width(16);
-       os.setf(std::ios_base::right | std::ios_base::scientific);
-       os << DataTable->text(i,j) << "   ";
-     }
+     if  ( !DataTable->isColumnHidden(j) ) {
+
+     os.width(18);
+     os.setf(std::ios_base::right | std::ios_base::scientific);
+     os << DataTable->text(i,j);
+     } 
    }
    os << std::endl; 
 
