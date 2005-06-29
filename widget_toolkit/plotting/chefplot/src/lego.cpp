@@ -132,6 +132,14 @@ LegoPlot::paintEvent ( QPaintEvent *event ){
 
             if ( (s+len) >= _x0) drawBend(len, s);
   
+       } else  if ( std::string(beptr->Type()) == std::string("CF_sbend") ) {
+
+            if ( (s+len) >= _x0) drawBend(len, s);
+  
+       } else  if ( std::string(beptr->Type()) == std::string("CF_rbend") ) {
+
+            if ( (s+len) >= _x0) drawBend(len, s);
+  
        } else if ( std::string(beptr->Type()) == std::string("quadrupole") ) {
 
             if ( (s+len) >= _x0) drawQuad(len, s, (beptr->Strength()<0)  );
