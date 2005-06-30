@@ -36,6 +36,11 @@
 #include "Particle.h"
 #include "PhysicsConstants.h"
 
+// Error flags for _tag manipulation functions.
+const short Particle::BF_OK         = 0;
+const short Particle::BF_NULL_ARG   = 1;
+const short Particle::BF_BAD_START  = 2;
+
 using namespace std;
 
 // **************************************************
@@ -43,8 +48,6 @@ using namespace std;
 // **************************************************
 
 const short int Particle::PSD = 6;
-
-
 
 Particle::Particle( double mass ) {
  q     = 0.0;
@@ -295,8 +298,100 @@ const char* Particle::GenericException::what() const throw()
 }
 
 
+// Tagging
+short  Particle::writeTag ( char, short )
+{
+}
 
 
+short  Particle::writeTag ( const char* )
+{
+}
+
+
+short  Particle::writeTag ( const char*, short, short )
+{
+}
+
+
+short  Particle::writeTag ( const std::string& )
+{
+}
+
+
+short  Particle::writeTag ( const std::string&, short )
+{
+}
+
+
+std::string Particle::readTag  () const
+{
+  return _tag;
+}
+
+
+std::string Particle::readTag( short start, short num ) const
+{
+  if( 0 == _tag.size() ) { 
+    return _tag;
+  }
+  if( start < 0 || start + 1 > _tag.size() ) {
+    start = 0;
+  }
+  if( start + num > _tag.size() ) {
+    num = _tag.size() - start;
+  }
+  return _tag.substr( start, num );
+}
+
+
+short  Particle::readTag( char* s ) const
+{
+  return this->readTag( s, 0, _tag.size() );
+}
+
+
+short Particle::readTag( char* s, short start, short num ) const
+{
+  if( s == 0 ) {
+    return BF_NULL_ARG;
+  }
+  if( start < 0 || start + 1 > _tag.size() ) {
+    return BF_BAD_START;
+  }
+  if( start + num > _tag.size() ) {
+    num = _tag.size() - start;
+  }
+
+  _tag.copy( s, num, start );
+  return BF_OK;
+}
+
+
+char Particle::readTag( short pos ) const
+{
+  if( (pos < 0) || (pos + 1 > _tag.size()) ) {
+    pos = 0;
+    cerr << "*** WARNING ***                              \n"
+            "*** WARNING *** " 
+         << __FILE__ << ": " << __LINE__ << "             \n"
+            "*** WARNING *** Particle::readTag            \n"
+            "*** WARNING *** Character position out of    \n"
+            "*** WARNING *** bounds. Will return first    \n"
+            "*** WARNING *** character of tag.            \n"
+            "*** WARNING ***                              \n"
+         << endl;
+  }
+  return (_tag.c_str())[pos];
+}
+
+
+short Particle::getTagSize() const
+{
+  return _tag.size();
+}
+
+  
 // **************************************************
 //   class Proton
 // **************************************************

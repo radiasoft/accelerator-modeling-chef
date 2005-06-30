@@ -156,6 +156,8 @@ struct infoWriter : public ConstBmlVisitor
 struct editDialog : public BmlVisitor 
 {
   void visitBmlnElmnt  ( bmlnElmnt*  );
+  void visitDrift      ( drift*      );
+  void visitSlot       ( Slot*       );
   void visitRbend      ( rbend*      );
   void visitQuadrupole ( quadrupole* );
   void visitThinQuad   ( thinQuad*   );

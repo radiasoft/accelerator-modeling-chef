@@ -48,6 +48,7 @@
 #include <qheader.h>
 #include <qdialog.h>
 #include <qpushbutton.h>
+#include <qradiobutton.h>
 #include <qhbox.h>
 #include <qvbox.h>
 #include <qlabel.h>
@@ -1397,7 +1398,7 @@ QPtrList<bmlnElmnt> BeamlineBrowser::findAllSelected( QBmlRoot* startpoint ) con
 
     if( started ) {
       if(    ((void*)(qbmlPtr->parent()) == 0   ) 
-	  || ((void*)(qbmlPtr->parent()) == this) )
+          || ((void*)(qbmlPtr->parent()) == this) )
       { 
         break; 
       }
@@ -1466,8 +1467,9 @@ void BeamlineBrowser::infoWriter::visitBmlnElmnt( const bmlnElmnt* x )
 
 void BeamlineBrowser::infoWriter::visitDrift( const drift* x )
 {
-  QDialog* wpu = new QDialog( 0, 0, true );
+  QDialog* wpu = new QDialog;
     QVBox* qvb = new QVBox( wpu );
+
       QHBox* qhb1 = new QHBox( qvb );
         new QLabel( "Length [m] = ", qhb1 );
         QString stl;
@@ -1476,24 +1478,36 @@ void BeamlineBrowser::infoWriter::visitDrift( const drift* x )
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
       qhb1->adjustSize();
+
       QHBox* qhb2 = new QHBox( qvb );
-        QPushButton* cancelBtn = new QPushButton( "Close", qhb2 );
-          connect( cancelBtn, SIGNAL(pressed()),
+        QPushButton* closeBtn = new QPushButton( "Close", qhb2 );
+          closeBtn->setDefault( true );
+          connect( closeBtn,  SIGNAL(pressed()),
                    wpu,       SLOT(reject()) );
+        QPushButton* editBtn = new QPushButton( "Edit", qhb2 );
+          connect( editBtn, SIGNAL(pressed()),
+                   wpu,     SLOT(accept()) );
       qhb2->setMargin(10);
       qhb2->setSpacing(3);
       qhb2->adjustSize();
+
     qvb->adjustSize();
 
-  // Note: when reject is activated, wpu and all its subwidgets
-  //       will be deleted, if created with flag Qt::WDestructiveClose.
-  //       This is confirmed by changing these from pointers to objects.
-  //       A warning message is issued, when exiting this scope, that
-  //       the objects are deleted twice.
   wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
   wpu->adjustSize();
 
   int returnCode = wpu->exec();
+  // Note: when reject is activated, wpu and all its subwidgets
+  //       will be deleted, if the flag Qt::WDestructiveClose is used.
+  //       This is confirmed by changing these from pointers to objects.
+  //       A warning message is issued, when exiting this scope, that
+  //       the objects are deleted twice.
+
+  if( returnCode == QDialog::Accepted ) {
+    editDialog edg;
+    edg._contextPtr = _contextPtr;
+    (const_cast<drift*>(x))->accept(edg);
+  }
 
   delete wpu;
 }
@@ -1511,151 +1525,152 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
           );
   */
 
-  { // Old version
-  QString sts;
-  QDialog* wpu = new QDialog( 0, 0, true );
-    QVBox* qvb = new QVBox( wpu );
-      QHBox* qhbFrames = new QHBox( qvb );
+  
+  // REMOVE: { // Old version
+  // REMOVE: QString sts;
+  // REMOVE: QDialog* wpu = new QDialog( 0, 0, true );
+  // REMOVE:   QVBox* qvb = new QVBox( wpu );
+  // REMOVE:     QHBox* qhbFrames = new QHBox( qvb );
+  // REMOVE: 
+  // REMOVE:       QVBox* qvbIn = new QVBox( qhbFrames );
+  // REMOVE:         new QLabel( "Upstream frame", qvbIn );
+  // REMOVE: 
+  // REMOVE:         QHBox* qhboIn = new QHBox( qvbIn );
+  // REMOVE:           new QLabel( QString("O: "), qhboIn );
+  // REMOVE:           sts.setNum( (x->getInFrame().getOrigin()) (0) );
+  // REMOVE:           new QLabel( sts, qhboIn );
+  // REMOVE:           sts.setNum( (x->getInFrame().getOrigin()) (1) );
+  // REMOVE:           new QLabel( sts, qhboIn );
+  // REMOVE:           sts.setNum( (x->getInFrame().getOrigin()) (2) );
+  // REMOVE:           new QLabel( sts, qhboIn );
+  // REMOVE:         qhboIn->setMargin(5);
+  // REMOVE:         qhboIn->setSpacing(3);
+  // REMOVE:         qhboIn->adjustSize();
+  // REMOVE:   
+  // REMOVE:         QHBox* qhb3 = new QHBox( qvbIn );
+  // REMOVE:           QString sts0( "U: ( " );
+  // REMOVE:           sts.setNum( (x->getInFrame().getxAxis()) (0) );
+  // REMOVE:           sts0 = sts0 + sts + ", ";
+  // REMOVE:           sts.setNum( (x->getInFrame().getxAxis()) (1) );
+  // REMOVE:           sts0 = sts0 + sts + ", ";
+  // REMOVE:           sts.setNum( (x->getInFrame().getxAxis()) (2) );
+  // REMOVE:           sts0 = sts0 + sts + " )";
+  // REMOVE:           new QLabel( sts0, qhb3 );
+  // REMOVE:         qhb3->setMargin(5);
+  // REMOVE:         qhb3->setSpacing(3);
+  // REMOVE:         qhb3->adjustSize();
+  // REMOVE:   
+  // REMOVE:         QHBox* qhb4 = new QHBox( qvbIn );
+  // REMOVE:           QString sts1( "V: ( " );
+  // REMOVE:           sts.setNum( (x->getInFrame().getyAxis()) (0) );
+  // REMOVE:           sts1 = sts1 + sts + ", ";
+  // REMOVE:           sts.setNum( (x->getInFrame().getyAxis()) (1) );
+  // REMOVE:           sts1 = sts1 + sts + ", ";
+  // REMOVE:           sts.setNum( (x->getInFrame().getyAxis()) (2) );
+  // REMOVE:           sts1 = sts1 + sts + " )";
+  // REMOVE:           new QLabel( sts1, qhb4 );
+  // REMOVE:         qhb4->setMargin(5);
+  // REMOVE:         qhb4->setSpacing(3);
+  // REMOVE:         qhb4->adjustSize();
+  // REMOVE:   
+  // REMOVE:         QHBox* qhb5 = new QHBox( qvbIn );
+  // REMOVE:           QString sts2( "W: ( " );
+  // REMOVE:           sts.setNum( (x->getInFrame().getzAxis()) (0) );
+  // REMOVE:           sts2 = sts2 + sts + ", ";
+  // REMOVE:           sts.setNum( (x->getInFrame().getzAxis()) (1) );
+  // REMOVE:           sts2 = sts2 + sts + ", ";
+  // REMOVE:           sts.setNum( (x->getInFrame().getzAxis()) (2) );
+  // REMOVE:           sts2 = sts2 + sts + " )";
+  // REMOVE:           new QLabel( sts2, qhb5 );
+  // REMOVE:         qhb5->setMargin(5);
+  // REMOVE:         qhb5->setSpacing(3);
+  // REMOVE:         qhb5->adjustSize();
+  // REMOVE: 
+  // REMOVE:       qvbIn->setMargin(5);
+  // REMOVE:       qvbIn->setSpacing(3);
+  // REMOVE:       qvbIn->adjustSize();
+  // REMOVE: 
+  // REMOVE:       QVBox* qvbOut = new QVBox( qhbFrames );
+  // REMOVE:         new QLabel( "Downstream frame", qvbOut );
+  // REMOVE: 
+  // REMOVE:         QHBox* qhbo = new QHBox( qvbOut );
+  // REMOVE:           new QLabel( QString("O: "), qhbo );
+  // REMOVE:           sts.setNum( (x->getOutFrame().getOrigin()) (0) );
+  // REMOVE:           new QLabel( sts, qhbo );
+  // REMOVE:           sts.setNum( (x->getOutFrame().getOrigin()) (1) );
+  // REMOVE:           new QLabel( sts, qhbo );
+  // REMOVE:           sts.setNum( (x->getOutFrame().getOrigin()) (2) );
+  // REMOVE:           new QLabel( sts, qhbo );
+  // REMOVE:         qhbo->setMargin(5);
+  // REMOVE:         qhbo->setSpacing(3);
+  // REMOVE:         qhbo->adjustSize();
+  // REMOVE:   
+  // REMOVE:         QHBox* qhb0 = new QHBox( qvbOut );
+  // REMOVE:           sts0 = "U: ( ";
+  // REMOVE:           sts.setNum( (x->getOutFrame().getxAxis()) (0) );
+  // REMOVE:           sts0 = sts0 + sts + ", ";
+  // REMOVE:           sts.setNum( (x->getOutFrame().getxAxis()) (1) );
+  // REMOVE:           sts0 = sts0 + sts + ", ";
+  // REMOVE:           sts.setNum( (x->getOutFrame().getxAxis()) (2) );
+  // REMOVE:           sts0 = sts0 + sts + " )";
+  // REMOVE:           new QLabel( sts0, qhb0 );
+  // REMOVE:         qhb0->setMargin(5);
+  // REMOVE:         qhb0->setSpacing(3);
+  // REMOVE:         qhb0->adjustSize();
+  // REMOVE:   
+  // REMOVE:         QHBox* qhb1 = new QHBox( qvbOut );
+  // REMOVE:           sts1 = "V: ( ";
+  // REMOVE:           sts.setNum( (x->getOutFrame().getyAxis()) (0) );
+  // REMOVE:           sts1 = sts1 + sts + ", ";
+  // REMOVE:           sts.setNum( (x->getOutFrame().getyAxis()) (1) );
+  // REMOVE:           sts1 = sts1 + sts + ", ";
+  // REMOVE:           sts.setNum( (x->getOutFrame().getyAxis()) (2) );
+  // REMOVE:           sts1 = sts1 + sts + " )";
+  // REMOVE:           new QLabel( sts1, qhb1 );
+  // REMOVE:         qhb1->setMargin(5);
+  // REMOVE:         qhb1->setSpacing(3);
+  // REMOVE:         qhb1->adjustSize();
+  // REMOVE:   
+  // REMOVE:         QHBox* qhb2 = new QHBox( qvbOut );
+  // REMOVE:           sts2 = "W: ( ";
+  // REMOVE:           sts.setNum( (x->getOutFrame().getzAxis()) (0) );
+  // REMOVE:           sts2 = sts2 + sts + ", ";
+  // REMOVE:           sts.setNum( (x->getOutFrame().getzAxis()) (1) );
+  // REMOVE:           sts2 = sts2 + sts + ", ";
+  // REMOVE:           sts.setNum( (x->getOutFrame().getzAxis()) (2) );
+  // REMOVE:           sts2 = sts2 + sts + " )";
+  // REMOVE:           new QLabel( sts2, qhb2 );
+  // REMOVE:         qhb2->setMargin(5);
+  // REMOVE:         qhb2->setSpacing(3);
+  // REMOVE:         qhb2->adjustSize();
+  // REMOVE: 
+  // REMOVE:       qvbOut->setMargin(5);
+  // REMOVE:       qvbOut->setSpacing(3);
+  // REMOVE:       qvbOut->adjustSize();
+  // REMOVE: 
+  // REMOVE:     qhbFrames->setMargin(5);
+  // REMOVE:     qhbFrames->setSpacing(3);
+  // REMOVE:     qhbFrames->adjustSize();
+  // REMOVE: 
+  // REMOVE:     QHBox* qhb99 = new QHBox( qvb );
+  // REMOVE:       QPushButton* cancelBtn = new QPushButton( "Close", qhb99 );
+  // REMOVE:         connect( cancelBtn, SIGNAL(pressed()),
+  // REMOVE:                  wpu,       SLOT(reject()) );
+  // REMOVE:     qhb99->setMargin(5);
+  // REMOVE:     qhb99->setSpacing(3);
+  // REMOVE:     qhb99->adjustSize();
+  // REMOVE: 
+  // REMOVE:   qvb->adjustSize();
+  // REMOVE: 
+  // REMOVE: wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  // REMOVE: wpu->adjustSize();
+  // REMOVE: 
+  // REMOVE: wpu->exec();
+  // REMOVE: 
+  // REMOVE: delete wpu;
+  // REMOVE: }
 
-        QVBox* qvbIn = new QVBox( qhbFrames );
-          new QLabel( "Upstream frame", qvbIn );
-
-      	  QHBox* qhboIn = new QHBox( qvbIn );
-      	    new QLabel( QString("O: "), qhboIn );
-      	    sts.setNum( (x->getInFrame().getOrigin()) (0) );
-      	    new QLabel( sts, qhboIn );
-      	    sts.setNum( (x->getInFrame().getOrigin()) (1) );
-      	    new QLabel( sts, qhboIn );
-      	    sts.setNum( (x->getInFrame().getOrigin()) (2) );
-      	    new QLabel( sts, qhboIn );
-      	  qhboIn->setMargin(5);
-      	  qhboIn->setSpacing(3);
-      	  qhboIn->adjustSize();
-    
-      	  QHBox* qhb3 = new QHBox( qvbIn );
-      	    QString sts0( "U: ( " );
-      	    sts.setNum( (x->getInFrame().getxAxis()) (0) );
-      	    sts0 = sts0 + sts + ", ";
-      	    sts.setNum( (x->getInFrame().getxAxis()) (1) );
-      	    sts0 = sts0 + sts + ", ";
-      	    sts.setNum( (x->getInFrame().getxAxis()) (2) );
-      	    sts0 = sts0 + sts + " )";
-      	    new QLabel( sts0, qhb3 );
-      	  qhb3->setMargin(5);
-      	  qhb3->setSpacing(3);
-      	  qhb3->adjustSize();
-    
-      	  QHBox* qhb4 = new QHBox( qvbIn );
-      	    QString sts1( "V: ( " );
-      	    sts.setNum( (x->getInFrame().getyAxis()) (0) );
-      	    sts1 = sts1 + sts + ", ";
-      	    sts.setNum( (x->getInFrame().getyAxis()) (1) );
-      	    sts1 = sts1 + sts + ", ";
-      	    sts.setNum( (x->getInFrame().getyAxis()) (2) );
-      	    sts1 = sts1 + sts + " )";
-      	    new QLabel( sts1, qhb4 );
-      	  qhb4->setMargin(5);
-      	  qhb4->setSpacing(3);
-      	  qhb4->adjustSize();
-    
-      	  QHBox* qhb5 = new QHBox( qvbIn );
-      	    QString sts2( "W: ( " );
-      	    sts.setNum( (x->getInFrame().getzAxis()) (0) );
-      	    sts2 = sts2 + sts + ", ";
-      	    sts.setNum( (x->getInFrame().getzAxis()) (1) );
-      	    sts2 = sts2 + sts + ", ";
-      	    sts.setNum( (x->getInFrame().getzAxis()) (2) );
-      	    sts2 = sts2 + sts + " )";
-      	    new QLabel( sts2, qhb5 );
-      	  qhb5->setMargin(5);
-      	  qhb5->setSpacing(3);
-      	  qhb5->adjustSize();
-
-        qvbIn->setMargin(5);
-        qvbIn->setSpacing(3);
-        qvbIn->adjustSize();
-
-        QVBox* qvbOut = new QVBox( qhbFrames );
-          new QLabel( "Downstream frame", qvbOut );
-
-      	  QHBox* qhbo = new QHBox( qvbOut );
-      	    new QLabel( QString("O: "), qhbo );
-      	    sts.setNum( (x->getOutFrame().getOrigin()) (0) );
-      	    new QLabel( sts, qhbo );
-      	    sts.setNum( (x->getOutFrame().getOrigin()) (1) );
-      	    new QLabel( sts, qhbo );
-      	    sts.setNum( (x->getOutFrame().getOrigin()) (2) );
-      	    new QLabel( sts, qhbo );
-      	  qhbo->setMargin(5);
-      	  qhbo->setSpacing(3);
-      	  qhbo->adjustSize();
-    
-      	  QHBox* qhb0 = new QHBox( qvbOut );
-      	    sts0 = "U: ( ";
-      	    sts.setNum( (x->getOutFrame().getxAxis()) (0) );
-      	    sts0 = sts0 + sts + ", ";
-      	    sts.setNum( (x->getOutFrame().getxAxis()) (1) );
-      	    sts0 = sts0 + sts + ", ";
-      	    sts.setNum( (x->getOutFrame().getxAxis()) (2) );
-      	    sts0 = sts0 + sts + " )";
-      	    new QLabel( sts0, qhb0 );
-      	  qhb0->setMargin(5);
-      	  qhb0->setSpacing(3);
-      	  qhb0->adjustSize();
-    
-      	  QHBox* qhb1 = new QHBox( qvbOut );
-      	    sts1 = "V: ( ";
-      	    sts.setNum( (x->getOutFrame().getyAxis()) (0) );
-      	    sts1 = sts1 + sts + ", ";
-      	    sts.setNum( (x->getOutFrame().getyAxis()) (1) );
-      	    sts1 = sts1 + sts + ", ";
-      	    sts.setNum( (x->getOutFrame().getyAxis()) (2) );
-      	    sts1 = sts1 + sts + " )";
-      	    new QLabel( sts1, qhb1 );
-      	  qhb1->setMargin(5);
-      	  qhb1->setSpacing(3);
-      	  qhb1->adjustSize();
-    
-      	  QHBox* qhb2 = new QHBox( qvbOut );
-      	    sts2 = "W: ( ";
-      	    sts.setNum( (x->getOutFrame().getzAxis()) (0) );
-      	    sts2 = sts2 + sts + ", ";
-      	    sts.setNum( (x->getOutFrame().getzAxis()) (1) );
-      	    sts2 = sts2 + sts + ", ";
-      	    sts.setNum( (x->getOutFrame().getzAxis()) (2) );
-      	    sts2 = sts2 + sts + " )";
-      	    new QLabel( sts2, qhb2 );
-      	  qhb2->setMargin(5);
-      	  qhb2->setSpacing(3);
-      	  qhb2->adjustSize();
-
-        qvbOut->setMargin(5);
-        qvbOut->setSpacing(3);
-        qvbOut->adjustSize();
-
-      qhbFrames->setMargin(5);
-      qhbFrames->setSpacing(3);
-      qhbFrames->adjustSize();
-
-      QHBox* qhb99 = new QHBox( qvb );
-        QPushButton* cancelBtn = new QPushButton( "Close", qhb99 );
-          connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
-      qhb99->setMargin(5);
-      qhb99->setSpacing(3);
-      qhb99->adjustSize();
-
-    qvb->adjustSize();
-
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
-  wpu->adjustSize();
-
-  wpu->exec();
-
-  delete wpu;
-  }
-
-  { // New version  START HERE
+  { // New version
   QString xstr, ystr, zstr;
   QString lparen("( ");
   QString rparen(" )");
@@ -1665,15 +1680,15 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
 
     QVBox* qvb = new QVBox( wpu );
       QWidget* qwa = new QWidget( qvb );
-      	 QGridLayout* qgl = new QGridLayout( qwa, 5, 3, 5, 10 );
+         QGridLayout* qgl = new QGridLayout( qwa, 5, 3, 5, 10 );
 
-      	 qgl->addWidget( new QLabel( QString("Upstream"),   qwa ), 0, 1 );
-      	 qgl->addWidget( new QLabel( QString("Downstream"), qwa ), 0, 2 );
+         qgl->addWidget( new QLabel( QString("Upstream"),   qwa ), 0, 1 );
+         qgl->addWidget( new QLabel( QString("Downstream"), qwa ), 0, 2 );
          
-      	 qgl->addWidget( new QLabel( QString("Origin   "), qwa ), 1, 0 );
-      	 qgl->addWidget( new QLabel( QString("U   "), qwa ), 2, 0 );
-      	 qgl->addWidget( new QLabel( QString("V   "), qwa ), 3, 0 );
-      	 qgl->addWidget( new QLabel( QString("W   "), qwa ), 4, 0 );
+         qgl->addWidget( new QLabel( QString("Origin   "), qwa ), 1, 0 );
+         qgl->addWidget( new QLabel( QString("U   "), qwa ), 2, 0 );
+         qgl->addWidget( new QLabel( QString("V   "), qwa ), 3, 0 );
+         qgl->addWidget( new QLabel( QString("W   "), qwa ), 4, 0 );
 
          xstr.setNum( (x->getInFrame().getOrigin())(0) );
          ystr.setNum( (x->getInFrame().getOrigin())(1) );
@@ -1827,24 +1842,24 @@ void BeamlineBrowser::infoWriter::visitRbend( const rbend* x )
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QWidget* qwa = new QWidget( qvb );
-      	 QGridLayout* qgl = new QGridLayout( qwa, 3, 3, 5 );
+         QGridLayout* qgl = new QGridLayout( qwa, 3, 3, 5 );
 
-      	 qgl->addWidget( new QLabel( QString("Length"), qwa ), 0, 0 );
-      	 qgl->addWidget( new QLabel( QString(" [m]: "), qwa ), 0, 1 );
-      	   QString stlen;
-      	   stlen.setNum( x->Length() );
-      	 qgl->addWidget( new QLabel( stlen, qwa ), 0, 2 );
+         qgl->addWidget( new QLabel( QString("Length"), qwa ), 0, 0 );
+         qgl->addWidget( new QLabel( QString(" [m]: "), qwa ), 0, 1 );
+           QString stlen;
+           stlen.setNum( x->Length() );
+         qgl->addWidget( new QLabel( stlen, qwa ), 0, 2 );
 
-      	 qgl->addWidget( new QLabel( QString("Magnetic field"), qwa ), 1, 0 );
-      	 qgl->addWidget( new QLabel( QString(" [T]: "), qwa ), 1, 1 );
-      	   QString sts;
-      	   sts.setNum( x->Strength() );
-      	 qgl->addWidget( new QLabel( sts, qwa ), 1, 2 );
+         qgl->addWidget( new QLabel( QString("Magnetic field"), qwa ), 1, 0 );
+         qgl->addWidget( new QLabel( QString(" [T]: "), qwa ), 1, 1 );
+           QString sts;
+           sts.setNum( x->Strength() );
+         qgl->addWidget( new QLabel( sts, qwa ), 1, 2 );
 
-      	 qgl->addWidget( new QLabel( QString("Nominal entry angle"), qwa ), 2, 0 );
-      	 qgl->addWidget( new QLabel( QString(" [mrad]: "), qwa ), 2, 1 );
-      	   sts.setNum( 1000.0 * x->getPoleFaceAngle() );
-      	 qgl->addWidget( new QLabel( sts, qwa ), 2, 2 );
+         qgl->addWidget( new QLabel( QString("Nominal entry angle"), qwa ), 2, 0 );
+         qgl->addWidget( new QLabel( QString(" [mrad]: "), qwa ), 2, 1 );
+           sts.setNum( 1000.0 * x->getPoleFaceAngle() );
+         qgl->addWidget( new QLabel( sts, qwa ), 2, 2 );
 
        qwa->adjustSize();
 
@@ -1938,7 +1953,7 @@ void BeamlineBrowser::infoWriter::visitCF_rbend( const CF_rbend* x )
 void BeamlineBrowser::infoWriter::visitQuadrupole( const quadrupole* x )
 {
   QString theValue;
-  QDialog* wpu = new QDialog( 0, 0, true );
+  QDialog* wpu = new QDialog;
     QVBox* qvb = new QVBox( wpu );
 
       QHBox* qhb1 = new QHBox( qvb );
@@ -2006,17 +2021,17 @@ void BeamlineBrowser::infoWriter::visitThinQuad( const thinQuad* x )
     QVBox* qvb = new QVBox( wpu );
 
       QWidget* qwa = new QWidget( qvb );
-      	 QGridLayout* qgl = new QGridLayout( qwa, 2, 3, 5 );
+         QGridLayout* qgl = new QGridLayout( qwa, 2, 3, 5 );
 
-      	 qgl->addWidget( new QLabel( QString("Integrated gradient"), qwa ), 0, 0 );
-      	 qgl->addWidget( new QLabel( QString(" [T]  "), qwa ), 0, 1 );
-      	   theValue.setNum( x->Strength() );
-      	 qgl->addWidget( new QLabel( theValue, qwa ), 0, 2 );
+         qgl->addWidget( new QLabel( QString("Integrated gradient"), qwa ), 0, 0 );
+         qgl->addWidget( new QLabel( QString(" [T]  "), qwa ), 0, 1 );
+           theValue.setNum( x->Strength() );
+         qgl->addWidget( new QLabel( theValue, qwa ), 0, 2 );
 
-      	 qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 1, 0 );
-      	 qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 1, 1 );
-      	   theValue.setNum( 1000.*(x->Alignment().tilt /*[rad]*/) );
-      	 qgl->addWidget( new QLabel( theValue, qwa ), 1, 2 );
+         qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 1, 0 );
+         qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 1, 1 );
+           theValue.setNum( 1000.*(x->Alignment().tilt /*[rad]*/) );
+         qgl->addWidget( new QLabel( theValue, qwa ), 1, 2 );
       qwa->adjustSize();
 
       QHBox* qhb = new QHBox( qvb );
@@ -2229,31 +2244,31 @@ void BeamlineBrowser::infoWriter::visitMonitor( const monitor* x )
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QWidget* qwa = new QWidget( qvb );
-      	 QGridLayout* qgl = new QGridLayout( qwa, 4, 4, 5 );
+         QGridLayout* qgl = new QGridLayout( qwa, 4, 4, 5 );
 
-      	 qgl->addWidget( new QLabel( QString("x"),     qwa ), 0, 0 );
-      	 qgl->addWidget( new QLabel( QString("[mm]"),  qwa ), 0, 1 );
-      	 qgl->addWidget( new QLabel( QString("="),     qwa ), 0, 2 );
-      	   theValue.setNum( 1000.0*w[ Particle::_x()  ] );
-      	 qgl->addWidget( new QLabel( theValue,         qwa ), 0, 3 );
+         qgl->addWidget( new QLabel( QString("x"),     qwa ), 0, 0 );
+         qgl->addWidget( new QLabel( QString("[mm]"),  qwa ), 0, 1 );
+         qgl->addWidget( new QLabel( QString("="),     qwa ), 0, 2 );
+           theValue.setNum( 1000.0*w[ Particle::_x()  ] );
+         qgl->addWidget( new QLabel( theValue,         qwa ), 0, 3 );
 
-      	 qgl->addWidget( new QLabel( QString("y"),     qwa ), 1, 0 );
-      	 qgl->addWidget( new QLabel( QString("[mm]"),  qwa ), 1, 1 );
-      	 qgl->addWidget( new QLabel( QString("="),     qwa ), 1, 2 );
-      	   theValue.setNum( 1000.0*w[ Particle::_y()  ] );
-      	 qgl->addWidget( new QLabel( theValue,         qwa ), 1, 3 );
+         qgl->addWidget( new QLabel( QString("y"),     qwa ), 1, 0 );
+         qgl->addWidget( new QLabel( QString("[mm]"),  qwa ), 1, 1 );
+         qgl->addWidget( new QLabel( QString("="),     qwa ), 1, 2 );
+           theValue.setNum( 1000.0*w[ Particle::_y()  ] );
+         qgl->addWidget( new QLabel( theValue,         qwa ), 1, 3 );
 
-      	 qgl->addWidget( new QLabel( QString("p_x/p"), qwa ), 2, 0 );
-      	 qgl->addWidget( new QLabel( QString("[mrad]"),qwa ), 2, 1 );
-      	 qgl->addWidget( new QLabel( QString("="),     qwa ), 2, 2 );
-      	   theValue.setNum( 1000.0*w[ Particle::_xp() ] );
-      	 qgl->addWidget( new QLabel( theValue,         qwa ), 2, 3 );
+         qgl->addWidget( new QLabel( QString("p_x/p"), qwa ), 2, 0 );
+         qgl->addWidget( new QLabel( QString("[mrad]"),qwa ), 2, 1 );
+         qgl->addWidget( new QLabel( QString("="),     qwa ), 2, 2 );
+           theValue.setNum( 1000.0*w[ Particle::_xp() ] );
+         qgl->addWidget( new QLabel( theValue,         qwa ), 2, 3 );
 
-      	 qgl->addWidget( new QLabel( QString("p_y/p"), qwa ), 3, 0 );
-      	 qgl->addWidget( new QLabel( QString("[mrad]"),qwa ), 3, 1 );
-      	 qgl->addWidget( new QLabel( QString("="),     qwa ), 3, 2 );
-      	   theValue.setNum( 1000.0*w[ Particle::_yp() ] );
-      	 qgl->addWidget( new QLabel( theValue,         qwa ), 3, 3 );
+         qgl->addWidget( new QLabel( QString("p_y/p"), qwa ), 3, 0 );
+         qgl->addWidget( new QLabel( QString("[mrad]"),qwa ), 3, 1 );
+         qgl->addWidget( new QLabel( QString("="),     qwa ), 3, 2 );
+           theValue.setNum( 1000.0*w[ Particle::_yp() ] );
+         qgl->addWidget( new QLabel( theValue,         qwa ), 3, 3 );
 
        qwa->adjustSize();
 
@@ -2292,22 +2307,22 @@ void BeamlineBrowser::editDialog::visitRbend( rbend* x )
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QWidget* qwa = new QWidget( qvb );
-      	 QGridLayout* qgl = new QGridLayout( qwa, 2, 3, 5 );
+         QGridLayout* qgl = new QGridLayout( qwa, 2, 3, 5 );
 
-      	 qgl->addWidget( new QLabel( QString("Length"), qwa ), 0, 0 );
-      	 qgl->addWidget( new QLabel( QString("[m]"), qwa ), 0, 1 );
+         qgl->addWidget( new QLabel( QString("Length"), qwa ), 0, 0 );
+         qgl->addWidget( new QLabel( QString("[m]"), qwa ), 0, 1 );
            QString stlen;
-      	   stlen.setNum( x->Length() );
+           stlen.setNum( x->Length() );
            // QLineEdit* qle1 = new QLineEdit( stlen, qwa );
          // qgl->addWidget( qle1, 0, 2 );
-      	 qgl->addWidget( new QLabel( stlen, qwa ), 0, 2 );
+         qgl->addWidget( new QLabel( stlen, qwa ), 0, 2 );
 
-      	 qgl->addWidget( new QLabel( QString("Magnetic field"), qwa ), 1, 0 );
-      	 qgl->addWidget( new QLabel( QString("[T]"), qwa ), 1, 1 );
+         qgl->addWidget( new QLabel( QString("Magnetic field"), qwa ), 1, 0 );
+         qgl->addWidget( new QLabel( QString("[T]"), qwa ), 1, 1 );
            QString sts;
-      	   sts.setNum( x->Strength() );
+           sts.setNum( x->Strength() );
            QLineEdit* qle2 = new QLineEdit( sts, qwa );
-      	 qgl->addWidget( qle2, 1, 2 );
+         qgl->addWidget( qle2, 1, 2 );
 
        qwa->adjustSize();
 
@@ -2362,7 +2377,7 @@ void BeamlineBrowser::editDialog::visitRbend( rbend* x )
                << __LINE__
                << ": rbend not found in context."
                << endl;
-	}
+        }
       }
     }
   }
@@ -2377,28 +2392,28 @@ void BeamlineBrowser::editDialog::visitQuadrupole( quadrupole* x )
     QVBox* qvb = new QVBox( wpu );
 
       QWidget* qwa = new QWidget( qvb );
-      	 QGridLayout* qgl = new QGridLayout( qwa, 3, 3, 5 );
+         QGridLayout* qgl = new QGridLayout( qwa, 3, 3, 5 );
 
-      	 qgl->addWidget( new QLabel( QString("Gradient"), qwa ), 0, 0 );
-      	 qgl->addWidget( new QLabel( QString(" [T/m]  "), qwa ), 0, 1 );
-  	   QString st1;
-      	   st1.setNum( x->Strength() );
+         qgl->addWidget( new QLabel( QString("Gradient"), qwa ), 0, 0 );
+         qgl->addWidget( new QLabel( QString(" [T/m]  "), qwa ), 0, 1 );
+           QString st1;
+           st1.setNum( x->Strength() );
            QLineEdit* qle1 = new QLineEdit( st1, qwa );
-      	 qgl->addWidget( qle1, 0, 2 );
+         qgl->addWidget( qle1, 0, 2 );
 
-      	 qgl->addWidget( new QLabel( QString("Length"), qwa ), 1, 0 );
-      	 qgl->addWidget( new QLabel( QString(" [m]  "), qwa ), 1, 1 );
-  	   QString stl;
-      	   stl.setNum( x->Length() );
-      	 qgl->addWidget( new QLabel( QString(stl), qwa ), 1, 2 );
+         qgl->addWidget( new QLabel( QString("Length"), qwa ), 1, 0 );
+         qgl->addWidget( new QLabel( QString(" [m]  "), qwa ), 1, 1 );
+           QString stl;
+           stl.setNum( x->Length() );
+         qgl->addWidget( new QLabel( QString(stl), qwa ), 1, 2 );
 
-      	 qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 2, 0 );
-      	 qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 2, 1 );
-	   QString st2;
+         qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 2, 0 );
+         qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 2, 1 );
+           QString st2;
            alignmentData ad(x->Alignment());
-      	   st2.setNum( 1000.*(ad.tilt /*[rad]*/) );
+           st2.setNum( 1000.*(ad.tilt /*[rad]*/) );
            QLineEdit* qle2 = new QLineEdit( st2, qwa );
-      	 qgl->addWidget( qle2, 2, 2 );
+         qgl->addWidget( qle2, 2, 2 );
       qwa->adjustSize();
 
       QHBox* qhb = new QHBox( qvb );
@@ -2441,7 +2456,7 @@ void BeamlineBrowser::editDialog::visitQuadrupole( quadrupole* x )
                << " not found in context."
                << endl;
           QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
-	}
+        }
       }
     }
 
@@ -2460,10 +2475,256 @@ void BeamlineBrowser::editDialog::visitQuadrupole( quadrupole* x )
                << " not found in context."
                << endl;
           QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
-	}
+        }
       }
     }
 
+  }
+
+  delete wpu;
+}
+
+
+void BeamlineBrowser::editDialog::visitDrift( drift* x )
+{
+  QDialog* wpu = new QDialog( 0, 0, true );
+    QVBox* qvb = new QVBox( wpu );
+
+      QWidget* qwa = new QWidget( qvb );
+         QGridLayout* qgl = new QGridLayout( qwa, 2, 3, 5 );
+
+         qgl->addWidget( new QLabel( QString("Length"), qwa ), 0, 0 );
+         qgl->addWidget( new QLabel( QString(" [m]  "), qwa ), 0, 1 );
+           QString stl;
+           stl.setNum( x->Length() );
+           QLineEdit* qle2 = new QLineEdit( stl, qwa );
+         qgl->addWidget( qle2, 0, 2 );
+
+           QRadioButton* qrb = new QRadioButton(qwa);
+         qgl->addWidget( qrb, 1, 0 );
+         qgl->addMultiCellWidget( new QLabel( QString("Convert to Slot"), qwa )
+                                  , 1, 1, 1, 2 );
+      qwa->adjustSize();
+
+      QHBox* qhb = new QHBox( qvb );
+        QPushButton* okayBtn = new QPushButton( "Okay", qhb );
+          connect( okayBtn, SIGNAL(pressed()),
+                   wpu,     SLOT(accept()) );
+        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb );
+          cancelBtn->setDefault( true );
+          connect( cancelBtn,  SIGNAL(pressed()),
+                   wpu,        SLOT(reject()) );
+      qhb->setMargin(5);
+      qhb->setSpacing(3);
+      qhb->adjustSize();
+
+    qvb->adjustSize();
+
+  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->adjustSize();
+
+  int returnCode = wpu->exec();
+  // Note: when reject is activated, wpu and all its subwidgets
+  //       will be deleted, if the flag Qt::WDestructiveClose is used.
+  //       This is confirmed by changing these from pointers to objects.
+  //       A warning message is issued, when exiting this scope, that
+  //       the objects are deleted twice.
+
+  if( returnCode == QDialog::Accepted ) {
+    if( qrb->isOn() ) {
+      #if 0
+      ostringstream uic;
+      uic  << "*** WARNING *** File "
+           << __FILE__ 
+           << ", Line "
+           << __LINE__
+           << "\n*** WARNING *** This part routine needs to be rewritten. "
+           << endl;
+      QMessageBox::warning( 0, "BeamlineBrowser: WARNING", uic.str().c_str() );
+      #endif
+
+      #if 1
+      // Drift will be converted to Slot
+      ostringstream uic;
+      uic  << "*** WARNING *** File "
+           << __FILE__ 
+           << ", Line "
+           << __LINE__
+           << "\n*** WARNING *** Am deleting "
+           << x->Type()
+           << " element "
+           << x->Name()
+           << "\n*** WARNING *** If the program aborts soon, this is"
+              "\n*** WARNING *** probably the reason."
+           << endl;
+      QMessageBox::warning( 0, "BeamlineBrowser: WARNING", uic.str().c_str() );
+
+      bool ok;
+      double newLength = (qle2->text()).toDouble( &ok );
+      if( !ok ) { newLength = x->Length(); }
+
+      Vector origin(3);
+      origin( Particle::_cdt() ) = newLength; 
+      // This is a phenomenally stupid and convoluted
+      // way to do this.
+      Frame outFrame;
+      outFrame.setOrigin( origin );
+      Slot* slotPtr = new Slot( x->Name(), outFrame );
+      _contextPtr->replaceElement( x, slotPtr );
+
+      // START HERE. The Browser should not be in the business of editing
+      // lines. This should be done within CHEF itself. How???
+
+      // WARNING: This routine will delete x.
+      // WARNING: Best of luck!
+      #endif
+    }
+
+    else {
+      // Drift remains a drift
+      if( stl != qle2->text() ) {
+        bool ok;
+        double newLength = (qle2->text()).toDouble( &ok );
+        if( ok ) {
+          if( 0 != _contextPtr->setLength( x, newLength ) ) {
+            ostringstream uic;
+            uic  << "*** WARNING *** File "
+                 << __FILE__ 
+                 << ", Line "
+                 << __LINE__
+                 << ": "
+                 << x->Type()
+                 << " not found in context."
+                 << endl;
+            QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
+          }
+        }
+      }
+    }
+  }
+
+  delete wpu;
+}
+
+
+void BeamlineBrowser::editDialog::visitSlot( Slot* x )
+{
+  QDialog* wpu = new QDialog( 0, 0, true );
+    QVBox* qvb = new QVBox( wpu );
+
+      QWidget* qwa = new QWidget( qvb );
+         QGridLayout* qgl = new QGridLayout( qwa, 6, 3, 5, 10 );
+
+         QString xstr, ystr, zstr;
+         QString lparen("( ");
+         QString rparen(" )");
+         QString comma(", ");
+  
+         qgl->addWidget( new QLabel( QString("Upstream"),   qwa ), 0, 1 );
+         qgl->addWidget( new QLabel( QString("Downstream"), qwa ), 0, 2 );
+         
+         qgl->addWidget( new QLabel( QString("Origin   "), qwa ), 1, 0 );
+         qgl->addWidget( new QLabel( QString("U   "), qwa ), 2, 0 );
+         qgl->addWidget( new QLabel( QString("V   "), qwa ), 3, 0 );
+         qgl->addWidget( new QLabel( QString("W   "), qwa ), 4, 0 );
+
+         xstr.setNum( (x->getInFrame().getOrigin())(0) );
+         ystr.setNum( (x->getInFrame().getOrigin())(1) );
+         zstr.setNum( (x->getInFrame().getOrigin())(2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 1, 1 );
+         xstr.setNum( (x->getOutFrame().getOrigin())(0) );
+         ystr.setNum( (x->getOutFrame().getOrigin())(1) );
+         zstr.setNum( (x->getOutFrame().getOrigin())(2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 1, 2 );
+
+         xstr.setNum( (x->getInFrame().getxAxis()) (0) );
+         ystr.setNum( (x->getInFrame().getxAxis()) (1) );
+         zstr.setNum( (x->getInFrame().getxAxis()) (2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 2, 1 );
+         xstr.setNum( (x->getInFrame().getyAxis()) (0) );
+         ystr.setNum( (x->getInFrame().getyAxis()) (1) );
+         zstr.setNum( (x->getInFrame().getyAxis()) (2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 3, 1 );
+         xstr.setNum( (x->getInFrame().getzAxis()) (0) );
+         ystr.setNum( (x->getInFrame().getzAxis()) (1) );
+         zstr.setNum( (x->getInFrame().getzAxis()) (2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 4, 1 );
+        
+         xstr.setNum( (x->getOutFrame().getxAxis()) (0) );
+         ystr.setNum( (x->getOutFrame().getxAxis()) (1) );
+         zstr.setNum( (x->getOutFrame().getxAxis()) (2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 2, 2 );
+         xstr.setNum( (x->getOutFrame().getyAxis()) (0) );
+         ystr.setNum( (x->getOutFrame().getyAxis()) (1) );
+         zstr.setNum( (x->getOutFrame().getyAxis()) (2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 3, 2 );
+         xstr.setNum( (x->getOutFrame().getzAxis()) (0) );
+         ystr.setNum( (x->getOutFrame().getzAxis()) (1) );
+         zstr.setNum( (x->getOutFrame().getzAxis()) (2) );
+         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
+                         , 4, 2 );
+
+         QRadioButton* qrb = new QRadioButton(qwa);
+	 qgl->addWidget( qrb, 5, 0 );
+         qgl->addMultiCellWidget( new QLabel( QString("Zero out-state"), qwa )
+                                              , 5, 5, 1, 2 );
+      qwa->adjustSize();
+        
+      QHBox* qhb = new QHBox( qvb );
+        QPushButton* okayBtn = new QPushButton( "Okay", qhb );
+          connect( okayBtn, SIGNAL(pressed()),
+                   wpu,     SLOT(accept()) );
+        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb );
+          cancelBtn->setDefault( true );
+          connect( cancelBtn,  SIGNAL(pressed()),
+                   wpu,        SLOT(reject()) );
+      qhb->setMargin(5);
+      qhb->setSpacing(3);
+      qhb->adjustSize();
+
+    qvb->adjustSize();
+
+  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->adjustSize();
+
+  int returnCode = wpu->exec();
+  // Note: when reject is activated, wpu and all its subwidgets
+  //       will be deleted, if the flag Qt::WDestructiveClose is used.
+  //       This is confirmed by changing these from pointers to objects.
+  //       A warning message is issued, when exiting this scope, that
+  //       the objects are deleted twice.
+
+  if( returnCode == QDialog::Accepted ) {
+    if( qrb->isOn() ) {
+      if( !(_contextPtr->hasReferenceProton()) ) {
+        Proton p( _contextPtr->getEnergy() );
+         _contextPtr->setReferenceProton(p);
+      }
+
+      Proton prtn( _contextPtr->getReferenceProton() );
+      DeepBeamlineIterator dbi( _contextPtr->cheatBmlPtr() );
+      bmlnElmnt* q;
+      while((  q = dbi++  )) {
+        if( q == x ) { break; }
+        else         { q->propagate( prtn ); }
+      }
+      if( q == x ) {
+        q->propagate( prtn );
+        double offset   = prtn.get_x();
+        double yawAngle = atan( prtn.get_npx()/prtn.get_npz() );
+        Frame f(x->getOutFrame());
+        f.translate( offset*f.getxAxis() );
+        f.rotate( yawAngle, f.getyAxis(), false );
+        x->setOutFrame(f);
+      }
+    }
   }
 
   delete wpu;
@@ -2476,22 +2737,22 @@ void BeamlineBrowser::editDialog::visitThinQuad( thinQuad* x )
     QVBox* qvb = new QVBox( wpu );
 
       QWidget* qwa = new QWidget( qvb );
-      	 QGridLayout* qgl = new QGridLayout( qwa, 2, 3, 5 );
+         QGridLayout* qgl = new QGridLayout( qwa, 2, 3, 5 );
 
-      	 qgl->addWidget( new QLabel( QString("Integrated gradient"), qwa ), 0, 0 );
-      	 qgl->addWidget( new QLabel( QString(" [T]  "), qwa ), 0, 1 );
-  	   QString st1;
-      	   st1.setNum( x->Strength() );
+         qgl->addWidget( new QLabel( QString("Integrated gradient"), qwa ), 0, 0 );
+         qgl->addWidget( new QLabel( QString(" [T]  "), qwa ), 0, 1 );
+           QString st1;
+           st1.setNum( x->Strength() );
            QLineEdit* qle1 = new QLineEdit( st1, qwa );
-      	 qgl->addWidget( qle1, 0, 2 );
+         qgl->addWidget( qle1, 0, 2 );
 
-      	 qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 1, 0 );
-      	 qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 1, 1 );
-	   QString st2;
+         qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 1, 0 );
+         qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 1, 1 );
+           QString st2;
            alignmentData ad(x->Alignment());
-      	   st2.setNum( 1000.*(ad.tilt /*[rad]*/) );
+           st2.setNum( 1000.*(ad.tilt /*[rad]*/) );
            QLineEdit* qle2 = new QLineEdit( st2, qwa );
-      	 qgl->addWidget( qle2, 1, 2 );
+         qgl->addWidget( qle2, 1, 2 );
       qwa->adjustSize();
 
       QHBox* qhb = new QHBox( qvb );
@@ -2530,7 +2791,7 @@ void BeamlineBrowser::editDialog::visitThinQuad( thinQuad* x )
                << __LINE__
                << ": thinQuad not found in context."
                << endl;
-	}
+        }
       }
     }
 
@@ -2545,7 +2806,7 @@ void BeamlineBrowser::editDialog::visitThinQuad( thinQuad* x )
                << __LINE__
                << ": thinQuad not found in context."
                << endl;
-	}
+        }
       }
     }
 
@@ -2553,5 +2814,3 @@ void BeamlineBrowser::editDialog::visitThinQuad( thinQuad* x )
 
   delete wpu;
 }
-
-

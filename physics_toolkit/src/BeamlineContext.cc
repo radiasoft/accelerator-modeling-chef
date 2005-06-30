@@ -316,13 +316,17 @@ int BeamlineContext::setLength( bmlnElmnt* w, double l )
   while( notFound && (q = dbi++) ) 
   { if( q == w ) 
     { notFound = false;
+      // REMOVE: if( l != q->Length() ) 
+      // REMOVE: { q->setLength(l);
+      // REMOVE:   this->_deleteLFS();
+      // REMOVE:   // if( _p_lfs ) { delete _p_lfs; _p_lfs = 0; }  // This is extreme.
+      // REMOVE:   if( _p_cos ) { delete _p_cos; _p_cos = 0; }
+      // REMOVE:   if( _p_ca  ) { delete _p_ca; _p_ca = 0;   }
+      // REMOVE:   if( _p_ta  ) { delete _p_ta; _p_ta = 0;   }
+      // REMOVE: }
       if( l != q->Length() ) 
       { q->setLength(l);
-        this->_deleteLFS();
-        // if( _p_lfs ) { delete _p_lfs; _p_lfs = 0; }  // This is extreme.
-        if( _p_cos ) { delete _p_cos; _p_cos = 0; }
-        if( _p_ca  ) { delete _p_ca; _p_ca = 0;   }
-        if( _p_ta  ) { delete _p_ta; _p_ta = 0;   }
+        this->reset();  // This is extreme.
       }
     }
   }
@@ -415,6 +419,25 @@ int BeamlineContext::setAlignment( beamline::Criterion& cf, const alignmentData&
     this->_deleteClosedOrbit();
   }
 
+  return ret;
+}
+
+
+int BeamlineContext::replaceElement( bmlnElmnt* a, bmlnElmnt* b )
+{
+  // Will replace the first argument with
+  // the second. Return values:
+  // 0 everything went as planned
+  // 1 first argument was not found
+  // 2 at least one argument was null
+  // 
+  // WARNING: Element *a will be deleted if the beamline has
+  // been cloned. It is assumed that *b has been created on the
+  // heap, and the BeamlineContext takes over ownership.
+
+  int ret = _p_bml->replace(a,b);
+  if( 0 == ret ) { this->reset(); }
+  // This step will not always be necessary.
   return ret;
 }
 
@@ -623,6 +646,30 @@ bool BeamlineContext::onTransClosedOrbit( const Proton& arg ) const
   }
 
   return false;
+}
+
+
+bool BeamlineContext::hasReferenceProton() const
+{
+  return (0 != _p_co_p);
+}
+
+
+void BeamlineContext::setReferenceProton( const Proton& x )
+{
+  this->reset();
+  _p_co_p = new Proton(x);
+}
+
+
+Proton BeamlineContext::getReferenceProton() const
+{
+  if( 0 != _p_co_p ) { 
+    return (*_p_co_p); 
+  }
+  else {
+    return Proton( this->getEnergy() );
+  }
 }
 
 

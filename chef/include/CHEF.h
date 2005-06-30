@@ -208,6 +208,16 @@ public:
   int run();
 
 
+public:
+  struct insDlgData
+  {
+    bool    accepted;
+    QString namePrefix;
+    bool    upstream;
+    bool    downstream;
+  };
+  insDlgData _insertionDialog() const;
+
 private:
   // Key widgets
   QApplication*    _appl;
@@ -289,6 +299,7 @@ private slots:
   void _editRenameLine();
   void _editRemoveLine();
   void _editCondense();
+  void _editEditElement();
   void _editAlign();
   void _editMisalign();
   void _editFlatten();

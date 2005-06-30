@@ -687,7 +687,7 @@ short  bmlnElmnt::writeTag ( const std::string& s )
 }
 
 
-short bmlnElmnt::readTag  ( char* s, short start, short num )
+short bmlnElmnt::readTag  ( char* s, short start, short num ) const
 {
   if( s == 0 ) {
     return BF_NULL_ARG;
@@ -703,13 +703,13 @@ short bmlnElmnt::readTag  ( char* s, short start, short num )
 }
 
 
-short bmlnElmnt::readTag( char* s )
+short bmlnElmnt::readTag( char* s ) const
 {
   return this->readTag( s, 0, BF_MAXCHAR );
 }
 
 
-char bmlnElmnt::readTag( short pos )
+char bmlnElmnt::readTag( short pos ) const
 {
   if( (pos < 0) || (pos + 1 > BF_MAXCHAR) ) {
     pos = 0;
@@ -725,7 +725,7 @@ char bmlnElmnt::readTag( short pos )
 }
 
 
-std::string bmlnElmnt::readTag( short start, short  num )
+std::string bmlnElmnt::readTag( short start, short  num ) const
 {
   std::string ret;
   if( start < 0 || start + 1 > BF_MAXCHAR ) {
@@ -739,7 +739,7 @@ std::string bmlnElmnt::readTag( short start, short  num )
 }
 
 
-std::string bmlnElmnt::readTag()
+std::string bmlnElmnt::readTag() const
 {
   return this->readTag( 0, BF_MAXCHAR );
 }

@@ -305,6 +305,21 @@ char dlist::putBelow( const void* a, const void* b )    // Untested???
 }
 
 
+int dlist::replaceOne( const void* a, const void* b )
+{
+  // This recasting nonsense is terminally stupid!
+  dlist_traversor dtr( const_cast<const dlist&>(*this) );
+  dlink* q;
+  while((  0 != (q = dtr())  )) {
+    if( a == q->info() ) {
+      q->replace( const_cast<void*>(b));
+      return 0;
+    }
+  }
+  return 1;
+}
+
+
 void* dlist::get() {
   if ( last == 0 ) return 0;   // In case the list is empty.
   dlink* f = last->next;

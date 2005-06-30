@@ -120,8 +120,19 @@ class BeamlineContext
     int setStrength ( bmlnElmnt*, double );
     int setAlignment( bmlnElmnt*, const alignmentData& );
     // I really want to get rid of AlignmentData altogether!
-
     int setAlignment( beamline::Criterion&, const alignmentData& );
+
+    int replaceElement( bmlnElmnt*, bmlnElmnt* );
+    // Will replace the first argument with
+    // the second. Return values:
+    // 0 everything went as planned
+    // 1 first argument was not found
+    // 2 at least one argument was null
+    // 
+    // WARNING: Element *a will be deleted if the beamline has
+    // been cloned. It is assumed that *b has been created on the
+    // heap, and the BeamlineContext takes over ownership.
+
     int processElements( beamline::Action& );
     // Returns number of elements processed.
 
@@ -143,6 +154,10 @@ class BeamlineContext
     // Side effect: calculates closed orbit if not
     // already done.
     bool onTransClosedOrbit( const Proton& ) const;
+
+    bool hasReferenceProton() const;
+    void setReferenceProton( const Proton& );
+    Proton getReferenceProton() const;
 
     bool isRing() const;
     bool isTreatedAsRing() const;

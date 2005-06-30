@@ -653,6 +653,15 @@ void beamline::InsertElementsFromList( double& s,
 
 }
 
+
+int beamline::replace( const bmlnElmnt* a, const bmlnElmnt* b ) 
+{
+  // This routine has a potential to break things!
+  if( 0 == a || 0 == b ) { return 2; }
+  return dynamic_cast<dlist*>(this)->replaceOne( (const void*) a, (const void*) b );
+}
+
+
 beamline& beamline::operator^( bmlnElmnt& x ) {
  append( x );
  return *this;
