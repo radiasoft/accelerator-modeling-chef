@@ -105,9 +105,12 @@ protected:
   double   pn;        // normalized reference momentum = pc/mc^2 = p/mc
                       //                               = beta*gamma
   double   pni2;      // ( 1/pn )^2
-  double   bRho;      // normalized reference momentm / charge
+  double   bRho;      // normalized reference momentum / charge
   double   beta;      // normalized reference velocity = v/c
   double   gamma;     // reference gamma
+
+  std::string _tag;   // Utility tag for arbitrary identification
+                      // of a particle.
 
   Particle( double  /* mass [GeV/c^2] */ );
   Particle( double  /* mass [GeV/c^2] */,
@@ -226,6 +229,38 @@ public:
   static int _yp();    //           p_y / p_ref
   static int _dpop();
 
+  // Tagging
+  static const short BF_OK;
+  static const short BF_NULL_ARG;
+  static const short BF_BAD_START;
+
+  short  writeTag ( char,          // character to be written
+                    short = 0      // position in tag
+                  );
+  short  writeTag ( const char* );
+  short  writeTag ( const char*,   // characters to be written
+                    short,         // starting position in tag
+                    short          // number of characters 
+                  );
+
+  short  writeTag ( const std::string& );
+  short  writeTag ( const std::string&, 
+                    short          // starting position in tag
+                  );
+
+  std::string readTag  () const;
+  std::string readTag  ( short,           // starting position in tag
+                         short  ) const;  // number of characters read
+  short  readTag  ( char* ) const;
+  short  readTag  ( char*,         // returned characters
+                    short,         // starting position in tag
+                    short          // number of characters
+                  ) const;
+  char   readTag  ( short ) const;       // position in tag
+
+  short  getTagSize() const;
+
+  
   // Exceptions
   struct GenericException : public std::exception
   {
@@ -242,12 +277,12 @@ public:
 };
 
 
-  inline int Particle::_x()    { return 0; }
-  inline int Particle::_y()    { return 1; }
-  inline int Particle::_cdt()  { return 2; }
-  inline int Particle::_xp()   { return 3; }
-  inline int Particle::_yp()   { return 4; }
-  inline int Particle::_dpop() { return 5; }
+inline int Particle::_x()    { return 0; }
+inline int Particle::_y()    { return 1; }
+inline int Particle::_cdt()  { return 2; }
+inline int Particle::_xp()   { return 3; }
+inline int Particle::_yp()   { return 4; }
+inline int Particle::_dpop() { return 5; }
 
 
 
@@ -382,6 +417,9 @@ protected:
   double   beta;      // normalized reference velocity = v/c
   double   gamma;     // reference gamma
 
+  std::string _tag;   // Utility tag for arbitrary identification
+                      // of a particle.
+
   JetParticle( double  /* mass [GeV/c^2] */ );
   JetParticle( double  /* mass [GeV/c^2] */,
                double  /* energy [GeV]   */ );   // ??? momentum here???
@@ -390,6 +428,7 @@ protected:
                double* /* state          */ );
   JetParticle( const Particle& );
   JetParticle( const JetParticle& );
+
 
 public:
   virtual Particle* ConvertToParticle() const = 0;
@@ -496,6 +535,34 @@ public:
   }
   JetParticle& operator=(const JetParticle&);
   BarnacleList dataHook;   // Carries data as service to application program.
+
+
+  // Tagging
+  short  writeTag ( char,          // character to be written
+                    short = 0      // position in tag
+                  );
+  short  writeTag ( const char* );
+  short  writeTag ( const char*,   // characters to be written
+                    short,         // starting position in tag
+                    short          // number of characters 
+                  );
+
+  short  writeTag ( const std::string& );
+  short  writeTag ( const std::string&, 
+                    short          // starting position in tag
+                  );
+
+  std::string readTag  () const;
+  std::string readTag  ( short,          // starting position in tag
+                         short  ) const; // number of characters read
+  short  readTag  ( char* ) const;
+  short  readTag  ( char*,         // returned characters
+                    short,         // starting position in tag
+                    short          // number of characters
+                  ) const;
+  char   readTag  ( short ) const; // position in tag
+
+  short  getTagSize() const;
 };
 
 struct JetProton : public JetParticle {

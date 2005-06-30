@@ -79,6 +79,8 @@ public:
   dlink* prevPtr() {return prev;}
   void* info() {return e;}
 
+  void replace( void* x ) { e = x; }
+
   friend class dlist;
   friend class dlist_iterator;
   friend class dlist_traversor;
@@ -140,6 +142,15 @@ public:
                                    // Installs b above (before) a in the list
   char putBelow( const void* a, const void* b );
                                    // Installs b below (after)  a in the list
+  int replaceOne( const void* a, const void* b );
+                                   // Replaces a with b. Will do so even
+                                   // if b is void. Performs a level one
+                                   // search: that is, will not search
+                                   // through sublists.
+                                   // Return values:
+                                   // 0 everything went as planned
+                                   // 1 first argument was not found
+                                   
   void* get();
 
   int  startAt( const void*, int=1 );

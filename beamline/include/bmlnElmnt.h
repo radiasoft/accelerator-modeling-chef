@@ -421,18 +421,18 @@ public:
   short  readTag  ( char*,         // returned characters
                     short,         // starting position in tag
                     short          // number of characters
-                  );
-  short  readTag  ( char* );
+                  ) const;
+  short  readTag  ( char* ) const;
 
   char   readTag  ( short          // position in tag
-                  );    
+                  ) const;    
   std::string readTag  ( 
               short,         // starting position in tag
               short          // number of characters 
-                  );
-  std::string readTag  ();
+                  ) const;
+  std::string readTag  () const;
 
-  short  getTagSize() 
+  short  getTagSize() const
     { return BF_MAXCHAR; }
 
   virtual void setLength     ( double );
@@ -643,7 +643,6 @@ public:
 
   void InsertElementAt( double s_0, double s, const bmlnElmnt& q );
   void InsertElementAt( double s_0, double s, const bmlnElmnt* q );
-
                                       // Will insert q into the beamline at
                                       // OrbitLength s, assuming the beamline
                                       // begins at OrbitLength s_0.  Normally
@@ -652,12 +651,18 @@ public:
                                       // module can be used recursively.
 
   void InsertElementsFromList( double& s_0, InsertionList&, slist& );
-
                                       // Will insert elements from the list into
                                       // the beamline at locations specified in
                                       // the list.  Removed elements are stored
                                       // in the final argument, in case they
                                       // need to be eliminated by the user module.
+
+  int replace( const bmlnElmnt*, const bmlnElmnt* );
+                                      // Will replace the first argument with
+                                      // the second. Return values:
+                                      // 0 everything went as planned
+                                      // 1 first argument was not found
+                                      // 2 at least one argument was null
 
   beamline& operator^( bmlnElmnt& );  // Alters the beamline
   beamline& operator^( beamline& );

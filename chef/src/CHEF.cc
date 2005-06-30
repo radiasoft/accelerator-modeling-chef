@@ -190,6 +190,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
 
     _editMenu->insertSeparator();
 
+    _editMenu->insertItem( "Modify ...", this, SLOT(_editEditElement()) );
     _editMenu->insertItem( "Align ...", this, SLOT(_editAlign()) );
     int id_Misalign = 
     _editMenu->insertItem( "Misalign ...", this, SLOT(_editMisalign()) );
@@ -833,6 +834,70 @@ void CHEF::_toolAlignBends()
 }
 
 
+void CHEF::_editEditElement()
+{
+  // The code in this method was patterned after that
+  // in CHEF::_editNewOrder()
+
+  // One quick test ...
+  if( 0 == _p_clickedQBml ) {
+    QMessageBox::warning( 0, "CHEF: WARNING", 
+			  "A single beamline element must be chosen first." );
+    return;
+  }
+
+  // Locate the element and its root beamline
+  QBmlElmt* qbmlElPtr = dynamic_cast<QBmlElmt*>(_p_clickedQBml);
+
+  // This test should be made more flexible after
+  //   allowing non-flat beamlines to be processed.
+  if( 0 == qbmlElPtr ) {
+    std::ostringstream uic;
+    uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
+           "\nIn function void CHEF::_editNewOrder():"
+           "\nFailure: beamline element not chosen correctly.";
+           "\nOperation will abort.";
+    QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
+    return;
+  }
+  const bmlnElmnt* elmntPtr = qbmlElPtr->cheatElementPtr();
+  QBmlRoot* theRoot = const_cast<QBmlRoot*>(_p_clickedQBml->topBmlParent());
+
+  // Invoke this slot to reset the current settings.
+  BeamlineContext* contextPtr = const_cast<BeamlineContext*>(theRoot->cheatContextPtr());
+  _set_p_clickedContext( contextPtr, theRoot );
+  beamline* bmlPtr = const_cast<beamline*>(_p_currBmlCon->cheatBmlPtr());
+
+  // This restriction should be removed ... but it isn't:
+  //   a test for a flat beamline.
+  int bmlLevel = bmlPtr->depth();
+  if( bmlLevel != 0 ) {
+    QMessageBox::warning( 0, "CHEF: WARNING", 
+			  "SORRY: Current implementation requires flat beamline." );
+    return;
+  }
+
+  // Finally, do the editing with the help of 
+  // and editDialog visitor.
+  if( 0 == (_p_vwr->removeBeamline( contextPtr )) ) {
+    BeamlineBrowser::editDialog edg;
+    edg._contextPtr = contextPtr;
+    const_cast<bmlnElmnt*>(elmntPtr)->accept(edg);
+    contextPtr->reset();
+    emit _new_beamline();
+  }
+  else { 
+    std::ostringstream uic;
+    uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
+           "\nIn function void CHEF::_editNewOrder():"
+           "\nFailure: Unable to remove old beamline.";
+           "\nOperation will abort.";
+    QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
+    return;
+  }
+}
+
+
 void CHEF::_editAlign()
 {
   bool handleSpace   = true;
@@ -1105,15 +1170,15 @@ void CHEF::_editD2S()
 }
 
 
-void CHEF::_editAddMarkers()
+CHEF::insDlgData CHEF::_insertionDialog() const
 {
-  // Dialog to determine where marker is to be inserted
+  // Dialog to determine where to insert new elements.
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
 
       QHBox* qhb1 = new QHBox( qvb );
         new QLabel( "Name: ", qhb1 );
-        QLineEdit* qle = new QLineEdit( "DIVIDER", qhb1 );
+        QLineEdit* qle = new QLineEdit( "NEW", qhb1 );
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
       qhb1->adjustSize();
@@ -1145,15 +1210,38 @@ void CHEF::_editAddMarkers()
   wpu->setCaption( "CHEF: Marker Insertion" );
   wpu->adjustSize();
 
-
   // Execute dialog and continue
   int returnCode = wpu->exec();
 
-  if( returnCode == QDialog::Accepted ) {
+  // Package and return dialog choices
+  CHEF::insDlgData ret;
+  if( returnCode != QDialog::Accepted ) {
+    ret.accepted   = false;
+    ret.upstream   = false;
+    ret.downstream = false;
+  }
+  else {
     // Preliminaries
-    QString markerName( qle->text() );
-    const bool upstream   = ( upPtr   == qbg->selected() );
-    const bool downstream = ( downPtr == qbg->selected() );
+    // DATUM: QString markerName( qle->text() );
+    ret.accepted   = true;
+    ret.namePrefix = qle->text();
+    ret.upstream   = ( upPtr   == qbg->selected() );
+    ret.downstream = ( downPtr == qbg->selected() );
+  }
+
+  delete wpu;
+  return ret;
+}
+
+
+void CHEF::_editAddMarkers()
+{
+  insDlgData options;
+  options = _insertionDialog();
+
+  if( options.accepted ) {
+    // Preliminaries
+    QString markerName( options.namePrefix );
 
     // Locate the root beamline
     QBmlRoot* theRoot = dynamic_cast<QBmlRoot*>(_p_clickedQBml);
@@ -1169,8 +1257,7 @@ void CHEF::_editAddMarkers()
       uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
              "\nIn function: void CHEF::_editAddMarkers():"
              "\nNo elements selected; no action will be taken.";
-      QMessageBox::information( 0, "CHEF: WARNING", uic.str().c_str() );
-      delete wpu;
+      QMessageBox::warning( 0, "CHEF: WARNING", uic.str().c_str() );
       return;
     }
 
@@ -1183,15 +1270,14 @@ void CHEF::_editAddMarkers()
       insertions.append( new marker(markerName.ascii()) );
     }
 
-
-    // Create the new beamline with inserted monitors included
+    // Create the new beamline with inserted markers included
     const beamline* oldbmlPtr = _p_currBmlCon->cheatBmlPtr();
     beamline* bmlPtr = 0;
 
-    if( upstream ) {
+    if( options.upstream ) {
       bmlPtr = BmlUtil::cloneLineAndInsert( 0.0, insertions, theOnes, oldbmlPtr );
     }
-    else if( downstream ) {
+    else if( options.downstream ) {
       bmlPtr = BmlUtil::cloneLineAndInsert( 1.0, insertions, theOnes, oldbmlPtr );
     }
     else {
@@ -1212,9 +1298,7 @@ void CHEF::_editAddMarkers()
     else           { _p_currBmlCon->handleAsLine(); }
     _contextList.insert( _p_currBmlCon );
 
-
     // Finished!
-    delete wpu;
     emit _new_beamline();
   }
 }
@@ -1222,30 +1306,76 @@ void CHEF::_editAddMarkers()
 
 void CHEF::_editAddQtMons()
 {
-  const beamline* oldbmlPtr = _p_currBmlCon->cheatBmlPtr();
+  insDlgData options;
+  options = _insertionDialog();
 
-  beamline* bmlPtr = new beamline( oldbmlPtr->Name() );
-  bmlPtr->setEnergy( oldbmlPtr->Energy() );
+  if( options.accepted ) {
+    QString markerName( options.namePrefix );
 
-  DeepBeamlineIterator dbi( oldbmlPtr );
-  bmlnElmnt* q      = 0;
-  QtMonitor* qtmPtr = 0;
-  while((  q = dbi++  )) {
-    bmlPtr->append( q->Clone() );
-    // if( typeid(*q) == typeid(quadrupole) ) {
-    if( typeid(*q) == typeid(drift) ) {
-      qtmPtr = new QtMonitor( "QtMonitor" );
-      qtmPtr->setStrength(5.0);  // to survive condensation
-      bmlPtr->append( qtmPtr );
+    // Locate the root beamline
+    QBmlRoot* theRoot = dynamic_cast<QBmlRoot*>(_p_clickedQBml);
+    if( 0 == theRoot ) {
+      theRoot = const_cast<QBmlRoot*>(_p_clickedQBml->topBmlParent());
     }
+
+    // Find selected elements
+    QPtrList<bmlnElmnt> theChosenOnes;
+    theChosenOnes = _p_vwr->findAllSelected( theRoot );
+    if( theChosenOnes.isEmpty() ) {
+      std::ostringstream uic;
+      uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
+             "\nIn function: void CHEF::_editAddQtMons():"
+             "\nNo elements selected; no action will be taken.";
+      QMessageBox::information( 0, "CHEF: WARNING", uic.str().c_str() );
+      return;
+    }
+
+    // Load BmlPtrLists, for use by lower level tools
+    BmlPtrList theOnes;
+    BmlPtrList insertions;
+    bmlnElmnt* elementPtr;
+    QtMonitor* qtmPtr = 0;
+    while( 0 != (elementPtr = theChosenOnes.take()) ) {
+      qtmPtr = new QtMonitor(markerName.ascii());
+      qtmPtr->setStrength(5.0);  // to survive condensation
+      theOnes.append(elementPtr);
+      insertions.append( qtmPtr );
+    }
+
+    // Create the new beamline with inserted monitors included
+    const beamline* oldbmlPtr = _p_currBmlCon->cheatBmlPtr();
+    beamline* bmlPtr = 0;
+
+    if( options.upstream ) {
+      bmlPtr = BmlUtil::cloneLineAndInsert( 0.0, insertions, theOnes, oldbmlPtr );
+    }
+    else if( options.downstream ) {
+      bmlPtr = BmlUtil::cloneLineAndInsert( 1.0, insertions, theOnes, oldbmlPtr );
+    }
+    else {
+      bmlPtr = BmlUtil::cloneLineAndInsert( 0.5, insertions, theOnes, oldbmlPtr );
+    }
+
+    // Register the azimuth at all QtMonitor locations.
+    QtMonitor::setAzimuth( bmlPtr );
+
+    // Final steps
+    QString newName( oldbmlPtr->Name() );
+    newName += ".monitored";
+    bmlPtr->Rename( newName.ascii() );
+    bmlPtr->setEnergy( oldbmlPtr->Energy() );  // Probably unnecessary.
+
+    // Generate a new BeamlineContext to handle the new line
+    bool makeRing = _p_currBmlCon->isTreatedAsRing();
+    _p_currBmlCon = new BeamlineContext( false, bmlPtr );
+    _p_currBmlCon->setClonedFlag( true );
+    if( makeRing ) { _p_currBmlCon->handleAsRing(); }
+    else           { _p_currBmlCon->handleAsLine(); }
+    _contextList.insert( _p_currBmlCon );
+
+    // Signal the new line
+    emit _new_beamline();
   }
-  QtMonitor::setAzimuth( bmlPtr );
-
-  _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-  _p_currBmlCon->setClonedFlag( true );
-  _contextList.insert( _p_currBmlCon );
-
-  emit _new_beamline();
 }
 
 
