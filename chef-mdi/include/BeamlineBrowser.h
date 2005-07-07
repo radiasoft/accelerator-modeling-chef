@@ -7,7 +7,7 @@
 ******             of BEAMLINE.                                    
 ******                                                                
 ******  File:      BeamlineBrowser.h
-******  Version:   3.3
+******  Version:   3.4
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -115,6 +115,9 @@ public:
 
     friend class BeamlineBrowser;
 
+    // Must get rid of this eventually!!
+    inline const BeamlineContext* cheatContextPtr() const { return _myBmlCon; }
+
 private:
     BeamlineContext* _myBmlCon;      // if there is no QBmlRoot parent
     beamline*        _myBeamline;    // if there is a  QBmlRoot parent
@@ -153,6 +156,8 @@ struct infoWriter : public ConstBmlVisitor
 struct editDialog : public BmlVisitor 
 {
   void visitBmlnElmnt  ( bmlnElmnt*  );
+  void visitDrift      ( drift*      );
+  void visitSlot       ( Slot*       );
   void visitRbend      ( rbend*      );
   void visitQuadrupole ( quadrupole* );
   void visitThinQuad   ( thinQuad*   );
