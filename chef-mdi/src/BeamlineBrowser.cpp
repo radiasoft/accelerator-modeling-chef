@@ -1938,7 +1938,7 @@ void BeamlineBrowser::infoWriter::visitCF_rbend( const CF_rbend* x )
 void BeamlineBrowser::infoWriter::visitQuadrupole( const quadrupole* x )
 {
   QString theValue;
-  QDialog* wpu = new QDialog( 0, 0, true );
+  QDialog* wpu = new QDialog;
     QVBox* qvb = new QVBox( wpu );
 
       QHBox* qhb1 = new QHBox( qvb );

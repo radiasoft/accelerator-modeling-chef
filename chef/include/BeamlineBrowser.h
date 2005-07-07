@@ -7,7 +7,7 @@
 ******             of BEAMLINE.                                    
 ******                                                                
 ******  File:      BeamlineBrowser.h
-******  Version:   3.3
+******  Version:   3.4
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
