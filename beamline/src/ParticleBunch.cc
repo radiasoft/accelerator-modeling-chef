@@ -2,7 +2,7 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  BEAMLINE:  C++ objects for design and analysis
+******  Beamline:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
 ******  Version:   2.0                    
@@ -33,18 +33,18 @@
 #include <config.h>
 #endif
 
-#include "ParticleBunch.h"
+#include <ParticleBunch.h>
 
 #include <math.h>
-#include "MathConstants.h"
-
-#define    MAX_RANDOM    2147483647.0 
+#include <MathConstants.h>
 
 using namespace std;
+
 
 ParticleBunch::Discriminator::Discriminator( const ParticleBunch* x )
 : _within(x)
 {
+
 }
 
 
@@ -56,29 +56,34 @@ ParticleBunch::Discriminator::Discriminator( const Discriminator& x )
 
 ParticleBunch::ParticleBunch()
 {
+
 }
 
 
 ParticleBunch::~ParticleBunch() 
 {
-  list<Particle*>::iterator cur;
-  for( cur  = _bag.begin();
-       cur != _bag.end();
-       cur++                ) 
-  {
-    delete (*cur);
-  }
+ 
+ // No need to explicitly invoke delete on a shared_ptr.  
+ // delete( shared_ptr ) is called when the stl container is deleted.
+
 }
 
 
 void ParticleBunch::append( const Particle& x )
 {
-  Particle* ptr = x.Clone();
-  _bag.push_back( ptr );
+
+  _bag.push_back( ParticlePtr( x.Clone()) ); 
+
 }
 
 
-list<Particle*> ParticleBunch::remove( Discriminator& dsc )
+void ParticleBunch::append( ParticlePtr p )
+{
+  _bag.push_back( p ); 
+} 
+
+
+list<ParticlePtr> ParticleBunch::remove( Discriminator& dsc )
 {
   //list<Particle*>::iterator collector 
   //    = remove_if ( _bag.begin(), _bag.end(), dsc );
@@ -88,8 +93,8 @@ list<Particle*> ParticleBunch::remove( Discriminator& dsc )
   // This really seems horribly inefficient
   // compared to using a dlist_traversor
 
-  list<Particle*> marked;
-  list<Particle*>::iterator cur;
+  list<ParticlePtr> marked;
+  list<ParticlePtr>::iterator cur;
   for( cur  = _bag.begin();
        cur != _bag.end();
        cur++                ) 
@@ -103,7 +108,7 @@ list<Particle*> ParticleBunch::remove( Discriminator& dsc )
        cur != marked.end();
        cur++                  )
   {
-    list<Particle*>::iterator new_end 
+    list<ParticlePtr>::iterator new_end 
       = _bag.erase( std::remove( _bag.begin(), _bag.end(), *cur ), _bag.end() );
   }
   
@@ -162,17 +167,20 @@ ParticleBunch::Iterator::~Iterator()
 
 
 
+
 const Particle* ParticleBunch::Iterator::next()
 {
-  Particle* ret;
+
   if( _cur == _ref->_bag.end() ) { 
-    ret = 0;
+    return 0;
   }
   else {
-    ret = *_cur;
+    Particle* ptr = (*_cur).get();
     _cur++;
+    return ptr; 
   }
-  return ret;
+  
+
 }
 
 
@@ -190,19 +198,100 @@ ProtonBunch::ProtonBunch() : ParticleBunch()
 
 ProtonBunch::~ProtonBunch()
 {
+
 }
  
 
-void ProtonBunch::append( const Proton& x )
+void ProtonBunch::append( const Proton& p) 
 {
-  // Assures that only protons are added
-  // to the bunch.
-  ParticleBunch::append( x );
+  ParticleBunch::append(p);
 }
+
+
+void ProtonBunch::append( ProtonPtr p) 
+{
+  ParticleBunch::append(p);
+}
+
+
+
+Particle* ProtonBunch::makeParticle( double energy, double* state )
+{
+
+  return new Proton( energy, state );
+
+}
+
+
+std::ostream& 
+operator<<( std::ostream &os, const ParticleBunch& bunch) {
+
+  // Note: ParticleBunch& bunch should be declared const ParticleBunch& bunch
+  // Unfortunately,  const declarations are not consistent  
+
+  using std::setw;
+
+  double state[6];
+
+  os << bunch.size() << endl;
+ 
+  ParticleBunch::Iterator it( const_cast<ParticleBunch&>(bunch) );  
+
+  while ( const Particle* p  = it.next()  ) {  
+
+    const_cast<Particle*>(p)->getState( state ); // work around broken getState() signature.
+    
+    os << setw(16) << p->ReferenceEnergy() << "  ";
+
+    for (int i=0; i<6; ++i )
+      os << setw(16) << state[i] << "  ";
+ 
+    os << std::endl;
+  }
+
+  return os;
+
+}
+
+//....................................................................................................
+
+
+std::istream& 
+operator >>( std::istream &is, ParticleBunch& bunch) {
+
+  using std::setw;
+
+    double state[6];
+  double reference_energy = 0.0; 
+
+
+  int counter = 0;
+  int nsize   = 0;
+
+  is >> nsize;  
+
+  while ( (!is.eof()) && (counter++ < nsize) ) { 
+
+    is >> reference_energy;  
+
+    for (int i=0; i<6; ++i) {
+       is >> state[i]; 
+    };     
+    
+    bunch.append( ParticlePtr(bunch.makeParticle(reference_energy,  state)));
+    
+  }
+
+  return is;
+
+}
+
+
 
 
 
 /*** OLD CODE ***
+
 ProtonBunch::ProtonBunch(int nm, double energy, double* widths,
 			 Distribution& distrib,
                          BunchPredicate* pBunchPredicate ): ParticleBunch() 
