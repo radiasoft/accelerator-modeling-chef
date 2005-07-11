@@ -76,7 +76,7 @@ fi
 
 AC_ARG_WITH(gxx_rtti,AC_HELP_STRING([--with-gxx_rtti],[Enable G++ rtti]),,
 if test "x${GXX}" = "xyes" && test "x$set_CXXFLAGS" = "x"; then
-CXXFLAGS="-fno-rtti ${CXXFLAGS}"
+CXXFLAGS="${CXXFLAGS}"
 AC_SUBST(CXXFLAGS)
 AC_DEFINE(NO_RTTI,,nortti)
 fi
