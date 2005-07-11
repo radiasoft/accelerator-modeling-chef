@@ -29,7 +29,6 @@
 **************************************************************************
 *************************************************************************/
 
-
 #ifndef PARTBUNCH_H
 #define PARTBUNCH_H
 
@@ -37,22 +36,32 @@
 #include <list>
 #include <algorithm>
 
-#include "Particle.h"
-#include "Distribution.h"
+#include <Particle.h>
+#include <Distribution.h>
+
+#include <boost/shared_ptr.hpp>
+
+typedef boost::shared_ptr<Particle> ParticlePtr;
+typedef boost::shared_ptr<Proton>   ProtonPtr;
+typedef boost::shared_ptr<Electron> ElectronPtr;
+
 
 class ParticleBunch 
 {
-// Subclasses: Iterator, Discriminator
+
+friend std::istream& operator >>( std::istream &is, ParticleBunch& bunch);
+
 public:
-  class Discriminator : public std::unary_function<Particle*, bool>
+  class Discriminator : public std::unary_function<ParticlePtr, bool>
   {
     public:
       Discriminator( const ParticleBunch* );
       Discriminator( const Discriminator& );
       virtual ~Discriminator() {}
 
-      virtual bool operator()( Particle* ) { return true; }
+      virtual bool operator()( ParticlePtr ) { return true; }
     protected:
+
       const ParticleBunch* _within;  // not owned
   };
 
@@ -67,13 +76,17 @@ public:
       const Particle* next();
       void reset();
     private:
-      std::list<Particle*>::iterator _cur;
+
+      std::list<ParticlePtr >::iterator _cur;
       ParticleBunch* _ref;
   };
   friend class Iterator;
 
+
 // Public member functions
+
 public:
+
   ParticleBunch();
   virtual ~ParticleBunch();
   
@@ -93,26 +106,38 @@ public:
 
 
   // Modifier functions
-  void append( const Particle& );  
-  // The argument is cloned to assure ownership     THIS IS A MISTAKE
-  // by the ParticleBunch. Responsibility for the
-  // argument remains with the invoking program.
+
+  void append( const Particle& );  //  The Particle is cloned   
+  void append( ParticlePtr p);     //  Particle is NOT cloned. Shared ownership with caller; caller can safely delete.
 
   // void remove( const Particle* );
-  std::list<Particle*> remove( Discriminator& );
+
+  std::list<ParticlePtr> remove( Discriminator& );
+   
   // I'll have to think carefully about this one.
   // Returns a list of removed particles and hands
   // their ownership to invoking program.
+
 
   // Query functions
   int size() const;
   bool isEmpty() const;
 
-// Protected data
 protected:
-  std::list<Particle*> _bag;
+
+   virtual Particle* makeParticle( double energy, double* state) = 0;  
+
+  std::list<ParticlePtr> _bag;
+
   // Particles in the _bag are owned by the ParticleBunch object.
 };
+
+
+// stream operators
+
+std::ostream& operator<<( std::ostream &os, const ParticleBunch& bunch);
+std::istream& operator>>( std::istream &is, ParticleBunch& bunch);
+
 
 
 class ProtonBunch : public ParticleBunch
@@ -137,6 +162,7 @@ public:
   ~ProtonBunch();
   
   void append( const Proton& );
+  void append( ProtonPtr  );
 
   void recreate( int,                // number of particles
                  double,             // particle energy
@@ -151,6 +177,10 @@ public:
                  Distribution&,      // distribution function
                  Discriminator* = 0  // constraints predicate
                  );
+ protected:
+
+  virtual Particle* makeParticle(double energy, double* state);
+
 };
 
 
@@ -175,6 +205,9 @@ public:
   
   ~ElectronBunch();
   
+  void append( const Electron& );
+  void append( ElectronPtr );
+
   void recreate( int,                // number of particles
                  double,             // particle energy
                  double*,            // array of widths (size = 6)
@@ -188,6 +221,11 @@ public:
                  Distribution&,      // distribution function
                  Discriminator* = 0  // constraints predicate
                  );
+
+ protected:
+ 
+  virtual Particle* makeParticle(double energy, double* state);
+
 };
 
 #endif // PARTBUNCH_H
