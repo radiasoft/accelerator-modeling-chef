@@ -87,6 +87,7 @@
 #include "QueryDialog.h"
 #include "ModifierVisitor.h"
 #include "InitCondDialogLF.h"
+#include "DistributionWidget.h"
 
 // This undef is needed because of the compiler.
 // #undef connect
@@ -239,6 +240,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
           _calcPushMenu->insertItem( "Uncoupled Lattice Functions", this, SLOT(_pushULF()) );
           _calcPushMenu->insertItem( "Moments", this, SLOT(_pushMoments()) );
           _calcPushMenu->insertItem( "Dispersion", this, SLOT(_pushDispersion()) );
+          _calcPushMenu->insertItem( "Particles", this, SLOT(_pushParticles()) );
         _calcCalcFuncMenu->insertItem( "Push", _calcPushMenu );
 
         _calcCalcFuncMenu->insertItem( "Dispersion", this, SLOT(_launchDispersion()) );
@@ -2081,6 +2083,16 @@ void CHEF::_pushDispersion()
 
   // Clean up before exiting
   if( 0 != wpu) { delete wpu; wpu = 0; }
+}
+
+
+void CHEF::_pushParticles()
+{
+  DistributionWidget* dwPtr
+    = new DistributionWidget( *(_p_currBmlCon), 0, 0, Qt::WDestructiveClose );
+  // REMOVE: DistributionWidget* dwPtr
+  // REMOVE:   = new DistributionWidget( _p_currBmlCon->_protonBunch, 0, 0, Qt::WDestructiveClose );
+  dwPtr->show();
 }
 
 

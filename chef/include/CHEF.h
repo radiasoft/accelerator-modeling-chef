@@ -326,9 +326,10 @@ private slots:
   void _launchET();
   void _launchMoments();
   void _launchLB();
-  void _pushDispersion();
-  void _pushMoments();
   void _pushULF();
+  void _pushMoments();
+  void _pushDispersion();
+  void _pushParticles();
   void _launchTrack();
   void _launchRayTrace();
   void _launchDispersion();

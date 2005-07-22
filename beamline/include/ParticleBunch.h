@@ -113,6 +113,8 @@ public:
   // void remove( const Particle* );
 
   std::list<ParticlePtr> remove( Discriminator& );
+  void clear();
+  void empty();
    
   // I'll have to think carefully about this one.
   // Returns a list of removed particles and hands
@@ -124,10 +126,8 @@ public:
   bool isEmpty() const;
 
 protected:
-
    virtual Particle* makeParticle( double energy, double* state) = 0;  
-
-  std::list<ParticlePtr> _bag;
+   std::list<ParticlePtr> _bag;
 
   // Particles in the _bag are owned by the ParticleBunch object.
 };

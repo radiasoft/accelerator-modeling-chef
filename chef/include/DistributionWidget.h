@@ -24,11 +24,12 @@ class DistributionWidget : public QDialog
 {
   Q_OBJECT
   public:
+    // Constructors
     DistributionWidget();
-    DistributionWidget( ProtonBunch& );
+    DistributionWidget( ProtonBunch&, QWidget* = 0, const char* = 0, WFlags = 0 );
       // Can be used to fill the ProtonBunch.
-    DistributionWidget( beamline*, ProtonBunch&, QWidget* = 0, const char* = 0, WFlags = 0 );
-    DistributionWidget( BeamlineContext&, ProtonBunch&, QWidget* = 0, const char* = 0, WFlags = 0 );
+    DistributionWidget( beamline&, ProtonBunch&, QWidget* = 0, const char* = 0, WFlags = 0 );
+    DistributionWidget( BeamlineContext&, QWidget* = 0, const char* = 0, WFlags = 0 );
       // Will also propagate the bunch down a line.
       // !!! NOT WRITTEN ???
     DistributionWidget( const DistributionWidget& );
@@ -42,6 +43,11 @@ class DistributionWidget : public QDialog
     // avg: 
 
   private:
+    beamline*        _bmlPtr;      // NOT OWNED
+    BeamlineContext* _bmlConPtr;   // NOT OWNED
+                                   // Takes precedence
+                                   // over _bmlPtr.
+
     enum distType {uniform,gaussian,equilibrium} _kind;
 
     QVBox*        _qvbPtr;
@@ -85,11 +91,20 @@ class DistributionWidget : public QDialog
     QLineEdit*    _gauss_dppAvg;
     QLineEdit*    _gauss_dppSig;
 
+    QLineEdit*    _equil_xBeta;
+    QLineEdit*    _equil_yBeta;
+    QLineEdit*    _equil_xAlpha;
+    QLineEdit*    _equil_yAlpha;
+    QLineEdit*    _equil_xEps;
+    QLineEdit*    _equil_yEps;
+
   private:
     ProtonBunch* _theSamplePtr;
     Vector       _average;
     Matrix       _covariance;
     bool         _statsGiven;
+
+    void         _finishConstructor();
 
     void         _genUniform();
     void         _genGaussian();

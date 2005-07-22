@@ -232,6 +232,7 @@ class BeamlineContext
     friend istream& operator>>( istream&,       BeamlineContext& );
 
     Proton                _proton;
+    ProtonBunch           _protonBunch;
 
     // Status flags
     static const int OKAY;
