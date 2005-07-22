@@ -116,6 +116,18 @@ list<ParticlePtr> ParticleBunch::remove( Discriminator& dsc )
 }
 
 
+void ParticleBunch::empty()
+{
+  this->clear();
+}
+
+
+void ParticleBunch::clear()
+{
+  if( !_bag.empty() ) { _bag.clear(); }
+}
+
+
 int ParticleBunch::size() const
 {
   return _bag.size();

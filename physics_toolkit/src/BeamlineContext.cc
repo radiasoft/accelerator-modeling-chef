@@ -60,7 +60,7 @@ const double BeamlineContext::_smallClosedOrbitNPYError /*[rad]*/ = 1.0e-9;
 using namespace std;
 
 BeamlineContext::BeamlineContext( bool doClone, beamline* x )
-: _p_bml(x), _proton( x->Energy() ),
+: _p_bml(x), _proton( x->Energy() ), _protonBunch(),
   _p_lfs(0), _p_ets(0), _p_covs(0), _p_lbs(0), _p_cos(0), _p_dsps(0),
   _p_ca(0), _p_ta(0),
   _p_co_p(0), _p_disp_p(0), 

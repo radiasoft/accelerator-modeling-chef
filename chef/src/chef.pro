@@ -29,6 +29,7 @@ CONFIG += stl
 SOURCES = CHEF.builders.cc \
           CHEF.cc \
           BeamlineBrowser.cc \
+          DistributionWidget.cc \
           ExpressionBrowser.cc \
           LattFncPlt.cc \
           ETFncPlt.cc \
@@ -47,6 +48,7 @@ SOURCES = CHEF.builders.cc \
 
 HEADERS = ../include/CHEF.h \
           ../include/BeamlineBrowser.h \
+          ../include/DistributionWidget.h \
           ../include/ExpressionBrowser.h \
           ../include/LattFncPlt.h \
           ../include/ETFncPlt.h \
