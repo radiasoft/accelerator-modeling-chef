@@ -167,7 +167,7 @@ CF_Editor::renumberLines()
   }
 
   // Lines_->setAlignment( Qt::AlignRight ); 
-  Lines_->setText( QString ( ss.str() ) );
+  Lines_->setText( QString ( ss.str().c_str() ) );
     
   // Once the lines are added, the min/max scale for the scroll "value" has also
   // changed. The line below is needed to force resync of both scrollbar values. 
