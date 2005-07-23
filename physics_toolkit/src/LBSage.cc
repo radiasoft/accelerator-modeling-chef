@@ -196,6 +196,22 @@ int LBSage::doCalc( const JetParticle* ptr_jp, beamline::Criterion& crit )
       _deleteCalcs(); delete ptr_proton; delete localPtr; return 2; 
     }
 
+    // alpha_1x and alpha_2y
+    temp = E2(xp,x)*E2(x,x);
+    if( std::abs(imag(temp) + 0.5) < 1.0e-8 ) {
+      _calcs[i]->alpha_1x = -2.0*real(temp);
+    }
+    else {
+      _deleteCalcs(); delete ptr_proton; delete localPtr; return 3; 
+    }
+    temp = E2(yp,y)*E2(y,y);
+    if( std::abs(imag(temp) + 0.5) < 1.0e-8 ) {
+      _calcs[i]->alpha_2y = -2.0*real(temp);
+    }
+    else {
+      _deleteCalcs(); delete ptr_proton; delete localPtr; return 4; 
+    }
+
     // beta_1y and beta_2x
     temp = E2(y,x);
     _calcs[i]->beta_1y = 2.0*real(temp*conj(temp));

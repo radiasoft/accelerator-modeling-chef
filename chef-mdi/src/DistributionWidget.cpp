@@ -1,3 +1,17 @@
+/**********************************************************************/
+/*                                                                    */
+/* File:           DistributionWidget.cc                              */
+/*                                                                    */ 
+/* Authors:        Leo Michelotti                                     */
+/*                 michelotti@fnal.gov                                */     
+/*                                                                    */ 
+/* Creation Date:  July 15, 2005                                      */
+/* Current rev:    July 23, 2005                                      */
+/*                                                                    */ 
+/* Copyright:      (c) URA/Fermilab                                   */
+/*                                                                    */
+/**********************************************************************/
+
 #include <iostream>
 #include <fstream>
 
@@ -5,6 +19,15 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/variate_generator.hpp>
+
+typedef boost::uniform_real<double>
+        basUnifGen;
+typedef boost::variate_generator<boost::minstd_rand&, boost::uniform_real<double> >
+        varUnifGen;
+typedef boost::normal_distribution<double>
+        basGaussGen;
+typedef boost::variate_generator<boost::minstd_rand&, boost::normal_distribution<double> >
+        varGaussGen;
 
 #include "DistributionWidget.h"
 
@@ -27,7 +50,9 @@
 
 using namespace std;
 
+
 DistributionWidget::DistributionWidget( const DistributionWidget& )
+: QDialog( 0, 0, true )
 {
   QMessageBox::critical( this, "ERROR", "Program will crash."
                                         "\nDistributionWidget copy constructor called.");
@@ -37,19 +62,51 @@ DistributionWidget::DistributionWidget( const DistributionWidget& )
 DistributionWidget::DistributionWidget()
 : QDialog( 0, 0, true )
 {
-  QMessageBox::warning( this, "DistributionWidget", 
-                              "You must specify a ProtonBunch"
-                              "\nin the constructor.");
+  QMessageBox::critical( this, "DistributionWidget", 
+                               "You must specify a ProtonBunch"
+                               "\nin the constructor."
+                               "\nThis object will fail."       );
 }
 
 
-DistributionWidget::DistributionWidget( ProtonBunch& x )
-: QDialog( 0, 0, true )
+DistributionWidget::DistributionWidget( ProtonBunch& x, QWidget* parent, const char* name , WFlags atts )
+:   QDialog( parent, name, false, atts )
+  , _bmlPtr(0)
+  , _bmlConPtr(0)
   , _kind(uniform)
   , _theSamplePtr(&x)
   , _average(6)
   , _covariance(6,6)
   , _statsGiven(false)
+{
+  _finishConstructor();
+}
+
+
+DistributionWidget::DistributionWidget( beamline& x, ProtonBunch&, QWidget*, const char*, WFlags )
+:   QDialog( 0, 0, true )
+  , _bmlPtr(&x)
+{
+  QMessageBox::warning( this, "DistributionWidget", 
+                        "This constructor not written.");
+}
+
+
+DistributionWidget::DistributionWidget( BeamlineContext& x, QWidget* parent, const char* name, WFlags atts )
+:   QDialog( parent, name, false, atts )
+  , _bmlPtr(0)
+  , _bmlConPtr(&x)
+  , _kind(uniform)
+  , _theSamplePtr(&(x._protonBunch))
+  , _average(6)
+  , _covariance(6,6)
+  , _statsGiven(false)
+{
+  _finishConstructor();
+}
+
+
+void DistributionWidget::_finishConstructor()
 {
   _qvbPtr = new QVBox( this );
 
@@ -70,7 +127,7 @@ DistributionWidget::DistributionWidget( ProtonBunch& x )
              connect( _cPtr, SIGNAL(pressed()),
                        this,  SLOT(changeLabels()) );
 
-         // _qbgPtr->setFrameStyle(QFrame::NoFrame);
+         _qbgPtr->setFrameStyle(QFrame::NoFrame);
          _qbgPtr->setRadioButtonExclusive(true);
          _qbgPtr->setButton( _qbgPtr->id(_aPtr) );
          _qbgPtr->adjustSize();
@@ -118,8 +175,8 @@ DistributionWidget::DistributionWidget( ProtonBunch& x )
          unifLayoutPtr->addWidget( _unif_yMin,                    2, 2 );
          unifLayoutPtr->addWidget( _unif_yMax,                    2, 3 );
 
-         _unif_cdtMin = new QLineEdit( "-1.000", _unifPtr );
-         _unif_cdtMax = new QLineEdit( "1.000", _unifPtr );
+         _unif_cdtMin = new QLineEdit( "0.000", _unifPtr );
+         _unif_cdtMax = new QLineEdit( "0.000", _unifPtr );
          _unif_cdtMin->setMaxLength(7);
          _unif_cdtMax->setMaxLength(7);
          unifLayoutPtr->addWidget( new QLabel("cdt",   _unifPtr), 3, 0 );
@@ -127,8 +184,8 @@ DistributionWidget::DistributionWidget( ProtonBunch& x )
          unifLayoutPtr->addWidget( _unif_cdtMin,                  3, 2 );
          unifLayoutPtr->addWidget( _unif_cdtMax,                  3, 3 );
 
-         _unif_pxMin = new QLineEdit( "-1.000", _unifPtr );
-         _unif_pxMax = new QLineEdit( "1.000", _unifPtr );
+         _unif_pxMin = new QLineEdit( "0.000", _unifPtr );
+         _unif_pxMax = new QLineEdit( "0.000", _unifPtr );
          _unif_pxMin->setMaxLength(7);
          _unif_pxMax->setMaxLength(7);
          unifLayoutPtr->addWidget( new QLabel("px/p",  _unifPtr), 4, 0 );
@@ -136,8 +193,8 @@ DistributionWidget::DistributionWidget( ProtonBunch& x )
          unifLayoutPtr->addWidget( _unif_pxMin,                   4, 2 );
          unifLayoutPtr->addWidget( _unif_pxMax,                   4, 3 );
 
-         _unif_pyMin = new QLineEdit( "-1.000", _unifPtr );
-         _unif_pyMax = new QLineEdit( "1.000", _unifPtr );
+         _unif_pyMin = new QLineEdit( "0.000", _unifPtr );
+         _unif_pyMax = new QLineEdit( "0.000", _unifPtr );
          _unif_pyMin->setMaxLength(7);
          _unif_pyMax->setMaxLength(7);
          unifLayoutPtr->addWidget( new QLabel("py/p",  _unifPtr), 5, 0 );
@@ -145,8 +202,8 @@ DistributionWidget::DistributionWidget( ProtonBunch& x )
          unifLayoutPtr->addWidget( _unif_pyMin,                   5, 2 );
          unifLayoutPtr->addWidget( _unif_pyMax,                   5, 3 );
 
-         _unif_dppMin = new QLineEdit( "-1.000", _unifPtr );
-         _unif_dppMax = new QLineEdit( "1.000", _unifPtr );
+         _unif_dppMin = new QLineEdit( "0.000", _unifPtr );
+         _unif_dppMax = new QLineEdit( "0.000", _unifPtr );
          _unif_dppMin->setMaxLength(7);
          _unif_dppMax->setMaxLength(7);
          unifLayoutPtr->addWidget( new QLabel("dp/p",  _unifPtr), 6, 0 );
@@ -187,7 +244,7 @@ DistributionWidget::DistributionWidget( ProtonBunch& x )
          gaussLayoutPtr->addWidget( _gauss_ySig,                    2, 3 );
 
          _gauss_cdtAvg = new QLineEdit( "0.000", _gaussPtr );
-         _gauss_cdtSig = new QLineEdit( "1.000", _gaussPtr );
+         _gauss_cdtSig = new QLineEdit( "0.000", _gaussPtr );
          _gauss_cdtAvg->setMaxLength(7);
          _gauss_cdtSig->setMaxLength(7);
          gaussLayoutPtr->addWidget( new QLabel("cdt",   _gaussPtr), 3, 0 );
@@ -196,7 +253,7 @@ DistributionWidget::DistributionWidget( ProtonBunch& x )
          gaussLayoutPtr->addWidget( _gauss_cdtSig,                  3, 3 );
 
          _gauss_pxAvg = new QLineEdit( "0.000", _gaussPtr );
-         _gauss_pxSig = new QLineEdit( "1.000", _gaussPtr );
+         _gauss_pxSig = new QLineEdit( "0.000", _gaussPtr );
          _gauss_pxAvg->setMaxLength(7);
          _gauss_pxSig->setMaxLength(7);
          gaussLayoutPtr->addWidget( new QLabel("px/p",  _gaussPtr), 4, 0 );
@@ -205,7 +262,7 @@ DistributionWidget::DistributionWidget( ProtonBunch& x )
          gaussLayoutPtr->addWidget( _gauss_pxSig,                   4, 3 );
 
          _gauss_pyAvg = new QLineEdit( "0.000", _gaussPtr );
-         _gauss_pySig = new QLineEdit( "1.000", _gaussPtr );
+         _gauss_pySig = new QLineEdit( "0.000", _gaussPtr );
          _gauss_pyAvg->setMaxLength(7);
          _gauss_pySig->setMaxLength(7);
          gaussLayoutPtr->addWidget( new QLabel("py/p",  _gaussPtr), 5, 0 );
@@ -214,7 +271,7 @@ DistributionWidget::DistributionWidget( ProtonBunch& x )
          gaussLayoutPtr->addWidget( _gauss_pySig,                   5, 3 );
 
          _gauss_dppAvg = new QLineEdit( "0.000", _gaussPtr );
-         _gauss_dppSig = new QLineEdit( "1.000", _gaussPtr );
+         _gauss_dppSig = new QLineEdit( "0.000", _gaussPtr );
          _gauss_dppAvg->setMaxLength(7);
          _gauss_dppSig->setMaxLength(7);
          gaussLayoutPtr->addWidget( new QLabel("dp/p",  _gaussPtr), 6, 0 );
@@ -226,7 +283,74 @@ DistributionWidget::DistributionWidget( ProtonBunch& x )
        _gaussPtr->hide();
 
        _equilPtr = new QWidget( _selPtr );
-       _equilPtr->setMinimumSize( _gaussPtr->size() );
+         QGridLayout* equilLayoutPtr = new QGridLayout( _equilPtr, 5, 4, 5, 10 );
+         equilLayoutPtr->addWidget( new QLabel("Parameter",_equilPtr), 0, 0 );
+         equilLayoutPtr->addWidget( new QLabel("Unit"     ,_equilPtr), 0, 1 );
+         equilLayoutPtr->addWidget( new QLabel("Hor"      ,_equilPtr), 0, 2 );
+         equilLayoutPtr->addWidget( new QLabel("Ver"      ,_equilPtr), 0, 3 );
+
+         double beta_x = 10.0;
+         double beta_y = 10.0;
+         double alpha_x = 10.0;
+         double alpha_y = 10.0;
+
+         if( 0 != _bmlConPtr ) {
+           if( _bmlConPtr->isTreatedAsRing() ) {
+             const LBSage::Info* lbsPtr
+               = _bmlConPtr->getLBFuncPtr( _bmlConPtr->countHowManyDeeply() - 1 );
+             beta_x = lbsPtr->beta_1x;
+             beta_y = lbsPtr->beta_2y;
+             alpha_x = lbsPtr->alpha_1x;
+             alpha_y = lbsPtr->alpha_2y;
+           }
+         }
+ 
+         QString stl;
+         stl.setNum( beta_x );
+         _equil_xBeta = new QLineEdit( stl, _equilPtr );
+         stl.setNum( beta_y );
+         _equil_yBeta = new QLineEdit( stl, _equilPtr );
+         _equil_xBeta->setMaxLength(7);
+         _equil_yBeta->setMaxLength(7);
+         equilLayoutPtr->addWidget( new QLabel("Beta" , _equilPtr), 1, 0 );
+         equilLayoutPtr->addWidget( new QLabel("[m]"  , _equilPtr), 1, 1 );
+         equilLayoutPtr->addWidget( _equil_xBeta                  , 1, 2 );
+         equilLayoutPtr->addWidget( _equil_yBeta                  , 1, 3 );
+
+         stl.setNum( alpha_x );
+         _equil_xAlpha = new QLineEdit( stl, _equilPtr );
+         stl.setNum( alpha_y );
+         _equil_yAlpha = new QLineEdit( stl, _equilPtr );
+         _equil_xAlpha->setMaxLength(7);
+         _equil_yAlpha->setMaxLength(7);
+         equilLayoutPtr->addWidget( new QLabel("Alpha" , _equilPtr), 2, 0 );
+         equilLayoutPtr->addWidget( new QLabel("   "   , _equilPtr), 2, 1 );
+         equilLayoutPtr->addWidget( _equil_xAlpha                  , 2, 2 );
+         equilLayoutPtr->addWidget( _equil_yAlpha                  , 2, 3 );
+
+         _equil_xEps = new QLineEdit( "10", _equilPtr );
+         _equil_yEps = new QLineEdit( "10", _equilPtr );
+         _equil_xEps->setMaxLength(7);
+         _equil_yEps->setMaxLength(7);
+         equilLayoutPtr->addWidget( new QLabel("Emittance"      , _equilPtr), 3, 0 );
+         equilLayoutPtr->addWidget( new QLabel("[pi mm-mrad]"   , _equilPtr), 3, 1 );
+         equilLayoutPtr->addWidget( _equil_xEps                             , 3, 2 );
+         equilLayoutPtr->addWidget( _equil_yEps                             , 3, 3 );
+
+         QWidget* fill0 = new QWidget(_equilPtr);
+         QWidget* fill1 = new QWidget(_equilPtr);
+         QWidget* fill2 = new QWidget(_equilPtr);
+         QWidget* fill3 = new QWidget(_equilPtr);
+         fill0->setSizePolicy( QSizePolicy(QSizePolicy::Ignored,QSizePolicy::Ignored) );
+         fill1->setSizePolicy( QSizePolicy(QSizePolicy::Ignored,QSizePolicy::Ignored) );
+         fill2->setSizePolicy( QSizePolicy(QSizePolicy::Ignored,QSizePolicy::Ignored) );
+         fill3->setSizePolicy( QSizePolicy(QSizePolicy::Ignored,QSizePolicy::Ignored) );
+         equilLayoutPtr->addWidget( fill0, 4, 0 );
+         equilLayoutPtr->addWidget( fill1, 4, 1 );
+         equilLayoutPtr->addWidget( fill2, 4, 2 );
+         equilLayoutPtr->addWidget( fill3, 4, 3 );
+   
+       _equilPtr->adjustSize();
        _equilPtr->hide();
 
        _selQglPtr->addWidget( _leftStuff,  0, 0 );
@@ -263,22 +387,6 @@ DistributionWidget::DistributionWidget( ProtonBunch& x )
 
   this->setCaption( "Specify distribution." );
   this->adjustSize();
-}
-
-
-DistributionWidget::DistributionWidget( beamline*, ProtonBunch&, QWidget*, const char*, WFlags )
-: QDialog( 0, 0, true )
-{
-  QMessageBox::warning( this, "DistributionWidget", 
-			"This constructor not written.");
-}
-
-
-DistributionWidget::DistributionWidget( BeamlineContext&, ProtonBunch&, QWidget*, const char*, WFlags )
-: QDialog( 0, 0, true )
-{
-  QMessageBox::warning( this, "DistributionWidget", 
-			"This constructor not written.");
 }
 
 
@@ -331,6 +439,7 @@ void DistributionWidget::resizeEvent( QResizeEvent* qrePtr )
 
 void DistributionWidget::_genUniform()
 {
+  // Read the numbers from the interface
   bool keepGoing = true;
   bool ok = true;
   double xMin = _unif_xMin->text().toDouble(&ok);      keepGoing &= ok;
@@ -348,51 +457,100 @@ void DistributionWidget::_genUniform()
   int n = _populationPtr->text().toInt(&ok);           keepGoing &= ok;
 
   if( keepGoing ) {
-    // The following use of boost classes is based on boost 
+    // The following use of boost classes is based on boost
     // random_demo.cpp profane demo
     // by Jens Maurer 2000
-    // 
+    //
     // Define a random number generator and initialize it with a reproducible
     // seed.
     // (The seed is unsigned, otherwise the wrong overload may be selected
     // when using mt19937 as the base_generator_type.)
-    // 
+    //
     // Whatever ...
-    // 
+    //
     boost::minstd_rand generator(42u);
     // ??? Should be in constructor ???
 
-    boost::uniform_real<double> xRan( xMin, xMax );
-    boost::uniform_real<double> yRan( yMin, yMax );
-    boost::uniform_real<double> cdtRan( cdtMin, cdtMax );
-    boost::uniform_real<double> pxRan( pxMin, pxMax );
-    boost::uniform_real<double> pyRan( pyMin, pyMax );
-    boost::uniform_real<double> dppRan( dppMin, dppMax );
+    // The boost random functors will only accept xMin < xMax,
+    // throwing an exception when xMin = xMax. This is unacceptable.
+    // To bypass this behavior, I use pointers.
 
-    boost::variate_generator<boost::minstd_rand&, boost::uniform_real<double> > 
-    xDist(generator, xRan);
-    boost::variate_generator<boost::minstd_rand&, boost::uniform_real<double> > 
-    yDist(generator, yRan);
-    boost::variate_generator<boost::minstd_rand&, boost::uniform_real<double> > 
-    cdtDist(generator, cdtRan);
-    boost::variate_generator<boost::minstd_rand&, boost::uniform_real<double> > 
-    pxDist(generator, pxRan);
-    boost::variate_generator<boost::minstd_rand&, boost::uniform_real<double> > 
-    pyDist(generator, pyRan);
-    boost::variate_generator<boost::minstd_rand&, boost::uniform_real<double> > 
-    dppDist(generator, dppRan);
+    basUnifGen* xRanPtr   = 0;
+    basUnifGen* yRanPtr   = 0;
+    basUnifGen* cdtRanPtr = 0;
+    basUnifGen* pxRanPtr  = 0;
+    basUnifGen* pyRanPtr  = 0;
+    basUnifGen* dppRanPtr = 0;
 
+    varUnifGen* xDistPtr   = 0;
+    varUnifGen* yDistPtr   = 0;
+    varUnifGen* cdtDistPtr = 0;
+    varUnifGen* pxDistPtr  = 0;
+    varUnifGen* pyDistPtr  = 0;
+    varUnifGen* dppDistPtr = 0;
+
+    if( xMin < xMax )
+    { xRanPtr  = new basUnifGen( 0.001*xMin,   0.001*xMax );
+      xDistPtr = new varUnifGen(generator, *xRanPtr);
+    }
+    else
+    { xMin = 0.001*xMin;
+    }
+    if( yMin < yMax )
+    { yRanPtr  = new basUnifGen( 0.001*yMin,   0.001*yMax );
+      yDistPtr = new varUnifGen(generator, *yRanPtr);
+    }
+    else
+    { yMin = 0.001*yMin;
+    }
+    if( cdtMin < cdtMax )
+    { cdtRanPtr  = new basUnifGen( 0.001*cdtMin, 0.001*cdtMax );
+      cdtDistPtr = new varUnifGen(generator, *cdtRanPtr);
+    }
+    else
+    { cdtMin = 0.001*cdtMin;
+    }
+    if( pxMin < pxMax )
+    { pxRanPtr  = new basUnifGen( 0.001*pxMin,  0.001*pxMax );
+      pxDistPtr = new varUnifGen(generator, *pxRanPtr);
+    }
+    else
+    { pxMin = 0.001*pxMin;
+    }
+    if( pyMin < pyMax )
+    { pyRanPtr  = new basUnifGen( 0.001*pyMin,  0.001*pyMax );
+      pyDistPtr = new varUnifGen(generator, *pyRanPtr);
+    }
+    else
+    { pyMin = 0.001*pyMin;
+    }
+    if( dppMin < dppMax )
+    { dppRanPtr  = new basUnifGen( 0.001*dppMin, 0.001*dppMax );
+      dppDistPtr = new varUnifGen(generator, *dppRanPtr);
+    }
+    else
+    { dppMin = 0.001*dppMin;
+    }
+
+    // Finally, populate the ProtonBunch
     if( n <= 0 ) { n = 16; }
     Proton p;
     for( int i = 0; i < n; i++ ) {
-      p.set_x( xDist() );
-      p.set_y( yDist() );
-      p.set_cdt( cdtDist() );
-      p.set_npx( pxDist() );
-      p.set_npy( pyDist() );
-      p.set_ndp( dppDist() );
+      if(xDistPtr)   { p.set_x( (*xDistPtr)() );     }
+      else           { p.set_x( xMin );              }
+      if(yDistPtr)   { p.set_y( (*yDistPtr)() );     }
+      else           { p.set_y( yMin );              }
+      if(cdtDistPtr) { p.set_cdt( (*cdtDistPtr)() ); }
+      else           { p.set_cdt( cdtMin );          }
+      if(pxDistPtr)  { p.set_npx( (*pxDistPtr)() );  }
+      else           { p.set_npx( pxMin );           }
+      if(pyDistPtr)  { p.set_npy( (*pyDistPtr)() );  }
+      else           { p.set_npy( pyMin );           }
+      if(dppDistPtr) { p.set_ndp( (*dppDistPtr)() ); }
+      else           { p.set_ndp( dppMin );          }
+
       _theSamplePtr->append( p );
-      // The proton is cloned by the ParticleBunch
+      // Note: the proton is cloned by the ParticleBunch
     }
 
     ostringstream uic;
@@ -402,6 +560,22 @@ void DistributionWidget::_genUniform()
         << _theSamplePtr->size()
         << " particles.";
     QMessageBox::information( 0, "DistributionWidget", uic.str().c_str() );
+
+
+    // Clean up before returning.
+    if( xRanPtr   ) { delete xRanPtr;   }
+    if( yRanPtr   ) { delete yRanPtr;   }
+    if( cdtRanPtr ) { delete cdtRanPtr; }
+    if( pxRanPtr  ) { delete pxRanPtr;  }
+    if( pyRanPtr  ) { delete pyRanPtr;  }
+    if( dppRanPtr ) { delete dppRanPtr; }
+
+    if( xDistPtr   ) { delete xDistPtr;   }
+    if( yDistPtr   ) { delete yDistPtr;   }
+    if( cdtDistPtr ) { delete cdtDistPtr; }
+    if( pxDistPtr  ) { delete pxDistPtr;  }
+    if( pyDistPtr  ) { delete pyDistPtr;  }
+    if( dppDistPtr ) { delete dppDistPtr; }
   }
 
   else {
@@ -412,6 +586,7 @@ void DistributionWidget::_genUniform()
 
 void DistributionWidget::_genGaussian()
 {
+  // Read the numbers from the interface
   bool keepGoing = true;
   bool ok = true;
   double xAvg = _gauss_xAvg->text().toDouble(&ok);      keepGoing &= ok;
@@ -443,25 +618,19 @@ void DistributionWidget::_genGaussian()
     boost::minstd_rand generator(42u);
     // ??? Should be in constructor ???
 
-    boost::normal_distribution<double> xRan( xAvg, xSig );
-    boost::normal_distribution<double> yRan( yAvg, ySig );
-    boost::normal_distribution<double> cdtRan( cdtAvg, cdtSig );
-    boost::normal_distribution<double> pxRan( pxAvg, pxSig );
-    boost::normal_distribution<double> pyRan( pyAvg, pySig );
-    boost::normal_distribution<double> dppRan( dppAvg, dppSig );
+    basGaussGen xRan( 0.001*xAvg, 0.001*std::abs(xSig) );
+    basGaussGen yRan( 0.001*yAvg, 0.001*std::abs(ySig) );
+    basGaussGen cdtRan( 0.001*cdtAvg, 0.001*std::abs(cdtSig) );
+    basGaussGen pxRan( 0.001*pxAvg, 0.001*std::abs(pxSig) );
+    basGaussGen pyRan( 0.001*pyAvg, 0.001*std::abs(pySig) );
+    basGaussGen dppRan( 0.001*dppAvg, 0.001*std::abs(dppSig) );
 
-    boost::variate_generator<boost::minstd_rand&, boost::normal_distribution<double> > 
-    xDist(generator, xRan);
-    boost::variate_generator<boost::minstd_rand&, boost::normal_distribution<double> > 
-    yDist(generator, yRan);
-    boost::variate_generator<boost::minstd_rand&, boost::normal_distribution<double> > 
-    cdtDist(generator, cdtRan);
-    boost::variate_generator<boost::minstd_rand&, boost::normal_distribution<double> > 
-    pxDist(generator, pxRan);
-    boost::variate_generator<boost::minstd_rand&, boost::normal_distribution<double> > 
-    pyDist(generator, pyRan);
-    boost::variate_generator<boost::minstd_rand&, boost::normal_distribution<double> > 
-    dppDist(generator, dppRan);
+    varGaussGen xDist(generator, xRan);
+    varGaussGen yDist(generator, yRan);
+    varGaussGen cdtDist(generator, cdtRan);
+    varGaussGen pxDist(generator, pxRan);
+    varGaussGen pyDist(generator, pyRan);
+    varGaussGen dppDist(generator, dppRan);
 
     if( n <= 0 ) { n = 16; }
     Proton p;
@@ -493,6 +662,74 @@ void DistributionWidget::_genGaussian()
 
 void DistributionWidget::_genEquilibrium()
 {
+  // Read the numbers from the interface
+  bool keepGoing = true;
+  bool ok = true;
+
+  double beta_x  = _equil_xBeta->text().toDouble(&ok);  keepGoing &= ok;
+  double beta_y  = _equil_yBeta->text().toDouble(&ok);  keepGoing &= ok;
+  double alpha_x = _equil_xAlpha->text().toDouble(&ok); keepGoing &= ok;
+  double alpha_y = _equil_yAlpha->text().toDouble(&ok); keepGoing &= ok;
+  double eps_x   = _equil_xEps->text().toDouble(&ok);   keepGoing &= ok;
+  double eps_y   = _equil_yEps->text().toDouble(&ok);   keepGoing &= ok;
+  int n = _populationPtr->text().toInt(&ok);            keepGoing &= ok;
+
+  if( keepGoing ) {
+    if( beta_x <= 0 || beta_y <= 0 || eps_x <= 0 || eps_y <= 0 )
+    { keepGoing = false; }
+  }
+
+  if( keepGoing ) {
+    // Set up the boost random number generators
+    boost::minstd_rand generator(42u);
+    // ??? Should be in constructor ???
+
+    basUnifGen psiRan(-M_PI, M_PI);
+    basUnifGen x_epsRan(0.0,eps_x);
+    basUnifGen y_epsRan(0.0,eps_y);
+
+    varUnifGen psiDist(generator,psiRan);
+    varUnifGen x_epsDist(generator,x_epsRan);
+    varUnifGen y_epsDist(generator,y_epsRan);
+
+
+    // Finally, populate the ProtonBunch
+    if( n <= 0 ) { n = 16; }
+    Proton p;
+    double eps, psi, amp, pos;
+    for( int i = 0; i < n; i++ ) {
+      psi = psiDist();
+      eps = (1.0e-6)*x_epsDist();
+
+      amp = sqrt(beta_x*eps);
+      pos = amp*sin(psi);
+      p.set_x( pos );
+      p.set_npx( (amp*cos(psi) - alpha_x*pos) / beta_x );
+
+      psi = psiDist();
+      eps = (1.0e-6)*y_epsDist();
+
+      amp = sqrt(beta_y*eps);
+      pos = amp*sin(psi);
+      p.set_y( pos );
+      p.set_npy( (amp*cos(psi) - alpha_y*pos) / beta_y );
+
+      _theSamplePtr->append( p );
+      // Note: the proton is cloned by the ParticleBunch
+    }
+
+    ostringstream uic;
+    uic << n
+        << " particles have been added to the bunch."
+        << "\nIt now contains "
+        << _theSamplePtr->size()
+        << " particles.";
+    QMessageBox::information( 0, "DistributionWidget", uic.str().c_str() );
+  }
+
+  else {
+    QMessageBox::warning( this, "Sorry", "Error reading data from widget." );
+  }
 }
 
 
@@ -505,13 +742,8 @@ void DistributionWidget::sample()
   // Uniform sampling
   if     ( uniform     == _kind ) { _genUniform(); }
   else if( gaussian    == _kind ) { _genGaussian(); }
-  else if( equilibrium == _kind ) {
-    QMessageBox::warning( this, "Sorry", "Nothing happened." );
-  }
-  else {
-    cout << "DGN: whoops! Nothing is down." << endl;
-    QMessageBox::warning( this, "Sorry", "Nothing happened." );
-  }
+  else if( equilibrium == _kind ) { _genEquilibrium(); }
+  else { QMessageBox::warning( this, "Sorry", "Nothing happened." ); }
 }
 
 
