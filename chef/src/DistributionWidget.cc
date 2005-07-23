@@ -1,3 +1,17 @@
+/**********************************************************************/
+/*                                                                    */
+/* File:           DistributionWidget.cc                              */
+/*                                                                    */ 
+/* Authors:        Leo Michelotti                                     */
+/*                 michelotti@fnal.gov                                */     
+/*                                                                    */ 
+/* Creation Date:  July 15, 2005                                      */
+/* Current rev:    July 23, 2005                                      */
+/*                                                                    */ 
+/* Copyright:      (c) URA/Fermilab                                   */
+/*                                                                    */
+/**********************************************************************/
+
 #include <iostream>
 #include <fstream>
 

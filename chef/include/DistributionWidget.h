@@ -1,3 +1,17 @@
+/**********************************************************************/
+/*                                                                    */
+/* File:           DistributionWidget.h                               */
+/*                                                                    */ 
+/* Authors:        Leo Michelotti                                     */
+/*                 michelotti@fnal.gov                                */     
+/*                                                                    */ 
+/* Creation Date:  July 15, 2005                                      */
+/* Current rev:    July 23, 2005                                      */
+/*                                                                    */ 
+/* Copyright:      (c) URA/Fermilab                                   */
+/*                                                                    */
+/**********************************************************************/
+
 #ifndef TMATRIX_H
 #include "TMatrix.h"
 #endif
