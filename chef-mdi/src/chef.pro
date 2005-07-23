@@ -84,6 +84,7 @@ HEADERS	+= ../include/BeamlineBrowser.h \
 	../include/DspnFncData.h \
 	../include/LBFncData.h \
 	../include/about.h \
+        ../include/DistributionWidget.h \
 	../include/InitCondDialogLF.h \
 	../include/CF_Editor.h
 
@@ -109,6 +110,7 @@ SOURCES	+= BeamlineBrowser.cpp \
 	DspnFncData.cpp \
 	LBFncData.cpp \
 	about.cpp \
+        DistributionWidget.cpp \
 	InitCondDialogLF.cpp \
 	CF_Editor.cpp
 
