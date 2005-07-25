@@ -420,6 +420,8 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
  //          initialize its propagator functor within
  //          its own copy constructor.
 
+ _attributes = a._attributes; 
+ 
  memcpy( (void*) _tag, (const void*) a._tag, BF_MAXCHAR*sizeof(char) );
 
  if(a.align != 0) {
@@ -1464,11 +1466,41 @@ bmlnElmnt::GenericException::GenericException( string fileName, int lineNumber,
   }
 }
 
-const char* bmlnElmnt::GenericException::what() const throw()
+
+const char* 
+bmlnElmnt::GenericException::what() const throw()
 {
   return errorString.c_str();
 }
 
 
+boost::any& 
+bmlnElmnt::operator[](const std::string& s) {
 
+  return _attributes[s.c_str()]; 
+
+}
+
+bool  
+bmlnElmnt::attributeExists( const std::string& s ) {
+
+  return (_attributes.end() !=  _attributes.find( s.c_str() ) );
+
+
+}
+
+void  
+bmlnElmnt::attributeClear( const std::string& s ) {
+
+  _attributes.erase( s.c_str() ); 
+
+}
+
+
+void  
+bmlnElmnt::attributeClear() {
+
+  _attributes.clear();
+
+}
 

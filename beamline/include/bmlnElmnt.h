@@ -37,10 +37,16 @@
 #include <iostream>
 #include <exception>
 
-#include "slist.h"
-#include "Barnacle.h"
-#include "VectorD.h"
-#include "BmlVisitor.h"
+#include <slist.h>
+#include <Barnacle.h>
+#include <VectorD.h>
+#include <BmlVisitor.h>
+
+#include <ext/hash_map>    // This is g++ specific, but will be supported
+                           // in the next c++ std. Most other compilers 
+                           // support hashes.      
+#include <boost/any.hpp>
+
 
 class ParticleBunch;
 class Aperture;
@@ -269,6 +275,16 @@ public:
     std::string errorString;
   };
 
+    // comparison operator for hash table.  
+
+  struct eqstr
+  {
+     bool operator()(const char* s1, const char* s2) const
+     {
+       return strcmp(s1, s2) == 0;
+     }
+  };
+
 protected:
   char*        ident;      // Name identifier of the element.
   double       length;     // Length of object [ meters ]
@@ -296,6 +312,8 @@ protected:
                   // a reference particle to cross
                   // the element. Established by a
                   // RefRegVisitor.
+
+  __gnu_cxx::hash_map<const char*, boost::any, __gnu_cxx::hash<const char*>, bmlnElmnt::eqstr> _attributes;
 
 
 public:
@@ -329,6 +347,11 @@ public:
   BarnacleList dataHook;   // Carries data as service to application program.
   // ??? REMOVE:  lattFunc     lattInfo;   // Information on maps and lattice functions.
   // REMOVE: bmlnElmnt& operator=( const bmlnElmnt& );
+
+  boost::any& operator[](const std::string& s);   // a type-safe facility to attach attributes
+  bool attributeExists(const std::string& s);     // of arbitary type -jfo   
+  void attributeClear (const std::string& s);           
+  void attributeClear ();                                
 
   virtual void accept( BmlVisitor& ) = 0;
   virtual void accept( ConstBmlVisitor& ) const = 0;
