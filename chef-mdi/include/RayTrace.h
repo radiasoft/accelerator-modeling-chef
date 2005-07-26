@@ -137,8 +137,11 @@ public slots:
   void   _new_y           ( double );
   void   _new_yp          ( double );
 
-  // Slot connected to timer.
+  // Slot connected to timer ...
   void   _iterate();
+  // ... and its helpers.
+  void   _pushParticle();
+  void   _pushBunch();
 
 private:
   void             _finishConstructor();
