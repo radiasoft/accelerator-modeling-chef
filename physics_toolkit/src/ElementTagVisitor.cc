@@ -93,6 +93,7 @@ bool ElementTagVisitor::overlap(double x1, double x2, double y1, double y2) {
     
   }
 
+  double num =0;
   if ( (num = std::min(x2,y2) - std::max(x1,y1)) > 0.0 )
      return ( num/std::min((x2-x1),(y2-y1)) > _overlap_tolerance );
   else
