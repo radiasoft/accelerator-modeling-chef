@@ -352,7 +352,7 @@ TrbWidget::TrbWidget( slist& theOrbits )
 
   // Construct drawing windows ...
   _p_glWindow = new DrawSpace3D( this );
-  _p_glWindow->show();
+  // REMOVE: _p_glWindow->show();
   int fixedWidth = ((60*(QApplication::desktop()->height()))/100);
   _p_glWindow->setFixedSize(fixedWidth,fixedWidth);
   _p_glWindow->update();
@@ -482,18 +482,40 @@ void DrawSpace3D::_drawOneLine( double x1, double y1, double x2, double y2 )
   glEnd();
 }
 
+
+// REMOVE: void DrawSpace3D::_output(double x, double y, double u)
+// REMOVE: {
+// REMOVE:   glRasterPos2f(x, y);
+// REMOVE:   stringstream ss;
+// REMOVE:   ss << u << '\0';
+// REMOVE:   char c;
+// REMOVE:   c = ss.get();
+// REMOVE: 
+// REMOVE:   while(( c != '\0' )) {
+// REMOVE:     glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, c);
+// REMOVE:     c = ss.get();
+// REMOVE:   }
+// REMOVE: }
+
+
 void DrawSpace3D::_output(double x, double y, double u)
 {
   glRasterPos2f(x, y);
-  stringstream ss;
-  ss << u << '\0';
+  QString ss;
+  ss.setNum(u);
+  QChar qc;
   char c;
-  c = ss.get();
-  while(( c != '\0' )) {
+  int i = 0;
+  qc = ss[i];
+
+  while(( qc != QChar::null )) {
+    c = qc.latin1();
     glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, c);
-    c = ss.get();
+    ++i;
+    qc = ss[i];
   }
 }
+
 
 void DrawSpace3D::_zoutput(double x, double y, double z, double u)
 {
@@ -559,11 +581,11 @@ void DrawSpace3D::_drawGrid()
       //draw lines parallel y-axis
       _drawOneLine( sx, sy_min - _sy_cell_width,sx, sy_max + _sy_cell_width );
       _output( sx, sy_min - 1.5*_sy_cell_width, x );
-
     }
     x += _x_cell_width;
     sx += _sx_cell_width;
   }
+
   double sy = sy_min - _sy_cell_width;
   double y = fy_min  - _y_cell_width;
   while( y < (cy_max) + 1.5*_y_cell_width )
