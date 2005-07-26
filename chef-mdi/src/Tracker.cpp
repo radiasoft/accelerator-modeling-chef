@@ -1379,7 +1379,9 @@ void Tracker::_edit_clear()
   }
 
   _p_leftWindow->updateGL();
+  _p_leftWindow->uploadBuffer();
   _p_rightWindow->updateGL();
+  _p_rightWindow->uploadBuffer();
 }
 
 

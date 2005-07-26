@@ -1074,11 +1074,44 @@ void RayTrace::setState( const Vector& s )
 
 void RayTrace::_iterate()
 {
-  static beamline* bmlPtr;
-  static Proton*   protonPtr;
-  bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
-  protonPtr = &(_bmlConPtr->_proton);
+  if( _bmlConPtr->_protonBunch.isEmpty() ) { _pushParticle(); }
+  else                                     { _pushBunch();    }
+}
 
+
+void RayTrace::_pushBunch()
+{
+  // Proton  originalProton( _bmlConPtr->getReferenceProton() );
+  Proton* protonPtr;
+  beamline* bmlPtr   = const_cast<beamline*>(_bmlConPtr->cheatBmlPtr());
+  ProtonBunch* pbPtr = &(_bmlConPtr->_protonBunch);
+
+  if( _isIterating ) 
+  {
+    ParticleBunch::Iterator itr( *pbPtr );
+    while( 0 != ( protonPtr = (Proton*)(itr.next()) ) ) {
+      _bmlConPtr->_proton.setState( protonPtr->State() );
+      // _bmlConPtr->setReferenceProton( *protonPtr );
+      this->_pushParticle();
+    }
+    // _bmlConPtr->setReferenceProton( originalProton );
+
+    // _p_leftWindow->updateGL();
+    // _p_rightWindow->updateGL();
+
+    _isIterating = false;
+    _p_timer->stop();  // Probably unnecessary
+    _p_startBtn->setOn(false);
+    _p_startBtn->setText( "Trace" );
+  }
+}
+
+
+void RayTrace::_pushParticle()
+{
+  beamline* bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
+  Proton*   protonPtr = &(_bmlConPtr->_proton);
+  
   // Continuous operation
   if( _continuous ) 
   {
