@@ -64,7 +64,6 @@ unix:LIBS	+= -lwidget_toolkit -lqwt -lqt-mt -lqassistantclient -lqscintilla
 
 
 HEADERS	+= ../include/BeamlineBrowser.h \
-	../include/ExpressionBrowser.h \
 	../include/PointEdit.h \
 	../include/QtMonitor.h \
 	../include/QueryDialog.h \
@@ -72,7 +71,6 @@ HEADERS	+= ../include/BeamlineBrowser.h \
 	../include/SiteViewer.h \
 	../include/Tracker.h \
 	../include/TrbWidget.h \
-	../include/TrackerDefs.h \
 	../include/CHEFGUI.h \
 	../include/filters.h \
 	../include/messages.h \
@@ -89,7 +87,6 @@ HEADERS	+= ../include/BeamlineBrowser.h \
 	../include/CF_Editor.h
 
 SOURCES	+= BeamlineBrowser.cpp \
-	ExpressionBrowser.cpp \
 	PointEdit.cpp \
 	QtMonitor.cpp \
 	QueryDialog.cpp \
