@@ -75,9 +75,28 @@ ElementTagVisitor::~ElementTagVisitor() {}
 bool ElementTagVisitor::overlap(double x1, double x2, double y1, double y2) {
 
 
-  double tol = ( std::min(x2,y2) - std::max(x1,y1) ) / ( std::min((x2-x1),(y2-y1)));
-  
-  return ( tol > _overlap_tolerance ); 
+ if (x1 == x2) { 
+
+     if ( (x1>y1) && (x1<y2) )
+       return true;
+     else 
+       return false;
+
+  }
+
+  if (y1 == y2) { 
+
+     if ( (y1>x1) && (y1<x2) )  
+       return true;
+     else 
+       return false;
+    
+  }
+
+  if ( (num = std::min(x2,y2) - std::max(x1,y1)) > 0.0 )
+     return ( num/std::min((x2-x1),(y2-y1)) > _overlap_tolerance );
+  else
+    return false;
 
 }
 
