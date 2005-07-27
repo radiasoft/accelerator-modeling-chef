@@ -311,8 +311,7 @@ void SiteViewer::_viewHilite()
     QueryDialog* qdl = new QueryDialog( 0, 0, false );
     connect( qdl,  SIGNAL(_useThis( const BoolNode& )), 
              this, SLOT  (_optionHilt( const BoolNode& )) );
-    qdl->exec();
-    delete qdl;
+    qdl->show();
   }
 }
 

@@ -356,11 +356,10 @@ int CHEF::run()
 
 void CHEF::_editFindFilter()
 {
-  QueryDialog* qdl = new QueryDialog( 0, 0, false );
+  QueryDialog* qdl = new QueryDialog( 0, 0, false, Qt::WDestructiveClose );
   connect( qdl,  SIGNAL(_useThis( const BoolNode& )), 
            this, SLOT  (_processFilter( const BoolNode& )) );
-  qdl->exec();
-  delete qdl;
+  qdl->show();
 }
 
 
