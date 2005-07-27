@@ -312,6 +312,7 @@ void SiteViewer::_viewHilite()
     connect( qdl,  SIGNAL(_useThis( const BoolNode& )), 
              this, SLOT  (_optionHilt( const BoolNode& )) );
     qdl->show();
+  }
 }
 
 
