@@ -43,49 +43,67 @@
 #include <qradiobutton.h>
 #include <qrect.h>
 #include <qstring.h>
-#include <qtabdialog.h>
+#include <qtabwidget.h>
 #include <qtextedit.h>
 #include <qvbox.h>
+#include <qlayout.h>
 
 #include "BeamlineExpressionTree.h"
 #include "QueryDialog.h"
 
 using namespace std;
 
-QueryDialog::QueryDialog( QWidget* p, const char* n, 
-                          bool m, WFlags f )
-: QObject(p,n), _tabDialogPtr(0)
+QueryDialog::QueryDialog( QWidget* p, const char* n, bool m, WFlags f )
+: QWidget(p,n,f)
 {
+  QGridLayout* qgl = new QGridLayout( this, 2, 3, 5 );
+
   for( int i = 0; i < 4; i++ ) {
     _queryPtr[i] = 0;
   }
 
   // Construct the operations buttons
-  _opsBoxPtr = new QVBox;
+  _opsBoxPtr = new QVBox(this);
     QPushButton* enterPtr = new QPushButton( "Enter", _opsBoxPtr );
-    enterPtr->setMinimumWidth( QApplication::desktop()->width()/9 );
+    // enterPtr->setMinimumWidth( QApplication::desktop()->width()/9 );
+    enterPtr->setMaximumWidth( 70 );
     connect( enterPtr, SIGNAL(pressed()),
              this,     SLOT(_opEnter()) );
     QPushButton* andPtr   = new QPushButton( "AND",   _opsBoxPtr );
+    andPtr->setMaximumWidth( 70 );
     connect( andPtr,   SIGNAL(pressed()),
              this,     SLOT(_opAnd()) );
     QPushButton* orPtr    = new QPushButton( "OR",    _opsBoxPtr );
+    orPtr->setMaximumWidth( 70 );
     connect( orPtr,    SIGNAL(pressed()),
              this,     SLOT(_opOr()) );
     QPushButton* notPtr   = new QPushButton( "NOT",   _opsBoxPtr );
+    notPtr->setMaximumWidth( 70 );
     connect( notPtr,   SIGNAL(pressed()),
              this,     SLOT(_opNot()) );
 
-  _opsBoxPtr->setCaption( "Ops" );
+    QPushButton* applyPtr = new QPushButton( "Apply",   _opsBoxPtr );
+    applyPtr->setMaximumWidth( 70 );
+    connect( applyPtr,   SIGNAL(pressed()),
+             this,     SLOT(_doFilter()) );
+    QPushButton* closePtr = new QPushButton( "Close",   _opsBoxPtr );
+    closePtr->setMaximumWidth( 70 );
+    connect( closePtr,   SIGNAL(pressed()),
+             this,     SLOT(close()) );
+
+    QWidget* opsFiller = new QWidget( _opsBoxPtr );
+    opsFiller->setSizePolicy( QSizePolicy(QSizePolicy::Ignored,QSizePolicy::Ignored) );
+
+  // REMOVE: _opsBoxPtr->setCaption( "Ops" );
   _opsBoxPtr->setMargin(5);
   _opsBoxPtr->setSpacing(3);
   _opsBoxPtr->adjustSize();
 
 
   // Construct the Tab Dialog
-   _tabDialogPtr = new QTabDialog( 0, n, false, f );
+   _tabWidgetPtr = new QTabWidget(this);
 
-   _typeTabPtr = new QListBox( _tabDialogPtr );
+   _typeTabPtr = new QListBox( _tabWidgetPtr );
    _typeTabPtr->setMinimumWidth( QApplication::desktop()->width()/4 );
    _typeTabPtr->insertItem( "BBLens"               );
    _typeTabPtr->insertItem( "CF_rbend"             );
@@ -127,9 +145,9 @@ QueryDialog::QueryDialog( QWidget* p, const char* n,
    _typeTabPtr->insertItem( "vkick"                );
    _typeTabPtr->insertItem( "vmonitor"             );
    _typeTabPtr->setSelected( 0, true );
-   _tabDialogPtr->addTab( _typeTabPtr, "Type" );
+   _tabWidgetPtr->addTab( _typeTabPtr, "Type" );
 
-   QVBox* nameTab = new QVBox( _tabDialogPtr );
+   QVBox* nameTab = new QVBox( _tabWidgetPtr );
      QString nameString; // ??? necessary???
      _nameEdt = new QLineEdit( nameString, nameTab );
      _nameEdt->setFixedHeight( 20 );
@@ -137,9 +155,9 @@ QueryDialog::QueryDialog( QWidget* p, const char* n,
      nameTab->setMargin(5);
      nameTab->setSpacing(3);
      nameTab->adjustSize();
-   _tabDialogPtr->addTab( nameTab, "Name" );
+   _tabWidgetPtr->addTab( nameTab, "Name" );
 
-   QVBox* lengthTab = new QVBox( _tabDialogPtr );
+   QVBox* lengthTab = new QVBox( _tabWidgetPtr );
      new QLabel( "Length is ", lengthTab );
      _lengthBtnGrp = new QHButtonGroup( lengthTab );
        _lengthBtnGrp->setExclusive( true );
@@ -156,9 +174,9 @@ QueryDialog::QueryDialog( QWidget* p, const char* n,
      lengthTab->setMargin(5);
      lengthTab->setSpacing(3);
      lengthTab->adjustSize();
-   _tabDialogPtr->addTab( lengthTab, "Length" );
+   _tabWidgetPtr->addTab( lengthTab, "Length" );
 
-   QVBox* strengthTab = new QVBox( _tabDialogPtr );
+   QVBox* strengthTab = new QVBox( _tabWidgetPtr );
      new QLabel( "Strength is ", strengthTab );
      _strengthBtnGrp = new QHButtonGroup( strengthTab );
        _strengthBtnGrp->setExclusive( true );
@@ -175,61 +193,71 @@ QueryDialog::QueryDialog( QWidget* p, const char* n,
      strengthTab->setMargin(5);
      strengthTab->setSpacing(3);
      strengthTab->adjustSize();
-   _tabDialogPtr->addTab( strengthTab, "Strength" );
+   _tabWidgetPtr->addTab( strengthTab, "Strength" );
 
-   // A null string makes the OK button invisible.
-   _tabDialogPtr->setOkButton( QString() );
+   // REMOVE:   // A null string makes the OK button invisible.
+   // REMOVE:   _tabWidgetPtr->setOkButton( QString() );
 
-   _tabDialogPtr->setApplyButton( "Select" );
-   connect( _tabDialogPtr, SIGNAL(applyButtonPressed()),
-            this,          SLOT(_doFilter()) );
-   _tabDialogPtr->setCancelButton( "Close" );
+   // REMOVE:   _tabWidgetPtr->setApplyButton( "Select" );
+   // REMOVE:   connect( _tabWidgetPtr, SIGNAL(applyButtonPressed()),
+   // REMOVE:            this,          SLOT(_doFilter()) );
+   // REMOVE:   _tabWidgetPtr->setCancelButton( "Close" );
 
 
-   _tabDialogPtr->adjustSize();
-   _tabDialogPtr->setCaption( "Filters" );
+   _tabWidgetPtr->adjustSize();
+   // REMOVE: _tabWidgetPtr->setCaption( "Filters" );
 
 
    // Construct the query display.
-   _displayPtr = new QTextEdit;
+   _displayPtr = new QTextEdit(this);
    _displayPtr->setReadOnly( true );
-   _displayPtr->setFixedWidth(512);
+   // REMOVE: _displayPtr->setFixedWidth(512);
+   _displayPtr->setMinimumWidth(256);
 
-   _displayPtr->adjustSize();
-   _displayPtr->setCaption( "Query buffers" );
+   // REMOVE: _displayPtr->adjustSize();
+   // REMOVE: _displayPtr->setCaption( "Query buffers" );
 
+   // REMOVE:   // Arrange the widgets on the screen and show them
+   // REMOVE:   QRect geom_td = _tabDialogPtr->geometry();
+   // REMOVE:   QRect geom_ob = _opsBoxPtr->geometry();
+   // REMOVE:   QRect geom_dp = _displayPtr->geometry();
 
-   // Arrange the widgets on the screen and show them
-   QRect geom_td = _tabDialogPtr->geometry();
-   QRect geom_ob = _opsBoxPtr->geometry();
-   QRect geom_dp = _displayPtr->geometry();
+   // REMOVE:   int dx = geom_td.width() + geom_dp.width();
 
-   int dx = geom_td.width() + geom_dp.width();
+   // REMOVE:   int x = ( QApplication::desktop()->width()  - dx               ) / 2;
+   // REMOVE:   int y = ( QApplication::desktop()->height() - geom_td.height() ) / 2;
+   // REMOVE:   geom_td.moveTopLeft( QPoint(x,y) );
+   // REMOVE:   _tabDialogPtr->setGeometry( geom_td );
 
-   int x = ( QApplication::desktop()->width()  - dx               ) / 2;
-   int y = ( QApplication::desktop()->height() - geom_td.height() ) / 2;
-   geom_td.moveTopLeft( QPoint(x,y) );
-   _tabDialogPtr->setGeometry( geom_td );
+   // REMOVE:   x += ( geom_td.width() + 10 );
+   // REMOVE:   geom_ob.moveTopLeft( QPoint(x,y) );
+   // REMOVE:   _opsBoxPtr->setGeometry( geom_ob );
 
-   x += ( geom_td.width() + 10 );
-   geom_ob.moveTopLeft( QPoint(x,y) );
-   _opsBoxPtr->setGeometry( geom_ob );
+   // REMOVE:   y += ( geom_td.height() - geom_ob.height() );
+   // REMOVE:   // y += ( geom_ob.height() + 20 );
+   // REMOVE:   geom_dp.moveTopLeft( QPoint(x,y) );
+   // REMOVE:   _displayPtr->setGeometry( geom_dp );
 
-   y += ( geom_td.height() - geom_ob.height() );
-   // y += ( geom_ob.height() + 20 );
-   geom_dp.moveTopLeft( QPoint(x,y) );
-   _displayPtr->setGeometry( geom_dp );
+   QWidget* fillerPtr = new QWidget( this );
+   fillerPtr->setSizePolicy( QSizePolicy(QSizePolicy::Ignored,QSizePolicy::Ignored) );
+   
+   // Install the widgets into the grid
+   qgl->addMultiCellWidget( _tabWidgetPtr, 0, 1, 0, 0 );
+   qgl->addWidget( _opsBoxPtr, 0, 1 );
+   qgl->addWidget( fillerPtr, 0, 2 );
+   qgl->addMultiCellWidget( _displayPtr, 1, 1, 1, 2 );
 
-   _tabDialogPtr->show();
-   _opsBoxPtr->show();
-   _displayPtr->show();
+   // REMOVE: _tabWidgetPtr->show();
+   // REMOVE: _opsBoxPtr->show();
+   // REMOVE: _displayPtr->show();
 
    _updateDisplay();
 
    // this->setFixedSize( this->childrenRect().width(), 
    //                     this->childrenRect().height() );
 
-   // this->adjustSize();
+   this->adjustSize();
+   this->setCaption( "Beamline Query Dialog" );
    // this->show();
 }
 
@@ -239,7 +267,7 @@ QueryDialog::~QueryDialog()
   for( int i = 0; i < 4; i++ ) {
     if( 0 != _queryPtr[i] )     { _queryPtr[i]->eliminate(); }
   }
-  if( 0 != _tabDialogPtr ) { delete _tabDialogPtr; }
+  if( 0 != _tabWidgetPtr ) { delete _tabWidgetPtr; }
   if( 0 != _opsBoxPtr    ) { delete _opsBoxPtr;    }
   if( 0 != _displayPtr   ) { delete _displayPtr;   }
 }
@@ -261,11 +289,11 @@ const BoolNode& QueryDialog::query()
 }
 
 
-int QueryDialog::exec()
-{ 
-  if( 0 != _tabDialogPtr ) { return _tabDialogPtr->exec(); }
-  else { return -1; }
-}
+// REMOVE:int QueryDialog::exec()
+// REMOVE:{ 
+// REMOVE:  if( 0 != _tabWidgetPtr ) { return _tabWidgetPtr->exec(); }
+// REMOVE:  else { return -1; }
+// REMOVE:}
 
 
 // Slots ...
@@ -286,7 +314,7 @@ void QueryDialog::_opEnter()
   _queryPtr[0] = 0;
 
   // Process tabs
-  QString filterName( _tabDialogPtr->tabLabel( _tabDialogPtr->currentPage() ) );
+  QString filterName( _tabWidgetPtr->tabLabel( _tabWidgetPtr->currentPage() ) );
 
   if( filterName == typeLabel ) {
     _queryPtr[0] = new TypeNode( (_typeTabPtr->selectedItem()->text()).ascii() );
