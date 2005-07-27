@@ -33,36 +33,37 @@
 #include <fstream>
 #include <typeinfo>
 
-#include <qdir.h>
-#include <qfile.h>
-#include <qfileinfo.h>
+// REMOVE: #include <qdir.h>
+// REMOVE: #include <qfile.h>
+// REMOVE: #include <qfileinfo.h>
 #include <qpixmap.h>
-#include <qevent.h>
-#include <qpoint.h>
+// REMOVE: #include <qevent.h>
+// REMOVE: #include <qpoint.h>
 #include <qmessagebox.h>
 #include <qdragobject.h>
-#include <qmime.h>
-#include <qstrlist.h>
-#include <qstringlist.h>
+// REMOVE: #include <qmime.h>
+// REMOVE: #include <qstrlist.h>
+// REMOVE: #include <qstringlist.h>
 #include <qapplication.h>
 #include <qheader.h>
 #include <qdialog.h>
 #include <qpushbutton.h>
-#include <qradiobutton.h>
+// REMOVE: #include <qradiobutton.h>
 #include <qhbox.h>
 #include <qvbox.h>
 #include <qlabel.h>
-#include <qlineedit.h>
+// REMOVE: #include <qlineedit.h>
 #include <qlayout.h>
 #include <qtextbrowser.h>
 
-#include "PhysicsConstants.h"
+#include "BeamlineBrowser.h"
+// REMOVE: #include "PhysicsConstants.h"
 #include "GenericException.h"
 #include "BeamlineIterator.h"
-#include "bmlfactory.h"
-#include "BeamlineBrowser.h"
 #include "BeamlineContext.h"
+#include "bmlfactory.h"
 #include "BeamlineExpressionTree.h"
+
 
 // This undef is needed because of the compiler.
 // #undef connect
@@ -1467,7 +1468,8 @@ void BeamlineBrowser::infoWriter::visitBmlnElmnt( const bmlnElmnt* x )
 
 void BeamlineBrowser::infoWriter::visitDrift( const drift* x )
 {
-  QDialog* wpu = new QDialog;
+  QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
+  // REMOVE: QDialog* wpu = new QDialog;
     QVBox* qvb = new QVBox( wpu );
 
       QHBox* qhb1 = new QHBox( qvb );
@@ -1483,10 +1485,10 @@ void BeamlineBrowser::infoWriter::visitDrift( const drift* x )
         QPushButton* closeBtn = new QPushButton( "Close", qhb2 );
           closeBtn->setDefault( true );
           connect( closeBtn,  SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
-        QPushButton* editBtn = new QPushButton( "Edit", qhb2 );
-          connect( editBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
+                   wpu,       SLOT(close()) );
+	  // REMOVE:       QPushButton* editBtn = new QPushButton( "Edit", qhb2 );
+	  // REMOVE:         connect( editBtn, SIGNAL(pressed()),
+	  // REMOVE:                  wpu,     SLOT(accept()) );
       qhb2->setMargin(10);
       qhb2->setSpacing(3);
       qhb2->adjustSize();
@@ -1496,20 +1498,21 @@ void BeamlineBrowser::infoWriter::visitDrift( const drift* x )
   wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
   wpu->adjustSize();
 
-  int returnCode = wpu->exec();
-  // Note: when reject is activated, wpu and all its subwidgets
-  //       will be deleted, if the flag Qt::WDestructiveClose is used.
-  //       This is confirmed by changing these from pointers to objects.
-  //       A warning message is issued, when exiting this scope, that
-  //       the objects are deleted twice.
+  wpu->show();
+  // REMOVE: int returnCode = wpu->exec();
+  // REMOVE: // Note: when reject is activated, wpu and all its subwidgets
+  // REMOVE: //       will be deleted, if the flag Qt::WDestructiveClose is used.
+  // REMOVE: //       This is confirmed by changing these from pointers to objects.
+  // REMOVE: //       A warning message is issued, when exiting this scope, that
+  // REMOVE: //       the objects are deleted twice.
 
-  if( returnCode == QDialog::Accepted ) {
-    editDialog edg;
-    edg._contextPtr = _contextPtr;
-    (const_cast<drift*>(x))->accept(edg);
-  }
+  // REMOVE: if( returnCode == QDialog::Accepted ) {
+  // REMOVE:   editDialog edg;
+  // REMOVE:   edg._contextPtr = _contextPtr;
+  // REMOVE:   (const_cast<drift*>(x))->accept(edg);
+  // REMOVE: }
 
-  delete wpu;
+  // REMOVE: delete wpu;
 }
 
 
@@ -1655,7 +1658,7 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
   // REMOVE:     QHBox* qhb99 = new QHBox( qvb );
   // REMOVE:       QPushButton* cancelBtn = new QPushButton( "Close", qhb99 );
   // REMOVE:         connect( cancelBtn, SIGNAL(pressed()),
-  // REMOVE:                  wpu,       SLOT(reject()) );
+  // REMOVE:                  wpu,       SLOT(close()) );
   // REMOVE:     qhb99->setMargin(5);
   // REMOVE:     qhb99->setSpacing(3);
   // REMOVE:     qhb99->adjustSize();
@@ -1676,7 +1679,8 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
   QString rparen(" )");
   QString comma(", ");
   
-  QDialog* wpu = new QDialog( 0, 0, true );
+  QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
+  // REMOVE: QDialog* wpu = new QDialog( 0, 0, true );
 
     QVBox* qvb = new QVBox( wpu );
       QWidget* qwa = new QWidget( qvb );
@@ -1738,7 +1742,7 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
       QHBox* qhb99 = new QHBox( qvb );
         QPushButton* cancelBtn = new QPushButton( "Close", qhb99 );
           connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
+                   wpu,       SLOT(close()) );
       qhb99->setMargin(5);
       qhb99->setSpacing(3);
       qhb99->adjustSize();
@@ -1748,16 +1752,17 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
   wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
   wpu->adjustSize();
 
-  wpu->exec();
-
-  delete wpu;
+  wpu->show();
+  // REMOVE: wpu->exec();
+  // REMOVE: delete wpu;
   }
 }
 
 
 void BeamlineBrowser::infoWriter::visitSbend( const sbend* x )
 {
-  QDialog* wpu = new QDialog( 0, 0, true );
+  QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
+  // REMOVE: QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
 
       QHBox* qhb1 = new QHBox( qvb );
@@ -1781,7 +1786,7 @@ void BeamlineBrowser::infoWriter::visitSbend( const sbend* x )
       QHBox* qhb3 = new QHBox( qvb );
         QPushButton* cancelBtn = new QPushButton( "Close", qhb3 );
           connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
+                   wpu,       SLOT(close()) );
       qhb3->setMargin(5);
       qhb3->setSpacing(3);
       qhb3->adjustSize();
@@ -1795,9 +1800,9 @@ void BeamlineBrowser::infoWriter::visitSbend( const sbend* x )
   wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
   wpu->adjustSize();
 
-  wpu->exec();
-
-  delete wpu;
+  wpu->show();
+  // REMOVE: wpu->exec();
+  // REMOVE: delete wpu;
 }
 
 
@@ -1839,7 +1844,8 @@ void BeamlineBrowser::infoWriter::visitCF_sbend( const CF_sbend* x )
 
 void BeamlineBrowser::infoWriter::visitRbend( const rbend* x )
 {
-  QDialog* wpu = new QDialog( 0, 0, true );
+  QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
+  // REMOVE: QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QWidget* qwa = new QWidget( qvb );
          QGridLayout* qgl = new QGridLayout( qwa, 3, 3, 5 );
@@ -1867,33 +1873,30 @@ void BeamlineBrowser::infoWriter::visitRbend( const rbend* x )
         QPushButton* closeBtn = new QPushButton( "Close", qhb4 );
           closeBtn->setDefault( true );
           connect( closeBtn,  SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
-        QPushButton* editBtn = new QPushButton( "Edit", qhb4 );
-          connect( editBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
+                   wpu,       SLOT(close()) );
+	  // REMOVE:       QPushButton* editBtn = new QPushButton( "Edit", qhb4 );
+	  // REMOVE:         connect( editBtn, SIGNAL(pressed()),
+	  // REMOVE:                  wpu,     SLOT(accept()) );
 
       qhb4->setMargin(5);
       qhb4->setSpacing(3);
       qhb4->adjustSize();
 
     qvb->adjustSize();
-  // Note: when reject is activated, wpu and all its subwidgets
-  //       will be deleted, because of the flag Qt::WDestructiveClose.
-  //       This is confirmed by changing these from pointers to objects.
-  //       A warning message is issued, when exiting this scope, that
-  //       the objects are deleted twice.
+
   wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
   wpu->adjustSize();
 
-  int returnCode = wpu->exec();
+  wpu->show();
+  // REMOVE: int returnCode = wpu->exec();
 
-  if( returnCode == QDialog::Accepted ) {
-    editDialog edg;
-    edg._contextPtr = _contextPtr;
-    ((rbend*) x)->accept(edg);
-  }
+  // REMOVE: if( returnCode == QDialog::Accepted ) {
+  // REMOVE:   editDialog edg;
+  // REMOVE:   edg._contextPtr = _contextPtr;
+  // REMOVE:   ((rbend*) x)->accept(edg);
+  // REMOVE: }
 
-  delete wpu;
+  // REMOVE: delete wpu;
 }
 
 
@@ -1901,7 +1904,8 @@ void BeamlineBrowser::infoWriter::visitRbend( const rbend* x )
 // ??? Change the argument???
 void BeamlineBrowser::infoWriter::visitCF_rbend( const CF_rbend* x )
 {
-  QDialog* wpu = new QDialog( 0, 0, true );
+  QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
+  // REMOVE: QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
 
       QHBox* qhb1 = new QHBox( qvb );
@@ -1935,7 +1939,7 @@ void BeamlineBrowser::infoWriter::visitCF_rbend( const CF_rbend* x )
       QHBox* qhb3 = new QHBox( qvb );
         QPushButton* cancelBtn = new QPushButton( "Close", qhb3 );
           connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
+                   wpu,       SLOT(close()) );
       qhb3->setMargin(5);
       qhb3->setSpacing(3);
       qhb3->adjustSize();
@@ -1944,16 +1948,17 @@ void BeamlineBrowser::infoWriter::visitCF_rbend( const CF_rbend* x )
   wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
   wpu->adjustSize();
 
-  wpu->exec();
-
-  delete wpu;
+  wpu->show();
+  // REMOVE: wpu->exec();
+  // REMOVE: delete wpu;
 }
 
 
 void BeamlineBrowser::infoWriter::visitQuadrupole( const quadrupole* x )
 {
   QString theValue;
-  QDialog* wpu = new QDialog;
+  QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
+  // REMOVE: QDialog* wpu = new QDialog;
     QVBox* qvb = new QVBox( wpu );
 
       QHBox* qhb1 = new QHBox( qvb );
@@ -1985,10 +1990,10 @@ void BeamlineBrowser::infoWriter::visitQuadrupole( const quadrupole* x )
         QPushButton* closeBtn = new QPushButton( "Close", qhb4 );
           closeBtn->setDefault( true );
           connect( closeBtn,  SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
-        QPushButton* editBtn = new QPushButton( "Edit", qhb4 );
-          connect( editBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
+                   wpu,       SLOT(close()) );
+	  // REMOVE:       QPushButton* editBtn = new QPushButton( "Edit", qhb4 );
+	  // REMOVE:         connect( editBtn, SIGNAL(pressed()),
+	  // REMOVE:                  wpu,     SLOT(accept()) );
       qhb4->setMargin(5);
       qhb4->setSpacing(3);
       qhb4->adjustSize();
@@ -1997,27 +2002,29 @@ void BeamlineBrowser::infoWriter::visitQuadrupole( const quadrupole* x )
   wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
   wpu->adjustSize();
 
-  int returnCode = wpu->exec();
-  // Note: when reject is activated, wpu and all its subwidgets
-  //       will be deleted, if the flag Qt::WDestructiveClose is used.
-  //       This is confirmed by changing these from pointers to objects.
-  //       A warning message is issued, when exiting this scope, that
-  //       the objects are deleted twice.
+  wpu->show();
+  // REMOVE: int returnCode = wpu->exec();
+  // REMOVE: // Note: when reject is activated, wpu and all its subwidgets
+  // REMOVE: //       will be deleted, if the flag Qt::WDestructiveClose is used.
+  // REMOVE: //       This is confirmed by changing these from pointers to objects.
+  // REMOVE: //       A warning message is issued, when exiting this scope, that
+  // REMOVE: //       the objects are deleted twice.
 
-  if( returnCode == QDialog::Accepted ) {
-    editDialog edg;
-    edg._contextPtr = _contextPtr;
-    ((quadrupole*) x)->accept(edg);
-  }
+  // REMOVE: if( returnCode == QDialog::Accepted ) {
+  // REMOVE:   editDialog edg;
+  // REMOVE:   edg._contextPtr = _contextPtr;
+  // REMOVE:   ((quadrupole*) x)->accept(edg);
+  // REMOVE: }
 
-  delete wpu;
+  // REMOVE: delete wpu;
 }
 
 
 void BeamlineBrowser::infoWriter::visitThinQuad( const thinQuad* x )
 {
   QString theValue;
-  QDialog* wpu = new QDialog( 0, 0, true );
+  QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
+  // REMOVE: QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
 
       QWidget* qwa = new QWidget( qvb );
@@ -2038,10 +2045,10 @@ void BeamlineBrowser::infoWriter::visitThinQuad( const thinQuad* x )
         QPushButton* closeBtn = new QPushButton( "Close", qhb );
           closeBtn->setDefault( true );
           connect( closeBtn,  SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
-        QPushButton* editBtn = new QPushButton( "Edit", qhb );
-          connect( editBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
+                   wpu,       SLOT(close()) );
+	  // REMOVE:       QPushButton* editBtn = new QPushButton( "Edit", qhb );
+	  // REMOVE:         connect( editBtn, SIGNAL(pressed()),
+	  // REMOVE:                  wpu,     SLOT(accept()) );
       qhb->setMargin(5);
       qhb->setSpacing(3);
       qhb->adjustSize();
@@ -2051,20 +2058,21 @@ void BeamlineBrowser::infoWriter::visitThinQuad( const thinQuad* x )
   wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
   wpu->adjustSize();
 
-  int returnCode = wpu->exec();
-  // Note: when reject is activated, wpu and all its subwidgets
-  //       will be deleted, if the flag Qt::WDestructiveClose is used.
-  //       This is confirmed by changing these from pointers to objects.
-  //       A warning message is issued, when exiting this scope, that
-  //       the objects are deleted twice.
+  wpu->show();
+  // REMOVE: int returnCode = wpu->exec();
+  // REMOVE: // Note: when reject is activated, wpu and all its subwidgets
+  // REMOVE: //       will be deleted, if the flag Qt::WDestructiveClose is used.
+  // REMOVE: //       This is confirmed by changing these from pointers to objects.
+  // REMOVE: //       A warning message is issued, when exiting this scope, that
+  // REMOVE: //       the objects are deleted twice.
 
-  if( returnCode == QDialog::Accepted ) {
-    editDialog edg;
-    edg._contextPtr = _contextPtr;
-    ((thinQuad*) x)->accept(edg);
-  }
+  // REMOVE: if( returnCode == QDialog::Accepted ) {
+  // REMOVE:   editDialog edg;
+  // REMOVE:   edg._contextPtr = _contextPtr;
+  // REMOVE:   ((thinQuad*) x)->accept(edg);
+  // REMOVE: }
 
-  delete wpu;
+  // REMOVE: delete wpu;
 }
 
 
@@ -2164,7 +2172,8 @@ void BeamlineBrowser::infoWriter::visitSector( const sector* x )
   // outStream << "\nEnd the mapping " << endl;
   // outStream << '\0';
 
-  QDialog* wpu = new QDialog( 0, 0, true );
+  QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
+  // REMOVE: QDialog* wpu = new QDialog( 0, 0, true );
 
     QVBox* qvb = new QVBox( wpu );
 
@@ -2177,10 +2186,10 @@ void BeamlineBrowser::infoWriter::visitSector( const sector* x )
       qtv->setFixedSize( fixedWidth, fixedWidth );
 
       QHBox* qhb3 = new QHBox( qvb );
-        QPushButton* doneBtn = new QPushButton( "Done", qhb3 );
+        QPushButton* doneBtn = new QPushButton( "Close", qhb3 );
           doneBtn->setDefault( true );
           connect( doneBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
+                   wpu,     SLOT(close()) );
       qhb3->setMargin(5);
       qhb3->setSpacing(3);
       qhb3->adjustSize();
@@ -2190,8 +2199,9 @@ void BeamlineBrowser::infoWriter::visitSector( const sector* x )
   wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
   wpu->adjustSize();
 
-  wpu->exec();
-  delete wpu;
+  wpu->show();
+  // REMOVE: wpu->exec();
+  // REMOVE: delete wpu;
 }
 
 
@@ -2241,7 +2251,8 @@ void BeamlineBrowser::infoWriter::visitMonitor( const monitor* x )
 
   // Set up the display widget
   QString theValue;
-  QDialog* wpu = new QDialog( 0, 0, true );
+  QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
+  // REMOVE: QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QWidget* qwa = new QWidget( qvb );
          QGridLayout* qgl = new QGridLayout( qwa, 4, 4, 5 );
@@ -2275,7 +2286,7 @@ void BeamlineBrowser::infoWriter::visitMonitor( const monitor* x )
       QHBox* qhb4 = new QHBox( qvb );
         QPushButton* cancelBtn = new QPushButton( "Close", qhb4 );
           connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
+                   wpu,       SLOT(close()) );
 
       qhb4->setMargin(5);
       qhb4->setSpacing(3);
@@ -2286,531 +2297,7 @@ void BeamlineBrowser::infoWriter::visitMonitor( const monitor* x )
   wpu->adjustSize();
 
   // Show the information and exit
-  wpu->exec();
-  delete wpu;
-}
-
-
-//////////////////////////////////////////////////
-// BeamlineBrowser::editDialog implementation
-/////////////////////////////////////////////////
-
-void BeamlineBrowser::editDialog::visitBmlnElmnt( bmlnElmnt* x )
-{
-  QMessageBox::warning( 0, "BeamlineBrowser", 
-                        "Sorry. You may not edit this element." );
-}
-
-
-void BeamlineBrowser::editDialog::visitRbend( rbend* x )
-{
-  QDialog* wpu = new QDialog( 0, 0, true );
-    QVBox* qvb = new QVBox( wpu );
-      QWidget* qwa = new QWidget( qvb );
-         QGridLayout* qgl = new QGridLayout( qwa, 2, 3, 5 );
-
-         qgl->addWidget( new QLabel( QString("Length"), qwa ), 0, 0 );
-         qgl->addWidget( new QLabel( QString("[m]"), qwa ), 0, 1 );
-           QString stlen;
-           stlen.setNum( x->Length() );
-           // QLineEdit* qle1 = new QLineEdit( stlen, qwa );
-         // qgl->addWidget( qle1, 0, 2 );
-         qgl->addWidget( new QLabel( stlen, qwa ), 0, 2 );
-
-         qgl->addWidget( new QLabel( QString("Magnetic field"), qwa ), 1, 0 );
-         qgl->addWidget( new QLabel( QString("[T]"), qwa ), 1, 1 );
-           QString sts;
-           sts.setNum( x->Strength() );
-           QLineEdit* qle2 = new QLineEdit( sts, qwa );
-         qgl->addWidget( qle2, 1, 2 );
-
-       qwa->adjustSize();
-
-      QHBox* qhb = new QHBox( qvb );
-        QPushButton* okayBtn = new QPushButton( "Okay", qhb );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
-        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb );
-          cancelBtn->setDefault( true );
-          connect( cancelBtn,  SIGNAL(pressed()),
-                   wpu,        SLOT(reject()) );
-      qhb->setMargin(5);
-      qhb->setSpacing(3);
-      qhb->adjustSize();
-
-    qvb->adjustSize();
-
-  // Note: when reject is activated, wpu and all its subwidgets
-  //       will be deleted, if the flag Qt::WDestructiveClose is used.
-  //       This is confirmed by changing these from pointers to objects.
-  //       A warning message is issued, when exiting this scope, that
-  //       the objects are deleted twice.
-
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
-  wpu->adjustSize();
-
-  int returnCode = wpu->exec();
-
-  if( returnCode == QDialog::Accepted ) {
-    // if( stlen != qle1->text() ) {
-    //   bool ok;
-    //   double newLength = (qle1->text()).toDouble( &ok );
-    //   if( ok ) {
-    //     if( 0 != _contextPtr->setLength( (rbend*) x, newLength ) ) { 
-    //       cerr << "*** WARNING *** File "
-    //            << __FILE__ 
-    //            << ", Line "
-    //            << __LINE__
-    //            << ": rbend not found in context."
-    //            << endl;
-    //     }
-    //   }
-    // }
-    if( sts != qle2->text() ) {
-      bool ok;
-      double newStrength = (qle2->text()).toDouble( &ok );
-      if( ok ) {
-        if( 0 != _contextPtr->setStrength( (rbend*) x, newStrength ) ) { 
-          cerr << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": rbend not found in context."
-               << endl;
-        }
-      }
-    }
-  }
-
-  delete wpu;
-}
-
-
-void BeamlineBrowser::editDialog::visitQuadrupole( quadrupole* x )
-{
-  QDialog* wpu = new QDialog( 0, 0, true );
-    QVBox* qvb = new QVBox( wpu );
-
-      QWidget* qwa = new QWidget( qvb );
-         QGridLayout* qgl = new QGridLayout( qwa, 3, 3, 5 );
-
-         qgl->addWidget( new QLabel( QString("Gradient"), qwa ), 0, 0 );
-         qgl->addWidget( new QLabel( QString(" [T/m]  "), qwa ), 0, 1 );
-           QString st1;
-           st1.setNum( x->Strength() );
-           QLineEdit* qle1 = new QLineEdit( st1, qwa );
-         qgl->addWidget( qle1, 0, 2 );
-
-         qgl->addWidget( new QLabel( QString("Length"), qwa ), 1, 0 );
-         qgl->addWidget( new QLabel( QString(" [m]  "), qwa ), 1, 1 );
-           QString stl;
-           stl.setNum( x->Length() );
-         qgl->addWidget( new QLabel( QString(stl), qwa ), 1, 2 );
-
-         qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 2, 0 );
-         qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 2, 1 );
-           QString st2;
-           alignmentData ad(x->Alignment());
-           st2.setNum( 1000.*(ad.tilt /*[rad]*/) );
-           QLineEdit* qle2 = new QLineEdit( st2, qwa );
-         qgl->addWidget( qle2, 2, 2 );
-      qwa->adjustSize();
-
-      QHBox* qhb = new QHBox( qvb );
-        QPushButton* okayBtn = new QPushButton( "Okay", qhb );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
-        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb );
-          cancelBtn->setDefault( true );
-          connect( cancelBtn,  SIGNAL(pressed()),
-                   wpu,        SLOT(reject()) );
-      qhb->setMargin(5);
-      qhb->setSpacing(3);
-      qhb->adjustSize();
-
-    qvb->adjustSize();
-
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
-  wpu->adjustSize();
-
-  int returnCode = wpu->exec();
-  // Note: when reject is activated, wpu and all its subwidgets
-  //       will be deleted, if the flag Qt::WDestructiveClose is used.
-  //       This is confirmed by changing these from pointers to objects.
-  //       A warning message is issued, when exiting this scope, that
-  //       the objects are deleted twice.
-
-  if( returnCode == QDialog::Accepted ) {
-    if( st1 != qle1->text() ) {
-      bool ok;
-      double newStrength = (qle1->text()).toDouble( &ok );
-      if( ok ) {
-        if( 0 != _contextPtr->setStrength( x, newStrength ) ) {
-          ostringstream uic;
-          uic  << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": "
-               << x->Type()
-               << " not found in context."
-               << endl;
-          QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
-        }
-      }
-    }
-
-    if( st2 != qle2->text() ) {
-      bool ok;
-      ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
-      if( ok ) {
-        if( 0 != _contextPtr->setAlignment( x, ad ) ) {
-          ostringstream uic;
-          uic  << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": "
-               << x->Type()
-               << " not found in context."
-               << endl;
-          QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
-        }
-      }
-    }
-
-  }
-
-  delete wpu;
-}
-
-
-void BeamlineBrowser::editDialog::visitDrift( drift* x )
-{
-  QDialog* wpu = new QDialog( 0, 0, true );
-    QVBox* qvb = new QVBox( wpu );
-
-      QWidget* qwa = new QWidget( qvb );
-         QGridLayout* qgl = new QGridLayout( qwa, 2, 3, 5 );
-
-         qgl->addWidget( new QLabel( QString("Length"), qwa ), 0, 0 );
-         qgl->addWidget( new QLabel( QString(" [m]  "), qwa ), 0, 1 );
-           QString stl;
-           stl.setNum( x->Length() );
-           QLineEdit* qle2 = new QLineEdit( stl, qwa );
-         qgl->addWidget( qle2, 0, 2 );
-
-           QRadioButton* qrb = new QRadioButton(qwa);
-         qgl->addWidget( qrb, 1, 0 );
-         qgl->addMultiCellWidget( new QLabel( QString("Convert to Slot"), qwa )
-                                  , 1, 1, 1, 2 );
-      qwa->adjustSize();
-
-      QHBox* qhb = new QHBox( qvb );
-        QPushButton* okayBtn = new QPushButton( "Okay", qhb );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
-        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb );
-          cancelBtn->setDefault( true );
-          connect( cancelBtn,  SIGNAL(pressed()),
-                   wpu,        SLOT(reject()) );
-      qhb->setMargin(5);
-      qhb->setSpacing(3);
-      qhb->adjustSize();
-
-    qvb->adjustSize();
-
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
-  wpu->adjustSize();
-
-  int returnCode = wpu->exec();
-  // Note: when reject is activated, wpu and all its subwidgets
-  //       will be deleted, if the flag Qt::WDestructiveClose is used.
-  //       This is confirmed by changing these from pointers to objects.
-  //       A warning message is issued, when exiting this scope, that
-  //       the objects are deleted twice.
-
-  if( returnCode == QDialog::Accepted ) {
-    if( qrb->isOn() ) {
-      #if 0
-      ostringstream uic;
-      uic  << "*** WARNING *** File "
-           << __FILE__ 
-           << ", Line "
-           << __LINE__
-           << "\n*** WARNING *** This part routine needs to be rewritten. "
-           << endl;
-      QMessageBox::warning( 0, "BeamlineBrowser: WARNING", uic.str().c_str() );
-      #endif
-
-      #if 1
-      // Drift will be converted to Slot
-      ostringstream uic;
-      uic  << "*** WARNING *** File "
-           << __FILE__ 
-           << ", Line "
-           << __LINE__
-           << "\n*** WARNING *** Am deleting "
-           << x->Type()
-           << " element "
-           << x->Name()
-           << "\n*** WARNING *** If the program aborts soon, this is"
-              "\n*** WARNING *** probably the reason."
-           << endl;
-      QMessageBox::warning( 0, "BeamlineBrowser: WARNING", uic.str().c_str() );
-
-      bool ok;
-      double newLength = (qle2->text()).toDouble( &ok );
-      if( !ok ) { newLength = x->Length(); }
-
-      Vector origin(3);
-      origin( Particle::_cdt() ) = newLength; 
-      // This is a phenomenally stupid and convoluted
-      // way to do this.
-      Frame outFrame;
-      outFrame.setOrigin( origin );
-      Slot* slotPtr = new Slot( x->Name(), outFrame );
-      _contextPtr->replaceElement( x, slotPtr );
-
-      // START HERE. The Browser should not be in the business of editing
-      // lines. This should be done within CHEF itself. How???
-
-      // WARNING: This routine will delete x.
-      // WARNING: Best of luck!
-      #endif
-    }
-
-    else {
-      // Drift remains a drift
-      if( stl != qle2->text() ) {
-        bool ok;
-        double newLength = (qle2->text()).toDouble( &ok );
-        if( ok ) {
-          if( 0 != _contextPtr->setLength( x, newLength ) ) {
-            ostringstream uic;
-            uic  << "*** WARNING *** File "
-                 << __FILE__ 
-                 << ", Line "
-                 << __LINE__
-                 << ": "
-                 << x->Type()
-                 << " not found in context."
-                 << endl;
-            QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
-          }
-        }
-      }
-    }
-  }
-
-  delete wpu;
-}
-
-
-void BeamlineBrowser::editDialog::visitSlot( Slot* x )
-{
-  QDialog* wpu = new QDialog( 0, 0, true );
-    QVBox* qvb = new QVBox( wpu );
-
-      QWidget* qwa = new QWidget( qvb );
-         QGridLayout* qgl = new QGridLayout( qwa, 6, 3, 5, 10 );
-
-         QString xstr, ystr, zstr;
-         QString lparen("( ");
-         QString rparen(" )");
-         QString comma(", ");
-  
-         qgl->addWidget( new QLabel( QString("Upstream"),   qwa ), 0, 1 );
-         qgl->addWidget( new QLabel( QString("Downstream"), qwa ), 0, 2 );
-         
-         qgl->addWidget( new QLabel( QString("Origin   "), qwa ), 1, 0 );
-         qgl->addWidget( new QLabel( QString("U   "), qwa ), 2, 0 );
-         qgl->addWidget( new QLabel( QString("V   "), qwa ), 3, 0 );
-         qgl->addWidget( new QLabel( QString("W   "), qwa ), 4, 0 );
-
-         xstr.setNum( (x->getInFrame().getOrigin())(0) );
-         ystr.setNum( (x->getInFrame().getOrigin())(1) );
-         zstr.setNum( (x->getInFrame().getOrigin())(2) );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 1, 1 );
-         xstr.setNum( (x->getOutFrame().getOrigin())(0) );
-         ystr.setNum( (x->getOutFrame().getOrigin())(1) );
-         zstr.setNum( (x->getOutFrame().getOrigin())(2) );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 1, 2 );
-
-         xstr.setNum( (x->getInFrame().getxAxis()) (0) );
-         ystr.setNum( (x->getInFrame().getxAxis()) (1) );
-         zstr.setNum( (x->getInFrame().getxAxis()) (2) );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 2, 1 );
-         xstr.setNum( (x->getInFrame().getyAxis()) (0) );
-         ystr.setNum( (x->getInFrame().getyAxis()) (1) );
-         zstr.setNum( (x->getInFrame().getyAxis()) (2) );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 3, 1 );
-         xstr.setNum( (x->getInFrame().getzAxis()) (0) );
-         ystr.setNum( (x->getInFrame().getzAxis()) (1) );
-         zstr.setNum( (x->getInFrame().getzAxis()) (2) );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 4, 1 );
-        
-         xstr.setNum( (x->getOutFrame().getxAxis()) (0) );
-         ystr.setNum( (x->getOutFrame().getxAxis()) (1) );
-         zstr.setNum( (x->getOutFrame().getxAxis()) (2) );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 2, 2 );
-         xstr.setNum( (x->getOutFrame().getyAxis()) (0) );
-         ystr.setNum( (x->getOutFrame().getyAxis()) (1) );
-         zstr.setNum( (x->getOutFrame().getyAxis()) (2) );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 3, 2 );
-         xstr.setNum( (x->getOutFrame().getzAxis()) (0) );
-         ystr.setNum( (x->getOutFrame().getzAxis()) (1) );
-         zstr.setNum( (x->getOutFrame().getzAxis()) (2) );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 4, 2 );
-
-         QRadioButton* qrb = new QRadioButton(qwa);
-	 qgl->addWidget( qrb, 5, 0 );
-         qgl->addMultiCellWidget( new QLabel( QString("Zero out-state"), qwa )
-                                              , 5, 5, 1, 2 );
-      qwa->adjustSize();
-        
-      QHBox* qhb = new QHBox( qvb );
-        QPushButton* okayBtn = new QPushButton( "Okay", qhb );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
-        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb );
-          cancelBtn->setDefault( true );
-          connect( cancelBtn,  SIGNAL(pressed()),
-                   wpu,        SLOT(reject()) );
-      qhb->setMargin(5);
-      qhb->setSpacing(3);
-      qhb->adjustSize();
-
-    qvb->adjustSize();
-
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
-  wpu->adjustSize();
-
-  int returnCode = wpu->exec();
-  // Note: when reject is activated, wpu and all its subwidgets
-  //       will be deleted, if the flag Qt::WDestructiveClose is used.
-  //       This is confirmed by changing these from pointers to objects.
-  //       A warning message is issued, when exiting this scope, that
-  //       the objects are deleted twice.
-
-  if( returnCode == QDialog::Accepted ) {
-    if( qrb->isOn() ) {
-      if( !(_contextPtr->hasReferenceProton()) ) {
-        Proton p( _contextPtr->getEnergy() );
-         _contextPtr->setReferenceProton(p);
-      }
-
-      Proton prtn( _contextPtr->getReferenceProton() );
-      DeepBeamlineIterator dbi( _contextPtr->cheatBmlPtr() );
-      bmlnElmnt* q;
-      while((  q = dbi++  )) {
-        if( q == x ) { break; }
-        else         { q->propagate( prtn ); }
-      }
-      if( q == x ) {
-        q->propagate( prtn );
-        double offset   = prtn.get_x();
-        double yawAngle = atan( prtn.get_npx()/prtn.get_npz() );
-        Frame f(x->getOutFrame());
-        f.translate( offset*f.getxAxis() );
-        f.rotate( yawAngle, f.getyAxis(), false );
-        x->setOutFrame(f);
-      }
-    }
-  }
-
-  delete wpu;
-}
-
-
-void BeamlineBrowser::editDialog::visitThinQuad( thinQuad* x )
-{
-  QDialog* wpu = new QDialog( 0, 0, true );
-    QVBox* qvb = new QVBox( wpu );
-
-      QWidget* qwa = new QWidget( qvb );
-         QGridLayout* qgl = new QGridLayout( qwa, 2, 3, 5 );
-
-         qgl->addWidget( new QLabel( QString("Integrated gradient"), qwa ), 0, 0 );
-         qgl->addWidget( new QLabel( QString(" [T]  "), qwa ), 0, 1 );
-           QString st1;
-           st1.setNum( x->Strength() );
-           QLineEdit* qle1 = new QLineEdit( st1, qwa );
-         qgl->addWidget( qle1, 0, 2 );
-
-         qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 1, 0 );
-         qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 1, 1 );
-           QString st2;
-           alignmentData ad(x->Alignment());
-           st2.setNum( 1000.*(ad.tilt /*[rad]*/) );
-           QLineEdit* qle2 = new QLineEdit( st2, qwa );
-         qgl->addWidget( qle2, 1, 2 );
-      qwa->adjustSize();
-
-      QHBox* qhb = new QHBox( qvb );
-        QPushButton* okayBtn = new QPushButton( "Okay", qhb );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
-        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb );
-          cancelBtn->setDefault( true );
-          connect( cancelBtn,  SIGNAL(pressed()),
-                   wpu,        SLOT(reject()) );
-      qhb->setMargin(5);
-      qhb->setSpacing(3);
-      qhb->adjustSize();
-
-    qvb->adjustSize();
-
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
-  wpu->adjustSize();
-
-  int returnCode = wpu->exec();
-  // Note: when reject is activated, wpu and all its subwidgets
-  //       will be deleted, if the flag Qt::WDestructiveClose is used.
-  //       This is confirmed by changing these from pointers to objects.
-  //       A warning message is issued, when exiting this scope, that
-  //       the objects are deleted twice.
-
-  if( returnCode == QDialog::Accepted ) {
-    if( st1 != qle1->text() ) {
-      bool ok;
-      double newStrength = (qle1->text()).toDouble( &ok );
-      if( ok ) {
-        if( 0 != _contextPtr->setStrength( x, newStrength ) ) {
-          cerr << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": thinQuad not found in context."
-               << endl;
-        }
-      }
-    }
-
-    if( st2 != qle2->text() ) {
-      bool ok;
-      ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
-      if( ok ) {
-        if( 0 != _contextPtr->setAlignment( x, ad ) ) {
-          cerr << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": thinQuad not found in context."
-               << endl;
-        }
-      }
-    }
-
-  }
-
-  delete wpu;
+  wpu->show();
+  // REMOVE: wpu->exec();
+  // REMOVE: delete wpu;
 }

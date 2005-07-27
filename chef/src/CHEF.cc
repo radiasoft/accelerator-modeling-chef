@@ -60,6 +60,7 @@
 #include "InsertionList.h"
 #include "BeamlineContext.h"
 #include "BeamlineExpressionTree.h"
+#include "EditDialog.h"
 #include "FramePusher.h"
 #include "DriftEliminator.h"
 #include "QuadEliminator.h"
@@ -882,7 +883,7 @@ void CHEF::_editEditElement()
   // Finally, do the editing with the help of 
   // and editDialog visitor.
   if( 0 == (_p_vwr->removeBeamline( contextPtr )) ) {
-    BeamlineBrowser::editDialog edg;
+    editDialog edg;
     edg._contextPtr = contextPtr;
     const_cast<bmlnElmnt*>(elmntPtr)->accept(edg);
     contextPtr->reset();

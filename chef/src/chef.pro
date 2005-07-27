@@ -30,12 +30,7 @@ SOURCES = CHEF.builders.cc \
           CHEF.cc \
           BeamlineBrowser.cc \
           DistributionWidget.cc \
-          ExpressionBrowser.cc \
-          LattFncPlt.cc \
-          ETFncPlt.cc \
-          DspnFncPlt.cc \
-          MomentsFncPlt.cc \
-          LBFncPlt.cc \
+          EditDialog.cc \
           PointEdit.cc \
           QtMonitor.cc \
           QueryDialog.cc \
@@ -49,12 +44,7 @@ SOURCES = CHEF.builders.cc \
 HEADERS = ../include/CHEF.h \
           ../include/BeamlineBrowser.h \
           ../include/DistributionWidget.h \
-          ../include/ExpressionBrowser.h \
-          ../include/LattFncPlt.h \
-          ../include/ETFncPlt.h \
-          ../include/DspnFncPlt.h \
-          ../include/MomentsFncPlt.h \
-          ../include/LBFncPlt.h \
+          ../include/EditDialog.h \
           ../include/PointEdit.h \
           ../include/QtMonitor.h \
           ../include/QueryDialog.h \

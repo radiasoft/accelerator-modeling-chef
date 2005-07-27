@@ -152,19 +152,18 @@ struct infoWriter : public ConstBmlVisitor
 };
 
 
-// Interface for editDialog subclass
-struct editDialog : public BmlVisitor 
-{
-  void visitBmlnElmnt  ( bmlnElmnt*  );
-  void visitDrift      ( drift*      );
-  void visitSlot       ( Slot*       );
-  void visitRbend      ( rbend*      );
-  void visitQuadrupole ( quadrupole* );
-  void visitThinQuad   ( thinQuad*   );
-
-  BeamlineContext*     _contextPtr;
-};
-
+// REMOVE: // Interface for editDialog subclass
+// REMOVE: struct editDialog : public BmlVisitor 
+// REMOVE: {
+// REMOVE:   void visitBmlnElmnt  ( bmlnElmnt*  );
+// REMOVE:   void visitDrift      ( drift*      );
+// REMOVE:   void visitSlot       ( Slot*       );
+// REMOVE:   void visitRbend      ( rbend*      );
+// REMOVE:   void visitQuadrupole ( quadrupole* );
+// REMOVE:   void visitThinQuad   ( thinQuad*   );
+// REMOVE: 
+// REMOVE:   BeamlineContext*     _contextPtr;
+// REMOVE: };
 
   BeamlineBrowser( QWidget *parent = 0, const char *name = 0, bool sdo = FALSE );
   ~BeamlineBrowser();
