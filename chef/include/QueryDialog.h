@@ -34,18 +34,18 @@
 #define QUERYDIALOG_H
 
 #ifndef QWIDGET_H
-#include <qobject.h>
+#include <qwidget.h>
 #endif
 
 class BoolNode;
-class QTabDialog;
+class QTabWidget;
 class QVBox;
 class QListBox;
 class QLineEdit;
 class QHButtonGroup;
 class QTextEdit;
 
-class QueryDialog : public QObject
+class QueryDialog : public QWidget
 {
 Q_OBJECT
 
@@ -71,7 +71,7 @@ signals:
 
 private:
   QTextEdit*     _displayPtr;
-  QTabDialog*    _tabDialogPtr;
+  QTabWidget*    _tabWidgetPtr;
   QLineEdit*     _nameEdt;
   QLineEdit*     _lengthEdt;
   QHButtonGroup* _lengthBtnGrp;
