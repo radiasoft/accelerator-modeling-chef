@@ -208,11 +208,6 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
     _editMenu->setItemEnabled( id_Misalign, false );
   _mainMenu->insertItem( "Edit", _editMenu );
 
-    _mach_imagMenu = new QPopupMenu;
-    _mach_imagMenu->insertItem( "FODO Cells", this, SLOT(_makeFODO()) );
-    _mach_imagMenu->insertItem( "Single Sextupole", this, SLOT(_makeSingSext()) );
-  _mainMenu->insertItem( "Examples", _mach_imagMenu );
-
     _calcsMenu = new QPopupMenu;
        // TBC:  _calcEnterMenu = new QPopupMenu;
        // TBC:  _calcEnterMenu->insertItem( "Line", this, SLOT(_enterContextArg()) );
@@ -262,6 +257,11 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
     _toolMenu->insertItem( "Track", this, SLOT(_launchTrack()) );
     _toolMenu->insertItem( "Trace", this, SLOT(_launchRayTrace()) );
   _mainMenu->insertItem( "Tools", _toolMenu );
+
+    _mach_imagMenu = new QPopupMenu;
+    _mach_imagMenu->insertItem( "FODO Cells", this, SLOT(_makeFODO()) );
+    _mach_imagMenu->insertItem( "Single Sextupole", this, SLOT(_makeSingSext()) );
+  _mainMenu->insertItem( "Examples", _mach_imagMenu );
 
 #if 0
     For some reason, this shows up to the right of the help menu item.
