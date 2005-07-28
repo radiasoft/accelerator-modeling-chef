@@ -39,20 +39,20 @@
 #include <typeinfo>
 // #include <process.h>
 
-#include <qmainwindow.h>
 #include <qapplication.h>
-#include <qlabel.h>
-#include <qpopupmenu.h>
-#include <qmessagebox.h>
-#include <qmenubar.h>
-#include <qinputdialog.h>
-#include <qfiledialog.h>
-#include <qpixmap.h>
-#include <qdialog.h>
 #include <qbuttongroup.h>
-#include <qvbuttongroup.h>
-#include <qradiobutton.h>
+#include <qdialog.h>
+#include <qfiledialog.h>
+#include <qinputdialog.h>
+#include <qlabel.h>
+#include <qmainwindow.h>
+#include <qmenubar.h>
+#include <qmessagebox.h>
+#include <qpixmap.h>
+#include <qpopupmenu.h>
 #include <qptrlist.h>
+#include <qradiobutton.h>
+#include <qvbuttongroup.h>
 // #include <qprocess.h>
 
 #include "GenericException.h"
@@ -168,7 +168,6 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
     _fileMenu->insertItem( "Exit", qApp, SLOT(quit()) );
   _mainMenu->insertItem( "File", _fileMenu );
     
-
     _editMenu = new QPopupMenu;
       _edit_selectMenu = new QPopupMenu;
       _edit_selectMenu->insertItem( "Filter...", this, SLOT(_editFindFilter()) );
@@ -180,36 +179,33 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
     _editMenu->setItemEnabled( _id_EditSelectMenu, false);
 
     _editMenu->insertSeparator();
-    
-    _editMenu->insertItem( "Rename line", this, SLOT(_editRenameLine()) );
-    _editMenu->insertItem( "Remove line", this, SLOT(_editRemoveLine()) );
-    _editMenu->insertItem( "Duplicate line", this, SLOT(_editCopyLine()) );
-    _editMenu->insertItem( "Condense line", this, SLOT(_editCondense()) );
+    _editMenu->insertItem( "Mode...", this, SLOT(_editMode()) );
+    _editMenu->insertItem( "Remove", this, SLOT(_editRemoveLine()) );
+    _editMenu->insertItem( "Duplicate", this, SLOT(_editCopyLine()) );
+    _editMenu->insertItem( "Condense", this, SLOT(_editCondense()) );
     _editMenu->insertItem( "Flatten", this, SLOT(_editFlatten()) );
-    _editMenu->insertItem( "New injection point", this, SLOT(_editNewOrder()) );
-    _editMenu->insertItem( "Merge equivalent quads", this, SLOT(_editMergeQuads()) );
+    _editMenu->insertItem( "Permute", this, SLOT(_editNewOrder()) );
+
+    _editMenu->insertSeparator();
+    _editMenu->insertItem( "Modify ...", this, SLOT(_editEditElement()) );
+
+    _editMenu->insertSeparator();
+    _editMenu->insertItem( "Insert markers", this, SLOT(_editAddMarkers()) );
     _editMenu->insertItem( "Insert monitors", this, SLOT(_editAddQtMons()) );
 
     _editMenu->insertSeparator();
-
-    _editMenu->insertItem( "Modify ...", this, SLOT(_editEditElement()) );
-    _editMenu->insertItem( "Align ...", this, SLOT(_editAlign()) );
-    int id_Misalign = 
-    _editMenu->insertItem( "Misalign ...", this, SLOT(_editMisalign()) );
-    _editMenu->setItemEnabled( id_Misalign, false );
-
-    _editMenu->insertSeparator();
-
+    _editMenu->insertItem( "Merge equivalent quads", this, SLOT(_editMergeQuads()) );
     _editMenu->insertItem( "Convert to Slots", this, SLOT(_editD2S()) );
     _editMenu->insertItem( "Partition", this, SLOT(_editPartition()) );
-    _editMenu->insertItem( "Insert markers", this, SLOT(_editAddMarkers()) );
     int id_PartSect = 
     _editMenu->insertItem( "Partition and sectorize", this, SLOT(_editPartAndSect()) );
     _editMenu->setItemEnabled( id_PartSect, false );
 
     _editMenu->insertSeparator();
-
-    _editMenu->insertItem( "Mode...", this, SLOT(_editMode()) );
+    _editMenu->insertItem( "Align ...", this, SLOT(_editAlign()) );
+    int id_Misalign = 
+    _editMenu->insertItem( "Misalign ...", this, SLOT(_editMisalign()) );
+    _editMenu->setItemEnabled( id_Misalign, false );
   _mainMenu->insertItem( "Edit", _editMenu );
 
     _mach_imagMenu = new QPopupMenu;
@@ -217,65 +213,64 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
     _mach_imagMenu->insertItem( "Single Sextupole", this, SLOT(_makeSingSext()) );
   _mainMenu->insertItem( "Examples", _mach_imagMenu );
 
+    _calcsMenu = new QPopupMenu;
+       // TBC:  _calcEnterMenu = new QPopupMenu;
+       // TBC:  _calcEnterMenu->insertItem( "Line", this, SLOT(_enterContextArg()) );
+       // TBC:  _calcEnterMenu->insertItem( "Map", this, SLOT(_enterMapArg()) );
+       // TBC:  _calcEnterMenu->insertSeparator();
+       // TBC:  _calcEnterMenu->insertItem( "Clear", this, SLOT(_clearArgs()) );
+    // TBC:  _calcsMenu->insertItem( "Enter...", _calcEnterMenu);
+
+      _calcLattFuncMenu = new QPopupMenu;
+      _calcLattFuncMenu->insertItem( "Uncoupled", this, SLOT(_launchLatt()) );
+      _calcLattFuncMenu->insertItem( "Factorization", this, SLOT(_launchET()) );
+      _calcLattFuncMenu->insertItem( "Eigenvectors", this, SLOT(_launchLB()) );
+      _calcLattFuncMenu->insertItem( "Moments", this, SLOT(_launchMoments()) );
+    _calcsMenu->insertItem( "Lattice Functions", _calcLattFuncMenu );
+
+      _calcPushMenu = new QPopupMenu;
+      _calcPushMenu->insertItem( "Uncoupled Lattice Functions", this, SLOT(_pushULF()) );
+      _calcPushMenu->insertItem( "Moments", this, SLOT(_pushMoments()) );
+      _calcPushMenu->insertItem( "Dispersion", this, SLOT(_pushDispersion()) );
+    _calcsMenu->insertItem( "Push", _calcPushMenu );
+
+    _calcsMenu->insertItem( "Dispersion", this, SLOT(_launchDispersion()) );
+    _calcsMenu->insertItem( "Emittance Dilution", this, SLOT(_launchDilution()) );
+  _mainMenu->insertItem( "Calculations", _calcsMenu );
+
+    _ctrlMenu = new QPopupMenu;
+    _ctrlMenu->insertItem( "Build hor. tune circuit", this, SLOT(_horTuneCtrl()) );
+    _ctrlMenu->insertItem( "Build ver. tune circuit", this, SLOT(_verTuneCtrl()) );
+    _ctrlMenu->insertItem( "Adjust tune", this, SLOT(_tuneCtrl()) );
+    _ctrlMenu->insertSeparator();
+      int id_chrom = 
+    _ctrlMenu->insertItem( "Chromaticity", this, SLOT(_chromCtrl()) );
+      _ctrlMenu->setItemEnabled( id_chrom, false );
+    _ctrlMenu->insertSeparator();
+    _ctrlMenu->insertItem( "Align CF_rbends...", this, SLOT(_toolAlignBends()) );
+    _ctrlMenu->insertItem( "Misalign all...",    this, SLOT(_toolMisalign()) );
+  _mainMenu->insertItem( "Controls", _ctrlMenu );
+
+    _dsgnMenu = new QPopupMenu;
+    int dsgnMenuID = 
+  _mainMenu->insertItem( "Design", _dsgnMenu );
+  _mainMenu->setItemEnabled( dsgnMenuID, false );
+
     _toolMenu = new QPopupMenu;
-
-      _tool_calcMenu = new QPopupMenu;
-
-        // _calcEnterMenu = new QPopupMenu;
-        // _calcEnterMenu->insertItem( "Line", this, SLOT(_enterContextArg()) );
-        // _calcEnterMenu->insertItem( "Map", this, SLOT(_enterMapArg()) );
-        // _calcEnterMenu->insertSeparator();
-        // _calcEnterMenu->insertItem( "Clear", this, SLOT(_clearArgs()) );
-      // _tool_calcMenu->insertItem( "Enter...", _calcEnterMenu);
-
-        _calcCalcFuncMenu = new QPopupMenu;
-
-          _calcLattFuncMenu = new QPopupMenu;
-          _calcLattFuncMenu->insertItem( "Uncoupled", this, SLOT(_launchLatt()) );
-          _calcLattFuncMenu->insertItem( "Factorization", this, SLOT(_launchET()) );
-          _calcLattFuncMenu->insertItem( "Eigenvectors", this, SLOT(_launchLB()) );
-          _calcLattFuncMenu->insertItem( "Moments", this, SLOT(_launchMoments()) );
-        _calcCalcFuncMenu->insertItem( "Lattice Functions", _calcLattFuncMenu );
-
-          _calcPushMenu = new QPopupMenu;
-          _calcPushMenu->insertItem( "Uncoupled Lattice Functions", this, SLOT(_pushULF()) );
-          _calcPushMenu->insertItem( "Moments", this, SLOT(_pushMoments()) );
-          _calcPushMenu->insertItem( "Dispersion", this, SLOT(_pushDispersion()) );
-          _calcPushMenu->insertItem( "Particles", this, SLOT(_pushParticles()) );
-        _calcCalcFuncMenu->insertItem( "Push", _calcPushMenu );
-
-        _calcCalcFuncMenu->insertItem( "Dispersion", this, SLOT(_launchDispersion()) );
-        _calcCalcFuncMenu->insertItem( "Emittance Dilution", this, SLOT(_launchDilution()) );
-      _tool_calcMenu->insertItem( "Calculations", _calcCalcFuncMenu );
-
-      _tool_calcMenu->insertItem( "Site Viewer", this, SLOT(_launchSiteVu()) );
-      _tool_calcMenu->insertItem( "Track", this, SLOT(_launchTrack()) );
-      _tool_calcMenu->insertItem( "Trace", this, SLOT(_launchRayTrace()) );
-
-      _id_analMenu = 
-    _toolMenu->insertItem( "Analysis", _tool_calcMenu );
-    _toolMenu->setItemEnabled( _id_analMenu, false );
-
-      _tool_ctrlMenu = new QPopupMenu;
-      _tool_ctrlMenu->insertItem( "Build hor. tune circuit", this, SLOT(_horTuneCtrl()) );
-      _tool_ctrlMenu->insertItem( "Build ver. tune circuit", this, SLOT(_verTuneCtrl()) );
-      _tool_ctrlMenu->insertItem( "Adjust tune", this, SLOT(_tuneCtrl()) );
-      _tool_ctrlMenu->insertSeparator();
-        int id_chrom = 
-      _tool_ctrlMenu->insertItem( "Chromaticity", this, SLOT(_chromCtrl()) );
-        _tool_ctrlMenu->setItemEnabled( id_chrom, false );
-      _tool_ctrlMenu->insertSeparator();
-      _tool_ctrlMenu->insertItem( "Align CF_rbends...", this, SLOT(_toolAlignBends()) );
-      _tool_ctrlMenu->insertItem( "Misalign all...",    this, SLOT(_toolMisalign()) );
-      _id_ctrlMenu = 
-    _toolMenu->insertItem( "Control", _tool_ctrlMenu );
-    _toolMenu->setItemEnabled( _id_ctrlMenu, false );
-
-      _tool_dsgnMenu = new QPopupMenu;
-      _id_dsgnMenu = 
-    _toolMenu->insertItem( "Design", _tool_dsgnMenu );
-      _toolMenu->setItemEnabled( _id_dsgnMenu, false );
+    _toolMenu->insertItem( "Generate Bunch", this, SLOT(_pushParticles()) );
+    _toolMenu->insertItem( "Site Viewer", this, SLOT(_launchSiteVu()) );
+    _toolMenu->insertItem( "Track", this, SLOT(_launchTrack()) );
+    _toolMenu->insertItem( "Trace", this, SLOT(_launchRayTrace()) );
   _mainMenu->insertItem( "Tools", _toolMenu );
+
+#if 0
+    For some reason, this shows up to the right of the help menu item.
+    QLabel*  spacerPtr = new QLabel( "SPACER", _mainMenu );
+    // QWidget* spacerPtr = new QWidget( _mainMenu );
+    spacerPtr->setFocusPolicy( QWidget::NoFocus );
+    spacerPtr->setSizePolicy( QSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed) );
+  _mainMenu->insertItem( spacerPtr );
+#endif
 
     _helpMenu = new QPopupMenu;
     _helpMenu->insertItem( "Contents", this, SLOT(_helpContents()) );
@@ -418,51 +413,6 @@ void CHEF::_editCopyLine()
     _contextList.insert( _p_currBmlCon );
     emit _new_beamline();
   }
-}
-
-
-void CHEF::_editRenameLine()
-{
-  if( 0 == _p_currBmlCon ) { 
-    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
-    return;
-  }
-
-  QDialog* wpu = new QDialog( 0, 0, true );
-    QVBox* qvb = new QVBox( wpu );
-
-      QHBox* qhb1 = new QHBox( qvb );
-        new QLabel( "Name: ", qhb1 );
-        QLineEdit* qle = new QLineEdit( _p_currBmlCon->name(), qhb1 );
-      qhb1->setMargin(5);
-      qhb1->setSpacing(3);
-      qhb1->adjustSize();
-  
-      QHBox* qhb2 = new QHBox( qvb );
-        QPushButton* okayBtn = new QPushButton( "Okay", qhb2 );
-          okayBtn->setDefault( true );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
-        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb2 );
-          connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
-      qhb2->setMargin(5);
-      qhb2->setSpacing(3);
-      qhb2->adjustSize();
-  
-    qvb->adjustSize();
-
-  wpu->setCaption( "CHEF: Rename beamline" );
-  wpu->adjustSize();
-
-  int returnCode = wpu->exec();
-
-  if( returnCode == QDialog::Accepted ) {
-    _p_currBmlCon->rename( qle->text().ascii() );
-    _p_currQBmlRoot->setText( 0, qle->text() );
-  }
-
-  delete wpu;
 }
 
 
@@ -854,13 +804,28 @@ void CHEF::_editEditElement()
   // This test should be made more flexible after
   //   allowing non-flat beamlines to be processed.
   if( 0 == qbmlElPtr ) {
-    std::ostringstream uic;
-    uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
-           "\nIn function void CHEF::_editNewOrder():"
-           "\nFailure: beamline element not chosen correctly.";
-           "\nOperation will abort.";
-    QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
-    return;
+    // Allow modifying the beamline only
+    if( 0 != _p_currBmlCon ) {
+      BeamlineContext* contextPtr = _p_currBmlCon;
+      if( 0 == (_p_vwr->removeBeamline( contextPtr )) ) {
+        editDialog edg;
+        edg._contextPtr = contextPtr;
+        beamline* bmlPtr = const_cast<beamline*>(_p_currBmlCon->cheatBmlPtr());
+        bmlPtr->accept(edg);
+        contextPtr->reset();
+        emit _new_beamline();
+        return;
+      }
+    }
+    else {
+      std::ostringstream uic;
+      uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
+             "\nIn function void CHEF::_editNewOrder():"
+             "\nFailure: beamline element not chosen correctly.";
+             "\nOperation will abort.";
+      QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
+      return;
+    }
   }
   const bmlnElmnt* elmntPtr = qbmlElPtr->cheatElementPtr();
   QBmlRoot* theRoot = const_cast<QBmlRoot*>(_p_clickedQBml->topBmlParent());
@@ -2692,15 +2657,16 @@ void CHEF::_launch_browser()
   _fileMenu->setItemEnabled( _id_FileWriteTree,  true);
   _fileMenu->setItemEnabled( _id_FilePrint,      true );
   _editMenu->setItemEnabled( _id_EditSelectMenu, true);
-  _toolMenu->setItemEnabled( _id_analMenu,       true );
   _toolMenu->setItemEnabled( _id_ctrlMenu,       true );
 
   if( _p_vwr == 0 ) {
+    int minWidth = _mainMenu->width();
     _p_vwr = new BeamlineBrowser( _mainWindow );
     // _p_vwr = new BeamlineBrowser( 0 );
   
     _p_vwr->setCaption( "CHEF:: Beamline Browser" );
     _p_vwr->setAllColumnsShowFocus( TRUE );
+    _p_vwr->setMinimumWidth( minWidth );
     _p_vwr->show();
 
     connect( this,   SIGNAL(_modeChanged( const BeamlineContext* )),
