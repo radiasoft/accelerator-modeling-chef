@@ -242,21 +242,20 @@ private:
   QPopupMenu*      _editMenu;
   QPopupMenu*        _edit_selectMenu;
   QPopupMenu*      _mach_imagMenu;
+  QPopupMenu*      _calcsMenu;
+  QPopupMenu*      _ctrlMenu;
+  QPopupMenu*      _dsgnMenu;
   QPopupMenu*      _toolMenu;
-  QPopupMenu*        _tool_calcMenu;
   QPopupMenu*          _calcEnterMenu;
   QPopupMenu*          _calcCalcFuncMenu;
   QPopupMenu*            _calcLattFuncMenu;
   QPopupMenu*            _calcPushMenu;
-  QPopupMenu*        _tool_ctrlMenu;
-  QPopupMenu*        _tool_dsgnMenu;
   QPopupMenu*      _helpMenu;
 
   // Menu identifiers
   int              _id_FilePrint;
   int              _id_FileWriteTree;
   int              _id_EditSelectMenu;
-  int              _id_analMenu;
   int              _id_ctrlMenu;
   int              _id_dsgnMenu;
   
@@ -268,7 +267,7 @@ private:
                                     // by the editor.
   dlist             _contextList;
 
-  BeamlineContext*  _p_currBmlCon;  // Currently selected beamline
+  BeamlineContext*  _p_currBmlCon;  // Currently selected beamline context
   QBmlRoot*         _p_currQBmlRoot;// ... and its widget
   // REMOVE: BeamlineContext*  _p_clickedCon;  // Last context clicked on ...
   QBml*             _p_clickedQBml; // Most recently clicked item in BeamlineBrowser
@@ -296,7 +295,6 @@ private slots:
   void _editSelectNone();
   // REMOVE: void _editSelectLine();
   void _editCopyLine();
-  void _editRenameLine();
   void _editRemoveLine();
   void _editCondense();
   void _editEditElement();

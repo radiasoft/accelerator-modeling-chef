@@ -22,6 +22,7 @@ class BeamlineContext;
 struct editDialog : public BmlVisitor 
 {
   void visitBmlnElmnt  ( bmlnElmnt*  );
+  void visitBeamline   ( beamline*   );
   void visitDrift      ( drift*      );
   void visitSlot       ( Slot*       );
   void visitRbend      ( rbend*      );
