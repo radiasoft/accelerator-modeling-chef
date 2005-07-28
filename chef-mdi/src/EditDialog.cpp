@@ -33,6 +33,54 @@ void editDialog::visitBmlnElmnt( bmlnElmnt* x )
 }
 
 
+void editDialog::visitBeamline( beamline* x )
+{
+  QDialog* wpu = new QDialog( 0, 0, true );
+    QVBox* qvb = new QVBox( wpu );
+      QWidget* qwa = new QWidget( qvb );
+        QGridLayout* qgl = new QGridLayout( qwa, 1, 2, 5 );
+          QString sts( x->Name() );
+          QLineEdit* qlePtr = new QLineEdit( sts, qwa );
+        qgl->addWidget( new QLabel( QString("Name: "), qwa ), 0, 0 );
+        qgl->addWidget( qlePtr, 0, 1 );
+
+      qwa->adjustSize();
+
+      QHBox* qhb = new QHBox( qvb );
+        QPushButton* okayBtn = new QPushButton( "Okay", qhb );
+          QObject::connect( okayBtn, SIGNAL(pressed()),
+                                wpu,    SLOT(accept()) );
+        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb );
+          cancelBtn->setDefault( true );
+          QObject::connect( cancelBtn,  SIGNAL(pressed()),
+                                  wpu,     SLOT(reject()) );
+      qhb->setMargin(5);
+      qhb->setSpacing(3);
+      qhb->adjustSize();
+
+    qvb->adjustSize();
+
+  // Note: when reject is activated, wpu and all its subwidgets
+  //       will be deleted, if the flag Qt::WDestructiveClose is used.
+  //       This is confirmed by changing these from pointers to objects.
+  //       A warning message is issued, when exiting this scope, that
+  //       the objects are deleted twice.
+
+  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->adjustSize();
+
+  int returnCode = wpu->exec();
+
+  if( returnCode == QDialog::Accepted ) {
+    if( sts != qlePtr->text() ) {
+      x->Rename( (qlePtr->text()).latin1() );
+    }
+  }
+
+  delete wpu;
+}
+
+
 void editDialog::visitRbend( rbend* x )
 {
   QDialog* wpu = new QDialog( 0, 0, true );
