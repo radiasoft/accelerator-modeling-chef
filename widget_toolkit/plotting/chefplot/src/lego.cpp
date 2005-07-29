@@ -1,30 +1,47 @@
-////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                            //
-// FILE:       lego.cpp                                                                       //
-//                                                                                            //
-// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-//             Accelerator Division / Accelerator Integration Dept                            //
-//             Fermi National Laboratory, Batavia, IL                                         //
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-// DATE:       September 2004                                                                 //
-//                                                                                            //
-// COPYRIGHT: Universities Research Association                                               //
-//                                                                                            //
-//                                                                                            //
-////////////////////////////////////////////////////////////////////////////////////////////////
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  CHEF:      A Qt-based Application 
+******             Layered on top of of BEAMLINE.
+******                                                                
+******  File:      lego.cpp
+******                                                                
+******  Copyright (c) Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Jean-Francois Ostiguy
+******                                                                
+******             Fermilab                                           
+******             Batavia, IL  60510                                
+******             ostiguy@fnal.gov                         
+******                                                                
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
+**************************************************************************
+**************************************************************************
+*************************************************************************/
 
 #include <beamline.h>
-#include "lego.h"
+#include <lego.h>
 #include <qpainter.h>
 #include <qwmatrix.h>
 #include <qpixmap.h>
 #include <iostream>
 
 
-LegoPlot::LegoPlot(QWidget * parent, const char * name, WFlags f ): QWidget(parent,name,f), _beamline(0) {
+LegoPlot::LegoPlot(QWidget * parent, const char * name, WFlags f ): 
+QWidget(parent,name,f), _beamline(0) {
  
   setBackgroundMode( Qt::PaletteBase );
    _pixmap  = 0;
@@ -32,6 +49,8 @@ LegoPlot::LegoPlot(QWidget * parent, const char * name, WFlags f ): QWidget(pare
    setWFlags(Qt::WNoAutoErase);
   
 }
+
+//.........................................................................................
 
 LegoPlot::~LegoPlot() {
    
@@ -51,6 +70,7 @@ LegoPlot::~LegoPlot() {
   };
 }
 
+//.........................................................................................
 
 
 void 
@@ -70,6 +90,7 @@ LegoPlot::getBeamline()
 
 }
 
+//.........................................................................................
 
 void LegoPlot::setBeamlineDisplayLimits(double x, double w, int loffset, int roffset) {
   
@@ -80,6 +101,7 @@ void LegoPlot::setBeamlineDisplayLimits(double x, double w, int loffset, int rof
 
 }
 
+//.........................................................................................
 
 void 
 LegoPlot::resizeEvent ( QResizeEvent *event ){
@@ -95,6 +117,7 @@ LegoPlot::resizeEvent ( QResizeEvent *event ){
   
 }
 
+//.........................................................................................
 
 
 void 
@@ -172,6 +195,8 @@ LegoPlot::paintEvent ( QPaintEvent *event ){
 
 }
 
+//.........................................................................................
+
 void 
 LegoPlot::drawDrift( double l, double  s ) {
   
@@ -190,6 +215,8 @@ LegoPlot::drawDrift( double l, double  s ) {
  
 }
 
+//.........................................................................................
+
 void 
 LegoPlot::drawBend( double l, double  s ) {
 
@@ -204,6 +231,8 @@ LegoPlot::drawBend( double l, double  s ) {
 
 }
 
+
+//.........................................................................................
 
 void 
 LegoPlot::drawQuad( double l, double  s, bool focusing  ) {
@@ -225,6 +254,7 @@ LegoPlot::drawQuad( double l, double  s, bool focusing  ) {
 
 }
 
+//.........................................................................................
 
 void 
 LegoPlot::drawSext( double l, double  s,  bool focusing ) {

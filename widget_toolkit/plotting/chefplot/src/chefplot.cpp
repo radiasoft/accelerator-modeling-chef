@@ -1,20 +1,36 @@
-////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                            //
-// FILE:       chefplot.cpp                                                                   //
-//                                                                                            //
-// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-//             Accelerator Division / Accelerator Integration Dept                            //
-//             Fermi National Laboratory, Batavia, IL                                         //
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-// DATE:       September 2004                                                                 //
-//                                                                                            //
-// COPYRIGHT: Universities Research Association                                               //
-//                                                                                            //
-//                                                                                            //
-////////////////////////////////////////////////////////////////////////////////////////////////
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  CHEF:      A Qt-based Application 
+******             Layered on top of of BEAMLINE.
+******                                                                
+******  File:      chefplot.cpp
+******                                                                
+******  Copyright (c) Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Jean-Francois Ostiguy
+******                                                                
+******             Fermilab                                           
+******             Batavia, IL  60510                                
+******             ostiguy@fnal.gov                         
+******                                                                
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
+**************************************************************************
+**************************************************************************
+*************************************************************************/
 
 #include <chefplot.h> 
 #include <plot.h>
@@ -31,7 +47,9 @@
 
 
 
-CHEFPlot::CHEFPlot(QWidget * parent, const char* name, Qt::WFlags f): QWidget(parent,name,f) {
+CHEFPlot::CHEFPlot(QWidget * parent, const char* name, Qt::WFlags f): 
+QWidget(parent,name,f) 
+{
 
    _lego_height = 30;
 
@@ -44,6 +62,7 @@ CHEFPlot::CHEFPlot(QWidget * parent, const char* name, Qt::WFlags f): QWidget(pa
 }
 
 
+//..........................................................................................
 
 CHEFPlot::~CHEFPlot() {
 
@@ -53,7 +72,7 @@ CHEFPlot::~CHEFPlot() {
 }
 
 
-
+//............................................................................................
 
 void 
 CHEFPlot::resizeEvent (QResizeEvent* event) {
@@ -64,6 +83,7 @@ CHEFPlot::resizeEvent (QResizeEvent* event) {
 
 }
 
+//............................................................................................
 
 void 
 CHEFPlot::resizeLego () {
@@ -74,8 +94,7 @@ CHEFPlot::resizeLego () {
 
 }
 
-
-
+//............................................................................................
 
 void 
 CHEFPlot::displayLattice(const beamline* bml) {
@@ -86,6 +105,8 @@ CHEFPlot::displayLattice(const beamline* bml) {
   
 }
 
+//............................................................................................
+
 const beamline*
 CHEFPlot::getBeamline()
 {
@@ -95,6 +116,8 @@ CHEFPlot::getBeamline()
 
 }
 
+
+//............................................................................................
 
 void 
 CHEFPlot::updateLatticeDisplay() {
@@ -111,6 +134,8 @@ CHEFPlot::updateLatticeDisplay() {
 
 }
 
+//............................................................................................
+
 void 
 CHEFPlot::enableGrid(bool set) {
 
@@ -120,6 +145,7 @@ CHEFPlot::enableGrid(bool set) {
   
 }
 
+//............................................................................................
 
 void 
 CHEFPlot::enableThumbWheels(bool set) {
@@ -130,6 +156,8 @@ CHEFPlot::enableThumbWheels(bool set) {
   _lego->repaint();
 
 }
+
+//............................................................................................
 
 void 
 CHEFPlot::enableLegoPlot(bool set) {
@@ -156,6 +184,8 @@ CHEFPlot::enableLegoPlot(bool set) {
 }
 
 
+//............................................................................................
+
 void 
 CHEFPlot::zoomUseRightAxis() {
 
@@ -164,6 +194,7 @@ CHEFPlot::zoomUseRightAxis() {
 
 }
 
+//............................................................................................
 
 void 
 CHEFPlot::zoomUseLeftAxis(){
@@ -173,6 +204,7 @@ CHEFPlot::zoomUseLeftAxis(){
 }
 
 
+//............................................................................................
 
 
 void 
@@ -197,6 +229,7 @@ CHEFPlot::addData(CHEFPlotData& cpdata) {
   
 }
 
+//............................................................................................
 void 
 CHEFPlot::setLogScale( int axis) 
 {
@@ -205,6 +238,8 @@ CHEFPlot::setLogScale( int axis)
 
 }
 
+//............................................................................................
+
 void 
 CHEFPlot::setLinScale( int axis) 
 {
@@ -212,6 +247,8 @@ CHEFPlot::setLinScale( int axis)
   _plot->setLinScale(axis); 
 
 }
+
+//............................................................................................
 
 void
 CHEFPlot::clear() 

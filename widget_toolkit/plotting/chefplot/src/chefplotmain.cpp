@@ -1,26 +1,42 @@
-////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                            //
-// FILE:       chefplotmain.cpp                                                               //
-//                                                                                            //
-// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-//             Accelerator Division / Accelerator Integration Dept                            //
-//             Fermi National Laboratory, Batavia, IL                                         //
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-// DATE:       September 2004                                                                 //
-//                                                                                            //
-// COPYRIGHT:  Universities Research Association                                              //
-//                                                                                            //
-//                                                                                            //
-////////////////////////////////////////////////////////////////////////////////////////////////
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  CHEF:      A Qt-based Application 
+******             Layered on top of of BEAMLINE.
+******                                                                
+******  File:      chefplotmain.cpp
+******                                                                
+******  Copyright (c) Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Jean-Francois Ostiguy
+******                                                                
+******             Fermilab                                           
+******             Batavia, IL  60510                                
+******             ostiguy@fnal.gov                         
+******                                                                
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
+**************************************************************************
+**************************************************************************
+*************************************************************************/
 
-#include "chefplotmain.h" 
-#include "chefplot.h"
-#include "plot.h"
-#include "lego.h"
-#include "TuneDialog.h"
+#include <chefplotmain.h> 
+#include <chefplot.h>
+#include <plot.h>
+#include <lego.h>
+#include <TuneDialog.h>
 #include <beamline.h>
 #include <qwt/qwt_plot_canvas.h>
 #include <qwt/qwt_scale.h>
@@ -33,7 +49,7 @@
 
 #include <qwt/qwt_painter.h>
 #include <qwt/qwt_plot_printfilter.h>
-#include "datadisplay.h"
+#include <datadisplay.h>
 
 #include <iostream>
 #include <string>
@@ -54,7 +70,7 @@ CHEFPlotMainBase(parent,name,f), _auto_clear(true) {
 
 }
 
-
+//.................................................................................
 
 CHEFPlotMain::~CHEFPlotMain() {
 
@@ -63,6 +79,8 @@ CHEFPlotMain::~CHEFPlotMain() {
 
 }
 
+//.................................................................................
+
 void CHEFPlotMain::displayLattice(beamline* bml){
 
   _chefplot->displayLattice(bml);
@@ -70,6 +88,8 @@ void CHEFPlotMain::displayLattice(beamline* bml){
   }
 
   
+//.................................................................................
+
 void CHEFPlotMain::addData(CHEFPlotData& cpdata){
   
  if (_auto_clear) _chefplot->clear(); 
@@ -80,6 +100,8 @@ void CHEFPlotMain::addData(CHEFPlotData& cpdata){
 
 }
 
+//.................................................................................
+
 void CHEFPlotMain::enableGrid(bool set) {
   
  _chefplot->enableGrid(set);
@@ -87,17 +109,23 @@ void CHEFPlotMain::enableGrid(bool set) {
 }
 
 
+//.................................................................................
+
 void CHEFPlotMain::enableThumbWheels(bool set) {
 
  _chefplot->enableThumbWheels(set);
 
 }
 
+//.................................................................................
+
 void CHEFPlotMain::enableLegoPlot(bool set) {
 
  _chefplot->enableLegoPlot(set);
 }
 
+
+//.................................................................................
 
 void CHEFPlotMain::zoomUseRightAxis() {
   
@@ -106,17 +134,23 @@ void CHEFPlotMain::zoomUseRightAxis() {
 
 }
 
+//.................................................................................
+
 void CHEFPlotMain::zoomUseLeftAxis(){
 
   _chefplot->zoomUseLeftAxis();
   
 }
 
+//.................................................................................
+
 void CHEFPlotMain::showDataPoints( bool set ){
 
   _chefplot->_plot->enableDataPointSymbols(set);
   
 }
+
+//.................................................................................
 
 void CHEFPlotMain::enableLegend( bool set ){
 
@@ -125,6 +159,8 @@ void CHEFPlotMain::enableLegend( bool set ){
   
 }
 
+//.................................................................................
+
 void CHEFPlotMain::enableInterpolation( bool set ){
 
   _chefplot->_plot->enableInterpolation(set);
@@ -132,11 +168,15 @@ void CHEFPlotMain::enableInterpolation( bool set ){
   
 }
 
+//.................................................................................
+
 void CHEFPlotMain::enableCoordinatesDisplay( bool set ){
 
   _chefplot->_plot->enableCoordinatesDisplay(set);
   
 }
+
+//.................................................................................
 
 void CHEFPlotMain::exit( ){
   
@@ -149,12 +189,15 @@ void CHEFPlotMain::exit( ){
 
 }
 
+//.................................................................................
+
 void CHEFPlotMain::clear( ){
   
      _chefplot->clear();  //  clear the plot
 
 }
 
+//.................................................................................
 
 void CHEFPlotMain::setAutoClear( bool set){
   
@@ -162,6 +205,7 @@ void CHEFPlotMain::setAutoClear( bool set){
 
 }
 
+//.................................................................................
 
 
 
@@ -264,6 +308,8 @@ void CHEFPlotMain::filePrint() {
 
 }
 
+//.................................................................................
+
 void 
 CHEFPlotMain::showTunes() 
 {
@@ -272,6 +318,8 @@ CHEFPlotMain::showTunes()
  
 }
 
+
+//.................................................................................
 
 void
 CHEFPlotMain::_showdata() 
@@ -372,6 +420,8 @@ CHEFPlotMain::_showdata()
   dd->show();
 }
 
+//.................................................................................
+
 void CHEFPlotMain::optionsVerLogScaleLeft(bool set) 
 {
 
@@ -387,6 +437,8 @@ void CHEFPlotMain::optionsVerLogScaleLeft(bool set)
 }
 
 
+//.................................................................................
+
 void CHEFPlotMain::optionsVerLogScaleRight(bool set) 
 {
 
@@ -401,6 +453,8 @@ void CHEFPlotMain::optionsVerLogScaleRight(bool set)
 
 }
 
+//.................................................................................
+
 void CHEFPlotMain::optionsHorLogScale(bool set) 
 {
 
@@ -414,6 +468,8 @@ void CHEFPlotMain::optionsHorLogScale(bool set)
 
 
 }
+
+//.................................................................................
 
 void CHEFPlotMain::optionsPersistent(bool set) 
 {
