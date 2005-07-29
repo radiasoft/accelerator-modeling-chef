@@ -3,14 +3,14 @@
 /* File:           CHEFGUI.cpp                                        */
 /* Authors:                                                           */
 /*                 Leo Michelotti                                     */
-/*                 michelotti@fnal.gov                                */     
-/*                                                                    */ 
+/*                 michelotti@fnal.gov                                */
+/*                                                                    */
 /*                 Jean-Francois Ostiguy                              */
 /*                 ostiguy@fnal.gov                                   */
 /*                                                                    */
 /*                                                                    */
 /* Creation Date:  August 2004                                        */
-/*                                                                    */ 
+/*                                                                    */
 /* Copyright:      (C) URA/Fermilab                                   */
 /*                                                                    */
 /**********************************************************************/
@@ -57,12 +57,12 @@ extern beamline* DriftsToSlots( /* const */ beamline& original );
 
 
 
-CHEFGUI::CHEFGUI(QWidget* parent, const char* name, WFlags f): 
-CHEFGUIBase(parent,name,f), _plotWidget(0), 
-                            _DspnplotWidget(0), 
-                            _ETplotWidget(0), 
-                            _LBplotWidget(0), 
-                            _MMplotWidget(0), 
+CHEFGUI::CHEFGUI(QWidget* parent, const char* name, WFlags f):
+CHEFGUIBase(parent,name,f), _plotWidget(0),
+                            _DspnplotWidget(0),
+                            _ETplotWidget(0),
+                            _LBplotWidget(0),
+                            _MMplotWidget(0),
                             _p_vwr(0)
 
 {
@@ -73,7 +73,7 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
   _p_currQBmlRoot = 0;
   _p_clickedQBml = 0;
 
-  // Create an initial Jet environment 
+  // Create an initial Jet environment
   double scale[]  = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3 };
   Jet::BeginEnvironment( 1 );
 
@@ -86,7 +86,7 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
 
   _p_JetEnv  = Jet::EndEnvironment( scale );
   _p_JetCEnv = JetC::_lastEnv = JetC::CreateEnvFrom( _p_JetEnv );
- 
+
   if( _p_JetEnv != Jet::_lastEnv ) {
     std::stringstream uic;
     uic << "An impossibility has occurred\nin file "
@@ -98,15 +98,15 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
   }
 
   // Make connections
-  connect( this, SIGNAL(_new_beamline()), 
+  connect( this, SIGNAL(_new_beamline()),
            this, SLOT  (_launch_browser()) );
 
-  
- 
-  
 
-  _centralWidget = new AppWorkspace(this, "AppWorkspace"); 
-  
+
+
+
+  _centralWidget = new AppWorkspace(this, "AppWorkspace");
+
   setCentralWidget( _centralWidget );
 
 
@@ -114,21 +114,21 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
   // based on the initial main widget dimensions.   _launch_browser();
 
 
-  _eventfilter = new WindowCloseEventEater(); 
+  _eventfilter = new WindowCloseEventEater();
 
 
   // initialize the beamline browser
   // -------------------------------
 
    _p_vwr = new BeamlineBrowser( centralWidget(), "BeamlineBrowser" );
-   
+
    _p_vwr->hide();
    _p_vwr->installEventFilter( _eventfilter );
 
    windowsTree_BrowserAction->setOn(true);
    _p_vwr->setAllColumnsShowFocus( true );
 
-  
+
 
     connect( this,   SIGNAL(_modeChanged( const BeamlineContext* )),
              _p_vwr, SLOT(resetPixmap( const BeamlineContext* ))        );
@@ -136,15 +136,15 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
     connect( _p_vwr, SIGNAL(sig_bmlLeftClicked( BeamlineContext*,   QBmlRoot* )),
              this,   SLOT( _set_p_clickedContext( BeamlineContext*, QBmlRoot* ))    );
 
-    connect( _p_vwr, SIGNAL( sig_bmlLeftClicked( QBml* )), 
+    connect( _p_vwr, SIGNAL( sig_bmlLeftClicked( QBml* )),
              this,   SLOT(_set_p_clickedQBml( QBml* ))    );
 
     connect( _p_vwr, SIGNAL( sig_newContext( BeamlineContext* )),
              this,   SLOT(_slot_contextGenerated( BeamlineContext* ))    );
 
-   // initialize the Message window and the associated Message io   
+   // initialize the Message window and the associated Message io
    // --------------------------------------------------------
- 
+
      _messages  = new QTextEdit(_centralWidget, "Messages");
      _messages->setCaption("Messages");
      _messages->setFont(QFont("MiscFixed"));
@@ -155,23 +155,23 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
      //_messages_stdout = new Messages<>(_messages);
      //_messages_stderr = new Messages<>(_messages);
 
-     //_p_messages_stdout_stream = new std::ostream( _messages_stdout ); 
+     //_p_messages_stdout_stream = new std::ostream( _messages_stdout );
      //_p_messages_stderr_stream = new std::ostream( _messages_stderr );
-  
+
      _messages->append( QString("CHEF (Win32) Version 1.0 (Beta)") );
      _messages->append( QString("URA/Fermilab, All Rights Reserved.\n") );
- 
+
      // *_p_messages_stdout_stream  << "This is a test message to stdout !!!!" << std::endl;
      // *_p_messages_stderr_stream  << "This is a test message to stderr !!!!" << std::endl;
 
      windowsMessagesAction->setOn(true);
-    
+
 
    // initialize the Python Interpreter window
    // ------------------------------------------
-      
+
      _interpreter = 0;
-     _interpreter = new QPyCHEF(_centralWidget , "Interpreter");  
+     _interpreter = new QPyCHEF(_centralWidget , "Interpreter");
      _interpreter->hide();
      _interpreter->installEventFilter(_eventfilter);
      windowsInterpreterAction->setOn(true);
@@ -179,8 +179,8 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
 
    // initialize the ACNET Devices Monitor window
    // ------------------------------------------
- 
-    _devices = new DeviceTable(_centralWidget, "Devices"); 
+
+    _devices = new DeviceTable(_centralWidget, "Devices");
     _devices->hide();
     _devices->installEventFilter(_eventfilter);
      windowsDevicesAction->setOn(true);
@@ -208,8 +208,8 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
     _bmlSelectionDialog->hide();
 
 
-    connect(_p_vwr , SIGNAL( sig_browserIsEmpty()    ),    this, SLOT( _disableMenus() ) );   
-    connect(_p_vwr , SIGNAL( sig_browserIsNotEmpty() ),    this, SLOT( _enableMenus()  )  );   
+    connect(_p_vwr , SIGNAL( sig_browserIsEmpty()    ),    this, SLOT( _disableMenus() ) );
+    connect(_p_vwr , SIGNAL( sig_browserIsNotEmpty() ),    this, SLOT( _enableMenus()  )  );
 
     _disableMenus();
 
@@ -235,7 +235,7 @@ CHEFGUI::~CHEFGUI()
 {
 
    // remove the eventfilters
- 
+
     if (_p_vwr)       _p_vwr->removeEventFilter( _eventfilter );
     if (_messages)    _messages->removeEventFilter( _eventfilter );
     if (_interpreter) _interpreter->removeEventFilter( _eventfilter );
@@ -243,11 +243,11 @@ CHEFGUI::~CHEFGUI()
 
     // delete the message window ostream and streambuf objects
 
-    //if (_p_messages_stdout_stream) delete _p_messages_stdout_stream; 
-    //if (_p_messages_stderr_stream) delete _p_messages_stderr_stream; 
+    //if (_p_messages_stdout_stream) delete _p_messages_stdout_stream;
+    //if (_p_messages_stderr_stream) delete _p_messages_stderr_stream;
 
-    //if (_messages_stdout) delete _messages_stdout; 
-    //if (_messages_stderr) delete _messages_stderr; 
+    //if (_messages_stdout) delete _messages_stdout;
+    //if (_messages_stderr) delete _messages_stderr;
 
     if (_x)  delete _x;
     if (_y)  delete _y;
@@ -261,37 +261,37 @@ CHEFGUI::~CHEFGUI()
 void
 CHEFGUI::_openFile()
 {
-  
+
   std::auto_ptr<bmlfactory> bfp;
 
   // Open file dialog
-  QString s = QFileDialog::getOpenFileName( QString::null, 
+  QString s = QFileDialog::getOpenFileName( QString::null,
                    "MAD (*.mad *.lat);;Beamline (*.bml)");
 
-  if( s.isEmpty() ) 
+  if( s.isEmpty() )
   {
       return;
-  } 
-  else 
+  }
+  else
   {
 
     if( QString(".mad") == s.right(4) ||
-        QString(".lat") == s.right(4)    ) 
+        QString(".lat") == s.right(4)    )
     {
- 
-      try 
+
+      try
       {
         bfp.reset(new bmlfactory(s.ascii(), (char*)0 )); // cast needed to avoid ambiguity
       }
-      catch (GenericException& e) 
+      catch (GenericException& e)
       {
         QMessageBox::information( 0, "CHEF: ERROR", e.what() );
         return;
       }
 
        std::list<std::string>& beamline_list = bfp->getBeamlineList();
-       
-        //  instantiate only the n last beamlines defined in the mad file. 
+
+        //  instantiate only the n last beamlines defined in the mad file.
 
         _bmlSelectionDialog->setList( beamline_list );
         _bmlSelectionDialog->setBeamParameters( *bfp.get() );
@@ -301,7 +301,7 @@ CHEFGUI::_openFile()
 
         double brho = _bmlSelectionDialog->getBRHO();
 
-        _bmlSelectionDialog->getSelected(); // this function alters beamline_list 
+        _bmlSelectionDialog->getSelected(); // this function alters beamline_list
 
         std::list<std::string>::iterator it;
         int nlines = 0;
@@ -310,7 +310,7 @@ CHEFGUI::_openFile()
            beamline* bmlPtr = bfp->create_beamline( (*it).c_str() , brho);
 
           _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-          _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called) 
+          _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called)
                                                 //when the context is destroyed;
           _contextList.insert( _p_currBmlCon );
 
@@ -319,10 +319,10 @@ CHEFGUI::_openFile()
 
            _p_vwr->displayBeamline( _p_currBmlCon );
           nlines++;
-	}
-     } 
+        }
+     }
 
-     else 
+     else
      { // Read .bml file, not .mad file
 
       beamline* bmlPtr = new beamline;
@@ -331,14 +331,14 @@ CHEFGUI::_openFile()
       inputStream.close();
 
       _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-      _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called) 
-                                            // when the context is destroyed; 
+      _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called)
+                                            // when the context is destroyed;
 
       // REMOVE: if( _p_currBmlCon->isRing() ) { _p_currBmlCon->handleAsRing(); }
       // REMOVE: else                          { _p_currBmlCon->handleAsLine(); }
 
       _contextList.insert( _p_currBmlCon );
-      emit _new_beamline();    
+      emit _new_beamline();
      }
     }
 
@@ -351,32 +351,32 @@ void CHEFGUI::_openDeviceFile()
 {
 
 
- QString s = QFileDialog::getOpenFileName( QString::null, 
+ QString s = QFileDialog::getOpenFileName( QString::null,
                    "Devices (*.dev)" );
 
  if ( s.isEmpty() ) return;
 
- std::ifstream is( s.ascii()); 
+ std::ifstream is( s.ascii());
 
  _devices->readDeviceList(is);
  is.close();
- 
+
 }
 
-void CHEFGUI::_openScriptFile() 
+void CHEFGUI::_openScriptFile()
 {
 
- QString s = QFileDialog::getOpenFileName( QString::null, 
+ QString s = QFileDialog::getOpenFileName( QString::null,
                    "Script (Python) (*.py)" );
 
   if ( s.isEmpty() ) return;
 
   _interpreter->readFile( s.ascii() );
 
-} 
+}
 
 
-void 
+void
 CHEFGUI::_print()
 {
   double s = 0.0;
@@ -384,14 +384,14 @@ CHEFGUI::_print()
 }
 
 
-void 
+void
 CHEFGUI::_fileWriteTree()
 {
   if( 0 != _p_currBmlCon ) { _p_currBmlCon->writeTree(); }
 }
 
 
-void 
+void
 CHEFGUI::_fileSaveAs()
 {
   // REMOVE: if( _p_clickedCon == 0 ) {
@@ -400,14 +400,14 @@ CHEFGUI::_fileSaveAs()
                 "Left click on a beamline first." );
     return;
   }
-  
+
   // REMOVE: QString startName(_p_clickedCon->name());
   QString startName(_p_currBmlCon->name());
   startName += ".bml";
 
-  QString s = QFileDialog::getSaveFileName( 
+  QString s = QFileDialog::getSaveFileName(
                    startName,
-                   "Beamline (*.bml)", 
+                   "Beamline (*.bml)",
                    0,
                    0,
                    "Save File As" );
@@ -421,24 +421,24 @@ CHEFGUI::_fileSaveAs()
     outStream.close();
   }
 
-  
+
 
 }
 
-void 
+void
 CHEFGUI::_fileEditorSaveAs()
 {
 
-  // save the file in the opened editor window that has focus 
+  // save the file in the opened editor window that has focus
 
-  
-CF_Editor* editor = dynamic_cast<CF_Editor*>( dynamic_cast<QWorkspace*>(_centralWidget)->activeWindow() ); 
+
+CF_Editor* editor = dynamic_cast<CF_Editor*>( dynamic_cast<QWorkspace*>(_centralWidget)->activeWindow() );
 
  if (!editor) return;
 
-QString s = QFileDialog::getSaveFileName( 
+QString s = QFileDialog::getSaveFileName(
                    editor->caption(),
-                   "Beamline (*.lat)", 
+                   "Beamline (*.lat)",
                    0,
                    0,
                    "Save File As" );
@@ -450,14 +450,14 @@ QString s = QFileDialog::getSaveFileName(
 
 }
 
-void 
+void
 CHEFGUI::_fileEditorSave()
 {
 
-  // save the file in the opened editor window that has focus 
+  // save the file in the opened editor window that has focus
 
-  
-CF_Editor* editor = dynamic_cast<CF_Editor*>( dynamic_cast<QWorkspace*>(_centralWidget)->activeWindow() ); 
+
+CF_Editor* editor = dynamic_cast<CF_Editor*>( dynamic_cast<QWorkspace*>(_centralWidget)->activeWindow() );
 
  if (!editor) return;
 
@@ -467,50 +467,50 @@ CF_Editor* editor = dynamic_cast<CF_Editor*>( dynamic_cast<QWorkspace*>(_central
 
 }
 
-void 
+void
 CHEFGUI::editParse()
 {
- 
+
   CF_Editor* editor = 0;
-  
+
   QWidgetList wlist = dynamic_cast<QWorkspace*>(centralWidget())->windowList(QWorkspace::StackingOrder);
 
   for (QWidget* w = wlist.first(); w; w = wlist.next())
   {
-   if ( dynamic_cast<QWorkspace*>(_centralWidget)->activeWindow() == w ) 
+   if ( dynamic_cast<QWorkspace*>(_centralWidget)->activeWindow() == w )
     {
-      if ( QString((w)->name()) == QString("MAD8 Editor") ) 
-      { 
+      if ( QString((w)->name()) == QString("MAD8 Editor") )
+      {
          editor = dynamic_cast<CF_Editor*>(w);
       }
-    } 
+    }
   }
 
   if (!editor) { return; }
-  
+
   std::auto_ptr<bmlfactory> bfp;
- 
-  try 
+
+  try
   {
-    bfp.reset( new bmlfactory( editor->caption().ascii(), editor->text().ascii()) ); // the 2nd argument is the buffer. It is used when it is != 0  
+    bfp.reset( new bmlfactory( editor->caption().ascii(), editor->text().ascii()) ); // the 2nd argument is the buffer. It is used when it is != 0
   }
   catch (GenericException& e)
   {
-    QMessageBox mb(QString("Error"), QString( e.what() ), 
-                 QMessageBox::Critical, 
+    QMessageBox mb(QString("Error"), QString( e.what() ),
+                 QMessageBox::Critical,
                   QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
     mb.show();
-    while (mb.isVisible())  qApp->processEvents(); 
- 
+    while (mb.isVisible())  qApp->processEvents();
+
     editor->setSelectionAttributes ( 1, QColor("Red"), true ); // last argument for inverted text
-    editor->setSelection( e.lineNumber()-1, 0, e.lineNumber(), 0, 1); // last argument is selection no 
+    editor->setSelection( e.lineNumber()-1, 0, e.lineNumber(), 0, 1); // last argument is selection no
 
     return;
   }
 
   std::list<std::string>& beamline_list = bfp->getBeamlineList();
-       
-  //  instantiate only the n last beamlines defined in the mad file. 
+
+  //  instantiate only the n last beamlines defined in the mad file.
 
   _bmlSelectionDialog->setList( beamline_list );
   _bmlSelectionDialog->setBeamParameters( *bfp.get() );
@@ -520,7 +520,7 @@ CHEFGUI::editParse()
 
   double brho = _bmlSelectionDialog->getBRHO();
 
-  _bmlSelectionDialog->getSelected(); // this function alters beamline_list 
+  _bmlSelectionDialog->getSelected(); // this function alters beamline_list
 
   std::list<std::string>::iterator it;
   int nlines = 0;
@@ -529,7 +529,7 @@ CHEFGUI::editParse()
            beamline* bmlPtr = bfp->create_beamline( (*it).c_str() , brho);
 
           _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-          _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called) 
+          _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called)
                                                 //when the context is destroyed;
           _contextList.insert( _p_currBmlCon );
            _p_vwr->displayBeamline( _p_currBmlCon );
@@ -538,7 +538,7 @@ CHEFGUI::editParse()
 }
 
 
-void 
+void
 CHEFGUI::_editAddMarkers()
 {
   // Dialog to determine where marker is to be inserted
@@ -653,7 +653,7 @@ CHEFGUI::_editAddMarkers()
   }
 }
 
-void 
+void
 CHEFGUI::_editPartition()
 {
   // This is a stripped down version.
@@ -733,38 +733,38 @@ CHEFGUI::_editPartition()
 }
 
 
-void 
+void
 CHEFGUI::_editFindFilter()
 {
   QueryDialog* qdl = new QueryDialog( 0, 0, false, Qt::WDestructiveClose );
-  connect( qdl,  SIGNAL(_useThis( const BoolNode& )), 
+  connect( qdl,  SIGNAL(_useThis( const BoolNode& )),
            this, SLOT  (_processFilter( const BoolNode& )) );
   qdl->show();
 }
 
 
-void 
+void
 CHEFGUI::_editSelectAll()
-{ 
+{
   _p_vwr->selectAll( true );
 }
 
 
-void 
+void
 CHEFGUI::_editSelectNone()
 {
   _p_vwr->clearSelection();
 }
 
 
-void 
+void
 CHEFGUI::_editCopyLine()
 {
   // Procedure copied from CHEF.builders.cc
   // and slightly modified.
 
-  if( 0 != _p_currBmlCon ) { 
-    _p_currBmlCon = new BeamlineContext( false, 
+  if( 0 != _p_currBmlCon ) {
+    _p_currBmlCon = new BeamlineContext( false,
                                          _p_currBmlCon->cloneBeamline() );
     _p_currBmlCon->setClonedFlag( true );
     _contextList.insert( _p_currBmlCon );
@@ -772,10 +772,10 @@ CHEFGUI::_editCopyLine()
   }
 }
 
-void 
+void
 CHEFGUI::_editRenameLine()
 {
-  if( 0 == _p_currBmlCon ) { 
+  if( 0 == _p_currBmlCon ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
@@ -789,7 +789,7 @@ CHEFGUI::_editRenameLine()
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
       qhb1->adjustSize();
-  
+
       QHBox* qhb2 = new QHBox( qvb );
         QPushButton* okayBtn = new QPushButton( "OK", qhb2 );
           okayBtn->setDefault( true );
@@ -801,7 +801,7 @@ CHEFGUI::_editRenameLine()
       qhb2->setMargin(5);
       qhb2->setSpacing(3);
       qhb2->adjustSize();
-  
+
     qvb->adjustSize();
 
   wpu->setCaption( "CHEF: Rename beamline" );
@@ -818,7 +818,7 @@ CHEFGUI::_editRenameLine()
 }
 
 
-void 
+void
 CHEFGUI::_editRemoveLine()
 {
   if( 0 == _p_currBmlCon ) { return; }
@@ -826,18 +826,18 @@ CHEFGUI::_editRemoveLine()
   { // Note: Beamline has been eliminated as well.
     _contextList.remove( _p_currBmlCon );
 
-    delete _p_currBmlCon; 
+    delete _p_currBmlCon;
     _p_currBmlCon = 0;
     _p_currQBmlRoot = 0;
   }
-  else 
+  else
   { QMessageBox::information( 0, "CHEF: ERROR",
                               "Operation not successful." );
   }
 }
 
 
-void 
+void
 CHEFGUI::_horTuneCtrl()
 {
 
@@ -857,7 +857,7 @@ CHEFGUI::_horTuneCtrl()
 }
 
 
-void 
+void
 CHEFGUI::_verTuneCtrl()
 {
 
@@ -878,16 +878,16 @@ CHEFGUI::_verTuneCtrl()
 }
 
 
-int 
+int
 CHEFGUI::_buildHTuneCircuit( const CHEFGUI* aPtr, const bmlnElmnt* bPtr )
 {
   aPtr->_p_currBmlCon->addHTuneCorrector( bPtr );
-  return 0; // this should really be a void function 
+  return 0; // this should really be a void function
 
 }
 
 
-int 
+int
 CHEFGUI::_buildVTuneCircuit( const CHEFGUI* aPtr, const bmlnElmnt* bPtr )
 {
   aPtr->_p_currBmlCon->addVTuneCorrector( bPtr );
@@ -896,13 +896,13 @@ CHEFGUI::_buildVTuneCircuit( const CHEFGUI* aPtr, const bmlnElmnt* bPtr )
 }
 
 
-void 
+void
 CHEFGUI::_editCondense()
 {
   DriftEliminator de;
 
   if (!_p_currBmlCon)
-  { 
+  {
      QMessageBox::information( 0, "CHEF: INFO",
                               "You must select a beamline first." );
      return;
@@ -920,7 +920,7 @@ CHEFGUI::_editCondense()
 }
 
 
-void 
+void
 CHEFGUI::_editMergeQuads()
 {
   QuadEliminator qe;
@@ -938,7 +938,7 @@ CHEFGUI::_editMergeQuads()
 }
 
 
-void 
+void
 CHEFGUI::_toolMisalign()
 {
   if( 0 == _p_currBmlCon ) {
@@ -952,16 +952,16 @@ CHEFGUI::_toolMisalign()
 
       QHBox* qhb1 = new QHBox( qvb );
         QButtonGroup* qbg = new QButtonGroup( 2, Qt::Vertical, QString("Misalign"), qhb1 );
-          QRadioButton* bendPtr 
+          QRadioButton* bendPtr
             = new QRadioButton( "Bends: ", qbg );
             bendPtr->setChecked( true );
-          QRadioButton* quadPtr 
+          QRadioButton* quadPtr
             = new QRadioButton( "Quads: ", qbg );
         qbg->setExclusive( true );
         qbg->setMargin(5);
         qbg->adjustSize();
-        
-        new QLabel( " Roll [mrad]: ", qhb1 ); 
+
+        new QLabel( " Roll [mrad]: ", qhb1 );
 
         QLineEdit* qle = new QLineEdit( "0.0", qhb1 );
 
@@ -980,7 +980,7 @@ CHEFGUI::_toolMisalign()
       qhb2->setMargin(5);
       qhb2->setSpacing(3);
       qhb2->adjustSize();
-  
+
     qvb->adjustSize();
 
   QString qstr( "CHEFGUI: " );
@@ -990,11 +990,11 @@ CHEFGUI::_toolMisalign()
 
   int returnCode = wpu->exec();
 
-  if( returnCode == QDialog::Accepted ) 
+  if( returnCode == QDialog::Accepted )
   {
     bool ok = false;
     double rollAngle = 0.001*( (qle->text()).toDouble(&ok) );
-    if( ok ) 
+    if( ok )
     {
       if( fabs(rollAngle) < 1.0e-6 ) {
         QMessageBox::information( 0, "CHEF: INFO",
@@ -1023,37 +1023,37 @@ CHEFGUI::_toolMisalign()
 
     }
   }
-    
+
   delete wpu;
 }
 
 
-void 
+void
 CHEFGUI::_toolAlignBends()
 {
   // This menu function changes the beamline in place
   // without creating a new one.
 
   const bmlnElmnt* selected = _p_vwr->getSelectedElement(_p_currBmlCon);
-  if( 0 == selected ) 
+  if( 0 == selected )
   {
     QMessageBox::information( 0, "CHEF: INFO",
                               "You must select a prototype CF_rbend in the browser." );
   }
 
-  else 
+  else
   {
-    if( typeid(*selected) == typeid(CF_rbend) ) 
+    if( typeid(*selected) == typeid(CF_rbend) )
     {
       // The following was modeled on rrv19.cfrbend.cfg
       CF_rbend* prototype = (CF_rbend*) selected->Clone();
 
       Proton p( _p_currBmlCon->getEnergy() );
       double inState [] = { 0., 0., 0., 0., 0., 0. };
-      // inState[ p.npxIndex() ] 
+      // inState[ p.npxIndex() ]
       //             =  ( p.Momentum()/p.ReferenceMomentum() )
       //                * sin( prototype->getPoleFaceAngle() / 2.0 );
-      inState[ p.npxIndex() ] 
+      inState[ p.npxIndex() ]
                   =  ( p.Momentum()/p.ReferenceMomentum() )
                      * sin( prototype->getPoleFaceAngle() );
       p.setState( inState );
@@ -1081,16 +1081,16 @@ CHEFGUI::_toolAlignBends()
           qhb2->setMargin(5);
           qhb2->setSpacing(3);
           qhb2->adjustSize();
-    
+
         qvb->adjustSize();
-    
+
       wpu->setCaption( "CHEF: CF_rbend Alignment" );
       wpu->adjustSize();
-    
+
       int returnCode = wpu->exec();
 
       // Realign bends
-      if( returnCode == QDialog::Accepted ) 
+      if( returnCode == QDialog::Accepted )
       {
         CF_rbendFinder_quad cf( prototype->getQuadrupole() );
         _p_currBmlCon->setAlignment( cf, prototype->Alignment() );
@@ -1100,7 +1100,7 @@ CHEFGUI::_toolAlignBends()
       delete prototype;
     }
 
-    else 
+    else
     {
       QMessageBox::information( 0, "CHEF: INFO",
                                 "Selected element is not CF_rbend." );
@@ -1198,8 +1198,8 @@ CHEFGUI::_editAlign()
 }
 
 
-void 
-CHEFGUI::_editD2S() 
+void
+CHEFGUI::_editD2S()
 {
   beamline* bmlPtr = DriftsToSlots( (beamline&) *(_p_currBmlCon->cheatBmlPtr()) );
   _p_currBmlCon = new BeamlineContext( false, bmlPtr );
@@ -1212,7 +1212,7 @@ CHEFGUI::_editD2S()
 }
 
 
-void 
+void
 CHEFGUI::_editAddQtMons()
 {
 
@@ -1242,7 +1242,7 @@ CHEFGUI::_editAddQtMons()
   emit _new_beamline();
 }
 
-void 
+void
 CHEFGUI::_editMode()
 {
   if( 0 == _p_currBmlCon ) {
@@ -1387,14 +1387,14 @@ CHEFGUI::_editPartAndSect()
     numberOfSectors = (qle->text()).toInt( &ok);
 
     if( ok && ( numberOfSectors > 1 )) {
-      // Insert equally spaced markers throughout 
+      // Insert equally spaced markers throughout
       // the bml model.
 
       marker* spaceCharge[ numberOfSectors + 1 ];
       double markerInterval = bmlLength / ((double) numberOfSectors);
       double insertionPoint = markerInterval;
       InsertionList insl( momentum );
-      
+
       spaceCharge[ 0 ] = new marker;
       int i;
       for( i = 1; i < numberOfSectors; i++ ) {
@@ -1403,14 +1403,14 @@ CHEFGUI::_editPartAndSect()
         insertionPoint += markerInterval;
       }
       spaceCharge[ numberOfSectors ] = new marker;
-    
-      double s = 0.0;  
+
+      double s = 0.0;
       slist removedElements;
-    
+
       bmlPtr->insert( spaceCharge[0] );
       bmlPtr->InsertElementsFromList( s, insl, removedElements );
       bmlPtr->append( spaceCharge[numberOfSectors] );
-    
+
       // Display and delete the removed elements
       cout << "Removed elements\n";
 
@@ -1421,8 +1421,8 @@ CHEFGUI::_editPartAndSect()
         delete qq;
       }
       //cout << endl;
-    
-      // Create a temporary Jet environment 
+
+      // Create a temporary Jet environment
       Jet__environment*  formerJetEnv  = Jet::_lastEnv;
       JetC__environment* formerJetCEnv = JetC::_lastEnv;
       double scale[]  = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3 };
@@ -1438,7 +1438,7 @@ CHEFGUI::_editPartAndSect()
       coord* pz = new coord(0.0);
       Jet::EndEnvironment( scale );
       JetC::_lastEnv = JetC::CreateEnvFrom( _p_JetEnv );
- 
+
       // Sectorize between the partition markers.
       for( i = 0; i < numberOfSectors; i++ ) {
         JetProton jp( energy );
@@ -1486,7 +1486,7 @@ CHEFGUI::_helpContents()
 void
 CHEFGUI::_helpAbout()
 {
-  
+
   QWidget* helpabout = new About( this,"About CHEF", Qt::WDestructiveClose );
   helpabout->show();
 
@@ -1494,11 +1494,11 @@ CHEFGUI::_helpAbout()
 
 
 
-void 
+void
 CHEFGUI::_slot_contextGenerated( BeamlineContext* x )
 {
-  if( x ) 
-  { if( x->getClonedFlag() ) 
+  if( x )
+  { if( x->getClonedFlag() )
     { _p_currBmlCon = x;
       _contextList.insert( x );
     }
@@ -1513,9 +1513,9 @@ CHEFGUI::_uncoupledLFDispatch(){
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
- 
+
   if( _p_currBmlCon->isTreatedAsRing() ) {
-    CHEFGUI::_launchLatt(); 
+    CHEFGUI::_launchLatt();
   } else {
      CHEFGUI::_pushULF();
   }
@@ -1528,9 +1528,9 @@ CHEFGUI::_momentsDispatch(){
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
- 
+
   if( _p_currBmlCon->isTreatedAsRing() ) {
-    CHEFGUI::_launchMoments(); 
+    CHEFGUI::_launchMoments();
   } else {
      CHEFGUI::_pushMoments();
   }
@@ -1543,16 +1543,16 @@ CHEFGUI::_dispersionDispatch(){
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
- 
+
   if( _p_currBmlCon->isTreatedAsRing() ) {
-    CHEFGUI::_launchDispersion(); 
+    CHEFGUI::_launchDispersion();
   } else {
      CHEFGUI::_pushDispersion();
   }
 }
 
 
-void 
+void
 CHEFGUI::_launchLatt()
 {
 
@@ -1581,8 +1581,8 @@ CHEFGUI::_launchLatt()
            "The message was:\n"
         << ge.what();
 
-    QMessageBox mb(QString("CHEF: ERROR"), QString(uic.str().c_str()), 
-                   QMessageBox::Critical, 
+    QMessageBox mb(QString("CHEF: ERROR"), QString(uic.str().c_str()),
+                   QMessageBox::Critical,
                    QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
     mb.show();
     while(mb.isVisible()) { qApp->processEvents(); }
@@ -1593,9 +1593,9 @@ CHEFGUI::_launchLatt()
 
   if( lfd ) {
 
-    if (!_plotWidget) 
-    { 
-      _plotWidget  =  new CHEFPlotMain( _centralWidget, "plotWidget", Qt::WDestructiveClose );  
+    if (!_plotWidget)
+    {
+      _plotWidget  =  new CHEFPlotMain( _centralWidget, "plotWidget", Qt::WDestructiveClose );
        char theCaption[1024];
        for( int i = 0; i < 1024; i++ ) {
           theCaption[i] = '\0';
@@ -1605,12 +1605,12 @@ CHEFGUI::_launchLatt()
        _plotWidget->setCaption( theCaption );
        _plotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
        _plotWidget->setAutoClear(true);
-       _plotWidget->show();    
+       _plotWidget->show();
 
     };
- 
+
     _plotWidget->addData( *lfd );
-    delete lfd; 
+    delete lfd;
     lfd = 0;
   }
 
@@ -1635,7 +1635,7 @@ void CHEFGUI::_launchLB()
   try {
     lbfd = new LBFncData( _p_currBmlCon );
     lbfd->doCalc();
-    lbfd->makeCurves(); 
+    lbfd->makeCurves();
   }
   catch( const std::exception& ge ) {
 
@@ -1645,8 +1645,8 @@ void CHEFGUI::_launchLB()
            "The message was:\n"
         << ge.what();
 
-    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ), 
-                   QMessageBox::Critical, 
+    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ),
+                   QMessageBox::Critical,
                    QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
     mb.show();
     while(mb.isVisible()) { qApp->processEvents(); }
@@ -1679,7 +1679,7 @@ void CHEFGUI::_launchLB()
 
 
 
-void 
+void
 CHEFGUI::_launchET()
 {
 
@@ -1708,8 +1708,8 @@ CHEFGUI::_launchET()
            "The message was:\n"
         << ge.what();
 
-    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ), 
-                   QMessageBox::Critical, 
+    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ),
+                   QMessageBox::Critical,
                    QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
     mb.show();
     while(mb.isVisible()) { qApp->processEvents(); }
@@ -1721,8 +1721,8 @@ CHEFGUI::_launchET()
   if( etfd ) {
     if (!_ETplotWidget)
     {
-       _ETplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
-                                                      Qt::WDestructiveClose); 
+       _ETplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget",
+                                                      Qt::WDestructiveClose);
        // destructive close needed !
 
 
@@ -1745,11 +1745,11 @@ CHEFGUI::_launchET()
 }
 
 
-void 
+void
 CHEFGUI::_launchMoments()
 {
 
-  if( 0 == _p_currBmlCon ) { 
+  if( 0 == _p_currBmlCon ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
@@ -1763,7 +1763,7 @@ CHEFGUI::_launchMoments()
 
   MomentsFncData*  mfd = 0;
   try {
-    mfd = new MomentsFncData( _p_currBmlCon ); 
+    mfd = new MomentsFncData( _p_currBmlCon );
     mfd->doCalc();
     mfd->makeCurves();
   }
@@ -1775,8 +1775,8 @@ CHEFGUI::_launchMoments()
            "The message was:\n"
         << ge.what();
 
-    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ), 
-                   QMessageBox::Critical, 
+    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ),
+                   QMessageBox::Critical,
                    QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
     mb.show();
     while(mb.isVisible()) { qApp->processEvents(); }
@@ -1788,10 +1788,10 @@ CHEFGUI::_launchMoments()
   if( mfd ) {
     if (!_MMplotWidget)
     {
-       _MMplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
-                                                      Qt::WDestructiveClose);  
+       _MMplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget",
+                                                      Qt::WDestructiveClose);
        // destructive close needed !
- 
+
        char theCaption[1024];
        for( int i = 0; i < 1024; i++ ) {
         theCaption[i] = '\0';
@@ -1811,7 +1811,7 @@ CHEFGUI::_launchMoments()
 
 }
 
-void 
+void
 CHEFGUI::_pushMoments()
 {
   if( 0 == _p_currBmlCon ) {
@@ -1832,20 +1832,20 @@ CHEFGUI::_pushMoments()
 #endif
 
   if( QDialog::Accepted == _initCondDialogMoments->exec() ){
-    // Two steps are needed here: 
-    //   (1) read the text widgets and 
+    // Two steps are needed here:
+    //   (1) read the text widgets and
     //   (2) return the lattice functions.
     _initCondDialogMoments->readInputValues();
     LattFuncSage::lattFunc initialConditions( _initCondDialogMoments->getInitCond() );
- 
+
   CovarianceSage::Info initialCovariance;
     initialCovariance.arcLength = 0.0;
     initialCovariance.beta.hor  = initialConditions.beta.hor;
     initialCovariance.beta.ver  = initialConditions.beta.ver;
     initialCovariance.alpha.hor = initialConditions.alpha.hor;
     initialCovariance.alpha.ver = initialConditions.alpha.ver;
-    
-    int returnCode 
+
+    int returnCode
       = BmlUtil::makeCovariance( initialCovariance, _p_currBmlCon->_proton );
     // This assumes, by default, an equal horizontal and vertical emittance.
 
@@ -1868,8 +1868,8 @@ CHEFGUI::_pushMoments()
           << "Exception was thrown by MomentsFncData.\n"
              "The message was:\n"
           << ge.what();
-      QMessageBox mb(QString("CHEF: ERROR"), QString( uic.str().c_str() ), 
-                     QMessageBox::Critical, 
+      QMessageBox mb(QString("CHEF: ERROR"), QString( uic.str().c_str() ),
+                     QMessageBox::Critical,
                      QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
       mb.show();
       while(mb.isVisible()) { qApp->processEvents(); }
@@ -1881,10 +1881,10 @@ CHEFGUI::_pushMoments()
     if(mfd) {
       if (!_MMplotWidget)
       {
-         _MMplotWidget = new CHEFPlotMain( _centralWidget, "MMplotWidget", Qt::WDestructiveClose ); 
+         _MMplotWidget = new CHEFPlotMain( _centralWidget, "MMplotWidget", Qt::WDestructiveClose );
          // destructive close needed !
 
-  
+
          char theCaption[1024];
          for( int i = 0; i < 1024; i++ ) {
            theCaption[i] = '\0';
@@ -1896,10 +1896,10 @@ CHEFGUI::_pushMoments()
          _MMplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
          _MMplotWidget->setAutoClear(true);
          _MMplotWidget->show();
-      }; 
+      };
 
       _MMplotWidget->addData( *mfd  );
-      delete mfd; 
+      delete mfd;
       mfd = 0;
     }
   }
@@ -1907,7 +1907,7 @@ CHEFGUI::_pushMoments()
 }
 
 
-void 
+void
 CHEFGUI::_pushDispersion()
 {
   if( 0 == _p_currBmlCon ) {
@@ -1922,13 +1922,13 @@ CHEFGUI::_pushDispersion()
   }
 
 #if 0
-  DispersionSage::Info disp_defaults; 
+  DispersionSage::Info disp_defaults;
   _p_currBmlCon->getInitial(&disp_defaults);
 #endif
 
   if( QDialog::Accepted == _initCondDialogDisp->exec() ){
-    // Two steps are needed here: 
-    //   (1) read the text widgets and 
+    // Two steps are needed here:
+    //   (1) read the text widgets and
     //   (2) return the lattice functions.
     _initCondDialogDisp->readInputValues();
     LattFuncSage::lattFunc initialConditions( _initCondDialogDisp->getInitCond() );
@@ -1955,8 +1955,8 @@ CHEFGUI::_pushDispersion()
           << "Exception was thrown by DspnFncData.\n"
              "The message was:\n"
           << ge.what();
-      QMessageBox mb(QString("CHEF: ERROR"), QString( uic.str().c_str() ), 
-                     QMessageBox::Critical, 
+      QMessageBox mb(QString("CHEF: ERROR"), QString( uic.str().c_str() ),
+                     QMessageBox::Critical,
                      QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
       mb.show();
       while(mb.isVisible()) { qApp->processEvents(); }
@@ -1968,10 +1968,10 @@ CHEFGUI::_pushDispersion()
     if(dfd) {
       if (!_DspnplotWidget)
       {
-         _DspnplotWidget = new CHEFPlotMain( _centralWidget, "DspnplotWidget", Qt::WDestructiveClose ); 
+         _DspnplotWidget = new CHEFPlotMain( _centralWidget, "DspnplotWidget", Qt::WDestructiveClose );
          // destructive close needed !
 
-  
+
          char theCaption[1024];
          for( int i = 0; i < 1024; i++ ) {
            theCaption[i] = '\0';
@@ -1987,7 +1987,7 @@ CHEFGUI::_pushDispersion()
       };
 
       _DspnplotWidget->addData( *dfd  );
-      delete dfd; 
+      delete dfd;
       dfd = 0;
     }
   }
@@ -1995,7 +1995,7 @@ CHEFGUI::_pushDispersion()
 }
 
 
-void 
+void
 CHEFGUI::_pushULF()
 {
   if( 0 == _p_currBmlCon ) {
@@ -2016,12 +2016,12 @@ CHEFGUI::_pushULF()
 #endif
 
   if( QDialog::Accepted == _initCondDialogLF->exec() ){
-    // Two steps are needed here: 
-    //   (1) read the text widgets and 
+    // Two steps are needed here:
+    //   (1) read the text widgets and
     //   (2) return the lattice functions.
     _initCondDialogLF->readInputValues();
     LattFuncSage::lattFunc initialConditions( _initCondDialogLF->getInitCond() );
-    
+
     _p_currBmlCon->setInitial( initialConditions );
 
     LattFncData* lfd = 0;
@@ -2037,8 +2037,8 @@ CHEFGUI::_pushULF()
           << "Exception was thrown by LattFncData.\n"
              "The message was:\n"
           << ge.what();
-      QMessageBox mb(QString("CHEF: ERROR"), QString( uic.str().c_str() ), 
-                     QMessageBox::Critical, 
+      QMessageBox mb(QString("CHEF: ERROR"), QString( uic.str().c_str() ),
+                     QMessageBox::Critical,
                      QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
       mb.show();
       while(mb.isVisible()) { qApp->processEvents(); }
@@ -2048,12 +2048,12 @@ CHEFGUI::_pushULF()
     }
 
     if(lfd) {
-      if (!_plotWidget) 
-      { 
-         _plotWidget = new CHEFPlotMain( _centralWidget, "PlotWidget", Qt::WDestructiveClose ); 
+      if (!_plotWidget)
+      {
+         _plotWidget = new CHEFPlotMain( _centralWidget, "PlotWidget", Qt::WDestructiveClose );
          // destructive close needed !
- 
-  
+
+
          char theCaption[1024];
          for( int i = 0; i < 1024; i++ ) {
            theCaption[i] = '\0';
@@ -2067,7 +2067,7 @@ CHEFGUI::_pushULF()
       };
 
       _plotWidget->addData( *lfd  );
-      delete lfd; 
+      delete lfd;
       lfd = 0;
     }
   }
@@ -2122,7 +2122,7 @@ void CHEFGUI::_launchRayTrace()
 void CHEFGUI::_launchDispersion()
 {
 
-  if( 0 == _p_currBmlCon ) { 
+  if( 0 == _p_currBmlCon ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
@@ -2148,8 +2148,8 @@ void CHEFGUI::_launchDispersion()
            "The message was:\n"
         << ge.what();
 
-    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ), 
-                   QMessageBox::Critical, 
+    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ),
+                   QMessageBox::Critical,
                    QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
     mb.show();
     while(mb.isVisible()) { qApp->processEvents(); }
@@ -2161,11 +2161,11 @@ void CHEFGUI::_launchDispersion()
   if( dfd ) {
     if (!_DspnplotWidget)
     {
-       _DspnplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", 
-                                                        Qt::WDestructiveClose); 
+       _DspnplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget",
+                                                        Qt::WDestructiveClose);
        // destructive close needed !
- 
-  
+
+
        char theCaption[1024];
        for( int i = 0; i < 1024; i++ ) {
          theCaption[i] = '\0';
@@ -2203,12 +2203,12 @@ void CHEFGUI::_launchDilution()
 
   if( (0 == onePtr) || (0 == twoPtr) ) {
     QMessageBox::information( 0, "CHEF",
-                              "ERROR: Arguments were not set correctly." 
+                              "ERROR: Arguments were not set correctly."
                               "\nERROR: Must have two beamlines." );
     return;
   }
-  else 
-  { 
+  else
+  {
     BeamlineContext* bc1Ptr = (BeamlineContext*) (onePtr->ptr());
     BeamlineContext* bc2Ptr = (BeamlineContext*) (twoPtr->ptr());
 
@@ -2228,14 +2228,14 @@ void CHEFGUI::_launchDilution()
     return;
   }
 
-  const int index [] = { Particle::_x(), Particle::_xp(), 
+  const int index [] = { Particle::_x(), Particle::_xp(),
                          Particle::_y(), Particle::_yp() };
 
   // Get invariant emittances
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlba 
+        QLabel* qlba
           = new QLabel( "(pseudo-)horizontal invariant emittance", qhb1 );
         QLineEdit* qleh = new QLineEdit( "30", qhb1 );
         new QLabel( "pi mm-mr", qhb1 );
@@ -2306,7 +2306,7 @@ void CHEFGUI::_launchDilution()
       MatrixD ev(1,4);
       ev = real( (cov_a*(cov_b.inverse())).eigenValues() );
       double rho = - 1.0e88;
-      for( i = 0; i < 4; i++ ) 
+      for( i = 0; i < 4; i++ )
       { if( rho < ev(0,i) ) { rho = ev(0,i); } }
       double answer = rho*rho*rho*rho;
       answer *= cov_b.determinant();
@@ -2327,7 +2327,7 @@ void CHEFGUI::_pushArgs()
 {
   int i;
   int j = CHEF_numargs - 1;
-  if( _toolArgs[j] ) { 
+  if( _toolArgs[j] ) {
     delete _toolArgs[j];  // virtual destructor should work
     _toolArgs[j] = 0;
   }
@@ -2373,7 +2373,7 @@ void CHEFGUI::_enterContextArg()
 void CHEFGUI::_clearArgs()
 {
   for( int i = 0; i < CHEF_numargs; i++ ) {
-    if( _toolArgs[i] ) { 
+    if( _toolArgs[i] ) {
       delete _toolArgs[i];  // virtual destructor should work
       _toolArgs[i] = 0;
     }
@@ -2392,7 +2392,7 @@ void CHEFGUI::_launchSiteVu()
   _siteWidget = new SiteViewer( *(_p_currBmlCon) , _centralWidget, "SiteViewer", Qt::WDestructiveClose );
   // Must be deleted by itself.
   _siteWidget->setCaption( QString("CHEF:: Site Viewer")+
-                           QString("    ")+ 
+                           QString("    ")+
                            QString(_p_currBmlCon->name()) );
   _siteWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
   _siteWidget->show();
@@ -2469,7 +2469,7 @@ void CHEFGUI::_tuneCtrl()
       if( (0. != deltaNuH) || (0. != deltaNuV) ) {
         if( 0 != (returnCode = _p_currBmlCon->changeTunesBy( deltaNuH, deltaNuV )) ) {
           cerr << "*** WARNING *** File "
-               << __FILE__ 
+               << __FILE__
                << ", Line "
                << __LINE__
                << ": Tune adjustment returned error condition "
@@ -2530,11 +2530,11 @@ void CHEFGUI::_do_nothing()
 
 void CHEFGUI::showEvent(QShowEvent* event) {
 
-  // The initial size and positions of all windows are set here. 
-  // Receiving a QShowEvent indicates that the main window has been displayed.  
+  // The initial size and positions of all windows are set here.
+  // Receiving a QShowEvent indicates that the main window has been displayed.
 
   if ( event->spontaneous() ) return QMainWindow::showEvent(event);
-    
+
   QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
   _p_vwr->setSizePolicy(policy);
@@ -2545,7 +2545,7 @@ void CHEFGUI::showEvent(QShowEvent* event) {
 
   _interpreter->setSizePolicy(policy);
   _interpreter->show();
- 
+
 
   _devices->setSizePolicy(policy);
   _devices->show();
@@ -2555,7 +2555,7 @@ void CHEFGUI::showEvent(QShowEvent* event) {
    return QMainWindow::showEvent(event);
 
 }
-  
+
 
 void CHEFGUI::_processFilter( const BoolNode& query )
 {
@@ -2581,7 +2581,7 @@ void CHEFGUI::_testFC( ACTFUNC11 actfcn ) const
 
   while( 0 != fc ) {
     if(typeid(*fc) == typeid(QBmlRoot)) {
-      this->_traverseTree( dynamic_cast<QBmlRoot*>(fc), 
+      this->_traverseTree( dynamic_cast<QBmlRoot*>(fc),
                            actfcn );
     }
 
@@ -2603,13 +2603,13 @@ void CHEFGUI::_traverseTree( const QBmlRoot* x, ACTFUNC11 actfcn ) const
 {
 
 
-  // cout << "Recognized QBmlRoot " 
+  // cout << "Recognized QBmlRoot "
   //      << x->fullName()
   //      << endl;
 
   QListViewItem* fc = x->firstChild();
 
-  while( 0 != fc ) 
+  while( 0 != fc )
   {
     if(typeid(*fc) == typeid(QBmlElmt)) {
       // cout << "Recognized QBmlElmt "
@@ -2632,7 +2632,7 @@ void CHEFGUI::_traverseTree( const QBmlRoot* x, ACTFUNC11 actfcn ) const
       QMessageBox::information( 0, "CHEF: ERROR",
                                 uic.str().c_str() );
     }
-    
+
     fc = fc->nextSibling();
   }
 
@@ -2642,7 +2642,7 @@ void CHEFGUI::_traverseTree( const QBmlRoot* x, ACTFUNC11 actfcn ) const
 void CHEFGUI::windowsMessagesAction_toggled( bool set )
 {
 
-if (set) 
+if (set)
   _messages->show();
 else
   _messages->hide();
@@ -2652,9 +2652,9 @@ else
 
 void CHEFGUI::windowsTree_BrowserAction_toggled( bool set ){
 
-if (set) 
+if (set)
   _p_vwr->show();
-  
+
 else
   _p_vwr->hide();
 
@@ -2663,7 +2663,7 @@ else
 
 void CHEFGUI::windowsInterpreterAction_toggled( bool  set){
 
-if (set) 
+if (set)
   _interpreter->show();
 else
   _interpreter->hide();
@@ -2673,7 +2673,7 @@ else
 void CHEFGUI::windowsDevicesAction_toggled( bool  set)
 {
 
-if (set) 
+if (set)
   _devices->show();
 else
   _devices->hide();
@@ -2708,27 +2708,27 @@ void CHEFGUI::_windowsDefaultLayout(){
 }
 
 
-void CHEFGUI::_disableMenus() 
+void CHEFGUI::_disableMenus()
 {
-  _enableMenus(false); 
+  _enableMenus(false);
 
 }
-  
-void CHEFGUI::_enableMenus() 
+
+void CHEFGUI::_enableMenus()
 {
 
  _enableMenus(true);
 
 }
- 
-void CHEFGUI::_enableMenus( bool set ) 
+
+void CHEFGUI::_enableMenus( bool set )
 {
 
-//  Enable/Disable actions that do/do not make sense if 
+//  Enable/Disable actions that do/do not make sense if
 //  at least one beamline is/is not defined;
 
-    toolsAnalysisCalculationsLatticeFunctionsEigenvaluesAction->setEnabled(set);    
-    toolsAnalysisCalculationsLattice_FunctionsUncoupledAction->setEnabled(set);    
+    toolsAnalysisCalculationsLatticeFunctionsEigenvaluesAction->setEnabled(set);
+    toolsAnalysisCalculationsLattice_FunctionsUncoupledAction->setEnabled(set);
     toolsAnalysisCalculationsLattice_FunctionsMomentsAction->setEnabled(set);
     toolsAnalysisCalculationsLattice_FunctionsEdwards_TengAction->setEnabled(set);
     toolsAnalysisSite_ViewerAction->setEnabled(set);
@@ -2769,7 +2769,7 @@ void CHEFGUI::_exit()
 
   close();
 
-  // exit(1); // this is for debugging (memory usage diags) only 
+  // exit(1); // this is for debugging (memory usage diags) only
 
 }
 
@@ -2811,7 +2811,7 @@ void CHEFGUI::modeLine(bool set)
   // modeRingAction->setOn( !set);
 }
 
-void 
+void
 CHEFGUI::fileEditPython()
 {
 
@@ -2820,12 +2820,12 @@ std::ifstream is;
 QString theText;
 char buffer[1024];
 
-QString s = QFileDialog::getOpenFileName( QString::null, 
-					  "Script (python) (*.py )" );
+QString s = QFileDialog::getOpenFileName( QString::null,
+                                          "Script (python) (*.py )" );
 
 if( s.isEmpty() ) return;
 
-is.open(s);   
+is.open(s);
 
  CF_Editor* editor = new CF_Editor( _centralWidget, "Python Editor", Qt::WDestructiveClose);
  editor->hide();
@@ -2833,26 +2833,26 @@ is.open(s);
 
 while ( ! is.eof() )
 {
-    is.getline(buffer,1024); 
+    is.getline(buffer,1024);
     theText += buffer;
     theText += "\n";
  }
 
- // the "magic numbers" used in the args for resize() and move() reflect the fact 
+ // the "magic numbers" used in the args for resize() and move() reflect the fact
  // that widget dimensions and positions *do not* include the frame. Since the decorations
  // are handled by the wmgr in X11 and since there is no universal reliable way of querying,
- // the wmgr,  there is no reliable way of obtaining info about the 
- // decoration geometry. 
-   
+ // the wmgr,  there is no reliable way of obtaining info about the
+ // decoration geometry.
+
  editor->setCaption(s);
- editor->setText( theText ); 
+ editor->setText( theText );
  editor->resize(_centralWidget->width()-_p_vwr->width()-20, _centralWidget->height()-30);
  editor->move(_p_vwr->width()+10, 0);
- editor->show(); 
+ editor->show();
 
 }
 
-void 
+void
 CHEFGUI::fileEditMAD8()
 {
 
@@ -2861,7 +2861,7 @@ std::ifstream is;
 QString theText;
 char buffer[1024];
 
-QString s = QFileDialog::getOpenFileName( QString::null, 
+QString s = QFileDialog::getOpenFileName( QString::null,
                    "MAD (*.mad *.lat)");
 
 if( s.isEmpty() ) return;
@@ -2871,23 +2871,23 @@ if( s.isEmpty() ) return;
  //editor->setLexer(0); // this should eventually be a MAD8 Lexer
  editor->hide();
 
-is.open(s);   
-  
+is.open(s);
+
 while ( ! is.eof() )
 {
-    is.getline(buffer,1024); 
+    is.getline(buffer,1024);
     theText += buffer;
     theText += "\n";
 }
 
     editor->setCaption(s);
-    editor->setText( theText ); 
+    editor->setText( theText );
     // the correction is for the dimensions **with** the frame.
-    // width() is 
-    editor->resize(width()-_p_vwr->frameGeometry().width()-20, 
-                   _centralWidget->height()-30); 
+    // width() is
+    editor->resize(width()-_p_vwr->frameGeometry().width()-20,
+                   _centralWidget->height()-30);
     editor->move( _p_vwr->frameGeometry().width()+10, 0);
-    editor->show(); 
+    editor->show();
 
 }
 
@@ -3011,7 +3011,7 @@ argPtr::argPtr( void* x, bool y )
             "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** ERROR *** argPtr::argPtr( void* x )"
             "\n*** ERROR *** Constructor does not accept null argument."
-	 << endl;
+         << endl;
     _ptr = this;
   }
 };
@@ -3032,7 +3032,7 @@ bool argPtr::isOwned() const
 }
 
 
-MappingPtr::MappingPtr( const Mapping& x, bool y ) 
+MappingPtr::MappingPtr( const Mapping& x, bool y )
 : argPtr( new Mapping(x), true )
 {
   if( !y ) {
@@ -3044,13 +3044,13 @@ MappingPtr::MappingPtr( const Mapping& x, bool y )
 }
 
 
-MappingPtr::~MappingPtr() 
+MappingPtr::~MappingPtr()
 {
   if( _owned ) { delete ((Mapping*) _ptr); }
 }
 
 
-BeamlineContextPtr::BeamlineContextPtr( const BeamlineContext& x, bool y ) 
+BeamlineContextPtr::BeamlineContextPtr( const BeamlineContext& x, bool y )
 : argPtr( ((void*) &x), false )
 {
   if( y ) {
@@ -3062,7 +3062,7 @@ BeamlineContextPtr::BeamlineContextPtr( const BeamlineContext& x, bool y )
 }
 
 
-BeamlineContextPtr::~BeamlineContextPtr() 
+BeamlineContextPtr::~BeamlineContextPtr()
 {
   if( _owned ) { delete ((BeamlineContext*) _ptr); }
 }
