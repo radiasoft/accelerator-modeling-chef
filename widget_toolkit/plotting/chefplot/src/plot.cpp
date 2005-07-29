@@ -1,25 +1,40 @@
-////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                            //
-// FILE:       plot.cpp                                                                       //
-//                                                                                            //
-// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-//             Accelerator Division / Accelerator Integration Dept                            //
-//             Fermi National Laboratory, Batavia, IL                                         //
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-// DATE:       September 2004                                                                 //
-//                                                                                            //
-// COPYRIGHT: Universities Research Association                                               //
-//                                                                                            //
-//                                                                                            //
-////////////////////////////////////////////////////////////////////////////////////////////////
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  CHEF:      A Qt-based Application 
+******             Layered on top of of BEAMLINE.
+******                                                                
+******  File:      plot.cpp
+******                                                                
+******  Copyright (c) Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Jean-Francois Ostiguy
+******                                                                
+******             Fermilab                                           
+******             Batavia, IL  60510                                
+******             ostiguy@fnal.gov                         
+******                                                                
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
+**************************************************************************
+**************************************************************************
+*************************************************************************/
 
-
-#include "plot.h"
-#include "chefplotdata.h"
-#include "chefplotzoomer.h"
+#include <plot.h>
+#include <chefplotdata.h>
+#include <chefplotzoomer.h>
 
 #include <qlayout.h>
 #include <qcanvas.h>
@@ -34,7 +49,8 @@
 #include <iostream>
 
 
-Plot::Plot(QWidget * parent, const char * name, Qt::WFlags f ): QwtPlot(parent, name), _bottom_wheel(0), _right_wheel(0), _left_wheel(0), 
+Plot::Plot(QWidget * parent, const char * name, Qt::WFlags f ): 
+QwtPlot(parent, name), _bottom_wheel(0), _right_wheel(0), _left_wheel(0), 
                                                                 _xmin(0.0), _xmax(0.0) {
  
 
@@ -112,6 +128,9 @@ Plot::Plot(QWidget * parent, const char * name, Qt::WFlags f ): QwtPlot(parent, 
 
 }
 
+
+//..................................................................................................
+
 Plot::~Plot() {
 
   // Qt Widgets are automatically destroyed when their parent is destroyed.
@@ -120,6 +139,7 @@ Plot::~Plot() {
 
 }
 
+//..................................................................................................
 
 bool 
 Plot::eventFilter(QObject *object, QEvent *e)
@@ -187,6 +207,8 @@ Plot::eventFilter(QObject *object, QEvent *e)
        return QwtPlot::eventFilter(object,e);
 
 }
+
+//..................................................................................................
 
 void 
 Plot::addData(const CHEFPlotData& cpdata) {
@@ -286,6 +308,8 @@ Plot::addData(const CHEFPlotData& cpdata) {
 }
 
 
+//..................................................................................................
+
 void 
 Plot::leftWheelValueChanged(double value) {
   double range = axisScale(QwtPlot::yLeft)->hBound() - axisScale(QwtPlot::yLeft)->lBound();
@@ -294,6 +318,8 @@ Plot::leftWheelValueChanged(double value) {
   replot();
 }
 
+//..................................................................................................
+
 void 
 Plot::rightWheelValueChanged(double value){
   double range = axisScale(QwtPlot::yRight)->hBound() - axisScale(QwtPlot::yRight)->lBound();
@@ -301,6 +327,8 @@ Plot::rightWheelValueChanged(double value){
   emit scaleChangedSignal();
   replot();
 }
+
+//..................................................................................................
 
 void 
 Plot::bottomWheelValueChanged(double value){
@@ -312,6 +340,8 @@ Plot::bottomWheelValueChanged(double value){
 }
 
 
+//..................................................................................................
+
 double 
 Plot::getCurrentXmin() {
 
@@ -319,12 +349,15 @@ Plot::getCurrentXmin() {
 
 }
 
+//..................................................................................................
+
 double
 Plot::getCurrentXmax() {
   
   return axisScale(QwtPlot::xBottom)->hBound();
 }
 
+//..................................................................................................
 
 double 
 Plot::getCurrentYmin() {
@@ -334,6 +367,8 @@ Plot::getCurrentYmin() {
   
  return axisScale(QwtPlot::yLeft)->lBound();
 }
+
+//..................................................................................................
 
 double 
 Plot::getCurrentYmax() {
@@ -345,6 +380,7 @@ Plot::getCurrentYmax() {
  
 }
 
+//..................................................................................................
  
 void 
 Plot::scaleChanged( ){
@@ -368,6 +404,7 @@ Plot::scaleChanged( ){
   
 }
 
+//..................................................................................................
 
 void 
 Plot::resizeEvent(QResizeEvent *e) {
@@ -377,6 +414,7 @@ Plot::resizeEvent(QResizeEvent *e) {
   
 }
 
+//..................................................................................................
 
 void 
 Plot::enableThumbWheels(bool set) 
@@ -388,6 +426,7 @@ Plot::enableThumbWheels(bool set)
   replot();
 }
 
+//..................................................................................................
 
 void 
 Plot::enableThumbWheel(bool set, int axiscode) 
@@ -439,6 +478,8 @@ if (set) {
  
 }
 
+//..................................................................................................
+
 void Plot::setZoomer(bool set, int axis) {
 
   if (!set) {
@@ -479,6 +520,7 @@ void Plot::setZoomer(bool set, int axis) {
    
 }
 
+//..................................................................................................
   
 void   Plot::enableDataPointSymbols(bool set) {
 
@@ -495,6 +537,8 @@ void   Plot::enableDataPointSymbols(bool set) {
   replot();
   
 }
+
+//..................................................................................................
 
 void   Plot::enableInterpolation(bool set) {
 
@@ -513,6 +557,8 @@ void   Plot::enableInterpolation(bool set) {
 
 }
 
+//..................................................................................................
+
 void   Plot::enableCoordinatesDisplay(bool set) {
 
 
@@ -530,6 +576,8 @@ if (set) {
 
 }
 
+//..................................................................................................
+
 void   Plot::toggleCurve(long key, bool setting) {
   
   curve(key)->setEnabled(setting);
@@ -537,6 +585,7 @@ void   Plot::toggleCurve(long key, bool setting) {
 }
 
 
+//..................................................................................................
 
 
 
@@ -552,6 +601,8 @@ PlotLegendItem::PlotLegendItem(long curve_key, const QwtSymbol& symbol, const QP
   
 }
 
+//..................................................................................................
+
 void   PlotLegendItem::toggleCurve(bool set) {
 
    Plot* plot = dynamic_cast<Plot*>( parent()->parent()->parent()->parent() );
@@ -560,6 +611,7 @@ void   PlotLegendItem::toggleCurve(bool set) {
 
 }
 
+//..................................................................................................
 
 
 void 
@@ -572,6 +624,8 @@ Plot::setLogScale( int axis)
 
  
 }
+
+//..................................................................................................
 
 void 
 Plot::setLinScale( int axis) 

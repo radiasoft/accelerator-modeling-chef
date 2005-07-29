@@ -1,22 +1,38 @@
-////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                            //
-// FILE:       chefplotdata.cpp                                                               //
-//                                                                                            //
-// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-//             Accelerator Division / Accelerator Integration Dept                            //
-//             Fermi National Laboratory, Batavia, IL                                         //
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-// DATE:       September 2004                                                                 //
-//                                                                                            //
-// COPYRIGHT: Universities Research Association                                               //
-//                                                                                            //
-//                                                                                            //
-////////////////////////////////////////////////////////////////////////////////////////////////
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  CHEF:      A Qt-based Application 
+******             Layered on top of of BEAMLINE.
+******                                                                
+******  File:      chefplotdata.cpp
+******                                                                
+******  Copyright (c) Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Jean-Francois Ostiguy
+******                                                                
+******             Fermilab                                           
+******             Batavia, IL  60510                                
+******             ostiguy@fnal.gov                         
+******                                                                
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
+**************************************************************************
+**************************************************************************
+*************************************************************************/
 
-#include "chefplotdata.h"
+#include <chefplotdata.h>
 #include <beamline.h>
 #include <string>
 #include <fstream>
@@ -24,7 +40,6 @@
 #include <algorithm>
 #include <qwt/qwt_plot.h>
 #include <qwt/qwt_plot_classes.h>
-
 
 
 CurveData::CurveData( boost::shared_array<double> x , boost::shared_array<double> y, int size):
@@ -43,6 +58,8 @@ CurveData::CurveData( boost::shared_array<double> x , boost::shared_array<double
 
 
 }
+
+//..........................................................................................
 
 CurveData::CurveData( const double* x , const double* y, int size):
   _x( new double[size] ), _y( new double[size] ), _size(size) 
@@ -73,6 +90,7 @@ CurveData::CurveData( const double* x , const double* y, int size):
 
 }
 
+//..........................................................................................
 
 CurveData::~CurveData()
 {
@@ -85,6 +103,7 @@ CurveData::~CurveData()
 
 }
 
+//..........................................................................................
 
 QwtData*   
 CurveData::copy () const
@@ -94,6 +113,7 @@ CurveData::copy () const
 
 }
 
+//..........................................................................................
 
 size_t
 CurveData::size () const 
@@ -103,12 +123,16 @@ CurveData::size () const
 
 }
 
+//..........................................................................................
+
 double
 CurveData::x (size_t i) const
 {
   return _x.get()[i];
 
 }
+
+//..........................................................................................
 
 double
 CurveData::y (size_t i) const
@@ -118,6 +142,8 @@ CurveData::y (size_t i) const
 }
 
 
+//..........................................................................................
+
 QwtDoubleRect   
 CurveData::boundingRect () const
 {
@@ -126,6 +152,7 @@ CurveData::boundingRect () const
 
 }
 
+//..........................................................................................
 
 
 CHEFPlotData::CHEFPlotData(): _bml(0), _scalemagright(1.0), _scalemagleft(1.0), _cloned(true) {
@@ -139,6 +166,7 @@ CHEFPlotData::CHEFPlotData(): _bml(0), _scalemagright(1.0), _scalemagleft(1.0), 
 
 }
 
+//..........................................................................................
 
 CHEFPlotData::~CHEFPlotData(){
 
@@ -155,6 +183,8 @@ CHEFPlotData::~CHEFPlotData(){
 
 }
 
+//..........................................................................................
+
 double CHEFPlotData::getHorTune()
 {
   // this is a virtual function. Default implementation just returns -1.0 
@@ -162,6 +192,8 @@ double CHEFPlotData::getHorTune()
   return -1.0;
 
 }
+
+//..........................................................................................
 
 double CHEFPlotData::getVerTune()
 {
@@ -172,6 +204,8 @@ double CHEFPlotData::getVerTune()
 }
 
 
+//..........................................................................................
+
 const beamline* 
 CHEFPlotData::getBeamline() 
 {
@@ -180,6 +214,8 @@ CHEFPlotData::getBeamline()
   
 }
 
+
+//..........................................................................................
 
 void 
 CHEFPlotData::setBeamline(const beamline* bml, bool clone)
@@ -198,6 +234,8 @@ CHEFPlotData::setBeamline(const beamline* bml, bool clone)
     _bml = dynamic_cast<const beamline*>( bml );  
   }
 }
+
+//..........................................................................................
 
 void 
 CHEFPlotData::addCurve(boost::shared_ptr<CHEFCurve> curve)
@@ -241,6 +279,7 @@ CHEFPlotData::addCurve(boost::shared_ptr<CHEFCurve> curve)
 
 }
 
+//..........................................................................................
 
 boost::shared_ptr<CHEFCurve> 
 CHEFPlotData::operator[](int i) const 
@@ -251,6 +290,7 @@ CHEFPlotData::operator[](int i) const
 }
 
     
+//..........................................................................................
 
 void 
 CHEFPlotData::setXLabel(const char* label) 
@@ -260,6 +300,7 @@ CHEFPlotData::setXLabel(const char* label)
 
 }
  
+//..........................................................................................
 
 void 
 CHEFPlotData::setYLabel(const char* label, int axis)
@@ -276,6 +317,7 @@ switch (axis) {
 
 }
 
+//..........................................................................................
 
 QString 
 CHEFPlotData::yLLabel() const 
@@ -283,11 +325,15 @@ CHEFPlotData::yLLabel() const
   return _yLLabel;
 }
 
+//..........................................................................................
+
 QString 
 CHEFPlotData::yRLabel() const 
 {
   return _yRLabel;
 }
+
+//..........................................................................................
 
 QString CHEFPlotData::xLabel() const 
 {
@@ -295,11 +341,15 @@ QString CHEFPlotData::xLabel() const
 }
 
 
+//..........................................................................................
+
 double 
 CHEFPlotData::xMin() const 
 {
   return _global_xmin;
 }
+
+//..........................................................................................
 
 double CHEFPlotData::xMax()const 
 {
@@ -307,10 +357,14 @@ double CHEFPlotData::xMax()const
 }
 
 
+//..........................................................................................
+
 double CHEFPlotData::yLMin() const 
 {
   return _global_ylmin;
 }
+
+//..........................................................................................
 
 double CHEFPlotData::yLMax() const 
 {
@@ -318,10 +372,14 @@ double CHEFPlotData::yLMax() const
 }
 
 
+//..........................................................................................
+
 double CHEFPlotData::yRMin() const 
 {
   return _global_yrmin;
 }
+
+//..........................................................................................
 
 double CHEFPlotData::yRMax() const  
 {
@@ -329,11 +387,15 @@ double CHEFPlotData::yRMax() const
   
 }
 
+//..........................................................................................
+
 int CHEFPlotData::nCurves() const  
 {
   return _curves.size();
   
 }
+
+//..........................................................................................
 
 void CHEFPlotData::setScaleMagRight(double rmag)  
 {
@@ -342,17 +404,23 @@ void CHEFPlotData::setScaleMagRight(double rmag)
 }
 
 
+//..........................................................................................
+
 void CHEFPlotData::setScaleMagLeft(double lmag)  
 {
   _scalemagleft = lmag;
   
 }
 
+//..........................................................................................
+
 double CHEFPlotData::scaleMagLeft() const  
 {
   return _scalemagleft;
   
 }
+
+//..........................................................................................
 
 double CHEFPlotData::scaleMagRight() const  
 {
