@@ -10,7 +10,14 @@
 /*                                                                    */
 /*                                                                    */
 /* Creation Date:  August 2004                                        */
-/*                                                                    */ 
+/* Revision Date:  July,  2005                                        */
+/*   - added five slots: _editEditElement                             */
+/*                       _editFlatten                                 */
+/*                       _editMisalign                                */
+/*                       _editNewOrder                                */
+/*                       _pushParticles                               */
+/*   - LPJM                                                           */
+/*                                                                    */
 /* Copyright:      (C) URA/Fermilab                                   */
 /*                                                                    */
 /**********************************************************************/
@@ -193,6 +200,15 @@ public:
   CHEFGUI(QWidget* parent, const char* name, WFlags w);
   virtual ~CHEFGUI();    
 
+  struct insDlgData
+  {
+    bool    accepted;
+    QString namePrefix;
+    bool    upstream;
+    bool    downstream;
+  };
+  insDlgData _insertionDialog() const;
+
 private:
 
   int             _id_FileWriteTree;
@@ -311,6 +327,10 @@ signals:
    void _editSelectAll();
    void _editSelectNone();
    void _editCopyLine();
+   void _editEditElement();
+   void _editFlatten();
+   void _editMisalign();
+   void _editNewOrder();
    void _editRemoveLine();
    void _editRenameLine();
    void _editCondense();
@@ -340,6 +360,7 @@ signals:
    void _pushDispersion();
    void _pushMoments();
    void _pushULF();
+   void _pushParticles();
    void _launchTrack();
    void _launchRayTrace();
    void _launchDispersion();

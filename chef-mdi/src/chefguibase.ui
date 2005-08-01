@@ -8,7 +8,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>652</width>
+            <width>680</width>
             <height>501</height>
         </rect>
     </property>
@@ -30,12 +30,12 @@
             <action name="fileLoadDeviceFileAction"/>
             <action name="fileLoadScriptAction"/>
         </item>
-        <separator/>
         <action name="fileEditAction"/>
-        <item text="Open" name="popupMenu_6" accel="">
+        <item text="Open" name="popupMenu_5" accel="">
             <action name="fileOpenMAD8Action"/>
             <action name="fileOpenPythonAction"/>
         </item>
+        <action name="fileParseAction"/>
         <separator/>
         <action name="fileEditorSaveAction"/>
         <action name="fileEditorSaveAsAction"/>
@@ -53,52 +53,54 @@
         </item>
         <separator/>
         <action name="editModeAction"/>
-        <action name="editCopyLineAction"/>
-        <action name="editRenameLineAction"/>
         <action name="editRemoveLineAction"/>
-        <action name="editMisalignAction"/>
+        <action name="editCopyLineAction"/>
         <action name="editCondenseAction"/>
+        <action name="editFlattenAction"/>
+        <action name="editPermuteAction"/>
+        <separator/>
+        <action name="editModifyAction"/>
+        <separator/>
+        <action name="editInsertMarkersAction"/>
+        <action name="editInsertMonitorAction"/>
+        <separator/>
         <action name="editMergeEquivalentQuadsAction"/>
         <action name="editConvertToSlotsAction"/>
-        <action name="editInsertMonitorAction"/>
-        <action name="editInsertMarkersAction"/>
         <action name="editPartitionElementsAction"/>
-        <action name="editPartitionAndSectorizeAction"/>
         <separator/>
-        <action name="editParseAction"/>
+        <action name="editAlignAction"/>
+    </item>
+    <item text="Calculations" name="Calculations">
+        <action name="calculationsLatticeFunctionsAction"/>
+        <item text="Lattice Functions" name="popupMenu_38" accel="">
+            <action name="calculationsLattice_FunctionsUncoupledAction"/>
+            <action name="calculationsLattice_FunctionsEdwards_TengAction"/>
+            <action name="calculationsLattice_FunctionsMomentsAction"/>
+            <action name="calculationsLatticeFunctionsEigenvaluesAction"/>
+        </item>
+        <action name="calculationsPush"/>
+        <item text="Push" name="popupMenu_43" accel="">
+            <action name="calculationsPushULFAction"/>
+            <action name="calculationsPushMomentsAction"/>
+            <action name="calculationsPushDispersionAction"/>
+        </item>
+        <action name="calculationsDispersionAction"/>
+        <action name="calculationsEmittance_DilutionAction"/>
+    </item>
+    <item text="Controls" name="Controls">
+        <action name="controlsBuildHTuneCct"/>
+        <action name="controlsBuildVTuneCct"/>
+        <action name="controlsAdjustTune"/>
+    </item>
+    <item text="&amp;Tools" name="Tools">
+        <action name="toolsGenBunch"/>
+        <action name="toolsSite_ViewerAction"/>
+        <action name="toolsTrackAction"/>
+        <action name="toolsTraceAction"/>
     </item>
     <item text="Examples" name="Examples">
         <action name="examplesFODO_CellAction"/>
         <action name="examplesSingle_SextupoleAction"/>
-    </item>
-    <item text="&amp;Tools" name="Tools">
-        <action name="toolsAnalysisAction"/>
-        <item text="Analysis" name="popupMenu_37" accel="">
-            <action name="toolsAnalysisCalculationsAction"/>
-            <item text="Lattice Functions" name="popupMenu_38" accel="">
-                <action name="toolsAnalysisCalculationsLattice_FunctionsUncoupledAction"/>
-                <separator/>
-                <action name="toolsAnalysisCalculationsLattice_FunctionsEdwards_TengAction"/>
-                <action name="toolsAnalysisCalculationsLattice_FunctionsMomentsAction"/>
-                <action name="toolsAnalysisCalculationsLatticeFunctionsEigenvaluesAction"/>
-                <separator/>
-            </item>
-            <action name="toolsAnalysisCalculationsDispersionAction"/>
-            <action name="toolsAnalysisCalculationsEmittance_DilutionAction"/>
-            <action name="toolsAnalysisSite_ViewerAction"/>
-            <action name="toolsAnalysisTrackAction"/>
-            <action name="toolsAnalysisTraceAction"/>
-        </item>
-        <action name="toolsControlAction"/>
-        <item text="Control" name="popupMenu_50" accel="">
-            <action name="toolsControlBuildHorTuneCircuitAction"/>
-            <action name="toolsControlBuildVerTuneCircuitAction"/>
-            <action name="toolsControlAdjustTuneAction"/>
-            <separator/>
-            <action name="toolsControlAlign_CF_rbends_Action"/>
-            <action name="toolsControlMisalign_All_Action"/>
-        </item>
-        <action name="toolsDesignAction"/>
     </item>
     <item text="&amp;Windows" name="Windows">
         <action name="windowsTree_BrowserAction"/>
@@ -116,13 +118,13 @@
         <action name="devicesAutoRefreshAction"/>
         <action name="devicesClearSelectionAction"/>
     </item>
+    <separator/>
     <item text="&amp;Help" name="helpMenu">
         <action name="helpContentsAction"/>
         <action name="helpIndexAction"/>
         <separator/>
         <action name="helpAboutAction"/>
     </item>
-    <separator/>
 </menubar>
 <toolbars>
     <toolbar dock="2">
@@ -147,13 +149,13 @@
         <property name="label">
             <string></string>
         </property>
-        <action name="editParseAction"/>
+        <action name="fileParseAction"/>
         <action name="editModeAction"/>
-        <action name="toolsAnalysisCalculationsLattice_FunctionsUncoupledAction"/>
-        <action name="toolsAnalysisCalculationsLattice_FunctionsMomentsAction"/>
-        <action name="toolsAnalysisCalculationsLattice_FunctionsEdwards_TengAction"/>
-        <action name="toolsAnalysisCalculationsLatticeFunctionsEigenvaluesAction"/>
-        <action name="toolsAnalysisCalculationsDispersionAction"/>
+        <action name="calculationsLattice_FunctionsUncoupledAction"/>
+        <action name="calculationsLattice_FunctionsMomentsAction"/>
+        <action name="calculationsLattice_FunctionsEdwards_TengAction"/>
+        <action name="calculationsLatticeFunctionsEigenvaluesAction"/>
+        <action name="calculationsDispersionAction"/>
     </toolbar>
 </toolbars>
 <actions>
@@ -393,30 +395,180 @@
     </action>
     <action>
         <property name="name">
-            <cstring>toolsAnalysisAction</cstring>
+            <cstring>modeRingAction</cstring>
+        </property>
+        <property name="toggleAction">
+            <bool>true</bool>
+        </property>
+        <property name="on">
+            <bool>true</bool>
         </property>
         <property name="text">
-            <string>Analysis</string>
+            <string>Ring</string>
         </property>
         <property name="menuText">
-            <string>Analysis</string>
+            <string>Ring</string>
         </property>
     </action>
     <action>
         <property name="name">
-            <cstring>toolsControlAction</cstring>
+            <cstring>modeLineAction</cstring>
+        </property>
+        <property name="toggleAction">
+            <bool>true</bool>
         </property>
         <property name="text">
-            <string>Control</string>
+            <string>Line</string>
         </property>
         <property name="menuText">
-            <string>Control</string>
+            <string>Line</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editLattice_FileAction</cstring>
+        </property>
+        <property name="text">
+            <string>Lattice File</string>
+        </property>
+        <property name="menuText">
+            <string>Lattice File</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileEditAction</cstring>
+        </property>
+        <property name="text">
+            <string>Open</string>
+        </property>
+        <property name="menuText">
+            <string>Open</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileOpenMAD8Action</cstring>
+        </property>
+        <property name="text">
+            <string>Lattice (MAD8)</string>
+        </property>
+        <property name="menuText">
+            <string>Lattice (MAD8)</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileOpenPythonAction</cstring>
+        </property>
+        <property name="text">
+            <string>Script  (Python)</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileAction</cstring>
+        </property>
+        <property name="text">
+            <string></string>
+        </property>
+        <property name="menuText">
+            <string></string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileExitnew_itemAction</cstring>
+        </property>
+        <property name="text">
+            <string>new item</string>
+        </property>
+        <property name="menuText">
+            <string>new item</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileEditorSaveAction</cstring>
+        </property>
+        <property name="text">
+            <string>Save</string>
+        </property>
+        <property name="menuText">
+            <string>Save</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileEditorSaveAsAction</cstring>
+        </property>
+        <property name="text">
+            <string>Save As ...</string>
+        </property>
+        <property name="menuText">
+            <string>Save As ...</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileParseAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>run.xpm</iconset>
+        </property>
+        <property name="text">
+            <string>Parse</string>
+        </property>
+        <property name="menuText">
+            <string>Parse</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editModeAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>redo</iconset>
+        </property>
+        <property name="text">
+            <string>Mode ...</string>
+        </property>
+        <property name="menuText">
+            <string>Mode ...</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>calculationsLatticeFunctionsAction</cstring>
+        </property>
+        <property name="text">
+            <string>Lattice Functions</string>
+        </property>
+        <property name="menuText">
+            <string>Lattice Functions</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>calculationsPush</cstring>
+        </property>
+        <property name="text">
+            <string>Push</string>
+        </property>
+        <property name="menuText">
+            <string>Push</string>
         </property>
     </action>
     <action>
         <property name="name">
             <cstring>toolsDesignAction</cstring>
         </property>
+        <property name="enabled">
+            <bool>false</bool>
+        </property>
         <property name="text">
             <string>Design</string>
         </property>
@@ -426,65 +578,32 @@
     </action>
     <action>
         <property name="name">
-            <cstring>toolsAnalysisCalculationsAction</cstring>
+            <cstring>calculationsPushULFAction</cstring>
         </property>
         <property name="text">
-            <string>Lattice Functions</string>
+            <string>Uncoupled Lattice Functions</string>
         </property>
         <property name="menuText">
-            <string>Lattice Functions</string>
+            <string>Uncoupled Lattice Functions</string>
         </property>
     </action>
     <action>
         <property name="name">
-            <cstring>toolsAnalysisSite_ViewerAction</cstring>
+            <cstring>calculationsPushMomentsAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>plot.xpm</iconset>
         </property>
         <property name="text">
-            <string>Site Viewer</string>
+            <string>Moments</string>
         </property>
         <property name="menuText">
-            <string>Site Viewer</string>
+            <string>Moments</string>
         </property>
     </action>
     <action>
         <property name="name">
-            <cstring>toolsAnalysisTrackAction</cstring>
-        </property>
-        <property name="text">
-            <string>Track</string>
-        </property>
-        <property name="menuText">
-            <string>Track</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>toolsAnalysisTraceAction</cstring>
-        </property>
-        <property name="text">
-            <string>Trace</string>
-        </property>
-        <property name="menuText">
-            <string>Trace</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>toolsAnalysisCalculationsLattice_FunctionsAction</cstring>
-        </property>
-        <property name="text">
-            <string></string>
-        </property>
-        <property name="menuText">
-            <string></string>
-        </property>
-        <property name="toolTip">
-            <string>Ring Lattice Functions</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>toolsAnalysisCalculationsDispersionAction</cstring>
+            <cstring>calculationsPushDispersionAction</cstring>
         </property>
         <property name="iconSet">
             <iconset>plot.xpm</iconset>
@@ -495,13 +614,98 @@
         <property name="menuText">
             <string>Dispersion</string>
         </property>
-        <property name="toolTip">
+    </action>
+    <action>
+        <property name="name">
+            <cstring>controlsBuildHTuneCct</cstring>
+        </property>
+        <property name="text">
+            <string>Build Horizontal Tune Circuit</string>
+        </property>
+        <property name="menuText">
+            <string>Build Horizontal Tune Circuit</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>controlsBuildVTuneCct</cstring>
+        </property>
+        <property name="text">
+            <string>Build Vertical Tune Circuit</string>
+        </property>
+        <property name="menuText">
+            <string>Build Vertical Tune Circuit</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>controlsAdjustTune</cstring>
+        </property>
+        <property name="text">
+            <string>Adjust Tune</string>
+        </property>
+        <property name="menuText">
+            <string>Adjust Tune</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>toolsGenBunch</cstring>
+        </property>
+        <property name="text">
+            <string>Generate Bunch</string>
+        </property>
+        <property name="menuText">
+            <string>Generate Bunch</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>toolsSite_ViewerAction</cstring>
+        </property>
+        <property name="text">
+            <string>Site Viewer</string>
+        </property>
+        <property name="menuText">
+            <string>Site Viewer</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>toolsTrackAction</cstring>
+        </property>
+        <property name="text">
+            <string>Track</string>
+        </property>
+        <property name="menuText">
+            <string>Track</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>toolsTraceAction</cstring>
+        </property>
+        <property name="text">
+            <string>Trace</string>
+        </property>
+        <property name="menuText">
+            <string>Trace</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>calculationsDispersionAction</cstring>
+        </property>
+        <property name="text">
+            <string>Dispersion</string>
+        </property>
+        <property name="menuText">
             <string>Dispersion</string>
         </property>
     </action>
     <action>
         <property name="name">
-            <cstring>toolsAnalysisCalculationsEmittance_DilutionAction</cstring>
+            <cstring>calculationsEmittance_DilutionAction</cstring>
         </property>
         <property name="text">
             <string>Emittance Dilution</string>
@@ -512,7 +716,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>toolsAnalysisCalculationsLattice_FunctionsUncoupledAction</cstring>
+            <cstring>calculationsLattice_FunctionsUncoupledAction</cstring>
         </property>
         <property name="iconSet">
             <iconset>plot.xpm</iconset>
@@ -529,7 +733,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>toolsAnalysisCalculationsLattice_FunctionsEdwards_TengAction</cstring>
+            <cstring>calculationsLattice_FunctionsEdwards_TengAction</cstring>
         </property>
         <property name="iconSet">
             <iconset>plot.xpm</iconset>
@@ -546,7 +750,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>toolsAnalysisCalculationsLattice_FunctionsMomentsAction</cstring>
+            <cstring>calculationsLattice_FunctionsMomentsAction</cstring>
         </property>
         <property name="iconSet">
             <iconset>plot.xpm</iconset>
@@ -559,50 +763,6 @@
         </property>
         <property name="toolTip">
             <string>Coupled LF Moments Method</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>toolsControlBuildHorTuneCircuitAction</cstring>
-        </property>
-        <property name="text">
-            <string>Build Hor Tune Circuit</string>
-        </property>
-        <property name="menuText">
-            <string>Build Hor Tune Circuit</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>toolsControlBuildVerTuneCircuitAction</cstring>
-        </property>
-        <property name="text">
-            <string>Build Ver Tune Circuit</string>
-        </property>
-        <property name="menuText">
-            <string>Build Ver Tune Circuit</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>toolsControlAlign_CF_rbends_Action</cstring>
-        </property>
-        <property name="text">
-            <string>Align CF_rbends ...</string>
-        </property>
-        <property name="menuText">
-            <string>Align CF_rbends ...</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>toolsControlMisalign_All_Action</cstring>
-        </property>
-        <property name="text">
-            <string>Misalign All ...</string>
-        </property>
-        <property name="menuText">
-            <string>Misalign All ...</string>
         </property>
     </action>
     <action>
@@ -621,10 +781,10 @@
             <cstring>editCopyLineAction</cstring>
         </property>
         <property name="text">
-            <string>Copy Line</string>
+            <string>Copy</string>
         </property>
         <property name="menuText">
-            <string>Copy Line</string>
+            <string>Copy</string>
         </property>
     </action>
     <action>
@@ -632,10 +792,10 @@
             <cstring>editRemoveLineAction</cstring>
         </property>
         <property name="text">
-            <string>Remove Line</string>
+            <string>Remove</string>
         </property>
         <property name="menuText">
-            <string>Remove Line</string>
+            <string>Remove</string>
         </property>
     </action>
     <action>
@@ -643,10 +803,10 @@
             <cstring>editMisalignAction</cstring>
         </property>
         <property name="text">
-            <string>(Mis)align</string>
+            <string>zlorfik</string>
         </property>
         <property name="menuText">
-            <string>(Mis)align</string>
+            <string>fembril</string>
         </property>
     </action>
     <action>
@@ -878,17 +1038,6 @@
     </action>
     <action>
         <property name="name">
-            <cstring>toolsControlAdjustTuneAction</cstring>
-        </property>
-        <property name="text">
-            <string>Adjust Tune</string>
-        </property>
-        <property name="menuText">
-            <string>Adjust Tune</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
             <cstring>devicesRefreshAction</cstring>
         </property>
         <property name="text">
@@ -958,7 +1107,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>toolsAnalysisCalculationsLatticeFunctionsEigenvaluesAction</cstring>
+            <cstring>calculationsLatticeFunctionsEigenvaluesAction</cstring>
         </property>
         <property name="iconSet">
             <iconset>plot.xpm</iconset>
@@ -971,153 +1120,6 @@
         </property>
         <property name="toolTip">
             <string>Coupled LF Eigenvectors Method</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>modeRingAction</cstring>
-        </property>
-        <property name="toggleAction">
-            <bool>true</bool>
-        </property>
-        <property name="on">
-            <bool>true</bool>
-        </property>
-        <property name="text">
-            <string>Ring</string>
-        </property>
-        <property name="menuText">
-            <string>Ring</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>modeLineAction</cstring>
-        </property>
-        <property name="toggleAction">
-            <bool>true</bool>
-        </property>
-        <property name="text">
-            <string>Line</string>
-        </property>
-        <property name="menuText">
-            <string>Line</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>editLattice_FileAction</cstring>
-        </property>
-        <property name="text">
-            <string>Lattice File</string>
-        </property>
-        <property name="menuText">
-            <string>Lattice File</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>fileEditAction</cstring>
-        </property>
-        <property name="text">
-            <string>Open</string>
-        </property>
-        <property name="menuText">
-            <string>Open</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>fileOpenMAD8Action</cstring>
-        </property>
-        <property name="text">
-            <string>Lattice (MAD8)</string>
-        </property>
-        <property name="menuText">
-            <string>Lattice (MAD8)</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>fileOpenPythonAction</cstring>
-        </property>
-        <property name="text">
-            <string>Script  (Python)</string>
-        </property>
-        <property name="accel">
-            <string></string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>fileAction</cstring>
-        </property>
-        <property name="text">
-            <string></string>
-        </property>
-        <property name="menuText">
-            <string></string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>fileExitnew_itemAction</cstring>
-        </property>
-        <property name="text">
-            <string>new item</string>
-        </property>
-        <property name="menuText">
-            <string>new item</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>fileEditorSaveAction</cstring>
-        </property>
-        <property name="text">
-            <string>Save</string>
-        </property>
-        <property name="menuText">
-            <string>Save</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>fileEditorSaveAsAction</cstring>
-        </property>
-        <property name="text">
-            <string>Save As ...</string>
-        </property>
-        <property name="menuText">
-            <string>Save As ...</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>editParseAction</cstring>
-        </property>
-        <property name="iconSet">
-            <iconset>run.xpm</iconset>
-        </property>
-        <property name="text">
-            <string>Parse</string>
-        </property>
-        <property name="menuText">
-            <string>Parse</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>editModeAction</cstring>
-        </property>
-        <property name="iconSet">
-            <iconset>redo</iconset>
-        </property>
-        <property name="text">
-            <string>Mode</string>
-        </property>
-        <property name="menuText">
-            <string>Mode</string>
         </property>
     </action>
     <action>
@@ -1144,61 +1146,6 @@
     </action>
     <action>
         <property name="name">
-            <cstring>toolsAnalysisLineAction</cstring>
-        </property>
-        <property name="text">
-            <string></string>
-        </property>
-        <property name="menuText">
-            <string></string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>toolsAnalysisLineDispersionAction</cstring>
-        </property>
-        <property name="text">
-            <string>Dispersion</string>
-        </property>
-        <property name="menuText">
-            <string>Dispersion</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>toolsAnalysisLineLattice_FunctionsAction</cstring>
-        </property>
-        <property name="text">
-            <string>Lattice Functions</string>
-        </property>
-        <property name="menuText">
-            <string>Lattice Functions</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>toolsAnalysisLineULFAction</cstring>
-        </property>
-        <property name="text">
-            <string>Uncoupled</string>
-        </property>
-        <property name="menuText">
-            <string>Uncoupled</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>toolsAnalysisLineMomentsAction</cstring>
-        </property>
-        <property name="text">
-            <string>Moments</string>
-        </property>
-        <property name="menuText">
-            <string>Moments</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
             <cstring>editInsertMarkersAction</cstring>
         </property>
         <property name="text">
@@ -1213,10 +1160,10 @@
             <cstring>editPartitionElementsAction</cstring>
         </property>
         <property name="text">
-            <string>Partition Elements</string>
+            <string>Partition</string>
         </property>
         <property name="menuText">
-            <string>Partition Elements</string>
+            <string>Partition</string>
         </property>
     </action>
     <action>
@@ -1232,13 +1179,34 @@
     </action>
     <action>
         <property name="name">
-            <cstring>toolsAnalysisCalculationsCoupledAction</cstring>
+            <cstring>editFlattenAction</cstring>
         </property>
         <property name="text">
-            <string>Coupled</string>
+            <string>Flatten</string>
         </property>
-        <property name="menuText">
-            <string>Coupled</string>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editPermuteAction</cstring>
+        </property>
+        <property name="text">
+            <string>Permute</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editModifyAction</cstring>
+        </property>
+        <property name="text">
+            <string>Modfy ...</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editAlignAction</cstring>
+        </property>
+        <property name="text">
+            <string>Align ...</string>
         </property>
     </action>
 </actions>
@@ -1260,6 +1228,12 @@
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>fileSave()</slot>
+    </connection>
+    <connection>
+        <sender>toolsGenBunch</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_pushParticles()</slot>
     </connection>
     <connection>
         <sender>fileSaveAsAction</sender>
@@ -1322,76 +1296,88 @@
         <slot>_helpContents()</slot>
     </connection>
     <connection>
-        <sender>toolsAnalysisCalculationsLattice_FunctionsUncoupledAction</sender>
+        <sender>calculationsLattice_FunctionsUncoupledAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>_uncoupledLFDispatch()</slot>
     </connection>
     <connection>
-        <sender>toolsAnalysisCalculationsLattice_FunctionsMomentsAction</sender>
+        <sender>calculationsLattice_FunctionsMomentsAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>_momentsDispatch()</slot>
     </connection>
     <connection>
-        <sender>toolsAnalysisCalculationsLattice_FunctionsEdwards_TengAction</sender>
+        <sender>calculationsLattice_FunctionsEdwards_TengAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>_launchET()</slot>
     </connection>
     <connection>
-        <sender>toolsAnalysisSite_ViewerAction</sender>
+        <sender>calculationsPushULFAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_launchSiteVu()</slot>
+        <slot>_pushULF()</slot>
     </connection>
     <connection>
-        <sender>toolsAnalysisTrackAction</sender>
+        <sender>calculationsPushMomentsAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_launchTrack()</slot>
+        <slot>_pushMoments()</slot>
     </connection>
     <connection>
-        <sender>toolsAnalysisTraceAction</sender>
+        <sender>calculationsPushDispersionAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_launchRayTrace()</slot>
+        <slot>_pushDispersion()</slot>
     </connection>
     <connection>
-        <sender>toolsAnalysisCalculationsDispersionAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>_dispersionDispatch()</slot>
-    </connection>
-    <connection>
-        <sender>toolsAnalysisCalculationsEmittance_DilutionAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>_launchDilution()</slot>
-    </connection>
-    <connection>
-        <sender>toolsControlBuildHorTuneCircuitAction</sender>
+        <sender>controlsBuildHTuneCct</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>_horTuneCtrl()</slot>
     </connection>
     <connection>
-        <sender>toolsControlBuildVerTuneCircuitAction</sender>
+        <sender>controlsBuildVTuneCct</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>_verTuneCtrl()</slot>
     </connection>
     <connection>
-        <sender>toolsControlAlign_CF_rbends_Action</sender>
+        <sender>controlsAdjustTune</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_toolAlignBends()</slot>
+        <slot>_tuneCtrl()</slot>
     </connection>
     <connection>
-        <sender>toolsControlMisalign_All_Action</sender>
+        <sender>toolsSite_ViewerAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_toolMisalign()</slot>
+        <slot>_launchSiteVu()</slot>
+    </connection>
+    <connection>
+        <sender>toolsTrackAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_launchTrack()</slot>
+    </connection>
+    <connection>
+        <sender>toolsTraceAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_launchRayTrace()</slot>
+    </connection>
+    <connection>
+        <sender>calculationsDispersionAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_dispersionDispatch()</slot>
+    </connection>
+    <connection>
+        <sender>calculationsEmittance_DilutionAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_launchDilution()</slot>
     </connection>
     <connection>
         <sender>examplesSingle_SextupoleAction</sender>
@@ -1520,12 +1506,6 @@
         <slot>_editAddQtMons()</slot>
     </connection>
     <connection>
-        <sender>toolsControlAdjustTuneAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>_tuneCtrl()</slot>
-    </connection>
-    <connection>
         <sender>fileLoadLatticeFileAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
@@ -1574,7 +1554,7 @@
         <slot>_helpAbout()</slot>
     </connection>
     <connection>
-        <sender>toolsAnalysisCalculationsLatticeFunctionsEigenvaluesAction</sender>
+        <sender>calculationsLatticeFunctionsEigenvaluesAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>_launchLB()</slot>
@@ -1616,7 +1596,7 @@
         <slot>fileEditMAD8()</slot>
     </connection>
     <connection>
-        <sender>editParseAction</sender>
+        <sender>fileParseAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>editParse()</slot>
@@ -1626,24 +1606,6 @@
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>_editMode()</slot>
-    </connection>
-    <connection>
-        <sender>toolsAnalysisLineDispersionAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>_pushDispersion()</slot>
-    </connection>
-    <connection>
-        <sender>toolsAnalysisLineULFAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>_pushULF()</slot>
-    </connection>
-    <connection>
-        <sender>toolsAnalysisLineMomentsAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>_pushMoments()</slot>
     </connection>
     <connection>
         <sender>editInsertMarkersAction</sender>
@@ -1676,6 +1638,9 @@
         <slot>_fileEditorSave()</slot>
     </connection>
 </connections>
+<includes>
+    <include location="local" impldecl="in implementation">chefguibase.ui.h</include>
+</includes>
 <slots>
     <slot>fileNew()</slot>
     <slot>fileOpen()</slot>
@@ -1754,6 +1719,7 @@
     <slot>_pushDispersion()</slot>
     <slot>_pushULF()</slot>
     <slot>_pushMoments()</slot>
+    <slot>_pushParticles()</slot>
     <slot>_editAddMarkers()</slot>
     <slot>_editPartition()</slot>
     <slot>_editRenameLine()</slot>

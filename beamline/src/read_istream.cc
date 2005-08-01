@@ -194,11 +194,11 @@ bmlnElmnt* read_istream(istream& is)
     element = quadrupolePtr;
   }
   else if( strcasecmp(type, 		"rbend") == 0 ) {
-    rbendPtr = new rbend(name, length, strength, MIN_ANGLE);
+    rbendPtr = new rbend(name, length, strength, 1.0 /* Dummy large angle */ );
     element = rbendPtr;
   }
   else if( strcasecmp(type, 		"sbend") == 0 ) {
-    sbendPtr = new sbend(name, length, strength, MIN_ANGLE);
+    sbendPtr = new sbend(name, length, strength, 1.0 /* Dummy large angle */ );
     element = sbendPtr;
   }
   else if( strcasecmp(type, 		"sextupole") == 0 ) {
