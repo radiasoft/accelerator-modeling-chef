@@ -91,8 +91,8 @@ HEADERS	+= ../include/BeamlineBrowser.h \
 SOURCES	+= BeamlineBrowser.cpp \
 	PointEdit.cpp \
 	QtMonitor.cpp \
-	QueryDialog.cpp \
         EditDialog.cpp \
+	QueryDialog.cpp \
 	RayTrace.cpp \
 	SiteViewer.cpp \
 	Tracker.cpp \
