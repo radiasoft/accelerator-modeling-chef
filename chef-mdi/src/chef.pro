@@ -129,8 +129,8 @@ IMAGES	= images/filenew \
 	images/editcopy \
 	images/editpaste \
 	images/searchfind \
-	plot.xpm \
-	run.xpm
+	../images/plot.xpm \
+	../images/run.xpm
 
 
 
