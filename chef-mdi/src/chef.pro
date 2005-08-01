@@ -25,7 +25,7 @@ INCLUDEPATH	+= /usr/local/qt/include
 INCLUDEPATH	+= /usr/local/qt/include/qutexr
 
 INCLUDEPATH	+= ../include 
-INCLUDEPATH	+= ./licenses 
+INCLUDEPATH	+= ../licenses 
 
 INCLUDEPATH	+= ../../widget_toolkit/include
 INCLUDEPATH	+= ../../widget_toolkit/src/ui
