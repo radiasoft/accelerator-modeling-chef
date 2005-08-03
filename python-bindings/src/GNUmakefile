@@ -38,16 +38,16 @@ LDFLAGS    = -Wl,--export-dynamic -mthreads -shared
 
 
 # private setup (heaviside linux)
-CHEF_INSTALL_TOP_DIR   =  /home/ostiguy/CHEF/chef-tmp
-FNALROOT               =  /home/ostiguy/CHEF/chef-tmp
-BOOST_INC              =  /usr/include
-BOOST_LIB              =  /usr/lib
+CHEF_INSTALL_TOP_DIR   =  $(INSTALLDIR)
+FNALROOT               =  $(INSTALLDIR)
+BOOST_INC              =  /usr/local/include/boost-1_32
+BOOST_LIB              =  /usr/local/lib
 BOOST_VER              =  1_32
-QTDIR                  =  /usr/qt/3
-QT_INC                 =  /usr/qt/3/include
-PYTHON_DIR             =  /usr
+QTDIR                  =  /usr/local/qt
+QT_INC                 =  /usr/local/qt/include
+PYTHON_DIR             =  /usr/local
 PYTHON_VER             =  2.3
-INSTALL_DIR            = /home/ostiguy/CHEF/chef-tmp
+INSTALL_DIR            = $(INSTALLDIR)
 GLIB_DIR               = /usr
 GLIB_INC_DIR           =  $(GLIB_DIR)/include/glib-2.0
 GLIBCONFIG_INC_DIR     =  $(GLIB_DIR)/lib/glib-2.0/include

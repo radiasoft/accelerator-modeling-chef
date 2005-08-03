@@ -2997,7 +2997,6 @@ void CHEFGUI::_enableMenus( bool set )
     editInsertMarkersAction->setEnabled(set);
     editModeAction->setEnabled(set);
     editPartitionElementsAction->setEnabled(set);
-    editMisalignAction->setEnabled(set);
     editCondenseAction->setEnabled(set);
 
     editSelectFilterAction->setEnabled(set);

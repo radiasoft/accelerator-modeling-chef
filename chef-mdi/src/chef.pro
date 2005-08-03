@@ -20,18 +20,12 @@ win32:RC_FILE = chefres.rc
 #DEFINES	+= QT_DEBUG
 
 
-INCLUDEPATH	+= /boost/include/boost-1_32
+INCLUDEPATH	+= /usr/local/include/boost-1_32
 INCLUDEPATH	+= /usr/local/qt/include
 INCLUDEPATH	+= /usr/local/qt/include/qutexr
 
 INCLUDEPATH	+= ../include 
 INCLUDEPATH	+= ../licenses 
-
-INCLUDEPATH	+= ../../widget_toolkit/include
-INCLUDEPATH	+= ../../widget_toolkit/src/ui
-
-INCLUDEPATH	+= ../../interpreter/include
-INCLUDEPATH	+= ../../interpreter/src/ui
 
 INCLUDEPATH	+= ../../acnet-devices/include
 INCLUDEPATH	+= ../../acnet-devices/src/ui
@@ -47,21 +41,40 @@ win32:INCLUDEPATH += ..\..\..\chef-win32\include\physics_toolkit
 win32:INCLUDEPATH += ..\..\..\chef-win32\include\widget_toolkit
 win32:INCLUDEPATH += ..\..\widget_toolkit\include
 
-INCLUDEPATH += /msys/1.0/local/include/glib-2.0
-INCLUDEPATH += /msys/1.0/local/lib/glib-2.0/include
-INCLUDEPATH += /msys/1.0/local/include/qutexr
+INCLUDEPATH += ../include
+INCLUDEPATH += $(INSTALLDIR)/include/basic_toolkit
+INCLUDEPATH += $(INSTALLDIR)/include/bmlfactory
+INCLUDEPATH += $(INSTALLDIR)/include/gms
+INCLUDEPATH += $(INSTALLDIR)/include/mxyzptlk
+INCLUDEPATH += $(INSTALLDIR)/include/beamline
+INCLUDEPATH += $(INSTALLDIR)/include/integrator
+INCLUDEPATH += $(INSTALLDIR)/include/physics_toolkit
+
+INCLUDEPATH += ../../widget_toolkit/chefplot/include
+INCLUDEPATH += ../../widget_toolkit/chefplot/src/ui
+INCLUDEPATH += ../../widget_toolkit/interpreter/include
+INCLUDEPATH += ../../widget_toolkit/interpreter/src/ui
+INCLUDEPATH += ../../widget_toolkit/devices/include
+INCLUDEPATH += ../../widget_toolkit/devices/src/ui
+
+INCLUDEPATH += /usr/include/glib-2.0
+INCLUDEPATH += /usr/lib/glib-2.0/include
+
+#INCLUDEPATH += /msys/1.0/local/include/glib-2.0
+#INCLUDEPATH += /msys/1.0/local/lib/glib-2.0/include
+#INCLUDEPATH += /msys/1.0/local/include/qutexr
 
 
 win32:INCLUDEPATH     += /python23/include
 win32:INCLUDEPATH     += /msys/1.0/local/include/qutexr
 win32:INCLUDEPATH     += /msys/1.0/local/include
 
-unix:INCLUDEPATH     += /python23/include
-unix:INCLUDEPATH     += /msys/1.0/local/include/qutexr
-unix:INCLUDEPATH     += /msys/1.0/local/include
+unix:INCLUDEPATH     += /usr/local/include/python2.3
+#unix:INCLUDEPATH     += /msys/1.0/local/include/qutexr
+#unix:INCLUDEPATH     += /msys/1.0/local/include
 
 
-unix:LIBS	+= -lwidget_toolkit -lqwt -lqt-mt -lqassistantclient -lqscintilla
+unix:LIBS	+= -lqwt -lqt-mt -lqassistantclient -lqscintilla
 
 
 HEADERS	+= ../include/BeamlineBrowser.h \
@@ -150,42 +163,20 @@ OBJECTS_DIR = .\obj
 DESTDIR = .
 LIBS += -lqassistantclient
 
-LIBS += -L..\..\..\chef-win32\lib -linterpreter
+LIBS += -L$(INSTALLDIR)/lib
+LIBS += -linterpreter -lchefplot -ldevices 
 LIBS += -lpychef -lpychefplot -lpybmlfactory -lpyphysics_toolkit -lpybeamline -lpymxyzptlk -lpybasic_toolkit 
-LIBS += -ldevices
-LIBS += -lwidget_toolkit 
 LIBS += -lphysics_toolkit -lbmlfactory -lbeamline -lmxyzptlk -lbasic_toolkit 
 LIBS += -lqutexr
 LIBS += -lqwt
-LIBS += -lglut32
-LIBS += c:\boost\lib\boost_python-mgw-mt-1_32.lib   
-LIBS += -Lc:\python23\libs -lpython23
-#LIBS += c:\windows\system32\python23.dll 
+LIBS += -lglut
 LIBS += -lglib-2.0   
 ##LIBS += -lutil
 
-QMAKE_LIBDIR += /msys/1.0/home/Administrator/chef-win32/lib
-QMAKE_LIBDIR += /msys/1.0/local/lib
-QMAKE_LIBDIR += /python23/lib
-QMAKE_LIBDIR += /boost/lib
+#QMAKE_LIBDIR += /msys/1.0/home/Administrator/chef-win32/lib
+#QMAKE_LIBDIR += /msys/1.0/local/lib
+QMAKE_LIBDIR += /usr/local/lib/python2.3
+QMAKE_LIBDIR += /usr/local/lib
 
+QMAKE_LDFLAGS += -Wl,--rpath,$(INSTALLDIR)/lib
 #QMAKE_LDFLAGS += -Wl,-rpath,/opt/chef/lib
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

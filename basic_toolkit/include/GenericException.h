@@ -35,17 +35,24 @@
 #include <string>
 #include <sstream>
 
-struct GenericException : public std::exception
+class GenericException : public std::exception
 {
+
+ public:
   GenericException( std::string, int, const char* = "", const char* = "" );
   // Miscellaneous errors
   // 1st argument: name of file in which exception is thrown
   // 2nd         : line from which exception is thrown
   // 3rd         : identifies function containing throw
   // 4th         : identifies type of error
+
   ~GenericException() throw() {}
   const char* what() const throw();
   std::string errorString;
+  int lineNumber() const throw();
+
+ private:
+  int _lineno;
 };
 
 #endif // GENEXC_H

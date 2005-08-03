@@ -28,7 +28,8 @@ SOURCES	+= src/readdevice.cpp \
 FORMS	=  src/devicetablebase.ui
 
 
-INCLUDEPATH += $$QUTEXR_INC
+INCLUDEPATH += $(QTDIR)/include/qutexr
+# INCLUDEPATH += $$QUTEXR_INC
 
 unix:LIBS	 += -L$$QUTEXR_LIBDIR -lqutexr -lqwt 
 windows:LIBS	 += -L$$QUTEXR_LIBDIR -lqutexr -lqwt 

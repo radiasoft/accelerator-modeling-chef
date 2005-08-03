@@ -426,17 +426,6 @@
     </action>
     <action>
         <property name="name">
-            <cstring>editLattice_FileAction</cstring>
-        </property>
-        <property name="text">
-            <string>Lattice File</string>
-        </property>
-        <property name="menuText">
-            <string>Lattice File</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
             <cstring>fileEditAction</cstring>
         </property>
         <property name="text">
@@ -477,17 +466,6 @@
         </property>
         <property name="menuText">
             <string></string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>fileExitnew_itemAction</cstring>
-        </property>
-        <property name="text">
-            <string>new item</string>
-        </property>
-        <property name="menuText">
-            <string>new item</string>
         </property>
     </action>
     <action>
@@ -560,20 +538,6 @@
         </property>
         <property name="menuText">
             <string>Push</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>toolsDesignAction</cstring>
-        </property>
-        <property name="enabled">
-            <bool>false</bool>
-        </property>
-        <property name="text">
-            <string>Design</string>
-        </property>
-        <property name="menuText">
-            <string>Design</string>
         </property>
     </action>
     <action>
@@ -800,17 +764,6 @@
     </action>
     <action>
         <property name="name">
-            <cstring>editMisalignAction</cstring>
-        </property>
-        <property name="text">
-            <string>zlorfik</string>
-        </property>
-        <property name="menuText">
-            <string>fembril</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
             <cstring>editCondenseAction</cstring>
         </property>
         <property name="text">
@@ -928,10 +881,10 @@
             <cstring>editSelectFilterAction</cstring>
         </property>
         <property name="text">
-            <string>filter ...</string>
+            <string>Filter ...</string>
         </property>
         <property name="menuText">
-            <string>filter ...</string>
+            <string>Filter ...</string>
         </property>
     </action>
     <action>
@@ -939,10 +892,10 @@
             <cstring>editSelectallAction</cstring>
         </property>
         <property name="text">
-            <string>all</string>
+            <string>All</string>
         </property>
         <property name="menuText">
-            <string>all</string>
+            <string>All</string>
         </property>
     </action>
     <action>
@@ -950,10 +903,10 @@
             <cstring>editSelectnoneAction</cstring>
         </property>
         <property name="text">
-            <string>none</string>
+            <string>None</string>
         </property>
         <property name="menuText">
-            <string>none</string>
+            <string>None</string>
         </property>
     </action>
     <action>
@@ -1124,28 +1077,6 @@
     </action>
     <action>
         <property name="name">
-            <cstring>editModeRingAction</cstring>
-        </property>
-        <property name="text">
-            <string>Ring (periodic)</string>
-        </property>
-        <property name="menuText">
-            <string>Ring (periodic)</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>editModeLineAction</cstring>
-        </property>
-        <property name="text">
-            <string>Line (not periodic)</string>
-        </property>
-        <property name="menuText">
-            <string>Line (not periodic)</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
             <cstring>editInsertMarkersAction</cstring>
         </property>
         <property name="text">
@@ -1198,7 +1129,7 @@
             <cstring>editModifyAction</cstring>
         </property>
         <property name="text">
-            <string>Modfy ...</string>
+            <string>Modify ...</string>
         </property>
     </action>
     <action>
@@ -1246,6 +1177,30 @@
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>filePrint()</slot>
+    </connection>
+    <connection>
+        <sender>editFlattenAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_editFlatten()</slot>
+    </connection>
+    <connection>
+        <sender>editPermuteAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_editNewOrder()</slot>
+    </connection>
+    <connection>
+        <sender>editModifyAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_editEditElement()</slot>
+    </connection>
+    <connection>
+        <sender>editAlignAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_editAlign()</slot>
     </connection>
     <connection>
         <sender>editUndoAction</sender>
@@ -1660,6 +1615,10 @@
     <slot>_print()</slot>
     <slot>_fileWriteTree()</slot>
     <slot>_fileSaveAs()</slot>
+    <slot>_editFlatten()</slot>
+    <slot>_editNewOrder()</slot>
+    <slot>_editEditElement()</slot>
+    <slot>_editAlign()</slot>
     <slot>_editFindFilter()</slot>
     <slot>_editSelectAll()</slot>
     <slot>_editSelectNone()</slot>
@@ -1667,7 +1626,6 @@
     <slot>_editCopyLine()</slot>
     <slot>_editRemoveLine()</slot>
     <slot>_editCondense()</slot>
-    <slot>_editAlign()</slot>
     <slot>_editMergeQuads()</slot>
     <slot>_editD2S()</slot>
     <slot>_openDeviceFile()</slot>
