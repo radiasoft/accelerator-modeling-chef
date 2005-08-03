@@ -9,16 +9,16 @@
 #
 ########################################################################
 
-   unix:CHEF_INSTALL_TOP_DIR   =  /home/ostiguy/CHEF/chef-tmp  
-   unix:FNAL_INSTALL_TOP_DIR   =  /home/ostiguy/CHEF/chef-tmp
-   unix:BOOST_INSTALL_TOP_DIR  =  /usr
+   unix:CHEF_INSTALL_TOP_DIR   =  $(INSTALLDIR)
+   unix:FNAL_INSTALL_TOP_DIR   =  $(INSTALLDIR)
+   unix:BOOST_INSTALL_TOP_DIR  =  /usr/local
    unix:BOOST_VERSION          =  1_32
    unix:GLIB_INSTALL_TOP_DIR   =  /usr
    unix:GLIB_VERSION           =  2.0
-   unix:PYTHON_INSTALL_TOP_DIR =  /usr
+   unix:PYTHON_INSTALL_TOP_DIR =  /usr/local
    unix:PYTHON_VERSION         =  2.3
-   unix:QWT_INSTALL_TOP_DIR    =  /usr/qt/3/include
-   unix:QUTEXR_INSTALL_TOP_DIR =  /usr/local
+   unix:QWT_INSTALL_TOP_DIR    =  /usr/local/qt/include
+   unix:QUTEXR_INSTALL_TOP_DIR =  /usr/local/qt/include
 
    windows:CHEF_INSTALL_TOP_DIR   =  /root/chef-tmp  
    windows:FNAL_INSTALL_TOP_DIR   =  /root/chef-tmp

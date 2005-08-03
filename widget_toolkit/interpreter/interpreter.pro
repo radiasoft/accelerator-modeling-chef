@@ -35,8 +35,7 @@ INCLUDEPATH += $$PYTHON_INC
 
 unix:LIBS += -L$$CHEF_LIBDIR -lpychefplot -lpybmlfactory -lpybeamline -lpyphysics_toolkit -lpymxyzptlk -lpybasic_toolkit 
 unix:LIBS += -lqwt 
-#unix:LIBS += /usr/lib/python2.3/config/libpython2.3.a -L/usr/lib -lboost_python-gcc-mt-1_32 
-unix:LIBS += /usr/lib/python2.3/config/libpython2.3.a -L/usr/lib -lboost_python-mt 
+unix:LIBS += /usr/local/lib/python2.3/config/libpython2.3.a -L/usr/local/lib -lboost_python-gcc-mt 
 unix:LIBS += -L$$FNAL_LIBDIR-lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit 
 
 windows:LIBS += -L/opt/chef/lib -lpychefplot -lpybmlfactory -lpybeamline -lpyphysics_toolkit -lpymxyzptlk -lpybasic_toolkit 

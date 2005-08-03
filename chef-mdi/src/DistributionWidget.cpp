@@ -561,7 +561,6 @@ void DistributionWidget::_genUniform()
         << " particles.";
     QMessageBox::information( 0, "DistributionWidget", uic.str().c_str() );
 
-
     // Clean up before returning.
     if( xRanPtr   ) { delete xRanPtr;   }
     if( yRanPtr   ) { delete yRanPtr;   }

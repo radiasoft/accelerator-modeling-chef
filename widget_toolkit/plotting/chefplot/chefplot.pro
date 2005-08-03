@@ -16,6 +16,7 @@ include ( "../config.pri" )
 
 unix:CONFIG	+= qt warn_on debug thread rtti exceptions dll
 
+unix:LIBS	+= -L/usr/local/lib
 unix:LIBS	+= -lqwt -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -lglib-2.0
 
 

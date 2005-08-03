@@ -91,11 +91,11 @@ return call_method<double>(_self, "OrbitLength"); }
 
 
 
-short          (bmlnElmnt::*readTag1)(char*, short, short)    = &bmlnElmnt::readTag;
-short          (bmlnElmnt::*readTag2)(char*)                  = &bmlnElmnt::readTag;
-char           (bmlnElmnt::*readTag3)(short)                  = &bmlnElmnt::readTag;
-std::string    (bmlnElmnt::*readTag4)(short,short)            = &bmlnElmnt::readTag;
-std::string    (bmlnElmnt::*readTag5)()                       = &bmlnElmnt::readTag;
+short          (bmlnElmnt::*readTag1)(char*, short, short) const   = &bmlnElmnt::readTag;
+short          (bmlnElmnt::*readTag2)(char*) const                 = &bmlnElmnt::readTag;
+char           (bmlnElmnt::*readTag3)(short) const                 = &bmlnElmnt::readTag;
+std::string    (bmlnElmnt::*readTag4)(short,short) const           = &bmlnElmnt::readTag;
+std::string    (bmlnElmnt::*readTag5)() const                      = &bmlnElmnt::readTag;
 
    // short (bmlnElmnt::*writeTag1)     (char)                                    = &bmlnElmnt::writeTag;
 short (bmlnElmnt::*writeTag2)     (char,short)                              = &bmlnElmnt::writeTag;
@@ -202,7 +202,7 @@ class_<beamline>("beamline", init<>() )
   //.def("whatisLattice",            whatisLattice2) 
   .def("countHowMany",             &beamline::countHowMany,       beamline_overloads1())
   .def("countHowManyDeeply",       &beamline::countHowManyDeeply, beamline_overloads2())
-  .def("howDeep",                  &beamline::howDeep)
+  .def("depth",                    &beamline::depth)
      //.def("contains",                 &beamline::contains)
      //.def("firstElement",             &beamline::firstElement)
      //.def("lastElement",              &beamline::lastElement)

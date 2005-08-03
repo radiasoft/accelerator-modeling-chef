@@ -35,7 +35,8 @@ using namespace std;
 GenericException::GenericException( string fileName, 
                                     int lineNumber, 
                                     const char* fcn, 
-                                    const char* msg )
+                                    const char* msg ):
+  _lineno(0)
 {
   ostringstream uic;
   uic << "\n*** ERROR *** "
@@ -53,9 +54,17 @@ GenericException::GenericException( string fileName,
          << endl;
     firstTime = false;
   }
+
+  _lineno = lineNumber;
 }
 
 const char* GenericException::what() const throw()
 {
   return errorString.c_str();
+}
+
+
+int GenericException::lineNumber() const throw()
+{
+  return _lineno;
 }
