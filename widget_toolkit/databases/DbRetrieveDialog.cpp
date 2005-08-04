@@ -37,6 +37,7 @@
 #include <qmessagebox.h>
 #include <qsqlcursor.h>
 #include <qdatatable.h>
+#include <qdatetime.h>
 #include <qsqlquery.h>
 #include <qlistbox.h>
 #include <qlineedit.h>
@@ -49,6 +50,7 @@
 #include <qspinbox.h>
 #include <qdatetimeedit.h>
 #include <qvalidator.h>
+#include <qtextview.h>
 #include <iostream>
 
 #include <vector>
@@ -92,6 +94,8 @@ DbRetrieveDialog::DbRetrieveDialog(QWidget* parent, const char* name, WFlags f):
 DbRetrieveDialog::~DbRetrieveDialog() 
 {
 
+
+ QMessageBox::warning(0, "WARNING", "destructor called");
 
 }
 
@@ -238,6 +242,7 @@ void DbRetrieveDialog::_handleDipoleBendsChecked( bool set ) {
 
 // ......................................................................................................................
 
+
 void DbRetrieveDialog::_handleMainQuadsChecked(bool set ) {
 
   if (!set) return;
@@ -315,11 +320,12 @@ void DbRetrieveDialog::_handleButtonOkClicked() {
 
 //......................................................................................................................................
 
+
 void DbRetrieveDialog::_displaySurveyXYHInfo() {
 
 Many query_params;
 
-column_item data_table_columns[] = { {"c_magnet_name",      "Magnet Name"}, 
+column_item data_table_columns[] = {   {"c_magnet_name",      "Magnet Name"}, 
                                        {"c_magnet_location",  "Magnet Location"},
 				       {"c_calc_date",        "Date" },
 				       {"c_x",                "X [m] FSCS"},
@@ -467,10 +473,10 @@ else if (checkBoxMainQuads->isChecked() ) {
 } 
 
 
-query_params.push_back( dateEditMachineState->date().toString(Qt::ISODate) );     // date
-query_params.push_back( dateEditMachineState->date().toString(Qt::ISODate) );     // date
-query_params.push_back( dateEditMachineState->date().toString(Qt::ISODate) );     // date
-query_params.push_back( listBoxMachines->selectedItem()->text()  );     // machine name
+query_params.push_back( dateEditMachineState->date().toString(Qt::ISODate) );        // date
+query_params.push_back( dateEditMachineState->date().toString(Qt::ISODate) );        // date
+query_params.push_back( dateEditMachineState->date().toString(Qt::ISODate) );        // date
+query_params.push_back( listBoxMachines->selectedItem()->text()  );                  // machine name
 query_params.push_back( listBoxMeasurementCurrent->selectedItem()->text().toInt() ); // current
 query_params.push_back( numpoles );
 
@@ -583,18 +589,22 @@ void DbRetrieveDialog::_handleCurrentTabChanged(QWidget* w) {
   else if (   w->name() == QString("TabMultipoles") ) {
     spinBoxMinOrder->setEnabled(false);
     spinBoxMaxOrder->setEnabled(false);
-    buttonGroupMagnetSelection->setEnabled(true);
-    checkBoxAllMagnets->setEnabled(false);
-    checkBoxDipoleBends->setEnabled(true);
-    checkBoxMainQuads->setEnabled(true);
-
   }
+
+  if (buttonGroupMagnetSelection->isEnabled() ) { 
+    if ( checkBoxDipoleBends->isChecked() ) _handleDipoleBendsChecked(true); 
+    if ( checkBoxMainQuads->isChecked()   ) _handleMainQuadsChecked(true);
+    if ( checkBoxAllMagnets->isChecked()  ) _handleAllMomentsChecked(true);
+    if ( checkBoxSeries->isChecked()      ) _handleSeriesChecked(true);
+  }
+
 
 
 }
 
 
 //.........................................................................
+
 
 void DbRetrieveDialog::_handleSurveyTypeCheckBoxToggled(bool set) {
 
@@ -619,11 +629,25 @@ else
 
 void DbRetrieveDialog::_displayDataTable( QString query_string, Many query_params, column_item col_info[] ) {
 
-QString tmp_table_name   =  "tmp_table";
-
-
+QString   tmp_table_name   =  "tmp_table";
 QSqlQuery dml_query;
+
+//  A temporary kludge to work around the fact that TEMP TABLE Qt cursors are 
+//  broken on WIN32 with pgsql ODBC drivers. Not sure whether the pb lies with Qt or
+//  pgsql ODBC. 
+
+#ifdef WIN32
+
+int timestamp   = QTime::currentTime().msec();
+tmp_table_name += QString().arg( timestamp );
+ 
+dml_query.prepare( QString("CREATE TABLE ") + QString(tmp_table_name) + QString(" AS ") + QString( query_string ));
+
+#else
+
 dml_query.prepare( QString("CREATE TEMP TABLE ") + QString(tmp_table_name) + QString(" AS ") + QString( query_string ));
+
+#endif
 
  for ( unsigned int i = 0; i < query_params.size(); ++i) 
  { 
@@ -632,36 +656,37 @@ dml_query.prepare( QString("CREATE TEMP TABLE ") + QString(tmp_table_name) + QSt
 
  if( !dml_query.exec() ) {
  
-   QMessageBox::warning(this, "Error", "Query failed.");
+   QMessageBox::warning(this, "Create TMP TABLE query Error", dml_query.lastError().databaseText() );
    return;
  } 
 
+
  QSqlCursor* cursor       = new QSqlCursor( tmp_table_name );
  QDataTable* data_table   = new QDataTable( cursor );
-
+ 
   
  column_item* cptr = col_info; 
  do {
-      data_table->addColumn( cptr->name, cptr->label );
+       data_table->addColumn( cptr->name, cptr->label );
  } 
  while ( (++cptr)->name !=  0 );
     
  data_table->refresh();
  data_table->show();
-
   
  QSqlQuery ddl_query;
  QString q = "DROP TABLE "+ tmp_table_name;
  ddl_query.prepare( q );
 
  if( !ddl_query.exec() ) {
-    QMessageBox::warning(this, "Error", "Query failed.");
+    QMessageBox::warning(this, "Drop Tmp Table Error", dml_query.lastError().databaseText() );
     return;
  }
 
 }
 
 //.................................................................................
+
 
 QString DbRetrieveDialog::_getSelectedSeriesList() {
 
