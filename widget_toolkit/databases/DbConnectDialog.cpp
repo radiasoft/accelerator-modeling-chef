@@ -38,27 +38,48 @@
 #include <qsqldatabase.h>
 #include <qpushbutton.h>
 #include <qmessagebox.h>
+#include <qstringlist.h>
 
 #include <iostream>
 
 DbConnectDialog::DbConnectDialog(QWidget* parent, const char* name, WFlags f):
   DbConnectDialogBase(parent,name,f) 
 {
+  listBoxDBDriver->clear();
 
+  QStringList drvlist = QSqlDatabase::drivers (); 
+
+  if (drvlist.size() < 1 ) {
+     QMessageBox::warning( this ,"Error", "No Database Driver installed.");
+     return;
+  }
+
+  
+
+  QStringList::Iterator it = drvlist.begin();
+
+  while( it != drvlist.end() ) {
+
+        listBoxDBDriver->insertItem( *it );
+        ++it;
+  }
+
+  listBoxDBDriver->setCurrentItem(0);
+ 
   // ... FIXME !
   // ... the defaults should be read from a separate config file ... 
 
-  listBoxDBDriver->clear();
-  listBoxDBDriver->insertItem("QODBC3");
-  listBoxDBDriver->insertItem("QPSQL7");
-  listBoxDBDriver->setCurrentItem(0);
- 
+  // ** default values ***  
+
   lineEditDBName->setText("blastman");
   lineEditHostName->setText("mrkrabs.fnal.gov");
   lineEditUserName->setText("nobody");
   lineEditPassword->setText("");
 
-  connect ( buttonOk, SIGNAL( clicked() ), this, SLOT( handleOkClicked() )  );
+  _handleDriverSelectionChanged();
+
+  connect ( listBoxDBDriver, SIGNAL( selectionChanged() ), this, SLOT( _handleDriverSelectionChanged() )  );
+  connect ( buttonOk,        SIGNAL( clicked() ),          this, SLOT( _handleOkClicked() )               );
 
 }
 
@@ -74,6 +95,26 @@ DbConnectDialog::~DbConnectDialog()
 
 // ...........................................................................................................
 
+void DbConnectDialog::_handleDriverSelectionChanged() {
+
+  
+
+  if ( listBoxDBDriver->currentText().contains('ODBC') ) { 
+ 
+    lineEditHostName->setEnabled(false);
+    lineEditUserName->setEnabled(false);
+    lineEditPassword->setEnabled(false);   
+
+  } else {
+
+    lineEditHostName->setEnabled(true);
+    lineEditUserName->setEnabled(true);
+    lineEditPassword->setEnabled(true);   
+
+ }
+}
+
+// ...........................................................................................................
 
 QString DbConnectDialog::databaseName() 
 { 
@@ -109,7 +150,7 @@ QString DbConnectDialog::hostName()
 // ...........................................................................................................
 
 
-void DbConnectDialog::handleOkClicked() {
+void DbConnectDialog::_handleOkClicked() {
 
 
 

@@ -63,9 +63,12 @@ Q_OBJECT
  QString password();     
  QString hostName();     
 
+
+
  private slots:
 
-   void handleOkClicked();
+   void _handleDriverSelectionChanged();
+   void _handleOkClicked();
 
  signals:
   
