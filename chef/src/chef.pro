@@ -2,20 +2,25 @@ TEMPLATE = lib
 
 INCLUDEPATH += ../include
 
-INCLUDEPATH += /home/michelotti/software/test_installed/include/basic_toolkit
-INCLUDEPATH += /home/michelotti/software/test_installed/include/bmlfactory       
-INCLUDEPATH += /home/michelotti/software/test_installed/include/mxyzptlk
-INCLUDEPATH += /home/michelotti/software/test_installed/include/beamline
-INCLUDEPATH += /home/michelotti/software/test_installed/include/integrator
-INCLUDEPATH += /home/michelotti/software/test_installed/include/physics_toolkit
-INCLUDEPATH += /home/michelotti/software/test_installed/include/widget_toolkit/chefplot
-INCLUDEPATH += /home/michelotti/software/test_installed/include/widget_toolkit/devices
-INCLUDEPATH += /home/michelotti/software/test_installed/include/widget_toolkit/interpreter
-INCLUDEPATH += /usr/local/ap/include/boost-1_32
+INCLUDEPATH += $(INSTALLDIR)/include/basic_toolkit
+INCLUDEPATH += $(INSTALLDIR)/include/gms
+INCLUDEPATH += $(INSTALLDIR)/include/bmlfactory       
+INCLUDEPATH += $(INSTALLDIR)/include/mxyzptlk
+INCLUDEPATH += $(INSTALLDIR)/include/beamline
+INCLUDEPATH += $(INSTALLDIR)/include/integrator
+INCLUDEPATH += $(INSTALLDIR)/include/physics_toolkit
+INCLUDEPATH += $(INSTALLDIR)/include/widget_toolkit/devices
+INCLUDEPATH += $(INSTALLDIR)/include/widget_toolkit/interpreter
+INCLUDEPATH += ../../widget_toolkit/chefplot/include
+INCLUDEPATH += ../../widget_toolkit/chefplot/src/ui
+INCLUDEPATH += $(BOOST_INC_DIR)
+INCLUDEPATH += $(GLIB_INC_DIR)
+INCLUDEPATH += $(GLIBCONFIG_INC_DIR)
+
 
 QMAKE_EXT_MOC = .cc
 
-DESTDIR = /home/michelotti/software/test_installed/lib
+DESTDIR = $(INSTALLDIR)/lib
 
 CONFIG += debug
 CONFIG += qt
@@ -30,6 +35,11 @@ SOURCES = CHEF.builders.cc \
           CHEF.cc \
           BeamlineBrowser.cc \
           DistributionWidget.cc \
+          DspnFncData.cc \
+          LBFncData.cc \
+          LattFncData.cc \
+          MomentsFncData.cc \
+          ETFncData.cc \
           EditDialog.cc \
           PointEdit.cc \
           QtMonitor.cc \
