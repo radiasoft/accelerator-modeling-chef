@@ -11,7 +11,7 @@ INCLUDEPATH += $(INSTALLDIR)/include/integrator
 INCLUDEPATH += $(INSTALLDIR)/include/physics_toolkit
 INCLUDEPATH += $(INSTALLDIR)/include/widget_toolkit
 
-INCLUDEPATH	+= /usr/local/include/boost-1_32
+INCLUDEPATH += $(BOOST_INC_DIR)
 
 QMAKE_EXT_MOC = .cc
 
@@ -31,4 +31,4 @@ LIBS += -lchef -lchefplot -lqwt -lqt-mt
 LIBS += -lbeamline -lbmlfactory -lintegrator -lmxyzptlk -lphysics_toolkit -lbasic_toolkit
 LIBS += -lglib-2.0 -lglut -lGLU -lGL
 QMAKE_LIBDIR += $(INSTALLDIR)/lib
-QMAKE_LIBDIR += /usr/local/ap/lib
+QMAKE_LIBDIR += /usr/local/lib
