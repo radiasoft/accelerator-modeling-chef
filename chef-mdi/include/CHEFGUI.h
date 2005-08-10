@@ -1,26 +1,42 @@
-/**********************************************************************/
-/*                                                                    */
-/* File:           CHEFGUI.h                                          */
-/* Authors:                                                           */
-/*                 Leo Michelotti                                     */
-/*                 michelotti@fnal.gov                                */     
-/*                                                                    */ 
-/*                 Jean-Francois Ostiguy                              */
-/*                 ostiguy@fnal.gov                                   */
-/*                                                                    */
-/*                                                                    */
-/* Creation Date:  August 2004                                        */
-/* Revision Date:  July,  2005                                        */
-/*   - added five slots: _editEditElement                             */
-/*                       _editFlatten                                 */
-/*                       _editMisalign                                */
-/*                       _editNewOrder                                */
-/*                       _pushParticles                               */
-/*   - LPJM                                                           */
-/*                                                                    */
-/* Copyright:      (C) URA/Fermilab                                   */
-/*                                                                    */
-/**********************************************************************/
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******
+******  CHEF:      An application layered on the Beamline/mxyzptlk
+******             class libraries.
+******
+******  File:      CHEFGUI.h
+******
+******  Copyright (c) Universities Research Association, Inc.
+******                All Rights Reserved
+******
+******  Authors:   Leo Michelotti         michelotti@fnal.gov
+******             Jean-Francois Ostiguy  ostiguy@fnal.gov
+******             Fermilab
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
+******* Creation Date:  August 2004                                      
+******* Revision Date:  July,  2005 
+*******                                      
+******* - added five slots: _editEditElement                            
+*******                     _editFlatten                              
+*******                     _editMisalign                               
+*******                     _editNewOrder                               
+*******                     _pushParticles                              
+*******  - LPJM 
+*******                                                         
+/***************************************************************************
+
 #ifndef CHEFGUI_H
 #define CHEFGUI_H
 
@@ -47,46 +63,35 @@
 #include <ModifierVisitor.h>
 #include <complexAddon.h>
 #include <InitCondDialogLF.h>
+#include <messages.h>
+#include <DbConnectDialog.h>
 
 #include <qptrlist.h>
 #include <qguardedptr.h>
 #include <list>
 
-class BeamlineContext;
-class ReverseBeamlineIterator;
+#include <Jet__environment.h>
+#include <Mapping.h>
 
-// The following forward class declarations should be removed eventually
-#ifdef FIRST_ORDER
-class Jet__environment;
-class JetC__environment;
-class Mapping;
-#else
-template<typename T1, typename T2> 
-class TJetEnvironment;
-template<typename T1, typename T2>
-class TMapping;
-typedef TJetEnvironment<double,FNAL::Complex> Jet__environment;
-typedef TJetEnvironment<FNAL::Complex,double> JetC__environment;
-typedef TMapping<double,FNAL::Complex> Mapping;
-#endif
+class  BeamlineContext;
+class  ReverseBeamlineIterator;
+class  DbConnectDialog;
+class  DbRetrieveDialog;
+class  QBml;
+class  QBmlRoot;
+class  CHEFPlotMain;
+class  Tracker;
+class  RayTrace;
+class  SiteViewer;
+class  QTextEdit;
+class  QPyCHEF;
+class  DeviceTable;
+class  QAssistantClient;
+class  BmlSelectionDialog;
+class  InitCondDialogLF;
+class  QSqlDatabase;
+class  CF_Editor;
 
-class QBml;
-class QBmlRoot;
-class CHEFPlotMain;
-class Tracker;
-class RayTrace;
-class SiteViewer;
-class QTextEdit;
-class QPyCHEF;
-class DeviceTable;
-class QAssistantClient;
-class BmlSelectionDialog;
-class InitCondDialogLF;
-
-
-#include "messages.h"
-
-//template<> class Messages;
 
 
 // Utility classes
@@ -244,17 +249,24 @@ private:
   RayTrace*           _traceWidget;
   SiteViewer*         _siteWidget;
  
-  Messages<>*                      _messages_stdout;
-  Messages<>*                      _messages_stderr;
+  Messages<0>*                      _messages_stdout;
+  Messages<1>*                      _messages_stdwar;
+  Messages<2>*                      _messages_stderr;
 
+  std::ostream *                   _p_messages_stdout_stream;
+  std::ostream *                   _p_messages_stdwar_stream;
+  std::ostream *                   _p_messages_stderr_stream;
+  QTextEdit*                       _messages;
+
+  DbConnectDialog*                 _dbconnect_dlg;
+  DbRetrieveDialog*                _dbretrieve_dlg;
+  QSqlDatabase*                    _default_db; 
+ 
   InitCondDialogLF*                _initCondDialogLF;       
   InitCondDialogLF*                _initCondDialogDisp;     
   InitCondDialogLF*                _initCondDialogMoments;  
 
 
-  std::ostream *                   _p_messages_stdout_stream;
-  std::ostream *                   _p_messages_stderr_stream;
-  QTextEdit*                       _messages;
   DeviceTable*                     _devices;
   QAssistantClient*                _assistanthelp;
   BmlSelectionDialog*              _bmlSelectionDialog;
@@ -323,6 +335,8 @@ signals:
    void _fileSaveAs();
    void _fileEditorSaveAs();
    void _fileEditorSave();
+   void _databaseConnect();
+   void _databaseRetrieve();
    void _editFindFilter();
    void _editSelectAll();
    void _editSelectNone();
@@ -380,6 +394,7 @@ signals:
    void _windowsMinimizeAll();
    void _windowsTile();
    void _windowsDefaultLayout();
+   void _handleDBConnection( const DbConnectStruct& st );
    void _exit();
 
    void _do_nothing();
@@ -394,6 +409,10 @@ signals:
    void _disableMenus();
    void _enableMenus();
 
+ private:
+
+   void _parseEditorPython( CF_Editor* editor );
+   void _parseEditorMAD8( CF_Editor* editor );
 
      
 };
