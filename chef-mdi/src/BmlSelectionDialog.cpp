@@ -25,7 +25,7 @@
 ******* is protected under the U.S. and Foreign Copyright Laws. 
 ******* URA/FNAL reserves all rights.
 *******                                                                
-**************************************************************************
+**************************************************************************/
 
 #include <BmlSelectionDialog.h>
 #include <bmlfactory.h>

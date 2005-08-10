@@ -25,7 +25,7 @@
 ******* is protected under the U.S. and Foreign Copyright Laws. 
 ******* URA/FNAL reserves all rights.
 *******                                                                
-**************************************************************************
+**************************************************************************/
 
 #ifndef BMLSELECTIONDIALOG_H
 #define BMLSELECTIONDIALOG_H
