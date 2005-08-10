@@ -1,26 +1,42 @@
-/**********************************************************************/
-/*                                                                    */
-/* File:           CHEFGUI.cpp                                        */
-/* Authors:                                                           */
-/*                 Leo Michelotti                                     */
-/*                 michelotti@fnal.gov                                */
-/*                                                                    */
-/*                 Jean-Francois Ostiguy                              */
-/*                 ostiguy@fnal.gov                                   */
-/*                                                                    */
-/*                                                                    */
-/* Creation Date:  August 2004                                        */
-/* Revision Date:  July,  2005                                        */
-/*   - added five slots: _editEditElement                             */
-/*                       _editFlatten                                 */
-/*                       _editMisalign                                */
-/*                       _editNewOrder                                */
-/*                       _pushParticles                               */
-/*   - LPJM                                                           */
-/*                                                                    */
-/* Copyright:      (C) URA/Fermilab                                   */
-/*                                                                    */
-/**********************************************************************/
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******
+******  CHEF:      An application layered on the Beamline/mxyzptlk
+******             class libraries.
+******
+******  File:      CHEFGUI.h
+******
+******  Copyright (c) Universities Research Association, Inc.
+******                All Rights Reserved
+******
+******  Authors:   Leo Michelotti         michelotti@fnal.gov
+******             Jean-Francois Ostiguy  ostiguy@fnal.gov
+******             Fermilab
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
+******* Creation Date:  August 2004                                      
+******* Revision Date:  July,  2005 
+*******                                      
+******* - added five slots: _editEditElement                            
+*******                     _editFlatten                              
+*******                     _editMisalign                               
+*******                     _editNewOrder                               
+*******                     _pushParticles                              
+*******  - LPJM 
+*******                                                         
+/***************************************************************************
+
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -28,17 +44,20 @@
 #include <istream>
 #include <streambuf>
 
-#include "CHEFGUI.h"
-#include "filters.h"
-#include "BeamlineBrowser.h"
-#include "BmlSelectionDialog.h"
-#include "InitCondDialogLF.h"
-#include "EditDialog.h"
-#include "DistributionWidget.h"
-#include "appworkspace.h"
-#include "about.h"
+#include <CHEFGUI.h>
+#include <filters.h>
+#include <BeamlineBrowser.h>
+#include <BmlSelectionDialog.h>
+#include <InitCondDialogLF.h>
+#include <EditDialog.h>
+#include <DistributionWidget.h>
+#include <DbConnectDialog.h>
+#include <DbRetrieveDialog.h>
+#include <appworkspace.h>
+#include <about.h>
 
 #include <GenericException.h>
+#include <ParserException.h>
 #include <BmlUtil.h>
 
 #include <qapplication.h>
@@ -51,6 +70,8 @@
 #include <qsizepolicy.h>
 #include <qassistantclient.h>
 #include <qaction.h>
+#include <qsqldatabase.h>
+
 #include <CF_Editor.h>
 #include <qpychef.h>
 #include <devicetable.h>
@@ -62,6 +83,9 @@
 #include <MomentsFncData.h>
 
 #include <chefplotmain.h>
+#include <DbConnectDialog.h>
+
+#include <iosetup.h>
 
 extern beamline* DriftsToSlots( /* const */ beamline& original );
 
@@ -154,7 +178,7 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
 
    // initialize the Message window and the associated Message io
    // --------------------------------------------------------
-
+ 
      _messages  = new QTextEdit(_centralWidget, "Messages");
      _messages->setCaption("Messages");
      _messages->setFont(QFont("MiscFixed"));
@@ -162,17 +186,22 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
      _messages->installEventFilter(_eventfilter);
 
 
-     //_messages_stdout = new Messages<>(_messages);
-     //_messages_stderr = new Messages<>(_messages);
+     _messages_stdout = new Messages<0>(_messages);
+     _messages_stdwar = new Messages<1>(_messages);
+     _messages_stderr = new Messages<2>(_messages);
 
-     //_p_messages_stdout_stream = new std::ostream( _messages_stdout );
-     //_p_messages_stderr_stream = new std::ostream( _messages_stderr );
-
-     _messages->append( QString("CHEF (Win32) Version 1.0 (Beta)") );
-     _messages->append( QString("URA/Fermilab, All Rights Reserved.\n") );
-
-     // *_p_messages_stdout_stream  << "This is a test message to stdout !!!!" << std::endl;
-     // *_p_messages_stderr_stream  << "This is a test message to stderr !!!!" << std::endl;
+     _p_messages_stdout_stream = new std::ostream( _messages_stdout ); 
+     _p_messages_stdwar_stream = new std::ostream( _messages_stdwar ); 
+     _p_messages_stderr_stream = new std::ostream( _messages_stderr );
+  
+#ifdef _WIN32
+     _messages->append( QString("CHEF (Win32) Beta Version, July 2005)") );
+#else
+     _messages->append( QString("CHEF (Unix/Linux) Beta Version,  July 2005)") );
+#endif
+     _messages->append( QString("(C) URA/Fermilab, All Rights Reserved.\n") );
+    
+     iosetup(_p_messages_stdout_stream, _p_messages_stdwar_stream);
 
      windowsMessagesAction->setOn(true);
 
@@ -196,6 +225,27 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
      windowsDevicesAction->setOn(true);
 
 
+   // initialize the Database support
+   //---------------------------------
+
+#if 0
+     // there seems to be a bug in Qt when windows with a fixed size are displayed in a 
+     // QWorkspace.
+ 
+    _dbconnect_dlg  = new DbConnectDialog(  dynamic_cast<QWorkspace*>(_centralWidget), 
+                                            "Database Connection");  
+    _dbretrieve_dlg = new DbRetrieveDialog( dynamic_cast<QWorkspace*>(_centralWidget), 
+                                            "Retrieve Data from Database");
+#endif
+    _dbconnect_dlg  = new DbConnectDialog( 0, "Database Connection");  
+    _dbretrieve_dlg = new DbRetrieveDialog(0, "Retrieve Data from Database");
+
+    connect( _dbconnect_dlg, SIGNAL( buttonOkClicked(const DbConnectStruct&)    ), 
+             this,             SLOT(_handleDBConnection(const DbConnectStruct&) ) );
+
+    _default_db = 0;
+
+    databaseRetrieveDataAction->setEnabled(false);
 
    // initialize the Text Editor
    // --------------------------
@@ -292,6 +342,15 @@ void CHEFGUI::_openFile()
       {
         bfp.reset(new bmlfactory(s.ascii(), (char*)0 )); // cast needed to avoid ambiguity
       }
+      catch (ParserException& e)
+      {
+        QMessageBox mb(QString("Error"), QString( e.what() ), 
+                    QMessageBox::Critical, 
+                    QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+        mb.show();
+        while (mb.isVisible())  qApp->processEvents(); 
+        return;
+      }
       catch (GenericException& e)
       {
         QMessageBox::information( 0, "CHEF: ERROR", e.what() );
@@ -302,7 +361,7 @@ void CHEFGUI::_openFile()
 
         //  instantiate only the n last beamlines defined in the mad file.
 
-        _bmlSelectionDialog->setList( beamline_list );
+        _bmlSelectionDialog->setList( beamline_list, bfp->getUseStatementBeamlineName() );
         _bmlSelectionDialog->setBeamParameters( *bfp.get() );
         _bmlSelectionDialog->show();
 
@@ -471,51 +530,79 @@ CF_Editor* editor = dynamic_cast<CF_Editor*>( dynamic_cast<QWorkspace*>(_central
 
 }
 
-void CHEFGUI::editParse()
+void 
+CHEFGUI::editParse()
 {
-
+ 
   CF_Editor* editor = 0;
+  
+  // **** determine which editor (if any) has focus; 
 
   QWidgetList wlist = dynamic_cast<QWorkspace*>(centralWidget())->windowList(QWorkspace::StackingOrder);
 
   for (QWidget* w = wlist.first(); w; w = wlist.next())
   {
-   if ( dynamic_cast<QWorkspace*>(_centralWidget)->activeWindow() == w )
+   if ( dynamic_cast<QWorkspace*>(_centralWidget)->activeWindow() == w ) 
     {
-      if ( QString((w)->name()) == QString("MAD8 Editor") )
-      {
-         editor = dynamic_cast<CF_Editor*>(w);
+      if ( QString((w)->name()) == QString("MAD8 Editor") ) 
+      { 
+	if ( editor = dynamic_cast<CF_Editor*>(w) ) _parseEditorMAD8( editor );
+      }
+      if ( QString((w)->name()) == QString("Python Editor") ) 
+      { 
+        if( editor = dynamic_cast<CF_Editor*>(w) )  _parseEditorPython(editor);
       }
     }
   }
+  return;
+}
+ 
 
-  if (!editor) { return; }
-
+void 
+CHEFGUI::_parseEditorMAD8( CF_Editor* editor )
+{
   std::auto_ptr<bmlfactory> bfp;
-
-  try
+ 
+  try 
   {
-    bfp.reset( new bmlfactory( editor->caption().ascii(), editor->text().ascii()) ); // the 2nd argument is the buffer. It is used when it is != 0
+    bfp.reset( new bmlfactory( editor->caption().ascii(), editor->text().ascii()) ); // the 2nd argument is the actual text buffer. 
+                                                                                     // It is used only if != 0  
+  }
+
+  catch (ParserException& e)
+  {
+     QMessageBox mb(QString("Error"), QString( e.what() ), 
+                    QMessageBox::Critical, 
+                    QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+     mb.show();
+     while (mb.isVisible())  qApp->processEvents(); 
+ 
+     if (e._inmemory) { // may not be in memory if other files have been included
+         
+      editor->setSelection( e._lineno-1, 0, e._lineno, 0,  1); 
+      editor->setSelectionAttributes (1, QColor("Red"), false); 
+     }
+
+     return;
   }
   catch (GenericException& e)
   {
-    QMessageBox mb(QString("Error"), QString( e.what() ),
-                 QMessageBox::Critical,
+    QMessageBox mb(QString("Error"), QString( e.what() ), 
+                 QMessageBox::Critical, 
                   QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
     mb.show();
-    while (mb.isVisible())  qApp->processEvents();
-
-     editor->setSelectionAttributes ( 1, QColor("Red"), true ); // last argument for inverted text
-     editor->setSelection( e.lineNumber()-1, 0, e.lineNumber(), 0, 1); // last argument is selection no
-
+    while (mb.isVisible())  qApp->processEvents(); 
+ 
     return;
+
+
   }
 
   std::list<std::string>& beamline_list = bfp->getBeamlineList();
+       
+  //  instantiate only the n last beamlines defined in the mad file. 
 
-  //  instantiate only the n last beamlines defined in the mad file.
-
-  _bmlSelectionDialog->setList( beamline_list );
+  _bmlSelectionDialog->setList( beamline_list, bfp->getUseStatementBeamlineName() );
   _bmlSelectionDialog->setBeamParameters( *bfp.get() );
   _bmlSelectionDialog->show();
 
@@ -523,7 +610,7 @@ void CHEFGUI::editParse()
 
   double brho = _bmlSelectionDialog->getBRHO();
 
-  _bmlSelectionDialog->getSelected(); // this function alters beamline_list
+  _bmlSelectionDialog->getSelected(); // this function alters beamline_list 
 
   std::list<std::string>::iterator it;
   int nlines = 0;
@@ -532,7 +619,7 @@ void CHEFGUI::editParse()
            beamline* bmlPtr = bfp->create_beamline( (*it).c_str() , brho);
 
           _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-          _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called)
+          _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called) 
                                                 //when the context is destroyed;
           _contextList.insert( _p_currBmlCon );
            _p_vwr->displayBeamline( _p_currBmlCon );
@@ -540,6 +627,17 @@ void CHEFGUI::editParse()
   }
 }
 
+
+void 
+CHEFGUI::_parseEditorPython( CF_Editor* editor )
+{
+ 
+  //  FIXME ! QPyCHEF needs to be fixed
+  //  _interpreter->runBuffer( editor->text().ascii() );
+
+
+
+}
 
 void CHEFGUI::_editFindFilter()
 {
@@ -3131,6 +3229,47 @@ void CHEFGUI::fileEditMAD8()
                      _centralWidget->height()-30);
       editor->move( _p_vwr->frameGeometry().width()+10, 0);
       editor->show();
+
+}
+
+
+void 
+CHEFGUI::_databaseConnect() { 
+
+  _dbconnect_dlg->show();
+
+}
+
+void CHEFGUI::_handleDBConnection( const DbConnectStruct& st )
+{
+ 
+  if (_default_db ) { 
+     QSqlDatabase::removeDatabase(_default_db); // drop existing connection
+     _default_db = 0;
+  }
+
+   _default_db = QSqlDatabase::addDatabase( st.driver );
+   _default_db->setDatabaseName(st.dbname ); 
+   _default_db->setUserName(st.username);
+   _default_db->setPassword(st.passwd);
+   _default_db->setHostName(st.hostname); 
+
+   if ( ! _default_db->open() ) {
+      QMessageBox::warning(this,"Database Connection", "Database Connection Failed");
+      databaseRetrieveDataAction->setEnabled(false);
+   }   
+   else {  
+      QMessageBox::information(this,"Database Connection", "Database Connection Successful"); 
+      databaseRetrieveDataAction->setEnabled(true);
+   }
+}
+
+
+void 
+CHEFGUI::_databaseRetrieve(){ 
+
+  if (_default_db )  
+     _dbretrieve_dlg->show();
 
 }
 
