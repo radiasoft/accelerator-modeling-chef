@@ -1,7 +1,35 @@
-#include "BmlSelectionDialog.h"
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******
+******  CHEF:      An application layered on the Beamline/mxyzptlk
+******             class libraries.
+******
+******  File:      BmlSelectionDialog.cpp
+******
+******  Copyright (c) Universities Research Association, Inc.
+******                All Rights Reserved
+******
+******  Author:    Jean-Francois Ostiguy
+******             Fermilab
+******             ostiguy@fnal.gov
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
+**************************************************************************
 
-#include "bmlfactory.h"
-#include "GenericException.h"
+#include <BmlSelectionDialog.h>
+#include <bmlfactory.h>
+#include <GenericException.h>
 
 #include <qlistbox.h>
 #include <qlabel.h>
@@ -47,20 +75,37 @@ BmlSelectionDialog::BmlSelectionDialog(QWidget* parent, const char* name, WFlags
   
 
 void 
-BmlSelectionDialog::setList( std::list<std::string>& bmllist) {
+BmlSelectionDialog::setList( std::list<std::string>& bmllist, const char* use_name) {
 
   _bmllist = &bmllist;   
   
   beamlines_listBox->clear();
 
+  
   list<string>::reverse_iterator it;
 
+  QListBoxText* item          = 0;
+  QListBoxText* selected_item = 0;
+
   for ( it = bmllist.rbegin(); it != bmllist.rend(); it++) {
+     
+     item = new QListBoxText( QString((*it).c_str() ));
+     beamlines_listBox->insertItem( item , -1 );
 
-     beamlines_listBox->insertItem( new QListBoxText( QString((*it).c_str() )), -1 );
+     if ( QString( use_name ).upper() == item->text().upper() ) { // bml names are not case sensitive ! 
+       selected_item = item;
+     }   
   };
+ 
+  if (selected_item) 
+     beamlines_listBox->setSelected ( selected_item, true ); 
+  else 
+     beamlines_listBox->setSelected ( 0, true );             // the first item is the last defined beamline
 
-  beamlines_textLabel->setText( QString("A total of %1 beamlines are defined in this file.\n Please select one or more from the list below.").arg( _bmllist->size() ) );
+  beamlines_textLabel->setText( QString("A total of %1 beamlines are defined in this file.\n Select one or more from the list below.").arg( _bmllist->size() ) );
+
+
+
 
 }
 
@@ -93,11 +138,12 @@ BmlSelectionDialog::setBeamParameters(const bmlfactory& bf)
 
   const varstructtype* vp = &vars[0];
 
+#if 0
   while ( vp->name ) 
   {
     vp->cb->setChecked(false);
 
-    if (bf.variableIsDefined( vp->name ) )
+    if (bf.variableIsDefined( vp->name ) ) // THIS NEEDS TO GO AWAY !
       {
         computeBeamParameters( bf.getVariableValue(vp->name), vp->type );
         vp->cb->setChecked(true);
@@ -106,6 +152,12 @@ BmlSelectionDialog::setBeamParameters(const bmlfactory& bf)
     
     vp++;
   };
+#endif
+  
+  computeBeamParameters( bf.getBrho(), BRHO );
+  vp[1].cb->setChecked(true);
+  defined = true; 
+
 
   if (!defined) {
 
@@ -155,7 +207,7 @@ BmlSelectionDialog::computeBeamParameters( double value, int datatype)
 {
 
 
- const double m_p = 0.93827231;
+ const double m_p = 0.93827231; // THIS DOES NOT BELONG HERE
 
  switch (datatype) 
  {
