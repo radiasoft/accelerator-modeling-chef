@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -8,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      rfcavity.cc
+******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -32,6 +29,9 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iomanip>
 
@@ -51,8 +51,10 @@ rfcavity::rfcavity( const char* name_arg)
   sin_phi_s = 0.0;
   Q = 0.0;
   R = 0.0;
+  h = -1.0;
 }
   
+
 rfcavity::rfcavity(double lng_arg,    // length [m]
                    double w_rf_arg,   // rf frequency [Hz]
                    double eV_arg,     // rf voltage   [eV]
@@ -67,7 +69,9 @@ rfcavity::rfcavity(double lng_arg,    // length [m]
   sin_phi_s = sin(phi_s);
   Q = Q_arg;
   R = R_arg;
+  h = -1.0;
 }
+
 
 rfcavity::rfcavity( char* name_arg,    // name
                     double lng_arg,    // length [m]
@@ -84,6 +88,7 @@ rfcavity::rfcavity( char* name_arg,    // name
   sin_phi_s = sin(phi_s);
   Q = Q_arg;
   R = R_arg;
+  h = -1.0;
 }
 
 
@@ -95,6 +100,7 @@ rfcavity::rfcavity( const rfcavity& x )
  sin_phi_s = x.sin_phi_s;
  Q         = x.Q;
  R         = x.R;
+ h         = x.h;
 }
 
 
@@ -132,6 +138,52 @@ const char* rfcavity::Type() const
 }
 
 
+void rfcavity::setHarmonicNumber( double n )
+{
+  if( 0 < n ) {
+    h = n;
+  }
+}
+
+
+void rfcavity::setHarmonicNumber( int n )
+{
+  this->setHarmonicNumber( (double) n );
+}
+
+
+void rfcavity::setFrequency( double f )
+{
+  if( 0 < f ) {
+    w_rf = MATH_TWOPI*f;
+  }
+}
+
+
+void rfcavity::setFrequencyRelativeTo( double f )
+{
+  if( (0 < f) && (0 < h) ) {
+    MATH_TWOPI*( ((double) h)*f );
+  }
+}
+
+
+void rfcavity::setRadialFrequency( double omega )
+{
+  if( 0 < omega ) {
+    w_rf = omega;
+  }
+}
+
+
+void rfcavity::setRadialFrequencyRelativeTo( double omega )
+{
+  if( (0 < omega) && (0 < h) ) {
+    ((double) h)*omega;
+  }
+}
+
+
 // **************************************************
 //   class thinrfcavity 
 // **************************************************
@@ -142,6 +194,7 @@ thinrfcavity::thinrfcavity(char *name_arg) : bmlnElmnt(name_arg, 0.0, 0.0)
   sin_phi_s = 0.0;
   Q = 0.0;
   R = 0.0;
+  h = -1.0;
 }
   
 thinrfcavity::thinrfcavity(double w_rf_arg,   // rf frequency [Hz]
@@ -157,6 +210,7 @@ thinrfcavity::thinrfcavity(double w_rf_arg,   // rf frequency [Hz]
   sin_phi_s = sin(phi_s);
   Q = Q_arg;
   R = R_arg;
+  h = -1.0;
 }
 
 thinrfcavity::thinrfcavity(char * name_arg,   // name
@@ -173,6 +227,7 @@ thinrfcavity::thinrfcavity(char * name_arg,   // name
   sin_phi_s = sin(phi_s);
   Q = Q_arg;
   R = R_arg;
+  h = -1.0;
 }
 
 thinrfcavity::thinrfcavity( const thinrfcavity& x ) 
@@ -183,6 +238,7 @@ thinrfcavity::thinrfcavity( const thinrfcavity& x )
  sin_phi_s = x.sin_phi_s;
  Q         = x.Q;
  R         = x.R;
+ h         = x.h;
 }
 
 
@@ -216,6 +272,52 @@ istream& thinrfcavity::readFrom(istream& is)
 const char* thinrfcavity::Type() const 
 {
   return "thinrfcavity"; 
+}
+
+
+void thinrfcavity::setHarmonicNumber( double n )
+{
+  if( 0 < n ) {
+    h = n;
+  }
+}
+
+
+void thinrfcavity::setHarmonicNumber( int n )
+{
+  this->setHarmonicNumber( (double) n );
+}
+
+
+void thinrfcavity::setFrequency( double f )
+{
+  if( 0 < f ) {
+    w_rf = MATH_TWOPI*f;
+  }
+}
+
+
+void thinrfcavity::setFrequencyRelativeTo( double f )
+{
+  if( (0 < f) && (0 < h) ) {
+    MATH_TWOPI*( ((double) h)*f );
+  }
+}
+
+
+void thinrfcavity::setRadialFrequency( double omega )
+{
+  if( 0 < omega ) {
+    w_rf = omega;
+  }
+}
+
+
+void thinrfcavity::setRadialFrequencyRelativeTo( double omega )
+{
+  if( (0 < omega) && (0 < h) ) {
+    ((double) h)*omega;
+  }
 }
 
 

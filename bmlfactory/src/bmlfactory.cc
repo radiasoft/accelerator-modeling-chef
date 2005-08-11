@@ -683,11 +683,17 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       char   name[BEL_NAME_LENGTH];
       
       lbel = new beamline( bel->name_ );
+      // NOTE: I cannot set the frequency of the rf cavity from harmonic number
+      // until the revolution frequency is known; i.e. until the beamline
+      // model is instantiated.  Thus, the rf cavity must be completed
+      // by a registration visitor before being used.
+      thinrfcavity* rfcPtr = new thinrfcavity( add_str( name, bel->name_, "center" ), 0.0, volt*1.0e6, lag*2*M_PI, 0.0, shunt );
+      rfcPtr->setHarmonicNumber( harmon );
       ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new thinrfcavity( add_str( name, bel->name_, "center" ), harmon, volt*1.0e6, lag*2*M_PI, 0.0, shunt ) );
+      ((beamline*)lbel)->append( (bmlnElmnt*) rfcPtr );
       ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
       
-         // Ignored parameters: BETRF, PG, TFILL
+      // Ignored parameters: BETRF, PG, TFILL
       
       break;
     }

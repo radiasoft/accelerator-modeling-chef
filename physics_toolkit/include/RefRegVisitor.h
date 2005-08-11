@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0
 ******                                    
 ******  File:      RefRegVisitor.h
+******  Version:   1.1
 ******                                                                
 ******  Copyright (c) 2003  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -69,6 +69,7 @@ class RefRegVisitor : public BmlVisitor
   void visitCF_sbend( CF_sbend* );
   void visitSbend( sbend* );
   void visitRbend( rbend* );
+  void visitThinrfcavity( thinrfcavity* );
 
   int  getErrorCode() const;
 
@@ -78,6 +79,7 @@ class RefRegVisitor : public BmlVisitor
  private:
   Particle* _prtnPtr;
   int       _errorCode;
+  double    _revolutionFrequency;
 };
 
 #endif // REFREGVISITOR_H

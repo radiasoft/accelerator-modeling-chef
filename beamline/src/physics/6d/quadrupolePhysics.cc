@@ -55,11 +55,13 @@ void quadrupole::TPOT_Prop::set_n( int m )
 
 int quadrupole::TPOT_Prop::operator()( bmlnElmnt* pbe, Particle& p ) {
   ((quadrupole*) pbe)->p_bml->propagate( p );
+  p.set_cdt( p.get_cdt() - pbe->getReferenceTime() );
   return 0;
 }
 
 int quadrupole::TPOT_Prop::operator()( bmlnElmnt* pbe, JetParticle& p ) {
   ((quadrupole*) pbe)->p_bml->propagate( p );
+  p.set_cdt( p.get_cdt() - pbe->getReferenceTime() );
   return 0;
 }
 

@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      rfcavity.h
+******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -39,19 +39,24 @@
 class rfcavity : public bmlnElmnt
 {
 private:
-  double w_rf;                  // RF frequency [MHz]  // ??? What??
+  double w_rf;                  // RF frequency [Hz]
   double phi_s;                 // synchronous phase
   double sin_phi_s;             // sine of synchronous phase
   // The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
   double Q;                     // quality factor
   double R;                     // shunt impedance
+  double h;                     // harmonic number 
+                                //   = ratio cavity frequency to
+                                //     revolution frequency of a ring
+                                //   Note: this is *NOT* a cavity attribute,
+                                //   but is included for convenience.
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 
 public:
   rfcavity( const char* = "NONAME" ); // Name
   rfcavity( double,   // length [m]
-            double,   // RF frequency [MHz]
+            double,   // RF frequency [Hz]
             double,   // max energy gain per turn [eV] (strength)
             double,   // synchronous phase [radians]
             double,   // Q
@@ -59,7 +64,7 @@ public:
           );
   rfcavity( char*,    // Name
             double,   // length [m]
-            double,   // RF frequency [MHz]
+            double,   // RF frequency [Hz]
             double,   // max energy gain per turn [eV] (strength)
             double,   // synchronous phase [radians]
             double,   // Q
@@ -84,6 +89,14 @@ public:
   inline double getFrequency() const { return w_rf; }
   inline double getQ() const { return Q; }
   inline double getR() const { return R; }
+  inline double getHarmonicNumber() const { return h; }
+
+  void setHarmonicNumber( int );
+  void setHarmonicNumber( double );
+  void setFrequency( double );
+  void setFrequencyRelativeTo( double );
+  void setRadialFrequency( double );
+  void setRadialFrequencyRelativeTo( double );
 };
 
 
@@ -95,25 +108,30 @@ public:
 class thinrfcavity : public bmlnElmnt
 {
 private:
-  double w_rf;                  // RF frequency [MHz]  // ??? What??
+  double w_rf;                  // RF frequency [Hz]
   double phi_s;                 // synchronous phase
   double sin_phi_s;             // sine of synchronous phase
   // The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
   double Q;                     // quality factor
   double R;                     // shunt impedance
+  double h;                     // harmonic number 
+                                //   = ratio cavity frequency to
+                                //     revolution frequency of a ring
+                                //   Note: this is *NOT* a cavity attribute,
+                                //   but is included for convenience.
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 
 public:
   thinrfcavity( char * ); // Name
-  thinrfcavity( double,   // RF frequency [MHz]
+  thinrfcavity( double,   // RF frequency [Hz]
                 double,   // max energy gain per turn [eV] (strength)
                 double,   // synchronous phase [radians]
                 double,   // Q
                 double    // R shunt impedance
                 );
   thinrfcavity( char *,   // Name
-                double,   // RF frequency [MHz]
+                double,   // RF frequency [Hz]
                 double,   // max energy gain per turn [eV] (strength)
                 double,   // synchronous phase [radians]
                 double,   // Q
@@ -138,6 +156,14 @@ public:
   inline double getFrequency() const { return w_rf; }
   inline double getQ() const { return Q; }
   inline double getR() const { return R; }
+  inline double getHarmonicNumber() const { return h; }
+
+  void setHarmonicNumber( int );
+  void setHarmonicNumber( double );
+  void setFrequency( double );
+  void setFrequencyRelativeTo( double );
+  void setRadialFrequency( double );
+  void setRadialFrequencyRelativeTo( double );
 };
 
 

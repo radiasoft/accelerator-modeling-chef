@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
 ******                                    
 ******  File:      RefRegVisitor.cc
+******  Version:   1.1
 ******                                                                
 ******  Copyright (c) 2003  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -49,12 +49,15 @@
 #endif
 
 #include "RefRegVisitor.h"
+#include "PhysicsConstants.h"
 #include "CF_rbend.h"
 #include "CF_sbend.h"
 #include "rbend.h"
 #include "sbend.h"
 #include "Slot.h"
+#include "rfcavity.h"
 #include "Particle.h"
+#include "BeamlineIterator.h"
 
 // Static error codes
 
@@ -65,14 +68,18 @@ using namespace std;
 // Constructors
 
 RefRegVisitor::RefRegVisitor( const Particle& p )
-: _errorCode(OKAY)
+:   _prtnPtr(0)
+  , _errorCode(OKAY)
+  , _revolutionFrequency(-1.0)
 {
   _prtnPtr = p.Clone();
 }
 
 
 RefRegVisitor::RefRegVisitor( const RefRegVisitor& x )
-: _errorCode(x._errorCode)
+:   _prtnPtr(0)
+  , _errorCode(OKAY)
+  , _revolutionFrequency(x._revolutionFrequency)
 {
   _prtnPtr = x._prtnPtr->Clone();
 }
@@ -95,6 +102,22 @@ int RefRegVisitor::getErrorCode() const
 void RefRegVisitor::visitBeamline( beamline* x )
 {
   x->setEnergy( _prtnPtr->Energy() );  // not just reference energy
+
+  // Preliminary traversal in case there are
+  // RF cavities in the line.
+  if( _revolutionFrequency < 0 ) {
+    Particle* copy = _prtnPtr->Clone();
+    copy->set_cdt(0);
+    bmlnElmnt* q;
+    DeepBeamlineIterator dbi( x );
+    while((  q = dbi++  )) {
+      q->setReferenceTime(0);
+      q->propagate( *copy );
+    }
+    _revolutionFrequency = PH_MKS_c /( copy->get_cdt() );
+    delete copy;
+  }
+
   this->BmlVisitor::visitBeamline( x );
 }
 
@@ -160,6 +183,16 @@ void RefRegVisitor::visitRbend( rbend* x )
   this->visitBmlnElmnt( ((bmlnElmnt*) x) );
   x->setExitAngle( *_prtnPtr );
   x->setPropFunction( propPtr );
+}
+
+
+void RefRegVisitor::visitThinrfcavity( thinrfcavity* x ) 
+{
+  if( x->getFrequency() < 1.0e-9 ) {
+    if( 0 < x->getHarmonicNumber() ) {
+      x->setFrequencyRelativeTo( _revolutionFrequency );
+    }
+  }
 }
 
 
