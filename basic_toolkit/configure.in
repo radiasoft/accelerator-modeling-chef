@@ -1,4 +1,15 @@
+#--------------------------------------------------------------------
+# configure.in for basic_toolkit
+#
+# Authors:  Enrico Ng (Summer Intern) 
+#
+#           Jean-Francois Ostiguy
+#           ostiguy@fnal.gov
+#
 # Process this file with autoconf to produce a configure script.
+#
+#-------------------------------------------------------------------
+
 AC_INIT(src/Distribution.cc)
 AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER([config.h])
@@ -31,8 +42,8 @@ if test "x$set_CXXFLAGS" != "x" && test "x$set_CFLAGS" != "x"; then
 	AC_SUBST(CFLAGS)
 	AC_SUBST(CXXFLAGS)
 elif test "x${GXX}" = "xyes" || test "x${GCC}" = "xyes"; then
-   CFLAGS="-g"
-   CXXFLAGS="-g -O2 -pipe -fpermissive -Wno-deprecated"
+   CFLAGS="${CFLAGS} -g"
+   CXXFLAGS="${CXXFLAGS} -g -O2 -pipe -fpermissive -Wno-deprecated"
    AC_SUBST(CFLAGS)
    AC_SUBST(CXXFLAGS)
 elif test "x${CXX}" = "xCC"; then
@@ -52,8 +63,8 @@ if test "x$set_CXXFLAGS" != "x" && test "x$set_CFLAGS" != "x"; then
 ##	AC_SUBST(CFLAGS)
 ##	AC_SUBST(CXXFLAGS)
 elif test "x${GXX}" = "xyes" || test "x${GCC}" = "xyes"; then
-   CFLAGS=${CFLAGS} "-g -O2"
-   CXXFLAGS=${CXXFLAGS} "-g -O2 -pipe -fpermissive -Wno-deprecated"
+   CFLAGS="${CFLAGS} -g -O2"
+   CXXFLAGS="${CXXFLAGS} -g -O2 -pipe -fpermissive -Wno-deprecated"
    AC_SUBST(CFLAGS)
    AC_SUBST(CXXFLAGS)
 elif test "x${CXX}" = "xCC"; then
