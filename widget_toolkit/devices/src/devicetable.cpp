@@ -1,7 +1,37 @@
+***************************************************************************
+***************************************************************************
+***************************************************************************
+******                                                               ******   
+******  Widget Toolkit:                                              ******
+******                                                               ******
+******  A collection of Qt widgets layered on the Beamline/mxyzptlk  ****** 
+******  class libraries.                                             ****** 
+******                                                               ****** 
+******  File:  devicetable.cpp                                       ****** 
+******                                                               ******
+******  Copyright (c) Universities Research Association, Inc.        ****** 
+******                All Rights Reserved                            ****** 
+******                                                               ****** 
+******  Author:    Jean-Francois Ostiguy                             ******
+******             Fermilab                                          ****** 
+******             ostiguy@fnal.gov                                  ****** 
+******                                                               ******  
+******  Usage, modification, and redistribution are subject to terms ******
+******  of the License supplied with this software.                  ****** 
+******                                                               ******
+******  Software and documentation created under                     ****** 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.    ****** 
+******  The U.S. Government retains a world-wide non-exclusive,      ****** 
+******  royalty-free license to publish or reproduce documentation   ****** 
+******  and software for U.S. Government purposes. This software     ****** 
+******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
+******  URA/FNAL reserves all rights.                                ****** 
+******                                                               ******
+**************************************************************************/
+
 #include <iostream>
 #include <sstream>
 #include <string>
-#include "devicetablebase.h"
 #include <qmessagebox.h>
 #include <qapplication.h>
 #include <qheader.h>
@@ -10,7 +40,7 @@
 #include <qutexr/xrclient.h>
 #include <iostream>
 
-#include "devicetable.h"
+#include <devicetable.h>
 
 
 #define NAME       "XML-RPC  get device settings "
