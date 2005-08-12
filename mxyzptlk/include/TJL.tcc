@@ -1404,7 +1404,7 @@ template<typename T1, typename T2>
 ostream& operator<<( ostream& os, const TJL<T1,T2>& x ) 
 {
  dlist_traversor getNext( x._theList );
- int i;
+
  TJLterm<T1,T2>* p;
  dlink* q;
 
