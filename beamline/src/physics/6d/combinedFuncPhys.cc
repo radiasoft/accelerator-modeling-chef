@@ -36,17 +36,26 @@
 #include "combinedFunction.h"
 #include "Particle.h"
 
-void combinedFunction::localPropagate( Particle& p ) {
-
-  if( Propagator ) (*Propagator)   ( this, p );
-  else             p_bml->propagate( p );
+void combinedFunction::localPropagate( Particle& p ) 
+{
+  if( Propagator ) {
+    (*Propagator)( this, p );
+  }
+  else {
+    p_bml->propagate( p );
+    p.set_cdt( p.get_cdt() - _ctRef );
+  }
 
 }
 
-void combinedFunction::localPropagate( JetParticle& p ) {
-
-  if( Propagator ) (*Propagator)   ( this, p );
-  else             p_bml->propagate( p );
-
+void combinedFunction::localPropagate( JetParticle& p ) 
+{
+  if( Propagator ) {
+    (*Propagator)( this, p );
+  }
+  else {
+    p_bml->propagate( p );
+    p.set_cdt( p.get_cdt() - _ctRef );
+  }
 }
   
