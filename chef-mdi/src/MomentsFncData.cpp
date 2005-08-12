@@ -1,41 +1,83 @@
+***************************************************************************
+***************************************************************************
+***************************************************************************
+******                                                               ******   
+******  CHEF:      An application layered on the Beamline/mxyzptlk   ****** 
+******             class libraries.                                  ****** 
+******                                                               ****** 
+******  File:  CHEFGUI.cpp                                           ****** 
+******                                                               ******
+******  Copyright (c) Universities Research Association, Inc.        ****** 
+******                All Rights Reserved                            ****** 
+******                                                               ****** 
+******  Authors:                                                     ******
+******                                                               ******
+******              Jean-Francois Ostiguy                            ******
+******              Fermilab                                         ****** 
+******              ostiguy@fnal.gov                                 ****** 
+******                                                               ******  
+******              Leo Michelotti                                   ******
+******              Fermilab                                         ******
+******              michelotti@fnal.gov                              ****** 
+******                                                               ******
+******  Usage, modification, and redistribution are subject to terms ******
+******  of the License supplied with this software.                  ****** 
+******                                                               ******
+******  Software and documentation created under                     ****** 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.    ****** 
+******  The U.S. Government retains a world-wide non-exclusive,      ****** 
+******  royalty-free license to publish or reproduce documentation   ****** 
+******  and software for U.S. Government purposes. This software     ****** 
+******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
+******  URA/FNAL reserves all rights.                                ****** 
+******                                                               ******
+**************************************************************************/
+
 #include <fstream>
 #include <iomanip>
 #include <string>   // needed for strcat
 #include <math.h>
 
-#include "complexAddon.h"
-#include "bmlfactory.h"
-#include "MomentsFncData.h"
-#include "BeamlineContext.h"
+#include <complexAddon.h>
+#include <bmlfactory.h>
+#include <MomentsFncData.h>
+#include <BeamlineContext.h>
 
 #include <qapplication.h>
 #include <qwt/qwt_plot.h>
 #include <boost/shared_ptr.hpp>
-#include "chefplotmain.h"
+#include <chefplotmain.h>
 
-// This undef is needed because of the compiler.
+// This undef is needed because connect is defined by qt as a macro. Unfortunately, the string "connect" is 
+// also used in the std c++ library code.  
+
 #undef connect
 
 static double* dnull = 0;
 
 using namespace std;
 
-// External variable that has to be defined for the MAD parser
-// Already defined in CHEF.cc. This is a problem!!
-// madparser* mp = 0;
 
 
 MomentsFncData::MomentsFncData( BeamlineContext* bcp, std::ostream* stdoutstream, std::ostream* stderrstream)
-: _errorStreamPtr(stderrstream), _outputStreamPtr(stdoutstream),
-  _bmlConPtr(bcp), _deleteContext(false),
-  _plotType( betaPlot ),
+: 
+  _bmlConPtr(bcp), 
+  _deleteContext(false),
   _arraySize(0), 
   _azimuth(dnull),
-  _beta_H(dnull),  _beta_V(dnull),
-  _alpha_H(dnull), _alpha_V(dnull),
-  _inv_beta_H(dnull), _inv_beta_V(dnull),
-  _root_beta_H(dnull), _root_beta_V(dnull),
-  _disp_H(dnull), _disp_V(dnull)
+  _beta_H(dnull),  
+  _beta_V(dnull),
+  _inv_beta_H(dnull), 
+  _inv_beta_V(dnull),
+  _root_beta_H(dnull), 
+  _root_beta_V(dnull),
+  _alpha_H(dnull), 
+  _alpha_V(dnull),
+  _disp_H(dnull), 
+  _disp_V(dnull),
+  _plotType( betaPlot ),
+  _errorStreamPtr(stderrstream), 
+  _outputStreamPtr(stdoutstream)
 
 {
   this->_finishConstructor();
@@ -43,16 +85,24 @@ MomentsFncData::MomentsFncData( BeamlineContext* bcp, std::ostream* stdoutstream
 
 
 MomentsFncData::MomentsFncData( /* const */ beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream)
-: _errorStreamPtr(stderrstream), _outputStreamPtr(stdoutstream),
-  _bmlConPtr(0), _deleteContext(true),
-  _plotType( betaPlot ),
+: 
+  _bmlConPtr(0), 
+  _deleteContext(true),
   _arraySize(0), 
   _azimuth(dnull),
-  _beta_H(dnull),  _beta_V(dnull),
-  _alpha_H(dnull), _alpha_V(dnull),
-  _inv_beta_H(dnull), _inv_beta_V(dnull),
-  _root_beta_H(dnull), _root_beta_V(dnull),
-  _disp_H(dnull), _disp_V(dnull)
+  _beta_H(dnull),  
+  _beta_V(dnull),
+  _inv_beta_H(dnull), 
+  _inv_beta_V(dnull),
+  _root_beta_H(dnull), 
+  _root_beta_V(dnull),
+  _alpha_H(dnull), 
+  _alpha_V(dnull),
+  _disp_H(dnull), 
+  _disp_V(dnull),
+  _plotType( betaPlot ),
+  _errorStreamPtr(stderrstream), 
+  _outputStreamPtr(stdoutstream)
 
 {
   _bmlConPtr = new BeamlineContext( false, pBml );
@@ -81,17 +131,17 @@ MomentsFncData::_finishConstructor( )
   _disp_V      = boost::shared_array<double>( new double[_arraySize] );
 
   for( int i = 0; i < _arraySize; i++ ) {
-    _azimuth[i] = 0.0;
-    _beta_H[i] = 0.0;
-    _alpha_H[i] = 0.0;
-    _beta_V[i] = 0.0;
-    _alpha_V[i] = 0.0;
-    _inv_beta_H[i] = 0.0;
-    _inv_beta_V[i] = 0.0;
+    _azimuth[i]     = 0.0;
+    _beta_H[i]      = 0.0;
+    _alpha_H[i]     = 0.0;
+    _beta_V[i]      = 0.0;
+    _alpha_V[i]     = 0.0;
+    _inv_beta_H[i]  = 0.0;
+    _inv_beta_V[i]  = 0.0;
     _root_beta_H[i] = 0.0;
     _root_beta_V[i] = 0.0;
-    _disp_H[i] = 0.0;
-    _disp_V[i] = 0.0;
+    _disp_H[i]      = 0.0;
+    _disp_V[i]      = 0.0;
   }
 }
 

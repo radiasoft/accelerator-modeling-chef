@@ -1,9 +1,40 @@
+***************************************************************************
+***************************************************************************
+***************************************************************************
+******                                                               ******   
+******  CHEF:      An application layered on the Beamline/mxyzptlk   ****** 
+******             class libraries.                                  ****** 
+******                                                               ****** 
+******  File:                                                        ****** 
+******                                                               ******
+******  Copyright (c) Universities Research Association, Inc.        ****** 
+******                All Rights Reserved                            ****** 
+******                                                               ****** 
+******  Author:    Jean-Francois Ostiguy                             ******
+******             Fermilab                                          ****** 
+******             ostiguy@fnal.gov                                  ****** 
+******                                                               ******  
+******  Usage, modification, and redistribution are subject to terms ******
+******  of the License supplied with this software.                  ****** 
+******                                                               ******
+******  Software and documentation created under                     ****** 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.    ****** 
+******  The U.S. Government retains a world-wide non-exclusive,      ****** 
+******  royalty-free license to publish or reproduce documentation   ****** 
+******  and software for U.S. Government purposes. This software     ****** 
+******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
+******  URA/FNAL reserves all rights.                                ****** 
+******                                                               ******
+**************************************************************************/
+
 #include <iostream>
 #include <string>
 #include <appworkspace.h>
 
-// Note: widget->parentWidget() is necessary here. For MDI, The "parent" is actually a widget that simulates the
-// window decoration. The decoration of windows that have 0 as parent is the responsibilty of the X window manager. 
+// Note: widget->parentWidget() is necessary here. 
+// For MDI, The "parent" is actually a widget that simulates the
+// window decoration. The decoration of windows that have 0 as 
+// parent is the responsibilty of the X window manager. 
 
 void AppWorkspace::tileVertically() 
 {
@@ -65,9 +96,7 @@ void AppWorkspace::cascade()
  QWidgetList windows = windowList();
 
  for (QWidget *widget = windows.first(); widget; widget = windows.next()) {
-     widget->parentWidget()->resize(0.75*width(), 0.75*height());
+     widget->parentWidget()->resize(width()*3/4, height()*3/4);
  } 
  
-
-   
- }
+}

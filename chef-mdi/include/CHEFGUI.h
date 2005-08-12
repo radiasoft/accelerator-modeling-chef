@@ -1,42 +1,48 @@
-/*************************************************************************
-**************************************************************************
-**************************************************************************
-******
-******  CHEF:      An application layered on the Beamline/mxyzptlk
-******             class libraries.
-******
-******  File:      CHEFGUI.h
-******
-******  Copyright (c) Universities Research Association, Inc.
-******                All Rights Reserved
-******
-******  Authors:   Leo Michelotti         michelotti@fnal.gov
-******             Jean-Francois Ostiguy  ostiguy@fnal.gov
-******             Fermilab
-******
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******* The U.S. Government retains a world-wide non-exclusive, 
-******* royalty-free license to publish or reproduce documentation 
-******* and software for U.S. Government purposes. This software 
-******* is protected under the U.S. and Foreign Copyright Laws. 
-******* URA/FNAL reserves all rights.
-*******                                                                
-******* Creation Date:  August 2004                                      
-******* Revision Date:  July,  2005 
-*******                                      
-******* - added five slots: _editEditElement                            
-*******                     _editFlatten                              
-*******                     _editMisalign                               
-*******                     _editNewOrder                               
-*******                     _pushParticles                              
-*******  - LPJM 
-*******                                                         
-***************************************************************************/
-
+***************************************************************************
+***************************************************************************
+***************************************************************************
+******                                                               ******   
+******  CHEF:      An application layered on the Beamline/mxyzptlk   ****** 
+******             class libraries.                                  ****** 
+******                                                               ****** 
+******  File:      CHEFGUI.h                                         ****** 
+******                                                               ******
+******  Copyright (c) Universities Research Association, Inc.        ****** 
+******                All Rights Reserved                            ****** 
+******                                                               ****** 
+******  Authors:                                                     ******
+******                                                               ******
+******              Leo Michelotti                                   ******
+******              Fermilab                                         ******
+******              michelotti@fnal.gov                              ****** 
+******                                                               ******
+******              Jean-Francois Ostiguy                            ******
+******              Fermilab                                         ****** 
+******              ostiguy@fnal.gov                                 ****** 
+******                                                               ******  
+******  Usage, modification, and redistribution are subject to terms ******
+******  of the License supplied with this software.                  ****** 
+******                                                               ******
+******  Software and documentation created under                     ****** 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.    ****** 
+******  The U.S. Government retains a world-wide non-exclusive,      ****** 
+******  royalty-free license to publish or reproduce documentation   ****** 
+******  and software for U.S. Government purposes. This software     ****** 
+******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
+******  URA/FNAL reserves all rights.                                ****** 
+******                                                               ******
+**************************************************************************/
+/**********************************************************************/
+/* Creation Date:  August 2004                                        */
+/* Revision Date:  July,  2005                                        */
+/*   - added five slots: _editEditElement                             */
+/*                       _editFlatten                                 */
+/*                       _editMisalign                                */
+/*                       _editNewOrder                                */
+/*                       _pushParticles                               */
+/*   - LPJM                                                           */
+/*                                                                    */
+/**********************************************************************/
 #ifndef CHEFGUI_H
 #define CHEFGUI_H
 
@@ -107,7 +113,7 @@ class CF_rbendFinder_quad : public beamline::Criterion
 {
   public:
     CF_rbendFinder_quad( double = 0.0 );
-    ~CF_rbendFinder_quad();
+    virtual ~CF_rbendFinder_quad();
 
     void setQuadrupole( double );
 
@@ -123,7 +129,7 @@ class RollAccumulator : public beamline::Action
 {
   public:
     RollAccumulator( const char*, double = 0.0 );
-    ~RollAccumulator();
+    virtual ~RollAccumulator();
 
     void setWeakType();
     void setStrongType();
@@ -238,7 +244,7 @@ private:
   QMainWindow*                     _mainWindow;
   QWidget*                         _centralWidget;
 
-  QGuardedPtr<CHEFPlotMain>                    _plotWidget;
+  QGuardedPtr<CHEFPlotMain>                   _plotWidget;
   QGuardedPtr<CHEFPlotMain>                   _ETplotWidget;
   QGuardedPtr<CHEFPlotMain>                   _MMplotWidget;
   QGuardedPtr<CHEFPlotMain>                   _LBplotWidget;
