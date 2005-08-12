@@ -32,6 +32,7 @@
 
 #include <fstream>
 #include <typeinfo>
+#include <iosetup.h>
 
 // REMOVE: #include <qdir.h>
 // REMOVE: #include <qfile.h>
@@ -56,17 +57,13 @@
 #include <qlayout.h>
 #include <qtextbrowser.h>
 
-#include "BeamlineBrowser.h"
-// REMOVE: #include "PhysicsConstants.h"
-#include "GenericException.h"
-#include "BeamlineIterator.h"
-#include "BeamlineContext.h"
-#include "bmlfactory.h"
-#include "BeamlineExpressionTree.h"
-
-
-// This undef is needed because of the compiler.
-// #undef connect
+#include <BeamlineBrowser.h>
+// REMOVE: #include "PhysicsConstants.h>
+#include <GenericException.h>
+#include <BeamlineIterator.h>
+#include <BeamlineContext.h>
+#include <bmlfactory.h>
+#include <BeamlineExpressionTree.h>
 
 using namespace std;
 
@@ -454,7 +451,8 @@ const QBmlRoot* QBml::topBmlParent()
 
 QBmlElmt::QBmlElmt( QBmlRoot* parent, /* const */ bmlnElmnt* q, double& s )
 : QBml( 0, parent, q->Name(), q->Type() ),
-  _azimuth(s), _myElement(q)
+  _myElement(q),
+  _azimuth(s) 
 {
   QString str;
   str.setNum( ((double) s) );
@@ -505,8 +503,10 @@ QBmlRoot::QBmlRoot( QListView* parent, /* const */ beamline* q, double& s )
 
 
 QBmlRoot::QBmlRoot( QBmlRoot * parent, /* const */ beamline* q, double& s )
-: QBml( 0, parent, q->Name(), q->Type() ),
-  _myBeamline(q), _myBmlCon(0)
+: 
+   QBml( 0, parent, q->Name(), q->Type() ),
+   _myBmlCon(0),
+   _myBeamline(q) 
 {
     QString str;
     str.setNum( ((double) s) );
@@ -642,7 +642,7 @@ const QBmlElmt* QBmlRoot::findSelectedElement() const
 // *
 // *****************************************************************************
 
-BeamlineBrowser::BeamlineBrowser( QWidget *parent, const char *name, bool sdo )
+BeamlineBrowser::BeamlineBrowser( QWidget *parent, const char *name, bool /*sdo*/ )
     : QListView( parent, name ), oldCurrent( 0 ),
       dropItem( 0 ), mousePressed( FALSE ), _lastClickedRootPtr(0)
 {
@@ -908,11 +908,11 @@ void BeamlineBrowser::contentsMousePressEvent( QMouseEvent* e )
   // if( firstTime ) {
   //   firstTime = false;
   //   SelectionMode sm = this->selectionMode();
-  //   if( sm == QListView::Single )      { cout << "DGN: Single selection mode."   << endl; }
-  //   else if( sm == QListView::Multi )       { cout << "DGN: Multi selection mode."    << endl; }
-  //   else if( sm == QListView::Extended )    { cout << "DGN: Extended selection mode." << endl; }
-  //   else if( sm == QListView::NoSelection ) { cout << "DGN: No selection mode."       << endl; }
-  //   else { cout << "DGN: Selection mode not recognized." << endl; }
+  //   if( sm == QListView::Single )      { (*pcout) << "DGN: Single selection mode."   << endl; }
+  //   else if( sm == QListView::Multi )       { (*pcout) << "DGN: Multi selection mode."    << endl; }
+  //   else if( sm == QListView::Extended )    { (*pcout) << "DGN: Extended selection mode." << endl; }
+  //   else if( sm == QListView::NoSelection ) { (*pcout) << "DGN: No selection mode."       << endl; }
+  //   else { (*pcout) << "DGN: Selection mode not recognized." << endl; }
   // }
   // End DGN: section
 
@@ -1182,7 +1182,7 @@ void BeamlineBrowser::_displayLine( QBmlRoot* root,
     }
     else {
       if( firstTime ) {
-        cerr << "*** WARNING ***                              \n"
+        (*pcerr) << "*** WARNING ***                              \n"
                 "*** WARNING *** BeamlineBrowser::_displayLine    \n"
                 "*** WARNING *** bmlnElmnt::Length() function \n"
                 "*** WARNING *** will give incorrect answers  \n"
@@ -1267,10 +1267,10 @@ int BeamlineBrowser::removeBeamline( BeamlineContext* ptr )
 // REMOVE   while( 0 != (  qbmlPtr = dynamic_cast<QBml*>(looker.current()) )) {
 // REMOVE     if( 0 != ( qbmlelmtPtr = dynamic_cast<QBmlElmt*>( qbmlPtr ) )) {
 // REMOVE       if( qbmlelmtPtr->fullName() == name ) {
-// REMOVE         cout << ++i << " !  " << qbmlelmtPtr->fullName() << endl;
+// REMOVE         (*pcout) << ++i << " !  " << qbmlelmtPtr->fullName() << endl;
 // REMOVE       }
 // REMOVE       else {
-// REMOVE         cout << ++i << "    " << qbmlelmtPtr->fullName() << endl;
+// REMOVE         (*pcout) << ++i << "    " << qbmlelmtPtr->fullName() << endl;
 // REMOVE       }
 // REMOVE     }
 // REMOVE     ++looker;

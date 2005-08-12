@@ -1,12 +1,48 @@
+***************************************************************************
+***************************************************************************
+***************************************************************************
+******                                                               ******   
+******  CHEF:      An application layered on the Beamline/mxyzptlk   ****** 
+******             class libraries.                                  ****** 
+******                                                               ****** 
+******  File:      DspnFncData.cpp                                   ****** 
+******                                                               ******
+******  Copyright (c) Universities Research Association, Inc.        ****** 
+******                All Rights Reserved                            ****** 
+******                                                               ****** 
+******  Authors:                                                     ******
+******                                                               ******
+******              Jean-Francois Ostiguy                            ******
+******              Fermilab                                         ****** 
+******              ostiguy@fnal.gov                                 ****** 
+******                                                               ******  
+******              Leo Michelotti                                   ******
+******              Fermilab                                         ******
+******              michelotti@fnal.gov                              ****** 
+******                                                               ******
+******  Usage, modification, and redistribution are subject to terms ******
+******  of the License supplied with this software.                  ****** 
+******                                                               ******
+******  Software and documentation created under                     ****** 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.    ****** 
+******  The U.S. Government retains a world-wide non-exclusive,      ****** 
+******  royalty-free license to publish or reproduce documentation   ****** 
+******  and software for U.S. Government purposes. This software     ****** 
+******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
+******  URA/FNAL reserves all rights.                                ****** 
+******                                                               ******
+**************************************************************************/
+
+
 #include <iomanip>
 #include <string>   // needed for strcat
 #include <math.h>
 
-#include "complexAddon.h"
-#include "bmlfactory.h"
-#include "DspnFncData.h"
-#include "BeamlineContext.h"
-#include "GenericException.h"
+#include <complexAddon.h>
+#include <bmlfactory.h>
+#include <DspnFncData.h>
+#include <BeamlineContext.h>
+#include <GenericException.h>
 
 #include <qwt/qwt_plot.h>
 #include <boost/shared_ptr.hpp>
@@ -18,12 +54,17 @@
 static double* dnull = 0;
 
 DspnFncData::DspnFncData( BeamlineContext* bcp, std::ostream*  stdoutstream, std::ostream* stderrstream )
-: _errorStreamPtr(stderrstream), _outputStreamPtr(stdoutstream),
-  _bmlConPtr(bcp), _deleteContext(false),
+: 
+  _bmlConPtr(bcp), 
+  _deleteContext(false),
   _arraySize(0), 
   _azimuth(dnull),
-  _clo_H(dnull), _clo_V(dnull), 
-  _disp_H(dnull), _disp_V(dnull)
+  _clo_H(dnull), 
+  _clo_V(dnull), 
+  _disp_H(dnull), 
+  _disp_V(dnull),
+  _errorStreamPtr(stderrstream), 
+  _outputStreamPtr(stdoutstream)
 
 {
   this->_finishConstructor();
@@ -31,12 +72,17 @@ DspnFncData::DspnFncData( BeamlineContext* bcp, std::ostream*  stdoutstream, std
 
 
 DspnFncData::DspnFncData( /* const */ beamline* pBml, std::ostream*  stdoutstream, std::ostream* stderrstream )
-: _errorStreamPtr(stderrstream), _outputStreamPtr(stdoutstream),
-  _bmlConPtr(0), _deleteContext(true),
+: 
+  _bmlConPtr(0), 
+  _deleteContext(true),
   _arraySize(0), 
   _azimuth(dnull),
-  _clo_H(dnull), _clo_V(dnull), 
-  _disp_H(dnull), _disp_V(dnull)
+  _clo_H(dnull), 
+  _clo_V(dnull), 
+  _disp_H(dnull), 
+  _disp_V(dnull),
+  _errorStreamPtr(stderrstream), 
+  _outputStreamPtr(stdoutstream)
 {
   _bmlConPtr = new BeamlineContext( false, pBml );
   this->_finishConstructor();
@@ -57,14 +103,22 @@ void DspnFncData::_finishConstructor( )
   _clo_H       = boost::shared_array<double>( new double[_arraySize] );
   _clo_V       = boost::shared_array<double>( new double[_arraySize] );
 
+  double* azimuth     =_azimuth.get();   
+  double* disp_H      =_disp_H.get();    
+  double* disp_V      =_disp_V.get();    
+  double* dPrime_H    =_dPrime_H.get();  
+  double* dPrime_V    =_dPrime_V.get();  
+  double* clo_H       =_clo_H.get();     
+  double* clo_V       =_clo_V.get();     
+
   for( int i = 0; i < _arraySize; i++ ) {
-    _azimuth[i] = 0.0;
-    _disp_H[i] = 0.0;
-    _disp_V[i] = 0.0;
-    _dPrime_H[i] = 0.0;
-    _dPrime_V[i] = 0.0;
-    _clo_H[i] = 0.0;
-    _clo_V[i] = 0.0;
+    *(azimuth)++  = 0.0;
+    *(disp_H)++   = 0.0;
+    *(disp_V)++   = 0.0;
+    *(dPrime_H)++ = 0.0;
+    *(dPrime_V)++ = 0.0;
+    *(clo_H)++    = 0.0;
+    *(clo_V)++    = 0.0;
   }
 
 }
@@ -128,7 +182,8 @@ DspnFncData::~DspnFncData()
 
 void DspnFncData::doCalc()
 {
-  const double mm = 0.001;
+
+  // UNUSED ??? const double mm = 0.001;
   int i = 0;
 
   const DispersionSage::Info* infoPtr;
@@ -138,6 +193,14 @@ void DspnFncData::doCalc()
   catch( const GenericException& ge ) {
     throw ge;
   }
+
+  double* azimuth     =_azimuth.get();   
+  double* disp_H      =_disp_H.get();    
+  double* disp_V      =_disp_V.get();    
+  double* dPrime_H    =_dPrime_H.get();  
+  double* dPrime_V    =_dPrime_V.get();  
+  double* clo_H       =_clo_H.get();     
+  double* clo_V       =_clo_V.get();     
 
   while( 0 != infoPtr ) {
     if( i >= _arraySize ) {
@@ -153,17 +216,19 @@ void DspnFncData::doCalc()
         << endl;
     }
     else {
-      _azimuth[i]      = infoPtr->arcLength;
-      _clo_H[i]        = infoPtr->closedOrbit.hor / mm;
-      _clo_V[i]        = infoPtr->closedOrbit.ver / mm;
-      _disp_H[i]       = infoPtr->dispersion.hor;
-      _disp_V[i]       = infoPtr->dispersion.ver;
-      _dPrime_H[i]     = infoPtr->dPrime.hor;
-      _dPrime_V[i]     = infoPtr->dPrime.ver;
+       *(azimuth++)     = infoPtr->arcLength;
 
       // Zero out closed orbits of less than 1 Angstrom
-      if( std::abs(_clo_H[i]) < 1.0e-7 ) { _clo_H[i] = 0.0; }
-      if( std::abs(_clo_V[i]) < 1.0e-7 ) { _clo_V[i] = 0.0; }
+
+       infoPtr->closedOrbit.hor < 1.0e-7 ? *(clo_H++) = 0.0 : *(clo_H++) = infoPtr->closedOrbit.hor;
+       infoPtr->closedOrbit.ver < 1.0e-7 ? *(clo_V++) = 0.0 : *(clo_V++) = infoPtr->closedOrbit.ver;
+
+       *(disp_H++)       = infoPtr->dispersion.hor;
+       *(disp_V++)       = infoPtr->dispersion.ver;
+       *(dPrime_H++)     = infoPtr->dPrime.hor;
+       *(dPrime_V++)     = infoPtr->dPrime.ver;
+
+      // Zero out closed orbits of less than 1 Angstrom
 
       infoPtr = _bmlConPtr->getDispersionPtr(++i);
     }

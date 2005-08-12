@@ -539,8 +539,9 @@ void RayDrawSpace::drawV_ViewRect( RayDrawSpace* x )
 };
 
 
-void RayDrawSpace::mousePressEvent( QMouseEvent* qme )
+void RayDrawSpace::mousePressEvent( QMouseEvent* /*qme*/ )
 {
+
 }
 
 
@@ -891,7 +892,8 @@ void RayTrace::_opt_setHistory()
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( "Maximum number of traces", qhb1 );
+      //QLabel* qlb = new QLabel( "Maximum number of traces", qhb1 );
+        new QLabel( "Maximum number of traces", qhb1 );
         QString stl;
         stl.setNum( _maxHistory );
         QLineEdit* qle = new QLineEdit( stl, qhb1 );
@@ -934,7 +936,7 @@ void RayTrace::_opt_setIter()
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( "Strobe period", qhb1 );
+      /* QLabel* qlb = */ new QLabel( "Strobe period", qhb1 );
         QString stl;
         stl.setNum( _number );
         QLineEdit* qle = new QLineEdit( stl, qhb1 );
@@ -1083,7 +1085,7 @@ void RayTrace::_pushBunch()
 {
   // Proton  originalProton( _bmlConPtr->getReferenceProton() );
   Proton* protonPtr;
-  beamline* bmlPtr   = const_cast<beamline*>(_bmlConPtr->cheatBmlPtr());
+  // beamline* bmlPtr   = const_cast<beamline*>(_bmlConPtr->cheatBmlPtr());
   ProtonBunch* pbPtr = &(_bmlConPtr->_protonBunch);
 
   if( _isIterating ) 

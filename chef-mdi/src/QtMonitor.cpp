@@ -57,7 +57,7 @@ QtMonitor::QtMonitor( const char* identifier )
 }
 
 QtMonitor::QtMonitor( const QtMonitor& x )
-: monitor( x ), _azimuth( x._azimuth )
+: QObject(this), monitor( x ), _azimuth( x._azimuth )
 {
 }
 

@@ -124,8 +124,7 @@ BmlSelectionDialog::setBeamParameters(const bmlfactory& bf)
     const       char* name;
     int         type;
     QCheckBox*  cb;
-  }  varstruct;
-
+  };
 
 
   const varstructtype vars[] = { {"MOMENTUM",       MOMENTUM,     checkBoxMomentum}, 

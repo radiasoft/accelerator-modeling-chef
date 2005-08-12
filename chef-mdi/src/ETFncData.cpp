@@ -1,10 +1,45 @@
+***************************************************************************
+***************************************************************************
+***************************************************************************
+******                                                               ******   
+******  CHEF:      An application layered on the Beamline/mxyzptlk   ****** 
+******             class libraries.                                  ****** 
+******                                                               ****** 
+******  File:      ETFFncData.cpp                                    ****** 
+******                                                               ******
+******  Copyright (c) Universities Research Association, Inc.        ****** 
+******                All Rights Reserved                            ****** 
+******                                                               ****** 
+******  Authors:                                                     ******
+******                                                               ******
+******              Jean-Francois Ostiguy                            ******
+******              Fermilab                                         ****** 
+******              ostiguy@fnal.gov                                 ****** 
+******                                                               ******
+******              Leo Michelotti                                   ******
+******              Fermilab                                         ******
+******              michelotti@fnal.gov                              ****** 
+******                                                               ******  
+******  Usage, modification, and redistribution are subject to terms ******
+******  of the License supplied with this software.                  ****** 
+******                                                               ******
+******  Software and documentation created under                     ****** 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.    ****** 
+******  The U.S. Government retains a world-wide non-exclusive,      ****** 
+******  royalty-free license to publish or reproduce documentation   ****** 
+******  and software for U.S. Government purposes. This software     ****** 
+******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
+******  URA/FNAL reserves all rights.                                ****** 
+******                                                               ******
+**************************************************************************/
+
 #include <fstream>
 #include <iomanip>
 #include <string>   // needed for strcat
 #include <math.h>
 
-#include "ETFncData.h"
-#include "BeamlineContext.h"
+#include <ETFncData.h>
+#include <BeamlineContext.h>
 #include <boost/shared_ptr.hpp>
 #include <qwt/qwt_plot.h>
 
@@ -17,34 +52,50 @@ static double* dnull = 0;
 
 
 ETFncData::ETFncData( BeamlineContext* bcp,  ostream* stdoutstream, ostream* stderrstream )
-: _errorStreamPtr(stderrstream), _outputStreamPtr(stdoutstream),
-  _bmlConPtr(bcp), _deleteContext(false),
-  _plotType( betaPlot ),
+: 
+  _bmlConPtr(bcp), 
+  _deleteContext(false),
   _arraySize(0), 
   _azimuth(dnull),
-  _beta_H( dnull),  _beta_V(dnull),
-  _alpha_H(dnull), _alpha_V(dnull),
-  _inv_beta_H( dnull), _inv_beta_V(dnull),
-  _root_beta_H(dnull), _root_beta_V(dnull),
-  _disp_H(dnull), _disp_V(dnull), 
-  _name(0)
+  _beta_H( dnull),  
+  _beta_V(dnull),
+  _inv_beta_H( dnull), 
+  _inv_beta_V(dnull),
+  _root_beta_H(dnull), 
+  _root_beta_V(dnull),
+  _alpha_H(dnull), 
+  _alpha_V(dnull),
+  _disp_H(dnull), 
+  _disp_V(dnull), 
+  _name(0),
+  _plotType( betaPlot ),
+  _errorStreamPtr(stderrstream), 
+  _outputStreamPtr(stdoutstream)
 {
   this->_finishConstructor();
 }
 
 
 ETFncData::ETFncData( /* const */ beamline* pBml,  ostream* stdoutstream, ostream* stderrstream)
-: _errorStreamPtr(stderrstream), _outputStreamPtr(stdoutstream),
-  _bmlConPtr(0), _deleteContext(true),
-  _plotType( betaPlot ),
+:
+  _bmlConPtr(0), 
+  _deleteContext(true),
   _arraySize(0), 
   _azimuth(dnull),
-  _beta_H(dnull),  _beta_V(dnull),
-  _alpha_H(dnull), _alpha_V(dnull),
-  _inv_beta_H(dnull), _inv_beta_V(dnull),
-  _root_beta_H(dnull), _root_beta_V(dnull),
-  _disp_H(dnull), _disp_V(dnull), 
-  _name(0)
+  _beta_H(dnull),  
+  _beta_V(dnull),
+  _inv_beta_H(dnull), 
+  _inv_beta_V(dnull),
+  _root_beta_H(dnull), 
+  _root_beta_V(dnull),
+  _alpha_H(dnull), 
+  _alpha_V(dnull),
+  _disp_H(dnull), 
+  _disp_V(dnull), 
+  _name(0),
+  _plotType( betaPlot ),
+  _errorStreamPtr(stderrstream), 
+  _outputStreamPtr(stdoutstream)
 {
   _bmlConPtr = new BeamlineContext( false, pBml );
    this->_finishConstructor();
@@ -70,18 +121,30 @@ void ETFncData::_finishConstructor()
   _disp_H      = boost::shared_array<double>( new double[_arraySize] );
   _disp_V      = boost::shared_array<double>( new double[_arraySize] );
 
+   double* azimuth     = _azimuth.get();
+   double* beta_H      = _beta_H.get();     
+   double* alpha_H     = _alpha_H.get();     
+   double* beta_V      = _beta_V.get();      
+   double* alpha_V     = _alpha_V.get();     
+   double* inv_beta_H  = _inv_beta_H.get();  
+   double* inv_beta_V  = _inv_beta_V.get();  
+   double* root_beta_H = _root_beta_H.get(); 
+   double* root_beta_V = _root_beta_V.get(); 
+   double* disp_H      = _disp_H.get();        
+   double* disp_V      = _disp_V.get();        
+
   for( int i = 0; i < _arraySize; i++ ) {
-    _azimuth[i] = 0.0;
-    _beta_H[i] = 0.0;
-    _alpha_H[i] = 0.0;
-    _beta_V[i] = 0.0;
-    _alpha_V[i] = 0.0;
-    _inv_beta_H[i] = 0.0;
-    _inv_beta_V[i] = 0.0;
-    _root_beta_H[i] = 0.0;
-    _root_beta_V[i] = 0.0;
-    _disp_H[i] = 0.0;
-    _disp_V[i] = 0.0;
+    *(azimuth++)     = 0.0;
+    *(beta_H++)      = 0.0;
+    *(alpha_H++)     = 0.0;
+    *(beta_V++)      = 0.0;
+    *(alpha_V++)     = 0.0;
+    *(inv_beta_H++)  = 0.0;
+    *(inv_beta_V++)  = 0.0;
+    *(root_beta_H++) = 0.0;
+    *(root_beta_V++) = 0.0;
+    *(disp_H++)      = 0.0;
+    *(disp_V++)      = 0.0;
   }
 }
 

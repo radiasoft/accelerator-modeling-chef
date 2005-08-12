@@ -831,7 +831,7 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         //   a separate routine!!
 
   	double alphaH, betaH, alphaV, betaV;
-  	double u, v, amp;
+  	double u, v;
 
   	alphaH = ( _topTracker->_p_info->alpha ).hor;
   	betaH  = ( _topTracker->_p_info->beta  ).hor;
@@ -1112,11 +1112,15 @@ void DrawSpace::setActAngContext()
 
 Tracker::Tracker( BeamlineContext* bmlCP, QWidget* parent, const char* name, WFlags f)
 : QVBox(parent, name, f),
-  _bmlConPtr( bmlCP ), _centralParticlePtr(0),
-  _isIterating(false), _p_info(0), _number(1),
-  _deleteContext( false ), _p_currOrb(0),
-  _myWheel(0.0)
-{
+  _p_info(0),
+  _number(1),
+  _myWheel(0.0),
+  _bmlConPtr( bmlCP ), 
+  _centralParticlePtr(0),
+  _deleteContext( false ), 
+  _isIterating(false), 
+  _p_currOrb(0)
+  {
   // *** _myWheel.setIncrement( 252.0 );  // = 7*36, will provide ten colors
   _myWheel.setIncrement( 195.0 ); 
 
@@ -1126,10 +1130,14 @@ Tracker::Tracker( BeamlineContext* bmlCP, QWidget* parent, const char* name, WFl
 
 Tracker::Tracker( /* const */ beamline* x,  QWidget* parent, const char* name, WFlags f)
 : QVBox(parent, name, f),
-  _bmlConPtr( 0 ), _centralParticlePtr(0),
-  _isIterating(false), _p_info(0), _number(1),
-  _deleteContext( true ), _p_currOrb(0),
-  _myWheel(0.0)
+  _p_info(0), 
+  _number(1),
+  _myWheel(0.0),
+  _bmlConPtr( 0 ), 
+  _centralParticlePtr(0),
+  _deleteContext( true ), 
+  _isIterating(false), 
+  _p_currOrb(0)
 {
   if( 0 == x ) {
     QMessageBox::information( 0, "CHEF::Tracker",
@@ -1571,7 +1579,8 @@ void Tracker::_view_zoom_s()
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( "Multiplier", qhb1 );
+      //QLabel* qlb = new QLabel( "Multiplier", qhb1 );
+        new QLabel( "Multiplier", qhb1 );
         QString stl;
         stl.setNum( 1.0 );
         QLineEdit* qle = new QLineEdit( stl, qhb1 );
@@ -1663,8 +1672,8 @@ void Tracker::_opt_setIter()
 {
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
-      QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( "Strobe period", qhb1 );
+     QHBox* qhb1 = new QHBox( qvb );
+        new QLabel( "Strobe period", qhb1 );
         QString stl;
         stl.setNum( _number );
         QLineEdit* qle = new QLineEdit( stl, qhb1 );
@@ -1727,7 +1736,7 @@ void Tracker::_tool_pdicOrb()
     QVBox* qvb = new QVBox( wpu );
 
       QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( "Period: ", qhb1 );
+        new QLabel( "Period: ", qhb1 );
         QString stl;
         stl.setNum(4);
         QLineEdit* qle = new QLineEdit( stl, qhb1 );
@@ -1759,7 +1768,6 @@ void Tracker::_tool_pdicOrb()
   // Maybe this belongs in a separate method.
  
   if( returnCode == QDialog::Accepted ) {
-    int i, j;
 
     bool ok = true;
     uint iterate = (qle->text()).toInt( &ok );
@@ -1785,7 +1793,7 @@ void Tracker::_tool_pdicOrb()
     Jet__environment* storedEnv = Jet::_lastEnv;
     double energy = _bmlConPtr->_proton.Energy();
 
-    for( int iterCount = 0; iterCount < ul; iterCount++ ) {
+    for( unsigned int iterCount = 0; iterCount < ul; iterCount++ ) {
       Jet::BeginEnvironment( order );
   	coord  x(w(0)),  y(w(1)),  q(0.0),
   	      px(w(3)), py(w(4)), qq(0.0);
@@ -1799,7 +1807,7 @@ void Tracker::_tool_pdicOrb()
       cout << "Begin n-th Henon iterate for n = "
   	   << iterate
   	   << endl;
-      for( i = 0; i < iterate; i++ ) {
+      for( unsigned int i = 0; i < iterate; i++ ) {
   	cout << "No." << (i+1) << endl;
   	bmlPtr->propagate( jpr );
       }
@@ -1810,14 +1818,14 @@ void Tracker::_tool_pdicOrb()
       MatrixD M(6,6);
       M = stuff.Jacobian();
 
-      for( i = 0; i < 6; i++ ) {
+      for( int i = 0; i < 6; i++ ) {
         M(i,2) = 0.0;
         M(2,i) = 0.0;
         M(i,5) = 0.0;
         M(5,i) = 0.0;
       }
 
-      for( i = 0; i < 6; i++ ) { M( i, i ) -= 1.0; }
+      for( int i = 0; i < 6; i++ ) { M( i, i ) -= 1.0; }
       M = M.inverse();
   
       Vector z(w);
@@ -1837,8 +1845,8 @@ void Tracker::_tool_pdicOrb()
   
     cout << "\nTest the results: " << endl;
   
-    for( j = 0; j < 10; j++ ) {
-      for( i = 0; i < iterate; i++ ) {
+    for( int j = 0; j < 10; j++ ) {
+      for( unsigned int i = 0; i < iterate; i++ ) {
   	bmlPtr->propagate(_bmlConPtr->_proton);
       }
       cout << _bmlConPtr->_proton.State() << endl;
@@ -1856,7 +1864,7 @@ void Tracker::_tool_dppMod()
     QVBox* qvb = new QVBox( wpu );
 
       QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( "dp/p: ", qhb1 );
+        new QLabel( "dp/p: ", qhb1 );
         QString stl;
         stl.setNum( _bmlConPtr->_proton.get_ndp() );
         QLineEdit* qle = new QLineEdit( stl, qhb1 );

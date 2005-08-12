@@ -1,41 +1,47 @@
-/*************************************************************************
-**************************************************************************
-**************************************************************************
-******
-******  CHEF:      An application layered on the Beamline/mxyzptlk
-******             class libraries.
-******
-******  File:      CHEFGUI.h
-******
-******  Copyright (c) Universities Research Association, Inc.
-******                All Rights Reserved
-******
-******  Authors:   Leo Michelotti         michelotti@fnal.gov
-******             Jean-Francois Ostiguy  ostiguy@fnal.gov
-******             Fermilab
-******
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******* The U.S. Government retains a world-wide non-exclusive, 
-******* royalty-free license to publish or reproduce documentation 
-******* and software for U.S. Government purposes. This software 
-******* is protected under the U.S. and Foreign Copyright Laws. 
-******* URA/FNAL reserves all rights.
-*******                                                                
-******* Creation Date:  August 2004                                      
-******* Revision Date:  July,  2005 
-*******                                      
-******* - added five slots: _editEditElement                            
-*******                     _editFlatten                              
-*******                     _editMisalign                               
-*******                     _editNewOrder                               
-*******                     _pushParticles                              
-*******  - LPJM 
-*******                                                         
-***************************************************************************/
+***************************************************************************
+***************************************************************************
+***************************************************************************
+******                                                               ******   
+******  CHEF:      An application layered on the Beamline/mxyzptlk   ****** 
+******             class libraries.                                  ****** 
+******                                                               ****** 
+******  File:  CHEFGUI.cpp                                           ****** 
+******                                                               ******
+******  Copyright (c) Universities Research Association, Inc.        ****** 
+******                All Rights Reserved                            ****** 
+******                                                               ****** 
+******  Authors:                                                     ******
+******                                                               ******
+******              Leo Michelotti                                   ******
+******              Fermilab                                         ******
+******              michelotti@fnal.gov                              ****** 
+******                                                               ******
+******              Jean-Francois Ostiguy                            ******
+******              Fermilab                                         ****** 
+******              ostiguy@fnal.gov                                 ****** 
+******                                                               ******  
+******  Usage, modification, and redistribution are subject to terms ******
+******  of the License supplied with this software.                  ****** 
+******                                                               ******
+******  Software and documentation created under                     ****** 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.    ****** 
+******  The U.S. Government retains a world-wide non-exclusive,      ****** 
+******  royalty-free license to publish or reproduce documentation   ****** 
+******  and software for U.S. Government purposes. This software     ****** 
+******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
+******  URA/FNAL reserves all rights.                                ****** 
+******                                                               ******
+**************************************************************************/
+/* Creation Date:  August 2004                                           */
+/* Revision Date:  July,  2005                                           */
+/*   - added five slots: _editEditElement                                */
+/*                       _editFlatten                                    */
+/*                       _editMisalign                                   */
+/*                       _editNewOrder                                   */
+/*                       _pushParticles                                  */
+/*   - LPJM                                                              */
+/*                                                                       */
+/*************************************************************************/
 
 #include <iostream>
 #include <sstream>
@@ -93,10 +99,10 @@ extern beamline* DriftsToSlots( /* const */ beamline& original );
 
 CHEFGUI::CHEFGUI(QWidget* parent, const char* name, WFlags f):
 CHEFGUIBase(parent,name,f), _plotWidget(0),
-                            _DspnplotWidget(0),
                             _ETplotWidget(0),
-                            _LBplotWidget(0),
                             _MMplotWidget(0),
+                            _LBplotWidget(0),
+                            _DspnplotWidget(0),
                             _p_vwr(0)
 
 {
@@ -629,7 +635,7 @@ CHEFGUI::_parseEditorMAD8( CF_Editor* editor )
 
 
 void 
-CHEFGUI::_parseEditorPython( CF_Editor* editor )
+CHEFGUI::_parseEditorPython( CF_Editor* /* editor */ )
 {
  
   //  FIXME ! QPyCHEF needs to be fixed
@@ -846,7 +852,7 @@ void CHEFGUI::_editNewOrder()
     std::ostringstream uic;
     uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
            "\nIn function void CHEF::_editNewOrder():"
-           "\nFailure: beamline element not chosen correctly.";
+           "\nFailure: beamline element not chosen correctly."
            "\nOperation will abort.";
     QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
     return;
@@ -878,7 +884,7 @@ void CHEFGUI::_editNewOrder()
     std::ostringstream uic;
     uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
            "\nIn function void CHEF::_editNewOrder():"
-           "\nFailure: Unable to remove old beamline.";
+           "\nFailure: Unable to remove old beamline."
            "\nOperation will abort.";
     QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
     return;
@@ -1146,7 +1152,7 @@ void CHEFGUI::_editEditElement()
       std::ostringstream uic;
       uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
              "\nIn function void CHEF::_editNewOrder():"
-             "\nFailure: beamline element not chosen correctly.";
+             "\nFailure: beamline element not chosen correctly."
              "\nOperation will abort.";
       QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
       return;
@@ -1182,7 +1188,7 @@ void CHEFGUI::_editEditElement()
     std::ostringstream uic;
     uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
            "\nIn function void CHEF::_editNewOrder():"
-           "\nFailure: Unable to remove old beamline.";
+           "\nFailure: Unable to remove old beamline."
            "\nOperation will abort.";
     QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
     return;
@@ -1339,7 +1345,7 @@ CHEFGUI::insDlgData CHEFGUI::_insertionDialog() const
       QButtonGroup* qbg =
       new QButtonGroup( 3, Qt::Horizontal, QString("Misalign"), qvb );
         QRadioButton* upPtr   = new QRadioButton( "Upstream",   qbg );
-        QRadioButton* midPtr  = new QRadioButton( "Middle",     qbg );
+      /*QRadioButton* midPtr  = */ new QRadioButton( "Middle",     qbg );
         QRadioButton* downPtr = new QRadioButton( "Downstream", qbg );
         upPtr->setChecked( true );
       qbg->setExclusive( true );
@@ -1704,7 +1710,8 @@ void CHEFGUI::_editPartAndSect()
 
   double energy    = bmlPtr->Energy();
   double momentum  = sqrt( energy*energy - PH_NORM_mp*PH_NORM_mp );
-  double brho = momentum/PH_CNV_brho_to_p;
+
+  // double brho = momentum/PH_CNV_brho_to_p; UNUSED
 
   // Insert equally spaced markers throughout the model.
   double bmlLength = 0.0;
@@ -3144,14 +3151,14 @@ void CHEFGUI::devicesAutoRefresh(bool set)
 }
 
 
-void CHEFGUI::modeRing(bool set)
+void CHEFGUI::modeRing(bool /*set */)
 {
   // obsolete ??
   // modeLineAction->setOn(!set);
 }
 
 
-void CHEFGUI::modeLine(bool set)
+void CHEFGUI::modeLine(bool /*set */)
 {
   // obsolete ??
   // modeRingAction->setOn( !set);

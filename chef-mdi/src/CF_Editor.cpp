@@ -1,14 +1,31 @@
-/**********************************************************************/
-/*                                                                    */
-/* File:           CF_Editor.cpp                                      */
-/* Author:         Jean-Francois Ostiguy                              */
-/*                 ostiguy@fnal.gov                                   */
-/*                                                                    */
-/* Creation Date:  January 2005                                       */
-/*                                                                    */ 
-/* Copyright:      (C) URA/Fermilab                                   */
-/*                                                                    */
-/**********************************************************************/
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******
+******  CHEF:      An application layered on the Beamline/mxyzptlk
+******             class libraries.
+******
+******  File:      CF_Editor.cpp
+******
+******  Copyright (c) Universities Research Association, Inc.
+******                All Rights Reserved
+******
+******  Author:    Jean-Francois Ostiguy
+******             Fermilab
+******             ostiguy@fnal.gov
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
+**************************************************************************/
 
 #include <CF_Editor.h>
 
@@ -23,6 +40,8 @@ QTextEdit(parent,name)
 
 }
 
+//.......................................................................................
+
 void
 PrivateTextEdit::paste()
 {
@@ -33,6 +52,8 @@ PrivateTextEdit::paste()
 }
 
 
+//.......................................................................................
+
 void
 PrivateTextEdit::cut()
 {
@@ -42,6 +63,8 @@ PrivateTextEdit::cut()
 
 }
 
+//.......................................................................................
+
 void
 PrivateTextEdit::removeSelectedText()
 {
@@ -49,6 +72,8 @@ PrivateTextEdit::removeSelectedText()
   QTextEdit::removeSelectedText();
   emit numberOfLinesChanged();
 }
+
+//.......................................................................................
 
 void 
 PrivateTextEdit::doKeyboardAction(QTextEdit::KeyboardAction action)
@@ -125,11 +150,16 @@ CF_Editor::CF_Editor(QWidget* parent, const char* name, WFlags f): QWidget(paren
 
 }
 
+//.......................................................................................
+
 CF_Editor::~CF_Editor() 
 {
 
 
 }
+
+//.......................................................................................
+
 
 void 
 CF_Editor::resizeEvent ( QResizeEvent * e) 
@@ -147,6 +177,8 @@ CF_Editor::resizeEvent ( QResizeEvent * e)
 
 
 }
+
+//.......................................................................................
 
 void
 CF_Editor::renumberLines()
@@ -176,6 +208,8 @@ CF_Editor::renumberLines()
 
 }
 
+//.......................................................................................
+
 void
 CF_Editor::append ( const QString & text )
 {
@@ -185,14 +219,20 @@ Text_->append(text);
 }
 
 
+//.......................................................................................
+
 void
 CF_Editor::setText( const QString& s)
 {
+
+//.......................................................................................
 
 Text_->setText(s);
 renumberLines();
 
 }
+
+//.......................................................................................
 
 QString
 CF_Editor::text()
@@ -202,6 +242,8 @@ return Text_->text();
 
 }
 
+//.......................................................................................
+
 void 
 CF_Editor::setSelection ( int paraFrom, int indexFrom, int paraTo, int indexTo, int selNum) 
 {
@@ -210,6 +252,7 @@ CF_Editor::setSelection ( int paraFrom, int indexFrom, int paraTo, int indexTo, 
 
 }
 
+//.......................................................................................
 
 void 
 CF_Editor::setSelectionAttributes ( int selNum, const QColor & back, bool invertText )
