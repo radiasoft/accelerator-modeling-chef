@@ -91,7 +91,7 @@ public:
     double ver;
 
     Tunes() : hor(0.0), ver(0.0) {}
-    Tunes( const Tunes& x ) : hor(x.hor), ver(x.ver) {}
+    Tunes( const Tunes& x ) : BarnacleData(), hor(x.hor), ver(x.ver) {}
     ~Tunes() {}
     
     Tunes& operator=( const Tunes& x )

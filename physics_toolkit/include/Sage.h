@@ -66,7 +66,7 @@ public:
   //   routine. 
   // By default, it just stores the pointer.
   Sage( const Sage& );
- ~Sage();
+ virtual ~Sage();
   
  void set_verbose();
  void unset_verbose();

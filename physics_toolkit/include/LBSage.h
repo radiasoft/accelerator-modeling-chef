@@ -83,7 +83,7 @@ private:
 public:
   LBSage( const beamline*, bool = false );
   LBSage( const beamline&, bool = false );
-  ~LBSage();
+  virtual ~LBSage();
 
   // vestigial: need to retain???
   int doCalc( const JetParticle*, beamline::Criterion& = beamline::yes ); 
