@@ -63,7 +63,7 @@ public:
    double hor;
    double ver;
    tunes() : hor(0.0), ver(0.0) {}
-   tunes( const tunes& x ) {hor = x.hor; ver = x.ver;}
+   tunes( const tunes& x ): BarnacleData( ), hor(x.hor), ver(x.ver) { }
    ~tunes(){}
  };
 
