@@ -120,7 +120,7 @@ TJet<T1,T2>::TJet( T1 x, TJetEnvironment<T1,T2>* p_je )
 }
 
 template<typename T1, typename T2>
-TJet<T1,T2>::TJet( const TJet& x ) 
+TJet<T1,T2>::TJet( const TJet& x ): gms::FastAllocator() 
 {
  _jl = x._jl;
  ( _jl->_rc )++;
@@ -367,7 +367,7 @@ TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* scl )
 
   Tcoord<T1,T2>*  p;
   T1* q;
-  int i, j;
+  int i;
 
   if((  ( _currentIndex     != _newCoords.size() )  ||  
         ( _newCoords.size() != _newValues.size() )  )) {
@@ -394,7 +394,7 @@ TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* scl )
   
   int w = _workEnv->_maxWeight;
   int n = _workEnv->_numVar;
-  int bcfr = bcfRec( w + n, n );
+  // REMOVE int bcfr = bcfRec( w + n, n );
 
   _workEnv->_offset.reconstruct( w, n, false );
 
@@ -1477,8 +1477,7 @@ TJet<T1,T2> operator/( const TJet<T1,T2>& wArg, const TJet<T1,T2>& uArg )
  TJLterm<T1,T2>* qw = 0;
  T1 u0 = T1();
 
- int i   = 0;
- int wgt = 0;
+  int wgt = 0;
  int wl  = 0;
  int mw  =  wArg->_myEnv->_maxWeight;
  
