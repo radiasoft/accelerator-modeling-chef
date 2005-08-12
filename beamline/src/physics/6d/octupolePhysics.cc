@@ -38,10 +38,12 @@
 
 void octupole::localPropagate( Particle& p ) {
   p_bml->propagate( p );
+  p.set_cdt( p.get_cdt() - _ctRef );
 }
 
 void octupole::localPropagate( JetParticle& p ) {
   p_bml->propagate( p );
+  p.set_cdt( p.get_cdt() - _ctRef );
 }
 
 

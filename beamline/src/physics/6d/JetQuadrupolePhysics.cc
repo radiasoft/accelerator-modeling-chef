@@ -53,13 +53,18 @@ void JetQuadrupole::TPOT_Prop::set_n( int m )
 };
 
 
-int JetQuadrupole::TPOT_Prop::operator()( bmlnElmnt* pbe, Particle& p ) {
+int JetQuadrupole::TPOT_Prop::operator()( bmlnElmnt* pbe, Particle& p ) 
+{
   ((JetQuadrupole*) pbe)->p_bml->propagate( p );
+  p.set_cdt( p.get_cdt() - pbe->getReferenceTime() );
   return 0;
 }
 
-int JetQuadrupole::TPOT_Prop::operator()( bmlnElmnt* pbe, JetParticle& p ) {
+
+int JetQuadrupole::TPOT_Prop::operator()( bmlnElmnt* pbe, JetParticle& p ) 
+{
   ((JetQuadrupole*) pbe)->p_bml->propagate( p );
+  p.set_cdt( p.get_cdt() - pbe->getReferenceTime() );
   return 0;
 }
 
