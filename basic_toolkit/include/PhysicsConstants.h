@@ -45,8 +45,8 @@
 #define PH_NORM_me         0.5110034e-3       /* Mass of electron [GeV/c^2]          */
 #define PH_NORM_mmu        0.105658387        /* mass of muon [GeV/c^2]              */
 
-/* #define PH_MKS_e           1.6021892e-19   /* Proton charge   [Coulombs]          */
-/* #define PH_ESU_e           4.803242e-10    /* Proton charge   [esu]               */ 
+/* #define PH_MKS_e           1.6021892e-19*/   /* Proton charge   [Coulombs]          */
+/* #define PH_ESU_e           4.803242e-10 */   /* Proton charge   [esu]               */ 
 
 #define PH_MKS_e           1.602176462e-19    /* Proton charge   [Coulombs]          */
 #define PH_MKS_c           2.99792458e8       /* Speed of light  [m/sec]             */
@@ -67,7 +67,7 @@
 #define PH_MKS_r_earth     6.37815e6          /* Radius of earth [m]                 */
 
 
-#define PH_MKS_r_bohr      0.5291772083e-10   /* Bohr radius     [m] 
+#define PH_MKS_r_bohr      0.5291772083e-10   /* Bohr radius     [m]                 */
 
 /* In each of the conversion factors below, the factor   */
 /* converts a quantity from one system to another        */
