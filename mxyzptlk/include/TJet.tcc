@@ -2078,14 +2078,20 @@ TJet<T1,T2> sqrt( const TJet<T1,T2>& x )
    // * existing environments. 
    // * The scratchpads should be cleared when *any* exception is thrown
    // * within mxyzptlk because the TJLterm _value fields may contain  
-   // * "Nan"s. -JFO 
+   // * "Nan"s. 
+   // *DO NOT REMOVE OR COMMENT OUT UNLESS YOU HAVE IMPLEMENTED A BETTER SOLUTION !* 
+   //   
+   // -JFO 
+
+   //--------------------------------------------------------------------------
 
    (*pcout) << "Resetting Environment Scratchpad" << std::endl;
-   //for (int i=0; i< x._jl->_myEnv->_maxTerms; i++ ) {
-   //      x._jl->_myEnv->_TJLmml[i]._value = 0.0;
-   //      std::(*pcout) << x._jl->_myEnv->_TJLmml[i]._index << std::endl;
-   //}          
+   for (int i=0; i< x._jl->_myEnv->_maxTerms; i++ ) {
+         x._jl->_myEnv->_TJLmml[i]._value = 0.0;
+   }          
    
+   //--------------------------------------------------------------------------
+
    throw( GenericException( __FILE__, __LINE__, 
           "TJet<T1,T2> sqrt( const TJet<T1,T2>& ) { ",
           "Argument is zero." ) );
