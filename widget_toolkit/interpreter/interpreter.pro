@@ -9,7 +9,7 @@
 #       
 #######################################################################
 
-include( "../config.pri" )
+include( "..\..\chef-config\config.pri" )
 
 TEMPLATE	= lib
 LANGUAGE	= C++
@@ -27,25 +27,22 @@ SOURCES	+= ./src/qpychef.cpp \
            ./src/interpreter.cpp \
            ./src/ioredirector.cpp \
            ./src/py-ioredirector.cpp \
-	   ./src/python-specific/2.3/testcomplete.c 
+	   ./src/python-specific/$$PYTHON_VERSION/testcomplete.c 
 
 FORMS	=  ./src/qpychefbase.ui
 
 INCLUDEPATH += $$PYTHON_INC
 
-unix:LIBS += -L$$CHEF_LIBDIR -lpychefplot -lpybmlfactory -lpybeamline -lpyphysics_toolkit -lpymxyzptlk -lpybasic_toolkit 
-unix:LIBS += -lqwt 
-unix:LIBS += /usr/local/lib/python2.3/config/libpython2.3.a -L/usr/local/lib -lboost_python-gcc-mt 
-unix:LIBS += -L$$FNAL_LIBDIR-lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit 
+LIBS += -L../plotting/python-bindings/lib -lpychefplot -L$$CHEF_LIBDIR -lpybmlfactory -lpybeamline -lpyphysics_toolkit -lpymxyzptlk -lpybasic_toolkit 
+LIBS += -lqwt 
+LIBS += -L$$FNAL_LIBDIR -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit 
+##LIBS += -L$$PYTHON_LIBDIR -lpython$$PYTHON_VERSION
+LIBS +=  $${PYTHON_LIBDIR}/libpython$${PYTHON_VERSION}.a 
+LIBS += -L$$BOOST_LIBDIR -lboost_python-gcc-mt 
+
+unix:LIBS  +=  -Wl,--export-dynamic $$QMAKE_RPATH$$CHEF_LIBDIR $$QMAKE_RPATH$$FNAL_LIBDIR $$QMAKE_RPATH$$GLIB_LIBDIR $$QMAKE_RPATH$$BOOST_LIBDIR 
 
 windows:LIBS += -L/opt/chef/lib -lpychefplot -lpybmlfactory -lpybeamline -lpyphysics_toolkit -lpymxyzptlk -lpybasic_toolkit 
 windows:LIBS += -lqwt 
 windows:LIBS += /usr/local/lib/python2.3/config/libpython2.3.a -L/usr/local/lib -lboost_python-gcc-mt-1_32 
 windows:LIBS += -L/opt/chef/lib -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit 
-
-
-unix:QMAKE_LFLAGS     +=-Wl,--export-dynamic  -Wl,--rpath,$$FNAL_LIBDIR   -Wl,--rpath,$$CHEF_LIBDIR 
-
-INSTALLS += target
-
-DESTDIR = .
