@@ -1,13 +1,14 @@
-#! /bin/sh
+#!/bin/sh
 
-## ------------------------------------------------------------------------------
-## bootstrap: a script to generate a build environment using the GNU autotools
+####################################################################
+## bootstrap: a script to generate a build environment 
+## using the GNU autotools
 ## 
 ## Author: Jean-Francois Ostiguy
 ##         Fermilab
 ##         ostiguy@fnal.gov
 ##
-##-------------------------------------------------------------------------------
+########################################################################
 
 set -x
 
@@ -33,6 +34,13 @@ do
   cd ../..
 done
 
+for dir in python-bindings
+do
+  cd   $dir
+  ${rootdir}/updateheaders
+  cd ..
+done
+
 cd   beamline
 ${rootdir}/updateheaders
 cd ./src
@@ -53,7 +61,7 @@ automake --add-missing --foreign --copy
 autoconf
 
 
-for dir in basic_toolkit beamline bmlfactory mxyzptlk physics_toolkit integrator gms
+for dir in basic_toolkit beamline bmlfactory mxyzptlk physics_toolkit integrator gms python-bindings
 do
   cd $dir
   libtoolize --force --copy
