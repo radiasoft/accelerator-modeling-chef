@@ -1,3 +1,5 @@
+#ifdef HAS_GSL
+
 #include <iostream>
 
 #include "AkimaSplinterpoland.h"
@@ -134,3 +136,5 @@ void AkimaSplinterpoland::_wipeClean()
   _lastX  = 0.0;
   _lastY  = 0.0;
 }
+
+#endif
