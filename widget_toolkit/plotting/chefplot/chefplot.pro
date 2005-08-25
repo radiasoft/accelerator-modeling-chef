@@ -12,13 +12,14 @@
 TEMPLATE	= lib
 LANGUAGE	= C++
 
-include ( "../config.pri" )
+#
+# Note: the relative path is broken under UNIX. Forward slashes do not seem to work, but win32 style backslashes are OK.
+#
+!include ( "..\..\..\chef-config\config.pri" ) {
+        message( "Error: failed to find global configuration file config.pri" ) 
+}
 
 unix:CONFIG	+= qt warn_on debug thread rtti exceptions dll
-
-unix:LIBS	+= -L/usr/local/lib
-unix:LIBS	+= -lqwt -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -lglib-2.0
-
 
 HEADERS	+= ./include/plot.h \
 	   ./include/chefplot.h \
@@ -55,17 +56,8 @@ IMAGES	= ./src/images/filenew \
 	  ./src/images/searchfind
 
 
-INSTALLS += target
+LIBS	   +=  -L$$FNAL_LIBDIR -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -L$$GLIB_LIBDIR -lglib-2.0
+LIBS       +=  -lqwt
 
-DESTDIR = .
-
-unix:QMAKE_LIBDIR_FLAGS += -L$$CHEF_LIBDIR 
-unix:QMAKE_LIBDIR_FLAGS += -L$$FNAL_LIBDIR
-unix:QMAKE_LIBDIR_FLAGS += -L$$GLIB_LIBDIR
-
-unix:QMAKE_LFLAGS += -Wl,--rpath,$$CHEF_LIBDIR 
-unix:QMAKE_LFLAGS += -Wl,--rpath,$$FNAL_LIBDIR 
-unix:QMAKE_LFLAGS += -Wl,--rpath,$$GLIB_LIBDIR 
-
-
+unix:LIBS  +=  $$QMAKE_RPATH$$FNAL_LIBDIR $$QMAKE_RPATH$$GLIB_LIBDIR
 
