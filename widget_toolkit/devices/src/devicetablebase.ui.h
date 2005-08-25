@@ -12,21 +12,20 @@
 
 
 
-
-
-void  DeviceTableBase::handleResponse( int response_num, const QVariant & response) {
+void  DeviceTableBase::handleResponse( int /*response_num*/, const QVariant & /*response*/) {
 
   
   
 }
 
 
-void  DeviceTableBase::handleFault( int response_num, int fault_num, const QString & fault_string) {
+void  DeviceTableBase::handleFault( int /*response_num*/, int /*fault_num*/, const QString & /*fault_string*/) {
+
 
 }
 
 
-void  DeviceTableBase::valueChanged(int row, int col)  
+void  DeviceTableBase::valueChanged(int /*row*/, int /*col*/)  
 {
 
 
