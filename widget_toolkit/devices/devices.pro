@@ -10,33 +10,29 @@
 #######################################################################
 
 
-include ( "../config.pri" )
+include ( "..\..\chef-config\config.pri" )
 
 TEMPLATE	= lib
 LANGUAGE	= C++
 
 windows:CONFIG	+= qt debug warn_on thread staticlib exceptions rtti
-   unix:CONFIG	+= qt debug warn_on thread staticlib exceptions rtti
-
-
+unix:CONFIG	+= qt warn_on debug thread dll       rtti exceptions 
 
 HEADERS	+= include/devicetable.h
 
-SOURCES	+= src/readdevice.cpp \
-	   src/devicetable.cpp
+SOURCES	+= src/devicetable.cpp
 
 FORMS	=  src/devicetablebase.ui
 
 
-INCLUDEPATH += $(QTDIR)/include/qutexr
-# INCLUDEPATH += $$QUTEXR_INC
+INCLUDEPATH += $$QUTEXR_INC
 
-unix:LIBS	 += -L$$QUTEXR_LIBDIR -lqutexr -lqwt 
+LIBS	 += -L$$QUTEXR_LIBDIR -lqutexr -lqwt 
+LIBS	 += $$QMAKE_RPATH$$QUTEXR_LIBDIR 
+
+
 windows:LIBS	 += -L$$QUTEXR_LIBDIR -lqutexr -lqwt 
 
 
-DESTDIR = .
 
-windows:INSTALLS += target
-unix:INSTALLS    += target
 
