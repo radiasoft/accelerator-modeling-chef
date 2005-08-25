@@ -25,13 +25,13 @@
     </property>
     <item text="&amp;File" name="fileMenu">
         <action name="fileLoadAction"/>
-        <item text="Load" name="popupMenu" accel="">
+        <item text="Load" name="popupMenu_38" accel="">
             <action name="fileLoadLatticeFileAction"/>
             <action name="fileLoadDeviceFileAction"/>
             <action name="fileLoadScriptAction"/>
         </item>
         <action name="fileEditAction"/>
-        <item text="Open" name="popupMenu_5" accel="">
+        <item text="Open" name="popupMenu_42" accel="">
             <action name="fileOpenMAD8Action"/>
             <action name="fileOpenPythonAction"/>
         </item>
@@ -45,7 +45,7 @@
     </item>
     <item text="&amp;Edit" name="editMenu">
         <action name="editSelectAction"/>
-        <item text="Select" name="popupMenu_15" accel="">
+        <item text="Select" name="popupMenu" accel="">
             <action name="editSelectFilterAction"/>
             <separator/>
             <action name="editSelectallAction"/>
@@ -72,14 +72,14 @@
     </item>
     <item text="Calculations" name="Calculations">
         <action name="calculationsLatticeFunctionsAction"/>
-        <item text="Lattice Functions" name="popupMenu_38" accel="">
+        <item text="Lattice Functions" name="popupMenu_24" accel="">
             <action name="calculationsLattice_FunctionsUncoupledAction"/>
             <action name="calculationsLattice_FunctionsEdwards_TengAction"/>
             <action name="calculationsLattice_FunctionsMomentsAction"/>
             <action name="calculationsLatticeFunctionsEigenvaluesAction"/>
         </item>
         <action name="calculationsPush"/>
-        <item text="Push" name="popupMenu_43" accel="">
+        <item text="Push" name="popupMenu_29" accel="">
             <action name="calculationsPushULFAction"/>
             <action name="calculationsPushMomentsAction"/>
             <action name="calculationsPushDispersionAction"/>
@@ -118,6 +118,10 @@
         <action name="devicesAutoRefreshAction"/>
         <action name="devicesClearSelectionAction"/>
     </item>
+    <item text="Database" name="Database">
+        <action name="databaseConnectAction"/>
+        <action name="databaseRetrieveDataAction"/>
+    </item>
     <separator/>
     <item text="&amp;Help" name="helpMenu">
         <action name="helpContentsAction"/>
@@ -127,36 +131,6 @@
     </item>
 </menubar>
 <toolbars>
-    <toolbar dock="2">
-        <property name="name">
-            <cstring>toolBar</cstring>
-        </property>
-        <property name="label">
-            <string>Tools</string>
-        </property>
-        <action name="fileNewAction"/>
-        <action name="fileLoadAction"/>
-        <action name="fileSaveAction"/>
-        <action name="fileSaveAsAction"/>
-        <action name="filePrintAction"/>
-        <action name="fileExitAction"/>
-        <separator/>
-    </toolbar>
-    <toolbar dock="2">
-        <property name="name">
-            <cstring>Toolbar</cstring>
-        </property>
-        <property name="label">
-            <string></string>
-        </property>
-        <action name="fileParseAction"/>
-        <action name="editModeAction"/>
-        <action name="calculationsLattice_FunctionsUncoupledAction"/>
-        <action name="calculationsLattice_FunctionsMomentsAction"/>
-        <action name="calculationsLattice_FunctionsEdwards_TengAction"/>
-        <action name="calculationsLatticeFunctionsEigenvaluesAction"/>
-        <action name="calculationsDispersionAction"/>
-    </toolbar>
 </toolbars>
 <actions>
     <action>
@@ -164,7 +138,7 @@
             <cstring>fileNewAction</cstring>
         </property>
         <property name="iconSet">
-            <iconset>filenew</iconset>
+            <iconset></iconset>
         </property>
         <property name="text">
             <string>New</string>
@@ -192,7 +166,7 @@
             <cstring>fileSaveAction</cstring>
         </property>
         <property name="iconSet">
-            <iconset>filesave</iconset>
+            <iconset></iconset>
         </property>
         <property name="text">
             <string>Save</string>
@@ -223,7 +197,7 @@
             <cstring>filePrintAction</cstring>
         </property>
         <property name="iconSet">
-            <iconset>print</iconset>
+            <iconset></iconset>
         </property>
         <property name="text">
             <string>Print</string>
@@ -254,7 +228,7 @@
             <cstring>editUndoAction</cstring>
         </property>
         <property name="iconSet">
-            <iconset>undo</iconset>
+            <iconset></iconset>
         </property>
         <property name="text">
             <string></string>
@@ -271,7 +245,7 @@
             <cstring>editRedoAction</cstring>
         </property>
         <property name="iconSet">
-            <iconset>redo</iconset>
+            <iconset></iconset>
         </property>
         <property name="text">
             <string>Redo</string>
@@ -288,7 +262,7 @@
             <cstring>editCutAction</cstring>
         </property>
         <property name="iconSet">
-            <iconset>editcut</iconset>
+            <iconset></iconset>
         </property>
         <property name="text">
             <string>Cut</string>
@@ -305,7 +279,7 @@
             <cstring>editCopyAction</cstring>
         </property>
         <property name="iconSet">
-            <iconset>editcopy</iconset>
+            <iconset></iconset>
         </property>
         <property name="text">
             <string>Copy</string>
@@ -322,7 +296,7 @@
             <cstring>editPasteAction</cstring>
         </property>
         <property name="iconSet">
-            <iconset>editpaste</iconset>
+            <iconset></iconset>
         </property>
         <property name="text">
             <string>Paste</string>
@@ -339,7 +313,7 @@
             <cstring>editFindAction</cstring>
         </property>
         <property name="iconSet">
-            <iconset>searchfind</iconset>
+            <iconset></iconset>
         </property>
         <property name="text">
             <string>Find</string>
@@ -472,6 +446,9 @@
         <property name="name">
             <cstring>fileEditorSaveAction</cstring>
         </property>
+        <property name="on">
+            <bool>false</bool>
+        </property>
         <property name="text">
             <string>Save</string>
         </property>
@@ -494,9 +471,6 @@
         <property name="name">
             <cstring>fileParseAction</cstring>
         </property>
-        <property name="iconSet">
-            <iconset>run.xpm</iconset>
-        </property>
         <property name="text">
             <string>Parse</string>
         </property>
@@ -507,9 +481,6 @@
     <action>
         <property name="name">
             <cstring>editModeAction</cstring>
-        </property>
-        <property name="iconSet">
-            <iconset>redo</iconset>
         </property>
         <property name="text">
             <string>Mode ...</string>
@@ -556,7 +527,7 @@
             <cstring>calculationsPushMomentsAction</cstring>
         </property>
         <property name="iconSet">
-            <iconset>plot.xpm</iconset>
+            <iconset></iconset>
         </property>
         <property name="text">
             <string>Moments</string>
@@ -570,7 +541,7 @@
             <cstring>calculationsPushDispersionAction</cstring>
         </property>
         <property name="iconSet">
-            <iconset>plot.xpm</iconset>
+            <iconset></iconset>
         </property>
         <property name="text">
             <string>Dispersion</string>
@@ -682,9 +653,6 @@
         <property name="name">
             <cstring>calculationsLattice_FunctionsUncoupledAction</cstring>
         </property>
-        <property name="iconSet">
-            <iconset>plot.xpm</iconset>
-        </property>
         <property name="text">
             <string>Uncoupled</string>
         </property>
@@ -699,9 +667,6 @@
         <property name="name">
             <cstring>calculationsLattice_FunctionsEdwards_TengAction</cstring>
         </property>
-        <property name="iconSet">
-            <iconset>plot.xpm</iconset>
-        </property>
         <property name="text">
             <string>Factorization</string>
         </property>
@@ -715,9 +680,6 @@
     <action>
         <property name="name">
             <cstring>calculationsLattice_FunctionsMomentsAction</cstring>
-        </property>
-        <property name="iconSet">
-            <iconset>plot.xpm</iconset>
         </property>
         <property name="text">
             <string>Moments</string>
@@ -1062,9 +1024,6 @@
         <property name="name">
             <cstring>calculationsLatticeFunctionsEigenvaluesAction</cstring>
         </property>
-        <property name="iconSet">
-            <iconset>plot.xpm</iconset>
-        </property>
         <property name="text">
             <string>Eigenvectors</string>
         </property>
@@ -1138,6 +1097,39 @@
         </property>
         <property name="text">
             <string>Align ...</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>separatornew_itemAction</cstring>
+        </property>
+        <property name="text">
+            <string>new item</string>
+        </property>
+        <property name="menuText">
+            <string>new item</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>databaseConnectAction</cstring>
+        </property>
+        <property name="text">
+            <string>Connect</string>
+        </property>
+        <property name="menuText">
+            <string>Connect</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>databaseRetrieveDataAction</cstring>
+        </property>
+        <property name="text">
+            <string>Retrieve Data</string>
+        </property>
+        <property name="menuText">
+            <string>Retrieve Data</string>
         </property>
     </action>
 </actions>
@@ -1592,6 +1584,18 @@
         <receiver>CHEFGUIBase</receiver>
         <slot>_fileEditorSave()</slot>
     </connection>
+    <connection>
+        <sender>databaseRetrieveDataAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_databaseRetrieve()</slot>
+    </connection>
+    <connection>
+        <sender>databaseConnectAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_databaseConnect()</slot>
+    </connection>
 </connections>
 <includes>
     <include location="local" impldecl="in implementation">chefguibase.ui.h</include>
@@ -1686,6 +1690,8 @@
     <slot>_momentsDispatch()</slot>
     <slot>_fileEditorSaveAs()</slot>
     <slot>_fileEditorSave()</slot>
+    <slot>_databaseConnect()</slot>
+    <slot>_databaseRetrieve()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>
