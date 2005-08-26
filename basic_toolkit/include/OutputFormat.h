@@ -34,16 +34,6 @@
 // Stream-IO flags (could be appended if necessary
 // ??? Note: These names are a little too global and
 // ??? should be changed.
-#define LEFT   02
-#define RIGHT  04
-#define SCIENTIFIC 04000
-#define FIXED 010000
-
-// Dump formats
-#define BIN  2
-#define OCT  8
-#define DEC 10
-#define HEX 16
 
 class OutputFormat{
 public:
@@ -55,10 +45,24 @@ public:
   void setPadding( const char* );
   const char* getPadding();
  
-  unsigned width;
-  unsigned precision;
-  long     flags;
-  unsigned dumpbase;
+  unsigned   width;
+  unsigned   precision;
+  long       flags;
+  unsigned   dumpbase;
+
+  const static unsigned left   = 02;
+  const static unsigned right  = 04;
+
+  const static unsigned scientific = 04000;
+  const static unsigned fixed      = 010000;
+
+// Dump formats
+
+  const static unsigned int BIN  =  2;
+  const static unsigned int OCT  =  8;
+  const static unsigned int DEC  = 10;
+  const static unsigned int HEX  = 16;
+
  
 private:
   char*    padding;

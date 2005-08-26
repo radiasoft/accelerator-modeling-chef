@@ -33,13 +33,13 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "OutputFormat.h"
+#include <OutputFormat.h>
 
 OutputFormat::OutputFormat( const char* pad )
 {
   width     =   10;
   precision =    3;
-  flags     =    SCIENTIFIC;
+  flags     =    OutputFormat::scientific;
   dumpbase  =    0;
  
   if( pad ) {
@@ -55,12 +55,12 @@ OutputFormat::OutputFormat( const char* pad )
  
 OutputFormat::OutputFormat( const OutputFormat& x)
 {
-  width = x.width;
+  width     = x.width;
   precision = x.precision;
-  flags = x.flags;
-  padding = new char [ strlen( x.padding ) + 1 ];
+  flags     = x.flags;
+  padding   = new char [ strlen( x.padding ) + 1 ];
   strcpy( padding, x.padding );
-  dumpbase = x.dumpbase;
+  dumpbase =  x.dumpbase;
 }
 
 OutputFormat::~OutputFormat()
