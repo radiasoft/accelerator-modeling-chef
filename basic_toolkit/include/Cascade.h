@@ -27,7 +27,9 @@
 **************************************************************************
 *************************************************************************/
 
-
+#ifndef CASCADE_H
+#define CASCADE_H
+ 
 class IntArray;
 class Cascade;
 
@@ -96,3 +98,5 @@ class Cascade
     void _clean();
     void _finishConstructor();
 };
+
+#endif // CASCADE_H
