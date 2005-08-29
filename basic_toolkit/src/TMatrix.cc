@@ -287,7 +287,7 @@ bool TMatrix<T>::isOrthogonal() const
 }
 
 template<typename T>
-T TMatrix<T>::determinant() 
+T TMatrix<T>::determinant() const
 {
   T det = T();
   if(rows() != cols()) {
