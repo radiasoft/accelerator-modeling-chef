@@ -2355,10 +2355,8 @@ void TJet<T1,T2>::peekAt() const
         << " : "
         << (int) p
         << endl;
-   (*pcout) << "Index:  ";
-   for( i = 0; i < _jl->_myEnv->_numVar; i++ )
-     (*pcout) << (p -> _index)(i) << "  ";
-   (*pcout) << "\n" << endl;
+   (*pcout) << "Index:  " << (p -> _index) << endl;
+
    }
 }
 
