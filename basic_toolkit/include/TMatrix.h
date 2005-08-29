@@ -93,7 +93,7 @@ public:
   inline int cols() const { return _ml->_c;}
   TMatrix<T> transpose() const;
   TMatrix<T> Square() const;
-  T determinant();
+  T determinant() const;
   TMatrix<T> inverse() const;
   TMatrix<FNAL::Complex> eigenValues();
   TMatrix<FNAL::Complex> eigenVectors();
