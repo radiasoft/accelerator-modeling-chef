@@ -3086,6 +3086,11 @@ void CHEFGUI::_enableMenus( bool set )
     calculationsLattice_FunctionsUncoupledAction->setEnabled(set);
     calculationsLattice_FunctionsMomentsAction->setEnabled(set);
     calculationsLattice_FunctionsEdwards_TengAction->setEnabled(set);
+
+    calculationsPushULFAction->setEnabled(set);
+    calculationsPushMomentsAction->setEnabled(set);
+    calculationsPushDispersionAction->setEnabled(set);
+
     toolsSite_ViewerAction->setEnabled(set);
     toolsTrackAction->setEnabled(set);
     toolsTraceAction->setEnabled(set);
@@ -3103,6 +3108,10 @@ void CHEFGUI::_enableMenus( bool set )
     editModeAction->setEnabled(set);
     editPartitionElementsAction->setEnabled(set);
     editCondenseAction->setEnabled(set);
+    editFlattenAction->setEnabled(set);
+    editPermuteAction->setEnabled(set);
+    editModifyAction->setEnabled(set);
+    editAlignAction->setEnabled(set);
 
     editSelectFilterAction->setEnabled(set);
     editSelectallAction->setEnabled(set);
