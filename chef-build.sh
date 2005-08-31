@@ -3,28 +3,58 @@
 ######################################################
 # chef-build.sh 
 #
-# Aa simple script to automate the CHEF daily build
+# A simple script to automate the CHEF daily build
+# from CVS
+#
 #
 # Jean-Francois Ostiguy
 # ostiguy@fnal.gov
 #
 ######################################################
 
+set +x
+
 MAKE=gmake
-
-
 
 help_build() {
 
-  echo "Usage: $0 qtdir_directory" 
+  echo "Usage: $0 qtdir_directory qmakespec" 
   echo "Options:"
   echo "-I installation_directory"
   exit 1
 }
 
+build_all() {
+#./bootstrap
+#
+#mkdir BUILD
+#cd BUILD
+#ierr=`../configure --prefix=$TOPDIR/RUNTIME`
+#if [ $ierr -ne 0 ]; then return $ierr fi
+#
+#ierr=`$MAKE`
+#if [ $ierr ] then return $ierr fi
+#ierr=`$MAKE install`
+#if [ $ierr ] then return $ierr fi
+#cd ..
+cd widget_toolkit
+qmake widget_toolkit.pro
+if [ $? -ne 0 ];  then exit; fi
+$MAKE
+if [ $? -ne 0 ];  then exit; fi
+$MAKE install
+if [ $? -ne 0 ];  then exit; fi
+cd ..
+cd chef-mdi
+qmake chef.pro
+if [ $? -ne 0 ];  then exit; fi
+$MAKE
+if [ $? -ne 0 ];  then exit; fi
+}
+
 INSTALLDIR=""
 #
-if [ $# -lt 1 ]; then
+if [ $# -lt 2 ]; then
   help_build
 fi
 
@@ -43,7 +73,7 @@ if [ -a config.pri.$nodename ]
 then 
   ln -s config.pri.$nodename  config.pri
 else
-  echo 'File ' config.pri.$nodename 'not found.'
+  echo 'File  config.pri.'$nodename 'not found.'
   exit 1
 fi
 cd ..
@@ -68,31 +98,24 @@ export INSTALLDIR
 QTDIR=$1
 export QTDIR
 #
-PATH=/usr/local/ap/bin\:/usr/local/bin:\$QTDIR/bin\:$PATH
+PATH=/usr/local/ap/bin\:/usr/local/bin\:$QTDIR/bin\:$PATH
 export PATH
+#
+QMAKESPEC=$2 
+export QMAKESPEC
 #
 SED=/bin/sed 
 export SED
 #
-echo 'CHEF BUILD started on node $nodename'
+echo 'CHEF BUILD started on node' $nodename
 echo `date`
 
-./bootstrap
-#
-mkdir BUILD
-cd BUILD
-../configure --prefix=$TOPDIR/RUNTIME
-#
-$MAKE
-$MAKE install
-cd ..
-cd widget_toolkit
-qmake widget_toolkit.pro
-$MAKE
-$MAKE install
-cd ..
-cd chef-mdi
-qmake chef.pro
-$MAKE
-echo '--------CHEF BUILD SUCCESSFUL ---------'
-echo `date`
+build_all
+
+if [ $? -eq 0 ]; then
+  echo '--------CHEF BUILD SUCCESSFUL ---------'
+  echo `date`
+else
+  echo '--------CHEF BUILD FAILED ---------'
+  echo `date`
+fi
