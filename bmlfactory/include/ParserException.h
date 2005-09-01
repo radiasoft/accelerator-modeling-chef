@@ -46,10 +46,10 @@ class ParserException : public std::exception
 
   const char* what() const throw();
 
-  const int   _lineno;
-  const char* _filename;
-  const char* _errmsg;
-  const int   _inmemory;
+  const int    _lineno;
+  std::string  _filename;
+  std::string  _errmsg;
+  const int    _inmemory;
 };
 
 #endif // PARSEREXCEPT_H
