@@ -1,4 +1,4 @@
-/***************************************************************************
+/**************************************************************************
 ***************************************************************************
 ***************************************************************************
 ******                                                               ******   
@@ -380,22 +380,29 @@ void CHEFGUI::_openFile()
         std::list<std::string>::iterator it;
         int nlines = 0;
         for ( it = beamline_list.begin(); it != beamline_list.end(); it++) {
-
-           beamline* bmlPtr = bfp->create_beamline( (*it).c_str() , brho);
-
-          _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-          _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called)
+	    beamline* bmlPtr = 0;
+	    try {
+              bmlPtr = bfp->create_beamline( (*it).c_str() , brho);
+            } 
+            catch (ParserException& e) {
+                QMessageBox mb(QString("Error"), QString( e.what() ), 
+                QMessageBox::Critical, 
+                QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+                mb.show();
+                while (mb.isVisible())  qApp->processEvents(); 
+                return;
+            }
+            _p_currBmlCon = new BeamlineContext( false, bmlPtr );
+            _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called)
                                                 //when the context is destroyed;
-          _contextList.insert( _p_currBmlCon );
+            _contextList.insert( _p_currBmlCon );
 
-          // REMOVE: if( _p_currBmlCon->isRing() ) { _p_currBmlCon->handleAsRing(); }
-          // REMOVE: else                          { _p_currBmlCon->handleAsLine(); }
+            _p_vwr->displayBeamline( _p_currBmlCon );
+            nlines++;
+	}
+	
 
-           _p_vwr->displayBeamline( _p_currBmlCon );
-          nlines++;
-        }
-     }
-
+    }
      else
      { // Read .bml file, not .mad file
 
@@ -620,17 +627,38 @@ CHEFGUI::_parseEditorMAD8( CF_Editor* editor )
 
   std::list<std::string>::iterator it;
   int nlines = 0;
+  beamline* bmlPtr = 0;
+  
   for ( it = beamline_list.begin(); it != beamline_list.end(); it++) {
 
-           beamline* bmlPtr = bfp->create_beamline( (*it).c_str() , brho);
+       try { 
+         bmlPtr = bfp->create_beamline( (*it).c_str() , brho);
+       }
 
-          _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-          _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called) 
+       catch (ParserException& e) {
+         QMessageBox mb(QString("Error"), QString( e.what() ), 
+                    QMessageBox::Critical, 
+                    QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+          mb.show();
+          while (mb.isVisible())  qApp->processEvents(); 
+ 
+          if (e._inmemory) { // may not be in memory if other files have been included
+         
+             editor->setSelection( e._lineno-1, 0, e._lineno, 0,  1); 
+             editor->setSelectionAttributes (1, QColor("Red"), false); 
+          }
+
+          return;
+        } // catch
+
+        _p_currBmlCon = new BeamlineContext( false, bmlPtr );
+        _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called) 
                                                 //when the context is destroyed;
-          _contextList.insert( _p_currBmlCon );
-           _p_vwr->displayBeamline( _p_currBmlCon );
-          nlines++;
-  }
+        _contextList.insert( _p_currBmlCon );
+        _p_vwr->displayBeamline( _p_currBmlCon );
+        nlines++;
+  } 
+
 }
 
 
@@ -1982,6 +2010,12 @@ void CHEFGUI::_launchLatt()
     lfd = 0;
   }
 
+  //std::cout << " TJL<double, std::complex<double> >::_initstorecalls = " << TJL<double, std::complex<double> >::_initstorecalls << std::endl;
+  //std::cout << " TJL<std::complex<double>, double >::_initstorecalls = " << TJL<std::complex<double>, double >::_initstorecalls << std::endl;
+  // std::cout << " double  pool size = " <<  TJL<double, std::complex<double> >::_thePool.size() << std::endl;
+  //std::cout << " complex pool size = " <<  TJL<std::complex<double>, double >::_thePool.size() << std::endl;
+
+
 }
 
 
@@ -3086,7 +3120,6 @@ void CHEFGUI::_enableMenus( bool set )
     calculationsLattice_FunctionsUncoupledAction->setEnabled(set);
     calculationsLattice_FunctionsMomentsAction->setEnabled(set);
     calculationsLattice_FunctionsEdwards_TengAction->setEnabled(set);
-
     calculationsPushULFAction->setEnabled(set);
     calculationsPushMomentsAction->setEnabled(set);
     calculationsPushDispersionAction->setEnabled(set);
@@ -3112,6 +3145,7 @@ void CHEFGUI::_enableMenus( bool set )
     editPermuteAction->setEnabled(set);
     editModifyAction->setEnabled(set);
     editAlignAction->setEnabled(set);
+
 
     editSelectFilterAction->setEnabled(set);
     editSelectallAction->setEnabled(set);
