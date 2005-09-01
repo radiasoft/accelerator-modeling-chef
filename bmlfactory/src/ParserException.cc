@@ -47,6 +47,6 @@ const char*
 ParserException::what() const throw()
 {
 
-  return _errmsg;
+  return _errmsg.c_str();
 
 }
