@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -12,12 +9,23 @@
 ******                                    
 ******  File:      expression.c
 ******                                                                
-******  Copyright (c) 1999  Universities Research Association, Inc.   
+******  Copyright (c) Universities Research Association, Inc.   
 ******                All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
-******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******  Authors:    Dmitri Mokhov, Oleg Krivosheev                  
+******              Jean-Francois Ostiguy 
 ******                                                                
-******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******  Contacts:  Leo Michelotti or Jean-Francois Ostiguy            
 ******                                                                
 ******             Fermilab                                           
 ******             P.O.Box 500                                        
@@ -29,13 +37,13 @@
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <assert.h>
 #include <math.h>
@@ -43,27 +51,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern void bmlfactory_exit();
+extern void bmlfactory_exit(const char* filename, int lineno, const char* errmessage);
+extern void bmlfactory_parse_error(int inmemory, const char* input_filename, int input_file_lineno, const char* parser_message);
 
-#if !defined(beam_element_h)
-#include "beam_element.h"
-#endif /* beam_element_h */
+#include <beam_element.h>
+#include <beamel_table.h>
+#include <const_table.h>
+#include <var_table.h>
+#include <expression.h>
+#include <madparser.h>
 
-#if !defined(beamel_table_h)
-#include "beamel_table.h"
-#endif /* beamel_table_h */
+/* Including mp here is a temporary fix. mp is required for error reporting */
+/* the entire error reporting mechanism should be overhauled. -jfo          */ 
 
-#if !defined(const_table_h)
-#include "const_table.h"
-#endif /* const_table_h */
-
-#if !defined(var_table_h)
-#include "var_table.h"
-#endif /* var_table_h */
-
-#if !defined(expression_h)
-#include "expression.h"
-#endif /* expression_h */
+extern madparser* mp; 
+static char error_msg[132];
 
 void
 expression_init( void ) {
@@ -183,7 +185,6 @@ expr_display( FILE*       out,
       beam_element* bel = (beam_element*)bel_table_lookup( data->svalue_, bel_table );
       if ( bel == NULL ) {
         fprintf( out, "error ! beam element %s never defined\n", data->svalue_ );
-        bmlfactory_exit();
       } else {
         fprintf( out, "%e /* %s.Length() */", expr_evaluate( bel->length_, var_table, bel_table ), data->svalue_ );
       }
@@ -303,7 +304,7 @@ expr_display( FILE*       out,
       fprintf( out, ")");
       break;
     default :
-      fprintf(stderr, "error ! uknown expression type\n");
+      fprintf(stderr, "error ! unknown expression type\n");
   }
 }
 
@@ -328,22 +329,26 @@ expr_evaluate( GNode*      expr,
       return data->dvalue_;
       break;
     case STRING_EXPR :
-      fprintf(stderr, "error ! string \"%s\" used in an algebraic expression\n", data->svalue_);
+      sprintf(error_msg, "String \"%s\" used in an algebraic expression\n", data->svalue_);
+      bmlfactory_parse_error( madparser_is_reading_from_memory(mp), madparser_current_filename(mp), madparser_linenum(mp), error_msg);
       return 0;
       break;
     case NUM_IDENT_EXPR :
       return data->dvalue_;
       break;
     case STR_IDENT_EXPR :
-      fprintf(stderr, "error ! string id %s used in an algebraic expression\n", data->svalue_);
+      sprintf(error_msg, "String id %s used in an algebraic expression\n", data->svalue_);
+      bmlfactory_parse_error( madparser_is_reading_from_memory(mp), madparser_current_filename(mp), madparser_linenum(mp), error_msg);
       return 0;
       break;
     case VAR_IDENT_EXPR :
       {
         variable* var = (variable*)var_table_lookup( data->svalue_, var_table );
         if ( var == NULL ) {
-          fprintf(stderr, "error ! variable %s never defined\n", data->svalue_);
-          bmlfactory_exit();
+          sprintf(error_msg, "Variable %s was never defined\n", data->svalue_);
+          bmlfactory_parse_error( madparser_is_reading_from_memory(mp), madparser_current_filename(mp), madparser_linenum(mp), error_msg);
+          /* bmlfactory_exit(); */
+          return 0;
         } else {
           return expr_evaluate( var->expr_, var_table, bel_table );
         }
@@ -353,8 +358,10 @@ expr_evaluate( GNode*      expr,
       {
         beam_element* bel = (beam_element*)bel_table_lookup( data->svalue_, bel_table );
         if ( bel == NULL ) {
-          fprintf(stderr, "error ! beam element %s never defined\n", data->svalue_);
-          bmlfactory_exit();
+           sprintf(error_msg, "Beamline element %s was never defined\n", data->svalue_);
+           bmlfactory_parse_error( madparser_is_reading_from_memory(mp), madparser_current_filename(mp), madparser_linenum(mp), error_msg);
+           /* bmlfactory_exit(); */
+           return 0;
         } else {
           return expr_evaluate( bel->length_, var_table, bel_table );
         }
@@ -431,7 +438,8 @@ expr_evaluate( GNode*      expr,
       return ( val1 < val2 ) ? val1 : val2;
       break;
     default :
-      fprintf(stderr, "error ! unknown expression type\n");
+      sprintf(error_msg, "Unknown expression type\n");
+      bmlfactory_parse_error( madparser_is_reading_from_memory(mp), madparser_current_filename(mp), madparser_linenum(mp), error_msg);
       return 0;
   }
 }
@@ -447,8 +455,10 @@ expr_is_string( GNode*      expr,
   expr_struct* data;
   variable* assigned_var = (variable*)var_table_lookup( ((expr_struct*)(expr->data))->svalue_, var_table );
   if ( assigned_var == NULL ) {
-    fprintf(stderr, "error ! variable %s never defined\n", ((expr_struct*)(expr->data))->svalue_);
-    bmlfactory_exit();
+    sprintf(error_msg, "Variable %s was never defined\n", ((expr_struct*)(expr->data))->svalue_);
+    bmlfactory_parse_error( madparser_is_reading_from_memory(mp), madparser_current_filename(mp), madparser_linenum(mp), error_msg);
+    return 0;    
+    /* bmlfactory_exit(); */
   }
   data = (expr_struct*)(((GNode*)(assigned_var->expr_))->data);
   if ( data->kind_ == STRING_EXPR ) {
