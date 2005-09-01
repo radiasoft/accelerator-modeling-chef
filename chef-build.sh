@@ -25,18 +25,17 @@ help_build() {
 }
 
 build_all() {
-#./bootstrap
-#
-#mkdir BUILD
-#cd BUILD
-#ierr=`../configure --prefix=$TOPDIR/RUNTIME`
-#if [ $ierr -ne 0 ]; then return $ierr fi
-#
-#ierr=`$MAKE`
-#if [ $ierr ] then return $ierr fi
-#ierr=`$MAKE install`
-#if [ $ierr ] then return $ierr fi
-#cd ..
+./bootstrap
+
+mkdir BUILD
+cd BUILD
+../configure --prefix=$TOPDIR/RUNTIME
+if [ $? -ne 0 ]; then return; fi
+$MAKE
+if [ $? -ne 0 ]; then return; fi
+$MAKE install
+if [ $? -ne 0 ]; then return; fi
+cd ..
 cd widget_toolkit
 qmake widget_toolkit.pro
 if [ $? -ne 0 ];  then exit; fi
@@ -112,7 +111,8 @@ echo `date`
 
 build_all
 
-if [ $? -eq 0 ]; then
+if [ $? -eq 0 ]
+then
   echo '--------CHEF BUILD SUCCESSFUL ---------'
   echo `date`
 else
