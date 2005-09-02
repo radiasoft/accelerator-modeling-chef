@@ -69,6 +69,7 @@ class Frame
 
    Frame dual() const;
    bool  isOrthonormal() const;
+   bool  isRightHanded() const;
 
    static int xAxisIndex();
    static int yAxisIndex();
@@ -115,8 +116,8 @@ class Frame
                                   //  the point p - to their values as
                                   //  viewed by the frame.
 
-   friend std::ostream& operator<< ( std::ostream& os, /* const */ Frame& );
-   friend std::istream& operator>> ( std::istream& is, /* const */ Frame& );
+   friend std::ostream& operator<< ( std::ostream& os, const Frame& );
+   friend std::istream& operator>> ( std::istream& is, Frame& );
 };
 
 
