@@ -514,7 +514,7 @@ void Frame::convertInPlace( Vector& p, Vector& v ) const
 }
 
 
-ostream& operator<< ( ostream& os, /* const */ Frame& f )
+ostream& operator<< ( ostream& os, const Frame& f )
 {
   /* 
      os << "Frame origin: " << f.o << endl;
@@ -536,7 +536,7 @@ ostream& operator<< ( ostream& os, /* const */ Frame& f )
   return os;
 }
 
-istream& operator>> ( istream& is, /* const */ Frame& f )
+istream& operator>> ( istream& is, Frame& f )
 {
   is >> f.o(0) >> f.o(1) >> f.o(2);
   is >> f.e(0,0) >> f.e(1,0) >> f.e(2,0);

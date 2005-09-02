@@ -59,3 +59,8 @@ inline MatrixD Frame::getAxes() const
   return e;
 }
 
+inline bool Frame::isRightHanded() const
+{
+  return ( 0 < e.determinant() );
+}
+
