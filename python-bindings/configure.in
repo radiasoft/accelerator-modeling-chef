@@ -160,6 +160,7 @@ else
 fi
 ])
 
+AC_ARG_VAR([GLIBCONFIG_INC],    [GLIBCONFIG include directory])dnl
 AC_CHECK_HEADER(glibconfig.h,,[
 if test ${GLIBCONFIG_INC} && test -r ${GLIBCONFIG_INC}; then
         AC_SUBST(GLIBCONFIG_INC)
@@ -203,6 +204,55 @@ else
 fi
 ])
 
+AC_ARG_VAR([PYTHON_INC],    [PYTHON include directory])dnl
+AC_CHECK_HEADER(shared_ptr.hpp,,[
+if test ${PYTHON_INC} && test -r ${PYTHON_INC}; then
+        AC_SUBST(PYTHON_INC)
+        AC_MSG_RESULT([Location specified: ${PYTHON_INC}])
+else
+# Try to guess the location based on the location of gcc 
+        python_inc=`which python | sed "s#bin\/gcc#include#"`
+        if test -r $python_inc/python2.4/Python.h; then
+                PYTHON_INC=$python_inc
+                AC_SUBST(PYTHON_INC)
+                AC_MSG_RESULT([Header file located in $PYTHON_INC]) 
+        elif test -r $python_inc/python2.3/Python.h; then
+                PYTHON_INC=$python_inc
+                AC_SUBST(PYTHON_INC)
+                AC_MSG_RESULT([Header file located in $PYTHON_INC])
+        else
+		if test -r /usr/include/python2.4/Python.h; then
+		    PYTHON_INC="/usr/include/python2.4"
+		    AC_SUBST(PYTHON_INC)
+		    AC_MSG_RESULT([Header file located in $PYTHON_INC])
+	         elif test -r /usr/include/python2.3; then
+		    PYTHON_INC="/usr/include/python2.3"
+		    AC_SUBST(PYTHON_INC)
+		    AC_MSG_RESULT([Header file located in $PYTHON_INC])
+	         elif test -r /usr/local/include/python2.4; then
+		    PYTHON_INC="/usr/local/include/python2.4"
+		    AC_SUBST(PYTHON_INC)
+		    AC_MSG_RESULT([Header file located in $PYTHON_INC])
+	         elif test -r /usr/local/include/python2.3; then
+		    PYTHON_INC="/usr/local/include/python2.3"
+		    AC_SUBST(PYTHON_INC)
+		    AC_MSG_RESULT([Header file located in $PYTHON_INC])
+	         elif test -r /usr/local/ap/include/python2.4; then
+		    PYTHON_INC="/usr/local/ap/include/python2.4"
+		    AC_SUBST(PYTHON_INC)
+		    AC_MSG_RESULT([Header file located in $PYTHON_INC])
+	         elif test -r /usr/local/ap/include/python2.3; then
+		    PYTHON_INC="/usr/local/ap/include/python2.3"
+		    AC_SUBST(PYTHON_INC)
+		    AC_MSG_RESULT([Header file located in $PYTHON_INC])
+                 else
+		AC_MSG_ERROR([PYTHON includes not found, please define PYTHON_INC.]);
+	        fi
+        fi
+
+fi
+])
+
 AC_ARG_VAR([BOOST_INC],    [BOOST include directory])dnl
 AC_CHECK_HEADER(shared_ptr.hpp,,[
 if test ${BOOST_INC} && test -r ${BOOST_INC}; then
@@ -233,48 +283,12 @@ else
 		    AC_SUBST(BOOST_INC)
 		    AC_MSG_RESULT([Header file located in $BOOST_INC])
                 else
-		AC_MSG_ERROR([BOOST includes not found, please define BOOST_INC.]);
+		AC_MSG_ERROR([BOOST include not found, please define BOOST_INC.]);
 		fi
 	fi
 fi
 ])
 
-AC_ARG_VAR([PYTHON_INC],    [PYTHON include directory])dnl
-AC_CHECK_HEADER(shared_ptr.hpp,,[
-if test ${PYTHON_INC} && test -r ${PYTHON_INC}; then
-        AC_SUBST(PYTHON_INC)
-        AC_MSG_RESULT([Location specified: ${PYTHON_INC}])
-else
-# Try to guess the location based on the location of gcc 
-        python_inc=`which python | sed "s#bin\/gcc#include#"`
-        if test -r $boost_inc/boost/shared_ptr.hpp; then
-                PYTHON_INC=$boost_inc
-                AC_SUBST(PYTHON_INC)
-                AC_MSG_RESULT([Header file located in $PYTHON_INC])
-        else
-		if test -r /usr/include/python2.4/Python.h; then
-		    PYTHON_INC="/usr/include/python2.4"
-		    AC_SUBST(PYTHON_INC)
-		    AC_MSG_RESULT([Header file located in $PYTHON_INC])
-	         elif test -r /usr/local/include/python2.3; then
-		    PYTHON_INC="/usr/local/include/python2.3"
-		    AC_SUBST(PYTHON_INC)
-		    AC_MSG_RESULT([Header file located in $PYTHON_INC])
-	         elif test -r /usr/local/ap/include/python2.4; then
-		    PYTHON_INC="/usr/local/include/python2.4"
-		    AC_SUBST(PYTHON_INC)
-		    AC_MSG_RESULT([Header file located in $PYTHON_INC])
-	         elif test -r /usr/local/ap/include/python2.3; then
-		    PYTHON_INC="/usr/local/ap/include/python2.3"
-		    AC_SUBST(PYTHON_INC)
-		    AC_MSG_RESULT([Header file located in $PYTHON_INC])
-                 else
-		AC_MSG_ERROR([PYTHON includes not found, please define PYTHON_INC.]);
-	        fi
-        fi
-
-fi
-])
 
 # Checks for library functions.
 AC_CHECK_FUNCS([pow sqrt strcasecmp strdup])
