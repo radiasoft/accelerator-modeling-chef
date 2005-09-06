@@ -28,20 +28,15 @@
 *************************************************************************/
 
 
-#ifndef TLIEOPERATOR
-#define TLIEOPERATOR
+#ifndef LIEOPERATOR_H
+#define LIEOPERATOR_H
 
-#ifndef TJET
-#include "Jet.h"
-#endif
 
-#ifndef TJETVECTOR
-#include "JetVector.h"
-#endif
-
-#include "TLieOperator.tcc"
+#include <Jet.h>
+#include <JetVector.h>
+#include <TLieOperator.h>
 
 typedef TLieOperator<double,FNAL::Complex> LieOperator;
 typedef TLieOperator<FNAL::Complex,double> CLieOperator;
 
-#endif // TLIEOPERATOR
+#endif // LIEOPERATOR_H
