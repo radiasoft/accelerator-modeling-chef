@@ -43,6 +43,11 @@
 
 #include <cstdlib>
 
+#ifdef WIN32
+extern long   srand48(long int);
+extern double drand48();
+#endif
+
 #include "VectorD.h"
 #include "TMatrix.h"
 
