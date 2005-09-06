@@ -114,11 +114,14 @@ void Interpreter::runString(const char* s)
 
   // save Jet environment ( a script can change the environment !)
 
-  Jet__environment * storedEnv   =   Jet::_lastEnv;
+  Jet__environment  * storedEnv    =   Jet::_lastEnv;
   JetC__environment * storedEnvC   =   JetC::_lastEnv; 
 
+  
+  //  int Py_file_input 
+  //  int Py_single_input:  This is the symbol used for the interactive interpreter loop
   try { 
-  boost::python::handle<> pyrun_handle( PyRun_String( s , Py_file_input,
+  boost::python::handle<> pyrun_handle( PyRun_String( s , Py_single_input,
              _main_dictionary.get(), _main_dictionary.get() ));
   }
   catch(std::exception& e)
