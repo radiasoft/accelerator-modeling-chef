@@ -41,6 +41,8 @@
 **************************************************************************
 *************************************************************************/
 
+#ifdef  EXPLICIT_TEMPLATE_INSTANTIATIONS 
+
 #ifndef TJET_TCC
 #define TJET_TCC
 
@@ -412,7 +414,7 @@ TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* scl )
     _workEnv->_refPoint[i++] = *q;
   }
   if( i != n ) {
-    throw( typename TJL<T2,T2>::HideousException(i, n, __FILE__, __LINE__, 
+    throw( typename TJL<T1,T2>::HideousException(i, n, __FILE__, __LINE__, 
              "TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* )", 
              "" ) );
   }
@@ -2924,3 +2926,5 @@ TJet<T1,T2> TJet<T1,T2>::D( const IntArray& n ) const
 
 
 #endif // TJET_TCC
+
+#endif //  EXPLICIT_TEMPLATE_INSTANTIATIONS 
