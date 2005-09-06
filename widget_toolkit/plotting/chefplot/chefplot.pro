@@ -15,7 +15,7 @@ LANGUAGE	= C++
 #
 # Note: the relative path is broken under UNIX. Forward slashes do not seem to work, but win32 style backslashes are OK.
 #
-!include ( "..\..\..\chef-config\config.pri" ) {
+!include ( ../../../chef-config/config.pri ) {
         message( "Error: failed to find global configuration file config.pri" ) 
 }
 
@@ -56,8 +56,8 @@ IMAGES	= ./src/images/filenew \
 	  ./src/images/searchfind
 
 
-LIBS	   +=  -L$$FNAL_LIBDIR -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -L$$GLIB_LIBDIR -lglib-2.0
+LIBS	   +=  -L$${FNAL_LIBDIR} -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -L$${GLIB_LIBDIR} -lglib-2.0
 LIBS       +=  -lqwt
 
-unix:LIBS  +=  $$QMAKE_RPATH$$FNAL_LIBDIR $$QMAKE_RPATH$$GLIB_LIBDIR
+unix:LIBS  +=  -Wl,--rpath,$${FNAL_LIBDIR} -Wl,--rpath,$${GLIB_LIBDIR}
 
