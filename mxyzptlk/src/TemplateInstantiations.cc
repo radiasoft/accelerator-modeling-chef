@@ -49,8 +49,13 @@
 #include <FastAllocator.h>
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
+#include <vector>
+#include <algorithm>
 #include <complex>
 
+// ============================================================================================
+// The standard classes
+//=============================================================================================
 
 template class TJetEnvironment<double, std::complex<double> >;
 template class TJetEnvironment<std::complex<double>, double >;
@@ -73,46 +78,34 @@ template class TMapping<std::complex<double>, double >;
 template class TLieOperator<double, std::complex<double> >;
 template class TLieOperator<std::complex<double>, double >;
 
-
 template class Tcoord<double, std::complex<double> >;
 template class Tcoord<std::complex<double>, double >;
 
-template 
-TJet<double, std::complex<double> > operator/<double, std::complex<double> >(TJet<double, std::complex<double> > const&, double const&);
 
-template
-TJetVector<double, std::complex<double> > operator*<double, std::complex<double> >(double const&, TJetVector<double, std::complex<double> > const&);
-
-template
-TJet<std::complex<double>, double> operator-<std::complex<double>, double>(std::complex<double> const&, TJet<std::complex<double>, double> const&);
+// ============================================================================================
+// The friend function operators
+//=============================================================================================
 
 template 
 TJet<double, std::complex<double> > operator+<double, std::complex<double> >(double const&, TJet<double, std::complex<double> > const&);
 
 template 
-TJL<double, double>::HideousException::HideousException(int, int, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, int, char const*, char const*);
+TJet<std::complex<double>, double> operator+<std::complex<double>, double>(TJet<std::complex<double>, double> const&, TJet<std::complex<double>, double> const&);
 
 template 
-class boost::pool<>;
+TJet<std::complex<double>, double> operator+<std::complex<double>, double>(std::complex<double> const&, TJet<std::complex<double>, double> const&);
 
 template 
-class gms::FastPODAllocator<TJLterm<std::complex<double>, double               > >;
+TJet<std::complex<double>, double> operator+<std::complex<double>, double>(TJet<std::complex<double>, double> const&, std::complex<double> const&);
 
 template 
-class gms::FastPODAllocator<TJLterm<double,               std::complex<double> > >;
+TJet<double, std::complex<double> > operator+<double, std::complex<double> >(TJet<double, std::complex<double> > const&, double const&);
 
+template 
+TJet<double, std::complex<double> > operator+<double, std::complex<double> >(TJet<double, std::complex<double> > const&, TJet<double, std::complex<double> > const&);
 
 template
- TJet<std::complex<double>, double> operator*<std::complex<double>, double>(TJet<std::complex<double>, double> const&, std::complex<double> const&);
-
-template
- TJet<double, std::complex<double> > operator/<double, std::complex<double> >(TJet<double, std::complex<double> > const&, TJet<double, std::complex<double> > const&);
-
-template
-std::basic_ostream<char, std::char_traits<char> >& operator<< <double, std::complex<double> >(std::basic_ostream<char, std::char_traits<char> >&, TJet<double, std::complex<double> > const&);
-
-template 
-bool operator<=<std::complex<double>, double>(TJLterm<std::complex<double>, double> const&, TJLterm<std::complex<double>, double> const&);
+TJet<std::complex<double>, double> operator-<std::complex<double>, double>(std::complex<double> const&, TJet<std::complex<double>, double> const&);
 
 template 
 TJet<std::complex<double>, double> operator-<std::complex<double>, double>(TJet<std::complex<double>, double> const&, std::complex<double> const&);
@@ -121,13 +114,78 @@ template
 TJet<double, std::complex<double> > operator-<double, std::complex<double> >(TJet<double, std::complex<double> > const&);
 
 template 
+TJetVector<double, std::complex<double> > operator-<double, std::complex<double> >(TJetVector<double, std::complex<double> > const&);
+
+template 
+TJet<std::complex<double>, double> operator-<std::complex<double>, double>(TJet<std::complex<double>, double> const&, TJet<std::complex<double>, double> const&);
+
+template 
+TJet<double, std::complex<double> > operator-<double, std::complex<double> >(TJet<double, std::complex<double> > const&, TJet<double, std::complex<double> > const&);
+
+template 
+TJet<double, std::complex<double> > operator-<double, std::complex<double> >(double const&, TJet<double, std::complex<double> > const&);
+
+template 
+TJet<double, std::complex<double> > operator-<double, std::complex<double> >(TJet<double, std::complex<double> > const&, double const&);
+
+template 
+TJet<std::complex<double>, double> operator-<std::complex<double>, double>(TJet<std::complex<double>, double> const&);
+
+template
+TJetVector<double, std::complex<double> > operator*<double, std::complex<double> >(double const&, TJetVector<double, std::complex<double> > const&);
+
+template
+ TJet<std::complex<double>, double> operator*<std::complex<double>, double>(TJet<std::complex<double>, double> const&, std::complex<double> const&);
+
+template 
+TJet<std::complex<double>, double> operator*<std::complex<double>, double>(std::complex<double> const&, TJet<std::complex<double>, double> const&);
+
+template 
+TJet<double, std::complex<double> > operator*<double, std::complex<double> >(double const&, TJet<double, std::complex<double> > const&);
+
+template 
+TJetVector<double, std::complex<double> > operator*<double, std::complex<double> >(TJet<double, std::complex<double> > const&, Vector const&);
+
+template 
+TJetVector<std::complex<double>, double> operator*<std::complex<double>, double>(TMatrix<std::complex<double> > const&, TJetVector<std::complex<double>, double> const&);
+
+template 
+TJetVector<double, std::complex<double> > operator*<double, std::complex<double> >(TMatrix<double> const&, TJetVector<double, std::complex<double> > const&);
+
+template 
+TJetVector<double, std::complex<double> > operator*<double, std::complex<double> >(TJet<double, std::complex<double> > const&, TJetVector<double, std::complex<double> > const&);
+
+template 
+TJet<std::complex<double>, double> operator*<std::complex<double>, double>(TJet<std::complex<double>, double> const&, TJet<std::complex<double>, double> const&);
+
+template 
+TJet<double, std::complex<double> > operator*<double, std::complex<double> >(TJet<double, std::complex<double> > const&, double const&);
+
+template
+TJet<double, std::complex<double> > operator*<double, std::complex<double> >(TJet<double, std::complex<double> > const&, TJet<double, std::complex<double> > const&);
+
+template 
+TJet<double, std::complex<double> > operator/<double, std::complex<double> >(TJet<double, std::complex<double> > const&, double const&);
+
+template
+ TJet<double, std::complex<double> > operator/<double, std::complex<double> >(TJet<double, std::complex<double> > const&, TJet<double, std::complex<double> > const&);
+
+template 
 TJet<std::complex<double>, double> operator/<std::complex<double>, double>(std::complex<double> const&, TJet<std::complex<double>, double> const&);
+
+template 
+TJet<std::complex<double>, double> operator/<std::complex<double>, double>(TJet<std::complex<double>, double> const&, std::complex<double> const&);
+
+
+template
+std::basic_ostream<char, std::char_traits<char> >& operator<< <double, std::complex<double> >(std::basic_ostream<char, std::char_traits<char> >&, TJet<double, std::complex<double> > const&);
+
+template 
+bool operator<=<std::complex<double>, double>(TJLterm<std::complex<double>, double> const&, TJLterm<std::complex<double>, double> const&);
 
 template 
 TJet<double, std::complex<double> > cosh<double, std::complex<double> >(TJet<double, std::complex<double> > const&);
 
-template 
-TJet<std::complex<double>, double> operator/<std::complex<double>, double>(TJet<std::complex<double>, double> const&, std::complex<double> const&);
 
 template 
 bool operator!=<double, std::complex<double> >(TJet<double, std::complex<double> > const&, TJet<double, std::complex<double> > const&);
@@ -148,12 +206,6 @@ template
 TJet<double, std::complex<double> > asin<double, std::complex<double> >(TJet<double, std::complex<double> > const&);
 
 template 
-TJet<std::complex<double>, double> operator*<std::complex<double>, double>(std::complex<double> const&, TJet<std::complex<double>, double> const&);
-
-template 
-TJetVector<double, std::complex<double> > operator*<double, std::complex<double> >(TJet<double, std::complex<double> > const&, Vector const&);
-
-template 
 bool operator<=<double, std::complex<double> >(TJLterm<double, std::complex<double> > const&, TJLterm<double, std::complex<double> > const&);
 
 template 
@@ -163,25 +215,11 @@ template
 TJet<std::complex<double>, double> sqrt<std::complex<double>, double>(TJet<std::complex<double>, double> const&);
 
 template 
-TJetVector<std::complex<double>, double> operator*<std::complex<double>, double>(TMatrix<std::complex<double> > const&, TJetVector<std::complex<double>, double> const&);
-
-template 
-TJetVector<double, std::complex<double> > operator*<double, std::complex<double> >(TMatrix<double> const&, TJetVector<double, std::complex<double> > const&);
-
-template 
-TJet<std::complex<double>, double> operator+<std::complex<double>, double>(TJet<std::complex<double>, double> const&, TJet<std::complex<double>, double> const&);
-
-template 
 TJet<double, std::complex<double> > pow<double, std::complex<double> >(TJet<double, std::complex<double> > const&, double const&);
 
-template 
-TJet<std::complex<double>, double> operator+<std::complex<double>, double>(std::complex<double> const&, TJet<std::complex<double>, double> const&);
 
 template 
 TJet<double, std::complex<double> > operator/<double, std::complex<double> >(double const&, TJet<double, std::complex<double> > const&);
-
-//template
-//std::vector<TJL<std::complex<double>, double>*, std::allocator<TJL<std::complex<double>, double>*> >::_M_insert_aux(__gnu_cxx::__normal_iterator<TJL<std::complex<double>, double>**, std::vector<TJL<std::complex<double>, double>*, std::allocator<TJL<std::complex<double>, double>*> > >, TJL<std::complex<double>, double>* const&);
 
 template 
 bool operator==<std::complex<double>, double>(TJL<std::complex<double>, double> const&, std::complex<double> const&);
@@ -202,32 +240,11 @@ template
 TJet<double, std::complex<double> > sinh<double, std::complex<double> >(TJet<double, std::complex<double> > const&);
 
 template 
-TJet<double, std::complex<double> > operator*<double, std::complex<double> >(double const&, TJet<double, std::complex<double> > const&);
-
-template 
-TJetVector<double, std::complex<double> > operator-<double, std::complex<double> >(TJetVector<double, std::complex<double> > const&);
-
-template 
 TJetVector<double, std::complex<double> > operator^<double, std::complex<double> >(Vector const&, TJetVector<double, std::complex<double> > const&);
-
-template 
-TJet<std::complex<double>, double> operator-<std::complex<double>, double>(TJet<std::complex<double>, double> const&, TJet<std::complex<double>, double> const&);
 
 template 
 bool operator%=<std::complex<double>, double>(TJLterm<std::complex<double>, double> const&, TJLterm<std::complex<double>, double> const&);
 
-template 
-TJet<double, std::complex<double> > operator-<double, std::complex<double> >(TJet<double, std::complex<double> > const&, TJet<double, std::complex<double> > const&);
-
-template 
-TJetVector<double, std::complex<double> > operator*<double, std::complex<double> >(TJet<double, std::complex<double> > const&, TJetVector<double, std::complex<double> > const&);
-
-
-template 
-TJet<double, std::complex<double> > operator-<double, std::complex<double> >(double const&, TJet<double, std::complex<double> > const&);
-
-template 
-TJet<std::complex<double>, double> operator+<std::complex<double>, double>(TJet<std::complex<double>, double> const&, std::complex<double> const&);
 
 template 
 TJet<double, std::complex<double> > sin<double, std::complex<double> >(TJet<double, std::complex<double> > const&);
@@ -238,33 +255,18 @@ TJet<double, std::complex<double> > cos<double, std::complex<double> >(TJet<doub
 template 
 TJet<double, std::complex<double> > pow<double, std::complex<double> >(TJet<double, std::complex<double> > const&, int);
 
-template 
-TJet<std::complex<double>, double> operator*<std::complex<double>, double>(TJet<std::complex<double>, double> const&, TJet<std::complex<double>, double> const&);
-
-template 
-TJet<double, std::complex<double> > operator-<double, std::complex<double> >(TJet<double, std::complex<double> > const&, double const&);
 
 template 
 Tcoord<std::complex<double>, double>::Tcoord(Tcoord<std::complex<double>, double> const&);
 
-template 
-TJet<double, std::complex<double> > operator+<double, std::complex<double> >(TJet<double, std::complex<double> > const&, double const&);
 
 template 
 bool operator!=<double, std::complex<double> >(TJet<double, std::complex<double> > const&, double const&);
 
 
-template 
-TJet<std::complex<double>, double> operator-<std::complex<double>, double>(TJet<std::complex<double>, double> const&);
-
-template 
-TJet<double, std::complex<double> > operator+<double, std::complex<double> >(TJet<double, std::complex<double> > const&, TJet<double, std::complex<double> > const&);
 
 template 
 std::basic_istream<char, std::char_traits<char> >& operator>><double, std::complex<double> >(std::basic_istream<char, std::char_traits<char> >&, TJetVector<double, std::complex<double> >&);
-
-template 
-TJL<std::complex<double>, std::complex<double> >::HideousException::HideousException(int, int, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, int, char const*, char const*);
 
 template 
 TJet<std::complex<double>, double> exp<std::complex<double>, double>(TJet<std::complex<double>, double> const&);
@@ -272,8 +274,103 @@ TJet<std::complex<double>, double> exp<std::complex<double>, double>(TJet<std::c
 template 
 TJet<std::complex<double>, double> operator/<std::complex<double>, double>(TJet<std::complex<double>, double> const&, TJet<std::complex<double>, double> const&);
 
-template 
-TJet<double, std::complex<double> > operator*<double, std::complex<double> >(TJet<double, std::complex<double> > const&, double const&);
 
 template
 std::basic_ostream<char, std::char_traits<char> >& operator<< <double, std::complex<double> >(std::basic_ostream<char, std::char_traits<char> >&, TJetVector<double, std::complex<double> > const&);
+
+template
+std::basic_istream<char, std::char_traits<char> >& operator>><double, std::complex<double> >(std::basic_istream<char, std::char_traits<char> >&, TJet<double, std::complex<double> >&);
+
+template
+std::basic_ostream<char, std::char_traits<char> >& operator<< <double, std::complex<double> >(std::basic_ostream<char, std::char_traits<char> >&, TJL<double, std::complex<double> > const&);
+
+template
+bool operator==<std::complex<double>, double>(TJLterm<std::complex<double>, double> const&, TJLterm<std::complex<double>, double> const&);
+
+template
+class boost::simple_segregated_storage<unsigned int>;
+
+template
+std::basic_istream<char, std::char_traits<char> >& streamIn<double, std::complex<double> >(std::basic_istream<char, std::char_traits<char> >&, TJetEnvironment<double, std::complex<double> >**);
+
+template
+std::basic_ostream<char, std::char_traits<char> >& operator<< <std::complex<double>, double>(std::basic_ostream<char, std::char_traits<char> >&, TJL<std::complex<double>, double> const&);
+
+template
+std::basic_ostream<char, std::char_traits<char> >& operator<< <double, std::complex<double> >(std::basic_ostream<char, std::char_traits<char> >&, TJetEnvironment<double, std::complex<double> > const&);
+
+template
+std::complex<double> std::sqrt<double>(std::complex<double> const&);
+
+template
+bool operator==<double, std::complex<double> >(TJLterm<double, std::complex<double> > const&, TJLterm<double, std::complex<double> > const&);
+
+template 
+std::basic_ostream<char, std::char_traits<char> >& operator<< <std::complex<double>, double>(std::basic_ostream<char, std::char_traits<char> >&, TJetEnvironment<std::complex<double>, double> const&);
+
+template
+class std::vector< TJL<std::complex<double>, double> * >;
+
+template
+class std::vector< TJL<double, std::complex<double> > *>;
+
+template
+std::basic_istream<char, std::char_traits<char> >& operator>><double, std::complex<double> >(std::basic_istream<char, std::char_traits<char> >&, TJL<double, std::complex<double> >&);
+
+
+//=============================
+// Memory allocation templates
+//=============================
+
+template 
+class boost::pool<>;
+
+template 
+class gms::FastPODAllocator<TJLterm<std::complex<double>, double               > >;
+
+template 
+class gms::FastPODAllocator<TJLterm<double,               std::complex<double> > >;
+
+//=======================================================================================================
+// I am not sure why this is needed, but apparently it is. Probably originates from the bowels of BOOST ;-) 
+//=======================================================================================================
+
+template
+void std::fill< std::vector< TJL< complex<double>,double >* >::iterator, TJL< complex<double>, double >* > 
+               (std::vector< TJL< complex<double>,double >* >::iterator,  
+                std::vector< TJL< complex<double>,double >* >::iterator,  TJL<complex<double>, double>* const& );
+
+template
+void std::fill< std::vector< TJL< double, complex<double> >* >::iterator, TJL< double, complex<double> >* > 
+              (std::vector< TJL<double, complex<double> >* >::iterator, 
+               std::vector< TJL<double, complex<double> >* >::iterator,
+               TJL<double, complex<double> >* const& );
+template
+std::vector< TJL< complex<double>,double >* >::iterator
+std::fill_n< std::vector< TJL< complex<double>,double >* >::iterator, unsigned int,  TJL< complex<double>, double >* > 
+                 (std::vector< TJL< complex<double>,double >* >::iterator, 
+                  unsigned int,  
+                  TJL< complex<double>, double>* const& );
+
+template
+std::vector< TJL< double, complex<double> >* >::iterator
+std::fill_n< std::vector< TJL< double, complex<double> >* >::iterator, unsigned int, TJL< double, complex<double> >* > 
+                (std::vector< TJL<double, complex<double> >* >::iterator, 
+                 unsigned int,
+                 TJL<double, complex<double> >* const& );
+template
+TJL< double, complex<double> >**
+std::fill_n< TJL< double, complex<double> >**, unsigned int, TJL< double, complex<double> >* > 
+                (TJL<double, complex<double> >**, 
+                 unsigned int,
+                 TJL<double, complex<double> > * const& );
+template
+TJL< complex<double>, double >**
+std::fill_n< TJL< complex<double>, double >**, unsigned int, TJL< complex<double>,double >* > 
+                (TJL<complex<double>, double >**, 
+                 unsigned int,
+                 TJL<complex<double>, double > * const& );
+
+
+
+
