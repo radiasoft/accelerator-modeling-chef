@@ -36,6 +36,7 @@
 #include <iomanip>
 
 #include <iosetup.h>
+#include <MathConstants.h>
 #include <PhysicsConstants.h>
 #include <CF_rbend.h>
 #include <quadrupole.h>
