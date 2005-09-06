@@ -11,7 +11,7 @@ LANGUAGE	= C++
 
 CONFIG	+= qt warn_on release
 
-include ( "..\..\chef-config\config.pri" )
+include ( ../../chef-config/config.pri )
 
 HEADERS	+= include/DbConnectDialog.h \
 	   include/DbRetrieveDialog.h \
