@@ -20,7 +20,7 @@ unix:CONFIG	+= qt warn_on debug thread rtti exceptions dll
 #
 # Note: the relative path is broken under UNIX. Forward slashes do not seem to work, but win32 style backslashes are OK.
 #
-!include ( "..\..\..\chef-config\config.pri" ) {
+!include ( ../../../chef-config/config.pri ) {
         message( "Error: failed to find global configuration file config.pri" ) 
 }
 
@@ -33,12 +33,12 @@ SOURCES	+= ./src/py-chefplot-module.cpp \
 
 INCLUDEPATH += ../chefplot/include
 INCLUDEPATH += ../chefplot/src/ui
-INCLUDEPATH +=  $$FNAL_INSTALL_TOP_DIR/include/python-bindings
+INCLUDEPATH +=  $${FNAL_INSTALL_TOP_DIR}/include/python-bindings
 
-INCLUDEPATH += $$PYTHON_INC
+INCLUDEPATH += $${PYTHON_INC}
 
-LIBS	+= -L$$FNAL_LIBDIR -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -L$$GLIB_LIBDIR -lglib-2.0
+LIBS	+= -L$${FNAL_LIBDIR} -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -L$$GLIB_LIBDIR -lglib-2.0
 LIBS    += -lqwt
 
-unix:LIBS  +=  $$QMAKE_RPATH$$FNAL_LIBDIR $$QMAKE_RPATH$$GLIB_LIBDIR
+unix:LIBS  +=  -Wl,-rpath,$${FNAL_LIBDIR}  -Wl,-rpath,$${GLIB_LIBDIR}
 
