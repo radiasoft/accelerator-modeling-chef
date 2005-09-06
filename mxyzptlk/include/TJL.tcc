@@ -43,6 +43,7 @@
 **************************************************************************
 *************************************************************************/
 
+#ifdef  EXPLICIT_TEMPLATE_INSTANTIATIONS 
 
 #ifndef TJL_TCC
 #define TJL_TCC
@@ -399,12 +400,12 @@ TJL<T1,T2>* TJL<T1,T2>::makeTJL( const T1& x, TJetEnvironment<T1,T2>* pje )
 
  if( pje ) {
    p->_accuWgt = pje->_maxWeight;
-   insert( new( p->storePtr() ) TJLterm<T1,T2>( IntArray( pje->_numVar ), x, pje ) );
+   p->insert( new( p->storePtr() ) TJLterm<T1,T2>( IntArray( pje->_numVar ), x, pje ) );
 
  }
  else {
    p->_accuWgt = 100000;    // ??? Better way?
-   insert( new( p->storePtr() ) TJLterm<T1,T2>( IntArray(1), x, 0 ) );
+   p->insert( new( p->storePtr() ) TJLterm<T1,T2>( IntArray(1), x, 0 ) );
  }
 
  return p;
@@ -457,11 +458,11 @@ TJL<T1,T2>* TJL<T1,T2>::makeTJL( const IntArray& e, const T1& x, TJetEnvironment
 
  if( pje ) {
    p->_accuWgt = pje->_maxWeight;
-   insert( new( p->storePtr() ) TJLterm<T1,T2>( e, x, pje ) );
+   p->insert( new( p->storePtr() ) TJLterm<T1,T2>( e, x, pje ) );
  }
  else {
    p->_accuWgt = 100000;    // ??? Better way?
-   insert( new( p->storePtr() ) TJLterm<T1,T2>( IntArray(1), x, 0 ) );
+   p->insert( new( p->storePtr() ) TJLterm<T1,T2>( IntArray(1), x, 0 ) );
  }
 
  return p;
@@ -1115,7 +1116,7 @@ template<typename T1, typename T2>
 TJLterm<T1,T2> TJL<T1,T2>::firstTerm() const 
 {
  TJLterm<T1,T2>* p = 0;
- p = (TJLterm<T1,T2>*) ( _theList.firstInfoPtr() );
+ p = ( TJLterm<T1,T2>* ) const_cast<dlist&>(_theList).firstInfoPtr() ;
  if( 0 != p ) {
    return TJLterm<T1,T2>( *p );
  }
@@ -1637,7 +1638,7 @@ TJLterm<T1,T2> TJLterm<T1,T2>::operator*( const TJLterm<T1,T2>& y )
  int n = 0;
 
  if((  ( n = this->_index.Dim() ) != y._index.Dim()  )) {
-   throw( TJL<T1,T2>::BadDimension( this->_index.Dim(), y._index.Dim(),
+   throw( typename TJL<T1,T2>::BadDimension( this->_index.Dim(), y._index.Dim(),
                             __FILE__, __LINE__, 
                             "TJLterm<T1,T2> TJLterm<T1,T2>::operator*( const TJLterm<T1,T2>& y ) ",
                             "Inconsistent number of coordinates." ) );
@@ -1656,7 +1657,7 @@ template<typename T1, typename T2>
 TJLterm<T1,T2> TJLterm<T1,T2>::operator+( const TJLterm<T1,T2>& y ) 
 {
  if( this->_index != y._index ) {
-   throw( TJL<T1,T2>::BadDimension( this->_index.Dim(), y._index.Dim(),
+   throw( typename TJL<T1,T2>::BadDimension( this->_index.Dim(), y._index.Dim(),
                             __FILE__, __LINE__, 
                             "TJLterm<T1,T2> TJLterm<T1,T2>::operator*( const TJLterm<T1,T2>& y ) ",
                             "Inconsistent number of coordinates." ) );
@@ -1933,3 +1934,5 @@ std::vector<TJL<T1,T2>* > TJL<T1,T2>::_thePool;
 
 
 #endif // TJL_TCC
+
+#endif // EXPLICIT_TEMPLATE_INSTANTIATIONS 
