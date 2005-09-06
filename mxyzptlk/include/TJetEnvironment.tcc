@@ -41,7 +41,7 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
+#ifdef EXPLICIT_TEMPLATE_INSTANTIATIONS
 
 #ifndef TJETENVIRONMENT_TCC
 #define TJETENVIRONMENT_TCC
@@ -644,3 +644,5 @@ istream& streamIn( istream& is, TJetEnvironment<T1,T2>** x )
 #undef PREPFORCHANGE
 
 #endif // TJETENVIRONMENT_TCC
+
+#endif // EXPLICIT_TEMPLATE_INSTANTIATIONS

@@ -27,6 +27,7 @@
 **************************************************************************
 *************************************************************************/
 
+#ifdef  EXPLICIT_TEMPLATE_INSTANTIATIONS
 #ifndef TJETVECTOR_TCC
 #define TJETVECTOR_TCC
 
@@ -415,7 +416,7 @@ TJet<T1,T2> TJetVector<T1,T2>::operator* ( const Vector& y ) const
 #endif
 
   TJet<T1,T2> u( _myEnv );
-  u = 0.0; // This should not be necessary. Why is it here?
+  u = T1(); // This should not be necessary. Why is it here?
   for ( int i = 0; i < _dim; i++ ) { u += _comp[i] * y(i); }
   return u;
 }
@@ -842,3 +843,5 @@ void TJetVector<T1,T2>::getReference( T1* r ) const
 
 
 #endif // TJETVECTOR_TCC
+
+#endif // EXPLICIT_TEMPLATE_INSTANTIATIONS
