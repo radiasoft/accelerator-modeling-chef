@@ -56,11 +56,12 @@
 #include <LieOperator.h>
 #include <Mapping.h>
 #include <MathConstants.h>
-
 #include <iomanip>
 
 using namespace std;
 using FNAL::Complex;
+using FNAL::pcerr;
+using FNAL::pcout;
 
 int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
 {

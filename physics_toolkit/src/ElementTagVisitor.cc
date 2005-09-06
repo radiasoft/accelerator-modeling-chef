@@ -42,6 +42,9 @@ using boost::any;
 using boost::any_cast;
 using std::vector;
 using std::string;
+using FNAL::pcout;
+using FNAL::pcerr;
+
 
 
 ElementTagVisitor::ElementTagVisitor( vector<Location>& locations, 
