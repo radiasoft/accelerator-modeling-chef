@@ -145,18 +145,23 @@ namespace gms {
 		~FastPODAllocator() {}
 
 	private:
-		// each FastAllocator specialization has it's own memory pool
-                // arrays are allocated from an ordered pool 
+		// Each FastAllocator specialization has its own memory pool
+                // Arrays are allocated from an ordered pool 
+
 		static boost::pool<> s_memPool;
 		static boost::pool<> s_ordered_memPool;
 	};
 
-	//the static variable s_memPool is defined here. It's constructor is passed the object size.
-	template <class T>
-	boost::pool<> FastPODAllocator<T>::s_memPool(sizeof(T));
+	// The static variable s_memPool is defined here. Its constructor is passed the object size.
+        // We use the virtually undocumented third argument to set the initial size of the pool
+        // boost::pool<> uses a doubling algorithm to resize the pool. The initial size is 
+        // 32, unless it is overriden.  
 
 	template <class T>
-	boost::pool<> FastPODAllocator<T>::s_ordered_memPool( sizeof(T) );
+	boost::pool<> FastPODAllocator<T>::s_memPool(sizeof(T), 2048);
+
+	template <class T>
+	boost::pool<> FastPODAllocator<T>::s_ordered_memPool( sizeof(T), 2048 );
 }
 
 #endif
