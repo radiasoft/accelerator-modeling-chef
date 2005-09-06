@@ -26,6 +26,8 @@
 
 #include "BeamlineContext.h"
 
+using std::ostringstream;
+
 void editDialog::visitBmlnElmnt( bmlnElmnt* x )
 {
   QMessageBox::warning( 0, "BeamlineBrowser", 
