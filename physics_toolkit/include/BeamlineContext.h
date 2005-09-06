@@ -228,8 +228,8 @@ class BeamlineContext
     const beamline* cheatBmlPtr() const;
 
     // Stream functions
-    friend ostream& operator<<( ostream&, const BeamlineContext& );
-    friend istream& operator>>( istream&,       BeamlineContext& );
+    friend std::ostream& operator<<( std::ostream&, const BeamlineContext& );
+    friend std::istream& operator>>( std::istream&,       BeamlineContext& );
 
     Proton                _proton;
     ProtonBunch           _protonBunch;
