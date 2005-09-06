@@ -45,16 +45,37 @@
 #include <config.h>
 #endif
 
+#include <MathConstants.h>
+
 #include <GenericException.h>
 #include <complexAddon.h>
 #include <VectorD.h>
 
+#include <TJL.h>
 #include <TJL.tcc>
+
+#include <TJetEnvironment.h>
 #include <TJetEnvironment.tcc>
+
+#include <TJet.h>
 #include <TJet.tcc>
+
+#include <TJetVector.h>
 #include <TJetVector.tcc>
+
+#include <TLieOperator.h>
 #include <TLieOperator.tcc>
+
+#include <TMapping.h>
 #include <TMapping.tcc>
+
+
+#define CHECKOUT(test,fcn,message)    \
+  if( test ) {                        \
+    throw( GenericException(          \
+             __FILE__, __LINE__,      \
+             fcn, message        ) ); \
+  }
 
 // ================================================================
 //      External routines
@@ -76,23 +97,23 @@ using namespace std;
 using FNAL::Complex;
 
 
-template<> TJL<Complex,double>* TJet<double,Complex>::newJLOpp() const;
-template<> TJL<double,Complex>* TJet<Complex,double>::newJLOpp() const;
-template<> TJL<Complex,double>* TJet<double,Complex>::newJLOpp( TJetEnvironment<Complex,double>* pje ) const;
-template<> TJL<double,Complex>* TJet<Complex,double>::newJLOpp( TJetEnvironment<double,Complex>* pje ) const;
+template<> TJL<complex<double> ,double>* TJet<double,complex<double> >::newJLOpp() const;
+template<> TJL<double,complex<double> >* TJet<complex<double> ,double>::newJLOpp() const;
+template<> TJL<complex<double> ,double>* TJet<double,complex<double> >::newJLOpp( TJetEnvironment<complex<double> ,double>* pje ) const;
+template<> TJL<double,complex<double> >* TJet<complex<double> ,double>::newJLOpp( TJetEnvironment<double,complex<double> >* pje ) const;
 
 
 // ================================================================
 
-// TJetEnvironment<double,Complex>* TJet<double,Complex>::_workEnv;
-// TJetEnvironment<double,Complex>* TJet<double,Complex>::_lastEnv; 
-// TJetEnvironment<Complex,double>* TJet<Complex,double>::_workEnv;
-// TJetEnvironment<Complex,double>* TJet<Complex,double>::_lastEnv; 
+// TJetEnvironment<double,complex<double> >* TJet<double,complex<double> >::_workEnv;
+// TJetEnvironment<double,complex<double> >* TJet<double,complex<double> >::_lastEnv; 
+// TJetEnvironment<complex<double> ,double>* TJet<complex<double> ,double>::_workEnv;
+// TJetEnvironment<complex<double> ,double>* TJet<complex<double> ,double>::_lastEnv; 
 
 // ================================================================
 
-bool EnvEquivalent( const TJetEnvironment<double,Complex>* x, 
-                    const TJetEnvironment<Complex,double>* y ) 
+bool EnvEquivalent( const TJetEnvironment<double,complex<double> >* x, 
+                    const TJetEnvironment<complex<double> ,double>* y ) 
 {
   static int i;
   if( x->_numVar    != y->_numVar    ) return false;
@@ -107,15 +128,15 @@ bool EnvEquivalent( const TJetEnvironment<double,Complex>* x,
   return true;
 }
 
-bool EnvEquivalent( const TJetEnvironment<Complex,double>* x, 
-                    const TJetEnvironment<double,Complex>* y ) {
+bool EnvEquivalent( const TJetEnvironment<complex<double> ,double>* x, 
+                    const TJetEnvironment<double,complex<double> >* y ) {
   return EnvEquivalent( y, x );
 }
 
 // ================================================================
 
 
-TJetEnvironment<Complex,double>::TJetEnvironment( const TJetEnvironment<double,Complex>& x )
+TJetEnvironment<complex<double> ,double>::TJetEnvironment( const TJetEnvironment<double,complex<double> >& x )
 : _maxWeight( x._maxWeight ), 
   _numVar( x._numVar ), 
   _spaceDim( x._spaceDim ),
@@ -123,17 +144,17 @@ TJetEnvironment<Complex,double>::TJetEnvironment( const TJetEnvironment<double,C
   _monomial(0), _TJLmonomial(0), _TJLmml(0), _maxTerms(0), 
   _offset( x._maxWeight, x._numVar )
 {
-  if( TJet<Complex,double>::_workEnv != 0 ) {
+  if( TJet<complex<double> ,double>::_workEnv != 0 ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "TJetEnvironment<Complex,double>::TJetEnvironment<Complex,double>( const TJetEnvironment<double,Complex>& )",
-           "Close open TJet<Complex,double> environment before copying." ) );
+           "TJetEnvironment<complex<double> ,double>::TJetEnvironment<complex<double> ,double>( const TJetEnvironment<double,complex<double> >& )",
+           "Close open TJet<complex<double> ,double> environment before copying." ) );
   }
 
   if( _numVar == 0 ) {
     cerr << "\n\n"
          << "*** WARNING ***                                          \n"
-         << "*** WARNING *** TJetEnvironment<Complex,double>::TJetEnvironment<Complex,double>     \n"
-         << "*** WARNING *** ( const TJetEnvironment<double,Complex>& )              \n"
+         << "*** WARNING *** TJetEnvironment<complex<double> ,double>::TJetEnvironment<complex<double> ,double>     \n"
+         << "*** WARNING *** ( const TJetEnvironment<double,complex<double> >& )              \n"
          << "*** WARNING ***                                          \n"
          << "*** WARNING *** You are copying a null environment.      \n"
          << "*** WARNING ***                                          \n"
@@ -172,19 +193,19 @@ TJetEnvironment<Complex,double>::TJetEnvironment( const TJetEnvironment<double,C
 
   _dof                = x._dof;
 
-  _refPoint = new Complex[ n ];
+  _refPoint = new complex<double> [ n ];
   _scale = new double[ n ];
   _allZeroes.Reconstruct( n );
 
   for( i = 0; i < n; i++ ) {
-   _refPoint[i] = Complex( x._refPoint[i], 0.0 );
+   _refPoint[i] = complex<double> ( x._refPoint[i], 0.0 );
    _scale[i] = x._scale[i];
    _allZeroes(i) = 0;   // ??? Redundant and unnecessary.
   }
 
   // REMOVE: bcfr = bcfRec( w + n, n );
-  // REMOVE: _monomial   = new Complex[ bcfr ];
-  // REMOVE: _TJLmonomial = new TJet<Complex,double>  [ bcfr ];
+  // REMOVE: _monomial   = new complex<double> [ bcfr ];
+  // REMOVE: _TJLmonomial = new TJet<complex<double> ,double>  [ bcfr ];
   // REMOVE: for( i = 0; i < bcfr; i++ ) _TJLmonomial[i].Reconstruct( this );
 
   _buildScratchPads();
@@ -195,19 +216,19 @@ TJetEnvironment<Complex,double>::TJetEnvironment( const TJetEnvironment<double,C
 }
 
 
-TJetEnvironment<Complex,double>& TJetEnvironment<Complex,double>::operator=( const TJetEnvironment<double,Complex>& x )
+TJetEnvironment<complex<double> ,double>& TJetEnvironment<complex<double> ,double>::operator=( const TJetEnvironment<double,complex<double> >& x )
 {
-  if( TJet<Complex,double>::_workEnv != 0 ) {
+  if( TJet<complex<double> ,double>::_workEnv != 0 ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "TJetEnvironment<Complex,double>& TJetEnvironment<Complex,double>::operator=( const TJetEnvironment<double,Complex>& )",
-           "Close the open TJet<Complex,double> environment first." ) );
+           "TJetEnvironment<complex<double> ,double>& TJetEnvironment<complex<double> ,double>::operator=( const TJetEnvironment<double,complex<double> >& )",
+           "Close the open TJet<complex<double> ,double> environment first." ) );
   }
 
   if( _numVar == 0 ) {
     cerr << "\n\n"
          << "*** WARNING ***                                          \n"
-         << "*** WARNING *** TJetEnvironment<Complex,double>::TJetEnvironment<Complex,double>     \n"
-         << "*** WARNING *** ( const TJetEnvironment<double,Complex>& )              \n"
+         << "*** WARNING *** TJetEnvironment<complex<double> ,double>::TJetEnvironment<complex<double> ,double>     \n"
+         << "*** WARNING *** ( const TJetEnvironment<double,complex<double> >& )              \n"
          << "*** WARNING ***                                          \n"
          << "*** WARNING *** You are copying a null environment.      \n"
          << "*** WARNING ***                                          \n"
@@ -256,20 +277,20 @@ TJetEnvironment<Complex,double>& TJetEnvironment<Complex,double>::operator=( con
 
   delete [] _refPoint;
   delete [] _scale;
-  _refPoint = new Complex[ n ];
+  _refPoint = new complex<double> [ n ];
   _scale = new double[ n ];
   _allZeroes.Reconstruct( n );
 
   for( i = 0; i < n; i++ ) {
-   _refPoint[i] = Complex( x._refPoint[i], 0.0 );
+   _refPoint[i] = complex<double> ( x._refPoint[i], 0.0 );
    _scale[i] = x._scale[i];
    _allZeroes(i) = 0;   // ??? Redundant and unnecessary.
   }
 
   // Final constructions ...
   // REMOVE: bcfr = bcfRec( w + n, n );
-  // REMOVE: _monomial   = new Complex[ bcfr ];
-  // REMOVE: _TJLmonomial = new TJet<Complex,double>  [ bcfr ];
+  // REMOVE: _monomial   = new complex<double> [ bcfr ];
+  // REMOVE: _TJLmonomial = new TJet<complex<double> ,double>  [ bcfr ];
   // REMOVE: for( i = 0; i < bcfr; i++ ) _TJLmonomial[i].Reconstruct( this );
 
   _buildScratchPads();
@@ -280,7 +301,7 @@ TJetEnvironment<Complex,double>& TJetEnvironment<Complex,double>::operator=( con
 
 // ----------------------------------------------------------
 
-TJetEnvironment<double,Complex>::TJetEnvironment<double,Complex>( const TJetEnvironment<Complex,double>& x )
+TJetEnvironment<double,complex<double> >::TJetEnvironment<double,complex<double> >( const TJetEnvironment<complex<double> ,double>& x )
 : _maxWeight( x._maxWeight ), 
   _numVar( x._numVar ), 
   _spaceDim( x._spaceDim ), 
@@ -288,24 +309,24 @@ TJetEnvironment<double,Complex>::TJetEnvironment<double,Complex>( const TJetEnvi
 {
   for( int ii = 0; ii < _numVar; ii++ ) {
     if( imag( x._refPoint[ii] ) != 0.0 ) {
-      throw( TJL<double,Complex>::BadReference ( ii, imag( x._refPoint[ii] ), 
+      throw( TJL<double,complex<double> >::BadReference ( ii, imag( x._refPoint[ii] ), 
                                 __FILE__, __LINE__, 
-                                "TJetEnvironment<double,Complex>::TJetEnvironment<double,Complex>( const TJetEnvironment<Complex,double>& )", 
+                                "TJetEnvironment<double,complex<double> >::TJetEnvironment<double,complex<double> >( const TJetEnvironment<complex<double> ,double>& )", 
                                 "Cannot copy complex environment to real one." ) );
     }
   }
 
-  if( TJet<double,Complex>::_workEnv != 0 ) {
+  if( TJet<double,complex<double> >::_workEnv != 0 ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "TJetEnvironment<double,Complex>::TJetEnvironment<double,Complex>( const TJetEnvironment<Complex,double>& )",
+           "TJetEnvironment<double,complex<double> >::TJetEnvironment<double,complex<double> >( const TJetEnvironment<complex<double> ,double>& )",
            "Close the open Jet environment before copying." ) );
   }
 
   if( _numVar == 0 ) {
     cerr << "\n\n"
          << "*** WARNING ***                                          \n"
-         << "*** WARNING *** TJetEnvironment<double,Complex>::TJetEnvironment<double,Complex>       \n"
-         << "*** WARNING *** ( const TJetEnvironment<Complex,double>& )             \n"
+         << "*** WARNING *** TJetEnvironment<double,complex<double> >::TJetEnvironment<double,complex<double> >       \n"
+         << "*** WARNING *** ( const TJetEnvironment<complex<double> ,double>& )             \n"
          << "*** WARNING ***                                          \n"
          << "*** WARNING *** You are copying a null environment.      \n"
          << "*** WARNING ***                                          \n"
@@ -356,7 +377,7 @@ TJetEnvironment<double,Complex>::TJetEnvironment<double,Complex>( const TJetEnvi
 
   // REMOVE: bcfr = bcfRec( w + n, n );
   // REMOVE: _monomial   = new double[ bcfr ];
-  // REMOVE: _TJLmonomial = new TJet<double,Complex> [ bcfr ];
+  // REMOVE: _TJLmonomial = new TJet<double,complex<double> > [ bcfr ];
   // REMOVE: for( i = 0; i < bcfr; i++ ) _TJLmonomial[i].Reconstruct( this );
 
   _buildScratchPads();
@@ -367,28 +388,28 @@ TJetEnvironment<double,Complex>::TJetEnvironment<double,Complex>( const TJetEnvi
 }
 
 
-TJetEnvironment<double,Complex>& TJetEnvironment<double,Complex>::operator=( const TJetEnvironment<Complex,double>& x )
+TJetEnvironment<double,complex<double> >& TJetEnvironment<double,complex<double> >::operator=( const TJetEnvironment<complex<double> ,double>& x )
 {
   for( int ii = 0; ii < _numVar; ii++ ) {
     if( imag( x._refPoint[ii] ) != 0.0 ) {
-      throw( TJL<double,Complex>::BadReference ( ii, imag( x._refPoint[ii] ), 
+      throw( TJL<double,complex<double> >::BadReference ( ii, imag( x._refPoint[ii] ), 
                                 __FILE__, __LINE__, 
-                                "TJetEnvironment<double,Complex>& TJetEnvironment<double,Complex>::operator=( const TJetEnvironment<Complex,double>& )", 
+                                "TJetEnvironment<double,complex<double> >& TJetEnvironment<double,complex<double> >::operator=( const TJetEnvironment<complex<double> ,double>& )", 
                                 "Cannot assign complex environment to real one." ) );
     }
   }
 
-  if( TJet<double,Complex>::_workEnv != 0 ) {
+  if( TJet<double,complex<double> >::_workEnv != 0 ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "TJetEnvironment<double,Complex>& TJetEnvironment<double,Complex>::operator=( const TJetEnvironment<Complex,double>& )",
+           "TJetEnvironment<double,complex<double> >& TJetEnvironment<double,complex<double> >::operator=( const TJetEnvironment<complex<double> ,double>& )",
            "Close the open Jet environment first." ) );
   }
 
   if( _numVar == 0 ) {
     cerr << "\n\n"
          << "*** WARNING ***                                          \n"
-         << "*** WARNING *** TJetEnvironment<double,Complex>::operator=              \n"
-         << "*** WARNING *** ( const TJetEnvironment<Complex,double>& )             \n"
+         << "*** WARNING *** TJetEnvironment<double,complex<double> >::operator=              \n"
+         << "*** WARNING *** ( const TJetEnvironment<complex<double> ,double>& )             \n"
          << "*** WARNING ***                                          \n"
          << "*** WARNING *** You are copying a null environment.      \n"
          << "*** WARNING ***                                          \n"
@@ -451,7 +472,7 @@ TJetEnvironment<double,Complex>& TJetEnvironment<double,Complex>::operator=( con
   // Final constructions ...
   // REMOVE: bcfr = bcfRec( w + n, n );
   // REMOVE: _monomial   = new double[ bcfr ];
-  // REMOVE: _TJLmonomial = new TJet<double,Complex> [ bcfr ];
+  // REMOVE: _TJLmonomial = new TJet<double,complex<double> > [ bcfr ];
   // REMOVE: for( i = 0; i < bcfr; i++ ) _TJLmonomial[i].Reconstruct( this );
 
   _buildScratchPads();
@@ -462,52 +483,52 @@ TJetEnvironment<double,Complex>& TJetEnvironment<double,Complex>::operator=( con
 // ----------------------------------------------------------
 // ----------------------------------------------------------
 
-TJetEnvironment<Complex,double>* TJet<Complex,double>::CreateEnvFrom( TJetEnvironment<double,Complex>* x )
+TJetEnvironment<complex<double> ,double>* TJet<complex<double> ,double>::CreateEnvFrom( TJetEnvironment<double,complex<double> >* x )
 {
   // Check to see if an appropriate environment already exists
-  slist_iterator g( TJet<Complex,double>::_environments );
-  TJetEnvironment<Complex,double>* pje;
-  while( pje = (TJetEnvironment<Complex,double>*) g() ) {
+  slist_iterator g( TJet<complex<double> ,double>::_environments );
+  TJetEnvironment<complex<double> ,double>* pje;
+  while( pje = (TJetEnvironment<complex<double> ,double>*) g() ) {
     if( EnvEquivalent( x, pje ) ) return pje;
   }
  
-  // If not, then create a new TJetEnvironment<Complex,double> ...........
-  TJetEnvironment<Complex,double>* pje_new = new TJetEnvironment<Complex,double>( *x );
-  TJet<Complex,double>::_environments.append( pje_new );
+  // If not, then create a new TJetEnvironment<complex<double> ,double> ...........
+  TJetEnvironment<complex<double> ,double>* pje_new = new TJetEnvironment<complex<double> ,double>( *x );
+  TJet<complex<double> ,double>::_environments.append( pje_new );
   return pje_new;
 }
 
 // ----------------------------------------------------------
 // ----------------------------------------------------------
 
-TJetEnvironment<double,Complex>* TJet<double,Complex>::CreateEnvFrom( TJetEnvironment<Complex,double>* x )
+TJetEnvironment<double,complex<double> >* TJet<double,complex<double> >::CreateEnvFrom( TJetEnvironment<complex<double> ,double>* x )
 {
   // Check to see if an appropriate environment already exists
-  slist_iterator g( TJet<double,Complex>::_environments );
-  TJetEnvironment<double,Complex>* pje;
-  while( pje = (TJetEnvironment<double,Complex>*) g() ) {
+  slist_iterator g( TJet<double,complex<double> >::_environments );
+  TJetEnvironment<double,complex<double> >* pje;
+  while( pje = (TJetEnvironment<double,complex<double> >*) g() ) {
     if( EnvEquivalent( pje, x ) ) return pje;
   }
  
-  // If not, then create a new TJetEnvironment<double,Complex> ............
-  TJetEnvironment<double,Complex>* pje_new = new TJetEnvironment<double,Complex>( *x );
-  TJet<double,Complex>::_environments.append( pje_new );
+  // If not, then create a new TJetEnvironment<double,complex<double> > ............
+  TJetEnvironment<double,complex<double> >* pje_new = new TJetEnvironment<double,complex<double> >( *x );
+  TJet<double,complex<double> >::_environments.append( pje_new );
   return pje_new;
 }
 
 // ----------------------------------------------------------
 // ----------------------------------------------------------
 
-TJetEnvironment<double,Complex>* TJet<double,Complex>::CreateEnvFrom( const Vector& x, int order )
+TJetEnvironment<double,complex<double> >* TJet<double,complex<double> >::CreateEnvFrom( const Vector& x, int order )
 {
   // POSTCONDITIONS: The _lastEnv static pointer is not changed.
   //
   // Check to see if an appropriate environment already exists
   int n = x.Dim();
   int i = 0;
-  slist_iterator g( TJet<double,Complex>::_environments );
-  TJetEnvironment<double,Complex>* pje;
-  while( pje = (TJetEnvironment<double,Complex>*) g() ) {
+  slist_iterator g( TJet<double,complex<double> >::_environments );
+  TJetEnvironment<double,complex<double> >* pje;
+  while( pje = (TJetEnvironment<double,complex<double> >*) g() ) {
     bool passed = ( ( order == pje->_maxWeight       ) &&
                     ( n == pje->_spaceDim            ) && 
                     ( pje->_spaceDim == pje->_numVar )    );
@@ -519,24 +540,24 @@ TJetEnvironment<double,Complex>* TJet<double,Complex>::CreateEnvFrom( const Vect
     if( passed ) { return pje; }
   }
  
-  // If not, then create a new TJetEnvironment<double,Complex> ...........
-  TJetEnvironment<double,Complex>* storedEnv = TJet<double,Complex>::_lastEnv;
+  // If not, then create a new TJetEnvironment<double,complex<double> > ...........
+  TJetEnvironment<double,complex<double> >* storedEnv = TJet<double,complex<double> >::_lastEnv;
 
-  TJet<double,Complex>::BeginEnvironment( order );
+  TJet<double,complex<double> >::BeginEnvironment( order );
   for( int i = 0; i < n; i++ ) {
-    new Tcoord<double,Complex>( x(i) );
+    new Tcoord<double,complex<double> >( x(i) );
     // Unfortunately, these cannot be deleted because
     // the TJetEnvironment stores the original pointers, 
     // not the copies.
     // This is very bad!!
   }
-  pje = TJet<double,Complex>::EndEnvironment();
+  pje = TJet<double,complex<double> >::EndEnvironment();
 
-  TJet<double,Complex>::_lastEnv = storedEnv;
+  TJet<double,complex<double> >::_lastEnv = storedEnv;
   return pje;
 }
 
-TJet<Complex,double>::TJet<Complex,double>( const TJet<double,Complex>& x )
+TJet<complex<double> ,double>::TJet<complex<double> ,double>( const TJet<double,complex<double> >& x )
 {
   _jl = x.newJLOpp();
   _constIterPtr = 0;
@@ -544,15 +565,15 @@ TJet<Complex,double>::TJet<Complex,double>( const TJet<double,Complex>& x )
 }
 
 
-TJet<Complex,double>& TJet<Complex,double>::operator=( const TJet<double,Complex>& x )
+TJet<complex<double> ,double>& TJet<complex<double> ,double>::operator=( const TJet<double,complex<double> >& x )
 {
-  if( --(_jl->_rc) == 0 ) TJL<Complex,double>::discardTJL(_jl); // delete _jl;
+  if( --(_jl->_rc) == 0 ) TJL<complex<double> ,double>::discardTJL(_jl); // delete _jl;
   _jl = x.newJLOpp();
   return *this; 
 }
 
 
-TJet<Complex,double>::TJet<Complex,double>( const TJet<double,Complex>& x, TJetEnvironment<Complex,double>* pje )
+TJet<complex<double> ,double>::TJet<complex<double> ,double>( const TJet<double,complex<double> >& x, TJetEnvironment<complex<double> ,double>* pje )
 {
   _jl = x.newJLOpp( pje );
   _constIterPtr = 0;
@@ -562,11 +583,11 @@ TJet<Complex,double>::TJet<Complex,double>( const TJet<double,Complex>& x, TJetE
 
 // ----------------------------------------------------------
 
-TJL<Complex,double>::TJL<Complex,double>( const TJL<double,Complex>& x, TJetEnvironment<Complex,double>* pje ) 
+TJL<complex<double> ,double>::TJL<complex<double> ,double>( const TJL<double,complex<double> >& x, TJetEnvironment<complex<double> ,double>* pje ) 
 {
  dlist_iterator getNext( x._theList );
- TJLterm<double,Complex>* p;
- TJLterm<Complex,double>* q;
+ TJLterm<double,complex<double> >* p;
+ TJLterm<complex<double> ,double>* q;
 
  initStore( x._jltermStoreCapacity );
  
@@ -575,8 +596,8 @@ TJL<Complex,double>::TJL<Complex,double>( const TJL<double,Complex>& x, TJetEnvi
 
  // NOTE: we cannot do a memcpy here because x._value is of type real and _value is of type complex !
 
- while ( p = (TJLterm<double,Complex>*) getNext() ) {
-    q = new ( storePtr() )  TJLterm<Complex,double> ( p->_index, FNAL::Complex(p->_value, 0.0), pje  );
+ while ( p = (TJLterm<double,complex<double> >*) getNext() ) {
+    q = new ( storePtr() )  TJLterm<complex<double> ,double> ( p->_index, complex<double> (p->_value, 0.0), pje  );
     q->_deleted    = p->_deleted;// ??     
     q->_weight     = p->_weight; // ??     
     append(q);
@@ -591,26 +612,26 @@ TJL<Complex,double>::TJL<Complex,double>( const TJL<double,Complex>& x, TJetEnvi
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJLterm<Complex,double>::TJLterm<Complex,double>( const TJLterm<double,Complex>& x )
+TJLterm<complex<double> ,double>::TJLterm<complex<double> ,double>( const TJLterm<double,complex<double> >& x )
 : _deleted(x._deleted), _index( x._index ), _weight( x._weight ), _value( x._value, 0.0 )
 {
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJLterm<Complex,double>::TJLterm<Complex,double>( const TJLterm<double,Complex>* x )
+TJLterm<complex<double> ,double>::TJLterm<complex<double> ,double>( const TJLterm<double,complex<double> >* x )
 : _deleted(x->_deleted), _index( x->_index ), _weight( x->_weight ), _value( x->_value, 0.0 )
 {
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJL<Complex,double>* TJL<Complex,double>::makeTJL( const TJL<double,Complex>& x, TJetEnvironment<Complex,double>* pje ) 
+TJL<complex<double> ,double>* TJL<complex<double> ,double>::makeTJL( const TJL<double,complex<double> >& x, TJetEnvironment<complex<double> ,double>* pje ) 
 {
 
- if ( _thePool.empty() ) return new TJL<Complex,double>( x,pje); 
+ if ( _thePool.empty() ) return new TJL<complex<double> ,double>( x,pje); 
 
- TJL<Complex,double>* p = _thePool.back(); _thePool.pop_back();
+ TJL<complex<double> ,double>* p = _thePool.back(); _thePool.pop_back();
 
  if ( (p->_jltermStoreCapacity) < (x._jltermStoreCapacity) ) {
 
@@ -622,11 +643,11 @@ TJL<Complex,double>* TJL<Complex,double>::makeTJL( const TJL<double,Complex>& x,
   // NOTE: we cannot do a memcpy here because x._value is of type real and _value is of type complex !
 
  dlist_iterator getNext( x._theList );
- TJLterm<double,Complex>* q;
- TJLterm<Complex,double>* r;
+ TJLterm<double,complex<double> >* q;
+ TJLterm<complex<double> ,double>* r;
 
-  while ( q = (TJLterm<double,Complex>*) getNext() ) {
-    r = new ( p->storePtr() )  TJLterm<Complex,double> ( q->_index, FNAL::Complex(q->_value, 0.0), pje  );
+  while ( q = (TJLterm<double,complex<double> >*) getNext() ) {
+    r = new ( p->storePtr() )  TJLterm<complex<double> ,double> ( q->_index, complex<double> (q->_value, 0.0), pje  );
     r->_deleted    = q->_deleted;// ??     
     r->_weight     = q->_weight; // ??     
     p->append(r);
@@ -644,14 +665,14 @@ TJL<Complex,double>* TJL<Complex,double>::makeTJL( const TJL<double,Complex>& x,
 
 // ----------------------------------------------------------
 
-TJetVector<Complex,double>& TJetVector<Complex,double>::operator=( const TJetVector<double,Complex>& x ) 
+TJetVector<complex<double> ,double>& TJetVector<complex<double> ,double>::operator=( const TJetVector<double,complex<double> >& x ) 
 {
 // #ifndef NOCHECKS
-//   CHECKOUT(dim   != x.dim, "TJet<Complex,double>Vector::operator=", "Incompatible dimensions.")
-//   CHECKOUT(_myEnv != x._myEnv, "TJet<Complex,double>Vector::operator=", "Incompatible environments.")
+//   CHECKOUT(dim   != x.dim, "TJet<complex<double> ,double>Vector::operator=", "Incompatible dimensions.")
+//   CHECKOUT(_myEnv != x._myEnv, "TJet<complex<double> ,double>Vector::operator=", "Incompatible environments.")
 // #endif
 
-  _myEnv = TJet<Complex,double>::CreateEnvFrom( (TJetEnvironment<double,Complex>*) (x.Env()) );
+  _myEnv = TJet<complex<double> ,double>::CreateEnvFrom( (TJetEnvironment<double,complex<double> >*) (x.Env()) );
   Reconstruct( x.Dim(), _myEnv );
   for ( int i = 0; i < _dim; i++ ) { _comp[i] = x(i); }
   return *this;
@@ -660,16 +681,16 @@ TJetVector<Complex,double>& TJetVector<Complex,double>::operator=( const TJetVec
 
 // ----------------------------------------------------------
 
-TMapping<Complex,double>& TMapping<Complex,double>::operator= ( const TMapping<double,Complex>& x )
+TMapping<complex<double> ,double>& TMapping<complex<double> ,double>::operator= ( const TMapping<double,complex<double> >& x )
 {
-  return (TMapping<Complex,double>&) ( ( (TJetVector<Complex,double>*) this )->operator=( (TJetVector<double,Complex>&) x ) ); 
+  return (TMapping<complex<double> ,double>&) ( ( (TJetVector<complex<double> ,double>*) this )->operator=( (TJetVector<double,complex<double> >&) x ) ); 
 }
 
 
 // ----------------------------------------------------------
 // ----------------------------------------------------------
 
-TJet<double,Complex>::TJet<double,Complex>( const TJet<Complex,double>& x )
+TJet<double,complex<double> >::TJet<double,complex<double> >( const TJet<complex<double> ,double>& x )
 {
   _jl = x.newJLOpp();
   _constIterPtr = 0;
@@ -677,15 +698,15 @@ TJet<double,Complex>::TJet<double,Complex>( const TJet<Complex,double>& x )
 }
 
 
-TJet<double,Complex>& TJet<double,Complex>::operator=( const TJet<Complex,double>& x )
+TJet<double,complex<double> >& TJet<double,complex<double> >::operator=( const TJet<complex<double> ,double>& x )
 {
-  if( --(_jl->_rc) == 0 )  TJL<double,Complex>::discardTJL(_jl); // delete _jl;
+  if( --(_jl->_rc) == 0 )  TJL<double,complex<double> >::discardTJL(_jl); // delete _jl;
   _jl = x.newJLOpp();
   return *this; 
 }
 
 
-TJet<double,Complex>::TJet<double,Complex>( const TJet<Complex,double>& x, TJetEnvironment<double,Complex>* pje )
+TJet<double,complex<double> >::TJet<double,complex<double> >( const TJet<complex<double> ,double>& x, TJetEnvironment<double,complex<double> >* pje )
 {
   _jl = x.newJLOpp( pje );
   _constIterPtr = 0;
@@ -695,11 +716,11 @@ TJet<double,Complex>::TJet<double,Complex>( const TJet<Complex,double>& x, TJetE
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJL<double,Complex>::TJL<double,Complex>( const TJL<Complex,double>& x, TJetEnvironment<double,Complex>* pje ) 
+TJL<double,complex<double> >::TJL<double,complex<double> >( const TJL<complex<double> ,double>& x, TJetEnvironment<double,complex<double> >* pje ) 
 {
  dlist_iterator getNext( x._theList );
- TJLterm<Complex,double>*  p = 0;
- TJLterm<double,Complex>*  q = 0;
+ TJLterm<complex<double> ,double>*  p = 0;
+ TJLterm<double,complex<double> >*  q = 0;
 
  initStore( x._jltermStoreCapacity );
   
@@ -708,8 +729,8 @@ TJL<double,Complex>::TJL<double,Complex>( const TJL<Complex,double>& x, TJetEnvi
 
 // note: cannot use memcpy here since q->_value is real and p->_value is complex !
 
-   while ( p = (TJLterm<Complex,double>*) getNext() ) {
-    q = new ( storePtr() ) TJLterm<double,Complex> ( p->_index, (p->_value).real(), pje); 
+   while ( p = (TJLterm<complex<double> ,double>*) getNext() ) {
+    q = new ( storePtr() ) TJLterm<double,complex<double> > ( p->_index, (p->_value).real(), pje); 
     q->_deleted = p->_deleted;
     q->_weight  = p->_weight;     
     append(q);
@@ -725,12 +746,12 @@ TJL<double,Complex>::TJL<double,Complex>( const TJL<Complex,double>& x, TJetEnvi
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJL<double,Complex>* TJL<double,Complex>::makeTJL( const TJL<Complex,double>& x, TJetEnvironment<double,Complex>* pje ) 
+TJL<double,complex<double> >* TJL<double,complex<double> >::makeTJL( const TJL<complex<double> ,double>& x, TJetEnvironment<double,complex<double> >* pje ) 
 {
 
- if ( _thePool.empty() ) return (new TJL<double,Complex>(x,pje) );
+ if ( _thePool.empty() ) return (new TJL<double,complex<double> >(x,pje) );
 
- TJL<double,Complex>* p = TJL<double,Complex>::_thePool.back();  TJL<double,Complex>::_thePool.pop_back();
+ TJL<double,complex<double> >* p = TJL<double,complex<double> >::_thePool.back();  TJL<double,complex<double> >::_thePool.pop_back();
 
  if ( p->_jltermStoreCapacity < x._jltermStoreCapacity ) {
 
@@ -740,15 +761,15 @@ TJL<double,Complex>* TJL<double,Complex>::makeTJL( const TJL<Complex,double>& x,
  }
 
  dlist_iterator getNext( x._theList );
- TJLterm<Complex,double>*  q = 0;
- TJLterm<double,Complex>*  r = 0;
+ TJLterm<complex<double> ,double>*  q = 0;
+ TJLterm<double,complex<double> >*  r = 0;
 
 
   
 // note: cannot use memcpy here since q->_value is real and p->_value is complex !
 
-   while ( q = (TJLterm<Complex,double>*) getNext() ) {
-    r = new ( p->storePtr() ) TJLterm<double,Complex> ( q->_index, (q->_value).real(), pje); 
+   while ( q = (TJLterm<complex<double> ,double>*) getNext() ) {
+    r = new ( p->storePtr() ) TJLterm<double,complex<double> > ( q->_index, (q->_value).real(), pje); 
     r->_deleted = q->_deleted;
     r->_weight  = q->_weight;     
     p->append(r);
@@ -765,7 +786,7 @@ TJL<double,Complex>* TJL<double,Complex>::makeTJL( const TJL<Complex,double>& x,
 }
 
 
-TJLterm<double,Complex>::TJLterm<double,Complex>( const TJLterm<Complex,double>& x )
+TJLterm<double,complex<double> >::TJLterm<double,complex<double> >( const TJLterm<complex<double> ,double>& x )
 : _deleted(x._deleted), _index( x._index ), _weight( x._weight ), _value( real( x._value ) )
 {
 }
@@ -774,40 +795,40 @@ TJLterm<double,Complex>::TJLterm<double,Complex>( const TJLterm<Complex,double>&
 // ----------------------------------------------------------
 
 
-TJL<Complex,double>* TJet<double,Complex>::newJLOpp() const
+TJL<complex<double> ,double>* TJet<double,complex<double> >::newJLOpp() const
 {
-  return TJL<Complex,double>::makeTJL( *(this->_jl), TJet<Complex,double>::CreateEnvFrom( this->_jl->_myEnv ) );
+  return TJL<complex<double> ,double>::makeTJL( *(this->_jl), TJet<complex<double> ,double>::CreateEnvFrom( this->_jl->_myEnv ) );
 }
 
 
-TJL<double,Complex>* TJet<Complex,double>::newJLOpp() const
+TJL<double,complex<double> >* TJet<complex<double> ,double>::newJLOpp() const
 {
-  return TJL<double,Complex>::makeTJL( *(this->_jl), TJet<double,Complex>::CreateEnvFrom( this->_jl->_myEnv ) );
+  return TJL<double,complex<double> >::makeTJL( *(this->_jl), TJet<double,complex<double> >::CreateEnvFrom( this->_jl->_myEnv ) );
 }
 
-TJL<Complex,double>* TJet<double,Complex>::newJLOpp( TJetEnvironment<Complex,double>* pje ) const
+TJL<complex<double> ,double>* TJet<double,complex<double> >::newJLOpp( TJetEnvironment<complex<double> ,double>* pje ) const
 {
-  return TJL<Complex,double>::makeTJL( *(this->_jl), pje );
+  return TJL<complex<double> ,double>::makeTJL( *(this->_jl), pje );
 }
 
 
-TJL<double,Complex>* TJet<Complex,double>::newJLOpp( TJetEnvironment<double,Complex>* pje ) const
+TJL<double,complex<double> >* TJet<complex<double> ,double>::newJLOpp( TJetEnvironment<double,complex<double> >* pje ) const
 {
-  return TJL<double,Complex>::makeTJL( *(this->_jl), pje );
+  return TJL<double,complex<double> >::makeTJL( *(this->_jl), pje );
 }
 
 
 // ----------------------------------------------------------
 // ----------------------------------------------------------
 
-TJetVector<double,Complex>& TJetVector<double,Complex>::operator=( const TJetVector<Complex,double>& x ) 
+TJetVector<double,complex<double> >& TJetVector<double,complex<double> >::operator=( const TJetVector<complex<double> ,double>& x ) 
 {
 // #ifndef NOCHECKS
-//   CHECKOUT(_dim   != x._dim, "TJetVector<double,Complex>::operator=", "Incompatible dimensions.")
-//   CHECKOUT(_myEnv != x._myEnv, "TJetVector<double,Complex>::operator=", "Incompatible environments.")
+//   CHECKOUT(_dim   != x._dim, "TJetVector<double,complex<double> >::operator=", "Incompatible dimensions.")
+//   CHECKOUT(_myEnv != x._myEnv, "TJetVector<double,complex<double> >::operator=", "Incompatible environments.")
 // #endif
 
-  _myEnv = TJet<double,Complex>::CreateEnvFrom( (TJetEnvironment<Complex,double>*) x.Env() );
+  _myEnv = TJet<double,complex<double> >::CreateEnvFrom( (TJetEnvironment<complex<double> ,double>*) x.Env() );
   Reconstruct( x.Dim(), _myEnv );
   for ( int i = 0; i < _dim; i++ ) _comp[i] = x(i);
   return *this;
@@ -817,17 +838,17 @@ TJetVector<double,Complex>& TJetVector<double,Complex>::operator=( const TJetVec
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<double,Complex> real( const TJet<Complex,double>& x ) 
+TJet<double,complex<double> > real( const TJet<complex<double> ,double>& x ) 
 {
 
-  TJet<double,Complex>       z;
-  TJLterm<Complex,double>*  p;
-  TJLterm<double,Complex>*   q;
-  TJL<Complex,double>*      xPtr;
-  TJL<double,Complex>*       zPtr;
+  TJet<double,complex<double> >       z;
+  TJLterm<complex<double> ,double>*  p;
+  TJLterm<double,complex<double> >*   q;
+  TJL<complex<double> ,double>*      xPtr;
+  TJL<double,complex<double> >*       zPtr;
  
-  TJetEnvironment<double,Complex>* pje_new 
-    = TJet<double,Complex>::CreateEnvFrom( (TJetEnvironment<Complex,double>*) x.Env() );
+  TJetEnvironment<double,complex<double> >* pje_new 
+    = TJet<double,complex<double> >::CreateEnvFrom( (TJetEnvironment<complex<double> ,double>*) x.Env() );
 
   // Proceed ...
   xPtr = x._jl;
@@ -843,8 +864,8 @@ TJet<double,Complex> real( const TJet<Complex,double>& x )
   }
  
   // .. otherwise, continue normal operations.
-  while((  p = (TJLterm<Complex,double>*) gx()  )) {
-   q = new( zPtr->storePtr() ) TJLterm<double,Complex>( p->_index, real( p->_value ), pje_new );
+  while((  p = (TJLterm<complex<double> ,double>*) gx()  )) {
+   q = new( zPtr->storePtr() ) TJLterm<double,complex<double> >( p->_index, real( p->_value ), pje_new );
    zPtr->addTerm( q );
   }
  
@@ -857,16 +878,16 @@ TJet<double,Complex> real( const TJet<Complex,double>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<double,Complex> imag( const TJet<Complex,double>& x ) 
+TJet<double,complex<double> > imag( const TJet<complex<double> ,double>& x ) 
 {
 
-  TJet<double,Complex>      z;
-  TJLterm<Complex,double>*  p;
-  TJLterm<double,Complex>*  q;
-  TJL<Complex,double>*      xPtr;
-  TJL<double,Complex>*      zPtr;
+  TJet<double,complex<double> >      z;
+  TJLterm<complex<double> ,double>*  p;
+  TJLterm<double,complex<double> >*  q;
+  TJL<complex<double> ,double>*      xPtr;
+  TJL<double,complex<double> >*      zPtr;
  
-  TJetEnvironment<double,Complex>* pje_new = TJet<double,Complex>::CreateEnvFrom( x->_myEnv );
+  TJetEnvironment<double,complex<double> >* pje_new = TJet<double,complex<double> >::CreateEnvFrom( x->_myEnv );
 
   // Proceed ...
   xPtr = x._jl;
@@ -882,8 +903,8 @@ TJet<double,Complex> imag( const TJet<Complex,double>& x )
   }
  
   // .. otherwise, continue normal operations.
-  while((  p = (TJLterm<Complex,double>*) gx()  )) {
-   q = new ( zPtr->storePtr() ) TJLterm<double,Complex>( p->_index, imag( p->_value ), pje_new );
+  while((  p = (TJLterm<complex<double> ,double>*) gx()  )) {
+   q = new ( zPtr->storePtr() ) TJLterm<double,complex<double> >( p->_index, imag( p->_value ), pje_new );
    zPtr->addTerm( q );
   }
  
@@ -899,31 +920,31 @@ TJet<double,Complex> imag( const TJet<Complex,double>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator+( const TJet<double,Complex>& x, const TJet<Complex,double>& y ) 
+TJet<complex<double> ,double> operator+( const TJet<double,complex<double> >& x, const TJet<complex<double> ,double>& y ) 
 {
-  return TJet<Complex,double>(x) + y;
+  return TJet<complex<double> ,double>(x) + y;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator+( const TJet<Complex,double>& x, const TJet<double,Complex>& y ) 
+TJet<complex<double> ,double> operator+( const TJet<complex<double> ,double>& x, const TJet<double,complex<double> >& y ) 
 {
-  return x + TJet<Complex,double>(y);
+  return x + TJet<complex<double> ,double>(y);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator+( const Complex& x, const TJet<double,Complex>& y ) 
+TJet<complex<double> ,double> operator+( const complex<double> & x, const TJet<double,complex<double> >& y ) 
 {
-  return x + TJet<Complex,double>(y);
+  return x + TJet<complex<double> ,double>(y);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator+( const TJet<double,Complex>& y, const Complex& x ) 
+TJet<complex<double> ,double> operator+( const TJet<double,complex<double> >& y, const complex<double> & x ) 
 {
   return operator+( x, y );
 }
@@ -931,171 +952,171 @@ TJet<Complex,double> operator+( const TJet<double,Complex>& y, const Complex& x 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator+( const double& x, const TJet<Complex,double>& y ) 
+TJet<complex<double> ,double> operator+( const double& x, const TJet<complex<double> ,double>& y ) 
 {
-  return Complex(x,0.0) + y;
+  return complex<double> (x,0.0) + y;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator+( const TJet<Complex,double>& y, const double& x ) 
+TJet<complex<double> ,double> operator+( const TJet<complex<double> ,double>& y, const double& x ) 
 {
-  return y + Complex(x,0.0);
+  return y + complex<double> (x,0.0);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator-( const TJet<double,Complex>& x, const TJet<Complex,double>& y ) 
+TJet<complex<double> ,double> operator-( const TJet<double,complex<double> >& x, const TJet<complex<double> ,double>& y ) 
 {
-  return TJet<Complex,double>(x) - y;
+  return TJet<complex<double> ,double>(x) - y;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator-( const TJet<Complex,double>& x, const TJet<double,Complex>& y ) 
+TJet<complex<double> ,double> operator-( const TJet<complex<double> ,double>& x, const TJet<double,complex<double> >& y ) 
 {
-  return x - TJet<Complex,double>(y);
+  return x - TJet<complex<double> ,double>(y);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator-( const Complex& x, const TJet<double,Complex>& y ) 
+TJet<complex<double> ,double> operator-( const complex<double> & x, const TJet<double,complex<double> >& y ) 
 {
-  return x - TJet<Complex,double>(y);
+  return x - TJet<complex<double> ,double>(y);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator-( const TJet<double,Complex>& y, const Complex& x ) 
+TJet<complex<double> ,double> operator-( const TJet<double,complex<double> >& y, const complex<double> & x ) 
 {
-  return TJet<Complex,double>(y) - x;
+  return TJet<complex<double> ,double>(y) - x;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator-( const double& x, const TJet<Complex,double>& y ) 
+TJet<complex<double> ,double> operator-( const double& x, const TJet<complex<double> ,double>& y ) 
 {
-  return Complex(x,0.0) - y;
+  return complex<double> (x,0.0) - y;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator-( const TJet<Complex,double>& y, const double& x ) 
+TJet<complex<double> ,double> operator-( const TJet<complex<double> ,double>& y, const double& x ) 
 {
-  return y - Complex(x,0.0);
+  return y - complex<double> (x,0.0);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator*( const TJet<double,Complex>& x, const TJet<Complex,double>& y ) 
+TJet<complex<double> ,double> operator*( const TJet<double,complex<double> >& x, const TJet<complex<double> ,double>& y ) 
 {
-  return TJet<Complex,double>(x)*y;
+  return TJet<complex<double> ,double>(x)*y;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator*( const TJet<Complex,double>& x, const TJet<double,Complex>& y ) 
+TJet<complex<double> ,double> operator*( const TJet<complex<double> ,double>& x, const TJet<double,complex<double> >& y ) 
 {
-  return x*TJet<Complex,double>(y);
+  return x*TJet<complex<double> ,double>(y);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator*( const Complex& y, const TJet<double,Complex>& x ) 
+TJet<complex<double> ,double> operator*( const complex<double> & y, const TJet<double,complex<double> >& x ) 
 {  
-  return y*TJet<Complex,double>(x);
+  return y*TJet<complex<double> ,double>(x);
 }
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator*( const TJet<double,Complex>& x, const Complex& y ) 
+TJet<complex<double> ,double> operator*( const TJet<double,complex<double> >& x, const complex<double> & y ) 
 {  
-  return TJet<Complex,double>(x)*y;
+  return TJet<complex<double> ,double>(x)*y;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator*( const double& y, const TJet<Complex,double>& x ) 
+TJet<complex<double> ,double> operator*( const double& y, const TJet<complex<double> ,double>& x ) 
 {  
-  return Complex(y)*x;
+  return complex<double> (y)*x;
 }
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator*( const TJet<Complex,double>& x, const double& y ) 
+TJet<complex<double> ,double> operator*( const TJet<complex<double> ,double>& x, const double& y ) 
 {  
-  return x*Complex(y);
+  return x*complex<double> (y);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator/( const TJet<double,Complex>& x, const TJet<Complex,double>& y ) 
+TJet<complex<double> ,double> operator/( const TJet<double,complex<double> >& x, const TJet<complex<double> ,double>& y ) 
 {
 
-  return TJet<Complex,double>(x)/y;
+  return TJet<complex<double> ,double>(x)/y;
 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator/( const TJet<Complex,double>& x, const TJet<double,Complex>& y ) 
+TJet<complex<double> ,double> operator/( const TJet<complex<double> ,double>& x, const TJet<double,complex<double> >& y ) 
 {
-  return x/TJet<Complex,double>(y);
+  return x/TJet<complex<double> ,double>(y);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator/( const Complex& x, const TJet<double,Complex>& y ) 
+TJet<complex<double> ,double> operator/( const complex<double> & x, const TJet<double,complex<double> >& y ) 
 {
-  return x/TJet<Complex,double>(y);
+  return x/TJet<complex<double> ,double>(y);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator/( const TJet<double,Complex>& y, const Complex& x ) 
+TJet<complex<double> ,double> operator/( const TJet<double,complex<double> >& y, const complex<double> & x ) 
 {
-  return TJet<Complex,double>(y)/x;
+  return TJet<complex<double> ,double>(y)/x;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator/(const TJet<Complex,double>& x, const double& y)
+TJet<complex<double> ,double> operator/(const TJet<complex<double> ,double>& x, const double& y)
 {
-  return x/Complex(y);
+  return x/complex<double> (y);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<Complex,double> operator/(const double& x, const TJet<Complex,double>& y)
+TJet<complex<double> ,double> operator/(const double& x, const TJet<complex<double> ,double>& y)
 {
-  return Complex(x)/y;
+  return complex<double> (x)/y;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<double,FNAL::Complex> fabs( const TJet<double,FNAL::Complex>& x )
+TJet<double,complex<double> > fabs( const TJet<double,complex<double> >& x )
 {
  static double u;
 
@@ -1121,14 +1142,14 @@ TJet<double,FNAL::Complex> fabs( const TJet<double,FNAL::Complex>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<double,FNAL::Complex> erf( const TJet<double,FNAL::Complex>& z ) 
+TJet<double,complex<double> > erf( const TJet<double,complex<double> >& z ) 
 {
-  TJetEnvironment<double,FNAL::Complex>* pje = z.Env();
+  TJetEnvironment<double,complex<double> >* pje = z.Env();
 
-  TJet<double,FNAL::Complex> series    ( pje );
-  TJet<double,FNAL::Complex> oldseries ( pje );
-  TJet<double,FNAL::Complex> arg       ( pje );
-  TJet<double,FNAL::Complex> term      ( pje );
+  TJet<double, complex<double> > series    ( pje );
+  TJet<double, complex<double> > oldseries ( pje );
+  TJet<double, complex<double> > arg       ( pje );
+  TJet<double, complex<double> > term      ( pje );
 
   static double  den;
   static double  fctr_x;
@@ -1156,22 +1177,22 @@ TJet<double,FNAL::Complex> erf( const TJet<double,FNAL::Complex>& z )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<FNAL::Complex,double> erf( const TJet<FNAL::Complex,double>& z ) 
+TJet<complex<double> ,double> erf( const TJet<complex<double> ,double>& z ) 
 {
-  TJetEnvironment<FNAL::Complex,double>* pje = z.Env();
+  TJetEnvironment<complex<double> ,double>* pje = z.Env();
 
   if( ( fabs(imag(z.standardPart())) > 3.9 ) || 
       ( fabs(real(z.standardPart())) > 3.0 ) ) {
-    TJet<FNAL::Complex,double> u( pje );
-    u = FNAL::Complex( 0., 1. )*z;
-    u = FNAL::Complex( 1., 0. ) - exp(u*u)*w(u);
+    TJet<complex<double> ,double> u( pje );
+    u = complex<double> ( 0., 1. )*z;
+    u = complex<double> ( 1., 0. ) - exp(u*u)*w(u);
     return u;
   }
 
-  TJet<FNAL::Complex,double>    series    ( pje );
-  TJet<FNAL::Complex,double>    oldseries ( pje );
-  TJet<FNAL::Complex,double>    arg       ( pje );
-  TJet<FNAL::Complex,double>    term      ( pje );
+  TJet<complex<double> ,double>    series    ( pje );
+  TJet<complex<double> ,double>    oldseries ( pje );
+  TJet<complex<double> ,double>    arg       ( pje );
+  TJet<complex<double> ,double>    term      ( pje );
   static double  den;
   static double  fctr_x;
   static int     counter;
@@ -1193,25 +1214,25 @@ TJet<FNAL::Complex,double> erf( const TJet<FNAL::Complex,double>& z )
     series   += term/den;
   }  
 
-  return FNAL::Complex(2.0/MATH_SQRTPI,0.0)*z*series;
+  return complex<double> (2.0/MATH_SQRTPI,0.0)*z*series;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<FNAL::Complex,double> w( const TJet<FNAL::Complex,double>& z ) 
+TJet<complex<double> ,double> w( const TJet<complex<double> ,double>& z ) 
 {
-  const FNAL::Complex mi( 0., -1. );
+  const complex<double>  mi( 0., -1. );
   double x;
   double y;
-  TJet<FNAL::Complex,double>  answer( z.Env() );
+  TJet<complex<double> ,double>  answer( z.Env() );
   
   x = real( z.standardPart() );
   y = imag( z.standardPart() );
 
   if( ( x < 0.0 ) || ( y < 0.0  ) ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "TJet<FNAL::Complex,double> w( const TJet<FNAL::Complex,double>& ) ",
+           "TJet<complex<double> ,double> w( const TJet<complex<double> ,double>& ) ",
            "Argument must have positive standard part." ) );
   }
 
@@ -1240,20 +1261,20 @@ TJet<FNAL::Complex,double> w( const TJet<FNAL::Complex,double>& z )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJetVector<FNAL::Complex,double> operator*( const TJetVector<FNAL::Complex,double>& x, const double& c )
+TJetVector<complex<double> ,double> operator*( const TJetVector<complex<double> ,double>& x, const double& c )
 {
-  return x.operator*( FNAL::Complex(c,0.0) );
+  return x.operator*( complex<double> (c,0.0) );
 }
 
-TJetVector<FNAL::Complex,double> operator*( const double& c, const TJetVector<FNAL::Complex,double>& x )
+TJetVector<complex<double> ,double> operator*( const double& c, const TJetVector<complex<double> ,double>& x )
 {
-  return x.operator*( FNAL::Complex(c,0.0) );  // it's commutative
+  return x.operator*( complex<double> (c,0.0) );  // it's commutative
 }
 
-void TJetVector<double,FNAL::Complex>::printCoeffs() const
+void TJetVector<double,complex<double> >::printCoeffs() const
 {
   int i;
-  cout << "\n\nBegin TJetVector<double,FNAL::Complex>::printCoeffs() ......\n"
+  cout << "\n\nBegin TJetVector<double,complex<double> >::printCoeffs() ......\n"
        << "Dimension: " << _dim 
        << ", Weight = " << Weight()
        << ", Max accurate weight = " << AccuWgt() 
@@ -1266,22 +1287,22 @@ void TJetVector<double,FNAL::Complex>::printCoeffs() const
          << "\n" << endl;
 
   for ( i = 0; i < _dim; i++ ) {
-    cout << "TJetVector<double,FNAL::Complex>::printCoeffs(): Component " << i << endl;
+    cout << "TJetVector<double,complex<double> >::printCoeffs(): Component " << i << endl;
     _comp[i].printCoeffs();
   }
-  cout << "End TJetVector<double,FNAL::Complex>::printCoeffs() ......\n" << endl;
+  cout << "End TJetVector<double,complex<double> >::printCoeffs() ......\n" << endl;
 }
 
 
-void TJetVector<FNAL::Complex,double>::printCoeffs() const
+void TJetVector<complex<double> ,double>::printCoeffs() const
 {
   int i;
-  cout << "\n\nBegin TJetVector<FNAL::Complex,double>::printCoeffs() ......\n"
+  cout << "\n\nBegin TJetVector<complex<double> ,double>::printCoeffs() ......\n"
        << "Dimension: " << _dim 
        << ", Weight = " << Weight()
        << ", Max accurate weight = " << AccuWgt() 
        << endl;
-  cout << "TJetVector<FNAL::Complex,double> reference point: " 
+  cout << "TJetVector<complex<double> ,double> reference point: " 
        << endl;
   for( i = 0; i < _myEnv->_numVar; i++ ) 
     cout << setw(20) << setprecision(12) 
@@ -1292,23 +1313,23 @@ void TJetVector<FNAL::Complex,double>::printCoeffs() const
          << "\n" << endl;
 
   for ( i = 0; i < _dim; i++ ) {
-    cout << "TJetVector<FNAL::Complex,double>::printCoeffs(): Component " << i << endl;
+    cout << "TJetVector<complex<double> ,double>::printCoeffs(): Component " << i << endl;
     _comp[i].printCoeffs();
   }
-  cout << "End TJetVector<FNAL::Complex,double>::printCoeffs() ......\n" << endl;
+  cout << "End TJetVector<complex<double> ,double>::printCoeffs() ......\n" << endl;
 }
 
 
-void TJetVector<double,FNAL::Complex>::Rotate ( TJetVector<double,FNAL::Complex>& v, double theta ) const
+void TJetVector<double,complex<double> >::Rotate ( TJetVector<double,complex<double> >& v, double theta ) const
 {
 #ifndef NOCHECKS
   CHECKOUT((_dim != 3) || ( v._dim != 3 ),
-           "TJetVector<double,FNAL::Complex>::Rotate",
+           "TJetVector<double,complex<double> >::Rotate",
            "Dimension must be 3." )
 #endif
 
   double c, s;
-  TJetVector<double,FNAL::Complex> e( 3, 0, _myEnv ), u( 3, 0, _myEnv);
+  TJetVector<double,complex<double> > e( 3, 0, _myEnv ), u( 3, 0, _myEnv);
 
   e = Unit();
   c = cos( theta );
@@ -1320,7 +1341,7 @@ void TJetVector<double,FNAL::Complex>::Rotate ( TJetVector<double,FNAL::Complex>
 }
 
 
-void TJetVector<FNAL::Complex,double>::Rotate ( TJetVector<FNAL::Complex,double>&, double ) const
+void TJetVector<complex<double> ,double>::Rotate ( TJetVector<complex<double> ,double>&, double ) const
 {
   throw( GenericException( __FILE__, __LINE__, 
          "void JetCVectorRotate ( JetCVector&, double ) const", 
@@ -1328,20 +1349,20 @@ void TJetVector<FNAL::Complex,double>::Rotate ( TJetVector<FNAL::Complex,double>
 }
 
 
-void TJetVector<double,FNAL::Complex>::Rotate ( TJetVector<double,FNAL::Complex>& v, 
-                                 const TJet<double,FNAL::Complex>& theta ) const
+void TJetVector<double,complex<double> >::Rotate ( TJetVector<double,complex<double> >& v, 
+                                 const TJet<double,complex<double> >& theta ) const
 {
 #ifndef NOCHECKS
   CHECKOUT((_dim != 3) || ( v._dim != 3 ),
-           "TJetVector<double,FNAL::Complex>::Rotate",
+           "TJetVector<double,complex<double> >::Rotate",
            "Dimension must be 3." )
   CHECKOUT((_myEnv != v._myEnv)||(_myEnv != theta.Env()), 
-           "TJetVector<double,FNAL::Complex>::Rotate", 
+           "TJetVector<double,complex<double> >::Rotate", 
            "Incompatible environments.")
 #endif
 
-  TJet<double,FNAL::Complex> c( _myEnv ), s( _myEnv );
-  TJetVector<double,FNAL::Complex> e( 3, 0, _myEnv), u( 3, 0, _myEnv);
+  TJet<double,complex<double> > c( _myEnv ), s( _myEnv );
+  TJetVector<double,complex<double> > e( 3, 0, _myEnv), u( 3, 0, _myEnv);
 
   e = Unit();
   c = cos( theta );
@@ -1353,8 +1374,8 @@ void TJetVector<double,FNAL::Complex>::Rotate ( TJetVector<double,FNAL::Complex>
 }
 
 
-void TJetVector<FNAL::Complex,double>::Rotate ( TJetVector<FNAL::Complex,double>&, 
-                                                const TJet<FNAL::Complex,double>& ) const
+void TJetVector<complex<double> ,double>::Rotate ( TJetVector<complex<double> ,double>&, 
+                                                const TJet<complex<double> ,double>& ) const
 {
   throw( GenericException( __FILE__, __LINE__, 
          "void JetCVectorRotate ( JetCVector&, const JetC& ) const", 
@@ -1364,12 +1385,12 @@ void TJetVector<FNAL::Complex,double>::Rotate ( TJetVector<FNAL::Complex,double>
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Vector TMapping<double,Complex>::operator()( const Vector& x ) const
+Vector TMapping<double,complex<double> >::operator()( const Vector& x ) const
 {
  int i = x.Dim();
  if( ( i != _myEnv->_numVar ) || ( i != _dim ) ) {
    throw( GenericException(__FILE__, __LINE__, 
-          "Vector TMapping<double,Complex>::operator()( const Vector& ) const",
+          "Vector TMapping<double,complex<double> >::operator()( const Vector& ) const",
           "Incompatible dimensions." ) );
  }
 
@@ -1385,10 +1406,10 @@ Vector TMapping<double,Complex>::operator()( const Vector& x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Vector TMapping<Complex,double>::operator()( const Vector& x ) const
+Vector TMapping<complex<double> ,double>::operator()( const Vector& x ) const
 {
   throw( GenericException( __FILE__, __LINE__, 
-         "Vector TMapping<Complex,double>::operator()( const Vector& x ) const", 
+         "Vector TMapping<complex<double>, double>::operator()( const Vector& x ) const", 
          "This specialization is meaningless. It should not be invoked." ) );
 }
 
