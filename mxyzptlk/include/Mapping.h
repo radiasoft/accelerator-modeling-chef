@@ -28,20 +28,14 @@
 *************************************************************************/
 
 
-#ifndef TMAPPING
-#define TMAPPING
+#ifndef MAPPING_H
+#define MAPPING_H
 
-#ifndef TJET
-#include "Jet.h"
-#endif
-
-#ifndef TJETVECTOR
-#include "JetVector.h"
-#endif
-
-#include "TMapping.tcc"
+#include <Jet.h>
+#include <JetVector.h>
+#include <TMapping.h>
 
 typedef TMapping<double,FNAL::Complex> Mapping;
 typedef TMapping<FNAL::Complex,double> MappingC;
 
-#endif // TMAPPING
+#endif // MAPPING_H

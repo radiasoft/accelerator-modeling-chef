@@ -28,16 +28,13 @@
 *************************************************************************/
 
 
-#ifndef TJETVECTOR
-#define TJETVECTOR
+#ifndef JETVECTOR_H
+#define JETVECTOR_H
 
-#ifndef TJET
-#include "Jet.h"
-#endif
-
-#include "TJetVector.tcc"
+#include <Jet.h>
+#include <TJetVector.h>
 
 typedef TJetVector<double,FNAL::Complex> JetVector;
 typedef TJetVector<FNAL::Complex,double> JetCVector;
 
-#endif // TJETVECTOR
+#endif // JETVECTOR_H

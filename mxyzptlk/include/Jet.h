@@ -27,12 +27,12 @@
 **************************************************************************
 *************************************************************************/
 
-#ifndef TJET
-#define TJET
+#ifndef JET_H
+#define JET_H
 
-#include "TJetEnvironment.tcc"
-#include "TJL.tcc"
-#include "TJet.tcc"
+#include <TJetEnvironment.h>
+#include <TJL.h>
+#include <TJet.h>
 
 typedef TJetEnvironment<double,FNAL::Complex> Jet__environment;
 typedef TJetEnvironment<FNAL::Complex,double> JetC__environment;
@@ -47,4 +47,4 @@ typedef TJet<FNAL::Complex,double> JetC;
 typedef Tcoord<double,FNAL::Complex> coord;
 typedef Tcoord<FNAL::Complex,double> coordC;
 
-#endif // TJET
+#endif // JET_H
