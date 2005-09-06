@@ -74,7 +74,7 @@ class AccelParamAcc
 
   double  convert() const;
 
-  friend istream& operator>>( istream&, AccelParamAcc );
+  friend std::istream& operator>>( std::istream&, AccelParamAcc );
   operator double() const { return this->convert(); }
 
  private:
@@ -109,8 +109,8 @@ class AccelParam
   void   _setReady ( const AccelParamAcc& x )
     { x._ap->_ready = true;  }  
 
-  friend istream& operator>>( istream&, AccelParamAcc );
-  friend ostream& operator<<( ostream&, ParameterList& );
+  friend std::istream& operator>>( std::istream&, AccelParamAcc );
+  friend std::ostream& operator<<( std::ostream&, ParameterList& );
   friend class AccelParamAcc;
   friend class ParameterList;
 };
