@@ -31,11 +31,11 @@
 #ifndef TJETENV_H
 #define TJETENV_H
 
-#include "slist.h"
-#include "IntArray.h"
-#include "Cascade.h"
+#include <slist.h>
+#include <IntArray.h>
+#include <Cascade.h>
 
-#include "TMatrix.h"
+#include <TMatrix.h>
 
 // Forward declarations
 class Vector;
@@ -107,10 +107,10 @@ struct TJetEnvironment
  TJetEnvironment& operator=( const TJetEnvironment& );
  TJetEnvironment& operator=( const TJetEnvironment<T2,T1>& );
 
- bool operator==( const TJetEnvironment& ) const;
- bool operator!=( const TJetEnvironment& ) const;
- bool approxEq( const TJetEnvironment&, const Vector& tolerance ) const;
- bool approxEq( const TJetEnvironment&, const double* tolerance ) const;
+ bool operator==( const TJetEnvironment<T1,T2>& ) const;
+ bool operator!=( const TJetEnvironment<T1,T2>& ) const;
+ bool approxEq( const TJetEnvironment<T1,T2>&, const Vector& tolerance ) const;
+ bool approxEq( const TJetEnvironment<T1,T2>&, const double* tolerance ) const;
      // Second argument is a "tolerance" Vector. There is
      //   no default: the invoking program must declare
      //   its tolerance.
