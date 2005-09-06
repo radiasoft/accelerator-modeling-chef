@@ -44,6 +44,8 @@
 **************************************************************************
 *************************************************************************/
 
+#ifdef EXPLICIT_TEMPLATE_INSTANTIATIONS
+
 #ifndef TMAPPING_TCC
 #define TMAPPING_TCC
 
@@ -349,3 +351,5 @@ TMapping<T1,T2> TMapping<T1,T2>::_epsInverse( TJetEnvironment<T1,T2>* pje ) cons
 
 
 #endif // TMAPPING_TCC
+
+#endif // EXPLICIT_TEMPLATE_INSTANTIATIONS

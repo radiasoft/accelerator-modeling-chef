@@ -41,6 +41,7 @@
 **************************************************************************
 *************************************************************************/
 
+#ifdef  EXPLICIT_TEMPLATE_INSTANTIATIONS
 #ifndef TLIEOPERATOR_TCC
 #define TLIEOPERATOR_TCC
 
@@ -253,12 +254,13 @@ void TLieOperator<T1,T2>::setVariable( const T1& x, int j )
  
  int n = TLieOperator<T1,T2>::_myEnv->_numVar;
  
- static IntArray ndx;
- ndx.Reconstruct( n );
+ IntArray ndx;
 
- TLieOperator<T1,T2>::_comp[j].addTerm( new( TLieOperator<T1,T2>::_comp[j]->_jl->storePtr() ) TJLterm<T1,T2>( ndx, x, TLieOperator<T1,T2>::_myEnv ) );
+ // NOTE: TJet<>::operator->() is overloaded and returns the TJL<>* _jl; 
+ 
+ TLieOperator<T1,T2>::_comp[j].addTerm( new( TLieOperator<T1,T2>::_comp[j]->storePtr() ) TJLterm<T1,T2>( ndx, x, TLieOperator<T1,T2>::_myEnv ) );
  ndx(j) = 1;
- TLieOperator<T1,T2>::_comp[j].addTerm( new( TLieOperator<T1,T2>::_comp[j]->_jl->storePtr() ) TJLterm<T1,T2>( ndx, ((T1) 1.0), TLieOperator<T1,T2>::_myEnv ) );
+ TLieOperator<T1,T2>::_comp[j].addTerm( new( TLieOperator<T1,T2>::_comp[j]->storePtr() ) TJLterm<T1,T2>( ndx, ((T1) 1.0), TLieOperator<T1,T2>::_myEnv ) );
 
  for( int i = 0; i < TLieOperator<T1,T2>::_dim; i++ ) TLieOperator<T1,T2>::_comp[i].setEnvTo(TLieOperator<T1,T2>::_myEnv );
 }
@@ -469,3 +471,5 @@ TJetVector<T1,T2> TLieOperator<T1,T2>::expMap( const TJet<T1,T2>& t, const TJetV
 }
 
 #endif // TLIEOPERATOR_TCC
+
+#endif // EXPLICIT_TEMPLATE_INSTANTIATIONS
