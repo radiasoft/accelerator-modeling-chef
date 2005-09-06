@@ -28,13 +28,13 @@
 *************************************************************************/
 
 
-#ifndef T_MXYZPTLK
-#define T_MXYZPTLK
+#ifndef MXYZPTLK_H
+#define MXYZPTLK_H
 
-#include "Jet.h"
-#include "JetVector.h"
-#include "LieOperator.h"
-#include "Mapping.h"
+#include <Jet.h>
+#include <JetVector.h>
+#include <LieOperator.h>
+#include <Mapping.h>
 
 
-#endif // T_MXYZPTLK
+#endif // MXYZPTLK_
