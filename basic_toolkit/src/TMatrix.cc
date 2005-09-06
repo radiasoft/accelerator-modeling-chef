@@ -35,7 +35,9 @@
 #include <iomanip>
 #include <sstream>
 #include <MathConstants.h>
-
+#ifdef WIN32
+#include <Distribution.h> // for drand48
+#endif
 
 #include "TMatrix.h"
 //extern "C" {strstr(char*,char*);} // this may need to be commented out

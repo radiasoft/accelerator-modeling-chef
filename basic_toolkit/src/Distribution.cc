@@ -48,6 +48,14 @@
 #include "Distribution.h"
 #include "VectorD.h"
 
+#ifdef WIN32
+
+/* srand48 and drand48 are not available under Win32 */
+/* The stubs below allow the code to compile         */
+long    srand48(long int) { return 1;  }
+double  drand48()         { return 0.5;}
+
+#endif
 
 using namespace std;
 
