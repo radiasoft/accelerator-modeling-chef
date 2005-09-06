@@ -14,12 +14,12 @@ LANGUAGE	= C++
 unix:CONFIG	+= opengl x11 rtti stl thread exceptions 
 #win32:CONFIG	+= opengl x11 rtti stl thread exceptions 
 
-include ( "..\chef-config\config.pri" ) 
+include ( ../chef-config/config.pri ) 
 
 
 win32:RC_FILE = chefres.rc
 
-INCLUDEPATH += ./includeI
+INCLUDEPATH += ./include
 INCLUDEPATH += ./licenses 
 
 INCLUDEPATH +=  $${FNAL_INSTALL_TOP_DIR}/include/python-bindings
@@ -124,7 +124,7 @@ LIBS    += -lqwt
 LIBS    += -lglut
 LIBS    += -L$${GLIB_DIR} -lglib-2.0   
 
-unix:LIBS  += $$QMAKE_RPATH$$CHEF_LIBDIR $$QMAKE_RPATH$$FNAL_LIBDIR $$QMAKE_RPATH$$GLIB_LIBDIR $$QMAKE_RPATH$$BOOST_LIBDIR 
+unix:LIBS  += -Wl,-rpath,$${CHEF_LIBDIR} -Wl,-rpath,$${FNAL_LIBDIR} -Wl,-rpath,$${GLIB_LIBDIR} -Wl,-rpath,$${BOOST_LIBDIR} 
 
 DESTDIR = .
 
