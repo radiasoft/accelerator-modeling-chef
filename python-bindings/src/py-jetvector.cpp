@@ -22,12 +22,7 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 
-#ifdef FNAL_FIRST_ORDER
 #include <JetVector.h>
-#include <JetCVector.h>
-#else
-#include <JetVector.h>
-#endif
 
 //  TJetVector<T1,T2>::TJetVector<T1,T2>( int n,  const TJet<T1,T2>* x, const TJetEnvironment<T1,T2>* pje )
 
