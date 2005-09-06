@@ -93,6 +93,10 @@
 
 #include <iosetup.h>
 
+using FNAL::pcout;
+using FNAL::pcerr;
+
+
 extern beamline* DriftsToSlots( /* const */ beamline& original );
 
 
@@ -1815,7 +1819,7 @@ void CHEFGUI::_editPartAndSect()
       bmlPtr->append( spaceCharge[numberOfSectors] );
 
       // Display and delete the removed elements
-      cout << "Removed elements\n";
+      *pcout << "Removed elements\n";
 
       slist_iterator fembril( removedElements );
       bmlnElmnt* qq;
