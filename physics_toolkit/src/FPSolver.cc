@@ -35,9 +35,15 @@
 
 #include <math.h>
 
-#include "GenericException.h"
-#include "beamline.h"
-#include "FPSolver.h"
+#include <GenericException.h>
+#include <beamline.h>
+#include <FPSolver.h>
+#include <iosetup.h>
+
+
+using FNAL::pcout;
+using FNAL::pcerr;
+
 
 using namespace std;
 
@@ -131,7 +137,7 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
     // --- Has the state gone out of bounds? ---------
     for( i = 0; i < Particle::PSD; i++ ) {
       if( isnan(p->State(i)) ) { 
-        cerr << "FPSolver: *** ERROR *** p->State(" << i << ") is NaN." << endl;
+        (*pcerr) << "FPSolver: *** ERROR *** p->State(" << i << ") is NaN." << endl;
         return -1; 
       }
     }
@@ -166,15 +172,15 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
 
   // --- Cleaning up -------------------------------------------------
   if( iterCount >= 200 ) {
-    cerr << 
+    (*pcerr) << 
       "FixedPoint:: More than 200 Newton's iterations attempted." << endl;
-    cerr << "FixedPoint:: Result may not be reliable!! " << endl;
+    (*pcerr) << "FixedPoint:: Result may not be reliable!! " << endl;
 
     return 1;
   }
 
   if( !jumpTest || !zeroTest ) 
-    cerr << 
+    (*pcerr) << 
       "FixedPoint:: Convergence achieved after " << iterCount 
                                                  << " iterations." << endl;
 
@@ -216,7 +222,7 @@ int FPSolver::operator()( JetProton* p_jpr, const char*, FP_CRITFUNC Crit )
   }
   else 
   {
-    cerr << "*** ERROR ***                                          \n"
+    (*pcerr) << "*** ERROR ***                                          \n"
             "*** ERROR *** FPSolver::operator()(JetProton*, char*)  \n"
             "*** ERROR *** null argument for JetProton*             \n"
             "*** ERROR ***                                          \n"
@@ -229,7 +235,7 @@ int FPSolver::operator()( JetProton* p_jpr, const char*, FP_CRITFUNC Crit )
   if( ret == 0 ) 
   {
     if( dimension != p_jpr->State().Dim() ) {
-      cerr << "*** ERROR ***                                         \n"
+      (*pcerr) << "*** ERROR ***                                         \n"
               "*** ERROR *** FPSolver::operator()(JetProton*, char*) \n"
               "*** ERROR *** Dimensions are not correct.             \n"
               "*** ERROR ***  " << dimension << " != " << p->State().Dim() << "\n"
@@ -271,7 +277,7 @@ int FPSolver::operator()( JetProton* p_jpr, const char*, FP_CRITFUNC Crit )
       // --- Has the state gone out of bounds? ---------
       for( i = 0; i < Particle::PSD; i++ ) {
         if( isnan(p->State(i)) ) { 
-          cerr << "FPSolver: *** ERROR *** p->State(" << i << ") is NaN." << endl;
+          (*pcerr) << "FPSolver: *** ERROR *** p->State(" << i << ") is NaN." << endl;
           return -1; 
         }
       }
@@ -305,13 +311,13 @@ int FPSolver::operator()( JetProton* p_jpr, const char*, FP_CRITFUNC Crit )
     
   
     if( iterCount >= 200 ) {
-      cerr << "FPSolver: More than 200 Newton's iterations attempted." << endl;
-      cerr << "FPSolver: Result may not be reliable!! " << endl;
+      (*pcerr) << "FPSolver: More than 200 Newton's iterations attempted." << endl;
+      (*pcerr) << "FPSolver: Result may not be reliable!! " << endl;
     }
   
   
     if( !jumpTest || !zeroTest ) 
-      cerr << 
+      (*pcerr) << 
         "FPSolver:: Convergence achieved after " << iterCount 
                                                  << " iterations." << endl;
     
@@ -393,7 +399,7 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
     // --- Has the state gone out of bounds? ---------
     for( i = 0; i < Particle::PSD; i++ ) {
       if( isnan(p->State(i)) ) { 
-        cerr << "FPSolver: *** ERROR *** p->State(" << i << ") is NaN." << endl;
+        (*pcerr) << "FPSolver: *** ERROR *** p->State(" << i << ") is NaN." << endl;
         return -1; 
       }
     }
@@ -425,15 +431,15 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
 
   // --- Cleaning up -------------------------------------------------
   if( iterCount >= 200 ) {
-    cerr << 
+    (*pcerr) << 
       "FixedPoint:: More than 200 Newton's iterations attempted." << endl;
-    cerr << "FixedPoint:: Result may not be reliable!! " << endl;
+    (*pcerr) << "FixedPoint:: Result may not be reliable!! " << endl;
 
     return 1;
   }
 
   if( !jumpTest ) 
-    cerr << 
+    (*pcerr) << 
       "FixedPoint:: Convergence achieved after " << iterCount 
                                                  << " iterations." << endl;
 
@@ -555,13 +561,13 @@ void FPSolver::operator()( JetProton* p, FP_CRITFUNC Crit )
 
   // --- Cleaning up -------------------------------------------------
   if( iterCount >= 200 ) {
-    cerr << 
+    (*pcerr) << 
       "FixedPoint:: More than 200 Newton's iterations attempted." << endl;
-    cerr << "FixedPoint:: Result may not be reliable!! " << endl;
+    (*pcerr) << "FixedPoint:: Result may not be reliable!! " << endl;
   }
 
   if( !jumpTest ) 
-    cerr << 
+    (*pcerr) << 
       "FixedPoint:: Convergence achieved after " << iterCount 
                                                  << " iterations." << endl;
 
@@ -633,7 +639,7 @@ void FPSolver::operator()( double* result )
     // --- Has the state gone out of bounds? ---------
     for( i = 0; i < 6; i++ ) {
       if( isnan(u[i]) ) { 
-        cerr << "fixedPoint:: p->State(" << i << ") is NaN." << endl;
+        (*pcerr) << "fixedPoint:: p->State(" << i << ") is NaN." << endl;
         return; 
       }
     }
@@ -681,16 +687,16 @@ void FPSolver::operator()( double* result )
   } while ( jumpTest && test && (iterCount < 200) && zeroTest );
   
   if( iterCount >= 200 ) {
-    cerr << 
+    (*pcerr) << 
       "fixedPoint:: More than 200 Newton's iterations attempted." << endl;
-    cerr << "fixedPoint:: Result may not be reliable!! " << endl;
+    (*pcerr) << "fixedPoint:: Result may not be reliable!! " << endl;
   }
   if( !test ) 
-    cerr << 
+    (*pcerr) << 
       "fixedPoint:: Mapping failed after " << iterCount << " iterations."
 					   << endl;
   if( !jumpTest ) 
-    cerr << 
+    (*pcout) << 
       "fixedPoint:: Convergence achieved after " << iterCount 
 						 << " iterations." << endl;
   FORALL(i) result[i] = particleCoord[i];
