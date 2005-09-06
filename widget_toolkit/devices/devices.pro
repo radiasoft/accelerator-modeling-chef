@@ -10,7 +10,7 @@
 #######################################################################
 
 
-include ( "..\..\chef-config\config.pri" )
+include ( ../../chef-config/config.pri )
 
 TEMPLATE	= lib
 LANGUAGE	= C++
@@ -27,11 +27,11 @@ FORMS	=  src/devicetablebase.ui
 
 INCLUDEPATH += $$QUTEXR_INC
 
-LIBS	 += -L$$QUTEXR_LIBDIR -lqutexr -lqwt 
-LIBS	 += $$QMAKE_RPATH$$QUTEXR_LIBDIR 
+LIBS	 += -L$$(QUTEXR_LIBDIR) -lqutexr -lqwt 
+LIBS	 += -Wl,-rpath,$${QUTEXR_LIBDIR} 
 
 
-windows:LIBS	 += -L$$QUTEXR_LIBDIR -lqutexr -lqwt 
+windows:LIBS	 += -L$${QUTEXR_LIBDIR} -lqutexr -lqwt 
 
 
 

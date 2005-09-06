@@ -9,7 +9,7 @@
 #       
 #######################################################################
 
-include( "..\..\chef-config\config.pri" )
+include( ../../chef-config/config.pri )
 
 TEMPLATE	= lib
 LANGUAGE	= C++
@@ -38,9 +38,9 @@ LIBS += -lqwt
 LIBS += -L$$FNAL_LIBDIR -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit 
 ##LIBS += -L$$PYTHON_LIBDIR -lpython$$PYTHON_VERSION
 LIBS +=  $${PYTHON_LIBDIR}/libpython$${PYTHON_VERSION}.a 
-LIBS += -L$$BOOST_LIBDIR -lboost_python-gcc-mt 
+LIBS += -L$${BOOST_LIBDIR} -lboost_python-gcc 
 
-unix:LIBS  +=  -Wl,--export-dynamic $$QMAKE_RPATH$$CHEF_LIBDIR $$QMAKE_RPATH$$FNAL_LIBDIR $$QMAKE_RPATH$$GLIB_LIBDIR $$QMAKE_RPATH$$BOOST_LIBDIR 
+unix:LIBS  +=  -Wl,--export-dynamic -Wl,-rpath,$${CHEF_LIBDIR} -Wl,-rpath,$${FNAL_LIBDIR} -Wl,-rpath,$${GLIB_LIBDIR} -Wl,-rpath,$${BOOST_LIBDIR} 
 
 windows:LIBS += -L/opt/chef/lib -lpychefplot -lpybmlfactory -lpybeamline -lpyphysics_toolkit -lpymxyzptlk -lpybasic_toolkit 
 windows:LIBS += -lqwt 
