@@ -66,6 +66,9 @@
 #include <BeamlineExpressionTree.h>
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
+
 
 const char* BeamlineBrowser::drift_xpm[19]={
 "  16 16 2 1",
