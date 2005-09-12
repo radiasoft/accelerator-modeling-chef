@@ -54,8 +54,10 @@ int           fb_alloc_delete( fb_allocator* alloc );
 void*         allocatei__( fb_allocator* alloc );
 void          deallocate__( void* p, fb_allocator* alloc );
 
-#define allocate_block__( p,alloc ) (((void*)(p)) = allocatei__(alloc) )
-#define allocate_malloc__( p,alloc ) (((void*)(p)) = malloc( fb_alloc_esize(alloc) ) )
+static void* p;
+
+#define allocate_block__( p,alloc )  ( p = allocatei__(alloc) )
+#define allocate_malloc__( p,alloc ) ( p = malloc( fb_alloc_esize(alloc) ) )
 #define deallocate_free__( p,alloc ) ( free(p) )
 
 #endif /* fb_allocator_h */
