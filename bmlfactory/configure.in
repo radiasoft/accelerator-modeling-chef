@@ -55,7 +55,7 @@ elif test "x${CXX}" = "xpgCC"; then
      AC_SUBST(AM_CPPFLAGS)
 fi,
 if test "x${GXX}" = "xyes" || test "x${GCC}" = "xyes"; then
-   CFLAGS="${CFLAGS} -g -O2 -pipe -fexceptions -ansi -D_GNU_SOURCE -D__EXTENSIONS__"
+   CFLAGS="${CFLAGS} -g -O2 -pipe -fexceptions -std=gnu89"
    CXXFLAGS="${CXXFLAGS} -g -O2 -pipe -fpermissive -Wno-deprecated"
    AC_SUBST(CFLAGS)
    AC_SUBST(CXXFLAGS)
