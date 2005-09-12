@@ -5,29 +5,39 @@
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
 ******                                    
 ******  File:      TMatrix.h
-******  Version:   1.0
-******                                                                
-******  Copyright (c) 2004 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******
+******  Copyright (c) Universities Research Association, Inc.
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******
 ******                                                                
 ******  Author:    Leo Michelotti                                     
-******                                                                
 ******             Fermilab                                           
 ******             P.O.Box 500                                        
 ******             Mail Stop 220                                      
 ******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
+****** 
+******  Revision (Sep 2005):
+******
+******             Jean-Francois Ostiguy
+******             ostiguy@fnal.gov                                   
+******             
+******   - reorganized code to support explicit template instantiations
+******   
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
-*************************************************************************/
-
-
+*************************************************************************
 #ifndef TMATRIX_H
 #define TMATRIX_H
 
@@ -36,15 +46,17 @@
 #include <complex>
 #include <complexAddon.h>
 
-#include "TML.h"
+#include <TML.h>
 
 template<typename T> class TMatrix; 
 
 
+// standalone functions
+
+TMatrix<double> real( const TMatrix<FNAL::Complex>& x );
+TMatrix<double> imag( const TMatrix<FNAL::Complex>& x );
+
 // Friend functions
-template<typename T> char operator==( const TMatrix<T>&, const TMatrix<T>& );
-template<typename T> char operator==( const TMatrix<T>&, const T& );
-template<typename T> char operator==( const T&, const TMatrix<T>& );
 
 template<typename T> std::ostream& operator<<(std::ostream&, const TMatrix<T>&);
 
@@ -65,6 +77,14 @@ template<typename T> TMatrix<T> operator/(const TMatrix<T>&, const T);
 template<typename T> TMatrix<T> operator/(const T, TMatrix<T>&);
 template<typename T> TMatrix<T> operator/(TMatrix<T>&, TMatrix<T>&);
 
+template<typename T> bool operator==( const TMatrix<T>&, const TMatrix<T>& );
+template<typename T> bool operator==( const TMatrix<T>&, const T& );
+template<typename T> bool operator==( const T&, const TMatrix<T>& );
+template<typename T> void operator-=( TMatrix<T>&, const TMatrix<T>& );
+template<typename T> void operator*=( TMatrix<T>&, const TMatrix<T>& );
+template<typename T> bool operator!=( const TMatrix<T>&, const TMatrix<T>& );
+template<typename T> bool operator!=( const TMatrix<T>&, const T& );
+template<typename T> bool operator!=( const T&, const TMatrix<T>& );
 
 
 template<typename T>
@@ -91,6 +111,7 @@ public:
   // Public member functions__________________________________________
   inline int rows() const { return _ml->_r;}
   inline int cols() const { return _ml->_c;}
+
   TMatrix<T> transpose() const;
   TMatrix<T> Square() const;
   T determinant() const;
@@ -122,9 +143,9 @@ public:
   void operator-=( const T&);
 
   // Friends
-  friend char operator==<>( const TMatrix&, const TMatrix& );
-  friend char operator==<>( const TMatrix&, const T& );
-  friend char operator==<>( const T&, const TMatrix& );
+  friend bool operator==<>( const TMatrix&, const TMatrix& );
+  friend bool operator==<>( const TMatrix&, const T& );
+  friend bool operator==<>( const T&, const TMatrix& );
 
   friend std::ostream& operator<<<>(std::ostream&, const TMatrix&);
 
@@ -207,7 +228,18 @@ public:
 };
 
 
+// TMatrix Specializations
+ 
+template<> TMatrix<FNAL::Complex> TMatrix<double>::eigenValues();
+template<> TMatrix<FNAL::Complex> TMatrix<double>::eigenVectors(); 
+
+template<> TMatrix<FNAL::Complex> TMatrix<FNAL::Complex>::eigenValues();
+template<> TMatrix<FNAL::Complex> TMatrix<FNAL::Complex>::eigenVectors();
+
+
+
 // Special class RandomOrthogonal
+
 class RandomOrthogonal
 {
   public: 
@@ -238,18 +270,6 @@ class RandomOrthogonal
 };
 
 
-template<typename T> void operator-=( TMatrix<T>&, const TMatrix<T>& );
-
-template<typename T> void operator*=( TMatrix<T>&, const TMatrix<T>& );
-
-template<typename T> char operator!=( const TMatrix<T>&, const TMatrix<T>& );
-
-template<typename T> char operator!=( const TMatrix<T>&, const T& );
-
-template<typename T> char operator!=( const T&, const TMatrix<T>& );
-
-
-
 // Derived class MatrixC
 // Done to replicate member functions dagger() and MatrixC(const TMatrix<double>&)
 
@@ -270,11 +290,14 @@ struct MatrixC : public TMatrix<FNAL::Complex>
   MatrixC dagger() const;
 };
 
-typedef TMatrix<double> Matrix;
-typedef TMatrix<double> MatrixD;
-typedef TMatrix<int> MatrixI;
+
+typedef TMatrix<double>         Matrix;
+typedef TMatrix<double>         MatrixD;
+typedef TMatrix<int>            MatrixI;
 
 MatrixD real( const MatrixC& x );
 MatrixD imag( const MatrixC& x );
 
 #endif // TMATRIX_H
+
+
