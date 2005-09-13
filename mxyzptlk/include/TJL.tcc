@@ -1678,7 +1678,7 @@ TJLterm<T1,T2> TJLterm<T1,T2>::operator+( const TJLterm<T1,T2>& y )
 //      Implementation of Class TJLterm<T1,T2>
 
 template<typename T1, typename T2>
-TJLterm<T1,T2>::TJLterm<T1,T2>() 
+TJLterm<T1,T2>::TJLterm() 
 : _index(6), _weight(0), _value(T1()), _deleted(false) /// index argument necessary ???
 {
 }
@@ -1687,7 +1687,7 @@ TJLterm<T1,T2>::TJLterm<T1,T2>()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-TJLterm<T1,T2>::TJLterm<T1,T2>( TJetEnvironment<T1,T2>* pje ) 
+TJLterm<T1,T2>::TJLterm( TJetEnvironment<T1,T2>* pje ) 
 : _index( pje->_numVar ), _weight(0), _value(T1()), _deleted(false) 
 {
 }
@@ -1696,7 +1696,7 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( TJetEnvironment<T1,T2>* pje )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l, 
+TJLterm<T1,T2>::TJLterm( const IntArray& l, 
                 const T1& x, 
                 TJetEnvironment<T1,T2>* pje ) 
 :   _index( l ), _deleted(false)
@@ -1766,7 +1766,7 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l,
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l, const T1& x )
+TJLterm<T1,T2>::TJLterm( const IntArray& l, const T1& x )
 : _index(l), _weight(l.Sum()), _value(x),_deleted(false)
 {
 }
@@ -1776,7 +1776,7 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray& l, const T1& x )
 
 
 template<typename T1, typename T2>
-TJLterm<T1,T2>::TJLterm<T1,T2>( const TJLterm<T1,T2>* x ) 
+TJLterm<T1,T2>::TJLterm( const TJLterm<T1,T2>* x ) 
 : _index( x->_index ), _weight(x->_weight), _value(x->_value), _deleted(x->_deleted)
 {
 }
@@ -1785,7 +1785,7 @@ TJLterm<T1,T2>::TJLterm<T1,T2>( const TJLterm<T1,T2>* x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T1, typename T2>
-TJLterm<T1,T2>::TJLterm<T1,T2>( const TJLterm<T1,T2>& x ) 
+TJLterm<T1,T2>::TJLterm( const TJLterm<T1,T2>& x ) 
 : _index( x._index ), _weight(x._weight), _value(x._value), _deleted(x._deleted)
 {
 }
