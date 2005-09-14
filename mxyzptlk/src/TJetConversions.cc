@@ -635,7 +635,7 @@ TJL<complex<double> ,double>* TJL<complex<double> ,double>::makeTJL( const TJL<d
 
  if ( (p->_jltermStoreCapacity) < (x._jltermStoreCapacity) ) {
 
-   delete[] p->_jltermStore; 
+   TJLterm< complex<double> ,double>::array_deallocate(p->_jltermStore); 
    p->initStore( x._jltermStoreCapacity );
 
  }; 
@@ -755,7 +755,7 @@ TJL<double,complex<double> >* TJL<double,complex<double> >::makeTJL( const TJL<c
 
  if ( p->_jltermStoreCapacity < x._jltermStoreCapacity ) {
 
-   delete[] p->_jltermStore;
+   TJLterm<double,complex<double> >::array_deallocate(p->_jltermStore);
    p->initStore( x._jltermStoreCapacity );     
 
  }
