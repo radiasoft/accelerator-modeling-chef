@@ -55,6 +55,7 @@
 #define SLIST_HXX
 
 #include <FastPODAllocator.h>
+#include <FastAllocator.h>
 
 typedef void* ent;
 
@@ -85,9 +86,9 @@ friend class slist_traversor;
   objectCount--;
 #endif
   }
-} ;
+};
 
-class slist: public gms::FastPODAllocator<slist> {
+class slist: public gms::FastAllocator {
 private:
   slink* last;
   char   owner;
