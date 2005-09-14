@@ -283,7 +283,8 @@ template<typename T1, typename T2>
 void TJL<T1,T2>::initStore( int capacity) {
 
   _jltermStoreCapacity    = capacity;
-  _jltermStore            = new TJLterm<T1,T2>[ _jltermStoreCapacity ]; 
+  _jltermStore            =  TJLterm<T1,T2>::array_allocate( _jltermStoreCapacity ); 
+                             // new TJLterm<T1,T2>[ _jltermStoreCapacity ]; 
   _jltermStoreCurrentPtr  = _jltermStore;
 
 }
@@ -295,7 +296,8 @@ template<typename T1, typename T2>
 void TJL<T1,T2>::initStore( ) {
 
   _jltermStoreCapacity    = 16;
-  _jltermStore            = new TJLterm<T1,T2>[ _jltermStoreCapacity ]; 
+  _jltermStore            = TJLterm<T1,T2>::array_allocate( _jltermStoreCapacity );
+                            //new TJLterm<T1,T2>[ _jltermStoreCapacity ]; 
   _jltermStoreCurrentPtr  = _jltermStore;
 
 }
@@ -519,7 +521,8 @@ TJL<T1,T2>* TJL<T1,T2>::makeTJL( const TJL& x )
   
   if (p->_jltermStoreCapacity < x._jltermStoreCapacity)  
   { 
-       delete[]  p->_jltermStore;       
+       // delete[]  p->_jltermStore;       
+       TJLterm<T1,T2>::array_deallocate( p->_jltermStore );
        p->initStore(x._jltermStoreCapacity);   
   
   }
@@ -604,7 +607,8 @@ TJL<T1,T2>*  TJL<T1,T2>::makeTJL( const TJL* x )
   
   if (p->_jltermStoreCapacity < x->_jltermStoreCapacity)  
   { 
-       delete[]  p->_jltermStore;       
+       //delete[]  p->_jltermStore;       
+       TJLterm<T1,T2>::array_deallocate( p->_jltermStore );
        p->initStore(x->_jltermStoreCapacity);   
   };
 
@@ -647,7 +651,8 @@ TJL<T1,T2>::~TJL()
 {
  clear();
 
- delete[] _jltermStore;
+ //delete[] _jltermStore;
+ TJLterm<T1,T2>::array_deallocate( _jltermStore );
 
  _jltermStore = _jltermStoreCurrentPtr = 0;
  _jltermStoreCapacity = 0;
@@ -692,7 +697,8 @@ int             old_jltermStoreCapacity  = 0;
     old_jltermStoreCapacity   = _jltermStoreCapacity;
 
     _jltermStoreCapacity *= 2;  // double the capacity
-    _jltermStore = _jltermStoreCurrentPtr = new TJLterm<T1,T2> [_jltermStoreCapacity ];
+    _jltermStore = _jltermStoreCurrentPtr = TJLterm<T1,T2>::array_allocate( _jltermStoreCapacity );
+                                         // new TJLterm<T1,T2> [_jltermStoreCapacity ];
  
   // We DO NOT do a memcpy here, so as to get rid of deleted jlterms. This is done
   // to prevent the size of the allocation vector to grow indefinitely.  
@@ -717,8 +723,9 @@ int             old_jltermStoreCapacity  = 0;
 
     // now, it is ok to zap the old store
  
-    delete [] old_jltermStore; 
- 
+    //delete [] old_jltermStore; 
+    TJLterm<T1,T2>::array_deallocate( old_jltermStore );
+
     // finally, return a ptr to the next available block 
 
     return  _jltermStoreCurrentPtr++;
@@ -1557,7 +1564,7 @@ TJL<T1,T2>& TJL<T1,T2>::operator=( const TJL<T1,T2>& x )
 
  if ( _jltermStoreCapacity < x._jltermStoreCapacity )  {
    old_jltermStore = _jltermStore;
-      _jltermStore = _jltermStoreCurrentPtr = new TJLterm<T1,T2> [ x._jltermStoreCapacity ];
+      _jltermStore = _jltermStoreCurrentPtr =  TJLterm<T1,T2>::array_allocate(x._jltermStoreCapacity);
       _jltermStoreCapacity = x._jltermStoreCapacity;
  };
 
@@ -1572,8 +1579,10 @@ TJL<T1,T2>& TJL<T1,T2>::operator=( const TJL<T1,T2>& x )
           append(q);  
  }
 
- if (old_jltermStore) delete[] old_jltermStore; 
-
+ if (old_jltermStore) {
+    TJLterm<T1,T2>::array_deallocate( old_jltermStore );
+    //delete[] old_jltermStore; 
+ }
  _count   = x._count;     // _rc is purposely left untouched
  _weight  = x._weight;
  _accuWgt = x._accuWgt;
@@ -1816,6 +1825,31 @@ TJLterm<T1,T2>::~TJLterm<T1,T2>()
 }
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #endif 
+
+template<typename T1, typename T2>
+TJLterm<T1,T2>* TJLterm<T1,T2>::array_allocate(int n) {
+
+    TJLterm<T1,T2>* p = 
+       static_cast<TJLterm<T1,T2>*>(_ordered_memPool.ordered_malloc( n ));
+    _array_sizes[ p ] = n;
+    return p;
+}
+
+template<typename T1, typename T2>
+void TJLterm<T1,T2>::array_deallocate(TJLterm<T1,T2>* p) {
+
+    _ordered_memPool.ordered_free( p, _array_sizes[p] ); 
+    _array_sizes.erase(p );
+}
+
+
+// static member variable instantiations for the TJLterm class
+
+template <typename T1, typename T2>
+boost::pool<> TJLterm<T1,T2>::_ordered_memPool( sizeof(TJLterm<T1,T2>), 2048 );
+
+template <typename T1, typename T2>
+__gnu_cxx::hash_map< TJLterm<T1,T2>*, unsigned int, boost::hash<TJLterm<T1,T2>*> > TJLterm<T1,T2>::_array_sizes;
 
 
 // ***************************************************************

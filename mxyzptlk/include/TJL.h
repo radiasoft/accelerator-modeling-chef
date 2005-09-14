@@ -54,6 +54,8 @@
 #include <TMatrix.h>
 #include <VectorD.h>
 #include <TJetEnvironment.h>
+#include <ext/hash_map>
+#include <boost/functional/hash/hash.hpp>
 #include <FastPODAllocator.h>
 #include <vector>
 
@@ -104,6 +106,29 @@ struct TJLterm: public gms::FastPODAllocator<TJLterm<T1,T2> >
   T1&       coefficient()       { return _value; }
   T1        coefficient() const { return _value; }
   T1        coeff()       const { return _value; }  // old
+
+  static TJLterm<T1,T2>*   array_allocate(int n);
+  static void              array_deallocate(TJLterm<T1,T2>* p);
+
+  private:
+
+  static boost::pool<>                                                       
+                         _ordered_memPool; // an ordered pool of TJLterms
+  
+  static __gnu_cxx::hash_map< TJLterm<T1,T2>*, unsigned int, boost::hash<TJLterm<T1,T2>*> > 
+                         _array_sizes;     // the size of the allocated arrays, 
+                                           // indexed by their pointers   
+
+  // prevent use of all forms of operator new[];
+
+  static void* operator new[]( std::size_t size) throw (std::bad_alloc); 
+  static void* operator new[]( std::size_t size, const std::nothrow_t&) throw();
+  static void* operator new[]( std::size_t size, void*) throw();
+
+  static void operator delete[](void* p) throw();
+  static void operator delete[](void* p, const std::nothrow_t&) throw();
+  // this form *cannot* be overloaded: static void operator delete[](void* p, void*) throw();
+
 } ;
 
 

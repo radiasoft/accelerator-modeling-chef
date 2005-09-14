@@ -220,6 +220,7 @@ TJet<double,std::complex<double> > erf    ( const TJet<double,std::complex<doubl
 
 // Class TJet template
 template<typename T1,typename T2>
+
 class TJet: public gms::FastAllocator 
 {
 
