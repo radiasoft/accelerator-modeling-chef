@@ -219,8 +219,8 @@ void TJetEnvironment<T1,T2>::_buildScratchPads()
       _TJLmonomial[i].Reconstruct( this ); 
     }
 
-    if( _TJLmml ) { delete [] _TJLmml; }
-    _TJLmml = new TJLterm<T1,T2>[ _maxTerms ];
+    if( _TJLmml ) { TJLterm<T1,T2>::array_deallocate(_TJLmml);}
+    _TJLmml =  TJLterm<T1,T2>::array_allocate(_maxTerms);
     IntArray powers(n);
     T1 startValue(0.0);
     _TJLmml[0].Reconstruct( powers, startValue );
@@ -256,7 +256,9 @@ TJetEnvironment<T1,T2>::~TJetEnvironment()
 {
   if( _monomial   )  { delete [] _monomial;    _monomial = 0;    }
   if( _TJLmonomial ) { delete [] _TJLmonomial; _TJLmonomial = 0; }
-  if( _TJLmml     )  { delete [] _TJLmml;      _TJLmml = 0;      }
+  if( _TJLmml     )  { TJLterm<T1,T2>:: array_deallocate(_TJLmml);      
+                       _TJLmml = 0;      
+                     }
   if( _exponent   )  { delete [] _exponent;    _exponent = 0;    }
   // OBSOLETE if( _expCode    )  { delete [] _expCode;     _expCode = 0;     }
   // OBSOLETE if( _numPaths   )  { delete    _numPaths;    _numPaths = 0;    }
