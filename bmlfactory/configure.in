@@ -198,6 +198,14 @@ else
 		    BOOST_INC="/usr/local/include"
 		    AC_SUBST(BOOST_INC)
 		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+		elif test -r /usr/local/include/boost-1_33/boost/shared_ptr.hpp; then
+		    BOOST_INC="/usr/local/include/boost-1_33"
+		    AC_SUBST(BOOST_INC)
+		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+		elif test -r /usr/local/ap/include/boost-1_33/boost/shared_ptr.hpp; then
+		    BOOST_INC="/usr/local/ap/include/boost-1_33"
+		    AC_SUBST(BOOST_INC)
+		    AC_MSG_RESULT([Header file located in $BOOST_INC])
 		elif test -r /usr/local/include/boost-1_32/boost/shared_ptr.hpp; then
 		    BOOST_INC="/usr/local/include/boost-1_32"
 		    AC_SUBST(BOOST_INC)
