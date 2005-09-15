@@ -1,6 +1,6 @@
-! File: Tevatron-E-all.lat
+! Tevatron-E-all.lat
 
-CALL, FILENAME="Tevatron-E-part1.lat"
-CALL, FILENAME="Tevatron-E-part2.lat"
+CALL,  FILENAME="Tevatron-E-part1.lat"
+CALL , FILENAME="Tevatron-E-part2.lat"
 
-!!CALL, FILENAME="Tevatron-E-return.lat"
+

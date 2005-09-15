@@ -14,6 +14,7 @@ erest   :=      0.93828
 c       :=      0.29979
 etotal  :=      ekin + erest
 pc      :=      sqrt(etotal * etotal - erest * erest)
+
 !gamma   :=      etotal / erest
 !beta    :=      sqrt(1 - (1 / (gamma * gamma)))
 !gammas  :=      gamma*gamma
@@ -23,7 +24,7 @@ pc      :=      sqrt(etotal * etotal - erest * erest)
 
 brho    :=      pc/c
 
-!beam,   particle=proton, energy=etotal
+beam,   particle=proton, energy=etotal
 
 rhod    :=      48.034
 rhof    :=      40.847
@@ -32,8 +33,32 @@ qsf     :=      0.0542195
 blength :=      2.889612
 angled  :=      blength/rhod
 anglef  :=      blength/rhof
-ed      :=      angled/2.0
-ef      :=      anglef/2.0
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+! ATTN CHEF USERS 
+! 
+! NOTE: in this file, the entrance and exit edge angles e1,e2 are set to 0
+! and the bends are set to SBEND
+!  
+! If the angles are non-zero, slots will need to be generated. 
+! In that case, one must manually convert drifts to slots.
+! At the moment, this will fail if there are two magnet with edges following each other with no 
+! drift space in between
+!
+! -JFO
+!.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+!ed      :=      angled/2.0
+!ef      :=      anglef/2.0
+
+ed      :=      0.0
+ef      :=      0.0
+
+
 ! llonga  :=      3.0
 ! llongb  :=      5.7-llonga
 
@@ -746,3 +771,4 @@ booster:        line=(bcel01, bcel02, bcel03, bcel04, bcel05, bcel06,&
                       bcel13, bcel14, bcel15, bcel16, bcel17, bcel18,&
                       bcel19, bcel20, bcel21, bcel22, bcel23, bcel24)
 
+USE, booster

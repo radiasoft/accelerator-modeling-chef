@@ -25,6 +25,9 @@
 
 
 momentum  := 150.0                ! GeV/c
+beam, pc=momentum, particle=proton
+
+
 brho      := momentum/0.299792458 ! T-m
 
 twopi     := 6.2831853072
