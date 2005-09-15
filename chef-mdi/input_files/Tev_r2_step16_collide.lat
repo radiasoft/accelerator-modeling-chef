@@ -1,0 +1,203 @@
+
+! ----------------------------------------------------------------------
+!
+! Tevatron Collider Run 2
+! Lattice Step 16 (Collisions with Collimator Phase Bumps)
+!  with
+!   - Design beta* = 35 cm
+!   - Proton collision helix
+!   - Head on collisions at B0 and D0
+!   - Collimator phase bumps
+!   - 
+!   - 
+! ----------------------------------------------------------------------
+
+! option, -echo, verify
+
+MOMENTUM := 1.0                     ! Units are TeV
+BRHO := 3335.6400869 * MOMENTUM     ! Units are kG-meter
+
+MAINBUSF := 0.0227724747            ! Strengths of main bus quads.
+MAINBUSD := -MAINBUSF               ! Units are in m^-2 ( or kG/m / BRHO )
+                                    ! This corresponds to 76.0 T/m at 1 TeV.
+
+KBENDQ := 2.259873E-05              ! Units are in 1/m
+                                    ! KBENDQ is strength of the thin quad
+                                    ! placed at each end of the dipoles.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Added by ostiguy@fnal.gov
+! 
+! The following were undefined
+!
+TWOPI   = 2*PI
+KBENDA1 = 0
+!!!!!!!!!!!!!!!!!!!!
+
+! Low Beta Quadrupoles
+! Strengths are in Tesla/m ( C49 units are kG/m )
+! These are divided by BRHO to become the K1 of the MAD quadrupole
+
+AQB       :=   -8.888888 * MOMENTUM
+AQ0       :=   -5.987662 * MOMENTUM
+AQ9       :=  -33.022189 * MOMENTUM
+AQ8       :=    0.00     * MOMENTUM
+AQ7       :=   36.105133 * MOMENTUM
+B0Q6UP    := -108.415411 * MOMENTUM
+B0QT6UP   :=   -4.601578 * MOMENTUM
+
+B0Q5UP    :=  -58.632144 * MOMENTUM
+B0Q1UP    :=    0.000000 * MOMENTUM
+B0Q2UP    :=  139.838667 * MOMENTUM
+B0Q3UP    := -137.927667 * MOMENTUM
+B0Q4UP    :=  B0Q2UP
+
+B0Q4DOWN  := -B0Q2UP
+B0Q3DOWN  := -B0Q3UP
+B0Q2DOWN  := -B0Q2UP
+B0Q1DOWN  :=  0.0
+B0Q5DOWN  := -B0Q5UP
+
+B0Q6DOWN  := -B0Q6UP
+B0QT6DOWN :=  B0QT6UP
+BQ7       :=  -40.423133 * MOMENTUM
+BQ8       :=   -8.888889 * MOMENTUM
+BQ9       :=   28.514122 * MOMENTUM
+BQ0       :=    2.961301 * MOMENTUM
+
+! These are the settings for the D0 Low beta quads.
+! They are nominally the same as B0.
+
+CQB       := AQB
+CQ0       := AQ0
+CQ9       := AQ9
+CQ8       := AQ8
+CQ7       := AQ7
+D0Q6UP    := B0Q6UP
+D0QT6UP   := B0QT6UP
+
+D0Q5UP    := B0Q5UP
+D0Q1UP    := B0Q1UP
+D0Q2UP    := B0Q2UP
+D0Q3UP    := B0Q3UP
+D0Q4UP    := B0Q4UP
+
+D0Q4DOWN  := B0Q4DOWN
+D0Q3DOWN  := B0Q3DOWN
+D0Q2DOWN  := B0Q2DOWN
+D0Q1DOWN  := B0Q1DOWN
+D0Q5DOWN  := B0Q5DOWN
+
+D0Q6DOWN  := B0Q6DOWN
+D0QT6DOWN := B0QT6DOWN
+DQ7       := BQ7
+DQ8       := BQ8
+DQ9       := BQ9
+DQ0       := BQ0
+
+
+! Trim tune quads
+! Strengths are in Tesla/m
+! These are divided by BRHO to become the K1 of the MAD quadrupole
+
+QFA4    := -2.415874 * MOMENTUM
+QDD1    :=  1.530739 * MOMENTUM
+
+QFE1    := -2.629709 * MOMENTUM
+QDE2    := -1.518840 * MOMENTUM
+QFF3    := -1.248530 * MOMENTUM
+QDF4    :=  2.493741 * MOMENTUM
+
+QE19    := -4.602813 * MOMENTUM
+QE26    :=  0.026839 * MOMENTUM
+QE28    :=  0.338661 * MOMENTUM
+QF28    :=  0.818806 * MOMENTUM
+QF32    := -3.724763 * MOMENTUM
+
+QE47    := -0.264063 * MOMENTUM
+QF33    := -0.115670 * MOMENTUM
+
+
+! Trim skew quads
+! Strengths are in Tesla/m
+! These are divided by BRHO to become the K1 of the MAD quadrupole
+
+KSQ   := 0.0
+KSQA0 := 0.0
+KSQA4 := 0.0
+KSQB1 := 0.0
+KSQD0 := 0.0
+KSQE0 := 0.0
+
+
+! 39th harmonic quadrupoles are off in Collider
+
+Q39SINT := 0.0
+Q39CINT := 0.0
+
+
+! Chromaticity sextupoles
+! Strength of thin sextupole in chromaticity circuits
+! Strengths are in Tesla.
+! These are divided by BRHO to become the K2L of the MAD thin sextupole
+! Units are K2L = 1/m = (length * T/m / BRHO) = ( L/BRHO )(d^2 B_y / dx^2)
+
+SCHROMD := -209.6332252263 * MOMENTUM
+SCHROMF :=  130.5031674218 * MOMENTUM
+
+
+! Feeddown sextupoles
+! These are not used in the design lattice
+
+S1INTSTR   := 0.0
+S2INTSTR   := 0.0
+S3INTSTR   := 0.0
+S4INTSTR   := 0.0
+S5INTSTR   := 0.0
+S6INTSTR   := 0.0
+S6A0INTSTR := 0.0
+S7INTSTR   := 0.0
+
+
+! Octupole circuits
+! These are not used in the design lattice
+
+KOF  := 0.0
+KOD  := 0.0
+KO1  := 0.0
+KO2  := 0.0
+
+
+! ------------------------------------------------------------------
+! Separator strengths are in MV/m.
+! Approximate bend angle is theta(ur) = E_MAD(MV/m)*2.57175(m)/E(Tev)
+! E_MAD(MV/m) = 2 * V_SEP(MV) / 0.05 meters
+! Positive value for E_field kicks protons upward or radial outward
+! -------------------------------------------------------------------
+
+beam, particle=proton, energy= 1000.0*MOMENTUM
+
+helix_polarity :=  1.0                    !  1 for prot orbit,
+                                          !  0 for no helix,
+                                          ! -1 for pbar orbit
+
+SEP_B11H_E :=  4.000 * helix_polarity    ! Kicks protons radial outward
+SEP_B17H_E := -1.903 * helix_polarity    ! Kicks protons radial inward
+SEP_C49H_E :=  3.719 * helix_polarity    ! Kicks protons radial outward
+
+SEP_D11H_E := -3.470 * helix_polarity    ! Kicks protons radial inward
+SEP_D48H_E := -0.603 * helix_polarity    ! Kicks protons radial inward
+SEP_A49H_E :=  4.00  * helix_polarity    ! Kicks protons radial outward
+
+SEP_B11V_E :=  4.000 * helix_polarity    ! Kicks protons radial upward
+SEP_C17V_E := -1.936 * helix_polarity    ! Kicks protons radial downward
+SEP_C49V_E :=  3.321 * helix_polarity    ! Kicks protons radial upward
+
+SEP_D11V_E :=  4.000 * helix_polarity    ! Kicks protons radial upward
+SEP_D17V_E := -2.353 * helix_polarity    ! Kicks protons radial downward
+SEP_A17V_E := -2.203 * helix_polarity    ! Kicks protons radial downward
+SEP_A49V_E := -4.000 * helix_polarity    ! Kicks protons radial downward
+
+!------------- End of Tev_r2_step16_collide.lat -----------------
+
+CALL, FILENAME="TeV-Collider-Run-II.lat"
+ 
