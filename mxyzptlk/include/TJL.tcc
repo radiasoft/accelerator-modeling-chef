@@ -1806,8 +1806,9 @@ template<typename T1, typename T2>
 void TJLterm<T1,T2>::Reconstruct( const IntArray& e, const T1& x )
 {
   _index.Reconstruct(e);
-  _weight = e.Sum();
-  _value = x;
+  _weight   = e.Sum();
+  _value    = x;
+  _deleted  = false;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
