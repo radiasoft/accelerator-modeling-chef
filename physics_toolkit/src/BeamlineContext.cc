@@ -105,12 +105,10 @@ BeamlineContext::BeamlineContext( const BeamlineContext& )
 
 BeamlineContext::~BeamlineContext()
 {
-
   this->reset();
 
   if( _isCloned && (_p_bml != 0) ) 
   { _p_bml->eliminate(); }
-
 }
 
 
