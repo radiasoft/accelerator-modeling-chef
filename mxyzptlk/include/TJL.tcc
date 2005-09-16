@@ -284,7 +284,6 @@ void TJL<T1,T2>::initStore( int capacity) {
 
   _jltermStoreCapacity    = capacity;
   _jltermStore            =  TJLterm<T1,T2>::array_allocate( _jltermStoreCapacity ); 
-                             // new TJLterm<T1,T2>[ _jltermStoreCapacity ]; 
   _jltermStoreCurrentPtr  = _jltermStore;
 
 }
@@ -297,7 +296,6 @@ void TJL<T1,T2>::initStore( ) {
 
   _jltermStoreCapacity    = 16;
   _jltermStore            = TJLterm<T1,T2>::array_allocate( _jltermStoreCapacity );
-                            //new TJLterm<T1,T2>[ _jltermStoreCapacity ]; 
   _jltermStoreCurrentPtr  = _jltermStore;
 
 }
@@ -521,7 +519,6 @@ TJL<T1,T2>* TJL<T1,T2>::makeTJL( const TJL& x )
   
   if (p->_jltermStoreCapacity < x._jltermStoreCapacity)  
   { 
-       // delete[]  p->_jltermStore;       
        TJLterm<T1,T2>::array_deallocate( p->_jltermStore );
        p->initStore(x._jltermStoreCapacity);   
   
@@ -607,7 +604,6 @@ TJL<T1,T2>*  TJL<T1,T2>::makeTJL( const TJL* x )
   
   if (p->_jltermStoreCapacity < x->_jltermStoreCapacity)  
   { 
-       //delete[]  p->_jltermStore;       
        TJLterm<T1,T2>::array_deallocate( p->_jltermStore );
        p->initStore(x->_jltermStoreCapacity);   
   };
@@ -650,8 +646,6 @@ template<typename T1, typename T2>
 TJL<T1,T2>::~TJL() 
 {
  clear();
-
- //delete[] _jltermStore;
  TJLterm<T1,T2>::array_deallocate( _jltermStore );
 
  _jltermStore = _jltermStoreCurrentPtr = 0;
@@ -698,7 +692,6 @@ int             old_jltermStoreCapacity  = 0;
 
     _jltermStoreCapacity *= 2;  // double the capacity
     _jltermStore = _jltermStoreCurrentPtr = TJLterm<T1,T2>::array_allocate( _jltermStoreCapacity );
-                                         // new TJLterm<T1,T2> [_jltermStoreCapacity ];
  
   // We DO NOT do a memcpy here, so as to get rid of deleted jlterms. This is done
   // to prevent the size of the allocation vector to grow indefinitely.  
@@ -723,7 +716,6 @@ int             old_jltermStoreCapacity  = 0;
 
     // now, it is ok to zap the old store
  
-    //delete [] old_jltermStore; 
     TJLterm<T1,T2>::array_deallocate( old_jltermStore );
 
     // finally, return a ptr to the next available block 
@@ -1581,7 +1573,6 @@ TJL<T1,T2>& TJL<T1,T2>::operator=( const TJL<T1,T2>& x )
 
  if (old_jltermStore) {
     TJLterm<T1,T2>::array_deallocate( old_jltermStore );
-    //delete[] old_jltermStore; 
  }
  _count   = x._count;     // _rc is purposely left untouched
  _weight  = x._weight;
@@ -1708,7 +1699,14 @@ template<typename T1, typename T2>
 TJLterm<T1,T2>::TJLterm( const IntArray& l, 
                 const T1& x, 
                 TJetEnvironment<T1,T2>* pje ) 
-:   _index( l ), _deleted(false)
+:   _index( l ), _weight(l.Sum()), _value(x), _deleted(false)
+{ }
+//------------------------------------------------------------------------------------------------------
+// The code below has been commented out for efficiency. It performs sanity checks and can be re-enabled
+// for debugging pruposes.
+// Remember: TJLterm<>::TJLterm() is called on a massive scale ! 
+//------------------------------------------------------------------------------------------------------
+#if 0
 {
 
  // I think that it is not necessary to use a try block
@@ -1768,8 +1766,12 @@ TJLterm<T1,T2>::TJLterm( const IntArray& l,
    _weight = l.Sum();
    _value = x;
  }
-
 }
+#endif
+//--------------------------------------------------------------------------------------------------------
+// end of commented out code
+//---------------------------------------------------------------------------------------------------------
+
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1814,7 +1816,8 @@ void TJLterm<T1,T2>::Reconstruct( const IntArray& e, const T1& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// This destructor should never be called 
+// This destructor should **never** be called 
+// doing so will break the specialized allocation.
 
 #if  0
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1844,7 +1847,14 @@ void TJLterm<T1,T2>::array_deallocate(TJLterm<T1,T2>* p) {
 }
 
 
-// static member variable instantiations for the TJLterm class
+//*** Static member variable instantiations for the TJLterm class
+//
+// Notes:
+// 
+//  __gnu_cxx::hash_map is an extension to the STL. 
+//  There is equivalent functionality in tr1 ...
+//  boost::hash<TJLterm<T1,T2>*> is used to get a portable
+//  pointer hash fnct. 
 
 template <typename T1, typename T2>
 boost::pool<> TJLterm<T1,T2>::_ordered_memPool( sizeof(TJLterm<T1,T2>), 2048 );
@@ -1907,8 +1917,8 @@ bool operator<=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b )
 
  if( a._weight != b._weight ) { return ( a._weight < b._weight ); }
  
-// this should work, but at the moment it does not. 
-
+// the code below should work, but at the moment it does not for some reason ... . 
+// 
 #if 0
  return (a._index <= b._index) ;
 #endif
