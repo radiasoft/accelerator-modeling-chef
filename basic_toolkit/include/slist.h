@@ -34,7 +34,7 @@
 ******
 ****** March 2005: ostiguy@fnal.gov
 ******  
-****** Memory management improvements. Pooled slist node allocation.
+****** Memory management improvements. Pooled allocation.
 ******
 **************************************************************************
 *************************************************************************/
@@ -59,7 +59,14 @@
 
 typedef void* ent;
 
-class slink: public gms::FastPODAllocator<slink> {
+//class slink: public gms::FastPODAllocator<slink> {
+
+// Note: prioivate allocation temporarily disabled. 
+// The allocator triggers a bug in CHEF.
+// However, it is not clear at all that the 
+// allocator is really the source of the problem.
+ 
+class slink {
 public:
 #ifdef OBJECT_DEBUG
   static int objectCount;
