@@ -129,6 +129,7 @@ public:
   void append( void* );
   void* remove( void* );
   void* get();
+  void* pop();
 
   char Owns();
   void DoesOwn()    { owner = 1; }
@@ -211,5 +212,7 @@ public:
 
 
 inline char slist::Owns() { return owner; }
+
+inline void* slist::pop() { return this->get(); }
 
 #endif // SLIST_HXX
