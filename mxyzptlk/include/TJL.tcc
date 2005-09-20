@@ -312,7 +312,7 @@ TJL<T1,T2>::TJL( TJetEnvironment<T1,T2>* pje )
  initStore();   
 
  if( pje ) {
-   _myEnv   = (TJetEnvironment<T1,T2>*) pje;
+   _myEnv   = pje;
    _accuWgt = pje->_maxWeight;
 
  }
@@ -338,7 +338,7 @@ TJL<T1,T2>* TJL<T1,T2>::makeTJL( TJetEnvironment<T1,T2>* pje )
   p->_count   =  0;
 
  if( pje ) {
-   p->_myEnv   = (TJetEnvironment<T1,T2>*) pje;
+   p->_myEnv   = pje;
    p->_accuWgt = pje->_maxWeight;
 
  }
