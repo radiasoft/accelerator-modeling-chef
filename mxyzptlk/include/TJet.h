@@ -451,6 +451,19 @@ public:
 
 // *******************************************************************
 
+// specializations for class TJet
+
+ template <>
+ TJetEnvironment<double, std::complex<double> >* TJet<double, std::complex<double> >::CreateEnvFrom( TJetEnvironment<std::complex<double>, double >* );
+
+ template<>
+ TJetEnvironment<std::complex<double>, double >* TJet<std::complex<double>, double >::CreateEnvFrom( TJetEnvironment<double, std::complex<double> >* );
+
+ template<>
+ TJetEnvironment<double, std::complex<double> >* TJet<double, std::complex<double> >::CreateEnvFrom( const Vector&, int );
+
+//***********************************************************************
+
 template<typename T1, typename T2>
 class Tcoord : public TJet<T1,T2> 
 {
