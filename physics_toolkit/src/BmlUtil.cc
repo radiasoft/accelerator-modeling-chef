@@ -37,6 +37,7 @@
 #include "GenericException.h"
 #include "BmlUtil.h"
 #include "TMatrix.h"
+#include "Mapping.h"
 
 using FNAL::Complex;
 using namespace std;
@@ -48,15 +49,15 @@ const double BmlUtil::mlt1   = 1.0e-6;
 const int    BmlUtil::PSDERR = 1;
 
 
-void BmlUtil::setErrorStream( ostream* w )
+void BmlUtil::setErrorStream( ostream& w )
 {
-  _errorStreamPtr = w;
+  _errorStreamPtr = &w;
 }
 
 
-void setOutputStream( ostream* w )
+void BmlUtil::setOutputStream( ostream& w )
 {
-  BmlUtil::_outputStreamPtr = w;
+  _outputStreamPtr = &w;
 }
 
 
@@ -112,6 +113,41 @@ bool BmlUtil::isKnown( const bmlnElmnt& x )
   if( 0 == strcmp( "thinMultipole", x.Type() ))   { return true; }
 
   return false;
+}
+
+
+void BmlUtil::writeAsTransport( const Mapping* mapPtr )
+{
+  BmlUtil::writeAsTransport( *mapPtr );
+}
+
+
+void BmlUtil::writeAsTransport( const Mapping& map )
+{
+  Jet cmp;
+  const JLterm* termPtr;
+  int d = map.Dim();
+  int e;
+  IntArray exps(d);
+  for( int i = 0; i < d; i++ ) {
+    cmp = map(i);
+    cmp.resetConstIterator();
+    termPtr = cmp.stepConstIteratorPtr();
+    while( 0 != termPtr ) {
+      *_outputStreamPtr << "M_{ " << (i+1);
+      exps = termPtr->exponents();
+      for( int j = 0; j < d; j++ ) {
+        e = exps(j);
+        if( 0 != e ) {
+          for( int k = 0; k < e; k++ ) {
+            *_outputStreamPtr << " " << (j+1);
+	  }
+        }        
+      }
+      *_outputStreamPtr << " } = " << termPtr->coefficient() << endl;
+      termPtr = cmp.stepConstIteratorPtr();
+    }
+  }
 }
 
 

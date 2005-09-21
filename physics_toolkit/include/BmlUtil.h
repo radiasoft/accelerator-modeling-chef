@@ -48,6 +48,10 @@
 // Forward declarations
 class MatrixC;
 
+#ifndef TMAPPING
+#include "Mapping.h"
+#endif
+
 #ifndef COVARIANCESAGE_H
 #include "CovarianceSage.h"
 #endif
@@ -116,6 +120,11 @@ class BmlUtil
   //   of <linePtr> is preserved.
 
 
+  static void writeAsTransport( const Mapping* );
+  static void writeAsTransport( const Mapping& );
+  // Streams the mapping as a sequence of Transport-like
+  //   "matrix" coefficients.
+
   static bool isSpace( const bmlnElmnt* );
   static bool isSpace( const bmlnElmnt& );
   // Returns true if the argument refers to an element
@@ -128,13 +137,13 @@ class BmlUtil
 
 
   // Message streams
-  static void setErrorStream( std::ostream* );
-  static void setOutputStream( std::ostream* );
+  static void setErrorStream( std::ostream& );
+  static void setOutputStream( std::ostream& );
 
+ private: 
   static std::ostream* _errorStreamPtr;
   static std::ostream* _outputStreamPtr;
 
- private: 
   static const double mlt1;
 
   // Error codes 
