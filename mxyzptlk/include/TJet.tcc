@@ -1479,7 +1479,7 @@ TJet<T1,T2> operator/( const TJet<T1,T2>& wArg, const TJet<T1,T2>& uArg )
  TJLterm<T1,T2>* qw = 0;
  T1 u0 = T1();
 
-  int wgt = 0;
+ int wgt = 0;
  int wl  = 0;
  int mw  =  wArg->_myEnv->_maxWeight;
  
