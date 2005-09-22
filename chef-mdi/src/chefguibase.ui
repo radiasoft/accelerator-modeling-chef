@@ -69,6 +69,7 @@
         <action name="editPartitionElementsAction"/>
         <separator/>
         <action name="editAlignAction"/>
+        <action name="editAlignDataAction"/>
     </item>
     <item text="Calculations" name="Calculations">
         <action name="calculationsLatticeFunctionsAction"/>
@@ -1101,6 +1102,14 @@
     </action>
     <action>
         <property name="name">
+            <cstring>editAlignDataAction</cstring>
+        </property>
+        <property name="text">
+            <string>Align to data ...</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
             <cstring>separatornew_itemAction</cstring>
         </property>
         <property name="text">
@@ -1193,6 +1202,12 @@
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>_editAlign()</slot>
+    </connection>
+    <connection>
+        <sender>editAlignDataAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_editAlignData()</slot>
     </connection>
     <connection>
         <sender>editUndoAction</sender>
@@ -1623,6 +1638,7 @@
     <slot>_editNewOrder()</slot>
     <slot>_editEditElement()</slot>
     <slot>_editAlign()</slot>
+    <slot>_editAlignData()</slot>
     <slot>_editFindFilter()</slot>
     <slot>_editSelectAll()</slot>
     <slot>_editSelectNone()</slot>

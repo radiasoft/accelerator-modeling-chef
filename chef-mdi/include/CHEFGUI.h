@@ -349,12 +349,12 @@ signals:
    void _editCopyLine();
    void _editEditElement();
    void _editFlatten();
-   void _editMisalign();
    void _editNewOrder();
    void _editRemoveLine();
    void _editRenameLine();
    void _editCondense();
    void _editAlign();
+   void _editAlignData();
    void _editMergeQuads();
    void _editD2S();
    void _editAddQtMons();

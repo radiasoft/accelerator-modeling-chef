@@ -57,10 +57,14 @@
 #include <InitCondDialogLF.h>
 #include <EditDialog.h>
 #include <DistributionWidget.h>
+#include <FramePusher.h>
+#include <SurveyMatcher.h>
 #include <DbConnectDialog.h>
 #include <DbRetrieveDialog.h>
 #include <appworkspace.h>
 #include <about.h>
+
+#include <qwt/qwt_plot.h>
 
 #include <GenericException.h>
 #include <ParserException.h>
@@ -835,14 +839,6 @@ CHEFGUI::_buildVTuneCircuit( const CHEFGUI* aPtr, const bmlnElmnt* bPtr )
 }
 
 
-void CHEFGUI::_editMisalign()
-{
-  QMessageBox::warning( 0, "CHEF: SORRY",
-                        "Sorry. This function is not written yet."
-                        "\nSend complaints to: michelotti@fnal.gov" );
-}
-
-
 void CHEFGUI::_editCondense()
 {
   DriftEliminator de;
@@ -1336,6 +1332,151 @@ void CHEFGUI::_editAlign()
       if( 0 != _p_currBmlCon) { _p_currBmlCon->accept( euclid ); }
      }
   }
+}
+
+
+void CHEFGUI::_editAlignData()
+{
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF: INFO",
+                              "You must select a beamline first." );
+    return;
+  }
+
+  // Store survey data read from a file.
+  QString s = QFileDialog::getOpenFileName( QString::null, 
+                   "Data file (*.dat *.txt);;All files (*.*)" );
+  if( s.isEmpty() ) { return; }
+  std::ifstream dataStream( s );
+
+
+  struct DataStore {
+    double az;
+    double x1;
+    double x2;
+    double x3;
+  };
+  slist dataBag;
+  DataStore* dtmPtr;
+
+  char oneLine[1024];
+  if( dataStream ) {
+    dataStream.getline(oneLine,1000);
+    while( !dataStream.eof() ) {
+      std::istringstream lineStream( oneLine );
+      dtmPtr = new DataStore;
+      lineStream >> dtmPtr->az >> dtmPtr->x1 >> dtmPtr->x2 >> dtmPtr->x3;
+      dataBag.append(dtmPtr);
+      dataStream.getline(oneLine,1000);
+    }
+    dataStream.close();
+  }
+  else {
+    QMessageBox::warning( 0, "CHEF: WARNING", 
+                          "Survey data file could not be opened." );
+    return;
+  }
+
+  int n = dataBag.size();
+
+
+  // Invoke a SurveyMatcher object
+  beamline* bmlPtr = (beamline*)(_p_currBmlCon->cheatBmlPtr());
+  Vector r(3);
+  std::vector<Vector> rawData;
+  slist_iterator getNext(dataBag);
+  while((  0 != (dtmPtr = (DataStore*)getNext() )  )) {
+    r(0) = dtmPtr->x1;
+    r(1) = dtmPtr->x2;
+    r(2) = dtmPtr->x3;
+    rawData.push_back(r);
+  }
+
+  SurveyMatcher sm( rawData, bmlPtr );
+  
+
+
+  // Preparing the plot
+  // Load the shared arrays
+  boost::shared_array<double> azimuthArray( new double[n] );
+  boost::shared_array<double>       xArray( new double[n] );
+  boost::shared_array<double>       yArray( new double[n] );
+  boost::shared_array<double>       zArray( new double[n] );
+
+  bool firstPass = true;
+  for( int i = 0; i < n; i++ ) {
+    dtmPtr = (DataStore*) dataBag.get();
+    if( 0 != dtmPtr ) {
+      azimuthArray[i] = dtmPtr->az;
+      r = sm.getLocalDisplacement(i);
+      xArray[i]       = r(0);
+      yArray[i]       = r(1);
+      zArray[i]       = r(2);
+      delete dtmPtr;
+    }
+    else {
+      if( firstPass ) {
+        std::ostringstream uic;
+        uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
+               "\nIn function void CHEF::_editAlignData()"
+               "\nImpossible condition occurred: not enough data."
+               "\nOperation will abort.";
+        QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
+        return;
+      }
+    }
+  }
+
+  if( 0 != dataBag.get() ) {
+    std::ostringstream uic;
+    uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
+           "\nIn function void CHEF::_editAlignData()"
+           "\nImpossible condition occurred: too much data."
+           "\nOperation will abort.";
+    QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
+    return;
+  }
+
+
+  boost::shared_ptr<CHEFCurve> 
+    dxCurve( new CHEFCurve( CurveData(azimuthArray,xArray,n), "dx" ));
+  boost::shared_ptr<CHEFCurve> 
+    dyCurve( new CHEFCurve( CurveData(azimuthArray,yArray,n), "dy" ));
+  boost::shared_ptr<CHEFCurve> 
+    dzCurve( new CHEFCurve( CurveData(azimuthArray,zArray,n), "dz" ));
+
+  dxCurve->setPen( QPen( "black", 1, Qt::SolidLine ) );
+  dyCurve->setPen( QPen( "red", 1, Qt::SolidLine ) );
+  dzCurve->setPen( QPen( "green",  1, Qt::SolidLine ) );
+
+  dxCurve->setAxis( QwtPlot::xBottom, QwtPlot::yLeft );
+  dyCurve->setAxis( QwtPlot::xBottom, QwtPlot::yLeft );
+  dzCurve->setAxis( QwtPlot::xBottom, QwtPlot::Right );
+
+
+  // Create a CHEFPlotData object for handing over to the plotter
+  CHEFPlotData plotData;
+  plotData.addCurve(dxCurve);
+  plotData.addCurve(dyCurve);
+  plotData.addCurve(dzCurve);
+  plotData.setXLabel( "Arc Length [m]"              );
+  plotData.setYLabel( "Data",       QwtPlot::yLeft  );
+  plotData.setBeamline( _p_currBmlCon->cheatBmlPtr(), false );
+  // false = do not clone line   
+
+
+  // Plot and display the results
+  CHEFPlotMain* surveyPlotter
+    = new CHEFPlotMain( 0, "Survey Plotter", Qt::WDestructiveClose );
+  surveyPlotter->setCaption( "CR&P" );
+  surveyPlotter->addData( plotData );
+  surveyPlotter->show();
+
+  #if 0
+  DataAlignWidget* dawPtr 
+    = new DataAlignWidget( *(_p_currBmlCon), 0, 0, Qt::WDestructiveClose );
+  dawPtr->show();
+  #endif
 }
 
 
@@ -3149,6 +3290,7 @@ void CHEFGUI::_enableMenus( bool set )
     editPermuteAction->setEnabled(set);
     editModifyAction->setEnabled(set);
     editAlignAction->setEnabled(set);
+    editAlignDataAction->setEnabled(set);
 
 
     editSelectFilterAction->setEnabled(set);
