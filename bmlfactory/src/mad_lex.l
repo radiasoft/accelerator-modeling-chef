@@ -495,7 +495,7 @@ extern struct madparser_* mp;
 
 [ \t]* |
 ^[ \t]*\n |
-"&"[ \t]*\n			;
+"&".*\n			        ;
 
 \n |
 ";"				{ return MAD_NEWLINE; }
