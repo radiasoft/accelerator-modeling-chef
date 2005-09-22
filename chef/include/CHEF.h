@@ -7,7 +7,7 @@
 ******             of BEAMLINE.                                    
 ******                                                                
 ******  File:      CHEF.h
-******  Version:   3.1
+******  Version:   3.2
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -299,7 +299,7 @@ private slots:
   void _editCondense();
   void _editEditElement();
   void _editAlign();
-  void _editMisalign();
+  void _editAlignData();
   void _editFlatten();
   void _editNewOrder();
   void _editMergeQuads();

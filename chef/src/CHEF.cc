@@ -7,7 +7,7 @@
 ******         of BEAMLINE.                                    
 ******                                                                
 ******  File:      CHEF.cc
-******  Version:   3.3
+******  Version:   3.4
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -36,6 +36,7 @@
 
 // #include <stdlib.h>   // Needed for call to system( const char* )
 #include <fstream>
+#include <sstream>
 #include <typeinfo>
 // #include <process.h>
 
@@ -55,6 +56,8 @@
 #include <qvbuttongroup.h>
 // #include <qprocess.h>
 
+#include <qwt/qwt_plot.h>
+
 #include "GenericException.h"
 #include "beamline.h"
 #include "InsertionList.h"
@@ -62,6 +65,7 @@
 #include "BeamlineExpressionTree.h"
 #include "EditDialog.h"
 #include "FramePusher.h"
+#include "SurveyMatcher.h"
 #include "DriftEliminator.h"
 #include "QuadEliminator.h"
 #include "bmlfactory.h"
@@ -95,13 +99,14 @@
 
 #include "CHEF.h"
 
-extern beamline* DriftsToSlots( /* const */ beamline& original );
+extern beamline* DriftsToSlots( beamline& original );
 
 
 
 // 
 // Constructors and destructor
 // 
+
 
 CHEF::CHEF( beamline* xbml, int argc, char** argv )
 : _p_vwr(0), _plotWidget(0), 
@@ -203,9 +208,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
 
     _editMenu->insertSeparator();
     _editMenu->insertItem( "Align ...", this, SLOT(_editAlign()) );
-    int id_Misalign = 
-    _editMenu->insertItem( "Misalign ...", this, SLOT(_editMisalign()) );
-    _editMenu->setItemEnabled( id_Misalign, false );
+    _editMenu->insertItem( "Align to data ...", this, SLOT(_editAlignData()) );
   _mainMenu->insertItem( "Edit", _editMenu );
 
     _calcsMenu = new QPopupMenu;
@@ -256,6 +259,8 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
     _toolMenu->insertItem( "Site Viewer", this, SLOT(_launchSiteVu()) );
     _toolMenu->insertItem( "Track", this, SLOT(_launchTrack()) );
     _toolMenu->insertItem( "Trace", this, SLOT(_launchRayTrace()) );
+    // NEW: *** START HERE ***
+    // NEW: _toolMenu->insertItem( "Register Reference Proton", this, SLOT(_register()) );
   _mainMenu->insertItem( "Tools", _toolMenu );
 
     _mach_imagMenu = new QPopupMenu;
@@ -794,7 +799,7 @@ void CHEF::_editEditElement()
   // One quick test ...
   if( 0 == _p_clickedQBml ) {
     QMessageBox::warning( 0, "CHEF: WARNING", 
-			  "A single beamline element must be chosen first." );
+                          "A single beamline element must be chosen first." );
     return;
   }
 
@@ -840,7 +845,7 @@ void CHEF::_editEditElement()
   int bmlLevel = bmlPtr->depth();
   if( bmlLevel != 0 ) {
     QMessageBox::warning( 0, "CHEF: WARNING", 
-			  "SORRY: Current implementation requires flat beamline." );
+                          "SORRY: Current implementation requires flat beamline." );
     return;
   }
 
@@ -857,7 +862,7 @@ void CHEF::_editEditElement()
     std::ostringstream uic;
     uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
            "\nIn function void CHEF::_editNewOrder():"
-           "\nFailure: Unable to remove old beamline.";
+           "\nFailure: Unable to remove old beamline."
            "\nOperation will abort.";
     QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
     return;
@@ -977,11 +982,148 @@ void CHEF::_editAlign()
 }
 
 
-void CHEF::_editMisalign()
+void CHEF::_editAlignData()
 {
-  QMessageBox::warning( 0, "CHEF: SORRY",
-                        "Sorry. This function is not written yet."
-                        "\nSend complaints to: michelotti@fnal.gov" );
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF: INFO",
+                              "You must select a beamline first." );
+    return;
+  }
+
+  // Store survey data read from a file.
+  QString s = QFileDialog::getOpenFileName( QString::null, 
+                   "Data file (*.dat *.txt);;All files (*.*)" );
+  if( s.isEmpty() ) { return; }
+  std::ifstream dataStream( s );
+
+
+  struct DataStore {
+    double az;
+    double x1;
+    double x2;
+    double x3;
+  } oneSite;
+  slist dataBag;
+  DataStore* dtmPtr;
+
+  char oneLine[1024];
+  if( dataStream ) {
+    dataStream.getline(oneLine,1000);
+    while( !dataStream.eof() ) {
+      std::istringstream lineStream( oneLine );
+      dtmPtr = new DataStore;
+      lineStream >> dtmPtr->az >> dtmPtr->x1 >> dtmPtr->x2 >> dtmPtr->x3;
+      dataBag.append(dtmPtr);
+      dataStream.getline(oneLine,1000);
+    }
+    dataStream.close();
+  }
+  else {
+    QMessageBox::warning( 0, "CHEF: WARNING", 
+                          "Survey data file could not be opened." );
+    return;
+  }
+
+  int n = dataBag.size();
+
+
+  // Invoke a SurveyMatcher object
+  beamline* bmlPtr = (beamline*)(_p_currBmlCon->cheatBmlPtr());
+  Vector r(3);
+  std::vector<Vector> rawData;
+  slist_iterator getNext(dataBag);
+  while((  0 != (dtmPtr = (DataStore*)getNext() )  )) {
+    r(0) = dtmPtr->x1;
+    r(1) = dtmPtr->x2;
+    r(2) = dtmPtr->x3;
+    rawData.push_back(r);
+  }
+
+  SurveyMatcher sm( rawData, bmlPtr );
+  
+
+
+  // Preparing the plot
+  // Load the shared arrays
+  boost::shared_array<double> azimuthArray( new double[n] );
+  boost::shared_array<double>       xArray( new double[n] );
+  boost::shared_array<double>       yArray( new double[n] );
+  boost::shared_array<double>       zArray( new double[n] );
+
+  bool firstPass = true;
+  for( int i = 0; i < n; i++ ) {
+    dtmPtr = (DataStore*) dataBag.get();
+    if( 0 != dtmPtr ) {
+      azimuthArray[i] = dtmPtr->az;
+      r = sm.getLocalDisplacement(i);
+      xArray[i]       = r(0);
+      yArray[i]       = r(1);
+      zArray[i]       = r(2);
+      delete dtmPtr;
+    }
+    else {
+      if( firstPass ) {
+        std::ostringstream uic;
+        uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
+               "\nIn function void CHEF::_editAlignData()"
+               "\nImpossible condition occurred: not enough data."
+               "\nOperation will abort.";
+        QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
+        return;
+      }
+    }
+  }
+
+  if( 0 != dataBag.get() ) {
+    std::ostringstream uic;
+    uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
+           "\nIn function void CHEF::_editAlignData()"
+           "\nImpossible condition occurred: too much data."
+           "\nOperation will abort.";
+    QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
+    return;
+  }
+
+
+  boost::shared_ptr<CHEFCurve> 
+    dxCurve( new CHEFCurve( CurveData(azimuthArray,xArray,n), "dx" ));
+  boost::shared_ptr<CHEFCurve> 
+    dyCurve( new CHEFCurve( CurveData(azimuthArray,yArray,n), "dy" ));
+  boost::shared_ptr<CHEFCurve> 
+    dzCurve( new CHEFCurve( CurveData(azimuthArray,zArray,n), "dz" ));
+
+  dxCurve->setPen( QPen( "black", 1, Qt::SolidLine ) );
+  dyCurve->setPen( QPen( "red", 1, Qt::SolidLine ) );
+  dzCurve->setPen( QPen( "green",  1, Qt::SolidLine ) );
+
+  dxCurve->setAxis( QwtPlot::xBottom, QwtPlot::yLeft );
+  dyCurve->setAxis( QwtPlot::xBottom, QwtPlot::yLeft );
+  dzCurve->setAxis( QwtPlot::xBottom, QwtPlot::Right );
+
+
+  // Create a CHEFPlotData object for handing over to the plotter
+  CHEFPlotData plotData;
+  plotData.addCurve(dxCurve);
+  plotData.addCurve(dyCurve);
+  plotData.addCurve(dzCurve);
+  plotData.setXLabel( "Arc Length [m]"              );
+  plotData.setYLabel( "Data",       QwtPlot::yLeft  );
+  plotData.setBeamline( _p_currBmlCon->cheatBmlPtr(), false );
+  // false = do not clone line   
+
+
+  // Plot and display the results
+  CHEFPlotMain* surveyPlotter
+    = new CHEFPlotMain( 0, "Survey Plotter", Qt::WDestructiveClose );
+  surveyPlotter->setCaption( "CR&P" );
+  surveyPlotter->addData( plotData );
+  surveyPlotter->show();
+
+  #if 0
+  DataAlignWidget* dawPtr 
+    = new DataAlignWidget( *(_p_currBmlCon), 0, 0, Qt::WDestructiveClose );
+  dawPtr->show();
+  #endif
 }
 
 
@@ -1045,7 +1187,7 @@ void CHEF::_editNewOrder()
   // One quick test ...
   if( 0 == _p_clickedQBml ) {
     QMessageBox::warning( 0, "CHEF: WARNING", 
-			  "A single beamline element must be chosen first." );
+                          "A single beamline element must be chosen first." );
     return;
   }
 
@@ -1076,7 +1218,7 @@ void CHEF::_editNewOrder()
   int bmlLevel = bmlPtr->depth();
   if( bmlLevel != 0 ) {
     QMessageBox::warning( 0, "CHEF: WARNING", 
-			  "SORRY: Current implementation requires flat beamline." );
+                          "SORRY: Current implementation requires flat beamline." );
     return;
   }
 
@@ -1090,7 +1232,7 @@ void CHEF::_editNewOrder()
     std::ostringstream uic;
     uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
            "\nIn function void CHEF::_editNewOrder():"
-           "\nFailure: Unable to remove old beamline.";
+           "\nFailure: Unable to remove old beamline."
            "\nOperation will abort.";
     QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
     return;
@@ -1593,14 +1735,14 @@ void CHEF::_editPartAndSect()
       bmlPtr->append( spaceCharge[numberOfSectors] );
     
       // Display and delete the removed elements
-      cout << "Removed elements\n";
+      // REMOVE: cout << "Removed elements\n";
       slist_iterator fembril( removedElements );
       bmlnElmnt* qq;
       while(( qq = (bmlnElmnt*) fembril() )) {
-        cout << qq->Type() << "  " << qq->Name() << "\n";
+        // REMOVE: cout << qq->Type() << "  " << qq->Name() << "\n";
         delete qq;
       }
-      cout << endl;
+      // REMOVE: cout << endl;
     
       // Create a temporary Jet environment 
       Jet__environment*  formerJetEnv  = Jet::_lastEnv;
@@ -2898,5 +3040,3 @@ BeamlineContextPtr::~BeamlineContextPtr()
 {
   if( _owned ) { delete ((BeamlineContext*) _ptr); }
 }
-
-
