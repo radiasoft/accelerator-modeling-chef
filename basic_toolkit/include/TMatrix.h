@@ -288,6 +288,10 @@ typedef class TMatrix<double>                MatrixD;
 typedef class TMatrix<FNAL::Complex>         MatrixC;
 typedef class TMatrix<int>                   MatrixI;
 
+#ifdef BASICTOOLKIT_IMPLICIT_TEMPLATES
+#include <TMatrix.tcc>
+#endif
+
 
 #endif // TMATRIX_H
 
