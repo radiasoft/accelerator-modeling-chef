@@ -33,7 +33,8 @@
 ******             ostiguy@fnal.gov                                   
 ******             
 ******   - reorganized code to support explicit template instantiations
-******
+******   - eliminated separate MatrixC class implementation
+****** 
 **************************************************************************
 *************************************************************************/
 
@@ -188,8 +189,53 @@ TMatrix<double> RandomOrthogonal::build()
 }
 
 
+
+TMatrix<double> TMatrix<double>::dagger() const {
+
+//  for a real matrix, the Hermitian conjugate and the transpose
+//  are the same
+
+  return transpose();
+
+}
+
+// ===================================================================
 // Specializations for class TMatrix 
-// =======================================================
+// ==================================================================
+
+
+TMatrix<std::complex<double> > TMatrix<std::complex<double> >::dagger() const
+{
+  TMatrix<std::complex<double> > z( cols(), rows(), complex_0 );
+  TML<std::complex<double> >*     zPtr = z._ml;
+
+  for(int row = 0; row < rows(); row++) {
+    for(int col = 0; col < cols(); col++) {
+      zPtr->_m[col][row] = conj(_ml->_m[row][col]);
+    }
+  }
+  z._stacked = 1; /// THIS STACKED VARIABLE IS A TERRIBLE IDEA ! 
+  return z;
+}
+
+
+// All the matrix code below is horribly inefficient ... FIXME !
+
+
+template<> TMatrix<double>::operator TMatrix<FNAL::Complex> () { 
+
+ 
+  TMatrix<std::complex<double> > z( cols(), rows(), complex_0 );
+
+  for( int i=0; i< _ml->_r; i++ ) {
+    for( int j=0; j< _ml->_c; j++ ) {
+      z(i,j) = std::complex<double>( _ml->_m[i][j], 0.0 );
+    }
+  }
+  
+  return z;
+}
+
 
 TMatrix<double> real( const TMatrix<FNAL::Complex>& x )
 {
@@ -702,106 +748,6 @@ TMatrix<FNAL::Complex> TMatrix<FNAL::Complex>::eigenVectors() {
   return z1;
 }
 
-
-// Implementation of derived class MatrixC
-// Done to replicate member function dagger()
-
-MatrixC::MatrixC()
-: TMatrix<Complex>()
-{
-}
-
-MatrixC::MatrixC( const MatrixC& x )
-: TMatrix<Complex>( (const TMatrix<Complex>&) x )
-{
-}
-
-MatrixC::MatrixC( const TMatrix<Complex>& x )
-: TMatrix<Complex>( x )
-{
-}
-
-MatrixC::MatrixC( int i )
-: TMatrix<Complex>(i)
-{
-}
-
-MatrixC::MatrixC( int rows, int columns )
-: TMatrix<Complex>( rows, columns )
-{
-}
-
-MatrixC::MatrixC( int rows, int columns, const FNAL::Complex& initval )
-: TMatrix<Complex>( rows, columns, initval )
-{
-}
-
-MatrixC::MatrixC( int rows, int columns, FNAL::Complex* initval )
-: TMatrix<Complex>( rows, columns, initval )
-{
-}
-
-MatrixC::MatrixC( const char* flag, int dimension )
-: TMatrix<Complex>( flag, dimension )
-{
-}
-
-MatrixC::MatrixC( const TMatrix<double>& x )
-: TMatrix<Complex>( x.rows(), x.cols() )
-{
-  int i, j;
-  for( i=0; i< _ml->_r; i++ ) {
-    for( j=0; j< _ml->_c; j++ ) {
-      _ml->_m[i][j] = Complex( x(i,j), 0.0 );
-    }
-  }
-}
-
-MatrixC::~MatrixC()
-{
-}
-
-
-MatrixC MatrixC::dagger() const
-{
-  MatrixC z( cols(), rows(), complex_0 );
-  TML<Complex>* zPtr = z._ml;
-
-  for(int row = 0; row < rows(); row++) {
-    for(int col = 0; col < cols(); col++) {
-      zPtr->_m[col][row] = conj(_ml->_m[row][col]);
-    }
-  }
-  z._stacked = 1;
-  return z;
-}
-
-MatrixD real( const MatrixC& x )
-{
-  int r = x.rows();
-  int c = x.cols();
-  MatrixD ret( r, c );
-  for( int i = 0; i < r; i++ ) {
-    for( int j = 0; j < c; j++ ) {
-      ret(i,j) = real((const FNAL::Complex&) (x(i,j)));
-    }
-  }
-  return ret;
-}
-
-
-MatrixD imag( const MatrixC& x )
-{
-  int r = x.rows();
-  int c = x.cols();
-  MatrixD ret( r, c );
-  for( int i = 0; i < r; i++ ) {
-    for( int j = 0; j < c; j++ ) {
-      ret(i,j) = imag((const FNAL::Complex&) (x(i,j)));
-    }
-  }
-  return ret;
-}
 
 TMatrix<FNAL::Complex > operator*(const TMatrix<FNAL::Complex >& x, const TMatrix<double>& y)
 {
