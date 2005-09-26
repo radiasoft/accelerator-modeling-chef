@@ -5,7 +5,6 @@
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
 ******                                    
 ******  File:      TJet.tcc
-******  Version:   1.0
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc. / Fermilab    
 ******                All Rights Reserved                             
@@ -35,14 +34,17 @@
 ******  Feb 2005 - Jean-Francois Ostiguy
 ******             ostiguy@fnal.gov
 ******
-******  Efficiency improvements.
-******  - new memory management
+******             - Efficiency improvements.
+******             - new memory management
 ****** 
+******  Sept 2005   ostiguy@fnal.gov
+******
+******              - new code based on a single template parameter
+******                instead of two. Mixed mode handled
+******                using conversion operators.
+******
 **************************************************************************
 *************************************************************************/
-
-#ifdef  EXPLICIT_TEMPLATE_INSTANTIATIONS 
-
 #ifndef TJET_TCC
 #define TJET_TCC
 
@@ -63,7 +65,7 @@ class Vector;
 
 
 
-#define PREPFORCHANGE(_jl)  if(((_jl)->_rc)>1){--((_jl)->_rc);(_jl) = TJL<T1,T2>::makeTJL(_jl);}
+#define PREPFORCHANGE(_jl)  if(((_jl)->_rc)>1){--((_jl)->_rc);(_jl) = TJL<T>::makeTJL(_jl);}
 
 
 // ================================================================
@@ -72,12 +74,12 @@ class Vector;
 
 #define DEFSCALE  0.001
 
-template<typename T1, typename T2> slist TJet<T1,T2>::_environments;
-template<typename T1, typename T2> int   TJet<T1,T2>::_currentIndex = 0;
-template<typename T1, typename T2> slist TJet<T1,T2>::_newCoords;
-template<typename T1, typename T2> slist TJet<T1,T2>::_newValues;
-template<typename T1, typename T2> TJetEnvironment<T1,T2>*  TJet<T1,T2>::_lastEnv = 0;
-template<typename T1, typename T2> TJetEnvironment<T1,T2>*  TJet<T1,T2>::_workEnv = 0;
+template<typename T> slist TJet<T>::_environments;
+template<typename T> int   TJet<T>::_currentIndex = 0;
+template<typename T> slist TJet<T>::_newCoords;
+template<typename T> slist TJet<T>::_newValues;
+template<typename T> TJetEnvironment<T>*  TJet<T>::_lastEnv = 0;
+template<typename T> TJetEnvironment<T>*  TJet<T>::_workEnv = 0;
 
 // ================================================================
 //      External routines
@@ -105,24 +107,24 @@ using FNAL::pcout;
 // ***************************************************************
 // ***************************************************************
 
-template<typename T1, typename T2>
-TJet<T1,T2>::TJet( TJetEnvironment<T1,T2>* pje ) 
+template<typename T>
+TJet<T>::TJet( TJetEnvironment<T>* pje ) 
 {
- _jl = TJL<T1,T2>::makeTJL( pje );
+ _jl = TJL<T>::makeTJL( pje );
  _constIterPtr = 0;
  _iterPtr     = 0;
 }
 
-template<typename T1, typename T2>
-TJet<T1,T2>::TJet( T1 x, TJetEnvironment<T1,T2>* p_je ) 
+template<typename T>
+TJet<T>::TJet( T x, TJetEnvironment<T>* p_je ) 
 {
- _jl = TJL<T1,T2>::makeTJL( x, p_je );
+ _jl = TJL<T>::makeTJL( x, p_je );
  _constIterPtr = 0;
  _iterPtr     = 0;
 }
 
-template<typename T1, typename T2>
-TJet<T1,T2>::TJet( const TJet& x ): gms::FastAllocator() 
+template<typename T>
+TJet<T>::TJet( const TJet& x ): gms::FastAllocator() 
 {
  _jl = x._jl;
  ( _jl->_rc )++;
@@ -131,8 +133,8 @@ TJet<T1,T2>::TJet( const TJet& x ): gms::FastAllocator()
  _iterPtr     = 0;
 }
 
-template<typename T1, typename T2>
-TJet<T1,T2>::~TJet() 
+template<typename T>
+TJet<T>::~TJet() 
 {
  if( 0 != _iterPtr ) {
    delete _iterPtr;
@@ -141,49 +143,49 @@ TJet<T1,T2>::~TJet()
    delete _constIterPtr;
  }
  if( --(_jl->_rc) == 0 ) {
-   TJL<T1,T2>::discardTJL(_jl); 
+   TJL<T>::discardTJL(_jl); 
  }
 }
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::Reconstruct()
+template<typename T>
+void TJet<T>::Reconstruct()
 {
  // Combines destructor and constructor functions.
  // Use when initializing a static TJet variable.
- TJetEnvironment<T1,T2>* pje;
+ TJetEnvironment<T>* pje;
  pje = _jl->_myEnv;
- if( --(_jl->_rc) == 0 ) TJL<T1,T2>::discardTJL(_jl); 
-  _jl = TJL<T1,T2>::makeTJL( pje );
+ if( --(_jl->_rc) == 0 ) TJL<T>::discardTJL(_jl); 
+  _jl = TJL<T>::makeTJL( pje );
 }
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::Reconstruct( TJetEnvironment<T1,T2>* pje )
+template<typename T>
+void TJet<T>::Reconstruct( TJetEnvironment<T>* pje )
 {
  // Combines destructor and constructor functions.
  // Use when initializing a static TJet variable.
- if( --(_jl->_rc) == 0 ) TJL<T1,T2>::discardTJL(_jl); 
- _jl = TJL<T1,T2>::makeTJL( pje );
+ if( --(_jl->_rc) == 0 ) TJL<T>::discardTJL(_jl); 
+ _jl = TJL<T>::makeTJL( pje );
 }
 
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::Reconstruct( const IntArray& e, 
-                               const T1& x, 
-                               TJetEnvironment<T1,T2>* pje )
+template<typename T>
+void TJet<T>::Reconstruct( const IntArray& e, 
+                               const T& x, 
+                               TJetEnvironment<T>* pje )
 {
  // Combines destructor and constructor functions.
  // Use when initializing a static TJet variable.
- if( --(_jl->_rc) == 0 ) TJL<T1,T2>::discardTJL(_jl); 
- _jl = TJL<T1,T2>::makeTJL( e, x, pje );
+ if( --(_jl->_rc) == 0 ) TJL<T>::discardTJL(_jl); 
+ _jl = TJL<T>::makeTJL( e, x, pje );
 }
 
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::setEnvTo( const TJet& x )
+template<typename T>
+void TJet<T>::setEnvTo( const TJet& x )
 {
   if( _jl == NULL ) 
   {
-    _jl = TJL<T1,T2>::makeTJL( x._jl->_myEnv );
+    _jl = TJL<T>::makeTJL( x._jl->_myEnv );
   }
   else if( _jl->_myEnv != x._jl->_myEnv ) 
   {
@@ -193,34 +195,34 @@ void TJet<T1,T2>::setEnvTo( const TJet& x )
 }
 
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::setEnvTo( TJetEnvironment<T1,T2>* pje )
+template<typename T>
+void TJet<T>::setEnvTo( TJetEnvironment<T>* pje )
 {
   if( _jl == NULL ) 
   {
-    _jl = TJL<T1,T2>::makeTJL( pje );
+    _jl = TJL<T>::makeTJL( pje );
   }
   else if( _jl->_myEnv != pje ) 
   {
     PREPFORCHANGE(_jl);
-    _jl->_myEnv = (TJetEnvironment<T1,T2>*) pje;
+    _jl->_myEnv = (TJetEnvironment<T>*) pje;
   }
 }
 
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::getReference( T1* r ) const
+template<typename T>
+void TJet<T>::getReference( T* r ) const
 {
  _jl->getReference( r );
 }
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::setVariable( const T1& x,
+template<typename T>
+void TJet<T>::setVariable( const T& x,
                                const int& j, 
-                               TJetEnvironment<T1,T2>* pje )
+                               TJetEnvironment<T>* pje )
 {
  if( _jl == NULL ) {
-   _jl = TJL<T1,T2>::makeTJL( pje );
+   _jl = TJL<T>::makeTJL( pje );
  }
  else {
    PREPFORCHANGE(_jl)
@@ -228,13 +230,13 @@ void TJet<T1,T2>::setVariable( const T1& x,
  _jl->setVariable( x, j, pje );  // !! Alters the environment!
 }
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::setVariable( const T1& x,
+template<typename T>
+void TJet<T>::setVariable( const T& x,
                                const int& j )
 {
  if( _jl == NULL ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "void TJet<T1,T2>::setVariable( const T2&, const int& )",
+          "void TJet<T>::setVariable( const T2&, const int& )",
           "Impossible! _jl not initialized?????" ) );
  }
  else {
@@ -243,12 +245,12 @@ void TJet<T1,T2>::setVariable( const T1& x,
  _jl->setVariable( x, j, _jl->_myEnv );  // !! Alters the environment!
 }
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::setVariable( const int& j, 
-                               TJetEnvironment<T1,T2>* pje ) 
+template<typename T>
+void TJet<T>::setVariable( const int& j, 
+                               TJetEnvironment<T>* pje ) 
 {
  if( _jl == NULL ) {
-    _jl = TJL<T1,T2>::makeTJL( pje );
+    _jl = TJL<T>::makeTJL( pje );
  }
  else {
    PREPFORCHANGE(_jl)
@@ -256,12 +258,12 @@ void TJet<T1,T2>::setVariable( const int& j,
  _jl->setVariable( j, pje );
 }
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::setVariable( const int& j )
+template<typename T>
+void TJet<T>::setVariable( const int& j )
 {
  if( _jl == NULL ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "void TJet<T1,T2>::setVariable( const int& )",
+          "void TJet<T>::setVariable( const int& )",
           "Impossible: _jl not initialized?????" ) );
  }
  else {
@@ -270,50 +272,50 @@ void TJet<T1,T2>::setVariable( const int& j )
  _jl->setVariable( j, _jl->_myEnv );
 }
 
-template<typename T1, typename T2>
-TJet<T1,T2>& TJet<T1,T2>::operator=( const TJet& x ) 
+template<typename T>
+TJet<T>& TJet<T>::operator=( const TJet& x ) 
 {
  if( _jl != x._jl ) {
-   if( --(_jl->_rc) == 0 ) TJL<T1,T2>::discardTJL(_jl); 
+   if( --(_jl->_rc) == 0 ) TJL<T>::discardTJL(_jl); 
    _jl = x._jl;
    (_jl->_rc)++;
  }
  return *this; 
 }
 
-template<typename T1, typename T2>
-TJet<T1,T2>& TJet<T1,T2>::DeepCopy( const TJet& x ) 
+template<typename T>
+TJet<T>& TJet<T>::DeepCopy( const TJet& x ) 
 {
  if( this != &x ) {
-  if( --(_jl->_rc) == 0 ) TJL<T1,T2>::discardTJL(_jl); 
-   _jl = TJL<T1,T2>::makeTJL( x->_myEnv );
+  if( --(_jl->_rc) == 0 ) TJL<T>::discardTJL(_jl); 
+   _jl = TJL<T>::makeTJL( x->_myEnv );
   *_jl = *(x._jl);
  }
  return *this; 
 }
 
 
-template<typename T1, typename T2>
-TJet<T1,T2>& TJet<T1,T2>::operator=( const T1& x ) 
+template<typename T>
+TJet<T>& TJet<T>::operator=( const T& x ) 
 {
- TJetEnvironment<T1,T2>* pje = _jl->_myEnv;
+ TJetEnvironment<T>* pje = _jl->_myEnv;
 
- if( --(_jl->_rc) == 0 ) TJL<T1,T2>::discardTJL(_jl); 
-  _jl = TJL<T1,T2>::makeTJL(pje);
+ if( --(_jl->_rc) == 0 ) TJL<T>::discardTJL(_jl); 
+  _jl = TJL<T>::makeTJL(pje);
  *(_jl) = x;
  return *this; 
 }
 
-template<typename T1, typename T2>
-istream& operator>>( istream& is,  TJet<T1,T2>& x ) 
+template<typename T>
+istream& operator>>( istream& is,  TJet<T>& x ) 
 {
- if( --(x._jl->_rc) == 0 )  TJL<T1,T2>::discardTJL(x._jl); 
- x._jl = TJL<T1,T2>::makeTJL();
+ if( --(x._jl->_rc) == 0 )  TJL<T>::discardTJL(x._jl); 
+ x._jl = TJL<T>::makeTJL();
  return operator>>( is, *(x._jl) );
 }
 
-template<typename T1, typename T2>
-ostream& operator<<( ostream& os, const TJet<T1,T2>& x ) 
+template<typename T>
+ostream& operator<<( ostream& os, const TJet<T>& x ) 
 {
  return operator<<( os, *(x._jl) );
 }
@@ -331,35 +333,37 @@ ostream& operator<<( ostream& os, const TJet<T1,T2>& x )
 //      dimension of phase space, s,
 //      default reference point, r.
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::BeginEnvironment( int w ) 
+template<typename T>
+void TJet<T>::BeginEnvironment( int w ) 
 {
   if( _workEnv != 0 ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "void TJet<T1,T2>::BeginEnvironment( int w )",
+           "void TJet<T>::BeginEnvironment( int w )",
            "Cannot open two environments simultaneously. Close first." ) );
   }
-  _workEnv = new TJetEnvironment<T1,T2>;
+  _workEnv             = new TJetEnvironment<T>;
   _workEnv->_maxWeight = w;
-  _currentIndex = 0;
+  _currentIndex        = 0;
 }
 
+// ---------------------------------------------------------------------------
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::Parameters()
+template<typename T>
+void TJet<T>::Parameters()
 {
   if( _workEnv->_pbok ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "void TJet<T1,T2>::Parameters()",
+          "void TJet<T>::Parameters()",
           "Can only be called once per (open) environment." ) );
   }
-  _workEnv->_pbok = 1;
+  _workEnv->_pbok     = 1;
   _workEnv->_spaceDim = _currentIndex;
 }
 
+// ---------------------------------------------------------------------------
 
-template<typename T1, typename T2>
-TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* scl )
+template<typename T>
+TJetEnvironment<T>* TJet<T>::EndEnvironment( double* scl )
 {
   if( _currentIndex == 0 ) {
     delete _workEnv;
@@ -367,16 +371,16 @@ TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* scl )
     return 0;
   }
 
-  Tcoord<T1,T2>*  p;
-  T1* q;
+  Tcoord<T>*  p;
+  T* q;
   int i;
 
   if((  ( _currentIndex     != _newCoords.size() )  ||  
         ( _newCoords.size() != _newValues.size() )  )) {
-    throw( typename TJL<T1,T2>::HorribleException( 
+    throw( typename TJL<T>::HorribleException( 
            _currentIndex, _newCoords.size(), _newValues.size(),
            __FILE__, __LINE__, 
-           "TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* )",
+           "TJetEnvironment<T>* TJet<T>::EndEnvironment( double* )",
            "" ) );
   }
 
@@ -386,7 +390,7 @@ TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* scl )
   if( _workEnv->_pbok && ( 2*_workEnv->_dof != _workEnv->_spaceDim ) ) {
     (*pcerr) << "\n\n"
          << "*** WARNING ***                                 \n"
-         << "*** WARNING *** TJet<T1,T2>::EndEnvironment()   \n"
+         << "*** WARNING *** TJet<T>::EndEnvironment()   \n"
          << "*** WARNING *** Phase space has odd dimension.  \n"
          << "*** WARNING *** I hope you know what you        \n"
          << "*** WARNING *** are doing, but I doubt it.      \n"
@@ -396,45 +400,32 @@ TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* scl )
   
   int w = _workEnv->_maxWeight;
   int n = _workEnv->_numVar;
-  // REMOVE int bcfr = bcfRec( w + n, n );
 
   _workEnv->_offset.reconstruct( w, n, false );
 
   _workEnv->_exponent    = new int[ n ];
-  // REMOVE: _workEnv->_expCode     = new char[ w + n ];
-  // REMOVE: _workEnv->_monomial    = new T1 [ bcfr ];
-  // REMOVE: _workEnv->_TJLmonomial = new TJet<T1,T2> [ bcfr ];
-  // REMOVE: for( i = 0; i < bcfr; i++ ) { _workEnv->_TJLmonomial[i].Reconstruct( _workEnv ); }
 
   // The reference point is set.
-  _workEnv->_refPoint = new T1 [ n ];
+  _workEnv->_refPoint = new T [ n ];
   slist_iterator GetNextValue( _newValues );
   i = 0;
-  while( ( q = (T1*) GetNextValue() ) != 0 ) {
+  while( ( q = (T*) GetNextValue() ) != 0 ) {
     _workEnv->_refPoint[i++] = *q;
   }
   if( i != n ) {
-    throw( typename TJL<T1,T2>::HideousException(i, n, __FILE__, __LINE__, 
-             "TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* )", 
+    throw( typename TJL<T>::HideousException(i, n, __FILE__, __LINE__, 
+             "TJetEnvironment<T>* TJet<T>::EndEnvironment( double* )", 
              "" ) );
   }
  
   _workEnv->_allZeroes.Reconstruct(n);
   for( i = 0; i < n; i++ ) _workEnv->_allZeroes(i) = 0;
  
-  // OBSOLETE // Load the _numPaths array with binomial coefficients;
-  // OBSOLETE // required by Wilf's algorithm for ranking monomials.
-  // OBSOLETE _workEnv->_numPaths = new MatrixI( w+1, n );
-  // OBSOLETE for( i = 0; i <= w; i++ ) {
-  // OBSOLETE   for( j = 1; j <= n; j++ ) {
-  // OBSOLETE     (*(_workEnv->_numPaths))( i, j-1 ) = bcfRec( i + j - 1, i );
-  // OBSOLETE   }
-  // OBSOLETE }
 
   // Initialize the coordinates
   i = 0;
-  while((  p = (Tcoord<T1,T2>*) _newCoords.get()  )) {
-    q = (T1*) _newValues.get();
+  while((  p = (Tcoord<T>*) _newCoords.get()  )) {
+    q = (T*) _newValues.get();
     p->Reconstruct( _workEnv );
     // This reconstruction is not strictly necessary
     // when the data is represented by a list - which
@@ -463,10 +454,10 @@ TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* scl )
   }
 
   // Reset for the next environment and exit.
-  TJetEnvironment<T1,T2>::_skipEnvEqTest = true;
+  TJetEnvironment<T>::_skipEnvEqTest = true;
   _lastEnv = _workEnv;
 
-  TJet<T1,T2>::_environments.append( _workEnv );
+  TJet<T>::_environments.append( _workEnv );
   _workEnv = 0;        // This does NOT delete the environment.
   _newCoords.clear();  // Should be unnecessary.
   _newValues.clear();  // Should be unnecessary.
@@ -475,33 +466,35 @@ TJetEnvironment<T1,T2>* TJet<T1,T2>::EndEnvironment( double* scl )
   return _lastEnv;
 }
 
+// ---------------------------------------------------------------------------
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::EnlargeEnvironment( TJetEnvironment<T1,T2>* pje )
+template<typename T>
+void TJet<T>::EnlargeEnvironment( const TJetEnvironment<T>* pje )
 {
-  int i;
+  // Like TJet<T>::BeginEnvironment
 
-  // Like TJet<T1,T2>::BeginEnvironment
   if( _workEnv != 0 ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "void TJet<T1,T2>::EnlargeEnvironment( TJetEnvironment<T1,T2>* )",
+           "void TJet<T>::EnlargeEnvironment( TJetEnvironment<T>* )",
            "Close open environment before invoking this function." ) );
   }
 
-  _workEnv = new TJetEnvironment<T1,T2>;
+  _workEnv             = new TJetEnvironment<T>;
   _workEnv->_maxWeight = pje->_maxWeight;
-  _currentIndex = 0;  
+  _currentIndex        = 0;  
 
   // Creating new coordinates ...
-  Tcoord<T1,T2>* p_coord;
-  for( i = 0; i < pje->_numVar; i++ ) {
-    p_coord = new Tcoord<T1,T2>( pje->_refPoint[ i ] );
+  Tcoord<T>* p_coord;
+
+  for( int i = 0; i < pje->_numVar; i++ ) {
+    p_coord = new Tcoord<T>( pje->_refPoint[ i ] );
     // _currentIndex is automatically increased by coord::coord
   }
 
-  // Like TJet<T1,T2>::Parameters()
+  // Like TJet<T>::Parameters()
+
   if( pje->_pbok ) {
-    _workEnv->_pbok = pje->_pbok;
+    _workEnv->_pbok     = pje->_pbok;
     _workEnv->_spaceDim = pje->_spaceDim;
   }
 }
@@ -514,57 +507,57 @@ void TJet<T1,T2>::EnlargeEnvironment( TJetEnvironment<T1,T2>* pje )
 //    Implementation of class Tcoord
 //
  
-template<typename T1, typename T2>
-Tcoord<T1,T2>::Tcoord( T1 x ) 
-: TJet<T1,T2>( TJet<T1,T2>::_workEnv ) {
+template<typename T>
+Tcoord<T>::Tcoord( T x ) 
+: TJet<T>( TJet<T>::_workEnv ) {
  
- if( ! TJet<T1,T2>::_workEnv ) {
+ if( ! TJet<T>::_workEnv ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "Tcoord<T1,T2>::coord( T1 ) ",
-          "Use TJet<T1,T2>::BeginEnvironment() to open an environment first." ) );
+          "Tcoord<T>::coord( T ) ",
+          "Use TJet<T>::BeginEnvironment() to open an environment first." ) );
  }
 
- _index = TJet<T1,T2>::_currentIndex++;
+ _index = TJet<T>::_currentIndex++;
  
- TJet<T1,T2>::_newCoords.append( this );
- TJet<T1,T2>::_newValues.append( new T1( x ) );
+ TJet<T>::_newCoords.append( this );
+ TJet<T>::_newValues.append( new T( x ) );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-Tcoord<T1,T2>::~Tcoord() 
+template<typename T>
+Tcoord<T>::~Tcoord() 
 {
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-Tcoord<T1,T2>::Tcoord( const Tcoord<T1,T2>&  ) 
+template<typename T>
+Tcoord<T>::Tcoord( const Tcoord<T>&  ) 
 {
  throw( GenericException( __FILE__, __LINE__, 
-        "Tcoord<T1,T2>::coord( const coord& )",
+        "Tcoord<T>::coord( const coord& )",
         "Coordinate copy constructor called; this is forbidden." ) );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void Tcoord<T1,T2>::operator=( const T1& ) 
+template<typename T>
+void Tcoord<T>::operator=( const T& ) 
 {
   throw( GenericException( __FILE__, __LINE__, 
-         "void Tcoord<T1,T2>::operator=( const T1& x ) ",
+         "void Tcoord<T>::operator=( const T& x ) ",
          "Changing the value of a coordinate is forbidden." ) );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // 
-// template<typename T1, typename T2>
-// void Tcoord<T1,T2>::operator=( const T1& x ) 
+// template<typename T>
+// void Tcoord<T>::operator=( const T& x ) 
 // {                                        // DANGER: Be careful!
 //   setVariable( x, _index, this->Env() );  // This alters the environment!
 // }
@@ -572,11 +565,11 @@ void Tcoord<T1,T2>::operator=( const T1& )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-Tcoord<T1,T2>& Tcoord<T1,T2>::operator=( const Tcoord& ) 
+template<typename T>
+Tcoord<T>& Tcoord<T>::operator=( const Tcoord& ) 
 {
  throw( GenericException( __FILE__, __LINE__, 
-        "Tcoord& Tcoord<T1,T2>::operator=( const Tcoord& )",
+        "Tcoord& Tcoord<T>::operator=( const Tcoord& )",
         "It is forbidden to change the value of a coordinate." ) );
  return *this;  // Never executed, of course.
 }
@@ -585,11 +578,11 @@ Tcoord<T1,T2>& Tcoord<T1,T2>::operator=( const Tcoord& )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-Tcoord<T1,T2>& Tcoord<T1,T2>::operator=( const TJet<T1,T2>& ) 
+template<typename T>
+Tcoord<T>& Tcoord<T>::operator=( const TJet<T>& ) 
 {
  throw( GenericException( __FILE__, __LINE__, 
-        "Tcoord& Tcoord<T1,T2>::operator=( const TJet& )",
+        "Tcoord& Tcoord<T>::operator=( const TJet& )",
         "It is forbidden to change the value of a coordinate." ) );
  return *this;  // Never executed, of course.
 }
@@ -603,8 +596,8 @@ Tcoord<T1,T2>& Tcoord<T1,T2>::operator=( const TJet<T1,T2>& )
 //    Iteration routines
 // 
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::resetConstIterator() 
+template<typename T>
+void TJet<T>::resetConstIterator() 
 {
   if( 0 == _constIterPtr ) {
     _constIterPtr = new dlist_iterator( _jl->_theList );
@@ -616,49 +609,49 @@ void TJet<T1,T2>::resetConstIterator()
   }
 }
 
-template<typename T1, typename T2>
-TJLterm<T1,T2> TJet<T1,T2>::stepConstIterator()  const
+template<typename T>
+TJLterm<T> TJet<T>::stepConstIterator()  const
 {
   if( _constIterPtr ) {
-    return TJLterm<T1,T2>( (TJLterm<T1,T2>*) (_constIterPtr->operator()()) );
+    return TJLterm<T>( (TJLterm<T>*) (_constIterPtr->operator()()) );
   }
   else {
     throw( GenericException( __FILE__, __LINE__, 
-           "TJLterm<T1,T2> TJet<T1,T2>::stepConstIterator()  const",
+           "TJLterm<T> TJet<T>::stepConstIterator()  const",
            "You must first resetConstIterator." ) );
   }
 }
 
-template<typename T1, typename T2>
-const TJLterm<T1,T2>& TJet<T1,T2>::stepConstIteratorRef()  const
+template<typename T>
+const TJLterm<T>& TJet<T>::stepConstIteratorRef()  const
 {
   if( _constIterPtr ) {
-    return *( (TJLterm<T1,T2>*)( _constIterPtr->operator()() ) );
+    return *( (TJLterm<T>*)( _constIterPtr->operator()() ) );
   }
   else {
     throw( GenericException( __FILE__, __LINE__, 
-           "const TJLterm<T1,T2>& TJet<T1,T2>::stepConstIterator()  const",
-           "You must first resetConstIterator." ) );
-  }
-}
-
-
-template<typename T1, typename T2>
-const TJLterm<T1,T2>* TJet<T1,T2>::stepConstIteratorPtr()  const
-{
-  if( _constIterPtr ) {
-    return ( (const TJLterm<T1,T2>*) ( _constIterPtr->operator()() ) );
-  }
-  else {
-    throw( GenericException( __FILE__, __LINE__, 
-           "const TJLterm<T1,T2>& TJet<T1,T2>::stepConstIterator()  const",
+           "const TJLterm<T>& TJet<T>::stepConstIterator()  const",
            "You must first resetConstIterator." ) );
   }
 }
 
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::resetIterator()
+template<typename T>
+const TJLterm<T>* TJet<T>::stepConstIteratorPtr()  const
+{
+  if( _constIterPtr ) {
+    return ( (const TJLterm<T>*) ( _constIterPtr->operator()() ) );
+  }
+  else {
+    throw( GenericException( __FILE__, __LINE__, 
+           "const TJLterm<T>& TJet<T>::stepConstIterator()  const",
+           "You must first resetConstIterator." ) );
+  }
+}
+
+
+template<typename T>
+void TJet<T>::resetIterator()
 {
   if( 0 == _iterPtr ) {
     _iterPtr = new dlist_iterator( _jl->_theList );
@@ -670,19 +663,19 @@ void TJet<T1,T2>::resetIterator()
   }
 }
 
-template<typename T1, typename T2>
-TJLterm<T1,T2>* TJet<T1,T2>::stepIterator()
+template<typename T>
+TJLterm<T>* TJet<T>::stepIterator()
 {
   PREPFORCHANGE(_jl)
   // This has to be done each time, since _jl could have
   // been given to a new TJet since the last invocation.
 
   if( _iterPtr ) {
-    return (TJLterm<T1,T2>*) (_iterPtr->operator()());
+    return (TJLterm<T>*) (_iterPtr->operator()());
   }
   else {
     throw( GenericException( __FILE__, __LINE__, 
-           "TJLterm<T1,T2>* TJet<T1,T2>::stepIterator()",
+           "TJLterm<T>* TJet<T>::stepIterator()",
            "You must first resetIterator." ) );
   }
 }
@@ -700,11 +693,11 @@ TJLterm<T1,T2>* TJet<T1,T2>::stepIterator()
 // 
 
 #ifndef MX_SMALL
-#define MX_SMALL       1.0e-12 // Used by TJL<T1,T2>::addTerm to decide 
+#define MX_SMALL       1.0e-12 // Used by TJL<T>::addTerm to decide 
 #endif  // MX_SMALL
-                            //   removal of a TJL<T1,T2>Cterm.
+                            //   removal of a TJL<T>Cterm.
 #ifndef MX_ABS_SMALL
-#define MX_ABS_SMALL    1.0e-15 // Used by TJL<T1,T2>::addTerm to decide 
+#define MX_ABS_SMALL    1.0e-15 // Used by TJL<T>::addTerm to decide 
 #endif
 
 
@@ -718,49 +711,49 @@ TJLterm<T1,T2>* TJet<T1,T2>::stepIterator()
 
 
 
-template<typename T1, typename T2>
-TJet<T1,T2>& TJet<T1,T2>::operator+=( const TJet<T1,T2>& y ) 
+template<typename T>
+TJet<T>& TJet<T>::operator+=( const TJet<T>& y ) 
 {
 
- TJet<T1,T2> z( *this );
+ TJet<T> z( *this );
  (*this) = z+y;
  return *this;
 
 }
 
-template<typename T1, typename T2>
-TJet<T1,T2>& TJet<T1,T2>::operator-=( const TJet<T1,T2>& y ) 
+template<typename T>
+TJet<T>& TJet<T>::operator-=( const TJet<T>& y ) 
 {
 
   return this->operator+=( - y );
 }
 
-template<typename T1, typename T2>
-TJet<T1,T2>& TJet<T1,T2>::operator*=( const TJet<T1,T2>& y ) 
+template<typename T>
+TJet<T>& TJet<T>::operator*=( const TJet<T>& y ) 
 {
  
 
- TJet<T1,T2> z( *this );
+ TJet<T> z( *this );
  (*this) = z*y;
  return *this;
 
 }
 
-template<typename T1, typename T2>
-TJet<T1,T2>& TJet<T1,T2>::operator/=( const TJet<T1,T2>& y ) 
+template<typename T>
+TJet<T>& TJet<T>::operator/=( const TJet<T>& y ) 
 {
 
- TJet<T1,T2> z( *this );
+ TJet<T> z( *this );
  (*this) = z/y;
  return *this;
 
 }
 
-template<typename T1, typename T2>
-TJet<T1,T2>& TJet<T1,T2>::operator/=( const T1& y ) 
+template<typename T>
+TJet<T>& TJet<T>::operator/=( const T& y ) 
 {
 
- TJLterm<T1,T2>* p =0;
+ TJLterm<T>* p =0;
 
  // note: this does not work in mixed mode !
 
@@ -776,8 +769,8 @@ TJet<T1,T2>& TJet<T1,T2>::operator/=( const T1& y )
 
 //     Member functions(public)  |||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::addTerm( TJLterm<T1,T2>* a) 
+template<typename T>
+void TJet<T>::addTerm( TJLterm<T>* a) 
 {
  PREPFORCHANGE(_jl)
  _jl->addTerm( a );
@@ -791,14 +784,14 @@ void TJet<T1,T2>::addTerm( TJLterm<T1,T2>* a)
 // **************************************************************
 // **************************************************************
 //
-//      The overloaded operators for class TJet<T1,T2>
+//      The overloaded operators for class TJet<T>
 //
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool TJet<T1,T2>::operator==( const TJet<T1,T2>& y ) const
+template<typename T>
+bool TJet<T>::operator==( const TJet<T>& y ) const
 {
  return *(this->_jl) == *(y._jl);
 }
@@ -806,8 +799,8 @@ bool TJet<T1,T2>::operator==( const TJet<T1,T2>& y ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool TJet<T1,T2>::operator==( const T1& y ) const
+template<typename T>
+bool TJet<T>::operator==( const T& y ) const
 {
  return *(this->_jl) == y;
 }
@@ -815,8 +808,8 @@ bool TJet<T1,T2>::operator==( const T1& y ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool operator!=( const TJet<T1,T2>& x, const TJet<T1,T2>& y ) 
+template<typename T>
+bool operator!=( const TJet<T>& x, const TJet<T>& y ) 
 {
  return !( x == y );
 }
@@ -824,8 +817,8 @@ bool operator!=( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool operator!=( const TJet<T1,T2>& x, const T1& y ) 
+template<typename T>
+bool operator!=( const TJet<T>& x, const T& y ) 
 {
  return !( x == y );
 }
@@ -833,8 +826,8 @@ bool operator!=( const TJet<T1,T2>& x, const T1& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool operator!=( const T1& x, const TJet<T1,T2>& y ) 
+template<typename T>
+bool operator!=( const T& x, const TJet<T>& y ) 
 {
  return !( x == y );
 }
@@ -842,11 +835,11 @@ bool operator!=( const T1& x, const TJet<T1,T2>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2>& TJet<T1,T2>::operator+=( const T1& x ) 
+template<typename T>
+TJet<T>& TJet<T>::operator+=( const T& x ) 
 {   
  if( _jl == NULL ) {                                         // ??? DANGER: what is the 
-   _jl = TJL<T1,T2>::makeTJL();                              // ??? reference point?
+   _jl = TJL<T>::makeTJL();                              // ??? reference point?
  }              
  else {
    PREPFORCHANGE(_jl)
@@ -858,8 +851,8 @@ TJet<T1,T2>& TJet<T1,T2>::operator+=( const T1& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2>& TJet<T1,T2>::operator-=( const T1& x ) 
+template<typename T>
+TJet<T>& TJet<T>::operator-=( const T& x ) 
 {
  this->operator+=( -x );
  return *this;
@@ -868,11 +861,11 @@ TJet<T1,T2>& TJet<T1,T2>::operator-=( const T1& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2>& TJet<T1,T2>::operator*=( const T1& x ) 
+template<typename T>
+TJet<T>& TJet<T>::operator*=( const T& x ) 
 {
 
- TJLterm<T1,T2>* p =0;
+ TJLterm<T>* p =0;
 
  // note: this code does not work in mixed mode (i.e. complex argument and double TJet)!
 
@@ -887,10 +880,10 @@ TJet<T1,T2>& TJet<T1,T2>::operator*=( const T1& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator+( const TJet<T1,T2>& x, const TJet<T1,T2>& y ) 
+template<typename T>
+TJet<T> operator+( const TJet<T>& x, const TJet<T>& y ) 
 { 
-  // Possibility: constant TJet<T1,T2> argument
+  // Possibility: constant TJet<T> argument
   if( !(x->_myEnv) ) {
     if( x->_count == 1 ) {
       return x.standardPart() + y;
@@ -898,10 +891,10 @@ TJet<T1,T2> operator+( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
     else {
       (*pcerr) << "\n\n"
            << "*** ERROR ***                                       \n"
-           << "*** ERROR *** TJet<T1,T2> operator+( TJet<T1,T2>, TJet<T1,T2> )             \n"
+           << "*** ERROR *** TJet<T> operator+( TJet<T>, TJet<T> )             \n"
            << "*** ERROR ***                                       \n"
            << "*** ERROR *** Null environment for the first        \n"
-           << "*** ERROR *** TJet<T1,T2> argument.                         \n"
+           << "*** ERROR *** TJet<T> argument.                         \n"
            << "*** ERROR ***                                       \n"
            << endl;
     }
@@ -914,10 +907,10 @@ TJet<T1,T2> operator+( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
     else {
       (*pcerr) << "\n\n"
            << "*** ERROR ***                                       \n"
-           << "*** ERROR *** TJet<T1,T2> operator+( TJet<T1,T2>, TJet<T1,T2> )             \n"
+           << "*** ERROR *** TJet<T> operator+( TJet<T>, TJet<T> )             \n"
            << "*** ERROR ***                                       \n"
            << "*** ERROR *** Null environment for the second       \n"
-           << "*** ERROR *** TJet<T1,T2> argument.                         \n"
+           << "*** ERROR *** TJet<T> argument.                         \n"
            << "*** ERROR ***                                       \n"
            << endl;
     }
@@ -926,15 +919,15 @@ TJet<T1,T2> operator+( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
   // Check for consistency and set reference point of the sum.
   if( x->_myEnv != y->_myEnv ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "TJet<T1,T2> operator+( const TJet<T1,T2>& x, const TJet<T1,T2>& )",
+           "TJet<T> operator+( const TJet<T>& x, const TJet<T>& )",
            "Inconsistent environments." ) );
   }
-  TJetEnvironment<T1,T2>* pje = x->_myEnv;
+  TJetEnvironment<T>* pje = x->_myEnv;
 
                               // ??? This should be modified so that
-  TJet<T1,T2> z(pje);          // ??? terms beyond the accurate weight of
-  TJLterm<T1,T2>* p = 0;        // ??? x or y are not computed and carried
-  TJLterm<T1,T2>* q = 0;        // ??? into the answer.
+  TJet<T> z(pje);          // ??? terms beyond the accurate weight of
+  TJLterm<T>* p = 0;        // ??? x or y are not computed and carried
+  TJLterm<T>* q = 0;        // ??? into the answer.
 
 
   // If one of the arguments is void, then return the other ..
@@ -953,13 +946,13 @@ TJet<T1,T2> operator+( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
   dlist_iterator getp( x._jl->_theList );
   dlist_iterator getq( y._jl->_theList );
 
-  p = (TJLterm<T1,T2>*) getp();
-  q = (TJLterm<T1,T2>*) getq();
+  p = (TJLterm<T>*) getp();
+  q = (TJLterm<T>*) getq();
 
   bool pcont = p != 0;
   bool qcont = q != 0;
  
-  T1 result; 
+  T result; 
 
   while( qcont && pcont ) {
 
@@ -968,38 +961,38 @@ TJet<T1,T2> operator+( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
 
   
         result = p->_value + q->_value;
-        z->append( new( z._jl->storePtr()) TJLterm<T1,T2>( p->_index, result ) );
+        z->append( new( z._jl->storePtr()) TJLterm<T>( p->_index, result ) );
        
-        p = (TJLterm<T1,T2>*) getp();
-        q = (TJLterm<T1,T2>*) getq();
+        p = (TJLterm<T>*) getp();
+        q = (TJLterm<T>*) getq();
 
         pcont = (p != 0);
         qcont = (q != 0);
       }
       else {
-        z->append( new( z._jl->storePtr()) TJLterm<T1,T2>( p->_index, p->_value ) );
-        p = (TJLterm<T1,T2>*) getp();
+        z->append( new( z._jl->storePtr()) TJLterm<T>( p->_index, p->_value ) );
+        p = (TJLterm<T>*) getp();
         pcont = (p != 0);
       }
     }
     else {
-       z->append( new( z._jl->storePtr()) TJLterm<T1,T2>( q->_index, q->_value ) );
-       q = (TJLterm<T1,T2>*) getq();
+       z->append( new( z._jl->storePtr()) TJLterm<T>( q->_index, q->_value ) );
+       q = (TJLterm<T>*) getq();
        qcont = (q != 0);
     }
   }
 
   if( pcont ) {
     while(p) {
-      z->append( new( z._jl->storePtr() ) TJLterm<T1,T2>( p->_index, p->_value ) );
-      p = (TJLterm<T1,T2>*) getp();
+      z->append( new( z._jl->storePtr() ) TJLterm<T>( p->_index, p->_value ) );
+      p = (TJLterm<T>*) getp();
     }
   }
 
   if( qcont ) {
     while(q) {
-      z->append( new( z._jl->storePtr() ) TJLterm<T1,T2>( q->_index, q->_value ) );
-      q = (TJLterm<T1,T2>*) getq();
+      z->append( new( z._jl->storePtr() ) TJLterm<T>( q->_index, q->_value ) );
+      q = (TJLterm<T>*) getq();
     }
   }
 
@@ -1015,10 +1008,10 @@ TJet<T1,T2> operator+( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator+( const TJet<T1,T2>& x, const T1& y ) 
+template<typename T>
+TJet<T> operator+( const TJet<T>& x, const T& y ) 
 {
- TJet<T1,T2> z;           // !!! "TJet<T1,T2> z = x;" does not work.  The copy constructor
+ TJet<T> z;           // !!! "TJet<T> z = x;" does not work.  The copy constructor
  z.DeepCopy( x );         // ??? is called, which makes x and z own the same data!!
  z += y;
  return z;
@@ -1027,10 +1020,10 @@ TJet<T1,T2> operator+( const TJet<T1,T2>& x, const T1& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator+( const T1& y, const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> operator+( const T& y, const TJet<T>& x ) 
 {
- TJet<T1,T2> z;
+ TJet<T> z;
  z.DeepCopy( x );
  z += y;
  return z;
@@ -1039,8 +1032,8 @@ TJet<T1,T2> operator+( const T1& y, const TJet<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator-( const TJet<T1,T2>& x, const T1& y ) 
+template<typename T>
+TJet<T> operator-( const TJet<T>& x, const T& y ) 
 {
  return x + (-y);
 }
@@ -1048,8 +1041,8 @@ TJet<T1,T2> operator-( const TJet<T1,T2>& x, const T1& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator-( const T1& y, const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> operator-( const T& y, const TJet<T>& x ) 
 {
  return y + (-x);
 }
@@ -1057,16 +1050,16 @@ TJet<T1,T2> operator-( const T1& y, const TJet<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator-( const TJet<T1,T2>& y ) 
+template<typename T>
+TJet<T> operator-( const TJet<T>& y ) 
 {  
  // If the argument is void, then return it ..
  if( y->_count < 1 ) { 
    return y;
  }
 
- TJet<T1,T2> z( y.Env() );
- TJLterm<T1,T2>* p = 0;
+ TJet<T> z( y.Env() );
+ TJLterm<T>* p = 0;
 
  z.DeepCopy( y ); 
 
@@ -1084,10 +1077,10 @@ TJet<T1,T2> operator-( const TJet<T1,T2>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::Negate()
+template<typename T>
+void TJet<T>::Negate()
 {
-TJLterm<T1,T2>* p;
+TJLterm<T>* p;
 
  // If the argument is void, then return ...
  if( _jl->_count < 1 ) return;
@@ -1096,16 +1089,16 @@ TJLterm<T1,T2>* p;
  PREPFORCHANGE(_jl)
  dlist_iterator getNext( _jl->_theList );
 
- while((  p = (TJLterm<T1,T2>*) getNext()  )) p->_value = - p->_value;
+ while((  p = (TJLterm<T>*) getNext()  )) p->_value = - p->_value;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::Mult( const T1& x )
+template<typename T>
+void TJet<T>::Mult( const T& x )
 {
- TJLterm<T1,T2>* p;
+ TJLterm<T>* p;
 
  // If the argument is void, then return ...
  if( _jl->_count < 1 ) return;
@@ -1113,14 +1106,14 @@ void TJet<T1,T2>::Mult( const T1& x )
  // .. otherwise continue normal operations.
  PREPFORCHANGE(_jl)
  dlist_iterator getNext( _jl->_theList );
- while((  p = (TJLterm<T1,T2>*) getNext()  )) p->_value *= x;
+ while((  p = (TJLterm<T>*) getNext()  )) p->_value *= x;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator-( const TJet<T1,T2>& x, const TJet<T1,T2>& y ) 
+template<typename T>
+TJet<T> operator-( const TJet<T>& x, const TJet<T>& y ) 
 {  
   return ( x + (-y) );
 }
@@ -1128,35 +1121,35 @@ TJet<T1,T2> operator-( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator*( const TJet<T1,T2>& x, const TJet<T1,T2>& y ) 
+template<typename T>
+TJet<T> operator*( const TJet<T>& x, const TJet<T>& y ) 
 {
 
  // Check for consistency 
 
  if( x->_myEnv != y->_myEnv ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> operator*( const TJet<T1,T2>&, const TJet<T1,T2>& ) ",
+          "TJet<T> operator*( const TJet<T>&, const TJet<T>& ) ",
           "Inconsistent environments." ) );
  };
 
  
- TJetEnvironment<T1,T2>* pje = x->_myEnv;
- TJet<T1,T2> z(pje);
+ TJetEnvironment<T>* pje = x->_myEnv;
+ TJet<T> z(pje);
 
- TJLterm<T1,T2>* p = 0;
- TJLterm<T1,T2>* q = 0;
- TJL<T1,T2>* xPtr  = x._jl;
- TJL<T1,T2>* yPtr  = y._jl;
- TJL<T1,T2>* zPtr  = z._jl;
+ TJLterm<T>* p = 0;
+ TJLterm<T>* q = 0;
+ TJL<T>* xPtr  = x._jl;
+ TJL<T>* yPtr  = y._jl;
+ TJL<T>* zPtr  = z._jl;
  int testWeight    = 0;
  int trialWeight  =  0;
  
  int  indy                = 0;
- TJLterm<T1,T2>* zed      = 0;
- TJLterm<T1,T2>* upperzed = 0;
- T1  dummy                = T1();
- T1  product              = T1();
+ TJLterm<T>* zed      = 0;
+ TJLterm<T>* upperzed = 0;
+ T  dummy                = T();
+ T  product              = T();
 
 
 
@@ -1168,17 +1161,17 @@ TJet<T1,T2> operator*( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
 
  // Determine the maximum weight computed accurately.
 
- TJLterm<T1,T2> x_1stTerm( xPtr->lowTerm() );
- TJLterm<T1,T2> y_1stTerm( yPtr->lowTerm() );
+ TJLterm<T> x_1stTerm( xPtr->lowTerm() );
+ TJLterm<T> y_1stTerm( yPtr->lowTerm() );
 
  testWeight = xPtr->_accuWgt;
- if( ( y_1stTerm._weight != 0 ) && ( y_1stTerm._value !=  T1() ) )
+ if( ( y_1stTerm._weight != 0 ) && ( y_1stTerm._value !=  T() ) )
  {
    testWeight += y_1stTerm._weight;
  }
 
  trialWeight = yPtr->_accuWgt;
- if( ( x_1stTerm._weight != 0 ) && ( x_1stTerm._value !=  T1() ) )
+ if( ( x_1stTerm._weight != 0 ) && ( x_1stTerm._value !=  T() ) )
  {
    trialWeight += x_1stTerm._weight;
  }
@@ -1221,7 +1214,7 @@ TJet<T1,T2> operator*( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
      dummy = pje->_TJLmml[indy]._value + product;
 
      if( (std::abs( dummy ) < MX_SMALL*std::abs( product )) || ( std::abs( dummy ) < MX_ABS_SMALL) ) {
-       pje->_TJLmml[indy]._value = T1();
+       pje->_TJLmml[indy]._value = T();
      } 
      else {
        pje->_TJLmml[indy]._value = dummy;
@@ -1240,8 +1233,8 @@ TJet<T1,T2> operator*( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
  for( p = zed; p < upperzed; ++p) 
  {
     if (  std::abs(p->_value) > 0.0)  {
-      zPtr->append( new( zPtr->storePtr() ) TJLterm<T1,T2>( *p ) ); 
-      p->_value = T1( );  // erase the scratchpad entry
+      zPtr->append( new( zPtr->storePtr() ) TJLterm<T>( *p ) ); 
+      p->_value = T( );  // erase the scratchpad entry
     }
  
  };
@@ -1260,12 +1253,12 @@ TJet<T1,T2> operator*( const TJet<T1,T2>& x, const TJet<T1,T2>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator*( const TJet<T1,T2>& x, const T1& y ) 
+template<typename T>
+TJet<T> operator*( const TJet<T>& x, const T& y ) 
 {
- TJet<T1,T2> z(  x->_myEnv );
+ TJet<T> z(  x->_myEnv );
  
- if( y == T1( ) || x._jl->_count < 1 ) {
+ if( y == T( ) || x._jl->_count < 1 ) {
    return z;
  };
  
@@ -1276,7 +1269,7 @@ TJet<T1,T2> operator*( const TJet<T1,T2>& x, const T1& y )
 
  // scale the values directly, regardless of order (i.e. without using the dlist)
  
- for ( TJLterm<T1,T2>* p = z._jl->_jltermStore; p < z._jl->_jltermStoreCurrentPtr; p++  ) 
+ for ( TJLterm<T>* p = z._jl->_jltermStore; p < z._jl->_jltermStoreCurrentPtr; p++  ) 
  {
    if ( ! (p->_deleted) ) (p->_value) *= y;
  }
@@ -1288,8 +1281,8 @@ TJet<T1,T2> operator*( const TJet<T1,T2>& x, const T1& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator*( const T1& y, const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> operator*( const T& y, const TJet<T>& x ) 
 {  
  
  return operator*( x, y );
@@ -1299,32 +1292,32 @@ TJet<T1,T2> operator*( const T1& y, const TJet<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator*( const TJet<T1,T2>& x, const int& j ) 
+template<typename T>
+TJet<T> operator*( const TJet<T>& x, const int& j ) 
 {  
-  return operator*( x, T1(j) );
+  return operator*( x, T(j) );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator*( const int& j, const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> operator*( const int& j, const TJet<T>& x ) 
 { 
-  return operator*( T1(j), x );
+  return operator*( T(j), x );
 }
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator/( const TJet<T1,T2>& x, const T1& y ) 
+template<typename T>
+TJet<T> operator/( const TJet<T>& x, const T& y ) 
 { 
   // Check for division by zero ..
   if( y == 0.0 ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "TJet<T1,T2> operator/( const TJet<T1,T2>&, const T1& ) ",
+           "TJet<T> operator/( const TJet<T>&, const T& ) ",
            "Attempt to divide by a scalar zero." ) );
   }
  
@@ -1334,26 +1327,26 @@ TJet<T1,T2> operator/( const TJet<T1,T2>& x, const T1& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator/( const TJet<T1,T2>& x, const int& j ) 
+template<typename T>
+TJet<T> operator/( const TJet<T>& x, const int& j ) 
 { 
   // Check for division by zero ..
   if( j == 0 ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "TJet<T1,T2> operator/( const TJet<T1,T2>& x, const int& j )",
+           "TJet<T> operator/( const TJet<T>& x, const int& j )",
            "Attempt to divide by a scalar zero." ) );
   }
  
-  return ( x*(1.0/((T1) j)) );
+  return ( x*(1.0/((T) j)) );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator/( const T1& a, const TJet<T1,T2>& b ) 
+template<typename T>
+TJet<T> operator/( const T& a, const TJet<T>& b ) 
 {
-  TJet<T1,T2> u( b->_myEnv ); 
+  TJet<T> u( b->_myEnv ); 
   u = a;
   return u/b;
 } 
@@ -1362,8 +1355,8 @@ TJet<T1,T2> operator/( const T1& a, const TJet<T1,T2>& b )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJet<T1,T2>::_truncMult( const TJet<T1,T2>& v, const int& wl ) const 
+template<typename T>
+TJet<T> TJet<T>::_truncMult( const TJet<T>& v, const int& wl ) const 
 { 
  //
  // Truncated multiplication: used only by the division operator.
@@ -1371,14 +1364,14 @@ TJet<T1,T2> TJet<T1,T2>::_truncMult( const TJet<T1,T2>& v, const int& wl ) const
  //
 
 
- TJLterm<T1,T2>* p = 0;
- TJLterm<T1,T2>* q = 0;
+ TJLterm<T>* p = 0;
+ TJLterm<T>* q = 0;
 
- TJLterm<T1,T2>* zed;
- TJLterm<T1,T2>* upperzed;
+ TJLterm<T>* zed;
+ TJLterm<T>* upperzed;
 
- T1  dummy   = T1();
- T1  product = T1();
+ T  dummy   = T();
+ T  product = T();
 
  int indy = 0;
 
@@ -1390,9 +1383,9 @@ TJet<T1,T2> TJet<T1,T2>::_truncMult( const TJet<T1,T2>& v, const int& wl ) const
 
  // Initializations
 
- TJetEnvironment<T1,T2>* pje = _jl->_myEnv;
- TJet<T1,T2> z( pje );
- TJL<T1,T2>* zPtr = z._jl;
+ TJetEnvironment<T>* pje = _jl->_myEnv;
+ TJet<T> z( pje );
+ TJL<T>* zPtr = z._jl;
 
  // .. otherwise continue normal operations.
 
@@ -1429,8 +1422,8 @@ TJet<T1,T2> TJet<T1,T2>::_truncMult( const TJet<T1,T2>& v, const int& wl ) const
 
  while( zed < upperzed ) {
    if( abs(zed->_value) > MX_ABS_SMALL ) {
-     zPtr->append( new( zPtr->storePtr() ) TJLterm<T1,T2>( *zed ) );
-     zed->_value = T1( );
+     zPtr->append( new( zPtr->storePtr() ) TJLterm<T>( *zed ) );
+     zed->_value = T( );
    }
    zed++;
  }
@@ -1448,36 +1441,36 @@ TJet<T1,T2> TJet<T1,T2>::_truncMult( const TJet<T1,T2>& v, const int& wl ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator/( const TJet<T1,T2>& wArg, const TJet<T1,T2>& uArg ) 
+template<typename T>
+TJet<T> operator/( const TJet<T>& wArg, const TJet<T>& uArg ) 
 { 
 
  // Check for void operators ..
  if ( wArg->_count < 1 ) return wArg;
  if ( uArg->_count < 1 ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> operator/( const TJet<T1,T2>&, const TJet<T1,T2>& )",
-          "Attempt to divide by a void TJL<T1,T2> variable." ) );
+          "TJet<T> operator/( const TJet<T>&, const TJet<T>& )",
+          "Attempt to divide by a void TJL<T> variable." ) );
  }
  
  // Check for consistency 
  if( wArg->_myEnv != uArg->_myEnv ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> operator/( const TJet<T1,T2>&, const TJet<T1,T2>& )",
+          "TJet<T> operator/( const TJet<T>&, const TJet<T>& )",
           "Inconsistent environments." ) );
  }
 
  // Initialize local variables and set the environment of the answer.
  // (These steps are not necessary, but they enforce a discipline.)
 
- TJet<T1,T2> v(wArg->_myEnv);
- TJet<T1,T2> vn(wArg->_myEnv);
- TJet<T1,T2> w(wArg->_myEnv);
- TJet<T1,T2> u(wArg->_myEnv);
+ TJet<T> v(wArg->_myEnv);
+ TJet<T> vn(wArg->_myEnv);
+ TJet<T> w(wArg->_myEnv);
+ TJet<T> u(wArg->_myEnv);
 
- TJLterm<T1,T2>* qu = 0;
- TJLterm<T1,T2>* qw = 0;
- T1 u0 = T1();
+ TJLterm<T>* qu = 0;
+ TJLterm<T>* qw = 0;
+ T u0 = T();
 
  int wgt = 0;
  int wl  = 0;
@@ -1488,28 +1481,28 @@ TJet<T1,T2> operator/( const TJet<T1,T2>& wArg, const TJet<T1,T2>& uArg )
  dlist_looper gw( wArg._jl->_theList );
 
  // Normalize the denominator
- if( ( qu = (TJLterm<T1,T2>*) gu() ) == 0 ) {
+ if( ( qu = (TJLterm<T>*) gu() ) == 0 ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> operator/( const TJet<T1,T2>&, const TJet<T1,T2>& )",
+          "TJet<T> operator/( const TJet<T>&, const TJet<T>& )",
           "Division algorithm called with uninitialized JL." ) );
    }
  if( ( wgt = qu->_weight ) != 0 ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> operator/( const TJet<T1,T2>&, const TJet<T1,T2>& )",
+          "TJet<T> operator/( const TJet<T>&, const TJet<T>& )",
           "Attempt to divide by nilpotent element." ) );
    }
  if(  (u0 = qu->_value ) == 0.0 ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> operator/( const TJet<T1,T2>&, const TJet<T1,T2>& )",
+          "TJet<T> operator/( const TJet<T>&, const TJet<T>& )",
           "Attempt to divide by zero." ) );
    }
 
  u = uArg / u0;
  
  // Recursive algorithm
- qw = (TJLterm<T1,T2>*) gw();
+ qw = (TJLterm<T>*) gw();
  if( qw->_weight == 0 ) v = ( qw->_value );
- else                   v = ((T1) 0.0); 
+ else                   v = T(); 
  v->_myEnv = wArg->_myEnv;  
 
  wl = 0;
@@ -1536,19 +1529,19 @@ TJet<T1,T2> operator/( const TJet<T1,T2>& wArg, const TJet<T1,T2>& uArg )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> operator^( const TJet<T1,T2>& x, const TJet<T1,T2>& y ) 
+template<typename T>
+TJet<T> operator^( const TJet<T>& x, const TJet<T>& y ) 
 { 
 
  // Check for consistency 
  if( x->_myEnv != y->_myEnv ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> operator^( const TJet<T1,T2>&, const TJet<T1,T2>& )",
+          "TJet<T> operator^( const TJet<T>&, const TJet<T>& )",
           "Inconsistent environments." ) );
  }
 
- TJetEnvironment<T1,T2>* theEnv = x->_myEnv;
- TJet<T1,T2> z (theEnv);
+ TJetEnvironment<T>* theEnv = x->_myEnv;
+ TJet<T> z (theEnv);
 
  int*  m = new int [ theEnv->_numVar ];
  int*  n = new int [ theEnv->_numVar ];
@@ -1579,7 +1572,7 @@ if( theEnv->_pbok ) {
    delete [] m;
    delete [] n;
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> operator^( const TJet<T1,T2>&, const TJet<T1,T2>& )",
+          "TJet<T> operator^( const TJet<T>&, const TJet<T>& )",
           "Environment not correct for performing bracket." ) );
  }
 }
@@ -1594,27 +1587,27 @@ if( theEnv->_pbok ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> acos( const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> acos( const TJet<T>& x ) 
 {
   // Returns answer in (0,pi) if asin returns (-pi/2,pi/2).
-  return ( ((T1) M_PI_2) - asin(x) );
+  return ( ((T) M_PI_2) - asin(x) );
 }
  
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> asin( const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> asin( const TJet<T>& x ) 
 { 
 
- const T1 zero = ((T1) 0.0); 	 
- TJetEnvironment<T1,T2>* pje = x.Env(); 	 
+ const T zero = T(); 	 
+ TJetEnvironment<T>* pje = x.Env(); 	 
   	 
  // Initial Newton's step 	 
  
- TJet<T1,T2> z;	        
- TJet<T1,T2> dz;
+ TJet<T> z;	        
+ TJet<T> dz;
 
  z.DeepCopy( x ); 	 
  dz = ( sin(z) - x ) / cos(z); 	 
@@ -1627,7 +1620,7 @@ TJet<T1,T2> asin( const TJet<T1,T2>& x )
  double compValue; 	 
  bool repeat = true; 	 
  
- TJLterm<T1,T2>* pz = 0; 	 
+ TJLterm<T>* pz = 0; 	 
  	 
  // Iterated Newton's steps
  
@@ -1695,7 +1688,7 @@ TJet<T1,T2> asin( const TJet<T1,T2>& x )
 
  if( iter >= MX_MAXITER ) {
   (*pcerr) << "*** WARNING ***                             \n";
-  (*pcerr) << "*** WARNING *** TJL<T1,T2>& asin( TJL<T1,T2>& x ) {         \n";
+  (*pcerr) << "*** WARNING *** TJL<T>& asin( TJL<T>& x ) {         \n";
   (*pcerr) << "*** WARNING *** Over " 
        << MX_MAXITER 
        << " iterations used;    \n";
@@ -1725,19 +1718,19 @@ TJet<T1,T2> asin( const TJet<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> atan( const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> atan( const TJet<T>& x ) 
 {   
  
- TJet<T1,T2> z;
- TJet<T1,T2> c, dz;
+ TJet<T> z;
+ TJet<T> c, dz;
  int iter = 0;
 
  z.DeepCopy( x );
  c = cos( z );
  dz = c*( sin(z) - x*c );
 
- while( ( dz != ((T1) 0.0) ) && ( iter++ < MX_MAXITER ) ) {
+ while( ( dz != T() ) && ( iter++ < MX_MAXITER ) ) {
   z -= dz;
   c = cos( z );
   dz = c*( sin(z) - x*c );
@@ -1745,7 +1738,7 @@ TJet<T1,T2> atan( const TJet<T1,T2>& x )
 
  if( iter >= MX_MAXITER ) {
   (*pcerr) <<  "*** WARNING ***                             \n" 
-       <<  "*** WARNING *** TJL<T1,T2>& atan( TJL<T1,T2>& x ) {         \n" 
+       <<  "*** WARNING *** TJL<T>& atan( TJL<T>& x ) {         \n" 
        <<  "*** WARNING *** Over " 
                 << MX_MAXITER  << " iterations used;    \n"
        <<  "*** WARNING *** result may be incorrect.    \n" 
@@ -1759,16 +1752,16 @@ TJet<T1,T2> atan( const TJet<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> cos( const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> cos( const TJet<T>& x ) 
 { 
  
- TJet<T1,T2> epsilon(x->_myEnv);
+ TJet<T> epsilon(x->_myEnv);
 
- T1 cs = T1();
- T1 sn = T1();
+ T cs = T();
+ T sn = T();
 
- TJLterm<T1,T2>* p = 0;
+ TJLterm<T>* p = 0;
 
  dlist_iterator getNext( x._jl->_theList );
  
@@ -1778,24 +1771,24 @@ TJet<T1,T2> cos( const TJet<T1,T2>& x )
      uic  << "Horrible, inexplicable error: epsilon->_count = " 
           << epsilon->_count;
      throw( GenericException( __FILE__, __LINE__, 
-            "TJet<T1,T2> cos( const TJet<T1,T2>& ) ",
+            "TJet<T> cos( const TJet<T>& ) ",
             uic.str().c_str() ) );
    }
-   epsilon.addTerm( new( epsilon.storePtr() ) TJLterm<T1,T2>( x->_myEnv->_allZeroes, ((T1) 1.0), x->_myEnv ) );
+   epsilon.addTerm( new( epsilon.storePtr() ) TJLterm<T>( x->_myEnv->_allZeroes, ((T) 1.0), x->_myEnv ) );
    return epsilon;
  }
  
- p = (TJLterm<T1,T2>*) getNext();
+ p = (TJLterm<T>*) getNext();
  if( ( p -> _weight ) == 0 ) {         // x has non-zero standard part
    cs = std::cos( p -> _value );
    sn = std::sin( p -> _value );
    epsilon.DeepCopy( x );             // x must not be altered by the routine
    p = epsilon.get();                 // pops the standard part off epsilon
    p->_deleted = true; //delete p; // NOT WITH NEW MEM MANAGEMENT
-   return cs*TJet<T1,T2>::_epsCos( epsilon ) - sn*TJet<T1,T2>::_epsSin( epsilon );
+   return cs*TJet<T>::_epsCos( epsilon ) - sn*TJet<T>::_epsSin( epsilon );
    }
  else {                               // x is pure infinitesimal
-   return TJet<T1,T2>::_epsCos( x );
+   return TJet<T>::_epsCos( x );
    }
  
 }
@@ -1803,10 +1796,10 @@ TJet<T1,T2> cos( const TJet<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> cosh( const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> cosh( const TJet<T>& x ) 
 { 
- TJet<T1,T2> z = exp(x);
+ TJet<T> z = exp(x);
  z = ( z + ( 1.0 / z ) ) / 2.0;
  return z;
 }
@@ -1814,13 +1807,13 @@ TJet<T1,T2> cosh( const TJet<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> exp( const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> exp( const TJet<T>& x ) 
 { 
  
- TJet<T1,T2> epsilon( x->_myEnv );
- T1 factor = T1();
- TJLterm<T1,T2>* p = 0;
+ TJet<T> epsilon( x->_myEnv );
+ T factor = T();
+ TJLterm<T>* p = 0;
 
  dlist_iterator getNext( x._jl->_theList );
 
@@ -1830,49 +1823,49 @@ TJet<T1,T2> exp( const TJet<T1,T2>& x )
      uic  << "Horrible, inexplicable error: epsilon->_count = " 
           << epsilon->_count;
      throw( GenericException( __FILE__, __LINE__, 
-            "TJet<T1,T2> exp( const TJet<T1,T2>& ) ",
+            "TJet<T> exp( const TJet<T>& ) ",
             uic.str().c_str() ) );
    }
-   epsilon.addTerm( new( epsilon.storePtr() ) TJLterm<T1,T2>( x->_myEnv->_allZeroes, ((T1) 1.0), x->_myEnv ) );
+   epsilon.addTerm( new( epsilon.storePtr() ) TJLterm<T>( x->_myEnv->_allZeroes, ((T) 1.0), x->_myEnv ) );
    return epsilon;
  }
  
- p = (TJLterm<T1,T2>*) getNext();
+ p = (TJLterm<T>*) getNext();
  if( ( p -> _weight ) == 0 ) {         // x has non-zero standard part
    factor = std::exp( p -> _value );
    epsilon.DeepCopy( x );             // x must not be altered by the routine
    p = epsilon.get();                 // pops the standard part off epsilon
    p->_deleted = true; // delete p; NOT WITH NEW MEM MNGMNT
-   return factor*TJet<T1,T2>::_epsExp( epsilon );
+   return factor*TJet<T>::_epsExp( epsilon );
    }
  else {                               // x is pure infinitesimal
-   return TJet<T1,T2>::_epsExp( x );
+   return TJet<T>::_epsExp( x );
    }
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> log ( const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> log ( const TJet<T>& x ) 
 { 
-  TJet<T1,T2>   epsilon(x->_myEnv);
-  TJet<T1,T2>   u(x->_myEnv);
-  TJet<T1,T2>   w(x->_myEnv);
+  TJet<T>   epsilon(x->_myEnv);
+  TJet<T>   u(x->_myEnv);
+  TJet<T>   w(x->_myEnv);
 
-  T1 std   = T1();
+  T std   = T();
   double n = 0.0;
-  TJLterm<T1,T2>*  p = 0;
+  TJLterm<T>*  p = 0;
 
   dlist_iterator  getNext( x._jl->_theList );
  
  if( x->_count == 0 ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> log ( const TJet<T1,T2>& ) { ",
+          "TJet<T> log ( const TJet<T>& ) { ",
           "Argument is zero." ) );
  }
  
- p = (TJLterm<T1,T2>*) getNext();
+ p = (TJLterm<T>*) getNext();
  if( ( ( p -> _weight      ) ==  0   ) &&
      ( ( std = p -> _value ) !=  0.0 )
    )                                  // x has non-zero standard part
@@ -1900,7 +1893,7 @@ TJet<T1,T2> log ( const TJet<T1,T2>& x )
  else                                 // x has zero standard part
    {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> log ( const TJet<T1,T2>& ) ",
+          "TJet<T> log ( const TJet<T>& ) ",
           "Argument's standard part vanishes; it is nilpotent." ) );
    }
 }
@@ -1908,24 +1901,24 @@ TJet<T1,T2> log ( const TJet<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> log10( const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> log10( const TJet<T>& x ) 
 {
- static const T1 logE = 0.4342944819032518276511289;
+ static const T logE = 0.4342944819032518276511289;
  return  logE*log(x);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> pow( const TJet<T1,T2>& x, const double& s ) 
+template<typename T>
+TJet<T> pow( const TJet<T>& x, const double& s ) 
 { 
 
- TJet<T1,T2> epsilon(x->_myEnv );
- T1 factor = T1();
- T1 std    = T1();
- TJLterm<T1,T2>* p = 0;
+ TJet<T> epsilon(x->_myEnv );
+ T factor = T();
+ T std    = T();
+ TJLterm<T>* p = 0;
  int u = 0;
 
  if( x->_count == 0 ) {
@@ -1934,16 +1927,16 @@ TJet<T1,T2> pow( const TJet<T1,T2>& x, const double& s )
      uic  << "Horrible, inexplicable error: epsilon->_count = " 
           << epsilon->_count;
      throw( GenericException( __FILE__, __LINE__, 
-            "TJet<T1,T2> pow( const TJet<T1,T2>&, double ) ",
+            "TJet<T> pow( const TJet<T>&, double ) ",
             uic.str().c_str() ) );
    }
-   epsilon.addTerm( new( epsilon.storePtr() ) TJLterm<T1,T2>( x->_myEnv->_allZeroes, T1(), x->_myEnv ) );
+   epsilon.addTerm( new( epsilon.storePtr() ) TJLterm<T>( x->_myEnv->_allZeroes, T(), x->_myEnv ) );
    return epsilon;
  }
  
  dlist_iterator getNext( x._jl->_theList );
 
- p = (TJLterm<T1,T2>*) getNext();
+ p = (TJLterm<T>*) getNext();
  if( ( ( p -> _weight      ) ==  0   ) &&
      ( ( std = p -> _value ) !=  0.0 )
    )                                  // x has non-zero standard part
@@ -1957,18 +1950,18 @@ TJet<T1,T2> pow( const TJet<T1,T2>& x, const double& s )
    p = epsilon.get();                 //   pops the standard part off epsilon
    p->_deleted = true; // delete p; NOT WITH NEW MEM MNGMT
    epsilon.scaleBy( 1.0/std );
-   epsilon = factor*TJet<T1,T2>::_epsPow( epsilon, s );
+   epsilon = factor*TJet<T>::_epsPow( epsilon, s );
    return epsilon;
    }
  else                                 // x is pure infinitesimal
    {
    u = nearestInteger( s );
-   if( s != (T1) u ) {
+   if( s != (T) u ) {
      throw( GenericException( __FILE__, __LINE__, 
-            "TJet<T1,T2> pow( const TJet<T1,T2>&, const double& )",
+            "TJet<T> pow( const TJet<T>&, const double& )",
             "Cannot use infinitesimal as base with non-integer _exponent." ) );
    }
-   epsilon = ((T1) 1.0);
+   epsilon = ((T) 1.0);
    if ( u == 0 ) {
      return epsilon;
    }
@@ -1987,19 +1980,19 @@ TJet<T1,T2> pow( const TJet<T1,T2>& x, const double& s )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> pow( const TJet<T1,T2>& x, int n ) 
+template<typename T>
+TJet<T> pow( const TJet<T>& x, int n ) 
 {
 
-  TJet<T1,T2> z( x->_myEnv ); 
+  TJet<T> z( x->_myEnv ); 
 
-  if( n == 0 ) z = ((T1) 1.0);
+  if( n == 0 ) z = ((T) 1.0);
   else if( n > 0 ) {
     z.DeepCopy( x );
     for( int i = 2; i <= n; i++ ) z *= x;
   }
   else {
-    TJet<T1,T2> xr;
+    TJet<T> xr;
     z = 1.0 / x;
     xr = z;
     for( int i = -2; i >= n; i-- ) z *= xr;
@@ -2010,15 +2003,15 @@ TJet<T1,T2> pow( const TJet<T1,T2>& x, int n )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> sin( const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> sin( const TJet<T>& x ) 
 { 
  
- TJet<T1,T2> epsilon(x->_myEnv);
- T1 cs = T1();
- T1 sn = T1();
+ TJet<T> epsilon(x->_myEnv);
+ T cs = T();
+ T sn = T();
 
- TJLterm<T1,T2>* p = 0;
+ TJLterm<T>* p = 0;
 
  if( x->_count == 0 ) {
    if( epsilon->_count != 0  ) {
@@ -2026,35 +2019,35 @@ TJet<T1,T2> sin( const TJet<T1,T2>& x )
      uic  << "Horrible, inexplicable error: epsilon->_count = " 
           << epsilon->_count;
      throw( GenericException( __FILE__, __LINE__, 
-            "TJet<T1,T2> sin( const TJet<T1,T2>&, double ) ",
+            "TJet<T> sin( const TJet<T>&, double ) ",
             uic.str().c_str() ) );
    }
-   epsilon.addTerm( new( epsilon.storePtr() ) TJLterm<T1,T2>( x->_myEnv->_allZeroes, T1(), x->_myEnv ) );
+   epsilon.addTerm( new( epsilon.storePtr() ) TJLterm<T>( x->_myEnv->_allZeroes, T(), x->_myEnv ) );
    return epsilon;
  }
  
  dlist_iterator getNext( x._jl->_theList );
- p = (TJLterm<T1,T2>*) getNext();
+ p = (TJLterm<T>*) getNext();
  if( ( p -> _weight ) == 0 ) {         // x has non-zero standard part
    cs = std::cos( p -> _value );
    sn = std::sin( p -> _value );
    epsilon.DeepCopy( x );             // x must not be altered by the routine
    p = epsilon.get();                 // pops the standard part off epsilon
    p->_deleted = true; // delete p; NOT WITH NEW MEM MNGMNT
-   return sn*TJet<T1,T2>::_epsCos( epsilon ) + cs*TJet<T1,T2>::_epsSin( epsilon );
+   return sn*TJet<T>::_epsCos( epsilon ) + cs*TJet<T>::_epsSin( epsilon );
    }
  else {                               // x is pure infinitesimal
-   return TJet<T1,T2>::_epsSin( x );
+   return TJet<T>::_epsSin( x );
    }
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> sinh( const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> sinh( const TJet<T>& x ) 
 {
- TJet<T1,T2> z;
+ TJet<T> z;
  z = exp(x);
  return ( z - (1.0/z))/2.0;
 }
@@ -2062,16 +2055,16 @@ TJet<T1,T2> sinh( const TJet<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> sqrt( const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> sqrt( const TJet<T>& x ) 
 {
 
 
- TJLterm<T1,T2>* p = 0;
+ TJLterm<T>* p = 0;
 
- TJet<T1,T2> epsilon( x->_myEnv );
- T1 factor = T1();
- T1 std    = T1();
+ TJet<T> epsilon( x->_myEnv );
+ T factor = T();
+ T std    = T();
 
  if( x->_count == 0 ) {
 
@@ -2095,12 +2088,12 @@ TJet<T1,T2> sqrt( const TJet<T1,T2>& x )
    //--------------------------------------------------------------------------
 
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> sqrt( const TJet<T1,T2>& ) { ",
+          "TJet<T> sqrt( const TJet<T>& ) { ",
           "Argument is zero." ) );
  }
  
  dlist_iterator getNext( x._jl->_theList );
- p = (TJLterm<T1,T2>*) getNext();
+ p = (TJLterm<T>*) getNext();
 
 
  if( ( ( p -> _weight      ) ==  0   ) &&
@@ -2119,13 +2112,13 @@ TJet<T1,T2> sqrt( const TJet<T1,T2>& x )
      p = epsilon.get();               // pops the standard part off epsilon
      p->_deleted = true; // delete p; NOT WITH NEW MEM MNGMNT
      epsilon.scaleBy( 1.0/std );
-     return factor * TJet<T1,T2>::_epsSqrt( epsilon );
+     return factor * TJet<T>::_epsSqrt( epsilon );
      }
    }
  else                                 // x is pure infinitesimal
    {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> sqrt( const TJet<T1,T2>& ) ",
+          "TJet<T> sqrt( const TJet<T>& ) ",
           "Argument's standard part vanishes; it is nilpotent." ) );
    }
 }
@@ -2133,8 +2126,8 @@ TJet<T1,T2> sqrt( const TJet<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> tan( const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> tan( const TJet<T>& x ) 
 { 
  return sin(x) / cos(x) ;
 }
@@ -2142,8 +2135,8 @@ TJet<T1,T2> tan( const TJet<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> tanh( const TJet<T1,T2>& x ) 
+template<typename T>
+TJet<T> tanh( const TJet<T>& x ) 
 { 
  return sinh(x) / cosh(x);
 }
@@ -2153,10 +2146,10 @@ TJet<T1,T2> tanh( const TJet<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-template<typename T1, typename T2>
-TJet<T1,T2> erfc( const TJet<T1,T2>& z ) 
+template<typename T>
+TJet<T> erfc( const TJet<T>& z ) 
 {
-  static const T1 one = ((T1) 1.0);
+  static const T one = ((T) 1.0);
   return ( one - erf( z ) );
 }
 
@@ -2170,16 +2163,16 @@ TJet<T1,T2> erfc( const TJet<T1,T2>& z )
 //      It is assumed that the calling program checks to be sure
 //      that the argument has zero standard part.
  
-template<typename T1, typename T2>
-TJet<T1,T2> TJet<T1,T2>::_epsCos( const TJet<T1,T2>& epsilon ) 
+template<typename T>
+TJet<T> TJet<T>::_epsCos( const TJet<T>& epsilon ) 
 { 
  
- TJet<T1,T2> z;
- TJet<T1,T2> epsq, term;
+ TJet<T> z;
+ TJet<T> epsq, term;
  double n;
 
  z->_myEnv = epsilon->_myEnv;
- z = ((T1) 1.0);
+ z = ((T) 1.0);
  
  epsq = - epsilon*epsilon;
  
@@ -2201,15 +2194,15 @@ TJet<T1,T2> TJet<T1,T2>::_epsCos( const TJet<T1,T2>& epsilon )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJet<T1,T2>::_epsExp( const TJet<T1,T2>& epsilon ) 
+template<typename T>
+TJet<T> TJet<T>::_epsExp( const TJet<T>& epsilon ) 
 { 
- TJet<T1,T2> z;
- TJet<T1,T2> term;
+ TJet<T> z;
+ TJet<T> term;
  double n;
  
  z->_myEnv = epsilon->_myEnv;
- z = ((T1) 1.0);
+ z = ((T) 1.0);
  
  term = epsilon;
  n = 1.0;
@@ -2229,16 +2222,16 @@ TJet<T1,T2> TJet<T1,T2>::_epsExp( const TJet<T1,T2>& epsilon )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJet<T1,T2>::_epsPow( const TJet<T1,T2>& epsilon, const double& s ) 
+template<typename T>
+TJet<T> TJet<T>::_epsPow( const TJet<T>& epsilon, const double& s ) 
 { 
- TJet<T1,T2> z;
- TJet<T1,T2> term;
+ TJet<T> z;
+ TJet<T> term;
  double f;
  double n;
 
  z->_myEnv = epsilon->_myEnv;
- z = ((T1) 1.0);
+ z = ((T) 1.0);
  
  f = s;
  n = 1.0;
@@ -2248,7 +2241,7 @@ TJet<T1,T2> TJet<T1,T2>::_epsPow( const TJet<T1,T2>& epsilon, const double& s )
  
  while( term->_count > 0 ) {
    z += term;
-   term = ( ((T1) (--f)) * term * epsilon ) / ++n;
+   term = ( ((T) (--f)) * term * epsilon ) / ++n;
    }
  
  z->_accuWgt = epsilon->_accuWgt;
@@ -2259,12 +2252,12 @@ TJet<T1,T2> TJet<T1,T2>::_epsPow( const TJet<T1,T2>& epsilon, const double& s )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJet<T1,T2>::_epsSin( const TJet<T1,T2>& epsilon ) 
+template<typename T>
+TJet<T> TJet<T>::_epsSin( const TJet<T>& epsilon ) 
 { 
  
- TJet<T1,T2> z;
- TJet<T1,T2> epsq, term;
+ TJet<T> z;
+ TJet<T> epsq, term;
  double n;
  
  epsq = - epsilon*epsilon;
@@ -2286,18 +2279,18 @@ TJet<T1,T2> TJet<T1,T2>::_epsSin( const TJet<T1,T2>& epsilon )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJet<T1,T2>::_epsSqrt( const TJet<T1,T2>& epsilon ) 
+template<typename T>
+TJet<T> TJet<T>::_epsSqrt( const TJet<T>& epsilon ) 
 {  
 
  // This function is identical to epsPow
  // with the substitution  s = 1/2
 
- TJet<T1,T2>     z;
- TJet<T1,T2>     term;
+ TJet<T>     z;
+ TJet<T>     term;
  
  z->_myEnv = epsilon->_myEnv;
- z = ((T1) 1.0);
+ z = ((T) 1.0);
  
  double f    = 1.0 / 2.0;
  double n    = 1.0;
@@ -2307,7 +2300,7 @@ TJet<T1,T2> TJet<T1,T2>::_epsSqrt( const TJet<T1,T2>& epsilon )
  
  while( term->_count > 0 ) {
    z += term;
-   term *= ( ((T1) (--f)) * epsilon ) / ++n;
+   term *= ( ((T) (--f)) * epsilon ) / ++n;
  }
  
  z->_accuWgt = epsilon->_accuWgt;
@@ -2320,17 +2313,17 @@ TJet<T1,T2> TJet<T1,T2>::_epsSqrt( const TJet<T1,T2>& epsilon )
 // **************************************************************
 // **************************************************************
 //
-//      Implementation of Class TJet<T1,T2>
+//      Implementation of Class TJet<T>
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::peekAt() const 
+template<typename T>
+void TJet<T>::peekAt() const 
 {
  dlist_traversor getNext( _jl->_theList );
  int i;
- TJLterm<T1,T2>* p;
+ TJLterm<T>* p;
  dlink* q;
  (*pcout) << "\nCount  = "
       << _jl->_count
@@ -2344,7 +2337,7 @@ void TJet<T1,T2>::peekAt() const
     (*pcout) << setprecision(12) << _jl->_myEnv->_refPoint[i] << "  ";
  (*pcout) << endl;
  while((  q = getNext()  )) {
-   p = (TJLterm<T1,T2>*) q->info();
+   p = (TJLterm<T>*) q->info();
    (*pcout) << "Weight: "
         << p -> _weight
         << "   Value: "
@@ -2364,12 +2357,12 @@ void TJet<T1,T2>::peekAt() const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::printCoeffs() const 
+template<typename T>
+void TJet<T>::printCoeffs() const 
 {
  dlist_iterator getNext( _jl->_theList );
  int i;
- TJLterm<T1,T2>* p;
+ TJLterm<T>* p;
 
  (*pcout) << "\nCount  = " << _jl->_count 
       << ", Weight = " << _jl->_weight 
@@ -2382,7 +2375,7 @@ void TJet<T1,T2>::printCoeffs() const
  }
  (*pcout) << endl;
 
- while((  p = (TJLterm<T1,T2>*) getNext()  )) {
+ while((  p = (TJLterm<T>*) getNext()  )) {
    if( p->_weight > _jl->_accuWgt ) break;
    (*pcout) << "Index:  " 
         << p->_index
@@ -2397,8 +2390,8 @@ void TJet<T1,T2>::printCoeffs() const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::writeToFile( char* fileName ) const 
+template<typename T>
+void TJet<T>::writeToFile( char* fileName ) const 
 {
  ofstream outStr( fileName );
  this->writeToFile( outStr );
@@ -2407,8 +2400,8 @@ void TJet<T1,T2>::writeToFile( char* fileName ) const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::writeToFile( ofstream& outStr ) const 
+template<typename T>
+void TJet<T>::writeToFile( ofstream& outStr ) const 
 {
  _jl->writeToFile( outStr );
 }
@@ -2416,8 +2409,8 @@ void TJet<T1,T2>::writeToFile( ofstream& outStr ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::scaleBy( T1 y ) 
+template<typename T>
+void TJet<T>::scaleBy( T y ) 
 {
  PREPFORCHANGE(_jl)
  _jl->scaleBy( y );
@@ -2426,8 +2419,8 @@ void TJet<T1,T2>::scaleBy( T1 y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJLterm<T1,T2>* TJet<T1,T2>::get() 
+template<typename T>
+TJLterm<T>* TJet<T>::get() 
 {
  PREPFORCHANGE(_jl)
  return _jl->get();
@@ -2436,8 +2429,8 @@ TJLterm<T1,T2>* TJet<T1,T2>::get()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJLterm<T1,T2> TJet<T1,T2>::firstTerm() const 
+template<typename T>
+TJLterm<T> TJet<T>::firstTerm() const 
 {
  return _jl->firstTerm();
 }
@@ -2445,8 +2438,8 @@ TJLterm<T1,T2> TJet<T1,T2>::firstTerm() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJLterm<T1,T2> TJet<T1,T2>::lowTerm() const 
+template<typename T>
+TJLterm<T> TJet<T>::lowTerm() const 
 {
  return _jl->lowTerm();
 }
@@ -2454,8 +2447,8 @@ TJLterm<T1,T2> TJet<T1,T2>::lowTerm() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-T1 TJet<T1,T2>::standardPart() const 
+template<typename T>
+T TJet<T>::standardPart() const 
 {
  return _jl->standardPart();
 }
@@ -2463,8 +2456,8 @@ T1 TJet<T1,T2>::standardPart() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJet<T1,T2>::clear() 
+template<typename T>
+void TJet<T>::clear() 
 {
  PREPFORCHANGE(_jl)
  _jl->clear();
@@ -2473,8 +2466,8 @@ void TJet<T1,T2>::clear()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-T1 TJet<T1,T2>::weightedDerivative( const int* ind ) const 
+template<typename T>
+T TJet<T>::weightedDerivative( const int* ind ) const 
 {
  return _jl->weightedDerivative( ind );
 }
@@ -2482,8 +2475,8 @@ T1 TJet<T1,T2>::weightedDerivative( const int* ind ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-T1 TJet<T1,T2>::derivative( const int* ind ) const 
+template<typename T>
+T TJet<T>::derivative( const int* ind ) const 
 {
  return _jl->derivative( ind );
 }
@@ -2491,15 +2484,15 @@ T1 TJet<T1,T2>::derivative( const int* ind ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJet<T1,T2>::filter( const int& wgtLo, const int& wgtHi ) const 
+template<typename T>
+TJet<T> TJet<T>::filter( const int& wgtLo, const int& wgtHi ) const 
 { 
- TJet<T1,T2> z;
- TJL<T1,T2>* zPtr = z._jl;
- TJL<T1,T2>* thisPtr = _jl;
+ TJet<T> z;
+ TJL<T>* zPtr = z._jl;
+ TJL<T>* thisPtr = _jl;
  dlist_iterator getNext( thisPtr->_theList );
- TJLterm<T1,T2>* p;
- TJLterm<T1,T2>* q;
+ TJLterm<T>* p;
+ TJLterm<T>* q;
  int numTerms;
  int wgt, upperWgt;
  
@@ -2515,10 +2508,10 @@ TJet<T1,T2> TJet<T1,T2>::filter( const int& wgtLo, const int& wgtHi ) const
  numTerms = 0;
  upperWgt = 0;
  
- while((  p = (TJLterm<T1,T2>*) getNext()  )) {
+ while((  p = (TJLterm<T>*) getNext()  )) {
    wgt = p->_weight;
    if( ( wgt >= wgtLo ) && ( wgt <= wgtHi ) ) {
-     q = new( zPtr->storePtr() ) TJLterm<T1,T2>( p );
+     q = new( zPtr->storePtr() ) TJLterm<T>( p );
      zPtr->append( q );
      if( wgt > upperWgt ) upperWgt = wgt;
      numTerms++;
@@ -2535,13 +2528,13 @@ TJet<T1,T2> TJet<T1,T2>::filter( const int& wgtLo, const int& wgtHi ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJet<T1,T2>::filter( bool (*f) ( const IntArray&, const T1& ) ) const 
+template<typename T>
+TJet<T> TJet<T>::filter( bool (*f) ( const IntArray&, const T& ) ) const 
 { 
- TJet<T1,T2> z( _jl->_myEnv );
- TJL<T1,T2>* zPtr  = z._jl ;
- TJLterm<T1,T2>* p = 0;
- TJLterm<T1,T2>* q = 0;
+ TJet<T> z( _jl->_myEnv );
+ TJL<T>* zPtr  = z._jl ;
+ TJLterm<T>* p = 0;
+ TJLterm<T>* q = 0;
 
 
  dlist_iterator getNext( _jl->_theList );
@@ -2553,19 +2546,19 @@ TJet<T1,T2> TJet<T1,T2>::filter( bool (*f) ( const IntArray&, const T1& ) ) cons
  nv = _jl->_myEnv->_numVar;
  oldIndex.Reconstruct( nv );
 
- while((  p = (TJLterm<T1,T2>*) getNext()  )) {
+ while((  p = (TJLterm<T>*) getNext()  )) {
   oldIndex = p->_index;
 
   if( (*f)( p->_index, p->_value ) ) {
-   q = new( zPtr->storePtr() ) TJLterm<T1,T2>( p );
+   q = new( zPtr->storePtr() ) TJLterm<T>( p );
    zPtr->append( q );
   }
 
   for( i = 0; i < nv; i++ ) 
    if( oldIndex(i) != p->_index(i) ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "TJet<T1,T2> TJet<T1,T2>::filter( char (*f) ( const IntArray&, "
-           "const T1& ) ) const",
+           "TJet<T> TJet<T>::filter( char (*f) ( const IntArray&, "
+           "const T& ) ) const",
            "Test routine changes value of _index array." ) );
    }
  }
@@ -2576,18 +2569,18 @@ TJet<T1,T2> TJet<T1,T2>::filter( bool (*f) ( const IntArray&, const T1& ) ) cons
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJet<T1,T2>::_concat() const 
+template<typename T>
+TJet<T> TJet<T>::_concat() const 
 {
 
- TJetEnvironment<T1,T2>* theEnv = _jl->_myEnv;
- TJet<T1,T2> v(( ((theEnv)->_TJLmonomial )[0] )->_myEnv );
- TJLterm<T1,T2>* p = 0;
+ TJetEnvironment<T>* theEnv = _jl->_myEnv;
+ TJet<T> v(( ((theEnv)->_TJLmonomial )[0] )->_myEnv );
+ TJLterm<T>* p = 0;
 
  
  
  dlist_iterator getNext( _jl->_theList );
- while((  p = (TJLterm<T1,T2>*) getNext()  )) {
+ while((  p = (TJLterm<T>*) getNext()  )) {
    if( p->_weight > _jl->_accuWgt ) break;
    v += ( p->_value ) * ( theEnv->_TJLmonomial[ theEnv->_offset.index(p->_index) ] );
  }
@@ -2598,14 +2591,14 @@ TJet<T1,T2> TJet<T1,T2>::_concat() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJet<T1,T2>::operator() ( const TJetVector<T1,T2>& y ) const 
+template<typename T>
+TJet<T> TJet<T>::operator() ( const TJetVector<T>& y ) const 
 {
  int n = _jl->_myEnv->_numVar;   
 
- TJet<T1,T2> z;      // ??? so as to be self-contained.
+ TJet<T> z;      // ??? so as to be self-contained.
 
- TJet<T1,T2>* u = new TJet<T1,T2> [ n ];
+ TJet<T>* u = new TJet<T> [ n ];
 
  for( int i = 0; i < n; i++ ) u[i] = y(i);
  
@@ -2618,15 +2611,15 @@ TJet<T1,T2> TJet<T1,T2>::operator() ( const TJetVector<T1,T2>& y ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJet<T1,T2>::operator() ( const TJet<T1,T2>* y ) const 
+template<typename T>
+TJet<T> TJet<T>::operator() ( const TJet<T>* y ) const 
 { 
- TJetEnvironment<T1,T2>* theEnv = _jl->_myEnv;
+ TJetEnvironment<T>* theEnv = _jl->_myEnv;
 
- TJet<T1,T2>*     u = new TJet<T1,T2> [ theEnv->_numVar ];
- TJet<T1,T2>      z(y[0]->_myEnv);
+ TJet<T>*     u = new TJet<T> [ theEnv->_numVar ];
+ TJet<T>      z(y[0]->_myEnv);
 
- TJet<T1,T2>      term;         // Initializing term should not be necessary. 
+ TJet<T>      term;         // Initializing term should not be necessary. 
 
  int  i = 0;
  int  j = 0;
@@ -2640,7 +2633,7 @@ TJet<T1,T2> TJet<T1,T2>::operator() ( const TJet<T1,T2>* y ) const
  for( int i = 0; i < theEnv->_numVar; i++ ) {
    if( y[i]->_myEnv != y[0]->_myEnv ) {
      throw( GenericException( __FILE__, __LINE__, 
-            "TJet<T1,T2> TJet<T1,T2>::operator() ( const TJet<T1,T2>* ) const ",
+            "TJet<T> TJet<T>::operator() ( const TJet<T>* ) const ",
             "Inconsistent environments." ) );
    }
    u[i] = y[i] - theEnv->_refPoint[i];
@@ -2650,8 +2643,8 @@ TJet<T1,T2> TJet<T1,T2>::operator() ( const TJet<T1,T2>* y ) const
  
  // The zeroth one.
  ( ( theEnv->_TJLmonomial )[0] )->_myEnv = y[0]->_myEnv; // Needed by 
-                                                         // TJet<T1,T2>::concat
- theEnv->_TJLmonomial[0] = ((T1) 1.0);
+                                                         // TJet<T>::concat
+ theEnv->_TJLmonomial[0] = ((T) 1.0);
 
  // For all higher weights ...
  for( int w = 1; w <= _jl->_accuWgt; w++ )
@@ -2679,17 +2672,17 @@ TJet<T1,T2> TJet<T1,T2>::operator() ( const TJet<T1,T2>* y ) const
    } // End while loop.
  
  // Monomials have been stored.
- // Now traverse the TJL<T1,T2> variable and evaluate.
+ // Now traverse the TJL<T> variable and evaluate.
  // Formerly done by using concat routine, which
  // I copy here
  {
 
   dlist_iterator getNext( _jl->_theList );
-  TJLterm<T1,T2>* p = 0;
+  TJLterm<T>* p = 0;
  
   z->_myEnv = (( theEnv->_TJLmonomial )[0] )->_myEnv;
   
-  while((  p = (TJLterm<T1,T2>*) getNext()  )) {
+  while((  p = (TJLterm<T>*) getNext()  )) {
     if( p->_weight > _jl->_accuWgt ) break;
     // REMOVE: for( int i = 0; i < theEnv->_numVar; i++ )
     // REMOVE:   theEnv->_exponent[i] = (p->_index)(i);
@@ -2709,8 +2702,8 @@ TJet<T1,T2> TJet<T1,T2>::operator() ( const TJet<T1,T2>* y ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-T1 TJet<T1,T2>::operator() ( const Vector& x ) const 
+template<typename T>
+T TJet<T>::operator() ( const Vector& x ) const 
 {
  return _jl->operator()( x );
 }
@@ -2718,8 +2711,8 @@ T1 TJet<T1,T2>::operator() ( const Vector& x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-T1 TJet<T1,T2>::operator() ( const T1* x ) const 
+template<typename T>
+T TJet<T>::operator() ( const T* x ) const 
 {
  return _jl->operator()( x );
 }
@@ -2728,8 +2721,8 @@ T1 TJet<T1,T2>::operator() ( const T1* x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJet<T1,T2>::D( const int* n ) const 
+template<typename T>
+TJet<T> TJet<T>::D( const int* n ) const 
 {
  bool doit = false;
 
@@ -2737,9 +2730,9 @@ TJet<T1,T2> TJet<T1,T2>::D( const int* n ) const
  int j = 0;
  int w = 0;
 
- TJet<T1,T2> z( _jl->_myEnv);
- TJLterm<T1,T2>* p = 0;
- TJLterm<T1,T2>* q = 0;
+ TJet<T> z( _jl->_myEnv);
+ TJLterm<T>* p = 0;
+ TJLterm<T>* q = 0;
 
  dlist_iterator getNext( _jl->_theList );
  
@@ -2750,7 +2743,7 @@ TJet<T1,T2> TJet<T1,T2>::D( const int* n ) const
  for( int i = 0; i < _jl->_myEnv->_numVar; i++ ) {
    if( n[i] < 0 ) {
      throw( GenericException( __FILE__, __LINE__, 
-            "TJet<T1,T2> TJet<T1,T2>::D( const int* ) const",
+            "TJet<T> TJet<T>::D( const int* ) const",
             "Cannot differentiate with negative _index." ) );
      }
    w += n[i];
@@ -2758,7 +2751,7 @@ TJet<T1,T2> TJet<T1,T2>::D( const int* n ) const
  
  if( w > _jl->_accuWgt ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> TJet<T1,T2>::D( const int* ) const",
+          "TJet<T> TJet<T>::D( const int* ) const",
           "Differentiation request beyond accuracy allowed." ) );
  }
  
@@ -2771,9 +2764,9 @@ TJet<T1,T2> TJet<T1,T2>::D( const int* n ) const
  // --- Construct the derivative one link at a time.
  // --- ( See note Obs.4 )
  
- while((  p = (TJLterm<T1,T2>*) getNext()  )) {
+ while((  p = (TJLterm<T>*) getNext()  )) {
  
-   q = new( z->storePtr() ) TJLterm<T1,T2>( p );
+   q = new( z->storePtr() ) TJLterm<T>( p );
  
    doit = true;
    // -- Reset the _index.
@@ -2789,11 +2782,11 @@ TJet<T1,T2> TJet<T1,T2>::D( const int* n ) const
      }
      if( f <= 0 ) {
        throw( GenericException( __FILE__, __LINE__, 
-              "TJet<T1,T2> TJet<T1,T2>::D( const int* ) const",
+              "TJet<T> TJet<T>::D( const int* ) const",
               "Horrible, unexplainable error while differentiating!" ) );
      }                           // Super fussbudget!! ( f "must" be positive )
    
-     // -- Make final changes in private data of the TJLterm<T1,T2> and
+     // -- Make final changes in private data of the TJLterm<T> and
      //    absorb it into the answer.
      (q->_value) *= f;              // OK. So I'm a fussbudget with parentheses again ..
      (q->_weight ) -= w;
@@ -2818,13 +2811,13 @@ TJet<T1,T2> TJet<T1,T2>::D( const int* n ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJet<T1,T2>::D( const IntArray& n ) const 
+template<typename T>
+TJet<T> TJet<T>::D( const IntArray& n ) const 
 {
 
  if( n.Dim() != _jl->_myEnv->_numVar ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> TJet<T1,T2>::D( const IntArray& ) const ",
+          "TJet<T> TJet<T>::D( const IntArray& ) const ",
           "Inconsistent dimensions." ) );
  }
 
@@ -2834,12 +2827,12 @@ TJet<T1,T2> TJet<T1,T2>::D( const IntArray& n ) const
  int j = 0;
  int w = 0;
 
- TJet<T1,T2> z(_jl->_myEnv );
+ TJet<T> z(_jl->_myEnv );
 
  dlist_iterator getNext( _jl->_theList );
 
- TJLterm<T1,T2>* p = 0;
- TJLterm<T1,T2>* q = 0;
+ TJLterm<T>* p = 0;
+ TJLterm<T>* q = 0;
  
  // --- Initializations.
  f = j = w = 0;
@@ -2851,7 +2844,7 @@ TJet<T1,T2> TJet<T1,T2>::D( const IntArray& n ) const
  for( int i = 0; i < _jl->_myEnv->_numVar; i++ ) {
    if( n(i) < 0 ) {
      throw( GenericException( __FILE__, __LINE__, 
-            "TJet<T1,T2> TJet<T1,T2>::D( const IntArray& ) const ",
+            "TJet<T> TJet<T>::D( const IntArray& ) const ",
             "Cannot differentiate with negative _index." ) );
    }
    w += n(i);
@@ -2859,7 +2852,7 @@ TJet<T1,T2> TJet<T1,T2>::D( const IntArray& n ) const
  
  if( w > _jl->_accuWgt ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T1,T2> TJet<T1,T2>::D( const IntArray& ) const ",
+          "TJet<T> TJet<T>::D( const IntArray& ) const ",
           "Differentiation request beyond accuracy allowed." ) );
  }
  
@@ -2872,9 +2865,9 @@ TJet<T1,T2> TJet<T1,T2>::D( const IntArray& n ) const
  // --- Construct the derivative one link at a time.
  // --- ( See note Obs.4 )
  
- while((  p = (TJLterm<T1,T2>*) getNext()  )) {
+ while((  p = (TJLterm<T>*) getNext()  )) {
  
-   q = new( z->storePtr() ) TJLterm<T1,T2>( p );
+   q = new( z->storePtr() ) TJLterm<T>( p );
  
    doit = true;
    // -- Reset the _index.
@@ -2890,11 +2883,11 @@ TJet<T1,T2> TJet<T1,T2>::D( const IntArray& n ) const
        }
      if( f <= 0 ) {
        throw( GenericException( __FILE__, __LINE__, 
-              "TJet<T1,T2> TJet<T1,T2>::D( const IntArray& ) const",
+              "TJet<T> TJet<T>::D( const IntArray& ) const",
               "Horrible, unexplainable error while differentiating!" ) );
        }                           // Super fussbudget!! ( f "must" be positive )
    
-     // -- Make final changes in private data of the TJLterm<T1,T2> and
+     // -- Make final changes in private data of the TJLterm<T> and
      //    absorb it into the answer.
      (q->_value) *= f;              // OK. So I'm a fussbudget with parentheses again ..
      (q->_weight ) -= w;
@@ -2926,5 +2919,3 @@ TJet<T1,T2> TJet<T1,T2>::D( const IntArray& n ) const
 
 
 #endif // TJET_TCC
-
-#endif //  EXPLICIT_TEMPLATE_INSTANTIATIONS 

@@ -7,8 +7,18 @@
 ******  File:      TJetVector.cc
 ******  Version:   1.0                    
 ******                                                                
-******  Copyright (c) 1990, 2004 Universities Research Association, Inc.    
+******  Copyright (c) Universities Research Association, Inc.    
 ******                All Rights Reserved                             
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -20,14 +30,19 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  Revision History
 ******                                                                
+******  Sept 2005   ostiguy@fnal.gov
+******
+******              - new code based on a single template parameter
+******                instead of two. Mixed mode now handled
+******                using conversion operators.
+******
+******                                                                
+******
 **************************************************************************
 *************************************************************************/
 
-#ifdef  EXPLICIT_TEMPLATE_INSTANTIATIONS
 #ifndef TJETVECTOR_TCC
 #define TJETVECTOR_TCC
 
@@ -58,53 +73,53 @@ using namespace std;
 //      Constructors and the destructor ...
 //
 
-template<typename T1, typename T2>
-TJetVector<T1,T2>::TJetVector<T1,T2>( int n, 
-                        const TJet<T1,T2>* x, 
-                        const TJetEnvironment<T1,T2>* pje )
+template<typename T>
+TJetVector<T>::TJetVector<T>( int n, 
+                        const TJet<T>* x, 
+                        const TJetEnvironment<T>* pje )
 {
   int i;
 
-  CHECKOUT(n <= 0, "TJetVector<T1,T2>::TJetVector<T1,T2>", "Dimension must be positive.")
-  CHECKOUT(pje == 0, "TJetVector<T1,T2>::TJetVector<T1,T2>", "Environment is required.")
+  CHECKOUT(n <= 0, "TJetVector<T>::TJetVector<T>", "Dimension must be positive.")
+  CHECKOUT(pje == 0, "TJetVector<T>::TJetVector<T>", "Environment is required.")
 
-  _myEnv = (TJetEnvironment<T1,T2>*) pje;
+  _myEnv = (TJetEnvironment<T>*) pje;
   _dim = n;
-  _comp = new TJet<T1,T2> [ _dim ];
+  _comp = new TJet<T> [ _dim ];
 
   if( x ) for ( i = 0; i < _dim; i++ ) _comp[i] = x[i];
   else    for ( i = 0; i < _dim; i++ ) {
-    _comp[i].setEnvTo( (TJetEnvironment<T1,T2>*) pje );
-    _comp[i] = ((T1) 0.0);    // ??? Unnecessary?
+    _comp[i].setEnvTo( (TJetEnvironment<T>*) pje );
+    _comp[i] = T();    // ??? Unnecessary?
   }
 }
 
-template<typename T1, typename T2>
-TJetVector<T1,T2>::TJetVector<T1,T2>( const TJetVector<T1,T2>& x )
+template<typename T>
+TJetVector<T>::TJetVector<T>( const TJetVector<T>& x )
 {
   static int i;
 
   _myEnv = x._myEnv;
   _dim = x._dim;
-  _comp = new TJet<T1,T2> [ _dim ];
+  _comp = new TJet<T> [ _dim ];
 
   for ( i = 0; i < _dim; i++ ) {
     _comp[i] = x._comp[i];    // Shallow copy is automatic because
                             // of lazy evaluation.
     #ifndef NOCHECKS
     if( _comp[i].Env() != _myEnv ) {
-      throw( typename TJL<T1,T2>::BadEnvironment( 
+      throw( typename TJL<T>::BadEnvironment( 
                i, (int) _comp[i].Env(), (int) _myEnv, 
                __FILE__, __LINE__, 
-               "TJetVector<T1,T2>::TJetVector<T1,T2>( const TJetVector<T1,T2>& )",
+               "TJetVector<T>::TJetVector<T>( const TJetVector<T>& )",
                "Inconsistent environment at a component." ));
     }
     #endif
   }
 }
 
-template<typename T1, typename T2>
-TJetVector<T1,T2>::~TJetVector<T1,T2>()
+template<typename T>
+TJetVector<T>::~TJetVector<T>()
 {
   delete [] _comp;
 }
@@ -112,48 +127,48 @@ TJetVector<T1,T2>::~TJetVector<T1,T2>()
 
 // Assignment ...
 
-template<typename T1, typename T2>
-void TJetVector<T1,T2>::Set( const TJet<T1,T2>* x )
+template<typename T>
+void TJetVector<T>::Set( const TJet<T>* x )
 {
-  TJetEnvironment<T1,T2>* pje;
+  TJetEnvironment<T>* pje;
   pje = x[0].Env();
 #ifndef NOCHECKS
-    CHECKOUT(pje != _myEnv, "TJetVector<T1,T2>::Set", "Wrong environment.")
+    CHECKOUT(pje != _myEnv, "TJetVector<T>::Set", "Wrong environment.")
 #endif
   for ( int i = 0; i < 3; i++ ) {
 #ifndef NOCHECKS
-    CHECKOUT(x[i].Env() != pje, "TJetVector<T1,T2>::Set", "Inequivalent environments.")
+    CHECKOUT(x[i].Env() != pje, "TJetVector<T>::Set", "Inequivalent environments.")
 #endif
     _comp[i] = x[i];
   }
 }
 
 
-template<typename T1, typename T2>
-void TJetVector<T1,T2>::SetComponent( int i, const TJet<T1,T2>& x )
+template<typename T>
+void TJetVector<T>::SetComponent( int i, const TJet<T>& x )
 {
 #ifndef NOCHECKS
-    CHECKOUT(x.Env() != _myEnv, "TJetVector<T1,T2>::Set", "Wrong environment.")
+    CHECKOUT(x.Env() != _myEnv, "TJetVector<T>::Set", "Wrong environment.")
 #endif
     _comp[i] = x;
 }
 
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJetVector<T1,T2>::operator() ( int i ) const
+template<typename T>
+TJet<T> TJetVector<T>::operator() ( int i ) const
 {
 #ifndef NOCHECKS
-    CHECKOUT(!(( 0 <= i ) && ( i < _dim )), "TJetVector<T1,T2>::operator()", "Argument out of range")
+    CHECKOUT(!(( 0 <= i ) && ( i < _dim )), "TJetVector<T>::operator()", "Argument out of range")
 #endif
     return _comp[i];
 }
 
 
-template<typename T1, typename T2>
-TJet<T1,T2>& TJetVector<T1,T2>::operator() ( int i )
+template<typename T>
+TJet<T>& TJetVector<T>::operator() ( int i )
 {
 #ifndef NOCHECKS
-    CHECKOUT(!(( 0 <= i ) && ( i < _dim )), "TJetVector<T1,T2>::operator()", "Argument out of range")
+    CHECKOUT(!(( 0 <= i ) && ( i < _dim )), "TJetVector<T>::operator()", "Argument out of range")
 #endif
     return _comp[i];
 }
@@ -161,8 +176,8 @@ TJet<T1,T2>& TJetVector<T1,T2>::operator() ( int i )
 
 // Algebraic functions ...
 
-template<typename T1, typename T2>
-TJetVector<T1,T2>& TJetVector<T1,T2>::operator= ( const TJetVector<T1,T2>& x )
+template<typename T>
+TJetVector<T>& TJetVector<T>::operator= ( const TJetVector<T>& x )
 {
   Reconstruct( x._dim, x._myEnv );
 
@@ -171,29 +186,29 @@ TJetVector<T1,T2>& TJetVector<T1,T2>::operator= ( const TJetVector<T1,T2>& x )
 }
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator+ ( const TJetVector<T1,T2>& x ) const
+template<typename T>
+TJetVector<T> TJetVector<T>::operator+ ( const TJetVector<T>& x ) const
 {
 #ifndef NOCHECKS
-  CHECKOUT(_dim != x._dim, "TJetVector<T1,T2>::operator+", "Incompatible dimensions.")
-  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T1,T2>::operator+", "Incompatible environments.")
+  CHECKOUT(_dim != x._dim, "TJetVector<T>::operator+", "Incompatible dimensions.")
+  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T>::operator+", "Incompatible environments.")
 #endif
 
-  TJetVector<T1,T2> z( _dim, 0, _myEnv );
+  TJetVector<T> z( _dim, 0, _myEnv );
   for ( int i = 0; i < _dim; i++ ) 
     z._comp[i] = _comp[i] + x._comp[i];
   return z;
 }
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator+ ( const Vector& y ) const
+template<typename T>
+TJetVector<T> TJetVector<T>::operator+ ( const Vector& y ) const
 {
 #ifndef NOCHECKS
   CHECKOUT(_dim != y.Dim(), "JetVector::operator+", "Incompatible dimensions.")
 #endif
 
-  TJetVector<T1,T2> z( *this );
+  TJetVector<T> z( *this );
   for ( int i = 0; i < _dim; i++ ) {
     z._comp[i] += y(i);
   }
@@ -201,12 +216,12 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator+ ( const Vector& y ) const
 }
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator+= ( const TJetVector<T1,T2>& x )
+template<typename T>
+TJetVector<T> TJetVector<T>::operator+= ( const TJetVector<T>& x )
 {
 #ifndef NOCHECKS
-  CHECKOUT(_dim != x._dim, "TJetVector<T1,T2>::operator+=", "Incompatible dimensions.")
-  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T1,T2>::operator+=", "Incompatible environments.")
+  CHECKOUT(_dim != x._dim, "TJetVector<T>::operator+=", "Incompatible dimensions.")
+  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T>::operator+=", "Incompatible environments.")
 #endif
 
   for ( int i = 0; i < _dim; i++ ) _comp[i] += x._comp[i];
@@ -214,8 +229,8 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator+= ( const TJetVector<T1,T2>& x )
 }
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator+= ( const Vector& x )
+template<typename T>
+TJetVector<T> TJetVector<T>::operator+= ( const Vector& x )
 {
 #ifndef NOCHECKS
   CHECKOUT(_dim != x.Dim(), "JetVector::operator-=", "Incompatible dimensions.")
@@ -228,15 +243,15 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator+= ( const Vector& x )
 }
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator- ( const TJetVector<T1,T2>& x ) const
+template<typename T>
+TJetVector<T> TJetVector<T>::operator- ( const TJetVector<T>& x ) const
 {
 #ifndef NOCHECKS
-  CHECKOUT(_dim != x._dim, "TJetVector<T1,T2>::operator-", "Incompatible dimensions.")
-  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T1,T2>::operator-", "Incompatible environments.")
+  CHECKOUT(_dim != x._dim, "TJetVector<T>::operator-", "Incompatible dimensions.")
+  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T>::operator-", "Incompatible environments.")
 #endif
 
-  TJetVector<T1,T2> z( _dim, 0, _myEnv );
+  TJetVector<T> z( _dim, 0, _myEnv );
   for ( int i = 0; i < _dim; i++ ) {
     z._comp[i] = _comp[i] - x._comp[i];
   }
@@ -244,14 +259,14 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator- ( const TJetVector<T1,T2>& x ) co
 }
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator- ( const Vector& y ) const
+template<typename T>
+TJetVector<T> TJetVector<T>::operator- ( const Vector& y ) const
 {
 #ifndef NOCHECKS
   CHECKOUT(_dim != y.Dim(), "JetVector::operator-", "Incompatible dimensions.")
 #endif
 
-  TJetVector<T1,T2> z( *this );
+  TJetVector<T> z( *this );
   for ( int i = 0; i < _dim; i++ ) {
     z._comp[i] -= y(i);
   }
@@ -259,22 +274,22 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator- ( const Vector& y ) const
 }
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> operator- ( const TJetVector<T1,T2>& x )
+template<typename T>
+TJetVector<T> operator- ( const TJetVector<T>& x )
 {
-  TJetVector<T1,T2> z( x );
+  TJetVector<T> z( x );
   for ( int i = 0; i < x._dim; i++ ) 
     z._comp[i].Negate();
   return z;
 }
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator-= ( const TJetVector<T1,T2>& x )
+template<typename T>
+TJetVector<T> TJetVector<T>::operator-= ( const TJetVector<T>& x )
 {
 #ifndef NOCHECKS
-  CHECKOUT(_dim != x._dim, "TJetVector<T1,T2>::operator-=", "Incompatible dimensions.")
-  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T1,T2>::operator-=", "Incompatible environments.")
+  CHECKOUT(_dim != x._dim, "TJetVector<T>::operator-=", "Incompatible dimensions.")
+  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T>::operator-=", "Incompatible environments.")
 #endif
 
   for ( int i = 0; i < _dim; i++ ) 
@@ -283,8 +298,8 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator-= ( const TJetVector<T1,T2>& x )
 }
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator-= ( const Vector& x )
+template<typename T>
+TJetVector<T> TJetVector<T>::operator-= ( const Vector& x )
 {
 #ifndef NOCHECKS
   CHECKOUT(_dim != x.Dim(), "JetVector::operator-=", "Incompatible dimensions.")
@@ -297,29 +312,29 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator-= ( const Vector& x )
 }
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator* ( const TJet<T1,T2>& c ) const
+template<typename T>
+TJetVector<T> TJetVector<T>::operator* ( const TJet<T>& c ) const
 {
-  TJetVector<T1,T2> z( _dim, 0, _myEnv );
+  TJetVector<T> z( _dim, 0, _myEnv );
   for ( int i = 0; i < _dim; i++ ) z._comp[i] = c * _comp[i];
   return z;
 }
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator* ( const T1& c ) const
+template<typename T>
+TJetVector<T> TJetVector<T>::operator* ( const T& c ) const
 {
-  TJetVector<T1,T2> z( _dim, 0, _myEnv );
+  TJetVector<T> z( _dim, 0, _myEnv );
   for ( int i = 0; i < _dim; i++ ) z._comp[i] = c * _comp[i];
   return z;
 }
 
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> operator*( const TJet<T1,T2>& c, const Vector& x )
+template<typename T>
+TJetVector<T> operator*( const TJet<T>& c, const Vector& x )
 {
   int d = x.Dim();
-  TJetVector<T1,T2> z( d, 0, ((TJetEnvironment<T1,T2>*) c.Env()) );
+  TJetVector<T> z( d, 0, ((TJetEnvironment<T>*) c.Env()) );
   for ( int i = 0; i < d; i++ ) { z.SetComponent( i, c * x(i) ); }
   return z;
 }
@@ -329,109 +344,109 @@ TJetVector<T1,T2> operator*( const TJet<T1,T2>& c, const Vector& x )
 
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> operator* ( const TJet<T1,T2>& c, const TJetVector<T1,T2>& x )
+template<typename T>
+TJetVector<T> operator* ( const TJet<T>& c, const TJetVector<T>& x )
 {
-  TJetVector<T1,T2> z( x._dim, 0, x._myEnv );
+  TJetVector<T> z( x._dim, 0, x._myEnv );
   for ( int i = 0; i < x._dim; i++ ) z._comp[i] = c * x._comp[i];
   return z;
 }
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> operator* ( const T1& c, const TJetVector<T1,T2>& x )
+template<typename T>
+TJetVector<T> operator* ( const T& c, const TJetVector<T>& x )
 {
-  TJetVector<T1,T2> z( x._dim, 0, x._myEnv );
+  TJetVector<T> z( x._dim, 0, x._myEnv );
   for ( int i = 0; i < x._dim; i++ ) z._comp[i] = c * x._comp[i];
   return z;
 }
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator*=( const TJet<T1,T2>& c ) 
+template<typename T>
+TJetVector<T> TJetVector<T>::operator*=( const TJet<T>& c ) 
 {
  for( int i = 0; i < _dim; i++ ) _comp[i] *= c;
  return *this;
 }
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator*=( T1 c ) 
+template<typename T>
+TJetVector<T> TJetVector<T>::operator*=( T c ) 
 {
  for( int i = 0; i < _dim; i++ ) _comp[i] *= c;
  return *this;
 }
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator/ ( const TJet<T1,T2>& c ) const
+template<typename T>
+TJetVector<T> TJetVector<T>::operator/ ( const TJet<T>& c ) const
 {
- TJetVector<T1,T2> z( *this );  // ??? Can be speeded up by negate function.
+ TJetVector<T> z( *this );  // ??? Can be speeded up by negate function.
  for( int i = 0; i < _dim; i++ ) z._comp[i] /= c;
  return z;
 }
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator/ ( T1 c ) const
+template<typename T>
+TJetVector<T> TJetVector<T>::operator/ ( T c ) const
 {
- TJetVector<T1,T2> z( *this );
+ TJetVector<T> z( *this );
  for( int i = 0; i < _dim; i++ ) z._comp[i] /= c;
  return z;
 }
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator/=( const TJet<T1,T2>& c ) 
+template<typename T>
+TJetVector<T> TJetVector<T>::operator/=( const TJet<T>& c ) 
 {
  for( int i = 0; i < _dim; i++ ) _comp[i] /= c;
  return *this;
 }
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator/=( T1 c ) 
+template<typename T>
+TJetVector<T> TJetVector<T>::operator/=( T c ) 
 {
  for( int i = 0; i < _dim; i++ ) _comp[i] /= c;
  return *this;
 }
 
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJetVector<T1,T2>::operator* ( const TJetVector<T1,T2>& x ) const
+template<typename T>
+TJet<T> TJetVector<T>::operator* ( const TJetVector<T>& x ) const
 {
 #ifndef NOCHECKS
-  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T1,T2>::operator*", "Incompatible environments.")
-  CHECKOUT(_dim != x._dim, "TJetVector<T1,T2>::operator*", "Incompatible dimensions.")
+  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T>::operator*", "Incompatible environments.")
+  CHECKOUT(_dim != x._dim, "TJetVector<T>::operator*", "Incompatible dimensions.")
 #endif
 
-  TJet<T1,T2> u( _myEnv );
-  u = ((T1) 0.0);
+  TJet<T> u( _myEnv );
+  u = T();
   int i;
   for ( i = 0; i < _dim; i++ ) u += _comp[i] * x._comp[i];
   return u;
 }
 
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJetVector<T1,T2>::operator* ( const Vector& y ) const
+template<typename T>
+TJet<T> TJetVector<T>::operator* ( const Vector& y ) const
 {
 #ifndef NOCHECKS
   CHECKOUT(_dim != y.Dim(), "JetVector::operator*", "Incompatible dimensions.")
 #endif
 
-  TJet<T1,T2> u( _myEnv );
-  u = T1(); // This should not be necessary. Why is it here?
+  TJet<T> u( _myEnv );
+  u = T(); // This should not be necessary. Why is it here?
   for ( int i = 0; i < _dim; i++ ) { u += _comp[i] * y(i); }
   return u;
 }
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator^ ( const TJetVector<T1,T2>& x ) const
+template<typename T>
+TJetVector<T> TJetVector<T>::operator^ ( const TJetVector<T>& x ) const
 {
 #ifndef NOCHECKS
   CHECKOUT((_dim != 3) || ( x._dim != 3 ),
-           "TJetVector<T1,T2>::operator^",
+           "TJetVector<T>::operator^",
            "Dimension must be 3." )
 #endif
 
-  TJetVector<T1,T2> z( 3, 0, _myEnv );
+  TJetVector<T> z( 3, 0, _myEnv );
   z._comp[ 0 ] = _comp[ 1 ] * x._comp[ 2 ] - _comp[ 2 ] * x._comp[ 1 ];
   z._comp[ 1 ] = _comp[ 2 ] * x._comp[ 0 ] - _comp[ 0 ] * x._comp[ 2 ];
   z._comp[ 2 ] = _comp[ 0 ] * x._comp[ 1 ] - _comp[ 1 ] * x._comp[ 0 ];
@@ -439,32 +454,32 @@ TJetVector<T1,T2> TJetVector<T1,T2>::operator^ ( const TJetVector<T1,T2>& x ) co
 }
 
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::operator^ ( const Vector& x ) const
+template<typename T>
+TJetVector<T> TJetVector<T>::operator^ ( const Vector& x ) const
 {
 #ifndef NOCHECKS
   CHECKOUT((_dim != 3) || ( x.Dim() != 3 ),
-           "TJetVector<T1,T2>::operator^",
+           "TJetVector<T>::operator^",
            "Dimension must be 3." )
 #endif
 
-  TJetVector<T1,T2> z( 3, 0, _myEnv );
+  TJetVector<T> z( 3, 0, _myEnv );
   z._comp[ 0 ] = _comp[ 1 ] * x( 2 ) - _comp[ 2 ] * x( 1 );
   z._comp[ 1 ] = _comp[ 2 ] * x( 0 ) - _comp[ 0 ] * x( 2 );
   z._comp[ 2 ] = _comp[ 0 ] * x( 1 ) - _comp[ 1 ] * x( 0 );
   return z;
 }
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> operator^ ( const Vector& y, const TJetVector<T1,T2>& x )
+template<typename T>
+TJetVector<T> operator^ ( const Vector& y, const TJetVector<T>& x )
 {
 #ifndef NOCHECKS
   CHECKOUT(( y.Dim() != 3 ) || ( x._dim != 3 ),
-           "TJetVector<T1,T2>::operator^",
+           "TJetVector<T>::operator^",
            "Dimension must be 3." )
 #endif
 
-  TJetVector<T1,T2> z( 3, 0, x.Env() );
+  TJetVector<T> z( 3, 0, x.Env() );
   z._comp[ 0 ] = y( 1 ) * x._comp[ 2 ] - y( 2 ) * x._comp[ 1 ];
   z._comp[ 1 ] = y( 2 ) * x._comp[ 0 ] - y( 0 ) * x._comp[ 2 ];
   z._comp[ 2 ] = y( 0 ) * x._comp[ 1 ] - y( 1 ) * x._comp[ 0 ];
@@ -473,12 +488,12 @@ TJetVector<T1,T2> operator^ ( const Vector& y, const TJetVector<T1,T2>& x )
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> operator*(  const TMatrix<T1>& M, 
-                              const TJetVector<T1,T2>& x ) 
+template<typename T>
+TJetVector<T> operator*(  const TMatrix<T>& M, 
+                              const TJetVector<T>& x ) 
 {
- const TJetEnvironment<T1,T2>* pje = x._myEnv;
- TJetVector<T1,T2> z( M.rows(), 0, pje );
+ const TJetEnvironment<T>* pje = x._myEnv;
+ TJetVector<T> z( M.rows(), 0, pje );
  int i, j, r, c;
 
  i = j = 0;
@@ -487,7 +502,7 @@ TJetVector<T1,T2> operator*(  const TMatrix<T1>& M,
 
  if( M.cols() != x._dim ) {
   throw( GenericException( __FILE__, __LINE__, 
-         "TJetVector<T1,T2> operator*(  const TMatrix<T1>&, const TJetVector<T1,T2>& )",
+         "TJetVector<T> operator*(  const TMatrix<T>&, const TJetVector<T>& )",
          "Rows and/or columns of the matrix are not correct." ) );
  }
 
@@ -506,8 +521,8 @@ TJetVector<T1,T2> operator*(  const TMatrix<T1>& M,
 // Boolean functions |||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool TJetVector<T1,T2>::operator== ( const TJetVector<T1,T2>& x ) const
+template<typename T>
+bool TJetVector<T>::operator== ( const TJetVector<T>& x ) const
 {
   if( ( _dim != x._dim ) || _myEnv != x._myEnv ) return 0;
   for( int i = 0; i < _dim; i++ ) 
@@ -517,8 +532,8 @@ bool TJetVector<T1,T2>::operator== ( const TJetVector<T1,T2>& x ) const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool TJetVector<T1,T2>::operator==( const T1& x ) const 
+template<typename T>
+bool TJetVector<T>::operator==( const T& x ) const 
 {
  for( int i = 0; i < _dim; i++ )
    if( _comp[i] != x ) return 0;     // ??? WHAT???
@@ -527,28 +542,28 @@ bool TJetVector<T1,T2>::operator==( const T1& x ) const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool TJetVector<T1,T2>::operator!= ( const TJetVector<T1,T2>& x ) const
+template<typename T>
+bool TJetVector<T>::operator!= ( const TJetVector<T>& x ) const
 {
   return !( operator==( x ) );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool TJetVector<T1,T2>::operator!=( const T1& x ) const 
+template<typename T>
+bool TJetVector<T>::operator!=( const T& x ) const 
 {
  return !( this->operator==( x ) );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool TJetVector<T1,T2>::operator< ( const TJetVector<T1,T2>& x ) const
+template<typename T>
+bool TJetVector<T>::operator< ( const TJetVector<T>& x ) const
 {
 #ifndef NOCHECKS
-  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T1,T2>::operator<", "Incompatible environments.")
-  CHECKOUT(_dim != x._dim, "TJetVector<T1,T2>::operator<", "Incompatible dimensions.")
+  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T>::operator<", "Incompatible environments.")
+  CHECKOUT(_dim != x._dim, "TJetVector<T>::operator<", "Incompatible dimensions.")
 #endif
 
   for( int i = 0; i < _dim; i++ ) 
@@ -556,12 +571,12 @@ bool TJetVector<T1,T2>::operator< ( const TJetVector<T1,T2>& x ) const
   return 1;
 }
 
-template<typename T1, typename T2>
-bool TJetVector<T1,T2>::operator<= ( const TJetVector<T1,T2>& x ) const
+template<typename T>
+bool TJetVector<T>::operator<= ( const TJetVector<T>& x ) const
 {
 #ifndef NOCHECKS
-  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T1,T2>::operator<", "Incompatible environments.")
-  CHECKOUT(_dim != x._dim, "TJetVector<T1,T2>::operator<", "Incompatible dimensions.")
+  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T>::operator<", "Incompatible environments.")
+  CHECKOUT(_dim != x._dim, "TJetVector<T>::operator<", "Incompatible dimensions.")
 #endif
 
   for( int i = 0; i < _dim; i++ ) 
@@ -569,14 +584,14 @@ bool TJetVector<T1,T2>::operator<= ( const TJetVector<T1,T2>& x ) const
   return 1;
 }
 
-template<typename T1, typename T2>
-bool TJetVector<T1,T2>::operator> ( const TJetVector<T1,T2>& x ) const
+template<typename T>
+bool TJetVector<T>::operator> ( const TJetVector<T>& x ) const
 {
   return !( operator<=( x ) );
 }
 
-template<typename T1, typename T2>
-bool TJetVector<T1,T2>::operator>= ( const TJetVector<T1,T2>& x ) const
+template<typename T>
+bool TJetVector<T>::operator>= ( const TJetVector<T>& x ) const
 {
   return !( operator<( x ) );
 }
@@ -585,20 +600,20 @@ bool TJetVector<T1,T2>::operator>= ( const TJetVector<T1,T2>& x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool TJetVector<T1,T2>::IsNull() const
+template<typename T>
+bool TJetVector<T>::IsNull() const
 {
   int i = -1;
-  while ( ++i < _dim ) if( _comp[i] != ((T1) 0.0) ) return 0;
+  while ( ++i < _dim ) if( _comp[i] != T() ) return 0;
   return 1;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool TJetVector<T1,T2>::IsUnit() const
+template<typename T>
+bool TJetVector<T>::IsUnit() const
 {
-  T1 x = ((T1) 0.0);
+  T x = T();
   for( int i = 0; i < _dim; i++ ) 
     x += _comp[i].standardPart()*_comp[i].standardPart();
   return x == 1.0;
@@ -606,8 +621,8 @@ bool TJetVector<T1,T2>::IsUnit() const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool TJetVector<T1,T2>::IsNilpotent() const 
+template<typename T>
+bool TJetVector<T>::IsNilpotent() const 
 {
  for( int i = 0; i <  _myEnv->_spaceDim; i++ ) 
   if( !(_comp[i].isNilpotent()) ) return 0;
@@ -619,11 +634,11 @@ bool TJetVector<T1,T2>::IsNilpotent() const
 // Utilities ..
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJetVector<T1,T2>::Reconstruct()
+template<typename T>
+void TJetVector<T>::Reconstruct()
 {
   delete [] _comp;
-  _comp = new TJet<T1,T2> [ _dim ];
+  _comp = new TJet<T> [ _dim ];
   for ( int i = 0; i < _dim; i++ ) {
     _comp[i].setEnvTo( _myEnv );
     _comp[i].Reconstruct();
@@ -631,87 +646,87 @@ void TJetVector<T1,T2>::Reconstruct()
 }
 
 
-template<typename T1, typename T2>
-void TJetVector<T1,T2>::Reconstruct( int n, TJetEnvironment<T1,T2>* pje )
+template<typename T>
+void TJetVector<T>::Reconstruct( int n, TJetEnvironment<T>* pje )
 {
   delete [] _comp;
   _dim = n;
   _myEnv = pje;
-  _comp = new TJet<T1,T2> [ _dim ];
+  _comp = new TJet<T> [ _dim ];
   for ( int i = 0; i < _dim; i++ ) {
     _comp[i].Reconstruct( pje );
   }
 }
 
 
-template<typename T1, typename T2>
-void TJetVector<T1,T2>::CopyFrom( const TJetVector& x )
+template<typename T>
+void TJetVector<T>::CopyFrom( const TJetVector& x )
 {
-  this->Reconstruct( x.Dim(), ((TJetEnvironment<T1,T2>*) x.Env()) );
+  this->Reconstruct( x.Dim(), ((TJetEnvironment<T>*) x.Env()) );
   this->operator=( x );
 }
 
 
-template<typename T1, typename T2>
-void TJetVector<T1,T2>::peekAt() const
+template<typename T>
+void TJetVector<T>::peekAt() const
 {
-  cout << "\n\nBegin TJetVector<T1,T2>::peekAt() ......\n";
+  cout << "\n\nBegin TJetVector<T>::peekAt() ......\n";
   for ( int i = 0; i < _dim; i++ ) {
-    cout << "TJetVector<T1,T2>::peekAt(): Component " << i << endl;
+    cout << "TJetVector<T>::peekAt(): Component " << i << endl;
     _comp[i].peekAt();
   }
-  cout << "End TJetVector<T1,T2>::peekAt() ......\n" << endl;
+  cout << "End TJetVector<T>::peekAt() ......\n" << endl;
 }
 
 
-template<typename T1, typename T2>
-TJet<T1,T2> TJetVector<T1,T2>::Norm () const
+template<typename T>
+TJet<T> TJetVector<T>::Norm () const
 {
-  TJet<T1,T2> x( _myEnv );
-  x = ((T1) 0.0);
+  TJet<T> x( _myEnv );
+  x = T();
   for ( int i = 0; i < _dim; i++ ) x += _comp[i]*_comp[i];
   return sqrt(x);
 }
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::Unit () const
+template<typename T>
+TJetVector<T> TJetVector<T>::Unit () const
 {
-  TJet<T1,T2> x( _myEnv );
+  TJet<T> x( _myEnv );
   x = Norm();
-  TJetVector<T1,T2> z( *this );
+  TJetVector<T> z( *this );
   for ( int i = 0; i < _dim; i++ ) z._comp[i] /= x;
   return z;
 }
 
 
-template<typename T1, typename T2>
-ostream& operator<<( ostream& os, const TJetVector<T1,T2>& v )
+template<typename T>
+ostream& operator<<( ostream& os, const TJetVector<T>& v )
 {
-  os << "Begin TJetVector<T1,T2>:" << endl;
+  os << "Begin TJetVector<T>:" << endl;
   os << v._dim << endl;
   os << *(v._myEnv);
   for( int i = 0; i < v._dim; i++ ) {
-    os << "\nTJetVector<T1,T2> component " << i << ":" << endl;
+    os << "\nTJetVector<T> component " << i << ":" << endl;
     os << v._comp[i];
   }
-  os << "\nEnd TJetVector<T1,T2>." << endl;
+  os << "\nEnd TJetVector<T>." << endl;
   return os;
 }
 
 
-template<typename T1, typename T2>
-istream& operator>>( istream& is, TJetVector<T1,T2>& v )
+template<typename T>
+istream& operator>>( istream& is, TJetVector<T>& v )
 {
   static char buf[100];
   is >> buf;
   is >> buf;
   is >> v._dim;
-  CHECKOUT(v._dim <= 0, "TJetVector<T1,T2>::TJetVector<T1,T2>", "Dimension must be positive.")
+  CHECKOUT(v._dim <= 0, "TJetVector<T>::TJetVector<T>", "Dimension must be positive.")
 
   streamIn( is, &(v._myEnv) );
 
   if( v._comp ) delete [] v._comp;
-  v._comp = new TJet<T1,T2> [ v._dim ];
+  v._comp = new TJet<T> [ v._dim ];
 
   for ( int i = 0; i < v._dim; i++ ) {
     is >> buf;
@@ -729,10 +744,10 @@ istream& operator>>( istream& is, TJetVector<T1,T2>& v )
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::filter( bool (*f[]) ( const IntArray&, const T1& ) )
+template<typename T>
+TJetVector<T> TJetVector<T>::filter( bool (*f[]) ( const IntArray&, const T& ) )
 {
- TJetVector<T1,T2> z( _dim, 0, _myEnv );
+ TJetVector<T> z( _dim, 0, _myEnv );
  int i;
 
  for( i = 0; i < _dim; i++ )
@@ -743,10 +758,10 @@ TJetVector<T1,T2> TJetVector<T1,T2>::filter( bool (*f[]) ( const IntArray&, cons
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJetVector<T1,T2> TJetVector<T1,T2>::filter( int lower, int upper ) 
+template<typename T>
+TJetVector<T> TJetVector<T>::filter( int lower, int upper ) 
 {
- TJetVector<T1,T2> z( _dim, 0, _myEnv );
+ TJetVector<T> z( _dim, 0, _myEnv );
  int i;        
 
  for( i = 0; i < _dim; i++ )
@@ -760,8 +775,8 @@ TJetVector<T1,T2> TJetVector<T1,T2>::filter( int lower, int upper )
 // Operations related to differentiation |||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJetVector<T1,T2>::weightedDerivative( int* m, T1* x ) 
+template<typename T>
+void TJetVector<T>::weightedDerivative( int* m, T* x ) 
 {
  int i;
  for( i = 0; i < _dim; i++ ) x[i] = _comp[i].weightedDerivative( m );
@@ -769,8 +784,8 @@ void TJetVector<T1,T2>::weightedDerivative( int* m, T1* x )
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJetVector<T1,T2>::derivative( int* m, T1* x ) 
+template<typename T>
+void TJetVector<T>::derivative( int* m, T* x ) 
 {
  int i;
  for( i = 0; i < _dim; i++ ) x[i] = _comp[i].derivative( m );
@@ -781,15 +796,15 @@ void TJetVector<T1,T2>::derivative( int* m, T1* x )
 // Query functions |||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-int TJetVector<T1,T2>::AccuWgt() const
+template<typename T>
+int TJetVector<T>::AccuWgt() const
 {
   int accuWgt = _myEnv->_maxWeight;
   for( int i = 0; i < _dim; i++ ) {
    if( _myEnv != _comp[i].Env() ) {
      cerr << "\n\n"
  	  << "*** WARNING ***                                   \n"
- 	  << "*** WARNING *** TJetVector<T1,T2>::AccuWgt()             \n"
+ 	  << "*** WARNING *** TJetVector<T>::AccuWgt()             \n"
  	  << "*** WARNING ***                                   \n"
  	  << "*** WARNING *** Inconsistent environments at      \n"
  	  << "*** WARNING *** index " << i << "                 \n"
@@ -801,15 +816,15 @@ int TJetVector<T1,T2>::AccuWgt() const
   return accuWgt;
 }
 
-template<typename T1, typename T2>
-int TJetVector<T1,T2>::Weight()  const
+template<typename T>
+int TJetVector<T>::Weight()  const
 {
   int weight = -1;
   for( int i = 0; i < _dim; i++ ) {
    if( _myEnv != _comp[i].Env() ) {
      cerr << "\n\n"
  	  << "*** WARNING ***                                   \n"
- 	  << "*** WARNING *** TJetVector<T1,T2>::Weight()               \n"
+ 	  << "*** WARNING *** TJetVector<T>::Weight()               \n"
  	  << "*** WARNING ***                                   \n"
  	  << "*** WARNING *** Inconsistent environments at      \n"
  	  << "*** WARNING *** index " << i << "                 \n"
@@ -823,8 +838,8 @@ int TJetVector<T1,T2>::Weight()  const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJetVector<T1,T2>::standardPart( T1* x ) const 
+template<typename T>
+void TJetVector<T>::standardPart( T* x ) const 
 {
  int i;
  for( i = 0; i < _dim; i++ ) 
@@ -834,8 +849,8 @@ void TJetVector<T1,T2>::standardPart( T1* x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJetVector<T1,T2>::getReference( T1* r ) const 
+template<typename T>
+void TJetVector<T>::getReference( T* r ) const 
 {
  int i;
  for( i = 0; i < _myEnv->_numVar; i++ ) r[i] = _myEnv->_refPoint[i];
@@ -844,4 +859,3 @@ void TJetVector<T1,T2>::getReference( T1* r ) const
 
 #endif // TJETVECTOR_TCC
 
-#endif // EXPLICIT_TEMPLATE_INSTANTIATIONS

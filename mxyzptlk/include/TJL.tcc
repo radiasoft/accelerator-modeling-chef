@@ -5,7 +5,6 @@
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
 ******                                    
 ******  File:      TJL.cc
-******  Version:   1.0
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                All Rights Reserved                             
@@ -35,16 +34,17 @@
 ******  Feb 2005 - Jean-Francois Ostiguy
 *****              ostiguy@fnal.gov
 ******  
-****** Efficiency improvements.
-****** - New memory management.
+******             - Efficiency improvements.
+******             - New memory management.
 ******
+******  Sept 2005   ostiguy@fnal.gov
+******              - new code based on a single template parameter
+******                instead of two. Mixed mode handled
+******                using conversion operators.
 ******  
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
-#ifdef  EXPLICIT_TEMPLATE_INSTANTIATIONS 
-
 #ifndef TJL_TCC
 #define TJL_TCC
 
@@ -96,8 +96,8 @@ using FNAL::pcout;
 // ================================================================
 //      Implementation of exceptions
 
-template<typename T1, typename T2>
-TJL<T1,T2>::BadDimension::BadDimension( int i, int j, 
+template<typename T>
+TJL<T>::BadDimension::BadDimension( int i, int j, 
                                 string fileName, int lineNumber, 
                                 const char* fcn, 
                                 const char* msg )
@@ -123,14 +123,14 @@ TJL<T1,T2>::BadDimension::BadDimension( int i, int j,
   }
 }
 
-template<typename T1, typename T2>
-const char* TJL<T1,T2>::BadDimension::what() const throw()
+template<typename T>
+const char* TJL<T>::BadDimension::what() const throw()
 {
   return errorString.c_str();
 }
 
-template<typename T1, typename T2>
-TJL<T1,T2>::BadEnvironment::BadEnvironment( int a, int b, int c, 
+template<typename T>
+TJL<T>::BadEnvironment::BadEnvironment( int a, int b, int c, 
                                 string fileName, int lineNumber, 
                                 const char* fcn, 
                                 const char* msg )
@@ -156,14 +156,14 @@ TJL<T1,T2>::BadEnvironment::BadEnvironment( int a, int b, int c,
   }
 }
 
-template<typename T1, typename T2>
-const char* TJL<T1,T2>::BadEnvironment::what() const throw()
+template<typename T>
+const char* TJL<T>::BadEnvironment::what() const throw()
 {
   return errorString.c_str();
 }
 
-template<typename T1, typename T2>
-TJL<T1,T2>::BadReference::BadReference( int ndx, double u,
+template<typename T>
+TJL<T>::BadReference::BadReference( int ndx, double u,
                                 string fileName, int lineNumber, 
                                 const char* fcn, 
                                 const char* msg )
@@ -189,14 +189,14 @@ TJL<T1,T2>::BadReference::BadReference( int ndx, double u,
   }
 }
 
-template<typename T1, typename T2>
-const char* TJL<T1,T2>::BadReference::what() const throw()
+template<typename T>
+const char* TJL<T>::BadReference::what() const throw()
 {
   return errorString.c_str();
 }
 
-template<typename T1, typename T2>
-TJL<T1,T2>::HorribleException::HorribleException( int i, int j, int k, 
+template<typename T>
+TJL<T>::HorribleException::HorribleException( int i, int j, int k, 
                                 string fileName, int lineNumber, 
                                 const char* fcn, 
                                 const char* msg )
@@ -227,14 +227,14 @@ TJL<T1,T2>::HorribleException::HorribleException( int i, int j, int k,
   }
 }
 
-template<typename T1, typename T2>
-const char* TJL<T1,T2>::HorribleException::what() const throw()
+template<typename T>
+const char* TJL<T>::HorribleException::what() const throw()
 {
   return errorString.c_str();
 }
 
-template<typename T1, typename T2>
-TJL<T1,T2>::HideousException::HideousException( int x, int y, 
+template<typename T>
+TJL<T>::HideousException::HideousException( int x, int y, 
                                 string fileName, int lineNumber, 
                                 const char* fcn, 
                                 const char* msg )
@@ -263,8 +263,8 @@ TJL<T1,T2>::HideousException::HideousException( int x, int y,
   }
 }
 
-template<typename T1, typename T2>
-const char* TJL<T1,T2>::HideousException::what() const throw()
+template<typename T>
+const char* TJL<T>::HideousException::what() const throw()
 {
   return errorString.c_str();
 }
@@ -279,11 +279,11 @@ const char* TJL<T1,T2>::HideousException::what() const throw()
 //    Constructors and destructors    |||||||||||||||||||||||||||
 
 
-template<typename T1, typename T2>
-void TJL<T1,T2>::initStore( int capacity) {
+template<typename T>
+void TJL<T>::initStore( int capacity) {
 
   _jltermStoreCapacity    = capacity;
-  _jltermStore            =  TJLterm<T1,T2>::array_allocate( _jltermStoreCapacity ); 
+  _jltermStore            =  TJLterm<T>::array_allocate( _jltermStoreCapacity ); 
   _jltermStoreCurrentPtr  = _jltermStore;
 
 }
@@ -291,19 +291,19 @@ void TJL<T1,T2>::initStore( int capacity) {
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJL<T1,T2>::initStore( ) {
+template<typename T>
+void TJL<T>::initStore( ) {
 
   _jltermStoreCapacity    = 16;
-  _jltermStore            = TJLterm<T1,T2>::array_allocate( _jltermStoreCapacity );
+  _jltermStore            = TJLterm<T>::array_allocate( _jltermStoreCapacity );
   _jltermStoreCurrentPtr  = _jltermStore;
 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJL<T1,T2>::TJL( TJetEnvironment<T1,T2>* pje ) 
+template<typename T>
+TJL<T>::TJL( TJetEnvironment<T>* pje ) 
 {
  _rc      =  1;
  _weight  = -1;
@@ -325,13 +325,13 @@ TJL<T1,T2>::TJL( TJetEnvironment<T1,T2>* pje )
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJL<T1,T2>* TJL<T1,T2>::makeTJL( TJetEnvironment<T1,T2>* pje ) 
+template<typename T>
+TJL<T>* TJL<T>::makeTJL( TJetEnvironment<T>* pje ) 
 {
 
- if ( _thePool.empty() ) return ( new TJL<T1,T2>( pje ) );
+ if ( _thePool.empty() ) return ( new TJL<T>( pje ) );
  
-  TJL<T1,T2>* p =  _thePool.back(); _thePool.pop_back();
+  TJL<T>* p =  _thePool.back(); _thePool.pop_back();
 
   p->_rc      =  1;
   p->_weight  = -1;
@@ -355,8 +355,8 @@ TJL<T1,T2>* TJL<T1,T2>::makeTJL( TJetEnvironment<T1,T2>* pje )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJL<T1,T2>::TJL( const T1& x, TJetEnvironment<T1,T2>* pje ):
+template<typename T>
+TJL<T>::TJL( const T& x, TJetEnvironment<T>* pje ):
 _jltermStoreCapacity(0), _jltermStore(0), _jltermStoreCurrentPtr(0) 
 {
 
@@ -371,12 +371,12 @@ _jltermStoreCapacity(0), _jltermStore(0), _jltermStoreCurrentPtr(0)
 
  if( pje ) {
    _accuWgt = pje->_maxWeight;
-   insert( new( storePtr() ) TJLterm<T1,T2>( IntArray( pje->_numVar ), x, pje ) );
+   insert( new( storePtr() ) TJLterm<T>( IntArray( pje->_numVar ), x, pje ) );
 
  }
  else {
    _accuWgt = 100000;    // ??? Better way?
-   insert( new( storePtr() ) TJLterm<T1,T2>( IntArray(1), x, 0 ) );
+   insert( new( storePtr() ) TJLterm<T>( IntArray(1), x, 0 ) );
  }
 
 }
@@ -384,13 +384,13 @@ _jltermStoreCapacity(0), _jltermStore(0), _jltermStoreCurrentPtr(0)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJL<T1,T2>* TJL<T1,T2>::makeTJL( const T1& x, TJetEnvironment<T1,T2>* pje )
+template<typename T>
+TJL<T>* TJL<T>::makeTJL( const T& x, TJetEnvironment<T>* pje )
 {
 
- if (_thePool.empty() ) return (new TJL<T1,T2>(x,pje)); 
+ if (_thePool.empty() ) return (new TJL<T>(x,pje)); 
  
- TJL<T1,T2>* p = _thePool.back();  _thePool.pop_back();
+ TJL<T>* p = _thePool.back();  _thePool.pop_back();
  
   p->_rc     = 1;
   p->_weight = 0;
@@ -400,12 +400,12 @@ TJL<T1,T2>* TJL<T1,T2>::makeTJL( const T1& x, TJetEnvironment<T1,T2>* pje )
 
  if( pje ) {
    p->_accuWgt = pje->_maxWeight;
-   p->insert( new( p->storePtr() ) TJLterm<T1,T2>( IntArray( pje->_numVar ), x, pje ) );
+   p->insert( new( p->storePtr() ) TJLterm<T>( IntArray( pje->_numVar ), x, pje ) );
 
  }
  else {
    p->_accuWgt = 100000;    // ??? Better way?
-   p->insert( new( p->storePtr() ) TJLterm<T1,T2>( IntArray(1), x, 0 ) );
+   p->insert( new( p->storePtr() ) TJLterm<T>( IntArray(1), x, 0 ) );
  }
 
  return p;
@@ -414,8 +414,8 @@ TJL<T1,T2>* TJL<T1,T2>::makeTJL( const T1& x, TJetEnvironment<T1,T2>* pje )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJL<T1,T2>::TJL( const IntArray& e, const T1& x, TJetEnvironment<T1,T2>* pje ) :
+template<typename T>
+TJL<T>::TJL( const IntArray& e, const T& x, TJetEnvironment<T>* pje ) :
 _jltermStoreCapacity(0), _jltermStore(0), _jltermStoreCurrentPtr(0) 
 {
 
@@ -430,11 +430,11 @@ _jltermStoreCapacity(0), _jltermStore(0), _jltermStoreCurrentPtr(0)
 
  if( pje ) {
    _accuWgt = pje->_maxWeight;
-   insert( new( storePtr() ) TJLterm<T1,T2>( e, x, pje ) );
+   insert( new( storePtr() ) TJLterm<T>( e, x, pje ) );
  }
  else {
    _accuWgt = 100000;    // ??? Better way?
-   insert( new( storePtr() ) TJLterm<T1,T2>( IntArray(1), x, 0 ) );
+   insert( new( storePtr() ) TJLterm<T>( IntArray(1), x, 0 ) );
  }
 
 
@@ -443,13 +443,13 @@ _jltermStoreCapacity(0), _jltermStore(0), _jltermStoreCurrentPtr(0)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJL<T1,T2>* TJL<T1,T2>::makeTJL( const IntArray& e, const T1& x, TJetEnvironment<T1,T2>* pje ) 
+template<typename T>
+TJL<T>* TJL<T>::makeTJL( const IntArray& e, const T& x, TJetEnvironment<T>* pje ) 
 {
 
-  if (_thePool.empty() ) return new TJL<T1,T2>(e,x,pje);
+  if (_thePool.empty() ) return new TJL<T>(e,x,pje);
 
-  TJL<T1,T2>* p = _thePool.back(); _thePool.pop_back();
+  TJL<T>* p = _thePool.back(); _thePool.pop_back();
 
   p->_rc = 1;
   p->_weight = 0;
@@ -458,11 +458,11 @@ TJL<T1,T2>* TJL<T1,T2>::makeTJL( const IntArray& e, const T1& x, TJetEnvironment
 
  if( pje ) {
    p->_accuWgt = pje->_maxWeight;
-   p->insert( new( p->storePtr() ) TJLterm<T1,T2>( e, x, pje ) );
+   p->insert( new( p->storePtr() ) TJLterm<T>( e, x, pje ) );
  }
  else {
    p->_accuWgt = 100000;    // ??? Better way?
-   p->insert( new( p->storePtr() ) TJLterm<T1,T2>( IntArray(1), x, 0 ) );
+   p->insert( new( p->storePtr() ) TJLterm<T>( IntArray(1), x, 0 ) );
  }
 
  return p;
@@ -471,8 +471,8 @@ TJL<T1,T2>* TJL<T1,T2>::makeTJL( const IntArray& e, const T1& x, TJetEnvironment
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJL<T1,T2>::TJL( const TJL& x ):
+template<typename T>
+TJL<T>::TJL( const TJL& x ):
 _jltermStoreCapacity(0), _jltermStore(0), _jltermStoreCurrentPtr(0) 
  
 {
@@ -485,15 +485,15 @@ _jltermStoreCapacity(0), _jltermStore(0), _jltermStoreCurrentPtr(0)
 
  
  initStore( x._jltermStoreCapacity );
- memcpy( _jltermStore, x._jltermStore, (x._jltermStoreCurrentPtr-x._jltermStore)*sizeof(TJLterm<T1,T2>) );
+ memcpy( _jltermStore, x._jltermStore, (x._jltermStoreCurrentPtr-x._jltermStore)*sizeof(TJLterm<T>) );
   _jltermStoreCurrentPtr = _jltermStore + (x._jltermStoreCurrentPtr - x._jltermStore);
 
 
  dlist_iterator getNext( x._theList );
- TJLterm<T1,T2>* p = 0;
- TJLterm<T1,T2>* q = 0;
+ TJLterm<T>* p = 0;
+ TJLterm<T>* q = 0;
 
- while((  p = (TJLterm<T1,T2>*) getNext()  )) {
+ while((  p = (TJLterm<T>*) getNext()  )) {
           q = _jltermStore + ( p - x._jltermStore); 
           append(q);
  }
@@ -509,17 +509,17 @@ _jltermStoreCapacity(0), _jltermStore(0), _jltermStoreCurrentPtr(0)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJL<T1,T2>* TJL<T1,T2>::makeTJL( const TJL& x )
+template<typename T>
+TJL<T>* TJL<T>::makeTJL( const TJL& x )
 {
 
-  if (_thePool.empty() ) return new TJL<T1,T2>(x);
+  if (_thePool.empty() ) return new TJL<T>(x);
  
-  TJL<T1,T2>* p = _thePool.back(); _thePool.pop_back(); 
+  TJL<T>* p = _thePool.back(); _thePool.pop_back(); 
   
   if (p->_jltermStoreCapacity < x._jltermStoreCapacity)  
   { 
-       TJLterm<T1,T2>::array_deallocate( p->_jltermStore );
+       TJLterm<T>::array_deallocate( p->_jltermStore );
        p->initStore(x._jltermStoreCapacity);   
   
   }
@@ -531,16 +531,16 @@ TJL<T1,T2>* TJL<T1,T2>::makeTJL( const TJL& x )
   p->_rc       = 1;
 
  
-   memcpy( p->_jltermStore, x._jltermStore, (x._jltermStoreCurrentPtr-x._jltermStore)*sizeof(TJLterm<T1,T2>) );
+   memcpy( p->_jltermStore, x._jltermStore, (x._jltermStoreCurrentPtr-x._jltermStore)*sizeof(TJLterm<T>) );
    p->_jltermStoreCurrentPtr = p->_jltermStore + (x._jltermStoreCurrentPtr - x._jltermStore);
 
 
  dlist_iterator getNext( x._theList );
  
- TJLterm<T1,T2>* q = 0;
- TJLterm<T1,T2>* r = 0;
+ TJLterm<T>* q = 0;
+ TJLterm<T>* r = 0;
 
- while((  q = (TJLterm<T1,T2>*) getNext()  )) {
+ while((  q = (TJLterm<T>*) getNext()  )) {
           r = p->_jltermStore + ( q - x._jltermStore); 
           p->append(r);
  }
@@ -558,14 +558,14 @@ TJL<T1,T2>* TJL<T1,T2>::makeTJL( const TJL& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJL<T1,T2>::TJL( const TJL* x ) 
+template<typename T>
+TJL<T>::TJL( const TJL* x ) 
 {
 
 
  dlist_iterator getNext( x->_theList );
- TJLterm<T1,T2>* p;
- TJLterm<T1,T2>* q;
+ TJLterm<T>* p;
+ TJLterm<T>* q;
 
  _count    = x->_count;
  _weight   = x->_weight;
@@ -574,10 +574,10 @@ TJL<T1,T2>::TJL( const TJL* x )
  _rc       = 1;
 
  initStore( x->_jltermStoreCapacity );
- memcpy( _jltermStore, x->_jltermStore, (x->_jltermStoreCurrentPtr - x->_jltermStore)*sizeof(TJLterm<T1,T2>) );
+ memcpy( _jltermStore, x->_jltermStore, (x->_jltermStoreCurrentPtr - x->_jltermStore)*sizeof(TJLterm<T>) );
  _jltermStoreCurrentPtr = _jltermStore + (x->_jltermStoreCurrentPtr - x->_jltermStore);
 
- while((  p = (TJLterm<T1,T2>*) getNext()  )) {
+ while((  p = (TJLterm<T>*) getNext()  )) {
          q = _jltermStore + ( p - x->_jltermStore); 
          append(q); 
  }
@@ -593,18 +593,18 @@ TJL<T1,T2>::TJL( const TJL* x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJL<T1,T2>*  TJL<T1,T2>::makeTJL( const TJL* x ) 
+template<typename T>
+TJL<T>*  TJL<T>::makeTJL( const TJL* x ) 
 {
 
  
- if (_thePool.empty() ) return new TJL<T1,T2>(x);
+ if (_thePool.empty() ) return new TJL<T>(x);
  
-  TJL<T1,T2>* p = _thePool.back(); _thePool.pop_back(); 
+  TJL<T>* p = _thePool.back(); _thePool.pop_back(); 
   
   if (p->_jltermStoreCapacity < x->_jltermStoreCapacity)  
   { 
-       TJLterm<T1,T2>::array_deallocate( p->_jltermStore );
+       TJLterm<T>::array_deallocate( p->_jltermStore );
        p->initStore(x->_jltermStoreCapacity);   
   };
 
@@ -616,14 +616,14 @@ TJL<T1,T2>*  TJL<T1,T2>::makeTJL( const TJL* x )
   p->_rc       = 1;
 
 
-  memcpy( p->_jltermStore, x->_jltermStore, (x->_jltermStoreCurrentPtr - x->_jltermStore)*sizeof(TJLterm<T1,T2>) );
+  memcpy( p->_jltermStore, x->_jltermStore, (x->_jltermStoreCurrentPtr - x->_jltermStore)*sizeof(TJLterm<T>) );
   p->_jltermStoreCurrentPtr = p->_jltermStore + (x->_jltermStoreCurrentPtr - x->_jltermStore);
 
  dlist_iterator getNext( x->_theList );
- TJLterm<T1,T2>* q;
- TJLterm<T1,T2>* r;
+ TJLterm<T>* q;
+ TJLterm<T>* r;
 
- while((  q = (TJLterm<T1,T2>*) getNext()  )) {
+ while((  q = (TJLterm<T>*) getNext()  )) {
           r = p->_jltermStore + ( q - x->_jltermStore); 
           p->append(r); 
  }
@@ -642,13 +642,13 @@ TJL<T1,T2>*  TJL<T1,T2>::makeTJL( const TJL* x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJL<T1,T2>::~TJL() 
+template<typename T>
+TJL<T>::~TJL() 
 {
  clear();
- TJLterm<T1,T2>::array_deallocate( _jltermStore );
+ TJLterm<T>::array_deallocate( _jltermStore );
 
- _jltermStore = _jltermStoreCurrentPtr = 0;
+ _jltermStore         = _jltermStoreCurrentPtr = 0;
  _jltermStoreCapacity = 0;
  
 
@@ -657,8 +657,8 @@ TJL<T1,T2>::~TJL()
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJL<T1,T2>::discardTJL( TJL<T1,T2>* p) 
+template<typename T>
+void TJL<T>::discardTJL( TJL<T>* p) 
 {
 
    p->clear();
@@ -669,13 +669,13 @@ void TJL<T1,T2>::discardTJL( TJL<T1,T2>* p)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //     Member functions(public)  |||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJLterm<T1,T2>* TJL<T1,T2>::storePtr( ) {
+template<typename T>
+TJLterm<T>* TJL<T>::storePtr( ) {
  
-TJLterm<T1,T2>* p                         = 0;
-TJLterm<T1,T2>* q                         = 0;
-TJLterm<T1,T2>* old_jltermStore           = 0;
-TJLterm<T1,T2>* old_jltermStoreCurrentPtr = 0;
+TJLterm<T>* p                         = 0;
+TJLterm<T>* q                         = 0;
+TJLterm<T>* old_jltermStore           = 0;
+TJLterm<T>* old_jltermStoreCurrentPtr = 0;
 int             old_jltermStoreCapacity  = 0;
 
   if ( (_jltermStoreCurrentPtr-_jltermStore) < _jltermStoreCapacity ) 
@@ -691,7 +691,7 @@ int             old_jltermStoreCapacity  = 0;
     old_jltermStoreCapacity   = _jltermStoreCapacity;
 
     _jltermStoreCapacity *= 2;  // double the capacity
-    _jltermStore = _jltermStoreCurrentPtr = TJLterm<T1,T2>::array_allocate( _jltermStoreCapacity );
+    _jltermStore = _jltermStoreCurrentPtr = TJLterm<T>::array_allocate( _jltermStoreCapacity );
  
   // We DO NOT do a memcpy here, so as to get rid of deleted jlterms. This is done
   // to prevent the size of the allocation vector to grow indefinitely.  
@@ -702,21 +702,21 @@ int             old_jltermStoreCapacity  = 0;
      dlist oldList;
   
      dlist_iterator getNext( _theList );
-     while((  p = (TJLterm<T1,T2>*) getNext()  )) {
+     while((  p = (TJLterm<T>*) getNext()  )) {
           oldList.append(p);
     };
 
      _theList.clear();
 
      dlist_iterator getNext2( oldList );
-     while((  p = (TJLterm<T1,T2>*) getNext2()  )) {
-          q = new ( _jltermStoreCurrentPtr++ ) TJLterm<T1,T2>( *p );
+     while((  p = (TJLterm<T>*) getNext2()  )) {
+          q = new ( _jltermStoreCurrentPtr++ ) TJLterm<T>( *p );
           append(q);
     };
 
     // now, it is ok to zap the old store
  
-    TJLterm<T1,T2>::array_deallocate( old_jltermStore );
+    TJLterm<T>::array_deallocate( old_jltermStore );
 
     // finally, return a ptr to the next available block 
 
@@ -726,13 +726,13 @@ int             old_jltermStoreCapacity  = 0;
 }   
 
 
-template<typename T1, typename T2>
-void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a) 
+template<typename T>
+void TJL<T>::addTerm( TJLterm<T>* a) 
 {
  // If the value of *a is 0, don't bother with it unless
  // the _weight is also 0.
- if( ( a -> _value == T1() ) && ( a -> _weight != 0 ) ) {
-   a->_deleted =true; // delete a; // NOT WITH NEW MEM MGMNT
+ if( ( a -> _value == T() ) && ( a -> _weight != 0 ) ) {
+   a->_deleted =true; // NOTE: explicit deletion of an individual JLterm is NOT allowed. 
    return;
  }
 
@@ -750,14 +750,14 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a)
    return;
    }
  
- if(     *a   <=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
-   if(   *a   %=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
+ if(     *a   <=   ( *(TJLterm<T>*) (p->info()) )   ) {
+   if(   *a   %=   ( *(TJLterm<T>*) (p->info()) )   ) {
  
-     (( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) += ( a -> _value );
+     (( (TJLterm<T>*) (p->info()) ) -> _value ) += ( a -> _value );
  
      if(
          (
-           std::abs( ( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) < MX_SMALL*std::abs( a -> _value )
+           std::abs( ( (TJLterm<T>*) (p->info()) ) -> _value ) < MX_SMALL*std::abs( a -> _value )
          )
          // REMOVE ??? &&
          // REMOVE ??? (
@@ -765,10 +765,9 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a)
          // REMOVE ??? )
        )
  
-          //delete remove( p );
-          remove( p )->_deleted = true;
+       remove( p )->_deleted = true; // NOTE: explicit deletion of an individual JLterm is not allowed 
  
-     a->_deleted = true; // delete a;  NO NEED TO DO THIS WITH NEW MEM MANAGEMENT
+     a->_deleted = true; // NOTE: explicit deletion of an individual JLterm is not allowed 
      return;
      }
  
@@ -784,14 +783,14 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a)
  //
  while((  p = getNext()  )){
  
-   if(     *a   <=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
-     if(   *a   %=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
+   if(     *a   <=   ( *(TJLterm<T>*) (p->info()) )   ) {
+     if(   *a   %=   ( *(TJLterm<T>*) (p->info()) )   ) {
  
-       (( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) += ( a -> _value );
+       (( (TJLterm<T>*) (p->info()) ) -> _value ) += ( a -> _value );
  
        if(
 	   (
-	     std::abs( ( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) < MX_SMALL*std::abs( a -> _value )
+	     std::abs( ( (TJLterm<T>*) (p->info()) ) -> _value ) < MX_SMALL*std::abs( a -> _value )
 	   )
 	   // REMOVE ??? &&
 	   // REMOVE ??? (
@@ -801,7 +800,7 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a)
  
          //delete remove( p );
          remove( p )->_deleted = true;
-         a->_deleted = true; // delete a; NO NEED TO DO THIS WITH NEW MEM MANAGEMENT
+         a->_deleted = true; // NOTE: explicit deletion of an individual JLterm is not allowed 
        return;
        }
  
@@ -826,21 +825,21 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a, dlist_traversor& getNext ) 
+template<typename T>
+void TJL<T>::addTerm( TJLterm<T>* a, dlist_traversor& getNext ) 
 {
  // JUST A TEST: THIS IS NOT WRITTEN CORRECTLY.
  // IT SHOULD NOT BE USED.
 
  throw( GenericException( __FILE__, __LINE__, 
-   "void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a, dlist_traversor& getNext )", 
+   "void TJL<T>::addTerm( TJLterm<T>* a, dlist_traversor& getNext )", 
    "This method is broken.") );
 
 
  // If the value of *a is 0, don't bother with it unless
  // the _weight is also 0.
  if( ( a -> _value == 0.0 ) && ( a -> _weight != 0 ) ) {
-   a->_deleted = true; //delete a; NO NEED TO DO THIS WITH NE MEM MANAGEMENT
+   a->_deleted = true; // NOTE: explicit deletion of an individual JLterm is not allowed
    return;
  }
 
@@ -857,16 +856,16 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a, dlist_traversor& getNext )
    return;
    }
  
- if(     *a   <=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
-   if(   *a   %=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
+ if(     *a   <=   ( *(TJLterm<T>*) (p->info()) )   ) {
+   if(   *a   %=   ( *(TJLterm<T>*) (p->info()) )   ) {
  
-     (( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) += ( a -> _value );
+     (( (TJLterm<T>*) (p->info()) ) -> _value ) += ( a -> _value );
  
-     if( std::abs( ( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) 
+     if( std::abs( ( (TJLterm<T>*) (p->info()) ) -> _value ) 
            < MX_SMALL*std::abs( a -> _value ) ) {
-      remove( p )->_deleted = true; //delete remove( p );
+      remove( p )->_deleted = true; // NOTE: explicit deletion of an individual JLterm is not allowed 
      } 
-     a->_deleted = true; // delete a; NO NEED TO DO THIS WITH NEW MEM MNGMNT
+     a->_deleted = true; // NOTE: explicit deletion of an individual JLterm is not allowed
      return;
      }
    else {
@@ -880,14 +879,14 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a, dlist_traversor& getNext )
  //
  while((  p = getNext()  ))
  {
-   if(     *a   <=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
-     if(   *a   %=   ( *(TJLterm<T1,T2>*) (p->info()) )   ) {
+   if(     *a   <=   ( *(TJLterm<T>*) (p->info()) )   ) {
+     if(   *a   %=   ( *(TJLterm<T>*) (p->info()) )   ) {
  
-       (( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) += ( a -> _value );
+       (( (TJLterm<T>*) (p->info()) ) -> _value ) += ( a -> _value );
  
        if(
 	   (
-	     std::abs( ( (TJLterm<T1,T2>*) (p->info()) ) -> _value ) < MX_SMALL*std::abs( a -> _value )
+	     std::abs( ( (TJLterm<T>*) (p->info()) ) -> _value ) < MX_SMALL*std::abs( a -> _value )
 	   )
 	   // REMOVE ??? &&
 	   // REMOVE ??? (
@@ -895,9 +894,9 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a, dlist_traversor& getNext )
 	   // REMOVE ??? )
 	 )
  
-         remove(p)->_deleted = true; // delete remove( p );
+         remove(p)->_deleted = true; // NOTE: explicit deletion of an individual JLterm is not allowed
  
-       a->_deleted = true; // delete a; NO NEED WITH NEW MEM MNGMNT
+       a->_deleted = true; // NOTE: explicit deletion of an individual JLterm is not allowed
        return;
        }
  
@@ -922,8 +921,8 @@ void TJL<T1,T2>::addTerm( TJLterm<T1,T2>* a, dlist_traversor& getNext )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJL<T1,T2>::getReference( T1* r ) const 
+template<typename T>
+void TJL<T>::getReference( T* r ) const 
 {
  int i;
  for( i = 0; i < _myEnv->_numVar; i++ ) r[i] = _myEnv->_refPoint[i];
@@ -932,11 +931,11 @@ void TJL<T1,T2>::getReference( T1* r ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool TJL<T1,T2>::isNilpotent() const 
+template<typename T>
+bool TJL<T>::isNilpotent() const 
 {
  dlist_iterator getNext( _theList );
- TJLterm<T1,T2>* p = (TJLterm<T1,T2>*) getNext();
+ TJLterm<T>* p = (TJLterm<T>*) getNext();
  if( p->_weight == 0 && std::abs(p->_value) > MX_SMALL ) 
    { return false; }
  else
@@ -947,12 +946,12 @@ bool TJL<T1,T2>::isNilpotent() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-template<typename T1, typename T2>
-void TJL<T1,T2>::writeToFile( ofstream& outStr ) const 
+template<typename T>
+void TJL<T>::writeToFile( ofstream& outStr ) const 
 {
  dlist_traversor getNext( _theList );
  int i;
- TJLterm<T1,T2>* p;
+ TJLterm<T>* p;
  dlink* q;
  
  outStr << "\n_Count  = " << _count
@@ -965,7 +964,7 @@ void TJL<T1,T2>::writeToFile( ofstream& outStr ) const
  }
  outStr << endl;
  while((  q = getNext()  )) {
-   p = (TJLterm<T1,T2>*) q->info();
+   p = (TJLterm<T>*) q->info();
    outStr << "Weight: " << p -> _weight
           << "   Value: " << p -> _value
           << " || ";
@@ -987,14 +986,14 @@ void TJL<T1,T2>::writeToFile( ofstream& outStr ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJL<T1,T2>::scaleBy( T1 y ) 
+template<typename T>
+void TJL<T>::scaleBy( T y ) 
 {
- TJLterm<T1,T2>* p;
+ TJLterm<T>* p;
  dlist_iterator getNext( _theList );
  
  if ( this->_count < 1 ) {
-   (*pcout) << "\n\n*** WARNING::TJL<T1,T2>::scaleBy: function invoked \n"
+   (*pcout) << "\n\n*** WARNING::TJL<T>::scaleBy: function invoked \n"
         <<     "    by null JL variable with address " << (int) this 
         << endl;
    return;
@@ -1009,17 +1008,17 @@ void TJL<T1,T2>::scaleBy( T1 y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJL<T1,T2>::setVariable( const T1& x, 
+template<typename T>
+void TJL<T>::setVariable( const T& x, 
                               const int& j, 
-                              TJetEnvironment<T1,T2>* theEnv )
+                              TJetEnvironment<T>* theEnv )
 {
 
  if( theEnv != 0 ) _myEnv = theEnv;
 
  if( _myEnv == 0 ) {
    throw( GenericException( __FILE__, __LINE__, 
-     "void TJL<T1,T2>::setVariable( const T1&, const int&, TJetEnvironment<T1,T2>* )", 
+     "void TJL<T>::setVariable( const T&, const int&, TJetEnvironment<T>* )", 
      "Private data _myEnv is null: object has no environment assigned.") );
  }
 
@@ -1028,9 +1027,9 @@ void TJL<T1,T2>::setVariable( const T1& x,
  if( ( j < 0 ) || ( j >= _myEnv->_numVar ) ) return;
 
  IntArray ndx( _myEnv->_numVar );  // Assumes: initialized with zeroes
- insert( new(storePtr()) TJLterm<T1,T2>( ndx, x, _myEnv ) );
+ insert( new(storePtr()) TJLterm<T>( ndx, x, _myEnv ) );
  ndx(j) = 1;
- append( new(storePtr()) TJLterm<T1,T2>( ndx, 1.0, _myEnv ) );
+ append( new(storePtr()) TJLterm<T>( ndx, 1.0, _myEnv ) );
  
  _myEnv->_refPoint[j] = x;
 }
@@ -1038,33 +1037,33 @@ void TJL<T1,T2>::setVariable( const T1& x,
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJL<T1,T2>::setVariable( const int& j, 
-                              TJetEnvironment<T1,T2>* theEnv ) 
+template<typename T>
+void TJL<T>::setVariable( const int& j, 
+                              TJetEnvironment<T>* theEnv ) 
 {
  if( theEnv != 0 ) _myEnv = theEnv;
 
  if( _myEnv == 0 ) {
    throw( GenericException( __FILE__, __LINE__, 
-     "void TJL<T1,T2>::setVariable( const int&, TJetEnvironment<T1,T2>* )", 
+     "void TJL<T>::setVariable( const int&, TJetEnvironment<T>* )", 
      "Private data _myEnv is null: object has no environment assigned.") );
  }
 
  clear();
  if( ( j < 0 ) || ( j >= _myEnv->_numVar ) ) return;
  
- T1 x = theEnv->_refPoint[j];
+ T x = theEnv->_refPoint[j];
  IntArray ndx( _myEnv->_numVar );
- insert( new( storePtr() ) TJLterm<T1,T2>( ndx, x, theEnv ) );
+ insert( new( storePtr() ) TJLterm<T>( ndx, x, theEnv ) );
  ndx(j) = 1;
- append ( new( storePtr() ) TJLterm<T1,T2>( ndx, 1.0, theEnv ) );
+ append ( new( storePtr() ) TJLterm<T>( ndx, 1.0, theEnv ) );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJL<T1,T2>::insert( TJLterm<T1,T2>* a) 
+template<typename T>
+void TJL<T>::insert( TJLterm<T>* a) 
 {
  _theList.insert(a);
  _count++;
@@ -1074,13 +1073,13 @@ void TJL<T1,T2>::insert( TJLterm<T1,T2>* a)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
+template<typename T>
 inline
-TJLterm<T1,T2>* TJL<T1,T2>::get() 
+TJLterm<T>* TJL<T>::get() 
 {
- TJLterm<T1,T2>* p;
+ TJLterm<T>* p;
  if( _count <= 0 ) return 0;
- p = ((TJLterm<T1,T2>*) _theList.get());
+ p = ((TJLterm<T>*) _theList.get());
  if( --_count == 0 ) _weight = -1;
  return p;
 }
@@ -1088,47 +1087,47 @@ TJLterm<T1,T2>* TJL<T1,T2>::get()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJLterm<T1,T2> TJL<T1,T2>::lowTerm() const 
+template<typename T>
+TJLterm<T> TJL<T>::lowTerm() const 
 {
  dlist_iterator getNext( _theList );
- TJLterm<T1,T2>* p      = 0;
- TJLterm<T1,T2>* result = 0;
+ TJLterm<T>* p      = 0;
+ TJLterm<T>* result = 0;
 
- p = (TJLterm<T1,T2>*) getNext();
+ p = (TJLterm<T>*) getNext();
  result = 0;
    
  while ( (result == 0) && (p!=0) ) 
  {
    if( p->_value != 0.0 ) result = p;
-   p = (TJLterm<T1,T2>*) getNext();
+   p = (TJLterm<T>*) getNext();
  }
 
- if( result == 0 ) return TJLterm<T1,T2>( this->_myEnv->_allZeroes, 0.0, this->_myEnv );
- else              return TJLterm<T1,T2>( *result );
+ if( result == 0 ) return TJLterm<T>( this->_myEnv->_allZeroes, 0.0, this->_myEnv );
+ else              return TJLterm<T>( *result );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJLterm<T1,T2> TJL<T1,T2>::firstTerm() const 
+template<typename T>
+TJLterm<T> TJL<T>::firstTerm() const 
 {
- TJLterm<T1,T2>* p = 0;
- p = ( TJLterm<T1,T2>* ) const_cast<dlist&>(_theList).firstInfoPtr() ;
+ TJLterm<T>* p = 0;
+ p = ( TJLterm<T>* ) const_cast<dlist&>(_theList).firstInfoPtr() ;
  if( 0 != p ) {
-   return TJLterm<T1,T2>( *p );
+   return TJLterm<T>( *p );
  }
  else {
-   return TJLterm<T1,T2>( this->_myEnv->_allZeroes, 0.0, this->_myEnv );
+   return TJLterm<T>( this->_myEnv->_allZeroes, 0.0, this->_myEnv );
  }
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJL<T1,T2>::append( TJLterm<T1,T2>* a) 
+template<typename T>
+void TJL<T>::append( TJLterm<T>* a) 
 {
  _theList.append(a);
  _count++;
@@ -1138,10 +1137,10 @@ void TJL<T1,T2>::append( TJLterm<T1,T2>* a)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJLterm<T1,T2>* TJL<T1,T2>::remove( dlink* w ) 
+template<typename T>
+TJLterm<T>* TJL<T>::remove( dlink* w ) 
 {
- TJLterm<T1,T2>* a;
+ TJLterm<T>* a;
  dlink* predecessor;
  dlink* successor;
  int predWeight;
@@ -1150,7 +1149,7 @@ TJLterm<T1,T2>* TJL<T1,T2>::remove( dlink* w )
  predecessor = w->prevPtr();
  successor   = w->nextPtr();
  
- a = (TJLterm<T1,T2>*) _theList.remove( w );
+ a = (TJLterm<T>*) _theList.remove( w );
  _count--;
  
  if( _count == 0 ) {
@@ -1160,8 +1159,8 @@ TJLterm<T1,T2>* TJL<T1,T2>::remove( dlink* w )
  
  if ( _weight > a->_weight ) return a;
  
- predWeight = ( (TJLterm<T1,T2>*) ( predecessor->info() ) ) -> _weight;
- succWeight = ( (TJLterm<T1,T2>*) ( successor->info() ) ) -> _weight;
+ predWeight = ( (TJLterm<T>*) ( predecessor->info() ) ) -> _weight;
+ succWeight = ( (TJLterm<T>*) ( successor->info() ) ) -> _weight;
  _weight = predWeight;
  if( succWeight > _weight ) _weight = succWeight;
  return a;
@@ -1170,13 +1169,13 @@ TJLterm<T1,T2>* TJL<T1,T2>::remove( dlink* w )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-T1 TJL<T1,T2>::standardPart() const 
+template<typename T>
+T TJL<T>::standardPart() const 
 {
- TJLterm<T1,T2>* p; 
+ TJLterm<T>* p; 
  if( _count < 1 ) { return 0.0; }
  dlist_iterator g( _theList );
- p = (TJLterm<T1,T2>*) g();
+ p = (TJLterm<T>*) g();
  if( p->_weight  == 0 ) { return p->_value; }
  return 0.0;
 }
@@ -1184,19 +1183,10 @@ T1 TJL<T1,T2>::standardPart() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJL<T1,T2>::clear() 
+template<typename T>
+void TJL<T>::clear() 
 {
 
-#if 0 
-
- while((  TJLterm<T1,T2>* p = get()  )) 
- { 
-   p->_deleted = true;    /// THIS SHOULD NOT BE NECESSARY
-   // delete p;            
-
- }
-#endif
 
  _theList.clear();
  _count      = 0;
@@ -1211,18 +1201,18 @@ void TJL<T1,T2>::clear()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-T1 TJL<T1,T2>::weightedDerivative( const int* ind ) const 
+template<typename T>
+T TJL<T>::weightedDerivative( const int* ind ) const 
 {
  int i;
- TJLterm<T1,T2>* p;
+ TJLterm<T>* p;
  char theOne;
  
  if( _count < 1 ) return 0.0;
  
  dlist_iterator getNext( _theList );
 
- while((  p = (TJLterm<T1,T2>*) getNext()  )) {
+ while((  p = (TJLterm<T>*) getNext()  )) {
    theOne = 1;
    for ( i = 0; i < _myEnv->_numVar; i++ )
      theOne = theOne && ( (p->_index)(i) == ind[i] );
@@ -1235,12 +1225,12 @@ T1 TJL<T1,T2>::weightedDerivative( const int* ind ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-T1 TJL<T1,T2>::derivative( const int* ind ) const 
+template<typename T>
+T TJL<T>::derivative( const int* ind ) const 
 {
  double n;
  double multiplier;
- T1 d;
+ T d;
  int i;
  
  d = weightedDerivative( ind );
@@ -1258,21 +1248,21 @@ T1 TJL<T1,T2>::derivative( const int* ind ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-T1 TJL<T1,T2>::operator()( const T1* x )  const 
+template<typename T>
+T TJL<T>::operator()( const T* x )  const 
 {
- // This routine is linked to double TJL<T1,T2>::operator()( const Vector& x ) const
+ // This routine is linked to double TJL<T>::operator()( const Vector& x ) const
  // Any change made to this must be reflected in the other.
 
- TJLterm<T1,T2>* p = 0;
- T1 v    = T1();
+ TJLterm<T>* p = 0;
+ T v    = T();
  int w   = 0;
  int i   = 0;
- T1 term = T1();
- T1* u   = 0;
+ T term = T();
+ T* u   = 0;
  dlist_iterator getNext( _theList );
  
- u = new T1[ _myEnv->_numVar ];
+ u = new T[ _myEnv->_numVar ];
  
  // Subtract off the reference point.
  for( i = 0; i < _myEnv->_numVar; i++ ) u[i] = x[i] - _myEnv->_refPoint[i];
@@ -1312,7 +1302,7 @@ T1 TJL<T1,T2>::operator()( const T1* x )  const
  
  v = 0.0;
  
- while((  p = (TJLterm<T1,T2>*) getNext()  )) {
+ while((  p = (TJLterm<T>*) getNext()  )) {
    // REMOVE; for( i = 0; i < _myEnv->_numVar; i++ ) _myEnv->_exponent[i] = (p->_index)(i);
    // REMOVE: _myEnv->_monoCode();
    // REMOVE: v += ( p->_value ) * ( _myEnv->_monomial[ _myEnv->_monoRank() ] );
@@ -1328,11 +1318,11 @@ T1 TJL<T1,T2>::operator()( const T1* x )  const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-T1 TJL<T1,T2>::operator()( const Vector& x ) const 
+template<typename T>
+T TJL<T>::operator()( const Vector& x ) const 
 {
   int n = x.Dim();
-  T1 newarg [n];
+  T newarg [n];
   for( int i = 0; i < n; i++ ) {
     newarg[i] = x(i);
   }
@@ -1351,15 +1341,15 @@ T1 TJL<T1,T2>::operator()( const Vector& x ) const
 //      The overloaded operators for class JL
 //
 
-template<typename T1, typename T2>
-istream& operator>>( istream& is,  TJL<T1,T2>& x ) 
+template<typename T>
+istream& operator>>( istream& is,  TJL<T>& x ) 
 {  // ??? This function shouldn't
    // ??? be here.
   char buf[100];
   int i,j;
   int count;
-  T1 value;
-  TJLterm<T1,T2>* q;
+  T value;
+  TJLterm<T>* q;
 
   x.clear();
 
@@ -1389,7 +1379,7 @@ istream& operator>>( istream& is,  TJL<T1,T2>& x )
     }
     is >> buf;
     is >> value;
-    q = new(x.storePtr()) TJLterm<T1,T2>( ndx, value, x._myEnv );
+    q = new(x.storePtr()) TJLterm<T>( ndx, value, x._myEnv );
     x.append( q );
   }
 
@@ -1400,12 +1390,12 @@ istream& operator>>( istream& is,  TJL<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-ostream& operator<<( ostream& os, const TJL<T1,T2>& x ) 
+template<typename T>
+ostream& operator<<( ostream& os, const TJL<T>& x ) 
 {
  dlist_traversor getNext( x._theList );
 
- TJLterm<T1,T2>* p;
+ TJLterm<T>* p;
  dlink* q;
 
  os << "\n Count = " << x._count << " , Weight = " << x._weight;
@@ -1415,7 +1405,7 @@ ostream& operator<<( ostream& os, const TJL<T1,T2>& x )
     << "\nEnd Environment: " << endl;
 
  while((  q = getNext()  )) {
-   p = (TJLterm<T1,T2>*) q->info();
+   p = (TJLterm<T>*) q->info();
    os << "Index: ";
    os << p->_index << " ";
    os << "   Value: " << setprecision(30) << p -> _value << endl;
@@ -1427,8 +1417,8 @@ ostream& operator<<( ostream& os, const TJL<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool operator==( const TJL<T1,T2>& x, const TJL<T1,T2>& y ) 
+template<typename T>
+bool operator==( const TJL<T>& x, const TJL<T>& y ) 
 {
  if( ( x._count   != y._count )   ||
      ( x._weight  != y._weight )  ||
@@ -1439,15 +1429,15 @@ bool operator==( const TJL<T1,T2>& x, const TJL<T1,T2>& y )
 
  dlist_iterator getNextX( x._theList );
  dlist_iterator getNextY( y._theList );
- TJLterm<T1,T2>* p;
- TJLterm<T1,T2>* q;
+ TJLterm<T>* p;
+ TJLterm<T>* q;
  
- while((  p = (TJLterm<T1,T2>*) getNextX()  )) {
-   if( !( q = (TJLterm<T1,T2>*) getNextY() ) ) return false;
+ while((  p = (TJLterm<T>*) getNextX()  )) {
+   if( !( q = (TJLterm<T>*) getNextY() ) ) return false;
    if( !( *p == *q ) ) return false;
    }
  
- if( (TJLterm<T1,T2>*) getNextY() ) {
+ if( (TJLterm<T>*) getNextY() ) {
    printf( "\n*** ERROR: Inconsistency in JL operator==\n" );
      // This point should never be reached, since that would imply that
      // x._count != y._count
@@ -1460,11 +1450,11 @@ bool operator==( const TJL<T1,T2>& x, const TJL<T1,T2>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool operator==( const TJL<T1,T2>& x, const T1& y ) 
+template<typename T>
+bool operator==( const TJL<T>& x, const T& y ) 
 {
  bool result = true;
- TJLterm<T1,T2>* p;
+ TJLterm<T>* p;
 
  if( x._count < 1 ) {
   if( y == 0.0 ) return true;
@@ -1473,7 +1463,7 @@ bool operator==( const TJL<T1,T2>& x, const T1& y )
 
  dlist_iterator getNext( x._theList );
 
- while((  p = (TJLterm<T1,T2>*) getNext()  )) 
+ while((  p = (TJLterm<T>*) getNext()  )) 
   result = result && ( p->_weight == 0 ? p->_value == y : 
                                         p->_value == 0.0 );
 
@@ -1483,8 +1473,8 @@ bool operator==( const TJL<T1,T2>& x, const T1& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool operator==( const T1& y, const TJL<T1,T2>& x )
+template<typename T>
+bool operator==( const T& y, const TJL<T>& x )
 {
  return x == y;
 }
@@ -1492,8 +1482,8 @@ bool operator==( const T1& y, const TJL<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool operator!=( const TJL<T1,T2>& x, const TJL<T1,T2>& y ) 
+template<typename T>
+bool operator!=( const TJL<T>& x, const TJL<T>& y ) 
 {
  return !( x == y );
 }
@@ -1501,8 +1491,8 @@ bool operator!=( const TJL<T1,T2>& x, const TJL<T1,T2>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool operator!=( const TJL<T1,T2>& x, const T1& y ) 
+template<typename T>
+bool operator!=( const TJL<T>& x, const T& y ) 
 {
  return !( x == y );
 }
@@ -1510,8 +1500,8 @@ bool operator!=( const TJL<T1,T2>& x, const T1& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool operator!=( const T1& x, const TJL<T1,T2>& y ) 
+template<typename T>
+bool operator!=( const T& x, const TJL<T>& y ) 
 {
  return !( x == y );
 }
@@ -1519,8 +1509,8 @@ bool operator!=( const T1& x, const TJL<T1,T2>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJL<T1,T2>& TJL<T1,T2>::operator=( const T1& x ) 
+template<typename T>
+TJL<T>& TJL<T>::operator=( const T& x ) 
 {
  
  clear();
@@ -1529,11 +1519,11 @@ TJL<T1,T2>& TJL<T1,T2>::operator=( const T1& x )
  if( _myEnv ) _accuWgt = _myEnv->_maxWeight;
  else {
    throw( GenericException( __FILE__, __LINE__, 
-     "TJL<T1,T2>& TJL<T1,T2>::operator=( const T1& x ) {", 
+     "TJL<T>& TJL<T>::operator=( const T& x ) {", 
      "Private data _myEnv is null: object has no environment assigned.") );
  }
 
- insert( new(storePtr()) TJLterm<T1,T2>( IntArray( _myEnv->_numVar ), x, _myEnv ) );
+ insert( new(storePtr()) TJLterm<T>( IntArray( _myEnv->_numVar ), x, _myEnv ) );
 
  return *this;
 }
@@ -1541,12 +1531,12 @@ TJL<T1,T2>& TJL<T1,T2>::operator=( const T1& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJL<T1,T2>& TJL<T1,T2>::operator=( const TJL<T1,T2>& x ) 
+template<typename T>
+TJL<T>& TJL<T>::operator=( const TJL<T>& x ) 
 {
- TJLterm<T1,T2>* p = 0;
- TJLterm<T1,T2>* q = 0;
- TJLterm<T1,T2>* old_jltermStore = 0;
+ TJLterm<T>* p = 0;
+ TJLterm<T>* q = 0;
+ TJLterm<T>* old_jltermStore = 0;
 
  if( this == &x ) return *this;
  
@@ -1556,23 +1546,23 @@ TJL<T1,T2>& TJL<T1,T2>::operator=( const TJL<T1,T2>& x )
 
  if ( _jltermStoreCapacity < x._jltermStoreCapacity )  {
    old_jltermStore = _jltermStore;
-      _jltermStore = _jltermStoreCurrentPtr =  TJLterm<T1,T2>::array_allocate(x._jltermStoreCapacity);
+      _jltermStore = _jltermStoreCurrentPtr =  TJLterm<T>::array_allocate(x._jltermStoreCapacity);
       _jltermStoreCapacity = x._jltermStoreCapacity;
  };
 
  
- memcpy( _jltermStore, x._jltermStore, (x._jltermStoreCurrentPtr-x._jltermStore)*sizeof(TJLterm<T1,T2>) );
+ memcpy( _jltermStore, x._jltermStore, (x._jltermStoreCurrentPtr-x._jltermStore)*sizeof(TJLterm<T>) );
  _jltermStoreCurrentPtr = _jltermStore + (x._jltermStoreCurrentPtr-x._jltermStore);
 
  dlist_iterator getNext( x._theList );
 
- while((  p = (TJLterm<T1,T2>*) getNext()  )) {
+ while((  p = (TJLterm<T>*) getNext()  )) {
           q = _jltermStore + ( p - x._jltermStore); 
           append(q);  
  }
 
  if (old_jltermStore) {
-    TJLterm<T1,T2>::array_deallocate( old_jltermStore );
+    TJLterm<T>::array_deallocate( old_jltermStore );
  }
  _count   = x._count;     // _rc is purposely left untouched
  _weight  = x._weight;
@@ -1586,16 +1576,16 @@ TJL<T1,T2>& TJL<T1,T2>::operator=( const TJL<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-template<typename T1, typename T2>
-TJL<T1,T2>& TJL<T1,T2>::operator+=( const T1& x ) {   
+template<typename T>
+TJL<T>& TJL<T>::operator+=( const T& x ) {   
 
  static char firstNull = 1;
  int i;
 
- TJLterm<T1,T2>* p;                               
- TJLterm<T1,T2>* q;
+ TJLterm<T>* p;                               
+ TJLterm<T>* q;
 
- if( p = (TJLterm<T1,T2>*) _theList.firstInfoPtr() )
+ if( p = (TJLterm<T>*) _theList.firstInfoPtr() )
  {
    if ( p->_weight == 0 ) { 
     p->_value += x;
@@ -1603,7 +1593,7 @@ TJL<T1,T2>& TJL<T1,T2>::operator+=( const T1& x ) {
    }
  
    else {
-     q = new(storePtr()) TJLterm<T1,T2>( _myEnv );
+     q = new(storePtr()) TJLterm<T>( _myEnv );
      for( i = 0; i < _myEnv->_numVar; i++ ) q->_index(i) = 0;
      q->_weight = 0;
      q->_value = x;
@@ -1614,7 +1604,7 @@ TJL<T1,T2>& TJL<T1,T2>::operator+=( const T1& x ) {
  {
    if( firstNull ) {
      (*pcerr) << "*** WARNING ***                                 \n"
-             "*** WARNING *** TJL<T1,T2>& TJL<T1,T2>::operator+=( const T1& )\n"
+             "*** WARNING *** TJL<T>& TJL<T>::operator+=( const T& )\n"
              "*** WARNING *** Operator invoked by a null      \n"
              "*** WARNING *** JL.  This warning will not be   \n"
              "*** WARNING *** repeated.                       \n"
@@ -1631,16 +1621,16 @@ TJL<T1,T2>& TJL<T1,T2>::operator+=( const T1& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJLterm<T1,T2> TJLterm<T1,T2>::operator*( const TJLterm<T1,T2>& y ) 
+template<typename T>
+TJLterm<T> TJLterm<T>::operator*( const TJLterm<T>& y ) 
 {
- TJLterm<T1,T2> z(*this);
+ TJLterm<T> z(*this);
  int n = 0;
 
  if((  ( n = this->_index.Dim() ) != y._index.Dim()  )) {
-   throw( typename TJL<T1,T2>::BadDimension( this->_index.Dim(), y._index.Dim(),
+   throw( typename TJL<T>::BadDimension( this->_index.Dim(), y._index.Dim(),
                             __FILE__, __LINE__, 
-                            "TJLterm<T1,T2> TJLterm<T1,T2>::operator*( const TJLterm<T1,T2>& y ) ",
+                            "TJLterm<T> TJLterm<T>::operator*( const TJLterm<T>& y ) ",
                             "Inconsistent number of coordinates." ) );
  }
 
@@ -1653,16 +1643,16 @@ TJLterm<T1,T2> TJLterm<T1,T2>::operator*( const TJLterm<T1,T2>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJLterm<T1,T2> TJLterm<T1,T2>::operator+( const TJLterm<T1,T2>& y ) 
+template<typename T>
+TJLterm<T> TJLterm<T>::operator+( const TJLterm<T>& y ) 
 {
  if( this->_index != y._index ) {
-   throw( typename TJL<T1,T2>::BadDimension( this->_index.Dim(), y._index.Dim(),
+   throw( typename TJL<T>::BadDimension( this->_index.Dim(), y._index.Dim(),
                             __FILE__, __LINE__, 
-                            "TJLterm<T1,T2> TJLterm<T1,T2>::operator*( const TJLterm<T1,T2>& y ) ",
+                            "TJLterm<T> TJLterm<T>::operator*( const TJLterm<T>& y ) ",
                             "Inconsistent number of coordinates." ) );
  }
- TJLterm<T1,T2> z(*this);
+ TJLterm<T> z(*this);
  z._value += y._value;
  return z;
 }
@@ -1675,30 +1665,30 @@ TJLterm<T1,T2> TJLterm<T1,T2>::operator+( const TJLterm<T1,T2>& y )
 // ***************************************************************
 // ***************************************************************
 //
-//      Implementation of Class TJLterm<T1,T2>
+//      Implementation of Class TJLterm<T>
 
-template<typename T1, typename T2>
-TJLterm<T1,T2>::TJLterm() 
-: _index(6), _weight(0), _value(T1()), _deleted(false) /// index argument necessary ???
+template<typename T>
+TJLterm<T>::TJLterm() 
+: _index(6), _weight(0), _value(T()), _deleted(false) /// index argument necessary ???
 {
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJLterm<T1,T2>::TJLterm( TJetEnvironment<T1,T2>* pje ) 
-: _index( pje->_numVar ), _weight(0), _value(T1()), _deleted(false) 
+template<typename T>
+TJLterm<T>::TJLterm( TJetEnvironment<T>* pje ) 
+: _index( pje->_numVar ), _weight(0), _value(T()), _deleted(false) 
 {
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJLterm<T1,T2>::TJLterm( const IntArray& l, 
-                const T1& x, 
-                TJetEnvironment<T1,T2>* pje ) 
+template<typename T>
+TJLterm<T>::TJLterm( const IntArray& l, 
+                const T& x, 
+                TJetEnvironment<T>* pje ) 
 :   _index( l ), _weight(l.Sum()), _value(x), _deleted(false)
 { }
 //------------------------------------------------------------------------------------------------------
@@ -1724,7 +1714,7 @@ TJLterm<T1,T2>::TJLterm( const IntArray& l,
 
    if( n != pje->_numVar ) {
      throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, TJetEnvironment<T1,T2>*",
+            "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
             "Dimensions are wrong.") );
    }
   
@@ -1733,7 +1723,7 @@ TJLterm<T1,T2>::TJLterm( const IntArray& l,
    for( i = 0; i < n; i++ ) {
      if( (l(i) < 0) ) {
        throw( GenericException( __FILE__, __LINE__, 
-              "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, TJetEnvironment<T1,T2>*",
+              "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
               "Bad index in JLTerm.") );
      }
      dpt += l(i);
@@ -1741,7 +1731,7 @@ TJLterm<T1,T2>::TJLterm( const IntArray& l,
   
    if( dpt > pje->_maxWeight ) {
      throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, TJetEnvironment<T1,T2>*",
+            "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
             "Attempt to load a JLTerm with too large a weight.") );
    }
    
@@ -1753,12 +1743,12 @@ TJLterm<T1,T2>::TJLterm( const IntArray& l,
  else {
    if( l.Dim() != 1 ) {
      throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, TJetEnvironment<T1,T2>*",
+            "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
             "Inconsistency between l and pje") );
    }
    if( l(0) != 0 ) {
      throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T1,T2>::TJLterm<T1,T2>( const IntArray&, const T1&, TJetEnvironment<T1,T2>*",
+            "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
             "Bad value of the index when pje = 0.") );
    }
 
@@ -1776,8 +1766,8 @@ TJLterm<T1,T2>::TJLterm( const IntArray& l,
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJLterm<T1,T2>::TJLterm( const IntArray& l, const T1& x )
+template<typename T>
+TJLterm<T>::TJLterm( const IntArray& l, const T& x )
 : _index(l), _weight(l.Sum()), _value(x),_deleted(false)
 {
 }
@@ -1786,8 +1776,8 @@ TJLterm<T1,T2>::TJLterm( const IntArray& l, const T1& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-template<typename T1, typename T2>
-TJLterm<T1,T2>::TJLterm( const TJLterm<T1,T2>* x ) 
+template<typename T>
+TJLterm<T>::TJLterm( const TJLterm<T>* x ) 
 : _index( x->_index ), _weight(x->_weight), _value(x->_value), _deleted(x->_deleted)
 {
 }
@@ -1795,8 +1785,8 @@ TJLterm<T1,T2>::TJLterm( const TJLterm<T1,T2>* x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TJLterm<T1,T2>::TJLterm( const TJLterm<T1,T2>& x ) 
+template<typename T>
+TJLterm<T>::TJLterm( const TJLterm<T>& x ) 
 : _index( x._index ), _weight(x._weight), _value(x._value), _deleted(x._deleted)
 {
 }
@@ -1804,8 +1794,8 @@ TJLterm<T1,T2>::TJLterm( const TJLterm<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void TJLterm<T1,T2>::Reconstruct( const IntArray& e, const T1& x )
+template<typename T>
+void TJLterm<T>::Reconstruct( const IntArray& e, const T& x )
 {
   _index.Reconstruct(e);
   _weight   = e.Sum();
@@ -1821,8 +1811,8 @@ void TJLterm<T1,T2>::Reconstruct( const IntArray& e, const T1& x )
 
 #if  0
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-template<typename T1, typename T2>
-TJLterm<T1,T2>::~TJLterm<T1,T2>() 
+template<typename T>
+TJLterm<T>::~TJLterm<T>() 
 {
  
 
@@ -1830,17 +1820,17 @@ TJLterm<T1,T2>::~TJLterm<T1,T2>()
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #endif 
 
-template<typename T1, typename T2>
-TJLterm<T1,T2>* TJLterm<T1,T2>::array_allocate(int n) {
+template<typename T>
+TJLterm<T>* TJLterm<T>::array_allocate(int n) {
 
-    TJLterm<T1,T2>* p = 
-       static_cast<TJLterm<T1,T2>*>(_ordered_memPool.ordered_malloc( n ));
+    TJLterm<T>* p = 
+       static_cast<TJLterm<T>*>(_ordered_memPool.ordered_malloc( n ));
     _array_sizes[ p ] = n;
     return p;
 }
 
-template<typename T1, typename T2>
-void TJLterm<T1,T2>::array_deallocate(TJLterm<T1,T2>* p) {
+template<typename T>
+void TJLterm<T>::array_deallocate(TJLterm<T>* p) {
 
     _ordered_memPool.ordered_free( p, _array_sizes[p] ); 
     _array_sizes.erase(p );
@@ -1853,24 +1843,24 @@ void TJLterm<T1,T2>::array_deallocate(TJLterm<T1,T2>* p) {
 // 
 //  __gnu_cxx::hash_map is an extension to the STL. 
 //  There is equivalent functionality in tr1 ...
-//  boost::hash<TJLterm<T1,T2>*> is used to get a portable
+//  boost::hash<TJLterm<T>*> is used to get a portable
 //  pointer hash fnct. 
 
-template <typename T1, typename T2>
-boost::pool<> TJLterm<T1,T2>::_ordered_memPool( sizeof(TJLterm<T1,T2>), 2048 );
+template <typename T>
+boost::pool<> TJLterm<T>::_ordered_memPool( sizeof(TJLterm<T>), 2048 );
 
-template <typename T1, typename T2>
-__gnu_cxx::hash_map< TJLterm<T1,T2>*, unsigned int, boost::hash<TJLterm<T1,T2>*> > TJLterm<T1,T2>::_array_sizes;
+template <typename T>
+__gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> > TJLterm<T>::_array_sizes;
 
 
 // ***************************************************************
 // ***************************************************************
 // ***************************************************************
 //
-//      Overloaded operators for class TJLterm<T1,T2>
+//      Overloaded operators for class TJLterm<T>
 
-template<typename T1, typename T2>
-TJLterm<T1,T2>& TJLterm<T1,T2>::operator=( const TJLterm<T1,T2>& x ) 
+template<typename T>
+TJLterm<T>& TJLterm<T>::operator=( const TJLterm<T>& x ) 
 {
  _deleted = x._deleted;
  _weight  = x._weight;
@@ -1882,8 +1872,8 @@ TJLterm<T1,T2>& TJLterm<T1,T2>::operator=( const TJLterm<T1,T2>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool operator==( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b ) 
+template<typename T>
+bool operator==( const TJLterm<T>& a, const TJLterm<T>& b ) 
 {
  if( a._weight != b._weight ) return false;
  if( a._value  != b._value  ) return false;
@@ -1895,8 +1885,8 @@ bool operator==( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool operator!=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b ) 
+template<typename T>
+bool operator!=( const TJLterm<T>& a, const TJLterm<T>& b ) 
 {
  return !( a == b );
 }
@@ -1904,14 +1894,14 @@ bool operator!=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool operator<=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b ) 
+template<typename T>
+bool operator<=( const TJLterm<T>& a, const TJLterm<T>& b ) 
 {
  int i;
  if( a._index.Dim() != b._index.Dim() ) {
-   throw( typename TJL<T1,T2>::BadDimension( a._index.Dim(), b._index.Dim(), 
+   throw( typename TJL<T>::BadDimension( a._index.Dim(), b._index.Dim(), 
           __FILE__, __LINE__, 
-          "char operator<=( const TJLterm<T1,T2>&, const TJLterm<T1,T2>& )",
+          "char operator<=( const TJLterm<T>&, const TJLterm<T>& )",
           "Dimensions don't match.") );
  }
 
@@ -1961,8 +1951,8 @@ bool operator<=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-bool operator%=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b ) 
+template<typename T>
+bool operator%=( const TJLterm<T>& a, const TJLterm<T>& b ) 
 {
  if( a._weight != b._weight ) return false;
  return a._index == b._index;
@@ -1974,10 +1964,8 @@ bool operator%=( const TJLterm<T1,T2>& a, const TJLterm<T1,T2>& b )
 
 //the static variable _thePool is defined here. 
 
-template <typename T1, typename T2>
-std::vector<TJL<T1,T2>* > TJL<T1,T2>::_thePool; 
+template <typename T>
+std::vector<TJL<T>* > TJL<T>::_thePool; 
 
 
 #endif // TJL_TCC
-
-#endif // EXPLICIT_TEMPLATE_INSTANTIATIONS 
