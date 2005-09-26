@@ -9,8 +9,20 @@
 ******  File:      bmlnElmnt.h
 ******  Version:   3.1
 ******
-******  Copyright (c) 1991 Universities Research Association, Inc.
+******                                                                
+******  Copyright (c) Universities Research Association, Inc. / Fermilab     
 ******                All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******                                                                 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -22,13 +34,9 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 
 #ifndef BMLNELMNT_H
 #define BMLNELMNT_H
@@ -47,20 +55,12 @@
                            // support hashes.      
 #include <boost/any.hpp>
 
+#include <Jet.h>
+#include <JetVector.h>
 
 class ParticleBunch;
 class Aperture;
 class Particle;
-
-template<typename T1, typename T2> 
-class TJet;
-typedef TJet<double,FNAL::Complex> Jet;
-// class Jet;
-
-template<typename T1, typename T2> 
-class TJetVector;
-typedef TJetVector<double,FNAL::Complex> JetVector;
-// class JetVector;
 
 class JetParticle;
 class InsertionList;
