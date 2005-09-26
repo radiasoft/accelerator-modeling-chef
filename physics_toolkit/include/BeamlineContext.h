@@ -9,8 +9,20 @@
 ******  File:      BeamlineContext.h
 ******  Version:   2.0
 ******                                                                
-******  Copyright (c) 2001  Universities Research Association, Inc.   
+******                                                                
+******  Copyright (c) Universities Research Association, Inc. / Fermilab     
 ******                All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******                                          
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -22,22 +34,22 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
 
-
 #ifndef BEAMLINECONTEXT_H
 #define BEAMLINECONTEXT_H
 
-#ifndef _CPP_IOSTREAM
 #include <iostream>
-#endif
+#include <complexAddon.h>
+#include <Mapping.h>
+#include <LattFuncSage.h>
+#include <EdwardsTengSage.h>
+#include <CovarianceSage.h>
+#include <LBSage.h>
+#include <DispersionSage.h>
 
-#include "complexAddon.h"
 
 class beamline;
 class ClosedOrbitSage;
@@ -53,32 +65,6 @@ class DeepBeamlineIterator;
 class ReverseBeamlineIterator;
 class DeepReverseBeamlineIterator;
 
-template<typename T1, typename T2> 
-class TMapping;
-typedef TMapping<double,FNAL::Complex> Mapping;
-// class Mapping;
-
-#ifndef LATTFUNCSAGE_H
-#include "LattFuncSage.h"
-#endif
-// The way that LattFuncSage.h is currently written,
-// it #includes bmlnElmnt.h.  Bad form.
-
-#ifndef EDWARDSTENGSAGE_H
-#include "EdwardsTengSage.h"
-#endif
-
-#ifndef COVARIANCESAGE_H
-#include "CovarianceSage.h"
-#endif
-
-#ifndef LBSAGE_H
-#include "LBSage.h"
-#endif
-
-#ifndef DISPERSIONSAGE_H
-#include "DispersionSage.h"
-#endif
 
 class BeamlineContext
 {
