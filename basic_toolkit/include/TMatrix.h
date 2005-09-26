@@ -33,6 +33,8 @@
 ******             ostiguy@fnal.gov                                   
 ******             
 ******   - reorganized code to support explicit template instantiations
+******   - eliminated explicit MatrixC class implementation and replaced by typedef   
+******   - use conversion operator for implicit conversions
 ******   
 ******                                                                
 ******                                                                
@@ -86,7 +88,6 @@ template<typename T> bool operator!=( const TMatrix<T>&, const TMatrix<T>& );
 template<typename T> bool operator!=( const TMatrix<T>&, const T& );
 template<typename T> bool operator!=( const T&, const TMatrix<T>& );
 
-
 template<typename T>
 class TMatrix
 {
@@ -112,7 +113,8 @@ public:
   inline int rows() const { return _ml->_r;}
   inline int cols() const { return _ml->_c;}
 
-  TMatrix<T> transpose() const;
+  TMatrix<T> transpose() const; 
+  TMatrix<T> dagger() const;
   TMatrix<T> Square() const;
   T determinant() const;
   TMatrix<T> inverse() const;
@@ -132,6 +134,10 @@ public:
   void       _lu_back_subst( int*, TMatrix<T>& );
 
   // Operators________________________________________________________
+
+  
+  operator TMatrix<FNAL::Complex> ();  //  Conversion operator; 
+
   TMatrix<T>& operator=(const TMatrix&);
   TMatrix<T>& DeepCopy(const TMatrix&);
   T& operator()(int row, int column);
@@ -229,6 +235,13 @@ public:
 
 
 // TMatrix Specializations
+
+template<> 
+TMatrix<double>                 TMatrix<double>::dagger() const; 
+template<> 
+TMatrix<std::complex<double> >  TMatrix<std::complex<double> >::dagger() const; 
+
+template<> TMatrix<double>::operator TMatrix<FNAL::Complex> ();  
  
 template<> TMatrix<FNAL::Complex> TMatrix<double>::eigenValues();
 template<> TMatrix<FNAL::Complex> TMatrix<double>::eigenVectors(); 
@@ -270,33 +283,11 @@ class RandomOrthogonal
 };
 
 
-// Derived class MatrixC
-// Done to replicate member functions dagger() and MatrixC(const TMatrix<double>&)
+typedef class TMatrix<double>                Matrix;
+typedef class TMatrix<double>                MatrixD;
+typedef class TMatrix<FNAL::Complex>         MatrixC;
+typedef class TMatrix<int>                   MatrixI;
 
-struct MatrixC : public TMatrix<FNAL::Complex>
-{
-  MatrixC();
-  MatrixC(const MatrixC& );
-  MatrixC(const TMatrix<FNAL::Complex>& );
-  MatrixC(const TMatrix<double>&);
-  MatrixC(int);
-  MatrixC(int rows, int columns );
-  MatrixC(int rows, int columns, const FNAL::Complex& initval );
-  MatrixC(int rows, int columns, FNAL::Complex* initval);
-  MatrixC(const char* flag, int dimension); // create an identity matrix
-				     // or a symplectic matrix
-  ~MatrixC();
-
-  MatrixC dagger() const;
-};
-
-
-typedef TMatrix<double>         Matrix;
-typedef TMatrix<double>         MatrixD;
-typedef TMatrix<int>            MatrixI;
-
-MatrixD real( const MatrixC& x );
-MatrixD imag( const MatrixC& x );
 
 #endif // TMATRIX_H
 
