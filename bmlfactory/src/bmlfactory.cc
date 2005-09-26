@@ -497,11 +497,15 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
 
       double k0l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K0L], var_table_, bel_table_ );
       if( k0l != 0.0 ) {
-        cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
-             << "\n*** WARNING *** Value of K0L is being ignored.       "
-             << "\n*** WARNING *** K0L = " << k0l << " for " <<  bel->name_
-             << "\n*** WARNING ***                                      "
-             << endl;
+        q = new thin2pole(BRHO_*k0l);
+        roll = expr_evaluate( bel->params_[BEL_MULTIPOLE_T0], var_table_, bel_table_ );
+        if( 0.0 != roll ) {
+          aligner->xOffset = 0.0;
+          aligner->yOffset = 0.0;
+          aligner->tilt    = roll;
+          q->setAlignment( *aligner );
+	}
+        temp->append( q );
       }
 
       double k1l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K1L], var_table_, bel_table_ );

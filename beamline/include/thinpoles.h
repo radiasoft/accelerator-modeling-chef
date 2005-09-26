@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      thinpoles.h
+******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -35,6 +35,30 @@
 
 #include "bmlnElmnt.h"
 
+class thin2pole : public bmlnElmnt
+{
+public:
+  thin2pole( double /* strength = BL */ );
+  thin2pole( char*  /* name */,
+             double /* strength */ );
+  thin2pole( bmlnElmntData& );
+  thin2pole( const thin2pole& );
+  ~thin2pole();
+
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
+
+  void accept( BmlVisitor& v ) { v.visitThin2pole( this ); }
+  void accept( ConstBmlVisitor& v ) const { v.visitThin2pole( this ); }
+
+  const char* Type() const;
+  virtual int isType(char* c) { if ( strcmp(c, "thin2pole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+
+  bmlnElmnt* Clone() const { return new thin2pole( *this ); }
+} ;
+
+
 class thin12pole : public bmlnElmnt
 {
 public:
@@ -46,7 +70,7 @@ public:
   ~thin12pole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& p );
+  void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThin12pole( this ); }
@@ -69,7 +93,7 @@ public:
   ~thin14pole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& p );
+  void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThin14pole( this ); }
@@ -91,7 +115,7 @@ public:
   ~thin16pole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& p );
+  void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThin16pole( this ); }
@@ -113,7 +137,7 @@ public:
   ~thin18pole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& p );
+  void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThin18pole( this ); }
@@ -135,7 +159,7 @@ public:
   ~thinMultipole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& p );
+  void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v ) { v.visitThinMultipole( this ); }

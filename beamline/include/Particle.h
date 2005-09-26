@@ -74,6 +74,7 @@ protected:
   friend class JetthinSext;
   friend class thinOctupole;
   friend class thinDecapole;
+  friend class thin2pole;
   friend class thin12pole;
   friend class thin14pole;
   friend class thin16pole;
@@ -383,6 +384,7 @@ protected:
   friend class JetthinSext;
   friend class thinOctupole;
   friend class thinDecapole;
+  friend class thin2pole;
   friend class thin12pole;
   friend class thin14pole;
   friend class thin16pole;
