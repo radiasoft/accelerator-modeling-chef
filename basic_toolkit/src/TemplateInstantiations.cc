@@ -33,6 +33,7 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+#ifndef BASICTOOLKIT_IMPLICIT_TEMPLATES
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -130,3 +131,5 @@ template TMatrix<FNAL::Complex> operator/(TMatrix<FNAL::Complex>&, TMatrix<FNAL:
 template class TML<double>;
 template class TML<FNAL::Complex>;
 template class TML<int>;
+
+#endif //BASICTOOLKIT_IMPLICIT_TEMPLATES
