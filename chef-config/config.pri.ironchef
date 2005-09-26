@@ -17,8 +17,8 @@ GLIB_INSTALL_TOP_DIR   =  /usr
 GLIB_VERSION           =  2.0
 PYTHON_INSTALL_TOP_DIR =  /usr/local
 PYTHON_VERSION         =  2.4
-QWT_INSTALL_TOP_DIR    =  /usr/local/qt
-QUTEXR_INSTALL_TOP_DIR =  /usr/local/qt
+QWT_INSTALL_TOP_DIR    =  /usr/local/qt3
+QUTEXR_INSTALL_TOP_DIR =  /usr/local/qt3
 
 ########################################################################
 
@@ -27,6 +27,7 @@ GLIB_INC        =  $${GLIB_INSTALL_TOP_DIR}/include/glib-$${GLIB_VERSION}
 GLIBCONFIG_INC  =  $${GLIB_INSTALL_TOP_DIR}/lib/glib-$${GLIB_VERSION}/include
 PYTHON_INC      =  $${PYTHON_INSTALL_TOP_DIR}/include/python$${PYTHON_VERSION}
 QUTEXR_INC      =  $${QUTEXR_INSTALL_TOP_DIR}/include/qutexr
+QUTEXR_INC     +=  $${QUTEXR_INC}/include
 
 INCLUDEPATH     += $${FNAL_INSTALL_TOP_DIR}/include/beamline
 INCLUDEPATH     += $${FNAL_INSTALL_TOP_DIR}/include/bmlfactory
@@ -34,9 +35,9 @@ INCLUDEPATH     += $${FNAL_INSTALL_TOP_DIR}/include/mxyzptlk
 INCLUDEPATH     += $${FNAL_INSTALL_TOP_DIR}/include/basic_toolkit
 INCLUDEPATH     += $${FNAL_INSTALL_TOP_DIR}/include/physics_toolkit
 INCLUDEPATH     += $${FNAL_INSTALL_TOP_DIR}/include/gms
-INCLUDEPATH     += $$BOOST_INC
-INCLUDEPATH     += $$GLIB_INC $$GLIBCONFIG_INC
-INCLUDEPATH     += $$QUTEXR_INC 
+INCLUDEPATH     += $${BOOST_INC}
+INCLUDEPATH     += $${GLIB_INC} $${GLIBCONFIG_INC}
+INCLUDEPATH     += $${QUTEXR_INC} 
 INCLUDEPATH += ./include
 INCLUDEPATH += ./src/ui
 
