@@ -67,7 +67,8 @@ const double limit = double(1e-14);
 
 template class TMatrix<double>;
 template class TMatrix<FNAL::Complex>;
-template class TMatrix<int>;
+template class TMatrix<int>;  // This should not be used at all, 
+                              // but apparently it is ... 
 
 template bool operator==( const TMatrix<double>&, const TMatrix<double>& );
 template bool operator==( const TMatrix<double>&, const double& );
@@ -104,6 +105,7 @@ template TMatrix<int> operator*(const int, const TMatrix<int>&);
 template TMatrix<int> operator/(const TMatrix<int>&, const int);
 template TMatrix<int> operator/(const int, TMatrix<int>&);
 template TMatrix<int> operator/(TMatrix<int>&, TMatrix<int>&);
+
 
 template bool operator==( const TMatrix<FNAL::Complex>&, const TMatrix<FNAL::Complex>& );
 template bool operator==( const TMatrix<FNAL::Complex>&, const FNAL::Complex& );
