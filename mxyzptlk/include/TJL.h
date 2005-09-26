@@ -5,11 +5,21 @@
 ******  MXYZPTLK:  A C++ implementation of differential algebra.
 ******
 ******  File:      TJL.h
-******  Version:   1.0
 ******
 ******  Copyright (c) Universities Research Association, Inc.
 ******                All Rights Reserved
 ******
+******* Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
 ******  Author:    Leo Michelotti
 ******
 ******             Fermilab
@@ -22,24 +32,18 @@
 ******
 ******  Revision History:
 ******
-******  Feb 2005 - Jean-Francois Ostiguy
+******  Feb 2005   Jean-Francois Ostiguy
 *****              ostiguy@fnal.gov
 ******  
-******  Efficiency improvements
-******  - Major memory management redesign. 
+******              - Efficiency improvements
+******              - Major memory management redesign. 
 ******  
-****** 
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License supplied with this software.
+******  Sept 2005   ostiguy@fnal.gov
+******              - new code based on a single template parameter
+******                instead of two. Mixed mode handled
+******                using conversion operators.
+******                 
 ******  
-******  Software and documentation created under 
-******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******* The U.S. Government retains a world-wide non-exclusive, 
-******* royalty-free license to publish or reproduce documentation 
-******* and software for U.S. Government purposes. This software 
-******* is protected under the U.S. and Foreign Copyright Laws. 
-******* URA/FNAL reserves all rights.
-*******                                                                
 **************************************************************************
 **************************************************************************
 **************************************************************************
@@ -61,41 +65,46 @@
 
 // *******************************************************************
 
-template<typename T1, typename T2>
-struct TJLterm: public gms::FastPODAllocator<TJLterm<T1,T2> >  
+template<typename T>
+struct TJLterm: public gms::FastPODAllocator<TJLterm<T> >  
 {
 
   // Data
-  IntArray _index; // An integer array giving the derivatives associated
-                   //   with the JLterm.  For example, ( 1, 1, 0, 2 )
-                   //   would correspond to D_1^1 D_2^1 D_4^2 .
-  int _weight;     // The sum of the values in index.  For the above example,
-                   //   this would be 4.
-  T1 _value;       // The value associated with the JLterm.
+  IntArray _index;      //  An integer array giving the derivatives associated
+                        //  with the JLterm.  For example, ( 1, 1, 0, 2 )
+                        //  would correspond to D_1^1 D_2^1 D_4^2 .
+  int      _weight;     //  The sum of the values in index.  For the above example,
+                        //  this would be 4.
+  T        _value;      //  The value associated with the JLterm.
 
-  bool _deleted;   // true if the term has been deleted
+  bool     _deleted;    //  true when the term has been deleted (but not yet de-allocated)
 
   // Constructors and destructors
   TJLterm();
-  void Reconstruct( const IntArray&, const T1& );
-  // NOTE: The void constructor is to be used ONLY in
+
+  void Reconstruct( const IntArray&, const T& );
+
+  //   NOTE: The void constructor is to be used ONLY in
   //   conjunction with Reconstruct. By default,
   //   _index is made 6 dimensional until Reconstruct
   //   is invoked.
-  TJLterm( TJetEnvironment<T1,T2>* );
-  TJLterm( const IntArray&, const T1&, TJetEnvironment<T1,T2>* );
-  // If 0 is used for the environment pointer,
+
+  TJLterm( TJetEnvironment<T>* );
+  TJLterm( const IntArray&, const T&, TJetEnvironment<T>* );
+
+  //   If 0 is used for the environment pointer,
   //   it is assumed that the that the variable
   //   represents a constant function.
-  TJLterm( const IntArray&, const T1& );
+
+  TJLterm( const IntArray&, const T& );
   TJLterm( const TJLterm* );
   TJLterm( const TJLterm& );
-  TJLterm( const TJLterm<T2,T1>& );
-  TJLterm( const TJLterm<T2,T1>* );
-
-  // ~TJLterm();  NOT NEEDED ! 
 
   // Operators
+
+  operator TJLterm <std::complex<double> > () const;
+  operator TJLterm <double> () const;
+
   TJLterm& operator=( const TJLterm& );
   TJLterm  operator*( const TJLterm& );
   TJLterm  operator+( const TJLterm& );
@@ -103,23 +112,27 @@ struct TJLterm: public gms::FastPODAllocator<TJLterm<T1,T2> >
   // Accessors
   IntArray& exponents()         { return _index; }
   IntArray  exponents()   const { return _index; }
-  T1&       coefficient()       { return _value; }
-  T1        coefficient() const { return _value; }
-  T1        coeff()       const { return _value; }  // old
+  T&        coefficient()       { return _value; }
+  T         coefficient() const { return _value; }
+  T         coeff()       const { return _value; }  // old
 
-  static TJLterm<T1,T2>*   array_allocate(int n);
-  static void              array_deallocate(TJLterm<T1,T2>* p);
+  // JLterm array allocation functions
+
+  static TJLterm<T>*       array_allocate(int n);
+  static void              array_deallocate(TJLterm<T>* p);
 
   private:
 
-  static boost::pool<>                                                       
-                         _ordered_memPool; // an ordered pool of TJLterms
-  
-  static __gnu_cxx::hash_map< TJLterm<T1,T2>*, unsigned int, boost::hash<TJLterm<T1,T2>*> > 
-                         _array_sizes;     // the size of the allocated arrays, 
-                                           // indexed by their pointers   
+  // ~TJLterm();           MUST NOT BE DEFINED ! 
 
-  // prevent use of all forms of operator new[];
+  static boost::pool<>                                                       
+                         _ordered_memPool;  // an ordered pool of TJLterms
+  
+  static __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> > 
+                         _array_sizes;      // the size of the allocated arrays, 
+                                            // indexed by their pointers   
+
+  // these declations are meant to prevent use of all forms of operator new[];
 
   static void* operator new[]( std::size_t size) throw (std::bad_alloc); 
   static void* operator new[]( std::size_t size, const std::nothrow_t&) throw();
@@ -134,97 +147,106 @@ struct TJLterm: public gms::FastPODAllocator<TJLterm<T1,T2> >
 
 // *******************************************************************
 
-template<typename T1, typename T2> struct TJL
+template<typename T> class TJL
 {
 
+ 
+ public:
+ 
   dlist _theList;    // Data structure to hold all the information.
 
-  int _count;        // The number of JL terms in the variable
-  int _weight;       // The maximum weight of the terms
-  int _accuWgt;      // Highest weight computed accurately
+  int   _count;      // The number of JL terms in the variable
+  int   _weight;     // The maximum weight of the terms
+  int   _accuWgt;    // Highest weight computed accurately
 
-  TJetEnvironment<T1,T2>*  _myEnv;
-                    // Environment of the jet.
+  TJetEnvironment<T>*  _myEnv;
+                     // Environment of the jet.
 
   int _rc;           // Reference counting for garbage collection
   
-  TJLterm<T1,T2>*                     _jltermStore;
-  TJLterm<T1,T2>*                     _jltermStoreCurrentPtr;
+  TJLterm<T>*                         _jltermStore;
+  TJLterm<T>*                         _jltermStoreCurrentPtr;
   int                                 _jltermStoreCapacity;
 
   void initStore();                // setup and initialize the jlterm store using default capacity 
   void initStore(int capacity);    // setup and initialize the jlterm store 
 
-  void insert( TJLterm<T1,T2>* );
-  void append( TJLterm<T1,T2>* );
-  TJLterm<T1,T2>* remove( dlink* );
+  void insert( TJLterm<T>* );
+  void append( TJLterm<T>* );
+  TJLterm<T>* remove( dlink* );
 
   // Constructors and destructors_____________________________________
 
- private:
+ public:
 
-  TJL( TJetEnvironment<T1,T2>* = 0 );
-  TJL( const T1&, TJetEnvironment<T1,T2>* );
-  TJL( const IntArray&, const T1&, TJetEnvironment<T1,T2>*  );
+  TJL( TJetEnvironment<T>* = 0 );
+  TJL( const T&, TJetEnvironment<T>* );
+  TJL( const IntArray&, const T&, TJetEnvironment<T>*  );
   TJL( const TJL& );
   TJL( const TJL* );
-  TJL( const TJL<T2,T1>&, TJetEnvironment<T1,T2>* );
   ~TJL();
 
-  static std::vector<TJL<T1,T2>* >  _thePool;
+  static std::vector<TJL<T>* >  _thePool;  // declared public because the TJet
+                                           // conversion function need access FIXME !
+
 
  public:
  
+
   // factory functions 
 
-  static TJL<T1,T2>* makeTJL( TJetEnvironment<T1,T2>* = 0 );
-  static TJL<T1,T2>* makeTJL( const T1&, TJetEnvironment<T1,T2>* );
-  static TJL<T1,T2>* makeTJL( const IntArray&, const T1&, TJetEnvironment<T1,T2>*  );
-  static TJL<T1,T2>* makeTJL( const TJL& );
-  static TJL<T1,T2>* makeTJL( const TJL* );
-  static TJL<T1,T2>* makeTJL( const TJL<T2,T1>&, TJetEnvironment<T1,T2>* );
+  static TJL<T>* makeTJL( TJetEnvironment<T>* = 0 );
+  static TJL<T>* makeTJL( const T&, TJetEnvironment<T>* );
+  static TJL<T>* makeTJL( const IntArray&, const T&, TJetEnvironment<T>*  );
+  static TJL<T>* makeTJL( const TJL& );
+  static TJL<T>* makeTJL( const TJL* );
+  static void discardTJL( TJL<T>* p);  
+  
+  // converters
 
-  static void discardTJL( TJL<T1,T2>* p);  
+  // operator TJL<double> () const;
+  // operator TJL<std::complex<double> > () const;
+
 
   // Public member functions__________________________________________
 
-  TJLterm<T1,T2>* get();        // Pops the top term, which should be the
-                                // one of lowest weight.
-  TJLterm<T1,T2>  firstTerm() const;    
-                                // Returns a TJLterm<T1,T2> equivalent 
-                                // to the top term,
-                                // which should be the one of lowest weight.
-  TJLterm<T1,T2>  lowTerm()   const;    
-                                // Returns a TJLterm<T1,T2> equivalent to the
-                                // non-zero term of lowest weight.
-  void addTerm( TJLterm<T1,T2>* ); // Public only for diagnostic purposes.
-  void addTerm( TJLterm<T1,T2>*, dlist_traversor& ); 
-                                   // Public only for diagnostic purposes.
+  TJLterm<T>* get();                      // Pops the top term, which should be the
+                                          // one of lowest weight.
+  TJLterm<T>  firstTerm() const;    
+                                          // Returns a TJLterm<T> equivalent 
+                                          // to the top term,
+                                          // which should be the one of lowest weight.
+  TJLterm<T>  lowTerm()   const;    
+                                          // Returns a TJLterm<T> equivalent to the
+                                          // non-zero term of lowest weight.
+  void addTerm( TJLterm<T>* );            // Public only for diagnostic purposes.
+  void addTerm( TJLterm<T>*, dlist_traversor& ); 
+                                           // Public only for diagnostic purposes.
  
-  TJLterm<T1,T2>* storePtr();   // return a ptr to the next available block in the JLterm store;
+  TJLterm<T>* storePtr();                  // returns a ptr to the next available block in the JLterm store;
 
   bool isNilpotent() const;
   void writeToFile( std::ofstream& ) const;
 
-  void getReference( T1* ) const;
-  void scaleBy( T1 );
+  void getReference( T* ) const;
+  void scaleBy( T );
 
-  void setVariable( const T1&,
+  void setVariable( const T&,
                     const int&,
-                    TJetEnvironment<T1,T2>* = 0 );
+                    TJetEnvironment<T>* = 0 );
                   // WARNING: This routine alters the environment in
                   // WARNING: the third argument.
 
   void setVariable( const int&,
-                    TJetEnvironment<T1,T2>* = 0 );
+                    TJetEnvironment<T>* = 0 );
 
-  T1 standardPart() const;
+  T standardPart() const;
   void clear();
-  T1 weightedDerivative( const int* ) const;
-  T1 derivative( const int* ) const;
+  T weightedDerivative( const int* ) const;
+  T derivative( const int* ) const;
 
-  T1 operator()( const Vector& ) const;
-  T1 operator()( const T1* ) const;
+  T operator()( const Vector& ) const;
+  T operator()( const T* ) const;
                        // Performs a multinomial evaluation of
                        // the TJL variable.  Essentially acts as a
                        // power series expansion.
@@ -233,15 +255,15 @@ template<typename T1, typename T2> struct TJL
 
   // Arithmetic operators
   TJL& operator=( const TJL& );
-  TJL& operator=( const T1& );
+  TJL& operator=( const T& );
   TJL& operator+=( const TJL& );
-  TJL& operator+=( const T1& );
+  TJL& operator+=( const T& );
   TJL& operator-=( const TJL& );
-  TJL& operator-=( const T1& );
+  TJL& operator-=( const T& );
   TJL& operator*=( const TJL& );
-  TJL& operator*=( const T1& );
+  TJL& operator*=( const T& );
   TJL& operator/=( const TJL& );
-  TJL& operator/=( const T1& );
+  TJL& operator/=( const T& );
 
 
   // Exception subclasses____________________________________________
@@ -284,7 +306,7 @@ template<typename T1, typename T2> struct TJL
   {
     BadReference( int, double, std::string, int, const char* = "", const char* = "" );
     // Attempt to convert a JetC__environment with non-real
-    // reference point into a TJetEnvironment<T1,T2>.
+    // reference point into a TJetEnvironment<T>.
     // 1st argument: reference point component index
     // 2nd         : imaginary part of component
     // 3rd         : name of file in which exception is thrown
@@ -337,5 +359,8 @@ template<typename T1, typename T2> struct TJL
   };
 };
 
+#ifdef  MXYZPTLK_IMPLICIT_TEMPLATES
+#include <TJL.tcc>
+#endif
 
 #endif // TJL_H

@@ -38,14 +38,17 @@
 ******  May 2005 - Jean-Francois Ostiguy
 ******             ostiguy@fnal.gov
 ******
-****** Efficiency improvements. 
-****** - new memory management
+******            -Efficiency improvements. 
+******            - new memory management
+******
+******  Sept 2005   ostiguy@fnal.gov
+******
+******            - new code based on a single template parameter
+******              instead of two. Mixed mode now handled
+******              using conversion operators.
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
-#ifdef EXPLICIT_TEMPLATE_INSTANTIATIONS
-
 #ifndef TMAPPING_TCC
 #define TMAPPING_TCC
 
@@ -76,41 +79,41 @@ using namespace std;
 //    Constructors and destructors    |||||||||||||||||||||||||||
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TMapping<T1,T2>::TMapping<T1,T2>( int n,
-                                  const TJet<T1,T2>* pj,
-                                  TJetEnvironment<T1,T2>* pje )
-: TJetVector<T1,T2>( n, pj, pje )
+template<typename T>
+TMapping<T>::TMapping<T>( int n,
+                                  const TJet<T>* pj,
+                                  TJetEnvironment<T>* pje )
+: TJetVector<T>( n, pj, pje )
 {
 }
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TMapping<T1,T2>::TMapping<T1,T2>( const TMapping<T1,T2>& x ) 
-: TJetVector<T1,T2>( (const TJetVector<T1,T2>&) x ) 
+template<typename T>
+TMapping<T>::TMapping<T>( const TMapping<T>& x ) 
+: TJetVector<T>( (const TJetVector<T>&) x ) 
 {
 }
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TMapping<T1,T2>::TMapping<T1,T2>( const TJetVector<T1,T2>& x ) 
-: TJetVector<T1,T2>( x ) 
+template<typename T>
+TMapping<T>::TMapping<T>( const TJetVector<T>& x ) 
+: TJetVector<T>( x ) 
 {
 }
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TMapping<T1,T2>::TMapping<T1,T2>( const char*, TJetEnvironment<T1,T2>* pje  ) 
-: TJetVector<T1,T2>( pje->_spaceDim, 0, pje )
+template<typename T>
+TMapping<T>::TMapping<T>( const char*, TJetEnvironment<T>* pje  ) 
+: TJetVector<T>( pje->_spaceDim, 0, pje )
 {
  int i, s;
  
  if( pje->_spaceDim == 0 ) {
    throw( GenericException(__FILE__, __LINE__, 
-          "TMapping<T1,T2>::TMapping<T1,T2>( char*, TJetEnvironment<T1,T2>* ) ",
+          "TMapping<T>::TMapping<T>( char*, TJetEnvironment<T>* ) ",
           "Phase space has dimension 0." ) );
  }
  
@@ -122,24 +125,24 @@ TMapping<T1,T2>::TMapping<T1,T2>( const char*, TJetEnvironment<T1,T2>* pje  )
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TMapping<T1,T2>::~TMapping<T1,T2>() 
+template<typename T>
+TMapping<T>::~TMapping<T>() 
 {
 }
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TMapping<T1,T2> TMapping<T1,T2>::operator()( const TMapping<T1,T2>& x ) const
+template<typename T>
+TMapping<T> TMapping<T>::operator()( const TMapping<T>& x ) const
 {
  if( x._dim != (this->_myEnv)->_numVar ) {
    throw( GenericException(__FILE__, __LINE__, 
-          "TMapping<T1,T2> TMapping<T1,T2>::operator()( const TMapping<T1,T2>& ) const",
+          "TMapping<T> TMapping<T>::operator()( const TMapping<T>& ) const",
           "Incompatible dimensions." ) );
  }
 
  int i;
- TMapping<T1,T2> z( (this->_dim), 0, x._myEnv );
+ TMapping<T> z( (this->_dim), 0, x._myEnv );
 
  for( i = 0; i < (this->_myEnv)->_spaceDim; i++) {
   z._comp[i] = (this->_comp)[i]( x );
@@ -150,8 +153,8 @@ TMapping<T1,T2> TMapping<T1,T2>::operator()( const TMapping<T1,T2>& x ) const
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TMapping<T1,T2> TMapping<T1,T2>::operator*( const TMapping<T1,T2>& x ) const
+template<typename T>
+TMapping<T> TMapping<T>::operator*( const TMapping<T>& x ) const
 {
   return operator()( x );
 }
@@ -159,19 +162,19 @@ TMapping<T1,T2> TMapping<T1,T2>::operator*( const TMapping<T1,T2>& x ) const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-void operator*=( TMapping<T1,T2>& x, const TMapping<T1,T2>& y ) {
+template<typename T>
+void operator*=( TMapping<T>& x, const TMapping<T>& y ) {
  x = x*y;
 }
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TMatrix<T1> TMapping<T1,T2>::Jacobian() const 
+template<typename T>
+TMatrix<T> TMapping<T>::Jacobian() const 
 {
  int            i, j;
  int            nv = (this->_myEnv)->_numVar;   // ??? Is this right?
  int*           d = new int[ nv ];
- TMatrix<T1>    M( (this->_dim), nv, ((T1) 0.0) );
+ TMatrix<T>    M( (this->_dim), nv, ((T) 0.0) );
 
  for( i = 0; i < nv; i++  ) d[i] = 0;
  for( j = 0; j < nv; j++ ) {
@@ -186,11 +189,11 @@ TMatrix<T1> TMapping<T1,T2>::Jacobian() const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TMapping<T1,T2> TMapping<T1,T2>::Inverse() const 
+template<typename T>
+TMapping<T> TMapping<T>::Inverse() const 
 { 
  if( (this->_myEnv)->_spaceDim != (this->_dim) ) {
-  throw( typename TJL<T1,T2>::BadDimension( (this->_myEnv)->_spaceDim, (this->_dim), __FILE__, __LINE__, 
+  throw( typename TJL<T>::BadDimension( (this->_myEnv)->_spaceDim, (this->_dim), __FILE__, __LINE__, 
          "Mapping Mapping::Inverse() const ",
          "Phase space dimensions do not match." ) );
  }
@@ -200,8 +203,8 @@ TMapping<T1,T2> TMapping<T1,T2>::Inverse() const
  char       t1;
  char*      t2   = new char    [(this->_dim)];
  char       t3;
- T1* ref  = new T1[nv];
- TJLterm<T1,T2>**   p    = new TJLterm<T1,T2>* [(this->_dim)];
+ T* ref  = new T[nv];
+ TJLterm<T>**   p    = new TJLterm<T>* [(this->_dim)];
  for( j = 0; j < (this->_dim); j++ ) p[j] = 0;
 
 
@@ -228,17 +231,17 @@ TMapping<T1,T2> TMapping<T1,T2>::Inverse() const
  }
 
 
- // Otherwise, create a new TJetEnvironment<T1,T2> .........................
- TJetEnvironment<T1,T2>* pje_new = new TJetEnvironment<T1,T2>( *(this->_myEnv) );
- TJetEnvironment<T1,T2>* pje;
+ // Otherwise, create a new TJetEnvironment<T> .........................
+ TJetEnvironment<T>* pje_new = new TJetEnvironment<T>( *(this->_myEnv) );
+ TJetEnvironment<T>* pje;
 
  for( i = 0; i < (this->_dim); i++ ) pje_new->_refPoint[i] = (this->_comp)[i].standardPart();
 
  // ... Check to see if it already exists
- slist_iterator g( TJet<T1,T2>::_environments );
+ slist_iterator g( TJet<T>::_environments );
  char found = 0;
 
- while( pje = (TJetEnvironment<T1,T2>*) g() )
+ while( pje = (TJetEnvironment<T>*) g() )
    if( *pje == *pje_new ) {
      found = 1;
      break;
@@ -248,12 +251,12 @@ TMapping<T1,T2> TMapping<T1,T2>::Inverse() const
    delete pje_new;
    pje_new = pje;
  }
- else TJet<T1,T2>::_environments.append( pje_new );
+ else TJet<T>::_environments.append( pje_new );
 
 
  // Construct an idempotent 
  // and compute its inverse. ..................................
- TMapping<T1,T2> z( (this->_dim), 0, (this->_myEnv) );
+ TMapping<T> z( (this->_dim), 0, (this->_myEnv) );
  z = *this;   // ??? Deep copy needed here.
 
  // ... Temporarily zero the reference point 
@@ -263,7 +266,7 @@ TMapping<T1,T2> TMapping<T1,T2>::Inverse() const
  for( j = 0; j < (this->_dim); j++ ) {
    if( !t2[j] ) { 
      p[j] = z._comp[j].get();
-     z._comp[j].addTerm( new( z._comp[j].storePtr() ) TJLterm<T1,T2>( z._myEnv->_allZeroes, 0.0, z._myEnv ) );
+     z._comp[j].addTerm( new( z._comp[j].storePtr() ) TJLterm<T>( z._myEnv->_allZeroes, 0.0, z._myEnv ) );
      // ??? This last line should not be necessary.
    }
  }
@@ -284,7 +287,7 @@ TMapping<T1,T2> TMapping<T1,T2>::Inverse() const
  for( j = 0; j < (this->_dim); j++ ) 
    if( ref[j] != 0.0 ) {
     (*pcout) << "*** WARNING ***                                              \n"
-            "*** WARNING *** TJet<T1,T2>::Inverse()                       \n"
+            "*** WARNING *** TJet<T>::Inverse()                       \n"
             "*** WARNING *** ref[" << j << "] = " << ref[j] << "          \n"
             "*** WARNING ***                                              \n"
          << endl;
@@ -294,7 +297,7 @@ TMapping<T1,T2> TMapping<T1,T2>::Inverse() const
 
  if( !t1 ) {
   for( j = 0; j < z._dim; j++ ) 
-   z._comp[j].addTerm( new ( z._comp[j].storePtr() ) TJLterm<T1,T2>( z._myEnv->_allZeroes, 
+   z._comp[j].addTerm( new ( z._comp[j].storePtr() ) TJLterm<T>( z._myEnv->_allZeroes, 
                                    (this->_myEnv)->_refPoint[j], 
                                    z._myEnv
                                  ) );
@@ -315,23 +318,23 @@ TMapping<T1,T2> TMapping<T1,T2>::Inverse() const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T1, typename T2>
-TMapping<T1,T2> TMapping<T1,T2>::_epsInverse( TJetEnvironment<T1,T2>* pje ) const 
+template<typename T>
+TMapping<T> TMapping<T>::_epsInverse( TJetEnvironment<T>* pje ) const 
 {
- TMapping<T1,T2>  z( (this->_dim), 0, pje );
- TMapping<T1,T2>  id( "ident", pje );
- TMapping<T1,T2>  v( (this->_dim), 0, pje );
+ TMapping<T>  z( (this->_dim), 0, pje );
+ TMapping<T>  id( "ident", pje );
+ TMapping<T>  v( (this->_dim), 0, pje );
  int  i = 0;
- TMatrix<T1> M( (this->_dim), (this->_dim), 0.0 );
+ TMatrix<T> M( (this->_dim), (this->_dim), 0.0 );
 
  if( (this->_dim) == (this->_myEnv)->_numVar ) M = Jacobian().inverse();
  else                         M = Jacobian().Square().inverse();
 
  z = M*id;
  v = ( operator()(z) - id );
- while ( ( i++ < MX_MAXITER ) && ( ( v - v.filter(0,1)) != ((T1) 0.0) ) ) {
+ while ( ( i++ < MX_MAXITER ) && ( ( v - v.filter(0,1)) != ((T) 0.0) ) ) {
                // This assumes linear is handled well enough
-               // by the TMatrix<T1> routine.  
+               // by the TMatrix<T> routine.  
   z = z - M*v;
   v = ( operator()(z) - id );
  }
@@ -339,7 +342,7 @@ TMapping<T1,T2> TMapping<T1,T2>::_epsInverse( TJetEnvironment<T1,T2>* pje ) cons
  if( i >= MX_MAXITER ) {
   (*pcerr) << "\n\n"
        << "*** WARNING ***                                            \n" 
-          "*** WARNING *** TMapping<T1,T2>& TMapping<T1,T2>::_epsInverse()                     \n" 
+          "*** WARNING *** TMapping<T>& TMapping<T>::_epsInverse()                     \n" 
           "*** WARNING *** Over " << MX_MAXITER << " iterations used. \n"
           "*** WARNING *** result may be incorrect.                   \n" 
           "*** WARNING ***                                            \n" 
@@ -351,5 +354,3 @@ TMapping<T1,T2> TMapping<T1,T2>::_epsInverse( TJetEnvironment<T1,T2>* pje ) cons
 
 
 #endif // TMAPPING_TCC
-
-#endif // EXPLICIT_TEMPLATE_INSTANTIATIONS
