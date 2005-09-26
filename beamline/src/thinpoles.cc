@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -8,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      thinpoles.cc
+******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -32,11 +29,50 @@
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include "thinpoles.h"
 
 using namespace std;
 
+// **************************************************
+//   class thin2pole 
+// **************************************************
+
+thin2pole::thin2pole( double s /* strength = BL */ )
+: bmlnElmnt( 0.0, s )
+{
+}
+
+
+thin2pole::thin2pole( char*  n /* name */, double s /* strength */ )
+: bmlnElmnt( n, 0.0, s )
+{
+}
+
+
+thin2pole::thin2pole( bmlnElmntData& x )
+: bmlnElmnt( x )
+{
+}
+
+
+thin2pole::thin2pole( const thin2pole& x )
+: bmlnElmnt( (const bmlnElmnt&) x )
+{
+}
+
+
+thin2pole::~thin2pole()
+{
+}
+
+
+const char* thin2pole::Type() const
+{
+}
 // **************************************************
 //   class thin12pole 
 // **************************************************

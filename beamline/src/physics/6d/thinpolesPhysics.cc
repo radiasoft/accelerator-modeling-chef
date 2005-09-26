@@ -37,6 +37,23 @@
 #include "Jet.h"
 #include "Particle.h"
 
+
+void thin2pole::localPropagate( Particle& p ) {
+ if(strength != 0) {
+   p.state[3] -= strength/p.ReferenceBRho();
+ }
+}
+
+void thin2pole::localPropagate( JetParticle& p ) {
+  if(strength != 0) {
+    Jet  s;
+    s = p.state(3) - (strength/p.ReferenceBRho());
+    ( p.state ).SetComponent( 3, s );
+  }
+}
+
+
+
 void thin12pole::localPropagate( Particle& p ) {
  double x, y, k;
  

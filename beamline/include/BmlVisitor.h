@@ -70,6 +70,7 @@ class sbend;
 class sector;
 class quadrupole;
 class JetQuadrupole;
+class thin2pole;
 class thinQuad;
 class thinSextupole;
 class JetthinSext;
@@ -128,6 +129,8 @@ public:
   virtual void visitQuadrupole( quadrupole* x ) 
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
   virtual void visitJetQuadrupole( JetQuadrupole* x ) 
+                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
+  virtual void visitThin2pole( thin2pole* x ) 
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
   virtual void visitThinQuad( thinQuad* x ) 
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
@@ -233,6 +236,9 @@ public:
                          { visitBmlnElmnt( (const bmlnElmnt*) x ); }
 
   virtual void visitJetQuadrupole( const JetQuadrupole* x ) 
+                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+
+  virtual void visitThin2pole( const thin2pole* x ) 
                          { visitBmlnElmnt( (const bmlnElmnt*) x ); }
 
   virtual void visitThinQuad( const thinQuad* x ) 
