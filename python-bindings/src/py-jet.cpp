@@ -23,10 +23,7 @@
 #include <boost/python.hpp>
 
 #include <Jet.h>
-
-#ifdef FNAL_FIRST_ORDER
 #include <JetC.h>
-#endif
 
 #include <string>
 #include <iostream>
@@ -56,8 +53,8 @@ static void setLastEnv_local(  Jet__environment* env  )
 //  static TJetEnvironment<T1,T2>* CreateEnvFrom( TJetEnvironment<T2,T1>* );
 //  static TJetEnvironment<T1,T2>* CreateEnvFrom( const Vector&, int );
 
-// Jet__environment*   ( Jet::*  )(Jet__environment*  )             =  &Jet::CreateEnvFrom;
-JetC__environment*     ( * CreateEnvFromPtr)(Jet__environment*  )   = &JetC::CreateEnvFrom;
+// Jet__environment*   ( Jet::*  )(Jet__environment*  )                   =  &Jet::CreateEnvFrom;
+JetC__environment*     ( * CreateEnvFromPtr)(const Jet__environment*  )   = &JetC::CreateEnvFrom;
 
 
 
