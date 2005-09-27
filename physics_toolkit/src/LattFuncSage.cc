@@ -191,7 +191,7 @@ int LattFuncSage::pushCalc( const Particle& prt,
   }
   // REMOVE: Jet__environment* pje = Jet::EndEnvironment( scale );
   // REMOVE: JetC::lastEnv = JetC::CreateEnvFrom( pje );
-  JetC::_lastEnv = JetC::CreateEnvFrom( Jet::EndEnvironment( scale ) );
+  JetC::_lastEnv = JetC__environment::CreateEnvFrom( Jet::EndEnvironment( scale ) );
  
 
   Particle* p0Ptr = prt.Clone();
@@ -877,7 +877,7 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
 
   // Reset current environment
   Jet::_lastEnv = (Jet__environment*) (arg_jp->State().Env());
-  JetC::_lastEnv = JetC::CreateEnvFrom( Jet::_lastEnv );
+  JetC::_lastEnv = JetC__environment::CreateEnvFrom( Jet::_lastEnv );
 
   MatrixD mtrx;
   LattFuncSage::lattFunc* infoPtr;

@@ -190,7 +190,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
     tolerance(i) = std::abs(0.001*(Jet::_lastEnv->_refPoint[i]));
   }
 
-  slist_iterator envIter( Jet::_environments );
+  slist_iterator envIter( Jet__environment::_environments );
   while((  pje = (Jet__environment*) envIter()  )) {
     if( pje->hasApproxReferencePoint( z, tolerance ) ) {
       found = true;
