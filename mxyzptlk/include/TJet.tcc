@@ -74,7 +74,6 @@ class Vector;
 
 #define DEFSCALE  0.001
 
-template<typename T> slist TJet<T>::_environments;
 template<typename T> int   TJet<T>::_currentIndex = 0;
 template<typename T> slist TJet<T>::_newCoords;
 template<typename T> slist TJet<T>::_newValues;
@@ -385,8 +384,11 @@ TJetEnvironment<T>* TJet<T>::EndEnvironment( double* scl )
   }
 
   _workEnv->_numVar = _currentIndex;
+
   if( !_workEnv->_pbok ) { _workEnv->_spaceDim = _currentIndex; }
+
   _workEnv->_dof = _workEnv->_spaceDim / 2;
+
   if( _workEnv->_pbok && ( 2*_workEnv->_dof != _workEnv->_spaceDim ) ) {
     (*pcerr) << "\n\n"
          << "*** WARNING ***                                 \n"
@@ -457,7 +459,7 @@ TJetEnvironment<T>* TJet<T>::EndEnvironment( double* scl )
   TJetEnvironment<T>::_skipEnvEqTest = true;
   _lastEnv = _workEnv;
 
-  TJet<T>::_environments.append( _workEnv );
+   TJetEnvironment<T>::_environments.append( _workEnv );
   _workEnv = 0;        // This does NOT delete the environment.
   _newCoords.clear();  // Should be unnecessary.
   _newValues.clear();  // Should be unnecessary.
@@ -530,63 +532,6 @@ template<typename T>
 Tcoord<T>::~Tcoord() 
 {
 }
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-Tcoord<T>::Tcoord( const Tcoord<T>&  ) 
-{
- throw( GenericException( __FILE__, __LINE__, 
-        "Tcoord<T>::coord( const coord& )",
-        "Coordinate copy constructor called; this is forbidden." ) );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void Tcoord<T>::operator=( const T& ) 
-{
-  throw( GenericException( __FILE__, __LINE__, 
-         "void Tcoord<T>::operator=( const T& x ) ",
-         "Changing the value of a coordinate is forbidden." ) );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// 
-// template<typename T>
-// void Tcoord<T>::operator=( const T& x ) 
-// {                                        // DANGER: Be careful!
-//   setVariable( x, _index, this->Env() );  // This alters the environment!
-// }
-// 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-Tcoord<T>& Tcoord<T>::operator=( const Tcoord& ) 
-{
- throw( GenericException( __FILE__, __LINE__, 
-        "Tcoord& Tcoord<T>::operator=( const Tcoord& )",
-        "It is forbidden to change the value of a coordinate." ) );
- return *this;  // Never executed, of course.
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-Tcoord<T>& Tcoord<T>::operator=( const TJet<T>& ) 
-{
- throw( GenericException( __FILE__, __LINE__, 
-        "Tcoord& Tcoord<T>::operator=( const TJet& )",
-        "It is forbidden to change the value of a coordinate." ) );
- return *this;  // Never executed, of course.
-}
-
 
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

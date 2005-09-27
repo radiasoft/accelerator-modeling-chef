@@ -114,9 +114,20 @@ struct TJetEnvironment
   TJetEnvironment( const TJetEnvironment& );
  ~TJetEnvironment();
 
+
  operator TJetEnvironment<std::complex<double> > () const;
  operator TJetEnvironment<double> () const;
  
+ // factory functions
+
+ static TJetEnvironment*                        makeJetEnvironment(); // is this really needed ? 
+ static TJetEnvironment*                        makeJetEnvironment(const TJetEnvironment*);
+
+ static TJetEnvironment*                        CreateEnvFrom( const Vector&, int );
+ static TJetEnvironment<double>*                CreateEnvFrom( const TJetEnvironment<std::complex<double> >* );
+ static TJetEnvironment<std::complex<double> >* CreateEnvFrom( const TJetEnvironment<double>* );
+
+
  TJetEnvironment& operator=( const TJetEnvironment& );
 
  void _buildScratchPads();
@@ -150,7 +161,26 @@ struct TJetEnvironment
 
  // Static data members
  static bool _skipEnvEqTest;
+
+ static slist _environments;   // A list of existing environments 
+                               // note that there is a list of every template typename T
+
 };
+
+
+// specializations
+
+template <>
+ TJetEnvironment<double>* TJetEnvironment<double>::CreateEnvFrom( const TJetEnvironment<std::complex<double> >* );
+
+ template<>
+ TJetEnvironment<std::complex<double> >* TJetEnvironment<std::complex<double> >::CreateEnvFrom( const TJetEnvironment<double>* );
+
+ template<>
+ TJetEnvironment<double>* TJetEnvironment<double>::CreateEnvFrom( const Vector&, int );
+
+
+
 
 #ifdef MXYZPTLK_IMPLICIT_TEMPLATES
 #include <TJetEnvironment.tcc>
