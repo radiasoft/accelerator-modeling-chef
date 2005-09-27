@@ -747,7 +747,7 @@ void BeamlineContext::_createClosedOrbit()
   // If necessary, create a new Jet environment, 
   // centered on the closed orbit, for the Jet proton.
   Jet__environment* storedEnv = Jet::_lastEnv;
-  Jet__environment* pje = Jet::CreateEnvFrom( _p_co_p->State(), 
+  Jet__environment* pje = Jet__environment::CreateEnvFrom( _p_co_p->State(), 
                                               storedEnv->_maxWeight );
   // ... Note: this method does not reset Jet::_lastEnv;
   // ...       thus the (possible) necessity of the next line.
@@ -981,7 +981,7 @@ const EdwardsTengSage::Info* BeamlineContext::getETFuncPtr( int i )
     Jet__environment*  storedEnv  = Jet::_lastEnv;
     JetC__environment* storedEnvC = JetC::_lastEnv;
     Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
-    JetC::_lastEnv = JetC::CreateEnvFrom( Jet::_lastEnv );
+    JetC::_lastEnv = JetC__environment::CreateEnvFrom( Jet::_lastEnv );
 
     JetParticle* ptr_arg = _p_jp->Clone();
     Mapping id( "identity" );
@@ -1028,7 +1028,7 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
       storedEnv  = Jet::_lastEnv;
       storedEnvC = JetC::_lastEnv;
       Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
-      JetC::_lastEnv = JetC::CreateEnvFrom( Jet::_lastEnv );
+      JetC::_lastEnv = JetC__environment::CreateEnvFrom( Jet::_lastEnv );
 
       ptr_arg = _p_jp->Clone();
     }
@@ -1050,7 +1050,7 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
           scale[j] = 0.001;
           coordPtr[j] = new coord( _proton.State(j) );
         }
-        JetC::_lastEnv = JetC::CreateEnvFrom( Jet::EndEnvironment( scale ) );
+        JetC::_lastEnv = JetC__environment::CreateEnvFrom( Jet::EndEnvironment( scale ) );
 
         ptr_arg = _proton.ConvertToJetParticle();
       }
@@ -1113,7 +1113,7 @@ const LBSage::Info* BeamlineContext::getLBFuncPtr( int i )
     Jet__environment*  storedEnv  = Jet::_lastEnv;
     JetC__environment* storedEnvC = JetC::_lastEnv;
     Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
-    JetC::_lastEnv = JetC::CreateEnvFrom( Jet::_lastEnv );
+    JetC::_lastEnv = JetC__environment::CreateEnvFrom( Jet::_lastEnv );
 
     _LBFuncsCalcd = ( 0 == _p_lbs->doCalc( _p_jp, beamline::yes ) );
 
@@ -1152,7 +1152,7 @@ const DispersionSage::Info* BeamlineContext::getDispersionPtr( int i )
       Jet__environment*  storedEnv  = Jet::_lastEnv;
       JetC__environment* storedEnvC = JetC::_lastEnv;
       Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
-      JetC::_lastEnv = JetC::CreateEnvFrom( Jet::_lastEnv );
+      JetC::_lastEnv = JetC__environment::CreateEnvFrom( Jet::_lastEnv );
 
       // DispersionSage::Options newOptions;
       // newOptions.onClosedOrbit = true;
