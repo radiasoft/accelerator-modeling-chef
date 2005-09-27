@@ -23,7 +23,7 @@
 #include <boost/python.hpp>
 
 #include <Jet.h>
-#include <JetC.h>
+
 
 #include <string>
 #include <iostream>
@@ -50,11 +50,31 @@ static void setLastEnv_local(  Jet__environment* env  )
   Jet::_lastEnv = env; 
 }
 
-//  static TJetEnvironment<T1,T2>* CreateEnvFrom( TJetEnvironment<T2,T1>* );
-//  static TJetEnvironment<T1,T2>* CreateEnvFrom( const Vector&, int );
+static void EndEnvironment_local( ) 
+{
+  // double* scale = new double[ Jet::_workEnv->numVar] 
 
-// Jet__environment*   ( Jet::*  )(Jet__environment*  )                   =  &Jet::CreateEnvFrom;
-JetC__environment*     ( * CreateEnvFromPtr)(const Jet__environment*  )   = &JetC::CreateEnvFrom;
+  //  For the moment, the signature of this function ignores the scale array. 
+  //  TO DO: an additional function that accepts a python array type as a argument
+  //  passing a null ptr implies default scaling 
+
+  Jet::EndEnvironment(0);  
+}
+
+static void EndEnvironmentC_local( ) 
+{
+  // double* scale = new double[JetC::_workEnv->numVar] 
+
+  //  for the moment, the signature of this function ignores the scale array. 
+  //  TO DO: an additional function that accepts a python array type as a argument
+  //  passing a null ptr implies default scaling 
+
+  JetC::EndEnvironment(0); 
+}
+
+
+// Jet__environment*   ( Jet::*  )(Jet__environment*  )                   =  &Jet__environment::CreateEnvFrom;
+JetC__environment*     ( * CreateEnvFromPtr)(const Jet__environment*  )   = &JetC__environment::CreateEnvFrom;
 
 
 
@@ -70,7 +90,7 @@ void wrap_mxyzptlk_jetc() {
   JetC_Class_.def(self_ns::str(self));
   JetC_Class_.def("BeginEnvironment", &JetC::BeginEnvironment);
   JetC_Class_.staticmethod("BeginEnvironment");
-  JetC_Class_.def( "EndEnvironment",  &JetC::EndEnvironment,  return_value_policy<reference_existing_object>());
+  JetC_Class_.def( "EndEnvironment",  EndEnvironmentC_local,  return_value_policy<reference_existing_object>());
   JetC_Class_.staticmethod("EndEnvironment");
   JetC_Class_.def("getLastEnv",       &getLastEnvC_local, return_value_policy<reference_existing_object>() ) ;
   JetC_Class_.staticmethod("getLastEnv");
@@ -87,7 +107,7 @@ void wrap_mxyzptlk_jet() {
   Jet_Class_.def(self_ns::str(self));
   Jet_Class_.def( "BeginEnvironment", &Jet::BeginEnvironment);
   Jet_Class_.staticmethod("BeginEnvironment");
-  Jet_Class_.def( "EndEnvironment",   &Jet::EndEnvironment,  return_value_policy<reference_existing_object>());
+  Jet_Class_.def( "EndEnvironment",   EndEnvironment_local,  return_value_policy<reference_existing_object>());
   Jet_Class_.staticmethod("EndEnvironment");
   Jet_Class_.def("getLastEnv",        &::getLastEnv_local,  return_value_policy<reference_existing_object>()); 
   Jet_Class_.staticmethod("getLastEnv");
