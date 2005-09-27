@@ -294,21 +294,12 @@ public:
 
   static const TJetEnvironment<T>* workEnvironment();
   static const TJetEnvironment<T>* lastEnvironment();
+  static void EnlargeEnvironment( const TJetEnvironment<T>* );
 
   static void BeginEnvironment( int = 1 /* maximum weight */ );
-
-  static void Parameters();
-
   static TJetEnvironment<T>* EndEnvironment( double* = 0 /* scale array */ );
 
-  static void EnlargeEnvironment( const TJetEnvironment<T>* );
- 
-  static TJetEnvironment<T>* CreateEnvFrom( const Vector&, int );
-    // POSTCONDITION: The _lastEnv environment pointer is NOT changed.
-
-  static TJetEnvironment<double>*                CreateEnvFrom( const TJetEnvironment<std::complex<double> >* );
-  static TJetEnvironment<std::complex<double> >* CreateEnvFrom( const TJetEnvironment<double>* );
-
+  static void Parameters();
 
   void setEnvTo( const TJet& );                   // Changes environment to
   void setEnvTo( TJetEnvironment<T>* );           // that of the argument.
@@ -470,13 +461,7 @@ public:
                                //  only when the number of
                                //  coordinates = 1.
 
-  static slist _environments;  // environments is made public for
-                               // convenience, but no user program
-                               // should play around directly
-                               // with it.
 };
-
-// *******************************************************************
 
 // specializations for class TJet
 
@@ -486,16 +471,7 @@ public:
  template<>
  TJet<std::complex<double> >::operator TJet<double> () const;
 
- template <>
- TJetEnvironment<double>* TJet<double>::CreateEnvFrom( const TJetEnvironment<std::complex<double> >* );
-
- template<>
- TJetEnvironment<std::complex<double> >* TJet<std::complex<double> >::CreateEnvFrom( const TJetEnvironment<double>* );
-
- template<>
- TJetEnvironment<double>* TJet<double>::CreateEnvFrom( const Vector&, int );
-
-//***********************************************************************
+ //***********************************************************************
 
 template<typename T>
 class Tcoord : public TJet<T> 
@@ -504,14 +480,17 @@ private:
   int _index;
 public:
   Tcoord( T = T() );
-  Tcoord( const Tcoord& );
-  ~Tcoord();
-
-  void    operator=( const T& );
-  Tcoord& operator=( const Tcoord& );
-  Tcoord& operator=( const TJet<T>& );
+ ~Tcoord();
 
   inline int Index() { return _index; }
+
+ private:
+
+  Tcoord( const Tcoord& );             // forbidden - no implementation
+  void    operator=( const T& );       // forbidden - no implementation
+  Tcoord& operator=( const Tcoord& );  // forbidden - no implementation
+  Tcoord& operator=( const TJet<T>& ); // forbidden - no implementation
+
 };
 
 

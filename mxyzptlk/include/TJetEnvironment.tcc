@@ -69,6 +69,8 @@ using FNAL::pcerr;
 
 #define PREPFORCHANGE(_jl)  if(((_jl)->_rc)>1){--((_jl)->_rc);(_jl) = TJL<T> makeTJL(_jl);}
 
+
+
 // ================================================================
 //      Global variables
 //
@@ -77,6 +79,8 @@ using FNAL::pcerr;
 
 template<typename T> bool TJetEnvironment<T>::_skipEnvEqTest = false;
   // Used by the EndEnvironment function.
+
+template<typename T> slist TJetEnvironment<T>::_environments;
 
 
 // ================================================================
@@ -101,6 +105,32 @@ extern "C" {
 //      ??? Belongs in JL.cc
 
 
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TJetEnvironment<T>*     TJetEnvironment<T>::makeJetEnvironment( const TJetEnvironment*){
+
+// not implemented yet !
+
+
+return 0;
+
+}
+
+template<typename T>
+TJetEnvironment<T>*     TJetEnvironment<T>::makeJetEnvironment(){
+
+// not implemented yet !
+
+
+return 0;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 template<typename T>
 TJetEnvironment<T>::TJetEnvironment() 
 : _offset( 2, 1 )
@@ -120,8 +150,10 @@ TJetEnvironment<T>::TJetEnvironment()
 }
  
 
+
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 template<typename T>
 TJetEnvironment<T>::TJetEnvironment( const TJetEnvironment& x )

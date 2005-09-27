@@ -299,11 +299,11 @@ TJetEnvironment<complex<double> >::operator TJetEnvironment<double> () const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJetEnvironment<complex<double> >* TJet<complex<double> >::CreateEnvFrom( const TJetEnvironment<double>* x )
+TJetEnvironment<complex<double> >* TJetEnvironment<complex<double> >::CreateEnvFrom( const TJetEnvironment<double>* x )
 {
   // Check to see if an appropriate environment already exists
 
-  slist_iterator g( TJet<complex<double> >::_environments );
+  slist_iterator g( TJetEnvironment<complex<double> >::_environments );
   
   TJetEnvironment<complex<double> >* pje;
 
@@ -316,7 +316,7 @@ TJetEnvironment<complex<double> >* TJet<complex<double> >::CreateEnvFrom( const 
 
   TJetEnvironment<complex<double> >* pje_new = new TJetEnvironment<complex<double> >( *x ); // conversion operator 
 
-  TJet<complex<double> >::_environments.append( pje_new );
+  TJetEnvironment<complex<double> >::_environments.append( pje_new );
  
   return pje_new;
 }
@@ -326,10 +326,10 @@ TJetEnvironment<complex<double> >* TJet<complex<double> >::CreateEnvFrom( const 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-TJetEnvironment<double>* TJet<double>::CreateEnvFrom( const TJetEnvironment<complex<double> >* z )
+TJetEnvironment<double>* TJetEnvironment<double>::CreateEnvFrom( const TJetEnvironment<complex<double> >* z )
 {
   // Check to see if an appropriate environment already exists
-  slist_iterator g( TJet<double>::_environments );
+  slist_iterator g( TJetEnvironment<double>::_environments );
 
   TJetEnvironment<double>* pje;
 
@@ -340,7 +340,7 @@ TJetEnvironment<double>* TJet<double>::CreateEnvFrom( const TJetEnvironment<comp
   // If not, then create a new TJetEnvironment<double> ............
 
   TJetEnvironment<double>* pje_new = new TJetEnvironment<double>( *z );     // conversion operator
-  TJet<double>::_environments.append( pje_new  );
+  TJetEnvironment<double>::_environments.append( pje_new  );
   return pje_new;
 }
 
@@ -349,14 +349,14 @@ TJetEnvironment<double>* TJet<double>::CreateEnvFrom( const TJetEnvironment<comp
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-TJetEnvironment<double>* TJet<double>::CreateEnvFrom( const Vector& x, int order )
+TJetEnvironment<double>* TJetEnvironment<double>::CreateEnvFrom( const Vector& x, int order )
 {
   // POSTCONDITIONS: The _lastEnv static pointer is not changed.
   //
   // Check to see if an appropriate environment already exists
   int n = x.Dim();
   int i = 0;
-  slist_iterator g( TJet<double>::_environments );
+  slist_iterator g( TJetEnvironment<double>::_environments );
   TJetEnvironment<double>* pje;
   while( pje = (TJetEnvironment<double>*) g() ) {
     bool passed = ( ( order == pje->_maxWeight       ) &&
@@ -430,7 +430,7 @@ TJLterm<double>::operator TJLterm<std::complex<double> > () const {
 
 TJet<double>::operator TJet<std::complex<double> >() const { 
 
-  TJetEnvironment<complex<double> >* zenv = TJet<complex<double> >::CreateEnvFrom(_jl->_myEnv);
+  TJetEnvironment<complex<double> >* zenv = TJetEnvironment<complex<double> >::CreateEnvFrom(_jl->_myEnv);
 
   TJet<std::complex<double> >   z( zenv );
  
@@ -494,7 +494,7 @@ TJet<double>::operator TJet<std::complex<double> >() const {
 TJet<std::complex<double> >::operator TJet<double> () const {
 
 
-  TJetEnvironment<double>* xenv = TJet<double>::CreateEnvFrom(_jl->_myEnv);
+  TJetEnvironment<double>* xenv = TJetEnvironment<double>::CreateEnvFrom(_jl->_myEnv);
 
   TJet<double>   x( xenv );
   
@@ -565,7 +565,7 @@ TJet<double> real( const TJet<complex<double> >& x )
   TJL<double>*                zPtr;
  
   TJetEnvironment<double>* pje_new 
-    = TJet<double>::CreateEnvFrom( (TJetEnvironment<complex<double> >*) x.Env() );
+    = TJetEnvironment<double>::CreateEnvFrom( (TJetEnvironment<complex<double> >*) x.Env() );
 
   // Proceed ...
   xPtr = x._jl;
@@ -604,7 +604,7 @@ TJet<double> imag( const TJet<complex<double> >& x )
   TJL<complex<double> >*      xPtr;
   TJL<double>*                zPtr;
  
-  TJetEnvironment<double>* pje_new = TJet<double>::CreateEnvFrom( x->_myEnv );
+  TJetEnvironment<double>* pje_new = TJetEnvironment<double>::CreateEnvFrom( x->_myEnv );
 
   // Proceed ...
   xPtr = x._jl;
@@ -1143,7 +1143,7 @@ TMapping<double>::operator TMapping<std::complex<double> > () const {
   TMapping<std::complex<double> > z;
 
   z._dim   = _dim;
-  z._myEnv = TJet<std::complex<double> >::CreateEnvFrom(_myEnv);
+  z._myEnv = TJetEnvironment<std::complex<double> >::CreateEnvFrom(_myEnv);
 
   for (int i =0; i< _dim; ++i ) {
 

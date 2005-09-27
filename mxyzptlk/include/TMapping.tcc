@@ -238,7 +238,7 @@ TMapping<T> TMapping<T>::Inverse() const
  for( i = 0; i < (this->_dim); i++ ) pje_new->_refPoint[i] = (this->_comp)[i].standardPart();
 
  // ... Check to see if it already exists
- slist_iterator g( TJet<T>::_environments );
+ slist_iterator g( TJetEnvironment<T>::_environments );
  char found = 0;
 
  while( pje = (TJetEnvironment<T>*) g() )
@@ -251,7 +251,7 @@ TMapping<T> TMapping<T>::Inverse() const
    delete pje_new;
    pje_new = pje;
  }
- else TJet<T>::_environments.append( pje_new );
+ else TJetEnvironment<T>::_environments.append( pje_new );
 
 
  // Construct an idempotent 
