@@ -133,7 +133,7 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
   _pz  = new coord(0.0);
 
   _p_JetEnv  = Jet::EndEnvironment( scale );
-  _p_JetCEnv = JetC::_lastEnv = JetC::CreateEnvFrom( _p_JetEnv );
+  _p_JetCEnv = JetC::_lastEnv = JetC__environment::CreateEnvFrom( _p_JetEnv );
 
   if( _p_JetEnv != Jet::_lastEnv ) {
     std::stringstream uic;
@@ -1985,7 +1985,7 @@ void CHEFGUI::_editPartAndSect()
       coord* py = new coord(0.0);
       coord* pz = new coord(0.0);
       Jet::EndEnvironment( scale );
-      JetC::_lastEnv = JetC::CreateEnvFrom( _p_JetEnv );
+      JetC::_lastEnv = JetC__environment::CreateEnvFrom( _p_JetEnv );
 
       // Sectorize between the partition markers.
       for( i = 0; i < numberOfSectors; i++ ) {
