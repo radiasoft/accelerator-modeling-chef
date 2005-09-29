@@ -209,6 +209,7 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
     _editMenu->insertSeparator();
     _editMenu->insertItem( "Align ...", this, SLOT(_editAlign()) );
     _editMenu->insertItem( "Align to data ...", this, SLOT(_editAlignData()) );
+    _editMenu->insertItem( "Align CF_rbends...", this, SLOT(_editAlignBends()) );
   _mainMenu->insertItem( "Edit", _editMenu );
 
     _calcsMenu = new QPopupMenu;
@@ -245,7 +246,6 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
     _ctrlMenu->insertItem( "Chromaticity", this, SLOT(_chromCtrl()) );
       _ctrlMenu->setItemEnabled( id_chrom, false );
     _ctrlMenu->insertSeparator();
-    _ctrlMenu->insertItem( "Align CF_rbends...", this, SLOT(_toolAlignBends()) );
     _ctrlMenu->insertItem( "Misalign all...",    this, SLOT(_toolMisalign()) );
   _mainMenu->insertItem( "Controls", _ctrlMenu );
 
@@ -710,31 +710,31 @@ void CHEF::_toolMisalign()
 }
 
 
-void CHEF::_toolAlignBends()
+void CHEF::_editAlignBends()
 {
   // This menu function changes the beamline in place
   // without creating a new one.
 
   const bmlnElmnt* selected = _p_vwr->getSelectedElement(_p_currBmlCon);
-  if( 0 == selected ) 
+  if( 0 == selected )
   {
     QMessageBox::information( 0, "CHEF: INFO",
                               "You must select a prototype CF_rbend in the browser." );
   }
 
-  else 
+  else
   {
-    if( typeid(*selected) == typeid(CF_rbend) ) 
+    if( typeid(*selected) == typeid(CF_rbend) )
     {
       // The following was modeled on rrv19.cfrbend.cfg
       CF_rbend* prototype = (CF_rbend*) selected->Clone();
 
       Proton p( _p_currBmlCon->getEnergy() );
       double inState [] = { 0., 0., 0., 0., 0., 0. };
-      // inState[ p.npxIndex() ] 
+      // inState[ p.npxIndex() ]
       //             =  ( p.Momentum()/p.ReferenceMomentum() )
       //                * sin( prototype->getPoleFaceAngle() / 2.0 );
-      inState[ p.npxIndex() ] 
+      inState[ p.npxIndex() ]
                   =  ( p.Momentum()/p.ReferenceMomentum() )
                      * sin( prototype->getPoleFaceAngle() );
       p.setState( inState );
@@ -749,7 +749,7 @@ void CHEF::_toolAlignBends()
           str2.setNum(1000.0*delta);
           str += str2;
           str += " mm.";
-          QLabel* qlb = new QLabel( str, qvb );
+          /////QLabel* qlb = new QLabel( str, qvb );
 
           QHBox* qhb2 = new QHBox( qvb );
             QPushButton* okayBtn = new QPushButton( "Proceed", qhb2 );
@@ -762,16 +762,16 @@ void CHEF::_toolAlignBends()
           qhb2->setMargin(5);
           qhb2->setSpacing(3);
           qhb2->adjustSize();
-    
+
         qvb->adjustSize();
-    
+
       wpu->setCaption( "CHEF: CF_rbend Alignment" );
       wpu->adjustSize();
-    
+
       int returnCode = wpu->exec();
 
       // Realign bends
-      if( returnCode == QDialog::Accepted ) 
+      if( returnCode == QDialog::Accepted )
       {
         CF_rbendFinder_quad cf( prototype->getQuadrupole() );
         _p_currBmlCon->setAlignment( cf, prototype->Alignment() );
@@ -781,7 +781,7 @@ void CHEF::_toolAlignBends()
       delete prototype;
     }
 
-    else 
+    else
     {
       QMessageBox::information( 0, "CHEF: INFO",
                                 "Selected element is not CF_rbend." );
@@ -789,6 +789,87 @@ void CHEF::_toolAlignBends()
 
   }
 }
+
+
+// REMOVE: void CHEF::_toolAlignBends()
+// REMOVE: {
+// REMOVE:   // This menu function changes the beamline in place
+// REMOVE:   // without creating a new one.
+// REMOVE: 
+// REMOVE:   const bmlnElmnt* selected = _p_vwr->getSelectedElement(_p_currBmlCon);
+// REMOVE:   if( 0 == selected ) 
+// REMOVE:   {
+// REMOVE:     QMessageBox::information( 0, "CHEF: INFO",
+// REMOVE:                               "You must select a prototype CF_rbend in the browser." );
+// REMOVE:   }
+// REMOVE: 
+// REMOVE:   else 
+// REMOVE:   {
+// REMOVE:     if( typeid(*selected) == typeid(CF_rbend) ) 
+// REMOVE:     {
+// REMOVE:       // The following was modeled on rrv19.cfrbend.cfg
+// REMOVE:       CF_rbend* prototype = (CF_rbend*) selected->Clone();
+// REMOVE: 
+// REMOVE:       Proton p( _p_currBmlCon->getEnergy() );
+// REMOVE:       double inState [] = { 0., 0., 0., 0., 0., 0. };
+// REMOVE:       // inState[ p.npxIndex() ] 
+// REMOVE:       //             =  ( p.Momentum()/p.ReferenceMomentum() )
+// REMOVE:       //                * sin( prototype->getPoleFaceAngle() / 2.0 );
+// REMOVE:       inState[ p.npxIndex() ] 
+// REMOVE:                   =  ( p.Momentum()/p.ReferenceMomentum() )
+// REMOVE:                      * sin( prototype->getPoleFaceAngle() );
+// REMOVE:       p.setState( inState );
+// REMOVE: 
+// REMOVE:       double delta = ( prototype->AdjustPosition(p) );
+// REMOVE: 
+// REMOVE:       // Dialog: permission to realign the CF_rbends
+// REMOVE:       QDialog* wpu = new QDialog( 0, 0, true );
+// REMOVE:         QVBox* qvb = new QVBox( wpu );
+// REMOVE:           QString str( "Similar rbends will be moved " );
+// REMOVE:           QString str2;
+// REMOVE:           str2.setNum(1000.0*delta);
+// REMOVE:           str += str2;
+// REMOVE:           str += " mm.";
+// REMOVE:           QLabel* qlb = new QLabel( str, qvb );
+// REMOVE: 
+// REMOVE:           QHBox* qhb2 = new QHBox( qvb );
+// REMOVE:             QPushButton* okayBtn = new QPushButton( "Proceed", qhb2 );
+// REMOVE:               okayBtn->setDefault( true );
+// REMOVE:               connect( okayBtn, SIGNAL(pressed()),
+// REMOVE:                        wpu,     SLOT(accept()) );
+// REMOVE:             QPushButton* cancelBtn = new QPushButton( "Cancel", qhb2 );
+// REMOVE:               connect( cancelBtn, SIGNAL(pressed()),
+// REMOVE:                        wpu,       SLOT(reject()) );
+// REMOVE:           qhb2->setMargin(5);
+// REMOVE:           qhb2->setSpacing(3);
+// REMOVE:           qhb2->adjustSize();
+// REMOVE:     
+// REMOVE:         qvb->adjustSize();
+// REMOVE:     
+// REMOVE:       wpu->setCaption( "CHEF: CF_rbend Alignment" );
+// REMOVE:       wpu->adjustSize();
+// REMOVE:     
+// REMOVE:       int returnCode = wpu->exec();
+// REMOVE: 
+// REMOVE:       // Realign bends
+// REMOVE:       if( returnCode == QDialog::Accepted ) 
+// REMOVE:       {
+// REMOVE:         CF_rbendFinder_quad cf( prototype->getQuadrupole() );
+// REMOVE:         _p_currBmlCon->setAlignment( cf, prototype->Alignment() );
+// REMOVE:       }
+// REMOVE: 
+// REMOVE:       delete wpu;
+// REMOVE:       delete prototype;
+// REMOVE:     }
+// REMOVE: 
+// REMOVE:     else 
+// REMOVE:     {
+// REMOVE:       QMessageBox::information( 0, "CHEF: INFO",
+// REMOVE:                                 "Selected element is not CF_rbend." );
+// REMOVE:     }
+// REMOVE: 
+// REMOVE:   }
+// REMOVE: }
 
 
 void CHEF::_editEditElement()
