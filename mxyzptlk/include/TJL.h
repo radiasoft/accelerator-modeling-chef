@@ -121,9 +121,10 @@ struct TJLterm
   static TJLterm<T>*       array_allocate(int n);
   static void              array_deallocate(TJLterm<T>* p);
 
+  // ~TJLterm();           // MUST **NOT** BE DEFINED ! 
+
   private:
 
-  // ~TJLterm();           MUST NOT BE DEFINED ! 
 
   static boost::pool<>                                                       
                          _ordered_memPool;  // an ordered pool of TJLterms
