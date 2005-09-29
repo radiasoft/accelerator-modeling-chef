@@ -72,7 +72,10 @@ thin2pole::~thin2pole()
 
 const char* thin2pole::Type() const
 {
+  return "thin2pole"; 
 }
+
+
 // **************************************************
 //   class thin12pole 
 // **************************************************
