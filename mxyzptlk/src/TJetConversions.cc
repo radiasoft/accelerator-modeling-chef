@@ -56,22 +56,11 @@
 #include <VectorD.h>
 
 #include <TJL.h>
-#include <TJL.tcc>
-
 #include <TJetEnvironment.h>
-#include <TJetEnvironment.tcc>
-
 #include <TJet.h>
-#include <TJet.tcc>
-
 #include <TJetVector.h>
-#include <TJetVector.tcc>
-
 #include <TLieOperator.h>
-#include <TLieOperator.tcc>
-
 #include <TMapping.h>
-#include <TMapping.tcc>
 
 
 #define CHECKOUT(test,fcn,message)    \
