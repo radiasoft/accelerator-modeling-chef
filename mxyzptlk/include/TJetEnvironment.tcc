@@ -58,7 +58,6 @@
 #include <iosetup.h>
 #include <GenericException.h>
 #include <TJetEnvironment.h>
-#include <TJet.h>
 #include <VectorD.h>   // Used by .approxEq
 
 using namespace std;
