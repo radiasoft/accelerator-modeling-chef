@@ -66,7 +66,7 @@
 // *******************************************************************
 
 template<typename T>
-struct TJLterm: public gms::FastPODAllocator<TJLterm<T> >  
+struct TJLterm
 {
 
   // Data
