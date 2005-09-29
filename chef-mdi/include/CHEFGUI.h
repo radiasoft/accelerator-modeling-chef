@@ -355,6 +355,7 @@ signals:
    void _editCondense();
    void _editAlign();
    void _editAlignData();
+   void _editAlignBends();
    void _editMergeQuads();
    void _editD2S();
    void _editAddQtMons();
@@ -362,7 +363,6 @@ signals:
    void _editPartAndSect();
    void _editAddMarkers();
    void _editPartition();   
-   void _toolAlignBends();
    void _toolMisalign();
    void _helpContents();
    void _helpAbout();
