@@ -47,7 +47,8 @@
 #include <TMatrix.h>
 
 #ifdef WIN32
-#include <Distribution.h> // for drand48
+extern long   srand48(long int);
+extern double drand48();
 #endif
 
 extern "C" { void rg_(int*, int*, double*, double*,double*, int*, double*,
