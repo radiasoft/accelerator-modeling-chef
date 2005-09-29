@@ -1026,7 +1026,7 @@ void CHEFGUI::_toolMisalign()
 }
 
 
-void CHEFGUI::_toolAlignBends()
+void CHEFGUI::_editAlignBends()
 {
   // This menu function changes the beamline in place
   // without creating a new one.
@@ -3291,6 +3291,7 @@ void CHEFGUI::_enableMenus( bool set )
     editModifyAction->setEnabled(set);
     editAlignAction->setEnabled(set);
     editAlignDataAction->setEnabled(set);
+    editAlignBendsAction->setEnabled(set);
 
 
     editSelectFilterAction->setEnabled(set);

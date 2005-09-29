@@ -70,6 +70,7 @@
         <separator/>
         <action name="editAlignAction"/>
         <action name="editAlignDataAction"/>
+        <action name="editAlignBendsAction"/>
     </item>
     <item text="Calculations" name="Calculations">
         <action name="calculationsLatticeFunctionsAction"/>
@@ -1110,6 +1111,14 @@
     </action>
     <action>
         <property name="name">
+            <cstring>editAlignBendsAction</cstring>
+        </property>
+        <property name="text">
+            <string>Align CF_rbends ...</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
             <cstring>separatornew_itemAction</cstring>
         </property>
         <property name="text">
@@ -1208,6 +1217,12 @@
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>_editAlignData()</slot>
+    </connection>
+    <connection>
+        <sender>editAlignBendsAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_editAlignBends()</slot>
     </connection>
     <connection>
         <sender>editUndoAction</sender>
@@ -1639,6 +1654,7 @@
     <slot>_editEditElement()</slot>
     <slot>_editAlign()</slot>
     <slot>_editAlignData()</slot>
+    <slot>_editAlignBends()</slot>
     <slot>_editFindFilter()</slot>
     <slot>_editSelectAll()</slot>
     <slot>_editSelectNone()</slot>
@@ -1650,7 +1666,6 @@
     <slot>_editD2S()</slot>
     <slot>_openDeviceFile()</slot>
     <slot>_editPartAndSect()</slot>
-    <slot>_toolAlignBends()</slot>
     <slot>_toolMisalign()</slot>
     <slot>_makeFODO()</slot>
     <slot>_makeSingSext()</slot>
