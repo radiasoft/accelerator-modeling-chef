@@ -300,6 +300,7 @@ private slots:
   void _editEditElement();
   void _editAlign();
   void _editAlignData();
+  void _editAlignBends();
   void _editFlatten();
   void _editNewOrder();
   void _editMergeQuads();
@@ -309,7 +310,6 @@ private slots:
   void _editMode();
   void _editPartition();
   void _editPartAndSect();
-  void _toolAlignBends();
   void _toolMisalign();
   void _helpContents();
   void _helpAbout();
