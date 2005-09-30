@@ -99,9 +99,10 @@ public:
 class FastAllocator {
 public:
 
-   static void* operator new(size_t size, void* p) {  // default behavior  
-     return ::new(size,p);                            // for placement new.
+   static void* operator new(size_t size, void* p) throw()    {  // For placement new, continue using default behavior
+     return ::operator new(size,p);                              // Usually, this is equivalent to simply returning p
    }
+
 
    static void* operator new(size_t size) {
        return PoolManager::getInstance().allocateMemory(size);
