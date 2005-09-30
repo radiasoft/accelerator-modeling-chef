@@ -53,17 +53,17 @@ using FNAL::pcout;
 */
 
 
-std::complex<double> > w( std::complex<double> > );
+std::complex<double>  w( std::complex<double>  );
 
 //////////////////////////////////////////////////////////////
 
-std::complex<double> > erfSeries( const std::complex<double> >& z ) 
+std::complex<double>  erfSeries( const std::complex<double> & z ) 
 {
-  static std::complex<double> > series;
-  static std::complex<double> > oldseries;
-  static std::complex<double> > arg;
+  static std::complex<double>  series;
+  static std::complex<double>  oldseries;
+  static std::complex<double>  arg;
   static double  den;
-  static std::complex<double> > term;
+  static std::complex<double>  term;
 
   series        = 1.0;
   oldseries     = 0.0;
@@ -83,17 +83,17 @@ std::complex<double> > erfSeries( const std::complex<double> >& z )
 
 //////////////////////////////////////////////////////////////
 
-std::complex<double> > erf( const std::complex<double> >& z ) 
+std::complex<double>  erf( const std::complex<double> & z ) 
 {
   if( ( fabs(imag(z)) > 3.9 ) || ( fabs(real(z)) > 3.0 ) ) {
-    std::complex<double> > u( - imag(z), real(z) );
+    std::complex<double>  u( - imag(z), real(z) );
     return ( 1.0 - std::exp(u*u)*w(u) );
   }
 
-  static std::complex<double> > series;
-  static std::complex<double> > oldseries;
-  static std::complex<double> > arg;
-  static std::complex<double> > term;
+  static std::complex<double>  series;
+  static std::complex<double>  oldseries;
+  static std::complex<double>  arg;
+  static std::complex<double>  term;
   static double  den;
   static double  fctr_x;
 
@@ -117,17 +117,17 @@ std::complex<double> > erf( const std::complex<double> >& z )
 
 //////////////////////////////////////////////////////////////
 
-std::complex<double> > erfc( const std::complex<double> >& z ) 
+std::complex<double>  erfc( const std::complex<double> & z ) 
 {
-  static const std::complex<double> > one( 1.0, 0.0 );
+  static const std::complex<double>  one( 1.0, 0.0 );
   return ( one - erf( z ) );
 }
 
 //////////////////////////////////////////////////////////////
 
-std::complex<double> > w( std::complex<double> > z ) 
+std::complex<double>  w( std::complex<double>  z ) 
 {
-  static const std::complex<double> > mi( 0., -1. );
+  static const std::complex<double>  mi( 0., -1. );
   static double x;
   static double y;
   
@@ -138,7 +138,7 @@ std::complex<double> > w( std::complex<double> > z )
     return 2.0*std::exp( -z*z ) - w( -z );
 
   if( x < 0.0 ) 
-    return conj( w( std::complex<double> >( - x, y ) ) );
+    return conj( w( std::complex<double> ( - x, y ) ) );
 
   if( ( x > 6.0 ) || ( y > 6.0 ) ) 
     return ( - mi * z * (
