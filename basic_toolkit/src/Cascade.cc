@@ -12,9 +12,19 @@
 ******  File:      Cascade.cc
 ******  Version:   1.0
 ******                                                                
-******  Copyright (c) 2004 Universities Research Association, Inc.
+******  Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -64,7 +74,7 @@ Switch::Switch( int maxWeight, int indexValue, const IntArray& x )
   _xpt(x) // , _terminator(false)
 {
   if( _w <= 0 ) {
-    cout << "Can't do this." << endl;
+    (*pcout) << "Can't do this." << endl;
     exit(1);
   }
   _finishConstructor();
@@ -196,7 +206,7 @@ void Cascade::_finishConstructor()
   }
 
   if( _verbose ) {
-    cout << "\nNumber of switches  = " << _numberOfSwitches 
+    (*pcout) << "\nNumber of switches  = " << _numberOfSwitches 
          << "\n          monomials = " << _numberOfMonomials
          << "\n          linkers   = " << (_numberOfSwitches - _numberOfMonomials)
          << endl;
@@ -215,7 +225,7 @@ void Cascade::_finishConstructor()
   Switch* swPtr = 0;
   swPtr = _arrayOfSwitches;
 
-  if( _verbose ) { cout << "Making: " << e << endl; }
+  if( _verbose ) { (*pcout) << "Making: " << e << endl; }
 
   if( swPtr < upperBound ) {
     swPtr->reconstruct( _maxWeight, counter++, e );
@@ -233,7 +243,7 @@ void Cascade::_finishConstructor()
   for( int i = 1; i <= _maxWeight; i++ ) {
     while( nexcom( i, _numVar, f) ) {
       e.Set(f);
-      if( _verbose ) { cout << "Making: " << e << endl; }
+      if( _verbose ) { (*pcout) << "Making: " << e << endl; }
       if( swPtr < upperBound ) {
         swPtr->reconstruct( _maxWeight, counter++, e );
       }
@@ -250,7 +260,7 @@ void Cascade::_finishConstructor()
   if( _numberOfMonomials 
       != ((((int) swPtr) - ((int) _arrayOfSwitches))/sizeof(Switch))  ) 
   {
-    cout << "*** ERROR *** "
+    (*pcout) << "*** ERROR *** "
          << "A total of " 
          << ((((int) swPtr) - ((int) _arrayOfSwitches))/sizeof(Switch))
          << " monomials have been made; expected " 
@@ -261,7 +271,7 @@ void Cascade::_finishConstructor()
 
   if( _numberOfMonomials != counter )
   {
-    cout << "*** ERROR *** "
+    (*pcout) << "*** ERROR *** "
          << "Index counter is out of synch: "
          << counter
          << " != "
@@ -297,7 +307,7 @@ void Cascade::_finishConstructor()
         int j = 0;
         bool foundNull = ( 0 == foundPtr->_arrow[j++] );
         if( foundNull ) {
-          cout << "Whoops" << endl;
+          (*pcout) << "Whoops" << endl;
           return;
         }
         while( !foundNull && (j < _maxWeight + 1) ) {
@@ -309,7 +319,7 @@ void Cascade::_finishConstructor()
           }
         }
         if( !foundNull ) {
-          cout << "Oh-oh" << endl;
+          (*pcout) << "Oh-oh" << endl;
           return;
         }
       }
@@ -347,10 +357,10 @@ void Cascade::_finishConstructor()
   // Look at the results
   slist_iterator sli( setOfSwitches );
   if( _verbose ) { 
-    cout << "All the switches:" << endl;
+    (*pcout) << "All the switches:" << endl;
     int i = 0;
     while((  swPtr = (Switch*) sli()  )) {
-      cout << swPtr->_xpt << " : " << ++i << endl;
+      (*pcout) << swPtr->_xpt << " : " << ++i << endl;
     }
     sli.Reset();
   }
@@ -362,9 +372,9 @@ void Cascade::_finishConstructor()
   }
 
   if( _verbose ) {
-    cout << "Total number of nodes = " 
+    (*pcout) << "Total number of nodes = " 
          << _numberOfSwitches << endl;
-    cout << "           link nodes = " 
+    (*pcout) << "           link nodes = " 
          << (_numberOfSwitches - _numberOfMonomials) 
          << "; expected "
          << expectedLinks
@@ -383,34 +393,34 @@ void Cascade::_finishConstructor()
   for( i = 0; i < w+1; i++ ) { 
     _startPoint[i] = (Switch*) sli(); 
     if( 0 == _startPoint[i] ) {
-      cout << "Yike" << endl;
+      (*pcout) << "Yike" << endl;
       exit(-5);
     }
   }
   if( 0 != sli() ) {
-    cout << "Oh no" << endl;
+    (*pcout) << "Oh no" << endl;
     exit(-3);
   }
   sli.Reset();
 
 
   // Test the results
-  if( _verbose ) { cout << "\nTesting accuracy." << endl; }
+  if( _verbose ) { (*pcout) << "\nTesting accuracy." << endl; }
 
   // Do the first monomial by hand
   for( int i = 0; i < n; i++ ) { f[i] = 0; }
   e.Set(f);
-  if( _verbose ) { cout << e << endl; }
+  if( _verbose ) { (*pcout) << e << endl; }
   swPtr = _startPoint[e(0)];
-  if( _verbose ) { cout << "  " << swPtr->_xpt << endl; }
+  if( _verbose ) { (*pcout) << "  " << swPtr->_xpt << endl; }
   for( int j = 1; j < n; j++ ) {
     swPtr = (Switch*) (swPtr->_arrow[e(j)]);
-    if( _verbose ) { cout << "  " << swPtr->_xpt << endl; }
+    if( _verbose ) { (*pcout) << "  " << swPtr->_xpt << endl; }
   }
-  if( _verbose ) { cout << e << ": -> " << swPtr->_xpt << endl; }
+  if( _verbose ) { (*pcout) << e << ": -> " << swPtr->_xpt << endl; }
 
   if( e != swPtr->_xpt ) {
-    cout << "Error occurred: " 
+    (*pcout) << "Error occurred: " 
          << e << ": -> " << swPtr->_xpt 
          << endl;
   }
@@ -419,18 +429,18 @@ void Cascade::_finishConstructor()
   for( int i = 1; i <= w; i++ ) {
     while( nexcom( i, n, f) ) {
       e.Set(f);
-      if( _verbose ) { cout << e << endl; }
+      if( _verbose ) { (*pcout) << e << endl; }
       swPtr = _startPoint[e(0)];
-      if( _verbose ) { cout << "  " << swPtr->_xpt << endl; }
+      if( _verbose ) { (*pcout) << "  " << swPtr->_xpt << endl; }
       for( int j = 1; j < n; j++ ) {
         swPtr = (Switch*) (swPtr->_arrow[e(j)]);
-        if( _verbose ) { cout << "  " << swPtr->_xpt << endl; }
+        if( _verbose ) { (*pcout) << "  " << swPtr->_xpt << endl; }
       }
-      if( _verbose ) { cout << e << ": -> " << swPtr->_xpt << endl; }
+      if( _verbose ) { (*pcout) << e << ": -> " << swPtr->_xpt << endl; }
     }
   }
 
-  if( _verbose ) { cout << "Finished testing accuracy." << endl; }
+  if( _verbose ) { (*pcout) << "Finished testing accuracy." << endl; }
 }
 
 
