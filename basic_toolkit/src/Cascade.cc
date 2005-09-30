@@ -36,13 +36,18 @@
 #include <config.h>
 #endif
 
-#include "GenericException.h"
-#include "slist.h"
-#include "IntArray.h"
-#include "Cascade.h" // RENAME Cascade.h
+#include <iosetup.h>
+#include <GenericException.h>
+#include <slist.h>
+#include <IntArray.h>
+#include <Cascade.h> // RENAME Cascade.h
+
 
 extern char nexcom( int, int, int* );  
 extern "C" { int bcfRec( int, int ); }
+
+using FNAL::pcerr;
+using FNAL::pcout;
 
 using namespace std;
 
@@ -499,7 +504,7 @@ IntArray Cascade::exponents( const IntArray& e )
 
 int Cascade::selfTest()
 {
-  std::cerr << "\nCascade::selfTest beginning test of all possible indices." 
+  (*pcerr) << "\nCascade::selfTest beginning test of all possible indices." 
             << std::endl;
   int ret = 0;
   int n = _numVar;
@@ -510,11 +515,11 @@ int Cascade::selfTest()
 
   e.Set(f);
   if( e != (this->exponents(e)) ) {
-    std::cerr << "Type 1 error: " << e << " != " << (this->exponents(e)) << endl;
+    (*pcerr) << "Type 1 error: " << e << " != " << (this->exponents(e)) << endl;
     ret = 1;
   }
   if( e != _arrayOfSwitches[this->index(e)]._xpt ) {
-    std::cerr << "Type 2 error: " << e << " != " 
+    (*pcerr) << "Type 2 error: " << e << " != " 
               << "_arrayOfSwitches["
               << (this->index(e))
               << "] = " 
@@ -528,11 +533,11 @@ int Cascade::selfTest()
     while( nexcom( i, n, f) ) {
       e.Set(f);
       if( e != (this->exponents(e)) ) {
-        std::cerr << "Type 1 error: " << e << " != " << (this->exponents(e)) << endl;
+        (*pcerr) << "Type 1 error: " << e << " != " << (this->exponents(e)) << endl;
         ret = 1;
       }
       if( e != _arrayOfSwitches[this->index(e)]._xpt ) {
-        std::cerr << "Type 2 error: " << e << " != " 
+        (*pcerr) << "Type 2 error: " << e << " != " 
                   << "_arrayOfSwitches["
                   << (this->index(e))
                   << "] = " 
@@ -543,7 +548,7 @@ int Cascade::selfTest()
     }
   }
 
-  std::cerr << "\nCascade::selfTest finished test of all possible indices." 
+  (*pcerr) << "\nCascade::selfTest finished test of all possible indices." 
             << std::endl;
   return ret;
 }
