@@ -58,9 +58,10 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <iosetup>
 
-using std::cerr;
-using std::endl;
+using FNAL::pcerr;
+using FNAL::pcout;
 
 #ifdef OBJECT_DEBUG
 int IntArray::objectCount = 0;
@@ -72,8 +73,8 @@ IntArray::GenericException::GenericException( const char* fcn, const char* msg )
 {
   static bool firstTime = true;
   if( firstTime ) {
-    cerr << "\n*** ERROR *** "
-            "\n*** ERROR *** " << fcn
+(*pcerr) << "\n*** ERROR *** "
+         << "\n*** ERROR *** " << fcn
          << "\n*** ERROR *** " << msg
          << "\n*** ERROR *** This message is printed only once." 
          << endl;

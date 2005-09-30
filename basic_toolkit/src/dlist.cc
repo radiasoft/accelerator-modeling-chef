@@ -7,9 +7,19 @@
 ******                                    
 ******  File:      dlist.cc
 ******                                                                
-******  Copyright (c) 1990 Universities Research Association, Inc.    
+******  Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -19,10 +29,6 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -34,10 +40,13 @@
 
 #include <stdlib.h>
 #include <iostream>
-using std::cerr;
+#include <iosetup.h>
+
+using FNAL::pcerr;
+using FNAL::pcout;
 using std::endl;
 
-#include "dlist.h"
+#include <dlist.h>
 
 // ================================================================
 //      Global variables
@@ -181,21 +190,21 @@ dlist dlist::remove( void* a, void* b )
      } while ( p != 0 && w != a && w != b );
   
   if( p == 0 ) {
-    cerr << "\n*** WARNING ***                              \n";
-    cerr <<   "*** WARNING *** dlist::remove( void*, void* )    \n";
-    cerr <<   "*** WARNING *** Reached the end of the list  \n";
-    cerr <<   "*** WARNING *** without finding markers.     \n";
-    cerr <<   "*** WARNING ***                              \n";
-    cerr << endl;
+    (*pcerr) << "\n*** WARNING ***                              \n";
+    (*pcerr) <<   "*** WARNING *** dlist::remove( void*, void* )    \n";
+    (*pcerr) <<   "*** WARNING *** Reached the end of the list  \n";
+    (*pcerr) <<   "*** WARNING *** without finding markers.     \n";
+    (*pcerr) <<   "*** WARNING ***                              \n";
+    (*pcerr) << endl;
     return *this;
   }
   
   if( w == a ) y = b;
   else  {      y = a;
                if( w != b ) {
-                 cerr << "\n*** WARNING*** IMPOSSIBLE ERROR!";
-                 cerr << "\n*** WARNING *** dlist::remove( void*, void* )";
-                 cerr << endl;
+                 (*pcerr) << "\n*** WARNING*** IMPOSSIBLE ERROR!";
+                 (*pcerr) << "\n*** WARNING *** dlist::remove( void*, void* )";
+                 (*pcerr) << endl;
                  return *this;
                }
   }
@@ -203,11 +212,11 @@ dlist dlist::remove( void* a, void* b )
   p = getNext();
   w = ( pr = p )->e;
   if( w == y || p == 0 ) {
-    cerr << "\n*** WARNING ***                                     \n";
-    cerr <<   "*** WARNING *** dlist::remove( void*, void* )           \n";
-    cerr <<   "*** WARNING *** No elements available for removal.  \n";
-    cerr <<   "*** WARNING ***                                     \n";
-    cerr << endl;
+    (*pcerr) << "\n*** WARNING ***                                     \n";
+    (*pcerr) <<   "*** WARNING *** dlist::remove( void*, void* )           \n";
+    (*pcerr) <<   "*** WARNING *** No elements available for removal.  \n";
+    (*pcerr) <<   "*** WARNING ***                                     \n";
+    (*pcerr) << endl;
     return *this;
   }
   
@@ -219,11 +228,11 @@ dlist dlist::remove( void* a, void* b )
   } while ( ( p != 0 ) && ( w != y ) );
   
   if( p == 0 ) {
-    cerr << "\n*** WARNING ***                                \n";
-    cerr <<   "*** WARNING *** dlist::remove( void*, void* )      \n";
-    cerr <<   "*** WARNING *** Reached the end of the list.   \n";
-    cerr <<   "*** WARNING ***                                \n";
-    cerr << endl;
+    (*pcerr) << "\n*** WARNING ***                                \n";
+    (*pcerr) <<   "*** WARNING *** dlist::remove( void*, void* )      \n";
+    (*pcerr) <<   "*** WARNING *** Reached the end of the list.   \n";
+    (*pcerr) <<   "*** WARNING ***                                \n";
+    (*pcerr) << endl;
   }
   
   return ret;

@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -10,9 +7,19 @@
 ******                                    
 ******  File:      erf.cc
 ******                                                                
-******  Copyright (c) 1990 Universities Research Association, Inc.    
+******  Copyright (c) Universities Research Association, Inc.    
 ******                All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -23,13 +30,19 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
 **************************************************************************
 *************************************************************************/
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <iosetup.h>
+#include <complex>
+#include <MathConstants.h>
+
+using FNAL::pcerr;
+using FNAL::pcout;
 
 /*
 ** Complex error function.
@@ -39,29 +52,18 @@
 ** 
 */
 
-#ifdef __VISUAL_CPP__
-#include <complex>
-#include <iostream>
-using std::cerr;
-#else
-#include <complex>
-#endif
-#include "complexAddon.h"
-#include "MathConstants.h"
 
-using FNAL::Complex;
-
-Complex w( Complex );
+std::complex<double> > w( std::complex<double> > );
 
 //////////////////////////////////////////////////////////////
 
-Complex erfSeries( const Complex& z ) 
+std::complex<double> > erfSeries( const std::complex<double> >& z ) 
 {
-  static Complex series;
-  static Complex oldseries;
-  static Complex arg;
+  static std::complex<double> > series;
+  static std::complex<double> > oldseries;
+  static std::complex<double> > arg;
   static double  den;
-  static Complex term;
+  static std::complex<double> > term;
 
   series        = 1.0;
   oldseries     = 0.0;
@@ -81,17 +83,17 @@ Complex erfSeries( const Complex& z )
 
 //////////////////////////////////////////////////////////////
 
-Complex erf( const Complex& z ) 
+std::complex<double> > erf( const std::complex<double> >& z ) 
 {
   if( ( fabs(imag(z)) > 3.9 ) || ( fabs(real(z)) > 3.0 ) ) {
-    Complex u( - imag(z), real(z) );
+    std::complex<double> > u( - imag(z), real(z) );
     return ( 1.0 - std::exp(u*u)*w(u) );
   }
 
-  static Complex series;
-  static Complex oldseries;
-  static Complex arg;
-  static Complex term;
+  static std::complex<double> > series;
+  static std::complex<double> > oldseries;
+  static std::complex<double> > arg;
+  static std::complex<double> > term;
   static double  den;
   static double  fctr_x;
 
@@ -115,17 +117,17 @@ Complex erf( const Complex& z )
 
 //////////////////////////////////////////////////////////////
 
-Complex erfc( const Complex& z ) 
+std::complex<double> > erfc( const std::complex<double> >& z ) 
 {
-  static const Complex one( 1.0, 0.0 );
+  static const std::complex<double> > one( 1.0, 0.0 );
   return ( one - erf( z ) );
 }
 
 //////////////////////////////////////////////////////////////
 
-Complex w( Complex z ) 
+std::complex<double> > w( std::complex<double> > z ) 
 {
-  static const Complex mi( 0., -1. );
+  static const std::complex<double> > mi( 0., -1. );
   static double x;
   static double y;
   
@@ -136,7 +138,7 @@ Complex w( Complex z )
     return 2.0*std::exp( -z*z ) - w( -z );
 
   if( x < 0.0 ) 
-    return conj( w( Complex( - x, y ) ) );
+    return conj( w( std::complex<double> >( - x, y ) ) );
 
   if( ( x > 6.0 ) || ( y > 6.0 ) ) 
     return ( - mi * z * (
