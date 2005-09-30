@@ -50,7 +50,7 @@ void BubbleSort( double x[], int n )
                 "*** WARNING ***  BubbleSort                 \n" 
                 "*** WARNING ***  n = " << n << " < 2        \n" 
                 "*** WARNING ***                             \n" 
-             << endl;
+             << std::endl;
     return;
   }
 
