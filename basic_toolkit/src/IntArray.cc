@@ -58,7 +58,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
-#include <iosetup>
+#include <iosetup.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;
