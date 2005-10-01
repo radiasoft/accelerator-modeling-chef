@@ -77,7 +77,7 @@ IntArray::GenericException::GenericException( const char* fcn, const char* msg )
          << "\n*** ERROR *** " << fcn
          << "\n*** ERROR *** " << msg
          << "\n*** ERROR *** This message is printed only once." 
-         << endl;
+         << std::endl;
     firstTime = false;
   }
 }
