@@ -737,7 +737,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       // dvalue_ should *always* default to
       // a well-defined value for any unused parameter. -jfo
 
-      if ( (expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data)->kind_ != NUMBER_EXPR ) {    
+      if ( ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->kind_ != NUMBER_EXPR ) {    
            aligner->xOffset = 0.0;
            aligner->yOffset = 0.0;
            aligner->tilt    = expr_evaluate( bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
