@@ -717,11 +717,37 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
 
       lbel = new vkick( bel->name_, length, angle );
 
-      if ( ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->kind_ != NUMBER_EXPR ) {
-        aligner->xOffset = 0.0;
-        aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
-        lbel->setAlignment( *aligner );
+      // Original code:. 
+
+      //      if ( ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->dvalue_ != 0.0 
+      //        || ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->kind_ != NUMBER_EXPR ) {
+      //
+      //  aligner->xOffset = 0.0;
+      //  aligner->yOffset = 0.0;
+      //  aligner->tilt    = expr_evaluate( bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
+      //  lbel->setAlignment( *aligner );
+      // }
+
+      // It seems that under some circumstances, dvalue_ is unitialized when the above test
+      // is performed. If dvalue_ contains garbage,the separator tilt will be set to 
+      // a nonsensical value.  
+
+      // As a workaround, the test is now performed in two separate steps. 
+      // The exact source of the problem remains to be identified. 
+      // dvalue_ should *always* default to
+      // a well-defined value for any unused parameter. -jfo
+
+      if ( (expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data)->kind_ != NUMBER_EXPR ) {    
+           aligner->xOffset = 0.0;
+           aligner->yOffset = 0.0;
+           aligner->tilt    = expr_evaluate( bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
+           lbel->setAlignment( *aligner );
+
+      } else if ( ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->dvalue_ != 0.0 ) {
+           aligner->xOffset = 0.0;
+           aligner->yOffset = 0.0;
+           aligner->tilt    = expr_evaluate( bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
+           lbel->setAlignment( *aligner );
       }
 
       break;
