@@ -139,6 +139,8 @@ class bmlfactory {
 
     void bmlfactory_init(const char* fname, const char* stringbuffer);
 
+    std::string strip_final_colon( const char* );
+
   public:
 
     bmlfactory( const char* filename, double brho, const char* stringbuffer=0); // deprecated

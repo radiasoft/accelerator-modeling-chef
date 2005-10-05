@@ -292,6 +292,30 @@ add_str( char* ptr, char* s1, char* s2 ) {
   return strcat( ptr, s2 );
 }
 
+
+std::string
+bmlfactory::strip_final_colon( const char* stuff )
+{
+  if( 0 == stuff ) { return std::string("*** ERROR ***"); }
+  std::string workString( stuff );
+  std::string ret;
+  int n = workString.size();
+  if( 1 < n ) { 
+    n -= 1;
+    if( ':' == workString[n] ) {
+      ret.assign( workString, 0, n );
+    }
+    else {
+      ret = workString;
+    }
+  }
+  else {
+    ret = workString;
+  }
+  return ret;
+}
+
+
 bmlnElmnt*
 bmlfactory::beam_element_instantiate( beam_element* bel ) {
   
@@ -305,11 +329,11 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
   switch ( bel->kind_ ) {
     case BEL_DRIFT: {
       double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
-      lbel = new drift( bel->name_, length );
+      lbel = new drift( strip_final_colon( bel->name_ ).c_str(), length );
       break;
     }
     case BEL_MARKER: {
-      lbel = new marker( bel->name_ );
+      lbel = new marker( strip_final_colon( bel->name_ ).c_str() );
       break;
     }
     case BEL_SBEND: {
@@ -331,7 +355,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
                 tilt->kind_ == NUMBER_EXPR && tilt->dvalue_ == 0.0);
 
       if( true == simple ) {
-        lbel = new sbend( bel->name_, length, BRHO_*angle/length, angle, e1, e2 );
+        lbel = new sbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*angle/length, angle, e1, e2 );
         if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
           aligner->xOffset = 0.0;
           aligner->yOffset = 0.0;
@@ -342,7 +366,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
         break;
       }
       else {
-        lbel = new CF_sbend( bel->name_, length, BRHO_*angle/length, angle, e1, e2 );
+        lbel = new CF_sbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*angle/length, angle, e1, e2 );
 
         double multipoleStrength;
 
@@ -389,10 +413,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
 
       if( true == simple ) {
         if( (0.0 == e1) && (0.0 == e2) ) {
-          lbel = new rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) );
+          lbel = new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) );
 	}
         else {
-          lbel = new rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
+          lbel = new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
         }
         if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
           aligner->xOffset = 0.0;
@@ -405,10 +429,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       }
       else {
         if( (0.0 == e1) && (0.0 == e2) ) {
-          lbel = new CF_rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) );
+          lbel = new CF_rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) );
 	}
         else {
-          lbel = new CF_rbend( bel->name_, length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
+          lbel = new CF_rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
 	}
 
         double multipoleStrength;
@@ -438,9 +462,9 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       double k1     = expr_evaluate( bel->params_[BEL_QUADRUPOLE_K1], var_table_, bel_table_ );
       
       if ( length != 0.0 || k1 != 0.0 ) {
-        lbel = new quadrupole( bel->name_, length, BRHO_*k1 );
+        lbel = new quadrupole( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*k1 );
       } else {
-        lbel = new thinQuad( bel->name_, length );
+        lbel = new thinQuad( strip_final_colon( bel->name_ ).c_str(), length );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_QUADRUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_QUADRUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -456,9 +480,9 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       double k2     = expr_evaluate( bel->params_[BEL_SEXTUPOLE_K2], var_table_, bel_table_ );
       
       if ( length != 0.0 || k2 != 0.0 ) {
-        lbel = new sextupole( bel->name_, length, BRHO_*k2/2.0 );
+        lbel = new sextupole( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*k2/2.0 );
       } else {
-        lbel = new thinSextupole( bel->name_, length );
+        lbel = new thinSextupole( strip_final_colon( bel->name_ ).c_str(), length );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_SEXTUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_SEXTUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -474,9 +498,9 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       double k3     = expr_evaluate( bel->params_[BEL_OCTUPOLE_K3], var_table_, bel_table_ );
       
       if ( length != 0.0 || k3 != 0.0 ) {
-        lbel = new octupole( bel->name_, length, BRHO_*k3/6.0 );
+        lbel = new octupole( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*k3/6.0 );
       } else {
-        lbel = new thinOctupole( bel->name_, length );
+        lbel = new thinOctupole( strip_final_colon( bel->name_ ).c_str(), length );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_OCTUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_OCTUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -492,7 +516,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       double momentum = PH_CNV_brho_to_p*BRHO_;
       double energy   = sqrt( momentum*momentum + PH_NORM_mp*PH_NORM_mp );
       bmlnElmnt* q    = 0;
-      beamline* temp  = new beamline( bel->name_ );
+      beamline* temp  = new beamline( strip_final_colon( bel->name_ ).c_str() );
       temp->setEnergy( energy ); 
 
       double k0l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K0L], var_table_, bel_table_ );
@@ -551,7 +575,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       if( k4l != 0.0 ) {
         cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K4L is being ignored.       "
-             << "\n*** WARNING *** K4L = " << k4l << " for " <<  bel->name_
+             << "\n*** WARNING *** K4L = " << k4l << " for " <<  strip_final_colon( bel->name_ ).c_str()
              << "\n*** WARNING ***                                      "
              << endl;
       }
@@ -560,7 +584,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       if( k5l != 0.0 ) {
         cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K5L is being ignored.       "
-             << "\n*** WARNING *** K5L = " << k5l << " for " <<  bel->name_
+             << "\n*** WARNING *** K5L = " << k5l << " for " <<  strip_final_colon( bel->name_ ).c_str()
              << "\n*** WARNING ***                                      "
              << endl;
       }
@@ -569,7 +593,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       if( k6l != 0.0 ) {
         cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K6L is being ignored.       "
-             << "\n*** WARNING *** K6L = " << k6l << " for " <<  bel->name_
+             << "\n*** WARNING *** K6L = " << k6l << " for " <<  strip_final_colon( bel->name_ ).c_str()
              << "\n*** WARNING ***                                      "
              << endl;
       }
@@ -578,7 +602,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       if( k7l != 0.0 ) {
         cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K7L is being ignored.       "
-             << "\n*** WARNING *** K7L = " << k7l << " for " <<  bel->name_
+             << "\n*** WARNING *** K7L = " << k7l << " for " <<  strip_final_colon( bel->name_ ).c_str()
              << "\n*** WARNING ***                                      "
              << endl;
       }
@@ -587,7 +611,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       if( k8l != 0.0 ) {
         cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K8L is being ignored.       "
-             << "\n*** WARNING *** K8L = " << k8l << " for " <<  bel->name_
+             << "\n*** WARNING *** K8L = " << k8l << " for " <<  strip_final_colon( bel->name_ ).c_str()
              << "\n*** WARNING ***                                      "
              << endl;
       }
@@ -596,7 +620,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       if( k9l != 0.0 ) {
         cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K9L is being ignored.       "
-             << "\n*** WARNING *** K9L = " << k9l << " for " <<  bel->name_
+             << "\n*** WARNING *** K9L = " << k9l << " for " <<  strip_final_colon( bel->name_ ).c_str()
              << "\n*** WARNING ***                                      "
              << endl;
       }
@@ -604,12 +628,12 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       int n = temp->howMany();
 
       if( 0 == n ) {
-        lbel = new marker( bel->name_ );
+        lbel = new marker( strip_final_colon( bel->name_ ).c_str() );
         delete temp;
       }
       else if( 1 == n ) {
         lbel = temp->firstElement();
-        lbel->Rename( bel->name_ );
+        lbel->Rename( strip_final_colon( bel->name_ ).c_str() );
         delete temp;  // This should not delete the element.
       }
       else {
@@ -618,7 +642,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       break;
     }
     case BEL_SOLENOID:
-      lbel = make_solenoid( bel->name_, expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_solenoid( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
       break;
     case BEL_HKICKER: {
       double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
@@ -626,9 +650,9 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       char   name[BEL_NAME_LENGTH];
       
       if ( length != 0.0 || kck != 0.0 ) {
-        lbel = new hkick( bel->name_, length, kck );
+        lbel = new hkick( strip_final_colon( bel->name_ ).c_str(), length, kck );
       } else {
-        lbel = new hkick( bel->name_, kck );
+        lbel = new hkick( strip_final_colon( bel->name_ ).c_str(), kck );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -645,9 +669,9 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       char   name[BEL_NAME_LENGTH];
       
       if ( length != 0.0 || kck != 0.0 ) {
-        lbel = new vkick( bel->name_, length, kck );
+        lbel = new vkick( strip_final_colon( bel->name_ ).c_str(), length, kck );
       } else {
-        lbel = new vkick( bel->name_, kck );
+        lbel = new vkick( strip_final_colon( bel->name_ ).c_str(), kck );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -665,9 +689,9 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       char   name[BEL_NAME_LENGTH];
       
       if ( length != 0.0 || hkck != 0.0 || vkck != 0.0 ) {
-        lbel = new kick( bel->name_, length, hkck, vkck );
+        lbel = new kick( strip_final_colon( bel->name_ ).c_str(), length, hkck, vkck );
       } else {
-        lbel = new kick( bel->name_, hkck, vkck );
+        lbel = new kick( strip_final_colon( bel->name_ ).c_str(), hkck, vkck );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -686,23 +710,23 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       double shunt  = expr_evaluate( bel->params_[BEL_RFCAVITY_SHUNT], var_table_, bel_table_ );
       char   name[BEL_NAME_LENGTH];
       
-      lbel = new beamline( bel->name_ );
+      lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
       // NOTE: I cannot set the frequency of the rf cavity from harmonic number
       // until the revolution frequency is known; i.e. until the beamline
       // model is instantiated.  Thus, the rf cavity must be completed
       // by a registration visitor before being used.
-      thinrfcavity* rfcPtr = new thinrfcavity( add_str( name, bel->name_, "center" ), 0.0, volt*1.0e6, lag*2*M_PI, 0.0, shunt );
+      thinrfcavity* rfcPtr = new thinrfcavity( add_str( name, strip_final_colon( bel->name_ ).c_str(), "center" ), 0.0, volt*1.0e6, lag*2*M_PI, 0.0, shunt );
       rfcPtr->setHarmonicNumber( harmon );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
+      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "left" ), length/2.0 ) );
       ((beamline*)lbel)->append( (bmlnElmnt*) rfcPtr );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
+      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "right" ), length/2.0 ) );
       
       // Ignored parameters: BETRF, PG, TFILL
       
       break;
     }
     case BEL_ELSEPARATOR: {
-      // lbel = make_elseparator( bel->name_, expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      // lbel = make_elseparator( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
 
       // According to the MAD manual, field is in MV/m
       // Separator strengths are in MV/m.
@@ -715,7 +739,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       double energy   = sqrt( momentum*momentum + PH_NORM_mp*PH_NORM_mp );
       double angle    = 0.001 * (field*length/momentum) * (energy/momentum);
 
-      lbel = new vkick( bel->name_, length, angle );
+      lbel = new vkick( strip_final_colon( bel->name_ ).c_str(), length, angle );
 
       // Original code:. 
 
@@ -757,16 +781,16 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       // REMOVE: char   name[BEL_NAME_LENGTH];
       
       if( length > 0.0 ) {
-        lbel = new hmonitor( bel->name_, length );
+        lbel = new hmonitor( strip_final_colon( bel->name_ ).c_str(), length );
       }
       else {
-        lbel = new hmonitor( bel->name_ );
+        lbel = new hmonitor( strip_final_colon( bel->name_ ).c_str() );
       }
 
-      // REMOVE: lbel = new beamline( bel->name_ );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new hmonitor( add_str( name, bel->name_, "center" ) ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
+      // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "left" ), length/2.0 ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new hmonitor( add_str( name, strip_final_colon( bel->name_ ).c_str(), "center" ) ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "right" ), length/2.0 ) );
       
       break;
     }
@@ -775,16 +799,16 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       // REMOVE: char   name[BEL_NAME_LENGTH];
       
       if( length > 0.0 ) {
-        lbel = new vmonitor( bel->name_, length );
+        lbel = new vmonitor( strip_final_colon( bel->name_ ).c_str(), length );
       }
       else {
-        lbel = new vmonitor( bel->name_ );
+        lbel = new vmonitor( strip_final_colon( bel->name_ ).c_str() );
       }
 
-      // REMOVE: lbel = new beamline( bel->name_ );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new vmonitor( add_str( name, bel->name_, "center" ) ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
+      // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "left" ), length/2.0 ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new vmonitor( add_str( name, strip_final_colon( bel->name_ ).c_str(), "center" ) ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "right" ), length/2.0 ) );
       
       break;
     }
@@ -793,44 +817,44 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       // REMOVE: char   name[BEL_NAME_LENGTH];
       
       if( length > 0.0 ) {
-        lbel = new monitor( bel->name_, length );
+        lbel = new monitor( strip_final_colon( bel->name_ ).c_str(), length );
       }
       else {
-        lbel = new monitor( bel->name_ );
+        lbel = new monitor( strip_final_colon( bel->name_ ).c_str() );
       }
 
-      // REMOVE: lbel = new beamline( bel->name_ );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "left" ), length/2.0 ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new monitor( add_str( name, bel->name_, "center" ) ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, bel->name_, "right" ), length/2.0 ) );
+      // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "left" ), length/2.0 ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new monitor( add_str( name, strip_final_colon( bel->name_ ).c_str(), "center" ) ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "right" ), length/2.0 ) );
       
       break;
     }
     case BEL_INSTRUMENT:
-      lbel = make_instrument( bel->name_, expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_instrument( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
       break;
     case BEL_ECOLLIMATOR:
-      lbel = make_ecollimator( bel->name_, expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_ecollimator( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
       break;
     case BEL_RCOLLIMATOR:
-      lbel = make_rcollimator( bel->name_, expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_rcollimator( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
       break;
     case BEL_YROT:
-      lbel = make_yrot( bel->name_, expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_yrot( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
       break;
     case BEL_SROT: {
       double angle = expr_evaluate( bel->params_[BEL_SROT_ANGLE], var_table_, bel_table_ );
-      lbel = new srot( bel->name_, angle );
+      lbel = new srot( strip_final_colon( bel->name_ ).c_str(), angle );
       break;
     }
     case BEL_BEAMBEAM:
-      lbel = make_beambeam( bel->name_, expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_beambeam( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
       break;
     case BEL_MATRIX:
-      lbel = make_matrix( bel->name_, expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_matrix( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
       break;
     case BEL_LUMP:
-      lbel = make_lump( bel->name_, expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_lump( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
       break;
     default:
       cerr << "Unknown beam element." << endl;
