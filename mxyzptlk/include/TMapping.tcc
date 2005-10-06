@@ -46,6 +46,7 @@
 ******            - new code based on a single template parameter
 ******              instead of two. Mixed mode now handled
 ******              using conversion operators.
+******            - centralized environment management
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -230,29 +231,17 @@ TMapping<T> TMapping<T>::Inverse() const
    return _epsInverse( (this->_myEnv) );
  }
 
+// T* stdparts = new T [this->_dim ];
+//
+// for (int i=0; i<this->_dim; ++i) {
+//   
+//   stdparts[i] = (this->_comp)[i].standardPart();    
+// }
 
- // Otherwise, create a new TJetEnvironment<T> .........................
- TJetEnvironment<T>* pje_new = new TJetEnvironment<T>( *(this->_myEnv) );
- TJetEnvironment<T>* pje;
 
- for( i = 0; i < (this->_dim); i++ ) pje_new->_refPoint[i] = (this->_comp)[i].standardPart();
+ TJetEnvironment<T>* pje_new =TJetEnvironment<T>:: makeInverseJetEnvironment( this->_myEnv, *this);
 
- // ... Check to see if it already exists
- slist_iterator g( TJetEnvironment<T>::_environments );
- char found = 0;
-
- while( pje = (TJetEnvironment<T>*) g() )
-   if( *pje == *pje_new ) {
-     found = 1;
-     break;
-   }
-
- if( found ) {
-   delete pje_new;
-   pje_new = pje;
- }
- else TJetEnvironment<T>::_environments.append( pje_new );
-
+// delete stdparts;   
 
  // Construct an idempotent 
  // and compute its inverse. ..................................

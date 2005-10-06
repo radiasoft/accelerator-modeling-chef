@@ -42,6 +42,7 @@
 ******              - new code based on a single template parameter
 ******                instead of two. Mixed mode handled
 ******                using conversion operators.
+******              - Centralized environment management 
 ******
 **************************************************************************
 *************************************************************************/
@@ -455,11 +456,30 @@ TJetEnvironment<T>* TJet<T>::EndEnvironment( double* scl )
     }
   }
 
-  // Reset for the next environment and exit.
-  TJetEnvironment<T>::_skipEnvEqTest = true;
-  _lastEnv = _workEnv;
+  slist_iterator g( TJetEnvironment<T>::_environments );
+  Vector envtol( _workEnv->_numVar );
 
-   TJetEnvironment<T>::_environments.append( _workEnv );
+  for ( int i=0; i < envtol.Dim(); ++i ) { envtol(i) = 1.0e-6; }  // FIXME !
+
+  TJetEnvironment<T>* existing_pje;
+  bool found = false;
+  while( existing_pje = (TJetEnvironment<T>*) g() )
+   if( _workEnv->approxEq(*existing_pje, envtol) ) { 
+     found = true;
+     break;
+   } 
+
+   if(found){
+       delete _workEnv;
+      _lastEnv = existing_pje; 
+ 
+  } else {
+
+      TJetEnvironment<T>::_environments.append( _workEnv );
+     _lastEnv = _workEnv;
+      TJetEnvironment<T>::_skipEnvEqTest = true; // is this still needed ??? 
+  }
+
   _workEnv = 0;        // This does NOT delete the environment.
   _newCoords.clear();  // Should be unnecessary.
   _newValues.clear();  // Should be unnecessary.
@@ -863,10 +883,24 @@ TJet<T> operator+( const TJet<T>& x, const TJet<T>& y )
 
   // Check for consistency and set reference point of the sum.
   if( x->_myEnv != y->_myEnv ) {
+
+   std::cout << "x->_myEnv = " <<  *(x->_myEnv) <<std::endl;
+   std::cout << "y->_myEnv = " <<  *(y->_myEnv) <<std::endl;
+
+   slist_iterator g( TJetEnvironment<T>::_environments );
+   int i = 1;
+   while( TJetEnvironment<T>* pje = (TJetEnvironment<T>*) g() ) {
+     std::cout << "Environment no "<< i << " = " << *pje << std::endl; 
+     ++i;
+   }
+
+
     throw( GenericException( __FILE__, __LINE__, 
            "TJet<T> operator+( const TJet<T>& x, const TJet<T>& )",
            "Inconsistent environments." ) );
   }
+
+
   TJetEnvironment<T>* pje = x->_myEnv;
 
                               // ??? This should be modified so that
@@ -1398,11 +1432,21 @@ TJet<T> operator/( const TJet<T>& wArg, const TJet<T>& uArg )
           "Attempt to divide by a void TJL<T> variable." ) );
  }
  
- // Check for consistency 
- if( wArg->_myEnv != uArg->_myEnv ) {
+ if ( (wArg->_myEnv) != (wArg->_myEnv) ) {
+   std::cout << "wArg->_myEnv = " <<  *(wArg->_myEnv) <<std::endl;
+   std::cout << "uArg->_myEnv = " <<  *(uArg->_myEnv) <<std::endl;
+
+   slist_iterator g( TJetEnvironment<T>::_environments );
+   int i = 1;
+   while( TJetEnvironment<T>* pje = (TJetEnvironment<T>*) g() ) {
+     std::cout << "Environment no "<< i << " = " << *pje << std::endl; 
+     ++i;
+   }
+
    throw( GenericException( __FILE__, __LINE__, 
           "TJet<T> operator/( const TJet<T>&, const TJet<T>& )",
           "Inconsistent environments." ) );
+   
  }
 
  // Initialize local variables and set the environment of the answer.
