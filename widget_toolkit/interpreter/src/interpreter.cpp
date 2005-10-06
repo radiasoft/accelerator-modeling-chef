@@ -38,6 +38,8 @@
 #include <qdir.h>
 
 #include <iostream>
+#include <sstream>
+
 #include <stdio.h>
 
 #include <Jet.h>
@@ -72,6 +74,12 @@ Interpreter::Interpreter()
 {
 
    Py_Initialize();
+
+// NOTE: Th init<modulename> function is normally implicitly 
+// called when a shared module is dynamically loaded. When a module is
+// linked in (e.g. as part of a lib linked to the interpreter), 
+// it must be explicitly initialized.
+  
    initioredirector();
    initbasic_toolkit();
    initmxyzptlk();
@@ -80,23 +88,24 @@ Interpreter::Interpreter()
    initbmlfactory();
    initchefplot();
    // initchef() ***DISABLED ****
+
 // Call Python C API routines to use the interpreter.
 
    _main_module     = boost::python::handle<> ( boost::python::borrowed( PyImport_AddModule("__main__") ) );
    _main_dictionary = boost::python::handle<> ( boost::python::borrowed( PyModule_GetDict(_main_module.get()) ) );
    _sys_module      = boost::python::handle<> ( boost::python::borrowed( PyImport_AddModule("sys") ) );
 
-   runString("from math import *");
-   runString("import os,sys");
-   runString("import code");
-   runString("import  basic_toolkit");
-   runString("import  mxyzptlk");
-   runString("import  beamline");
-   runString("import  physics_toolkit");
-   runString("import  bmlfactory");
-   runString("import  chefplot");
+    runString("from math import *");
+    runString("import os,sys");
+    runString("import code");
+    runString("import  basic_toolkit");
+    runString("import  mxyzptlk");
+    runString("import  beamline");
+    runString("import  physics_toolkit");
+    runString("import  bmlfactory");
+    runString("import  chefplot");
    /// runString("import  chef"); ***DISABLED***
-   runString("sys.path += '.'");
+    runString("sys.path += '.'");
 }
 
 
@@ -112,7 +121,7 @@ Interpreter::~Interpreter()
 void Interpreter::runString(const char* s) 
 {
 
-  // save Jet environment ( a script can change the environment !)
+  // save the current Jet environment ( an arbitrary script can change the environment !)
 
   Jet__environment  * storedEnv    =   Jet::_lastEnv;
   JetC__environment * storedEnvC   =   JetC::_lastEnv; 
@@ -130,7 +139,7 @@ void Interpreter::runString(const char* s)
     throw e;
   }
   
- // restore Jet environment
+ // restore the Jet environment
 
   Jet::_lastEnv = storedEnv;
   JetC::_lastEnv = storedEnvC;
@@ -172,18 +181,54 @@ const char* Interpreter::getPythonPrompt2() {
 void Interpreter::readFile(const char* fname) 
 {
 
+  if (!fname) {
+ 
+    throw GenericException(__FILE__, __LINE__, "Interpreter::readFile(const char* fname)", "File name not defined." ); 
+  }
+
   QFileInfo qfinfo(fname);  
 
   if ( !qfinfo.exists() )
     throw GenericException(__FILE__, __LINE__, "Interpreter::readFile(const char* fname)", "File not found.");
 
-  QString   qdirpath_old = QDir::currentDirPath(); 
+  QString  qdirpath_old = QDir::currentDirPath(); 
+
   QDir::setCurrent( qfinfo.dir().path() );
 
-  FILE* fp = fopen(fname, "r");
-  PyRun_SimpleFile(fp, fname); 
+ FILE* fp = fopen(fname, "r");
+    
+ if (fp)  {
+
+#ifdef WIN32
+
+//   ----------------------------------------------------------------
+//   NOTE:
+//   The code below is a work-around for win32. 
+//   Python24.dll is usually distributed in binary form, 
+//   from www.python.org. 
+//   Unfortunately, the header files are not distributed with the OS
+//   and the one used used for this compilation
+//   are likely to use a different implementation of the FILE struct 
+//   than the one used when compiling CHEF. This results in
+//   lots of strange error and access violations. The workaround
+//   avoids the PyRun_SimpleFile function. 
+//   ---------------------------------------------------------------- 
+     std::stringstream cmd;
+
+     cmd << "execfile(" << "'" << fname << "'" << ")" << std::ends;  
+
+     PyRun_SimpleString(cmd.str().c_str()); 
+#else
+     PyRun_SimpleFile(fp, fname); 
+#endif 
+  } else { 
+ 
+    throw GenericException(__FILE__, __LINE__, "Interpreter::readFile(const char* fname)", "Could not open script file"); 
+  }
    
   QDir::setCurrent(qdirpath_old);
+
   fclose(fp);
 
 }
+
