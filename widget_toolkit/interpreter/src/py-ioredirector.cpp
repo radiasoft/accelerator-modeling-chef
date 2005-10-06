@@ -40,7 +40,10 @@
 
 using namespace boost::python;
 
-#define BOOST_PYTHON_STATIC_MODULE
+// defining the symbol below would prevent the initioredirector function to be exported
+// from the module, on platforms that supports this feature.
+
+// #define BOOST_PYTHON_STATIC_MODULE
 
 
 BOOST_PYTHON_MODULE( ioredirector )
