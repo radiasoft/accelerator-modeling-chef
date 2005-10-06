@@ -43,7 +43,7 @@
 ******              - new code based on a single template parameter
 ******                instead of two. Mixed mode now handled
 ******                using conversion operators.
-******
+******              - centralized environment management
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -59,6 +59,7 @@
 #include <GenericException.h>
 #include <TJetEnvironment.h>
 #include <VectorD.h>   // Used by .approxEq
+#include <TMapping.h>
 
 using namespace std;
 
@@ -101,33 +102,178 @@ extern "C" {
 
 // ================================================================
 //      Implementation of TJetEnvironment
-//      ??? Belongs in JL.cc
-
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetEnvironment<T>*     TJetEnvironment<T>::makeJetEnvironment( const TJetEnvironment*){
+TJetEnvironment<T>*  TJetEnvironment<T>::makeInverseJetEnvironment( const TJetEnvironment* pEnv, const TMapping<T>& map){
 
-// not implemented yet !
+  TJetEnvironment<T>* pInvEnv = new TJetEnvironment<T>;
+
+  pInvEnv->_maxWeight     = pEnv->_maxWeight;
+  pInvEnv->_monomial      = 0; 
+  pInvEnv->_maxTerms      = pEnv->_maxTerms;
+  pInvEnv->_numVar        = pEnv->_numVar; 
+  pInvEnv->_spaceDim      = pEnv->_spaceDim;
+  pInvEnv->_pbok          = pEnv->_pbok;
+  pInvEnv->_dof           = pEnv->_dof;
+  pInvEnv->_TJLmonomial   = 0; 
+  pInvEnv->_TJLmml        = 0;
+  pInvEnv->_offset.reconstruct( pEnv->_maxWeight, pEnv->_numVar );
+
+  if( TJet<T>::workEnvironment() != 0 ) {
+    throw( GenericException( __FILE__, __LINE__, 
+           "TJetEnvironment::makeInverseJetEnvironment( TJetEnvironment* )",
+           "Close open environment before copying." ) );
+  }
+
+  if( pInvEnv->_numVar == 0 ) {
+    (*pcerr) << "\n\n"
+         << "*** WARNING ***                                          \n"
+         << "*** WARNING *** TJetEnvironment::makeInverseJetEnvironment( const TJetEnvironment*) \n"
+         << "*** WARNING ***                                          \n"
+         << "*** WARNING *** You are copying a null environment.      \n"
+         << "*** WARNING ***                                          \n"
+         << endl;
+
+    pInvEnv->_monomial    = 0;
+    pInvEnv->_TJLmonomial = 0;
+    pInvEnv->_TJLmml      = 0;
+    pInvEnv->_exponent    = 0;
+    pInvEnv-> _pbok       = 0;
+    pInvEnv->_numVar      = 0;
+    pInvEnv->_maxWeight   = 0;
+    pInvEnv->_spaceDim    = -1;
+    pInvEnv->_dof         = 0;            
+    pInvEnv->_refPoint    = 0;       
+    pInvEnv->_scale       = 0;
+
+    return pInvEnv;
+  }
+
+  int w = pInvEnv->_maxWeight;
+  int n = pInvEnv->_numVar;
+  int i, j;
+
+  pInvEnv->_exponent   = new int[ n ];
+
+  pInvEnv->_refPoint   = new T[ n ];
+  pInvEnv->_scale      = new double[ n ];
+
+  pInvEnv->_allZeroes.Reconstruct( n );
+
+  for( i = 0; i < n; i++ ) {
+   pInvEnv->_refPoint[i]  = pEnv->_refPoint[i];
+   pInvEnv->_scale[i]     = pEnv->_scale[i];
+   pInvEnv->_allZeroes(i) = 0;   // ??? Redundant and unnecessary.
+  }
+
+  pInvEnv->_buildScratchPads();
+
+// --------------------------------------------------------
+// at this point, *pInvEnv should be an exact COPY of *pEnv
+// --------------------------------------------------------
 
 
-return 0;
+ for( i = 0; i < map.Dim(); i++ )
+    pInvEnv->_refPoint[i] = map(i).standardPart();
+
+
+ // ... Check to see if it already exists
+ 
+ slist_iterator g( TJetEnvironment<T>::_environments );
+ 
+ bool found = 0;
+
+ TJetEnvironment<T>* pje = 0;
+
+ while( pje = (TJetEnvironment<T>*) g() )
+   if( *pje == *pInvEnv ) {
+     found = true;
+     break;
+   }
+
+ if( found ) {
+   delete pInvEnv;
+   pInvEnv = pje;
+ }
+ else TJetEnvironment<T>::_environments.append( pInvEnv );
+
+ return pInvEnv;
 
 }
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetEnvironment<T>*     TJetEnvironment<T>::makeJetEnvironment(){
 
-// not implemented yet !
-
+// NOT implemented yet !
+// The code here should first check if a suitable env already exists.
+// if it does, return a ptr to it. If it does not, return a new one.
 
 return 0;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TJetEnvironment<T>*  TJetEnvironment<T>::makeJetEnvironment( const TJetEnvironment* pje){
+
+ slist_iterator g( TJetEnvironment<T>::_environments );
+ 
+ bool found = false;
+
+ TJetEnvironment<T>* existing_pje = 0;
+
+ while( existing_pje = (TJetEnvironment<T>*) g() ) 
+ {
+   if( *existing_pje == *pje ) {
+     found = true;
+     break;
+   }
+ }
+
+ if( found ) {
+    return existing_pje;
+ } 
+ else  {
+   TJetEnvironment<T>::_environments.append( const_cast<TJetEnvironment<T>*>(pje) );  
+   return const_cast<TJetEnvironment<T>*>(pje);
+ } 
+ 
+
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if 0 
+
+template<typename T>
+TJetEnvironment<T>::TJetEnvironment( const TJetEnvironment&) 
+{
+  // Since the copy constructor is declared private, this should 
+  // never be called. This implementation is here because the entire class
+  // is explicitly instantiated in TemplateInstantiations.cc; therefore
+  // a strong reference is generated.
+
+    throw( GenericException( __FILE__, __LINE__, 
+           "TJetEnvironment::TJetEnvironment( const TJetEnvironment&)",
+           "Calling the copy constructor is forbidden." ) );
+
+
+}
+
+#endif
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 
 template<typename T>
@@ -153,76 +299,6 @@ TJetEnvironment<T>::TJetEnvironment()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-template<typename T>
-TJetEnvironment<T>::TJetEnvironment( const TJetEnvironment& x )
-: _maxWeight( x._maxWeight ),
-  _monomial(0), 
-  _maxTerms( x._maxTerms ),
-  _numVar( x._numVar ), 
-  _spaceDim( x._spaceDim ),
-  _pbok( x._pbok ),
-  _dof( x._dof ),
-  // OBSOLETE _numPaths(0), 
-  _TJLmonomial(0), 
-  _TJLmml(0),
-  _offset( x._maxWeight, x._numVar )
-{
-  if( TJet<T>::workEnvironment() != 0 ) {
-    throw( GenericException( __FILE__, __LINE__, 
-           "TJetEnvironment::TJetEnvironment( TJetEnvironment& )",
-           "Close open environment before copying." ) );
-  }
-
-  if( _numVar == 0 ) {
-    (*pcerr) << "\n\n"
-         << "*** WARNING ***                                          \n"
-         << "*** WARNING *** TJetEnvironment::TJetEnvironment       \n"
-         << "*** WARNING ***                                          \n"
-         << "*** WARNING *** You are copying a null environment.      \n"
-         << "*** WARNING ***                                          \n"
-         << endl;
-
-    _monomial    = 0;
-    _TJLmonomial = 0;
-    _TJLmml      = 0;
-    _exponent    = 0;
-    // OBSOLETE _expCode     = 0;
-    _pbok        = 0;
-    // OBSOLETE _numPaths    = 0;
-    _numVar      = 0;
-    _maxWeight   = 0;
-    _spaceDim    = -1;
-    _dof         = 0;            
-    _refPoint    = 0;       
-    _scale       = 0;
-
-    return;
-  }
-
-  int w = _maxWeight;
-  int n = _numVar;
-  int i, j;
-
-  _exponent   = new int[ n ];
-
-  _refPoint   = new T[ n ];
-  _scale      = new double[ n ];
-
-  _allZeroes.Reconstruct( n );
-
-  for( i = 0; i < n; i++ ) {
-   _refPoint[i] = x._refPoint[i];
-   _scale[i] = x._scale[i];
-   _allZeroes(i) = 0;   // ??? Redundant and unnecessary.
-  }
-
-  _buildScratchPads();
-
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 void TJetEnvironment<T>::_buildScratchPads()

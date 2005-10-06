@@ -37,7 +37,7 @@
 ******              - new code based on a single template parameter
 ******                instead of two. Mixed mode now handled
 ******                using conversion operators.
-******
+******              - centralized environment management
 ******
 *************************************************************************
 *************************************************************************/
@@ -63,6 +63,9 @@ class TJetEnvironment;
 
 template<typename T> 
 class TJLterm;
+
+template<typename T>
+class TMapping;
 
 template<typename T> 
 std::ostream& operator<<( std::ostream&, const TJetEnvironment<T>& );
@@ -110,18 +113,19 @@ struct TJetEnvironment
 
  // Member functions -------------------------------------
 
-  TJetEnvironment();
-  TJetEnvironment( const TJetEnvironment& );
+  TJetEnvironment(); // this should go away  and made private!
+
  ~TJetEnvironment();
 
 
- operator TJetEnvironment<std::complex<double> > () const;
- operator TJetEnvironment<double> () const;
+ operator TJetEnvironment<std::complex<double> >* () const;
+ operator TJetEnvironment<double>* () const;
  
  // factory functions
 
- static TJetEnvironment*                        makeJetEnvironment(); // is this really needed ? 
- static TJetEnvironment*                        makeJetEnvironment(const TJetEnvironment*);
+ static TJetEnvironment*                        makeJetEnvironment();                       
+ static TJetEnvironment*                        makeJetEnvironment(const TJetEnvironment* pje);                       
+ static TJetEnvironment*                        makeInverseJetEnvironment(const TJetEnvironment*, const TMapping<T>& map); 
 
  static TJetEnvironment*                        CreateEnvFrom( const Vector&, int );
  static TJetEnvironment<double>*                CreateEnvFrom( const TJetEnvironment<std::complex<double> >* );
@@ -164,6 +168,11 @@ struct TJetEnvironment
 
  static slist _environments;   // A list of existing environments 
                                // note that there is a list of every template typename T
+
+  private:
+
+  TJetEnvironment( const TJetEnvironment& );
+
 
 };
 
