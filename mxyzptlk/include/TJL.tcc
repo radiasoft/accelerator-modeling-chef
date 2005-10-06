@@ -41,6 +41,7 @@
 ******              - new code based on a single template parameter
 ******                instead of two. Mixed mode handled
 ******                using conversion operators.
+******              - centralized environment management 
 ******  
 ******                                                                
 **************************************************************************
@@ -1823,23 +1824,39 @@ TJLterm<T>::~TJLterm<T>()
 template<typename T>
 TJLterm<T>* TJLterm<T>::array_allocate(int n) {
 
+// ----------------------------------------------------------------------
+// To use the system allocator instead of boost:pool to allocate JLterms
+// define JLTERM_ALLOCATOR_MALLOC. This is often useful for debugging.  
+//-----------------------------------------------------------------------
+
+#ifdef JLTERM_ALLOCATOR_MALLOC
+    TJLterm<T>* p = (TJLterm<T>*) malloc(n*sizeof(TJLterm<T>));
+#else
     TJLterm<T>* p = 
-       static_cast<TJLterm<T>*>(_ordered_memPool.ordered_malloc( n ));
+     static_cast<TJLterm<T>*>(_ordered_memPool.ordered_malloc( n ));
     _array_sizes[ p ] = n;
+#endif
+
     return p;
 }
 
 template<typename T>
 void TJLterm<T>::array_deallocate(TJLterm<T>* p) {
 
+#ifdef JLTERM_ALLOCATOR_MALLOC
+    free(p)
+#else 
     _ordered_memPool.ordered_free( p, _array_sizes[p] ); 
     _array_sizes.erase(p );
+#endif
+
 }
 
-
+//---------------------------------------------------------------
 //*** Static member variable instantiations for the TJLterm class
+//---------------------------------------------------------------
 //
-// Notes:
+// NOTE::
 // 
 //  __gnu_cxx::hash_map is an extension to the STL. 
 //  There is equivalent functionality in tr1 ...
