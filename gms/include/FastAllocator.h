@@ -46,8 +46,8 @@ public:
 		                       }
 
      void* allocateMemory(size_t size) {
-		                         if(size > MAX_SMALL_OBJECT_SIZE){
-		                           return ::operator new(size);
+		                         if(   (size > MAX_SMALL_OBJECT_SIZE) ) { 
+                                         return ::operator new(size);
 		                         }		  
 		                         return m_pools[size - 1]->malloc();
 		                       }
@@ -96,6 +96,10 @@ public:
 //=============================================================================================================
 
 
+// NOTE: Under certain circumstances, there are problems with the boost::pool<> allocator under WIN32.
+//       Until the issue is understood, FastAllocator merely uses the default system allocation 
+//       on that platform. 
+
 class FastAllocator {
 public:
 
@@ -105,11 +109,22 @@ public:
 
 
    static void* operator new(size_t size) {
-       return PoolManager::getInstance().allocateMemory(size);
+         if (size==0) size=1 ;       // new must return a valid pointer when an object of zero size is allocated
+#ifdef WIN32
+        return ::operator new(size);
+#else
+        return PoolManager::getInstance().allocateMemory(size);
+#endif
+
    }
 
    static void operator delete(void* deletable, size_t size) {
-       PoolManager::getInstance().releaseMemory(deletable, size);
+#ifdef WIN32
+      ::operator delete(deletable);
+#else
+      PoolManager::getInstance().releaseMemory(deletable, size);
+#endif
+
    }
 
    virtual ~FastAllocator() {}
