@@ -81,8 +81,8 @@ JetC__environment*     ( * CreateEnvFromPtr)(const Jet__environment*  )   = &Jet
 void wrap_mxyzptlk_jetc() {
 
 
- class_<Jet__environment>  Jet__environmentClass_("Jet__environment", no_init);
- class_<JetC__environment> JetC__environmentClass_("JetC__environment", no_init);
+ class_<Jet__environment,  boost::noncopyable>  Jet__environmentClass_("Jet__environment", no_init);
+ class_<JetC__environment, boost::noncopyable> JetC__environmentClass_("JetC__environment", no_init);
 
 
  class_<JetC> JetC_Class_("JetC", init<>()); 
