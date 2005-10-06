@@ -123,20 +123,22 @@ bool EnvEquivalent( const TJetEnvironment<complex<double> >* x,
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJetEnvironment<double>::operator TJetEnvironment<complex<double> > () const {
+TJetEnvironment<double>::operator TJetEnvironment<complex<double> >* () const {
 
-  TJetEnvironment<complex<double> > z; 
-   
-  z._maxWeight   =  _maxWeight; 
-  z._monomial    =  0;
-  z._maxTerms    =  _maxTerms; 
-  z._numVar      =  _numVar;
-  z._spaceDim    =  _spaceDim;
-  z._pbok        =  _pbok;  
-  z._dof         =  _dof;  
-  z._TJLmonomial =  0; 
-  z._TJLmml      =  0; 
-  z._offset.reconstruct( _offset );
+  // NOTE: Using the TJetEnvironment copy constructor is forbidden;  
+
+  TJetEnvironment<complex<double> >*  zp = new TJetEnvironment<complex<double> >; 
+  
+  zp->_maxWeight   =  _maxWeight; 
+  zp->_monomial    =  0;
+  zp->_maxTerms    =  _maxTerms; 
+  zp->_numVar      =  _numVar;
+  zp->_spaceDim    =  _spaceDim;
+  zp->_pbok        =  _pbok;  
+  zp->_dof         =  _dof;  
+  zp->_TJLmonomial =  0; 
+  zp->_TJLmml      =  0; 
+  zp->_offset.reconstruct( _offset );
 
   if( TJet<complex<double> >::workEnvironment() != 0 ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -154,46 +156,46 @@ TJetEnvironment<double>::operator TJetEnvironment<complex<double> > () const {
          << "*** WARNING ***                                          \n"
          << endl;
 
-    z._monomial           = 0;
-    z._TJLmonomial        = 0;
-    z._TJLmml             = 0;
-    z._maxTerms           = 0;
-    z._exponent           = 0;
-    z._pbok               = 0;
-    z._numVar             = 0;
-    z._maxWeight          = 0;
-    z._spaceDim           = -1;
-    z._dof                = 0;            
-    z._refPoint           = 0;       
-    z._scale              = 0;
+    zp->_monomial           = 0;
+    zp->_TJLmonomial        = 0;
+    zp->_TJLmml             = 0;
+    zp->_maxTerms           = 0;
+    zp->_exponent           = 0;
+    zp->_pbok               = 0;
+    zp->_numVar             = 0;
+    zp->_maxWeight          = 0;
+    zp->_spaceDim           = -1;
+    zp->_dof                = 0;            
+    zp->_refPoint           = 0;       
+    zp->_scale              = 0;
 
-    return z;
+    return zp;
   }
 
-  int w = z._maxWeight;
-  int n = z._numVar;
+  int w = zp->_maxWeight;
+  int n = zp->_numVar;
 
-  if( z._monomial ) { delete [] z._monomial; }
-  z._monomial   = new std::complex<double>[ bcfRec( w + n, n ) ];
+  if( zp->_monomial ) { delete [] zp->_monomial; }
+  zp->_monomial   = new std::complex<double>[ bcfRec( w + n, n ) ];
 
-  if (z._exponent) delete  z._exponent;   z._exponent = new int[ n ];            
-  z._pbok    = _pbok;
-  z._dof     = _dof;
+  if (zp->_exponent) delete  zp->_exponent;   zp->_exponent = new int[ n ];            
+  zp->_pbok    = _pbok;
+  zp->_dof     = _dof;
 
-  if(z._refPoint) delete z._refPoint;  z._refPoint = new complex<double> [ n ];  
-  if(z._scale)    delete z._scale;     z._scale    = new double[ n ];            
+  if(zp->_refPoint) delete zp->_refPoint;  zp->_refPoint = new complex<double> [ n ];  
+  if(zp->_scale)    delete zp->_scale;     zp->_scale    = new double[ n ];            
 
-  z._allZeroes.Reconstruct( n );            
+  zp->_allZeroes.Reconstruct( n );            
 
   for( int i = 0; i < n; i++ ) {
-   z._refPoint[i]   = complex<double> ( _refPoint[i], 0.0 );
-   z._scale[i]      = _scale[i];
-   z._allZeroes(i)  = 0;   // ??? Redundant and unnecessary.
+   zp->_refPoint[i]   = complex<double> ( _refPoint[i], 0.0 );
+   zp->_scale[i]      = _scale[i];
+   zp->_allZeroes(i)  = 0;   // ??? Redundant and unnecessary.
   }
 
-  z._buildScratchPads();
+  zp->_buildScratchPads();
 
-  return z;
+  return zp;
 
 }
 
@@ -201,20 +203,22 @@ TJetEnvironment<double>::operator TJetEnvironment<complex<double> > () const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-TJetEnvironment<complex<double> >::operator TJetEnvironment<double> () const {
+TJetEnvironment<complex<double> >::operator TJetEnvironment<double>* () const {
  
-  TJetEnvironment<double> x;
+  // NOTE: Using the TJetEnvironment copy constructor is forbidden;  
 
-  x._maxWeight   =  _maxWeight; 
-  x._monomial    =  0;
-  x._maxTerms    =  _maxTerms; 
-  x._numVar      =  _numVar;
-  x._spaceDim    =  _spaceDim;
-  x._pbok        =  _pbok;  
-  x._dof         =  _dof;  
-  x._TJLmonomial =  0; 
-  x._TJLmml      =  0; 
-  x._offset.reconstruct(_offset); 
+  TJetEnvironment<double>* xp = new  TJetEnvironment<double>;
+
+  xp->_maxWeight   =  _maxWeight; 
+  xp->_monomial    =  0;
+  xp->_maxTerms    =  _maxTerms; 
+  xp->_numVar      =  _numVar;
+  xp->_spaceDim    =  _spaceDim;
+  xp->_pbok        =  _pbok;  
+  xp->_dof         =  _dof;  
+  xp->_TJLmonomial =  0; 
+  xp->_TJLmml      =  0; 
+  xp->_offset.reconstruct(_offset); 
 
 
   for( int ii = 0; ii < _numVar; ii++ ) {
@@ -241,47 +245,47 @@ TJetEnvironment<complex<double> >::operator TJetEnvironment<double> () const {
          << "*** WARNING ***                                          \n"
          << endl;
 
-    x._monomial           = 0;
-    x._TJLmonomial        = 0;
-    x._TJLmml             = 0;
-    x._maxTerms           = 0;
-    x._exponent           = 0;
-    x._pbok               = 0;
-    x._numVar             = 0;
-    x._maxWeight          = 0;
-    x._spaceDim           = -1;
-    x._dof                = 0;            
-    x._refPoint           = 0;       
-    x._scale              = 0;
+    xp->_monomial           = 0;
+    xp->_TJLmonomial        = 0;
+    xp->_TJLmml             = 0;
+    xp->_maxTerms           = 0;
+    xp->_exponent           = 0;
+    xp->_pbok               = 0;
+    xp->_numVar             = 0;
+    xp->_maxWeight          = 0;
+    xp->_spaceDim           = -1;
+    xp->_dof                = 0;            
+    xp->_refPoint           = 0;       
+    xp->_scale              = 0;
 
-    return x;
+    return xp;
   }
 
-  int w = x._maxWeight;
-  int n = x._numVar;
+  int w = xp->_maxWeight;
+  int n = xp->_numVar;
 
-  if( x._monomial ) { delete [] x._monomial; }
-  x._monomial   = new double[ bcfRec( w + n, n ) ];
+  if( xp->_monomial ) { delete [] xp->_monomial; }
+  xp->_monomial   = new double[ bcfRec( w + n, n ) ];
 
-  if(x._exponent) delete x._exponent; x._exponent   = new int[ n ];  
-  x._pbok       = _pbok;
-  x._dof        = _dof;
+  if(xp->_exponent) delete xp->_exponent; xp->_exponent   = new int[ n ];  
+  xp->_pbok       = _pbok;
+  xp->_dof        = _dof;
 
-  if(x._refPoint) delete x._refPoint;  x._refPoint = new double[ n ]; 
-  if(x._scale)    delete x._scale;     x._scale    = new double[ n ]; 
+  if(xp->_refPoint) delete xp->_refPoint;  xp->_refPoint = new double[ n ]; 
+  if(xp->_scale)    delete xp->_scale;     xp->_scale    = new double[ n ]; 
 
-  x._allZeroes.Reconstruct( n ); // not needed ????
+  xp->_allZeroes.Reconstruct( n ); // not needed ????
 
   for( int i = 0; i < n; i++ ) {
-    x._refPoint[i]  = real( _refPoint[i] );
-    x._scale[i]     = _scale[i];
-    x._allZeroes(i) = 0;   // ??? Redundant and unnecessary.
+    xp->_refPoint[i]  = real( _refPoint[i] );
+    xp->_scale[i]     = _scale[i];
+    xp->_allZeroes(i) = 0;   // ??? Redundant and unnecessary.
   }
 
 
-  x._buildScratchPads();
+  xp->_buildScratchPads();
 
-  return x;
+  return xp;
 
 }
 
@@ -303,9 +307,11 @@ TJetEnvironment<complex<double> >* TJetEnvironment<complex<double> >::CreateEnvF
   // If not, then create a new TJetEnvironment<complex<double> > ...........
 
 
-  TJetEnvironment<complex<double> >* pje_new = new TJetEnvironment<complex<double> >( *x ); // conversion operator 
+  // TJetEnvironment<complex<double> >* pje_new = new TJetEnvironment<complex<double> >( *x ); // conversion operator 
+ 
+  TJetEnvironment<complex<double> >* pje_new = makeJetEnvironment( *x ); // conversion operator 
 
-  TJetEnvironment<complex<double> >::_environments.append( pje_new );
+  // TJetEnvironment<complex<double> >::_environments.append( pje_new );
  
   return pje_new;
 }
@@ -328,8 +334,12 @@ TJetEnvironment<double>* TJetEnvironment<double>::CreateEnvFrom( const TJetEnvir
  
   // If not, then create a new TJetEnvironment<double> ............
 
-  TJetEnvironment<double>* pje_new = new TJetEnvironment<double>( *z );     // conversion operator
-  TJetEnvironment<double>::_environments.append( pje_new  );
+  // TJetEnvironment<double>* pje_new = new TJetEnvironment<double>( *z );     // conversion operator
+
+  TJetEnvironment<double>* pje_new = makeJetEnvironment( *z );     // conversion operator
+
+  // TJetEnvironment<double>::_environments.append( pje_new  );
+
   return pje_new;
 }
 
