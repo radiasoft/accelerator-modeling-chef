@@ -112,9 +112,24 @@ Interpreter::Interpreter()
 Interpreter::~Interpreter() 
 {
 
-  Py_Finalize(); //  terminate the interpreter and release its resources.
+  //--------------------------------------------------------------------------------------------------
+  // From the Boost.Python TODO list:
+  //--------------------------------------------------------------------------------------------------
+  // 
+  // Currently (as this is written boost 1_33),  Boost.Python has several global or function-static
+  // objects  whose existence keeps reference counts from dropping to zero until the Boost.Python 
+  // shared object is unloaded. This can cause a crash because when the reference counts do go to 
+  // zero, there is no interpreter. In order to make it safe to call Py_Finalize, we must register 
+  // an atexit() routine to destroy these objects and release all Python reference counts
+  // so that Python can clean them up while there is still an interpreter.
+  //  
+ 
+  // COMMENTED OUT -- see above  Py_Finalize(); //  terminate the interpreter and release its resources.
+
+
   if (_instance) delete _instance;
   _instance = 0; 
+
 } 
 
 
