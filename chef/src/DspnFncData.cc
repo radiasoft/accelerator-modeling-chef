@@ -146,7 +146,7 @@ void DspnFncData::doCalc()
       *(_errorStreamPtr) 
         << "\n*** WARNING *** "
            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-        << "\n*** WARNING *** void DspnFncData::_recalc()"
+        << "\n*** WARNING *** void DspnFncData::doCalc()"
            "\n*** WARNING *** Too many lattice functions read."
            "\n*** WARNING *** Am resetting to " << _arraySize << " in all."
         << "\n*** WARNING *** "
@@ -161,9 +161,9 @@ void DspnFncData::doCalc()
       _dPrime_H[i]     = infoPtr->dPrime.hor;
       _dPrime_V[i]     = infoPtr->dPrime.ver;
 
-      // Zero out closed orbits of less than 1 Angstrom
-      if( std::abs(_clo_H[i]) < 1.0e-7 ) { _clo_H[i] = 0.0; }
-      if( std::abs(_clo_V[i]) < 1.0e-7 ) { _clo_V[i] = 0.0; }
+      // REMOVE: // Zero out closed orbits of less than 1 Angstrom
+      // REMOVE: if( std::abs(_clo_H[i]) < 1.0e-7 ) { _clo_H[i] = 0.0; }
+      // REMOVE: if( std::abs(_clo_V[i]) < 1.0e-7 ) { _clo_V[i] = 0.0; }
 
       infoPtr = _bmlConPtr->getDispersionPtr(++i);
     }
