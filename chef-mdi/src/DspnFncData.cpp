@@ -182,8 +182,7 @@ DspnFncData::~DspnFncData()
 
 void DspnFncData::doCalc()
 {
-
-  // UNUSED ??? const double mm = 0.001;
+  const double mm = 0.001;
   int i = 0;
 
   const DispersionSage::Info* infoPtr;
@@ -209,26 +208,21 @@ void DspnFncData::doCalc()
       *(_errorStreamPtr) 
         << "\n*** WARNING *** "
            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-        << "\n*** WARNING *** void DspnFncData::_recalc()"
+        << "\n*** WARNING *** void DspnFncData::doCalc()"
            "\n*** WARNING *** Too many lattice functions read."
            "\n*** WARNING *** Am resetting to " << _arraySize << " in all."
         << "\n*** WARNING *** "
         << endl;
     }
     else {
-       *(azimuth++)     = infoPtr->arcLength;
+      *(azimuth++)     = infoPtr->arcLength;
 
-      // Zero out closed orbits of less than 1 Angstrom
-
-       infoPtr->closedOrbit.hor < 1.0e-7 ? *(clo_H++) = 0.0 : *(clo_H++) = infoPtr->closedOrbit.hor;
-       infoPtr->closedOrbit.ver < 1.0e-7 ? *(clo_V++) = 0.0 : *(clo_V++) = infoPtr->closedOrbit.ver;
-
-       *(disp_H++)       = infoPtr->dispersion.hor;
-       *(disp_V++)       = infoPtr->dispersion.ver;
-       *(dPrime_H++)     = infoPtr->dPrime.hor;
-       *(dPrime_V++)     = infoPtr->dPrime.ver;
-
-      // Zero out closed orbits of less than 1 Angstrom
+      *(clo_H++)        = infoPtr->closedOrbit.hor / mm;
+      *(clo_V++)        = infoPtr->closedOrbit.ver / mm;
+      *(disp_H++)       = infoPtr->dispersion.hor;
+      *(disp_V++)       = infoPtr->dispersion.ver;
+      *(dPrime_H++)     = infoPtr->dPrime.hor;
+      *(dPrime_V++)     = infoPtr->dPrime.ver;
 
       infoPtr = _bmlConPtr->getDispersionPtr(++i);
     }
