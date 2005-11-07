@@ -90,8 +90,12 @@ export TOPDIR
 #
 if [ -z $INSTALLDIR ]
 then
-   INSTALLDIR=$TOPDIR/RUNTIME
+  INSTALLDIR="$TOPDIR/RUNTIME"
+else
+  echo "Installing in directory $INSTALLDIR"
+  shift 2
 fi
+
 export INSTALLDIR 
 #
 QTDIR=$1
