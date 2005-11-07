@@ -76,15 +76,15 @@ else
   exit 1
 fi
 cd ..
-
-while getopts I: opt
+#
+while getopts "?I:" opt
 do
    case "$opt" in 
       I)  INSTALLDIR="$OPTARG";;
       \?) help_build;;
    esac
 done
-
+#
 TOPDIR=`pwd`
 export TOPDIR
 #
