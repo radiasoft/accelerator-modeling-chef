@@ -25,7 +25,7 @@ SOURCES	+= src/devicetable.cpp
 FORMS	=  src/devicetablebase.ui
 
 
-INCLUDEPATH += $$QUTEXR_INC
+INCLUDEPATH += $${QUTEXR_INC}
 
 LIBS	 += -L$$(QUTEXR_LIBDIR) -lqutexr -lqwt 
 LIBS	 += -Wl,-rpath,$${QUTEXR_LIBDIR} 
