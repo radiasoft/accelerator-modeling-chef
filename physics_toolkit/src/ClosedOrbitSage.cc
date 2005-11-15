@@ -110,7 +110,8 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
   while((  q = getNext++  ))
   {
-    if( 0 == strcmp( "thinrfcavity", q->Type() ) )
+    if(    ( 0 == strcmp( "rfcavity",     q->Type() ) )
+        || ( 0 == strcmp( "thinrfcavity", q->Type() ) ) )
     {
       sd = new strengthData;
       sd->address = q;
