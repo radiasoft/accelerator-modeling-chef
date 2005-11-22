@@ -18,7 +18,7 @@
 ******  The U.S. Government retains a world-wide non-exclusive, 
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S. and Foreign Copyright Laws.                                                                
+******  is protected under the U.S. and Foreign Copyright Laws.
 ******
 ******  Author:    Leo Michelotti                                     
 ******                                                                
