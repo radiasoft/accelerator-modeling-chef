@@ -1,6 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -35,6 +32,9 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 
    /* -*- C -*- */
@@ -45,25 +45,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if !defined(str_to_upper_h)
-#include "str_to_upper.h"
-#endif /* str_to_upper_h */
-
-#if !defined(expression_h)
-#include "expression.h"
-#endif /* expression_h */
-
-#if !defined(troika_h)
-#include "troika.h"
-#endif /* troika_h */
-
-#if !defined(const_table_h)
-#include "const_table.h"
-#endif /* const_table_h */
-
-#ifdef _WIN32
-#define M_PI 3.141592
-#endif
+#include <str_to_upper.h>
+#include <expression.h>
+#include <troika.h>
+#include <const_table.h>
 
 enum constant_kind current_constant = CONSTANT_UNKNOWN;
 
