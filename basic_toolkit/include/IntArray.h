@@ -87,7 +87,7 @@ protected:
 public:
 
   // Constructors and the destructor ...
-  IntArray( int         _dim = intarray_max_variables,
+  IntArray( int         dim = intarray_max_variables,
             const int*  components = 0 );
   IntArray( const IntArray& );
 
