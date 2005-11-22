@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -12,8 +9,19 @@
 ******                                    
 ******  File:      var_table.c
 ******                                                                
-******  Copyright (c) 1999  Universities Research Association, Inc.   
+******  Copyright (c) Universities Research Association, Inc.   
 ******                All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******                                                     
 ******                                                                
 ******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
 ******                                                                
@@ -29,12 +37,12 @@
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 
    /* -*- C -*- */
@@ -47,37 +55,15 @@
 
 extern void bmlfactory_exit();
 
-#if !defined(str_to_upper_h)
-#include "str_to_upper.h"
-#endif /* str_to_upper_h */
+#include <str_to_upper.h>
+#include <beam_element.h>
+#include <beamel_table.h>
+#include <const_table.h>
+#include <expression.h>
+#include <pair.h>
+#include <quatro.h>
+#include <var_table.h>
 
-#if !defined(beam_element_h)
-#include "beam_element.h"
-#endif /* beam_element_h */
-
-#if !defined(beamel_table_h)
-#include "beamel_table.h"
-#endif /* beamel_table_h */
-
-#if !defined(const_table_h)
-#include "const_table.h"
-#endif /* const_table_h */
-
-#if !defined(expression_h)
-#include "expression.h"
-#endif /* expression_h */
-
-#if !defined(pair_h)
-#include "pair.h"
-#endif /* pair_h */
-
-#if !defined(quatro_h)
-#include "quatro.h"
-#endif /* quatro_h */
-
-#if !defined(var_table_h)
-#include "var_table.h"
-#endif /* var_table_h */
 
    /*
      Takes a string and returns its hash table index
@@ -347,18 +333,21 @@ var_check_circ( GNode*          expr,
       case NUMBER_EXPR :
         break;
       case STRING_EXPR :
-        fprintf(stderr, "error ! string \"%s\" used in an algebraic expression\n", data->svalue_ );
+        /* fprintf(stderr, "error ! string \"%s\" used in an algebraic expression\n", data->svalue_ );*/
+        send_to_stderr_stream(stderr, "error ! string \"%s\" used in an algebraic expression\n", data->svalue_ );
         break;
       case NUM_IDENT_EXPR :
         break;
       case STR_IDENT_EXPR :
-        fprintf(stderr, "error ! string id %s used in an algebraic expression\n", data->svalue_);
+        /* fprintf(stderr, "error ! string id %s used in an algebraic expression\n", data->svalue_); */
+        send_to_stderr_stream(stderr, "error ! string id %s used in an algebraic expression\n", data->svalue_);
         break;
       case VAR_IDENT_EXPR :
         {
           variable* var = (variable*)var_table_lookup( data->svalue_, var_table );
           if ( var == NULL ) {
-            fprintf(stderr, "error ! variable %s never defined\n", data->svalue_ );
+            /* fprintf(stderr, "error ! variable %s never defined\n", data->svalue_ ); */
+            send_to_stderr_stream(stderr, "error ! variable %s never defined\n", data->svalue_ );
             bmlfactory_exit();
           } else {
             if ( var == var_to_compare ) {
@@ -371,7 +360,8 @@ var_check_circ( GNode*          expr,
         {
           beam_element* bel = (beam_element*)bel_table_lookup( data->svalue_, bel_table );
           if ( bel == NULL ) {
-            fprintf(stderr, "error ! beam element %s never defined\n", data->svalue_ );
+            /* fprintf(stderr, "error ! beam element %s never defined\n", data->svalue_ ); */
+            send_to_stderr_stream(stderr, "error ! beam element %s never defined\n", data->svalue_ ); 
             bmlfactory_exit();
           } else {
             var_check_circ( bel->length_, NULL, res, var_table, bel_table );
@@ -440,7 +430,7 @@ var_check_circ( GNode*          expr,
         ( var_check_circ( node, NULL, res, var_table, bel_table ), var_check_circ( node->next, NULL, res, var_table, bel_table ) );
         break;
       default :
-        fprintf(stderr, "error ! unknown expression type\n");
+        /* fprintf(stderr, "error ! unknown expression type\n"); */
         bmlfactory_exit();
     }
   }

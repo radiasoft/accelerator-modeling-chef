@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -12,8 +9,19 @@
 ******                                    
 ******  File:      comment_arr.c
 ******                                                                
-******  Copyright (c) 1999  Universities Research Association, Inc.   
+******  Copyright (c) Universities Research Association, Inc.   
 ******                All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******                                                            
 ******                                                                
 ******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
 ******                                                                
@@ -29,12 +37,11 @@
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
 **************************************************************************
 *************************************************************************/
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 
    /* -*- C -*- */
@@ -44,13 +51,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if !defined(fb_allocator_h)
-#include "fb_allocator.h"
-#endif /* fb_allocator.h */
+#include <fb_allocator.h>
+#include <comment_arr.h>
 
-#if !defined(comment_arr_h)
-#include "comment_arr.h"
-#endif /* comment_arr_h */
 
    /*
      Initializes the array for comments and returns an OK or ERROR value

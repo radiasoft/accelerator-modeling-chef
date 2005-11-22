@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -11,8 +8,7 @@
 ******
 ******  File:      madparser.c
 ******                                                                
-******  Copyright (c) 
-******                Universities Research Association, Inc.   
+******  Copyright (c) Universities Research Association, Inc.   
 ******                All Rights Reserved                             
 ******
 ******  Usage, modification, and redistribution are subject to terms          
@@ -43,6 +39,9 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 
    /* -*- C -*- */
@@ -54,78 +53,46 @@
 #include <string.h>
 #include <errno.h>
 
+/* windows.h is required for WIN32 specific file io */
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
 #include <glib.h>
 
+#include <fb_allocator.h>
+#include <expression.h>
+#include <const_table.h>
+#include <var_table.h>
+#include <beam_element.h>
+#include <beamel_table.h>
+#include <matrix.h>
+#include <beam_line.h>
+#include <bml_table.h>
+#include <comment_arr.h>
+#include <madparser.h>
+#include <PhysicsConstants.h>
+
+/*
+   ---- prototypes
+*/
+
 extern void bmlfactory_exit(const char* filename, int lineno, const char* errmessage);
 extern void* get_current_buffer();
 extern void  reset_input_buffer();
-
-#if !defined(fb_allocator_h)
-#include "fb_allocator.h"
-#endif /* fb_allocator_h */
-
-#if !defined(expression_h)
-#include "expression.h"
-#endif /* expression_h */
-
-#if !defined(const_table_h)
-#include "const_table.h"
-#endif /* const_table_h */
-
-#if !defined(var_table_h)
-#include "var_table.h"
-#endif /* var_table_h */
-
-#if !defined(beam_element_h)
-#include "beam_element.h"
-#endif /* beam_element_h */
-
-#if !defined(beamel_table_h)
-#include "beamel_table.h"
-#endif /* beamel_table_h */
-
-#if !defined(matrix_h)
-#include "matrix.h"
-#endif /* matrix_h */
-
-#if !defined(beam_line_h)
-#include "beam_line.h"
-#endif /* beam_line_h */
-
-#if !defined(bml_table_h)
-#include "bml_table.h"
-#endif /* bml_table_h */
-
-#if !defined(comment_arr_h)
-#include "comment_arr.h"
-#endif /* comment_arr_h */
-
-#if !defined(madparser_h)
-#include "madparser.h"
-#endif /* madparser_h */
-
-#include <PhysicsConstants.h>
-
-   /*
-    *  prototypes
-    */
-
 extern int yyparse( void );
 extern void read_from_string( const char* );
-   /*
-    *  external vars
-    */
+
+/*
+   --- external vars
+*/
 
 extern FILE* yyin;
 extern FILE* yyout;
 
-   /*
-    *  local constants
-    */
+/*
+   --- local constants
+*/
 
 static const size_t       alignment   = 16;
 static const size_t       ident_len   = 4;
@@ -256,8 +223,7 @@ madparser_init( const char* filename_in,
         } else {
           
           
-          fprintf( stderr, "Input and output files are the same, quitting\n" );
-
+          /* fprintf( stderr, "Input and output files are the same, quitting\n" ); */
           bmlfactory_exit(__FILE__, __LINE__, "Input and output files are the same.");
         }
       }
@@ -431,7 +397,8 @@ madparser_parse( madparser* mp, const char* stringbuffer) {
 
     if ( yyin == NULL ) 
     {
-      fprintf(stderr, "Can't open input file %s\n", mp->filename_in_ );
+      /* fprintf(stderr, "Can't open input file %s\n", mp->filename_in_ ); */
+      send_to_stderr_stream(stderr, "Can't open input file %s\n", mp->filename_in_ );
       res = 1;
     } 
     else 
@@ -581,12 +548,12 @@ madparser_new_yybuff( madparser*  mp,
       mp->yybuff_list_ = g_slist_prepend( mp->yybuff_list_, y );
       
     } else {
-      fprintf( stderr, "Trying to switch to file with the same name as master out, quitting\n" );
+      /* fprintf( stderr, "Trying to switch to file with the same name as master out, quitting\n" ); */
       bmlfactory_exit( __FILE__, __LINE__, "Trying to switch to file with the same name as master out, quitting." );
     }
   } else {
 
-    fprintf( stderr, "Trying to switch to file with the same name as master in, quitting\n" );
+    /*fprintf( stderr, "Trying to switch to file with the same name as master in, quitting\n" ); */
     bmlfactory_exit( __FILE__, __LINE__, "Trying to switch to file with the same name as master in, quitting.");
   }
   
