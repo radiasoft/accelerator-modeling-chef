@@ -35,10 +35,6 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
 **************************************************************************
 *************************************************************************/
 
@@ -457,7 +453,7 @@ void Cascade::_clean()
 }
 
 
-int Cascade::index( const IntArray& e )
+int Cascade::index( const IntArray& e ) const
 {
 
   IntArrayIterator getNext( e );
@@ -478,17 +474,17 @@ int Cascade::index( const IntArray& e )
 }
 
 
-int Cascade::index( const int e[] )
+int Cascade::index( const int e[] ) const
 {
 
-  const int* idx = &e[0] - 1;
+//  const int* idx = &e[0] - 1;
   
-//  Switch* swPtr = _startPoint[e[0]];
-  Switch* swPtr = _startPoint[ *(++idx) ];
+  Switch* swPtr = _startPoint[e[0]];
+//  Switch* swPtr = _startPoint[ *(++idx) ];
   
   for( int j = 1; j < _numVar; j++ ) {
-    //    swPtr = (Switch*) (swPtr->_arrow[e[j]]);
-    swPtr = (Switch*) (swPtr->_arrow[*(++idx)]);
+       swPtr = (Switch*) (swPtr->_arrow[e[j]]);
+// swPtr = (Switch*) (swPtr->_arrow[*(++idx)]);
   }
 
   return swPtr->_index;
