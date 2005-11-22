@@ -58,13 +58,18 @@
 #include <config.h>
 #endif
 
-
-#include <iostream>
 using namespace std;
 
-#undef allocate
-#undef deallocate
+// allocate and deallocate are strings used 
+// int the stdlib headers. Unfortunately, they
+// are also used by the bmlfactory private block 
+// allocators 
 
+#undef   allocate
+#undef   deallocate
+
+#include <iostream>
+#include <iosetup.h> 
 #include <beamline.h>
 #include <GenericException.h>
 
@@ -87,6 +92,8 @@ using namespace std;
 extern struct madparser_* mp;
 
 using namespace std;
+using FNAL::pcout;
+using FNAL::pcerr;
 
 bmlfactory::bmlfactory( const char* fname, double BRHO, const char* stringbuffer) {
 
@@ -278,7 +285,7 @@ bmlfactory::create_beamline_private( const char* bmlname, double brho ) {
     }
   }
   if ( i == bml_arr_size_ ) {
-    cerr << "Beam line \"" << bmlname << "\" not found." << endl;
+    (*pcerr) << "Beam line \"" << bmlname << "\" not found." << endl;
     return NULL;
   } else {
     bml_ptr = (beamline*)(beam_line_instantiate( *(bml_arr_+i) ));
@@ -287,7 +294,7 @@ bmlfactory::create_beamline_private( const char* bmlname, double brho ) {
 }
 
 static char*
-add_str( char* ptr, char* s1, char* s2 ) {
+add_str( char* ptr, const char* s1, const char* s2 ) {
   strcpy( ptr, s1 );
   return strcat( ptr, s2 );
 }
@@ -573,7 +580,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       
       double k4l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K4L], var_table_, bel_table_ );
       if( k4l != 0.0 ) {
-        cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
+        (*pcerr) << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K4L is being ignored.       "
              << "\n*** WARNING *** K4L = " << k4l << " for " <<  strip_final_colon( bel->name_ ).c_str()
              << "\n*** WARNING ***                                      "
@@ -582,7 +589,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
 
       double k5l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K5L], var_table_, bel_table_ );
       if( k5l != 0.0 ) {
-        cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
+        (*pcerr) << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K5L is being ignored.       "
              << "\n*** WARNING *** K5L = " << k5l << " for " <<  strip_final_colon( bel->name_ ).c_str()
              << "\n*** WARNING ***                                      "
@@ -591,7 +598,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
 
       double k6l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K6L], var_table_, bel_table_ );
       if( k6l != 0.0 ) {
-        cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
+        (*pcerr) << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K6L is being ignored.       "
              << "\n*** WARNING *** K6L = " << k6l << " for " <<  strip_final_colon( bel->name_ ).c_str()
              << "\n*** WARNING ***                                      "
@@ -600,7 +607,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
 
       double k7l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K7L], var_table_, bel_table_ );
       if( k7l != 0.0 ) {
-        cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
+        (*pcerr) << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K7L is being ignored.       "
              << "\n*** WARNING *** K7L = " << k7l << " for " <<  strip_final_colon( bel->name_ ).c_str()
              << "\n*** WARNING ***                                      "
@@ -609,7 +616,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
 
       double k8l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K8L], var_table_, bel_table_ );
       if( k8l != 0.0 ) {
-        cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
+        (*pcerr) << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K8L is being ignored.       "
              << "\n*** WARNING *** K8L = " << k8l << " for " <<  strip_final_colon( bel->name_ ).c_str()
              << "\n*** WARNING ***                                      "
@@ -618,7 +625,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
 
       double k9l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K9L], var_table_, bel_table_ );
       if( k9l != 0.0 ) {
-        cerr << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
+        (*pcerr) << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K9L is being ignored.       "
              << "\n*** WARNING *** K9L = " << k9l << " for " <<  strip_final_colon( bel->name_ ).c_str()
              << "\n*** WARNING ***                                      "
@@ -857,7 +864,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       lbel = make_lump( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
       break;
     default:
-      cerr << "Unknown beam element." << endl;
+      (*pcerr) << "Unknown beam element." << endl;
   }
   
   bel_pair p;
@@ -973,7 +980,7 @@ bmlfactory::append_bml_element( char* ptr, beamline* lbml ) {
          //
          // if nothing to append then break
          //
-      cerr << "Beam line element \"" << ptr+1 << "\" not found." << endl;
+      (*pcerr) << "Beam line element \"" << ptr+1 << "\" not found." << endl;
     }
   }
 }
