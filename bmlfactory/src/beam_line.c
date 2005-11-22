@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -12,12 +9,23 @@
 ******                                    
 ******  File:      beam_line.c
 ******                                                                
-******  Copyright (c) 1999  Universities Research Association, Inc.   
+******  Copyright (c) Universities Research Association, Inc.   
 ******                All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******                                                           
 ******                                                                
-******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
+******  Authors:    Dmitri Mokhov and Oleg Krivosheev                  
 ******                                                                
-******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******  Contacts:   Leo Michelotti or Jean-Francois Ostiguy            
 ******                                                                
 ******             Fermilab                                           
 ******             P.O.Box 500                                        
@@ -29,12 +37,12 @@
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 
    /* -*- C -*- */
@@ -96,7 +104,12 @@ beam_line_add_bel( beam_line*  bml,
   assert( sign_and_name != NULL );
 
   if ( bel == NULL && (beam_line*)bml_table_lookup( name, bml_table ) == NULL ) {
-    fprintf(stderr, "warning ! beam element/line %s not yet defined\n", name);
+
+    /* 
+      fprintf( stderr, "warning ! beam element/line %s not yet defined\n", name);
+    */
+    send_to_stderr_stream( stderr, "warning ! beam element/line %s not yet defined\n", name );
+
   }
 
   strcpy( sign_and_name, "+" );
