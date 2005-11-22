@@ -9,8 +9,18 @@
 ******                                    
 ******  File:      kick.h
 ******                                                                
-******  Copyright (c) 1991 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -22,9 +32,6 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -41,13 +48,13 @@ class hkick : public bmlnElmnt
 {
 public:
   hkick();
-  hkick( double );   // kick size in radians
-  hkick( char* );    // name; assumes zero kick
-  hkick( char*,      // name
-         double );   // kick size in radians
-  hkick( char*,      // name
-         double,     // length
-         double );   // kick size in radians
+  hkick( double );         // kick size in radians
+  hkick( const char* );    // name; assumes zero kick
+  hkick( const char*,      // name
+         double );         // kick size in radians
+  hkick( const char*,      // name
+         double,           // length
+         double );         // kick size in radians
   hkick( const hkick& );
   hkick( bmlnElmntData& );
 
@@ -58,7 +65,7 @@ public:
   void localPropagate( JetParticle& );
 
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "hkick") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual int isType(const char* c) { if ( strcmp(c, "hkick") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new hkick( *this ); }
 
   void accept( BmlVisitor& v ) { v.visitHkick( this ); }
@@ -69,14 +76,14 @@ public:
 class vkick : public bmlnElmnt
 {
 public:
-  vkick();            // Assumes zero kick
-  vkick( double );    // kick size in radians
-  vkick( char* );     // name; assumes zero kick
-  vkick( char*,       // name
-         double  );   // kick size in radians
-  vkick( char*,       // name
-         double,      // length
-         double  );   // kick size in radians
+  vkick();                  // Assumes zero kick
+  vkick( double );          // kick size in radians
+  vkick( const char* );     // name; assumes zero kick
+  vkick( const char*,       // name
+         double  );         // kick size in radians
+  vkick( const char*,       // name
+         double,            // length
+         double  );         // kick size in radians
   vkick( const vkick& );
   vkick( bmlnElmntData& );
   ~vkick();
@@ -89,7 +96,7 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitVkick( this ); }
 
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "vkick") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual int isType(const char* c) { if ( strcmp(c, "vkick") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   bmlnElmnt* Clone() const { return new vkick( *this ); }
 };
 

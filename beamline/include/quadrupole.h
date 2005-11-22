@@ -9,8 +9,18 @@
 ******  File:      quadrupole.h
 ******  Version:   2.1
 ******                                                                
-******  Copyright (c) 1991 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -22,18 +32,14 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
 
-
 #ifndef QUADRUPOLE_H
 #define QUADRUPOLE_H
 
-#include "bmlnElmnt.h"
+#include <bmlnElmnt.h>
 
 class quadrupole : public bmlnElmnt
 {
@@ -68,7 +74,7 @@ public:
   static TPOT_Prop LikeTPOT;
 
   quadrupole();
-  quadrupole( char*  n,         // name
+  quadrupole( const char*  n,   // name
               double l,         // length,        in meters
               double s,         // strength = B', in Tesla-meters^-1
               PropFunc*    = &quadrupole::LikeTPOT );
@@ -97,7 +103,7 @@ public:
   void eliminate();
 
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "quadrupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual int isType(const char* c) { if ( strcmp(c, "quadrupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
 
   bmlnElmnt* Clone() const { return new quadrupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
@@ -107,7 +113,7 @@ class thinQuad : public bmlnElmnt
 {
 public:
   thinQuad( double );    // B'L in Tesla; + = horizontally focussing
-  thinQuad( char*,       // name
+  thinQuad( const char*, // name
             double );    // B'L in Tesla; + = horizontally focussing
   thinQuad( bmlnElmntData& );
   thinQuad( const thinQuad& );
@@ -122,7 +128,7 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThinQuad( this ); }
 
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "thinQuad") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual int isType(const char* c) { if ( strcmp(c, "thinQuad") != 0 ) return bmlnElmnt::isType(c); else return 1; }
   
   bmlnElmnt* Clone() const { return new thinQuad( *this ); }
 } ;

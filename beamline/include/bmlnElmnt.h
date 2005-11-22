@@ -487,7 +487,7 @@ public:
   virtual const char*  Name() const
     { return ident; }
   virtual const char*  Type() const = 0;
-  virtual int    isType(char* s) { return strcmp(s, "bmlnElmnt") == 0; }
+  virtual int    isType(const char* s) { return strcmp(s, "bmlnElmnt") == 0; }
 
 
   void setFlavor( const std::string& x )
