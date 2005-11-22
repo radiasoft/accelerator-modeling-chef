@@ -9,8 +9,18 @@
 ******  File:      quadrupole.cc
 ******  Version:   2.1
 ******                                                                
-******  Copyright (c) 1991 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -22,13 +32,9 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -56,14 +62,14 @@ quadrupole::quadrupole()
         "No default construction: Cannot define quadrupole without parameters." ) );
 }
 
-quadrupole::quadrupole( char* n, double l, double s, bmlnElmnt::PropFunc* pf )
+quadrupole::quadrupole( const char* n, double l, double s, bmlnElmnt::PropFunc* pf )
 : bmlnElmnt( n, l, s, pf )
 {
  if( l<= 0.0 ) {
   ostringstream uic;
   uic  << "Quadrupole length l = " << l << " is negative.";
   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-         "quadrupole::quadrupole( char* n, double l, double s, bmlnElmnt::PropFunc* pf )", 
+         "quadrupole::quadrupole( const char* n, double l, double s, bmlnElmnt::PropFunc* pf )", 
          uic.str().c_str() ) );
  }
 
@@ -312,7 +318,7 @@ thinQuad::thinQuad( double s ) : bmlnElmnt() {
  strength = s;      // B'L in Tesla
 }
 
-thinQuad::thinQuad( char* n, double s ) : bmlnElmnt(n) {
+thinQuad::thinQuad( const char* n, double s ) : bmlnElmnt(n) {
  strength = s;
 }
 

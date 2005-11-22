@@ -9,8 +9,18 @@
 ******                                    
 ******  File:      Particle.cc
 ******                                                                
-******  Copyright (c) 1991 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -22,19 +32,15 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-#include "Particle.h"
-#include "PhysicsConstants.h"
+#include <Particle.h>
+#include <PhysicsConstants.h>
 
 // Error flags for _tag manipulation functions.
 const short Particle::BF_OK         = 0;
@@ -604,7 +610,7 @@ JetParticle::JetParticle( double mass, double energy, double* s ) {
  q = 0.0;
  state = Mapping( "id", Jet::_lastEnv );
  for( int i = 0; i < state.Dim(); i++ )  
-   state(i) = state(i) + ( s[i] - Jet::_lastEnv->_refPoint[i] );
+   state(i) = state(i) + ( s[i] - Jet::_lastEnv->refPoint()[i] );
  m = mass;
  E = energy;
  if( E < m ) {
@@ -627,7 +633,7 @@ JetParticle::JetParticle( const Particle& u ) {
  q = u.Charge();
  state = Mapping( "id", Jet::_lastEnv );
  for( int i = 0; i < state.Dim(); i++ )  
-   state(i) = state(i) + ( u.State(i) - Jet::_lastEnv->_refPoint[i] );
+   state(i) = state(i) + ( u.State(i) - Jet::_lastEnv->refPoint()[i] );
  m = u.Mass();
  E = u.ReferenceEnergy();
  if( E < m ) {
@@ -674,19 +680,19 @@ void JetParticle::setState( const Vector& u ) {
          uic.str().c_str() ) );
  }
 
- Jet__environment* pje = ((Jet__environment*) state.Env());
+ EnvPtr<double>::Type pje = state.Env();
  state = Mapping( "id", pje );
  for( int i = 0; i < state.Dim(); i++ )  
-   state(i) = state(i) + ( u(i) - pje->_refPoint[i] );
+   state(i) = state(i) + ( u(i) - pje->refPoint()[i] );
  // ??? REMOVE for( int i = 0; i < BMLN_dynDim; i++ )  state.SetComponent( i, u[i] );
  // ??? REMOVE state.fixReference(u);
 } 
 
 void JetParticle::setState( double* u ) {
- Jet__environment* pje = ((Jet__environment*) state.Env());
+ EnvPtr<double>::Type pje = state.Env();
  state = Mapping( "id", pje );
  for( int i = 0; i < state.Dim(); i++ )  
-   state(i) = state(i) + ( u[i] - pje->_refPoint[i] );
+   state(i) = state(i) + ( u[i] - pje->refPoint()[i] );
  // ??? REMOVE for( int i = 0; i < BMLN_dynDim; i++ )  state.SetComponent( i, u[i] );
  // ??? REMOVE state.fixReference(u);
 } 

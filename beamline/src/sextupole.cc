@@ -9,6 +9,18 @@
 ******                                    
 ******  File:      sextupole.cc
 ******                                                                
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
 ******                                                                
@@ -22,9 +34,6 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -54,7 +63,7 @@ sextupole::sextupole ( double l, double s ) : bmlnElmnt( l, s ) {
 }
 
 
-sextupole::sextupole ( char* n, double l, double s ) : bmlnElmnt( n, l, s ) {
+sextupole::sextupole ( const char* n, double l, double s ) : bmlnElmnt( n, l, s ) {
  p_bml = new beamline;
  p_bml->append( new drift( length / 2.0 ) );
  p_bml->append( p_bml_e = new thinSextupole( strength*length ) );
@@ -144,7 +153,7 @@ thinSextupole::thinSextupole ( double s ) : bmlnElmnt( 0.0, s ) {
  // (1/2)*B''l in  Tesla / meter
 }
 
-thinSextupole::thinSextupole ( char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
+thinSextupole::thinSextupole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
  // The strength is to be interpreted as
  // (1/2)*B''l in  Tesla / meter
 }

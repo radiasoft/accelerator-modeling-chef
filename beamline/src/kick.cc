@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -12,8 +9,18 @@
 ******                                    
 ******  File:      kick.cc
 ******                                                                
-******  Copyright (c) 1991 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -25,17 +32,14 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
 **************************************************************************
 *************************************************************************/
-
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iomanip>
-
-#include "kick.h"
+#include <kick.h>
 
 using namespace std;
 
@@ -52,10 +56,10 @@ vkick::vkick( double k ) : bmlnElmnt() {
                       // single "double" argument
 }                     // indicates length.
 
-vkick::vkick( char* n ) : bmlnElmnt(n) {
+vkick::vkick( const char* n ) : bmlnElmnt(n) {
 }
 
-vkick::vkick( char* n, double k ) : bmlnElmnt(n) {
+vkick::vkick( const char* n, double k ) : bmlnElmnt(n) {
                       // Unfortunately, this is a
  strength = k;        // special case. Normally a
                       // single "double" argument
@@ -70,7 +74,7 @@ vkick::vkick( const vkick& x )
 }
 
 
-vkick::vkick( char* n, double l, double s ) 
+vkick::vkick( const char* n, double l, double s ) 
 : bmlnElmnt(n,l,s) 
 {
 }
@@ -97,10 +101,10 @@ hkick::hkick( double k ) : bmlnElmnt() {
  strength = k;
 }
 
-hkick::hkick( char* n ) : bmlnElmnt(n) {
+hkick::hkick( const char* n ) : bmlnElmnt(n) {
 }
 
-hkick::hkick( char* n, double k ) 
+hkick::hkick( const char* n, double k ) 
 : bmlnElmnt( n ) 
 {
  strength = k;      // Unfortunately, this is a
@@ -118,7 +122,7 @@ hkick::hkick( bmlnElmntData& x ) : bmlnElmnt( x ) {
 }
 
 
-hkick::hkick( char* n, double l, double s ) 
+hkick::hkick( const char* n, double l, double s ) 
 : bmlnElmnt(n,l,s) 
 {
 }
