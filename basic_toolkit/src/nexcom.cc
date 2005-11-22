@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -10,8 +7,18 @@
 ******                                    
 ******  File:      nexcom.cc
 ******                                                                
-******  Copyright (c) 1990 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -23,32 +30,33 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+#include <iostream>
 
+bool nexcom( int n, int k, int* r ) {
 
-char nexcom( int n, int k, int* r ) {
 int t, h, i;
-static char firstEntry = 1;
-static char allDone = 0;
+static bool firstEntry  = true;
+static bool allDone     = false;
 
 if( allDone ) {
-  firstEntry = 1;
-  allDone = 0;
-  return 0;
+  firstEntry = true;
+     allDone = false;
+  return false;
   }
 
 if( firstEntry ) {
   r[0] = n;
   if( k > 1 ) {
     for( i = 1; i < k; i++ ) r[i] = 0;
-    firstEntry = 0;
+    firstEntry = false;
     }
-  else allDone = 1;
+  else allDone = true;
   return 1;
   }
 
@@ -63,6 +71,6 @@ r[++h]++;
 
 allDone = ( r[k-1] == n );
 
-return 1;
+return true;
 
 }
