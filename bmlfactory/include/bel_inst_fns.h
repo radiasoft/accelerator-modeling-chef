@@ -9,8 +9,19 @@
 ******                                    
 ******  File:      bel_inst_fns.c
 ******                                                                
-******  Copyright (c) 1999  Universities Research Association, Inc.   
+******  Copyright (c) Universities Research Association, Inc. / Fermilab     
 ******                All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******                                                                 
 ******                                                                
 ******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
 ******                                                                
@@ -26,24 +37,20 @@
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
+// from MXYZPLTK
 
-
-   // from MXYZPLTK
 #include <beamline.h>
 
 static inline bmlnElmnt*
-make_multipole( char* name, double length ) {
+make_multipole( const char* name, double length ) {
   return new drift( name, length );
 }
 
 static inline bmlnElmnt*
-make_solenoid( char* name, double length ) {
+make_solenoid( const char* name, double length ) {
   return new drift( name, length );
 }
 
@@ -53,36 +60,36 @@ make_elseparator( char* name, double length ) {
 }
 
 static inline bmlnElmnt*
-make_instrument( char* name, double length ) {
+make_instrument( const char* name, double length ) {
   return new drift( name, length );
 }
 
 static inline bmlnElmnt*
-make_ecollimator( char* name, double length ) {
+make_ecollimator( const char* name, double length ) {
   return new drift( name, length );
 }
 
 static inline bmlnElmnt*
-make_rcollimator( char* name, double length ) {
+make_rcollimator( const char* name, double length ) {
   return new drift( name, length );
 }
 
 static inline bmlnElmnt*
-make_yrot( char* name, double length ) {
+make_yrot(const char* name, double length ) {
   return new drift( name, length );
 }
 
 static inline bmlnElmnt*
-make_beambeam( char* name, double length ) {
+make_beambeam( const char* name, double length ) {
   return new drift( name, length );
 }
 
 static inline bmlnElmnt*
-make_matrix( char* name, double length ) {
+make_matrix( const char* name, double length ) {
   return new drift( name, length );
 }
 
 static inline bmlnElmnt*
-make_lump( char* name, double length ) {
+make_lump( const char* name, double length ) {
   return new drift( name, length );
 }
