@@ -58,10 +58,7 @@ public:
   static int objectCount;
 #endif
 
-  dlink( void* a, dlink* p, dlink* q ) { 
-    e=a; 
-    prev=p; 
-    next=q; 
+  dlink( void* a, dlink* p, dlink* q ):  next(q), prev(p), e(a) { 
 #ifdef OBJECT_DEBUG
   objectCount++;
 #endif

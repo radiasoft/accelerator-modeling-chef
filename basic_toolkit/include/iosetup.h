@@ -25,15 +25,17 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 #ifndef IOSETUP_H
 #define IOSETUP_H
+
+#ifdef __cplusplus
 
 #include <iosfwd>
 
 namespace FNAL {
-extern std::ostream* pcout;
-extern std::ostream* pcerr;
+
+  extern std::ostream* pcout;
+  extern std::ostream* pcerr;
 
 }
 
@@ -42,5 +44,22 @@ extern std::ostream* pcerr;
 
 void iosetup(std::ostream* pcout, std::ostream* pcerr); 
 
+extern "C" {
 
-#endif // IOSETUP_H
+  void send_to_stderr_stream(FILE* file, const char* msg, ...);
+  void send_to_stdout_stream(FILE* file, const char* msg, ...);
+
+}
+
+#else
+
+/* Declarations to be used when header file included into 
+   ANSI-C source code 
+*/   
+
+void send_to_stderr_stream(FILE* file, const char* msg, ...);
+void send_to_stdout_stream(FILE* file, const char* msg, ...);
+
+#endif /* __cplusplus */ 
+
+#endif /* IOSETUP_H */
