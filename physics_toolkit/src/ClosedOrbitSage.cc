@@ -22,9 +22,15 @@
 ******             Phone: (630) 840 4956
 ******             Email: michelotti@fnal.gov
 ******
-******  Usage, modification, and redistribution are subject to terms
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******
 **************************************************************************
 *************************************************************************/
@@ -46,9 +52,11 @@
  */
 
 
-#include "ClosedOrbitSage.h"
-#include "FPSolver.h"
-#include "RefRegVisitor.h"
+#include <ClosedOrbitSage.h>
+#include <FPSolver.h>
+#include <RefRegVisitor.h>
+#include <Jet__environment.h>
+
 
 using namespace std;
 
@@ -77,8 +85,8 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   }
 
   // Preliminary steps ...
-  Jet__environment* storedEnv = Jet::_lastEnv;
-  Jet::_lastEnv = (Jet__environment*) (p_jp->State()).Env();
+  EnvPtr<double>::Type storedEnv = Jet::_lastEnv;
+  Jet::_lastEnv = p_jp->State().Env();
 
 
   // Data structures for handling RF ...
@@ -110,8 +118,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
   while((  q = getNext++  ))
   {
-    if(    ( 0 == strcmp( "rfcavity",     q->Type() ) )
-        || ( 0 == strcmp( "thinrfcavity", q->Type() ) ) )
+    if( 0 == strcmp( "thinrfcavity", q->Type() ) )
     {
       sd = new strengthData;
       sd->address = q;
@@ -176,40 +183,18 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   Vector z( BMLN_dynDim );
   z = p_prt->State();
 
+  Jet::_lastEnv = TJetEnvironment<double>::getApproxJetEnvironment(Jet::_lastEnv->maxWeight(), z);
 
-  // Determine if a Jet environment already exists
-  //   whose reference point is sufficiently close
-  //   to the closed orbit.
-  Jet__environment* pje;
-  bool found = false;
-  Vector tolerance( Jet::_lastEnv->_numVar );
-
-  for( i = 0; i < Jet::_lastEnv->_numVar; i++ ) {
-    // *** CHANGE ***
-    // *** CHANGE *** The tolerance criterion should be user-determined.
-    // *** CHANGE ***
-    tolerance(i) = std::abs(0.001*(Jet::_lastEnv->_refPoint[i]));
-  }
-
-  slist_iterator envIter( Jet__environment::_environments );
-  while((  pje = (Jet__environment*) envIter()  )) {
-    if( pje->hasApproxReferencePoint( z, tolerance ) ) {
-      found = true;
-      Jet::_lastEnv = pje;
-    }
-  }
-
-  // If necessary, create a new Jet environment
-  // whose reference point is the closed orbit.
-  if( !found ) {
-    Jet::BeginEnvironment( p_jp->State().Env()->_maxWeight );
+  coord*  tmpcoord[BMLN_dynDim];
+  if ( Jet::_lastEnv.get() == 0 ) {  // true if there was no suitable approximate Environment  
+   
+    Jet__environment::BeginEnvironment( p_jp->State().Env()->maxWeight() );
     // *** CHANGE ***
     // *** CHANGE *** Presumably this memory leak will eventually be fixed.
     // *** CHANGE ***
-    for( i = 0; i < BMLN_dynDim; i++ ) { new coord(z(i)); }
-    Jet::EndEnvironment();
+    for( i = 0; i < BMLN_dynDim; i++ ) { tmpcoord[i] = new coord(z(i)); }
+    Jet__environment::EndEnvironment();
   }
-
 
   // Instantiate a JetProton with the new environment
   // and propagate it once around the ring.
@@ -238,6 +223,9 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   // ... Reset the Jet environment to its incoming state
   Jet::_lastEnv = storedEnv;
 
+  // ... delete temporary coordinates 
+
+  /// for( i=0; i<BMLN_dynDim; ++i) { delete tmpcoord[i]; }
 
   if( _verbose ) {
     *_outputStreamPtr << "ClosedOrbitSage -- Leaving ClosedOrbitSage::findClosedOrbit"
@@ -248,6 +236,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   p_prt = 0;
 
   return 0;
+
 }
 
 
