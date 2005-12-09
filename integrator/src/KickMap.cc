@@ -1,7 +1,13 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include "KickMap.h"
+
+#include <KickMap.h>
+#include <iosetup.h>
+
+using FNAL::pcout;
+using FNAL::pcerr;
+
 
 /// ******************************************
 ///   class KickMap
@@ -22,7 +28,7 @@ Vector KickMap::operator() (const Vector& state, double t ){
     return ret;
   }
   else{
-    cerr << "KickMap::operator(): Wrong dimension." << endl;
+    (*pcerr) << "KickMap::operator(): Wrong dimension." << std::endl;
     return 0;
   }
 }

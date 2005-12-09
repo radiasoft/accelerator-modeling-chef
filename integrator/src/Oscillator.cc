@@ -1,7 +1,13 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include "Oscillator.h"
+
+#include <Oscillator.h>
+#include <iosetup.h>
+
+using FNAL::pcerr;
+using FNAL::pcout;
+
 
 /// ******************************************
 ///   class Oscillator
@@ -22,7 +28,7 @@ Vector Oscillator::operator() (const Vector& state, double /* t */ ){
     return ret;
   }
   else{
-    cerr << "Oscillator::operator(): Wrong dimension." << endl;
+    (*pcerr) << "Oscillator::operator(): Wrong dimension." << std::endl;
     return 0;
   }
 }
