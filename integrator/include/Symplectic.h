@@ -1,7 +1,7 @@
 #ifndef SYMPLECTIC_H
 #define SYMPLECTIC_H
 
-#include "Integrator.h"
+#include <Integrator.h>
 
 class Symplectic : public Integrator {
 

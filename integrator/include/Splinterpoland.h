@@ -1,8 +1,9 @@
 #ifndef SPLINTERPOLAND_H
 #define SPLINTERPOLAND_H
 
-#include "AbsIntegrator.h"
+#include <AbsIntegrator.h>
 
+#include <Matrix.h>
 #include <vector>
 
 class Splinterpoland : public AbsIntegrator<double>::Integrand
