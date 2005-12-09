@@ -59,8 +59,8 @@ elif test "x${CXX}" = "xpgCC"; then
      AC_SUBST(AM_CPPFLAGS)
 fi,
 if test "x${GXX}" = "xyes" || test "x${GCC}" = "xyes"; then
-     CFLAGS="${CFLAGS} -g -O2"
-     CXXFLAGS="${CXXFLAGS} -g -O2 -pipe -fpermissive -Wno-deprecated -fno-implicit-templates"
+     CFLAGS="${CFLAGS}"
+     CXXFLAGS="${CXXFLAGS} -pipe -fpermissive -Wno-deprecated -fno-implicit-templates"
      AC_SUBST(CFLAGS)
      AC_SUBST(CXXFLAGS)
 elif test "x${CXX}" = "xCC"; then
@@ -76,13 +76,13 @@ elif test "x${CXX}" = "xpgCC"; then
 fi
 )
 
-AC_ARG_WITH(gxx_rtti,AC_HELP_STRING([--with-gxx_rtti],[Enable G++ rtti]),,
-if test "x${GXX}" = "xyes" && test "x$set_CXXFLAGS" = "x"; then
-CXXFLAGS="-fno-rtti ${CXXFLAGS}"
-AC_SUBST(CXXFLAGS)
-AC_DEFINE(NO_RTTI,,nortti)
-fi
-)
+#AC_ARG_WITH(gxx_rtti,AC_HELP_STRING([--with-gxx_rtti],[Enable G++ rtti]),,
+#if test "x${GXX}" = "xyes" && test "x$set_CXXFLAGS" = "x"; then
+#CXXFLAGS="-fno-rtti ${CXXFLAGS}"
+#AC_SUBST(CXXFLAGS)
+#AC_DEFINE(NO_RTTI,,nortti)
+#fi
+#)
 
 #AC_ARG_WITH(gxx_exception,AC_HELP_STRING([--with-gxx_exception],[Enable G++ exceptions]),,
 #if test "x${GXX}" = "xyes" && test "x$set_CXXFLAGS" = "x"; then
