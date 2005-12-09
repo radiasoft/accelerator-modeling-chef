@@ -9,8 +9,22 @@
 ******  File:      LBSage.cc
 ******  Version:   1.0
 ******                                                                
-******  Copyright (c) 2004  Universities Research Association, Inc.   
-******                All Rights Reserved                             
+****** Copyright (c) Universities Research Association, Inc.
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******
+******                                                                
+******  Author:    Leo Michelotti                                     
+******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -22,24 +36,25 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
 **************************************************************************
 *************************************************************************/
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include <iomanip>
 
-#include "LBSage.h"
-#include "Particle.h"
-#include "BeamlineIterator.h"
+#include <iosetup.h>
+#include <LBSage.h>
+#include <Particle.h>
+#include <BeamlineIterator.h>
+#include <GenericException.h>
 
-#include "BmlUtil.h"  // Temporary line
+#include <BmlUtil.h>  // Temporary line
+
+using FNAL::pcout;
+using FNAL::pcerr;
+
 
 using namespace std;
 
@@ -156,7 +171,20 @@ int LBSage::doCalc( const JetParticle* ptr_jp, beamline::Criterion& crit )
   const int dpp = Particle::_dpop();
 
   MatrixC E(n,n), E2(n,n);
-  E = ( localPtr->State() ).Jacobian().eigenVectors();
+  
+  //*********************************************************
+  // NOTE:
+  // ----- 
+  //
+  // For some reason, MatrixC::eigenvector() will be called if
+  // Matrix::eigenvector() is not explicitly specified. It is
+  // not clear wether this behavior is compliant or ...
+  // a compiler bug. -jfo
+  //
+  // 
+  //*********************************************************
+ 
+  E = ( localPtr->State() ).Jacobian().Matrix::eigenVectors();
   BmlUtil::normalize( E );
 
   Mapping id( "identity" );
@@ -168,7 +196,7 @@ int LBSage::doCalc( const JetParticle* ptr_jp, beamline::Criterion& crit )
   bmlnElmnt* be;
   int i = 0;
   double lng = 0.0;
-  FNAL::Complex temp;
+  std::complex<double>  temp;
 
   while( (0 != ( be = dbi++ )) && (i<_n) ) {
     _calcs[i] = new LBSage::Info;
@@ -186,15 +214,23 @@ int LBSage::doCalc( const JetParticle* ptr_jp, beamline::Criterion& crit )
       _calcs[i]->beta_1x = 2.0*real(temp)*real(temp);
     }
     else { 
-      _deleteCalcs(); delete ptr_proton; delete localPtr; return 1; 
+      _deleteCalcs(); delete ptr_proton; delete localPtr; 
+       throw GenericException( __FILE__, __LINE__, 
+              "LBSage::doCalc(const JetParticle*, beamline::Criterion&)",
+			       "beta_1x is negative !. This error is likely due to an unstable lattice." );
+       return 1; 
     }
     temp = real(E2(y,y));
     if( real(temp) > 0.0 ) {
       _calcs[i]->beta_2y = 2.0*real(temp)*real(temp);
     }
     else { 
-      _deleteCalcs(); delete ptr_proton; delete localPtr; return 2; 
-    }
+      _deleteCalcs(); delete ptr_proton; delete localPtr; 
+       throw GenericException( __FILE__, __LINE__, 
+             "LBSage::doCalc(const JetParticle*, beamline::Criterion&)",
+			       "beta_2y is negative ! This error is likely due to an unstable lattice." );
+        return 2; 
+     }
 
     // alpha_1x and alpha_2y
     temp = E2(xp,x)*E2(x,x);
@@ -207,7 +243,11 @@ int LBSage::doCalc( const JetParticle* ptr_jp, beamline::Criterion& crit )
       _calcs[i]->alpha_1x = -2.0*real(temp);
     }
     else {
-      _deleteCalcs(); delete ptr_proton; delete localPtr; return 3; 
+    _deleteCalcs(); delete ptr_proton; delete localPtr; 
+    throw GenericException( __FILE__, __LINE__, 
+              "LBSage::doCalc(const JetParticle*, beamline::Criterion&)",
+			       "imag(alpha_1x)  is not *exactly* 1/2. This error is likely due to an unstable lattice." );
+    return 3; 
     }
     temp = E2(yp,y)*E2(y,y);
     if( std::abs(imag(temp) + 0.5) < 0.001 ) {
@@ -219,7 +259,11 @@ int LBSage::doCalc( const JetParticle* ptr_jp, beamline::Criterion& crit )
       _calcs[i]->alpha_2y = -2.0*real(temp);
     }
     else {
-      _deleteCalcs(); delete ptr_proton; delete localPtr; return 4; 
+    _deleteCalcs(); delete ptr_proton; delete localPtr; 
+    throw GenericException( __FILE__, __LINE__, 
+              "LBSage::doCalc(const JetParticle*, beamline::Criterion&)",
+	      "imag(alpha_2y)  is not *exactly* 1/2. This error is is likely to an unstable lattice.");
+    return 4; 
     }
 
     // beta_1y and beta_2x
