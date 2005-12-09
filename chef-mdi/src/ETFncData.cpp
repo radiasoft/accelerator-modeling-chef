@@ -51,7 +51,7 @@ using namespace std;
 static double* dnull = 0;
 
 
-ETFncData::ETFncData( BeamlineContext* bcp,  ostream* stdoutstream, ostream* stderrstream )
+ETFncData::ETFncData( BeamlineContext* bcp,  std::ostream* stdoutstream, std::ostream* stderrstream )
 : 
   _bmlConPtr(bcp), 
   _deleteContext(false),
@@ -76,7 +76,7 @@ ETFncData::ETFncData( BeamlineContext* bcp,  ostream* stdoutstream, ostream* std
 }
 
 
-ETFncData::ETFncData( /* const */ beamline* pBml,  ostream* stdoutstream, ostream* stderrstream)
+ETFncData::ETFncData( /* const */ beamline* pBml,  std::ostream* stdoutstream, std::ostream* stderrstream)
 :
   _bmlConPtr(0), 
   _deleteContext(true),
