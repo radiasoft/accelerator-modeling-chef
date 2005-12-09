@@ -27,16 +27,21 @@
 ******             Batavia, IL   60510                                
 ******             Email: michelotti@fnal.gov                         
 ****** 
-******  Revision (Sep 2005):
+******  Revision History 
 ******
-******             Jean-Francois Ostiguy
-******             ostiguy@fnal.gov                                   
-******             
-******   - reorganized code to support explicit template instantiations
-******   - eliminated explicit MatrixC class implementation and replaced by typedef   
-******   - use conversion operator for implicit conversions
-******   
-******                                                                
+******  Sep-Nov 2005   Jean-Francois Ostiguy
+******                 ostiguy@fnal.gov
+******  
+******   - refactored code to use single template parameter instead of two
+******   - introduced implicit conversions 
+******   - using boost::intrusive_pointer for reference counting
+******   - eliminated access to internals of implementation class (TML) from class TMatrix.
+******   - eliminated separate MatrixC class implementation (used to be derived from Matrix<T1,T2>)
+******   - organized code to support both implicit and explicit template instantiations
+******   - fixed incorrect complex version of eigenvalues/eigenvectors 
+******   - separated eigenvalue/eigenvector reordering function 
+******   - eliminated code that attempted to discriminate between objects allocated
+******     on the stack and objects allocated from the free store.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -46,56 +51,72 @@
 #include <exception>
 #include <string>
 #include <complex>
-#include <complexAddon.h>
-
 #include <TML.h>
 
 template<typename T> class TMatrix; 
 
 
-// standalone functions
-
-TMatrix<double> real( const TMatrix<FNAL::Complex>& x );
-TMatrix<double> imag( const TMatrix<FNAL::Complex>& x );
-
 // Friend functions
+
+TMatrix<double> real( const TMatrix<std::complex<double> >& x );
+TMatrix<double> imag( const TMatrix<std::complex<double> >& x );
 
 template<typename T> std::ostream& operator<<(std::ostream&, const TMatrix<T>&);
 
 template<typename T> TMatrix<T> operator+(const TMatrix<T>&, const TMatrix<T>&);
 template<typename T> TMatrix<T> operator+(const TMatrix<T>&, const T&); 
-template<typename T> TMatrix<T> operator+(const T&, const TMatrix<T>&); 
+template<typename T> TMatrix<T> operator+(const T&,          const TMatrix<T>&); 
 
 template<typename T> TMatrix<T> operator-(const TMatrix<T>&); 
 template<typename T> TMatrix<T> operator-(const TMatrix<T>&, const TMatrix<T>&); 
 template<typename T> TMatrix<T> operator-(const TMatrix<T>&, const T&); 
-template<typename T> TMatrix<T> operator-(const T&, const TMatrix<T>&); 
+template<typename T> TMatrix<T> operator-(const T&,          const TMatrix<T>&); 
 
 template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const TMatrix<T>&); 
-template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const T);
-template<typename T> TMatrix<T> operator*(const T, const TMatrix<T>&);
+template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const T&);
+template<typename T> TMatrix<T> operator*(const T&,          const TMatrix<T>&);
 
-template<typename T> TMatrix<T> operator/(const TMatrix<T>&, const T);
-template<typename T> TMatrix<T> operator/(const T, TMatrix<T>&);
-template<typename T> TMatrix<T> operator/(TMatrix<T>&, TMatrix<T>&);
+TMatrix<std::complex<double> > operator*(const TMatrix<std::complex<double> >& x, const TMatrix<double>& y);
+TMatrix<std::complex<double> > operator*(const TMatrix<double>& y,                const TMatrix<std::complex<double> >& x);
+
+template<typename T> TMatrix<T> operator/(const TMatrix<T>&,     const T&);
+template<typename T> TMatrix<T> operator/(const T&,              TMatrix<T> const&);
+template<typename T> TMatrix<T> operator/(TMatrix<T> const&,     TMatrix<T> const&);
 
 template<typename T> bool operator==( const TMatrix<T>&, const TMatrix<T>& );
 template<typename T> bool operator==( const TMatrix<T>&, const T& );
-template<typename T> bool operator==( const T&, const TMatrix<T>& );
-template<typename T> void operator-=( TMatrix<T>&, const TMatrix<T>& );
-template<typename T> void operator*=( TMatrix<T>&, const TMatrix<T>& );
+template<typename T> bool operator==( const T&,          const TMatrix<T>& );
+template<typename T> void operator-=( TMatrix<T>&,       const TMatrix<T>& );
+template<typename T> void operator*=( TMatrix<T>&,       const TMatrix<T>& );
 template<typename T> bool operator!=( const TMatrix<T>&, const TMatrix<T>& );
 template<typename T> bool operator!=( const TMatrix<T>&, const T& );
-template<typename T> bool operator!=( const T&, const TMatrix<T>& );
+template<typename T> bool operator!=( const T&,          const TMatrix<T>& );
 
 template<typename T>
-class TMatrix
-{
+
+class TMatrix {
+
+  friend class TMatrix<double>;
+  friend class TMatrix<std::complex<double> >;
+
 protected:
-  TML<T>* _ml;
+
+  typename MLPtr<T>::Type  _ml;
+
+  // Functions used by the eigen routines.
+
+ private:
+
+  void       _copy_column(TMatrix<T>& x, int, int );
+  void       _switch_rows( int, int );
+  TMatrix<T> _scale();
+  TMatrix<T> _lu_decompose( int*, int& ) const;
+  void       _lu_back_subst( int*, TMatrix<T>& );
 
 public:
+
   // Constructors and destructors_____________________________________
+
   TMatrix();
   TMatrix(int);
   TMatrix(int rows, int columns);
@@ -104,42 +125,38 @@ public:
   TMatrix(const char* flag, int dimension); // create an identity matrix
                                             // or a symplectic matrix
   TMatrix(const TMatrix<T>& X);
-  ~TMatrix();
+  TMatrix(typename MLPtr<T>::Type& ml);
 
-  // Temporary measure: _stacked will be eliminated.
-  bool _stacked;
+ ~TMatrix();
+
+  operator TMatrix<std::complex<double> > () const;  
 
   // Public member functions__________________________________________
-  inline int rows() const { return _ml->_r;}
-  inline int cols() const { return _ml->_c;}
 
-  TMatrix<T> transpose() const; 
-  TMatrix<T> dagger() const;
-  TMatrix<T> Square() const;
-  T determinant() const;
-  TMatrix<T> inverse() const;
-  TMatrix<FNAL::Complex> eigenValues();
-  TMatrix<FNAL::Complex> eigenVectors();
-  T trace(); // return the trace of a square matrix
-  void SVD( TMatrix&, TMatrix&, TMatrix& ) const;
-  
-  bool isOrthogonal() const;
 
-  // Functions used by the eigen routines.
-  void       _copy_column(TMatrix<T>& x, int, int );
-  void       _switch_columns( int, int );
-  void       _switch_rows( int, int );
-  TMatrix<T> _scale();
-  TMatrix<T> _lu_decompose( int*, int& ) const;
-  void       _lu_back_subst( int*, TMatrix<T>& );
+  void      switch_columns( int, int ); // used by SurveyMatcher
+
+  inline int rows() const { return _ml->rows();}
+  inline int cols() const { return _ml->cols();}
+
+  TMatrix<T>                     transpose()    const; 
+  TMatrix<T>                     dagger()       const;
+  TMatrix<T>                     Square()       const;
+  T                              determinant()  const;
+  TMatrix<T>                     inverse()      const;
+  TMatrix<std::complex<double> > eigenValues()  const;
+  TMatrix<std::complex<double> > eigenVectors() const;
+  T                              trace()        const ; 
+  void                           SVD( TMatrix&, TMatrix&, TMatrix& );
+  bool                           isOrthogonal() const;
 
   // Operators________________________________________________________
-
   
-  operator TMatrix<FNAL::Complex> ();  //  Conversion operator; 
+  
+  TMatrix<T>& DeepCopy(const TMatrix&);
 
   TMatrix<T>& operator=(const TMatrix&);
-  TMatrix<T>& DeepCopy(const TMatrix&);
+
   T& operator()(int row, int column);
   T  operator()(int row, int column) const;
   T  getElement(int row, int column) const;
@@ -149,109 +166,62 @@ public:
   void operator-=( const T&);
 
   // Friends
+
+  friend TMatrix<double> real( const TMatrix<std::complex<double> >& x );
+  friend TMatrix<double> imag( const TMatrix<std::complex<double> >& x );
+
   friend bool operator==<>( const TMatrix&, const TMatrix& );
   friend bool operator==<>( const TMatrix&, const T& );
-  friend bool operator==<>( const T&, const TMatrix& );
+  friend bool operator==<>( const T&,       const TMatrix& );
 
-  friend std::ostream& operator<<<>(std::ostream&, const TMatrix&);
+  friend std::ostream& operator<< <T>(std::ostream&, const TMatrix<T>&);
 
   friend TMatrix operator+<>(const TMatrix&, const TMatrix&);
   friend TMatrix operator+<>(const TMatrix&, const T&); 
-  friend TMatrix operator+<>(const T&, const TMatrix&); 
+  friend TMatrix operator+<>(const T&,       const TMatrix&); 
   friend TMatrix operator-<>(const TMatrix&); 
   friend TMatrix operator-<>(const TMatrix&, const TMatrix&); 
   friend TMatrix operator-<>(const TMatrix&, const T&); 
-  friend TMatrix operator-<>(const T&, const TMatrix&); 
+  friend TMatrix operator-<>(const T&,       const TMatrix&); 
   friend TMatrix operator*<>(const TMatrix&, const TMatrix&); 
 
-  friend TMatrix<FNAL::Complex> operator*(const TMatrix<double>&, const TMatrix<FNAL::Complex>&); 
-  friend TMatrix<FNAL::Complex> operator*(const TMatrix<FNAL::Complex>&, const TMatrix<double>&); 
+  friend TMatrix<std::complex<double> > operator*(const TMatrix<double>&,                const TMatrix<std::complex<double> >&); 
+  friend TMatrix<std::complex<double> > operator*(const TMatrix<std::complex<double> >&, const TMatrix<double>&); 
 
-  friend TMatrix operator*<>(const TMatrix&, const T);
-  friend TMatrix operator*<>(const T, const TMatrix&);
-  friend TMatrix operator/<>(const TMatrix&, const T);
-  friend TMatrix operator/<>(const T, TMatrix&);
-  friend TMatrix operator/<>(TMatrix&, TMatrix&);
+  friend TMatrix operator*<>(const TMatrix&,   const T&);
+  friend TMatrix operator*<>(const T&,         const TMatrix&);
+  friend TMatrix operator/<>(const TMatrix&,   const T&);
+  friend TMatrix operator/<>(const T&,         TMatrix const&);
+  friend TMatrix operator/<>(TMatrix const&,   TMatrix const&);
 
-  // Exception subclasses
-  struct IndexRange : public std::exception
-  {
-    // User has tried to access a matrix element with
-    // out-of-range indices: M(i,j) with 
-    // i or j < 0
-    // or i > rows - 1
-    // or j > cols - 1
-    IndexRange( int, int, int, int, const char* );
-    ~IndexRange() throw() {}
-    const char* what() const throw();
-    int i,  j;   // Row and column indices called
-    int im, jm;  // Maximum allowed values
-  };
-
-  struct NotVector : public std::exception
-  {
-    // Attempt to access a matrix element as a vector element,
-    // with one index, when the matrix is not a vector.
-    NotVector( int, int, int, const char* );
-    ~NotVector() throw() {}
-    const char* what() const throw();
-    int i, r, c;  // index, rows, columns
-  };
-
-  struct Incompatible : public std::exception
-  {
-    // Attempting operations on matrices who dimensions
-    // are not compatible.
-    Incompatible( int, int, int, int, const char* );
-    ~Incompatible() throw() {}
-    const char* what() const throw();
-    int ra, ca, rb, cb;
-  };
-
-  struct NotSquare : public std::exception
-  {
-    // Non-square matrix handed over for square
-    // matrix operations
-    NotSquare( int, int, const char* );
-    ~NotSquare() throw() {}
-    const char* what() const throw();
-    int r, c;
-  };
-
-  struct GenericException : public std::exception
-  {
-    // Miscellaneous other errors
-    GenericException( int, int, const char*, const char* = "" );
-    // 1st argument: number of rows
-    // 2nd         : number of columns
-    // 3rd         : identifies function containing throw
-    // 4th         : identifies type of error
-    ~GenericException() throw() {}
-    const char* what() const throw();
-    std::string errorString;
-    int r, c;
-  };
 };
 
 
 // TMatrix Specializations
 
+
+template<> TMatrix<double>::operator TMatrix<std::complex<double> > ()  const;  
+
 template<> 
-TMatrix<double>                 TMatrix<double>::dagger() const; 
+TMatrix<double>                                TMatrix<double>::dagger() const; 
+
 template<> 
 TMatrix<std::complex<double> >  TMatrix<std::complex<double> >::dagger() const; 
 
-template<> TMatrix<double>::operator TMatrix<FNAL::Complex> ();  
  
-template<> TMatrix<FNAL::Complex> TMatrix<double>::eigenValues();
-template<> TMatrix<FNAL::Complex> TMatrix<double>::eigenVectors(); 
+template<> TMatrix<std::complex<double> > TMatrix<double>::eigenValues()    const;
+template<> TMatrix<std::complex<double> > TMatrix<double>::eigenVectors()   const; 
 
-template<> TMatrix<FNAL::Complex> TMatrix<FNAL::Complex>::eigenValues();
-template<> TMatrix<FNAL::Complex> TMatrix<FNAL::Complex>::eigenVectors();
+template<> TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenValues()  const;
+template<> TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenVectors() const;
+
+template<> void  TMatrix<double>::SVD( TMatrix<double>&, TMatrix<double>&, TMatrix<double>& );
 
 
-
+// --------------------------------------------------------------------------------------------
 // Special class RandomOrthogonal
+// --------------------------------------------------------------------------------------------
+
 
 class RandomOrthogonal
 {
@@ -283,10 +253,6 @@ class RandomOrthogonal
 };
 
 
-typedef class TMatrix<double>                Matrix;
-typedef class TMatrix<double>                MatrixD;
-typedef class TMatrix<FNAL::Complex>         MatrixC;
-typedef class TMatrix<int>                   MatrixI;
 
 #ifdef BASICTOOLKIT_IMPLICIT_TEMPLATES
 #include <TMatrix.tcc>
