@@ -44,4 +44,19 @@ extern "C" {
                                 //  double argument.
 }
 
+/************************************************************************** 
+
+rg_ and cg_ are respectively std EISPACK eigensolvers for arbitrary real 
+and complex matrices from, translated from fortran using f2c. 
+
+*****************************************************************************/   
+
+extern "C" { void rg_(int*, int*, double*, double*,double*, int*, double*,
+                 int*, double*, int*); }
+
+extern "C" { void cg_(int*, int*, double*, double*,double*,double*, int*,
+                      double*,double*,double*, double*, double*,int*); }
+
+
+
 #endif // UTILS_H 
