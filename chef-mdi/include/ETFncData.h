@@ -44,8 +44,8 @@ class ETFncData: public CHEFPlotData
     void _finishConstructor();
 
  public:
-    ETFncData( beamline*,        ostream* = &std::cout, ostream* = &std::cerr);
-    ETFncData( BeamlineContext*, ostream* = &std::cout, ostream* = &std::cerr);
+    ETFncData( beamline*,        std::ostream* = &std::cout, std::ostream* = &std::cerr);
+    ETFncData( BeamlineContext*, std::ostream* = &std::cout, std::ostream* = &std::cerr);
    ~ETFncData();
 
     void resetErrorStream ( std::ostream* stderrstream );
@@ -58,8 +58,8 @@ class ETFncData: public CHEFPlotData
     void makeCurves();
 
  protected:
-    ostream* _errorStreamPtr;
-    ostream* _outputStreamPtr;
+    std::ostream* _errorStreamPtr;
+    std::ostream* _outputStreamPtr;
 };
 
 
