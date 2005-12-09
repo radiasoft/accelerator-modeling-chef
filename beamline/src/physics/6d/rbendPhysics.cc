@@ -39,6 +39,8 @@
 #include "PhysicsConstants.h"
 #include "Jet.h"
 
+static std::complex<double> complex_i(0.0, 1.0);
+
 rbend::NoEdge_Prop       rbend::NoEdge;
 rbend::Exact_Prop        rbend::Exact;
 rbend::InEdge_Prop       rbend::InEdge;
@@ -275,15 +277,15 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  double beta_3 = E_factor*sqrt( psq - p.get_npx()*p.get_npx()
                                     - p.get_npy()*p.get_npy() );
 
- FNAL::Complex ui  ( 0.0, p.get_x() );
- FNAL::Complex vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
+ std::complex<double>  ui  ( 0.0, p.get_x() );
+ std::complex<double>  vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
 
  // Step 1.
  double omega  = csq_red * pbe->Strength() / p.Energy();
- FNAL::Complex bi = ( complex_i*vui / omega ) - ui;
+ std::complex<double>  bi = ( complex_i*vui / omega ) - ui;
 
  // Step 2.
- FNAL::Complex bf = bi*pbe->_propPhase + pbe->_propTerm;
+ std::complex<double>  bf = bi*pbe->_propPhase + pbe->_propTerm;
  
  // Step 3.
  double rho = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
@@ -291,9 +293,9 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
                    - (pbe->_myArcsin)( real(bf)/rho );
 
  // Step 4.
- FNAL::Complex expFactor( cos(dthmdphi), sin(dthmdphi) );
- FNAL::Complex vuf = vui*expFactor;
- FNAL::Complex uf  = ( ui + bi )*expFactor - bf;
+ std::complex<double>  expFactor( cos(dthmdphi), sin(dthmdphi) );
+ std::complex<double>  vuf = vui*expFactor;
+ std::complex<double>  uf  = ( ui + bi )*expFactor - bf;
 
  // Final filter back to state coordinates
  // REMOVE: double dphi   = 0.0;

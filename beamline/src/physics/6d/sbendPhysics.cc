@@ -40,6 +40,9 @@
 #include "Particle.h"
 #include "sbend.h"
 
+static std::complex<double> complex_i(0.0, 1.0);
+
+
 sbend::NoEdge_Prop  sbend::NoEdge;
 sbend::Exact_Prop   sbend::Exact;
 sbend::InEdge_Prop  sbend::InEdge;
@@ -246,15 +249,15 @@ int sbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  double beta_3 = E_factor*sqrt( psq - p.get_npx()*p.get_npx()
                                     - p.get_npy()*p.get_npy() );
 
- FNAL::Complex ui  ( 0.0, p.get_x() );
- FNAL::Complex vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
+ std::complex<double>  ui  ( 0.0, p.get_x() );
+ std::complex<double>  vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
 
  // Step 1.
  double omega  = csq_red * pbe->Strength() / p.Energy();
- FNAL::Complex bi = ( complex_i*vui / omega ) - ui;
+ std::complex<double>  bi = ( complex_i*vui / omega ) - ui;
 
  // Step 2.
- FNAL::Complex bf = bi*pbe->_propPhase + pbe->_propTerm;
+ std::complex<double>  bf = bi*pbe->_propPhase + pbe->_propTerm;
 
  // Step 3.
  double rho = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
@@ -262,9 +265,9 @@ int sbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
                    - (pbe->_myArcsin)( real(bf)/rho );
 
  // Step 4.
- FNAL::Complex expFactor( cos(dthmdphi), sin(dthmdphi) );
- FNAL::Complex vuf = vui*expFactor;
- FNAL::Complex uf  = ( ui + bi )*expFactor - bf;
+ std::complex<double>  expFactor( cos(dthmdphi), sin(dthmdphi) );
+ std::complex<double>  vuf = vui*expFactor;
+ std::complex<double>  uf  = ( ui + bi )*expFactor - bf;
 
  // Final filter back to state coordinates
  double dtheta = dthmdphi + pbe->_dphi;
@@ -408,24 +411,24 @@ int sbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 // REMOVE:  double beta_3 = E_factor*sqrt( psq - p.get_npx()*p.get_npx()
 // REMOVE:                                     - p.get_npy()*p.get_npy() );
 // REMOVE: 
-// REMOVE:  FNAL::Complex ui  ( 0.0, p.get_x() );
-// REMOVE:  FNAL::Complex vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
+// REMOVE:  std::complex<double>  ui  ( 0.0, p.get_x() );
+// REMOVE:  std::complex<double>  vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
 // REMOVE: 
 // REMOVE:  // Step 1.
 // REMOVE:  double omega  = csq_red * pbe->Strength() / p.Energy();
-// REMOVE:  FNAL::Complex bi = ( complex_i*vui / omega ) - ui;
+// REMOVE:  std::complex<double>  bi = ( complex_i*vui / omega ) - ui;
 // REMOVE: 
 // REMOVE:  // Step 2.
-// REMOVE:  FNAL::Complex bf = bi*pbe->_propPhase + pbe->_propTerm;
+// REMOVE:  std::complex<double>  bf = bi*pbe->_propPhase + pbe->_propTerm;
 // REMOVE: 
 // REMOVE:  // Step 3.
 // REMOVE:  double rho = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
 // REMOVE:  double dthmdphi = _fastArcsin( real(bi)/rho ) - _fastArcsin( real(bf)/rho );
 // REMOVE: 
 // REMOVE:  // Step 4.
-// REMOVE:  FNAL::Complex expFactor( cos(dthmdphi), sin(dthmdphi) );
-// REMOVE:  FNAL::Complex vuf = vui*expFactor;
-// REMOVE:  FNAL::Complex uf  = ( ui + bi )*expFactor - bf;
+// REMOVE:  std::complex<double>  expFactor( cos(dthmdphi), sin(dthmdphi) );
+// REMOVE:  std::complex<double>  vuf = vui*expFactor;
+// REMOVE:  std::complex<double>  uf  = ( ui + bi )*expFactor - bf;
 // REMOVE: 
 // REMOVE: 
 // REMOVE:  // Final filter back to state coordinates
