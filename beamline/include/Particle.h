@@ -35,9 +35,10 @@
 
 #include <exception>
 
-#include "VectorD.h"
-#include "Mapping.h"
-#include "Barnacle.h"
+#include <VectorD.h>
+#include <Mapping.h>
+#include <Barnacle.h>
+#include <Matrix.h>
 
 // Forward declaration
 class JetParticle;
