@@ -112,38 +112,35 @@ Interpreter::Interpreter()
 Interpreter::~Interpreter() 
 {
 
-  //--------------------------------------------------------------------------------------------------
-  // From the Boost.Python TODO list:
-  //--------------------------------------------------------------------------------------------------
-  // 
-  // Currently (as this is written boost 1_33),  Boost.Python has several global or function-static
-  // objects  whose existence keeps reference counts from dropping to zero until the Boost.Python 
-  // shared object is unloaded. This can cause a crash because when the reference counts do go to 
-  // zero, there is no interpreter. In order to make it safe to call Py_Finalize, we must register 
-  // an atexit() routine to destroy these objects and release all Python reference counts
-  // so that Python can clean them up while there is still an interpreter.
-  //  
- 
-  // COMMENTED OUT -- see above  Py_Finalize(); //  terminate the interpreter and release its resources.
-
-
+  Py_Finalize(); //  terminate the interpreter and release its resources.
   if (_instance) delete _instance;
   _instance = 0; 
-
 } 
 
 
 void Interpreter::runString(const char* s) 
 {
 
-  // save the current Jet environment ( an arbitrary script can change the environment !)
+  static EnvPtr<double>::Type                  pgmEnv;   // null ptr
+  static EnvPtr<std::complex<double> >::Type   pgmEnvC;  // null ptr
 
-  Jet__environment  * storedEnv    =   Jet::_lastEnv;
-  JetC__environment * storedEnvC   =   JetC::_lastEnv; 
+  static EnvPtr<double>::Type                  interpreterEnv;   // null ptr
+  static EnvPtr<std::complex<double> >::Type   interpreterEnvC;  // null ptr
+
+  // save the program  Jet environment ( an arbitrary script can change the environment !)
+
+  pgmEnv  =  Jet::_lastEnv; 
+  pgmEnvC = JetC::_lastEnv; 
+
+  // restore the interpreter Jet environment if one was set 
+
+  if (interpreterEnv.get() )  Jet::_lastEnv  = interpreterEnv;
+  if (interpreterEnvC.get())  JetC::_lastEnv = interpreterEnvC; 
 
   
   //  int Py_file_input 
   //  int Py_single_input:  This is the symbol used for the interactive interpreter loop
+
   try { 
   boost::python::handle<> pyrun_handle( PyRun_String( s , Py_single_input,
              _main_dictionary.get(), _main_dictionary.get() ));
@@ -154,10 +151,15 @@ void Interpreter::runString(const char* s)
     throw e;
   }
   
- // restore the Jet environment
+ // save the interpreter Jet environment if one was set 
 
-  Jet::_lastEnv = storedEnv;
-  JetC::_lastEnv = storedEnvC;
+  interpreterEnv  =  Jet::_lastEnv; 
+  interpreterEnvC = JetC::_lastEnv; 
+
+ // restore the program Jet environment
+
+  Jet::_lastEnv  = pgmEnv;
+  JetC::_lastEnv = pgmEnvC;
 } 
 
 
@@ -214,6 +216,22 @@ void Interpreter::readFile(const char* fname)
     
  if (fp)  {
 
+  static EnvPtr<double>::Type                  pgmEnv;   // null ptr
+  static EnvPtr<std::complex<double> >::Type   pgmEnvC;  // null ptr
+
+  static EnvPtr<double>::Type                  interpreterEnv;   // null ptr
+  static EnvPtr<std::complex<double> >::Type   interpreterEnvC;  // null ptr
+
+  // save the program  Jet environment ( an arbitrary script can change the environment !)
+
+  pgmEnv  =  Jet::_lastEnv; 
+  pgmEnvC = JetC::_lastEnv; 
+
+  // restore the interpreter Jet environment if one was set 
+
+  if (interpreterEnv.get() )  Jet::_lastEnv  = interpreterEnv;
+  if (interpreterEnvC.get())  JetC::_lastEnv = interpreterEnvC; 
+
 #ifdef WIN32
 
 //   ----------------------------------------------------------------
@@ -221,11 +239,11 @@ void Interpreter::readFile(const char* fname)
 //   The code below is a work-around for win32. 
 //   Python24.dll is usually distributed in binary form, 
 //   from www.python.org. 
-//   Unfortunately, the header files are not distributed with the OS
-//   and the one used used for this compilation
-//   are likely to use a different implementation of the FILE struct 
-//   than the one used when compiling CHEF. This results in
-//   lots of strange error and access violations. The workaround
+//   Unfortunately, the header files are not distributed with Windows
+//   but rather, with the compiler. The headers one used used to compile 
+//   Python24.dll are likely to use a different implementation of the FILE 
+//   struct than the one used when compiling CHEF. This results in
+//   lots of strange errors and access violations. This workaround
 //   avoids the PyRun_SimpleFile function. 
 //   ---------------------------------------------------------------- 
      std::stringstream cmd;
@@ -236,6 +254,17 @@ void Interpreter::readFile(const char* fname)
 #else
      PyRun_SimpleFile(fp, fname); 
 #endif 
+
+ // save the interpreter Jet environment if one was set 
+
+  interpreterEnv  =  Jet::_lastEnv; 
+  interpreterEnvC = JetC::_lastEnv; 
+
+ // restore the program Jet environment
+
+  Jet::_lastEnv  = pgmEnv;
+  JetC::_lastEnv = pgmEnvC;
+
   } else { 
  
     throw GenericException(__FILE__, __LINE__, "Interpreter::readFile(const char* fname)", "Could not open script file"); 
