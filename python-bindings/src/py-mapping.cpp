@@ -21,85 +21,100 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-
-#ifdef FNAL_FIRST_ORDER
-#include <JetVector.h>
-#include <JetCVector.h>
-#include <Mapping.h>
-#include <MappingC.h>
-#else
 #include <JetVector.h>
 #include <Mapping.h>
-#endif
+#include <EnvPtr.h>
 
 using namespace boost::python;
 
+//------------------------------------------------------------------------------
+// Local auxiliary functions and wrapper classe(s)
+//------------------------------------------------------------------------------
+
+
+template<typename T>
+class MappingWrapper: public TMapping<T> {
+ 
+ private:
+  
+   PyObject* m_self;
+
+ public:
+
+  MappingWrapper( PyObject* self): m_self(self), TMapping<T>() {}
+
+  MappingWrapper( PyObject* self, TMapping<T> const& ): m_self(self), TMapping<T>() {}
+
+  MappingWrapper( PyObject* self, boost::python::tuple components): m_self(self) {
+ 
+    int dim = extract<int>( components.attr("__len__")() );
+    TJet<T>* comps = new TJet<T> [dim];
+    for (int i=0; i<dim; ++i) {
+      comps[i] = extract<TJet<T> >(components[i]); 
+    }
+    TMapping<T>* mapping = this; 
+    new(mapping) TMapping<T>(dim, comps); // placement new   
+    delete[] comps;
+  }
+
+  MappingWrapper(  PyObject* self, boost::python::tuple components, typename EnvPtr<T>::Type env ): m_self(self) {
+
+      int dim = extract<int>( components.attr("__len__")() );
+      TJet<T>* comps = new TJet<T> [dim];
+      for (int i=0; i<dim; ++i) {
+        comps[i] = extract<TJet<T> >(components[i]); 
+      }
+      TMapping<T>* mapping = this; 
+      new(mapping) TMapping<T>(dim, comps); // placement new   
+      delete[] comps;
+  }
+};
+
+
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+//------------------------------------------------------------------------------
+//  Python wrapper classes
+//------------------------------------------------------------------------------
+
+
+
 void wrap_mxyzptlk_mapping() {
 
-  class_<Mapping, bases<JetVector> >("Mapping", init<>() );
 
+  class_<Mapping, bases<JetVector>, MappingWrapper<double> > Mapping_class_("Mapping", init<>() );
+
+
+  Mapping_class_.def( init<boost::python::tuple>() );
+  Mapping_class_.def( init<boost::python::tuple, EnvPtr<double>::Type >() );
+  Mapping_class_.def("Inverse", &MappingWrapper<double>::Inverse  );
+  //Mapping_class_.def("Jacobian",&MappingWrapper::Jacobian );
+
+  //-----------------------------------
+  // *** composition ***
+  //-----------------------------------
+
+  Mapping_class_.def(self * self);
+ 
 }
 
 void wrap_mxyzptlk_mappingc() {
 
-  class_<MappingC, bases<JetCVector> >("MappingC", init<>() );
+  class_<MappingC, bases<JetCVector>,  MappingWrapper<std::complex<double> > >MappingC_class_("MappingC", init<>() );
 
+  MappingC_class_.def( init<boost::python::tuple>() );
+  MappingC_class_.def( init<boost::python::tuple, EnvPtr<std::complex<double> >::Type >() );
+
+  MappingC_class_.def("Inverse", &MappingWrapper<std::complex<double> >::Inverse );
+  //MappingC_class_.def("Jacobian",&MappingWrapperC::Jacobian );
+
+
+  //-----------------------------------
+  // *** composition ***
+  //-----------------------------------
+  MappingC_class_.def(self * self);
+ 
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-#if  0
-
-class Mapping : public JetVector
-{
- private:
-
-  Mapping EpsInverse( Jet__environment* ) const;
-
- protected:
-  // Friends
-  // friend class  Jet;
-  // friend struct JL;
-  // friend class  CJetVector;
-
- public: 
-
-  Mapping( const int&  /* dimension */   = Jet::_lastEnv->SpaceDim,
-           const Jet*  /* components */  = 0, 
-                 Jet__environment*       = Jet::_lastEnv 
-     );
-  Mapping( const Mapping& );
-  Mapping( const JetVector& );
-  Mapping( char*, 
-           Jet__environment* = Jet::_lastEnv );    // Produces the identity.
-  ~Mapping();
-
-  Mapping& operator=( const Mapping& );
-  Vector  operator()( const Vector& ) const;
-  Mapping operator()( const Mapping& ) const;  // Mapping composition.
-  Mapping operator* ( const Mapping& ) const;  // Mapping composition also; an alias.
-
-  MatrixD Jacobian() const;
-  Jet& operator()( const int& ) const; 
-
-  Mapping Inverse() const;
-
-#ifdef OBJECT_DEBUG
-  static int objectCount;
-#endif
-};
-
-void 
-operator*=( Mapping& x, const Mapping& y );
-
-
-inline 
-Jet& 
-Mapping::operator()( const int& i ) 
-const
-{
-  return JetVector::operator()( i );   // Regrettably, this is necessary.
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#endif
-

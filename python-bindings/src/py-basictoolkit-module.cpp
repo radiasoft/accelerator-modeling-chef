@@ -26,12 +26,16 @@ using namespace boost::python;
 
 extern void wrap_barnacle();
 extern void wrap_vector();
+extern void wrap_matrix();
+extern void wrap_matrixc();
 
 BOOST_PYTHON_MODULE( basic_toolkit )
 {
 
 wrap_barnacle();
 wrap_vector(); 
+wrap_matrix(); 
+wrap_matrixc(); 
 
 }
 

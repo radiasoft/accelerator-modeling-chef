@@ -23,7 +23,7 @@
 #include <boost/python.hpp>
 
 #include <bmlnElmnt.h>
-#include "LattFuncSage.h"
+#include <LattFuncSage.h>
 #include <iostream>
 
 #define BOOST_PYTHON_STATIC_MODULE
@@ -58,7 +58,7 @@ static std::ostream& operator<<(std::ostream &os,
 
 static std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattRing& lr) {
   
-  os << lr.tune         << endl
+  os << lr.tune         << std::endl
      << lr.chromaticity << std::endl;
 
       return os;

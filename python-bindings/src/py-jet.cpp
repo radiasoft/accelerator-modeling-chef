@@ -23,99 +23,216 @@
 #include <boost/python.hpp>
 
 #include <Jet.h>
-
-
+#include <EnvPtr.h>
 #include <string>
 #include <iostream>
 
-using namespace boost::python;
-
-static JetC__environment*  getLastEnvC_local( ) 
+static EnvPtr<std::complex<double> >::Type getLastEnvC_local( ) 
 {
   return JetC::_lastEnv; 
 }
 
-static Jet__environment*  getLastEnv_local( ) 
+static EnvPtr<double>::Type  getLastEnv_local( ) 
 {
   return Jet::_lastEnv; 
 }
 
-static void setLastEnvC_local( JetC__environment* env ) 
+static void setLastEnvC_local( EnvPtr<std::complex<double> >::Type env ) 
 {
   JetC::_lastEnv = env; 
 }
 
-static void setLastEnv_local(  Jet__environment* env  ) 
+static void setLastEnv_local(  EnvPtr<double>::Type env  ) 
 {
   Jet::_lastEnv = env; 
 }
 
-static void EndEnvironment_local( ) 
-{
-  // double* scale = new double[ Jet::_workEnv->numVar] 
+static TJet<double>  (*log_ptr  )(const TJet<double>& )          = &::log;
+static TJet<double>  (*log10_ptr)(const TJet<double>& )          = &::log10;
+static TJet<double>  (*sqrt_ptr )(const TJet<double>& )          = &::sqrt;
+static TJet<double>  (*powd_ptr )(const TJet<double>&, const double& )  = &::pow;
+static TJet<double>  (*pow_ptr  )(const TJet<double>&, int    )  = &::pow;
+static TJet<double>  (*exp_ptr  )(const TJet<double>& )          = &::exp;
+static TJet<double>  (*sin_ptr  )(const TJet<double>& )          = &::sin;
+static TJet<double>  (*cos_ptr  )(const TJet<double>& )          = &::cos;
+static TJet<double>  (*sinh_ptr )(const TJet<double>& )          = &::sinh;
+static TJet<double>  (*cosh_ptr )(const TJet<double>& )          = &::cosh;
+static TJet<double>  (*tanh_ptr )(const TJet<double>& )          = &::tanh;
+static TJet<double>  (*asin_ptr )(const TJet<double>& )          = &::asin;
+static TJet<double>  (*tan_ptr  )(const TJet<double>& )          = &::tan;
+static TJet<double>  (*erf_ptr  )(const TJet<double>& )          = &::erf;
+static TJet<double>  (*erfc_ptr )(const TJet<double>& )          = &::erfc;
 
-  //  For the moment, the signature of this function ignores the scale array. 
-  //  TO DO: an additional function that accepts a python array type as a argument
-  //  passing a null ptr implies default scaling 
-
-  Jet::EndEnvironment(0);  
-}
-
-static void EndEnvironmentC_local( ) 
-{
-  // double* scale = new double[JetC::_workEnv->numVar] 
-
-  //  for the moment, the signature of this function ignores the scale array. 
-  //  TO DO: an additional function that accepts a python array type as a argument
-  //  passing a null ptr implies default scaling 
-
-  JetC::EndEnvironment(0); 
-}
-
-
-// Jet__environment*   ( Jet::*  )(Jet__environment*  )                   =  &Jet__environment::CreateEnvFrom;
-JetC__environment*     ( * CreateEnvFromPtr)(const Jet__environment*  )   = &JetC__environment::CreateEnvFrom;
-
-
-
-void wrap_mxyzptlk_jetc() {
-
-
- class_<Jet__environment,  boost::noncopyable>  Jet__environmentClass_("Jet__environment", no_init);
- class_<JetC__environment, boost::noncopyable> JetC__environmentClass_("JetC__environment", no_init);
+static TJet<std::complex<double> >  (*clog_ptr  )( const TJet<std::complex<double> >& )         = &::log;
+static TJet<std::complex<double> >  (*clog10_ptr)( const TJet<std::complex<double> >& )         = &::log10;
+static TJet<std::complex<double> >  (*csqrt_ptr )( const TJet<std::complex<double> >& )         = &::sqrt;
+//static TJet<std::complex<double> >  (*cpowd_ptr )( const TJet<std::complex<double> >&, const double& )  = &::pow; //not implemented
+//static TJet<std::complex<double> >  (*cpow_ptr  )( const TJet<std::complex<double> >&, int           )  = &::pow; //not implemented
+static TJet<std::complex<double> >  (*cexp_ptr  )( const TJet<std::complex<double> >& )         = &::exp;
+static TJet<std::complex<double> >  (*csin_ptr  )( const TJet<std::complex<double> >& )         = &::sin;
+static TJet<std::complex<double> >  (*ccos_ptr  )( const TJet<std::complex<double> >& )         = &::cos;
+static TJet<std::complex<double> >  (*csinh_ptr )( const TJet<std::complex<double> >& )         = &::sinh;
+static TJet<std::complex<double> >  (*ccosh_ptr )( const TJet<std::complex<double> >& )         = &::cosh;
+static TJet<std::complex<double> >  (*ctanh_ptr )( const TJet<std::complex<double> >& )         = &::tanh;
+static TJet<std::complex<double> >  (*casin_ptr )( const TJet<std::complex<double> >& )         = &::asin;
+static TJet<std::complex<double> >  (*ctan_ptr  )( const TJet<std::complex<double> >& )         = &::tan;
+static TJet<std::complex<double> >  (*cerf_ptr  )( const TJet<std::complex<double> >& )         = &::erf;
+static TJet<std::complex<double> >  (*cerfc_ptr )( const TJet<std::complex<double> >& )         = &::erfc;
 
 
- class_<JetC> JetC_Class_("JetC", init<>()); 
-
-  JetC_Class_.def(self_ns::str(self));
-  JetC_Class_.def("BeginEnvironment", &JetC::BeginEnvironment);
-  JetC_Class_.staticmethod("BeginEnvironment");
-  JetC_Class_.def( "EndEnvironment",  EndEnvironmentC_local,  return_value_policy<reference_existing_object>());
-  JetC_Class_.staticmethod("EndEnvironment");
-  JetC_Class_.def("getLastEnv",       &getLastEnvC_local, return_value_policy<reference_existing_object>() ) ;
-  JetC_Class_.staticmethod("getLastEnv");
-  JetC_Class_.def("setLastEnv",       &setLastEnvC_local);
-  JetC_Class_.staticmethod("setLastEnv");
-  JetC_Class_.def("CreateEnvFrom",    CreateEnvFromPtr,  return_value_policy<reference_existing_object>());
-  JetC_Class_.staticmethod("CreateEnvFrom");
-
-}
+using namespace boost::python;
 
 void wrap_mxyzptlk_jet() {
 
-  class_<Jet> Jet_Class_ ("Jet", init<>());
-  Jet_Class_.def(self_ns::str(self));
-  Jet_Class_.def( "BeginEnvironment", &Jet::BeginEnvironment);
-  Jet_Class_.staticmethod("BeginEnvironment");
-  Jet_Class_.def( "EndEnvironment",   EndEnvironment_local,  return_value_policy<reference_existing_object>());
-  Jet_Class_.staticmethod("EndEnvironment");
-  Jet_Class_.def("getLastEnv",        &::getLastEnv_local,  return_value_policy<reference_existing_object>()); 
-  Jet_Class_.staticmethod("getLastEnv");
-  Jet_Class_.def("setLastEnv",        &::setLastEnv_local );
-  Jet_Class_.staticmethod("setLastEnv");
+  class_<Jet> Jet_class_ ("Jet", init<>());
+  Jet_class_.def("getLastEnv",        &::getLastEnv_local ); 
+  Jet_class_.staticmethod("getLastEnv");
+  Jet_class_.def("setLastEnv",        &::setLastEnv_local );
+  Jet_class_.staticmethod("setLastEnv");
+  //-----------------------------------
+  // *** addition ***
+  //-----------------------------------
+  Jet_class_.def(self +  self);
+  Jet_class_.def(self += self);
+  Jet_class_.def(self +  double() );
+  Jet_class_.def(self += double() );
+  Jet_class_.def(double() + self );
+  //-----------------------------------
+  // *** subtraction ***
+  //-----------------------------------
+  Jet_class_.def(self - self);
+  Jet_class_.def(self - double());
+  Jet_class_.def(double() - self);
+  //-----------------------------------
+  // *** multiplication ***
+  //-----------------------------------
+  Jet_class_.def(self * self);
+  Jet_class_.def(self * double());
+  Jet_class_.def(double() * self);
+  //-----------------------------------
+  // *** division ****
+  //-----------------------------------
+  Jet_class_.def(self / self);
+  Jet_class_.def(self / double());
+  Jet_class_.def(double() / self);
+    //-----------------------------------
+  // *** boolean ****
+  //-----------------------------------
+  Jet_class_.def(self == self);   	
+  Jet_class_.def(self != self); 	
+  //Jet_class_.def(self < self); 	
+  //Jet_class_.def(self > self); 	
+  //Jet_class_.def(self <= self); 	
+  //Jet_class_.def(self >= self); 	
+  //----------------------------
+  // *** unary ****
+  //----------------------------
+  Jet_class_.def( -self );  	
+  //Jet_class_.def( +self ); 	
+  //Jet_class_.del( ~self );  // inverse	
+  //Jet_class_.def( !self );  // non-zero	
 
-  //Jet_Class_.def("CreateEnvFrom",    &Jet::CreateEnvFrom,  return_value_policy<reference_existing_object>());
-  //Jet_Class_.staticmethod("CreateEnvFrom");
+  //----------------------------
+  // *** special methods ****
+  //----------------------------
+  Jet_class_.def( self_ns::str(self));
+  Jet_class_.def( pow( self, int()) ); 
+  Jet_class_.def( pow( self, double()) );             
+  
+  //-----------------------------------
+  // *** functions ****
+  //-----------------------------------
+  def("log",   log_ptr   );
+  def("log10", log10_ptr );
+  def("sqrt",  sqrt_ptr  );
+  def("exp",   sqrt_ptr  );
+  def("sin",   sin_ptr   );
+  def("cos",   cos_ptr   );
+  def("sinh",  sinh_ptr  );
+  def("cosh",  cosh_ptr  );
+  def("tanh",  tanh_ptr  );
+  def("asin",  asin_ptr  );
+  def("atan",  asin_ptr  );
+  def("erf",   asin_ptr  );
+  def("erfc",  asin_ptr  );
+
+}
+
+void wrap_mxyzptlk_jetc() {
+
+  class_<JetC> JetC_class_ ("JetC", init<>());
+  JetC_class_.def("getLastEnv",        &::getLastEnvC_local ); 
+  JetC_class_.staticmethod("getLastEnv");
+  JetC_class_.def("setLastEnv",        &::setLastEnvC_local );
+  JetC_class_.staticmethod("setLastEnv");
+  //-----------------------------------
+  // *** addition ***
+  //-----------------------------------
+  JetC_class_.def(self +  self);
+  JetC_class_.def(self += self);
+  JetC_class_.def(self +  std::complex<double>() );
+  JetC_class_.def(self += std::complex<double>() );
+  JetC_class_.def(std::complex<double>() + self );
+  //-----------------------------------
+  // *** subtraction ***
+  //-----------------------------------
+  JetC_class_.def(self - self);
+  JetC_class_.def(self - std::complex<double>());
+  JetC_class_.def(std::complex<double>() - self);
+  //-----------------------------------
+  // *** multiplication ***
+  //-----------------------------------
+  JetC_class_.def(self * self);
+  JetC_class_.def(self * std::complex<double>());
+  JetC_class_.def(std::complex<double>() * self);
+  //-----------------------------------
+  // *** division ****
+  //-----------------------------------
+  JetC_class_.def(self / self);
+  JetC_class_.def(self / std::complex<double>());
+  JetC_class_.def(std::complex<double>() / self);
+  //-----------------------------------
+  // *** boolean ****
+  //-----------------------------------
+  JetC_class_.def(self == self);   	
+  JetC_class_.def(self != self); 	
+  //JetC_class_.def(self < self); 	
+  //JetC_class_.def(self > self); 	
+  //JetC_class_.def(self <= self); 	
+  //JetC_class_.def(self >= self); 	
+  //----------------------------
+  // *** unary ****
+  //----------------------------
+  JetC_class_.def( -self );  	
+  //JetC_class_.def( +self ); 	
+  //JetC_class_.del( ~self );  // inverse	
+  //JetC_class_.def( !self );  // non-zero	
+
+  //----------------------------
+  // *** special methods ****
+  //----------------------------
+  JetC_class_.def( pow( self, int()    )); 
+  //JetC_class_.def( pow( self, double() ));              
+  //JetC_class_.def(pow( self, std::complex<double>() ));              
+  JetC_class_.def(self_ns::str(self)  );             
+
+  //-----------------------------------
+  // *** functions ****
+  //-----------------------------------
+  def("log",   log_ptr   );
+  def("log10", log10_ptr );
+  def("sqrt",  sqrt_ptr  );
+  def("exp",   sqrt_ptr  );
+  def("sin",   sin_ptr   );
+  def("cos",   cos_ptr   );
+  def("sinh",  sinh_ptr  );
+  def("cosh",  cosh_ptr  );
+  def("tanh",  tanh_ptr  );
+  def("asin",  asin_ptr  );
+  def("atan",  asin_ptr  );
+  def("erf",   asin_ptr  );
+  def("erfc",  asin_ptr  );
+
 
 }
 
