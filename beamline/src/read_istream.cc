@@ -9,10 +9,22 @@
 ******                                    
 ******  File:      read_istream.cc
 ******                                                                
-******  Copyright (c) 1991 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
+*****
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
-******  Author:    Leo Michelotti                                     
+******  Author: Leo Michelotti                                     
+******         Elliott McCrory (principal author of this file)                           
+******            
 ******                                                                
 ******             Fermilab                                           
 ******             P.O.Box 500                                        
@@ -22,32 +34,26 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
-
 /******  read_istream: global functions and class methods for doing   ****
 ******     read/write of ".bml" files via stream operators.           ****
-******                                                                ****
-******  Principal author:  Elliott McCrory                            ****/
+******                                                                ****/
 
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-#include "beamline.h"
+#include <beamline.h>
 #include <iomanip>
 
-#include "combinedFunction.h"
-#include "kick.h"
-#include "Slot.h"
+#include <combinedFunction.h>
+#include <kick.h>
+#include <Slot.h>
 
-#include "pinger.h"
-#include "CF_rbend.h"
+#include <pinger.h>
+#include <CF_rbend.h>
 
 using namespace std;
 

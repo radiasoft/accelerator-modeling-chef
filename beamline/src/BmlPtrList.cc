@@ -9,8 +9,18 @@
 ******                                    
 ******  File:      BmlPtrList.cc
 ******                                                                
-******  Copyright (c) 2003 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -22,14 +32,9 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
-
 #include <iosetup.h>
 #include <bmlnElmnt.h>
 #include <PhysicsConstants.h>
@@ -65,7 +70,7 @@ void BmlPtrList::append( bmlnElmnt* x )
     (*pcerr) << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** ERROR *** void BmlPtrList::append( bmlnElmnt* x )"
             "\n*** ERROR *** Attempt to append null pointer."
-         << endl;
+         << std::endl;
   }
 }
 
@@ -85,7 +90,7 @@ void BmlPtrList::insert( bmlnElmnt* x )
     (*pcerr) << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** ERROR *** void BmlPtrList::insert( bmlnElmnt* x )"
             "\n*** ERROR *** Attempt to append null pointer."
-         << endl;
+         << std::endl;
   }
 }
 

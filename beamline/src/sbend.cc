@@ -9,10 +9,20 @@
 ******  File:      sbend.cc
 ******  Version:   3.1
 ******                                                                
-******  Copyright (c) 1991 Universities Research Association, Inc.    
-******                All Rights Reserved                             
-******                                                                
 ******  Author:    Leo Michelotti                                     
+******                                                                
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
+*****
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 ******             Fermilab                                           
 ******             P.O.Box 500                                        
@@ -22,13 +32,9 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -296,13 +302,13 @@ void sbend::_calcPropParams()
   // Geometric parameters
   double psi = _angle - (_usEdgeAngle + _dsEdgeAngle);
   _dphi = - psi;
-  _propPhase = FNAL::Complex( cos(psi), sin(psi) );
+  _propPhase = std::complex<double> ( cos(psi), sin(psi) );
 
   double rho = this->Length()/_angle;
   // Note: _angle and rho have the same sign.
-  _propTerm =     FNAL::Complex( 0.0, rho )
-                * FNAL::Complex( 1.0 - cos(_angle), -sin(_angle) )
-                * FNAL::Complex( cos(_dsEdgeAngle), -sin(_dsEdgeAngle) );
+  _propTerm =     std::complex<double> ( 0.0, rho )
+                * std::complex<double> ( 1.0 - cos(_angle), -sin(_angle) )
+                * std::complex<double> ( cos(_dsEdgeAngle), -sin(_dsEdgeAngle) );
 
   this->setupPropFunc();
 }
