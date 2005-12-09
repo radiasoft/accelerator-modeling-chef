@@ -35,8 +35,8 @@
 
 #include <iostream>
 
-#include "MathConstants.h"      // To get bool
-#include "slist.h"
+#include <MathConstants.h>      // To get bool
+#include <slist.h>
 
 class ParameterList;
 class AccelParam;
@@ -125,7 +125,7 @@ class ParameterList
   ParameterList( const ParameterList& );
   ~ParameterList();
 
-  friend ostream& operator<<( ostream&, ParameterList& );
+  friend std::ostream& operator<<( std::ostream&, ParameterList& );
   friend class AccelParamAcc;
   friend class AccelParam;
 

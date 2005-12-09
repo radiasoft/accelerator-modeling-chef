@@ -86,8 +86,8 @@ public:
  bool hasRing() const;
  bool isTreatedAsRing() const;
 
- void setErrorStream( ostream* );
- void setOutputStream( ostream* );
+ void setErrorStream( std::ostream* );
+ void setOutputStream( std::ostream* );
 
  void treatAsRing( bool );
  void setGapTolerance( double );
@@ -101,8 +101,8 @@ protected:
  bool                _verbose;
  bool                _cloned;
  bool                _isRing;
- ostream*            _errorStreamPtr;
- ostream*            _outputStreamPtr;
+ std::ostream*            _errorStreamPtr;
+ std::ostream*            _outputStreamPtr;
  double              _ringGapTolerance;
  double              _ringAngleTolerance;
 };
@@ -118,12 +118,12 @@ inline void Sage::unset_verbose()
   _verbose = false;
 }
 
-inline void Sage::setErrorStream( ostream* x )
+inline void Sage::setErrorStream( std::ostream* x )
 {
   _errorStreamPtr = x;
 }
 
-inline void Sage::setOutputStream( ostream* x )
+inline void Sage::setOutputStream( std::ostream* x )
 {
   _outputStreamPtr = x;
 }
