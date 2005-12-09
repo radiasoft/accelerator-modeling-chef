@@ -28,11 +28,15 @@
 **************************************************************************
 *************************************************************************/
 
-#ifdef MATRIX_H
+#ifndef MATRIX_H
+#define MATRIX_H
 
-typedef class TMatrix<double>                Matrix;
-typedef class TMatrix<double>                MatrixD;
-typedef class TMatrix<FNAL::Complex>         MatrixC;
-typedef class TMatrix<int>                   MatrixI;
+#include <TMatrix.h>
+
+typedef class TMatrix<double>                  Matrix;
+typedef class TMatrix<double>                  MatrixD;
+typedef class TMatrix<std::complex<double> >   MatrixC;
+typedef class TMatrix<int>                     MatrixI;
+
 
 #endif
