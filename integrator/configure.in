@@ -94,6 +94,8 @@ fi
 #fi
 #)
 
+
+
 if test "x$CXX" = "xpgCC"; then
 	enable_shared=yes
 fi
@@ -107,6 +109,50 @@ fi
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([stdlib.h string.h])
+
+AC_ARG_VAR([BOOST_INC],    [BOOST include directory])dnl
+AC_CHECK_HEADER(shared_ptr.hpp,,[
+if test ${BOOST_INC} && test -r ${BOOST_INC}; then
+        AC_SUBST(BOOST_INC)
+        AC_MSG_RESULT([Location specified: ${BOOST_INC}])
+else
+# Try to guess the location based on the location of gcc 
+        boost_inc=`which gcc | sed "s#bin\/gcc#include#"`
+        if test -r $boost_inc/boost/shared_ptr.hpp; then
+                BOOST_INC=$boost_inc
+                AC_SUBST(BOOST_INC)
+                AC_MSG_RESULT([Header file located in $BOOST_INC])
+        else
+		if test -r /usr/include/boost/shared_ptr.hpp; then
+		    BOOST_INC="/usr/include"
+		    AC_SUBST(BOOST_INC)
+		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+		elif test -r /usr/local/include/boost/shared_ptr.hpp; then
+		    BOOST_INC="/usr/local/include"
+		    AC_SUBST(BOOST_INC)
+		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+		elif test -r /usr/local/include/boost-1_33/boost/shared_ptr.hpp; then
+		    BOOST_INC="/usr/local/include/boost-1_33"
+		    AC_SUBST(BOOST_INC)
+		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+		elif test -r /usr/local/ap/include/boost-1_33/boost/shared_ptr.hpp; then
+		    BOOST_INC="/usr/local/ap/include/boost-1_33"
+		    AC_SUBST(BOOST_INC)
+		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+		elif test -r /usr/local/include/boost-1_32/boost/shared_ptr.hpp; then
+		    BOOST_INC="/usr/local/include/boost-1_32"
+		    AC_SUBST(BOOST_INC)
+		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+		elif test -r /usr/local/ap/include/boost-1_32/boost/shared_ptr.hpp; then
+		    BOOST_INC="/usr/local/ap/include/boost-1_32"
+		    AC_SUBST(BOOST_INC)
+		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+                else
+		AC_MSG_ERROR([BOOST includes not found, please define BOOST_INC.]);
+		fi
+	fi
+fi
+])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
