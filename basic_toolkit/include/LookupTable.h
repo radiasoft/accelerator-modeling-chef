@@ -7,7 +7,7 @@
 ******                                    
 ******  File:      LookupTable.h
 ******                                                                
-******  Copyright (c) 1990 Universities Research Association, Inc.    
+******  Copyright (c) Universities Research Association, Inc.    
 ******                All Rights Reserved                             
 ******                                                                
 ******  Author:    Leo Michelotti                                     
@@ -21,23 +21,21 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws.
+******                                                                
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
-
 #ifndef LOOKUPTABLE_H
 #define LOOKUPTABLE_H
 
-#ifdef __VISUAL_CPP__
-#define NULL    0
-#endif
-
-#ifndef __VISUAL_CPP__
-#include <stdio.h>
-#endif
 
 class Table {
   // This is SCREAMING to be a template!!  This would be Table<double>
@@ -47,7 +45,7 @@ class Table {
   void makeTable();
 
  public:
-  Table() { num_rows = num_columns = 0; table = NULL; }
+  Table() { num_rows = num_columns = 0; table = 0; }
   Table(Table& t);
   Table(int r, int c);
   Table(int r, int c, double** v);
