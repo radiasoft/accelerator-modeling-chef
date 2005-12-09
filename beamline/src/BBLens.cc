@@ -9,8 +9,19 @@
 ******                                    
 ******  File:      BBLens.cc
 ******                                                                
-******  Copyright (c) 1991 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
+*****
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws.
+******                                                                
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -22,25 +33,23 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-#include "Jet.h"
-#include "BBLens.h"
-#include "EdwardsTeng.h"  // ??? Doesn't belong.
+#include <Jet.h>
+#include <BBLens.h>
+#include <EdwardsTeng.h>  // ??? Doesn't belong.
 
 using namespace std;
-using FNAL::Complex;
 
-extern Complex w( Complex );
+static complex<double> complex_i(0.0, 1.0);
+
+
+extern std::complex<double>  w( std::complex<double>  );
 extern JetC    w( const JetC& );
 
 double const SIGMA_LIMIT = 64.0;
@@ -139,12 +148,12 @@ Vector BBLens::NormalizedEField( double arg_x, double arg_y )
 {
   Vector  retvec(3);
   char    normal;
-  Complex z;
+  std::complex<double>  z;
   double  x, y;
   double  sigmaX, sigmaY, ds, meanSigma;
-  Complex arg1, arg2;
+  std::complex<double>  arg1, arg2;
   double  tmp1,r;
-  Complex retarg1, retarg2;
+  std::complex<double>  retarg1, retarg2;
   enum    { ur, ul, lr, ll } quadrant;
 
   x = arg_x;  

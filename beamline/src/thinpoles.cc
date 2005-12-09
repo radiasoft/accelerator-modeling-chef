@@ -11,7 +11,7 @@
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
-******
+*****
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
@@ -20,7 +20,8 @@
 ******  The U.S. Government retains a world-wide non-exclusive, 
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S. and Foreign Copyright Laws. 
+******  is protected under the U.S. and Foreign Copyright Laws.
+******                                                                
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -35,6 +36,7 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -53,7 +55,7 @@ thin2pole::thin2pole( double s /* strength = BL */ )
 }
 
 
-thin2pole::thin2pole( char*  n /* name */, double s /* strength */ )
+thin2pole::thin2pole( const char*  n /* name */, double s /* strength */ )
 : bmlnElmnt( n, 0.0, s )
 {
 }
@@ -89,7 +91,7 @@ const char* thin2pole::Type() const
 thin12pole::thin12pole ( double s ) : bmlnElmnt( 0.0, s ) {
 }
 
-thin12pole::thin12pole ( char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
+thin12pole::thin12pole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
 }
 
 
@@ -118,7 +120,7 @@ const char* thin12pole::Type() const
 thin14pole::thin14pole ( double s ) : bmlnElmnt( 0.0, s ) {
 }
 
-thin14pole::thin14pole ( char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
+thin14pole::thin14pole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
 }
 
 
@@ -147,7 +149,7 @@ const char* thin14pole::Type() const
 thin16pole::thin16pole ( double s ) : bmlnElmnt( 0.0, s ) {
 }
 
-thin16pole::thin16pole ( char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
+thin16pole::thin16pole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
 }
 
 
@@ -175,7 +177,7 @@ const char* thin16pole::Type() const
 thin18pole::thin18pole ( double s ) : bmlnElmnt( 0.0, s ) {
 }
 
-thin18pole::thin18pole ( char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
+thin18pole::thin18pole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
 }
 
 
@@ -216,7 +218,7 @@ thinMultipole::thinMultipole ( double s ) : bmlnElmnt( 0.0, s ) {
 
 }
 
-thinMultipole::thinMultipole ( char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
+thinMultipole::thinMultipole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
  static char firstCall = 1;
 
  if ( firstCall ) {
