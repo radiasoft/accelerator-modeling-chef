@@ -33,7 +33,8 @@
 
 #include <stdlib.h>
 #include <string.h>   // for memcpy()
-#include "VectorD.h"
+#include <VectorD.h>
+#include <Matrix.h>
 
 #include <iomanip>
  
@@ -316,7 +317,7 @@ Vector Vector::operator^ ( const Vector& x ) const
 
 // Boolean functions ...
 
-char Vector::operator== ( const Vector& x ) const
+bool Vector::operator== ( const Vector& x ) const
 {
   if( dim != x.dim ) return 0;
   for( int i = 0; i < dim; i++ ) 
@@ -324,12 +325,12 @@ char Vector::operator== ( const Vector& x ) const
   return 1;
 }
 
-char Vector::operator!= ( const Vector& x ) const
+bool Vector::operator!= ( const Vector& x ) const
 {
   return !( operator==( x ) );
 }
 
-char Vector::operator< ( const Vector& x ) const
+bool Vector::operator< ( const Vector& x ) const
 {
 #ifndef NOCHECKS
   CHECKOUT(dim != x.dim, "Vector::operator<", "Dimensions incompatible.")
@@ -338,7 +339,7 @@ char Vector::operator< ( const Vector& x ) const
   return 1;
 }
 
-char Vector::operator<= ( const Vector& x ) const
+bool Vector::operator<= ( const Vector& x ) const
 {
 #ifndef NOCHECKS
   CHECKOUT(dim != x.dim, "Vector::operator<=", "Dimensions incompatible.")
@@ -347,7 +348,7 @@ char Vector::operator<= ( const Vector& x ) const
   return 1;
 }
 
-char Vector::operator> ( const Vector& x ) const
+bool Vector::operator> ( const Vector& x ) const
 {
 #ifndef NOCHECKS
   CHECKOUT(dim != x.dim, "Vector::operator>", "Dimensions incompatible.")
@@ -356,7 +357,7 @@ char Vector::operator> ( const Vector& x ) const
   return 1;
 }
 
-char Vector::operator>= ( const Vector& x ) const
+bool Vector::operator>= ( const Vector& x ) const
 {
 #ifndef NOCHECKS
   CHECKOUT(dim != x.dim, "Vector::operator>=", "Dimensions incompatible.")
@@ -365,14 +366,14 @@ char Vector::operator>= ( const Vector& x ) const
   return 1;
 }
 
-char Vector::IsNull() const
+bool Vector::IsNull() const
 {
   int i = -1;
   while ( ++i < dim ) if( comp[i] != 0.0 ) return 0;
   return 1;
 }
 
-char Vector::IsUnit() const
+bool Vector::IsUnit() const
 {
   double x = 0.0;
   for( int i = 0; i < dim; i++ ) x += comp[i]*comp[i];
@@ -429,7 +430,7 @@ void Vector::Rotate ( Vector& v, double theta ) const
 }
 
 
-ostream& operator<<( ostream& os, const Vector& v )
+ostream& operator<<( ostream & os, const Vector& v ) 
 {
   static OutputFormat* q;
   q = v.ofPtr;
