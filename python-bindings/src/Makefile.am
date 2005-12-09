@@ -1,8 +1,8 @@
 lib_LTLIBRARIES		= libpybasic_toolkit.la  libpymxyzptlk.la libpybeamline.la libpybmlfactory.la libpyphysics_toolkit.la
 
-libpybasic_toolkit_la_SOURCES     =   py-basictoolkit-module.cpp py-barnacle.cpp  py-vector.cpp
+libpybasic_toolkit_la_SOURCES     =   py-basictoolkit-module.cpp py-barnacle.cpp  py-vector.cpp  py-matrix.cpp
 
-libpymxyzptlk_la_SOURCES          =   py-mxyzptlk-module.cpp py-jet.cpp py-jetvector.cpp py-mapping.cpp py-coord.cpp 
+libpymxyzptlk_la_SOURCES          =   py-mxyzptlk-module.cpp py-jetenv.cpp  py-jet.cpp py-jetvector.cpp py-mapping.cpp py-coord.cpp 
 
 libpybeamline_la_SOURCES          =   py-beamline-module.cpp py-aperture.cpp py-kick.cpp py-bblens.cpp py-bmlnelmnt.cpp py-drift.cpp py-sbend.cpp \
                                       py-cf_sbend.cpp py-cf_rbend.cpp py-lambertson.cpp py-mover.cpp py-marker.cpp py-monitor.cpp \
