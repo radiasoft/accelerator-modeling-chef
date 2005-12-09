@@ -12,12 +12,8 @@
 /*                                                                    */
 /**********************************************************************/
 
-#ifndef TMATRIX_H
-#include "TMatrix.h"
-#endif
-#ifndef VECTOR_H
-#include "VectorD.h"
-#endif
+#include <Matrix.h>
+#include <VectorD.h>
 
 #include <qdialog.h>
 
