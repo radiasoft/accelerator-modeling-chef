@@ -1790,17 +1790,18 @@ void Tracker::_tool_pdicOrb()
     Vector z(w);
   
     beamline* bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
-    Jet__environment* storedEnv = Jet::_lastEnv;
+    EnvPtr<double>::Type storedEnv = Jet::_lastEnv;
     double energy = _bmlConPtr->_proton.Energy();
 
     for( unsigned int iterCount = 0; iterCount < ul; iterCount++ ) {
-      Jet::BeginEnvironment( order );
+      Jet__environment::BeginEnvironment( order );
   	coord  x(w(0)),  y(w(1)),  q(0.0),
   	      px(w(3)), py(w(4)), qq(0.0);
-      Jet::EndEnvironment();
+      Jet__environment::EndEnvironment();
   
       Jet xsq;
-      xsq = x*x;
+      Jet x1 = x;
+      xsq = x1*x1;
   
       JetProton jpr( energy );
       Mapping stuff;
