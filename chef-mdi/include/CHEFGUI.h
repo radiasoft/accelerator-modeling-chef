@@ -299,8 +299,8 @@ private:
   
  
 
-  Jet__environment*   _p_JetEnv;
-  JetC__environment*  _p_JetCEnv;
+  EnvPtr<double>::Type                  _p_JetEnv;
+  EnvPtr<std::complex<double> >::Type   _p_JetCEnv;
 
   Options             _userOptions;
 
