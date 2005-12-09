@@ -1,10 +1,15 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include "RungeKutta.h"
+
+#include <RungeKutta.h>
+#include <iosetup.h>
 
 using std::cout;
 using std::endl;
+
+using FNAL::pcout;
+using FNAL::pcerr;
 
 /// ******************************************
 ///   class RungeKutta
@@ -51,7 +56,7 @@ Vector RungeKutta::rk4( ODE& yPrime, Vector yInit, double t0, double t1 ) {
   /// yPrime: right hand side of the ODE
 
   if ( yInit.Dim() != yPrime.getDim() ) {
-    cerr << "Error in RungeKutta::rk4OneStep: Dimensions don't match." << endl;
+    (*pcerr) << "Error in RungeKutta::rk4OneStep: Dimensions don't match." << endl;
     return 0;
   }
   else {
@@ -82,7 +87,7 @@ Vector RungeKutta::rk4ASC( ODE& yPrime, Vector yInit, double t0, double t1,
   /// yPrime: right hand side of the ODE
 
   if ( yInit.Dim() != yPrime.getDim() ) {
-    cerr << "Error in RungeKutta::rk4OneStep: Dimensions don't match." << endl;
+    (*pcerr) << "Error in RungeKutta::rk4OneStep: Dimensions don't match." << endl;
     return 0;
   }
   else {
@@ -120,11 +125,11 @@ Vector RungeKutta::rk4ASC( ODE& yPrime, Vector yInit, double t0, double t1,
       }
       yTemp = yTemp1;
       t += stepSize;
-      cout << stepSize << ", " << t << endl;
+      (*pcout) << stepSize << ", " << t << endl;
       if (stepSize<minStepSize) {
-        cerr << "Warning from RungeKutta::RK4ASC: Minimum step size reached.";
-        cerr << endl;
-        cerr << "Relative error is " << epsTemp << endl;
+        (*pcerr) << "Warning from RungeKutta::RK4ASC: Minimum step size reached.";
+        (*pcerr) << endl;
+        (*pcerr) << "Relative error is " << epsTemp << endl;
       }
     }
     return yTemp;
@@ -140,7 +145,7 @@ Vector RungeKutta::integrate( int choice, ODE& yPrime, ODE& /* yMap2 */,
     return rk4ASC(yPrime, yInit, t0, t1, minStepSize, eps);
   }
   else{
-    cerr << "RungeKutta::integrate: Invalid choice of integrator." << endl;
+    (*pcerr) << "RungeKutta::integrate: Invalid choice of integrator." << endl;
     return 0;
   }
 }

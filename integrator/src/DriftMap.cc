@@ -1,7 +1,12 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include "DriftMap.h"
+
+#include <DriftMap.h>
+#include <iosetup.h>
+
+using FNAL::pcout;
+using FNAL::pcerr;
 
 /// ******************************************
 ///   class DriftMap
@@ -22,7 +27,7 @@ Vector DriftMap::operator() (const Vector& state, double t ){
     return ret;
   }
   else{
-    cerr << "DriftMap::operator(): Wrong dimension." << endl;
+    (*pcerr) << "DriftMap::operator(): Wrong dimension." << std::endl;
     return 0;
   }
 }

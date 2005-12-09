@@ -1,7 +1,10 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
-#include "Symplectic.h"
+#include <Symplectic.h>
+#include <iosetup.h>
+
+using  FNAL::pcout;
+using  FNAL::pcerr;
+
+using std::endl;
 
 /// ******************************************
 ///   class Symplectic
@@ -23,7 +26,7 @@ Vector Symplectic::symplectic2( ODE& yMap1, ODE& yMap2, Vector yInit,
   /// H = H_1 + H_2
 
   if ( yInit.Dim() != yMap1.getDim() ) {
-    cerr << "Error in Symplectic::symplectic2: Dimensions don't match." << endl;
+    (*pcerr) << "Error in Symplectic::symplectic2: Dimensions don't match." << endl;
     return 0;
   }
   else {
@@ -56,7 +59,7 @@ Vector Symplectic::symplectic4( ODE& yMap1, ODE& yMap2, Vector yInit,
   /// H = H_1 + H_2
 
   if ( yInit.Dim() != yMap1.getDim() ) {
-    cerr << "Error in Symplectic::symplectic4: Dimensions don't match." << endl;
+    (*pcerr) << "Error in Symplectic::symplectic4: Dimensions don't match." << endl;
     return 0;
   }
   else {
@@ -97,7 +100,7 @@ Vector Symplectic::integrate( int choice, ODE& yMap1, ODE& yMap2, Vector yInit,
     return symplectic4(yMap1, yMap2, yInit, t0, t1);
   }
   else{
-    cerr << "Symplectic::integrate: Invalid choice of integrator." << endl;
+    (*pcerr) << "Symplectic::integrate: Invalid choice of integrator." << endl;
     return 0;
   }
 }
