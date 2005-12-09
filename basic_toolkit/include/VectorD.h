@@ -19,10 +19,16 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
+******
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -49,8 +55,9 @@
 #include <string>
 
 #include <math.h>
-#include "TMatrix.h"     // Needed only for final utility.
-#include "OutputFormat.h"
+#include <OutputFormat.h>
+
+template<typename T> class TMatrix;
 
 class Vector 
 {
@@ -96,14 +103,14 @@ public:
                                                         // three-dimensional
 
   // Boolean functions ...
-  char          operator==     ( const Vector& ) const;
-  char          operator!=     ( const Vector& ) const;
-  char          operator<      ( const Vector& ) const;
-  char          operator<=     ( const Vector& ) const;
-  char          operator>      ( const Vector& ) const;
-  char          operator>=     ( const Vector& ) const;
-  char          IsNull         () const;
-  char          IsUnit         () const;
+  bool          operator==     ( const Vector& ) const;
+  bool          operator!=     ( const Vector& ) const;
+  bool          operator<      ( const Vector& ) const;
+  bool          operator<=     ( const Vector& ) const;
+  bool          operator>      ( const Vector& ) const;
+  bool          operator>=     ( const Vector& ) const;
+  bool          IsNull         () const;
+  bool          IsUnit         () const;
 
   // Queries ...
   int  Dim() const { return dim; }
@@ -123,7 +130,7 @@ public:
                                                    // an angle theta using
                                                    // *this as the axis
 
-  friend std::ostream& operator<<( std::ostream&, const Vector& );
+  friend std::ostream& operator<<( std::ostream& , const Vector& );
 
   // Exceptions ...
   struct GenericException : public std::exception
@@ -139,7 +146,7 @@ public:
 #ifdef OBJECT_DEBUG
   static int objectCount;
 #endif
-} ;
+};
 
 
 // Utilities
