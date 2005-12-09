@@ -47,18 +47,10 @@
 #ifndef EDWARDSTENGSAGE_H
 #define EDWARDSTENGSAGE_H
 
-#ifndef BMLNELMNT_H
-#include "bmlnElmnt.h"
-#endif
-#ifndef MAP_HXX
-#include "Mapping.h"
-#endif
-#ifndef MATHCONS_H
-#include "MathConstants.h"
-#endif
-#ifndef SAGE_H
-#include "Sage.h"
-#endif
+#include <bmlnElmnt.h>
+#include <Mapping.h>
+#include <MathConstants.h>
+#include <Sage.h>
 
 class EdwardsTengSage : public Sage
 {

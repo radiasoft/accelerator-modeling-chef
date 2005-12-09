@@ -43,17 +43,11 @@
 #ifndef EDWARDSTENG_H
 #define EDWARDSTENG_H
 
-#ifndef BMLNELMNT_H
-#include "bmlnElmnt.h"
-#endif
+#include <bmlnElmnt.h>
+#include <Mapping.h>
+#include <Matrix.h>
+#include <MathConstants.h>
 
-#ifndef MAP_HXX
-#include "Mapping.h"
-#endif
-
-#ifndef MATHCONS_H
-#include "MathConstants.h"
-#endif
 
 
 typedef char (*ET_CRITFUNC)( bmlnElmnt* );
