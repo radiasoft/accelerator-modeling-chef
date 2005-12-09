@@ -43,12 +43,9 @@
 #define JET_H
 
 #include <complex>
-#include <TJetEnvironment.h>
+#include <Jet__environment.h>
 #include <TJL.h>
 #include <TJet.h>
-
-typedef TJetEnvironment<double>                Jet__environment;
-typedef TJetEnvironment<std::complex<double> > JetC__environment;
 
 typedef TJLterm<double>                JLterm;
 typedef TJLterm<std::complex<double> > JLCterm;

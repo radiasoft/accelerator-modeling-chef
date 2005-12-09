@@ -30,26 +30,32 @@
 ******             Phone: (630) 840 4956
 ******             Email: michelotti@fnal.gov
 ******
-******  Revision History:
+******  Major Revision History:
 ******
 ******  Feb 2005   Jean-Francois Ostiguy
 *****              ostiguy@fnal.gov
 ******  
-******              - Efficiency improvements
-******              - Major memory management redesign. 
+****** - Efficiency improvements
+****** - Major memory management redesign. 
 ******  
-******  Sept 2005   ostiguy@fnal.gov
-******              - new code based on a single template parameter
-******                instead of two. Mixed mode handled
-******                using conversion operators.
-******                 
+******  Sep-Dec 2005  ostiguy@fnal.gov
+******
+****** - refactored code to usea single class template parameter
+******   instead of two. Mixed mode operations now handled using 
+******   implicit conversion operators.
+****** - reference counting now based on using boost::intrusive pointer
+****** - reference counted TJetEnvironment
+****** - centralized TJetEnvironment management
+****** - all implementation details now completely moved to TJL   
+****** - redesigned coordinate class Tcoord. New class Tparams for parameters
+****** - header files support for both explicit and implicit template instantiations
+******   (default for mxyzptlk = explicit)
+******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES 
 ******  
 **************************************************************************
 **************************************************************************
 **************************************************************************
 *************************************************************************/
-
-
 #ifndef TJL_H
 #define TJL_H
 
@@ -60,10 +66,46 @@
 #include <TJetEnvironment.h>
 #include <ext/hash_map>
 #include <boost/functional/hash/hash.hpp>
+#include <ReferenceCounter.h>
 #include <FastPODAllocator.h>
 #include <vector>
+#include <JLPtr.h>
+#include <EnvPtr.h>
+
+#define MX_SMALL       1.0e-12 // Used by TJL<T>::addTerm to decide 
+                               // removal of a TJL<T>Cterm.
+
+#define MX_ABS_SMALL   1.0e-15 // Used by TJL<T>::addTerm to decide 
+
+#define MX_MAXITER     20      // Maximum number of iterations allowed
+                               //   in iterative routines
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // *******************************************************************
+
+template<typename T>
+class TJL;
+
+template<typename T>
+bool operator==( const TJL<T>& x, const TJL<T>& y ); 
+template<typename T>
+bool operator==( const TJL<T>& x, const T& y ); 
+template<typename T>
+bool operator==( const T& y, const TJL<T>& x );
+template<typename T>
+bool operator!=( const TJL<T>& x, const TJL<T>& y ); 
+template<typename T>
+bool operator!=( const TJL<T>& x, const T& y ); 
+template<typename T>
+bool operator!=( const T& x, const TJL<T>& y ); 
+template<typename T>
+std::ostream& operator<<( std::ostream& os, const TJL<T>& x ); 
+template<typename T>
+std::istream& operator>>( std::istream& is,  TJL<T>& x ); 
+
+
 
 template<typename T>
 struct TJLterm
@@ -73,7 +115,7 @@ struct TJLterm
   IntArray _index;      //  An integer array giving the derivatives associated
                         //  with the JLterm.  For example, ( 1, 1, 0, 2 )
                         //  would correspond to D_1^1 D_2^1 D_4^2 .
-  int      _weight;     //  The sum of the values in index.  For the above example,
+  int      _weight;     //  The sum of the values in index.  For the above example, 
                         //  this would be 4.
   T        _value;      //  The value associated with the JLterm.
 
@@ -89,8 +131,8 @@ struct TJLterm
   //   _index is made 6 dimensional until Reconstruct
   //   is invoked.
 
-  TJLterm( TJetEnvironment<T>* );
-  TJLterm( const IntArray&, const T&, TJetEnvironment<T>* );
+  TJLterm( typename EnvPtr<T>::Type pje );
+  TJLterm( const IntArray&, const T&,  typename EnvPtr<T>::Type pje);
 
   //   If 0 is used for the environment pointer,
   //   it is assumed that the that the variable
@@ -148,26 +190,32 @@ struct TJLterm
 
 // *******************************************************************
 
-template<typename T> class TJL
-{
 
+template<typename T> 
+class TJL: public ReferenceCounter {
+
+  friend class TJL<double>;
+  friend class TJL<std::complex<double> >;
  
- public:
- 
-  dlist _theList;    // Data structure to hold all the information.
+ private: 
 
-  int   _count;      // The number of JL terms in the variable
-  int   _weight;     // The maximum weight of the terms
-  int   _accuWgt;    // Highest weight computed accurately
+  dlist                               _theList;    // Data structure to hold all the information.
+  int                                 _count;      // The number of JL terms in the variable
+  int                                 _weight;     // The maximum weight of (the actual) terms    
+  int                                 _accuWgt;    // Highest weight computed accurately
 
-  TJetEnvironment<T>*  _myEnv;
-                     // Environment of the jet.
-
-  int _rc;           // Reference counting for garbage collection
+  mutable typename EnvPtr<T>::Type    _myEnv; // Environment of the jet.
   
   TJLterm<T>*                         _jltermStore;
   TJLterm<T>*                         _jltermStoreCurrentPtr;
   int                                 _jltermStoreCapacity;
+
+  mutable dlist_iterator*             _constIterPtr;
+  mutable dlist_iterator*             _iterPtr;
+
+  static std::vector<TJL<T>* >        _thePool;  
+                                           // declared public because the TJet
+                                           // conversion function need access FIXME !
 
   void initStore();                // setup and initialize the jlterm store using default capacity 
   void initStore(int capacity);    // setup and initialize the jlterm store 
@@ -176,40 +224,67 @@ template<typename T> class TJL
   void append( TJLterm<T>* );
   TJLterm<T>* remove( dlink* );
 
-  // Constructors and destructors_____________________________________
-
- public:
-
-  TJL( TJetEnvironment<T>* = 0 );
-  TJL( const T&, TJetEnvironment<T>* );
-  TJL( const IntArray&, const T&, TJetEnvironment<T>*  );
+  TJL( typename EnvPtr<T>::Type, T value = T() );
+  TJL( const IntArray&, const T&,  typename EnvPtr<T>::Type );
   TJL( const TJL& );
   TJL( const TJL* );
-  ~TJL();
 
-  static std::vector<TJL<T>* >  _thePool;  // declared public because the TJet
-                                           // conversion function need access FIXME !
+  virtual ~TJL();
 
+  static typename JLPtr<T>::Type TJL<T>::_epsSin(  typename JLPtr<T>::Type const& epsilon );
+  static typename JLPtr<T>::Type TJL<T>::_epsCos(  typename JLPtr<T>::Type const& epsilon );
+  static typename JLPtr<T>::Type TJL<T>::_epsSqrt( typename JLPtr<T>::Type const& epsilon ); 
+  static typename JLPtr<T>::Type TJL<T>::_epsExp(  typename JLPtr<T>::Type const& epsilon ); 
+  static typename JLPtr<T>::Type TJL<T>::_epsPow(  typename JLPtr<T>::Type const& epsilon, const double& s ); 
+
+
+  // Constructors and destructors (factory functions)_____________________________________
 
  public:
- 
 
   // factory functions 
 
-  static TJL<T>* makeTJL( TJetEnvironment<T>* = 0 );
-  static TJL<T>* makeTJL( const T&, TJetEnvironment<T>* );
-  static TJL<T>* makeTJL( const IntArray&, const T&, TJetEnvironment<T>*  );
+  static TJL<T>* makeTJL( typename EnvPtr<T>::Type pje,  T value = T());
+  static TJL<T>* makeTJL( const IntArray&, const T&, typename EnvPtr<T>::Type pje );
   static TJL<T>* makeTJL( const TJL& );
   static TJL<T>* makeTJL( const TJL* );
   static void discardTJL( TJL<T>* p);  
-  
-  // converters
 
-  // operator TJL<double> () const;
-  // operator TJL<std::complex<double> > () const;
+  
+  // functions used to implement COW semantics ______________________________________________
+
+
+  virtual void dispose() { TJL<T>::discardTJL(  this ); }  // used by ReferenceCounter class 
+  inline static typename JLPtr<T>::Type clone(const typename JLPtr<T>::Type& jl) 
+                           {return typename JLPtr<T>::Type( TJL<T>::makeTJL( jl.get() )); } 
+
 
 
   // Public member functions__________________________________________
+
+
+  operator JLPtr<std::complex<double> >::Type () const;
+  operator JLPtr<double>::Type () const;
+
+  void clear();     // clears all the terms. 
+
+  int                      getCount()   { return _count;   }
+  int                      getWeight()  { return _weight;  }
+  int                      getAccuWgt() { return _accuWgt; }
+
+ 
+  typename EnvPtr<T>::Type getEnv() const { return _myEnv; }    
+  void                     setEnv( typename EnvPtr<T>::Type pje) { _myEnv = pje; }  // DANGER !  
+
+  typename JLPtr<T>::Type  truncMult( typename JLPtr<T>::Type const& v, const int& wl )  const; 
+
+  typename JLPtr<T>::Type  filter( const int& wgtLo, const int& wgtHi )      const; 
+
+  typename JLPtr<T>::Type  filter( bool (*f) ( const IntArray&, const T& ) ) const; 
+
+
+  void printCoeffs() const;               // prints term coefficients 
+  void peekAt() const;                     
 
   TJLterm<T>* get();                      // Pops the top term, which should be the
                                           // one of lowest weight.
@@ -220,9 +295,9 @@ template<typename T> class TJL
   TJLterm<T>  lowTerm()   const;    
                                           // Returns a TJLterm<T> equivalent to the
                                           // non-zero term of lowest weight.
-  void addTerm( TJLterm<T>* );            // Public only for diagnostic purposes.
-  void addTerm( TJLterm<T>*, dlist_traversor& ); 
-                                           // Public only for diagnostic purposes.
+  void addTerm( const TJLterm<T>* );      
+ 
+  TJLterm<T>* TJL<T>::removeTerm( TJLterm<T>* a); // Unconditionally remove term pointed to by a;  a is not deleted !
  
   TJLterm<T>* storePtr();                  // returns a ptr to the next available block in the JLterm store;
 
@@ -230,19 +305,47 @@ template<typename T> class TJL
   void writeToFile( std::ofstream& ) const;
 
   void getReference( T* ) const;
-  void scaleBy( T );
+  void   scaleBy( T );
 
-  void setVariable( const T&,
-                    const int&,
-                    TJetEnvironment<T>* = 0 );
-                  // WARNING: This routine alters the environment in
-                  // WARNING: the third argument.
+  TJL& Negate();
 
-  void setVariable( const int&,
-                    TJetEnvironment<T>* = 0 );
+  void add     ( typename JLPtr<T>::Type const&  x);    // in place addition 
+  void multiply( typename JLPtr<T>::Type const&  x);    // in place multiplication 
+
+  static JLPtr<double>::Type TJL<T>::real( const JLPtr<std::complex<double> >::Type & z ); 
+  static JLPtr<double>::Type TJL<T>::imag( const JLPtr<std::complex<double> >::Type & z );
+
+  static typename JLPtr<T>::Type       add(typename JLPtr<T>::Type const& x, typename JLPtr<T>::Type const& y);
+  static typename JLPtr<T>::Type  multiply(typename JLPtr<T>::Type const& x, typename JLPtr<T>::Type const& y);
+  static typename JLPtr<T>::Type  multiply(typename JLPtr<T>::Type const& x, T const& y );
+  static typename JLPtr<T>::Type    divide(typename JLPtr<T>::Type const& x, typename JLPtr<T>::Type const& y);
+  
+ 
+  typename JLPtr<T>::Type sin()              const;
+  typename JLPtr<T>::Type cos()              const;
+  typename JLPtr<T>::Type asin()             const;
+  typename JLPtr<T>::Type atan()             const;
+  typename JLPtr<T>::Type sqrt()             const;
+  typename JLPtr<T>::Type exp()              const;
+  typename JLPtr<T>::Type pow(int)           const;
+  typename JLPtr<T>::Type pow(const double&) const;
+  typename JLPtr<T>::Type log()              const;
+  typename JLPtr<T>::Type compose(typename JLPtr<T>::Type const y[ ]) const; 
+  typename JLPtr<T>::Type TJL<T>::D( const int* n ) const; 
+
+  void              resetConstIterator();
+  TJLterm<T>        stepConstIterator()     const;
+  const TJLterm<T>& stepConstIteratorRef()  const;
+  const TJLterm<T>* stepConstIteratorPtr()  const;
+  void              resetIterator();
+  TJLterm<T>*       stepIterator();
+
+  void setVariable( const T&, const int& );
+  void setVariable( const T& x, const int& j, typename EnvPtr<T>::Type pje );
+  void setVariable( const int&, typename EnvPtr<T>::Type pje );               
 
   T standardPart() const;
-  void clear();
+
   T weightedDerivative( const int* ) const;
   T derivative( const int* ) const;
 
@@ -254,20 +357,35 @@ template<typename T> class TJL
   TJL& operator()( const TJL* ) const;
                        // Self explanatory ...
 
-  // Arithmetic operators
+  // Arithmetic operators // some of these may no longer be needed ... FIXME !
+
   TJL& operator=( const TJL& );
   TJL& operator=( const T& );
+
   TJL& operator+=( const TJL& );
   TJL& operator+=( const T& );
+
   TJL& operator-=( const TJL& );
   TJL& operator-=( const T& );
+
   TJL& operator*=( const TJL& );
   TJL& operator*=( const T& );
+
   TJL& operator/=( const TJL& );
   TJL& operator/=( const T& );
 
+  friend   bool operator==<>( const TJL<T>& x, const TJL<T>& y ); 
+  friend   bool operator==<>( const TJL<T>& x, const T& y ); 
+  friend   bool operator==<>( const T& y, const TJL<T>& x );
+  friend   bool operator!=<>( const TJL<T>& x, const TJL<T>& y ); 
+  friend   bool operator!=<>( const TJL<T>& x, const T& y ); 
+  friend   bool operator!=<>( const T& x, const TJL<T>& y ); 
+  friend   std::ostream& operator<< <T>( std::ostream& os, const TJL<T>& x ); 
+  friend   std::istream& operator>><T>(  std::istream& is,  TJL<T>& x ); 
+
 
   // Exception subclasses____________________________________________
+
   struct BadDimension: public std::exception
   {
     BadDimension( int, int, std::string, int, const char* = "", const char* = "" );

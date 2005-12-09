@@ -30,12 +30,24 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  Revision History
-******                                                                
-******  Sept 2005   ostiguy@fnal.gov
-******
-******              - new code based on a single template parameter
-******                instead of two. Mixed mode now handled
-******                using conversion operators.
+******   
+******  Feb 2005       Jean-Francois Ostiguy
+******                 ostiguy@fnal.gov 
+****** 
+****** - new memory management scheme 
+******                                                            
+******  Sep-Dec 2005  ostiguy@fnal.gov
+******  
+****** - refactored code to usea single class template parameter
+******   instead of two. Mixed mode operations now handled using 
+******   implicit conversion operators.
+****** - reference counting now based on using boost::intrusive pointer
+****** - reference counted TJetEnvironment
+****** - implementation details completely moved to TJL   
+****** - redesigned coordinate class Tcoord. New class Tparams for parameters
+****** - header files support for both explicit and implicit template instantiations
+******   (default for mxyzptlk = explicit)
+******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES
 ******
 ******                                                                
 **************************************************************************
@@ -53,18 +65,20 @@ class TMapping : public TJetVector<T>
   friend class TMapping<std::complex<double> >;
 
  private:
-  TMapping<T> _epsInverse( TJetEnvironment<T>* ) const;
+
+  TMapping<T> _epsInverse(  typename EnvPtr<T>::Type) const;
 
  public: 
-  TMapping( int /* dimension  */ = (TJet<T>::_lastEnv)->_spaceDim,
+
+  TMapping( int /* dimension  */ = (TJet<T>::_lastEnv)->spaceDim(),
             const TJet<T>* /* components */ = 0, 
-            TJetEnvironment<T>*  = (TJet<T>::_lastEnv) );
+            typename EnvPtr<T>::Type  = (TJet<T>::_lastEnv) );
 
   TMapping( const TMapping& );
 
   TMapping( const TJetVector<T>& );
 
-  TMapping( const char*, TJetEnvironment<T>* = (TJet<T>::_lastEnv) ); // Produces the identity.
+  TMapping( const char*, typename EnvPtr<T>::Type = (TJet<T>::_lastEnv) ); // Produces the identity.
   ~TMapping();
 
   TMapping& operator= ( const TMapping& );

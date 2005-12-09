@@ -31,15 +31,26 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  Revision History
+******   
+******  Feb-May 2005   Jean-Francois Ostiguy
+******                 ostiguy@fnal.gov 
+****** 
+****** - new memory management scheme 
+******                                                            
+******  Sep-Dec 2005  ostiguy@fnal.gov
+******  
+****** - refactored code to usea single class template parameter
+******   instead of two. Mixed mode operations now handled using 
+******   implicit conversion operators.
+****** - reference counting now based on using boost::intrusive pointer
+****** - reference counted TJetEnvironment
+****** - implementation details completely moved to TJL   
+****** - redesigned coordinate class Tcoord. New class Tparams for parameters
+****** - header files support for both explicit and implicit template instantiations
+******   (default for mxyzptlk = explicit)
+******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES
+******
 ******                                                                
-******  Sept 2005   ostiguy@fnal.gov
-******
-******              - new code based on a single template parameter
-******                instead of two. Mixed mode now handled
-******                using conversion operators.
-******
-******                                                                
-******
 **************************************************************************
 *************************************************************************/
 
@@ -51,10 +62,16 @@
 #endif
 
 #include <iostream>
+#include <iosetup.h>
+#include <GenericException.h>
+#include <TJetVector.h>
+#include <Jet.h>
+#include <Matrix.h>
 
-#include "GenericException.h"
-#include "TJetVector.h"
-#include "TMatrix.h"
+
+using FNAL::pcout;
+using FNAL::pcerr;
+
 
 // ================================================================
 //      Global variables
@@ -75,48 +92,56 @@ using namespace std;
 
 template<typename T>
 TJetVector<T>::TJetVector<T>( int n, 
-                        const TJet<T>* x, 
-                        const TJetEnvironment<T>* pje )
+                              const TJet<T>* x, 
+                              const typename EnvPtr<T>::Type pje )
+
 {
-  int i;
 
   CHECKOUT(n <= 0, "TJetVector<T>::TJetVector<T>", "Dimension must be positive.")
   CHECKOUT(pje == 0, "TJetVector<T>::TJetVector<T>", "Environment is required.")
 
-  _myEnv = (TJetEnvironment<T>*) pje;
-  _dim = n;
-  _comp = new TJet<T> [ _dim ];
+  if ( n < 0 ) { n = TJet<T>::lastEnvironment()->numVar(); }
 
-  if( x ) for ( i = 0; i < _dim; i++ ) _comp[i] = x[i];
-  else    for ( i = 0; i < _dim; i++ ) {
-    _comp[i].setEnvTo( (TJetEnvironment<T>*) pje );
-    _comp[i] = T();    // ??? Unnecessary?
+  _myEnv = pje;
+  _dim   = n;
+  _comp  = new TJet<T>[ _dim ];
+
+  if( x ) for ( int i = 0; i < _dim; i++ ) _comp[i] = x[i];
+  else    for ( int i = 0; i < _dim; i++ ) {
+     _comp[i].setEnvTo( pje );
+     _comp[i] = T();    // ??? Unnecessary?
   }
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetVector<T>::TJetVector<T>( const TJetVector<T>& x )
 {
-  static int i;
 
   _myEnv = x._myEnv;
-  _dim = x._dim;
-  _comp = new TJet<T> [ _dim ];
+  _dim   = x._dim;
+  _comp  = new TJet<T> [ _dim ];
 
-  for ( i = 0; i < _dim; i++ ) {
-    _comp[i] = x._comp[i];    // Shallow copy is automatic because
-                            // of lazy evaluation.
-    #ifndef NOCHECKS
+  for ( int i = 0; i < _dim; i++ ) {
+    _comp[i] = x._comp[i];           // Shallow copy is automatic because of lazy evaluation.
+
+#ifndef NOCHECKS
     if( _comp[i].Env() != _myEnv ) {
+
       throw( typename TJL<T>::BadEnvironment( 
-               i, (int) _comp[i].Env(), (int) _myEnv, 
+               i, (int) _comp[i].Env().get(), (int) _myEnv.get(), 
                __FILE__, __LINE__, 
                "TJetVector<T>::TJetVector<T>( const TJetVector<T>& )",
                "Inconsistent environment at a component." ));
     }
-    #endif
+#endif
   }
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetVector<T>::~TJetVector<T>()
@@ -125,17 +150,20 @@ TJetVector<T>::~TJetVector<T>()
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 // Assignment ...
 
 template<typename T>
 void TJetVector<T>::Set( const TJet<T>* x )
 {
-  TJetEnvironment<T>* pje;
+  typename EnvPtr<T>::Type pje;
   pje = x[0].Env();
 #ifndef NOCHECKS
     CHECKOUT(pje != _myEnv, "TJetVector<T>::Set", "Wrong environment.")
 #endif
-  for ( int i = 0; i < 3; i++ ) {
+  for ( int i = 0; i < 3; i++ ) { /// WHY is the no of variables assumed to be 3 ?  FIXME !!!
 #ifndef NOCHECKS
     CHECKOUT(x[i].Env() != pje, "TJetVector<T>::Set", "Inequivalent environments.")
 #endif
@@ -143,6 +171,9 @@ void TJetVector<T>::Set( const TJet<T>* x )
   }
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 void TJetVector<T>::SetComponent( int i, const TJet<T>& x )
@@ -154,6 +185,9 @@ void TJetVector<T>::SetComponent( int i, const TJet<T>& x )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 TJet<T> TJetVector<T>::operator() ( int i ) const
 {
@@ -162,6 +196,10 @@ TJet<T> TJetVector<T>::operator() ( int i ) const
 #endif
     return _comp[i];
 }
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 template<typename T>
@@ -186,6 +224,9 @@ TJetVector<T>& TJetVector<T>::operator= ( const TJetVector<T>& x )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 TJetVector<T> TJetVector<T>::operator+ ( const TJetVector<T>& x ) const
 {
@@ -201,6 +242,10 @@ TJetVector<T> TJetVector<T>::operator+ ( const TJetVector<T>& x ) const
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 template<typename T>
 TJetVector<T> TJetVector<T>::operator+ ( const Vector& y ) const
 {
@@ -209,12 +254,15 @@ TJetVector<T> TJetVector<T>::operator+ ( const Vector& y ) const
 #endif
 
   TJetVector<T> z( *this );
-  for ( int i = 0; i < _dim; i++ ) {
+  for ( int i = 0; i < _dim; ++i ) {
     z._comp[i] += y(i);
   }
   return z;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetVector<T> TJetVector<T>::operator+= ( const TJetVector<T>& x )
@@ -227,6 +275,10 @@ TJetVector<T> TJetVector<T>::operator+= ( const TJetVector<T>& x )
   for ( int i = 0; i < _dim; i++ ) _comp[i] += x._comp[i];
   return *this;
 }
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 template<typename T>
@@ -242,6 +294,9 @@ TJetVector<T> TJetVector<T>::operator+= ( const Vector& x )
   return *this;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetVector<T> TJetVector<T>::operator- ( const TJetVector<T>& x ) const
@@ -259,6 +314,9 @@ TJetVector<T> TJetVector<T>::operator- ( const TJetVector<T>& x ) const
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 TJetVector<T> TJetVector<T>::operator- ( const Vector& y ) const
 {
@@ -274,6 +332,9 @@ TJetVector<T> TJetVector<T>::operator- ( const Vector& y ) const
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 TJetVector<T> operator- ( const TJetVector<T>& x )
 {
@@ -283,6 +344,9 @@ TJetVector<T> operator- ( const TJetVector<T>& x )
   return z;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetVector<T> TJetVector<T>::operator-= ( const TJetVector<T>& x )
@@ -298,6 +362,9 @@ TJetVector<T> TJetVector<T>::operator-= ( const TJetVector<T>& x )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 TJetVector<T> TJetVector<T>::operator-= ( const Vector& x )
 {
@@ -312,6 +379,9 @@ TJetVector<T> TJetVector<T>::operator-= ( const Vector& x )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 TJetVector<T> TJetVector<T>::operator* ( const TJet<T>& c ) const
 {
@@ -319,6 +389,9 @@ TJetVector<T> TJetVector<T>::operator* ( const TJet<T>& c ) const
   for ( int i = 0; i < _dim; i++ ) z._comp[i] = c * _comp[i];
   return z;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetVector<T> TJetVector<T>::operator* ( const T& c ) const
@@ -329,20 +402,21 @@ TJetVector<T> TJetVector<T>::operator* ( const T& c ) const
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetVector<T> operator*( const TJet<T>& c, const Vector& x )
 {
   int d = x.Dim();
-  TJetVector<T> z( d, 0, ((TJetEnvironment<T>*) c.Env()) );
+  TJetVector<T> z( d, 0,  c.Env() );
   for ( int i = 0; i < d; i++ ) { z.SetComponent( i, c * x(i) ); }
   return z;
 }
 
 
-
-
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetVector<T> operator* ( const TJet<T>& c, const TJetVector<T>& x )
@@ -352,13 +426,28 @@ TJetVector<T> operator* ( const TJet<T>& c, const TJetVector<T>& x )
   return z;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
-TJetVector<T> operator* ( const T& c, const TJetVector<T>& x )
+TJetVector<T> operator* ( const TJetVector<T>& x , const T& c )
 {
   TJetVector<T> z( x._dim, 0, x._myEnv );
   for ( int i = 0; i < x._dim; i++ ) z._comp[i] = c * x._comp[i];
   return z;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TJetVector<T> operator* ( const T& c, const TJetVector<T>& x )
+{
+  return operator*( x,c);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetVector<T> TJetVector<T>::operator*=( const TJet<T>& c ) 
@@ -368,6 +457,9 @@ TJetVector<T> TJetVector<T>::operator*=( const TJet<T>& c )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 TJetVector<T> TJetVector<T>::operator*=( T c ) 
 {
@@ -375,6 +467,9 @@ TJetVector<T> TJetVector<T>::operator*=( T c )
  return *this;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetVector<T> TJetVector<T>::operator/ ( const TJet<T>& c ) const
@@ -384,6 +479,9 @@ TJetVector<T> TJetVector<T>::operator/ ( const TJet<T>& c ) const
  return z;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 TJetVector<T> TJetVector<T>::operator/ ( T c ) const
 {
@@ -392,12 +490,18 @@ TJetVector<T> TJetVector<T>::operator/ ( T c ) const
  return z;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 TJetVector<T> TJetVector<T>::operator/=( const TJet<T>& c ) 
 {
  for( int i = 0; i < _dim; i++ ) _comp[i] /= c;
  return *this;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetVector<T> TJetVector<T>::operator/=( T c ) 
@@ -407,28 +511,12 @@ TJetVector<T> TJetVector<T>::operator/=( T c )
 }
 
 
-template<typename T>
-TJet<T> TJetVector<T>::operator* ( const TJetVector<T>& x ) const
-{
-#ifndef NOCHECKS
-  CHECKOUT(_myEnv != x._myEnv, "TJetVector<T>::operator*", "Incompatible environments.")
-  CHECKOUT(_dim != x._dim, "TJetVector<T>::operator*", "Incompatible dimensions.")
-#endif
-
-  TJet<T> u( _myEnv );
-  u = T();
-  int i;
-  for ( i = 0; i < _dim; i++ ) u += _comp[i] * x._comp[i];
-  return u;
-}
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJet<T> TJetVector<T>::operator* ( const Vector& y ) const
 {
-#ifndef NOCHECKS
-  CHECKOUT(_dim != y.Dim(), "JetVector::operator*", "Incompatible dimensions.")
-#endif
 
   TJet<T> u( _myEnv );
   u = T(); // This should not be necessary. Why is it here?
@@ -436,6 +524,8 @@ TJet<T> TJetVector<T>::operator* ( const Vector& y ) const
   return u;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetVector<T> TJetVector<T>::operator^ ( const TJetVector<T>& x ) const
@@ -454,6 +544,9 @@ TJetVector<T> TJetVector<T>::operator^ ( const TJetVector<T>& x ) const
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 TJetVector<T> TJetVector<T>::operator^ ( const Vector& x ) const
 {
@@ -469,6 +562,9 @@ TJetVector<T> TJetVector<T>::operator^ ( const Vector& x ) const
   z._comp[ 2 ] = _comp[ 0 ] * x( 1 ) - _comp[ 1 ] * x( 0 );
   return z;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetVector<T> operator^ ( const Vector& y, const TJetVector<T>& x )
@@ -486,13 +582,15 @@ TJetVector<T> operator^ ( const Vector& y, const TJetVector<T>& x )
   return z;
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 template<typename T>
 TJetVector<T> operator*(  const TMatrix<T>& M, 
                               const TJetVector<T>& x ) 
 {
- const TJetEnvironment<T>* pje = x._myEnv;
+ const typename EnvPtr<T>::Type pje(x._myEnv);
  TJetVector<T> z( M.rows(), 0, pje );
  int i, j, r, c;
 
@@ -566,10 +664,13 @@ bool TJetVector<T>::operator< ( const TJetVector<T>& x ) const
   CHECKOUT(_dim != x._dim, "TJetVector<T>::operator<", "Incompatible dimensions.")
 #endif
 
-  for( int i = 0; i < _dim; i++ ) 
-    if( _comp[i].standardPart() >= x._comp[i].standardPart() ) return 0;
-  return 1;
+  for( int i=0; i < _dim; ++i ) 
+    if( _comp[i].standardPart()  >= x._comp[i].standardPart() ) return false;
+  return true;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 bool TJetVector<T>::operator<= ( const TJetVector<T>& x ) const
@@ -579,16 +680,22 @@ bool TJetVector<T>::operator<= ( const TJetVector<T>& x ) const
   CHECKOUT(_dim != x._dim, "TJetVector<T>::operator<", "Incompatible dimensions.")
 #endif
 
-  for( int i = 0; i < _dim; i++ ) 
-    if( _comp[i].standardPart() > x._comp[i].standardPart() ) return 0;
-  return 1;
+  for( int i = 0; i < _dim; ++i ) 
+    if( _comp[i].standardPart() > x._comp[i].standardPart() ) return false;
+  return true;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 bool TJetVector<T>::operator> ( const TJetVector<T>& x ) const
 {
   return !( operator<=( x ) );
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 bool TJetVector<T>::operator>= ( const TJetVector<T>& x ) const
@@ -624,7 +731,7 @@ bool TJetVector<T>::IsUnit() const
 template<typename T>
 bool TJetVector<T>::IsNilpotent() const 
 {
- for( int i = 0; i <  _myEnv->_spaceDim; i++ ) 
+ for( int i = 0; i <  _myEnv->spaceDim(); i++ ) 
   if( !(_comp[i].isNilpotent()) ) return 0;
  return 1;
 }
@@ -646,8 +753,11 @@ void TJetVector<T>::Reconstruct()
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
-void TJetVector<T>::Reconstruct( int n, TJetEnvironment<T>* pje )
+void TJetVector<T>::Reconstruct( int n, typename EnvPtr<T>::Type pje )
 {
   delete [] _comp;
   _dim = n;
@@ -659,25 +769,34 @@ void TJetVector<T>::Reconstruct( int n, TJetEnvironment<T>* pje )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 void TJetVector<T>::CopyFrom( const TJetVector& x )
 {
-  this->Reconstruct( x.Dim(), ((TJetEnvironment<T>*) x.Env()) );
+  this->Reconstruct( x.Dim(), x.Env() );
   this->operator=( x );
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 void TJetVector<T>::peekAt() const
 {
-  cout << "\n\nBegin TJetVector<T>::peekAt() ......\n";
+  (*pcout) << "\n\nBegin TJetVector<T>::peekAt() ......\n";
   for ( int i = 0; i < _dim; i++ ) {
-    cout << "TJetVector<T>::peekAt(): Component " << i << endl;
+   (*pcout) << "TJetVector<T>::peekAt(): Component " << i << endl;
     _comp[i].peekAt();
   }
-  cout << "End TJetVector<T>::peekAt() ......\n" << endl;
+  (*pcout) << "End TJetVector<T>::peekAt() ......\n" << endl;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJet<T> TJetVector<T>::Norm () const
@@ -687,6 +806,9 @@ TJet<T> TJetVector<T>::Norm () const
   for ( int i = 0; i < _dim; i++ ) x += _comp[i]*_comp[i];
   return sqrt(x);
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetVector<T> TJetVector<T>::Unit () const
@@ -698,6 +820,9 @@ TJetVector<T> TJetVector<T>::Unit () const
   return z;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 ostream& operator<<( ostream& os, const TJetVector<T>& v )
@@ -713,6 +838,9 @@ ostream& operator<<( ostream& os, const TJetVector<T>& v )
   return os;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 istream& operator>>( istream& is, TJetVector<T>& v )
@@ -745,12 +873,11 @@ istream& operator>>( istream& is, TJetVector<T>& v )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T> TJetVector<T>::filter( bool (*f[]) ( const IntArray&, const T& ) )
+TJetVector<T> TJetVector<T>::filter( bool (*f[]) ( const IntArray&, const T& ) ) const
 {
  TJetVector<T> z( _dim, 0, _myEnv );
- int i;
 
- for( i = 0; i < _dim; i++ )
+ for( int i=0; i<_dim;  ++i )
   z._comp[i] = _comp[i].filter( f[i] );
 
  return z;
@@ -759,12 +886,11 @@ TJetVector<T> TJetVector<T>::filter( bool (*f[]) ( const IntArray&, const T& ) )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T> TJetVector<T>::filter( int lower, int upper ) 
+TJetVector<T> TJetVector<T>::filter( int lower, int upper ) const
 {
  TJetVector<T> z( _dim, 0, _myEnv );
- int i;        
 
- for( i = 0; i < _dim; i++ )
+ for( int i=0; i < _dim; ++i )
   z._comp[i] = _comp[i].filter( lower, upper );
 
  return z;
@@ -799,10 +925,10 @@ void TJetVector<T>::derivative( int* m, T* x )
 template<typename T>
 int TJetVector<T>::AccuWgt() const
 {
-  int accuWgt = _myEnv->_maxWeight;
+  int accuWgt = _myEnv->maxWeight();
   for( int i = 0; i < _dim; i++ ) {
    if( _myEnv != _comp[i].Env() ) {
-     cerr << "\n\n"
+     (*pcerr) << "\n\n"
  	  << "*** WARNING ***                                   \n"
  	  << "*** WARNING *** TJetVector<T>::AccuWgt()             \n"
  	  << "*** WARNING ***                                   \n"
@@ -822,7 +948,7 @@ int TJetVector<T>::Weight()  const
   int weight = -1;
   for( int i = 0; i < _dim; i++ ) {
    if( _myEnv != _comp[i].Env() ) {
-     cerr << "\n\n"
+     (*pcerr) << "\n\n"
  	  << "*** WARNING ***                                   \n"
  	  << "*** WARNING *** TJetVector<T>::Weight()               \n"
  	  << "*** WARNING ***                                   \n"
@@ -853,7 +979,7 @@ template<typename T>
 void TJetVector<T>::getReference( T* r ) const 
 {
  int i;
- for( i = 0; i < _myEnv->_numVar; i++ ) r[i] = _myEnv->_refPoint[i];
+ for( i = 0; i < _myEnv->numVar(); i++ ) r[i] = _myEnv->getRefPoint()[i];
 }
 
 

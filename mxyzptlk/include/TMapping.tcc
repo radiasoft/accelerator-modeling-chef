@@ -1,5 +1,5 @@
-/*************************************************************************
-**************************************************************************
+/**************************************************************************
+*************************************************************************
 **************************************************************************
 ******                                                                
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
@@ -35,18 +35,26 @@
 ******                                                                
 ******  Revision History:
 ******
-******  May 2005 - Jean-Francois Ostiguy
-******             ostiguy@fnal.gov
+******  Revision History
+******   
+******  May 2005       Jean-Francois Ostiguy
+******                 ostiguy@fnal.gov 
+****** 
+****** - new memory management scheme 
+******                                                            
+******  Sep-Dec 2005  ostiguy@fnal.gov
+******  
+****** - refactored code to usea single class template parameter
+******   instead of two. Mixed mode operations now handled using 
+******   implicit conversion operators.
+****** - reference counting now based on using boost::intrusive pointer
+****** - reference counted TJetEnvironment
+****** - implementation details completely moved to TJL   
+****** - redesigned coordinate class Tcoord. New class Tparams for parameters
+****** - header files support for both explicit and implicit template instantiations
+******   (default for mxyzptlk = explicit)
+******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES
 ******
-******            -Efficiency improvements. 
-******            - new memory management
-******
-******  Sept 2005   ostiguy@fnal.gov
-******
-******            - new code based on a single template parameter
-******              instead of two. Mixed mode now handled
-******              using conversion operators.
-******            - centralized environment management
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -83,9 +91,10 @@ using namespace std;
 template<typename T>
 TMapping<T>::TMapping<T>( int n,
                                   const TJet<T>* pj,
-                                  TJetEnvironment<T>* pje )
+                                  typename EnvPtr<T>::Type pje )
 : TJetVector<T>( n, pj, pje )
 {
+
 }
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -94,6 +103,7 @@ template<typename T>
 TMapping<T>::TMapping<T>( const TMapping<T>& x ) 
 : TJetVector<T>( (const TJetVector<T>&) x ) 
 {
+
 }
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -107,21 +117,20 @@ TMapping<T>::TMapping<T>( const TJetVector<T>& x )
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping<T>( const char*, TJetEnvironment<T>* pje  ) 
-: TJetVector<T>( pje->_spaceDim, 0, pje )
+TMapping<T>::TMapping<T>( const char*, typename EnvPtr<T>::Type pje  ) 
+: TJetVector<T>( pje->spaceDim(), 0, pje )
 {
- int i, s;
  
- if( pje->_spaceDim == 0 ) {
+ if( pje->spaceDim() == 0 ) {
    throw( GenericException(__FILE__, __LINE__, 
           "TMapping<T>::TMapping<T>( char*, TJetEnvironment<T>* ) ",
           "Phase space has dimension 0." ) );
  }
  
- s = pje->_spaceDim;
+ int s = pje->spaceDim();
 (this->_myEnv) = pje;
 
- for( i = 0; i < s; i++ ) (this->_comp)[i].setVariable( i, pje );
+ for( int i = 0; i < s; i++ ) (this->_comp)[i].setVariable( i, pje );
 }
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -136,16 +145,15 @@ TMapping<T>::~TMapping<T>()
 template<typename T>
 TMapping<T> TMapping<T>::operator()( const TMapping<T>& x ) const
 {
- if( x._dim != (this->_myEnv)->_numVar ) {
+ if( x._dim != (this->_myEnv)->numVar() ) {
    throw( GenericException(__FILE__, __LINE__, 
           "TMapping<T> TMapping<T>::operator()( const TMapping<T>& ) const",
           "Incompatible dimensions." ) );
  }
 
- int i;
  TMapping<T> z( (this->_dim), 0, x._myEnv );
 
- for( i = 0; i < (this->_myEnv)->_spaceDim; i++) {
+ for( int i = 0; i < (this->_myEnv)->spaceDim(); i++) {
   z._comp[i] = (this->_comp)[i]( x );
  }
 
@@ -172,15 +180,14 @@ void operator*=( TMapping<T>& x, const TMapping<T>& y ) {
 template<typename T>
 TMatrix<T> TMapping<T>::Jacobian() const 
 {
- int            i, j;
- int            nv = (this->_myEnv)->_numVar;   // ??? Is this right?
+ int            nv = (this->_myEnv)->numVar();   // ??? Is this right?
  int*           d = new int[ nv ];
  TMatrix<T>    M( (this->_dim), nv, ((T) 0.0) );
 
- for( i = 0; i < nv; i++  ) d[i] = 0;
- for( j = 0; j < nv; j++ ) {
+ for( int i = 0; i < nv; i++  ) d[i] = 0;
+ for( int j = 0; j < nv; j++ ) {
   d[j] = 1;
-  for( i = 0; i < (this->_dim); i++ ) M( i, j ) = (this->_comp)[i].derivative( d );
+  for( int i = 0; i < (this->_dim); i++ ) M( i, j ) = (this->_comp)[i].derivative( d );
   d[j] = 0;
  }
 
@@ -193,135 +200,145 @@ TMatrix<T> TMapping<T>::Jacobian() const
 template<typename T>
 TMapping<T> TMapping<T>::Inverse() const 
 { 
- if( (this->_myEnv)->_spaceDim != (this->_dim) ) {
-  throw( typename TJL<T>::BadDimension( (this->_myEnv)->_spaceDim, (this->_dim), __FILE__, __LINE__, 
+ if( (this->_myEnv)->spaceDim() != (this->_dim) ) {
+  throw( typename TJL<T>::BadDimension( (this->_myEnv)->spaceDim(), (this->_dim), __FILE__, __LINE__, 
          "Mapping Mapping::Inverse() const ",
          "Phase space dimensions do not match." ) );
  }
 
- int        i, j;
- int        nv   = (this->_myEnv)->_numVar;
- char       t1;
- char*      t2   = new char    [(this->_dim)];
- char       t3;
- T* ref  = new T[nv];
- TJLterm<T>**   p    = new TJLterm<T>* [(this->_dim)];
- for( j = 0; j < (this->_dim); j++ ) p[j] = 0;
+ int    nv   = (this->_myEnv)->numVar();
 
+ bool                      ref_pt_is_zero;
+ boost::scoped_array<bool> ref_pt_image_is_zero(new bool  [(this->_dim)]);
+ bool                      zero_mapped_into_zero;
 
- // If zero maps to zero, return result .....................
- t1 = 1;    // Indicates reference point is the origin.
-            // Test is one _spaceDim coordinates only.
- for( i = 0; i < (this->_dim); i++ ) 
-   if( (this->_myEnv)->_refPoint[i] != 0.0 ) {
-     t1 = 0;
+ boost::scoped_array<T>    ref( new T[nv] );
+ 
+ // ------------------------------------------
+ // determine if zero is mapped in to zero ... 
+ //-------------------------------------------
+ ref_pt_is_zero = true;       // true if ref point is the origin.
+
+ for( int i=0; i < (this->_dim); ++i ) 
+   if( (this->_myEnv)->getRefPoint()[i] != 0.0 ) {
+     ref_pt_is_zero = false;
      break;
-   }
-
- for( j = 0; j < (this->_dim); j++ )
-   t2[j] = ( (this->_comp)[j].standardPart() == 0.0 );
-
- t3 = t1;
- if( t3 ) for( j = 0; j < (this->_dim); j++ ) t3 &= t2[j];
-
- if( t3 ) {
-   delete [] t2;
-   delete [] ref;
-   delete [] p;
-   return _epsInverse( (this->_myEnv) );
  }
 
-// T* stdparts = new T [this->_dim ];
-//
-// for (int i=0; i<this->_dim; ++i) {
-//   
-//   stdparts[i] = (this->_comp)[i].standardPart();    
-// }
+ for( int j=0; j < (this->_dim); ++j )
+   ref_pt_image_is_zero[j] = ( (this->_comp)[j].standardPart() == 0.0 );
+
+ zero_mapped_into_zero = false;
+ if(  ref_pt_is_zero ) { 
+     for( int j = 0; j < (this->_dim); j++ ) 
+        zero_mapped_into_zero &= ref_pt_image_is_zero[j];
+ }
+
+ // If zero maps into zero, return inverse immediately .....................
+ 
+ if( zero_mapped_into_zero ) return _epsInverse( (this->_myEnv) );
+
+ // --------------------------------------
+ // Otherwise,onstruct an idempotent 
+ // and compute its inverse and susequently
+ // set the constant terms 
+ // --------------------------------------
+
+ typename EnvPtr<T>::Type pje_inv( TJetEnvironment<T>:: makeInverseJetEnvironment( this->_myEnv, *this) );
+
+ TMapping<T> z( *this );  // copies the current mapping instance ...
+  
+ // ... Temporarily zero out the reference point 
+
+ typename EnvPtr<T>::Type tmp_pje_inv_zeroed( 
+                         TJetEnvironment<T>::makeJetEnvironment(pje_inv->maxWeight(), pje_inv->numVar(), pje_inv->spaceDim(), 0, 0  )); 
+
+ z._myEnv = tmp_pje_inv_zeroed;
 
 
- TJetEnvironment<T>* pje_new =TJetEnvironment<T>:: makeInverseJetEnvironment( this->_myEnv, *this);
+ for( int j=0; j < (this->_dim); j++ ) {
 
-// delete stdparts;   
+   if( !ref_pt_image_is_zero[j] ) { 
 
- // Construct an idempotent 
- // and compute its inverse. ..................................
- TMapping<T> z( (this->_dim), 0, (this->_myEnv) );
- z = *this;   // ??? Deep copy needed here.
+     // NOTE: calling get() here implicitly clones z._comp[j] !!!!;
+     (z._comp[j].get())->_deleted = true; // pops out and deletes the first term (i.e. the weight==0 term);        
 
- // ... Temporarily zero the reference point 
- for( i = 0; i < (this->_dim); i++ ) pje_new->_refPoint[i] = 0.0;
- z._myEnv = pje_new;
-
- for( j = 0; j < (this->_dim); j++ ) {
-   if( !t2[j] ) { 
-     p[j] = z._comp[j].get();
-     z._comp[j].addTerm( new( z._comp[j].storePtr() ) TJLterm<T>( z._myEnv->_allZeroes, 0.0, z._myEnv ) );
-     // ??? This last line should not be necessary.
+     // replace the weight==0 term with a new one that has value 0 
+     TJLterm<T> tmp_term( z._myEnv->allZeroes(), T(), z._myEnv);
+     z._comp[j].addTerm( TJLterm<T>( z._myEnv->allZeroes(), T(), z._myEnv));
    }
  }
 
- if( !t1 ) 
-   for( j = 0; j < (this->_dim); j++ )        // A little paranoia
-     z._comp[j].setEnvTo( z._myEnv );  // never hurt.
+ // In case the original reference point was not zero, set the reference point of each component to zero 
+ // before taking an inverse.
+  
+  for( int j = 0; j < (this->_dim); ++j )  {         
+         z._comp[j].setEnvTo( z._myEnv );    // NOTE: setEnvTo() clones z._comp[j] !!!!         
+   }
 
- z = z._epsInverse( z._myEnv );
+   z = z._epsInverse( z._myEnv );
+ 
+ 
+//---------------------------------------------------------------------
+// Reset the environment with one that has the correct reference point 
+// and make final adjustments before returning. ..................
+//---------------------------------------------------------------------
+ 
+  z._myEnv = pje_inv;
 
+  for( int i=0; i<(this->_dim); i++ ) 
+     z._comp[i].setEnvTo( pje_inv );    // clones again !!!
 
- // Make final adjustments before returning. .....................
- for( i = 0; i < (this->_dim); i++ ) 
-   pje_new->_refPoint[i] = (this->_comp)[i].standardPart();
 
  // ... A little test ...
- z.standardPart( ref );
- for( j = 0; j < (this->_dim); j++ ) 
+ 
+  z.standardPart( ref.get() );
+  for( int j = 0; j < (this->_dim); j++ ) 
    if( ref[j] != 0.0 ) {
-    (*pcout) << "*** WARNING ***                                              \n"
-            "*** WARNING *** TJet<T>::Inverse()                       \n"
-            "*** WARNING *** ref[" << j << "] = " << ref[j] << "          \n"
-            "*** WARNING ***                                              \n"
+    (*pcout) << "*** WARNING ***                                    \n"
+            "*** WARNING *** TJet<T>::Inverse()                     \n"
+            "*** WARNING *** ref[" << j << "] = " << ref[j] << "    \n"
+            "*** WARNING ***                                        \n"
          << endl;
    }
 
- // ... Add the correct image point ...
+ // ... Add the correct reference point and return ...
 
- if( !t1 ) {
-  for( j = 0; j < z._dim; j++ ) 
-   z._comp[j].addTerm( new ( z._comp[j].storePtr() ) TJLterm<T>( z._myEnv->_allZeroes, 
-                                   (this->_myEnv)->_refPoint[j], 
-                                   z._myEnv
-                                 ) );
- }
+  for( int j = 0; j< z._dim; j++ ) 
+     z._comp[j].addTerm( TJLterm<T>( z._myEnv->allZeroes(), (this->_myEnv)->getRefPoint()[j], z._myEnv ) );
 
-
- // Clean up and leave
- delete [] t2;
- delete [] ref;
-
- for( j = 0; j < (this->_dim); j++ )  if ( p[j] )  p[j]->_deleted = true; // p[j] seems to be 0 sometimes
-                                                                       // Should this check be necessary ?  
-                                                                                 
- delete [] p;
-
- return z;
+  return z;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T> TMapping<T>::_epsInverse( TJetEnvironment<T>* pje ) const 
+TMapping<T> TMapping<T>::_epsInverse(  typename EnvPtr<T>::Type pje) const 
 {
- TMapping<T>  z( (this->_dim), 0, pje );
+
+ TMapping<T>  z( (this->_dim), 0, pje ); // the second argument creates an "empty mapping"
  TMapping<T>  id( "ident", pje );
  TMapping<T>  v( (this->_dim), 0, pje );
- int  i = 0;
+
  TMatrix<T> M( (this->_dim), (this->_dim), 0.0 );
 
- if( (this->_dim) == (this->_myEnv)->_numVar ) M = Jacobian().inverse();
- else                         M = Jacobian().Square().inverse();
+
+ if( (this->_dim) == (this->_myEnv)->numVar() ) 
+    M = Jacobian().inverse();
+ else{                                            
+    M = Jacobian().Square().inverse();
+    std::cout << " TMapping<T>::_epsInverse : this should not be called ! " << std::endl;
+ }
 
  z = M*id;
+
+
  v = ( operator()(z) - id );
- while ( ( i++ < MX_MAXITER ) && ( ( v - v.filter(0,1)) != ((T) 0.0) ) ) {
+
+
+
+ int  i = 0;
+ while ( ( i++ < MX_MAXITER ) && ( ( v - v.filter(0,1)) != T() ) ) {
                // This assumes linear is handled well enough
                // by the TMatrix<T> routine.  
   z = z - M*v;

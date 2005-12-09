@@ -32,26 +32,30 @@
 ******  
 ******  Revision History:
 ******
-******  Feb 2005   Jean-Francois Ostiguy
-******             ostiguy@fnal.gov
+******  Feb-May 2005  Jean-Francois Ostiguy
+******                ostiguy@fnal.gov
 ******
-******  Efficiency improvements.
-******  - New memory management.
+******  - Efficiency improvements.
+******  - New memory management scheme.
 ******
-******  Sept 2005   ostiguy@fnal.gov
-******              - new code based on a single template parameter
-******                instead of two. Mixed mode handled
-******                using conversion operators.
+******  Sept-Dec 2005  ostiguy@fnal.gov
 ******  
+****** - refactored code to usea single class template parameter
+******   instead of two. Mixed mode operations now handled using 
+******   implicit conversion operators.
+****** - reference counting now based on using boost::intrusive pointer
+****** - reference counted TJetEnvironment
+****** - all implementation details now completely moved to TJL   
+****** - redesigned coordinate class Tcoord. New class Tparams for parameters
+****** - header files support for both explicit and implicit template instantiations
+******   (default for mxyzptlk = explicit)
+******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES 
 **************************************************************************
 *************************************************************************/
-
-
 #ifndef TJET_H
 #define TJET_H
 
 #include <slist.h>
-#include <dlist.h>
 #include <IntArray.h>
 
 #include <TJetEnvironment.h>
@@ -60,6 +64,8 @@
 
 
 // Forward declarations
+
+
 class Vector;
 
 template<typename T> 
@@ -158,6 +164,15 @@ TJet<std::complex<double> > operator/( const TJet<std::complex<double> >& x, con
 TJet<std::complex<double> > operator/( const double& x,                      const TJet<std::complex<double> >& y );
 
 template<typename T> 
+bool operator==( const TJet<T>&, const TJet<T>& );
+
+template<typename T> 
+bool operator==( const TJet<T>&, const T& );
+
+template<typename T> 
+bool operator==( const T&, const TJet<T>& );
+
+template<typename T> 
 bool operator!=( const TJet<T>& x, const TJet<T>& y ); 
 
 template<typename T> 
@@ -237,43 +252,33 @@ class TJet: public gms::FastAllocator
 
   friend class TLieOperator<T>;
 
-private:
-  TJL<T>*     _jl;
-  dlist_iterator* _constIterPtr;
-  dlist_iterator* _iterPtr;
+protected:
+
+  mutable typename JLPtr<T>::Type   _jl; 
+
+ private:
 
   TJet _epsInverse() const;  // Calculates the inverse of
                              // nilpotent Jets.
-  TJet _concat() const;
 
-  TJet _truncMult( const TJet&, const int& ) const;  // Used by division algorithm.
-
-  friend TJet<double > fabs( const TJet<double >& );
+  friend TJet<double > fabs( const TJet<double >& ); // ?????
   friend TJet<double > real( const TJet<std::complex<double> >& );
   friend TJet<double > imag( const TJet<std::complex<double> >& );
 
-  // Utility functions; used by public analytic functions ...
- 
- static TJet _epsCos( const TJet& );
-  static TJet _epsExp( const TJet& );
-  static TJet _epsPow( const TJet&, const double& );
-  static TJet _epsSin( const TJet& );
-  static TJet _epsSqrt( const TJet& ); 
+  // private constructor.  
+
+  TJet(const typename JLPtr<T>::Type& jl );
 
 protected:
 
-  static slist _newCoords;
-  static slist _newValues;
-  static int   _currentIndex;
-
-  TJL<T>* operator->() const { return _jl; }
+  const typename JLPtr<T>::Type& operator->() const { return _jl; }
 
 public:
 
   // Constructors and destructors_____________________________________
 
-  TJet( TJetEnvironment<T>* = _lastEnv );
-  TJet( T, TJetEnvironment<T>* = _lastEnv );
+  TJet( typename EnvPtr<T>::Type     = _lastEnv );
+  TJet( T, typename EnvPtr<T>::Type  = _lastEnv );
   TJet( const TJet& );
   
   ~TJet();
@@ -282,34 +287,30 @@ public:
   operator TJet<double> () const;
 
   void Reconstruct();
-  void Reconstruct( TJetEnvironment<T>* pje );
-  void Reconstruct( const IntArray&, const T&, TJetEnvironment<T>* pje );
+  void Reconstruct( typename EnvPtr<T>::Type );
+  void Reconstruct( const IntArray&, const T&, typename EnvPtr<T>::Type );
 
   // Environment management __________________________________
  
 public:
 
-  static TJetEnvironment<T>* _workEnv; 
-  static TJetEnvironment<T>* _lastEnv; 
+  static typename EnvPtr<T>::Type      _lastEnv; 
+  static typename EnvPtr<T>::Type lastEnvironment();
+  static void setLastEnv(typename EnvPtr<T>::Type pje); 
 
-  static const TJetEnvironment<T>* workEnvironment();
-  static const TJetEnvironment<T>* lastEnvironment();
-  static void EnlargeEnvironment( const TJetEnvironment<T>* );
 
-  static void BeginEnvironment( int = 1 /* maximum weight */ );
-  static TJetEnvironment<T>* EndEnvironment( double* = 0 /* scale array */ );
+  // static void EnlargeEnvironment( const TJetEnvironment<T>* );
 
-  static void Parameters();
 
   void setEnvTo( const TJet& );                   // Changes environment to
-  void setEnvTo( TJetEnvironment<T>* );           // that of the argument.
+  void setEnvTo( typename EnvPtr<T>::Type );      // that of the argument.
 
   int intEnv() const;                             // Returns integer representation
                                                   // of the environment pointer.
 
-  TJetEnvironment<T>* Env() const;                // ??? DANGER!!! These two break
+  typename EnvPtr<T>::Type Env() const;           // ??? DANGER!!! These two break
 
-  void Env( TJetEnvironment<T>* pje ) const;      // ??? DANGER!!! protection!!
+  void Env( typename EnvPtr<T>::Type env ) const; // ??? DANGER!!! protection!!
 
 
   // Public member functions__________________________________________
@@ -322,14 +323,17 @@ public:
                                      // which should be the one of lowest weight.
   TJLterm<T>  lowTerm()  const;  // Returns a JLterm equivalent to the 
                                      // non-zero term of lowest weight.
-  void addTerm( TJLterm<T>* );   // Public only for diagnostic purposes.
 
+
+  const TJLterm<T>* stepConstIteratorPtr() const;   
+  const TJLterm<T>& stepConstIteratorRef() const;   
   void              resetConstIterator();
-  TJLterm<T>        stepConstIterator()  const;
-  const TJLterm<T>& stepConstIteratorRef()  const;
-  const TJLterm<T>* stepConstIteratorPtr()  const;
   void              resetIterator();
   TJLterm<T>*       stepIterator();
+
+
+  void addTerm( const TJLterm<T>& ); 
+
 
   bool isNilpotent() const;
 
@@ -350,14 +354,11 @@ public:
 
   void scaleBy( T );
 
-  void setVariable( const T&, const int&, TJetEnvironment<T>* );
-               // Alters the environment
+  void setVariable( const T&, const int&, typename EnvPtr<T>::Type pje);
+  void setVariable( const int&,           typename EnvPtr<T>::Type pje );
   void setVariable( const T&, const int& );
-               // Alters its environment
-  void setVariable( const int&, TJetEnvironment<T>* );
-               // Does not alter the environment.
   void setVariable( const int& );
-               // Does not alter its environment.
+
 
   T        standardPart() const;
   void     clear();
@@ -385,11 +386,13 @@ public:
 
   friend std::ostream& operator<<<>(std::ostream&, const TJet&);
   friend std::istream& operator>><>(std::istream&, TJet&);
-  // friend bool operator==<>( const TJet&, const TJet& );
-  // friend bool operator==<>( const TJet&, const T& );
-  // friend bool operator==<>( const T&, const TJet& );
-  bool operator==( const TJet& ) const;
-  bool operator==( const T& ) const;
+
+  friend bool operator==<>( const TJet&, const TJet& );
+  friend bool operator==<>( const TJet&, const T& );
+  friend bool operator==<>( const T&, const TJet& );
+
+  // bool operator==( const TJet& ) const; // ??? what is this for
+  // bool operator==( const T& ) const;    // ??? what is this for
 
   TJet& operator=( const TJet& );
   TJet& operator=( const T& );
@@ -399,11 +402,11 @@ public:
   TJet& operator+=( const T& );
   TJet& operator-=( const TJet& );
   TJet& operator-=( const T& );
+
   TJet& operator*=( const TJet& );
   TJet& operator*=( const T& );
   TJet& operator/=( const TJet& );
   TJet& operator/=( const T& );
-
 
   friend TJet operator+<>( const TJet&, const TJet& );
   friend TJet operator+<>( const TJet&, const T& );
@@ -430,22 +433,23 @@ public:
   friend TJet operator*<>( const int&, const TJet& );
   friend TJet operator/<>( const TJet&, const int& ); 
 
-  friend TJet<T> acos<> ( const TJet<T>& );
-  friend TJet<T> asin<> ( const TJet<T>& );
-  friend TJet<T> atan<> ( const TJet<T>& );
-  friend TJet<T> cos<>  ( const TJet<T>& );
-  friend TJet<T> cosh<> ( const TJet<T>& );
-  friend TJet<T> exp<>  ( const TJet<T>& );
-  friend TJet<T> log<>  ( const TJet<T>& );
-  friend TJet<T> log10<>( const TJet<T>& );
-  friend TJet<T> pow<>  ( const TJet<T>&, const double& );
-  friend TJet<T> pow<>  ( const TJet<T>&, int );
-  friend TJet<T> sin<>  ( const TJet<T>& );
-  friend TJet<T> sinh<> ( const TJet<T>& );
-  friend TJet<T> sqrt<> ( const TJet<T>& );
-  friend TJet<T> tan<>  ( const TJet<T>& );
-  friend TJet<T> tanh<> ( const TJet<T>& );
-  friend TJet<T> erfc<> ( const TJet<T>& );
+  friend TJet acos<> ( const TJet<T>& );
+  friend TJet asin<> ( const TJet<T>& );  
+  friend TJet atan<> ( const TJet<T>& ); 
+  friend TJet cos<>  ( const TJet<T>& );
+  friend TJet cosh<> ( const TJet<T>& );
+  friend TJet exp<>  ( const TJet<T>& );
+  friend TJet log<>  ( const TJet<T>& );
+  friend TJet log10<>( const TJet<T>& );
+  friend TJet pow<>  ( const TJet<T>&, const double& );
+  friend TJet pow<>  ( const TJet<T>&, int );
+  friend TJet sin<>  ( const TJet<T>& );
+  friend TJet sinh<> ( const TJet<T>& );
+  friend TJet sqrt<> ( const TJet<T>& );
+  friend TJet tan<>  ( const TJet<T>& );
+  friend TJet tanh<> ( const TJet<T>& );
+  friend TJet erfc<> ( const TJet<T>& );
+
   friend TJet<std::complex<double> > erf    ( const TJet<std::complex<double> >& );
   friend TJet<double > erf    ( const TJet<double >& );
   friend TJet<std::complex<double> > w ( const TJet<std::complex<double> >& );
@@ -471,20 +475,29 @@ public:
  template<>
  TJet<std::complex<double> >::operator TJet<double> () const;
 
- //***********************************************************************
+
+//------------------------------------------------------------------------------------
+// Tcoord and Tparam classes
+//------------------------------------------------------------------------------------
 
 template<typename T>
-class Tcoord : public TJet<T> 
+class Tcoord: public TJet<T> 
 {
-private:
-  int _index;
+
 public:
-  Tcoord( T = T() );
+
+  Tcoord( T=T() ); 
  ~Tcoord();
 
-  inline int Index() { return _index; }
-
+  inline int Index() const { return _index; } 
+  inline T   value() const { return _refpt; };  
+   
+  void instantiate(int index, typename EnvPtr<T>::Type pje);
+ 
  private:
+
+  int       _index;  
+  T         _refpt; 
 
   Tcoord( const Tcoord& );             // forbidden - no implementation
   void    operator=( const T& );       // forbidden - no implementation
@@ -494,62 +507,90 @@ public:
 };
 
 
-// Inline functions
+template<typename T>
+class Tparam: public TJet<T> 
+{
+
+public:
+
+  Tparam( T = T() );
+ ~Tparam();
+
+  inline int Index() { return _index; } 
+  inline T   value() const { return _refpt; };  
+
+  void instantiate(int index, typename EnvPtr<T>::Type pje);
+
+ private:
+
+  int       _index; // the parameter index  ( > numVar )
+  T         _refpt; 
+
+  Tparam( const Tparam& );                 // forbidden - no implementation
+  void    operator=( const T& );           // forbidden - no implementation
+  Tparam& operator=( const Tparam& );      // forbidden - no implementation
+  Tparam& operator=( const TJet<T>& );     // forbidden - no implementation
+
+};
+
+// ----------------------------------------------------------------------------------------------
+// Inline functions for class Jet
+// ----------------------------------------------------------------------------------------------
 
 template<typename T>
-inline TJetEnvironment<T>* TJet<T>::Env() const
+inline typename EnvPtr<T>::Type TJet<T>::Env() const
 {
-  return _jl->_myEnv;
+  return _jl->getEnv();
 }
 
 template<typename T>
-inline void TJet<T>::Env( TJetEnvironment<T>* pje ) const
+inline void TJet<T>::Env(  typename EnvPtr<T>::Type pje ) const
 {
-  pje = _jl->_myEnv;
+  _jl->setEnv(pje);;
 }
 
 
 template<typename T>
-inline int TJet<T>::intEnv() const
+inline int TJet<T>::intEnv() const   // what is this for ????
 {  
-  return int( _jl->_myEnv );
+  return int( _jl->getEnv().get() );
 }
 
 
 template<typename T>
 inline int TJet<T>::termCount() const
 {
-  return _jl->_count;
+  return _jl->getCount();
 }
 
 template<typename T>
 inline int TJet<T>::getEnvNumVar() const 
 {
-  return _jl->_myEnv->_numVar;
+  return _jl->getEnv()->numVar();
 }
 
 template<typename T>
 inline int TJet<T>::getEnvSpaceDim() const 
 {
-  return _jl->_myEnv->_spaceDim;
+  return _jl->getEnv()->spaceDim();
 }
 
 template<typename T>
 inline int TJet<T>::getEnvMaxWeight() const 
 {
-  return _jl->_myEnv->_maxWeight;
+  return _jl->getEnv()->maxWeight();
 }
 
 template<typename T>
 inline int TJet<T>::getWeight() const 
 {
-  return _jl->_weight;
+  return _jl->getWeight();
 }
 
 template<typename T>
 inline int TJet<T>::getAccuWgt() const 
 {
-  return _jl->_accuWgt;
+  return _jl->getAccuWgt();
 }
 
 template<typename T>
@@ -558,23 +599,20 @@ inline bool TJet<T>::isNilpotent() const
   return _jl->isNilpotent();
 }
 
-template<typename T>
-inline const TJetEnvironment<T>* TJet<T>::workEnvironment()
-{
-  return _workEnv;
-}
 
 template<typename T>
-inline const TJetEnvironment<T>* TJet<T>::lastEnvironment()
+inline typename EnvPtr<T>::Type TJet<T>::lastEnvironment()
 {
   return _lastEnv;
 }
 
 template<typename T>
-inline bool operator==( const T& x, const TJet<T>& y )
+inline void TJet<T>::setLastEnv(typename EnvPtr<T>::Type pje) 
 {
-  return y == x;
+  TJet<T>::_lastEnv =  pje;
+
 }
+
 
 #ifdef  MXYZPTLK_IMPLICIT_TEMPLATES
 #include <TJet.tcc>

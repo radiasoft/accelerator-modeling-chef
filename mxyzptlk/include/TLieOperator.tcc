@@ -29,21 +29,25 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Revision History:
+******  Feb-may 2005   Jean-Francois Ostiguy
+******                 ostiguy@fnal.gov 
+****** 
+****** - new memory management scheme 
+******                                                            
+******  Sep-Dec 2005  ostiguy@fnal.gov
+******  
+****** - refactored code to usea single class template parameter
+******   instead of two. Mixed mode operations now handled using 
+******   implicit conversion operators.
+****** - reference counting now based on using boost::intrusive pointer
+****** - reference counted TJetEnvironment
+****** - implementation details completely moved to TJL   
+****** - header files support for both explicit and implicit template 
+******   instantiations
+******   (default for mxyzptlk = explicit)
+******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES
 ******
-******  Feb 2005 - Jean-Francois Ostiguy
-******              ostiguy@fnal.gov
-******
-******           -Efficiency improvements.
-******           - new memory management  
-******
-******  Sept 2005  ostiguy@fnal.gov
-******              
-******           - new code based on a single template parameter
-******             instead of two. Mixed mode handled
-******             using conversion operators.
-******
-******
+******                                                        
 **************************************************************************
 *************************************************************************/
 #ifndef TLIEOPERATOR_TCC
@@ -63,7 +67,7 @@
 //      External routines
 //
 
-extern char nexcom( int, int, int* );  
+extern bool nexcom( int, int, int* );  
                                 // Computes the next composition
                                 //  of an integer into a number of parts.
                                 //  Algorithm devised by Herbert Wilf.
@@ -104,12 +108,12 @@ using FNAL::pcout;
 
 
 template<typename T>
-TLieOperator<T>::TLieOperator<T>( TJetEnvironment<T>* theEnv ) 
-: TJetVector<T>( theEnv->_spaceDim, 0, theEnv )
+TLieOperator<T>::TLieOperator<T>( typename EnvPtr<T>::Type theEnv ) 
+: TJetVector<T>( theEnv->spaceDim(), 0, theEnv )
 {
  TLieOperator<T>::_myEnv = theEnv;
  
- if( theEnv->_spaceDim == 0 ) {
+ if( theEnv->spaceDim() == 0 ) {
    throw( GenericException(__FILE__, __LINE__, 
           "TLieOperator<T>::TLieOperator<T>( TJetEnvironment<T>* ) ",
           "Phase space has dimension zero." ) );
@@ -120,13 +124,12 @@ TLieOperator<T>::TLieOperator<T>( TJetEnvironment<T>* theEnv )
 
 template<typename T>
 TLieOperator<T>::TLieOperator<T>( const TLieOperator<T>& x ) 
-: TJetVector<T>( x._myEnv->_spaceDim, 0, x._myEnv )
+: TJetVector<T>( x._myEnv->spaceDim(), 0, x._myEnv )
 {
- int i;
- 
+
  TLieOperator<T>::_myEnv = x._myEnv;
 
- for ( i = 0; i < TLieOperator<T>::_myEnv->_spaceDim; i++ ) {
+ for ( int i = 0; i < TLieOperator<T>::_myEnv->spaceDim(); i++ ) {
    TLieOperator<T>::_comp[i] = x._comp[i];
  }
 }
@@ -135,13 +138,13 @@ TLieOperator<T>::TLieOperator<T>( const TLieOperator<T>& x )
 
 template<typename T>
 TLieOperator<T>::TLieOperator<T>( const TJet<T>& x ) 
-: TJetVector<T>( (x.Env())->_spaceDim, 0, x.Env() )
+: TJetVector<T>( (x.Env())->spaceDim(), 0, x.Env() )
 { 
  int i = 0;
- TJetEnvironment<T>* pje = x.Env();
+ typename EnvPtr<T>::Type pje = x.Env();
 
- int s = pje->_spaceDim;
- int n = pje->_numVar;
+ int s = pje->spaceDim();
+ int n = pje->numVar();
  int* ndx = new int [n];
 
  if( s == 0 ) {
@@ -183,8 +186,8 @@ TLieOperator<T>::TLieOperator<T>( const TJet<T>& x )
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TLieOperator<T>::TLieOperator<T>( char*, TJetEnvironment<T>* pje  ) 
-: TJetVector<T>( pje->_spaceDim, 0, pje )
+TLieOperator<T>::TLieOperator<T>( char*, typename EnvPtr<T>::Type pje  ) 
+: TJetVector<T>( pje->spaceDim(), 0, pje )
 { 
  int i;
  
@@ -193,14 +196,14 @@ TLieOperator<T>::TLieOperator<T>( char*, TJetEnvironment<T>* pje  )
           "TLieOperator<T>::TLieOperator<T>( char*, TJetEnvironment<T>* ) ",
           "Jet__environment pointer is null." ) );
    }
- if( pje->_spaceDim == 0 ) {
+ if( pje->spaceDim() == 0 ) {
    throw( GenericException(__FILE__, __LINE__, 
           "TLieOperator<T>::TLieOperator<T>( char*, TJetEnvironment<T>* ) ",
           "Phase space has dimension zero." ) );
    }
  TLieOperator<T>::_myEnv = pje;
 
- for( i = 0; i < pje->_spaceDim; i++ ) 
+ for( i = 0; i < pje->spaceDim(); i++ ) 
   TLieOperator<T>::_comp[i].setVariable( i, pje );
 }
 
@@ -222,11 +225,11 @@ void TLieOperator<T>::setVariable( const TJet<T>& x, int j )
           "void TLieOperator<T>::setVariable( const TJet<T>&, int ) ",
           "Inconsistent environments." ) );
  }
- if( j < 0 || TLieOperator<T>::_myEnv->_spaceDim <= j ) {
+ if( j < 0 || TLieOperator<T>::_myEnv->spaceDim() <= j ) {
    ostringstream uic;
    uic  << "Argument j = " << j
         << ": it should be within [ 0, "
-        << TLieOperator<T>::_myEnv->_spaceDim
+        << TLieOperator<T>::_myEnv->spaceDim()
         << " ].";
    throw( GenericException( __FILE__, __LINE__, 
           "void TLieOperator<T>::setVariable( const TJet<T>& x, int j ) ",
@@ -238,6 +241,7 @@ void TLieOperator<T>::setVariable( const TJet<T>& x, int j )
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+#if 0 
 template<typename T>
 void TLieOperator<T>::setVariable( const T& x, int j ) 
 {
@@ -253,22 +257,23 @@ void TLieOperator<T>::setVariable( const T& x, int j )
           uic.str().c_str() ) );
  }
  
- TLieOperator<T>::_myEnv->_refPoint[j] = x;  // WARNING: The environment is altered!
+ TLieOperator<T>::_myEnv->resetRefPoint(j,x);  // WARNING: The environment is altered!
  TLieOperator<T>::_comp[j].Reconstruct( TLieOperator<T>::_myEnv );
  
- int n = TLieOperator<T>::_myEnv->_numVar;
+ int n = TLieOperator<T>::_myEnv->numVar();
  
  IntArray ndx;
 
  // NOTE: TJet<>::operator->() is overloaded and returns the TJL<>* _jl; 
  
- TLieOperator<T>::_comp[j].addTerm( new( TLieOperator<T>::_comp[j]->storePtr() ) TJLterm<T>( ndx, x, TLieOperator<T>::_myEnv ) );
+ TLieOperator<T>::_comp[j].addTerm( TJLterm<T>( ndx, x, TLieOperator<T>::_myEnv ) );
  ndx(j) = 1;
- TLieOperator<T>::_comp[j].addTerm( new( TLieOperator<T>::_comp[j]->storePtr() ) TJLterm<T>( ndx, ((T) 1.0), TLieOperator<T>::_myEnv ) );
+ TLieOperator<T>::_comp[j].addTerm( TJLterm<T>( ndx, ((T) 1.0), TLieOperator<T>::_myEnv ) );
 
  for( int i = 0; i < TLieOperator<T>::_dim; i++ ) TLieOperator<T>::_comp[i].setEnvTo(TLieOperator<T>::_myEnv );
 }
 
+#endif
 
 //     Operators   |||||||||||||||||||||||||||||||||||||||||||||
 
@@ -284,7 +289,7 @@ istream& operator>>(istream& is,  TLieOperator<T>& x)
   is >> buf;
   is >> buf;
   is >> buf;
-  for( i = 0; i < x.Env()->_numVar; i++ ) {
+  for( i = 0; i < x.Env()->numVar(); i++ ) {
     is >> buf;
     is >> buf;
     is >> buf;
@@ -304,7 +309,7 @@ ostream& operator<<(ostream& os,  TLieOperator<T>& x)
  int i;
  os << "\n************ Begin TLieOperator<T>  printCoeffs ********\n";
  os << "Weight: " << x.Weight() << endl;
- for( i = 0; i < x.Env()->_numVar; i++ ) {
+ for( i = 0; i < x.Env()->numVar(); i++ ) {
    os << "\n******************\n**** Component index = " << i << endl;
    os << x._comp[i];
    }
@@ -324,19 +329,14 @@ TJet<T> TLieOperator<T>::operator^( const TJet<T>& x ) const
           "Inconsistent environments." ) );
  }
 
- static TJetEnvironment<T>* pje;
- static TJet<T> answer;
- static int  s;
- static int  i;
- static IntArray ndx;
- static char adjustWeight;
+ 
+ typename EnvPtr<T>::Type pje = TLieOperator<T>::_myEnv;
+ 
+ TJet<T> answer( pje );
+ int s = pje->spaceDim();
+ IntArray ndx( pje->numVar() );
 
- pje = TLieOperator<T>::_myEnv;
- answer.Reconstruct( pje );
- s = pje->_spaceDim;
- ndx.Reconstruct( pje->_numVar );
-
- i = 0;
+ int i = 0;
 
  ndx(0) = 1; 
  answer = TLieOperator<T>::_comp[0]*x.D( ndx );

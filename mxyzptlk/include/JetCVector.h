@@ -45,10 +45,6 @@
 #ifndef JETCVECTOR_H
 #define JETCVECTOR_H
 
-#include <complex>
-#include <Jet.h>
-
-typedef TJetVector<double>                JetVector;
-typedef TJetVector<std::complex<double> > JetCVector;
+#include <JetVector.h>
 
 #endif // JETCVECTOR_H
