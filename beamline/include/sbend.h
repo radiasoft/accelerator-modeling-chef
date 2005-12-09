@@ -55,7 +55,7 @@ private:
                             // sgn( _usTan ) = - sgn( _dsTan )
   double _dphi;             // angle between in- and out-frames: a derived 
                             // quantity
-  FNAL::Complex _propPhase, _propTerm;
+  std::complex<double> _propPhase, _propTerm;
                             // Used to propagate through constant magnetic
                             // field using bend angle and edge angle data.
 
