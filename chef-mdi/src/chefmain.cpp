@@ -30,7 +30,7 @@
 #include <boost/python.hpp>
 #include <iostream>
 
-#include "CHEFGUI.h"
+#include <CHEFGUI.h>
 
 extern boost::python::class_ <CHEFGUI, CHEFGUI*,  boost::noncopyable>*  PythonTypeCHEFGUIPtr;
 
@@ -60,7 +60,7 @@ int main( int argc, char** argv )
 
   a.setStyle( new QWindowsStyle );
 
-  QDate expiration(2005,12,1);
+  QDate expiration(2006,6,1);
  
  
   if (QDate::currentDate() > expiration ) {
