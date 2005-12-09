@@ -123,7 +123,7 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
 
   // Create an initial Jet environment
   double scale[]  = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3 };
-  Jet::BeginEnvironment( 1 );
+  Jet__environment::BeginEnvironment( 1 );
 
   _x   = new coord(0.0);
   _y   = new coord(0.0);
@@ -132,8 +132,8 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
   _py  = new coord(0.0);
   _pz  = new coord(0.0);
 
-  _p_JetEnv  = Jet::EndEnvironment( scale );
-  _p_JetCEnv = JetC::_lastEnv = JetC__environment::CreateEnvFrom( _p_JetEnv );
+  _p_JetEnv  = Jet__environment::EndEnvironment(scale);
+  _p_JetCEnv = JetC::_lastEnv = *_p_JetEnv; // implicit conversion
 
   if( _p_JetEnv != Jet::_lastEnv ) {
     std::stringstream uic;
@@ -148,8 +148,6 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
   // Make connections
   connect( this, SIGNAL(_new_beamline()),
            this, SLOT  (_launch_browser()) );
-
-
 
 
 
@@ -1971,10 +1969,10 @@ void CHEFGUI::_editPartAndSect()
       //cout << endl;
 
       // Create a temporary Jet environment
-      Jet__environment*  formerJetEnv  = Jet::_lastEnv;
-      JetC__environment* formerJetCEnv = JetC::_lastEnv;
+      EnvPtr<double>::Type                 formerJetEnv  = Jet::_lastEnv;
+      EnvPtr<std::complex<double> >::Type  formerJetCEnv = JetC::_lastEnv;
       double scale[]  = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3 };
-      Jet::BeginEnvironment( order );
+      Jet__environment::BeginEnvironment( order );
       // coord x(0.0),  y(0.0),  z(0.0),
       //      px(0.0), py(0.0), pz(0.0);
       // ??? This needs to be fixed!!!
@@ -1984,8 +1982,8 @@ void CHEFGUI::_editPartAndSect()
       coord* px = new coord(0.0);
       coord* py = new coord(0.0);
       coord* pz = new coord(0.0);
-      Jet::EndEnvironment( scale );
-      JetC::_lastEnv = JetC__environment::CreateEnvFrom( _p_JetEnv );
+      Jet__environment::EndEnvironment(scale);
+      JetC::_lastEnv = *_p_JetEnv ; // implicit conversion
 
       // Sectorize between the partition markers.
       for( i = 0; i < numberOfSectors; i++ ) {
