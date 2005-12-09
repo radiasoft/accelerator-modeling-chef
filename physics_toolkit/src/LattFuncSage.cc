@@ -23,11 +23,20 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 /*
  *  File: LattFuncSage.cc
@@ -40,9 +49,6 @@
  *  Nov. 19, 1998
  */
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 #include <iomanip>
 
@@ -53,7 +59,6 @@
 #include <QBpropVisitor.h>
 
 using namespace std;
-using FNAL::Complex;
 
 using FNAL::pcout;
 using FNAL::pcerr;
@@ -178,20 +183,25 @@ int LattFuncSage::pushCalc( const Particle& prt,
   coord** coordPtr = new coord* [N];
 
   // Preserve the current Jet environment
-  Jet__environment*  storedEnv  = Jet::_lastEnv;
-  JetC__environment* storedEnvC = JetC::_lastEnv;
+  EnvPtr<double>::Type                storedEnv  = Jet::_lastEnv;
+  EnvPtr<std::complex<double> >::Type storedEnvC = JetC::_lastEnv;
 
   // Create a new Jet environment
   double scale[N];
   //   scale is probably no longer needed ... oh, well ...
-  Jet::BeginEnvironment( 1 );
-  for( i = 0; i < N; i++ ) {
+
+  for( int i = 0; i < N; i++ ) {
     scale[i] = 0.001;
+  }
+  Jet__environment::BeginEnvironment( 1 );
+ 
+  for( i = 0; i < N; i++ ) {
     coordPtr[i] = new coord( prt.State(i) );
   }
   // REMOVE: Jet__environment* pje = Jet::EndEnvironment( scale );
   // REMOVE: JetC::lastEnv = JetC::CreateEnvFrom( pje );
-  JetC::_lastEnv = JetC__environment::CreateEnvFrom( Jet::EndEnvironment( scale ) );
+
+  JetC::_lastEnv = *Jet__environment::EndEnvironment(scale); // implicit conversion operator
  
 
   Particle* p0Ptr = prt.Clone();
@@ -266,7 +276,7 @@ int LattFuncSage::pushCalc( const Particle& prt,
   // --------------------------------------------------------------------
   
   // Clean up before exit
-  Jet::_lastEnv = storedEnv;
+  Jet::_lastEnv  = storedEnv;
   JetC::_lastEnv = storedEnvC;
   for( i = 0; i < N; i++ ) { delete coordPtr[i]; }
   delete [] coordPtr;
@@ -479,7 +489,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   }  
   
   
-  Complex outState[6], phase;
+  std::complex<double>  outState[6], phase;
   double realState[6];
   double imagState[6];
   DeepBeamlineIterator getNext( _myBeamlinePtr );
@@ -501,10 +511,10 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
     zlorfik.getState( realState );
     fembril.getState( imagState );
 
-    outState[i_x ] = Complex( realState[i_x],  imagState[i_x] );
-    outState[i_y ] = Complex( realState[i_y],  imagState[i_y] );
-    outState[i_px] = Complex( realState[i_px], imagState[i_px] );
-    outState[i_py] = Complex( realState[i_py], imagState[i_py] );
+    outState[i_x ] = std::complex<double> ( realState[i_x],  imagState[i_x] );
+    outState[i_y ] = std::complex<double> ( realState[i_y],  imagState[i_y] );
+    outState[i_px] = std::complex<double> ( realState[i_px], imagState[i_px] );
+    outState[i_py] = std::complex<double> ( realState[i_py], imagState[i_py] );
   
     phase = outState[i_x] / abs( outState[i_x] );
     outState[i_x]  /= phase;
@@ -872,12 +882,12 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
   }
 
   // Preserve the current Jet environment
-  Jet__environment*  storedEnv  = Jet::_lastEnv;
-  JetC__environment* storedEnvC = JetC::_lastEnv;
+  EnvPtr<double>::Type                 storedEnv  = Jet::_lastEnv;
+  EnvPtr<std::complex<double> >::Type  storedEnvC = JetC::_lastEnv;
 
   // Reset current environment
-  Jet::_lastEnv = (Jet__environment*) (arg_jp->State().Env());
-  JetC::_lastEnv = JetC__environment::CreateEnvFrom( Jet::_lastEnv );
+  Jet::_lastEnv = arg_jp->State().Env();
+  JetC::_lastEnv = *Jet::_lastEnv; // implicit conversion operator
 
   MatrixD mtrx;
   LattFuncSage::lattFunc* infoPtr;
@@ -1804,7 +1814,7 @@ int LattFuncSage::FAD_Disp_Calc( /* const */ JetParticle* arg_jp,
                                    // a 5x5, so it shouldn't matter much.
   
   int numberFound = 0;
-  static const Complex c_one( 1.0, 0.0 );
+  static const std::complex<double>  c_one( 1.0, 0.0 );
   int theColumn;
 
   for( i = 0; i < 5; i++ ) {

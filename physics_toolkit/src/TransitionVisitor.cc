@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -26,11 +23,20 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 
 /*
@@ -45,16 +51,19 @@
  *
  */
 
-
-#include "TransitionVisitor.h"
-
-#include "rbend.h"
-#include "sbend.h"
-#include "CF_rbend.h"
-#include "CF_sbend.h"
-
-#include "LattFuncSage.h"
+#include <iosetup.h>
+#include <TransitionVisitor.h>
+#include <rbend.h>
+#include <sbend.h>
+#include <CF_rbend.h>
+#include <CF_sbend.h>
+#include <LattFuncSage.h>
 #include <typeinfo>
+
+using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
+
 
 // Static error codes
 
@@ -82,7 +91,6 @@ const char* TransitionVisitor::_errorMessage [] =
   "NULLBMLPTR: Asked to visit a null pointer."
 };
 
-using namespace std;
 
 // Constructors
 
@@ -191,7 +199,7 @@ void TransitionVisitor::visitBeamline( beamline* x )
     }
     else {
       _errorCode = ZEROLENGTH;
-      cerr << "\n*** ERROR ***                              "
+      (*pcerr) << "\n*** ERROR ***                              "
            << "\n*** ERROR *** " 
            << _errorMessage[_errorCode]
            << "\n*** ERROR *** " 
@@ -200,7 +208,7 @@ void TransitionVisitor::visitBeamline( beamline* x )
   }
   
   else if( _level < 0 ) {
-    cerr << "\n*** ERROR ***                              "
+    (*pcerr) << "\n*** ERROR ***                              "
             "\n*** ERROR *** TransitionVisitor::visitBeamline  "
             "\n*** ERROR *** Impossible! _level = " << _level << " < 0."
             "\n*** ERROR ***                              "

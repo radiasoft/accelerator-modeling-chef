@@ -19,7 +19,7 @@
 ******  The U.S. Government retains a world-wide non-exclusive, 
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S. and Foreign Copyright Laws.                                                                
+******  is protected under the U.S. and Foreign Copyright Laws.
 ******
 ******  Author:    Leo Michelotti                                     
 ******
@@ -203,7 +203,7 @@ void SurveyMatcher::orientPlane( vector<Vector>& stuff, Frame& f )
   }
   
   if( index != Frame::zAxisIndex() ) {
-    e._switch_columns( index, Frame::zAxisIndex() );
+    e.switch_columns( index, Frame::zAxisIndex() );
     double temp = lambda( index, index );
     lambda( index, index ) = lambda( Frame::zAxisIndex(), Frame::zAxisIndex() );
     lambda( Frame::zAxisIndex(), Frame::zAxisIndex() ) = temp;

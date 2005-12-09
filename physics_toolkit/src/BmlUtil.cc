@@ -23,9 +23,15 @@
 ******             Phone: (630) 840 4956
 ******             Email: michelotti@fnal.gov
 ******
-******  Usage, modification, and redistribution are subject to terms
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******
 **************************************************************************
 *************************************************************************/
@@ -34,13 +40,14 @@
 #include <config.h>
 #endif
 
-#include "GenericException.h"
-#include "BmlUtil.h"
-#include "TMatrix.h"
-#include "Mapping.h"
+#include <GenericException.h>
+#include <BmlUtil.h>
+#include <TMatrix.h>
+#include <Mapping.h>
 
-using FNAL::Complex;
 using namespace std;
+
+static std::complex<double> complex_0(0.0,0.0);
 
 ostream* BmlUtil::_errorStreamPtr  = &cerr;
 ostream* BmlUtil::_outputStreamPtr = &cout;
@@ -185,14 +192,14 @@ void BmlUtil::normalize( MatrixC& B )
   int i, j;
 
   // Normalizing the linear normal form coordinates
-  Complex  mi( 0., -1. );
+  std::complex<double>   mi( 0., -1. );
   MatrixD  J( "J", 6 );
   MatrixC  Nx;
   Nx = ( B.transpose() * J * B * J ) * mi;
 
   for( i = 0; i < 6; i++ ) {
    Nx( i, i ) = 1.0 / sqrt( abs( Nx(i,i) ) );
-   if( abs( ( (Complex) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) Nx(i,i) = 1.0;
+   if( abs( ( (std::complex<double> ) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) Nx(i,i) = 1.0;
 
        /* CAUTION */   for( j = 0; j < 6; j++ ) {
        /* CAUTION */    if( j == i ) continue;
@@ -212,7 +219,8 @@ void BmlUtil::normalize( MatrixC& B )
   B = B*Nx;
 
   // Try to get the phase correct ...
-  Complex m0, cm0, m1, cm1;
+  // ------------------------------------
+  std::complex<double>  m0, cm0, m1, cm1;
   m0  = B(0,0)/abs(B(0,0));
   cm0 = conj(m0);
   m1  = B(1,1)/abs(B(1,1));
@@ -237,8 +245,8 @@ void BmlUtil::normalize( MatrixC& B )
       B(i,4) = m0;
     }
   }
-}
 
+}
 
 // ============================================================== //
 
@@ -251,7 +259,7 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w,
   //   in the file BeamlineContext.cc.   - Leo Michelotti (October 29, 2004)
 
   static bool firstTime = true;
-  static const FNAL::Complex i( 0., 1. );
+  static const std::complex<double>  i( 0., 1. );
 
   if( firstTime ) {
     *_errorStreamPtr << "\n*** WARNING ***"

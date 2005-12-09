@@ -23,8 +23,14 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -33,8 +39,8 @@
 #include <config.h>
 #endif
 
-#include "ClosedOrbitSage.h"
-#include "DispersionSage.h"
+#include <ClosedOrbitSage.h>
+#include <DispersionSage.h>
 
 extern int filterTransverseTunes( /* const */ MatrixD&, Vector& );
 
@@ -139,33 +145,33 @@ DispersionSage::DispersionSage( const beamline& x, bool doClone )
 
 // REMOVE: void DispersionSage::_finishConstructor()
 // REMOVE: {
-// REMOVE:           cout << "DGN: Entering void DispersionSage::_finishConstructor()" << endl;
-// REMOVE:           cout << "DGN:   _n = _arrayPtr->size();" << endl;
+// REMOVE:           cout << "DGN: Entering void DispersionSage::_finishConstructor()" << std::endl;
+// REMOVE:           cout << "DGN:   _n = _arrayPtr->size();" << std::endl;
 // REMOVE:   _n = _arrayPtr->size();
-// REMOVE:           cout << "DGN:   if( 0 < _n ) {" << endl;
+// REMOVE:           cout << "DGN:   if( 0 < _n ) {" << std::endl;
 // REMOVE:           cout << "DGN:   if( 0 < "
 // REMOVE:        << _n
-// REMOVE:        << " ) {" << endl;
+// REMOVE:        << " ) {" << std::endl;
 // REMOVE:   if( 0 < _n ) {
-// REMOVE:             cout << "DGN: The value of _calcs is " << ((int) _calcs) << endl;
-// REMOVE:             cout << "DGN:     _calcs = new Info* [_n];" << endl;
+// REMOVE:             cout << "DGN: The value of _calcs is " << ((int) _calcs) << std::endl;
+// REMOVE:             cout << "DGN:     _calcs = new Info* [_n];" << std::endl;
 // REMOVE:             cout << "DGN:     _calcs = new Info* ["
 // REMOVE:                  << _n
-// REMOVE:                  << "];" << endl;
+// REMOVE:                  << "];" << std::endl;
 // REMOVE:     _calcs = new Info* [_n];
-// REMOVE:             cout << "DGN:     _calcs[0] = new Info[_n];" << endl;
+// REMOVE:             cout << "DGN:     _calcs[0] = new Info[_n];" << std::endl;
 // REMOVE:     _calcs[0] = new Info[_n];
-// REMOVE:             cout << "DGN:     Info* k = _calcs[0];" << endl;
+// REMOVE:             cout << "DGN:     Info* k = _calcs[0];" << std::endl;
 // REMOVE:     Info* k = _calcs[0];
-// REMOVE:             cout << "DGN:     for( int i = 0; i < _n; i++ ) { _calcs[i] = k++; }" << endl;
+// REMOVE:             cout << "DGN:     for( int i = 0; i < _n; i++ ) { _calcs[i] = k++; }" << std::endl;
 // REMOVE:     for( int i = 0; i < _n; i++ ) { 
 // REMOVE:               cout << "DGN:       _calcs["
 // REMOVE:                    << i
-// REMOVE:                    << "] = k++; " << endl;
+// REMOVE:                    << "] = k++; " << std::endl;
 // REMOVE:       _calcs[i] = k++; 
 // REMOVE:     }
 // REMOVE:   }
-// REMOVE:           cout << "DGN: Leaving void DispersionSage::_finishConstructor()" << endl;
+// REMOVE:           cout << "DGN: Leaving void DispersionSage::_finishConstructor()" << std::endl;
 // REMOVE: }
 
 void DispersionSage::_finishConstructor()
@@ -219,7 +225,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   // 
 
   if( _verbose ) {
-    *_outputStreamPtr << "DispersionSage -- Entering DispersionSage::fullCalc" << endl;
+    *_outputStreamPtr << "DispersionSage -- Entering DispersionSage::fullCalc" << std::endl;
     _outputStreamPtr->flush();
   }
 
@@ -228,7 +234,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   _finishConstructor();
 
   // Preserve the current Jet environment
-  Jet__environment* storedEnv = Jet::_lastEnv;
+  EnvPtr<double>::Type storedEnv = Jet::_lastEnv;
 
   int ret = 0;
   Particle* firstParticle = 0;
@@ -267,7 +273,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
     // Review the solution
     if( 0 == ret ) {
       if( _verbose ) {
-        *_outputStreamPtr << "DispersionSage -- Closed orbit successfully calculated." << endl;
+        *_outputStreamPtr << "DispersionSage -- Closed orbit successfully calculated." << std::endl;
         _outputStreamPtr->flush();
       }
       *p_jp = *local_jp;
@@ -278,11 +284,11 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
           *_outputStreamPtr << "DispersionSage -- ClosedOrbitSage error "
                             << ret
                             << " is being ignored." 
-                            << endl;
+                            << std::endl;
           *_errorStreamPtr  << "DispersionSage -- ClosedOrbitSage error "
                             << ret
                             << " is being ignored." 
-                            << endl;
+                            << std::endl;
           _outputStreamPtr->flush();
           _errorStreamPtr->flush();
         }
@@ -291,8 +297,8 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
       }
       else {
         if( _verbose ) {
-          *_errorStreamPtr << "DispersionSage -- Closed orbit not successfully calculated." << endl;
-          *_errorStreamPtr << "DispersionSage -- Leaving DispersionSage::fullCalc" << endl;
+          *_errorStreamPtr << "DispersionSage -- Closed orbit not successfully calculated." << std::endl;
+          *_errorStreamPtr << "DispersionSage -- Leaving DispersionSage::fullCalc" << std::endl;
           _errorStreamPtr->flush();
         }
         if( firstParticle  ) { delete firstParticle;   firstParticle = 0; }
@@ -308,12 +314,12 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   // At this point,  *p_jp is on a closed orbit, with
   //   appropriate Jet__environment. 
   //   For purposes of paranoia, I reset Jet::_lastEnv here.
-  Jet::_lastEnv = (Jet__environment*) p_jp->State().Env();
+  Jet::_lastEnv = p_jp->State().Env();
 
 
   // Calculate the closed orbit for an off-momentum particle ...
   if( _verbose ) {
-    *_outputStreamPtr << "DispersionSage --- Starting calculation of offset closed orbit." << endl;
+    *_outputStreamPtr << "DispersionSage --- Starting calculation of offset closed orbit." << std::endl;
     _outputStreamPtr->flush();
   }
 
@@ -336,7 +342,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   // Review the solution
   if( ret == 0 ) {
     if( _verbose ) {
-      *_outputStreamPtr << "DispersionSage -- Offset closed orbit successfully calculated." << endl;
+      *_outputStreamPtr << "DispersionSage -- Offset closed orbit successfully calculated." << std::endl;
       _outputStreamPtr->flush();
     }
   }
@@ -345,11 +351,11 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
       *_outputStreamPtr << "DispersionSage -- ClosedOrbitSage error "
                         << ret
                         << " is being ignored for offset orbit." 
-                        << endl;
+                        << std::endl;
       *_errorStreamPtr  << "DispersionSage -- ClosedOrbitSage error "
                         << ret
                         << " is being ignored for offset orbit." 
-                        << endl;
+                        << std::endl;
       _outputStreamPtr->flush();
       _errorStreamPtr->flush();
 
@@ -357,8 +363,8 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
     }
     else {
       if( _verbose ) {
-        *_outputStreamPtr << "DispersionSage -- Off-momentum closed orbit not successfully calculated." << endl;
-        *_outputStreamPtr << "DispersionSage -- Leaving DispersionSage::fullCalc" << endl;
+        *_outputStreamPtr << "DispersionSage -- Off-momentum closed orbit not successfully calculated." << std::endl;
+        *_outputStreamPtr << "DispersionSage -- Leaving DispersionSage::fullCalc" << std::endl;
         _outputStreamPtr->flush();
       }
 
@@ -381,7 +387,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
 
   // Attach dispersion data wherever desired ...
   if( _verbose ) {
-    *_outputStreamPtr << "DispersionSage --- Attaching dispersion data to the elements." << endl;
+    *_outputStreamPtr << "DispersionSage --- Attaching dispersion data to the elements." << std::endl;
     _outputStreamPtr->flush();
   }
 
@@ -424,7 +430,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
             "\n*** ERROR *** Horrible, inexplicable error occurred"
             "\n*** ERROR *** while trying to filter the tunes."
             "\n*** ERROR ***"
-         << endl;
+         << std::endl;
     ret = 111;
     if( firstParticle  ) { delete firstParticle;   firstParticle = 0; }
     if( secondParticle ) { delete secondParticle;  secondParticle = 0;}
@@ -436,7 +442,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
 
   // Final operations ....................................
   if( _verbose ) {
-    *_outputStreamPtr << "DispersionSage -- Leaving DispersionSage::fullCalc" << endl;
+    *_outputStreamPtr << "DispersionSage -- Leaving DispersionSage::fullCalc" << std::endl;
     _outputStreamPtr->flush();
   }
 
@@ -451,7 +457,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
 int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions )
 {
   if( _verbose ) {
-    *_outputStreamPtr << "DispersionSage -- Entering DispersionSage::pushCalc" << endl;
+    *_outputStreamPtr << "DispersionSage -- Entering DispersionSage::pushCalc" << std::endl;
     _outputStreamPtr->flush();
   }
 
@@ -517,7 +523,7 @@ int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions
   if( secondParticle ) { delete secondParticle;  secondParticle = 0;}
 
   if( _verbose ) {
-    *_outputStreamPtr << "DispersionSage -- Leaving DispersionSage::pushCalc" << endl;
+    *_outputStreamPtr << "DispersionSage -- Leaving DispersionSage::pushCalc" << std::endl;
     _outputStreamPtr->flush();
   }
 
@@ -539,7 +545,7 @@ int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions
 // POSTPONED 
 // POSTPONED   if( _verbose ) {
 // POSTPONED     *_outputStreamPtr << "DispersionSage -- Entering DispersionSage::fadCalc" 
-// POSTPONED          << endl;
+// POSTPONED          << std::endl;
 // POSTPONED     _outputStreamPtr->flush();
 // POSTPONED   }
 // POSTPONED 
@@ -630,7 +636,7 @@ int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions
 // POSTPONED             "*** ERROR *** Results of this calculation will not be    \n"
 // POSTPONED             "*** ERROR *** correct.                                   \n"
 // POSTPONED             "*** ERROR ***                                            \n"
-// POSTPONED          << endl;
+// POSTPONED          << std::endl;
 // POSTPONED     ret = DispersionSage::TOO_MANY_VECTORS;
 // POSTPONED   }
 // POSTPONED 
@@ -650,7 +656,7 @@ int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions
 // POSTPONED    
 // POSTPONED      // Attach dispersion data wherever desired ...
 // POSTPONED      if( _verbose ) {
-// POSTPONED        *_outputStreamPtr << "DispersionSage --- Attaching dispersion data to the elements." << endl;
+// POSTPONED        *_outputStreamPtr << "DispersionSage --- Attaching dispersion data to the elements." << std::endl;
 // POSTPONED        _outputStreamPtr->flush();
 // POSTPONED      }
 // POSTPONED    
@@ -708,7 +714,7 @@ int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions
 // POSTPONED                "*** ERROR *** Horrible error occurred while trying   \n"
 // POSTPONED                "*** ERROR *** to filter the tunes.                   \n"
 // POSTPONED                "*** ERROR ***                                        \n"
-// POSTPONED             << endl;
+// POSTPONED             << std::endl;
 // POSTPONED        ret = DispersionSage::IMPOSSIBILITY;
 // POSTPONED      }  
 // POSTPONED 
@@ -716,7 +722,7 @@ int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions
 // POSTPONED 
 // POSTPONED   // Final operations ....................................
 // POSTPONED   if( _verbose ) {
-// POSTPONED     *_outputStreamPtr << "DispersionSage -- Leaving DispersionSage::Disp_Calc" << endl;
+// POSTPONED     *_outputStreamPtr << "DispersionSage -- Leaving DispersionSage::Disp_Calc" << std::endl;
 // POSTPONED     _outputStreamPtr->flush();
 // POSTPONED   }
 // POSTPONED 
@@ -786,7 +792,7 @@ void DispersionSage::eraseAll()
                         "\n*** WARNING *** Mismatch in number of elements."
                         "\n*** WARNING *** Has the beamline been edited?"
                         "\n*** WARNING ***"
-                     << endl;
+                     << std::endl;
   }
 }
 
@@ -801,7 +807,7 @@ void DispersionSage::set_dpp( double x )
                      << " )"
                         "\n*** WARNING *** Non-positive argument changed."
                         "\n*** WARNING ***                         "
-                     << endl;
+                     << std::endl;
     if( x != 0.0 ) { _dpp = -x; }
   }
 }
