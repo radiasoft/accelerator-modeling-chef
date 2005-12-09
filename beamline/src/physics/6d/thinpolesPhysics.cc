@@ -28,15 +28,16 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-#include "thinpoles.h"
-#include "Jet.h"
-#include "Particle.h"
+#include <thinpoles.h>
+#include <Jet.h>
+#include <Particle.h>
 
+
+static std::complex<double> complex_i(0.0,1.0);
 
 void thin2pole::localPropagate( Particle& p ) {
  if(strength != 0) {
@@ -62,8 +63,8 @@ void thin12pole::localPropagate( Particle& p ) {
    x = p.state[0];
    y = p.state[1];
    
-   FNAL::Complex z( x, y );
-   FNAL::Complex z2 = z*z;
+   std::complex<double>  z( x, y );
+   std::complex<double>  z2 = z*z;
    z = z2*z2*z;
    
    p.state[3] -= k * real(z);
@@ -101,7 +102,7 @@ void thin14pole::localPropagate( Particle& p ) {
     x = p.state[0];
     y = p.state[1];
  
-    FNAL::Complex z( x, y );
+    std::complex<double>  z( x, y );
     z = z*z*z;
     z = z*z;
 
@@ -140,8 +141,8 @@ void thin16pole::localPropagate( Particle& p ) {
     x = p.state[0];
     y = p.state[1];
  
-    FNAL::Complex z( x, y );
-    FNAL::Complex u = z;
+    std::complex<double>  z( x, y );
+    std::complex<double>  u = z;
     z = z*z*z;
     z = z*z*u;
     
@@ -181,7 +182,7 @@ void thin18pole::localPropagate( Particle& p ) {
     x = p.state[0];
     y = p.state[1];
  
-    FNAL::Complex z( x, y );
+    std::complex<double>  z( x, y );
     z = z*z;
     z = z*z;
     z = z*z;
