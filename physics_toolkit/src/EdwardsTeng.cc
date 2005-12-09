@@ -23,12 +23,17 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -45,10 +50,14 @@
 
 #include <iomanip>
 
-#include "EdwardsTeng.h"
-#include "Particle.h"
+#include <EdwardsTeng.h>
+#include <Particle.h>
+#include <iosetup.h>
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
+
 
 ETinfo::ETinfo( const ETinfo& x ) 
 {
@@ -113,7 +122,7 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
  else {                                // Coupled lattice
 
   if( fabs( EdwardsTeng::csH - EdwardsTeng::csV ) < 1.0e-4 ) {
-    cerr << "\n"
+    (*pcerr) << "\n"
          << "*** ERROR *** EdwardsTeng()                        \n"
          << "*** ERROR *** \"Horizontal\" and \"vertical\" tunes\n"
          << "*** ERROR *** are too near each other for          \n"
@@ -130,7 +139,7 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
   if( fabs( cos2phi + 1.0 ) < 1.0e-4 ) cos2phi = - 1.0;  // ??? isn't it?
 
   if( fabs( cos2phi ) > 1.0 ) {
-   cerr << "\n"
+   (*pcerr) << "\n"
         << "*** ERROR: EdwardsTeng()                        \n"
         << "*** ERROR: cos( 2 phi ) = " 
         <<           setprecision(10) << cos2phi 
@@ -160,7 +169,7 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
   }
 
   if( fabs( D.determinant() - 1.0 ) > 1.0e-4 ) {
-    cerr << "\n"
+    (*pcerr) << "\n"
          << "*** ERROR *** EdwardsTeng()                        \n"
          << "*** ERROR *** The matrix D is non-symplectic.      \n"
          << "*** ERROR *** |D| = " << D.determinant() << "      \n"
@@ -199,18 +208,18 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
  // .......... A little test to keep everyone honest .....
  if( JH( 0, 0 ) != 0.0 )
   if( fabs( ( JH(0,0) + JH(1,1) ) / ( JH(0,0) - JH(1,1) ) ) > 1.0e-4 ) {
-   cerr << endl;
-   cerr << "*** WARNING ***                                " << endl;
-   cerr << "*** WARNING *** EdwardsTeng()                  " << endl;
-   cerr << "*** WARNING *** \"Horizontal\" matrix does not " << endl;
-   cerr << "*** WARNING *** pass symplecticity test.       " << endl;
-   cerr << "*** WARNING *** JH( 0, 0 ) = " << JH( 0, 0 )     << endl;
-   cerr << "*** WARNING *** JH( 1, 1 ) = " << JH( 1, 1 )     << endl;
-   cerr << "*** WARNING ***                                " << endl;
-   cerr << "*** WARNING *** The ratio is " 
+   (*pcerr) << endl;
+   (*pcerr) << "*** WARNING ***                                " << endl;
+   (*pcerr) << "*** WARNING *** EdwardsTeng()                  " << endl;
+   (*pcerr) << "*** WARNING *** \"Horizontal\" matrix does not " << endl;
+   (*pcerr) << "*** WARNING *** pass symplecticity test.       " << endl;
+   (*pcerr) << "*** WARNING *** JH( 0, 0 ) = " << JH( 0, 0 )     << endl;
+   (*pcerr) << "*** WARNING *** JH( 1, 1 ) = " << JH( 1, 1 )     << endl;
+   (*pcerr) << "*** WARNING ***                                " << endl;
+   (*pcerr) << "*** WARNING *** The ratio is " 
         << fabs( ( JH(0,0) + JH(1,1) ) / ( JH(0,0) - JH(1,1) ) )
         << endl;
-   cerr << "*** WARNING ***                                " << endl;
+   (*pcerr) << "*** WARNING ***                                " << endl;
    // return 5;
   }
 
@@ -230,18 +239,18 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
  // .......... A little test to keep everyone honest .....
  if( JV( 0, 0 ) != 0.0 )
   if( fabs( ( JV(0,0) + JV(1,1) ) / ( JV(0,0) - JV(1,1) ) ) > 1.0e-4 ) {
-   cerr << endl;
-   cerr << "*** WARNING ***                                " << endl;
-   cerr << "*** WARNING *** EdwardsTeng()                  " << endl;
-   cerr << "*** WARNING *** \"Vertical\" matrix does not   " << endl;
-   cerr << "*** WARNING *** pass symplecticity test.       " << endl;
-   cerr << "*** WARNING *** JV( 0, 0 ) = " << JV( 0, 0 )     << endl;
-   cerr << "*** WARNING *** JV( 1, 1 ) = " << JV( 1, 1 )     << endl;
-   cerr << "*** WARNING ***                                " << endl;
-   cerr << "*** WARNING *** The ratio is " 
+   (*pcerr) << endl;
+   (*pcerr) << "*** WARNING ***                                " << endl;
+   (*pcerr) << "*** WARNING *** EdwardsTeng()                  " << endl;
+   (*pcerr) << "*** WARNING *** \"Vertical\" matrix does not   " << endl;
+   (*pcerr) << "*** WARNING *** pass symplecticity test.       " << endl;
+   (*pcerr) << "*** WARNING *** JV( 0, 0 ) = " << JV( 0, 0 )     << endl;
+   (*pcerr) << "*** WARNING *** JV( 1, 1 ) = " << JV( 1, 1 )     << endl;
+   (*pcerr) << "*** WARNING ***                                " << endl;
+   (*pcerr) << "*** WARNING *** The ratio is " 
         << fabs( ( JV(0,0) + JV(1,1) ) / ( JV(0,0) - JV(1,1) ) )
         << endl;
-   cerr << "*** WARNING ***                                " << endl;
+   (*pcerr) << "*** WARNING ***                                " << endl;
    // return 6;
  }
 
@@ -322,7 +331,7 @@ int EdwardsTeng::doCalc( void* arg, ET_CRITFUNC Crit )
 
  for( i = 0; i < BMLN_dynDim; i++ )
   if( fabs( abs(lambda(i)) - 1.0 ) > 1.0e-4 ) {
-   cerr << "\n"
+   (*pcerr) << "\n"
         << "*** ERROR ***                                     \n"
         << "*** ERROR ***                                     \n"
         << "*** ERROR *** EdwardsTeng()                       \n"
@@ -341,7 +350,7 @@ int EdwardsTeng::doCalc( void* arg, ET_CRITFUNC Crit )
  if( ( abs( lambda(0) - conj( lambda(3) ) ) > 1.0e-4 )  ||
      ( abs( lambda(1) - conj( lambda(4) ) ) > 1.0e-4 )
    ) {
-   cerr << "\n"
+   (*pcerr) << "\n"
         << "*** ERROR *** EdwardsTeng()                        \n"
         << "*** ERROR *** Conjugacy condition has been violated\n"
         << "*** ERROR *** The lattice may be linearly unstable.\n"

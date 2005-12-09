@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -26,11 +23,20 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 
 /*
@@ -50,16 +56,22 @@
  */
 
 
-#include "LayoutVisitor.h"
+#include <iosetup.h>
+#include <LayoutVisitor.h>
+#include <bmlnElmnt.h>
+#include <quadrupole.h>
+#include <rbend.h>
+#include <sbend.h>
+#include <CF_rbend.h>
+#include <CF_sbend.h>
+#include <sextupole.h>
+#include <sector.h>
 
-#include "bmlnElmnt.h"
-#include "quadrupole.h"
-#include "rbend.h"
-#include "sbend.h"
-#include "CF_rbend.h"
-#include "CF_sbend.h"
-#include "sextupole.h"
-#include "sector.h"
+
+using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
+
 
 // Static error codes
 
@@ -67,7 +79,6 @@ const int LayoutVisitor::OKAY          = 0;
 const int LayoutVisitor::SECTORVISITED = 1;
 const int LayoutVisitor::NOFILEOPENED  = 2;
 
-using namespace std;
 
 // Constructors
 
@@ -98,7 +109,7 @@ LayoutVisitor::LayoutVisitor( const LayoutVisitor& x )
 {
   static bool firstTime = true;
   if( firstTime ) {
-    cerr << "\n*** WARNING *** "
+    (*pcerr) << "\n*** WARNING *** "
             "\n*** WARNING *** You should not copy a LayoutVisitor."
             "\n*** WARNING *** "
          << endl;
@@ -127,7 +138,7 @@ void LayoutVisitor::setDiscriminator( bmlnElmnt::Discriminator* dsc,
 
 void LayoutVisitor::visitSector   ( sector*     )
 {
-  cerr << "*** WARNING ***                                \n"
+  (*pcerr) << "*** WARNING ***                                \n"
        << "*** WARNING *** LayoutVisitor::visitSector       \n"
        << "*** WARNING ***                                \n"
        << "*** WARNING *** Sectors are not handled        \n"

@@ -32,13 +32,12 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 
+#include <iosetup.h>
 #include <GenericException.h>
 #include <BmlUtil.h>
 #include <slist.h>  // This should not be necessary!!!
@@ -53,6 +52,10 @@
 
 extern void BeamlineSpitout( int, BeamlineIterator& );
 
+using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
+
 const int BeamlineContext::OKAY = 0;
 const int BeamlineContext::NO_TUNE_ADJUSTER = 1;
 
@@ -61,7 +64,6 @@ const double BeamlineContext::_smallClosedOrbitYError   /* [m] */ = 1.0e-9;
 const double BeamlineContext::_smallClosedOrbitNPXError /*[rad]*/ = 1.0e-9;
 const double BeamlineContext::_smallClosedOrbitNPYError /*[rad]*/ = 1.0e-9;
 
-using namespace std;
 
 BeamlineContext::BeamlineContext( bool doClone, beamline* x )
 : _p_bml(x), _proton( x->Energy() ), _protonBunch(),
@@ -143,7 +145,7 @@ int BeamlineContext::assign( beamline* x )
   static bool firstTime = true;
   if( 0 != _p_bml ) 
   { if( firstTime ) 
-    { cerr << "\n*** WARNING *** BeamlineContext::assign "
+    { (*pcerr) << "\n*** WARNING *** BeamlineContext::assign "
               "invoked illegally."
               "\n*** WARNING *** This message appears only once.\n"
            << endl;
@@ -499,7 +501,7 @@ Mapping BeamlineContext::getOneTurnMap()
   }
 
   if( 0 == _p_jp ) {
-    cerr << "\n*** ERROR *** " << __FILE__ << ", line " << __LINE__ << ": "
+    (*pcerr) << "\n*** ERROR *** " << __FILE__ << ", line " << __LINE__ << ": "
          << "\n*** ERROR *** Mapping BeamlineContext::getOneTurnMap() const"
             "\n*** ERROR *** Unable to calculate closed orbit correctly."
             "\n*** ERROR *** Will return identity map. Your calculations"
@@ -746,9 +748,9 @@ void BeamlineContext::_createClosedOrbit()
  
   // If necessary, create a new Jet environment, 
   // centered on the closed orbit, for the Jet proton.
-  Jet__environment* storedEnv = Jet::_lastEnv;
-  Jet__environment* pje = Jet__environment::CreateEnvFrom( _p_co_p->State(), 
-                                              storedEnv->_maxWeight );
+
+  EnvPtr<double>::Type storedEnv = Jet::_lastEnv;
+  EnvPtr<double>::Type pje = Jet__environment::makeJetEnvironment( storedEnv->maxWeight(), _p_co_p->State() );
   // ... Note: this method does not reset Jet::_lastEnv;
   // ...       thus the (possible) necessity of the next line.
   Jet::_lastEnv = pje;
@@ -978,10 +980,12 @@ const EdwardsTengSage::Info* BeamlineContext::getETFuncPtr( int i )
     //   This information should have been preserved.
 
     // Preserve/reset the current Jet environment
-    Jet__environment*  storedEnv  = Jet::_lastEnv;
-    JetC__environment* storedEnvC = JetC::_lastEnv;
-    Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
-    JetC::_lastEnv = JetC__environment::CreateEnvFrom( Jet::_lastEnv );
+
+    EnvPtr<double>::Type                storedEnv  = Jet::_lastEnv;
+    EnvPtr<std::complex<double> >::Type storedEnvC = JetC::_lastEnv;
+
+    Jet::_lastEnv = _p_jp->State().Env();
+    JetC::_lastEnv = *Jet::_lastEnv ; // implicit conversion operator
 
     JetParticle* ptr_arg = _p_jp->Clone();
     Mapping id( "identity" );
@@ -1017,8 +1021,10 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
     int j;
     const int n = Particle::PSD;
     MatrixD covariance(n,n);
-    Jet__environment*  storedEnv = 0;
-    JetC__environment* storedEnvC = 0;
+
+    EnvPtr<double>::Type                  storedEnv;  // null 
+    EnvPtr<std::complex<double> >::Type   storedEnvC; // null
+
     JetParticle* ptr_arg = 0;
     coord** coordPtr = 0;
 
@@ -1027,8 +1033,8 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
 
       storedEnv  = Jet::_lastEnv;
       storedEnvC = JetC::_lastEnv;
-      Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
-      JetC::_lastEnv = JetC__environment::CreateEnvFrom( Jet::_lastEnv );
+      Jet::_lastEnv = _p_jp->State().Env();
+      JetC::_lastEnv = *Jet::_lastEnv; //implicit conversion operator
 
       ptr_arg = _p_jp->Clone();
     }
@@ -1044,13 +1050,17 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
 
         // Create a new Jet environment
         double scale[n];
-        //   scale is probably no longer needed ... oh, well ...
-        Jet::BeginEnvironment( 1 );
-        for( j = 0; j < n; j++ ) {
+        for( int j = 0; j < n; j++ ) {
           scale[j] = 0.001;
+        } 
+        //   scale is probably no longer needed ... oh, well ...
+
+        Jet__environment::BeginEnvironment( 1 );
+
+        for( int j = 0; j < n; j++ ) {
           coordPtr[j] = new coord( _proton.State(j) );
         }
-        JetC::_lastEnv = JetC__environment::CreateEnvFrom( Jet::EndEnvironment( scale ) );
+        JetC::_lastEnv = *Jet__environment::EndEnvironment(scale); // implicit conversion operator
 
         ptr_arg = _proton.ConvertToJetParticle();
       }
@@ -1110,10 +1120,12 @@ const LBSage::Info* BeamlineContext::getLBFuncPtr( int i )
   if( !_LBFuncsCalcd ) {
     // Preserve current Jet environment
     //   and reset to that of *_p_jp
-    Jet__environment*  storedEnv  = Jet::_lastEnv;
-    JetC__environment* storedEnvC = JetC::_lastEnv;
-    Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
-    JetC::_lastEnv = JetC__environment::CreateEnvFrom( Jet::_lastEnv );
+
+    EnvPtr<double>::Type  storedEnv                = Jet::_lastEnv;
+    EnvPtr<std::complex<double> >::Type storedEnvC = JetC::_lastEnv;
+
+    Jet::_lastEnv = _p_jp->State().Env();
+    JetC::_lastEnv = *Jet::_lastEnv; // implicit conversion operator
 
     _LBFuncsCalcd = ( 0 == _p_lbs->doCalc( _p_jp, beamline::yes ) );
 
@@ -1149,10 +1161,12 @@ const DispersionSage::Info* BeamlineContext::getDispersionPtr( int i )
       }
 
       // Preserve/reset the current Jet environment
-      Jet__environment*  storedEnv  = Jet::_lastEnv;
-      JetC__environment* storedEnvC = JetC::_lastEnv;
-      Jet::_lastEnv = (Jet__environment*) (_p_jp->State().Env());
-      JetC::_lastEnv = JetC__environment::CreateEnvFrom( Jet::_lastEnv );
+
+      EnvPtr<double>::Type  storedEnv                 = Jet::_lastEnv;
+      EnvPtr<std::complex<double> >::Type  storedEnvC = JetC::_lastEnv;
+ 
+      Jet:: _lastEnv = _p_jp->State().Env();
+      JetC::_lastEnv = *Jet::_lastEnv; //implicit conversion operator
 
       // DispersionSage::Options newOptions;
       // newOptions.onClosedOrbit = true;
@@ -1310,7 +1324,7 @@ int BeamlineContext::beginIterator()
 {
   if(_p_rbi||_p_dbi||_p_drbi)
   { 
-    cerr << "*** WARNING *** "
+    (*pcerr) << "*** WARNING *** "
          << __FILE__ 
          << ", line "
          << __LINE__
@@ -1330,7 +1344,7 @@ int BeamlineContext::beginDeepIterator()
 {
   if(_p_bi||_p_rbi||_p_drbi)
   { 
-    cerr << "*** WARNING *** "
+    (*pcerr) << "*** WARNING *** "
          << __FILE__ 
          << ", line "
          << __LINE__
@@ -1350,7 +1364,7 @@ int BeamlineContext::beginReverseIterator()
 {
   if(_p_bi||_p_dbi||_p_drbi)
   { 
-    cerr << "*** WARNING *** "
+    (*pcerr) << "*** WARNING *** "
          << __FILE__ 
          << ", line "
          << __LINE__
@@ -1370,7 +1384,7 @@ int BeamlineContext::beginDeepReverseIterator()
 {
   if(_p_bi||_p_rbi||_p_dbi)
   { 
-    cerr << "*** WARNING *** "
+    (*pcerr) << "*** WARNING *** "
          << __FILE__ 
          << ", line "
          << __LINE__

@@ -23,12 +23,17 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 /*
 ** int ConvertNtoTunes( MappingC& nu, const CLieOperator& N )
 **
@@ -55,13 +60,15 @@
 #include <iosetup.h>
 #include <LieOperator.h>
 #include <Mapping.h>
+#include <Matrix.h>
 #include <MathConstants.h>
 #include <iomanip>
 
 using namespace std;
-using FNAL::Complex;
 using FNAL::pcerr;
 using FNAL::pcout;
+
+static std::complex<double> complex_0(0.0, 0.0);
 
 int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
 {
@@ -336,22 +343,22 @@ int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
 int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
 {
   int returnValue = 0;
-  static const Complex c_zero = Complex( 0.0, 0.0 );
-  static const Complex c_i    = Complex( 0.0, 1.0 );
+  static const std::complex<double> c_zero = std::complex<double>( 0.0, 0.0 );
+  static const std::complex<double> c_i    = std::complex<double>( 0.0, 1.0 );
 
   if( nu.Env() != N.Env() )        return 137;
   if( nu.Dim() != N.Dim() )        return 138;
 
-  int sd = N.Env()->_spaceDim;
+  int sd = N.Env()->spaceDim();
   if( sd%2 != 0 )                  return 139;
   int sd2 = sd/2;
 
   // Environment is set ........................
-  JetC__environment* thisEnv = ((JetC__environment*) N.Env());
+  EnvPtr<std::complex<double> >::Type thisEnv = N.Env();
 
   JLCterm* jlctPtr;
-  IntArray  ndx( N.Env()->_numVar );
-  Complex   v;
+  IntArray  ndx( N.Env()->numVar() );
+  std::complex<double>   v;
 
   // Construct the Mapping .......................
   int  i, j;

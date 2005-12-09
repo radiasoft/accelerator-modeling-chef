@@ -23,8 +23,14 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -505,7 +511,7 @@ void FPSolver::operator()( JetProton* p, FP_CRITFUNC Crit )
     FORALL(i) particleCoord[i] += eps(i,0);
 
     FORALL(i) {
-      y.setVariable( i, ((Jet__environment*) p->State().Env()) );
+      y.setVariable( i, p->State().Env() );
       w.SetComponent( i, y );
     }
     p->setState(w);
@@ -627,7 +633,7 @@ void FPSolver::operator()( double* result )
 
   do{
     FORALL(i) {
-      y.setVariable( i, ((Jet__environment*) p.State().Env()) );
+      y.setVariable( i,  p.State().Env() );
       w.SetComponent( i, y );
     }
     p.setState(w);

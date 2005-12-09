@@ -23,8 +23,14 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -46,50 +52,55 @@
 **
 */
 
-#include "GenericException.h"
-#include "mxyzptlk.h"
+#include <GenericException.h>
+#include <mxyzptlk.h>
+#include <Matrix.h>
 
 #define MLT1  1.0e-6
 
-using namespace std;
-using FNAL::Complex;
+static std::complex<double> complex_0 (0.0, 0.0);
+static std::complex<double> complex_1 (1.0, 0.0);
 
-bool sh0( const IntArray& index, const Complex& /* value */ ) {
+
+using namespace std;
+
+
+bool sh0( const IntArray& index, const std::complex<double>& /* value */ ) {
  if( index(0) != index(3) + 1 ) return false;
  if( index(1) != index(4) )     return false;
  if( index(2) != index(5) )     return false;
  return true;
 }
 
-bool sh1( const IntArray& index, const Complex& /* value */ ) {
+bool sh1( const IntArray& index, const std::complex<double>& /* value */ ) {
  if( index(0) != index(3) )     return false;
  if( index(1) != index(4) + 1 ) return false;
  if( index(2) != index(5) )     return false;
  return true;
 }
 
-bool sh2( const IntArray& index, const Complex& /* value */ ) {
+bool sh2( const IntArray& index, const std::complex<double>& /* value */ ) {
  if( index(0) != index(3) )     return false;
  if( index(1) != index(4) )     return false;
  if( index(2) != index(5) + 1 ) return false;
  return true;
 }
 
-bool sh3( const IntArray& index, const Complex& /* value */ ) {
+bool sh3( const IntArray& index, const std::complex<double>& /* value */ ) {
  if( index(0) != index(3) - 1 ) return false;
  if( index(1) != index(4) )     return false;
  if( index(2) != index(5) )     return false;
  return true;
 }
 
-bool sh4( const IntArray& index, const Complex& /* value */ ) {
+bool sh4( const IntArray& index, const std::complex<double>& /* value */ ) {
  if( index(0) != index(3) )     return false;
  if( index(1) != index(4) - 1 ) return false;
  if( index(2) != index(5) )     return false;
  return true;
 }
 
-bool sh5( const IntArray& index, const Complex& /* value */ ) {
+bool sh5( const IntArray& index, const std::complex<double>& /* value */ ) {
  if( index(0) != index(3) )     return false;
  if( index(1) != index(4) )     return false;
  if( index(2) != index(5) - 1 ) return false;
@@ -104,10 +115,10 @@ void normalForm( const Mapping& theMapping, /* input */
                  CLieOperator*  N,
                  CLieOperator*  T ) 
 {
- // typedef char (*MX_R_FUNCCPTR)(const IntArray&, const Complex&);
- // typedef char (*CFUNCPTR)(const IntArray&, const Complex& );
+ // typedef char (*MX_R_FUNCCPTR)(const IntArray&, const std::complex<double>&);
+ // typedef char (*CFUNCPTR)(const IntArray&, const std::complex<double>& );
  // static MX_R_FUNCCPTR shear[] = { sh0, sh1, sh2, sh3, sh4, sh5 };
- bool (*shear[])( const IntArray&, const Complex& ) 
+ bool (*shear[])( const IntArray&, const std::complex<double>& ) 
     = { sh0, sh1, sh2, sh3, sh4, sh5 };
  int i, j;
 
@@ -125,7 +136,7 @@ void normalForm( const Mapping& theMapping, /* input */
  B = A.eigenVectors();
 
  // Normalizing the linear normal form coordinates
- Complex  mi( 0., -1. );
+ std::complex<double>  mi( 0., -1. );
  MatrixD  J( "J", 6 );
  MatrixC  Nx;
  Nx = ( B.transpose() * J * B * J ) * mi;
@@ -139,7 +150,7 @@ void normalForm( const Mapping& theMapping, /* input */
                                        // ??? In principle, could get divide
                                        // ??? by zero here.
 
-  if( abs( ( (Complex) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) Nx(i,i) = 1.0;
+  if( abs( ( (std::complex<double>) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) Nx(i,i) = 1.0;
 
       /* CAUTION */   for( j = 0; j < 6; j++ ) {
       /* CAUTION */    if( j == i ) continue;
@@ -161,7 +172,7 @@ void normalForm( const Mapping& theMapping, /* input */
 
 
  // Try to get the phase correct ...
- Complex m0, cm0, m1, cm1;
+ std::complex<double> m0, cm0, m1, cm1;
  m0  = B(0,0)/abs(B(0,0));
  cm0 = conj(m0);
  m1  = B(1,1)/abs(B(1,1));
@@ -274,7 +285,7 @@ void normalForm( const Mapping& theMapping, /* input */
 
 
  // And the rest ...
- Complex          factor, denom, temp;
+ std::complex<double>          factor, denom, temp;
  int              l, ll;
  JLCterm*         q;
  JetC             scr;
@@ -309,13 +320,11 @@ void normalForm( const Mapping& theMapping, /* input */
     // Either absorption or resonance subtraction ... 
     denom = factor - complex_1;
     if( abs( denom ) <= 1.0e-7 ) {
-      N[k](i).addTerm( new JLCterm( q->exponents(), 
-                                    - q->coefficient(), 
-                                    ((JetC__environment*) CL1.Env()) ) );
+      N[k](i).addTerm( JLCterm( q->exponents(), - q->coefficient(), CL1.Env() ) );
     }
     else {
       q->coefficient() /= denom;
-      scr.addTerm( new JLCterm( *q ) );
+      scr.addTerm( JLCterm( *q ) );
     }
 
    }

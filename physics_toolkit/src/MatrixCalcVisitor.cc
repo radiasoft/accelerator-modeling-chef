@@ -23,8 +23,14 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -33,17 +39,21 @@
 #include <config.h>
 #endif
 
-#include "GenericException.h"
-#include "beamline.h"
-#include "MatrixCalcVisitor.h"
+#include <GenericException.h>
+#include <beamline.h>
+#include <MatrixCalcVisitor.h>
+#include <iosetup.h>
+
+using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
+
 
 int MatrixCalcVisitor::DONE         =  0;
 int MatrixCalcVisitor::UNSTABLE     = -1;
 int MatrixCalcVisitor::INTEGER_TUNE = -2;
 int MatrixCalcVisitor::PHASE_ERROR  = -3;
 
-using namespace std;
-using FNAL::Complex;
 
 MatrixCalcVisitor::MatrixCalcVisitor( const Particle& x )
 : _numberOfElements(0), 
@@ -394,7 +404,7 @@ int MatrixCalcVisitor::_doCalc()
     else                             sn = - sqrt( 1.0 - cs*cs );
   }
   else {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** MatrixCalcVisitor::_doCalc          \n"
             "*** ERROR *** cos( psi_H ) = "
          << cs
@@ -407,7 +417,7 @@ int MatrixCalcVisitor::_doCalc()
   }
 
   if( sn == 0.0 ) {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** MatrixCalcVisitor::_doCalc          \n"
             "*** ERROR *** Integer horizontal tune.            \n"
             "*** ERROR ***                                     \n"
@@ -428,7 +438,7 @@ int MatrixCalcVisitor::_doCalc()
     else                           sn = - sqrt( 1.0 - cs*cs );
   }
   else {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** MatrixCalcVisitor::_doCalc          \n"
             "*** ERROR *** cos( psi_V ) = "
          << cs
@@ -441,7 +451,7 @@ int MatrixCalcVisitor::_doCalc()
   }
 
   if( sn == 0.0 ) {
-    cerr << "*** ERROR ***                                     \n"
+    (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** MatrixCalcVisitor::_doCalc          \n"
             "*** ERROR *** Integer vertical tune.              \n"
             "*** ERROR ***                                     \n"
@@ -458,7 +468,7 @@ int MatrixCalcVisitor::_doCalc()
   MatrixC w_x(2,1);
   MatrixC w_y(2,1);
   double  dum;
-  Complex ci( 0., 1.0 );
+  std::complex<double> ci( 0., 1.0 );
 
   w_x( i_x,  0 ) = dum = sqrt( beta_x );
   w_x( i_px, 0 ) = ( ci - alpha_x ) / dum;
@@ -466,7 +476,7 @@ int MatrixCalcVisitor::_doCalc()
   w_y( i_py, 0 ) = ( ci - alpha_y ) / dum;
 
   MatrixC outState_x(2,1), outState_y(2,1);
-  Complex phase;
+  std::complex<double> phase;
  
   double psi_x = 0.0;
   double psi_y = 0.0;
@@ -490,13 +500,13 @@ int MatrixCalcVisitor::_doCalc()
     if(   fabs( imag( outState_x(i_px,0) )*real( outState_x(i_x,0) ) - 1.0 )
         > 0.01 )
     {
-  	cerr << "*** ERROR *** Phase error in horizontal plane at index " 
+  	(*pcerr) << "*** ERROR *** Phase error in horizontal plane at index " 
              << jc
              << endl;
-  	cerr << "*** ERROR *** imag( outState_x(i_px,0) ) = " 
+  	(*pcerr) << "*** ERROR *** imag( outState_x(i_px,0) ) = " 
              << imag( outState_x(i_px,0) ) 
              << endl;
-  	cerr << "*** ERROR *** outState_x(i_px,0) = " 
+  	(*pcerr) << "*** ERROR *** outState_x(i_px,0) = " 
              << outState_x(i_px,0)
              << endl;
 
@@ -510,13 +520,13 @@ int MatrixCalcVisitor::_doCalc()
     if(   fabs( imag( outState_y(i_py,0) )*real( outState_y(i_y,0) ) - 1.0 )
         > 0.01 )
     {
-  	cerr << "*** ERROR *** Phase error in vertical plane at index " 
+  	(*pcerr) << "*** ERROR *** Phase error in vertical plane at index " 
              << jc
              << endl;
-  	cerr << "*** ERROR *** imag( outState_y(i_py,0) ) = " 
+  	(*pcerr) << "*** ERROR *** imag( outState_y(i_py,0) ) = " 
              << imag( outState_y(i_py,0) ) 
              << endl;
-  	cerr << "*** ERROR *** outState_y(i_py,0) = " 
+  	(*pcerr) << "*** ERROR *** outState_y(i_py,0) = " 
              << outState_y(i_py,0)
              << endl;
 

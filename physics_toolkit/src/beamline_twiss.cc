@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -26,26 +23,38 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 
 #include <iomanip>
-
-#include "LattFuncSage.h"    // ??? Only temporary, until beamline::twiss functions vanish.
-#include "ClosedOrbitSage.h" // 
+#include <iosetup.h>
+#include <LattFuncSage.h>    // ??? Only temporary, until beamline::twiss functions vanish.
+#include <ClosedOrbitSage.h> // 
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
+
 
 int beamline::twiss( JetParticle& p, double dpp, short int flag ) 
 {
   static char firstTime = 1;
   if( firstTime ) {
     firstTime = 0;
-    cerr << "*** WARNING ***                                      \n"
+    (*pcerr) << "*** WARNING ***                                      \n"
             "*** WARNING *** beamline::twiss                      \n"
             "*** WARNING ***                                      \n"
             "*** WARNING *** This member function is obsolete.    \n"
@@ -74,11 +83,11 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
     clsg.setForcedCalc();
     if( ( ret = clsg.findClosedOrbit( &p ) ) == 0 )
     {
-      cerr << "beamline::twiss: Closed orbit successfully calculated." << endl;
+      (*pcerr) << "beamline::twiss: Closed orbit successfully calculated." << endl;
     }
     else
     {
-      cerr << "beamline::twiss: Closed orbit not successfully calculated." << endl;
+      (*pcerr) << "beamline::twiss: Closed orbit not successfully calculated." << endl;
       delete [] zero;
       return ret;
     }
@@ -114,7 +123,7 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
     }  
 
     if( ret != 0 ) {
-      cerr << "beamline::twiss: Problem calculating the Twiss \n"
+      (*pcerr) << "beamline::twiss: Problem calculating the Twiss \n"
   	   << "parameters." << endl;
       delete [] zero;
       return ret;
@@ -140,7 +149,7 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
     }
   
     if( ret != 0 ) {
-      cerr << "beamline::twiss: Problem calculating dispersion."
+      (*pcerr) << "beamline::twiss: Problem calculating dispersion."
   	   << endl;
       delete [] zero;
       return ret;
@@ -163,7 +172,7 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
             q->dataHook.eraseAll("Dispersion");
           }
           else {
-            cerr << "beamline::twiss: Dispersion data missing from "
+            (*pcerr) << "beamline::twiss: Dispersion data missing from "
                  << q->Type() << "  " << q->Name()
                  << endl;
             ret = -1;
@@ -172,7 +181,7 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
           }
         }
         else {
-          cerr << "beamline::twiss: Twiss data missing from "
+          (*pcerr) << "beamline::twiss: Twiss data missing from "
                << q->Type() << "  " << q->Name()
                << endl;
           ret = -1;
@@ -236,10 +245,10 @@ int beamline::twiss( char, JetParticle& p ) {
     csV = ( mtrx(1,1) + mtrx(4,4) ) / 2.0;  // cosine vertical   tune
 
     if( fabs(csH) > 1.0 || fabs(csV) > 1.0 ) {
-      cerr << "\n*** WARNING *** " << endl ;
-      cerr << "*** WARNING *** beamline::twiss(JetParticle)  Lattice is unstable." << endl;
-      cerr << "*** WARNING *** beamline::twiss() did not exit properly." << endl;
-      cerr << "*** WARNING *** " << endl;
+      (*pcerr) << "\n*** WARNING *** " << endl ;
+      (*pcerr) << "*** WARNING *** beamline::twiss(JetParticle)  Lattice is unstable." << endl;
+      (*pcerr) << "*** WARNING *** beamline::twiss() did not exit properly." << endl;
+      (*pcerr) << "*** WARNING *** " << endl;
       delete [] zero;
       delete [] z;
       delete latticeFunctions;
@@ -334,7 +343,7 @@ int beamline::twiss( lattFunc& W_arg, JetParticle& p, short int flag ) {
 
   if( firstTime ) {
     firstTime = 0;
-    cerr << "***WARNING***                                           \n"
+    (*pcerr) << "***WARNING***                                           \n"
             "***WARNING***  beamline::twiss( lattFunc& W, JetParticle& p)      \n"
             "***WARNING***  Using LattFuncSage is preferred.         \n"
             "***WARNING***  This member function will disappear      \n"
@@ -371,7 +380,7 @@ int beamline::twiss( lattFunc& W_arg, JetParticle& p, short int flag ) {
 
     if( ret == 0 ) twissDone = 1;
     else {
-      cerr << "***WARNING***                                     \n"
+      (*pcerr) << "***WARNING***                                     \n"
               "***WARNING*** beamline::twiss                     \n"
               "***WARNING*** Failed.                             \n"
               "***WARNING***                                     \n"
