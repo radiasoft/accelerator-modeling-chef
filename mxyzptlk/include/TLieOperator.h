@@ -30,13 +30,26 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ****** 
-******  Revision History:
-******                                                               
-******  Sept 2005   ostiguy@fnal.gov
-******              - new code based on a single template parameter
-******                instead of two. Mixed mode handled
-******                using conversion operators.
-******                 
+******  Revision History
+******
+******  Feb-may 2005   Jean-Francois Ostiguy
+******                 ostiguy@fnal.gov 
+****** 
+****** - new memory management scheme 
+******                                                            
+******  Sep-Dec 2005  ostiguy@fnal.gov
+******  
+****** - refactored code to usea single class template parameter
+******   instead of two. Mixed mode operations now handled using 
+******   implicit conversion operators.
+****** - reference counting now based on using boost::intrusive pointer
+****** - reference counted TJetEnvironment
+****** - implementation details completely moved to TJL   
+****** - header files support for both explicit and implicit template 
+******   instantiations
+******   (default for mxyzptlk = explicit)
+******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES
+******
 ******                                                                 
 **************************************************************************
 *************************************************************************/
@@ -60,16 +73,18 @@ template<typename T>
 TLieOperator<T> operator^( const TLieOperator<T>&, const TLieOperator<T>& );
 
 
-// Class TLieOperator template
 template<typename T>
 class TLieOperator : public TJetVector<T>
 {
+
 public:
+
   // Constructors and destructors_____________________________________
-  TLieOperator( TJetEnvironment<T>* = (TJet<T>::_lastEnv) );
+
+  TLieOperator( typename EnvPtr<T>::Type = (TJet<T>::_lastEnv) );
   TLieOperator( const TLieOperator& );
   TLieOperator( const TJet<T>& );  // Creates a Hamiltonian vector field.
-  TLieOperator( char*, TJetEnvironment<T>* = (TJet<T>::_lastEnv) ); 
+  TLieOperator( char*, typename EnvPtr<T>::Type = (TJet<T>::_lastEnv) ); 
                                        // Creates the identity function.  
   ~TLieOperator();
 

@@ -6,7 +6,7 @@
 ******                                    
 ******  File:      TJetConversions.cc
 ******                                                                
-******  Copyright (c) Universities Research Association, Inc. / Fermilab   
+******  Copyright Universities Research Association, Inc. / Fermilab   
 ******                All Rights Reserved
 ******
 ******  Usage, modification, and redistribution are subject to terms          
@@ -16,51 +16,55 @@
 ******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
 ******  The U.S. Government retains a world-wide non-exclusive, 
 ******  royalty-free license to publish or reproduce documentation 
-*****  and software for U.S. Government purposes. This software 
+*****   and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******
 ******  Revision History:
-******                             
-******  Feb 2005 - Jean-Francois Ostiguy
-*****              ostiguy@fnal.gov
+******
+******  Feb-May 2005  Jean-Francois Ostiguy
+******                ostiguy@fnal.gov
+******
+******  - Efficiency improvements.
+******  - New memory management scheme.
+******
+******  Sept-Dec 2005  ostiguy@fnal.gov
 ******  
-******  Efficiency improvements.
-******  - new memory management 
-******  
-******  Sep 2005   ostiguy@fnal.gov
-******   
-******  -new code based on a single template parameter and 
-******   conversion operators. 
-******  
+****** - refactored code to usea single class template parameter
+******   instead of two. Mixed mode operations now handled using 
+******   implicit conversion operators.
+****** - reference counting now based on using boost::intrusive pointer
+****** - reference counted TJetEnvironment
+****** - all implementation details now completely moved to TJL   
+****** - redesigned coordinate class Tcoord. New class Tparams for parameters
+****** - header files support for both explicit and implicit template instantiations
+******   (default for mxyzptlk = explicit)
+******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES 
+******
 **************************************************************************
 *************************************************************************/
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
+#include <iosetup.h>
 #include <MathConstants.h>
 
 #include <GenericException.h>
-#include <complexAddon.h>
 #include <VectorD.h>
 
 #include <TJL.h>
 #include <TJetEnvironment.h>
 #include <TJet.h>
-#include <TJetVector.h>
 #include <TLieOperator.h>
-#include <TMapping.h>
+
+std::complex<double> complex_0(0.0, 0.0);
+std::complex<double> complex_1(1.0, 0.0);
+std::complex<double> complex_i(0.0, 1.0);
 
 
 #define CHECKOUT(test,fcn,message)    \
@@ -74,7 +78,7 @@
 //      External routines
 //
 
-extern char nexcom( int, int, int* );  
+extern bool nexcom( int, int, int* );  
                                 // Computes the next composition
                                 //  of an integer into a number of parts.
                                 //  Algorithm devised by Herbert Wilf.
@@ -87,304 +91,9 @@ extern "C" {
 }
 
 using namespace std;
-using FNAL::Complex;
 
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-bool EnvEquivalent( const TJetEnvironment<double>* x, 
-                    const TJetEnvironment<complex<double> >* y ) 
-{
-  static int i;
-  if( x->_numVar    != y->_numVar    ) return false;
-  if( x->_spaceDim  != y->_spaceDim  ) return false;
-  if( x->_maxWeight != y->_maxWeight ) return false;
-  for( i = 0; i < x->_numVar; i++ ) {
-    if( ( x->_refPoint[i] != real( y->_refPoint[i] ) ) ||
-        ( imag( y->_refPoint[i] ) != 0.0  )
-      )                                return false;
-    if( x->_scale[i] != y->_scale[i] ) return false;
-  }
-  return true;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-
-bool EnvEquivalent( const TJetEnvironment<complex<double> >* x, 
-                    const TJetEnvironment<double>* y ) {
-  return EnvEquivalent( y, x );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-TJetEnvironment<double>::operator TJetEnvironment<complex<double> >* () const {
-
-  // NOTE: Using the TJetEnvironment copy constructor is forbidden;  
-
-  TJetEnvironment<complex<double> >*  zp = new TJetEnvironment<complex<double> >; 
-  
-  zp->_maxWeight   =  _maxWeight; 
-  zp->_monomial    =  0;
-  zp->_maxTerms    =  _maxTerms; 
-  zp->_numVar      =  _numVar;
-  zp->_spaceDim    =  _spaceDim;
-  zp->_pbok        =  _pbok;  
-  zp->_dof         =  _dof;  
-  zp->_TJLmonomial =  0; 
-  zp->_TJLmml      =  0; 
-  zp->_offset.reconstruct( _offset );
-
-  if( TJet<complex<double> >::workEnvironment() != 0 ) {
-    throw( GenericException( __FILE__, __LINE__, 
-           "TJetEnvironment<double>::operator TJetEnvironment<complex<double> > ()"
-           "Close open TJet<complex<double> > environment before copying." ) );
-  }
-
-  if( _numVar == 0 ) {
-    cerr << "\n\n"
-         << "*** WARNING ***                                          \n"
-         << "*** WARNING *** TJetEnvironment<double>::operator TJetEnvironment<complex<double> > ()\n"
-         << "*** WARNING *** ( const TJetEnvironment<double,complex<double> >& )              \n"
-         << "*** WARNING ***                                          \n"
-         << "*** WARNING *** You are copying a null environment.      \n"
-         << "*** WARNING ***                                          \n"
-         << endl;
-
-    zp->_monomial           = 0;
-    zp->_TJLmonomial        = 0;
-    zp->_TJLmml             = 0;
-    zp->_maxTerms           = 0;
-    zp->_exponent           = 0;
-    zp->_pbok               = 0;
-    zp->_numVar             = 0;
-    zp->_maxWeight          = 0;
-    zp->_spaceDim           = -1;
-    zp->_dof                = 0;            
-    zp->_refPoint           = 0;       
-    zp->_scale              = 0;
-
-    return zp;
-  }
-
-  int w = zp->_maxWeight;
-  int n = zp->_numVar;
-
-  if( zp->_monomial ) { delete [] zp->_monomial; }
-  zp->_monomial   = new std::complex<double>[ bcfRec( w + n, n ) ];
-
-  if (zp->_exponent) delete  zp->_exponent;   zp->_exponent = new int[ n ];            
-  zp->_pbok    = _pbok;
-  zp->_dof     = _dof;
-
-  if(zp->_refPoint) delete zp->_refPoint;  zp->_refPoint = new complex<double> [ n ];  
-  if(zp->_scale)    delete zp->_scale;     zp->_scale    = new double[ n ];            
-
-  zp->_allZeroes.Reconstruct( n );            
-
-  for( int i = 0; i < n; i++ ) {
-   zp->_refPoint[i]   = complex<double> ( _refPoint[i], 0.0 );
-   zp->_scale[i]      = _scale[i];
-   zp->_allZeroes(i)  = 0;   // ??? Redundant and unnecessary.
-  }
-
-  zp->_buildScratchPads();
-
-  return zp;
-
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-TJetEnvironment<complex<double> >::operator TJetEnvironment<double>* () const {
- 
-  // NOTE: Using the TJetEnvironment copy constructor is forbidden;  
-
-  TJetEnvironment<double>* xp = new  TJetEnvironment<double>;
-
-  xp->_maxWeight   =  _maxWeight; 
-  xp->_monomial    =  0;
-  xp->_maxTerms    =  _maxTerms; 
-  xp->_numVar      =  _numVar;
-  xp->_spaceDim    =  _spaceDim;
-  xp->_pbok        =  _pbok;  
-  xp->_dof         =  _dof;  
-  xp->_TJLmonomial =  0; 
-  xp->_TJLmml      =  0; 
-  xp->_offset.reconstruct(_offset); 
-
-
-  for( int ii = 0; ii < _numVar; ii++ ) {
-    if( imag( _refPoint[ii] ) != 0.0 ) {
-    throw( TJL<complex<double> >::BadReference ( ii, imag( _refPoint[ii] ), 
-                                __FILE__, __LINE__, 
-      "TJetEnvironment<complex<double> >::operator TJetEnvironment<double> ()",
-      "Cannot copy complex environment with non-zero imaginary part to real one." ) );
-    }
-  }
-
-  if( TJet<double>::workEnvironment() != 0 ) {
-    throw( GenericException( __FILE__, __LINE__, 
-           "TJetEnvironment<complex<double> >::operator TJetEnvironment<double> ()",
-           "Close the open Jet environment before copying." ) );
-  }
-
-  if( _numVar == 0 ) {
-    cerr << "\n\n"
-         << "*** WARNING ***                                          \n"
-         << "*** WARNING *** TJetEnvironment<complex<double> >::operator TJetEnvironment<double> () \n"
-         << "*** WARNING ***                                          \n"
-         << "*** WARNING *** You are copying a null environment.      \n"
-         << "*** WARNING ***                                          \n"
-         << endl;
-
-    xp->_monomial           = 0;
-    xp->_TJLmonomial        = 0;
-    xp->_TJLmml             = 0;
-    xp->_maxTerms           = 0;
-    xp->_exponent           = 0;
-    xp->_pbok               = 0;
-    xp->_numVar             = 0;
-    xp->_maxWeight          = 0;
-    xp->_spaceDim           = -1;
-    xp->_dof                = 0;            
-    xp->_refPoint           = 0;       
-    xp->_scale              = 0;
-
-    return xp;
-  }
-
-  int w = xp->_maxWeight;
-  int n = xp->_numVar;
-
-  if( xp->_monomial ) { delete [] xp->_monomial; }
-  xp->_monomial   = new double[ bcfRec( w + n, n ) ];
-
-  if(xp->_exponent) delete xp->_exponent; xp->_exponent   = new int[ n ];  
-  xp->_pbok       = _pbok;
-  xp->_dof        = _dof;
-
-  if(xp->_refPoint) delete xp->_refPoint;  xp->_refPoint = new double[ n ]; 
-  if(xp->_scale)    delete xp->_scale;     xp->_scale    = new double[ n ]; 
-
-  xp->_allZeroes.Reconstruct( n ); // not needed ????
-
-  for( int i = 0; i < n; i++ ) {
-    xp->_refPoint[i]  = real( _refPoint[i] );
-    xp->_scale[i]     = _scale[i];
-    xp->_allZeroes(i) = 0;   // ??? Redundant and unnecessary.
-  }
-
-
-  xp->_buildScratchPads();
-
-  return xp;
-
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-TJetEnvironment<complex<double> >* TJetEnvironment<complex<double> >::CreateEnvFrom( const TJetEnvironment<double>* x )
-{
-  // Check to see if an appropriate environment already exists
-
-  slist_iterator g( TJetEnvironment<complex<double> >::_environments );
-  
-  TJetEnvironment<complex<double> >* pje;
-
-  while( pje = (TJetEnvironment<complex<double> >*) g() ) {
-    if( EnvEquivalent( x, pje ) ) return pje;
-  }
- 
-  // If not, then create a new TJetEnvironment<complex<double> > ...........
-
-
-  // TJetEnvironment<complex<double> >* pje_new = new TJetEnvironment<complex<double> >( *x ); // conversion operator 
- 
-  TJetEnvironment<complex<double> >* pje_new = makeJetEnvironment( *x ); // conversion operator 
-
-  // TJetEnvironment<complex<double> >::_environments.append( pje_new );
- 
-  return pje_new;
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-TJetEnvironment<double>* TJetEnvironment<double>::CreateEnvFrom( const TJetEnvironment<complex<double> >* z )
-{
-  // Check to see if an appropriate environment already exists
-  slist_iterator g( TJetEnvironment<double>::_environments );
-
-  TJetEnvironment<double>* pje;
-
-  while( pje = ( TJetEnvironment<double>* ) g() ) {
-    if( EnvEquivalent( pje, z ) ) return pje;
-  }
- 
-  // If not, then create a new TJetEnvironment<double> ............
-
-  // TJetEnvironment<double>* pje_new = new TJetEnvironment<double>( *z );     // conversion operator
-
-  TJetEnvironment<double>* pje_new = makeJetEnvironment( *z );     // conversion operator
-
-  // TJetEnvironment<double>::_environments.append( pje_new  );
-
-  return pje_new;
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-TJetEnvironment<double>* TJetEnvironment<double>::CreateEnvFrom( const Vector& x, int order )
-{
-  // POSTCONDITIONS: The _lastEnv static pointer is not changed.
-  //
-  // Check to see if an appropriate environment already exists
-  int n = x.Dim();
-  int i = 0;
-  slist_iterator g( TJetEnvironment<double>::_environments );
-  TJetEnvironment<double>* pje;
-  while( pje = (TJetEnvironment<double>*) g() ) {
-    bool passed = ( ( order == pje->_maxWeight       ) &&
-                    ( n == pje->_spaceDim            ) && 
-                    ( pje->_spaceDim == pje->_numVar )    );
-    i = 0;
-    while( passed && ( i < n ) ) {
-      if( std::abs(pje->_refPoint[i] - x(i)) > 1.0e-8 ) { passed = false; }
-      i++;
-    }
-    if( passed ) { return pje; }
-  }
- 
-  // If not, then create a new TJetEnvironment<double,complex<double> > ...........
-  TJetEnvironment<double>* storedEnv = TJet<double>::_lastEnv;
-
-  TJet<double>::BeginEnvironment( order );
-  for( int i = 0; i < n; i++ ) {
-    new Tcoord<double>( x(i) );
-    // Unfortunately, these cannot be deleted because
-    // the TJetEnvironment stores the original pointers, 
-    // not the copies.
-    // This is very bad!!
-  }
-  pje = TJet<double>::EndEnvironment();
-
-  TJet<double>::_lastEnv = storedEnv;
-  return pje;
-}
+using FNAL::pcout;
+using FNAL::pcerr;
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -426,64 +135,162 @@ TJLterm<double>::operator TJLterm<std::complex<double> > () const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+TJL<double>::operator JLPtr<std::complex<double> >::Type () const {
 
-TJet<double>::operator TJet<std::complex<double> >() const { 
-
-  TJetEnvironment<complex<double> >* zenv = TJetEnvironment<complex<double> >::CreateEnvFrom(_jl->_myEnv);
-
-  TJet<std::complex<double> >   z( zenv );
+  EnvPtr<std::complex<double> >::Type pje (*_myEnv);    // implicit conversion;
+  JLPtr<std::complex<double> >::Type z( TJL<std::complex<double> >::makeTJL(pje) ); // instantiates a complex JLPtr 
  
-  TJL<std::complex<double> >::discardTJL(z._jl);
+  //---------------------------------------------------------------------------
+  // If necessary, adjust the capacity of the new JLterm<complex> store to match 
+  // that of the current JLterm<double> 
+  // --------------------------------------------------------------------------
 
-  z._jl = 0;
 
-  TJL<std::complex<double> >*  zjl = 0;
-
-  if ( TJL<std::complex<double> >::_thePool.empty() ) {
-
-      zjl = new TJL<std::complex<double> >;
-
-  } else {
-
-      zjl = TJL<std::complex<double> >::_thePool.back(); TJL<std::complex<double> >::_thePool.pop_back(); 
-  }
-
-  if (zjl->_jltermStoreCapacity < _jl->_jltermStoreCapacity) { 
+  if ( z.get()->_jltermStoreCapacity < _jltermStoreCapacity) { 
    
-      TJLterm<std::complex<double> >::array_deallocate( zjl->_jltermStore );
-      zjl->initStore( _jl->_jltermStoreCapacity);   
+      TJLterm<std::complex<double> >::array_deallocate( z->_jltermStore );
+      z->initStore( _jltermStoreCapacity);   
   
   };
+  
+  //--------------------------------------------------------------------------
+  // copy all the terms of the current TJL<double> to the new TJL<complex> ...
+  // --------------------------------------------------------------------------
 
-  zjl->_count    = _jl->_count;   // needed by append function
-  zjl->_weight   = _jl->_weight;  // needed by append function
-  zjl->_accuWgt  = _jl->_accuWgt;
-  zjl->_myEnv    = zenv;
-  zjl->_rc       = 1;
-
- 
-  dlist_iterator getNext( _jl->_theList );
+  dlist_iterator getNext( _theList );
 
   TJLterm<double>* p                = 0;
   TJLterm<std::complex<double> >* q = 0;
 
   while ( p = (TJLterm<double>*) getNext() ) {
-    q = new( zjl->storePtr() )  TJLterm<complex<double> > ( *p ); // conversion operator
-    q->_deleted    = p->_deleted;// ??     
-    q->_weight     = p->_weight; // ??     
-    zjl->append(q);
+    q = new( z->storePtr() )  TJLterm<complex<double> > ( *p ); // implicit conversion operator
+    z->append(q);
   }
  
-  zjl->_count    = _jl->_count;    // gets reset by append function
-  zjl->_weight   = _jl->_weight;   // may get reset by append function
-  zjl->_accuWgt  = _jl->_accuWgt;
-  zjl->_myEnv    = zenv;
-  zjl->_rc       = 1;
+  z->_accuWgt  = _accuWgt;  // accurate weight depends on previous operations, 
+                            // so it must be preserved. 
 
-
-  z._jl = zjl; 
 
   return z;
+
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+TJL<std::complex<double> >::operator JLPtr<double>::Type () const {
+
+  EnvPtr<double>::Type pje(*_myEnv); // implicit conversion;
+  JLPtr<double>::Type  x( TJL<double>::makeTJL(pje) );
+ 
+  //---------------------------------------------------------------------------
+  // If necessary, adjust the capacity of the new JLterm<double> store to match 
+  // that of the current JLterm<complex> 
+  // --------------------------------------------------------------------------
+
+  if (x->_jltermStoreCapacity < _jltermStoreCapacity) { 
+   
+      TJLterm<double>::array_deallocate( x->_jltermStore );
+      x->initStore(_jltermStoreCapacity);   
+  
+  };
+
+ 
+  //--------------------------------------------------------------------------
+  // copy all the terms of the current TJL<complex> to the new TJL<double> ...
+  // --------------------------------------------------------------------------
+
+  dlist_iterator getNext( _theList );
+
+  TJLterm<std::complex<double> >* p = 0; 
+  TJLterm<double>*                q = 0;
+
+  while ( p =  (TJLterm<std::complex<double> >*) getNext() ) {
+    q    = new ( x->storePtr() )  TJLterm<double> ( *p ); // conversion operator
+    x->append(q);
+  }
+ 
+  x->_accuWgt  = _accuWgt; // max accurate weight depends on previous operations, 
+                           // so it must be preserved
+  return x; 
+
+}
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JLPtr<double>::Type TJL<std::complex<double> >::real( const JLPtr<std::complex<double> >::Type & z ) 
+{
+
+  EnvPtr<double>::Type pje( *z->_myEnv );            // implicit conversion 
+
+  // If the argument is void, then return a copy ...
+  if( z->_count < 1 ) {
+     return JLPtr<double>::Type(  TJL<double>::makeTJL(pje) );
+  }
+
+  JLPtr<double>::Type  x( TJL<double>::makeTJL( pje ) );
+
+  // Proceed ...
+ 
+  TJLterm<std::complex<double> >*  p;
+  TJLterm<double>*                 q;
+
+  dlist_iterator gz( z->_theList );
+   
+  while((  p = (TJLterm<complex<double> >*) gz()  )) {
+    q = new( x->storePtr() ) TJLterm<double>( p->_index, std::real( p->_value ), x->_myEnv );
+    x->addTerm( q );
+  }
+ 
+  // Set the maximum accurate _weight.
+  x->_accuWgt = z->_accuWgt;
+  
+  return x;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JLPtr<double>::Type TJL<complex<double> >::imag( const JLPtr<std::complex<double> >::Type& z ) 
+{
+
+  EnvPtr<double>::Type pje( *z->_myEnv );        // implicit conversion 
+
+  // If the argument is void, then return ...
+  if( z->_count < 1 ) {
+     return JLPtr<double>::Type(  TJL<double>::makeTJL( pje) );
+  }
+
+  JLPtr<double>::Type  x( TJL<double>::makeTJL(pje) );
+
+  // Proceed ...
+ 
+  TJLterm<complex<double> >*  p;
+  TJLterm<double>*            q;
+
+  dlist_iterator gz( z->_theList );
+   
+  while((  p = (TJLterm<complex<double> >*) gz()  )) {
+    q = new( x->storePtr() ) TJLterm<double>( p->_index, std::imag( p->_value ), x->_myEnv );
+    x->addTerm( q );
+  }
+ 
+  // Set the maximum accurate _weight.
+  x->_accuWgt = z->_accuWgt;
+  
+  return x;
+
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+TJet<double>::operator TJet<std::complex<double> >() const { 
+
+  return TJet<std::complex<double> >( *_jl ); // implicit conversion
+ 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -492,61 +299,8 @@ TJet<double>::operator TJet<std::complex<double> >() const {
 
 TJet<std::complex<double> >::operator TJet<double> () const {
 
+  return TJet<double>( *_jl ); // implicit conversion
 
-  TJetEnvironment<double>* xenv = TJetEnvironment<double>::CreateEnvFrom(_jl->_myEnv);
-
-  TJet<double>   x( xenv );
-  
-  TJL<double>::discardTJL(x._jl);
-
-  x._jl = 0;
-
-  TJL<double>*  xjl = 0;
-
-  if (TJL<double>::_thePool.empty() ) {
-
-      xjl = new TJL<double>;
-
-  } else {
-
-      xjl = TJL<double>::_thePool.back(); TJL<double>::_thePool.pop_back(); 
-  }
-
-  if (xjl->_jltermStoreCapacity < _jl->_jltermStoreCapacity) { 
-   
-      TJLterm<double>::array_deallocate( xjl->_jltermStore );
-      xjl->initStore(_jl->_jltermStoreCapacity);   
-  
-  };
-
-  xjl->_count    = _jl->_count;   // needed by append function
-  xjl->_weight   = _jl->_weight;  // needed by append function
-  xjl->_accuWgt  = _jl->_accuWgt;
-  xjl->_myEnv    = xenv;
-  xjl->_rc       = 1;
-
- 
-  dlist_iterator getNext( _jl->_theList );
-
-  TJLterm<std::complex<double> >* p = 0;
-  TJLterm<double>*                q = 0;
-
-  while ( p = (TJLterm<std::complex<double> >*) getNext() ) {
-    q              = new ( xjl->storePtr() )  TJLterm<double> ( *p ); // conversion operator
-    q->_deleted    = p->_deleted;// ??     
-    q->_weight     = p->_weight; // ??     
-    xjl->append(q);
-  }
- 
-  xjl->_count    = _jl->_count;    // gets reset by append function
-  xjl->_weight   = _jl->_weight;   // may get reset by append function
-  xjl->_accuWgt  = _jl->_accuWgt;
-  xjl->_myEnv    = xenv;
-  xjl->_rc       = 1;
-
-  x._jl = xjl; 
-
-  return x; 
 }
 
 
@@ -554,80 +308,21 @@ TJet<std::complex<double> >::operator TJet<double> () const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-TJet<double> real( const TJet<complex<double> >& x ) 
+TJet<double> real( const TJet<complex<double> >& z ) 
 {
 
-  TJet<double>                z;
-  TJLterm<complex<double> >*  p;
-  TJLterm<double>*            q;
-  TJL<complex<double> >*      xPtr;
-  TJL<double>*                zPtr;
- 
-  TJetEnvironment<double>* pje_new 
-    = TJetEnvironment<double>::CreateEnvFrom( (TJetEnvironment<complex<double> >*) x.Env() );
+  return TJet<double>( TJL<std::complex<double> >::real(z._jl) );    
 
-  // Proceed ...
-  xPtr = x._jl;
-  zPtr = z._jl;
- 
-  dlist_iterator gx( xPtr->_theList );
-
-
-  // If the argument is void, then return ...
-  if( xPtr->_count < 1 ) {
-   z = 0.0;
-   return z;
-  }
- 
-  // .. otherwise, continue normal operations.
-  while((  p = (TJLterm<complex<double> >*) gx()  )) {
-   q = new( zPtr->storePtr() ) TJLterm<double>( p->_index, real( p->_value ), pje_new );
-   zPtr->addTerm( q );
-  }
- 
-  // Set the maximum accurate _weight.
-  zPtr->_accuWgt = xPtr->_accuWgt;
-  
-  return z;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<double> imag( const TJet<complex<double> >& x ) 
+TJet<double> imag( const TJet<complex<double> >& z ) 
 {
 
-  TJet<double>                z;
-  TJLterm<complex<double> >*  p;
-  TJLterm<double>*            q;
-  TJL<complex<double> >*      xPtr;
-  TJL<double>*                zPtr;
- 
-  TJetEnvironment<double>* pje_new = TJetEnvironment<double>::CreateEnvFrom( x->_myEnv );
+  return TJet<double>( TJL<std::complex<double> >::imag(z._jl) );    
 
-  // Proceed ...
-  xPtr = x._jl;
-  zPtr = z._jl;
- 
-  dlist_iterator gx( xPtr->_theList );
-
-
-  // If the argument is void, then return ...
-  if( xPtr->_count < 1 ) {
-   z = 0.0;
-   return z;
-  }
- 
-  // .. otherwise, continue normal operations.
-  while((  p = (TJLterm<complex<double> >*) gx()  )) {
-   q = new ( zPtr->storePtr() ) TJLterm<double>( p->_index, imag( p->_value ), pje_new );
-   zPtr->addTerm( q );
-  }
- 
-  // Set the maximum accurate _weight.
-  zPtr->_accuWgt = xPtr->_accuWgt;
-  
-  return z;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -754,7 +449,13 @@ TJet<complex<double> > operator*( const TJet<complex<double> >& x, const TJet<do
 
 TJet<complex<double> > operator*( const complex<double>& y, const TJet<double>& x ) 
 {  
-  return y*TJet<complex<double> >(x);
+
+  
+  TJet<complex<double> > z( x);
+
+  return y*TJet<complex<double> >( x );
+
+
 }
 
 
@@ -840,7 +541,7 @@ TJet<double> fabs( const TJet<double>& x )
 {
  double u;
 
- if( x->_count == 0 ) {
+ if( x._jl->getCount() == 0 ) {
    throw( GenericException( __FILE__, __LINE__, 
           "Jet fabs( const Jet& ) { ",
           "Argument is zero." ) );
@@ -848,8 +549,9 @@ TJet<double> fabs( const TJet<double>& x )
  
  if( (u = x.standardPart()) != 0.0 ) 
  {
-   if( u > 0.0 ) return x;
-   else          return -x;
+
+   return std::abs(u);
+
  }
  else
  {
@@ -864,7 +566,7 @@ TJet<double> fabs( const TJet<double>& x )
 
 TJet<double> erf( const TJet<double>& z ) 
 {
-  TJetEnvironment<double>* pje = z.Env();
+  EnvPtr<double>::Type pje = z.Env();
 
   TJet<double> series    ( pje );
   TJet<double> oldseries ( pje );
@@ -883,7 +585,7 @@ TJet<double> erf( const TJet<double>& z )
   fctr_x        = 0.0;
 
   counter = 0;
-  while( ( series != oldseries ) || counter++ < pje->_maxWeight ) {
+  while( ( series != oldseries ) || counter++ < pje->maxWeight() ) {
     oldseries = series;
     den      += 2.0;
     fctr_x   += 1.0;
@@ -899,7 +601,7 @@ TJet<double> erf( const TJet<double>& z )
 
 TJet<complex<double> > erf( const TJet<complex<double> >& z ) 
 {
-  TJetEnvironment<complex<double> >* pje = z.Env();
+  EnvPtr<complex<double> >::Type pje = z.Env();
 
   if( ( fabs(imag(z.standardPart())) > 3.9 ) || 
       ( fabs(real(z.standardPart())) > 3.0 ) ) {
@@ -926,7 +628,7 @@ TJet<complex<double> > erf( const TJet<complex<double> >& z )
   fctr_x        = 0.0;
 
   counter = 0;
-  while( ( series != oldseries ) || counter++ < pje->_maxWeight ) {
+  while( ( series != oldseries ) || counter++ < pje->maxWeight() ) {
     oldseries = series;
     den      += 2.0;
     fctr_x   += 1.0;
@@ -975,183 +677,4 @@ TJet<complex<double> > w( const TJet<complex<double> >& z )
 
   return answer;
 }
-
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-TJetVector<complex<double> > operator*( const TJetVector<complex<double> >& x, const double& c )
-{
-  return x.operator*( complex<double> (c,0.0) );
-}
-
-TJetVector<complex<double> > operator*( const double& c, const TJetVector<complex<double> >& x )
-{
-  return x.operator*( complex<double> (c,0.0) );  // it's commutative
-}
-
-void TJetVector<double>::printCoeffs() const
-{
-  int i;
-  cout << "\n\nBegin TJetVector<double>::printCoeffs() ......\n"
-       << "Dimension: " << _dim 
-       << ", Weight = " << Weight()
-       << ", Max accurate weight = " << AccuWgt() 
-       << endl;
-  cout << "JetVector reference point: " 
-       << endl;
-  for( i = 0; i < _myEnv->_numVar; i++ ) 
-    cout << setw(20) << setprecision(12) 
-         << _myEnv->_refPoint[i]
-         << "\n" << endl;
-
-  for ( i = 0; i < _dim; i++ ) {
-    cout << "TJetVector<double>::printCoeffs(): Component " << i << endl;
-    _comp[i].printCoeffs();
-  }
-  cout << "End TJetVector<double>::printCoeffs() ......\n" << endl;
-}
-
-
-void TJetVector<complex<double> >::printCoeffs() const
-{
-  int i;
-  cout << "\n\nBegin TJetVector<complex<double> >::printCoeffs() ......\n"
-       << "Dimension: " << _dim 
-       << ", Weight = " << Weight()
-       << ", Max accurate weight = " << AccuWgt() 
-       << endl;
-  cout << "TJetVector<complex<double> > reference point: " 
-       << endl;
-  for( i = 0; i < _myEnv->_numVar; i++ ) 
-    cout << setw(20) << setprecision(12) 
-         << real( _myEnv->_refPoint[i] )
-         << " + i"
-         << setw(20) << setprecision(12) 
-         << imag( _myEnv->_refPoint[i] )
-         << "\n" << endl;
-
-  for ( i = 0; i < _dim; i++ ) {
-    cout << "TJetVector<complex<double> >::printCoeffs(): Component " << i << endl;
-    _comp[i].printCoeffs();
-  }
-  cout << "End TJetVector<complex<double> >::printCoeffs() ......\n" << endl;
-}
-
-
-void TJetVector<double>::Rotate ( TJetVector<double>& v, double theta ) const
-{
-#ifndef NOCHECKS
-  CHECKOUT((_dim != 3) || ( v._dim != 3 ),
-           "TJetVector<double>::Rotate",
-           "Dimension must be 3." )
-#endif
-
-  double c, s;
-  TJetVector<double> e( 3, 0, _myEnv ), u( 3, 0, _myEnv);
-
-  e = Unit();
-  c = cos( theta );
-  s = sin( theta );
-  u = ( c*v ) +
-      ( s*( e^v) ) +
-      ( ( ( 1.0 - c )*(e*v) )*e );
-  for ( int i = 0; i < 3; i++ ) v._comp[i] = u._comp[i];
-}
-
-
-void TJetVector<complex<double> >::Rotate ( TJetVector<complex<double> >&, double ) const
-{
-  throw( GenericException( __FILE__, __LINE__, 
-         "void JetCVectorRotate ( JetCVector&, double ) const", 
-         "Function does not exist." ) );
-}
-
-
-void TJetVector<double>::Rotate ( TJetVector<double>& v, 
-                                 const TJet<double>& theta ) const
-{
-#ifndef NOCHECKS
-  CHECKOUT((_dim != 3) || ( v._dim != 3 ),
-           "TJetVector<double,complex<double> >::Rotate",
-           "Dimension must be 3." )
-  CHECKOUT((_myEnv != v._myEnv)||(_myEnv != theta.Env()), 
-           "TJetVector<double,complex<double> >::Rotate", 
-           "Incompatible environments.")
-#endif
-
-  TJet<double>       c( _myEnv ), s( _myEnv );
-  TJetVector<double> e( 3, 0, _myEnv), u( 3, 0, _myEnv);
-
-  e = Unit();
-  c = cos( theta );
-  s = sin( theta );
-  u = ( c*v ) +
-      ( s*( e^v) ) +
-      ( ( ( 1.0 - c )*(e*v) )*e );
-  for ( int i = 0; i < 3; i++ ) v._comp[i] = u._comp[i];
-}
-
-
-void TJetVector<complex<double> >::Rotate ( TJetVector<complex<double> >&, 
-                                                const TJet<complex<double> >& ) const
-{
-  throw( GenericException( __FILE__, __LINE__, 
-         "void JetCVectorRotate ( JetCVector&, const JetC& ) const", 
-         "Function does not exist." ) );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-Vector TMapping<double>::operator()( const Vector& x ) const
-{
- int i = x.Dim();
- if( ( i != _myEnv->_numVar ) || ( i != _dim ) ) {
-   throw( GenericException(__FILE__, __LINE__, 
-          "Vector TMapping<double>::operator()( const Vector& ) const",
-          "Incompatible dimensions." ) );
- }
-
- Vector z( _dim );
-
- for( i = 0; i < _myEnv->_spaceDim; i++) {
-  z(i) = _comp[i]( x );
- }
-
- return z;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-Vector TMapping<complex<double> >::operator()( const Vector& x ) const
-{
-  throw( GenericException( __FILE__, __LINE__, 
-         "Vector TMapping<complex<double> >::operator()( const Vector& x ) const", 
-         "This specialization is meaningless. It should not be invoked." ) );
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-TMapping<double>::operator TMapping<std::complex<double> > () const {
-
-  TMapping<std::complex<double> > z;
-
-  z._dim   = _dim;
-  z._myEnv = TJetEnvironment<std::complex<double> >::CreateEnvFrom(_myEnv);
-
-  for (int i =0; i< _dim; ++i ) {
-
-    z._comp[i] = TJet<complex<double> >( _comp[i] ); // the environment is converted by the conversion operator
-    
-  }
-
-  return z;
-
-}
-
 
