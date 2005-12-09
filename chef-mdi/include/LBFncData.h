@@ -93,18 +93,18 @@ class LBFncData : public CHEFPlotData
     void makeCurves();
 
  protected:
-    ostream* _errorStreamPtr;
-    ostream* _outputStreamPtr;
+    std::ostream* _errorStreamPtr;
+    std::ostream* _outputStreamPtr;
 };
 
 
-inline void LBFncData::resetErrorStream( ostream* x )
+inline void LBFncData::resetErrorStream( std::ostream* x )
 {
   _errorStreamPtr = x;
 }
 
 
-inline void LBFncData::resetOutputStream( ostream* x )
+inline void LBFncData::resetOutputStream( std::ostream* x )
 {
   _outputStreamPtr = x;
 }
