@@ -1140,19 +1140,25 @@ void bmlnElmnt::realign()
 }
 
 
-bool bmlnElmnt::setAlignment(const alignmentData& a) {
+bool bmlnElmnt::setAlignment(const alignmentData& a) 
+{
   bool ret = true;
+  alignment* nuAlignPtr = new alignment(a);
 
-  if( this->hasParallelFaces() ) {
+  this->realign();
+
+  if( nuAlignPtr->isNull() ) {
+    delete nuAlignPtr;
+    nuAlignPtr = 0;
+  }
+  else if( this->hasParallelFaces() ) {
     if( 0.0 == a.tilt ) {
       if( (a.xOffset != 0.0) || (a.yOffset != 0.0) ) {
-        if(0 != align) { delete align; align = 0; }
-        align = new alignment(a);
+        this->align = nuAlignPtr;
       }
     }
     else if( this->hasStandardFaces() ) {
-      if(0 != align) { delete align; align = 0; }
-      align = new alignment(a);
+      this->align = nuAlignPtr;
     }
     else { 
       ret = false;
@@ -1165,13 +1171,15 @@ bool bmlnElmnt::setAlignment(const alignmentData& a) {
   if( !ret ) {
     (*pcerr) << "\n*** WARNING *** "
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
+         << "\n*** WARNING *** bool bmlnElmnt::setAlignment(const alignmentData& a)"
             "\n*** WARNING *** Cannot use this method on an element "
          << this->Type() << "  " << this->Name()
          << "\n*** WARNING *** without affecting its neighbors."
             "\n*** WARNING *** Nothing has been done."
             "\n*** WARNING *** "
          << endl;
+
+    if( 0 != nuAlignPtr ) { delete nuAlignPtr; nuAlignPtr = 0; }
     ret = false;
   }
 
