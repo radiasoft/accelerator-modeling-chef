@@ -24,9 +24,6 @@
 ******
 ******                                                                
 ******  Author:    Leo Michelotti                                     
-******             Email: michelotti@fnal.gov                         
-******                                                                
-******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
 ******             P.O.Box 500                                        
@@ -38,6 +35,7 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -50,7 +48,7 @@
 #include <BeamlineIterator.h>
 #include <GenericException.h>
 
-#include <BmlUtil.h>  // Temporary line
+#include <BmlUtil.h>
 
 using FNAL::pcout;
 using FNAL::pcerr;
@@ -234,37 +232,12 @@ int LBSage::doCalc( const JetParticle* ptr_jp, beamline::Criterion& crit )
 
     // alpha_1x and alpha_2y
     temp = E2(xp,x)*E2(x,x);
-    if( std::abs(imag(temp) + 0.5) < 0.001 ) {
-      // Relaxed bound 0.001 replaces the more stringent 1.0e-8 .
-      // THIS IS A TEMPORARY MEASURE, installed until I understand how
-      // and under what conditions this test's failure is approached
-      // as a quad is rolled. 
-      // - Leo Michelotti
-      _calcs[i]->alpha_1x = -2.0*real(temp);
-    }
-    else {
-    _deleteCalcs(); delete ptr_proton; delete localPtr; 
-    throw GenericException( __FILE__, __LINE__, 
-              "LBSage::doCalc(const JetParticle*, beamline::Criterion&)",
-			       "imag(alpha_1x)  is not *exactly* 1/2. This error is likely due to an unstable lattice." );
-    return 3; 
-    }
+    _calcs[i]->alpha_1x = -2.0*real(temp);
+    _calcs[i]->u1       = -2.0*imag(temp);
+
     temp = E2(yp,y)*E2(y,y);
-    if( std::abs(imag(temp) + 0.5) < 0.001 ) {
-      // Relaxed bound 0.001 replaces the more stringent 1.0e-8 .
-      // THIS IS A TEMPORARY MEASURE, installed until I understand how
-      // and under what conditions this test's failure is approached
-      // as a quad is rolled. 
-      // - Leo Michelotti
-      _calcs[i]->alpha_2y = -2.0*real(temp);
-    }
-    else {
-    _deleteCalcs(); delete ptr_proton; delete localPtr; 
-    throw GenericException( __FILE__, __LINE__, 
-              "LBSage::doCalc(const JetParticle*, beamline::Criterion&)",
-	      "imag(alpha_2y)  is not *exactly* 1/2. This error is is likely to an unstable lattice.");
-    return 4; 
-    }
+    _calcs[i]->alpha_2y = -2.0*real(temp);
+    _calcs[i]->u4       = -2.0*imag(temp);
 
     // beta_1y and beta_2x
     temp = E2(y,x);
@@ -272,7 +245,15 @@ int LBSage::doCalc( const JetParticle* ptr_jp, beamline::Criterion& crit )
     temp = E2(x,y);
     _calcs[i]->beta_2x = 2.0*real(temp*conj(temp));
 
-    // And that's all I'll bother with for now
+    // alpha_1y and alpha_2x
+    temp = E2(yp,x)*E2(y,x);
+    _calcs[i]->alpha_1y = -2.0*real(temp);
+    _calcs[i]->u2       = -2.0*imag(temp);
+
+    temp = E2(xp,y)*E2(y,y);
+    _calcs[i]->alpha_2x = -2.0*real(temp);
+    _calcs[i]->u3       = -2.0*imag(temp);
+
     i++;
   }
 
