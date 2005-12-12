@@ -85,7 +85,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   }
 
   // Preliminary steps ...
-  EnvPtr<double>::Type storedEnv = Jet::_lastEnv;
+  Jet__environment_ptr storedEnv = Jet::_lastEnv;
   Jet::_lastEnv = p_jp->State().Env();
 
 

@@ -183,8 +183,8 @@ int LattFuncSage::pushCalc( const Particle& prt,
   coord** coordPtr = new coord* [N];
 
   // Preserve the current Jet environment
-  EnvPtr<double>::Type                storedEnv  = Jet::_lastEnv;
-  EnvPtr<std::complex<double> >::Type storedEnvC = JetC::_lastEnv;
+  Jet__environment_ptr  storedEnv  = Jet::_lastEnv;
+  JetC__environment_ptr storedEnvC = JetC::_lastEnv;
 
   // Create a new Jet environment
   double scale[N];

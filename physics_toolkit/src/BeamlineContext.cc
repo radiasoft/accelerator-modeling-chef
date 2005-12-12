@@ -749,8 +749,8 @@ void BeamlineContext::_createClosedOrbit()
   // If necessary, create a new Jet environment, 
   // centered on the closed orbit, for the Jet proton.
 
-  EnvPtr<double>::Type storedEnv = Jet::_lastEnv;
-  EnvPtr<double>::Type pje = Jet__environment::makeJetEnvironment( storedEnv->maxWeight(), _p_co_p->State() );
+  Jet__environment_ptr storedEnv = Jet::_lastEnv;
+  Jet__environment_ptr pje = Jet__environment::makeJetEnvironment( storedEnv->maxWeight(), _p_co_p->State() );
   // ... Note: this method does not reset Jet::_lastEnv;
   // ...       thus the (possible) necessity of the next line.
   Jet::_lastEnv = pje;

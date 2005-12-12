@@ -160,7 +160,7 @@ Jet bmlnElmnt::AsinFunctor::operator()( const Jet& x ) const
 {
   if( _exactMode ) { return asin(x); }
   else {
-    EnvPtr<double>::Type envPtr = x.Env();
+    Jet__environment_ptr envPtr = x.Env();
     Jet u(envPtr); 
     Jet multiplier(envPtr);
     u = x*x;
