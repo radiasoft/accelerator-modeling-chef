@@ -34,14 +34,14 @@ pr = beamline.Proton( energy )
 # define a first order environment in 6D phase space
 #
 
-mxyzptlk.Jet.BeginEnvironment(1)
+mxyzptlk.BeginEnvironment(1)
 x    = mxyzptlk.coord(0.0)
 y    = mxyzptlk.coord(0.0)
 ct   = mxyzptlk.coord(0.0)
 npx  = mxyzptlk.coord(0.0)
 npy  = mxyzptlk.coord(0.0)
 np   = mxyzptlk.coord(0.0)
-mxyzptlk.Jet.EndEnvironment()
+mxyzptlk.EndEnvironment()
 
 #
 # read tevatron lattice file
@@ -67,7 +67,7 @@ storedEnv    =   mxyzptlk.Jet.getLastEnv()
 mxyzptlk.Jet.setLastEnv(  jp.State().Env())
 
 storedEnvC   =   mxyzptlk.JetC.getLastEnv()
-mxyzptlk.JetC.setLastEnv( mxyzptlk.JetC.CreateEnvFrom( mxyzptlk.Jet.getLastEnv() ) );
+mxyzptlk.JetC.setLastEnv( mxyzptlk.toCmplxEnvironment( mxyzptlk.Jet.getLastEnv() ) ); 
 
 # propagate the JetProton ( i.e. compute a one-turn map)
 tevatron.propagateJetParticle(jp)
