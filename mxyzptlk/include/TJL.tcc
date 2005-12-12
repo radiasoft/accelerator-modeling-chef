@@ -2602,22 +2602,19 @@ typename JLPtr<T>::Type TJL<T>::_epsSqrt( typename JLPtr<T>::Type const& epsilon
  // with the substitution  s = 1/2
 
  typename JLPtr<T>::Type      z(makeTJL(epsilon->_myEnv,(T) 1.0)); // z = 1.0 
- typename JLPtr<T>::Type      zdbg(makeTJL(epsilon->_myEnv,(T) 1.0)); // z = 1.0 
-
  typename JLPtr<T>::Type          term(makeTJL(epsilon.get()));        // deep copy;  term = epsilon 
- typename JLPtr<T>::Type      term_dbg(makeTJL(epsilon.get()));        // deep copy;  term = epsilon 
  
  double f    = 1.0 / 2.0;
  double n    = 1.0;
 
  term->scaleBy(f);                      // term = f*epsilon;
- term_dbg->scaleBy(f);                  // term = f*epsilon;
  
  int nsteps = 0;
  while( term->_count > 0 ) {
 
    z    = add(z, term);                                                // z += term; in place add
-   term->multiply(multiply(epsilon, ((T)--f)/(++n) ));                 // term *= ( ((T) (--f)) * epsilon ) / ++n;
+   term->multiply(epsilon);
+   term->scaleBy( ((T)--f)/(++n) );                                    // term *= ( ((T) (--f)) * epsilon ) / ++n;
 
    if (++nsteps > epsilon->_accuWgt) break;                            // expansion terminates after at most  epsilon->_accuWgt steps
                                                                        // NOTE: "term->count" may not reach zero due to round-off
