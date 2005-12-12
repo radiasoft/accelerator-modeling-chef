@@ -34,7 +34,6 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -234,7 +233,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   _finishConstructor();
 
   // Preserve the current Jet environment
-  EnvPtr<double>::Type storedEnv = Jet::_lastEnv;
+  Jet__environment_ptr storedEnv = Jet::_lastEnv;
 
   int ret = 0;
   Particle* firstParticle = 0;

@@ -45,6 +45,6 @@
 #ifndef JETC__ENV_H
 #define JETC__ENV_H
 
-#include <Jet__Environment.h>
+#include <Jet__environment.h>
 
 #endif

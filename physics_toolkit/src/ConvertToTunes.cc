@@ -354,7 +354,7 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
   int sd2 = sd/2;
 
   // Environment is set ........................
-  EnvPtr<std::complex<double> >::Type thisEnv = N.Env();
+  JetC__environment_ptr thisEnv = N.Env();
 
   JLCterm* jlctPtr;
   IntArray  ndx( N.Env()->numVar() );
