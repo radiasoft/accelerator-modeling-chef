@@ -274,6 +274,8 @@ class heldPtrsAreEqual {
 template<typename T>
 void TJetEnvironment<T>::dispose() {
 
+  TJetEnvironment* pje = 0;
+
   typename std::list<typename EnvPtr<T>::Type>::iterator iter;
   
   iter =  std::find_if(  TJetEnvironment<T>::_environments.begin(),  
@@ -285,22 +287,28 @@ void TJetEnvironment<T>::dispose() {
      return;
   }
    
-  typename EnvPtr<T>::Type tmp;       // a null pointer
-  (*iter).swap(tmp);                  // the smart pointer in the list now holds a null ptr 
+  pje = (*iter).get();             // save the raw pointer. 
 
-  _environments.remove(*iter);        // remove *this from the env list
+  //                   ****** NOTE ******* 
+  // remove() returns the container's new 'end()' (which just
+  // happens to be the first element that was removed); this value
+  // is then used in the container's 'erase()' call.
 
-  if (_environments.size() < 3) {
-    for (  iter =  _environments.begin();  
-           iter != _environments.end(); 
-           ++iter ) {
-    }
-  }   
+  // remove all instances of  *this from the env list ... 
 
-  if (tmp.get()) delete (tmp.get());  
+  _environments.erase(remove(_environments.begin(), _environments.end(), *iter), _environments.end()) ;   
+  
+  
+ //                        **** NOTE ****  
+ // The erase operation above is safe because intrusive_ptr_release() 
+ // decrements the reference count from 0 to -1. As a result, 
+ // dispose() is **not** called. dispose() is called only 
+ // when unless the reference reaches 0 as a result of a decrement 
+ // operation..
 
- // ~ TJetEnvironment<T> is *not* called when tmp goes out of scope because
- //   ref count is already 0 !
+  // it is now safe to delete the raw pointer ;-) ...  
+
+  if (pje) delete pje;
 
 }
 
@@ -485,46 +493,6 @@ TJetEnvironment<T>& TJetEnvironment<T>::DeepCopy( const TJetEnvironment& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-#if 0 
-template<typename T>
-TJetEnvironment<T>*  TJetEnvironment<T>::add( TJetEnvironment<T>* pje ) 
-{
-
-bool found = false;
-TJetEnvironment<T>* tmp_pje = 0;
-slist_iterator env_iter( TJetEnvironment<T>::_environments );
-
- // if an exact match already  exists, return it and delete pje;
- while( tmp_pje = (TJetEnvironment<T>*) env_iter() ) {
-   if( *tmp_pje == *pje ) {
-     delete pje;
-     return tmp_pje;
-   }
- }
-
- // next, try an approximate match; if one exists, return it and delete pje;
-
- env_iter.Reset();
-
- Vector tol(pje->_numVar);
- for (int i=0; i<pje->_numVar; ++i) tol(i) = 1.0e-6;
- while( tmp_pje = (TJetEnvironment<T>*) env_iter() ) {
-    if( tmp_pje->approxEq( *pje, tol) ) {
-     delete pje;
-     return tmp_pje;
-    }
- }
- 
- // otherwise, append pje to the pool of existing environments ...
- 
- TJetEnvironment<T>::_environments.append( pje );
- return pje;
-
- 
-}
-#endif
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
 typename EnvPtr<T>::Type  TJetEnvironment<T>::makeInverseJetEnvironment( typename EnvPtr<T>::Type pEnv, const TMapping<T>& map ){
