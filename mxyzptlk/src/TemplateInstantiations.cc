@@ -646,6 +646,41 @@ template
 std::complex<double>  std::sqrt<double>( const std::complex<double>& );
 
 
+template
+std::_List_iterator<EnvPtr<double>::Type> 
+std::remove(std::_List_iterator<EnvPtr<double>::Type>, 
+            std::_List_iterator<EnvPtr<double>::Type>, 
+            EnvPtr<double>::Type const&);
 
+
+template
+std::_List_iterator<EnvPtr<std::complex<double> >::Type> 
+std::remove(std::_List_iterator<EnvPtr<std::complex<double> >::Type>, 
+            std::_List_iterator<EnvPtr<std::complex<double> >::Type>, 
+            EnvPtr<std::complex<double> >::Type const& );
+
+
+template
+std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<double> > > 
+std::remove_copy<std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<double> > >, 
+                 std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<double> > >, 
+                 boost::intrusive_ptr<TJetEnvironment<double> > >
+     (std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<double> > >, 
+      std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<double> > >, 
+      std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<double> > >, 
+      boost::intrusive_ptr<TJetEnvironment<double> > const&);
+
+template
+std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > > 
+std::remove_copy<std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > >, 
+                 std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > >, 
+                 boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > >
+     (std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > >, 
+      std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > >, 
+      std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > >, 
+      boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > const&);
 
 #endif // MXYZPTLK_IMPLICIT_TEMPLATES 
+
+
+
