@@ -147,7 +147,7 @@ void LattFncData::doCalc()
     *(_errorStreamPtr) 
          << "\n*** WARNING *** "
          << __FILE__ << ", " << __LINE__ << ": "
-         << "LattFncData::recalc(): "
+         << "LattFncData::doCalc(): "
          << "\n*** WARNING ***  _arraySize is being reset from "
          << _arraySize << " to " << i << "."
          << "\n*** WARNING *** "
