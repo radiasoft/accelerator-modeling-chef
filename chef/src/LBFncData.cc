@@ -175,14 +175,13 @@ void LBFncData::doCalc()
       *(_errorStreamPtr) 
         << "\n*** WARNING *** "
            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-        << "\n*** WARNING *** void LBFncData::_recalc()"
+        << "\n*** WARNING *** void LBFncData::_docalc()"
            "\n*** WARNING *** Too many lattice functions read."
            "\n*** WARNING *** Am resetting to " << _arraySize << " in all."
         << "\n*** WARNING *** "
         << endl;
     }
     else {
-
       _azimuth[i] = infoPtr->arcLength;
       _beta_1x[i] = infoPtr->beta_1x;
       _beta_1y[i] = infoPtr->beta_1y;
@@ -197,7 +196,7 @@ void LBFncData::doCalc()
     (*_errorStreamPtr)
          <<  "\n*** WARNING *** "
          << __FILE__ << ", " << __LINE__ << ": "
-         << "LBFncData::recalc(): "
+         << "LBFncData::docalc(): "
          << "\n*** WARNING ***  _arraySize is being reset from "
          << _arraySize << " to " << i << "."
          << "\n*** WARNING *** "
