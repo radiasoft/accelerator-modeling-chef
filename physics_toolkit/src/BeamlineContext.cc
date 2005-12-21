@@ -32,6 +32,8 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -210,7 +212,7 @@ void BeamlineContext::setInitial( const DispersionSage::Info* u )
 
 void BeamlineContext::getInitial( DispersionSage::Info* u )
 {
-  if( _initialDispersionPtr ) { 
+  if( 0 == _initialDispersionPtr ) { 
     throw( GenericException( __FILE__, __LINE__, 
              "BeamlineContext::getInitial( DispersionSage::Info* )",
              "Initial conditions for dispersion are not available." ) );
@@ -236,7 +238,7 @@ void BeamlineContext::setInitial( const CovarianceSage::Info* u )
 
 void BeamlineContext::getInitial( CovarianceSage::Info* u )
 {
-  if( _initialCovariancePtr ) { 
+  if( 0 == _initialCovariancePtr ) { 
     throw( GenericException( __FILE__, __LINE__, 
              "BeamlineContext::getInitial( CovarianceSage::Info* )",
              "Initial conditions for covariance are not available." ) );
@@ -262,7 +264,7 @@ void BeamlineContext::setInitial( const LattFuncSage::lattFunc* u )
 
 void BeamlineContext::getInitial( LattFuncSage::lattFunc* u )
 {
-  if( _initialLattFuncPtr ) { 
+  if( 0 == _initialLattFuncPtr ) { 
     throw( GenericException( __FILE__, __LINE__, 
              "BeamlineContext::getInitial( LattFuncSage::lattFunc* )",
              "Initial conditions for uncoupled \n"
