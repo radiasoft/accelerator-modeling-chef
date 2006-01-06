@@ -22,11 +22,7 @@
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
 ******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******
 ******  Revision History:
@@ -77,6 +73,16 @@
 
 using FNAL::pcerr;
 using FNAL::pcout;
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//  
+// ******  the static class variable _thePool is a container for ****
+//         discarded Jets. 
+
+
+template <typename T>
+std::vector<TJL<T>* > TJL<T>::_thePool; 
 
 
 // ================================================================
@@ -340,7 +346,7 @@ _iterPtr(0)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJL<T>* TJL<T>::makeTJL( typename EnvPtr<T>::Type pje, T x )
+typename JLPtr<T>::Type TJL<T>::makeTJL( typename EnvPtr<T>::Type pje, T x )
 {
 
   if (!pje) return 0; // this form is called by TCoord and Tparam
@@ -362,7 +368,7 @@ TJL<T>* TJL<T>::makeTJL( typename EnvPtr<T>::Type pje, T x )
   p->_constIterPtr = 0,
   p->_iterPtr      = 0;
 
- return p;
+ return typename JLPtr<T>::Type(p);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -394,7 +400,7 @@ _iterPtr(0)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJL<T>* TJL<T>::makeTJL( const IntArray& e, const T& x, typename EnvPtr<T>::Type pje ) 
+typename JLPtr<T>::Type TJL<T>::makeTJL( const IntArray& e, const T& x, typename EnvPtr<T>::Type pje ) 
 {
 
   if (!pje) return 0;  // cannot create a TJL without a properly constructed environemnt 
@@ -417,7 +423,7 @@ TJL<T>* TJL<T>::makeTJL( const IntArray& e, const T& x, typename EnvPtr<T>::Type
   p->_constIterPtr = 0,
   p->_iterPtr      = 0;
 
-  return p;
+  return typename JLPtr<T>::Type(p);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -457,7 +463,7 @@ _iterPtr(0)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJL<T>* TJL<T>::makeTJL( const TJL& x )
+typename JLPtr<T>::Type  TJL<T>::makeTJL( const TJL& x )
 {
 
   if (_thePool.empty() ) return new TJL<T>(x);
@@ -493,79 +499,7 @@ TJL<T>* TJL<T>::makeTJL( const TJL& x )
   p->_constIterPtr = 0,
   p->_iterPtr      = 0;
 
- return p;
-
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJL<T>::TJL( const TJL* x ) : 
-_count(0), 
-_weight(x->_weight), 
-_accuWgt(x->_accuWgt), 
-_myEnv(x->_myEnv),
-_constIterPtr(0),
-_iterPtr(0)
-{
-
- dlist_iterator getNext( x->_theList );
- TJLterm<T>* p;
- TJLterm<T>* q;
-
-
- initStore( x->_jltermStoreCapacity );
- memcpy( _jltermStore, x->_jltermStore, (x->_jltermStoreCurrentPtr - x->_jltermStore)*sizeof(TJLterm<T>) );
- _jltermStoreCurrentPtr = _jltermStore + (x->_jltermStoreCurrentPtr - x->_jltermStore);
-
- while((  p = (TJLterm<T>*) getNext()  )) {
-         q = _jltermStore + ( p - x->_jltermStore); 
-         append(q); 
- }
- 
- 
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJL<T>*  TJL<T>::makeTJL( const TJL* x ) 
-{
-
-  if (_thePool.empty() ) return new TJL<T>(x);
- 
-  TJL<T>* p = _thePool.back(); _thePool.pop_back(); 
-  
-  if (p->_jltermStoreCapacity < x->_jltermStoreCapacity)  
-  { 
-       TJLterm<T>::array_deallocate( p->_jltermStore );
-       p->initStore(x->_jltermStoreCapacity);   
-  };
-
-
-  p->_count     = 0;
-  p->_weight    = x->_weight;
-  p->_accuWgt   = x->_accuWgt;
-  p->_myEnv     = x->_myEnv;
-
-  memcpy( p->_jltermStore, x->_jltermStore, (x->_jltermStoreCurrentPtr - x->_jltermStore)*sizeof(TJLterm<T>) );
-  p->_jltermStoreCurrentPtr = p->_jltermStore + (x->_jltermStoreCurrentPtr - x->_jltermStore);
-
-  dlist_iterator getNext( x->_theList );
-  TJLterm<T>* q;
-  TJLterm<T>* r;
-
-  while((  q = (TJLterm<T>*) getNext()  )) {
-           r = p->_jltermStore + ( q - x->_jltermStore); 
-           p->append(r); 
-  }
- 
-  p->_constIterPtr = 0,
-  p->_iterPtr      = 0;
-
-  return p;
+ return typename JLPtr<T>::Type(p);
 
 }
 
@@ -687,7 +621,7 @@ template<typename T>
         
   // readjust the max weight to reflect the removed term.
 
-  _weight  = max(_weight,  ((TJLterm<T>*) p)->_weight);
+  _weight  = std::max(_weight,  ((TJLterm<T>*) p)->_weight);
 
   }
   
@@ -750,7 +684,7 @@ void TJL<T>::addTerm( const TJLterm<T>* a )
      else {
        p -> putAbove( new dlink( const_cast<TJLterm<T>*>(a), 0, 0 ) );
        ++(this->_count);
-       this->_weight = max(this->_weight, a->_weight);
+       this->_weight = std::max(this->_weight, a->_weight);
        return;
        }
  
@@ -882,7 +816,7 @@ void TJL<T>::scaleBy( T y )
 
  TJLterm<T>* p = 0;
 
- if ( abs(y) < MX_SMALL ) { // *** multiplication by zero  -- remove all the terms !
+ if ( std::abs(y) < MX_SMALL ) { // *** multiplication by zero  -- remove all the terms !
 
    _theList.clear();                       // note: the terms are not deleted    
    _jltermStoreCurrentPtr = _jltermStore;  // reset the store ptr to the begining   
@@ -1011,7 +945,7 @@ void TJL<T>::insert( TJLterm<T>* a)
 {
  _theList.insert(a);
  ++_count;
- _weight = max( _weight, a->_weight );
+ _weight = std::max( _weight, a->_weight );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1075,7 +1009,7 @@ void TJL<T>::append( TJLterm<T>* a)
 {
  _theList.append(a);
  ++_count;
- _weight  = max(_weight, a->_weight);
+ _weight  = std::max(_weight, a->_weight);
 
 }
 
@@ -1289,7 +1223,7 @@ typename JLPtr<T>::Type TJL<T>::filter( const int& wgtLo, const int& wgtHi ) con
  // Trivial case: nothing to filter ... return a *deep copy* of the current jl.
  
  if( ( wgtLo <= 0 ) && ( wgtHi >= _weight ) ) {
-   return typename JLPtr<T>::Type( TJL<T>::makeTJL( this ));
+   return typename JLPtr<T>::Type( TJL<T>::makeTJL( *this ));
  } 
 
  // Begin filtering ... 
@@ -1376,8 +1310,8 @@ typename JLPtr<T>::Type TJL<T>::truncMult( typename JLPtr<T>::Type const& v, con
 
  // If one of the arguments is void, return a *deep copy* of it ..
 
- if ( _count < 1 )     return  typename JLPtr<T>::Type( TJL<T>::makeTJL(this) );   
- if ( v->_count < 1 )  return  typename JLPtr<T>::Type( TJL<T>::makeTJL(v.get()) );        
+ if ( _count < 1 )     return  typename JLPtr<T>::Type( TJL<T>::makeTJL(*this) );   
+ if ( v->_count < 1 )  return  typename JLPtr<T>::Type( TJL<T>::makeTJL(*v) );        
 
  // .. otherwise continue normal operations.
 
@@ -1434,7 +1368,7 @@ typename JLPtr<T>::Type TJL<T>::truncMult( typename JLPtr<T>::Type const& v, con
  // Determine the maximum weight computed accurately.
  // ??? Is this step necessary???
  
- z->_accuWgt = min(_accuWgt, v->_accuWgt);
+ z->_accuWgt = std::min(_accuWgt, v->_accuWgt);
  
  return  z;
 }
@@ -1639,7 +1573,6 @@ TJL<T>& TJL<T>::operator=( const TJL<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<typename T>
 TJL<T>& TJL<T>::operator+=( const T& x ) {   
 
@@ -1685,711 +1618,15 @@ TJL<T>& TJL<T>::operator+=( const T& x ) {
  return *this;
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>
-TJLterm<T> TJLterm<T>::operator*( const TJLterm<T>& y ) 
-{
- TJLterm<T> z(*this);
- int n = 0;
-
- if((  ( n = this->_index.Dim() ) != y._index.Dim()  )) {
-   throw( typename TJL<T>::BadDimension( this->_index.Dim(), y._index.Dim(),
-                            __FILE__, __LINE__, 
-                            "TJLterm<T> TJLterm<T>::operator*( const TJLterm<T>& y ) ",
-                            "Inconsistent number of coordinates." ) );
- }
-
- z._weight = this->_weight + y._weight;
- for( int i = 0; i < n; ++i ) {  z._index(i) = this->_index(i) + y._index(i);  }
- z._value = this->_value * y._value;
- return z;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJLterm<T> TJLterm<T>::operator+( const TJLterm<T>& y ) 
-{
- if( this->_index != y._index ) {
-   throw( typename TJL<T>::BadDimension( this->_index.Dim(), y._index.Dim(),
-                            __FILE__, __LINE__, 
-                            "TJLterm<T> TJLterm<T>::operator*( const TJLterm<T>& y ) ",
-                            "Inconsistent number of coordinates." ) );
- }
- TJLterm<T> z(*this);
- z._value += y._value;
- return z;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TJL<T>::add( typename JLPtr<T>::Type const& x) {
-
- //---------------
- // In place add()
- //---------------
-
-// Check for consistency and set reference point of the sum.
-
-  if( x->_myEnv != this->_myEnv ) {
-
-   throw( GenericException( __FILE__, __LINE__, 
-           "TJL<T>::add(typename JLPtr<T>::Type const& x)"
-           "Inconsistent environments." ) );
-  }
-
- if (x->_count < 1) return; // rhs is zero; do nothing
-
- //  -----------------------------------------------------------------
- //  Loop over the terms and accumulate monomials in the scrach pad.
- //  Use direct sequential access to access terms since order is
- //  irrelevant in this context.
- //  ------------------------------------------------------------------ 
- 
- TJLterm<T>* tjlmml =  _myEnv->TJLmml(); // the environment scratchpad
- 
- TJLterm<T>* p = 0;
- int indy      = 0;
- T result      = T();
-
- //------------------------------------------------------------
- // accumulate terms of the current object into the scratchpad
- //------------------------------------------------------------
- for(  p = _jltermStore; p < _jltermStoreCurrentPtr; ++p  ) {
-
-   if ( p->_deleted) continue; // ignore deleted terms ! 
-   indy = _myEnv->offsetIndex( p->_index);
-   tjlmml[indy]._value = p->_value;
- }
-
- //-------------------------------------------------------------------
- // accumulate terms of the rhs argument (i.e. x)  into the scratchpad
- // ------------------------------------------------------------------
-
- for(  p = x->_jltermStore; p< x->_jltermStoreCurrentPtr; ++p  ) {
-
-   if ( p->_deleted) continue;   // ignore deleted terms ! 
-   indy   = _myEnv->offsetIndex( p->_index);
-   result =  tjlmml[indy]._value +  p->_value;
-
-   if (abs(result) > MX_SMALL) 
-        tjlmml[indy]._value = result; // should not be needed !
-   else 
-        tjlmml[indy]._value = T(); 
- }
- 
-
- //------------------------------------------------
- // At this point, the result is in the scratchpad!
- //------------------------------------------------
-
- // -----------------------------
- // zero out  the current object 
- // -----------------------------
-
- int accuWgt = _accuWgt; // save lhs accurate weight value before clearing it ...   
- 
- clear();
- _weight     =  0;                   // reset
- _accuWgt    =  _myEnv->maxWeight(); // reset
-
- // Transfer result from the scratchpad. 
- // Append only monomials with non-zero coefficients
-
- TJLterm<T>* zed      = tjlmml;
- TJLterm<T>* upperzed = tjlmml + _myEnv->maxTerms();
-
- // collect the terms from the scratchpad and return 
-
- for( p=zed;  p<upperzed; ++p) 
- {
-    if (  p->_value != T() )  {
-      append( new(storePtr()) TJLterm<T>( *p ) ); 
-      p->_value = T();
-    }
- 
- };
-
-  _accuWgt = min(accuWgt, x->_accuWgt);
-
-
- return;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-typename JLPtr<T>::Type TJL<T>::add(typename JLPtr<T>::Type const& x, typename JLPtr<T>::Type const& y ) {
-
-
-// Check for consistency and set reference point of the sum.
-
-  if( x->_myEnv != y->_myEnv ) {
-
-   throw( GenericException( __FILE__, __LINE__, 
-           "TJL<T>::add(typename JLPtr<T>::Type const& x)"
-           "Inconsistent environments." ) );
-  }
-
- if (x->_count < 1) return typename JLPtr<T>::Type( makeTJL( y.get()) ); // x=0; return a copy of y
- if (y->_count < 1) return typename JLPtr<T>::Type( makeTJL( x.get()) ); // y=0; return a copy of x
-
- //  -----------------------------------------------------------------
- //  Loop over the terms and accumulate monomials in the scrach pad.
- //  Use direct sequential access to access terms since order is
- //  irrelevant in this context.
- //  ------------------------------------------------------------------ 
- 
- TJLterm<T>* tjlmml =  x->_myEnv->TJLmml(); // the environment scratchpad
- 
- TJLterm<T>* p = 0;
- int indy      = 0;
- T result      = T();
-
- //------------------------------------------------------------
- // accumulate terms of the lhs argument (i.e. x) into the scratchpad
- //------------------------------------------------------------
- for(  p = x->_jltermStore; p < x->_jltermStoreCurrentPtr; ++p  ) {
-
-   if ( p->_deleted) continue; // ignore deleted terms ! 
-   indy = x->_myEnv->offsetIndex( p->_index);
-   tjlmml[indy]._value = p->_value;
- }
-
- //-------------------------------------------------------------------
- // accumulate terms of the rhs argument (i.e. y)  into the scratchpad
- // ------------------------------------------------------------------
-
- for(  p = y->_jltermStore; p< y->_jltermStoreCurrentPtr; ++p  ) {
-
-   if ( p->_deleted) continue;   // ignore deleted terms ! 
-   indy   = x->_myEnv->offsetIndex( p->_index);
-   tjlmml[indy]._value +=  p->_value;
-
- }
- //------------------------------------------------
- // At this point, the result is in the scratchpad!
- //------------------------------------------------
-
-
- // Transfer result from the scratchpad. 
- // Append only monomials with non-zero coefficients
-
-  typename JLPtr<T>::Type z( makeTJL(x->_myEnv) ); 
-
-  TJLterm<T>* zed      = tjlmml;
-  TJLterm<T>* upperzed = tjlmml + x->_myEnv->maxTerms();
-
- // collect the terms from the scratchpad and return 
-
- for( p=zed;  p<upperzed; ++p) 
- {
-    if (  p->_value != T() )  {
-      z->append( new(z->storePtr()) TJLterm<T>( *p ) ); 
-      p->_value = T();
-    }
- 
- };
-
-  z->_accuWgt = min(x->_accuWgt, y->_accuWgt);
-
- return z;
-}
-
-#if  0
-
-  // Check for consistency and set reference point of the sum.
-
-  if( x->_myEnv != y->_myEnv ) {
-
-   throw( GenericException( __FILE__, __LINE__, 
-           "TJet<T> operator+( const TJet<T>& x, const TJet<T>& )",
-           "Inconsistent environments." ) );
-  }
-
-
-  typename EnvPtr<T>::Type pje(x->_myEnv);
-
-                                                          // ??? This should be modified so that
-  typename JLPtr<T>::Type z( TJL<T>::makeTJL(pje));       // ??? terms beyond the accurate weight of
-  TJLterm<T>*    p = 0;                                   // ??? x or y are not computed and carried
-  TJLterm<T>*    q = 0;                                   // ??? into the answer.
-
-
-  // If one of the arguments is void, then return *a deep copy* of the other ..
-  if( x->_count < 1 ) {           
-    return typename JLPtr<T>::Type( TJL<T>::makeTJL( y.get() ));             
-  }
-  if( y->_count < 1 ) {
-    return typename JLPtr<T>::Type( TJL<T>::makeTJL( x.get() ));
-  }
-                                 
-  // .. otherwise, continue normal operations.
-
-  dlist_iterator getp( x->_theList );
-  dlist_iterator getq( y->_theList );
-
-  p = (TJLterm<T>*) getp();
-  q = (TJLterm<T>*) getq();
-
-  T result; 
-
-  while( q && p ) {
-
-    if( *p <= *q ) {   
-      if( *p %= *q ) { 
-
-  
-        result = p->_value + q->_value;
-
-        // if (abs(result) > MX_SMALL)  // is this test needed ????
-        z->append( new( z->storePtr()) TJLterm<T>( p->_index, result ) );
-       
-        p = (TJLterm<T>*) getp();
-        q = (TJLterm<T>*) getq();
-
-      }
-      else {
-        z->append( new( z->storePtr()) TJLterm<T>( p->_index, p->_value ) );
-        p = (TJLterm<T>*) getp();
-      }
-    }
-    else {
-       z->append( new( z->storePtr()) TJLterm<T>( q->_index, q->_value ) );
-       q = (TJLterm<T>*) getq();
-    }
-  }
-
-  while(p) {
-    z->append( new( z->storePtr() ) TJLterm<T>( p->_index, p->_value ) );
-    p = (TJLterm<T>*) getp();
-  }
-
-  while(q) {
-    z->append( new( z->storePtr() ) TJLterm<T>( q->_index, q->_value ) );
-    q = (TJLterm<T>*) getq();
-
-  }
-
-
-  // .....determine the maximum weight computed accurately.
-
-  z->_accuWgt = min(x->_accuWgt, y->_accuWgt);
-  
-  return z;
-}
-#endif
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-typename JLPtr<T>::Type TJL<T>::multiply(typename JLPtr<T>::Type const& x, T const& y ) {
-
-//---------------------------
-// Multiplication by a scalar
-//---------------------------
-
- typename JLPtr<T>::Type z(TJL<T>::makeTJL(x.get())); // deep copy 
- 
- if( x->_count < 1 ) return z;
- 
- z->scaleBy(y);
- return z;
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TJL<T>::multiply(typename JLPtr<T>::Type const& y ) 
-{
-
-//------------------------------------
-// In place Multiplication of two jets
-//------------------------------------
-
- // Consistency check 
-
- if( _myEnv != y->_myEnv ) {
-   throw( GenericException( __FILE__, __LINE__, 
-          "multiply(typename JLPtr<T>::Type const& ) ",
-          "Inconsistent environments." ) );
- };
-
- // if one of the arguments is zero, return a *deep copy*  (required!). 
-
- if(    _count < 1 ) return;
- if( y->_count < 1 ) { 
-
-    clear();
-   _accuWgt = _myEnv->maxWeight();
-   _weight  = 0; 
-   return;
- }
-
- TJLterm<T>* p = 0;
- TJLterm<T>* q = 0;
-
- int  indy                = 0;
- TJLterm<T>* zed          = 0;
- TJLterm<T>* upperzed     = 0;
- T  dummy                 = T();
- T  product               = T();
-
-
-  // -------------------------------------------------
- // Determine the maximum weight computed accurately.
- // -------------------------------------------------
-
- TJLterm<T> x_1stTerm( lowTerm() ); 
- TJLterm<T> y_1stTerm( y->lowTerm() ); 
-
- int testWeight    = 0;
- int trialWeight  =  0;
- 
- testWeight = _accuWgt;
- if( ( y_1stTerm._weight != 0 ) && ( y_1stTerm._value !=  T() ) )
- {
-   testWeight += y_1stTerm._weight;
- }
-
- trialWeight = y->_accuWgt;
- if( ( x_1stTerm._weight != 0 ) && ( x_1stTerm._value !=  T() ) )
- {
-   trialWeight += x_1stTerm._weight;
- }
-
- int accuWgt = std::min(testWeight, trialWeight);
-     accuWgt = std::min(accuWgt,    _myEnv->maxWeight() ); 
- 
-     testWeight = accuWgt;
-
- //  -----------------------------------------------------------------
- //  Loop over the terms and accumulate monomials in the scrach pad.
- //  Use direct sequential access to access terms since order is
- //  irrelevant in this context.
- //  ------------------------------------------------------------------ 
- 
- TJLterm<T>* tjlmml =  _myEnv->TJLmml(); 
- 
- for(  p = (y->_jltermStore); p < (y->_jltermStoreCurrentPtr); ++p  ) {
-
-   if ( p->_deleted) continue; // ignore deleted terms ! 
-
-   for(  q = _jltermStore; q < _jltermStoreCurrentPtr; ++q  ) {
-
-     if ( q->_deleted) continue;
-
-     if( ( p->_weight + q->_weight ) > testWeight ) continue;   
-
-     indy = _myEnv->offsetIndex( p->_index + q->_index );
-
-     // Will work even when the exponents are all zero.
-
-     product = p->_value * q->_value;
-
-     dummy = tjlmml[indy]._value + product;
-
-     if( (std::abs( dummy ) < MX_SMALL*std::abs( product )) || ( std::abs( dummy ) < MX_ABS_SMALL) ) {
-       tjlmml[indy]._value = T();
-     } 
-     else {
-       tjlmml[indy]._value = dummy;
-     }
- }}
-
- // -----------------------------------------------------------------------------------------------
- // At this point, the terms are ordered in the scratchpad!
- // clear the scratchpad and setup the JLterm* dlist 
- // this could be optimized further by using use another mean 
- // to clear scratch pad  
- //-------------------------------------------------------------------------------------------------
-
- clear();
- _accuWgt = accuWgt;
- _weight = 0;
-
- // Transfer answer from the scratchpad and append only monomials with non-zero coefficients
-
- zed      = tjlmml;
- upperzed = tjlmml + _myEnv->maxTerms();
-
- for( p = zed; p < upperzed; ++p) 
- {
-    if (  std::abs(p->_value) > 0.0)  {
-      append( new(  storePtr() ) TJLterm<T>( *p ) ); 
-      p->_value = T( );  // erase the scratchpad entry
-    }
- 
- };
-
- // IMPORTANT NOTE:
- // The result of a multiplication operation can be an empty Jet. 
- // This happens when the product of x and y would yield only high 
- // order monomial terms (i.e.) beyond the max weight computed
- // accurately 
-
-
- return;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-typename JLPtr<T>::Type TJL<T>::multiply(typename JLPtr<T>::Type const& x, typename JLPtr<T>::Type const& y ) {
-
-//----------------------------
-// Multiplication of two jets
-//----------------------------
-
- // Consistency check 
-
- if( x->_myEnv != y->_myEnv ) {
-   throw( GenericException( __FILE__, __LINE__, 
-          "TJLPtr<T> operator*( const JLPtr<T>&, const JLPtr<T>& ) ",
-          "Inconsistent environments." ) );
- };
-
- // if one of the arguments is zero, return a *deep copy*  (required!). 
-
- if( x->_count < 1 ) return typename JLPtr<T>::Type( TJL<T>::makeTJL( x.get() ) ); 
- if( y->_count < 1 ) return typename JLPtr<T>::Type( TJL<T>::makeTJL( y.get() ) );
-
-
- typename EnvPtr<T>::Type pje(x->_myEnv);
- typename  JLPtr<T>::Type z( TJL<T>::makeTJL( pje ) );
-
- TJLterm<T>* p = 0;
- TJLterm<T>* q = 0;
-
- int  indy                = 0;
- TJLterm<T>* zed          = 0;
- TJLterm<T>* upperzed     = 0;
- T  dummy                 = T();
- T  product               = T();
-
-
-  // -------------------------------------------------
- // Determine the maximum weight computed accurately.
- // -------------------------------------------------
-
- TJLterm<T> x_1stTerm( x->lowTerm() ); 
- TJLterm<T> y_1stTerm( y->lowTerm() ); 
-
- int testWeight    = 0;
- int trialWeight  =  0;
- 
- testWeight = x->_accuWgt;
- if( ( y_1stTerm._weight != 0 ) && ( y_1stTerm._value !=  T() ) )
- {
-   testWeight += y_1stTerm._weight;
- }
-
- trialWeight = y->_accuWgt;
- if( ( x_1stTerm._weight != 0 ) && ( x_1stTerm._value !=  T() ) )
- {
-   trialWeight += x_1stTerm._weight;
- }
-
- z->_accuWgt = std::min(testWeight, trialWeight);
- z->_accuWgt = std::min(z->_accuWgt,  pje->maxWeight() ); 
- 
- testWeight = z->_accuWgt;
-
- //  -----------------------------------------------------------------
- //  Loop over the terms and accumulate monomials in the scrach pad.
- //  Use direct sequential access to access terms since order is
- //  irrelevant in this context.
- //  ------------------------------------------------------------------ 
- 
- TJLterm<T>* tjlmml =  pje->TJLmml(); 
- 
- for(  p = (y->_jltermStore); p < (y->_jltermStoreCurrentPtr); ++p  ) {
-
-   if ( p->_deleted) continue; // ignore deleted terms ! 
-
-   for(  q = (x->_jltermStore); q < (x->_jltermStoreCurrentPtr); ++q  ) {
-
-     if ( q->_deleted) continue;
-
-     if( ( p->_weight + q->_weight ) > testWeight ) continue;   
-
-     indy = pje->offsetIndex( p->_index + q->_index );
-
-     // Will work even when the exponents are all zero.
-
-     product = p->_value * q->_value;
-
-     dummy = tjlmml[indy]._value + product;
-
-     if( (std::abs( dummy ) < MX_SMALL*std::abs( product )) || ( std::abs( dummy ) < MX_ABS_SMALL) ) {
-       tjlmml[indy]._value = T();
-     } 
-     else {
-       tjlmml[indy]._value = dummy;
-     }
- }}
-
- // -----------------------------------------------------------------------------------------------
- // At this point, the terms are ordered in the scratchpad!
- // clear the scratchpad and setup the JLterm* dlist 
- // this could be optimized further by using use another mean 
- // to clear scratch pad  
- //-------------------------------------------------------------------------------------------------
-
- // Transfer answer from the scratchpad and append only monomials with non-zero coefficients
-
- zed      = tjlmml;
- upperzed = tjlmml + pje->maxTerms();
-
- for( p = zed; p < upperzed; ++p) 
- {
-    if (  p->_value != T() )  {
-      z->append( new( z->storePtr() ) TJLterm<T>( *p ) ); 
-      p->_value = T();  // erase the scratchpad entry
-    }
- 
- };
-
- // IMPORTANT NOTE:
- // The result of a multiplication operation can be an empty Jet. 
- // This happens when the product of x and y would yield only high 
- // order monomial terms (i.e.) beyond the max weight allowed for
- // the environment.   
-
- return z;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
-typename JLPtr<T>::Type TJL<T>::divide( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg ) 
-{ 
-
- if ( (wArg->_myEnv) != (uArg->_myEnv) ) {
-
-   throw( GenericException( __FILE__, __LINE__, 
-          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
-          "Inconsistent environments." ) );
- }
-
- if ( wArg->_count < 1 ) return typename JLPtr<T>::Type( makeTJL(wArg->_myEnv.get()) );  // numerator is zero
- 
-
- // Check for void operators ..
-
- if ( uArg->_count < 1 ) {
-   throw( GenericException( __FILE__, __LINE__, 
-          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
-          "Attempt to divide by a void TJL<T> variable." ) );
- }
- 
- // Initialize local variables and set the environment of the answer.
- // (These steps are not necessary, but they enforce a discipline.)
-
- typename JLPtr<T>::Type  v( TJL<T>::makeTJL(wArg->_myEnv) );
- typename JLPtr<T>::Type vn( TJL<T>::makeTJL(wArg->_myEnv) );
- typename JLPtr<T>::Type  w( TJL<T>::makeTJL(wArg->_myEnv) );
- typename JLPtr<T>::Type  u( TJL<T>::makeTJL(wArg->_myEnv) );
-
- TJLterm<T>* qu = 0;
- TJLterm<T>* qw = 0;
- T u0 = T();
-
- int wgt = 0;
- int wl  = 0;
- int mw  =  wArg->_myEnv->maxWeight();
- 
-
- dlist_looper gu( uArg->_theList );
- dlist_looper gw( wArg->_theList );
-
- // Normalize the denominator
- if( ( qu = (TJLterm<T>*) gu() ) == 0 ) {
-   throw( GenericException( __FILE__, __LINE__, 
-          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
-          "Division algorithm called with uninitialized JL." ) );
-   }
- if( ( wgt = qu->_weight ) != 0 ) {
-   throw( GenericException( __FILE__, __LINE__, 
-          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
-          "Attempt to divide by nilpotent element." ) );
-   }
- if(  (u0 = qu->_value ) == 0.0 ) {
-   throw( GenericException( __FILE__, __LINE__, 
-          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
-          "Attempt to divide by zero." ) );
-   }
-
-
- u = TJL<T>::multiply(uArg, ((T) 1.0)/ u0 ); 
-
- //  -------------------
- //  Recursive algorithm
- //  ------------------- 
-
- qw = (TJLterm<T>*) gw();
-
- if( qw->_weight == 0 ) 
-   { (*v) = ( qw->_value ); }
- else                   
-   { (*v) = T(); }
- 
- wl = 0;
- while ( wl < mw ) {
-
-   wl++;
-   vn  = u->truncMult( v, wl );
-   vn  = vn->filter( wl, wl );
-    w  = wArg->filter( wl, wl );
-     
-  // compute v = v + w - vn 
-  // Using regular version of multiply: 
-
-   // v  = add( v, add(w, multiply(vn, -1.0) ) );  
- 
-  // Instead, we use the in-place version of add below ...
-  // NOTE: the value of vn is changed !
-  // In this context, in is a temp, and there is no harm done
-
-   vn->Negate();    // -vn
-   vn->add(w);      // -vn+w
-   v->add(vn);      // v + w- vn                       
- 
-   }                                     
- 
- // Correct normalization of the answer ..
-
- v->scaleBy( ((T) 1.0)/ u0); 
- 
- // Determine the maximum weight computed accurately.
-
- v->_accuWgt = min(  wArg->_accuWgt, uArg->_accuWgt);
-
- // .. and return _value.
-
- return v;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 typename JLPtr<T>::Type TJL<T>::sin() const
 { 
 
- typename JLPtr<T>::Type epsilon( TJL<T>::makeTJL(this) ); // deep copy 
+ typename JLPtr<T>::Type epsilon( TJL<T>::makeTJL( *this) ); // deep copy 
 
  if( epsilon->_count == 0 ) return epsilon; // argument is null 
  
@@ -2405,8 +1642,8 @@ typename JLPtr<T>::Type TJL<T>::sin() const
    // at this point, epsilon is a pure differential    
    // ---------------------------------------------
 
-    return TJL<T>::add( multiply(_epsCos(epsilon), sn),             
-                        multiply(_epsSin(epsilon), cs));
+     return  ( _epsCos(epsilon)*sn + _epsSin(epsilon)*cs);
+  
  }
 
  else {                               
@@ -2424,7 +1661,7 @@ template<typename T>
 typename JLPtr<T>::Type TJL<T>::cos() const
 { 
 
- typename JLPtr<T>::Type epsilon( makeTJL(this) ); // deep copy 
+ typename JLPtr<T>::Type epsilon( makeTJL( *this) ); // deep copy 
 
  if( _count == 0 ) {
     epsilon->addTerm( new (epsilon->storePtr() ) TJLterm<T>( _myEnv->allZeroes(), (T)(1.0), epsilon->_myEnv ) ); // cos(0.0) = 1.0
@@ -2444,9 +1681,8 @@ typename JLPtr<T>::Type TJL<T>::cos() const
    // at this point, epsilon is a pure differential    
    // ---------------------------------------------
    
-   return TJL<T>::add( multiply( _epsCos( epsilon ),             cs  ), 
-                       multiply( _epsSin( epsilon ),            -sn  ));
-   }
+     return  (_epsCos( epsilon )*cs - _epsSin( epsilon )*sn );
+ }
 
  else {                               
 
@@ -2463,12 +1699,14 @@ template<typename T>
 typename JLPtr<T>::Type TJL<T>::_epsSin( typename JLPtr<T>::Type const& epsilon ) 
 { 
  
- typename JLPtr<T>::Type epsq( makeTJL( TJL<T>::multiply(epsilon, epsilon).get()->Negate() )); // epsq = -epsilon*epsilon 
- typename JLPtr<T>::Type z( makeTJL(epsilon.get()));                                           //    z = epsilon -- deep copy 
+ typename JLPtr<T>::Type epsq;
+ epsq = epsilon*epsilon;
+ epsq->Negate();                                              //   epsq = -epsilon*epsilon 
+ typename JLPtr<T>::Type z( epsilon->clone() );               //    z = epsilon -- deep copy 
 
 
 
- typename JLPtr<T>::Type term =  TJL<T>::multiply(epsilon,epsq );                    // term = 1/6 * epsilon*epsq
+ typename JLPtr<T>::Type term =  epsilon*epsq;                // term = 1/6 * epsilon*epsq
  term->scaleBy(1.0/6.0);
  
  double n = 3.0;
@@ -2476,12 +1714,15 @@ typename JLPtr<T>::Type TJL<T>::_epsSin( typename JLPtr<T>::Type const& epsilon 
 
   int nsteps = 0;
   while( term->_count > 0 ) {
-   //z = add(z, term);                             // z += term;
-   z->add(term);                               // z += term;
-   term->multiply(epsq);
+   z    += term;                                // z += term;
+   term *= epsq;                                // term->multiply(epsq);
    n1 = ++n; n2 = ++n;
-   term->scaleBy( 1.0/(n1*n2) );               // term = ( ( term*epsq ) / ++n ) / ++n;
+   term->scaleBy( 1.0/static_cast<T>(n1*n2) );  // term = ( ( term*epsq ) / ++n ) / ++n;
+   
+
    if (++nsteps > epsilon->_accuWgt) break;                            // expansion terminates after at most  epsilon->_accuWgt steps
+
+
  }
  
  z->_accuWgt = epsilon->_accuWgt;
@@ -2500,21 +1741,24 @@ typename JLPtr<T>::Type TJL<T>::_epsCos( typename JLPtr<T>::Type const& epsilon 
 
  typename JLPtr<T>::Type z( makeTJL( epsilon->_myEnv, ((T) 1.0) ));             // z   = 1    
 
- const typename JLPtr<T>::Type epsq( makeTJL( TJL<T>::multiply(epsilon,epsilon).get()->Negate() )); // epsq = -epsilon*epsilon
+ typename JLPtr<T>::Type epsq;
+ epsq = (epsilon*epsilon);
+ epsq->Negate();                                         // epsq = -epsilon*epsilon
 
- typename JLPtr<T>::Type term = TJL<T>::multiply(epsq, 0.5);                    // term = epsq/2.0
+ typename JLPtr<T>::Type term;
+ term = epsq;
+ term->scaleBy(0.5);                                     // term = epsq/2.0
 
  double n = 2.0;
  double n1, n2;
  
   int nsteps =0;
   while( term->_count > 0 ) {
-   z->add(term);                             // z += term;
-   //z = add(z, term);                            // z += term;
-   term->multiply(epsq);
+   z += term;                                   // z += term;
+   term *= epsq;                                // term->multiply(epsq);
    n1 = ++n; n2 = ++n;
-   term->scaleBy( 1.0/(n1*n2) );              // term = ( ( term*epsq ) / ++n ) / ++n;  
-   if (++nsteps > epsilon->_accuWgt) break;                            // expansion terminates after at most  epsilon->_accuWgt steps
+   term->scaleBy( 1.0/static_cast<T>(n1*n2) );  // term = ( ( term*epsq ) / ++n ) / ++n;  
+   if (++nsteps > epsilon->_accuWgt) break;     // expansion terminates after at most  epsilon->_accuWgt steps
    }
  
  z->_accuWgt = epsilon->_accuWgt;
@@ -2575,10 +1819,10 @@ typename JLPtr<T>::Type TJL<T>::sqrt() const
      }
    else                       // ... normal case
      {
-     typename JLPtr<T>::Type epsilon( makeTJL(this) ); // deep copy 
-     epsilon->get()->_deleted = true;                  // pop out and delete the standard part off epsilon
+     typename JLPtr<T>::Type epsilon( makeTJL(*this) ); // deep copy 
+     epsilon->get()->_deleted = true;                   // pop out and delete the standard part off epsilon
      epsilon->scaleBy( 1.0/stdpart );
-     return multiply(_epsSqrt(epsilon), factor);       // NOT EFFICIENT !!!
+     return ( _epsSqrt(epsilon)*factor );               // NOT EFFICIENT !!!
      }
  }
  else                                 // nilpotent argument
@@ -2602,7 +1846,7 @@ typename JLPtr<T>::Type TJL<T>::_epsSqrt( typename JLPtr<T>::Type const& epsilon
  // with the substitution  s = 1/2
 
  typename JLPtr<T>::Type      z(makeTJL(epsilon->_myEnv,(T) 1.0)); // z = 1.0 
- typename JLPtr<T>::Type          term(makeTJL(epsilon.get()));        // deep copy;  term = epsilon 
+ typename JLPtr<T>::Type      term(makeTJL(*epsilon));             // deep copy;  term = epsilon 
  
  double f    = 1.0 / 2.0;
  double n    = 1.0;
@@ -2612,9 +1856,9 @@ typename JLPtr<T>::Type TJL<T>::_epsSqrt( typename JLPtr<T>::Type const& epsilon
  int nsteps = 0;
  while( term->_count > 0 ) {
 
-   z    = add(z, term);                                                // z += term; in place add
-   term->multiply(epsilon);
-   term->scaleBy( ((T)--f)/(++n) );                                    // term *= ( ((T) (--f)) * epsilon ) / ++n;
+   z    += term;                                     // z += term; in place add
+   term *= epsilon;                                  // term->multiply(epsilon);
+   term->scaleBy( ((T)--f)/static_cast<T>(++n) );    // term *= ( ((T) (--f)) * epsilon ) / ++n;
 
    if (++nsteps > epsilon->_accuWgt) break;                            // expansion terminates after at most  epsilon->_accuWgt steps
                                                                        // NOTE: "term->count" may not reach zero due to round-off
@@ -2632,7 +1876,7 @@ typename JLPtr<T>::Type TJL<T>::_epsSqrt( typename JLPtr<T>::Type const& epsilon
  typename JLPtr<T>::Type TJL<T>::exp() const
  {
   
- typename JLPtr<T>::Type epsilon( makeTJL(this) ); //deep copy
+ typename JLPtr<T>::Type epsilon( makeTJL(*this) ); //deep copy
  
  T factor = T();
  TJLterm<T>* p = 0;
@@ -2656,7 +1900,7 @@ typename JLPtr<T>::Type TJL<T>::_epsSqrt( typename JLPtr<T>::Type const& epsilon
  if( ( p -> _weight ) == 0 ) {         // x has non-zero standard part
    factor = std::exp( p -> _value );
    epsilon->get()->_deleted = true;   // pop out and delete the standard part off epsilon
-   return multiply( _epsExp( epsilon ), factor);
+   return ( _epsExp( epsilon )*factor );
    }
  else {                               // x is pure infinitesimal
    return _epsExp( epsilon );
@@ -2672,16 +1916,15 @@ typename JLPtr<T>::Type  TJL<T>::_epsExp( typename JLPtr<T>::Type const& epsilon
 { 
 
  typename JLPtr<T>::Type z( makeTJL(epsilon->_myEnv, ((T) 1.0)  ));   // z    = 1.0;
- typename JLPtr<T>::Type term(makeTJL(epsilon.get()));               // term = epsilon
+ typename JLPtr<T>::Type term(makeTJL(*epsilon));                     // term = epsilon
 
  double n = 1.0;
  
  int nsteps = 0;
  while( term->_count > 0 ) {
-   z->add(term);                                          // z += term;
-   //z = add(z, term);                                       // z += term;
-   term->multiply(epsilon);
-   term->scaleBy(1.0/(++n));                              // term = ( term*epsilon ) / ++n;
+   z += term;                                             // z += term;
+   term *= epsilon;  
+   term->scaleBy(1.0/static_cast<T>(++n));                // term = ( term*epsilon ) / ++n;
    if (++nsteps > epsilon->_accuWgt) break;               // this should not be necessary
                                                           // unless the scratchpad is poluted.   
  }
@@ -2698,7 +1941,7 @@ template<typename T>
 typename JLPtr<T>::Type TJL<T>::pow(const double& s )  const
 {
 
- if( _count == 0 ) return typename JLPtr<T>::Type( makeTJL(this) ); // deepcopy  pow(0, s) = 0  
+ if( _count == 0 ) return typename JLPtr<T>::Type( makeTJL(*this) ); // deepcopy  pow(0, s) = 0  
  
  int u = 0;
  dlist_iterator getNext(_theList );
@@ -2713,7 +1956,7 @@ typename JLPtr<T>::Type TJL<T>::pow(const double& s )  const
      return typename JLPtr<T>::Type( makeTJL(_myEnv, std::pow(std,s) ));
    }
 
-   typename JLPtr<T>::Type z( makeTJL(this) );   //   deep copy
+   typename JLPtr<T>::Type z( makeTJL(*this) );   //   deep copy
 
    p = z->get();
    std = p->_value;  
@@ -2739,15 +1982,15 @@ typename JLPtr<T>::Type TJL<T>::pow(const double& s )  const
      return z;
    }
    if ( u > 0 ) {
-     typename JLPtr<T>::Type x(makeTJL(this));      // x, deepcopy;
-     while( u-- > 0 )   z->multiply(x);            // z *= x;
+     typename JLPtr<T>::Type x(makeTJL(*this));      // x, deepcopy;
+     while( u-- > 0 )   z *= x;
      return z;
      }
    else {
-     typename JLPtr<T>::Type x(makeTJL(this));   //  x, deepcopy;
-     while( u++ < 0 )  z->multiply(x);           //  z *= x;
+     typename JLPtr<T>::Type x(makeTJL(*this));               //  x, deepcopy;
+     while( u++ < 0 )   z *= x;
      typename JLPtr<T>::Type tmp(makeTJL(_myEnv, ((T) 1.0))); // tmp = 1.0;
-     z = divide(tmp, z);                         //  z = 1.0/z;
+     z = tmp/ z;                                              //  z = 1.0/z;
      return z;
      }
    }
@@ -2763,19 +2006,19 @@ typename JLPtr<T>::Type TJL<T>::pow(int n ) const
   if( n == 0 ) 
      return typename JLPtr<T>::Type(makeTJL( _myEnv, ((T) 1.0)));    // z = 1
   else if( n > 0 ) {
-     typename JLPtr<T>::Type z(makeTJL( this));                // z =  x
-     typename JLPtr<T>::Type x(makeTJL( this));                // z =  x
-     for( int i = 2; i <= n; ++i ) z->multiply(x);            // z *= x
+     typename JLPtr<T>::Type z(makeTJL( *this));              // z =  x
+     typename JLPtr<T>::Type x(makeTJL( *this));              // z =  x
+     for( int i = 2; i <= n; ++i ) z *= x;
      return z;
   }
   else { // exponent is negative
 
     typename JLPtr<T>::Type xr( makeTJL( _myEnv, ((T) 1.0) ));
-    typename JLPtr<T>::Type x(  makeTJL(this) );               // deep copy of argument; this step is not really necessary
-                                                               // and should be eliminated
-    xr = divide(xr,x);                                         // xr  = 1/x 
-    x  = xr;                                                   // deep copy 
-    for( int i = -2; i >= n; i-- ) x->multiply(xr);            // x *= xr;
+    typename JLPtr<T>::Type x(  makeTJL(*this) );               // deep copy of argument; this step is not really necessary
+                                                                // and should be eliminated
+    xr = xr/x;                                                  // xr  = 1/x 
+    x  = xr;                                                    // deep copy 
+    for( int i = -2; i >= n; i-- ) x *= xr;
     return x;
   }
 
@@ -2793,16 +2036,16 @@ typename JLPtr<T>::Type TJL<T>::_epsPow( typename JLPtr<T>::Type const& epsilon,
  double f = s;
  double n = 1.0;
 
- term = multiply(epsilon,s);                  //term = s*epsilon;
+ term  = epsilon;
+ term->scaleBy(s);                   //term = s*epsilon;
  
  z->_myEnv = epsilon->_myEnv;
  
  int ncount = 0;
  while( term->_count > 0 ) {
-   z->add(term);                             // z += term;
-   //z = add(z, term);                           // z += term;
-   term->multiply(epsilon);                  // term = ( ((T) (--f)) * term * epsilon ) / ++n;
-   term->scaleBy(((T) (--f))/++n );
+   z    += term;                                     
+   term *= epsilon;                                  // term = ( ((T) (--f)) * term * epsilon ) / ++n;
+   term->scaleBy(((T) (--f))/ static_cast<T>(++n) );
    if (++ncount > epsilon->_accuWgt ) break;
    }
  
@@ -2835,7 +2078,7 @@ typename JLPtr<T>::Type TJL<T>::log() const
 
    }
 
-   typename JLPtr<T>::Type z( makeTJL(this)   );
+   typename JLPtr<T>::Type z( makeTJL(*this)   );
    typename JLPtr<T>::Type u( makeTJL(_myEnv) );
    typename JLPtr<T>::Type w( makeTJL(_myEnv) );
    
@@ -2846,17 +2089,16 @@ typename JLPtr<T>::Type TJL<T>::log() const
    z->scaleBy( - 1.0/std );
 
    w = z;
-   u = z;                                                  // We use here the formulae
+   u = z;                                         // We use here the formulae
 
-   double n = 1.0;                                         // ln( s + e )   = ln s + ln( 1 + e/s ), and
-   while( u->_count > 0 ) {                                // ln( 1 + e/s ) = ln( 1 - ( -e/s )) 
-     u = multiply(u, z);                // u *= z;         //  = - sum ( - e/s )^n / n
-     w = add(w, multiply(u, 1.0/++n));  // w += ( u / ++n );
+   double n = 1.0;                                // ln( s + e )   = ln s + ln( 1 + e/s ), and
+   while( u->_count > 0 ) {                       // ln( 1 + e/s ) = ln( 1 - ( -e/s )) 
+     u *= z;                                      //  = - sum ( - e/s )^n / n
+     w += (u / static_cast<T>(++n));              // w += ( u / ++n );
    }
    
    typename JLPtr<T>::Type tmp( makeTJL(_myEnv, std::log(std) ));
-   w->Negate();
-   return ( add( tmp,w) );     // std::log(std) - w
+   return ( tmp - w );     // std::log(std) - w
  
    }
  else                                 // operand has zero standard part
@@ -2893,7 +2135,7 @@ typename JLPtr<T>::Type TJL<T>::compose( typename JLPtr<T>::Type const y[ ]) con
             "Inconsistent environments." ) );
    }
  
-   u[i] = add( y[i], typename JLPtr<T>::Type( makeTJL( y[0]->_myEnv, -_myEnv->getRefPoint()[i])));   // u[i] = y[i] - _myEnv->getRefPoint()[i];
+   u[i] =  y[i] + typename JLPtr<T>::Type( makeTJL( y[0]->_myEnv, -_myEnv->getRefPoint()[i])) ;  // u[i] = y[i] - _myEnv->getRefPoint()[i];
  }
 
 
@@ -2937,7 +2179,7 @@ typename JLPtr<T>::Type TJL<T>::compose( typename JLPtr<T>::Type const y[ ]) con
 
      exponent[i]++;
 
-     tjlmonomial[ _myEnv->offsetIndex( exponent )] = multiply( u[i],  term); 
+     tjlmonomial[ _myEnv->offsetIndex( exponent )] = u[i]*term; 
  
 
    } // End while loop.
@@ -2958,9 +2200,8 @@ typename JLPtr<T>::Type TJL<T>::compose( typename JLPtr<T>::Type const y[ ]) con
  while( p = (TJLterm<T>*) getNext()  ) {
 
     if( p->_weight > _accuWgt ) break;
-
-    z = add(z, multiply(tjlmonomial[ _myEnv->offsetIndex(p->_index) ], p->_value)); // z += ( p->_value ) * tjlmonomial[ _myEnv->offsetIndex(p->_index) ];
- }
+    z += ( tjlmonomial[ _myEnv->offsetIndex(p->_index) ] *  (p->_value) );
+ } 
  
  // Finish...
   
@@ -2998,18 +2239,18 @@ std::istream& operator>>( std::istream& is,  TJL<T>& x )
   is >> x._accuWgt;
   is >> buf;
   is >> buf;
-  streamIn( is, &(x.getEnv()));
+  streamIn( is, x._myEnv);
   is >> buf;
   is >> buf;
   IntArray ndx( x.getEnv()->numVar() );
   for( j = 0; j < count; ++j) {
     is >> buf;
-    for( i = 0; i < x.getEnv()->numVar(); ++i )  {
+    for( i = 0; i < x._myEnv->numVar(); ++i )  {
      is >> ndx(i);
     }
     is >> buf;
     is >> value;
-    q = new(x.storePtr()) TJLterm<T>( ndx, value, x.getEnv() );
+    q = new(x.storePtr()) TJLterm<T>( ndx, value, x._myEnv );
     x.append( q );
   }
 
@@ -3029,12 +2270,11 @@ typename JLPtr<T>::Type TJL<T>::asin() const
   	 
  // Initial Newton's step 	 
  
- typename JLPtr<T>::Type z(makeTJL(this));        // deep copy	        
+ typename JLPtr<T>::Type z(makeTJL(*this));        // deep copy	        
  typename JLPtr<T>::Type dz; 
- typename JLPtr<T>::Type minusx( makeTJL(this) );
- minusx = multiply(minusx, -1.0);
+ typename JLPtr<T>::Type x( makeTJL(*this) );
 
- dz = divide( add(z->sin(), minusx), z->cos() );  // dz = ( sin(z) - x ) / cos(z); 	 
+ dz = ( z->sin() - x ) / z->cos(); 	 
 
  // Setting up the iteration 	 
  int upperBound = 8; 	 
@@ -3054,9 +2294,8 @@ typename JLPtr<T>::Type TJL<T>::asin() const
  { 	 
      while( iter++ < upperBound ) { 	 
       // These two lines are the heart of the calculation: 	 
-      z->add( multiply(dz, -1.0) );                               // z -= dz; 	 
-      //z = add( z, multiply(dz, -1.0) );                               // z -= dz; 	 
-      dz = divide( add(z->sin(), minusx), z->cos() );             // dz = ( sin(z) - x ) / cos(z);	      
+      z  -= dz; 	 
+      dz  = ( z->sin() - x ) / z->cos();	      
      }
 	 
      // The rest is just determining when to stop. 	  
@@ -3130,9 +2369,8 @@ typename JLPtr<T>::Type TJL<T>::asin() const
   (*pcerr) << "*** WARNING *** A few iterations:             " << std::endl;
   for( iter = 0; iter < 4; ++iter ) {
    (*pcerr) << "*** WARNING *** Iteration No. " << ( iter+1 ) << std::endl;
-   z->add( multiply(dz, -1.0));                                                         // z -= dz;
-   //z = add( z, multiply(dz, -1.0));                                                         // z -= dz;
-   dz = divide( add(z->sin(), minusx), z->cos() );                                      // dz = ( sin(z) - x ) / cos(z);
+   z -= dz;
+   dz = ( z->sin() - x ) / z->cos();
    (*pcerr) << "*** WARNING *** dz = " << std::endl;
    dz->printCoeffs();
    (*pcerr) << "*** WARNING *** z = " << std::endl;
@@ -3151,22 +2389,21 @@ template<typename T>
 typename JLPtr<T>::Type TJL<T>::atan() const
 {   
  
- typename JLPtr<T>::Type z( makeTJL(this));      // deep copy
+ typename JLPtr<T>::Type z( makeTJL(*this));      // deep copy
  typename JLPtr<T>::Type c;
  typename JLPtr<T>::Type dz;
 
- typename JLPtr<T>::Type minusx( makeTJL(this)); minusx->Negate(); // deep copy
+ typename JLPtr<T>::Type x( makeTJL(*this)); 
 
  int iter = 0;
 
  c = z->cos();                                                    // c = cos( z );
- dz = multiply( c, add(z->sin(), multiply(c,minusx )));           // dz = c*( sin(z) - x*c ); in-place multiply would help 
+ dz = c*( z->sin() - x*c );                                       // in-place multiply would help 
 
  while( ( dz->standardPart() != T() ) && ( iter++ < MX_MAXITER ) ) { 
-  z->add( multiply(dz, -1.0));                                    // z -= dz;
-  //z = add( z, multiply(dz, -1.0));                                    // z -= dz;
+  z -= dz;
   c = z->cos();                                                   // c = cos( z );
-  dz = multiply( c, add( z->sin(), multiply(c,minusx)));          // dz = c*( sin(z) - x*c );
+  dz = c*( z->sin() - x*c );
  }
 
  if( iter >= MX_MAXITER ) {
@@ -3184,322 +2421,6 @@ typename JLPtr<T>::Type TJL<T>::atan() const
  
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-// ***************************************************************
-// ***************************************************************
-// ***************************************************************
-//
-//      Implementation of Class TJLterm<T>
-
-template<typename T>
-TJLterm<T>::TJLterm() 
-: _index(6), _weight(0), _value(T()), _deleted(false) /// index argument necessary ???
-{
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJLterm<T>::TJLterm(  typename EnvPtr<T>::Type pje ) 
-: _index( pje->numVar() ), _weight(0), _value(T()), _deleted(false) 
-{
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJLterm<T>::TJLterm( const IntArray& l, 
-                const T& x, 
-                typename EnvPtr<T>::Type pje ) 
-:   _index( l ), _weight(l.Sum()), _value(x), _deleted(false)
-{ }
-//------------------------------------------------------------------------------------------------------
-// The code below has been commented out for efficiency. It performs sanity checks and can be re-enabled
-// for debugging pruposes.
-// Remember: TJLterm<>::TJLterm() is called on a massive scale ! 
-//------------------------------------------------------------------------------------------------------
-#if 0
-{
-
- // I think that it is not necessary to use a try block
- // with this constructor, even though it throws exceptions,
- // because the destructor does no subsidiary garbage collection.
- // - Leo Michelotti
- //   Thursday, January 22, 2004
-
-
- int i, dpt;
-
- if( pje ) {
-
-   int n = l.Dim();
-
-   if( n != pje->numVar() ) {
-     throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
-            "Dimensions are wrong.") );
-   }
-  
-   // ??? These checks could be removed for speed.
-   dpt = 0;
-   for( i = 0; i < n; ++i ) {
-     if( (l(i) < 0) ) {
-       throw( GenericException( __FILE__, __LINE__, 
-              "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
-              "Bad index in JLTerm.") );
-     }
-     dpt += l(i);
-   }
-  
-   if( dpt > pje->maxWeight() ) {
-     throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
-            "Attempt to load a JLTerm with too large a weight.") );
-   }
-   
-   // ??? REMOVE: _index = l;
-   _weight = dpt;
-   _value = x;
- }
-
- else {
-   if( l.Dim() != 1 ) {
-     throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
-            "Inconsistency between l and pje") );
-   }
-   if( l(0) != 0 ) {
-     throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
-            "Bad value of the index when pje = 0.") );
-   }
-
-   _index = l;
-   _weight = l.Sum();
-   _value = x;
- }
-}
-#endif
-//--------------------------------------------------------------------------------------------------------
-// end of commented out code
-//---------------------------------------------------------------------------------------------------------
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJLterm<T>::TJLterm( const IntArray& l, const T& x )
-: _index(l), _weight(l.Sum()), _value(x),_deleted(false)
-{
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
-TJLterm<T>::TJLterm( const TJLterm<T>* x ) 
-: _index( x->_index ), _weight(x->_weight), _value(x->_value), _deleted(x->_deleted)
-{
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJLterm<T>::TJLterm( const TJLterm<T>& x ) 
-: _index( x._index ), _weight(x._weight), _value(x._value), _deleted(x._deleted)
-{
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TJLterm<T>::Reconstruct( const IntArray& e, const T& x )
-{
-  _index.Reconstruct(e);
-  _weight   = e.Sum();
-  _value    = x;
-  _deleted  = false;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-// This destructor should **never** be called 
-// doing so will break the specialized allocation.
-
-#if  0
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-template<typename T>
-TJLterm<T>::~TJLterm<T>() 
-{
- 
-
-}
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#endif 
-
-template<typename T>
-TJLterm<T>* TJLterm<T>::array_allocate(int n) {
-
-// ----------------------------------------------------------------------
-// To use the system allocator instead of boost:pool to allocate JLterms
-// define JLTERM_ALLOCATOR_MALLOC. This is often useful for debugging.  
-//-----------------------------------------------------------------------
-
-#ifdef JLTERM_ALLOCATOR_MALLOC
-    TJLterm<T>* p = (TJLterm<T>*) malloc(n*sizeof(TJLterm<T>));
-#else
-    TJLterm<T>* p = 
-     static_cast<TJLterm<T>*>(_ordered_memPool.ordered_malloc( n ));
-    _array_sizes[ p ] = n;
-#endif
-
-    return p;
-}
-
-template<typename T>
-void TJLterm<T>::array_deallocate(TJLterm<T>* p) {
-
-#ifdef JLTERM_ALLOCATOR_MALLOC
-    free(p)
-#else 
-    _ordered_memPool.ordered_free( p, _array_sizes[p] ); 
-    _array_sizes.erase(p );
-#endif
-
-}
-
-//---------------------------------------------------------------
-//*** Static member variable instantiations for the TJLterm class
-//---------------------------------------------------------------
-//
-// NOTE::
-// 
-//  __gnu_cxx::hash_map is an extension to the STL. 
-//  There is equivalent functionality in tr1 ...
-//  boost::hash<TJLterm<T>*> is used to get a portable
-//  pointer hash fnct. 
-
-template <typename T>
-boost::pool<> TJLterm<T>::_ordered_memPool( sizeof(TJLterm<T>), 2048 );
-
-template <typename T>
-__gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> > TJLterm<T>::_array_sizes;
-
-
-// ***************************************************************
-// ***************************************************************
-// ***************************************************************
-//
-//      Overloaded operators for class TJLterm<T>
-
-template<typename T>
-TJLterm<T>& TJLterm<T>::operator=( const TJLterm<T>& x ) 
-{
- _deleted = x._deleted;
- _weight  = x._weight;
- _value   = x._value;
- _index   = x._index;
- return *this;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-bool operator==( const TJLterm<T>& a, const TJLterm<T>& b ) 
-{
- if( a._weight != b._weight ) return false;
- if( a._value  != b._value  ) return false;
- if( a._index  != b._index  ) return false;
- return true;
-
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-bool operator!=( const TJLterm<T>& a, const TJLterm<T>& b ) 
-{
- return !( a == b );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-bool operator<=( const TJLterm<T>& a, const TJLterm<T>& b ) 
-{
- int i;
- if( a._index.Dim() != b._index.Dim() ) {
-   throw( typename TJL<T>::BadDimension( a._index.Dim(), b._index.Dim(), 
-          __FILE__, __LINE__, 
-          "char operator<=( const TJLterm<T>&, const TJLterm<T>& )",
-          "Dimensions don't match.") );
- }
-
- if( a._weight != b._weight ) { return ( a._weight < b._weight ); }
- 
-// the code below should work, but at the moment it does not for some reason ... . 
-// 
-#if 0
- return (a._index <= b._index) ;
-#endif
-
-// do this instead ... 
-
-#if 1
-
- // for( i = 0; i < a._index.Dim(); ++i ) {
- //   if( a._index(i) == b._index(i) ) continue;
- //   return ( a._index(i) < b._index(i) );
- // }
-
- i = a._index.Dim();
- 
- int k,l;
-
- IntArrayReverseIterator getNext_a(a._index); // this should go away. Use 
- IntArrayReverseIterator getNext_b(b._index); // IntArray operator <= instead
-
- while( 0 < i-- ) {
-   k = getNext_a(); l = getNext_b();
-   if( k  != l ) {
-     return (  k < l );
-   }
- }
-
-// while( 0 < i ) {
-//   i--;
-//   if( a._index(i) != b._index(i) ) {
-//     return ( a._index(i) < b._index(i) );
-//   }
-// }
-
- return true;  // when all indices are the same.
-#endif
-//////////////////////////////////////////////////////////////////////////////
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-bool operator%=( const TJLterm<T>& a, const TJLterm<T>& b ) 
-{
- if( a._weight != b._weight ) return false;
- return a._index == b._index;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 void TJL<T>::printCoeffs() const {
@@ -3748,13 +2669,789 @@ TJLterm<T>* TJL<T>::stepIterator()
   }
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//  
-// ******  the static class variable _thePool is defined here **** 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+// *** friend functions ******
 
 template <typename T>
-std::vector<TJL<T>* > TJL<T>::_thePool; 
+boost::intrusive_ptr<TJL<T> >   operator+(boost::intrusive_ptr<TJL<T> > const & x, boost::intrusive_ptr<TJL<T> > const& y  ){  
+
+// Check for consistency and set reference point of the sum.
+
+  if( x->_myEnv != y->_myEnv ) {
+
+   throw( GenericException( __FILE__, __LINE__, 
+           "TJL<T>::operator+(typename JLPtr<T>::Type const& x, typename JLPtr<T>::Type const& y)"
+           "Inconsistent environments." ) );
+  }
+
+ if (x->_count < 1) return typename JLPtr<T>::Type( y->clone() ); // x=0; return a copy of y
+ if (y->_count < 1) return typename JLPtr<T>::Type( x->clone() ); // y=0; return a copy of x
+
+ //  -----------------------------------------------------------------
+ //  Loop over the terms and accumulate monomials in the scrach pad.
+ //  Use direct sequential access to access terms since order is
+ //  irrelevant in this context.
+ //  ------------------------------------------------------------------ 
+ 
+ TJLterm<T>* tjlmml =  x->_myEnv->TJLmml(); // the environment scratchpad
+ 
+ TJLterm<T>* p = 0;
+ int indy      = 0;
+ T result      = T();
+
+ //------------------------------------------------------------
+ // accumulate terms of the lhs argument (i.e. x) into the scratchpad
+ //------------------------------------------------------------
+ for(  p = x->_jltermStore; p < x->_jltermStoreCurrentPtr; ++p  ) {
+
+   if ( p->_deleted) continue; // ignore deleted terms ! 
+   indy = x->_myEnv->offsetIndex( p->_index);
+   tjlmml[indy]._value = p->_value;
+ }
+
+ //-------------------------------------------------------------------
+ // accumulate terms of the rhs argument (i.e. y)  into the scratchpad
+ // ------------------------------------------------------------------
+
+ for(  p = y->_jltermStore; p< y->_jltermStoreCurrentPtr; ++p  ) {
+
+   if ( p->_deleted) continue;   // ignore deleted terms ! 
+   indy   = x->_myEnv->offsetIndex( p->_index);
+   tjlmml[indy]._value +=  p->_value;
+
+ }
+ //------------------------------------------------
+ // At this point, the result is in the scratchpad!
+ //------------------------------------------------
+
+
+ // Transfer result from the scratchpad. 
+ // Append only monomials with non-zero coefficients
+
+  typename JLPtr<T>::Type z( TJL<T>::makeTJL(x->_myEnv) ); 
+
+  TJLterm<T>* zed      = tjlmml;
+  TJLterm<T>* upperzed = tjlmml + x->_myEnv->maxTerms();
+
+ // collect the terms from the scratchpad and return 
+
+ for( p=zed;  p<upperzed; ++p) 
+ {
+    if (  p->_value != T() )  {
+      z->append( new(z->storePtr()) TJLterm<T>( *p ) ); 
+      p->_value = T();
+    }
+ 
+ };
+
+  z->_accuWgt = std::min(x->_accuWgt, y->_accuWgt);
+
+ return z;
+}
+
+#if  0
+
+  // Check for consistency and set reference point of the sum.
+
+  if( x->_myEnv != y->_myEnv ) {
+
+   throw( GenericException( __FILE__, __LINE__, 
+           "TJet<T> operator+( const TJet<T>& x, const TJet<T>& )",
+           "Inconsistent environments." ) );
+  }
+
+
+  typename EnvPtr<T>::Type pje(x->_myEnv);
+
+                                                          // ??? This should be modified so that
+  typename JLPtr<T>::Type z( TJL<T>::makeTJL(pje));                // ??? terms beyond the accurate weight of
+  TJLterm<T>*    p = 0;                                   // ??? x or y are not computed and carried
+  TJLterm<T>*    q = 0;                                   // ??? into the answer.
+
+
+  // If one of the arguments is void, then return *a deep copy* of the other ..
+  if( x->_count < 1 ) {           
+    return typename JLPtr<T>::Type( TJL<T>::makeTJL( *y );             
+  }
+  if( y->_count < 1 ) {
+    return typename JLPtr<T>::Type( TJL<T>::makeTJL( *x );
+  }
+                                 
+  // .. otherwise, continue normal operations.
+
+  dlist_iterator getp( x->_theList );
+  dlist_iterator getq( y->_theList );
+
+  p = (TJLterm<T>*) getp();
+  q = (TJLterm<T>*) getq();
+
+  T result; 
+
+  while( q && p ) {
+
+    if( *p <= *q ) {   
+      if( *p %= *q ) { 
+
+  
+        result = p->_value + q->_value;
+
+        // if (abs(result) > MX_SMALL)  // is this test needed ????
+        z->append( new( z->storePtr()) TJLterm<T>( p->_index, result ) );
+       
+        p = (TJLterm<T>*) getp();
+        q = (TJLterm<T>*) getq();
+
+      }
+      else {
+        z->append( new( z->storePtr()) TJLterm<T>( p->_index, p->_value ) );
+        p = (TJLterm<T>*) getp();
+      }
+    }
+    else {
+       z->append( new( z->storePtr()) TJLterm<T>( q->_index, q->_value ) );
+       q = (TJLterm<T>*) getq();
+    }
+  }
+
+  while(p) {
+    z->append( new( z->storePtr() ) TJLterm<T>( p->_index, p->_value ) );
+    p = (TJLterm<T>*) getp();
+  }
+
+  while(q) {
+    z->append( new( z->storePtr() ) TJLterm<T>( q->_index, q->_value ) );
+    q = (TJLterm<T>*) getq();
+
+  }
+
+
+  // .....determine the maximum weight computed accurately.
+
+  z->_accuWgt = std::min(x->_accuWgt, y->_accuWgt);
+  
+  return z;
+}
+#endif
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >&  operator+=(boost::intrusive_ptr<TJL<T> >& x,      boost::intrusive_ptr<TJL<T> > const& y  ) {
+
+ //---------------
+ // In place add()
+ //---------------
+
+// Check for consistency and set reference point of the sum.
+
+  if( y->_myEnv != x->_myEnv ) {
+
+   throw( GenericException( __FILE__, __LINE__, 
+           "TJL<T>::add(typename JLPtr<T>::Type const& y)"
+           "Inconsistent environments." ) );
+  }
+
+ if (y->_count < 1) return x; // rhs is zero; do nothing
+
+ //  -----------------------------------------------------------------
+ //  Loop over the terms and accumulate monomials in the scrach pad.
+ //  Use direct sequential access to access terms since order is
+ //  irrelevant in this context.
+ //  ------------------------------------------------------------------ 
+ 
+ TJLterm<T>* tjlmml =  x->_myEnv->TJLmml(); // the environment scratchpad
+ 
+ TJLterm<T>* p = 0;
+ int indy      = 0;
+ T result      = T();
+
+ //------------------------------------------------------------
+ // accumulate terms of the current object into the scratchpad
+ //------------------------------------------------------------
+ for(  p = x->_jltermStore; p < x->_jltermStoreCurrentPtr; ++p  ) {
+
+   if ( p->_deleted) continue; // ignore deleted terms ! 
+   indy = x->_myEnv->offsetIndex( p->_index);
+   tjlmml[indy]._value = p->_value;
+ }
+
+ //-------------------------------------------------------------------
+ // accumulate terms of the rhs argument (i.e. y)  into the scratchpad
+ // ------------------------------------------------------------------
+
+ for(  p = y->_jltermStore; p< y->_jltermStoreCurrentPtr; ++p  ) {
+
+   if ( p->_deleted) continue;   // ignore deleted terms ! 
+   indy   =  x->_myEnv->offsetIndex( p->_index);
+   result =  tjlmml[indy]._value +  p->_value;
+
+   if (std::abs(result) > MX_SMALL) 
+        tjlmml[indy]._value = result; // should not be needed !
+   else 
+        tjlmml[indy]._value = T(); 
+ }
+ 
+
+ //------------------------------------------------
+ // At this point, the result is in the scratchpad!
+ //------------------------------------------------
+
+ // -----------------------------
+ // zero out  the current object 
+ // -----------------------------
+
+ int accuWgt = x->_accuWgt; // save lhs accurate weight value before clearing it ...   
+ 
+ x->clear();
+ x->_weight     =  0;                      // reset
+ x->_accuWgt    =  x->_myEnv->maxWeight(); // reset
+
+ // Transfer result from the scratchpad. 
+ // Append only monomials with non-zero coefficients
+
+ TJLterm<T>* zed      = tjlmml;
+ TJLterm<T>* upperzed = tjlmml + x->_myEnv->maxTerms();
+
+ // collect the terms from the scratchpad and return 
+
+ for( p=zed;  p<upperzed; ++p) 
+ {
+    if (  p->_value != T() )  {
+      x->append( new(x->storePtr()) TJLterm<T>( *p ) ); 
+      p->_value = T();
+    }
+ 
+ };
+
+  x->_accuWgt = std::min(accuWgt, y->_accuWgt);
+
+
+ return x;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >&  operator-=(boost::intrusive_ptr<TJL<T> >& x,      boost::intrusive_ptr<TJL<T> > const& y  ) {
+
+ //---------------
+ // In place add()
+ //---------------
+
+// Check for consistency and set reference point of the sum.
+
+  if( y->_myEnv != x->_myEnv ) {
+
+   throw( GenericException( __FILE__, __LINE__, 
+           "TJL<T>::add(typename JLPtr<T>::Type const& y)"
+           "Inconsistent environments." ) );
+  }
+
+ if (y->_count < 1) return x; // rhs is zero; do nothing
+
+ //  -----------------------------------------------------------------
+ //  Loop over the terms and accumulate monomials in the scrach pad.
+ //  Use direct sequential access to access terms since order is
+ //  irrelevant in this context.
+ //  ------------------------------------------------------------------ 
+ 
+ TJLterm<T>* tjlmml =  x->_myEnv->TJLmml(); // the environment scratchpad
+ 
+ TJLterm<T>* p = 0;
+ int indy      = 0;
+ T result      = T();
+
+ //------------------------------------------------------------
+ // accumulate terms of the current object into the scratchpad
+ //------------------------------------------------------------
+ for(  p = x->_jltermStore; p < x->_jltermStoreCurrentPtr; ++p  ) {
+
+   if ( p->_deleted) continue; // ignore deleted terms ! 
+   indy = x->_myEnv->offsetIndex( p->_index);
+   tjlmml[indy]._value = p->_value;
+ }
+
+ //-------------------------------------------------------------------
+ // accumulate terms of the rhs argument (i.e. y)  into the scratchpad
+ // ------------------------------------------------------------------
+
+ for(  p = y->_jltermStore; p< y->_jltermStoreCurrentPtr; ++p  ) {
+
+   if ( p->_deleted) continue;   // ignore deleted terms ! 
+   indy   =  x->_myEnv->offsetIndex( p->_index);
+   result =  tjlmml[indy]._value -  p->_value;
+
+   if (std::abs(result) > MX_SMALL) 
+        tjlmml[indy]._value = result; // should not be needed !
+   else 
+        tjlmml[indy]._value = T(); 
+ }
+ 
+
+ //------------------------------------------------
+ // At this point, the result is in the scratchpad!
+ //------------------------------------------------
+
+ // -----------------------------
+ // zero out  the current object 
+ // -----------------------------
+
+ int accuWgt = x->_accuWgt; // save lhs accurate weight value before clearing it ...   
+ 
+ x->clear();
+ x->_weight     =  0;                      // reset
+ x->_accuWgt    =  x->_myEnv->maxWeight(); // reset
+
+ // Transfer result from the scratchpad. 
+ // Append only monomials with non-zero coefficients
+
+ TJLterm<T>* zed      = tjlmml;
+ TJLterm<T>* upperzed = tjlmml + x->_myEnv->maxTerms();
+
+ // collect the terms from the scratchpad and return 
+
+ for( p=zed;  p<upperzed; ++p) 
+ {
+    if (  p->_value != T() )  {
+      x->append( new(x->storePtr()) TJLterm<T>( *p ) ); 
+      p->_value = T();
+    }
+ 
+ };
+
+  x->_accuWgt = std::min(accuWgt, y->_accuWgt);
+
+
+ return x;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator-(boost::intrusive_ptr<TJL<T> > const &x) {
+
+ typename JLPtr<T>::Type z( x->clone() );
+ z->Negate();
+ return z;
+
+}
+ 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator-(boost::intrusive_ptr<TJL<T> > const & x,  boost::intrusive_ptr<TJL<T> > const& y  ){
+  
+  return (x+(-y));
+
+}
+  
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator*(boost::intrusive_ptr<TJL<T> > const & x,  T const& y  ){  
+
+  typename JLPtr<T>::Type z (x->clone() );
+  z->scaleBy( y );  
+  return z;
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator*( T const & x,             boost::intrusive_ptr<TJL<T> > const& y  ){  
+
+  return y*x;
+
+}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator*(boost::intrusive_ptr<TJL<T> > const & x,  boost::intrusive_ptr<TJL<T> > const& y  ){  
+
+//----------------------------
+// Multiplication of two jets
+//----------------------------
+
+ // Consistency check 
+
+ if( x->_myEnv != y->_myEnv ) {
+   throw( GenericException( __FILE__, __LINE__, 
+          "TJLPtr<T> operator*( const JLPtr<T>&, const JLPtr<T>& ) ",
+          "Inconsistent environments." ) );
+ };
+
+ // if one of the arguments is zero, return a *deep copy*  (required!). 
+
+ if( x->_count < 1 ) return typename JLPtr<T>::Type(  x->clone() ); 
+ if( y->_count < 1 ) return typename JLPtr<T>::Type(  y->clone() );
+
+
+ typename EnvPtr<T>::Type pje(x->_myEnv);
+ typename  JLPtr<T>::Type z( TJL<T>::makeTJL( pje ) );
+
+ TJLterm<T>* p = 0;
+ TJLterm<T>* q = 0;
+
+ int  indy                = 0;
+ TJLterm<T>* zed          = 0;
+ TJLterm<T>* upperzed     = 0;
+ T  dummy                 = T();
+ T  product               = T();
+
+
+  // -------------------------------------------------
+ // Determine the maximum weight computed accurately.
+ // -------------------------------------------------
+
+ TJLterm<T> x_1stTerm( x->lowTerm() ); 
+ TJLterm<T> y_1stTerm( y->lowTerm() ); 
+
+ int testWeight    = 0;
+ int trialWeight  =  0;
+ 
+ testWeight = x->_accuWgt;
+ if( ( y_1stTerm._weight != 0 ) && ( y_1stTerm._value !=  T() ) )
+ {
+   testWeight += y_1stTerm._weight;
+ }
+
+ trialWeight = y->_accuWgt;
+ if( ( x_1stTerm._weight != 0 ) && ( x_1stTerm._value !=  T() ) )
+ {
+   trialWeight += x_1stTerm._weight;
+ }
+
+ z->_accuWgt = std::min(testWeight, trialWeight);
+ z->_accuWgt = std::min(z->_accuWgt,  pje->maxWeight() ); 
+ 
+ testWeight = z->_accuWgt;
+
+ //  -----------------------------------------------------------------
+ //  Loop over the terms and accumulate monomials in the scrach pad.
+ //  Use direct sequential access to access terms since order is
+ //  irrelevant in this context.
+ //  ------------------------------------------------------------------ 
+ 
+ TJLterm<T>* tjlmml =  pje->TJLmml(); 
+ 
+ for(  p = (y->_jltermStore); p < (y->_jltermStoreCurrentPtr); ++p  ) {
+
+   if ( p->_deleted) continue; // ignore deleted terms ! 
+
+   for(  q = (x->_jltermStore); q < (x->_jltermStoreCurrentPtr); ++q  ) {
+
+     if ( q->_deleted) continue;
+
+     if( ( p->_weight + q->_weight ) > testWeight ) continue;   
+
+     indy = pje->offsetIndex( p->_index + q->_index );
+
+     // Will work even when the exponents are all zero.
+
+     product = p->_value * q->_value;
+
+     dummy = tjlmml[indy]._value + product;
+
+     if( (std::abs( dummy ) < MX_SMALL*std::abs( product )) || ( std::abs( dummy ) < MX_ABS_SMALL) ) {
+       tjlmml[indy]._value = T();
+     } 
+     else {
+       tjlmml[indy]._value = dummy;
+     }
+ }}
+
+ // -----------------------------------------------------------------------------------------------
+ // At this point, the terms are ordered in the scratchpad!
+ // clear the scratchpad and setup the JLterm* dlist 
+ // this could be optimized further by using use another mean 
+ // to clear scratch pad  
+ //-------------------------------------------------------------------------------------------------
+
+ // Transfer answer from the scratchpad and append only monomials with non-zero coefficients
+
+ zed      = tjlmml;
+ upperzed = tjlmml + pje->maxTerms();
+
+ for( p = zed; p < upperzed; ++p) 
+ {
+    if (  p->_value != T() )  {
+      z->append( new( z->storePtr() ) TJLterm<T>( *p ) ); 
+      p->_value = T();  // erase the scratchpad entry
+    }
+ 
+ };
+
+ // IMPORTANT NOTE:
+ // The result of a multiplication operation can be an empty Jet. 
+ // This happens when the product of x and y would yield only high 
+ // order monomial terms (i.e.) beyond the max weight allowed for
+ // the environment.   
+
+ return z;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >&  operator*=(boost::intrusive_ptr<TJL<T> > & x,     boost::intrusive_ptr<TJL<T> > const& y  )  
+{
+
+//------------------------------------
+// In place Multiplication of two jets
+//------------------------------------
+
+ // Consistency check 
+
+ if( x->_myEnv != y->_myEnv ) {
+   throw( GenericException( __FILE__, __LINE__, 
+          "multiply(typename JLPtr<T>::Type const& ) ",
+          "Inconsistent environments." ) );
+ };
+
+ // if one of the arguments is zero, clear x before returning 
+
+ if( x->_count < 1 ) return x;
+ if( y->_count < 1 ) { 
+
+   x->clear();
+   x->_accuWgt = x->_myEnv->maxWeight();
+   x->_weight  = 0; 
+   return x;
+ }
+
+ TJLterm<T>* p = 0;
+ TJLterm<T>* q = 0;
+
+ int  indy                = 0;
+ TJLterm<T>* zed          = 0;
+ TJLterm<T>* upperzed     = 0;
+ T  dummy                 = T();
+ T  product               = T();
+
+
+  // -------------------------------------------------
+ // Determine the maximum weight computed accurately.
+ // -------------------------------------------------
+
+ TJLterm<T> x_1stTerm( x->lowTerm() ); 
+ TJLterm<T> y_1stTerm( y->lowTerm() ); 
+
+ int testWeight    = 0;
+ int trialWeight  =  0;
+ 
+ testWeight = x->_accuWgt;
+ if( ( y_1stTerm._weight != 0 ) && ( y_1stTerm._value !=  T() ) )
+ {
+   testWeight += y_1stTerm._weight;
+ }
+
+ trialWeight = y->_accuWgt;
+ if( ( x_1stTerm._weight != 0 ) && ( x_1stTerm._value !=  T() ) )
+ {
+   trialWeight += x_1stTerm._weight;
+ }
+
+ int accuWgt = std::min(testWeight, trialWeight);
+     accuWgt = std::min(accuWgt,    x->_myEnv->maxWeight() ); 
+ 
+ testWeight = accuWgt;
+
+ //  -----------------------------------------------------------------
+ //  Loop over the terms and accumulate monomials in the scrach pad.
+ //  Use direct sequential access to access terms since order is
+ //  irrelevant in this context.
+ //  ------------------------------------------------------------------ 
+ 
+ TJLterm<T>* tjlmml =  x->_myEnv->TJLmml(); 
+ 
+ for(  p = (y->_jltermStore); p < (y->_jltermStoreCurrentPtr); ++p  ) {
+
+   if ( p->_deleted) continue; // ignore deleted terms ! 
+
+   for(  q = x->_jltermStore; q < x->_jltermStoreCurrentPtr; ++q  ) {
+
+     if ( q->_deleted) continue;
+
+     if( ( p->_weight + q->_weight ) > testWeight ) continue;   
+
+     indy = x->_myEnv->offsetIndex( p->_index + q->_index );
+
+     // Will work even when the exponents are all zero.
+
+     product = p->_value * q->_value;
+
+     dummy = tjlmml[indy]._value + product;
+
+     if( (std::abs( dummy ) < MX_SMALL*std::abs( product )) || ( std::abs( dummy ) < MX_ABS_SMALL) ) {
+       tjlmml[indy]._value = T();
+     } 
+     else {
+       tjlmml[indy]._value = dummy;
+     }
+ }}
+
+ // -----------------------------------------------------------------------------------------------
+ // At this point, the terms are ordered in the scratchpad!
+ // clear the scratchpad and setup the JLterm* dlist 
+ // this could be optimized further by using use another mean 
+ // to clear scratch pad  
+ //-------------------------------------------------------------------------------------------------
+
+ x->clear();
+ x->_accuWgt = accuWgt;
+ x->_weight = 0;
+
+ // Transfer answer from the scratchpad and append only monomials with non-zero coefficients
+
+ zed      = tjlmml;
+ upperzed = tjlmml + x->_myEnv->maxTerms();
+
+ for( p = zed; p < upperzed; ++p) 
+ {
+    if (  std::abs(p->_value) > 0.0)  {
+      x->append( new(  x->storePtr() ) TJLterm<T>( *p ) ); 
+      p->_value = T( );  // erase the scratchpad entry
+    }
+ 
+ };
+
+ // IMPORTANT NOTE:
+ // The result of a multiplication operation can be an empty Jet. 
+ // This happens when the product of x and y would yield only high 
+ // order monomial terms (i.e.) beyond the max weight computed
+ // accurately 
+
+
+ return x;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator/(boost::intrusive_ptr<TJL<T> > const & wArg,  boost::intrusive_ptr<TJL<T> > const& uArg  ){ 
+
+ if ( (wArg->_myEnv) != (uArg->_myEnv) ) {
+
+   throw( GenericException( __FILE__, __LINE__, 
+          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
+          "Inconsistent environments." ) );
+ }
+
+ if ( wArg->_count < 1 ) return typename JLPtr<T>::Type( TJL<T>::makeTJL( wArg->_myEnv ) );  // numerator is zero
+ 
+
+ // Check for void operators ..
+
+ if ( uArg->_count < 1 ) {
+   throw( GenericException( __FILE__, __LINE__, 
+          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
+          "Attempt to divide by a void TJL<T> variable." ) );
+ }
+ 
+ // Initialize local variables and set the environment of the answer.
+ // (These steps are not necessary, but they enforce a discipline.)
+
+ typename JLPtr<T>::Type  v( TJL<T>::makeTJL(wArg->_myEnv) );
+ typename JLPtr<T>::Type vn( TJL<T>::makeTJL(wArg->_myEnv) );
+ typename JLPtr<T>::Type  w( TJL<T>::makeTJL(wArg->_myEnv) );
+ typename JLPtr<T>::Type  u( TJL<T>::makeTJL(wArg->_myEnv) );
+
+ TJLterm<T>* qu = 0;
+ TJLterm<T>* qw = 0;
+ T u0 = T();
+
+ int wgt = 0;
+ int wl  = 0;
+ int mw  =  wArg->_myEnv->maxWeight();
+ 
+
+ dlist_looper gu( uArg->_theList );
+ dlist_looper gw( wArg->_theList );
+
+ // Normalize the denominator
+ if( ( qu = (TJLterm<T>*) gu() ) == 0 ) {
+   throw( GenericException( __FILE__, __LINE__, 
+          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
+          "Division algorithm called with uninitialized JL." ) );
+   }
+ if( ( wgt = qu->_weight ) != 0 ) {
+   throw( GenericException( __FILE__, __LINE__, 
+          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
+          "Attempt to divide by nilpotent element." ) );
+   }
+ if(  (u0 = qu->_value ) == 0.0 ) {
+   throw( GenericException( __FILE__, __LINE__, 
+          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
+          "Attempt to divide by zero." ) );
+   }
+
+
+ u = uArg* ((T) 1.0)/ u0 ; 
+
+ //  -------------------
+ //  Recursive algorithm
+ //  ------------------- 
+
+ qw = (TJLterm<T>*) gw();
+
+ if( qw->_weight == 0 ) 
+   { (*v) = ( qw->_value ); }
+ else                   
+   { (*v) = T(); }
+ 
+ wl = 0;
+ while ( wl < mw ) {
+
+   wl++;
+   vn  = u->truncMult( v, wl );
+   vn  = vn->filter( wl, wl );
+    w  = wArg->filter( wl, wl );
+     
+  // compute v = v + w - vn 
+
+   v += (w-vn);      // v + w- vn                       
+ 
+   }                                     
+ 
+ // Correct normalization of the answer ..
+
+ v->scaleBy( ((T) 1.0)/ u0); 
+ 
+ // Determine the maximum weight computed accurately.
+
+ v->_accuWgt = std::min(  wArg->_accuWgt, uArg->_accuWgt);
+
+ // .. and return _value.
+
+ return v;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator/(boost::intrusive_ptr<TJL<T> > const & x,  T const& y  ){  
+
+  typename JLPtr<T>::Type z (x->clone() );
+  z->scaleBy( ((T) 1.0) / y );  
+  return z;
+
+}
 
 
 #endif // TJL_TCC

@@ -64,13 +64,12 @@
 #include <TMatrix.h>
 #include <VectorD.h>
 #include <TJetEnvironment.h>
-#include <ext/hash_map>
-#include <boost/functional/hash/hash.hpp>
 #include <ReferenceCounter.h>
 #include <FastPODAllocator.h>
 #include <vector>
 #include <JLPtr.h>
 #include <EnvPtr.h>
+#include <TJLterm.h>
 
 #define MX_SMALL       1.0e-12 // Used by TJL<T>::addTerm to decide 
                                // removal of a TJL<T>Cterm.
@@ -105,91 +104,50 @@ std::ostream& operator<<( std::ostream& os, const TJL<T>& x );
 template<typename T>
 std::istream& operator>>( std::istream& is,  TJL<T>& x ); 
 
+// ---------------------------------------------------------------------------------------------------------
+// NOTE:
+// The arguments in the operator declations below can unfortunately not be declared in terms of of the pseudo 
+// class JLPtr<T>; doing so results in failure of the template argument matching algorithm. The new 
+// C++-0x standard provides support for true "templated typdefs". This feature should be taken advantage of 
+// when it becomes available, so a to avoid explicit details of the smart pointer implementatation in this
+// header file.    
+//-----------------------------------------------------------------------------------------------------------   
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator+(boost::intrusive_ptr<TJL<T> > const & x, boost::intrusive_ptr<TJL<T> > const& y  );  
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >&  operator+=(boost::intrusive_ptr<TJL<T> >& x,      boost::intrusive_ptr<TJL<T> > const& y  );  
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator-(boost::intrusive_ptr<TJL<T> > const &x);  
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator-(boost::intrusive_ptr<TJL<T> > const & x,  boost::intrusive_ptr<TJL<T> > const& y  );  
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >&  operator-=(boost::intrusive_ptr<TJL<T> >& x,      boost::intrusive_ptr<TJL<T> > const& y  );  
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator*(boost::intrusive_ptr<TJL<T> > const & x,  boost::intrusive_ptr<TJL<T> > const& y  );  
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator*(boost::intrusive_ptr<TJL<T> > const & x,  T const& y  );  
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator*(T const & x,                              boost::intrusive_ptr<TJL<T> > const& y  );  
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >&  operator*=(boost::intrusive_ptr<TJL<T> > & x,     boost::intrusive_ptr<TJL<T> > const& y  );  
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator/(boost::intrusive_ptr<TJL<T> > const & x,  boost::intrusive_ptr<TJL<T> > const& y  );  
+
+template <typename T>
+boost::intrusive_ptr<TJL<T> >   operator/(boost::intrusive_ptr<TJL<T> > const & x,  T const& y  );  
 
 
-template<typename T>
-struct TJLterm
-{
-
-  // Data
-  IntArray _index;      //  An integer array giving the derivatives associated
-                        //  with the JLterm.  For example, ( 1, 1, 0, 2 )
-                        //  would correspond to D_1^1 D_2^1 D_4^2 .
-  int      _weight;     //  The sum of the values in index.  For the above example, 
-                        //  this would be 4.
-  T        _value;      //  The value associated with the JLterm.
-
-  bool     _deleted;    //  true when the term has been deleted (but not yet de-allocated)
-
-  // Constructors and destructors
-  TJLterm();
-
-  void Reconstruct( const IntArray&, const T& );
-
-  //   NOTE: The void constructor is to be used ONLY in
-  //   conjunction with Reconstruct. By default,
-  //   _index is made 6 dimensional until Reconstruct
-  //   is invoked.
-
-  TJLterm( typename EnvPtr<T>::Type pje );
-  TJLterm( const IntArray&, const T&,  typename EnvPtr<T>::Type pje);
-
-  //   If 0 is used for the environment pointer,
-  //   it is assumed that the that the variable
-  //   represents a constant function.
-
-  TJLterm( const IntArray&, const T& );
-  TJLterm( const TJLterm* );
-  TJLterm( const TJLterm& );
-
-  // Operators
-
-  operator TJLterm <std::complex<double> > () const;
-  operator TJLterm <double> () const;
-
-  TJLterm& operator=( const TJLterm& );
-  TJLterm  operator*( const TJLterm& );
-  TJLterm  operator+( const TJLterm& );
-  
-  // Accessors
-  IntArray& exponents()         { return _index; }
-  IntArray  exponents()   const { return _index; }
-  T&        coefficient()       { return _value; }
-  T         coefficient() const { return _value; }
-  T         coeff()       const { return _value; }  // old
-
-  // JLterm array allocation functions
-
-  static TJLterm<T>*       array_allocate(int n);
-  static void              array_deallocate(TJLterm<T>* p);
-
-  // ~TJLterm();           // MUST **NOT** BE DEFINED ! 
-
-  private:
-
-
-  static boost::pool<>                                                       
-                         _ordered_memPool;  // an ordered pool of TJLterms
-  
-  static __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> > 
-                         _array_sizes;      // the size of the allocated arrays, 
-                                            // indexed by their pointers   
-
-  // these declations are meant to prevent use of all forms of operator new[];
-
-  static void* operator new[]( std::size_t size) throw (std::bad_alloc); 
-  static void* operator new[]( std::size_t size, const std::nothrow_t&) throw();
-  static void* operator new[]( std::size_t size, void*) throw();
-
-  static void operator delete[](void* p) throw();
-  static void operator delete[](void* p, const std::nothrow_t&) throw();
-  // this form *cannot* be overloaded: static void operator delete[](void* p, void*) throw();
-
-} ;
-
-
-// *******************************************************************
-
+// **********************************************************************************************************
 
 template<typename T> 
 class TJL: public ReferenceCounter {
@@ -244,10 +202,10 @@ class TJL: public ReferenceCounter {
 
   // factory functions 
 
-  static TJL<T>* makeTJL( typename EnvPtr<T>::Type pje,  T value = T());
-  static TJL<T>* makeTJL( const IntArray&, const T&, typename EnvPtr<T>::Type pje );
-  static TJL<T>* makeTJL( const TJL& );
-  static TJL<T>* makeTJL( const TJL* );
+
+  static typename JLPtr<T>::Type makeTJL( typename EnvPtr<T>::Type pje,  T value = T());
+  static typename JLPtr<T>::Type makeTJL( const IntArray&, const T&, typename EnvPtr<T>::Type pje );
+  static typename JLPtr<T>::Type makeTJL( const TJL& );
   static void discardTJL( TJL<T>* p);  
 
   
@@ -255,8 +213,8 @@ class TJL: public ReferenceCounter {
 
 
   virtual void dispose() { TJL<T>::discardTJL(  this ); }  // used by ReferenceCounter class 
-  inline static typename JLPtr<T>::Type clone(const typename JLPtr<T>::Type& jl) 
-                           {return typename JLPtr<T>::Type( TJL<T>::makeTJL( jl.get() )); } 
+  inline typename JLPtr<T>::Type clone() 
+                           {return typename JLPtr<T>::Type( TJL<T>::makeTJL(  *this ) ); } 
 
 
 
@@ -309,18 +267,43 @@ class TJL: public ReferenceCounter {
 
   TJL& Negate();
 
-  void add     ( typename JLPtr<T>::Type const&  x);    // in place addition 
-  void multiply( typename JLPtr<T>::Type const&  x);    // in place multiplication 
 
   static JLPtr<double>::Type TJL<T>::real( const JLPtr<std::complex<double> >::Type & z ); 
   static JLPtr<double>::Type TJL<T>::imag( const JLPtr<std::complex<double> >::Type & z );
 
-  static typename JLPtr<T>::Type       add(typename JLPtr<T>::Type const& x, typename JLPtr<T>::Type const& y);
-  static typename JLPtr<T>::Type  multiply(typename JLPtr<T>::Type const& x, typename JLPtr<T>::Type const& y);
-  static typename JLPtr<T>::Type  multiply(typename JLPtr<T>::Type const& x, T const& y );
-  static typename JLPtr<T>::Type    divide(typename JLPtr<T>::Type const& x, typename JLPtr<T>::Type const& y);
+  friend boost::intrusive_ptr<TJL<T> >  
+         operator+<>(boost::intrusive_ptr<TJL<T> > const & x, boost::intrusive_ptr<TJL<T> > const& y  );  
+
+  friend boost::intrusive_ptr<TJL<T> >& 
+         operator+= <>(boost::intrusive_ptr<TJL<T> >& x,      boost::intrusive_ptr<TJL<T> > const& y  );  
+
+  friend boost::intrusive_ptr<TJL<T> >  
+         operator-<>(boost::intrusive_ptr<TJL<T> > const & x );  
+
+  friend boost::intrusive_ptr<TJL<T> >  
+         operator-<>(boost::intrusive_ptr<TJL<T> > const & x, boost::intrusive_ptr<TJL<T> > const& y  );  
+
+  friend boost::intrusive_ptr<TJL<T> >&  
+         operator-=<>(boost::intrusive_ptr<TJL<T> >& x,         boost::intrusive_ptr<TJL<T> > const& y  );  
+
+  friend boost::intrusive_ptr<TJL<T> >  
+         operator*<>(boost::intrusive_ptr<TJL<T> > const & x, boost::intrusive_ptr<TJL<T> > const& y  );  
+
+  friend boost::intrusive_ptr<TJL<T> >   
+         operator*<>(boost::intrusive_ptr<TJL<T> > const & x,  T const& y  );  
+
+  friend boost::intrusive_ptr<TJL<T> >   
+         operator*<>(T const & x,                              boost::intrusive_ptr<TJL<T> > const& y  );  
+
+  friend boost::intrusive_ptr<TJL<T> >& 
+        operator*= <>(boost::intrusive_ptr<TJL<T> >& x,        boost::intrusive_ptr<TJL<T> > const& y  );  
+
+  friend boost::intrusive_ptr<TJL<T> >  
+         operator/<>(boost::intrusive_ptr<TJL<T> > const & x,  boost::intrusive_ptr<TJL<T> > const& y  );  
   
- 
+  friend boost::intrusive_ptr<TJL<T> >   
+         operator/<>(boost::intrusive_ptr<TJL<T> > const & x,  T const& y  );  
+
   typename JLPtr<T>::Type sin()              const;
   typename JLPtr<T>::Type cos()              const;
   typename JLPtr<T>::Type asin()             const;
@@ -477,6 +460,17 @@ class TJL: public ReferenceCounter {
     int i, n;
   };
 };
+
+
+// specializations 
+
+template<> TJL<double>::operator JLPtr<std::complex<double> >::Type () const;              // implemented
+template<> TJL<std::complex<double> >::operator JLPtr<double>::Type () const;              // implemented
+
+template<> TJL<std::complex<double> >::operator JLPtr<std::complex<double> >::Type () const; // NOT implemented
+template<> TJL<double>::operator JLPtr<double>::Type () const;                             // NOT implemented
+
+
 
 #ifdef  MXYZPTLK_IMPLICIT_TEMPLATES
 #include <TJL.tcc>
