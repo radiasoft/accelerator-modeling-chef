@@ -63,8 +63,6 @@
 #include <iomanip>
 #include <fstream>
 
-class Vector;
-
 #include <utils.h> // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
 #include <iosetup.h>
 #include <GenericException.h>
@@ -87,6 +85,24 @@ using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
 
+//-------------------------------------------------------------------
+// factory funtions
+//-------------------------------------------------------------------
+template<typename T>
+typename JLPtr<T>::Type makeJL( boost::intrusive_ptr<TJetEnvironment<T> > pje,  T value) {
+
+  return TJL<T>::makeTJL( pje,value) ;
+
+}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename JLPtr<T>::Type makeJL( const IntArray& index, const T& value, typename EnvPtr<T>::Type pje ) {
+
+  return  TJL<T>::makeTJL( index, value, pje) ;
+
+}
 
 // ***************************************************************
 // ***************************************************************
@@ -107,7 +123,7 @@ TJet<T>::TJet( const typename JLPtr<T>::Type& jl) : _jl( jl)
 
 
 template<typename T>
-TJet<T>::TJet( typename EnvPtr<T>::Type pje ) :  _jl( TJL<T>::makeTJL( pje ) )
+TJet<T>::TJet( typename EnvPtr<T>::Type pje ) :  _jl( makeJL( pje ) )
 {
 }
 
@@ -116,7 +132,7 @@ TJet<T>::TJet( typename EnvPtr<T>::Type pje ) :  _jl( TJL<T>::makeTJL( pje ) )
 
 
 template<typename T>
-TJet<T>::TJet( T x, typename EnvPtr<T>::Type pje ): _jl(TJL<T>::makeTJL( pje,x ) )
+TJet<T>::TJet( T x, typename EnvPtr<T>::Type pje ): _jl( makeJL( pje,x ) )
 {
 }
 
@@ -150,7 +166,7 @@ void TJet<T>::Reconstruct()
  // Combines destructor and constructor functions.
  // Use when initializing a static TJet variable.
 
- _jl = typename::JLPtr<T>::Type( TJL<T>::makeTJL( _jl->getEnv() ) );
+ _jl = typename::JLPtr<T>::Type( makeJL( _jl->getEnv() ) );
 
 }
 
@@ -164,7 +180,7 @@ void TJet<T>::Reconstruct( typename EnvPtr<T>::Type pje )
  // Combines destructor and constructor functions.
  // Use when initializing a static TJet variable.
 
- _jl = typename::JLPtr<T>::Type( TJL<T>::makeTJL( pje ) );
+ _jl = typename::JLPtr<T>::Type( makeJL( pje ) );
 
 }
 
@@ -180,7 +196,7 @@ void TJet<T>::Reconstruct( const IntArray& e,
  // Combines destructor and constructor functions.
  // Use when initializing a static TJet variable.
 
- _jl = typename::JLPtr<T>::Type( TJL<T>::makeTJL( e, x, pje ) ); 
+ _jl = typename::JLPtr<T>::Type( makeJL( e, x, pje ) ); 
 
 }
 
@@ -194,7 +210,7 @@ void TJet<T>::setEnvTo( const TJet& x )
  
   if( _jl->getEnv() != x._jl->getEnv() ) 
   {
-    if (_jl->count() > 1 ) _jl = TJL<T>::clone(_jl);  // do not clone unless the ref count > 1  
+    if (_jl->count() > 1 ) _jl = _jl->clone();  // do not clone unless the ref count > 1  
 
     _jl->setEnv(x._jl->getEnv());
   }
@@ -209,7 +225,7 @@ void TJet<T>::setEnvTo( typename EnvPtr<T>::Type pje )
 {
   if( _jl->getEnv() != pje ) 
   {
-     if (_jl->count() > 1 )  _jl = TJL<T>::clone(_jl);
+     if (_jl->count() > 1 )  _jl = _jl->clone();
     _jl->setEnv(pje);
   }
 }
@@ -236,7 +252,7 @@ void TJet<T>::setVariable( const T& x,
                                const int& j, 
                                typename EnvPtr<T>::Type pje )
 {
-  _jl = TJL<T>::clone(_jl);
+  _jl = _jl->clone();
   _jl->setVariable( x, j, pje );  // !! Alters the environment!
 
 }
@@ -262,7 +278,7 @@ void TJet<T>::setVariable( const int& j,
                                typename EnvPtr<T>::Type pje ) 
 {
 
-    _jl = TJL<T>::clone(_jl);;
+    _jl = _jl->clone();;
     _jl->setVariable( j, pje );
 }
 
@@ -273,7 +289,7 @@ template<typename T>
 void TJet<T>::setVariable( const int& j )
 {
 
- _jl = TJL<T>::clone(_jl);
+ _jl = _jl->clone();
  _jl->setVariable( j, _jl->getEnv() );
 
 }
@@ -299,7 +315,7 @@ TJet<T>& TJet<T>::DeepCopy( const TJet& x )
 {
 
  if( this != &x ) {
-   _jl = TJL<T>::clone( x._jl );
+   _jl = (x._jl)->clone();
 }
 
  return *this; 
@@ -313,7 +329,7 @@ template<typename T>
 TJet<T>& TJet<T>::operator=( const T& x ) 
 {
 
- _jl = typename JLPtr<T>::Type( TJL<T>::makeTJL( _jl->getEnv(), x)); 
+ _jl = typename JLPtr<T>::Type( makeJL( _jl->getEnv(), x)); 
 
  return *this; 
 
@@ -326,7 +342,7 @@ TJet<T>& TJet<T>::operator=( const T& x )
 template<typename T>
 void TJet<T>::addTerm( const TJLterm<T>& a) 
 {
- _jl = TJL<T>::clone(_jl);
+ _jl = _jl->clone();
  _jl->addTerm( new( _jl->storePtr()) TJLterm<T>(a) );
 }
 
@@ -340,7 +356,7 @@ istream& operator>>( istream& is,  TJet<T>& x )
 {
 //  streams a TJet from into an existing instance
 
-  x._jl = typename::JLPtr<T>::Type(TJL<T>::makeTJL(x->getEnv()) );
+  x._jl = typename::JLPtr<T>::Type( makeJL(x->getEnv()) );
   
  return operator>>( is, *(x._jl) );
 }
@@ -385,7 +401,7 @@ void Tcoord<T>::instantiate( int index, typename EnvPtr<T>::Type pje) {
  }
 
  this->_index = index;
- this->_jl    = typename JLPtr<T>::Type( TJL<T>::makeTJL( pje) );
+ this->_jl    = typename JLPtr<T>::Type( makeJL( pje) );
  this->_jl->setVariable( _refpt, index );  
 
 } 
@@ -439,7 +455,7 @@ void Tparam<T>::instantiate( int index, typename EnvPtr<T>::Type pje) {
   }
 
   this->_index = index;
-  this->_jl   = typename JLPtr<T>::Type( TJL<T>::makeTJL( pje) );
+  this->_jl   = typename JLPtr<T>::Type( makeJL( pje) );
   this->_jl->setVariable( _refpt, index );  
 } 
 
@@ -461,8 +477,8 @@ template<typename T>
 TJet<T>& TJet<T>::operator+=( const TJet<T>& y ) 
 {
 
-_jl = TJL<T>::clone(_jl);
-_jl->add( y._jl ); 
+_jl = _jl->clone();
+_jl += y._jl; 
 return *this;
  
 }
@@ -489,7 +505,7 @@ TJet<T>& TJet<T>::operator*=( const TJet<T>& y )
 // no in-place multiplication yet ...
 // use std operator instead.
  
- _jl = TJL<T>::multiply( _jl, y._jl );
+ _jl *= y._jl;
  return *this;
 
 }
@@ -503,7 +519,7 @@ TJet<T>& TJet<T>::operator/=( const TJet<T>& y )
 
 // no in-place division yet ...
 // use std operator instead
- _jl = TJL<T>::divide( _jl, y._jl);  
+ _jl = _jl / (y._jl);  
  return *this;
 
 }
@@ -514,7 +530,7 @@ TJet<T>& TJet<T>::operator/=( const TJet<T>& y )
 template<typename T>
 TJet<T>& TJet<T>::operator/=( const T& y ) 
 {
-  _jl = TJL<T>::clone(_jl);
+  _jl = _jl->clone();
   _jl->scaleBy( ((T) 1.0)/ y);
   return *this;
 
@@ -606,7 +622,7 @@ template<typename T>
 TJet<T>& TJet<T>::operator+=( const T& x ) 
 {   
 
-  _jl = TJL<T>::clone(_jl);
+  _jl = _jl->clone();
   _jl->operator+=( x );
 
  return *this;
@@ -630,7 +646,7 @@ template<typename T>
 TJet<T>& TJet<T>::operator*=( const T& x ) 
 {
 
- _jl = TJL<T>::clone(_jl);
+ _jl = _jl->clone();
  _jl->scaleBy(x); 
  return *this;
 }
@@ -643,7 +659,7 @@ template<typename T>
 TJet<T> operator+( const TJet<T>& x, const TJet<T>& y ) 
 { 
 
-  return TJet<T>( TJL<T>::add(x._jl, y._jl));
+  return TJet<T>( x._jl + y._jl);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -653,7 +669,7 @@ template<typename T>
 TJet<T> operator+( const TJet<T>& x, const T& y ) 
 {
 
- return TJet<T>( TJL<T>::add( x._jl, typename JLPtr<T>::Type( TJL<T>::makeTJL( x->getEnv(), y))) );    
+ return TJet<T>( x._jl + typename JLPtr<T>::Type( makeJL( x->getEnv(), y)) );    
 
 }
 
@@ -692,7 +708,7 @@ TJet<T> operator-( const T& x, const TJet<T>& y )
 template<typename T> 
 TJet<T> operator-( const TJet<T>& x) // Unary form of minus 
 {
-  typename JLPtr<T>::Type  jl(  TJL<T>::makeTJL( x._jl.get() ) ); // deep copy
+  typename JLPtr<T>::Type  jl ( (x._jl)->clone() ); // deep copy
   jl->Negate();
   return TJet<T>( jl );
 
@@ -704,7 +720,7 @@ TJet<T> operator-( const TJet<T>& x) // Unary form of minus
 template<typename T>
 void TJet<T>::Negate()    // ??? What is this for ???
 {
-  _jl = TJL<T>::clone(_jl);
+  _jl = _jl->clone();
   _jl->Negate();
 
 }
@@ -716,7 +732,7 @@ template<typename T>
 void TJet<T>::Mult( const T& x ) // ??? What is this for ???
 {
 
- _jl = TJL<T>::clone(_jl);
+ _jl = _jl->clone();
  _jl->scaleBy(x);
 
 }
@@ -737,7 +753,7 @@ template<typename T>
 TJet<T> operator*( const TJet<T>& x, const TJet<T>& y ) 
 {
 
- return TJet<T>( TJet<T>( TJL<T>::multiply(x._jl, y._jl) ) );
+ return TJet<T>( x._jl * y._jl );
 }
 
 
@@ -749,7 +765,7 @@ TJet<T> operator*( const TJet<T>& x, const T& y )
 {
 
 
- return TJet<T>( TJL<T>::multiply(x._jl, y) );
+ return TJet<T>( x._jl* y );
 
 
 }
@@ -810,7 +826,7 @@ template<typename T>
 TJet<T> operator/( const T& a, const TJet<T>& b ) 
 {
 
- return TJet<T>( TJL<T>::divide( typename JLPtr<T>::Type( TJL<T>::makeTJL(b._jl->getEnv(), a) ), b._jl ) );    
+ return TJet<T>( typename JLPtr<T>::Type( makeJL(b._jl->getEnv(), a) )/ b._jl  );    
 
 } 
 
@@ -823,7 +839,7 @@ template<typename T>
 TJet<T> operator/( const TJet<T>& wArg, const TJet<T>& uArg ) 
 { 
 
- return TJet<T>( TJL<T>::divide( wArg._jl,  uArg._jl) );
+ return TJet<T>( wArg._jl/  uArg._jl );
 
 
 }
@@ -1113,7 +1129,7 @@ void TJet<T>::writeToFile( ofstream& outStr ) const
 template<typename T>
 void TJet<T>::scaleBy( T y ) 
 {
- _jl = TJL<T>::clone(_jl); 
+ _jl = _jl->clone(); 
  _jl->scaleBy( y );
 }
 
@@ -1123,7 +1139,7 @@ void TJet<T>::scaleBy( T y )
 template<typename T>
 TJLterm<T>* TJet<T>::get() 
 {
- _jl = TJL<T>::clone(_jl);
+ _jl = _jl->clone();
  return _jl->get();
 }
 
@@ -1160,7 +1176,7 @@ T TJet<T>::standardPart() const
 template<typename T>
 void TJet<T>::clear() 
 {
- _jl = TJL<T>::clone(_jl); 
+ _jl = _jl->clone(); 
  _jl->clear();
 }
 
@@ -1302,7 +1318,7 @@ TJet<T> TJet<T>::D( const IntArray& n ) const
 template<typename T> 
 const TJLterm<T>* TJet<T>::stepConstIteratorPtr() const
 {
-  _jl =  TJL<T>::clone(_jl);
+  _jl =  _jl->clone();
   return _jl->stepConstIteratorPtr(); 
 }   
 
@@ -1312,7 +1328,7 @@ const TJLterm<T>* TJet<T>::stepConstIteratorPtr() const
 template<typename T>
 const TJLterm<T>& TJet<T>::stepConstIteratorRef() const
 {   
-  _jl =  TJL<T>::clone(_jl);
+  _jl =  _jl->clone();
   return _jl->stepConstIteratorRef();
 }
 
@@ -1322,7 +1338,7 @@ const TJLterm<T>& TJet<T>::stepConstIteratorRef() const
 template<typename T>
 void  TJet<T>::resetConstIterator()
 {
-  _jl =  TJL<T>::clone(_jl);
+  _jl =  _jl->clone();
   _jl->stepConstIteratorRef();
 }
 
@@ -1332,7 +1348,7 @@ void  TJet<T>::resetConstIterator()
 template<typename T>
 void TJet<T>::resetIterator()
 {
-   _jl =  TJL<T>::clone(_jl);
+   _jl =  _jl->clone();
    _jl->resetIterator();
 }
 
@@ -1342,7 +1358,7 @@ void TJet<T>::resetIterator()
 template<typename T>
 TJLterm<T>*  TJet<T>::stepIterator()
 {
-  _jl = TJL<T>::clone(_jl);
+  _jl = _jl->clone();
   return _jl->stepIterator();
 
 }

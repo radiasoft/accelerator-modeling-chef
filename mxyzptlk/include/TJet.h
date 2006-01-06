@@ -57,16 +57,13 @@
 
 #include <slist.h>
 #include <IntArray.h>
+#include <VectorD.h>
 
 #include <TJetEnvironment.h>
 #include <TJL.h>
 #include <complex>
 
-
 // Forward declarations
-
-
-class Vector;
 
 template<typename T> 
 class TJet;
@@ -238,7 +235,24 @@ TJet<T> erfc ( const TJet<T>& );
 TJet<std::complex<double> > erf    ( const TJet<std::complex<double> >& );
 TJet<double > erf    ( const TJet<double >& );
 
+// JL factory functions
+
+template<typename T>
+typename JLPtr<T>::Type makeJL( boost::intrusive_ptr<TJetEnvironment<T> > pje,  T value = T());
+
+template<typename T>
+typename JLPtr<T>::Type makeJL( const IntArray&, const T&, typename EnvPtr<T>::Type pje );
+
+//template<typename T>
+//typename JLPtr<T>::Type makeJL( const TJL& );
+
+//template<typename T>
+//void discardJL( TJL<T>* p);  
+
+
+//******************************************************************************************************************
 // Class TJet template
+
 template<typename T>
 
 class TJet: public gms::FastAllocator 
