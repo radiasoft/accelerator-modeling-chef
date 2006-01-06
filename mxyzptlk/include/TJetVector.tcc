@@ -851,7 +851,7 @@ istream& operator>>( istream& is, TJetVector<T>& v )
   is >> v._dim;
   CHECKOUT(v._dim <= 0, "TJetVector<T>::TJetVector<T>", "Dimension must be positive.")
 
-  streamIn( is, &(v._myEnv) );
+  streamIn( is, v._myEnv );
 
   if( v._comp ) delete [] v._comp;
   v._comp = new TJet<T> [ v._dim ];
