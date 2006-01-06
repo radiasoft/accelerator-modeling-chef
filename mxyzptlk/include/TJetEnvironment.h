@@ -41,9 +41,9 @@
 ******  Nov 2005   ostiguy@fnal.gov
 ******  
 ****** - reference counted environments based on boost::intrusive_ptr<>
-****** - shared scratch pads, implemented as ScratchArea a distinct 
-******   private class. Only one instance of Scratch are is created for 
-******   for all environments that share the same values of maxweight, 
+****** - shared scratchpads:  implemented ScratchArea as a distinct 
+******   private class. Only one instance of ScratchArea is created for 
+******   for *all* environments sharing the same values of maxweight, 
 ******   and numvar.   
 ******          
 *************************************************************************
@@ -52,6 +52,7 @@
 #define TJETENV_H
 
 #include <IntArray.h>
+#include <VectorD.h>
 #include <Cascade.h>
 #include <TMatrix.h>
 #include <deque>
@@ -63,13 +64,10 @@
 #include <ReferenceCounter.h>
 
 // Forward declarations
-class Vector;
+
 
 template<typename T> 
 class TJet;
-
-template<typename T> 
-class TJL;
 
 template<typename T> 
 class Tcoord;
@@ -89,9 +87,9 @@ class TMapping;
 template<typename T> 
 std::ostream& operator<<( std::ostream& os, const TJetEnvironment<T>& pje);
 
+template<typename T> 
+std::istream& streamIn(std::istream&, boost::intrusive_ptr<TJetEnvironment<T> >& pje );
 
-std::istream& streamIn(std::istream&, EnvPtr<double>::Type* );
-std::istream& streamIn(std::istream&, EnvPtr<std::complex<double> >::Type* );
 
 // Struct TJetEnvironment template
 template<typename T>
@@ -168,7 +166,7 @@ class TJetEnvironment: public ReferenceCounter
   static typename EnvPtr<T>::Type   EndEnvironment(double* scale=0);
 
   static typename EnvPtr<T>::Type  makeJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0, double* scale=0);
-  static typename EnvPtr<T>::Type  makeInverseJetEnvironment(typename EnvPtr<T>::Type, const TMapping<T>& map); 
+  static typename EnvPtr<T>::Type  makeInverseJetEnvironment(const TMapping<T>& map); 
   static typename EnvPtr<T>::Type  makeJetEnvironment(int maxweight, const Vector&, double* scale=0);
 
   static EnvPtr<double>::Type  getApproxJetEnvironment(int maxweight, const Vector& refpoints);
@@ -227,9 +225,7 @@ class TJetEnvironment: public ReferenceCounter
    // Streams --------------------------------------------------------- 
 
   friend std::ostream& operator<< <>( std::ostream&, const TJetEnvironment& );
-  friend std::istream& streamIn(std::istream&, EnvPtr<double>::Type* );
-  friend std::istream& streamIn(std::istream&, EnvPtr<std::complex<double> >::Type* );
-  // friend std::istream& streamIn<>(std::istream&, typename EnvPtr<T>::Type * );
+  friend std::istream& streamIn<>(std::istream&, boost::intrusive_ptr<TJetEnvironment<T> >& pje );
 
  private:
 
