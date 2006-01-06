@@ -29,6 +29,8 @@
 ******             ostiguy@fnal.gov                                                   
 ******             
 ******             - segregated explicit template instantiations
+******             - new template Vector class
+******           
 ******
 ******                                                                
 **************************************************************************
@@ -55,12 +57,12 @@
 
 #include <TMatrix.tcc>
 #include <TML.tcc>
+#include <TVector.tcc>
 #include <FastPODAllocator.h>
 #include <dlist.h>
 #include <slist.h>
 
 using namespace std;
-using FNAL::Complex;
 using std::ostringstream;
 
 const double limit = double(1e-14);
@@ -85,6 +87,36 @@ template
 unsigned int boost::details::pool::lcm<unsigned int>(unsigned int const&, unsigned int const&);
 template
 unsigned int boost::details::pool::gcd<unsigned int>(unsigned int, unsigned int);
+
+// ----------------------------------------------------------------------------
+// Instantiations related to Vector Class
+// ----------------------------------------------------------------------------
+
+template class TVector<double>;
+template class TVector<std::complex<double> >;
+
+template double TVector<double>::Norm() const;
+template double TVector<std::complex<double> >::Norm() const;
+
+template TVector<double> operator-(TVector<double> const&);
+template TVector<std::complex<double> > operator-(TVector<std::complex<double> > const&);
+
+template TVector<double> operator*<double>(TVector<double> const&, double);
+template TVector<double> operator*<double>(double, TVector<double> const&);
+
+template TVector<std::complex<double> > operator*(std::complex<double>, TVector<std::complex<double> > const&);
+template TVector<std::complex<double> > operator*(TVector<std::complex<double> > const&, std::complex<double>);
+
+template bool TVector<double>::IsUnit() const;
+template bool TVector<std::complex<double> >::IsUnit() const;
+
+template TVector<double> operator*(TMatrix<double> const&, TVector<double> const&);
+template TVector<std::complex<double> > operator*(TMatrix<std::complex<double> > const&, TVector<std::complex<double> > const&);
+
+template std::ostream& operator<<(std::ostream&, TVector<double> const&);
+template std::ostream& operator<<(std::ostream&, TVector<std::complex<double> > const&);
+
+
 
 // ----------------------------------------------------------------------------
 // Instantiations related to Matrix Class
