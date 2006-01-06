@@ -76,12 +76,12 @@ class MomentsFncData : public CHEFPlotData
     void _finishConstructor();
 
  public:
-    MomentsFncData( beamline*        ,  ostream* stdoutstream = &std::cout, ostream* stderrstream=&std::cerr );
-    MomentsFncData( BeamlineContext* ,  ostream* stdoutstream = &std::cout, ostream* stderrstream=&std::cerr );
+    MomentsFncData( beamline*        ,  std::ostream* stdoutstream = &std::cout, std::ostream* stderrstream=&std::cerr );
+    MomentsFncData( BeamlineContext* ,  std::ostream* stdoutstream = &std::cout, std::ostream* stderrstream=&std::cerr );
     ~MomentsFncData();
 
-    void resetErrorStream(  ostream* );
-    void resetOutputStream( ostream* );
+    void resetErrorStream(  std::ostream* );
+    void resetOutputStream( std::ostream* );
 
     double getHorTune();
     double getVerTune();
@@ -90,17 +90,17 @@ class MomentsFncData : public CHEFPlotData
     void makeCurves();
 
  protected:
-    ostream* _errorStreamPtr;
-    ostream* _outputStreamPtr;
+    std::ostream* _errorStreamPtr;
+    std::ostream* _outputStreamPtr;
 };
 
 
-inline void MomentsFncData::resetErrorStream( ostream* x )
+inline void MomentsFncData::resetErrorStream( std::ostream* x )
 {
   _errorStreamPtr = x;
 }
 
-inline void MomentsFncData::resetOutputStream( ostream* x )
+inline void MomentsFncData::resetOutputStream( std::ostream* x )
 {
   _outputStreamPtr = x;
 }

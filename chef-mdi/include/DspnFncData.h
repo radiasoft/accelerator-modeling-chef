@@ -86,8 +86,8 @@ class DspnFncData : public CHEFPlotData
     void makeCurves();
 
  protected:
-    ostream*   _errorStreamPtr;
-    ostream*   _outputStreamPtr;
+    std::ostream*   _errorStreamPtr;
+    std::ostream*   _outputStreamPtr;
 };
 
 

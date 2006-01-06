@@ -100,12 +100,12 @@ class LattFncData: public CHEFPlotData
 };
 
 
-inline void LattFncData::resetErrorStream( ostream* x )
+inline void LattFncData::resetErrorStream( std::ostream* x )
 {
   _errorStreamPtr = x;
 }
 
-inline void LattFncData::resetOutputStream( ostream* x )
+inline void LattFncData::resetOutputStream( std::ostream* x )
 {
   _outputStreamPtr = x;
 }
