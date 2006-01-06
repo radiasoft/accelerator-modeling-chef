@@ -67,7 +67,6 @@ extern "C" { void cg_(int*, int*, double*, double*,double*,double*, int*,
                       double*,double*,double*, double*, double*,int*); }
 
 
-using FNAL::Complex;
 using FNAL::pcout;
 using FNAL::pcerr;
 
@@ -372,7 +371,7 @@ return _ml->operator()(i);
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-ostream& operator<<(ostream& os, const TMatrix<T>& x)
+std::ostream& operator<<(std::ostream& os, const TMatrix<T>& x)
 {
 
    return os << *(x._ml); 
