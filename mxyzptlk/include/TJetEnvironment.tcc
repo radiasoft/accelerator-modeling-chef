@@ -35,16 +35,24 @@
 ******  Feb  2005 - Jean-Francois Ostiguy
 ******              ostiguy@fnal.gov
 ******  
-******              - Efficiency improvements.
-******              - new memory management
+****** - Efficiency improvements.
+****** - new memory management
 ******  
 ******  Sept 2005   ostiguy@fnal.gov
 ******
-******              - new code based on a single template parameter
-******                instead of two. Mixed mode now handled
-******                using conversion operators.
-******              - centralized environment management
-******                                                                
+****** - new code based on a single template parameter
+******   instead of two. Mixed mode handled
+******   using conversion operators.
+****** - centralized environment management
+******
+******  Nov 2005     ostiguy@fnal.gov                                           
+******
+****** - reference counted environments based on boost::intrusive_ptr<>
+****** - shared scratchpads:  implemented ScratchArea as a distinct 
+******   private class. Only one instance of ScratchArea is created for 
+******   for *all* environments sharing the same values of maxweight, 
+******   and numvar.   
+
 **************************************************************************
 *************************************************************************/
 #ifndef TJETENVIRONMENT_TCC
@@ -495,7 +503,7 @@ TJetEnvironment<T>& TJetEnvironment<T>::DeepCopy( const TJetEnvironment& x )
 
 
 template<typename T>
-typename EnvPtr<T>::Type  TJetEnvironment<T>::makeInverseJetEnvironment( typename EnvPtr<T>::Type pEnv, const TMapping<T>& map ){
+typename EnvPtr<T>::Type  TJetEnvironment<T>::makeInverseJetEnvironment( const TMapping<T>& map ){
 
  //---------------------------------------------------------------------------------------------------------------------
  // NOTE: in general, the inverse map does not exist unless map.Dim() == pEnv->_numVar !@!! (Implicit function theorem) 
@@ -507,8 +515,9 @@ typename EnvPtr<T>::Type  TJetEnvironment<T>::makeInverseJetEnvironment( typenam
     refpoint[i] =  map(i).standardPart();
   }  
   
-  
-  typename EnvPtr<T>::Type pInvEnv( makeJetEnvironment(  pEnv->_maxWeight, pEnv->_numVar,  pEnv->_spaceDim, refpoint, pEnv->_scale));
+  typename EnvPtr<T>::Type mapenv( map.Env() );   
+
+  typename EnvPtr<T>::Type pInvEnv( makeJetEnvironment(  mapenv->_maxWeight, mapenv->_numVar,  mapenv->_spaceDim, refpoint, mapenv->_scale));
 
   delete[] refpoint;
 
@@ -841,8 +850,8 @@ ostream& operator<<( ostream& os, const TJetEnvironment<T>& x )
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-std::istream& streamIn( std::istream& is, EnvPtr<double>::Type* x )
+template<typename T>
+std::istream& streamIn( std::istream& is, boost::intrusive_ptr<TJetEnvironment<T> >& pje )
 {
 
   int numvar    = 0;
@@ -855,11 +864,11 @@ std::istream& streamIn( std::istream& is, EnvPtr<double>::Type* x )
 
   if( numvar < spacedim ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "istream& streamIn( istream&, TJetEnvironment** )",
+           "istream& streamIn( istream&, EnvPtr<T>& )",
            "Jet_environment dimensions are wrong." ) );
   }
   
-  double*      refpoint = new      double[numvar]; 
+  T*      refpoint = new T[numvar]; 
   double* scale    = new double[numvar]; 
 
   for( int i=0; i<numvar; ++i ) is >> refpoint[i];
@@ -869,52 +878,7 @@ std::istream& streamIn( std::istream& is, EnvPtr<double>::Type* x )
   is >> pbok;
 
 
-  *x = TJetEnvironment<double>::makeJetEnvironment(maxweight, numvar, spacedim, refpoint, scale);
-
-  
-  // Initialize the coordinates
-  // ??? HOW ???
-
-  //cleanup 
-
-  delete[] refpoint; 
-  delete[] scale;
-
-  return is;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-std::istream& streamIn( std::istream& is, EnvPtr<std::complex<double> >::Type* x )
-{
-
-  int numvar    = 0;
-  int spacedim  = 0;
-  int maxweight = 0;
-
-  bool pbok     = false;
-
-  is >> numvar;
-  is >> spacedim;
-
-  if( numvar < spacedim ) {
-    throw( GenericException( __FILE__, __LINE__, 
-           "istream& streamIn( istream&, TJetEnvironment** )",
-           "Jet_environment dimensions are wrong." ) );
-  }
-  
-  std::complex<double>* refpoint = new   std::complex<double>[numvar]; 
-  double* scale                  = new   double[numvar]; 
-
-  for( int i=0; i<numvar; ++i ) is >> refpoint[i];
-  for( int i=0; i<numvar; ++i ) is >> scale[i];
-
-  is >> maxweight;
-  is >> pbok;
-
-
-  *x = TJetEnvironment<std::complex<double> >::makeJetEnvironment(maxweight, numvar, spacedim, refpoint, scale);
+  pje =  TJetEnvironment<T>::makeJetEnvironment(maxweight, numvar, spacedim, refpoint, scale);
 
   
   // Initialize the coordinates
