@@ -244,7 +244,7 @@ TMapping<T> TMapping<T>::Inverse() const
  // set the constant terms 
  // --------------------------------------
 
- typename EnvPtr<T>::Type pje_inv( TJetEnvironment<T>:: makeInverseJetEnvironment( this->_myEnv, *this) );
+ typename EnvPtr<T>::Type pje_inv( TJetEnvironment<T>:: makeInverseJetEnvironment(*this) );
 
  TMapping<T> z( *this );  // copies the current mapping instance ...
   
