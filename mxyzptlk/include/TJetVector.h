@@ -62,7 +62,7 @@
 
 
 // Forward declarations
-class Vector;
+typedef class TVector<double> Vector;
 
 template<typename T>
 class TMatrix;
