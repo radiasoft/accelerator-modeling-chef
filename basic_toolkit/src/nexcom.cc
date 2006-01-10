@@ -39,14 +39,13 @@
 #include <iostream>
 
 bool nexcom( int n, int k, int* r ) {
-
 int t, h, i;
 static bool firstEntry  = true;
 static bool allDone     = false;
 
 if( allDone ) {
   firstEntry = true;
-     allDone = false;
+  allDone = false;
   return false;
   }
 
@@ -57,7 +56,7 @@ if( firstEntry ) {
     firstEntry = false;
     }
   else allDone = true;
-  return 1;
+  return true;
   }
 
 h = 0;
