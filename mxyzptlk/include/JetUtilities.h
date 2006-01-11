@@ -5,6 +5,7 @@
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
 ******                                    
 ******  File:      JetUtilities.h
+******  Version:   4.1                    
 ******                                                                
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc. / Fermilab     
@@ -43,16 +44,16 @@
 #include <Mapping.h>
 #include <LieOperator.h>
  
-extern void normalForm( const Mapping&,                            /* Input:   map                    */
-                        int,                                       /* Input:   order                  */
-                        MatrixD*,                                  /* Output:  matrix of eigenvectors */
-                                                                   /*          of Jacobian of map     */
-                        LieOperator*,                              /* Output:  normal form            */
-                        LieOperatorC*);                            /* Output:  transformation         */
+extern void normalForm( const Mapping&,      /* Input:   map                    */
+                        int,                 /* Input:   order                  */
+                        MatrixC*,            /* Output:  matrix of eigenvectors */
+                                             /*          of Jacobian of map     */
+                        CLieOperator*,       /* Output:  normal form            */
+                        CLieOperator* );     /* Output:  transformation         */
 
 
-extern int ConvertNtoTunes( MappingC&,        /* Output: tune map                 */
-                /* const */ LieOperator& );   /* Input:  normal form vector field */
+extern int ConvertNtoTunes( MappingC&,       /* Output: tune map                 */
+                /* const */ CLieOperator& ); /* Input:  normal form vector field */
 
 
 #endif  // JETUTIL_H
