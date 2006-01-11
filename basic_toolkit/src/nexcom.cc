@@ -33,43 +33,44 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
+
 #include <iostream>
 
 bool nexcom( int n, int k, int* r ) {
-int t, h, i;
-static bool firstEntry  = true;
-static bool allDone     = false;
+  int t, h, i;
+  static bool firstEntry  = true;
+  static bool allDone     = false;
 
-if( allDone ) {
-  firstEntry = true;
-  allDone = false;
-  return false;
+  if( allDone ) {
+    firstEntry = true;
+    allDone = false;
+    return false;
   }
 
-if( firstEntry ) {
-  r[0] = n;
-  if( k > 1 ) {
-    for( i = 1; i < k; i++ ) r[i] = 0;
-    firstEntry = false;
-    }
-  else allDone = true;
+  if( firstEntry ) {
+    r[0] = n;
+    if( k > 1 ) {
+      for( i = 1; i < k; i++ ) r[i] = 0;
+      firstEntry = false;
+      }
+    else allDone = true;
+    return true;
+  }
+
+  h = 0;
+  while( r[h++] == 0 ) ;
+  h--;
+
+  t = r[h];
+  r[h] = 0;
+  r[0] = --t;
+  r[++h]++;
+
+  allDone = ( r[k-1] == n );
+
   return true;
-  }
-
-h = 0;
-while( r[h++] == 0 ) ;
-h--;
-
-t = r[h];
-r[h] = 0;
-r[0] = --t;
-r[++h]++;
-
-allDone = ( r[k-1] == n );
-
-return true;
-
 }
