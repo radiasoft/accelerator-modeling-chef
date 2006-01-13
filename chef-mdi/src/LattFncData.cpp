@@ -159,7 +159,6 @@ void LattFncData::_finishConstructor()
 
 LattFncData::~LattFncData()
 {
-  //std::cout << "LattFncData::~LattFncData()" << std::endl;
   if(_deleteContext) { delete _bmlConPtr; }
 }
 
