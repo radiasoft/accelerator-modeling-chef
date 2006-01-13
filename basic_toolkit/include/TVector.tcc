@@ -213,14 +213,14 @@ T& TVector<T>::operator() ( int i )
 template<typename T>
 TVector<T>& TVector<T>::operator= ( const TVector& x )
 {
-#ifndef NOCHECKS
-  CHECKOUT(_dim != x._dim, "TVector::operator=", "Incompatible dimensions.")
-#endif
-
-  memcpy((void *) _comp, (const void *) x._comp, _dim * sizeof(T));
+  if( this != &x ) {
+    #ifndef NOCHECKS
+    CHECKOUT(_dim != x._dim, "TVector::operator=", "Incompatible dimensions.")
+    #endif
+    memcpy((void *)_comp, (const void *)x._comp, _dim * sizeof(T));
+  }
   return *this;
 }
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -564,5 +564,46 @@ TVector<T> operator*( const TMatrix<T>& A, const TVector<T>& x )
   }
   return z;
 }
+
+
+template<typename T>
+TVector<T>& TVector<T>::operator=( const TMatrix<T>& x )
+{
+  T* u = _comp;
+
+  if( 1 == x.rows() ) {
+    if( _dim == x.cols() ) {
+      for( int i = 0; i < _dim; i++ ) {
+        *(u++) = x(0,i);
+      }
+      // A better way of doing this requires writing
+      // a TMatrix iterator, which probably should be
+      // done anyway.
+    }
+    else {
+      throw( typename TVector<T>::GenericException( 
+               "TVector& TVector::operator=( const TMatrix& x )", 
+               "Incompatible dimensions."  ) );
+    }
+  }
+  if( 1 == x.cols() ) {
+    if( _dim == x.rows() ) {
+      for( int i = 0; i < _dim; i++ ) {
+        *(u++) = x(i,0);
+      }
+      // A better way of doing this requires writing
+      // a TMatrix iterator, which probably should be
+      // done anyway.
+    }
+    else {
+      throw( typename TVector<T>::GenericException( 
+               "TVector& TVector::operator=( const TMatrix& x )", 
+               "Incompatible dimensions."  ) );
+    }
+  }
+
+  return *this;
+}
+
 
 #endif // TVECTOR_TCC

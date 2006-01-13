@@ -453,40 +453,44 @@ void Cascade::_clean()
 }
 
 
+// DEPRECATED: int Cascade::index( const IntArray& e ) const
+// DEPRECATED: {
+// DEPRECATED:   Switch* swPtr = _startPoint[e(0)];
+// DEPRECATED:   for( int j = 1; j < _numVar; ++j ) {
+// DEPRECATED:     swPtr = (Switch*) (swPtr->_arrow[e(j)]); 
+// DEPRECATED:   }
+// DEPRECATED:   return swPtr->_index;
+// DEPRECATED: }
+
+
 int Cascade::index( const IntArray& e ) const
 {
-
   IntArrayIterator getNext( e );
-
-  // Switch* swPtr = _startPoint[e(0)];
-
   Switch* swPtr = _startPoint[ getNext() ];
-
-  
   for( int j = 1; j < _numVar; ++j ) {
-
-    // swPtr = (Switch*) (swPtr->_arrow[e(j)]); 
-
     swPtr = (Switch*) ( swPtr->_arrow[ getNext() ] ); 
   }
-
   return swPtr->_index;
 }
 
 
+// DEPRECATED: int Cascade::index( const int e[] ) const
+// DEPRECATED: {
+// DEPRECATED:   const int* idx = &e[0] - 1;
+// DEPRECATED:   Switch* swPtr = _startPoint[ *(++idx) ];
+// DEPRECATED:   for( int j = 1; j < _numVar; j++ ) {
+// DEPRECATED:     swPtr = (Switch*) (swPtr->_arrow[*(++idx)]);
+// DEPRECATED:   }
+// DEPRECATED:   return swPtr->_index;
+// DEPRECATED: }
+
+
 int Cascade::index( const int e[] ) const
 {
-
-//  const int* idx = &e[0] - 1;
-  
   Switch* swPtr = _startPoint[e[0]];
-//  Switch* swPtr = _startPoint[ *(++idx) ];
-  
   for( int j = 1; j < _numVar; j++ ) {
-       swPtr = (Switch*) (swPtr->_arrow[e[j]]);
-// swPtr = (Switch*) (swPtr->_arrow[*(++idx)]);
+    swPtr = (Switch*) (swPtr->_arrow[e[j]]);
   }
-
   return swPtr->_index;
 }
 

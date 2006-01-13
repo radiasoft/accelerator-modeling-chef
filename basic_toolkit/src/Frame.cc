@@ -481,7 +481,7 @@ Frame Frame::tween(   const Frame& one, const Frame& two
 	}
         else {
           theta = pct*atan2( imag(lambda(i,i)), real(lambda(i,i)) );
-          lambda(i,i) = std::complex<double> ( cos(theta), sin(theta) );
+          lambda(i,i) = std::complex<double>( cos(theta), sin(theta) );
 	}
       }
       else {
