@@ -63,9 +63,9 @@ template<typename T1, typename T2>
 class TJetEnvironment;
 template<typename T1, typename T2>
 class TMapping;
-typedef TJetEnvironment<double,FNAL::Complex> Jet__environment;
-typedef TJetEnvironment<FNAL::Complex,double> JetC__environment;
-typedef TMapping<double,FNAL::Complex> Mapping;
+typedef TJetEnvironment<double,std::complex<double> > Jet__environment;
+typedef TJetEnvironment<std::complex<double>,double> JetC__environment;
+typedef TMapping<double,std::complex<double> > Mapping;
 #endif
 
 
