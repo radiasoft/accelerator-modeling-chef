@@ -425,6 +425,7 @@ public:
   virtual bool hasParallelFaces() const;
   virtual bool hasStandardFaces() const;
   virtual bool isSimple() const;
+  virtual bool isMagnet() const;
 
   short  writeTag ( char,          // character to be written
                     short = 0      // position in tag

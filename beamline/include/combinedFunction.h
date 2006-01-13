@@ -90,6 +90,8 @@ public:
     { return this->Skew(x); }
 
   const char* Type() const;
+  bool isMagnet() const;
+
   bmlnElmnt* Clone() const { return new combinedFunction( *this ); }
 
   double AdjustPosition( const Proton& );

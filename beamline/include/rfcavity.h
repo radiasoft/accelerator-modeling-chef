@@ -35,6 +35,7 @@
 
 #include "bmlnElmnt.h"
 #include "MathConstants.h"
+#include "RefRegVisitor.h"
 
 class rfcavity : public bmlnElmnt
 {
@@ -50,22 +51,27 @@ private:
                                 //     revolution frequency of a ring
                                 //   Note: this is *NOT* a cavity attribute,
                                 //   but is included for convenience.
+  bmlnElmnt** _u;               // Address of first internal bmlElmnt pointer
+  bmlnElmnt** _v;               // Address of final internal bmlElmnt pointer
+
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
+
+  void _finishConstructor();
 
 public:
   rfcavity( const char* = "NONAME" ); // Name
   rfcavity( double,   // length [m]
             double,   // RF frequency [Hz]
-            double,   // max energy gain per turn [eV] (strength)
+            double,   // max energy gain per turn [eV] (strength*10**9)
             double,   // synchronous phase [radians]
             double,   // Q
             double    // R shunt impedance
           );
-  rfcavity( char*,    // Name
+  rfcavity( const char*, // Name
             double,   // length [m]
             double,   // RF frequency [Hz]
-            double,   // max energy gain per turn [eV] (strength)
+            double,   // max energy gain per turn [eV] (strength*10**9)
             double,   // synchronous phase [radians]
             double,   // Q
             double    // R shunt impedance
@@ -79,6 +85,9 @@ public:
 
   void accept( BmlVisitor& v ) { v.visitRfcavity( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitRfcavity( this ); }
+  void acceptInner( RefRegVisitor& v );
+  void acceptInner( BmlVisitor& v );
+  void acceptInner( ConstBmlVisitor& v );
 
   void eliminate();
 
@@ -97,6 +106,8 @@ public:
   void setFrequencyRelativeTo( double );
   void setRadialFrequency( double );
   void setRadialFrequencyRelativeTo( double );
+  void setPhi( double );  // radians
+  void setStrength( double );  // eV
 };
 
 
@@ -123,16 +134,16 @@ private:
   std::istream& readFrom(std::istream&);
 
 public:
-  thinrfcavity( char * ); // Name
+  thinrfcavity( const char * ); // Name
   thinrfcavity( double,   // RF frequency [Hz]
-                double,   // max energy gain per turn [eV] (strength)
+                double,   // max energy gain per turn [eV] (strength*10**9)
                 double,   // synchronous phase [radians]
                 double,   // Q
                 double    // R shunt impedance
                 );
-  thinrfcavity( char *,   // Name
+  thinrfcavity( const char *,   // Name
                 double,   // RF frequency [Hz]
-                double,   // max energy gain per turn [eV] (strength)
+                double,   // max energy gain per turn [eV] (strength*10**9)
                 double,   // synchronous phase [radians]
                 double,   // Q
                 double    // R shunt impedance
@@ -164,6 +175,7 @@ public:
   void setFrequencyRelativeTo( double );
   void setRadialFrequency( double );
   void setRadialFrequencyRelativeTo( double );
+  void setPhi( double );  // radians
 };
 
 

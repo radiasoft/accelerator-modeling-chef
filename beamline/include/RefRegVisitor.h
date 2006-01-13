@@ -7,7 +7,7 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      RefRegVisitor.h
-******  Version:   1.1
+******  Version:   1.2
 ******                                                                
 ******  Copyright (c) 2003  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -70,16 +70,23 @@ class RefRegVisitor : public BmlVisitor
   void visitSbend( sbend* );
   void visitRbend( rbend* );
   void visitThinrfcavity( thinrfcavity* );
+  void visitRfcavity( rfcavity* );
 
   int  getErrorCode() const;
 
   // Error codes
   static const int OKAY;
 
+  // So far, these two functions are used exclusively
+  // by class rfcavity.
+  double getCdt();
+  void setCdt(double);
+
  private:
   Particle* _prtnPtr;
   int       _errorCode;
   double    _revolutionFrequency;
+  double    _initialMomentum;
 };
 
 #endif // REFREGVISITOR_H

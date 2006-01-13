@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.1
 ******                                    
 ******  File:      Particle.h
+******  Version:   2.2
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -477,6 +477,8 @@ public:
   inline Mapping State() const { return state; }
   // inline Mapping& State() { return state; }
   Jet& State( int );
+
+  static void createStandardEnvironments();
 
   MatrixD SymplecticTest();  // Tests the state for the
                              // symplectic condition, 1 = - MJM^t; 

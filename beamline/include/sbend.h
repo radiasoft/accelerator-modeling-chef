@@ -267,6 +267,8 @@ public:
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "sbend") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  bool isMagnet() const;
+
   bmlnElmnt* Clone() const { return new sbend( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 };

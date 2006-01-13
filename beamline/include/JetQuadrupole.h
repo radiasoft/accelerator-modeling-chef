@@ -105,6 +105,7 @@ public:
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "JetQuadrupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  bool isMagnet() const;
 
   bmlnElmnt* Clone() const { return new JetQuadrupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
@@ -141,7 +142,8 @@ class JetthinQuad : public bmlnElmnt
    void eliminate();
  
    const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "JetthinQuad") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+   virtual int isType(char* c) { if ( strcmp(c, "JetthinQuad") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+   bool isMagnet() const;
 
    bmlnElmnt* Clone() const { return new JetthinQuad( *this ); }
 

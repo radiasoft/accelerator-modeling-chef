@@ -103,7 +103,8 @@ public:
   void eliminate();
 
   const char* Type() const;
-  virtual int isType(const char* c) { if ( strcmp(c, "quadrupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual int isType(char* c) { if ( strcmp(c, "quadrupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  bool isMagnet() const;
 
   bmlnElmnt* Clone() const { return new quadrupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
@@ -128,7 +129,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThinQuad( this ); }
 
   const char* Type() const;
-  virtual int isType(const char* c) { if ( strcmp(c, "thinQuad") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual int isType(char* c) { if ( strcmp(c, "thinQuad") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  bool isMagnet() const;
   
   bmlnElmnt* Clone() const { return new thinQuad( *this ); }
 } ;

@@ -343,6 +343,8 @@ public:
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "rbend") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  bool isMagnet() const;
+
   bmlnElmnt* Clone() const { return new rbend( *this ); }
   double OrbitLength( const Particle& );
     // Computes arclength of orbit assuming a symmetric bend.
