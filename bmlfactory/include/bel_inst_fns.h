@@ -5,9 +5,8 @@
 ******  BEAMLINE FACTORY:  Interprets MAD input files and             
 ******             creates instances of class beamline.                       
 ******                                                
-******  Version:   1.2                    
-******                                    
-******  File:      bel_inst_fns.c
+******  File:      bel_inst_fns.h
+******  Version:   1.3
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc. / Fermilab     
 ******                All Rights Reserved                             
@@ -40,7 +39,6 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-// from MXYZPLTK
 
 #include <beamline.h>
 
@@ -55,7 +53,7 @@ make_solenoid( const char* name, double length ) {
 }
 
 static inline bmlnElmnt*
-make_elseparator( char* name, double length ) {
+make_elseparator( const char* name, double length ) {
   return new drift( name, length );
 }
 
@@ -75,7 +73,7 @@ make_rcollimator( const char* name, double length ) {
 }
 
 static inline bmlnElmnt*
-make_yrot(const char* name, double length ) {
+make_yrot( const char* name, double length ) {
   return new drift( name, length );
 }
 

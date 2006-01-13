@@ -715,19 +715,28 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       double volt   = expr_evaluate( bel->params_[BEL_RFCAVITY_VOLT], var_table_, bel_table_ );
       double lag    = expr_evaluate( bel->params_[BEL_RFCAVITY_LAG], var_table_, bel_table_ );
       double shunt  = expr_evaluate( bel->params_[BEL_RFCAVITY_SHUNT], var_table_, bel_table_ );
-      char   name[BEL_NAME_LENGTH];
+      // REMOVE: char   name[BEL_NAME_LENGTH];
       
-      lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
+      // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
+      // REMOVE: // NOTE: I cannot set the frequency of the rf cavity from harmonic number
+      // REMOVE: // until the revolution frequency is known; i.e. until the beamline
+      // REMOVE: // model is instantiated.  Thus, the rf cavity must be completed
+      // REMOVE: // by a registration visitor before being used.
+      // REMOVE: thinrfcavity* rfcPtr = new thinrfcavity( add_str( name, strip_final_colon( bel->name_ ).c_str(), "center" ), 0.0, volt*1.0e6, lag*2*M_PI, 0.0, shunt );
+      // REMOVE: rfcPtr->setHarmonicNumber( harmon );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "left" ), length/2.0 ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*) rfcPtr );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "right" ), length/2.0 ) );
+      
+      lbel = new rfcavity( strip_final_colon( bel->name_ ).c_str(), 
+                           length, 0, volt*1.0e6, lag*(2.0*M_PI), 0, shunt );
+      // ......................................................................
       // NOTE: I cannot set the frequency of the rf cavity from harmonic number
       // until the revolution frequency is known; i.e. until the beamline
       // model is instantiated.  Thus, the rf cavity must be completed
       // by a registration visitor before being used.
-      thinrfcavity* rfcPtr = new thinrfcavity( add_str( name, strip_final_colon( bel->name_ ).c_str(), "center" ), 0.0, volt*1.0e6, lag*2*M_PI, 0.0, shunt );
-      rfcPtr->setHarmonicNumber( harmon );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "left" ), length/2.0 ) );
-      ((beamline*)lbel)->append( (bmlnElmnt*) rfcPtr );
-      ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "right" ), length/2.0 ) );
-      
+      // ......................................................................
+
       // Ignored parameters: BETRF, PG, TFILL
       
       break;
