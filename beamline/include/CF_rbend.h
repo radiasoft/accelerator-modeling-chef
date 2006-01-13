@@ -127,6 +127,7 @@ class CF_rbend : public bmlnElmnt
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "CF_rbend") != 0 )
     return bmlnElmnt::isType(c); else return 1; }
+  bool isMagnet() const;
   
   bmlnElmnt* Clone() const 
     { return new CF_rbend( *this ); }
