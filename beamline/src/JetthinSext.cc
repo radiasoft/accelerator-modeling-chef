@@ -35,6 +35,7 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -104,6 +105,12 @@ void JetthinSext::eliminate() {
 const char* JetthinSext::Type() const 
 { 
   return "JetthinSext"; 
+}
+
+
+bool JetthinSext::isMagnet() const
+{
+  return true;
 }
 
 

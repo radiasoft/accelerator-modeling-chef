@@ -35,6 +35,7 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -412,6 +413,13 @@ const char* combinedFunction::Type() const
 { 
   return "combinedFunction"; 
 }
+
+
+bool combinedFunction::isMagnet() const
+{
+  return true;
+}
+
 
 double combinedFunction::AdjustPosition( const Proton& arg_p )
 {

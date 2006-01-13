@@ -78,9 +78,7 @@ ParticleBunch::~ParticleBunch()
 
 void ParticleBunch::append( const Particle& x )
 {
-
   _bag.push_back( ParticlePtr( x.Clone()) ); 
-
 }
 
 

@@ -911,6 +911,12 @@ bool bmlnElmnt::isSimple() const
 }
 
 
+bool bmlnElmnt::isMagnet() const
+{
+  return false;
+}
+
+
 // --- Local, small alignment routines.
 // --- Changes alignment struct.
 // --- Should not disturb neighboring elements.

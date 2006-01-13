@@ -35,6 +35,7 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -416,6 +417,12 @@ void sbend::setupPropFunc()
 void sbend::eliminate() 
 {
  delete this;
+}
+
+
+bool sbend::isMagnet() const
+{
+  return true;
 }
 
 

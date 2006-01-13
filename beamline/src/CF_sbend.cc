@@ -666,6 +666,12 @@ const char* CF_sbend::Type() const
 }
 
 
+bool CF_sbend::isMagnet() const
+{
+  return true;
+}
+
+
 double CF_sbend::OrbitLength( const Particle& x )
 {
   return length;

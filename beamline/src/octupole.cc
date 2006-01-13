@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      octupole.cc
+******  Version:   2.1
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -108,6 +108,12 @@ const char* octupole::Type() const
 }
 
 
+bool octupole::isMagnet() const
+{
+  return true;
+}
+
+
 void octupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
@@ -168,4 +174,10 @@ thinOctupole::~thinOctupole() {
 const char* thinOctupole::Type() const 
 { 
   return "thinOctupole"; 
+}
+
+
+bool thinOctupole::isMagnet() const
+{
+  return true;
 }
