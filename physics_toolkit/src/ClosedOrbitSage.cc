@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes
 ******             which facilitate calculations with the
 ******             BEAMLINE class library.
-******  Version:   2.0
 ******
 ******  File:      ClosedOrbitSage.cc
+******  Version:   2.0
 ******
 ******  Copyright (c) 2001  Universities Research Association, Inc.
 ******                All Rights Reserved
@@ -118,7 +118,8 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
   while((  q = getNext++  ))
   {
-    if( 0 == strcmp( "thinrfcavity", q->Type() ) )
+    if(    ( 0 == strcmp( "rfcavity",     q->Type() ) )
+        || ( 0 == strcmp( "thinrfcavity", q->Type() ) ) )
     {
       sd = new strengthData;
       sd->address = q;
@@ -185,15 +186,15 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
   Jet::_lastEnv = TJetEnvironment<double>::getApproxJetEnvironment(Jet::_lastEnv->maxWeight(), z);
 
+  bool newcoords = false;
   coord*  tmpcoord[BMLN_dynDim];
   if ( Jet::_lastEnv.get() == 0 ) {  // true if there was no suitable approximate Environment  
-   
     Jet__environment::BeginEnvironment( p_jp->State().Env()->maxWeight() );
-    // *** CHANGE ***
-    // *** CHANGE *** Presumably this memory leak will eventually be fixed.
-    // *** CHANGE ***
-    for( i = 0; i < BMLN_dynDim; i++ ) { tmpcoord[i] = new coord(z(i)); }
+    for( i = 0; i < BMLN_dynDim; i++ ) { 
+      tmpcoord[i] = new coord(z(i)); 
+    }
     Jet__environment::EndEnvironment();
+    newcoords = true;
   }
 
   // Instantiate a JetProton with the new environment
@@ -224,8 +225,11 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   Jet::_lastEnv = storedEnv;
 
   // ... delete temporary coordinates 
-
-  /// for( i=0; i<BMLN_dynDim; ++i) { delete tmpcoord[i]; }
+  if( newcoords ) {
+    for( i=0; i<BMLN_dynDim; i++ ) { 
+      delete tmpcoord[i]; 
+    }
+  }
 
   if( _verbose ) {
     *_outputStreamPtr << "ClosedOrbitSage -- Leaving ClosedOrbitSage::findClosedOrbit"
@@ -236,7 +240,6 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   p_prt = 0;
 
   return 0;
-
 }
 
 

@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.1
 ******                                    
 ******  File:      normalForm.cc
+******  Version:   1.1
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -57,9 +57,6 @@
 #include <Matrix.h>
 
 #define MLT1  1.0e-6
-
-static std::complex<double> complex_0 (0.0, 0.0);
-static std::complex<double> complex_1 (1.0, 0.0);
 
 
 using namespace std;
@@ -115,6 +112,10 @@ void normalForm( const Mapping& theMapping, /* input */
                  CLieOperator*  N,
                  CLieOperator*  T ) 
 {
+ const std::complex<double> complex_0 (0.0, 0.0);
+ const std::complex<double> complex_1 (1.0, 0.0);
+ const std::complex<double> mi( 0., -1. );
+
  // typedef char (*MX_R_FUNCCPTR)(const IntArray&, const std::complex<double>&);
  // typedef char (*CFUNCPTR)(const IntArray&, const std::complex<double>& );
  // static MX_R_FUNCCPTR shear[] = { sh0, sh1, sh2, sh3, sh4, sh5 };
@@ -136,7 +137,6 @@ void normalForm( const Mapping& theMapping, /* input */
  B = A.eigenVectors();
 
  // Normalizing the linear normal form coordinates
- std::complex<double>  mi( 0., -1. );
  MatrixD  J( "J", 6 );
  MatrixC  Nx;
  Nx = ( B.transpose() * J * B * J ) * mi;
@@ -285,12 +285,12 @@ void normalForm( const Mapping& theMapping, /* input */
 
 
  // And the rest ...
- std::complex<double>          factor, denom, temp;
- int              l, ll;
- JLCterm*         q;
- JetC             scr;
- MappingC         reg;
- MappingC         doc;
+ std::complex<double>  factor, denom, temp;
+ int                   l, ll;
+ JLCterm*              q;
+ JetC                  scr;
+ MappingC              reg;
+ MappingC              doc;
 
  for( int k = 0; k <= maxOrder - 2; k++ ) {
   reg = id;
