@@ -36,6 +36,7 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -168,24 +169,6 @@ void* beamlineData::clone() {
  return p;
 }
 
-// ??? REMOVE or REWRITE:  void beamlineData::writeTo( FILE* f ) {
-// ??? REMOVE or REWRITE:   int sz = strlen( name );
-// ??? REMOVE or REWRITE:   if( sz == 0 ) {
-// ??? REMOVE or REWRITE:    printf( "\n" );
-// ??? REMOVE or REWRITE:    printf( "*** ERROR ***                                        \n" );
-// ??? REMOVE or REWRITE:    printf( "*** ERROR *** void beamlineData::writeTo( FILE*  )   \n" );
-// ??? REMOVE or REWRITE:    printf( "*** ERROR *** Anomoly in ident.  Quitting.           \n" );
-// ??? REMOVE or REWRITE:    printf( "*** ERROR ***                                        \n" );
-// ??? REMOVE or REWRITE:    printf( "\n" );
-// ??? REMOVE or REWRITE:    exit(0);
-// ??? REMOVE or REWRITE:   }
-// ??? REMOVE or REWRITE:  
-// ??? REMOVE or REWRITE:   fwrite( this, sizeof( beamlineData ), 1, f );
-// ??? REMOVE or REWRITE:   fwrite( &sz, sizeof( int ), 1, f );
-// ??? REMOVE or REWRITE:   fprintf( f, "%s ", name );
-// ??? REMOVE or REWRITE:  }
-
-
 
 // **************************************************
 //   class beamline::arrayRep
@@ -272,10 +255,6 @@ beamline::beamline( const beamline& a )
 
 bmlnElmnt* beamline::Clone() const {
  beamline* ret = new beamline( ident );
- // ??? REMOVE beamline* ret = new beamline;
-
- // ??? REMOVE ret->ident         = new char [ strlen(ident) + 1 ];
- // ??? REMOVE                      strcpy( ret->ident, ident );
  ret->length        = length;
  ret->strength      = strength;
 
@@ -843,15 +822,6 @@ char beamline::putBelow( const bmlnElmnt& x, const bmlnElmnt& y )
     // ++++++++++++ End:   Insert and append functions ++++++++++++++++++
 
 
-// REMOVE: beamline& beamline::operator=( const beamline& a ) {
-// REMOVE:  dlist::operator=( (dlist&) a );
-// REMOVE:  bmlnElmnt::operator=( (bmlnElmnt&) a );
-// REMOVE:  nominalEnergy     = a.nominalEnergy;
-// REMOVE:  numElem           = a.numElem;
-// REMOVE:  twissDone         = 0;
-// REMOVE:  return *this;
-// REMOVE: } 
-
 beamline* beamline::flatten() const {
  // Produces a flattened version of itself.
  // WARNING: the elements are not cloned.
@@ -925,7 +895,6 @@ sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2,
  // desired by the calling program.  This routine does NOT
  // initialize the state of jp.
 
- // REMOVE: dlist_iterator getNext( *(dlist*) this );
  DeepBeamlineIterator dbi( this );
  bmlnElmnt* p_be;
  char       firstFound  = 0;
@@ -935,7 +904,6 @@ sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2,
 
  p_prt = jp.ConvertToParticle();
 
- // REMOVE: while ( p_be = (bmlnElmnt*) getNext() ) {
  while ((  p_be = dbi++  )) {
 
   if( p_be == &be_2 ) {
@@ -966,7 +934,6 @@ sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2,
   return 0;
  }
  
- // REMOVE: while ( p_be = (bmlnElmnt*) getNext() ) {
  while ((  p_be = dbi++  )) {  // Notice: we do not propagate through
   if( p_be == &be_2 ) {        // be_1 and be_2
     secondFound = 1;
@@ -2058,23 +2025,6 @@ ostream& beamline::writeTo(ostream& os) {
   return os;
 }
 
-// REMOVE: istream& beamline::readFrom(istream& is)
-// REMOVE: {
-// REMOVE:   // Written by Elliott McCrory
-// REMOVE:   bmlnElmnt *e = NULL;
-// REMOVE:   is >> nominalEnergy;
-// REMOVE:   // cerr << "Beamline " << Name() << " has energy of " << nominalEnergy << "\n";
-// REMOVE:   // Now, continue reading is until we see the end of this beamline
-// REMOVE:   length = 0;
-// REMOVE:   do {
-// REMOVE:     e = read_istream(is);        // (Recursion)
-// REMOVE:     // read_istream will return NULL when end of file or end of beamline is reached.
-// REMOVE:     if ( e ) 
-// REMOVE:       append(e);
-// REMOVE:   } while ( e );
-// REMOVE: 
-// REMOVE:   return is;
-// REMOVE: }
 
 // **************************************************
 //   Frame functions

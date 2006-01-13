@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      sextupole.cc
+******  Version:   2.1
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -142,6 +142,12 @@ void sextupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 }
 
 
+bool sextupole::isMagnet() const
+{
+  return true;
+}
+
+
 
 // **************************************************
 //   class thinSextupole
@@ -173,3 +179,11 @@ thinSextupole::~thinSextupole() {
 const char* thinSextupole::Type() const { 
   return "thinSextupole"; 
 }
+
+
+bool thinSextupole::isMagnet() const
+{
+  return true;
+}
+
+

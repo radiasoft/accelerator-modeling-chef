@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.1
 ******                                    
 ******  File:      Particle.cc
+******  Version:   2.3
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -724,6 +724,18 @@ Jet& JetParticle::State( int i )
            "inline Jet State( int ) const", 
            uic.str().c_str() ) );
   }
+}
+
+
+void JetParticle::createStandardEnvironments()
+{
+  // Create an initial Jet environment 
+  double scale[]  = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3 };
+  Jet__environment::BeginEnvironment( 1 );
+  coord x(0.0),  y(0.0),  z(0.0),
+       px(0.0), py(0.0), pz(0.0);
+  EnvPtr<double>::Type JetEnvPtr  =  Jet__environment::EndEnvironment(scale);
+  JetC::_lastEnv  =  *JetEnvPtr; // implicit conversion
 }
 
 

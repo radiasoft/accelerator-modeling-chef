@@ -84,6 +84,12 @@ const char* thin2pole::Type() const
 }
 
 
+bool thin2pole::isMagnet() const
+{
+  return true;
+}
+
+
 // **************************************************
 //   class thin12pole 
 // **************************************************
@@ -113,6 +119,11 @@ const char* thin12pole::Type() const
 }
 
 
+bool thin12pole::isMagnet() const
+{
+  return true;
+}
+
 // **************************************************
 //   class thin14pole 
 // **************************************************
@@ -139,6 +150,12 @@ thin14pole::~thin14pole() {
 const char* thin14pole::Type() const 
 { 
   return "thin14pole"; 
+}
+
+
+bool thin14pole::isMagnet() const
+{
+  return true;
 }
 
 
@@ -170,6 +187,12 @@ const char* thin16pole::Type() const
 }
 
 
+bool thin16pole::isMagnet() const
+{
+  return true;
+}
+
+
 // **************************************************
 //   class thin18pole 
 // **************************************************
@@ -196,6 +219,12 @@ thin18pole::~thin18pole() {
 const char* thin18pole::Type() const 
 { 
   return "thin18pole"; 
+}
+
+
+bool thin18pole::isMagnet() const
+{
+  return true;
 }
 
 
@@ -250,6 +279,12 @@ thinMultipole::~thinMultipole() {
 const char* thinMultipole::Type() const 
 { 
   return "thinMultipole"; 
+}
+
+
+bool thinMultipole::isMagnet() const
+{
+  return true;
 }
 
 

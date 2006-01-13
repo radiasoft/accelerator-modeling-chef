@@ -39,7 +39,7 @@
 #include "PhysicsConstants.h"
 #include "Jet.h"
 
-static std::complex<double> complex_i(0.0, 1.0);
+static const std::complex<double> complex_i(0.0, 1.0);
 
 rbend::NoEdge_Prop       rbend::NoEdge;
 rbend::Exact_Prop        rbend::Exact;

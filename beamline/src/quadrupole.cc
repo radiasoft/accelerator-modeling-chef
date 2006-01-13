@@ -246,6 +246,12 @@ const char* quadrupole::Type() const
 }
 
 
+bool quadrupole::isMagnet() const
+{
+  return true;
+}
+
+
 void quadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
@@ -341,4 +347,10 @@ void thinQuad::eliminate() {
 
 const char* thinQuad::Type() const { 
   return "thinQuad"; 
+}
+
+
+bool thinQuad::isMagnet() const
+{
+  return true;
 }

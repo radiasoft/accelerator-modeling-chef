@@ -78,6 +78,7 @@ RefRegVisitor::RefRegVisitor( const Particle& p )
   , _errorCode(OKAY)
   , _revolutionFrequency(-1.0)
 {
+  _initialMomentum = p.Momentum();
   _prtnPtr = p.Clone();
 }
 
@@ -103,24 +104,49 @@ int RefRegVisitor::getErrorCode() const
 }
 
 
+double RefRegVisitor::getCdt()
+{
+  return _prtnPtr->get_cdt();
+}
+
+
+void RefRegVisitor::setCdt( double x )
+{
+  _prtnPtr->set_cdt(x);
+}
+
+
 // Visiting functions
 
 void RefRegVisitor::visitBeamline( beamline* x )
 {
+  double momentum;
   x->setEnergy( _prtnPtr->Energy() );  // not just reference energy
 
   // Preliminary traversal in case there are
   // RF cavities in the line.
-  if( _revolutionFrequency < 0 ) {
+  if( _revolutionFrequency < 0 ) 
+  {
     Particle* copy = _prtnPtr->Clone();
     copy->set_cdt(0);
     bmlnElmnt* q;
     DeepBeamlineIterator dbi( x );
+
+    // Adjust the strength of all magnetic elements
+    //   if the reference particle has been accelerated.
     while((  q = dbi++  )) {
+      if(    (_initialMomentum != (momentum = copy->Momentum()))
+          && (q->isMagnet())                        ) 
+      {
+        q->setStrength( (q->Strength())*(momentum/_initialMomentum) );
+      }
       q->setReferenceTime(0);
       q->propagate( *copy );
     }
+
+    // Store the total time of traversal as a frequency
     _revolutionFrequency = PH_MKS_c /( copy->get_cdt() );
+
     delete copy;
   }
 
@@ -192,6 +218,12 @@ void RefRegVisitor::visitRbend( rbend* x )
 }
 
 
+void RefRegVisitor::visitRfcavity( rfcavity* x ) 
+{
+  x->acceptInner( *this );
+}
+
+
 void RefRegVisitor::visitThinrfcavity( thinrfcavity* x ) 
 {
   if( x->getFrequency() < 1.0e-9 ) {
@@ -199,6 +231,7 @@ void RefRegVisitor::visitThinrfcavity( thinrfcavity* x )
       x->setFrequencyRelativeTo( _revolutionFrequency );
     }
   }
+  this->visitBmlnElmnt(x);
 }
 
 

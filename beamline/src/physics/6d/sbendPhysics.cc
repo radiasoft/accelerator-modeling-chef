@@ -40,7 +40,7 @@
 #include "Particle.h"
 #include "sbend.h"
 
-static std::complex<double> complex_i(0.0, 1.0);
+static const std::complex<double> complex_i(0.0, 1.0);
 
 
 sbend::NoEdge_Prop  sbend::NoEdge;

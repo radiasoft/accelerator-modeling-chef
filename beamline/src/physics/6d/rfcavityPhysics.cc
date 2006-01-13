@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      rfcavityPhysics.cc
+******  Version:   3.0
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -32,7 +32,6 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
 **************************************************************************
 *************************************************************************/
 
@@ -49,16 +48,16 @@ using FNAL::pcerr;
 using FNAL::pcout;
 
 
-#ifndef MADPHYSICS
+// REMOVE: #ifndef MADPHYSICS
 
 void rfcavity::localPropagate( Particle& p ) 
 {
-  static double E;
-  static double oldRefP, newRefP;
-  static double oldLength;
-  static double referenceEnergyGain;
-  static double w;
-  static double k1, k2;
+  double E;
+  double oldRefP, newRefP;
+  double oldLength;
+  double referenceEnergyGain;
+  double w;
+  double k1, k2;
 
   // Scale length to "effective" length.
   referenceEnergyGain = strength*sin_phi_s;
@@ -73,49 +72,22 @@ void rfcavity::localPropagate( Particle& p )
   p.state[3] += k1*p.state[0];
   p.state[4] += k1*p.state[1];
 
-  // Free space propagation through "effective half length"
-  // of the cavity.
-  this->length = (oldLength)/2.0;
+
+  // Propagate through the inner structures
+  double x_in = p.state[0];
+  double y_in = p.state[1];
   w = (referenceEnergyGain/2.0) / p.E;
-  if( fabs(w) > 1.0e-8 ) {
-    this->length *= (log(1.+w)/w);
-  }
-  bmlnElmnt::localPropagate( p );
+  if( std::abs(w) > 1.0e-8 ) { w = (log(1.+w)/w); }
+  else                       { w = 1.0;           }
 
-  // Cavity increases energy and momentum of the particle
-  if( 0.0 != this->strength ) {
-    E = p.Energy() + 0.5*strength*sin( phi_s + p.state[2] * w_rf / PH_MKS_c );
-    oldRefP = p.ReferenceMomentum();
-    p.SetReferenceEnergy( p.E + referenceEnergyGain/2. );
-    newRefP = p.ReferenceMomentum();
-    p.state[3] *= ( oldRefP / newRefP );
-    p.state[4] *= ( oldRefP / newRefP );
-    p.state[5] = ( sqrt((E - p.m)*(E + p.m)) 
-                 - sqrt((p.E-p.m)*(p.E+p.m))) / p.p;
+  bmlnElmnt** x = _u;
+  while( x <= _v ) {
+    (*(x++))->localPropagate( p );
   }
 
-  // Put transverse wake field kick here ...
+  p.state[0] = ( 1.0 - w )*x_in + w*p.state[0];
+  p.state[1] = ( 1.0 - w )*y_in + w*p.state[1];
 
-  // Free space propagation through "effective half length"
-  // of the cavity.
-  this->length = (oldLength)/2.0;
-  w = (referenceEnergyGain/2.0) / p.E;
-  if( fabs(w) > 1.0e-8 ) {
-    this->length *= (log(1.+w)/w);
-  }
-  bmlnElmnt::localPropagate( p );
-
-  // Cavity increases energy and momentum of the particle
-  if( 0.0 != this->strength ) {
-    E = p.Energy() + 0.5*strength*sin( phi_s + p.state[2] * w_rf / PH_MKS_c );
-    oldRefP = p.ReferenceMomentum();
-    p.SetReferenceEnergy( p.E + referenceEnergyGain/2. );
-    newRefP = p.ReferenceMomentum();
-    p.state[3] *= ( oldRefP / newRefP );
-    p.state[4] *= ( oldRefP / newRefP );
-    p.state[5] = ( sqrt((E - p.m)*(E + p.m)) 
-                 - sqrt((p.E-p.m)*(p.E+p.m))) / p.p;
-  }
 
   // Thin lens kick upon exit
   p.state[3] += k2*p.state[0];
@@ -129,11 +101,11 @@ void rfcavity::localPropagate( Particle& p )
 void rfcavity::localPropagate( JetParticle& p ) 
 {
   Jet E( p.State().Env() );
-  static double oldRefP, newRefP;
-  static double oldLength;
-  static double referenceEnergyGain;
-  static double w;
-  static double k1, k2;
+  double oldRefP, newRefP;
+  double oldLength;
+  double referenceEnergyGain;
+  double w;
+  double k1, k2;
 
   // Scale length to "effective" length.
   referenceEnergyGain = strength*sin_phi_s;
@@ -148,49 +120,22 @@ void rfcavity::localPropagate( JetParticle& p )
   ( p.state ).SetComponent( 3, p.State(3) + k1*p.State(0) );
   ( p.state ).SetComponent( 4, p.State(4) + k1*p.State(1) );
 
-  // Free space propagation through "effective half length"
-  // of the cavity.
-  this->length = (oldLength)/2.0;
+
+  // Propagate through the inner structures
+  Jet x_in( p.State(0) );
+  Jet y_in( p.State(1) );
   w = (referenceEnergyGain/2.0) / p.E;
-  if( fabs(w) > 1.0e-8 ) {
-    this->length *= (log(1.+w)/w);
-  }
-  bmlnElmnt::localPropagate( p );
+  if( std::abs(w) > 1.0e-8 ) { w = (log(1.+w)/w); }
+  else                       { w = 1.0;           }
 
-  // Cavity increases energy and momentum of the particle
-  if( 0.0 != this->strength ) {
-    E = p.Energy() + 0.5*strength*sin( phi_s + p.state(2) * w_rf / PH_MKS_c );
-    oldRefP = p.ReferenceMomentum();
-    p.SetReferenceEnergy( p.E + referenceEnergyGain/2.0 );
-    newRefP = p.ReferenceMomentum();
-    ( p.state ).SetComponent( 3, ( oldRefP / newRefP )*p.State(3) );
-    ( p.state ).SetComponent( 4, ( oldRefP / newRefP )*p.State(4) );
-    ( p.state ).SetComponent( 5, ( sqrt((E - p.m)*(E + p.m)) 
-                                 - sqrt((p.E-p.m)*(p.E+p.m)) ) / p.p );
+  bmlnElmnt** x = _u;
+  while( x <= _v ) {
+    (*(x++))->localPropagate( p );
   }
 
-  // Put transverse wake field kick here ...
+  ( p.state ).SetComponent( 0, ( 1.0 - w )*x_in + w*p.State(0) );
+  ( p.state ).SetComponent( 1, ( 1.0 - w )*y_in + w*p.State(1) );
 
-  // Free space propagation through "effective half length"
-  // of the cavity.
-  this->length = (oldLength)/2.0;
-  w = (referenceEnergyGain/2.0) / p.E;
-  if( fabs(w) > 1.0e-8 ) {
-    this->length *= (log(1.+w)/w);
-  }
-  bmlnElmnt::localPropagate( p );
-
-  // Cavity increases energy and momentum of the particle
-  if( 0.0 != this->strength ) {
-    E = p.Energy() + 0.5*strength*sin( phi_s + p.state(2) * w_rf / PH_MKS_c );
-    oldRefP = p.ReferenceMomentum();
-    p.SetReferenceEnergy( p.E + referenceEnergyGain/2.0 );
-    newRefP = p.ReferenceMomentum();
-    ( p.state ).SetComponent( 3, ( oldRefP / newRefP )*p.State(3) );
-    ( p.state ).SetComponent( 4, ( oldRefP / newRefP )*p.State(4) );
-    ( p.state ).SetComponent( 5, ( sqrt((E - p.m)*(E + p.m)) 
-                                 - sqrt((p.E-p.m)*(p.E+p.m)) ) / p.p );
-  }
 
   // Thin lens kick upon exit
   ( p.state ).SetComponent( 3, p.State(3) + k2*p.State(0) );
@@ -201,11 +146,10 @@ void rfcavity::localPropagate( JetParticle& p )
 }
 
 
-
 void thinrfcavity::localPropagate( Particle& p ) 
 {
-  static double E;
-  static double oldRefP, newRefP;
+  double E;
+  double oldRefP, newRefP;
 
   if( 0.0 != this->strength ) {
     E = p.Energy() + strength*sin( phi_s + p.state[2] * w_rf / PH_MKS_c );
@@ -214,15 +158,16 @@ void thinrfcavity::localPropagate( Particle& p )
     newRefP = p.ReferenceMomentum();
     p.state[3] *= ( oldRefP / newRefP );
     p.state[4] *= ( oldRefP / newRefP );
-    p.state[5] = ( sqrt((E - p.m)*(E + p.m)) 
-                 - sqrt((p.E-p.m)*(p.E+p.m))) / p.p;
+    // REMOVE: p.state[5] = ( sqrt((E - p.m)*(E + p.m)) 
+    // REMOVE:              - sqrt((p.E-p.m)*(p.E+p.m))) / p.p;
+    p.state[5] = ( sqrt((E - p.m)*(E + p.m))/p.p ) - 1.0;
   }
 }
 
 void thinrfcavity::localPropagate( JetParticle& p ) 
 {
   Jet E( p.State().Env() );
-  static double oldRefP, newRefP;
+  double oldRefP, newRefP;
 
   if( 0.0 != this->strength ) {
     E = p.Energy() + strength*sin( phi_s + p.state(2) * w_rf / PH_MKS_c );
@@ -231,52 +176,53 @@ void thinrfcavity::localPropagate( JetParticle& p )
     newRefP = p.ReferenceMomentum();
     ( p.state ).SetComponent( 3, ( oldRefP / newRefP )*p.State(3) );
     ( p.state ).SetComponent( 4, ( oldRefP / newRefP )*p.State(4) );
-    ( p.state ).SetComponent( 5, ( sqrt((E - p.m)*(E + p.m)) 
-                                 - sqrt((p.E-p.m)*(p.E+p.m)) ) / p.p 
-                            );
+    // REMOVE: ( p.state ).SetComponent( 5, ( sqrt((E - p.m)*(E + p.m)) 
+    // REMOVE:                              - sqrt((p.E-p.m)*(p.E+p.m)) ) / p.p 
+    // REMOVE:                         );
+    ( p.state ).SetComponent( 5, ( sqrt((E - p.m)*(E + p.m))/p.p ) - 1.0 );
   }
 }
-
-#endif
-
-// ================================================================
-
-#ifdef MADPHYSICS
-
-void thinrfcavity::localPropagate( Particle& p) 
-{
- static char firstCall = 1;
- if( firstCall ) {
-  (*pcout) << "*** WARNING ***  thinrfcavity::localPropagate( Particle& ): This\n"
-       << "*** WARNING ***  routine was written using a linear\n"
-       << "*** WARNING ***  approximation.  Eventually it will be\n"
-       << "*** WARNING ***  fixed so as to represent an RF kick more\n"
-       << "*** WARNING ***  correctly." << endl;
-  firstCall = 0;
- }
-
- double kick;
- kick = strength*M_TWOPI*w_rf/p.Beta()*cos(phi_s)/p.Momentum()/PH_MKS_c/1.0e9;
- p.state[5] += kick*p.state[2];
-}
-
-void thinrfcavity::localPropagate( JetParticle& p) 
-{
- static char firstCall = 1;
- if( firstCall ) {
-  (*pcout) << "*** WARNING ***  thinrfcavity::localPropagate( JetParticle& ): This\n"
-       << "*** WARNING ***  routine was written using a linear\n"
-       << "*** WARNING ***  approximation.  Eventually it will be\n"
-       << "*** WARNING ***  fixed so as to represent an RF kick more\n"
-       << "*** WARNING ***  correctly." << endl;
-  firstCall = 0;
- }
-
- Jet phi, u;
- Jet kick;
- kick = strength*M_TWOPI*w_rf/p.Beta()*cos(phi_s)/p.Momentum()/PH_MKS_c/1.0e9;
- u = p.state(5) + kick *p.state(2);
- ( p.state ).SetComponent( 5, u );
-}
-
-#endif
+// REMOVE: 
+// REMOVE: #endif
+// REMOVE: 
+// REMOVE: // ================================================================
+// REMOVE: 
+// REMOVE: #ifdef MADPHYSICS
+// REMOVE: 
+// REMOVE: void thinrfcavity::localPropagate( Particle& p) 
+// REMOVE: {
+// REMOVE:  static char firstCall = 1;
+// REMOVE:  if( firstCall ) {
+// REMOVE:   (*pcout) << "*** WARNING ***  thinrfcavity::localPropagate( Particle& ): This\n"
+// REMOVE:        << "*** WARNING ***  routine was written using a linear\n"
+// REMOVE:        << "*** WARNING ***  approximation.  Eventually it will be\n"
+// REMOVE:        << "*** WARNING ***  fixed so as to represent an RF kick more\n"
+// REMOVE:        << "*** WARNING ***  correctly." << endl;
+// REMOVE:   firstCall = 0;
+// REMOVE:  }
+// REMOVE: 
+// REMOVE:  double kick;
+// REMOVE:  kick = strength*M_TWOPI*w_rf/p.Beta()*cos(phi_s)/p.Momentum()/PH_MKS_c/1.0e9;
+// REMOVE:  p.state[5] += kick*p.state[2];
+// REMOVE: }
+// REMOVE: 
+// REMOVE: void thinrfcavity::localPropagate( JetParticle& p) 
+// REMOVE: {
+// REMOVE:  static char firstCall = 1;
+// REMOVE:  if( firstCall ) {
+// REMOVE:   (*pcout) << "*** WARNING ***  thinrfcavity::localPropagate( JetParticle& ): This\n"
+// REMOVE:        << "*** WARNING ***  routine was written using a linear\n"
+// REMOVE:        << "*** WARNING ***  approximation.  Eventually it will be\n"
+// REMOVE:        << "*** WARNING ***  fixed so as to represent an RF kick more\n"
+// REMOVE:        << "*** WARNING ***  correctly." << endl;
+// REMOVE:   firstCall = 0;
+// REMOVE:  }
+// REMOVE: 
+// REMOVE:  Jet phi, u;
+// REMOVE:  Jet kick;
+// REMOVE:  kick = strength*M_TWOPI*w_rf/p.Beta()*cos(phi_s)/p.Momentum()/PH_MKS_c/1.0e9;
+// REMOVE:  u = p.state(5) + kick *p.state(2);
+// REMOVE:  ( p.state ).SetComponent( 5, u );
+// REMOVE: }
+// REMOVE: 
+// REMOVE: #endif

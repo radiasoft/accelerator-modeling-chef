@@ -28,6 +28,7 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -37,7 +38,7 @@
 #include <Particle.h>
 
 
-static std::complex<double> complex_i(0.0,1.0);
+static const std::complex<double> complex_i(0.0,1.0);
 
 void thin2pole::localPropagate( Particle& p ) {
  if(strength != 0) {

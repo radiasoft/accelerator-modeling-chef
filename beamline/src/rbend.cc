@@ -504,6 +504,12 @@ double rbend::OrbitLength( const Particle& x )
 }
 
 
+bool rbend::isMagnet() const
+{
+  return true;
+}
+
+
 void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   static bool firstTime = true;

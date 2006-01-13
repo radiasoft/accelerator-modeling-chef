@@ -78,3 +78,7 @@ const char* thinDecapole::Type() const
 }
 
 
+bool thinDecapole::isMagnet() const
+{
+  return true;
+}

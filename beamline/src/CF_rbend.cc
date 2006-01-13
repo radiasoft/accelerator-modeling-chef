@@ -770,6 +770,12 @@ const char* CF_rbend::Type() const
 }
 
 
+bool CF_rbend::isMagnet() const
+{
+  return true;
+}
+
+
 double CF_rbend::OrbitLength( const Particle& x )
 {
   static double tworho;
