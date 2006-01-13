@@ -3,9 +3,9 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.3                   
 ******                                    
 ******  File:      slist.h
+******  Version:   4.4
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -59,13 +59,13 @@
 
 typedef void* ent;
 
-//class slink: public gms::FastPODAllocator<slink> {
-
-// Note: prioivate allocation temporarily disabled. 
-// The allocator triggers a bug in CHEF.
+// Note: It may be necessary to disable private allocation.
+// The allocator may trigger a bug in CHEF under Windows.
 // However, it is not clear at all that the 
 // allocator is really the source of the problem.
- 
+// 
+// class slink: public gms::FastPODAllocator<slink> {
+
 class slink {
 public:
 #ifdef OBJECT_DEBUG

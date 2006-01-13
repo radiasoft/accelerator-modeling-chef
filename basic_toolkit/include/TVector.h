@@ -80,9 +80,7 @@ private:
   static OutputFormat* _defOFPtr;  // default OutputFormat
 
 public:
-
   // Constructors and the destructor __________________________
-
   TVector( int  dimension= 3, const T* components=0, OutputFormat* ofmt=0 );
   TVector( const TVector& );
   ~TVector();
@@ -95,11 +93,12 @@ public:
   T&     operator()            ( int );       // set    component
 
   // Algebraic functions ___________________________
+  TVector&  operator= ( const TVector& );
+  // ... Utility extension
+  TVector&  operator= ( const TMatrix<T>& );
 
-  TVector&       operator=      ( const TVector& );
-
-  TVector          operator+      ( const TVector& ) const;
-  TVector          operator+=     ( const TVector& );
+  TVector   operator+ ( const TVector& ) const;
+  TVector   operator+=( const TVector& );
 
   friend  TVector<T> operator-<T>(    const TVector& );
   friend  TVector<T> operator*<T>( T, const TVector& );
