@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
 ******                                    
 ******  File:      LattFuncSage.cc
+******  Version:   1.0                    
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -34,9 +34,6 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 /*
  *  File: LattFuncSage.cc
@@ -49,6 +46,9 @@
  *  Nov. 19, 1998
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <iomanip>
 
@@ -1814,7 +1814,7 @@ int LattFuncSage::FAD_Disp_Calc( /* const */ JetParticle* arg_jp,
                                    // a 5x5, so it shouldn't matter much.
   
   int numberFound = 0;
-  static const std::complex<double>  c_one( 1.0, 0.0 );
+  const std::complex<double>  c_one( 1.0, 0.0 );
   int theColumn;
 
   for( i = 0; i < 5; i++ ) {

@@ -148,7 +148,10 @@ int EdwardsTengSage::eigenTuneCalc( const JetParticle& ptr_jp,
   MatrixD mtrx;
   mtrx = ptr_jp.State().Jacobian();  
   MatrixC lambda;
-  lambda = mtrx.Matrix::eigenValues();
+  lambda = mtrx.Matrix::eigenValues();              // ???
+  // It is necessary to specify the specific routine   ???
+  // because of some anomoly in selection algorithm of ???
+  // the templates.  It should not be so.              ???
 
   if( ( std::abs(1.0 - std::abs(lambda(0)) > 1.0e-8 ) ) || 
       ( std::abs(1.0 - std::abs(lambda(1)) > 1.0e-8 ) )    ){
@@ -214,7 +217,11 @@ int EdwardsTengSage::_attachETFuncs( bmlnElmnt* lbe )
  ETptr = (Info*) ETbarn->info;
  localMap = ETptr->map( (*EdwardsTengSage::_theMapPtr)( ETptr->mapInv ) );
  mtrx = localMap.Jacobian();
- ETptr->EV = mtrx.Matrix::eigenVectors(); 
+ ETptr->EV = mtrx.Matrix::eigenVectors();           // ???
+  // It is necessary to specify the specific routine   ???
+  // because of some anomoly in selection algorithm of ???
+  // the templates.  It should not be so.              ???
+
  
  M( 0, 0 ) = mtrx( 0, 0 );     n( 0, 0 ) = mtrx( 0, 1 );
  M( 0, 1 ) = mtrx( 0, 3 );     n( 0, 1 ) = mtrx( 0, 4 );

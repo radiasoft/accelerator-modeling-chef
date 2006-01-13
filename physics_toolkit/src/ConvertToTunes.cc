@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.1
 ******                                    
 ******  File:      ConvertToTunes.cc
+******  Version:   1.2
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -34,6 +34,7 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+
 /*
 ** int ConvertNtoTunes( MappingC& nu, const CLieOperator& N )
 **
@@ -68,7 +69,6 @@ using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
 
-static std::complex<double> complex_0(0.0, 0.0);
 
 int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
 {
@@ -342,9 +342,11 @@ int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
 
 int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
 {
+  const std::complex<double> complex_0(0.0, 0.0);
+  const std::complex<double> c_zero = std::complex<double>( 0.0, 0.0 );
+  const std::complex<double> c_i    = std::complex<double>( 0.0, 1.0 );
+
   int returnValue = 0;
-  static const std::complex<double> c_zero = std::complex<double>( 0.0, 0.0 );
-  static const std::complex<double> c_i    = std::complex<double>( 0.0, 1.0 );
 
   if( nu.Env() != N.Env() )        return 137;
   if( nu.Dim() != N.Dim() )        return 138;

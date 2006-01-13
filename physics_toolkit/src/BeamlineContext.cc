@@ -816,7 +816,6 @@ void BeamlineContext::_createTunes()
     this->_createLFS();
   }
   
-
   int lfs_result = _p_lfs->TuneCalc( _p_jp, false );
   if( lfs_result != 0 ) {
     ostringstream uic;

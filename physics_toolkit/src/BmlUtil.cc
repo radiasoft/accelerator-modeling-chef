@@ -5,10 +5,10 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes
 ******             which facilitate calculations with the
 ******             BEAMLINE class library.
-******  Version:   2.0
 ******
 ******  File:      BmlUtil.cc
 ******             Source code for Beamline utility methods.
+******  Version:   2.0
 ******
 ******  Copyright (c) 2003  Universities Research Association, Inc.
 ******                All Rights Reserved
@@ -46,8 +46,6 @@
 #include <Mapping.h>
 
 using namespace std;
-
-static std::complex<double> complex_0(0.0,0.0);
 
 ostream* BmlUtil::_errorStreamPtr  = &cerr;
 ostream* BmlUtil::_outputStreamPtr = &cout;
@@ -189,10 +187,11 @@ void BmlUtil::normalize( MatrixC& B )
   // This code is lifted from emittanceDilution.cc,
   // which lifted it from normalForm.cc
 
+  const std::complex<double> complex_0(0.0,0.0);
+  const std::complex<double> mi(0.,-1.);
   int i, j;
 
   // Normalizing the linear normal form coordinates
-  std::complex<double>   mi( 0., -1. );
   MatrixD  J( "J", 6 );
   MatrixC  Nx;
   Nx = ( B.transpose() * J * B * J ) * mi;
@@ -219,7 +218,6 @@ void BmlUtil::normalize( MatrixC& B )
   B = B*Nx;
 
   // Try to get the phase correct ...
-  // ------------------------------------
   std::complex<double>  m0, cm0, m1, cm1;
   m0  = B(0,0)/abs(B(0,0));
   cm0 = conj(m0);
@@ -245,8 +243,8 @@ void BmlUtil::normalize( MatrixC& B )
       B(i,4) = m0;
     }
   }
-
 }
+
 
 // ============================================================== //
 
@@ -259,7 +257,7 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w,
   //   in the file BeamlineContext.cc.   - Leo Michelotti (October 29, 2004)
 
   static bool firstTime = true;
-  static const std::complex<double>  i( 0., 1. );
+  const std::complex<double>  i( 0., 1. );
 
   if( firstTime ) {
     *_errorStreamPtr << "\n*** WARNING ***"
