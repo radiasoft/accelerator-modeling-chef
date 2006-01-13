@@ -53,6 +53,8 @@
 
 static double* dnull = 0;
 
+using namespace std;
+
 DspnFncData::DspnFncData( BeamlineContext* bcp, std::ostream*  stdoutstream, std::ostream* stderrstream )
 : 
   _bmlConPtr(bcp), 

@@ -100,6 +100,7 @@
 using FNAL::pcout;
 using FNAL::pcerr;
 
+using namespace std;
 
 extern beamline* DriftsToSlots( /* const */ beamline& original );
 

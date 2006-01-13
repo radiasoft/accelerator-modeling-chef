@@ -27,6 +27,7 @@
 #include "BeamlineContext.h"
 
 using std::ostringstream;
+using namespace std;
 
 void editDialog::visitBmlnElmnt( bmlnElmnt* x )
 {
