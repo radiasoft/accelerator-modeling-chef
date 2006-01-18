@@ -176,7 +176,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   _myBeamlinePtr->accept( registrar );
 
 
-  // Useful Proton and Vector
+  // Useful Particle and Vector
   // containing the closed orbit.
   if( p_prt ) delete p_prt;
   p_prt =  p_jp->ConvertToParticle();
@@ -197,18 +197,18 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
     newcoords = true;
   }
 
-  // Instantiate a JetProton with the new environment
+  // Instantiate a JetParticle with the new environment
   // and propagate it once around the ring.
   if( _verbose ) {
-    *_outputStreamPtr << "ClosedOrbitSage --- Propagating JetProton around ring final time."
+    *_outputStreamPtr << "ClosedOrbitSage --- Propagating JetParticle around ring final time."
          << endl;
   }
-  JetProton jpr2( *(dynamic_cast<Proton*>(p_prt)) );
-  _myBeamlinePtr->propagate( jpr2 );
+  JetParticle* jpr2Ptr = p_prt->ConvertToJetParticle();
+  _myBeamlinePtr->propagate( *jpr2Ptr );
 
 
-  // Reset the argument to this second JetProton.
-  *(dynamic_cast<JetProton*>(p_jp)) = jpr2;
+  // Reset the argument to this second JetParticle
+  *p_jp = *jpr2Ptr;
 
 
   // Final operations ....................................
@@ -236,8 +236,14 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
          << endl;
   }
 
-  if( p_prt ) delete p_prt;
-  p_prt = 0;
+  if( p_prt ) {
+    delete p_prt;
+    p_prt = 0;
+  }
+  if( jpr2Ptr ) {
+    delete jpr2Ptr;
+    jpr2Ptr = 0;
+  }
 
   return 0;
 }
