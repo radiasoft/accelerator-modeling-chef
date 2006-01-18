@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   1.0
 ******                                    
 ******  File:      InsertionList.h
+******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -36,7 +36,7 @@
 #ifndef INSERTIONLIST_H
 #define INSERTIONLIST_H
 
-#include "Particle.h"
+class Particle;
 
 struct InsertionListElement {
   double     s;  // Position (design orbit length)
@@ -50,10 +50,15 @@ struct InsertionListElement {
 class InsertionList : private dlist
 {
 private:
-  double smax;
-  Proton prtn;
+  double    _smax;
+  Particle* _pPtr;
+
 public:
   InsertionList( double /* momentum [GeV/c] */ = 1000.0 );
+  // By default, a proton will be used as the internal particle.
+  InsertionList( const Particle& );
+  // Argument must have the correct momentum and, ideally,
+  // be on the fiducial reference orbit.
   InsertionList( const InsertionList& );
   ~InsertionList();
 
@@ -68,20 +73,28 @@ public:
   InsertionList& operator=( const InsertionList& );
   int Size();
   void Clear();   // Preserves the InsertionListElements
-  Proton GetParticle() { return prtn; }
+
+  Particle* clonedParticlePtr();
+  // Will instatiate a particle on the heap. 
+  // Invoker must take responsibility for deleting it.
+
   friend std::ostream& operator<<( std::ostream&, const InsertionList& );
 };
 
-inline 
-InsertionListElement* 
-InsertionList::Get()
+
+inline Particle* InsertionList::clonedParticlePtr()
+{ 
+  return _pPtr->Clone();
+}
+
+
+inline InsertionListElement* InsertionList::Get()
 {
   return (InsertionListElement*) dlist::get();
 }
 
-inline 
-InsertionListElement* 
-InsertionList::operator()( const int& n ) const
+
+inline InsertionListElement* InsertionList::operator()( const int& n ) const
 {
   return (InsertionListElement*) dlist::operator[]( n );
 }

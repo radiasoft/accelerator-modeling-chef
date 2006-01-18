@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      InsertionList.cc
+******  Version:   2.1
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -41,24 +41,35 @@
 #endif
 
 #include <PhysicsConstants.h>
+#include <Particle.h>
 #include <bmlnElmnt.h>
 #include <InsertionList.h>
 
 using namespace std;
 
 InsertionList::InsertionList( double p )
-: smax( -1.0e-20 ), prtn( sqrt( p*p + PH_NORM_mp*PH_NORM_mp ) )
+: _smax( -1.0e-20 )
 {
+  // By default, a proton is instantiated.
+  _pPtr  = new Proton( sqrt( p*p + PH_NORM_mp*PH_NORM_mp ) );
+}
+
+InsertionList::InsertionList( const Particle& x )
+: _smax( -1.0e-20 )
+{
+  _pPtr  = x.Clone();
 }
 
 InsertionList::InsertionList( const InsertionList& x )
 : dlist( (dlist&) x )
 {
-  smax = x.smax;
+  _smax = x._smax;
 }
 
 InsertionList::~InsertionList()
 {
+  delete _pPtr;
+  _pPtr  = 0;
 }
 
 
@@ -69,19 +80,19 @@ void InsertionList::Append( const InsertionListElement& x )
 
 void InsertionList::Append( const InsertionListElement* x )
 {
-  if( x->q->OrbitLength( prtn ) != 0.0 ) {
+  if( x->q->OrbitLength( (*_pPtr) ) != 0.0 ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
            "void InsertionList::Append( const InsertionListElement* x )", 
            "This version can only handle zero length elements." ) );
   }
 
-  if( x->s > smax ) {
+  if( x->s > _smax ) {
     dlist::append( (void*) x );
-    smax = x->s;
+    _smax = x->s;
     return;
   }
   ostringstream uic;
-  uic  << "Ordering is not correct: " << smax << " < " << (x->s);
+  uic  << "Ordering is not correct: " << _smax << " < " << (x->s);
   throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
          "void InsertionList::Append( const InsertionListElement* x )", 
          uic.str().c_str() ) );
@@ -94,7 +105,7 @@ void InsertionList::Insert( const InsertionListElement& x )
 
 void InsertionList::Insert( const InsertionListElement* x )
 {
-  if( x->q->OrbitLength( prtn ) != 0.0 ) {
+  if( x->q->OrbitLength( (*_pPtr) ) != 0.0 ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
            "void InsertionList::Insert( const InsertionListElement* x )", 
            "This version can only handle zero length elements." ) );
@@ -102,7 +113,7 @@ void InsertionList::Insert( const InsertionListElement* x )
 
   if( IsEmpty() ) {
     dlist::insert( (void*) x  );
-    smax = x->s;
+    _smax = x->s;
     return;
   }
 
@@ -165,14 +176,14 @@ void InsertionList::MergeAll( InsertionList& x )
       }
     if( !inserted ) {
       dlist::append( (void*) p_ile_x );
-      smax = p_ile_x->s;
+      _smax = p_ile_x->s;
     }
   }
 }
 
 InsertionList& InsertionList::operator=( const InsertionList& x )
 {
-  smax = x.smax;
+  _smax = x._smax;
   dlist::operator=( (dlist&) x );
   return *this;
 }
@@ -185,8 +196,9 @@ int InsertionList::Size()
 void InsertionList::Clear()
 {
   dlist::clear();
-  smax = -1.0e-20;
+  _smax = -1.0e-20;
 }
+
 ostream& operator<<(ostream& os, const InsertionList& x)
 {
   dlist_iterator getNext((dlist&)x);
