@@ -46,6 +46,7 @@
 #endif
 #include <string>
 
+#include <iosetup.h>
 #include <bmlnElmnt.h>
 #include <Slot.h>
 #include <sector.h>
@@ -55,6 +56,8 @@
 #include <iomanip>
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
 
 
 // **************************************************
@@ -410,8 +413,8 @@ lattRing beamline::whatIsRing() {
   lattRing* ringPtr = (lattRing*)dataHook.find( "Ring" );
   if(ringPtr != 0)
     return *ringPtr;
-    cout << endl;
-    cout << "*** WARNING ***                            \n"
+    (*pcout) << endl;
+    (*pcout) << "*** WARNING ***                            \n"
          << "*** WARNING *** beamline::whatIsRing       \n"
          << "*** WARNING *** Entry was not found.       \n"
          << "*** WARNING *** Meaningless value being    \n"
@@ -441,8 +444,8 @@ lattFunc beamline::whatIsLattice( int n ) {
   if( n == count++ ) 
    return (*(lattFunc*) p->dataHook.find( "Twiss" ));
  
- cout << endl;
- cout << "*** WARNING ***                               \n"
+ (*pcout) << endl;
+ (*pcout) << "*** WARNING ***                               \n"
       << "*** WARNING *** beamline::whatIsLattice       \n"
       << "*** WARNING *** Entry was not found.          \n"
       << "*** WARNING *** Meaningless value being       \n"
@@ -504,13 +507,10 @@ void beamline::InsertElementsFromList( double& s,
  bmlnElmnt* p_be_a = 0;
  bmlnElmnt* p_be_b = 0;
  InsertionListElement* p_ile = inList(0);  // top element; not removed
- Proton prtn;
  bool   firstWarning = true;
 
- prtn = inList.GetParticle();
-
  if( !p_be ) {
-  cerr << "\n"
+  (*pcerr) << "\n"
           "*** WARNING ***                                     \n"
           "*** WARNING *** beamline::InsertElementsFromList( s_0, list ) \n"
           "*** WARNING *** The beamline is empty!              \n"
@@ -521,7 +521,7 @@ void beamline::InsertElementsFromList( double& s,
  }
 
  if( !p_ile ) {
-  cerr << "\n"
+  (*pcerr) << "\n"
           "*** WARNING ***                                     \n"
           "*** WARNING *** beamline::InsertElementsFromList( s_0, list ) \n"
           "*** WARNING *** The list is empty!                  \n"
@@ -532,6 +532,8 @@ void beamline::InsertElementsFromList( double& s,
  }
 
 
+ const Particle* prtnPtr = inList.clonedParticlePtr();
+
  while( p_be && p_ile ) {
   if( strcasecmp( p_be->Type(), "beamline" ) == 0 ) {
     ( (beamline*) p_be )->InsertElementsFromList( s, inList, removedElements );
@@ -539,8 +541,8 @@ void beamline::InsertElementsFromList( double& s,
     p_be = (bmlnElmnt*) getNext();
   }
 
-  else if ( s + p_be->OrbitLength( prtn ) <= p_ile->s ) {
-    s += p_be->OrbitLength( prtn );
+  else if ( s + p_be->OrbitLength( *prtnPtr ) <= p_ile->s ) {
+    s += p_be->OrbitLength( *prtnPtr );
     p_be = (bmlnElmnt*) getNext();
   }
 
@@ -562,7 +564,7 @@ void beamline::InsertElementsFromList( double& s,
     p_be = (bmlnElmnt*) getNext();
 
     if( firstWarning ) {
-      cerr << "\n*** WARNING:                                   *** "
+      (*pcerr) << "\n*** WARNING:                                   *** "
               "\n*** WARNING: Insertion into a combinedFunction *** "
               "\n*** WARNING: element will hide what is being   *** "
               "\n*** WARNING: inserted.                         *** "
@@ -572,8 +574,8 @@ void beamline::InsertElementsFromList( double& s,
     }
   }
 
-  else if ( ( s < p_ile->s ) && ( p_ile->s < s + p_be->OrbitLength( prtn ) ) ) {
-    p_be->Split( ( p_ile->s - s )/p_be->OrbitLength( prtn ), 
+  else if ( ( s < p_ile->s ) && ( p_ile->s < s + p_be->OrbitLength( *prtnPtr ) ) ) {
+    p_be->Split( ( p_ile->s - s )/p_be->OrbitLength( *prtnPtr ), 
                  &p_be_a, 
                  &p_be_b 
                );
@@ -582,7 +584,7 @@ void beamline::InsertElementsFromList( double& s,
     putAbove( *(p_be), *(p_be_b)   );
 
     getNext.GoBack();
-    s += ( p_be_a->OrbitLength( prtn ) + p_ile->q->OrbitLength( prtn ) );
+    s += ( p_be_a->OrbitLength( *prtnPtr ) + p_ile->q->OrbitLength( *prtnPtr ) );
 
     if( ((void*) p_be) == this->lastInfoPtr() ) {
       dlist::remove( (void*) p_be );
@@ -601,7 +603,7 @@ void beamline::InsertElementsFromList( double& s,
   }
 
   else {
-    cerr << "\n"
+    (*pcerr) << "\n"
             "*** WARNING ***                                     \n"
             "*** WARNING *** beamline::InsertElementsFromList( s, list ) \n"
             "*** WARNING *** The impossible has happened at      \n"
@@ -613,29 +615,30 @@ void beamline::InsertElementsFromList( double& s,
             "*** WARNING ***                                     \n"
          << endl;
 
-    cerr << "Here are the tests:\n";
-    cerr << "else if ( s + p_be->OrbitLength( prtn ) <= p_ile->s )\n"
-         << "else if ( " << setprecision(10) << ( s + p_be->OrbitLength( prtn ) )
+    (*pcerr) << "Here are the tests:\n";
+    (*pcerr) << "else if ( s + p_be->OrbitLength( *prtnPtr ) <= p_ile->s )\n"
+         << "else if ( " << setprecision(10) << ( s + p_be->OrbitLength( *prtnPtr ) )
          << " <= "       << setprecision(10) << ( p_ile->s )
          << " )\n";
-    cerr << "else if ( s == p_ile->s )\n"
+    (*pcerr) << "else if ( s == p_ile->s )\n"
          << "else if ( " << setprecision(10) << s 
          << " == "       << setprecision(10) << p_ile->s 
          << " )\n";
-    cerr << "else if ( p_be->p_bml )\n"
+    (*pcerr) << "else if ( p_be->p_bml )\n"
          << "else if ( " << p_be->p_bml << " )\n";
-    cerr << "else if ( ( s < p_ile->s ) && ( p_ile->s < s + p_be->OrbitLength( prtn ) ) )\n"
+    (*pcerr) << "else if ( ( s < p_ile->s ) && ( p_ile->s < s + p_be->OrbitLength( *prtnPtr ) ) )\n"
          << "else if ( ( " << setprecision(10) << s 
          << " < "          << setprecision(10) << p_ile->s 
          << " ) && ( "     << setprecision(10) << p_ile->s 
-         << " < "          << setprecision(10) << ( s + p_be->OrbitLength( prtn ) )
+         << " < "          << setprecision(10) << ( s + p_be->OrbitLength( *prtnPtr ) )
          << " ) )\n";
 
-    s += p_be->OrbitLength( prtn );
+    s += p_be->OrbitLength( *prtnPtr );
     p_be = (bmlnElmnt*) getNext();
   }
  }
 
+ delete prtnPtr;
 }
 
 
@@ -782,7 +785,7 @@ char beamline::putAbove( const bmlnElmnt& x, const bmlnElmnt& y )
  unTwiss();
 
  if ( !dlist::putAbove( &x, &y ) ) {
-   cerr << "\n*** ERROR ***                                             \n"
+   (*pcerr) << "\n*** ERROR ***                                             \n"
              "*** ERROR *** beamline::putAbove                          \n"
              "*** ERROR *** dlist::putAbove did not work.               \n"
              "*** ERROR ***                                             \n"
@@ -804,7 +807,7 @@ char beamline::putBelow( const bmlnElmnt& x, const bmlnElmnt& y )
  unTwiss();
 
  if ( !dlist::putBelow( &x, &y ) ) {
-   cerr << "\n*** ERROR ***                                             \n"
+   (*pcerr) << "\n*** ERROR ***                                             \n"
              "*** ERROR *** beamline::putBelow                          \n"
              "*** ERROR *** dlist::putAbove did not work.               \n"
              "*** ERROR ***                                             \n"
@@ -907,7 +910,7 @@ sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2,
  while ((  p_be = dbi++  )) {
 
   if( p_be == &be_2 ) {
-   cout << "*** WARNING ***                                      \n" 
+   (*pcout) << "*** WARNING ***                                      \n" 
         << "*** WARNING *** beamline::MakeSector                 \n" 
         << "*** WARNING *** Second element found first.          \n" 
         << "*** WARNING *** Returning zero.                      \n" 
@@ -924,7 +927,7 @@ sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2,
  }
 
  if( !firstFound ) {
-  cout << "*** WARNING ***                                      \n" 
+  (*pcout) << "*** WARNING ***                                      \n" 
        << "*** WARNING *** beamline::MakeSector                 \n" 
        << "*** WARNING *** Unable to find first element.        \n" 
        << "*** WARNING *** Returning zero.                      \n" 
@@ -946,7 +949,7 @@ sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2,
  }
 
  if( !secondFound ) {
-  cout << "*** WARNING ***                                      \n" 
+  (*pcout) << "*** WARNING ***                                      \n" 
        << "*** WARNING *** beamline::MakeSector                 \n" 
        << "*** WARNING *** Unable to find second element.       \n" 
        << "*** WARNING *** Returning zero.                      \n" 
@@ -979,7 +982,7 @@ sector* beamline::MakeSectorFromStart ( const bmlnElmnt& be_1, int deg, JetParti
  p_be = (bmlnElmnt*) getNext();
 
  if( !p_be ) {
-  cout << "*** WARNING ***                                      \n" 
+  (*pcout) << "*** WARNING ***                                      \n" 
        << "*** WARNING *** beamline::MakeSectorFromStart        \n" 
        << "*** WARNING *** The beamline was empty!!             \n" 
        << "*** WARNING *** Returning zero.                      \n" 
@@ -1012,7 +1015,7 @@ sector* beamline::MakeSectorFromStart ( const bmlnElmnt& be_1, int deg, JetParti
  }
 
  if( !firstFound ) {
-  cout << "*** WARNING ***                                      \n" 
+  (*pcout) << "*** WARNING ***                                      \n" 
        << "*** WARNING *** beamline::MakeSectorFromStart        \n" 
        << "*** WARNING *** Unable to find element.              \n" 
        << "*** WARNING *** Returning zero.                      \n" 
@@ -1052,7 +1055,7 @@ sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle&
  }
 
  if( !firstFound ) {
-  cout << "*** WARNING ***                                      \n" 
+  (*pcout) << "*** WARNING ***                                      \n" 
        << "*** WARNING *** beamline::MakeSectorToEnd            \n" 
        << "*** WARNING *** Unable to find first element.        \n" 
        << "*** WARNING *** Returning zero.                      \n" 
@@ -1154,7 +1157,7 @@ void beamline::peekAt( double& s, Particle* p_prt ) {
  dlist_iterator getNext( *(dlist*) this );
  bmlnElmnt* p;
 
- cout << "\nBegin beamline::peekat() -- Address of beamline: "
+ (*pcout) << "\nBegin beamline::peekat() -- Address of beamline: "
       << ident << " = " << (int) this 
       << endl;
 
@@ -1164,7 +1167,7 @@ void beamline::peekAt( double& s, Particle* p_prt ) {
    else p->peekAt( s, p_prt );
  }
 
- cout << "End beamline::peekat() -- Address of beamline: "
+ (*pcout) << "End beamline::peekat() -- Address of beamline: "
       << ident << " = " << (int) this 
       << endl;
 
@@ -1184,7 +1187,7 @@ int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
      ret++; 
    }
    if( ret != numElem ) {
-     cerr << "\n*** WARNING ***                                     \n"
+     (*pcerr) << "\n*** WARNING ***                                     \n"
                "*** WARNING *** beamline::countHowMany              \n"
                "*** WARNING *** Inconsistency in the count:         \n"
                "*** WARNING *** "
@@ -1504,7 +1507,7 @@ void beamline::_moveRel(   int axis, double u
 
   // Will not displace anything less than 1 micron.
   if( std::abs(u) < 1.0e-6 ) { 
-    cerr << "\n*** ERROR *** "
+    (*pcerr) << "\n*** ERROR *** "
          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** ERROR *** Called by " << invoker
          << "\n*** ERROR *** Unable to perform operation on "
@@ -1575,7 +1578,7 @@ void beamline::_moveRel(   int axis, double u
       Vector displacement(u*frameTwo.getAxis(axis));
       frameTwo.translate( displacement );
 
-      cerr << "\n*** WARNING *** "
+      (*pcerr) << "\n*** WARNING *** "
            << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
            << "\n*** WARNING *** Called by " << invoker
            << "\n*** WARNING *** Will displace using downstream end of "
@@ -1749,7 +1752,7 @@ void beamline::_rotateRel(   int axis, double angle
 
   // Will not rotate anything less than 1 microradian.
   if( std::abs(angle) < 1.0e-6 ) { 
-    cerr << "\n*** ERROR *** "
+    (*pcerr) << "\n*** ERROR *** "
          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** ERROR *** Called by " << invoker
          << "\n*** ERROR *** Unable to perform operation on "
@@ -1766,7 +1769,7 @@ void beamline::_rotateRel(   int axis, double angle
 
   // Check for a valid element
   if( typeid(*thePtr) == typeid(sector) ) {
-    cerr << "\n*** ERROR *** "
+    (*pcerr) << "\n*** ERROR *** "
          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** ERROR *** Called by " << invoker
          << "\n*** ERROR *** Unable to perform rotation on "
@@ -1982,7 +1985,7 @@ bool beamline::setAlignment( const alignmentData& al ) {
   bmlnElmnt* p;
   while ((  p = (bmlnElmnt*) getNext()  )) {
     if( !(p->setAlignment(al)) ) {
-      cerr << "\n*** ERROR *** "
+      (*pcerr) << "\n*** ERROR *** "
            << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
            << "\n*** ERROR *** bool beamline::setAlignment( const alignmentData& al )"
               "\n*** ERROR *** Unable to perform operation on "
