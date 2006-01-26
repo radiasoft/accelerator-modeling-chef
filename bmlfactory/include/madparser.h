@@ -91,6 +91,7 @@ fb_allocator* madparser_comment_alloc( madparser* mp );
 
 void          madparser_use_parameters ( madparser* mp, const char* s);
 const char*   madparser_get_use_statement_beamline_name( madparser* mp );
+const char*   madparser_get_particle_type( madparser* mp );
 
 void          madparser_set_beam_particle_mass( madparser* mp, double mass);
 void          madparser_set_beam_particle_charge( madparser* mp, double charge); 
