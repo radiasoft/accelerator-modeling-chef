@@ -917,6 +917,12 @@ madparser_get_use_statement_beamline_name(  madparser* mp ) {
 }
 
 
+const char* 
+madparser_get_particle_type( madparser* mp ) {
+  return mp->beam_params_.particle_type_;
+}
+
+
 void  
 madparser_set_beam_particle_mass( madparser* mp, double mass) {
 

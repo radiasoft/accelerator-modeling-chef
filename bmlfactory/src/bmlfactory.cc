@@ -1062,6 +1062,10 @@ bmlfactory::getUseStatementBeamlineName() {
 
 }
 
+const char* bmlfactory::getParticleType() {
+  return madparser_get_particle_type( mp );
+}
+
 double 
 bmlfactory::getBrho( ) const {
 
