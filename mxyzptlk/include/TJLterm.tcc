@@ -191,16 +191,6 @@ TJLterm<T>::TJLterm( const IntArray& l, const T& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-template<typename T>
-TJLterm<T>::TJLterm( const TJLterm<T>* x ) 
-: _index( x->_index ), _weight(x->_weight), _value(x->_value), _deleted(x->_deleted)
-{
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 template<typename T>
 TJLterm<T>::TJLterm( const TJLterm<T>& x ) 
 : _index( x._index ), _weight(x._weight), _value(x._value), _deleted(x._deleted)
