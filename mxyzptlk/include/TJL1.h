@@ -46,7 +46,7 @@
 #include <ReferenceCounter.h>
 #include <FastPODAllocator.h>
 #include <vector>
-#include <JL1Ptr.h>
+#include <JLPtr.h>
 #include <EnvPtr.h>
 #include <TJLterm.h>
 
@@ -85,51 +85,49 @@ template<typename T>
 bool operator!=( const T& x, const TJL1<T>& y ); 
 
 template<typename T>
-std::ostream& operator<<( std::ostream& os, const TJL1<T>& x ); 
+std::ostream& operator<<( std::ostream& os, const TJL1<T>& x); 
 
 template<typename T>
-std::istream& operator>>( std::istream& is,  TJL1<T>& x ); 
+std::istream& operator>>( std::istream& is,  TJL1<T>&  x); 
 
-JL1Ptr<double>::Type real( const JL1Ptr<std::complex<double> >::Type & z ); 
-JL1Ptr<double>::Type imag( const JL1Ptr<std::complex<double> >::Type & z );
-
-template<typename T>
-boost::intrusive_ptr<TJL1<T> > operator*(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
+JLPtr<double>::Type real( const JLPtr<std::complex<double> >::Type & z ); 
+JLPtr<double>::Type imag( const JLPtr<std::complex<double> >::Type & z );
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> > operator*(boost::intrusive_ptr<TJL1<T> > const& x, T const& y );
+boost::intrusive_ptr<TJL1<T> >  operator*(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> > operator/(T const& x, boost::intrusive_ptr<TJL1<T> > const& y);
+boost::intrusive_ptr<TJL1<T> >  operator*(boost::intrusive_ptr<TJL1<T> > const& x, T const& y );
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> > operator/(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
+boost::intrusive_ptr<TJL1<T> >  operator/(T const& x, boost::intrusive_ptr<TJL1<T> > const& y);
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> > operator+(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
+boost::intrusive_ptr<TJL1<T> >  operator/(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> > operator-(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
+boost::intrusive_ptr<TJL1<T> >  operator+(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> > operator-(boost::intrusive_ptr<TJL1<T> > const& x);
-
-// these functions are called by TJet
- 
-template<typename T>
-boost::intrusive_ptr<TJL1<T> > makeJL( typename EnvPtr<T>::Type pje, T x );
+boost::intrusive_ptr<TJL1<T> >& operator+=(boost::intrusive_ptr<TJL1<T> > &x,      boost::intrusive_ptr<TJL1<T> > const& y  );
 
 template<typename T>
-void discardJL( TJL1<T>* p);  
+boost::intrusive_ptr<TJL1<T> >  operator-(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> > cloneJL( TJL1<T>* p);  
+boost::intrusive_ptr<TJL1<T> >  operator-(boost::intrusive_ptr<TJL1<T> > const& x);
+
 
 //***********************************************************************************************************************************
 
 
 template<typename T> 
 class TJL1: public ReferenceCounter {
+
+  struct term {
+    T      value;
+    bool   deleted;
+  };
 
   friend class TJL1<double>;
   friend class TJL1<std::complex<double> >;
@@ -142,11 +140,11 @@ class TJL1: public ReferenceCounter {
 
   mutable typename EnvPtr<T>::Type    _myEnv; // Environment of the jet.
   
-  T                                   _std;  // standard part
-  T*                                  _jcb;  // jacobian
+  term                                 _std;  // standard part
+  term*                                _jcb;  // jacobian
 
-  int _constIterPtr;
-  int _iterPtr;
+  mutable int                         _constIterPtr;
+  int                                 _iterPtr;
 
   static std::vector<TJL1<T>* > TJL1<T>::_thePool;  // pool of discarded TJL1 objects
 
@@ -177,15 +175,19 @@ class TJL1: public ReferenceCounter {
 
 
   virtual void dispose() { TJL1<T>::discardTJL(  this ); }  // used by ReferenceCounter class 
-  inline typename JL1Ptr<T>::Type clone() 
-                           {return typename JL1Ptr<T>::Type( TJL1<T>::makeTJL(*this) ); } 
+  inline typename JLPtr<T>::Type clone() 
+                           {return typename JLPtr<T>::Type( TJL1<T>::makeTJL(*this) ); } 
+
+  // Comaptibility 
+
+  TJLterm<T>* storePtr() {return 0;}                  // returns a ptr to the next available block in the JLterm store;
 
 
   // Public member functions__________________________________________
 
 
-  operator JL1Ptr<std::complex<double> >::Type () const;
-  operator JL1Ptr<double>::Type () const;
+  operator JLPtr<std::complex<double> >::Type () const;
+  operator JLPtr<double>::Type () const;
 
   void clear();     // clears all the terms. 
 
@@ -197,27 +199,26 @@ class TJL1: public ReferenceCounter {
   typename EnvPtr<T>::Type getEnv() const { return _myEnv; }    
   void                     setEnv( typename EnvPtr<T>::Type pje) { _myEnv = pje; }  // DANGER !  
 
-  typename JL1Ptr<T>::Type  truncMult( typename JL1Ptr<T>::Type const& v, const int& wl )  const; 
+  typename JLPtr<T>::Type  truncMult( typename JLPtr<T>::Type const& v, const int& wl )  const; 
 
-  typename JL1Ptr<T>::Type  filter( const int& wgtLo, const int& wgtHi )      const; 
+  typename JLPtr<T>::Type  filter( const int& wgtLo, const int& wgtHi )      const; 
 
-  typename JL1Ptr<T>::Type  filter( bool (*f) ( const IntArray&, const T& ) ) const; 
+  typename JLPtr<T>::Type  filter( bool (*f) ( const IntArray&, const T& ) ) const; 
 
 
   void printCoeffs() const;               // prints term coefficients 
   void peekAt() const;                     
 
-  TJLterm<T>* get();                      // Pops the top term, which should be the
-                                          // one of lowest weight.
-  TJLterm<T>  firstTerm() const;    
-                                          // Returns a TJLterm<T> equivalent 
-                                          // to the top term,
-                                          // which should be the one of lowest weight.
-  TJLterm<T>  lowTerm()   const;    
-                                          // Returns a TJLterm<T> equivalent to the
-                                          // non-zero term of lowest weight.
-  void addTerm( const TJLterm<T>& );      
+  TJLterm<T>* get();                      // Pops the top term (lowest weight).
+  //TJLterm<T>  get();                      // Pops the top term (lowest weight).
+
+  TJLterm<T>  firstTerm() const;          // Returns a TJLterm<T> equivalent 
+                                          // to the top term but does not remove it
  
+  TJLterm<T>  lowTerm()   const;          // Returns a TJLterm<T> equivalent to the
+                                          // **non-zero** term of lowest weight.
+
+  void addTerm( const TJLterm<T>& );      
  
   bool isNilpotent() const;
   void writeToFile( std::ofstream& ) const;
@@ -226,24 +227,25 @@ class TJL1: public ReferenceCounter {
   void   scaleBy( T );
 
   TJL1& Negate();
-  void add     ( typename JL1Ptr<T>::Type const&  x);    // in place addition 
+  void add     ( typename JLPtr<T>::Type const&  x);    // in place addition 
 
-  typename JL1Ptr<T>::Type sin()              const;
-  typename JL1Ptr<T>::Type cos()              const;
-  typename JL1Ptr<T>::Type asin()             const;
-  typename JL1Ptr<T>::Type atan()             const;
-  typename JL1Ptr<T>::Type sqrt()             const;
-  typename JL1Ptr<T>::Type exp()              const;
-  typename JL1Ptr<T>::Type pow(int)           const;
-  typename JL1Ptr<T>::Type pow(const double&) const;
-  typename JL1Ptr<T>::Type log()              const;
-  typename JL1Ptr<T>::Type compose(typename JL1Ptr<T>::Type const y[ ]) const; 
-  typename JL1Ptr<T>::Type TJL1<T>::D( const int* n ) const; 
+  typename JLPtr<T>::Type sin()              const;
+  typename JLPtr<T>::Type cos()              const;
+  typename JLPtr<T>::Type asin()             const;
+  typename JLPtr<T>::Type atan()             const;
+  typename JLPtr<T>::Type sqrt()             const;
+  typename JLPtr<T>::Type exp()              const;
+  typename JLPtr<T>::Type pow(int)           const;
+  typename JLPtr<T>::Type pow(const double&) const;
+  typename JLPtr<T>::Type log()              const;
+  typename JLPtr<T>::Type compose(typename JLPtr<T>::Type const y[ ]) const; 
+  typename JLPtr<T>::Type TJL1<T>::D( const int* n ) const; 
  
-  //void               resetConstIterator();
+  void               resetConstIterator();
+  const TJLterm<T>*  stepConstIteratorPtr()  const;
+
   //TJLterm<T>         stepConstIterator()     const;
-  //const TJLterm<T>& stepConstIteratorRef()  const;
-  //const TJLterm<T>* stepConstIteratorPtr()  const;
+  //const TJLterm<T>&  stepConstIteratorRef()  const;
   //void               resetIterator();
   //TJLterm<T>*        stepIterator();
 
@@ -264,6 +266,31 @@ class TJL1: public ReferenceCounter {
   TJL1& operator()( const TJL1* ) const;
                        // Self explanatory ...
 
+  friend   bool operator==<>( const TJL1<T>& x, const TJL1<T>& y ); 
+  friend   bool operator==<>( const TJL1<T>& x, const T& y ); 
+  friend   bool operator==<>( const T& y, const TJL1<T>& x );
+  friend   bool operator!=<>( const TJL1<T>& x, const TJL1<T>& y ); 
+  friend   bool operator!=<>( const TJL1<T>& x, const T& y ); 
+  friend   bool operator!=<>( const T& x, const TJL1<T>& y ); 
+
+  friend   std::ostream& operator<< <T>( std::ostream& os, const TJL1<T>& x ); 
+  friend   std::istream& operator>><T>(  std::istream& is,  TJL1<T>& x ); 
+
+  friend typename JLPtr<double>::Type real( const JLPtr<std::complex<double> >::Type & z ); 
+  friend typename JLPtr<double>::Type imag( const JLPtr<std::complex<double> >::Type & z );
+
+  friend boost::intrusive_ptr<TJL1<T> >  operator*<>(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
+  friend boost::intrusive_ptr<TJL1<T> >  operator*<>(boost::intrusive_ptr<TJL1<T> > const& x, T const& y );
+
+  friend boost::intrusive_ptr<TJL1<T> >  operator/<>(boost::intrusive_ptr<TJL1<T> > const& x,  boost::intrusive_ptr<TJL1<T> > const& y);
+  friend boost::intrusive_ptr<TJL1<T> >  operator/<>(T const& x,         boost::intrusive_ptr<TJL1<T> > const& y);
+
+  friend boost::intrusive_ptr<TJL1<T> >  operator+<>  ( boost::intrusive_ptr<TJL1<T> >  const& x,    boost::intrusive_ptr<TJL1<T> > const& y );
+  friend boost::intrusive_ptr<TJL1<T> >& operator+= <>( boost::intrusive_ptr<TJL1<T> >       & x,    boost::intrusive_ptr<TJL1<T> > const& y );
+
+  friend boost::intrusive_ptr<TJL1<T> >  operator-<>(boost::intrusive_ptr<TJL1<T> > const& x);
+  friend boost::intrusive_ptr<TJL1<T> >  operator-<>(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
+
   // Arithmetic operators // some of these may no longer be needed ... FIXME !
 
   TJL1& operator=( const TJL1& );
@@ -280,30 +307,6 @@ class TJL1: public ReferenceCounter {
 
   TJL1& operator/=( const TJL1& );
   TJL1& operator/=( const T& );
-
-  friend   bool operator==<>( const TJL1<T>& x, const TJL1<T>& y ); 
-  friend   bool operator==<>( const TJL1<T>& x, const T& y ); 
-  friend   bool operator==<>( const T& y, const TJL1<T>& x );
-  friend   bool operator!=<>( const TJL1<T>& x, const TJL1<T>& y ); 
-  friend   bool operator!=<>( const TJL1<T>& x, const T& y ); 
-  friend   bool operator!=<>( const T& x, const TJL1<T>& y ); 
-
-  friend   std::ostream& operator<< <T>( std::ostream& os, const TJL1<T>& x ); 
-  friend   std::istream& operator>><T>(  std::istream& is,  TJL1<T>& x ); 
-
-  friend typename JL1Ptr<double>::Type real( const JL1Ptr<std::complex<double> >::Type & z ); 
-  friend typename JL1Ptr<double>::Type imag( const JL1Ptr<std::complex<double> >::Type & z );
-
-  friend boost::intrusive_ptr<TJL1<T> >  operator*<>(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
-  friend boost::intrusive_ptr<TJL1<T> >  operator*<>(boost::intrusive_ptr<TJL1<T> > const& x, T const& y );
-
-  friend boost::intrusive_ptr<TJL1<T> >  operator/<>(boost::intrusive_ptr<TJL1<T> > const& x,  boost::intrusive_ptr<TJL1<T> > const& y);
-  friend boost::intrusive_ptr<TJL1<T> >  operator/<>(T const& x,         boost::intrusive_ptr<TJL1<T> > const& y);
-
-  friend boost::intrusive_ptr<TJL1<T> >  operator+<>(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
-
-  friend boost::intrusive_ptr<TJL1<T> >  operator-<>(boost::intrusive_ptr<TJL1<T> > const& x);
-  friend boost::intrusive_ptr<TJL1<T> >  operator-<>(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
 
     // Exception subclasses____________________________________________
 
@@ -402,11 +405,11 @@ class TJL1: public ReferenceCounter {
 //  ================== specializations ====================
 
 
-template<>                 TJL1<double>::operator JL1Ptr<std::complex<double> >::Type () const;
+template<>                 TJL1<double>::operator JLPtr<std::complex<double> >::Type () const;
 
-template<>  TJL1<std::complex<double> >::operator JL1Ptr<double>::Type () const;                // not implemented
-template<>  TJL1<double>::operator JL1Ptr<double>::Type () const;                               // not implemented
-template<>  TJL1<std::complex<double> >::operator JL1Ptr<std::complex<double> >::Type () const; // not implemented
+template<>  TJL1<std::complex<double> >::operator JLPtr<double>::Type () const;                // not implemented
+template<>  TJL1<double>::operator JLPtr<double>::Type () const;                               // not implemented
+template<>  TJL1<std::complex<double> >::operator JLPtr<std::complex<double> >::Type () const; // not implemented
 
 
 #ifdef  MXYZPTLK_IMPLICIT_TEMPLATES
