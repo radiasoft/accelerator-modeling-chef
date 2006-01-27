@@ -147,6 +147,10 @@ template <typename T>
 boost::intrusive_ptr<TJL<T> >   operator/(boost::intrusive_ptr<TJL<T> > const & x,  T const& y  );  
 
 
+JLPtr<double>::Type real( const JLPtr<std::complex<double> >::Type & z ); 
+JLPtr<double>::Type imag( const JLPtr<std::complex<double> >::Type & z );
+
+
 // **********************************************************************************************************
 
 template<typename T> 
@@ -175,11 +179,15 @@ class TJL: public ReferenceCounter {
                                            // declared public because the TJet
                                            // conversion function need access FIXME !
 
-  void initStore();                // setup and initialize the jlterm store using default capacity 
-  void initStore(int capacity);    // setup and initialize the jlterm store 
+  void initStore();                  // setup and initialize the jlterm store using default capacity 
+  void initStore(int capacity);      // setup and initialize the jlterm store 
 
-  void insert( TJLterm<T>* );
-  void append( TJLterm<T>* );
+  void insert( TJLterm<T>  const& );  // prefer this form. Allocation performed by insert(). 
+  void append( TJLterm<T>  const&);   // prefer this form. Allocation performed by append().
+
+  void insert( TJLterm<T>  const*);   // implies a pointer to an already allocated obj.         
+  void append( TJLterm<T>  const*);   // implies a pointer to an already allocated obj.  
+
   TJLterm<T>* remove( dlink* );
 
   TJL( typename EnvPtr<T>::Type, T value = T() );
@@ -253,7 +261,8 @@ class TJL: public ReferenceCounter {
   TJLterm<T>  lowTerm()   const;    
                                           // Returns a TJLterm<T> equivalent to the
                                           // non-zero term of lowest weight.
-  void addTerm( const TJLterm<T>* );      
+
+  void addTerm( const TJLterm<T>& );      
  
   TJLterm<T>* TJL<T>::removeTerm( TJLterm<T>* a); // Unconditionally remove term pointed to by a;  a is not deleted !
  
@@ -266,10 +275,6 @@ class TJL: public ReferenceCounter {
   void   scaleBy( T );
 
   TJL& Negate();
-
-
-  static JLPtr<double>::Type TJL<T>::real( const JLPtr<std::complex<double> >::Type & z ); 
-  static JLPtr<double>::Type TJL<T>::imag( const JLPtr<std::complex<double> >::Type & z );
 
   friend boost::intrusive_ptr<TJL<T> >  
          operator+<>(boost::intrusive_ptr<TJL<T> > const & x, boost::intrusive_ptr<TJL<T> > const& y  );  
@@ -303,6 +308,10 @@ class TJL: public ReferenceCounter {
   
   friend boost::intrusive_ptr<TJL<T> >   
          operator/<>(boost::intrusive_ptr<TJL<T> > const & x,  T const& y  );  
+
+  friend typename JLPtr<double>::Type real( const JLPtr<std::complex<double> >::Type & z ); 
+  friend typename JLPtr<double>::Type imag( const JLPtr<std::complex<double> >::Type & z );
+
 
   typename JLPtr<T>::Type sin()              const;
   typename JLPtr<T>::Type cos()              const;
@@ -348,14 +357,14 @@ class TJL: public ReferenceCounter {
   TJL& operator+=( const TJL& );
   TJL& operator+=( const T& );
 
-  TJL& operator-=( const TJL& );
-  TJL& operator-=( const T& );
+  //TJL& operator-=( const TJL& );
+  //TJL& operator-=( const T& );
 
-  TJL& operator*=( const TJL& );
-  TJL& operator*=( const T& );
+  //TJL& operator*=( const TJL& );
+  //TJL& operator*=( const T& );
 
-  TJL& operator/=( const TJL& );
-  TJL& operator/=( const T& );
+  //TJL& operator/=( const TJL& );
+  //TJL& operator/=( const T& );
 
   friend   bool operator==<>( const TJL<T>& x, const TJL<T>& y ); 
   friend   bool operator==<>( const TJL<T>& x, const T& y ); 
@@ -468,7 +477,7 @@ template<> TJL<double>::operator JLPtr<std::complex<double> >::Type () const;   
 template<> TJL<std::complex<double> >::operator JLPtr<double>::Type () const;              // implemented
 
 template<> TJL<std::complex<double> >::operator JLPtr<std::complex<double> >::Type () const; // NOT implemented
-template<> TJL<double>::operator JLPtr<double>::Type () const;                             // NOT implemented
+template<> TJL<double>::operator JLPtr<double>::Type () const;                               // NOT implemented
 
 
 
