@@ -43,9 +43,13 @@
 #include <DspnFncData.h>
 #include <BeamlineContext.h>
 #include <GenericException.h>
+#include <iosetup.h>
 
 #include <qwt/qwt_plot.h>
 #include <boost/shared_ptr.hpp>
+
+using FNAL::pcerr;
+using FNAL::pcout;
 
 
 // This undef is needed because of the compiler.
@@ -214,7 +218,7 @@ void DspnFncData::doCalc()
            "\n*** WARNING *** Too many lattice functions read."
            "\n*** WARNING *** Am resetting to " << _arraySize << " in all."
         << "\n*** WARNING *** "
-        << endl;
+        << std::endl;
     }
     else {
       *(azimuth++)     = infoPtr->arcLength;
@@ -231,13 +235,13 @@ void DspnFncData::doCalc()
   }
 
   if( i != _arraySize ) {
-    cerr << "\n*** WARNING *** "
+    (*pcerr) << "\n*** WARNING *** "
          << __FILE__ << ", " << __LINE__ << ": "
          << "DspnFncData::recalc(): "
          << "\n*** WARNING ***  _arraySize is being reset from "
          << _arraySize << " to " << i << "."
          << "\n*** WARNING *** "
-         << endl;
+         << std::endl;
   }
 
   _arraySize = i;

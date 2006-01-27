@@ -1967,7 +1967,7 @@ void CHEFGUI::_editPartAndSect()
         //cout << qq->Type() << "  " << qq->Name() << "\n";
         delete qq;
       }
-      //cout << endl;
+      //cout << std::endl;
 
       // Create a temporary Jet environment
       EnvPtr<double>::Type                 formerJetEnv  = Jet::_lastEnv;
@@ -3002,13 +3002,13 @@ void CHEFGUI::_tuneCtrl()
     if( okh && okv ) {
       if( (0. != deltaNuH) || (0. != deltaNuV) ) {
         if( 0 != (returnCode = _p_currBmlCon->changeTunesBy( deltaNuH, deltaNuV )) ) {
-          cerr << "*** WARNING *** File "
+          (*pcerr) << "*** WARNING *** File "
                << __FILE__
                << ", Line "
                << __LINE__
                << ": Tune adjustment returned error condition "
                << returnCode
-               << endl;
+               << std::endl;
           QMessageBox::information( 0, "CHEF",
                       "Tune adjustment error." );
         }
@@ -3147,7 +3147,7 @@ void CHEFGUI::_traverseTree( const QBmlRoot* x, ACTFUNC11 actfcn ) const
     if(typeid(*fc) == typeid(QBmlElmt)) {
       // cout << "Recognized QBmlElmt "
       //      << dynamic_cast<QBmlElmt*>(fc)->fullName()
-      //      << endl;
+      //      << std::endl;
       if( fc->isSelected() ) {
         (*actfcn)( this, dynamic_cast<QBmlElmt*>(fc)->cheatElementPtr() );
       }
@@ -3585,11 +3585,11 @@ argPtr::argPtr( void* x, bool y )
 {
   if(x) { _ptr = x; }
   else {
-    cerr << "\n*** ERROR *** "
+    (*pcerr) << "\n*** ERROR *** "
             "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** ERROR *** argPtr::argPtr( void* x )"
             "\n*** ERROR *** Constructor does not accept null argument."
-         << endl;
+         << std::endl;
     _ptr = this;
   }
 };
@@ -3614,10 +3614,10 @@ MappingPtr::MappingPtr( const Mapping& x, bool y )
 : argPtr( new Mapping(x), true )
 {
   if( !y ) {
-    cerr << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+    (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** MappingPtr::MappingPtr( const Mapping& x, bool y ) "
             "\n*** WARNING *** Second argument is being ignored."
-         << endl;
+         << std::endl;
   }
 }
 
@@ -3632,10 +3632,10 @@ BeamlineContextPtr::BeamlineContextPtr( const BeamlineContext& x, bool y )
 : argPtr( ((void*) &x), false )
 {
   if( y ) {
-    cerr << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+    (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** BeamlineContextPtr::BeamlineContextPtr( const BeamlineContext& x, bool y ) "
             "\n*** WARNING *** Second argument is being ignored."
-         << endl;
+         << std::endl;
   }
 }
 
