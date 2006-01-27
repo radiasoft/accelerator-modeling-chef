@@ -22,9 +22,9 @@ main( int argc, char** argv ) {
 
  int deg = atoi( argv[1] );
 
- Jet::BeginEnvironment( deg );
+ Jet__environment::BeginEnvironment( deg );
  coord x(1.0);
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  Jet f, g;
 
