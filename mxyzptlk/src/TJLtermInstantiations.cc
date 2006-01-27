@@ -98,6 +98,62 @@ unsigned int boost::details::pool::lcm<unsigned int>(unsigned int const&, unsign
 template
 unsigned boost::details::pool::gcd<unsigned>(unsigned, unsigned);
 
+template 
+class boost::hash<TJLterm<double >* >;
+
+template 
+class boost::hash<TJLterm<std::complex<double>  >* >; 
+
+
+template
+class __gnu_cxx::hash_map<TJLterm<double >*, unsigned int, boost::hash<TJLterm<double >* > >;
+
+template
+class __gnu_cxx::hash_map<TJLterm<std::complex<double>  >*, unsigned int, boost::hash<TJLterm<std::complex<double>  >* > >;
+
+template
+class __gnu_cxx::hashtable<std::pair<TJLterm<std::complex<double> >* const, unsigned int>, TJLterm<std::complex<double> >*, boost::hash<TJLterm<std::complex<double> >*>, std::_Select1st<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >, std::equal_to<TJLterm<std::complex<double> >*>, std::allocator<unsigned int> >;
+
+template
+class __gnu_cxx::hashtable<std::pair<TJLterm<double >* const, unsigned int>, TJLterm<double >*, boost::hash<TJLterm<double >*>, std::_Select1st<std::pair<TJLterm<double >* const, unsigned int> >, std::equal_to<TJLterm<double >*>, std::allocator<unsigned int> >;
+
+template 
+__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >** 
+std::fill_n<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >**, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*> 
+(__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >**, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >* const&);
+
+template 
+__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >** 
+std::fill_n<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >**, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*> 
+(__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >**, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >* const&);
+
+template 
+class std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*> >;
+
+template 
+class std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double>  >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double>  >* const, unsigned int> >*> >;
+
+template
+void std::fill<__gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*> > >, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*>(__gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*> > >, __gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*> > >, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >* const&);
+
+
+template 
+void std::fill<__gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*> > >, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*>(__gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*> > >, __gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*> > >, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >* const&);
+
+template
+unsigned int boost::hash_value<TJLterm<double > >(TJLterm<double >* const&);
+
+template
+unsigned int boost::hash_value<TJLterm<std::complex<double>  > >(TJLterm<std::complex<double>  >* const&);
+
+template
+__gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*> > > std::fill_n<__gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*> > >, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*>(__gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*> > >, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >* const&);
+
+template
+__gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*> > > std::fill_n<__gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*> > >, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*>(__gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >*> > >, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<double >* const, unsigned int> >* const&);
+
+template
+unsigned long const* std::lower_bound<unsigned long const*, unsigned long>(unsigned long const*, unsigned long const*, unsigned long const&);
 
 #endif // MXYZPTLK_IMPLICIT_TEMPLATES 
 
