@@ -1,14 +1,18 @@
+#include <IntArray.h>
+#include <VectorD.h>
 #include "mxyzptlk.h"
-#include <iomanip.h>
+#include <iomanip>
+
+using namespace std;
 
 main() {
 static int index[] = { 3, 2 };
 double   answer[2];
 
-Jet::BeginEnvironment( 7 );
+Jet__environment::BeginEnvironment( 7 );
 coord x( 0.0 );
 coord y( 0.0 );
-Jet::EndEnvironment();
+Jet__environment::EndEnvironment();
 
 Jet u, v, w, z;
 // Mapping a( 2, 0, x.Env() ), c( 2, 0, x.Env() );
@@ -19,10 +23,10 @@ w = sin(u) * cos(v);       z = exp( u*u*u ) / ( u*v );
 
 a.SetComponent( 0, u ); a.SetComponent( 1, v );
 
-Jet::BeginEnvironment( 7 );
+Jet__environment::BeginEnvironment( 1 );
 coord xx( u.standardPart() );
 coord yy( v.standardPart() );
-Jet::EndEnvironment();
+Jet__environment::EndEnvironment();
 
 Mapping b( 2, 0, xx.Env() );
 

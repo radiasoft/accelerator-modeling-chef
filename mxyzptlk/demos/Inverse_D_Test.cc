@@ -17,11 +17,13 @@
 #include <stdio.h>
 #include "mxyzptlk.h"
 
+using namespace std;
+
 void oldmain() 
 {
- Jet::BeginEnvironment( 4 );
+ Jet__environment::BeginEnvironment( 4 );
  coord x( -1.2 ), y( 3.5 ), z( 2.1 );
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  Mapping w, u;
 

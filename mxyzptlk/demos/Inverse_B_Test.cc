@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <Matrix.h>
 #include "mxyzptlk.h"
 
 main( int argc, char** argv ) {
@@ -22,9 +23,9 @@ main( int argc, char** argv ) {
 
  int limit = atoi( argv[1] );
 
- Jet::BeginEnvironment( 4 );
+ Jet__environment::BeginEnvironment( 1 );
  coord x( 0.0 ), y( 0.0 ), z( 0.0 );
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  Mapping u, v, w;
  Mapping id( "ident" );

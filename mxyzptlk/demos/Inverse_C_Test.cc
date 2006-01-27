@@ -17,9 +17,9 @@
 
 main( int, char** ) {
  
- Jet::BeginEnvironment( 4 );
+ Jet__environment::BeginEnvironment( 4 );
  coord x( 0.0 ), y( 0.0 ), z( 0.0 );
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  Mapping w, u;
 
