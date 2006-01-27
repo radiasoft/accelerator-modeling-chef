@@ -35,13 +35,23 @@
 #include <boost/intrusive_ptr.hpp>
 
 template<typename T>
+class TJL1;
+
+template<typename T>
 class TJL;
 
 template<typename T>
 struct JLPtr
 {
+#ifdef  FIRST_ORDER_JETS 
+  typedef boost::intrusive_ptr<TJL1<T> > Type;
+#else
   typedef boost::intrusive_ptr<TJL<T> > Type;
+#endif
+
 };
+
+
 
 #endif
 
