@@ -188,7 +188,7 @@ void LattFncData::doCalc()
            "\n*** WARNING *** Too many lattice functions read."
            "\n*** WARNING *** Am resetting to " << _arraySize << " in all."
         << "\n*** WARNING *** "
-        << endl;
+        << std::endl;
     }
     else {
       _azimuth[i]      = infoPtr->arcLength;
@@ -217,7 +217,7 @@ void LattFncData::doCalc()
          << "\n*** WARNING ***  _arraySize is being reset from "
          << _arraySize << " to " << i << "."
          << "\n*** WARNING *** "
-         << endl;
+         << std::endl;
   }
 
   _arraySize = i;
