@@ -33,8 +33,8 @@
 ******  REVISION HISTORY 
 ******                  
 ******  May 2005  ostiguy@fnal.gov
-******            - File converted to a stub to preserve src compatibility
-******              with pre-template code base.  
+******    - File converted to a stub to preserve src compatibility
+******      with pre-template code base.  
 ******                                               
 **************************************************************************
 *************************************************************************/
@@ -44,11 +44,10 @@
 
 #include <complex>
 #include <Jet__environment.h>
+#include <JLterm.h>
 #include <TJL.h>
 #include <TJet.h>
 
-typedef TJLterm<double>                JLterm;
-typedef TJLterm<std::complex<double> > JLCterm;
 typedef TJL<double>                    JL;
 typedef TJL<std::complex<double> >     JLC;
 
@@ -56,5 +55,7 @@ typedef TJet<double>                   Jet;
 typedef TJet<std::complex<double> >    JetC;
 typedef Tcoord<double>                 coord;
 typedef Tcoord<std::complex<double> >  coordC;
+typedef Tparam<double>                 param;
+typedef Tparam<std::complex<double> >  paramC;
 
 #endif // JET_H
