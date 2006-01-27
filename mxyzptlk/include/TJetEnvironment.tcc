@@ -369,7 +369,7 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
 
  
  for( int i = 0; i<_maxTerms;  i++) {
-   _TJLmonomial[i] = typename JLPtr<T>::Type( TJL<T>::makeTJL( typename EnvPtr<T>::Type(pje), T()) ); 
+   _TJLmonomial[i] = typename JLPtr<T>::Type( makeJL<T>( typename EnvPtr<T>::Type(pje), T()) ); 
                                                   // the anonymous constructor above is not suitable for an array.  
                                                    
 
