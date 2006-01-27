@@ -122,22 +122,16 @@ TJetVector<T>::TJetVector<T>( const TJetVector<T>& x )
 
   _myEnv = x._myEnv;
   _dim   = x._dim;
+
   _comp  = new TJet<T> [ _dim ];
 
   for ( int i = 0; i < _dim; i++ ) {
+
     _comp[i] = x._comp[i];           // Shallow copy is automatic because of lazy evaluation.
+    CHECKOUT(  _comp[i].Env() != _myEnv , "TJetVector<T>::const TJetVector<T>& x", "Incompatible environments.")
 
-#ifndef NOCHECKS
-    if( _comp[i].Env() != _myEnv ) {
-
-      throw( typename TJL<T>::BadEnvironment( 
-               i, (int) _comp[i].Env().get(), (int) _myEnv.get(), 
-               __FILE__, __LINE__, 
-               "TJetVector<T>::TJetVector<T>( const TJetVector<T>& )",
-               "Inconsistent environment at a component." ));
-    }
-#endif
   }
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

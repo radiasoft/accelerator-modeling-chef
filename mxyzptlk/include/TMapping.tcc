@@ -145,6 +145,7 @@ TMapping<T>::~TMapping<T>()
 template<typename T>
 TMapping<T> TMapping<T>::operator()( const TMapping<T>& x ) const
 {
+
  if( x._dim != (this->_myEnv)->numVar() ) {
    throw( GenericException(__FILE__, __LINE__, 
           "TMapping<T> TMapping<T>::operator()( const TMapping<T>& ) const",
@@ -182,7 +183,7 @@ TMatrix<T> TMapping<T>::Jacobian() const
 {
  int            nv = (this->_myEnv)->numVar();   // ??? Is this right?
  int*           d = new int[ nv ];
- TMatrix<T>    M( (this->_dim), nv, ((T) 0.0) );
+ TMatrix<T>    M( (this->_dim), nv,  T() );
 
  for( int i = 0; i < nv; i++  ) d[i] = 0;
  for( int j = 0; j < nv; j++ ) {
@@ -201,9 +202,9 @@ template<typename T>
 TMapping<T> TMapping<T>::Inverse() const 
 { 
  if( (this->_myEnv)->spaceDim() != (this->_dim) ) {
-  throw( typename TJL<T>::BadDimension( (this->_myEnv)->spaceDim(), (this->_dim), __FILE__, __LINE__, 
+  throw GenericException( __FILE__, __LINE__, 
          "Mapping Mapping::Inverse() const ",
-         "Phase space dimensions do not match." ) );
+         "Phase space dimensions do not match." );
  }
 
  int    nv   = (this->_myEnv)->numVar();
@@ -244,6 +245,7 @@ TMapping<T> TMapping<T>::Inverse() const
  // set the constant terms 
  // --------------------------------------
 
+ //typename EnvPtr<T>::Type pje_inv( TJetEnvironment<T>:: makeInverseJetEnvironment( this->_myEnv, *this) );
  typename EnvPtr<T>::Type pje_inv( TJetEnvironment<T>:: makeInverseJetEnvironment(*this) );
 
  TMapping<T> z( *this );  // copies the current mapping instance ...
@@ -277,8 +279,7 @@ TMapping<T> TMapping<T>::Inverse() const
    }
 
    z = z._epsInverse( z._myEnv );
- 
- 
+
 //---------------------------------------------------------------------
 // Reset the environment with one that has the correct reference point 
 // and make final adjustments before returning. ..................
