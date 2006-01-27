@@ -29,6 +29,7 @@
 // If explicit template instantiations are not desired, *do not* compile this file !
 // =================================================================================
 
+#ifdef  FIRST_ORDER_JETS
 #ifndef MXYZPTLK_IMPLICIT_TEMPLATES 
 
 #include <complex>
@@ -37,51 +38,63 @@
 #include <TJLterm.tcc>
 #include <TJL1.h>
 #include <TJL1.tcc>
-//#include <TJetEnvironment.h>
-//#include <TJetEnvironment.tcc>
-//#include <TJetVector.h>
-//#include <TJetVector.tcc>
-//#include <TMapping.h>
-//#include <TMapping.tcc>
-//#include <TLieOperator.h>
-//#include <TLieOperator.tcc>
 
-//#include <FastPODAllocator.h>
-//#include <FastAllocator.h>
-//#include <boost/functional/hash/hash.hpp>
-//#include <boost/pool/pool.hpp>
-//#include <boost/pool/pool_alloc.hpp>
-//#include <vector>
-//#include <deque>
-//#include <list>
-//#include <ext/hash_map>
-//#include <algorithm>
-//#include <istream>
 
 // ============================================================================================
 // Friend functions 
 //=============================================================================================
 
-template class JL1Ptr<double>;
-template class JL1Ptr<std::complex<double> >;
+template class JLPtr<double>;
+template class JLPtr<std::complex<double> >;
 
-template JL1Ptr<double>::Type                operator-(JL1Ptr<double>::Type const&);
-template JL1Ptr<std::complex<double> >::Type operator-(JL1Ptr<std::complex<double> >::Type const&);
 
-template JL1Ptr<double>::Type                operator-(JL1Ptr<double>::Type const&, JL1Ptr<double>::Type  const&);
-template JL1Ptr<std::complex<double> >::Type operator-(JL1Ptr<std::complex<double> >::Type const&, JL1Ptr<std::complex<double> >::Type  const&);
+template bool operator==( const TJL1<double>& x,                const TJL1<double>& y ); 
+template bool operator==( const TJL1<std::complex<double> >& x, const TJL1<std::complex<double> >& y ); 
 
-template JL1Ptr<double>::Type                operator+(JL1Ptr<double>::Type const&, JL1Ptr<double>::Type const&);
-template JL1Ptr<std::complex<double> >::Type operator+(JL1Ptr<std::complex<double> >::Type const&, JL1Ptr<std::complex<double> >::Type const&);
+template bool operator==( const TJL1<double>& x,                const double& y ); 
+template bool operator==( const TJL1<std::complex<double> >& x, const std::complex<double> & y ); 
 
-template JL1Ptr<double>::Type                operator/(JL1Ptr<double>::Type const&,                JL1Ptr<double>::Type const&);
-template JL1Ptr<std::complex<double> >::Type operator/(JL1Ptr<std::complex<double> >::Type const&, JL1Ptr<std::complex<double> >::Type const&);
+template bool operator==( const double& y,                const TJL1<double>& x );
+template bool operator==( const std::complex<double> & y, const TJL1<std::complex<double> >& x );
 
-template JL1Ptr<double>::Type                operator/(double const&, JL1Ptr<double>::Type const&);
-template JL1Ptr<std::complex<double> >::Type operator/(std::complex<double> const&, JL1Ptr<std::complex<double> >::Type const&);
+template bool operator!=( const TJL1<double>& x,                const TJL1<double>& y ); 
+template bool operator!=( const TJL1<std::complex<double> >& x, const TJL1<std::complex<double> >& y ); 
 
-template JL1Ptr<double>::Type                operator*(JL1Ptr<double>::Type const&, JL1Ptr<double>::Type const&);
-template JL1Ptr<std::complex<double> >::Type operator*(JL1Ptr<std::complex<double> >::Type const&, JL1Ptr<std::complex<double> >::Type const&);
+template bool operator!=( const TJL1<double>& x,                const double& y ); 
+template bool operator!=( const TJL1<std::complex<double> >& x, const std::complex<double> & y ); 
+
+template bool operator!=( const double& x,                const TJL1<double>& y ); 
+template bool operator!=( const std::complex<double> & x, const TJL1<std::complex<double> >& y ); 
+
+template std::ostream& operator<<( std::ostream& os, const TJL1<double>& x); 
+template std::ostream& operator<<( std::ostream& os, const TJL1<std::complex<double> >& x); 
+
+template std::istream& operator>>( std::istream& is,  TJL1<double>&  x); 
+template std::istream& operator>>( std::istream& is,  TJL1<std::complex<double> >&  x); 
+
+
+template JLPtr<double>::Type                operator-(JLPtr<double>::Type const&);
+template JLPtr<std::complex<double> >::Type operator-(JLPtr<std::complex<double> >::Type const&);
+
+template JLPtr<double>::Type                operator-(JLPtr<double>::Type const&, JLPtr<double>::Type  const&);
+template JLPtr<std::complex<double> >::Type operator-(JLPtr<std::complex<double> >::Type const&, JLPtr<std::complex<double> >::Type  const&);
+
+template JLPtr<double>::Type                operator+(JLPtr<double>::Type const&, JLPtr<double>::Type const&);
+template JLPtr<std::complex<double> >::Type operator+(JLPtr<std::complex<double> >::Type const&, JLPtr<std::complex<double> >::Type const&);
+
+template JLPtr<double>::Type&                operator+=(JLPtr<double>::Type &x,                JLPtr<double>::Type  const& y  );
+template JLPtr<std::complex<double> >::Type& operator+=(JLPtr<std::complex<double> >::Type &x, JLPtr<std::complex<double> >::Type  const& y  );
+
+template JLPtr<double>::Type                operator/(JLPtr<double>::Type const&,                JLPtr<double>::Type const&);
+template JLPtr<std::complex<double> >::Type operator/(JLPtr<std::complex<double> >::Type const&, JLPtr<std::complex<double> >::Type const&);
+
+template JLPtr<double>::Type                operator/(double const&, JLPtr<double>::Type const&);
+template JLPtr<std::complex<double> >::Type operator/(std::complex<double> const&, JLPtr<std::complex<double> >::Type const&);
+
+template JLPtr<double>::Type                operator*(JLPtr<double>::Type const&, JLPtr<double>::Type const&);
+template JLPtr<std::complex<double> >::Type operator*(JLPtr<std::complex<double> >::Type const&, JLPtr<std::complex<double> >::Type const&);
+template JLPtr<double>::Type                 operator*(JLPtr<double>::Type const& x, double const& y );
+template JLPtr<std::complex<double> >::Type  operator*(JLPtr<std::complex<double> >::Type const& x, std::complex<double> const& y );
 
 
 //============================================================================================
@@ -104,4 +117,4 @@ template void std::vector<TJL1<double>*, std::allocator<TJL1<double>*> >::_M_ins
 template void std::vector<TJL1<std::complex<double> >*, std::allocator<TJL1<std::complex<double> >*> >::_M_insert_aux(__gnu_cxx::__normal_iterator<TJL1<std::complex<double> >**, std::vector<TJL1<std::complex<double> >*, std::allocator<TJL1<std::complex<double> >*> > >, TJL1<std::complex<double> >* const&);
 
 #endif // MXYZPTLK_IMPLICIT_TEMPLATES 
-
+#endif // FIRST_ORDER_JETS

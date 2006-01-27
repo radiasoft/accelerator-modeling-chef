@@ -31,7 +31,7 @@
 #include <complex>
 #include <EnvPtr.h>
 #include <TJetEnvironment.h>
-#include <TJL.h>
+#include <GenericException.h>
 #include <iosetup.h>
 
 using FNAL::pcout;
@@ -84,10 +84,9 @@ TJetEnvironment<std::complex<double> >::operator EnvPtr<double>::Type () const {
 
   for( int i = 0; i < _numVar ; i++ ) {
     if( imag( _refPoint[i] ) != 0.0 ) {
-    throw( TJL<std::complex<double> >::BadReference ( i, imag( _refPoint[i] ), 
-                                __FILE__, __LINE__, 
+    throw GenericException( __FILE__, __LINE__, 
       "TJetEnvironment<complex<double> >::operator TJetEnvironment<double>* ()",
-      "Cannot copy complex environment with non-zero imaginary part to real one." ) );
+      "Cannot copy complex environment with non-zero imaginary part to real one." );
     }
     refPoint[i]  = std::real( _refPoint[i] );
   }

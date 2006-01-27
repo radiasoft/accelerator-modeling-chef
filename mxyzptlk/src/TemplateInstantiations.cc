@@ -34,7 +34,6 @@
 #include <complex>
 #include <ReferenceCounter.h>
 #include <TJLterm.h>
-#include <TJL.h>
 #include <TJet.h>
 #include <TJet.tcc>  
 #include <TJetEnvironment.h>
@@ -113,6 +112,7 @@ TJet<double> operator+(TJet<double> const&, double const&);
 
 template 
 TJet<double> operator+(TJet<double> const&, TJet<double> const&);
+
 
 template
 TJet<std::complex<double> > operator-(std::complex<double> const&, TJet<std::complex<double> > const&);

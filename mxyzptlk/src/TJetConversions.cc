@@ -116,7 +116,7 @@ TJet<std::complex<double> >::operator TJet<double> () const {
 TJet<double> real( const TJet<complex<double> >& z ) 
 {
 
-  return TJet<double>( TJL<std::complex<double> >::real(z._jl) );    
+  return TJet<double>( real(z._jl) );    
 
 }
 
@@ -126,7 +126,7 @@ TJet<double> real( const TJet<complex<double> >& z )
 TJet<double> imag( const TJet<complex<double> >& z ) 
 {
 
-  return TJet<double>( TJL<std::complex<double> >::imag(z._jl) );    
+  return TJet<double>( imag(z._jl) );    
 
 }
 
