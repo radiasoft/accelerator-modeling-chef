@@ -4,7 +4,7 @@
 ******                                                                
 ******  Mxyzptlk:  A C++ implementation of differential algebra.      
 ******                                    
-******  File:      TJL1.cc
+******  File:      TJL1.tcc
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                All Rights Reserved                             
