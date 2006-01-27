@@ -51,12 +51,12 @@
 #include <config.h>
 #endif
 
+#ifndef  FIRST_ORDER_JETS 
+
 #include <iosetup.h>
 #include <MathConstants.h>
-
 #include <GenericException.h>
 #include <VectorD.h>
-
 #include <TJL.h>
 #include <TJetEnvironment.h>
 
@@ -177,7 +177,7 @@ TJL<std::complex<double> >::operator boost::intrusive_ptr<TJL<std::complex<doubl
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-JLPtr<double>::Type TJL<std::complex<double> >::real( const JLPtr<std::complex<double> >::Type & z ) 
+JLPtr<double>::Type real( const JLPtr<std::complex<double> >::Type & z ) 
 {
 
   EnvPtr<double>::Type pje( *z->_myEnv );            // implicit conversion 
@@ -192,13 +192,11 @@ JLPtr<double>::Type TJL<std::complex<double> >::real( const JLPtr<std::complex<d
   // Proceed ...
  
   TJLterm<std::complex<double> >*  p;
-  TJLterm<double>*                 q;
 
   dlist_iterator gz( z->_theList );
    
   while((  p = (TJLterm<complex<double> >*) gz()  )) {
-    q = new( x->storePtr() ) TJLterm<double>( p->_index, std::real( p->_value ), x->_myEnv );
-    x->addTerm( q );
+    x->addTerm( TJLterm<double>( p->_index, std::real( p->_value ), x->_myEnv ));
   }
  
   // Set the maximum accurate _weight.
@@ -210,7 +208,7 @@ JLPtr<double>::Type TJL<std::complex<double> >::real( const JLPtr<std::complex<d
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JLPtr<double>::Type TJL<complex<double> >::imag( const JLPtr<std::complex<double> >::Type& z ) 
+JLPtr<double>::Type imag( const JLPtr<std::complex<double> >::Type& z ) 
 {
 
   EnvPtr<double>::Type pje( *z->_myEnv );        // implicit conversion 
@@ -225,13 +223,10 @@ JLPtr<double>::Type TJL<complex<double> >::imag( const JLPtr<std::complex<double
   // Proceed ...
  
   TJLterm<complex<double> >*  p;
-  TJLterm<double>*            q;
-
   dlist_iterator gz( z->_theList );
    
   while((  p = (TJLterm<complex<double> >*) gz()  )) {
-    q = new( x->storePtr() ) TJLterm<double>( p->_index, std::imag( p->_value ), x->_myEnv );
-    x->addTerm( q );
+    x->addTerm( TJLterm<double>( p->_index, std::imag( p->_value ), x->_myEnv ) );
   }
  
   // Set the maximum accurate _weight.
@@ -240,4 +235,6 @@ JLPtr<double>::Type TJL<complex<double> >::imag( const JLPtr<std::complex<double
   return x;
 
 }
+
+#endif // FIRST_ORDER_JETS 
 
