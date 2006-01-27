@@ -61,6 +61,7 @@
 
 #include <TJetEnvironment.h>
 #include <TJL.h>
+#include <TJL1.h>
 #include <complex>
 
 // Forward declarations
@@ -238,20 +239,13 @@ TJet<double > erf    ( const TJet<double >& );
 // JL factory functions
 
 template<typename T>
-typename JLPtr<T>::Type makeJL( boost::intrusive_ptr<TJetEnvironment<T> > pje,  T value = T());
+typename JLPtr<T>::Type makeJL( typename EnvPtr<T>::Type pje,  T value = T());
 
 template<typename T>
 typename JLPtr<T>::Type makeJL( const IntArray&, const T&, typename EnvPtr<T>::Type pje );
 
-//template<typename T>
-//typename JLPtr<T>::Type makeJL( const TJL& );
 
-//template<typename T>
-//void discardJL( TJL<T>* p);  
-
-
-//******************************************************************************************************************
-// Class TJet template
+// ==============================================================================
 
 template<typename T>
 
@@ -331,23 +325,23 @@ public:
 
   TJLterm<T>* storePtr() {return _jl->storePtr();}  // reserve and get a ptr to the next available free block  
   
-  TJLterm<T>* get();             // Pops the top term, which should be the 
-                                     // one of lowest weight.
-  TJLterm<T> firstTerm() const;  // Returns a JLterm equivalent to the top term,
-                                     // which should be the one of lowest weight.
-  TJLterm<T>  lowTerm()  const;  // Returns a JLterm equivalent to the 
-                                     // non-zero term of lowest weight.
+  TJLterm<T>* get();               // Pops the top term, which should be the 
+                                   // one of lowest weight. **** eliminate ! ****
+  TJLterm<T>  getLowestWeight();   // Removes the top term(lowest weight);
+
+  TJLterm<T>  firstTerm() const;   // Returns a JLterm equivalent to the top term,
+                                   // which should be the one of lowest weight.
+  TJLterm<T>  lowTerm()  const;    // Returns a JLterm equivalent to the 
+                                   // non-zero term of lowest weight.
 
 
   const TJLterm<T>* stepConstIteratorPtr() const;   
-  const TJLterm<T>& stepConstIteratorRef() const;   
   void              resetConstIterator();
-  void              resetIterator();
-  TJLterm<T>*       stepIterator();
-
+  //const TJLterm<T>& stepConstIteratorRef() const;   
+  //void              resetIterator();
+  //TJLterm<T>*       stepIterator();
 
   void addTerm( const TJLterm<T>& ); 
-
 
   bool isNilpotent() const;
 
