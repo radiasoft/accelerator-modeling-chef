@@ -80,9 +80,30 @@ using FNAL::pcout;
 // ******  the static class variable _thePool is a container for ****
 //         discarded Jets. 
 
-
 template <typename T>
 std::vector<TJL<T>* > TJL<T>::_thePool; 
+
+
+//-------------------------------------------------------------------
+// factory functions
+//-------------------------------------------------------------------
+
+template<typename T>
+typename JLPtr<T>::Type makeJL( boost::intrusive_ptr<TJetEnvironment<T> > pje,  T value) {
+
+  return TJL<T>::makeTJL( pje,value) ;
+
+}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename JLPtr<T>::Type makeJL( const IntArray& index, const T& value, typename EnvPtr<T>::Type pje ) {
+
+  return  TJL<T>::makeTJL( index, value, pje) ;
+
+}
+
 
 
 // ================================================================
@@ -338,7 +359,7 @@ _iterPtr(0)
    initStore();
    // NOTE: only non-zero terms are stored
    if ( x != T() ) {
-     insert( new( storePtr() ) TJLterm<T>( IntArray( pje->numVar() ), x, pje ) );
+     insert( TJLterm<T>( IntArray( pje->numVar() ), x, pje ) );
    }
  }
 
@@ -362,7 +383,7 @@ typename JLPtr<T>::Type TJL<T>::makeTJL( typename EnvPtr<T>::Type pje, T x )
    // NOTE: only non-zero terms are stored
 
   if ( x != T() ) {
-    p->insert( new( p->storePtr() ) TJLterm<T>( IntArray( pje->numVar() ), x, pje ) );
+    p->insert( TJLterm<T>( IntArray( pje->numVar() ), x, pje ) );
   }
 
   p->_constIterPtr = 0,
@@ -392,7 +413,7 @@ _iterPtr(0)
  // NOTE: only non-zero terms are stored
 
  if ( x != T() ) { 
-   insert( new( storePtr() ) TJLterm<T>( e, x, pje ) );
+   insert( TJLterm<T>( e, x, pje ) );
  } 
 }
 
@@ -417,7 +438,7 @@ typename JLPtr<T>::Type TJL<T>::makeTJL( const IntArray& e, const T& x, typename
  // NOTE: only non-zero terms are stored
 
  if ( x != T() ) { 
-    p->insert( new( p->storePtr() ) TJLterm<T>( e, x, pje ) );
+    p->insert( TJLterm<T>( e, x, pje ) );
  } 
 
   p->_constIterPtr = 0,
@@ -582,8 +603,8 @@ int             old_jltermStoreCapacity  = 0;
 
      dlist_iterator getNext2( oldList );
      while((  p = (TJLterm<T>*) getNext2()  )) {
-          q = new ( _jltermStoreCurrentPtr++ ) TJLterm<T>( *p );
-          append(q);
+           q = new ( _jltermStoreCurrentPtr++ ) TJLterm<T>( *p );
+           append(q); // note: pointer form 
     };
 
     // now, it is ok to zap the old store
@@ -634,7 +655,7 @@ template<typename T>
 
 
 template<typename T>
-void TJL<T>::addTerm( const TJLterm<T>* a )
+void TJL<T>::addTerm( const TJLterm<T> & a )
 {
 
  dlist_traversor getNext( _theList );
@@ -647,21 +668,21 @@ void TJL<T>::addTerm( const TJLterm<T>* a )
  p = getNext();
  
  if( p == 0 ) {
-   insert( const_cast<TJLterm<T>*>(a) ); // inserting a term into a list does not change it 
+   insert( a ); // inserting a term into a list does not change it 
    return;
    }
  
- if(     *a   <=   ( *(TJLterm<T>*) (p->info()) )   ) {
-   if(   *a   %=   ( *(TJLterm<T>*) (p->info()) )   ) {
+ if(     a   <=   ( *(TJLterm<T>*) (p->info()) )   ) {
+   if(   a   %=   ( *(TJLterm<T>*) (p->info()) )   ) {
  
-     (( (TJLterm<T>*) (p->info()) ) -> _value ) += ( a -> _value );
+     (( (TJLterm<T>*) (p->info()) ) -> _value ) += ( a._value );
  
      //  NOTE: the older versions of this method would remove and delete zero terms. 
      return;
      }
  
    else {
-     insert( const_cast<TJLterm<T>*>(a) ); // inserting a term into a list does not change it  
+     insert( a); // inserting a term into a list does not change it  
      return;
      }
  
@@ -672,19 +693,20 @@ void TJL<T>::addTerm( const TJLterm<T>* a )
  //
  while((  p = getNext()  )){
  
-   if(     *a   <=   ( *(TJLterm<T>*) (p->info()) )   ) { // compares weights only 
-     if(   *a   %=   ( *(TJLterm<T>*) (p->info()) )   ) { // equality implies equak weights and indentical exponents
+   if(      a   <=   ( *(TJLterm<T>*) (p->info()) )   ) { // compares weights only 
+     if(    a   %=   ( *(TJLterm<T>*) (p->info()) )   ) { // equality implies equak weights and indentical exponents
  
-       (( (TJLterm<T>*) (p->info()) ) -> _value ) += ( a -> _value );
+       (( (TJLterm<T>*) (p->info()) ) -> _value ) += ( a._value );
  
        //  NOTE: the older versions of this method would remove and delete zero terms. 
        return;
        }
  
      else {
-       p -> putAbove( new dlink( const_cast<TJLterm<T>*>(a), 0, 0 ) );
+       TJLterm<T>* q = new( this->storePtr() ) TJLterm<T>(a);
+       p -> putAbove( new dlink( const_cast<TJLterm<T>*>(q), 0, 0 ) );
        ++(this->_count);
-       this->_weight = std::max(this->_weight, a->_weight);
+       this->_weight = std::max(this->_weight, q->_weight);
        return;
        }
  
@@ -694,7 +716,7 @@ void TJL<T>::addTerm( const TJLterm<T>* a )
  //
  //  The new entry is heavier than existing ones.
  //
- append( const_cast<TJLterm<T>*>(a) );
+ append( a );
  return;
  
 }
@@ -870,9 +892,9 @@ void TJL<T>::setVariable(  const T& x, const int& j, typename EnvPtr<T>::Type pj
  _weight  = 0;
   
  IntArray ndx( _myEnv->numVar() );  
- insert( new(storePtr()) TJLterm<T>( ndx,  x,     _myEnv ) );
+ insert( TJLterm<T>( ndx,  x,     _myEnv ) );
  ndx(j) = 1;
- append( new(storePtr()) TJLterm<T>( ndx, (T)1.0, _myEnv ) );
+ append( TJLterm<T>( ndx, (T)1.0, _myEnv ) );
  
 }
 
@@ -897,9 +919,9 @@ void TJL<T>::setVariable(  const T& x, const int& j )
  _weight = 0;
 
  IntArray ndx( _myEnv->numVar() );  
- insert( new(storePtr()) TJLterm<T>( ndx,  x,     _myEnv ) );
+ insert( TJLterm<T>( ndx,  x,     _myEnv ) );
  ndx(j) = 1;
- append( new(storePtr()) TJLterm<T>( ndx, (T)1.0, _myEnv ) );
+ append( TJLterm<T>( ndx, (T)1.0, _myEnv ) );
  
 }
 
@@ -932,18 +954,18 @@ void TJL<T>::setVariable( const int& j,
 
  T x = theEnv->refPoint()[j];
  IntArray ndx( _myEnv->numVar() );
- insert( new( storePtr() ) TJLterm<T>( ndx, x, theEnv ) );
+ insert( TJLterm<T>( ndx, x, theEnv ) );
  ndx(j) = 1;
- append ( new( storePtr() ) TJLterm<T>( ndx, 1.0, theEnv ) );
+ append ( TJLterm<T>( ndx, 1.0, theEnv ) );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJL<T>::insert( TJLterm<T>* a) 
+void TJL<T>::insert( const TJLterm<T>* a) 
 {
- _theList.insert(a);
+ _theList.insert(const_cast<TJLterm<T>*>(a));
  ++_count;
  _weight = std::max( _weight, a->_weight );
 }
@@ -952,7 +974,19 @@ void TJL<T>::insert( TJLterm<T>* a)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-inline
+void TJL<T>::insert( const TJLterm<T>& a) 
+{
+
+ TJLterm<T>* p = new (storePtr())TJLterm<T>(a);
+  _theList.insert(const_cast<TJLterm<T>*>(p));
+ ++_count;
+ _weight = std::max( _weight, p->_weight );
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
 TJLterm<T>* TJL<T>::get() 
 {
  TJLterm<T>* p;
@@ -1005,9 +1039,22 @@ TJLterm<T> TJL<T>::firstTerm() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJL<T>::append( TJLterm<T>* a) 
+void TJL<T>::append( TJLterm<T> const& a) 
 {
- _theList.append(a);
+ TJLterm<T>* p = new( this->storePtr() ) TJLterm<T>(a); 
+ _theList.append(p);
+ ++_count;
+ _weight  = std::max(_weight, p->_weight);
+
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+void TJL<T>::append( const TJLterm<T>* a) 
+{
+ _theList.append( const_cast<TJLterm<T>*>(a) );
  ++_count;
  _weight  = std::max(_weight, a->_weight);
 
@@ -1242,8 +1289,7 @@ typename JLPtr<T>::Type TJL<T>::filter( const int& wgtLo, const int& wgtHi ) con
  while((  p = (TJLterm<T>*) getNext()  )) {
    wgt = p->_weight;
    if( ( wgt >= wgtLo ) && ( wgt <= wgtHi ) ) {
-     q = new( z->storePtr() ) TJLterm<T>( p );
-     z->append( q );
+     z->append( TJLterm<T>(*p) );
      if( wgt > upperWgt ) upperWgt = wgt;
      numTerms++;
      }
@@ -1282,8 +1328,8 @@ typename JLPtr<T>::Type TJL<T>::filter( bool (*f) ( const IntArray&, const T& ) 
   oldIndex = p->_index;
 
   if( (*f)( p->_index, p->_value ) ) {
-   q = new( z->storePtr() ) TJLterm<T>( p );
-   z->append( q );
+     z->append( TJLterm<T>(*p) );
+
   }
 
   for( i = 0; i < nv; i++ ) 
@@ -1359,7 +1405,7 @@ typename JLPtr<T>::Type TJL<T>::truncMult( typename JLPtr<T>::Type const& v, con
 
  while( zed < upperzed ) {
    if( zed->_value !=  T() ) {
-     z->append( new( z->storePtr() ) TJLterm<T>( *zed ) );
+     z->append( TJLterm<T>( *zed ) );
      zed->_value = T();
    }
    zed++;
@@ -1502,7 +1548,6 @@ bool operator!=( const T& x, const TJL<T>& y )
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 template<typename T>
 TJL<T>& TJL<T>::operator=( const T& x ) 
 {
@@ -1517,10 +1562,11 @@ TJL<T>& TJL<T>::operator=( const T& x )
      "Private data _myEnv is null: object has no environment assigned.") );
  }
 
- insert( new(storePtr()) TJLterm<T>( IntArray( _myEnv->numVar() ), x, _myEnv ) );
+ insert( TJLterm<T>( IntArray( _myEnv->numVar() ), x, _myEnv ) );
 
  return *this;
 }
+
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1618,7 +1664,6 @@ TJL<T>& TJL<T>::operator+=( const T& x ) {
  return *this;
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -1664,7 +1709,7 @@ typename JLPtr<T>::Type TJL<T>::cos() const
  typename JLPtr<T>::Type epsilon( makeTJL( *this) ); // deep copy 
 
  if( _count == 0 ) {
-    epsilon->addTerm( new (epsilon->storePtr() ) TJLterm<T>( _myEnv->allZeroes(), (T)(1.0), epsilon->_myEnv ) ); // cos(0.0) = 1.0
+    epsilon->addTerm( TJLterm<T>( _myEnv->allZeroes(), (T)(1.0), epsilon->_myEnv ) ); // cos(0.0) = 1.0
     return epsilon;
  }
  
@@ -1892,7 +1937,7 @@ typename JLPtr<T>::Type TJL<T>::_epsSqrt( typename JLPtr<T>::Type const& epsilon
             "TJet<T> exp( const TJet<T>& ) ",
             uic.str().c_str() ) );
    }
-   epsilon->addTerm( new (epsilon->storePtr()) TJLterm<T>( _myEnv->allZeroes(), ((T) 1.0), _myEnv ) );
+   epsilon->addTerm( TJLterm<T>( _myEnv->allZeroes(), ((T) 1.0), _myEnv ) );
    return epsilon;
  }
 
@@ -2532,7 +2577,7 @@ typename JLPtr<T>::Type TJL<T>::D( const int* n ) const
  
  while((  p = (TJLterm<T>*) getNext()  )) {
  
-   q = new( z->storePtr() ) TJLterm<T>( p );
+   q = new( z->storePtr() ) TJLterm<T>( *p );
  
    doit = true;
    // -- Reset the _index.
@@ -2596,7 +2641,7 @@ template<typename T>
 TJLterm<T> TJL<T>::stepConstIterator()  const
 {
   if( _constIterPtr ) {
-    return TJLterm<T>( (TJLterm<T>*) (_constIterPtr->operator()()) );
+    return TJLterm<T>( *( (TJLterm<T>*)(_constIterPtr->operator()())) );
   }
   else {
     throw( GenericException( __FILE__, __LINE__, 
@@ -2740,7 +2785,7 @@ boost::intrusive_ptr<TJL<T> >   operator+(boost::intrusive_ptr<TJL<T> > const & 
  for( p=zed;  p<upperzed; ++p) 
  {
     if (  p->_value != T() )  {
-      z->append( new(z->storePtr()) TJLterm<T>( *p ) ); 
+      z->append( TJLterm<T>( *p ) ); 
       p->_value = T();
     }
  
@@ -2798,30 +2843,30 @@ boost::intrusive_ptr<TJL<T> >   operator+(boost::intrusive_ptr<TJL<T> > const & 
         result = p->_value + q->_value;
 
         // if (abs(result) > MX_SMALL)  // is this test needed ????
-        z->append( new( z->storePtr()) TJLterm<T>( p->_index, result ) );
+        z->append( TJLterm<T>( p->_index, result ) );
        
         p = (TJLterm<T>*) getp();
         q = (TJLterm<T>*) getq();
 
       }
       else {
-        z->append( new( z->storePtr()) TJLterm<T>( p->_index, p->_value ) );
+        z->append( TJLterm<T>( p->_index, p->_value ) );
         p = (TJLterm<T>*) getp();
       }
     }
     else {
-       z->append( new( z->storePtr()) TJLterm<T>( q->_index, q->_value ) );
+         z->append( TJLterm<T>( q->_index, q->_value ) );
        q = (TJLterm<T>*) getq();
     }
   }
 
   while(p) {
-    z->append( new( z->storePtr() ) TJLterm<T>( p->_index, p->_value ) );
+     z->append( TJLterm<T>( p->_index, p->_value ) );
     p = (TJLterm<T>*) getp();
   }
 
   while(q) {
-    z->append( new( z->storePtr() ) TJLterm<T>( q->_index, q->_value ) );
+     z->append( TJLterm<T>( q->_index, q->_value ) );
     q = (TJLterm<T>*) getq();
 
   }
@@ -2921,7 +2966,7 @@ boost::intrusive_ptr<TJL<T> >&  operator+=(boost::intrusive_ptr<TJL<T> >& x,    
  for( p=zed;  p<upperzed; ++p) 
  {
     if (  p->_value != T() )  {
-      x->append( new(x->storePtr()) TJLterm<T>( *p ) ); 
+      x->append( TJLterm<T>( *p ) ); 
       p->_value = T();
     }
  
@@ -3018,7 +3063,7 @@ boost::intrusive_ptr<TJL<T> >&  operator-=(boost::intrusive_ptr<TJL<T> >& x,    
  for( p=zed;  p<upperzed; ++p) 
  {
     if (  p->_value != T() )  {
-      x->append( new(x->storePtr()) TJLterm<T>( *p ) ); 
+      x->append( TJLterm<T>( *p ) ); 
       p->_value = T();
     }
  
@@ -3187,7 +3232,7 @@ boost::intrusive_ptr<TJL<T> >   operator*(boost::intrusive_ptr<TJL<T> > const & 
  for( p = zed; p < upperzed; ++p) 
  {
     if (  p->_value != T() )  {
-      z->append( new( z->storePtr() ) TJLterm<T>( *p ) ); 
+      z->append( TJLterm<T>( *p ) ); 
       p->_value = T();  // erase the scratchpad entry
     }
  
@@ -3322,7 +3367,7 @@ boost::intrusive_ptr<TJL<T> >&  operator*=(boost::intrusive_ptr<TJL<T> > & x,   
  for( p = zed; p < upperzed; ++p) 
  {
     if (  std::abs(p->_value) > 0.0)  {
-      x->append( new(  x->storePtr() ) TJLterm<T>( *p ) ); 
+      x->append( TJLterm<T>( *p ) ); 
       p->_value = T( );  // erase the scratchpad entry
     }
  
