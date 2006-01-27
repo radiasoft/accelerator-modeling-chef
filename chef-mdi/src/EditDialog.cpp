@@ -24,7 +24,12 @@
 #include <qlayout.h>
 #include <qradiobutton.h>
 
-#include "BeamlineContext.h"
+#include <iosetup.h>
+#include <BeamlineContext.h>
+
+using FNAL::pcerr;
+using FNAL::pcout;
+
 
 using std::ostringstream;
 using namespace std;
@@ -139,12 +144,12 @@ void editDialog::visitRbend( rbend* x )
     //   double newLength = (qle1->text()).toDouble( &ok );
     //   if( ok ) {
     //     if( 0 != _contextPtr->setLength( (rbend*) x, newLength ) ) { 
-    //       cerr << "*** WARNING *** File "
+    //       (*pcerr) << "*** WARNING *** File "
     //            << __FILE__ 
     //            << ", Line "
     //            << __LINE__
     //            << ": rbend not found in context."
-    //            << endl;
+    //            << std::endl;
     //     }
     //   }
     // }
@@ -153,12 +158,12 @@ void editDialog::visitRbend( rbend* x )
       double newStrength = (qle2->text()).toDouble( &ok );
       if( ok ) {
         if( 0 != _contextPtr->setStrength( (rbend*) x, newStrength ) ) { 
-          cerr << "*** WARNING *** File "
+          (*pcerr) << "*** WARNING *** File "
                << __FILE__ 
                << ", Line "
                << __LINE__
                << ": rbend not found in context."
-               << endl;
+               << std::endl;
         }
       }
     }
@@ -236,7 +241,7 @@ void editDialog::visitQuadrupole( quadrupole* x )
                << ": "
                << x->Type()
                << " not found in context."
-               << endl;
+               << std::endl;
           QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
         }
       }
@@ -255,7 +260,7 @@ void editDialog::visitQuadrupole( quadrupole* x )
                << ": "
                << x->Type()
                << " not found in context."
-               << endl;
+               << std::endl;
           QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
         }
       }
@@ -321,7 +326,7 @@ void editDialog::visitDrift( drift* x )
            << ", Line "
            << __LINE__
            << "\n*** WARNING *** This part routine needs to be rewritten. "
-           << endl;
+           << std::endl;
       QMessageBox::warning( 0, "BeamlineBrowser: WARNING", uic.str().c_str() );
       #endif
 
@@ -338,7 +343,7 @@ void editDialog::visitDrift( drift* x )
            << x->Name()
            << "\n*** WARNING *** If the program aborts soon, this is"
               "\n*** WARNING *** probably the reason."
-           << endl;
+           << std::endl;
       QMessageBox::warning( 0, "BeamlineBrowser: WARNING", uic.str().c_str() );
 
       bool ok;
@@ -377,7 +382,7 @@ void editDialog::visitDrift( drift* x )
                  << ": "
                  << x->Type()
                  << " not found in context."
-                 << endl;
+                 << std::endl;
             QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
           }
         }
@@ -567,12 +572,12 @@ void editDialog::visitThinQuad( thinQuad* x )
       double newStrength = (qle1->text()).toDouble( &ok );
       if( ok ) {
         if( 0 != _contextPtr->setStrength( x, newStrength ) ) {
-          cerr << "*** WARNING *** File "
+          (*pcerr) << "*** WARNING *** File "
                << __FILE__ 
                << ", Line "
                << __LINE__
                << ": thinQuad not found in context."
-               << endl;
+               << std::endl;
         }
       }
     }
@@ -582,12 +587,12 @@ void editDialog::visitThinQuad( thinQuad* x )
       ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
       if( ok ) {
         if( 0 != _contextPtr->setAlignment( x, ad ) ) {
-          cerr << "*** WARNING *** File "
+          (*pcerr) << "*** WARNING *** File "
                << __FILE__ 
                << ", Line "
                << __LINE__
                << ": thinQuad not found in context."
-               << endl;
+               << std::endl;
         }
       }
     }
