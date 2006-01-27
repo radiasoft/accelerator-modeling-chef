@@ -60,6 +60,7 @@ using FNAL::pcout;
 template <typename T>
 std::vector<TJL1<T>* > TJL1<T>::_thePool; 
 
+
 // ***************************************************************
 // ***************************************************************
 // ***************************************************************
@@ -80,15 +81,15 @@ template<typename T>
 TJL1<T>::TJL1(typename EnvPtr<T>::Type pje, T x): 
 _count( pje->numVar()+1 ),
 _weight(1),                        
-_accuWgt( pje->maxWeight() ),
+_accuWgt(1),
 _myEnv( pje )  
 {
 
-   _std = x; 
-   _jcb = new T[ _count-1 ];
+   _std.value = x; 
+   _jcb = new term[ _count-1 ];
 
    for (int i=0; i<_count-1; ++i )  
-        _jcb[i] = T();
+        _jcb[i].value = T();
    
  }
 
@@ -108,13 +109,16 @@ TJL1<T>* TJL1<T>::makeTJL( typename EnvPtr<T>::Type pje, T x )
   if ( p->_count  != pje->numVar()+1 ) {
       
       delete [] p->_jcb; 
-      p->_jcb   = new T[ pje->numVar() ];
+      p->_jcb   = new term[ pje->numVar() ];
       p->_count =  pje->numVar()+1;
   }
  
   p->_weight   = 1;
-  p->_accuWgt  = pje->maxWeight();
+  p->_accuWgt  = 1;
   p->_myEnv    = pje; 
+
+  p->_std.value = x;
+  for (int i=0; i<p->_count-1; ++i) p->_jcb[i].value= T();
 
 
  return p;
@@ -127,24 +131,34 @@ template<typename T>
 TJL1<T>::TJL1( const IntArray& e, const T& x, typename EnvPtr<T>::Type pje ) :
  _count(  pje->numVar()+1 ),
  _weight(1),
- _accuWgt(pje->maxWeight() ),
+ _accuWgt(1),
  _myEnv(pje) 
 {
 
-  _jcb = new T [ _count-1 ];
+  _jcb = new term [ _count-1 ];
  
-  for (int i=0; i<_count-1; ++i) { _jcb[i] = T(); }
+  for (int i=0; i<_count-1; ++i) { _jcb[i].value = T(); }
 
-  int i =0; 
-  for (i=0; i<_count-1; ++i) {
+  int weight = 0;
+  for (int i=0; i < _count-1; ++i) {
+    weight  += e(i);
+  }
+
+  if (weight > 1) return;
+
+  if (weight ==0) {
+    _std.value = x;   
+    return;
+  }
+
+  for (int i=0; i<_count-1; ++i) {
      if ( e(i) == 1){ 
-       _jcb[i] = x;  
+       _jcb[i].value = x;  
        break;
      }
   } 
- 
-  if (i==_count-1) _std = x;   
-
+  
+  return;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -160,26 +174,39 @@ TJL1<T>* TJL1<T>::makeTJL( const IntArray& e, const T& x, typename EnvPtr<T>::Ty
 
   TJL1<T>* p = _thePool.back(); _thePool.pop_back();
 
-  if (p->_count  != pje->numVar()+1) {
+  if (p->_count  != pje->numVar()+1 ) {
       delete [] p->_jcb; 
-      p->_jcb   = new T[ pje->numVar() ];
+      p->_jcb   = new term[ pje->numVar() ];
       p->_count =  pje->numVar()+1;
   }
  
   p->_weight   = 1;
-  p->_accuWgt  = pje->maxWeight();
+  p->_accuWgt  = 1;
   p->_myEnv    = pje; 
 
-  int i =0; 
-  for (i=0; i < p->_count-1; ++i) {
+  int weight = 0;
+
+  for (int i=0; i<  p->_count-1; ++i) { p->_jcb[i].value = T(); }
+
+  for (int i=0; i < p->_count-1; ++i) {
+    weight  += e(i);
+  }
+
+  if (weight > 1)  
+     return p ;  // all terms of order 1 or lower are 0
+
+  if (weight == 0) { 
+     p->_std.value = x; 
+     return p;  
+  }
+ 
+  for (int i=0; i < p->_count-1; ++i) {
      if ( e(i) == 1){ 
-       p->_jcb[i] = x;  
+       p->_jcb[i].value = x;  
        break;
      }
   } 
  
-  if ( i == (p->_count-1) ) p->_std = x;   
-
   return p;
 }
 
@@ -194,11 +221,11 @@ TJL1<T>::TJL1( const TJL1& x ):
  _myEnv(x._myEnv)
 
 {
-     _std = x._std;
-     _jcb = new T [ _count-1 ];
+     _std.value = x._std.value;
+     _jcb = new term [ _count-1 ];
 
      for (int i=0; i<_count-1; ++i) 
-       _jcb[i] = x._jcb[i];
+       _jcb[i].value = x._jcb[i].value;
 
 }
 
@@ -213,10 +240,9 @@ TJL1<T>* TJL1<T>::makeTJL( const TJL1& x )
  
   TJL1<T>* p = _thePool.back(); _thePool.pop_back(); 
   
-
   if ( p->_count  != x._myEnv->numVar()+1) {
       delete [] p->_jcb; 
-      p->_jcb   = new T[ x._myEnv->numVar() ];
+      p->_jcb   = new term[ x._myEnv->numVar() ];
       p->_count =  x._myEnv->numVar()+1;
   }
  
@@ -224,10 +250,10 @@ TJL1<T>* TJL1<T>::makeTJL( const TJL1& x )
   p->_accuWgt  = x._accuWgt;
   p->_myEnv    = x._myEnv;
  
-  p->_std      = x._std;
+  p->_std.value      = x._std.value;
 
   for (int i=0; i < (p->_count-1); ++i) 
-       p->_jcb[i] = x._jcb[i];
+       p->_jcb[i].value = x._jcb[i].value;
 
  return p;
 
@@ -265,7 +291,7 @@ template<typename T>
 void TJL1<T>::getReference( T* r ) const 
 {
 
- for( int i=0;  i<_count; ++i ) r[i] = _myEnv->refPoint()[i];
+ for( int i=0;  i< _count-1; ++i ) r[i] = _myEnv->refPoint()[i];
 
 }
 
@@ -277,7 +303,7 @@ bool TJL1<T>::isNilpotent() const
 {
 
 
- if(   std::abs(_std) > MX_SMALL ) 
+ if(   std::abs(_std.value) > MX_SMALL ) 
       { return false; }
  else
       { return true; }
@@ -325,10 +351,10 @@ template<typename T>
 void TJL1<T>::scaleBy( T y ) 
 { 
 
-  _std *= y;
+  _std.value *= y;
  
   for (int i=0; i<_count-1; ++i) {
-   _jcb[i] *= y;               
+   _jcb[i].value *= y;               
   }
 
 }
@@ -340,10 +366,10 @@ void TJL1<T>::scaleBy( T y )
 template<typename T>
 TJL1<T>& TJL1<T>::Negate( ) {
 
-  _std = -_std;
+  _std.value = -_std.value;
  
   for (int i=0; i<_count-1; ++i) {
-   _jcb[i] = - _jcb[i];               
+   _jcb[i].value = - _jcb[i].value;               
   }
 
  return *this;
@@ -370,8 +396,8 @@ void TJL1<T>::setVariable(  const T& x, const int& j, typename EnvPtr<T>::Type p
  _accuWgt = _myEnv->maxWeight();
  _weight  = 1;
   
- _std   = x;
- _jcb[j]= T (1.0);
+ _std.value     = x;
+ _jcb[j].value  = T (1.0);
  
 }
 
@@ -392,10 +418,10 @@ void TJL1<T>::setVariable(  const T& x, const int& j )
  }
  
  _accuWgt =  _myEnv->maxWeight();
- _weight = 1;
+ _weight  = 1;
 
- _std   = x;
- _jcb[j]= T (1.0);
+ _std.value     = x;
+ _jcb[j].value  = T (1.0);
 
  
 }
@@ -421,15 +447,14 @@ void TJL1<T>::setVariable( const int& j,
 
  }
 
- _myEnv = theEnv;
+ _myEnv   = theEnv;
  
  _accuWgt =  theEnv->maxWeight();
- _weight = 1;
+ _weight  = 1;
 
- T x = theEnv->refPoint()[j];
+ _std.value     = theEnv->refPoint()[j];
 
- _std    = x;
- _jcb[j] = (T) 1.0;
+ _jcb[j].value  = (T) 1.0;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -439,12 +464,12 @@ template<typename T>
 void TJL1<T>::insert( const TJLterm<T>& a) 
 {
 
- // if (a._weight > 1 ) throw GenericException
+ if (a._weight > 1 ) return;  // weight > 1,  do nothing
  
- if (a._weight == 0) _std = a._value;
+ if (a._weight == 0) _std.value = a._value;
 
  for (int i=0; i< a._index.Dim(); ++i) { 
-  if (a._index(i) == 1 ) _jcb[i] = a._value;
+  if (a._index(i) == 1 ) _jcb[i].value = a._value;
   break;
  }
 
@@ -453,70 +478,140 @@ void TJL1<T>::insert( const TJLterm<T>& a)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-#if  0
 template<typename T>
 TJLterm<T>* TJL1<T>::get() 
 {
-  
 
- return 0;
+ // this function should be eliminated and replaced by one that returns
+ // a copy of a TJLterm object.
+
+// THIS IS A LEAK ! *** BROKEN *** FIX ME ! 
+  
+ T value;
+ 
+ IntArray index(_count-1);
+
+ if ( _std.value  != T() ) { 
+    value = _std.value;
+    _std.value  = T(); 
+    return new TJLterm<T>(index, value );  
+ }
+
+ for (int i=0; i< _count-1; ++i) { 
+   if (_jcb[i].value != T()  ) { 
+     value   = _jcb[i].value; 
+     _jcb[i].value = T();
+     index(i) = 1;
+     return new TJLterm<T>(index, value ); 
+   }
+ }
+
+ return new TJLterm<T>(index, T() ); 
 
 }
 
-#endif
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-#if  0
 template<typename T>
 TJLterm<T> TJL1<T>::lowTerm() const 
 {
  
- // returns the lowest order **non-zero**  term;  Returns 0.0 if all terms are zero.  
+ // returns the lowest order **non-zero**  term;  
+ 
+ IntArray index( this->_myEnv->numVar() );
 
- TJLterm<T>* p =0;
- for( p = _jltermStore; p < _jltermStoreCurrentPtr; ++p  ) {
-  if ( p->_value != T() ) break;
+ if (_std.value != T() ) return TJLterm<T>( index, _std.value, this->_myEnv );
+
+ for (int i=0; i< _count-1; ++i ) {
+  
+  if ( _jcb[i].value != T() ) { 
+     index(i) = 1; 
+     return TJLterm<T>( index, _jcb[i].value, this->_myEnv ); // all terms are zero 
+   }
  }
 
- if     ( p == _jltermStoreCurrentPtr ) return TJLterm<T>( IntArray(this->_myEnv->numVar()), T(), this->_myEnv );
- else  return TJLterm<T>( *p );
+ return TJLterm<T>( index, T(), this->_myEnv ); // all terms are zero 
+
 }
-#endif
+
+ 
+
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-#if 0
 template<typename T>
 TJLterm<T> TJL1<T>::firstTerm() const 
 {
 
- // returns the first term i.e. the lowest order. Note that this term may have a zero coefficient;
+ // returns the first non-zero term;  In the context of the non-sparse 1st order Jet
+ // this is the same as lowTerm. For a sparse Jet representation, this would be the
+ // first term in the list. Note that this term is allowed to have a zero coefficient. 
+ // Normally 0.0 terms are omitted, but a term with a zero coeffient may arise as the
+ // result of addition, for example.  
 
- return _jltermStore[0];
- 
+ return lowTerm();
 
-}
-#endif
+ }
+
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-#if 0 
 
 template<typename T>
 void TJL1<T>::append(const TJLterm<T>& a) 
 {
 
- for (int i=0; i< a._index.Dim(); ++i) { 
-  if (a._index(i) != 0) _jltermStore[i] = a;
- }
- _weight  = max(_weight, a._weight);
+ if (a._weight >  1) return; 
 
+ if (a._weight == 0) {
+   _std.value = a._value;
+   return;
+ }
+
+ if (a._weight ==  1) {
+   for (int i=0; i< a._index.Dim(); ++i) { 
+     if (a._index(i) == 1) { 
+       _jcb[i].value = a._value; 
+       break;
+     }
+   }
+    _weight  = std::max(_weight, a._weight);
+   return;
+ }
+ 
 }
-#endif
+
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+void TJL1<T>::addTerm(const TJLterm<T>& a) 
+{
+
+ if (a._weight >  1) return; 
+
+ if (a._weight == 0) {
+   _std.value += a._value;
+   return;
+ }
+
+ if (a._weight ==  1) {
+   for (int i=0; i< a._index.Dim(); ++i) { 
+     if (a._index(i) == 1) { 
+       _jcb[i].value += a._value; 
+       break;
+     }
+   }
+    _weight  = std::max(_weight, a._weight);
+   return;
+ }
+ 
+}
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -526,7 +621,7 @@ template<typename T>
 T TJL1<T>::standardPart() const 
 {
 
-return _std;
+return _std.value;
 
 }
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -536,13 +631,11 @@ template<typename T>
 void TJL1<T>::clear() 
 {
 
- _std = T();
+    _std.value = T();
 
- for (int i=0; i<_count-1; ++i) { 
-   
-    _jcb[i] = T();
-
- }
+    for (int i=0; i<_count-1; ++i) { 
+      _jcb[i].value = T();
+    }
  
 }
 
@@ -552,17 +645,19 @@ void TJL1<T>::clear()
 template<typename T>
 T TJL1<T>::weightedDerivative( const int* ind ) const 
 {
+
  int sum = 0;
  int j   = 0;
  int k   = 0;
- for( int i=0; i< _myEnv->numVar(); i++ ) {
+
+ for( int i=0; i< _myEnv->numVar(); ++i) {
   k = ind[i];
   sum += k;
-  if( 1 == k ) { j = i; }
+  if( k == 1 ) { j = i; }
  }
 
- if( 0 == sum ) { return _std; }
- if( 1 == sum ) { return _jcb[j]; }
+ if( 0 == sum ) { return _std.value; }
+ if( 1 == sum ) { return _jcb[j].value; }
 
  return T();
 }
@@ -580,10 +675,10 @@ T TJL1<T>::derivative( const int* ind ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JL1Ptr<T>::Type TJL1<T>::compose( typename JL1Ptr<T>::Type const y[ ]) const 
+typename JLPtr<T>::Type TJL1<T>::compose( typename JLPtr<T>::Type const y[ ]) const 
 { 
 
- typename JL1Ptr<T>::Type u[_myEnv->numVar()];
+ typename JLPtr<T>::Type u[_myEnv->numVar()];
 
  // Check consistency of reference points and
  // subtract reference point prior to concatenation.
@@ -591,25 +686,40 @@ typename JL1Ptr<T>::Type TJL1<T>::compose( typename JL1Ptr<T>::Type const y[ ]) 
  for( int i=0;  i< _myEnv->numVar(); ++i ) {
    if(  (y[i]->_myEnv) != (y[0]->_myEnv) ) {
      throw( GenericException( __FILE__, __LINE__, 
-            "TJL1::compose(typename JL1Ptr<T>::Type const y[ ]) const ",
+            "TJL1::compose(typename JLPtr<T>::Type const y[ ]) const ",
             "Inconsistent environments." ));
    }
 
-   u[i] = y[i] + typename JL1Ptr<T>::Type( makeTJL( y[0]->_myEnv, -_myEnv->getRefPoint()[i]));   // u[i] = y[i] - _myEnv->getRefPoint()[i];
+   u[i] = y[i] + typename JLPtr<T>::Type( makeTJL( y[0]->_myEnv, -_myEnv->getRefPoint()[i]));   // u[i] = y[i] - _myEnv->getRefPoint()[i];
  }
 
- typename JL1Ptr<T>::Type z( makeTJL(y[0]->_myEnv) );
+ typename JLPtr<T>::Type z( makeTJL(y[0]->_myEnv) );
  
- z->_std  =  _std;                                  
+ z->_std.value  =  _std.value;                                  
 
- for( int i=0; i <_count-1; ++i ) {
+ for( int i=0; i <_myEnv->numVar(); ++i ) { // note: it is assumed that y[] has dimension _myEnv->NumVar()
  
-    z->_std += ( _jcb[i] * u[i]->_std ); 
+    z->_std.value += ( _jcb[i].value * u[i]->_std.value ); 
 
     for( int j=0; j < _count-1; ++j) { 
-      z->_jcb[j]  += ( _jcb[i] * u[i]->_jcb[j] );   
+
+      z->_jcb[j].value  += ( _jcb[i].value * u[i]->_jcb[j].value );   
+
     }
  }
+
+ //std::cout << "+++++++++++++ composition operator BEGIN +++++++++++++++++++++"  << std::endl;
+
+ //for (int i=0; i<6; ++i) {
+ //  std::cout << "y ["<< i << "] = "  << *y[i] << std::endl;
+ //}
+
+ //std::cout << " this = " <<  std::hex << this << "\n" <<  *this << std::endl;
+
+ //std::cout << " z = " <<  *z << std::endl;
+
+ //std::cout << "+++++++++++++ composition operator END +++++++++++++++++++++"  << std::endl;
+
 
  return z;
 }
@@ -625,10 +735,10 @@ T TJL1<T>::operator()( const T* x )  const
  // This routine is linked to double TJL1::operator()( const Vector& x ) const
  // Any change made to this must be reflected in the other.
 
- T v             = _std;
+  T v             = _std.value;
 
  for( int i=0; i< _count-1; ++i ) {
-   v += _jcb[i] * ( x[i] - _myEnv->refPoint()[i] );
+   v += _jcb[i].value * ( x[i] - _myEnv->refPoint()[i] );
  }
  return v;
 }
@@ -652,22 +762,25 @@ T TJL1<T>::operator()( const Vector& x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JL1Ptr<T>::Type TJL1<T>::filter( const int& wgtLo, const int& wgtHi ) const 
+typename JLPtr<T>::Type TJL1<T>::filter( const int& wgtLo, const int& wgtHi ) const 
 { 
 
- if( wgtLo <= 0 && wgtHi >= 1 ) { return *this; }
+ if( wgtLo <= 0 && wgtHi >= 1 ) { return typename JLPtr<T>::Type( makeTJL(*this) ); }
+
  if( wgtHi < wgtLo ) {
-   return typename JL1Ptr<T>::Type( makeTJL(_myEnv) );
+   return typename JLPtr<T>::Type( makeTJL(_myEnv) );
  }
 
- typename JL1Ptr<T>::Type z( makeTJL(*this) );
+ typename JLPtr<T>::Type z( makeTJL(*this) );
 
  if( 0 == wgtHi ) {
-  for( int i=0; i < _count-1; ++i ) { z->_jcb[i] = T(); }
+  for( int i=0; i < _count-1; ++i ) { z->_jcb[i].value = T(); }
  }
+
  if( 1 == wgtLo ) {
-  z->_std= T();
+  z->_std.value= T();
  }
+
  return z;
 }
 
@@ -675,113 +788,25 @@ typename JL1Ptr<T>::Type TJL1<T>::filter( const int& wgtLo, const int& wgtHi ) c
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JL1Ptr<T>::Type TJL1<T>::filter( bool (*f) ( const IntArray&, const T& ) ) const 
+typename JLPtr<T>::Type TJL1<T>::filter( bool (*f) ( const IntArray&, const T& ) ) const 
 { 
 
- typename JL1Ptr<T>::Type z(makeTJL(_myEnv) );
+ typename JLPtr<T>::Type z(makeTJL(_myEnv) );
 
  IntArray index(_myEnv->numVar());
 
 
- if( f( index, _std ) ) { z->_std = _std; }
+ if( f( index, _std.value ) ) { z->_std.value = _std.value; }
 
  for( int i=0; i<_count-1; ++i) {
   index(i) = 1;
-  if( f( index, _std ) ) { 
-    z->_jcb[i] = _jcb[i];
+  if( f( index, _std.value ) ) { 
+    z->_jcb[i].value = _jcb[i].value;
   }
   index(i) = 0;
  }
 
  return z;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
-std::ostream& operator<<( std::ostream& os, const TJL1<T>& x ) 
-{
-
- os << "\n Count = " << x._count << " , Weight = " << x._weight;
- os << " , Max accurate weight = " << x._accuWgt << std::endl;
- os << "Begin Environment: \n"
-    << *(x._myEnv)
-    << "\nEnd Environment: " << std::endl;
-
- return os << "\n" << std::endl;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-bool operator==( const TJL1<T>& x, const TJL1<T>& y ) 
-{
- if( x._myEnv != y._myEnv ) return false;
-
- if( !( x->_std == y->_std ) ) return false;
-
- for(  int i=0; i< x._count-1; ++i) {
-    for(  int j=0; j<y._count-1; ++j) {
-      if( !( x->_jcb[i] == y->_jcb[i] ) ) return false;
-   }
- }
- return true;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-bool operator==( const TJL1<T>& x, const T& y ) 
-{
-
- bool result = true;
- result = result && ( x._std == y );
- for( int i=0; i < x._myEnv->numVar(); i++ ) {
-  result = result && ( x._jcb[i] == T() );
- }
-
- return result;
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-bool operator==( const T& y, const TJL1<T>& x )
-{
- return x == y;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-bool operator!=( const TJL1<T>& x, const TJL1<T>& y ) 
-{
- return !( x == y );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-bool operator!=( const TJL1<T>& x, const T& y ) 
-{
- return !( x == y );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-bool operator!=( const T& x, const TJL1<T>& y ) 
-{
- return !( x == y );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -794,7 +819,7 @@ TJL1<T>& TJL1<T>::operator=( const T& x )
  // FIX ME ++++ need to check env  !!!!!
  
  clear();
- _std  = x;
+ _std.value  = x;
  return *this;
 
 }
@@ -806,11 +831,11 @@ template<typename T>
 TJL1<T>& TJL1<T>::operator=( const TJL1<T>& x ) 
 {
 
- _std = x._std;
+ _std.value = x._std.value;
 
  for (int i=0; i< _myEnv->numVar(); ++i ) {
 
-   _jcb[i] = x._jcb[i];
+   _jcb[i].value = x._jcb[i].value;
  
  }
 
@@ -824,7 +849,7 @@ TJL1<T>& TJL1<T>::operator=( const TJL1<T>& x )
 template<typename T>
 TJL1<T>& TJL1<T>::operator+=( const T& x ) {   
 
-  _std += x;
+  _std.value += x;
 
 
  return *this;
@@ -834,228 +859,33 @@ TJL1<T>& TJL1<T>::operator+=( const T& x ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJL1<T>::add( typename JL1Ptr<T>::Type const& x) {
+void TJL1<T>::add( typename JLPtr<T>::Type const& x) {
 
-   _std += x->_std;
+   _std.value += x->_std.value;
 
  for (int i=0; i< _myEnv->numVar(); ++i ) {
 
-   _jcb[i] += x->_jcb[i];
+   _jcb[i].value += x->_jcb[i].value;
  
  } 
 
  return;
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-typename boost::intrusive_ptr<TJL1<T> > operator+(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y ) {
-
-// Check for consistency and set reference point of the sum.
-
-  if( x->_myEnv != y->_myEnv ) {
-
-   throw( GenericException( __FILE__, __LINE__, 
-           "TJL<T>::operator+(typename JL1Ptr<T>::Type const& x)"
-           "Inconsistent environments." ) );
-  }
-
- typename JL1Ptr<T>::Type z(TJL1<T>::makeTJL( x->_myEnv ) );
-
- z->_std  = x->_std +  y->_std;
-
- for (int i=0; i< z->_myEnv->numVar(); ++i ) {
-
-   z->_jcb[i] = x->_jcb[i] +  y->_jcb[i];
- 
- } 
-
- return z;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-boost::intrusive_ptr<TJL1<T> > operator-(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y ) {
-
-// Check for consistency and set reference point of the sum.
-
-  if( x->_myEnv != y->_myEnv ) {
-
-   throw( GenericException( __FILE__, __LINE__, 
-           "TJL<T>::operator-(typename JL1Ptr<T>::Type const& x)"
-           "Inconsistent environments." ) );
-  }
-
- typename JL1Ptr<T>::Type z(TJL1<T>::makeTJL( x->_myEnv ) );
-
- z->_std  = x->_std -  y->_std;
-
- for (int i=0; i< z->_myEnv->numVar(); ++i ) {
-
-   z->_jcb[i] = x->_jcb[i] -  y->_jcb[i];
- 
- } 
-
- return z;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
-boost::intrusive_ptr<TJL1<T> > operator-(boost::intrusive_ptr<TJL1<T> > const& x) {
-
- typename JL1Ptr<T>::Type z(TJL1<T>::makeTJL( x->_myEnv ));
-
- z->_std  = - x->_std;
-
- for (int i=0; i< z->_myEnv->numVar(); ++i ) {
-
-   z->_jcb[i] = -x->_jcb[i];
- } 
-
- return z;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-boost::intrusive_ptr<TJL1<T> > operator*(boost::intrusive_ptr<TJL1<T> > const& x, T const& y ) {
-
-//---------------------------
-// Multiplication by a scalar
-//---------------------------
-
- typename JL1Ptr<T>::Type z(TJL1<T>::makeTJL( *x ) ); // deep copy 
- z->scaleBy(y);
- 
- return z;
-
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-boost::intrusive_ptr<TJL1<T> > operator*(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y ) {
-
-//----------------------------
-// Multiplication of two jets
-//----------------------------
-
- // Consistency check 
-
- if( x->_myEnv != y->_myEnv ) {
-   throw( GenericException( __FILE__, __LINE__, 
-          "TJL1Ptr<T> operator*( const JL1Ptr<T>&, const JL1Ptr<T>& ) ",
-          "Inconsistent environments." ) );
- };
-
- typename JL1Ptr<T>::Type z( TJL1<T>::makeTJL(x->_myEnv) );
-
- z->_std  = x->_std * y->_std;
-
- for( int i=0; i< z->_myEnv->numVar();  ++i) { 
-
-   z->_jcb[i]  = ( x->_std * y->_jcb[i] ) + ( y->_std * x->_jcb[i] ); 
-
- }
-
- return z;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
-boost::intrusive_ptr<TJL1<T> > operator/( T const& wArg, boost::intrusive_ptr<TJL1<T> > const& uArg ) 
-{ 
-
- // Check for void operators ..
-
- if ( uArg->_count < 1 ) {
-   throw( GenericException( __FILE__, __LINE__, 
-          "TJL1<T>::operator/( typename JL1Ptr<T>::Type const& wArg, typename JL1Ptr<T>::Type const& uArg )",
-          "Attempt to divide by a null TJL1<T> variable." ) );
- }
- 
- typename JL1Ptr<T>::Type  z( TJL1<T>::makeTJL(uArg->_myEnv) );
-
- z->_std =  wArg/(uArg->_std);
-
- for( int i=0; i < z->_myEnv->numVar(); ++i) { 
-
-   z->_jcb[i] =   - ( wArg * uArg->_jcb[i] ) / ( uArg->_std * uArg->_std ); 
-
- };
- 
- return z;
-
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
-boost::intrusive_ptr<TJL1<T> > operator/( boost::intrusive_ptr<TJL1<T> > const& wArg, boost::intrusive_ptr<TJL1<T> > const& uArg ) 
-{ 
-
- if ( (wArg->_myEnv) != (uArg->_myEnv) ) {
-
-   throw( GenericException( __FILE__, __LINE__, 
-          "TJL<T>::operator/( typename JL1Ptr<T>::Type const& wArg, typename JL1Ptr<T>::Type const& uArg )",
-          "Inconsistent environments." ) );
- }
-
- // Check for void operators ..
-
- if ( uArg->_count < 1 ) {
-   throw( GenericException( __FILE__, __LINE__, 
-          "TJL1<T>::operator/( typename JL1Ptr<T>::Type const& wArg, typename JL1Ptr<T>::Type const& uArg )",
-          "Attempt to divide by a null TJL1<T> variable." ) );
- }
- 
- typename JL1Ptr<T>::Type  z( TJL1<T>::makeTJL(wArg->_myEnv) );
-
-
- z->_std =  (wArg->_std)/(uArg->_std);
-
- for( int i = 0; i < z->_myEnv->numVar(); i++ ) { 
-
-   z->_jcb[i] = ( ( uArg->_std * wArg->_jcb[i] ) - ( wArg->_std * uArg->_jcb[i] ) )
-                / ( uArg->_std* uArg->_std ); 
-
- };
- 
- return z;
-
-}
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JL1Ptr<T>::Type TJL1<T>::sin() const
+typename JLPtr<T>::Type TJL1<T>::sin() const
 { 
 
-  typename JL1Ptr<T>::Type z( makeTJL(_myEnv) ); 
+  typename JLPtr<T>::Type z( makeTJL(_myEnv) ); 
 
-  z->_std = std::sin( _std );
+  z->_std.value = std::sin( _std.value );
 
-  for( int i=0; i<_myEnv->numVar();  ++i) { 
+  for( int i=0; i<_count-1;  ++i) { 
 
-    z->_jcb[i]  = std::cos( _std ) * _jcb[i];
+    z->_jcb[i].value  = std::cos( _std.value ) * _jcb[i].value;
 
   }
   return z;
@@ -1066,16 +896,16 @@ typename JL1Ptr<T>::Type TJL1<T>::sin() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JL1Ptr<T>::Type TJL1<T>::cos() const
+typename JLPtr<T>::Type TJL1<T>::cos() const
 { 
 
- typename JL1Ptr<T>::Type z( makeTJL(_myEnv) ); 
+ typename JLPtr<T>::Type z( makeTJL(_myEnv) ); 
 
-  z->_std = std::cos( _std );
+  z->_std.value = std::cos( _std.value );
 
-  for( int i=0; i<_myEnv->numVar();  ++i) { 
+  for( int i=0; i<_count-1;  ++i) { 
 
-    z->_jcb[i]  = -std::sin( _std ) * _jcb[i];
+    z->_jcb[i].value  = -std::sin( _std.value ) * _jcb[i].value;
 
   }
   return z;
@@ -1087,15 +917,15 @@ typename JL1Ptr<T>::Type TJL1<T>::cos() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
  template<typename T>
- typename JL1Ptr<T>::Type TJL1<T>::exp() const
+ typename JLPtr<T>::Type TJL1<T>::exp() const
  {
 
-  typename JL1Ptr<T>::Type z(makeTJL(_myEnv) );  
+  typename JLPtr<T>::Type z(makeTJL(_myEnv) );  
 
-  z->_std  = std::exp( _std );
+  z->_std.value  = std::exp( _std.value );
 
-  for( int i=0; i <_myEnv->numVar(); ++i ) { 
-    z->_jcb[i] = _std * _jcb[i]; 
+  for( int i=0; i <_count-1; ++i ) { 
+    z->_jcb[i].value = _std.value * _jcb[i].value; 
   }
 
   return z;
@@ -1106,15 +936,15 @@ typename JL1Ptr<T>::Type TJL1<T>::cos() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JL1Ptr<T>::Type TJL1<T>::pow(const double& s )  const
+typename JLPtr<T>::Type TJL1<T>::pow(const double& s )  const
 {
 
-  typename JL1Ptr<T>::Type z( makeTJL(_myEnv) );  
+  typename JLPtr<T>::Type z( makeTJL(_myEnv) );  
 
-  z->_std = std::pow( _std, s );
+  z->_std.value = std::pow( _std.value, s );
 
-  for( int i=1; i< _count;  ++i) { 
-    z->_jcb[i] = _jcb[i] * s * std::pow( _std, s-1 ); 
+  for( int i=0; i<_count-1;  ++i) { 
+    z->_jcb[i].value = _jcb[i].value * s * std::pow( _std.value, s-1 ); 
   }
 
   return z;
@@ -1125,21 +955,21 @@ typename JL1Ptr<T>::Type TJL1<T>::pow(const double& s )  const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JL1Ptr<T>::Type TJL1<T>::pow(int n ) const
+typename JLPtr<T>::Type TJL1<T>::pow(int n ) const
 {
 
-  typename JL1Ptr<T>::Type z;  
-  typename JL1Ptr<T>::Type x (makeTJL(*this) );  
+  typename JLPtr<T>::Type z;  
+  typename JLPtr<T>::Type x (makeTJL(*this) );  
   
   int i = 0;
 
-  if( n == 0 ) z =  typename JL1Ptr<T>::Type( makeTJL(_myEnv, (T) 1.0 ) );
+  if( n == 0 ) z =  typename JLPtr<T>::Type( makeTJL(_myEnv, (T) 1.0 ) );
   else if( n > 0 ) {
-    z = typename JL1Ptr<T>::Type( makeTJL(*this) );
+    z = typename JLPtr<T>::Type( makeTJL(*this) );
     for( i = 2; i <= n; i++ ) z = x*z;
   }
   else {
-    typename JL1Ptr<T>::Type xr; 
+    typename JLPtr<T>::Type xr; 
     z  = (T)1.0 / x ;
     xr = z;
     for( i = -2; i >= n; i-- ) z = z*xr;
@@ -1153,22 +983,22 @@ typename JL1Ptr<T>::Type TJL1<T>::pow(int n ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JL1Ptr<T>::Type TJL1<T>::log() const
+typename JLPtr<T>::Type TJL1<T>::log() const
 {
 
- if( std::abs(_std) <= 0.0 ) {
+ if( std::abs(_std.value) <= 0.0 ) {
     throw( GenericException( __FILE__, __LINE__, 
            "TJL1::log() const",
            "Non-positive standard part.") );
   }
 
-  typename JL1Ptr<T>::Type z(makeTJL(_myEnv) );
+  typename JLPtr<T>::Type z(makeTJL(_myEnv) );
 
-  z->_std = std::log( _std );
+  z->_std.value = std::log( _std.value );
 
-  for( int i=0; i<_myEnv->numVar(); ++i ) { 
+  for( int i=0; i<_count-1; ++i ) { 
 
-    z->_jcb[i] = ( 1.0 / _std  ) * _jcb[i]; 
+    z->_jcb[i].value = ( 1.0 / _std.value  ) * _jcb[i].value; 
 
   }
   return z;
@@ -1177,63 +1007,15 @@ typename JL1Ptr<T>::Type TJL1<T>::log() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<typename T>
-std::istream& operator>>( std::istream& is,  TJL1<T>& x ) 
-{  
-  char buf[100];
-  int i,j;
-  int count;
-  T value;
-  TJLterm<T>* q;
-
-  x.clear();
-
-  is >> buf;
-  is >> buf;
-  is >> count;
-  is >> buf;
-  is >> buf;
-  is >> buf;
-  is >> x._weight;
-  is >> buf;
-  is >> buf;
-  is >> buf;
-  is >> buf;
-  is >> buf;
-  is >> x._accuWgt;
-  is >> buf;
-  is >> buf;
-  streamIn( is, &(x.getEnv()));
-  is >> buf;
-  is >> buf;
-  IntArray ndx( x.getEnv()->numVar() );
-  for( j = 0; j < count; ++j) {
-    is >> buf;
-    for( i = 0; i < x.getEnv()->numVar(); ++i )  {
-     is >> ndx(i);
-    }
-    is >> buf;
-    is >> value;
-//     x.append(  TJLterm<T>( ndx, value, x.getEnv() ) );
-  }
-
- return is;
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-typename JL1Ptr<T>::Type TJL1<T>::asin() const
+typename JLPtr<T>::Type TJL1<T>::asin() const
 { 
 
 
-typename JL1Ptr<T>::Type z( makeTJL(*this) );
-typename JL1Ptr<T>::Type x( makeTJL(*this) );
-typename JL1Ptr<T>::Type tmp = operator-<T>(z - x);
-typename JL1Ptr<T>::Type dz = ( z->sin() - x ) / ( z->cos() );
+typename JLPtr<T>::Type z( makeTJL(*this) );
+typename JLPtr<T>::Type x( makeTJL(*this) );
+typename JLPtr<T>::Type tmp = operator-<T>(z - x);
+typename JLPtr<T>::Type dz = ( z->sin() - x ) / ( z->cos() );
 
  int iter = 0;
 
@@ -1276,13 +1058,13 @@ typename JL1Ptr<T>::Type dz = ( z->sin() - x ) / ( z->cos() );
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JL1Ptr<T>::Type TJL1<T>::atan() const
+typename JLPtr<T>::Type TJL1<T>::atan() const
 {   
  
- typename JL1Ptr<T>::Type z( makeTJL(*this) );
- typename JL1Ptr<T>::Type x( makeTJL(*this) );
- typename JL1Ptr<T>::Type c  = -z->cos();
- typename JL1Ptr<T>::Type dz = c *( z->sin() +  (x*c) );
+ typename JLPtr<T>::Type z( makeTJL(*this) );
+ typename JLPtr<T>::Type x( makeTJL(*this) );
+ typename JLPtr<T>::Type c  = -z->cos();
+ typename JLPtr<T>::Type dz = c *( z->sin() +  (x*c) );
 
  int iter = 0;
  while( ++iter < 2 ) {  // FIXME !!!!
@@ -1308,7 +1090,7 @@ typename JL1Ptr<T>::Type TJL1<T>::atan() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JL1Ptr<T>::Type TJL1<T>::D( const int* n ) const 
+typename JLPtr<T>::Type TJL1<T>::D( const int* n ) const 
 {
 
  //----------------------------- 
@@ -1332,8 +1114,8 @@ typename JL1Ptr<T>::Type TJL1<T>::D( const int* n ) const
   if( 1 == n[i] ) { k = i; }
  }  
 
- typename JL1Ptr<T>::Type z( makeTJL(_myEnv) );
- if( 1 == sum ) { z->_std = _jcb[k]; }
+ typename JLPtr<T>::Type z( makeTJL(_myEnv) );
+ if( 1 == sum ) { z->_std.value = _jcb[k].value; }
  return z;
 }
 
@@ -1349,25 +1131,35 @@ void TJL1<T>::printCoeffs() const {
       << ", Max accurate weight = " << _accuWgt << std::endl;
  std::cout << "Reference point: " 
       << _myEnv->getRefPoint()[0];
- for( int i=1; i < _myEnv->numVar(); i++ ) {
+
+ for( int i=0; i < _count-1; i++ ) {
    std::cout << ", ";
    std::cout << _myEnv->getRefPoint()[i];
  }
+
  std::cout << std::endl;
 
-#if 0
- while((  p = (TJLterm<T>*) getNext()  )) {
-   if( p->_weight > _accuWgt ) break;
-   std::cout << "Index:  " 
-        << p->_index
+ IntArray index(_count-1);
+
+ std::cout << "Index:  " 
+        << index
         << "   Value: "
-        << p->_value
+        << _std.value
         << std::endl;
- }
 
- std::cout << "\n" << std::endl;
-#endif
-
+ for( int i=0; i < _count-1; ++i ) {
+  
+  if( _weight > _accuWgt ) break;
+ 
+  index(i) = 1; 
+  std::cout << "Index:  " 
+        << index
+        << "   Value: "
+        << _jcb[i].value
+        << std::endl;
+  index(i) = 0; 
+  }
+  std::cout << "\n" << std::endl;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1376,56 +1168,61 @@ void TJL1<T>::printCoeffs() const {
 //    **** Iteration routines **** 
 //------------------------------------------------------------ 
 
-#if  0
-
-
 template<typename T>
 void TJL1<T>::resetConstIterator() 
 {
 
   _constIterPtr = 0;
 
+ std::cout << "void TJL1<T>::resetConstIterator() called." << std::endl;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+#if 0
 template<typename T>
 TJLterm<T> TJL1<T>::stepConstIterator()  const
 {
-    return _jltermStore[_constIterPtr]; 
+    
+    return _jcb[_constIterPtr]; 
     ++_constIterPtr;
 }
+#endif
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
+#if 0
 template<typename T>
 const TJLterm<T>& TJL1<T>::stepConstIteratorRef()  const
 {
-    return _jltermStore[_constIterPtr]; 
+    return _jcb[_constIterPtr]; 
     ++_constIterPtr;
 
 }
-
+#endif
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 template<typename T>
 const TJLterm<T>* TJL1<T>::stepConstIteratorPtr()  const
 {
 
-    return &_jltermStore[_constIterPtr]; 
-    ++_constIterPtr;
+  //    return &_jcb[_constIterPtr]; 
+  //  ++_constIterPtr;
+    
+    std::cout << "const TJLterm<T>* TJL1<T>::stepConstIteratorPtr() called." << std::endl;
+    return 0;
 
 }
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
+#if 0
 template<typename T>
 void TJL1<T>::resetIterator()
 {
@@ -1433,21 +1230,19 @@ void TJL1<T>::resetIterator()
   _iterPtr = 0;
 
 }
-
+#endif
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
+#if 0
 template<typename T>
 TJLterm<T>* TJL1<T>::stepIterator()
 {
-    return &_jltermStore[_constIterPtr]; 
+    return &_jcb[_constIterPtr]; 
     ++_constIterPtr;
 
 }
 
-
 #endif
-
 // ================================================================
 //      Implementation of exceptions
 
@@ -1650,6 +1445,372 @@ const char* TJL1<T>::HideousException::what() const throw()
 {
   return errorString.c_str();
 }
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+//  ******   friends and operators  ***********
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<typename T>
+std::ostream& operator<<( std::ostream& os, const TJL1<T>& x ) 
+{
+
+ os << "\n Count = " << x._count << " , Weight = " << x._weight;
+ os << " , Max accurate weight = " << x._accuWgt << std::endl;
+ os << "Begin Environment: \n"
+    << *(x._myEnv)
+    << "\nEnd Environment: " << std::endl;
+
+ IntArray index(x._count-1);
+
+ os << "Index: " << index << "   Value: " << x._std.value << std::endl;  
+
+ for (int i=0; i < x._count-1;  ++i) {
+   index(i) = 1;
+   os << "Index: " << index <<"   Value: " << x._jcb[i].value << std::endl;  
+   index(i) = 0;
+ }
+
+ return os << "\n" << std::endl;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+std::istream& operator>>( std::istream& is,  TJL1<T>& x ) 
+{  
+  char buf[100];
+  int i,j;
+  int count;
+  T value;
+  TJLterm<T>* q;
+
+  x.clear();
+
+  is >> buf;
+  is >> buf;
+  is >> count;
+  is >> buf;
+  is >> buf;
+  is >> buf;
+  is >> x._weight;
+  is >> buf;
+  is >> buf;
+  is >> buf;
+  is >> buf;
+  is >> buf;
+  is >> x._accuWgt;
+  is >> buf;
+  is >> buf;
+  streamIn( is, x._myEnv);
+  is >> buf;
+  is >> buf;
+  IntArray ndx( x.getEnv()->numVar() );
+  for( j = 0; j < count; ++j) {
+    is >> buf;
+    for( i = 0; i < x.getEnv()->numVar(); ++i )  {
+     is >> ndx(i);
+    }
+    is >> buf;
+    is >> value;
+//     x.append(  TJLterm<T>( ndx, value, x.getEnv() ) );
+  }
+
+ return is;
+}
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+bool operator==( const TJL1<T>& x, const TJL1<T>& y ) 
+{
+ if( x._myEnv != y._myEnv ) return false;
+
+ if( !( x._std.value == y._std.value ) ) return false;
+
+ for(  int i=0; i< x._count-1; ++i) {
+    for(  int j=0; j<y._count-1; ++j) {
+      if( !( x._jcb[i].value == y._jcb[i].value ) ) return false;
+   }
+ }
+ return true;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+bool operator==( const TJL1<T>& x, const T& y ) 
+{
+
+ bool result = true;
+ result = result && ( x._std.value == y );
+ for( int i=0; i < x._myEnv->numVar(); i++ ) {
+  result = result && ( x._jcb[i].value == T() );
+ }
+
+ return result;
+}
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+bool operator==( const T& y, const TJL1<T>& x )
+{
+ return x == y;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+bool operator!=( const TJL1<T>& x, const TJL1<T>& y ) 
+{
+ return !( x == y );
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+bool operator!=( const TJL1<T>& x, const T& y ) 
+{
+ return !( x == y );
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+bool operator!=( const T& x, const TJL1<T>& y ) 
+{
+ return !( x == y );
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename boost::intrusive_ptr<TJL1<T> > operator+(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y ) {
+
+// Check for consistency and set reference point of the sum.
+
+  if( x->_myEnv != y->_myEnv ) {
+
+   throw( GenericException( __FILE__, __LINE__, 
+           "TJL<T>::operator+(typename JLPtr<T>::Type const& x)"
+           "Inconsistent environments." ) );
+  }
+
+ typename JLPtr<T>::Type z(TJL1<T>::makeTJL( x->_myEnv ) );
+
+ z->_std.value  = x->_std.value +  y->_std.value;
+
+ for (int i=0; i< z->_myEnv->numVar(); ++i ) {
+
+   z->_jcb[i].value = x->_jcb[i].value +  y->_jcb[i].value;
+ 
+ } 
+
+ return z;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<typename T>
+boost::intrusive_ptr<TJL1<T> >& operator+=(boost::intrusive_ptr<TJL1<T> > &x,      boost::intrusive_ptr<TJL1<T> > const& y  ){
+
+ x->_std.value += y->_std.value;
+ for (int i=0; i< x->_count-1; ++i) {
+
+    x->_jcb[i].value += y->_jcb[i].value;
+
+ } 
+
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+boost::intrusive_ptr<TJL1<T> > operator-(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y ) {
+
+// Check for consistency and set reference point of the sum.
+
+  if( x->_myEnv != y->_myEnv ) {
+
+   throw( GenericException( __FILE__, __LINE__, 
+           "TJL<T>::operator-(typename JLPtr<T>::Type const& x)"
+           "Inconsistent environments." ) );
+  }
+
+ typename JLPtr<T>::Type z(TJL1<T>::makeTJL( x->_myEnv ) );
+
+ z->_std.value  = x->_std.value -  y->_std.value;
+
+ for (int i=0; i< z->_myEnv->numVar(); ++i ) {
+
+   z->_jcb[i].value = x->_jcb[i].value -  y->_jcb[i].value;
+ 
+ } 
+
+ return z;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<typename T>
+boost::intrusive_ptr<TJL1<T> > operator-(boost::intrusive_ptr<TJL1<T> > const& x) {
+
+ typename JLPtr<T>::Type z(TJL1<T>::makeTJL( x->_myEnv ));
+
+ z->_std.value  = - x->_std.value;
+
+ for (int i=0; i< z->_myEnv->numVar(); ++i ) {
+
+   z->_jcb[i].value = -x->_jcb[i].value;
+ } 
+
+ return z;
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+boost::intrusive_ptr<TJL1<T> > operator*(boost::intrusive_ptr<TJL1<T> > const& x, T const& y ) {
+
+//---------------------------
+// Multiplication by a scalar
+//---------------------------
+
+ typename JLPtr<T>::Type z(TJL1<T>::makeTJL( *x ) ); // deep copy 
+ z->scaleBy(y);
+ 
+ return z;
+
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+boost::intrusive_ptr<TJL1<T> > operator*(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y ) {
+
+//----------------------------
+// Multiplication of two jets
+//----------------------------
+
+ // Consistency check 
+
+ if( x->_myEnv != y->_myEnv ) {
+   throw( GenericException( __FILE__, __LINE__, 
+          "TJLPtr<T> operator*( const JLPtr<T>&, const JLPtr<T>& ) ",
+          "Inconsistent environments." ) );
+ };
+
+ typename JLPtr<T>::Type z( TJL1<T>::makeTJL(x->_myEnv) );
+
+ z->_std.value  = x->_std.value * y->_std.value;
+
+ for( int i=0; i< z->_myEnv->numVar();  ++i) { 
+
+   z->_jcb[i].value  = ( x->_std.value * y->_jcb[i].value ) + ( y->_std.value * x->_jcb[i].value ); 
+
+ }
+
+ return z;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<typename T>
+boost::intrusive_ptr<TJL1<T> > operator/( T const& wArg, boost::intrusive_ptr<TJL1<T> > const& uArg ) 
+{ 
+
+ // Check for void operators ..
+
+ if ( uArg->_count < 1 ) {
+   throw( GenericException( __FILE__, __LINE__, 
+          "TJL1<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
+          "Attempt to divide by a null TJL1<T> variable." ) );
+ }
+ 
+ typename JLPtr<T>::Type  z( TJL1<T>::makeTJL(uArg->_myEnv) );
+
+ z->_std.value =  wArg/(uArg->_std.value);
+
+ for( int i=0; i < z->_myEnv->numVar(); ++i) { 
+
+   z->_jcb[i].value =   - ( wArg * uArg->_jcb[i].value ) / ( uArg->_std.value * uArg->_std.value ); 
+
+ };
+ 
+ return z;
+
+}
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<typename T>
+boost::intrusive_ptr<TJL1<T> > operator/( boost::intrusive_ptr<TJL1<T> > const& wArg, boost::intrusive_ptr<TJL1<T> > const& uArg ) 
+{ 
+
+ if ( (wArg->_myEnv) != (uArg->_myEnv) ) {
+
+   throw( GenericException( __FILE__, __LINE__, 
+          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
+          "Inconsistent environments." ) );
+ }
+
+ // Check for void operators ..
+
+ if ( uArg->_count < 1 ) {
+   throw( GenericException( __FILE__, __LINE__, 
+          "TJL1<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
+          "Attempt to divide by a null TJL1<T> variable." ) );
+ }
+ 
+ typename JLPtr<T>::Type  z( TJL1<T>::makeTJL(wArg->_myEnv) );
+
+
+ z->_std.value =  (wArg->_std.value)/(uArg->_std.value);
+
+ for( int i = 0; i < z->_myEnv->numVar(); i++ ) { 
+
+   z->_jcb[i].value = ( ( uArg->_std.value * wArg->_jcb[i].value ) - ( wArg->_std.value * uArg->_jcb[i].value ) )
+                / ( uArg->_std.value* uArg->_std.value ); 
+
+ };
+ 
+ return z;
+
+}
+
+
 
 #endif // TJL1_TCC
 
