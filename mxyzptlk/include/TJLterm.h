@@ -64,7 +64,7 @@ template<typename T>
 class TJetEnvironment;
 
 template<typename T>
-struct TJLterm;
+class TJLterm;
 
 template<typename T> 
 bool operator<=(TJLterm<T> const&, TJLterm<T> const&);
@@ -79,9 +79,10 @@ bool operator==(TJLterm<T> const&, TJLterm<T> const&);
 // ********************************************************************************************************************
 
 template<typename T>
-struct TJLterm
+class TJLterm
 {
 
+ public:
   // Data
   IntArray _index;      //  An integer array giving the derivatives associated
                         //  with the JLterm.  For example, ( 1, 1, 0, 2 )
@@ -110,7 +111,6 @@ struct TJLterm
   //   represents a constant function.
 
   TJLterm( const IntArray&, const T& );
-  TJLterm( const TJLterm* );
   TJLterm( const TJLterm& );
 
   // Operators
