@@ -266,7 +266,7 @@ template<typename T>
 TJL1<T>::~TJL1() 
 {
 
- delete _jcb;
+ delete [] _jcb;
 
 }
 
