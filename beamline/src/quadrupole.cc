@@ -201,7 +201,7 @@ void quadrupole::releasePropFunc()
 {
   if( 0 != Propagator ) {
     if( 0 != p_bml ) {
-      delete p_bml;
+      p_bml->eliminate();
       p_bml = 0;
     }
   }
@@ -214,7 +214,7 @@ void quadrupole::setupPropFunc()
 {
   if( 0 != Propagator ) {
     if( 0 != p_bml ) {
-      delete p_bml;
+      p_bml->eliminate();
       p_bml = 0;
     }
     if( 0 == strcmp( Propagator->Type(), "quadrupole::TPOT_Prop" ) ) 
