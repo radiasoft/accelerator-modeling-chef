@@ -9,8 +9,18 @@
 ******                                    
 ******  File:      srotPhysics.cc
 ******                                                                
-******  Copyright (c) 1991 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
+*****
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -20,11 +30,7 @@
 ******             Batavia, IL   60510                                
 ******                                                                
 ******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******             Email: michelotti@fnal.gov   
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -33,8 +39,8 @@
 #include <config.h>
 #endif
 
-#include "srot.h"
-#include "Particle.h"
+#include <srot.h>
+#include <Particle.h>
 
 void srot::localPropagate(Particle& p) {
 double result[4];
