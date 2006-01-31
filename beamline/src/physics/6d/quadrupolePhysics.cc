@@ -9,8 +9,18 @@
 ******                                    
 ******  File:      quadrupolePhysics.cc
 ******                                                                
-******  Copyright (c) 1991 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
+*****
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -21,21 +31,17 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******                                          
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-#include "Particle.h"
-#include "quadrupole.h"
-#include "drift.h"
+#include <Particle.h>
+#include <quadrupole.h>
+#include <drift.h>
 
 quadrupole::TPOT_Prop::TPOT_Prop( int m )
 : _n(m)
@@ -76,6 +82,9 @@ void quadrupole::TPOT_Prop::setup( quadrupole* pqd ) const
   double sepLength       = ( lng - 2.0*frontLength ) / 3.0;
   double quarterStrength = pqd->Strength()*lng/4.0;
  
+
+  if( pqd->p_bml ) pqd->p_bml->eliminate();
+
   pqd->p_bml = new beamline;
   
   if( _n == 1 ) {           // One thin element ..........
