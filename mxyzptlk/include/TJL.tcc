@@ -555,6 +555,9 @@ void TJL<T>::discardTJL( TJL<T>* p)
 
    p->_myEnv = nullEnv; // nullify the environment. 
 
+   if( p->_iterPtr)        { delete p->_iterPtr;       p->_iterPtr      = 0; }
+   if( p->_constIterPtr )  { delete p->_constIterPtr;  p->_constIterPtr = 0; }
+
    _thePool.push_back(p);
 
 }
@@ -2691,7 +2694,10 @@ const TJLterm<T>* TJL<T>::stepConstIteratorPtr()  const
 template<typename T>
 void TJL<T>::resetIterator()
 {
-  if( _iterPtr )  delete _iterPtr;
+  if( _iterPtr != 0 ) {  
+    delete _iterPtr;
+    _iterPtr = 0;
+  }
 
   _iterPtr = new dlist_iterator( _theList );
 
