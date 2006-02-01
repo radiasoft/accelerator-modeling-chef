@@ -33,10 +33,10 @@
 
 #include <TMatrix.h>
 
-typedef class TMatrix<double>                  Matrix;
-typedef class TMatrix<double>                  MatrixD;
-typedef class TMatrix<std::complex<double> >   MatrixC;
-typedef class TMatrix<int>                     MatrixI;
+typedef TMatrix<double>                  Matrix;
+typedef TMatrix<double>                  MatrixD;
+typedef TMatrix<std::complex<double> >   MatrixC;
+typedef TMatrix<int>                     MatrixI;
 
 
 #endif
