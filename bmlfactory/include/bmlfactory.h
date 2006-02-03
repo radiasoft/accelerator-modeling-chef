@@ -153,11 +153,12 @@ class bmlfactory {
         
     std::list<std::string>&  getBeamlineList();       // list of all instanciated beamlines  
     const char* getUseStatementBeamlineName();        // get beamline name from USE statement, 0 if none found 
-    const char* getParticleType();
+    const char* getParticleType() const;
 
     bool    variableIsDefined(const char* varname) const;
     double  getVariableValue(const char* varname) const;   
 
+    double getEnergy() const;
     double getBrho() const;
 };
 

@@ -520,11 +520,9 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
     }
     case BEL_MULTIPOLE: {
       double roll     = 0.0;
-      double momentum = PH_CNV_brho_to_p*BRHO_;
-      double energy   = sqrt( momentum*momentum + PH_NORM_mp*PH_NORM_mp );
       bmlnElmnt* q    = 0;
       beamline* temp  = new beamline( strip_final_colon( bel->name_ ).c_str() );
-      temp->setEnergy( energy ); 
+      temp->setEnergy( this->getEnergy() ); 
 
       double k0l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K0L], var_table_, bel_table_ );
       if( k0l != 0.0 ) {
@@ -752,7 +750,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       double field  = expr_evaluate( bel->params_[BEL_ELSEPARATOR_E], var_table_, bel_table_ );
 
       double momentum = PH_CNV_brho_to_p*BRHO_;
-      double energy   = sqrt( momentum*momentum + PH_NORM_mp*PH_NORM_mp );
+      double energy   = this->getEnergy();
       double angle    = 0.001 * (field*length/momentum) * (energy/momentum);
 
       lbel = new vkick( strip_final_colon( bel->name_ ).c_str(), length, angle );
@@ -935,12 +933,7 @@ bmlfactory::beam_line_instantiate( beam_line* bml ) {
 
   }
   
-  double energy;
-  energy = PH_CNV_brho_to_p*BRHO_;
-  energy = energy*energy + PH_NORM_mp*PH_NORM_mp;
-  energy = sqrt( energy );
-   
-  lbml->setEnergy( energy ); 
+  lbml->setEnergy( this->getEnergy() ); 
 
   _beamline_objects_list.push_back(lbml);
 
@@ -1062,9 +1055,41 @@ bmlfactory::getUseStatementBeamlineName() {
 
 }
 
-const char* bmlfactory::getParticleType() {
+
+double bmlfactory::getEnergy() const
+{
+  double ret = 0.0;
+  double momentum = (this->BRHO_)*PH_CNV_brho_to_p;
+  if( 0 == strcmp("PROTON",this->getParticleType()) ) {
+    ret = sqrt( momentum*momentum + PH_NORM_mp*PH_NORM_mp );
+  }
+  else if( 0 == strcmp("POSITRON",this->getParticleType()) ) {
+    ret = sqrt( momentum*momentum + PH_NORM_me*PH_NORM_me );
+  }
+  else {
+    (*pcerr) << "\n*** ERROR *** "
+                "\n*** ERROR *** bmlfactory is not programmed to handle"
+                "\n*** ERROR *** particle type "
+             << this->getParticleType()
+             << "\n*** ERROR *** "
+             << endl;
+    ostringstream uic;
+    uic  <<   "bmlfactory is not programmed to handle"
+              "\nparticle type "
+         << this->getParticleType();
+    throw( GenericException( __FILE__, __LINE__, 
+           "double bmlfactory::getEnergy() const", 
+           uic.str().c_str() ) );
+  }
+  return ret;
+}
+
+
+const char* bmlfactory::getParticleType() const 
+{
   return madparser_get_particle_type( mp );
 }
+
 
 double 
 bmlfactory::getBrho( ) const {
