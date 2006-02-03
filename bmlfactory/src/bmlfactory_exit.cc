@@ -53,7 +53,6 @@
 
 extern "C" 
 {
-
   void bmlfactory_exit(const char* filename, int lineno, const char* errmessage);
   void bmlfactory_parse_error(int inmemory, const char* input_filename, int input_file_lineno, const char* parser_message);
 }
@@ -61,7 +60,6 @@ extern "C"
 void 
 bmlfactory_exit(const char* filename, int lineno, const char* errmessage) 
 {
-
   throw( GenericException( filename, lineno, 
       "void bmlfactory_exit()", errmessage) );
 }
@@ -69,7 +67,6 @@ bmlfactory_exit(const char* filename, int lineno, const char* errmessage)
 void 
 bmlfactory_parse_error(int inmemory, const char* input_filename, int input_file_lineno, const char* parser_message) 
 {
-
   std::stringstream errs;
   errs <<" The MAD parser encountered an error while parsing line ";
   errs <<  input_file_lineno << std::endl;
