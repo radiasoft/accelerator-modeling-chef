@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
 ******                                    
 ******  File:      TuneAdjuster.h
+******  Version:   2.0
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -79,9 +79,9 @@ public:
 
   int  numberOfCorrectors() const;
 
-  int changeTunesBy ( double, double, const JetProton& );
-  int changeHorizontalTuneBy ( double, const JetProton& );
-  int changeVerticalTuneBy ( double, const JetProton& );
+  int changeTunesBy ( double, double, const JetParticle& );
+  int changeHorizontalTuneBy ( double, const JetParticle& );
+  int changeVerticalTuneBy ( double, const JetParticle& );
   MatrixD getControls();
 
   void eraseAll();

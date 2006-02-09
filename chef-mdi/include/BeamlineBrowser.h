@@ -43,6 +43,8 @@
 #include "BmlVisitor.h"
 #include "slist.h"
 
+class Particle;
+
 class QWidget;
 class QDragEnterEvent;
 class QDragMoveEvent;
@@ -101,8 +103,8 @@ class QBmlRoot : public QBml
 {
 public:
     QBmlRoot( QListView* parent, /* const */ BeamlineContext*, double& );
-    QBmlRoot( QListView* parent, /* const */ beamline*,        double& );
-    QBmlRoot( QBmlRoot*  parent, /* const */ beamline*,        double& );
+    QBmlRoot( QListView* parent, const Particle&, /* const */ beamline*, double& );
+    QBmlRoot( QBmlRoot*  parent, /* const */ beamline*, double& );
     ~QBmlRoot();
 
     // QString text( int column ) const;

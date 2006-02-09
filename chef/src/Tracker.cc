@@ -218,7 +218,7 @@ void RectH::toDynamics( const Vector& state, double* xPtr, double* yPtr, double*
 }
 
 
-void RectH::toState( double a, double b, Proton* ptrPtr ) const
+void RectH::toState( double a, double b, Particle* ptrPtr ) const
 {
   ptrPtr->set_x(a);
   ptrPtr->set_npx(b);
@@ -232,7 +232,7 @@ void RectV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double*
 }
 
 
-void RectV::toState( double a, double b, Proton* ptrPtr ) const
+void RectV::toState( double a, double b, Particle* ptrPtr ) const
 {
   ptrPtr->set_y(a);
   ptrPtr->set_npy(b);
@@ -247,7 +247,7 @@ void NormH::toDynamics( const Vector& state, double* xPtr, double* yPtr, double*
 }
 
 
-void NormH::toState( double a, double b, Proton* ptrPtr ) const
+void NormH::toState( double a, double b, Particle* ptrPtr ) const
 {
   ptrPtr->set_x(a);
   ptrPtr->set_npx(( b - a*_alpha )/_beta);
@@ -262,7 +262,7 @@ void NormV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double*
 }
 
 
-void NormV::toState( double a, double b, Proton* ptrPtr ) const
+void NormV::toState( double a, double b, Particle* ptrPtr ) const
 {
   ptrPtr->set_y(a);
   ptrPtr->set_npy(( b - a*_alpha )/_beta);
@@ -309,7 +309,7 @@ PhiHPhiV::PhiHPhiV()
 
 void IHIV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
-  static double u, v;
+  double u, v;
 
   // Horizontal
   u = state(Particle::_x()) - _x_o;
@@ -325,21 +325,25 @@ void IHIV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* 
 }
 
 
-void IHIV::toState( double IH, double IV, Proton* protonPtr ) const
+void IHIV::toState( double IH, double IV, Particle* particlePtr ) const
 {
-  static double  u, v, amp, phi;
-  static double  alpha, beta;
+  double  u     = 0;
+  double  v     = 0;
+  double  amp   = 0;
+  double  phi   = 0;
+  double  alpha = 0;
+  double  beta  = 0;
 
   // If orbit has diverged, bring it back.
-  if( isnan(protonPtr->get_x()) || isnan(protonPtr->get_npx()) || 
-      isnan(protonPtr->get_y()) || isnan(protonPtr->get_npy())    ) 
+  if( isnan(particlePtr->get_x()) || isnan(particlePtr->get_npx()) || 
+      isnan(particlePtr->get_y()) || isnan(particlePtr->get_npy())    ) 
   {
-    protonPtr->set_x  (0.);
-    protonPtr->set_y  (0.);
-    protonPtr->set_cdt(0.);
-    protonPtr->set_npx(0.);
-    protonPtr->set_npy(0.);
-    protonPtr->set_ndp(0.);
+    particlePtr->set_x  (0.);
+    particlePtr->set_y  (0.);
+    particlePtr->set_cdt(0.);
+    particlePtr->set_npx(0.);
+    particlePtr->set_npy(0.);
+    particlePtr->set_ndp(0.);
     return;
   }
 
@@ -347,8 +351,8 @@ void IHIV::toState( double IH, double IV, Proton* protonPtr ) const
   beta  = _betaH;
   alpha = _alphaH;
 
-  u = protonPtr->get_x() - _x_o;
-  v = alpha*u + beta*( protonPtr->get_npx() - _xp_o );
+  u = particlePtr->get_x() - _x_o;
+  v = alpha*u + beta*( particlePtr->get_npx() - _xp_o );
   phi = atan2(u,v);
   if( phi > M_PI ) phi -= M_TWOPI;
 
@@ -356,20 +360,20 @@ void IHIV::toState( double IH, double IV, Proton* protonPtr ) const
     amp = sqrt(2.0*beta*IH);
     u = amp*sin(phi);
     v = amp*cos(phi);
-    protonPtr->set_x( _x_o + u );
-    protonPtr->set_npx( _xp_o + (( v - alpha*u )/beta) );
+    particlePtr->set_x( _x_o + u );
+    particlePtr->set_npx( _xp_o + (( v - alpha*u )/beta) );
   }
   else {
-    protonPtr->set_x( 0. );
-    protonPtr->set_npx( 0. );
+    particlePtr->set_x( 0. );
+    particlePtr->set_npx( 0. );
   }
 
   // Vertical
   beta  = _betaV;
   alpha = _alphaV;
 
-  u = protonPtr->get_y() - _y_o;
-  v = alpha*u + beta*( protonPtr->get_npy() - _yp_o );
+  u = particlePtr->get_y() - _y_o;
+  v = alpha*u + beta*( particlePtr->get_npy() - _yp_o );
   phi = atan2(u,v);
   if( phi > M_PI ) phi -= M_TWOPI;
 
@@ -377,19 +381,19 @@ void IHIV::toState( double IH, double IV, Proton* protonPtr ) const
     amp = sqrt(2.0*beta*IV);
     u = amp*sin(phi);
     v = amp*cos(phi);
-    protonPtr->set_y( _y_o + u );
-    protonPtr->set_npy( _yp_o + (( v - alpha*u )/beta) );
+    particlePtr->set_y( _y_o + u );
+    particlePtr->set_npy( _yp_o + (( v - alpha*u )/beta) );
   }
   else {
-    protonPtr->set_y( 0. );
-    protonPtr->set_npy( 0. );
+    particlePtr->set_y( 0. );
+    particlePtr->set_npy( 0. );
   }
 }
 
 
 void PhiHPhiV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
-  static double u, v, phiH, phiV;
+  double u, v, phiH, phiV;
 
   // Horizontal
   u = state(Particle::_x()) - _x_o;
@@ -409,21 +413,24 @@ void PhiHPhiV::toDynamics( const Vector& state, double* xPtr, double* yPtr, doub
 }
 
 
-void PhiHPhiV::toState( double phiH, double phiV, Proton* protonPtr ) const
+void PhiHPhiV::toState( double phiH, double phiV, Particle* particlePtr ) const
 {
-  static double u, v, amp;
-  static double alpha, beta;
+  double u     = 0;
+  double v     = 0;
+  double amp   = 0;
+  double alpha = 0;
+  double beta  = 0;
 
   // If orbit has diverged, bring it back.
-  if( isnan(protonPtr->get_x()) || isnan(protonPtr->get_npx()) || 
-      isnan(protonPtr->get_y()) || isnan(protonPtr->get_npy())    ) 
+  if( isnan(particlePtr->get_x()) || isnan(particlePtr->get_npx()) || 
+      isnan(particlePtr->get_y()) || isnan(particlePtr->get_npy())    ) 
   {
-    protonPtr->set_x  (0.);
-    protonPtr->set_y  (0.);
-    protonPtr->set_cdt(0.);
-    protonPtr->set_npx(0.);
-    protonPtr->set_npy(0.);
-    protonPtr->set_ndp(0.);
+    particlePtr->set_x  (0.);
+    particlePtr->set_y  (0.);
+    particlePtr->set_cdt(0.);
+    particlePtr->set_npx(0.);
+    particlePtr->set_npy(0.);
+    particlePtr->set_ndp(0.);
     return;
   }
 
@@ -437,27 +444,27 @@ void PhiHPhiV::toState( double phiH, double phiV, Proton* protonPtr ) const
   beta  = _betaH;
   alpha = _alphaH;
 
-  u = protonPtr->get_x() - _x_o;
-  v = alpha*u + beta*( protonPtr->get_npx() - _xp_o );
+  u = particlePtr->get_x() - _x_o;
+  v = alpha*u + beta*( particlePtr->get_npx() - _xp_o );
 
   amp = sqrt( u*u + v*v );
   u = amp*sin(phiH);
   v = amp*cos(phiH);
-  protonPtr->set_x( _x_o + u );
-  protonPtr->set_npx( _xp_o + (( v - alpha*u )/beta) );
+  particlePtr->set_x( _x_o + u );
+  particlePtr->set_npx( _xp_o + (( v - alpha*u )/beta) );
 
   // Vertical
   beta  = _betaV;
   alpha = _alphaV;
 
-  u = protonPtr->get_y() - _y_o;
-  v = alpha*u + beta*( protonPtr->get_npy() - _yp_o );
+  u = particlePtr->get_y() - _y_o;
+  v = alpha*u + beta*( particlePtr->get_npy() - _yp_o );
 
   amp = sqrt( u*u + v*v );
   u = amp*sin(phiV);
   v = amp*cos(phiV);
-  protonPtr->set_y( _y_o + u );
-  protonPtr->set_npy( _yp_o + (( v - alpha*u )/beta) );
+  particlePtr->set_y( _y_o + u );
+  particlePtr->set_npy( _yp_o + (( v - alpha*u )/beta) );
 }
 
 
@@ -831,7 +838,7 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         //   a separate routine!!
 
   	double alphaH, betaH, alphaV, betaV;
-  	double u, v, amp;
+  	double u, v;
 
   	alphaH = ( _topTracker->_p_info->alpha ).hor;
   	betaH  = ( _topTracker->_p_info->beta  ).hor;
@@ -968,8 +975,8 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
 
 void DrawSpace::mouseMoveEvent( QMouseEvent* qme )
 {
-  static int w, h;
-  static int myW, myH;
+  int w, h;
+  int myW, myH;
   static QPixmap pic;
 
   if( _zoomActive ) {
@@ -997,9 +1004,9 @@ void DrawSpace::mouseMoveEvent( QMouseEvent* qme )
 
 void DrawSpace::mouseReleaseEvent( QMouseEvent* qme )
 {
-  static double ix, iy;
-  static double x, y;
-  static double dx, dy, w;
+  double ix, iy;
+  double x, y;
+  double dx, dy, w;
 
   if( _isZooming ) 
   {
@@ -1112,11 +1119,15 @@ void DrawSpace::setActAngContext()
 
 Tracker::Tracker( BeamlineContext* bmlCP, QWidget* parent, const char* name, WFlags f)
 : QVBox(parent, name, f),
-  _bmlConPtr( bmlCP ), _centralParticlePtr(0),
-  _isIterating(false), _p_info(0), _number(1),
-  _deleteContext( false ), _p_currOrb(0),
-  _myWheel(0.0)
-{
+  _p_info(0),
+  _number(1),
+  _myWheel(0.0),
+  _bmlConPtr( bmlCP ), 
+  _centralParticlePtr(0),
+  _deleteContext( false ), 
+  _isIterating(false), 
+  _p_currOrb(0)
+  {
   // *** _myWheel.setIncrement( 252.0 );  // = 7*36, will provide ten colors
   _myWheel.setIncrement( 195.0 ); 
 
@@ -1124,12 +1135,17 @@ Tracker::Tracker( BeamlineContext* bmlCP, QWidget* parent, const char* name, WFl
 }
 
 
-Tracker::Tracker( /* const */ beamline* x,  QWidget* parent, const char* name, WFlags f)
+Tracker::Tracker( const Particle& prt, beamline* x,
+                  QWidget* parent, const char* name, WFlags f)
 : QVBox(parent, name, f),
-  _bmlConPtr( 0 ), _centralParticlePtr(0),
-  _isIterating(false), _p_info(0), _number(1),
-  _deleteContext( true ), _p_currOrb(0),
-  _myWheel(0.0)
+  _p_info(0), 
+  _number(1),
+  _myWheel(0.0),
+  _bmlConPtr( 0 ), 
+  _centralParticlePtr(0),
+  _deleteContext( true ), 
+  _isIterating(false), 
+  _p_currOrb(0)
 {
   if( 0 == x ) {
     QMessageBox::information( 0, "CHEF::Tracker",
@@ -1138,7 +1154,7 @@ Tracker::Tracker( /* const */ beamline* x,  QWidget* parent, const char* name, W
   else {
     // *** _myWheel.setIncrement( 252.0 );  // = 7*36, will provide ten colors
     _myWheel.setIncrement( 195.0 ); 
-    _bmlConPtr = new BeamlineContext( false, x );
+    _bmlConPtr = new BeamlineContext( prt, x, false );
     this->_finishConstructor();
   }
 }
@@ -1572,7 +1588,8 @@ void Tracker::_view_zoom_s()
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( "Multiplier", qhb1 );
+      //QLabel* qlb = new QLabel( "Multiplier", qhb1 );
+        new QLabel( "Multiplier", qhb1 );
         QString stl;
         stl.setNum( 1.0 );
         QLineEdit* qle = new QLineEdit( stl, qhb1 );
@@ -1629,11 +1646,11 @@ void Tracker::_view_zoom_reset()
 
 void Tracker::_view_center()
 {
-  if( _centralParticlePtr ) { delete _centralParticlePtr; }
-  _centralParticlePtr = _bmlConPtr->_proton.Clone();
+  if( _centralParticlePtr ) { delete _centralParticlePtr; _centralParticlePtr = 0; }
+  _centralParticlePtr = (_bmlConPtr->getParticle()).Clone();
 
-  _p_leftWindow->setCenterOn( _bmlConPtr->_proton );
-  _p_rightWindow->setCenterOn( _bmlConPtr->_proton );
+  _p_leftWindow->setCenterOn( *_centralParticlePtr );
+  _p_rightWindow->setCenterOn( *_centralParticlePtr );
 
   _p_leftWindow->updateGL();
   _p_rightWindow->updateGL();
@@ -1665,7 +1682,7 @@ void Tracker::_opt_setIter()
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( "Strobe period", qhb1 );
+        new QLabel( "Strobe period", qhb1 );
         QString stl;
         stl.setNum( _number );
         QLineEdit* qle = new QLineEdit( stl, qhb1 );
@@ -1728,7 +1745,7 @@ void Tracker::_tool_pdicOrb()
     QVBox* qvb = new QVBox( wpu );
 
       QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( "Period: ", qhb1 );
+        new QLabel( "Period: ", qhb1 );
         QString stl;
         stl.setNum(4);
         QLineEdit* qle = new QLineEdit( stl, qhb1 );
@@ -1760,7 +1777,6 @@ void Tracker::_tool_pdicOrb()
   // Maybe this belongs in a separate method.
  
   if( returnCode == QDialog::Accepted ) {
-    int i, j;
 
     bool ok = true;
     uint iterate = (qle->text()).toInt( &ok );
@@ -1772,10 +1788,12 @@ void Tracker::_tool_pdicOrb()
       return;
     }
 
-    Vector w(6);                            // ??? Change this
-    // w(0) = _bmlConPtr->_proton.State(0); // ??? Change this
-    // w(3) = _bmlConPtr->_proton.State(3); // ??? Change this
-    w = _bmlConPtr->_proton.State();
+    Particle* dummyPtr = (_bmlConPtr->getParticle()).Clone();
+
+    Vector w(6);                                    // ??? Change this
+    // w(0) = (_bmlConPtr->getParticle()).State(0); // ??? Change this
+    // w(3) = (_bmlConPtr->getParticle()).State(3); // ??? Change this
+    w = dummyPtr->State();
 
     const uint order = 5;  // ??? Change this
     const uint ul    = 5;  // ??? Change this
@@ -1783,42 +1801,45 @@ void Tracker::_tool_pdicOrb()
     Vector z(w);
   
     beamline* bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
-    Jet__environment* storedEnv = Jet::_lastEnv;
-    double energy = _bmlConPtr->_proton.Energy();
+    EnvPtr<double>::Type storedEnv = Jet::_lastEnv;
+    double energy = dummyPtr->Energy();
 
-    for( int iterCount = 0; iterCount < ul; iterCount++ ) {
-      Jet::BeginEnvironment( order );
+    JetParticle* jpPtr = 0;
+    for( unsigned int iterCount = 0; iterCount < ul; iterCount++ ) {
+      Jet__environment::BeginEnvironment( order );
   	coord  x(w(0)),  y(w(1)),  q(0.0),
   	      px(w(3)), py(w(4)), qq(0.0);
-      Jet::EndEnvironment();
+      Jet__environment::EndEnvironment();
   
       Jet xsq;
-      xsq = x*x;
+      Jet x1 = x;   // ??? This is most unfortunate.    ???
+      xsq = x1*x1;  // ??? Why do we have to define x1? ???
   
-      JetProton jpr( energy );
+      dummyPtr->setStateToZero();
+      jpPtr = dummyPtr->ConvertToJetParticle();
       Mapping stuff;
       cout << "Begin n-th Henon iterate for n = "
   	   << iterate
   	   << endl;
-      for( i = 0; i < iterate; i++ ) {
+      for( unsigned int i = 0; i < iterate; i++ ) {
   	cout << "No." << (i+1) << endl;
-  	bmlPtr->propagate( jpr );
+  	bmlPtr->propagate( *jpPtr );
       }
       cout << "End n-th Henon iterate" << endl;
   
-      stuff = jpr.State();
+      stuff = jpPtr->State();
   
       MatrixD M(6,6);
       M = stuff.Jacobian();
 
-      for( i = 0; i < 6; i++ ) {
+      for( int i = 0; i < 6; i++ ) {
         M(i,2) = 0.0;
         M(2,i) = 0.0;
         M(i,5) = 0.0;
         M(5,i) = 0.0;
       }
 
-      for( i = 0; i < 6; i++ ) { M( i, i ) -= 1.0; }
+      for( int i = 0; i < 6; i++ ) { M( i, i ) -= 1.0; }
       M = M.inverse();
   
       Vector z(w);
@@ -1829,22 +1850,24 @@ void Tracker::_tool_pdicOrb()
       cout << w << endl;
     }
 
-    Jet::_lastEnv = storedEnv;
 
-  
     // A final test ...
-
-    _bmlConPtr->_proton.setState(w);
-  
+    dummyPtr->setState(w);
     cout << "\nTest the results: " << endl;
-  
-    for( j = 0; j < 10; j++ ) {
-      for( i = 0; i < iterate; i++ ) {
-  	bmlPtr->propagate(_bmlConPtr->_proton);
+    for( int j = 0; j < 10; j++ ) {
+      for( unsigned int i = 0; i < iterate; i++ ) {
+  	bmlPtr->propagate(*dummyPtr);
       }
-      cout << _bmlConPtr->_proton.State() << endl;
+      cout << dummyPtr->State() << endl;
     }
 
+
+    // Finish and clean up ...
+    _bmlConPtr->setParticleState(w);
+
+    if( 0 != dummyPtr ) { delete dummyPtr; dummyPtr = 0; }
+    if( 0 != jpPtr    ) { delete jpPtr;    jpPtr    = 0; }
+    Jet::_lastEnv = storedEnv;
   }
 
   delete wpu;
@@ -1857,9 +1880,9 @@ void Tracker::_tool_dppMod()
     QVBox* qvb = new QVBox( wpu );
 
       QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( "dp/p: ", qhb1 );
+        new QLabel( "dp/p: ", qhb1 );
         QString stl;
-        stl.setNum( _bmlConPtr->_proton.get_ndp() );
+        stl.setNum( _bmlConPtr->getParticle_ndp() );
         QLineEdit* qle = new QLineEdit( stl, qhb1 );
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
@@ -1896,7 +1919,7 @@ void Tracker::_tool_dppMod()
       return;
     }
 
-    _bmlConPtr->_proton.set_ndp( newdpp );
+    _bmlConPtr->setParticle_ndp( newdpp );
   }
 
   delete wpu;
@@ -1905,32 +1928,32 @@ void Tracker::_tool_dppMod()
 
 void Tracker::_new_x( double x )
 {
-  _bmlConPtr->_proton.set_x(x);
+  _bmlConPtr->setParticle_x(x);
 }
 
 
 void Tracker::_new_xp( double xp )
 {
-  _bmlConPtr->_proton.set_npx(xp);
+  _bmlConPtr->setParticle_npx(xp);
 }
 
 
 void Tracker::_new_y( double y )
 {
-  _bmlConPtr->_proton.set_y(y);
+  _bmlConPtr->setParticle_y(y);
 }
 
 
 void Tracker::_new_yp( double yp )
 {
-  _bmlConPtr->_proton.set_npy(yp);
+  _bmlConPtr->setParticle_npy(yp);
 }
 
 
 void Tracker::_makeNewOrbit()
 {
   if( _isIterating ) {
-    _p_currOrb = new Orbit( _bmlConPtr->_proton.State() );
+    _p_currOrb = new Orbit( _bmlConPtr->getParticleState() );
     _myWheel.increment();
     _p_currOrb->setColor( _myWheel.red(), _myWheel.green(), _myWheel.blue() );
     _orbits.append( _p_currOrb );
@@ -1943,7 +1966,7 @@ void Tracker::_makeNewOrbit()
 
 void Tracker::_cnvFromView( double a, double b, const OrbitTransformer* otPtr )
 {
-  otPtr->toState( a, b, &(_bmlConPtr->_proton) );
+  otPtr->toState( a, b, _bmlConPtr->_particlePtr );   // ??? WARNING: VERY DANGEROUS! ???
   _makeNewOrbit();
 }
 
@@ -1951,7 +1974,7 @@ void Tracker::_cnvFromView( double a, double b, const OrbitTransformer* otPtr )
 void Tracker::setState( const Vector& s )
 {
   if( s.Dim() == 6 ) {
-    _bmlConPtr->_proton.setState( s );
+    _bmlConPtr->setParticleState( s );
   }
   else {
     ostringstream uic;
@@ -1965,17 +1988,16 @@ void Tracker::setState( const Vector& s )
 
 void Tracker::_iterate()
 {
-  static beamline* bmlPtr;
-  static Proton*   protonPtr;
-  bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
-  protonPtr = &(_bmlConPtr->_proton);
+  beamline* bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
+  Particle* particlePtr = _bmlConPtr->_particlePtr;
+  // ??? WARNING: TWO VERY DANGEROUS LINES! ???
 
   if( _isIterating ) 
   {
     for( int i = 0; i < _number; i++ ) {
-      bmlPtr->propagate( *protonPtr );
-      _p_currOrb->add( protonPtr->State() );
-      // REMOVE: _history.add( protonPtr->State() );
+      bmlPtr->propagate( *particlePtr );
+      _p_currOrb->add( particlePtr->State() );
+      // REMOVE: _history.add( particlePtr->State() );
     }
 
     _p_leftWindow->updateGL();
@@ -1986,10 +2008,10 @@ void Tracker::_iterate()
   else {
     _p_timer->stop();
 
-    _p_x_input ->_set_first ( protonPtr->get_x(), protonPtr->get_npx() ); // Probably should
-    _p_xp_input->_set_second( protonPtr->get_x(), protonPtr->get_npx() ); // be done by emitting
-    _p_y_input ->_set_first ( protonPtr->get_y(), protonPtr->get_npy() ); // a signal of some
-    _p_yp_input->_set_second( protonPtr->get_y(), protonPtr->get_npy() ); // sort.
+    _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
+    _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
+    _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
+    _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() ); // sort.
   }
 }
 

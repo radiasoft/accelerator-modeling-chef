@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.1
 ******                                    
 ******  File:      EdwardsTeng.h
+******  Version:   1.1
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -43,14 +43,13 @@
 #ifndef EDWARDSTENG_H
 #define EDWARDSTENG_H
 
-#include <bmlnElmnt.h>
-#include <Mapping.h>
-#include <Matrix.h>
 #include <MathConstants.h>
-
-
+#include <Matrix.h>
+#include <Mapping.h>
+#include <bmlnElmnt.h>
 
 typedef char (*ET_CRITFUNC)( bmlnElmnt* );
+
 
 struct ETinfo : BarnacleData 
 {
@@ -95,7 +94,7 @@ private:
 public:
  EdwardsTeng( const beamline* );
  ~EdwardsTeng();
- int doCalc( void* ptr = 0, ET_CRITFUNC = 0 ); 
+ int doCalc( JetParticle*, ET_CRITFUNC = 0 ); 
                             // If default value is used for ET_CRITFUNC, then
                             // information is attached to all elements.
  void eraseAll();

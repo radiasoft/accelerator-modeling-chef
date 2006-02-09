@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
 ******                                    
 ******  File:      FPSolver.h
+******  Version:   1.5
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -60,11 +60,11 @@ class FPSolver {
   double& JumpScale( int ); 
   double& ZeroScale( int );
 
-  int  operator()( Proton*,    const char*, FP_CRITFUNC = 0 );
-  int  operator()( JetProton*, const char*, FP_CRITFUNC = 0 );   
-      // PRECONDITIONS:  1st argument: address of Proton whose
+  int  operator()( Particle*,    const char*, FP_CRITFUNC = 0 );
+  int  operator()( JetParticle*, const char*, FP_CRITFUNC = 0 );   
+      // PRECONDITIONS:  1st argument: address of Particle whose
       //   closed orbit is to be found. Phase space dimensions
-      //   of Proton must match that of the FPSolver object.
+      //   of Particle must match that of the FPSolver object.
       //   In fact, it had better be 6.
       //                 2nd argument: value is ignored, but
       //   its presence means that the transverse (four-dimensional)
@@ -72,7 +72,7 @@ class FPSolver {
       //                 3rd argument: closed orbit Barnacles will
       //   be attached to all elements that match the criterion.
       //   Default: attach to no elements.
-      // POSTCONDITIONS: 1st argument: [Jet}Proton's state is on
+      // POSTCONDITIONS: 1st argument: [Jet}Particle's state is on
       //   the closed orbit.
       //                 Return value 0: normal exit
       //                              1: Newton iterates stopped
@@ -81,10 +81,10 @@ class FPSolver {
       //                 NOTE: the Jet::Environment is not reset
       //   to the closed orbit. Thus all derivatives are assumed
       //   evaluated at the initial reference point, even though
-      //   the JetProton is "on" the closed orbit.
-  int  operator()( Proton*, FP_CRITFUNC = 0 );     // FixedPoint
-  void operator()( JetProton*, FP_CRITFUNC = 0 );  // FixedPoint
-  void operator()( double* );                      // fixedPoint
+      //   the JetParticle is "on" the closed orbit.
+  int  operator()( Particle*, FP_CRITFUNC = 0 );     // FixedPoint
+  void operator()( JetParticle*, FP_CRITFUNC = 0 );  // FixedPoint
+  // REMOVE: void operator()( double* );                      // fixedPoint
   // If default value is used for FP_CRITFUNC argument, then no 
   // fixed point information is attached to the elements.
 

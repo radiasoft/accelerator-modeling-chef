@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
 ******                                    
 ******  File:      FindCovariance.h
+******  Version:   2.0
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -45,8 +45,8 @@ public:
   ~WIREData() {}
 };
 
-MatrixD FindCovariance( const beamline& , const slist& , JetProton );
-void    TestCovariance( const beamline& , const slist& , JetProton ,
+MatrixD FindCovariance( const beamline& , const slist& , const JetParticle& );
+void    TestCovariance( const beamline& , const slist& , const JetParticle& ,
 		        const MatrixD& );
 
 #endif

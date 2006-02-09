@@ -3,17 +3,19 @@
 #include <string>   // needed for strcat
 #include <math.h>
 
-#include "complexAddon.h"
-#include "bmlfactory.h"
-#include "MomentsFncData.h"
-#include "BeamlineContext.h"
+#include <complexAddon.h>
+#include <bmlfactory.h>
+#include <MomentsFncData.h>
+#include <BeamlineContext.h>
 
 #include <qapplication.h>
 #include <qwt/qwt_plot.h>
 #include <boost/shared_ptr.hpp>
-#include "chefplotmain.h"
+#include <chefplotmain.h>
 
-// This undef is needed because of the compiler.
+// This undef is needed because connect is defined by qt as a macro. Unfortunately, the string "connect" is 
+// also used in the std c++ library code.  
+
 #undef connect
 
 static double* dnull = 0;
@@ -42,7 +44,7 @@ MomentsFncData::MomentsFncData( BeamlineContext* bcp, std::ostream* stdoutstream
 }
 
 
-MomentsFncData::MomentsFncData( /* const */ beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream)
+MomentsFncData::MomentsFncData( const Particle&, prt, beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream)
 : _errorStreamPtr(stderrstream), _outputStreamPtr(stdoutstream),
   _bmlConPtr(0), _deleteContext(true),
   _plotType( betaPlot ),
@@ -55,7 +57,7 @@ MomentsFncData::MomentsFncData( /* const */ beamline* pBml, std::ostream* stdout
   _disp_H(dnull), _disp_V(dnull)
 
 {
-  _bmlConPtr = new BeamlineContext( false, pBml );
+  _bmlConPtr = new BeamlineContext( prt, pBml, false );
   this->_finishConstructor();
 }
 

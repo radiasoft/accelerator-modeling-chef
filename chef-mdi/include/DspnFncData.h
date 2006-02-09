@@ -71,7 +71,7 @@ class DspnFncData : public CHEFPlotData
     void _finishConstructor( );
 
  public:
-    DspnFncData( beamline*,        std::ostream* = &std::cout, std::ostream* = &std::cerr );
+    DspnFncData( const Particle&, beamline*, std::ostream* = &std::cout, std::ostream* = &std::cerr );
     DspnFncData( BeamlineContext*, std::ostream* = &std::cout, std::ostream* = &std::cerr );
     ~DspnFncData();
 

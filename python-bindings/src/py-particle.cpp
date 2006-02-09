@@ -82,6 +82,11 @@ void wrap_particle () {
    .def( init<double,double*>());
 
 
+  class_<Positron, bases<Particle> >("Positron", init<>() )
+   .def( init<double>())
+   .def( init<double,double*>());
+
+
   class_<JetParticle, boost::noncopyable>("JetParticle", no_init)
        //.def( init<double>())
        //.def( init<double,double>())
@@ -148,6 +153,11 @@ void wrap_particle () {
        //.def( init<double,double*>())
    .def( init<const Proton&>());
 
+  class_<JetPositron, bases<JetParticle> >("JetPositron") 
+   .def( init<double>())
+       //.def( init<double,double*>())
+   .def( init<const Positron&>());
+
 }
 
 
@@ -172,7 +182,7 @@ class Particle {
   double   pn;        // normalized reference momentum = pc/mc^2 = p/mc
                       //                               = beta*gamma
   double   pni2;      // ( 1/pn )^2
-  double   bRho;      // normalized reference momentm / charge
+  double   bRho;      // normalized reference momentum / charge
   double   beta;      // normalized reference velocity = v/c
   double   gamma;     // reference gamma
 
@@ -185,8 +195,9 @@ class Particle {
   Particle( const Particle& );
 
 public:
+  virtual JetParticle* ConvertToJetParticle() const = 0;
+  
   virtual ~Particle();
-
   virtual Particle* Clone() const = 0;
   
   // Phase space indices
@@ -215,6 +226,9 @@ public:
   inline double get_cdt()   const { return state[2]; }
   inline double get_npx()   const { return state[3]; }
   inline double get_npy()   const { return state[4]; }
+  inline double get_npz()   const { return sqrt( ( 1.0 + state[5] )*( 1.0 + state[5] ) 
+                                                 - state[3]*state[3]  
+                                                 - state[4]*state[4] ); }
   inline double get_ndp()   const { return state[5]; }
 
   void set_x   ( double u )  { state[0] = u; }
@@ -224,7 +238,7 @@ public:
   void set_npy ( double u )  { state[4] = u; }
   void set_ndp ( double u )  { state[5] = u; }
 
-  inline Vector State() 
+  inline Vector State() const
          {  return Vector( BMLN_dynDim, state ); } 
          // Returns the state as a Vector object.
 
@@ -292,12 +306,12 @@ public:
 };
 
 
-  inline int Particle::_x()    { return 0; }
-  inline int Particle::_y()    { return 1; }
-  inline int Particle::_cdt()  { return 2; }
-  inline int Particle::_xp()   { return 3; }
-  inline int Particle::_yp()   { return 4; }
-  inline int Particle::_dpop() { return 5; }
+inline int Particle::_x()    { return 0; }
+inline int Particle::_y()    { return 1; }
+inline int Particle::_cdt()  { return 2; }
+inline int Particle::_xp()   { return 3; }
+inline int Particle::_yp()   { return 4; }
+inline int Particle::_dpop() { return 5; }
 
 
 
@@ -311,6 +325,7 @@ public:
   Proton( double /* energy [GeV] */, double* /* state */ );
   Proton( const Proton& );
   ~Proton();
+  JetParticle* ConvertToJetParticle() const;
   Particle* Clone() const { return new Proton( *this ); }
 };
 
@@ -321,6 +336,7 @@ public:
   AntiProton( double /* energy [GeV] */, double* /* state */ );
   AntiProton( const AntiProton& );
   ~AntiProton();
+  JetParticle* ConvertToJetParticle() const;
   Particle* Clone() const { return new AntiProton( *this ); }
 };
 
@@ -331,6 +347,7 @@ public:
   Electron( double /* energy [GeV] */, double* /* state */ );
   Electron( const Electron& );
   ~Electron();
+  JetParticle* ConvertToJetParticle() const;
   Particle* Clone() const { return new Electron( *this ); }
 };
 
@@ -341,6 +358,7 @@ public:
   Positron( double /* energy [GeV] */, double* /* state */ );
   Positron( const Positron& );
   ~Positron();
+  JetParticle* ConvertToJetParticle() const;
   Particle* Clone() const { return new Positron( *this ); }
 };
 
@@ -351,6 +369,7 @@ public:
   Muon( double /* energy [GeV] */, double* /* state */ );
   Muon( const Muon& );
   ~Muon();
+  JetParticle* ConvertToJetParticle() const;
   Particle* Clone() const { return new Muon( *this ); }
 };
 
@@ -361,6 +380,7 @@ public:
   AntiMuon( double /* energy [GeV] */, double* /* state */ );
   AntiMuon( const AntiMuon& );
   ~AntiMuon();
+  JetParticle* ConvertToJetParticle() const;
   Particle* Clone() const { return new AntiMuon( *this ); }
 };
 
@@ -392,6 +412,7 @@ protected:
   friend class JetthinSext;
   friend class thinOctupole;
   friend class thinDecapole;
+  friend class thin2pole;
   friend class thin12pole;
   friend class thin14pole;
   friend class thin16pole;
@@ -438,7 +459,7 @@ protected:
   static void errorHandler( const char* f, int l, const char* msg, int e );
 
 public:
-  virtual Particle* ConvertToParticle() = 0;
+  virtual Particle* ConvertToParticle() const = 0;
   virtual ~JetParticle();
   virtual JetParticle* Clone() const = 0;
 
@@ -466,6 +487,9 @@ public:
   inline Jet get_cdt()   const { return state(2); }
   inline Jet get_npx()   const { return state(3); }
   inline Jet get_npy()   const { return state(4); }
+  inline Jet get_npz()   const { return sqrt( ( 1.0 + state(5) )*( 1.0 + state(5) ) 
+                                              - state(3)*state(3)  
+                                              - state(4)*state(4) ); }
   inline Jet get_ndp()   const { return state(5); }
 
   void set_x   ( const Jet& u )  { state.SetComponent(0,u); }
@@ -550,7 +574,7 @@ struct JetProton : public JetParticle {
   JetProton( const JetProton& );
   ~JetProton();
   JetParticle* Clone() const { return new JetProton( *this ); }
-  Particle* ConvertToParticle();
+  Particle* ConvertToParticle() const;
 };
 
 struct JetAntiProton : public JetParticle {
@@ -560,7 +584,7 @@ struct JetAntiProton : public JetParticle {
   JetAntiProton( const JetAntiProton& );
   ~JetAntiProton();
   JetParticle* Clone() const { return new JetAntiProton( *this ); }
-  Particle* ConvertToParticle();
+  Particle* ConvertToParticle() const;
 };
 
 struct JetElectron : public JetParticle {
@@ -570,7 +594,7 @@ struct JetElectron : public JetParticle {
   JetElectron( const JetElectron& );
   ~JetElectron();
   JetParticle* Clone() const { return new JetElectron( *this ); }
-  Particle* ConvertToParticle();
+  Particle* ConvertToParticle() const;
 };
 
 struct JetPositron : public JetParticle {
@@ -580,7 +604,7 @@ struct JetPositron : public JetParticle {
   JetPositron( const JetPositron& );
   ~JetPositron();
   JetParticle* Clone() const { return new JetPositron( *this ); }
-  Particle* ConvertToParticle();
+  Particle* ConvertToParticle() const;
 };
 
 struct JetMuon : public JetParticle {
@@ -590,7 +614,7 @@ struct JetMuon : public JetParticle {
   JetMuon( const JetMuon& );
   ~JetMuon();
   JetParticle* Clone() const { return new JetMuon( *this ); }
-  Particle* ConvertToParticle();
+  Particle* ConvertToParticle() const;
 };
 
 struct JetAntiMuon : public JetParticle {
@@ -600,8 +624,7 @@ struct JetAntiMuon : public JetParticle {
   JetAntiMuon( const JetAntiMuon& );
   ~JetAntiMuon();
   JetParticle* Clone() const { return new JetAntiMuon( *this ); }
-  Particle* ConvertToParticle();
+  Particle* ConvertToParticle() const;
 };
 
 #endif // PARTICLE_H
-

@@ -37,8 +37,8 @@
 #include "bmlnElmnt.h"
 #endif
 
-class Proton;
-class JetProton;
+class Particle;
+class JetParticle;
 
 class CF_sbend : public bmlnElmnt
 {
@@ -91,7 +91,8 @@ class CF_sbend : public bmlnElmnt
   void acceptInner( BmlVisitor& v );
   void acceptInner( ConstBmlVisitor& v );
   
-  void peekAt( double& s, Particle* = 0 );
+  // REMOVE: void peekAt( double& s, Particle* = 0 );
+  void peekAt( double& s, const Particle& ) const;
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "CF_sbend") != 0 )
@@ -126,8 +127,8 @@ class CF_sbend : public bmlnElmnt
 
 
 
-  double AdjustPosition( const Proton& );
-  double AdjustPosition( const JetProton& );
+  // REMOVE: double AdjustPosition( const Particle& );
+  // REMOVE: double AdjustPosition( const JetParticle& );
 
 
   int setQuadrupole ( double );  

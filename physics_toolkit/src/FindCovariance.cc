@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
 ******                                    
 ******  File:      FindCovariance.cc
+******  Version:   2.0
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -34,6 +34,7 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -61,27 +62,29 @@
 
 #include <iomanip>
 
+#include <iosetup.h>
 #include <GenericException.h>
 #include <beamline.h>
 #include <FindCovariance.h>
 
-const int columns = 3;
-
 using namespace std;
 
-MatrixD FindCovariance( const beamline& line,       
-                        const slist&    sampleSites,
-			      JetProton jp ) {
-//******************************************************************
-// This routine will calculate the covariance matrix from a sequence
-// of width measurements.
-// This routine expects:
-//  const beamline& line       :  beamline in question.
-//  const slist&    sampleSites:  an slist of bmlnElmnts where profile
-//                                data has been attached as a
-//                                Barnacle.
-//        JetProton jp         :  A suitable particle to propagate.
-//******************************************************************
+MatrixD FindCovariance( const beamline&    line,       
+                        const slist&       sampleSites,
+                        const JetParticle& jp ) 
+{
+  //******************************************************************
+  // This routine will calculate the covariance matrix from a sequence
+  // of width measurements.
+  // This routine expects:
+  //  const beamline& line       :  beamline in question.
+  //  const slist&    sampleSites:  an slist of bmlnElmnts where profile
+  //                                data has been attached as a
+  //                                Barnacle.
+  //  const JetParticle& jp      :  A suitable particle to propagate.
+  //******************************************************************
+
+  const int columns = 3;
 
   // dlist_iterator NextElement( (dlist&) line );
   BeamlineIterator bi( line );
@@ -91,8 +94,6 @@ MatrixD FindCovariance( const beamline& line,
   double zero [] = { 0., 0., 0., 0., 0., 0. };
 
   int rows = sampleSites.size();
-//  int rows = 12;  Why was this fixed to 12?
-
   double  xsq, ysq;
 
   MatrixD C( 6, 6 );
@@ -103,7 +104,9 @@ MatrixD FindCovariance( const beamline& line,
   MatrixD yV( rows, 1 ), xV( columns, 1 );
   Mapping map;
   int count = 0;
-  jp.setState( zero );
+
+  JetParticle* jpPtr = jp.Clone();
+  jpPtr->setState( zero );
 
   if( pbe_sample = (bmlnElmnt*) NextSample() ) {
 
@@ -111,10 +114,10 @@ MatrixD FindCovariance( const beamline& line,
 
     while( ( pbe_sample ) && ( pbe_line = bi++ ) ) {
 
-      pbe_line->propagate( jp );
+      pbe_line->propagate( *jpPtr );
       
       if( pbe_line == pbe_sample ) {
-	jp.getState(map);
+        jpPtr->getState(map);
         M = map.Jacobian();
       
         xsq = ( (WIREData*) pbe_line->dataHook.find("WIREData") )->hsigma;
@@ -143,6 +146,7 @@ MatrixD FindCovariance( const beamline& line,
           << count << " marked bmlnElmnts but expected " 
           << rows
           << endl;
+      delete jpPtr; jpPtr = 0;
       throw( GenericException( __FILE__, __LINE__, 
              "MatrixD FindCovariance( const beamline& line,       ", 
              uic.str().c_str() ) );
@@ -161,19 +165,23 @@ MatrixD FindCovariance( const beamline& line,
     C( 1, 4 ) = C( 4, 1 ) = xV( 1, 0 );
     C( 4, 4 )             = xV( 2, 0 );
 
+    delete jpPtr; jpPtr = 0;
     return C;
   }
   else {
-      throw( GenericException( __FILE__, __LINE__, 
-             "MatrixD FindCovariance( const beamline& line,       ", 
-             "Empty sampling list." ) );
+    delete jpPtr; jpPtr = 0;
+    throw( GenericException( __FILE__, __LINE__, 
+           "MatrixD FindCovariance( const beamline& line,       ", 
+           "Empty sampling list." ) );
   }
 }
 
-void TestCovariance( const beamline& line,
-                     const slist&    sampleSites,
-                     JetProton       jp,
-                     const MatrixD&  C ) {
+
+void TestCovariance( const beamline&    line,
+                     const slist&       sampleSites,
+                     const JetParticle& jp,
+                     const MatrixD&     C ) 
+{
   dlist_iterator NextElement( (dlist&) line );
   slist_iterator NextSample (          sampleSites );
   bmlnElmnt* pbe_line;
@@ -183,24 +191,25 @@ void TestCovariance( const beamline& line,
   MatrixD M, Cov;
   Mapping map;
 
-  jp.setState( zero );
-  cout.setf( ios::fixed );
+  JetParticle* jpPtr = jp.Clone();
+  jpPtr->setState( zero );
+  (*FNAL::pcout).setf( ios::fixed );
 
   if( pbe_sample = (bmlnElmnt*) NextSample() ) {
     while( ( pbe_sample                            ) && 
            ( pbe_line = (bmlnElmnt*) NextElement() ) 
          ) {
 
-      pbe_line->propagate( jp );
+      pbe_line->propagate( *jpPtr );
 
       if( pbe_line == pbe_sample ) 
       {
-	jp.getState(map);
+        jpPtr->getState(map);
         M = map.Jacobian();
         Cov = M*C*M.transpose();
       
         xsq = ( (WIREData*) pbe_line->dataHook.find("WIREData") )->hsigma;
-        cout << setw(12) << pbe_line->Name()
+        (*FNAL::pcout) << setw(12) << pbe_line->Name()
              << "  Data = "   
              << setw(8) << setprecision(3) << 1000.0*xsq
              << "  Theory = " 
@@ -209,7 +218,7 @@ void TestCovariance( const beamline& line,
              << endl;
         
         ysq = ( (WIREData*) pbe_line->dataHook.find("WIREData") )->vsigma;
-        cout << setw(12) << pbe_line->Name()
+        (*FNAL::pcout) << setw(12) << pbe_line->Name()
              << "  Data = "   
              << setw(8) << setprecision(3) << 1000.0*ysq
              << "  Theory = " 
@@ -221,18 +230,18 @@ void TestCovariance( const beamline& line,
       } 
       else 
       {
-	jp.getState(map);
+        jpPtr->getState(map);
         M = map.Jacobian();
         Cov = M*C*M.transpose();
       
-        cout << setw(12) << pbe_line->Name()
+        (*FNAL::pcout) << setw(12) << pbe_line->Name()
              << "                 "
              << "  Theory = " 
              << setw(8) << setprecision(3) << 1000.0*sqrt( Cov( 0, 0 ) )
              << "  [mm]  Horizontal"
              << endl;
         
-        cout << setw(12) << pbe_line->Name()
+        (*FNAL::pcout) << setw(12) << pbe_line->Name()
              << "                 "
              << "  Theory = " 
              << setw(8) << setprecision(3) << 1000.0*sqrt( Cov( 1, 1 ) )

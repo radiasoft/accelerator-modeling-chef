@@ -36,8 +36,8 @@ static double (CF_rbend::*setExitAngleParticle_Ptr)    (const Particle&      ) =
 
 // The following functions exist in the header file CF_rbend.h but currently have no implementation.
 
-//static double (CF_rbend::*AdjustPositionProton_Ptr)    (const Proton&        ) = &CF_rbend::AdjustPosition;
-//static double (CF_rbend::*AdjustPositionJetProton_Ptr) (const JetProton&     ) = &CF_rbend::AdjustPosition;
+//static double (CF_rbend::*AdjustPositionParticle_Ptr)    (const Particle&        ) = &CF_rbend::AdjustPosition;
+//static double (CF_rbend::*AdjustPositionJetParticle_Ptr) (const JetParticle&     ) = &CF_rbend::AdjustPosition;
 
 void wrap_cf_rbend () {
 
@@ -67,8 +67,8 @@ void wrap_cf_rbend () {
   .def("getExitEdgeAngle",        &CF_rbend::getExitEdgeAngle)
   .def("hasParallelFaces",        &CF_rbend::hasParallelFaces)
   .def("hasStandardFaces",        &CF_rbend::hasStandardFaces) 
-    //  .def("AdjustPositionProton",    AdjustPositionProton_Ptr)
-    //.def("AdjustPositionJetProton", AdjustPositionJetProton_Ptr )
+    //  .def("AdjustPositionParticle",    AdjustPositionParticle_Ptr)
+    //.def("AdjustPositionJetParticle", AdjustPositionJetParticle_Ptr )
   .def("OrbitLength",             &CF_rbend::OrbitLength);
 
 }

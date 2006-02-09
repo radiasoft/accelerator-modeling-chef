@@ -84,7 +84,7 @@ MomentsFncData::MomentsFncData( BeamlineContext* bcp, std::ostream* stdoutstream
 }
 
 
-MomentsFncData::MomentsFncData( /* const */ beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream)
+MomentsFncData::MomentsFncData( const Particle& prt, beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream)
 : 
   _bmlConPtr(0), 
   _deleteContext(true),
@@ -105,7 +105,7 @@ MomentsFncData::MomentsFncData( /* const */ beamline* pBml, std::ostream* stdout
   _outputStreamPtr(stdoutstream)
 
 {
-  _bmlConPtr = new BeamlineContext( false, pBml );
+  _bmlConPtr = new BeamlineContext( prt, pBml, false );
   this->_finishConstructor();
 }
 

@@ -51,8 +51,8 @@ using namespace std;
 // madparser* mp = 0;
 
 
-LBFncData::LBFncData( beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream )
-: _bmlConPtr( new BeamlineContext( false, pBml ) ),
+LBFncData::LBFncData( const Particle& prt, beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream )
+: _bmlConPtr( new BeamlineContext( prt, pBml, false ) ),
   _deleteContext(false),
   _arraySize(0),
   _azimuth(dnull),

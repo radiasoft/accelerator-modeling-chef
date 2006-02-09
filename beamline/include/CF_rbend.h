@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      CF_rbend.h
+******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -37,8 +37,8 @@
 #include "bmlnElmnt.h"
 #endif
 
-class Proton;
-class JetProton;
+class Particle;
+class JetParticle;
 
 class CF_rbend : public bmlnElmnt
 {
@@ -64,9 +64,9 @@ class CF_rbend : public bmlnElmnt
             double,     // entry angle  [ radians ]
             int = 1 );
 
-  CF_rbend( double,     // length  [ meters ]     // No entry angle assumed
-            double,     // field   [ tesla ]      // Must use a registration proton
-                        // (assumed along the y-axis)
+  CF_rbend( double,     // length  [ meters ]           // No entry angle assumed.
+            double,     // field   [ tesla ]            // Must be registered.
+                        // (assumed along the y-axis)   // See RefRegVisitor
 
             double,     // upstream edge angle [radians]
             double,     // downstream edge angle [radians]
@@ -122,7 +122,8 @@ class CF_rbend : public bmlnElmnt
   void acceptInner( BmlVisitor& v );
   void acceptInner( ConstBmlVisitor& v );
   
-  void peekAt( double& s, Particle* = 0 );
+  // REMOVE: void peekAt( double& s, Particle* = 0 );
+  void peekAt( double& s, const Particle& ) const;
 
   const char* Type() const;
   virtual int isType(char* c) { if ( strcmp(c, "CF_rbend") != 0 )
@@ -158,8 +159,8 @@ class CF_rbend : public bmlnElmnt
   double getTanPoleFaceAngle() const { return tan(this->getEntryAngle()); }
 
 
-  double AdjustPosition( const Proton& );
-  double AdjustPosition( const JetProton& );
+  double AdjustPosition( const Particle& );
+  double AdjustPosition( const JetParticle& );
 
 
   int setQuadrupole ( double );  

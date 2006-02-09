@@ -7,7 +7,7 @@
 ******             of BEAMLINE.                                    
 ******                                                                
 ******  File:      RayTrace.cc
-******  Version:   3.2
+******  Version:   3.3
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -539,7 +539,7 @@ void RayDrawSpace::drawV_ViewRect( RayDrawSpace* x )
 };
 
 
-void RayDrawSpace::mousePressEvent( QMouseEvent* qme )
+void RayDrawSpace::mousePressEvent( QMouseEvent* /*qme*/ )
 {
 }
 
@@ -577,7 +577,8 @@ RayTrace::RayTrace( BeamlineContext* bmlCP, QWidget* parent, const char* name, W
 }
 
 
-RayTrace::RayTrace( /* const */ beamline* x, QWidget* parent, const char* name, WFlags f )
+RayTrace::RayTrace( const Particle& prt, beamline* x, 
+                    QWidget* parent, const char* name, WFlags f )
 : QVBox(parent, name, f),
   _p_info(0), 
   _number(1),
@@ -593,7 +594,7 @@ RayTrace::RayTrace( /* const */ beamline* x, QWidget* parent, const char* name, 
            "null argument passed to constructor." ) );
   }
 
-  _bmlConPtr = new BeamlineContext( false, x );
+  _bmlConPtr = new BeamlineContext( prt, x, false );
   this->_finishConstructor();
 }
 
@@ -730,11 +731,11 @@ void RayTrace::_finishConstructor()
   _p_yp_label = new QLabel   ( "  y' ", _p_numberDisplay );
   _p_yp_input = new PointEdit( "0.0"  , _p_numberDisplay );
 
-  const Proton* protonPtr = &(_bmlConPtr->_proton);
-  _p_x_input ->_set_first ( protonPtr->get_x(), protonPtr->get_npx() ); // Probably should
-  _p_xp_input->_set_second( protonPtr->get_x(), protonPtr->get_npx() ); // be done by emitting
-  _p_y_input ->_set_first ( protonPtr->get_y(), protonPtr->get_npy() ); // a signal of some
-  _p_yp_input->_set_second( protonPtr->get_y(), protonPtr->get_npy() ); // sort.
+  const Particle& particleRef = _bmlConPtr->getParticle();
+  _p_x_input ->_set_first ( particleRef.get_x(), particleRef.get_npx() ); // Probably should
+  _p_xp_input->_set_second( particleRef.get_x(), particleRef.get_npx() ); // be done by emitting
+  _p_y_input ->_set_first ( particleRef.get_y(), particleRef.get_npy() ); // a signal of some
+  _p_yp_input->_set_second( particleRef.get_y(), particleRef.get_npy() ); // sort.
 
   _p_x_input ->setMaxLength( 14 );
   _p_xp_input->setMaxLength( 14 );
@@ -891,7 +892,7 @@ void RayTrace::_opt_setHistory()
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( "Maximum number of traces", qhb1 );
+        new QLabel( "Maximum number of traces", qhb1 );
         QString stl;
         stl.setNum( _maxHistory );
         QLineEdit* qle = new QLineEdit( stl, qhb1 );
@@ -934,7 +935,7 @@ void RayTrace::_opt_setIter()
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlb = new QLabel( "Strobe period", qhb1 );
+      /* QLabel* qlb = */ new QLabel( "Strobe period", qhb1 );
         QString stl;
         stl.setNum( _number );
         QLineEdit* qle = new QLineEdit( stl, qhb1 );
@@ -1026,25 +1027,25 @@ void RayTrace::_opt_snglmode()
 
 void RayTrace::_new_x( double x )
 {
-  _bmlConPtr->_proton.set_x(x);
+  _bmlConPtr->setParticle_x(x);
 }
 
 
 void RayTrace::_new_xp( double xp )
 {
-  _bmlConPtr->_proton.set_npx(xp);
+  _bmlConPtr->setParticle_npx(xp);
 }
 
 
 void RayTrace::_new_y( double y )
 {
-  _bmlConPtr->_proton.set_y(y);
+  _bmlConPtr->setParticle_y(y);
 }
 
 
 void RayTrace::_new_yp( double yp )
 {
-  _bmlConPtr->_proton.set_npy(yp);
+  _bmlConPtr->setParticle_npy(yp);
 }
 
 
@@ -1060,7 +1061,7 @@ void RayTrace::_appendToHistory( double az, const Vector& state )
 void RayTrace::setState( const Vector& s )
 {
   if( s.Dim() == 6 ) {
-    _bmlConPtr->_proton.setState( s );
+    _bmlConPtr->setParticleState( s );
   }
   else {
     ostringstream uic;
@@ -1074,27 +1075,23 @@ void RayTrace::setState( const Vector& s )
 
 void RayTrace::_iterate()
 {
-  if( _bmlConPtr->_protonBunch.isEmpty() ) { _pushParticle(); }
-  else                                     { _pushBunch();    }
+  if( _bmlConPtr->_particleBunchPtr->isEmpty() ) { _pushParticle(); }
+  else                                           { _pushBunch();    }
 }
 
 
 void RayTrace::_pushBunch()
 {
-  // Proton  originalProton( _bmlConPtr->getReferenceProton() );
-  Proton* protonPtr;
-  beamline* bmlPtr   = const_cast<beamline*>(_bmlConPtr->cheatBmlPtr());
-  ProtonBunch* pbPtr = &(_bmlConPtr->_protonBunch);
+  const Particle* particlePtr = 0;
+  ParticleBunch* pbPtr = _bmlConPtr->_particleBunchPtr;
 
   if( _isIterating ) 
   {
     ParticleBunch::Iterator itr( *pbPtr );
-    while( 0 != ( protonPtr = (Proton*)(itr.next()) ) ) {
-      _bmlConPtr->_proton.setState( protonPtr->State() );
-      // _bmlConPtr->setReferenceProton( *protonPtr );
+    while( 0 != ( particlePtr = (itr.next()) ) ) {
+      _bmlConPtr->setParticleState( particlePtr->State() );
       this->_pushParticle();
     }
-    // _bmlConPtr->setReferenceProton( originalProton );
 
     // _p_leftWindow->updateGL();
     // _p_rightWindow->updateGL();
@@ -1110,7 +1107,8 @@ void RayTrace::_pushBunch()
 void RayTrace::_pushParticle()
 {
   beamline* bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
-  Proton*   protonPtr = &(_bmlConPtr->_proton);
+  Particle* particlePtr = _bmlConPtr->_particlePtr;
+  // ??? This will eventually have to be changed.
   
   // Continuous operation
   if( _continuous ) 
@@ -1118,7 +1116,7 @@ void RayTrace::_pushParticle()
     if( _isIterating ) 
     {
       // REMOVE: for( int i = 0; i < _number; i++ ) {
-      // REMOVE:   bmlPtr->propagate( *protonPtr );
+      // REMOVE:   bmlPtr->propagate( *particlePtr );
       // REMOVE: }
 
       // ??? This code fragment must be improved.
@@ -1128,15 +1126,15 @@ void RayTrace::_pushParticle()
       DeepBeamlineIterator dbi( bmlPtr );
       bmlnElmnt* q = 0;
       while( 0 != (q = dbi++) ) {
-        q->propagate( *protonPtr );
-        if(    (0.1 < std::abs(protonPtr->get_x())) 
-            || (0.1 < std::abs(protonPtr->get_y())) ) {
+        q->propagate( *particlePtr );
+        if(    (0.1 < std::abs(particlePtr->get_x())) 
+            || (0.1 < std::abs(particlePtr->get_y())) ) {
           _p_timer->stop();
 
-          _p_x_input ->_set_first ( protonPtr->get_x(), protonPtr->get_npx() ); // Probably should
-          _p_xp_input->_set_second( protonPtr->get_x(), protonPtr->get_npx() ); // be done by emitting
-          _p_y_input ->_set_first ( protonPtr->get_y(), protonPtr->get_npy() ); // a signal of some
-          _p_yp_input->_set_second( protonPtr->get_y(), protonPtr->get_npy() ); // sort.
+          _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
+          _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
+          _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
+          _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() ); // sort.
 
           _p_leftWindow->updateGL();
           _p_rightWindow->updateGL();
@@ -1153,10 +1151,10 @@ void RayTrace::_pushParticle()
     else {
       _p_timer->stop();
 
-      _p_x_input ->_set_first ( protonPtr->get_x(), protonPtr->get_npx() ); // Probably should
-      _p_xp_input->_set_second( protonPtr->get_x(), protonPtr->get_npx() ); // be done by emitting
-      _p_y_input ->_set_first ( protonPtr->get_y(), protonPtr->get_npy() ); // a signal of some
-      _p_yp_input->_set_second( protonPtr->get_y(), protonPtr->get_npy() ); // sort.
+      _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
+      _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
+      _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
+      _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() ); // sort.
     }
   }
 
@@ -1165,7 +1163,7 @@ void RayTrace::_pushParticle()
   {
     if( _isIterating ) 
     {
-      // REMOVE: bmlPtr->propagate( *protonPtr );
+      // REMOVE: bmlPtr->propagate( *particlePtr );
 
       // ??? This code fragment must be improved.
       // ??? It is written as a hack to prevent
@@ -1174,9 +1172,9 @@ void RayTrace::_pushParticle()
       DeepBeamlineIterator dbi( bmlPtr );
       bmlnElmnt* q = 0;
       while( 0 != (q = dbi++) ) {
-        q->propagate( *protonPtr );
-        if(    (0.1 < std::abs(protonPtr->get_x())) 
-            || (0.1 < std::abs(protonPtr->get_y())) ) {
+        q->propagate( *particlePtr );
+        if(    (0.1 < std::abs(particlePtr->get_x())) 
+            || (0.1 < std::abs(particlePtr->get_y())) ) {
       	  _p_leftWindow->updateGL();
       	  _p_rightWindow->updateGL();
 
@@ -1185,10 +1183,10 @@ void RayTrace::_pushParticle()
       	  _p_startBtn->setOn(false);
       	  _p_startBtn->setText( "Trace" );
 
-      	  _p_x_input ->_set_first ( protonPtr->get_x(), protonPtr->get_npx() ); // Probably should
-      	  _p_xp_input->_set_second( protonPtr->get_x(), protonPtr->get_npx() ); // be done by emitting
-      	  _p_y_input ->_set_first ( protonPtr->get_y(), protonPtr->get_npy() ); // a signal of some
-      	  _p_yp_input->_set_second( protonPtr->get_y(), protonPtr->get_npy() ); // sort.
+      	  _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
+      	  _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
+      	  _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
+      	  _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() ); // sort.
 
           return;
 	}
@@ -1202,10 +1200,10 @@ void RayTrace::_pushParticle()
       _p_startBtn->setOn(false);
       _p_startBtn->setText( "Trace" );
 
-      _p_x_input ->_set_first ( protonPtr->get_x(), protonPtr->get_npx() ); // Probably should
-      _p_xp_input->_set_second( protonPtr->get_x(), protonPtr->get_npx() ); // be done by emitting
-      _p_y_input ->_set_first ( protonPtr->get_y(), protonPtr->get_npy() ); // a signal of some
-      _p_yp_input->_set_second( protonPtr->get_y(), protonPtr->get_npy() ); // sort.
+      _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
+      _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
+      _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
+      _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() ); // sort.
     }
   }
 }

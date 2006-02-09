@@ -218,7 +218,7 @@ int beamline::twiss( char, JetParticle& p ) {
   double*         zero;
   int             i;
 
- // .......... Propagate a JetProton to get transfer matrix
+ // .......... Propagate a JetParticle to get transfer matrix
 
 
   lattFunc*       latticeFunctions = new lattFunc;
@@ -229,7 +229,7 @@ int beamline::twiss( char, JetParticle& p ) {
     zero           = new double   [ BMLN_dynDim ];
     z              = new Jet      [ BMLN_dynDim ];
 
-   // .......... Propagate a JetProton to get transfer matrix
+   // .......... Propagate a JetParticle to get transfer matrix
     for ( i = 0; i < BMLN_dynDim; i++ ) zero[i] = 0.0;
     p.setState( zero );
     propagate( p );

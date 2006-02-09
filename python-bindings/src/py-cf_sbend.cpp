@@ -36,8 +36,8 @@ static double (CF_sbend::*setExitAngleParticle_Ptr)    (const Particle&      ) =
 
 // The following functions exist in the header file CF_sbend.h but currently have no implementation.
 
-//static double (CF_sbend::*AdjustPositionProton_Ptr)    (const Proton&        ) = &CF_sbend::AdjustPosition;
-//static double (CF_sbend::*AdjustPositionJetProton_Ptr) (const JetProton&     ) = &CF_sbend::AdjustPosition;
+//static double (CF_sbend::*AdjustPositionParticle_Ptr)    (const Particle&        ) = &CF_sbend::AdjustPosition;
+//static double (CF_sbend::*AdjustPositionJetParticle_Ptr) (const JetParticle&     ) = &CF_sbend::AdjustPosition;
 
 
 void wrap_cf_sbend () {
@@ -70,8 +70,8 @@ void wrap_cf_sbend () {
   .def("getExitEdgeAngle",        &CF_sbend::getExitEdgeAngle)
   .def("hasParallelFaces",        &CF_sbend::hasParallelFaces)
   .def("hasStandardFaces",        &CF_sbend::hasStandardFaces) 
-//.def("AdjustPositionProton",    AdjustPositionProton_Ptr)
-//.def("AdjustPositionJetProton", AdjustPositionJetProton_Ptr )
+//.def("AdjustPositionParticle",    AdjustPositionParticle_Ptr)
+//.def("AdjustPositionJetParticle", AdjustPositionJetParticle_Ptr )
   .def("OrbitLength",             &CF_sbend::OrbitLength);
 
 }

@@ -33,7 +33,7 @@ ETFncData::ETFncData( BeamlineContext* bcp,  ostream* stdoutstream, ostream* std
 }
 
 
-ETFncData::ETFncData( /* const */ beamline* pBml,  ostream* stdoutstream, ostream* stderrstream)
+ETFncData::ETFncData( const Particle& prt, beamline* pBml,  ostream* stdoutstream, ostream* stderrstream)
 : _errorStreamPtr(stderrstream), _outputStreamPtr(stdoutstream),
   _bmlConPtr(0), _deleteContext(true),
   _plotType( betaPlot ),
@@ -46,7 +46,7 @@ ETFncData::ETFncData( /* const */ beamline* pBml,  ostream* stdoutstream, ostrea
   _disp_H(dnull), _disp_V(dnull), 
   _name(0)
 {
-  _bmlConPtr = new BeamlineContext( false, pBml );
+  _bmlConPtr = new BeamlineContext( prt, pBml, false );
    this->_finishConstructor();
 }
 

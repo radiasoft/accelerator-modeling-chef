@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      combinedFunction.h
+******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -39,8 +39,8 @@
 
 enum WHICH_MULTIPOLE { DIPOLE_FIELD, QUADRUPOLE_FIELD, SEXTUPOLE_FIELD, OCTUPOLE_FIELD, DECAPOLE_FIELD, TWELVEPOLE_FIELD, FOURTEENPOLE_FIELD, SIXTEENPOLE_FIELD, EIGHTEENPOLE_FIELD };
 
-class Proton;
-class JetProton;
+class Particle;
+class JetParticle;
 
 class combinedFunction : public bmlnElmnt 
 {
@@ -94,8 +94,8 @@ public:
 
   bmlnElmnt* Clone() const { return new combinedFunction( *this ); }
 
-  double AdjustPosition( const Proton& );
-  double AdjustPosition( const JetProton& );
+  double AdjustPosition( const Particle& );
+  double AdjustPosition( const JetParticle& );
 };
 
 #endif // COMBINED_FUNCTION_H

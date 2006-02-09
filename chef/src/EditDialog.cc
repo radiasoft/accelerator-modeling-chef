@@ -12,7 +12,7 @@
 /**********************************************************************/
 
 
-#include "EditDialog.h"
+#include <EditDialog.h>
 
 #include <qlabel.h>
 #include <qdialog.h>
@@ -24,8 +24,16 @@
 #include <qlayout.h>
 #include <qradiobutton.h>
 
-#include "BeamlineContext.h"
+#include <iosetup.h>
 
+#include <GenericException.h>
+#include <BeamlineContext.h>
+
+using FNAL::pcerr;
+using FNAL::pcout;
+
+
+using std::ostringstream;
 using namespace std;
 
 void editDialog::visitBmlnElmnt( bmlnElmnt* x )
@@ -138,12 +146,12 @@ void editDialog::visitRbend( rbend* x )
     //   double newLength = (qle1->text()).toDouble( &ok );
     //   if( ok ) {
     //     if( 0 != _contextPtr->setLength( (rbend*) x, newLength ) ) { 
-    //       cerr << "*** WARNING *** File "
+    //       (*pcerr) << "*** WARNING *** File "
     //            << __FILE__ 
     //            << ", Line "
     //            << __LINE__
     //            << ": rbend not found in context."
-    //            << endl;
+    //            << std::endl;
     //     }
     //   }
     // }
@@ -152,12 +160,12 @@ void editDialog::visitRbend( rbend* x )
       double newStrength = (qle2->text()).toDouble( &ok );
       if( ok ) {
         if( 0 != _contextPtr->setStrength( (rbend*) x, newStrength ) ) { 
-          cerr << "*** WARNING *** File "
+          (*pcerr) << "*** WARNING *** File "
                << __FILE__ 
                << ", Line "
                << __LINE__
                << ": rbend not found in context."
-               << endl;
+               << std::endl;
         }
       }
     }
@@ -235,7 +243,7 @@ void editDialog::visitQuadrupole( quadrupole* x )
                << ": "
                << x->Type()
                << " not found in context."
-               << endl;
+               << std::endl;
           QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
         }
       }
@@ -254,7 +262,7 @@ void editDialog::visitQuadrupole( quadrupole* x )
                << ": "
                << x->Type()
                << " not found in context."
-               << endl;
+               << std::endl;
           QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
         }
       }
@@ -320,7 +328,7 @@ void editDialog::visitDrift( drift* x )
            << ", Line "
            << __LINE__
            << "\n*** WARNING *** This part routine needs to be rewritten. "
-           << endl;
+           << std::endl;
       QMessageBox::warning( 0, "BeamlineBrowser: WARNING", uic.str().c_str() );
       #endif
 
@@ -337,7 +345,7 @@ void editDialog::visitDrift( drift* x )
            << x->Name()
            << "\n*** WARNING *** If the program aborts soon, this is"
               "\n*** WARNING *** probably the reason."
-           << endl;
+           << std::endl;
       QMessageBox::warning( 0, "BeamlineBrowser: WARNING", uic.str().c_str() );
 
       bool ok;
@@ -376,7 +384,7 @@ void editDialog::visitDrift( drift* x )
                  << ": "
                  << x->Type()
                  << " not found in context."
-                 << endl;
+                 << std::endl;
             QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
           }
         }
@@ -484,22 +492,31 @@ void editDialog::visitSlot( Slot* x )
 
   if( returnCode == QDialog::Accepted ) {
     if( qrb->isOn() ) {
-      if( !(_contextPtr->hasReferenceProton()) ) {
-        Proton p( _contextPtr->getEnergy() );
-         _contextPtr->setReferenceProton(p);
+      if( !(_contextPtr->hasReferenceParticle()) ) {
+        delete wpu;
+  	QMessageBox::critical( 
+  	        0, 
+  	        "CHEF ERROR",
+  	        "Reference particle must be established first."
+  	        );
+  	throw( GenericException( __FILE__, __LINE__, 
+  	       "void editDialog::visitSlot( Slot* x )", 
+  	       "Reference particle not established." ) );
       }
 
-      Proton prtn( _contextPtr->getReferenceProton() );
+
+      Particle* particlePtr = (_contextPtr->getParticle()).Clone();
+      _contextPtr->getReferenceParticle( *particlePtr );
       DeepBeamlineIterator dbi( _contextPtr->cheatBmlPtr() );
       bmlnElmnt* q;
       while((  q = dbi++  )) {
         if( q == x ) { break; }
-        else         { q->propagate( prtn ); }
+        else         { q->propagate( *particlePtr ); }
       }
       if( q == x ) {
-        q->propagate( prtn );
-        double offset   = prtn.get_x();
-        double yawAngle = atan( prtn.get_npx()/prtn.get_npz() );
+        q->propagate( *particlePtr );
+        double offset   = particlePtr->get_x();
+        double yawAngle = atan( particlePtr->get_npx()/particlePtr->get_npz() );
         Frame f(x->getOutFrame());
         f.translate( offset*f.getxAxis() );
         f.rotate( yawAngle, f.getyAxis(), false );
@@ -566,12 +583,12 @@ void editDialog::visitThinQuad( thinQuad* x )
       double newStrength = (qle1->text()).toDouble( &ok );
       if( ok ) {
         if( 0 != _contextPtr->setStrength( x, newStrength ) ) {
-          cerr << "*** WARNING *** File "
+          (*pcerr) << "*** WARNING *** File "
                << __FILE__ 
                << ", Line "
                << __LINE__
                << ": thinQuad not found in context."
-               << endl;
+               << std::endl;
         }
       }
     }
@@ -581,12 +598,12 @@ void editDialog::visitThinQuad( thinQuad* x )
       ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
       if( ok ) {
         if( 0 != _contextPtr->setAlignment( x, ad ) ) {
-          cerr << "*** WARNING *** File "
+          (*pcerr) << "*** WARNING *** File "
                << __FILE__ 
                << ", Line "
                << __LINE__
                << ": thinQuad not found in context."
-               << endl;
+               << std::endl;
         }
       }
     }

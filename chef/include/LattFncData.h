@@ -14,7 +14,7 @@ class BeamlineContext;
 class LattFncData: public CHEFPlotData 
 {
  public:
-    LattFncData( beamline*,        std::ostream* = &std::cout, std::ostream* = &std::cerr );
+    LattFncData( const Particle&, beamline*, std::ostream* = &std::cout, std::ostream* = &std::cerr );
     LattFncData( BeamlineContext*, std::ostream* = &std::cout, std::ostream* = &std::cerr );
    ~LattFncData();
 

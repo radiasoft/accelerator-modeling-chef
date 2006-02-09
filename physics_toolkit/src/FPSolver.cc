@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.1
 ******                                    
 ******  File:      FPSolver.cc
+******  Version:   1.5
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -91,22 +91,22 @@ FPSolver::FPSolver( beamline* bml, int n ) {
 
 
 FPSolver::~FPSolver() {
-  delete [] jumpScale;
-  delete [] zeroScale;
-  delete [] l;
+  delete [] jumpScale;  jumpScale = 0;
+  delete [] zeroScale;  zeroScale = 0;
+  delete [] l;          l         = 0;
 }
 
            /* ------------------------------------- */
            /* ------------------------------------- */
 
-int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
+int FPSolver::operator()( Particle* p, const char*, FP_CRITFUNC Crit )
 {
   if( dimension != p->State().Dim() ) {
     ostringstream uic;
     uic << "Dimensions are not correct. " << dimension 
         << " != " << p->State().Dim();
     throw( GenericException( __FILE__, __LINE__, 
-           "int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )",
+           "int FPSolver::operator()( Particle* p, const char*, FP_CRITFUNC Crit )",
            uic.str().c_str() ) );
   }
 
@@ -121,11 +121,11 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
   Vector z(4);
   for( i = 0; i < 4; i++ ) z(i) = p->State( l[i] );
 
-  JetProton jpr( *p ); 
-  bmLine->propagate( jpr );
+  JetParticle* jprPtr = p->ConvertToJetParticle();
+  bmLine->propagate( *jprPtr );
 
   MatrixD MM;
-  MM = jpr .State() .Jacobian();
+  MM = jprPtr->State().Jacobian();
 
   MatrixD M( 4, 4 );
   for( i = 0; i < 4; i++ ) 
@@ -144,6 +144,7 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
     for( i = 0; i < Particle::PSD; i++ ) {
       if( isnan(p->State(i)) ) { 
         (*pcerr) << "FPSolver: *** ERROR *** p->State(" << i << ") is NaN." << endl;
+        delete jprPtr; jprPtr = 0;
         return -1; 
       }
     }
@@ -182,6 +183,7 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
       "FixedPoint:: More than 200 Newton's iterations attempted." << endl;
     (*pcerr) << "FixedPoint:: Result may not be reliable!! " << endl;
 
+    delete jprPtr; jprPtr = 0;
     return 1;
   }
 
@@ -209,6 +211,7 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
   }
 
   // --- Exit --------------------------------------------------------
+  delete jprPtr; jprPtr = 0;
   return 0;
 
 }
@@ -216,21 +219,21 @@ int FPSolver::operator()( Proton* p, const char*, FP_CRITFUNC Crit )
             /* ------------------------------------- */
            /* ------------------------------------- */
 
-int FPSolver::operator()( JetProton* p_jpr, const char*, FP_CRITFUNC Crit )
+int FPSolver::operator()( JetParticle* p_jpr, const char*, FP_CRITFUNC Crit )
 {
   int ret = 0;
-  Proton* p = 0;
+  Particle* p = 0;
 
   if( p_jpr ) 
   {
-    p = (Proton*) p_jpr->ConvertToParticle();
+    p = p_jpr->ConvertToParticle();
     p_jpr->setState( p->State() );  // Resets to identity.
   }
   else 
   {
     (*pcerr) << "*** ERROR ***                                          \n"
-            "*** ERROR *** FPSolver::operator()(JetProton*, char*)  \n"
-            "*** ERROR *** null argument for JetProton*             \n"
+            "*** ERROR *** FPSolver::operator()(JetParticle*, char*)  \n"
+            "*** ERROR *** null argument for JetParticle*             \n"
             "*** ERROR ***                                          \n"
          << endl;
     ret = 1;
@@ -242,7 +245,7 @@ int FPSolver::operator()( JetProton* p_jpr, const char*, FP_CRITFUNC Crit )
   {
     if( dimension != p_jpr->State().Dim() ) {
       (*pcerr) << "*** ERROR ***                                         \n"
-              "*** ERROR *** FPSolver::operator()(JetProton*, char*) \n"
+              "*** ERROR *** FPSolver::operator()(JetParticle*, char*) \n"
               "*** ERROR *** Dimensions are not correct.             \n"
               "*** ERROR ***  " << dimension << " != " << p->State().Dim() << "\n"
               "*** ERROR ***                                         \n"
@@ -284,6 +287,7 @@ int FPSolver::operator()( JetProton* p_jpr, const char*, FP_CRITFUNC Crit )
       for( i = 0; i < Particle::PSD; i++ ) {
         if( isnan(p->State(i)) ) { 
           (*pcerr) << "FPSolver: *** ERROR *** p->State(" << i << ") is NaN." << endl;
+          if(p) { delete p; p = 0; }
           return -1; 
         }
       }
@@ -346,7 +350,7 @@ int FPSolver::operator()( JetProton* p_jpr, const char*, FP_CRITFUNC Crit )
     }
   
 
-    // --- Reset JetProton* argument to contain the map ----------------
+    // --- Reset JetParticle* argument to contain the map ----------------
     // --- on the closed orbit.                         ----------------
 
     zs( p->cdtIndex() ) = 0.0;
@@ -362,14 +366,14 @@ int FPSolver::operator()( JetProton* p_jpr, const char*, FP_CRITFUNC Crit )
 
 
   // --- Exit --------------------------------------------------------
-  if(p) delete p;
+  if(p) { delete p; p = 0; }
   return ret;
 }
 
            /* ------------------------------------- */
            /* ------------------------------------- */
 
-int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
+int FPSolver::operator()( Particle* p, FP_CRITFUNC Crit )
 {
   Vector z = p->State();
 
@@ -378,7 +382,7 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
     uic << "Dimensions are not correct. "
         << dimension << " != " << z.Dim();
     throw( GenericException( __FILE__, __LINE__, 
-           "int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )",
+           "int FPSolver::operator()( Particle* p, FP_CRITFUNC Crit )",
            uic.str().c_str() ) );
   }
 
@@ -389,11 +393,11 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
   // -----------------------------------------------  
 
 
-  JetProton jpr( *p ); 
-  bmLine->propagate( jpr );
+  JetParticle* jprPtr = p->ConvertToJetParticle();
+  bmLine->propagate( *jprPtr );
 
   MatrixD M;
-  M = jpr .State() .Jacobian();
+  M = jprPtr->State().Jacobian();
   for( i = 0; i < dimension; i++ ) M( i, i ) -= 1.0;
   M = M.inverse();
   
@@ -406,6 +410,7 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
     for( i = 0; i < Particle::PSD; i++ ) {
       if( isnan(p->State(i)) ) { 
         (*pcerr) << "FPSolver: *** ERROR *** p->State(" << i << ") is NaN." << endl;
+        delete jprPtr; jprPtr = 0;
         return -1; 
       }
     }
@@ -440,7 +445,7 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
     (*pcerr) << 
       "FixedPoint:: More than 200 Newton's iterations attempted." << endl;
     (*pcerr) << "FixedPoint:: Result may not be reliable!! " << endl;
-
+    delete jprPtr; jprPtr = 0;
     return 1;
   }
 
@@ -467,14 +472,14 @@ int FPSolver::operator()( Proton* p, FP_CRITFUNC Crit )
   }
 
   // --- Exit --------------------------------------------------------
+  delete jprPtr; jprPtr = 0;
   return 0;
-
 }
 
            /* ------------------------------------- */
            /* ------------------------------------- */
 
-void FPSolver::operator()( JetProton* p, FP_CRITFUNC Crit )
+void FPSolver::operator()( JetParticle* p, FP_CRITFUNC Crit )
 {
   dimension = 6;
   
@@ -580,8 +585,7 @@ void FPSolver::operator()( JetProton* p, FP_CRITFUNC Crit )
   // --- Store closed orbit if desired -------------------------------
   double startLength( 0.0 );
   if( !Crit ) {
-    Proton* xp;
-    xp = (Proton*) ( p->ConvertToParticle() );
+    Particle* xp = p->ConvertToParticle();
 
     dlist_iterator getNext ( *(dlist*) bmLine );
     bmlnElmnt* q;
@@ -592,7 +596,7 @@ void FPSolver::operator()( JetProton* p, FP_CRITFUNC Crit )
          q->dataHook.append( "FPS_orbit", new FPinfo( startLength, xp->State() ) );
     }
 
-    delete xp;
+    delete xp; xp = 0;
   }
 
   // --- Exit --------------------------------------------------------
@@ -601,112 +605,112 @@ void FPSolver::operator()( JetProton* p, FP_CRITFUNC Crit )
            /* ------------------------------------- */
            /* ------------------------------------- */
 
-void FPSolver::operator()( double* result )
-{
-  JetProton      p(bmLine->Energy());
-  LieOperator   map;
-  dimension = 6;
-  
-  double particleCoord[6];
-  double u[6];
-  int m[6];
-  double zero[6];
-  int      i,j;
-  for(i=0; i<6; i++) {
-    particleCoord[i] = 0.0;
-    zero[i] = 0.0;
-  }
-  
-  Jet       y;
-  Mapping   w;
-  int     test, jumpTest, zeroTest;
-  int      iterCount;
-  
-  iterCount = 0;
-  MatrixD hessian(dimension,dimension);
-  MatrixD eps(dimension,1);
-  
-  MatrixD zzhessian(dimension,dimension);
-  MatrixD zzeps(dimension,1);
-  MatrixD zzx(dimension);
-  
-
-  do{
-    FORALL(i) {
-      y.setVariable( i,  p.State().Env() );
-      w.SetComponent( i, y );
-    }
-    p.setState(w);
-    bmLine->propagate( p );
-    p.getState(w);
-    test = 1;
-    w.standardPart( u );
-
-    // --- Has the state gone out of bounds? ---------
-    for( i = 0; i < 6; i++ ) {
-      if( isnan(u[i]) ) { 
-        (*pcerr) << "fixedPoint:: p->State(" << i << ") is NaN." << endl;
-        return; 
-      }
-    }
-      
-    FORALL(i) m[i] = 0;
-    FORALL(i) FORALL(j) {
-      m[j] = 1;
-      hessian(i,j) = w(i).derivative( m );
-      m[j] = 0;                           
-    }
-
-    FORALL(i) {
-      hessian(i,i) -= 1.0;
-      eps(i,0) = particleCoord[i] - u[i];
-    }
-
-    for( i = 0; i < 6; i++ ) {
-      for( j = 0; j < 6; j++ ) 
-	zzhessian(i,j) = 0.0;
-    }
-    zzeps = eps;
-    zzx = eps;
-    zzhessian = hessian;
-    mygaussj( zzhessian, 6, zzeps, 1 );
-    
-    eps = zzeps;
-    
-    jumpTest = 0;
-    FORALL(i) 
-      jumpTest = jumpTest || 
-        (  
-          ( fabs( eps(i,0) ) >
-          jumpScale[i]*DMAX(fabs( particleCoord[i] ),fabs(u[i])) )  
-        );
-
-    FORALL(i) particleCoord[i] += eps(i,0);
-
-    zeroTest = 0;
-    FORALL(i)  {
-      zeroTest = zeroTest || 
-        ( DMAX(fabs( particleCoord[i] ),fabs( u[i] )) > zeroScale[i] );
-    }
-
-    iterCount++;
-  } while ( jumpTest && test && (iterCount < 200) && zeroTest );
-  
-  if( iterCount >= 200 ) {
-    (*pcerr) << 
-      "fixedPoint:: More than 200 Newton's iterations attempted." << endl;
-    (*pcerr) << "fixedPoint:: Result may not be reliable!! " << endl;
-  }
-  if( !test ) 
-    (*pcerr) << 
-      "fixedPoint:: Mapping failed after " << iterCount << " iterations."
-					   << endl;
-  if( !jumpTest ) 
-    (*pcout) << 
-      "fixedPoint:: Convergence achieved after " << iterCount 
-						 << " iterations." << endl;
-  FORALL(i) result[i] = particleCoord[i];
-}
+// REMOVE: void FPSolver::operator()( double* result )
+// REMOVE: {
+// REMOVE:   JetProton      p(bmLine->Energy());
+// REMOVE:   LieOperator   map;
+// REMOVE:   dimension = 6;
+// REMOVE:   
+// REMOVE:   double particleCoord[6];
+// REMOVE:   double u[6];
+// REMOVE:   int m[6];
+// REMOVE:   double zero[6];
+// REMOVE:   int      i,j;
+// REMOVE:   for(i=0; i<6; i++) {
+// REMOVE:     particleCoord[i] = 0.0;
+// REMOVE:     zero[i] = 0.0;
+// REMOVE:   }
+// REMOVE:   
+// REMOVE:   Jet       y;
+// REMOVE:   Mapping   w;
+// REMOVE:   int     test, jumpTest, zeroTest;
+// REMOVE:   int      iterCount;
+// REMOVE:   
+// REMOVE:   iterCount = 0;
+// REMOVE:   MatrixD hessian(dimension,dimension);
+// REMOVE:   MatrixD eps(dimension,1);
+// REMOVE:   
+// REMOVE:   MatrixD zzhessian(dimension,dimension);
+// REMOVE:   MatrixD zzeps(dimension,1);
+// REMOVE:   MatrixD zzx(dimension);
+// REMOVE:   
+// REMOVE: 
+// REMOVE:   do{
+// REMOVE:     FORALL(i) {
+// REMOVE:       y.setVariable( i,  p.State().Env() );
+// REMOVE:       w.SetComponent( i, y );
+// REMOVE:     }
+// REMOVE:     p.setState(w);
+// REMOVE:     bmLine->propagate( p );
+// REMOVE:     p.getState(w);
+// REMOVE:     test = 1;
+// REMOVE:     w.standardPart( u );
+// REMOVE: 
+// REMOVE:     // --- Has the state gone out of bounds? ---------
+// REMOVE:     for( i = 0; i < 6; i++ ) {
+// REMOVE:       if( isnan(u[i]) ) { 
+// REMOVE:         (*pcerr) << "fixedPoint:: p->State(" << i << ") is NaN." << endl;
+// REMOVE:         return; 
+// REMOVE:       }
+// REMOVE:     }
+// REMOVE:       
+// REMOVE:     FORALL(i) m[i] = 0;
+// REMOVE:     FORALL(i) FORALL(j) {
+// REMOVE:       m[j] = 1;
+// REMOVE:       hessian(i,j) = w(i).derivative( m );
+// REMOVE:       m[j] = 0;                           
+// REMOVE:     }
+// REMOVE: 
+// REMOVE:     FORALL(i) {
+// REMOVE:       hessian(i,i) -= 1.0;
+// REMOVE:       eps(i,0) = particleCoord[i] - u[i];
+// REMOVE:     }
+// REMOVE: 
+// REMOVE:     for( i = 0; i < 6; i++ ) {
+// REMOVE:       for( j = 0; j < 6; j++ ) 
+// REMOVE: 	zzhessian(i,j) = 0.0;
+// REMOVE:     }
+// REMOVE:     zzeps = eps;
+// REMOVE:     zzx = eps;
+// REMOVE:     zzhessian = hessian;
+// REMOVE:     mygaussj( zzhessian, 6, zzeps, 1 );
+// REMOVE:     
+// REMOVE:     eps = zzeps;
+// REMOVE:     
+// REMOVE:     jumpTest = 0;
+// REMOVE:     FORALL(i) 
+// REMOVE:       jumpTest = jumpTest || 
+// REMOVE:         (  
+// REMOVE:           ( fabs( eps(i,0) ) >
+// REMOVE:           jumpScale[i]*DMAX(fabs( particleCoord[i] ),fabs(u[i])) )  
+// REMOVE:         );
+// REMOVE: 
+// REMOVE:     FORALL(i) particleCoord[i] += eps(i,0);
+// REMOVE: 
+// REMOVE:     zeroTest = 0;
+// REMOVE:     FORALL(i)  {
+// REMOVE:       zeroTest = zeroTest || 
+// REMOVE:         ( DMAX(fabs( particleCoord[i] ),fabs( u[i] )) > zeroScale[i] );
+// REMOVE:     }
+// REMOVE: 
+// REMOVE:     iterCount++;
+// REMOVE:   } while ( jumpTest && test && (iterCount < 200) && zeroTest );
+// REMOVE:   
+// REMOVE:   if( iterCount >= 200 ) {
+// REMOVE:     (*pcerr) << 
+// REMOVE:       "fixedPoint:: More than 200 Newton's iterations attempted." << endl;
+// REMOVE:     (*pcerr) << "fixedPoint:: Result may not be reliable!! " << endl;
+// REMOVE:   }
+// REMOVE:   if( !test ) 
+// REMOVE:     (*pcerr) << 
+// REMOVE:       "fixedPoint:: Mapping failed after " << iterCount << " iterations."
+// REMOVE: 					   << endl;
+// REMOVE:   if( !jumpTest ) 
+// REMOVE:     (*pcout) << 
+// REMOVE:       "fixedPoint:: Convergence achieved after " << iterCount 
+// REMOVE: 						 << " iterations." << endl;
+// REMOVE:   FORALL(i) result[i] = particleCoord[i];
+// REMOVE: }
 
 
 void FPSolver::eraseAll() {

@@ -60,8 +60,7 @@ static double* dnull = 0;
 using namespace std;
 
 DspnFncData::DspnFncData( BeamlineContext* bcp, std::ostream*  stdoutstream, std::ostream* stderrstream )
-: 
-  _bmlConPtr(bcp), 
+: _bmlConPtr(bcp), 
   _deleteContext(false),
   _arraySize(0), 
   _azimuth(dnull),
@@ -77,9 +76,8 @@ DspnFncData::DspnFncData( BeamlineContext* bcp, std::ostream*  stdoutstream, std
 }
 
 
-DspnFncData::DspnFncData( /* const */ beamline* pBml, std::ostream*  stdoutstream, std::ostream* stderrstream )
-: 
-  _bmlConPtr(0), 
+DspnFncData::DspnFncData( const Particle& prt, beamline* pBml, std::ostream*  stdoutstream, std::ostream* stderrstream )
+: _bmlConPtr(0), 
   _deleteContext(true),
   _arraySize(0), 
   _azimuth(dnull),
@@ -90,7 +88,7 @@ DspnFncData::DspnFncData( /* const */ beamline* pBml, std::ostream*  stdoutstrea
   _errorStreamPtr(stderrstream), 
   _outputStreamPtr(stdoutstream)
 {
-  _bmlConPtr = new BeamlineContext( false, pBml );
+  _bmlConPtr = new BeamlineContext( prt, pBml, false );
   this->_finishConstructor();
 }
 
@@ -222,7 +220,6 @@ void DspnFncData::doCalc()
     }
     else {
       *(azimuth++)     = infoPtr->arcLength;
-
       *(clo_H++)        = infoPtr->closedOrbit.hor / mm;
       *(clo_V++)        = infoPtr->closedOrbit.ver / mm;
       *(disp_H++)       = infoPtr->dispersion.hor;

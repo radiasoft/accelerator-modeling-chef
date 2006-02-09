@@ -122,11 +122,11 @@ class OrbitTransformer
     OrbitTransformer();
     virtual ~OrbitTransformer() {}
 
-    virtual void toState( double, double, Proton* ) const = 0;
+    virtual void toState( double, double, Particle* ) const = 0;
     virtual void toDynamics( const Vector&, double*, double*, double* ) const = 0;
     // This assumes, without checking, that the dimension
     //   of the Vector is correct: i.e. it is the same as the
-    //   dimension of a proton state.
+    //   dimension of a particle state.
 
     inline void set_x_center  ( double u ) { _x_o   = u; }
     inline void set_xp_center ( double u ) { _xp_o  = u; }
@@ -151,7 +151,7 @@ class OrbitTransformer
     void copyCenterFrom( const OrbitTransformer& );
 
   protected:
-    // Central values of the proton state. 
+    // Central values of the particle state. 
     //   Typically, these represent a closed or periodic orbit.
     //   The last two are added in anticipation of future upgrades.
     double _x_o;
@@ -169,7 +169,7 @@ class RectH : public OrbitTransformer
     RectH() {}
     ~RectH() {}
 
-    void toState( double, double, Proton* ) const;
+    void toState( double, double, Particle* ) const;
     void toDynamics( const Vector&, double*, double*, double* ) const;
 };
 
@@ -180,7 +180,7 @@ class RectV : public OrbitTransformer
     RectV() {}
     ~RectV() {}
 
-    void toState( double, double, Proton* ) const;
+    void toState( double, double, Particle* ) const;
     void toDynamics( const Vector&, double*, double*, double* ) const;
 };
 
@@ -191,7 +191,7 @@ class NormH : public OrbitTransformer
     NormH() : _alpha(0.0), _beta(1.0) {}
     NormH( double a, double b ) : _alpha(a), _beta(b) {}
 
-    void toState( double, double, Proton* ) const;
+    void toState( double, double, Particle* ) const;
     void toDynamics( const Vector&, double*, double*, double* ) const;
 
   private:
@@ -206,7 +206,7 @@ class NormV : public OrbitTransformer
     NormV() : _alpha(0.0), _beta(1.0) {}
     NormV( double a, double b ) : _alpha(a), _beta(b) {}
 
-    void toState( double, double, Proton* ) const;
+    void toState( double, double, Particle* ) const;
     void toDynamics( const Vector&, double*, double*, double* ) const;
 
   private:
@@ -225,7 +225,7 @@ class IHIV : public OrbitTransformer
     IHIV(); 
     ~IHIV() {}
 
-    void toState( double, double, Proton* ) const;
+    void toState( double, double, Particle* ) const;
     void toDynamics( const Vector&, double*, double*, double* ) const;
 
   private:
@@ -244,7 +244,7 @@ class PhiHPhiV : public OrbitTransformer
     PhiHPhiV();
     ~PhiHPhiV() {}
 
-    void toState( double, double, Proton* ) const;
+    void toState( double, double, Particle* ) const;
     void toDynamics( const Vector&, double*, double*, double* ) const;
 
   private:
@@ -260,7 +260,7 @@ class Tracker : public QVBox
 Q_OBJECT
 
 public:
-  Tracker( beamline*,        QWidget* parent=0, const char* name=0, WFlags f=0 );
+  Tracker( const Particle&, beamline*, QWidget* parent=0, const char* name=0, WFlags f=0 );
   Tracker( BeamlineContext*, QWidget* parent=0, const char* name=0, WFlags f=0 );
   ~Tracker();
   int run();

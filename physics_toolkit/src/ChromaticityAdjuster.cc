@@ -143,7 +143,7 @@ void ChromaticityAdjuster::addCorrector( const thinSextupole* x, double a, doubl
 }
 
 
-int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetProton& jp )
+int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetParticle& jp )
 {
   int j;
   double delta_H = x;
@@ -153,17 +153,17 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPr
   _myBeamlinePtr->eraseBarnacles( "Ring" );
 
   // 
-  JetProton jpr ( jp );   
-  JetProton jpr2( jp );  // Necessary????
-  JetProton jpr3( jp );  // Necessary????
+  JetParticle* jprPtr  = jp.Clone();
+  JetParticle* jpr2Ptr = jp.Clone(); // Necessary????
+  JetParticle* jpr3Ptr = jp.Clone(); // Necessary????
 
   // Calculate current lattice functions
   LattFuncSage lfs( _myBeamlinePtr );
  
-  _myBeamlinePtr->propagate( jpr );
-  // lfs.Fast_CS_Calc( &jpr  );
-  lfs.Slow_CS_Calc( &jpr  );
-  lfs.Disp_Calc   ( &jpr2 );
+  _myBeamlinePtr->propagate( *jprPtr );
+  // lfs.Fast_CS_Calc( jprPtr  );
+  lfs.Slow_CS_Calc( jprPtr  );
+  lfs.Disp_Calc   ( jpr2Ptr );
  
   int N = this->numberOfCorrectors();
   MatrixD beta      (2,N);
@@ -180,16 +180,22 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPr
   {
     ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Dispersion" );
     if(!ptr) {
+      delete jprPtr;  jprPtr  = 0;
+      delete jpr2Ptr; jpr2Ptr = 0;
+      delete jpr3Ptr; jpr3Ptr = 0;
       throw( GenericException( __FILE__, __LINE__, 
-             "int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetProton& jp )", 
+             "int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetParticle& jp )", 
              "No dispersion information found." ) );
     }
     dsp       =   ptr->dispersion.hor;
 
     ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
     if(!ptr) {
+      delete jprPtr;  jprPtr  = 0;
+      delete jpr2Ptr; jpr2Ptr = 0;
+      delete jpr3Ptr; jpr3Ptr = 0;
       throw( GenericException( __FILE__, __LINE__, 
-             "int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetProton& jp )", 
+             "int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetParticle& jp )", 
              "Lattice functions not yet calculated." ) );
     }
     beta(0,j) =   ptr->beta.hor * dsp;
@@ -201,7 +207,7 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPr
   delta_xi(0,0) = delta_H;
   delta_xi(1,0) = delta_V;
  
-  double brho = jpr.ReferenceBRho();
+  double brho = jprPtr->ReferenceBRho();
   _c = (M_TWOPI*brho)*( (beta*(*_f)).inverse() * delta_xi );
   w = (*_f)*_c;
  
@@ -218,8 +224,12 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPr
 
  
   // Clean up ...
-  // _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
-  // _myBeamlinePtr->eraseBarnacles( "Twiss" );
+  // REMOVE: _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
+  // REMOVE: _myBeamlinePtr->eraseBarnacles( "Twiss" );
+  delete jprPtr;  jprPtr  = 0;
+  delete jpr2Ptr; jpr2Ptr = 0;
+  delete jpr3Ptr; jpr3Ptr = 0;
+
   return 0;
 }
 

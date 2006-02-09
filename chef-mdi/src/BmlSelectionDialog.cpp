@@ -43,7 +43,7 @@
 using namespace std;
 
 BmlSelectionDialog::BmlSelectionDialog(QWidget* parent, const char* name, WFlags f):
-  BmlSelectionDialogBase(parent,name,f), _bmllist(0) 
+  BmlSelectionDialogBase(parent,name,f), _bmllist(0), _mass(0)
 {
 
   beamlines_listBox->clear();
@@ -113,12 +113,33 @@ BmlSelectionDialog::setList( std::list<std::string>& bmllist, const char* use_na
 void 
 BmlSelectionDialog::setBeamParameters(const bmlfactory& bf) 
 {
+  // ------------------------------------
+  // Determining the mass of the particle.
+  // This assumes that a MAD file has already
+  // been parsed.                 - lpjm
+  // ------------------------------------
+  if( 0 == strcmp( "POSITRON", bf.getParticleType() ) ) {
+    _mass = PH_NORM_me;
+  }
+  else if( 0 == strcmp( "PROTON", bf.getParticleType() ) ) {
+    _mass = PH_NORM_mp;
+  }
+  else {
+    ostringstream uic;
+    uic  << "Unrecognized particle type: "
+         << bf.getParticleType()
+         << "\nCurrent implementation allows "
+            "\nonly proton or positron.";
+    throw GenericException( __FILE__, __LINE__,
+                            "BmlSelectionDialog::setBeamParameters",
+                            uic.str().c_str() );
+  }
+  // ------------------------------------
+
 
   typedef  void (BmlSelectionDialog::* checkfptrtype)(bool);
 
   bool defined = false;
-
-
 
   struct varstructtype{
     const       char* name;
@@ -205,18 +226,15 @@ void
 BmlSelectionDialog::computeBeamParameters( double value, int datatype)
 {
 
-
- const double m_p = 0.93827231; // THIS DOES NOT BELONG HERE
-
  switch (datatype) 
  {
 
  case MOMENTUM:
 
     _momentum  = value;
-    _et        = sqrt( (_momentum*_momentum)+(m_p*m_p) );
-    _ek        = _et - m_p;
-    _gamma     = _et/m_p;
+    _et        = sqrt( (_momentum*_momentum)+(_mass*_mass) );
+    _ek        = _et - _mass;
+    _gamma     = _et/_mass;
     _brho      = _momentum/PH_CNV_brho_to_p;
 
     break;
@@ -224,9 +242,9 @@ BmlSelectionDialog::computeBeamParameters( double value, int datatype)
  case ET:
   
    _et        = value;
-   _ek        = _et - m_p;
-   _gamma     = _et/m_p;
-   _momentum  = sqrt((_et*_et)-(m_p*m_p));
+   _ek        = _et - _mass;
+   _gamma     = _et/_mass;
+   _momentum  = sqrt((_et*_et)-(_mass*_mass));
    _brho      = _momentum/PH_CNV_brho_to_p;
 
    break;
@@ -234,9 +252,9 @@ BmlSelectionDialog::computeBeamParameters( double value, int datatype)
  case EK: 
  
    _ek        = value;
-   _et        = m_p + _ek;
-   _gamma     = _et/m_p;
-   _momentum  = sqrt((_et*_et)-(m_p*m_p));
+   _et        = _mass + _ek;
+   _gamma     = _et/_mass;
+   _momentum  = sqrt((_et*_et)-(_mass*_mass));
    _brho      = _momentum/PH_CNV_brho_to_p;
   
    break;
@@ -244,9 +262,9 @@ BmlSelectionDialog::computeBeamParameters( double value, int datatype)
  case GAMMA: 
  
    _gamma     = value;
-   _et        = _gamma*m_p;
-   _ek        = _et-m_p;
-   _momentum  = sqrt((_et*_et)-(m_p*m_p));
+   _et        = _gamma*_mass;
+   _ek        = _et-_mass;
+   _momentum  = sqrt((_et*_et)-(_mass*_mass));
    _brho      = _momentum/PH_CNV_brho_to_p;
 
    break;
@@ -255,9 +273,9 @@ BmlSelectionDialog::computeBeamParameters( double value, int datatype)
 
    _brho      =  value;
    _momentum  =  _brho*PH_CNV_brho_to_p;
-   _et        =  sqrt( (_momentum*_momentum)+(m_p*m_p) );
-   _ek        =  _et - m_p;
-   _gamma     =  _et/m_p;
+   _et        =  sqrt( (_momentum*_momentum)+(_mass*_mass) );
+   _ek        =  _et - _mass;
+   _gamma     =  _et/_mass;
 
    break;
 
