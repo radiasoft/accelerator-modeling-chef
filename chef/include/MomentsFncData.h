@@ -41,8 +41,8 @@ class MomentsFncData : public CHEFPlotData
     void _finishConstructor();
 
  public:
-    MomentsFncData( beamline*        ,  ostream* stdoutstream = &std::cout, ostream* stderrstream=&std::cerr );
-    MomentsFncData( BeamlineContext* ,  ostream* stdoutstream = &std::cout, ostream* stderrstream=&std::cerr );
+    MomentsFncData( const Particle&, beamline*, ostream* stdoutstream = &std::cout, ostream* stderrstream=&std::cerr );
+    MomentsFncData( BeamlineContext*, ostream* stdoutstream = &std::cout, ostream* stderrstream=&std::cerr );
     ~MomentsFncData();
 
     void resetErrorStream(  ostream* );

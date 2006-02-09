@@ -6,9 +6,9 @@
 ******             interfaces to exercise the functionality        
 ******             of BEAMLINE.                                    
 ******                                                                
-******  Version:   3.0                    
 ******                                    
 ******  File:      CHEF.builders.cc
+******  Version:   3.1
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -84,7 +84,7 @@ void CHEF::_makeFODO()
    
   bmlPtr->setEnergy( energy );
   
-  _p_currBmlCon = new BeamlineContext( false, bmlPtr );
+  _p_currBmlCon = new BeamlineContext( Proton(energy), bmlPtr, false );
   _p_currBmlCon->setClonedFlag( true );
   _contextList.insert( _p_currBmlCon );
 
@@ -127,7 +127,7 @@ void CHEF::_makeSingSext()
    
   bmlPtr->setEnergy( energy );
   
-  _p_currBmlCon = new BeamlineContext( false, bmlPtr );
+  _p_currBmlCon = new BeamlineContext( Proton(energy), bmlPtr, false );
   _p_currBmlCon->setClonedFlag( true );
   _contextList.insert( _p_currBmlCon );
 

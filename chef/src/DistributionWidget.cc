@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <typeinfo>
 
 #include <boost/random/linear_congruential.hpp>
 #include <boost/random/uniform_real.hpp>
@@ -63,13 +64,16 @@ DistributionWidget::DistributionWidget()
 : QDialog( 0, 0, true )
 {
   QMessageBox::critical( this, "DistributionWidget", 
-                               "You must specify a ProtonBunch"
+                               "You must specify a ParticleBunch"
                                "\nin the constructor."
                                "\nThis object will fail."       );
 }
 
 
-DistributionWidget::DistributionWidget( ProtonBunch& x, QWidget* parent, const char* name , WFlags atts )
+DistributionWidget::DistributionWidget(   ParticleBunch& x
+                                        , QWidget*       parent
+                                        , const char*    name
+                                        , WFlags         atts   )
 :   QDialog( parent, name, false, atts )
   , _bmlPtr(0)
   , _bmlConPtr(0)
@@ -83,11 +87,11 @@ DistributionWidget::DistributionWidget( ProtonBunch& x, QWidget* parent, const c
 }
 
 
-DistributionWidget::DistributionWidget( beamline& x, ProtonBunch&, QWidget*, const char*, WFlags )
+DistributionWidget::DistributionWidget( beamline& x, ParticleBunch&, QWidget*, const char*, WFlags )
 :   QDialog( 0, 0, true )
   , _bmlPtr(&x)
 {
-  QMessageBox::warning( this, "DistributionWidget", 
+  QMessageBox::critical( this, "DistributionWidget", 
                         "This constructor not written.");
 }
 
@@ -97,7 +101,7 @@ DistributionWidget::DistributionWidget( BeamlineContext& x, QWidget* parent, con
   , _bmlPtr(0)
   , _bmlConPtr(&x)
   , _kind(uniform)
-  , _theSamplePtr(&(x._protonBunch))
+  , _theSamplePtr(x._particleBunchPtr)
   , _average(6)
   , _covariance(6,6)
   , _statsGiven(false)
@@ -108,6 +112,23 @@ DistributionWidget::DistributionWidget( BeamlineContext& x, QWidget* parent, con
 
 void DistributionWidget::_finishConstructor()
 {
+  // Determine the particle type first
+  if( typeid(*_theSamplePtr) == typeid(ProtonBunch) ) {
+    _flavor = DistributionWidget::proton;
+  }
+  else if( typeid(*_theSamplePtr) == typeid(PositronBunch) ) {
+    _flavor = DistributionWidget::positron;
+  }
+  else {
+    ostringstream uic;
+    uic << __FILE__ << ", line " << __LINE__
+        << "\nvoid DistributionWidget::_finishConstructor()"
+           "\nType of particle bunch not recognized."
+           "\nIt should be either for protons or positrons."
+           "\nConstruction aborted.";
+    QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
+  }
+
   _qvbPtr = new QVBox( this );
 
     _selPtr = new QWidget( _qvbPtr );
@@ -132,7 +153,7 @@ void DistributionWidget::_finishConstructor()
          _qbgPtr->setButton( _qbgPtr->id(_aPtr) );
          _qbgPtr->adjustSize();
 
-         new QLabel( "Number of\nprotons", _leftStuff );
+         new QLabel( "Number of\nparticles", _leftStuff );
          _populationPtr = new QLineEdit( "256", _leftStuff );
          _populationPtr->setMaxLength(7);
 
@@ -532,25 +553,33 @@ void DistributionWidget::_genUniform()
     { dppMin = 0.001*dppMin;
     }
 
-    // Finally, populate the ProtonBunch
+    // Finally, populate the ParticleBunch
     if( n <= 0 ) { n = 16; }
-    Proton p;
-    for( int i = 0; i < n; i++ ) {
-      if(xDistPtr)   { p.set_x( (*xDistPtr)() );     }
-      else           { p.set_x( xMin );              }
-      if(yDistPtr)   { p.set_y( (*yDistPtr)() );     }
-      else           { p.set_y( yMin );              }
-      if(cdtDistPtr) { p.set_cdt( (*cdtDistPtr)() ); }
-      else           { p.set_cdt( cdtMin );          }
-      if(pxDistPtr)  { p.set_npx( (*pxDistPtr)() );  }
-      else           { p.set_npx( pxMin );           }
-      if(pyDistPtr)  { p.set_npy( (*pyDistPtr)() );  }
-      else           { p.set_npy( pyMin );           }
-      if(dppDistPtr) { p.set_ndp( (*dppDistPtr)() ); }
-      else           { p.set_ndp( dppMin );          }
 
-      _theSamplePtr->append( p );
-      // Note: the proton is cloned by the ParticleBunch
+    Particle* pPtr = 0;
+    if( DistributionWidget::proton == _flavor ) {
+      pPtr = new Proton;
+    }
+    else if( DistributionWidget::positron == _flavor ) {
+      pPtr = new Positron;
+    }
+
+    for( int i = 0; i < n; i++ ) {
+      if(xDistPtr)   { pPtr->set_x( (*xDistPtr)() );     }
+      else           { pPtr->set_x( xMin );              }
+      if(yDistPtr)   { pPtr->set_y( (*yDistPtr)() );     }
+      else           { pPtr->set_y( yMin );              }
+      if(cdtDistPtr) { pPtr->set_cdt( (*cdtDistPtr)() ); }
+      else           { pPtr->set_cdt( cdtMin );          }
+      if(pxDistPtr)  { pPtr->set_npx( (*pxDistPtr)() );  }
+      else           { pPtr->set_npx( pxMin );           }
+      if(pyDistPtr)  { pPtr->set_npy( (*pyDistPtr)() );  }
+      else           { pPtr->set_npy( pyMin );           }
+      if(dppDistPtr) { pPtr->set_ndp( (*dppDistPtr)() ); }
+      else           { pPtr->set_ndp( dppMin );          }
+
+      _theSamplePtr->append( *pPtr );
+      // Note: the particle is cloned by the ParticleBunch
     }
 
     ostringstream uic;
@@ -561,8 +590,8 @@ void DistributionWidget::_genUniform()
         << " particles.";
     QMessageBox::information( 0, "DistributionWidget", uic.str().c_str() );
 
-
     // Clean up before returning.
+                      delete pPtr;
     if( xRanPtr   ) { delete xRanPtr;   }
     if( yRanPtr   ) { delete yRanPtr;   }
     if( cdtRanPtr ) { delete cdtRanPtr; }
@@ -633,17 +662,27 @@ void DistributionWidget::_genGaussian()
     varGaussGen dppDist(generator, dppRan);
 
     if( n <= 0 ) { n = 16; }
-    Proton p;
-    for( int i = 0; i < n; i++ ) {
-      p.set_x( xDist() );
-      p.set_y( yDist() );
-      p.set_cdt( cdtDist() );
-      p.set_npx( pxDist() );
-      p.set_npy( pyDist() );
-      p.set_ndp( dppDist() );
-      _theSamplePtr->append( p );
-      // The proton is cloned by the ParticleBunch
+
+    Particle* pPtr = 0;
+    if( DistributionWidget::proton == _flavor ) {
+      pPtr = new Proton;
     }
+    else if( DistributionWidget::positron == _flavor ) {
+      pPtr = new Positron;
+    }
+
+    for( int i = 0; i < n; i++ ) {
+      pPtr->set_x( xDist() );
+      pPtr->set_y( yDist() );
+      pPtr->set_cdt( cdtDist() );
+      pPtr->set_npx( pxDist() );
+      pPtr->set_npy( pyDist() );
+      pPtr->set_ndp( dppDist() );
+      _theSamplePtr->append( *pPtr );
+      // The particle is cloned by the ParticleBunch
+    }
+
+    delete pPtr;
 
     ostringstream uic;
     uic << n
@@ -692,10 +731,17 @@ void DistributionWidget::_genEquilibrium()
     varUnifGen x_epsDist(generator,x_epsRan);
     varUnifGen y_epsDist(generator,y_epsRan);
 
-
-    // Finally, populate the ProtonBunch
+    // Finally, populate the ParticleBunch
     if( n <= 0 ) { n = 16; }
-    Proton p;
+
+    Particle* pPtr = 0;
+    if( DistributionWidget::proton == _flavor ) {
+      pPtr = new Proton;
+    }
+    else if( DistributionWidget::positron == _flavor ) {
+      pPtr = new Positron;
+    }
+
     double eps, psi, amp, pos;
     for( int i = 0; i < n; i++ ) {
       psi = psiDist();
@@ -703,20 +749,22 @@ void DistributionWidget::_genEquilibrium()
 
       amp = sqrt(beta_x*eps);
       pos = amp*sin(psi);
-      p.set_x( pos );
-      p.set_npx( (amp*cos(psi) - alpha_x*pos) / beta_x );
+      pPtr->set_x( pos );
+      pPtr->set_npx( (amp*cos(psi) - alpha_x*pos) / beta_x );
 
       psi = psiDist();
       eps = (1.0e-6)*y_epsDist();
 
       amp = sqrt(beta_y*eps);
       pos = amp*sin(psi);
-      p.set_y( pos );
-      p.set_npy( (amp*cos(psi) - alpha_y*pos) / beta_y );
+      pPtr->set_y( pos );
+      pPtr->set_npy( (amp*cos(psi) - alpha_y*pos) / beta_y );
 
-      _theSamplePtr->append( p );
-      // Note: the proton is cloned by the ParticleBunch
+      _theSamplePtr->append( *pPtr );
+      // Note: the particle is cloned by the ParticleBunch
     }
+
+    delete pPtr;
 
     ostringstream uic;
     uic << n

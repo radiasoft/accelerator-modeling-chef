@@ -282,11 +282,10 @@ void EdwardsTeng::eraseAll()
   be->dataHook.eraseAll( "EdwardsTeng" );
 }
 
-int EdwardsTeng::doCalc( void* arg, ET_CRITFUNC Crit ) 
+int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit ) 
 {
  int             ret;
  bmlnElmnt*      be;
- JetProton*      ptr_jp;
  dlist_looper    getNext ( *(dlist*) myBeamline );
  double          t;
  int             i;
@@ -296,16 +295,15 @@ int EdwardsTeng::doCalc( void* arg, ET_CRITFUNC Crit )
 
  EdwardsTeng::theMap = new Mapping;
 
- // .......... Propagate a JetProton element by element
+ // .......... Propagate a JetParticle element by element
  // .......... It is assumed to be on a closed orbit!!
- ptr_jp = (JetProton*) arg;
- Proton* ptr_proton = (Proton*) (ptr_jp->ConvertToParticle());
+ Particle* ptr_particle = ptr_jp->ConvertToParticle();
  // is deleted before returning
 
 
  double lng = 0.0;
  while (( be = (bmlnElmnt*) getNext() )) {
-   lng += be->OrbitLength( *ptr_proton );
+   lng += be->OrbitLength( *ptr_particle );
    be->propagate( *ptr_jp );
    if( !Crit ) {
      ETptr = new ETinfo;
@@ -342,7 +340,7 @@ int EdwardsTeng::doCalc( void* arg, ET_CRITFUNC Crit )
         << "*** ERROR ***                                     \n"
         << endl;
    delete EdwardsTeng::theMap;
-   delete ptr_proton;
+   delete ptr_particle;
    eraseAll();
    return 10;
   }
@@ -357,7 +355,7 @@ int EdwardsTeng::doCalc( void* arg, ET_CRITFUNC Crit )
         << "*** ERROR *** Eigenvalues =                        \n"
         << "*** ERROR *** " << lambda << endl;
    delete EdwardsTeng::theMap;
-   delete ptr_proton;
+   delete ptr_particle;
    eraseAll();
    return 11;
  }
@@ -375,7 +373,7 @@ int EdwardsTeng::doCalc( void* arg, ET_CRITFUNC Crit )
   if( !Crit ) {
    if( ( ret = attachETLattFuncs( be ) ) != 0 ) {
     delete EdwardsTeng::theMap;
-    delete ptr_proton;
+    delete ptr_particle;
     eraseAll();
     return ret;
    }
@@ -383,7 +381,7 @@ int EdwardsTeng::doCalc( void* arg, ET_CRITFUNC Crit )
   else if( (*Crit)( be ) ) {
    if( ( ret = attachETLattFuncs( be ) ) != 0 ) {
     delete EdwardsTeng::theMap;
-    delete ptr_proton;
+    delete ptr_particle;
     eraseAll();
     return ret;
    }
@@ -401,7 +399,7 @@ int EdwardsTeng::doCalc( void* arg, ET_CRITFUNC Crit )
  myBeamline->dataHook.append( "Tunes", tuneptr );
 
  delete EdwardsTeng::theMap;
- delete ptr_proton;
+ delete ptr_particle;
  return 0;
 }
 

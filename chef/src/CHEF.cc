@@ -7,7 +7,7 @@
 ******         of BEAMLINE.                                    
 ******                                                                
 ******  File:      CHEF.cc
-******  Version:   3.4
+******  Version:   3.5
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -120,9 +120,11 @@ CHEF::CHEF( beamline* xbml, int argc, char** argv )
   _userOptions.couplingOption = Options::ignore_coupling;
 
 
-  // ??? This needs to be fixed.
+  // ??? !!! This needs to be fixed. !!! ???
   if( 0 != xbml ) 
-  { _p_currBmlCon = new BeamlineContext( true, xbml );
+  { // This is not good: by default, a proton machine is assumed.
+    Proton reggie( xbml->Energy() );
+    _p_currBmlCon = new BeamlineContext( reggie, xbml, true );
     _contextList.append( _p_currBmlCon );
   }
   else 
@@ -408,12 +410,10 @@ void CHEF::_editCopyLine()
 {
   // Procedure copied from CHEF.builders.cc
   // and slightly modified.
-  // REMOVE: if( 0 != _p_clickedCon ) { 
-  // REMOVE:   _p_currBmlCon = new BeamlineContext( false, 
-  // REMOVE:                                        _p_clickedCon->cloneBeamline() );
   if( 0 != _p_currBmlCon ) { 
-    _p_currBmlCon = new BeamlineContext( false, 
-                                         _p_currBmlCon->cloneBeamline() );
+    _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
+                                         _p_currBmlCon->cloneBeamline(), 
+                                         false );
     _p_currBmlCon->setClonedFlag( true );
     _contextList.insert( _p_currBmlCon );
     emit _new_beamline();
@@ -729,17 +729,20 @@ void CHEF::_editAlignBends()
       // The following was modeled on rrv19.cfrbend.cfg
       CF_rbend* prototype = (CF_rbend*) selected->Clone();
 
-      Proton p( _p_currBmlCon->getEnergy() );
-      double inState [] = { 0., 0., 0., 0., 0., 0. };
-      // inState[ p.npxIndex() ]
-      //             =  ( p.Momentum()/p.ReferenceMomentum() )
-      //                * sin( prototype->getPoleFaceAngle() / 2.0 );
-      inState[ p.npxIndex() ]
-                  =  ( p.Momentum()/p.ReferenceMomentum() )
-                     * sin( prototype->getPoleFaceAngle() );
-      p.setState( inState );
+      // REMOVE: double inState [] = { 0., 0., 0., 0., 0., 0. };
+      // REMOVE: inState[ p.npxIndex() ]
+      // REMOVE:             =  ( p.Momentum()/p.ReferenceMomentum() )
+      // REMOVE:                * sin( prototype->getPoleFaceAngle() / 2.0 );
+      Particle* pPtr = (_p_currBmlCon->getParticle()).Clone();
+      pPtr->SetReferenceEnergy( _p_currBmlCon->getEnergy() );
+        // This line is almost certainly unnecessary.
+      pPtr->setStateToZero();
+      pPtr->set_npx( ( pPtr->Momentum()/pPtr->ReferenceMomentum() )
+                     * sin( prototype->getPoleFaceAngle() ) );
 
-      double delta = ( prototype->AdjustPosition(p) );
+      double delta = ( prototype->AdjustPosition(*pPtr) );
+
+      delete pPtr; pPtr = 0;
 
       // Dialog: permission to realign the CF_rbends
       QDialog* wpu = new QDialog( 0, 0, true );
@@ -1224,10 +1227,8 @@ void CHEF::_editCondense()
 
 
   beamline* bmlPtr = de.clonedBeamlinePtr();
-  _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-  // _p_currBmlCon = new BeamlineContext( false, de.clonedBeamlinePtr() );
-
-
+  _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
+                                       bmlPtr, false );
   _p_currBmlCon->setClonedFlag( true );
   _contextList.insert( _p_currBmlCon );
 
@@ -1252,9 +1253,8 @@ void CHEF::_editFlatten()
   delete tempPtr;  
     // Does not delete beamline elements.
 
-  _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-  // _p_currBmlCon = new BeamlineContext( false, de.clonedBeamlinePtr() );
-
+  _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
+                                       bmlPtr, false );
 
   _p_currBmlCon->setClonedFlag( true );
   _contextList.insert( _p_currBmlCon );
@@ -1327,9 +1327,8 @@ void CHEF::_editMergeQuads()
   _p_currBmlCon->accept(qe);
 
   beamline* bmlPtr = qe.clonedBeamlinePtr();
-  _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-  // _p_currBmlCon = new BeamlineContext( false, qe.clonedBeamlinePtr() );
-
+  _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
+                                       bmlPtr, false );
 
   _p_currBmlCon->setClonedFlag( true );
   _contextList.insert( _p_currBmlCon );
@@ -1342,8 +1341,8 @@ void CHEF::_editD2S()
 {
   beamline* bmlPtr = DriftsToSlots( (beamline&) *(_p_currBmlCon->cheatBmlPtr()) );
   if( bmlPtr != _p_currBmlCon->cheatBmlPtr() ) {
-    _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-    // _p_currBmlCon = new BeamlineContext( false, de.clonedBeamlinePtr() );
+    _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
+                                         bmlPtr, false );
     _p_currBmlCon->setClonedFlag( true );
     _contextList.insert( _p_currBmlCon );
     emit _new_beamline();
@@ -1482,7 +1481,8 @@ void CHEF::_editAddMarkers()
 
     // Generate a new BeamlineContext to handle the new line
     bool makeRing = _p_currBmlCon->isTreatedAsRing();
-    _p_currBmlCon = new BeamlineContext( false, bmlPtr );
+    _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
+                                         bmlPtr, false );
     _p_currBmlCon->setClonedFlag( true );
     if( makeRing ) { _p_currBmlCon->handleAsRing(); }
     else           { _p_currBmlCon->handleAsLine(); }
@@ -1557,7 +1557,8 @@ void CHEF::_editAddQtMons()
 
     // Generate a new BeamlineContext to handle the new line
     bool makeRing = _p_currBmlCon->isTreatedAsRing();
-    _p_currBmlCon = new BeamlineContext( false, bmlPtr );
+    _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
+                                         bmlPtr, false );
     _p_currBmlCon->setClonedFlag( true );
     if( makeRing ) { _p_currBmlCon->handleAsRing(); }
     else           { _p_currBmlCon->handleAsLine(); }
@@ -1715,7 +1716,8 @@ void CHEF::_editPartition()
 
   // Generate a new BeamlineContext to handle the new line
   bool makeRing = _p_currBmlCon->isTreatedAsRing();
-  _p_currBmlCon = new BeamlineContext( false, bmlPtr );
+  _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
+                                       bmlPtr, false );
   _p_currBmlCon->setClonedFlag( true );
   if( makeRing ) { _p_currBmlCon->handleAsRing(); }
   else           { _p_currBmlCon->handleAsLine(); }
@@ -1737,10 +1739,7 @@ void CHEF::_editPartAndSect()
 
   beamline* bmlPtr = _p_currBmlCon->cloneBeamline();
   // Must be eliminated before exiting.
-
   double energy    = bmlPtr->Energy();
-  double momentum  = sqrt( energy*energy - PH_NORM_mp*PH_NORM_mp );
-  double brho = momentum/PH_CNV_brho_to_p;
 
   // Insert equally spaced markers throughout the model.
   double bmlLength = 0.0;
@@ -1785,7 +1784,7 @@ void CHEF::_editPartAndSect()
 
   int order = 2;
   beamline* splitBmlPtr = new beamline( "Sectorized beamline" );
-  splitBmlPtr->setEnergy( bmlPtr->Energy() );
+  splitBmlPtr->setEnergy( energy );
   if( returnCode == QDialog::Accepted ) {
     bool ok;
     numberOfSectors = (qle->text()).toInt( &ok);
@@ -1797,7 +1796,11 @@ void CHEF::_editPartAndSect()
       marker* spaceCharge[ numberOfSectors + 1 ];
       double markerInterval = bmlLength / ((double) numberOfSectors);
       double insertionPoint = markerInterval;
-      InsertionList insl( momentum );
+
+      Particle* pPtr = (_p_currBmlCon->getParticle()).Clone();
+      pPtr->setStateToZero();
+      InsertionList insl( *pPtr );
+      delete pPtr; pPtr = 0;
       
       spaceCharge[ 0 ] = new marker;
       int i;
@@ -1842,14 +1845,24 @@ void CHEF::_editPartAndSect()
       Jet::EndEnvironment( scale );
       JetC::_lastEnv = JetC::CreateEnvFrom( _p_JetEnv );
  
+
       // Sectorize between the partition markers.
+      Particle* pPtr = (_p_currBmlCon->getParticle()).Clone();
+      pPtr->SetReferenceEnergy( _p_currBmlCon->getEnergy() );
+        // This line is almost certainly unnecessary.
+      pPtr->setStateToZero();
+
       for( i = 0; i < numberOfSectors; i++ ) {
-        JetProton jp( energy );
+        JetParticle* jpPtr = pPtr->ConvertToJetParticle();
         splitBmlPtr->append( bmlPtr->MakeSector( *(spaceCharge[i]),
                                                  *(spaceCharge[i+1]),
-                                                 order, jp  ) );
+                                                 order, *jpPtr  ) );
+        delete jpPtr; jpPtr = 0;
         splitBmlPtr->append( spaceCharge[i+1]->Clone() );
       }
+
+      delete pPtr; pPtr = 0;
+
 
       // Restore former environment...
       Jet::_lastEnv  = formerJetEnv;
@@ -1861,7 +1874,8 @@ void CHEF::_editPartAndSect()
   delete wpu;
   bmlPtr->eliminate();
 
-  _p_currBmlCon = new BeamlineContext( false, splitBmlPtr );
+  _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
+                                       splitBmlPtr, false );
   _p_currBmlCon->setClonedFlag( true );
   _contextList.insert( _p_currBmlCon );
 
@@ -2133,8 +2147,8 @@ void CHEF::_pushMoments()
     initialCovariance.alpha.hor = initialConditions.alpha.hor;
     initialCovariance.alpha.ver = initialConditions.alpha.ver;
     
-    int returnCode 
-      = BmlUtil::makeCovariance( initialCovariance, _p_currBmlCon->_proton );
+    int returnCode
+      = BmlUtil::makeCovariance( initialCovariance, _p_currBmlCon->getParticle() );
     // This assumes, by default, an equal horizontal and vertical emittance.
 
     if( 0 != returnCode ) {
@@ -2278,8 +2292,6 @@ void CHEF::_pushParticles()
 {
   DistributionWidget* dwPtr
     = new DistributionWidget( *(_p_currBmlCon), 0, 0, Qt::WDestructiveClose );
-  // REMOVE: DistributionWidget* dwPtr
-  // REMOVE:   = new DistributionWidget( _p_currBmlCon->_protonBunch, 0, 0, Qt::WDestructiveClose );
   dwPtr->show();
 }
 
@@ -2617,10 +2629,6 @@ void CHEF::_enterMapArg()
 void CHEF::_enterContextArg()
 {
   _pushArgs();
-
-  // REMOVE: if( 0 != _p_clickedCon ) {
-  // REMOVE:   _toolArgs[0] = new BeamlineContextPtr( *_p_clickedCon );
-  // REMOVE: }
   if( 0 != _p_currBmlCon ) {
     _toolArgs[0] = new BeamlineContextPtr( *_p_currBmlCon );
   }
@@ -2721,9 +2729,9 @@ void CHEF::_openFile()
         QHBox* qhb2 = new QHBox( qvb );
           QButtonGroup* qbg = new QButtonGroup( 2, Qt::Vertical, qhb2 );
             QRadioButton* kePtr 
-              = new QRadioButton( "Proton kinetic energy [GeV]: ", qbg );
+              = new QRadioButton( "Kinetic energy [GeV]: ", qbg );
             QRadioButton* pcPtr 
-              = new QRadioButton( "Proton momentum [GeV/c]: ", qbg );
+              = new QRadioButton( "Momentum [GeV/c]: ", qbg );
           qbg->setExclusive( true );
           qbg->setMargin(5);
           // qbg->setSpacing(3);
@@ -2785,8 +2793,26 @@ void CHEF::_openFile()
       bmlfactory* bfPtr = new bmlfactory( s, brho );
       beamline* bmlPtr = bfPtr->create_beamline( bmlName );
 
-      _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-      _p_currBmlCon->setClonedFlag( true );
+      const char* typeStringPtr = bfp->getParticleType();
+      if( 0 == strcmp( "PROTON", typeStringPtr ) ) {
+        _p_currBmlCon = new BeamlineContext( Proton(bmlPtr->Energy()), bmlPtr, false );
+      }
+      else if( 0 == strcmp( "POSITRON", typeStringPtr ) ) {
+        _p_currBmlCon = new BeamlineContext( Positron(bmlPtr->Energy()), bmlPtr, false );
+      }
+      else {
+        QMessageBox mb(  QString("*** ERROR ***")
+                       , QString( "Unrecognized or unspecified particle type."
+                                  "\nDeclare a particle using MAD's BEAM command." )
+                       , QMessageBox::Critical
+                       , QMessageBox::Ok
+                       , QMessageBox::NoButton
+                       , QMessageBox::NoButton );
+        mb.show();
+        while (mb.isVisible())  qApp->processEvents(); 
+      }
+      _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called)
+                                            //when the context is destroyed;
       _contextList.insert( _p_currBmlCon );
     }
   
@@ -2802,8 +2828,37 @@ void CHEF::_openFile()
     inputStream >> (*bmlPtr);
     inputStream.close();
 
-    _p_currBmlCon = new BeamlineContext( false, bmlPtr );
-    _p_currBmlCon->setClonedFlag( true );
+    QDialog* wpu = new QDialog( 0, 0, true );
+      QVBox* qvb = new QVBox( wpu );
+
+      new QLabel( "I regret you must specify\na particle species.", qvb );
+      QRadioButton* qrb_proton_ptr = new QRadioButton( "proton", qvb );
+      QRadioButton* qrb_positron_ptr = new QRadioButton( "positron", qvb );
+
+      QPushButton* okayBtn = new QPushButton( "OK", qvb );
+        connect( okayBtn, SIGNAL(pressed()),
+                 wpu,     SLOT(accept()) );
+
+      qvb->setMargin(5);
+      qvb->setSpacing(3);
+      qvb->adjustSize();
+
+    wpu->setCaption( "CHEF: Particle Choice" );
+    wpu->adjustSize();
+
+    int returnCode = wpu->exec();
+
+    if( qrb_proton_ptr->isDown() ) {
+      _p_currBmlCon = new BeamlineContext( Proton(bmlPtr->Energy()), bmlPtr, false );
+    }
+    else {
+      _p_currBmlCon = new BeamlineContext( Positron(bmlPtr->Energy()), bmlPtr, false );
+    }
+
+    delete wpu;
+
+    _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called)
+                                          // when the context is destroyed;
 
     // REMOVE: if( _p_currBmlCon->isRing() ) { _p_currBmlCon->handleAsRing(); }
     // REMOVE: else                          { _p_currBmlCon->handleAsLine(); }

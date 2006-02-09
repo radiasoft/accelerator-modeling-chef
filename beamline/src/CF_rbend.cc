@@ -682,10 +682,10 @@ void CF_rbend::acceptInner( ConstBmlVisitor& v )
 }
 
 
-void CF_rbend::peekAt( double& s, Particle* p_prt )
+void CF_rbend::peekAt( double& s, const Particle& prt ) const
 {
  (*pcout) << setw(12) << s;
- s += OrbitLength( *p_prt );
+ s += OrbitLength( prt );
  (*pcout) << setw(12) << s           
                   << " : " 
       << setw(10) << (int) this  
@@ -778,8 +778,7 @@ bool CF_rbend::isMagnet() const
 
 double CF_rbend::OrbitLength( const Particle& x )
 {
-  static double tworho;
-  tworho  = 2.0 * ( x.Momentum() / PH_CNV_brho_to_p ) / strength;
+  double tworho = 2.0 * ( x.Momentum() / PH_CNV_brho_to_p ) / strength;
   return tworho * asin( length / tworho );
 }
 
@@ -790,25 +789,29 @@ void CF_rbend::eliminate( void )
 }
 
 
-double CF_rbend::AdjustPosition( const Proton& arg_p )
+double CF_rbend::AdjustPosition( const Particle& arg_p )
 {
-  JetProton myJP( arg_p );  // This probably won't work properly.
-  return AdjustPosition( myJP );
+  JetParticle* myJPPtr = arg_p.ConvertToJetParticle();
+  // This probably won't work properly.
+  double ret = AdjustPosition( *myJPPtr );
+  delete myJPPtr;
+  return ret;
 }
 
 
-double CF_rbend::AdjustPosition( const JetProton& arg_jp )
+double CF_rbend::AdjustPosition( const JetParticle& arg_jp )
 {
   if( ( 0.0 != _usEdgeAngle ) || ( 0.0 != _dsEdgeAngle ) ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "double CF_rbend::AdjustPosition( const JetProton& arg_jp )", 
+           "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )", 
            "In this version: only implemented for parallel faces." ) );
   }
 
   enum { x = 0, y, cdt, xp, yp, dpop };
-  JetProton  myJP( arg_jp );
-  Proton*    p_myP = (Proton*) myJP.ConvertToParticle();
-  // This is deleted before returning.
+
+  JetParticle* myJPPtr = arg_jp.Clone();
+  Particle*      p_myP = myJPPtr->ConvertToParticle();
+  // These are deleted before returning.
 
   double x_i  = p_myP->State( x  );
   double xp_i = p_myP->State( xp );
@@ -820,13 +823,15 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
   double f, m, z;
 
   // Initialize the derivative...
-  myJP  .setState( inState );
-  this->propagate( myJP );
+  myJPPtr->setState( inState );
+  this->propagate( *myJPPtr );
 
-  m = ( myJP.State().Jacobian() )( xp, x );
+  m = ( myJPPtr->State().Jacobian() )( xp, x );
   if( fabs(m) < 1.0e-12 ) {
+    delete p_myP;   p_myP   = 0;
+    delete myJPPtr; myJPPtr = 0;
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "double CF_rbend::AdjustPosition( const JetProton& arg_jp )", 
+           "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )", 
            "Horrible, inexplicable error: a multi-valued solution is suspected." ) );
   }
   m = 1.0 / m;
@@ -848,12 +853,14 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
     inState[x]  = z;
 
     // Recalculate inverse derivative ...
-    myJP.setState( inState );
-    this->propagate( myJP );
-    m = ( myJP.State().Jacobian() )( xp, x );
+    myJPPtr->setState( inState );
+    this->propagate( *myJPPtr );
+    m = ( myJPPtr->State().Jacobian() )( xp, x );
     if( fabs(m) < 1.0e-12 ) {
+      delete p_myP;   p_myP   = 0;
+      delete myJPPtr; myJPPtr = 0;
       throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-             "double CF_rbend::AdjustPosition( const JetProton& arg_jp )", 
+             "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )", 
              "Horrible, inexplicable error: a multi-valued solution is suspected." ) );
     }
     m = 1.0 / m;
@@ -948,6 +955,8 @@ double CF_rbend::AdjustPosition( const JetProton& arg_jp )
 
 
   // Clean up and return.
-  delete p_myP;
+  delete p_myP;   p_myP   = 0;
+  delete myJPPtr; myJPPtr = 0;
+
   return z;
 }

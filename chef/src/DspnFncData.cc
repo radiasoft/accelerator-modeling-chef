@@ -1,15 +1,55 @@
+/***************************************************************************
+***************************************************************************
+***************************************************************************
+******                                                               ******   
+******  CHEF:      An application layered on the Beamline/mxyzptlk   ****** 
+******             class libraries.                                  ****** 
+******                                                               ****** 
+******  File:      DspnFncData.cc                                    ****** 
+******                                                               ******
+******  Copyright (c) Universities Research Association, Inc.        ****** 
+******                All Rights Reserved                            ****** 
+******                                                               ****** 
+******  Authors:                                                     ******
+******                                                               ******
+******              Jean-Francois Ostiguy                            ******
+******              Fermilab                                         ****** 
+******              ostiguy@fnal.gov                                 ****** 
+******                                                               ******  
+******              Leo Michelotti                                   ******
+******              Fermilab                                         ******
+******              michelotti@fnal.gov                              ****** 
+******                                                               ******
+******  Usage, modification, and redistribution are subject to terms ******
+******  of the License supplied with this software.                  ****** 
+******                                                               ******
+******  Software and documentation created under                     ****** 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.    ****** 
+******  The U.S. Government retains a world-wide non-exclusive,      ****** 
+******  royalty-free license to publish or reproduce documentation   ****** 
+******  and software for U.S. Government purposes. This software     ****** 
+******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
+******  URA/FNAL reserves all rights.                                ****** 
+******                                                               ******
+**************************************************************************/
+
+
 #include <iomanip>
 #include <string>   // needed for strcat
 #include <math.h>
 
-#include "complexAddon.h"
-#include "bmlfactory.h"
-#include "DspnFncData.h"
-#include "BeamlineContext.h"
-#include "GenericException.h"
+#include <complexAddon.h>
+#include <bmlfactory.h>
+#include <DspnFncData.h>
+#include <BeamlineContext.h>
+#include <GenericException.h>
+#include <iosetup.h>
 
 #include <qwt/qwt_plot.h>
 #include <boost/shared_ptr.hpp>
+
+using FNAL::pcerr;
+using FNAL::pcout;
 
 
 // This undef is needed because of the compiler.
@@ -17,28 +57,38 @@
 
 static double* dnull = 0;
 
+using namespace std;
+
 DspnFncData::DspnFncData( BeamlineContext* bcp, std::ostream*  stdoutstream, std::ostream* stderrstream )
-: _errorStreamPtr(stderrstream), _outputStreamPtr(stdoutstream),
-  _bmlConPtr(bcp), _deleteContext(false),
+: _bmlConPtr(bcp), 
+  _deleteContext(false),
   _arraySize(0), 
   _azimuth(dnull),
-  _clo_H(dnull), _clo_V(dnull), 
-  _disp_H(dnull), _disp_V(dnull)
+  _clo_H(dnull), 
+  _clo_V(dnull), 
+  _disp_H(dnull), 
+  _disp_V(dnull),
+  _errorStreamPtr(stderrstream), 
+  _outputStreamPtr(stdoutstream)
 
 {
   this->_finishConstructor();
 }
 
 
-DspnFncData::DspnFncData( /* const */ beamline* pBml, std::ostream*  stdoutstream, std::ostream* stderrstream )
-: _errorStreamPtr(stderrstream), _outputStreamPtr(stdoutstream),
-  _bmlConPtr(0), _deleteContext(true),
+DspnFncData::DspnFncData( const Particle& prt, beamline* pBml, std::ostream*  stdoutstream, std::ostream* stderrstream )
+: _bmlConPtr(0), 
+  _deleteContext(true),
   _arraySize(0), 
   _azimuth(dnull),
-  _clo_H(dnull), _clo_V(dnull), 
-  _disp_H(dnull), _disp_V(dnull)
+  _clo_H(dnull), 
+  _clo_V(dnull), 
+  _disp_H(dnull), 
+  _disp_V(dnull),
+  _errorStreamPtr(stderrstream), 
+  _outputStreamPtr(stdoutstream)
 {
-  _bmlConPtr = new BeamlineContext( false, pBml );
+  _bmlConPtr = new BeamlineContext( prt, pBml, false );
   this->_finishConstructor();
 }
 
@@ -150,7 +200,7 @@ void DspnFncData::doCalc()
            "\n*** WARNING *** Too many lattice functions read."
            "\n*** WARNING *** Am resetting to " << _arraySize << " in all."
         << "\n*** WARNING *** "
-        << endl;
+        << std::endl;
     }
     else {
       _azimuth[i]      = infoPtr->arcLength;
@@ -170,13 +220,13 @@ void DspnFncData::doCalc()
   }
 
   if( i != _arraySize ) {
-    cerr << "\n*** WARNING *** "
+    (*pcerr) << "\n*** WARNING *** "
          << __FILE__ << ", " << __LINE__ << ": "
          << "DspnFncData::recalc(): "
          << "\n*** WARNING ***  _arraySize is being reset from "
          << _arraySize << " to " << i << "."
          << "\n*** WARNING *** "
-         << endl;
+         << std::endl;
   }
 
   _arraySize = i;

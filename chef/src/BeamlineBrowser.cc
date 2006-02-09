@@ -492,7 +492,7 @@ QBmlRoot::QBmlRoot( QListView* parent, /* const */ BeamlineContext* q, double& s
 }
 
 
-QBmlRoot::QBmlRoot( QListView* parent, /* const */ beamline* q, double& s )
+QBmlRoot::QBmlRoot( QListView* parent, const Particle& prt, beamline* q, double& s )
 : QBml( 0, parent, q->Name(), q->Type() ), 
   _myBeamline(0)
 {
@@ -500,7 +500,7 @@ QBmlRoot::QBmlRoot( QListView* parent, /* const */ beamline* q, double& s )
     str.setNum( ((double) s) );
     this->setText( 2, str );
 
-    _myBmlCon = new BeamlineContext( true, q );
+    _myBmlCon = new BeamlineContext( prt, q, true );
 }
 
 
@@ -1069,10 +1069,26 @@ BeamlineContext* BeamlineBrowser::readMADFile( const char* fileName,
   bmlfactory bf( fileName, brho );
   beamline* pBml = bf.create_beamline( lineName ); 
 
-  BeamlineContext* www = new BeamlineContext( false, pBml );
+  BeamlineContext* www = 0;
+  if( 0 == strcmp( "PROTON", bf.getParticleType() ) ) {
+    www = new BeamlineContext( Proton(pBml->Energy()), pBml, false );
+  }
+  else if( 0 == strcmp( "POSITRON", bf.getParticleType() ) ) {
+    www = new BeamlineContext( Positron(pBml->Energy()), pBml, false );
+  }
+  else {
+    ostringstream uic;
+    uic << "Particle type "
+        << bf.getParticleType()
+        << " not recognized.";
+    QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
+    throw GenericException( __FILE__, __LINE__, 
+          "BeamlineBrowser::readMADFile",
+          uic.str().c_str() ) ;
+  }
+
   www->setClonedFlag( true );
   displayBeamline( www );
-
   emit sig_newContext( www );
   return www;
 }

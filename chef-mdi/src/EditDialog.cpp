@@ -12,7 +12,7 @@
 /**********************************************************************/
 
 
-#include "EditDialog.h"
+#include <EditDialog.h>
 
 #include <qlabel.h>
 #include <qdialog.h>
@@ -25,6 +25,8 @@
 #include <qradiobutton.h>
 
 #include <iosetup.h>
+
+#include <GenericException.h>
 #include <BeamlineContext.h>
 
 using FNAL::pcerr;
@@ -490,22 +492,31 @@ void editDialog::visitSlot( Slot* x )
 
   if( returnCode == QDialog::Accepted ) {
     if( qrb->isOn() ) {
-      if( !(_contextPtr->hasReferenceProton()) ) {
-        Proton p( _contextPtr->getEnergy() );
-         _contextPtr->setReferenceProton(p);
+      if( !(_contextPtr->hasReferenceParticle()) ) {
+        delete wpu;
+  	QMessageBox::critical( 
+  	        0, 
+  	        "CHEF ERROR",
+  	        "Reference particle must be established first."
+  	        );
+  	throw( GenericException( __FILE__, __LINE__, 
+  	       "void editDialog::visitSlot( Slot* x )", 
+  	       "Reference particle not established." ) );
       }
 
-      Proton prtn( _contextPtr->getReferenceProton() );
+
+      Particle* particlePtr = (_contextPtr->getParticle()).Clone();
+      _contextPtr->getReferenceParticle( *particlePtr );
       DeepBeamlineIterator dbi( _contextPtr->cheatBmlPtr() );
       bmlnElmnt* q;
       while((  q = dbi++  )) {
         if( q == x ) { break; }
-        else         { q->propagate( prtn ); }
+        else         { q->propagate( *particlePtr ); }
       }
       if( q == x ) {
-        q->propagate( prtn );
-        double offset   = prtn.get_x();
-        double yawAngle = atan( prtn.get_npx()/prtn.get_npz() );
+        q->propagate( *particlePtr );
+        double offset   = particlePtr->get_x();
+        double yawAngle = atan( particlePtr->get_npx()/particlePtr->get_npz() );
         Frame f(x->getOutFrame());
         f.translate( offset*f.getxAxis() );
         f.rotate( yawAngle, f.getyAxis(), false );

@@ -44,8 +44,8 @@ class ETFncData: public CHEFPlotData
     void _finishConstructor();
 
  public:
-    ETFncData( beamline*,        ostream* = &std::cout, ostream* = &std::cerr);
-    ETFncData( BeamlineContext*, ostream* = &std::cout, ostream* = &std::cerr);
+    ETFncData( const Particle&, beamline*, std::ostream* = &std::cout, std::ostream* = &std::cerr);
+    ETFncData( BeamlineContext*, std::ostream* = &std::cout, std::ostream* = &std::cerr);
    ~ETFncData();
 
     void resetErrorStream ( std::ostream* stderrstream );

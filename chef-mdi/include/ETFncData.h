@@ -8,6 +8,7 @@
 #include <boost/shared_array.hpp>
 
 
+class Particle;
 class BeamlineContext;
 
 class ETFncData: public CHEFPlotData 
@@ -44,7 +45,7 @@ class ETFncData: public CHEFPlotData
     void _finishConstructor();
 
  public:
-    ETFncData( beamline*,        std::ostream* = &std::cout, std::ostream* = &std::cerr);
+    ETFncData( const Particle&, beamline*, std::ostream* = &std::cout, std::ostream* = &std::cerr);
     ETFncData( BeamlineContext*, std::ostream* = &std::cout, std::ostream* = &std::cerr);
    ~ETFncData();
 

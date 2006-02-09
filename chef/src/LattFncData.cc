@@ -1,13 +1,49 @@
+/***************************************************************************
+***************************************************************************
+***************************************************************************
+******                                                               ******   
+******  CHEF:      An application layered on the Beamline/mxyzptlk   ****** 
+******             class libraries.                                  ****** 
+******                                                               ****** 
+******  File:      LattFncData.cpp                                   ******
+******                                                               ******
+******  Copyright (c) Universities Research Association, Inc.        ****** 
+******                All Rights Reserved                            ****** 
+******                                                               ****** 
+******  Authors:                                                     ******
+******                                                               ******
+******              Jean-Francois Ostiguy                            ******
+******              Fermilab                                         ****** 
+******              ostiguy@fnal.gov                                 ****** 
+******                                                               ******
+******              Leo Michelotti                                   ******
+******              Fermilab                                         ******
+******              michelotti@fnal.gov                              ****** 
+******                                                               ******
+******                                                               ******  
+******  Usage, modification, and redistribution are subject to terms ******
+******  of the License supplied with this software.                  ****** 
+******                                                               ******
+******  Software and documentation created under                     ****** 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.    ****** 
+******  The U.S. Government retains a world-wide non-exclusive,      ****** 
+******  royalty-free license to publish or reproduce documentation   ****** 
+******  and software for U.S. Government purposes. This software     ****** 
+******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
+******  URA/FNAL reserves all rights.                                ****** 
+******                                                               ******
+**************************************************************************/
+
 #include <fstream>
 #include <iomanip>
 #include <string>   // needed for strcat
 #include <math.h>
 
-#include "complexAddon.h"
-#include "bmlfactory.h"
-#include "LattFncData.h"
-#include "BeamlineContext.h"
-#include "chefplotmain.h"
+#include <complexAddon.h>
+#include <bmlfactory.h>
+#include <LattFncData.h>
+#include <BeamlineContext.h>
+#include <chefplotmain.h>
 #include <boost/shared_ptr.hpp>
 #include <qwt/qwt_plot.h>
 
@@ -34,7 +70,7 @@ LattFncData::LattFncData( BeamlineContext* bcp, std::ostream* stdoutstream, std:
 }
 
 
-LattFncData::LattFncData( beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream)
+LattFncData::LattFncData( const Particle& prt, beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream)
 : _errorStreamPtr(stdoutstream), _outputStreamPtr(stderrstream),
   _bmlConPtr(0),  _deleteContext(true),
   _plotType( betaPlot ),
@@ -48,7 +84,7 @@ LattFncData::LattFncData( beamline* pBml, std::ostream* stdoutstream, std::ostre
   _disp_H     ( dnull ),      _disp_V( dnull ), 
   _name("undefined")
 {
-  _bmlConPtr = new BeamlineContext( false, pBml );
+  _bmlConPtr = new BeamlineContext( prt, pBml, false );
   this->_finishConstructor();
 }
 
@@ -92,7 +128,6 @@ void LattFncData::_finishConstructor()
 
 LattFncData::~LattFncData()
 {
-  //std::cout << "LattFncData::~LattFncData()" << std::endl;
   if(_deleteContext) { delete _bmlConPtr; }
 }
 
@@ -122,7 +157,7 @@ void LattFncData::doCalc()
            "\n*** WARNING *** Too many lattice functions read."
            "\n*** WARNING *** Am resetting to " << _arraySize << " in all."
         << "\n*** WARNING *** "
-        << endl;
+        << std::endl;
     }
     else {
       _azimuth[i]      = infoPtr->arcLength;
@@ -151,7 +186,7 @@ void LattFncData::doCalc()
          << "\n*** WARNING ***  _arraySize is being reset from "
          << _arraySize << " to " << i << "."
          << "\n*** WARNING *** "
-         << endl;
+         << std::endl;
   }
 
   _arraySize = i;

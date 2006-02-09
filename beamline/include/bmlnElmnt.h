@@ -419,7 +419,8 @@ public:
                                    // The user has responsibility for
                                    // eventually deleting these.
 
-  virtual void peekAt( double& s, Particle* = 0 );
+  // REMOVE: virtual void peekAt( double& s, Particle* = 0 );
+  virtual void peekAt( double& s, const Particle& ) const;
   virtual bool equivTo( const bmlnElmnt& ) const;
   virtual bool equivTo( const bmlnElmnt* ) const;
   virtual bool hasParallelFaces() const;
@@ -819,7 +820,8 @@ public:
 
 
   // QUERIES
-  void   peekAt( double& s, Particle* = 0 );
+  // REMOVE: void   peekAt( double& s, Particle* = 0 );
+  void   peekAt( double& s, const Particle& ) const;
   lattFunc whatIsLattice( int );     // After element n, 0 <= n.
   lattFunc whatIsLattice( char* n ); // n is name of element 
   int    howMany() const { return numElem; }  // WARNING: not reliable!

@@ -5,9 +5,8 @@
 ******  BEAMLINE FACTORY:  Interprets MAD input files and             
 ******             creates instances of class beamline.                 
 ******                                                
-******  Version:   1.6
-******                                    
 ******  File:      bmlfactory.cc
+******  Version:   2.0
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc.   
 ******                All Rights Reserved                             

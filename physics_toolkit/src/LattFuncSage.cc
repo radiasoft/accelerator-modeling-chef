@@ -464,7 +464,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   double resizeFactor = 0.00001;
 
 
-  // Set up "real" proton ...
+  // Set up "real" particle ...
   inState[ p_1->xIndex()   ] = sqrt( beta_x );
   inState[ p_1->npxIndex() ] = - alpha_x / sqrt( beta_x );
   inState[ p_1->yIndex()   ] = sqrt( beta_y );
@@ -477,7 +477,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
     inState[i] = 0.0;
   }
     
-  // Set up "imaginary" proton ...
+  // Set up "imaginary" particle ...
   inState[ p_2->npxIndex() ] = 1.0/sqrt( beta_x );
   inState[ p_2->npyIndex() ] = 1.0/sqrt( beta_y );
   for( i = 0; i < 6; i++ ) {
@@ -1957,7 +1957,7 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
    zero           = new double   [ BMLN_dynDim ];
    z              = new Jet      [ BMLN_dynDim ];
 
-   // .......... Propagate a JetProton to get transfer matrix
+   // .......... Propagate a JetParticle to get transfer matrix
    for ( i = 0; i < BMLN_dynDim; i++ ) zero[i] = 0.0;
    p.setState( zero );
    _myBeamlinePtr->propagate( p );

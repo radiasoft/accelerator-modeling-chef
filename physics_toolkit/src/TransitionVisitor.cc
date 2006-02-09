@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
 ******                                    
 ******  File:      TransitionVisitor.cc
+******  Version:   2.2
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -73,7 +73,7 @@ const int  TransitionVisitor::NEGLEVEL   = 1;
 const int  TransitionVisitor::ZEROLENGTH = 2;
 const int  TransitionVisitor::NEGCOMP    = 3;
 const int  TransitionVisitor::DOUBLED    = 4;
-const int  TransitionVisitor::NOPROTON   = 5;
+const int  TransitionVisitor::NOPARTICLE = 5;
 const int  TransitionVisitor::NOLATTFUNC = 6;
 const int  TransitionVisitor::VERDISP    = 7;
 const int  TransitionVisitor::NOELEMENTS = 8;
@@ -84,7 +84,7 @@ const char* TransitionVisitor::_errorMessage [] =
   "ZEROLENGTH: No calculation done: beamline length = 0.",
   "NEGCOMP: Momentum compaction is negative.",
   "DOUBLED: Attempt to visit two beamlines with same TransitionVisitor.",
-  "NOPROTON: No proton was instantiated.",
+  "NOPARTICLE: No particle was instantiated.",
   "NOLATTFUNC: Dispersion has not been calculated.",
   "VERDISP: Vertical dispersion detected.  I'm not a Sage, you know!",
   "NOELEMENTS: The beamline is empty.",
@@ -98,8 +98,8 @@ TransitionVisitor::TransitionVisitor()
 : _s(0.0),
   _alpha(0.0),
   _gamma_t(0.0),
-  _errorCode(NOPROTON),
-  _protonPtr(0),
+  _errorCode(NOPARTICLE),
+  _particlePtr(0),
   _level(0),
   _D(0.0),
   _Dprime(0.0),
@@ -128,21 +128,42 @@ TransitionVisitor::TransitionVisitor( const TransitionVisitor& x )
   _b(x._b),
   _f(x._f)
 {
-  if( x._protonPtr ) {
-    _protonPtr = new Proton( *(x._protonPtr) );
+  if( x._particlePtr ) {
+    _particlePtr = (x._particlePtr)->Clone();
     _errorCode = OKAY;
   }
   else {
-    _protonPtr = 0;
-    _errorCode = NOPROTON;
+    _particlePtr = 0;
+    _errorCode = NOPARTICLE;
   }
+}
+
+
+TransitionVisitor::TransitionVisitor( const Particle& x )
+: _s(0.0),
+  _alpha(0.0),
+  _gamma_t(0.0),
+  _errorCode(OKAY),
+  _particlePtr( x.Clone() ),
+  _level(0),
+  _D(0.0),
+  _Dprime(0.0),
+  _calcDone(false),
+  _coeff(4,4),
+  _b(1,4),
+  _f(4,1)
+{
+  _coeff(0,0) = 1.0;
+  _coeff(1,1) = 1.0;
+  _coeff(2,0) = 1.0;
+  _coeff(3,1) = 1.0;
 }
 
 
 TransitionVisitor::~TransitionVisitor()
 {
-  if( _protonPtr ) { delete _protonPtr; }
-  _protonPtr = 0;
+  if( _particlePtr ) { delete _particlePtr; }
+  _particlePtr = 0;
 }
 
 
@@ -159,9 +180,8 @@ void TransitionVisitor::visitBeamline( beamline* x )
     _errorCode = DOUBLED;
     return;
   }
-  if( !_protonPtr ) {
-    _protonPtr = new Proton( x->Energy() );
-    _errorCode = OKAY;
+  if( !_particlePtr ) {
+    _errorCode = NOPARTICLE;
   }
   if( _errorCode != OKAY ) {
     return;
@@ -222,7 +242,7 @@ void TransitionVisitor::visitBmlnElmnt( bmlnElmnt* x )
 {
   if( !_calcDone && (_errorCode == OKAY) ) 
   {
-    _s += x->OrbitLength( *(_protonPtr) );
+    _s += x->OrbitLength( *(_particlePtr) );
     this->_set_prev(x);
   }
 }
@@ -248,7 +268,7 @@ void TransitionVisitor::_visit_bend( bmlnElmnt* x )
     }
 
     // The calculation
-    double lng = x->OrbitLength( *(_protonPtr) );
+    double lng = x->OrbitLength( *(_particlePtr) );
     _coeff(2,1) = lng;
     _coeff(2,2) = lng*lng;
     _coeff(2,3) = _coeff(2,2)*lng;
@@ -262,7 +282,7 @@ void TransitionVisitor::_visit_bend( bmlnElmnt* x )
     temp *= lng; _b(0,3) = temp/4.0;
 
     double str  = x->Strength();
-    double brho = _protonPtr->ReferenceBRho();
+    double brho = _particlePtr->ReferenceBRho();
     _f(0,0) = str*_D/brho;
     _f(1,0) = str*_Dprime/brho;
     _f(2,0) = str*(lfPtr->dispersion.hor)/brho;

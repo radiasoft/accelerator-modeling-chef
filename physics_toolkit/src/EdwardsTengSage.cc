@@ -217,11 +217,15 @@ int EdwardsTengSage::_attachETFuncs( bmlnElmnt* lbe )
 
  ETbarn = lbe->dataHook.lift( "EdwardsTengSage" );
  ETptr = (Info*) ETbarn->info;
- // *** REMOVE *** localMap = ETptr->map( (*EdwardsTengSage::_theMapPtr)( ETptr->mapInv ) );
+ // REMOVE: localMap = ETptr->map( (*EdwardsTengSage::_theMapPtr)( ETptr->mapInv ) );
  localMap = ETptr->map( (*EdwardsTengSage::_theMapPtr)( ETptr->map.Inverse() ) );
  mtrx = localMap.Jacobian();
- ETptr->EV = mtrx.Matrix::eigenVectors(); 
- 
+ ETptr->EV = mtrx.Matrix::eigenVectors();
+  // In the above, it is necessary to qualify the member 
+  // function eigenValues(). Without explicit class qualifier, 
+  // the complex form of the algorithm is called. 
+  // This should not be so. Compiler bug ???
+
  M( 0, 0 ) = mtrx( 0, 0 );     n( 0, 0 ) = mtrx( 0, 1 );
  M( 0, 1 ) = mtrx( 0, 3 );     n( 0, 1 ) = mtrx( 0, 4 );
  M( 1, 0 ) = mtrx( 3, 0 );     n( 1, 0 ) = mtrx( 3, 1 );
@@ -427,25 +431,24 @@ int EdwardsTengSage::doCalc( JetParticle* ptr_jp, beamline::Criterion& crit )
 
   EdwardsTengSage::_theMapPtr = new Mapping;
 
-  // .......... Propagate a JetProton element by element
+  // .......... Propagate a JetParticle element by element
   // .......... It is assumed to be on a closed orbit!!
-  Proton* ptr_proton 
-     = (Proton*) (dynamic_cast<JetProton*>(ptr_jp)->ConvertToParticle());
-  // Note: ptr_proton is deleted before returning
+  Particle* ptr_particle = ptr_jp->ConvertToParticle();
+  // Note: ptr_particle is deleted before returning
 
   double lng = 0.0;
   DeepBeamlineIterator dbi( _myBeamlinePtr );
    
-  Mapping* tmp_map = 0;  
+  // REMOVE: Mapping* tmp_map = 0;  
 
   while ((  be = dbi++  )) {
-    lng += be->OrbitLength( *ptr_proton );
+    lng += be->OrbitLength( *ptr_particle );
     be->propagate( *ptr_jp );
     if( crit(be) ) {
       ETptr = new Info;
       ETptr->arcLength = lng;
       ptr_jp->getState( ETptr->map );   // ??? Change statements?  Use pointer?
-      // **** REMOVE *** ETptr->mapInv = ETptr->map.Inverse();
+      // REMOVE: ETptr->mapInv = ETptr->map.Inverse();
       be->dataHook.append( "EdwardsTengSage", ETptr );
     }
   }
@@ -469,7 +472,7 @@ int EdwardsTengSage::doCalc( JetParticle* ptr_jp, beamline::Criterion& crit )
          << "*** ERROR ***                                     \n"
          << endl;
     delete EdwardsTengSage::_theMapPtr;
-    delete ptr_proton;
+    delete ptr_particle;
     eraseAll();
     return 10;
    }
@@ -484,7 +487,7 @@ int EdwardsTengSage::doCalc( JetParticle* ptr_jp, beamline::Criterion& crit )
          << "*** ERROR *** Eigenvalues =                        \n"
          << "*** ERROR *** " << lambda << endl;
     delete EdwardsTengSage::_theMapPtr;
-    delete ptr_proton;
+    delete ptr_particle;
     eraseAll();
     return 11;
   }
@@ -498,12 +501,11 @@ int EdwardsTengSage::doCalc( JetParticle* ptr_jp, beamline::Criterion& crit )
   //   the Edwards Teng lattice info to each element
   //   satisfying the selection criterion.
   dbi.reset();
-  
   while ((  be = dbi++  )) {
     if( crit(be) ) {
       if( 0 != ( ret = _attachETFuncs(be) ) ) {
         delete EdwardsTengSage::_theMapPtr;
-        delete ptr_proton;
+        delete ptr_particle;
         eraseAll();
         return ret;
       }
@@ -521,7 +523,7 @@ int EdwardsTengSage::doCalc( JetParticle* ptr_jp, beamline::Criterion& crit )
   _myBeamlinePtr->dataHook.append( "eigentunes", tuneptr );
 
   delete EdwardsTengSage::_theMapPtr;
-  delete ptr_proton;
+  delete ptr_particle;
   return 0;
 }
 

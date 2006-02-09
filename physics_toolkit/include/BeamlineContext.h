@@ -7,8 +7,7 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      BeamlineContext.h
-******  Version:   2.0
-******                                                                
+******  Version:   2.2
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc. / Fermilab     
 ******                All Rights Reserved                             
@@ -57,8 +56,6 @@ class ChromaticityAdjuster;
 class TuneAdjuster;
 class ConstBmlVisitor;
 class BmlVisitor;
-class Particle;
-class JetProton;
 class bmlnElmnt;
 class BeamlineIterator;
 class DeepBeamlineIterator;
@@ -69,11 +66,12 @@ class DeepReverseBeamlineIterator;
 class BeamlineContext
 {
   public:
-    BeamlineContext( bool = false, beamline* = 0 );
+    BeamlineContext( const Particle&, beamline* = 0, bool = false );
     BeamlineContext( const BeamlineContext& );
-    // If first argument is true, the
-    // beamline is cloned, and therefore
-    // owned by the context.
+    // If the bool argument is true, the
+    // beamline is cloned, and its copy is
+    // owned by the context; 
+    // if false, it is not cloned.
     ~BeamlineContext();
 
     int assign( /* const */ beamline* );
@@ -99,7 +97,7 @@ class BeamlineContext
     // Beamline methods
     const char* name() const;
     void rename( const char* );
-    void peekAt( double& s, Particle* = 0 ) const;
+    void peekAt( double& s, const Particle& ) const;
     double sumLengths() const;
 
     int setLength   ( bmlnElmnt*, double );
@@ -139,17 +137,35 @@ class BeamlineContext
     // Returns the one turn map; 
     // Side effect: calculates closed orbit if not
     // already done.
-    bool onTransClosedOrbit( const Proton& ) const;
+    bool onTransClosedOrbit( const Particle& ) const;
 
-    bool hasReferenceProton() const;
-    void setReferenceProton( const Proton& );
-    Proton getReferenceProton() const;
+    bool hasReferenceParticle() const;
+    void setReferenceParticle( const Particle& );
+    int  getReferenceParticle( Particle& ) const;
+    // Returns -1 if no reference particle is available.
+    const Particle& getParticle();
+
+    Vector getParticleState();
+    void   loadParticleStateInto( Vector& );
+    double getParticle_x   ();
+    double getParticle_y   ();
+    double getParticle_cdt ();
+    double getParticle_npx ();
+    double getParticle_npy ();
+    double getParticle_ndp ();
+
+    void setParticleState( const Vector& );
+    void setParticle_x   ( double );
+    void setParticle_y   ( double );
+    void setParticle_cdt ( double );
+    void setParticle_npx ( double );
+    void setParticle_npy ( double );
+    void setParticle_ndp ( double );
 
     bool isRing() const;
     bool isTreatedAsRing() const;
     void handleAsRing();
     void handleAsLine();
-
 
     void reset();
     // This is a drastic function which almost acts
@@ -217,8 +233,10 @@ class BeamlineContext
     friend std::ostream& operator<<( std::ostream&, const BeamlineContext& );
     friend std::istream& operator>>( std::istream&,       BeamlineContext& );
 
-    Proton                _proton;
-    ProtonBunch           _protonBunch;
+    // !!! Eventually, these three should become private !!!
+    Particle*             _particlePtr;
+    Particle*             _facadeParticlePtr;
+    ParticleBunch*        _particleBunchPtr;
 
     // Status flags
     static const int OKAY;
@@ -252,12 +270,12 @@ class BeamlineContext
     //   Note: because units are pi mm-mr, I divide by 2, not M_TWOPI
     // I assume that _eps_1 is "mostly horizontal" and _eps_2 is
     //   "mostly vertical."
-    Proton*               _p_co_p; 
-    // once created, proton holds initial state for
+    Particle*             _p_co_p; 
+    // once created, holds initial state for
     // (transverse) closed orbit.
-    Proton*               _p_disp_p;
+    Particle*             _p_disp_p;
     // same as above, but at reference energy*(1+dp/p)
-    JetProton*            _p_jp;
+    JetParticle*          _p_jp;
     // once created, its state always contains
     // one traversal of the beamline at the
     // reference energy on the closed orbit.
@@ -326,6 +344,90 @@ inline void BeamlineContext::handleAsRing()
 inline void BeamlineContext::handleAsLine()
 {
   _p_bml->setLineMode( beamline::line );
+}
+
+
+inline Vector BeamlineContext::getParticleState()
+{
+  return (_particlePtr->State());
+}
+
+
+inline void BeamlineContext::loadParticleStateInto( Vector& s )
+{
+  s = _particlePtr->State();
+}
+
+
+inline double BeamlineContext::getParticle_x()
+{
+  return (_particlePtr->get_x());
+}
+
+
+inline double BeamlineContext::getParticle_y()
+{
+  return (_particlePtr->get_y());
+}
+
+
+inline double BeamlineContext::getParticle_cdt()
+{
+  return (_particlePtr->get_cdt());
+}
+
+
+inline double BeamlineContext::getParticle_npx()
+{
+  return (_particlePtr->get_npx());
+}
+
+
+inline double BeamlineContext::getParticle_npy()
+{
+  return (_particlePtr->get_npy());
+}
+
+
+inline double BeamlineContext::getParticle_ndp()
+{
+  return (_particlePtr->get_ndp());
+}
+
+
+inline void BeamlineContext::setParticle_x( double u )
+{
+  _particlePtr->set_x(u);
+}
+
+
+inline void BeamlineContext::setParticle_y( double u )
+{
+  _particlePtr->set_y(u);
+}
+
+
+inline void BeamlineContext::setParticle_cdt( double u )
+{
+  _particlePtr->set_cdt(u);
+}
+
+
+inline void BeamlineContext::setParticle_npx( double u )
+{
+  _particlePtr->set_npx(u);
+}
+
+
+inline void BeamlineContext::setParticle_npy( double u )
+{
+  _particlePtr->set_npy(u);
+}
+
+
+inline void BeamlineContext::setParticle_ndp( double u )
+{
+  _particlePtr->set_ndp(u);
 }
 
 

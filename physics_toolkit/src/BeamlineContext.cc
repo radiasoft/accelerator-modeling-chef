@@ -7,7 +7,7 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      BeamlineContext.cc
-******  Version:   2.0.1
+******  Version:   2.2
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                All Rights Reserved                             
@@ -67,38 +67,59 @@ const double BeamlineContext::_smallClosedOrbitNPXError /*[rad]*/ = 1.0e-9;
 const double BeamlineContext::_smallClosedOrbitNPYError /*[rad]*/ = 1.0e-9;
 
 
-BeamlineContext::BeamlineContext( bool doClone, beamline* x )
-: _p_bml(x), _proton( x->Energy() ), _protonBunch(),
-  _p_lfs(0), _p_ets(0), _p_covs(0), _p_lbs(0), _p_cos(0), _p_dsps(0),
-  _p_ca(0), _p_ta(0),
-  _p_co_p(0), _p_disp_p(0), 
-  _initialLattFuncPtr(0), 
-  _initialDispersionPtr(0),
-  _initialCovariancePtr(0),
-  _dpp(0.0001),
-  _isCloned(doClone),
-  _p_bi(0), _p_dbi(0), _p_rbi(0), _p_drbi(0),
-  _tunes(0), _eigentunes(0), 
-  _p_jp(0), 
-  _eps_1(40.0), _eps_2(40.0),
-  _normalLattFuncsCalcd(false), 
-  _edwardstengFuncsCalcd(false), 
-  _momentsFuncsCalcd(false), 
-  _LBFuncsCalcd(false), 
-  _dispersionFuncsCalcd(false), 
-  _dispCalcd(false)
+BeamlineContext::BeamlineContext( const Particle& w, beamline* x, bool doClone )
+:   _p_bml(x)
+  , _particlePtr( w.Clone() )
+  , _facadeParticlePtr( w.Clone() )
+  , _particleBunchPtr(0)
+  , _p_lfs(0)
+  , _p_ets(0)
+  , _p_covs(0)
+  , _p_lbs(0)
+  , _p_cos(0)
+  , _p_dsps(0)
+  , _p_ca(0)
+  , _p_ta(0)
+  , _p_co_p(0)
+  , _p_disp_p(0)
+  , _initialLattFuncPtr(0)
+  , _initialDispersionPtr(0)
+  , _initialCovariancePtr(0)
+  , _dpp(0.0001)
+  , _isCloned(doClone)
+  , _p_bi(0)
+  , _p_dbi(0)
+  , _p_rbi(0)
+  , _p_drbi(0)
+  , _tunes(0)
+  , _eigentunes(0)
+  , _p_jp(0)
+  , _eps_1(40.0)
+  , _eps_2(40.0)
+  , _normalLattFuncsCalcd(false)
+  , _edwardstengFuncsCalcd(false)
+  , _momentsFuncsCalcd(false)
+  , _LBFuncsCalcd(false)
+  , _dispersionFuncsCalcd(false)
+  , _dispCalcd(false)
 {
   if( x == 0 ) {
+    delete _particlePtr; _particlePtr = 0;
     throw( GenericException( __FILE__, __LINE__, 
            "BeamlineContext::BeamlineContext( bool doClone, beamline* x )", 
            "Invoked with null beamline pointer." ) );
   }
+
+  // Reinitialize the internal particle
+  _particlePtr->setStateToZero();
+  _particlePtr->SetReferenceEnergy( _p_bml->Energy() );
 
   if( _isCloned ) { _p_bml = (beamline*) (x->Clone()); }
 
   if( Sage::isRing(_p_bml) ) { this->handleAsRing(); }
   else                       { this->handleAsLine(); }
 }
+
 
 BeamlineContext::BeamlineContext( const BeamlineContext& )
 {
@@ -107,12 +128,22 @@ BeamlineContext::BeamlineContext( const BeamlineContext& )
          "Calling copy constructor is not allowed." ) );
 }
 
+
 BeamlineContext::~BeamlineContext()
 {
   this->reset();
 
+  if( 0 != _particlePtr ) 
+  { delete _particlePtr; _particlePtr = 0; }
+
+  if( 0 != _facadeParticlePtr ) 
+  { delete _facadeParticlePtr; _facadeParticlePtr = 0; }
+
+  if( 0 != _particleBunchPtr ) 
+  { delete _particleBunchPtr; _particleBunchPtr = 0; }
+
   if( _isCloned && (_p_bml != 0) ) 
-  { _p_bml->eliminate(); }
+  { _p_bml->eliminate(); _p_bml = 0; }
 }
 
 
@@ -138,7 +169,7 @@ void BeamlineContext::reset()
   if( _initialDispersionPtr ) 
   { delete _initialDispersionPtr; _initialDispersionPtr = 0; }
 
-  _proton.setStateToZero();
+  _particlePtr->setStateToZero();
 }
 
 
@@ -296,7 +327,7 @@ void BeamlineContext::rename( const char* newname )
 }
 
 
-void BeamlineContext::peekAt( double& s, Particle* p ) const
+void BeamlineContext::peekAt( double& s, const Particle& p ) const
 {
   _p_bml->peekAt( s, p );
 }
@@ -639,52 +670,89 @@ void BeamlineContext::_createDSPS()
 }
 
 
-bool BeamlineContext::onTransClosedOrbit( const Proton& arg ) const
+bool BeamlineContext::onTransClosedOrbit( const Particle& arg ) const
 {
-  Proton probe( arg );
+  Particle* probePtr = arg.Clone();
   
-  _p_bml->propagate( probe );
+  _p_bml->propagate( *probePtr );
 
-  if(    ( fabs( arg.get_x()   - probe.get_x()  ) < _smallClosedOrbitXError   )
-      && ( fabs( arg.get_y()   - probe.get_y()  ) < _smallClosedOrbitYError   )
-      && ( fabs( arg.get_npx() - probe.get_npx()) < _smallClosedOrbitNPXError )
-      && ( fabs( arg.get_npy() - probe.get_npy()) < _smallClosedOrbitNPYError ) ) 
+  if(    ( fabs( arg.get_x()   - probePtr->get_x()  ) < _smallClosedOrbitXError   )
+      && ( fabs( arg.get_y()   - probePtr->get_y()  ) < _smallClosedOrbitYError   )
+      && ( fabs( arg.get_npx() - probePtr->get_npx()) < _smallClosedOrbitNPXError )
+      && ( fabs( arg.get_npy() - probePtr->get_npy()) < _smallClosedOrbitNPYError ) ) 
   {
+    delete probePtr; probePtr = 0;
     return true;
   }
 
+  delete probePtr; probePtr = 0;
   return false;
 }
 
 
-bool BeamlineContext::hasReferenceProton() const
+bool BeamlineContext::hasReferenceParticle() const
 {
   return (0 != _p_co_p);
 }
 
 
-void BeamlineContext::setReferenceProton( const Proton& x )
+void BeamlineContext::setReferenceParticle( const Particle& x )
 {
   this->reset();
-  _p_co_p = new Proton(x);
+  _p_co_p = x.Clone();
 }
 
 
-Proton BeamlineContext::getReferenceProton() const
+int BeamlineContext::getReferenceParticle( Particle& x ) const
 {
-  if( 0 != _p_co_p ) { 
-    return (*_p_co_p); 
+  if( 0 != _p_co_p ) {
+    try {
+      x = *_p_co_p;
+    }
+    catch( const GenericException& ge ) {
+      (*pcerr) << "\n*** ERROR *** "
+                  "\n*** ERROR *** " << __FILE__ << ", line" << __LINE__ 
+               << "\n*** ERROR *** : BeamlineContext::getReferenceParticle( Particle& x )"
+                  "\n*** ERROR *** Exception thrown by Particle::operator= indicates incompatability."
+                  "\n*** ERROR *** "
+               << endl;
+      throw ge;
+    }
   }
+
   else {
-    return Proton( this->getEnergy() );
+    (*pcerr) << "\n*** WARNING *** "
+                "\n*** WARNING *** No reference particle is established,"
+                "\n*** WARNING *** so none is being returned."
+                "\n*** WARNING *** "
+             << endl;
+    return -1;
   }
+
+  return 0;
+}
+
+
+const Particle& BeamlineContext::getParticle()
+{
+  if( 0 != _facadeParticlePtr ) 
+  { delete _facadeParticlePtr; _facadeParticlePtr = 0; }
+
+  _facadeParticlePtr = _particlePtr->Clone();
+  return *_facadeParticlePtr;
+}
+
+
+void BeamlineContext::setParticleState( const Vector& s )
+{
+  _particlePtr->setState(s);
 }
 
 
 void BeamlineContext::_createClosedOrbit()
 {
-  // Instantiates the closed orbit Proton and JetProton.
-  // The JetProton is on the closed orbit and its environment
+  // Instantiates the closed orbit Particle and JetParticle.
+  // The JetParticle is on the closed orbit and its environment
   // is centered on the closed orbit. Its state corresponds
   // to the one turn map.
   
@@ -698,16 +766,17 @@ void BeamlineContext::_createClosedOrbit()
 
   // Eliminate previous information, if necessary
   _deleteClosedOrbit();
-
-  _p_co_p   = new Proton( _p_bml->Energy() );
-  _proton.SetReferenceEnergy( _p_co_p->ReferenceEnergy());
-  _proton.setState( _p_co_p->State() );
+  _particlePtr->SetReferenceEnergy( _p_bml->Energy() );
+  _particlePtr->setStateToZero();
+  _p_co_p = _particlePtr->Clone();
 
   if( (this->onTransClosedOrbit( *_p_co_p )) ) 
   {
     // Instantiate _p_jp on the closed orbit
     // and propagate it once.
-    _p_jp = new JetProton( *_p_co_p );
+    delete _p_co_p;
+    _p_co_p = _particlePtr->Clone();
+    _p_jp = _p_co_p->ConvertToJetParticle();
     _p_bml->propagate( *_p_jp );
   }
   else 
@@ -717,7 +786,7 @@ void BeamlineContext::_createClosedOrbit()
     delete _p_co_p;
     _p_co_p = 0;
 
-    _p_jp = new JetProton( _p_bml->Energy() );
+    _p_jp = _particlePtr->ConvertToJetParticle();
     _p_cos = new ClosedOrbitSage( _p_bml, false );
     int err;
 
@@ -734,22 +803,23 @@ void BeamlineContext::_createClosedOrbit()
              uic.str().c_str() ) );
     }
 
-    _p_co_p = (dynamic_cast<Proton*>(_p_jp->ConvertToParticle()));
-    _proton.setState( _p_co_p->State() );
-    _proton.SetReferenceEnergy( _p_co_p->ReferenceEnergy());
+    _p_co_p = _p_jp->ConvertToParticle();
+    _particlePtr->setState( _p_co_p->State() );
+    _particlePtr->SetReferenceEnergy( _p_co_p->ReferenceEnergy());
   }
 
 
-  // As a final step, register the closed orbit proton
+  // As a final step, register the closed orbit particle
   //   to initialize the reference times correctly
   //   in the elements.
-  Proton dummyProton( *_p_co_p );
-  RefRegVisitor registrar( dummyProton );
+  Particle* dummyParticlePtr = _p_co_p->Clone();
+  RefRegVisitor registrar( *dummyParticlePtr );
   _p_bml->accept( registrar );
+  delete dummyParticlePtr;
   
  
   // If necessary, create a new Jet environment, 
-  // centered on the closed orbit, for the Jet proton.
+  // centered on the closed orbit, for the JetParticle.
 
   Jet__environment_ptr storedEnv = Jet::_lastEnv;
   Jet__environment_ptr pje = Jet__environment::makeJetEnvironment( storedEnv->maxWeight(), _p_co_p->State() );
@@ -757,7 +827,7 @@ void BeamlineContext::_createClosedOrbit()
   // ...       thus the (possible) necessity of the next line.
   Jet::_lastEnv = pje;
   delete _p_jp;
-  _p_jp = new JetProton( *_p_co_p );
+  _p_jp = _p_co_p->ConvertToJetParticle();
   _p_bml->propagate( *_p_jp );
 
 
@@ -948,7 +1018,7 @@ const LattFuncSage::lattFunc* BeamlineContext::getLattFuncPtr( int i )
     else
     {
       if( 0 != _initialLattFuncPtr ) {
-        int errorFlag = _p_lfs->pushCalc( _proton, *_initialLattFuncPtr );
+        int errorFlag = _p_lfs->pushCalc( *_particlePtr, *_initialLattFuncPtr );
         _normalLattFuncsCalcd = ( 0 == errorFlag );
       }
       else {
@@ -1059,11 +1129,11 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
         Jet__environment::BeginEnvironment( 1 );
 
         for( int j = 0; j < n; j++ ) {
-          coordPtr[j] = new coord( _proton.State(j) );
+          coordPtr[j] = new coord( _particlePtr->State(j) );
         }
         JetC::_lastEnv = *Jet__environment::EndEnvironment(scale); // implicit conversion operator
 
-        ptr_arg = _proton.ConvertToJetParticle();
+        ptr_arg = _particlePtr->ConvertToJetParticle();
       }
 
       else {
@@ -1185,7 +1255,7 @@ const DispersionSage::Info* BeamlineContext::getDispersionPtr( int i )
     // If the line is not treated as periodic, do the following:
     else {
       if( 0 != _initialDispersionPtr ) {
-        int errorFlag = _p_dsps->pushCalc( _proton, *_initialDispersionPtr );
+        int errorFlag = _p_dsps->pushCalc( *_particlePtr, *_initialDispersionPtr );
         _dispersionFuncsCalcd = ( 0 == errorFlag );
       }
       else {
@@ -1201,7 +1271,6 @@ const DispersionSage::Info* BeamlineContext::getDispersionPtr( int i )
   if( _dispersionFuncsCalcd ) { return (_p_dsps->getInfoPtr(i)); }
   else                        { return 0;                        }
 }
-
 
 
 MatrixD BeamlineContext::equilibriumCovariance()
@@ -1311,10 +1380,17 @@ int BeamlineContext::changeTunesBy( double dnuh, double dnuv )
     return NO_TUNE_ADJUSTER;
   }
 
-  JetProton jp( _p_bml->Energy() );
-  _p_ta->changeTunesBy( dnuh, dnuv, jp );
+  Particle* dummyPtr = _particlePtr->Clone();
+  dummyPtr->setStateToZero();
+  dummyPtr->SetReferenceEnergy( _p_bml->Energy() );
+  JetParticle* jpPtr = dummyPtr->ConvertToJetParticle();
 
+  _p_ta->changeTunesBy( dnuh, dnuv, *jpPtr );
+
+  delete dummyPtr;
+  delete jpPtr;
   _deleteLFS();
+
   return OKAY;
 }
 
@@ -1538,5 +1614,3 @@ istream& operator>>( istream& is, BeamlineContext& x )
 
   return is;
 }
-
-

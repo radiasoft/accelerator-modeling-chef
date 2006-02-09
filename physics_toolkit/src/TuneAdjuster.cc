@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
 ******                                    
 ******  File:      TuneAdjuster.cc
+******  Version:   2.0
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -67,6 +67,7 @@
 #include <GenericException.h>
 #include <TuneAdjuster.h>
 #include <LattFuncSage.h>
+#include <iosetup.h>
 
 using namespace std;
 
@@ -156,7 +157,7 @@ void TuneAdjuster::addCorrector( const thinQuad* x, double a, double b )
 }
 
 
-int TuneAdjuster::changeTunesBy ( double x, double y, const JetProton& jp )
+int TuneAdjuster::changeTunesBy ( double x, double y, const JetParticle& jp )
 {
   int j;
   double delta_H = x;
@@ -165,15 +166,12 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetProton& jp )
   _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
   _myBeamlinePtr->eraseBarnacles( "Twiss" );
 
-  // 
-  JetProton jpr ( jp );   
-  JetProton jpr2( jp );  // Necessary????
-  JetProton jpr3( jp );  // Necessary????
+  JetParticle* jprPtr  = jp.Clone();
 
   // Calculate current lattice functions
   LattFuncSage lfs( _myBeamlinePtr );
- 
-  _myBeamlinePtr->propagate( jpr );
+
+  _myBeamlinePtr->propagate( *jprPtr );
 
   // Check for Slots
   DeepBeamlineIterator dbi( _myBeamlinePtr );
@@ -188,13 +186,13 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetProton& jp )
   dbi.reset();
 
   if( slotFound ) {
-    lfs.Slow_CS_Calc( &jpr );
+    lfs.Slow_CS_Calc( jprPtr );
   }
   else {
-    lfs.Fast_CS_Calc( &jpr );
+    lfs.Fast_CS_Calc( jprPtr );
   }  
   
-  // lfs.Fast_CS_Calc( &jpr );
+  // lfs.Fast_CS_Calc( jprPtr );
   // This Fast_CS_Calc does not work if there are Slot's!!!  Take action!
 
   int N = this->numberOfCorrectors();
@@ -212,8 +210,9 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetProton& jp )
   {
     ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
     if(!ptr) {
+      delete jprPtr;
       throw( GenericException( __FILE__, __LINE__, 
-             "int TuneAdjuster::changeTunesBy ( double x, double y, const JetProton& jp )", 
+             "int TuneAdjuster::changeTunesBy ( double x, double y, const JetParticle& jp )", 
              "No lattice functions." ) );
     }
     beta(0,j) =   ptr->beta.hor;
@@ -225,7 +224,7 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetProton& jp )
   delta_nu(0,0) = delta_H;
   delta_nu(1,0) = delta_V;
  
-  double brho = jpr.ReferenceBRho();
+  double brho = jprPtr->ReferenceBRho();
   _c = (4.0*M_PI*brho)*( (beta*(*_f)).inverse() * delta_nu );
   w = (*_f)*_c;
  
@@ -246,27 +245,27 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetProton& jp )
   // Clean up ...
   _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
   _myBeamlinePtr->eraseBarnacles( "Twiss" );
+
+  delete jprPtr;
+
   return 0;
 }
 
 
 int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, 
-                                           const JetProton& jp )
+                                           const  JetParticle& jp )
 {
   int j;
 
   _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
   _myBeamlinePtr->eraseBarnacles( "Twiss" );
 
-  // 
-  JetProton jpr ( jp );   
-  JetProton jpr2( jp );  // Necessary????
-  JetProton jpr3( jp );  // Necessary????
+  JetParticle* jprPtr = jp.Clone();
 
   // Calculate current lattice functions
   LattFuncSage lfs( _myBeamlinePtr );
  
-  _myBeamlinePtr->propagate( jpr );
+  _myBeamlinePtr->propagate( *jprPtr );
 
   // Check for Slots
   DeepBeamlineIterator dbi( _myBeamlinePtr );
@@ -281,13 +280,13 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H,
   dbi.reset();
 
   if( slotFound ) {
-    lfs.Slow_CS_Calc( &jpr );
+    lfs.Slow_CS_Calc( jprPtr );
   }
   else {
-    lfs.Fast_CS_Calc( &jpr );
+    lfs.Fast_CS_Calc( jprPtr );
   }  
   
-  // lfs.Fast_CS_Calc( &jpr );
+  // lfs.Fast_CS_Calc( jprPtr );
   // This Fast_CS_Calc does not work if there are Slot's!!!  Take action!
 
   int N = this->numberOfCorrectors();
@@ -308,6 +307,7 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H,
 
     ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
     if(!ptr) {
+      delete jprPtr;
       throw( GenericException( __FILE__, __LINE__, 
              "int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, ", 
              "No lattice functions." ) );
@@ -316,7 +316,7 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H,
   }
   
   // Adjust tune 
-  double brho = jpr.ReferenceBRho();
+  double brho = jprPtr->ReferenceBRho();
   c = (beta*f)(0,0);
   c = (4.0*M_PI*brho)*( delta_H/c );
   w = c*f;
@@ -340,12 +340,15 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H,
   // Clean up ...
   _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
   _myBeamlinePtr->eraseBarnacles( "Twiss" );
+
+  delete jprPtr;
+
   return 0;
 }
 
 
 int TuneAdjuster::changeVerticalTuneBy ( double delta_V, 
-                                         const JetProton& jp )
+                                         const JetParticle& jp )
 {
   int j;
 
@@ -353,14 +356,12 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V,
   _myBeamlinePtr->eraseBarnacles( "Twiss" );
 
   // 
-  JetProton jpr ( jp );   
-  JetProton jpr2( jp );  // Necessary????
-  JetProton jpr3( jp );  // Necessary????
+  JetParticle* jprPtr = jp.Clone();
 
   // Calculate current lattice functions
   LattFuncSage lfs( _myBeamlinePtr );
  
-  _myBeamlinePtr->propagate( jpr );
+  _myBeamlinePtr->propagate( *jprPtr );
 
   // Check for Slots
   DeepBeamlineIterator dbi( _myBeamlinePtr );
@@ -375,13 +376,13 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V,
   dbi.reset();
 
   if( slotFound ) {
-    lfs.Slow_CS_Calc( &jpr );
+    lfs.Slow_CS_Calc( jprPtr );
   }
   else {
-    lfs.Fast_CS_Calc( &jpr );
+    lfs.Fast_CS_Calc( jprPtr );
   }  
   
-  // lfs.Fast_CS_Calc( &jpr );
+  // lfs.Fast_CS_Calc( jprPtr );
   // This Fast_CS_Calc does not work if there are Slot's!!!  Take action!
 
   int N = this->numberOfCorrectors();
@@ -402,6 +403,7 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V,
 
     ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
     if(!ptr) {
+      delete jprPtr;
       throw( GenericException( __FILE__, __LINE__, 
              "int TuneAdjuster::changeVerticalTuneBy ( double delta_V, ", 
              "No lattice functions." ) );
@@ -410,7 +412,7 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V,
   }
   
   // Adjust tune 
-  double brho = jpr.ReferenceBRho();
+  double brho = jprPtr->ReferenceBRho();
   c = (beta*f)(0,0);
   c = (4.0*M_PI*brho)*( delta_V/c );
   w = c*f;
@@ -435,6 +437,9 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V,
   // Clean up ...
   _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
   _myBeamlinePtr->eraseBarnacles( "Twiss" );
+
+  delete jprPtr;
+
   return 0;
 }
 
@@ -442,6 +447,7 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V,
 
 void TuneAdjuster::eraseAll()
 {
-  cerr << "\nWARNING: TuneAdjuster::eraseAll is not written" << endl;
+  (*FNAL::pcerr) << "\nWARNING: TuneAdjuster::eraseAll is not written" 
+                 << endl;
 }
 

@@ -76,7 +76,7 @@ ETFncData::ETFncData( BeamlineContext* bcp,  std::ostream* stdoutstream, std::os
 }
 
 
-ETFncData::ETFncData( /* const */ beamline* pBml,  std::ostream* stdoutstream, std::ostream* stderrstream)
+ETFncData::ETFncData( const Particle& prt, beamline* pBml,  std::ostream* stdoutstream, std::ostream* stderrstream)
 :
   _bmlConPtr(0), 
   _deleteContext(true),
@@ -97,7 +97,7 @@ ETFncData::ETFncData( /* const */ beamline* pBml,  std::ostream* stdoutstream, s
   _errorStreamPtr(stderrstream), 
   _outputStreamPtr(stdoutstream)
 {
-  _bmlConPtr = new BeamlineContext( false, pBml );
+  _bmlConPtr = new BeamlineContext( prt, pBml, false );
    this->_finishConstructor();
 }
 

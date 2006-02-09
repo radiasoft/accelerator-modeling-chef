@@ -78,7 +78,7 @@ LattFncData::LattFncData( BeamlineContext* bcp, std::ostream* stdoutstream, std:
 }
 
 
-LattFncData::LattFncData( beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream)
+LattFncData::LattFncData( const Particle& prt, beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream)
 : _errorStreamPtr(stdoutstream), _outputStreamPtr(stderrstream),
   _bmlConPtr(0),  
   _deleteContext( true ),
@@ -99,7 +99,7 @@ LattFncData::LattFncData( beamline* pBml, std::ostream* stdoutstream, std::ostre
   _name("undefined"),
   _plotType( betaPlot )
 {
-  _bmlConPtr = new BeamlineContext( false, pBml );
+  _bmlConPtr = new BeamlineContext( prt, pBml, false );
   this->_finishConstructor();
 }
 
@@ -213,7 +213,7 @@ void LattFncData::doCalc()
     *(_errorStreamPtr) 
          << "\n*** WARNING *** "
          << __FILE__ << ", " << __LINE__ << ": "
-         << "LattFncData::recalc(): "
+         << "LattFncData::doCalc(): "
          << "\n*** WARNING ***  _arraySize is being reset from "
          << _arraySize << " to " << i << "."
          << "\n*** WARNING *** "

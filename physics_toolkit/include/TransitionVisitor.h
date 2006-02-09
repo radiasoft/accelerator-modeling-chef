@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   ?.?
 ******                                    
 ******  File:      TransitionVisitor.h
+******  Version:   2.2
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -58,6 +58,7 @@ class TransitionVisitor : public BmlVisitor
 {
  public:
   TransitionVisitor();
+  TransitionVisitor( const Particle& );
   TransitionVisitor( const TransitionVisitor& );
   ~TransitionVisitor();
 
@@ -67,6 +68,8 @@ class TransitionVisitor : public BmlVisitor
   void visitSbend     ( sbend*      );
   void visitCF_rbend  ( CF_rbend*   );
   void visitCF_sbend  ( CF_sbend*   );
+
+  void setParticle( const Particle& );
 
   double getTransitionGamma() const;
   double getMomentumCompaction() const;
@@ -82,17 +85,17 @@ class TransitionVisitor : public BmlVisitor
   static const int ZEROLENGTH;
   static const int NEGCOMP;
   static const int DOUBLED;
-  static const int NOPROTON;
+  static const int NOPARTICLE;
   static const int NOLATTFUNC;
   static const int VERDISP;
   static const int NOELEMENTS;
   static const int NULLBMLPTR;
 
  private:
-  double  _s;
-  double  _alpha;
-  double  _gamma_t;
-  Proton* _protonPtr;
+  double    _s;
+  double    _alpha;
+  double    _gamma_t;
+  Particle* _particlePtr;
 
   int     _level;
   double  _D;

@@ -48,6 +48,14 @@
 using namespace std;
 
 
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+//
+//  Class ParticleBunch
+//
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+
 ParticleBunch::Discriminator::Discriminator( const ParticleBunch* x )
 : _within(x)
 {
@@ -208,6 +216,55 @@ void ParticleBunch::Iterator::reset()
 
 
 
+std::ostream& operator<<( std::ostream &os, const ParticleBunch& bunch) 
+{
+  // Note: ParticleBunch& bunch should be declared const ParticleBunch& bunch
+  // Unfortunately,  const declarations are not consistent  
+
+  using std::setw;
+  double state[6];
+  os << bunch.size() << endl;
+  ParticleBunch::Iterator it( const_cast<ParticleBunch&>(bunch) );  
+
+  while ( const Particle* p  = it.next()  ) {  
+    const_cast<Particle*>(p)->getState( state ); // work around broken getState() signature.
+    os << setw(16) << p->ReferenceEnergy() << "  ";
+    for (int i=0; i<6; ++i )
+      os << setw(16) << state[i] << "  ";
+    os << std::endl;
+  }
+  return os;
+}
+
+
+std::istream& operator >>( std::istream &is, ParticleBunch& bunch) 
+{
+  using std::setw;
+  double state[6];
+  double reference_energy = 0.0; 
+  int counter = 0;
+  int nsize   = 0;
+  is >> nsize;  
+
+  while ( (!is.eof()) && (counter++ < nsize) ) { 
+    is >> reference_energy;  
+    for (int i=0; i<6; ++i) {
+       is >> state[i]; 
+    };     
+    bunch.append( ParticlePtr(bunch.makeParticle(reference_energy,  state)));
+  }
+  return is;
+}
+
+
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+//
+//  Class ProtonBunch
+//
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+
 ProtonBunch::ProtonBunch() : ParticleBunch() 
 {
 }
@@ -234,80 +291,184 @@ void ProtonBunch::append( ProtonPtr p)
 
 Particle* ProtonBunch::makeParticle( double energy, double* state )
 {
-
   return new Proton( energy, state );
-
 }
 
 
-std::ostream& 
-operator<<( std::ostream &os, const ParticleBunch& bunch) {
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+//
+//  Class PositronBunch
+//
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
 
-  // Note: ParticleBunch& bunch should be declared const ParticleBunch& bunch
-  // Unfortunately,  const declarations are not consistent  
-
-  using std::setw;
-
-  double state[6];
-
-  os << bunch.size() << endl;
+PositronBunch::PositronBunch() : ParticleBunch() 
+{
+}
  
-  ParticleBunch::Iterator it( const_cast<ParticleBunch&>(bunch) );  
 
-  while ( const Particle* p  = it.next()  ) {  
+PositronBunch::PositronBunch(int nm, double energy, double* widths,
+                             Distribution& distrib,
+                             ParticleBunch::Discriminator* pBunchPredicate )
+: ParticleBunch() 
+{
+ #if 0                               
+ Positron* p;
+ double x[ BMLN_dynDim ];
 
-    const_cast<Particle*>(p)->getState( state ); // work around broken getState() signature.
-    
-    os << setw(16) << p->ReferenceEnergy() << "  ";
-
-    for (int i=0; i<6; ++i )
-      os << setw(16) << state[i] << "  ";
- 
-    os << std::endl;
-  }
-
-  return os;
-
-}
-
-//....................................................................................................
-
-
-std::istream& 
-operator >>( std::istream &is, ParticleBunch& bunch) {
-
-  using std::setw;
-
-    double state[6];
-  double reference_energy = 0.0; 
-
-
-  int counter = 0;
-  int nsize   = 0;
-
-  is >> nsize;  
-
-  while ( (!is.eof()) && (counter++ < nsize) ) { 
-
-    is >> reference_energy;  
-
-    for (int i=0; i<6; ++i) {
-       is >> state[i]; 
-    };     
-    
-    bunch.append( ParticlePtr(bunch.makeParticle(reference_energy,  state)));
-    
-  }
-
-  return is;
-
+ while( iNOfTracked_ < nm ) {
+   
+   p = new Positron(energy);
+   x[0] = distrib.getValue()*widths[0];
+   x[1] = distrib.getValue()*widths[1];
+   x[2] = distrib.getValue()*widths[2];
+   x[3] = distrib.getValue()*widths[3];
+   x[4] = distrib.getValue()*widths[4];
+   x[5] = distrib.getValue()*widths[5];
+   p->setState( x );
+   
+   if (( pBunchPredicate != 0 ) && ( (*pBunchPredicate)( *p ) == 0 )) {
+     delete p;
+   } else {
+     append( p );
+     iNOfTracked_++;
+   }
+   iNOfTotal_++;   
+ }
+ #endif
 }
 
 
+PositronBunch::PositronBunch(int nm, double energy, double* widths,
+			     double* offsets,Distribution& distrib,
+                             ParticleBunch::Discriminator* pBunchPredicate ) 
+: ParticleBunch() 
+{
+ #if 0
+ Positron* p;
+ double x[ BMLN_dynDim ];
+
+ while( iNOfTracked_ < nm ) {
+   
+   p = new Positron(energy);
+   x[0] = distrib.getValue()*widths[0] + offsets[0];
+   x[1] = distrib.getValue()*widths[1] + offsets[1];
+   x[2] = distrib.getValue()*widths[2] + offsets[2];
+   x[3] = distrib.getValue()*widths[3] + offsets[3];
+   x[4] = distrib.getValue()*widths[4] + offsets[4];
+   x[5] = distrib.getValue()*widths[5] + offsets[5];
+   p->setState( x );
+   
+   if (( pBunchPredicate != 0 ) && ( (*pBunchPredicate)( *p ) == 0 )) {
+     delete p;
+   } else {
+     append( p );
+     iNOfTracked_++;
+   }
+   iNOfTotal_++;   
+ }
+ #endif
+}
 
 
+PositronBunch::~PositronBunch() 
+{
+}
 
-/*** OLD CODE ***
+
+void PositronBunch::recreate(int nm, double energy, double* widths,
+			     Distribution& distrib, 
+                             ParticleBunch::Discriminator* pBunchPredicate ) 
+{
+ #if 0
+ Positron* p;
+ double x[ BMLN_dynDim ];
+				// First get rid of the old particles
+ slist_iterator getNext( *(slist*) this );
+ while( (p = (Positron*) getNext()) ) delete p;
+
+ clear();
+ iNOfTracked_ = 0;
+ iNOfTotal_   = 0;
+
+ while( iNOfTracked_ < nm ) {
+   
+   p = new Positron(energy);
+   x[0] = distrib.getValue()*widths[0];
+   x[1] = distrib.getValue()*widths[1];
+   x[2] = distrib.getValue()*widths[2];
+   x[3] = distrib.getValue()*widths[3];
+   x[4] = distrib.getValue()*widths[4];
+   x[5] = distrib.getValue()*widths[5];   
+   p->setState( x );
+   
+   if (( pBunchPredicate != 0 ) && ( (*pBunchPredicate)( *p ) == 0 )) {
+     delete p;
+   } else {
+     append( p );
+     iNOfTracked_++;
+   }
+   iNOfTotal_++;   
+ }
+ #endif
+}
+
+
+void PositronBunch::recreate(int nm, double energy, double* widths, double* offsets,
+                             Distribution& distrib, 
+                             ParticleBunch::Discriminator* pBunchPredicate )
+{
+ #if 0
+ Positron* p;
+ double x[ BMLN_dynDim ];
+
+				// First get rid of the old particles
+ slist_iterator getNext( *(slist*) this );
+ while( (p = (Positron*) getNext()) ) delete p;
+ clear();
+
+ iNOfTracked_ = 0;
+ iNOfTotal_   = 0;
+
+ while( iNOfTracked_ < nm ) {
+
+   p = new Positron(energy);
+   x[0] = distrib.getValue()*widths[0] + offsets[0];
+   x[1] = distrib.getValue()*widths[1] + offsets[1];
+   x[2] = distrib.getValue()*widths[2] + offsets[2];
+   x[3] = distrib.getValue()*widths[3] + offsets[3];
+   x[4] = distrib.getValue()*widths[4] + offsets[4];
+   x[5] = distrib.getValue()*widths[5] + offsets[5];
+   p->setState( x );
+   
+   if (( pBunchPredicate != 0 ) && ( (*pBunchPredicate)( *p ) == 0 )) {
+     delete p;
+   } else {
+     append( p );
+     iNOfTracked_++;
+   }
+   iNOfTotal_++;
+ }
+ #endif
+}
+
+
+Particle* PositronBunch::makeParticle( double energy, double* state )
+{
+  return new Positron( energy, state );
+}
+
+
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+//
+//  *** OLD CODE ***
+//
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+
+/*
 
 ProtonBunch::ProtonBunch(int nm, double energy, double* widths,
 			 Distribution& distrib,
@@ -470,19 +631,19 @@ ProtonBunch::ProtonBunch( int, int nm, char t,
  }
 }
 
-ElectronBunch::ElectronBunch() : ParticleBunch() {
+PositronBunch::PositronBunch() : ParticleBunch() {
 }
  
-ElectronBunch::ElectronBunch(int nm, double energy, double* widths,
+PositronBunch::PositronBunch(int nm, double energy, double* widths,
                              Distribution& distrib,
                              BunchPredicate* pBunchPredicate ) : ParticleBunch() {
                                
- Electron* p;
+ Positron* p;
  double x[ BMLN_dynDim ];
 
  while( iNOfTracked_ < nm ) {
    
-   p = new Electron(energy);
+   p = new Positron(energy);
    x[0] = distrib.getValue()*widths[0];
    x[1] = distrib.getValue()*widths[1];
    x[2] = distrib.getValue()*widths[2];
@@ -501,15 +662,15 @@ ElectronBunch::ElectronBunch(int nm, double energy, double* widths,
  }
 }
 
-ElectronBunch::ElectronBunch(int nm, double energy, double* widths,
+PositronBunch::PositronBunch(int nm, double energy, double* widths,
 			     double* offsets,Distribution& distrib,
                              BunchPredicate* pBunchPredicate ) : ParticleBunch() {
- Electron* p;
+ Positron* p;
  double x[ BMLN_dynDim ];
 
  while( iNOfTracked_ < nm ) {
    
-   p = new Electron(energy);
+   p = new Positron(energy);
    x[0] = distrib.getValue()*widths[0] + offsets[0];
    x[1] = distrib.getValue()*widths[1] + offsets[1];
    x[2] = distrib.getValue()*widths[2] + offsets[2];
@@ -528,16 +689,16 @@ ElectronBunch::ElectronBunch(int nm, double energy, double* widths,
  }
 }
 
-ElectronBunch::~ElectronBunch() {
+PositronBunch::~PositronBunch() {
 }
 
-void ElectronBunch::recreate(int nm, double energy, double* widths,
+void PositronBunch::recreate(int nm, double energy, double* widths,
 			     Distribution& distrib, BunchPredicate* pBunchPredicate ) {
- Electron* p;
+ Positron* p;
  double x[ BMLN_dynDim ];
 				// First get rid of the old particles
  slist_iterator getNext( *(slist*) this );
- while( (p = (Electron*) getNext()) ) delete p;
+ while( (p = (Positron*) getNext()) ) delete p;
 
  clear();
  iNOfTracked_ = 0;
@@ -545,7 +706,7 @@ void ElectronBunch::recreate(int nm, double energy, double* widths,
 
  while( iNOfTracked_ < nm ) {
    
-   p = new Electron(energy);
+   p = new Positron(energy);
    x[0] = distrib.getValue()*widths[0];
    x[1] = distrib.getValue()*widths[1];
    x[2] = distrib.getValue()*widths[2];
@@ -564,14 +725,14 @@ void ElectronBunch::recreate(int nm, double energy, double* widths,
  }
 }
 
-void ElectronBunch::recreate(int nm, double energy, double* widths, double* offsets,
+void PositronBunch::recreate(int nm, double energy, double* widths, double* offsets,
                              Distribution& distrib, BunchPredicate* pBunchPredicate ) {
- Electron* p;
+ Positron* p;
  double x[ BMLN_dynDim ];
 
 				// First get rid of the old particles
  slist_iterator getNext( *(slist*) this );
- while( (p = (Electron*) getNext()) ) delete p;
+ while( (p = (Positron*) getNext()) ) delete p;
  clear();
 
  iNOfTracked_ = 0;
@@ -579,7 +740,7 @@ void ElectronBunch::recreate(int nm, double energy, double* widths, double* offs
 
  while( iNOfTracked_ < nm ) {
 
-   p = new Electron(energy);
+   p = new Positron(energy);
    x[0] = distrib.getValue()*widths[0] + offsets[0];
    x[1] = distrib.getValue()*widths[1] + offsets[1];
    x[2] = distrib.getValue()*widths[2] + offsets[2];

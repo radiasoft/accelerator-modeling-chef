@@ -24,6 +24,7 @@
 
 #include <bmlnElmnt.h>
 #include <beamline.h>
+#include <Particle.h>
 
 #ifdef FNAL_FIRST_ORDER
 #include <Matrix.h>
@@ -46,7 +47,7 @@ void wrap_beamlinecontext() {
 
 using namespace boost::python;
 
-class_<BeamlineContext>( "BeamlineContext", init<bool, beamline*>() )
+class_<BeamlineContext>( "BeamlineContext", init<const Particle&, beamline*, bool>() )
       
 .def( "assign",                         &BeamlineContext::assign )                    //
 //.def( "accept",                       &BeamlineContext::accept )                    //  ( ConstBmlVisitor& ) const;
@@ -55,7 +56,7 @@ class_<BeamlineContext>( "BeamlineContext", init<bool, beamline*>() )
 .def( "getClonedFlag",                  &BeamlineContext::getClonedFlag )
 .def( "writeTree",                      &BeamlineContext::writeTree )
 .def( "name",                           &BeamlineContext::name)                             // const char* name() const;
-.def( "peekAt",                         &BeamlineContext::peekAt)                           // void peekAt( double& s, Particle* = 0 ) const;
+.def( "peekAt",                         &BeamlineContext::peekAt)                           // void peekAt( double& s, const Particle& ) const;
 .def( "sumLengths",                     &BeamlineContext::sumLengths)                       // double sumLengths() const;
 .def( "setLength",                      &BeamlineContext::setLength )                       // int setLength   ( bmlnElmnt*, double );
 .def( "setStrength",                    &BeamlineContext::setStrength )                     // int setStrength ( bmlnElmnt*, double );

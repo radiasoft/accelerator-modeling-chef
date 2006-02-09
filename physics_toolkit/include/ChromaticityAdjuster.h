@@ -65,7 +65,7 @@ public:
   void addCorrector( const thinSextupole*, double, double );
 
   int numberOfCorrectors() const;
-  int changeChromaticityBy ( double, double, const JetProton& );
+  int changeChromaticityBy ( double, double, const JetParticle& );
   MatrixD getControls();
 
   void eraseAll();

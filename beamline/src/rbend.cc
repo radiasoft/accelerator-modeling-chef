@@ -498,8 +498,7 @@ double rbend::OrbitLength( const Particle& x )
 {
   // Computes arclength of orbit assuming a symmetric bend.
   // WARNING: This is not the true arclength under all conditions.
-  static double tworho;
-  tworho  = 2.0 * ( x.Momentum() / PH_CNV_brho_to_p ) / strength;
+  double tworho = 2.0 * ( x.Momentum() / PH_CNV_brho_to_p ) / strength;
   return tworho * asin( length / tworho );
 }
 

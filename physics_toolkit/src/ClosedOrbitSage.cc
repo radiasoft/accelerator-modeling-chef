@@ -283,7 +283,7 @@ int ClosedOrbitSage::_invokeFPSolver( JetParticle* p_jp )
   // *** CHANGE *** fp should know nothing about beamlines
   // *** CHANGE ***
   // ??? Also: the recast is a kludge which must be changed.
-  int fpError = fp( dynamic_cast<JetProton*>(p_jp), "transverse", Sage::no );
+  int fpError = fp( p_jp, "transverse", Sage::no );
   if( 0 != fpError )
   {
     *_errorStreamPtr

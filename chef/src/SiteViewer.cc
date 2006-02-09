@@ -79,7 +79,7 @@ SiteViewer::SiteViewer( BeamlineContext& bmlCP, QWidget* parent, const char* nam
 }
 
 
-SiteViewer::SiteViewer( beamline* x, QWidget* parent, const char* name, WFlags f)
+SiteViewer::SiteViewer( const Particle& prt, beamline* x, QWidget* parent, const char* name, WFlags f)
 : 
   QVBox(parent,name,f),
    _x(0), _y(0), _z(0), 
@@ -97,7 +97,7 @@ SiteViewer::SiteViewer( beamline* x, QWidget* parent, const char* name, WFlags f
                               "Must specify a beamline first." );
   }
   else {
-    _bmlConPtr = new BeamlineContext( false, x );
+    _bmlConPtr = new BeamlineContext( prt, x, false );
     this->_finishConstructor();
   }
 }

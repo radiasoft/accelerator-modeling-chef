@@ -260,19 +260,33 @@ Vector Particle::NormalizedVectorMomentum() const
  return ret;
 }
 
-Particle& Particle::operator=( const Particle& u ) {
- int i;
- if(&u != this) {
-   for( i = 0; i < BMLN_dynDim; i++ ) state[i] = u.state[i];
-   q = u.q;
-   E = u.E;
-   p = u.p;
-   m = u.m;
-   pn = u.pn;
-   pni2 = u.pni2;
-   bRho = u.bRho;
-   beta = u.beta;
-   gamma = u.gamma;
+Particle& Particle::operator=( const Particle& u ) 
+{
+ if( &u != this ) {
+   if( typeid(u) == typeid(*this) ) {
+     for( int i = 0; i < BMLN_dynDim; i++ ) 
+     { state[i] = u.state[i]; }
+     q = u.q;
+     E = u.E;
+     p = u.p;
+     m = u.m;
+     pn = u.pn;
+     pni2 = u.pni2;
+     bRho = u.bRho;
+     beta = u.beta;
+     gamma = u.gamma;
+   }
+   else {
+     ostringstream uic;
+     uic  << "Incompatible types: "
+          << typeid(*this).name()
+          << " is not "
+          << typeid(u).name()
+          << '.';
+     throw( Particle::GenericException( __FILE__, __LINE__, 
+            "Particle& Particle::operator=( const Particle& u )",
+            uic.str().c_str() ) );
+   }
  }
  return *this;
 }

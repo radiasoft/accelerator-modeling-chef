@@ -229,10 +229,10 @@ void CF_sbend::acceptInner( ConstBmlVisitor& v )
 }
 
 
-void CF_sbend::peekAt( double& s, Particle* p_prt )
+void CF_sbend::peekAt( double& s, const Particle& prt ) const
 {
  (*pcout) << setw(12) << s;
- s += OrbitLength( *p_prt );
+ s += OrbitLength( prt );
  (*pcout) << setw(12) << s           
                   << " : " 
       << setw(10) << (int) this  

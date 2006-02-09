@@ -44,7 +44,7 @@ class LBFncData : public CHEFPlotData
     void _finishConstructor();
 
  public:
-    LBFncData( beamline*,        std::ostream* = &std::cout, std::ostream* = &std::cerr);
+    LBFncData( const Particle&, beamline*, std::ostream* = &std::cout, std::ostream* = &std::cerr);
     LBFncData( BeamlineContext*, std::ostream* = &std::cout, std::ostream* = &std::cerr);
     ~LBFncData();
     

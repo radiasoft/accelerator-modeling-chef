@@ -5,9 +5,9 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      combinedFunction.cc
+******  Version:   2.1
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -421,17 +421,22 @@ bool combinedFunction::isMagnet() const
 }
 
 
-double combinedFunction::AdjustPosition( const Proton& arg_p )
+double combinedFunction::AdjustPosition( const Particle& arg_p )
 {
-  JetProton myJP( arg_p );  // This probably won't work properly.
-  return AdjustPosition( myJP );
+  JetParticle* myJPPtr = arg_p.ConvertToJetParticle();
+  // This probably won't work properly.
+  double ret = AdjustPosition( *myJPPtr );
+  delete myJPPtr;
+  return ret;
 }
 
-double combinedFunction::AdjustPosition( const JetProton& arg_jp )
+
+double combinedFunction::AdjustPosition( const JetParticle& arg_jp )
 {
-  /* static */ enum { x = 0, y, cdt, xp, yp, dpop };
-  JetProton  myJP( arg_jp );
-  Proton*    p_myP = (Proton*) myJP.ConvertToParticle();
+  enum { x = 0, y, cdt, xp, yp, dpop };
+
+  JetParticle* myJPPtr = arg_jp.Clone();
+  Particle*      p_myP = myJPPtr->ConvertToParticle();
   // This is deleted before returning.
 
   double x_i  = p_myP->State( x  );
@@ -441,19 +446,21 @@ double combinedFunction::AdjustPosition( const JetProton& arg_jp )
   inState[x]  = x_i;
   inState[xp] = xp_i;
 
-  myJP  .setState( inState );
+  myJPPtr->setState( inState );
   p_myP->setState( inState );
 
-  this->propagate( myJP );
+  this->propagate( *myJPPtr );
 
   double f, m, z;
 
-  m = ( myJP.State().Jacobian() )( x, x );
+  m = ( myJPPtr->State().Jacobian() )( x, x );
   m -= 1.0;
   if( fabs(m) < 1.0e-12 ) {
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-         "double combinedFunction::AdjustPosition( const JetProton& arg_jp )", 
-         "Horrible, inexplicable error: a multi-valued solution is suspected." ) );
+    delete p_myP;   p_myP   = 0;
+    delete myJPPtr; myJPPtr = 0;
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "double combinedFunction::AdjustPosition( const JetParticle& arg_jp )", 
+           "Horrible, inexplicable error: a multi-valued solution is suspected." ) );
   }
   m = 1.0 / m;
 
@@ -484,6 +491,8 @@ double combinedFunction::AdjustPosition( const JetProton& arg_jp )
 
 
   // Clean up and return.
-  delete p_myP;
+  delete p_myP;   p_myP   = 0;
+  delete myJPPtr; myJPPtr = 0;
+
   return z;
 }

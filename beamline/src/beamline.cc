@@ -997,7 +997,7 @@ sector* beamline::MakeSectorFromStart ( const bmlnElmnt& be_1, int deg, JetParti
    return 0;
  }
 
- // Propagate jetProton through first element -----------
+ // Propagate the JetParticle through first element -----------
  p_be->propagate( jp );
  s += p_be->OrbitLength( *p_prt );
 
@@ -1147,31 +1147,32 @@ beamline beamline::sectorize( bmlnElmnt& x, bmlnElmnt& y, int degree,
 
 
 
-void beamline::peekAt( double& s, Particle* p_prt ) {
- char newProton = 0;
- if( !p_prt ) {
-    p_prt = new Proton( nominalEnergy );
-    newProton = 1;
- }
+void beamline::peekAt( double& s, const Particle& prt ) const
+{
+  // REMOVE: char newProton = 0;
+  // REMOVE: if( !p_prt ) {
+  // REMOVE:    p_prt = new Proton( nominalEnergy );
+  // REMOVE:    newProton = 1;
+  // REMOVE: }
 
- dlist_iterator getNext( *(dlist*) this );
- bmlnElmnt* p;
+  dlist_iterator getNext( *(dlist*) this );
+  bmlnElmnt* p;
 
- (*pcout) << "\nBegin beamline::peekat() -- Address of beamline: "
-      << ident << " = " << (int) this 
-      << endl;
+  (*pcout) << "\nBegin beamline::peekat() -- Address of beamline: "
+       << ident << " = " << (int) this 
+       << endl;
 
- while ((  p = (bmlnElmnt*) getNext()  ))  {
-   if( strcasecmp( p->Type(), "beamline" ) == 0 ) 
-     ( (beamline*) p)->peekAt( s, p_prt );
-   else p->peekAt( s, p_prt );
- }
+  while ((  p = (bmlnElmnt*) getNext()  ))  {
+    if( strcasecmp( p->Type(), "beamline" ) == 0 ) 
+      ( (beamline*) p)->peekAt( s, prt );
+    else p->peekAt( s, prt );
+  }
 
- (*pcout) << "End beamline::peekat() -- Address of beamline: "
-      << ident << " = " << (int) this 
-      << endl;
+  (*pcout) << "End beamline::peekat() -- Address of beamline: "
+       << ident << " = " << (int) this 
+       << endl;
 
- if( newProton ) delete p_prt;
+  // REMOVE: if( newProton ) delete p_prt;
 }
 
 

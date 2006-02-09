@@ -853,9 +853,10 @@ bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( const PropFunc& a )
 }
 
 
-void bmlnElmnt::peekAt( double& s, Particle* p_prt ) {
+void bmlnElmnt::peekAt( double& s, const Particle& prt ) const
+{ 
  (*pcout) << setw(12) << s;
- s += OrbitLength( *p_prt );
+ s += OrbitLength( prt );
  (*pcout) << setw(12) << s           
                   << " : " 
       << setw(10) << (int) this  

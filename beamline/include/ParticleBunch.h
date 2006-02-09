@@ -43,7 +43,7 @@
 
 typedef boost::shared_ptr<Particle> ParticlePtr;
 typedef boost::shared_ptr<Proton>   ProtonPtr;
-typedef boost::shared_ptr<Electron> ElectronPtr;
+typedef boost::shared_ptr<Positron> PositronPtr;
 
 
 class ParticleBunch 
@@ -184,18 +184,18 @@ public:
 };
 
 
-class ElectronBunch : public ParticleBunch
+class PositronBunch : public ParticleBunch
 {
 public:
-  ElectronBunch();
-  ElectronBunch( int,                // number of particles
+  PositronBunch();
+  PositronBunch( int,                // number of particles
                  double,             // particle energy
                  double*,            // array of widths (size = 6)
                  Distribution&,      // distribution function
                  Discriminator* = 0  // constraints predicate
                  );
 
-  ElectronBunch( int,                // number of particles
+  PositronBunch( int,                // number of particles
                  double,             // particle energy
                  double*,            // array of widths (size = 6)
                  double*,            // array of offsets (size = 6)
@@ -203,10 +203,10 @@ public:
                  Discriminator* = 0  // constraints predicate
                  );
   
-  ~ElectronBunch();
+  ~PositronBunch();
   
-  void append( const Electron& );
-  void append( ElectronPtr );
+  void append( const Positron& );
+  void append( PositronPtr );
 
   void recreate( int,                // number of particles
                  double,             // particle energy

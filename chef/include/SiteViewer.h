@@ -89,7 +89,7 @@ class Wndw : public QGLWidget
 
 
 public:
-  SiteViewer( beamline*, QWidget* = 0, const char* = 0, WFlags = 0 );
+  SiteViewer( const Particle&, beamline*, QWidget* = 0, const char* = 0, WFlags = 0 );
   SiteViewer( BeamlineContext&, QWidget* = 0, const char* = 0, WFlags = 0 );
   ~SiteViewer();
 

@@ -5,9 +5,9 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
 ******                                    
 ******  File:      AdjustPosition.cc
+******  Version:   1.1
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -44,15 +44,15 @@
 
 using namespace std;
 
-int AdjustPosition( bmlnElmnt* p_be, const JetProton& arg_jp, char )
+int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )
 {
   int ret   = 0;
 
   // --- Must initialize these variables before the goto -----
   // --- (especially for g++ compiler ) ----------------------
-  JetProton  myJP( arg_jp );
-  Proton* p_myP = (Proton*) myJP.ConvertToParticle();
-  // This is deleted before returning.
+  JetParticle* myJPPtr = arg_jp.Clone();
+  Particle* p_myP = myJPPtr->ConvertToParticle();
+  // These are deleted before returning.
 
   double x_i  = p_myP->get_x();
   double xp_i = p_myP->get_npx();
@@ -104,13 +104,13 @@ int AdjustPosition( bmlnElmnt* p_be, const JetProton& arg_jp, char )
   double f, m, z;
 
   // Initialize the derivative...
-  myJP  .setState( inState );
-  p_be->propagate( myJP );
+  myJPPtr->setState( inState );
+  p_be->propagate( *myJPPtr );
 
-  m = ( myJP.State().Jacobian() )( xp, x );
+  m = ( myJPPtr->State().Jacobian() )( xp, x );
   if( fabs(m) < 1.0e-12 ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "int AdjustPosition( bmlnElmnt* p_be, const JetProton& arg_jp, char )", 
+           "int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )", 
            "Horrible, inexplicable error: multi-valued solution is suspected." ) );
   }
   m = 1.0 / m;
@@ -131,15 +131,15 @@ int AdjustPosition( bmlnElmnt* p_be, const JetProton& arg_jp, char )
     inState[x]  = z;
 
     // Recalculate inverse derivative ...
-    myJP.setState( inState );
-    p_be->propagate( myJP );
-    m = ( myJP.State().Jacobian() )( xp, x );
+    myJPPtr->setState( inState );
+    p_be->propagate( *myJPPtr );
+    m = ( myJPPtr->State().Jacobian() )( xp, x );
     if( fabs(m) < 1.0e-12 ) {
       ostringstream uic;
       uic  << "Horrible, inexplicable error at step "
            <<  i << ": multi-valued solution is suspected.";
       throw( GenericException( __FILE__, __LINE__, 
-             "int AdjustPosition( bmlnElmnt* p_be, const JetProton& arg_jp, char )", 
+             "int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )", 
              uic.str().c_str() ) );
     }
     m = 1.0 / m;
@@ -227,6 +227,7 @@ int AdjustPosition( bmlnElmnt* p_be, const JetProton& arg_jp, char )
 
   // Clean up and return.
   end:
-  if( p_myP ) delete p_myP;
+  if( p_myP )   { delete p_myP;   p_myP   = 0; }
+  if( myJPPtr ) { delete myJPPtr; myJPPtr = 0; }
   return ret;
 }
