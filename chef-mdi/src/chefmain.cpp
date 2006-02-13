@@ -90,7 +90,7 @@ int main( int argc, char** argv )
   int w = a.desktop()->width();
   int h = a.desktop()->height();
 
-  gui->setGeometry(w/20,h/20, w*0.90, h*0.90);
+  gui->setGeometry( w/20, h/20, ((9*w)/10), ((9*h)/10) );
 
   clock_t start_time, cur_time;
 
