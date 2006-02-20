@@ -925,17 +925,53 @@ madparser_get_particle_type( madparser* mp ) {
 
 void  
 madparser_set_beam_particle_mass( madparser* mp, double mass) {
+  if( fabs( mass - PH_NORM_mp) < 1.0e-6*fabs(mass + PH_NORM_mp) ) {
+    if( 0 == strcasecmp( "PROTON", mp->beam_params_.particle_type_  ) ) {
+      mp->beam_params_.mass_ = mass;
+    }
+    else {
+      madparser_set_beam_particle_type( mp, "PROTON" );
+    }
+  }
 
-  mp->beam_params_.mass_ = mass;
+  else if( fabs( mass - PH_NORM_me) < 1.0e-6*fabs(mass + PH_NORM_me) ) {
+    if( 0 == strcasecmp( "POSITRON", mp->beam_params_.particle_type_  ) ) {
+      mp->beam_params_.mass_ = mass;
+    }
+    else {
+      madparser_set_beam_particle_type( mp, "POSITRON" );
+    }
+  }
 
+  else {
+    send_to_stderr_stream( stderr, "error ! Incorrect mass assignment %f for %s\n"
+                                   , mass, mp->beam_params_.particle_type_ );
+    char error_msg[132];
+    sprintf( error_msg, "*** ERROR *** Incorrect mass assignment %f for %s"
+                      , mass, mp->beam_params_.particle_type_ );
+    bmlfactory_exit(__FILE__, __LINE__, error_msg);
+  }
 }
+
 
 void  
 madparser_set_beam_particle_charge( madparser* mp, double charge){
-
-  mp->beam_params_.charge_ = charge;
-
+  if( fabs( charge - 1.0) < 1.0e-6*fabs(charge + 1.0) ) {
+    if(    (0 == strcasecmp( "PROTON"  , mp->beam_params_.particle_type_  ))
+        || (0 == strcasecmp( "POSITRON", mp->beam_params_.particle_type_  )) ) {
+      mp->beam_params_.charge_ = charge;
+    }
+  }
+  else {
+    send_to_stderr_stream( stderr, "error ! Incorrect charge assignment %f for %s\n"
+                                   , charge, mp->beam_params_.particle_type_ );
+    char error_msg[132];
+    sprintf( error_msg, "*** ERROR *** Incorrect charge assignment %f for %s"
+                      , charge, mp->beam_params_.particle_type_ );
+    bmlfactory_exit(__FILE__, __LINE__, error_msg);
+  }
 }
+
 
 void  
 madparser_set_beam_energy( madparser* mp, double value){
@@ -943,20 +979,31 @@ madparser_set_beam_energy( madparser* mp, double value){
   double pc, m_p, et, ek, brho, gamma; 
 
   m_p      = mp->beam_params_.mass_;
-
   et        = value;
-  ek        = et - m_p;
-  gamma     = et/m_p;
-  pc        = sqrt((et*et)-(m_p*m_p));
-  brho      = pc/PH_CNV_brho_to_p;
 
-  mp->beam_params_.pc_      = pc;
-  mp->beam_params_.energy_  = et;
-  mp->beam_params_.kenergy_ = ek;
-  mp->beam_params_.brho_    = brho;
-  mp->beam_params_.gamma_   = gamma;
+  if( et < m_p ) {
+    send_to_stderr_stream( stderr, "error ! Energy %f smaller than rest mass %f\n"
+                                   , et, m_p                                       );
+    char error_msg[132];
+    sprintf( error_msg, "*** ERROR *** Energy %f smaller than rest mass %f"
+                      , et, m_p                                                    );
+    bmlfactory_exit(__FILE__, __LINE__, error_msg);
+  }
 
+  else {
+    ek        = et - m_p;
+    gamma     = et/m_p;
+    pc        = sqrt((et*et)-(m_p*m_p));
+    brho      = pc/PH_CNV_brho_to_p;
+
+    mp->beam_params_.pc_      = pc;
+    mp->beam_params_.energy_  = et;
+    mp->beam_params_.kenergy_ = ek;
+    mp->beam_params_.brho_    = brho;
+    mp->beam_params_.gamma_   = gamma;
+  }
 } 
+
 
 void  
 madparser_set_beam_momentum( madparser* mp, double value){
@@ -976,29 +1023,38 @@ madparser_set_beam_momentum( madparser* mp, double value){
   mp->beam_params_.kenergy_ = ek;
   mp->beam_params_.brho_    = brho;
   mp->beam_params_.gamma_   = gamma;
-
-
 }
+
 
 void  
 madparser_set_beam_gamma( madparser* mp, double value){
 
   double pc, m_p, et, ek, brho, gamma; 
 
-  m_p      = mp->beam_params_.mass_;
+  if( value < 1.0 ) {
+    send_to_stderr_stream( stderr, "error ! Assigned gamma %f is smaller than 1.\n"
+                                   , value                                          );
+    char error_msg[132];
+    sprintf( error_msg, "*** ERROR *** Assigned gamma %f is smaller than 1."
+                      , value                                                       );
+    bmlfactory_exit(__FILE__, __LINE__, error_msg);
+  }
 
-  gamma     = value;
-  et        = gamma*m_p;
-  ek        = et-m_p;
-  pc        = sqrt((et*et)-(m_p*m_p));
-  brho      = pc/PH_CNV_brho_to_p;
+  else {
+    m_p   = mp->beam_params_.mass_;
 
-  mp->beam_params_.pc_      = pc;
-  mp->beam_params_.energy_  = et;
-  mp->beam_params_.kenergy_ = ek;
-  mp->beam_params_.brho_    = brho;
-  mp->beam_params_.gamma_   = gamma;
+    gamma = value;
+    et    = gamma*m_p;
+    ek    = et-m_p;
+    pc    = sqrt((et*et)-(m_p*m_p));
+    brho  = pc/PH_CNV_brho_to_p;
 
+    mp->beam_params_.pc_      = pc;
+    mp->beam_params_.energy_  = et;
+    mp->beam_params_.kenergy_ = ek;
+    mp->beam_params_.brho_    = brho;
+    mp->beam_params_.gamma_   = gamma;
+  }
 }
 
 
@@ -1011,6 +1067,20 @@ madparser_set_beam_particle_type( madparser* mp, char* type){
 
   mp->beam_params_.particle_type_ = s;
 
+  if( 0 == strcasecmp( type, "POSITRON" ) ) {
+    madparser_set_beam_particle_charge( mp, 1.0 );
+    madparser_set_beam_particle_mass( mp, PH_NORM_me );
+  }
+  else if( 0 == strcasecmp( type, "PROTON" ) ) {
+    madparser_set_beam_particle_charge( mp, 1.0 );
+    madparser_set_beam_particle_mass( mp, PH_NORM_mp );
+  }
+  else {
+    send_to_stderr_stream(stderr, "error ! Unrecognized particle type %s\n", type );
+    char error_msg[132];
+    sprintf(error_msg, "*** ERROR *** Unrecognized particle type %s", type  );
+    bmlfactory_exit(__FILE__, __LINE__, error_msg);
+  }
 }
 
 double
