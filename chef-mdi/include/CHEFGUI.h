@@ -1,8 +1,8 @@
-/***************************************************************************
+/**************************************************************************
 ***************************************************************************
 ***************************************************************************
 ******                                                               ******   
-******  CHEF:      An application layered on the Beamline/mxyzptlk   ****** 
+******  CHEF:      An application layered on the Beamline/Mxyzptlk   ****** 
 ******             class libraries.                                  ****** 
 ******                                                               ****** 
 ******  File:      CHEFGUI.h                                         ****** 
@@ -11,7 +11,6 @@
 ******                All Rights Reserved                            ****** 
 ******                                                               ****** 
 ******  Authors:                                                     ******
-******                                                               ******
 ******              Leo Michelotti                                   ******
 ******              Fermilab                                         ******
 ******              michelotti@fnal.gov                              ****** 
@@ -46,6 +45,7 @@
 #ifndef CHEFGUI_H
 #define CHEFGUI_H
 
+                                             // BEGIN CHEFGUI SPECIFIC CODE
 #include <ostream>
 #include <chefguibase.h>
 
@@ -78,26 +78,41 @@
 
 #include <Jet__environment.h>
 #include <Mapping.h>
+                                             // END   CHEFGUI SPECIFIC CODE
 
-class  BeamlineContext;
-class  ReverseBeamlineIterator;
-class  DbConnectDialog;
-class  DbRetrieveDialog;
-class  QBml;
-class  QBmlRoot;
-class  CHEFPlotMain;
-class  Tracker;
-class  RayTrace;
-class  SiteViewer;
-class  QTextEdit;
-class  QPyCHEF;
-class  DeviceTable;
-class  QAssistantClient;
-class  BmlSelectionDialog;
-class  InitCondDialogLF;
-class  QSqlDatabase;
-class  CF_Editor;
+// Forward declarations
+// --------------------
+class BeamlineContext;
+class ReverseBeamlineIterator;
 
+class QBml;
+class QBmlRoot;
+
+
+
+
+
+
+
+
+
+class CHEFPlotMain;
+class RayTrace;
+class SiteViewer;
+class Tracker;
+
+                                             // BEGIN CHEFGUI SPECIFIC CODE
+class DbConnectDialog;
+class DbRetrieveDialog;
+class QTextEdit;
+class QPyCHEF;
+class DeviceTable;
+class QAssistantClient;
+class BmlSelectionDialog;
+class InitCondDialogLF;
+class QSqlDatabase;
+class CF_Editor;
+                                             // END   CHEFGUI SPECIFIC CODE
 
 
 // Utility classes
@@ -190,26 +205,27 @@ struct BeamlineContextPtr : public argPtr
 #define CHEF_numargs 5
 
 
+                                             // BEGIN CHEFGUI SPECIFIC CODE
 class CHEFGUI: public CHEFGUIBase {
-
- typedef int (*ACTFUNC00)( CHEFGUI*, bmlnElmnt* );
- typedef int (*ACTFUNC01)( CHEFGUI*, const bmlnElmnt* );
- typedef int (*ACTFUNC10)( const CHEFGUI*, bmlnElmnt* );
- typedef int (*ACTFUNC11)( const CHEFGUI*, const bmlnElmnt* );
-
-
- typedef bool (*BOOLFUNC00)( CHEFGUI*, bmlnElmnt* );
- typedef bool (*BOOLFUNC01)( CHEFGUI*, const bmlnElmnt* );
- typedef bool (*BOOLFUNC10)( const CHEFGUI*, bmlnElmnt* );
- typedef bool (*BOOLFUNC11)( const CHEFGUI*, const bmlnElmnt* );
-
-
+                                             // END   CHEFGUI SPECIFIC CODE
   Q_OBJECT
 
-public:
+  typedef int (*ACTFUNC00)( CHEFGUI*, bmlnElmnt* );
+  typedef int (*ACTFUNC01)( CHEFGUI*, const bmlnElmnt* );
+  typedef int (*ACTFUNC10)( const CHEFGUI*, bmlnElmnt* );
+  typedef int (*ACTFUNC11)( const CHEFGUI*, const bmlnElmnt* );
 
+  typedef bool (*BOOLFUNC00)( CHEFGUI*, bmlnElmnt* );
+  typedef bool (*BOOLFUNC01)( CHEFGUI*, const bmlnElmnt* );
+  typedef bool (*BOOLFUNC10)( const CHEFGUI*, bmlnElmnt* );
+  typedef bool (*BOOLFUNC11)( const CHEFGUI*, const bmlnElmnt* );
+
+
+public:
+                                             // BEGIN CHEFGUI SPECIFIC CODE
   CHEFGUI(QWidget* parent, const char* name, WFlags w);
   virtual ~CHEFGUI();    
+                                             // END   CHEFGUI SPECIFIC CODE
 
   struct insDlgData
   {
@@ -221,13 +237,12 @@ public:
   insDlgData _insertionDialog() const;
 
 private:
-
+                                             // BEGIN CHEFGUI SPECIFIC CODE
   int             _id_FileWriteTree;
   int             _id_analMenu;
   int             _id_ctrlMenu;
   int             _id_EditSelectMenu;
   int             _id_FilePrint;
-  argPtr*         _toolArgs[CHEF_numargs];
 
   coord*          _x; 
   coord*          _y; 
@@ -237,27 +252,31 @@ private:
   coord*          _pz;
 
   QObject*        _eventfilter;
+                                             // END   CHEFGUI SPECIFIC CODE
  
-  // Key widgets
-
   QApplication*                    _appl;
   QMainWindow*                     _mainWindow;
+                                             // BEGIN CHEFGUI SPECIFIC CODE
   QWidget*                         _centralWidget;
+                                             // END   CHEFGUI SPECIFIC CODE
 
-  QGuardedPtr<CHEFPlotMain>                   _plotWidget;
-  QGuardedPtr<CHEFPlotMain>                   _ETplotWidget;
-  QGuardedPtr<CHEFPlotMain>                   _MMplotWidget;
-  QGuardedPtr<CHEFPlotMain>                   _LBplotWidget;
-  QGuardedPtr<CHEFPlotMain>                   _DspnplotWidget;
-  
+  QGuardedPtr<CHEFPlotMain>        _plotWidget;
+  QGuardedPtr<CHEFPlotMain>        _ETplotWidget;
+  QGuardedPtr<CHEFPlotMain>        _MMplotWidget;
+  QGuardedPtr<CHEFPlotMain>        _LBplotWidget;
+  QGuardedPtr<CHEFPlotMain>        _DspnplotWidget;
 
-  Tracker*            _trackWidget;
-  RayTrace*           _traceWidget;
-  SiteViewer*         _siteWidget;
- 
-  Messages<0>*                      _messages_stdout;
-  Messages<1>*                      _messages_stdwar;
-  Messages<2>*                      _messages_stderr;
+  BeamlineBrowser*                 _p_vwr;
+  Tracker*                         _trackWidget;
+  RayTrace*                        _traceWidget;
+  SiteViewer*                      _siteWidget;
+
+  argPtr*                          _toolArgs[CHEF_numargs];
+
+                                             // BEGIN CHEFGUI SPECIFIC CODE
+  Messages<0>*                     _messages_stdout;
+  Messages<1>*                     _messages_stdwar;
+  Messages<2>*                     _messages_stderr;
 
   std::ostream *                   _p_messages_stdout_stream;
   std::ostream *                   _p_messages_stdwar_stream;
@@ -277,8 +296,8 @@ private:
   QAssistantClient*                _assistanthelp;
   BmlSelectionDialog*              _bmlSelectionDialog;
 
-  BeamlineBrowser*                 _p_vwr;
   QPyCHEF*                         _interpreter;
+                                             // END   CHEFGUI SPECIFIC CODE
 
 
   QPopupMenu*      _fileMenu;
@@ -286,18 +305,15 @@ private:
   QPopupMenu*      _editMenu;
 
 
-  
   QPtrList<QBml>    _selListItems;  // selected QListViewItems
                                     // Doesn't seem to be used so far
                                     // (9/24/03)
-  QPtrList<bmlnElmnt> _foundList;   // List of beamline elements found by the editor.
-
-  dlist                  _contextList;
-  BeamlineContext*       _p_currBmlCon;  // Currently selected beamline
-  QBmlRoot*              _p_currQBmlRoot;// ... and its widget
-  QBml*                  _p_clickedQBml; // ... and its QBml
-  
- 
+  QPtrList<bmlnElmnt> _foundList;   // List of beamline elements found
+                                    // by the editor.
+  dlist               _contextList;
+  BeamlineContext*    _p_currBmlCon;  // Currently selected beamline context
+  QBmlRoot*           _p_currQBmlRoot;// ... and its widget
+  QBml*               _p_clickedQBml; // ... and its QBml
 
   EnvPtr<double>::Type                  _p_JetEnv;
   EnvPtr<std::complex<double> >::Type   _p_JetCEnv;
@@ -310,118 +326,124 @@ private:
   void _testFC( ACTFUNC11 ) const;
   void _traverseTree( const QBmlRoot*, ACTFUNC11 ) const;
   void _pushArgs();
+
+                                             // BEGIN CHEFGUI SPECIFIC CODE
   void _enableMenus(bool set);
-  
   void _updateEditorWindowLists(); 
 
-
-signals:
-
-  void  _new_beamline();
-  void _modeChanged( const BeamlineContext* );
-
-  public slots:
-
+public slots:
   void modeRing(bool set);
   void modeLine(bool set);
   void devicesAutoRefresh(bool);
   void fileEditPython();
   void fileEditMAD8();
   void editParse();
+                                             // END   CHEFGUI SPECIFIC CODE
 
-  private slots:
+private slots:
+  void _openFile();
+  void _print();
+  void _fileWriteTree();
+  void _fileSaveAs();
+  void _editFindFilter();
+  void _editSelectAll();
+  void _editSelectNone();
+  void _editCopyLine();
+  void _editRemoveLine();
+  void _editCondense();
+  void _editEditElement();
+  void _editAlign();
+  void _editAlignData();
+  void _editAlignBends();
+  void _editFlatten();
+  void _editNewOrder();
+  void _editMergeQuads();
+  void _editD2S();
+  void _editAddMarkers();
+  void _editAddQtMons();
+  void _editMode();
+  void _editPartition();
+  void _editPartAndSect();
+  void _toolMisalign();
+  void _helpContents();
+  void _helpAbout();
+  void _processFilter( const BoolNode& );
 
-   void _openFile(); 
-   void _openDeviceFile(); 
-   void _openScriptFile(); 
-   void _devicesClearSelection();
-   void _devicesRefreshAll();
-   void _print();
-   void _fileWriteTree();
-   void _fileSaveAs();
-   void _fileEditorSaveAs();
-   void _fileEditorSave();
-   void _databaseConnect();
-   void _databaseRetrieve();
-   void _editFindFilter();
-   void _editSelectAll();
-   void _editSelectNone();
-   void _editCopyLine();
-   void _editEditElement();
-   void _editFlatten();
-   void _editNewOrder();
-   void _editRemoveLine();
-   void _editRenameLine();
-   void _editCondense();
-   void _editAlign();
-   void _editAlignData();
-   void _editAlignBends();
-   void _editMergeQuads();
-   void _editD2S();
-   void _editAddQtMons();
-   void _editMode();
-   void _editPartAndSect();
-   void _editAddMarkers();
-   void _editPartition();   
-   void _toolMisalign();
-   void _helpContents();
-   void _helpAbout();
-   void _processFilter( const BoolNode& );
-   void _slot_contextGenerated( BeamlineContext* );
-   void _makeFODO();
-   void _makeSingSext();
-   void _uncoupledLFDispatch();
-   void _momentsDispatch();
-   void _dispersionDispatch();
-   void _launchLatt();
-   void _launchET();
-   void _launchMoments();
-   void _launchLB();
-   void _pushDispersion();
-   void _pushMoments();
-   void _pushULF();
-   void _pushParticles();
-   void _launchTrack();
-   void _launchRayTrace();
-   void _launchDispersion();
-   void _launchDilution();
-   void _enterMapArg();
-   void _enterContextArg();
-   void _clearArgs();
-   void _launchSiteVu();
-   void _launch_browser();
-   void _horTuneCtrl();
-   void _verTuneCtrl();
-   void _tuneCtrl();
-   void _chromCtrl();
-   void _set_p_clickedContext(BeamlineContext*, QBmlRoot*);
-   void _set_p_clickedQBml( QBml* );
-   void _windowsCascade();
-   void _windowsMinimizeAll();
-   void _windowsTile();
-   void _windowsDefaultLayout();
-   void _handleDBConnection( const DbConnectStruct& st );
-   void _exit();
+  void _slot_contextGenerated( BeamlineContext* );
 
-   void _do_nothing();
+  void _makeFODO();
+  void _makeSingSext();
 
-   void showEvent( QShowEvent* event); 
+  void _launchLatt();
+  void _launchET();
+  void _launchMoments();
+  void _launchLB();
+  void _pushDispersion();
+  void _pushMoments();
+  void _pushULF();
+  void _pushParticles();
+  void _launchTrack();
+  void _launchRayTrace();
+  void _launchDispersion();
+  void _launchDilution();
+  void _enterMapArg();
+  void _enterContextArg();
+  void _clearArgs();
+  void _launchSiteVu();
+  void _launch_browser();
 
-   void windowsMessagesAction_toggled( bool set );
-   void windowsTree_BrowserAction_toggled( bool set );
-   void windowsInterpreterAction_toggled( bool  set);
-   void windowsDevicesAction_toggled( bool  set);
+  void _horTuneCtrl();
+  void _verTuneCtrl();
+  void _tuneCtrl();
+  void _chromCtrl();
+
+  void _set_p_clickedContext( BeamlineContext*, QBmlRoot* );
+  void _set_p_clickedQBml( QBml* );
+  void _do_nothing();
+
+                                             // BEGIN CHEFGUI SPECIFIC CODE
+  void _editRenameLine();
+
+  void _openDeviceFile(); 
+  void _openScriptFile(); 
+  void _devicesClearSelection();
+  void _devicesRefreshAll();
+  void _fileEditorSaveAs();
+  void _fileEditorSave();
+  void _databaseConnect();
+  void _databaseRetrieve();
+
+  void _uncoupledLFDispatch();
+  void _momentsDispatch();
+  void _dispersionDispatch();
+
+  void _windowsCascade();
+  void _windowsMinimizeAll();
+  void _windowsTile();
+  void _windowsDefaultLayout();
+  void _handleDBConnection( const DbConnectStruct& st );
+  void _exit();
+
+  void showEvent( QShowEvent* event); 
+
+  void windowsMessagesAction_toggled( bool set );
+  void windowsTree_BrowserAction_toggled( bool set );
+  void windowsInterpreterAction_toggled( bool  set);
+  void windowsDevicesAction_toggled( bool  set);
   
-   void _disableMenus();
-   void _enableMenus();
+  void _disableMenus();
+  void _enableMenus();
 
  private:
 
-   void _parseEditorPython( CF_Editor* editor );
-   void _parseEditorMAD8( CF_Editor* editor );
+  void _parseEditorPython( CF_Editor* editor );
+  void _parseEditorMAD8( CF_Editor* editor );
+                                             // END   CHEFGUI SPECIFIC CODE
 
-     
+signals:
+  void _new_beamline();
+  void _modeChanged( const BeamlineContext* );
 };
 
 
-#endif
+#endif // CHEFGUI_H
