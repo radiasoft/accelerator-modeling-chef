@@ -1,74 +1,76 @@
-/*************************************************************************
-**************************************************************************
-**************************************************************************
-******                                                                
-******  CHEF: Library of Qt based widget classes, providing GUI   
-******             interfaces to exercise the functionality        
-******             of BEAMLINE.                                    
-******                                                                
-******  File:      CHEF.h
-******  Version:   3.2
-******                                                                
-******  Copyright (c) 2004  Universities Research Association, Inc.   
-******                All Rights Reserved                             
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
-**************************************************************************
-*************************************************************************/
-
+/**************************************************************************
+***************************************************************************
+***************************************************************************
+******                                                               ******   
+******  CHEF:      An application layered on the Beamline/Mxyzptlk   ****** 
+******             class libraries.                                  ****** 
+******                                                               ****** 
+******  File:      CHEF.h                                            ****** 
+******  Version:   3.2                                               ******
+******                                                               ******
+******  Copyright (c) Universities Research Association, Inc.        ****** 
+******                All Rights Reserved                            ******
+******                                                               ******
+******  Author:     Leo Michelotti                                   ******
+******              Fermilab                                         ******
+******              michelotti@fnal.gov                              ******
+******                                                               ******
+******  Usage, modification, and redistribution are subject to terms ******
+******  of the License supplied with this software.                  ******
+******                                                               ******
+******  Software and documentation created under                     ******
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.    ****** 
+******  The U.S. Government retains a world-wide non-exclusive,      ****** 
+******  royalty-free license to publish or reproduce documentation   ****** 
+******  and software for U.S. Government purposes. This software     ****** 
+******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
+******  URA/FNAL reserves all rights.                                ****** 
+******                                                               ******
+**************************************************************************/
 
 #ifndef CHEF_H
 #define CHEF_H
 
+                                                // BEGIN CHEF SPECIFIC CODE
 #ifndef QOBJECT_H
 #include <qobject.h>
 #endif
 #ifndef QPTRLIST_H
 #include <qptrlist.h>
 #endif
+#ifndef QGUARDEDPTR_H
+#include <qguardedptr.h>
+#endif
+
 
 #include "complexAddon.h"
+                                                // END   CHEF SPECIFIC CODE
 
 // Forward declarations
+// --------------------
+                                                // BEGIN CHEF SPECIFIC CODE
+class Mapping;
+                                                // END   CHEF SPECIFIC CODE
+class BeamlineContext;
+class ReverseBeamlineIterator;
+
+class QBml;
+class QBmlRoot;
+                                                // BEGIN CHEF SPECIFIC CODE
 class QMainWindow;
 class QApplication;
 class QLabel;
 class QMenuBar;
 class QPopupMenu;
 class QPixmap;
+                                                // END   CHEF SPECIFIC CODE
 
-class BeamlineContext;
-class ReverseBeamlineIterator;
+class CHEFPlotMain;
+class RayTrace;
+class SiteViewer;
+class Tracker;
 
-// The following forward class declarations should be removed eventually
-#ifdef FIRST_ORDER
-class Jet__environment;
-class JetC__environment;
-class Mapping;
-#else
-template<typename T1, typename T2> 
-class TJetEnvironment;
-template<typename T1, typename T2>
-class TMapping;
-typedef TJetEnvironment<double,std::complex<double> > Jet__environment;
-typedef TJetEnvironment<std::complex<double>,double> JetC__environment;
-typedef TMapping<double,std::complex<double> > Mapping;
-#endif
-
-
+                                                // BEGIN CHEF SPECIFIC CODE
 #ifndef BEAMLINEBROWSER_H
 #include "BeamlineBrowser.h"
 #endif
@@ -78,21 +80,7 @@ typedef TMapping<double,std::complex<double> > Mapping;
 #ifndef BMLNELMNT_H
 #include "bmlnElmnt.h"
 #endif
-
-// ++----++++----++++----++++----++++----++++----++++----++
-
-class CHEFPlotMain;
-
-class QBml;
-class QBmlRoot;
-// class LattFncPlt;
-// class ETFncPlt;
-// class MomentsFncPlt;
-// class LBFncPlt;
-// class DspnFncPlt;
-class Tracker;
-class RayTrace;
-class SiteViewer;
+                                                // END   CHEF SPECIFIC CODE
 
 
 // Utility classes
@@ -108,7 +96,7 @@ class CF_rbendFinder_quad : public beamline::Criterion
 {
   public:
     CF_rbendFinder_quad( double = 0.0 );
-    ~CF_rbendFinder_quad();
+    virtual ~CF_rbendFinder_quad();
 
     void setQuadrupole( double );
 
@@ -124,7 +112,7 @@ class RollAccumulator : public beamline::Action
 {
   public:
     RollAccumulator( const char*, double = 0.0 );
-    ~RollAccumulator();
+    virtual ~RollAccumulator();
 
     void setWeakType();
     void setStrongType();
@@ -181,34 +169,35 @@ struct BeamlineContextPtr : public argPtr
 };
 
 
-// Declaration: class CHEF
-// ------------------------
 
 #define CHEF_numargs 5
 
+
+                                                // BEGIN CHEF SPECIFIC CODE
 class CHEF : public QObject
 {
-Q_OBJECT
+                                                // END   CHEF SPECIFIC CODE
+  Q_OBJECT
 
- typedef int (*ACTFUNC00)( CHEF*, bmlnElmnt* );
- typedef int (*ACTFUNC01)( CHEF*, const bmlnElmnt* );
- typedef int (*ACTFUNC10)( const CHEF*, bmlnElmnt* );
- typedef int (*ACTFUNC11)( const CHEF*, const bmlnElmnt* );
+  typedef int (*ACTFUNC00)( CHEF*, bmlnElmnt* );
+  typedef int (*ACTFUNC01)( CHEF*, const bmlnElmnt* );
+  typedef int (*ACTFUNC10)( const CHEF*, bmlnElmnt* );
+  typedef int (*ACTFUNC11)( const CHEF*, const bmlnElmnt* );
 
- typedef bool (*BOOLFUNC00)( CHEF*, bmlnElmnt* );
- typedef bool (*BOOLFUNC01)( CHEF*, const bmlnElmnt* );
- typedef bool (*BOOLFUNC10)( const CHEF*, bmlnElmnt* );
- typedef bool (*BOOLFUNC11)( const CHEF*, const bmlnElmnt* );
+  typedef bool (*BOOLFUNC00)( CHEF*, bmlnElmnt* );
+  typedef bool (*BOOLFUNC01)( CHEF*, const bmlnElmnt* );
+  typedef bool (*BOOLFUNC10)( const CHEF*, bmlnElmnt* );
+  typedef bool (*BOOLFUNC11)( const CHEF*, const bmlnElmnt* );
 
 
 public:
+                                                // BEGIN CHEF SPECIFIC CODE
   CHEF( beamline* = 0, int = 0, char** = 0 );
   ~CHEF();
 
   int run();
+                                                // END   CHEF SPECIFIC CODE
 
-
-public:
   struct insDlgData
   {
     bool    accepted;
@@ -219,37 +208,48 @@ public:
   insDlgData _insertionDialog() const;
 
 private:
-  // Key widgets
-  QApplication*    _appl;
-  QMainWindow*     _mainWindow;
-  QLabel*          _centralWidget;
-  CHEFPlotMain*    _plotWidget;
-  CHEFPlotMain*    _ETplotWidget;
-  CHEFPlotMain*    _MMplotWidget;
-  CHEFPlotMain*    _LBplotWidget;
-  CHEFPlotMain*    _DspnplotWidget;
-  Tracker*         _trackWidget;
-  RayTrace*        _traceWidget;
-  SiteViewer*      _siteWidget;
-  QPixmap*         _splash;
+  QApplication*                    _appl;
+  QMainWindow*                     _mainWindow;
+                                                // BEGIN CHEF SPECIFIC CODE
+  QLabel*                          _centralWidget;
+                                                // END   CHEF SPECIFIC CODE
+
+  QGuardedPtr<CHEFPlotMain>        _plotWidget;
+  QGuardedPtr<CHEFPlotMain>        _ETplotWidget;
+  QGuardedPtr<CHEFPlotMain>        _MMplotWidget;
+  QGuardedPtr<CHEFPlotMain>        _LBplotWidget;
+  QGuardedPtr<CHEFPlotMain>        _DspnplotWidget;
+
+  BeamlineBrowser*                 _p_vwr;
+  Tracker*                         _trackWidget;
+  RayTrace*                        _traceWidget;
+  SiteViewer*                      _siteWidget;
+
+  argPtr*                          _toolArgs[CHEF_numargs];
+
+                                                // BEGIN CHEF SPECIFIC CODE
+  QPixmap*                         _splash;
   
-  argPtr*          _toolArgs[CHEF_numargs];
   // ??? Why not use a std::vector ???
     
   // Menus
   QMenuBar*        _mainMenu;
+                                                // END   CHEF SPECIFIC CODE
   QPopupMenu*      _fileMenu;
+  QPopupMenu*      _toolMenu;
+                                                // BEGIN CHEF SPECIFIC CODE
+  QPopupMenu*          _calcEnterMenu;
+  QPopupMenu*          _calcCalcFuncMenu;
+  QPopupMenu*            _calcLattFuncMenu;
+  QPopupMenu*            _calcPushMenu;
+                                                // END   CHEF SPECIFIC CODE
   QPopupMenu*      _editMenu;
+                                                // BEGIN CHEF SPECIFIC CODE
   QPopupMenu*        _edit_selectMenu;
   QPopupMenu*      _mach_imagMenu;
   QPopupMenu*      _calcsMenu;
   QPopupMenu*      _ctrlMenu;
   QPopupMenu*      _dsgnMenu;
-  QPopupMenu*      _toolMenu;
-  QPopupMenu*          _calcEnterMenu;
-  QPopupMenu*          _calcCalcFuncMenu;
-  QPopupMenu*            _calcLattFuncMenu;
-  QPopupMenu*            _calcPushMenu;
   QPopupMenu*      _helpMenu;
 
   // Menu identifiers
@@ -258,6 +258,7 @@ private:
   int              _id_EditSelectMenu;
   int              _id_ctrlMenu;
   int              _id_dsgnMenu;
+                                                // END   CHEF SPECIFIC CODE
   
 
   QPtrList<QBml>    _selListItems;  // selected QListViewItems
@@ -265,22 +266,19 @@ private:
                                     // (9/24/03)
   QPtrList<bmlnElmnt> _foundList;   // List of beamline elements found
                                     // by the editor.
-  dlist             _contextList;
+  dlist               _contextList;
+  BeamlineContext*    _p_currBmlCon;  // Currently selected beamline context
+  QBmlRoot*           _p_currQBmlRoot;// ... and its widget
+  QBml*               _p_clickedQBml; // ... and its QBml
 
-  BeamlineContext*  _p_currBmlCon;  // Currently selected beamline context
-  QBmlRoot*         _p_currQBmlRoot;// ... and its widget
-  // REMOVE: BeamlineContext*  _p_clickedCon;  // Last context clicked on ...
-  QBml*             _p_clickedQBml; // Most recently clicked item in BeamlineBrowser
+  EnvPtr<double>::Type                  _p_JetEnv;
+  EnvPtr<std::complex<double> >::Type   _p_JetCEnv;
 
-  BeamlineBrowser*  _p_vwr;
-
-  Jet__environment*  _p_JetEnv;
-  JetC__environment* _p_JetCEnv;
-
-  Options  _userOptions;
+  Options             _userOptions;
 
   static int _buildVTuneCircuit( const CHEF*, const bmlnElmnt* );
   static int _buildHTuneCircuit( const CHEF*, const bmlnElmnt* );
+
   void _testFC( ACTFUNC11 ) const;
   void _traverseTree( const QBmlRoot*, ACTFUNC11 ) const;
   void _pushArgs();
@@ -293,7 +291,6 @@ private slots:
   void _editFindFilter();
   void _editSelectAll();
   void _editSelectNone();
-  // REMOVE: void _editSelectLine();
   void _editCopyLine();
   void _editRemoveLine();
   void _editCondense();
@@ -324,9 +321,9 @@ private slots:
   void _launchET();
   void _launchMoments();
   void _launchLB();
-  void _pushULF();
-  void _pushMoments();
   void _pushDispersion();
+  void _pushMoments();
+  void _pushULF();
   void _pushParticles();
   void _launchTrack();
   void _launchRayTrace();
@@ -352,5 +349,6 @@ signals:
   void _new_beamline();
   void _modeChanged( const BeamlineContext* );
 };
+
 
 #endif // CHEF_H
