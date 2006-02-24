@@ -185,17 +185,11 @@ void rfcavity::acceptInner( RefRegVisitor& v )
 
 void rfcavity::acceptInner( BmlVisitor& v )
 {
-  std::cout << "DGN: " << __FILE__ << ", " << __LINE__
-            << ": Entering void rfcavity::acceptInner( BmlVisitor& v )"
-            << std::endl;
   bmlnElmnt** x = _u;
   while( x <= _v ) {
     (*x)->accept( v );
     x++;
   }
-  std::cout << "DGN: " << __FILE__ << ", " << __LINE__
-            << ": Leaving void rfcavity::acceptInner( BmlVisitor& v )"
-            << std::endl;
 }
 
 
