@@ -77,8 +77,8 @@ RefRegVisitor::RefRegVisitor( const Particle& p )
 :   _prtnPtr(0)
   , _errorCode(OKAY)
   , _revolutionFrequency(-1.0)
+  , _initialMomentum( p.ReferenceMomentum() )
 {
-  _initialMomentum = p.Momentum();
   _prtnPtr = p.Clone();
 }
 
@@ -121,7 +121,9 @@ void RefRegVisitor::setCdt( double x )
 void RefRegVisitor::visitBeamline( beamline* x )
 {
   double momentum;
-  x->setEnergy( _prtnPtr->Energy() );  // not just reference energy
+  // REMOVE: x->setEnergy( _prtnPtr->Energy() );  // not just reference energy
+  // REMOVE:                                      // ??? why not ???
+  x->setEnergy( _prtnPtr->ReferenceEnergy() );
 
   // Preliminary traversal in case there are
   // RF cavities in the line.
@@ -135,8 +137,8 @@ void RefRegVisitor::visitBeamline( beamline* x )
     // Adjust the strength of all magnetic elements
     //   if the reference particle has been accelerated.
     while((  q = dbi++  )) {
-      if(    (_initialMomentum != (momentum = copy->Momentum()))
-          && (q->isMagnet())                        ) 
+      if(    (_initialMomentum != (momentum = copy->ReferenceMomentum()))
+          && (q->isMagnet())                                                ) 
       {
         q->setStrength( (q->Strength())*(momentum/_initialMomentum) );
       }
