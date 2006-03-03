@@ -179,18 +179,37 @@ bool Frame::setOrthonormalAxes( const MatrixD& axisSystem )
 }
 
 
+// REMOVE: bool Frame::isOrthonormal() const
+// REMOVE: {
+// REMOVE:   MatrixD u(3,3);
+// REMOVE: 
+// REMOVE:   u = e.transpose() - e.inverse();
+// REMOVE: 
+// REMOVE:   for( int i = 0; i < 3; i++ ) {
+// REMOVE:     for( int j = 0; j < 3; j++ ) {
+// REMOVE:       if( 1.0e-12 < fabs( u(i,j) ) ) return false;
+// REMOVE:     }
+// REMOVE:   }
+// REMOVE: 
+// REMOVE:   return true;
+// REMOVE: }
+
+
 bool Frame::isOrthonormal() const
 {
   MatrixD u(3,3);
-
-  u = e.transpose() - e.inverse();
+  u = (e.transpose())*e;
 
   for( int i = 0; i < 3; i++ ) {
     for( int j = 0; j < 3; j++ ) {
-      if( 1.0e-12 < fabs( u(i,j) ) ) return false;
+      if( i == j ) {
+        if( 1.0e-9 < fabs( u(i,j) - 1.0 ) ) { return false; }
+      }
+      else {
+        if( 1.0e-12 < fabs( u(i,j) ) ) { return false; }
+      }
     }
   }
-
   return true;
 }
 
