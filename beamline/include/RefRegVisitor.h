@@ -83,10 +83,10 @@ class RefRegVisitor : public BmlVisitor
   void setCdt(double);
 
  private:
-  Particle* _prtnPtr;
-  int       _errorCode;
-  double    _revolutionFrequency;
-  double    _initialMomentum;
+  Particle*    _prtnPtr;
+  int          _errorCode;
+  double       _revolutionFrequency;
+  const double _initialMomentum;
 };
 
 #endif // REFREGVISITOR_H
