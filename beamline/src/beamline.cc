@@ -809,7 +809,7 @@ char beamline::putBelow( const bmlnElmnt& x, const bmlnElmnt& y )
  if ( !dlist::putBelow( &x, &y ) ) {
    (*pcerr) << "\n*** ERROR ***                                             \n"
              "*** ERROR *** beamline::putBelow                          \n"
-             "*** ERROR *** dlist::putAbove did not work.               \n"
+             "*** ERROR *** dlist::putBelow did not work.               \n"
              "*** ERROR ***                                             \n"
         << endl;
    return 1;
