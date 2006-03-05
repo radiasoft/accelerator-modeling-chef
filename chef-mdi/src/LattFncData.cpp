@@ -139,21 +139,19 @@ void LattFncData::_finishConstructor()
   double* disp_V      = _disp_V.get();
 
   for( int i = 0; i < _arraySize; i++ ) {
-
-  *(azimuth++)    =  0.0;
-  *(beta_H++)     =  0.0;
-  *(beta_V++)     =  0.0;
-  *(inv_beta_H++) =  0.0;
-  *(inv_beta_V++) =  0.0;
-  *(root_beta_H++)=  0.0;
-  *(root_beta_V++)=  0.0;
-  *(alpha_H++)    =  0.0;
-  *(alpha_V++)    =  0.0;
-  *(psi_H++)      =  0.0;
-  *(psi_V++)      =  0.0;
-  *(disp_H++)     =  0.0;
-  *(disp_V++)     =  0.0;
-
+    *(azimuth++)    =  0.0;
+    *(beta_H++)     =  0.0;
+    *(beta_V++)     =  0.0;
+    *(inv_beta_H++) =  0.0;
+    *(inv_beta_V++) =  0.0;
+    *(root_beta_H++)=  0.0;
+    *(root_beta_V++)=  0.0;
+    *(alpha_H++)    =  0.0;
+    *(alpha_V++)    =  0.0;
+    *(psi_H++)      =  0.0;
+    *(psi_V++)      =  0.0;
+    *(disp_H++)     =  0.0;
+    *(disp_V++)     =  0.0;
   }
 }
 
