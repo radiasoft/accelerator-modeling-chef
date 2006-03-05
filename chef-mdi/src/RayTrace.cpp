@@ -6,7 +6,7 @@
 ******             interfaces to exercise the functionality        
 ******             of BEAMLINE.                                    
 ******                                                                
-******  File:      RayTrace.cc
+******  File:      RayTrace.cpp
 ******  Version:   3.3
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
@@ -1115,8 +1115,32 @@ void RayTrace::_pushParticle()
   {
     if( _isIterating ) 
     {
-      for( int i = 0; i < _number; i++ ) {
-        bmlPtr->propagate( *particlePtr );
+      // REMOVE: for( int i = 0; i < _number; i++ ) {
+      // REMOVE:   bmlPtr->propagate( *particlePtr );
+      // REMOVE: }
+
+      // ??? This code fragment must be improved.
+      // ??? It is written as a hack to prevent
+      // ??? the program from hanging if the orbit 
+      // ??? diverges.
+      DeepBeamlineIterator dbi( bmlPtr );
+      bmlnElmnt* q = 0;
+      while( 0 != (q = dbi++) ) {
+        q->propagate( *particlePtr );
+        if(    (0.1 < std::abs(particlePtr->get_x())) 
+            || (0.1 < std::abs(particlePtr->get_y())) ) {
+          _p_timer->stop();
+
+          _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
+          _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
+          _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
+          _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() ); // sort.
+
+          _p_leftWindow->updateGL();
+          _p_rightWindow->updateGL();
+
+          return;
+	}
       }
 
       _p_leftWindow->updateGL();
@@ -1139,7 +1163,34 @@ void RayTrace::_pushParticle()
   {
     if( _isIterating ) 
     {
-       bmlPtr->propagate( *particlePtr );
+      // REMOVE: bmlPtr->propagate( *particlePtr );
+
+      // ??? This code fragment must be improved.
+      // ??? It is written as a hack to prevent
+      // ??? the program from hanging if the orbit 
+      // ??? diverges.
+      DeepBeamlineIterator dbi( bmlPtr );
+      bmlnElmnt* q = 0;
+      while( 0 != (q = dbi++) ) {
+        q->propagate( *particlePtr );
+        if(    (0.1 < std::abs(particlePtr->get_x())) 
+            || (0.1 < std::abs(particlePtr->get_y())) ) {
+      	  _p_leftWindow->updateGL();
+      	  _p_rightWindow->updateGL();
+
+      	  _isIterating = false;
+      	  _p_timer->stop();  // Probably unnecessary
+      	  _p_startBtn->setOn(false);
+      	  _p_startBtn->setText( "Trace" );
+
+      	  _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
+      	  _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
+      	  _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
+      	  _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() ); // sort.
+
+          return;
+	}
+      }
 
       _p_leftWindow->updateGL();
       _p_rightWindow->updateGL();
