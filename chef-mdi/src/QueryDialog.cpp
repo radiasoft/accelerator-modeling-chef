@@ -53,7 +53,7 @@
 
 using namespace std;
 
-QueryDialog::QueryDialog( QWidget* p, const char* n, bool /*m*/ , WFlags f )
+QueryDialog::QueryDialog( QWidget* p, const char* n, WFlags f )
 : QWidget(p,n,f)
 {
   QGridLayout* qgl = new QGridLayout( this, 2, 3, 5 );
@@ -151,7 +151,6 @@ QueryDialog::QueryDialog( QWidget* p, const char* n, bool /*m*/ , WFlags f )
      QString nameString; // ??? necessary???
      _nameEdt = new QLineEdit( nameString, nameTab );
      _nameEdt->setFixedHeight( 20 );
-     // QLabel* qlbName = new QLabel( nameTab );
      new QLabel( nameTab );
      nameTab->setMargin(5);
      nameTab->setSpacing(3);

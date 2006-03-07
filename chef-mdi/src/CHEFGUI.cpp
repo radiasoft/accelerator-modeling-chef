@@ -5,13 +5,12 @@
 ******  CHEF:      An application layered on the Beamline/mxyzptlk   ****** 
 ******             class libraries.                                  ****** 
 ******                                                               ****** 
-******  File:  CHEFGUI.cpp                                           ****** 
+******  File:      CHEFGUI.cpp                                       ****** 
 ******                                                               ******
 ******  Copyright (c) Universities Research Association, Inc.        ****** 
 ******                All Rights Reserved                            ****** 
 ******                                                               ****** 
 ******  Authors:                                                     ******
-******                                                               ******
 ******              Leo Michelotti                                   ******
 ******              Fermilab                                         ******
 ******              michelotti@fnal.gov                              ****** 

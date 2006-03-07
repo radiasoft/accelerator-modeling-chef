@@ -246,7 +246,7 @@ void TrbWidget::_light_sel()
         QString stl1;
         stl1.setNum( ((180./M_PI)*_p_glWindow->getTheta()) );
         QLineEdit* qle1 = new QLineEdit( stl1, qgr );
-        /*QLabel* qlb2 = */ new QLabel( "Phi [deg]", qgr );
+     /* QLabel* qlb2 = */ new QLabel( "Phi [deg]", qgr );
         // qlb2->setTextFormat( Qt::PlainText );
         // qlb2->setFixedSize(qlb1->size());
         // qlb2->resize(qlb1->size());
