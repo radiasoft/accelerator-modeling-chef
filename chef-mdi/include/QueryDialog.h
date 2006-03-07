@@ -52,7 +52,6 @@ Q_OBJECT
  public:
   QueryDialog( QWidget* parent = 0, 
                const char* name = 0, 
-               bool modal = FALSE, 
                WFlags f = 0 );
   ~QueryDialog();
 
