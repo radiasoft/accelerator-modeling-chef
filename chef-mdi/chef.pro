@@ -41,6 +41,7 @@ INCLUDEPATH += $$PYTHON_INC
 
 
 HEADERS	+= include/BeamlineBrowser.h \
+	include/DataAlignWidget.h \
 	include/PointEdit.h \
 	include/QtMonitor.h \
 	include/QueryDialog.h \
@@ -65,6 +66,7 @@ HEADERS	+= include/BeamlineBrowser.h \
 	include/CF_Editor.h
 
 SOURCES	+= src/BeamlineBrowser.cpp \
+        src/DataAlignWidget.cpp \
   	src/PointEdit.cpp \
 	src/QtMonitor.cpp \
         src/EditDialog.cpp \
