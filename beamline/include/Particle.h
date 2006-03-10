@@ -478,7 +478,8 @@ public:
   // inline Mapping& State() { return state; }
   Jet& State( int );
 
-  static void createStandardEnvironments();
+  static void createStandardEnvironments( int = 1 );
+  // Input: argument = degree (or "order")
 
   MatrixD SymplecticTest();  // Tests the state for the
                              // symplectic condition, 1 = - MJM^t; 
