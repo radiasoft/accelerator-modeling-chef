@@ -741,11 +741,11 @@ Jet& JetParticle::State( int i )
 }
 
 
-void JetParticle::createStandardEnvironments()
+void JetParticle::createStandardEnvironments( int deg )
 {
   // Create an initial Jet environment 
   double scale[]  = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3 };
-  Jet__environment::BeginEnvironment( 1 );
+  Jet__environment::BeginEnvironment( deg );
   coord x(0.0),  y(0.0),  z(0.0),
        px(0.0), py(0.0), pz(0.0);
   EnvPtr<double>::Type JetEnvPtr  =  Jet__environment::EndEnvironment(scale);
