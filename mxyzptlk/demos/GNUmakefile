@@ -3,7 +3,7 @@
 .SUFFIXES: .o .cpp .cc 
 
 #
-FNALROOT = /home/ostiguy/fnal-jan-19/RUNTIME
+FNALROOT = ../../RUNTIME
 
 INCS = -I/usr/local/include/boost-1_33 -I$(FNALROOT)/include/gms -I$(FNALROOT)/include/mxyzptlk -I$(FNALROOT)/include/basic_toolkit 
 
