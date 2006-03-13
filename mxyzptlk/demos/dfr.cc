@@ -14,9 +14,9 @@
 main( int argc, char** argv ) {
 
  if( argc != 5 ) {
-  cout << "\nUsage: " << argv[0] 
-       << "  x n_x y n_y\n"
-       << endl;
+  std::cout << "\nUsage: " << argv[0] 
+            << "  x n_x y n_y\n"
+            << std::endl;
   exit(0);
  }
 
@@ -24,12 +24,12 @@ main( int argc, char** argv ) {
  deg[0] = atoi( argv[2] );
  deg[1] = atoi( argv[4] );
 
- Jet::BeginEnvironment( deg[0] + deg[1] );
+ Jet__environment::BeginEnvironment( deg[0] + deg[1] );
  coord x( atof( argv[1] ) ), y( atof( argv[3] ) );
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
- cout << "Answer: " 
-      << ( exp(-x*x) * sin(y) ).derivative( deg ) 
-      << endl;
+ std::cout << "Answer: " 
+           << ( exp(-x*x) * sin(y) ).derivative( deg ) 
+           << std::endl;
 
 }
