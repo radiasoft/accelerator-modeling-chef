@@ -1789,12 +1789,10 @@ typename JLPtr<T>::Type TJL<T>::_epsCos( typename JLPtr<T>::Type const& epsilon 
 
  typename JLPtr<T>::Type z( makeTJL( epsilon->_myEnv, ((T) 1.0) ));             // z   = 1    
 
- typename JLPtr<T>::Type epsq;
- epsq = (epsilon*epsilon);
+ typename JLPtr<T>::Type epsq = (epsilon*epsilon);
  epsq->Negate();                                         // epsq = -epsilon*epsilon
 
- typename JLPtr<T>::Type term;
- term = epsq;
+ typename JLPtr<T>::Type term(epsq->clone());
  term->scaleBy(0.5);                                     // term = epsq/2.0
 
  double n = 2.0;
@@ -1964,7 +1962,7 @@ typename JLPtr<T>::Type  TJL<T>::_epsExp( typename JLPtr<T>::Type const& epsilon
 { 
 
  typename JLPtr<T>::Type z( makeTJL(epsilon->_myEnv, ((T) 1.0)  ));   // z    = 1.0;
- typename JLPtr<T>::Type term(makeTJL(*epsilon));                     // term = epsilon
+ typename JLPtr<T>::Type term( epsilon->clone() );                     // term = epsilon
 
  double n = 1.0;
  
