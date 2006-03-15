@@ -90,8 +90,8 @@ void wrap_mxyzptlk_mapping() {
 
   Mapping_class_.def( init<boost::python::tuple>() );
   Mapping_class_.def( init<boost::python::tuple, EnvPtr<double>::Type >() );
-  Mapping_class_.def("Inverse", &MappingWrapper<double>::Inverse  );
-  //Mapping_class_.def("Jacobian",&MappingWrapper::Jacobian );
+  Mapping_class_.def("inverse", &MappingWrapper<double>::inverse  );
+  Mapping_class_.def("jacobian",&MappingWrapper<double>::jacobian );
 
   //-----------------------------------
   // *** composition ***
@@ -108,8 +108,8 @@ void wrap_mxyzptlk_mappingc() {
   MappingC_class_.def( init<boost::python::tuple>() );
   MappingC_class_.def( init<boost::python::tuple, EnvPtr<std::complex<double> >::Type >() );
 
-  MappingC_class_.def("Inverse", &MappingWrapper<std::complex<double> >::Inverse );
-  //MappingC_class_.def("Jacobian",&MappingWrapperC::Jacobian );
+  MappingC_class_.def("inverse",  &MappingWrapper<std::complex<double> >::inverse  );
+  MappingC_class_.def("jacobian", &MappingWrapper<std::complex<double> >::jacobian );
 
 
   //-----------------------------------
