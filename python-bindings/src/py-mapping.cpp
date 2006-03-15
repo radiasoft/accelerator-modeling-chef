@@ -43,7 +43,7 @@ class MappingWrapper: public TMapping<T> {
 
   MappingWrapper( PyObject* self): m_self(self), TMapping<T>() {}
 
-  MappingWrapper( PyObject* self, TMapping<T> const& ): m_self(self), TMapping<T>() {}
+  MappingWrapper( PyObject* self, TMapping<T> const& map): m_self(self), TMapping<T>(map) {}
 
   MappingWrapper( PyObject* self, boost::python::tuple components): m_self(self) {
  
