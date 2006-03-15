@@ -179,7 +179,7 @@ void operator*=( TMapping<T>& x, const TMapping<T>& y ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T> TMapping<T>::Jacobian() const 
+TMatrix<T> TMapping<T>::jacobian() const 
 {
  int            nv = (this->_myEnv)->numVar();   // ??? Is this right?
  int*           d = new int[ nv ];
@@ -199,7 +199,15 @@ TMatrix<T> TMapping<T>::Jacobian() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T> TMapping<T>::Inverse() const 
+TMatrix<T> TMapping<T>::Jacobian() const 
+{
+return jacobian();
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TMapping<T> TMapping<T>::inverse() const 
 { 
  if( (this->_myEnv)->spaceDim() != (this->_dim) ) {
   throw GenericException( __FILE__, __LINE__, 
@@ -359,5 +367,17 @@ TMapping<T> TMapping<T>::_epsInverse(  typename EnvPtr<T>::Type pje) const
  return z;
 }
 
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TMapping<T> TMapping<T>::Inverse() const 
+{
+
+ return inverse();
+
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 #endif // TMAPPING_TCC
