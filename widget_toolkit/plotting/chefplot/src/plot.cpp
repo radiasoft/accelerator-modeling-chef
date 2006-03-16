@@ -36,6 +36,7 @@
 #include <chefplotdata.h>
 #include <chefplotzoomer.h>
 
+#include <qapplication.h>
 #include <qlayout.h>
 #include <qcanvas.h>
 #include <qwhatsthis.h>
@@ -305,6 +306,9 @@ Plot::addData(const CHEFPlotData& cpdata) {
   setAxisTitle (QwtPlot::yRight,  cpdata.yRLabel());
   
   replot();
+
+  QApplication::postEvent( this, new QResizeEvent( QSize(width(), height()), QSize( width(), height() ) ) );
+
 }
 
 
