@@ -650,6 +650,37 @@ int beamline::replace( const bmlnElmnt* a, const bmlnElmnt* b )
 }
 
 
+int beamline::deepReplace( const bmlnElmnt* a, const bmlnElmnt* b ) 
+{
+  // This routine has a potential to break things!
+  // It is, of course, horribly inefficient because
+  // both it and dlist::replaceOne searches.
+  // I don't care.
+  if( 0 == a || 0 == b ) { return 2; }
+  BeamlineIterator bi( this );
+  bmlnElmnt* q;
+  while((  q = bi++  )) {
+    if( q == a ) 
+    {
+      if( 0 == ( dynamic_cast<dlist*>(this)->replaceOne( (const void*) a, (const void*) b ) ) )
+      { return 0; }
+      else 
+      { 
+        throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+               "int beamline::deepReplace( const bmlnElmnt* a, const bmlnElmnt* b )", 
+               "An impossibility has occurred, beyond the realm of human comprehension!!" ) );
+      }
+    }
+    else if( 0 == strcmp( "beamline", q->Type() ) ) 
+    {
+      if( 0 == ( dynamic_cast<beamline*>(q)->deepReplace( a, b ) ) )
+      { return 0; }
+    }
+  }
+  return 1;
+}
+
+
 beamline& beamline::operator^( bmlnElmnt& x ) {
  append( x );
  return *this;

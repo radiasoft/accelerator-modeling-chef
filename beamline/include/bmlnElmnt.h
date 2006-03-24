@@ -688,6 +688,17 @@ public:
                                       // 0 everything went as planned
                                       // 1 first argument was not found
                                       // 2 at least one argument was null
+                                      // NOTE: works only at the highest
+                                      // level of the tree hierarchy; does
+                                      // not descend into the tree.
+                                      // NOTE ALSO: will replace only the
+                                      // first object found whose address
+                                      // matches that of the second.
+
+  int deepReplace( const bmlnElmnt*, const bmlnElmnt* );
+                                      // Like replace() but descends into
+                                      // the hierarchy. Either argument
+                                      // may be a pointer to a beamline.
 
   beamline& operator^( bmlnElmnt& );  // Alters the beamline
   beamline& operator^( beamline& );
