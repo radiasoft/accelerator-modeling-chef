@@ -7,7 +7,7 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      Particle.h
-******  Version:   2.2
+******  Version:   2.4
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -111,9 +111,13 @@ protected:
   double   beta;      // normalized reference velocity = v/c
   double   gamma;     // reference gamma
 
+  double   _wgt;      // Statistical weight: i.e. macroparticle
+                      // Default value: 1.0
+
   std::string _tag;   // Utility tag for arbitrary identification
                       // of a particle.
 
+  // ctors
   Particle( double  /* mass [GeV/c^2] */ );
   Particle( double  /* mass [GeV/c^2] */,
             double  /* energy [GeV]   */ );  // ??? momentum here???
@@ -140,8 +144,11 @@ public:
   static const short int PSD;
   short int psd()        { return Particle::PSD; }
 
-  void SetReferenceEnergy( double /* energy [GeV] */ );
+  void SetReferenceEnergy(   double /* energy [GeV] */ );
   void SetReferenceMomentum( double /* momentum [GeV/c] */ );
+
+  double setWeight( double );       // Returns previous value.
+
   void setState      ( double* );
   void setState      ( const Vector& );
   void getState      ( double* );
@@ -210,6 +217,9 @@ public:
   }
   inline double ReferenceEnergy() const {
    return E;
+  }
+  inline double Weight() const {
+    return _wgt; 
   }
   inline double Charge() const {
    return q;
@@ -420,9 +430,12 @@ protected:
   double   beta;      // normalized reference velocity = v/c
   double   gamma;     // reference gamma
 
+  double   _wgt;      // Statistical weight: i.e. macrojetparticle
+                      // Default value: 1.0
   std::string _tag;   // Utility tag for arbitrary identification
                       // of a particle.
 
+  // ctors
   JetParticle( double  /* mass [GeV/c^2] */ );
   JetParticle( double  /* mass [GeV/c^2] */,
                double  /* energy [GeV]   */ );   // ??? momentum here???
@@ -449,7 +462,10 @@ public:
   // Dimension of phase space
   short int psd()        { return Particle::PSD; }
 
-  void SetReferenceEnergy( double /* Energy */ );
+  void SetReferenceEnergy(   double /* Energy [GeV] */ );
+  void SetReferenceMomentum( double /* momentum [GeV/c] */ );
+
+  double setWeight( double );       // Returns previous value.
 
   void setState( double* );
   void setState( const Vector& );
@@ -521,6 +537,9 @@ public:
   }
   inline double ReferenceEnergy() const {
    return E;
+  }
+  inline double Weight() const {
+    return _wgt; 
   }
   inline double Charge() const {
    return q;
