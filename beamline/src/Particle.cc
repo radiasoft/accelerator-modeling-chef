@@ -7,7 +7,7 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      Particle.cc
-******  Version:   2.3
+******  Version:   2.4
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -57,7 +57,9 @@ using namespace std;
 
 const short int Particle::PSD = 6;
 
-Particle::Particle( double mass ) {
+Particle::Particle( double mass ) 
+: _wgt(1.0)
+{
  q     = 0.0;
  for( int i = 0; i < BMLN_dynDim; i++ ) state[i] = 0.0;
  E     = mass;
@@ -70,7 +72,9 @@ Particle::Particle( double mass ) {
  gamma = 1.0;
 }
 
-Particle::Particle( double mass, double energy ) {
+Particle::Particle( double mass, double energy ) 
+: _wgt(1.0)
+{
  q = 0.0;
  for( int i = 0; i < BMLN_dynDim; i++ ) state[i] = 0.0;
  m = mass;
@@ -91,7 +95,9 @@ Particle::Particle( double mass, double energy ) {
  else            pni2 = 1.0e33;
 }
 
-Particle::Particle( double mass, double energy, double* s ) {
+Particle::Particle( double mass, double energy, double* s ) 
+: _wgt(1.0)
+{
  q = 0.0;
  for( int i = 0; i < BMLN_dynDim; i++ ) state[i] = s[i];
  m = mass;
@@ -112,7 +118,9 @@ Particle::Particle( double mass, double energy, double* s ) {
  else            pni2 = 1.0e33;
 }
 
-Particle::Particle( const Particle& u ) {
+Particle::Particle( const Particle& u ) 
+: _wgt(u._wgt)
+{
  int i;
  for( i = 0; i < BMLN_dynDim; i++ ) state[i] = u.state[i];
  q = u.q;
@@ -220,6 +228,16 @@ void Particle::SetReferenceMomentum( double new_p ) {
  if( pn != 0.0 ) pni2 = 1.0 / ( pn*pn );
  else            pni2 = 1.0e33;
 }
+
+
+double Particle::setWeight( double w )
+{
+  double ret = _wgt;
+  if( 0 <= w ) { _wgt = w; }
+  else         { _wgt = 1; }
+  return ret;
+}
+
 
 Vector Particle::VectorBeta() const
 {
@@ -792,6 +810,27 @@ void JetParticle::SetReferenceEnergy( double energy ) {
  if( pn != 0.0 ) pni2 = 1.0 / ( pn*pn );
  else            pni2 = 1.0e33;
 }
+
+void JetParticle::SetReferenceMomentum( double new_p ) 
+{
+ p = new_p;
+ E = sqrt( new_p*new_p + m*m );
+ bRho  = p / PH_CNV_brho_to_p;
+ gamma = E / m;
+ beta  = sqrt( 1.0 - 1.0 / ( gamma*gamma ) );
+ pn = beta*gamma;
+ if( pn != 0.0 ) pni2 = 1.0 / ( pn*pn );
+ else            pni2 = 1.0e33;
+}
+
+double JetParticle::setWeight( double w )
+{
+  double ret = _wgt;
+  if( 0 <= w ) { _wgt = w; }
+  else         { _wgt = 1; }
+  return ret;
+}
+
 
 JetVector JetParticle::VectorBeta() const
 {
