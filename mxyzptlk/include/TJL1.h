@@ -122,8 +122,7 @@ boost::intrusive_ptr<TJL1<T> >  operator-(boost::intrusive_ptr<TJL1<T> > const& 
 
 
 template<typename T> 
-class TJL1: public ReferenceCounter {
-
+class TJL1: public ReferenceCounter<TJL1<T> > {
   struct term {
     T      value;
     bool   deleted;

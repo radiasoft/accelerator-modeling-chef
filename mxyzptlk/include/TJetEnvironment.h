@@ -93,7 +93,7 @@ std::istream& streamIn(std::istream&, boost::intrusive_ptr<TJetEnvironment<T> >&
 
 // Struct TJetEnvironment template
 template<typename T>
-class TJetEnvironment: public ReferenceCounter
+class TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 {
 
  public:
@@ -171,7 +171,7 @@ class TJetEnvironment: public ReferenceCounter
 
   static EnvPtr<double>::Type  getApproxJetEnvironment(int maxweight, const Vector& refpoints);
 
-  virtual void dispose();
+  void dispose();
 
    // operators -------------------------------------------
 
