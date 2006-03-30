@@ -81,7 +81,7 @@ template<typename T> std::ostream& operator<< (std::ostream& os, const TML<T>& x
 
 
 template<typename T> 
-class TML : public ReferenceCounter {
+class TML : public ReferenceCounter<TML<T> > {
 
   friend class TML<double>;
   friend class TML<std::complex<double> >;
@@ -113,7 +113,7 @@ class TML : public ReferenceCounter {
  
   operator TML<std::complex<double> >* (); 
 
-  virtual void dispose() {delete this;} // needed by ReferenceCounter
+  void dispose() {delete this;} // needed by ReferenceCounter
   inline static typename MLPtr<T>::Type clone(typename MLPtr<T>::Type const& ml) 
                            { return typename MLPtr<T>::Type( new TML<T>(*ml) ); } 
 
