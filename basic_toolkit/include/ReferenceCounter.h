@@ -24,10 +24,27 @@
 ******  Author:    Jean-Francois Ostiguy
 ******             ostiguy@fnal.gov                         
 ******                                                                
-******  This is a modified version of code suggested in
+******  Inspired by the code suggested in
 ******  B. Karlsonn, "Beyond the C++ STL: An Introduction to Boost",
 ******  Addisson-Wesley 2005.
-******                                                                
+******
+******
+****** Note:
+****** 
+****** The ReferenceCounter class uses the Curiously Recurring Template 
+****** idiom to provide compile-time polymorphism idiom. 
+******
+****** A derived class DerivedClass should be declared as follows:
+******
+******   class DerivedClass : public  ReferenceCounter<DerivedClass> {
+******   public:
+******   void dispose(); // a class specific implementation of dispose 
+******                   // must be provided 
+******   ... 
+******   ...
+******                                   
+******   };                          
+*****
 **************************************************************************
 *************************************************************************/
 #ifndef  REFERENCECOUNTER_H
@@ -36,9 +53,11 @@
 #include <iosetup.h>
 #include <iostream>
 
+template <typename T>
 class ReferenceCounter {
 
   unsigned int _refcount; 
+  T& toDerivedClass() { return static_cast<T&>(*this); }
 
  public:
 
@@ -48,7 +67,7 @@ class ReferenceCounter {
   //       order to make the ref count manipulation
   //       thread-safe. 
 
-  virtual void dispose() = 0; 
+  void dispose(){ return toDerivedClass().dispose(); }
 
   friend void intrusive_ptr_add_ref(ReferenceCounter* p) {
     ++(p->_refcount);
@@ -82,8 +101,8 @@ class ReferenceCounter {
   }
 
   // Explicit destruction forbidden; 
-  virtual ~ReferenceCounter(){ }        
-
+  ~ReferenceCounter(){ }        
+  
 
  private:
 

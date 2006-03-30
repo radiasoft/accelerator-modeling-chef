@@ -109,8 +109,8 @@ std::istream& operator>>( std::istream& is,  TJL<T>& x );
 // The arguments in the operator declations below can unfortunately not be declared in terms of of the pseudo 
 // class JLPtr<T>; doing so results in failure of the template argument matching algorithm. The new 
 // C++-0x standard provides support for true "templated typdefs". This feature should be taken advantage of 
-// when it becomes available, so a to avoid explicit details of the smart pointer implementatation in this
-// header file.    
+// when it becomes available so as to remove explicit details of the smart pointer implementatation from this
+// header file.  -JFO  
 //-----------------------------------------------------------------------------------------------------------   
 
 template <typename T>
@@ -154,7 +154,7 @@ JLPtr<double>::Type imag( const JLPtr<std::complex<double> >::Type & z );
 // **********************************************************************************************************
 
 template<typename T> 
-class TJL: public ReferenceCounter {
+class TJL: public ReferenceCounter<TJL<T> > {
 
   friend class TJL<double>;
   friend class TJL<std::complex<double> >;
@@ -195,7 +195,7 @@ class TJL: public ReferenceCounter {
   TJL( const TJL& );
   TJL( const TJL* );
 
-  virtual ~TJL();
+  ~TJL();
 
   static typename JLPtr<T>::Type TJL<T>::_epsSin(  typename JLPtr<T>::Type const& epsilon );
   static typename JLPtr<T>::Type TJL<T>::_epsCos(  typename JLPtr<T>::Type const& epsilon );
@@ -220,7 +220,7 @@ class TJL: public ReferenceCounter {
   // functions used to implement COW semantics ______________________________________________
 
 
-  virtual void dispose() { TJL<T>::discardTJL(  this ); }  // used by ReferenceCounter class 
+  void dispose() { TJL<T>::discardTJL(  this ); }  // used by ReferenceCounter class 
   inline typename JLPtr<T>::Type clone() 
                            {return typename JLPtr<T>::Type( TJL<T>::makeTJL(  *this ) ); } 
 
