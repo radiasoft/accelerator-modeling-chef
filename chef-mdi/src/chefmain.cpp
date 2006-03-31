@@ -35,7 +35,7 @@
 extern boost::python::class_ <CHEFGUI, CHEFGUI*,  boost::noncopyable>*  PythonTypeCHEFGUIPtr;
 
 #include "CHEFGUI.h"
-#include "../images/chef-logo-2.xpm"
+#include "../images/chef-logo-preview.xpm"
 #include <qapplication.h>
 #include <qsplashscreen.h>
 #include <qmessagebox.h>
@@ -69,8 +69,8 @@ int main( int argc, char** argv )
     exit(0);
   };
 
-  QSplashScreen *splash = new QSplashScreen( (const char**) chef_logo_2_xpm );
-
+  QSplashScreen *splash = new QSplashScreen( (const char**) chef_logo_preview_xpm );
+  splash->message("BUILD DATE: 20060130", (Qt::AlignHCenter | Qt::AlignBottom), QColor("White") );
 
   splash->show();
 
@@ -90,7 +90,7 @@ int main( int argc, char** argv )
   int w = a.desktop()->width();
   int h = a.desktop()->height();
 
-  gui->setGeometry( w/20, h/20, ((9*w)/10), ((9*h)/10) );
+  gui->setGeometry(w/20,h/20, w*0.90, h*0.90);
 
   clock_t start_time, cur_time;
 
