@@ -5,5 +5,4 @@
 ####################################################
 
 TEMPLATE = subdirs
-SUBDIRS  = devices plotting interpreter databases
- 
+SUBDIRS  = devices plotting interpreter databases tracking viewing fncdata dialogs
