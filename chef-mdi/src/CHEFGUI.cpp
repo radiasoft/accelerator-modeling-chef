@@ -738,7 +738,7 @@ CHEFGUI::_parseEditorPython( CF_Editor* /* editor */ )
 
 void CHEFGUI::_editFindFilter()
 {
-  QueryDialog* qdl = new QueryDialog( 0, 0, false, Qt::WDestructiveClose );
+  QueryDialog* qdl = new QueryDialog( 0, 0, Qt::WDestructiveClose );
   connect( qdl,  SIGNAL(_useThis( const BoolNode& )),
            this, SLOT  (_processFilter( const BoolNode& )) );
   qdl->show();
