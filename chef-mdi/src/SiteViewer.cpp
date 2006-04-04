@@ -297,7 +297,7 @@ void SiteViewer::_viewHilite()
   _myGLwindow->toggleHighlight();
 
   if( checked ) {
-    QueryDialog* qdl = new QueryDialog( 0, 0, false, Qt::WDestructiveClose );
+    QueryDialog* qdl = new QueryDialog( 0, 0, Qt::WDestructiveClose );
     connect( qdl,  SIGNAL(_useThis( const BoolNode& )), 
              this, SLOT  (_optionHilt( const BoolNode& )) );
     qdl->show();
