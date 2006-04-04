@@ -2,11 +2,7 @@
 #                                                                      #
 # FILE:     chef.pro                                                   #
 #                                                                      #
-#                                                                      #
-#                                                                      #
-#                                                                      #
 ########################################################################
-
 
 TEMPLATE	= app
 LANGUAGE	= C++
@@ -32,7 +28,10 @@ INCLUDEPATH += ../widget_toolkit/devices/include
 INCLUDEPATH += ../widget_toolkit/devices/src/ui
 INCLUDEPATH += ../widget_toolkit/databases/include
 INCLUDEPATH += ../widget_toolkit/databases/src/ui
-
+INCLUDEPATH += ../widget_toolkit/tracking/include
+INCLUDEPATH += ../widget_toolkit/viewing/include
+INCLUDEPATH += ../widget_toolkit/fncdata/include
+INCLUDEPATH += ../widget_toolkit/dialogs/include
 
 INCLUDEPATH += $$GLIBCONFIG_INC
 INCLUDEPATH += $$GLIB_INC
@@ -40,57 +39,25 @@ INCLUDEPATH += $$QUTEXR_INC
 INCLUDEPATH += $$PYTHON_INC
 
 
-HEADERS	+= include/BeamlineBrowser.h \
-	include/DataAlignWidget.h \
-	include/PointEdit.h \
-	include/QtMonitor.h \
-	include/QueryDialog.h \
-	include/EditDialog.h \
-	include/RayTrace.h \
-	include/SiteViewer.h \
-	include/Tracker.h \
-	include/TrbWidget.h \
+HEADERS	+= include/BmlSelectionDialog.h \
+	include/CF_Editor.h \
 	include/CHEFGUI.h \
-	include/filters.h \
-	include/messages.h \
-	include/appworkspace.h \
-	include/BmlSelectionDialog.h \
-	include/LattFncData.h \
-	include/ETFncData.h \
-	include/MomentsFncData.h \
-	include/DspnFncData.h \
-	include/LBFncData.h \
-	include/about.h \
-        include/DistributionWidget.h \
 	include/InitCondDialogLF.h \
-	include/CF_Editor.h
+	include/about.h \
+	include/appworkspace.h \
+	include/filters.h \
+	include/messages.h
 
-SOURCES	+= src/BeamlineBrowser.cpp \
-        src/DataAlignWidget.cpp \
-  	src/PointEdit.cpp \
-	src/QtMonitor.cpp \
-        src/EditDialog.cpp \
-	src/QueryDialog.cpp \
-	src/RayTrace.cpp \
-	src/SiteViewer.cpp \
-	src/Tracker.cpp \
-	src/TrbWidget.cpp \
+SOURCES	+= src/BmlSelectionDialog.cpp \
+	src/CF_Editor.cpp \
 	src/CHEFGUI.cpp \
-	src/chefmain.cpp \
-	src/builders.cpp \
-	src/filters.cpp \
-	src/messages.cpp \
-	src/appworkspace.cpp \
-	src/BmlSelectionDialog.cpp \
-	src/LattFncData.cpp \
-	src/ETFncData.cpp \
-	src/MomentsFncData.cpp \
-	src/DspnFncData.cpp \
-	src/LBFncData.cpp \
-	src/about.cpp \
-        src/DistributionWidget.cpp \
 	src/InitCondDialogLF.cpp \
-	src/CF_Editor.cpp
+	src/about.cpp \
+	src/appworkspace.cpp \
+	src/builders.cpp \
+	src/chefmain.cpp \
+	src/filters.cpp \
+	src/messages.cpp
 
 FORMS	= src/chefguibase.ui \
 	src/bmlselectiondialogbase.ui \
@@ -115,10 +82,9 @@ IMAGES	= src/images/filenew \
 QMAKE_LIBDIR  += /usr/local/ap/lib/python2.4
 QMAKE_LIBDIR  += /usr/local/ap/lib
 
-
-
 LIBS    += -L$${CHEF_LIBDIR} -linterpreter -ldevices -ldatabases -lpychefplot -lchefplot
-LIBS    += -lpybmlfactory -lpyphysics_toolkit -lpybeamline -lpymxyzptlk -lpybasic_toolkit 
+LIBS    += -L$${CHEF_LIBDIR} -lviewing -ltracking -lfncdata
+LIBS    += -L$${FNAL_LIBDIR} -lpybmlfactory -lpyphysics_toolkit -lpybeamline -lpymxyzptlk -lpybasic_toolkit 
 LIBS    += -L$${FNAL_LIBDIR} -lphysics_toolkit -lbmlfactory -lbeamline -lmxyzptlk -lbasic_toolkit 
 LIBS    += -lqassistantclient
 LIBS    += -lqutexr
