@@ -94,13 +94,31 @@ using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
 
-bmlfactory::bmlfactory( const char* fname, double BRHO, const char* stringbuffer) {
+
+bmlfactory::bmlfactory( const char* fname, double BRHO, const char* stringbuffer) 
+{
+  // ----------------------------------------------------------------
+  // 
+  // April 5, 2005
+  // TEMPORARY (perhaps) KLUDGE: The bmlfactory must be a singleton.
+  // - Leo Michelotti
+  // 
+  if( bmlfactory::_exists ) {
+    (*pcerr) << "\n*** ERROR ***"
+                "\n*** ERROR *** Attempt to instantiate more than one"
+                "\n*** ERROR *** bmlfactory objects simultaneously."
+                "\n*** ERROR ***"
+             << endl;
+    throw( GenericException( __FILE__, __LINE__
+           , "bmlfactory::bmlfactory(...)"
+           , "Until further notice, bmlfactory is a singleton.") );
+  }
+  // ----------------------------------------------------------------
 
   BRHO_ = BRHO;
   try 
   {
      bmlfactory_init(fname, stringbuffer);
-
   }
   catch (GenericException& e)
   {
@@ -121,17 +139,34 @@ bmlfactory::bmlfactory( const char* fname, double BRHO, const char* stringbuffer
      throw e;
   }
 
+  bmlfactory::_exists = true;
 }
 
 
-bmlfactory::bmlfactory( const char* fname, const char* stringbuffer) {
+bmlfactory::bmlfactory( const char* fname, const char* stringbuffer) 
+{
+  // ----------------------------------------------------------------
+  // 
+  // April 5, 2005
+  // TEMPORARY (perhaps) KLUDGE: The bmlfactory must be a singleton.
+  // - Leo Michelotti
+  // 
+  if( bmlfactory::_exists ) {
+    (*pcerr) << "\n*** ERROR ***"
+                "\n*** ERROR *** Attempt to instantiate more than one"
+                "\n*** ERROR *** bmlfactory objects simultaneously."
+                "\n*** ERROR ***"
+             << endl;
+    throw( GenericException( __FILE__, __LINE__
+           , "bmlfactory::bmlfactory(...)"
+           , "Until further notics, bmlfactory is a singleton.") );
+  }
+  // ----------------------------------------------------------------
 
   BRHO_ = 0;
   try 
   {
-
      bmlfactory_init(fname, stringbuffer);
-
   }
   catch (GenericException& e)
   {
@@ -152,12 +187,13 @@ bmlfactory::bmlfactory( const char* fname, const char* stringbuffer) {
     throw e;
   }
 
+  bmlfactory::_exists = true;
 }
 
 
 void 
-bmlfactory::bmlfactory_init(const char* fname, const char* stringbuffer) {
-
+bmlfactory::bmlfactory_init(const char* fname, const char* stringbuffer) 
+{
   mp_      = NULL;
   fname_   = NULL;
   bel_arr_ = NULL;
@@ -204,8 +240,8 @@ bmlfactory::bmlfactory_init(const char* fname, const char* stringbuffer) {
   
 }
 
-bmlfactory::~bmlfactory() {
-
+bmlfactory::~bmlfactory() 
+{
   madparser_delete( mp_ );
 
   mp_ = NULL;
@@ -223,6 +259,7 @@ bmlfactory::~bmlfactory() {
   // Note: the create_beamline function returns a Cloned() beamline and bmlnElmnts, 
   // so that ownership of these objects is that of the bmlfactory object instance.
 
+  bmlfactory::_exists = false;
 }
 
 
@@ -272,8 +309,8 @@ bmlfactory::create_beamline_private( const char* bmlname) { // *** DEPRECATED **
 }
 
 beamline*
-bmlfactory::create_beamline_private( const char* bmlname, double brho ) {
-  
+bmlfactory::create_beamline_private( const char* bmlname, double brho ) 
+{
   BRHO_ = brho;
 
   beamline* bml_ptr = 0;  
@@ -293,7 +330,8 @@ bmlfactory::create_beamline_private( const char* bmlname, double brho ) {
 }
 
 static char*
-add_str( char* ptr, const char* s1, const char* s2 ) {
+add_str( char* ptr, const char* s1, const char* s2 ) 
+{
   strcpy( ptr, s1 );
   return strcat( ptr, s2 );
 }
@@ -323,8 +361,8 @@ bmlfactory::strip_final_colon( const char* stuff )
 
 
 bmlnElmnt*
-bmlfactory::beam_element_instantiate( beam_element* bel ) {
-  
+bmlfactory::beam_element_instantiate( beam_element* bel ) 
+{
   bmlnElmnt* lbel = find_beam_element( bel->name_ );
   if ( lbel != NULL ) {
     return lbel;
@@ -886,8 +924,8 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
 }
 
 bmlnElmnt*
-bmlfactory::find_beam_element( char* ptr ) {
-  
+bmlfactory::find_beam_element( char* ptr ) 
+{
   bel_pair_list__t::iterator res = find_if( bel_list_->begin(),
                                             bel_list_->end(),
                                             bind2nd( bel_predicate(), ptr ) );
@@ -899,12 +937,14 @@ bmlfactory::find_beam_element( char* ptr ) {
 }
 
 void
-bmlfactory::create_bel_list() {
+bmlfactory::create_bel_list() 
+{
   bel_list_ = new bel_pair_list__t();
 }
 
 void
-bmlfactory::delete_bel_list() {
+bmlfactory::delete_bel_list() 
+{
   for( bel_pair_list__t::iterator i = bel_list_->begin();
        i != bel_list_->end(); ++i ) {
     delete i->lbel_ptr_;
@@ -913,8 +953,8 @@ bmlfactory::delete_bel_list() {
 }
 
 beamline*
-bmlfactory::beam_line_instantiate( beam_line* bml ) {
-  
+bmlfactory::beam_line_instantiate( beam_line* bml ) 
+{
   beamline* lbml = find_beam_line( bml->name_ );
   if ( lbml == NULL ) {
     lbml = new beamline( bml->name_ );
@@ -940,8 +980,8 @@ bmlfactory::beam_line_instantiate( beam_line* bml ) {
 }
 
 beamline*
-bmlfactory::find_beam_line( char* ptr ) {
-  
+bmlfactory::find_beam_line( char* ptr ) 
+{
   bml_pair_list__t::iterator res = find_if( bml_list_->begin(),
                                             bml_list_->end(),
                                             bind2nd( bml_predicate(), ptr ) );
@@ -953,8 +993,8 @@ bmlfactory::find_beam_line( char* ptr ) {
 }
 
 void
-bmlfactory::append_bml_element( char* ptr, beamline* lbml ) {
-
+bmlfactory::append_bml_element( char* ptr, beamline* lbml ) 
+{
      // search in the beam element table
   int i;
   char label[BEL_NAME_LENGTH];
@@ -987,12 +1027,14 @@ bmlfactory::append_bml_element( char* ptr, beamline* lbml ) {
 }
 
 void
-bmlfactory::create_bml_list() {
+bmlfactory::create_bml_list() 
+{
   bml_list_ = new bml_pair_list__t();
 }
 
 void
-bmlfactory::delete_bml_list() {
+bmlfactory::delete_bml_list() 
+{
   for( bml_pair_list__t::iterator i = bml_list_->begin();
        i != bml_list_->end(); ++i ) {
     delete i->lbml_ptr_;
@@ -1003,8 +1045,8 @@ bmlfactory::delete_bml_list() {
 
 
 std::list<std::string>& 
-bmlfactory::getBeamlineList() {
-
+bmlfactory::getBeamlineList() 
+{
   beam_line** bml_arr_ptr = bml_arr_;
   
   for (int i = 0; i< bml_arr_size_; i++) {
@@ -1048,14 +1090,14 @@ bmlfactory::variableIsDefined(const char* var_name) const
 }
 
 const char* 
-bmlfactory::getUseStatementBeamlineName() {
-
+bmlfactory::getUseStatementBeamlineName() 
+{
   return madparser_get_use_statement_beamline_name( mp ); 
-
 }
 
 
-double bmlfactory::getEnergy() const
+double 
+bmlfactory::getEnergy() const
 {
   double ret = 0.0;
   double momentum = (this->BRHO_)*PH_CNV_brho_to_p;
@@ -1084,16 +1126,32 @@ double bmlfactory::getEnergy() const
 }
 
 
-const char* bmlfactory::getParticleType() const 
+const char* 
+bmlfactory::getParticleType() const 
 {
   return madparser_get_particle_type( mp );
 }
 
 
 double 
-bmlfactory::getBrho( ) const {
-
+bmlfactory::getBrho( ) const 
+{
   return madparser_get_brho( mp ); 
-
 }
 
+
+// ----------------------------------------------------------------
+// 
+// April 5, 2005
+// TEMPORARY (perhaps) KLUDGE: The bmlfactory must be a singleton.
+// - Leo Michelotti
+// 
+
+bool bmlfactory::_exists = false;
+
+bool bmlfactory::exists()
+{
+  return bmlfactory::_exists;
+}
+
+// ----------------------------------------------------------------
