@@ -22,11 +22,8 @@ unix:CONFIG     += qt opengl x11 warn_on debug thread dll       rtti exceptions
 
 HEADERS += ./include/BeamlineBrowser.h \
            ./include/EditDialog.h \
-           ./include/SiteViewer.h \
-           ./include/SiteViewer.icc \
-           ./include/QueryDialog.h
+           ./include/SiteViewer.h
 
 SOURCES += ./src/BeamlineBrowser.cc \
            ./src/EditDialog.cc \
-           ./src/SiteViewer.cc \
-           ./src/QueryDialog.cc
+           ./src/SiteViewer.cc

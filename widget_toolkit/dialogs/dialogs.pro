@@ -20,6 +20,8 @@ LANGUAGE        = C++
 windows:CONFIG  += qt opengl x11 debug warn_on thread staticlib exceptions rtti
 unix:CONFIG     += qt opengl x11 warn_on debug thread dll       rtti exceptions
 
-HEADERS += ./include/DataAlignWidget.h
+HEADERS += ./include/DataAlignWidget.h \
+           ./include/QueryDialog.h
 
-SOURCES += ./src/DataAlignWidget.cc
+SOURCES += ./src/DataAlignWidget.cc \
+           ./src/QueryDialog.cc
