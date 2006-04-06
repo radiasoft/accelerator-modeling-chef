@@ -118,17 +118,25 @@ const char* TVector<T>::GenericException::what() const throw()
 //
 
 template<typename T>
-TVector<T>::TVector( int n, const T* x, OutputFormat* q )
+TVector<T>::TVector( int n, const T* x, OutputFormat* fmtPtr )
 {
 
   CHECKOUT(n <= 0, "TVector<T>::TVector", "Dimension must be positive.")
 
   _dim = n;
   _comp = new T[ _dim ];
-  if( x ) for ( int i=0; i< _dim; ++i) _comp[i] = x[i];
-  else    for ( int i=0; i< _dim; ++i) _comp[i] = 0.0;
+  _loComp = _comp;
+  _hiComp = &( _comp[_dim-1] );
 
-  _ofPtr = q;
+  T* q; 
+  const T* r = x;
+  if(x) { for( q = _loComp; q <= _hiComp; q++,r++ ) { *q = *r;   } }
+  else  { for( q = _loComp; q <= _hiComp; q++,r++ ) { *q =  T(); } }
+
+  // REMOVE: if( x ) { for ( int i=0; i< _dim; ++i) { _comp[i] = x[i]; } }
+  // REMOVE: else    { for ( int i=0; i< _dim; ++i) { _comp[i] = 0.0;  } }
+
+  _ofPtr = fmtPtr;
 
 }
 
@@ -140,10 +148,26 @@ TVector<T>::TVector( const TVector& x )
 {
   _dim = x._dim;
   _comp = new T[ _dim ];
-  for ( int i = 0; i < _dim; i++ ) _comp[i] = x._comp[i];
+  _loComp = _comp;
+  _hiComp = &( _comp[_dim-1] );
+
+  T* q; 
+  T* r = x._comp;
+  for( q = _loComp; q <= _hiComp; q++,r++ ) { *q = *r; }
+
+  // REMOVE: for ( int i = 0; i < _dim; i++ ) _comp[i] = x._comp[i];
 
   _ofPtr = x._ofPtr;  // Note: shallow copy of output format
+                      //       may or may not be a good thing.
+}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T> 
+void TVector<T>::reset()
+{
+  for( T* q = _loComp; q <= _hiComp; q++ ) { *q = T(); }
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -153,7 +177,6 @@ template<typename T>
 TVector<T>::TVector::~TVector()
 {
   delete [] _comp;
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
