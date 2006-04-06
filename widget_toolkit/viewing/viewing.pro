@@ -27,3 +27,5 @@ HEADERS += ./include/BeamlineBrowser.h \
 SOURCES += ./src/BeamlineBrowser.cc \
            ./src/EditDialog.cc \
            ./src/SiteViewer.cc
+
+INCLUDEPATH += ../dialogs/include
