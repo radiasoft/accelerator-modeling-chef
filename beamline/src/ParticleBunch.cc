@@ -454,6 +454,19 @@ void PositronBunch::recreate(int nm, double energy, double* widths, double* offs
 }
 
 
+void PositronBunch::append( const Positron& p) 
+{
+  ParticleBunch::append(p);
+}
+
+
+void PositronBunch::append( PositronPtr p) 
+{
+  ParticleBunch::append(p);
+}
+
+
+
 Particle* PositronBunch::makeParticle( double energy, double* state )
 {
   return new Positron( energy, state );
