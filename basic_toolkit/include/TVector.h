@@ -75,6 +75,8 @@ class TVector {
 private:
   int           _dim;
   T*            _comp;
+  T*            _loComp;
+  T*            _hiComp;
   OutputFormat* _ofPtr;
 
   static OutputFormat* _defOFPtr;  // default OutputFormat
@@ -83,6 +85,7 @@ public:
   // Constructors and the destructor __________________________
   TVector( int  dimension= 3, const T* components=0, OutputFormat* ofmt=0 );
   TVector( const TVector& );
+  void reset();
   ~TVector();
 
   // Assignment _____________________________
