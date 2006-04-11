@@ -10,7 +10,7 @@ libpybeamline_la_SOURCES          =   py-beamline-module.cpp py-aperture.cpp py-
                                       py-rbend.cpp py-rfcavity.cpp py-thinpoles.cpp py-decapole.cpp py-particle.cpp py-beamlineiterator.cpp \
                                       py-lattfunc.cpp 
 
-libpybmlfactory_la_SOURCES        =   py-bmlfactory-module.cpp bmlfactorykludge.cpp
+libpybmlfactory_la_SOURCES        =   py-bmlfactory-module.cpp 
 
 libpyphysics_toolkit_la_SOURCES   =   py-physicstoolkit-module.cpp py-lattfuncsage.cpp py-beamlinecontext.cpp
 
