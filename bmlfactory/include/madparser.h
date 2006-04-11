@@ -49,20 +49,15 @@
 #define madparser_h
 
 #include <glib.h>
-
-#if !defined(beam_element_h)
-#include "beam_element.h"
-#endif /* beam_element_h */
-
-#if !defined(beam_line_h)
-#include "beam_line.h"
-#endif /* beam_line_h */
-
-typedef struct madparser_ madparser;
+#include <beam_element.h>
+#include <beam_line.h>
+#include <madparser_types.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+void*         madparser_get_scanner( void* mp);
 
 madparser*    madparser_init( const char* filename_in, const char* filename_out);
 

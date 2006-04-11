@@ -9,35 +9,31 @@
 ******                                    
 ******  File:      mad_interface_internals.h
 ******                                                                
-******  Copyright (c) 1999  Universities Research Association, Inc.   
-******                All Rights Reserved                             
-******                                                                
-******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
-******                                                                
-******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******                    (630) 840 2231                              
-******             Email: michelotti@fnal.gov                         
-******                    ostiguy@fnal.gov                            
-******                                                                
+******  Copyright (c) Universities Research Association, Inc.
+******                All Rights Reserved
+******
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******   
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******  URA/FNAL reserves all rights.
+******                                          
 ******                                                                
+******  Authors:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******
+******  Contacts:            Leo Michelotti michelotti@fnal.gov
+******             Jean-Francois Ostiguy    ostiguy@fnal.gov
+******                                                              
 **************************************************************************
 *************************************************************************/
-
-
- /* -*- C -*- */
-
-#ifndef mad_interface_internals_h
-#define mad_interface_internals_h
+#ifndef MAD_INTERFACE_INTERNALS_H
+#define MAD_INTERFACE_INTERNALS_H
 
 void variable_init( variable* );
 void variable_destroy( variable* );
@@ -51,4 +47,4 @@ void beam_element_destroy( beam_element* );
 void beam_line_init( beam_line* );
 void beam_line_destroy( beam_line* );
 
-#endif /* mad_interface_internals_h */
+#endif /*  MAD_INTERFACE_INTERNALS_H */

@@ -9,42 +9,35 @@
 ******                                    
 ******  File:      var_table.h
 ******                                                                
-******  Copyright (c) 1999  Universities Research Association, Inc.   
-******                All Rights Reserved                             
-******                                                                
-******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
-******                                                                
-******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******                    (630) 840 2231                              
-******             Email: michelotti@fnal.gov                         
-******                    ostiguy@fnal.gov                            
-******                                                                
+******  Copyright (c) Universities Research Association, Inc.
+******                All Rights Reserved
+******
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******   
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******  URA/FNAL reserves all rights.
+******                                          
 ******                                                                
-**************************************************************************
-*************************************************************************/
-
-
-   /* -*- C -*- */
-
-#ifndef var_table_h
-#define var_table_h
+******  Authors:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******
+******  Contacts:            Leo Michelotti michelotti@fnal.gov
+******             Jean-Francois Ostiguy    ostiguy@fnal.gov
+******                                                              
+**************************************************************************/
+#ifndef BMLFACTORY_VAR_TABLE_H
+#define BMLFACTORY_VAR_TABLE_H
 
 #include <stddef.h>
 #include <glib.h>
+#include <fb_allocator.h>
 
-#if !defined(fb_allocator_h)
-#include "fb_allocator.h"
-#endif /* fb_allocator.h */
 
 #define VAR_OK             0
 #define VAR_TABLE_INIT_ERR 1
@@ -96,4 +89,4 @@ void         var_remove_forward( variable*** var_arr, int size, GHashTable* var_
 #endif
 
 
-#endif /* var_table_h */
+#endif /* BMLFACTORY_VAR_TABLE_H */

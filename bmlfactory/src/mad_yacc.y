@@ -23,9 +23,20 @@
 ******  Authors:    Dmitri Mokhov, Oleg Krivosheev                  
 ******              Jean-Francois Ostiguy 
 ******
+******  Revision History : 
+******  
+******  - April 2006, ostiguy@fnal.gov
+******    Made both lexer and parser reentrant. 
+******    Eliminated global variable mp.
+******
 ******
 **************************************************************************
 **************************************************************************/
+
+/**** this should be defined only for debugging ***/
+
+/*** %debug ****/
+
 
 %{
 #include <config.h>
@@ -46,31 +57,39 @@
 #include <expression.h>
 #include <madparser.h>
 
-/**** this should be defined only for debugging ***/
-/* #define YYDEBUG 1 */ 
 
-/************** is this really needed ? *********************/
-extern FILE* yyin;
-extern void* get_current_buffer();
-extern int get_yy_buf_size();
 
-void yyerror( char* s );
-int  yylex( void );
+typedef void* yyscan_t;
+
+void* get_current_buffer( madparser * mp );
+int   get_yy_buf_size( madparser * mp);
+void  yyerror( void* ylocp, madparser* mp, char const* s ); 
+
 void bmlfactory_exit(const char*, int, const char*);
 void bmlfactory_parse_error(int, const char*, int, const char*);
+
+#define YYLEX_PARAM ( madparser_get_scanner(mp) )
+
+
 #if 0
 void bmlfactory_exit(const char* filename, int lineno, const char* errmessage);
 void bmlfactory_parse_error(const char* input_filename, int input_file_lineno, const char* parser_message);
 #endif
-extern struct madparser_* mp;
- 
+
+
 %}
+
 
 %union {
   double   dval;
   char*    sval;
   void*    ptr;
 }
+
+
+%locations 
+%pure-parser
+%parse-param {madparser* mp} 
 
 %token MAD_NEWLINE MAD_IDENTIFIER MAD_STRING_LITERAL MAD_NUMERIC_LITERAL MAD_CONSTANT
 
@@ -206,16 +225,18 @@ command				: help
 call                            : MAD_CALL ',' call_attr
                                 | MAD_CALL ','  MAD_STRING_LITERAL 
                                 { 
-                                  yyin = madparser_call_include(mp, $<sval>3 ,get_current_buffer() );
-                                  yy_switch_to_buffer( yy_create_buffer( yyin, get_yy_buf_size() ) );
+                                  yyset_in (madparser_call_include(mp, $<sval>3 ,get_current_buffer(mp)), madparser_get_scanner(mp) );
+                                  yy_switch_to_buffer( yy_create_buffer( yyget_in(madparser_get_scanner(mp) ), get_yy_buf_size(mp), madparser_get_scanner(mp)),
+                                                       madparser_get_scanner(mp)  );
 				}
                                 ;
 
 call_attr			: MAD_FILENAME '=' MAD_STRING_LITERAL 
                                 {
 
-                                  yyin = madparser_call_include(mp, $<sval>3, get_current_buffer() );
-                                  yy_switch_to_buffer( yy_create_buffer( yyin, get_yy_buf_size() ) );
+                                  yyset_in( madparser_call_include(mp, $<sval>3, get_current_buffer(mp) ), madparser_get_scanner(mp));
+                                  yy_switch_to_buffer( yy_create_buffer(yyget_in(madparser_get_scanner(mp) ), get_yy_buf_size(mp),  madparser_get_scanner(mp)),
+                                                       madparser_get_scanner(mp) );
 				}
                                 ; 
  
@@ -224,8 +245,8 @@ return                          : MAD_RETURN {
                                    fprintf(stderr, "WARNING: Included files stack is empty. Ignoring RETURN statement.\n");
                                    return;
 				 }
-                                 yy_delete_buffer( get_current_buffer() );
-                                 yy_switch_to_buffer( madparser_return_from_include( mp ) );
+                                 yy_delete_buffer( get_current_buffer( mp ),  madparser_get_scanner(mp) );
+                                 yy_switch_to_buffer( madparser_return_from_include( mp ),  madparser_get_scanner(mp) );
 				
                                 }
                                 ;
@@ -449,7 +470,7 @@ var_definition			: identifier MAD_DEF_PARAM var_expression {
                                   if ( const_table_lookup( $<sval>3, madparser_const_table(mp) ) == 0 ) {
                                     variable* dst;
                                     variable* ptr = (variable*)var_table_lookup( $<sval>3, madparser_var_table(mp) );
-                                    double val = expr_evaluate( (GNode*)$<ptr>5, madparser_var_table(mp), madparser_bel_table(mp) );
+                                    double val = expr_evaluate(mp,  (GNode*)$<ptr>5, madparser_var_table(mp), madparser_bel_table(mp) );
                                     
                                     expr_struct* data;
                                     PRIVATE_ALLOCATE( data, madparser_expr_alloc(mp) );
@@ -2226,91 +2247,91 @@ beam_attr			: MAD_PARTICLE '=' particle_name
 				| MAD_MASS     '=' var_expression 
                                                    {       
                                                      printf("BEAM with particle mass=%g\n",  
-                                                       expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                       expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                      madparser_set_beam_particle_mass(mp,
-                                                       expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) ));  
+                                                       expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) ));  
                                                    }
 				| MAD_CHARGE   '='  var_expression  
                                                    {
 						     printf("BEAM with particle charge=%g\n",
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                      madparser_set_beam_particle_charge(mp,
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
  
                                                    }
 				| MAD_ENERGY   '=' var_expression 
                                                    { 
                                                      printf("BEAM with energy=%g\n",
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                      madparser_set_beam_energy(mp,
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                    }
 				| MAD_PC       '=' var_expression 
                                                    {  
                                                      printf("BEAM with pc=%g\n",
-                                                       expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                       expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                      madparser_set_beam_momentum(mp,
-                                                       expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                       expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                      
  
                                                    }
 				| MAD_GAMMA    '=' var_expression 
                                                    { 
 						     printf("BEAM with gamma=%g\n", 
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                      madparser_set_beam_gamma(mp,
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
 
                                                    }
 				| MAD_EX       '=' var_expression 
                                                    {  
                                                       printf("BEAM with ex=%g\n", 
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                    }
 				| MAD_EXN      '=' var_expression 
                                                    {
                                                       printf("BEAM with exn=e%g\n", 
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                    }
 				| MAD_EY       '=' var_expression 
                                                    { 
                                                       printf("BEAM with ey=%g\n", 
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                    }
 				| MAD_EYN      '=' var_expression 
                                                    { 
                                                       printf("BEAM with eyn=%g\n", 
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                    }
 				| MAD_ET       '=' var_expression 
                                                    { 
                                                       printf("BEAM with et=%g\n", 
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                    }
 				| MAD_SIGT     '=' var_expression 
                                                    {  
                                                       printf("BEAM with sigt=%g\n", 
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                    }
 				| MAD_SIGE     '=' var_expression 
                                                    { 
                                                       printf("BEAM with sige=%g\n", 
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                    }
 				| MAD_KBUNCH   '=' var_expression 
                                                    {  
                                                       printf("BEAM with kbunch=%g\n", 
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                    }
 				| MAD_NPART    '=' var_expression 
                                                    { 
                                                       printf("BEAM with npart=%g\n", 
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                    }
 				| MAD_BCURRENT '=' var_expression 
                                                    { 
                                                       printf("BEAM with bcurrent=%g\n", 
-                                                      expr_evaluate( (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
+                                                      expr_evaluate(mp,  (GNode*)$<ptr>3, madparser_var_table(mp), madparser_bel_table(mp) )); 
                                                    }
 				| MAD_BUNCHED      { 
                                                      printf("BEAM with BUNCHED true.\n"); 
@@ -2683,8 +2704,16 @@ identifier			: MAD_IDENTIFIER
 
 %%
 
-void
-yyerror( char* s ) {
+void yydebug_on( int set) { 
+
+  /* parser trace on */
+  /* note: yydebug is not defined when %debug is not set */
+  /******    yydebug = set; ****/ 
+
+}
+
+
+void yyerror( void* ylocp , madparser* mp, char const* s ) {
 
   fprintf( stderr, "Line %d: %s\n" , madparser_linenum(mp), s );
 

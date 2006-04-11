@@ -23,9 +23,16 @@
 ******  Authors:    Dmitri Mokhov, Oleg Krivosheev                  
 ******              Jean-Francois Ostiguy 
 ******
+******  Revision History : 
+******  
+******  - April 2006, ostiguy@fnal.gov
+******    Made both lexer and parser reentrant. 
+******    Eliminated global variable mp.
+******
 ******
 **************************************************************************
 **************************************************************************/
+
 %{
 #include <assert.h>
 #include <errno.h>
@@ -50,13 +57,19 @@ static GString* comments = NULL;
  
 static  void copy_and_format( char* dst, char* src );
 
-void    read_from_string(const char* buffer); 
-void    yyerror( char* s );
+void    read_from_string(madparser* mp, const char* buffer); 
+void    yyerror( void* ylocp, madparser* mp, char const* s ); 
 
-extern struct madparser_* mp; 
+#define YY_EXTRA_TYPE madparser*    
 
 
 %}
+
+%option reentrant
+%option bison-bridge
+%option bison-locations
+%option never-interactive
+/* %option debug */
 
 %x Comment Include
 
@@ -67,7 +80,7 @@ extern struct madparser_* mp;
 
 
 <*>^.*\n			{
-				  madparser_inc_linenum(mp);
+				  madparser_inc_linenum( yyextra );
 				  REJECT;
 				}
 
@@ -393,29 +406,29 @@ extern struct madparser_* mp;
 
 <Comment><<EOF>>		{
 				  /* Store the comments without last '\n' */
-				  yylval.sval = (char*)malloc( comments->len );
-				  if ( yylval.sval != NULL ) {
-				      strncpy( yylval.sval, comments->str, comments->len - 1 );
-				      *(yylval.sval+ comments->len - 1) = '\0';
+				  yylval->sval = (char*)malloc( comments->len );
+				  if ( yylval->sval != NULL ) {
+				      strncpy( yylval->sval, comments->str, comments->len - 1 );
+				      *(yylval->sval+ comments->len - 1) = '\0';
 
                                       g_string_free( comments, TRUE ); /* !!! */
 				  } else {
-				      yyerror( "Memory allocation problem\n" );
+				      yyerror( yylval, yyextra, "Memory allocation problem\n");
 				  }
-				  madparser_comment_at_eof_set(mp);
+				  madparser_comment_at_eof_set(yyextra);
 				  BEGIN(INITIAL);
 				  return MAD_EXCOMMENT;
 				}
 
 <Comment>.			{
 				  /* Store the comments without last '\n' */
-				  yylval.sval = (char*)malloc( comments->len );
-				  if ( yylval.sval != NULL ) {
-				      strncpy( yylval.sval, comments->str, comments->len - 1 );
-				      *(yylval.sval+ comments->len - 1) = '\0';
+				  yylval->sval = (char*)malloc( comments->len );
+				  if ( yylval->sval != NULL ) {
+				      strncpy( yylval->sval, comments->str, comments->len - 1 );
+				      *(yylval->sval+ comments->len - 1) = '\0';
                                       g_string_free( comments, TRUE ); /* !!! */
 				  } else {
-				      yyerror( "Memory allocation problem\n" );
+				      yyerror( yylval, yyextra, "Memory allocation problem\n");
 				  }
 				  yyless(0);
 				  BEGIN(INITIAL);
@@ -424,12 +437,12 @@ extern struct madparser_* mp;
 
 \!.*\n				{
 				  /* Store the comment without '!' and '\n' */
-				  yylval.sval = (char*)malloc( yyleng-1 );
-				  if ( yylval.sval != NULL ) {
-				      strncpy( yylval.sval, yytext+1, yyleng-2 );
-				      *(yylval.sval+yyleng-2) = '\0';
+				  yylval->sval = (char*)malloc( yyleng-1 );
+				  if ( yylval->sval != NULL ) {
+				      strncpy( yylval->sval, yytext+1, yyleng-2 );
+				      *(yylval->sval+yyleng-2) = '\0';
 				  } else {
-				      yyerror( "Memory allocation problem\n" );
+				      yyerror( yylval, yyextra, "Memory allocation problem\n");
 				  }
 
 				  return MAD_EXCOMMENT;
@@ -441,11 +454,11 @@ extern struct madparser_* mp;
 (c|C)(o|O)(n|N)(s|S)(t|T)(a|A)(n|N)(t|T)		return MAD_CONSTANT;
 
 [A-Za-z][A-Za-z0-9.'_]*		{
-				  yylval.sval=(char*)malloc( yyleng+1 );
-				  if ( yylval.sval != NULL ) {
-				      strcpy( yylval.sval, yytext );
+				  yylval->sval=(char*)malloc( yyleng+1 );
+				  if ( yylval->sval != NULL ) {
+				      strcpy( yylval->sval, yytext );
 				  } else {
-				      yyerror( "Memory allocation problem\n" );
+				      yyerror( yylval, yyextra, "Memory allocation problem\n");
 				  }
 				  return MAD_IDENTIFIER;
 				}
@@ -455,16 +468,16 @@ extern struct madparser_* mp;
 [0-9]+[DEde][+-]?[0-9]+ |
 [1-9][0-9]+ |
 [0-9]				{
-				  yylval.sval=(char*)malloc( yyleng+2 );
-				  if ( yylval.sval == NULL ) {
-				      yyerror( "Memory allocation problem\n" );
+				  yylval->sval=(char*)malloc( yyleng+2 );
+				  if ( yylval->sval == NULL ) {
+				      yyerror( yylval, yyextra, "Memory allocation problem\n");
 				  }
-				  copy_and_format( yylval.sval, yytext );
-				  strtod( yylval.sval, (char**)NULL );
+				  copy_and_format( yylval->sval, yytext );
+				  strtod( yylval->sval, (char**)NULL );
 				  if ( errno == ERANGE ) {
 				      strcpy( errmsg, "fatal error ! number out of range: " );
 				      assert( strlen( errmsg )+yyleng+1 < MAX_ERR_MSG_LENGTH );
-				      yyerror( strcat( errmsg, (char*)yylval.sval ) );
+				      yyerror( yylval, yyextra, strcat( errmsg, (char*)yylval->sval ) );
 				      exit( EXIT_FAILURE );
 				  }
 				  current_constant = CONSTANT_DOUBLE;
@@ -474,12 +487,12 @@ extern struct madparser_* mp;
 \"[^\"\n]*\" |
 \'[^\'\n]*\'			{
 				  /* Store the string without quotes */
-				  yylval.sval=(char*)malloc( yyleng-1 );
-				  if ( yylval.sval != NULL ) {
-				      strncpy( yylval.sval, yytext+1, yyleng-2 );
-				      *(yylval.sval+yyleng-2) = '\0';
+				  yylval->sval=(char*)malloc( yyleng-1 );
+				  if ( yylval->sval != NULL ) {
+				      strncpy( yylval->sval, yytext+1, yyleng-2 );
+				      *(yylval->sval+yyleng-2) = '\0';
 				  } else {
-				      yyerror( "Memory allocation problem\n" );
+				      yyerror( yylval->sval, yyextra, "Memory allocation problem\n" );
 				  }
 
 				  current_constant = CONSTANT_STRING;
@@ -489,7 +502,7 @@ extern struct madparser_* mp;
 ("*"|"/")[ \t]*("+"|"-")	{
 				  strcpy( errmsg, "Illegal *,/,+,- combination: " );
 				  assert( strlen( errmsg )+yyleng < MAX_ERR_MSG_LENGTH );
-				  yyerror( strcat( errmsg, (char*)yytext ) );
+				  yyerror( yylval, yyextra, strcat( errmsg, (char*)yytext ) );
 				  exit( EXIT_FAILURE );
 				}
 
@@ -502,7 +515,7 @@ extern struct madparser_* mp;
 
 <<EOF>>                         {
 
-                                  if ( madparser_has_input(mp) ) 
+                                  if ( madparser_has_input(yyextra) ) 
                                   {
                                      fprintf(stderr, "Warning: Added missing RETURN statement.\n");
                                      return MAD_RETURN;   /*this takes care of a missing RETURN statement */
@@ -545,21 +558,32 @@ copy_and_format( char* dst, char* src ) {
   *q = '\0';
 }
 
-void read_from_string(const char* buffer) 
+
+void read_from_string(madparser* mp, const char* buffer) 
 {
-  yy_scan_string(buffer);
-  madparser_set_inmemory_flag(mp,1);
+
+  yyscan_t yyscanner     =   (yyscan_t) madparser_get_scanner(mp);
+  struct yyguts_t * yyg  =   yyscanner;
+
+  yy_scan_string( buffer,  yyscanner );
+  madparser_set_inmemory_flag( mp, 1 );
 
 } 
 
-void reset_input_buffer() 
+/* --------------------------------------------------------------*/
+
+void reset_input_buffer( madparser* mp ) 
 {
+ 
+  yyscan_t yyscanner     =   (yyscan_t) madparser_get_scanner(mp);
+  struct yyguts_t * yyg  =   yyscanner;
+  
   if ( madparser_is_reading_from_memory(mp) != 0 ) 
   {
 
     BEGIN(0);    
     YY_FLUSH_BUFFER;
-    yy_delete_buffer( YY_CURRENT_BUFFER); 
+    yy_delete_buffer( YY_CURRENT_BUFFER, yyscanner ); 
 
   }
   else
@@ -569,16 +593,27 @@ void reset_input_buffer()
   } 
 } 
 
-void* get_current_buffer( )
+/* --------------------------------------------------------------*/
+
+void* get_current_buffer( madparser* mp )
 {
+
+  yyscan_t yyscanner     =   (yyscan_t) madparser_get_scanner(mp);
+  struct yyguts_t * yyg  =   yyscanner;
 
   return YY_CURRENT_BUFFER;
 
 }
 
-int get_yy_buf_size( )
+
+/* --------------------------------------------------------------*/
+
+int get_yy_buf_size( madparser* mp )
 {
 
+  yyscan_t yyscanner     =   (yyscan_t) madparser_get_scanner(mp);
+  struct yyguts_t * yyg  =   yyscanner;
+ 
  return YY_BUF_SIZE;
 
 }

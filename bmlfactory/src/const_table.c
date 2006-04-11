@@ -9,35 +9,33 @@
 ******                                    
 ******  File:      const_table.c
 ******                                                                
-******  Copyright (c) 1999  Universities Research Association, Inc.   
-******                All Rights Reserved                             
-******                                                                
-******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
-******                                                                
-******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******                    (630) 840 2231                              
-******             Email: michelotti@fnal.gov                         
-******                    ostiguy@fnal.gov                            
-******                                                                
+******  Copyright (c) Universities Research Association, Inc.
+******                All Rights Reserved
+******
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******   
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******  URA/FNAL reserves all rights.
+******                                          
 ******                                                                
+******  Authors:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******
+******  Contacts:            Leo Michelotti michelotti@fnal.gov
+******             Jean-Francois Ostiguy    ostiguy@fnal.gov
+******                                                              
 **************************************************************************
 *************************************************************************/
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-
-   /* -*- C -*- */
 
 #include <assert.h>
 #include <math.h>
@@ -147,7 +145,7 @@ const_table_init( fb_allocator* expr_alloc,
      Deletes the hash table for constants and returns an OK value
     */
 int
-  const_table_delete( GHashTable*   const_table,
+const_table_delete(   GHashTable*   const_table,
                       fb_allocator* expr_alloc ) {
 
   assert( const_table != NULL );
@@ -164,9 +162,10 @@ int
      and prints information about "value"
    */
 static void
-const_display_func( gpointer key,
-                    gpointer value,
-                    gpointer user_data ) {
+const_display_func( madparser* mp,  
+                    gpointer   key,
+                    gpointer   value,
+                    gpointer   user_data ) {
 
   troika* p = ((troika*)user_data);
   FILE* out = (FILE*)(p->first_);
@@ -178,7 +177,7 @@ const_display_func( gpointer key,
            ((constant*)value)->name_, ((constant*)value)->local_linenum_, ((constant*)value)->filename_ );
   
   fprintf( out, "Expression: ");
-  expr_display( out, expr, (GHashTable*)(p->second_), (GHashTable*)(p->third_) );
+  expr_display( mp, out, expr, (GHashTable*)(p->second_), (GHashTable*)(p->third_) );
   fprintf( out, "\nValue: ");
   if ( ((constant*)value)->svalue_ != NULL ) {
     fprintf( out, "\"%s\"\n", ((constant*)value)->svalue_ );

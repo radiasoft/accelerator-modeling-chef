@@ -109,7 +109,8 @@ bel_table_el_to_array_el( gpointer key,
      and prints information about "value"
    */
 static void
-bel_display_func( gpointer key,
+bel_display_func( madparser* mp,
+                  gpointer key,
                   gpointer value,
                   gpointer user_data ) {
   
@@ -117,7 +118,7 @@ bel_display_func( gpointer key,
   troika*       p   = (troika*)user_data;
   assert( bel != NULL );
   
-  beam_element_display( (FILE*)(p->first_), bel, (GHashTable*)(p->second_), (GHashTable*)(p->third_) );
+  beam_element_display( mp, (FILE*)(p->first_), bel, (GHashTable*)(p->second_), (GHashTable*)(p->third_) );
   fprintf( (FILE*)(p->first_), "(Defined on line %d in file %s)\n\n", bel->local_linenum_, bel->filename_ );
 }
 

@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -35,21 +32,17 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 
 #include <assert.h>
 #include <string.h>
+#include <matrix.h>
+#include <expression.h>
 
-#if !defined(matrix_h)
-#include "matrix.h"
-#endif /* matrix_h */
 
-#if !defined(expression_h)
-#include "expression.h"
-#endif /* expression_h */
-
-   /*
-    */
 matrix*
 matrix_init( fb_allocator* matrix_alloc ) {
 
