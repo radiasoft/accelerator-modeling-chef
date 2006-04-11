@@ -71,19 +71,20 @@ using namespace std;
 // Constructors
 
 FramePusher::FramePusher()
-: _errorCode(OKAY)
+: _frame()
+  , _errorCode(OKAY)
 {
-  Frame f;
-  _frame = f;
 }
 
 FramePusher::FramePusher( const Frame& f )
-: _frame(f), _errorCode(OKAY)
+: _frame(f)
+  , _errorCode(OKAY)
 {
 }
 
 FramePusher::FramePusher( const FramePusher& x )
-: _frame( x._frame ), _errorCode(x._errorCode)
+: _frame( x._frame )
+  , _errorCode(x._errorCode)
 {
 }
 
