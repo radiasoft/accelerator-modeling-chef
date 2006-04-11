@@ -88,37 +88,18 @@ using namespace std;
 #include <var_table.h>
 #include <bel_inst_fns.h>
 
-extern struct madparser_* mp;
-
 using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
 
-
-bmlfactory::bmlfactory( const char* fname, double BRHO, const char* stringbuffer) 
-{
-  // ----------------------------------------------------------------
-  // 
-  // April 5, 2005
-  // TEMPORARY (perhaps) KLUDGE: The bmlfactory must be a singleton.
-  // - Leo Michelotti
-  // 
-  if( bmlfactory::_exists ) {
-    (*pcerr) << "\n*** ERROR ***"
-                "\n*** ERROR *** Attempt to instantiate more than one"
-                "\n*** ERROR *** bmlfactory objects simultaneously."
-                "\n*** ERROR ***"
-             << endl;
-    throw( GenericException( __FILE__, __LINE__
-           , "bmlfactory::bmlfactory(...)"
-           , "Until further notice, bmlfactory is a singleton.") );
-  }
-  // ----------------------------------------------------------------
+bmlfactory::bmlfactory( const char* fname, double BRHO, const char* stringbuffer) {
 
   BRHO_ = BRHO;
   try 
   {
-     bmlfactory_init(fname, stringbuffer);
+
+    bmlfactory_init(fname, stringbuffer);
+
   }
   catch (GenericException& e)
   {
@@ -126,7 +107,7 @@ bmlfactory::bmlfactory( const char* fname, double BRHO, const char* stringbuffer
       We need to clean up here in order to avoid leaks and ensure that flex is reset to a sane state.
     */
 
-     madparser_delete(mp);
+     madparser_delete( mp_);
 
      delete_bel_list();
      delete_bml_list();
@@ -139,34 +120,17 @@ bmlfactory::bmlfactory( const char* fname, double BRHO, const char* stringbuffer
      throw e;
   }
 
-  bmlfactory::_exists = true;
 }
 
 
-bmlfactory::bmlfactory( const char* fname, const char* stringbuffer) 
-{
-  // ----------------------------------------------------------------
-  // 
-  // April 5, 2005
-  // TEMPORARY (perhaps) KLUDGE: The bmlfactory must be a singleton.
-  // - Leo Michelotti
-  // 
-  if( bmlfactory::_exists ) {
-    (*pcerr) << "\n*** ERROR ***"
-                "\n*** ERROR *** Attempt to instantiate more than one"
-                "\n*** ERROR *** bmlfactory objects simultaneously."
-                "\n*** ERROR ***"
-             << endl;
-    throw( GenericException( __FILE__, __LINE__
-           , "bmlfactory::bmlfactory(...)"
-           , "Until further notics, bmlfactory is a singleton.") );
-  }
-  // ----------------------------------------------------------------
+bmlfactory::bmlfactory( const char* fname, const char* stringbuffer) {
 
   BRHO_ = 0;
   try 
   {
-     bmlfactory_init(fname, stringbuffer);
+
+    bmlfactory_init(fname, stringbuffer);
+
   }
   catch (GenericException& e)
   {
@@ -174,7 +138,7 @@ bmlfactory::bmlfactory( const char* fname, const char* stringbuffer)
       We need to clean up here in order to avoid leaks and ensure that flex is reset to a sane state.
     */
   
-      madparser_delete(mp);
+      madparser_delete(mp_);
    
       delete_bel_list();
       delete_bml_list();
@@ -187,13 +151,12 @@ bmlfactory::bmlfactory( const char* fname, const char* stringbuffer)
     throw e;
   }
 
-  bmlfactory::_exists = true;
 }
 
 
 void 
-bmlfactory::bmlfactory_init(const char* fname, const char* stringbuffer) 
-{
+bmlfactory::bmlfactory_init(const char* fname, const char* stringbuffer) {
+
   mp_      = NULL;
   fname_   = NULL;
   bel_arr_ = NULL;
@@ -212,8 +175,6 @@ bmlfactory::bmlfactory_init(const char* fname, const char* stringbuffer)
 
   assert( mp_ != NULL );
   
-  mp = mp_; // set the global variable mp to point to the same parser structure as mp_
-
   var_table_ = madparser_var_table( mp_ );
   bel_table_ = madparser_bel_table( mp_ );
 
@@ -240,12 +201,11 @@ bmlfactory::bmlfactory_init(const char* fname, const char* stringbuffer)
   
 }
 
-bmlfactory::~bmlfactory() 
-{
+bmlfactory::~bmlfactory() {
+
   madparser_delete( mp_ );
 
   mp_ = NULL;
-  mp  = NULL;
 
   delete_bel_list();
   delete_bml_list();
@@ -259,7 +219,6 @@ bmlfactory::~bmlfactory()
   // Note: the create_beamline function returns a Cloned() beamline and bmlnElmnts, 
   // so that ownership of these objects is that of the bmlfactory object instance.
 
-  bmlfactory::_exists = false;
 }
 
 
@@ -309,8 +268,8 @@ bmlfactory::create_beamline_private( const char* bmlname) { // *** DEPRECATED **
 }
 
 beamline*
-bmlfactory::create_beamline_private( const char* bmlname, double brho ) 
-{
+bmlfactory::create_beamline_private( const char* bmlname, double brho ) {
+  
   BRHO_ = brho;
 
   beamline* bml_ptr = 0;  
@@ -330,8 +289,7 @@ bmlfactory::create_beamline_private( const char* bmlname, double brho )
 }
 
 static char*
-add_str( char* ptr, const char* s1, const char* s2 ) 
-{
+add_str( char* ptr, const char* s1, const char* s2 ) {
   strcpy( ptr, s1 );
   return strcat( ptr, s2 );
 }
@@ -361,8 +319,8 @@ bmlfactory::strip_final_colon( const char* stuff )
 
 
 bmlnElmnt*
-bmlfactory::beam_element_instantiate( beam_element* bel ) 
-{
+bmlfactory::beam_element_instantiate( beam_element* bel ) {
+  
   bmlnElmnt* lbel = find_beam_element( bel->name_ );
   if ( lbel != NULL ) {
     return lbel;
@@ -372,7 +330,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
   
   switch ( bel->kind_ ) {
     case BEL_DRIFT: {
-      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
+      double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
       lbel = new drift( strip_final_colon( bel->name_ ).c_str(), length );
       break;
     }
@@ -382,15 +340,15 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
     }
     case BEL_SBEND: {
       bool simple = false;
-      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
-      double angle  = expr_evaluate( bel->params_[BEL_SBEND_ANGLE], var_table_, bel_table_ );
+      double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
+      double angle  = expr_evaluate( mp_,  bel->params_[BEL_SBEND_ANGLE], var_table_, bel_table_ );
       expr_struct *k1   = (expr_struct*)bel->params_[BEL_SBEND_K1]->data;
       expr_struct *k2   = (expr_struct*)bel->params_[BEL_SBEND_K2]->data;
       expr_struct *k3   = (expr_struct*)bel->params_[BEL_SBEND_K3]->data;
       expr_struct *tilt = (expr_struct*)bel->params_[BEL_SBEND_TILT]->data;
       
-      double e1 = expr_evaluate( bel->params_[BEL_SBEND_E1], var_table_, bel_table_ );
-      double e2 = expr_evaluate( bel->params_[BEL_SBEND_E2], var_table_, bel_table_ );
+      double e1 = expr_evaluate( mp_,  bel->params_[BEL_SBEND_E1], var_table_, bel_table_ );
+      double e2 = expr_evaluate( mp_,  bel->params_[BEL_SBEND_E2], var_table_, bel_table_ );
 
 
       simple = (k1->kind_ == NUMBER_EXPR && k1->dvalue_ == 0.0 && 
@@ -403,7 +361,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
         if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
           aligner->xOffset = 0.0;
           aligner->yOffset = 0.0;
-          aligner->tilt    = expr_evaluate( bel->params_[BEL_SBEND_TILT], var_table_, bel_table_ );
+          aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_SBEND_TILT], var_table_, bel_table_ );
           lbel->setAlignment( *aligner );
           // Ignored parameters: K1, K2, K3, E1, E2, TILT, H1, H2, HGAP, FINT
 	}
@@ -414,19 +372,19 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
 
         double multipoleStrength;
 
-        multipoleStrength = expr_evaluate( bel->params_[BEL_SBEND_K1], var_table_, bel_table_ );
+        multipoleStrength = expr_evaluate( mp_,  bel->params_[BEL_SBEND_K1], var_table_, bel_table_ );
         multipoleStrength = multipoleStrength*BRHO_*length;
         if( multipoleStrength != 0.0 ) {
           ((CF_sbend*) lbel)->setQuadrupole( multipoleStrength );
 	}
 
-        multipoleStrength = expr_evaluate( bel->params_[BEL_SBEND_K2], var_table_, bel_table_ );
+        multipoleStrength = expr_evaluate( mp_,  bel->params_[BEL_SBEND_K2], var_table_, bel_table_ );
         multipoleStrength = multipoleStrength*BRHO_*length/2.0;
         if( multipoleStrength != 0.0 ) {
           ((CF_sbend*) lbel)->setSextupole( multipoleStrength );
 	}
 
-        multipoleStrength = expr_evaluate( bel->params_[BEL_SBEND_K3], var_table_, bel_table_ );
+        multipoleStrength = expr_evaluate( mp_,  bel->params_[BEL_SBEND_K3], var_table_, bel_table_ );
         multipoleStrength = multipoleStrength*BRHO_*length/6.0;
         if( multipoleStrength != 0.0 ) {
           ((CF_sbend*) lbel)->setOctupole( multipoleStrength );
@@ -436,15 +394,15 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
     }
     case BEL_RBEND: {
       bool simple = false;
-      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
-      double angle  = expr_evaluate( bel->params_[BEL_RBEND_ANGLE], var_table_, bel_table_ );
+      double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
+      double angle  = expr_evaluate( mp_,  bel->params_[BEL_RBEND_ANGLE], var_table_, bel_table_ );
       expr_struct *k1   = (expr_struct*)bel->params_[BEL_RBEND_K1]->data;
       expr_struct *k2   = (expr_struct*)bel->params_[BEL_RBEND_K2]->data;
       expr_struct *k3   = (expr_struct*)bel->params_[BEL_RBEND_K3]->data;
       expr_struct *tilt = (expr_struct*)bel->params_[BEL_RBEND_TILT]->data;
 
-      double e1 = expr_evaluate( bel->params_[BEL_RBEND_E1], var_table_, bel_table_ );
-      double e2 = expr_evaluate( bel->params_[BEL_RBEND_E2], var_table_, bel_table_ ); 
+      double e1 = expr_evaluate( mp_,  bel->params_[BEL_RBEND_E1], var_table_, bel_table_ );
+      double e2 = expr_evaluate( mp_,  bel->params_[BEL_RBEND_E2], var_table_, bel_table_ ); 
     
       simple = (k1->kind_ == NUMBER_EXPR && 
                 k1->dvalue_ == 0.0 && 
@@ -465,7 +423,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
         if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
           aligner->xOffset = 0.0;
           aligner->yOffset = 0.0;
-          aligner->tilt    = expr_evaluate( bel->params_[BEL_RBEND_TILT], var_table_, bel_table_ );
+          aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_RBEND_TILT], var_table_, bel_table_ );
           lbel->setAlignment( *aligner );
         }
         // Ignored parameters: K1, K2, K3, E1, E2, H1, H2, HGAP, FINT
@@ -481,19 +439,19 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
 
         double multipoleStrength;
 
-        multipoleStrength = expr_evaluate( bel->params_[BEL_RBEND_K1], var_table_, bel_table_ );
+        multipoleStrength = expr_evaluate( mp_,  bel->params_[BEL_RBEND_K1], var_table_, bel_table_ );
         multipoleStrength = multipoleStrength*BRHO_*length;
         if( multipoleStrength != 0.0 ) {
           ((CF_rbend*) lbel)->setQuadrupole( multipoleStrength );
 	}
 
-        multipoleStrength = expr_evaluate( bel->params_[BEL_RBEND_K2], var_table_, bel_table_ );
+        multipoleStrength = expr_evaluate( mp_,  bel->params_[BEL_RBEND_K2], var_table_, bel_table_ );
         multipoleStrength = multipoleStrength*BRHO_*length/2.0;
         if( multipoleStrength != 0.0 ) {
           ((CF_rbend*) lbel)->setSextupole( multipoleStrength );
 	}
 
-        multipoleStrength = expr_evaluate( bel->params_[BEL_RBEND_K3], var_table_, bel_table_ );
+        multipoleStrength = expr_evaluate( mp_,  bel->params_[BEL_RBEND_K3], var_table_, bel_table_ );
         multipoleStrength = multipoleStrength*BRHO_*length/6.0;
         if( multipoleStrength != 0.0 ) {
           ((CF_rbend*) lbel)->setOctupole( multipoleStrength );
@@ -502,8 +460,8 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       }
     }
     case BEL_QUADRUPOLE: {
-      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
-      double k1     = expr_evaluate( bel->params_[BEL_QUADRUPOLE_K1], var_table_, bel_table_ );
+      double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
+      double k1     = expr_evaluate( mp_,  bel->params_[BEL_QUADRUPOLE_K1], var_table_, bel_table_ );
       
       if ( length != 0.0 || k1 != 0.0 ) {
         lbel = new quadrupole( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*k1 );
@@ -514,14 +472,14 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       if ( ((expr_struct*)(bel->params_[BEL_QUADRUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_QUADRUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner->xOffset = 0.0;
         aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( bel->params_[BEL_QUADRUPOLE_TILT], var_table_, bel_table_ );
+        aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_QUADRUPOLE_TILT], var_table_, bel_table_ );
         lbel->setAlignment( *aligner );
       }
       break;
     }
     case BEL_SEXTUPOLE: {
-      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
-      double k2     = expr_evaluate( bel->params_[BEL_SEXTUPOLE_K2], var_table_, bel_table_ );
+      double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
+      double k2     = expr_evaluate( mp_,  bel->params_[BEL_SEXTUPOLE_K2], var_table_, bel_table_ );
       
       if ( length != 0.0 || k2 != 0.0 ) {
         lbel = new sextupole( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*k2/2.0 );
@@ -532,14 +490,14 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       if ( ((expr_struct*)(bel->params_[BEL_SEXTUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_SEXTUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner->xOffset = 0.0;
         aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( bel->params_[BEL_SEXTUPOLE_TILT], var_table_, bel_table_ );
+        aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_SEXTUPOLE_TILT], var_table_, bel_table_ );
         lbel->setAlignment( *aligner );
       }
       break;
     }
     case BEL_OCTUPOLE: {
-      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
-      double k3     = expr_evaluate( bel->params_[BEL_OCTUPOLE_K3], var_table_, bel_table_ );
+      double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
+      double k3     = expr_evaluate( mp_,  bel->params_[BEL_OCTUPOLE_K3], var_table_, bel_table_ );
       
       if ( length != 0.0 || k3 != 0.0 ) {
         lbel = new octupole( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*k3/6.0 );
@@ -550,7 +508,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       if ( ((expr_struct*)(bel->params_[BEL_OCTUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_OCTUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner->xOffset = 0.0;
         aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( bel->params_[BEL_OCTUPOLE_TILT], var_table_, bel_table_ );
+        aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_OCTUPOLE_TILT], var_table_, bel_table_ );
         lbel->setAlignment( *aligner );
       }
       break;
@@ -561,10 +519,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       beamline* temp  = new beamline( strip_final_colon( bel->name_ ).c_str() );
       temp->setEnergy( this->getEnergy() ); 
 
-      double k0l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K0L], var_table_, bel_table_ );
+      double k0l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K0L], var_table_, bel_table_ );
       if( k0l != 0.0 ) {
         q = new thin2pole(BRHO_*k0l);
-        roll = expr_evaluate( bel->params_[BEL_MULTIPOLE_T0], var_table_, bel_table_ );
+        roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T0], var_table_, bel_table_ );
         if( 0.0 != roll ) {
           aligner->xOffset = 0.0;
           aligner->yOffset = 0.0;
@@ -574,10 +532,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
         temp->append( q );
       }
 
-      double k1l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K1L], var_table_, bel_table_ );
+      double k1l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K1L], var_table_, bel_table_ );
       if( k1l != 0.0 ) {
         q = new thinQuad( BRHO_*k1l );
-        roll = expr_evaluate( bel->params_[BEL_MULTIPOLE_T1], var_table_, bel_table_ );
+        roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T1], var_table_, bel_table_ );
         if( 0.0 != roll ) {
           aligner->xOffset = 0.0;
           aligner->yOffset = 0.0;
@@ -587,10 +545,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
         temp->append( q );
       }
       
-      double k2l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K2L], var_table_, bel_table_ );
+      double k2l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K2L], var_table_, bel_table_ );
       if( k2l != 0.0 ) {
         q = new thinSextupole( BRHO_*k2l/2.0 );
-        roll = expr_evaluate( bel->params_[BEL_MULTIPOLE_T2], var_table_, bel_table_ );
+        roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T2], var_table_, bel_table_ );
         if( 0.0 != roll ) {
           aligner->xOffset = 0.0;
           aligner->yOffset = 0.0;
@@ -600,10 +558,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
         temp->append( q );
       }
       
-      double k3l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K3L], var_table_, bel_table_ );
+      double k3l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K3L], var_table_, bel_table_ );
       if( k3l != 0.0 ) {
         q = new thinOctupole( BRHO_*k3l/6.0 );
-        roll = expr_evaluate( bel->params_[BEL_MULTIPOLE_T3], var_table_, bel_table_ );
+        roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T3], var_table_, bel_table_ );
         if( 0.0 != roll ) {
           aligner->xOffset = 0.0;
           aligner->yOffset = 0.0;
@@ -613,7 +571,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
         temp->append( q );
       }
       
-      double k4l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K4L], var_table_, bel_table_ );
+      double k4l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K4L], var_table_, bel_table_ );
       if( k4l != 0.0 ) {
         (*pcerr) << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K4L is being ignored.       "
@@ -622,7 +580,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
              << endl;
       }
 
-      double k5l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K5L], var_table_, bel_table_ );
+      double k5l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K5L], var_table_, bel_table_ );
       if( k5l != 0.0 ) {
         (*pcerr) << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K5L is being ignored.       "
@@ -631,7 +589,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
              << endl;
       }
 
-      double k6l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K6L], var_table_, bel_table_ );
+      double k6l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K6L], var_table_, bel_table_ );
       if( k6l != 0.0 ) {
         (*pcerr) << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K6L is being ignored.       "
@@ -640,7 +598,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
              << endl;
       }
 
-      double k7l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K7L], var_table_, bel_table_ );
+      double k7l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K7L], var_table_, bel_table_ );
       if( k7l != 0.0 ) {
         (*pcerr) << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K7L is being ignored.       "
@@ -649,7 +607,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
              << endl;
       }
 
-      double k8l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K8L], var_table_, bel_table_ );
+      double k8l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K8L], var_table_, bel_table_ );
       if( k8l != 0.0 ) {
         (*pcerr) << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K8L is being ignored.       "
@@ -658,7 +616,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
              << endl;
       }
 
-      double k9l    = expr_evaluate( bel->params_[BEL_MULTIPOLE_K9L], var_table_, bel_table_ );
+      double k9l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K9L], var_table_, bel_table_ );
       if( k9l != 0.0 ) {
         (*pcerr) << "\n*** WARNING *** " << __FILE__ << ", " << __LINE__ << ": "
              << "\n*** WARNING *** Value of K9L is being ignored.       "
@@ -684,11 +642,11 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       break;
     }
     case BEL_SOLENOID:
-      lbel = make_solenoid( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_solenoid( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
       break;
     case BEL_HKICKER: {
-      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
-      double kck    = expr_evaluate( bel->params_[BEL_HKICKER_KICK], var_table_, bel_table_ );
+      double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
+      double kck    = expr_evaluate( mp_,  bel->params_[BEL_HKICKER_KICK], var_table_, bel_table_ );
       char   name[BEL_NAME_LENGTH];
       
       if ( length != 0.0 || kck != 0.0 ) {
@@ -700,14 +658,14 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       if ( ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner->xOffset = 0.0;
         aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( bel->params_[BEL_HKICKER_TILT], var_table_, bel_table_ );
+        aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_HKICKER_TILT], var_table_, bel_table_ );
         lbel->setAlignment( *aligner );
       }
       break;
     }
     case BEL_VKICKER: {
-      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
-      double kck    = expr_evaluate( bel->params_[BEL_VKICKER_KICK], var_table_, bel_table_ );
+      double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
+      double kck    = expr_evaluate( mp_,  bel->params_[BEL_VKICKER_KICK], var_table_, bel_table_ );
       char   name[BEL_NAME_LENGTH];
       
       if ( length != 0.0 || kck != 0.0 ) {
@@ -719,15 +677,15 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       if ( ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner->xOffset = 0.0;
         aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( bel->params_[BEL_VKICKER_TILT], var_table_, bel_table_ );
+        aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_VKICKER_TILT], var_table_, bel_table_ );
         lbel->setAlignment( *aligner );
       }
       break;
     }
     case BEL_KICKER: {
-      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
-      double hkck   = expr_evaluate( bel->params_[BEL_KICKER_HKICK], var_table_, bel_table_ );
-      double vkck   = expr_evaluate( bel->params_[BEL_KICKER_VKICK], var_table_, bel_table_ );
+      double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
+      double hkck   = expr_evaluate( mp_,  bel->params_[BEL_KICKER_HKICK], var_table_, bel_table_ );
+      double vkck   = expr_evaluate( mp_,  bel->params_[BEL_KICKER_VKICK], var_table_, bel_table_ );
       char   name[BEL_NAME_LENGTH];
       
       if ( length != 0.0 || hkck != 0.0 || vkck != 0.0 ) {
@@ -739,17 +697,17 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       if ( ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner->xOffset = 0.0;
         aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( bel->params_[BEL_KICKER_TILT], var_table_, bel_table_ );
+        aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_KICKER_TILT], var_table_, bel_table_ );
         lbel->setAlignment( *aligner );
       }
       break;
     }
     case BEL_RFCAVITY: {
-      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
-      double harmon = expr_evaluate( bel->params_[BEL_RFCAVITY_HARMON], var_table_, bel_table_ );
-      double volt   = expr_evaluate( bel->params_[BEL_RFCAVITY_VOLT], var_table_, bel_table_ );
-      double lag    = expr_evaluate( bel->params_[BEL_RFCAVITY_LAG], var_table_, bel_table_ );
-      double shunt  = expr_evaluate( bel->params_[BEL_RFCAVITY_SHUNT], var_table_, bel_table_ );
+      double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
+      double harmon = expr_evaluate( mp_,  bel->params_[BEL_RFCAVITY_HARMON], var_table_, bel_table_ );
+      double volt   = expr_evaluate( mp_,  bel->params_[BEL_RFCAVITY_VOLT], var_table_, bel_table_ );
+      double lag    = expr_evaluate( mp_,  bel->params_[BEL_RFCAVITY_LAG], var_table_, bel_table_ );
+      double shunt  = expr_evaluate( mp_,  bel->params_[BEL_RFCAVITY_SHUNT], var_table_, bel_table_ );
       // REMOVE: char   name[BEL_NAME_LENGTH];
       
       // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
@@ -777,14 +735,14 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       break;
     }
     case BEL_ELSEPARATOR: {
-      // lbel = make_elseparator( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      // lbel = make_elseparator( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
 
       // According to the MAD manual, field is in MV/m
       // Separator strengths are in MV/m.
       // approximate bend angle is theta(ur) = E_MAD(MV/m)*2.57175(m)/E(Tev)
 
-      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
-      double field  = expr_evaluate( bel->params_[BEL_ELSEPARATOR_E], var_table_, bel_table_ );
+      double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
+      double field  = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_E], var_table_, bel_table_ );
 
       double momentum = PH_CNV_brho_to_p*BRHO_;
       double energy   = this->getEnergy();
@@ -799,7 +757,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       //
       //  aligner->xOffset = 0.0;
       //  aligner->yOffset = 0.0;
-      //  aligner->tilt    = expr_evaluate( bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
+      //  aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
       //  lbel->setAlignment( *aligner );
       // }
 
@@ -815,20 +773,20 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       if ( ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->kind_ != NUMBER_EXPR ) {    
            aligner->xOffset = 0.0;
            aligner->yOffset = 0.0;
-           aligner->tilt    = expr_evaluate( bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
+           aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
            lbel->setAlignment( *aligner );
 
       } else if ( ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->dvalue_ != 0.0 ) {
            aligner->xOffset = 0.0;
            aligner->yOffset = 0.0;
-           aligner->tilt    = expr_evaluate( bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
+           aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
            lbel->setAlignment( *aligner );
       }
 
       break;
     }
     case BEL_HMONITOR: {
-      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
+      double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
       // REMOVE: char   name[BEL_NAME_LENGTH];
       
       if( length > 0.0 ) {
@@ -846,7 +804,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       break;
     }
     case BEL_VMONITOR: {
-      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
+      double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
       // REMOVE: char   name[BEL_NAME_LENGTH];
       
       if( length > 0.0 ) {
@@ -864,7 +822,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       break;
     }
     case BEL_MONITOR: {
-      double length = expr_evaluate( bel->length_, var_table_, bel_table_ );
+      double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
       // REMOVE: char   name[BEL_NAME_LENGTH];
       
       if( length > 0.0 ) {
@@ -882,30 +840,30 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
       break;
     }
     case BEL_INSTRUMENT:
-      lbel = make_instrument( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_instrument( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
       break;
     case BEL_ECOLLIMATOR:
-      lbel = make_ecollimator( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_ecollimator( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
       break;
     case BEL_RCOLLIMATOR:
-      lbel = make_rcollimator( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_rcollimator( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
       break;
     case BEL_YROT:
-      lbel = make_yrot( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_yrot( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
       break;
     case BEL_SROT: {
-      double angle = expr_evaluate( bel->params_[BEL_SROT_ANGLE], var_table_, bel_table_ );
+      double angle = expr_evaluate( mp_,  bel->params_[BEL_SROT_ANGLE], var_table_, bel_table_ );
       lbel = new srot( strip_final_colon( bel->name_ ).c_str(), angle );
       break;
     }
     case BEL_BEAMBEAM:
-      lbel = make_beambeam( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_beambeam( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
       break;
     case BEL_MATRIX:
-      lbel = make_matrix( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_matrix( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
       break;
     case BEL_LUMP:
-      lbel = make_lump( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( bel->length_, var_table_, bel_table_ ) );
+      lbel = make_lump( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
       break;
     default:
       (*pcerr) << "Unknown beam element." << endl;
@@ -924,8 +882,8 @@ bmlfactory::beam_element_instantiate( beam_element* bel )
 }
 
 bmlnElmnt*
-bmlfactory::find_beam_element( char* ptr ) 
-{
+bmlfactory::find_beam_element( char* ptr ) {
+  
   bel_pair_list__t::iterator res = find_if( bel_list_->begin(),
                                             bel_list_->end(),
                                             bind2nd( bel_predicate(), ptr ) );
@@ -937,14 +895,12 @@ bmlfactory::find_beam_element( char* ptr )
 }
 
 void
-bmlfactory::create_bel_list() 
-{
+bmlfactory::create_bel_list() {
   bel_list_ = new bel_pair_list__t();
 }
 
 void
-bmlfactory::delete_bel_list() 
-{
+bmlfactory::delete_bel_list() {
   for( bel_pair_list__t::iterator i = bel_list_->begin();
        i != bel_list_->end(); ++i ) {
     delete i->lbel_ptr_;
@@ -953,8 +909,8 @@ bmlfactory::delete_bel_list()
 }
 
 beamline*
-bmlfactory::beam_line_instantiate( beam_line* bml ) 
-{
+bmlfactory::beam_line_instantiate( beam_line* bml ) {
+  
   beamline* lbml = find_beam_line( bml->name_ );
   if ( lbml == NULL ) {
     lbml = new beamline( bml->name_ );
@@ -980,8 +936,8 @@ bmlfactory::beam_line_instantiate( beam_line* bml )
 }
 
 beamline*
-bmlfactory::find_beam_line( char* ptr ) 
-{
+bmlfactory::find_beam_line( char* ptr ) {
+  
   bml_pair_list__t::iterator res = find_if( bml_list_->begin(),
                                             bml_list_->end(),
                                             bind2nd( bml_predicate(), ptr ) );
@@ -993,8 +949,8 @@ bmlfactory::find_beam_line( char* ptr )
 }
 
 void
-bmlfactory::append_bml_element( char* ptr, beamline* lbml ) 
-{
+bmlfactory::append_bml_element( char* ptr, beamline* lbml ) {
+
      // search in the beam element table
   int i;
   char label[BEL_NAME_LENGTH];
@@ -1027,14 +983,12 @@ bmlfactory::append_bml_element( char* ptr, beamline* lbml )
 }
 
 void
-bmlfactory::create_bml_list() 
-{
+bmlfactory::create_bml_list() {
   bml_list_ = new bml_pair_list__t();
 }
 
 void
-bmlfactory::delete_bml_list() 
-{
+bmlfactory::delete_bml_list() {
   for( bml_pair_list__t::iterator i = bml_list_->begin();
        i != bml_list_->end(); ++i ) {
     delete i->lbml_ptr_;
@@ -1045,8 +999,8 @@ bmlfactory::delete_bml_list()
 
 
 std::list<std::string>& 
-bmlfactory::getBeamlineList() 
-{
+bmlfactory::getBeamlineList() {
+
   beam_line** bml_arr_ptr = bml_arr_;
   
   for (int i = 0; i< bml_arr_size_; i++) {
@@ -1069,7 +1023,7 @@ bmlfactory::getVariableValue(const char* var_name) const
   char* tmp_name = new char[ strlen(var_name)+ 1 ];
   strcpy(tmp_name, var_name);
   variable* var = (variable*) var_table_lookup( tmp_name, var_table_ );
-  return expr_evaluate( var->expr_, var_table_, bel_table_ );
+  return expr_evaluate( mp_,  var->expr_, var_table_, bel_table_ );
 
   delete[] tmp_name;
 
@@ -1090,14 +1044,14 @@ bmlfactory::variableIsDefined(const char* var_name) const
 }
 
 const char* 
-bmlfactory::getUseStatementBeamlineName() 
-{
-  return madparser_get_use_statement_beamline_name( mp ); 
+bmlfactory::getUseStatementBeamlineName() {
+
+  return madparser_get_use_statement_beamline_name( mp_ ); 
+
 }
 
 
-double 
-bmlfactory::getEnergy() const
+double bmlfactory::getEnergy() const
 {
   double ret = 0.0;
   double momentum = (this->BRHO_)*PH_CNV_brho_to_p;
@@ -1126,32 +1080,16 @@ bmlfactory::getEnergy() const
 }
 
 
-const char* 
-bmlfactory::getParticleType() const 
+const char* bmlfactory::getParticleType() const 
 {
-  return madparser_get_particle_type( mp );
+  return madparser_get_particle_type( mp_ );
 }
 
 
 double 
-bmlfactory::getBrho( ) const 
-{
-  return madparser_get_brho( mp ); 
+bmlfactory::getBrho( ) const {
+
+  return madparser_get_brho( mp_ ); 
+
 }
 
-
-// ----------------------------------------------------------------
-// 
-// April 5, 2005
-// TEMPORARY (perhaps) KLUDGE: The bmlfactory must be a singleton.
-// - Leo Michelotti
-// 
-
-bool bmlfactory::_exists = false;
-
-bool bmlfactory::exists()
-{
-  return bmlfactory::_exists;
-}
-
-// ----------------------------------------------------------------

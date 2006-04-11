@@ -64,7 +64,6 @@ extern void bmlfactory_parse_error(int inmemory, const char* input_filename, int
 /* Including mp here is a temporary fix. mp is required for error reporting */
 /* the entire error reporting mechanism should be overhauled. -jfo          */ 
 
-extern madparser* mp; 
 static char error_msg[132];
 
 void
@@ -152,7 +151,8 @@ expr_node_delete( GNode*        expr,
      Takes an expression and outputs it in C++ style
    */
 void
-expr_display( FILE*       out,
+expr_display( madparser* mp,
+              FILE*       out,
               GNode*      expr,
               GHashTable* var_table,
               GHashTable* bel_table ) {
@@ -186,121 +186,121 @@ expr_display( FILE*       out,
       if ( bel == NULL ) {
         fprintf( out, "error ! beam element %s never defined\n", data->svalue_ );
       } else {
-        fprintf( out, "%e /* %s.Length() */", expr_evaluate( bel->length_, var_table, bel_table ), data->svalue_ );
+        fprintf( out, "%e /* %s.Length() */", expr_evaluate(mp,  bel->length_, var_table, bel_table ), data->svalue_ );
       }
       break;
     }
     case BRACKETS_EXPR:
       fprintf( out, "(");
-      expr_display( out, g_node_first_child( expr ), var_table, bel_table );      
+      expr_display(mp,  out, g_node_first_child( expr ), var_table, bel_table );      
       fprintf( out, ")");
       break;
     case UN_PLUS_EXPR :
-      expr_display( out, g_node_first_child( expr ), var_table, bel_table );
+      expr_display(mp,  out, g_node_first_child( expr ), var_table, bel_table );
       break;
     case UN_MINUS_EXPR :
       fprintf( out, "(-(");
-      expr_display( out, g_node_first_child( expr ), var_table, bel_table );
+      expr_display(mp,  out, g_node_first_child( expr ), var_table, bel_table );
       fprintf( out, "))" );
       break;
     case ADD_OP_EXPR :
       node = g_node_first_child( expr );
-      expr_display( out, node, var_table, bel_table );
+      expr_display(mp,  out, node, var_table, bel_table );
       fprintf( out, "+");
-      expr_display( out, node->next, var_table, bel_table );
+      expr_display(mp,  out, node->next, var_table, bel_table );
       break;
     case SUB_OP_EXPR :
       node = g_node_first_child( expr );
-      expr_display( out, node, var_table, bel_table );
+      expr_display(mp,  out, node, var_table, bel_table );
       fprintf( out, "-");
-      expr_display( out, node->next, var_table, bel_table );
+      expr_display(mp,  out, node->next, var_table, bel_table );
       break;
     case MUL_OP_EXPR :
       node = g_node_first_child( expr );
       fprintf( out, "(");
-      expr_display( out, node, var_table, bel_table );
+      expr_display(mp,  out, node, var_table, bel_table );
       fprintf( out, ")*(");
-      expr_display( out, node->next, var_table, bel_table );
+      expr_display(mp,  out, node->next, var_table, bel_table );
       fprintf( out, ")");
       break;
     case DIV_OP_EXPR :
       node = g_node_first_child( expr );
       fprintf( out, "(");
-      expr_display( out, node, var_table, bel_table );
+      expr_display(mp,  out, node, var_table, bel_table );
       fprintf( out, ")/(");
-      expr_display( out, node->next, var_table, bel_table );
+      expr_display(mp,  out, node->next, var_table, bel_table );
       fprintf( out, ")");
       break;
     case POW_OP_EXPR :
       node = g_node_first_child( expr );
       fprintf( out, "pow(");
-      expr_display( out, node, var_table, bel_table );
+      expr_display(mp,  out, node, var_table, bel_table );
       fprintf( out, ",");
-      expr_display( out, node->next, var_table, bel_table );
+      expr_display(mp,  out, node->next, var_table, bel_table );
       fprintf( out, ")");
       break;
     case SQRT_EXPR :
       fprintf( out, "sqrt(");
-      expr_display( out, g_node_first_child( expr ), var_table, bel_table );
+      expr_display(mp,  out, g_node_first_child( expr ), var_table, bel_table );
       fprintf( out, ")");
       break;
     case LOG_EXPR :
       fprintf( out, "log(");
-      expr_display( out, g_node_first_child( expr ), var_table, bel_table );
+      expr_display(mp,  out, g_node_first_child( expr ), var_table, bel_table );
       fprintf( out, ")");
       break;
     case EXP_EXPR :
       fprintf( out, "exp(");
-      expr_display( out, g_node_first_child( expr ), var_table, bel_table );
+      expr_display(mp,  out, g_node_first_child( expr ), var_table, bel_table );
       fprintf( out, ")");
       break;
     case SIN_EXPR :
       fprintf( out, "sin(");
-      expr_display( out, g_node_first_child( expr ), var_table, bel_table );
+      expr_display(mp,  out, g_node_first_child( expr ), var_table, bel_table );
       fprintf( out, ")");
       break;
     case COS_EXPR :
       fprintf( out, "cos(");
-      expr_display( out, g_node_first_child( expr ), var_table, bel_table );
+      expr_display(mp,  out, g_node_first_child( expr ), var_table, bel_table );
       fprintf( out, ")");
       break;
     case TAN_EXPR :
       fprintf( out, "tan(");
-      expr_display( out, g_node_first_child( expr ), var_table, bel_table );
+      expr_display(mp,  out, g_node_first_child( expr ), var_table, bel_table );
       fprintf( out, ")");
       break;
     case ASIN_EXPR :
       fprintf( out, "asin(");
-      expr_display( out, g_node_first_child( expr ), var_table, bel_table );
+      expr_display(mp,  out, g_node_first_child( expr ), var_table, bel_table );
       fprintf( out, ")");
       break;
     case ABS_EXPR :
       fprintf( out, "fabs(");
-      expr_display( out, g_node_first_child( expr ), var_table, bel_table );
+      expr_display(mp,  out, g_node_first_child( expr ), var_table, bel_table );
       fprintf( out, ")"); 
       break;
     case MAX_EXPR :
       node = g_node_first_child( expr );
       fprintf( out, "((");
-      expr_display( out, node, var_table, bel_table );
+      expr_display(mp,  out, node, var_table, bel_table );
       fprintf( out, ") > (");
-      expr_display( out, node->next, var_table, bel_table );
+      expr_display(mp,  out, node->next, var_table, bel_table );
       fprintf( out, ")) ? (");
-      expr_display( out, node, var_table, bel_table );
+      expr_display(mp,  out, node, var_table, bel_table );
       fprintf( out, ") : (");
-      expr_display( out, node->next, var_table, bel_table );
+      expr_display(mp,  out, node->next, var_table, bel_table );
       fprintf( out, ")");
       break;
     case MIN_EXPR :
       node = g_node_first_child( expr );
       fprintf( out, "((");
-      expr_display( out, node, var_table, bel_table );
+      expr_display(mp,  out, node, var_table, bel_table );
       fprintf( out, ") < (");
-      expr_display( out, node->next, var_table, bel_table );
+      expr_display(mp,  out, node->next, var_table, bel_table );
       fprintf( out, ")) ? (");
-      expr_display( out, node, var_table, bel_table );
+      expr_display(mp,  out, node, var_table, bel_table );
       fprintf( out, ") : (");
-      expr_display( out, node->next, var_table, bel_table );
+      expr_display(mp,  out, node->next, var_table, bel_table );
       fprintf( out, ")");
       break;
     default :
@@ -312,7 +312,7 @@ expr_display( FILE*       out,
      Takes an expression, evaluates it, and returns the result
    */
 double
-expr_evaluate( GNode*      expr,
+expr_evaluate(madparser* mp,  GNode*      expr,
                GHashTable* var_table,
                GHashTable* bel_table ) {
   double val1, val2;
@@ -350,7 +350,7 @@ expr_evaluate( GNode*      expr,
           /* bmlfactory_exit(); */
           return 0;
         } else {
-          return expr_evaluate( var->expr_, var_table, bel_table );
+          return expr_evaluate(mp,  var->expr_, var_table, bel_table );
         }
       }
       break;
@@ -363,78 +363,78 @@ expr_evaluate( GNode*      expr,
            /* bmlfactory_exit(); */
            return 0;
         } else {
-          return expr_evaluate( bel->length_, var_table, bel_table );
+          return expr_evaluate(mp,  bel->length_, var_table, bel_table );
         }
       }
       break;
     case BRACKETS_EXPR :
-      return expr_evaluate( g_node_first_child( expr ), var_table, bel_table );
+      return expr_evaluate(mp,  g_node_first_child( expr ), var_table, bel_table );
       break;
     case UN_PLUS_EXPR :
-      return expr_evaluate( g_node_first_child( expr ), var_table, bel_table );
+      return expr_evaluate(mp,  g_node_first_child( expr ), var_table, bel_table );
       break;
     case UN_MINUS_EXPR :
-      return -expr_evaluate( g_node_first_child( expr ), var_table, bel_table );
+      return -expr_evaluate(mp,  g_node_first_child( expr ), var_table, bel_table );
       break;
     case ADD_OP_EXPR :
       node = g_node_first_child( expr );
-      return ( expr_evaluate( node, var_table, bel_table ) +
-               expr_evaluate( node->next, var_table, bel_table ) );
+      return ( expr_evaluate(mp,  node, var_table, bel_table ) +
+               expr_evaluate(mp,  node->next, var_table, bel_table ) );
       break;
     case SUB_OP_EXPR :
       node = g_node_first_child( expr );
-      return ( expr_evaluate( node, var_table, bel_table ) -
-               expr_evaluate( node->next, var_table, bel_table ) );
+      return ( expr_evaluate(mp,  node, var_table, bel_table ) -
+               expr_evaluate(mp,  node->next, var_table, bel_table ) );
       break;
     case MUL_OP_EXPR :
       node = g_node_first_child( expr );
-      return ( expr_evaluate( node, var_table, bel_table ) *
-               expr_evaluate( node->next, var_table, bel_table ) );
+      return ( expr_evaluate(mp,  node, var_table, bel_table ) *
+               expr_evaluate(mp,  node->next, var_table, bel_table ) );
       break;
     case DIV_OP_EXPR :
       node = g_node_first_child( expr );
-      return ( expr_evaluate( node, var_table, bel_table ) /
-               expr_evaluate( node->next, var_table, bel_table ) );
+      return ( expr_evaluate(mp,  node, var_table, bel_table ) /
+               expr_evaluate(mp,  node->next, var_table, bel_table ) );
       break;
     case POW_OP_EXPR :
       node = g_node_first_child( expr );
-      return pow( expr_evaluate( node, var_table, bel_table ),
-                  expr_evaluate( node->next, var_table, bel_table ) );
+      return pow( expr_evaluate(mp,  node, var_table, bel_table ),
+                  expr_evaluate(mp,  node->next, var_table, bel_table ) );
       break;
     case SQRT_EXPR :
-      return sqrt( expr_evaluate( g_node_first_child( expr ), var_table, bel_table ) );
+      return sqrt( expr_evaluate(mp,  g_node_first_child( expr ), var_table, bel_table ) );
       break;
     case LOG_EXPR :
-      return log( expr_evaluate( g_node_first_child( expr ), var_table, bel_table ) );
+      return log( expr_evaluate(mp,  g_node_first_child( expr ), var_table, bel_table ) );
       break;
     case EXP_EXPR :
-      return exp( expr_evaluate( g_node_first_child( expr ), var_table, bel_table ) );
+      return exp( expr_evaluate(mp,  g_node_first_child( expr ), var_table, bel_table ) );
       break;
     case SIN_EXPR :
-      return sin( expr_evaluate( g_node_first_child( expr ), var_table, bel_table ) );
+      return sin( expr_evaluate(mp,  g_node_first_child( expr ), var_table, bel_table ) );
       break;
     case COS_EXPR :
-      return cos( expr_evaluate( g_node_first_child( expr ), var_table, bel_table ) );
+      return cos( expr_evaluate(mp,  g_node_first_child( expr ), var_table, bel_table ) );
       break;
     case TAN_EXPR :
-      return tan( expr_evaluate( g_node_first_child( expr ), var_table, bel_table ) );
+      return tan( expr_evaluate(mp,  g_node_first_child( expr ), var_table, bel_table ) );
       break;
     case ASIN_EXPR :
-      return atan( expr_evaluate( g_node_first_child( expr ), var_table, bel_table ) );
+      return atan( expr_evaluate(mp,  g_node_first_child( expr ), var_table, bel_table ) );
       break;
     case ABS_EXPR :
-      return fabs( expr_evaluate( g_node_first_child( expr ), var_table, bel_table ) );
+      return fabs( expr_evaluate(mp,  g_node_first_child( expr ), var_table, bel_table ) );
       break;
     case MAX_EXPR :
       node = g_node_first_child( expr );
-      val1 = expr_evaluate( node, var_table, bel_table );
-      val2 = expr_evaluate( node->next, var_table, bel_table );
+      val1 = expr_evaluate(mp,  node, var_table, bel_table );
+      val2 = expr_evaluate(mp,  node->next, var_table, bel_table );
       return ( val1 > val2 ) ? val1 : val2;
       break;
     case MIN_EXPR :
       node = g_node_first_child( expr );
-      val1 = expr_evaluate( node, var_table, bel_table );
-      val2 = expr_evaluate( node->next, var_table, bel_table );
+      val1 = expr_evaluate(mp,  node, var_table, bel_table );
+      val2 = expr_evaluate(mp,  node->next, var_table, bel_table );
       return ( val1 < val2 ) ? val1 : val2;
       break;
     default :
@@ -449,7 +449,8 @@ expr_evaluate( GNode*      expr,
      a string expression or NULL if it's not
    */
 char*
-expr_is_string( GNode*      expr,
+expr_is_string( madparser*  mp, 
+                GNode*      expr,
                 GHashTable* const_table,
                 GHashTable* var_table ) {
   expr_struct* data;
@@ -466,7 +467,7 @@ expr_is_string( GNode*      expr,
   } else if ( data->kind_ == STR_IDENT_EXPR ) {
     return ((constant*)const_table_lookup( data->svalue_, const_table ))->svalue_;
   } else if ( data->kind_ == VAR_IDENT_EXPR ) {
-    return expr_is_string( assigned_var->expr_, const_table, var_table );
+    return expr_is_string( mp, assigned_var->expr_, const_table, var_table );
   } else {
     return NULL;
   }

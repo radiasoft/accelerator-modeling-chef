@@ -9,40 +9,41 @@
 ******                                    
 ******  File:      expression.h
 ******                                                                
-******  Copyright (c) 1999  Universities Research Association, Inc.   
-******                All Rights Reserved                             
-******                                                                
-******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
-******                                                                
-******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******                    (630) 840 2231                              
-******             Email: michelotti@fnal.gov                         
-******                    ostiguy@fnal.gov                            
-******                                                                
+******  Copyright (c) Universities Research Association, Inc.
+******                All Rights Reserved
+******
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******   
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******  URA/FNAL reserves all rights.
+******                                          
+******                                                                
+******  Authors:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******
+******  Contacts:            Leo Michelotti michelotti@fnal.gov
+******             Jean-Francois Ostiguy    ostiguy@fnal.gov
+******                                                              
+******
+******  Revision History:   April 2006, ostiguy@fnal.gov
+******                      Made both lexer and parser reentrant. 
+******                      Eliminated global variable mp.            
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
-
-#ifndef expression_h
-#define expression_h
+#ifndef EXPRESSION_H
+#define EXPRESSION_H
 
 #include <stdio.h>
 #include <glib.h>
-
-#if !defined(fb_allocator_h)
-#include "fb_allocator.h"
-#endif /* fb_allocator_h */
+#include <fb_allocator.h>
+#include <madparser_types.h>
 
 #define EXPR_OK            0
 
@@ -90,12 +91,12 @@ extern "C" {
 GNode* expr_node_init( double dvalue, const char* svalue, fb_allocator* expr_alloc );
 int    expr_node_delete( GNode* expr, fb_allocator* expr_alloc );
 
-void   expr_display( FILE* out, GNode* expr, GHashTable* var_table, GHashTable* bel_table );
-double expr_evaluate( GNode* expr, GHashTable* var_table, GHashTable* bel_table );
-char*  expr_is_string( GNode* expr, GHashTable* const_table, GHashTable* var_table );
+void   expr_display  ( madparser* mp, FILE* out,     GNode* expr, GHashTable* var_table, GHashTable* bel_table );
+double expr_evaluate ( madparser* mp, GNode* expr, GHashTable* var_table, GHashTable* bel_table );
+char*  expr_is_string( madparser* mp, GNode* expr,   GHashTable* const_table, GHashTable* var_table );
 
 #ifdef __cplusplus
 };
 #endif
 
-#endif /* expression_h */
+#endif /* EXPRESSION_H  */

@@ -116,9 +116,10 @@ var_table_el_to_array_el( gpointer key,
      and prints information about "value"
    */
 static void
-var_display_func( gpointer key,
-                  gpointer value,
-                  gpointer user_data ) {
+var_display_func( madparser* mp, 
+                  gpointer   key,
+                  gpointer   value,
+                  gpointer   user_data ) {
 
   quatro* p   = (quatro*)user_data;
   FILE*  out  = (FILE*)(p->first_);
@@ -126,21 +127,21 @@ var_display_func( gpointer key,
   
   fprintf( out, "Variable: %s; defined on line %d in file %s\n", ((variable*)value)->name_, ((variable*)value)->local_linenum_, ((variable*)value)->filename_ );
   fprintf( out, "Expression: ");
-  expr_display( out, expr, (GHashTable*)(p->third_), (GHashTable*)(p->fourth_) );
+  expr_display( mp, out, expr, (GHashTable*)(p->third_), (GHashTable*)(p->fourth_) );
   fprintf( out, "\nValue: ");
   if ( ((expr_struct*)(expr->data))->kind_ == STRING_EXPR ) {
     fprintf( out, "\"%s\"", ((expr_struct*)(expr->data))->svalue_);
   } else if ( ((expr_struct*)(expr->data))->kind_ == STR_IDENT_EXPR ) {
     fprintf( out, "\"%s\"", ( (constant*)const_table_lookup( ((expr_struct*)(expr->data))->svalue_, (GHashTable*)(p->second_) ))->svalue_ );
   } else if ( ((expr_struct*)(expr->data))->kind_ == VAR_IDENT_EXPR ) {
-    char* str = expr_is_string( expr, (GHashTable*)(p->second_), (GHashTable*)(p->third_) );
+    char* str = expr_is_string( mp, expr, (GHashTable*)(p->second_), (GHashTable*)(p->third_) );
     if ( str != NULL ) {
       fprintf( out, "\"%s\"", str);
     } else {
-      fprintf( out, "%f", expr_evaluate( expr, (GHashTable*)(p->third_), (GHashTable*)(p->fourth_) ) );
+      fprintf( out, "%f", expr_evaluate( mp, expr, (GHashTable*)(p->third_), (GHashTable*)(p->fourth_) ) );
     }
   } else {
-    fprintf( out, "%f", expr_evaluate( expr, (GHashTable*)(p->third_), (GHashTable*)(p->fourth_) ) );
+    fprintf( out, "%f", expr_evaluate( mp, expr, (GHashTable*)(p->third_), (GHashTable*)(p->fourth_) ) );
   }
 
   fprintf( out, "\n" );

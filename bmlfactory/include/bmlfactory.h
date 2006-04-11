@@ -65,24 +65,21 @@
 
 typedef char* char_ptr;
 
-typedef struct 
-{
+typedef struct {
     beam_element* bel_ptr_;  /* beam element from MAD parser */
     bmlnElmnt*    lbel_ptr_; /* beam element from Leo */
 } bel_pair;
 
 typedef std::list<bel_pair> bel_pair_list__t;
 
-typedef struct 
-{
+typedef struct {
     beam_line* bml_ptr_;  /* beam line from MAD parser */
     beamline*  lbml_ptr_; /* beam line from Leo */
 } bml_pair;
 
 typedef std::list<bml_pair> bml_pair_list__t;
 
-struct bel_predicate : public std::binary_function<bel_pair,char_ptr,bool> 
-{
+struct bel_predicate : public std::binary_function<bel_pair,char_ptr,bool> {
     bool operator()( const bel_pair& x, const char_ptr& ptr ) const {
       char label[BEL_NAME_LENGTH];
       beam_element_get_label( x.bel_ptr_, label );
@@ -93,8 +90,7 @@ struct bel_predicate : public std::binary_function<bel_pair,char_ptr,bool>
     }
 };
 
-struct bml_predicate : public std::binary_function<bml_pair,char_ptr,bool> 
-{
+struct bml_predicate : public std::binary_function<bml_pair,char_ptr,bool> {
     bool operator()( const bml_pair& x, const char_ptr& ptr ) const {
       if ( strcasecmp( (x.bml_ptr_)->name_, ptr ) == 0 )
         return true;
@@ -104,14 +100,9 @@ struct bml_predicate : public std::binary_function<bml_pair,char_ptr,bool>
 };
 
 
-class bmlfactory 
-{
+class bmlfactory {
+
   private:
-    static bool             _exists;
-    // April 5, 2005
-    // TEMPORARY (perhaps) KLUDGE:
-    // Making the bmlfactory a singleton.
-    // - Leo Michelotti
 
     char*                   fname_;
     double                  BRHO_;
@@ -169,8 +160,6 @@ class bmlfactory
 
     double getEnergy() const;
     double getBrho() const;
-
-    static bool exists();
 };
 
 #endif // BMLFACTORY_H

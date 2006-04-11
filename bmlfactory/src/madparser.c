@@ -25,18 +25,17 @@
 ******  Authors:   Dmitri Mokhov, Oleg Krivosheev                  
 ******             and Jean-Francois Ostiguy
 ******                                                   
-******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
+******  Contacta:  Leo Michelotti or Jean-Francois Ostiguy            
 ******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******                    (630) 840 2231                              
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
 ******                                                                
+******  Revision History : 
+******  
+******  - April 2006, ostiguy@fnal.gov
+******    Made both lexer and parser reentrant. 
+******    Eliminated global variable mp.
+******
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -71,24 +70,26 @@
 #include <bml_table.h>
 #include <comment_arr.h>
 #include <madparser.h>
+#include <madparser_types.h>
 #include <PhysicsConstants.h>
+
+typedef void * yyscan_t;
 
 /*
    ---- prototypes
 */
 
-extern void bmlfactory_exit(const char* filename, int lineno, const char* errmessage);
-extern void* get_current_buffer();
-extern void  reset_input_buffer();
-extern int yyparse( void );
-extern void read_from_string( const char* );
+void bmlfactory_exit(const char* filename, int lineno, const char* errmessage);
 
-/*
-   --- external vars
-*/
+FILE* yyget_in ( yyscan_t scanner);
+FILE* yyget_out( yyscan_t scanner);
 
-extern FILE* yyin;
-extern FILE* yyout;
+void  yyset_in (FILE* in_fp , yyscan_t scanner);
+void  yyset_out(FILE* out_fp, yyscan_t scanner);
+void  yyrestart (FILE *input_file, yyscan_t yyscanner );
+int   yyparse( madparser* mp );
+void  read_from_string( const char* );
+void  yydebug_on(int);
 
 /*
    --- local constants
@@ -134,6 +135,7 @@ typedef struct {
     char        bunched_;        /* logical, true = the beam is bunched */ 
     char        radiate_;        /* logical, true = the beam is allowed to radiate photons */
 } beam_params;
+
 
 struct madparser_ {
   
@@ -185,6 +187,8 @@ struct madparser_ {
     char*           use_statement_beamline_name_;
     beam_params     beam_params_;
 
+    yyscan_t        scanner_;
+  
 };
 
 
@@ -338,15 +342,32 @@ madparser_init( const char* filename_in,
 
     }
   }
-  return mp;
+
+   yylex_init( &(mp->scanner_) ); /* user defined scanner state structure allocation               */  
+                                  /* this allows the scanner struct ptr to be passed to the parser */
+ 
+   yyset_extra( mp,  mp->scanner_ );  /* the scanner has a handle to mp  */ 
+ 
+   /* yydebug_on(1); */  /****************  turn on tracing ***********************/
+  
+   return mp;
+
 }
+
+
+void* 
+madparser_get_scanner( void* mp) { return ((madparser *) mp)->scanner_ ; } 
+
+
 
 int
 madparser_parse( madparser* mp, const char* stringbuffer) {
 
-  int res = 0;
-  char* tmpfilename;
-  int  i  = 0;
+  FILE* fp;
+
+  char*    tmpfilename;
+  int      res = 0;
+  int      i   = 0;
 
   assert( mp != NULL );
   assert( mp->filename_in_ != NULL );
@@ -387,15 +408,16 @@ madparser_parse( madparser* mp, const char* stringbuffer) {
   if (mp->inmemory_ != 0)
   {
     read_from_string( stringbuffer );
-    yyout = stdout;
-    mp->current_yybuff_->yyfile_ = yyin; /* important ! */
-    yyparse();
+    yyset_out( stdout, mp->scanner_); 
+    mp->current_yybuff_->yyfile_ = yyget_in( mp->scanner_ ); /* important ! */
+    yyparse( mp );
   } 
   else 
   {
-    yyin = fopen( mp->filename_in_, "r" );
+    fp = fopen( mp->filename_in_, "r" );
+    yyset_in( fp , mp->scanner_) ;
 
-    if ( yyin == NULL ) 
+    if (  yyget_in( mp->scanner_) == NULL ) 
     {
       /* fprintf(stderr, "Can't open input file %s\n", mp->filename_in_ ); */
       send_to_stderr_stream(stderr, "Can't open input file %s\n", mp->filename_in_ );
@@ -404,22 +426,24 @@ madparser_parse( madparser* mp, const char* stringbuffer) {
     else 
     {
 
-      yyout = stdout;
+      yyset_out( stdout, mp->scanner_); 
 
-      mp->current_yybuff_->yyfile_ = yyin; /* important ! */
+      mp->current_yybuff_->yyfile_ =  yyget_in( mp->scanner_); /* important ! */
 
       if (mp->filename_out_ != NULL) {
-        yyout = fopen( mp->filename_out_, "w" );
-        assert( yyout != NULL );      
+        yyset_out( fopen( mp->filename_out_, "w" ), mp->scanner_ );
+        assert( yyget_out( mp->scanner_) != NULL );      
       }
 
-      yyrestart(yyin);
-      while ( !feof( yyin ) ) {
-        yyparse();
+      yyrestart( yyget_in( mp->scanner_),  mp->scanner_ );
+      
+      while ( !feof( yyget_in( mp->scanner_) ) ) {
+        yyparse( mp );
       }    
     }
   }
   free(tmpfilename); 
+
   return res;
 }
 
@@ -625,6 +649,8 @@ free_yybuff( gpointer data,
 int
 madparser_delete( madparser* mp ) {
 
+  reset_input_buffer( mp );
+
   comment_arr_delete( mp->comment_arr_ );
   bml_table_delete( mp->bml_table_, mp->bml_alloc_ );
   bel_table_delete( mp->bel_table_, mp->bel_alloc_ , mp->expr_alloc_);
@@ -661,17 +687,17 @@ madparser_delete( madparser* mp ) {
      free(mp->use_statement_beamline_name_);
   }
 
-  reset_input_buffer();
  
   if ( mp->inmemory_ == 0) 
   { 
-    if ( yyin != stdin)  
-        fclose( yyin ); 
-    if (( yyout != stdout ) && (yyout != stderr) ) 
-       fclose( yyout );
+    if ( yyget_in( mp->scanner_) != stdin)  
+        fclose( yyget_in( mp->scanner_)  ); 
+    if ((yyget_out( mp->scanner_) != stdout ) && ( yyget_out( mp->scanner_) != stderr) ) 
+        fclose(  yyget_out( mp->scanner_) );
   }
    
-  
+   
+  yylex_destroy( mp->scanner_ );
 
   free( mp );
 
@@ -682,7 +708,7 @@ madparser_delete( madparser* mp ) {
 FILE*
 madparser_file_out( madparser* mp ) {
   assert( mp != NULL );
-  return yyout;
+  return yyget_out( mp->scanner_);
 }
 
 int
@@ -776,11 +802,8 @@ madparser_call_include( madparser* mp, char* newfile, void* yybuffer) {
   /*  Returns the full (canonical) path for the included file specified by newfile.*/
  
 
-  FILE* yyin;
   char* fullpathnewfile;
   char* errmsg;
-
-  yyin = NULL;
 
   madparser_push_input_buffer(mp, yybuffer); 
   fullpathnewfile = (char*) malloc( strlen(newfile) + strlen(mp->working_dir_)+2 );
@@ -813,10 +836,9 @@ madparser_call_include( madparser* mp, char* newfile, void* yybuffer) {
   
   madparser_new_yybuff(mp, fullpathnewfile); /**** need to eliminate this ***/
 
-  
-  yyin = fopen( mp->current_filename_, "r");
+  yyset_in( fopen( mp->current_filename_, "r"), mp->scanner_);
 
-  if ( yyin == NULL ) {
+  if ( yyget_in(mp->scanner_)  == NULL ) {
     errmsg = (char*) malloc( strlen(fullpathnewfile)+ strlen("File ")+strlen( " not found.") + 1 );
     strcpy(errmsg, "File ");   
     strcat(errmsg,  fullpathnewfile);
@@ -825,7 +847,7 @@ madparser_call_include( madparser* mp, char* newfile, void* yybuffer) {
   }
 
   free(fullpathnewfile);
-  return yyin;
+  return yyget_in( mp->scanner_);
 
 }
 

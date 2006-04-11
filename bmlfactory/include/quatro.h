@@ -9,33 +9,31 @@
 ******                                    
 ******  File:      quatro.h
 ******                                                                
-******  Copyright (c) 1999  Universities Research Association, Inc.   
-******                All Rights Reserved                             
-******                                                                
-******  Author:    Dmitri Mokhov and Oleg Krivosheev                  
-******                                                                
-******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******                    (630) 840 2231                              
-******             Email: michelotti@fnal.gov                         
-******                    ostiguy@fnal.gov                            
-******                                                                
+******  Copyright (c) Universities Research Association, Inc.
+******                All Rights Reserved
+******
 ******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  of the License supplied with this software.
+******   
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******  URA/FNAL reserves all rights.
+******                                          
 ******                                                                
+******  Authors:    Dmitri Mokhov and Oleg Krivosheev                  
+******                                                                
+******
+******  Contacts:            Leo Michelotti michelotti@fnal.gov
+******             Jean-Francois Ostiguy    ostiguy@fnal.gov
+******                                                              
 **************************************************************************
 *************************************************************************/
-
-
-#ifndef quatro_h
-#define quatro_h
+#ifndef BMLFACTORY_QUATRO_H
+#define BMLFACTORY_QUATRO_H
 
 typedef struct {
     void* first_;
@@ -44,4 +42,4 @@ typedef struct {
     void* fourth_;
 } quatro;
 
-#endif /* quatro_h */
+#endif /* BMLFACTORY_QUATRO_H */

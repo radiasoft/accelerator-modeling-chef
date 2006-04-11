@@ -44,10 +44,8 @@
 #define beam_element_h
 
 #include <glib.h>
-
-#if !defined(fb_allocator_h)
-#include "fb_allocator.h"
-#endif /* fb_allocator.h */
+#include <fb_allocator.h>
+#include <madparser_types.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -216,7 +214,7 @@ int            beam_element_delete( beam_element* bel, fb_allocator* bel_alloc, 
 beam_element*  beam_element_copy( beam_element* bel, fb_allocator* bel_alloc );
 
 void           beam_element_get_label( beam_element* bel, char* label );
-void           beam_element_display( FILE* out, beam_element* bel, GHashTable* var_table, GHashTable* bel_table );
+void           beam_element_display( madparser* mp, FILE* out, beam_element* bel, GHashTable* var_table, GHashTable* bel_table );
 
 #ifdef __cplusplus
 };

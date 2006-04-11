@@ -245,7 +245,8 @@ beam_element_get_label( beam_element* bel, char* label ) {
      called "<label>_center" located in between them
    */
 static void
-beam_element_plus_drift( FILE*       out,
+beam_element_plus_drift( madparser*  mp,
+                         FILE*       out,
                          char*       label,
                          const char* name,
                          GNode*      length,
@@ -253,9 +254,9 @@ beam_element_plus_drift( FILE*       out,
                          GHashTable* bel_table ) {
   
   fprintf( out, "drift %s_left ( (char*)\"%s:left\", (", label, name );
-  expr_display( out, length, var_table, bel_table );
+  expr_display(mp, out, length, var_table, bel_table );
   fprintf( out, ")/2.0 );\ndrift %s_right ( (char*)\"%s:right\", (", label, name );
-  expr_display( out, length, var_table, bel_table );
+  expr_display(mp,  out, length, var_table, bel_table );
   fprintf( out, ")/2.0 );\nbeamline %s ( \"%s\" );\n         %s.append( %s_left );\n", label, name, label, label);
   fprintf( out, "         %s.append( %s_center );\n         %s.append( %s_right );\n", label, label, label, label);
 }
@@ -264,7 +265,8 @@ beam_element_plus_drift( FILE*       out,
      Takes a bel and outputs corresponding C++ code for the bel's definition
    */
 void
-beam_element_display( FILE*         out,
+beam_element_display( madparser*    mp,
+                      FILE*         out,
                       beam_element* bel,
                       GHashTable*   var_table,
                       GHashTable*   bel_table ) {
@@ -279,7 +281,7 @@ beam_element_display( FILE*         out,
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "drift %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, " );\n");
       break;
     }
@@ -299,44 +301,44 @@ beam_element_display( FILE*         out,
       }
 
       fprintf( out, " %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, ", BRHO*(");
-      expr_display( out, bel->params_[BEL_SBEND_ANGLE], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_SBEND_ANGLE], var_table, bel_table );
       fprintf( out, ")/(");
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, "), ");
-      expr_display( out, bel->params_[BEL_SBEND_ANGLE], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_SBEND_ANGLE], var_table, bel_table );
       fprintf( out, " );\n");
 
       if ( simple == FALSE ) {
         fprintf( out, "         %s.setQuadrupole( ", left);
-        expr_display( out, bel->params_[BEL_SBEND_K1], var_table, bel_table );
+        expr_display(mp,  out, bel->params_[BEL_SBEND_K1], var_table, bel_table );
         fprintf( out, " );\n         %s.setSextupole ( ", left);
-        expr_display( out, bel->params_[BEL_SBEND_K2], var_table, bel_table );
+        expr_display(mp,  out, bel->params_[BEL_SBEND_K2], var_table, bel_table );
         fprintf( out, " );\n         %s.setOctupole  ( ", left);
-        expr_display( out, bel->params_[BEL_SBEND_K3], var_table, bel_table );
+        expr_display(mp,  out, bel->params_[BEL_SBEND_K3], var_table, bel_table );
         fprintf( out, " );\n");
       }
 
       fprintf( out, "// Ignored for %s: E1=", left);
-      expr_display( out, bel->params_[BEL_SBEND_E1], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_SBEND_E1], var_table, bel_table );
       fprintf( out, "; E2=");
-      expr_display( out, bel->params_[BEL_SBEND_E2], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_SBEND_E2], var_table, bel_table );
       fprintf( out, "; H1=");
-      expr_display( out, bel->params_[BEL_SBEND_H1], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_SBEND_H1], var_table, bel_table );
       fprintf( out, "; H2=");
-      expr_display( out, bel->params_[BEL_SBEND_H2], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_SBEND_H2], var_table, bel_table );
       fprintf( out, "; HGAP=");
-      expr_display( out, bel->params_[BEL_SBEND_HGAP], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_SBEND_HGAP], var_table, bel_table );
       fprintf( out, "; FINT=");
-      expr_display( out, bel->params_[BEL_SBEND_FINT], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_SBEND_FINT], var_table, bel_table );
       fprintf( out, "\n");
       
       if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
         fprintf( out, "aligner->xOffset = 0.0;\n");
         fprintf( out, "aligner->yOffset = 0.0;\n");
         fprintf( out, "aligner->tilt    = ");
-        expr_display( out, bel->params_[BEL_SBEND_TILT], var_table, bel_table );
+        expr_display(mp,  out, bel->params_[BEL_SBEND_TILT], var_table, bel_table );
         fprintf( out, ";\n%s.setAlignment( *aligner );\n", left);
       }
       break;
@@ -357,52 +359,52 @@ beam_element_display( FILE*         out,
       }
 
       fprintf( out, " %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, ", BRHO*(2.0*sin(0.5*(");
-      expr_display( out, bel->params_[BEL_RBEND_ANGLE], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RBEND_ANGLE], var_table, bel_table );
       fprintf( out, ")))/(");
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, "), 0.5*(");
-      expr_display( out, bel->params_[BEL_RBEND_ANGLE], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RBEND_ANGLE], var_table, bel_table );
       fprintf( out, ") );\n");
 
       if ( simple == FALSE ) {
         fprintf( out, "         %s.setQuadrupole( BRHO*(", left);
-        expr_display( out, bel->length_, var_table, bel_table );
+        expr_display(mp,  out, bel->length_, var_table, bel_table );
         fprintf( out, ")*(");
-        expr_display( out, bel->params_[BEL_RBEND_K1], var_table, bel_table );
+        expr_display(mp,  out, bel->params_[BEL_RBEND_K1], var_table, bel_table );
         fprintf( out, ") );\n" );
         fprintf( out, "         %s.setSextupole ( (1.0/2.0)*BRHO*(", left);
-        expr_display( out, bel->length_, var_table, bel_table );
+        expr_display(mp,  out, bel->length_, var_table, bel_table );
         fprintf( out, ")*(");
-        expr_display( out, bel->params_[BEL_RBEND_K2], var_table, bel_table );
+        expr_display(mp,  out, bel->params_[BEL_RBEND_K2], var_table, bel_table );
         fprintf( out, ") );\n");
         fprintf( out, "         %s.setOctupole  ( (1.0/6.0)*BRHO*(", left);
-        expr_display( out, bel->length_, var_table, bel_table );
+        expr_display(mp,  out, bel->length_, var_table, bel_table );
         fprintf( out, ")*(");        
-        expr_display( out, bel->params_[BEL_RBEND_K3], var_table, bel_table );
+        expr_display(mp,  out, bel->params_[BEL_RBEND_K3], var_table, bel_table );
         fprintf( out, ") );\n");
       }
       
       fprintf( out, "// Ignored for %s: E1=", left);
-      expr_display( out, bel->params_[BEL_RBEND_E1], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RBEND_E1], var_table, bel_table );
       fprintf( out, "; E2=");
-      expr_display( out, bel->params_[BEL_RBEND_E2], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RBEND_E2], var_table, bel_table );
       fprintf( out, "; H1=");
-      expr_display( out, bel->params_[BEL_RBEND_H1], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RBEND_H1], var_table, bel_table );
       fprintf( out, "; H2=");
-      expr_display( out, bel->params_[BEL_RBEND_H2], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RBEND_H2], var_table, bel_table );
       fprintf( out, "; HGAP=");
-      expr_display( out, bel->params_[BEL_RBEND_HGAP], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RBEND_HGAP], var_table, bel_table );
       fprintf( out, "; FINT=");
-      expr_display( out, bel->params_[BEL_RBEND_FINT], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RBEND_FINT], var_table, bel_table );
       fprintf( out, "\n");
 
       if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
         fprintf( out, "aligner->xOffset = 0.0;\n");
         fprintf( out, "aligner->yOffset = 0.0;\n");
         fprintf( out, "aligner->tilt    = ");
-        expr_display( out, bel->params_[BEL_RBEND_TILT], var_table, bel_table );
+        expr_display(mp,  out, bel->params_[BEL_RBEND_TILT], var_table, bel_table );
         fprintf( out, ";\n%s.setAlignment( *aligner );\n", left);
       }
       break;
@@ -411,16 +413,16 @@ beam_element_display( FILE*         out,
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "quadrupole %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, ", BRHO*(");
-      expr_display( out, bel->params_[BEL_QUADRUPOLE_K1], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_QUADRUPOLE_K1], var_table, bel_table );
       fprintf( out, ") );\n");
 
       if ( ((expr_struct*)(bel->params_[BEL_QUADRUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_QUADRUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
         fprintf( out, "aligner->xOffset = 0.0;\n");
         fprintf( out, "aligner->yOffset = 0.0;\n");
         fprintf( out, "aligner->tilt    = ");
-        expr_display( out, bel->params_[BEL_QUADRUPOLE_TILT], var_table, bel_table );
+        expr_display(mp,  out, bel->params_[BEL_QUADRUPOLE_TILT], var_table, bel_table );
         fprintf( out, ";\n%s.setAlignment( *aligner );\n", left);
       }
       break;
@@ -429,16 +431,16 @@ beam_element_display( FILE*         out,
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "sextupole %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, ", BRHO*(");
-      expr_display( out, bel->params_[BEL_SEXTUPOLE_K2], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_SEXTUPOLE_K2], var_table, bel_table );
       fprintf( out, ")/2.0 );\n");
 
       if ( ((expr_struct*)(bel->params_[BEL_SEXTUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_SEXTUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
         fprintf( out, "aligner->xOffset = 0.0;\n");
         fprintf( out, "aligner->yOffset = 0.0;\n");
         fprintf( out, "aligner->tilt    = ");
-        expr_display( out, bel->params_[BEL_SEXTUPOLE_TILT], var_table, bel_table );
+        expr_display(mp,  out, bel->params_[BEL_SEXTUPOLE_TILT], var_table, bel_table );
         fprintf( out, ";\n%s.setAlignment( *aligner );\n", left);
       }
       break;
@@ -447,72 +449,72 @@ beam_element_display( FILE*         out,
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "octupole %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, ", BRHO*(");
-      expr_display( out, bel->params_[BEL_OCTUPOLE_K3], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_OCTUPOLE_K3], var_table, bel_table );
       fprintf( out, ")/6.0 );\n");
 
       if ( ((expr_struct*)(bel->params_[BEL_OCTUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_OCTUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
         fprintf( out, "aligner->xOffset = 0.0;\n");
         fprintf( out, "aligner->yOffset = 0.0;\n");
         fprintf( out, "aligner->tilt    = ");
-        expr_display( out, bel->params_[BEL_OCTUPOLE_TILT], var_table, bel_table );
+        expr_display(mp,  out, bel->params_[BEL_OCTUPOLE_TILT], var_table, bel_table );
         fprintf( out, ";\n%s.setAlignment( *aligner );\n", left);
       }
       break;
     }
     case BEL_MULTIPOLE:
       fprintf( out, "// MULTIPOLE \"%s\": LRAD=", beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, "; K0L=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_K0L], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_K0L], var_table, bel_table );
       fprintf( out, "; T0=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_T0], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_T0], var_table, bel_table );
       fprintf( out, "; K1L=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_K1L], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_K1L], var_table, bel_table );
       fprintf( out, "; T1=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_T1], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_T1], var_table, bel_table );
       fprintf( out, ";\n// K2L=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_K2L], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_K2L], var_table, bel_table );
       fprintf( out, "; T2=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_T2], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_T2], var_table, bel_table );
       fprintf( out, "; K3L=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_K3L], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_K3L], var_table, bel_table );
       fprintf( out, "; T3=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_T3], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_T3], var_table, bel_table );
       fprintf( out, "; K4L=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_K4L], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_K4L], var_table, bel_table );
       fprintf( out, "; T4=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_T4], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_T4], var_table, bel_table );
       fprintf( out, "; K5L=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_K5L], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_K5L], var_table, bel_table );
       fprintf( out, "; T5=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_T5], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_T5], var_table, bel_table );
       fprintf( out, ";\n// K6L=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_K6L], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_K6L], var_table, bel_table );
       fprintf( out, "; T6=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_T6], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_T6], var_table, bel_table );
       fprintf( out, "; K7L=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_K7L], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_K7L], var_table, bel_table );
       fprintf( out, "; T7=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_T7], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_T7], var_table, bel_table );
       fprintf( out, "; K8L=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_K8L], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_K8L], var_table, bel_table );
       fprintf( out, "; T8=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_T8], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_T8], var_table, bel_table );
       fprintf( out, "; K9L=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_K9L], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_K9L], var_table, bel_table );
       fprintf( out, "; T9=");
-      expr_display( out, bel->params_[BEL_MULTIPOLE_T9], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_MULTIPOLE_T9], var_table, bel_table );
       fprintf( out, "\n");
       break;
     case BEL_SOLENOID: {
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "solenoid %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, ", BRHO*(");
-      expr_display( out, bel->params_[BEL_SOLENOID_KS], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_SOLENOID_KS], var_table, bel_table );
       fprintf( out, ") );\n");
       break;
     }
@@ -520,16 +522,16 @@ beam_element_display( FILE*         out,
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "hkick %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, ", ");
-      expr_display( out, bel->params_[BEL_HKICKER_KICK], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_HKICKER_KICK], var_table, bel_table );
       fprintf( out, " );\n");
 
       if ( ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
         fprintf( out, "aligner->xOffset = 0.0;\n" );
         fprintf( out, "aligner->yOffset = 0.0;\n" );
         fprintf( out, "aligner->tilt    = " );
-        expr_display( out, bel->params_[BEL_HKICKER_TILT], var_table, bel_table );
+        expr_display(mp,  out, bel->params_[BEL_HKICKER_TILT], var_table, bel_table );
         fprintf( out, ";\n%s.setAlignment( *aligner );\n", left);
       }
       break;
@@ -538,16 +540,16 @@ beam_element_display( FILE*         out,
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "vkick %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, ", ");
-      expr_display( out, bel->params_[BEL_VKICKER_KICK], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_VKICKER_KICK], var_table, bel_table );
       fprintf( out, " );\n");
 
       if ( ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
         fprintf( out, "aligner->xOffset = 0.0;\n");
         fprintf( out, "aligner->yOffset = 0.0;\n");
         fprintf( out, "aligner->tilt    = ");
-        expr_display( out, bel->params_[BEL_VKICKER_TILT], var_table, bel_table );
+        expr_display(mp,  out, bel->params_[BEL_VKICKER_TILT], var_table, bel_table );
         fprintf( out, ";\n%s.setAlignment( *aligner );\n", left);
       }
       break;
@@ -556,18 +558,18 @@ beam_element_display( FILE*         out,
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "kick %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, ", ");
-      expr_display( out, bel->params_[BEL_KICKER_HKICK], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_KICKER_HKICK], var_table, bel_table );
       fprintf( out, ", ");
-      expr_display( out, bel->params_[BEL_KICKER_VKICK], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_KICKER_VKICK], var_table, bel_table );
       fprintf( out, " );\n");
 
       if ( ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
         fprintf( out, "aligner->xOffset = 0.0;\n");
         fprintf( out, "aligner->yOffset = 0.0;\n");
         fprintf( out, "aligner->tilt    = ");
-        expr_display( out, bel->params_[BEL_KICKER_TILT], var_table, bel_table );
+        expr_display(mp,  out, bel->params_[BEL_KICKER_TILT], var_table, bel_table );
         fprintf( out, ";\n%s.setAlignment( *aligner );\n", left);
       }
       break;
@@ -576,21 +578,21 @@ beam_element_display( FILE*         out,
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "thinrfcavity %s_center ( (char*)\"%s:center\", (int)(", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->params_[BEL_RFCAVITY_HARMON], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RFCAVITY_HARMON], var_table, bel_table );
       fprintf( out, "), (");
-      expr_display( out, bel->params_[BEL_RFCAVITY_VOLT], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RFCAVITY_VOLT], var_table, bel_table );
       fprintf( out, ")*1.0e6*1.602177e-19, (");
-      expr_display( out, bel->params_[BEL_RFCAVITY_LAG], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RFCAVITY_LAG], var_table, bel_table );
       fprintf( out, ")*2*PI, 0.0, ");
-      expr_display( out, bel->params_[BEL_RFCAVITY_SHUNT], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RFCAVITY_SHUNT], var_table, bel_table );
       fprintf( out, " );\n");
-      beam_element_plus_drift( out, left, beam_element_make_name( bel->name_ ), bel->length_, var_table, bel_table );
+      beam_element_plus_drift(mp,  out, left, beam_element_make_name( bel->name_ ), bel->length_, var_table, bel_table );
       fprintf( out, "// Ignored for %s: BETRF=", left);
-      expr_display( out, bel->params_[BEL_RFCAVITY_BETRF], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RFCAVITY_BETRF], var_table, bel_table );
       fprintf( out, "; PG=");
-      expr_display( out, bel->params_[BEL_RFCAVITY_PG], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RFCAVITY_PG], var_table, bel_table );
       fprintf( out, "; TFILL=");
-      expr_display( out, bel->params_[BEL_RFCAVITY_TFILL], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RFCAVITY_TFILL], var_table, bel_table );
       fprintf( out, "\n");
       break;
     }
@@ -598,12 +600,12 @@ beam_element_display( FILE*         out,
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "drift %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, " );\n");
       fprintf( out, "// The above drift is really ELSEPARATOR \"%s\": E=", beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->params_[BEL_ELSEPARATOR_E], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_ELSEPARATOR_E], var_table, bel_table );
       fprintf( out, "; TILT=");
-      expr_display( out, bel->params_[BEL_ELSEPARATOR_TILT], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_ELSEPARATOR_TILT], var_table, bel_table );
       fprintf( out, "\n");
       break;
     }
@@ -611,28 +613,28 @@ beam_element_display( FILE*         out,
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "hmonitor %s_center ( (char*)\"%s:center\" );\n", left, beam_element_make_name( bel->name_ ));
-      beam_element_plus_drift( out, left, beam_element_make_name( bel->name_ ), bel->length_, var_table, bel_table );
+      beam_element_plus_drift(mp,  out, left, beam_element_make_name( bel->name_ ), bel->length_, var_table, bel_table );
       break;
     }
     case BEL_VMONITOR: {
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "vmonitor %s_center ( (char*)\"%s:center\" );\n", left, beam_element_make_name( bel->name_ ));
-      beam_element_plus_drift( out, left, beam_element_make_name( bel->name_ ), bel->length_, var_table, bel_table );
+      beam_element_plus_drift(mp,  out, left, beam_element_make_name( bel->name_ ), bel->length_, var_table, bel_table );
       break;
     }
     case BEL_MONITOR: {
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "monitor %s_center ( (char*)\"%s:center\" );\n", left, beam_element_make_name( bel->name_ ));
-      beam_element_plus_drift( out, left, beam_element_make_name( bel->name_ ), bel->length_, var_table, bel_table );
+      beam_element_plus_drift(mp,  out, left, beam_element_make_name( bel->name_ ), bel->length_, var_table, bel_table );
       break;
     }
     case BEL_INSTRUMENT: {
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "drift %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, " );\n");
       fprintf( out, "// The above drift is really INSTRUMENT \"%s\"\n", beam_element_make_name( bel->name_ ));
       break;
@@ -641,12 +643,12 @@ beam_element_display( FILE*         out,
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "drift %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, " );\n");
       fprintf( out, "// The above drift is really ECOLLIMATOR \"%s\": XSIZE=", beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->params_[BEL_ECOLLIMATOR_XSIZE], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_ECOLLIMATOR_XSIZE], var_table, bel_table );
       fprintf( out, "; YSIZE=");
-      expr_display( out, bel->params_[BEL_ECOLLIMATOR_YSIZE], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_ECOLLIMATOR_YSIZE], var_table, bel_table );
       fprintf( out, "\n");
       break;
     }
@@ -654,39 +656,39 @@ beam_element_display( FILE*         out,
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "drift %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->length_, var_table, bel_table );
+      expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, " );\n");
       fprintf( out, "// The above drift is really RCOLLIMATOR \"%s\": XSIZE=", beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->params_[BEL_RCOLLIMATOR_XSIZE], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RCOLLIMATOR_XSIZE], var_table, bel_table );
       fprintf( out, "; YSIZE=");
-      expr_display( out, bel->params_[BEL_RCOLLIMATOR_YSIZE], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_RCOLLIMATOR_YSIZE], var_table, bel_table );
       fprintf( out, "\n");
       break;
     }
     case BEL_YROT:
       fprintf( out, "// YROT \"%s\": ANGLE=", beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->params_[BEL_YROT_ANGLE], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_YROT_ANGLE], var_table, bel_table );
       fprintf( out, "\n");
       break;
     case BEL_SROT: {
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
       fprintf( out, "srot %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->params_[BEL_SROT_ANGLE], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_SROT_ANGLE], var_table, bel_table );
       fprintf( out, " );\n");
       break;
     }
     case BEL_BEAMBEAM:
       fprintf( out, "// BEAMBEAM \"%s\": SIGX=", beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->params_[BEL_BEAMBEAM_SIGX], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_BEAMBEAM_SIGX], var_table, bel_table );
       fprintf( out, "; SIGY=");
-      expr_display( out, bel->params_[BEL_BEAMBEAM_SIGY], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_BEAMBEAM_SIGY], var_table, bel_table );
       fprintf( out, "; XMA=");
-      expr_display( out, bel->params_[BEL_BEAMBEAM_XMA], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_BEAMBEAM_XMA], var_table, bel_table );
       fprintf( out, "; YMA=");
-      expr_display( out, bel->params_[BEL_BEAMBEAM_YMA], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_BEAMBEAM_YMA], var_table, bel_table );
       fprintf( out, "; CHARGE=");
-      expr_display( out, bel->params_[BEL_BEAMBEAM_CHARGE], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_BEAMBEAM_CHARGE], var_table, bel_table );
       fprintf( out, "\n");
       break;
     case BEL_MATRIX:
@@ -694,7 +696,7 @@ beam_element_display( FILE*         out,
       break;
     case BEL_LUMP:
       fprintf( out, "// LUMP \"%s\": ORDER=", beam_element_make_name( bel->name_ ));
-      expr_display( out, bel->params_[BEL_LUMP_ORDER], var_table, bel_table );
+      expr_display(mp,  out, bel->params_[BEL_LUMP_ORDER], var_table, bel_table );
       fprintf( out, "\n");
       break;
     default:

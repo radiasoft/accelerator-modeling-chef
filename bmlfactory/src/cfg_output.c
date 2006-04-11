@@ -81,7 +81,8 @@ print_comments( FILE*      out,
      Outputs the C++ code for all the constant definitions, sorted by line number
    */
 void
-const_def_output( FILE*       out,
+const_def_output( madparser*  mp, 
+                  FILE*       out,
                   GHashTable* const_table,
                   GHashTable* var_table,
                   GHashTable* bel_table,
@@ -101,7 +102,7 @@ const_def_output( FILE*       out,
       fprintf( out, "const double %s = ", (*(const_arr+i))->name_);
     }
 
-    expr_display( out, (*(const_arr+i))->expr_, var_table, bel_table );
+    expr_display(mp,  out, (*(const_arr+i))->expr_, var_table, bel_table );
     fprintf( out, ";\n");
   }
   free( const_arr );
@@ -162,7 +163,8 @@ var_get_refs( GNode*      expr,
      Outputs C++ code for all the variable definitions, without forward references
    */
 void
-var_def_output( FILE*       out,
+var_def_output( madparser*  mp,
+                FILE*       out,
                 GHashTable* const_table,
                 GHashTable* var_table,
                 GHashTable* bel_table,
@@ -185,13 +187,13 @@ var_def_output( FILE*       out,
     print_comments( out, (*(var_arr+i))->linenum_, comment_arr );
     if ( kind == STRING_EXPR || kind == STR_IDENT_EXPR ||
          ( kind == VAR_IDENT_EXPR &&
-           expr_is_string( (*(var_arr+i))->expr_, const_table, var_table ) != NULL ) ) {
+           expr_is_string( mp, (*(var_arr+i))->expr_, const_table, var_table ) != NULL ) ) {
       fprintf( out, "char *%s = ", (*(var_arr+i))->name_);
     } else {
       fprintf( out, "double %s = ", (*(var_arr+i))->name_);
     }
 
-    expr_display( out, (*(var_arr+i))->expr_, var_table, bel_table );
+    expr_display(mp,  out, (*(var_arr+i))->expr_, var_table, bel_table );
     fprintf( out, ";\n");
   }
   free( var_arr );
@@ -201,7 +203,8 @@ var_def_output( FILE*       out,
      Outputs C++ code for all the bel definitions, sorted by line number
    */
 void
-bel_def_output( FILE*       out,
+bel_def_output( madparser*  mp,
+                FILE*       out,
                 GHashTable* var_table,
                 GHashTable* bel_table,
                 GPtrArray*  comment_arr ) {
@@ -214,7 +217,7 @@ bel_def_output( FILE*       out,
   fprintf( out, "alignmentData* aligner = new alignmentData;\n");
   for ( i = 0; i < size; ++i ) {
     print_comments( out, (*(bel_arr+i))->linenum_, comment_arr );
-    beam_element_display( out, *(bel_arr+i), var_table, bel_table );
+    beam_element_display( mp, out, *(bel_arr+i), var_table, bel_table );
   }
   fprintf( out, "delete aligner;\n");
   free( bel_arr );
