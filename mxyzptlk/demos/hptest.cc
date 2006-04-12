@@ -6,11 +6,13 @@
 
 #define	NUMREG 4
 
-Jet**             HPreg;
-coord**           crds;
-Jet__environment* pje;
+Jet**                HPreg;
+coord**               crds;
+EnvPtr<double>::Type   pje;
 
 int numberOfVar, topWeight;
+
+using namespace std;
 
 main( int argc, char** argv ) 
 {
@@ -45,9 +47,9 @@ main( int argc, char** argv )
 
 
   // --- Construct the environment
-  Jet::BeginEnvironment( topWeight );
+  Jet__environment::BeginEnvironment( topWeight );
   for( i = 0; i < numberOfVar; i++ ) crds[i] = new coord( 0.0 );
-  pje = Jet::EndEnvironment();
+  pje = Jet__environment::EndEnvironment();
   
   HPreg = new Jet* [ NUMREG ];
   for( i = 0; i < NUMREG; i++ ) HPreg[i] = new Jet( pje );
@@ -80,7 +82,6 @@ main( int argc, char** argv )
   delete [] HPreg;
   for( i = 0; i < numberOfVar; i++ ) delete crds[i];
   delete [] crds;
-  delete pje;
 }
 
 
