@@ -224,6 +224,27 @@ void* bmlnElmntData::clone() {
 }
 
 
+// ***********************************
+//   class bmlnElmnt::PinnedFrameSet
+// ***********************************
+
+
+bmlnElmnt::PinnedFrameSet::PinnedFrameSet()
+:   _altered(false)
+  , _upStream()
+  , _downStream()
+{
+}
+
+
+void bmlnElmnt::PinnedFrameSet::reset()
+{
+  _upStream.reset();
+  _downStream.reset();
+  _altered = false;
+}
+
+
 // **************************************************
 //   class bmlnElmnt
 // **************************************************
@@ -603,16 +624,16 @@ void bmlnElmnt::propagate( JetParticle& x )
 
 void bmlnElmnt::propagate( ParticleBunch& x )
 {
-  static Particle* p;
+  Particle* p = 0;
   if( align == 0 ) {
     localPropagate  ( x );
   }
   else {
     ParticleBunch::Iterator get( x );
-    while((  p = (Particle*) get.next()  )) enterLocalFrame( *p );
+    while((  p = (Particle*) get.next()  )) { enterLocalFrame( *p ); }
     localPropagate  ( x );
     get.reset();
-    while((  p = (Particle*) get.next()  )) leaveLocalFrame( *p );
+    while((  p = (Particle*) get.next()  )) { leaveLocalFrame( *p ); }
   }
 }
 
@@ -856,7 +877,9 @@ bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( const PropFunc& a )
 void bmlnElmnt::peekAt( double& s, const Particle& prt ) const
 { 
  (*pcout) << setw(12) << s;
- s += OrbitLength( prt );
+
+ s += const_cast<bmlnElmnt*>(this)->OrbitLength( prt );  // Kludge!!
+
  (*pcout) << setw(12) << s           
                   << " : " 
       << setw(10) << (int) this  
@@ -1140,9 +1163,154 @@ bool bmlnElmnt::alignAbsRollmrad( double u )
 
 void bmlnElmnt::realign()
 {
-  if(0 != align ) {
-    delete align;
-    align = 0;
+  // #error *** WARNING ***
+  // #error *** WARNING ***  bmlnElmnt::realign is not finished.
+  // #error *** WARNING ***
+
+  if(0 != align ) 
+  { delete align; align = 0; }
+
+  #if 1
+  static bool firstTime = true;
+  if( firstTime ) {
+    (*pcerr) << "\n*** WARNING *** "
+                "\n*** WARNING *** File " << __FILE__ << ", Line " << __LINE__
+             << "\n*** WARNING *** void bmlnElmnt::realign()"
+                "\n*** WARNING *** --------------------------------------"
+                "\n*** WARNING *** This routine is undergoing renovation "
+                "\n*** WARNING *** and currently will only reset the "
+                "\n*** WARNING *** attribute \"align.\""
+                "\n*** WARNING *** "
+                "\n*** WARNING *** Temporary workaround: clone your original "
+                "\n*** WARNING *** beamline, before shifting elements around, "
+                "\n*** WARNING *** and reuse it as needed."
+                "\n*** WARNING *** "
+             << endl; 
+    firstTime = false;
+  }
+  #endif
+
+  # if 0
+  THE ISSUES:
+    - if Slots have been introduced above and below the element, 
+    they must be returned to drifts, if possible
+    - if they were originally Slots, then they have to be reset too.
+
+  _pinnedFrameSet.reset();
+  #endif
+}
+
+
+void bmlnElmnt::markPins()
+{
+  // #error *** WARNING ***
+  // #error *** WARNING ***  bmlnElmnt::markPins is not written!!!
+  // #error *** WARNING ***
+
+  #if 1
+  static bool firstTime = true;
+  if( firstTime ) {
+    (*pcerr) << "\n*** WARNING *** "
+                "\n*** WARNING *** File " << __FILE__ << ", Line " << __LINE__
+             << "\n*** WARNING *** void bmlnElmnt::markPins()"
+                "\n*** WARNING *** ------------------------------"
+                "\n*** WARNING *** This routine is not written."
+                "\n*** WARNING *** Nothing will happen."
+                "\n*** WARNING *** "
+             << endl; 
+    firstTime = false;
+  }
+  #endif
+}
+
+
+void bmlnElmnt::loadPinnedCoordinates( const Particle& prtcl, Vector& ret, double pct )
+{
+  // #error *** WARNING ***
+  // #error *** WARNING ***  bmlnElmnt::loadPinnedCoordinates is not tested!!
+  // #error *** WARNING ***
+
+  static Vector p( Particle::PSD / 2 );
+  static Vector v( Particle::PSD / 2 );
+  //                         |
+  //                         +--------- Not foolproof.
+
+  static int x  = Particle::_x();
+  static int y  = Particle::_y();
+  static int z  = Particle::_cdt();
+  //                         |
+  //                         +--------- Not quite what I want.
+  static int xp = Particle::_xp();
+  static int yp = Particle::_yp();
+  static int zp = Particle::_dpop();
+  //                         |
+  //                         +--------- Not quite what I want.
+
+
+  if( _pinnedFrames._altered ) 
+  {
+    if( pct < 0.000001 ) { pct = 0; }
+    if( 0.999999 < pct ) { pct = 1; }
+
+    Frame  ref;
+    if( Particle::PSD == ret.Dim() ) {
+      // Load position and momentum vectors
+      p(x) = prtcl.get_x();   
+      p(y) = prtcl.get_y();   
+      p(z) = 0;
+
+      v(x) = prtcl.get_npx(); 
+      v(y) = prtcl.get_npy(); 
+      v(z) = prtcl.get_npz();
+
+      // Downstream end (default)
+      if( (1.0 - pct) < 0.001 ) {
+        _pinnedFrames._downStream.convertInPlace( p, v );
+      }
+
+      // Upstream end
+      else if( pct < 0.001 ) {
+        _pinnedFrames._upStream.convertInPlace( p, v );
+      }
+
+      // Somewhere in the middle
+      else {
+        Frame ref( Frame::tween( _pinnedFrames._upStream, _pinnedFrames._downStream, pct, false ) );
+        ref.convertInPlace( p, v );
+      }
+
+      // Transfer the answer
+      ret(x)  = p(x);
+      ret(y)  = p(y);
+      ret(z)  = prtcl.get_cdt();
+      ret(xp) = v(x);
+      ret(yp) = v(y);
+      ret(zp) = prtcl.get_ndp();
+    }  
+
+    else {
+      (*pcerr) << "\n*** WARNING *** "
+               << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+               << "\n*** WARNING *** void bmlnElmnt::loadPinnedCoordinates(...)"
+               << "\n*** WARNING *** Dimension of vector argument is "
+               << (ret.Dim())
+               << ';'
+               << "\n*** WARNING *** current implementation only allows "
+               << BMLN_dynDim
+               << '.'
+               << "\n*** WARNING *** This function will do nothing."
+               << endl;
+    }
+  }
+
+  else // bmlnElmnt Frames have not been altered
+  {
+    ret(x)  = prtcl.get_x();
+    ret(y)  = prtcl.get_y();
+    ret(z)  = prtcl.get_cdt();
+    ret(xp) = prtcl.get_npx();
+    ret(yp) = prtcl.get_npy();
+    ret(zp) = prtcl.get_ndp();
   }
 }
 
@@ -1190,6 +1358,8 @@ bool bmlnElmnt::setAlignment(const alignmentData& a)
     ret = false;
   }
 
+  // _pinnedFrames._altered is not changed
+
   return ret;
 }
 
@@ -1207,9 +1377,9 @@ alignmentData bmlnElmnt::Alignment() const {
 
 void bmlnElmnt::enterLocalFrame( Particle& p ) const
 {
-  static double inState[ BMLN_dynDim ];
-  static double temp;
-  static double cs, sn;
+  double inState[ BMLN_dynDim ];
+  double temp;
+  double cs, sn;
 
   cs = align->cos_roll();
   sn = align->sin_roll();
@@ -1229,14 +1399,15 @@ void bmlnElmnt::enterLocalFrame( Particle& p ) const
     inState[3] = temp;
   }
  
-  p.setState( inState) ;
+  p.setState( inState ) ;
 }
+
 
 void bmlnElmnt::enterLocalFrame( JetParticle& p ) const
 {
   JetVector inState ( p.State() );
   Jet       temp    ( inState.Env() );
-  static    double  cs, sn;
+  double    cs, sn;
 
   cs = align->cos_roll();
   sn = align->sin_roll();
