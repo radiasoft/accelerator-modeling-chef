@@ -46,6 +46,7 @@
 #include <exception>
 
 #include <slist.h>
+#include <Frame.h>
 #include <Barnacle.h>
 #include <VectorD.h>
 #include <BmlVisitor.h>
@@ -246,6 +247,29 @@ public:
       virtual const char* Type() const                   = 0;
   };
 
+  class PinnedFrameSet
+  {
+    public:
+      bool  _altered;
+      Frame _upStream;
+      Frame _downStream;
+      // If the element never moves, 
+      //   both _upStream and _downStream should be the
+      //   identity frames. 
+      // If it moves, then _upStream will be the
+      //   element's original in-frame AS SEEN BY 
+      //   its current in-frame; _downStream will be its 
+      //   original out-frame AS SEEN BY its current
+      //   out-frame.
+      // !!! In fact, this is redundant information.              !!!
+      // !!! Either _upStream or _downStream could be eliminated. !!!
+
+      PinnedFrameSet();
+      ~PinnedFrameSet() {}
+
+      void  reset();
+  };
+
   typedef char (*CRITFUNC)( bmlnElmnt* );
   struct Discriminator
   {
@@ -303,6 +327,8 @@ protected:
   virtual void releasePropFunc();
   virtual void setupPropFunc();
   virtual void eliminate();
+
+  PinnedFrameSet _pinnedFrames;
 
   friend class beamline;
   // friend class circuit;
@@ -384,7 +410,23 @@ public:
   virtual bool alignRelRollmrad( double /*[milliradians]*/ );
   virtual bool alignAbsRollmrad( double /*[milliradians]*/ );
   virtual bool setAlignment( const alignmentData& );
-  virtual void realign();
+
+  inline  bool hasMoved()
+    { return ( _pinnedFrames._altered || (0 != align) ); }
+  void realign();
+    // Resets element to its original position.
+  void markPins(); // WRITE
+    // Marks the current positions of the element as "original"
+  void loadPinnedCoordinates( const Particle&, Vector&, double = 1.0 );  // WRITE
+    // Pinned coordinates of the particle are returned in the vector
+    //   argument.  
+    // 
+    // The third argument must be within [0,1]; it is internally
+    //   set to 1.0 otherwise.  It indicates the percentage of distance
+    //   from the upstream to downstream faces of the element at which 
+    //   the coordinates are to be calculated.
+    // 
+    // Default value: 1.0 -> return pinned coordinates at the downstream end.
 
 
   virtual void enterLocalFrame( Particle&                ) const;
@@ -535,7 +577,6 @@ private:
 };
 
 
-
 class BmlPtrList : private dlist
 {
   //  A list of pointers to instances of bmlnElmnt objects.
@@ -622,11 +663,11 @@ private:
 
   // Methods
   void _moveRel(   int axis, double u
-                 , const bmlnElmnt* thePtr
+                 , bmlnElmnt* thePtr
                  , int* errorCodePtr, BmlPtrList* recycleBinPtr
                  , std::string invoker );
   void _rotateRel(   int axis, double angle
-                   , const bmlnElmnt* thePtr
+                   , bmlnElmnt* thePtr
                    , double pct
                    , int* errorCodePtr, BmlPtrList* recycleBinPtr
                    , std::string invoker );
@@ -756,12 +797,12 @@ public:
 
   // Change geometry of the line
   bool setAlignment ( const alignmentData& );
-  BmlPtrList moveRelX( const bmlnElmnt*, double, int* = 0 );
-  BmlPtrList moveRelY( const bmlnElmnt*, double, int* = 0 );
-  BmlPtrList moveRelZ( const bmlnElmnt*, double, int* = 0 );
-  BmlPtrList pitch( const bmlnElmnt*, double, double, int* );
-  BmlPtrList   yaw( const bmlnElmnt*, double, double, int* );
-  BmlPtrList  roll( const bmlnElmnt*, double, double, int* );
+  BmlPtrList moveRelX( bmlnElmnt*, double, int* = 0 );
+  BmlPtrList moveRelY( bmlnElmnt*, double, int* = 0 );
+  BmlPtrList moveRelZ( bmlnElmnt*, double, int* = 0 );
+  BmlPtrList pitch( bmlnElmnt*, double, double, int* );
+  BmlPtrList   yaw( bmlnElmnt*, double, double, int* );
+  BmlPtrList  roll( bmlnElmnt*, double, double, int* );
 
 
   // PROPAGATE PARTICLES
@@ -784,6 +825,8 @@ public:
   void propLattFunc( FILE* );
   void propLattFunc( char* );
 
+  void realignAllElements();  // WRITE
+  void markAllPins();         // WRITE
 
   // EDIT PROPERTIES
 
@@ -847,7 +890,7 @@ public:
   int    contains( const bmlnElmnt*) const;
   // Returns the number of times the argument appears.
 
-  bool find( bmlnElmnt*& u, const bmlnElmnt*& v, bmlnElmnt*& w ) const;
+  bool find( bmlnElmnt*& u, bmlnElmnt*& v, bmlnElmnt*& w ) const;
   // Upon entry: u and w should have null value but can, in fact
   //               be anything. 
   //               WARNING: they will be reset, so don't use addresses
