@@ -30,15 +30,16 @@
 ******
 ******
 ****** Note:
-****** 
+****** -----
+******
 ****** The ReferenceCounter class uses the Curiously Recurring Template 
-****** idiom to provide compile-time polymorphism idiom. 
+****** idiom to provide compile-time polymorphism. 
 ******
 ****** A derived class DerivedClass should be declared as follows:
 ******
 ******   class DerivedClass : public  ReferenceCounter<DerivedClass> {
 ******   public:
-******   void dispose(); // a class specific implementation of dispose 
+******   void dispose(); // a class-specific implementation of dispose() 
 ******                   // must be provided 
 ******   ... 
 ******   ...
@@ -75,7 +76,7 @@ class ReferenceCounter {
 
 
   friend void intrusive_ptr_release(ReferenceCounter* p) {
-    if ( (--p->_refcount) == 0 ) p->dispose(); 
+    if ( --(p->_refcount) == 0 ) p->dispose(); 
   }
 
   void add_ref() {

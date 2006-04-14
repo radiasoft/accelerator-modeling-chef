@@ -149,6 +149,7 @@ template<typename T>
 TMatrix<T>& TMatrix<T>::DeepCopy(const TMatrix<T>& x) 
 {
   _ml = typename MLPtr<T>::Type( new TML<T>( *x._ml ) );
+
   return *this;
 }
 
@@ -212,22 +213,25 @@ bool operator!=( const T& x, const TMatrix<T>& y )
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TMatrix<T>::operator+=( const T& x ) 
+TMatrix<T>& TMatrix<T>::operator+=( const T& x ) 
 {
  
-  _ml = TML<T>::clone(_ml);
+  _ml = _ml->clone();
   _ml->operator+=( x );
+  return *this;
+
 }
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TMatrix<T>::operator-=( const T& x ) 
+TMatrix<T>& TMatrix<T>::operator-=( const T& x ) 
 {
 
- _ml = TML<T>::clone(_ml);
+ _ml = _ml->clone();
  _ml->operator+=( -x );
+ return *this;
 
 }
 
@@ -251,7 +255,7 @@ TMatrix<T> TMatrix<T>::transpose() const
 {
 
   typename MLPtr<T>::Type p( _ml->transpose() );
-  return TMatrix<T> ( p);
+  return TMatrix<T> (p);
 
 }
 
@@ -305,7 +309,7 @@ TMatrix<T> TMatrix<T>::inverse() const
 template<typename T>
 void    TMatrix<T>:: switch_columns( int col1, int col2) {
 
-  _ml = TML<T>::clone(_ml);
+  _ml = _ml->clone();
   _ml->_switch_columns(col1,col2);
 
 };
@@ -320,6 +324,7 @@ template<typename T>
 T& TMatrix<T>::operator()(int i, int j) 
 {
 
+  if ( _ml->count() > 1 ) _ml = _ml->clone();  // This may be bad ! 
   return (*_ml)(i,j); 
 
 }
@@ -353,7 +358,8 @@ template<typename T>
 T& TMatrix<T>::operator()(int i) 
 {
 
-return _ml->operator()(i);
+if ( _ml->count() > 1 ) _ml = _ml->clone();  // THIS IS BAD !
+return (*_ml)(i);
 
 }
 
@@ -416,7 +422,8 @@ TMatrix<T> operator+( const T& y, const TMatrix<T>& x )  // add returns a new ma
 template<typename T>
 TMatrix<T> operator-(const TMatrix<T>& x) 
 {
-  typename MLPtr<T>::Type p( Negate<T>(x._ml) );  
+
+  typename MLPtr<T>::Type p( Negate<T>(x._ml) ); // Note: Negate does a deepcopy   
   return TMatrix<T>(p);
 
 }

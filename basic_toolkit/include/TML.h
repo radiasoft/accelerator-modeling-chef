@@ -114,8 +114,8 @@ class TML : public ReferenceCounter<TML<T> > {
   operator TML<std::complex<double> >* (); 
 
   void dispose() {delete this;} // needed by ReferenceCounter
-  inline static typename MLPtr<T>::Type clone(typename MLPtr<T>::Type const& ml) 
-                           { return typename MLPtr<T>::Type( new TML<T>(*ml) ); } 
+  typename MLPtr<T>::Type clone() 
+                           { return typename MLPtr<T>::Type( new TML<T>(*this) ); } 
 
   // Public member functions__________________________________________
 

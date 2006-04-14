@@ -162,8 +162,8 @@ public:
   T  getElement(int row, int column) const;
   T& operator()(int row);
   T  operator()(int row) const;
-  void operator+=( const T&);
-  void operator-=( const T&);
+  TMatrix<T>& operator+=( const T&);
+  TMatrix<T>& operator-=( const T&);
 
   // Friends
 
