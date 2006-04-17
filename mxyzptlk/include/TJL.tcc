@@ -80,8 +80,7 @@ using FNAL::pcout;
 // ******  the static class variable _thePool is a container for ****
 //         discarded Jets. 
 
-template <typename T>
-std::vector<TJL<T>* > TJL<T>::_thePool; 
+template <typename T> std::vector<TJL<T>* > TJL<T>::_thePool; 
 
 
 //-------------------------------------------------------------------
@@ -372,7 +371,7 @@ typename JLPtr<T>::Type TJL<T>::makeTJL( typename EnvPtr<T>::Type pje, T x )
 
   if (!pje) return 0; // this form is called by TCoord and Tparam
 
-  if (_thePool.empty() ) return ( new  TJL<T>(pje, x )); 
+  if (_thePool.empty() ) return ( typename JLPtr<T>::Type(new  TJL<T>(pje, x ) )); 
  
   TJL<T>* p    = _thePool.back();  _thePool.pop_back();
   p->_count    = 0;
@@ -426,7 +425,7 @@ typename JLPtr<T>::Type TJL<T>::makeTJL( const IntArray& e, const T& x, typename
 
   if (!pje) return 0;  // cannot create a TJL without a properly constructed environemnt 
 
-  if (_thePool.empty() ) return new TJL<T>(e,x,pje);
+  if (_thePool.empty() ) return typename JLPtr<T>::Type( new TJL<T>(e,x,pje) );
 
   TJL<T>* p = _thePool.back(); _thePool.pop_back();
 
@@ -459,7 +458,7 @@ TJL<T>::TJL( const TJL& x ):
 _jltermStoreCapacity(0), 
 _jltermStore(0), 
 _jltermStoreCurrentPtr(0), 
-_constIterPtr(0),
+_constIterPtr(0), 
 _iterPtr(0)
 {
  
@@ -477,6 +476,56 @@ _iterPtr(0)
           q = _jltermStore + ( p - x._jltermStore); 
           append(q);
  }
+
+ //****************************************************************************************
+ // set the JLterm iterators properly in case they are in use. 
+ // 
+ // THIS TERRIBLE KLUDGE MUST GO AWAY ! THE TERM ITERATORS DO NOT BELONG 
+ // IN THE TJL CLASS ! 
+ // FIX ME !!! 
+ // 
+ //****************************************************************************************
+
+ // this messy code is necessary because there is no way (nor should not there be any !) 
+ // to sitectly access the internals of an iterator.    
+
+
+ getNext.Reset(); 
+ 
+ if ( x._constIterPtr) {
+
+    _constIterPtr = new dlist_iterator( _theList );
+    q = ( TJLterm<T>* ) x._constIterPtr->current();
+  
+    if (q) { 
+       while(  p = ( TJLterm<T>*) getNext( ) ) {
+         if ( *p   ==   *q ) break;
+
+       } 
+    };
+
+    *_constIterPtr = getNext;
+
+ };  
+
+ getNext.Reset(); 
+ 
+ if (x._iterPtr ) {
+
+   _iterPtr = new dlist_iterator( _theList );
+
+   q = (TJLterm<T>*) x._iterPtr->current();
+   
+   if (q ) {   
+       while(  p = ( TJLterm<T>*) getNext( ) ) {
+         if ( *p  ==  *q ) break;
+       }   
+   };
+
+   *_iterPtr = getNext;
+
+ }
+ 
 
 }
 
@@ -517,8 +566,54 @@ typename JLPtr<T>::Type  TJL<T>::makeTJL( const TJL& x )
           p->append(r);
  }
 
-  p->_constIterPtr = 0,
-  p->_iterPtr      = 0;
+
+ //****************************************************************************************
+ // set the JLterm iterators properly in case they are in use. 
+ // 
+ // THIS TERRIBLE KLUDGE MUST GO AWAY ! THE TERM ITERATORS DO NOT BELONG 
+ // IN THE TJL CLASS ! 
+ // FIX ME !!! 
+ // 
+ //****************************************************************************************
+
+ // this messy code is necessary because there is no way (nor should there be any !) 
+ // to access the internals of an iterator.    
+
+ getNext.Reset(); 
+ 
+ if ( x._constIterPtr) {
+
+    p->_constIterPtr = new dlist_iterator( p->_theList );
+    q = (TJLterm<T>*) x._constIterPtr->current();
+
+    if( q ) {
+
+       while(  r = (TJLterm<T>*) getNext( ) ) {
+
+         std::cout << "*r = " << (*r)  << std::endl;
+         std::cout << "*q = " << (*q)  << std::endl;
+
+        if ( *r   ==   *q ) break;
+       } 
+     };
+ };  
+
+ getNext.Reset(); 
+ 
+ if (x._iterPtr ) {
+
+   p->_iterPtr  = new dlist_iterator( p->_theList );
+
+   if (q) {
+     q = (TJLterm<T>*) x._iterPtr->current();
+     while(  r = ( TJLterm<T>*) getNext( ) ) {
+       if ( *r  ==  *q ) break;
+     }   
+   };
+
+   *(p->_iterPtr) = getNext;
+
+ }
 
  return typename JLPtr<T>::Type(p);
 
