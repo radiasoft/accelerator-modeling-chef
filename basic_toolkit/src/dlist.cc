@@ -491,14 +491,26 @@ void* dlist_iterator::operator()()
 }
 
 
+void* dlist_iterator::current() 
+{
+  void* ret = 0;
+  if( cs->last )
+  { 
+    ret = ce ? ce->e : 0;
+    if( ce == cs->last ) ce = 0;
+  }
+
+  return ret;
+}
+
+
 void dlist_iterator::GoBack( int n ) 
 {
-  static int j;
   
   if( n < 1 ) n = 1;
   if( ce == 0 ) ce = cs->last;  // Cancels interference from 
 				// dlist_iterator::operator()
-  for( j = 0; j < n; j++ ) ce = ce->prev;
+  for( int j = 0; j < n; ++j) ce = ce->prev;
 }
 
 
@@ -533,12 +545,11 @@ dlink* dlist_traversor::operator()()
 
 void dlist_traversor::GoBack( int n ) 
 {
-  static int j;
   
   if( n < 1 ) n = 1;
   if( ce == 0 ) ce = cs->last;  // Cancels interference from 
 				// dlist_traversor::operator()
-  for( j = 0; j < n; j++ ) ce = ce->prev;
+  for( int j= 0; j < n; ++j) ce = ce->prev;
 }
 
 
@@ -555,26 +566,3 @@ void* dlist_reverseIterator::operator()()
 }
 
 
-/*
- *   Pool functions written by Michael Allen
- *   February, 1993
- */
-
-#ifdef POOLED
-
-_dlink_Shell* _dlink_Pool::top = 0;
-_dlink_Pool::_dlink_Pool()
-{
-  register int i = _dlink_BLOCK_COUNT;
-  _dlink_Shell* p = slot;
-  _dlink_Shell* q;
-  while (--i)
-    {
-      q = p++;
-      q->next = p;
-    }
-  p->next = top;
-  top = slot;
-}
-
-#endif //  POOLED
