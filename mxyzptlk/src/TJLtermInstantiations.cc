@@ -70,6 +70,12 @@ bool operator==<double >(TJLterm<double > const&, TJLterm<double > const&);
 template
 bool operator==<std::complex<double> >(TJLterm<std::complex<double> > const&, TJLterm<std::complex<double> > const&);
 
+template 
+std::ostream& operator<<(std::ostream&, TJLterm<double > const&);
+template 
+std::ostream& operator<<(std::ostream&, TJLterm<std::complex<double> > const&);
+
+
 
 //=============================
 // Memory allocation templates
