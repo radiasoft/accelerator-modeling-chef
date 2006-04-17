@@ -214,11 +214,12 @@ public:
   }
 
   void* operator()();
-  void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
-  void Reset() { ce = cs->last; }
-  void GoBack( int = 1 );
-  void Terminate() { ce = 0; }
-  bool isFinished() { return ( 0 == ce ); }
+  void* current();  
+  void  Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
+  void  Reset() { ce = cs->last; }
+  void  GoBack( int = 1 );
+  void  Terminate() { ce = 0; }
+  bool  isFinished() { return ( 0 == ce ); }
 } ;
 
 class dlist_looper {
