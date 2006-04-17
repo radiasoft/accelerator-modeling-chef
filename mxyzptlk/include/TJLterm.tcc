@@ -403,6 +403,21 @@ bool operator%=( const TJLterm<T>& a, const TJLterm<T>& b )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
+template<typename T> 
+std::ostream& operator<<(std::ostream& os, TJLterm<T> const& term) {
+
+ os << "Index: "   << term._index  
+    << " Weight: " << term._weight 
+    << " Value: "  << term._value;
+
+ return os;
+} 
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 template<typename T>
 TJLterm<T>::BadDimension::BadDimension( int i, int j, 
                                 std::string fileName, int lineNumber, 

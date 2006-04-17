@@ -54,6 +54,7 @@
 
 #include <complex>
 #include <ext/hash_map>
+#include <ostream>
 #include <boost/functional/hash/hash.hpp>
 #include <boost/pool/pool.hpp>
 #include <EnvPtr.h>
@@ -74,6 +75,9 @@ bool operator%=(TJLterm<T> const&, TJLterm<T> const&);
 
 template<typename T> 
 bool operator==(TJLterm<T> const&, TJLterm<T> const&);
+
+template<typename T> 
+std::ostream& operator<<(std::ostream& os, TJLterm<T> const&);
 
 
 // ********************************************************************************************************************
