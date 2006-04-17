@@ -8,9 +8,19 @@
 ******  Version:   4.1
 ******  Date:      March 15, 2005
 ******                                                                
-******  Copyright (c) 1990 Universities Research Association, Inc.    
+******  Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -21,20 +31,14 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
 **************************************************************************
 *************************************************************************/
-
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-#include "GenericException.h"
-#include "Frame.h"
+#include <GenericException.h>
+#include <Frame.h>
 
 using namespace std;
 
@@ -43,29 +47,26 @@ Frame::Frame()
 : o(3), e(3,3)
 {
   //                     e_1  e_2  e_3
-  static double u [] = { 1.,  0.,  0.,
-                         0.,  1.,  0.,
-                         0.,  0.,  1.
-                       };
+  const static double u [] = { 1.,  0.,  0.,
+                               0.,  1.,  0.,
+                               0.,  0.,  1.
+                             };
 
-  double* k = u;
-  for( int i = 0; i < 3; i++ ) {
-    for( int j = 0; j < 3; j++ ) {
+  const double* k = u;
+  for( int i=0; i < 3; ++i) {
+    for( int j=0; j < 3; ++j) {
       e(i,j) = *(k++);
     }
   }
 }
 
 Frame::Frame( const Frame& x )
-: o(3), e(3,3)
-{
-  o = x.o;
-  e = x.e;
-}
+: o(x.o), e(x.e) { }
 
 Frame::~Frame()
 {
 }
+
 
 Frame& Frame::operator=( const Frame& x )
 {
@@ -78,8 +79,7 @@ Frame& Frame::operator=( const Frame& x )
   
 short int Frame::setOrigin ( const Vector& x )
 {
-  static short int ret;
-  ret = 0;
+  short int ret = 0;
 
   if( x.Dim() != 3 ) {
     cerr << "***WARNING***                                 \n"
@@ -99,8 +99,7 @@ short int Frame::setOrigin ( const Vector& x )
 
 short int Frame::setAxis   ( int j, const Vector& x )
 {
-  static short int ret;
-  ret = 0;
+  short int ret = 0;
 
   if( j < 0 || 2 < j ) {
     cerr << "***WARNING***                                 \n"
@@ -131,8 +130,7 @@ short int Frame::setAxis   ( int j, const Vector& x )
 
 short int Frame::setDualAxis   ( int i, const Vector& x )
 {
-  static short int ret;
-  ret = 0;
+  short int ret = 0;
 
   if( i < 0 || 2 < i ) {
     cerr << "***WARNING***                                 \n"
@@ -284,8 +282,7 @@ short int Frame::rotate( double theta,
                          const  Vector& u,
                          bool   rotateOrigin )
 {
-  static short int ret;
-  ret = 0;
+  short int ret = 0;
 
   if( u.Dim() != 3 ) {
     cerr << "***WARNING***                                 \n"
@@ -320,8 +317,7 @@ short int Frame::rotate( double theta,
 
 short int Frame::translate ( const Vector& x )
 {
-  static short int ret;
-  ret = 0;
+  short int ret = 0;
 
   if( x.Dim() != 3 ) {
     cerr << "***WARNING***                                 \n"
