@@ -1329,7 +1329,7 @@ TJet<T> TJet<T>::D( const IntArray& n ) const
 template<typename T> 
 const TJLterm<T>* TJet<T>::stepConstIteratorPtr() const
 {
-  _jl =  _jl->clone();
+  if (_jl->count() > 1) _jl =  _jl->clone();
   return _jl->stepConstIteratorPtr(); 
 }   
 
@@ -1339,7 +1339,7 @@ const TJLterm<T>* TJet<T>::stepConstIteratorPtr() const
 template<typename T>
 void  TJet<T>::resetConstIterator()
 {
-  _jl =  _jl->clone();
+  if (_jl->count() > 1)_jl =  _jl->clone();
   _jl->resetConstIterator();
 }
 
