@@ -1615,6 +1615,7 @@ void beamline::_moveRel(   int axis, double u
       if( 0 == strcmp("drift", upStreamPtr->Type() ) ) {
         // DANGEROUS!!  Creates free object
         Slot* slotPtr = new Slot(upStreamPtr->Name(), frameOne );
+        slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._downStream = (thePtr->_pinnedFrames)._upStream;
         slotPtr->_pinnedFrames._altered = true;
         this->putAbove( *thePtr, *slotPtr );
@@ -1624,6 +1625,7 @@ void beamline::_moveRel(   int axis, double u
       if( 0 == strcmp("drift", downStreamPtr->Type() ) ) {
         // DANGEROUS!!  Creates free object
         Slot* slotPtr = new Slot(downStreamPtr->Name(), frameThree.relativeTo(frameTwo) );
+        slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._upStream = (thePtr->_pinnedFrames)._downStream;
         slotPtr->_pinnedFrames._altered = true;
         this->putBelow( *thePtr, *slotPtr );
@@ -1669,6 +1671,7 @@ void beamline::_moveRel(   int axis, double u
       if( 0 == strcmp("drift", downStreamPtr->Type() ) ) {
         // DANGEROUS!!  Creates free object
         Slot* slotPtr = new Slot(downStreamPtr->Name(), frameThree.relativeTo(frameTwo) );
+        slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._upStream = (thePtr->_pinnedFrames)._downStream;
         slotPtr->_pinnedFrames._altered = true;
         this->putBelow( *thePtr, *slotPtr );
@@ -1705,6 +1708,7 @@ void beamline::_moveRel(   int axis, double u
       if( 0 == strcmp("drift", upStreamPtr->Type() ) ) {
         // DANGEROUS!!  Creates free object
         Slot* slotPtr = new Slot(upStreamPtr->Name(), frameOne );  // ?????
+        slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._downStream = (thePtr->_pinnedFrames)._upStream;
         slotPtr->_pinnedFrames._altered = true;
         this->putAbove( *thePtr, *slotPtr );
@@ -1946,6 +1950,7 @@ void beamline::_rotateRel(   int axis, double angle
       if( 0 == strcmp("drift", upStreamPtr->Type() ) ) {
         // DANGEROUS!!  Creates free object
         Slot* slotPtr = new Slot(upStreamPtr->Name(), frameOne );
+        slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._downStream = (thePtr->_pinnedFrames)._upStream;
         slotPtr->_pinnedFrames._altered = true;
         this->putAbove( *thePtr, *slotPtr );
@@ -1955,6 +1960,7 @@ void beamline::_rotateRel(   int axis, double angle
       if( 0 == strcmp("drift", downStreamPtr->Type() ) ) {
         // DANGEROUS!!  Creates free object
         Slot* slotPtr = new Slot(downStreamPtr->Name(), frameThree.relativeTo(frameTwo) );
+        slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._upStream = (thePtr->_pinnedFrames)._downStream;
         slotPtr->_pinnedFrames._altered = true;
         this->putBelow( *thePtr, *slotPtr );
@@ -2010,7 +2016,7 @@ void beamline::_rotateRel(   int axis, double angle
       // Reset upstream and downstream elements
       // Note: this is done inefficiently
       // DANGEROUS!!  Creates free object
-      Slot* slotPtr = new Slot(frameOne );
+      Slot* slotPtr = new Slot( frameOne );
       this->putAbove( *thePtr, *slotPtr );
       if( 0 == strcmp("Slot", downStreamPtr->Type() ) ) {
         dynamic_cast<Slot*>(downStreamPtr)->setInFrame( frameZero );
@@ -2021,6 +2027,7 @@ void beamline::_rotateRel(   int axis, double angle
       if( 0 == strcmp("drift", downStreamPtr->Type() ) ) {
         // DANGEROUS!!  Creates free object
         Slot* slotPtr = new Slot(downStreamPtr->Name(), frameThree.relativeTo(frameTwo) );
+        slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._upStream = (thePtr->_pinnedFrames)._downStream;
         slotPtr->_pinnedFrames._altered = true;
         this->putBelow( *thePtr, *slotPtr );
@@ -2084,6 +2091,7 @@ void beamline::_rotateRel(   int axis, double angle
       if( 0 == strcmp("drift", upStreamPtr->Type() ) ) {
         // DANGEROUS!!  Creates free object
         Slot* slotPtr = new Slot(upStreamPtr->Name(), frameOne );
+        slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._downStream = (thePtr->_pinnedFrames)._upStream;
         slotPtr->_pinnedFrames._altered = true;
         this->putAbove( *thePtr, *slotPtr );
