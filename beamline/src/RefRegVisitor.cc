@@ -87,6 +87,7 @@ RefRegVisitor::RefRegVisitor( const RefRegVisitor& x )
 :   _prtnPtr(0)
   , _errorCode(OKAY)
   , _revolutionFrequency(x._revolutionFrequency)
+  , _initialMomentum(x._initialMomentum)
 {
   _prtnPtr = x._prtnPtr->Clone();
 }
