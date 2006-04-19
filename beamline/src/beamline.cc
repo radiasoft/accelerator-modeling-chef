@@ -1818,7 +1818,7 @@ void beamline::_rotateRel(   int axis, double angle
   //             *errorCode  = 0, nothing wrong
   //                           1, errorCodePtr, recycleBinPtr, or thePtr 
   //                              is null on entry
-  //                           2, |angle| < 1 microradian displacement
+  //                           2, |angle| < 1 nanoradian displacement
   //                           3, *thePtr is a sector element
   // 
   //             NOTE WELL: if the returned list is not empty, it means
@@ -1848,8 +1848,8 @@ void beamline::_rotateRel(   int axis, double angle
   if( std::abs(pct) < 1.0e-8 )       { pct = 0.0; }
   if( std::abs(1.0 - pct) < 1.0e-8 ) { pct = 1.0; }
 
-  // Will not rotate anything less than 1 microradian.
-  if( std::abs(angle) < 1.0e-6 ) { 
+  // Will not rotate anything less than 1 nanoradian.
+  if( std::abs(angle) < 1.0e-9 ) { 
     (*pcerr) << "\n*** ERROR *** "
          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** ERROR *** Called by " << invoker
@@ -1857,8 +1857,8 @@ void beamline::_rotateRel(   int axis, double angle
          << thePtr->Type() << "  " << thePtr->Name() << "."
          << "\n*** ERROR *** Requested rotation angle, " 
          << (1.e6*angle) 
-         << ", microradians is too small."
-            "\n*** ERROR *** Must be at least 1 microradian."
+         << ", nanoradians is too small."
+            "\n*** ERROR *** Must be at least 1 nanoradian."
             "\n*** ERROR *** "
          << endl;
     *errPtr = 2;
