@@ -67,9 +67,9 @@ sbend::sbend( double l, double s, double alpha, PropFunc* pf )
   , _dsTan(0.0)
   , _myArcsin(true)
 {
- if ( fabs( alpha ) < 1.0e-6 ) {
+ if ( fabs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
-   uic  << "| bend angle | = " << fabs(alpha) << " < 1 microradian.";
+   uic  << "| bend angle | = " << fabs(alpha) << " < 1 nanoradian.";
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
           "sbend::sbend( double l, double s, double alpha, PropFunc* pf )",
           uic.str().c_str() ) );
@@ -110,9 +110,9 @@ sbend::sbend( double l, double s, double alpha,
   , _myArcsin(true)
 {
  static bool firstTime = true;
- if ( fabs( alpha ) < 1.0e-6 ) {
+ if ( fabs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
-   uic  << "| bend angle | = " << fabs(alpha) << " < 1 microradian.";
+   uic  << "| bend angle | = " << fabs(alpha) << " < 1 nanoradian.";
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
           "sbend::sbend( double l, double s, ... )",
           uic.str().c_str() ) );
@@ -185,9 +185,9 @@ sbend::sbend( const char* n, double l, double s, double alpha, PropFunc* pf )
   , _dsTan(0.0)
   , _myArcsin(true)
 {
- if ( fabs( alpha ) < 1.0e-6 ) {
+ if ( fabs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
-   uic  << "| bend angle | = " << fabs(alpha) << " < 1 microradian.";
+   uic  << "| bend angle | = " << fabs(alpha) << " < 1 nanoradian.";
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
           "sbend::sbend( char* n, double l, double s, double alpha, PropFunc* pf )",
           uic.str().c_str() ) );
@@ -228,9 +228,9 @@ sbend::sbend( const char* n, double l, double s, double alpha,
   , _myArcsin(true)
 {
  static bool firstTime = true;
- if ( fabs( alpha ) < 1.0e-6 ) {
+ if ( fabs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
-   uic  << "| bend angle | = " << fabs(alpha) << " < 1 microradian.";
+   uic  << "| bend angle | = " << fabs(alpha) << " < 1 nanoradian.";
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
           "sbend::sbend( double l, double s, ... )",
           uic.str().c_str() ) );

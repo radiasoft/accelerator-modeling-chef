@@ -108,7 +108,7 @@ rbend::rbend( double l, double s, double entryangle, PropFunc* pf )
   , _myArcsin(true)
 {
  static bool firstTime = true;
- if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-6) ) {
+ if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-9) ) {
    _usAngle = 0.0;
    _usTan   = 0.0;
    _dsAngle = 0.0;
@@ -119,7 +119,7 @@ rbend::rbend( double l, double s, double entryangle, PropFunc* pf )
           << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream entry angle | = " 
           << fabs(entryangle) 
-          << " < 1 microradian."
+          << " < 1 nanoradian."
              "\n*** WARNING *** It will be reset to zero."
              "\n*** WARNING *** This message is written once only."
           << endl;
@@ -147,7 +147,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, PropFunc* pf
   , _myArcsin(true)
 {
  static bool firstTime = true;
- if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-6) ) {
+ if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-9) ) {
    _usAngle = 0.0;
    _usTan   = 0.0;
    _dsAngle = 0.0;
@@ -158,7 +158,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, PropFunc* pf
           << "\n*** WARNING *** rbend::rbend( char* n, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream entry angle | = " 
           << fabs(entryangle) 
-          << " < 1 microradian."
+          << " < 1 nanoradian."
              "\n*** WARNING *** It will be reset to zero."
              "\n*** WARNING *** This message is written once only."
           << endl;
@@ -296,7 +296,7 @@ rbend::rbend( double l, double s, double entryangle, double us, double ds, PropF
   , _myArcsin(true)
 {
  static bool firstTime = true;
- if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-6) ) {
+ if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-9) ) {
    _usAngle = us;
    _usTan   = tan(us);
    _dsAngle = -ds;
@@ -307,7 +307,7 @@ rbend::rbend( double l, double s, double entryangle, double us, double ds, PropF
           << "\n*** WARNING *** rbend::rbend( char* n, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream entry angle | = " 
           << fabs(entryangle) 
-          << " < 1 microradian."
+          << " < 1 nanoradian."
              "\n*** WARNING *** It will be reset to zero."
              "\n*** WARNING *** This message is written once only."
           << endl;
@@ -369,7 +369,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, double us, d
   , _myArcsin(true)
 {
  static bool firstTime = true;
- if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-6) ) {
+ if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-9) ) {
    _usAngle = us;
    _usTan   = tan(us);
    _dsAngle = -ds;
@@ -380,7 +380,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, double us, d
           << "\n*** WARNING *** rbend::rbend( char* n, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream entry angle | = " 
           << fabs(entryangle) 
-          << " < 1 microradian."
+          << " < 1 nanoradian."
              "\n*** WARNING *** It will be reset to zero."
              "\n*** WARNING *** This message is written once only."
           << endl;
