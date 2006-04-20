@@ -88,7 +88,7 @@ void  yyset_in (FILE* in_fp , yyscan_t scanner);
 void  yyset_out(FILE* out_fp, yyscan_t scanner);
 void  yyrestart (FILE *input_file, yyscan_t yyscanner );
 int   yyparse( madparser* mp );
-void  read_from_string( const char* );
+void  read_from_string( madparser* mp, const char* );
 void  yydebug_on(int);
 
 /*
@@ -407,7 +407,7 @@ madparser_parse( madparser* mp, const char* stringbuffer) {
 
   if (mp->inmemory_ != 0)
   {
-    read_from_string( stringbuffer );
+    read_from_string(mp, stringbuffer );
     yyset_out( stdout, mp->scanner_); 
     mp->current_yybuff_->yyfile_ = yyget_in( mp->scanner_ ); /* important ! */
     yyparse( mp );
