@@ -49,8 +49,6 @@
 #include <Aperture.h>
 #include <BmlVisitor.h>
 
-using FNAL::pcerr;
-using FNAL::pcout;
 
 #ifdef OBJECT_DEBUG
 int bmlnElmnt::objectCount = 0;
@@ -63,6 +61,8 @@ const short bmlnElmnt::BF_NULL_ARG   = 1;
 const short bmlnElmnt::BF_BAD_START  = 2;
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
 
 // **************************************************
 //   yes and no Criteria
@@ -277,10 +277,6 @@ bmlnElmnt::bmlnElmnt( const char* n, PropFunc* pf ) {
  //          initialize its propagator functor within
  //          its constructor.
 
- for( int i = 0; i < BF_MAXCHAR; i++ ) {
-   _tag[i] = '\0';
- }
-
  #ifdef OBJECT_DEBUG
  objectCount++;
  #endif
@@ -307,10 +303,6 @@ bmlnElmnt::bmlnElmnt( double l /* length */, PropFunc* pf ) {
  // WARNING: I'm assuming that any derived class will 
  //          initialize its propagator functor within
  //          its constructor.
-
- for( int i = 0; i < BF_MAXCHAR; i++ ) {
-   _tag[i] = '\0';
- }
 
  #ifdef OBJECT_DEBUG
  objectCount++;
@@ -340,10 +332,6 @@ bmlnElmnt::bmlnElmnt( double l /* length */,
  // WARNING: I'm assuming that any derived class will 
  //          initialize its propagator functor within
  //          its constructor.
-
- for( int i = 0; i < BF_MAXCHAR; i++ ) {
-   _tag[i] = '\0';
- }
 
  #ifdef OBJECT_DEBUG
  objectCount++;
@@ -379,10 +367,6 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  // WARNING: I'm assuming that any derived class will 
  //          initialize its propagator functor within
  //          its constructor.
-
- for( int i = 0; i < BF_MAXCHAR; i++ ) {
-   _tag[i] = '\0';
- }
 
  #ifdef OBJECT_DEBUG
  objectCount++;
@@ -420,16 +404,14 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  //          initialize its propagator functor within
  //          its constructor.
 
- for( int i = 0; i < BF_MAXCHAR; i++ ) {
-   _tag[i] = '\0';
- }
-
  #ifdef OBJECT_DEBUG
  objectCount++;
  #endif
 }
 
-bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
+bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) 
+: _tag(a._tag)
+{
  ident         = new char [ strlen(a.ident) + 1 ];
                  strcpy( ident, a.ident );
  length        = a.length;
@@ -451,8 +433,6 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) {
 
  _attributes = a._attributes; 
  
- memcpy( (void*) _tag, (const void*) a._tag, BF_MAXCHAR*sizeof(char) );
-
  if(a.align != 0) {
    alignmentData data = a.align->getAlignment();
    if((data.xOffset != 0.0) || (data.yOffset != 0.0) || (data.tilt != 0.0))
@@ -648,131 +628,108 @@ void bmlnElmnt::propagate( ParticleBunch& x )
 // Begin: tagging routines
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-short bmlnElmnt::writeTag ( char c, short index )
+short  bmlnElmnt::writeTag( const char* s )
 {
-  if( index < 0 || index >= BF_MAXCHAR ) {
-    return BF_BAD_START;
-  }
-  _tag[index] = c;
+  if( s == 0 ) { return BF_NULL_ARG; }
+  _tag.assign(s);
   return BF_OK;
 }
 
 
-short bmlnElmnt::writeTag ( const char* s, short start, short num )
+short  bmlnElmnt::writeTag( char c, short index )
 {
-  if( s == 0 ) {
-    return BF_NULL_ARG;
-  }
-  if( start < 0 || start + 1 > BF_MAXCHAR ) {
-    return BF_BAD_START;
-  }
-
-  if( start + num > BF_MAXCHAR ) {
-    num = BF_MAXCHAR - start;
-  }
-  memcpy( (void*) (_tag + start), (const void*) s, num*sizeof(char) );
+  _tag.replace( index, 1, 1, c );
   return BF_OK;
 }
 
 
-short bmlnElmnt::writeTag ( const char* s )
+short bmlnElmnt::writeTag( const char* s, short index )
 {
-  static int num;
-
-  if( s == 0 ) {
-    return BF_NULL_ARG;
-  }
-
-  num = strlen(s);
-  if( num > BF_MAXCHAR ) {
-    num = BF_MAXCHAR;
-  }
-  memcpy( (void*) _tag, (const void*) s, num );
+  if( s == 0 ) { return BF_NULL_ARG; }
+  _tag.replace( index, strlen(s), s );
   return BF_OK;
 }
 
 
-short  bmlnElmnt::writeTag ( const std::string& s, short start, short  num )
+short  bmlnElmnt::writeTag( const std::string& s )
 {
-  if( start < 0 || start + 1 > BF_MAXCHAR ) {
-    return BF_BAD_START;
-  }
-  if( start + num > BF_MAXCHAR ) {
-    num = BF_MAXCHAR - start;
-  }
-  s.copy( _tag + start, num );
+  _tag.assign(s);
   return BF_OK;
 }
 
 
-short  bmlnElmnt::writeTag ( const std::string& s )
+short  bmlnElmnt::writeTag( const std::string& s, short index )
 {
-  static int num;
-
-  num = s.length();
-  if( num > BF_MAXCHAR ) {
-    num = BF_MAXCHAR;
-  }
-  s.copy( _tag, num );
+  _tag.assign( s, index, s.size() );
   return BF_OK;
-}
-
-
-short bmlnElmnt::readTag  ( char* s, short start, short num ) const
-{
-  if( s == 0 ) {
-    return BF_NULL_ARG;
-  }
-  if( start < 0 || start + 1 > BF_MAXCHAR ) {
-    return BF_BAD_START;
-  }
-  if( start + num > BF_MAXCHAR ) {
-    num = BF_MAXCHAR - start;
-  }
-  memcpy( (void*) s, (const void*) (_tag + start), num*sizeof(char) );
-  return BF_OK;
-}
-
-
-short bmlnElmnt::readTag( char* s ) const
-{
-  return this->readTag( s, 0, BF_MAXCHAR );
-}
-
-
-char bmlnElmnt::readTag( short pos ) const
-{
-  if( (pos < 0) || (pos + 1 > BF_MAXCHAR) ) {
-    pos = 0;
-    (*pcerr) << "*** WARNING ***                              \n"
-         << "*** WARNING *** bmlnElmnt::readTag           \n"
-         << "*** WARNING *** Character position out of    \n"
-         << "*** WARNING *** bounds. Will return first    \n"
-         << "*** WARNING *** character of tag.            \n"
-         << "*** WARNING ***                              \n"
-         << endl;
-  }
-  return _tag[pos];
-}
-
-
-std::string bmlnElmnt::readTag( short start, short  num ) const
-{
-  std::string ret;
-  if( start < 0 || start + 1 > BF_MAXCHAR ) {
-    start = 0;
-  }
-  if( start + num > BF_MAXCHAR ) {
-    num = BF_MAXCHAR - start;
-  }
-  ret = ret.append( _tag + start, num );
-  return ret;
 }
 
 
 std::string bmlnElmnt::readTag() const
 {
-  return this->readTag( 0, BF_MAXCHAR );
+  return _tag;
+}
+
+
+std::string bmlnElmnt::readTag( short start, short num ) const
+{
+  if( 0 == _tag.size() ) { 
+    return _tag; 
+  }
+  if( start < 0 || start + 1 > _tag.size() ) {
+    start = 0;
+  }
+  if( start + num > _tag.size() ) {
+    num = _tag.size() - start;
+  }
+  return _tag.substr( start, num );
+}
+
+
+short  bmlnElmnt::readTag( char* s ) const
+{
+  return this->readTag( s, 0, _tag.size() );
+}
+
+
+short bmlnElmnt::readTag( char* s, short start, short num ) const
+{
+  if( s == 0 ) {
+    return BF_NULL_ARG;
+  }
+  if( start < 0 || start + 1 > _tag.size() ) {
+    return BF_BAD_START;
+  }
+  if( start + num > _tag.size() ) {
+    num = _tag.size() - start;
+  }
+
+  _tag.copy( s, num, start );
+  return BF_OK;
+}
+
+
+char bmlnElmnt::readTag( short pos ) const
+{
+  if( (pos < 0) || (pos + 1 > _tag.size()) ) {
+    pos = 0;
+    (*pcerr) << "\n*** WARNING ***                              "
+                "\n*** WARNING *** File: " 
+             << __FILE__ << "  Line: " << __LINE__
+             << "\n*** WARNING *** bmlnElmnt::readTag            "
+                "\n*** WARNING *** Character position out of    "
+                "\n*** WARNING *** bounds. Will return first    "
+                "\n*** WARNING *** character of tag.            "
+                "\n*** WARNING ***                              "
+             << endl;
+  }
+  return (_tag.c_str())[pos];
+}
+
+
+short bmlnElmnt::getTagSize() const
+{
+  return _tag.size();
 }
 
 
