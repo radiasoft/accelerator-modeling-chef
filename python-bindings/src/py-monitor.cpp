@@ -135,9 +135,9 @@ public:
   
   inline bool State() const { return _onOffSwitch; }
   const char* Type() const;
-  virtual int isType(char* c) 
+  virtual bool isType(char* c) 
   { if ( strcmp(c, "monitor") != 0 ) return bmlnElmnt::isType(c); 
-    else return 1;
+    else return true;
   }
 
   bmlnElmnt* Clone() const 
@@ -163,9 +163,9 @@ public:
   void localPropagate( JetParticle& );
 
   const char* Type() const;
-  virtual int isType(char* c) 
+  virtual bool isType(char* c) 
   { if ( strcmp(c, "hmonitor") != 0 ) return monitor::isType(c); 
-    else return 1; 
+    else return true; 
   }
   bmlnElmnt* Clone() const 
   { return new hmonitor( *this ); }
@@ -189,9 +189,9 @@ public:
   void localPropagate( JetParticle& );
 
   const char* Type() const;
-  virtual int isType(char* c) 
+  virtual bool isType(char* c) 
   { if ( strcmp(c, "vmonitor") != 0 ) return monitor::isType(c); 
-    else return 1; 
+    else return true; 
   }
   bmlnElmnt* Clone() const 
   { return new vmonitor( *this ); }
