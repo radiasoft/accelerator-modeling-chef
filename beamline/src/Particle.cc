@@ -121,7 +121,8 @@ Particle::Particle( double mass, double energy, double* s )
 }
 
 Particle::Particle( const Particle& u ) 
-: _wgt(u._wgt)
+:   _wgt(u._wgt)
+  , _tag(u._tag)
 {
  int i;
  for( i = 0; i < BMLN_dynDim; i++ ) state[i] = u.state[i];
