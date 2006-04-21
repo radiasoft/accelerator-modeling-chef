@@ -123,7 +123,7 @@ public:
   void setLength( double );
 
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "sector") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType(char* c) { if ( strcmp(c, "sector") != 0 ) return bmlnElmnt::isType(c); else return true; }
 
   bmlnElmnt* Clone() const { return new sector( *this ); }
 } ;

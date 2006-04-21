@@ -58,7 +58,7 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThinDecapole( this ); }
 
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "thinDecapole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType(char* c) { if ( strcmp(c, "thinDecapole") != 0 ) return bmlnElmnt::isType(c); else return true; }
 
   bmlnElmnt* Clone() const { return new thinDecapole( *this ); }
 } ;

@@ -89,7 +89,7 @@ public:
   void eliminate();
   
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "thinLamb") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType(char* c) { if ( strcmp(c, "thinLamb") != 0 ) return bmlnElmnt::isType(c); else return true; }
 
   bmlnElmnt* Clone() const { return new thinLamb( *this ); }
 };

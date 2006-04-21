@@ -67,7 +67,7 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitSextupole( this ); }
 
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "sextupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType(char* c) { if ( strcmp(c, "sextupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
 
   bmlnElmnt* Clone() const { return new sextupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** );
@@ -93,7 +93,7 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThinSextupole( this ); }
 
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "thinSextupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType(char* c) { if ( strcmp(c, "thinSextupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
 
   bmlnElmnt* Clone() const { return new thinSextupole( *this ); }
 } ;
@@ -128,7 +128,7 @@ public:
   void eliminate();
   
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "JetthinSext") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType(char* c) { if ( strcmp(c, "JetthinSext") != 0 ) return bmlnElmnt::isType(c); else return true; }
 
   bmlnElmnt* Clone() const { return new JetthinSext( *this ); }
   

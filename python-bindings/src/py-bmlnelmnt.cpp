@@ -99,9 +99,9 @@ std::string    (bmlnElmnt::*readTag5)() const                      = &bmlnElmnt:
 
    // short (bmlnElmnt::*writeTag1)     (char)                                    = &bmlnElmnt::writeTag;
 short (bmlnElmnt::*writeTag2)     (char,short)                              = &bmlnElmnt::writeTag;
-short (bmlnElmnt::*writeTag3)     (const char*,short,short)                 = &bmlnElmnt::writeTag;
+short (bmlnElmnt::*writeTag3)     (const char*,short)                       = &bmlnElmnt::writeTag;
 short (bmlnElmnt::*writeTag4)     (const char*)                             = &bmlnElmnt::writeTag;
-short (bmlnElmnt::*writeTag5)     (const std::string&, short, short )       = &bmlnElmnt::writeTag;
+short (bmlnElmnt::*writeTag5)     (const std::string&,short)                = &bmlnElmnt::writeTag;
 short (bmlnElmnt::*writeTag6)     (const std::string&)                      = &bmlnElmnt::writeTag;
 
 
@@ -243,4 +243,3 @@ class_<beamline>("beamline", init<>() )
 #endif
 
 }
-
