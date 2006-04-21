@@ -71,7 +71,6 @@ class sector;
 class bmlnElmnt;
 class beamline;
 
-#define BF_MAXCHAR 8
 #define NOTKNOWN   -123456.789
 #define OSTREAM_DOUBLE_PREC setprecision(20)
 
@@ -281,10 +280,6 @@ public:
     virtual void writeTo( std::ostream& ) const = 0;
   };
 
-  static const short BF_OK;
-  static const short BF_NULL_ARG;
-  static const short BF_BAD_START;
-
   // Exceptions
   struct GenericException : public std::exception
   {
@@ -470,37 +465,35 @@ public:
   virtual bool isSimple() const;
   virtual bool isMagnet() const;
 
+
+  // Tagging methods
+  static const short BF_OK;
+  static const short BF_NULL_ARG;
+  static const short BF_BAD_START;
+
+  short  writeTag ( const char* );
   short  writeTag ( char,          // character to be written
                     short = 0      // position in tag
                   );
   short  writeTag ( const char*,   // characters to be written
-                    short,         // starting position in tag
-                    short          // number of characters 
-                  );
-  short  writeTag ( const char* );
-
-  short  writeTag ( const std::string&,
-                    short,         // starting position in tag
-                    short          // number of characters 
+                    short = 0      // starting position in tag
                   );
   short  writeTag ( const std::string& );
-
+  short  writeTag ( const std::string&, 
+                    short = 0      // starting position in tag
+                  );
+  std::string readTag  () const;
+  std::string readTag  ( short,           // starting position in tag
+                         short  ) const;  // number of characters read
+  short  readTag  ( char* ) const;
   short  readTag  ( char*,         // returned characters
                     short,         // starting position in tag
                     short          // number of characters
                   ) const;
-  short  readTag  ( char* ) const;
+  char   readTag  ( short ) const;       // position in tag
+  short  getTagSize() const;
+  short  getTagCapacity() const;
 
-  char   readTag  ( short          // position in tag
-                  ) const;    
-  std::string readTag  ( 
-              short,         // starting position in tag
-              short          // number of characters 
-                  ) const;
-  std::string readTag  () const;
-
-  short  getTagSize() const
-    { return BF_MAXCHAR; }
 
   virtual void setLength     ( double );
   virtual void setStrength   ( double );
@@ -573,7 +566,7 @@ private:
   friend bmlnElmnt* read_istream(std::istream&);
 
   std::string flavor;     // Allows for "flavors" of types of elements.
-  char         _tag[ BF_MAXCHAR ];
+  std::string  _tag;
 };
 
 

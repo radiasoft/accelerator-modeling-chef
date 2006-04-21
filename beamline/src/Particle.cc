@@ -50,6 +50,8 @@ const short Particle::BF_NULL_ARG   = 1;
 const short Particle::BF_BAD_START  = 2;
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
 
 // **************************************************
 //   class Particle
@@ -324,8 +326,8 @@ Particle::GenericException::GenericException( string fileName, int lineNumber,
 
   static bool firstTime = true;
   if( firstTime ) {
-    cerr << errorString;
-    cerr << "\n*** ERROR *** This message is printed only once."
+    (*pcerr) << errorString;
+    (*pcerr) << "\n*** ERROR *** This message is printed only once."
             "\n*** ERROR *** "
          << endl;
     firstTime = false;
@@ -338,33 +340,48 @@ const char* Particle::GenericException::what() const throw()
 }
 
 
-// Tagging
-short  Particle::writeTag ( char, short )
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// Begin: tagging routines
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+short  Particle::writeTag( const char* s )
 {
+  if( s == 0 ) { return BF_NULL_ARG; }
+  _tag.assign(s);
+  return BF_OK;
 }
 
 
-short  Particle::writeTag ( const char* )
+short  Particle::writeTag( char c, short index )
 {
+  _tag.replace( index, 1, 1, c );
+  return BF_OK;
 }
 
 
-short  Particle::writeTag ( const char*, short, short )
+short Particle::writeTag( const char* s, short index )
 {
+  if( s == 0 ) { return BF_NULL_ARG; }
+  _tag.replace( index, strlen(s), s );
+  return BF_OK;
 }
 
 
-short  Particle::writeTag ( const std::string& )
+short  Particle::writeTag( const std::string& s )
 {
+  _tag.assign(s);
+  return BF_OK;
 }
 
 
-short  Particle::writeTag ( const std::string&, short )
+short  Particle::writeTag( const std::string& s, short index )
 {
+  _tag.assign( s, index, s.size() );
+  return BF_OK;
 }
 
 
-std::string Particle::readTag  () const
+std::string Particle::readTag() const
 {
   return _tag;
 }
@@ -373,7 +390,7 @@ std::string Particle::readTag  () const
 std::string Particle::readTag( short start, short num ) const
 {
   if( 0 == _tag.size() ) { 
-    return _tag;
+    return _tag; 
   }
   if( start < 0 || start + 1 > _tag.size() ) {
     start = 0;
@@ -412,15 +429,15 @@ char Particle::readTag( short pos ) const
 {
   if( (pos < 0) || (pos + 1 > _tag.size()) ) {
     pos = 0;
-    cerr << "*** WARNING ***                              \n"
-            "*** WARNING *** " 
-         << __FILE__ << ": " << __LINE__ << "             \n"
-            "*** WARNING *** Particle::readTag            \n"
-            "*** WARNING *** Character position out of    \n"
-            "*** WARNING *** bounds. Will return first    \n"
-            "*** WARNING *** character of tag.            \n"
-            "*** WARNING ***                              \n"
-         << endl;
+    (*pcerr) << "\n*** WARNING ***                              "
+                "\n*** WARNING *** File: " 
+             << __FILE__ << "  Line: " << __LINE__
+             << "\n*** WARNING *** Particle::readTag            "
+                "\n*** WARNING *** Character position out of    "
+                "\n*** WARNING *** bounds. Will return first    "
+                "\n*** WARNING *** character of tag.            "
+                "\n*** WARNING ***                              "
+             << endl;
   }
   return (_tag.c_str())[pos];
 }
@@ -431,7 +448,12 @@ short Particle::getTagSize() const
   return _tag.size();
 }
 
-  
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// End: tagging routines
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
 // **************************************************
 //   class Proton
 // **************************************************

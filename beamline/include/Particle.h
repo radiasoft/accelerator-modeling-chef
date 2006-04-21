@@ -233,6 +233,7 @@ public:
   Particle& operator=(const Particle&);
   BarnacleList dataHook;   // Carries data as service to application program.
 
+
   // State indices ...
   static int _x();
   static int _y();
@@ -241,25 +242,23 @@ public:
   static int _yp();    //           p_y / p_ref
   static int _dpop();
 
-  // Tagging
+
+  // Tagging methods
   static const short BF_OK;
   static const short BF_NULL_ARG;
   static const short BF_BAD_START;
 
+  short  writeTag ( const char* );
   short  writeTag ( char,          // character to be written
                     short = 0      // position in tag
                   );
-  short  writeTag ( const char* );
   short  writeTag ( const char*,   // characters to be written
-                    short,         // starting position in tag
-                    short          // number of characters 
+                    short = 0      // starting position in tag
                   );
-
   short  writeTag ( const std::string& );
   short  writeTag ( const std::string&, 
-                    short          // starting position in tag
+                    short = 0      // starting position in tag
                   );
-
   std::string readTag  () const;
   std::string readTag  ( short,           // starting position in tag
                          short  ) const;  // number of characters read
@@ -269,7 +268,6 @@ public:
                     short          // number of characters
                   ) const;
   char   readTag  ( short ) const;       // position in tag
-
   short  getTagSize() const;
 
   
