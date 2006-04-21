@@ -33,12 +33,32 @@
 #ifndef RFCAVITY_H
 #define RFCAVITY_H
 
-#include "bmlnElmnt.h"
-#include "MathConstants.h"
-#include "RefRegVisitor.h"
+#include <bmlnElmnt.h>
+#include <MathConstants.h>
+#include <RefRegVisitor.h>
 
 class rfcavity : public bmlnElmnt
 {
+#if 0
+public:
+  class WakeField
+  {
+  public:
+    Wakefield();
+    ~Wakefield();
+
+    clear();
+    acceptSource( const Particle& );
+    acceptSource( const JetParticle& );
+
+    propagate( Particle& );
+    propagate( JetParticle& );
+
+  private:
+    Linterpoland _wakeSpline;
+  };
+#endif
+
 private:
   double w_rf;                  // RF frequency [Hz]
   double phi_s;                 // synchronous phase
@@ -92,7 +112,8 @@ public:
   void eliminate();
 
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "rfcavity") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType( const char* c )
+  { if ( strcmp(c, "rfcavity") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bmlnElmnt* Clone() const { return new rfcavity( *this ); }
   inline double getPhi() const { return phi_s; }
   inline double getFrequency() const { return w_rf; }
@@ -161,7 +182,8 @@ public:
   void eliminate();
 
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "thinrfcavity") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType( const char* c )
+  { if ( strcmp(c, "thinrfcavity") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bmlnElmnt* Clone() const { return new thinrfcavity( *this ); }
   inline double getPhi() const { return phi_s; }
   inline double getFrequency() const { return w_rf; }

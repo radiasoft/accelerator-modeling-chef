@@ -342,7 +342,8 @@ public:
   bool isAsinExact();
 
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "rbend") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType( const char* c )
+  { if ( strcmp(c, "rbend") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
   bmlnElmnt* Clone() const { return new rbend( *this ); }

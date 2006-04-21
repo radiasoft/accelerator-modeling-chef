@@ -65,7 +65,8 @@ public:
   void localPropagate( JetParticle& );
 
   const char* Type() const;
-  virtual int isType(const char* c) { if ( strcmp(c, "hkick") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType(const char* c) 
+  { if ( strcmp(c, "hkick") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bmlnElmnt* Clone() const { return new hkick( *this ); }
 
   void accept( BmlVisitor& v ) { v.visitHkick( this ); }
@@ -96,7 +97,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitVkick( this ); }
 
   const char* Type() const;
-  virtual int isType(const char* c) { if ( strcmp(c, "vkick") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType(const char* c) 
+  { if ( strcmp(c, "vkick") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bmlnElmnt* Clone() const { return new vkick( *this ); }
 };
 

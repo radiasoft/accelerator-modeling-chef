@@ -66,7 +66,8 @@ public:
   void localPropagate( JetParticle& );
 
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "octupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType( const char* c )
+  { if ( strcmp(c, "octupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
   bmlnElmnt* Clone() const { return new octupole( *this ); }
@@ -93,7 +94,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThinOctupole( this ); }
 
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "thinOctupole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType( const char* c )
+  { if ( strcmp(c, "thinOctupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
   
   bmlnElmnt* Clone() const { return new thinOctupole( *this ); }
