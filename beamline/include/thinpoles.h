@@ -59,7 +59,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThin2pole( this ); }
 
   const char* Type() const;
-  virtual int isType(const char* c) { if ( strcmp(c, "thin2pole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType(const char* c) 
+  { if ( strcmp(c, "thin2pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
   bmlnElmnt* Clone() const { return new thin2pole( *this ); }
@@ -84,7 +85,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThin12pole( this ); }
 
   const char* Type() const;
-  virtual int isType(const char* c) { if ( strcmp(c, "thin12pole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType(const char* c) 
+  { if ( strcmp(c, "thin12pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
   bmlnElmnt* Clone() const { return new thin12pole( *this ); }
@@ -108,7 +110,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThin14pole( this ); }
 
   const char* Type() const;
-  virtual int isType(const char* c) { if ( strcmp(c, "thin14pole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType(const char* c) 
+  { if ( strcmp(c, "thin14pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
   bmlnElmnt* Clone() const { return new thin14pole( *this ); }
@@ -132,7 +135,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThin16pole( this ); }
 
   const char* Type() const;
-  virtual int isType(const char* c) { if ( strcmp(c, "thin16pole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType(const char* c) 
+  { if ( strcmp(c, "thin16pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
   bmlnElmnt* Clone() const { return new thin16pole( *this ); }
@@ -156,7 +160,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThin18pole( this ); }
 
   const char* Type() const;
-  virtual int isType(const char* c) { if ( strcmp(c, "thin18pole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType(const char* c) 
+  { if ( strcmp(c, "thin18pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
   bmlnElmnt* Clone() const { return new thin18pole( *this ); }
@@ -180,7 +185,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThinMultipole( this ); }
 
   const char* Type() const;
-  virtual int isType(const char* c) { if ( strcmp(c, "thinMultipole") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType(const char* c) 
+  { if ( strcmp(c, "thinMultipole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
   bmlnElmnt* Clone() const { return new thinMultipole( *this ); }

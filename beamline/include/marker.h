@@ -54,7 +54,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitMarker( this ); }
 
   const char* Type() const;
-  virtual int isType(char* c) { if ( strcmp(c, "marker") != 0 ) return bmlnElmnt::isType(c); else return 1; }
+  virtual bool isType( const char* c )
+  { if ( strcmp(c, "marker") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bmlnElmnt* Clone() const { return new marker( *this ); }
 } ;
 

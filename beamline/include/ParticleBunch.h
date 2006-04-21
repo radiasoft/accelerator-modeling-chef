@@ -108,7 +108,8 @@ public:
   // Modifier functions
 
   void append( const Particle& );  //  The Particle is cloned   
-  void append( ParticlePtr p);     //  Particle is NOT cloned. Shared ownership with caller; caller can safely delete.
+  void append( ParticlePtr p);     //  Particle is NOT cloned. Shared ownership with caller; 
+                                   // caller can safely delete.
 
   // void remove( const Particle* );
 

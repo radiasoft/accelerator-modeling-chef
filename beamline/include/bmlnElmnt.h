@@ -524,7 +524,8 @@ public:
   virtual const char*  Name() const
     { return ident; }
   virtual const char*  Type() const = 0;
-  virtual int    isType(const char* s) { return strcmp(s, "bmlnElmnt") == 0; }
+  virtual bool isType( const char* c )
+  { return strcmp(c, "bmlnElmnt") == 0; }
 
 
   void setFlavor( const std::string& x )
@@ -927,9 +928,9 @@ public:
   double Energy() const 
   { return nominalEnergy; }
   const char*  Type() const;
-  virtual int isType(char* c) 
+  virtual bool isType( const char* c )
   { if ( strcmp(c, "beamline") != 0 ) return bmlnElmnt::isType(c); 
-    else return 1; 
+    else return true; 
   }
 
   bmlnElmnt* Clone() const;
