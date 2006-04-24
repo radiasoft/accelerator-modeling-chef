@@ -25,6 +25,10 @@ class Linterpoland : public AbsIntegrator<double>::Integrand
     double derivative( const double& );
     int acceptNode( double, double );
 
+    Linterpoland& operator=( const Linterpoland& );
+    void removeDomain( double, double );
+    void clear();
+
   private:
     std::vector<Node> _nodes;
     void _sort();
