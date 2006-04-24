@@ -2,13 +2,12 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  CHEF: Library of Qt based widget classes, providing GUI   
-******             interfaces to exercise the functionality        
-******             of BEAMLINE.                                    
+******  widget_toolkit: a category of Qt based widget classes, 
+******             providing graphical user interfaces to exercise
+******             the functionality of BEAMLINE/MXYZPTLK.
 ******                                                                
-******  Version:   3.0                    
-******                                    
 ******  File:      QueryDialog.h
+******  Version:   3.0
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -27,6 +26,25 @@
 ******  of the License and the GNU General Public License, both of
 ******  which are supplied with this software.
 ******                                                                
+**************************************************************************
+**************************************************************************
+******  
+******  QueryDialog interactively constructs a BoolNode object that
+******  can be used to select elements with a beamline.  Upon closing,
+******  the BoolNode is returned as argument to the QueryDialog signal
+******  _useThis.
+******  
+******  ------------------
+******  Use meta-fragment:
+******  ------------------
+******    #include <QueryDialog.h>
+******    ...
+******    QueryDialog qdl( 0, 0, false, Qt::WDestructiveClose );
+******    connect( &qdl,  SIGNAL(_useThis( const BoolNode& )), 
+******             <receiver-address>, SLOT( <handler> );
+******    ...
+******    qdl->show();
+******  
 **************************************************************************
 *************************************************************************/
 
