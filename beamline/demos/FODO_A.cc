@@ -27,28 +27,30 @@ using namespace std;
 
 int main( int argc, char** argv ) 
 {
- if( argc != 9) {
+ if( argc != 9 ) {
   cout << "Usage: " << argv[0]
        << " <length of drift [m]> "
           " <focal length [m]> "
           " <energy [Gev]> "
-          " x y px/p py/p n"
+          " x[m] y[m] px/p py/p "
+          " n"
        << endl;
   return -1;
  }
 
- double energy      = atof( argv[3] );
+ // Instantiate a proton in the specified state.
+ // 
+ double energy = atof( argv[3] );
+
  Proton p( energy );
+ p.set_x  ( atof( argv[4] ) );
+ p.set_y  ( atof( argv[5] ) );
+ p.set_npx( atof( argv[6] ) );
+ p.set_npy( atof( argv[7] ) );
 
- double state[6];
- state[0] = atof( argv[4] );
- state[1] = atof( argv[5] );
- state[2] = 0.0;
- state[3] = atof( argv[6] );
- state[4] = atof( argv[7] );
- state[5] = 0.0;
- p.setState( state );
 
+ // Instantiate the basic drift and quad elements.
+ // 
  double length = atof( argv[1] );
  drift OO ( "OO", length );
  drift O  ( "O",  length/2.0 );
@@ -59,16 +61,23 @@ int main( int argc, char** argv )
  thinQuad D ( "D", - strength );
 
 
+ // Instantiate monitors and bind
+ // to files.
+ // 
  ofstream hStr( "hor.dat" );
- hmonitor bpmH;
+ hmonitor bpmH( "HORIZONTAL" );
  bpmH.setOutputStream( hStr );
  bpmH.on();
 
  ofstream vStr( "ver.dat" );
- vmonitor bpmV;
+ vmonitor bpmV( "VERTICAL" );
  bpmV.setOutputStream( vStr );
  bpmV.on();
 
+
+ // Create a standard FODO cell
+ // (without bends)
+ // 
  beamline cell;
           cell.append( F );
           cell.append( OO );
@@ -78,6 +87,10 @@ int main( int argc, char** argv )
           cell.append( bpmV );
           cell.append( O );
 
+
+ // Propagate the proton the specified
+ // number of times.
+ // 
  for( int k = 0; k < atoi( argv[8] ); k++ ) {
   cell.propagate( p );
  }
