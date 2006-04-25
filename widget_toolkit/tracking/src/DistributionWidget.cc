@@ -379,13 +379,6 @@ void DistributionWidget::_finishConstructor()
 
      _selPtr->adjustSize();
 
-     // DGN: if( _selPtr->sizePolicy().mayGrowVertically() ) {
-     // DGN:   cout << "Can grow." << endl;
-     // DGN: }
-     // DGN: else {
-     // DGN:   cout << "Cannot grow." << endl;
-     // DGN: }
-
      QWidget* spaceThing = new QWidget(_qvbPtr);
      spaceThing->setSizePolicy( QSizePolicy(QSizePolicy::Ignored,QSizePolicy::Ignored) );
 
@@ -449,11 +442,6 @@ void DistributionWidget::changeLabels()
 
 void DistributionWidget::resizeEvent( QResizeEvent* qrePtr )
 {
-  // DGN: cout << "Received resizeEvent "
-  // DGN:      << qrePtr->size().width()
-  // DGN:      << "  "
-  // DGN:      << qrePtr->size().height()
-  // DGN:      << endl;
   _qvbPtr->resize( qrePtr->size().width(), qrePtr->size().height() );
 }
 

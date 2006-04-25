@@ -143,36 +143,6 @@ DispersionSage::DispersionSage( const beamline& x, bool doClone )
   // REMOVE: _finishConstructor();
 }
 
-// REMOVE: void DispersionSage::_finishConstructor()
-// REMOVE: {
-// REMOVE:           cout << "DGN: Entering void DispersionSage::_finishConstructor()" << std::endl;
-// REMOVE:           cout << "DGN:   _n = _arrayPtr->size();" << std::endl;
-// REMOVE:   _n = _arrayPtr->size();
-// REMOVE:           cout << "DGN:   if( 0 < _n ) {" << std::endl;
-// REMOVE:           cout << "DGN:   if( 0 < "
-// REMOVE:        << _n
-// REMOVE:        << " ) {" << std::endl;
-// REMOVE:   if( 0 < _n ) {
-// REMOVE:             cout << "DGN: The value of _calcs is " << ((int) _calcs) << std::endl;
-// REMOVE:             cout << "DGN:     _calcs = new Info* [_n];" << std::endl;
-// REMOVE:             cout << "DGN:     _calcs = new Info* ["
-// REMOVE:                  << _n
-// REMOVE:                  << "];" << std::endl;
-// REMOVE:     _calcs = new Info* [_n];
-// REMOVE:             cout << "DGN:     _calcs[0] = new Info[_n];" << std::endl;
-// REMOVE:     _calcs[0] = new Info[_n];
-// REMOVE:             cout << "DGN:     Info* k = _calcs[0];" << std::endl;
-// REMOVE:     Info* k = _calcs[0];
-// REMOVE:             cout << "DGN:     for( int i = 0; i < _n; i++ ) { _calcs[i] = k++; }" << std::endl;
-// REMOVE:     for( int i = 0; i < _n; i++ ) { 
-// REMOVE:               cout << "DGN:       _calcs["
-// REMOVE:                    << i
-// REMOVE:                    << "] = k++; " << std::endl;
-// REMOVE:       _calcs[i] = k++; 
-// REMOVE:     }
-// REMOVE:   }
-// REMOVE:           cout << "DGN: Leaving void DispersionSage::_finishConstructor()" << std::endl;
-// REMOVE: }
 
 void DispersionSage::_finishConstructor()
 {
