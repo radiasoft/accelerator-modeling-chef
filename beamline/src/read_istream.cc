@@ -58,6 +58,9 @@
 
 using namespace std;
 
+using FNAL::pcout;
+using FNAL::pcerr;
+
 bmlnElmnt* read_istream(istream& is)
 {
   // This is, in essence, the global "factory" function needed for operator<<().
@@ -117,7 +120,7 @@ bmlnElmnt* read_istream(istream& is)
   const int SIZE=80;
   char type[SIZE], *name;
   double length, strength, x, y, t;
-  static char previousLine[200];
+  std::string previousLine;
 
   name = new char[SIZE];
 
@@ -128,9 +131,6 @@ bmlnElmnt* read_istream(istream& is)
   is >> type >> name >> length >> strength >> x >> y >> t;
   
   // Figure out which type of element we have here
-
-  // cerr << "Have an element of type \"" << type << "\", name: " << name << "\n";
-
   if ( strcasecmp(type,                 "beamline") == 0 ) {
     bl = new beamline(name);
     element = bl;
@@ -301,14 +301,32 @@ bmlnElmnt* read_istream(istream& is)
     element = cfSbendPtr;
   }
   else {
-    cerr << "read_istream(istream&): Unknown element type \"" << type << "\"\n";
-    cerr << "Previous line read in was: \n" << previousLine << endl;
+    (*pcerr) << "\n **** WARNING **** read_istream(istream&): Unknown element type \"" << type << "\" "
+             << "\n **** WARNING **** Previous line read: " << previousLine
+             << "\n **** WARNING **** This program may crash and burn soon."
+             << "\n **** WARNING **** At the minimum, a memory leak has been created."
+             << endl;
+    ostringstream uic;
+    uic      << "\n **** WARNING **** read_istream(istream&): Unknown element type \"" << type << "\" "
+             << "\n **** WARNING **** Previous line read: " << previousLine
+             << "\n **** WARNING **** This program may crash and burn soon."
+             << endl;
+    return NULL;
   }
 
   // Save away the current line in case we need to report something 
   // unreadable next time.
-  sprintf(previousLine,"%s  %s  %lf  %lf  %lf  %lf  %lf",
-          type,name,length,strength,x,y,t);
+  previousLine.clear();
+  previousLine = type;
+  previousLine += "  ";
+  previousLine += name;
+  previousLine += "  ";
+  { ostringstream uic;
+    uic  << length << "  " << strength << "... and so forth.";
+    previousLine += uic.str();
+  }
+  // REMOVE: sprintf(previousLine,"%s  %s  %lf  %lf  %lf  %lf  %lf",
+  // REMOVE:         type,name,length,strength,x,y,t);
 
   // Get the rest of the description if we got a real element
   double energy;
@@ -322,8 +340,9 @@ bmlnElmnt* read_istream(istream& is)
       ((beamline*) element)->setEnergy( energy );
       do {
         e = read_istream(is);
-        if ( e ) 
+        if ( e ) {
           ((beamline*) element)->append(e);
+	}
       } while ( e );
     }
 
@@ -352,12 +371,24 @@ istream& operator>>(istream& is, beamline& bl)
   is >> type >> name >> length >> strength >> x >> y >> t;
 
   if ( strcasecmp(type, "beamline") != 0 ) {
-    cerr << " **** WARNING **** Expecting data file to begin with a \"beamline\" directive\n";
-    cerr << " **** WARNING **** First element, " 
-         << type << ",  " << name << ", ignored\n";
+    (*pcerr) << "\n **** WARNING **** Expecting data file to begin with a \"beamline\" directive"
+             << "\n **** WARNING **** First element, " 
+             << type << ",  " << name << ", ignored"
+             << "\n **** WARNING **** This program may crash and burn soon."
+             << endl;
+    ostringstream uic;
+    uic      << "\n **** WARNING **** Expecting data file to begin with a \"beamline\" directive"
+             << "\n **** WARNING **** First element, " 
+             << type << ",  " << name << ", ignored"
+             << "\n **** WARNING **** This program may crash and burn soon."
+             << endl;
+    throw(   bmlnElmnt::GenericException( __FILE__, __LINE__
+           , "istream& operator>>(istream& is, beamline& bl)"
+           , uic.str().c_str() ) );
   }
-  else
+  else {
     bl.Rename(name);
+  }
   
   // ??? REMOVE: bl.readFrom(is); // Polymorphically call the right readFrom().
   bmlnElmnt *e = 0;
