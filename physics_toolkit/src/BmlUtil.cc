@@ -329,17 +329,7 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w,
   //   at least, as I normalize on Oct.29, 2004.
   //   But that may change. Who knows? So I'll retain the line.
 
-  // DGN: Begin diagnostic section
-  // cout << "DGN:   BmlUtil::normalize( E );" << endl;
-  // MatrixC W(E); // DGN:
-  // DGN: End   diagnostic section
-
   BmlUtil::normalize( E );
-
-  // DGN: Begin diagnostic section
-  // cout << "DGN: Change in argument = " << endl;
-  // cout << (E - W) << endl;
-  // DGN: End   diagnostic section
 
   // Finally, the actual calculation: one line ...
   w.covariance = real(E*aa*E.dagger());

@@ -906,19 +906,6 @@ QString BeamlineBrowser::fullPath(QListViewItem* item)
 
 void BeamlineBrowser::contentsMousePressEvent( QMouseEvent* e )
 {
-  // Begin DGN: section
-  // static bool firstTime = true;
-  // if( firstTime ) {
-  //   firstTime = false;
-  //   SelectionMode sm = this->selectionMode();
-  //   if( sm == QListView::Single )      { (*pcout) << "DGN: Single selection mode."   << endl; }
-  //   else if( sm == QListView::Multi )       { (*pcout) << "DGN: Multi selection mode."    << endl; }
-  //   else if( sm == QListView::Extended )    { (*pcout) << "DGN: Extended selection mode." << endl; }
-  //   else if( sm == QListView::NoSelection ) { (*pcout) << "DGN: No selection mode."       << endl; }
-  //   else { (*pcout) << "DGN: Selection mode not recognized." << endl; }
-  // }
-  // End DGN: section
-
   QListView::contentsMousePressEvent(e);
 
   QPoint p( contentsToViewport( e->pos() ) );

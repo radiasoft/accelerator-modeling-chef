@@ -552,12 +552,5 @@ const EdwardsTengSage::Info* EdwardsTengSage::get_ETFuncPtr( int j )
     }
   }
 
-  // DGN: static EdwardsTengSage::Info dummyInfo;
-  // DGN: dummyInfo.beta.hor = dummyInfo.arcLength;
-  // DGN: dummyInfo.beta.ver = dummyInfo.arcLength;
-  // DGN: dummyInfo.arcLength += 1.0;
-  // DGN: 
-  // DGN: return &dummyInfo;
-
   return _calcs[j];
 }

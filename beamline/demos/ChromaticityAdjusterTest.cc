@@ -70,12 +70,6 @@ main( int argc, char** argv ) {
  ChromaticityAdjuster adj ( cell );
  LattFuncSage         lfs ( cell );
 
- // DGN: {
- // DGN: Proton p( energy );
- // DGN: double s = 0.0;
- // DGN: cell.peekAt( s, &p );
- // DGN: }
-
  // Initialize JetProtons for use
  Jet::BeginEnvironment( 1 );
  coord x(0.0),  y(0.0),  z(0.0),
@@ -88,14 +82,6 @@ main( int argc, char** argv ) {
 
  BeamlineIterator bi( cell );
  bmlnElmnt* q;
-
- // DGN: cout << jpr.State().Jacobian();
- // DGN: while( q = bi++ ) {
- // DGN:   q->propagate( jpr );
- // DGN:   cout << q->Type() << "  " << q->Name() << endl;
- // DGN:   cout << jpr.State().Jacobian();
- // DGN:   cout << endl;
- // DGN: }
 
  while((  q = bi++  )) 
  {
