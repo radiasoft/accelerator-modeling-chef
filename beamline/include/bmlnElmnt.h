@@ -932,6 +932,7 @@ public:
   { if ( strcmp(c, "beamline") != 0 ) return bmlnElmnt::isType(c); 
     else return true; 
   }
+  bool isFlat();
 
   bmlnElmnt* Clone() const;
 
