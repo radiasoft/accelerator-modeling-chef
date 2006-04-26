@@ -148,16 +148,23 @@ void rfcavity::localPropagate( JetParticle& p )
 
 void thinrfcavity::localPropagate( Particle& p ) 
 {
-  double E;
+  
+  double denom, px, py, cs, E;
   double oldRefP, newRefP;
 
   if( 0.0 != this->strength ) {
-    E = p.Energy() + strength*sin( phi_s + p.state[2] * w_rf / PH_MKS_c );
+    px = p.get_npx();
+    py = p.get_npy();
+    denom = 1.0 + p.get_ndp();
+    cs = sqrt( 1.0 - ( ( px*px + py*py ) / ( denom*denom ) ) );
+    E = p.Energy() + ((strength*cs)*(sin( phi_s + p.state[2] * w_rf / PH_MKS_c )));
+
     oldRefP = p.ReferenceMomentum();
     p.SetReferenceEnergy( p.E + strength*sin_phi_s );
     newRefP = p.ReferenceMomentum();
     p.state[3] *= ( oldRefP / newRefP );
     p.state[4] *= ( oldRefP / newRefP );
+
     // REMOVE: p.state[5] = ( sqrt((E - p.m)*(E + p.m)) 
     // REMOVE:              - sqrt((p.E-p.m)*(p.E+p.m))) / p.p;
     p.state[5] = ( sqrt((E - p.m)*(E + p.m))/p.p ) - 1.0;
@@ -166,16 +173,23 @@ void thinrfcavity::localPropagate( Particle& p )
 
 void thinrfcavity::localPropagate( JetParticle& p ) 
 {
-  Jet E( p.State().Env() );
+  Jet__environment_ptr myEnv( p.State().Env() );
+  Jet denom(myEnv), px(myEnv), py(myEnv), cs(myEnv), E(myEnv);
   double oldRefP, newRefP;
 
   if( 0.0 != this->strength ) {
-    E = p.Energy() + strength*sin( phi_s + p.state(2) * w_rf / PH_MKS_c );
+    px = p.get_npx();
+    py = p.get_npy();
+    denom = 1.0 + p.get_ndp();
+    cs = sqrt( 1.0 - ( ( px*px + py*py ) / ( denom*denom ) ) );
+    E = p.Energy() + ((strength*cs)*(sin( phi_s + p.state(2) * w_rf / PH_MKS_c )));
+
     oldRefP = p.ReferenceMomentum();
     p.SetReferenceEnergy( p.E + strength*sin_phi_s );
     newRefP = p.ReferenceMomentum();
     ( p.state ).SetComponent( 3, ( oldRefP / newRefP )*p.State(3) );
     ( p.state ).SetComponent( 4, ( oldRefP / newRefP )*p.State(4) );
+
     // REMOVE: ( p.state ).SetComponent( 5, ( sqrt((E - p.m)*(E + p.m)) 
     // REMOVE:                              - sqrt((p.E-p.m)*(p.E+p.m)) ) / p.p 
     // REMOVE:                         );
