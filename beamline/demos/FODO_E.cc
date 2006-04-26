@@ -9,23 +9,39 @@
 ** 
 ** --- Leo Michelotti
 ** --- August   5, 1994
-**     October 11, 1995  (modified)
+**     - Modified from old FODO.cc demo
+**     October 11, 1995  
+**     -  Modified slightly.
+**     April   21, 2006
+**     -  Brought into compliance with current
+**        versions of our libraries and of g++.
 **
 */
 
-// #include "beamline.h"
-#include "quadrupole.h"
-#include "drift.h"
-#include "mxyzptlk.h"
-#include "EdwardsTeng.h"
 
-char cf( bmlnElmnt* pbe ) {
-  if( ( strcasecmp( pbe->Type(), "thinQuad" ) ) == 0 )  return 1;
-  else                                                  return 0;
+#include <iostream>
+
+#include <mxyzptlk.h>
+#include <Particle.h>
+#include <quadrupole.h>
+#include <drift.h>
+#include <BeamlineIterator.h>
+
+// The following is from the physics_toolkit layer.
+#include <EdwardsTeng.h>
+
+using namespace std;
+
+
+// A utility function
+bool cf( bmlnElmnt* pbe ) 
+{ 
+  return (pbe->isType("thinQuad")); 
 }
 
-main( int argc, char** argv ) {
 
+int main( int argc, char** argv ) 
+{
  if( argc != 7 ) {
   cout << "Usage: " << argv[0]
        << " <length of drift [m]> "
@@ -35,14 +51,20 @@ main( int argc, char** argv ) {
           " <energy [Gev]> "
           " <number of cells>"
        << endl;
-  exit(0);
+  return -1;
+ }
+ else {
+   cout << "Command line: ";
+   for( int i = 0; i < argc; i++ ) {
+     cout << argv[i] << "  ";
+   }
+   cout << endl;
  }
 
- Jet::BeginEnvironment( 1 );
- coord x(0.0),  y(0.0),  z(0.0),
-      px(0.0), py(0.0), pz(0.0);
- Jet::EndEnvironment();
 
+ // Process command line arguments to get
+ // physical parameters and instantiate
+ // the drift and quads that will be used.
  double energy    =  atof( argv[5] );
  Proton pr( energy );
 
@@ -53,20 +75,26 @@ main( int argc, char** argv ) {
  double angle     =  atof( argv[4] );
  int    numCells  =  atoi( argv[6] );
 
+
+ // Create one standard FODO cell.
  beamline cell;
           cell.append( F );
           cell.append( O );
           cell.append( D );
           cell.append( O );
 
+
+ // This array will contain three beamlines
+ // built up from the FODO cell.
  beamline* theLine[3];
 
  theLine[0] = new beamline;
  theLine[2] = new beamline;
 
- *( theLine[0] ) = numCells*cell;
+ beamline clonedCell = cell.Clone();
+ *( theLine[0] ) = numCells*clonedCell;
     theLine[1]   = (beamline*) ( theLine[0]->flatten()->Clone() );
- *( theLine[2] ) = *( theLine[1] );
+ *( theLine[2] ) = theLine[1]->Clone();
 
  alignmentData roll;
  roll.tilt = angle*M_PI/180.0;
@@ -83,18 +111,33 @@ main( int argc, char** argv ) {
  theLine[2]->append( Q );
  theLine[2]->append( O );
 
+
+ // Anticipating calculations, a standard 
+ // environment is created for Jet
+ // objects: the void argument means
+ // only first order derivatives will be
+ // calculated.
+ JetParticle::createStandardEnvironments();
+
+
+ // Now we use an old standby, the EdwardsTeng object,
+ // to calculate the lattice functions of those lines.
  bmlnElmnt*   	 lbe;
  ETtunes*     	 tunes;
  ETinfo*      	 infoPtr;
- double          sl = 0.0;
+ // REMOVE: double          sl = 0.0;
 
  for( int n = 0; n < 3; n++ ) {
-  cout << "Result for line " << n << "******************\n" << endl;
-  theLine[n]->peekAt( sl, &pr );
+  cout << "\n\nResult for line " << n << "******************\n" << endl;
+  // REMOVE: theLine[n]->peekAt( sl, pr );
 
   EdwardsTeng ET( theLine[n] );
   JetProton p( energy );
-  argc = ET.doCalc( &p, cf );
+
+  // Note: lattice functions will be attached only to
+  // elements that satisfy the criterion indicated by
+  // the second argument.
+  argc = ET.doCalc( &p, cf );    // Waste not, want not.
 
   if( argc == 0 ) {
    tunes = (ETtunes*) theLine[n]->dataHook.find( "Tunes" );
@@ -102,9 +145,9 @@ main( int argc, char** argv ) {
         <<        "   vertical = " << tunes->ver
         << endl;
 
-   dlist_iterator getNext( *(dlist*) theLine[n] );
+   DeepBeamlineIterator dbi( theLine[n] );
 
-   while( lbe = (bmlnElmnt*) getNext() ) {
+   while((  lbe = dbi++  )) {
     cout << "Element:  " << lbe->Name() << endl;
 
     if( infoPtr = (ETinfo*) lbe->dataHook.find( "EdwardsTeng" ) ) {
@@ -117,9 +160,12 @@ main( int argc, char** argv ) {
       lbe->dataHook.eraseFirst( "EdwardsTeng" );
     }
     else cout << "Data not found\n" << endl;
-
    }
   }
-
+  else {
+    cout << "SORRY. EdwardsTeng exited with error " << argc << endl;
+  }
  }
+
+ return 0;
 }
