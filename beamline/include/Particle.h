@@ -248,29 +248,32 @@ public:
   static const short BF_NULL_ARG;
   static const short BF_BAD_START;
 
-  short  writeTag ( const char* );
-  short  writeTag ( char,          // character to be written
-                    short = 0      // position in tag
-                  );
-  short  writeTag ( const char*,   // characters to be written
-                    short = 0      // starting position in tag
-                  );
-  short  writeTag ( const std::string& );
-  short  writeTag ( const std::string&, 
-                    short = 0      // starting position in tag
-                  );
-  std::string readTag  () const;
-  std::string readTag  ( short,           // starting position in tag
-                         short  ) const;  // number of characters read
-  short  readTag  ( char* ) const;
-  short  readTag  ( char*,         // returned characters
-                    short,         // starting position in tag
-                    short          // number of characters
-                  ) const;
-  char   readTag  ( short ) const;       // position in tag
-  short  getTagSize() const;
+  short       writeTag(  const std::string& );  // Replaces entire tag
+  short       writeTag(  const std::string&
+                       , short                  // starting position in tag
+                      );
+  short       writeTag(  const char* );         // Replaces entire tag
+  short       writeTag(  const char*            // characters to be written
+                       , short                  // starting position in tag
+                       );
+  short       writeTag(  char );
+  short       writeTag(  char                   // character to be written
+                       , short                  // position in tag
+                      );
 
-  
+  std::string readTag() const;                  // returns entire tag
+  std::string readTag(  short                   // starting position in tag
+                      , short  ) const;         // number of characters read
+  short       readTag(  char* ) const;
+  short       readTag(  char*                   // returned characters
+                      , short                   // starting position in tag   
+                      , short                   // number of characters
+                     ) const;
+  char        readTag( short ) const;           // position in tag
+
+  short       getTagSize() const;
+
+
   // Exceptions
   struct GenericException : public std::exception
   {
