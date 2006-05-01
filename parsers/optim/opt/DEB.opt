@@ -1,0 +1,1979 @@
+#### Debuncher Ring KEG/VAL/ADS     
+### Rebuilt from many files Sep 2004 KEG         
+#--------------------------------------------------
+#### Switches
+$StarDisplay=1.0;   # $StarDisplay=1 display star chamber as outer radius,  for tracking $StarDisplay must be 0
+#--------------------------------------------------
+$DP=0;
+$dpp=$DP*0.01;
+#--------------------------------------------------
+#
+#   Header
+#
+#######include HEAD_constants.opi
+#  KEG changed to calculating E0 from P0. Pbar note 646 gives the momentum  1/15/04
+$P0 = 8886.26;  =>     8886.26
+$E0=sqrt($P0*$P0+$Mp*$Mp)-$Mp;  =>  7997.37848
+$gamma=1.0+$E0/$Mp;  =>  9.52344918
+$beta=sqrt(1.0-1.0/$gamma/$gamma);  => 0.994471802
+$Brho=$P0/$c*1e11;  =>  29641.3728
+#
+$Accept=0.0035;
+$AcceptN=$Accept*$gamma*$beta;  
+$DPoverPtot=0.0225; 
+#                    Lens and initial beta-functions
+$DeltaL=0.42;  
+$BetaStar=         3.4;  
+$Beta=$BetaStar+$DeltaL*$DeltaL/$BetaStar;  
+$Alpha=$DeltaL/$BetaStar; 
+#
+#--------------------------------------------------
+#--------------------------------------------------
+#
+#####include HEAD_definitions.opi
+######include HEAD_DEB_definitions.opi
+$ssplit=5;
+#
+$BPM = "hBPM ipD:BP hBPM";
+#
+#     Debuncher Dipole
+$DDEB = "hDEBend gBDEB bBDEB KBDEB hDEBmid bBDEB gBDEB hDEBend";
+#
+#    Debuncher dipole with shunt
+$DSDEBU = "hDEBend gBDEB bBDEB KBDEB";
+$DSDEBD = "hDEBmid  bBDEB gBDEB hDEBend";
+#--------------------------------------------------
+#--------------------------------------------------
+#
+#include opt/HEAD_excitation_DEB.opi
+#--------------------------------------------------
+#--------------------------------------------------
+####include HEAD_quad_define.opi
+#    Quad setpoint computations 
+#
+# Half lengths
+$Lsqa  =  42.29/2.0; 
+$Lsqb  =  60.5/2.0; 
+$Lsqc  =  66.68/2.0; 
+$Lsqd  =  79.38/2.0;  
+$Lsqe  =  127.46/2.0; 
+$LsqbS  = 2* $Lsqb/($ssplit-1); 
+$LsqcS  = 2* $Lsqc/($ssplit-1); 
+$LsqeS  = 2* $Lsqe/($ssplit-1); 
+#   KEG  10/28/03 Set LQE length to iron length                                                $Llqe = 80.57/2.0; 
+$Llqe = 76.2/2.0; 
+$LlqeS= 2*$Llqe/($ssplit-1); 
+#
+#
+# Parameterization for each type of quad
+#	
+$a0QA =  0.4; 
+$a1QA =  0.182; 
+$a2QA =  4.5e-5; 
+$a3QA = -1.e-08; 
+$a4QA = -3.1e-10; 
+#
+$a0QB =  .4 / (.997*45.27/63.15); 
+$a1QB =  .182 / (.997*45.27/63.15); 
+$a2QB =  4.5e-5 / (.997*45.27/63.15); 
+$a3QB = -1.0e-8 / (.997*45.27/63.15); 
+$a4QB = -2.87e-10 / (.997*45.27/63.15); 
+#
+$a0QC =  .4 / (45.27/69.25); 
+$a1QC =  .182 / (45.27/69.25); 
+$a2QC =  4.5e-5 / (45.27/69.25);  
+$a3QC = -1.0e-8 / (45.27/69.25); 
+$a4QC = -2.87e-10 / (45.27/69.25);  
+#
+$a0QD =  .4 / (45.27/81.67); 
+$a1QD =  .182 / (45.27/81.67);  
+$a2QD =  4.5e-5 / (45.27/81.67);  
+$a3QD = -5.0e-8 / (45.27/81.67);  
+$a4QD = -1.7e-10 / (45.27/81.67);  
+#
+$a0QE =  .4 / (45.27/129.55); 
+$a1QE =  .182 / (45.27/129.55);  
+$a2QE =  4.5e-5 / (45.27/129.55); 
+$a3QE = -5.0e-8 / (45.27/129.55);  
+$a4QE = -1.7e-10 / (45.27/129.55); 
+#
+$a0QLE  = 10*0.03585508;  
+$a1QLE  = 10*5.55488965E-03; 
+$a2QLE  = 10*1.51073945E-06;  
+$a3QLE  = 10*(-1.13597511E-09); 
+$a4QLE = 0;  
+#
+#--------------------------------------------------
+#--------------------------------------------------
+####include HEAD_apertures.opi
+$ASTARI=(1.0+$StarDisplay)*3.2848*2.54/2.0;  =>    4.171696
+$ASTARO=(1.0+$StarDisplay)*5.543*2.54/2.0;   =>    7.03961
+$ABPM=5.33*2.54/2.0;
+#--------------------------------------------------
+#--------------------------------------------------
+#####include HEAD_DEB_dip_trim.opi
+# Dipole parameters:
+$BendAngle = 2*$PI/66/2;  =>0.0475998887
+$Lbend = 161.6075/2;  =>    80.80375
+$BDEB=$Brho*$BendAngle/$Lbend;  =>  17.3454584
+$Eangle       = 360/66/2;  =>  2.72727273
+#
+# now to have fake trims in the center of each dipole
+$Lfaketrim=0.001;  =>       0.001
+$BKDEB=$BDEB*($iD:IB-$IBnom)/$Lfaketrim/$IBnom;  =>           0
+$BKS608=$BDEB*(($iD:IB-$iD:BS608)-($IBnom-$BS608nom))/$Lfaketrim/$IBnom;  =>           0
+#
+#  Trim Dipole Lengths (cm)
+$Lnda  =       6.500 * 2.54;  =>       16.51
+$Lndb  =     18.375 * 2.54;  =>     46.6725
+#
+# NDA and NDB transfer functions (kG/Amp):
+$aNDA = 1000*2.032129E-03/$Lnda;  => 0.123084737
+$aNDB = 1000*1.97255E-03/$Lndb;  => 0.0422636456
+#$aNDB = 1000*1.97255E-02/$Lndb;  => 0.422636456
+# The NDB above as pointed out by Valdimir N.  should be E-03 and not E-02    1/16/04 KEG
+#
+#
+# Trim Dipole kicks:
+$H102 = $aNDB*$iD:H102;  =>           0
+$H109 = $aNDB*$iD:H109;  =>           0
+$H206 = $aNDB*$iD:H206;  =>           0
+$H301 = $aNDB*$iD:H301;  =>           0
+$H302 = $aNDB*$iD:H302;  =>           0
+$H403 = $aNDB*$iD:H403;  =>           0
+$H405 = $aNDB*$iD:H405;  =>           0
+$H501 = $aNDA*$iD:H501;  =>           0
+$H606 = $aNDB*$iD:H606;  =>           0
+$H610 = $aNDB*$iD:H610;  =>           0
+$H611 = $aNDA*$iD:H611;  =>           0
+$V107 = $aNDB*$iD:V107;  =>           0
+$V206 = $aNDB*$iD:V206;  =>           0
+$V301 = $aNDB*$iD:V301;  =>           0
+$V401 = $aNDA*$iD:V401;  =>           0
+$V403 = $aNDB*$iD:V403;  =>           0
+$V406 = $aNDA*$iD:V406;  =>           0
+$V610 = $aNDB*$iD:V610;  =>           0
+#--------------------------------------------------
+#--------------------------------------------------
+#####include HEAD_DEB_fudge.opi
+#####include HEAD_fudge.opi
+# Quad fudge factors
+$FIB     =    0.000;  =>           0
+$F405    =       0.0;  =>           0
+$F404    =       0.0;  =>           0
+$F403    =       0.0;  =>           0
+# Quad fudge factors
+$FSQC =   0.000;  =>           0
+$FSQD =   0.000;  =>           0
+$FLQE  =   0.000;  =>           0
+$FLQB  =   0.000;  =>           0
+$FQSS  =   0.000;  =>           0
+$FQF    =  -0.029;
+$FQD   =   -0.031;
+$F101   =        0.0;  =>           0
+$F102    =       0.0;  =>           0
+$F103    =       0.0;  =>           0
+$F104    =       0.0;  =>           0
+$F105    =       0.0;  =>           0
+$F106    =       0.0;  =>           0
+$F107    =       0.0;  =>           0
+$F108    =       0.0;  =>           0
+$F109    =       0.0;  =>           0
+$F110    =       0.0;  =>           0
+$F111    =       0.0;  =>           0
+$F112    =       0.0;  =>           0
+$F113    =       0.0;  =>           0
+$F114    =       0.0;  =>           0
+$F115    =       0.0;  =>           0
+$F116    =       0.0;  =>           0
+$F117    =       0.0;  =>           0
+$F118    =       0.0;  =>           0
+$F119    =       0.0;  =>           0
+#
+$F220    =       0.0;  =>           0
+$F219    =       0.0;  =>           0
+$F218    =       0.0;  =>           0
+$F217    =       0.0;  =>           0
+$F216    =       0.0;  =>           0
+$F215    =       0.0;  =>           0
+$F214    =       0.0;  =>           0
+$F213    =       0.0;  =>           0
+$F212    =       0.0;  =>           0
+$F211    =       0.0;  =>           0
+$F210    =       0.0;  =>           0
+$F209    =       0.0;  =>           0
+$F208    =       0.0;  =>           0
+$F207    =       0.0;  =>           0
+$F206    =       0.0;  =>           0
+$F205    =       0.0;  =>           0
+$F204    =       0.0;  =>           0
+$F203    =       0.0;  =>           0
+$F202    =       0.0;  =>           0
+#
+$F301    =       0.0;  =>           0
+$F302    =       0.0;  =>           0
+$F303    =       0.0;  =>           0
+$F304    =       0.0;  =>           0
+$F305    =       0.0;  =>           0
+$F306    =       0.0;  =>           0
+$F307    =       0.0;  =>           0
+$F308    =       0.0;  =>           0
+$F309    =       0.0;  =>           0
+$F310    =       0.0;  =>           0
+$F311    =       0.0;  =>           0
+$F312    =       0.0;  =>           0
+$F313    =       0.0;  =>           0
+$F314    =       0.0;  =>           0
+$F315    =       0.0;  =>           0
+$F316    =       0.0;  =>           0
+$F317    =       0.0;  =>           0
+$F318    =       0.0;  =>           0
+$F319    =       0.0;  =>           0
+#
+$F420    =       0.0;  =>           0
+$F419    =       0.0;  =>           0
+$F418    =       0.0;  =>           0
+$F417    =       0.0;  =>           0
+$F416    =       0.0;  =>           0
+$F415    =       0.0;  =>           0
+$F414    =       0.0;  =>           0
+$F413    =       0.0;  =>           0
+$F412    =       0.0;  =>           0
+$F411    =       0.0;  =>           0
+$F410    =       0.0;  =>           0
+$F409    =       0.0;  =>           0
+$F408    =       0.0;  =>           0
+$F407    =       0.0;  =>           0
+$F406    =       0.0;  =>           0
+#
+$F402    =       0.0;  =>           0
+#
+$F501    =       0.0;  =>           0
+$F502    =       0.0;  =>           0
+$F503    =       0.0;  =>           0
+$F504    =       0.0;  =>           0
+$F505    =       0.0;  =>           0
+$F506    =       0.0;  =>           0
+$F507    =       0.0;  =>           0
+$F508    =       0.0;  =>           0
+$F509    =       0.0;  =>           0
+$F510    =       0.0;  =>           0
+$F511    =       0.0;  =>           0
+$F512    =       0.0;  =>           0
+$F513    =       0.0;  =>           0
+$F514    =       0.0;  =>           0
+$F515    =       0.0;  =>           0
+$F516    =       0.0;  =>           0
+$F517    =       0.0;  =>           0
+$F518    =       0.0;  =>           0
+$F519    =       0.0;  =>           0
+#
+$F620    =       0.0;  =>           0
+$F619    =       0.0;  =>           0
+$F618    =       0.0;  =>           0
+$F617    =       0.0;  =>           0
+$F616    =       0.0;  =>           0
+$F615    =       0.0;  =>           0
+$F614    =       0.0;  =>           0
+$F613    =       0.0;  =>           0
+$F612    =       0.0;  =>           0
+$F611    =       0.0;  =>           0
+$F610    =       0.0;  =>           0
+$F609    =       0.0;  =>           0
+$F608    =       0.0;  =>           0
+$F607    =       0.0;  =>           0
+$F606    =       0.0;  =>           0
+$F605    =       0.0;  =>           0
+$F604    =       0.0;  =>           0
+$F603    =       0.0;  =>           0
+$F602    =       0.0;  =>           0
+#--------------------------------------------------
+#--------------------------------------------------
+#####include HEAD_DEB_quads.opi
+# Individual magnet currents# Individual magnet currents
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS101; => 277.138397
+$G101 = (1 +$F101)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.18938061
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS102; => 267.268097
+$G102 = (1 +$F102)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.14860075
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS103; => 265.210602
+$G103 = (1 +$F103)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.14005029
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS104; => 282.435333
+$G104 = (1 +$F104)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.21109429
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS105; => 236.507904
+$G105 = (1 +$F105)*(1 + $FSQD) * ($a0QD + $I*($a1QD + $I*($a2QD + $I*($a3QD + $I*$a4QD))))/2/$Lsqd; => 1.01837329
+
+$I  = (1.0 + $FQD) * $iD:QD - $iD:QS106; => 227.405984
+$G106 = (1 +$F106)*(1 + $FSQD) * ($a0QD + $I*($a1QD + $I*($a2QD + $I*($a3QD + $I*$a4QD))))/2/$Lsqd; => 0.979741416
+
+$I  = (1.0 + $FQF) * $iD:QF; => 237.022677
+$G107 = (1 +$F107)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS108; => 231.592996
+$G108 = (1 +$F108)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS109; => 237.022677
+$G109 = (1 +$F109)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G110 = (1 +$F110)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF; => 237.022677
+$G111 = (1 +$F111)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G112 = (1 +$F112)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS113; => 237.022677
+$G113 = (1 +$F113)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS114; => 231.592996
+$G114 = (1 +$F114)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS115; => 237.022677
+$G115 = (1 +$F115)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G116 = (1 +$F116)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS117; => 237.022677
+$G117 = (1 +$F117)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G118 = (1 +$F118)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS119; => 237.022677
+$G119 = (1 +$F119)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+#
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G220 = (1 +$F220)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS219; => 237.022677
+$G219 = (1 +$F219)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G218 = (1 +$F218)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS217; => 237.022677
+$G217 = (1 +$F217)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G216 = (1 +$F216)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS215; => 237.022677
+$G215 = (1 +$F215)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS214; => 231.592996
+$G214 = (1 +$F214)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS213; => 237.022677
+$G213 = (1 +$F213)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G212 = (1 +$F212)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF; => 237.022677
+$G211 = (1 +$F211)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G210 = (1 +$F210)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS209; => 237.022677
+$G209 = (1 +$F209)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS208; => 231.592996
+$G208 = (1 +$F208)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF; => 237.022677
+$G207 = (1 +$F207)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS206; => 227.405984
+$G206 = (1 +$F206)*(1 + $FSQD) * ($a0QD + $I*($a1QD + $I*($a2QD + $I*($a3QD + $I*$a4QD))))/2/$Lsqd; => 0.979741416
+
+$I  = $iD:IB * (1.0 + $FIB ) + $iD:QT205; => 1528.09277
+$G205 = (1 +$F205)*(1 + $FLQE) * ($a0QLE + $I*($a1QLE + $I*($a2QLE + $I*($a3QLE + $I*$a4QLE))))/2/$Llqe; => 1.04967641
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS204; => 282.382233
+$G204 = (1 +$F204)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.21087724
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS203; => 265.210602
+$G203 = (1 +$F203)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.14005029
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS202; => 267.268097
+$G202 = (1 +$F202)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.14860075
+
+#
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS301; => 277.138397
+$G301 = (1 +$F301)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.18938061
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS302; => 267.268097
+$G302 = (1 +$F302)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.14860075
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS303; => 265.210602
+$G303 = (1 +$F303)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.14005029
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS304; => 282.382233
+$G304 = (1 +$F304)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.21087724
+
+$I  =  (1.0 + $FQSS) * $iD:QSS - $iD:QS305; => 236.507904
+$G305 = (1 +$F305)*(1 + $FSQD) * ($a0QD + $I*($a1QD + $I*($a2QD + $I*($a3QD + $I*$a4QD))))/2/$Lsqd; => 1.01837329
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS306; => 227.405984
+$G306 = (1 +$F306)*(1 + $FSQD) * ($a0QD + $I*($a1QD + $I*($a2QD + $I*($a3QD + $I*$a4QD))))/2/$Lsqd; => 0.979741416
+
+$I  = (1.0 + $FQF) * $iD:QF; => 237.022677
+$G307 = (1 +$F307)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS308; => 231.592996
+$G308 = (1 +$F308)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS309; => 237.022677
+$G309 = (1 +$F309)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G310 = (1 +$F310)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF; => 237.022677
+$G311 = (1 +$F311)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G312 = (1 +$F312)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS313; => 237.022677
+$G313 = (1 +$F313)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS314; => 231.592996
+$G314 = (1 +$F314)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS315; => 237.022677
+$G315 = (1 +$F315)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G316 = (1 +$F316)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS317; => 237.022677
+$G317 = (1 +$F317)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G318 = (1 +$F318)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS319; => 237.022677
+$G319 = (1 +$F319)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+#
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G420 = (1 +$F420)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS419; => 237.022677
+$G419 = (1 +$F419)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G418 = (1 +$F418)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS417; => 237.022677
+$G417 = (1 +$F417)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G416 = (1 +$F416)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS415; => 237.022677
+$G415 = (1 +$F415)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS414; => 231.592996
+$G414 = (1 +$F414)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS413; => 237.022677
+$G413 = (1 +$F413)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G412 = (1 +$F412)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF; => 237.022677
+$G411 = (1 +$F411)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G410 = (1 +$F410)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS409; => 237.022677
+$G409 = (1 +$F409)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS408; => 231.592996
+$G408 = (1 +$F408)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF; => 237.022677
+$G407 = (1 +$F407)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS406; => 227.405984
+$G406 = (1 +$F406)*(1 + $FSQD) * ($a0QD + $I*($a1QD + $I*($a2QD + $I*($a3QD + $I*$a4QD))))/2/$Lsqd; => 0.979741416
+
+$I  = $iD:IB * (1.0 + $FIB ) + $iD:QT405; => 1540.89184
+$G405 = (1 +$F405)*(1 + $FLQE) * ($a0QLE + $I*($a1QLE + $I*($a2QLE + $I*($a3QLE + $I*$a4QLE))))/2/$Llqe; => 1.05331584
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS404; => 282.435333
+$G404 = (1 +$F404)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.21109429
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS403; =>  265.1987
+$G403 = (1 +$F403)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.14000078
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS402; => 267.210114
+$G402 = (1 +$F402)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.14836001
+
+#
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS501; => 277.118866
+$G501 = (1 +$F501)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.18930032
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS502; => 267.210114
+$G502 = (1 +$F502)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.14836001
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS503; =>  265.1987
+$G503 = (1 +$F503)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.14000078
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS504; => 282.435333
+$G504 = (1 +$F504)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.21109429
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS505; => 236.507904
+$G505 = (1 +$F505)*(1 + $FSQD) * ($a0QD + $I*($a1QD + $I*($a2QD + $I*($a3QD + $I*$a4QD))))/2/$Lsqd; => 1.01837329
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS506; => 227.405984
+$G506 = (1 +$F506)*(1 + $FSQD) * ($a0QD + $I*($a1QD + $I*($a2QD + $I*($a3QD + $I*$a4QD))))/2/$Lsqd; => 0.979741416
+
+$I  = (1.0 + $FQF) * $iD:QF; => 237.022677
+$G507 = (1 +$F507)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS508; => 231.592996
+$G508 = (1 +$F508)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS509; => 237.022677
+$G509 = (1 +$F509)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G510 = (1 +$F510)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF; => 237.022677
+$G511 = (1 +$F511)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G512 = (1 +$F512)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS513; => 237.022677
+$G513 = (1 +$F513)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS514; => 231.592996
+$G514 = (1 +$F514)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS515; => 237.022677
+$G515 = (1 +$F515)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G516 = (1 +$F516)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS517; => 237.022677
+$G517 = (1 +$F517)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G518 = (1 +$F518)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS519; => 237.022677
+$G519 = (1 +$F519)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+#
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G620 = (1 +$F620)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS619; => 237.022677
+$G619 = (1 +$F619)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G618 = (1 +$F618)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS617; => 237.022677
+$G617 = (1 +$F617)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G616 = (1 +$F616)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS615; => 237.022677
+$G615 = (1 +$F615)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS614; => 231.592996
+$G614 = (1 +$F614)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS613; => 237.022677
+$G613 = (1 +$F613)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G612 = (1 +$F612)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF; => 237.022677
+$G611 = (1 +$F611)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD; => 231.592996
+$G610 = (1 +$F610)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF - $iD:QS609; => 237.022677
+$G609 = (1 +$F609)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = (1.0 + $FQD) * $iD:QD- $iD:QS608; => 231.592996
+$G608 = (1 +$F608)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 0.998230307
+
+$I  = (1.0 + $FQF) * $iD:QF; => 237.022677
+$G607 = (1 +$F607)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.02137874
+
+$I  = $iD:IB * (1.0 + $FIB ) + $iD:QT606; => 1527.59839
+$G606 = (1 +$F606)*(1 + $FLQE) * ($a0QLE + $I*($a1QLE + $I*($a2QLE + $I*($a3QLE + $I*$a4QLE))))/2/$Llqe; => 1.04953263
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS605; => 236.507904
+$G605 = (1 +$F605)*(1 + $FSQD) * ($a0QD + $I*($a1QD + $I*($a2QD + $I*($a3QD + $I*$a4QD))))/2/$Lsqd; => 1.01837329
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS604; => 282.435333
+$G604 = (1 +$F604)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.21109429
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS603; => 265.210602
+$G603 = (1 +$F603)*(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.14005029
+
+$I  = (1.0 + $FQSS) * $iD:QSS - $iD:QS602; => 267.268097
+$G602 = (1 +$F602) *(1 + $FSQC) * ($a0QC + $I*($a1QC + $I*($a2QC + $I*($a3QC + $I*$a4QC))))/2/$Lsqc; => 1.14860075
+#
+#--------------------------------------------------
+#--------------------------------------------------
+#######include HEAD_DEB_sext.opi
+# NSA Sextupole Parameters (kG/cm^2):
+$a0NSA = 0.1*1.51433E-02;  =>  0.00151433
+$a1NSA = 0.1*2.71623E-02;  =>  0.00271623
+$Lsex  =       100*0.1873250;  =>     18.7325
+$SexF =  ($a0NSA + $a1NSA*$iD:SEXF)/$Lsex;  =>0.0222345469
+$SexD =  ($a0NSA + $a1NSA*$iD:SEXD)/$Lsex;  =>-0.0295438897
+#--------------------------------------------------
+#--------------------------------------------------
+#####include HEAD_comb_func.opi
+#--------------------------------------------------
+#--------------------------------------------------
+#
+##############################################################################################################
+OptiM
+Energy[MeV]=$E0     Mass[MeV]=$Mp   
+#Emittance: ex[cm]=2e-07  ey[cm]=2e-07  DP/P=2e-05 
+Emittance: ex[cm]=$Accept  ey[cm]=$Accept  DPP=$DPoverPtot 
+Initial:	BetaX[cm]=1975.37 	BetaY[cm]=464.066 
+	AlfaX=-0.00978122 	AlfaY=0.0462084 
+#	DispersX[cm]=1.97139 	DispersY[cm]=0 
+#	Dsp_PrimeX=-0.000878966 	DspPrimeY=0 
+	DispersX[cm]=0 		DispersY[cm]=0 
+	Dsp_PrimeX=0.0		DspPrimeY=0 
+	X[cm]=0.0000   	Y[cm]=0.0000   	Z[cm]=0.0000   	S[cm]=0.0000   
+	tetaX[deg]=0        	tetaY[deg]=0        
+begin lattice. Number of periods=1 
+####include LAT_DEB_10.opi
+oD10 qQ101D  $BPM&H101 oD101AA hVschott oDVschott hVschott  hLschott oDLschott hLschott hHschott oDHschott hHschott oD101AB
+qQ102 hDSTAR  qQ102D   $BPM&V102 oD102AA oDDCCT oD102AB hGapMon oDGapMon hGapMon hDamp102 oDHDampA kH102 oDHDampA hDamp102 oD102B  
+qQ103 hDSTAR  qQ103D   $BPM&H103 oD103A hHBand4 oDtank103 hHBand4 oD103B
+$BPM&V104   qQ104 hDSTAR  qQ104D   oD104A hVBand4 oDtank104 hVBand4 oD104B
+$BPM&H105   qQ105 hDSTAR  qQ105D   oD105A hVBand3 oDtank105 hVBand3 oD105B
+qQ106 hDSTAR  qQ106D   $BPM&V106 oD106A hHBand3 oDtank106 hHBand3 oD106B
+$BPM&H107 qQ107 hDSTAR  qQ107D   oD107A kV107 oD107B $DDEB&107 oD107C   
+qQ108 hDSTAR  qQ108D   $BPM&V108 oD108A $DDEB&108 oD108B sSF108 oD108C  
+qQ109 hDSTAR  qQ109D $BPM&H109 oD109A sSF109 oD109B kH109 oD109CA hDamp109 oDVDampPU hDamp109 oD109CB sSD109 oD109D   
+qQ110 hDSTAR  qQ110D   $BPM&V110 oD110A sSD110 oD110B sSF110 oD110C   
+qQ111 hDSTAR  qQ111D   $BPM&H111 oD111A sSF111 oD111B $DDEB&111 oD111C sSD111 oD111D   
+qQ112 hDSTAR  qQ112D   $BPM&V112 oD112A sSD112 oD112B $DDEB&112 oD112C sSF112 oD112D   
+qQ113 hDSTAR  qQ113D  $BPM&H113 oD113A sSF113 oD113B $DDEB&113 oD113C sSD113 oD113D  
+qQ114 hDSTAR  qQ114D   $BPM&V114 oD114A sSD114 oD114B $DDEB&114 oD114C sSF114 oD114D   
+qQ115 hDSTAR  qQ115D  $BPM&H115 oD115A sSF115 oD115B $DDEB&115 oD115C sSD115 oD115D   
+qQ116 hDSTAR  qQ116D   $BPM&V116 oD116A sSD116 oD116B $DDEB&116 oD116C sSF116 oD116D 
+qQ117 hDSTAR  qQ117D   $BPM&H117 oD117A sSF117 oD117B $DDEB&117 oD117C sSD117 oD117D 
+qQ118 hDSTAR  qQ118D  $BPM&V118 oD118A sSD118 oD118B $DDEB&118 oD118C sSF118 oD118D 
+qQ119 hDSTAR  qQ119D   $BPM&H119 oD119A sSF119 oD119B $DDEB&119 oD119C sSD119 oD119D $BPM&V119 
+qQ220 hDSTAR 
+#--------------------------------------------------
+####include LAT_DEB_20.opi
+qQ220D 
+$BPM&V219 oD219D sSD219 oD219C $DDEB&219 oD219B sSF219 oD219A $BPM&H219  qQ219 hDSTAR qQ219D  
+oD218D sSF218 oD218C $DDEB&218 oD218B sSD218 oD218A $BPM&V218  qQ218 hDSTAR qQ218D 
+oD217D sSD217 oD217C $DDEB&217 oD217B sSF217 oD217A $BPM&H217  qQ217 hDSTAR qQ217D 
+oD216D sSF216 oD216C $DDEB&216 oD216B sSD216 oD216A $BPM&V216  qQ216 hDSTAR qQ216D  
+oD215D sSD215 oD215C $DDEB&215 oD215B sSF215 oD215A $BPM&H215 qQ215 hDSTAR qQ215D 
+oD214D sSF214 oD214C $DDEB&214 oD214B sSD214 oD214A $BPM&V214  qQ214 hDSTAR qQ214D  
+oD213D sSD213 oD213C $DDEB&213 oD213B sSF213 oD213A $BPM&H213  qQ213 hDSTAR qQ213D 
+oD212D sSF212 oD212C $DDEB&212 oD212B sSD212 oD212A $BPM&V212  qQ212 hDSTAR qQ212D  
+oD211D sSD211 oD211C $DDEB&211 oD211B sSF211 oD211A $BPM&H211  qQ211 hDSTAR qQ211D 
+oD210C sSF210 oD210B sSD210 oD210A $BPM&V210  qQ210 hDSTAR qQ210D  
+oD209C sSD209 oD209B sSF209 oD209A $BPM&H209  qQ209 hDSTAR qQ209D 
+oD208C sSF208 oD208B $DDEB&208 oD208A $BPM&V208  qQ208 hDSTAR qQ208D 
+oD207B $DDEB&207 oD207A  qQ207 hDSTAR qQ207D  $BPM&H207 
+oD206C kV206 oD206B kH206 oD206A $BPM&V206  qQ206 hDSTAR qQ206D 
+oD205A $BPM&H205  qQ205 hDSTAR qQ205D  
+oD204A hHBand2 oDtank204 hHBand2 oD204B $BPM&V204  qQ204 hDSTAR qQ204D  
+oD203A hVBand2 oDtank203 hVBand2 oD203B $BPM&H203  qQ203 hDSTAR qQ203D 
+oD202A  hVBand1 oDtank202 hVBand1 oD202B $BPM&V202  qQ202 hDSTAR qQ202D 
+oD201A hHBand1 oDtank201 hHBand1 oD201B $BPM&H201 
+qQ301 hDSTAR 
+#--------------------------------------------------
+####include LAT_DEB_30.opi
+qQ301D  $BPM&H301 oD301A kV301 oD301B kH301 oD301C  
+qQ302 hDSTAR qQ302D  $BPM&V302 oD302AA hDRF3 oDDRF3 hDRF3 oD302AB kH302 oD302B  
+qQ303 hDSTAR qQ303D $BPM&H303 oD303A hHBand4 oDtank303 hHBand4 oD303B
+$BPM&V304 qQ304 hDSTAR qQ304D  oD304A hVBand4 oDtank304 hVBand4 oD304B
+$BPM&H305 qQ305 hDSTAR qQ305D  oD305A hVBand3 oDtank305 hVBand3 oD305B
+qQ306 hDSTAR qQ306D  $BPM&V306 oD306A hHBand3 oDtank306 hHBand3 oD306B
+qQ307 hDSTAR qQ307D $BPM&H307 oD307AA iRJ306 oD307AB $DDEB&307 oD307B 
+qQ308 hDSTAR qQ308D  $BPM&V308 oD308AA iTJ308 oD308AB $DDEB&308 oD308B sSF308 oD308C  
+qQ309 hDSTAR qQ309D $BPM&H309 oD309A sSF309 oD309B sSD309 oD309C 
+qQ310 hDSTAR qQ310D  $BPM&V310 oD310A sSD310 oD310B sSF310 oD310C
+qQ311 hDSTAR qQ311D  $BPM&H311 oD311A sSF311 oD311B $DDEB&311 oD311C sSD311 oD311D 
+qQ312 hDSTAR qQ312D  $BPM&V312 oD312A sSD312 oD312B $DDEB&312 oD312C sSF312 oD312D  
+qQ313 hDSTAR qQ313D  $BPM&H313 oD313A sSF313 oD313B $DDEB&313 oD313C sSD313 oD313D  
+qQ314 hDSTAR qQ314D $BPM&V314 oD314A sSD314 oD314B $DDEB&314 oD314C sSF314 oD314D 
+qQ315 hDSTAR qQ315D  $BPM&H315 oD315A sSF315 oD315B $DDEB&315 oD315C sSD315 oD315D 
+qQ316 hDSTAR qQ316D  $BPM&V316 oD316A sSD316 oD316B $DDEB&316 oD316C sSF316 oD316D  
+qQ317 hDSTAR qQ317D  $BPM&H317 oD317A sSF317 oD317B $DDEB&317 oD317C sSD317 oD317D 
+qQ318 hDSTAR qQ318D  $BPM&V318 oD318A sSD318 oD318B $DDEB&318 oD318C sSF318 oD318D 
+qQ319 hDSTAR qQ319D  $BPM&H319 oD319A sSF319 oD319B $DDEB&319 oD319C sSD319 oD319D $BPM&V319 
+qQ420 hDSTAR 
+#--------------------------------------------------
+####nclude LAT_DEB_420_IKIK.opi
+qQ420D 
+$BPM&V419 oD419D sSD419 oD419C $DDEB&419 oD419B sSF419 oD419A $BPM&H419 qQ419 hDSTAR qQ419D 
+oD418D sSF418 oD418C $DDEB&418 oD418B sSD418 oD418A $BPM&V418  qQ418 hDSTAR qQ418D  
+oD417D sSD417 oD417C $DDEB&417 oD417B sSF417 oD417A $BPM&H417  qQ417 hDSTAR qQ417D 
+oD416D sSF416 oD416C $DDEB&416 oD416B sSD416 oD416A $BPM&V416  qQ416 hDSTAR qQ416D 
+oD415D sSD415 oD415C $DDEB&415 oD415B sSF415 oD415A $BPM&H415  qQ415 hDSTAR qQ415D 
+oD414D sSF414 oD414C $DDEB&414 oD414B sSD414 oD414A $BPM&V414  qQ414 hDSTAR qQ414D 
+oD413D sSD413 oD413C $DDEB&413 oD413B sSF413 oD413A $BPM&H413  qQ413 hDSTAR qQ413D  
+oD412D sSF412 oD412C $DDEB&412 oD412B sSD412 oD412A $BPM&V412  qQ412 hDSTAR qQ412D  
+oD411D sSD411 oD411C $DDEB&411 oD411B sSF411 oD411A $BPM&H411  qQ411 hDSTAR qQ411D 
+oD410C sSF410 oD410BA iMomScrape oD410BB sSD410 oD410A $BPM&V410 qQ410 hDSTAR qQ410D 
+oD409C sSD409 oD409BA hDRF1adi oDRF1_1 hDRF1adi oD409BB sSF409 oD409A $BPM&H409  qQ409 hDSTAR qQ409D 
+oD408C sSF408 oD408B $DDEB&408 oD408A $BPM&V408 qQ408 hDSTAR qQ408D 
+oD407B $DDEB&407 oD407A  qQ407 hDSTAR qQ407D  $BPM&H407 
+oD406B hmWave406 kV406 hmWave406 oD406A $BPM&V406 qQ406 hDSTAR qQ406D 
+oD405B kH405 oD405A $BPM&H405  qQ405 hDSTAR qQ405D 
+oD404B 
+#
+oAP2_INJ oD404A $BPM&V404  qQ404 hDSTAR qQ404D 
+oD403C kV403 oD403B kH403 oD403A $BPM&H403  qQ403 hDSTAR qQ403D 
+oD402A hIKIK oDIKIK hIKIK oD402B $BPM&V402   
+#--------------------------------------------------
+####include LAT_DEB_IKIK_401.opi
+oEndAP2 qQ402 hDSTAR qQ402D 
+oD401BA hDRF1rot oDDRF1_2 hDRF1rot oD401BB kV401 oD401A $BPM&H401
+qQ501 hDSTAR 
+#--------------------------------------------------
+####include LAT_DEB_50.opi
+qQ501D  $BPM&H501 oD501AA hDRF1rot oDDRF1_3 hDRF1rot oD501AB kH501 oD501B 
+qQ502 hDSTAR qQ502D  $BPM&V502 oD502A hDRF1rot oDDRF1_4 hDRF1rot oD502B 
+qQ503 hDSTAR qQ503D  $BPM&H503 oD503A hDRF1rot oDDRF1_5 hDRF1rot oD503B
+qQ504 hDSTAR qQ504D  $BPM&V504 oD504A  hDRF1rot oDDRF1_6 hDRF1rot oD504B
+$BPM&H505  qQ505 hDSTAR qQ505D  oD505A hDRF1rot oDDRF1_7 hDRF1rot oD505B
+qQ506 hDSTAR qQ506D  $BPM&V506 oD506A hDRF1adi oDDRF1_8 hDRF1adi oD506B
+$BPM&H507  qQ507 hDSTAR qQ507D  oD507A $DDEB&507 oD507B  
+qQ508 hDSTAR qQ508D  $BPM&V508 oD508A $DDEB&508 oD508B sSF508 oD508C 
+qQ509 hDSTAR qQ509D  $BPM&H509 oD509A sSF509 oD509BA hDRF2 oDDRF2 hDRF2 oD509BB sSD509 oD509C  
+qQ510 hDSTAR qQ510D  $BPM&V510 oD510A sSD510 oD510B sSF510 oD510C  
+qQ511 hDSTAR qQ511D  $BPM&H511 oD511A sSF511 oD511B $DDEB&511 oD511C sSD511 oD511D 
+qQ512 hDSTAR qQ512D  $BPM&V512 oD512A sSD512 oD512B $DDEB&512 oD512C sSF512 oD512D  
+qQ513 hDSTAR qQ513D  $BPM&H513 oD513A sSF513 oD513B $DDEB&513 oD513C sSD513 oD513D 
+qQ514 hDSTAR qQ514D  $BPM&V514 oD514A sSD514 oD514B $DDEB&514 oD514C sSF514 oD514D 
+qQ515 hDSTAR qQ515D $BPM&H515 oD515A sSF515 oD515B $DDEB&515 oD515C sSD515 oD515D 
+qQ516 hDSTAR qQ516D  $BPM&V516 oD516A sSD516 oD516B $DDEB&516 oD516C sSF516 oD516D  
+qQ517 hDSTAR qQ517D  $BPM&H517 oD517A sSF517 oD517B $DDEB&517 oD517C sSD517 oD517D 
+qQ518 hDSTAR qQ518D  $BPM&V518 oD518A sSD518 oD518B $DDEB&518 oD518C sSF518 oD518D 
+qQ519 hDSTAR qQ519D  $BPM&H519 oD519A sSF519 oD519B $DDEB&519 oD519C sSD519 oD519D $BPM&V519 
+qQ620 hDSTAR 
+#--------------------------------------------------
+####include LAT_DEB_60.opi
+qQ620D  
+$BPM&V619 oD619D sSD619 oD619C $DDEB&619 oD619B sSF619 oD619A $BPM&H619  qQ619 hDSTAR qQ619D  
+oD618D sSF618 oD618C $DDEB&618 oD618B sSD618 oD618A $BPM&V618  qQ618 hDSTAR qQ618D  
+oD617D sSD617 oD617C $DDEB&617 oD617B sSF617 oD617A $BPM&H617 qQ617 hDSTAR qQ617D 
+oD616D sSF616 oD616C $DDEB&616 oD616B sSD616 oD616A $BPM&V616  qQ616 hDSTAR qQ616D 
+oD615D sSD615 oD615C $DDEB&615 oD615B sSF615 oD615A $BPM&H615  qQ615 hDSTAR qQ615D 
+oD614D sSF614 oD614C $DDEB&614 oD614B sSD614 oD614A $BPM&V614  qQ614 hDSTAR qQ614D 
+oD613D sSD613 oD613C $DDEB&613 oD613B sSF613 oD613A $BPM&H613  qQ613 hDSTAR qQ613D
+oD612D sSF612 oD612C $DDEB&612 oD612B sSD612 oD612A $BPM&V612  qQ612 hDSTAR qQ612D  
+oD611E sSD611 oD611D $DDEB&611 oD611C hH611pipe kH611 hH611pipe oD611B sSF611 oD611A $BPM&H611  qQ611 hDSTAR qQ611D 
+oD610E sSF610 oD610D kV610 oD610C kH610 oD610B sSD610 oD610A $BPM&V610  qQ610 hDSTAR qQ610D 
+oD609C sSD609 oD609BB hEKIK oDEKIK hEKIK oD609BA sSF609 oD609A $BPM&H609 qQ609 hDSTAR qQ609D 
+oD608C sSF608 oD608B $DSDEBU&608 KS608 $DSDEBD&608 oD608A $BPM&V608  qQ608 hDSTAR qQ608D
+oD607B $DDEB&607 oD607A  qQ607 hDSTAR qQ607D  $BPM&H607 
+oD606C kH606 oD606B oDTOA_EXT oD606A qQ606 hDSTAR qQ606D  $BPM&V606 
+oD605C hmWave605 oDmWave605 hmWave605 oD605B hDamp605 oDVDamp605 hDamp605 oD605A $BPM&H605  qQ605 hDSTAR qQ605D  
+oD604B hHBand2 oDtank604 hHBand2 oD604A $BPM&V604  qQ604 hDSTAR qQ604D 
+oD603B hVBand2 oDtank603 hVBand2 oD603A $BPM&H603  qQ603 hDSTAR qQ603D  
+oD602B hVBand1 oDtank602 hVBand1 oD602A $BPM&V602  qQ602 hDSTAR qQ602D 
+oD601B hHBand1 oDtank601 hHBand1 oD601A $BPM&H601  
+qQ101 hDSTAR 
+#--------------------------------------------------
+end lattice 
+#
+##############################################################################################################
+begin list
+#
+####include LIST_bpm.opi
+#
+ipD:BP 	L[cm]=15.24     
+hBPM       	Ax[cm]=$ABPM 		Ay[cm]=$ABPM 		Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+#--------------------------------------------------
+#--------------------------------------------------
+#####include LIST_DEB_quads.opi
+qQ101D     	L[cm]=$Lsqc     	G[kG/cm]=$G101 	Tilt[deg]=0
+qQ102      	L[cm]=$Lsqc     	G[kG/cm]=$G102 	Tilt[deg]=90
+qQ102D     	L[cm]=$Lsqc     	G[kG/cm]=$G102 	Tilt[deg]=90
+qQ103      	L[cm]=$Lsqc     	G[kG/cm]=$G103 	Tilt[deg]=0
+qQ103D     	L[cm]=$Lsqc     	G[kG/cm]=$G103 	Tilt[deg]=0
+qQ104      	L[cm]=$Lsqc     	G[kG/cm]=$G104 	Tilt[deg]=90
+qQ104D     	L[cm]=$Lsqc     	G[kG/cm]=$G104 	Tilt[deg]=90
+qQ105      	L[cm]=$Lsqd    	G[kG/cm]=$G105 	Tilt[deg]=0
+qQ105D     	L[cm]=$Lsqd    	G[kG/cm]=$G105 	Tilt[deg]=0
+qQ106      	L[cm]=$Lsqd    	G[kG/cm]=$G106 	Tilt[deg]=90
+qQ106D     	L[cm]=$Lsqd    	G[kG/cm]=$G106 	Tilt[deg]=90
+qQ107      	L[cm]=$Lsqc     	G[kG/cm]=$G107 	Tilt[deg]=0
+qQ107D     	L[cm]=$Lsqc     	G[kG/cm]=$G107 	Tilt[deg]=0
+qQ108      	L[cm]=$Lsqc     	G[kG/cm]=$G108 	Tilt[deg]=90
+qQ108D     	L[cm]=$Lsqc     	G[kG/cm]=$G108 	Tilt[deg]=90
+qQ109      	L[cm]=$Lsqc     	G[kG/cm]=$G109 	Tilt[deg]=0
+qQ109D     	L[cm]=$Lsqc     	G[kG/cm]=$G109 	Tilt[deg]=0
+qQ110      	L[cm]=$Lsqc     	G[kG/cm]=$G110 	Tilt[deg]=90
+qQ110D     	L[cm]=$Lsqc     	G[kG/cm]=$G110 	Tilt[deg]=90
+qQ111      	L[cm]=$Lsqc     	G[kG/cm]=$G111 	Tilt[deg]=0
+qQ111D     	L[cm]=$Lsqc     	G[kG/cm]=$G111 	Tilt[deg]=0
+qQ112      	L[cm]=$Lsqc     	G[kG/cm]=$G112 	Tilt[deg]=90
+qQ112D     	L[cm]=$Lsqc     	G[kG/cm]=$G112 	Tilt[deg]=90
+qQ113      	L[cm]=$Lsqc     	G[kG/cm]=$G113 	Tilt[deg]=0
+qQ113D     	L[cm]=$Lsqc     	G[kG/cm]=$G113 	Tilt[deg]=0
+qQ114      	L[cm]=$Lsqc     	G[kG/cm]=$G114 	Tilt[deg]=90
+qQ114D     	L[cm]=$Lsqc     	G[kG/cm]=$G114 	Tilt[deg]=90
+qQ115      	L[cm]=$Lsqc     	G[kG/cm]=$G115 	Tilt[deg]=0
+qQ115D     	L[cm]=$Lsqc     	G[kG/cm]=$G115 	Tilt[deg]=0
+qQ116      	L[cm]=$Lsqc     	G[kG/cm]=$G116 	Tilt[deg]=90
+qQ116D     	L[cm]=$Lsqc     	G[kG/cm]=$G116 	Tilt[deg]=90
+qQ117      	L[cm]=$Lsqc     	G[kG/cm]=$G117 	Tilt[deg]=0
+qQ117D     	L[cm]=$Lsqc     	G[kG/cm]=$G117 	Tilt[deg]=0
+qQ118      	L[cm]=$Lsqc     	G[kG/cm]=$G118 	Tilt[deg]=90
+qQ118D     	L[cm]=$Lsqc     	G[kG/cm]=$G118 	Tilt[deg]=90
+qQ119      	L[cm]=$Lsqc     	G[kG/cm]=$G119 	Tilt[deg]=0
+qQ119D     	L[cm]=$Lsqc     	G[kG/cm]=$G119 	Tilt[deg]=0
+#
+qQ220      	L[cm]=$Lsqc     	G[kG/cm]=$G220 	Tilt[deg]=90
+qQ220D     	L[cm]=$Lsqc     	G[kG/cm]=$G220 	Tilt[deg]=90
+qQ219      	L[cm]=$Lsqc     	G[kG/cm]=$G219 	Tilt[deg]=0
+qQ219D     	L[cm]=$Lsqc     	G[kG/cm]=$G219 	Tilt[deg]=0
+qQ218      	L[cm]=$Lsqc     	G[kG/cm]=$G218 	Tilt[deg]=90
+qQ218D     	L[cm]=$Lsqc     	G[kG/cm]=$G218 	Tilt[deg]=90
+qQ217      	L[cm]=$Lsqc     	G[kG/cm]=$G217 	Tilt[deg]=0
+qQ217D     	L[cm]=$Lsqc     	G[kG/cm]=$G217 	Tilt[deg]=0
+qQ216      	L[cm]=$Lsqc     	G[kG/cm]=$G216 	Tilt[deg]=90
+qQ216D     	L[cm]=$Lsqc     	G[kG/cm]=$G216 	Tilt[deg]=90
+qQ215      	L[cm]=$Lsqc     	G[kG/cm]=$G215 	Tilt[deg]=0
+qQ215D     	L[cm]=$Lsqc     	G[kG/cm]=$G215 	Tilt[deg]=0
+qQ214      	L[cm]=$Lsqc     	G[kG/cm]=$G214 	Tilt[deg]=90
+qQ214D     	L[cm]=$Lsqc     	G[kG/cm]=$G214 	Tilt[deg]=90
+qQ213      	L[cm]=$Lsqc     	G[kG/cm]=$G213 	Tilt[deg]=0
+qQ213D     	L[cm]=$Lsqc     	G[kG/cm]=$G213 	Tilt[deg]=0
+qQ212      	L[cm]=$Lsqc     	G[kG/cm]=$G212 	Tilt[deg]=90
+qQ212D     	L[cm]=$Lsqc     	G[kG/cm]=$G212 	Tilt[deg]=90
+qQ211      	L[cm]=$Lsqc     	G[kG/cm]=$G211 	Tilt[deg]=0
+qQ211D     	L[cm]=$Lsqc     	G[kG/cm]=$G211 	Tilt[deg]=0
+qQ210      	L[cm]=$Lsqc     	G[kG/cm]=$G210 	Tilt[deg]=90
+qQ210D     	L[cm]=$Lsqc     	G[kG/cm]=$G210 	Tilt[deg]=90
+qQ209      	L[cm]=$Lsqc     	G[kG/cm]=$G209 	Tilt[deg]=0
+qQ209D     	L[cm]=$Lsqc     	G[kG/cm]=$G209 	Tilt[deg]=0
+qQ208      	L[cm]=$Lsqc     	G[kG/cm]=$G208 	Tilt[deg]=90
+qQ208D     	L[cm]=$Lsqc     	G[kG/cm]=$G208 	Tilt[deg]=90
+qQ207      	L[cm]=$Lsqc     	G[kG/cm]=$G207 	Tilt[deg]=0
+qQ207D     	L[cm]=$Lsqc     	G[kG/cm]=$G207 	Tilt[deg]=0
+qQ206      	L[cm]=$Lsqd    	G[kG/cm]=$G206 	Tilt[deg]=90
+qQ206D     	L[cm]=$Lsqd    	G[kG/cm]=$G206 	Tilt[deg]=90
+qQ205      	L[cm]=$Llqe       	G[kG/cm]=$G205 	Tilt[deg]=0
+qQ205D     	L[cm]=$Llqe       	G[kG/cm]=$G205 	Tilt[deg]=0
+qQ204      	L[cm]=$Lsqc     	G[kG/cm]=$G204 	Tilt[deg]=90
+qQ204D     	L[cm]=$Lsqc     	G[kG/cm]=$G204 	Tilt[deg]=90
+qQ203      	L[cm]=$Lsqc     	G[kG/cm]=$G203 	Tilt[deg]=0
+qQ203D     	L[cm]=$Lsqc     	G[kG/cm]=$G203 	Tilt[deg]=0
+qQ202      	L[cm]=$Lsqc     	G[kG/cm]=$G202 	Tilt[deg]=90
+qQ202D     	L[cm]=$Lsqc     	G[kG/cm]=$G202 	Tilt[deg]=90
+#
+qQ301      	L[cm]=$Lsqc     	G[kG/cm]=$G301 	Tilt[deg]=0
+qQ301D     	L[cm]=$Lsqc     	G[kG/cm]=$G301 	Tilt[deg]=0
+qQ302      	L[cm]=$Lsqc     	G[kG/cm]=$G302 	Tilt[deg]=90
+qQ302D     	L[cm]=$Lsqc     	G[kG/cm]=$G302 	Tilt[deg]=90
+qQ303      	L[cm]=$Lsqc     	G[kG/cm]=$G303 	Tilt[deg]=0
+qQ303D     	L[cm]=$Lsqc     	G[kG/cm]=$G303 	Tilt[deg]=0
+qQ304      	L[cm]=$Lsqc     	G[kG/cm]=$G304 	Tilt[deg]=90
+qQ304D     	L[cm]=$Lsqc     	G[kG/cm]=$G304 	Tilt[deg]=90
+qQ305      	L[cm]=$Lsqd    	G[kG/cm]=$G305 	Tilt[deg]=0
+qQ305D     	L[cm]=$Lsqd    	G[kG/cm]=$G305 	Tilt[deg]=0
+qQ306      	L[cm]=$Lsqd    	G[kG/cm]=$G306 	Tilt[deg]=90
+qQ306D     	L[cm]=$Lsqd    	G[kG/cm]=$G306 	Tilt[deg]=90
+qQ307      	L[cm]=$Lsqc     	G[kG/cm]=$G307 	Tilt[deg]=0
+qQ307D     	L[cm]=$Lsqc     	G[kG/cm]=$G307 	Tilt[deg]=0
+qQ308      	L[cm]=$Lsqc     	G[kG/cm]=$G308 	Tilt[deg]=90
+qQ308D     	L[cm]=$Lsqc     	G[kG/cm]=$G308 	Tilt[deg]=90
+qQ309      	L[cm]=$Lsqc     	G[kG/cm]=$G309 	Tilt[deg]=0
+qQ309D     	L[cm]=$Lsqc     	G[kG/cm]=$G309 	Tilt[deg]=0
+qQ310      	L[cm]=$Lsqc     	G[kG/cm]=$G310 	Tilt[deg]=90
+qQ310D     	L[cm]=$Lsqc     	G[kG/cm]=$G310 	Tilt[deg]=90
+qQ311      	L[cm]=$Lsqc     	G[kG/cm]=$G311 	Tilt[deg]=0
+qQ311D     	L[cm]=$Lsqc     	G[kG/cm]=$G311 	Tilt[deg]=0
+qQ312      	L[cm]=$Lsqc     	G[kG/cm]=$G312 	Tilt[deg]=90
+qQ312D     	L[cm]=$Lsqc     	G[kG/cm]=$G312 	Tilt[deg]=90
+qQ313      	L[cm]=$Lsqc     	G[kG/cm]=$G313 	Tilt[deg]=0
+qQ313D     	L[cm]=$Lsqc     	G[kG/cm]=$G313 	Tilt[deg]=0
+qQ314      	L[cm]=$Lsqc     	G[kG/cm]=$G314 	Tilt[deg]=90
+qQ314D     	L[cm]=$Lsqc     	G[kG/cm]=$G314 	Tilt[deg]=90
+qQ315      	L[cm]=$Lsqc     	G[kG/cm]=$G315 	Tilt[deg]=0
+qQ315D     	L[cm]=$Lsqc     	G[kG/cm]=$G315 	Tilt[deg]=0
+qQ316      	L[cm]=$Lsqc     	G[kG/cm]=$G316 	Tilt[deg]=90
+qQ316D     	L[cm]=$Lsqc     	G[kG/cm]=$G316 	Tilt[deg]=90
+qQ317      	L[cm]=$Lsqc     	G[kG/cm]=$G317 	Tilt[deg]=0
+qQ317D     	L[cm]=$Lsqc     	G[kG/cm]=$G317 	Tilt[deg]=0
+qQ318      	L[cm]=$Lsqc     	G[kG/cm]=$G318 	Tilt[deg]=90
+qQ318D     	L[cm]=$Lsqc     	G[kG/cm]=$G318 	Tilt[deg]=90
+qQ319      	L[cm]=$Lsqc     	G[kG/cm]=$G319 	Tilt[deg]=0
+qQ319D     	L[cm]=$Lsqc     	G[kG/cm]=$G319 	Tilt[deg]=0
+#
+qQ420      	L[cm]=$Lsqc     	G[kG/cm]=$G420 	Tilt[deg]=90
+qQ420D     	L[cm]=$Lsqc     	G[kG/cm]=$G420 	Tilt[deg]=90
+qQ419      	L[cm]=$Lsqc     	G[kG/cm]=$G419 	Tilt[deg]=0
+qQ419D     	L[cm]=$Lsqc     	G[kG/cm]=$G419 	Tilt[deg]=0
+qQ418      	L[cm]=$Lsqc     	G[kG/cm]=$G418 	Tilt[deg]=90
+qQ418D     	L[cm]=$Lsqc     	G[kG/cm]=$G418 	Tilt[deg]=90
+qQ417      	L[cm]=$Lsqc     	G[kG/cm]=$G417 	Tilt[deg]=0
+qQ417D     	L[cm]=$Lsqc     	G[kG/cm]=$G417 	Tilt[deg]=0
+qQ416      	L[cm]=$Lsqc     	G[kG/cm]=$G416 	Tilt[deg]=90
+qQ416D     	L[cm]=$Lsqc     	G[kG/cm]=$G416 	Tilt[deg]=90
+qQ415      	L[cm]=$Lsqc     	G[kG/cm]=$G415 	Tilt[deg]=0
+qQ415D     	L[cm]=$Lsqc     	G[kG/cm]=$G415 	Tilt[deg]=0
+qQ414      	L[cm]=$Lsqc     	G[kG/cm]=$G414 	Tilt[deg]=90
+qQ414D     	L[cm]=$Lsqc     	G[kG/cm]=$G414 	Tilt[deg]=90
+qQ413      	L[cm]=$Lsqc     	G[kG/cm]=$G413 	Tilt[deg]=0
+qQ413D     	L[cm]=$Lsqc     	G[kG/cm]=$G413 	Tilt[deg]=0
+qQ412      	L[cm]=$Lsqc     	G[kG/cm]=$G412 	Tilt[deg]=90
+qQ412D     	L[cm]=$Lsqc     	G[kG/cm]=$G412 	Tilt[deg]=90
+qQ411      	L[cm]=$Lsqc     	G[kG/cm]=$G411 	Tilt[deg]=0
+qQ411D     	L[cm]=$Lsqc     	G[kG/cm]=$G411 	Tilt[deg]=0
+qQ410      	L[cm]=$Lsqc     	G[kG/cm]=$G410 	Tilt[deg]=90
+qQ410D     	L[cm]=$Lsqc     	G[kG/cm]=$G410 	Tilt[deg]=90
+qQ409      	L[cm]=$Lsqc     	G[kG/cm]=$G409 	Tilt[deg]=0
+qQ409D     	L[cm]=$Lsqc     	G[kG/cm]=$G409 	Tilt[deg]=0
+qQ408      	L[cm]=$Lsqc     	G[kG/cm]=$G408 	Tilt[deg]=90
+qQ408D     	L[cm]=$Lsqc     	G[kG/cm]=$G408 	Tilt[deg]=90
+qQ407      	L[cm]=$Lsqc     	G[kG/cm]=$G407 	Tilt[deg]=0
+qQ407D     	L[cm]=$Lsqc     	G[kG/cm]=$G407 	Tilt[deg]=0
+qQ406      	L[cm]=$Lsqd    	G[kG/cm]=$G406 	Tilt[deg]=90
+qQ406D     	L[cm]=$Lsqd    	G[kG/cm]=$G406 	Tilt[deg]=90
+qQ405      	L[cm]=$Llqe       	G[kG/cm]=$G405 	Tilt[deg]=0
+qQ405D     	L[cm]=$Llqe       	G[kG/cm]=$G405 	Tilt[deg]=0
+qQ404      	L[cm]=$Lsqc     	G[kG/cm]=$G404 	Tilt[deg]=90
+qQ404D     	L[cm]=$Lsqc     	G[kG/cm]=$G404 	Tilt[deg]=90
+qQ403      	L[cm]=$Lsqc     	G[kG/cm]=$G403 	Tilt[deg]=0
+qQ403D     	L[cm]=$Lsqc     	G[kG/cm]=$G403 	Tilt[deg]=0
+qQ402      	L[cm]=$Lsqc     	G[kG/cm]=$G402 	Tilt[deg]=90
+qQ402D     	L[cm]=$Lsqc     	G[kG/cm]=$G402 	Tilt[deg]=90
+#
+qQ501      	L[cm]=$Lsqc     	G[kG/cm]=$G501 	Tilt[deg]=0
+qQ501D     	L[cm]=$Lsqc     	G[kG/cm]=$G501 	Tilt[deg]=0
+qQ502      	L[cm]=$Lsqc     	G[kG/cm]=$G502 	Tilt[deg]=90
+qQ502D     	L[cm]=$Lsqc     	G[kG/cm]=$G502 	Tilt[deg]=90
+qQ503      	L[cm]=$Lsqc     	G[kG/cm]=$G503 	Tilt[deg]=0
+qQ503D     	L[cm]=$Lsqc     	G[kG/cm]=$G503 	Tilt[deg]=0
+qQ504      	L[cm]=$Lsqc     	G[kG/cm]=$G504 	Tilt[deg]=90
+qQ504D     	L[cm]=$Lsqc     	G[kG/cm]=$G504 	Tilt[deg]=90
+qQ505      	L[cm]=$Lsqd    	G[kG/cm]=$G505 	Tilt[deg]=0
+qQ505D     	L[cm]=$Lsqd    	G[kG/cm]=$G505 	Tilt[deg]=0
+qQ506      	L[cm]=$Lsqd    	G[kG/cm]=$G506 	Tilt[deg]=90
+qQ506D     	L[cm]=$Lsqd    	G[kG/cm]=$G506 	Tilt[deg]=90
+qQ507      	L[cm]=$Lsqc     	G[kG/cm]=$G507 	Tilt[deg]=0
+qQ507D     	L[cm]=$Lsqc     	G[kG/cm]=$G507 	Tilt[deg]=0
+qQ508      	L[cm]=$Lsqc     	G[kG/cm]=$G508 	Tilt[deg]=90
+qQ508D     	L[cm]=$Lsqc     	G[kG/cm]=$G508 	Tilt[deg]=90
+qQ509      	L[cm]=$Lsqc     	G[kG/cm]=$G509 	Tilt[deg]=0
+qQ509D     	L[cm]=$Lsqc     	G[kG/cm]=$G509 	Tilt[deg]=0
+qQ510      	L[cm]=$Lsqc     	G[kG/cm]=$G510 	Tilt[deg]=90
+qQ510D     	L[cm]=$Lsqc     	G[kG/cm]=$G510 	Tilt[deg]=90
+qQ511      	L[cm]=$Lsqc     	G[kG/cm]=$G511 	Tilt[deg]=0
+qQ511D     	L[cm]=$Lsqc     	G[kG/cm]=$G511 	Tilt[deg]=0
+qQ512      	L[cm]=$Lsqc     	G[kG/cm]=$G512 	Tilt[deg]=90
+qQ512D     	L[cm]=$Lsqc     	G[kG/cm]=$G512 	Tilt[deg]=90
+qQ513      	L[cm]=$Lsqc     	G[kG/cm]=$G513 	Tilt[deg]=0
+qQ513D     	L[cm]=$Lsqc     	G[kG/cm]=$G513 	Tilt[deg]=0
+qQ514      	L[cm]=$Lsqc     	G[kG/cm]=$G514 	Tilt[deg]=90
+qQ514D     	L[cm]=$Lsqc     	G[kG/cm]=$G514 	Tilt[deg]=90
+qQ515      	L[cm]=$Lsqc     	G[kG/cm]=$G515 	Tilt[deg]=0
+qQ515D     	L[cm]=$Lsqc     	G[kG/cm]=$G515 	Tilt[deg]=0
+qQ516      	L[cm]=$Lsqc     	G[kG/cm]=$G516 	Tilt[deg]=90
+qQ516D     	L[cm]=$Lsqc     	G[kG/cm]=$G516 	Tilt[deg]=90
+qQ517      	L[cm]=$Lsqc     	G[kG/cm]=$G517 	Tilt[deg]=0
+qQ517D     	L[cm]=$Lsqc     	G[kG/cm]=$G517 	Tilt[deg]=0
+qQ518      	L[cm]=$Lsqc     	G[kG/cm]=$G518 	Tilt[deg]=90
+qQ518D     	L[cm]=$Lsqc     	G[kG/cm]=$G518 	Tilt[deg]=90
+qQ519      	L[cm]=$Lsqc     	G[kG/cm]=$G519 	Tilt[deg]=0
+qQ519D     	L[cm]=$Lsqc     	G[kG/cm]=$G519 	Tilt[deg]=0
+#
+qQ620      	L[cm]=$Lsqc     	G[kG/cm]=$G620 	Tilt[deg]=90
+qQ620D     	L[cm]=$Lsqc     	G[kG/cm]=$G620 	Tilt[deg]=90
+qQ619      	L[cm]=$Lsqc     	G[kG/cm]=$G619 	Tilt[deg]=0
+qQ619D     	L[cm]=$Lsqc     	G[kG/cm]=$G619 	Tilt[deg]=0
+qQ618      	L[cm]=$Lsqc     	G[kG/cm]=$G618 	Tilt[deg]=90
+qQ618D     	L[cm]=$Lsqc     	G[kG/cm]=$G618 	Tilt[deg]=90
+qQ617      	L[cm]=$Lsqc     	G[kG/cm]=$G617 	Tilt[deg]=0
+qQ617D     	L[cm]=$Lsqc     	G[kG/cm]=$G617 	Tilt[deg]=0
+qQ616      	L[cm]=$Lsqc     	G[kG/cm]=$G616 	Tilt[deg]=90
+qQ616D     	L[cm]=$Lsqc     	G[kG/cm]=$G616 	Tilt[deg]=90
+qQ615      	L[cm]=$Lsqc     	G[kG/cm]=$G615 	Tilt[deg]=0
+qQ615D     	L[cm]=$Lsqc     	G[kG/cm]=$G615 	Tilt[deg]=0
+qQ614      	L[cm]=$Lsqc     	G[kG/cm]=$G614 	Tilt[deg]=90
+qQ614D     	L[cm]=$Lsqc     	G[kG/cm]=$G614 	Tilt[deg]=90
+qQ613      	L[cm]=$Lsqc     	G[kG/cm]=$G613 	Tilt[deg]=0
+qQ613D     	L[cm]=$Lsqc     	G[kG/cm]=$G613 	Tilt[deg]=0
+qQ612      	L[cm]=$Lsqc     	G[kG/cm]=$G612 	Tilt[deg]=90
+qQ612D     	L[cm]=$Lsqc     	G[kG/cm]=$G612 	Tilt[deg]=90
+qQ611      	L[cm]=$Lsqc     	G[kG/cm]=$G611 	Tilt[deg]=0
+qQ611D     	L[cm]=$Lsqc     	G[kG/cm]=$G611 	Tilt[deg]=0
+qQ610      	L[cm]=$Lsqc     	G[kG/cm]=$G610 	Tilt[deg]=90
+qQ610D     	L[cm]=$Lsqc     	G[kG/cm]=$G610 	Tilt[deg]=90
+qQ609      	L[cm]=$Lsqc     	G[kG/cm]=$G609 	Tilt[deg]=0
+qQ609D     	L[cm]=$Lsqc     	G[kG/cm]=$G609 	Tilt[deg]=0
+qQ608      	L[cm]=$Lsqc     	G[kG/cm]=$G608 	Tilt[deg]=90
+qQ608D     	L[cm]=$Lsqc     	G[kG/cm]=$G608 	Tilt[deg]=90
+qQ607      	L[cm]=$Lsqc     	G[kG/cm]=$G607 	Tilt[deg]=0
+qQ607D     	L[cm]=$Lsqc     	G[kG/cm]=$G607 	Tilt[deg]=0
+qQ606      	L[cm]=$Llqe       	G[kG/cm]=$G606 	Tilt[deg]=90
+qQ606D     	L[cm]=$Llqe       	G[kG/cm]=$G606 	Tilt[deg]=90
+qQ605      	L[cm]=$Lsqd    	G[kG/cm]=$G605 	Tilt[deg]=0
+qQ605D     	L[cm]=$Lsqd    	G[kG/cm]=$G605 	Tilt[deg]=0
+qQ604      	L[cm]=$Lsqc     	G[kG/cm]=$G604 	Tilt[deg]=90
+qQ604D     	L[cm]=$Lsqc     	G[kG/cm]=$G604 	Tilt[deg]=90
+qQ603      	L[cm]=$Lsqc     	G[kG/cm]=$G603 	Tilt[deg]=0
+qQ603D     	L[cm]=$Lsqc     	G[kG/cm]=$G603 	Tilt[deg]=0
+qQ602      	L[cm]=$Lsqc     	G[kG/cm]=$G602 	Tilt[deg]=90
+qQ602D     	L[cm]=$Lsqc     	G[kG/cm]=$G602 	Tilt[deg]=90
+qQ101      	L[cm]=$Lsqc     	G[kG/cm]=$G101 	Tilt[deg]=0
+#--------------------------------------------------
+#--------------------------------------------------
+#####include LIST_DEB_dip_trims.opi
+#
+bBDEB 	L[cm]=$Lbend   	B[kG]=$BDEB   		G[kG/cm]=0        	Tilt[deg]=0
+gBDEB 	B[kG]=$BDEB	Angle[deg]=$Eangle  	EffLen[cm]=0  	Tilt[deg]=0  
+KBDEB         	L[cm]=$Lfaketrim      	B[kG]=$BKDEB   	Tilt[deg]=0
+#
+#   Trims
+kH102      	L[cm]=$Lndb		B[kG]=$H102		Tilt[deg]=0
+kV107      	L[cm]=$Lndb		B[kG]=$V107		Tilt[deg]=90
+kH109      	L[cm]=$Lndb		B[kG]=$H109		Tilt[deg]=0
+kV206      	L[cm]=$Lndb		B[kG]=$V206		Tilt[deg]=90  
+kH206      	L[cm]=$Lndb		B[kG]=$H206		Tilt[deg]=0  
+kV301      	L[cm]=$Lndb		B[kG]=$V301		Tilt[deg]=90  
+kH301      	L[cm]=$Lndb		B[kG]=$H301		Tilt[deg]=0  
+kH302      	L[cm]=$Lndb		B[kG]=$H302		Tilt[deg]=0  
+kV406      	L[cm]=$Lnda		B[kG]=$V406		Tilt[deg]=90    
+kH405      	L[cm]=$Lndb		B[kG]=$H405		Tilt[deg]=0  
+kV403      	L[cm]=$Lndb		B[kG]=$V403		Tilt[deg]=90.0  
+kH403      	L[cm]=$Lndb		B[kG]=$H403		Tilt[deg]=0  
+kV401      	L[cm]=$Lnda		B[kG]=$V401		Tilt[deg]=90    
+kH501      	L[cm]=$Lnda		B[kG]=$H501		Tilt[deg]=0    
+kH611      	L[cm]=$Lnda		B[kG]=$H611		Tilt[deg]=0    
+kV610      	L[cm]=$Lndb		B[kG]=$V610		Tilt[deg]=90
+kH610      	L[cm]=$Lndb		B[kG]=$H610		Tilt[deg]=0  
+kH606      	L[cm]=$Lndb		B[kG]=$H606		Tilt[deg]=0
+#
+#  Shunt
+KS608         	L[cm]=$Lfaketrim      	B[kG]=$BKS608   	Tilt[deg]=0
+#--------------------------------------------------
+#--------------------------------------------------
+#####include LIST_DEB_apertures.opi
+#
+hDSTAR       	Ax[cm]=$ASTARI 	Ay[cm]=$ASTARO	Ellipse=2 	OffsetX[cm]=0 	OffsetY[cm]=0
+#
+#  Added these 4/29/04
+hVBand1        	Ax[cm]=2.54 	Ay[cm]=2.9972	Ellipse=0 	OffsetX[cm]=0 	OffsetY[cm]=0
+hVBand2        	Ax[cm]=2.2225 	Ay[cm]=2.44475	Ellipse=0 	OffsetX[cm]=0 	OffsetY[cm]=0
+hVBand3        	Ax[cm]=2.4638 	Ay[cm]=2.2733	Ellipse=0 	OffsetX[cm]=0 	OffsetY[cm]=0
+hVBand4        	Ax[cm]=2.43205 	Ay[cm]=1.905	Ellipse=0 	OffsetX[cm]=0 	OffsetY[cm]=0
+#
+hHBand1        	Ax[cm]=2.9972 	Ay[cm]=2.54	Ellipse=0 	OffsetX[cm]=0 	OffsetY[cm]=0
+hHBand2      	Ax[cm]=2.44475 	Ay[cm]=2.2225	Ellipse=0 	OffsetX[cm]=0 	OffsetY[cm]=0
+hHBand3        	Ax[cm]=2.2733 	Ay[cm]=2.4638	Ellipse=0 	OffsetX[cm]=0 	OffsetY[cm]=0
+hHBand4        	Ax[cm]=1.905 	Ay[cm]=2.43205	Ellipse=0 	OffsetX[cm]=0 	OffsetY[cm]=0
+#
+hDRF2        	Ax[cm]=4.445 	Ay[cm]=4.445	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+hDRF3        	Ax[cm]=4.445 	Ay[cm]=4.445	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+#
+hmWave406        	Ax[cm]=3.96875 	Ay[cm]=3.96875	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+hmWave605        	Ax[cm]=3.96875 	Ay[cm]=3.96875	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+#
+hH611pipe        	Ax[cm]=6.1341 	Ay[cm]=2.3241	Ellipse=0 	OffsetX[cm]=0 	OffsetY[cm]=0
+#
+hDRF1adi        	Ax[cm]=4.9149 	Ay[cm]=4.9149	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+hDRF1rot        	Ax[cm]=3.96875 	Ay[cm]=3.96875	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+#
+hIKIK        	Ax[cm]=2.0637 	Ay[cm]=2.8575	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+hEKIK        	Ax[cm]=3.81 	Ay[cm]=2.2225	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+#
+hVschott        	Ax[cm]=2.5 	Ay[cm]=1.94183	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+hHschott        	Ax[cm]=1.94183 	Ay[cm]=2.5	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+hLschott        	Ax[cm]=4.9149 	Ay[cm]=4.9149	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+#
+hDEBend       	Ax[cm]=6.7691 	Ay[cm]=2.6279	Ellipse=0 	OffsetX[cm]=0 	OffsetY[cm]=0
+hDEBmid       	Ax[cm]=7.9873 	Ay[cm]=2.6279	Ellipse=0 	OffsetX[cm]=-1.9863 	OffsetY[cm]=0
+#
+#
+#
+#  Ficticious apertures in debuncher dipoles to make optim work     1/15/04
+hGapMon        	Ax[cm]=100.0 	Ay[cm]=100.0	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+#
+hDamp102        	Ax[cm]=100.0 	Ay[cm]=100.0	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+hDamp109        	Ax[cm]=3.81 	Ay[cm]=3.81	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+hDamp605        	Ax[cm]=100.0 	Ay[cm]=100.0	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=0
+#
+#  NEED To CHECK Offsets KEG May 2004
+hISEPell        	Ax[cm]=6.56336 	Ay[cm]=6.56336	Ellipse=1 	OffsetX[cm]=0 	OffsetY[cm]=1.5748
+hISEPrectU       	Ax[cm]=6.56336 	Ay[cm]=4.60375	Ellipse=0 	OffsetX[cm]=0	OffsetY[cm]=-0.49591
+hISEPrectD       	Ax[cm]=6.56336 	Ay[cm]=6.11125	Ellipse=0 	OffsetX[cm]=0	OffsetY[cm]=-0.49591
+#
+hESEPell        	Ax[cm]=6.985 	Ay[cm]=6.985 	Ellipse=1 	OffsetX[cm]=1.4637 	OffsetY[cm]=0
+hESEPrectU       	Ax[cm]=4.66725 	Ay[cm]=6.985	Ellipse=0 	OffsetX[cm]=-0.49591	OffsetY[cm]=0
+hESEPrectD       	Ax[cm]=6.11124 	Ay[cm]=6.985	Ellipse=0 	OffsetX[cm]=-0.49591	OffsetY[cm]=0
+#
+#--------------------------------------------------
+#--------------------------------------------------
+#####include LIST_DEB_sext.opi
+#
+sSF108 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF109 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD109 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD110 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF110 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF111 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD111 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD112 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF112 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF113 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD113 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD114 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF114 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF115 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD115 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD116 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF116 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF117 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD117 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD118 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF118 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF119 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD119 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+#
+sSD219 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF219 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF218 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD218 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD217 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF217 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF216 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD216 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD215 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF215 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF214 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD214 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD213 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF213 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF212 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD212 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD211 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF211 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF210 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD210 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD209 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF209 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF208 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+##
+sSF308 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF309 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD309 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD310 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF310 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF311 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD311 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD312 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF312 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF313 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD313 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD314 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF314 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF315 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD315 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD316 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF316 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF317 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD317 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD318 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF318 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF319 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD319 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+#
+sSD419 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF419 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF418 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD418 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD417 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF417 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF416 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD416 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD415 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF415 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF414 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD414 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD413 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF413 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF412 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD412 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD411 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF411 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF410 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD410 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD409 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF409 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF408 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+##
+sSF508 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF509 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD509 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD510 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF510 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF511 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD511 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD512 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF512 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF513 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD513 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD514 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF514 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF515 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD515 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD516 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF516 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF517 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD517 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD518 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF518 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF519 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD519 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+#
+sSD619 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF619 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF618 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD618 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD617 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF617 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF616 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD616 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD615 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF615 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF614 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD614 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD613 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF613 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF612 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD612 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD611 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF611 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF610 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSD610 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSD609 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexD
+sSF609 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+sSF608 	L[cm]=$Lsex    	S[kG/cm/cm)]=$SexF
+#--------------------------------------------------
+#--------------------------------------------------
+#####include LIST_DEB_drifts.opi
+#   KEG    8/25/03 adding 0.315cm to each drift around SQC quads due to changing lengths
+#   KEG    8/25/03 adding 0.0025cm to each drift around SQD quads due to changing lengths
+#   KEG    8/25/03 adding 2.185cm to each drift around LQE quads due to changing lengths
+#   KEG    9/18/03 Fixed problem with LQE drifts being wrong for 605 when it is 606              
+#   KEG  10/24/03 Q107 moved upstream a little for V107 installation; model not corrected in last decade
+#   KEG  10/28/03 Set LQE length back to iron length
+#   KEG    5/10/04 Splitting drifts for adding tanks and apertures
+#   
+oD10	L[cm]=0.0
+#                                                                        KEG    8/25/03 SQC+SQC half lengths::::: oD101A 	L[cm]=360.681  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD101A 	L[cm]=361.311  
+oD101AA 	L[cm]=36.957  
+oDVschott 	L[cm]=86.36  
+oDLschott 	L[cm]=121.92  
+oDHschott 	L[cm]=86.36  
+oD101AB 	L[cm]=29.714  
+#                                                                        KEG    8/25/03 SQC           half length::: oD102A 	L[cm]=99.695   
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD102A 	L[cm]=100.01   
+#                                                                        KEG    8/25/03 SQC           half length::: oD102B 	L[cm]=214.314  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD102B 	L[cm]=214.629
+oD102AA 	L[cm]=22.07    
+oDDCCT 	L[cm]=132.08    
+oD102AB 	L[cm]=21.56    
+oDGapMon 	L[cm]=71.771   
+oDHDampA 	L[cm]=12.699    
+oDHDampB 	L[cm]=12.699     
+oD102B 	L[cm]=41.76    
+#                                                                        KEG    8/25/03 SQC+SQC half lengths::::: oD103A 	L[cm]=345.441  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD103A 	L[cm]=346.071  
+oD103A 	L[cm]=30.7955  
+oDtank103 	L[cm]=284.48  
+oD103B 	L[cm]=30.7955  
+#                                                                        KEG    8/25/03 SQC+SQD half lengths::::::::::::::::: oD104A 	L[cm]=354.649  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD104A 	L[cm]=354.9665  
+oD104A 	L[cm]=39.373  
+oDtank104 	L[cm]=284.48  
+oD104B 	L[cm]=31.1135  
+#                                                                        KEG    8/25/03 SQC+SQD half lengths::::::::::::::::: oD105A 	L[cm]=363.856  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD105A 	L[cm]=364.1735  
+oD105A 	L[cm]=35.0835  
+oDtank105 	L[cm]=284.48  
+oD105B 	L[cm]=44.61  
+#                                                                        KEG    8/25/03 SQC+SQC half lengths::::: oD106A 	L[cm]=354.649  
+#                                                                        KEG  10/24/03 move Q107 upstream 2.087cm:::::::::oD106A 	L[cm]=355.279  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD106A 	L[cm]=353.192 
+oD106A 	L[cm]=35.311 
+oDtank106	L[cm]=284.48 
+oD106B 	L[cm]=33.401 
+#                                                                        KEG    8/25/03 SQC           half lengths::::: oD107A 	L[cm]=7.303    
+#                                                                        KEG  10/24/03 move Q107 upstream 2.087cm:::::::::oD107A 	L[cm]=7.6.18    
+oD107A 	L[cm]=9.705   
+oD107B 	L[cm]=37.942   
+#                                                                        KEG    8/25/03 SQC           half length::: oD107C 	L[cm]=107.157  
+oD107C 	L[cm]=107.472  
+#                                                                        KEG    8/25/03 SQC           half length::: oD108A 	L[cm]=91.917   
+oD108A 	L[cm]=92.232   
+oD108B 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length::: oD108C 	L[cm]=21.59    
+oD108C 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length::: oD109A 	L[cm]=7.62     
+oD109A 	L[cm]=7.935     
+oD109B 	L[cm]=19.05    
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD109C 	L[cm]=228.284  
+oD109CA 	L[cm]=15.24  
+oDVDampPU 	L[cm]=66.04  
+oD109CB 	L[cm]=147.004  
+#                                                                        KEG    8/25/03 SQC           half length::: oD109D 	L[cm]=21.59    
+oD109D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length::: oD110A 	L[cm]=7.62     
+oD110A 	L[cm]=7.935     
+oD110B 	L[cm]=294.006  
+#                                                                        KEG    8/25/03 SQC           half length::: oD110C 	L[cm]=21.59    
+oD110C 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length::: oD111A 	L[cm]=7.62     
+oD111A 	L[cm]=7.935     
+oD111B 	L[cm]=65.564   
+oD111C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length::: oD111D 	L[cm]=21.59    
+oD111D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length::: oD112A 	L[cm]=7.62     
+oD112A 	L[cm]=7.935     
+oD112B 	L[cm]=65.564   
+oD112C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length::: oD112D 	L[cm]=21.59    
+oD112D 	L[cm]=21.905   
+#                                                                        KEG    8/25/03 SQC           half length::: oD113A 	L[cm]=7.62     
+oD113A 	L[cm]=7.935     
+oD113B 	L[cm]=65.564   
+oD113C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length::: oD113D 	L[cm]=21.59    
+oD113D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length::: oD114A 	L[cm]=7.62     
+oD114A 	L[cm]=7.935     
+oD114B 	L[cm]=65.564   
+oD114C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length::: oD114D 	L[cm]=21.59    
+oD114D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length::: oD115A 	L[cm]=7.62     
+oD115A 	L[cm]=7.935     
+oD115B 	L[cm]=65.564   
+oD115C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length::: oD115D 	L[cm]=21.59    
+oD115D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length::: oD116A 	L[cm]=7.62     
+oD116A 	L[cm]=7.935     
+oD116B 	L[cm]=65.564   
+oD116C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length::: oD116D 	L[cm]=21.59    
+oD116D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length::: oD117A 	L[cm]=7.62     
+oD117A 	L[cm]=7.935     
+oD117B 	L[cm]=65.564   
+oD117C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length::: oD117D 	L[cm]=21.59    
+oD117D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length::: oD118A 	L[cm]=7.62     
+oD118A 	L[cm]=7.935     
+oD118B 	L[cm]=65.564   
+oD118C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length::: oD118D 	L[cm]=21.59    
+oD118D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length::: oD119A 	L[cm]=7.62     
+oD119A 	L[cm]=7.935     
+oD119B 	L[cm]=65.564   
+oD119C 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length::: oD119D 	L[cm]=7.62     
+oD119D 	L[cm]=7.935     
+#################################################################################
+#                                                                        KEG    8/25/03 SQC           half length::: oD219D 	L[cm]=7.62     
+oD219D 	L[cm]=7.935     
+oD219C 	L[cm]=65.564   
+oD219B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length::: oD219A 	L[cm]=7.62     
+oD219A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length::: oD218D 	L[cm]=21.59    
+oD218D 	L[cm]=21.905    
+oD218C 	L[cm]=66.834   
+oD218B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length::: oD218A 	L[cm]=7.62     
+oD218A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length::: oD217D 	L[cm]=21.59    
+oD217D 	L[cm]=21.905    
+oD217C 	L[cm]=66.834   
+oD217B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length::: oD217A 	L[cm]=7.62     
+oD217A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length::: oD216D 	L[cm]=21.59    
+oD216D 	L[cm]=21.905    
+oD216C 	L[cm]=66.834   
+oD216B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length::: oD216A 	L[cm]=7.62     
+oD216A 	L[cm]=7.935   
+#                                                                        KEG    8/25/03 SQC           half length::: oD215D 	L[cm]=21.59    
+oD215D 	L[cm]=21.905    
+oD215C 	L[cm]=66.834   
+oD215B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length::: oD215A 	L[cm]=7.62     
+oD215A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length::: oD214D 	L[cm]=21.59    
+oD214D 	L[cm]=21.905    
+oD214C 	L[cm]=66.834   
+oD214B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length::: oD214A 	L[cm]=7.62     
+oD214A 	L[cm]=7.935    
+#                                                                        KEG    8/25/03 SQC           half length::: oD213D 	L[cm]=21.59    
+oD213D 	L[cm]=21.905    
+oD213C 	L[cm]=66.834   
+oD213B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length::: oD213A 	L[cm]=7.62     
+oD213A 	L[cm]=7.935    
+#                                                                        KEG    8/25/03 SQC           half length::: oD212D 	L[cm]=21.59    
+oD212D 	L[cm]=21.905    
+oD212C 	L[cm]=66.834   
+oD212B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length::: oD212A 	L[cm]=7.62     
+oD212A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length::: oD211D 	L[cm]=21.59    
+oD211D 	L[cm]=21.905    
+oD211C 	L[cm]=66.834   
+oD211B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length::: oD211A 	L[cm]=7.62     
+oD211A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length::: oD210C 	L[cm]=21.59    
+oD210C 	L[cm]=21.905    
+oD210B 	L[cm]=294.006  
+#                                                                        KEG    8/25/03 SQC           half length::: oD210A 	L[cm]=7.62     
+oD210A 	L[cm]=7.935  
+#                                                                        KEG    8/25/03 SQC           half length::: oD209C 	L[cm]=21.59    
+oD209C 	L[cm]=21.905    
+oD209B 	L[cm]=294.006  
+#                                                                        KEG    8/25/03 SQC           half length::: oD209A 	L[cm]=7.62     
+oD209A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length::: oD208C 	L[cm]=21.59    
+oD208C 	L[cm]=21.905    
+oD208B 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length::: oD208A 	L[cm]=91.917   
+oD208A 	L[cm]=92.232   
+#                                                                        KEG    8/25/03 SQC           half length::: oD207B 	L[cm]=107.157  
+oD207B 	L[cm]=107.472  
+#                                                                        KEG    8/25/03 SQC           half length::: oD207A 	L[cm]=107.157  
+oD207A 	L[cm]=107.472  
+#                                                                        KEG    8/25/03 SQC           half length::: oD206C 	L[cm]=122.873  
+oD206C 	L[cm]=123.188  
+oD206B 	L[cm]=100.647  
+#                                                                        KEG    8/25/03 SQC           half length::: oD206A 	L[cm]=22.544   
+oD206A 	L[cm]=22.859   
+#                                                                        KEG    8/25/03 SQC+LQE   half lengths:::          oD205A 	L[cm]=350.204  
+#                                                                        KEG  10/28/03 remove LQE half length::::::::      oD205A 	L[cm]=352.704  
+oD205A 	L[cm]=350.519  
+#                                                                        KEG    8/25/03 SQC+LQE   half lengths:::          oD204A 	L[cm]=356.236  
+#                                                                        KEG  10/28/03 remove LQE half length::::::::      oD204A 	L[cm]=358.736  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD204A 	L[cm]=356.551 
+oD204A 	L[cm]=44.62 
+oDtank204 	L[cm]=284.48 
+oD204B 	L[cm]=27.451 
+#                                                                        KEG    8/25/03 SQC+SQC   half lengths::: oD203A 	L[cm]=360.681  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD203A 	L[cm]=361.311  
+oD203A 	L[cm]=45.53  
+oDtank203 	L[cm]=284.48  
+oD203B 	L[cm]=31.301  
+#                                                                        KEG    8/25/03 SQC+SQC   half lengths::: oD202A 	L[cm]=360.681  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD202A 	L[cm]=361.311  
+oD202A 	L[cm]=42.15  
+oDtank202 	L[cm]=284.48  
+oD202B 	L[cm]=34.681  
+#                                                                        KEG    8/25/03 SQC+SQC   half lengths::: oD201A 	L[cm]=360.681  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD201A 	L[cm]=361.311  
+oD201A 	L[cm]=38.49  
+oDtank201 	L[cm]=284.48  
+oD201B 	L[cm]=38.341  
+#################################################################################
+#                                                                        KEG    8/25/03 SQC           half length:::        oD301A 	L[cm]=55.563   
+oD301A 	L[cm]=55.878   
+oD301B 	L[cm]=51.118   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD301C 	L[cm]=160.656  
+oD301C 	L[cm]=160.971  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD302A 	L[cm]=279.083  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD302A 	L[cm]=279.398  
+oD302AA 	L[cm]=174.57  
+oDDRF3 	L[cm]=83.82  
+oD302AB 	L[cm]=21.008  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD302B 	L[cm]=34.926   
+oD302B 	L[cm]=35.241   
+#                                                                        KEG    8/25/03 SQC+SQC   half lengths:::  oD303A 	L[cm]=345.441  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD303A 	L[cm]=346.071  
+oD303A 	L[cm]=26.99  
+oDtank303 	L[cm]=284.48  
+oD303B 	L[cm]=34.601  
+#                                                                        KEG    8/25/03 SQC+SQE   half lengths:::          oD304A 	L[cm]=354.649  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD304A 	L[cm]=354.9665  
+oD304A 	L[cm]=31.43  
+oDtank304 	L[cm]=284.48  
+oD304B 	L[cm]=39.0565  
+#                                                                        KEG    8/25/03 SQC+SQE   half lengths:::          oD305A 	L[cm]=363.856  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD305A 	L[cm]=364.1735  
+oD305A 	L[cm]=41.117  
+oDtank305 	L[cm]=284.48  
+oD305B 	L[cm]=38.5765  
+#                                                                        KEG    8/25/03 SQC+SQC   half lengths:::   oD306A 	L[cm]=354.649  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD306A 	L[cm]=355.279  
+oD306A 	L[cm]=34.69  
+oDtank306 	L[cm]=284.48  
+oD306B 	L[cm]=36.109  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD307A 	L[cm]=91.917   
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD307A 	L[cm]=92.232   
+oD307AA 	L[cm]=43.26   
+iRJ306 	L[cm]=0.0
+oD307AB 	L[cm]=48.972   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD307B 	L[cm]=107.157  
+oD307B 	L[cm]=107.472  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD308A 	L[cm]=91.917   
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD308A 	L[cm]=92.232   
+oD308AA 	L[cm]=59.18   
+iTJ308 	L[cm]=0.0  
+oD308AB 	L[cm]=33.052
+#
+oD308B 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD308C 	L[cm]=21.59    
+oD308C 	L[cm]=21.905   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD309A 	L[cm]=7.62     
+oD309A 	L[cm]=7.935     
+oD309B 	L[cm]=294.006  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD309C 	L[cm]=21.59    
+oD309C 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD310A 	L[cm]=7.62     
+oD310A 	L[cm]=7.935     
+oD310B 	L[cm]=294.006  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD310C 	L[cm]=21.59    
+oD310C 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD311A 	L[cm]=7.62     
+oD311A 	L[cm]=7.935     
+oD311B 	L[cm]=65.564   
+oD311C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD311D 	L[cm]=21.59    
+oD311D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD312A 	L[cm]=7.62     
+oD312A 	L[cm]=7.935     
+oD312B 	L[cm]=65.564   
+oD312C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD312D 	L[cm]=21.59    
+oD312D 	L[cm]=21.905
+#                                                                        KEG    8/25/03 SQC           half length:::        oD313A 	L[cm]=7.62     
+oD313A 	L[cm]=7.935 
+oD313B 	L[cm]=65.564   
+oD313C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD313D 	L[cm]=21.59    
+oD313D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD314A 	L[cm]=7.62     
+oD314A 	L[cm]=7.935 
+oD314B 	L[cm]=65.564   
+oD314C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD314D 	L[cm]=21.59    
+oD314D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD315A 	L[cm]=7.62     
+oD315A 	L[cm]=7.935 
+oD315B 	L[cm]=65.564   
+oD315C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD315D 	L[cm]=21.59    
+oD315D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD316A 	L[cm]=7.62     
+oD316A 	L[cm]=7.935 
+oD316B 	L[cm]=65.564   
+oD316C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD316D 	L[cm]=21.59    
+oD316D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD317A 	L[cm]=7.62     
+oD317A 	L[cm]=7.935 
+oD317B 	L[cm]=65.564   
+oD317C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD317D 	L[cm]=21.59    
+oD317D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD318A 	L[cm]=7.62     
+oD318A 	L[cm]=7.935 
+oD318B 	L[cm]=65.564   
+oD318C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD318D 	L[cm]=21.59    
+oD318D 	L[cm]=21.905
+#                                                                        KEG    8/25/03 SQC           half length:::        oD319A 	L[cm]=7.62     
+oD319A 	L[cm]=7.935 
+oD319B 	L[cm]=65.564   
+oD319C 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD319D 	L[cm]=7.62     
+oD319D 	L[cm]=7.935    
+#################################################################################
+#                                                                        KEG    8/25/03 SQC           half length:::        oD419D 	L[cm]=7.62     
+oD419D 	L[cm]=7.935    
+oD419C 	L[cm]=65.564   
+oD419B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD419A 	L[cm]=7.62     
+oD419A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length:::        oD418D 	L[cm]=21.59    
+oD418D 	L[cm]=21.905    
+oD418C 	L[cm]=66.834   
+oD418B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD418A 	L[cm]=7.62     
+oD418A 	L[cm]=7.935   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD417D 	L[cm]=21.59    
+oD417D 	L[cm]=21.905    
+oD417C 	L[cm]=66.834   
+oD417B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD417A 	L[cm]=7.62     
+oD417A 	L[cm]=7.935    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD416D 	L[cm]=21.59    
+oD416D 	L[cm]=21.905    
+oD416C 	L[cm]=66.834   
+oD416B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD416A 	L[cm]=7.62     
+oD416A 	L[cm]=7.935 
+#                                                                        KEG    8/25/03 SQC           half length:::        oD415D 	L[cm]=21.59    
+oD415D 	L[cm]=21.905    
+oD415C 	L[cm]=66.834   
+oD415B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD415A 	L[cm]=7.62     
+oD415A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length:::        oD414D 	L[cm]=21.59    
+oD414D 	L[cm]=21.905    
+oD414C 	L[cm]=66.834   
+oD414B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD414A 	L[cm]=7.62     
+oD414A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length:::        oD413D 	L[cm]=21.59    
+oD413D 	L[cm]=21.905    
+oD413C 	L[cm]=66.834   
+oD413B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD413A 	L[cm]=7.62     
+oD413A 	L[cm]=7.935    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD412D 	L[cm]=21.59    
+oD412D 	L[cm]=21.905    
+oD412C 	L[cm]=66.834   
+oD412B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD412A 	L[cm]=7.62     
+oD412A 	L[cm]=7.935  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD411D 	L[cm]=21.59    
+oD411D 	L[cm]=21.905    
+oD411C 	L[cm]=66.834   
+oD411B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD411A 	L[cm]=7.62     
+oD411A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length:::        oD410C 	L[cm]=21.59    
+oD410C 	L[cm]=21.905    
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD410B 	L[cm]=294.006  
+oD410BA 	L[cm]=40.26  
+iMomScrape	L[cm]=0.0
+oD410BB 	L[cm]=253.746  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD410A 	L[cm]=7.62     
+oD410A 	L[cm]=7.935  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD409C 	L[cm]=21.59    
+oD409C 	L[cm]=21.905    
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD409B 	L[cm]=294.006  
+oD409BA 	L[cm]=26.35  
+oDRF1_1 	L[cm]=245.11  
+oD409BB 	L[cm]=22.546  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD409A 	L[cm]=7.62     
+oD409A 	L[cm]=7.935  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD408C 	L[cm]=21.59    
+oD408C 	L[cm]=21.905    
+oD408B 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD408A 	L[cm]=91.917   
+oD408A 	L[cm]=92.232   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD407B 	L[cm]=107.157  
+oD407B 	L[cm]=107.472  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD407A 	L[cm]=107.157  
+oD407A 	L[cm]=107.472
+#                                                                        KEG    8/25/03 SQC           half length:::        oD406B 	L[cm]=141.288  
+oD406B 	L[cm]=141.603  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD406A 	L[cm]=181.611  
+oD406A 	L[cm]=181.926  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD405B 	L[cm]=38.735   
+oD405B 	L[cm]=39.05   
+#                                                                        KEG    8/25/03 LQE           half length:::        oD405A 	L[cm]=264.796  
+#                                                                        KEG  10/28/03 remove LQE half length::::::::      oD405A 	L[cm]=266.981  
+oD405A 	L[cm]=264.796
+#                                                                        KEG    8/25/03 SQC+LQE          half lengths:::        oD404A 	L[cm]=356.236  
+#                                                                        KEG  10/28/03 remove LQE half length::::::::      oD404A 	L[cm]=358.736  
+#                                                                        KEG    9/21/04 Adding end of ISEP marker        oD404A 	L[cm]=356.551 
+oD404B 	L[cm]=281.901 
+oAP2_INJ  	L[cm]=0     
+oD404A 	L[cm]=74.65 
+#                                                                        KEG    8/25/03 SQC           half length:::        oD403C 	L[cm]=67.945   
+oD403C 	L[cm]=68.26   
+oD403B 	L[cm]=176.53   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD403A 	L[cm]=22.861   
+oD403A 	L[cm]=23.176   
+#                                                                        KEG    8/25/03 SQC+SQC           half lengths:::        oD402A 	L[cm]=360.681  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD402A 	L[cm]=361.311  
+oD402A 	L[cm]=39.75  
+oDIKIK 	L[cm]=295.275  
+oD402B 	L[cm]=26.286  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD401B 	L[cm]=320.041  
+oEndAP2	L[cm]=0.0		# KEG 1/15/04 added marker
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD401B 	L[cm]=320.356  
+oD401BA 	L[cm]=66.833  
+oDDRF1_2 	L[cm]=245.11  
+oD401BB 	L[cm]=8.413  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD401A 	L[cm]=24.13    
+oD401A 	L[cm]=24.445    
+#################################################################################
+#                                                                        KEG    8/25/03 SQC           half length:::        oD501A 	L[cm]=304.801  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD501A 	L[cm]=305.116  
+oD501AA 	L[cm]=52.47  
+oDDRF1_3 	L[cm]=245.11  
+oD501AB 	L[cm]=7.536  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD501B 	L[cm]=39.37    
+oD501B 	L[cm]=39.685    
+#                                                                        KEG    8/25/03 SQC+SQC           half lengths:::        oD502A 	L[cm]=360.681  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD502A 	L[cm]=361.311 
+oD502A 	L[cm]=51.916 
+oDDRF1_4 	L[cm]=245.11  
+oD502B 	L[cm]=64.285 
+#                                                                        KEG    8/25/03 SQC+SQC           half lengths:::        oD503A 	L[cm]=360.681  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD503A 	L[cm]=361.311  
+oD503A 	L[cm]=23.38  
+oDDRF1_5 	L[cm]=245.11  
+oD503B 	L[cm]=92.821  
+#                                                                        KEG    8/25/03 SQC+SQE          half lengths:::        oD504A 	L[cm]=339.409  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD504A 	L[cm]=339.7265  
+oD504A 	L[cm]=42.266  
+oDDRF1_6	L[cm]=245.11  
+oD504B 	L[cm]=52.3505 
+#                                                                        KEG    8/25/03 SQC+SQE          half lengths:::        oD505A 	L[cm]=363.856  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD505A 	L[cm]=364.1735  
+oD505A 	L[cm]=68.942  
+oDDRF1_7	L[cm]=245.11  
+oD505B 	L[cm]=50.1215  
+#                                                                        KEG    8/25/03 SQC+SQC           half lengths:::        oD506A 	L[cm]=339.409  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD506A 	L[cm]=340.039  
+oD506A 	L[cm]=43.896  
+oDDRF1_8	L[cm]=245.11  
+oD506B 	L[cm]=51.033  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD507A 	L[cm]=107.157  
+oD507A 	L[cm]=107.472
+#                                                                        KEG    8/25/03 SQC           half length:::        oD507B 	L[cm]=107.157  
+oD507B 	L[cm]=107.472  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD508A 	L[cm]=91.917   
+oD508A 	L[cm]=92.232   
+oD508B 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD508C 	L[cm]=21.59    
+oD508C 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD509A 	L[cm]=7.62     
+oD509A 	L[cm]=7.935     
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD509B 	L[cm]=294.006  
+oD509BA 	L[cm]=22.86  
+oDDRF2 	L[cm]=134.62  
+oD509BB 	L[cm]=136.526  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD509C 	L[cm]=21.59    
+oD509C 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD510A 	L[cm]=7.62     
+oD510A 	L[cm]=7.935 
+oD510B 	L[cm]=294.006  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD510C 	L[cm]=21.59    
+oD510C 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD511A 	L[cm]=7.62     
+oD511A 	L[cm]=7.935 
+oD511B 	L[cm]=65.564   
+oD511C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD511D 	L[cm]=21.59    
+oD511D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD512A 	L[cm]=7.62     
+oD512A 	L[cm]=7.935     
+oD512B 	L[cm]=65.564   
+oD512C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD512D 	L[cm]=21.59    
+oD512D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD513A 	L[cm]=7.62     
+oD513A 	L[cm]=7.935     
+oD513B 	L[cm]=65.564   
+oD513C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD513D 	L[cm]=21.59    
+oD513D 	L[cm]=21.905   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD514A 	L[cm]=7.62     
+oD514A 	L[cm]=7.935     
+oD514B 	L[cm]=65.564   
+oD514C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD514D 	L[cm]=21.59    
+oD514D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD515A 	L[cm]=7.62     
+oD515A 	L[cm]=7.935    
+oD515B 	L[cm]=65.564   
+oD515C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD515D 	L[cm]=21.59    
+oD515D 	L[cm]=21.905    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD516A 	L[cm]=7.62     
+oD516A 	L[cm]=7.935     
+oD516B 	L[cm]=65.564   
+oD516C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD516D 	L[cm]=21.59    
+oD516D 	L[cm]=21.905   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD517A 	L[cm]=7.62     
+oD517A 	L[cm]=7.935    
+oD517B 	L[cm]=65.564   
+oD517C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD517D 	L[cm]=21.59    
+oD517D 	L[cm]=21.905   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD518A 	L[cm]=7.62     
+oD518A 	L[cm]=7.935    
+oD518B 	L[cm]=65.564   
+oD518C 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD518D 	L[cm]=21.59    
+oD518D 	L[cm]=21.905   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD519A 	L[cm]=7.62     
+oD519A 	L[cm]=7.935     
+oD519B 	L[cm]=65.564   
+oD519C 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD519D 	L[cm]=7.62     
+oD519D 	L[cm]=7.935    
+#################################################################################
+#                                                                        KEG    8/25/03 SQC           half length:::        oD619D 	L[cm]=7.62     
+oD619D 	L[cm]=7.935     
+oD619C 	L[cm]=65.564   
+oD619B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD619A 	L[cm]=7.62     
+oD619A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length:::        oD618D 	L[cm]=21.59    
+oD618D 	L[cm]=21.905    
+oD618C 	L[cm]=66.834   
+oD618B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD618A 	L[cm]=7.62     
+oD618A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length:::        oD617D 	L[cm]=21.59    
+oD617D 	L[cm]=21.905    
+oD617C 	L[cm]=66.834   
+oD617B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD617A 	L[cm]=7.62     
+oD617A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length:::        oD616D 	L[cm]=21.59    
+oD616D 	L[cm]=21.905    
+oD616C 	L[cm]=66.834   
+oD616B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD616A 	L[cm]=7.62     
+oD616A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length:::        oD615D 	L[cm]=21.59    
+oD615D 	L[cm]=21.905    
+oD615C 	L[cm]=66.834   
+oD615B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD615A 	L[cm]=7.62     
+oD615A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length:::        oD614D 	L[cm]=21.59    
+oD614D 	L[cm]=21.905    
+oD614C 	L[cm]=66.834   
+oD614B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD614A 	L[cm]=7.62     
+oD614A 	L[cm]=7.935    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD613D 	L[cm]=21.59    
+oD613D 	L[cm]=21.905    
+oD613C 	L[cm]=66.834   
+oD613B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD613A 	L[cm]=7.62     
+oD613A 	L[cm]=7.935    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD612D 	L[cm]=21.59    
+oD612D 	L[cm]=21.905    
+oD612C 	L[cm]=66.834   
+oD612B 	L[cm]=65.564   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD612A 	L[cm]=7.62     
+oD612A 	L[cm]=7.935    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD611E 	L[cm]=21.59    
+oD611E 	L[cm]=21.905    
+oD611D 	L[cm]=66.834   
+oD611C 	L[cm]=41.117   
+oD611B 	L[cm]=7.938    
+#                                                                        KEG    8/25/03 SQC           half length:::        oD611A 	L[cm]=7.62     
+oD611A 	L[cm]=7.935
+#                                                                        KEG    8/25/03 SQC           half length:::        oD610E 	L[cm]=21.59    
+oD610E 	L[cm]=21.905    
+oD610D 	L[cm]=70.803   
+oD610C 	L[cm]=21.272   
+oD610B 	L[cm]=108.586  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD610A 	L[cm]=7.62     
+oD610A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length:::        oD609C 	L[cm]=21.59    
+oD609C 	L[cm]=21.905    
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD609B 	L[cm]=294.006  
+oD609BB 	L[cm]=7.341  
+oDEKIK 	L[cm]=264.0838  
+oD609BA 	L[cm]=22.5812  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD609A 	L[cm]=7.62     
+oD609A 	L[cm]=7.935     
+#                                                                        KEG    8/25/03 SQC           half length:::        oD608C 	L[cm]=21.59    
+oD608C 	L[cm]=21.905    
+oD608B 	L[cm]=66.834   
+#                                                                        KEG    8/25/03 SQC           half length:::        oD608A 	L[cm]=91.917   
+oD608A 	L[cm]=92.232  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD607B 	L[cm]=107.157  
+oD607B 	L[cm]=107.472  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD607A 	L[cm]=107.157  
+oD607A 	L[cm]=107.472  
+#                                                                        KEG    8/25/03 SQC           half length:::        oD606C 	L[cm]=16.51    
+oD606C 	L[cm]=16.825    
+oD606B	L[cm]=40.6555
+oDTOA_EXT  	L[cm]=0.0
+#                                                                        KEG    8/25/03 LQE           half length:::        oD606A 	L[cm]=293.054  
+#                                                                        KEG  10/28/03 remove LQE half length::::::::      oD606A 	L[cm]=295.239 
+########################################## Add extraction line marker      KEG 9/27/04    oD606A 	L[cm]=293.054
+oD606A 	L[cm]=252.3985
+#                                                                        KEG    8/25/03 SQC+LQE           half lengths:::        oD605A 	L[cm]=334.964  
+#                                                                        KEG  10/28/03 remove LQE half length::::::::      oD605A 	L[cm]=337.464  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD605A 	L[cm]=335.279  
+oD605C 	L[cm]=33.376  
+oDmWave605 	L[cm]=152.4  
+oD605B 	L[cm]=19.406  
+oDVDamp605 	L[cm]=58.367  
+oD605A 	L[cm]=71.73  
+#                                                                        KEG    8/25/03 SQC+SQC           half lengths:::        oD604A 	L[cm]=354.649  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::ooD604A 	L[cm]=355.279  
+oD604B 	L[cm]=35.3995  
+oDtank604 	L[cm]=284.48  
+oD604A 	L[cm]=35.3995  
+#                                                                        KEG    8/25/03 SQC+SQC           half lengths:::        oD603A 	L[cm]=360.681  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD603A 	L[cm]=361.311  
+oD603B 	L[cm]=45.53  
+oDtank603 	L[cm]=284.48  
+oD603A 	L[cm]=31.301  
+#                                                                        KEG    8/25/03 SQC+SQC           half lengths:::        oD602A 	L[cm]=360.681  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD602A 	L[cm]=361.311  
+oD602B 	L[cm]=41.79  
+oDtank602 	L[cm]=284.48  
+oD602A 	L[cm]=35.041  
+#                                                                        KEG    8/25/03 SQC+SQC           half lengths:::        oD601A 	L[cm]=360.681  
+#                                                               KEG    Split up for tanks and stuff:::::::::::::::::::::oD601A 	L[cm]=361.311    
+oD601B 	L[cm]=38.4155    
+oDtank601 	L[cm]=284.48    
+oD601A 	L[cm]=38.4155    
+#--------------------------------------------------
+#--------------------------------------------------
+#############################include LIST_DEB_comb_func.opi
+#--------------------------------------------------
+#--------------------------------------------------
+end list 
+#
+##############################################################################################################

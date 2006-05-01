@@ -1,0 +1,232 @@
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Version:   1.0                    
+******                                    
+******  File:      optim.l 
+******                                                                
+******  Copyright (c) Universities Research Association, Inc./ Fermilab    
+******                All Rights Reserved                             
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******
+******  Author:   Jean-Francois Ostiguy, ostiguy@fnal.gov                                      
+******            Fermilab                                           
+******
+******
+**********************************************************************************
+**********************************************************************************
+*********************************************************************************/
+/*----------------------------------------------*/
+/* A yacc (bison) parser for OPTIM input files  */
+/*----------------------------------------------*/
+
+%debug
+%error-verbose
+
+%skeleton "lalr1.cc"
+%define   "parser_class_name" "OptimParser"
+%output="OptimParser_ypp.cc"
+%lex-param   {void* yyscanner} 
+%parse-param {void* yyscanner}
+%name-prefix="optim_yy"
+%{
+
+#include <iostream>
+#include "OptimParserDriver.h"
+#include <cmath>
+
+%}
+
+%defines
+%parse-param {OptimParserDriver& driver}
+%lex-param   {OptimParserDriver& driver}
+%locations
+
+%initial-action 
+{
+   // Initialize the initial location.
+   @$.begin.filename = @$.end.filename = &driver.m_file;
+}
+
+%union
+{
+  int               ival;
+  double            dval;
+  parser_string_t*  sval;  /* string could/should be allocated from a pool to avoid leaks */ 
+}
+
+
+%token    OPTIM_VARIABLE
+%token    OPTIM_STRING_VARIABLE
+%token    OPTIM_IDENTIFIER
+%token    OPTIM_ATTRIBUTE
+%token    OPTIM_VALUE
+%token    OPTIM_INT_VALUE
+%token    OPTIM_STRING_VALUE
+%token    OPTIM_ELEMENT
+%token    OPTIM_SQRT
+%token    OPTIM_SIN
+%token    OPTIM_COS
+%token    OPTIM_TAN
+%token    OPTIM_EXP
+%token    OPTIM_LOG
+%token    OPTIM_BETAFIT 
+%token    OPTIM_BETAFIT4D 
+%token    OPTIM_SPCHARGE
+%token    OPTIM_EMITTANCE_SPEC
+%token    OPTIM_INITCOND_SPEC
+%token    OPTIM_GENERAL
+%token    OPTIM_INPUT_END
+%token    OPTIM_GROUP_G                 /* group of elements where the gradient varies (used for fitting/matching) */
+%token    OPTIM_GROUP_B                 /* group of elements where the field    varies (used for fiting/matching ) */
+%token    OPTIM_GROUP_L                 /* group of elements where the length   varies (used for fitting/matching) */
+%token    OPTIM_GROUP_ELEMENT 
+
+
+%left '+' '-'
+%left '*' '/' 
+%left '^' 
+%left NEG    /* negation, unary minus */
+
+%start program;
+
+%% 
+
+
+
+program:
+       |
+       program statement 
+       ;
+
+statement: 
+       OPTIM_ELEMENT                                      { driver.defineElement( (*$<sval>1)         ); 
+                                                            delete ($<sval>1);
+                                                          }
+       |
+       OPTIM_ELEMENT         attribute_assignements       { driver.defineElement( (*$<sval>1)         );                                 
+                                                            delete ($<sval>1);
+                                                          }
+       |
+       OPTIM_BETAFIT         attribute_assignements        { driver.setTwissFitAttributes();                                             }
+       |
+       OPTIM_BETAFIT                                      
+       |
+       OPTIM_BETAFIT4D       attribute_assignements       { driver.set4DFitAttributes();                                                 } 
+       |
+       OPTIM_BETAFIT4D       
+       |
+       OPTIM_SPCHARGE        attribute_assignements       { driver.setSpaceChargeAttributes();                                           }
+       |
+       OPTIM_SPCHARGE        
+       |
+       OPTIM_EMITTANCE_SPEC  attribute_assignements       { driver.setEmittanceAttributes();                                             }
+       |
+       OPTIM_INITCOND_SPEC   attribute_assignements       { driver.setInitialConditionsAttributes();                                     }
+       |
+       OPTIM_GENERAL         attribute_assignements       { driver.setGeneralAttributes();                                               }             
+       |
+       OPTIM_VARIABLE '=' expr ';'                        { driver.m_variables[ (*( $<sval>1 )) ]       =  $<dval>3;                     
+                                                            delete ($<sval>1);
+                                                          }
+       |
+       OPTIM_VARIABLE '=' OPTIM_STRING_VALUE ';'          { int len = (*($<sval>3)).length(); 
+                                                            driver.m_variables[ (*( $<sval>1 )) ]     =  (*($<sval>3)).substr(1,len-2);  
+                                                            delete ($<sval>1);
+                                                            delete ($<sval>3); 
+                                                          }
+       |
+       OPTIM_GROUP_G         elements                     {delete ($<sval>1);  } /* used for fitting/matching fitting ignored for the moment */
+       |                               
+       OPTIM_GROUP_B         elements                     {delete ($<sval>1);  } /* used for fitting/matching ignored for the moment */ 
+       |
+       OPTIM_GROUP_L         elements                     {delete ($<sval>1);  } /* used for fitting/matching ignored for the moment */        
+       ;       ; 
+
+
+elements:
+       elements OPTIM_GROUP_ELEMENT  
+       | 
+       OPTIM_GROUP_ELEMENT            
+       ;
+
+
+expr:  OPTIM_INT_VALUE                  { $<dval>$ = $<ival>1; } /* For the moment, ints are automatically converted to doubles */ 
+       |
+       OPTIM_VALUE                      { $<dval>$ = $<dval>1; }
+       |
+       OPTIM_VARIABLE                   {  
+                                           std::map<std::string, boost::any>::const_iterator it;
+                                           it = driver.m_variables.find( *($<sval>1) );
+                                           if ( it == driver.m_variables.end() ) {   
+                                               driver.error("ERROR Variable " + *($<sval>1)  + " is undefined and will be set to 0.");
+                                               driver.m_variables[ *($<sval>1) ] = 0.0;
+                                           }  
+                                           $<dval>$ = boost::any_cast<double>(driver.m_variables[ *($<sval>1) ]); 
+                                           delete ($<sval>1);
+                                        } 
+                                          
+       |
+       '-' expr %prec NEG               { $<dval>$ = - $<dval>2; }
+       |
+        expr '+' expr                   { $<dval>$ = $<dval>1 + $<dval>3;               } 
+       |                                                                               
+        expr '-' expr                   { $<dval>$ = $<dval>1 - $<dval>3;               }
+       | 
+        expr '*' expr                   { $<dval>$ = $<dval>1 * $<dval>3;               }
+       |   
+        expr '/' expr                   { $<dval>$ = $<dval>1 / $<dval>3;               }          
+       |
+        expr '^' expr                   { $<dval>$ = std::pow($<dval>1, $<dval>3);      } 
+       |
+
+        OPTIM_SQRT '(' expr ')'         { $<dval>$ = std::sqrt( $<dval>3);              }
+       |
+        OPTIM_SIN '(' expr ')'          { $<dval>$ = std::sin( $<dval>3);               }
+       |
+        OPTIM_COS '(' expr ')'          { $<dval>$ = std::cos( $<dval>3);               }
+       |
+        OPTIM_TAN '(' expr ')'          { $<dval>$ = std::tan( $<dval>3);               }
+       |
+        OPTIM_EXP '(' expr ')'          { $<dval>$ = std::exp( $<dval>3);               }
+       |
+        OPTIM_LOG '(' expr ')'          { $<dval>$ = std::log( $<dval>3);               }
+       |
+        '(' expr ')'                    { $<dval>$ = $<dval>2;                          }
+       ;
+  
+attribute_assignements:
+       attribute_assignements attribute_assignement
+       |
+       attribute_assignement
+       ;
+
+
+attribute_assignement: 
+       OPTIM_ATTRIBUTE '=' expr        { driver.m_attributes_stack.push( value_t( *($<sval>1), $<dval>3 ));  
+                                         delete  ($<sval>1);
+                                       } 
+       ;
+
+
+
+%%
+void
+yy::OptimParser::error(const yy::OptimParser::location_type& l, const std::string& m )
+{
+
+    driver.error(l,m);
+ 
+}
+
+
