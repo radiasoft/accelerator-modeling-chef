@@ -1,11 +1,14 @@
 .SUFFIXES:
 .SUFFIXES: .l .cc .c .o 
 
+
+VPATH=../include
+
 FNALROOT = /home/ostiguy/CHEF/fnal-apr-20/fnal/RUNTIME
-INCS = -I. -I$(FNALROOT)/include/basic_toolkit -I$(FNALROOT)/include/beamline -I$(FNALROOT)/include/mxyzptlk  -I$(FNALROOT)/include/gms 
+INCS = -I. -I../include -I$(FNALROOT)/include/basic_toolkit -I$(FNALROOT)/include/beamline -I$(FNALROOT)/include/mxyzptlk  -I$(FNALROOT)/include/gms 
 
 CXXFLAGS = -g 
-CXXFLAGS = -O2
+#CXXFLAGS = -O2
 
 parse_optim: parse_optim.o lex.optim_yy.c OptimParser_ypp.o OptimParserDriver.o
 	g++  $(CXXFLAGS) $(INCS) -o parse_optim  parse_optim.o  lex.optim_yy.c OptimParser_ypp.o OptimParserDriver.o
