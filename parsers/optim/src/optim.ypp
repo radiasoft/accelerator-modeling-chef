@@ -146,18 +146,18 @@ statement:
                                                             delete ($<sval>3); 
                                                           }
        |
-       OPTIM_GROUP_G         elements                     {delete ($<sval>1);  } /* used for fitting/matching fitting ignored for the moment */
+       OPTIM_GROUP_G         elements                     ;/* used for fitting/matching fitting ignored for the moment */
        |                               
-       OPTIM_GROUP_B         elements                     {delete ($<sval>1);  } /* used for fitting/matching ignored for the moment */ 
+       OPTIM_GROUP_B         elements                     ;/* used for fitting/matching ignored for the moment */ 
        |
-       OPTIM_GROUP_L         elements                     {delete ($<sval>1);  } /* used for fitting/matching ignored for the moment */        
-       ;       ; 
+       OPTIM_GROUP_L         elements                     ;/* used for fitting/matching ignored for the moment */        
+       ;       
 
 
 elements:
        elements OPTIM_GROUP_ELEMENT  
        | 
-       OPTIM_GROUP_ELEMENT            
+       OPTIM_GROUP_ELEMENT               { if ($<sval>1) delete ($<sval>1); /*should push elements on a stack ...*/  }  
        ;
 
 
