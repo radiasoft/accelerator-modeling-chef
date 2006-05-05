@@ -48,7 +48,7 @@
 #include <Mapping.h>
 #include <bmlnElmnt.h>
 
-typedef char (*ET_CRITFUNC)( bmlnElmnt* );
+typedef bool (*ET_CRITFUNC)( bmlnElmnt* );
 
 
 struct ETinfo : BarnacleData 

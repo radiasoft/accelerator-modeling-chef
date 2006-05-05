@@ -49,10 +49,11 @@
  */
 
 #include <iomanip>
-
-#include <EdwardsTeng.h>
-#include <Particle.h>
 #include <iosetup.h>
+
+#include <Particle.h>
+#include <BeamlineIterator.h>
+#include <EdwardsTeng.h>
 
 using namespace std;
 using FNAL::pcerr;
@@ -254,7 +255,6 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
    // return 6;
  }
 
-
  lbe->dataHook.append( ETbarn );
 
  return 0;
@@ -276,22 +276,22 @@ EdwardsTeng::~EdwardsTeng()
 
 void EdwardsTeng::eraseAll() 
 {
- dlist_iterator getNext ( *(dlist*) myBeamline );
- bmlnElmnt*      be;
- while((  be = (bmlnElmnt*) getNext()  )) 
-  be->dataHook.eraseAll( "EdwardsTeng" );
+ DeepBeamlineIterator dbi( myBeamline );
+ bmlnElmnt* be;
+ while((  be = dbi++  )) 
+ {  be->dataHook.eraseAll( "EdwardsTeng" ); }
 }
 
 int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit ) 
 {
- int             ret;
- bmlnElmnt*      be;
- dlist_looper    getNext ( *(dlist*) myBeamline );
- double          t;
- int             i;
- MatrixD         mtrx( BMLN_dynDim, BMLN_dynDim );
- ETinfo*         ETptr;
- ETtunes*        tuneptr;
+ int                  ret;
+ bmlnElmnt*           be;
+ DeepBeamlineIterator dbi( myBeamline );
+ double               t;
+ int                  i;
+ MatrixD              mtrx( BMLN_dynDim, BMLN_dynDim );
+ ETinfo*              ETptr;
+ ETtunes*             tuneptr;
 
  EdwardsTeng::theMap = new Mapping;
 
@@ -302,7 +302,7 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
 
 
  double lng = 0.0;
- while (( be = (bmlnElmnt*) getNext() )) {
+ while ((  be = dbi++  )) {
    lng += be->OrbitLength( *ptr_particle );
    be->propagate( *ptr_jp );
    if( !Crit ) {
@@ -320,6 +320,8 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
      be->dataHook.append( "EdwardsTeng", ETptr );
    }
  }
+ dbi.reset();
+
 
  // .......... Calculating tunes .........................
  ptr_jp->getState( *EdwardsTeng::theMap );
@@ -368,8 +370,7 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
  // Go through the accelerator again and attach
  // the Edwards Teng lattice info to each element.
 
- while ((  be = (bmlnElmnt*) getNext()  )) {
-
+ while ((  be = dbi++  )) {
   if( !Crit ) {
    if( ( ret = attachETLattFuncs( be ) ) != 0 ) {
     delete EdwardsTeng::theMap;
@@ -387,6 +388,8 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
    }
   }
  }
+ dbi.reset();
+
 
  tuneptr = new ETtunes;
  t = atan2( EdwardsTeng::snH, EdwardsTeng::csH );
@@ -400,6 +403,7 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
 
  delete EdwardsTeng::theMap;
  delete ptr_particle;
+
  return 0;
 }
 
