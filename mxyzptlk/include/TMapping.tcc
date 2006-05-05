@@ -89,7 +89,7 @@ using namespace std;
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping<T>( int n,
+TMapping<T>::TMapping( int n,
                                   const TJet<T>* pj,
                                   typename EnvPtr<T>::Type pje )
 : TJetVector<T>( n, pj, pje )
@@ -100,7 +100,7 @@ TMapping<T>::TMapping<T>( int n,
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping<T>( const TMapping<T>& x ) 
+TMapping<T>::TMapping( const TMapping<T>& x ) 
 : TJetVector<T>( (const TJetVector<T>&) x ) 
 {
 
@@ -109,7 +109,7 @@ TMapping<T>::TMapping<T>( const TMapping<T>& x )
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping<T>( const TJetVector<T>& x ) 
+TMapping<T>::TMapping( const TJetVector<T>& x ) 
 : TJetVector<T>( x ) 
 {
 }
@@ -117,7 +117,7 @@ TMapping<T>::TMapping<T>( const TJetVector<T>& x )
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping<T>( const char*, typename EnvPtr<T>::Type pje  ) 
+TMapping<T>::TMapping( const char*, typename EnvPtr<T>::Type pje  ) 
 : TJetVector<T>( pje->spaceDim(), 0, pje )
 {
  
@@ -136,7 +136,7 @@ TMapping<T>::TMapping<T>( const char*, typename EnvPtr<T>::Type pje  )
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::~TMapping<T>() 
+TMapping<T>::~TMapping() 
 {
 }
 

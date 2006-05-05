@@ -50,6 +50,7 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 double TVector<double>::operator* ( const TVector<double>& x ) const
 {
 #ifndef NOCHECKS
@@ -67,6 +68,7 @@ double TVector<double>::operator* ( const TVector<double>& x ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 std::complex<double> TVector<std::complex<double> >::operator* ( const TVector<std::complex<double> >& x ) const {
 #ifndef NOCHECKS
   CHECKOUT(std::complex<double>, _dim != x._dim, "TVector<double>::operator*", "dimensions incompatible.")
@@ -83,6 +85,7 @@ std::complex<double> TVector<std::complex<double> >::operator* ( const TVector<s
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 bool TVector<double>::operator> ( const TVector<double>& x ) const
 {
 #ifndef NOCHECKS
@@ -96,6 +99,7 @@ bool TVector<double>::operator> ( const TVector<double>& x ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 double TVector<double>::Norm () const
 {
   double x = 0.0;
@@ -106,6 +110,7 @@ double TVector<double>::Norm () const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 double TVector<std::complex<double> >::Norm () const
 {
   double x = 0.0;
@@ -116,6 +121,7 @@ double TVector<std::complex<double> >::Norm () const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 bool TVector<double>::IsUnit() const
 {
   double x = 0.0;
@@ -126,6 +132,7 @@ bool TVector<double>::IsUnit() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 bool TVector<std::complex<double> >::IsUnit() const
 {
   double x = 0.0;

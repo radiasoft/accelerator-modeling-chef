@@ -91,7 +91,7 @@ using namespace std;
 //
 
 template<typename T>
-TJetVector<T>::TJetVector<T>( int n, 
+TJetVector<T>::TJetVector( int n, 
                               const TJet<T>* x, 
                               const typename EnvPtr<T>::Type pje )
 
@@ -117,7 +117,7 @@ TJetVector<T>::TJetVector<T>( int n,
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T>::TJetVector<T>( const TJetVector<T>& x )
+TJetVector<T>::TJetVector( const TJetVector<T>& x )
 {
 
   _myEnv = x._myEnv;
@@ -138,7 +138,7 @@ TJetVector<T>::TJetVector<T>( const TJetVector<T>& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T>::~TJetVector<T>()
+TJetVector<T>::~TJetVector()
 {
   delete [] _comp;
 }

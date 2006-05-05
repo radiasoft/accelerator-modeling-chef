@@ -92,6 +92,7 @@ TMatrix<std::complex<double> > TMatrix<std::complex<double> >::dagger() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 TMatrix<double>::operator TMatrix<std::complex<double> > () const { 
 
   TML<std::complex<double> >*  p = *_ml; // implicit conversion
@@ -130,6 +131,7 @@ TMatrix<double> imag( const TMatrix<std::complex<double> >& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
 TMatrix<std::complex<double> > TMatrix<double>::eigenValues() const
 {
  
@@ -141,6 +143,7 @@ TMatrix<std::complex<double> > TMatrix<double>::eigenValues() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenValues() const 
 {
 
@@ -153,6 +156,7 @@ TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenValues() con
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 TMatrix<std::complex<double> > TMatrix<double>::eigenVectors() const
 {
 
@@ -165,6 +169,7 @@ TMatrix<std::complex<double> > TMatrix<double>::eigenVectors() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenVectors() const
 {
 
@@ -177,6 +182,7 @@ TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenVectors() co
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 void TMatrix<double>::SVD( TMatrix<double>& U, TMatrix<double>& V, TMatrix<double>& W) 
 {
   _ml->SVD( U._ml, V._ml, W._ml);

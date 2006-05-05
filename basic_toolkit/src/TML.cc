@@ -62,7 +62,7 @@ static std::complex<double> complex_0(0.0, 0.0);
 // Specializations for class TML
 // ==================================================================
 
-
+template<>
 MLPtr<std::complex<double> >::Type TML<std::complex<double> >::dagger() const
 {
   MLPtr<std::complex<double> >::Type  z( new  TML<std::complex<double> >(*this) );
@@ -80,6 +80,7 @@ MLPtr<std::complex<double> >::Type TML<std::complex<double> >::dagger() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 TML<double>::operator TML<std::complex<double> >* () { 
   
   TML<std::complex<double> >* z = 
@@ -132,6 +133,7 @@ MLPtr<double>::Type real_part( MLPtr<std::complex<double> >::Type const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
 MLPtr<double>::Type imag_part( MLPtr<std::complex<double> >::Type const& z )
 {
   int sz =  z->_nrows * z->_ncols; 
@@ -153,6 +155,7 @@ MLPtr<double>::Type imag_part( MLPtr<std::complex<double> >::Type const& z )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 MLPtr<std::complex<double> >::Type TML<double>::eigenVectors()  const
 {
 
@@ -257,6 +260,7 @@ MLPtr<std::complex<double> >::Type TML<double>::eigenVectors()  const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 MLPtr<std::complex<double> >::Type TML<double>::eigenValues() const
 {
   int nrows = _nrows;
@@ -350,6 +354,7 @@ MLPtr<std::complex<double> >::Type TML<double>::eigenValues() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
 MLPtr<std::complex<double> >::Type TML<std::complex<double> >::eigenValues() const { 
 
   int nm   = _nrows;
@@ -451,6 +456,7 @@ MLPtr<std::complex<double> >::Type TML<std::complex<double> >::eigenValues() con
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 MLPtr<std::complex<double> >::Type TML<std::complex<double> >::eigenVectors() const {
 
   int nm   = _nrows;
@@ -575,6 +581,7 @@ MLPtr<std::complex<double> >::Type  multiply( MLPtr<std::complex<double> >::Type
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 void 
 TML<std::complex<double> >::orderCoordinates(MLPtr<std::complex<double> >::Type& eigenvalues,   MLPtr<std::complex<double> >::Type& eigenvectors) {
 

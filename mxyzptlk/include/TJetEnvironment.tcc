@@ -529,6 +529,7 @@ typename EnvPtr<T>::Type  TJetEnvironment<T>::makeInverseJetEnvironment( const T
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 EnvPtr<double>::Type TJetEnvironment<double>::makeJetEnvironment(int maxweight, const Vector& v , double* scale) {
  
  boost::scoped_array<double> refpoints( new double[ v.Dim() ]);
@@ -636,6 +637,7 @@ typename EnvPtr<T>::Type  TJetEnvironment<T>::makeJetEnvironment(int maxweight, 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 EnvPtr<double>::Type  TJetEnvironment<double>::getApproxJetEnvironment(int maxweight, const Vector& refpoints)
 {
 

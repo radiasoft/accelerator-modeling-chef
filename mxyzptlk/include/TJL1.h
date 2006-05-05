@@ -145,7 +145,7 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   mutable int                         _constIterPtr;
   int                                 _iterPtr;
 
-  static std::vector<TJL1<T>* > TJL1<T>::_thePool;  // pool of discarded TJL1 objects
+  static std::vector<TJL1<T>* >       _thePool;  // pool of discarded TJL1 objects
 
   void insert( TJLterm<T> const& );
   void append( TJLterm<T> const& );
@@ -238,7 +238,7 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   typename JLPtr<T>::Type pow(const double&) const;
   typename JLPtr<T>::Type log()              const;
   typename JLPtr<T>::Type compose(typename JLPtr<T>::Type const y[ ]) const; 
-  typename JLPtr<T>::Type TJL1<T>::D( const int* n ) const; 
+  typename JLPtr<T>::Type D( const int* n ) const; 
  
   void               resetConstIterator();
   const TJLterm<T>*  stepConstIteratorPtr()  const;

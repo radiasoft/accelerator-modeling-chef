@@ -55,7 +55,7 @@
 
 using namespace std;
 
-
+template<>
 void TML<double>::SVD ( MLPtr<double>::Type& U, MLPtr<double>::Type& W, MLPtr<double>::Type& V ) const
 {
 
