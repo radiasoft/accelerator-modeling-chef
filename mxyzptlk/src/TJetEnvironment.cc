@@ -38,6 +38,7 @@ using FNAL::pcout;
 using FNAL::pcerr;
 
 
+template<>
 TJetEnvironment<double>::operator EnvPtr<double>::Type () const {
 
 // This should never be called !
@@ -52,6 +53,7 @@ TJetEnvironment<double>::operator EnvPtr<double>::Type () const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
 TJetEnvironment<double>::operator EnvPtr<std::complex<double> >::Type () const {
 
   // NOTE: Using the TJetEnvironment copy constructor is forbidden;  
@@ -76,6 +78,7 @@ TJetEnvironment<double>::operator EnvPtr<std::complex<double> >::Type () const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
 TJetEnvironment<std::complex<double> >::operator EnvPtr<double>::Type () const {
  
   // NOTE: Using the TJetEnvironment copy constructor is forbidden;  

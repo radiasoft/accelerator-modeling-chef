@@ -69,6 +69,7 @@ using FNAL::pcerr;
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 TJL<double>::operator JLPtr<std::complex<double> >::Type () const {
 
   EnvPtr<std::complex<double> >::Type pje (*_myEnv);    // implicit conversion;
@@ -112,6 +113,7 @@ TJL<double>::operator JLPtr<std::complex<double> >::Type () const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 TJL<std::complex<double> >::operator JLPtr<double>::Type () const {
 
   EnvPtr<double>::Type pje(*_myEnv); // implicit conversion;
@@ -154,6 +156,7 @@ TJL<std::complex<double> >::operator JLPtr<double>::Type () const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 TJL<double>::operator boost::intrusive_ptr<TJL<double> >() const {
 
   // this should never be called 
@@ -166,6 +169,7 @@ TJL<double>::operator boost::intrusive_ptr<TJL<double> >() const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 TJL<std::complex<double> >::operator boost::intrusive_ptr<TJL<std::complex<double> > >() const {
 
   // this should never be called 

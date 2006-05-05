@@ -57,6 +57,7 @@ using FNAL::pcout;
 using std::complex;
 
 
+template<>
 Vector TMapping<double>::operator()( const Vector& x ) const
 {
  int i = x.Dim();
@@ -78,6 +79,7 @@ Vector TMapping<double>::operator()( const Vector& x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 Vector TMapping<complex<double> >::operator()( const Vector& x ) const
 {
   throw( GenericException( __FILE__, __LINE__, 
@@ -89,6 +91,7 @@ Vector TMapping<complex<double> >::operator()( const Vector& x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 TMapping<double>::operator TMapping<std::complex<double> > () const {
 
   TMapping<std::complex<double> > z;

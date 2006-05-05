@@ -92,6 +92,7 @@ using FNAL::pcerr;
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 TJet<double>::operator TJet<std::complex<double> >() const { 
 
   return TJet<std::complex<double> >( *_jl ); // implicit conversion
@@ -102,6 +103,7 @@ TJet<double>::operator TJet<std::complex<double> >() const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
 TJet<std::complex<double> >::operator TJet<double> () const {
 
   return TJet<double>( *_jl ); // implicit conversion

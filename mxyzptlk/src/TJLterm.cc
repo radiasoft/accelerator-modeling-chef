@@ -64,6 +64,7 @@ using FNAL::pcerr;
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
 TJLterm<std::complex<double> >::operator TJLterm<double> () const {
  
   TJLterm<double> x;
@@ -82,6 +83,7 @@ TJLterm<std::complex<double> >::operator TJLterm<double> () const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
 TJLterm<double>::operator TJLterm<std::complex<double> > () const {
  
 

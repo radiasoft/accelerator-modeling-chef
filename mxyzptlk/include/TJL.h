@@ -197,11 +197,11 @@ class TJL: public ReferenceCounter<TJL<T> > {
 
   ~TJL();
 
-  static typename JLPtr<T>::Type TJL<T>::_epsSin(  typename JLPtr<T>::Type const& epsilon );
-  static typename JLPtr<T>::Type TJL<T>::_epsCos(  typename JLPtr<T>::Type const& epsilon );
-  static typename JLPtr<T>::Type TJL<T>::_epsSqrt( typename JLPtr<T>::Type const& epsilon ); 
-  static typename JLPtr<T>::Type TJL<T>::_epsExp(  typename JLPtr<T>::Type const& epsilon ); 
-  static typename JLPtr<T>::Type TJL<T>::_epsPow(  typename JLPtr<T>::Type const& epsilon, const double& s ); 
+  static typename JLPtr<T>::Type _epsSin(  typename JLPtr<T>::Type const& epsilon );
+  static typename JLPtr<T>::Type _epsCos(  typename JLPtr<T>::Type const& epsilon );
+  static typename JLPtr<T>::Type _epsSqrt( typename JLPtr<T>::Type const& epsilon ); 
+  static typename JLPtr<T>::Type _epsExp(  typename JLPtr<T>::Type const& epsilon ); 
+  static typename JLPtr<T>::Type _epsPow(  typename JLPtr<T>::Type const& epsilon, const double& s ); 
 
 
   // Constructors and destructors (factory functions)_____________________________________
@@ -264,9 +264,9 @@ class TJL: public ReferenceCounter<TJL<T> > {
 
   void addTerm( const TJLterm<T>& );      
  
-  TJLterm<T>* TJL<T>::removeTerm( TJLterm<T>* a); // Unconditionally remove term pointed to by a;  a is not deleted !
+  TJLterm<T>* removeTerm( TJLterm<T>* a); // Unconditionally remove term pointed to by a;  a is not deleted !
  
-  TJLterm<T>* storePtr();                  // returns a ptr to the next available block in the JLterm store;
+  TJLterm<T>* storePtr();                 // returns a ptr to the next available block in the JLterm store;
 
   bool isNilpotent() const;
   void writeToFile( std::ofstream& ) const;
@@ -323,7 +323,7 @@ class TJL: public ReferenceCounter<TJL<T> > {
   typename JLPtr<T>::Type pow(const double&) const;
   typename JLPtr<T>::Type log()              const;
   typename JLPtr<T>::Type compose(typename JLPtr<T>::Type const y[ ]) const; 
-  typename JLPtr<T>::Type TJL<T>::D( const int* n ) const; 
+  typename JLPtr<T>::Type D( const int* n ) const; 
 
   void              resetConstIterator();
   TJLterm<T>        stepConstIterator()     const;

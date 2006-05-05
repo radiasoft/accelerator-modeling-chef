@@ -65,6 +65,8 @@ using FNAL::pcout;
   }
 
 
+#if 0
+template<>
 TJetVector<complex<double> > operator*( const TJetVector<complex<double> >& x, const double& c )
 {
   return x.operator*( complex<double> (c,0.0) );
@@ -73,16 +75,19 @@ TJetVector<complex<double> > operator*( const TJetVector<complex<double> >& x, c
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 TJetVector<complex<double> > operator*( const double& c, const TJetVector<complex<double> >& x )
 {
   return x.operator*( complex<double> (c,0.0) );  
 
 }
+#endif
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
 void TJetVector<double>::printCoeffs() const
 {
   int i;
@@ -110,6 +115,7 @@ void TJetVector<double>::printCoeffs() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
 void TJetVector<complex<double> >::printCoeffs() const
 {
   int i;
@@ -140,6 +146,7 @@ void TJetVector<complex<double> >::printCoeffs() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
 void TJetVector<double>::Rotate ( TJetVector<double>& v, double theta ) const
 {
 #ifndef NOCHECKS
@@ -164,6 +171,7 @@ void TJetVector<double>::Rotate ( TJetVector<double>& v, double theta ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 void TJetVector<complex<double> >::Rotate ( TJetVector<complex<double> >&, double ) const
 {
   throw( GenericException( __FILE__, __LINE__, 
@@ -176,6 +184,7 @@ void TJetVector<complex<double> >::Rotate ( TJetVector<complex<double> >&, doubl
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
 void TJetVector<double>::Rotate ( TJetVector<double>& v, 
                                  const TJet<double>& theta ) const
 {
@@ -204,6 +213,7 @@ void TJetVector<double>::Rotate ( TJetVector<double>& v,
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 void TJetVector<complex<double> >::Rotate ( TJetVector<complex<double> >&, 
                                                 const TJet<complex<double> >& ) const
 {
@@ -216,6 +226,7 @@ void TJetVector<complex<double> >::Rotate ( TJetVector<complex<double> >&,
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 TJet<double> TJetVector<double>::operator* ( const TJetVector<double>& x ) const
 {
 
@@ -230,6 +241,7 @@ TJet<double> TJetVector<double>::operator* ( const TJetVector<double>& x ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 TJet<std::complex<double> > TJetVector<std::complex<double> >::operator* ( const TJetVector<std::complex<double> >& x ) const
 {
 
