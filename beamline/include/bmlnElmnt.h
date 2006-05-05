@@ -59,6 +59,8 @@
 #include <Jet.h>
 #include <JetVector.h>
 
+bmlnElmnt* read_istream(std::istream&);
+
 class ParticleBunch;
 class Aperture;
 class Particle;
