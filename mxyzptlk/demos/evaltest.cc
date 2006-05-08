@@ -7,7 +7,7 @@
 //
 
 #include <iostream>
-#include "Jet.h"
+#include <Jet.h>
 
 using namespace std;
 
@@ -15,9 +15,9 @@ int main()
 {
  double r[3], s[3];
  
- Jet::BeginEnvironment( 7 );
+ Jet__environment::BeginEnvironment( 7 );
  coord x(0.5), y(0.4), z(0.0);
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  Jet u, v;
  
