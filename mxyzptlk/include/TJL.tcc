@@ -590,9 +590,6 @@ typename JLPtr<T>::Type  TJL<T>::makeTJL( const TJL& x )
 
        while(  r = (TJLterm<T>*) getNext( ) ) {
 
-         std::cout << "*r = " << (*r)  << std::endl;
-         std::cout << "*q = " << (*q)  << std::endl;
-
         if ( *r   ==   *q ) break;
        } 
      };
@@ -1306,12 +1303,12 @@ T TJL<T>::operator()( const T* x )  const
  
    // Get the next set of _exponents of weight w.
    while( nexcom( w, _myEnv->numVar(), exponent ) ) {
- 
+    
      // Find the first non-zero _exponent.
      i = 0;
-     while( !exponent[++i]  ) ;
-     i--;
- 
+     while( !exponent[i++]  ) ;
+     i--; 
+
      // The value of the _monomial associated with this composition
      // is obtained by multiplying a factor into a previously
      // computed _monomial.
