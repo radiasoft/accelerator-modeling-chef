@@ -360,7 +360,7 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
   _maxTerms( bcfRec( w + n, n ) ),                      // no of monomials in a polynomial of order w in n variables
   _offset(w,n),
   _exponent(new int[n]),  
-  _monomial(0),
+  _monomial(new U[_maxTerms]),
   _TJLmonomial(new typename JLPtr<T>::Type[_maxTerms]), // for monomials used in multinomial evaluation.  
   _TJLmml( TJLterm<T>::array_allocate(_maxTerms) ),     // for collecting terms during multiplication.
   _allZeroes(n)
