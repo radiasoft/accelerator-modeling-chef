@@ -79,7 +79,7 @@ void JetthinSext::localPropagate( JetParticle& p ) {
   zero = 0.0;
   // ??? REMOVE zero.fixReferenceAtStart( p.state );
 
-  k = K2L / p.BRho();
+  k = K2L / p.ReferenceBRho();
 
   p.getState( inState );
 
