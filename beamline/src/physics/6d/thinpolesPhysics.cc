@@ -49,14 +49,14 @@ static const std::complex<double> complex_i(0.0,1.0);
 
 void thin2pole::localPropagate( Particle& p ) {
  if(strength != 0) {
-   p.state[3] -= strength/p.BRho();
+   p.state[3] -= strength/p.ReferenceBRho();
  }
 }
 
 void thin2pole::localPropagate( JetParticle& p ) {
   if(strength != 0) {
     Jet  s;
-    s = p.state(3) - (strength/p.BRho());
+    s = p.state(3) - (strength/p.ReferenceBRho());
     ( p.state ).SetComponent( 3, s );
   }
 }
@@ -67,7 +67,7 @@ void thin12pole::localPropagate( Particle& p ) {
  double x, y, k;
  
  if(strength != 0) {
-   k = strength/p.BRho();
+   k = strength/p.ReferenceBRho();
    x = p.state[0];
    y = p.state[1];
    
@@ -85,7 +85,7 @@ void thin12pole::localPropagate( JetParticle& p ) {
     Jet  k, x, y, s;
     JetC z, z2;
     
-    k = strength/p.BRho();
+    k = strength/p.ReferenceBRho();
     x = p.state(0);
     y = p.state(1);
     
@@ -106,7 +106,7 @@ void thin14pole::localPropagate( Particle& p ) {
  double x, y, k;
  
   if(strength != 0) {
-    k = strength/p.BRho();
+    k = strength/p.ReferenceBRho();
     x = p.state[0];
     y = p.state[1];
  
@@ -124,7 +124,7 @@ void thin14pole::localPropagate( JetParticle& p ) {
     Jet  k, x, y, s;
     JetC z;
  
-    k = strength/p.BRho();
+    k = strength/p.ReferenceBRho();
     x = p.state(0);
     y = p.state(1);
  
@@ -145,7 +145,7 @@ void thin16pole::localPropagate( Particle& p ) {
  double x, y, k;
  
   if(strength != 0) {
-    k = strength/p.BRho();
+    k = strength/p.ReferenceBRho();
     x = p.state[0];
     y = p.state[1];
  
@@ -164,7 +164,7 @@ void thin16pole::localPropagate( JetParticle& p ) {
     Jet  k, x, y, s;
     JetC z, u;
  
-    k = strength/p.BRho();
+    k = strength/p.ReferenceBRho();
     x = p.state(0);
     y = p.state(1);
  
@@ -186,7 +186,7 @@ void thin18pole::localPropagate( Particle& p ) {
  double x, y, k;
  
   if(strength != 0) {
-    k = strength/p.BRho();
+    k = strength/p.ReferenceBRho();
     x = p.state[0];
     y = p.state[1];
  
@@ -205,7 +205,7 @@ void thin18pole::localPropagate( JetParticle& p ) {
     Jet  k, x, y, s;
     JetC z;
  
-    k = strength/p.BRho();
+    k = strength/p.ReferenceBRho();
     x = p.state(0);
     y = p.state(1);
  
