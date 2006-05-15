@@ -131,21 +131,39 @@ void rfcavity::_finishConstructor()
 {
   // NOTE: If this code is ever modified, you 
   // must also modify rfcavity::readFrom and rfcavity::writeTo
-  if( 0 != _u ) { bmlnElmnt** w = _u;
-                  while( w <= _v ) { delete *w; 
-                                     w++; 
-                                   }
-                }
-  else          { _u = new bmlnElmnt* [3];
-                }
-  _v = _u;
+  if( 0 != _u ) { 
+    // rfcavity has been constructed before;
+    // it is now being modified
+    // ------------------------------------
+    bmlnElmnt* holder[3];
+    _v = _u;
+    for( int i = 0; i < 3; i++ ) { holder[i] = *(_v++); }
 
-  *(_v++) = new drift( this->Length()/2.0 );
-  *(_v)   = new thinrfcavity( 0.0, 1.0e9*(this->Strength()), phi_s, Q, R );
-  dynamic_cast<thinrfcavity*>(*_v)->setHarmonicNumber(h);
-  dynamic_cast<thinrfcavity*>(*_v)->setRadialFrequency(w_rf);
-  _v++;
-  *(_v)   = new drift( this->Length()/2.0 );
+    _v = _u;
+    *(_v++) = holder[0]->Clone();    // Could be: "*(_v++) = holder[0];"
+    *(_v)   = holder[1]->Clone();
+    dynamic_cast<thinrfcavity*>(*_v)->setHarmonicNumber(h);
+    dynamic_cast<thinrfcavity*>(*_v)->setRadialFrequency(w_rf);
+    dynamic_cast<thinrfcavity*>(*_v)->setPhi(phi_s);
+    (*_v)->setStrength( this->Strength() );  // bmlnElmnt version invoked
+    _v++;
+    *(_v)   = holder[2]->Clone();
+
+    for( int i = 0; i < 3; i++ ) { delete holder[i]; }
+  }
+  else { 
+    // initial construction of rfcavity
+    // -----------------------------------
+    _u = new bmlnElmnt* [3];
+
+    _v = _u;
+    *(_v++) = new drift( this->Length()/2.0 );
+    *(_v)   = new thinrfcavity( 0.0, 1.0e9*(this->Strength()), phi_s, Q, R );
+    dynamic_cast<thinrfcavity*>(*_v)->setHarmonicNumber(h);
+    dynamic_cast<thinrfcavity*>(*_v)->setRadialFrequency(w_rf);
+    _v++;
+    *(_v)   = new drift( this->Length()/2.0 );
+  }
 }
 
 
