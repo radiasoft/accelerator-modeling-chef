@@ -23,7 +23,8 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
+#ifndef BMLUTILS_H
+#define BMLUTILS_H
 
 /*
  *  File: BmlUtil.h
@@ -140,3 +141,5 @@ class BmlUtil
   // Used by functions which assume phase space has dimension
   //   six, and some other dimension is employed.
 };
+
+#endif // BMLUTILS_H
