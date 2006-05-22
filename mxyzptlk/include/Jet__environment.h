@@ -46,12 +46,13 @@
 #define JET__ENV_H
 
 #include <TJetEnvironment.h>
+#include <EnvPtr.h>
 
 typedef TJetEnvironment<double>                Jet__environment;
 typedef TJetEnvironment<std::complex<double> > JetC__environment;
 
-typedef EnvPtr<double>::Type                   Jet__environment_ptr;
-typedef EnvPtr<std::complex<double> >::Type    JetC__environment_ptr;
+typedef EnvPtr<double>                         Jet__environment_ptr;
+typedef EnvPtr<std::complex<double> >          JetC__environment_ptr;
 
 
 #endif
