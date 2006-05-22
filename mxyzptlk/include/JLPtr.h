@@ -41,13 +41,39 @@ template<typename T>
 class TJL;
 
 template<typename T>
-struct JLPtr
+class TJLBase;
+
+template<typename T>
+class JLPtr;
+
+//------------------------------------------------
+// class JLPtr  
+//------------------------------------------------
+
+template<typename T>
+class JLPtr: public boost::intrusive_ptr<TJL<T> >
 {
-#ifdef  FIRST_ORDER_JETS 
-  typedef boost::intrusive_ptr<TJL1<T> > Type;
-#else
-  typedef boost::intrusive_ptr<TJL<T> > Type;
-#endif
+
+ public:
+
+  JLPtr():                                 boost::intrusive_ptr<TJL<T> >() {}
+  JLPtr(TJL<T>* p, bool add_ref=true):     boost::intrusive_ptr<TJL<T> >(p,add_ref) {}
+  
+
+};
+
+//------------------------------------------------
+// class JL1Ptr  
+//------------------------------------------------
+
+template<typename T>
+class JL1Ptr: public boost::intrusive_ptr<TJL1<T> >
+{
+
+ public:
+
+  JL1Ptr():                                 boost::intrusive_ptr<TJL1<T> >() {}
+  JL1Ptr(TJL1<T>* p, bool add_ref=true):    boost::intrusive_ptr<TJL1<T> >(p,add_ref) {}
 
 };
 
