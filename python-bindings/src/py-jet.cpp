@@ -27,22 +27,22 @@
 #include <string>
 #include <iostream>
 
-static EnvPtr<std::complex<double> >::Type getLastEnvC_local( ) 
+static EnvPtr<std::complex<double> > getLastEnvC_local( ) 
 {
   return JetC::_lastEnv; 
 }
 
-static EnvPtr<double>::Type  getLastEnv_local( ) 
+static EnvPtr<double>  getLastEnv_local( ) 
 {
   return Jet::_lastEnv; 
 }
 
-static void setLastEnvC_local( EnvPtr<std::complex<double> >::Type env ) 
+static void setLastEnvC_local( EnvPtr<std::complex<double> > const& env ) 
 {
   JetC::_lastEnv = env; 
 }
 
-static void setLastEnv_local(  EnvPtr<double>::Type env  ) 
+static void setLastEnv_local(  EnvPtr<double> const& env  ) 
 {
   Jet::_lastEnv = env; 
 }
