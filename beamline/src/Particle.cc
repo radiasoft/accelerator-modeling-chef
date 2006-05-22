@@ -737,7 +737,7 @@ void JetParticle::setState( const Vector& u ) {
          uic.str().c_str() ) );
  }
 
- EnvPtr<double>::Type pje = state.Env();
+ EnvPtr<double> pje = state.Env();
  state = Mapping( "id", pje );
  for( int i = 0; i < state.Dim(); i++ )  
    state(i) = state(i) + ( u(i) - pje->refPoint()[i] );
@@ -746,7 +746,7 @@ void JetParticle::setState( const Vector& u ) {
 } 
 
 void JetParticle::setState( double* u ) {
- EnvPtr<double>::Type pje = state.Env();
+ EnvPtr<double> pje = state.Env();
  state = Mapping( "id", pje );
  for( int i = 0; i < state.Dim(); i++ )  
    state(i) = state(i) + ( u[i] - pje->refPoint()[i] );
@@ -789,8 +789,7 @@ void JetParticle::createStandardEnvironments( int deg )
   Jet__environment::BeginEnvironment( deg );
   coord x(0.0),  y(0.0),  z(0.0),
        px(0.0), py(0.0), pz(0.0);
-  EnvPtr<double>::Type JetEnvPtr  =  Jet__environment::EndEnvironment(scale);
-  JetC::_lastEnv  =  *JetEnvPtr; // implicit conversion
+  JetC::_lastEnv  =  Jet__environment::EndEnvironment(scale); // implicit conversion
 }
 
 
