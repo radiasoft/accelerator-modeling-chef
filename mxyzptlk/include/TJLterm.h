@@ -107,8 +107,8 @@ class TJLterm
   //   _index is made 6 dimensional until Reconstruct
   //   is invoked.
 
-  TJLterm( typename EnvPtr<T>::Type pje );
-  TJLterm( const IntArray&, const T&,  typename EnvPtr<T>::Type pje);
+  TJLterm( EnvPtr<T> const& pje );
+  TJLterm( const IntArray&, const T&,  EnvPtr<T> const& pje);
 
   //   If 0 is used for the environment pointer,
   //   it is assumed that the that the variable
@@ -117,10 +117,8 @@ class TJLterm
   TJLterm( const IntArray&, const T& );
   TJLterm( const TJLterm& );
 
-  // Operators
-
-  operator TJLterm <std::complex<double> > () const;
-  operator TJLterm <double> () const;
+  template<typename U>
+  TJLterm( const TJLterm<U>& );
 
   TJLterm& operator=( const TJLterm& );
   TJLterm  operator*( const TJLterm& );
@@ -184,6 +182,12 @@ class TJLterm
 
 
 } ;
+
+
+// specializations
+
+template<>
+TJLterm<std::complex<double> >::TJLterm( TJLterm<double> const& );
 
 
 #endif // TJLTERM_H
