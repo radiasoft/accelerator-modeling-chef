@@ -132,9 +132,9 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
   _py  = new coord(0.0);
   _pz  = new coord(0.0);
 
-  _p_JetEnv  = Jet__environment::EndEnvironment(scale);
-  _p_JetCEnv = JetC::_lastEnv = *_p_JetEnv; // implicit conversion
-
+  _p_JetEnv      = Jet__environment::EndEnvironment(scale);
+  _p_JetCEnv  =  JetC::_lastEnv = _p_JetEnv;      // implicit conversion
+ 
   if( _p_JetEnv != Jet::_lastEnv ) {
     std::stringstream uic;
     uic << "An impossibility has occurred\nin file "
@@ -2033,8 +2033,8 @@ void CHEFGUI::_editPartAndSect()
 
       // Create a temporary Jet environment
       // ----------------------------------
-      EnvPtr<double>::Type                 formerJetEnv  = Jet::_lastEnv;
-      EnvPtr<std::complex<double> >::Type  formerJetCEnv = JetC::_lastEnv;
+      EnvPtr<double>                  formerJetEnv  = Jet::_lastEnv;
+      EnvPtr<std::complex<double> >   formerJetCEnv = JetC::_lastEnv;
       double scale[]  = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3 };
       Jet__environment::BeginEnvironment( order );
       // coord x(0.0),  y(0.0),  z(0.0),
@@ -2047,7 +2047,7 @@ void CHEFGUI::_editPartAndSect()
       coord* py = new coord(0.0);
       coord* pz = new coord(0.0);
       Jet__environment::EndEnvironment(scale);
-      JetC::_lastEnv = *_p_JetEnv ; // implicit conversion
+      JetC::_lastEnv = _p_JetEnv ; // implicit conversion
 
 
       // Sectorize between the partition markers.

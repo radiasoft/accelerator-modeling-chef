@@ -1801,7 +1801,7 @@ void Tracker::_tool_pdicOrb()
     Vector z(w);
   
     beamline* bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
-    EnvPtr<double>::Type storedEnv = Jet::_lastEnv;
+    EnvPtr<double> storedEnv = Jet::_lastEnv;
     double energy = dummyPtr->Energy();
 
     JetParticle* jpPtr = 0;

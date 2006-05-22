@@ -315,8 +315,8 @@ private:
   QBmlRoot*           _p_currQBmlRoot;// ... and its widget
   QBml*               _p_clickedQBml; // ... and its QBml
 
-  EnvPtr<double>::Type                  _p_JetEnv;
-  EnvPtr<std::complex<double> >::Type   _p_JetCEnv;
+  EnvPtr<double>                   _p_JetEnv;
+  EnvPtr<std::complex<double> >    _p_JetCEnv;
 
   Options             _userOptions;
 
