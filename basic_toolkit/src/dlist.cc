@@ -329,7 +329,10 @@ int dlist::replaceOne( const void* a, const void* b )
 }
 
 
-void* dlist::get() {
+// get and remove the first element in the list 
+
+void* 
+dlist::get() { 
   if ( last == 0 ) return 0;   // In case the list is empty.
   dlink* f = last->next;
   void* r = f->e;
