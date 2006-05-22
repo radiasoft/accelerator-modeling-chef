@@ -54,7 +54,21 @@
 #include <iosetup.h>
 #include <iostream>
 
-template <typename T>
+template<typename T>
+class TJL;
+
+template<typename T>
+class ReferenceCounter;
+
+template<typename T>
+void intrusive_ptr_add_ref(ReferenceCounter<T>* p);
+
+template<typename T>
+void intrusive_ptr_release(ReferenceCounter<T>* p);
+
+
+
+template<typename T>
 class ReferenceCounter {
 
   unsigned int _refcount; 
@@ -70,14 +84,10 @@ class ReferenceCounter {
 
   void dispose(){ return toDerivedClass().dispose(); }
 
-  friend void intrusive_ptr_add_ref(ReferenceCounter* p) {
-    ++(p->_refcount);
-  }
+  friend void intrusive_ptr_add_ref<>(ReferenceCounter* p);
 
+  friend void intrusive_ptr_release<>(ReferenceCounter* p);
 
-  friend void intrusive_ptr_release(ReferenceCounter* p) {
-    if ( --(p->_refcount) == 0 ) p->dispose(); 
-  }
 
   void add_ref() {
     ++ _refcount;
@@ -111,6 +121,19 @@ class ReferenceCounter {
   ReferenceCounter(const  ReferenceCounter&); 
  
 }; 
+
+template<typename T>
+inline void intrusive_ptr_add_ref(ReferenceCounter<T>* p)
+{
+    ++(p->_refcount);
+}
+
+template<typename T>
+inline void intrusive_ptr_release(ReferenceCounter<T>* p)
+{
+    if ( --(p->_refcount) == 0 ) p->dispose(); 
+} 
+
  
 
 #endif  // REFERENCECOUNTER_H
