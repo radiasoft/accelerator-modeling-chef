@@ -57,12 +57,12 @@ static void EndEnvironmentC_local( )
   JetC__environment::EndEnvironment(); 
 }
 
-static EnvPtr<double>::Type makeJetEnvironment_3_local(int maxweight, int nvar, int spacedim ) {
+static EnvPtr<double> makeJetEnvironment_3_local(int maxweight, int nvar, int spacedim ) {
  
        return Jet__environment::makeJetEnvironment(maxweight, nvar, spacedim);
 }
 
-static EnvPtr<double>::Type makeJetEnvironment_4_local(int maxweight, int nvar, int spacedim, numeric::array& refpt ) {
+static EnvPtr<double> makeJetEnvironment_4_local(int maxweight, int nvar, int spacedim, numeric::array& refpt ) {
  
   if ( !   refpt.is_c_array() ) 
     throw PyBindingsException("makeJetEnvironment: reference points underlying data array must be a c-array.");  
@@ -73,23 +73,23 @@ static EnvPtr<double>::Type makeJetEnvironment_4_local(int maxweight, int nvar, 
        return Jet__environment::makeJetEnvironment(maxweight, nvar, spacedim, reinterpret_cast<double*>( reinterpret_cast<PyArrayObject*>( refpt.ptr())->data ) );
 }
 
-static EnvPtr<std::complex<double> >::Type makeJetCEnvironment_3_local(int maxweight, int nvar, int spacedim ) {
+static EnvPtr<std::complex<double> > makeJetCEnvironment_3_local(int maxweight, int nvar, int spacedim ) {
  
        return JetC__environment::makeJetEnvironment(maxweight, nvar, spacedim);
 }
 
 
-static EnvPtr<std::complex<double> >::Type toCmplxEnvironment( EnvPtr<double>::Type const& env) {
+static EnvPtr<std::complex<double> > toCmplxEnvironment( EnvPtr<double> const& env) {
        
-  return *env; // implicit converter 
+  return TJetEnvironment<std::complex<double> >::makeJetEnvironment(env); // implicit conversion 
 }
 
   
-static EnvPtr<double>::Type              toRealEnvironment( EnvPtr<std::complex<double> >::Type const& env) {
-
-  return *env; // implicit converter 
-
-}
+//static EnvPtr<double>   toRealEnvironment( EnvPtr<std::complex<double> > const& env) {
+//
+//  return env; // implicit converter 
+//
+//}
 
 void wrap_mxyzptlk_jetenv() {
 
@@ -98,7 +98,7 @@ void wrap_mxyzptlk_jetenv() {
   def("makeJetEnvironment",&makeJetEnvironment_3_local);      
   def("makeJetEnvironment",&makeJetEnvironment_4_local);      
 
-  class_<EnvPtr<double>::Type>  Jet__environmentClass_("Jet__environment", no_init); 
+  class_<EnvPtr<double> >  Jet__environmentClass_("Jet__environment", no_init); 
 
   def("makeJetEnvironment", &makeJetEnvironment_3_local);      
 
@@ -110,13 +110,13 @@ void wrap_mxyzptlk_jetcenv() {
  def("BeginEnvironmentC",  &JetC__environment::BeginEnvironment);
  def("EndEnvironmentC",    &EndEnvironmentC_local);
  
- class_<EnvPtr<std::complex<double> >::Type>  JetC__environmentClass_("JetC__environment", no_init);
+ class_<EnvPtr<std::complex<double> > >  JetC__environmentClass_("JetC__environment", no_init);
 
  def("makeJetCEnvironment", &makeJetCEnvironment_3_local);      
 
 
  def("toCmplxEnvironment",&toCmplxEnvironment);      
- def("toRealEnvironment", &toRealEnvironment);      
+ // def("toRealEnvironment", &toRealEnvironment);      
 
 
 }
