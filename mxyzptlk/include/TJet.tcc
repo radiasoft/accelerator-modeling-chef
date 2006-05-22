@@ -78,7 +78,7 @@
 //-----------------------------------------------------------------
 
 template<typename T> 
-typename EnvPtr<T>::Type TJet<T>::_lastEnv; // defaults to a null pointer
+EnvPtr<T> TJet<T>::_lastEnv; // defaults to a null pointer
 
 
 using namespace std;
@@ -87,43 +87,33 @@ using FNAL::pcout;
 
 
 //-------------------------------------------------------------------
-// factory funtions
+// factory functions
 //-------------------------------------------------------------------
 
-template<typename T>
-typename JLPtr<T>::Type makeJL( typename EnvPtr<T>::Type pje,  T value) {
-
-#ifdef FIRST_ORDER_JETS
-  return TJL1<T>::makeTJL( pje,value) ;
-#else
-  return TJL<T>::makeTJL( pje,value) ;
-#endif
-}
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>
-typename JLPtr<T>::Type makeJL( const IntArray& index, const T& value, typename EnvPtr<T>::Type pje ) {
-
-#ifdef FIRST_ORDER_JETS
-  return  TJL1<T>::makeTJL( index, value, pje) ;
-#else
-   return TJL<T>::makeTJL( pje,value) ;
-#endif
+JLPtr<std::complex<double> > makeJL(JLPtr<double> const& x) {
+  return TJL<std::complex<double> >::makeTJL(*x) ;
 }
 
+JL1Ptr<std::complex<double> > makeJL(JL1Ptr<double> const& x) {
+ return TJL1<std::complex<double> >::makeTJL(*x) ;
+}
+
+
+
 // ***************************************************************
 // ***************************************************************
 // ***************************************************************
+//
 //            Implementation of the class TJet<T>
 // 
 //
 
 template<typename T>
-TJet<T>::TJet( const typename JLPtr<T>::Type& jl) : _jl( jl) 
-{
-
-}
+TJet<T>::TJet( typename TJet<T>::jl_t const& jl) : _jl( jl) 
+{}
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -131,16 +121,32 @@ TJet<T>::TJet( const typename JLPtr<T>::Type& jl) : _jl( jl)
 
 
 template<typename T>
-TJet<T>::TJet( typename EnvPtr<T>::Type pje ) :  _jl( makeJL<T>( pje ) )
-{
-}
+TJet<T>::TJet( EnvPtr<T> const& pje ) :  _jl(   tjl_t::makeTJL( pje ) ){}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 template<typename T>
-TJet<T>::TJet( T x, typename EnvPtr<T>::Type pje ): _jl( makeJL( pje,x ) )
+TJet<T>::TJet( T x, EnvPtr<T> const& pje ): _jl(  tjl_t::makeTJL( pje,x ) ){}
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<>
+TJet<double>::TJet( TJet<double> const& x )
+: _jl( x._jl )  // NOTE: ref count is incremented when JLPtr is instantiated. 
+{}
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<>
+TJet<std::complex<double> >::TJet(TJet<std::complex<double> > const& x )
+: _jl( x._jl )  // NOTE: ref count is incremented when JLPtr is instantiated. 
 {
 }
 
@@ -148,10 +154,13 @@ TJet<T>::TJet( T x, typename EnvPtr<T>::Type pje ): _jl( makeJL( pje,x ) )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-template<typename T>
-TJet<T>::TJet( const TJet& x ): _jl( x._jl )  // NOTE: ref count is incremented when JLPtr is instantiated. 
-{
+template<>
+TJet<std::complex<double> >::TJet( TJet<double> const& x) {
+  
+  _jl    =  makeJL( x._jl );
+
 }
+
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -160,8 +169,7 @@ TJet<T>::TJet( const TJet& x ): _jl( x._jl )  // NOTE: ref count is incremented 
 
 template<typename T>
 TJet<T>::~TJet() 
-{
-}
+{}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -174,7 +182,7 @@ void TJet<T>::Reconstruct()
  // Combines destructor and constructor functions.
  // Use when initializing a static TJet variable.
 
- _jl = typename::JLPtr<T>::Type( makeJL<T>( _jl->getEnv() ) );
+ _jl = jl_t( tjl_t::makeTJL( _jl->getEnv() ) );
 
 }
 
@@ -183,12 +191,12 @@ void TJet<T>::Reconstruct()
 
 
 template<typename T>
-void TJet<T>::Reconstruct( typename EnvPtr<T>::Type pje )
+void TJet<T>::Reconstruct( EnvPtr<T> const& pje )
 {
  // Combines destructor and constructor functions.
  // Use when initializing a static TJet variable.
 
- _jl = typename::JLPtr<T>::Type( makeJL<T>( pje ) );
+ _jl = jl_t( tjl_t::makeTJL( pje ) );
 
 }
 
@@ -199,12 +207,12 @@ void TJet<T>::Reconstruct( typename EnvPtr<T>::Type pje )
 template<typename T>
 void TJet<T>::Reconstruct( const IntArray& e, 
                                const T& x, 
-                            typename EnvPtr<T>::Type pje )
+                               EnvPtr<T> const& pje )
 {
  // Combines destructor and constructor functions.
  // Use when initializing a static TJet variable.
 
- _jl = typename::JLPtr<T>::Type( makeJL<T>( e, x, pje ) ); 
+ _jl = jl_t( tjl_t::makeTJL( e, x, pje ) ); 
 
 }
 
@@ -229,7 +237,7 @@ void TJet<T>::setEnvTo( const TJet& x )
 
 
 template<typename T>
-void TJet<T>::setEnvTo( typename EnvPtr<T>::Type pje )
+void TJet<T>::setEnvTo( EnvPtr<T> const& pje )
 {
   if( _jl->getEnv() != pje ) 
   {
@@ -258,7 +266,7 @@ void TJet<T>::getReference( T* r ) const
 template<typename T>
 void TJet<T>::setVariable( const T& x,
                                const int& j, 
-                               typename EnvPtr<T>::Type pje )
+                               EnvPtr<T> const& pje )
 {
   _jl = _jl->clone();
   _jl->setVariable( x, j, pje );  // !! Alters the environment!
@@ -282,8 +290,7 @@ void TJet<T>::setVariable( const T& x,
 
 
 template<typename T>
-void TJet<T>::setVariable( const int& j, 
-                               typename EnvPtr<T>::Type pje ) 
+void TJet<T>::setVariable( const int& j, EnvPtr<T> const& pje ) 
 {
 
     _jl = _jl->clone();;
@@ -337,7 +344,7 @@ template<typename T>
 TJet<T>& TJet<T>::operator=( const T& x ) 
 {
 
- _jl = typename JLPtr<T>::Type( makeJL<T>( _jl->getEnv(), x)); 
+ _jl = jl_t(tjl_t:: makeTJL( _jl->getEnv(), x)); 
  return *this; 
 
 }
@@ -363,7 +370,7 @@ istream& operator>>( istream& is,  TJet<T>& x )
 {
 //  streams a TJet from into an existing instance
 
-  x._jl = typename::JLPtr<T>::Type( makeJL<T>(x->getEnv()) );
+  x._jl = typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL(x->getEnv()) );
   
  return operator>>( is, *(x._jl) );
 }
@@ -386,7 +393,7 @@ ostream& operator<<( ostream& os, const TJet<T>& x )
 //**************************************************************** 
 
 template<typename T>
-Tcoord<T>::Tcoord( T x ) : TJet<T>(0.0, typename EnvPtr<T>::Type() ), _refpt(x) {
+Tcoord<T>::Tcoord( T x ) : TJet<T>(0.0, EnvPtr<T>() ), _refpt(x) {
   
   // Note: passing a null env pointer to the TJet constructor
   //       results in a null JLPtr. Tcoord is not fully formed 
@@ -400,7 +407,7 @@ Tcoord<T>::Tcoord( T x ) : TJet<T>(0.0, typename EnvPtr<T>::Type() ), _refpt(x) 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void Tcoord<T>::instantiate( int index, typename EnvPtr<T>::Type pje) {
+void Tcoord<T>::instantiate( int index, EnvPtr<T> const& pje) {
  
  if (!pje)  { throw( GenericException( __FILE__, __LINE__, 
            "Tcoord<T>::instantiate( int index, const TJetEnvironment<T>* pje)",
@@ -408,7 +415,7 @@ void Tcoord<T>::instantiate( int index, typename EnvPtr<T>::Type pje) {
  }
 
  this->_index = index;
- this->_jl    = typename JLPtr<T>::Type( makeJL<T>( pje) );
+ this->_jl    = typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL( pje) );
  this->_jl->setVariable( _refpt, index );  
 
 } 
@@ -429,7 +436,7 @@ Tcoord<T>::~Tcoord()
 // ***************************************************************
  
 template<typename T>
-Tparam<T>::Tparam( T x ) : TJet<T>(0.0, typename EnvPtr<T>::Type() ), _refpt(x) {
+Tparam<T>::Tparam( T x ) : TJet<T>(0.0, EnvPtr<T>() ), _refpt(x) {
  
   // Note: passing a null env pointer to the TJet constructor
   //       results in a null JLPtr. Tcoord is not fully formed 
@@ -453,7 +460,7 @@ Tparam<T>::~Tparam()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void Tparam<T>::instantiate( int index, typename EnvPtr<T>::Type pje) {
+void Tparam<T>::instantiate( int index, EnvPtr<T> const& pje) {
 
  if (!pje)  { 
    throw( GenericException( __FILE__, __LINE__, 
@@ -462,7 +469,7 @@ void Tparam<T>::instantiate( int index, typename EnvPtr<T>::Type pje) {
   }
 
   this->_index = index;
-  this->_jl   = typename JLPtr<T>::Type( makeJL<T>( pje) );
+  this->_jl   = typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL( pje) );
   this->_jl->setVariable( _refpt, index );  
 } 
 
@@ -680,7 +687,7 @@ template<typename T>
 TJet<T> operator+( const TJet<T>& x, const T& y ) 
 {
 
- return TJet<T>( x._jl + typename JLPtr<T>::Type( makeJL( x->getEnv(), y)) );    
+ return TJet<T>( x._jl + typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL( x->getEnv(), y)) );    
 
 }
 
@@ -719,7 +726,7 @@ TJet<T> operator-( const T& x, const TJet<T>& y )
 template<typename T> 
 TJet<T> operator-( const TJet<T>& x) // Unary form of minus 
 {
-  typename JLPtr<T>::Type  jl ( (x._jl)->clone() ); // deep copy
+  typename TJet<T>::jl_t jl ( (x._jl)->clone() ); // deep copy
   jl->Negate();
   return TJet<T>( jl );
 
@@ -837,7 +844,7 @@ template<typename T>
 TJet<T> operator/( const T& a, const TJet<T>& b ) 
 {
 
- return TJet<T>( typename JLPtr<T>::Type( makeJL(b._jl->getEnv(), a) )/ b._jl  );    
+ return TJet<T>( typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL(b._jl->getEnv(), a) )/ b._jl  );    
 
 } 
 
@@ -1260,7 +1267,7 @@ template<typename T>
 TJet<T> TJet<T>::operator() ( const TJet<T>* y ) const 
 { 
 
- typename JLPtr<T>::Type yjl[ _jl->getEnv()->numVar() ];
+ jl_t yjl[ _jl->getEnv()->numVar() ];
 
  for(int i=0; i< _jl->getEnv()->numVar(); ++i) {
 
