@@ -81,10 +81,10 @@ public:
 
   // Constructors and destructors_____________________________________
 
-  TLieOperator( typename EnvPtr<T>::Type = (TJet<T>::_lastEnv) );
+  TLieOperator( EnvPtr<T> const env = (TJet<T>::_lastEnv) );
   TLieOperator( const TLieOperator& );
   TLieOperator( const TJet<T>& );  // Creates a Hamiltonian vector field.
-  TLieOperator( char*, typename EnvPtr<T>::Type = (TJet<T>::_lastEnv) ); 
+  TLieOperator( char*, EnvPtr<T> const env = (TJet<T>::_lastEnv) ); 
                                        // Creates the identity function.  
   ~TLieOperator();
 

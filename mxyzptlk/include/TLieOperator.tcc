@@ -108,7 +108,7 @@ using FNAL::pcout;
 
 
 template<typename T>
-TLieOperator<T>::TLieOperator( typename EnvPtr<T>::Type theEnv ) 
+TLieOperator<T>::TLieOperator<T>( EnvPtr<T> const theEnv ) 
 : TJetVector<T>( theEnv->spaceDim(), 0, theEnv )
 {
  TLieOperator<T>::_myEnv = theEnv;
@@ -123,7 +123,7 @@ TLieOperator<T>::TLieOperator( typename EnvPtr<T>::Type theEnv )
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TLieOperator<T>::TLieOperator( const TLieOperator<T>& x ) 
+TLieOperator<T>::TLieOperator<T>( const TLieOperator<T>& x ) 
 : TJetVector<T>( x._myEnv->spaceDim(), 0, x._myEnv )
 {
 
@@ -137,11 +137,11 @@ TLieOperator<T>::TLieOperator( const TLieOperator<T>& x )
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TLieOperator<T>::TLieOperator( const TJet<T>& x ) 
+TLieOperator<T>::TLieOperator<T>( const TJet<T>& x ) 
 : TJetVector<T>( (x.Env())->spaceDim(), 0, x.Env() )
 { 
  int i = 0;
- typename EnvPtr<T>::Type pje = x.Env();
+ EnvPtr<T> pje = x.Env();
 
  int s = pje->spaceDim();
  int n = pje->numVar();
@@ -186,7 +186,7 @@ TLieOperator<T>::TLieOperator( const TJet<T>& x )
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TLieOperator<T>::TLieOperator( char*, typename EnvPtr<T>::Type pje  ) 
+TLieOperator<T>::TLieOperator<T>( char*, EnvPtr<T> const pje  ) 
 : TJetVector<T>( pje->spaceDim(), 0, pje )
 { 
  int i;
@@ -210,7 +210,7 @@ TLieOperator<T>::TLieOperator( char*, typename EnvPtr<T>::Type pje  )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TLieOperator<T>::~TLieOperator() 
+TLieOperator<T>::~TLieOperator<T>() 
 {
 }
 
@@ -330,7 +330,7 @@ TJet<T> TLieOperator<T>::operator^( const TJet<T>& x ) const
  }
 
  
- typename EnvPtr<T>::Type pje = TLieOperator<T>::_myEnv;
+ EnvPtr<T> pje = TLieOperator<T>::_myEnv;
  
  TJet<T> answer( pje );
  int s = pje->spaceDim();
