@@ -99,7 +99,7 @@ class LayoutVisitor : public BmlVisitor
 
   void _visit_bend( bmlnElmnt* );
   void _processSpecialElement( bmlnElmnt* );
-  int    _errorCode;
+  int  _errorCode;
 };
 
 #endif // LAYOUTVISITOR_H
