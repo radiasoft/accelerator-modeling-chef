@@ -45,7 +45,13 @@
 ******   private class. Only one instance of ScratchArea is created for 
 ******   for *all* environments sharing the same values of maxweight, 
 ******   and numvar.   
-******          
+******  
+******  May 2006   ostiguy@fnal.gov
+****** 
+****** - EnvPtr<> is now a true class rather than a typedef wrapper 
+****** - template syntax declaration cleanup to better conform to standard. 
+******   Code now compiles cleanly with g++ 4.X   
+******      
 *************************************************************************
 *************************************************************************/
 #ifndef TJETENV_H
@@ -58,13 +64,15 @@
 #include <deque>
 #include <list>
 #include <JLPtr.h>
-#include <EnvPtr.h>
 #include <ostream>
 #include <istream>
 #include <ReferenceCounter.h>
 
 // Forward declarations
 
+
+template<typename T> 
+class EnvPtr;
 
 template<typename T> 
 class TJet;
@@ -88,10 +96,28 @@ template<typename T>
 std::ostream& operator<<( std::ostream& os, const TJetEnvironment<T>& pje);
 
 template<typename T> 
-std::istream& streamIn(std::istream&, boost::intrusive_ptr<TJetEnvironment<T> >& pje );
+std::istream& streamIn(std::istream&, EnvPtr<T>& pje );
 
+//-------------------------------------------------------------------------
+// the wrapper class EnvList is a kludge to prevent static EnvPtr<> objects
+// from iterating trough a potentially no longer existing 
+//  _environments static container upon program exit. 
+//-------------------------------------------------------------------------  
 
-// Struct TJetEnvironment template
+template<typename T>
+class EnvList : public std::list<EnvPtr<T> > {
+ 
+public:
+  EnvList(): _destructor_called(false) {}  
+  virtual  ~EnvList();   
+  bool _destructor_called;    
+ 
+};
+
+//----------------------------------------------------------------------------------------------
+// class TJetEnvironment
+//----------------------------------------------------------------------------------------------
+
 template<typename T>
 class TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 {
@@ -109,7 +135,7 @@ class TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
                                                 //   indices in the _TJLmonomial and _TJLmml arrays.
     U*                         _monomial;       // Storage area for monomials used in multinomial
                                                 // evaluation. 
-    typename JLPtr<U>::Type*   _TJLmonomial;    // Storage area for TJL monomials used in concatenation.
+    JLPtr<U>*                  _TJLmonomial;    // Storage area for TJL monomials used in concatenation.
  
     TJLterm<U>*                _TJLmml;         // Same as above, but used for collecting terms
                                                 //   during multiplication.
@@ -146,33 +172,36 @@ class TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
  
    friend class Tcoord<T>;
    friend class Tparam<T>;
-   friend class TJetEnvironment<double>;
-   friend class TJetEnvironment<std::complex<double> >;
+
+   template<typename U>
+   friend class TJetEnvironment;
 
  // Public Member functions -------------------------------------
 
-  TJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0, double* scale=0);
  ~TJetEnvironment();
 
- // implicit conversions ----------------------------------------
-
-  operator EnvPtr<std::complex<double> >::Type () const;
-  operator EnvPtr<double>::Type () const;
-
- 
   // factory functions -------------------------------------------
 
   static void                       BeginEnvironment(int maxweight); 
-  static typename EnvPtr<T>::Type   EndEnvironment(double* scale=0);
+  static EnvPtr<T>   EndEnvironment(double* scale=0);
 
-  static typename EnvPtr<T>::Type  makeJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0, double* scale=0);
-  static typename EnvPtr<T>::Type  makeInverseJetEnvironment(const TMapping<T>& map); 
-  static typename EnvPtr<T>::Type  makeJetEnvironment(int maxweight, const Vector&, double* scale=0);
+  static EnvPtr<T>   makeJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0, double* scale=0);
+  static EnvPtr<T>   makeInverseJetEnvironment(const TMapping<T>& map); 
+  static EnvPtr<T>   makeJetEnvironment(int maxweight, const Vector&, double* scale=0);
 
-  static EnvPtr<double>::Type  getApproxJetEnvironment(int maxweight, const Vector& refpoints);
+  template<typename U>
+  static EnvPtr<T>   makeJetEnvironment( EnvPtr<U> const&);
+
+  template<typename U>
+  static EnvPtr<double>   makeRealJetEnvironment( EnvPtr<U> const& );
+
+
+  static EnvPtr<double>  getApproxJetEnvironment(int maxweight, const Vector& refpoints);
 
   void dispose();
 
+  friend void EnvTerminate();
+                
    // operators -------------------------------------------
 
   TJetEnvironment& operator=( const TJetEnvironment& env) { return  DeepCopy(env); }
@@ -213,7 +242,7 @@ class TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
    T*              monomial()    const { return  _scratch->_monomial;    }
    int*            exponent()    const { return  _scratch->_exponent;    }
 
-   typename JLPtr<T>::Type*      TJLmonomial() const { return  _scratch->_TJLmonomial; }
+   JLPtr<T>*       TJLmonomial() const { return  _scratch->_TJLmonomial; }
 
    TJLterm<T>*     TJLmml()      const { return  _scratch->_TJLmml;      }
 
@@ -225,7 +254,7 @@ class TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
    // Streams --------------------------------------------------------- 
 
   friend std::ostream& operator<< <>( std::ostream&, const TJetEnvironment& );
-  friend std::istream& streamIn<>(std::istream&, boost::intrusive_ptr<TJetEnvironment<T> >& pje );
+  friend std::istream& streamIn<>(std::istream&, EnvPtr<T>& pje );
 
  private:
 
@@ -254,7 +283,7 @@ class TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
   static std::deque<Tcoord<T>*>         _coordinates;    // used only during new environment creation 
   static std::deque<Tparam<T>*>         _parameters;     // used only during new environment creation
   static std::list<ScratchArea<T>* >    _scratch_areas;  // list of existing scratch areas 
-  static std::list<typename EnvPtr<T>::Type >  _environments;  // A list of existing scratch areas 
+  static EnvList<T>                     _environments;  // A list of existing scratch areas 
                                                                // Note: there is a list for every typename parameter T
   static int   _tmp_maxWeight; // used by Begin/EndEnvironment() 
 
@@ -262,7 +291,13 @@ class TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 // Private Member  functions -------------------------------------
 
   ScratchArea<T>* _buildScratchPads(int maxweight, int numvar);
-  TJetEnvironment( const TJetEnvironment& ); // forbidden
+
+  TJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0, double* scale=0);
+
+  TJetEnvironment(TJetEnvironment const&);
+
+  template<typename U>
+  TJetEnvironment(TJetEnvironment<U> const&);
 
 
 };
@@ -272,10 +307,15 @@ class TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 //------------------------------------------------------------------------------------------------------------
 
 template<>
-TJetEnvironment<std::complex<double> >::operator EnvPtr<double>::Type () const;
+TJetEnvironment<std::complex<double> >::TJetEnvironment( TJetEnvironment<double> const& );
 
 template<>
-TJetEnvironment<double>::operator EnvPtr<std::complex<double> >::Type () const;
+EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEnvironment( EnvPtr<double> const&);
+
+
+template<>
+EnvPtr<double>  TJetEnvironment<std::complex<double> >::makeRealJetEnvironment( EnvPtr<std::complex<double> > const& );
+
 
 
 #ifdef MXYZPTLK_IMPLICIT_TEMPLATES

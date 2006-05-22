@@ -90,32 +90,45 @@ std::ostream& operator<<( std::ostream& os, const TJL1<T>& x);
 template<typename T>
 std::istream& operator>>( std::istream& is,  TJL1<T>&  x); 
 
-JLPtr<double>::Type real( const JLPtr<std::complex<double> >::Type & z ); 
-JLPtr<double>::Type imag( const JLPtr<std::complex<double> >::Type & z );
+JL1Ptr<double> real( const JL1Ptr<std::complex<double> > & z ); 
+JL1Ptr<double> imag( const JL1Ptr<std::complex<double> > & z );
+
+//...................................................................................................................................
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> >  operator*(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
+JL1Ptr<T>  operator*(JL1Ptr<T> const& x, JL1Ptr<T> const& y);
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> >  operator*(boost::intrusive_ptr<TJL1<T> > const& x, T const& y );
+JL1Ptr<T>  operator*(JL1Ptr<T> const& x, T const& y );
+
+//...................................................................................................................................
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> >  operator/(T const& x, boost::intrusive_ptr<TJL1<T> > const& y);
+JL1Ptr<T>  operator+(JL1Ptr<T> const& x, JL1Ptr<T> const& y);
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> >  operator/(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
+JL1Ptr<T>& operator+=(JL1Ptr<T> &x,      JL1Ptr<T> const& y  );
+
+//...................................................................................................................................
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> >  operator+(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
+JL1Ptr<T>  operator-(JL1Ptr<T> const& x, JL1Ptr<T> const& y);
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> >& operator+=(boost::intrusive_ptr<TJL1<T> > &x,      boost::intrusive_ptr<TJL1<T> > const& y  );
+JL1Ptr<T>  operator-(JL1Ptr<T> const& x);
+
+//...................................................................................................................................
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> >  operator-(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
+JL1Ptr<T>  operator/( JL1Ptr<T> const& x, JL1Ptr<T> const& y);
 
 template<typename T>
-boost::intrusive_ptr<TJL1<T> >  operator-(boost::intrusive_ptr<TJL1<T> > const& x);
+JL1Ptr<T>  operator/( JL1Ptr<T> const& x,  T        const& y);
+
+template<typename T>
+JL1Ptr<T>  operator/( T const& x,         JL1Ptr<T> const& y);
+
+
 
 
 //***********************************************************************************************************************************
@@ -123,13 +136,14 @@ boost::intrusive_ptr<TJL1<T> >  operator-(boost::intrusive_ptr<TJL1<T> > const& 
 
 template<typename T> 
 class TJL1: public ReferenceCounter<TJL1<T> > {
-  struct term {
+  
+ struct term {
     T      value;
     bool   deleted;
   };
 
-  friend class TJL1<double>;
-  friend class TJL1<std::complex<double> >;
+  template <typename U>
+  friend class TJL1;
  
  private: 
 
@@ -137,7 +151,7 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   int                                 _weight;     // The maximum weight of (the actual) terms  (set to 1)   
   int                                 _accuWgt;    // Highest weight computed accurately        ( set to 1 )
 
-  mutable typename EnvPtr<T>::Type    _myEnv; // Environment of the jet.
+  mutable EnvPtr<T>                    _myEnv; // Environment of the jet.
   
   term                                 _std;  // standard part
   term*                                _jcb;  // jacobian
@@ -145,14 +159,17 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   mutable int                         _constIterPtr;
   int                                 _iterPtr;
 
-  static std::vector<TJL1<T>* >       _thePool;  // pool of discarded TJL1 objects
+  static std::vector<TJL1<T>* > TJL1<T>::_thePool;  // pool of discarded TJL1 objects
 
   void insert( TJLterm<T> const& );
   void append( TJLterm<T> const& );
 
-  TJL1( typename EnvPtr<T>::Type, T value = T() );
-  TJL1( const IntArray&, const T&,  typename EnvPtr<T>::Type );
-  TJL1( const TJL1& );
+  TJL1( EnvPtr<T> const&, T value = T() );
+  TJL1( const IntArray&, const T&,  EnvPtr<T> const&);
+  TJL1(  TJL1 const& );
+
+  template<typename U> 
+  TJL1( TJL1<U> const& );  
 
   virtual ~TJL1();
 
@@ -163,19 +180,23 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
 
   // factory functions 
 
-  static TJL1<T>* makeTJL( typename EnvPtr<T>::Type pje,  T value = T());
-  static TJL1<T>* makeTJL( const IntArray&, const T&, typename EnvPtr<T>::Type pje );
-  static TJL1<T>* makeTJL( const TJL1& );
-  static TJL1<T>* makeTJL( const TJL1* );
+  static JL1Ptr<T> makeTJL( EnvPtr<T>  const& pje,  T value = T());
+  static JL1Ptr<T> makeTJL( const IntArray&, const T&, EnvPtr<T> const& pje );
+
+  template<typename U>
+  static JL1Ptr<T> makeTJL( const TJL1<U>& );
+
+  static JL1Ptr<T> makeTJL( const TJL1* ); /// eliminate ?
+
   static void discardTJL( TJL1<T>* p);  
 
   
   // functions used to implement COW semantics ______________________________________________
 
 
-  virtual void dispose() { TJL1<T>::discardTJL(  this ); }  // used by ReferenceCounter class 
-  inline typename JLPtr<T>::Type clone() 
-                           {return typename JLPtr<T>::Type( TJL1<T>::makeTJL(*this) ); } 
+  void dispose()           { TJL1<T>::discardTJL(  this ); }  // used by ReferenceCounter class 
+  inline JL1Ptr<T> clone() 
+                           {return JL1Ptr<T>( TJL1<T>::makeTJL(*this) ); } 
 
   // Comaptibility 
 
@@ -184,10 +205,6 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
 
   // Public member functions__________________________________________
 
-
-  operator JLPtr<std::complex<double> >::Type () const;
-  operator JLPtr<double>::Type () const;
-
   void clear();     // clears all the terms. 
 
   int                      getCount()   { return _count;   }
@@ -195,14 +212,14 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   int                      getAccuWgt() { return _accuWgt; }
 
  
-  typename EnvPtr<T>::Type getEnv() const { return _myEnv; }    
-  void                     setEnv( typename EnvPtr<T>::Type pje) { _myEnv = pje; }  // DANGER !  
+  EnvPtr<T>                getEnv() const { return _myEnv; }    
+  void                     setEnv( EnvPtr<T> const& pje) { _myEnv = pje; }  // DANGER !  
 
-  typename JLPtr<T>::Type  truncMult( typename JLPtr<T>::Type const& v, const int& wl )  const; 
+  JL1Ptr<T>  truncMult( JL1Ptr<T> const& v, const int& wl )  const; 
 
-  typename JLPtr<T>::Type  filter( const int& wgtLo, const int& wgtHi )      const; 
+  JL1Ptr<T>  filter( const int& wgtLo, const int& wgtHi )      const; 
 
-  typename JLPtr<T>::Type  filter( bool (*f) ( const IntArray&, const T& ) ) const; 
+  JL1Ptr<T>  filter( bool (*f) ( const IntArray&, const T& ) ) const; 
 
 
   void printCoeffs() const;               // prints term coefficients 
@@ -226,31 +243,27 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   void   scaleBy( T );
 
   TJL1& Negate();
-  void add     ( typename JLPtr<T>::Type const&  x);    // in place addition 
+  void add     ( JL1Ptr<T> const&  x);    // in place addition 
 
-  typename JLPtr<T>::Type sin()              const;
-  typename JLPtr<T>::Type cos()              const;
-  typename JLPtr<T>::Type asin()             const;
-  typename JLPtr<T>::Type atan()             const;
-  typename JLPtr<T>::Type sqrt()             const;
-  typename JLPtr<T>::Type exp()              const;
-  typename JLPtr<T>::Type pow(int)           const;
-  typename JLPtr<T>::Type pow(const double&) const;
-  typename JLPtr<T>::Type log()              const;
-  typename JLPtr<T>::Type compose(typename JLPtr<T>::Type const y[ ]) const; 
-  typename JLPtr<T>::Type D( const int* n ) const; 
+  JL1Ptr<T> sin()              const;
+  JL1Ptr<T> cos()              const;
+  JL1Ptr<T> asin()             const;
+  JL1Ptr<T> atan()             const;
+  JL1Ptr<T> sqrt()             const;
+  JL1Ptr<T> exp()              const;
+  JL1Ptr<T> pow(int)           const;
+  JL1Ptr<T> pow(const double&) const;
+  JL1Ptr<T> log()              const;
+  JL1Ptr<T> compose(JL1Ptr<T> const y[ ]) const; 
+  JL1Ptr<T> TJL1<T>::D( const int* n ) const; 
  
   void               resetConstIterator();
   const TJLterm<T>*  stepConstIteratorPtr()  const;
 
-  //TJLterm<T>         stepConstIterator()     const;
-  //const TJLterm<T>&  stepConstIteratorRef()  const;
-  //void               resetIterator();
-  //TJLterm<T>*        stepIterator();
 
   void setVariable( const T&, const int& );
-  void setVariable( const T& x, const int& j, typename EnvPtr<T>::Type pje );
-  void setVariable( const int&, typename EnvPtr<T>::Type pje );               
+  void setVariable( const T& x, const int& j, EnvPtr<T> const& pje );
+  void setVariable( const int&, EnvPtr<T> const& pje );               
 
   T standardPart() const;
 
@@ -275,20 +288,22 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   friend   std::ostream& operator<< <T>( std::ostream& os, const TJL1<T>& x ); 
   friend   std::istream& operator>><T>(  std::istream& is,  TJL1<T>& x ); 
 
-  friend typename JLPtr<double>::Type real( const JLPtr<std::complex<double> >::Type & z ); 
-  friend typename JLPtr<double>::Type imag( const JLPtr<std::complex<double> >::Type & z );
+  friend JL1Ptr<double> real( const JL1Ptr<std::complex<double> >& z ); 
+  friend JL1Ptr<double> imag( const JL1Ptr<std::complex<double> >& z );
 
-  friend boost::intrusive_ptr<TJL1<T> >  operator*<>(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
-  friend boost::intrusive_ptr<TJL1<T> >  operator*<>(boost::intrusive_ptr<TJL1<T> > const& x, T const& y );
+  friend JL1Ptr<T>  operator*<>(JL1Ptr<T> const& x, JL1Ptr<T> const& y);
+  friend JL1Ptr<T>  operator*<>(JL1Ptr<T> const& x, T const& y );
 
-  friend boost::intrusive_ptr<TJL1<T> >  operator/<>(boost::intrusive_ptr<TJL1<T> > const& x,  boost::intrusive_ptr<TJL1<T> > const& y);
-  friend boost::intrusive_ptr<TJL1<T> >  operator/<>(T const& x,         boost::intrusive_ptr<TJL1<T> > const& y);
+  friend JL1Ptr<T>  operator/<>(JL1Ptr<T> const& x, JL1Ptr<T> const& y);
+  friend JL1Ptr<T>  operator/<>(JL1Ptr<T> const& x, T         const& y);
+  friend JL1Ptr<T>  operator/<>(T const& x,         JL1Ptr<T> const& y);
 
-  friend boost::intrusive_ptr<TJL1<T> >  operator+<>  ( boost::intrusive_ptr<TJL1<T> >  const& x,    boost::intrusive_ptr<TJL1<T> > const& y );
-  friend boost::intrusive_ptr<TJL1<T> >& operator+= <>( boost::intrusive_ptr<TJL1<T> >       & x,    boost::intrusive_ptr<TJL1<T> > const& y );
 
-  friend boost::intrusive_ptr<TJL1<T> >  operator-<>(boost::intrusive_ptr<TJL1<T> > const& x);
-  friend boost::intrusive_ptr<TJL1<T> >  operator-<>(boost::intrusive_ptr<TJL1<T> > const& x, boost::intrusive_ptr<TJL1<T> > const& y);
+  friend JL1Ptr<T>  operator+<>  ( JL1Ptr<T>  const& x,    JL1Ptr<T> const& y );
+  friend JL1Ptr<T>& operator+= <>( JL1Ptr<T>       & x,    JL1Ptr<T> const& y );
+
+  friend JL1Ptr<T>  operator-<>(JL1Ptr<T> const& x);
+  friend JL1Ptr<T>  operator-<>(JL1Ptr<T> const& x, JL1Ptr<T> const& y);
 
   // Arithmetic operators // some of these may no longer be needed ... FIXME !
 
@@ -404,11 +419,11 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
 //  ================== specializations ====================
 
 
-template<>                 TJL1<double>::operator JLPtr<std::complex<double> >::Type () const;
+template<> 
+TJL1<std::complex<double> >::TJL1( TJL1<double> const& );  
 
-template<>  TJL1<std::complex<double> >::operator JLPtr<double>::Type () const;                // not implemented
-template<>  TJL1<double>::operator JLPtr<double>::Type () const;                               // not implemented
-template<>  TJL1<std::complex<double> >::operator JLPtr<std::complex<double> >::Type () const; // not implemented
+template<> 
+JL1Ptr<std::complex<double> >  TJL1<std::complex<double> >::makeTJL( TJL1<double> const& );
 
 
 #ifdef  MXYZPTLK_IMPLICIT_TEMPLATES
