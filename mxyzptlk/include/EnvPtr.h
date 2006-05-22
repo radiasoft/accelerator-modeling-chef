@@ -4,7 +4,7 @@
 ******                                                                
 ******  Mxyzptlk:  A C++ implementation of differential algebra.      
 ******                                    
-******  File:      JLPtr.h
+******  File:      EnvPtr.h
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                All Rights Reserved                             
@@ -33,17 +33,36 @@
 #endif
 
 #include <boost/intrusive_ptr.hpp>
+#include <TJetEnvironment.h>
+#include <iostream>
 
 template<typename T>
 class TJetEnvironment;
 
 template<typename T>
-struct EnvPtr
-{
 
-  typedef boost::intrusive_ptr<TJetEnvironment<T> > Type;
+ class EnvPtr: public boost::intrusive_ptr<TJetEnvironment<T> > {
+ 
+ public: 
+
+ EnvPtr():     boost::intrusive_ptr<TJetEnvironment<T> >() {}
+ EnvPtr(TJetEnvironment<T>* p, bool add_ref=true): boost::intrusive_ptr<TJetEnvironment<T> >(p,add_ref) {}
+
+
+ template<typename U>
+ operator EnvPtr<U>() const; 
+
 
 };
+
+
+template<>
+inline EnvPtr<double>::operator EnvPtr<std::complex<double> >() const
+{
+  return TJetEnvironment<std::complex<double> >::makeJetEnvironment( *this );
+}
+
+
 
 #endif // ENVPTR_H
 
