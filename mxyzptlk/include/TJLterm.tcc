@@ -93,7 +93,7 @@ TJLterm<T>::TJLterm()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJLterm<T>::TJLterm(  typename EnvPtr<T>::Type pje ) 
+TJLterm<T>::TJLterm(  EnvPtr<T> const& pje ) 
 : _index( pje->numVar() ), _weight(0), _value(T()), _deleted(false) 
 {
 }
@@ -103,9 +103,8 @@ TJLterm<T>::TJLterm(  typename EnvPtr<T>::Type pje )
 
 template<typename T>
 TJLterm<T>::TJLterm( const IntArray& l, 
-                const T& x, 
-                typename EnvPtr<T>::Type pje ) 
-:   _index( l ), _weight(l.Sum()), _value(x), _deleted(false)
+                const T& x, EnvPtr<T> const& pje ) :   
+_index( l ), _weight(l.Sum()), _value(x), _deleted(false)
 { }
 //------------------------------------------------------------------------------------------------------
 // The code below has been commented out for efficiency. It performs sanity checks and can be re-enabled
