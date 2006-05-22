@@ -57,55 +57,5 @@ using FNAL::pcout;
 using std::complex;
 
 
-template<>
-Vector TMapping<double>::operator()( const Vector& x ) const
-{
- int i = x.Dim();
- if( ( i != _myEnv->numVar() ) || ( i != _dim ) ) {
-   throw( GenericException(__FILE__, __LINE__, 
-          "Vector TMapping<double>::operator()( const Vector& ) const",
-          "Incompatible dimensions." ) );
- }
 
- Vector z( _dim );
-
- for( i = 0; i < _myEnv->spaceDim(); i++) {
-  z(i) = _comp[i]( x );
- }
-
- return z;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-Vector TMapping<complex<double> >::operator()( const Vector& x ) const
-{
-  throw( GenericException( __FILE__, __LINE__, 
-         "Vector TMapping<complex<double> >::operator()( const Vector& x ) const", 
-         "This specialization is meaningless. It should not be invoked." ) );
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-TMapping<double>::operator TMapping<std::complex<double> > () const {
-
-  TMapping<std::complex<double> > z;
-
-  z._dim   = _dim;
-  z._myEnv = *_myEnv; // implicit conversion operator
-
-  for (int i =0; i< _dim; ++i ) {
-
-    z._comp[i] = TJet<complex<double> >( _comp[i] ); // the environment is converted by the conversion operator
-    
-  }
-
-  return z;
-
-}
 

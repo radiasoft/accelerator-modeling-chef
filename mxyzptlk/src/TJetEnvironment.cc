@@ -3,7 +3,7 @@
 **************************************************************************
 ******                                                                
 ******  Mxyzptlk:  A C++ implementation of differential algebra.      
-******                                    
+******                                   
 ******  File:      TJetEnvironment.cc
 ******                                                                
 ******  Copyright Universities Research Association, Inc. / Fermilab   
@@ -33,72 +33,265 @@
 #include <TJetEnvironment.h>
 #include <GenericException.h>
 #include <iosetup.h>
+#include <boost/scoped_array.hpp>
 
 using FNAL::pcout;
 using FNAL::pcerr;
 
 
-template<>
-TJetEnvironment<double>::operator EnvPtr<double>::Type () const {
-
-// This should never be called !
-
-(*pcerr) << "ERROR:  TJetEnvironment<double>::operator TJetEnvironment<double>* () const has been called." << std::endl; 
-
- return EnvPtr<double>::Type(); // null pointer
-
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 template<>
-TJetEnvironment<double>::operator EnvPtr<std::complex<double> >::Type () const {
+TJetEnvironment<std::complex<double> >::TJetEnvironment(TJetEnvironment<double> const& x):
+  _numVar(x._numVar),                              // number of variables
+  _spaceDim(x._spaceDim),                          // phase space dimensions
+  _dof(x._dof),                                    // degrees of freedom                             
+  _refPoint(new std::complex<double>[x._numVar]),  // reference point (set to zero by default)
+  _scale(new double[x._numVar]),                   // scale (set to 1.0e-3 by default) should be a Vector
+  _maxWeight(x._maxWeight),                        // maximum weight (polynomial order)
+  _pbok(x._pbok),                                  // THIS IS HERE FOR COMPATIBILITY WITH EARLIER VERSIONS
+                                                   // _pbok was used as a flag to detect the presence of parameters 
+                                                   // poisson bracket OK is true only when phase space dimension is even; 
+                                                   // Consider simply checking the space dimensions before taking a PB ? 
 
-  // NOTE: Using the TJetEnvironment copy constructor is forbidden;  
+  _scratch( _buildScratchPads(_maxWeight, _numVar) ) {
 
-  std::complex<double>* zrefPoint = new std::complex<double>[this->_numVar ];
-
-  for( int i = 0; i < _numVar ; i++ ) {
-    zrefPoint[i]  = std::complex<double> ( _refPoint[i], 0.0 );
+    
+  for (int i=0; i<_numVar; ++i) {   
+       _refPoint[i]   = std::complex<double>(x._refPoint[i], 0.0);
+          _scale[i]   = x._scale[i];
   }
-
-  EnvPtr<std::complex<double> >::Type  zp(TJetEnvironment<std::complex<double> >::makeJetEnvironment(this->_maxWeight, this->_numVar,  this->_spaceDim,  zrefPoint, this->_scale));
-  
-  
-  delete [] zrefPoint;
-
-
-  return zp; 
-
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 template<>
-TJetEnvironment<std::complex<double> >::operator EnvPtr<double>::Type () const {
+EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEnvironment( EnvPtr<double> const& env) {
+
+ boost::scoped_array<std::complex<double> >    tmp_refpoints( new std::complex<double>[env->numVar()]); 
+ boost::scoped_array<double>                   tmp_scale(new double[env->numVar()]);    
  
-  // NOTE: Using the TJetEnvironment copy constructor is forbidden;  
+ for (int i=0; i< env->numVar(); ++i) {
+     tmp_refpoints[i] = std::complex<double>(env->refPoint()[i], 0.0);
+     tmp_scale[i]     = env->scale()[i];
 
-  double* refPoint = new double[this->_numVar ];
+ }
 
-  for( int i = 0; i < _numVar ; i++ ) {
-    if( imag( _refPoint[i] ) != 0.0 ) {
-    throw GenericException( __FILE__, __LINE__, 
-      "TJetEnvironment<complex<double> >::operator TJetEnvironment<double>* ()",
-      "Cannot copy complex environment with non-zero imaginary part to real one." );
+ std::list<EnvPtr<std::complex<double> > >::iterator env_iter;
+
+ //-----------------------------------------------------
+ // if a match already  exists, return it 
+ //-----------------------------------------------------
+
+ EnvPtr<std::complex<double> > pje;
+ EnvPtr<std::complex<double> > tmppje;
+
+ bool refpoints_are_equivalent = false;
+ bool scales_are_equivalent    = false;
+
+ for( env_iter  =  TJetEnvironment<std::complex<double> >::_environments.begin(); 
+      env_iter !=  TJetEnvironment<std::complex<double> >::_environments.end(); 
+     ++env_iter )                        { 
+ 
+    tmppje = *env_iter; 
+ 
+    if ( tmppje->maxWeight()    != env->maxWeight() )   continue;  
+    if ( tmppje->numVar()       != env->numVar()    )   continue;  
+    if ( tmppje->spaceDim()     != env->spaceDim()  )   continue;  
+    
+    refpoints_are_equivalent = true;
+    for (int i=0; i<env->numVar(); ++i ) {
+       refpoints_are_equivalent = refpoints_are_equivalent && (tmppje->refPoint()[i] == tmp_refpoints[i] );
     }
-    refPoint[i]  = std::real( _refPoint[i] );
+    if ( !refpoints_are_equivalent )   continue; 
+
+#if 0
+===============================================================
+    scales_are_equivalent = true;
+    for (int i=0; i<nvar; ++i ) {
+      scales_are_equivalent = scales_are_equivalent && ( tmppje->scale()[i] == tmp_scale[i] );
+    }
+    if ( ! scales_are_equivalent )              continue; 
+==================================================================
+#endif
+  
+    // -----------------------------------------------------------
+    // if we got here, a suitable environment already exists
+    // -----------------------------------------------------------
+     pje = tmppje; 
+     break;
+ }
+
+ if  (pje) { // pje is not null 
+     return pje;
+ } else  {
+
+     // NOTE: the 2nd argument (default=true) in the smart pointer constructor invocation is set to false. This
+     //       prevents the reference count to be incremented. The effect is that the reference count will go to 0 when 
+     //       the only instance of the smart ptr is the one left in the _environment list. When the ref count reaches 
+     //       0, the custom deleter (dispose()) removes the env from the list.   
+  
+     // NOTE: The swap function here is used here to prevent the ref count of newly created env ptr to go from 1 to zero 
+     //       and be prematurely deleted. Normally this is not a problem, but here the pointer is created (execeptionally)
+     //         with an initial ref count of 0.
+
+
+     EnvPtr<std::complex<double> > newpje( new TJetEnvironment<std::complex<double> >( env->maxWeight(), env->numVar(), env->spaceDim(), 
+                                                                tmp_refpoints.get(), tmp_scale.get()), false);
+  
+     pje.swap( newpje );
+
+     TJetEnvironment<std::complex<double> >::_environments.push_back( pje );
+
+     return pje;
+ }
+}
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+EnvPtr<double> TJetEnvironment<double>::makeJetEnvironment(int maxweight, const Vector& v , double* scale) {
+ 
+ boost::scoped_array<double> refpoints( new double[ v.Dim() ]);
+
+ for (int i=0; i<v.Dim(); ++i) {
+     refpoints[i] = v(i); 
+ }
+
+ return EnvPtr<double>( TJetEnvironment<double>::makeJetEnvironment(maxweight, v.Dim(), v.Dim(), refpoints.get(), scale) );
+ 
+}
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+EnvPtr<double>  TJetEnvironment<double>::getApproxJetEnvironment(int maxweight, const Vector& refpoints)
+{
+
+  //   Determine if a Jet environment already exists
+  //   whose reference point is sufficiently close
+  //   to the closed orbit. If so, returns it, otherwise
+  //   return a NULL environment
+
+  int nvar = refpoints.Dim();
+  
+  EnvPtr<double> pje; // null 
+  Vector tolerance( nvar );
+
+  for( int i=0;  i<nvar; ++i ) {
+    // *** CHANGE ***
+    // *** CHANGE *** The tolerance criterion should be user-determined.
+    // *** CHANGE ***
+    // tolerance(i) = std::max( 1.0e-6, std::abs(0.001*refpoints(i)));
+    tolerance(i) =  std::abs(0.001*refpoints(i));
   }
 
-  EnvPtr<double>::Type xp ( TJetEnvironment<double>::makeJetEnvironment(this->_maxWeight, this->_numVar,  this->_spaceDim, refPoint, this->_scale));
+  std::list<EnvPtr<double> >::iterator env_iter;
 
-  delete[]  refPoint;  
+  for ( env_iter  = TJetEnvironment<double>::_environments.begin();  
+        env_iter != TJetEnvironment<double>::_environments.end(); 
+        ++env_iter)
+  { 
+    if( (*env_iter)->numVar() != nvar ) continue; 
 
-  return xp;
+    if( (*env_iter)->hasApproxReferencePoint( refpoints, tolerance ) ) {
+      pje   = *env_iter; 
+    }
+   
+  }
+
+  return pje;  
+    
 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<>
+EnvPtr<double> 
+TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(EnvPtr<std::complex<double> > const& env) {
+
+ boost::scoped_array<double>                tmp_refpoints(new double[env->numVar()]); 
+ boost::scoped_array<double>                tmp_scale(new double[env->numVar()]);    
+ 
+ for (int i=0; i< env->numVar(); ++i) {
+     tmp_refpoints[i] = std::real( env->refPoint()[i] );
+     tmp_scale[i]     = env->scale()[i];
+
+ }
+
+ std::list<EnvPtr<double> >::iterator env_iter;
+
+ //-----------------------------------------------------
+ // if a match already  exists, return it 
+ //-----------------------------------------------------
+
+ EnvPtr<double> pje;
+ EnvPtr<double> tmppje;
+
+ bool refpoints_are_equivalent = false;
+ bool scales_are_equivalent    = false;
+
+ for( env_iter  = TJetEnvironment<double>::_environments.begin(); 
+      env_iter != TJetEnvironment<double>::_environments.end(); 
+     ++env_iter )                        { 
+ 
+    tmppje = *env_iter; 
+
+    if ( tmppje->maxWeight()    != env->maxWeight() )   continue;  
+    if ( tmppje->numVar()       != env->numVar()    )   continue;  
+    if ( tmppje->spaceDim()     != env->spaceDim()  )   continue;  
+    
+    refpoints_are_equivalent = true;
+    for (int i=0; i<env->numVar(); ++i ) {
+       refpoints_are_equivalent = refpoints_are_equivalent && (tmppje->refPoint()[i] == tmp_refpoints[i] );
+    }
+    if ( !refpoints_are_equivalent )   continue; 
+
+#if 0
+===============================================================
+    scales_are_equivalent = true;
+    for (int i=0; i<nvar; ++i ) {
+      scales_are_equivalent = scales_are_equivalent && ( tmppje->scale()[i] == tmp_scale[i] );
+    }
+    if ( ! scales_are_equivalent )              continue; 
+==================================================================
+#endif
+  
+    // -----------------------------------------------------------
+    // if we got here, a suitable environment already exists
+    // -----------------------------------------------------------
+     pje = tmppje; 
+     break;
+ }
+
+ if  (pje) { // pje is not null 
+     return pje;
+ } else  {
+
+     // NOTE: the 2nd argument (default=true) in the smart pointer constructor invocation is set to false. This
+     //       prevents the reference count to be incremented. The effect is that the reference count will go to 0 when 
+     //       the only instance of the smart ptr is the one left in the _environment list. When the ref count reaches 
+     //       0, the custom deleter (dispose()) removes the env from the list.   
+  
+     // NOTE: The swap function here is used here to prevent the ref count of newly created env ptr to go from 1 to zero 
+     //       and be prematurely deleted. Normally this is not a problem, but here the pointer is created (execeptionally)
+     //         with an initial ref count of 0.
+
+     EnvPtr<double> newpje( new TJetEnvironment<double>( env->maxWeight(), env->numVar(), env->spaceDim(), 
+                                                                tmp_refpoints.get(), tmp_scale.get()), false);
+  
+     pje.swap( newpje );
+
+     TJetEnvironment<double>::_environments.push_back( pje );
+
+     return pje;
+ }
+}

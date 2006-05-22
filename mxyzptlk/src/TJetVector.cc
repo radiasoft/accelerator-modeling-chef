@@ -51,6 +51,8 @@
 #include <TJetVector.h>
 
 
+#include <Jet.h>  /// TEMPORARY
+
 using std::complex;
 using std::setprecision;
 
@@ -65,7 +67,10 @@ using FNAL::pcout;
   }
 
 
-#if 0
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 template<>
 TJetVector<complex<double> > operator*( const TJetVector<complex<double> >& x, const double& c )
 {
@@ -81,7 +86,6 @@ TJetVector<complex<double> > operator*( const double& c, const TJetVector<comple
   return x.operator*( complex<double> (c,0.0) );  
 
 }
-#endif
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

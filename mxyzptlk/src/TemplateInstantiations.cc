@@ -61,7 +61,11 @@
 //=============================================================================================
 
 template class TJet<double>;
+template TJet<double>::TJet( const TJet<double>& );
+
 template class TJet<std::complex<double> >;
+template TJet<std::complex<double> >::TJet( const TJet<double>& );
+
 
 template class TJetVector<double>;
 template class TJetVector<std::complex<double> >;
@@ -83,17 +87,17 @@ template class Tparam<std::complex<double> >;
 //=============================================================================================
 //  ****** Class TJet *******
 
-template
-JLPtr<double>::Type makeJL<double>(IntArray const&, double const&, EnvPtr<double>::Type);
+//template
+//JLPtr<double> makeJL<double>(IntArray const&, double const&, EnvPtr<double> const&);
 
-template
-JLPtr<std::complex<double> >::Type makeJL<std::complex<double> >(IntArray const&, std::complex<double> const&, EnvPtr<std::complex<double> >::Type);
+//template
+//JLPtr<std::complex<double> > makeJL<std::complex<double> >(IntArray const&, std::complex<double> const&, EnvPtr<std::complex<double> > const&);
 
-template
-JLPtr<double>::Type makeJL<double>(boost::intrusive_ptr<TJetEnvironment<double> >, double);
+//template
+//JLPtr<double> makeJL<double>(EnvPtr<double> const&, double);
 
-template
-JLPtr<std::complex<double> >::Type makeJL<std::complex<double> >(boost::intrusive_ptr<TJetEnvironment<std::complex<double> > >, std::complex<double>);
+//template
+//JLPtr<std::complex<double> > makeJL<std::complex<double> >( EnvPtr<std::complex<double> > const&, std::complex<double>);
 
 template 
 TJet<double> operator+(double const&, TJet<double> const&);
