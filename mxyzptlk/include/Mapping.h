@@ -39,14 +39,10 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
-
 #ifndef MAPPING_H
 #define MAPPING_H
 
 #include <complex>
-#include <Jet.h>
-#include <JetVector.h>
 #include <TMapping.h>
 
 typedef TMapping<double>                Mapping;
