@@ -148,7 +148,7 @@ void JetthinQuad::localPropagate( JetParticle& p ) {
      TrState[i] = p.state(i);
    }
 
-   Jet k( (1.0/ p.ReferenceBRho()) * JetStrength  );
+   Jet k( (1.0/ p.ReferenceBRho()) * KL  );
    TrState[3] += - k * TrState[0];
    TrState[4] +=   k * TrState[1];
 
