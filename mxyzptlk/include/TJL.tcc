@@ -83,27 +83,6 @@ using FNAL::pcout;
 template <typename T> std::vector<TJL<T>* > TJL<T>::_thePool; 
 
 
-//-------------------------------------------------------------------
-// factory functions
-//-------------------------------------------------------------------
-
-template<typename T>
-typename JLPtr<T>::Type makeJL( boost::intrusive_ptr<TJetEnvironment<T> > pje,  T value) {
-
-  return TJL<T>::makeTJL( pje,value) ;
-
-}
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-typename JLPtr<T>::Type makeJL( const IntArray& index, const T& value, typename EnvPtr<T>::Type pje ) {
-
-  return  TJL<T>::makeTJL( index, value, pje) ;
-
-}
-
-
 
 // ================================================================
 //      Implementation of exceptions
@@ -346,7 +325,7 @@ void TJL<T>::initStore( ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJL<T>::TJL(typename EnvPtr<T>::Type pje, T x): 
+TJL<T>::TJL(EnvPtr<T> const& pje, T x): 
 _count(0),
 _weight(0),                        
 _accuWgt( pje->maxWeight() ),
@@ -366,12 +345,12 @@ _iterPtr(0)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::makeTJL( typename EnvPtr<T>::Type pje, T x )
+JLPtr<T> TJL<T>::makeTJL( EnvPtr<T> const& pje, T x )
 {
 
   if (!pje) return 0; // this form is called by TCoord and Tparam
 
-  if (_thePool.empty() ) return ( typename JLPtr<T>::Type(new  TJL<T>(pje, x ) )); 
+  if (_thePool.empty() ) return (  JLPtr<T>(new  TJL<T>(pje, x ) )); 
  
   TJL<T>* p    = _thePool.back();  _thePool.pop_back();
   p->_count    = 0;
@@ -388,14 +367,14 @@ typename JLPtr<T>::Type TJL<T>::makeTJL( typename EnvPtr<T>::Type pje, T x )
   p->_constIterPtr = 0,
   p->_iterPtr      = 0;
 
- return typename JLPtr<T>::Type(p);
+ return  JLPtr<T>(p);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJL<T>::TJL( const IntArray& e, const T& x, typename EnvPtr<T>::Type pje ) :
+TJL<T>::TJL( const IntArray& e, const T& x, EnvPtr<T> const& pje ) :
  _count(0),
  _weight(0),
  _accuWgt(pje->maxWeight() ),
@@ -420,12 +399,12 @@ _iterPtr(0)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::makeTJL( const IntArray& e, const T& x, typename EnvPtr<T>::Type pje ) 
+ JLPtr<T> TJL<T>::makeTJL( const IntArray& e, const T& x, EnvPtr<T> const& pje ) 
 {
 
   if (!pje) return 0;  // cannot create a TJL without a properly constructed environemnt 
 
-  if (_thePool.empty() ) return typename JLPtr<T>::Type( new TJL<T>(e,x,pje) );
+  if (_thePool.empty() ) return  JLPtr<T>( new TJL<T>(e,x,pje) );
 
   TJL<T>* p = _thePool.back(); _thePool.pop_back();
 
@@ -443,15 +422,15 @@ typename JLPtr<T>::Type TJL<T>::makeTJL( const IntArray& e, const T& x, typename
   p->_constIterPtr = 0,
   p->_iterPtr      = 0;
 
-  return typename JLPtr<T>::Type(p);
+  return JLPtr<T>(p);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJL<T>::TJL( const TJL& x ):
- _count(0),       
+TJL<T>::TJL( const TJL<T>& x ): 
+ _count(0),                     
  _weight(x._weight),     
  _accuWgt(x._accuWgt),
  _myEnv(x._myEnv),
@@ -533,10 +512,12 @@ _iterPtr(0)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type  TJL<T>::makeTJL( const TJL& x )
+template<typename U>
+JLPtr<T>  TJL<T>::makeTJL( const TJL<U>& x )
 {
 
-  if (_thePool.empty() ) return new TJL<T>(x);
+  if (_thePool.empty() ) 
+     return  JLPtr<T>(new TJL<T>(x));
  
   TJL<T>* p = _thePool.back(); _thePool.pop_back(); 
   
@@ -558,10 +539,10 @@ typename JLPtr<T>::Type  TJL<T>::makeTJL( const TJL& x )
 
  dlist_iterator getNext( x._theList );
  
- TJLterm<T>* q = 0;
+ TJLterm<U>* q = 0;
  TJLterm<T>* r = 0;
 
- while((  q = (TJLterm<T>*) getNext()  )) {
+ while((  q = (TJLterm<U>*) getNext()  )) {
           r = p->_jltermStore + ( q - x._jltermStore); 
           p->append(r);
  }
@@ -584,13 +565,13 @@ typename JLPtr<T>::Type  TJL<T>::makeTJL( const TJL& x )
  if ( x._constIterPtr) {
 
     p->_constIterPtr = new dlist_iterator( p->_theList );
-    q = (TJLterm<T>*) x._constIterPtr->current();
+    q = (TJLterm<U>*) x._constIterPtr->current();
 
     if( q ) {
 
-       while(  r = (TJLterm<T>*) getNext( ) ) {
+       while(  r = (TJLterm<U>*) getNext( ) ) {
 
-        if ( *r   ==   *q ) break;
+///////FIXME        if ( *r   ==   *q ) break;
        } 
      };
  };  
@@ -603,8 +584,8 @@ typename JLPtr<T>::Type  TJL<T>::makeTJL( const TJL& x )
 
    if (q) {
      q = (TJLterm<T>*) x._iterPtr->current();
-     while(  r = ( TJLterm<T>*) getNext( ) ) {
-       if ( *r  ==  *q ) break;
+     while(  r = ( TJLterm<U>*) getNext( ) ) {
+/////FIXME        if ( *r  ==  *q ) break;
      }   
    };
 
@@ -612,7 +593,7 @@ typename JLPtr<T>::Type  TJL<T>::makeTJL( const TJL& x )
 
  }
 
- return typename JLPtr<T>::Type(p);
+ return JLPtr<T>(p);
 
 }
 
@@ -641,7 +622,7 @@ template<typename T>
 void TJL<T>::discardTJL( TJL<T>* p) 
 {
   
-   typename EnvPtr<T>::Type nullEnv;
+   EnvPtr<T> nullEnv;
 
    p->clear();
 
@@ -970,7 +951,7 @@ TJL<T>& TJL<T>::Negate( ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJL<T>::setVariable(  const T& x, const int& j, typename EnvPtr<T>::Type pje)
+void TJL<T>::setVariable(  const T& x, const int& j, EnvPtr<T> const& pje)
 {
  
 // this member function is meant to be called **ONLY** when a coordinate is instantiated
@@ -1025,7 +1006,7 @@ void TJL<T>::setVariable(  const T& x, const int& j )
  
 template<typename T>
 void TJL<T>::setVariable( const int& j, 
-                              typename EnvPtr<T>::Type theEnv ) 
+                              EnvPtr<T> const& theEnv ) 
 {
 
  if( _myEnv == 0 ) {
@@ -1303,12 +1284,12 @@ T TJL<T>::operator()( const T* x )  const
  
    // Get the next set of _exponents of weight w.
    while( nexcom( w, _myEnv->numVar(), exponent ) ) {
-    
+ 
      // Find the first non-zero _exponent.
      i = 0;
      while( !exponent[i++]  ) ;
-     i--; 
-
+     i--;
+ 
      // The value of the _monomial associated with this composition
      // is obtained by multiplying a factor into a previously
      // computed _monomial.
@@ -1356,7 +1337,7 @@ T TJL<T>::operator()( const Vector& x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::filter( const int& wgtLo, const int& wgtHi ) const 
+JLPtr<T> TJL<T>::filter( const int& wgtLo, const int& wgtHi ) const 
 { 
  //----------------------------------------------------------------------------
  // Filters the terms with weights included in the closed interval [wgtLo,wgtHi]
@@ -1365,12 +1346,12 @@ typename JLPtr<T>::Type TJL<T>::filter( const int& wgtLo, const int& wgtHi ) con
  // Trivial case: nothing to filter ... return a *deep copy* of the current jl.
  
  if( ( wgtLo <= 0 ) && ( wgtHi >= _weight ) ) {
-   return typename JLPtr<T>::Type( TJL<T>::makeTJL( *this ));
+   return JLPtr<T>( TJL<T>::makeTJL( *this ));
  } 
 
  // Begin filtering ... 
 
- typename JLPtr<T>::Type z( TJL<T>::makeTJL( _myEnv) );
+ JLPtr<T> z( TJL<T>::makeTJL( _myEnv) );
 
  dlist_iterator getNext( _theList );
  TJLterm<T>* p = 0;
@@ -1401,10 +1382,10 @@ typename JLPtr<T>::Type TJL<T>::filter( const int& wgtLo, const int& wgtHi ) con
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::filter( bool (*f) ( const IntArray&, const T& ) ) const 
+JLPtr<T> TJL<T>::filter( bool (*f) ( const IntArray&, const T& ) ) const 
 { 
 
- typename JLPtr<T>::Type z( TJL<T>::makeTJL(_myEnv) );
+ JLPtr<T> z( TJL<T>::makeTJL(_myEnv) );
 
 
  TJLterm<T>* p = 0;
@@ -1442,7 +1423,7 @@ typename JLPtr<T>::Type TJL<T>::filter( bool (*f) ( const IntArray&, const T& ) 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::truncMult( typename JLPtr<T>::Type const& v, const int& wl ) const 
+JLPtr<T> TJL<T>::truncMult( JLPtr<T> const& v, const int& wl ) const 
 { 
  //
  // Truncated multiplication: used only by the division operator.
@@ -1451,14 +1432,14 @@ typename JLPtr<T>::Type TJL<T>::truncMult( typename JLPtr<T>::Type const& v, con
 
  // If one of the arguments is void, return a *deep copy* of it ..
 
- if ( _count < 1 )     return  typename JLPtr<T>::Type( TJL<T>::makeTJL(*this) );   
- if ( v->_count < 1 )  return  typename JLPtr<T>::Type( TJL<T>::makeTJL(*v) );        
+ if ( _count < 1 )     return  JLPtr<T>( TJL<T>::makeTJL(*this) );   
+ if ( v->_count < 1 )  return  JLPtr<T>( TJL<T>::makeTJL(*v) );        
 
  // .. otherwise continue normal operations.
 
  // Initializations
 
- typename JLPtr<T>::Type z( TJL<T>::makeTJL( _myEnv) );
+ JLPtr<T> z( TJL<T>::makeTJL( _myEnv) );
 
  TJLterm<T>* tjlmml =  _myEnv->TJLmml(); 
 
@@ -1763,10 +1744,10 @@ TJL<T>& TJL<T>::operator+=( const T& x ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::sin() const
+JLPtr<T> TJL<T>::sin() const
 { 
 
- typename JLPtr<T>::Type epsilon( TJL<T>::makeTJL( *this) ); // deep copy 
+ JLPtr<T> epsilon( TJL<T>::makeTJL( *this) ); // deep copy 
 
  if( epsilon->_count == 0 ) return epsilon; // argument is null 
  
@@ -1798,10 +1779,10 @@ typename JLPtr<T>::Type TJL<T>::sin() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::cos() const
+JLPtr<T> TJL<T>::cos() const
 { 
 
- typename JLPtr<T>::Type epsilon( makeTJL( *this) ); // deep copy 
+ JLPtr<T> epsilon( makeTJL( *this) ); // deep copy 
 
  if( _count == 0 ) {
     epsilon->addTerm( TJLterm<T>( _myEnv->allZeroes(), (T)(1.0), epsilon->_myEnv ) ); // cos(0.0) = 1.0
@@ -1836,17 +1817,17 @@ typename JLPtr<T>::Type TJL<T>::cos() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::_epsSin( typename JLPtr<T>::Type const& epsilon ) 
+JLPtr<T> TJL<T>::_epsSin( JLPtr<T> const& epsilon ) 
 { 
  
- typename JLPtr<T>::Type epsq;
+ JLPtr<T> epsq;
  epsq = epsilon*epsilon;
  epsq->Negate();                                              //   epsq = -epsilon*epsilon 
- typename JLPtr<T>::Type z( epsilon->clone() );               //    z = epsilon -- deep copy 
+ JLPtr<T> z( epsilon->clone() );               //    z = epsilon -- deep copy 
 
 
 
- typename JLPtr<T>::Type term =  epsilon*epsq;                // term = 1/6 * epsilon*epsq
+ JLPtr<T> term =  epsilon*epsq;                // term = 1/6 * epsilon*epsq
  term->scaleBy(1.0/6.0);
  
  double n = 3.0;
@@ -1873,18 +1854,17 @@ typename JLPtr<T>::Type TJL<T>::_epsSin( typename JLPtr<T>::Type const& epsilon 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::_epsCos( typename JLPtr<T>::Type const& epsilon ) 
+JLPtr<T> TJL<T>::_epsCos( JLPtr<T> const& epsilon ) 
 { 
  
 
- typename JLPtr<T>::Type z( makeTJL( epsilon->_myEnv, ((T) 1.0) ));             // z   = 1    
+ JLPtr<T> z( makeTJL( epsilon->_myEnv, ((T) 1.0) ));             // z   = 1    
 
- typename JLPtr<T>::Type epsq = (epsilon*epsilon);
+ JLPtr<T> epsq = (epsilon*epsilon);
  epsq->Negate();                                         // epsq = -epsilon*epsilon
 
- typename JLPtr<T>::Type term(epsq->clone());
+ JLPtr<T> term(epsq->clone());
  term->scaleBy(0.5);                                     // term = epsq/2.0
 
  double n = 2.0;
@@ -1908,7 +1888,7 @@ typename JLPtr<T>::Type TJL<T>::_epsCos( typename JLPtr<T>::Type const& epsilon 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::sqrt() const 
+JLPtr<T> TJL<T>::sqrt() const 
 {
 
  if( _count == 0 ) {
@@ -1953,11 +1933,11 @@ typename JLPtr<T>::Type TJL<T>::sqrt() const
  factor = std::sqrt( stdpart );
    if( _count == 1 )           // ... operand may have no derivatives
      {
-     return typename JLPtr<T>::Type( makeTJL(_myEnv, factor)); 
+     return JLPtr<T>( makeTJL(_myEnv, factor)); 
      }
    else                       // ... normal case
      {
-     typename JLPtr<T>::Type epsilon( makeTJL(*this) ); // deep copy 
+     JLPtr<T> epsilon( makeTJL(*this) ); // deep copy 
      epsilon->get()->_deleted = true;                   // pop out and delete the standard part off epsilon
      epsilon->scaleBy( 1.0/stdpart );
      return ( _epsSqrt(epsilon)*factor );               // NOT EFFICIENT !!!
@@ -1977,14 +1957,14 @@ typename JLPtr<T>::Type TJL<T>::sqrt() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::_epsSqrt( typename JLPtr<T>::Type const& epsilon ) 
+JLPtr<T> TJL<T>::_epsSqrt( JLPtr<T> const& epsilon ) 
 {  
 
  // This function is identical to epsPow
  // with the substitution  s = 1/2
 
- typename JLPtr<T>::Type      z(makeTJL(epsilon->_myEnv,(T) 1.0)); // z = 1.0 
- typename JLPtr<T>::Type      term(makeTJL(*epsilon));             // deep copy;  term = epsilon 
+ JLPtr<T>      z(makeTJL(epsilon->_myEnv,(T) 1.0)); // z = 1.0 
+ JLPtr<T>      term(makeTJL(*epsilon));             // deep copy;  term = epsilon 
  
  double f    = 1.0 / 2.0;
  double n    = 1.0;
@@ -2011,10 +1991,10 @@ typename JLPtr<T>::Type TJL<T>::_epsSqrt( typename JLPtr<T>::Type const& epsilon
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
  template<typename T>
- typename JLPtr<T>::Type TJL<T>::exp() const
+ JLPtr<T> TJL<T>::exp() const
  {
   
- typename JLPtr<T>::Type epsilon( makeTJL(*this) ); //deep copy
+ JLPtr<T> epsilon( makeTJL(*this) ); //deep copy
  
  T factor = T();
  TJLterm<T>* p = 0;
@@ -2050,11 +2030,11 @@ typename JLPtr<T>::Type TJL<T>::_epsSqrt( typename JLPtr<T>::Type const& epsilon
 
 
 template<typename T>
-typename JLPtr<T>::Type  TJL<T>::_epsExp( typename JLPtr<T>::Type const& epsilon ) 
+JLPtr<T>  TJL<T>::_epsExp( JLPtr<T> const& epsilon ) 
 { 
 
- typename JLPtr<T>::Type z( makeTJL(epsilon->_myEnv, ((T) 1.0)  ));   // z    = 1.0;
- typename JLPtr<T>::Type term( epsilon->clone() );                     // term = epsilon
+ JLPtr<T> z( makeTJL(epsilon->_myEnv, ((T) 1.0)  ));   // z    = 1.0;
+ JLPtr<T> term( epsilon->clone() );                     // term = epsilon
 
  double n = 1.0;
  
@@ -2076,10 +2056,10 @@ typename JLPtr<T>::Type  TJL<T>::_epsExp( typename JLPtr<T>::Type const& epsilon
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::pow(const double& s )  const
+JLPtr<T> TJL<T>::pow(const double& s )  const
 {
 
- if( _count == 0 ) return typename JLPtr<T>::Type( makeTJL(*this) ); // deepcopy  pow(0, s) = 0  
+ if( _count == 0 ) return JLPtr<T>( makeTJL(*this) ); // deepcopy  pow(0, s) = 0  
  
  int u = 0;
  dlist_iterator getNext(_theList );
@@ -2091,10 +2071,10 @@ typename JLPtr<T>::Type TJL<T>::pow(const double& s )  const
  {
 
    if( _count == 1 ) {             // x may have no derivatives
-     return typename JLPtr<T>::Type( makeTJL(_myEnv, std::pow(std,s) ));
+     return JLPtr<T>( makeTJL(_myEnv, std::pow(std,s) ));
    }
 
-   typename JLPtr<T>::Type z( makeTJL(*this) );   //   deep copy
+   JLPtr<T> z( makeTJL(*this) );   //   deep copy
 
    p = z->get();
    std = p->_value;  
@@ -2114,21 +2094,21 @@ typename JLPtr<T>::Type TJL<T>::pow(const double& s )  const
             "Cannot use infinitesimal as base with non-integer _exponent." ) );
    }
 
-   typename JLPtr<T>::Type z(makeTJL(_myEnv, ((T) 1.0))); // z = 1.0;
+   JLPtr<T> z(makeTJL(_myEnv, ((T) 1.0))); // z = 1.0;
 
    if ( u == 0 ) {
      return z;
    }
    if ( u > 0 ) {
-     typename JLPtr<T>::Type x(makeTJL(*this));      // x, deepcopy;
+     JLPtr<T> x(makeTJL(*this));      // x, deepcopy;
      while( u-- > 0 )   z *= x;
      return z;
      }
    else {
-     typename JLPtr<T>::Type x(makeTJL(*this));               //  x, deepcopy;
+     JLPtr<T> x(makeTJL(*this));               //  x, deepcopy;
      while( u++ < 0 )   z *= x;
-     typename JLPtr<T>::Type tmp(makeTJL(_myEnv, ((T) 1.0))); // tmp = 1.0;
-     z = tmp/ z;                                              //  z = 1.0/z;
+     JLPtr<T> tmp(makeTJL(_myEnv, ((T) 1.0))); // tmp = 1.0;
+     z = tmp/z;                                //  z = 1.0/z;
      return z;
      }
    }
@@ -2138,23 +2118,23 @@ typename JLPtr<T>::Type TJL<T>::pow(const double& s )  const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::pow(int n ) const
+JLPtr<T> TJL<T>::pow(int n ) const
 {
 
   if( n == 0 ) 
-     return typename JLPtr<T>::Type(makeTJL( _myEnv, ((T) 1.0)));    // z = 1
+     return JLPtr<T>(makeTJL( _myEnv, ((T) 1.0)));    // z = 1
   else if( n > 0 ) {
-     typename JLPtr<T>::Type z(makeTJL( *this));              // z =  x
-     typename JLPtr<T>::Type x(makeTJL( *this));              // z =  x
+     JLPtr<T> z(makeTJL( *this));              // z =  x
+     JLPtr<T> x(makeTJL( *this));              // z =  x
      for( int i = 2; i <= n; ++i ) z *= x;
      return z;
   }
   else { // exponent is negative
 
-    typename JLPtr<T>::Type xr( makeTJL( _myEnv, ((T) 1.0) ));
-    typename JLPtr<T>::Type x(  makeTJL(*this) );               // deep copy of argument; this step is not really necessary
+    JLPtr<T> xr( makeTJL( _myEnv, ((T) 1.0) ));
+    JLPtr<T> x(  makeTJL(*this) );               // deep copy of argument; this step is not really necessary
                                                                 // and should be eliminated
-    xr = xr/x;                                                  // xr  = 1/x 
+    xr =  xr/x;                                                 // xr  = 1/x 
     x  = xr;                                                    // deep copy 
     for( int i = -2; i >= n; i-- ) x *= xr;
     return x;
@@ -2166,10 +2146,10 @@ typename JLPtr<T>::Type TJL<T>::pow(int n ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::_epsPow( typename JLPtr<T>::Type const& epsilon, const double& s ) 
+JLPtr<T> TJL<T>::_epsPow( JLPtr<T> const& epsilon, const double& s ) 
 { 
- typename JLPtr<T>::Type z( makeTJL(epsilon->_myEnv, ((T) 1.0)) ); // z = 1.0;
- typename JLPtr<T>::Type term;
+ JLPtr<T> z( makeTJL(epsilon->_myEnv, ((T) 1.0)) ); // z = 1.0;
+ JLPtr<T> term;
 
  double f = s;
  double n = 1.0;
@@ -2196,7 +2176,7 @@ typename JLPtr<T>::Type TJL<T>::_epsPow( typename JLPtr<T>::Type const& epsilon,
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::log() const
+JLPtr<T> TJL<T>::log() const
 {
 
  if( _count == 0 ) {
@@ -2212,13 +2192,13 @@ typename JLPtr<T>::Type TJL<T>::log() const
      ( (p->_value)  !=  T() ) ) // x has non-zero standard part
  {
    if( _count == 1 ) {             // x may have no derivatives
-     return typename JLPtr<T>::Type( makeTJL( _myEnv, std::log( p->_value )));
+     return JLPtr<T>( makeTJL( _myEnv, std::log( p->_value )));
 
    }
 
-   typename JLPtr<T>::Type z( makeTJL(*this)   );
-   typename JLPtr<T>::Type u( makeTJL(_myEnv) );
-   typename JLPtr<T>::Type w( makeTJL(_myEnv) );
+   JLPtr<T> z( makeTJL(*this)   );
+   JLPtr<T> u( makeTJL(_myEnv) );
+   JLPtr<T> w( makeTJL(_myEnv) );
    
    p = z->get();
    T std   = p->_value;
@@ -2235,7 +2215,7 @@ typename JLPtr<T>::Type TJL<T>::log() const
      w += (u / static_cast<T>(++n));              // w += ( u / ++n );
    }
    
-   typename JLPtr<T>::Type tmp( makeTJL(_myEnv, std::log(std) ));
+   JLPtr<T> tmp( makeTJL(_myEnv, std::log(std) ));
    return ( tmp - w );     // std::log(std) - w
  
    }
@@ -2251,14 +2231,14 @@ typename JLPtr<T>::Type TJL<T>::log() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::compose( typename JLPtr<T>::Type const y[ ]) const 
+JLPtr<T> TJL<T>::compose( JLPtr<T> const y[ ]) const 
 {
 
  //-------------------------------------------------
  //  **** Composition operator ****
  //-------------------------------------------------
 
- typename JLPtr<T>::Type  u[ _myEnv->numVar() ];
+ JLPtr<T>  u[ _myEnv->numVar() ];
 
  //------------------------------------------------
  // Check consistency of reference points and
@@ -2269,17 +2249,17 @@ typename JLPtr<T>::Type TJL<T>::compose( typename JLPtr<T>::Type const y[ ]) con
  
   if( y[i]->_myEnv !=  y[0]->_myEnv ) {
      throw( GenericException( __FILE__, __LINE__, 
-            "TJL<T>::compose( typename JLPtr<T>::Type const y[] ) const ",
+            "TJL<T>::compose( JLPtr<T> const y[] ) const ",
             "Inconsistent environments." ) );
    }
  
-   u[i] =  y[i] + typename JLPtr<T>::Type( makeTJL( y[0]->_myEnv, -_myEnv->getRefPoint()[i])) ;  // u[i] = y[i] - _myEnv->getRefPoint()[i];
+   u[i] =  y[i] + JLPtr<T>( makeTJL( y[0]->_myEnv, -_myEnv->getRefPoint()[i])) ;  // u[i] = y[i] - _myEnv->getRefPoint()[i];
  }
 
 
- typename JLPtr<T>::Type term( makeTJL(_myEnv) ) ; // Initializing term should not be necessary. 
+ JLPtr<T> term( makeTJL(_myEnv) ) ; // Initializing term should not be necessary. 
 
- typename JLPtr<T>::Type* tjlmonomial = _myEnv->TJLmonomial();
+ JLPtr<T>* tjlmonomial = _myEnv->TJLmonomial();
  int*                     exponent    = _myEnv->exponent();
 
  // -----------------------------
@@ -2288,7 +2268,7 @@ typename JLPtr<T>::Type TJL<T>::compose( typename JLPtr<T>::Type const y[ ]) con
 
  // The zeroth one ...
 
- tjlmonomial[0] = typename JLPtr<T>::Type(makeTJL( u[0]->_myEnv, ((T) 1.0) ));
+ tjlmonomial[0] = JLPtr<T>(makeTJL( u[0]->_myEnv, ((T) 1.0) ));
 
  // For all higher weights ...
 
@@ -2330,7 +2310,7 @@ typename JLPtr<T>::Type TJL<T>::compose( typename JLPtr<T>::Type const y[ ]) con
  // is reproduced here
  //------------------------------------------------
  
- typename JLPtr<T>::Type z( makeTJL(u[0]->_myEnv) ); 
+ JLPtr<T> z( makeTJL(u[0]->_myEnv) ); 
 
  dlist_iterator getNext( _theList );
  
@@ -2400,17 +2380,17 @@ std::istream& operator>>( std::istream& is,  TJL<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::asin() const
+JLPtr<T> TJL<T>::asin() const
 { 
 
  const T zero = T(); 	 
- typename EnvPtr<T>::Type pje(_myEnv);
+ EnvPtr<T>  pje(_myEnv);
   	 
  // Initial Newton's step 	 
  
- typename JLPtr<T>::Type z(makeTJL(*this));        // deep copy	        
- typename JLPtr<T>::Type dz; 
- typename JLPtr<T>::Type x( makeTJL(*this) );
+ JLPtr<T> z(makeTJL(*this));        // deep copy	        
+ JLPtr<T> dz; 
+ JLPtr<T> x( makeTJL(*this) );
 
  dz = ( z->sin() - x ) / z->cos(); 	 
 
@@ -2433,7 +2413,7 @@ typename JLPtr<T>::Type TJL<T>::asin() const
      while( iter++ < upperBound ) { 	 
       // These two lines are the heart of the calculation: 	 
       z  -= dz; 	 
-      dz  = ( z->sin() - x ) / z->cos();	      
+      dz  =  (z->sin() - x ) / z->cos();	      
      }
 	 
      // The rest is just determining when to stop. 	  
@@ -2493,7 +2473,7 @@ typename JLPtr<T>::Type TJL<T>::asin() const
 
  if( iter >= MX_MAXITER ) {
   (*pcerr) << "*** WARNING ***                             \n";
-  (*pcerr) << "*** WARNING *** JLPtr<T>::Type& asin()      \n";
+  (*pcerr) << "*** WARNING *** JLPtr<T>& asin()      \n";
   (*pcerr) << "*** WARNING *** Over " 
        << MX_MAXITER 
        << " iterations used;    \n";
@@ -2524,14 +2504,14 @@ typename JLPtr<T>::Type TJL<T>::asin() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::atan() const
+JLPtr<T> TJL<T>::atan() const
 {   
  
- typename JLPtr<T>::Type z( makeTJL(*this));      // deep copy
- typename JLPtr<T>::Type c;
- typename JLPtr<T>::Type dz;
+ JLPtr<T> z( makeTJL(*this));      // deep copy
+ JLPtr<T> c;
+ JLPtr<T> dz;
 
- typename JLPtr<T>::Type x( makeTJL(*this)); 
+ JLPtr<T> x( makeTJL(*this)); 
 
  int iter = 0;
 
@@ -2567,33 +2547,6 @@ void TJL<T>::printCoeffs() const {
  int i;
  TJLterm<T>* p;
  
- #if 0   
-
- (*pcout) << "\nCount  = " << _count 
-      << ", Weight = " << _weight 
-      << ", Max accurate weight = " << _accuWgt << std::endl;
- (*pcout) << "Reference point: " 
-      << _myEnv->getRefPoint()[0];
- for( i = 1; i < _myEnv->numVar(); i++ ) {
-   (*pcout) << ", ";
-   (*pcout) << _myEnv->getRefPoint()[i];
- }
- (*pcout) << std::endl;
-
- while((  p = (TJLterm<T>*) getNext()  )) {
-   if( p->_weight > _accuWgt ) break;
-   (*pcout) << "Index:  " 
-        << p->_index
-        << "   Value: "
-        << p->_value
-        << std::endl;
- }
-
- (*pcout) << "\n" << std::endl;
-
-#endif
-
-#if 1
 
  std::cout << "\nCount  = " << _count 
       << ", Weight = " << _weight 
@@ -2617,15 +2570,13 @@ void TJL<T>::printCoeffs() const {
 
  std::cout << "\n" << std::endl;
 
-#endif
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename JLPtr<T>::Type TJL<T>::D( const int* n ) const 
+JLPtr<T> TJL<T>::D( const int* n ) const 
 {
 
  //----------------------------- 
@@ -2655,9 +2606,9 @@ typename JLPtr<T>::Type TJL<T>::D( const int* n ) const
           "Differentiation request beyond accuracy allowed." ) );
  }
  
- if( w == 0 ) return typename JLPtr<T>::Type(makeTJL(_myEnv));
+ if( w == 0 ) return JLPtr<T>(makeTJL(_myEnv));
 
- typename JLPtr<T>::Type z(makeTJL(_myEnv)); 
+ JLPtr<T> z(makeTJL(_myEnv)); 
 
  int f = 0;
  int j = 0;
@@ -2816,19 +2767,20 @@ TJLterm<T>* TJL<T>::stepIterator()
 // *** friend functions ******
 
 template <typename T>
-boost::intrusive_ptr<TJL<T> >   operator+(boost::intrusive_ptr<TJL<T> > const & x, boost::intrusive_ptr<TJL<T> > const& y  ){  
+JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  ){  
+
 
 // Check for consistency and set reference point of the sum.
 
   if( x->_myEnv != y->_myEnv ) {
 
    throw( GenericException( __FILE__, __LINE__, 
-           "TJL<T>::operator+(typename JLPtr<T>::Type const& x, typename JLPtr<T>::Type const& y)"
+           "TJL<T>::operator+(JLPtr<T> const& x, JLPtr<T> const& y)"
            "Inconsistent environments." ) );
   }
 
- if (x->_count < 1) return typename JLPtr<T>::Type( y->clone() ); // x=0; return a copy of y
- if (y->_count < 1) return typename JLPtr<T>::Type( x->clone() ); // y=0; return a copy of x
+ if (x->_count < 1) return JLPtr<T>( y->clone() ); // x=0; return a copy of y
+ if (y->_count < 1) return JLPtr<T>( x->clone() ); // y=0; return a copy of x
 
  //  -----------------------------------------------------------------
  //  Loop over the terms and accumulate monomials in the scrach pad.
@@ -2871,7 +2823,7 @@ boost::intrusive_ptr<TJL<T> >   operator+(boost::intrusive_ptr<TJL<T> > const & 
  // Transfer result from the scratchpad. 
  // Append only monomials with non-zero coefficients
 
-  typename JLPtr<T>::Type z( TJL<T>::makeTJL(x->_myEnv) ); 
+  JLPtr<T> z( TJL<T>::makeTJL(x->_myEnv) ); 
 
   TJLterm<T>* zed      = tjlmml;
   TJLterm<T>* upperzed = tjlmml + x->_myEnv->maxTerms();
@@ -2893,6 +2845,8 @@ boost::intrusive_ptr<TJL<T> >   operator+(boost::intrusive_ptr<TJL<T> > const & 
 }
 
 #if  0
+===============================================================================================================
+old LIST based operator+
 
   // Check for consistency and set reference point of the sum.
 
@@ -2904,20 +2858,20 @@ boost::intrusive_ptr<TJL<T> >   operator+(boost::intrusive_ptr<TJL<T> > const & 
   }
 
 
-  typename EnvPtr<T>::Type pje(x->_myEnv);
+  EnvPtr<T> pje(x->_myEnv);
 
                                                           // ??? This should be modified so that
-  typename JLPtr<T>::Type z( TJL<T>::makeTJL(pje));                // ??? terms beyond the accurate weight of
+  JLPtr<T> z( TJL<T>::makeTJL(pje));                // ??? terms beyond the accurate weight of
   TJLterm<T>*    p = 0;                                   // ??? x or y are not computed and carried
   TJLterm<T>*    q = 0;                                   // ??? into the answer.
 
 
   // If one of the arguments is void, then return *a deep copy* of the other ..
   if( x->_count < 1 ) {           
-    return typename JLPtr<T>::Type( TJL<T>::makeTJL( *y );             
+    return JLPtr<T>( TJL<T>::makeTJL( *y );             
   }
   if( y->_count < 1 ) {
-    return typename JLPtr<T>::Type( TJL<T>::makeTJL( *x );
+    return JLPtr<T>( TJL<T>::makeTJL( *x );
   }
                                  
   // .. otherwise, continue normal operations.
@@ -2974,6 +2928,7 @@ boost::intrusive_ptr<TJL<T> >   operator+(boost::intrusive_ptr<TJL<T> > const & 
   
   return z;
 }
+===========================================================================================================================
 #endif
 
 
@@ -2981,7 +2936,7 @@ boost::intrusive_ptr<TJL<T> >   operator+(boost::intrusive_ptr<TJL<T> > const & 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-boost::intrusive_ptr<TJL<T> >&  operator+=(boost::intrusive_ptr<TJL<T> >& x,      boost::intrusive_ptr<TJL<T> > const& y  ) {
+JLPtr<T>&  operator+=(JLPtr<T>& x,      JLPtr<T> const& y  ) {
 
  //---------------
  // In place add()
@@ -2992,7 +2947,7 @@ boost::intrusive_ptr<TJL<T> >&  operator+=(boost::intrusive_ptr<TJL<T> >& x,    
   if( y->_myEnv != x->_myEnv ) {
 
    throw( GenericException( __FILE__, __LINE__, 
-           "TJL<T>::add(typename JLPtr<T>::Type const& y)"
+           "TJL<T>::add(JLPtr<T> const& y)"
            "Inconsistent environments." ) );
   }
 
@@ -3078,7 +3033,7 @@ boost::intrusive_ptr<TJL<T> >&  operator+=(boost::intrusive_ptr<TJL<T> >& x,    
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-boost::intrusive_ptr<TJL<T> >&  operator-=(boost::intrusive_ptr<TJL<T> >& x,      boost::intrusive_ptr<TJL<T> > const& y  ) {
+JLPtr<T>&  operator-=(JLPtr<T>& x,      JLPtr<T> const& y  ) {
 
  //---------------
  // In place add()
@@ -3089,7 +3044,7 @@ boost::intrusive_ptr<TJL<T> >&  operator-=(boost::intrusive_ptr<TJL<T> >& x,    
   if( y->_myEnv != x->_myEnv ) {
 
    throw( GenericException( __FILE__, __LINE__, 
-           "TJL<T>::add(typename JLPtr<T>::Type const& y)"
+           "TJL<T>::add(JLPtr<T> const& y)"
            "Inconsistent environments." ) );
   }
 
@@ -3175,9 +3130,9 @@ boost::intrusive_ptr<TJL<T> >&  operator-=(boost::intrusive_ptr<TJL<T> >& x,    
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-boost::intrusive_ptr<TJL<T> >   operator-(boost::intrusive_ptr<TJL<T> > const &x) {
+JLPtr<T>   operator-(JLPtr<T> const &x) {
 
- typename JLPtr<T>::Type z( x->clone() );
+ JLPtr<T> z( x->clone() );
  z->Negate();
  return z;
 
@@ -3187,7 +3142,7 @@ boost::intrusive_ptr<TJL<T> >   operator-(boost::intrusive_ptr<TJL<T> > const &x
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-boost::intrusive_ptr<TJL<T> >   operator-(boost::intrusive_ptr<TJL<T> > const & x,  boost::intrusive_ptr<TJL<T> > const& y  ){
+JLPtr<T>   operator-(JLPtr<T> const & x,  JLPtr<T> const& y  ){
   
   return (x+(-y));
 
@@ -3198,9 +3153,9 @@ boost::intrusive_ptr<TJL<T> >   operator-(boost::intrusive_ptr<TJL<T> > const & 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-boost::intrusive_ptr<TJL<T> >   operator*(boost::intrusive_ptr<TJL<T> > const & x,  T const& y  ){  
+JLPtr<T>   operator*(JLPtr<T> const & x,  T const& y  ){  
 
-  typename JLPtr<T>::Type z (x->clone() );
+  JLPtr<T> z (x->clone() );
   z->scaleBy( y );  
   return z;
 
@@ -3210,7 +3165,7 @@ boost::intrusive_ptr<TJL<T> >   operator*(boost::intrusive_ptr<TJL<T> > const & 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-boost::intrusive_ptr<TJL<T> >   operator*( T const & x,             boost::intrusive_ptr<TJL<T> > const& y  ){  
+JLPtr<T>   operator*( T const & x,             JLPtr<T> const& y  ){  
 
   return y*x;
 
@@ -3219,7 +3174,7 @@ boost::intrusive_ptr<TJL<T> >   operator*( T const & x,             boost::intru
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-boost::intrusive_ptr<TJL<T> >   operator*(boost::intrusive_ptr<TJL<T> > const & x,  boost::intrusive_ptr<TJL<T> > const& y  ){  
+JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  ){  
 
 //----------------------------
 // Multiplication of two jets
@@ -3235,12 +3190,12 @@ boost::intrusive_ptr<TJL<T> >   operator*(boost::intrusive_ptr<TJL<T> > const & 
 
  // if one of the arguments is zero, return a *deep copy*  (required!). 
 
- if( x->_count < 1 ) return typename JLPtr<T>::Type(  x->clone() ); 
- if( y->_count < 1 ) return typename JLPtr<T>::Type(  y->clone() );
+ if( x->_count < 1 ) return JLPtr<T>(  x->clone() ); 
+ if( y->_count < 1 ) return JLPtr<T>(  y->clone() );
 
 
- typename EnvPtr<T>::Type pje(x->_myEnv);
- typename  JLPtr<T>::Type z( TJL<T>::makeTJL( pje ) );
+ EnvPtr<T> pje(x->_myEnv);
+ JLPtr<T> z( TJL<T>::makeTJL( pje ) );
 
  TJLterm<T>* p = 0;
  TJLterm<T>* q = 0;
@@ -3347,7 +3302,7 @@ boost::intrusive_ptr<TJL<T> >   operator*(boost::intrusive_ptr<TJL<T> > const & 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-boost::intrusive_ptr<TJL<T> >&  operator*=(boost::intrusive_ptr<TJL<T> > & x,     boost::intrusive_ptr<TJL<T> > const& y  )  
+JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )  
 {
 
 //------------------------------------
@@ -3358,7 +3313,7 @@ boost::intrusive_ptr<TJL<T> >&  operator*=(boost::intrusive_ptr<TJL<T> > & x,   
 
  if( x->_myEnv != y->_myEnv ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "multiply(typename JLPtr<T>::Type const& ) ",
+          "multiply(JLPtr<T> const& ) ",
           "Inconsistent environments." ) );
  };
 
@@ -3484,33 +3439,33 @@ boost::intrusive_ptr<TJL<T> >&  operator*=(boost::intrusive_ptr<TJL<T> > & x,   
 
 
 template <typename T>
-boost::intrusive_ptr<TJL<T> >   operator/(boost::intrusive_ptr<TJL<T> > const & wArg,  boost::intrusive_ptr<TJL<T> > const& uArg  ){ 
+JLPtr<T>  operator/(JLPtr<T> const& wArg,  JLPtr<T> const& uArg  ){ 
 
  if ( (wArg->_myEnv) != (uArg->_myEnv) ) {
 
    throw( GenericException( __FILE__, __LINE__, 
-          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
+          "TJL<T>::operator/ ( TJL<T> const& wArg, TJL<T> const& uArg )",
           "Inconsistent environments." ) );
  }
 
- if ( wArg->_count < 1 ) return typename JLPtr<T>::Type( TJL<T>::makeTJL( wArg->_myEnv ) );  // numerator is zero
+ if ( wArg->_count < 1 ) return JLPtr<T>( TJL<T>::makeTJL( wArg->_myEnv ) );  // numerator is zero
  
 
  // Check for void operators ..
 
  if ( uArg->_count < 1 ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
+          "TJL<T>::operator/ ( TJL<T> const& wArg, TJL<T> const& uArg )",
           "Attempt to divide by a void TJL<T> variable." ) );
  }
  
  // Initialize local variables and set the environment of the answer.
  // (These steps are not necessary, but they enforce a discipline.)
 
- typename JLPtr<T>::Type  v( TJL<T>::makeTJL(wArg->_myEnv) );
- typename JLPtr<T>::Type vn( TJL<T>::makeTJL(wArg->_myEnv) );
- typename JLPtr<T>::Type  w( TJL<T>::makeTJL(wArg->_myEnv) );
- typename JLPtr<T>::Type  u( TJL<T>::makeTJL(wArg->_myEnv) );
+ JLPtr<T>  v( TJL<T>::makeTJL(wArg->_myEnv) );
+ JLPtr<T> vn( TJL<T>::makeTJL(wArg->_myEnv) );
+ JLPtr<T>  w( TJL<T>::makeTJL(wArg->_myEnv) );
+ JLPtr<T>  u( TJL<T>::makeTJL(wArg->_myEnv) );
 
  TJLterm<T>* qu = 0;
  TJLterm<T>* qw = 0;
@@ -3521,28 +3476,28 @@ boost::intrusive_ptr<TJL<T> >   operator/(boost::intrusive_ptr<TJL<T> > const & 
  int mw  =  wArg->_myEnv->maxWeight();
  
 
- dlist_looper gu( uArg->_theList );
- dlist_looper gw( wArg->_theList );
+ dlist_looper gu( const_cast<dlist&>(uArg->_theList) );
+ dlist_looper gw( const_cast<dlist&>(wArg->_theList) );
 
  // Normalize the denominator
  if( ( qu = (TJLterm<T>*) gu() ) == 0 ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
+          "TJL<T>::operator/( JLPtr<T> const& wArg, JLPtr<T> const& uArg )",
           "Division algorithm called with uninitialized JL." ) );
    }
  if( ( wgt = qu->_weight ) != 0 ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
+          "TJL<T>::operator/( JLPtr<T> const& wArg, JLPtr<T> const& uArg )",
           "Attempt to divide by nilpotent element." ) );
    }
  if(  (u0 = qu->_value ) == 0.0 ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJL<T>::operator/( typename JLPtr<T>::Type const& wArg, typename JLPtr<T>::Type const& uArg )",
+          "TJL<T>::operator/( JLPtr<T> const& wArg, JLPtr<T> const& uArg )",
           "Attempt to divide by zero." ) );
    }
 
 
- u = uArg* ((T) 1.0)/ u0 ; 
+ u = uArg * ( (T) 1.0 )/ u0 ; 
 
  //  -------------------
  //  Recursive algorithm
@@ -3586,9 +3541,9 @@ boost::intrusive_ptr<TJL<T> >   operator/(boost::intrusive_ptr<TJL<T> > const & 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-boost::intrusive_ptr<TJL<T> >   operator/(boost::intrusive_ptr<TJL<T> > const & x,  T const& y  ){  
+JLPtr<T>   operator/( JLPtr<T> const & x,  T const& y  ){  
 
-  typename JLPtr<T>::Type z (x->clone() );
+  JLPtr<T> z (x->clone() );
   z->scaleBy( ((T) 1.0) / y );  
   return z;
 

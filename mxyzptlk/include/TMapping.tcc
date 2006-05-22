@@ -44,11 +44,11 @@
 ******                                                            
 ******  Sep-Dec 2005  ostiguy@fnal.gov
 ******  
-****** - refactored code to usea single class template parameter
-******   instead of two. Mixed mode operations now handled using 
-******   implicit conversion operators.
+****** - refactored code to use a single class template parameter
+******   rather than two. Mixed mode operations now handled using 
+******   implicit conversion.
 ****** - reference counting now based on using boost::intrusive pointer
-****** - reference counted TJetEnvironment
+****** - reference counted TJetEnvironment class
 ****** - implementation details completely moved to TJL   
 ****** - redesigned coordinate class Tcoord. New class Tparams for parameters
 ****** - header files support for both explicit and implicit template instantiations
@@ -68,7 +68,6 @@
 #include <GenericException.h>
 #include <iosetup.h>
 #include <TMapping.h>
-#include <TJL.h>
 
 using namespace std;
 using FNAL::pcout;
@@ -89,35 +88,36 @@ using namespace std;
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping( int n,
-                                  const TJet<T>* pj,
-                                  typename EnvPtr<T>::Type pje )
+TMapping<T>::TMapping<T>( int n,  const TJet<T>* pj, EnvPtr<T> const& pje )
 : TJetVector<T>( n, pj, pje )
-{
-
-}
+{ }
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping( const TMapping<T>& x ) 
-: TJetVector<T>( (const TJetVector<T>&) x ) 
-{
+TMapping<T>::TMapping<T>( TMapping<T> const& x ) 
+: TJetVector<T>( x ) {}
 
-}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<>
+TMapping<std::complex<double> >::TMapping( TMapping<double> const& x)
+: TJetVector<std::complex<double> >( x ) {}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TMapping<T>::TMapping<T>( TJetVector<T> const& x ) 
+: TJetVector<T>( x ) {}
+
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping( const TJetVector<T>& x ) 
-: TJetVector<T>( x ) 
-{
-}
-
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TMapping<T>::TMapping( const char*, typename EnvPtr<T>::Type pje  ) 
+TMapping<T>::TMapping<T>( const char*, EnvPtr<T> const& pje  ) 
 : TJetVector<T>( pje->spaceDim(), 0, pje )
 {
  
@@ -127,23 +127,47 @@ TMapping<T>::TMapping( const char*, typename EnvPtr<T>::Type pje  )
           "Phase space has dimension 0." ) );
  }
  
- int s = pje->spaceDim();
-(this->_myEnv) = pje;
 
- for( int i = 0; i < s; i++ ) (this->_comp)[i].setVariable( i, pje );
+ int s  = pje->spaceDim();
+
+ for( int i=0; i<s; ++i) (this->_comp)[i].setVariable( i, pje );
+
 }
+
+
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>
-TMapping<T>::~TMapping() 
+template<>
+Vector TMapping<double>::operator()( const Vector& x ) const
 {
+ int i = x.Dim();
+ if( ( i != _myEnv->numVar() ) || ( i != _dim ) ) {
+   throw( GenericException(__FILE__, __LINE__, 
+          "Vector TMapping<double>::operator()( const Vector& ) const",
+          "Incompatible dimensions." ) );
+ }
+
+ Vector z( _dim );
+
+ for( i=0;  i <_myEnv->spaceDim(); ++i) {
+  z(i) = _comp[i]( x );
+ }
+
+ return z;
 }
+
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T> TMapping<T>::operator()( const TMapping<T>& x ) const
+TMapping<T>::~TMapping<T>() {}
+
+
+//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TMapping<T> TMapping<T>::operator()(  TMapping<T> const& x ) const
 {
 
  if( x._dim != (this->_myEnv)->numVar() ) {
@@ -154,7 +178,7 @@ TMapping<T> TMapping<T>::operator()( const TMapping<T>& x ) const
 
  TMapping<T> z( (this->_dim), 0, x._myEnv );
 
- for( int i = 0; i < (this->_myEnv)->spaceDim(); i++) {
+ for( int i=0; i< (this->_myEnv)->spaceDim(); ++i) {
   z._comp[i] = (this->_comp)[i]( x );
  }
 
@@ -164,7 +188,7 @@ TMapping<T> TMapping<T>::operator()( const TMapping<T>& x ) const
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T> TMapping<T>::operator*( const TMapping<T>& x ) const
+TMapping<T> TMapping<T>::operator*( TMapping<T> const& x ) const
 {
   return operator()( x );
 }
@@ -173,26 +197,30 @@ TMapping<T> TMapping<T>::operator*( const TMapping<T>& x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void operator*=( TMapping<T>& x, const TMapping<T>& y ) {
+void operator*=( TMapping<T>& x, TMapping<T> const& y ) {
  x = x*y;
 }
+
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMatrix<T> TMapping<T>::jacobian() const 
 {
  int            nv = (this->_myEnv)->numVar();   // ??? Is this right?
- int*           d = new int[ nv ];
+ //int*           d = new int[ nv ];
+ int           d[ nv ];
  TMatrix<T>    M( (this->_dim), nv,  T() );
 
- for( int i = 0; i < nv; i++  ) d[i] = 0;
- for( int j = 0; j < nv; j++ ) {
+ for( int i=0; i<nv; ++i) d[i] = 0;
+ for( int j=0; j<nv; ++j) {
   d[j] = 1;
-  for( int i = 0; i < (this->_dim); i++ ) M( i, j ) = (this->_comp)[i].derivative( d );
+  for( int i=0; i< (this->_dim); ++i)  {
+      M( i, j ) = (this->_comp)[i].derivative( d );
+  }
   d[j] = 0;
  }
 
- delete [] d;
+ // delete [] d;
  return M;
 }
 
@@ -253,14 +281,14 @@ TMapping<T> TMapping<T>::inverse() const
  // set the constant terms 
  // --------------------------------------
 
- //typename EnvPtr<T>::Type pje_inv( TJetEnvironment<T>:: makeInverseJetEnvironment( this->_myEnv, *this) );
- typename EnvPtr<T>::Type pje_inv( TJetEnvironment<T>:: makeInverseJetEnvironment(*this) );
+
+ EnvPtr<T> pje_inv( TJetEnvironment<T>:: makeInverseJetEnvironment(*this) );
 
  TMapping<T> z( *this );  // copies the current mapping instance ...
   
  // ... Temporarily zero out the reference point 
 
- typename EnvPtr<T>::Type tmp_pje_inv_zeroed( 
+ EnvPtr<T> tmp_pje_inv_zeroed( 
                          TJetEnvironment<T>::makeJetEnvironment(pje_inv->maxWeight(), pje_inv->numVar(), pje_inv->spaceDim(), 0, 0  )); 
 
  z._myEnv = tmp_pje_inv_zeroed;
@@ -322,7 +350,7 @@ TMapping<T> TMapping<T>::inverse() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T> TMapping<T>::_epsInverse(  typename EnvPtr<T>::Type pje) const 
+TMapping<T> TMapping<T>::_epsInverse( EnvPtr<T> const& pje) const 
 {
 
  TMapping<T>  z( (this->_dim), 0, pje ); // the second argument creates an "empty mapping"
