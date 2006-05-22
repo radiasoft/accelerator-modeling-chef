@@ -25,8 +25,8 @@ if test "x${withval}" != "xno"; then
 CC=${withval}
 fi)
 
-AC_ARG_ENABLE(first-order-jets, AC_HELP_STRING([--enable-first-order-jets],[ Compile with specialized 1st order Jet implementation]), 
-              CXXFLAGS="-DFIRST_ORDER_JETS" ${CXXFLAGS} )
+AC_ARG_ENABLE(first-order-jets, AC_HELP_STRING([--enable-first-order-jets],[ Enable specialized 1st order Jet implementation]), 
+              CXXFLAGS="-DFIRST_ORDER_JETS ${CXXFLAGS}" )
 
 ### this test is not really needed, except as a way to detect if CXXFLAGS/CFLAGS has been set 
 
@@ -63,7 +63,7 @@ elif test "x${CXX}" = "xpgCC"; then
 fi,
 if test "x${GXX}" = "xyes" || test "x${GCC}" = "xyes"; then
      CFLAGS="${CFLAGS}"
-     CXXFLAGS="${CXXFLAGS} -pipe -fpermissive -Wno-deprecated -fno-implicit-templates"
+     CXXFLAGS="${CXXFLAGS} -O3 -pipe -fpermissive -Wno-deprecated -fno-implicit-templates"
      AC_SUBST(CFLAGS)
      AC_SUBST(CXXFLAGS)
 elif test "x${CXX}" = "xCC"; then
