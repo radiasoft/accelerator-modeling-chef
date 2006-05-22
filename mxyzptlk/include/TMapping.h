@@ -55,45 +55,50 @@
 #ifndef TMAPPING_H
 #define TMAPPING_H
 
-#include <TJetVector.h>
+#include <JetVector.h>
 
 template<typename T>
 class TMapping : public TJetVector<T>
 {
 
-  friend class TMapping<double>;
-  friend class TMapping<std::complex<double> >;
+ template <typename U>
+ friend class TMapping;
 
  private:
 
-  TMapping<T> _epsInverse(  typename EnvPtr<T>::Type) const;
+  TMapping<T> _epsInverse(  EnvPtr<T> const&) const;
 
  public: 
 
-  TMapping( int /* dimension  */ = (TJet<T>::_lastEnv)->spaceDim(),
-            const TJet<T>* /* components */ = 0, 
-            typename EnvPtr<T>::Type  = (TJet<T>::_lastEnv) );
+  TMapping( int               dim        = TJet<T>::_lastEnv->spaceDim(),
+            const TJet<T>*    components = 0, 
+            EnvPtr<T> const&  env        = TJet<T>::_lastEnv );
 
-  TMapping( const TMapping& );
+  template<typename U>
+  TMapping( TMapping<U> const& );
+
+  TMapping( TMapping const& );
+
+  TMapping( const char* id, EnvPtr<T> const& env = TJet<T>::_lastEnv ); // Produces the identity.
 
   TMapping( const TJetVector<T>& );
 
-  TMapping( const char*, typename EnvPtr<T>::Type = (TJet<T>::_lastEnv) ); // Produces the identity.
+
   ~TMapping();
 
   TMapping& operator= ( const TMapping& );
 
-  operator TMapping<std::complex<double> > () const;
 
-  Vector    operator()( const Vector& ) const;
-  TMapping  operator()( const TMapping& ) const;  // TMapping composition.
+  Vector     operator()( const Vector& ) const;
+  TMapping   operator()( const TMapping& ) const;  // TMapping composition.
+  TJet<T>    operator()( int ) const; 
+  TJet<T>&   operator()( int ); 
+
   TMapping  operator* ( const TMapping& ) const;  // TMapping composition also; an alias.
   TMapping* operator*=( const TMapping<T>& );
 
   TMatrix<T> Jacobian() const; // Retained for backwards compatability
   TMatrix<T> jacobian() const;
-  TJet<T>    operator()( int ) const; 
-  TJet<T>&   operator()( int ); 
 
   TMapping Inverse() const;  // retained for backwards compatability
   TMapping inverse() const;
@@ -102,25 +107,30 @@ class TMapping : public TJetVector<T>
 
 // specializations
 
-template<>
-TMapping<double>::operator TMapping<std::complex<double> > () const;
+ template<>
+ Vector  TMapping<double>::operator()( const Vector& ) const;
+
+ template<>
+ TMapping<std::complex<double> >::TMapping( TMapping<double> const& );
 
 // Inline methods
 
 template<typename T>
 inline TJet<T> TMapping<T>::operator()( int i ) const
-{ return TJetVector<T>::operator()( i ); }
+{ return this->TJetVector<T>::operator()( i ); }
 
 template<typename T>
 inline TJet<T>& TMapping<T>::operator()( int i )
-{ return TJetVector<T>::operator()( i ); }
+{ return this->TJetVector<T>::operator()( i ); }
 
 template<typename T>
 inline TMapping<T>& TMapping<T>::operator=( const TMapping<T>& x )
-{ TJetVector<T>::operator=( (TJetVector<T>&) x ); return *this; }
+{ static_cast< TJetVector<T>& >(*this) =  static_cast<TJetVector<T> const&>(x); 
+  return *this;
+}
 
 #ifdef MXYZPTLK_IMPLICIT_TEMPLATES
 #include <TMapping.tcc>
 #endif
 
-#endif // TMAP_H
+#endif // TMAPPING_H

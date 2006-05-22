@@ -40,8 +40,8 @@
 ******  Sep-Dec 2005  ostiguy@fnal.gov
 ******  
 ****** - refactored code to usea single class template parameter
-******   instead of two. Mixed mode operations now handled using 
-******   implicit conversion operators.
+******   rather than two. Mixed mode operations now handled using 
+******   implicit conversion.
 ****** - reference counting now based on using boost::intrusive pointer
 ****** - reference counted TJetEnvironment
 ****** - implementation details completely moved to TJL   
@@ -49,7 +49,8 @@
 ****** - header files support for both explicit and implicit template instantiations
 ******   (default for mxyzptlk = explicit)
 ******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES
-******
+****** 
+******  
 **************************************************************************
 *************************************************************************/
 #ifndef TJETVECTOR_H
@@ -76,11 +77,11 @@ TJetVector<T> operator-( const TJetVector<T>& );
 template<typename T> 
 TJetVector<T> operator*( const TJet<T>&,       const TJetVector<T>& );
 
-template<typename T> 
-TJetVector<T> operator*( const T&,             const TJetVector<T>& );
+template<typename T, typename U>
+TJetVector<T> operator*( const U&,             const TJetVector<T>& );
 
-template<typename T> 
-TJetVector<T> operator*( const TJetVector<T>&, T const& );
+template<typename T, typename U>
+TJetVector<T> operator*( const TJetVector<T>&, U const& );
 
 template<typename T> 
 TJetVector<T> operator*( const TMatrix<T>&,     const TJetVector<T>& );
@@ -103,13 +104,13 @@ template<typename T>
 class TJetVector 
 {
 
-  friend class TJetVector<double>;
-  friend class TJetVector<std::complex<double> >;
+template<typename U>
+friend class TJetVector;
  
 protected:
   int                             _dim;
   TJet<T>*                        _comp;
-  typename EnvPtr<T>::Type        _myEnv;
+  EnvPtr<T>                       _myEnv;
 
 public:
 
@@ -118,22 +119,20 @@ public:
  
   TJetVector( int   dim = -1,
               const TJet<T>* components = 0, 
-              const typename EnvPtr<T>::Type = (TJet<T>::lastEnvironment()) );
+              EnvPtr<T> const& env = (TJet<T>::lastEnvironment()) );
   TJetVector( const TJetVector& );
+
+  template<typename U>
+  TJetVector(TJetVector<U> const&);
+
 
   ~TJetVector();
 
-  // operator TJetVector<std::complex<double> > ();
-  
-  void             Reconstruct();
-  void             Reconstruct( int, typename EnvPtr<T>::Type );
-  void             CopyFrom( const TJetVector& );
-
   // Assignment ...
-  void             Set             ( const TJet<T>* );
-  void             SetComponent    ( int, const TJet<T>& );
-  TJet<T>      operator()      ( int ) const; 
-  TJet<T>&     operator()      ( int ); 
+  void             Set             ( int dim, const TJet<T>* );
+  void             SetComponent    ( int idx, const TJet<T>& );
+  TJet<T>          operator()      ( int ) const; 
+  TJet<T>&         operator()      ( int ); 
                    // WARNING: There is no way to use this and be
                    //          assured that environments are consistent.
 
@@ -197,12 +196,12 @@ public:
   
 
   // Queries ...
-  int  Dim() const;
-  const typename EnvPtr<T>::Type Env() const;
-  int AccuWgt() const;
-  int Weight()  const;
-  void standardPart( T* ) const;
-  void getReference( T* ) const;
+  int       Dim() const;
+  EnvPtr<T> Env() const;
+  int       AccuWgt() const;
+  int       Weight()  const;
+  void      standardPart( T* ) const;
+  void      getReference( T* ) const;
 
   // Utilities ..
   void        peekAt           () const;
@@ -222,7 +221,9 @@ public:
   TJetVector filter( bool (*[]) ( const IntArray&, const T& ) ) const;
 } ;
 
+//--------------------------------------
 // Inline functions ...
+//--------------------------------------
 
 // .. Functions included for symmetry
 template<typename T>
@@ -235,12 +236,13 @@ inline bool operator!=( const T& x, const TJetVector<T>& y )
 
 
 // ... Member functions (aka methods)
+
 template<typename T>
 inline int TJetVector<T>::Dim() const 
 { return _dim; }
 
 template<typename T>
-inline const typename EnvPtr<T>::Type TJetVector<T>::Env() const 
+inline EnvPtr<T> TJetVector<T>::Env() const 
 { return _myEnv; }
 
 template<typename T>
@@ -264,11 +266,36 @@ TJetVector<T> operator*( const Vector& x, const TJet<T>& y )
 
 // the complex form of the dot product requires x*conj(y) 
 
+ template<>
+ TJetVector<std::complex<double> >::TJetVector(TJetVector<double> const&);
+
  template<>  TJet<double>  TJetVector<double>::operator*      ( const TJetVector<double>& ) const; 
+
  template<>  TJet<std::complex<double> >  
              TJetVector<std::complex<double> >::operator*      ( const TJetVector<std::complex<double> >& ) const;
 
-// these specializations are not implemented ... (they do not really make much sense unless the norms are compared)  
+ template<>
+ void         TJetVector<double>::Rotate( TJetVector<double>& v, double theta ) const;
+
+ template<>
+ void         TJetVector<double>::Rotate( TJetVector<double>& v, const TJet<double>& theta ) const;
+
+ template<>
+ void         TJetVector<std::complex<double> >::Rotate( TJetVector<std::complex<double> >& v, double theta ) const;
+
+ template<>
+ void         TJetVector<std::complex<double> >::Rotate( TJetVector<std::complex<double> >& v, const TJet<std::complex<double> >& theta ) const;
+
+
+ template<> 
+ TJetVector<std::complex<double> > operator*( const TJetVector<std::complex<double> >&, double const& );
+
+ template<> 
+ TJetVector<std::complex<double> > operator*( double const&, const TJetVector<std::complex<double> >& );
+
+
+
+// these specializations are not implemented ... (they do not really make much sense unless norms are compared)  
 
  template<> bool TJetVector<std::complex<double> >::operator< ( const TJetVector<std::complex<double> >& ) const;
  template<> bool TJetVector<std::complex<double> >::operator<= ( const TJetVector<std::complex<double> >& ) const;
