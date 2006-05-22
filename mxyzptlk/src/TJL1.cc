@@ -35,31 +35,67 @@
 ******
 **************************************************************************
 *************************************************************************/
-#ifdef  FIRST_ORDER_JETS 
 
 #include <TJL1.h>
 #include <EnvPtr.h>
 #include <GenericException.h>
 
 
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<>
+JL1Ptr<std::complex<double> > TJL1<std::complex<double> >::makeTJL( const TJL1<double>& x )
+{
+ 
+  if (_thePool.empty() ) 
+     return new TJL1<std::complex<double> >(x);
+ 
+  TJL1<std::complex<double> >* p = _thePool.back(); _thePool.pop_back(); 
+  
+  if ( p->_count  != x._myEnv->numVar()+1) {
+      delete [] p->_jcb; 
+      p->_jcb   = new term[ x._myEnv->numVar() ];
+      p->_count =  x._myEnv->numVar()+1;
+  }
+ 
+  p->_weight   = x._weight;  
+  p->_accuWgt  = x._accuWgt;
+  p->_myEnv    = x._myEnv;
+ 
+  p->_std.value      = std::complex<double>(x._std.value, 0.0);
+
+  for (int i=0; i < (p->_count-1); ++i) 
+       p->_jcb[i].value = std::complex<double>( x._jcb[i].value, 0.0);
+
+
+ if ( !p->_myEnv ) {
+ throw( GenericException( __FILE__, __LINE__, 
+          "TJL1<std::complex<double> >::makeTJL( const TJL1<double>& x )",
+          "Null Environment." ) );
+ };
+
+
+ return JL1Ptr<std::complex<double> >(p);
+
+}
+
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JLPtr<double>::Type TJL1<double>::sqrt() const 
+JL1Ptr<double> TJL1<double>::sqrt() const 
 {
 
   if( _std.value <= 0.0 ) {
-
-    std::cout << " _std.value = " << _std.value << std::endl;
 
     throw( GenericException( __FILE__, __LINE__, 
            "Jet sqrt( const Jet& )",
            "Non-positive standard part.") );
   }
 
-  JLPtr<double>::Type z( makeTJL(_myEnv) ); 
+  JL1Ptr<double> z( makeTJL(_myEnv) ); 
 
   z->_std.value = std::sqrt(_std.value );
 
@@ -74,10 +110,10 @@ JLPtr<double>::Type TJL1<double>::sqrt() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JLPtr<std::complex<double> >::Type TJL1<std::complex<double> >::sqrt() const 
+JL1Ptr<std::complex<double> > TJL1<std::complex<double> >::sqrt() const 
 {
 
-  JLPtr<std::complex<double> >::Type z( makeTJL(_myEnv) ); 
+  JL1Ptr<std::complex<double> > z( makeTJL(_myEnv) ); 
 
   z->_std.value = std::sqrt(_std.value );
 
@@ -91,77 +127,31 @@ JLPtr<std::complex<double> >::Type TJL1<std::complex<double> >::sqrt() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJL1<double>::operator JLPtr<std::complex<double> >::Type () const {
+JL1Ptr<double>  real(JL1Ptr<std::complex<double> > const& z) {
 
- EnvPtr<std::complex<double> >::Type env(*this->_myEnv );                 // implicit conversion
- JLPtr<std::complex<double> >::Type z( TJL1<std::complex<double> >::makeTJL( env ) ); 
+  // ---------------------------------------------------------------------------------------------
+  // *********************************** NOTE ***************************************************: 
+  // Taking the real part of a Jet is only possible if the environment's reference point
+  // DOES NOT HAVE imaginary components 
+  // ---------------------------------------------------------------------------------------------- 
 
- z->_std.value = std::complex<double>( _std.value, 0.0);
- 
- for( int i=0; i < _myEnv->numVar(); ++i ) { 
-   z->_jcb[i].value = std::complex<double>(_jcb[i].value, 0.0 );
- } 
-
- return z;
-
-}
+  EnvPtr<double> env = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(z->_myEnv);            
 
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+  JL1Ptr<double> x( TJL1<double>::makeTJL(env));
 
-TJL1<std::complex<double> >::operator JLPtr<double>::Type () const {
-
- EnvPtr<double>::Type env( *(this->_myEnv));           // implicit conversion
- JLPtr<double>::Type x( TJL1<double>::makeTJL( env ) ); 
-
- x->_std.value = std::real( _std.value);
- 
- for( int i=0; i < _myEnv->numVar(); ++i ) { 
-   x->_jcb[i].value = std::real(_jcb[i].value);
- } 
-
- return x;
-
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-TJL1<std::complex<double> >::operator JLPtr<std::complex<double> >::Type () const {
-
- // *** this operator should never get called
- 
- JLPtr<std::complex<double> >::Type z; // Null ptr 
- return z;
-
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-TJL1<double>::operator JLPtr<double>::Type () const {
-
- // *** this operator should never get called
-
- JLPtr<double>::Type x; // Null ptr 
- return x;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-JLPtr<double>::Type  real(JLPtr<std::complex<double> >::Type const& z) {
-
- EnvPtr<double>::Type env( *(z->_myEnv));           // implicit conversion
-  JLPtr<double>::Type x( TJL1<double>::makeTJL(env));
   x->_std.value = std::real(z->_std.value);
   for (int i=0; i< x->_count-1; ++i) {
      x->_jcb[i].value = std::real(z->_jcb[i].value);
   }
+
+ if ( !x->_myEnv ) {
+ throw( GenericException( __FILE__, __LINE__, 
+          "JL1Ptr<double>  real(JL1Ptr<std::complex<double> > const& z)",
+          "Null Environment." ) );
+ };
+
+
   return x;
 }
 
@@ -169,24 +159,39 @@ JLPtr<double>::Type  real(JLPtr<std::complex<double> >::Type const& z) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-JLPtr<double>::Type    imag(JLPtr<std::complex<double> >::Type const& z){
+JL1Ptr<double>    imag(JL1Ptr<std::complex<double> > const& z){
 
 
- EnvPtr<double>::Type env( *(z->_myEnv));           // implicit conversion
-  JLPtr<double>::Type x( TJL1<double>::makeTJL(env));
+ // ---------------------------------------------------------------------------------------------
+ // *********************************** NOTE ***************************************************: 
+ // Taking the imaginary part of a Jet is only possible if the environment's reference point
+ // DOES NOT HAVE imaginary components 
+ // ---------------------------------------------------------------------------------------------- 
+
+  EnvPtr<double> env = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(z->_myEnv);            
+
+  JL1Ptr<double> x( TJL1<double>::makeTJL(env));
+
   x->_std.value = std::imag(z->_std.value);
   for (int i=0; i<x->_count-1 ; ++i) {
      x->_jcb[i].value = std::imag(z->_jcb[i].value);
   }
+
+  if ( !x->_myEnv ) {
+  throw( GenericException( __FILE__, __LINE__, 
+          "JL1Ptr<double>  image(JL1Ptr<std::complex<double> > const& z)",
+          "Null Environment." ) );
+  };
+
   return x;
+
+
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-#endif //FIRST_ORDER_JETS 
 
 
 
@@ -194,7 +199,7 @@ JLPtr<double>::Type    imag(JLPtr<std::complex<double> >::Type const& z){
 
 #if 0
 template<typename T>
-typename JLPtr<T>::Type TJL1<T>::fabs( ) const 
+typename JL1Ptr<T> TJL1<T>::fabs( ) const 
 {
  
  T u = _jltermStore[0]._value;
@@ -203,7 +208,7 @@ typename JLPtr<T>::Type TJL1<T>::fabs( ) const
 	 "Jet::fabs( const Jet& x )", 
 	 "Attempt to use infinitesimal argument."));
 
- typename JLPtr<T>::Type z(*this); 
+ typename JL1Ptr<T> z(*this); 
 
  if( u > 0.0 )  
      return z;

@@ -88,29 +88,6 @@ using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
 
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-TJet<double>::operator TJet<std::complex<double> >() const { 
-
-  return TJet<std::complex<double> >( *_jl ); // implicit conversion
- 
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<>
-TJet<std::complex<double> >::operator TJet<double> () const {
-
-  return TJet<double>( *_jl ); // implicit conversion
-
-}
-
-
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -134,7 +111,152 @@ TJet<double> imag( const TJet<complex<double> >& z )
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// ||| Mixed arithmetic
+
+TJet<double> fabs( const TJet<double>& x )
+{
+ double u;
+
+ if( (x._jl)->getCount() == 0 ) {
+   throw( GenericException( __FILE__, __LINE__, 
+          "Jet fabs( const Jet& ) { ",
+          "Argument is zero." ) );
+ }
+ 
+ if( (u = x.standardPart()) != 0.0 ) 
+ {
+
+   return std::abs(u);
+
+ }
+ else
+ {
+   throw( GenericException( __FILE__, __LINE__, 
+          "Jet fabs( const Jet& ) ",
+          "Argument is nilpotent." ) );
+ }
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+TJet<double> erf( const TJet<double>& z ) 
+{
+  EnvPtr<double> pje = z.Env();
+
+  TJet<double> series    ( pje );
+  TJet<double> oldseries ( pje );
+  TJet<double> arg       ( pje );
+  TJet<double> term      ( pje );
+
+  static double  den;
+  static double  fctr_x;
+  static int     counter;
+
+  series        = 1.0;
+  oldseries     = 0.0;
+  arg           = - z*z;
+  den           = 1.0;
+  term          = 1.0;
+  fctr_x        = 0.0;
+
+  counter = 0;
+  while( ( series != oldseries ) || counter++ < pje->maxWeight() ) {
+    oldseries = series;
+    den      += 2.0;
+    fctr_x   += 1.0;
+    term     *= arg/fctr_x;
+    series   += term/den;
+  }  
+
+  return (2.0/MATH_SQRTPI)*z*series;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+TJet<complex<double> > erf( const TJet<complex<double> >& z ) 
+{
+  EnvPtr<complex<double> > pje = z.Env();
+
+  if( ( fabs(imag(z.standardPart())) > 3.9 ) || 
+      ( fabs(real(z.standardPart())) > 3.0 ) ) {
+    TJet<complex<double> > u( pje );
+    u = complex<double> ( 0., 1. )*z;
+    u = complex<double> ( 1., 0. ) - exp(u*u)*w(u);
+    return u;
+  }
+
+  TJet<complex<double> >    series    ( pje );
+  TJet<complex<double> >    oldseries ( pje );
+  TJet<complex<double> >    arg       ( pje );
+  TJet<complex<double> >    term      ( pje );
+
+  static double  den;
+  static double  fctr_x;
+  static int     counter;
+
+  series        = complex_1;
+  oldseries     = complex_0;  // ??? Why necessary?
+   arg           = - z*z;
+  den           = 1.0;
+  term          = complex_1;
+  fctr_x        = 0.0;
+
+  counter = 0;
+  while( ( series != oldseries ) || counter++ < pje->maxWeight() ) {
+    oldseries = series;
+    den      += 2.0;
+    fctr_x   += 1.0;
+    term     *= arg/fctr_x;
+    series   += term/den;
+  }  
+
+  return complex<double> (2.0/MATH_SQRTPI,0.0)*z*series;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+TJet<complex<double> > w( const TJet<complex<double> >& z ) 
+{
+  const complex<double>  mi( 0., -1. );
+  double x;
+  double y;
+  TJet<complex<double> >  answer( z.Env() );
+  
+  x = real( z.standardPart() );
+  y = imag( z.standardPart() );
+
+  if( ( x < 0.0 ) || ( y < 0.0  ) ) {
+    throw( GenericException( __FILE__, __LINE__, 
+           "TJet<complex<double> > w( const TJet<complex<double> >& ) ",
+           "Argument must have positive standard part." ) );
+  }
+
+  if( ( x > 6.0 ) || ( y > 6.0 ) ) 
+    answer = ( - mi * z * (
+                          ( 0.5124242  /( z*z - 0.2752551 )) + 
+                          ( 0.05176536 /( z*z - 2.724745  ))
+                          ) 
+             );
+
+  else if( ( x > 3.9 ) || ( y > 3.0 ) ) 
+    answer = ( - mi * z * (
+                          ( 0.4613135   /( z*z - 0.1901635 )) + 
+                          ( 0.09999216  /( z*z - 1.7844927 )) + 
+                          ( 0.002883894 /( z*z - 5.5253437 ))
+                          ) 
+             );
+
+  else answer = exp( -z*z )*(  1.0 -erf( mi*z ) );
+
+  return answer;
+}
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// ||| Mixed Mode arithmetic
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -341,147 +463,5 @@ TJet<complex<double> > operator/(const double& x, const TJet<complex<double> >& 
   return complex<double> (x)/y;
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<double> fabs( const TJet<double>& x )
-{
- double u;
-
- if( x._jl->getCount() == 0 ) {
-   throw( GenericException( __FILE__, __LINE__, 
-          "Jet fabs( const Jet& ) { ",
-          "Argument is zero." ) );
- }
- 
- if( (u = x.standardPart()) != 0.0 ) 
- {
-
-   return std::abs(u);
-
- }
- else
- {
-   throw( GenericException( __FILE__, __LINE__, 
-          "Jet fabs( const Jet& ) ",
-          "Argument is nilpotent." ) );
- }
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-TJet<double> erf( const TJet<double>& z ) 
-{
-  EnvPtr<double>::Type pje = z.Env();
-
-  TJet<double> series    ( pje );
-  TJet<double> oldseries ( pje );
-  TJet<double> arg       ( pje );
-  TJet<double> term      ( pje );
-
-  static double  den;
-  static double  fctr_x;
-  static int     counter;
-
-  series        = 1.0;
-  oldseries     = 0.0;
-  arg           = - z*z;
-  den           = 1.0;
-  term          = 1.0;
-  fctr_x        = 0.0;
-
-  counter = 0;
-  while( ( series != oldseries ) || counter++ < pje->maxWeight() ) {
-    oldseries = series;
-    den      += 2.0;
-    fctr_x   += 1.0;
-    term     *= arg/fctr_x;
-    series   += term/den;
-  }  
-
-  return (2.0/MATH_SQRTPI)*z*series;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-TJet<complex<double> > erf( const TJet<complex<double> >& z ) 
-{
-  EnvPtr<complex<double> >::Type pje = z.Env();
-
-  if( ( fabs(imag(z.standardPart())) > 3.9 ) || 
-      ( fabs(real(z.standardPart())) > 3.0 ) ) {
-    TJet<complex<double> > u( pje );
-    u = complex<double> ( 0., 1. )*z;
-    u = complex<double> ( 1., 0. ) - exp(u*u)*w(u);
-    return u;
-  }
-
-  TJet<complex<double> >    series    ( pje );
-  TJet<complex<double> >    oldseries ( pje );
-  TJet<complex<double> >    arg       ( pje );
-  TJet<complex<double> >    term      ( pje );
-
-  static double  den;
-  static double  fctr_x;
-  static int     counter;
-
-  series        = complex_1;
-  oldseries     = complex_0;  // ??? Why necessary?
-   arg           = - z*z;
-  den           = 1.0;
-  term          = complex_1;
-  fctr_x        = 0.0;
-
-  counter = 0;
-  while( ( series != oldseries ) || counter++ < pje->maxWeight() ) {
-    oldseries = series;
-    den      += 2.0;
-    fctr_x   += 1.0;
-    term     *= arg/fctr_x;
-    series   += term/den;
-  }  
-
-  return complex<double> (2.0/MATH_SQRTPI,0.0)*z*series;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-TJet<complex<double> > w( const TJet<complex<double> >& z ) 
-{
-  const complex<double>  mi( 0., -1. );
-  double x;
-  double y;
-  TJet<complex<double> >  answer( z.Env() );
-  
-  x = real( z.standardPart() );
-  y = imag( z.standardPart() );
-
-  if( ( x < 0.0 ) || ( y < 0.0  ) ) {
-    throw( GenericException( __FILE__, __LINE__, 
-           "TJet<complex<double> > w( const TJet<complex<double> >& ) ",
-           "Argument must have positive standard part." ) );
-  }
-
-  if( ( x > 6.0 ) || ( y > 6.0 ) ) 
-    answer = ( - mi * z * (
-                          ( 0.5124242  /( z*z - 0.2752551 )) + 
-                          ( 0.05176536 /( z*z - 2.724745  ))
-                          ) 
-             );
-
-  else if( ( x > 3.9 ) || ( y > 3.0 ) ) 
-    answer = ( - mi * z * (
-                          ( 0.4613135   /( z*z - 0.1901635 )) + 
-                          ( 0.09999216  /( z*z - 1.7844927 )) + 
-                          ( 0.002883894 /( z*z - 5.5253437 ))
-                          ) 
-             );
-
-  else answer = exp( -z*z )*(  1.0 -erf( mi*z ) );
-
-  return answer;
-}
 

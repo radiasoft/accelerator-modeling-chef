@@ -63,37 +63,12 @@ using FNAL::pcerr;
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<>
-TJLterm<std::complex<double> >::operator TJLterm<double> () const {
- 
-  TJLterm<double> x;
-
-  x._index   =  _index;
-  x._weight  =  _weight; 
-  x._value   =  real( _value );  // this should probably throw if imag != 0
-  x._deleted =  _deleted; 
-
-
-  return x; 
-}
-
+TJLterm<std::complex<double> >::TJLterm( const TJLterm<double>& x):
+  _index(x._index),_value(x._value,0.0),_weight(x._weight), 
+  _deleted(x._deleted) 
+{}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-template<>
-TJLterm<double>::operator TJLterm<std::complex<double> > () const {
- 
-
-  TJLterm<std::complex<double> > z;
-
-  z._index   =  _index;
-  z._weight  =  _weight; 
-  z._value   =  std::complex<double>( _value, 0.0 );  
-  z._deleted =  _deleted; 
-
-
-  return z; 
-}

@@ -29,7 +29,6 @@
 // If explicit template instantiations are not desired, *do not* compile this file !
 // =================================================================================
 
-#ifndef FIRST_ORDER_JETS
 #ifndef MXYZPTLK_IMPLICIT_TEMPLATES 
 
 #include <complex>
@@ -55,67 +54,71 @@
 //=============================================================================================
 
 template class TJL<double>;
+template JLPtr<double> TJL<double>::makeTJL(TJL<double> const&);
+
 template class TJL<std::complex<double> >;
+template TJL<std::complex<double> >::TJL(TJL<double> const&);
+template JLPtr<std::complex<double> > TJL<std::complex<double> >::makeTJL(TJL<std::complex<double> > const&);
 
 // ============================================================================================
 // Friend function operators
 //=============================================================================================
 
 template
-JLPtr<double>::Type   operator+(JLPtr<double>::Type const & x, JLPtr<double>::Type const& y  );  
+JLPtr<double>   operator+(JLPtr<double> const & x, JLPtr<double> const& y  );  
 template
-JLPtr<std::complex<double> >::Type   operator+(JLPtr<std::complex<double> >::Type const & x, JLPtr<std::complex<double> >::Type const& y  );  
+JLPtr<std::complex<double> >   operator+(JLPtr<std::complex<double> > const & x, JLPtr<std::complex<double> > const& y  );  
 
 template
-JLPtr<double>::Type&  operator+=(JLPtr<double>::Type& x,      JLPtr<double>::Type const& y  );  
+JLPtr<double>&  operator+=(JLPtr<double>& x,      JLPtr<double> const& y  );  
 template
-JLPtr<std::complex<double> >::Type&  operator+=(JLPtr<std::complex<double> >::Type& x,      JLPtr<std::complex<double> >::Type const& y  );  
+JLPtr<std::complex<double> >&  operator+=(JLPtr<std::complex<double> >& x,      JLPtr<std::complex<double> > const& y  );  
 
 template
-JLPtr<double>::Type   operator-(JLPtr<double>::Type const &x);  
+JLPtr<double>   operator-(JLPtr<double> const &x);  
 template
-JLPtr<std::complex<double> >::Type   operator-(JLPtr<std::complex<double> >::Type const &x);  
+JLPtr<std::complex<double> >   operator-(JLPtr<std::complex<double> > const &x);  
 
 template
-JLPtr<double>::Type   operator-(JLPtr<double>::Type const & x,  JLPtr<double>::Type const& y  );  
+JLPtr<double>   operator-(JLPtr<double> const & x,  JLPtr<double> const& y  );  
 template
-JLPtr<std::complex<double> >::Type   operator-(JLPtr<std::complex<double> >::Type const & x,  JLPtr<std::complex<double> >::Type const& y  );  
+JLPtr<std::complex<double> >   operator-(JLPtr<std::complex<double> > const & x,  JLPtr<std::complex<double> > const& y  );  
 
 template
-JLPtr<double>::Type&  operator-=(JLPtr<double>::Type& x,      JLPtr<double>::Type const& y  );  
+JLPtr<double>&  operator-=(JLPtr<double>& x,      JLPtr<double> const& y  );  
 template
-JLPtr<std::complex<double> >::Type&  operator-=(JLPtr<std::complex<double> >::Type& x,      JLPtr<std::complex<double> >::Type const& y  );  
+JLPtr<std::complex<double> >&  operator-=(JLPtr<std::complex<double> >& x,      JLPtr<std::complex<double> > const& y  );  
 
 
 template
-JLPtr<double>::Type   operator*(JLPtr<double>::Type const & x,  JLPtr<double>::Type const& y  );  
+JLPtr<double>   operator*(JLPtr<double> const & x,  JLPtr<double> const& y  );  
 template
-JLPtr<std::complex<double> >::Type   operator*(JLPtr<std::complex<double> >::Type const & x,  JLPtr<std::complex<double> >::Type const& y  );  
+JLPtr<std::complex<double> >   operator*(JLPtr<std::complex<double> > const & x,  JLPtr<std::complex<double> > const& y  );  
 
 template
-JLPtr<double>::Type   operator*(JLPtr<double>::Type const & x,   double const& y  );  
+JLPtr<double>   operator*(JLPtr<double> const & x,   double const& y  );  
 template
-JLPtr<std::complex<double> >::Type   operator*(JLPtr<std::complex<double> >::Type const & x,  std::complex<double> const& y  );  
+JLPtr<std::complex<double> >   operator*(JLPtr<std::complex<double> > const & x,  std::complex<double> const& y  );  
 
 template
-JLPtr<double>::Type   operator*(double const & x,  JLPtr<double>::Type const& y  );  
+JLPtr<double>   operator*(double const & x,  JLPtr<double> const& y  );  
 template
-JLPtr<std::complex<double> >::Type   operator*(std::complex<double> const & x,  JLPtr<std::complex<double> >::Type const& y  );  
+JLPtr<std::complex<double> >   operator*(std::complex<double> const & x,  JLPtr<std::complex<double> > const& y  );  
 
 template
-JLPtr<double>::Type&  operator*=(JLPtr<double>::Type & x,     JLPtr<double>::Type const& y  );  
+JLPtr<double>&  operator*=(JLPtr<double> & x,     JLPtr<double> const& y  );  
 template
-JLPtr<std::complex<double> >::Type&  operator*=(JLPtr<std::complex<double> >::Type & x,     JLPtr<std::complex<double> >::Type const& y  );  
+JLPtr<std::complex<double> >&  operator*=(JLPtr<std::complex<double> > & x,     JLPtr<std::complex<double> > const& y  );  
 
 template
-JLPtr<double>::Type   operator/(JLPtr<double>::Type const & x,  JLPtr<double>::Type const& y  );  
+JLPtr<double>   operator/( JLPtr<double> const& x,  JLPtr<double> const& y  );  
 template
-JLPtr<std::complex<double> >::Type   operator/(JLPtr<std::complex<double> >::Type const & x,  JLPtr<std::complex<double> >::Type const& y  );  
+JLPtr<std::complex<double> >   operator/(  JLPtr<std::complex<double> > const& x,   JLPtr<std::complex<double> > const& y  );  
 
 template
-JLPtr<double>::Type   operator/(JLPtr<double>::Type const & x,  double const& y  );  
+JLPtr<double>   operator/(  JLPtr<double> const & x,  double const& y  );  
 template
-JLPtr<std::complex<double> >::Type   operator/(JLPtr<std::complex<double> >::Type const & x,  std::complex<double> const& y  );  
+JLPtr<std::complex<double> >   operator/( JLPtr<std::complex<double> > const & x,  std::complex<double> const& y  );  
 
 
 template 
@@ -149,6 +152,15 @@ class boost::simple_segregated_storage<unsigned int>;
 // Memory allocation templates
 //=============================
 
+//operator*(TJet<std::complex<double> > const&, TJet<double> const&)'
+//operator+(TJet<double> const&, TJet<std::complex<double> > const&)'
+
+//template 
+//void intrusive_ptr_release<TML<std::complex<double> > >(ReferenceCounter<TML<std::complex<double> > >*);
+
+//template
+//void intrusive_ptr_release<TML<double> >(ReferenceCounter<TML<double> >*);
+
 template 
 class boost::pool<>;
 
@@ -164,9 +176,12 @@ unsigned int boost::details::pool::lcm<unsigned int>(unsigned int const&, unsign
 template
 unsigned boost::details::pool::gcd<unsigned>(unsigned, unsigned);
 
+
 //=======================================================================================================
 // BOOST & STL
 //=======================================================================================================
+
+
 
 template
 class std::vector< TJL<std::complex<double> > * >;
@@ -226,5 +241,5 @@ std::complex<double>  std::sqrt<double>( const std::complex<double>& );
 
 
 #endif // MXYZPTLK_IMPLICIT_TEMPLATES 
-#endif // FIRST_ORDER_JETS
+
 

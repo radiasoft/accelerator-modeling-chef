@@ -51,6 +51,7 @@
 #include <algorithm>
 #include <istream>
 
+
 // ============================================================================================
 // The standard classes
 //=============================================================================================
@@ -60,6 +61,12 @@ template class TJetEnvironment<std::complex<double> >;
 
 template class TJetEnvironment<double>::ScratchArea<double>;
 template class TJetEnvironment<std::complex<double> >::ScratchArea<std::complex<double> >;
+
+template class EnvPtr<double>;
+template class EnvPtr<std::complex<double> >;
+
+template class EnvList<double>;
+template class EnvList<std::complex<double> >;
 
 // ============================================================================================
 // The friend function operators
@@ -72,17 +79,11 @@ std::ostream& operator<<(std::ostream&, TJetEnvironment<double > const&);
 template 
 std::ostream& operator<<(std::ostream&, TJetEnvironment<std::complex<double> > const&);
 
-//template
-//std::istream& streamIn( std::istream&, EnvPtr<double>& pje );
-
-//template
-//std::istream& streamIn( std::istream&, EnvPtr<std::complex<double> >& pje );
+template
+std::istream& streamIn( std::istream&, EnvPtr<double>& pje );
 
 template
-std::istream& streamIn( std::istream&, boost::intrusive_ptr<TJetEnvironment<double> >& pje );
-
-template
-std::istream& streamIn( std::istream&, boost::intrusive_ptr<TJetEnvironment<std::complex<double> > >& pje);
+std::istream& streamIn( std::istream&, EnvPtr<std::complex<double> >& pje);
 
 
 //=======================================================================================================
@@ -113,55 +114,55 @@ std::complex<double> std::pow(std::complex<double> const&, double const&);
 //class boost::detail::sp_counted_impl_p<TJetEnvironment<double> >;
 
 template 
-class std::list<EnvPtr<double>::Type>;
+class std::list<EnvPtr<double> >;
 
 template 
-class std::list<EnvPtr<std::complex<double> >::Type>;
+class std::list<EnvPtr<std::complex<double> > >;
 
 
 template
-void std::_List_base<EnvPtr<double>::Type, std::allocator<EnvPtr<double>::Type> > ::_M_clear();
+void std::_List_base<EnvPtr<double>, std::allocator<EnvPtr<double> > > ::_M_clear();
 
 template
-void std::_List_base<EnvPtr<std::complex<double> >::Type,  std::allocator<EnvPtr<std::complex<double> >::Type> >::_M_clear();
+void std::_List_base<EnvPtr<std::complex<double> >,  std::allocator<EnvPtr<std::complex<double> > > >::_M_clear();
 
 template
 std::complex<double>  std::sqrt<double>( const std::complex<double>& );
 
 
 template
-std::_List_iterator<EnvPtr<double>::Type> 
-std::remove(std::_List_iterator<EnvPtr<double>::Type>, 
-            std::_List_iterator<EnvPtr<double>::Type>, 
-            EnvPtr<double>::Type const&);
+std::_List_iterator<EnvPtr<double> > 
+std::remove(std::_List_iterator<EnvPtr<double> >, 
+            std::_List_iterator<EnvPtr<double> >, 
+            EnvPtr<double> const&);
 
 
 template
-std::_List_iterator<EnvPtr<std::complex<double> >::Type> 
-std::remove(std::_List_iterator<EnvPtr<std::complex<double> >::Type>, 
-            std::_List_iterator<EnvPtr<std::complex<double> >::Type>, 
-            EnvPtr<std::complex<double> >::Type const& );
+std::_List_iterator<EnvPtr<std::complex<double> > > 
+std::remove(std::_List_iterator<EnvPtr<std::complex<double> > >, 
+            std::_List_iterator<EnvPtr<std::complex<double> > >, 
+            EnvPtr<std::complex<double> > const& );
 
 
 template
-std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<double> > > 
-std::remove_copy<std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<double> > >, 
-                 std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<double> > >, 
-                 boost::intrusive_ptr<TJetEnvironment<double> > >
-     (std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<double> > >, 
-      std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<double> > >, 
-      std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<double> > >, 
-      boost::intrusive_ptr<TJetEnvironment<double> > const&);
+std::_List_iterator<EnvPtr<double> > 
+std::remove_copy<std::_List_iterator<EnvPtr<double> >, 
+                 std::_List_iterator<EnvPtr<double> >, 
+                 EnvPtr<double> >
+     (std::_List_iterator<EnvPtr<double> >, 
+      std::_List_iterator<EnvPtr<double> >, 
+      std::_List_iterator<EnvPtr<double> >, 
+      EnvPtr<double> const&);
 
 template
-std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > > 
-std::remove_copy<std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > >, 
-                 std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > >, 
-                 boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > >
-     (std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > >, 
-      std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > >, 
-      std::_List_iterator<boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > >, 
-      boost::intrusive_ptr<TJetEnvironment<std::complex<double> > > const&);
+std::_List_iterator<EnvPtr<std::complex<double> > > 
+std::remove_copy<std::_List_iterator<EnvPtr<std::complex<double> > >, 
+                 std::_List_iterator<EnvPtr<std::complex<double> > >, 
+                 EnvPtr<std::complex<double> > >
+     (std::_List_iterator<EnvPtr<std::complex<double> > >, 
+      std::_List_iterator<EnvPtr<std::complex<double> > >, 
+      std::_List_iterator<EnvPtr<std::complex<double> > >, 
+      EnvPtr<std::complex<double>  > const&);
 
 #endif // MXYZPTLK_IMPLICIT_TEMPLATES 
 

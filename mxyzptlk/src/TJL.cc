@@ -51,7 +51,6 @@
 #include <config.h>
 #endif
 
-#ifndef  FIRST_ORDER_JETS 
 
 #include <iosetup.h>
 #include <MathConstants.h>
@@ -66,132 +65,157 @@ using FNAL::pcout;
 using FNAL::pcerr;
 
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 template<>
-TJL<double>::operator JLPtr<std::complex<double> >::Type () const {
+TJL<std::complex<double> >::TJL( TJL<double> const& x):
+_weight(x._weight),     
+_accuWgt(x._accuWgt),
+_jltermStoreCapacity(0), 
+_jltermStore(0), 
+_jltermStoreCurrentPtr(0), 
+_constIterPtr(0), 
+_iterPtr(0)
+{
 
-  EnvPtr<std::complex<double> >::Type pje (*_myEnv);    // implicit conversion;
-  JLPtr<std::complex<double> >::Type z( TJL<std::complex<double> >::makeTJL(pje) ); // instantiates a complex JLPtr 
- 
-  //---------------------------------------------------------------------------
-  // If necessary, adjust the capacity of the new JLterm<complex> store to match 
-  // that of the current JLterm<double> 
-  // --------------------------------------------------------------------------
+  this->_myEnv = x._myEnv;        
 
+  initStore( x._jltermStoreCapacity );
 
-  if ( z.get()->_jltermStoreCapacity < _jltermStoreCapacity) { 
-   
-      TJLterm<std::complex<double> >::array_deallocate( z->_jltermStore );
-      z->initStore( _jltermStoreCapacity);   
-  
-  };
-  
   //--------------------------------------------------------------------------
-  // copy all the terms of the current TJL<double> to the new TJL<complex> ...
+  // copy all the terms of the TJL<double> to the new TJL<complex> ...
   // --------------------------------------------------------------------------
 
-  dlist_iterator getNext( _theList );
+  dlist_iterator getNext( x._theList );
 
   TJLterm<double>* p                = 0;
   TJLterm<std::complex<double> >* q = 0;
 
   while ( p = (TJLterm<double>*) getNext() ) {
-    q = new( z->storePtr() )  TJLterm<complex<double> > ( *p ); // implicit conversion operator
-    z->append(q);
+    q = new(  storePtr() )  TJLterm<complex<double> > ( *p ); // implicit conversion 
+    append(q);
   }
  
-  z->_accuWgt  = _accuWgt;  // accurate weight depends on previous operations, 
-                            // so it must be preserved. 
+   _accuWgt  = x._accuWgt;  // accurate weight depends on previous operations, 
+                             // so it must be preserved. 
 
-
-  return z;
+   return; 
 
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-TJL<std::complex<double> >::operator JLPtr<double>::Type () const {
-
-  EnvPtr<double>::Type pje(*_myEnv); // implicit conversion;
-  JLPtr<double>::Type  x( TJL<double>::makeTJL(pje) );
- 
-  //---------------------------------------------------------------------------
-  // If necessary, adjust the capacity of the new JLterm<double> store to match 
-  // that of the current JLterm<complex> 
-  // --------------------------------------------------------------------------
-
-  if (x->_jltermStoreCapacity < _jltermStoreCapacity) { 
-   
-      TJLterm<double>::array_deallocate( x->_jltermStore );
-      x->initStore(_jltermStoreCapacity);   
-  
-  };
-
- 
-  //--------------------------------------------------------------------------
-  // copy all the terms of the current TJL<complex> to the new TJL<double> ...
-  // --------------------------------------------------------------------------
-
-  dlist_iterator getNext( _theList );
-
-  TJLterm<std::complex<double> >* p = 0; 
-  TJLterm<double>*                q = 0;
-
-  while ( p =  (TJLterm<std::complex<double> >*) getNext() ) {
-    q    = new ( x->storePtr() )  TJLterm<double> ( *p ); // conversion operator
-    x->append(q);
-  }
- 
-  x->_accuWgt  = _accuWgt; // max accurate weight depends on previous operations, 
-                           // so it must be preserved
-  return x; 
-
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-TJL<double>::operator boost::intrusive_ptr<TJL<double> >() const {
-
-  // this should never be called 
-  throw GenericException( __FILE__, __LINE__, "TJL<double>::operator boost::intrusive_ptr<TJL<double> >()", 
-                         "This conversion operator should never be called." );
-}
-
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-TJL<std::complex<double> >::operator boost::intrusive_ptr<TJL<std::complex<double> > >() const {
-
-  // this should never be called 
-  throw GenericException( __FILE__, __LINE__, "TJL<double>::operator boost::intrusive_ptr<TJL<double> >()", 
-                         "This conversion operator should never be called." );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-JLPtr<double>::Type real( const JLPtr<std::complex<double> >::Type & z ) 
+JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL(  TJL<double> const& x )
 {
 
-  EnvPtr<double>::Type pje( *z->_myEnv );            // implicit conversion 
+  if (_thePool.empty() ) return new TJL<std::complex<double> >(x);
+
+  TJL<std::complex<double> >* p = _thePool.back(); _thePool.pop_back(); 
+  
+  if (p->_jltermStoreCapacity < x._jltermStoreCapacity)  
+  { 
+       TJLterm<std::complex<double> >::array_deallocate( p->_jltermStore );
+       p->initStore(x._jltermStoreCapacity);   
+  
+  }
+
+  p->_count    = 0;          // needed by append function
+  p->_weight   = x._weight;  // needed by append function
+  p->_accuWgt  = x._accuWgt;
+  p->_myEnv    = x._myEnv;  // implicit conversion
+ 
+
+  //--------------------------------------------------------------------------
+  // copy all the terms of the TJL<double> to the new TJL<complex> 
+  // note: no direct memcopy here because of conversion  
+  // --------------------------------------------------------------------------
+
+  dlist_iterator getNext( x._theList );
+
+  TJLterm<double>* r                = 0;
+  TJLterm<std::complex<double> >* q = 0;
+
+  while ( r = (TJLterm<double>*) getNext() ) {
+    q = new(  p->storePtr() )  TJLterm<complex<double> > ( *r ); // implicit conversion operator
+    p->append(q);
+  }
+ 
+  p->_accuWgt  = x._accuWgt;  // accurate weight depends on previous operations, 
+                             // so it must be preserved. 
+
+ //****************************************************************************************
+ // set the JLterm iterators properly in case they are in use. 
+ // 
+ // THIS TERRIBLE KLUDGE MUST GO AWAY ! THE TERM ITERATORS DO NOT BELONG 
+ // IN THE TJL CLASS ! 
+ // FIX ME !!! 
+ // 
+ //****************************************************************************************
+#if 0 
+========================================================================================================
+ // this messy code is necessary because there is no way (nor should there be any !) 
+ // to access the internals of an iterator.    
+
+ getNext.Reset(); 
+ 
+ if ( x._constIterPtr) {
+
+    p->_constIterPtr = new dlist_iterator( p->_theList );
+    q = (TJLterm<double>*) x._constIterPtr->current();
+
+    if( q ) {
+
+       while(  r = (TJLterm<std::complex<double> >*) getNext( ) ) {
+	 //// BROKEN !!!! if ( *r   ==   *q ) break;
+       } 
+     };
+ };  
+
+ getNext.Reset(); 
+ 
+ if (x._iterPtr ) {
+
+   p->_iterPtr  = new dlist_iterator( p->_theList );
+
+   if (q) {
+     q = (TJLterm<double>*) x._iterPtr->current();
+     while(  r = ( TJLterm<std::complex<double> >*) getNext( ) ) {
+       /// BROKEN if ( *r  ==  *q ) break;
+     }   
+   };
+
+   *(p->_iterPtr) = getNext;
+
+ }
+====================================================================================================================
+#endif
+
+ return JLPtr<std::complex<double> >(p);
+
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+JLPtr<double> real( JLPtr<std::complex<double> > const& z ) 
+{
+
+  // ---------------------------------------------------------------------------------------------
+  // *********************************** NOTE ***************************************************: 
+  // Taking the real part of a Jet is only possible if the environment's reference point
+  // DOES NOT HAVE imaginary components 
+  // ---------------------------------------------------------------------------------------------- 
+
+  EnvPtr<double> pje = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(z->_myEnv);            
 
   // If the argument is void, then return a copy ...
   if( z->_count < 1 ) {
-     return JLPtr<double>::Type(  TJL<double>::makeTJL(pje) );
+     return JLPtr<double>(  TJL<double>::makeTJL(pje) );
   }
 
-  JLPtr<double>::Type  x( TJL<double>::makeTJL( pje ) );
+  JLPtr<double>  x( TJL<double>::makeTJL( pje ) );
 
   // Proceed ...
  
@@ -212,17 +236,23 @@ JLPtr<double>::Type real( const JLPtr<std::complex<double> >::Type & z )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JLPtr<double>::Type imag( const JLPtr<std::complex<double> >::Type& z ) 
+JLPtr<double> imag( const JLPtr<std::complex<double> >& z ) 
 {
 
-  EnvPtr<double>::Type pje( *z->_myEnv );        // implicit conversion 
+  // ---------------------------------------------------------------------------------------------
+  // *********************************** NOTE ***************************************************: 
+  // Taking the imaginary part of a Jet is only possible if the environment's reference point
+  // DOES NOT HAVE imaginary components 
+  // ---------------------------------------------------------------------------------------------- 
+  
+  EnvPtr<double> pje = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment( z->_myEnv);       
 
   // If the argument is void, then return ...
   if( z->_count < 1 ) {
-     return JLPtr<double>::Type(  TJL<double>::makeTJL( pje) );
+     return JLPtr<double>(  TJL<double>::makeTJL( pje) );
   }
 
-  JLPtr<double>::Type  x( TJL<double>::makeTJL(pje) );
+  JLPtr<double>  x( TJL<double>::makeTJL(pje) );
 
   // Proceed ...
  
@@ -240,5 +270,4 @@ JLPtr<double>::Type imag( const JLPtr<std::complex<double> >::Type& z )
 
 }
 
-#endif // FIRST_ORDER_JETS 
 
