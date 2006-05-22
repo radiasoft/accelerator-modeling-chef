@@ -2,7 +2,7 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  BEAMLINE:  C++ objects for design and analysis
+******  Beamline:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
 ******  Version:   2.0                    
@@ -67,7 +67,9 @@ MappPropFunc::MappPropFunc( JetParticle& p, bmlnElmnt& b )
   // This assumes the p has already been set 
   // up correctly for the in-state.
   b.localPropagate( p );
-  _myMap.CopyFrom( p.State() );
+  _myMap = p.State();
+
+
 }
 
 
@@ -83,7 +85,7 @@ MappPropFunc::MappPropFunc( const MappPropFunc& x )
 
 void MappPropFunc::setMapping( const Mapping& x )
 {
-  _myMap.CopyFrom( x );
+   _myMap = x;
 }
 
 
