@@ -41,8 +41,8 @@
 ******  Sept 2005   ostiguy@fnal.gov
 ******
 ****** - new code based on a single template parameter
-******   instead of two. Mixed mode handled
-******   using conversion operators.
+******   rtaher than two. Mixed mode handled
+******   using implicit conversion.
 ****** - centralized environment management
 ******
 ******  Nov 2005     ostiguy@fnal.gov                                           
@@ -52,7 +52,13 @@
 ******   private class. Only one instance of ScratchArea is created for 
 ******   for *all* environments sharing the same values of maxweight, 
 ******   and numvar.   
-
+******
+******  May 2006   ostiguy@fnal.gov
+****** 
+****** - EnvPtr<> is now a true class rather than a typedef wrapper 
+****** - template syntax declaration cleanup to better conform to standard. 
+******   Code now compiles cleanly with g++ 4.X   
+******      
 **************************************************************************
 *************************************************************************/
 #ifndef TJETENVIRONMENT_TCC
@@ -87,7 +93,7 @@ using FNAL::pcerr;
 //--------------------------------------------------------------------------------- 
 
 template<typename T> 
-std::list<typename EnvPtr<T>::Type>                                 TJetEnvironment<T>::_environments;  
+EnvList<T>                                                          TJetEnvironment<T>::_environments;  
 
 template<typename T> std::deque<Tcoord<T>*>                         TJetEnvironment<T>::_coordinates; 
 template<typename T> std::deque<Tparam<T>*>                         TJetEnvironment<T>::_parameters;  
@@ -96,6 +102,7 @@ template<typename T>
 std::list<typename TJetEnvironment<T>::template ScratchArea<T>* >   TJetEnvironment<T>::_scratch_areas;  
 
 template<typename T> int                                            TJetEnvironment<T>::_tmp_maxWeight = 0;
+
 
 // -----------------------------------------------------------------------------------
 //      External routines
@@ -114,6 +121,32 @@ extern "C" {
 }
 
 
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<typename T>
+EnvList<T>::~EnvList() {   
+
+  // IMPORTANT NOTE: The effect of calling exit() or returning from main() is to call the destructors 
+  // for all static objects, ***in the reverse order of their construction *** (automatic objects are not destructed). 
+  // This last-in-first-out process also incorporates functions registered with atexit(), such that a function 
+  // registered with atexit() after a static object is constructed, will be called before that static object is destructed.
+  // EnvPtr<>s are kept in a static (list) container. When the program terminates, the destructor for this container is
+  // called. All the contained objects are "destroyed" (dispose() is called only if refcount = 0). 
+  // Unfortunately, there may be static instances of  EnvPtr in existence with refcount=1 *after* the list is destroyed. 
+  // When their destructor is called, the dispose() function will be called. In normal operations, dispose() removes 
+  // the object from the list ... but at this point the list is gone ! 
+  // 
+  // The unfortunate kludge below is meant to work around this problem. A flag is set at the time where the 
+  // list destructor is called. This flag is used to prevent dispose() to iterate through a non-existent list 
+  // Actually, dispose() then does nothing and just returns. 
+  // A better and cleaner scheme based on atexit() should be explored. -JFO
+ 
+     _destructor_called = true;
+
+}
+
 // ================================================================
 //      Implementation of TJetEnvironment
 
@@ -124,6 +157,7 @@ extern "C" {
 //      Must be called first by any program.
 //
 //***********************************************************************
+
 
 
 template<typename T>
@@ -142,7 +176,7 @@ void TJetEnvironment<T>::BeginEnvironment(int maxweight)
 // ---------------------------------------------------------------------------
 
 template<typename T>
-typename EnvPtr<T>::Type TJetEnvironment<T>::EndEnvironment(double* scale)
+EnvPtr<T> TJetEnvironment<T>::EndEnvironment(double* scale)
 {
 
   int maxweight  =   TJetEnvironment<T>::_tmp_maxWeight;
@@ -193,7 +227,7 @@ typename EnvPtr<T>::Type TJetEnvironment<T>::EndEnvironment(double* scale)
   //---------------------------
 
 
-  typename EnvPtr<T>::Type pje(TJetEnvironment<T>::makeJetEnvironment(maxweight, numvar, spacedim, refpoints.get(), scale));   
+   EnvPtr<T> pje(TJetEnvironment<T>::makeJetEnvironment(maxweight, numvar, spacedim, refpoints.get(), scale));   
   
 
   //---------------------------------------------------------------------
@@ -222,7 +256,10 @@ typename EnvPtr<T>::Type TJetEnvironment<T>::EndEnvironment(double* scale)
 
   };
 
-
+  //---------------------------------------------------------------------
+  // !TJetEnvironment<T>::_coordinates.empty()
+  //----------------------------------------------------------------------.
+   
   TJet<T>::setLastEnv( pje );  
 
   return pje;
@@ -273,18 +310,24 @@ class heldPtrsAreEqual {
  public:
 
   heldPtrsAreEqual( TJetEnvironment<T>* pje_raw ): _pje_raw(pje_raw) {} 
-  bool operator()(typename EnvPtr<T>::Type& pje) { 
+  bool operator()( EnvPtr<T>& pje) { 
                return (_pje_raw == pje.get() ); 
   }  
 
 }; 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 void TJetEnvironment<T>::dispose() {
 
+
+  if( TJetEnvironment<T>::_environments._destructor_called ) return; // do nothing (see note at the top of this file)
+
   TJetEnvironment* pje = 0;
 
-  typename std::list<typename EnvPtr<T>::Type>::iterator iter;
+  typename std::list<EnvPtr<T> >::iterator iter;
   
   iter =  std::find_if(  TJetEnvironment<T>::_environments.begin(),  
                          TJetEnvironment<T>::_environments.end(), 
@@ -361,7 +404,7 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
   _offset(w,n),
   _exponent(new int[n]),  
   _monomial(new U[_maxTerms]),
-  _TJLmonomial(new typename JLPtr<T>::Type[_maxTerms]), // for monomials used in multinomial evaluation.  
+  _TJLmonomial(new JLPtr<T>[_maxTerms]),                // for monomials used in multinomial evaluation.  
   _TJLmml( TJLterm<T>::array_allocate(_maxTerms) ),     // for collecting terms during multiplication.
   _allZeroes(n)
 {
@@ -369,10 +412,9 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
 
  
  for( int i = 0; i<_maxTerms;  i++) {
-   _TJLmonomial[i] = typename JLPtr<T>::Type( makeJL<T>( typename EnvPtr<T>::Type(pje), T()) ); 
-                                                  // the anonymous constructor above is not suitable for an array.  
-                                                   
-
+   _TJLmonomial[i] = JLPtr<T>( TJL<T>::makeTJL( EnvPtr<T>(pje), T()) );     // NOTE: the anonymous constructor is not suitable for an array.  
+                                                                            //       it causes problems with static variables. 
+                                                                           
  }
    
  IntArray powers(n);
@@ -503,7 +545,7 @@ TJetEnvironment<T>& TJetEnvironment<T>::DeepCopy( const TJetEnvironment& x )
 
 
 template<typename T>
-typename EnvPtr<T>::Type  TJetEnvironment<T>::makeInverseJetEnvironment( const TMapping<T>& map ){
+EnvPtr<T> TJetEnvironment<T>::makeInverseJetEnvironment( const TMapping<T>& map ){
 
  //---------------------------------------------------------------------------------------------------------------------
  // NOTE: in general, the inverse map does not exist unless map.Dim() == pEnv->_numVar !@!! (Implicit function theorem) 
@@ -515,9 +557,9 @@ typename EnvPtr<T>::Type  TJetEnvironment<T>::makeInverseJetEnvironment( const T
     refpoint[i] =  map(i).standardPart();
   }  
   
-  typename EnvPtr<T>::Type mapenv( map.Env() );   
+  EnvPtr<T> mapenv( map.Env() );   
 
-  typename EnvPtr<T>::Type pInvEnv( makeJetEnvironment(  mapenv->_maxWeight, mapenv->_numVar,  mapenv->_spaceDim, refpoint, mapenv->_scale));
+  EnvPtr<T> pInvEnv( makeJetEnvironment(  mapenv->_maxWeight, mapenv->_numVar,  mapenv->_spaceDim, refpoint, mapenv->_scale));
 
   delete[] refpoint;
 
@@ -526,29 +568,12 @@ typename EnvPtr<T>::Type  TJetEnvironment<T>::makeInverseJetEnvironment( const T
 
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-EnvPtr<double>::Type TJetEnvironment<double>::makeJetEnvironment(int maxweight, const Vector& v , double* scale) {
- 
- boost::scoped_array<double> refpoints( new double[ v.Dim() ]);
-
- for (int i=0; i<v.Dim(); ++i) {
-     refpoints[i] = v(i); 
- }
-
-
- return EnvPtr<double>::Type( TJetEnvironment<double>::makeJetEnvironment(maxweight, v.Dim(), v.Dim(), refpoints.get(), scale) );
- 
-}
-
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-typename EnvPtr<T>::Type  TJetEnvironment<T>::makeJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints, double* scale)
+EnvPtr<T>  TJetEnvironment<T>::makeJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints, double* scale)
 {
 
  boost::scoped_array<T>       tmp_refpoints( new T[nvar]); 
@@ -567,14 +592,14 @@ typename EnvPtr<T>::Type  TJetEnvironment<T>::makeJetEnvironment(int maxweight, 
 
  }
 
- typename std::list<typename EnvPtr<T>::Type>::iterator env_iter;
+ typename std::list<EnvPtr<T> >::iterator env_iter;
 
  //-----------------------------------------------------
  // if a match already  exists, return it 
  //-----------------------------------------------------
 
- typename EnvPtr<T>::Type pje;
- typename EnvPtr<T>::Type tmppje;
+ EnvPtr<T> pje;
+ EnvPtr<T> tmppje;
 
  bool refpoints_are_equivalent = false;
  bool scales_are_equivalent    = false;
@@ -625,55 +650,13 @@ typename EnvPtr<T>::Type  TJetEnvironment<T>::makeJetEnvironment(int maxweight, 
      //       and be prematurely deleted. Normally this is not a problem, but here the pointer is created (execeptionally)
      //         with an initial ref count of 0.
 
-     typename EnvPtr<T>::Type newpje( new TJetEnvironment<T>( maxweight, nvar, spacedim, tmp_refpoints.get(), tmp_scale.get()), false);
+     EnvPtr<T> newpje( new TJetEnvironment<T>( maxweight, nvar, spacedim, tmp_refpoints.get(), tmp_scale.get()), false);
      pje.swap( newpje );
 
      TJetEnvironment<T>::_environments.push_back( pje );
 
      return pje;
  }
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-EnvPtr<double>::Type  TJetEnvironment<double>::getApproxJetEnvironment(int maxweight, const Vector& refpoints)
-{
-
-  //   Determine if a Jet environment already exists
-  //   whose reference point is sufficiently close
-  //   to the closed orbit. If so, returns it, otherwise
-  //   return a NULL environment
-
-  int nvar = refpoints.Dim();
-  
-  EnvPtr<double>::Type pje; // null 
-  Vector tolerance( nvar );
-
-  for( int i=0;  i<nvar; ++i ) {
-    // *** CHANGE ***
-    // *** CHANGE *** The tolerance criterion should be user-determined.
-    // *** CHANGE ***
-    tolerance(i) = std::abs(0.001*refpoints(i));
-  }
-
-  std::list<EnvPtr<double>::Type>::iterator env_iter;
-
-  for ( env_iter  = TJetEnvironment<double>::_environments.begin();  
-        env_iter != TJetEnvironment<double>::_environments.end(); 
-        ++env_iter)
-  { 
-    if( (*env_iter)->numVar() != nvar ) continue; 
-
-    if( (*env_iter)->hasApproxReferencePoint( refpoints, tolerance ) ) {
-      pje   = *env_iter; 
-    }
-  }
-
-  return pje;  
-    
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -852,8 +835,9 @@ ostream& operator<<( ostream& os, const TJetEnvironment<T>& x )
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
-std::istream& streamIn( std::istream& is, boost::intrusive_ptr<TJetEnvironment<T> >& pje )
+std::istream& streamIn( std::istream& is, EnvPtr<T>& pje )
 {
 
   int numvar    = 0;
@@ -893,5 +877,6 @@ std::istream& streamIn( std::istream& is, boost::intrusive_ptr<TJetEnvironment<T
 
   return is;
 }
+
 
 #endif // TJETENVIRONMENT_TCC
