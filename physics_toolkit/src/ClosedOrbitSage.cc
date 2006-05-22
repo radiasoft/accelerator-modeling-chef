@@ -85,7 +85,10 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   }
 
   // Preliminary steps ...
-  Jet__environment_ptr storedEnv = Jet::_lastEnv;
+
+  Jet__environment_ptr  storedEnv  = Jet::_lastEnv;
+  JetC__environment_ptr storedEnvC = JetC::_lastEnv;
+
   Jet::_lastEnv = p_jp->State().Env();
 
 
@@ -188,12 +191,16 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
   bool newcoords = false;
   coord*  tmpcoord[BMLN_dynDim];
-  if ( Jet::_lastEnv.get() == 0 ) {  // true if there was no suitable approximate Environment  
+
+  if ( !Jet::_lastEnv ) {  // true if there was no suitable approximate Environment  
     Jet__environment::BeginEnvironment( p_jp->State().Env()->maxWeight() );
     for( i = 0; i < BMLN_dynDim; i++ ) { 
       tmpcoord[i] = new coord(z(i)); 
     }
     Jet__environment::EndEnvironment();
+    //    Jet::_lastEnv  = Jet__environment::EndEnvironment();
+    //    JetC::_lastEnv = Jet::_lastEnv;
+
     newcoords = true;
   }
 
@@ -203,9 +210,10 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
     *_outputStreamPtr << "ClosedOrbitSage --- Propagating JetParticle around ring final time."
          << endl;
   }
-  JetParticle* jpr2Ptr = p_prt->ConvertToJetParticle();
-  _myBeamlinePtr->propagate( *jpr2Ptr );
 
+  JetParticle* jpr2Ptr = p_prt->ConvertToJetParticle();
+
+  _myBeamlinePtr->propagate( *jpr2Ptr );
 
   // Reset the argument to this second JetParticle
   *p_jp = *jpr2Ptr;
@@ -222,7 +230,9 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
 
   // ... Reset the Jet environment to its incoming state
-  Jet::_lastEnv = storedEnv;
+
+  Jet::_lastEnv  = storedEnv;
+  JetC::_lastEnv = storedEnvC;
 
   // ... delete temporary coordinates 
   if( newcoords ) {

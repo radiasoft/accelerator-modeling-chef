@@ -1052,11 +1052,11 @@ const EdwardsTengSage::Info* BeamlineContext::getETFuncPtr( int i )
 
     // Preserve/reset the current Jet environment
 
-    EnvPtr<double>::Type                storedEnv  = Jet::_lastEnv;
-    EnvPtr<std::complex<double> >::Type storedEnvC = JetC::_lastEnv;
+    EnvPtr<double>                 storedEnv  = Jet::_lastEnv;
+    EnvPtr<std::complex<double> >  storedEnvC = JetC::_lastEnv;
 
-    Jet::_lastEnv = _p_jp->State().Env();
-    JetC::_lastEnv = *Jet::_lastEnv ; // implicit conversion operator
+    Jet::_lastEnv  = _p_jp->State().Env();
+    JetC::_lastEnv = Jet::_lastEnv ; // implicit conversion 
 
     JetParticle* ptr_arg = _p_jp->Clone();
     Mapping id( "identity" );
@@ -1093,8 +1093,8 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
     const int n = Particle::PSD;
     MatrixD covariance(n,n);
 
-    EnvPtr<double>::Type                  storedEnv;  // null 
-    EnvPtr<std::complex<double> >::Type   storedEnvC; // null
+    EnvPtr<double>                  storedEnv;  // null 
+    EnvPtr<std::complex<double> >   storedEnvC; // null
 
     JetParticle* ptr_arg = 0;
     coord** coordPtr = 0;
@@ -1104,8 +1104,8 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
 
       storedEnv  = Jet::_lastEnv;
       storedEnvC = JetC::_lastEnv;
-      Jet::_lastEnv = _p_jp->State().Env();
-      JetC::_lastEnv = *Jet::_lastEnv; //implicit conversion operator
+      Jet::_lastEnv  = _p_jp->State().Env();
+      JetC::_lastEnv = Jet::_lastEnv; //implicit conversion operator
 
       ptr_arg = _p_jp->Clone();
     }
@@ -1131,7 +1131,7 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
         for( int j = 0; j < n; j++ ) {
           coordPtr[j] = new coord( _particlePtr->State(j) );
         }
-        JetC::_lastEnv = *Jet__environment::EndEnvironment(scale); // implicit conversion operator
+        JetC::_lastEnv = Jet__environment::EndEnvironment(scale); // implicit conversion 
 
         ptr_arg = _particlePtr->ConvertToJetParticle();
       }
@@ -1192,11 +1192,11 @@ const LBSage::Info* BeamlineContext::getLBFuncPtr( int i )
     // Preserve current Jet environment
     //   and reset to that of *_p_jp
 
-    EnvPtr<double>::Type  storedEnv                = Jet::_lastEnv;
-    EnvPtr<std::complex<double> >::Type storedEnvC = JetC::_lastEnv;
+    EnvPtr<double>                storedEnv  = Jet::_lastEnv;
+    EnvPtr<std::complex<double> > storedEnvC = JetC::_lastEnv;
 
-    Jet::_lastEnv = _p_jp->State().Env();
-    JetC::_lastEnv = *Jet::_lastEnv; // implicit conversion operator
+    Jet::_lastEnv  = _p_jp->State().Env();
+    JetC::_lastEnv = Jet::_lastEnv; // implicit conversion 
 
     _LBFuncsCalcd = ( 0 == _p_lbs->doCalc( _p_jp, beamline::yes ) );
 
@@ -1233,11 +1233,11 @@ const DispersionSage::Info* BeamlineContext::getDispersionPtr( int i )
 
       // Preserve/reset the current Jet environment
 
-      EnvPtr<double>::Type  storedEnv                 = Jet::_lastEnv;
-      EnvPtr<std::complex<double> >::Type  storedEnvC = JetC::_lastEnv;
+      EnvPtr<double>   storedEnv                = Jet::_lastEnv;
+      EnvPtr<std::complex<double> >  storedEnvC = JetC::_lastEnv;
  
       Jet:: _lastEnv = _p_jp->State().Env();
-      JetC::_lastEnv = *Jet::_lastEnv; //implicit conversion operator
+      JetC::_lastEnv = Jet::_lastEnv; //implicit conversion 
 
       // DispersionSage::Options newOptions;
       // newOptions.onClosedOrbit = true;
