@@ -121,11 +121,11 @@ Interpreter::~Interpreter()
 void Interpreter::runString(const char* s) 
 {
 
-  static EnvPtr<double>::Type                  pgmEnv;   // null ptr
-  static EnvPtr<std::complex<double> >::Type   pgmEnvC;  // null ptr
+  static EnvPtr<double>                  pgmEnv;   // null ptr
+  static EnvPtr<std::complex<double> >   pgmEnvC;  // null ptr
 
-  static EnvPtr<double>::Type                  interpreterEnv;   // null ptr
-  static EnvPtr<std::complex<double> >::Type   interpreterEnvC;  // null ptr
+  static EnvPtr<double>                  interpreterEnv;   // null ptr
+  static EnvPtr<std::complex<double> >   interpreterEnvC;  // null ptr
 
   // save the program  Jet environment ( an arbitrary script can change the environment !)
 
@@ -216,11 +216,11 @@ void Interpreter::readFile(const char* fname)
     
  if (fp)  {
 
-  static EnvPtr<double>::Type                  pgmEnv;   // null ptr
-  static EnvPtr<std::complex<double> >::Type   pgmEnvC;  // null ptr
+  static EnvPtr<double>                  pgmEnv;   // null ptr
+  static EnvPtr<std::complex<double> >   pgmEnvC;  // null ptr
 
-  static EnvPtr<double>::Type                  interpreterEnv;   // null ptr
-  static EnvPtr<std::complex<double> >::Type   interpreterEnvC;  // null ptr
+  static EnvPtr<double>                 interpreterEnv;   // null ptr
+  static EnvPtr<std::complex<double> >  interpreterEnvC;  // null ptr
 
   // save the program  Jet environment ( an arbitrary script can change the environment !)
 
