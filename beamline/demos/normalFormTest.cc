@@ -11,41 +11,47 @@
 **
 */
 
-#include "beamline.rsc"
+#include "beamline.h"
 #include "JetUtilities.h"
 
-char fff( const IntArray& index, const double& /* value */ ) {
+using namespace std;
+
+bool cf( bmlnElmnt* pbe ) {
+  return ( ( strcasecmp( pbe->Name(), "M8" ) ) == 0 );
+}
+
+bool fff( const IntArray& index, const double& /* value */ ) {
  return ( ( index(2) == 0 ) && ( index(5) == 0 ) );
 }
 
-char xx2( const IntArray& index, const double& /* value */ ) {
+bool xx2( const IntArray& index, const double& /* value */ ) {
  if (   ( index(0) == 0 ) && ( index(3) == 0 ) &&
         ( index(1) == 0 ) && ( index(4) == 0 ) &&
         ( index(2) == 0 ) && ( index(5) == 0 ) 
-    ) return 1;
+    ) return true;
  if ( ( ( index(2) == 1 ) && ( index(5) == 0 ) ) &&
       ( ( index(0) == 0 ) && ( index(3) == 0 )   && 
         ( index(1) == 0 ) && ( index(4) == 0 ) ) 
-    ) return 1;
- return 0;
+    ) return true;
+ return false;
 }
 
-char xx5( const IntArray& index, const double& /* value */ ) {
+bool xx5( const IntArray& index, const double& /* value */ ) {
  if (   ( index(0) == 0 ) && ( index(3) == 0 ) &&
         ( index(1) == 0 ) && ( index(4) == 0 ) &&
         ( index(2) == 0 ) && ( index(5) == 0 ) 
-    ) return 1;
+    ) return true;
  if ( ( ( index(2) == 0 ) && ( index(5) == 1 ) ) &&
       ( ( index(0) == 0 ) && ( index(3) == 0 )   && 
         ( index(1) == 0 ) && ( index(4) == 0 ) ) 
-    ) return 1;
- return 0;
+    ) return true;
+ return false;
 }
 
 // ==============================================================
 
-main( int argc, char** argv ) {
-
+int main( int argc, char** argv ) 
+{
  // Set up the order of the calculation
  if( argc != 3 ) {
   cout << endl;
@@ -58,11 +64,7 @@ main( int argc, char** argv ) {
  int order   = atoi( argv[1] );
  double num  = atof( argv[2] );
 
- Jet::BeginEnvironment( order );
- coord x(0.0),  y(0.0),  z(0.0),
-      px(0.0), py(0.0), pz(0.0);
- Jet__environment* pje = Jet::EndEnvironment();
- JetC::lastEnv = JetC::CreateEnvFrom( pje );
+ JetParticle::createStandardEnvironments( order );
 
  // Construct the model ring
  int i;
@@ -157,8 +159,7 @@ main( int argc, char** argv ) {
  //   projected( i ) = map( l[i] ).filter( fff );
  // 
 
- static MX_R_FUNCPTR xxx[] = { fff, fff, xx2, fff, fff, xx5 };
-
+ bool (*xxx[]) ( const IntArray&, const double& ) = { fff, fff, xx2, fff, fff, xx5 };
  projected = map.filter( xxx );
 
  // for( i = 0; i < 6; i++ ) 
@@ -188,4 +189,5 @@ main( int argc, char** argv ) {
   T[i-2].printCoeffs();
  }
 
+ return 0;
 }
