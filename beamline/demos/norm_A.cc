@@ -11,51 +11,51 @@
 **
 */
 
-#include "beamline.rsc"
+#include "beamline.h"
 #include "EdwardsTeng.h"
 #include "JetUtilities.h"
 
+using namespace std;
 
 // Characteristic functions ---------------------------------
 
-char cf( bmlnElmnt* pbe ) {
+bool cf( bmlnElmnt* pbe ) {
   return ( ( strcasecmp( pbe->Name(), "M8" ) ) == 0 );
 }
 
-char fff( const IntArray& index, const double& /* value */ ) {
+bool fff( const IntArray& index, const double& /* value */ ) {
  return ( ( index(2) == 0 ) && ( index(5) == 0 ) );
 }
 
-char xx2( const IntArray& index, const double& /* value */ ) {
+bool xx2( const IntArray& index, const double& /* value */ ) {
  if (   ( index(0) == 0 ) && ( index(3) == 0 ) &&
         ( index(1) == 0 ) && ( index(4) == 0 ) &&
         ( index(2) == 0 ) && ( index(5) == 0 ) 
-    ) return 1;
+    ) return true;
  if ( ( ( index(2) == 1 ) && ( index(5) == 0 ) ) &&
       ( ( index(0) == 0 ) && ( index(3) == 0 )   && 
         ( index(1) == 0 ) && ( index(4) == 0 ) ) 
-    ) return 1;
- return 0;
+    ) return true;
+ return false;
 }
 
-char xx5( const IntArray& index, const double& /* value */ ) {
+bool xx5( const IntArray& index, const double& /* value */ ) {
  if (   ( index(0) == 0 ) && ( index(3) == 0 ) &&
         ( index(1) == 0 ) && ( index(4) == 0 ) &&
         ( index(2) == 0 ) && ( index(5) == 0 ) 
-    ) return 1;
+    ) return true;
  if ( ( ( index(2) == 0 ) && ( index(5) == 1 ) ) &&
       ( ( index(0) == 0 ) && ( index(3) == 0 )   && 
         ( index(1) == 0 ) && ( index(4) == 0 ) ) 
-    ) return 1;
- return 0;
+    ) return true;
+ return false;
 }
-
 
 
 // Main program -----------------------------------------
 
-main( int argc, char** argv ) {
-
+int main( int argc, char** argv ) 
+{
  // Set up the order of the calculation
  if( argc != 6 ) {
   cout << endl;
@@ -85,11 +85,7 @@ main( int argc, char** argv ) {
  double fl    = atof( argv[4] );
  double k     = atof( argv[5] );
 
- Jet::BeginEnvironment( order );
- coord x(0.0),  y(0.0),  z(0.0),
-      px(0.0), py(0.0), pz(0.0);
- Jet__environment* pje = Jet::EndEnvironment();
- JetC::lastEnv = JetC::CreateEnvFrom( pje );
+ JetParticle::createStandardEnvironments( order );
 
  // Construct the model ring
  int i;
@@ -139,8 +135,10 @@ main( int argc, char** argv ) {
  EdwardsTeng ET( &ring );
  argc = ET.doCalc( &jp, cf );
 
- if( argc != 0 ) 
+ if( argc != 0 ) {
    cout << "*** ERROR *** ET returned " << argc << endl;
+   return -1;
+ }
  
  ETinfo* infoPtr;
  if( infoPtr = (ETinfo*) Oct.dataHook.find( "EdwardsTeng" ) ) {
@@ -186,7 +184,7 @@ main( int argc, char** argv ) {
  Mapping projected;
  /* DGN */ cout << "DGN> Hang on, everybody. Here we goooo...!" << endl;
 
- static MX_R_FUNCPTR xxx[] = { fff, fff, xx2, fff, fff, xx5 };
+ static bool (*xxx[]) ( const IntArray&, const double& ) = { fff, fff, xx2, fff, fff, xx5 };
 
  projected = map.filter( xxx );
 
@@ -206,9 +204,9 @@ main( int argc, char** argv ) {
       << eigVec
       << endl;
  
- Complex eta = eigVec(0,0)/abs( eigVec(0,0) );
- Complex zeta_1 = eigVec(0,0)/eta;
- Complex zeta_2 = eigVec(3,0)/eta;
+ std::complex<double> eta = eigVec(0,0)/abs( eigVec(0,0) );
+ std::complex<double> zeta_1 = eigVec(0,0)/eta;
+ std::complex<double> zeta_2 = eigVec(3,0)/eta;
  cout << "DGN> zeta_1 = "
       << zeta_1
       << endl;
@@ -239,4 +237,5 @@ main( int argc, char** argv ) {
   T[i-2].printCoeffs();
  }
 
+ return 0;
 }

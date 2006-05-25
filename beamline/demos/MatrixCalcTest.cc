@@ -14,17 +14,19 @@
 #include "EdwardsTeng.h"
 #include "MatrixCalcVisitor.h"
 
+using namespace std;
+
 // char cf( bmlnElmnt* pbe ) {
 //   if( ( strcasecmp( pbe->Type(), "thinQuad" ) ) == 0 )  return 1;
 //   else                                                  return 0;
 // }
 
-char cf( bmlnElmnt* ) {
-  return 1;
+bool cf( bmlnElmnt* ) {
+  return true;
 }
 
-main( int argc, char** argv ) {
-
+int main( int argc, char** argv ) 
+{
  if( argc != 7 ) {
   cout << "Usage: " << argv[0]
        << " <length of drift [m]> "
@@ -37,10 +39,7 @@ main( int argc, char** argv ) {
   exit(0);
  }
 
- Jet::BeginEnvironment( 1 );
- coord x(0.0),  y(0.0),  z(0.0),
-      px(0.0), py(0.0), pz(0.0);
- Jet::EndEnvironment();
+ JetParticle::createStandardEnvironments( 1 );
 
  double energy    =  atof( argv[5] );
  Proton pr( energy );
@@ -143,4 +142,6 @@ main( int argc, char** argv ) {
           "----------------------------------------\n"
        << endl;
  }
+
+ return 0;
 }

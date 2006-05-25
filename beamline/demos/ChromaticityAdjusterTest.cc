@@ -13,9 +13,10 @@
 #include "LattFuncSage.h"
 #include "ChromaticityAdjuster.h"
 
+using namespace std;
 
-main( int argc, char** argv ) {
-
+int main( int argc, char** argv ) 
+{
  if( argc != 8 ) {
   cout << "Usage: " << argv[0]
        << " <length of sbend [m]>"
@@ -71,10 +72,7 @@ main( int argc, char** argv ) {
  LattFuncSage         lfs ( cell );
 
  // Initialize JetProtons for use
- Jet::BeginEnvironment( 1 );
- coord x(0.0),  y(0.0),  z(0.0),
-      px(0.0), py(0.0), pz(0.0);
- Jet::EndEnvironment();
+ JetParticle::createStandardEnvironments( 1 );
 
  JetProton jpr( energy );
  JetProton jpr2( energy );
@@ -130,4 +128,6 @@ main( int argc, char** argv ) {
 
  // Clean up before exiting
  cell.zap();
+
+ return 0;
 }
