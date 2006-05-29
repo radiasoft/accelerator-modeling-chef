@@ -12,8 +12,10 @@
 */
 
 #include <stdlib.h>
-#include <iostream.h>
+#include <iostream>
 #include "mxyzptlk.h"
+
+using namespace std;
 
 main( int argc, char** argv ) {
 
@@ -22,10 +24,10 @@ main( int argc, char** argv ) {
   exit(0);
  }
 
- Jet::BeginEnvironment( 1 );
+ Jet__environment::BeginEnvironment( 1 );
  coord x( atof( argv[1] ) );   
  coord p( atof( argv[2] ) );
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  LieOperator v( x.Env() );
  

@@ -3,6 +3,8 @@
 #include <iostream.h>
 #include <rand48.h>
 
+using namespace std;
+
 extern double drand48( int* );
 
 main( int argc, char** argv ) {

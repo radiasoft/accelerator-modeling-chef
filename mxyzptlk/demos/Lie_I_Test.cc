@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include "LieOperator.h"
 
+using namespace std;
+
 main( int argc, char** argv ) {
 
  if( argc != 3 ) {
@@ -24,9 +26,9 @@ main( int argc, char** argv ) {
  int    deg = atoi( argv[1] );
  double   t = atof( argv[2] );
 
- Jet::BeginEnvironment( deg );
+ Jet__environment::BeginEnvironment( deg );
  coord  x( 0.0 ),  y( 0.0 ),  z( 0.0 );
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  LieOperator u, v;
  Jet r1, r2;

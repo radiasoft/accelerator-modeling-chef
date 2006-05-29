@@ -20,12 +20,14 @@
 
 #include "mxyzptlk.h"
 
+using namespace std;
+
 main() {
 
-  Jet::BeginEnvironment( 6 );
+  Jet__environment::BeginEnvironment( 6 );
   coord x( 0.0 );
   coord y( 0.0 );
-  Jet::EndEnvironment();
+  Jet__environment::EndEnvironment();
 
   LieOperator v;
   v.SetComponent(  0,  y );

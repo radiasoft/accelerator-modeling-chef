@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include "CLieOperator.h"
 
+using namespace std;
+
 main( int argc, char** argv ) {
 
  if( argc != 3 ) {
@@ -24,9 +26,11 @@ main( int argc, char** argv ) {
  int    deg = atoi( argv[1] );
  double   t = atof( argv[2] );
 
- JetC::BeginEnvironment( deg );
- coordC  x( (Complex) 0.0 ),  y( (Complex) 0.0 ),  z( (Complex) 0.0 );
- JetC::EndEnvironment();
+ Jet__environment::BeginEnvironment( deg );
+ coordC   x(std::complex<double>(0,0))
+        , y(std::complex<double>(0,0))
+        , z(std::complex<double>(0,0));
+ Jet__environment::EndEnvironment();
 
  CLieOperator u, v;
  JetC r1, r2;

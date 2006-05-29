@@ -2,52 +2,28 @@
 .SUFFIXES: 
 .SUFFIXES: .o .cpp .cc 
 
-#
-FNALROOT = ../../RUNTIME
+C++        = g++
 
-INCS = -I/usr/local/include/boost-1_33 -I$(FNALROOT)/include/gms -I$(FNALROOT)/include/mxyzptlk -I$(FNALROOT)/include/basic_toolkit 
+INSTALLDIR = ../../RUNTIME
+INCS       = -I/usr/local/ap/include/boost-1_33 \
+             -I$(INSTALLDIR)/include/gms \
+             -I$(INSTALLDIR)/include/mxyzptlk \
+             -I$(INSTALLDIR)/include/basic_toolkit 
+LIBS       = -L$(INSTALLDIR)/lib -lmxyzptlk -lbasic_toolkit -Wl,-rpath,$(INSTALLDIR)/lib 
+SYSLIBS    = -lglib -lm -lnsl -lintl
 
-LIBS = -L$(FNALROOT)/lib -lmxyzptlk -lbasic_toolkit -Wl,-rpath,$(FNALROOT)/lib 
+.cc.o:
+	$(C++) $(C++FLAGS) $(INCS) -c $*.cc
+.o :
+	$(C++) $(C++FLAGS) -o $@ $< $(LIBS) $(SYSLIBS)
 
-
-all: Inverse_A_Test Inverse_B_Test Inverse_C_Test Inverse_D_Test Inverse_E_Test
-
-
-concattest : concattest.o
-	g++ -o concattest  concattest.o $(LIBS)
-
-concattest.o: concattest.cc
-	g++ $(INCS) -c concattest.cc
-
-Inverse_E_Test : Inverse_E_Test.o
-	g++ -o Inverse_E_Test  Inverse_E_Test.o $(LIBS)
-
-Inverse_E_Test.o: Inverse_E_Test.cc
-	g++ $(INCS) -c Inverse_E_Test.cc
-
-Inverse_D_Test : Inverse_D_Test.o
-	g++ -o Inverse_D_Test  Inverse_D_Test.o $(LIBS)
-
-Inverse_D_Test.o: Inverse_D_Test.cc
-	g++ $(INCS) -c Inverse_D_Test.cc
-
-Inverse_C_Test : Inverse_C_Test.o
-	g++ -o Inverse_C_Test  Inverse_C_Test.o $(LIBS)
-
-Inverse_C_Test.o: Inverse_C_Test.cc
-	g++ $(INCS) -c Inverse_C_Test.cc
-
-Inverse_B_Test : Inverse_B_Test.o
-	g++ -o Inverse_B_Test  Inverse_B_Test.o $(LIBS)
-
-Inverse_B_Test.o: Inverse_B_Test.cc
-	g++ $(INCS) -c Inverse_B_Test.cc
-
-Inverse_A_Test : Inverse_A_Test.o
-	g++ -o Inverse_A_Test  Inverse_A_Test.o $(LIBS)
-
-Inverse_A_Test.o: Inverse_A_Test.cc
-	g++ $(INCS) -c Inverse_A_Test.cc
+all: hptest dfr evaltest orthogonalTest g5 envTest \
+     pbtest ranTest survey CMapTest SVDTest \
+     concattest coordTest Inverse_A_Test Inverse_B_Test Inverse_C_Test \
+     Inverse_D_Test Inverse_E_Test Lie_A_Test Lie_B_Test Lie_C_Test \
+     Lie_D_Test Lie_E_Test Lie_F_Test Lie_G_Test Lie_H_Test \
+     Lie_I_Test Lie_J_Test Limit_A_Test Limit_B_Test Limit_C_Test \
+     Limit_D_Test Limit_E_Test Limit_F_Test Limit_G_Test Limit_H_Test
 
 clean:	
-	\rm *.o; \rm Inverse_A_Test Inverse_B_Test Inverse_C_Test Inverse_D_Test Inverse_E_Test
+	\rm *.o; \rm *Test; \rm hptest dfr evaltest pbtest survey concattest

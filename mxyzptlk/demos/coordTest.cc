@@ -1,5 +1,7 @@
 #include "mxyzptlk.h"
 
+using namespace std;
+
 //***************************************************************
 //***************************************************************
 //***************************************************************
@@ -10,11 +12,11 @@
 
 main() {
 
-  Jet::BeginEnvironment( 7 );
+  Jet__environment::BeginEnvironment( 7 );
   coord x( 0.5 );
   coord y( 0.3 );
   coord z( 0.1 );
-  Jet::EndEnvironment();
+  Jet__environment::EndEnvironment();
   
   Jet h, u, v;
   

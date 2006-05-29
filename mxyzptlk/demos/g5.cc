@@ -14,7 +14,9 @@
 **
 */
 
-#include "Jet"
+#include <Jet.h>
+
+using namespace std;
 
 Jet g( const Jet& x, int n ) {
   Jet z = 0.0;
@@ -28,9 +30,9 @@ Jet g( const Jet& x, int n ) {
 }
 
 main() {
- Jet::BeginEnvironment( 6 );
+ Jet__environment::BeginEnvironment( 6 );
  coord x(0.0), y(0.0), z(0.0);
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  Jet a; 
  a = x*y + y*z + z*x;

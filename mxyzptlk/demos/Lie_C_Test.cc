@@ -12,6 +12,8 @@
 
 #include "mxyzptlk.h"
 
+using namespace std;
+
 main( int argc, char** argv ) {
 
  if( argc != 3 ) {
@@ -26,11 +28,10 @@ main( int argc, char** argv ) {
  int    deg   = atoi( argv[1]  );
  double limit = atof( argv[2]  );
 
- Jet::BeginEnvironment( deg );
+ Jet__environment::BeginEnvironment( deg );
  coord x( 0.0 );
- Jet::Parameters();
- coord t( limit );
- Jet::EndEnvironment();
+ param t( limit );
+ Jet__environment::EndEnvironment();
 
  LieOperator v;
  v.SetComponent( 0, x );

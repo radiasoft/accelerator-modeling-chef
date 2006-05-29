@@ -11,6 +11,8 @@
 
 #include "mxyzptlk.h"
 
+using namespace std;
+
 main( int argc, char** argv ) {
 
  if( argc != 3 ) {
@@ -24,20 +26,20 @@ main( int argc, char** argv ) {
       << argv[2] << "  \n"
       << endl;
 
- Jet__environment *a, *b, *c;
+ Jet__environment_ptr a, b, c;
 
- Jet::BeginEnvironment( 4 );
+ Jet__environment::BeginEnvironment( 4 );
  coord x( atof( argv[1] ) );   
  coord y( atof( argv[2] ) );
- a = Jet::EndEnvironment();
+ a = Jet__environment::EndEnvironment();
 
- Jet::BeginEnvironment( 2 );
+ Jet__environment::BeginEnvironment( 2 );
  coord r( 0.0 );
- b = Jet::EndEnvironment();
+ b = Jet__environment::EndEnvironment();
 
- Jet::BeginEnvironment( 10 );
+ Jet__environment::BeginEnvironment( 10 );
  coord s( 0.0 );
- c = Jet::EndEnvironment();
+ c = Jet__environment::EndEnvironment();
 
  Jet f(a), g(b), k(c);
 

@@ -1,6 +1,8 @@
 #include <math.h>
 #include "Matrix.h"
 
+using namespace std;
+
 main( int, char** argv )
 {
   double x = atof( argv[1] );

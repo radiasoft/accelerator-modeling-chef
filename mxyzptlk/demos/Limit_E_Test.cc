@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include "mxyzptlk.h"
 
+using namespace std;
+
 main( int argc, char** argv ) {
 
  if( argc != 3 ) {
@@ -24,9 +26,9 @@ main( int argc, char** argv ) {
  int deg = atoi( argv[1] );
  int n   = atoi( argv[2] );
 
- Jet::BeginEnvironment( deg );
+ Jet__environment::BeginEnvironment( deg );
  coord x(0.0);
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  Jet u;
  Jet f, g;

@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include "mxyzptlk.h"
 
+using namespace std;
+
 main( int argc, char** argv ) {
 
  const int  dim       = 1;
@@ -27,9 +29,9 @@ main( int argc, char** argv ) {
  int     iterations = atoi( argv[2] );
  int     maxWeight  = atoi( argv[3] );
 
- Jet::BeginEnvironment( maxWeight );
+ Jet__environment::BeginEnvironment( maxWeight );
  coord m( x );
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  double answer = atan(x);
  printf ( "atan( %lf ) = %le\n", x, answer );
