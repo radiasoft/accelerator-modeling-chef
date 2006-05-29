@@ -8,10 +8,11 @@
 */
 
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <iostream.h>
+#include <iostream>
 #include "mxyzptlk.h"
+
+using namespace std;
 
 main( int argc, char** argv ) {
 

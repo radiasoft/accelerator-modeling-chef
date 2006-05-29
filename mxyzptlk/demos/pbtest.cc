@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <iostream>
 
-#include "Jet"
+#include <Jet.h>
 
 using namespace std;
 
@@ -15,13 +15,12 @@ main()
  v1 = -3.1;
  v2 = 1.5;
  
- Jet::BeginEnvironment( 5 );
+ Jet__environment::BeginEnvironment( 5 );
  coord x1( u1 );
  coord x2( u2 );
  coord p1( v1 );
  coord p2( v2 );
- Jet::Parameters();
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  Jet a, b, c;
  Jet pb;

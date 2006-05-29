@@ -1,11 +1,17 @@
-#include <stdlib.h>
-#include "Matrix.h"
+#include <Matrix.h>
 
-main( int, char** argv )
+using namespace std;
+
+int main( int, char** argv )
 {
   int dim = atoi( argv[1] );
-  MatrixD X( "o", dim );
+  RandomOrthogonal orthoFactory( dim );
+
+  MatrixD X( orthoFactory.build() );
+
   cout << X
        << X*X.transpose()
        << X.transpose()*X;
+
+  return 0;
 }

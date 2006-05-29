@@ -1,17 +1,19 @@
 #include "JetC.h"
 #include "MappingC.h"
 
-main( int, char** argv ) {
- Complex z( atof( argv[1] ), atof( argv[2] ) );
+using namespace std;
 
- JetC::BeginEnvironment( 6 );
+main( int, char** argv ) {
+ std::complex<double> z( atof( argv[1] ), atof( argv[2] ) );
+
+ Jet__environment::BeginEnvironment( 6 );
  coordC x( z );
- JetC::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  MappingC f;
  JetC     u;
 
- u = Complex( 3.0,1.0) + exp( x*(1.0 + 3.0*x) );
+ u = std::complex<double>( 3.0,1.0) + exp( x*(1.0 + 3.0*x) );
 
  f.SetComponent( 0, u );
 

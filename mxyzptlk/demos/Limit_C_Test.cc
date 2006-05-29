@@ -18,6 +18,8 @@
 #include <stdio.h>
 #include "mxyzptlk.h"
 
+using namespace std;
+
 main( int argc, char** argv ) {
 
  if( argc != 3 ) {
@@ -29,10 +31,10 @@ main( int argc, char** argv ) {
  double az        = atof( argv[2] );
  int    degree    = atoi( argv[3] );
 
- Jet::BeginEnvironment( degree );
+ Jet__environment::BeginEnvironment( degree );
  coord y( ay );
  coord z( az );
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  Jet m, u, s, c;
  m = sqrt( y*y + z*z );

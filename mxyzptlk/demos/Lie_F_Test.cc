@@ -2,6 +2,8 @@
 #include "Jet.h"
 #include "LieOperator.h"
 
+using namespace std;
+
 class field {
  private:
   Jet v[3];
@@ -43,10 +45,10 @@ main( int argc, char** argv ) {
  double p0  = atof( argv[4] ); // Momentum offset
  int    nb  = atoi( argv[5] ); // Number of cells in partition
 
- Jet::BeginEnvironment( deg );
+ Jet__environment::BeginEnvironment( deg );
  coord  x( 0.0 ),  y( 0.0 ),  z( 0.0 );
  coord px( 0.0 ), py( 0.0 ), pz( 0.0 );
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  msq = msq*msq;
  double vel = p0 / sqrt( p0*p0 + msq );

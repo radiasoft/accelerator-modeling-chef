@@ -1,6 +1,8 @@
 #include <math.h>
 #include <stdio.h>
 
+using namespace std;
+
 main( int argc, char** argv ) {
 
  double x = atof( argv[1] );

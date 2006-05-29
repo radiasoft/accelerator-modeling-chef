@@ -14,6 +14,8 @@
 #include "JetC.h"
 #include "CLieOperator.h"
 
+using namespace std;
+
 main( int argc, char** argv ) {
 
  if( argc != 3 ) {
@@ -28,11 +30,10 @@ main( int argc, char** argv ) {
  int    deg   = atoi( argv[1]  );
  double limit = atof( argv[2]  );
 
- JetC::BeginEnvironment( deg );
+ Jet__environment::BeginEnvironment( deg );
  coordC x( 0.0 );
- JetC::Parameters();
- coordC t( limit );
- JetC::EndEnvironment();
+ paramC t( limit );
+ Jet__environment::EndEnvironment();
 
  CLieOperator v;
  v.SetComponent( 0, x*x );

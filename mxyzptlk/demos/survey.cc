@@ -15,8 +15,11 @@
 **
 */
 
-#include <stdlib.h>
-#include "Mapping.h"
+// #include <stdlib.h>
+#include <Matrix.h>
+#include <Mapping.h>
+
+using namespace std;
 
 int main( int argc, char** argv ) 
 {
@@ -30,11 +33,11 @@ int main( int argc, char** argv )
  const double d2r = M_PI / 180.0;
  MatrixD M( 3, 3 );
 
- Jet::BeginEnvironment( 1 );
+ Jet__environment::BeginEnvironment( 1 );
  coord r     (     atof( argv[1] ) ),
        theta ( d2r*atof( argv[2] ) ),
        phi   ( d2r*atof( argv[3] ) );
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  Mapping position;
 

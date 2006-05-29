@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include "mxyzptlk.h"
 
+using namespace std;
+
 class field {
  private:
   Jet v[3];
@@ -54,10 +56,10 @@ main( int argc, char** argv ) {
  double t   = atof( argv[3] );
 
  msq = msq*msq;
- Jet::BeginEnvironment( deg );
+ Jet__environment::BeginEnvironment( deg );
  coord  x( 0.0 ),  y( 0.0 ),  z( 0.0 );
  coord px( 0.0 ), py( 0.0 ), pz( 0.0 );
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  Jet E = sqrt( px*px + py*py + pz*pz + msq );
  field B( x, y, z );
@@ -88,18 +90,24 @@ main( int argc, char** argv ) {
  w.SetComponent( 5, pz );
  // w.reset();
 
- u = (Mapping&) ( (JetVector&) ( v.expMap(  t, w ) ) );
- q = (Mapping&) ( (JetVector&) ( v.expMap( -t, w ) ) );
+ cout << "DGN: " << __FILE__ << "," << __LINE__
+      << ": u = v.expMap(  t, w );"
+      << endl;
+ u = v.expMap(  t, w );
+ cout << "DGN: " << __FILE__ << "," << __LINE__
+      << ": q = v.expMap( -t, w );"
+      << endl;
+ q = v.expMap( -t, w );
 
- printf( "\n-*-*-*-  u  coefficients  -*-*-*-*-*\n" );
+ cout << "\n-*-*-*-  u  coefficients  -*-*-*-*-*\n" << endl;
  u.printCoeffs();
 
- printf( "\n-*-*-*-  u  coefficients  -*-*-*-*-*\n" );
+ cout << "\n-*-*-*-  u  coefficients  -*-*-*-*-*\n" << endl;
  q.printCoeffs();
  
- printf( "\n-*-*-*-  u(q)  coefficients  -*-*-*-*-*\n" );
+ cout << "\n-*-*-*-  u(q)  coefficients  -*-*-*-*-*\n" << endl;
  u(q).printCoeffs();
 
- printf( "\n-*-*-*-  q(u)  coefficients  -*-*-*-*-*\n" );
+ cout << "\n-*-*-*-  q(u)  coefficients  -*-*-*-*-*\n" << endl;
  q(u).printCoeffs();
 }

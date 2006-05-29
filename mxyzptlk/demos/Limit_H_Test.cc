@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include "mxyzptlk.h"
 
+using namespace std;
+
 main( int argc, char** argv ) {
 
  if( argc == 1 ) {
@@ -23,9 +25,9 @@ main( int argc, char** argv ) {
 
  int i = 0;
  int deg = atoi( argv[1] );
- Jet::BeginEnvironment( deg );
+ Jet__environment::BeginEnvironment( deg );
  coord x(0.0);
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  int n = atoi( argv[2] );
  double* c = new double [n];

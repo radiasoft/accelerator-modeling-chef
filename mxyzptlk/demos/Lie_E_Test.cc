@@ -18,6 +18,8 @@
 #include <stdlib.h>
 #include "mxyzptlk.h"
 
+using namespace std;
+
 class field {
  private:
   Jet v[3];
@@ -54,10 +56,10 @@ main( int argc, char** argv ) {
 
  msq = msq*msq;
 
- Jet::BeginEnvironment( deg );
+ Jet__environment::BeginEnvironment( deg );
  coord  x( 0.0 ),  y( 0.0 ),  z( 0.0 );
  coord px( 0.0 ), py( 0.0 ), pz( 0.0 );
- Jet::EndEnvironment();
+ Jet__environment::EndEnvironment();
 
  Jet E = sqrt( px*px + py*py + pz*pz + msq );
  field B( x, y, z );
