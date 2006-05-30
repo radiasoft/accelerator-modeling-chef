@@ -55,27 +55,24 @@
 #include <ReferenceCounter.h>
 #include <MLPtr.h>
 
-template<typename T> typename MLPtr<T>::Type Negate( typename MLPtr<T>::Type const& );
+template<typename T> MLPtr<T> Negate( MLPtr<T> const& );
 
-template<typename T> typename MLPtr<T>::Type add(typename MLPtr<T>::Type const& x, typename MLPtr<T>::Type const& y); 
-template<typename T> typename MLPtr<T>::Type add(typename MLPtr<T>::Type const& x, const T& y);
+template<typename T> MLPtr<T> add(MLPtr<T> const& x, MLPtr<T> const& y); 
+template<typename T> MLPtr<T> add(MLPtr<T> const& x, const T& y);
 
-template<typename T> typename MLPtr<T>::Type subtract(typename MLPtr<T>::Type const& x, typename MLPtr<T>::Type const& y); 
-
-
-template<typename T> typename MLPtr<T>::Type multiply( typename MLPtr<T>::Type const& x, const T& y); 
-template<typename T> typename MLPtr<T>::Type multiply(typename MLPtr<T>::Type const& x, typename MLPtr<T>::Type const& y);
-
-//MLPtr<std::complex<double> >::Type  multiply( MLPtr<std::complex<double> >::Type const& x,  MLPtr<double>::Type const&  y);
+template<typename T> MLPtr<T> subtract(MLPtr<T> const& x, MLPtr<T> const& y); 
 
 
-template<typename T> typename MLPtr<T>::Type divide (typename MLPtr<T>::Type const& x, T const& y); 
-template<typename T> typename MLPtr<T>::Type divide (T const&y,                        typename MLPtr<T>::Type const& x  ); 
-template<typename T> typename MLPtr<T>::Type divide (typename MLPtr<T>::Type const& y, typename MLPtr<T>::Type const& x);
+template<typename T> MLPtr<T> multiply( MLPtr<T> const& x, const T& y); 
+template<typename T> MLPtr<T> multiply(MLPtr<T> const& x, MLPtr<T> const& y);
+
+template<typename T> MLPtr<T> divide (MLPtr<T> const& x, T const& y); 
+template<typename T> MLPtr<T> divide (T const&y,                        MLPtr<T> const& x  ); 
+template<typename T> MLPtr<T> divide (MLPtr<T> const& y, MLPtr<T> const& x);
 
 
-MLPtr<double>::Type real_part( MLPtr<std::complex<double> >::Type const& x );
-MLPtr<double>::Type imag_part( MLPtr<std::complex<double> >::Type const& x );
+MLPtr<double> real_part( MLPtr<std::complex<double> > const& x );
+MLPtr<double> imag_part( MLPtr<std::complex<double> > const& x );
 
 template<typename T> std::ostream& operator<< (std::ostream& os, const TML<T>& x);
 
@@ -83,9 +80,8 @@ template<typename T> std::ostream& operator<< (std::ostream& os, const TML<T>& x
 template<typename T> 
 class TML : public ReferenceCounter<TML<T> > {
 
-  friend class TML<double>;
-  friend class TML<std::complex<double> >;
-
+  template <typename U>
+  friend class TML;
 
  private:
 
@@ -94,28 +90,32 @@ class TML : public ReferenceCounter<TML<T> > {
   int _ncols;      // number of columns
 
   void                    _clear();
-  void                    _copy_column(typename MLPtr<T>::Type const& mm, int from_col, int to_col); 
+  void                    _copy_column(MLPtr<T> const& mm, int from_col, int to_col); 
   void                    _switch_rows(int row1, int row2); 
-  typename MLPtr<T>::Type _scale() const; 
-  typename MLPtr<T>::Type _lu_decompose(int* indx, int& d ) const;
-  void                    _lu_back_subst(int* indx, typename MLPtr<T>::Type& b);  
+  MLPtr<T> _scale() const; 
+  MLPtr<T> _lu_decompose(int* indx, int& d ) const;
+  void                    _lu_back_subst(int* indx, MLPtr<T>& b);  
 
  public:
 
   // Constructors and destructors_____________________________________
 
   TML();
-  TML(const TML<T>&);
+
+  TML(TML const&);
+
+  template <typename U>
+  TML(TML<U> const&);
+
   explicit TML(const char*, int);
   explicit TML(int rows, int columns,        T  initval);
   explicit TML(int rows, int columns,  const T* initval);
+
  ~TML();
  
-  operator TML<std::complex<double> >* (); 
-
   void dispose() {delete this;} // needed by ReferenceCounter
-  typename MLPtr<T>::Type clone() 
-                           { return typename MLPtr<T>::Type( new TML<T>(*this) ); } 
+  MLPtr<T> clone() 
+                           { return MLPtr<T>( new TML<T>(*this) ); } 
 
   // Public member functions__________________________________________
 
@@ -124,17 +124,17 @@ class TML : public ReferenceCounter<TML<T> > {
   inline int rows() const { return _nrows;}
   inline int cols() const { return _ncols;}
 
-  typename MLPtr<T>::Type Square()    const; 
-  typename MLPtr<T>::Type transpose() const; 
-  typename MLPtr<T>::Type dagger()    const; 
-  typename MLPtr<T>::Type inverse()   const;
+  MLPtr<T> Square()    const; 
+  MLPtr<T> transpose() const; 
+  MLPtr<T> dagger()    const; 
+  MLPtr<T> inverse()   const;
  
-  MLPtr<std::complex<double> >::Type eigenValues()     const; 
-  MLPtr<std::complex<double> >::Type eigenVectors()    const; 
+  MLPtr<std::complex<double> > eigenValues()     const; 
+  MLPtr<std::complex<double> > eigenVectors()    const; 
   
-  static void orderCoordinates(MLPtr<std::complex<double> >::Type& eigenvalues,   MLPtr<std::complex<double> >::Type& eigenvectors); 
+  static void orderCoordinates(MLPtr<std::complex<double> >& eigenvalues,   MLPtr<std::complex<double> >& eigenvectors); 
  
-  void SVD (typename MLPtr<T>::Type& U, typename MLPtr<T>::Type& W, typename MLPtr<T>::Type& V ) const;   
+  void SVD (MLPtr<T>& U, MLPtr<T>& W, MLPtr<T>& V ) const;   
 
   T      determinant() const; 
   T      trace() const; 
@@ -145,26 +145,23 @@ class TML : public ReferenceCounter<TML<T> > {
   T& operator()(int i); 
   T  operator()(int i) const; 
 
-  friend typename MLPtr<T>::Type add<T>(typename MLPtr<T>::Type const& x, typename MLPtr<T>::Type const& y); 
-  friend typename MLPtr<T>::Type add<T>(typename MLPtr<T>::Type const& x, const T& y);
+  friend MLPtr<T> add<T>(MLPtr<T> const& x, MLPtr<T> const& y); 
+  friend MLPtr<T> add<T>(MLPtr<T> const& x, const T& y);
  
-  friend typename MLPtr<T>::Type subtract<T>(typename MLPtr<T>::Type const& x, typename MLPtr<T>::Type const& y); 
+  friend MLPtr<T> subtract<T>(MLPtr<T> const& x, MLPtr<T> const& y); 
 
-  friend typename MLPtr<T>::Type multiply<T>( typename MLPtr<T>::Type const& x, const T& y); 
-  friend typename MLPtr<T>::Type multiply<T>( typename MLPtr<T>::Type const& x, typename MLPtr<T>::Type const& y);
+  friend MLPtr<T> multiply<T>( MLPtr<T> const& x, const T& y); 
+  friend MLPtr<T> multiply<T>( MLPtr<T> const& x, MLPtr<T> const& y);
   
-  //friend MLPtr<std::complex<double> >::Type  
-  //                    multiply( MLPtr<std::complex<double> >::Type const& x,  MLPtr<double>::Type const&  y);
-
   
-  friend typename MLPtr<T>::Type divide<T>( typename MLPtr<T>::Type const& x, T const& y); 
-  friend typename MLPtr<T>::Type divide<T>( T const&y,                        typename MLPtr<T>::Type const& x ); 
-  friend typename MLPtr<T>::Type divide<T>( typename MLPtr<T>::Type const& y, typename MLPtr<T>::Type const& x ); 
+  friend MLPtr<T> divide<T>( MLPtr<T> const& x, T const& y); 
+  friend MLPtr<T> divide<T>( T const&y,                        MLPtr<T> const& x ); 
+  friend MLPtr<T> divide<T>( MLPtr<T> const& y, MLPtr<T> const& x ); 
 
-  friend typename MLPtr<T>::Type Negate<T>( typename MLPtr<T>::Type const& x ); 
+  friend MLPtr<T> Negate<T>( MLPtr<T> const& x ); 
 
-  friend MLPtr<double>::Type real_part( MLPtr<std::complex<double> >::Type const& x );
-  friend MLPtr<double>::Type imag_part( MLPtr<std::complex<double> >::Type const& x );
+  friend MLPtr<double> real_part( MLPtr<std::complex<double> > const& x );
+  friend MLPtr<double> imag_part( MLPtr<std::complex<double> > const& x );
 
   friend std::ostream& operator<< <T>(std::ostream& os, const TML<T>& x);
 
@@ -240,29 +237,25 @@ class TML : public ReferenceCounter<TML<T> > {
 
 // TML Specializations
 
-template<> 
-MLPtr<double>::Type                 TML<double>::dagger()                                const;     
-template<> 
-MLPtr<std::complex<double> >::Type  TML<std::complex<double> >::dagger()                 const; 
+template<>
+template<>
+TML<std::complex<double> >::TML(const TML<double>&);
 
-template<> MLPtr<std::complex<double> >::Type TML<double>::eigenValues()                 const;  
-template<> MLPtr<std::complex<double> >::Type TML<double>::eigenVectors()                const; 
+template<> MLPtr<double>                 TML<double>::dagger()                      const;     
+template<> MLPtr<std::complex<double> >  TML<std::complex<double> >::dagger()       const; 
 
-template<> MLPtr<std::complex<double> >::Type TML<std::complex<double> >::eigenValues()  const;
-template<> MLPtr<std::complex<double> >::Type TML<std::complex<double> >::eigenVectors() const;
+template<> MLPtr<std::complex<double> >  TML<double>::eigenValues()                 const;  
+template<> MLPtr<std::complex<double> >  TML<double>::eigenVectors()                const; 
+
+template<> MLPtr<std::complex<double> >  TML<std::complex<double> >::eigenValues()  const;
+template<> MLPtr<std::complex<double> >  TML<std::complex<double> >::eigenVectors() const;
 
 template<>
-void TML<double>::orderCoordinates(MLPtr<std::complex<double> >::Type& eigenvalues,   MLPtr<std::complex<double> >::Type& eigenvectors);  // undefined !
+void TML<double>::orderCoordinates(MLPtr<std::complex<double> >& eigenvalues,   MLPtr<std::complex<double> >& eigenvectors);  // undefined !
 template<>
-void TML<std::complex<double> >::orderCoordinates(MLPtr<std::complex<double> >::Type& eigenvalues,   MLPtr<std::complex<double> >::Type& eigenvectors); 
+void TML<std::complex<double> >::orderCoordinates(MLPtr<std::complex<double> >& eigenvalues,   MLPtr<std::complex<double> >& eigenvectors); 
 
-template<> void TML<double>::SVD (MLPtr<double>::Type& U, MLPtr<double>::Type& W, MLPtr<double>::Type& V ) const;   
-
-template<>
-TML<double>::operator   TML<std::complex<double> >* ();
-
-template<>
-TML<std::complex<double> >::operator   TML<std::complex<double> >* ();  // not implemented !
+template<> void TML<double>::SVD (MLPtr<double>& U, MLPtr<double>& W, MLPtr<double>& V ) const;   
 
 
 #endif //TML_H

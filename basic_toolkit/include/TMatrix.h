@@ -96,21 +96,21 @@ template<typename T>
 
 class TMatrix {
 
-  friend class TMatrix<double>;
-  friend class TMatrix<std::complex<double> >;
+  template<typename U>
+  friend class TMatrix;
 
 protected:
 
-  typename MLPtr<T>::Type  _ml;
+  MLPtr<T> _ml;
 
-  // Functions used by the eigen routines.
+  // Functions used by the eigenroutines.
 
  private:
 
   void       _copy_column(TMatrix<T>& x, int, int );
   void       _switch_rows( int, int );
-  TMatrix<T> _scale();
-  TMatrix<T> _lu_decompose( int*, int& ) const;
+  TMatrix    _scale();
+  TMatrix    _lu_decompose( int*, int& ) const;
   void       _lu_back_subst( int*, TMatrix<T>& );
 
 public:
@@ -124,12 +124,15 @@ public:
   TMatrix(int rows, int columns, T* initval);
   TMatrix(const char* flag, int dimension); // create an identity matrix
                                             // or a symplectic matrix
-  TMatrix(const TMatrix<T>& X);
-  TMatrix(typename MLPtr<T>::Type& ml);
+
+  template<typename U>
+  TMatrix(TMatrix<U> const& );
+
+  TMatrix(TMatrix const& );
+
+  TMatrix(MLPtr<T> const& ml);
 
  ~TMatrix();
-
-  operator TMatrix<std::complex<double> > () const;  
 
   // Public member functions__________________________________________
 
@@ -139,11 +142,11 @@ public:
   inline int rows() const { return _ml->rows();}
   inline int cols() const { return _ml->cols();}
 
-  TMatrix<T>                     transpose()    const; 
-  TMatrix<T>                     dagger()       const;
-  TMatrix<T>                     Square()       const;
+  TMatrix                        transpose()    const; 
+  TMatrix                        dagger()       const;
+  TMatrix                        Square()       const;
   T                              determinant()  const;
-  TMatrix<T>                     inverse()      const;
+  TMatrix                        inverse()      const;
   TMatrix<std::complex<double> > eigenValues()  const;
   TMatrix<std::complex<double> > eigenVectors() const;
   T                              trace()        const ; 
@@ -153,9 +156,9 @@ public:
   // Operators________________________________________________________
   
   
-  TMatrix<T>& DeepCopy(const TMatrix&);
+  TMatrix& DeepCopy(const TMatrix&);
 
-  TMatrix<T>& operator=(const TMatrix&);
+  TMatrix& operator=(const TMatrix&);
 
   T& operator()(int row, int column);
   T  operator()(int row, int column) const;
@@ -200,10 +203,12 @@ public:
 // TMatrix Specializations
 
 
-template<> TMatrix<double>::operator TMatrix<std::complex<double> > ()  const;  
+template<> 
+template<> 
+TMatrix<std::complex<double> >::TMatrix(TMatrix<double> const& );  
 
 template<> 
-TMatrix<double>                                TMatrix<double>::dagger() const; 
+TMatrix<double>                 TMatrix<double>::dagger() const; 
 
 template<> 
 TMatrix<std::complex<double> >  TMatrix<std::complex<double> >::dagger() const; 
