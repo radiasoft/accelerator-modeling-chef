@@ -34,13 +34,38 @@
 
 #include <boost/intrusive_ptr.hpp>
 
-template<typename T>
+
+template <typename T>
 class TML;
 
+
 template<typename T>
-struct MLPtr
-{
-  typedef boost::intrusive_ptr<TML<T> > Type;
+class MLPtr: public boost::intrusive_ptr<TML<T> > {
+ 
+ public: 
+
+ MLPtr():                             boost::intrusive_ptr<TML<T> >() {}
+ MLPtr(TML<T>* p, bool add_ref=true): boost::intrusive_ptr<TML<T> >(p,add_ref) {}
+
+
+ template<typename U>
+ operator MLPtr<U>() const; 
+
+
 };
 
+// ---------------------------------------------------------------------------------
+// specializations
+// ---------------------------------------------------------------------------------
+
+
+template<>
+template<>
+MLPtr<double>::operator MLPtr<std::complex<double> >() const;
+
+
+#ifdef BASICTOOLKIT_IMPLICIT_TEMPLATES
+#include <MLPtr.tcc>
 #endif
+
+#endif //  MLPTR_H
