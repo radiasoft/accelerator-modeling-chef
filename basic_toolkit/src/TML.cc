@@ -63,9 +63,39 @@ static std::complex<double> complex_0(0.0, 0.0);
 // ==================================================================
 
 template<>
-MLPtr<std::complex<double> >::Type TML<std::complex<double> >::dagger() const
-{
-  MLPtr<std::complex<double> >::Type  z( new  TML<std::complex<double> >(*this) );
+template<>
+TML<std::complex<double> >::TML( TML<double> const& ml): _nrows(ml._nrows), _ncols(ml._ncols)  { 
+  
+  _mdata = new std::complex<double>* [_nrows];
+
+  int sz = _nrows*_ncols;
+
+  std::complex<double>* dataPtr = new std::complex<double> [ sz ];
+
+  for( int i=0; i<_nrows; ++i) { 
+     _mdata[i] = dataPtr;
+     dataPtr += _ncols;
+  }
+
+  // note: we do not use memcopy() because of the type conversion.
+
+  for( int i=0; i< _nrows; ++i ) {
+    for( int j=0; j< _ncols; ++j ) {
+      _mdata[i][j] = std::complex<double>( ml._mdata[i][j], 0.0 );
+    }
+  }
+  
+  return;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<>
+MLPtr<std::complex<double> > 
+TML<std::complex<double> >::dagger() const {
+
+  MLPtr<std::complex<double> >  z( new  TML<std::complex<double> >(*this) );
 
   for(int row=0;  row<_nrows; ++row) {
     for(int col=0; col < _ncols; ++col) {
@@ -80,44 +110,12 @@ MLPtr<std::complex<double> >::Type TML<std::complex<double> >::dagger() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<>
-TML<double>::operator TML<std::complex<double> >* () { 
-  
-  TML<std::complex<double> >* z = 
-     new TML<std::complex<double> >(_nrows, _ncols, complex_0);
 
-  for( int i=0; i< _nrows; ++i ) {
-    for( int j=0; j< _ncols; ++j ) {
-      z->_mdata[i][j] = std::complex<double>( _mdata[i][j], 0.0 );
-    }
-  }
-  
-  return z;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-#if  0
-TML<std::complex<double> >::operator TML<std::complex<double> >*() {
-
-  // *** This function should never be called *** 
-  // It is here for symmetry because it ends up being instantiated when explicit class
-  // instantiation is used. 
-  
-  return TML<std::complex<double> >( *this); 
-  
-}
-#endif
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-MLPtr<double>::Type real_part( MLPtr<std::complex<double> >::Type const& x )
+MLPtr<double> real_part( MLPtr<std::complex<double> > const& x )
 {
   int sz =  x->_nrows * x->_ncols; 
 
-  MLPtr<double>::Type ret( new TML<double>(x->_nrows, x->_ncols, 0.0) );
+  MLPtr<double> ret( new TML<double>(x->_nrows, x->_ncols, 0.0) );
   
   std::complex<double>* p =   x->_mdata[0];
   double*               q = ret->_mdata[0];
@@ -133,12 +131,11 @@ MLPtr<double>::Type real_part( MLPtr<std::complex<double> >::Type const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-MLPtr<double>::Type imag_part( MLPtr<std::complex<double> >::Type const& z )
+MLPtr<double> imag_part( MLPtr<std::complex<double> > const& z )
 {
   int sz =  z->_nrows * z->_ncols; 
 
-  MLPtr<double>::Type x( new TML<double>(z->_nrows, z->_ncols, 0.0) );
+  MLPtr<double> x( new TML<double>(z->_nrows, z->_ncols, 0.0) );
   
   std::complex<double>* p =   z->_mdata[0];
   double*               q =   x->_mdata[0];
@@ -156,7 +153,7 @@ MLPtr<double>::Type imag_part( MLPtr<std::complex<double> >::Type const& z )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-MLPtr<std::complex<double> >::Type TML<double>::eigenVectors()  const
+MLPtr<std::complex<double> > TML<double>::eigenVectors()  const
 {
 
   double* wr = new double[_ncols];
@@ -169,8 +166,8 @@ MLPtr<std::complex<double> >::Type TML<double>::eigenVectors()  const
 
   int i,j;
 
-  MLPtr<std::complex<double> >::Type eigenvectors ( new TML<std::complex<double> >(_nrows,_ncols,complex_0) );
-  MLPtr<std::complex<double> >::Type eigenvalues  ( new TML<std::complex<double> >(1,_ncols,complex_0)      );
+  MLPtr<std::complex<double> > eigenvectors ( new TML<std::complex<double> >(_nrows,_ncols,complex_0) );
+  MLPtr<std::complex<double> > eigenvalues  ( new TML<std::complex<double> >(1,_ncols,complex_0)      );
 
   int nrows  = _nrows;
   int ncols  = _ncols;
@@ -261,7 +258,7 @@ MLPtr<std::complex<double> >::Type TML<double>::eigenVectors()  const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-MLPtr<std::complex<double> >::Type TML<double>::eigenValues() const
+MLPtr<std::complex<double> > TML<double>::eigenValues() const
 {
   int nrows = _nrows;
   int ncols = _ncols;
@@ -279,8 +276,8 @@ MLPtr<std::complex<double> >::Type TML<double>::eigenValues() const
   int oddEven   = nrows/2;
   int realCount = 0;
 
-  MLPtr<std::complex<double> >::Type eigenvectors(  new TML<std::complex<double> >(_nrows, _ncols, complex_0));
-  MLPtr<std::complex<double> >::Type eigenvalues( new TML<std::complex<double> >(1, _ncols, complex_0));
+  MLPtr<std::complex<double> > eigenvectors(  new TML<std::complex<double> >(_nrows, _ncols, complex_0));
+  MLPtr<std::complex<double> > eigenvalues( new TML<std::complex<double> >(1, _ncols, complex_0));
 
   int k = 0;
   for(int i=0;  i< _nrows; ++i) {
@@ -353,9 +350,8 @@ MLPtr<std::complex<double> >::Type TML<double>::eigenValues() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<>
-MLPtr<std::complex<double> >::Type TML<std::complex<double> >::eigenValues() const { 
+MLPtr<std::complex<double> > TML<std::complex<double> >::eigenValues() const { 
 
   int nm   = _nrows;
   int n    = _ncols;
@@ -373,7 +369,7 @@ MLPtr<std::complex<double> >::Type TML<std::complex<double> >::eigenValues() con
 
   int ierr,i,j,k;
   int oddEven = nm/2;
-  MLPtr<std::complex<double> >::Type eigenvalues( new TML<std::complex<double> >( 1, _ncols, complex_0));
+  MLPtr<std::complex<double> > eigenvalues( new TML<std::complex<double> >( 1, _ncols, complex_0));
 
   k = 0;
   for(i = 0; i < _nrows; ++i) {
@@ -384,7 +380,7 @@ MLPtr<std::complex<double> >::Type TML<std::complex<double> >::eigenValues() con
       ++k;
     }
   }
-  MLPtr<std::complex<double> >::Type eigenvectors( new TML<std::complex<double> >(nm,n,complex_0) );
+  MLPtr<std::complex<double> > eigenvectors( new TML<std::complex<double> >(nm,n,complex_0) );
   cg_(&nm,&n,br,bi,wr,wi,&matz,cr,ci,fv1,fv2,fv3,&ierr);
 
   if(ierr != 0) {
@@ -457,7 +453,7 @@ MLPtr<std::complex<double> >::Type TML<std::complex<double> >::eigenValues() con
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-MLPtr<std::complex<double> >::Type TML<std::complex<double> >::eigenVectors() const {
+MLPtr<std::complex<double> > TML<std::complex<double> >::eigenVectors() const {
 
   int nm   = _nrows;
   int n    = _ncols;
@@ -486,7 +482,7 @@ MLPtr<std::complex<double> >::Type TML<std::complex<double> >::eigenVectors() co
     }
   }
 
-  MLPtr<std::complex<double> >::Type eigenvectors( new TML<std::complex<double> >(nm,n,complex_0));
+  MLPtr<std::complex<double> > eigenvectors( new TML<std::complex<double> >(nm,n,complex_0));
   cg_(&nm,&n,br,bi,wr,wi,&matz,cr,ci,fv1,fv2,fv3,&ierr);
 
   if(ierr != 0) {
@@ -552,38 +548,9 @@ MLPtr<std::complex<double> >::Type TML<std::complex<double> >::eigenVectors() co
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-#if  0
-MLPtr<std::complex<double> >::Type  multiply( MLPtr<std::complex<double> >::Type const& x,  MLPtr<double>::Type const&  y)
-{
-
-  MLPtr<std::complex<double> >::Type z( new TML<std::complex<double> >( *x ) );
-
-  if( x->_ncols != y->_nrows) {
-    throw(  TML<std::complex<double> >::Incompatible( x->_nrows, x->_ncols, y->_nrows, y->_ncols,
-           "multiply(MLPtr<std::complex<double> >::Type const& x,  MLPtr<double>::Type const&  y)" ) );
-  }
-
-
-  for(int row=0; row< x->_nrows; ++row) {
-    for(int col = 0; col < y->_ncols; ++col){
-      std::complex<double>  sum = complex_0;
-      for(int i=0; i< x->_ncols; ++i) {
-        sum += x->_mdata[row][i] * std::complex<double> (y->_mdata[i][col],0.0);
-      }
-      z->_mdata[row][col] = sum;
-    }
-  }
-  return z;
-}
-
-#endif
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 template<>
 void 
-TML<std::complex<double> >::orderCoordinates(MLPtr<std::complex<double> >::Type& eigenvalues,   MLPtr<std::complex<double> >::Type& eigenvectors) {
+TML<std::complex<double> >::orderCoordinates(MLPtr<std::complex<double> >& eigenvalues,   MLPtr<std::complex<double> >& eigenvectors) {
 
 //
 // eigenvectors is now a 1 x n matrix (row) containing the eigenvalues 

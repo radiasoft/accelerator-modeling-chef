@@ -51,7 +51,8 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-double TVector<double>::operator* ( const TVector<double>& x ) const
+double 
+TVector<double>::operator* ( const TVector<double>& x ) const
 {
 #ifndef NOCHECKS
   CHECKOUT(double, _dim != x._dim, "TVector<double>::operator*", "dimensions incompatible.")
@@ -68,8 +69,9 @@ double TVector<double>::operator* ( const TVector<double>& x ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<>
-std::complex<double> TVector<std::complex<double> >::operator* ( const TVector<std::complex<double> >& x ) const {
+template<> 
+std::complex<double> 
+TVector<std::complex<double> >::operator* ( const TVector<std::complex<double> >& x ) const {
 #ifndef NOCHECKS
   CHECKOUT(std::complex<double>, _dim != x._dim, "TVector<double>::operator*", "dimensions incompatible.")
 #endif
@@ -84,9 +86,9 @@ std::complex<double> TVector<std::complex<double> >::operator* ( const TVector<s
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 template<>
-bool TVector<double>::operator> ( const TVector<double>& x ) const
+bool 
+TVector<double>::operator> ( const TVector<double>& x ) const
 {
 #ifndef NOCHECKS
   CHECKOUT(double, _dim != x._dim, "TVector<T>::operator>", "Dimensions incompatible.")

@@ -57,6 +57,7 @@
 
 #include <TMatrix.tcc>
 #include <TML.tcc>
+#include <MLPtr.tcc>
 #include <TVector.tcc>
 #include <FastPODAllocator.h>
 #include <dlist.h>
@@ -148,12 +149,15 @@ template TMatrix<double> operator/<double>(const double&,          TMatrix<doubl
 template TMatrix<double> operator/<double>(TMatrix<double> const&, TMatrix<double> const&);
 
 
-//template bool operator==( const TMatrix<int>&, const TMatrix<int>& );
-//template bool operator==( const TMatrix<int>&, const int& );
-//template bool operator==( const int&, const TMatrix<int>& );
-//template std::ostream& operator<<(std::ostream&, const TMatrix<int>&);
-
 #if 0
+==================integer form of Matrix is disabled ============================================
+                    
+
+template bool operator==( const TMatrix<int>&, const TMatrix<int>& );
+template bool operator==( const TMatrix<int>&, const int& );
+template bool operator==( const int&, const TMatrix<int>& );
+template std::ostream& operator<<(std::ostream&, const TMatrix<int>&);
+
 template TMatrix<int> operator+(const TMatrix<int>&, const TMatrix<int>&);
 template TMatrix<int> operator+(const TMatrix<int>&, const int&); 
 template TMatrix<int> operator+(const int&,          const TMatrix<int>&); 
@@ -167,6 +171,8 @@ template TMatrix<int> operator*(const int&,          const TMatrix<int>&);
 template TMatrix<int> operator/(TMatrix<int> const&, const int&);
 template TMatrix<int> operator/(const int&,          TMatrix<int> const&);
 template TMatrix<int> operator/(TMatrix<int> const&, TMatrix<int> const&);
+
+===================================================================================================
 #endif
 
 template bool operator==( const TMatrix<std::complex<double> >&, const TMatrix<std::complex<double> >& );
@@ -192,32 +198,17 @@ template TMatrix<std::complex<double> > operator/(TMatrix<std::complex<double> >
 template bool operator!=<std::complex<double> >(TMatrix<std::complex<double> > const&, TMatrix<std::complex<double> > const&);
 
 
-
-//TMatrix<std::complex<double> > operator/<std::complex<double> >(TMatrix<std::complex<double> > const&, std::complex<double> const&)'
-//TMatrix<std::complex<double> > operator*<std::complex<double> >(TMatrix<std::complex<double> > const&, std::complex<double> const&)
-//TMatrix<double> operator*<double>(TMatrix<double> const&, double const&)'
-//TMatrix<double> operator*<double>(double const&, TMatrix<double> const&)'
-
-//TMatrix<double>::trace() const
-//TMatrix<double>::eigenVectors() const
-//TMatrix<double>::eigenValues()  const
-//TMatrix<double>::SVD(TMatrix<double>&, TMatrix<double>&, TMatrix<double>&)
-
-//bool operator!=<double>(TMatrix<double> const&, TMatrix<double> const&)'
-
-
-//TJet<std::complex<double> > pow<std::complex<double> >(TJet<std::complex<double> > const&, double const&)'
-//TJetVector<std::complex<double> > operator*<std::complex<double> >(std::complex<double> const&, TJetVector<std::complex<double> > const&)'
-
-
+//----------------------------------------------------------------------------------------------------------------
 // Instantiations for class TML<T>
+//----------------------------------------------------------------------------------------------------------------
 
 template class TML<double>;
 template class TML<std::complex<double> >;
+
 //template class TML<int>;
 
-template MLPtr<std::complex<double> >::Type Negate<std::complex<double> >(MLPtr<std::complex<double> >::Type const&);
-template MLPtr<double>::Type Negate<double>(MLPtr<double>::Type const&);
+template MLPtr<std::complex<double> > Negate<std::complex<double> >(MLPtr<std::complex<double> > const&);
+template MLPtr<double> Negate<double>(MLPtr<double> const&);
 
 
 //template std::ostream& operator<< (std::ostream&, TML<int> const&);
@@ -225,7 +216,6 @@ template std::ostream& operator<< (std::ostream&, TML<double> const&);
 template std::ostream& operator<< (std::ostream&, TML<std::complex<double> > const&);
 
 
-template TML<std::complex<double> >::operator TML<std::complex<double> >*();
 template bool operator!=<double>(TMatrix<double> const&, TMatrix<double> const&);
 
 
@@ -234,86 +224,93 @@ template bool operator!=<double>(TMatrix<double> const&, TMatrix<double> const&)
 #if  0
 ==============================================================================================
 template 
-MLPtr<int>::Type TML<int>::Negate (  MLPtr<int>::Type const& );
+MLPtr<int> TML<int>::Negate (  MLPtr<int> const& );
 
 template 
-MLPtr<int>::Type TML<int>::add     (  MLPtr<int>::Type const&,  MLPtr<int>::Type const& );  
+MLPtr<int> TML<int>::add     (  MLPtr<int> const&,  MLPtr<int> const& );  
 template 
-MLPtr<int>::Type TML<int>::add     (  MLPtr<int>::Type const&,  int const& );  
+MLPtr<int> TML<int>::add     (  MLPtr<int> const&,  int const& );  
 
 template 
-MLPtr<int>::Type TML<int>::subtract(  MLPtr<int>::Type const&,  MLPtr<int>::Type const& );  
+MLPtr<int> TML<int>::subtract(  MLPtr<int> const&,  MLPtr<int> const& );  
 
 template 
-MLPtr<int>::Type TML<int>::multiply(  MLPtr<int>::Type const&,  MLPtr<int>::Type const& );  
+MLPtr<int> TML<int>::multiply(  MLPtr<int> const&,  MLPtr<int> const& );  
 
 template 
-MLPtr<int>::Type TML<int>::multiply(  MLPtr<int>::Type const&,  int const& );  
+MLPtr<int> TML<int>::multiply(  MLPtr<int> const&,  int const& );  
 
 
 template 
-MLPtr<int>::Type TML<int>::divide  (  MLPtr<int>::Type const&,  MLPtr<int>::Type const& );  
+MLPtr<int> TML<int>::divide  (  MLPtr<int> const&,  MLPtr<int> const& );  
 
 template 
-MLPtr<int>::Type TML<int>::divide  (  MLPtr<int>::Type const&,  int const& );  
+MLPtr<int> TML<int>::divide  (  MLPtr<int> const&,  int const& );  
 
 template 
-MLPtr<int>::Type TML<int>::divide  (  int const&,                MLPtr<int>::Type const& );  
+MLPtr<int> TML<int>::divide  (  int const&,                MLPtr<int> const& );  
 ===============================================================================================
 #endif
-// ---------------------------------------------------------------------------------------
-
-template 
-MLPtr<double>::Type add<double>(  MLPtr<double>::Type const&,  MLPtr<double>::Type const& );  
-template 
-MLPtr<double>::Type add<double>(  MLPtr<double>::Type const&,  double const& );  
-
-template 
-MLPtr<double>::Type subtract<double>(  MLPtr<double>::Type const&,  MLPtr<double>::Type const& );  
-
-
-template 
-MLPtr<double>::Type multiply<double>(  MLPtr<double>::Type const&,  MLPtr<double>::Type const& );  
-
-template 
-MLPtr<double>::Type multiply<double>(  MLPtr<double>::Type const&,  double const& );  
-
-
-template 
-MLPtr<double>::Type divide<double>  (  MLPtr<double>::Type const&,  MLPtr<double>::Type const& );  
-
-template 
-MLPtr<double>::Type divide<double>  (  MLPtr<double>::Type const&,  double const& );
-
-template 
-MLPtr<double>::Type divide<double>  (  double const&,                MLPtr<double>::Type const& );  
 
 // ---------------------------------------------------------------------------------------
 
-template MLPtr<std::complex<double> >::Type 
-add<std::complex<double> >(  MLPtr<std::complex<double> >::Type const&,  MLPtr<std::complex<double> >::Type const& );  
+template 
+MLPtr<double> add<double>(  MLPtr<double> const&,  MLPtr<double> const& );  
+template 
+MLPtr<double> add<double>(  MLPtr<double> const&,  double const& );  
 
-template MLPtr<std::complex<double> >::Type 
-add<std::complex<double> >(  MLPtr<std::complex<double> >::Type const&,  std::complex<double> const& );  
-
-template MLPtr<std::complex<double> >::Type 
-subtract<std::complex<double> >(  MLPtr<std::complex<double> >::Type const&,  MLPtr<std::complex<double> >::Type const& );  
-
-template MLPtr<std::complex<double> >::Type 
-multiply<std::complex<double> >(  MLPtr<std::complex<double> >::Type const&,  MLPtr<std::complex<double> >::Type const& );  
-
-template MLPtr<std::complex<double> >::Type 
-multiply<std::complex<double> >(  MLPtr<std::complex<double> >::Type const&,  std::complex<double> const& );  
+template 
+MLPtr<double> subtract<double>(  MLPtr<double> const&,  MLPtr<double> const& );  
 
 
-template MLPtr<std::complex<double> >::Type 
-divide<std::complex<double> >  (  MLPtr<std::complex<double> >::Type const&,  MLPtr<std::complex<double> >::Type const& );  
+template 
+MLPtr<double> multiply<double>(  MLPtr<double> const&,  MLPtr<double> const& );  
 
-template MLPtr<std::complex<double> >::Type 
-divide<std::complex<double> >  (  MLPtr<std::complex<double> >::Type const&,  std::complex<double> const& );  
+template 
+MLPtr<double> multiply<double>(  MLPtr<double> const&,  double const& );  
 
-template MLPtr<std::complex<double> >::Type 
-divide<std::complex<double> >  (  std::complex<double> const&,                MLPtr<std::complex<double> >::Type const& );  
+
+template 
+MLPtr<double> divide<double>  (  MLPtr<double> const&,  MLPtr<double> const& );  
+
+template 
+MLPtr<double> divide<double>  (  MLPtr<double> const&,  double const& );
+
+template 
+MLPtr<double> divide<double>  (  double const&,                MLPtr<double> const& );  
+
+// ---------------------------------------------------------------------------------------
+
+template MLPtr<std::complex<double> > 
+add<std::complex<double> >(  MLPtr<std::complex<double> > const&,  MLPtr<std::complex<double> > const& );  
+
+template MLPtr<std::complex<double> > 
+add<std::complex<double> >(  MLPtr<std::complex<double> > const&,  std::complex<double> const& );  
+
+template MLPtr<std::complex<double> > 
+subtract<std::complex<double> >(  MLPtr<std::complex<double> > const&,  MLPtr<std::complex<double> > const& );  
+
+template MLPtr<std::complex<double> > 
+multiply<std::complex<double> >(  MLPtr<std::complex<double> > const&,  MLPtr<std::complex<double> > const& );  
+
+template MLPtr<std::complex<double> > 
+multiply<std::complex<double> >(  MLPtr<std::complex<double> > const&,  std::complex<double> const& );  
+
+
+template MLPtr<std::complex<double> > 
+divide<std::complex<double> >  (  MLPtr<std::complex<double> > const&,  MLPtr<std::complex<double> > const& );  
+
+template MLPtr<std::complex<double> > 
+divide<std::complex<double> >  (  MLPtr<std::complex<double> > const&,  std::complex<double> const& );  
+
+template MLPtr<std::complex<double> > 
+divide<std::complex<double> >  (  std::complex<double> const&,                MLPtr<std::complex<double> > const& );  
+
+
+template class MLPtr<double>;
+template class MLPtr<std::complex<double> >;
+
+template MLPtr<double>::operator MLPtr<std::complex<double> >() const;
 
 
 #endif //BASICTOOLKIT_IMPLICIT_TEMPLATES
