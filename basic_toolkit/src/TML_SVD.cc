@@ -56,7 +56,7 @@
 using namespace std;
 
 template<>
-void TML<double>::SVD ( MLPtr<double>::Type& U, MLPtr<double>::Type& W, MLPtr<double>::Type& V ) const
+void TML<double>::SVD ( MLPtr<double> & U, MLPtr<double> & W, MLPtr<double> & V ) const
 {
 
 #define PYTHAG(a,b) ((at=fabs(a)) > (bt=fabs(b)) ? \
@@ -77,25 +77,25 @@ void TML<double>::SVD ( MLPtr<double>::Type& U, MLPtr<double>::Type& W, MLPtr<do
 
   if (m < n) {
     throw GenericMatrixException( m, n, 
-           "void TML<double>::SVD ( MLPtr<double>::Type& U, MLPtr<double>::Type& W, MLPtr<double>::Type& V ) const",
+           "void TML<double>::SVD ( MLPtr<double>& U, MLPtr<double>& W, MLPtr<double>& V ) const",
            "Fewer rows than columns: augment matrix with extra rows" );
   } 
   
   if( (W->_nrows != n) || (W->_ncols != 1) ) {
     throw  GenericMatrixException(W->_nrows, W->_ncols, 
-           "void TML<double>::SVD (  MLPtr<double>::Type& U, MLPtr<double>::Type& W, MLPtr<double>::Type& V ) const",
+           "void TML<double>::SVD (  MLPtr<double>& U, MLPtr<double>& W, MLPtr<double>& V ) const",
            "W has the wrong dimensions." );
   }
 
   if( (V->_nrows != n) || (V->_ncols != n) ) {
     throw GenericMatrixException( V->_nrows, V->_ncols, 
-           "void TML<double>::SVD ( MLPtr<double>::Type& U, MLPtr<double>::Type& W, MLPtr<double>::Type& V ) const",
+           "void TML<double>::SVD ( MLPtr<double>& U, MLPtr<double>& W, MLPtr<double>& V ) const",
            "V has the wrong dimensions." );
   }
 
 
 
-  U = MLPtr<double>::Type( new TML<double>(*this) ); // deep copy
+  U = MLPtr<double>( new TML<double>(*this) ); // deep copy
 
   double*  rv1 = new double[n];
 
@@ -229,7 +229,7 @@ void TML<double>::SVD ( MLPtr<double>::Type& U, MLPtr<double>::Type& W, MLPtr<do
 
       if (its == 30) { 
         throw( _nrows, _ncols, 
-               "void TML<double>::SVD (  MLPtr<double>::Type& U, MLPtr<double>::Type& W, MLPtr<double>::Type& V) const",
+               "void TML<double>::SVD (  MLPtr<double>& U, MLPtr<double>& W, MLPtr<double>& V) const",
                "No convergence in 30 SVDCMP iterations." );
       }
 
