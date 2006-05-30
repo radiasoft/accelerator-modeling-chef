@@ -50,18 +50,10 @@
 
 // from MXYZPLTK
 #include <beamline.h>
+#include <beam_element.h>
+#include <beam_line.h>
+#include <madparser.h>
 
-#if !defined(beam_element_h)
-#include "beam_element.h"
-#endif /* beam_element.h */
-
-#if !defined(beam_line_h)
-#include "beam_line.h"
-#endif /* beam_line.h */
-
-#if !defined(madparser_h)
-#include "madparser.h"
-#endif /* madparser_h */
 
 typedef char* char_ptr;
 
@@ -151,7 +143,7 @@ class bmlfactory {
     beamline* create_beamline( const char* beamline,  double brho);
     beamline* create_beamline( const char* beamline); // deprecated 
         
-    std::list<std::string>&  getBeamlineList();       // list of all instanciated beamlines  
+    std::list<std::string>&  getBeamlineList();       // list of all instantiated beamlines  
     const char* getUseStatementBeamlineName();        // get beamline name from USE statement, 0 if none found 
     const char* getParticleType() const;
 
