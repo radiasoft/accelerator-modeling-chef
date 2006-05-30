@@ -450,12 +450,15 @@ TJet<T> TLieOperator<T>::expMap( const TJet<T>& t, const TJet<T>& x )
 template<typename T>
 TJetVector<T> TLieOperator<T>::expMap( const T& t , const TJetVector<T>& x ) 
 {
- TJetVector<T> z;
+ TJetVector<T> z( x );
+ // Copy constructor used only for formal initialization
+ // of attributes.  The initial value of z's components
+ // are not relevant.                             - lpjm
  
  int i; // O.K.
- 
- for(  i = 0; i < TLieOperator<T>::_dim; i++ ) 
+ for(  i = 0; i < this->_dim; i++ ) {
   z(i) = expMap( t, x(i) );
+ }
 
  return z;
 }
@@ -465,11 +468,15 @@ TJetVector<T> TLieOperator<T>::expMap( const T& t , const TJetVector<T>& x )
 template<typename T>
 TJetVector<T> TLieOperator<T>::expMap( const TJet<T>& t, const TJetVector<T>& x ) 
 {
- TJetVector<T> z;
+ TJetVector<T> z( x );
+ // Copy constructor used only for formal initialization
+ // of attributes.  The initial value of z's components
+ // are not relevant.                             - lpjm
+
  int i; // O.K.
- 
- for(  i = 0; i <TLieOperator<T>:: _dim; i++ ) 
+ for(  i = 0; i < this->_dim; i++ ) {
   z(i) = expMap( t, x(i) );
+ }
 
  return z;
 }
