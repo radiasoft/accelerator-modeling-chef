@@ -159,7 +159,7 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   mutable int                         _constIterPtr;
   int                                 _iterPtr;
 
-  static std::vector<TJL1<T>* > TJL1<T>::_thePool;  // pool of discarded TJL1 objects
+  static std::vector<TJL1<T>* > _thePool;  // pool of discarded TJL1 objects
 
   void insert( TJLterm<T> const& );
   void append( TJLterm<T> const& );
@@ -255,7 +255,7 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   JL1Ptr<T> pow(const double&) const;
   JL1Ptr<T> log()              const;
   JL1Ptr<T> compose(JL1Ptr<T> const y[ ]) const; 
-  JL1Ptr<T> TJL1<T>::D( const int* n ) const; 
+  JL1Ptr<T> D( const int* n ) const; 
  
   void               resetConstIterator();
   const TJLterm<T>*  stepConstIteratorPtr()  const;
@@ -420,8 +420,10 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
 
 
 template<> 
+template<> 
 TJL1<std::complex<double> >::TJL1( TJL1<double> const& );  
 
+template<> 
 template<> 
 JL1Ptr<std::complex<double> >  TJL1<std::complex<double> >::makeTJL( TJL1<double> const& );
 

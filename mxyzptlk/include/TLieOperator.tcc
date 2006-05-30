@@ -108,14 +108,14 @@ using FNAL::pcout;
 
 
 template<typename T>
-TLieOperator<T>::TLieOperator<T>( EnvPtr<T> const theEnv ) 
+TLieOperator<T>::TLieOperator( EnvPtr<T> const theEnv ) 
 : TJetVector<T>( theEnv->spaceDim(), 0, theEnv )
 {
  TLieOperator<T>::_myEnv = theEnv;
  
  if( theEnv->spaceDim() == 0 ) {
    throw( GenericException(__FILE__, __LINE__, 
-          "TLieOperator<T>::TLieOperator<T>( TJetEnvironment<T>* ) ",
+          "TLieOperator<T>::TLieOperator( TJetEnvironment<T>* ) ",
           "Phase space has dimension zero." ) );
  }
 }
@@ -123,7 +123,7 @@ TLieOperator<T>::TLieOperator<T>( EnvPtr<T> const theEnv )
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TLieOperator<T>::TLieOperator<T>( const TLieOperator<T>& x ) 
+TLieOperator<T>::TLieOperator( const TLieOperator<T>& x ) 
 : TJetVector<T>( x._myEnv->spaceDim(), 0, x._myEnv )
 {
 
@@ -137,7 +137,7 @@ TLieOperator<T>::TLieOperator<T>( const TLieOperator<T>& x )
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TLieOperator<T>::TLieOperator<T>( const TJet<T>& x ) 
+TLieOperator<T>::TLieOperator( const TJet<T>& x ) 
 : TJetVector<T>( (x.Env())->spaceDim(), 0, x.Env() )
 { 
  int i = 0;
@@ -149,7 +149,7 @@ TLieOperator<T>::TLieOperator<T>( const TJet<T>& x )
 
  if( s == 0 ) {
    throw( GenericException(__FILE__, __LINE__, 
-          "TLieOperator<T>::TLieOperator<T>( const TJet<T>& ) ",
+          "TLieOperator<T>::TLieOperator( const TJet<T>& ) ",
           "Phase space has dimension zero." ) );
  }
  
@@ -157,7 +157,7 @@ TLieOperator<T>::TLieOperator<T>( const TJet<T>& x )
    ostringstream uic;
    uic  << "Phase space has odd dimension = " << s;
    throw( GenericException( __FILE__, __LINE__, 
-          "TLieOperator<T>::TLieOperator<T>( const TJet<T>& ) ",
+          "TLieOperator<T>::TLieOperator( const TJet<T>& ) ",
           uic.str().c_str() ) );
  }
 
@@ -186,19 +186,19 @@ TLieOperator<T>::TLieOperator<T>( const TJet<T>& x )
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TLieOperator<T>::TLieOperator<T>( char*, EnvPtr<T> const pje  ) 
+TLieOperator<T>::TLieOperator( char*, EnvPtr<T> const pje  ) 
 : TJetVector<T>( pje->spaceDim(), 0, pje )
 { 
  int i;
  
  if( !pje ) {
    throw( GenericException(__FILE__, __LINE__, 
-          "TLieOperator<T>::TLieOperator<T>( char*, TJetEnvironment<T>* ) ",
+          "TLieOperator<T>::TLieOperator( char*, TJetEnvironment<T>* ) ",
           "Jet__environment pointer is null." ) );
    }
  if( pje->spaceDim() == 0 ) {
    throw( GenericException(__FILE__, __LINE__, 
-          "TLieOperator<T>::TLieOperator<T>( char*, TJetEnvironment<T>* ) ",
+          "TLieOperator<T>::TLieOperator( char*, TJetEnvironment<T>* ) ",
           "Phase space has dimension zero." ) );
    }
  TLieOperator<T>::_myEnv = pje;
@@ -210,7 +210,7 @@ TLieOperator<T>::TLieOperator<T>( char*, EnvPtr<T> const pje  )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TLieOperator<T>::~TLieOperator<T>() 
+TLieOperator<T>::~TLieOperator() 
 {
 }
 

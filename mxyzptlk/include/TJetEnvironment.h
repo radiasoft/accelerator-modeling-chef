@@ -307,12 +307,15 @@ class TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 //------------------------------------------------------------------------------------------------------------
 
 template<>
+template<>
 TJetEnvironment<std::complex<double> >::TJetEnvironment( TJetEnvironment<double> const& );
 
+template<>
 template<>
 EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEnvironment( EnvPtr<double> const&);
 
 
+template<>
 template<>
 EnvPtr<double>  TJetEnvironment<std::complex<double> >::makeRealJetEnvironment( EnvPtr<std::complex<double> > const& );
 

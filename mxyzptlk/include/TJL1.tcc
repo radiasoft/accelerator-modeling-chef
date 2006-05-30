@@ -309,6 +309,7 @@ TJL1<T>::TJL1( const TJL1& x ):
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
+template<>
 TJL1<std::complex<double> >::TJL1( TJL1<double> const& x ):
  _count(x._count),       
  _weight(x._weight),     
