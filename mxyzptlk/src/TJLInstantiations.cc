@@ -191,47 +191,74 @@ class std::vector< TJL<double > *>;
 
 
 template
-void std::fill< std::vector< TJL< std::complex<double> >* >::iterator, TJL< std::complex<double> >* > 
-               (std::vector< TJL< std::complex<double> >* >::iterator,  
-                std::vector< TJL< std::complex<double> >* >::iterator,  TJL<std::complex<double> >* const& );
+void std::fill( std::vector< TJL< std::complex<double> >* >::iterator,  
+                std::vector< TJL< std::complex<double> >* >::iterator,  
+                TJL<std::complex<double> >* const& );
 
 template
-void std::fill< std::vector< TJL< double>* >::iterator, TJL< double>* > 
-               (std::vector< TJL<double>* >::iterator, 
-               std::vector< TJL<double>* >::iterator,
-               TJL<double>* const& );
+void std::fill( std::vector< TJL<double>* >::iterator, 
+                std::vector< TJL<double>* >::iterator,
+                TJL<double>* const& );
 template
 std::vector< TJL< std::complex<double> >* >::iterator
-std::fill_n< std::vector< TJL< std::complex<double> >* >::iterator, unsigned int,  TJL< std::complex<double> >* > 
-                 (std::vector< TJL< std::complex<double> >* >::iterator, 
-                  unsigned int,  
-                  TJL< std::complex<double> >* const& );
+std::fill_n( std::vector< TJL< std::complex<double> >* >::iterator, 
+             unsigned int,  
+             TJL< std::complex<double> >* const& );
 
 template
 std::vector< TJL< double>* >::iterator
-std::fill_n< std::vector< TJL<double>* >::iterator, unsigned int, TJL<double>* > 
-                (std::vector< TJL<double>* >::iterator, 
-                 unsigned int,
-                 TJL<double>* const& );
+std::fill_n( std::vector< TJL<double>* >::iterator, 
+             unsigned int,
+             TJL<double>* const& );
+
 template
 TJL<double>**
-std::fill_n< TJL<double>**, unsigned int, TJL<double>* > 
-                (TJL<double>**, 
+std::fill_n(     TJL<double>**, 
                  unsigned int,
                  TJL<double> * const& );
 template
 TJL< std::complex<double> >**
-std::fill_n< TJL< std::complex<double> >**, unsigned int, TJL< std::complex<double> >* > 
-                (TJL<std::complex<double> >**, 
-                 unsigned int,
-                 TJL<std::complex<double> > * const& );
-
+std::fill_n ( TJL<std::complex<double> >**, 
+              unsigned int,
+              TJL<std::complex<double> > * const& );
 
 
 template
-double* std::fill_n<double*, unsigned int, double>(double*, unsigned int, double const&);
+double* std::fill_n(double*, unsigned int, double const&);
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#if (__GNUC__ > 3 )
+
+template 
+void std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >*> > >, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >* const&, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >*>);
+
+template 
+void  std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*> > >, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >* const&, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*>);
+
+
+template
+void std::__uninitialized_fill_n_a(TJL<double>**, unsigned int, TJL<double>* const&, std::allocator<TJL<double>*>);
+
+template
+void std::__uninitialized_fill_n_a(__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >**, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >* const&, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >*>);
+
+template 
+void std::__uninitialized_fill_n_a(TJL<std::complex<double> >**, unsigned int, TJL<std::complex<double> >* const&, std::allocator<TJL<std::complex<double> >*>);
+
+template 
+void std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<TJL<double>**, std::vector<TJL<double>*, std::allocator<TJL<double>*> > >, unsigned int, TJL<double>* const&, std::allocator<TJL<double>*>);
+
+template
+void std::__uninitialized_fill_n_a(__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >**, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >* const&, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*>);
+
+template 
+void std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<TJL<std::complex<double> >**, std::vector<TJL<std::complex<double> >*, std::allocator<TJL<std::complex<double> >*> > >, unsigned int, TJL<std::complex<double> >* const&, std::allocator<TJL<std::complex<double> >*>);
+
+#endif
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------
 
 template
 std::complex<double> std::pow(std::complex<double> const&, double const&);

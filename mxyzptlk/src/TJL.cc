@@ -66,6 +66,7 @@ using FNAL::pcerr;
 
 
 template<>
+template<>
 TJL<std::complex<double> >::TJL( TJL<double> const& x):
 _weight(x._weight),     
 _accuWgt(x._accuWgt),
@@ -105,6 +106,7 @@ _iterPtr(0)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 template<>
 JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL(  TJL<double> const& x )
 {

@@ -44,6 +44,7 @@ using FNAL::pcerr;
 
 
 template<>
+template<>
 TJetEnvironment<std::complex<double> >::TJetEnvironment(TJetEnvironment<double> const& x):
   _numVar(x._numVar),                              // number of variables
   _spaceDim(x._spaceDim),                          // phase space dimensions
@@ -69,6 +70,7 @@ TJetEnvironment<std::complex<double> >::TJetEnvironment(TJetEnvironment<double> 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
 template<>
 EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEnvironment( EnvPtr<double> const& env) {
 
@@ -155,6 +157,7 @@ EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEn
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 EnvPtr<double> TJetEnvironment<double>::makeJetEnvironment(int maxweight, const Vector& v , double* scale) {
  
  boost::scoped_array<double> refpoints( new double[ v.Dim() ]);
@@ -171,6 +174,7 @@ EnvPtr<double> TJetEnvironment<double>::makeJetEnvironment(int maxweight, const 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 EnvPtr<double>  TJetEnvironment<double>::getApproxJetEnvironment(int maxweight, const Vector& refpoints)
 {
 
@@ -213,7 +217,7 @@ EnvPtr<double>  TJetEnvironment<double>::getApproxJetEnvironment(int maxweight, 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
+template<>
 template<>
 EnvPtr<double> 
 TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(EnvPtr<std::complex<double> > const& env) {

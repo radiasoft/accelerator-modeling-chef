@@ -45,6 +45,7 @@
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
+template<>
 JL1Ptr<std::complex<double> > TJL1<std::complex<double> >::makeTJL( const TJL1<double>& x )
 {
  
@@ -85,6 +86,7 @@ JL1Ptr<std::complex<double> > TJL1<std::complex<double> >::makeTJL( const TJL1<d
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 JL1Ptr<double> TJL1<double>::sqrt() const 
 {
 
@@ -110,6 +112,7 @@ JL1Ptr<double> TJL1<double>::sqrt() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 JL1Ptr<std::complex<double> > TJL1<std::complex<double> >::sqrt() const 
 {
 
