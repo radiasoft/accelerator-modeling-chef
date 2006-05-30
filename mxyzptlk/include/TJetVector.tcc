@@ -91,7 +91,7 @@ using namespace std;
 //
 
 template<typename T>
-TJetVector<T>::TJetVector<T>( int n, const TJet<T>* x, EnvPtr<T> const& pje )
+TJetVector<T>::TJetVector( int n, const TJet<T>* x, EnvPtr<T> const& pje )
 {
 
   CHECKOUT(n <= 0, "TJetVector<T>::TJetVector<T>", "Dimension must be positive.")
@@ -115,7 +115,7 @@ TJetVector<T>::TJetVector<T>( int n, const TJet<T>* x, EnvPtr<T> const& pje )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T>::TJetVector<T>( const TJetVector<T>& x ):
+TJetVector<T>::TJetVector( const TJetVector<T>& x ):
 _dim(x._dim), _myEnv(x._myEnv) 
 {
 
@@ -136,6 +136,7 @@ _dim(x._dim), _myEnv(x._myEnv)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+ template<>
  template<>
  TJetVector<std::complex<double> >::TJetVector(TJetVector<double> const& x):
  _dim(x._dim), _myEnv(x._myEnv) // Note: env implicit conversion
@@ -159,7 +160,7 @@ _dim(x._dim), _myEnv(x._myEnv)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T>::~TJetVector<T>()
+TJetVector<T>::~TJetVector()
 {
   delete [] _comp;
 }

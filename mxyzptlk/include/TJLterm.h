@@ -187,6 +187,7 @@ class TJLterm
 // specializations
 
 template<>
+template<>
 TJLterm<std::complex<double> >::TJLterm( TJLterm<double> const& );
 
 

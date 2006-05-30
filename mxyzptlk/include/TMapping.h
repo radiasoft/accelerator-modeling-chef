@@ -111,6 +111,7 @@ class TMapping : public TJetVector<T>
  Vector  TMapping<double>::operator()( const Vector& ) const;
 
  template<>
+ template<>
  TMapping<std::complex<double> >::TMapping( TMapping<double> const& );
 
 // Inline methods

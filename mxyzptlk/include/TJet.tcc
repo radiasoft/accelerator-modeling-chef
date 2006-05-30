@@ -136,6 +136,7 @@ TJet<T>::TJet( T x, EnvPtr<T> const& pje ): _jl(  tjl_t::makeTJL( pje,x ) ){}
 
 
 template<>
+template<>
 TJet<double>::TJet( TJet<double> const& x )
 : _jl( x._jl )  // NOTE: ref count is incremented when JLPtr is instantiated. 
 {}
@@ -144,6 +145,7 @@ TJet<double>::TJet( TJet<double> const& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<>
 template<>
 TJet<std::complex<double> >::TJet(TJet<std::complex<double> > const& x )
 : _jl( x._jl )  // NOTE: ref count is incremented when JLPtr is instantiated. 
@@ -154,6 +156,7 @@ TJet<std::complex<double> >::TJet(TJet<std::complex<double> > const& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
 template<>
 TJet<std::complex<double> >::TJet( TJet<double> const& x) {
   

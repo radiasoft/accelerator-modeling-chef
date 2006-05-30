@@ -515,11 +515,14 @@ public:
 //-------------------------------------------------------------------------------------
 
 template<>
+template<>
 TJet<double>::TJet( TJet<double> const& );
 
 template<>
+template<>
 TJet<std::complex<double> >::TJet( TJet<std::complex<double> > const& );
 
+template<>
 template<>
 TJet<std::complex<double> >::TJet( TJet<double> const& );
 

@@ -267,6 +267,7 @@ TJetVector<T> operator*( const Vector& x, const TJet<T>& y )
 // the complex form of the dot product requires x*conj(y) 
 
  template<>
+ template<>
  TJetVector<std::complex<double> >::TJetVector(TJetVector<double> const&);
 
  template<>  TJet<double>  TJetVector<double>::operator*      ( const TJetVector<double>& ) const; 

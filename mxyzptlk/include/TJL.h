@@ -202,11 +202,11 @@ template<typename U>
 
   ~TJL();
 
-  static JLPtr<T> TJL<T>::_epsSin(  JLPtr<T> const& epsilon );
-  static JLPtr<T> TJL<T>::_epsCos(  JLPtr<T> const& epsilon );
-  static JLPtr<T> TJL<T>::_epsSqrt( JLPtr<T> const& epsilon ); 
-  static JLPtr<T> TJL<T>::_epsExp(  JLPtr<T> const& epsilon ); 
-  static JLPtr<T> TJL<T>::_epsPow(  JLPtr<T> const& epsilon, const double& s ); 
+  static JLPtr<T> _epsSin(  JLPtr<T> const& epsilon );
+  static JLPtr<T> _epsCos(  JLPtr<T> const& epsilon );
+  static JLPtr<T> _epsSqrt( JLPtr<T> const& epsilon ); 
+  static JLPtr<T> _epsExp(  JLPtr<T> const& epsilon ); 
+  static JLPtr<T> _epsPow(  JLPtr<T> const& epsilon, const double& s ); 
 
 
   // Constructors and destructors (factory functions)_____________________________________
@@ -269,7 +269,7 @@ template<typename U>
 
   void addTerm( const TJLterm<T>& );      
  
-  TJLterm<T>* TJL<T>::removeTerm( TJLterm<T>* a); // Unconditionally remove term pointed to by a;  a is not deleted !
+  TJLterm<T>* removeTerm( TJLterm<T>* a); // Unconditionally remove term pointed to by a;  a is not deleted !
  
   TJLterm<T>* storePtr();                  // returns a ptr to the next available block in the JLterm store;
 
@@ -329,7 +329,7 @@ template<typename U>
   JLPtr<T> pow(const double&) const;
   JLPtr<T> log()              const;
   JLPtr<T> compose(JLPtr<T> const y[ ]) const; 
-  JLPtr<T> TJL<T>::D( const int* n ) const; 
+  JLPtr<T> D( const int* n ) const; 
 
   void              resetConstIterator();
   TJLterm<T>        stepConstIterator()     const;
@@ -480,8 +480,10 @@ template<typename U>
 // specializations 
 
 template<> 
+template<> 
 TJL<std::complex<double> >::TJL( TJL<double> const& );  
 
+template<> 
 template<> 
 JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL( TJL<double> const& );
 

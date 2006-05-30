@@ -88,20 +88,21 @@ using namespace std;
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping<T>( int n,  const TJet<T>* pj, EnvPtr<T> const& pje )
+TMapping<T>::TMapping( int n,  const TJet<T>* pj, EnvPtr<T> const& pje )
 : TJetVector<T>( n, pj, pje )
 { }
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping<T>( TMapping<T> const& x ) 
+TMapping<T>::TMapping( TMapping<T> const& x ) 
 : TJetVector<T>( x ) {}
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
 template<>
 TMapping<std::complex<double> >::TMapping( TMapping<double> const& x)
 : TJetVector<std::complex<double> >( x ) {}
@@ -110,14 +111,14 @@ TMapping<std::complex<double> >::TMapping( TMapping<double> const& x)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping<T>( TJetVector<T> const& x ) 
+TMapping<T>::TMapping( TJetVector<T> const& x ) 
 : TJetVector<T>( x ) {}
 
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping<T>( const char*, EnvPtr<T> const& pje  ) 
+TMapping<T>::TMapping( const char*, EnvPtr<T> const& pje  ) 
 : TJetVector<T>( pje->spaceDim(), 0, pje )
 {
  
