@@ -642,8 +642,10 @@ TJetVector<T> operator*(  const TMatrix<T>& M, const TJetVector<T>& x )
  for( i=0; i < r; ++i) {
   z._comp[i] = M( i, 0 ) * x._comp[0];
   j = 1;
+
   while( j < c )   { 
-    z._comp[i] += M( i, j ) * ( x._comp[j++] ) ;
+    z._comp[i] += M( i, j ) * ( x._comp[j] ) ;  
+    ++j;
   }
  }
 
