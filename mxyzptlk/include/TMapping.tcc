@@ -365,14 +365,14 @@ TMapping<T> TMapping<T>::_epsInverse( EnvPtr<T> const& pje) const
     M = Jacobian().inverse();
  else{                                            
     M = Jacobian().Square().inverse();
-    std::cout << " TMapping<T>::_epsInverse : this should not be called ! " << std::endl;
+    (*pcout) << " TMapping<T>::_epsInverse() Warning: Jacobian Matrix is not square. This should not be called ! " << std::endl;
  }
+
 
  z = M*id;
 
 
  v = ( operator()(z) - id );
-
 
 
  int  i = 0;
