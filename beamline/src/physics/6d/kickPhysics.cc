@@ -38,24 +38,51 @@
 #include <config.h>
 #endif
 
+#include <iosetup.h>
 #include <Particle.h>
 #include <kick.h>
+
+using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
 
 // =================================================
 // vkick propagators
 // =================================================
 
-void vkick::localPropagate( Particle& p ) {
-  static double realLength;
+void vkick::localPropagate( Particle& p )
+{
+  static bool firstTime = true;
+  if( firstTime ) {
+    (*pcerr) << "\n*** WARNING *** "
+                "\n*** WARNING *** File: "
+             << __FILE__ << ", Line:" << __LINE__
+             << "\n*** WARNING *** void vkick::localPropagate( Particle& p )"
+                "\n*** WARNING *** -----------------------------------------"
+                "\n*** WARNING *** An approximation has been introduced"
+                "\n*** WARNING *** as a TEMPORARY bug workaround. It makes"
+                "\n*** WARNING *** an extremely small error in the computed"
+                "\n*** WARNING *** time coordinate; it \"fixes\" an extremely"
+                "\n*** WARNING *** large error in the computed time coordinate."
+                "\n*** WARNING ***                                   - lpjm"
+                "\n*** WARNING *** "
+             << endl;
+    firstTime = false;
+  }
+
+  double realLength, realCt;
   if( length > 0.0 ) {
     realLength = length;
+    realCt     = _ctRef;
     length /= 2.0;
+    _ctRef /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     p.state[4] += strength;
     bmlnElmnt::localPropagate( p );
 
     length = realLength;
+    _ctRef = realCt;
   }
   else {
     p.state[4] += strength;
@@ -63,17 +90,39 @@ void vkick::localPropagate( Particle& p ) {
 }
 
 
-void vkick::localPropagate( JetParticle& p ) {
-  static double realLength;
+void vkick::localPropagate( JetParticle& p )
+{
+  static bool firstTime = true;
+  if( firstTime ) {
+    (*pcerr) << "\n*** WARNING *** "
+                "\n*** WARNING *** File: "
+             << __FILE__ << ", Line:" << __LINE__
+             << "\n*** WARNING *** void vkick::localPropagate( JetParticle& p )"
+                "\n*** WARNING *** -----------------------------------------"
+                "\n*** WARNING *** An approximation has been introduced"
+                "\n*** WARNING *** as a TEMPORARY bug workaround. It makes"
+                "\n*** WARNING *** an extremely small error in the computed"
+                "\n*** WARNING *** time coordinate; it \"fixes\" an extremely"
+                "\n*** WARNING *** large error in the computed time coordinate."
+                "\n*** WARNING ***                                   - lpjm"
+                "\n*** WARNING *** "
+             << endl;
+    firstTime = false;
+  }
+
+  double realLength, realCt;
   if( length > 0.0 ) {
     realLength = length;
+    realCt     = _ctRef;
     length /= 2.0;
+    _ctRef /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     ( p.state ).SetComponent( 4, p.state(4) + strength );
     bmlnElmnt::localPropagate( p );
 
     length = realLength;
+    _ctRef = realCt;
   }
   else {
     ( p.state ).SetComponent( 4, p.state(4) + strength );
@@ -85,17 +134,39 @@ void vkick::localPropagate( JetParticle& p ) {
 // hkick propagators
 // =================================================
 
-void hkick::localPropagate( Particle& p ) {
-  static double realLength;
+void hkick::localPropagate( Particle& p )
+{
+  static bool firstTime = true;
+  if( firstTime ) {
+    (*pcerr) << "\n*** WARNING *** "
+                "\n*** WARNING *** File: "
+             << __FILE__ << ", Line:" << __LINE__
+             << "\n*** WARNING *** void hkick::localPropagate( Particle& p )"
+                "\n*** WARNING *** -----------------------------------------"
+                "\n*** WARNING *** An approximation has been introduced"
+                "\n*** WARNING *** as a TEMPORARY bug workaround. It makes"
+                "\n*** WARNING *** an extremely small error in the computed"
+                "\n*** WARNING *** time coordinate; it \"fixes\" an extremely"
+                "\n*** WARNING *** large error in the computed time coordinate."
+                "\n*** WARNING ***                                   - lpjm"
+                "\n*** WARNING *** "
+             << endl;
+    firstTime = false;
+  }
+
+  double realLength, realCt;
   if( length > 0.0 ) {
     realLength = length;
+    realCt     = _ctRef;
     length /= 2.0;
+    _ctRef /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     p.state[3] += strength;
     bmlnElmnt::localPropagate( p );
 
     length = realLength;
+    _ctRef = realCt;
   }
   else {
     p.state[3] += strength;
@@ -103,17 +174,39 @@ void hkick::localPropagate( Particle& p ) {
 }
 
 
-void hkick::localPropagate( JetParticle& p ) {
-  static double realLength;
+void hkick::localPropagate( JetParticle& p )
+{
+  static bool firstTime = true;
+  if( firstTime ) {
+    (*pcerr) << "\n*** WARNING *** "
+                "\n*** WARNING *** File: "
+             << __FILE__ << ", Line:" << __LINE__
+             << "\n*** WARNING *** void hkick::localPropagate( JetParticle& p )"
+                "\n*** WARNING *** -----------------------------------------"
+                "\n*** WARNING *** An approximation has been introduced"
+                "\n*** WARNING *** as a TEMPORARY bug workaround. It makes"
+                "\n*** WARNING *** an extremely small error in the computed"
+                "\n*** WARNING *** time coordinate; it \"fixes\" an extremely"
+                "\n*** WARNING *** large error in the computed time coordinate."
+                "\n*** WARNING ***                                   - lpjm"
+                "\n*** WARNING *** "
+             << endl;
+    firstTime = false;
+  }
+
+  double realLength, realCt;
   if( length > 0.0 ) {
     realLength = length;
+    realCt     = _ctRef;
     length /= 2.0;
+    _ctRef /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     ( p.state ).SetComponent( 3, p.state(3) + strength );
     bmlnElmnt::localPropagate( p );
 
     length = realLength;
+    _ctRef = realCt;
   }
   else {
     ( p.state ).SetComponent( 3, p.state(3) + strength );
@@ -126,10 +219,30 @@ void hkick::localPropagate( JetParticle& p ) {
 
 void kick::localPropagate( Particle& p ) 
 {
-  static double realLength;
+  static bool firstTime = true;
+  if( firstTime ) {
+    (*pcerr) << "\n*** WARNING *** "
+                "\n*** WARNING *** File: "
+             << __FILE__ << ", Line:" << __LINE__
+             << "\n*** WARNING *** void kick::localPropagate( Particle& p )"
+                "\n*** WARNING *** -----------------------------------------"
+                "\n*** WARNING *** An approximation has been introduced"
+                "\n*** WARNING *** as a TEMPORARY bug workaround. It makes"
+                "\n*** WARNING *** an extremely small error in the computed"
+                "\n*** WARNING *** time coordinate; it \"fixes\" an extremely"
+                "\n*** WARNING *** large error in the computed time coordinate."
+                "\n*** WARNING ***                                   - lpjm"
+                "\n*** WARNING *** "
+             << endl;
+    firstTime = false;
+  }
+
+  double realLength, realCt;
   if( length > 0.0 ) {
     realLength = length;
+    realCt     = _ctRef;
     length /= 2.0;
+    _ctRef /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     p.state[3] += horizontalKick;
@@ -137,6 +250,7 @@ void kick::localPropagate( Particle& p )
     bmlnElmnt::localPropagate( p );
 
     length = realLength;
+    _ctRef = realCt;
   }
   else {
     p.state[3] += horizontalKick;
@@ -146,10 +260,30 @@ void kick::localPropagate( Particle& p )
 
 void kick::localPropagate( JetParticle& p ) 
 {
-  static double realLength;
+  static bool firstTime = true;
+  if( firstTime ) {
+    (*pcerr) << "\n*** WARNING *** "
+                "\n*** WARNING *** File: "
+             << __FILE__ << ", Line:" << __LINE__
+             << "\n*** WARNING *** void kick::localPropagate( JetParticle& p ) "
+                "\n*** WARNING *** -----------------------------------------"
+                "\n*** WARNING *** An approximation has been introduced"
+                "\n*** WARNING *** as a TEMPORARY bug workaround. It makes"
+                "\n*** WARNING *** an extremely small error in the computed"
+                "\n*** WARNING *** time coordinate; it \"fixes\" an extremely"
+                "\n*** WARNING *** large error in the computed time coordinate."
+                "\n*** WARNING ***                                   - lpjm"
+                "\n*** WARNING *** "
+             << endl;
+    firstTime = false;
+  }
+
+  double realLength, realCt;
   if( length > 0.0 ) {
     realLength = length;
+    realCt     = _ctRef;
     length /= 2.0;
+    _ctRef /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     (p.state).SetComponent( 3, p.state(3) + horizontalKick );
@@ -157,6 +291,7 @@ void kick::localPropagate( JetParticle& p )
     bmlnElmnt::localPropagate( p );
 
     length = realLength;
+    _ctRef = realCt;
   }
   else {
     (p.state).SetComponent( 3, p.state(3) + horizontalKick );
