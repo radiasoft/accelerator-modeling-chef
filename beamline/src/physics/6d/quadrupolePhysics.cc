@@ -43,15 +43,18 @@
 #include <quadrupole.h>
 #include <drift.h>
 
+
 quadrupole::TPOT_Prop::TPOT_Prop( int m )
 : _n(m)
 {
 };
 
+
 int quadrupole::TPOT_Prop::get_n() const
 {
   return _n;
 };
+
 
 void quadrupole::TPOT_Prop::set_n( int m )
 {
@@ -64,6 +67,7 @@ int quadrupole::TPOT_Prop::operator()( bmlnElmnt* pbe, Particle& p ) {
   p.set_cdt( p.get_cdt() - pbe->getReferenceTime() );
   return 0;
 }
+
 
 int quadrupole::TPOT_Prop::operator()( bmlnElmnt* pbe, JetParticle& p ) {
   ((quadrupole*) pbe)->p_bml->propagate( p );
@@ -103,6 +107,23 @@ void quadrupole::TPOT_Prop::setup( quadrupole* pqd ) const
     pqd->p_bml->append( new drift( frontLength ) );
   }
   
+  else if( 0 == _n % 4 ) { // TEAPOT tandem ...............
+    int    u         = _n/4;
+    double xu        = u;
+    frontLength     /= xu;
+    sepLength       /= xu;
+    quarterStrength /= xu;
+    for( int i = 0; i < u; i++ ) {
+      pqd->p_bml->append( new drift( frontLength ) );
+      pqd->p_bml->append( new thinQuad( quarterStrength ) );
+      for( int i = 0; i < 3; i++ ) {
+        pqd->p_bml->append( new drift( sepLength ) );
+        pqd->p_bml->append( new thinQuad( quarterStrength ) );
+      }
+      pqd->p_bml->append( new drift( frontLength ) );
+    }
+  }
+
   else {                   // Equal spacing ...............
     pqd->p_bml->append( new drift( lng / ( 2.0*xm ) ) );
     pqd->p_bml->append( new thinQuad( str*lng/ xm ) );
@@ -117,7 +138,6 @@ void quadrupole::TPOT_Prop::setup( quadrupole* pqd ) const
 
 
 quadrupole::TPOT_Prop  quadrupole::LikeTPOT(4);
-
 
 
 void thinQuad::localPropagate( Particle& p ) {
@@ -138,6 +158,7 @@ void thinQuad::localPropagate( Particle& p ) {
 
  }
 }
+
 
 void thinQuad::localPropagate( JetParticle& p ) {
  Jet TrState[6];
