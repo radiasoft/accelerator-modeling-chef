@@ -71,7 +71,7 @@ int main( int argc, char** argv )
   
   cout << "\nOrthogonality tests"
        << "\nU^T*U:\n"  << ( U.transpose()*U )
-       << "\nV*V^T:\n"  << ( V*V.transpose() )
+       << "\nV^T*V:\n"  << ( V.transpose()*V )
        << endl;
 
   return 0;
