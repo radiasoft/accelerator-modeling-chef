@@ -2335,6 +2335,7 @@ std::istream& operator>>( std::istream& is,  TJL<T>& x )
 {  // ??? This function shouldn't
    // ??? be here.
   char buf[100];
+  buf[99] = '\0';
   int i,j;
   int count;
   T value;
@@ -2363,9 +2364,7 @@ std::istream& operator>>( std::istream& is,  TJL<T>& x )
   IntArray ndx( x.getEnv()->numVar() );
   for( j = 0; j < count; ++j) {
     is >> buf;
-    for( i = 0; i < x._myEnv->numVar(); ++i )  {
-     is >> ndx(i);
-    }
+    is >> ndx;
     is >> buf;
     is >> value;
     q = new(x.storePtr()) TJLterm<T>( ndx, value, x._myEnv );
