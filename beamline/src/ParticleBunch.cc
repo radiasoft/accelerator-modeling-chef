@@ -42,10 +42,14 @@
 
 #include <ParticleBunch.h>
 
+#include <iosetup.h>
 #include <math.h>
 #include <MathConstants.h>
 
 using namespace std;
+
+using FNAL::pcout;
+using FNAL::pcerr;
 
 
 ////////////////////////////////////////////////////
@@ -178,11 +182,22 @@ ParticleBunch::Iterator::Iterator( ParticleBunch& x )
 }
 
 
-ParticleBunch::Iterator::Iterator( const Iterator& )
+ParticleBunch::Iterator::Iterator( const Iterator& x )
+: _cur(x._cur)
+, _ref(x._ref)
 {
-  throw( Particle::GenericException( __FILE__, __LINE__, 
-         "ParticleBunch::Iterator::Iterator( const Iterator& )", 
-         "Copy constructor may not be called for this object." ) );
+  static bool firstTime = true;
+  if( firstTime ) {
+    (*pcerr) << "\n*** WARNING *** "
+             << "\n*** WARNING *** " << __FILE__ << ", Line " << __LINE__
+             << "\n*** WARNING *** ParticleBunch::Iterator::Iterator( const Iterator& x )" 
+                "\n*** WARNING *** ------------------------------------------------------" 
+                "\n*** WARNING *** Copying an iterator may lead to unexpected results."
+                "\n*** WARNING *** Do so at your own risk."
+                "\n*** WARNING *** " 
+             << endl;
+    firstTime = false;
+  }
 }
 
 
