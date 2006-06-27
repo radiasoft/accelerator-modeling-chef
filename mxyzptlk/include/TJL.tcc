@@ -67,9 +67,11 @@
 
 #define MX_SMALL    1.0e-12  // Used by JL::addTerm to decide 
                              //   removal of a JLterm.
+
+#ifndef MX_MAXITER
 #define MX_MAXITER  100      // Maximum number of iterations allowed
                              //   in iterative routines
-
+#endif  // MX_MAXITER
 
 using FNAL::pcerr;
 using FNAL::pcout;
