@@ -1517,7 +1517,7 @@ void beamline::_moveRel(   int axis, double u
   //             *errorCode  = 0, nothing wrong
   //                           1, errorCode, ret, or thePtr is null on entry
   //                           2, i != 0, 1, or 2
-  //                           3, |u| < 1 micron displacement
+  //                           3, |u| < 1 nanometer displacement
   // 
   //             NOTE WELL: if the returned list is not empty, it means
   //               that Slots have been created and installed in the line
@@ -1547,17 +1547,17 @@ void beamline::_moveRel(   int axis, double u
     return;
   }
 
-  // Will not displace anything less than 1 micron.
-  if( std::abs(u) < 1.0e-6 ) { 
+  // Will not displace anything less than 1 nanometer
+  if( std::abs(u) < 1.0e-9 ) { 
     (*pcerr) << "\n*** ERROR *** "
          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** ERROR *** Called by " << invoker
          << "\n*** ERROR *** Unable to perform operation on "
          << thePtr->Type() << "  " << thePtr->Name() << "."
          << "\n*** ERROR *** Requested displacement, " 
-         << (1.e6*u) 
-         << ", microns is too small."
-            "\n*** ERROR *** Must be at least 1 micron."
+         << (1.e9*u) 
+         << ", nanometers is too small."
+            "\n*** ERROR *** Must be at least 1 nanometer."
             "\n*** ERROR *** "
          << endl;
     *errPtr = 3;
