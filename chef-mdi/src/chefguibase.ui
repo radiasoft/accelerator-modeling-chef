@@ -1180,7 +1180,7 @@
         <sender>fileSaveAsAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>fileSaveAs()</slot>
+        <slot>_fileSaveAs()</slot>
     </connection>
     <connection>
         <sender>filePrintAction</sender>
