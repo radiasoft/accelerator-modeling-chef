@@ -39,6 +39,7 @@
         <separator/>
         <action name="fileEditorSaveAction"/>
         <action name="fileEditorSaveAsAction"/>
+        <action name="fileSaveAsAction"/>
         <separator/>
         <action name="fileExitAction"/>
         <separator/>
@@ -185,10 +186,10 @@
             <cstring>fileSaveAsAction</cstring>
         </property>
         <property name="text">
-            <string>Save As</string>
+            <string>Save Beamline As</string>
         </property>
         <property name="menuText">
-            <string>Save &amp;As...</string>
+            <string>Save &amp;beamline as...</string>
         </property>
         <property name="accel">
             <string></string>
