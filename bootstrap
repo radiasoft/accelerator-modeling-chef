@@ -28,6 +28,7 @@ find . -name config\.sub      -exec \rm     {}  \; -print
 for dir in basic_toolkit bmlfactory mxyzptlk physics_toolkit integrator gms
 do
   cd   $dir
+  ln -s include $dir
   ${rootdir}/updateheaders
   cd ./src
   ${rootdir}/updatesource
