@@ -76,9 +76,6 @@ bmlnElmnt* read_istream(istream& is)
 
   // Need one possible object of each type of bmlnElmnt
   BBLens                * bblensPtr;
-  JetQuadrupole         * jQuadPtr; 
-  JetthinQuad           * jtQuadPtr;
-  JetthinSext           * jtSextPtr;
   beamline              * bl;
   combinedFunction      * cmbPtr;
   drift                 * driftPtr;
@@ -260,14 +257,6 @@ bmlnElmnt* read_istream(istream& is)
     bblensPtr = new BBLens(name, length);
     element = bblensPtr;
   }
-  else if( strcasecmp(type,             "JetQuadrupole") == 0 ) {
-    jQuadPtr = new JetQuadrupole(name, strength, length, 1);
-    element = jQuadPtr;
-  }
-  else if( strcasecmp(type,             "JetthinQuad") == 0 ) {
-    jtQuadPtr = new JetthinQuad(name, strength, 1);
-    element = jtQuadPtr;
-  }
   else if( strcasecmp(type,             "sector") == 0 ) {
     sectorPtr = new sector(name, length);
     element = sectorPtr;
@@ -287,10 +276,6 @@ bmlnElmnt* read_istream(istream& is)
   else if( strcasecmp(type,             "thin18pole") == 0 ) {
     pole18Ptr = new thin18pole(name, length);
     element = pole18Ptr;
-  }
-  else if( strcasecmp(type,             "JetthinSext") == 0 ) {
-    jtSextPtr = new JetthinSext(name, length, 1);
-    element = jtSextPtr;
   }
   else if( strcasecmp(type,             "CF_rbend") == 0 ) {
     cfRbendPtr = new CF_rbend(name, length, strength, 1.0 /* Dummy large angle */ );

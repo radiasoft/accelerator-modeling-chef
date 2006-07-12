@@ -113,12 +113,6 @@ void QBpropVisitor::visitQuadrupole( quadrupole* x )
 }
 
 
-void QBpropVisitor::visitJetQuadrupole( JetQuadrupole* x )
-{
-  x->propagate( *particle );
-}
-
-
 void QBpropVisitor::visitThinQuad( thinQuad* x )
 {
   x->propagate( *particle );

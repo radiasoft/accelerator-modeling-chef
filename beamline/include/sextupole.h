@@ -102,42 +102,4 @@ public:
   bmlnElmnt* Clone() const { return new thinSextupole( *this ); }
 } ;
 
-class JetthinSext : public bmlnElmnt
-{
-private:
-  Jet K2L;
-  int strengthIndex;
-  std::ostream& writeTo(std::ostream&);
-  std::istream& readFrom(std::istream&);
-
-public:
-  JetthinSext( double, int );
-  JetthinSext( const char*,   // name
-	       double,        // B-prime L in Tesla; + = horizontally focussing
-	       int );         // index of focal length parameter (> 6)
-  JetthinSext( bmlnElmntData& );
-  JetthinSext( const JetthinSext& );
-  ~JetthinSext();
-  
-  void setStrength( double );
-  void setStrength( double, int );
-  
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& p );
-  void localPropagate( JetParticle& );
-  
-  void accept( BmlVisitor& v ) { v.visitJetthinSext( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitJetthinSext( this ); }
-
-  void eliminate();
-  
-  const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "JetthinSext") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  bool isMagnet() const;
-
-  bmlnElmnt* Clone() const { return new JetthinSext( *this ); }
-  
-} ;
- 
 #endif // SEXTUPOLE_H
