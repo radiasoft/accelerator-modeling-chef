@@ -90,8 +90,6 @@ bool BmlUtil::isKnown( const bmlnElmnt& x )
   if( 0 == strcmp( "combinedFunction", x.Type() )){ return true; }
   if( 0 == strcmp( "thinDecapole", x.Type() ))    { return true; }
   if( 0 == strcmp( "ElSeparator", x.Type() ))     { return true; }
-  if( 0 == strcmp( "JetQuadrupole", x.Type() ))   { return true; }
-  if( 0 == strcmp( "JetthinQuad", x.Type() ))     { return true; }
   if( 0 == strcmp( "hkick", x.Type() ))           { return true; }
   if( 0 == strcmp( "vkick", x.Type() ))           { return true; }
   if( 0 == strcmp( "kick", x.Type() ))            { return true; }
@@ -110,7 +108,6 @@ bool BmlUtil::isKnown( const bmlnElmnt& x )
   if( 0 == strcmp( "thinSeptum", x.Type() ))      { return true; }
   if( 0 == strcmp( "sextupole", x.Type() ))       { return true; }
   if( 0 == strcmp( "thinSextupole", x.Type() ))   { return true; }
-  if( 0 == strcmp( "JetthinSext", x.Type() ))     { return true; }
   if( 0 == strcmp( "thin12pole", x.Type() ))      { return true; }
   if( 0 == strcmp( "thin14pole", x.Type() ))      { return true; }
   if( 0 == strcmp( "thin16pole", x.Type() ))      { return true; }

@@ -68,11 +68,8 @@ protected:
   friend class sbend;
   friend class sector;
   friend class quadrupole;
-  friend class JetQuadrupole;
   friend class thinQuad;
-  friend class JetthinQuad;
   friend class thinSextupole;
-  friend class JetthinSext;
   friend class thinOctupole;
   friend class thinDecapole;
   friend class thin2pole;
@@ -389,11 +386,8 @@ protected:
   friend class sbend;
   friend class sector;
   friend class quadrupole;
-  friend class JetQuadrupole;
   friend class thinQuad;
-  friend class JetthinQuad;
   friend class thinSextupole;
-  friend class JetthinSext;
   friend class thinOctupole;
   friend class thinDecapole;
   friend class thin2pole;

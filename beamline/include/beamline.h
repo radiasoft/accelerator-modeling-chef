@@ -66,7 +66,6 @@
 #include <CF_rbend.h>
 #include <sector.h>
 #include <quadrupole.h>
-#include <JetQuadrupole.h>
 #include <sextupole.h>
 #include <octupole.h>
 #include <decapole.h>

@@ -305,14 +305,6 @@ void MatrixCalcVisitor::visitQuadrupole( quadrupole* x )
 }
 
 
-void MatrixCalcVisitor::visitJetQuadrupole( JetQuadrupole* x )
-{
-  throw( GenericException( __FILE__, __LINE__, 
-         "void MatrixCalcVisitor::visitJetQuadrupole( JetQuadrupole* x )", 
-         "Function not written." ) );
-}
-
-
 void MatrixCalcVisitor::visitThinQuad( thinQuad* x )
 {
   static double kappa;  // = 1/f

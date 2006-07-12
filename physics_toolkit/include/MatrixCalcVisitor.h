@@ -50,7 +50,6 @@ class MatrixCalcVisitor : public BmlVisitor
   void visitSbend( sbend* );
   void visitSector( sector* );
   void visitQuadrupole( quadrupole* );
-  void visitJetQuadrupole( JetQuadrupole* );
   void visitThinQuad( thinQuad* );
   void visitSlot( Slot* );
   void visitCF_rbend( CF_rbend* );

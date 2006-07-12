@@ -69,12 +69,9 @@ class rbend;
 class sbend;
 class sector;
 class quadrupole;
-class JetQuadrupole;
 class thin2pole;
 class thinQuad;
 class thinSextupole;
-class JetthinSext;
-class JetthinQuad;
 class thinOctupole;
 class thinDecapole;
 class thin12pole;
@@ -128,17 +125,11 @@ public:
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
   virtual void visitQuadrupole( quadrupole* x ) 
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
-  virtual void visitJetQuadrupole( JetQuadrupole* x ) 
-                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
   virtual void visitThin2pole( thin2pole* x ) 
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
   virtual void visitThinQuad( thinQuad* x ) 
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
   virtual void visitThinSextupole( thinSextupole* x ) 
-                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
-  virtual void visitJetthinSext( JetthinSext* x ) 
-                         { visitBmlnElmnt( (bmlnElmnt*) x ); }
-  virtual void visitJetthinQuad( JetthinQuad* x ) 
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
   virtual void visitThinOctupole( thinOctupole* x ) 
                          { visitBmlnElmnt( (bmlnElmnt*) x ); }
@@ -235,9 +226,6 @@ public:
   virtual void visitQuadrupole( const quadrupole* x ) 
                          { visitBmlnElmnt( (const bmlnElmnt*) x ); }
 
-  virtual void visitJetQuadrupole( const JetQuadrupole* x ) 
-                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
-
   virtual void visitThin2pole( const thin2pole* x ) 
                          { visitBmlnElmnt( (const bmlnElmnt*) x ); }
 
@@ -245,12 +233,6 @@ public:
                          { visitBmlnElmnt( (const bmlnElmnt*) x ); }
 
   virtual void visitThinSextupole( const thinSextupole* x ) 
-                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
-
-  virtual void visitJetthinSext( const JetthinSext* x ) 
-                         { visitBmlnElmnt( (const bmlnElmnt*) x ); }
-
-  virtual void visitJetthinQuad( const JetthinQuad* x ) 
                          { visitBmlnElmnt( (const bmlnElmnt*) x ); }
 
   virtual void visitThinOctupole( const thinOctupole* x ) 
