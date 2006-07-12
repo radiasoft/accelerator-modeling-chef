@@ -339,10 +339,12 @@ std::ostream& operator<<( std::ostream& os, const IntArray& x )
 std::istream& operator>>( std::istream& is, IntArray& x )
 {
   char buf[80];
+  buf[79] = '\0';
   int i;
 
   is >> buf;
   if( buf[0] != '(' ) {
+    is >> buf;
     throw( IntArray::GenericException(
                          "istream& operator>>( istream& is, IntArray& x )",
                          "Incorrect first character in line."  ) );
