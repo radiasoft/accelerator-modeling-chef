@@ -55,8 +55,9 @@
 /*  Old values
 #define PH_ESU_e           4.803242e-10          Proton charge   [esu]
 #define PH_MKS_e           1.6021892e-19         Proton charge   [Coulombs]
-#define PH_MKS_e           1.602176462e-19    Proton charge   [Coulombs]
+#define PH_MKS_e           1.602176462e-19       Proton charge   [Coulombs]
 */
+
 #define PH_MKS_e           1.60217653e-19     /* Proton charge   [Coulombs]          */
 #define PH_MKS_c           2.99792458e8       /* Speed of light  [m/sec]             */
 #define PH_MKS_h           6.62606876e-34     /* Planck's constant [Joule-sec]       */
