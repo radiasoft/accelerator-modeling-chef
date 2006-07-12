@@ -51,7 +51,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <math.h>
 
 /* windows.h is required for WIN32 specific file io */
 #ifdef _WIN32
