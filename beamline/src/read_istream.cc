@@ -198,11 +198,17 @@ bmlnElmnt* read_istream(istream& is)
     element = quadrupolePtr;
   }
   else if( strcasecmp(type,             "rbend") == 0 ) {
-    rbendPtr = new rbend(name, length, strength, 1.0 /* Dummy large angle */ );
+    if( 0 <= strength ) 
+    { rbendPtr = new rbend(name, length, strength,  1.0 /* Dummy large angle */ ); }
+    else 
+    { rbendPtr = new rbend(name, length, strength, -1.0 /* Dummy large angle */ ); }
     element = rbendPtr;
   }
   else if( strcasecmp(type,             "sbend") == 0 ) {
-    sbendPtr = new sbend(name, length, strength, 1.0 /* Dummy large angle */ );
+    if( 0 <= strength ) 
+    { sbendPtr = new sbend(name, length, strength,   1.0 /* Dummy large angle */ ); }
+    else
+    { sbendPtr = new sbend(name, length, strength, - 1.0 /* Dummy large angle */ ); }
     element = sbendPtr;
   }
   else if( strcasecmp(type,             "sextupole") == 0 ) {
@@ -278,11 +284,17 @@ bmlnElmnt* read_istream(istream& is)
     element = pole18Ptr;
   }
   else if( strcasecmp(type,             "CF_rbend") == 0 ) {
-    cfRbendPtr = new CF_rbend(name, length, strength, 1.0 /* Dummy large angle */ );
+    if( 0 <= strength ) 
+    { cfRbendPtr = new CF_rbend(name, length, strength,  1.0 /* Dummy large angle */ ); }
+    else
+    { cfRbendPtr = new CF_rbend(name, length, strength, -1.0 /* Dummy large angle */ ); }
     element = cfRbendPtr;
   }
   else if( strcasecmp(type,             "CF_sbend") == 0 ) {
-    cfSbendPtr = new CF_sbend(name, length, strength, 1.0 /* Dummy large angle */ );
+    if( 0 <= strength ) 
+    { cfSbendPtr = new CF_sbend(name, length, strength,  1.0 /* Dummy large angle */ ); }
+    else
+    { cfSbendPtr = new CF_sbend(name, length, strength, -1.0 /* Dummy large angle */ ); }
     element = cfSbendPtr;
   }
   else {
