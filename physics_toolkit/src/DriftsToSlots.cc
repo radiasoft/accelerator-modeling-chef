@@ -515,9 +515,15 @@ beamline* DriftsToSlots( /* const */ beamline& original )
           ret->append( new Slot(elPtr->Name(), arcFrame) );
         }
         else {
-          (*pcerr) << "\n*** WARNING: *** "
-               << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
-               << "\n*** WARNING: *** Calculation cannot be continued."
+          (*pcerr) 
+               << "\n*** WARNING: *** "
+               << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__
+               << "\n*** WARNING: *** Calculation cannot be continued for "
+               << elPtr->Type() << " " << elPtr->Name() << ": " << ((int) elPtr)
+               << "\n*** WARNING: *** Upstream: "
+               << a->Type() << " " << a->Name() << ": " << ((int) a)
+               << "\n*** WARNING: *** Downstream: "
+               << c->Type() << " " << c->Name() << ": " << ((int) c)
                << "\n*** WARNING: *** Function will return original argument."
                << "\n*** WARNING: *** "
                << endl;
@@ -565,9 +571,15 @@ beamline* DriftsToSlots( /* const */ beamline& original )
           ret->append( new Slot(elPtr->Name(), arcFrame) );
         }
         else {
-          (*pcerr) << "\n*** WARNING: *** "
-               << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
-               << "\n*** WARNING: *** Calculation cannot be continued."
+          (*pcerr) 
+               << "\n*** WARNING: *** "
+               << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__
+               << "\n*** WARNING: *** Calculation cannot be continued for "
+               << elPtr->Type() << " " << elPtr->Name() << ": " << ((int) elPtr)
+               << "\n*** WARNING: *** Upstream: "
+               << a->Type() << " " << a->Name() << ": " << ((int) a)
+               << "\n*** WARNING: *** Downstream: "
+               << c->Type() << " " << c->Name() << ": " << ((int) c)
                << "\n*** WARNING: *** Function will return original argument."
                << "\n*** WARNING: *** "
                << endl;
