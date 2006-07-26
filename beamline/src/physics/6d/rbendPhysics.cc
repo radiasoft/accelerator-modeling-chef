@@ -112,7 +112,7 @@ int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
   // Put in a kludge for the vertical focusing upon entrance.
   if( 0.0 != pbe->_usTan ) {
     edgeCoeff = ( pbe->_usTan / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
     }
     else {
@@ -126,7 +126,7 @@ int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
   // Put in a kludge for the vertical focusing upon exit.
   if( 0.0 != pbe->_dsTan ) {
     edgeCoeff = ( pbe->_dsTan / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
     }
     else {
@@ -147,7 +147,7 @@ int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
   // Put in a kludge for the vertical focusing upon entrance.
   if( 0.0 != pbe->_usTan ) {
     edgeCoeff = ( pbe->_usTan / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
     }
     else {
@@ -161,7 +161,7 @@ int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
   // Put in a kludge for the vertical focusing upon exit.
   if( 0.0 != pbe->_dsTan ) {
     edgeCoeff = ( pbe->_dsTan / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
     }
     else {
@@ -182,7 +182,7 @@ int rbend::InEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
   // Put in a kludge for the vertical focusing upon entrance.
   if( 0.0 != pbe->_usTan ) {
     edgeCoeff = ( pbe->_usTan / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
     }
     else {
@@ -206,7 +206,7 @@ int rbend::InEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
   // Put in a kludge for the vertical focusing upon entrance.
   if( 0.0 != pbe->_usTan ) {
     edgeCoeff = ( pbe->_usTan / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
     }
     else {
@@ -233,7 +233,7 @@ int rbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
   // Put in a kludge for the vertical focusing upon exit.
   if( 0.0 != pbe->_dsTan ) {
     edgeCoeff = ( pbe->_dsTan / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
     }
     else {
@@ -256,7 +256,7 @@ int rbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
   // Put in a kludge for the vertical focusing upon exit.
   if( 0.0 != pbe->_dsTan ) {
     edgeCoeff = ( pbe->_dsTan / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
     }
     else {
@@ -391,7 +391,7 @@ int rbend::Real_Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
   double xpr = p.get_npx()/p.get_npz();
   if( 0.0 != xpr ) {
     edgeCoeff = ( xpr / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
     }
     else {
@@ -406,7 +406,7 @@ int rbend::Real_Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
   xpr = p.get_npx()/p.get_npz();
   if( 0.0 != xpr ) {
     edgeCoeff = ( xpr / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
     }
     else {
@@ -429,7 +429,7 @@ int rbend::Real_Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
   xpr = p.get_npx()/p.get_npz();
   if( 0.0 != xpr.standardPart() ) {
     edgeCoeff = ( xpr / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
     }
     else {
@@ -444,7 +444,7 @@ int rbend::Real_Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
   xpr = p.get_npx()/p.get_npz();
   if( 0.0 != xpr.standardPart() ) {
     edgeCoeff = ( xpr / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
     }
     else {
@@ -466,7 +466,7 @@ int rbend::Real_InEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
   double xpr = p.get_npx()/p.get_npz();
   if( 0.0 != xpr ) {
     edgeCoeff = ( xpr / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
     }
     else {
@@ -492,7 +492,7 @@ int rbend::Real_InEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
   xpr = p.get_npx() / p.get_npz();
   if( 0.0 != xpr.standardPart() ) {
     edgeCoeff = ( xpr / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
     }
     else {
@@ -520,7 +520,7 @@ int rbend::Real_OutEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
   double xpr = p.get_npx() / p.get_npz();
   if( 0.0 != xpr ) {
     edgeCoeff = ( xpr / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
     }
     else {
@@ -545,7 +545,7 @@ int rbend::Real_OutEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
   xpr = p.get_npx() / p.get_npz();
   if( 0.0 != xpr.standardPart() ) {
     edgeCoeff = ( xpr / ( p.ReferenceBRho() / pbe->Strength() ) );
-    if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+    if( p.Charge() > 0.0 ) {
       p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
     }
     else {
