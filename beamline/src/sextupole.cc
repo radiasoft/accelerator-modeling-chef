@@ -51,6 +51,14 @@ using namespace std;
 //   class sextupole 
 // **************************************************
 
+sextupole::sextupole () : bmlnElmnt( 1.0, 0.0 ) {
+ p_bml = new beamline;
+ p_bml->append( new drift( 1.0 / 2.0 ) );
+ p_bml->append( p_bml_e = new thinSextupole( 0.0 ) );
+ p_bml->append( new drift( 1.0 / 2.0 ) );
+}
+
+
 sextupole::sextupole ( double l, double s ) : bmlnElmnt( l, s ) {
  p_bml = new beamline;
  p_bml->append( new drift( length / 2.0 ) );
@@ -88,13 +96,6 @@ sextupole::~sextupole() {
 void sextupole::setStrength( double s ) {
   strength = s - getShunt()*IToField();
   p_bml_e->setStrength( strength*length );
-}
-
-
-void sextupole::setStrength( double, int ) {
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-         "void sextupole::setStrength( double, int ) {", 
-         "Function should not be called." ) );
 }
 
 
@@ -149,6 +150,11 @@ bool sextupole::isMagnet() const
 // **************************************************
 //   class thinSextupole
 // **************************************************
+
+thinSextupole::thinSextupole () : bmlnElmnt( 0.0, 0.0 ) {
+ // The strength is to be interpreted as
+ // (1/2)*B''l in  Tesla / meter
+}
 
 thinSextupole::thinSextupole ( double s ) : bmlnElmnt( 0.0, s ) {
  // The strength is to be interpreted as
