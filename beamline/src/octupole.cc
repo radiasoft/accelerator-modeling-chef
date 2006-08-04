@@ -53,6 +53,13 @@ using FNAL::pcout;
 //   class octupole
 // **************************************************
 
+octupole::octupole() : bmlnElmnt(1.0, 0.0) {
+ p_bml = new beamline;
+ p_bml->append( new drift( 0.5 ) );
+ p_bml->append( p_bml_e = new thinOctupole( 0.0 ) );
+ p_bml->append( new drift( 0.5 ) );
+}
+
 octupole::octupole( double l, double s ) : bmlnElmnt(l, s) {
  p_bml = new beamline;
  p_bml->append( new drift( length / 2.0 ) );
@@ -87,13 +94,6 @@ octupole::~octupole() {
 void octupole::setStrength( double s ) {
  strength = s - getShunt()*IToField();
  p_bml_e->setStrength( strength*length );
-}
-
-
-void octupole::setStrength( double, int ) {
- throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-        "void octupole::setStrength( double, int ) {", 
-        "Call to unwritten function." ) );
 }
 
 
@@ -147,6 +147,11 @@ void octupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 // **************************************************
 //   class thinOctupole
 // **************************************************
+
+thinOctupole::thinOctupole () : bmlnElmnt( 0.0, 0.0 ) {
+ // The strength is to be interpreted as
+ // (1/3!)*B'''l  in  Tesla-meters^-2
+}
 
 thinOctupole::thinOctupole ( double s ) : bmlnElmnt( 0.0, s ) {
  // The strength is to be interpreted as

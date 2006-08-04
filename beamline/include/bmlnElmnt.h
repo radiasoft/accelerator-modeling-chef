@@ -499,14 +499,17 @@ public:
   short       getTagSize() const;
 
 
+  // Modifiers
+  // ---------
   virtual void setLength     ( double );
   virtual void setStrength   ( double );
-  virtual void setStrength   ( double, int );  // for JetQuad
   virtual void setCurrent    ( double );
+  virtual void setShunt(double a);
           void set           ( const bmlnElmntData& );
           void setAperture   ( Aperture* );
           void Rename        ( const char* );
-  virtual void setShunt(double a);
+          void rename        ( const char* x ) { this->Rename(x); }  
+          // an alias
 
 
   // REMOVE: virtual double getReferenceTime() const {return _ctRef;}

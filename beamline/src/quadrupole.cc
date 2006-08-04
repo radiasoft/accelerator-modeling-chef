@@ -56,11 +56,9 @@ using FNAL::pcout;
 // **************************************************
 
 quadrupole::quadrupole()
-: bmlnElmnt()
+: bmlnElmnt( 1.0, 0.0, &quadrupole::LikeTPOT )
 {
- throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-        "quadrupole::quadrupole()", 
-        "No default construction: Cannot define quadrupole without parameters." ) );
+ this->setupPropFunc();
 }
 
 quadrupole::quadrupole( const char* n, double l, double s, bmlnElmnt::PropFunc* pf )
@@ -189,14 +187,6 @@ void quadrupole::setStrength( double s ) {
 }
 
 
-void quadrupole::setStrength( double, int ) {
- throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-        "void quadrupole::setStrength( double, int ) {", 
-        "Not allowed." ) );
-}
-
-
-
 void quadrupole::releasePropFunc()
 {
   if( 0 != Propagator ) {
@@ -320,6 +310,10 @@ ostream& quadrupole::writeTo(ostream& os)
 // **************************************************
 //   class thinQuad
 // **************************************************
+
+thinQuad::thinQuad() : bmlnElmnt() {
+ strength = 0.0;
+}
 
 thinQuad::thinQuad( double s ) : bmlnElmnt() {
  strength = s;      // B'L in Tesla

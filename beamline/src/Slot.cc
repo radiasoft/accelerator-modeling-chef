@@ -847,12 +847,6 @@ void Slot::setStrength   ( double x )
   else if( 0 != p_bml_e ) p_bml_e ->setStrength( x );
 }
 
-void Slot::setStrength   ( double x , int i )
-{
-  if     ( 0 != p_bml   ) p_bml   ->setStrength( x, i );
-  else if( 0 != p_bml_e ) p_bml_e ->setStrength( x, i );
-}
-
 void Slot::setCurrent    ( double x )
 {
   if     ( 0 != p_bml   ) p_bml   ->setStrength( x );

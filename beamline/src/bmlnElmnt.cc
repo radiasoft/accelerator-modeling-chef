@@ -338,9 +338,10 @@ bmlnElmnt::bmlnElmnt( double l /* length */,
  #endif
 }
 
-bmlnElmnt::bmlnElmnt( const char*  n /* name */, 
-                      double l       /* length */, 
-                      PropFunc* pf ) {
+bmlnElmnt::bmlnElmnt(   const char*  n // name
+                      , double l       // length
+                      , PropFunc* pf ) // propagator
+{
  if( n ) {
   ident = new char [ strlen(n) + 1 ];
   strcpy( ident, n );
@@ -765,12 +766,6 @@ void bmlnElmnt::setStrength( double s ) {
   if( 0 != Propagator ) { this->setupPropFunc(); }
 }
 
-void bmlnElmnt::setStrength( double, int ) {
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-         "void bmlnElmnt::setStrength( double, int ) {", 
-         "This virtual function should never have been "
-         "called in its base class version." ) );
-}
 
 void bmlnElmnt::setCurrent( double I ) {
   setStrength((I-getShunt()) * IToField());
