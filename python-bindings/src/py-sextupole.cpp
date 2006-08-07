@@ -55,7 +55,6 @@ public:
   ~sextupole();
 
   void setStrength( double );
-  void setStrength( double, int );
 
   void setCurrent( double );
 

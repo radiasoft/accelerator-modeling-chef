@@ -125,7 +125,6 @@ class Slot : public bmlnElmnt
 
    // Functions passed on to tenant
    void setStrength   ( double );
-   void setStrength   ( double, int );
    void setCurrent    ( double );
    void setAlignment  ( const alignmentData& );
    double Current() const;

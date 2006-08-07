@@ -46,7 +46,6 @@ struct bmlnElmntWrap : bmlnElmnt {
 
     void   setLength(double);
     void   setStrength(double);
-    void   setStrength(double,int);
     void   setCurrent(double);
     void   Rename(const char* name);
     double getReferenceTime() const;
@@ -63,9 +62,6 @@ void bmlnElmntWrap::setLength(double){
 call_method<void>(_self, "setLength"); }
 
 void bmlnElmntWrap::setStrength(double){
-call_method<void>(_self, "setStrength"); }
-
-void bmlnElmntWrap::setStrength(double,int){
 call_method<void>(_self, "setStrength"); }
 
 void bmlnElmntWrap::setCurrent(double){ 
@@ -110,7 +106,6 @@ void (bmlnElmnt::*propagateJetParticle)  (JetParticle&   ) = &bmlnElmnt::propaga
 void (bmlnElmnt::*propagateParticleBunch)(ParticleBunch& ) = &bmlnElmnt::propagate;
 
 void (bmlnElmnt::*setStrength1)(double      ) = &bmlnElmnt::setStrength;
-void (bmlnElmnt::*setStrength2)(double, int ) = &bmlnElmnt::setStrength;
 
 double (bmlnElmnt::*setReferenceTime1)(const Particle&  ) = &bmlnElmnt::setReferenceTime;
 double (bmlnElmnt::*setReferenceTime2)(double)            = &bmlnElmnt::setReferenceTime;

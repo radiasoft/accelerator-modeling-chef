@@ -54,7 +54,6 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitOctupole( this ); }
 
   void setStrength( double );
-  void setStrength( double, int );
 
   void setCurrent( double );
 

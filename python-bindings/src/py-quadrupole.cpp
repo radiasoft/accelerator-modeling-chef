@@ -96,7 +96,6 @@ public:
   ~quadrupole();
 
   void setStrength( double );
-  void setStrength( double, int );
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle&    p ) { (*Propagator)( this, p ); }
