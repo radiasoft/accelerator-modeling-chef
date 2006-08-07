@@ -424,6 +424,10 @@ public:
     //   the coordinates are to be calculated.
     // 
     // Default value: 1.0 -> return pinned coordinates at the downstream end.
+  Frame getUpstreamPinnedFrame() const 
+    { return _pinnedFrames._upStream; }
+  Frame getDownstreamPinnedFrame() const 
+    { return _pinnedFrames._downStream; }
 
 
   virtual void enterLocalFrame( Particle&                ) const;
