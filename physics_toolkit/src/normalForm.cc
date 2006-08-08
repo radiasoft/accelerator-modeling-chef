@@ -116,9 +116,6 @@ void normalForm( const Mapping& theMapping, /* input */
  const std::complex<double> complex_1 (1.0, 0.0);
  const std::complex<double> mi( 0., -1. );
 
- // typedef char (*MX_R_FUNCCPTR)(const IntArray&, const std::complex<double>&);
- // typedef char (*CFUNCPTR)(const IntArray&, const std::complex<double>& );
- // static MX_R_FUNCCPTR shear[] = { sh0, sh1, sh2, sh3, sh4, sh5 };
  bool (*shear[])( const IntArray&, const std::complex<double>& ) 
     = { sh0, sh1, sh2, sh3, sh4, sh5 };
  int i, j;
@@ -279,7 +276,6 @@ void normalForm( const Mapping& theMapping, /* input */
  MappingC id( "ident" );
  MappingC calN;
  calN = Binv*CL1( B*(Dinv*id) );
- // ??? REMOVE: old error:  calN = Dinv*(Binv*CL1( B*id ));
  MappingC mapT;
 
 
@@ -288,7 +284,6 @@ void normalForm( const Mapping& theMapping, /* input */
  std::complex<double>  factor, denom, temp;
  int                   l, ll;
  const JLCterm*        q;
- JetC                  scr;
  MappingC              reg;
  MappingC              doc;
 
@@ -303,9 +298,11 @@ void normalForm( const Mapping& theMapping, /* input */
 
   doc = N[k] - reg;
   for( i = 0; i < 6; i++ ) {
-   scr.clear();
-   // REMOVE: doc(i).resetIterator();
-   // REMOVE: while((  q = doc(i).stepIterator()  )) {
+   #if 0
+   // Including this line causes an error.
+   // lpjm - 2006.08.06
+   T[k](i).clear();
+   #endif
    doc(i).resetConstIterator();
    while((  q = doc(i).stepConstIteratorPtr()  )) {
     factor = 1.0;
@@ -325,15 +322,11 @@ void normalForm( const Mapping& theMapping, /* input */
       N[k](i).addTerm( JLCterm( q->exponents(), - q->coefficient(), CL1.Env() ) );
     }
     else {
-      q->coefficient() /= denom;
-      scr.addTerm( JLCterm( *q ) );
+      T[k](i).addTerm( JLCterm( q->exponents(), q->coefficient()/denom, CL1.Env() ) );
     }
 
    }
-   T[k].SetComponent( i, scr );
   }
-  // T[k].reset();    // ??? Probably unnecessary
-
 
   // Prepare for the next order
   reg = Dinv*id;
@@ -346,5 +339,4 @@ void normalForm( const Mapping& theMapping, /* input */
   // In one line:
   // calN = T[k].expMap( -1.0, calN( D*( T[k].expMap( 1.0, Dinv*id ) ) ) );
  }
-
 }
