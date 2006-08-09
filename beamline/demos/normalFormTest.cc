@@ -67,8 +67,6 @@ int main( int argc, char** argv )
  JetParticle::createStandardEnvironments( order );
 
  // Construct the model ring
- int i;
-
  double energy = 10.0;            // GeV
  JetProton jp( energy );
  double brho      = jp.ReferenceBRho();  // Tesla-meters
@@ -80,10 +78,8 @@ int main( int argc, char** argv )
  drift     O ( "O",   5.0 );
  thinQuad  F ( "F",   brho / 7.0 );
  thinQuad  D ( "D", - brho / 7.0 );
- thinSextupole S(  "M6", 0.00*brho );
+ thinSextupole S(  "M6", 0.17*brho );
  thinOctupole Oct( "M8", 0.00*brho );
- // srot      r1(   0.1 );
- // srot      r2( - 0.1 );
 
  Mapping            map;
  MatrixC eigVec( 6, 6 );
@@ -91,31 +87,31 @@ int main( int argc, char** argv )
  CLieOperator* T = new CLieOperator[ order ];
 
  beamline cell;
- cell.append( O );
- cell.append( D );
- cell.append( O );
- cell.append( B );
- cell.append( O );
- cell.append( F );
- cell.append( O );
+          cell.append( O );
+          cell.append( D );
+          cell.append( O );
+          cell.append( B );
+          cell.append( O );
+          cell.append( F );
+          cell.append( O );
 
  beamline ring;
  ring.append( S );
- // ring.append( r1 );
  ring.append( Oct );
- // ring.append( r2 );
- for( i = 0; i < num; i++ ) {
-  ring.append( cell );
- }
+ for( int i = 0; i < ((int) num); i++ ) { ring.append( cell ); }
 
+ Proton p( energy );
+ RefRegVisitor registrar( p );
+ ring.accept(registrar);
+ p.setStateToZero();
 
  /* DGN */ // Some tracking...
  /* DGN */ cout << "DGN> Gonna do some tracking now ..." << endl;
- /* DGN */ Proton p( energy );
- /* DGN */ static double zero[] = { 0., 0., 0., 0., 0., 0. };
- /* DGN */ p.setState( zero );
- /* DGN */ for( i = 0; i < 100; i++ ) {
- /* DGN */   ring.propagate( p );
+ /* DGN */ // double zero[] = { 0., 0., 0., 0., 0., 0. };
+ /* DGN */ // p.setState( zero );
+ /* DGN */ for( int i = 0; i < 100; i++ ) {
+ /* DGN */   // ring.propagate( p );
+ /* DGN */   cell.propagate( p );
  /* DGN */   for( int j = 0; j < 6; j++ ) cout << p.State(j) << ",  ";
  /* DGN */   cout << endl;
  /* DGN */ }
@@ -131,13 +127,13 @@ int main( int argc, char** argv )
  // Subtract the image of the origin ...
  // This is a kludge!
  cout << "\nWe are going to subtract ( ";
- for( i = 0; i < 5; i++ ) cout << map(i).standardPart() 
+ for( int i = 0; i < 5; i++ ) cout << map(i).standardPart() 
                                << ", ";
  cout << map(5).standardPart() 
       << " )\n" 
       << endl;
 
- for( i = 0; i < 6; i++ ) map(i) -= map(i).standardPart();
+ for( int i = 0; i < 6; i++ ) map(i) -= map(i).standardPart();
 
 
  /* DGN */ map.printCoeffs();
@@ -155,14 +151,14 @@ int main( int argc, char** argv )
  Mapping projected;
  // static int l[] = { 0, 1, 3, 4 };
  /* DGN */ cout << "DGN> Hang on, everybody. Here we goooo...!" << endl;
- // for( i = 0; i < 4; i++ ) 
+ // for( int i = 0; i < 4; i++ ) 
  //   projected( i ) = map( l[i] ).filter( fff );
  // 
 
  bool (*xxx[]) ( const IntArray&, const double& ) = { fff, fff, xx2, fff, fff, xx5 };
  projected = map.filter( xxx );
 
- // for( i = 0; i < 6; i++ ) 
+ // for( int i = 0; i < 6; i++ ) 
  //   projected( i ) = map( i ).filter( fff );
 
  /* DGN */ cout << "DGN> Filtered map:" << endl;
@@ -179,12 +175,12 @@ int main( int argc, char** argv )
 
  // Output results
  cout << "The normal Form _______________________________" << endl;
- for( i = 2; i <= order; i++ ) {
+ for( int i = 2; i <= order; i++ ) {
   cout << "Terms of degree " << i << "_ _ _ _ _ _ _ _ _ _ _ _ _ _" << endl;
   N[i-2].printCoeffs();
  }
  cout << "The transformation ____________________________" << endl;
- for( i = 2; i <= order; i++ ) {
+ for( int i = 2; i <= order; i++ ) {
   cout << "Terms of degree " << i << " _ _ _ _ _ _ _ _ _ _ _ _ _ _" << endl;
   T[i-2].printCoeffs();
  }
