@@ -60,8 +60,12 @@ Frame::Frame()
   }
 }
 
+
 Frame::Frame( const Frame& x )
-: o(x.o), e(x.e) { }
+: o(x.o), e(x.e) 
+{ 
+}
+
 
 Frame::~Frame()
 {
@@ -376,6 +380,15 @@ Frame Frame::patchedOnto( const Frame& f ) const
   W = f.e;
   ret.o = f.o + W * ( this->o );
   ret.e = W * ( this->e );
+
+  // A correction to keep orthogonality
+  // errors from building up.
+  Matrix corrector(3,3);
+  corrector = (-0.5)*((ret.e.transpose())*(ret.e));
+  for( int i = 0; i < 3; i++ ) {
+    corrector(i,i) = corrector(i,i) + 1.5;
+  }
+  ret.e = corrector*(ret.e);
 
   return ret;
 }
