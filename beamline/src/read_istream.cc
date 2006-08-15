@@ -388,7 +388,7 @@ istream& operator>>(istream& is, beamline& bl)
   }
   else {
     bl.Rename(name);
-    bl.setReferenceTime(ref_ct);  // Meaningless???
+    bl.setReferenceTime(ref_ct);  // Meaningless???  No!
   }
   
   // ??? REMOVE: bl.readFrom(is); // Polymorphically call the right readFrom().
