@@ -28,8 +28,8 @@ find . -name config\.sub      -exec \rm     {}  \; -print
 for dir in basic_toolkit bmlfactory mxyzptlk physics_toolkit integrator gms
 do
   cd   $dir
-  if [ ! -l $dir ]; then 
-    ln -s include $dir
+  if [ ! -L $dir ]
+  then ln -s include $dir
   fi
   ${rootdir}/updateheaders
   cd ./src
