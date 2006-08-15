@@ -222,6 +222,7 @@ public:
   friend class Real_Exact_Prop;
 
   // Constructors 
+  rbend();
   rbend( double,     // length  [ meters ]
          double,     // field   [ tesla ]
                      // (assumed along the y-axis)

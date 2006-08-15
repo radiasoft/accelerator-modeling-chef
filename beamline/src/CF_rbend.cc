@@ -58,6 +58,20 @@ using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
 
+
+CF_rbend::CF_rbend()
+: bmlnElmnt( 1.0, 0.0 )
+  , _usEdgeAngle(0.0)
+  , _dsEdgeAngle(0.0)
+  , _usAngle(M_TWOPI)
+  , _dsAngle(-M_TWOPI)
+  , _usTan(0.0)
+  , _dsTan(0.0)
+{
+  _finishConstructor(1);
+}
+
+
 CF_rbend::CF_rbend( double        lng,  // length      [ meter    ]
                     double        fld,  // field       [ tesla    ]
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles

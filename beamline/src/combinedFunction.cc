@@ -57,14 +57,12 @@ using FNAL::pcerr;
 combinedFunction::combinedFunction()
 : bmlnElmnt()
 {
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-         "combinedFunction::combinedFunction()", 
-         "Proper instatiation requires parameters." ) );
+  p_bml = new beamline;
 }
 
 combinedFunction::combinedFunction( const char* n ) : bmlnElmnt(n) 
 {
-  p_bml = new beamline();
+  p_bml = new beamline;
 }
 
 combinedFunction::combinedFunction( const char* n, const beamline& b ) 

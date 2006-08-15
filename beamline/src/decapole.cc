@@ -48,6 +48,9 @@ using namespace std;
 //   class thinDecapole 
 // **************************************************
 
+thinDecapole::thinDecapole () : bmlnElmnt( 0.0, 0.0 ) {
+}
+
 thinDecapole::thinDecapole ( double s ) : bmlnElmnt( 0.0, s ) {
  // The strength is to be interpreted as
  // (1/4!)*B''''l/Brho  in  meters^-2

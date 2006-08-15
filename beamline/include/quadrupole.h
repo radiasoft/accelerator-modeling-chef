@@ -114,6 +114,7 @@ public:
 class thinQuad : public bmlnElmnt
 {
 public:
+  thinQuad();
   thinQuad( double );    // B'L in Tesla; + = horizontally focussing
   thinQuad( const char*, // name
             double );    // B'L in Tesla; + = horizontally focussing

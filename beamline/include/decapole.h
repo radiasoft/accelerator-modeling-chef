@@ -38,6 +38,7 @@
 class thinDecapole : public bmlnElmnt
 {
 public:
+  thinDecapole();
   thinDecapole( double /* strength */ );
   thinDecapole( char*  /* name */,
                 double /* strength */ );

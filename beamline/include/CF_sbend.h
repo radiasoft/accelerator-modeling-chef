@@ -44,6 +44,7 @@ class CF_sbend : public bmlnElmnt
 {
  public:
   // Constructors
+  CF_sbend();
   CF_sbend( double,     // length       [ meters ]
             double,     // field        [ tesla ]
             double,     // bend angle   [ radians ]

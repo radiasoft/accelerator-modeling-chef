@@ -56,6 +56,21 @@ using FNAL::pcout;
 //   class sbend
 // **************************************************
 
+sbend::sbend() 
+: bmlnElmnt( 1.0, 1.0, &sbend::Exact )
+  , _angle(0.001)
+  , _usEdgeAngle(0.0)
+  , _dsEdgeAngle(0.0)
+  , _usAngle(0.0)
+  , _dsAngle(0.0)
+  , _usTan(0.0)
+  , _dsTan(0.0)
+  , _myArcsin(true)
+{
+ _calcPropParams();
+}
+
+
 sbend::sbend( double l, double s, double alpha, PropFunc* pf ) 
 : bmlnElmnt( l, s, pf )
   , _angle(alpha)

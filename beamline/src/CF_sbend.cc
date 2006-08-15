@@ -56,6 +56,20 @@ using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
 
+CF_sbend::CF_sbend()
+: bmlnElmnt( 1.0, 0.0 )
+  , _angle(0.001)
+  , _usEdgeAngle(0.0)
+  , _dsEdgeAngle(0.0)
+  , _usAngle(0.0)
+  , _dsAngle(0.0)
+  , _usTan(0.0)
+  , _dsTan(0.0)
+{
+  _finishConstructor();
+}
+
+
 CF_sbend::CF_sbend( double        lng,  // length     [ meter    ]
                     double        fld,  // field      [ tesla    ]
                     double        ang,  // bend angle [ radians  ]

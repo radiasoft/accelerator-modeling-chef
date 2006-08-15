@@ -79,7 +79,6 @@ public:
 
 class HPinger : public Pinger {
  public:
-  HPinger(       /* Assumes zero kick */ );
   HPinger( double = 0.0 /* kick size in radians */,
            int    = -1  /* count */ );
   HPinger( char * /* name */  /* Assumes zero kick */ );
@@ -97,7 +96,6 @@ class HPinger : public Pinger {
 
 class VPinger : public Pinger {
  public:
-  VPinger( /* Assumes zero kick */ );
   VPinger( double = 0.0 /* kick size in radians */,
            int    = -1  /* count */ );
   VPinger( char * /* name */  /* Assumes zero kick */ );

@@ -1464,8 +1464,10 @@ double bmlnElmnt::getReferenceTime() const
 double bmlnElmnt::setReferenceTime( double x )
 {
   double oldValue = _ctRef;
+  if( fabs(x) < 1.0e-12 ) { x = 0.0; }
   _ctRef = x;
-  if( fabs(_ctRef) < 1.0e-12 ) { _ctRef = 0.0; }
+  if( p_bml   ) {   p_bml->setReferenceTime( x ); }
+  if( p_bml_e ) { p_bml_e->setReferenceTime( x ); }
   return oldValue;
 }
 

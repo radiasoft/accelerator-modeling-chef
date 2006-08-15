@@ -44,6 +44,7 @@
 class thin2pole : public bmlnElmnt
 {
 public:
+  thin2pole();
   thin2pole( double /* strength = BL */ );
   thin2pole( const char*  /* name */,
              double /* strength */ );
@@ -70,6 +71,7 @@ public:
 class thin12pole : public bmlnElmnt
 {
 public:
+  thin12pole();
   thin12pole( double /* strength */ );
   thin12pole( const char*  /* name */,
               double /* strength */ );
@@ -95,6 +97,7 @@ public:
 class thin14pole : public bmlnElmnt
 {
 public:
+  thin14pole();
   thin14pole( double /* strength */ );
   thin14pole( const char*  /* name */,
               double /* strength */ );
@@ -120,6 +123,7 @@ public:
 class thin16pole : public bmlnElmnt
 {
 public:
+  thin16pole();
   thin16pole( double /* strength */ );
   thin16pole( const char*  /* name */,
               double /* strength */ );
@@ -145,6 +149,7 @@ public:
 class thin18pole : public bmlnElmnt
 {
 public:
+  thin18pole();
   thin18pole( double /* strength */ );
   thin18pole( const char*  /* name */,
               double /* strength */ );
@@ -170,6 +175,7 @@ public:
 class thinMultipole : public bmlnElmnt
 {
 public:
+  thinMultipole();
   thinMultipole( double /* strength */ );
   thinMultipole( const char*  /* name */,
                 double /* strength */ );

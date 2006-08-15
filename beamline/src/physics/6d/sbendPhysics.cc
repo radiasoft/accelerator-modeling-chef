@@ -80,7 +80,12 @@ int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  // Put in a kludge for the vertical focusing upon entrance.
  if( 0.0 != pbe->_usTan ) {
    edgeCoeff = ( pbe->_usTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+   #if 0
+   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+   #endif
+   #if 1
    if( p.Charge() > 0.0 ) {
+   #endif
      p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
    }
    else {
@@ -94,7 +99,12 @@ int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  // Put in a kludge for the vertical focusing upon exit.
  if( 0.0 != pbe->_dsTan ) {
    edgeCoeff = ( pbe->_dsTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+   #if 0
+   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+   #endif
+   #if 1
    if( p.Charge() > 0.0 ) {
+   #endif
      p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
    }
    else {
@@ -115,7 +125,12 @@ int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  // Put in a kludge for the vertical focusing upon entrance.
  if( 0.0 != pbe->_usTan ) {
    edgeCoeff = ( pbe->_usTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+   #if 0
+   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+   #endif
+   #if 1
    if( p.Charge() > 0.0 ) {
+   #endif
      p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
    }
    else {
@@ -129,7 +144,12 @@ int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  // Put in a kludge for the vertical focusing upon exit.
  if( 0.0 != pbe->_dsTan ) {
    edgeCoeff = ( pbe->_dsTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+   #if 0
+   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+   #endif
+   #if 1
    if( p.Charge() > 0.0 ) {
+   #endif
      p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
    }
    else {
@@ -150,7 +170,12 @@ int sbend::InEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  // Put in a kludge for the vertical focusing upon entrance.
  if( 0.0 != pbe->_usTan ) {
    edgeCoeff = ( pbe->_usTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+   #if 0
+   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+   #endif
+   #if 1
    if( p.Charge() > 0.0 ) {
+   #endif
      p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
    }
    else {
@@ -174,7 +199,12 @@ int sbend::InEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  // Put in a kludge for the vertical focusing upon entrance.
  if( 0.0 != pbe->_usTan ) {
    edgeCoeff = ( pbe->_usTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+   #if 0
+   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+   #endif
+   #if 1
    if( p.Charge() > 0.0 ) {
+   #endif
      p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
    }
    else {
@@ -201,7 +231,12 @@ int sbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  // Put in a kludge for the vertical focusing upon exit.
  if( 0.0 != pbe->_dsTan ) {
    edgeCoeff = ( pbe->_dsTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+   #if 0
+   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+   #endif
+   #if 1
    if( p.Charge() > 0.0 ) {
+   #endif
      p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
    }
    else {
@@ -224,7 +259,12 @@ int sbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  // Put in a kludge for the vertical focusing upon exit.
  if( 0.0 != pbe->_dsTan ) {
    edgeCoeff = ( pbe->_dsTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+   #if 0
+   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
+   #endif
+   #if 1
    if( p.Charge() > 0.0 ) {
+   #endif
      p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
    }
    else {

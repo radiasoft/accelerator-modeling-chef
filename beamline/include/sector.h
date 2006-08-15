@@ -74,15 +74,15 @@ public:
   sector( const char* = 0, double = 0.0 );
   sector( double* betaH,  double* alphaH,  double* psiH,
           double* betaV,  double* alphaV,  double* psiV, double length );
-  sector( char*, double* betaH,  double* alphaH,  double* psiH,
-                 double* betaV,  double* alphaV,  double* psiV, double length );
+  sector( const char*, double* betaH,  double* alphaH,  double* psiH,
+                       double* betaV,  double* alphaV,  double* psiV, double length );
 
   sector( Jet*, 
           double /* length */, 
           char = 1, /* mapType */
           PropFunc*    = &sector::defaultPropagate );
 
-  sector( char*, 
+  sector( const char*, 
           Jet*, 
           double, 
           char = 1,    /* mapType */ 
@@ -93,7 +93,7 @@ public:
           char = 1, /* mapType */ 
           PropFunc*    = &sector::defaultPropagate );
 
-  sector( char*, 
+  sector( const char*, 
           const Mapping&,  
           double, 
           char = 1, /* mapType */ 

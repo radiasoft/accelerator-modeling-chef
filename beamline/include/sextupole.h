@@ -45,6 +45,7 @@
 class sextupole : public bmlnElmnt
 {
 public:
+  sextupole();
   sextupole( double,       /* length   */
              double        /* strength */ );
   sextupole( const char*,  /* name     */
@@ -80,6 +81,7 @@ public:
 class thinSextupole : public bmlnElmnt
 {
 public:
+  thinSextupole();
   thinSextupole( double        /* strength */ );
   thinSextupole( const char*   /* name */,
                  double        /* strength */ );

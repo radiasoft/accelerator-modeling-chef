@@ -155,7 +155,7 @@ private:
   std::istream& readFrom(std::istream&);
 
 public:
-  thinrfcavity( const char * ); // Name
+  thinrfcavity( const char* = "NONAME" ); // Name
   thinrfcavity( double,   // RF frequency [Hz]
                 double,   // max energy gain per turn [eV] (strength*10**9)
                 double,   // synchronous phase [radians]
