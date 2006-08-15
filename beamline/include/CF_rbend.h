@@ -44,6 +44,7 @@ class CF_rbend : public bmlnElmnt
 {
  public:
   // Constructors
+  CF_rbend();
   CF_rbend( double,     // length       [ meters ]
             double,     // field        [ tesla ]
             int n = 1 );// number of blocks: 4n+1 bends + 2(4n) thin multipoles

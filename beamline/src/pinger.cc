@@ -104,10 +104,6 @@ ostream& Pinger::writeTo(ostream& os) {
 
 /* HPinger Constructors */
 
-HPinger::HPinger() : Pinger() {
-}
-
-
 HPinger::HPinger(double kick, int c) : Pinger(kick, 0.0, c) {
 }
 
@@ -130,10 +126,6 @@ const char* HPinger::Type() const
 
 
 /* VPinger Constructors */
-
-VPinger::VPinger() : Pinger(0.0, M_PI_2, -1) {
-}
-
 
 VPinger::VPinger(double kick, int c) : Pinger(kick, M_PI_2, c) {
 }

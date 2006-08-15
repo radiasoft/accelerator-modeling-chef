@@ -53,7 +53,11 @@ using FNAL::pcout;
 //   class sector
 // **************************************************
 
-sector::sector( double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double l  ) : bmlnElmnt(l) {
+sector::sector(   double* bH,  double* aH,  double* pH
+                , double* bV,  double* aV,  double* pV
+                , double l  ) 
+: bmlnElmnt(l) 
+{
  int    i, j;
  double dummy, cs, sn;
 
@@ -111,7 +115,7 @@ sector::sector( double* bH,  double* aH,  double* pH, double* bV,  double* aV,  
 } // end function sector::sector( double* bH, ... )
 
 
-sector::sector( char* n, double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double l  ) : bmlnElmnt( n, l ) {
+sector::sector( const char* n, double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double l  ) : bmlnElmnt( n, l ) {
  int    i, j;
  double dummy, cs, sn;
 
@@ -119,14 +123,14 @@ sector::sector( char* n, double* bH,  double* aH,  double* pH, double* bV,  doub
 
  if( pH[1] <= pH[0] ) {
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "sector::sector( char* n, double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double l  ) : bmlnElmnt( n, l ) {", 
+          "sector::sector( const char* n, double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double l  ) : bmlnElmnt( n, l ) {", 
           "Horizontal phases inverted." ) );
  }
  else deltaPsiH = pH[1] - pH[0];
 
  if( pV[1] <= pV[0] ) {
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "sector::sector( char* n, double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double l  ) : bmlnElmnt( n, l ) {", 
+          "sector::sector( const char* n, double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double l  ) : bmlnElmnt( n, l ) {", 
           "Vertical phases inverted." ) );
  }
  else deltaPsiV = pV[1] - pV[0];
@@ -184,7 +188,7 @@ sector::sector( Jet* m, double l, char mpt, PropFunc* prop) : bmlnElmnt(l,prop) 
 }
 
 
-sector::sector( char* n, Jet* m, double l, char mpt, PropFunc* prop ) : bmlnElmnt( n, l, prop ) {
+sector::sector( const char* n, Jet* m, double l, char mpt, PropFunc* prop ) : bmlnElmnt( n, l, prop ) {
  int i, j;
  mapType  = mpt;
  for( i = 0; i < BMLN_dynDim; i++ ) myMap.SetComponent( i, m[i] );
@@ -235,7 +239,7 @@ sector::sector( const Mapping& m, double l, char mpt, PropFunc* prop   ) : bmlnE
 }
 
 
-sector::sector( char* n, const Mapping& m, double l, char mpt,PropFunc* prop ) : bmlnElmnt( n, l, prop ) {
+sector::sector( const char* n, const Mapping& m, double l, char mpt,PropFunc* prop ) : bmlnElmnt( n, l, prop ) {
  int i,j;
  mapType  = mpt;
  myMap = m;
@@ -249,11 +253,15 @@ sector::sector( char* n, const Mapping& m, double l, char mpt,PropFunc* prop ) :
  }
 }
 
-sector::sector( const char* n, double l ) : bmlnElmnt( n, l ) {
+
+sector::sector( const char* n, double l ) 
+: bmlnElmnt( n, l ) 
+{
  mapType  = 0;
  for   ( int i = 0; i < BMLN_dynDim; i++ ) {
-   for ( int j = 0; j < BMLN_dynDim; j++ )
+   for ( int j = 0; j < BMLN_dynDim; j++ ) {
      mapMatrix[i][j] = 0.0;
+   }
    mapMatrix[i][i] = 1.0;
  }
 }
@@ -276,11 +284,11 @@ Mapping sector::getMap() const
 
 
 void sector::setFrequency( double (*fcn)( double ) ) {
- DeltaT = fcn;
+  DeltaT = fcn;
 }
 
 void sector::setFrequency( Jet (*fcn)( const Jet& ) ) {
- JetDeltaT = fcn;
+  JetDeltaT = fcn;
 }
 
 

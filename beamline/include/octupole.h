@@ -44,6 +44,7 @@
 class octupole : public bmlnElmnt
 {
 public:
+  octupole();
   octupole( double,       /* length   */
             double        /* strength */ );
   octupole( const char*,  /* name     */
@@ -79,6 +80,7 @@ public:
 class thinOctupole : public bmlnElmnt
 {
 public:
+  thinOctupole();
   thinOctupole( double       /* strength */ );
   thinOctupole( const char*  /* name */,
                 double       /* strength */ );

@@ -49,6 +49,12 @@ using namespace std;
 //   class thin2pole 
 // **************************************************
 
+thin2pole::thin2pole()
+: bmlnElmnt( 0.0, 0.0 )
+{
+}
+
+
 thin2pole::thin2pole( double s /* strength = BL */ )
 : bmlnElmnt( 0.0, s )
 {
@@ -94,6 +100,9 @@ bool thin2pole::isMagnet() const
 //   class thin12pole 
 // **************************************************
 
+thin12pole::thin12pole () : bmlnElmnt( 0.0, 0.0 ) {
+}
+
 thin12pole::thin12pole ( double s ) : bmlnElmnt( 0.0, s ) {
 }
 
@@ -127,6 +136,9 @@ bool thin12pole::isMagnet() const
 // **************************************************
 //   class thin14pole 
 // **************************************************
+
+thin14pole::thin14pole () : bmlnElmnt( 0.0, 0.0 ) {
+}
 
 thin14pole::thin14pole ( double s ) : bmlnElmnt( 0.0, s ) {
 }
@@ -163,6 +175,9 @@ bool thin14pole::isMagnet() const
 //   class thin16pole 
 // **************************************************
 
+thin16pole::thin16pole () : bmlnElmnt( 0.0, 0.0 ) {
+}
+
 thin16pole::thin16pole ( double s ) : bmlnElmnt( 0.0, s ) {
 }
 
@@ -196,6 +211,9 @@ bool thin16pole::isMagnet() const
 // **************************************************
 //   class thin18pole 
 // **************************************************
+
+thin18pole::thin18pole () : bmlnElmnt( 0.0, 0.0 ) {
+}
 
 thin18pole::thin18pole ( double s ) : bmlnElmnt( 0.0, s ) {
 }
@@ -231,6 +249,20 @@ bool thin18pole::isMagnet() const
 // **************************************************
 //   class thinMultipole 
 // **************************************************
+
+thinMultipole::thinMultipole () : bmlnElmnt( 0.0, 0.0 ) {
+ static char firstCall = 1;
+
+ if ( firstCall ) {
+   printf( "\n*** SORRY:                                         " );
+   printf( "\n*** SORRY: class thinMultipole is not implemented. " );
+   printf( "\n*** SORRY: A marker will be substituted            " );
+   printf( "\n*** SORRY: for each instance.                      " );
+   printf( "\n*** SORRY:                                       \n" );
+   firstCall = 0;
+ }
+
+}
 
 thinMultipole::thinMultipole ( double s ) : bmlnElmnt( 0.0, s ) {
  static char firstCall = 1;

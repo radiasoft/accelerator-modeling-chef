@@ -59,6 +59,20 @@ using FNAL::pcerr;
 //   class rbend
 // **************************************************
 
+rbend::rbend()
+: bmlnElmnt( 1.0, 0.0, &rbend::Exact )
+  , _usEdgeAngle(0.0)
+  , _dsEdgeAngle(0.0)
+  , _usAngle(M_TWOPI)
+  , _dsAngle(-M_TWOPI)
+  , _usTan(0.0)
+  , _dsTan(0.0)
+  , _myArcsin(true)
+{
+ _calcPropParams();
+}
+
+
 rbend::rbend( double l, double s, PropFunc* pf ) 
 : bmlnElmnt( l, s, pf )
   , _usEdgeAngle(0.0)

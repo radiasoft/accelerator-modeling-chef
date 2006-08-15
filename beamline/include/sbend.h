@@ -186,6 +186,7 @@ public:
   
 
   // Constructors 
+  sbend();
   sbend( double,     // (orbit) length [meters]
          double,     // magnetic field [tesla]
                      // (assumed along the y-axis)
