@@ -116,7 +116,7 @@ bmlnElmnt* read_istream(istream& is)
   const double MIN_ANGLE = 2.0E-9;
   const int SIZE=80;
   char type[SIZE], *name;
-  double length, strength, x, y, t;
+  double length, strength, ref_ct, x, y, t;
   std::string previousLine;
 
   name = new char[SIZE];
@@ -125,7 +125,7 @@ bmlnElmnt* read_istream(istream& is)
     return NULL;
 
   // read in the invariant stuff
-  is >> type >> name >> length >> strength >> x >> y >> t;
+  is >> type >> name >> length >> strength >> ref_ct >> x >> y >> t;
   
   // Figure out which type of element we have here
   if ( strcasecmp(type,                 "beamline") == 0 ) {
@@ -326,15 +326,16 @@ bmlnElmnt* read_istream(istream& is)
   // REMOVE:         type,name,length,strength,x,y,t);
 
   // Get the rest of the description if we got a real element
-  double energy;
   if ( element ) {
+    element->setReferenceTime(ref_ct);
     if( 0 != strcmp( element->Type(), "beamline" ) ) {
-      element->readFrom(is);    
+      element->readFrom(is);
     }
     else {
-      bmlnElmnt *e = NULL;
+      double energy;
       is >> energy;
       ((beamline*) element)->setEnergy( energy );
+      bmlnElmnt *e = NULL;
       do {
         e = read_istream(is);
         if ( e ) {
@@ -362,10 +363,12 @@ istream& operator>>(istream& is, beamline& bl)
 {
   const int SIZE=80;
   char name[SIZE], type[SIZE];
-  double length, strength, x, y, t;
+  double length, strength, ref_ct, x, y, t;
 
   // Read in a beamline
-  is >> type >> name >> length >> strength >> x >> y >> t;
+  is >> type >> name >> length >> strength >> ref_ct >> x >> y >> t;
+  // Some of these arguments are meaningless for a beamline but must
+  // be included because beamline inherits from bmlnElmnt.
 
   if ( strcasecmp(type, "beamline") != 0 ) {
     (*pcerr) << "\n **** WARNING **** Expecting data file to begin with a \"beamline\" directive"
@@ -385,6 +388,7 @@ istream& operator>>(istream& is, beamline& bl)
   }
   else {
     bl.Rename(name);
+    bl.setReferenceTime(ref_ct);  // Meaningless???
   }
   
   // ??? REMOVE: bl.readFrom(is); // Polymorphically call the right readFrom().
