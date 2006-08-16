@@ -1557,11 +1557,11 @@ ostream& operator<<(ostream& os, bmlnElmnt& b)
        << " " 
        << b.Name() 
        << " " 
-       << b.Length() 
+       << OSTREAM_DOUBLE_PREC << b.Length() 
        << " " 
-       << b.Strength() 
+       << OSTREAM_DOUBLE_PREC << b.Strength() 
        << " "
-       << b.getReferenceTime()
+       << OSTREAM_DOUBLE_PREC << b.getReferenceTime()
        << " " ;
     os << (*b.align) << "\n";
     b.writeTo(os); // Polymorphically call the appropriate writeTo().
