@@ -1193,15 +1193,12 @@ T TJL<T>::standardPart() const
 template<typename T>
 void TJL<T>::clear() 
 {
-
-
  _theList.clear();
- _count      =    0;
- _weight     =    0; 
- _accuWgt    =    0;  
+ _count   = 0;
+ _weight  = 0; 
+ _accuWgt = _myEnv->maxWeight();
 
  _jltermStoreCurrentPtr  = _jltermStore ; // do not delete the store here !
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
