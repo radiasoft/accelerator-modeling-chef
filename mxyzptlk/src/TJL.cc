@@ -68,6 +68,7 @@ using FNAL::pcerr;
 template<>
 template<>
 TJL<std::complex<double> >::TJL( TJL<double> const& x):
+ _count(0),                     
 _weight(x._weight),     
 _accuWgt(x._accuWgt),
 _jltermStoreCapacity(0), 
