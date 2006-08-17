@@ -22,7 +22,7 @@ w = sin(u) * cos(v);       z = exp( u*u*u ) / ( u*v );
 
 a.SetComponent( 0, u ); a.SetComponent( 1, v );
 
-Jet__environment::BeginEnvironment( 1 );
+Jet__environment::BeginEnvironment( 7 );
 coord xx( u.standardPart() );
 coord yy( v.standardPart() );
 Jet__environment::EndEnvironment();
