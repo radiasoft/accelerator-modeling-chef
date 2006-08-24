@@ -96,6 +96,8 @@ class TML : public ReferenceCounter<TML<T> > {
   MLPtr<T> _lu_decompose(int* indx, int& d ) const;
   void                    _lu_back_subst(int* indx, MLPtr<T>& b);  
 
+  static double _tiny;     // pivot threshold
+
  public:
 
   // Constructors and destructors_____________________________________
