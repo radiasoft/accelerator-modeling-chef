@@ -49,6 +49,8 @@
 
 using namespace std;
 
+TML::tiny = double(1e-20); // pivot threshold
+
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -863,9 +865,9 @@ template<typename T>
       // If the pivot element is .zero the matrix is
       // singular (at least to the precision of the
       // algorithm). For some applications on singular
-      // matrices, it is desirable to substitute tiny for 0
+      // matrices, it is desirable to substitute _tiny for 0
       if(lu_decomp->_mdata[j][j] == T())
-        lu_decomp->_mdata[j][j] = T(tiny); /// this may not work for all types
+        lu_decomp->_mdata[j][j] = T(_tiny); /// this may not work for all types
                                             
       dum = T(1)/lu_decomp->_mdata[j][j];
       for(i=j+1; i <= _ncols-1; i++)
@@ -874,7 +876,7 @@ template<typename T>
 
   }
   if(lu_decomp->_mdata[_nrows-1][_ncols-1] == T())
-    lu_decomp->_mdata[_nrows-1][_ncols-1] = T(tiny);
+    lu_decomp->_mdata[_nrows-1][_ncols-1] = T(_tiny);
 
   return lu_decomp;
 }

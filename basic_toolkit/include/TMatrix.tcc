@@ -74,8 +74,6 @@ using FNAL::pcerr;
 static const int PHASESPACE = 6;
 #define M_SMALL  1.0e-30
 
-static double tiny = double(1e-20);
-
 
 template<typename T>
 TMatrix<T>::TMatrix(): _ml( MLPtr<T>( new TML<T> ) ) 
