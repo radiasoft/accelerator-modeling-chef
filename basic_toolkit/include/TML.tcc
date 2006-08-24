@@ -49,7 +49,8 @@
 
 using namespace std;
 
-TML::tiny = double(1e-20); // pivot threshold
+template<typename T> double TML<T>::_tiny                = 1.0e-20; // pivot threshold
+
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
