@@ -54,25 +54,29 @@
 #include <qmessagebox.h>
 #include <typeinfo>
 
-#include "GenericException.h"
-#include "RayTrace.h"
-#include "PointEdit.h"
-#include "Tracker.h"   // ??? Is this needed?
-#include "QtMonitor.h"
+#include <GenericException.h>
+#include <RayTrace.h>
+#include <PointEdit.h>
+#include <Tracker.h>   // ??? Is this needed?
+#include <QtMonitor.h>
 
 #include <GL/glut.h>
 #include <qwt/qwt_math.h>
 
-#include "Particle.h"  // This line should not be necessary!!!
-#include "beamline.h"
-#include "BeamlineContext.h"
+#include <Particle.h>  // This line should not be necessary!!!
+#include <beamline.h>
+#include <BeamlineContext.h>
 
 
 // This undef is needed because of the compiler.
 #undef connect
+// ??? which compiler ???
+// ??? still true     ???
 
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
 
 // --------------------------
 // Implementation: struct Ray
@@ -604,13 +608,13 @@ void RayTrace::_finishConstructor()
   // Initialize the QtMonitors
   _n_monitor = QtMonitor::setAzimuth( _bmlConPtr->cheatBmlPtr() );
   if( 0 == _n_monitor ) {
-    cerr << "\n*** WARNING *** "
-         << "\n*** WARNING *** " << __FILE__ << ", Line " << __LINE__
-         << "\n*** WARNING *** RayTrace::_finishConstructor()"
-         << "\n*** WARNING *** No QtMonitors in beamline "
-         << _bmlConPtr->name()
-         << "\n*** WARNING *** \n"
-         << endl;
+    (*pcerr) << "\n*** WARNING *** "
+             << "\n*** WARNING *** " << __FILE__ << ", Line " << __LINE__
+             << "\n*** WARNING *** RayTrace::_finishConstructor()"
+             << "\n*** WARNING *** No QtMonitors in beamline "
+             << _bmlConPtr->name()
+             << "\n*** WARNING *** \n"
+             << endl;
   }
 
 
@@ -744,39 +748,39 @@ void RayTrace::_finishConstructor()
 
 
   // Make connections...
-  connect( _p_x_input,  SIGNAL(textChanged( const QString& )),
-           _p_x_input,  SLOT(_txtchg( const QString& )) );
-  connect( _p_x_input,  SIGNAL(returnPressed()),
-           _p_x_input,  SLOT(_retprs()) );
-  connect( _p_x_input,  SIGNAL(_new_value( double )),
-                 this,  SLOT(_new_x( double )) );
+  QObject::connect( _p_x_input,  SIGNAL(textChanged( const QString& )),
+                    _p_x_input,  SLOT(_txtchg( const QString& )) );
+  QObject::connect( _p_x_input,  SIGNAL(returnPressed()),
+                    _p_x_input,  SLOT(_retprs()) );
+  QObject::connect( _p_x_input,  SIGNAL(_new_value( double )),
+                          this,  SLOT(_new_x( double )) );
 
-  connect( _p_xp_input, SIGNAL(textChanged( const QString& )),
-           _p_xp_input, SLOT(_txtchg( const QString& )) );
-  connect( _p_xp_input, SIGNAL(returnPressed()),
-           _p_xp_input, SLOT(_retprs()) );
-  connect( _p_xp_input, SIGNAL(_new_value( double )),
-                  this, SLOT(_new_xp( double )) );
+  QObject::connect( _p_xp_input, SIGNAL(textChanged( const QString& )),
+                    _p_xp_input, SLOT(_txtchg( const QString& )) );
+  QObject::connect( _p_xp_input, SIGNAL(returnPressed()),
+                    _p_xp_input, SLOT(_retprs()) );
+  QObject::connect( _p_xp_input, SIGNAL(_new_value( double )),
+                           this, SLOT(_new_xp( double )) );
 
-  connect( _p_y_input,  SIGNAL(textChanged( const QString& )),
-           _p_y_input,  SLOT(_txtchg( const QString& )) );
-  connect( _p_y_input,  SIGNAL(returnPressed()),
-           _p_y_input,  SLOT(_retprs()) );
-  connect( _p_y_input,  SIGNAL(_new_value( double )),
-                 this,  SLOT(_new_y( double )) );
+  QObject::connect( _p_y_input,  SIGNAL(textChanged( const QString& )),
+                    _p_y_input,  SLOT(_txtchg( const QString& )) );
+  QObject::connect( _p_y_input,  SIGNAL(returnPressed()),
+                    _p_y_input,  SLOT(_retprs()) );
+  QObject::connect( _p_y_input,  SIGNAL(_new_value( double )),
+                          this,  SLOT(_new_y( double )) );
 
-  connect( _p_yp_input, SIGNAL(textChanged( const QString& )),
-           _p_yp_input, SLOT(_txtchg( const QString& )) );
-  connect( _p_yp_input, SIGNAL(returnPressed()),
-           _p_yp_input, SLOT(_retprs()) );
-  connect( _p_yp_input, SIGNAL(_new_value( double )),
-                  this, SLOT(_new_yp( double )) );
+  QObject::connect( _p_yp_input, SIGNAL(textChanged( const QString& )),
+                    _p_yp_input, SLOT(_txtchg( const QString& )) );
+  QObject::connect( _p_yp_input, SIGNAL(returnPressed()),
+                    _p_yp_input, SLOT(_retprs()) );
+  QObject::connect( _p_yp_input, SIGNAL(_new_value( double )),
+                           this, SLOT(_new_yp( double )) );
 
-  connect( _p_startBtn,   SIGNAL(clicked()),
-           this,          SLOT(_start_callback()));
+  QObject::connect( _p_startBtn,   SIGNAL(clicked()),
+                    this,          SLOT(_start_callback()));
 
-  connect( _p_timer, SIGNAL(timeout()),
-           this,     SLOT(_iterate()));
+  QObject::connect( _p_timer, SIGNAL(timeout()),
+                    this,     SLOT(_iterate()));
 }
 
 
@@ -902,11 +906,11 @@ void RayTrace::_opt_setHistory()
       QHBox* qhb2 = new QHBox( qvb );
         QPushButton* okayBtn = new QPushButton( "Okay", qhb2 );
           okayBtn->setDefault( true );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
+          QObject::connect( okayBtn, SIGNAL(pressed()),
+                            wpu,     SLOT(accept()) );
         QPushButton* cancelBtn = new QPushButton( "Cancel", qhb2 );
-          connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
+          QObject::connect( cancelBtn, SIGNAL(pressed()),
+                            wpu,       SLOT(reject()) );
       qhb2->setMargin(5);
       qhb2->setSpacing(3);
       qhb2->adjustSize();
@@ -945,11 +949,11 @@ void RayTrace::_opt_setIter()
       QHBox* qhb2 = new QHBox( qvb );
         QPushButton* okayBtn = new QPushButton( "Okay", qhb2 );
           okayBtn->setDefault( true );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
+          QObject::connect( okayBtn, SIGNAL(pressed()),
+                            wpu,     SLOT(accept()) );
         QPushButton* cancelBtn = new QPushButton( "Cancel", qhb2 );
-          connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
+          QObject::connect( cancelBtn, SIGNAL(pressed()),
+                            wpu,       SLOT(reject()) );
       qhb2->setMargin(5);
       qhb2->setSpacing(3);
       qhb2->adjustSize();
@@ -1075,8 +1079,17 @@ void RayTrace::setState( const Vector& s )
 
 void RayTrace::_iterate()
 {
-  if( _bmlConPtr->_particleBunchPtr->isEmpty() ) { _pushParticle(); }
-  else                                           { _pushBunch();    }
+  if( 0 == (_bmlConPtr->_particleBunchPtr )) {
+    _pushParticle(); 
+  }
+  else {
+    if( _bmlConPtr->_particleBunchPtr->isEmpty() ) { 
+      _pushParticle(); 
+    }
+    else                                           { 
+      _pushBunch();    
+    }
+  }
 }
 
 
