@@ -208,7 +208,7 @@ void normalForm( const Mapping& theMapping, /* input */
  Dinv = D.inverse();
 
  MatrixC lambda(1,D.cols());
- for( i = 0; i < 6; i++ ) {
+ for( i = 0; i < D.cols(); i++ ) {
    lambda(i) = D(i,i);
  }
       /* CAUTION */  for( i = 0; i < 6; i++ ) {

@@ -375,9 +375,13 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
         // Reality check ...
         if( fabs( real(v) ) > 1.0e-10 * fabs( imag(v) ) ) {
           (*pcerr) << "WARNING:                              " << endl;
+          (*pcerr) << "WARNING: " << __FILE__ << ", Line " << __LINE__ << endl;
           (*pcerr) << "WARNING: ConvertNToTunes              " << endl;
-          (*pcerr) << "WARNING: Reality check was violated.  " << endl;
-          (*pcerr) << "WARNING: Offending ratio is ";
+          (*pcerr) << "WARNING: Reality check was violated for exponent "
+                   << jlctPtr->exponents()
+                   << ".  " << endl;
+          (*pcerr) << "WARNING: Offending ratio is "
+                   << "| " << real(v) << " / " << imag(v) << " |  = " ;
           if( fabs( imag(v) ) == 0.0 ) {
             (*pcerr) << "infinite." << endl;
           }
