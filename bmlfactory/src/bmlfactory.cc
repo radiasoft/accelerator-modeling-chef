@@ -123,14 +123,12 @@ bmlfactory::bmlfactory( const char* fname, double BRHO, const char* stringbuffer
 }
 
 
-bmlfactory::bmlfactory( const char* fname, const char* stringbuffer) {
-
+bmlfactory::bmlfactory( const char* fname, const char* stringbuffer) 
+{
   BRHO_ = 0;
   try 
   {
-
-    bmlfactory_init(fname, stringbuffer);
-
+     bmlfactory_init(fname, stringbuffer);
   }
   catch (GenericException& e)
   {
@@ -155,8 +153,8 @@ bmlfactory::bmlfactory( const char* fname, const char* stringbuffer) {
 
 
 void 
-bmlfactory::bmlfactory_init(const char* fname, const char* stringbuffer) {
-
+bmlfactory::bmlfactory_init(const char* fname, const char* stringbuffer) 
+{
   mp_      = NULL;
   fname_   = NULL;
   bel_arr_ = NULL;
@@ -201,8 +199,8 @@ bmlfactory::bmlfactory_init(const char* fname, const char* stringbuffer) {
   
 }
 
-bmlfactory::~bmlfactory() {
-
+bmlfactory::~bmlfactory() 
+{
   madparser_delete( mp_ );
 
   mp_ = NULL;
@@ -268,8 +266,8 @@ bmlfactory::create_beamline_private( const char* bmlname) { // *** DEPRECATED **
 }
 
 beamline*
-bmlfactory::create_beamline_private( const char* bmlname, double brho ) {
-  
+bmlfactory::create_beamline_private( const char* bmlname, double brho ) 
+{
   BRHO_ = brho;
 
   beamline* bml_ptr = 0;  
@@ -289,7 +287,8 @@ bmlfactory::create_beamline_private( const char* bmlname, double brho ) {
 }
 
 static char*
-add_str( char* ptr, const char* s1, const char* s2 ) {
+add_str( char* ptr, const char* s1, const char* s2 ) 
+{
   strcpy( ptr, s1 );
   return strcat( ptr, s2 );
 }

@@ -510,9 +510,9 @@ void TVector<T>::Rotate ( TVector& v, double theta ) const
   TVector<T> e  = Unit();
   T c = cos( theta );
   T s = sin( theta );
-  TVector<T> u = ( c*v ) +
-      ( s*( e^v) ) +
-      ( ( ( 1.0 - c )*(e*v) )*e );
+  TVector<T> u =   ( c*v )
+                 + ( s*( e^v) )
+                 + ( ( ( 1.0 - c )*(e*v) )*e );
   for ( int i = 0; i < 3; ++i) v._comp[i] = u._comp[i];
 }
 
