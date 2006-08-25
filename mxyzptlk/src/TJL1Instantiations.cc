@@ -29,7 +29,7 @@
 // If explicit template instantiations are not desired, *do not* compile this file !
 // =================================================================================
 
-#ifndef MXYZPTLK_IMPLICIT_TEMPLATES 
+#ifdef MXYZPTLK_EXPLICIT_TEMPLATES 
 
 #include <complex>
 #include <ReferenceCounter.h>
@@ -118,5 +118,5 @@ template void std::vector<TJL1<double>*, std::allocator<TJL1<double>*> >::_M_ins
 
 template void std::vector<TJL1<std::complex<double> >*, std::allocator<TJL1<std::complex<double> >*> >::_M_insert_aux(__gnu_cxx::__normal_iterator<TJL1<std::complex<double> >**, std::vector<TJL1<std::complex<double> >*, std::allocator<TJL1<std::complex<double> >*> > >, TJL1<std::complex<double> >* const&);
 
-#endif // MXYZPTLK_IMPLICIT_TEMPLATES 
+#endif // MXYZPTLK_EXPLICIT_TEMPLATES 
 

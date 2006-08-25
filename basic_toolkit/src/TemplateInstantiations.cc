@@ -35,7 +35,7 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-#ifndef BASICTOOLKIT_IMPLICIT_TEMPLATES
+#ifdef BASICTOOLKIT_EXPLICIT_TEMPLATES
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -312,4 +312,4 @@ template class MLPtr<std::complex<double> >;
 template MLPtr<double>::operator MLPtr<std::complex<double> >() const;
 
 
-#endif //BASICTOOLKIT_IMPLICIT_TEMPLATES
+#endif //BASICTOOLKIT_EXPLICIT_TEMPLATES

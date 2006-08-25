@@ -26,10 +26,10 @@
 *************************************************************************/
 
 // =================================================================================
-// If explicit template instantiations are not desired, *do not* compile this file !
+// If implicit template instantiations are desired, *do not* compile this file !
 // =================================================================================
 
-#ifndef MXYZPTLK_IMPLICIT_TEMPLATES 
+#ifdef MXYZPTLK_EXPLICIT_TEMPLATES 
 
 #include <complex>
 #include <ReferenceCounter.h>
@@ -164,7 +164,7 @@ std::remove_copy<std::_List_iterator<EnvPtr<std::complex<double> > >,
       std::_List_iterator<EnvPtr<std::complex<double> > >, 
       EnvPtr<std::complex<double>  > const&);
 
-#endif // MXYZPTLK_IMPLICIT_TEMPLATES 
+#endif // MXYZPTLK_EXPLICIT_TEMPLATES 
 
 
 

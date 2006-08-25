@@ -26,10 +26,10 @@
 *************************************************************************/
 
 // =================================================================================
-// If explicit template instantiations are not desired, *do not* compile this file !
+// If implicit template instantiations are desired, *do not* compile this file !
 // =================================================================================
 
-#ifndef MXYZPTLK_IMPLICIT_TEMPLATES 
+#ifdef MXYZPTLK_EXPLICIT_TEMPLATES 
 
 #include <complex>
 #include <ReferenceCounter.h>
@@ -161,7 +161,7 @@ __gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double
 template
 unsigned long const* std::lower_bound<unsigned long const*, unsigned long>(unsigned long const*, unsigned long const*, unsigned long const&);
 
-#endif // MXYZPTLK_IMPLICIT_TEMPLATES 
+#endif // MXYZPTLK_EXPLICIT_TEMPLATES 
 
 
 

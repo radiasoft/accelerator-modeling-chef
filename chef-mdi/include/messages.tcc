@@ -35,7 +35,7 @@
 #include <qtextedit.h>
 
 template<int msg_type, typename charT, typename traits>
-Messages<msg_type, charT, traits>::Messages<msg_type, charT, traits>(QTextEdit* editor):
+Messages<msg_type, charT, traits>::Messages(QTextEdit* editor):
 _textedit(editor)
 {
 

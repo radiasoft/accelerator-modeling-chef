@@ -260,4 +260,8 @@ void TML<std::complex<double> >::orderCoordinates(MLPtr<std::complex<double> >& 
 template<> void TML<double>::SVD (MLPtr<double>& U, MLPtr<double>& W, MLPtr<double>& V ) const;   
 
 
+#ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES
+#include <TML.tcc>
+#endif
+
 #endif //TML_H

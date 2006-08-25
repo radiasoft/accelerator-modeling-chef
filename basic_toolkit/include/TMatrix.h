@@ -223,7 +223,7 @@ template<> void  TMatrix<double>::SVD( TMatrix<double>&, TMatrix<double>&, TMatr
 
 
 
-#ifdef BASICTOOLKIT_IMPLICIT_TEMPLATES
+#ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES
 #include <TMatrix.tcc>
 #endif
 
