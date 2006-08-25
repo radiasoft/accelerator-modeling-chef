@@ -57,6 +57,7 @@
 #ifndef TLIEOPERATOR_H
 #define TLIEOPERATOR_H
 
+#include <TJetEnvironment.h>
 #include <TJetVector.h>
 
 // Forward declarations
@@ -153,7 +154,7 @@ inline void TLieOperator<T>::SetComponent( int i, const TJet<T>& x )
 { this->setVariable( x, i ); }
 
 
-#ifdef  MXYZPTLK_IMPLICIT_TEMPLATES
+#ifdef MXYZPTLK_IMPLICIT_TEMPLATES
 #include <TLieOperator.tcc>
 #endif
 

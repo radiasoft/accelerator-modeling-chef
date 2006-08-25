@@ -63,7 +63,6 @@
 
 #include <utils.h> // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
 #include <GenericException.h>
-#include <TJL.h>
 
 #define MX_SMALL    1.0e-12  // Used by JL::addTerm to decide 
                              //   removal of a JLterm.

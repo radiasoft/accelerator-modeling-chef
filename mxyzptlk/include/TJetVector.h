@@ -60,7 +60,7 @@
 #include <iomanip>
 #include <math.h>
 #include <TJet.h>
-
+#include <EnvPtr.h>
 
 // Forward declarations
 typedef class TVector<double> Vector;
@@ -98,11 +98,12 @@ std::ostream& operator<<( std::ostream&, const TJetVector<T>& );
 template<typename T> 
 std::istream& operator>>( std::istream&, TJetVector<T>& );
 
-
+//---------------------------------------------
 // Class TJetVector template
+//--------------------------------------------
+
 template<typename T>
-class TJetVector 
-{
+class TJetVector {
 
 template<typename U>
 friend class TJetVector;
@@ -120,7 +121,7 @@ public:
   TJetVector( int   dim = -1,
               const TJet<T>* components = 0, 
               EnvPtr<T> const& env = (TJet<T>::lastEnvironment()) );
-  TJetVector( const TJetVector& );
+  TJetVector( TJetVector const& );
 
   template<typename U>
   TJetVector(TJetVector<U> const&);
@@ -219,7 +220,8 @@ public:
 
   TJetVector filter( int, int ) const;
   TJetVector filter( bool (*[]) ( const IntArray&, const T& ) ) const;
-} ;
+
+};
 
 //--------------------------------------
 // Inline functions ...
@@ -302,7 +304,6 @@ TJetVector<T> operator*( const Vector& x, const TJet<T>& y )
  template<> bool TJetVector<std::complex<double> >::operator<= ( const TJetVector<std::complex<double> >& ) const;
  template<> bool TJetVector<std::complex<double> >::operator>  ( const TJetVector<std::complex<double> >& ) const;
  template<> bool TJetVector<std::complex<double> >::operator>= ( const TJetVector<std::complex<double> >& ) const;
-
 
 
 #ifdef MXYZPTLK_IMPLICIT_TEMPLATES

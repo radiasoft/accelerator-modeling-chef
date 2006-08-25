@@ -68,25 +68,22 @@
 #include <config.h>
 #endif
 
-#include <TJetEnvironment.h>
-#include <TJet.h> 
 #include <GenericException.h>
 #include <VectorD.h>   // Used by .approxEq
-#include <TMapping.h>
 
 #include <iomanip>
 #include <iosetup.h>
 #include <vector>
 #include <deque>
 #include <boost/scoped_array.hpp>
+#include <JLPtr.h>
+#include <iostream>
+#include <TMapping.h>
 
 using namespace std;
 
 using FNAL::pcout;
 using FNAL::pcerr;
-
-
-#include <iostream>
 
 // --------------------------------------------------------------------------------
 //  Static variables
@@ -545,7 +542,7 @@ TJetEnvironment<T>& TJetEnvironment<T>::DeepCopy( const TJetEnvironment& x )
 
 
 template<typename T>
-EnvPtr<T> TJetEnvironment<T>::makeInverseJetEnvironment( const TMapping<T>& map ){
+EnvPtr<T> TJetEnvironment<T>::makeInverseJetEnvironment( TMapping<T> const& map ){
 
  //---------------------------------------------------------------------------------------------------------------------
  // NOTE: in general, the inverse map does not exist unless map.Dim() == pEnv->_numVar !@!! (Implicit function theorem) 

@@ -4,7 +4,7 @@
 ******                                                                
 ******  Mxyzptlk:  A C++ implementation of differential algebra.      
 ******                                    
-******  File:      MLPtr.h
+******  File:      MLPtr.cc
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                All Rights Reserved                             
@@ -32,8 +32,8 @@
 #include <config.h>
 #endif
 
+#include <complex>
 #include <boost/intrusive_ptr.hpp>
-
 
 template <typename T>
 class TML;
@@ -63,9 +63,5 @@ template<>
 template<>
 MLPtr<double>::operator MLPtr<std::complex<double> >() const;
 
-
-#ifdef BASICTOOLKIT_IMPLICIT_TEMPLATES
-#include <MLPtr.tcc>
-#endif
 
 #endif //  MLPTR_H

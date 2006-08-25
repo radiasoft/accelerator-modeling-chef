@@ -328,6 +328,8 @@ public:
   TJet( EnvPtr<T> const&     env     = _lastEnv );
   TJet( T, EnvPtr<T> const&  env     = _lastEnv );
 
+  TJet( TJet<T> const& );
+
   template<typename U>
   TJet( TJet<U> const& );
 
@@ -514,13 +516,6 @@ public:
 // specializations for class TJet
 //-------------------------------------------------------------------------------------
 
-template<>
-template<>
-TJet<double>::TJet( TJet<double> const& );
-
-template<>
-template<>
-TJet<std::complex<double> >::TJet( TJet<std::complex<double> > const& );
 
 template<>
 template<>
@@ -664,9 +659,8 @@ inline void TJet<T>::setLastEnv(EnvPtr<T> const& pje)
 
 }
 
-
-#ifdef  MXYZPTLK_IMPLICIT_TEMPLATES
-#include <TJet.tcc>
+#ifdef MXYZPTLK_IMPLICIT_TEMPLATES
+#include<TJet.tcc>
 #endif
 
 #endif // TJET_H

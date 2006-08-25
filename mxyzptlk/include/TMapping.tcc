@@ -4,7 +4,7 @@
 ******                                                                
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
 ******                                    
-******  File:      TMapping.cc
+******  File:      TMapping.tcc
 ******  Version:   1.0
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc.    
@@ -65,9 +65,10 @@
 #include <config.h>
 #endif
 
-#include <GenericException.h>
 #include <iosetup.h>
-#include <TMapping.h>
+#include <GenericException.h>
+#include <TJet.h>
+
 
 using namespace std;
 using FNAL::pcout;
@@ -101,15 +102,6 @@ TMapping<T>::TMapping( TMapping<T> const& x )
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-template<>
-template<>
-TMapping<std::complex<double> >::TMapping( TMapping<double> const& x)
-: TJetVector<std::complex<double> >( x ) {}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 template<typename T>
 TMapping<T>::TMapping( TJetVector<T> const& x ) 
 : TJetVector<T>( x ) {}
@@ -135,28 +127,6 @@ TMapping<T>::TMapping( const char*, EnvPtr<T> const& pje  )
 
 }
 
-
-
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-Vector TMapping<double>::operator()( const Vector& x ) const
-{
- int i = x.Dim();
- if( ( i != _myEnv->numVar() ) || ( i != _dim ) ) {
-   throw( GenericException(__FILE__, __LINE__, 
-          "Vector TMapping<double>::operator()( const Vector& ) const",
-          "Incompatible dimensions." ) );
- }
-
- Vector z( _dim );
-
- for( i=0;  i <_myEnv->spaceDim(); ++i) {
-  z(i) = _comp[i]( x );
- }
-
- return z;
-}
 
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -190,6 +190,9 @@ template<>
 template<>
 TJLterm<std::complex<double> >::TJLterm( TJLterm<double> const& );
 
+#ifdef MXYZPTLK_IMPLICIT_TEMPLATES
+#include <TJLterm.tcc>
+#endif
 
 #endif // TJLTERM_H
 

@@ -66,8 +66,6 @@
 #include <utils.h> // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
 #include <iosetup.h>
 #include <GenericException.h>
-#include <TJet.h>
-#include <TJetVector.h>
 #include <MathConstants.h>
 #include <boost/weak_ptr.hpp>
 #include <boost/scoped_array.hpp>
@@ -84,23 +82,6 @@ EnvPtr<T> TJet<T>::_lastEnv; // defaults to a null pointer
 using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
-
-
-//-------------------------------------------------------------------
-// factory functions
-//-------------------------------------------------------------------
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-JLPtr<std::complex<double> > makeJL(JLPtr<double> const& x) {
-  return TJL<std::complex<double> >::makeTJL(*x) ;
-}
-
-JL1Ptr<std::complex<double> > makeJL(JL1Ptr<double> const& x) {
- return TJL1<std::complex<double> >::makeTJL(*x) ;
-}
-
 
 
 // ***************************************************************
@@ -135,34 +116,10 @@ TJet<T>::TJet( T x, EnvPtr<T> const& pje ): _jl(  tjl_t::makeTJL( pje,x ) ){}
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-template<>
-template<>
-TJet<double>::TJet( TJet<double> const& x )
+template<typename T>
+TJet<T>::TJet( TJet<T> const& x )
 : _jl( x._jl )  // NOTE: ref count is incremented when JLPtr is instantiated. 
 {}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-template<>
-TJet<std::complex<double> >::TJet(TJet<std::complex<double> > const& x )
-: _jl( x._jl )  // NOTE: ref count is incremented when JLPtr is instantiated. 
-{
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<>
-template<>
-TJet<std::complex<double> >::TJet( TJet<double> const& x) {
-  
-  _jl    =  makeJL( x._jl );
-
-}
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

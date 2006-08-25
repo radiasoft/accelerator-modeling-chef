@@ -61,9 +61,8 @@
 //=============================================================================================
 
 template class TJet<double>;
-template TJet<double>::TJet( const TJet<double>& );
-
 template class TJet<std::complex<double> >;
+
 template TJet<std::complex<double> >::TJet( const TJet<double>& );
 
 

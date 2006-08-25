@@ -211,7 +211,7 @@ JLPtr<double> real( JLPtr<std::complex<double> > const& z )
   // DOES NOT HAVE imaginary components 
   // ---------------------------------------------------------------------------------------------- 
 
-  EnvPtr<double> pje = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(z->_myEnv);            
+  EnvPtr<double> pje = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(EnvPtr<std::complex<double> >(z->_myEnv) );            
 
   // If the argument is void, then return a copy ...
   if( z->_count < 1 ) {

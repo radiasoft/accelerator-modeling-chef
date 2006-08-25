@@ -52,7 +52,6 @@
 #include <sstream>
 #include <MathConstants.h>
 #include <PhysicsConstants.h>
-#include <TMatrix.h>
 #include <TML.h>
 
 #ifdef WIN32
@@ -523,45 +522,6 @@ TMatrix<T> operator/( TMatrix<T> const& x, TMatrix<T> const& y)
   MLPtr<T> p(divide<T>(x._ml, y._ml));
   return TMatrix<T>(p);
 
-}
-
-
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-// Implementation of class MatrixD::RandomOrthogonal
-
-RandomOrthogonal::RandomOrthogonal( int n )
-: _dim(n), _passes(1)
-{
-  int i, j;
-
-  _omitted = new bool*[ _dim ];
-  for( i = 0; i < _dim; i++ ) {
-    _omitted[i] = new bool[ _dim ];
-    for( j = 0; j < _dim; j++ ) { _omitted[i][j] = false; }
-    _omitted[i][i] = true;
-  }
-
-  _lowerTheta = new double*[ _dim ];
-  for( i = 0; i < _dim; i++ ) {
-    _lowerTheta[i] = new double[ _dim ];
-    for( j = 0; j < _dim; j++ ) { _lowerTheta[i][j] = 0.0; }
-  }
-
-  _upperTheta = new double*[ _dim ];
-  for( i = 0; i < _dim; i++ ) {
-    _upperTheta[i] = new double[ _dim ];
-    for( j = 0; j < _dim; j++ ) { _upperTheta[i][j] = M_TWOPI; }
-    _upperTheta[i][i] = 0.0;
-  }
-
-  _rangeTheta = new double*[ _dim ];
-  for( i = 0; i < _dim; i++ ) {
-    _rangeTheta[i] = new double[ _dim ];
-    for( j = 0; j < _dim; j++ ) { _rangeTheta[i][j] = M_TWOPI; }
-    _rangeTheta[i][i] = 0.0;
-  }
 }
 
 

@@ -61,7 +61,6 @@
 
 #include <iosetup.h>
 #include <GenericException.h>
-#include <TLieOperator.h>
 
 // ================================================================
 //      External routines
