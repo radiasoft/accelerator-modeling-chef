@@ -63,13 +63,14 @@
 #include <TMatrix.h>
 #include <deque>
 #include <list>
-#include <JLPtr.h>
 #include <ostream>
 #include <istream>
 #include <ReferenceCounter.h>
 
 // Forward declarations
 
+template<typename T> 
+class JLPtr;
 
 template<typename T> 
 class EnvPtr;

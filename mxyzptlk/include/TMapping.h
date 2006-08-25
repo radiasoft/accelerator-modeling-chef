@@ -55,11 +55,11 @@
 #ifndef TMAPPING_H
 #define TMAPPING_H
 
-#include <JetVector.h>
+#include <TJet.h>
+#include <TJetVector.h>
 
-template<typename T>
-class TMapping : public TJetVector<T>
-{
+template <typename T>
+class TMapping: public TJetVector<T> {
 
  template <typename U>
  friend class TMapping;
@@ -81,21 +81,21 @@ class TMapping : public TJetVector<T>
 
   TMapping( const char* id, EnvPtr<T> const& env = TJet<T>::_lastEnv ); // Produces the identity.
 
-  TMapping( const TJetVector<T>& );
+  TMapping( TJetVector<T> const& );
 
 
   ~TMapping();
 
-  TMapping& operator= ( const TMapping& );
+  TMapping& operator= ( TMapping const& );
 
 
-  Vector     operator()( const Vector& ) const;
-  TMapping   operator()( const TMapping& ) const;  // TMapping composition.
+  Vector     operator()( Vector const& ) const;
+  TMapping   operator()( TMapping const& ) const;  // TMapping composition.
   TJet<T>    operator()( int ) const; 
   TJet<T>&   operator()( int ); 
 
-  TMapping  operator* ( const TMapping& ) const;  // TMapping composition also; an alias.
-  TMapping* operator*=( const TMapping<T>& );
+  TMapping  operator* ( TMapping const& ) const;  // TMapping composition also; an alias.
+  TMapping* operator*=( TMapping const& );
 
   TMatrix<T> Jacobian() const; // Retained for backwards compatability
   TMatrix<T> jacobian() const;

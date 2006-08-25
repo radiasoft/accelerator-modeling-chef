@@ -28,8 +28,6 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
-
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
@@ -39,6 +37,8 @@
 #include <Mapping.h>
 #include <Barnacle.h>
 #include <Matrix.h>
+#include <Jet.h>
+#include <JetVector.h>
 
 // Forward declaration
 class JetParticle;

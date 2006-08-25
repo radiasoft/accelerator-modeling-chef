@@ -35,6 +35,9 @@
 #include <iosetup.h>
 #include <boost/scoped_array.hpp>
 
+#include <TJLterm.h>
+#include <TJL.h>
+
 using FNAL::pcout;
 using FNAL::pcerr;
 

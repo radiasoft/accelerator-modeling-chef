@@ -488,7 +488,7 @@ template<>
 JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL( TJL<double> const& );
 
 
-#ifdef  MXYZPTLK_IMPLICIT_TEMPLATES
+#ifdef MXYZPTLK_IMPLICIT_TEMPLATES
 #include <TJL.tcc>
 #endif
 

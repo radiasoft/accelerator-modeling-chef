@@ -25,6 +25,12 @@ if test "x${withval}" != "xno"; then
 CC=${withval}
 fi)
 
+## do explicit template instantiation by default
+AC_ARG_ENABLE(implicit-templates, AC_HELP_STRING([--enable-implicit-templates],[ Enable implicit template instantiation for portability]), 
+	      CXXFLAGS="-DBASICTOOLKIT_IMPLICIT_TEMPLATES ${CXXFLAGS}",
+              CXXFLAGS="-fno-implicit-templates ${CXXFLAGS}")
+
+
 if test ${CXXFLAGS} && test ${CFLAGS}; then
 set_CXXFLAGS=${CXXFLAGS}
 set_CFLAGS=${CFLAGS}
@@ -43,7 +49,7 @@ if test "x$set_CXXFLAGS" != "x" && test "x$set_CFLAGS" != "x"; then
 	AC_SUBST(CXXFLAGS)
 elif test "x${GXX}" = "xyes" || test "x${GCC}" = "xyes"; then
    CFLAGS="${CFLAGS} -g"
-   CXXFLAGS="${CXXFLAGS} -g -O2 -pipe -fno-implicit-templates -fpermissive -Wno-deprecated"
+   CXXFLAGS="${CXXFLAGS} -g -O2 -pipe -fpermissive -Wno-deprecated"
    AC_SUBST(CFLAGS)
    AC_SUBST(CXXFLAGS)
 elif test "x${CXX}" = "xCC"; then
@@ -64,7 +70,7 @@ if test "x$set_CXXFLAGS" != "x" && test "x$set_CFLAGS" != "x"; then
 ##	AC_SUBST(CXXFLAGS)
 elif test "x${GXX}" = "xyes" || test "x${GCC}" = "xyes"; then
    CFLAGS="${CFLAGS} -g -O2"
-   CXXFLAGS="${CXXFLAGS} -g -O2 -pipe -fpermissive -fno-implicit-templates  -Wno-deprecated"
+   CXXFLAGS="${CXXFLAGS} -g -O2 -pipe -fpermissive -Wno-deprecated"
    AC_SUBST(CFLAGS)
    AC_SUBST(CXXFLAGS)
 elif test "x${CXX}" = "xCC"; then

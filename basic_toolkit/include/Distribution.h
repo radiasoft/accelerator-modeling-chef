@@ -54,7 +54,7 @@ extern double drand48();
 #endif
 
 #include <VectorD.h>
-#include <Matrix.h>
+#include <RandomOrthogonal.h>
 
 class Distribution 
 {

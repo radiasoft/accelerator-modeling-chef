@@ -55,7 +55,6 @@
 
 template<typename T> class TMatrix; 
 
-
 // Friend functions
 
 TMatrix<double> real( const TMatrix<std::complex<double> >& x );
@@ -221,41 +220,6 @@ template<> TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenV
 template<> TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenVectors() const;
 
 template<> void  TMatrix<double>::SVD( TMatrix<double>&, TMatrix<double>&, TMatrix<double>& );
-
-
-// --------------------------------------------------------------------------------------------
-// Special class RandomOrthogonal
-// --------------------------------------------------------------------------------------------
-
-
-class RandomOrthogonal
-{
-  public: 
-    RandomOrthogonal( int /* dimension */ );
-    ~RandomOrthogonal();
-
-    void omitIndex( int );  
-    void omitIndex( int, int );  
-    void includeIndex( int );
-    void includeIndex( int, int );
-    // By default, all are included
-    void setNumberOfPasses( int );
-    // By default, = 1.      
-
-    void setRange( int, double /* radians */, double );
-    void setRange( int, int, double /* radians */, double );
-    // Default range = [ 0, 2 pi ) for all indices
-
-    TMatrix<double> build();
-    
-  private:
-    int      _dim;
-    int      _passes;
-    bool**   _omitted;        // owned
-    double** _lowerTheta;     // owned
-    double** _upperTheta;     // owned
-    double** _rangeTheta;     // owned
-};
 
 
 

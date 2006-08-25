@@ -48,10 +48,11 @@
 #include <iosetup.h>
 #include <GenericException.h>
 #include <MathConstants.h>
+
+#include <TJetEnvironment.h>
 #include <TJetVector.h>
 
-
-#include <Jet.h>  /// TEMPORARY
+typedef TJet<std::complex<double> > JetC;
 
 using std::complex;
 using std::setprecision;
@@ -65,6 +66,28 @@ using FNAL::pcout;
              __FILE__, __LINE__,      \
              fcn, message        ) ); \
   }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ template<>
+ template<>
+ TJetVector<std::complex<double> >::TJetVector(TJetVector<double> const& x):
+ _dim(x._dim), _myEnv(x._myEnv) // Note: env implicit conversion
+{ 
+
+  
+  _comp  = new TJet<std::complex<double> > [ _dim ];
+
+  for ( int i=0; i< _dim; ++i) {
+
+    _comp[i] = x._comp[i];     // implicit type conversion
+
+    CHECKOUT(  _comp[i].Env() != _myEnv , "TJetVector<std::complex<double> >::const TJetVector<double>& x", "Incompatible environments.")
+
+  }
+
+}
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -255,6 +278,5 @@ TJet<std::complex<double> > TJetVector<std::complex<double> >::operator* ( const
   for ( i = 0; i < _dim; i++ ) u += ( _comp[i] * (real( x._comp[i]) - imag(x._comp[i]))  );
   return u;
 }
-
 
 

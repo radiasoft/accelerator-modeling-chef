@@ -46,6 +46,37 @@
 
 template<>
 template<>
+TJL1<std::complex<double> >::TJL1( TJL1<double> const& x ):
+ _count(x._count),       
+ _weight(x._weight),     
+ _accuWgt(x._accuWgt),
+ _myEnv(x._myEnv) // implicit conversion
+
+{
+
+    _std.value = std::complex<double>(x._std.value, 0.0);
+     _jcb = new term [ _count-1 ];
+
+     for (int i=0; i<_count-1; ++i) 
+       _jcb[i].value =  std::complex<double>(x._jcb[i].value, 0.0);
+
+
+
+ if ( !_myEnv ) {
+ throw( GenericException( __FILE__, __LINE__, 
+          "TJL1<std::complex<double> >::TJL1( TJL1<double> const& x)" ,
+          "Null Environment." ) );
+ };
+
+
+
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<>
+template<>
 JL1Ptr<std::complex<double> > TJL1<std::complex<double> >::makeTJL( const TJL1<double>& x )
 {
  
@@ -194,10 +225,6 @@ JL1Ptr<double>    imag(JL1Ptr<std::complex<double> > const& z){
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-
-
 
 
 #if 0

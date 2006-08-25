@@ -4,7 +4,7 @@
 ******                                                                
 ******  Mxyzptlk:  A C++ implementation of differential algebra.      
 ******                                    
-******  File:      TMapping.cc
+******  File:      TJet.cc
 ******                                                                
 ******  Copyright Universities Research Association, Inc. / Fermilab   
 ******                All Rights Reserved
@@ -20,75 +20,66 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******
 ******  Author:    Leo Michelotti                                     
+******                                                                
 ******             Fermilab                                           
 ******             Email: michelotti@fnal.gov                         
 ******
-******  Revision History
-******   
-******  Feb 2005       Jean-Francois Ostiguy
-******                 ostiguy@fnal.gov 
-****** 
-****** - new memory management scheme 
-******                                                            
-******  Sep-Dec 2005  ostiguy@fnal.gov
+******  Revision History:
+******
+******  Feb-May 2005  Jean-Francois Ostiguy
+******                ostiguy@fnal.gov
+******
+******  - Efficiency improvements.
+******  - New memory management scheme.
+******
+******  Sept-Dec 2005  ostiguy@fnal.gov
 ******  
 ****** - refactored code to usea single class template parameter
 ******   instead of two. Mixed mode operations now handled using 
 ******   implicit conversion operators.
 ****** - reference counting now based on using boost::intrusive pointer
 ****** - reference counted TJetEnvironment
-****** - implementation details completely moved to TJL   
+****** - all implementation details now completely moved to TJL   
 ****** - redesigned coordinate class Tcoord. New class Tparams for parameters
 ****** - header files support for both explicit and implicit template instantiations
 ******   (default for mxyzptlk = explicit)
-******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES
+******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES 
 ******
 **************************************************************************
 *************************************************************************/
-
-#include <GenericException.h>
-#include <iosetup.h>
-#include <TMapping.h>
-#include <complex>
-
-using FNAL::pcerr;
-using FNAL::pcout;
-
-using std::complex;
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+#include <TJet.h>
 
+//-------------------------------------------------------------------
+// factory functions
+//-------------------------------------------------------------------
 
-template<>
-template<>
-TMapping<std::complex<double> >::TMapping( TMapping<double> const& x)
-: TJetVector<std::complex<double> >( x ) {}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+JLPtr<std::complex<double> > makeJL(JLPtr<double> const& x) {
+  return TJL<std::complex<double> >::makeTJL(*x) ;
+}
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-Vector TMapping<double>::operator()( Vector const& x ) const
-{
- int i = x.Dim();
- if( ( i != _myEnv->numVar() ) || ( i != _dim ) ) {
-   throw( GenericException(__FILE__, __LINE__, 
-          "Vector TMapping<double>::operator()( const Vector& ) const",
-          "Incompatible dimensions." ) );
- }
-
- Vector z( _dim );
-
- for( i=0;  i <_myEnv->spaceDim(); ++i) {
-  z(i) = _comp[i]( x );
- }
-
- return z;
+JL1Ptr<std::complex<double> > makeJL(JL1Ptr<double> const& x) {
+ return TJL1<std::complex<double> >::makeTJL(*x) ;
 }
 
 
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+template<>
+template<>
+TJet<std::complex<double> >::TJet( TJet<double> const& x) {
+  
+  _jl    =  makeJL( x._jl );
+
+}
 
 

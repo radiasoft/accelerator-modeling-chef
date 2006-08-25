@@ -53,9 +53,9 @@
 
 #include <iosetup.h>
 #include <GenericException.h>
-#include <TJLterm.h>
 #include <VectorD.h>
 #include <TJetEnvironment.h>
+#include <TJLterm.h>
 
 using FNAL::pcerr;
 
