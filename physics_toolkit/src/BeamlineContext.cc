@@ -103,6 +103,28 @@ BeamlineContext::BeamlineContext( const Particle& w, beamline* x, bool doClone )
   , _dispersionFuncsCalcd(false)
   , _dispCalcd(false)
 {
+  // Try to instantiate _theSamplePtr
+  // --------------------------------
+  if( typeid(w) == typeid(Proton) ) {
+    _particleBunchPtr = new ProtonBunch;
+  }
+  else if( typeid(w) == typeid(Positron) ) {
+    _particleBunchPtr = new PositronBunch;
+  }
+  else {
+    throw GenericException( __FILE__, __LINE__, 
+           "BeamlineContext::BeamlineContext( const Particle&, beamline*, bool )", 
+           "*** SORRY ***"
+           "\n*** SORRY *** This version of BeamlinContext only handles"
+           "\n*** SORRY *** positrons and protons, principally because."
+           "\n*** SORRY *** this version of ParticleBunch is restricted"
+           "\n*** SORRY *** to those classes."
+           "\n*** SORRY ***"  );
+  }
+
+
+  // If that succeeds, then continue 
+  // -------------------------------
   if( x == 0 ) {
     delete _particlePtr; _particlePtr = 0;
     throw( GenericException( __FILE__, __LINE__, 
@@ -110,7 +132,9 @@ BeamlineContext::BeamlineContext( const Particle& w, beamline* x, bool doClone )
            "Invoked with null beamline pointer." ) );
   }
 
+
   // Reinitialize the internal particle
+  // ----------------------------------
   _particlePtr->setStateToZero();
   _particlePtr->SetReferenceEnergy( _p_bml->Energy() );
 
