@@ -628,5 +628,6 @@ TVector<T>& TVector<T>::operator=( const TMatrix<T>& x )
   return *this;
 }
 
+#undef CHECKOUT
 
 #endif // TVECTOR_TCC

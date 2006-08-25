@@ -93,6 +93,7 @@
 
 #include <chefplotmain.h>
 #include <DbConnectDialog.h>
+#include <EnvPtr.h>
 
 #include <iosetup.h>
 

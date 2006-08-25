@@ -196,7 +196,7 @@ template<>
 bool TVector<std::complex<double> >::IsUnit() const;
 
 
-#ifdef BASICTOOLKIT_IMPLICIT_TEMPLATES
+#ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES
 #include <TVector.tcc>
 #endif
 

@@ -45,7 +45,9 @@
 #include <config.h>
 #endif
 
+#include <iosetup.h>
 #include <TML.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -637,7 +639,7 @@ MLPtr<T> divide (MLPtr<T> const& x, T const& y)
 {
   MLPtr<T> z ( new TML<T>( *x) );
   if(y == T())
-    (*pcerr) << "TMatrix<T>:operator/ divide by zero" << endl;
+    (*FNAL::pcerr) << "TMatrix<T>:operator/ divide by zero" << endl;
 
   for(int i=0;  i<x->_nrows ; ++i) {
      for(int j=0; j< x->_ncols; ++j) {
@@ -767,7 +769,7 @@ MLPtr<T> TML<T>::_scale() const
     }
 
     if(maximum == 0.0 ) {
-      (*pcerr) << "\n*** ERROR *** Matrix = \n" << *this << endl;
+      (*FNAL::pcerr) << "\n*** ERROR *** Matrix = \n" << *this << endl;
       throw( GenericMatrixException( _nrows, _ncols
                      , "TML<T>::_scale()"
                      , "Matrix is singular." ) );
@@ -843,7 +845,7 @@ template<typename T>
       }
       // figure of merit for pivot:
       dum = scale_vector->_mdata[i][0] * std::abs(sum);
-      if (dum >= maximum){
+      if ( std::abs(dum) > std::abs(maximum) ){
         // is it better than the best so far ?
         col_max = i;
         maximum = std::abs(dum);
@@ -1054,7 +1056,7 @@ TML<T>::IndexRange::IndexRange( int a, int b, int c, int d, const char* f )
 {
   static bool firstTime = true;
   if( firstTime ) {
-    (*pcerr) << "\n*** ERROR *** "
+    (*FNAL::pcerr) << "\n*** ERROR *** "
             "\n*** ERROR *** " << f
          << "\n*** ERROR *** limits are " << im << " " << jm
          << "\n*** ERROR *** You asked for "<< i << " " << j
@@ -1086,7 +1088,7 @@ TML<T>::NotVector::NotVector( int x, int y, int z, const char* f )
 {
   static bool firstTime = true;
   if( firstTime ) {
-    (*pcerr) << "\n*** ERROR *** "
+    (*FNAL::pcerr) << "\n*** ERROR *** "
             "\n*** ERROR *** " << f
          << "\n*** ERROR *** Matrix is not a vector:"
             "\n*** ERROR *** its dimensions are " << r << " x " << c
@@ -1118,7 +1120,7 @@ TML<T>::Incompatible::Incompatible( int x, int y, int z, int t, const char* f )
 {
   static bool firstTime = true;
   if( firstTime ) {
-    (*pcerr) << "\n*** ERROR *** "
+    (*FNAL::pcerr) << "\n*** ERROR *** "
             "\n*** ERROR *** " << f
          << "\n*** ERROR *** Incompatible dimensions between matrices."
             "\n*** ERROR *** First  argument is " << ra << " x " << ca
@@ -1148,7 +1150,7 @@ TML<T>::NotSquare::NotSquare( int x, int y, const char* f )
 {
   static bool firstTime = true;
   if( firstTime ) {
-    (*pcerr) << "\n*** ERROR *** "
+    (*FNAL::pcerr) << "\n*** ERROR *** "
             "\n*** ERROR *** " << f
          << "\n*** ERROR *** Matrix must be square: it's dimensions are "
          << r << " x " << c
@@ -1188,8 +1190,8 @@ TML<T>::GenericMatrixException::GenericMatrixException( int x, int y,
 
   static bool firstTime = true;
   if( firstTime ) {
-    (*pcerr) << errorString;
-    (*pcerr) << "\n*** ERROR *** This message is printed only once."
+    (*FNAL::pcerr) << errorString;
+    (*FNAL::pcerr) << "\n*** ERROR *** This message is printed only once."
          << endl;
     firstTime = false;
   }
