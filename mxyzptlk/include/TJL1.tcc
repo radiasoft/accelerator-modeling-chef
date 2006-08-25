@@ -1069,7 +1069,6 @@ JL1Ptr<T> TJL1<T>::asin() const
 
 JL1Ptr<T> z( makeTJL(*this) );
 JL1Ptr<T> x( makeTJL(*this) );
-JL1Ptr<T> tmp = operator-<T>(z - x);
 JL1Ptr<T> dz = ( z->sin() - x ) / ( z->cos() );
 
  int iter = 0;
