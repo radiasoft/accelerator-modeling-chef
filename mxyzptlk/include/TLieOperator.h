@@ -48,7 +48,7 @@
 ****** - header files support for both explicit and implicit template 
 ******   instantiations
 ******   (default for mxyzptlk = explicit)
-******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES
+******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES
 ******
 ******                                                                 
 **************************************************************************
@@ -154,7 +154,7 @@ inline void TLieOperator<T>::SetComponent( int i, const TJet<T>& x )
 { this->setVariable( x, i ); }
 
 
-#ifdef MXYZPTLK_IMPLICIT_TEMPLATES
+#ifndef MXYZPTLK_EXPLICIT_TEMPLATES
 #include <TLieOperator.tcc>
 #endif
 

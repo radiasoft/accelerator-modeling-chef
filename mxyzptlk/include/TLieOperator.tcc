@@ -45,7 +45,7 @@
 ****** - header files support for both explicit and implicit template 
 ******   instantiations
 ******   (default for mxyzptlk = explicit)
-******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES
+******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES
 ******
 ******                                                        
 **************************************************************************

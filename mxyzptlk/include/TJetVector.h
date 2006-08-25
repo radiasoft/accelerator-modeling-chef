@@ -48,7 +48,7 @@
 ****** - redesigned coordinate class Tcoord. New class Tparams for parameters
 ****** - header files support for both explicit and implicit template instantiations
 ******   (default for mxyzptlk = explicit)
-******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES
+******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES
 ****** 
 ******  
 **************************************************************************
@@ -306,7 +306,7 @@ TJetVector<T> operator*( const Vector& x, const TJet<T>& y )
  template<> bool TJetVector<std::complex<double> >::operator>= ( const TJetVector<std::complex<double> >& ) const;
 
 
-#ifdef MXYZPTLK_IMPLICIT_TEMPLATES
+#ifndef MXYZPTLK_EXPLICIT_TEMPLATES
 #include <TJetVector.tcc>
 #endif
 

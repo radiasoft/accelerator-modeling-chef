@@ -47,7 +47,7 @@
 ****** - redesigned coordinate class Tcoord. New class Tparams for parameters
 ****** - header files support for both explicit and implicit template instantiations
 ******   (default for mxyzptlk = explicit)
-******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES
+******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES
 ******
 ******                                                                
 **************************************************************************
@@ -130,7 +130,7 @@ inline TMapping<T>& TMapping<T>::operator=( const TMapping<T>& x )
   return *this;
 }
 
-#ifdef MXYZPTLK_IMPLICIT_TEMPLATES
+#ifndef MXYZPTLK_EXPLICIT_TEMPLATES 
 #include <TMapping.tcc>
 #endif
 
