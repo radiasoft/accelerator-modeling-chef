@@ -50,7 +50,7 @@
 ****** - redesigned coordinate class Tcoord. New class Tparams for parameters
 ****** - header files support for both explicit and implicit template instantiations
 ******   (default for mxyzptlk = explicit)
-******   for implicit instantiations, define MXYZPTLK_IMPLICIT_TEMPLATES 
+******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
 ******  
 **************************************************************************
 **************************************************************************
@@ -488,7 +488,7 @@ template<>
 JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL( TJL<double> const& );
 
 
-#ifdef MXYZPTLK_IMPLICIT_TEMPLATES
+#ifndef MXYZPTLK_EXPLICIT_TEMPLATES
 #include <TJL.tcc>
 #endif
 

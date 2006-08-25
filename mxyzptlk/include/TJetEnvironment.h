@@ -322,7 +322,7 @@ EnvPtr<double>  TJetEnvironment<std::complex<double> >::makeRealJetEnvironment( 
 
 
 
-#ifdef MXYZPTLK_IMPLICIT_TEMPLATES
+#ifndef MXYZPTLK_EXPLICIT_TEMPLATES
 #include <TJetEnvironment.tcc>
 #endif
 
