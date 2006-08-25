@@ -30,12 +30,12 @@ typedef boost::normal_distribution<double>
 typedef boost::variate_generator<boost::minstd_rand&, boost::normal_distribution<double> >
         varGaussGen;
 
-#include "DistributionWidget.h"
+#include <DistributionWidget.h>
 
-#include "bmlnElmnt.h"
-#include "Particle.h"
-#include "ParticleBunch.h"
-#include "BeamlineContext.h"
+#include <bmlnElmnt.h>
+#include <Particle.h>
+#include <ParticleBunch.h>
+#include <BeamlineContext.h>
 
 #include <qapplication.h>
 #include <qbuttongroup.h>
@@ -465,6 +465,7 @@ void DistributionWidget::_genUniform()
   double dppMax = _unif_dppMax->text().toDouble(&ok);  keepGoing &= ok;
   int n = _populationPtr->text().toInt(&ok);           keepGoing &= ok;
 
+  Particle* pPtr = 0;
   if( keepGoing ) {
     // The following use of boost classes is based on boost
     // random_demo.cpp profane demo
@@ -544,7 +545,7 @@ void DistributionWidget::_genUniform()
     // Finally, populate the ParticleBunch
     if( n <= 0 ) { n = 16; }
 
-    Particle* pPtr = 0;
+    pPtr = 0;
     if( DistributionWidget::proton == _flavor ) {
       pPtr = new Proton;
     }
@@ -579,7 +580,6 @@ void DistributionWidget::_genUniform()
     QMessageBox::information( 0, "DistributionWidget", uic.str().c_str() );
 
     // Clean up before returning.
-                      delete pPtr;
     if( xRanPtr   ) { delete xRanPtr;   }
     if( yRanPtr   ) { delete yRanPtr;   }
     if( cdtRanPtr ) { delete cdtRanPtr; }
@@ -598,6 +598,8 @@ void DistributionWidget::_genUniform()
   else {
     QMessageBox::warning( this, "Sorry", "Error reading data from widget." );
   }
+
+  if( 0 != pPtr ) { delete pPtr; }
 }
 
 
@@ -620,6 +622,7 @@ void DistributionWidget::_genGaussian()
   double dppSig = _gauss_dppSig->text().toDouble(&ok);  keepGoing &= ok;
   int n = _populationPtr->text().toInt(&ok);            keepGoing &= ok;
 
+  Particle* pPtr = 0;
   if( keepGoing ) {
     // The following use of boost classes is based on boost 
     // random_demo.cpp profane demo
@@ -651,7 +654,7 @@ void DistributionWidget::_genGaussian()
 
     if( n <= 0 ) { n = 16; }
 
-    Particle* pPtr = 0;
+    pPtr = 0;
     if( DistributionWidget::proton == _flavor ) {
       pPtr = new Proton;
     }
@@ -670,8 +673,6 @@ void DistributionWidget::_genGaussian()
       // The particle is cloned by the ParticleBunch
     }
 
-    delete pPtr;
-
     ostringstream uic;
     uic << n
         << " normally distributed particles have been"
@@ -684,6 +685,8 @@ void DistributionWidget::_genGaussian()
   else {
     QMessageBox::warning( this, "Sorry", "Error reading data from widget." );
   }
+
+  if( 0 != pPtr ) { delete pPtr; }
 }
 
 
@@ -706,6 +709,7 @@ void DistributionWidget::_genEquilibrium()
     { keepGoing = false; }
   }
 
+  Particle* pPtr = 0;
   if( keepGoing ) {
     // Set up the boost random number generators
     boost::minstd_rand generator(42u);
@@ -722,7 +726,7 @@ void DistributionWidget::_genEquilibrium()
     // Finally, populate the ParticleBunch
     if( n <= 0 ) { n = 16; }
 
-    Particle* pPtr = 0;
+    pPtr = 0;
     if( DistributionWidget::proton == _flavor ) {
       pPtr = new Proton;
     }
@@ -752,8 +756,6 @@ void DistributionWidget::_genEquilibrium()
       // Note: the particle is cloned by the ParticleBunch
     }
 
-    delete pPtr;
-
     ostringstream uic;
     uic << n
         << " particles have been added to the bunch."
@@ -766,6 +768,8 @@ void DistributionWidget::_genEquilibrium()
   else {
     QMessageBox::warning( this, "Sorry", "Error reading data from widget." );
   }
+
+  if( 0 != pPtr ) { delete pPtr; }
 }
 
 
