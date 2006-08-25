@@ -3344,10 +3344,10 @@ void CHEFGUI::_enableMenus( bool set )
     toolsTraceAction->setEnabled(set);
     calculationsDispersionAction->setEnabled(set);
     calculationsEmittance_DilutionAction->setEnabled(set);
-    controlsBuildHTuneCct->setEnabled(set);
-    controlsBuildVTuneCct->setEnabled(set);
-    controlsAdjustTune->setEnabled(set);
-    toolsGenBunch->setEnabled(set);
+    controlsBuildHTuneCctAction->setEnabled(set);
+    controlsBuildVTuneCctAction->setEnabled(set);
+    controlsAdjustTuneAction->setEnabled(set);
+    toolsGenBunchAction->setEnabled(set);
 
     editCopyLineAction->setEnabled(set);
     editRemoveLineAction->setEnabled(set);

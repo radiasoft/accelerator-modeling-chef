@@ -81,7 +81,7 @@
             <action name="calculationsLattice_FunctionsMomentsAction"/>
             <action name="calculationsLatticeFunctionsEigenvaluesAction"/>
         </item>
-        <action name="calculationsPush"/>
+        <action name="calculationsPushAction"/>
         <item text="Push" name="popupMenu_29" accel="">
             <action name="calculationsPushULFAction"/>
             <action name="calculationsPushMomentsAction"/>
@@ -91,12 +91,12 @@
         <action name="calculationsEmittance_DilutionAction"/>
     </item>
     <item text="Controls" name="Controls">
-        <action name="controlsBuildHTuneCct"/>
-        <action name="controlsBuildVTuneCct"/>
-        <action name="controlsAdjustTune"/>
+        <action name="controlsBuildHTuneCctAction"/>
+        <action name="controlsBuildVTuneCctAction"/>
+        <action name="controlsAdjustTuneAction"/>
     </item>
     <item text="&amp;Tools" name="Tools">
-        <action name="toolsGenBunch"/>
+        <action name="toolsGenBunchAction"/>
         <action name="toolsSite_ViewerAction"/>
         <action name="toolsTrackAction"/>
         <action name="toolsTraceAction"/>
@@ -505,7 +505,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>calculationsPush</cstring>
+            <cstring>calculationsPushAction</cstring>
         </property>
         <property name="text">
             <string>Push</string>
@@ -555,7 +555,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>controlsBuildHTuneCct</cstring>
+            <cstring>controlsBuildHTuneCctAction</cstring>
         </property>
         <property name="text">
             <string>Build Horizontal Tune Circuit</string>
@@ -566,7 +566,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>controlsBuildVTuneCct</cstring>
+            <cstring>controlsBuildVTuneCctAction</cstring>
         </property>
         <property name="text">
             <string>Build Vertical Tune Circuit</string>
@@ -577,7 +577,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>controlsAdjustTune</cstring>
+            <cstring>controlsAdjustTuneAction</cstring>
         </property>
         <property name="text">
             <string>Adjust Tune</string>
@@ -588,7 +588,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>toolsGenBunch</cstring>
+            <cstring>toolsGenBunchAction</cstring>
         </property>
         <property name="text">
             <string>Generate Bunch</string>
@@ -1172,7 +1172,7 @@
         <slot>fileSave()</slot>
     </connection>
     <connection>
-        <sender>toolsGenBunch</sender>
+        <sender>toolsGenBunchAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>_pushParticles()</slot>
@@ -1310,19 +1310,19 @@
         <slot>_pushDispersion()</slot>
     </connection>
     <connection>
-        <sender>controlsBuildHTuneCct</sender>
+        <sender>controlsBuildHTuneCctAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>_horTuneCtrl()</slot>
     </connection>
     <connection>
-        <sender>controlsBuildVTuneCct</sender>
+        <sender>controlsBuildVTuneCctAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>_verTuneCtrl()</slot>
     </connection>
     <connection>
-        <sender>controlsAdjustTune</sender>
+        <sender>controlsAdjustTuneAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>_tuneCtrl()</slot>
