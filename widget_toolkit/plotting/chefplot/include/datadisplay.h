@@ -29,7 +29,7 @@ class DataDisplay: public DataDisplayBase {
 
 public:
 
- DataDisplay::DataDisplay(QWidget* parent, const char* name, WFlags f, bool showbml=false);
+ DataDisplay(QWidget* parent, const char* name, WFlags f, bool showbml=false);
 ~DataDisplay();
 
 public slots:
