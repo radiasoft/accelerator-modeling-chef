@@ -1,3 +1,21 @@
+////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                            //
+// FILE:       displayinfo.h                                                                  //
+//                                                                                            //
+// AUTHOR(S):  Jean-Francois Ostiguy                                                          //
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+//             Accelerator Division / Accelerator Integration Dept                            //
+//             Fermi National Laboratory, Batavia, IL                                         //
+//             ostiguy@fnal.gov                                                               //
+//                                                                                            //
+// DATE:       September 2004                                                                 //
+//                                                                                            //
+// COPYRIGHT: Universities Research Association                                               //
+//                                                                                            //
+//                                                                                            //
+////////////////////////////////////////////////////////////////////////////////////////////////
+
 #ifndef DISPLAY_INFO_H
 #define DISPLAY_INFO_H
 
