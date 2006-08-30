@@ -38,8 +38,8 @@
 #include <config.h>
 #endif
 
-#include <sector.h>
-#include <Particle.h>
+#include <beamline/sector.h>
+#include <beamline/Particle.h>
 
 // this is the actual ***definition** of sector::defaultPropagate
 

@@ -41,8 +41,8 @@
 // 
 // Nov.4, 1998
 
-#include "quadrupole.h"
-#include "Particle.h"
+#include <beamline/quadrupole.h>
+#include <beamline/Particle.h>
 
 quadrupole::MAD_Prop   quadrupole::LikeMAD;
 

@@ -38,8 +38,8 @@
 #include <config.h>
 #endif
 
-#include <septum.h>
-#include <Particle.h>
+#include <beamline/septum.h>
+#include <beamline/Particle.h>
 
 void thinSeptum::localPropagate( Particle& p ) {
   static int i;

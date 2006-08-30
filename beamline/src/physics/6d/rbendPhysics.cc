@@ -39,11 +39,11 @@
 #include <config.h>
 #endif
 
-#include <Particle.h>
-#include <VectorD.h>
-#include <rbend.h>
-#include <PhysicsConstants.h>
-#include <Jet.h>
+#include <beamline/Particle.h>
+#include <basic_toolkit/VectorD.h>
+#include <beamline/rbend.h>
+#include <basic_toolkit/PhysicsConstants.h>
+#include <mxyzptlk/Jet.h>
 
 static const std::complex<double> complex_i(0.0, 1.0);
 

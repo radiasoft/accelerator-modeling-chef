@@ -36,8 +36,8 @@
 #include <config.h>
 #endif
 
-#include "sbend.h"
-#include "Particle.h"
+#include <beamline/sbend.h>
+#include <beamline/Particle.h>
 
 sbend::MAD_Prop   sbend::LikeMAD;
 

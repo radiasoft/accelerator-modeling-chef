@@ -39,8 +39,8 @@
 #include <config.h>
 #endif
 
-#include "combinedFunction.h"
-#include "Particle.h"
+#include <beamline/combinedFunction.h>
+#include <beamline/Particle.h>
 
 void combinedFunction::localPropagate( Particle& p ) 
 {

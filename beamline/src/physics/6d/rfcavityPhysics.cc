@@ -39,10 +39,10 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <Particle.h>
-#include <rfcavity.h>
-#include <PhysicsConstants.h>
+#include <basic_toolkit/iosetup.h>
+#include <beamline/Particle.h>
+#include <beamline/rfcavity.h>
+#include <basic_toolkit/PhysicsConstants.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;

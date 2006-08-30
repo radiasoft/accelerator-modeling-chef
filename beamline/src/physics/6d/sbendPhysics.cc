@@ -36,11 +36,11 @@
 #include <config.h>
 #endif
 
-#include <GenericException.h>
-#include <PhysicsConstants.h>
-#include <Jet.h>
-#include <Particle.h>
-#include <sbend.h>
+#include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/PhysicsConstants.h>
+#include <mxyzptlk/Jet.h>
+#include <beamline/Particle.h>
+#include <beamline/sbend.h>
 
 static const std::complex<double> complex_i(0.0, 1.0);
 

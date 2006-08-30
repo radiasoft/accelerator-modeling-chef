@@ -40,9 +40,9 @@
 #include <config.h>
 #endif
 
-#include <Particle.h>
-#include <ParticleBunch.h>
-#include <pinger.h>
+#include <beamline/Particle.h>
+#include <beamline/ParticleBunch.h>
+#include <beamline/pinger.h>
 
 /* ********** Pinger propagators **********
    Note that these are also the propagators for HPinger and VPinger

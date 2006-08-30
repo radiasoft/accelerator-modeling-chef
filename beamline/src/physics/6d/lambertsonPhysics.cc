@@ -38,9 +38,9 @@
 #include <config.h>
 #endif
 
-#include <Particle.h>
-#include <lambertson.h>
-#include <ParticleBunch.h>
+#include <beamline/Particle.h>
+#include <beamline/lambertson.h>
+#include <beamline/ParticleBunch.h>
 
 void thinLamb::localPropagate( Particle& p ) { }
 

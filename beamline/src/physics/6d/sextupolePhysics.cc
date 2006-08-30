@@ -39,8 +39,8 @@
 #include <config.h>
 #endif
 
-#include <sextupole.h>
-#include <Particle.h>
+#include <beamline/sextupole.h>
+#include <beamline/Particle.h>
 
 void sextupole::localPropagate( Particle& p ) {
   p_bml->propagate( p );

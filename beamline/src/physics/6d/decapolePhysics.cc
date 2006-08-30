@@ -39,8 +39,8 @@
 #include <config.h>
 #endif
 
-#include "Particle.h"
-#include "decapole.h"
+#include <beamline/Particle.h>
+#include <beamline/decapole.h>
 
 void thinDecapole::localPropagate( Particle& p ) {
  double x, y, k;

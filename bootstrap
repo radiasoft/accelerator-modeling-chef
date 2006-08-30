@@ -72,12 +72,13 @@ do
   autoheader
   automake --add-missing --foreign --copy
   autoconf
-  cd
+  cd ..
 done
 
 ##
 ## create links for include subdirectories
 ##
+
 
 echo "Creating header file links ..."
 

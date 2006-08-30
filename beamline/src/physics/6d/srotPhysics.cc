@@ -39,8 +39,8 @@
 #include <config.h>
 #endif
 
-#include <srot.h>
-#include <Particle.h>
+#include <beamline/srot.h>
+#include <beamline/Particle.h>
 
 void srot::localPropagate(Particle& p) {
 double result[4];

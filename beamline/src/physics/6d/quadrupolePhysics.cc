@@ -39,9 +39,9 @@
 #include <config.h>
 #endif
 
-#include <Particle.h>
-#include <quadrupole.h>
-#include <drift.h>
+#include <beamline/Particle.h>
+#include <beamline/quadrupole.h>
+#include <beamline/drift.h>
 
 
 quadrupole::TPOT_Prop::TPOT_Prop( int m )

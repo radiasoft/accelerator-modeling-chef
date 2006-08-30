@@ -38,9 +38,9 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <Particle.h>
-#include <kick.h>
+#include <basic_toolkit/iosetup.h>
+#include <beamline/Particle.h>
+#include <beamline/kick.h>
 
 using namespace std;
 using FNAL::pcerr;
