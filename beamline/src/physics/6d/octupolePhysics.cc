@@ -38,8 +38,8 @@
 #include <config.h>
 #endif
 
-#include <Particle.h>
-#include <octupole.h>
+#include <beamline/Particle.h>
+#include <beamline/octupole.h>
 
 void octupole::localPropagate( Particle& p ) {
   p_bml->propagate( p );

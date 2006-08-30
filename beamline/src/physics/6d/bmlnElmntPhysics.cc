@@ -39,10 +39,10 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <Particle.h>
-#include <ParticleBunch.h>
-#include <bmlnElmnt.h>
+#include <basic_toolkit/iosetup.h>
+#include <beamline/Particle.h>
+#include <beamline/ParticleBunch.h>
+#include <beamline/bmlnElmnt.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;

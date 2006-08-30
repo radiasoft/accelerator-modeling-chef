@@ -33,10 +33,13 @@ AC_ARG_ENABLE(implicit-templates, AC_HELP_STRING([--enable-implicit-templates],[
               CXXFLAGS="-DBASICTOOLKIT_EXPLICIT_TEMPLATES  -fno-implicit-templates ${CXXFLAGS}" )
 
 
-if test ${CXXFLAGS} && test ${CFLAGS}; then
+if test -n "${CXXFLAGS}"; then 
 set_CXXFLAGS=${CXXFLAGS}
-set_CFLAGS=${CFLAGS}
 fi
+if test -n "${CFLAGS}"; then
+set_CFLAGS=${CFLAGS}
+fi 
+
 
 # Checks for programs.
 AC_PROG_CXX(g++ CC)

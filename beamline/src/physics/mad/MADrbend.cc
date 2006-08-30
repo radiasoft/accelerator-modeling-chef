@@ -33,8 +33,8 @@
 #include <config.h>
 #endif
 
-#include "rbend.h"
-#include "Particle.h"
+#include <beamline/rbend.h>
+#include <beamline/Particle.h>
 
 rbend::MAD_Prop   rbend::LikeMAD;
 

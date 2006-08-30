@@ -39,10 +39,10 @@
 #endif
 
 
-#include <Particle.h>
-#include <BBLens.h>
-#include <VectorD.h>
-#include <PhysicsConstants.h>
+#include <beamline/Particle.h>
+#include <beamline/BBLens.h>
+#include <basic_toolkit/VectorD.h>
+#include <basic_toolkit/PhysicsConstants.h>
 
 void BBLens::localPropagate( Particle& p ) {
 

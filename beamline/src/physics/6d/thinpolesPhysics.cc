@@ -40,9 +40,9 @@
 #include <config.h>
 #endif
 
-#include <thinpoles.h>
-#include <Jet.h>
-#include <Particle.h>
+#include <beamline/thinpoles.h>
+#include <mxyzptlk/Jet.h>
+#include <beamline/Particle.h>
 
 
 static const std::complex<double> complex_i(0.0,1.0);

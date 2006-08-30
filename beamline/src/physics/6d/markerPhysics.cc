@@ -38,8 +38,8 @@
 #include <config.h>
 #endif
 
-#include <Particle.h>
-#include <marker.h>
+#include <beamline/Particle.h>
+#include <beamline/marker.h>
 
 void marker::localPropagate( Particle& ) {
  // Markers don't do anything.
