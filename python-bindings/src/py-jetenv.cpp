@@ -23,14 +23,14 @@
 
 #include <boost/python.hpp>
 
-#include <Jet.h>
-#include <EnvPtr.h>
+#include <mxyzptlk/Jet.h>
+#include <mxyzptlk/EnvPtr.h>
 
 #include <string>
 #include <iostream>
 #include <numarray/numarray.h>
 #include <numarray/libnumarray.h>
-#include <py-exception.h>
+#include <python-bindings/py-exception.h>
 
 using namespace boost::python;
 

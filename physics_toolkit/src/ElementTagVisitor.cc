@@ -31,11 +31,11 @@
 **************************************************************************
 *************************************************************************/
 
-#include <ElementTagVisitor.h>
+#include <physics_toolkit/ElementTagVisitor.h>
 
-#include <beamline.h>
+#include <beamline/beamline.h>
 #include <boost/any.hpp>
-#include <iosetup.h>
+#include <basic_toolkit/iosetup.h>
 
 
 using boost::any;

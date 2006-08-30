@@ -52,9 +52,9 @@
 **
 */
 
-#include <GenericException.h>
-#include <mxyzptlk.h>
-#include <Matrix.h>
+#include <basic_toolkit/GenericException.h>
+#include <mxyzptlk/mxyzptlk.h>
+#include <basic_toolkit/Matrix.h>
 
 #define MLT1  1.0e-6
 

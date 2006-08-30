@@ -62,10 +62,10 @@
 
 #include <iomanip>
 
-#include <iosetup.h>
-#include <GenericException.h>
-#include <beamline.h>
-#include <FindCovariance.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
+#include <beamline/beamline.h>
+#include <physics_toolkit/FindCovariance.h>
 
 using namespace std;
 

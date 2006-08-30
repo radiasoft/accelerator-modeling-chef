@@ -72,5 +72,30 @@ do
   autoheader
   automake --add-missing --foreign --copy
   autoconf
-  cd ..
+  cd
 done
+
+##
+## create links for include subdirectories
+##
+
+echo "Creating header file links ..."
+
+if [ ! -d ./include ]
+then mkdir include
+fi
+
+cd ./include
+
+for dir in basic_toolkit beamline bmlfactory mxyzptlk physics_toolkit integrator gms python-bindings
+do
+
+if [ ! -L $dir ]; then
+ ln -s ../$dir/include $dir
+fi
+
+done
+
+cd ..
+
+ 

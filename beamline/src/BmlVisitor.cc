@@ -56,7 +56,7 @@
 ** --- August 21, 2001
 */
 
-#include "bmlnElmnt.h"  // This include BmlVisitor.h internally.
+#include <beamline/bmlnElmnt.h>  // This include BmlVisitor.h internally.
 
 using namespace std;
 

@@ -33,6 +33,7 @@
 #endif
 
 #include <boost/intrusive_ptr.hpp>
+#include <basic_toolkit/globaldefs.h>
 
 template<typename T>
 class TJL1;
@@ -48,7 +49,7 @@ class JLPtr;
 //------------------------------------------------
 
 template<typename T>
-class JLPtr: public boost::intrusive_ptr<TJL<T> >
+class DLLEXPORT JLPtr: public boost::intrusive_ptr<TJL<T> >
 {
 
  public:
@@ -63,7 +64,7 @@ class JLPtr: public boost::intrusive_ptr<TJL<T> >
 //------------------------------------------------
 
 template<typename T>
-class JL1Ptr: public boost::intrusive_ptr<TJL1<T> >
+class DLLEXPORT JL1Ptr: public boost::intrusive_ptr<TJL1<T> >
 {
 
  public:

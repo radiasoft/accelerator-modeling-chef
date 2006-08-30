@@ -22,7 +22,7 @@
    from the eispack library
 */
 
-#include "f2c.h"
+#include <basic_toolkit/f2c.h>
 
 /* Table of constant values */
 

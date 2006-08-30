@@ -9,8 +9,19 @@
 ******  File:      Particle.h
 ******  Version:   2.4
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
+******
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+****** 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -22,9 +33,6 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -33,12 +41,13 @@
 
 #include <exception>
 
-#include <VectorD.h>
-#include <Mapping.h>
-#include <Barnacle.h>
-#include <Matrix.h>
-#include <Jet.h>
-#include <JetVector.h>
+#include <basic_toolkit/globaldefs.h>
+#include <basic_toolkit/VectorD.h>
+#include <mxyzptlk/Mapping.h>
+#include <basic_toolkit/Barnacle.h>
+#include <basic_toolkit/Matrix.h>
+#include <mxyzptlk/Jet.h>
+#include <mxyzptlk/JetVector.h>
 
 // Forward declaration
 class JetParticle;
@@ -47,7 +56,7 @@ const int BMLN_dynDim  = 6;   // ??? Doesn't this imply that BMLN_dynDim
                               // ??? can be defined in several modules?
 
 // .............................. Particle classes
-class Particle {
+class DLLEXPORT Particle {
 protected:
 
   friend class alignment;
@@ -299,7 +308,7 @@ inline int Particle::_dpop() { return 5; }
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-class Proton : public Particle {
+class DLLEXPORT Proton : public Particle {
 public:
   Proton();
   Proton( double /* energy [GeV] */ );
@@ -310,7 +319,7 @@ public:
   Particle* Clone() const { return new Proton( *this ); }
 };
 
-class AntiProton : public Particle {
+class DLLEXPORT  AntiProton : public Particle {
 public:
   AntiProton();
   AntiProton( double /* energy [GeV] */ );
@@ -321,7 +330,7 @@ public:
   Particle* Clone() const { return new AntiProton( *this ); }
 };
 
-class Electron : public Particle {
+class DLLEXPORT  Electron : public Particle {
 public:
   Electron();
   Electron( double /* energy [GeV] */ );
@@ -332,7 +341,7 @@ public:
   Particle* Clone() const { return new Electron( *this ); }
 };
 
-class Positron : public Particle {
+class DLLEXPORT  Positron : public Particle {
 public:
   Positron();
   Positron( double /* energy [GeV] */ );
@@ -343,7 +352,7 @@ public:
   Particle* Clone() const { return new Positron( *this ); }
 };
 
-class Muon : public Particle {
+class DLLEXPORT Muon : public Particle {
 public:
   Muon();
   Muon( double /* energy [GeV] */ );
@@ -354,7 +363,7 @@ public:
   Particle* Clone() const { return new Muon( *this ); }
 };
 
-class AntiMuon : public Particle {
+class DLLEXPORT  AntiMuon : public Particle {
 public:
   AntiMuon();
   AntiMuon( double /* energy [GeV] */ );
@@ -585,7 +594,7 @@ public:
   short  getTagSize() const;
 };
 
-struct JetProton : public JetParticle {
+struct DLLEXPORT  JetProton : public JetParticle {
   JetProton();
   JetProton( double /* Energy [GeV] */ );
   JetProton( const Proton& );
@@ -595,7 +604,7 @@ struct JetProton : public JetParticle {
   Particle* ConvertToParticle() const;
 };
 
-struct JetAntiProton : public JetParticle {
+struct DLLEXPORT  JetAntiProton : public JetParticle {
   JetAntiProton();
   JetAntiProton( double /* Energy [GeV] */ );
   JetAntiProton( const AntiProton& );
@@ -605,7 +614,7 @@ struct JetAntiProton : public JetParticle {
   Particle* ConvertToParticle() const;
 };
 
-struct JetElectron : public JetParticle {
+struct DLLEXPORT  JetElectron : public JetParticle {
   JetElectron();
   JetElectron( double /* Energy */ );
   JetElectron( const Electron& );
@@ -615,7 +624,7 @@ struct JetElectron : public JetParticle {
   Particle* ConvertToParticle() const;
 };
 
-struct JetPositron : public JetParticle {
+struct DLLEXPORT  JetPositron : public JetParticle {
   JetPositron();
   JetPositron( double /* Energy */ );
   JetPositron( const Positron& );
@@ -625,7 +634,7 @@ struct JetPositron : public JetParticle {
   Particle* ConvertToParticle() const;
 };
 
-struct JetMuon : public JetParticle {
+struct DLLEXPORT  JetMuon : public JetParticle {
   JetMuon();
   JetMuon( double /* Energy [GeV] */ );
   JetMuon( const Muon& );
@@ -635,7 +644,7 @@ struct JetMuon : public JetParticle {
   Particle* ConvertToParticle() const;
 };
 
-struct JetAntiMuon : public JetParticle {
+struct DLLEXPORT  JetAntiMuon : public JetParticle {
   JetAntiMuon();
   JetAntiMuon( double /* Energy [GeV] */ );
   JetAntiMuon( const AntiMuon& );

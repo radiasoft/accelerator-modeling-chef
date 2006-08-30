@@ -36,57 +36,56 @@
 **************************************************************************
 *************************************************************************/
 
-
 #ifndef BEAMLINE_H
 #define BEAMLINE_H
 
-#include <PhysicsConstants.h>
-#include <math.h>
-#include <MathConstants.h>
-#include <mxyzptlk.h>
-#include <slist.h>
-#include <Barnacle.h>
-#include <VectorD.h>
-#include <Particle.h>
+#include <basic_toolkit/PhysicsConstants.h>
+#include <cmath>
+#include <basic_toolkit/MathConstants.h>
+#include <mxyzptlk/mxyzptlk.h>
+#include <basic_toolkit/slist.h>
+#include <basic_toolkit/Barnacle.h>
+#include <basic_toolkit/VectorD.h>
+#include <beamline/Particle.h>
 
 // ****************
 // BEAMLINE CLASSES
 // ****************
 
-#include <bmlnElmnt.h>
-#include <kick.h>
-#include <rfcavity.h>
-#include <srot.h>
-#include <monitor.h>
-#include <marker.h>
-#include <drift.h>
-#include <rbend.h>
-#include <sbend.h>
-#include <CF_sbend.h>
-#include <CF_rbend.h>
-#include <sector.h>
-#include <quadrupole.h>
-#include <sextupole.h>
-#include <octupole.h>
-#include <decapole.h>
-#include <thinpoles.h>
-#include <BBLens.h>
-#include <septum.h>
-#include <lambertson.h>
-#include <BeamlineIterator.h>
-#include <circuit.h>
-#include <ICircuit.h>
-#include <FCircuit.h>
-#include <mover.h>
-#include <BipolarCircuit.h>
-#include <Aperture.h>
-#include <BmlVisitor.h>
-#include <FDPolarity.h>
-#include <MappPropFunc.h>
-#include <Particle.h>
-#include <ParticleBunch.h>
-#include <Slot.h>
-#include <combinedFunction.h>
-#include <pinger.h>
+#include <beamline/bmlnElmnt.h>
+#include <beamline/kick.h>
+#include <beamline/rfcavity.h>
+#include <beamline/srot.h>
+#include <beamline/monitor.h>
+#include <beamline/marker.h>
+#include <beamline/drift.h>
+#include <beamline/rbend.h>
+#include <beamline/sbend.h>
+#include <beamline/CF_sbend.h>
+#include <beamline/CF_rbend.h>
+#include <beamline/sector.h>
+#include <beamline/quadrupole.h>
+#include <beamline/sextupole.h>
+#include <beamline/octupole.h>
+#include <beamline/decapole.h>
+#include <beamline/thinpoles.h>
+#include <beamline/BBLens.h>
+#include <beamline/septum.h>
+#include <beamline/lambertson.h>
+#include <beamline/BeamlineIterator.h>
+#include <beamline/circuit.h>
+#include <beamline/ICircuit.h>
+#include <beamline/FCircuit.h>
+#include <beamline/mover.h>
+#include <beamline/BipolarCircuit.h>
+#include <beamline/Aperture.h>
+#include <beamline/BmlVisitor.h>
+#include <beamline/FDPolarity.h>
+#include <beamline/MappPropFunc.h>
+#include <beamline/Particle.h>
+#include <beamline/ParticleBunch.h>
+#include <beamline/Slot.h>
+#include <beamline/combinedFunction.h>
+#include <beamline/pinger.h>
 
 #endif // BEAMLINE_H

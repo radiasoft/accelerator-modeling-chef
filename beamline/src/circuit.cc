@@ -43,8 +43,8 @@
 
 #include <string>
 
-#include <iosetup.h>
-#include <circuit.h>
+#include <basic_toolkit/iosetup.h>
+#include <beamline/circuit.h>
 
 using namespace std;
 

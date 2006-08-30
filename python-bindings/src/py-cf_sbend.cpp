@@ -22,9 +22,9 @@
 ****************************************************************************/
 
 #include <boost/python.hpp>
-#include <bmlnElmnt.h>
-#include <CF_sbend.h>
-#include <Particle.h>
+#include <beamline/bmlnElmnt.h>
+#include <beamline/CF_sbend.h>
+#include <beamline/Particle.h>
 
 using namespace boost::python;
 

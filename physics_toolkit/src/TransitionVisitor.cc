@@ -51,13 +51,13 @@
  *
  */
 
-#include <iosetup.h>
-#include <TransitionVisitor.h>
-#include <rbend.h>
-#include <sbend.h>
-#include <CF_rbend.h>
-#include <CF_sbend.h>
-#include <LattFuncSage.h>
+#include <basic_toolkit/iosetup.h>
+#include <physics_toolkit/TransitionVisitor.h>
+#include <beamline/rbend.h>
+#include <beamline/sbend.h>
+#include <beamline/CF_rbend.h>
+#include <beamline/CF_sbend.h>
+#include <physics_toolkit/LattFuncSage.h>
 #include <typeinfo>
 
 using namespace std;

@@ -1,7 +1,7 @@
 #ifndef ABSINTEGRATOR_H
 #define ABSINTEGRATOR_H
 
-#include "VectorD.h"
+#include <basic_toolkit/VectorD.h>
 
 template<class T>
 class AbsIntegrator
@@ -44,6 +44,6 @@ protected:
 };
 
 
-#include "AbsIntegrator.tcc"
+#include <integrator/AbsIntegrator.tcc>
 
 #endif // ABSINTEGRATOR_H

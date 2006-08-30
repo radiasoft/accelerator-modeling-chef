@@ -22,7 +22,7 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 
-#include <sector.h>
+#include <beamline/sector.h>
 
 void wrap_sector () {
   

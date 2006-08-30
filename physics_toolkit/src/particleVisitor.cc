@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -37,11 +34,14 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 
-#include <beamline.h>
-#include <Particle.h>
-#include <particleVisitor.h>
+#include <beamline/beamline.h>
+#include <beamline/Particle.h>
+#include <physics_toolkit/particleVisitor.h>
 
 
 particleVisitor::particleVisitor() : BmlVisitor() {

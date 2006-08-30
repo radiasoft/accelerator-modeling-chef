@@ -52,11 +52,11 @@
 
 #include <iomanip>
 
-#include <iosetup.h>
-#include <LattFuncSage.h>
-#include <ClosedOrbitSage.h>
-#include <FPSolver.h>
-#include <QBpropVisitor.h>
+#include <basic_toolkit/iosetup.h>
+#include <physics_toolkit/LattFuncSage.h>
+#include <physics_toolkit/ClosedOrbitSage.h>
+#include <physics_toolkit/FPSolver.h>
+#include <physics_toolkit/QBpropVisitor.h>
 
 using namespace std;
 

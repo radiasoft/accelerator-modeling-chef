@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "AkimaSplinterpoland.h"
+#include <integrator/AkimaSplinterpoland.h>
 
 using namespace std;
 

@@ -12,6 +12,17 @@
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -22,9 +33,6 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -33,18 +41,12 @@
 #ifndef COVARIANCESAGE_H
 #define COVARIANCESAGE_H
 
-#ifndef BMLNELMNT_H
-#include "bmlnElmnt.h"
-#endif
-#ifndef MAP_HXX
-#include "Mapping.h"
-#endif
-#ifndef MATHCONS_H
-#include "MathConstants.h"
-#endif
-#ifndef SAGE_H
-#include "Sage.h"
-#endif
+
+#include <beamline/bmlnElmnt.h>
+#include <mxyzptlk/Mapping.h>
+#include <basic_toolkit/MathConstants.h>
+#include <physics_toolkit/Sage.h>
+
 
 class CovarianceSage : public Sage
 {

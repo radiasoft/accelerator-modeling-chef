@@ -32,7 +32,7 @@
 #ifndef VECTORD_H
 #define VECTORD_H
 
-#include <TVector.h>
+#include <basic_toolkit/TVector.h>
 
 typedef class TVector<double>                  Vector;
 typedef class TVector<double>                  VectorD;

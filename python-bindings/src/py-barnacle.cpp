@@ -21,7 +21,7 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-#include <Barnacle.h>
+#include <basic_toolkit/Barnacle.h>
 
 using namespace boost::python;
 

@@ -68,9 +68,9 @@ using namespace std;
 #undef   deallocate
 
 #include <iostream>
-#include <iosetup.h> 
-#include <beamline.h>
-#include <GenericException.h>
+#include <basic_toolkit/iosetup.h> 
+#include <beamline/beamline.h>
+#include <basic_toolkit/GenericException.h>
 
 #include <functional>
 #include <algorithm>
@@ -78,15 +78,15 @@ using namespace std;
 #include <cmath>
 #include <iostream>
 
-#include <beam_element.h>
-#include <beamel_table.h>
-#include <beam_line.h>
-#include <bml_table.h>
-#include <bmlfactory.h>
-#include <expression.h>
-#include <madparser.h>
-#include <var_table.h>
-#include <bel_inst_fns.h>
+#include <bmlfactory/beam_element.h>
+#include <bmlfactory/beamel_table.h>
+#include <bmlfactory/beam_line.h>
+#include <bmlfactory/bml_table.h>
+#include <bmlfactory/bmlfactory.h>
+#include <bmlfactory/expression.h>
+#include <bmlfactory/madparser.h>
+#include <bmlfactory/var_table.h>
+#include <bmlfactory/bel_inst_fns.h>
 
 using namespace std;
 using FNAL::pcout;

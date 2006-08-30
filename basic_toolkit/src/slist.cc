@@ -10,6 +10,16 @@
 ******  Copyright (c) 1990 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+*****
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -20,9 +30,6 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -38,7 +45,7 @@ of The C++ Programming Language, by Stroustrup.
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "slist.h"
+#include <basic_toolkit/slist.h>
 
 // ================================================================
 //      Global variables
@@ -54,7 +61,7 @@ int slist_iterator::objectCount = 0;
 //      Constructors and the destructor ...
 //
 
-slist::slist( const slist& x )
+slist::slist( slist const& x )
 {
 void* w;
 last = 0;
@@ -62,9 +69,6 @@ slist_iterator getNext( x );
 while((  w = getNext()  )) append( w );
 owner = 0;
 
-#ifdef OBJECT_DEBUG
-  objectCount++;
-#endif
 }
 
 void slist::insert( void* a) {
@@ -153,7 +157,7 @@ delete f;
 return r;
 }
 
-slist& slist::operator=( const slist& x )
+slist& slist::operator=( slist const& x )
 {
 slist_iterator getNext( x );
 void* p;
@@ -175,7 +179,7 @@ int slist::size() const
 {
 slist_iterator getNext( *this );
 int i = 0;
-void* p;
+const void* p;
 while((  p = getNext()  )) i++;
 return i;
 }

@@ -52,10 +52,10 @@
  */
 
 
-#include <ClosedOrbitSage.h>
-#include <FPSolver.h>
-#include <RefRegVisitor.h>
-#include <Jet__environment.h>
+#include <physics_toolkit/ClosedOrbitSage.h>
+#include <physics_toolkit/FPSolver.h>
+#include <beamline/RefRegVisitor.h>
+#include <mxyzptlk/Jet__environment.h>
 
 
 using namespace std;

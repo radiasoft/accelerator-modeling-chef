@@ -59,10 +59,9 @@
 #include <complex>
 #include <iomanip>
 #include <fstream>
-#include <iosetup.h>
-
-#include <utils.h> // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
-#include <GenericException.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/utils.h>             // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
+#include <basic_toolkit/GenericException.h>
 
 #define MX_SMALL    1.0e-12  // Used by JL::addTerm to decide 
                              //   removal of a JLterm.
@@ -327,10 +326,10 @@ void TJL<T>::initStore( ) {
 
 template<typename T>
 TJL<T>::TJL(EnvPtr<T> const& pje, T x): 
+_myEnv( pje ),  
 _count(0),
 _weight(0),                        
 _accuWgt( pje->maxWeight() ),
-_myEnv( pje ),  
 _constIterPtr(0),
 _iterPtr(0)
 {
@@ -430,14 +429,14 @@ template<typename T>
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJL<T>::TJL( const TJL<T>& x ): 
+TJL<T>::TJL( const TJL<T>& x ): ReferenceCounter<TJL<T> >(),  
+ _myEnv(x._myEnv),
  _count(0),                     
  _weight(x._weight),     
  _accuWgt(x._accuWgt),
- _myEnv(x._myEnv),
-_jltermStoreCapacity(0), 
 _jltermStore(0), 
 _jltermStoreCurrentPtr(0), 
+_jltermStoreCapacity(0), 
 _constIterPtr(0), 
 _iterPtr(0)
 {
@@ -478,7 +477,7 @@ _iterPtr(0)
     q = ( TJLterm<T>* ) x._constIterPtr->current();
   
     if (q) { 
-       while(  p = ( TJLterm<T>*) getNext( ) ) {
+       while(  ( p = (TJLterm<T>*) getNext( )) ) {
          if ( *p   ==   *q ) break;
 
        } 
@@ -497,7 +496,7 @@ _iterPtr(0)
    q = (TJLterm<T>*) x._iterPtr->current();
    
    if (q ) {   
-       while(  p = ( TJLterm<T>*) getNext( ) ) {
+       while(  (p = ( TJLterm<T>*) getNext()) ) {
          if ( *p  ==  *q ) break;
        }   
    };
@@ -514,7 +513,7 @@ _iterPtr(0)
 
 template<typename T>
 template<typename U>
-JLPtr<T>  TJL<T>::makeTJL( const TJL<U>& x )
+JLPtr<T>  TJL<T>::makeTJL( TJL<U> const& x )
 {
 
   if (_thePool.empty() ) 
@@ -570,7 +569,7 @@ JLPtr<T>  TJL<T>::makeTJL( const TJL<U>& x )
 
     if( q ) {
 
-       while(  r = (TJLterm<U>*) getNext( ) ) {
+       while( (r = (TJLterm<U>*) getNext()) != 0  ) {
 
 ///////FIXME        if ( *r   ==   *q ) break;
        } 
@@ -585,7 +584,7 @@ JLPtr<T>  TJL<T>::makeTJL( const TJL<U>& x )
 
    if (q) {
      q = (TJLterm<T>*) x._iterPtr->current();
-     while(  r = ( TJLterm<U>*) getNext( ) ) {
+     while( (r = (TJLterm<U>*)getNext()) != 0 ) {
 /////FIXME        if ( *r  ==  *q ) break;
      }   
    };
@@ -1353,7 +1352,7 @@ JLPtr<T> TJL<T>::filter( const int& wgtLo, const int& wgtHi ) const
 
  dlist_iterator getNext( _theList );
  TJLterm<T>* p = 0;
- TJLterm<T>* q = 0;
+
  int numTerms;
  int wgt, upperWgt;
  
@@ -2789,7 +2788,6 @@ JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  ){
  
  TJLterm<T>* p = 0;
  int indy      = 0;
- T result      = T();
 
  //------------------------------------------------------------
  // accumulate terms of the lhs argument (i.e. x) into the scratchpad

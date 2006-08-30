@@ -51,12 +51,10 @@
 #include <config.h>
 #endif
 
-#include "ModifierVisitor.h"
-#include "BeamlineExpressionTree.h"
+#include <physics_toolkit/ModifierVisitor.h>
+#include <beamline/BeamlineExpressionTree.h>
+#include <beamline/bmlnElmnt.h>
 
-#ifndef BMLNELMNT_H
-#include "bmlnElmnt.h"
-#endif
 
 
 ModifierVisitor::ModifierVisitor()

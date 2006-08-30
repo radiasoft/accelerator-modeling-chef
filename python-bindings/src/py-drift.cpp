@@ -20,9 +20,10 @@
 ******             ostiguy@fnal.gov                         
 ******
 ****************************************************************************/
+
 #include <boost/python.hpp>
-#include <bmlnElmnt.h>
-#include <drift.h>
+#include <beamline/bmlnElmnt.h>
+#include <beamline/drift.h>
 
 using namespace boost::python;
 

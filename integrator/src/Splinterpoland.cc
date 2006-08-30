@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Splinterpoland.h"
+#include <integrator/Splinterpoland.h>
 
 using namespace std;
 

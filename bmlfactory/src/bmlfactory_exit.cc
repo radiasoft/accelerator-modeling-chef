@@ -46,8 +46,8 @@
 // function that throws. With GNU gcc, everything works correctly *only* if the C 
 // code is compiled with the -fexceptions flag.   
 
-#include <GenericException.h>
-#include <ParserException.h>
+#include <basic_toolkit/GenericException.h>
+#include <bmlfactory/ParserException.h>
 #include <strstream>
 #include <iostream>
 

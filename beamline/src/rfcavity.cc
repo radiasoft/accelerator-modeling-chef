@@ -40,8 +40,8 @@
 #endif
 
 #include <iomanip>
-#include <rfcavity.h>
-#include <drift.h>
+#include <beamline/rfcavity.h>
+#include <beamline/drift.h>
 
 using namespace std;
 

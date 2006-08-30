@@ -56,13 +56,13 @@
 #ifndef TJET_H
 #define TJET_H
 
-#include <slist.h>
-#include <IntArray.h>
-#include <VectorD.h>
+#include <basic_toolkit/slist.h>
+#include <basic_toolkit/IntArray.h>
+#include <basic_toolkit/VectorD.h>
 
-#include <TJetEnvironment.h>
-#include <TJL.h>
-#include <TJL1.h>
+#include <mxyzptlk/TJetEnvironment.h>
+#include <mxyzptlk/TJL.h>
+#include <mxyzptlk/TJL1.h>
 #include <complex>
 
 // Forward declarations
@@ -660,7 +660,7 @@ inline void TJet<T>::setLastEnv(EnvPtr<T> const& pje)
 }
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES
-#include<TJet.tcc>
+#include<mxyzptlk/TJet.tcc>
 #endif
 
 #endif // TJET_H

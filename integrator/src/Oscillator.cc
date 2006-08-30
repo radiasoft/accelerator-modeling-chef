@@ -2,8 +2,8 @@
 #include <config.h>
 #endif
 
-#include <Oscillator.h>
-#include <iosetup.h>
+#include <integrator/Oscillator.h>
+#include <basic_toolkit/iosetup.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;

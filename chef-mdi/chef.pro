@@ -7,13 +7,13 @@
 TEMPLATE	= app
 LANGUAGE	= C++
 
-unix:CONFIG	+= opengl x11 rtti stl thread exceptions 
+unix:CONFIG	+= qt debug opengl x11 rtti stl thread exceptions 
 #win32:CONFIG	+= opengl x11 rtti stl thread exceptions 
 
 include ( ../chef-config/config.pri ) 
 
 
-win32:RC_FILE = chefres.rc
+win32:RC_FILE = ./src/chefres.rc
 
 INCLUDEPATH += ./include
 INCLUDEPATH += ./licenses 

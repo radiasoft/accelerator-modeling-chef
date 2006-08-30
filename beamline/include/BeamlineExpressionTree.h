@@ -12,6 +12,16 @@
 ******  Copyright (c) 2003 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+****** 
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -22,22 +32,17 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
 **************************************************************************
 *************************************************************************/
-
 
 #ifndef BMLEXPTREE_H
 #define BMLEXPTREE_H
 
-#ifndef BMLNELMNT_H
-#include "bmlnElmnt.h"
-#endif
+#include <basic_toolkit/globaldefs.h>
+#include <beamline/bmlnElmnt.h>
 
-class BoolNode 
+
+class DLLEXPORT BoolNode 
 {
 public:
   virtual bool evaluate( const bmlnElmnt* ) const = 0;
@@ -53,7 +58,7 @@ public:
 };
 
 
-struct BoolNullNode : public BoolNode
+struct DLLEXPORT BoolNullNode : public BoolNode
 {
 public:
   BoolNullNode() {}
@@ -67,7 +72,7 @@ public:
 };
 
 
-class BoolEndNode : public virtual BoolNode
+class DLLEXPORT BoolEndNode : public virtual BoolNode
 {
 public: 
   BoolEndNode();   // Useful for derived EndNodes
@@ -100,7 +105,7 @@ public:
 };
 
 
-class BoolOpNode : public virtual BoolNode
+class DLLEXPORT BoolOpNode : public virtual BoolNode
 {
 protected:
   BoolOpNode();
@@ -123,7 +128,7 @@ public:
 };
 
 
-class AndNode : public virtual BoolOpNode
+class DLLEXPORT AndNode : public virtual BoolOpNode
 {
  public:
    AndNode( const BoolNode&, const BoolNode& );
@@ -136,7 +141,7 @@ class AndNode : public virtual BoolOpNode
 };
 
 
-class OrNode : public virtual BoolOpNode
+class DLLEXPORT OrNode : public virtual BoolOpNode
 {
  public:
    OrNode( const BoolNode&, const BoolNode& );
@@ -149,7 +154,7 @@ class OrNode : public virtual BoolOpNode
 };
 
 
-class NotNode : public virtual BoolOpNode
+class DLLEXPORT NotNode : public virtual BoolOpNode
 {
  public:
    NotNode( const BoolNode& );
@@ -167,7 +172,7 @@ AndNode operator*( const BoolNode&, const BoolNode& );
 
 // Derived Discriminators
 
-class TypeIs : public virtual bmlnElmnt::Discriminator
+class DLLEXPORT TypeIs : public virtual bmlnElmnt::Discriminator
 {
 public:
   TypeIs( const char* );
@@ -181,7 +186,7 @@ private:
 };
 
 
-class NameIs : public virtual bmlnElmnt::Discriminator
+class DLLEXPORT NameIs : public virtual bmlnElmnt::Discriminator
 {
 public:
   NameIs( const char* );
@@ -195,7 +200,7 @@ private:
 };
 
 
-class LengthIs : public virtual bmlnElmnt::Discriminator
+class DLLEXPORT  LengthIs : public virtual bmlnElmnt::Discriminator
 {
 public:
   LengthIs( double );
@@ -209,7 +214,7 @@ private:
 };
 
 
-class LengthLess : public virtual bmlnElmnt::Discriminator
+class DLLEXPORT LengthLess : public virtual bmlnElmnt::Discriminator
 {
 public:
   LengthLess( double );
@@ -223,7 +228,7 @@ private:
 };
 
 
-class LengthMore : public virtual bmlnElmnt::Discriminator
+class DLLEXPORT LengthMore : public virtual bmlnElmnt::Discriminator
 {
 public:
   LengthMore( double );
@@ -237,7 +242,7 @@ private:
 };
 
 
-class StrengthIs : public virtual bmlnElmnt::Discriminator
+class DLLEXPORT StrengthIs : public virtual bmlnElmnt::Discriminator
 {
 public:
   StrengthIs( double );
@@ -251,7 +256,7 @@ private:
 };
 
 
-class StrengthLess : public virtual bmlnElmnt::Discriminator
+class DLLEXPORT StrengthLess : public virtual bmlnElmnt::Discriminator
 {
 public:
   StrengthLess( double );
@@ -265,7 +270,7 @@ private:
 };
 
 
-class StrengthMore : public virtual bmlnElmnt::Discriminator
+class DLLEXPORT StrengthMore : public virtual bmlnElmnt::Discriminator
 {
 public:
   StrengthMore( double );
@@ -281,49 +286,49 @@ private:
 
 // Derived EndNodes
 
-struct TypeNode: public virtual BoolEndNode
+struct DLLEXPORT TypeNode: public virtual BoolEndNode
 {
   TypeNode( const char* );
   ~TypeNode() {}
 };
 
-struct NameNode: public virtual BoolEndNode
+struct DLLEXPORT NameNode: public virtual BoolEndNode
 {
   NameNode( const char* );
   ~NameNode() {}
 };
 
-struct LengthEqNode: public virtual BoolEndNode
+struct DLLEXPORT LengthEqNode: public virtual BoolEndNode
 {
   LengthEqNode( double );
   ~LengthEqNode() {}
 };
 
-struct LengthLtNode: public virtual BoolEndNode
+struct DLLEXPORT LengthLtNode: public virtual BoolEndNode
 {
   LengthLtNode( double );
   ~LengthLtNode() {}
 };
 
-struct LengthGtNode: public virtual BoolEndNode
+struct DLLEXPORT LengthGtNode: public virtual BoolEndNode
 {
   LengthGtNode( double );
   ~LengthGtNode() {}
 };
 
-struct StrengthEqNode: public virtual BoolEndNode
+struct DLLEXPORT StrengthEqNode: public virtual BoolEndNode
 {
   StrengthEqNode( double );
   ~StrengthEqNode() {}
 };
 
-struct StrengthLtNode: public virtual BoolEndNode
+struct DLLEXPORT StrengthLtNode: public virtual BoolEndNode
 {
   StrengthLtNode( double );
   ~StrengthLtNode() {}
 };
 
-struct StrengthGtNode: public virtual BoolEndNode
+struct DLLEXPORT StrengthGtNode: public virtual BoolEndNode
 {
   StrengthGtNode( double );
   ~StrengthGtNode() {}

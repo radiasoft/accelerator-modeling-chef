@@ -40,10 +40,10 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <quadrupole.h>
-#include <drift.h>
-#include <BeamlineIterator.h>
+#include <basic_toolkit/iosetup.h>
+#include <beamline/quadrupole.h>
+#include <beamline/drift.h>
+#include <beamline/BeamlineIterator.h>
 
 using namespace std;
 using FNAL::pcerr;

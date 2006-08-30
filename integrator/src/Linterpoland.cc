@@ -1,4 +1,4 @@
-#include "Linterpoland.h"
+#include <integrator/Linterpoland.h>
 
 Linterpoland::Linterpoland()
 {

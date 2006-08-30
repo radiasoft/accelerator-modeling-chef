@@ -58,9 +58,9 @@
 
 #include <iostream>
 #include <iomanip>
-#include <math.h>
-#include <TJet.h>
-#include <EnvPtr.h>
+#include <cmath>
+#include <mxyzptlk/TJet.h>
+#include <mxyzptlk/EnvPtr.h>
 
 // Forward declarations
 typedef class TVector<double> Vector;
@@ -307,7 +307,7 @@ TJetVector<T> operator*( const Vector& x, const TJet<T>& y )
 
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES
-#include <TJetVector.tcc>
+#include <mxyzptlk/TJetVector.tcc>
 #endif
 
 #endif // TJETVECTOR_H

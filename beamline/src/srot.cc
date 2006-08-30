@@ -41,7 +41,7 @@
 #endif
 
 
-#include <srot.h>
+#include <beamline/srot.h>
 
 using namespace std;
 

@@ -1,4 +1,4 @@
-#include "Simpson.h"
+#include <integrator/Simpson.h>
 
 Simpson::Simpson()
 {

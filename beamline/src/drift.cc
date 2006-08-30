@@ -39,7 +39,7 @@
 #include <config.h>
 #endif
 
-#include <drift.h>
+#include <beamline/drift.h>
 
 using namespace std;
 

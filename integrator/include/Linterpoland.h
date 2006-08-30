@@ -1,7 +1,7 @@
 #ifndef LINTERPOLAND_H
 #define LINTERPOLAND_H
 
-#include "AbsIntegrator.h"
+#include <integrator/AbsIntegrator.h>
 
 #include <vector>
 

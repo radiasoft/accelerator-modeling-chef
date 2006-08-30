@@ -34,15 +34,17 @@
 **************************************************************************
 *************************************************************************/
 
-
 #ifndef GENEXC_H
 #define GENEXC_H
+
+#include <basic_toolkit/globaldefs.h>
 
 #include <exception>
 #include <string>
 #include <sstream>
 
-class GenericException : public std::exception
+
+class DLLEXPORT GenericException : public std::exception
 {
 
  public:

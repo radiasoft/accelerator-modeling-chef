@@ -42,10 +42,10 @@
 
 #include <iostream>
 
-#include <SurveyMatcher.h>
-#include <GenericException.h>
-#include <beamline.h>
-#include <FramePusher.h>
+#include <physics_toolkit/SurveyMatcher.h>
+#include <basic_toolkit/GenericException.h>
+#include <beamline/beamline.h>
+#include <physics_toolkit/FramePusher.h>
 
 using namespace std;
 

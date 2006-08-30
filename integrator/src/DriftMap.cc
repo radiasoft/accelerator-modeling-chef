@@ -2,8 +2,8 @@
 #include <config.h>
 #endif
 
-#include <DriftMap.h>
-#include <iosetup.h>
+#include <integrator/DriftMap.h>
+#include <basic_toolkit/iosetup.h>
 
 using FNAL::pcout;
 using FNAL::pcerr;

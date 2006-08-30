@@ -46,16 +46,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
-#include <fb_allocator.h>
-#include <str_to_upper.h>
-#include <beamel_table.h>
-#include <bml_table.h>
-#include <comment_arr.h>
-#include <const_table.h>
-#include <var_table.h>
-#include <matrix.h>
-#include <expression.h>
-#include <madparser.h>
+#include <bmlfactory/fb_allocator.h>
+#include <bmlfactory/str_to_upper.h>
+#include <bmlfactory/beamel_table.h>
+#include <bmlfactory/bml_table.h>
+#include <bmlfactory/comment_arr.h>
+#include <bmlfactory/const_table.h>
+#include <bmlfactory/var_table.h>
+#include <bmlfactory/matrix.h>
+#include <bmlfactory/expression.h>
+#include <bmlfactory/madparser.h>
 
 
 

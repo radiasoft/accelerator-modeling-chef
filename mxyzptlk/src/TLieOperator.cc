@@ -46,9 +46,9 @@
 **************************************************************************
 *************************************************************************/
 
-#include <GenericException.h>
-#include <iosetup.h>
-#include <TLieOperator.h>
+#include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/iosetup.h>
+#include <mxyzptlk/TLieOperator.h>
 #include <complex>
 
 using FNAL::pcerr;

@@ -44,6 +44,6 @@
 #ifndef JETC_H
 #define JETC_H
 
-#include <Jet.h>
+#include <mxyzptlk/Jet.h>
 
 #endif // JETC_H

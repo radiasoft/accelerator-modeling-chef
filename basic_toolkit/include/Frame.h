@@ -50,12 +50,11 @@
 #ifndef FRAME_H
 #define FRAME_H
 
-#include <VectorD.h>
-#include <Matrix.h>
+#include <basic_toolkit/VectorD.h>
+#include <basic_toolkit/Matrix.h>
+#include <basic_toolkit/MathConstants.h> 
 
-#include <MathConstants.h> 
-
-class Frame
+class DLLEXPORT Frame
 {
  private:
    Vector  o;

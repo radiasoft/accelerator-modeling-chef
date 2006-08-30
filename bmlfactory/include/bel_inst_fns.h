@@ -40,7 +40,7 @@
 **************************************************************************
 *************************************************************************/
 
-#include <beamline.h>
+#include <beamline/beamline.h>
 
 static inline bmlnElmnt*
 make_multipole( const char* name, double length ) {

@@ -20,7 +20,7 @@
 ******             ostiguy@fnal.gov                         
 ******
 ****************************************************************************/
-#include <kick.h>
+#include <beamline/kick.h>
 #include <boost/python.hpp>
 
 using namespace boost::python;

@@ -41,7 +41,7 @@ extern "C" {
 
 #include <stdio.h>
 #include <glib.h>  
-#include <madparser_types.h>
+#include <bmlfactory/madparser_types.h>
 
 void  const_def_output( madparser* mp, FILE* out, GHashTable* const_table, GHashTable* var_table, GHashTable* bel_table, GPtrArray* comment_arr );
 void  var_def_output  ( madparser* mp, FILE* out, GHashTable* const_table, GHashTable* var_table, GHashTable* bel_table, GPtrArray* comment_arr );

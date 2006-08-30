@@ -39,10 +39,10 @@
 #include <config.h>
 #endif
 
-#include <GenericException.h>
-#include <beamline.h>
-#include <MatrixCalcVisitor.h>
-#include <iosetup.h>
+#include <basic_toolkit/GenericException.h>
+#include <beamline/beamline.h>
+#include <physics_toolkit/MatrixCalcVisitor.h>
+#include <basic_toolkit/iosetup.h>
 
 using namespace std;
 using FNAL::pcerr;

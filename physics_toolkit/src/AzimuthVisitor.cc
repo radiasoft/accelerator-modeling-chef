@@ -31,9 +31,9 @@
 **************************************************************************
 *************************************************************************/
 
-#include <AzimuthVisitor.h>
+#include <physics_toolkit/AzimuthVisitor.h>
 
-#include <beamline.h>
+#include <beamline/beamline.h>
 #include <boost/any.hpp>
 
 using std::string;

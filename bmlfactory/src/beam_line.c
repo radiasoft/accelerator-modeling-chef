@@ -54,10 +54,10 @@
 #include <string.h>
 
 
-#include <beamel_table.h>
-#include <bml_table.h>
-#include <troika.h>
-#include <beam_line.h>
+#include <bmlfactory/beamel_table.h>
+#include <bmlfactory/bml_table.h>
+#include <bmlfactory/troika.h>
+#include <bmlfactory/beam_line.h>
 
 
    /*

@@ -43,10 +43,10 @@
 #define JET_H
 
 #include <complex>
-#include <Jet__environment.h>
-#include <JLterm.h>
-#include <TJL.h>
-#include <TJet.h>
+#include <mxyzptlk/Jet__environment.h>
+#include <mxyzptlk/JLterm.h>
+#include <mxyzptlk/TJL.h>
+#include <mxyzptlk/TJet.h>
 
 typedef TJL<double>                    JL;
 typedef TJL<std::complex<double> >     JLC;

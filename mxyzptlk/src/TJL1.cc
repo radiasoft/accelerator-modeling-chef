@@ -36,9 +36,9 @@
 **************************************************************************
 *************************************************************************/
 
-#include <TJL1.h>
-#include <EnvPtr.h>
-#include <GenericException.h>
+#include <mxyzptlk/TJL1.h>
+#include <mxyzptlk/EnvPtr.h>
+#include <basic_toolkit/GenericException.h>
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

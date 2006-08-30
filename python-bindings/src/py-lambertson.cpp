@@ -21,7 +21,7 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-#include <lambertson.h>
+#include <beamline/lambertson.h>
 
 
 void wrap_lambertson () {

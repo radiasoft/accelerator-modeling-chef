@@ -57,15 +57,15 @@
 #ifndef TJETENV_H
 #define TJETENV_H
 
-#include <IntArray.h>
-#include <VectorD.h>
-#include <Cascade.h>
-#include <TMatrix.h>
+#include <basic_toolkit/IntArray.h>
+#include <basic_toolkit/VectorD.h>
+#include <basic_toolkit/Cascade.h>
+#include <basic_toolkit/TMatrix.h>
 #include <deque>
 #include <list>
 #include <ostream>
 #include <istream>
-#include <ReferenceCounter.h>
+#include <basic_toolkit/ReferenceCounter.h>
 
 // Forward declarations
 
@@ -120,7 +120,7 @@ public:
 //----------------------------------------------------------------------------------------------
 
 template<typename T>
-class TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
+class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 {
 
  public:
@@ -323,7 +323,7 @@ EnvPtr<double>  TJetEnvironment<std::complex<double> >::makeRealJetEnvironment( 
 
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES
-#include <TJetEnvironment.tcc>
+#include <mxyzptlk/TJetEnvironment.tcc>
 #endif
 
 #endif // TJETENV_H

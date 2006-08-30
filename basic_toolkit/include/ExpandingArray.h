@@ -38,8 +38,10 @@
 #ifndef EXPANDINGARRAY_H
 #define EXPANDINGARRAY_H
 
-class ExpandingArray
-{
+#include <basic_toolkit/globaldefs.h>
+
+class DLLEXPORT ExpandingArray{
+
 public:
   ExpandingArray();
   ~ExpandingArray();

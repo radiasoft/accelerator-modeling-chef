@@ -50,8 +50,8 @@
 #include <config.h>
 #endif
 
-#include <TML.h>
-#include <MLPtr.h>
+#include <basic_toolkit/TML.h>
+#include <basic_toolkit/MLPtr.h>
 
 using namespace std;
 

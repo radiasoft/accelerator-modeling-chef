@@ -45,10 +45,10 @@
 #include <complex>
 #include <iomanip>
 #include <fstream>
-#include <iosetup.h>
+#include <basic_toolkit/iosetup.h>
 
-#include <utils.h> // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
-#include <GenericException.h>
+#include <basic_toolkit/utils.h> // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
+#include <basic_toolkit/GenericException.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;

@@ -64,10 +64,10 @@
  */
 
 
-#include <GenericException.h>
-#include <TuneAdjuster.h>
-#include <LattFuncSage.h>
-#include <iosetup.h>
+#include <basic_toolkit/GenericException.h>
+#include <physics_toolkit/TuneAdjuster.h>
+#include <physics_toolkit/LattFuncSage.h>
+#include <basic_toolkit/iosetup.h>
 
 using namespace std;
 

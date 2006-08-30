@@ -20,9 +20,9 @@
 ******             ostiguy@fnal.gov                         
 ******
 ****************************************************************************/
-#include <Particle.h>
-#include <ParticleBunch.h>
-#include <BBLens.h>
+#include <beamline/Particle.h>
+#include <beamline/ParticleBunch.h>
+#include <beamline/BBLens.h>
 
 #include <boost/python.hpp>
 

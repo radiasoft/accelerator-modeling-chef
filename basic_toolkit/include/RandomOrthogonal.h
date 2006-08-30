@@ -1,4 +1,3 @@
-
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -42,13 +41,15 @@
 #ifndef RANDOMORTHOGONAL_H
 #define RANDOMORTHOGONAL_H
 
+
 // --------------------------------------------------------------------------------------------
 // Special class RandomOrthogonal
 // --------------------------------------------------------------------------------------------
 
-#include <Matrix.h>
+#include <basic_toolkit/globaldefs.h>
+#include <basic_toolkit/Matrix.h>
 
-class RandomOrthogonal
+class DLLEXPORT RandomOrthogonal
 {
   public: 
     RandomOrthogonal( int /* dimension */ );

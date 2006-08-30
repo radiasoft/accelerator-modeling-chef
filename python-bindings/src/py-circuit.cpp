@@ -21,10 +21,10 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-
-#include <kick.h>
-
 #include <iostream>
+
+#include <beamline/kick.h>
+
 
 void wrap_kick () {
   

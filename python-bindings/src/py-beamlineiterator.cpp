@@ -22,8 +22,8 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 #include <boost/shared_ptr.hpp>
-#include <BeamlineIterator.h>
-#include <bmlnElmnt.h>
+#include <beamline/BeamlineIterator.h>
+#include <beamline/bmlnElmnt.h>
 
 using namespace boost::python;
 

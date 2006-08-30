@@ -22,7 +22,7 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 
-#include <rfcavity.h>
+#include <beamline/rfcavity.h>
 
 void wrap_rfcavity () {
   

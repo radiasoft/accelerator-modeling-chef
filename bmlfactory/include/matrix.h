@@ -36,7 +36,7 @@
 #define BMLFACTORY_MATRIX_H
 
 #include <glib.h>
-#include <fb_allocator.h>
+#include <bmlfactory/fb_allocator.h>
 
 #ifdef __cplusplus
 extern "C" {

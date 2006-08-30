@@ -21,7 +21,7 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-#include <sextupole.h>
+#include <beamline/sextupole.h>
 
 void wrap_sextupole () {
   

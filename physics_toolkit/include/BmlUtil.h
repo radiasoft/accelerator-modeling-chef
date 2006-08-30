@@ -10,6 +10,17 @@
 ******  File:      BmlUtil.h
 ******                                                                
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******  URA/FNAL reserves all rights.
+******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -41,9 +52,9 @@
  */
 
 
-#include <Matrix.h>
-#include <Mapping.h>
-#include <CovarianceSage.h>
+#include <basic_toolkit/Matrix.h>
+#include <mxyzptlk/Mapping.h>
+#include <physics_toolkit/CovarianceSage.h>
 
 
 class BmlUtil

@@ -57,8 +57,8 @@
 #ifndef TLIEOPERATOR_H
 #define TLIEOPERATOR_H
 
-#include <TJetEnvironment.h>
-#include <TJetVector.h>
+#include <mxyzptlk/TJetEnvironment.h>
+#include <mxyzptlk/TJetVector.h>
 
 // Forward declarations
 template<typename T>
@@ -75,7 +75,7 @@ TLieOperator<T> operator^( const TLieOperator<T>&, const TLieOperator<T>& );
 
 
 template<typename T>
-class TLieOperator : public TJetVector<T>
+class DLLEXPORT TLieOperator : public TJetVector<T>
 {
 
 public:
@@ -155,7 +155,7 @@ inline void TLieOperator<T>::SetComponent( int i, const TJet<T>& x )
 
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES
-#include <TLieOperator.tcc>
+#include <mxyzptlk/TLieOperator.tcc>
 #endif
 
 #endif // TLIEOPERATOR_H

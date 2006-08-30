@@ -40,9 +40,9 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <octupole.h>
-#include <drift.h>
+#include <basic_toolkit/iosetup.h>
+#include <beamline/octupole.h>
+#include <beamline/drift.h>
 
 using namespace std;
 using FNAL::pcerr;

@@ -54,16 +54,16 @@
 #include <config.h>
 #endif
 
-#include "RefRegVisitor.h"
-#include "PhysicsConstants.h"
-#include "CF_rbend.h"
-#include "CF_sbend.h"
-#include "rbend.h"
-#include "sbend.h"
-#include "Slot.h"
-#include "rfcavity.h"
-#include "Particle.h"
-#include "BeamlineIterator.h"
+#include <beamline/RefRegVisitor.h>
+#include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/CF_rbend.h>
+#include <beamline/CF_sbend.h>
+#include <beamline/rbend.h>
+#include <beamline/sbend.h>
+#include <beamline/Slot.h>
+#include <beamline/rfcavity.h>
+#include <beamline/Particle.h>
+#include <beamline/BeamlineIterator.h>
 
 // Static error codes
 

@@ -40,7 +40,7 @@
 #ifndef JACOBIANVISITOR_H
 #define JACOBIANVISITOR_H
 
-#include <particleVisitor.h>
+#include <physics_toolkit/particleVisitor.h>
 
 class beamline;
 

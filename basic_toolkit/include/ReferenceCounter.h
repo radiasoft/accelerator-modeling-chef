@@ -51,8 +51,10 @@
 #ifndef  REFERENCECOUNTER_H
 #define  REFERENCECOUNTER_H
 
-#include <iosetup.h>
 #include <iostream>
+
+#include <basic_toolkit/globaldefs.h>
+#include <basic_toolkit/iosetup.h>
 
 template<typename T>
 class TJL;
@@ -69,7 +71,7 @@ void intrusive_ptr_release(ReferenceCounter<T>* p);
 
 
 template<typename T>
-class ReferenceCounter {
+class DLLEXPORT ReferenceCounter {
 
   unsigned int _refcount; 
   T& toDerivedClass() { return static_cast<T&>(*this); }
@@ -103,12 +105,12 @@ class ReferenceCounter {
   
  protected:
 
-  // The intent of the definitions below is to avoid
+  // The intent of the definitions below is to
   // make sure that copying of the reference count
   // is only done in an explicit manner.
 
-  ReferenceCounter& operator=(const ReferenceCounter&) {
-    return*this;
+  ReferenceCounter& operator=( ReferenceCounter const&) {
+    return *this;
   }
 
   // Explicit destruction forbidden; 
@@ -118,7 +120,7 @@ class ReferenceCounter {
  private:
 
   // Copy contruction forbidden
-  ReferenceCounter(const  ReferenceCounter&); 
+  ReferenceCounter(ReferenceCounter const&); 
  
 }; 
 

@@ -41,7 +41,7 @@
 #include <config.h>
 #endif
 
-#include <thinpoles.h>
+#include <beamline/thinpoles.h>
 
 using namespace std;
 

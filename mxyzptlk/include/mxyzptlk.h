@@ -46,9 +46,9 @@
 #ifndef MXYZPTLK_H
 #define MXYZPTLK_H
 
-#include <Jet.h>
-#include <JetVector.h>
-#include <LieOperator.h>
-#include <Mapping.h>
+#include <mxyzptlk/Jet.h>
+#include <mxyzptlk/JetVector.h>
+#include <mxyzptlk/LieOperator.h>
+#include <mxyzptlk/Mapping.h>
 
 #endif // MXYZPTLK_H

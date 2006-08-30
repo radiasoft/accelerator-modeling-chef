@@ -40,10 +40,10 @@
 #include <config.h>
 #endif
 
-#include <PhysicsConstants.h>
-#include <Particle.h>
-#include <bmlnElmnt.h>
-#include <InsertionList.h>
+#include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/Particle.h>
+#include <beamline/bmlnElmnt.h>
+#include <beamline/InsertionList.h>
 
 using namespace std;
 

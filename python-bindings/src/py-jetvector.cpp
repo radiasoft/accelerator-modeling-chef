@@ -22,8 +22,8 @@
 ****************************************************************************/
 
 #include <boost/python.hpp>
-#include <JetVector.h>
-#include <VectorD.h>
+#include <mxyzptlk/JetVector.h>
+#include <basic_toolkit/VectorD.h>
 
 //------------------------------------------------------------------------------
 // Local auxiliary functions and wrapper classe(s)

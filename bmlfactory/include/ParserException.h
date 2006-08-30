@@ -36,6 +36,8 @@
 #include <string>
 #include <sstream>
 
+#include <basic_toolkit/globaldefs.h>
+
 class ParserException : public std::exception
 {
 

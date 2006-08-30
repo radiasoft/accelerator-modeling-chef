@@ -36,7 +36,7 @@
 
 #include <stddef.h>
 #include <glib.h>
-#include <fb_allocator.h>
+#include <bmlfactory/fb_allocator.h>
 
 
 #define VAR_OK             0

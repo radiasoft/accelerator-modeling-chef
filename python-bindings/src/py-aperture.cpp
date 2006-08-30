@@ -20,7 +20,7 @@
 ******             ostiguy@fnal.gov                         
 ******
 ****************************************************************************/
-#include <Aperture.h>
+#include <beamline/Aperture.h>
 #include <boost/python.hpp>
 
 void wrap_aperture () {

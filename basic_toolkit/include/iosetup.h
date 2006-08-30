@@ -30,7 +30,7 @@
 
 #ifdef __cplusplus
 
-#include <iosfwd>
+#include <ostream>
 
 namespace FNAL {
 

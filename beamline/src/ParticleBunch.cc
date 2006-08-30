@@ -40,11 +40,11 @@
 #include <config.h>
 #endif
 
-#include <ParticleBunch.h>
+#include <beamline/ParticleBunch.h>
 
-#include <iosetup.h>
-#include <math.h>
-#include <MathConstants.h>
+#include <basic_toolkit/iosetup.h>
+#include <cmath>
+#include <basic_toolkit/MathConstants.h>
 
 using namespace std;
 

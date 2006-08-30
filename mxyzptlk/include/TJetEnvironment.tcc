@@ -68,17 +68,18 @@
 #include <config.h>
 #endif
 
-#include <GenericException.h>
-#include <VectorD.h>   // Used by .approxEq
+#include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/VectorD.h>   // Used by .approxEq
 
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/utils.h>
 #include <iomanip>
-#include <iosetup.h>
 #include <vector>
 #include <deque>
 #include <boost/scoped_array.hpp>
-#include <JLPtr.h>
+#include <mxyzptlk/JLPtr.h>
 #include <iostream>
-#include <TMapping.h>
+#include <mxyzptlk/TMapping.h>
 
 using namespace std;
 
@@ -99,23 +100,6 @@ template<typename T>
 std::list<typename TJetEnvironment<T>::template ScratchArea<T>* >   TJetEnvironment<T>::_scratch_areas;  
 
 template<typename T> int                                            TJetEnvironment<T>::_tmp_maxWeight = 0;
-
-
-// -----------------------------------------------------------------------------------
-//      External routines
-// -----------------------------------------------------------------------------------
-
-extern bool nexcom( int, int, int* );  
-                                // Computes the next composition
-                                //  of an integer into a number of parts.
-                                //  Algorithm devised by Herbert Wilf.
-
-extern "C" {
- int bcfRec( int, int );        // Recursive evaluation of binomial
-                                //  coefficient.
- int nearestInteger( double );  // Returns the integer nearest to its
-                                //  double argument.
-}
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -1,7 +1,8 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include "Integrator.h"
+
+#include <integrator/Integrator.h>
 
 /// ******************************************
 ///   class Integrator

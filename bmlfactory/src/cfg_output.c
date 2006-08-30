@@ -53,14 +53,14 @@
 
 extern void bmlfactory_exit();
 
-#include <beamel_table.h>
-#include <bml_table.h>
-#include <comment_arr.h>
-#include <const_table.h>
-#include <var_table.h>
-#include <expression.h>
-#include <pair.h>
-#include <cfg_output.h>
+#include <bmlfactory/beamel_table.h>
+#include <bmlfactory/bml_table.h>
+#include <bmlfactory/comment_arr.h>
+#include <bmlfactory/const_table.h>
+#include <bmlfactory/var_table.h>
+#include <bmlfactory/expression.h>
+#include <bmlfactory/pair.h>
+#include <bmlfactory/cfg_output.h>
 
 
    /*

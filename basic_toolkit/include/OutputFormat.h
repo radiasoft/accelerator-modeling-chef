@@ -34,15 +34,16 @@
 **************************************************************************
 *************************************************************************/
 
-
 #ifndef OUTPUTFORMAT_H
 #define OUTPUTFORMAT_H
+
+#include <basic_toolkit/globaldefs.h>
 
 // Stream-IO flags (could be appended if necessary
 // ??? Note: These names are a little too global and
 // ??? should be changed.
 
-class OutputFormat{
+class DLLEXPORT OutputFormat{
 public:
   OutputFormat( const char* = 0 );
   OutputFormat( const OutputFormat& );

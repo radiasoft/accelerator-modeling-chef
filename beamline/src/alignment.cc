@@ -42,9 +42,9 @@
 
 #include <iomanip>
 
-#include <bmlnElmnt.h>
-#include <VectorD.h>
-#include <Particle.h>
+#include <beamline/bmlnElmnt.h>
+#include <basic_toolkit/VectorD.h>
+#include <beamline/Particle.h>
 
 using namespace std;
 

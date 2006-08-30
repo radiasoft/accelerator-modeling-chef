@@ -22,9 +22,9 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 
-#include <Particle.h>
-#include <VectorD.h>
-#include <Mapping.h>
+#include <beamline/Particle.h>
+#include <basic_toolkit/VectorD.h>
+#include <mxyzptlk/Mapping.h>
 
 using namespace boost::python;
 

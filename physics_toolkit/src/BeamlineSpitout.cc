@@ -39,8 +39,8 @@
 #endif
 
 
-#include <bmlnElmnt.h>
-#include <BeamlineIterator.h>
+#include <beamline/bmlnElmnt.h>
+#include <beamline/BeamlineIterator.h>
 
 using namespace std;
 

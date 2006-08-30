@@ -37,14 +37,15 @@
 #ifndef BARNACLE_H
 #define BARNACLE_H
 
-#include <dlist.h>
+#include <basic_toolkit/globaldefs.h>
+#include <basic_toolkit/dlist.h>
 
-struct BarnacleData {
+struct DLLEXPORT BarnacleData {
  BarnacleData() {};
  virtual ~BarnacleData() {};
 };
 
-class Barnacle {
+class DLLEXPORT Barnacle {
 private:
  char* id;
  friend class BarnacleList;
@@ -54,29 +55,23 @@ public:
  virtual ~Barnacle();
  BarnacleData* info;
 
-#ifdef OBJECT_DEBUG
-  static int objectCount;
-#endif
 };
 
-class BarnacleList {
-public:
- BarnacleList();
- ~BarnacleList();
- void            append    ( const Barnacle* );
- void            insert    ( const Barnacle* );
- void            append    ( const char*, const BarnacleData* );
- void            insert    ( const char*, const BarnacleData* );
- char            eraseFirst( const char*     /* identifier */ );
- char            eraseAll  ( const char* = 0 /* identifier */ );
- BarnacleData*   find      ( const char*     /* identifier */,
-                                   int   = 1 /* instance   */ ) const;
- Barnacle*       lift      ( const char*     /* identifier */,
-                                   int   = 1 /* instance   */ );
+class DLLEXPORT BarnacleList {
 
-#ifdef OBJECT_DEBUG
-  static int objectCount;
-#endif
+public:
+  BarnacleList();
+ ~BarnacleList();
+  void            append    ( const Barnacle* );
+  void            insert    ( const Barnacle* );
+  void            append    ( const char*, const BarnacleData* );
+  void            insert    ( const char*, const BarnacleData* );
+  char            eraseFirst( const char*     /* identifier */ );
+  char            eraseAll  ( const char* = 0 /* identifier */ );
+  BarnacleData*   find      ( const char*     /* identifier */,
+                                   int   = 1 /* instance   */ ) const;
+  Barnacle*       lift      ( const char*     /* identifier */,
+                                   int   = 1 /* instance   */ );
 
 private:
  dlist theList;

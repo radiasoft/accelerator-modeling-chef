@@ -55,10 +55,10 @@
 
 #include <iomanip>
 
-#include <iosetup.h>
-#include <EdwardsTengSage.h>
-#include <Particle.h>
-#include <BeamlineIterator.h>
+#include <basic_toolkit/iosetup.h>
+#include <physics_toolkit/EdwardsTengSage.h>
+#include <beamline/Particle.h>
+#include <beamline/BeamlineIterator.h>
 
 using namespace std;
 using FNAL::pcerr;

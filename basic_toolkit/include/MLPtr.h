@@ -34,13 +34,14 @@
 
 #include <complex>
 #include <boost/intrusive_ptr.hpp>
+#include <basic_toolkit/globaldefs.h>
 
 template <typename T>
 class TML;
 
 
 template<typename T>
-class MLPtr: public boost::intrusive_ptr<TML<T> > {
+class DLLEXPORT MLPtr: public boost::intrusive_ptr<TML<T> > {
  
  public: 
 

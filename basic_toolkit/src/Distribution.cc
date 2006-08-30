@@ -45,8 +45,8 @@
 #include <stdlib.h>
 #include <iostream>
 
-#include <Distribution.h>
-#include <VectorD.h>
+#include <basic_toolkit/Distribution.h>
+#include <basic_toolkit/VectorD.h>
 
 #ifdef WIN32
 

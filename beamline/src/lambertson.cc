@@ -40,7 +40,7 @@
 
 
 #include <iomanip>
-#include <lambertson.h>
+#include <beamline/lambertson.h>
 
 using namespace std;
 

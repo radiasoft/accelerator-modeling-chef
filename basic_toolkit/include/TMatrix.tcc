@@ -46,13 +46,13 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include <MathConstants.h>
-#include <PhysicsConstants.h>
-#include <TML.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/MathConstants.h>
+#include <basic_toolkit/PhysicsConstants.h>
+#include <basic_toolkit/TML.h>
 
 #ifdef WIN32
 extern long   srand48(long int);

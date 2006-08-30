@@ -35,7 +35,8 @@
 #ifndef AZIMUTHVISITOR_H
 #define AZIMUTHVISITOR_H
 
-#include <BmlVisitor.h>
+#include <basic_toolkit/globaldefs.h>
+#include <beamline/BmlVisitor.h>
 #include <string>
 
 class Particle;

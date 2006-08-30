@@ -39,7 +39,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <fb_allocator.h>
+#include <bmlfactory/fb_allocator.h>
 
 const size_t       esize = 71;
 const size_t       align  = 8;

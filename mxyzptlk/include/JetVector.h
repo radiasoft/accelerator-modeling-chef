@@ -44,8 +44,8 @@
 #define JETVECTOR_H
 
 #include <complex>
-#include <Jet.h>
-#include <TJetVector.h>
+#include <mxyzptlk/Jet.h>
+#include <mxyzptlk/TJetVector.h>
 
 typedef TJetVector<double>                JetVector;
 typedef TJetVector<std::complex<double> > JetCVector;

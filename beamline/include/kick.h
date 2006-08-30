@@ -40,11 +40,11 @@
 #ifndef KICK_H
 #define KICK_H
 
-#ifndef BMLNELMNT_H
-#include "bmlnElmnt.h"
-#endif
+#include <basic_toolkit/globaldefs.h>
+#include <beamline/bmlnElmnt.h>
 
-class hkick : public bmlnElmnt
+
+class DLLEXPORT hkick : public bmlnElmnt
 {
 public:
   hkick();
@@ -74,7 +74,7 @@ public:
 };
 
 
-class vkick : public bmlnElmnt
+class DLLEXPORT vkick : public bmlnElmnt
 {
 public:
   vkick();                  // Assumes zero kick
@@ -103,7 +103,7 @@ public:
 };
 
 
-class kick : public bmlnElmnt {
+class DLLEXPORT kick : public bmlnElmnt {
 private:
         double horizontalKick;
         double verticalKick;

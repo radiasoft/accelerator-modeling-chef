@@ -29,14 +29,14 @@
 #endif
 
 #include <complex>
-#include <EnvPtr.h>
-#include <TJetEnvironment.h>
-#include <GenericException.h>
-#include <iosetup.h>
+#include <mxyzptlk/EnvPtr.h>
+#include <mxyzptlk/TJetEnvironment.h>
+#include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/iosetup.h>
 #include <boost/scoped_array.hpp>
 
-#include <TJLterm.h>
-#include <TJL.h>
+#include <mxyzptlk/TJLterm.h>
+#include <mxyzptlk/TJL.h>
 
 using FNAL::pcout;
 using FNAL::pcerr;

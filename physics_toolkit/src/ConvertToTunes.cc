@@ -57,11 +57,11 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <LieOperator.h>
-#include <Mapping.h>
-#include <Matrix.h>
-#include <MathConstants.h>
+#include <basic_toolkit/iosetup.h>
+#include <mxyzptlk/LieOperator.h>
+#include <mxyzptlk/Mapping.h>
+#include <basic_toolkit/Matrix.h>
+#include <basic_toolkit/MathConstants.h>
 #include <iomanip>
 
 using namespace std;

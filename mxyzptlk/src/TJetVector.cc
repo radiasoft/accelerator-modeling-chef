@@ -45,12 +45,12 @@
 
 #include <iosfwd>
 #include <complex>
-#include <iosetup.h>
-#include <GenericException.h>
-#include <MathConstants.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/MathConstants.h>
 
-#include <TJetEnvironment.h>
-#include <TJetVector.h>
+#include <mxyzptlk/TJetEnvironment.h>
+#include <mxyzptlk/TJetVector.h>
 
 typedef TJet<std::complex<double> > JetC;
 

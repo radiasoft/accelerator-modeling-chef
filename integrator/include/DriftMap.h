@@ -1,7 +1,7 @@
 #ifndef DRIFTMAP_H
 #define DRIFTMAP_H
 
-#include "ODE.h"
+#include <integrator/ODE.h>
 
 class DriftMap : public ODE {
 

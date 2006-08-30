@@ -41,8 +41,8 @@
 #include <config.h>
 #endif
 
-#include <sextupole.h>
-#include <drift.h>
+#include <beamline/sextupole.h>
+#include <beamline/drift.h>
 
 using namespace std;
 

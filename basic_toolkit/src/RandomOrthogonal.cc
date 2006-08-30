@@ -35,8 +35,8 @@
 **************************************************************************
 *************************************************************************/
 
-#include <RandomOrthogonal.h>
-#include <MathConstants.h>
+#include <basic_toolkit/RandomOrthogonal.h>
+#include <basic_toolkit/MathConstants.h>
 
 RandomOrthogonal::RandomOrthogonal( int n )
 : _dim(n), _passes(1)

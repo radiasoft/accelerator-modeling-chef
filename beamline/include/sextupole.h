@@ -39,10 +39,10 @@
 #ifndef SEXTUPOLE_H
 #define SEXTUPOLE_H
 
-#include <bmlnElmnt.h>
-#include <Jet.h>
+#include <basic_toolkit/globaldefs.h>
+#include <beamline/bmlnElmnt.h>
 
-class sextupole : public bmlnElmnt
+class DLLEXPORT sextupole : public bmlnElmnt
 {
 public:
   sextupole();
@@ -78,7 +78,7 @@ public:
 
 
 
-class thinSextupole : public bmlnElmnt
+class DLLEXPORT thinSextupole : public bmlnElmnt
 {
 public:
   thinSextupole();

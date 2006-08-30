@@ -1,7 +1,7 @@
 #ifndef RIEMANNRULE_H
 #define RIEMANNRULE_H
 
-#include "AbsIntegrator.h"
+#include <integrator/AbsIntegrator.h>
 
 
 class Riemann : public AbsIntegrator<double>::Method

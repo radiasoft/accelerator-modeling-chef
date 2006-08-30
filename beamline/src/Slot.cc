@@ -41,11 +41,11 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <marker.h>
-#include <Slot.h>
-#include <Particle.h>
-#include <ParticleBunch.h>
+#include <basic_toolkit/iosetup.h>
+#include <beamline/marker.h>
+#include <beamline/Slot.h>
+#include <beamline/Particle.h>
+#include <beamline/ParticleBunch.h>
 
 using namespace std;
 

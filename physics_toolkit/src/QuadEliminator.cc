@@ -54,10 +54,10 @@
 #include <iostream>
 #include <string>
 
-#include "GenericException.h"
-#include "QuadEliminator.h"
-#include "quadrupole.h"
-#include "BeamlineIterator.h"
+#include <basic_toolkit/GenericException.h>
+#include <physics_toolkit/QuadEliminator.h>
+#include <beamline/quadrupole.h>
+#include <beamline/BeamlineIterator.h>
 
 using namespace std;
 

@@ -45,9 +45,9 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <TML.h>
 #include <algorithm>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/TML.h>
 
 using namespace std;
 
@@ -164,7 +164,7 @@ TML<T>::TML(int rows, int columns, const T* values): _nrows(rows), _ncols(column
 
 
 template<typename T>
-TML<T>::TML( TML<T> const& X ):  _nrows(X._nrows), _ncols(X._ncols)
+TML<T>::TML( TML<T> const& X ): ReferenceCounter<TML<T> >(), _nrows(X._nrows), _ncols(X._ncols)
 {
 
   _mdata = new T* [_nrows];
@@ -747,7 +747,6 @@ void TML<T>::_switch_rows(int row1, int row2)
 template<typename T>
 MLPtr<T> TML<T>::_scale() const 
 {
-  T temp;
   if (_nrows <= 0 || _ncols <= 0) {
     throw( GenericMatrixException( _nrows, _ncols
                    , "TMatrix<T> TMatrix<T>::_scale()"

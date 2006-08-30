@@ -23,7 +23,7 @@
 
 #include <boost/python.hpp>
 #include <boost/shared_array.hpp>
-#include <VectorD.h>
+#include <basic_toolkit/VectorD.h>
 
 using namespace boost::python;
 

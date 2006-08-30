@@ -78,11 +78,11 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <GenericException.h>
-#include <beamline.h>
-#include <CF_rbend.h>
-#include <Slot.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
+#include <beamline/beamline.h>
+#include <beamline/CF_rbend.h>
+#include <beamline/Slot.h>
 
 using namespace std;
 using FNAL::pcout;

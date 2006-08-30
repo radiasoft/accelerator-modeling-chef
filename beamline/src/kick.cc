@@ -40,7 +40,7 @@
 
 
 #include <iomanip>
-#include <kick.h>
+#include <beamline/kick.h>
 
 using namespace std;
 

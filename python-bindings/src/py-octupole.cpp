@@ -22,7 +22,7 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 
-#include <octupole.h>
+#include <beamline/octupole.h>
 
 void wrap_octupole () {
   

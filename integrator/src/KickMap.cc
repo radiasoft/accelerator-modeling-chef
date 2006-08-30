@@ -2,8 +2,8 @@
 #include <config.h>
 #endif
 
-#include <KickMap.h>
-#include <iosetup.h>
+#include <integrator/KickMap.h>
+#include <basic_toolkit/iosetup.h>
 
 using FNAL::pcout;
 using FNAL::pcerr;

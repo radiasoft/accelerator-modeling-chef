@@ -21,7 +21,7 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-#include <septum.h>
+#include <beamline/septum.h>
 
 void wrap_septum () {
   

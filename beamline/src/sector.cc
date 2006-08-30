@@ -41,8 +41,8 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <sector.h>
+#include <basic_toolkit/iosetup.h>
+#include <beamline/sector.h>
 
 using namespace std;
 using FNAL::pcerr;

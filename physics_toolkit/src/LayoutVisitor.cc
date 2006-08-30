@@ -56,16 +56,16 @@
  */
 
 
-#include <iosetup.h>
-#include <LayoutVisitor.h>
-#include <bmlnElmnt.h>
-#include <quadrupole.h>
-#include <rbend.h>
-#include <sbend.h>
-#include <CF_rbend.h>
-#include <CF_sbend.h>
-#include <sextupole.h>
-#include <sector.h>
+#include <basic_toolkit/iosetup.h>
+#include <physics_toolkit/LayoutVisitor.h>
+#include <beamline/bmlnElmnt.h>
+#include <beamline/quadrupole.h>
+#include <beamline/rbend.h>
+#include <beamline/sbend.h>
+#include <beamline/CF_rbend.h>
+#include <beamline/CF_sbend.h>
+#include <beamline/sextupole.h>
+#include <beamline/sector.h>
 
 
 using namespace std;

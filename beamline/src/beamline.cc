@@ -46,13 +46,13 @@
 #endif
 #include <string>
 
-#include <iosetup.h>
-#include <bmlnElmnt.h>
-#include <Slot.h>
-#include <sector.h>
-#include <BeamlineIterator.h>
-#include <InsertionList.h>
-#include <FramePusher.h>
+#include <basic_toolkit/iosetup.h>
+#include <beamline/bmlnElmnt.h>
+#include <beamline/Slot.h>
+#include <beamline/sector.h>
+#include <beamline/BeamlineIterator.h>
+#include <beamline/InsertionList.h>
+#include <physics_toolkit/FramePusher.h>
 #include <iomanip>
 
 using namespace std;

@@ -38,7 +38,7 @@
 *************************************************************************/
 
 #include <iostream>
-#include <BeamlineExpressionTree.h>
+#include <beamline/BeamlineExpressionTree.h>
 
 using namespace std;
 

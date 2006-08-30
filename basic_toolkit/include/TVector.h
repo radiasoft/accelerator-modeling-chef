@@ -45,7 +45,7 @@
 #include <string>
 
 #include <math.h>
-#include <OutputFormat.h>
+#include <basic_toolkit/OutputFormat.h>
 
 template<typename T> 
 class TMatrix;
@@ -70,7 +70,7 @@ TVector<T> operator*( const TMatrix<T>&, const TVector<T>& );
 
 
 template<typename T>
-class TVector {
+class DLLEXPORT TVector {
 
 private:
   int           _dim;
@@ -197,7 +197,7 @@ bool TVector<std::complex<double> >::IsUnit() const;
 
 
 #ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES
-#include <TVector.tcc>
+#include <basic_toolkit/TVector.tcc>
 #endif
 
 #endif  //TVECTOR_H

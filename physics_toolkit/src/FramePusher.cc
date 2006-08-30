@@ -53,13 +53,13 @@
  */
 
 
-#include "FramePusher.h"
-#include "bmlnElmnt.h"
-#include "sbend.h"
-#include "CF_sbend.h"
-#include "rbend.h"
-#include "CF_rbend.h"
-#include "Slot.h"
+#include <physics_toolkit/FramePusher.h>
+#include <beamline/bmlnElmnt.h>
+#include <beamline/sbend.h>
+#include <beamline/CF_sbend.h>
+#include <beamline/rbend.h>
+#include <beamline/CF_rbend.h>
+#include <beamline/Slot.h>
 
 // Static error codes
 

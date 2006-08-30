@@ -55,11 +55,12 @@
 #ifndef TMAPPING_H
 #define TMAPPING_H
 
-#include <TJet.h>
-#include <TJetVector.h>
+#include <basic_toolkit/globaldefs.h>
+#include <mxyzptlk/TJet.h>
+#include <mxyzptlk/TJetVector.h>
 
 template <typename T>
-class TMapping: public TJetVector<T> {
+class DLLEXPORT TMapping: public TJetVector<T> {
 
  template <typename U>
  friend class TMapping;
@@ -131,7 +132,7 @@ inline TMapping<T>& TMapping<T>::operator=( const TMapping<T>& x )
 }
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES 
-#include <TMapping.tcc>
+#include <mxyzptlk/TMapping.tcc>
 #endif
 
 #endif // TMAPPING_H

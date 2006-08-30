@@ -29,6 +29,7 @@ PYTHON_INC      =  $${PYTHON_INSTALL_TOP_DIR}/include/python$${PYTHON_VERSION}
 QUTEXR_INC      =  $${QUTEXR_INSTALL_TOP_DIR}/include/qutexr
 QUTEXR_INC      += $${QUTEXR_INC}/include
 
+INCLUDEPATH     += $${FNAL_INSTALL_TOP_DIR}/include
 INCLUDEPATH     += $${FNAL_INSTALL_TOP_DIR}/include/beamline
 INCLUDEPATH     += $${FNAL_INSTALL_TOP_DIR}/include/bmlfactory
 INCLUDEPATH     += $${FNAL_INSTALL_TOP_DIR}/include/mxyzptlk

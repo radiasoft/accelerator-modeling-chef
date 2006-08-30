@@ -40,8 +40,8 @@
 #endif
 
 
-#include <iosetup.h>
-#include <BipolarCircuit.h>
+#include <basic_toolkit/iosetup.h>
+#include <beamline/BipolarCircuit.h>
 
 using namespace std;
 

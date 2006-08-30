@@ -42,7 +42,7 @@
 #ifndef JETWRITER_H
 #define JETWRITER_H
 
-#include <TJetWriter.h>
+#include <physics_toolkit/TJetWriter.h>
 
 typedef TJetWriter<double>                 JetWriter;
 typedef TJetWriter<std::complex<double> >  JetCWriter;

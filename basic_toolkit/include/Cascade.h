@@ -35,6 +35,8 @@
 
 #ifndef CASCADE_H
 #define CASCADE_H
+
+#include <basic_toolkit/globaldefs.h>
  
 class IntArray;
 class Cascade;
@@ -55,15 +57,14 @@ class Switch
     int      _w;
     int      _index;
     IntArray _xpt;
-    // bool     _terminator;
     Switch** _arrow;
 
-    void _clean();
-    void _finishConstructor();
+    DLLLOCAL void _clean();
+    DLLLOCAL void _finishConstructor();
 };
 
 
-class Cascade
+class DLLEXPORT Cascade
 {
   public:
     Cascade( int w = 2, int n = 2, bool v = false );

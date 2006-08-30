@@ -1,7 +1,7 @@
 #ifndef RUNGEKUTTA_H
 #define RUNGEKUTTA_H
 
-#include "Integrator.h"
+#include <integrator/Integrator.h>
 
 class RungeKutta : public Integrator {
 

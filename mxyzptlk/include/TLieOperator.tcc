@@ -59,27 +59,9 @@
 
 #include <stdlib.h>
 
-#include <iosetup.h>
-#include <GenericException.h>
-
-// ================================================================
-//      External routines
-//
-
-extern bool nexcom( int, int, int* );  
-                                // Computes the next composition
-                                //  of an integer into a number of parts.
-                                //  Algorithm devised by Herbert Wilf.
-
-extern "C" {
- int bcfRec( int, int );        // Recursive evaluation of binomial
-                                //  coefficient.
- int nearestInteger( double );  // Returns the integer nearest to its
-                                //  double argument.
-}
-
-
-// ================================================================
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/utils.h>
+#include <basic_toolkit/GenericException.h>
 
 #ifndef MX_SMALL
 #define MX_SMALL    1.0e-12 // Used by Jet::addTerm to decide 

@@ -22,17 +22,12 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 
-#include <bmlnElmnt.h>
-#include <beamline.h>
-#include <Particle.h>
+#include <beamline/bmlnElmnt.h>
+#include <beamline/beamline.h>
+#include <beamline/Particle.h>
+#include <basic_toolkit/Matrix.h>
+#include <physics_toolkit/BeamlineContext.h>
 
-#ifdef FNAL_FIRST_ORDER
-#include <Matrix.h>
-#else
-#include <TMatrix.h>
-#endif
-
-#include "BeamlineContext.h"
 #include <iostream>
 
 #define BOOST_PYTHON_STATIC_MODULE
