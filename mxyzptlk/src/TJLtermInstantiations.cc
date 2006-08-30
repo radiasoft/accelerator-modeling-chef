@@ -32,12 +32,12 @@
 #ifdef MXYZPTLK_EXPLICIT_TEMPLATES 
 
 #include <complex>
-#include <ReferenceCounter.h>
-#include <TJetEnvironment.h>
-#include <TJLterm.h>
-#include <TJLterm.tcc>
-#include <FastPODAllocator.h>
-#include <FastAllocator.h>
+#include <basic_toolkit/ReferenceCounter.h>
+#include <mxyzptlk/TJetEnvironment.h>
+#include <mxyzptlk/TJLterm.h>
+#include <mxyzptlk/TJLterm.tcc>
+#include <gms/FastPODAllocator.h>
+#include <gms/FastAllocator.h>
 #include <istream>
 
 

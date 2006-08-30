@@ -37,8 +37,12 @@
 **************************************************************************
 *************************************************************************/
 
-#include <TVector.h>
+#include <basic_toolkit/TVector.h>
 
+
+#ifdef CHECKOUT
+#undef CHECKOUT
+#endif
 
 #define CHECKOUT(type, test, fcn, message)                       \
   if( test ) {                                           \

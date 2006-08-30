@@ -49,9 +49,9 @@
 #define madparser_h
 
 #include <glib.h>
-#include <beam_element.h>
-#include <beam_line.h>
-#include <madparser_types.h>
+#include <bmlfactory/beam_element.h>
+#include <bmlfactory/beam_line.h>
+#include <bmlfactory/madparser_types.h>
 
 #ifdef __cplusplus
 extern "C" {

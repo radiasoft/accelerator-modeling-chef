@@ -42,7 +42,7 @@
 #include <config.h>
 #endif
 
-#include <marker.h>
+#include <beamline/marker.h>
 
 using namespace std;
 

@@ -32,20 +32,20 @@
 #ifdef MXYZPTLK_EXPLICIT_TEMPLATES 
 
 #include <complex>
-#include <ReferenceCounter.h>
-#include <TJLterm.h>
-#include <TJet.h>
-#include <TJet.tcc>  
-#include <TJetEnvironment.h>
-#include <TJetVector.h>
-#include <TJetVector.tcc>
-#include <TMapping.h>
-#include <TMapping.tcc>
-#include <TLieOperator.h>
-#include <TLieOperator.tcc>
+#include <basic_toolkit/ReferenceCounter.h>
+#include <mxyzptlk/TJLterm.h>
+#include <mxyzptlk/TJet.h>
+#include <mxyzptlk/TJet.tcc>  
+#include <mxyzptlk/TJetEnvironment.h>
+#include <mxyzptlk/TJetVector.h>
+#include <mxyzptlk/TJetVector.tcc>
+#include <mxyzptlk/TMapping.h>
+#include <mxyzptlk/TMapping.tcc>
+#include <mxyzptlk/TLieOperator.h>
+#include <mxyzptlk/TLieOperator.tcc>
 
-#include <FastPODAllocator.h>
-#include <FastAllocator.h>
+#include <gms/FastPODAllocator.h>
+#include <gms/FastAllocator.h>
 #include <boost/functional/hash/hash.hpp>
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>

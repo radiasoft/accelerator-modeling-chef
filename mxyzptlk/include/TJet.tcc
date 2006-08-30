@@ -63,10 +63,10 @@
 #include <iomanip>
 #include <fstream>
 
-#include <utils.h> // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
-#include <iosetup.h>
-#include <GenericException.h>
-#include <MathConstants.h>
+#include <basic_toolkit/utils.h> // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/MathConstants.h>
 #include <boost/weak_ptr.hpp>
 #include <boost/scoped_array.hpp>
 
@@ -117,9 +117,8 @@ TJet<T>::TJet( T x, EnvPtr<T> const& pje ): _jl(  tjl_t::makeTJL( pje,x ) ){}
 
 
 template<typename T>
-TJet<T>::TJet( TJet<T> const& x )
-: _jl( x._jl )  // NOTE: ref count is incremented when JLPtr is instantiated. 
-{}
+TJet<T>::TJet( TJet<T> const& x ): gms::FastAllocator(), _jl( x._jl ) {}
+// NOTE: ref count is incremented when JLPtr is instantiated. 
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

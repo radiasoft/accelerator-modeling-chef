@@ -38,10 +38,11 @@
 #ifndef SROT_H
 #define SROT_H
 
-#include <bmlnElmnt.h>
+#include <basic_toolkit/globaldefs.h>
+#include <beamline/bmlnElmnt.h>
 
 
-class srot : public bmlnElmnt
+class DLLEXPORT srot : public bmlnElmnt
 {
 public:
   srot();

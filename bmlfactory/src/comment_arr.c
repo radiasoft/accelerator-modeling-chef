@@ -51,8 +51,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <fb_allocator.h>
-#include <comment_arr.h>
+#include <bmlfactory/fb_allocator.h>
+#include <bmlfactory/comment_arr.h>
 
 
    /*

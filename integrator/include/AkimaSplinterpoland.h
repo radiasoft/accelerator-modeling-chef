@@ -1,7 +1,7 @@
 #ifndef AKIMASPLINTERPOLAND_H
 #define AKIMASPLINTERPOLAND_H
 
-#include "AbsIntegrator.h"
+#include <integrator/AbsIntegrator.h>
 
 #include <vector>
 

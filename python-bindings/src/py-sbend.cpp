@@ -21,7 +21,7 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-#include <sbend.h>
+#include <beamline/sbend.h>
 #include <iostream>
 
 

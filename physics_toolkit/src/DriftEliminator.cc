@@ -56,14 +56,14 @@
 #include <iostream>
 #include <string>
 
-#include <DriftEliminator.h>
+#include <physics_toolkit/DriftEliminator.h>
 
-#include <GenericException.h>
-#include <drift.h>
-#include <marker.h>
-#include <monitor.h>
-#include <Slot.h>
-#include <BeamlineIterator.h>
+#include <basic_toolkit/GenericException.h>
+#include <beamline/drift.h>
+#include <beamline/marker.h>
+#include <beamline/monitor.h>
+#include <beamline/Slot.h>
+#include <beamline/BeamlineIterator.h>
 
 using namespace std;
 

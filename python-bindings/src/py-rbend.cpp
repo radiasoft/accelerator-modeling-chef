@@ -23,8 +23,8 @@
 
 #include <boost/python.hpp>
 
-#include <rbend.h>
-#include <Particle.h>
+#include <beamline/rbend.h>
+#include <beamline/Particle.h>
 
 void wrap_rbend () {
   

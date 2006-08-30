@@ -37,8 +37,8 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
 #include <iostream>
+#include <basic_toolkit/iosetup.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;

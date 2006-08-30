@@ -39,35 +39,24 @@
 **************************************************************************
 *************************************************************************/
 
-
 #ifndef DLIST_HXX
 #define DLIST_HXX
 
-#include <FastAllocator.h>
-#include <FastPODAllocator.h>
+#include <basic_toolkit/globaldefs.h>
+
+#include <gms/FastAllocator.h>
+#include <gms/FastPODAllocator.h>
 
 typedef char (*DLIST_CRITFUNC)( void* );
 
-class dlink : public gms::FastPODAllocator<dlink> {
+class DLLLOCAL dlink : public gms::FastPODAllocator<dlink> {
 private:
   dlink* next;
   dlink* prev;
   void* e;
 public:
-#ifdef OBJECT_DEBUG
-  static int objectCount;
-#endif
-
-  dlink( void* a, dlink* p, dlink* q ):  next(q), prev(p), e(a) { 
-#ifdef OBJECT_DEBUG
-  objectCount++;
-#endif
-  }
-
-  ~dlink () {
-#ifdef OBJECT_DEBUG
-  objectCount--;
-#endif
+  dlink( void* a, dlink* p, dlink* q ):  next(q), prev(p), e(a) { }
+ ~dlink () {
   }
 
   void putAbove( dlink* );
@@ -86,43 +75,25 @@ public:
 
 };
 
-class dlist: public gms::FastAllocator {
+class DLLEXPORT dlist: public gms::FastAllocator {
 
 private:
   dlink* last;
   char   owner;
 
 public:
-#ifdef OBJECT_DEBUG
-  static int objectCount;
-#endif
-
-  dlist( char x = 0 ) { 
-    last = 0; 
-    owner = x; 
-#ifdef OBJECT_DEBUG
-  objectCount++;
-#endif
-  }
+  dlist( char x = 0 ): last(0), owner(x) {} 
 
   dlist( void* a, char x = 0   ) { 
     last = new dlink(a,0,0); 
     last->prev = last; 
     last->next = last; 
     owner = x; 
-#ifdef OBJECT_DEBUG
-  objectCount++;
-#endif
   }
 
   dlist( const dlist& );
 
-  virtual ~dlist() { 
-    clear();       
-#ifdef OBJECT_DEBUG
-  objectCount--;
-#endif
-  }
+  virtual ~dlist() { clear();}
 
   bool contains( const void* ) const;
 
@@ -184,21 +155,14 @@ public:
   friend class dlist_reverseIterator;
 } ;
 
-class dlist_iterator {
+class DLLEXPORT dlist_iterator {
   dlink* ce;
   dlist* cs;
 
 public:
-#ifdef OBJECT_DEBUG
-  static int objectCount;
-#endif
-
   dlist_iterator( const dlist& s ) { 
     cs = (dlist*) &s; 
     ce = cs->last; 
-    #ifdef OBJECT_DEBUG
-    objectCount++;
-    #endif
   }
 
   // A copy constructor. Use with caution.
@@ -207,11 +171,7 @@ public:
     cs = x.cs;
   }
 
-  ~dlist_iterator () {
-    #ifdef OBJECT_DEBUG
-    objectCount--;
-    #endif
-  }
+  ~dlist_iterator () { }
 
   void* operator()();
   void* current();  
@@ -222,7 +182,7 @@ public:
   bool  isFinished() { return ( 0 == ce ); }
 } ;
 
-class dlist_looper {
+class DLLEXPORT dlist_looper {
   dlink* ce;
   dlist* cs;
 public:
@@ -233,7 +193,7 @@ public:
   void Reset() { ce = cs->last; }
 } ;
 
-class dlist_traversor {
+class DLLEXPORT dlist_traversor {
   dlink* ce;
   dlist* cs;
 public:
@@ -246,7 +206,7 @@ public:
   void Terminate() { ce = 0; }
 } ;
 
-class dlist_reverseIterator {
+class DLLEXPORT dlist_reverseIterator {
   dlink* ce;
   dlist* cs;
 public:

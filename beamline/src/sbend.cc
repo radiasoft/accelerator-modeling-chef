@@ -42,9 +42,9 @@
 
 #include <iomanip>
 
-#include <iosetup.h>
-#include <sbend.h>
-#include <Particle.h>
+#include <basic_toolkit/iosetup.h>
+#include <beamline/sbend.h>
+#include <beamline/Particle.h>
 
 using namespace std;
 using FNAL::pcerr;

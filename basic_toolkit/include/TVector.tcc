@@ -45,8 +45,9 @@
 
 #include <stdlib.h>
 #include <string.h>   // for memcpy()
-#include <VectorD.h>
-#include <Matrix.h>
+
+#include <basic_toolkit/VectorD.h>
+#include <basic_toolkit/Matrix.h>
 
 #include <iomanip>
  

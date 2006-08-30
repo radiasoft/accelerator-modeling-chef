@@ -36,10 +36,12 @@
 #ifndef MENU_HXX_LPJM
 #define MENU_HXX_LPJM
 
+#include <basic_toolkit/globaldefs.h>
+
 typedef void (*MENUFUNC)();
 #define MAXMENUCHOICES 10
 
-class ttMenu {
+class DLLEXPORT ttMenu {
   int numChoices;
   MENUFUNC menuFunction[ MAXMENUCHOICES ];
   char* menuMessage[ MAXMENUCHOICES ];

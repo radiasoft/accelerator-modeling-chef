@@ -41,8 +41,8 @@
 #include <config.h>
 #endif
 
-#include <Particle.h>
-#include <PhysicsConstants.h>
+#include <beamline/Particle.h>
+#include <basic_toolkit/PhysicsConstants.h>
 
 // Error flags for _tag manipulation functions.
 const short Particle::BF_OK         = 0;

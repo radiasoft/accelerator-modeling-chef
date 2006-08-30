@@ -41,8 +41,8 @@
 #endif
 
 
-#include <iosetup.h>
-#include <ICircuit.h>
+#include <basic_toolkit/iosetup.h>
+#include <beamline/ICircuit.h>
 
 using namespace std;
 

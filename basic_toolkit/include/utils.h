@@ -33,16 +33,27 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-bool nexcom( int, int, int* );  // Computes the next composition
-                                //  of an integer into a number of parts.
-                                //  Algorithm devised by Herbert Wilf.
+#include <basic_toolkit/globaldefs.h>
+#include <complex>
 
-extern "C" {
- int bcfRec( int, int );        // Recursive evaluation of binomial
-                                //  coefficient.
- int nearestInteger( double );  // Returns the integer nearest to its
-                                //  double argument.
-}
+
+extern std::complex<double>  w(std::complex<double> const& z); 
+extern std::complex<double>  erf(  std::complex<double> const& z );
+extern std::complex<double>  erfc( std::complex<double> const& z ); 
+extern std::complex<double>  erfSeries( std::complex<double> const& z ); 
+ 
+extern bool nexcom( int, int, int* );            // Computes the next composition
+                                                 //  of an integer into a number of parts.
+                                                 //  Algorithm devised by Herbert Wilf.
+
+extern void BubbleSort( double x[], int n );     // sorts array x /*** OBSOLETE ***/
+
+
+extern "C" {int bcfRec( int, int ); }            // Recursive evaluation of binomial
+                                                 //  coefficient.
+
+extern "C" {int nearestInteger( double ); }      // Returns the integer nearest to its
+                                                 //  double argument.
 
 /************************************************************************** 
 

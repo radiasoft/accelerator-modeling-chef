@@ -23,8 +23,8 @@
 
 #include <boost/python.hpp>
 #include <boost/shared_array.hpp>
-#include <Matrix.h>
-#include <TMatrix.h>
+#include <basic_toolkit/Matrix.h>
+#include <basic_toolkit/TMatrix.h>
 
 using namespace boost::python;
 

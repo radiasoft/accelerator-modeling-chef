@@ -37,9 +37,9 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
 #include <complex>
-#include <MathConstants.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/MathConstants.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;
@@ -53,7 +53,7 @@ using FNAL::pcout;
 */
 
 
-std::complex<double>  w( std::complex<double>  );
+std::complex<double>  w( std::complex<double> const& z );
 
 //////////////////////////////////////////////////////////////
 
@@ -125,7 +125,7 @@ std::complex<double>  erfc( const std::complex<double> & z )
 
 //////////////////////////////////////////////////////////////
 
-std::complex<double>  w( std::complex<double>  z ) 
+std::complex<double>  w( std::complex<double> const& z ) 
 {
   static const std::complex<double>  mi( 0., -1. );
   static double x;

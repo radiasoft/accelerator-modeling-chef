@@ -51,9 +51,9 @@
  */
 
 
-#include "GenericException.h"
-#include "ChromaticityAdjuster.h"
-#include "LattFuncSage.h"
+#include <basic_toolkit/GenericException.h>
+#include <physics_toolkit/ChromaticityAdjuster.h>
+#include <physics_toolkit/LattFuncSage.h>
 
 using namespace std;
 

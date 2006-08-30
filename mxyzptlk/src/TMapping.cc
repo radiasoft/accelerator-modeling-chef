@@ -46,9 +46,9 @@
 **************************************************************************
 *************************************************************************/
 
-#include <GenericException.h>
-#include <iosetup.h>
-#include <TMapping.h>
+#include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/iosetup.h>
+#include <mxyzptlk/TMapping.h>
 #include <complex>
 
 using FNAL::pcerr;

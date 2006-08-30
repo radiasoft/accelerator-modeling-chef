@@ -38,7 +38,7 @@
 
 #include <stdio.h>
 #include <glib.h>
-#include <beam_line.h>
+#include <bmlfactory/beam_line.h>
 
 #define BML_TABLE_OK       0
 #define BML_TABLE_INIT_ERR 1

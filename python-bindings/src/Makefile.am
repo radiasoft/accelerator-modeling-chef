@@ -21,4 +21,5 @@ libpyphysics_toolkit_la_SOURCES   =   py-physicstoolkit-module.cpp py-lattfuncsa
 
 
 
-CPPFLAGS		          =      -I$(top_srcdir)/../basic_toolkit/include  -I$(top_srcdir)/../mxyzptlk/include  -I$(top_srcdir)/../beamline/include -I$(top_srcdir)/../bmlfactory/include -I$(top_srcdir)/../physics_toolkit/include -I$(BOOST_INC) -I$(top_srcdir)/include -I$(top_srcdir)/../gms/include -I$(GLIB_INC) -I$(GLIBCONFIG_INC) -I$(PYTHON_INC)
+CPPFLAGS		          =      -I$(top_srcdir)/../include -I$(GLIB_INC) -I$(GLIBCONFIG_INC) -I$(PYTHON_INC)
+

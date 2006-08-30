@@ -43,7 +43,7 @@
 #define MAPPING_H
 
 #include <complex>
-#include <TMapping.h>
+#include <mxyzptlk/TMapping.h>
 
 typedef TMapping<double>                Mapping;
 typedef TMapping<std::complex<double> > MappingC;

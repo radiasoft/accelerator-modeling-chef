@@ -41,10 +41,10 @@
 
 #include <math.h>
 
-#include <GenericException.h>
-#include <beamline.h>
-#include <FPSolver.h>
-#include <iosetup.h>
+#include <basic_toolkit/GenericException.h>
+#include <beamline/beamline.h>
+#include <physics_toolkit/FPSolver.h>
+#include <basic_toolkit/iosetup.h>
 
 
 using FNAL::pcout;

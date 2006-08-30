@@ -10,6 +10,16 @@
 ******  Copyright (c) 1990 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -20,44 +30,22 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
 **************************************************************************
 *************************************************************************/
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include <iostream>
+#include <basic_toolkit/Barnacle.h>
 
-#include "Barnacle.h"
-// ================================================================
-//      Global variables
-//
 
-#ifdef OBJECT_DEBUG
-int Barnacle::objectCount = 0;
-int BarnacleList::objectCount = 0;
-#endif
-
-// ================================================================
-
-BarnacleList::BarnacleList() {
-#ifdef OBJECT_DEBUG
-  objectCount++;
-#endif
-}
+BarnacleList::BarnacleList() {}
 
 BarnacleList::~BarnacleList() {
  dlist_iterator getNext( theList );
  Barnacle* p;
  while( 0 != (  p = (Barnacle*) getNext() )) delete p;
-#ifdef OBJECT_DEBUG
-  objectCount--;
-#endif
 }
  
 void BarnacleList::append( const Barnacle* x ) {
@@ -147,16 +135,10 @@ Barnacle::Barnacle( const char* s, const BarnacleData* e ) {
  strcpy( id, s );
  info = (BarnacleData*) e;
 
-#ifdef OBJECT_DEBUG
- objectCount++;
-#endif
 }
 
 Barnacle::~Barnacle() {
  delete [] id;
  delete info;
 
-#ifdef OBJECT_DEBUG
- objectCount--;
-#endif
 }

@@ -41,8 +41,8 @@
 #include <config.h>
 #endif
 
-#include <monitor.h>
-#include <Particle.h>
+#include <beamline/monitor.h>
+#include <beamline/Particle.h>
 
 using namespace std;
 

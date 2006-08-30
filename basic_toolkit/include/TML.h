@@ -45,15 +45,16 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 #ifndef TML_H
 #define TML_H
 
 #include <iostream>
 #include <complex>
-#include <math.h>
-#include <ReferenceCounter.h>
-#include <MLPtr.h>
+#include <cmath>
+
+#include <basic_toolkit/globaldefs.h>
+#include <basic_toolkit/ReferenceCounter.h>
+#include <basic_toolkit/MLPtr.h>
 
 template<typename T> MLPtr<T> Negate( MLPtr<T> const& );
 
@@ -78,7 +79,7 @@ template<typename T> std::ostream& operator<< (std::ostream& os, const TML<T>& x
 
 
 template<typename T> 
-class TML : public ReferenceCounter<TML<T> > {
+class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
 
   template <typename U>
   friend class TML;
@@ -261,7 +262,7 @@ template<> void TML<double>::SVD (MLPtr<double>& U, MLPtr<double>& W, MLPtr<doub
 
 
 #ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES
-#include <TML.tcc>
+#include <basic_toolkit/TML.tcc>
 #endif
 
 #endif //TML_H

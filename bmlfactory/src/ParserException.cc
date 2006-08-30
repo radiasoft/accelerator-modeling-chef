@@ -1,6 +1,3 @@
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -35,7 +32,11 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-#include <ParserException.h>
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <bmlfactory/ParserException.h>
 
 ParserException::ParserException( int inmemory, const char* filename, int lineno, const char* errmsg):
   _inmemory(inmemory), _filename(filename), _lineno(lineno), _errmsg(errmsg)

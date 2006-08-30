@@ -41,13 +41,13 @@
 #define BEAMLINECONTEXT_H
 
 #include <iostream>
-#include <complexAddon.h>
-#include <Mapping.h>
-#include <LattFuncSage.h>
-#include <EdwardsTengSage.h>
-#include <CovarianceSage.h>
-#include <LBSage.h>
-#include <DispersionSage.h>
+#include <basic_toolkit/complexAddon.h>
+#include <mxyzptlk/Mapping.h>
+#include <physics_toolkit/LattFuncSage.h>
+#include <physics_toolkit/EdwardsTengSage.h>
+#include <physics_toolkit/CovarianceSage.h>
+#include <physics_toolkit/LBSage.h>
+#include <physics_toolkit/DispersionSage.h>
 
 
 class beamline;

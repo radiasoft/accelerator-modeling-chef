@@ -42,7 +42,7 @@
 #endif
 
 #include <iomanip>
-#include <septum.h>
+#include <beamline/septum.h>
 
 
 using namespace std;

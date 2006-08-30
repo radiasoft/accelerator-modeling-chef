@@ -37,8 +37,8 @@
 #include <config.h>
 #endif
 
-#include <GenericException.h>
-#include <Frame.h>
+#include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/Frame.h>
 
 using namespace std;
 

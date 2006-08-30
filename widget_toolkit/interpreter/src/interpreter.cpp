@@ -42,9 +42,9 @@
 
 #include <stdio.h>
 
-#include <Jet.h>
-#include <JetC.h>
-#include <GenericException.h>
+#include <mxyzptlk/Jet.h>
+#include <mxyzptlk/JetC.h>
+#include <basic_toolkit/GenericException.h>
 
 using namespace boost::python;
 

@@ -30,7 +30,7 @@
 #ifndef JLTERM_H
 #define JLTERM_H
 
-#include <TJLterm.h>
+#include <mxyzptlk/TJLterm.h>
 
 typedef TJLterm<double>                JLterm;
 typedef TJLterm<std::complex<double> > JLCterm;

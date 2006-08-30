@@ -52,12 +52,12 @@
 #endif
 
 
-#include <iosetup.h>
-#include <MathConstants.h>
-#include <GenericException.h>
-#include <VectorD.h>
-#include <TJL.h>
-#include <TJetEnvironment.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/MathConstants.h>
+#include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/VectorD.h>
+#include <mxyzptlk/TJL.h>
+#include <mxyzptlk/TJetEnvironment.h>
 
 using namespace std;
 

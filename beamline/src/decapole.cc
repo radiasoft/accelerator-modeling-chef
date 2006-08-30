@@ -40,7 +40,7 @@
 #include <config.h>
 #endif
 
-#include <decapole.h>
+#include <beamline/decapole.h>
 
 using namespace std;
 

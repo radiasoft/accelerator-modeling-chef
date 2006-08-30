@@ -21,7 +21,7 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-#include <monitor.h>
+#include <beamline/monitor.h>
 
 using namespace boost::python;
 

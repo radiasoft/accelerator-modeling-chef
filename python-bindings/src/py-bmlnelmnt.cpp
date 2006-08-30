@@ -21,10 +21,12 @@
 ******
 ****************************************************************************/
 #include <string>
-#include <Particle.h>
-#include <ParticleBunch.h>
-#include <bmlnElmnt.h>
 #include <boost/python.hpp>
+
+#include <beamline/Particle.h>
+#include <beamline/ParticleBunch.h>
+#include <beamline/bmlnElmnt.h>
+
 
 class PropFunc;
 

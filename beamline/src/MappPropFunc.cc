@@ -38,8 +38,8 @@
 #include <config.h>
 #endif
 
-#include <MappPropFunc.h>
-#include <Particle.h>
+#include <beamline/MappPropFunc.h>
+#include <beamline/Particle.h>
 
 using namespace std;
 

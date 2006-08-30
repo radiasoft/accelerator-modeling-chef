@@ -40,9 +40,10 @@
 #ifndef DRIFT_H
 #define DRIFT_H
 
-#include <bmlnElmnt.h>
+#include <basic_toolkit/globaldefs.h>
+#include <beamline/bmlnElmnt.h>
 
-class drift : public bmlnElmnt
+class DLLEXPORT drift : public bmlnElmnt
 {
 public:
   drift();

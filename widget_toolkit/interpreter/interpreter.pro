@@ -38,7 +38,8 @@ LIBS += -lqwt
 LIBS += -L$$FNAL_LIBDIR -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit 
 ##LIBS += -L$$PYTHON_LIBDIR -lpython$$PYTHON_VERSION
 LIBS +=  $${PYTHON_LIBDIR}/libpython$${PYTHON_VERSION}.a 
-LIBS += -L$${BOOST_LIBDIR} -lboost_python-gcc 
+#LIBS += -L$${BOOST_LIBDIR} -lboost_python-gcc 
+LIBS += -L$${BOOST_LIBDIR} -lboost_python-mt-s 
 
 unix:LIBS  +=  -Wl,--export-dynamic -Wl,-rpath,$${CHEF_LIBDIR} -Wl,-rpath,$${FNAL_LIBDIR} -Wl,-rpath,$${GLIB_LIBDIR} -Wl,-rpath,$${BOOST_LIBDIR} 
 

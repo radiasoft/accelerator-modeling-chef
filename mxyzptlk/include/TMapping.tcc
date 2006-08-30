@@ -65,9 +65,9 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <GenericException.h>
-#include <TJet.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
+#include <mxyzptlk/TJet.h>
 
 
 using namespace std;

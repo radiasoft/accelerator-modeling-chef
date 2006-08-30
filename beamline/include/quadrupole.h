@@ -39,9 +39,10 @@
 #ifndef QUADRUPOLE_H
 #define QUADRUPOLE_H
 
-#include <bmlnElmnt.h>
+#include <basic_toolkit/globaldefs.h>
+#include <beamline/bmlnElmnt.h>
 
-class quadrupole : public bmlnElmnt
+class DLLEXPORT quadrupole : public bmlnElmnt
 {
 private:
   std::ostream& writeTo(std::ostream&);
@@ -111,7 +112,7 @@ public:
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 } ;
 
-class thinQuad : public bmlnElmnt
+class DLLEXPORT thinQuad : public bmlnElmnt
 {
 public:
   thinQuad();

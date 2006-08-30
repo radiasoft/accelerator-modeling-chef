@@ -21,9 +21,9 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-#include <JetVector.h>
-#include <Mapping.h>
-#include <EnvPtr.h>
+#include <mxyzptlk/JetVector.h>
+#include <mxyzptlk/Mapping.h>
+#include <mxyzptlk/EnvPtr.h>
 
 using namespace boost::python;
 

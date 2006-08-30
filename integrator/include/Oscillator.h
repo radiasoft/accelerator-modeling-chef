@@ -1,7 +1,7 @@
 #ifndef OSCILLATOR_H
 #define OSCILLATOR_H
 
-#include "ODE.h"
+#include <integrator/ODE.h>
 
 class Oscillator : public ODE {
 

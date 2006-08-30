@@ -35,13 +35,13 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 #ifndef OCTUPOLE_H
 #define OCTUPOLE_H
 
-#include <bmlnElmnt.h>
+#include <basic_toolkit/globaldefs.h>
+#include <beamline/bmlnElmnt.h>
 
-class octupole : public bmlnElmnt
+class DLLEXPORT octupole : public bmlnElmnt
 {
 public:
   octupole();
@@ -77,7 +77,7 @@ public:
 
 
 
-class thinOctupole : public bmlnElmnt
+class DLLEXPORT thinOctupole : public bmlnElmnt
 {
 public:
   thinOctupole();

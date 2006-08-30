@@ -40,7 +40,7 @@
 #include <config.h>
 #endif
 
-#include <mover.h>
+#include <beamline/mover.h>
 
 using namespace std;
 

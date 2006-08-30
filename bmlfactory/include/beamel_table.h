@@ -37,9 +37,9 @@
 #define BMLFACTORY_BEAMEL_TABLE_H
 
 #include <glib.h>
-#include <beam_element.h>
-#include <matrix.h>
-#include <madparser_types.h>
+#include <bmlfactory/beam_element.h>
+#include <bmlfactory/matrix.h>
+#include <bmlfactory/madparser_types.h>
 
 #define BEL_OK             0
 #define BEL_TABLE_INIT_ERR 1

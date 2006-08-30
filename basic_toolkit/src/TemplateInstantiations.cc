@@ -41,26 +41,25 @@
 #include <config.h>
 #endif
 
-#include <TMatrix.h>
 #include <complex>
-#include <ostream>
-#include <complexAddon.h>
-#include <MathConstants.h>
-#ifdef WIN32
-#include <Distribution.h> // for drand48
-#endif
-
 #include <iostream>
+#include <ostream>
 #include <iomanip>
 #include <sstream>
 
+#include <basic_toolkit/complexAddon.h>
+#include <basic_toolkit/TMatrix.h>
+#include <basic_toolkit/MathConstants.h>
+#ifdef WIN32
+#include <basic_toolkit/Distribution.h> // for drand48
+#endif
 
-#include <TMatrix.tcc>
-#include <TML.tcc>
-#include <TVector.tcc>
-#include <FastPODAllocator.h>
-#include <dlist.h>
-#include <slist.h>
+#include <basic_toolkit/TMatrix.tcc>
+#include <basic_toolkit/TML.tcc>
+#include <basic_toolkit/TVector.tcc>
+#include <gms/FastPODAllocator.h>
+#include <basic_toolkit/dlist.h>
+#include <basic_toolkit/slist.h>
 
 using namespace std;
 using std::ostringstream;

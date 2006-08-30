@@ -32,13 +32,13 @@
 #ifdef MXYZPTLK_EXPLICIT_TEMPLATES 
 
 #include <complex>
-#include <ReferenceCounter.h>
-#include <TJLterm.h>
-#include <TJL.h>
-#include <TJL.tcc>
+#include <basic_toolkit/ReferenceCounter.h>
+#include <mxyzptlk/TJLterm.h>
+#include <mxyzptlk/TJL.h>
+#include <mxyzptlk/TJL.tcc>
 
-#include <FastPODAllocator.h>
-#include <FastAllocator.h>
+#include <gms/FastPODAllocator.h>
+#include <gms/FastAllocator.h>
 #include <boost/functional/hash/hash.hpp>
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>

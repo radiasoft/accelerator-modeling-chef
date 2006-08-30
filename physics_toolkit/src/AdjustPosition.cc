@@ -38,9 +38,9 @@
 #include <config.h>
 #endif
 
-#include <GenericException.h>
-#include <bmlnElmnt.h>
-#include <Particle.h>
+#include <basic_toolkit/GenericException.h>
+#include <beamline/bmlnElmnt.h>
+#include <beamline/Particle.h>
 
 using namespace std;
 

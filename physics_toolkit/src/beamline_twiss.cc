@@ -40,9 +40,9 @@
 
 
 #include <iomanip>
-#include <iosetup.h>
-#include <LattFuncSage.h>    // ??? Only temporary, until beamline::twiss functions vanish.
-#include <ClosedOrbitSage.h> // 
+#include <basic_toolkit/iosetup.h>
+#include <physics_toolkit/LattFuncSage.h>    // ??? Only temporary, until beamline::twiss functions vanish.
+#include <physics_toolkit/ClosedOrbitSage.h> // 
 
 using namespace std;
 using FNAL::pcerr;

@@ -50,10 +50,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <str_to_upper.h>
-#include <beam_element.h>
-#include <bml_table.h>
-#include <pair.h>
+#include <bmlfactory/str_to_upper.h>
+#include <bmlfactory/beam_element.h>
+#include <bmlfactory/bml_table.h>
+#include <bmlfactory/pair.h>
 
    /*
      Takes a string and returns its hash table index

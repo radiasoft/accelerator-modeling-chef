@@ -39,7 +39,7 @@
 #endif
 
 
-#include <pinger.h>
+#include <beamline/pinger.h>
 
 using namespace std;
 

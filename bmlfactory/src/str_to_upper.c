@@ -41,7 +41,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <stddef.h>
-#include <str_to_upper.h>
+#include <bmlfactory/str_to_upper.h>
 
 
 char*

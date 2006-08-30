@@ -33,3 +33,8 @@ find widget_toolkit -name \*.so\.\*  -exec \rm {} \; -print
 
 find . -name #\* -exec rm {} \; -print
 find . -name \*~ -exec rm {} \; -print
+
+if [ -L ./include/basic_toolkit ] 
+then \rm -rf ./include
+fi
+

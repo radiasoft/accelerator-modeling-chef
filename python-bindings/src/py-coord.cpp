@@ -20,10 +20,11 @@
 ******             ostiguy@fnal.gov                         
 ******
 ****************************************************************************/
+
 #include <boost/python.hpp>
 
-#include <Jet.h>
-#include <JetC.h>
+#include <mxyzptlk/Jet.h>
+#include <mxyzptlk/JetC.h>
 
 using namespace boost::python;
 

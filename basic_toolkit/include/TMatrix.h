@@ -51,7 +51,7 @@
 #include <exception>
 #include <string>
 #include <complex>
-#include <TML.h>
+#include <basic_toolkit/TML.h>
 
 template<typename T> class TMatrix; 
 
@@ -93,7 +93,7 @@ template<typename T> bool operator!=( const T&,          const TMatrix<T>& );
 
 template<typename T>
 
-class TMatrix {
+class DLLEXPORT TMatrix {
 
   template<typename U>
   friend class TMatrix;
@@ -224,7 +224,7 @@ template<> void  TMatrix<double>::SVD( TMatrix<double>&, TMatrix<double>&, TMatr
 
 
 #ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES
-#include <TMatrix.tcc>
+#include <basic_toolkit/TMatrix.tcc>
 #endif
 
 

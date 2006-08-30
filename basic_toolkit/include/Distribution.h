@@ -53,8 +53,8 @@ extern long   srand48(long int);
 extern double drand48();
 #endif
 
-#include <VectorD.h>
-#include <RandomOrthogonal.h>
+#include <basic_toolkit/VectorD.h>
+#include <basic_toolkit/RandomOrthogonal.h>
 
 class Distribution 
 {

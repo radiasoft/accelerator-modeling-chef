@@ -1,7 +1,7 @@
 #ifndef SIMPSONSRULE_H
 #define SIMPSONSRULE_H
 
-#include "AbsIntegrator.h"
+#include <integrator/AbsIntegrator.h>
 
 class Simpson : public AbsIntegrator<double>::Method
 {

@@ -44,11 +44,11 @@
 #include <iomanip>
 #include <typeinfo>
 
-#include <iosetup.h>
-#include <MathConstants.h>
-#include <PhysicsConstants.h>
-#include <rbend.h>
-#include <Particle.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/MathConstants.h>
+#include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/rbend.h>
+#include <beamline/Particle.h>
 
 using namespace std;
 using FNAL::pcout;

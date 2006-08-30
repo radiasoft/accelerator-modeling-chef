@@ -39,8 +39,8 @@
 
 #include <assert.h>
 #include <string.h>
-#include <matrix.h>
-#include <expression.h>
+#include <bmlfactory/matrix.h>
+#include <bmlfactory/expression.h>
 
 
 matrix*

@@ -1,4 +1,4 @@
-#include "Riemann.h"
+#include <integrator/Riemann.h>
 
 Riemann::Riemann()
 : _lower(false)

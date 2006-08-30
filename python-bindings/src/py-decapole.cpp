@@ -22,7 +22,7 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 
-#include <decapole.h>
+#include <beamline/decapole.h>
 
 
 void wrap_decapole () {

@@ -59,17 +59,17 @@
 #ifndef TJL_H
 #define TJL_H
 
-#include <dlist.h>
-#include <IntArray.h>
-#include <TMatrix.h>
-#include <VectorD.h>
-#include <TJetEnvironment.h>
-#include <ReferenceCounter.h>
-#include <FastPODAllocator.h>
+#include <basic_toolkit/dlist.h>
+#include <basic_toolkit/IntArray.h>
+#include <basic_toolkit/TMatrix.h>
+#include <basic_toolkit/VectorD.h>
+#include <mxyzptlk/TJetEnvironment.h>
+#include <gms/FastPODAllocator.h>
+#include <basic_toolkit/ReferenceCounter.h>
 #include <vector>
-#include <JLPtr.h>
-#include <EnvPtr.h>
-#include <TJLterm.h>
+#include <mxyzptlk/JLPtr.h>
+#include <mxyzptlk/EnvPtr.h>
+#include <mxyzptlk/TJLterm.h>
 
 #define MX_SMALL       1.0e-12 // Used by TJL<T>::addTerm to decide 
                                // removal of a TJL<T>Cterm.
@@ -155,7 +155,7 @@ JLPtr<double> imag(  TJL<std::complex<double> >* const& z );
 // **********************************************************************************************************
 
 template<typename T> 
-class TJL: public ReferenceCounter<TJL<T> > {
+class DLLLOCAL TJL: public ReferenceCounter<TJL<T> > {
 
 template<typename U>  
   friend class TJL;
@@ -193,7 +193,7 @@ template<typename U>
   TJLterm<T>* remove( dlink* );
 
   TJL( EnvPtr<T> const&,  T value = T() );
-  TJL( const IntArray&, const T&,  EnvPtr<T> const&);
+  TJL( IntArray  const&,  T const&,  EnvPtr<T> const&);
 
   TJL( TJL const&);                    // this form is necessary to avoid 
                                        // problems with access to ReferenceCounter
@@ -216,8 +216,8 @@ template<typename U>
   // factory functions 
 
 
-  static JLPtr<T> makeTJL( EnvPtr<T> const& pje,  T value = T());
-  static JLPtr<T> makeTJL( const IntArray&, const T&, EnvPtr<T> const& pje );
+  static JLPtr<T> makeTJL( EnvPtr<T> const&  pje,  T value = T());
+  static JLPtr<T> makeTJL( IntArray  const&, T const& value, EnvPtr<T> const& pje );
 
   template<typename U>
   static JLPtr<T> makeTJL( const TJL<U>& );
@@ -489,7 +489,7 @@ JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL( TJL<double> c
 
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES
-#include <TJL.tcc>
+#include <mxyzptlk/TJL.tcc>
 #endif
 
 #endif // TJL_H

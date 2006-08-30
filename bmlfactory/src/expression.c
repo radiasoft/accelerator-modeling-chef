@@ -54,12 +54,12 @@
 extern void bmlfactory_exit(const char* filename, int lineno, const char* errmessage);
 extern void bmlfactory_parse_error(int inmemory, const char* input_filename, int input_file_lineno, const char* parser_message);
 
-#include <beam_element.h>
-#include <beamel_table.h>
-#include <const_table.h>
-#include <var_table.h>
-#include <expression.h>
-#include <madparser.h>
+#include <bmlfactory/beam_element.h>
+#include <bmlfactory/beamel_table.h>
+#include <bmlfactory/const_table.h>
+#include <bmlfactory/var_table.h>
+#include <bmlfactory/expression.h>
+#include <bmlfactory/madparser.h>
 
 /* Including mp here is a temporary fix. mp is required for error reporting */
 /* the entire error reporting mechanism should be overhauled. -jfo          */ 

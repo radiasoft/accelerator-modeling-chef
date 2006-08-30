@@ -56,6 +56,8 @@
 #include <exception>
 #include <string>
 
+#include <basic_toolkit/globaldefs.h>
+
 // ***  Note:
 // ***  Default max is set 8 variables (6 phase space vars + 2). 
 // ***  Increase intarray_max_variables if more variables are needed.
@@ -74,7 +76,7 @@ typedef signed char exponent_t;
 class IntArrayIterator;
 class IntArrayReverseIterator;
 
-class IntArray {
+class DLLEXPORT IntArray {
 
   friend class IntArrayIterator;
   friend class IntArrayReverseIterator;
@@ -147,9 +149,6 @@ public:
     std::string errorString;
   };
 
-#ifdef OBJECT_DEBUG
-  static int objectCount;
-#endif
 };
  
 // -----------------------------------------------------------------

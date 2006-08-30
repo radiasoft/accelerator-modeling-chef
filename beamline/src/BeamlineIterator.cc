@@ -55,8 +55,8 @@
 */
 
 
-#include <iosetup.h>
-#include <BeamlineIterator.h>
+#include <basic_toolkit/iosetup.h>
+#include <beamline/BeamlineIterator.h>
 
 using namespace std;
 

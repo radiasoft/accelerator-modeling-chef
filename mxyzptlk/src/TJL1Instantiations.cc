@@ -32,11 +32,11 @@
 #ifdef MXYZPTLK_EXPLICIT_TEMPLATES 
 
 #include <complex>
-#include <ReferenceCounter.h>
-#include <TJLterm.h>
-#include <TJLterm.tcc>
-#include <TJL1.h>
-#include <TJL1.tcc>
+#include <basic_toolkit/ReferenceCounter.h>
+#include <mxyzptlk/TJLterm.h>
+#include <mxyzptlk/TJLterm.tcc>
+#include <mxyzptlk/TJL1.h>
+#include <mxyzptlk/TJL1.tcc>
 
 
 // ============================================================================================

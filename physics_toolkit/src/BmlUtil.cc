@@ -40,10 +40,10 @@
 #include <config.h>
 #endif
 
-#include <GenericException.h>
-#include <BmlUtil.h>
-#include <TMatrix.h>
-#include <Mapping.h>
+#include <basic_toolkit/GenericException.h>
+#include <physics_toolkit/BmlUtil.h>
+#include <basic_toolkit/TMatrix.h>
+#include <mxyzptlk/Mapping.h>
 
 using namespace std;
 

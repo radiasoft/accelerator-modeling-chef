@@ -21,11 +21,11 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-
-#include <Jet.h>
-#include <EnvPtr.h>
 #include <string>
 #include <iostream>
+
+#include <mxyzptlk/Jet.h>
+#include <mxyzptlk/EnvPtr.h>
 
 static EnvPtr<std::complex<double> > getLastEnvC_local( ) 
 {

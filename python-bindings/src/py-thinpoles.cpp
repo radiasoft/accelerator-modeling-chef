@@ -21,7 +21,7 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-#include <thinpoles.h>
+#include <beamline/thinpoles.h>
 
 using namespace boost::python;
 

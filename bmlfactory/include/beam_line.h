@@ -52,9 +52,7 @@ extern "C" {
 #include <stdio.h>  
 #include <glib.h>
 
-#if !defined(fb_allocator_h)  
-#include "fb_allocator.h"
-#endif /* fb_allocator_h */
+#include <bmlfactory/fb_allocator.h>
 
 #define BEAM_LINE_DELETE_OK  0
 #define BEAM_LINE_ADD_OK     0

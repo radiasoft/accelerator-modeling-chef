@@ -48,11 +48,10 @@
 #include <list>
 #include <string>
 
-// from MXYZPLTK
-#include <beamline.h>
-#include <beam_element.h>
-#include <beam_line.h>
-#include <madparser.h>
+#include <beamline/beamline.h>
+#include <bmlfactory/beam_element.h>
+#include <bmlfactory/beam_line.h>
+#include <bmlfactory/madparser.h>
 
 
 typedef char* char_ptr;

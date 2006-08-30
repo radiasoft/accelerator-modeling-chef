@@ -21,7 +21,7 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-#include <bmlfactory.h>
+#include <bmlfactory/bmlfactory.h>
 
 using namespace boost::python;
 

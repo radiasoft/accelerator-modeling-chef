@@ -42,14 +42,14 @@
 
 #include <iomanip>
 
-#include <iosetup.h>
-#include <PhysicsConstants.h>
-#include <CF_sbend.h>
-#include <quadrupole.h>
-#include <sextupole.h>
-#include <sbend.h>
-#include <octupole.h>
-#include <Particle.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/CF_sbend.h>
+#include <beamline/quadrupole.h>
+#include <beamline/sextupole.h>
+#include <beamline/sbend.h>
+#include <beamline/octupole.h>
+#include <beamline/Particle.h>
 
 using namespace std;
 

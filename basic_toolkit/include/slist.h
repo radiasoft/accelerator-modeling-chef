@@ -54,8 +54,10 @@
 #ifndef SLIST_HXX
 #define SLIST_HXX
 
-#include <FastPODAllocator.h>
-#include <FastAllocator.h>
+#include <basic_toolkit/globaldefs.h>
+
+#include <gms/FastPODAllocator.h>
+#include <gms/FastAllocator.h>
 
 typedef void* ent;
 
@@ -66,62 +68,35 @@ typedef void* ent;
 // 
 // class slink: public gms::FastPODAllocator<slink> {
 
-class slink {
-public:
-#ifdef OBJECT_DEBUG
-  static int objectCount;
-#endif
+class DLLLOCAL slink {
 
 private:
+
 friend class slist;
 friend class slist_iterator;
 friend class slist_looper;
 friend class slist_traversor;
+
   slink* next;
   void* e;
 
-  slink( void* a, slink* p ) { 
-    e=a; 
-    next=p; 
-#ifdef OBJECT_DEBUG
-  objectCount++;
-#endif
-  }
-
-  ~slink() {
-#ifdef OBJECT_DEBUG
-  objectCount--;
-#endif
-  }
+   slink( void* a, slink* p ): next(p), e(a) {} 
+  ~slink() {}
 };
 
-class slist: public gms::FastAllocator {
+class DLLEXPORT slist: public gms::FastAllocator {
 private:
   slink* last;
   char   owner;
 public:
-  slist( char x = 0 ) { 
-    last = 0; 
-    owner = x; 
-#ifdef OBJECT_DEBUG
-  objectCount++;
-#endif
-  }
+  slist( char x = 0 ) : last(0), owner(x) {} 
   slist( void* a, char x = 0  ) { 
     last = new slink(a,0); 
     last->next = last; 
     owner = x; 
-#ifdef OBJECT_DEBUG
-  objectCount++;
-#endif
   }
-  slist( const slist& );
-  virtual ~slist() { 
-    clear();
-#ifdef OBJECT_DEBUG
-  objectCount--;
-#endif
-  }
+  slist( slist const& );
+  virtual ~slist() { clear(); }
 
   bool contains( const void* ) const;
 
@@ -140,7 +115,6 @@ public:
   int size() const;
   char IsEmpty() { return last == 0; }
   void clear();   // Preserves the data 
-  // void zap();     // Destroys the data
   void* lastInfoPtr() { if( last ) return last->e;
                       else       return 0;
                     }
@@ -152,57 +126,39 @@ public:
   friend class slist_looper;
   friend class slist_traversor;
 
-#ifdef OBJECT_DEBUG
-  static int objectCount;
-#endif
 };
 
-class slist_iterator {
-  slink* ce;
-  slist* cs;
+class DLLEXPORT slist_iterator {
+  const slist* const  cs;
+  slink*              ce;
 
 public:
-#ifdef OBJECT_DEBUG
-  static int objectCount;
-#endif
 
-  inline slist_iterator( const slist& s ) { 
-    cs = (slist*) &s; 
-    ce = cs->last; 
-#ifdef OBJECT_DEBUG
-  objectCount++;
-#endif
-  }
+  slist_iterator( slist const& s ):  cs(&s), ce( const_cast<slink*>(cs->last) ) {} 
+ ~slist_iterator() { }
 
-  ~slist_iterator() { 
-#ifdef OBJECT_DEBUG
-  objectCount--;
-#endif
-  }
-
-  void Reset    ( const slist& s ) { cs = (slist*) &s; ce = cs->last; }
-  void Reset()  { ce = cs->last; }
+  void Reset()     { ce = cs->last; }
   void Terminate() { ce = 0; }
 
   void* operator()();
 } ;
 
 
-class slist_looper {
-  slink* ce;
+class DLLEXPORT slist_looper {
   slist* cs;
+  slink* ce;
 public:
-  slist_looper( slist& s ) { cs = &s; ce = cs->last; }
+  slist_looper( slist& s ):   cs(&s), ce(cs->last) { }
   void* operator()();
   void Reset( const slist& s ) { cs = (slist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }
 } ;
 
 class slist_traversor {
-  slink* ce;
   slist* cs;
+  slink* ce;
 public:
-  slist_traversor( slist& s ) { cs = &s; ce = cs->last; }
+  slist_traversor( slist& s ): cs(&s), ce(cs->last) { }
   slink* operator()();
   void Reset( const slist& s ) { cs = (slist*) &s; ce = cs->last; }
   void Reset() { ce = cs->last; }

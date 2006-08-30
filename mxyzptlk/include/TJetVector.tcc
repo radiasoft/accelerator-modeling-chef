@@ -62,9 +62,9 @@
 #endif
 
 #include <iostream>
-#include <iosetup.h>
-#include <GenericException.h>
-#include <Matrix.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/Matrix.h>
 
 
 using FNAL::pcout;

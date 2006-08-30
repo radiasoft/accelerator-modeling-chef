@@ -54,7 +54,8 @@
 #ifndef TJLTERM_TCC
 #define TJLTERM_TCC
 
-#include <iosetup.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;
@@ -86,8 +87,7 @@ __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> > TJLte
 template<typename T>
 TJLterm<T>::TJLterm() 
 : _index(6), _weight(0), _value(T()), _deleted(false) /// index argument necessary ???
-{
-}
+{}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -95,17 +95,23 @@ TJLterm<T>::TJLterm()
 template<typename T>
 TJLterm<T>::TJLterm(  EnvPtr<T> const& pje ) 
 : _index( pje->numVar() ), _weight(0), _value(T()), _deleted(false) 
-{
-}
+{}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJLterm<T>::TJLterm( const IntArray& l, 
-                const T& x, EnvPtr<T> const& pje ) :   
-_index( l ), _weight(l.Sum()), _value(x), _deleted(false)
-{ }
+TJLterm<T>::TJLterm( IntArray const& l, T const& x, EnvPtr<T> const& pje ) :   
+_index( l ), _weight(l.Sum()), _value(x), _deleted(false) 
+{
+   if( !pje ) return; 
+   if (l.Dim() != pje->numVar() ) {
+       throw( GenericException( __FILE__, __LINE__, 
+              "TJLterm<T>::TJLterm<T>( IntArray const &, T const&, EnvPtr<T> const&)",
+              "Dimensions are inconsistent.") );
+   }
+} 
+
 //------------------------------------------------------------------------------------------------------
 // The code below has been commented out for efficiency. It performs sanity checks and can be re-enabled
 // for debugging pruposes.

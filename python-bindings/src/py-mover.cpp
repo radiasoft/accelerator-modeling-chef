@@ -22,7 +22,7 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 
-#include <mover.h>
+#include <beamline/mover.h>
 
 
 void wrap_mover () {

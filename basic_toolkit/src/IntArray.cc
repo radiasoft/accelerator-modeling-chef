@@ -53,19 +53,16 @@
 #include <config.h>
 #endif
 
-#include <IntArray.h>
 
 #include <iostream>
 #include <cstdlib>
 #include <string>
-#include <iosetup.h>
+
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/IntArray.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;
-
-#ifdef OBJECT_DEBUG
-int IntArray::objectCount = 0;
-#endif
 
 
 IntArray::GenericException::GenericException( const char* fcn, const char* msg )
@@ -110,9 +107,6 @@ IntArray::IntArray( int n, const int* x ): _dim(n)
   else    
     while (--count) *(++comp_ptr) = 0;
 
-#ifdef OBJECT_DEBUG
-  objectCount++;
-#endif
 }
 
 IntArray::IntArray( const IntArray& x ) : _dim(x._dim)
@@ -120,9 +114,6 @@ IntArray::IntArray( const IntArray& x ) : _dim(x._dim)
 
   memcpy((void *)_comp, (const void *)x._comp, _dim * sizeof(exponent_t));
 
-#ifdef OBJECT_DEBUG
-  objectCount++;
-#endif
 }
 
 // Assignment ...
@@ -367,15 +358,9 @@ std::istream& operator>>( std::istream& is, IntArray& x )
   return is;
 }
 
-// this destructor should never be called 
+// this destructor should never be called !!!
 #if  0
-IntArray::~IntArray()
-{
-
-#ifdef OBJECT_DEBUG
-  objectCount--;
-#endif
-}
+IntArray::~IntArray() { }
 #endif
 
 

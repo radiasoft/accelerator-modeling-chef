@@ -45,19 +45,19 @@
 #include <iostream>
 #include <exception>
 
-#include <slist.h>
-#include <Frame.h>
-#include <Barnacle.h>
-#include <VectorD.h>
-#include <BmlVisitor.h>
+#include <basic_toolkit/slist.h>
+#include <basic_toolkit/Frame.h>
+#include <basic_toolkit/Barnacle.h>
+#include <basic_toolkit/VectorD.h>
+#include <beamline/BmlVisitor.h>
 
 #include <ext/hash_map>    // This is g++ specific, but will be supported
                            // in the next c++ std. Most other compilers 
                            // support hashes.      
 #include <boost/any.hpp>
 
-#include <Jet.h>
-#include <JetVector.h>
+#include <mxyzptlk/Jet.h>
+#include <mxyzptlk/JetVector.h>
 
 bmlnElmnt* read_istream(std::istream&);
 
@@ -76,7 +76,7 @@ class beamline;
 #define NOTKNOWN   -123456.789
 #define OSTREAM_DOUBLE_PREC setprecision(20)
 
-struct lattRing : public BarnacleData {
+struct DLLEXPORT lattRing : public BarnacleData {
   struct {
     double hor;
     double ver;
@@ -92,7 +92,7 @@ struct lattRing : public BarnacleData {
 } ;
  std::ostream& operator<<(std::ostream&, const lattRing&);
 
-struct lattFunc : public BarnacleData {
+struct DLLEXPORT lattFunc : public BarnacleData {
   double arcLength;
   struct {
     double hor;
@@ -124,7 +124,7 @@ std::ostream& operator<<(std::ostream&, const lattFunc&);
 std::istream& operator>>(std::istream&, lattFunc&);
 
 
-struct alignmentData {
+struct DLLEXPORT alignmentData {
   double       xOffset;
   double       yOffset;
   double       tilt;
@@ -136,7 +136,7 @@ struct alignmentData {
 };
 
 
-class alignment {
+class DLLEXPORT alignment {
 private:
   double       xOffset;         // offset in meters
   double       yOffset;         // offset in meters
@@ -186,7 +186,7 @@ public:
 };
 
 
-struct bmlnElmntData {
+struct DLLEXPORT bmlnElmntData {
   char            type[80];
   bmlnElmnt*      address;
   char*           name;
@@ -214,7 +214,7 @@ struct bmlnElmntData {
 
 
 
-class bmlnElmnt
+class DLLEXPORT bmlnElmnt
 {
 public:
 
@@ -246,6 +246,7 @@ public:
       virtual int operator()( bmlnElmnt*, Particle&    ) = 0;
       virtual int operator()( bmlnElmnt*, JetParticle& ) = 0;
       virtual const char* Type() const                   = 0;
+      virtual ~PropFunc() {};
   };
 
   class PinnedFrameSet
@@ -582,7 +583,7 @@ private:
 };
 
 
-class BmlPtrList : private dlist
+class DLLEXPORT BmlPtrList : private dlist
 {
   //  A list of pointers to instances of bmlnElmnt objects.
   //  The objects are not owned by the list; their memory
@@ -609,7 +610,7 @@ public:
 };
 
 
-class beamline : public bmlnElmnt, public dlist
+class DLLEXPORT beamline : public bmlnElmnt, public dlist
 {
 public:
   enum LineMode { line, ring, unknown };
@@ -635,6 +636,8 @@ public:
   {
     virtual bool operator()( const bmlnElmnt* );
     virtual bool operator()( const bmlnElmnt& );
+    virtual ~Criterion() {};
+
   };
   // Returns true if element matches the derived 
   // criterion; false, if not.
@@ -653,6 +656,7 @@ public:
   {
     virtual int operator()( bmlnElmnt* );
     virtual int operator()( bmlnElmnt& );
+    virtual ~Action() {}
   };
   // Derived classes should return 0 if the action is 
   // performed successfully on the element. All other

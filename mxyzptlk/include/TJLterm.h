@@ -57,8 +57,8 @@
 #include <ostream>
 #include <boost/functional/hash/hash.hpp>
 #include <boost/pool/pool.hpp>
-#include <EnvPtr.h>
-#include <IntArray.h>
+#include <mxyzptlk/EnvPtr.h>
+#include <basic_toolkit/IntArray.h>
 
  
 template<typename T>
@@ -83,7 +83,7 @@ std::ostream& operator<<(std::ostream& os, TJLterm<T> const&);
 // ********************************************************************************************************************
 
 template<typename T>
-class TJLterm
+class DLLEXPORT TJLterm
 {
 
  public:
@@ -107,22 +107,22 @@ class TJLterm
   //   _index is made 6 dimensional until Reconstruct
   //   is invoked.
 
-  TJLterm( EnvPtr<T> const& pje );
-  TJLterm( const IntArray&, const T&,  EnvPtr<T> const& pje);
+  TJLterm( EnvPtr<T> const&  pje );
+  TJLterm( const IntArray&, const T&,  EnvPtr<T> const& pje );
 
   //   If 0 is used for the environment pointer,
   //   it is assumed that the that the variable
   //   represents a constant function.
 
-  TJLterm( const IntArray&, const T& );
-  TJLterm( const TJLterm& );
+  TJLterm( IntArray const&, T const& );
+  TJLterm( TJLterm  const& );
 
   template<typename U>
   TJLterm( const TJLterm<U>& );
 
-  TJLterm& operator=( const TJLterm& );
-  TJLterm  operator*( const TJLterm& );
-  TJLterm  operator+( const TJLterm& );
+  TJLterm& operator=( TJLterm const& );
+  TJLterm  operator*( TJLterm const& );
+  TJLterm  operator+( TJLterm const& );
   
   // Accessors
   IntArray& exponents()         { return _index; }
@@ -191,7 +191,7 @@ template<>
 TJLterm<std::complex<double> >::TJLterm( TJLterm<double> const& );
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES
-#include <TJLterm.tcc>
+#include <mxyzptlk/TJLterm.tcc>
 #endif
 
 #endif // TJLTERM_H

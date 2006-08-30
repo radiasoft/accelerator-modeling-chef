@@ -52,7 +52,7 @@
 #endif
 
 
-#include <TJet.h>
+#include <mxyzptlk/TJet.h>
 
 //-------------------------------------------------------------------
 // factory functions

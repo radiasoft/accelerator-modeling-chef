@@ -33,11 +33,12 @@
 **************************************************************************
 *************************************************************************/
 
-
 #ifndef COLORWHEEL_H
 #define COLORWHEEL_H
 
-class ColorWheel
+#include <basic_toolkit/globaldefs.h>
+
+class DLLEXPORT ColorWheel
 {
  public:
   ColorWheel( double /*.angle [deg].*/ = 0.0 );

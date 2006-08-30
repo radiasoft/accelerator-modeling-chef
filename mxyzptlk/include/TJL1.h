@@ -38,17 +38,17 @@
 #ifndef TJL1_H
 #define TJL1_H
 
-#include <dlist.h>
-#include <IntArray.h>
-#include <TMatrix.h>
-#include <VectorD.h>
-#include <TJetEnvironment.h>
-#include <ReferenceCounter.h>
-#include <FastPODAllocator.h>
+#include <basic_toolkit/dlist.h>
+#include <basic_toolkit/IntArray.h>
+#include <basic_toolkit/TMatrix.h>
+#include <basic_toolkit/VectorD.h>
+#include <mxyzptlk/TJetEnvironment.h>
+#include <basic_toolkit/ReferenceCounter.h>
+#include <gms/FastPODAllocator.h>
 #include <vector>
-#include <JLPtr.h>
-#include <EnvPtr.h>
-#include <TJLterm.h>
+#include <mxyzptlk/JLPtr.h>
+#include <mxyzptlk/EnvPtr.h>
+#include <mxyzptlk/TJLterm.h>
 
 #define MX_SMALL       1.0e-12 // Used by TJL<T>::addTerm to decide 
                                // removal of a TJL<T>Cterm.
@@ -429,7 +429,7 @@ JL1Ptr<std::complex<double> >  TJL1<std::complex<double> >::makeTJL( TJL1<double
 
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES
-#include <TJL1.tcc>
+#include <mxyzptlk/TJL1.tcc>
 #endif
 
 #endif // TJL1_H

@@ -22,7 +22,7 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 
-#include <quadrupole.h>
+#include <beamline/quadrupole.h>
 
 void wrap_quadrupole () {
 

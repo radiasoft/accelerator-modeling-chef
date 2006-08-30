@@ -40,10 +40,10 @@
 *************************************************************************/
 
 // =================================================================================
-// If explicit template instantiations are not desired, *do not* compile this file !
+// If explicit template instantiations are desired, *do not* compile this file !
 // =================================================================================
 
-#ifndef JETWRITER_IMPLICIT_TEMPLATES 
+#ifdef JETWRITER_EXPLICIT_TEMPLATES 
 
 #include <TJetWriter.h>
 #include <TJetWriter.tcc>
@@ -51,4 +51,4 @@
 template class TJetWriter<double>;
 template class TJetWriter<std::complex<double> >;
 
-#endif // JETWRITER_IMPLICIT_TEMPLATES 
+#endif // JETWRITER_EXPLICIT_TEMPLATES 

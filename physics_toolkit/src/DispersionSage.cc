@@ -39,8 +39,8 @@
 #include <config.h>
 #endif
 
-#include <ClosedOrbitSage.h>
-#include <DispersionSage.h>
+#include <physics_toolkit/ClosedOrbitSage.h>
+#include <physics_toolkit/DispersionSage.h>
 
 extern int filterTransverseTunes( /* const */ MatrixD&, Vector& );
 

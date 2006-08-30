@@ -39,18 +39,17 @@
 #endif
 
 
-#include <iosetup.h>
-#include <GenericException.h>
-#include <BmlUtil.h>
-#include <slist.h>  // This should not be necessary!!!
-#include <BeamlineContext.h>
-#include <beamline.h>
-#include <BeamlineIterator.h>
-// REMOVE: #include "LattFuncSage.h"
-#include <ClosedOrbitSage.h>
-#include <ChromaticityAdjuster.h>
-#include <TuneAdjuster.h>
-#include <RefRegVisitor.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
+#include <physics_toolkit/BmlUtil.h>
+#include <basic_toolkit/slist.h>  // This should not be necessary!!!
+#include <physics_toolkit/BeamlineContext.h>
+#include <beamline/beamline.h>
+#include <beamline/BeamlineIterator.h>
+#include <physics_toolkit/ClosedOrbitSage.h>
+#include <physics_toolkit/ChromaticityAdjuster.h>
+#include <physics_toolkit/TuneAdjuster.h>
+#include <beamline/RefRegVisitor.h>
 
 extern void BeamlineSpitout( int, BeamlineIterator& );
 

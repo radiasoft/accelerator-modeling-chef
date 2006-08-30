@@ -20,15 +20,12 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
 
 #include <iostream>
-#include "GenericException.h"
+#include <basic_toolkit/GenericException.h>
 
 using namespace std;
 

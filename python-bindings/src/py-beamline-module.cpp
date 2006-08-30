@@ -20,7 +20,7 @@
 ******             ostiguy@fnal.gov                         
 ******
 ****************************************************************************/
-#include "LattFuncSage.h"
+#include <physics_toolkit/LattFuncSage.h>
 #include <iostream>
 
 #define BOOST_PYTHON_STATIC_MODULE

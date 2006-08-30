@@ -36,13 +36,12 @@
 **************************************************************************
 *************************************************************************/
 
-
 #ifndef JETUTIL_H
 #define JETUTIL_H
 
 #include <complex>
-#include <Mapping.h>
-#include <LieOperator.h>
+#include <mxyzptlk/Mapping.h>
+#include <mxyzptlk/LieOperator.h>
  
 extern void normalForm( const Mapping&,      /* Input:   map                    */
                         int,                 /* Input:   order                  */

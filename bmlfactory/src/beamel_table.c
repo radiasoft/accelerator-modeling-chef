@@ -51,10 +51,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <str_to_upper.h>
-#include <var_table.h>
-#include <troika.h>
-#include <beamel_table.h>
+#include <bmlfactory/str_to_upper.h>
+#include <bmlfactory/var_table.h>
+#include <bmlfactory/troika.h>
+#include <bmlfactory/beamel_table.h>
 
    /*
      Takes a string and returns its hash table index

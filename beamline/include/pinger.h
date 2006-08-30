@@ -12,6 +12,16 @@
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+****** 
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -22,9 +32,6 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -33,15 +40,13 @@
 #ifndef PINGER_H
 #define PINGER_H
 
-#ifndef BMLNELMNT_H
-#include "bmlnElmnt.h"
-#endif
 
-#ifndef BMLVISITOR_H
-#include "BmlVisitor.h"
-#endif
+#include <basic_toolkit/globaldefs.h>
+#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlVisitor.h>
 
-class Pinger : public bmlnElmnt {
+
+class DLLEXPORT Pinger : public bmlnElmnt {
 protected:
   double _kick_direction;	/* In which direction is the kick? */
   int    _counter;              /* Counts number of turns before firing. */
@@ -77,7 +82,7 @@ public:
   void setKickDirection(double k) { _kick_direction = k; }
 };
 
-class HPinger : public Pinger {
+class DLLEXPORT HPinger : public Pinger {
  public:
   HPinger( double = 0.0 /* kick size in radians */,
            int    = -1  /* count */ );
@@ -94,7 +99,7 @@ class HPinger : public Pinger {
   void accept( ConstBmlVisitor& v ) const { v.visitHPinger( this ); }
 };
 
-class VPinger : public Pinger {
+class DLLEXPORT VPinger : public Pinger {
  public:
   VPinger( double = 0.0 /* kick size in radians */,
            int    = -1  /* count */ );

@@ -22,7 +22,7 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 
-#include <marker.h>
+#include <beamline/marker.h>
 
 
 void wrap_marker () {

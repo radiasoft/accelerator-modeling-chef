@@ -44,7 +44,8 @@
 #endif
 
 #include <sstream>
-#include <TJetWriter.h>
+#include <basic_toolkit/globaldefs.h>
+#include <physics_toolkit/TJetWriter.h>
 
 using namespace std;
 

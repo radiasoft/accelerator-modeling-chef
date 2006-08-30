@@ -40,10 +40,10 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <combinedFunction.h>
-#include <BeamlineIterator.h>
-#include <Particle.h>
+#include <basic_toolkit/iosetup.h>
+#include <beamline/combinedFunction.h>
+#include <beamline/BeamlineIterator.h>
+#include <beamline/Particle.h>
 
 using namespace std;
 

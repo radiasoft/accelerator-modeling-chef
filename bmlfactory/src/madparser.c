@@ -60,19 +60,19 @@
 
 #include <glib.h>
 
-#include <fb_allocator.h>
-#include <expression.h>
-#include <const_table.h>
-#include <var_table.h>
-#include <beam_element.h>
-#include <beamel_table.h>
-#include <matrix.h>
-#include <beam_line.h>
-#include <bml_table.h>
-#include <comment_arr.h>
-#include <madparser.h>
-#include <madparser_types.h>
-#include <PhysicsConstants.h>
+#include <bmlfactory/fb_allocator.h>
+#include <bmlfactory/expression.h>
+#include <bmlfactory/const_table.h>
+#include <bmlfactory/var_table.h>
+#include <bmlfactory/beam_element.h>
+#include <bmlfactory/beamel_table.h>
+#include <bmlfactory/matrix.h>
+#include <bmlfactory/beam_line.h>
+#include <bmlfactory/bml_table.h>
+#include <bmlfactory/comment_arr.h>
+#include <bmlfactory/madparser.h>
+#include <bmlfactory/madparser_types.h>
+#include <basic_toolkit/PhysicsConstants.h>
 
 typedef void * yyscan_t;
 

@@ -49,11 +49,11 @@
  */
 
 #include <iomanip>
-#include <iosetup.h>
+#include <basic_toolkit/iosetup.h>
 
-#include <Particle.h>
-#include <BeamlineIterator.h>
-#include <EdwardsTeng.h>
+#include <beamline/Particle.h>
+#include <beamline/BeamlineIterator.h>
+#include <physics_toolkit/EdwardsTeng.h>
 
 using namespace std;
 using FNAL::pcerr;

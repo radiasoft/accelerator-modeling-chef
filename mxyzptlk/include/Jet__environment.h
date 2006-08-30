@@ -45,8 +45,8 @@
 #ifndef JET__ENV_H
 #define JET__ENV_H
 
-#include <TJetEnvironment.h>
-#include <EnvPtr.h>
+#include <mxyzptlk/TJetEnvironment.h>
+#include <mxyzptlk/EnvPtr.h>
 
 typedef TJetEnvironment<double>                Jet__environment;
 typedef TJetEnvironment<std::complex<double> > JetC__environment;

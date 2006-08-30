@@ -53,8 +53,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <beam_element.h>
-#include <expression.h>
+#include <bmlfactory/beam_element.h>
+#include <bmlfactory/expression.h>
 
 
    /*

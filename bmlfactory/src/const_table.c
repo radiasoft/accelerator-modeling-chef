@@ -43,10 +43,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <str_to_upper.h>
-#include <expression.h>
-#include <troika.h>
-#include <const_table.h>
+#include <bmlfactory/str_to_upper.h>
+#include <bmlfactory/expression.h>
+#include <bmlfactory/troika.h>
+#include <bmlfactory/const_table.h>
 
 enum constant_kind current_constant = CONSTANT_UNKNOWN;
 

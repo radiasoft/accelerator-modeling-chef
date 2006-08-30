@@ -2,8 +2,8 @@
 #include <config.h>
 #endif
 
-#include <RungeKutta.h>
-#include <iosetup.h>
+#include <integrator/RungeKutta.h>
+#include <basic_toolkit/iosetup.h>
 
 using std::cout;
 using std::endl;

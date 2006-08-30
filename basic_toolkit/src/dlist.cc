@@ -32,31 +32,24 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include <stdlib.h>
 #include <iostream>
-#include <iosetup.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/dlist.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;
 using std::endl;
 
-#include <dlist.h>
 
 // ================================================================
 //      Global variables
 //
 
-#ifdef OBJECT_DEBUG
-int dlist::objectCount = 0;
-int dlink::objectCount = 0;
-int dlist_iterator::objectCount = 0;
-#endif
 
 // ================================================================
 //      Constructors and the destructor ...
@@ -71,9 +64,6 @@ dlist::dlist(  const dlist& x )
   while((  w = getNext()  )) append( w );
   owner = 0;
   
-  #ifdef OBJECT_DEBUG
-    objectCount++;
-  #endif
 }
 
 void dlink::putAbove( dlink* a ) 

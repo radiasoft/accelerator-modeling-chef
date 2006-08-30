@@ -40,13 +40,9 @@
 *************************************************************************/
 
 
-#ifndef SAGE_H
-#include <Sage.h>
-#endif
-
-#ifndef VECTOR_H
-#include <VectorD.h>
-#endif
+#include <physics_toolkit/Sage.h>
+#include <basic_toolkit/globaldefs.h>
+#include <basic_toolkit/VectorD.h>
 
 class beamline;
 

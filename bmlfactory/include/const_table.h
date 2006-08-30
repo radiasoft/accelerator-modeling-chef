@@ -37,8 +37,8 @@
 
 #include <stddef.h>
 #include <glib.h>
-#include <madparser_types.h>
-#include <fb_allocator.h>
+#include <bmlfactory/madparser_types.h>
+#include <bmlfactory/fb_allocator.h>
 
 
 enum constant_kind {

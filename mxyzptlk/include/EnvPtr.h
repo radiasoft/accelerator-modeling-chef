@@ -33,13 +33,15 @@
 #endif
 
 #include <boost/intrusive_ptr.hpp>
+#include <basic_toolkit/globaldefs.h>
+
 #include <iostream>
 
 template<typename T>
 class TJetEnvironment;
 
 template<typename T>
-class EnvPtr: public boost::intrusive_ptr<TJetEnvironment<T> > {
+class DLLEXPORT EnvPtr: public boost::intrusive_ptr<TJetEnvironment<T> > {
  
  public: 
 

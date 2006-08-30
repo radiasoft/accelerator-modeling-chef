@@ -55,14 +55,14 @@
 
 extern void bmlfactory_exit();
 
-#include <str_to_upper.h>
-#include <beam_element.h>
-#include <beamel_table.h>
-#include <const_table.h>
-#include <expression.h>
-#include <pair.h>
-#include <quatro.h>
-#include <var_table.h>
+#include <bmlfactory/str_to_upper.h>
+#include <bmlfactory/beam_element.h>
+#include <bmlfactory/beamel_table.h>
+#include <bmlfactory/const_table.h>
+#include <bmlfactory/expression.h>
+#include <bmlfactory/pair.h>
+#include <bmlfactory/quatro.h>
+#include <bmlfactory/var_table.h>
 
 
    /*

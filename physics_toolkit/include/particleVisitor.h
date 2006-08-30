@@ -51,8 +51,8 @@
 #ifndef PARTICLEVISITOR_H
 #define PARTICLEVISITOR_H
 
-#include <BmlVisitor.h>
-#include <Jet.h>
+#include <beamline/BmlVisitor.h>
+#include <mxyzptlk/Jet.h>
 
 class Particle;
 class JetParticle;

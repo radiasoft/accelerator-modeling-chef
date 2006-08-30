@@ -1,7 +1,7 @@
 #ifndef KICKMAP_H
 #define KICKMAP_H
 
-#include "ODE.h"
+#include <integrator/ODE.h>
 
 class KickMap : public ODE {
 

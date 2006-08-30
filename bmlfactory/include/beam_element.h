@@ -44,8 +44,9 @@
 #define beam_element_h
 
 #include <glib.h>
-#include <fb_allocator.h>
-#include <madparser_types.h>
+#include <bmlfactory/fb_allocator.h>
+#include <bmlfactory/madparser_types.h>
+#include <basic_toolkit/globaldefs.h>
 
 #ifdef __cplusplus
 extern "C" {

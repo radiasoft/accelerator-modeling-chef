@@ -26,8 +26,8 @@
 **************************************************************************
 *************************************************************************/
 
-#include <TJetEnvironment.h>
-#include <EnvPtr.h>
+#include <mxyzptlk/TJetEnvironment.h>
+#include <mxyzptlk/EnvPtr.h>
 
 
 template<>

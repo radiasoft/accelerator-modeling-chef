@@ -42,17 +42,12 @@
 #include <string>
 
 #include <iomanip>
-#include <iosetup.h>
-#include <bmlnElmnt.h>
-#include <Particle.h>
-#include <ParticleBunch.h>
-#include <Aperture.h>
-#include <BmlVisitor.h>
-
-
-#ifdef OBJECT_DEBUG
-int bmlnElmnt::objectCount = 0;
-#endif
+#include <basic_toolkit/iosetup.h>
+#include <beamline/bmlnElmnt.h>
+#include <beamline/Particle.h>
+#include <beamline/ParticleBunch.h>
+#include <beamline/Aperture.h>
+#include <beamline/BmlVisitor.h>
 
 
 // Error flags for _tag manipulation functions.
@@ -277,9 +272,6 @@ bmlnElmnt::bmlnElmnt( const char* n, PropFunc* pf ) {
  //          initialize its propagator functor within
  //          its constructor.
 
- #ifdef OBJECT_DEBUG
- objectCount++;
- #endif
 }
 
 bmlnElmnt::bmlnElmnt( double l /* length */, PropFunc* pf ) {
@@ -304,9 +296,6 @@ bmlnElmnt::bmlnElmnt( double l /* length */, PropFunc* pf ) {
  //          initialize its propagator functor within
  //          its constructor.
 
- #ifdef OBJECT_DEBUG
- objectCount++;
- #endif
 }
 
 bmlnElmnt::bmlnElmnt( double l /* length */, 
@@ -333,9 +322,6 @@ bmlnElmnt::bmlnElmnt( double l /* length */,
  //          initialize its propagator functor within
  //          its constructor.
 
- #ifdef OBJECT_DEBUG
- objectCount++;
- #endif
 }
 
 bmlnElmnt::bmlnElmnt(   const char*  n // name
@@ -369,9 +355,6 @@ bmlnElmnt::bmlnElmnt(   const char*  n // name
  //          initialize its propagator functor within
  //          its constructor.
 
- #ifdef OBJECT_DEBUG
- objectCount++;
- #endif
 }
 
 bmlnElmnt::bmlnElmnt( const char*  n /* name */, 
@@ -405,9 +388,6 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
  //          initialize its propagator functor within
  //          its constructor.
 
- #ifdef OBJECT_DEBUG
- objectCount++;
- #endif
 }
 
 bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) 
@@ -485,10 +465,6 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a )
  }
 
 
- #ifdef OBJECT_DEBUG
- objectCount++;
- #endif
-
 }
 
 bmlnElmnt::bmlnElmnt( bmlnElmntData& x ) {
@@ -520,9 +496,6 @@ bmlnElmnt::bmlnElmnt( bmlnElmntData& x ) {
  p_bml = 0;
  p_bml_e = 0;
 
- #ifdef OBJECT_DEBUG
- objectCount++;
- #endif
 }
 
 bmlnElmnt::~bmlnElmnt() {
@@ -541,9 +514,6 @@ bmlnElmnt::~bmlnElmnt() {
  //   be invoked within the derived class's destructor
  //   if it is necessary.
  dataHook.eraseAll();
- #ifdef OBJECT_DEBUG
- objectCount--;
- #endif
 }
 
 void bmlnElmnt::set( const bmlnElmntData& data ) {

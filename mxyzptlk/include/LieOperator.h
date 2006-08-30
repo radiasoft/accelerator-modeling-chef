@@ -47,9 +47,9 @@
 #define LIEOPERATOR_H
 
 #include <complex>
-#include <Jet.h>
-#include <JetVector.h>
-#include <TLieOperator.h>
+#include <mxyzptlk/Jet.h>
+#include <mxyzptlk/JetVector.h>
+#include <mxyzptlk/TLieOperator.h>
 
 typedef TLieOperator<double>                LieOperator;
 typedef TLieOperator<std::complex<double> > CLieOperator;

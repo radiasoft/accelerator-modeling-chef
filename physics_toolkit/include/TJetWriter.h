@@ -43,8 +43,9 @@
 #define TJETWRITER_H
 
 #include <string>
-#include <TJet.h>
-#include <TJetVector.h>
+#include <basic_toolkit/globaldefs.h>
+#include <mxyzptlk/TJet.h>
+#include <mxyzptlk/TJetVector.h>
 
 
 // Forward declarations

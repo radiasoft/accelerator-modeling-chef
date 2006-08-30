@@ -39,9 +39,10 @@
 #ifndef THINPOLES_H
 #define THINPOLES_H
 
-#include <bmlnElmnt.h>
+#include <basic_toolkit/globaldefs.h>
+#include <beamline/bmlnElmnt.h>
 
-class thin2pole : public bmlnElmnt
+class DLLEXPORT thin2pole : public bmlnElmnt
 {
 public:
   thin2pole();
@@ -68,7 +69,7 @@ public:
 } ;
 
 
-class thin12pole : public bmlnElmnt
+class DLLEXPORT thin12pole : public bmlnElmnt
 {
 public:
   thin12pole();
@@ -94,7 +95,7 @@ public:
   bmlnElmnt* Clone() const { return new thin12pole( *this ); }
 } ;
 
-class thin14pole : public bmlnElmnt
+class DLLEXPORT thin14pole : public bmlnElmnt
 {
 public:
   thin14pole();
@@ -120,7 +121,7 @@ public:
   bmlnElmnt* Clone() const { return new thin14pole( *this ); }
 } ;
 
-class thin16pole : public bmlnElmnt
+class DLLEXPORT thin16pole : public bmlnElmnt
 {
 public:
   thin16pole();
@@ -146,7 +147,7 @@ public:
   bmlnElmnt* Clone() const { return new thin16pole( *this ); }
 } ;
 
-class thin18pole : public bmlnElmnt
+class DLLEXPORT thin18pole : public bmlnElmnt
 {
 public:
   thin18pole();
@@ -172,7 +173,7 @@ public:
   bmlnElmnt* Clone() const { return new thin18pole( *this ); }
 } ;
 
-class thinMultipole : public bmlnElmnt
+class DLLEXPORT thinMultipole : public bmlnElmnt
 {
 public:
   thinMultipole();

@@ -40,16 +40,15 @@
 #include <config.h>
 #endif
 
-#include <Jet.h>
-#include <BBLens.h>
-#include <EdwardsTeng.h>  // ??? Doesn't belong.
+#include <beamline/BBLens.h>
+#include <basic_toolkit/utils.h>
+#include <mxyzptlk/Jet.h>
+#include <physics_toolkit/EdwardsTeng.h>  // ??? Doesn't belong here.
 
 using namespace std;
 
 static complex<double> complex_i(0.0, 1.0);
 
-
-extern std::complex<double>  w( std::complex<double>  );
 extern JetC    w( const JetC& );
 
 double const SIGMA_LIMIT = 64.0;

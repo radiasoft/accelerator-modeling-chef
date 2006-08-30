@@ -23,6 +23,15 @@ if test "x${withval}" != "xno"; then
 CC=${withval}
 fi)
 
+##----------------------------------------------------------
+## by default, use the explicit template instantiation model
+##-----------------------------------------------------------
+
+AC_ARG_ENABLE(implicit-templates, AC_HELP_STRING([--enable-implicit-templates],[ Enable implicit template instantiation for portability ]), 
+	      CXXFLAGS="${CXXFLAGS}",
+              CXXFLAGS="-DMXYZPTLK_EXPLICIT_TEMPLATES -DBASICTOOLKIT_EXPLICIT_TEMPLATES ${CXXFLAGS}" )
+
+
 if test ${CXXFLAGS} && test ${CFLAGS}; then
 set_CXXFLAGS=${CXXFLAGS}
 set_CFLAGS=${CFLAGS}

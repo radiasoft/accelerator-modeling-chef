@@ -51,11 +51,11 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <GenericException.h>
-#include <VectorD.h>
-#include <TJetEnvironment.h>
-#include <TJLterm.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/VectorD.h>
+#include <mxyzptlk/TJetEnvironment.h>
+#include <mxyzptlk/TJLterm.h>
 
 using FNAL::pcerr;
 

@@ -22,7 +22,7 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 
-#include <Slot.h>
+#include <beamline/Slot.h>
 
 
 void wrap_slot () {

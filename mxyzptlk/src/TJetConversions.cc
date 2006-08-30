@@ -51,37 +51,25 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <MathConstants.h>
-#include <complexAddon.h>
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/utils.h>
+#include <basic_toolkit/MathConstants.h>
+#include <basic_toolkit/complexAddon.h>
 
-#include <GenericException.h>
-#include <VectorD.h>
+#include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/VectorD.h>
 
-#include <TJet.h>
+#include <mxyzptlk/TJet.h>
 
+#ifdef CHECKOUT
+#undef CHECKOUT 
+#endif
 #define CHECKOUT(test,fcn,message)    \
   if( test ) {                        \
     throw( GenericException(          \
              __FILE__, __LINE__,      \
              fcn, message        ) ); \
   }
-
-// ================================================================
-//      External routines
-//
-
-extern bool nexcom( int, int, int* );  
-                                // Computes the next composition
-                                //  of an integer into a number of parts.
-                                //  Algorithm devised by Herbert Wilf.
-
-extern "C" {
- int bcfRec( int, int );        // Recursive evaluation of binomial
-                                //  coefficient.
- int nearestInteger( double );  // Returns the integer nearest to its
-                                //  double argument.
-}
 
 using namespace std;
 

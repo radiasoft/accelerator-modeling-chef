@@ -42,13 +42,13 @@
 
 #include <iomanip>
 
-#include <iosetup.h>
-#include <LBSage.h>
-#include <Particle.h>
-#include <BeamlineIterator.h>
-#include <GenericException.h>
+#include <basic_toolkit/iosetup.h>
+#include <physics_toolkit/LBSage.h>
+#include <beamline/Particle.h>
+#include <beamline/BeamlineIterator.h>
+#include <basic_toolkit/GenericException.h>
 
-#include <BmlUtil.h>
+#include <physics_toolkit/BmlUtil.h>
 
 using FNAL::pcout;
 using FNAL::pcerr;

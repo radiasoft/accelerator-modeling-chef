@@ -22,8 +22,8 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 
-#include <bmlnElmnt.h>
-#include <LattFuncSage.h>
+#include <beamline/bmlnElmnt.h>
+#include <physics_toolkit/LattFuncSage.h>
 #include <iostream>
 
 #define BOOST_PYTHON_STATIC_MODULE

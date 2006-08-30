@@ -36,6 +36,8 @@
 #ifndef LOOKUPTABLE_H
 #define LOOKUPTABLE_H
 
+#include <basic_toolkit/globaldefs.h>
+
 
 class Table {
   // This is SCREAMING to be a template!!  This would be Table<double>
@@ -60,7 +62,7 @@ class Table {
   double** getTable() { return table; }
 };
 
-class LookupTable : public Table {
+class DLLEXPORT LookupTable : public Table {
 private:
   double* xGrid;  // A uniform grid spacing is assumed!  A decent upgrade, someday?!
   double* yGrid;

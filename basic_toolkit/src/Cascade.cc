@@ -1,8 +1,3 @@
-// TODO
-// Remove exit statements
-// Create streamPtrs, like a Sage
-// Final check: destructor
-
 /*************************************************************************
 **************************************************************************
 **************************************************************************
@@ -42,15 +37,13 @@
 #include <config.h>
 #endif
 
-#include <iosetup.h>
-#include <GenericException.h>
-#include <slist.h>
-#include <IntArray.h>
-#include <Cascade.h> // RENAME Cascade.h
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/utils.h>
+#include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/slist.h>
+#include <basic_toolkit/IntArray.h>
+#include <basic_toolkit/Cascade.h> // RENAME Cascade.h
 
-
-extern char nexcom( int, int, int* );  
-extern "C" { int bcfRec( int, int ); }
 
 using FNAL::pcerr;
 using FNAL::pcout;
