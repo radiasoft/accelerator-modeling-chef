@@ -82,7 +82,7 @@ IMAGES	= src/images/filenew \
 QMAKE_LIBDIR  += /usr/local/ap/lib/python2.4
 QMAKE_LIBDIR  += /usr/local/ap/lib
 
-LIBS    += -L$${CHEF_LIBDIR} -linterpreter -ldevices -ldatabases -lpychefplot -lchefplot
+LIBS    += -L$${CHEF_LIBDIR} -linterpreter -ldevices -ldatabases -lpychefplot -lchefplot -ltunespace
 LIBS    += -L$${CHEF_LIBDIR} -lviewing -ltracking -lfncdata -ldialogs
 LIBS    += -L$${FNAL_LIBDIR} -lpybmlfactory -lpyphysics_toolkit -lpybeamline -lpymxyzptlk -lpybasic_toolkit 
 LIBS    += -L$${FNAL_LIBDIR} -lphysics_toolkit -lbmlfactory -lbeamline -lmxyzptlk -lbasic_toolkit 

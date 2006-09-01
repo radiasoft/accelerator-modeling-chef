@@ -29,7 +29,7 @@ class CHEFPlot;
 class beamline;
 class bmlnElmnt;
 class LegoPlot;
-class TuneDialog;
+class TuneDiagram;
 
 class CHEFPlotMain: public CHEFPlotMainBase {
 
@@ -69,7 +69,7 @@ class CHEFPlotMain: public CHEFPlotMainBase {
   private:
 
   CHEFPlot*      _chefplot;
-  TuneDialog*    _tunedialog;
+  TuneDiagram*   _tunediagram;
   bool           _auto_clear;
 
 

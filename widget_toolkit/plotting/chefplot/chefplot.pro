@@ -27,8 +27,7 @@ HEADERS	+= ./include/plot.h \
 	   ./include/chefplotzoomer.h \
 	   ./include/chefplotmain.h \
 	   ./include/lego.h \
-	   ./include/datadisplay.h \
-	   ./include/TuneDialog.h
+	   ./include/datadisplay.h
 
 SOURCES	+= ./src/chefplot.cpp \
 	   ./src/chefplotmain.cpp \
@@ -37,8 +36,7 @@ SOURCES	+= ./src/chefplot.cpp \
 	   ./src/chefcurve.cpp \
 	   ./src/chefplotzoomer.cpp \
 	   ./src/lego.cpp \
-	   ./src/datadisplay.cpp \
-	   ./src/TuneDialog.cpp
+	   ./src/datadisplay.cpp
 
 FORMS	= ./src/chefplotmainbase.ui \
 	  ./src/datadisplaybase.ui \
@@ -55,6 +53,8 @@ IMAGES	= ./src/images/filenew \
 	  ./src/images/editpaste \
 	  ./src/images/searchfind
 
+
+INCLUDEPATH += ../tunespace/include
 
 LIBS	   +=  -L$${FNAL_LIBDIR} -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -L$${GLIB_LIBDIR} -lglib-2.0
 LIBS       +=  -lqwt
