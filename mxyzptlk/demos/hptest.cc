@@ -8,7 +8,7 @@
 
 Jet**                HPreg;
 coord**               crds;
-EnvPtr<double>::Type   pje;
+Jet__environment_ptr   pje;
 
 int numberOfVar, topWeight;
 
