@@ -36,7 +36,7 @@
 #include <chefplot.h>
 #include <plot.h>
 #include <lego.h>
-#include <TuneDialog.h>
+#include <TuneDiagram.h>
 #include <beamline.h>
 #include <qwt/qwt_plot_canvas.h>
 #include <qwt/qwt_scale.h>
@@ -59,15 +59,13 @@
 const int canvas_height = 30;
 
 
-CHEFPlotMain::CHEFPlotMain(QWidget * parent, const char* name, Qt::WFlags f): 
-CHEFPlotMainBase(parent,name,f), _auto_clear(true) {
-
+CHEFPlotMain::CHEFPlotMain(QWidget * parent, const char* name, Qt::WFlags f)
+: CHEFPlotMainBase(parent,name,f), _auto_clear(true) 
+{
  _chefplot = new CHEFPlot(this);
  setCentralWidget(_chefplot);
- _tunedialog = new TuneDialog(this,"EigenTunes",0); 
- _tunedialog->hide();
-
-
+ _tunediagram = new TuneDiagram( parent );
+ _tunediagram->hide();
 }
 
 //.................................................................................
@@ -90,14 +88,11 @@ void CHEFPlotMain::displayLattice(beamline* bml){
   
 //.................................................................................
 
-void CHEFPlotMain::addData(CHEFPlotData& cpdata){
-  
+void CHEFPlotMain::addData(CHEFPlotData& cpdata)
+{
  if (_auto_clear) _chefplot->clear(); 
-
- _tunedialog->setTunes( cpdata.getHorTune(), cpdata.getVerTune());
+ _tunediagram->setTunes( cpdata.getHorTune(), cpdata.getVerTune());
  _chefplot->addData(cpdata);
-
-
 }
 
 //.................................................................................
@@ -313,9 +308,7 @@ void CHEFPlotMain::filePrint() {
 void 
 CHEFPlotMain::showTunes() 
 {
-
-  _tunedialog->show();
- 
+  _tunediagram->show();
 }
 
 
