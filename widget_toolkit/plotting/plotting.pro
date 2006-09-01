@@ -3,5 +3,4 @@
 #
 
 TEMPLATE = subdirs
-SUBDIRS  = chefplot python-bindings
- 
+SUBDIRS  = chefplot tunespace python-bindings
