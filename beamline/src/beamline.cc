@@ -1856,7 +1856,7 @@ void beamline::_rotateRel(   int axis, double angle
          << "\n*** ERROR *** Unable to perform operation on "
          << thePtr->Type() << "  " << thePtr->Name() << "."
          << "\n*** ERROR *** Requested rotation angle, " 
-         << (1.e6*angle) 
+         << (1.0e9*angle) 
          << ", nanoradians is too small."
             "\n*** ERROR *** Must be at least 1 nanoradian."
             "\n*** ERROR *** "
