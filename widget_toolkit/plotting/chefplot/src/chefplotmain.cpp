@@ -62,10 +62,10 @@ const int canvas_height = 30;
 CHEFPlotMain::CHEFPlotMain(QWidget * parent, const char* name, Qt::WFlags f)
 : CHEFPlotMainBase(parent,name,f), _auto_clear(true) 
 {
- _chefplot = new CHEFPlot(this);
- setCentralWidget(_chefplot);
- _tunediagram = new TuneDiagram( parent );
- _tunediagram->hide();
+  _chefplot = new CHEFPlot(this);
+  setCentralWidget(_chefplot);
+  _tunediagram = new TuneDiagram( parent, 0, Qt::WDestructiveClose );
+  _tunediagram->hide();
 }
 
 //.................................................................................
@@ -308,6 +308,7 @@ void CHEFPlotMain::filePrint() {
 void 
 CHEFPlotMain::showTunes() 
 {
+  _tunediagram->setCaption( this->caption() );
   _tunediagram->show();
 }
 
