@@ -40,6 +40,7 @@
 #include <beamline.h>
 #include <qwt/qwt_plot_canvas.h>
 #include <qwt/qwt_scale.h>
+// REMOVE: #include <qapplication.h>
 #include <qtoolbar.h>
 #include <qmenubar.h>
 #include <qevent.h>
@@ -64,7 +65,8 @@ CHEFPlotMain::CHEFPlotMain(QWidget * parent, const char* name, Qt::WFlags f)
 {
   _chefplot = new CHEFPlot(this);
   setCentralWidget(_chefplot);
-  _tunediagram = new TuneDiagram( parent, 0, Qt::WDestructiveClose );
+  // REMOVE: _tunediagram = new TuneDiagram( parent, 0, Qt::WDestructiveClose );
+  _tunediagram = new TuneDiagram( parent );
   _tunediagram->hide();
 }
 
@@ -92,6 +94,7 @@ void CHEFPlotMain::addData(CHEFPlotData& cpdata)
 {
  if (_auto_clear) _chefplot->clear(); 
  _tunediagram->setTunes( cpdata.getHorTune(), cpdata.getVerTune());
+ _tunediagram->draw();
  _chefplot->addData(cpdata);
 }
 
@@ -309,6 +312,19 @@ void
 CHEFPlotMain::showTunes() 
 {
   _tunediagram->setCaption( this->caption() );
+
+  #if 0
+  ??? Does not work yet! ???
+  QRect loc(_tunediagram->geometry());
+  // REMOVE: int x = ( QApplication::desktop()->width()  - _tunediagram->width()  ) / 2;
+  // REMOVE: int y = ( QApplication::desktop()->height() - _tunediagram->height() ) / 2;
+  int x = ( _tunediagram->parentWidget()->width()  - _tunediagram->width()  ) / 2;
+  int y = ( _tunediagram->parentWidget()->height() - _tunediagram->height() ) / 2;
+  int w = loc.width();
+  int h = loc.height();
+
+  _tunediagram->setGeometry( x, y, w, h );
+  #endif
   _tunediagram->show();
 }
 
