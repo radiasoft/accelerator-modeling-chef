@@ -6,7 +6,8 @@
 ******             Layered on top of of BEAMLINE and MXYZPTLK
 ******
 ******  File:      TuneDiagram.cc
-******  Revision:  September 1, 2006
+******  Original:  August   24, 2006
+******  Revision:  September 4, 2006
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -43,15 +44,12 @@ extern "C" { int nearestInteger( double ); }
 #include <qapplication.h>
 #include <qlabel.h>
 #include <qpainter.h>
+#include <qpixmap.h>
 
 #include <TuneDiagram.h>
 
 using namespace std;
 
-
-/////////////////////////////////////////////////////////////////
-
-QPixmap* TuneDiagram::_imagoPtr = 0;
 
 /////////////////////////////////////////////////////////////////
 
@@ -61,17 +59,69 @@ TuneDiagram::TuneDiagram( QWidget* parent, const char* nnn, WFlags fff )
 , _tunes(2)
 , _order(5)
 , _border(60)
+, _tuneLabelPtr(0)
+, _chalkBoardPtr(0)
+, _imagoPtr(0)
 {
   _tunes(0) = 0.5; 
   _tunes(1) = 0.5; 
-  _nx_lo    = 0;
-  _ny_lo    = 0;
-  _nx_hi    = 1;
-  _ny_hi    = 1;
 
-  _imagoPtr = new QPixmap;
+  _finishConstructor();
+}
+
+
+/////////////////////////////////////////////////////////////////
+
+
+TuneDiagram::TuneDiagram(   const Vector& nu, int ord
+                          , QWidget* parent, const char* nnn, WFlags fff )
+: QVBox( parent, nnn, fff )
+, _tunes(nu)
+, _order(ord)
+, _border(60)
+, _tuneLabelPtr(0)
+, _chalkBoardPtr(0)
+, _imagoPtr(0)
+{
+  if( _order < 0  ) { _order = - _order; }
+  if( 0 == _order ) { _order = 5;        }
+
+  if( 2 == _tunes.Dim() ) {
+    _finishConstructor();
+
+  }    
+  else {
+    ostringstream uic;
+    uic  << "Current version handles allows only two-dimensional tunespace."
+            "\nYours has dimension "
+         << _tunes.Dim()
+         << '.';
+    throw GenericException( __FILE__, __LINE__
+          , "TuneDiagram::TuneDiagram( const Vector&, double )"
+          , uic.str().c_str() );
+  }
+
+  this->draw();
+  this->show();
+}
+
+
+/////////////////////////////////////////////////////////////////
+
+
+void TuneDiagram::_finishConstructor()
+{
   _tuneLabelPtr  = new QLabel( this );
   _chalkBoardPtr = new ChalkBoard( this );
+  _imagoPtr      = new QPixmap;
+
+  _tunes(0) = fabs(_tunes(0));
+  _tunes(1) = fabs(_tunes(1));
+
+  _nx_lo    = int(_tunes(0));
+  _ny_lo    = int(_tunes(1));
+  _nx_hi    = _nx_lo + 1;
+  _ny_hi    = _ny_lo + 1;
 
   ostringstream uic;
   uic << "    "
@@ -86,54 +136,17 @@ TuneDiagram::TuneDiagram( QWidget* parent, const char* nnn, WFlags fff )
   _tuneLabelPtr->setText( QString(uic.str().c_str()) );
 
   this->setCaption( QString("CHEF: Tune Diagram") );
-
-  _draw();
-
 }
 
 
 /////////////////////////////////////////////////////////////////
 
 
-TuneDiagram::TuneDiagram(   const Vector& nu, int ord
-                          , QWidget* parent, const char* nnn, WFlags fff )
-: QVBox( parent, nnn, fff )
-, _tunes(nu)
-, _order(ord)
-, _border(60)
+void TuneDiagram::draw()
 {
-  if( 2 == _tunes.Dim() ) {
-    _imagoPtr = new QPixmap;
-    _tuneLabelPtr  = new QLabel( "Hi there", this );
-    _chalkBoardPtr = new ChalkBoard( this );
+  _imagoPtr->fill();
+  _chalkBoardPtr->erase();
 
-    _nx_lo = int(fabs(nu(0)));
-    _ny_lo = int(fabs(nu(1)));
-    _nx_hi = _nx_lo + 1;
-    _ny_hi = _ny_lo + 1;
-  }    
-  else {
-    ostringstream uic;
-    uic  << "Current version handles allows only two-dimensional tunespace."
-            "\nYours has dimension "
-         << _tunes.Dim()
-         << '.';
-    throw GenericException( __FILE__, __LINE__
-          , "TuneDiagram::TuneDiagram( const Vector&, double )"
-          , uic.str().c_str() );
-  }
-
-  this->setCaption( QString("CHEF: Tune Diagram") );
-
-  _draw();
-}
-
-
-/////////////////////////////////////////////////////////////////
-
-
-void TuneDiagram::_draw()
-{
   ostringstream uic;
   uic << "    "
       << "\nHorizontal tune = " 
@@ -189,7 +202,7 @@ void TuneDiagram::_draw()
     for( n = n_hi; n < n_lo + 0.01; n++ ) {
       a.x = (-n/ord); a.y = _ny_lo;
       b.x = (-n/ord); b.y = _ny_hi;
-      this->_drawLine( a, b, &blackPen );
+      _drawLine( a, b, &blackPen );
     }
        
     // Draw the line m_1 = 0, m_2 = ord
@@ -198,7 +211,7 @@ void TuneDiagram::_draw()
     for( n = n_hi; n < n_lo + 0.01; n++ ) {
       a.x = _nx_lo; a.y = (-n/ord);
       b.x = _nx_hi; b.y = (-n/ord);
-      this->_drawLine( a, b, &blackPen );
+      _drawLine( a, b, &blackPen );
     }
 
     // Draw the sum resonances
@@ -251,7 +264,7 @@ void TuneDiagram::_draw()
         }
 
         if( count == 2 ) {
-          this->_drawLine( a, b, &blackPen );
+          _drawLine( a, b, &blackPen );
         }
       }
     }
@@ -264,7 +277,7 @@ void TuneDiagram::_draw()
   QBrush redBrush;
   redBrush.setColor( Qt::red );
   redBrush.setStyle( Qt::SolidPattern );
-  this->_mark( _tunes(0), _tunes(1), &redBrush );
+  _mark( _tunes(0), _tunes(1), &redBrush );
 
 
   // -----------------
@@ -353,6 +366,10 @@ void TuneDiagram::_draw()
 
 TuneDiagram::~TuneDiagram()
 {
+  if( _imagoPtr ) { 
+    delete _imagoPtr; 
+    _imagoPtr = 0; 
+  }
 }
 
 
@@ -442,7 +459,10 @@ TuneDiagram::ChalkBoard::~ChalkBoard()
 
 void TuneDiagram::ChalkBoard::paintEvent( QPaintEvent* x )
 {
-  bitBlt ( this, x->rect().topLeft(), TuneDiagram::_imagoPtr, x->rect(), CopyROP );
+  bitBlt (   this
+           ,   x->rect().topLeft()
+           , dynamic_cast<TuneDiagram*>(this->parentWidget())->copyPtr()
+           ,   x->rect(), CopyROP );
   this->QWidget::paintEvent(x);
 }
 
@@ -454,5 +474,4 @@ void TuneDiagram::setTunes( double nu_x, double nu_y )
 {
   _tunes(0) = nu_x;
   _tunes(1) = nu_y;
-  this->_draw();
 }

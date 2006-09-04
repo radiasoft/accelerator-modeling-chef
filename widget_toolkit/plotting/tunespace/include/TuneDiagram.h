@@ -5,8 +5,8 @@
 /* Author:         Leo Michelotti                                     */
 /*                 michelotti@fnal.gov                                */     
 /*                                                                    */ 
-/* Creation Date:  August 24, 2006                                    */
-/* Current rev:    September 1, 2006                                  */
+/* Creation Date:  August   24, 2006                                  */
+/* Current rev:    September 4, 2006                                  */
 /*                                                                    */ 
 /* Copyright:      (c) URA/Fermilab                                   */
 /*                                                                    */
@@ -16,12 +16,12 @@
 #ifndef TUNEDIAGRAM_H
 #define TUNEDIAGRAM_H
 
-#include <qpixmap.h>
 #include <qvbox.h>
 
 #include <VectorD.h>
 
 class QLabel;
+class QPixmap;
 
 class TuneDiagram : public QVBox
 {
@@ -46,14 +46,14 @@ class TuneDiagram : public QVBox
 
  public:
   TuneDiagram( QWidget* = 0, const char* = 0, WFlags = 0 );
-  TuneDiagram( const Vector&, int, QWidget* = 0, const char* = 0, WFlags = 0 );
+  TuneDiagram( const Vector&, int = 5, QWidget* = 0, const char* = 0, WFlags = 0 );
   TuneDiagram( const TuneDiagram& );
   ~TuneDiagram();
 
   void setSize(int,int);
   void setTunes( double, double );
 
-  static QPixmap* _imagoPtr;
+  void draw();
 
  private:
   Vector  _tunes;
@@ -67,10 +67,15 @@ class TuneDiagram : public QVBox
 
   QLabel*      _tuneLabelPtr;
   ChalkBoard*  _chalkBoardPtr;
+  QPixmap*     _imagoPtr;
 
-  void _draw();
+  void _finishConstructor();
+
   void _mark( double, double, QBrush* );
   void _drawLine( const Pair&, const Pair&, QPen* );
+
+ public:
+  const QPixmap* copyPtr() { return _imagoPtr; }
 };
 
 #endif // TUNEDIAGRAM_H
