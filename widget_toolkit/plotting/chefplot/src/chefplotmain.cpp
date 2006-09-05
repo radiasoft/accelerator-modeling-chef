@@ -40,7 +40,7 @@
 #include <beamline.h>
 #include <qwt/qwt_plot_canvas.h>
 #include <qwt/qwt_scale.h>
-// REMOVE: #include <qapplication.h>
+#include <qapplication.h>
 #include <qtoolbar.h>
 #include <qmenubar.h>
 #include <qevent.h>
@@ -313,18 +313,16 @@ CHEFPlotMain::showTunes()
 {
   _tunediagram->setCaption( this->caption() );
 
-  #if 0
-  ??? Does not work yet! ???
-  QRect loc(_tunediagram->geometry());
-  // REMOVE: int x = ( QApplication::desktop()->width()  - _tunediagram->width()  ) / 2;
-  // REMOVE: int y = ( QApplication::desktop()->height() - _tunediagram->height() ) / 2;
-  int x = ( _tunediagram->parentWidget()->width()  - _tunediagram->width()  ) / 2;
-  int y = ( _tunediagram->parentWidget()->height() - _tunediagram->height() ) / 2;
-  int w = loc.width();
-  int h = loc.height();
+  int x = ( qApp->mainWidget()->width()  - _tunediagram->width()  ) / 2;
+  int y = ( qApp->mainWidget()->height() - _tunediagram->height() ) / 2;
+  _tunediagram->parentWidget()->move( x, y );
+  // NOTE: Must be done this way rather than
+  // NOTE: 
+  // NOTE:    _tunediagram->move( x, y );
+  // NOTE:  
+  // NOTE: because of MDI interface.
+  // NOTE: See TrollTech's documentation on class QWorkspace.
 
-  _tunediagram->setGeometry( x, y, w, h );
-  #endif
   _tunediagram->show();
 }
 
