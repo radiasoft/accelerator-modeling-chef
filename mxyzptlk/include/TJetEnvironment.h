@@ -252,31 +252,36 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
    const IntArray& allZeroes() const                         { return _scratch->_allZeroes; }     
    int             maxTerms() const                          { return _scratch->_maxTerms;}
 
+   static EnvPtr<T>      getLastEnv()                  { return _lastEnv; }
+   static EnvPtr<T>      setLastEnv( EnvPtr<T> pje)    { _lastEnv = pje;  return pje;} 
+
    // Streams --------------------------------------------------------- 
 
-  friend std::ostream& operator<< <>( std::ostream&, const TJetEnvironment& );
-  friend std::istream& streamIn<>(std::istream&, EnvPtr<T>& pje );
+   friend std::ostream& operator<< <>( std::ostream&, const TJetEnvironment& );
+   friend std::istream& streamIn<>(std::istream&, EnvPtr<T>& pje );
 
  private:
 
-  int              _numVar;              // Number of scalar variables associated with 
-                                         //   the JLC variable.
-  int              _spaceDim;            // This is, if you will, the dimension of phase space.
-  int              _dof;                 // The number of degrees of freedom = SpaceDim / 2.
-  T*               _refPoint;            // Reference point in phase space about which 
-                                         //   derivatives are taken.
-  double*          _scale;               // An array containing numbers which scale the
-                                         //   problem's variables.  Each entry is a "typical
-                                         //   size" for the variable of the same index.
-  int              _maxWeight;           // Maximum acceptable weight of a variable,
-                                         //   equivalent to the maximum order of derivatives
-                                         //   to be carried through calculations.
+  static EnvPtr<T>   _lastEnv;             // default environment  
 
-  bool             _pbok;                // Taking Poisson brackets is OK: the dimension of 
-                                         //   phase space is even.
+  int                _numVar;              // Number of scalar variables associated with 
+                                           //   the JLC variable.
+  int                _spaceDim;            // This is, if you will, the dimension of phase space.
+  int                _dof;                 // The number of degrees of freedom = SpaceDim / 2.
+  T*                 _refPoint;            // Reference point in phase space about which 
+                                           //   derivatives are taken.
+  double*            _scale;               // An array containing numbers which scale the
+                                           //   problem's variables.  Each entry is a "typical
+                                           //   size" for the variable of the same index.
+  int                _maxWeight;           // Maximum acceptable weight of a variable,
+                                           //   equivalent to the maximum order of derivatives
+                                           //   to be carried through calculations.
 
-  ScratchArea<T>*  _scratch;             // pointer to a common scratch area. Scratch is 
-                                         // unique for (maxweight, nvar) 
+  bool               _pbok;                // Taking Poisson brackets is OK: the dimension of 
+                                           //   phase space is even.
+
+  ScratchArea<T>*    _scratch;             // pointer to a common scratch area. Scratch is 
+                                           // unique for (maxweight, nvar) 
 
 
  // Static data members ------------------------------------------------

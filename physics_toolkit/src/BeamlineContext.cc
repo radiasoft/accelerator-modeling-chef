@@ -844,18 +844,18 @@ void BeamlineContext::_createClosedOrbit()
   // If necessary, create a new Jet environment, 
   // centered on the closed orbit, for the JetParticle.
 
-  Jet__environment_ptr storedEnv = Jet::_lastEnv;
+  Jet__environment_ptr storedEnv = Jet__environment::getLastEnv();
   Jet__environment_ptr pje = Jet__environment::makeJetEnvironment( storedEnv->maxWeight(), _p_co_p->State() );
   // ... Note: this method does not reset Jet::_lastEnv;
   // ...       thus the (possible) necessity of the next line.
-  Jet::_lastEnv = pje;
+  Jet__environment::setLastEnv(pje);
   delete _p_jp;
   _p_jp = _p_co_p->ConvertToJetParticle();
   _p_bml->propagate( *_p_jp );
 
 
-  // Before returning, restore Jet::_lastEnv
-  Jet::_lastEnv = storedEnv;
+  // Before returning, restore Jet__environment::_lastEnv
+  Jet__environment::setLastEnv(storedEnv);
 }
 
 
@@ -1075,11 +1075,11 @@ const EdwardsTengSage::Info* BeamlineContext::getETFuncPtr( int i )
 
     // Preserve/reset the current Jet environment
 
-    EnvPtr<double>                 storedEnv  = Jet::_lastEnv;
-    EnvPtr<std::complex<double> >  storedEnvC = JetC::_lastEnv;
+    EnvPtr<double>                 storedEnv  = Jet__environment::getLastEnv();
+    EnvPtr<std::complex<double> >  storedEnvC = JetC__environment::getLastEnv();
 
-    Jet::_lastEnv  = _p_jp->State().Env();
-    JetC::_lastEnv = Jet::_lastEnv ; // implicit conversion 
+     Jet__environment::setLastEnv(_p_jp->State().Env() );
+    JetC__environment::setLastEnv(Jet__environment::getLastEnv() ) ; // implicit conversion 
 
     JetParticle* ptr_arg = _p_jp->Clone();
     Mapping id( "identity" );
@@ -1089,8 +1089,8 @@ const EdwardsTengSage::Info* BeamlineContext::getETFuncPtr( int i )
     delete ptr_arg;
 
     // Restore current environment
-    Jet::_lastEnv = storedEnv;
-    JetC::_lastEnv = storedEnvC;
+    Jet__environment::setLastEnv(storedEnv);
+    JetC__environment::setLastEnv(storedEnvC);
   }
 
   if( _edwardstengFuncsCalcd ) { return (_p_ets->get_ETFuncPtr(i)); }
@@ -1125,10 +1125,10 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
     if( this->isTreatedAsRing() ) {
       covariance = this->equilibriumCovariance( _eps_1, _eps_2 );
 
-      storedEnv  = Jet::_lastEnv;
-      storedEnvC = JetC::_lastEnv;
-      Jet::_lastEnv  = _p_jp->State().Env();
-      JetC::_lastEnv = Jet::_lastEnv; //implicit conversion operator
+      storedEnv  = Jet__environment::getLastEnv();
+      storedEnvC = JetC__environment::getLastEnv();
+      Jet__environment::setLastEnv( _p_jp->State().Env() );
+      JetC__environment::setLastEnv( Jet__environment::getLastEnv() ); //implicit conversion operator
 
       ptr_arg = _p_jp->Clone();
     }
@@ -1139,8 +1139,8 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
         coordPtr = new coord* [n];
 
         // Preserve the current Jet environment
-        storedEnv  = Jet::_lastEnv;
-        storedEnvC = JetC::_lastEnv;
+        storedEnv  = Jet__environment::getLastEnv();
+        storedEnvC = JetC__environment::getLastEnv();
 
         // Create a new Jet environment
         double scale[n];
@@ -1154,7 +1154,7 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
         for( int j = 0; j < n; j++ ) {
           coordPtr[j] = new coord( _particlePtr->State(j) );
         }
-        JetC::_lastEnv = Jet__environment::EndEnvironment(scale); // implicit conversion 
+        JetC__environment::setLastEnv( Jet__environment::EndEnvironment(scale) ); // implicit conversion 
 
         ptr_arg = _particlePtr->ConvertToJetParticle();
       }
@@ -1182,8 +1182,8 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
     }
 
     // Restore current environment
-    Jet::_lastEnv = storedEnv;
-    JetC::_lastEnv = storedEnvC;
+    Jet__environment::setLastEnv( storedEnv );
+    JetC__environment::setLastEnv(storedEnvC );
   }
 
   return (_p_covs->getInfoPtr(i));
@@ -1215,17 +1215,17 @@ const LBSage::Info* BeamlineContext::getLBFuncPtr( int i )
     // Preserve current Jet environment
     //   and reset to that of *_p_jp
 
-    EnvPtr<double>                storedEnv  = Jet::_lastEnv;
-    EnvPtr<std::complex<double> > storedEnvC = JetC::_lastEnv;
+    EnvPtr<double>                storedEnv  = Jet__environment::getLastEnv();
+    EnvPtr<std::complex<double> > storedEnvC = JetC__environment::getLastEnv();
 
-    Jet::_lastEnv  = _p_jp->State().Env();
-    JetC::_lastEnv = Jet::_lastEnv; // implicit conversion 
+    Jet__environment::setLastEnv ( _p_jp->State().Env() );
+    JetC__environment::setLastEnv( Jet__environment::getLastEnv() ); // implicit conversion 
 
     _LBFuncsCalcd = ( 0 == _p_lbs->doCalc( _p_jp, beamline::yes ) );
 
     // Restore current environment
-    Jet::_lastEnv = storedEnv;
-    JetC::_lastEnv = storedEnvC;
+    Jet__environment::setLastEnv( storedEnv );
+    JetC__environment::setLastEnv( storedEnvC );
   }
 
   if( _LBFuncsCalcd ) { return (_p_lbs->getInfoPtr(i)); }
@@ -1256,11 +1256,11 @@ const DispersionSage::Info* BeamlineContext::getDispersionPtr( int i )
 
       // Preserve/reset the current Jet environment
 
-      EnvPtr<double>   storedEnv                = Jet::_lastEnv;
-      EnvPtr<std::complex<double> >  storedEnvC = JetC::_lastEnv;
+      EnvPtr<double>   storedEnv                = Jet__environment::getLastEnv();
+      EnvPtr<std::complex<double> >  storedEnvC = JetC__environment::getLastEnv();
  
-      Jet:: _lastEnv = _p_jp->State().Env();
-      JetC::_lastEnv = Jet::_lastEnv; //implicit conversion 
+      Jet__environment::setLastEnv ( _p_jp->State().Env() );
+      JetC__environment::setLastEnv ( Jet__environment::getLastEnv() ); //implicit conversion 
 
       // DispersionSage::Options newOptions;
       // newOptions.onClosedOrbit = true;
@@ -1271,8 +1271,8 @@ const DispersionSage::Info* BeamlineContext::getDispersionPtr( int i )
       _dispersionFuncsCalcd = ( 0 == errorFlag );
 
       // Restore current environment
-      Jet::_lastEnv = storedEnv;
-      JetC::_lastEnv = storedEnvC;
+      Jet__environment::setLastEnv( storedEnv );
+      JetC__environment::setLastEnv( storedEnvC );
     }
 
     // If the line is not treated as periodic, do the following:

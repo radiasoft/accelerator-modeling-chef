@@ -71,16 +71,16 @@ class DLLEXPORT TMapping: public TJetVector<T> {
 
  public: 
 
-  TMapping( int               dim        = TJet<T>::_lastEnv->spaceDim(),
+  TMapping( int               dim        = TJetEnvironment<T>::getLastEnv()->spaceDim(),
             const TJet<T>*    components = 0, 
-            EnvPtr<T> const&  env        = TJet<T>::_lastEnv );
+            EnvPtr<T> const&  env        = TJetEnvironment<T>::getLastEnv() );
 
   template<typename U>
   TMapping( TMapping<U> const& );
 
   TMapping( TMapping const& );
 
-  TMapping( const char* id, EnvPtr<T> const& env = TJet<T>::_lastEnv ); // Produces the identity.
+  TMapping( const char* id, EnvPtr<T> const& env = TJetEnvironment<T>::getLastEnv() ); // Produces the identity.
 
   TMapping( TJetVector<T> const& );
 

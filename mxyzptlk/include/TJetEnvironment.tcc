@@ -91,6 +91,9 @@ using FNAL::pcerr;
 //--------------------------------------------------------------------------------- 
 
 template<typename T> 
+EnvPtr<T>                                                           TJetEnvironment<T>::_lastEnv; // defaults to a null pointer
+
+template<typename T> 
 EnvList<T>                                                          TJetEnvironment<T>::_environments;  
 
 template<typename T> std::deque<Tcoord<T>*>                         TJetEnvironment<T>::_coordinates; 
@@ -241,7 +244,7 @@ EnvPtr<T> TJetEnvironment<T>::EndEnvironment(double* scale)
   // !TJetEnvironment<T>::_coordinates.empty()
   //----------------------------------------------------------------------.
    
-  TJet<T>::setLastEnv( pje );  
+  TJetEnvironment<T>::setLastEnv( pje );  
 
   return pje;
 }

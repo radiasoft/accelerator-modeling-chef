@@ -129,13 +129,13 @@ void Interpreter::runString(const char* s)
 
   // save the program  Jet environment ( an arbitrary script can change the environment !)
 
-  pgmEnv  =  Jet::_lastEnv; 
-  pgmEnvC = JetC::_lastEnv; 
+  pgmEnv  =  Jet__environment::getLastEnv(); 
+  pgmEnvC =  JetC__environment::getLastEnv(); 
 
   // restore the interpreter Jet environment if one was set 
 
-  if (interpreterEnv.get() )  Jet::_lastEnv  = interpreterEnv;
-  if (interpreterEnvC.get())  JetC::_lastEnv = interpreterEnvC; 
+  if (interpreterEnv.get() )  Jet__environment::setLastEnv(interpreterEnv   );
+  if (interpreterEnvC.get())  JetC__environment::setLastEnv(interpreterEnvC ); 
 
   
   //  int Py_file_input 
@@ -153,13 +153,13 @@ void Interpreter::runString(const char* s)
   
  // save the interpreter Jet environment if one was set 
 
-  interpreterEnv  =  Jet::_lastEnv; 
-  interpreterEnvC = JetC::_lastEnv; 
+  interpreterEnv  =  Jet__environment::getLastEnv(); 
+  interpreterEnvC =  JetC__environment::getLastEnv(); 
 
  // restore the program Jet environment
 
-  Jet::_lastEnv  = pgmEnv;
-  JetC::_lastEnv = pgmEnvC;
+  Jet__environment::setLastEnv( pgmEnv );
+  JetC__environment::setLastEnv(pgmEnvC );
 } 
 
 
@@ -224,13 +224,13 @@ void Interpreter::readFile(const char* fname)
 
   // save the program  Jet environment ( an arbitrary script can change the environment !)
 
-  pgmEnv  =  Jet::_lastEnv; 
-  pgmEnvC = JetC::_lastEnv; 
+  pgmEnv  =  Jet__environment::getLastEnv(); 
+  pgmEnvC =  JetC__environment::getLastEnv();
 
   // restore the interpreter Jet environment if one was set 
 
-  if (interpreterEnv.get() )  Jet::_lastEnv  = interpreterEnv;
-  if (interpreterEnvC.get())  JetC::_lastEnv = interpreterEnvC; 
+  if (interpreterEnv.get() )  Jet__environment::setLastEnv( interpreterEnv  );
+  if (interpreterEnvC.get())  JetC__environment::setLastEnv(interpreterEnvC ); 
 
 #ifdef WIN32
 
@@ -257,13 +257,13 @@ void Interpreter::readFile(const char* fname)
 
  // save the interpreter Jet environment if one was set 
 
-  interpreterEnv  =  Jet::_lastEnv; 
-  interpreterEnvC = JetC::_lastEnv; 
+  interpreterEnv  =  Jet__environment::getLastEnv(); 
+  interpreterEnvC =  JetC__environment::getLastEnv(); 
 
  // restore the program Jet environment
 
-  Jet::_lastEnv  = pgmEnv;
-  JetC::_lastEnv = pgmEnvC;
+  Jet__environment::setLastEnv(pgmEnv);
+  JetC__environment::setLastEnv(pgmEnvC);
 
   } else { 
  

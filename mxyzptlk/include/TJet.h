@@ -325,8 +325,8 @@ public:
 
   // Constructors and destructors_____________________________________
 
-  TJet( EnvPtr<T> const&     env     = _lastEnv );
-  TJet( T, EnvPtr<T> const&  env     = _lastEnv );
+  TJet( EnvPtr<T> const&     env     = TJetEnvironment<T>::getLastEnv() );
+  TJet( T, EnvPtr<T> const&  env     = TJetEnvironment<T>::getLastEnv() );
 
   TJet( TJet<T> const& );
 
@@ -342,13 +342,6 @@ public:
   // Environment management __________________________________
  
 public:
-
-  static EnvPtr<T>       _lastEnv; 
-  static EnvPtr<T>        lastEnvironment();
-  static void setLastEnv( EnvPtr<T> const& pje); 
-
-
-  // static void EnlargeEnvironment( const TJetEnvironment<T>* );
 
 
   void setEnvTo( const TJet& );                   // Changes environment to
@@ -645,19 +638,6 @@ inline bool TJet<T>::isNilpotent() const
   return _jl->isNilpotent();
 }
 
-
-template<typename T>
-inline EnvPtr<T> TJet<T>::lastEnvironment()
-{
-  return _lastEnv;
-}
-
-template<typename T>
-inline void TJet<T>::setLastEnv(EnvPtr<T> const& pje) 
-{
-  TJet<T>::_lastEnv =  pje;
-
-}
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES
 #include<mxyzptlk/TJet.tcc>

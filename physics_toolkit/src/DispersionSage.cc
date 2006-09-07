@@ -204,7 +204,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   _finishConstructor();
 
   // Preserve the current Jet environment
-  Jet__environment_ptr storedEnv = Jet::_lastEnv;
+  Jet__environment_ptr storedEnv = Jet__environment::getLastEnv();
 
   int ret = 0;
   Particle* firstParticle = 0;
@@ -274,7 +274,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
         if( firstParticle  ) { delete firstParticle;   firstParticle = 0; }
         if( secondParticle ) { delete secondParticle;  secondParticle = 0;}
         if( local_jp       ) { delete local_jp;        local_jp = 0;      }
-        Jet::_lastEnv = storedEnv;
+        Jet__environment::setLastEnv( storedEnv );
         return ret;
       }
     }
@@ -284,7 +284,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   // At this point,  *p_jp is on a closed orbit, with
   //   appropriate Jet__environment. 
   //   For purposes of paranoia, I reset Jet::_lastEnv here.
-  Jet::_lastEnv = p_jp->State().Env();
+  Jet__environment::setLastEnv( p_jp->State().Env() );
 
 
   // Calculate the closed orbit for an off-momentum particle ...
@@ -341,7 +341,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
       if( firstParticle  ) { delete firstParticle;   firstParticle = 0; }
       if( secondParticle ) { delete secondParticle;  secondParticle = 0;}
       if( local_jp       ) { delete local_jp;        local_jp = 0;      }
-      Jet::_lastEnv = storedEnv;
+      Jet__environment::setLastEnv( storedEnv );
       return ret;
     }
   }
@@ -405,7 +405,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
     if( firstParticle  ) { delete firstParticle;   firstParticle = 0; }
     if( secondParticle ) { delete secondParticle;  secondParticle = 0;}
     if( local_jp       ) { delete local_jp;        local_jp = 0;      }
-    Jet::_lastEnv = storedEnv;
+    Jet__environment::setLastEnv( storedEnv );
     return ret;
   }
 
@@ -419,7 +419,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   if( firstParticle  ) { delete firstParticle;   firstParticle = 0; }
   if( secondParticle ) { delete secondParticle;  secondParticle = 0;}
   if( local_jp       ) { delete local_jp;        local_jp = 0;      }
-  Jet::_lastEnv = storedEnv;
+  Jet__environment::setLastEnv( storedEnv );
   return ret;
 }
 

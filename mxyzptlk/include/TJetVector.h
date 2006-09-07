@@ -120,7 +120,7 @@ public:
  
   TJetVector( int   dim = -1,
               const TJet<T>* components = 0, 
-              EnvPtr<T> const& env = (TJet<T>::lastEnvironment()) );
+              EnvPtr<T> const& env = (TJetEnvironment<T>::getLastEnv()) );
   TJetVector( TJetVector const& );
 
   template<typename U>
