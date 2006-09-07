@@ -183,8 +183,8 @@ int LattFuncSage::pushCalc( const Particle& prt,
   coord** coordPtr = new coord* [N];
 
   // Preserve the current Jet environment
-  Jet__environment_ptr  storedEnv  = Jet::_lastEnv;
-  JetC__environment_ptr storedEnvC = JetC::_lastEnv;
+  Jet__environment_ptr  storedEnv  = Jet__environment::getLastEnv();
+  JetC__environment_ptr storedEnvC = JetC__environment::getLastEnv();
 
   // Create a new Jet environment
   double scale[N];
@@ -199,7 +199,7 @@ int LattFuncSage::pushCalc( const Particle& prt,
     coordPtr[i] = new coord( prt.State(i) );
   }
 
-  JetC::_lastEnv = Jet__environment::EndEnvironment(scale); // implicit conversion 
+  JetC__environment::setLastEnv( Jet__environment::EndEnvironment(scale) ); // implicit conversion 
  
 
   Particle* p0Ptr = prt.Clone();
@@ -274,8 +274,8 @@ int LattFuncSage::pushCalc( const Particle& prt,
   // --------------------------------------------------------------------
   
   // Clean up before exit
-  Jet::_lastEnv  = storedEnv;
-  JetC::_lastEnv = storedEnvC;
+  Jet__environment::setLastEnv( storedEnv );
+  JetC__environment::setLastEnv( storedEnvC );
   for( i = 0; i < N; i++ ) { delete coordPtr[i]; }
   delete [] coordPtr;
   
@@ -880,12 +880,12 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
   }
 
   // Preserve the current Jet environment
-  EnvPtr<double>                 storedEnv  = Jet::_lastEnv;
-  EnvPtr<std::complex<double> >  storedEnvC = JetC::_lastEnv;
+  Jet__environment_ptr  storedEnv  = Jet__environment::getLastEnv();
+  JetC__environment_ptr storedEnvC = JetC__environment::getLastEnv();
 
   // Reset current environment
-  Jet::_lastEnv  = arg_jp->State().Env();
-  JetC::_lastEnv = Jet::_lastEnv; // implicit conversion 
+  Jet__environment::setLastEnv( arg_jp->State().Env() );
+  JetC__environment::setLastEnv( Jet__environment::getLastEnv() ); // implicit conversion 
 
   MatrixD mtrx;
   LattFuncSage::lattFunc* infoPtr;
@@ -950,8 +950,8 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
 
     delete prt;
     delete jprt;
-    Jet::_lastEnv  = storedEnv;
-    JetC::_lastEnv = storedEnvC;
+    Jet__environment::setLastEnv(storedEnv );
+    JetC__environment::setLastEnv( storedEnvC );
     return LattFuncSage::UNSTABLE;
   }
 
@@ -964,8 +964,8 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
 
     delete prt;
     delete jprt;
-    Jet::_lastEnv = storedEnv;
-    JetC::_lastEnv = storedEnvC;
+    Jet__environment::setLastEnv( storedEnv );
+    JetC__environment::setLastEnv( storedEnvC );
     return LattFuncSage::INTEGER_TUNE;
   }
 
@@ -993,8 +993,8 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
 
     delete prt;
     delete jprt;
-    Jet::_lastEnv = storedEnv;
-    JetC::_lastEnv = storedEnvC;
+    Jet__environment::setLastEnv( storedEnv );
+    JetC__environment::setLastEnv( storedEnvC );
     return LattFuncSage::UNSTABLE;
   }
 
@@ -1007,8 +1007,8 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
 
     delete prt;
     delete jprt;
-    Jet::_lastEnv = storedEnv;
-    JetC::_lastEnv = storedEnvC;
+    Jet__environment::setLastEnv( storedEnv );
+    JetC__environment::setLastEnv( storedEnvC );
     return LattFuncSage::INTEGER_TUNE;
   }
 
@@ -1122,8 +1122,8 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
   delete prt;
   delete jprt;
 
-  Jet::_lastEnv = storedEnv;
-  JetC::_lastEnv = storedEnvC;
+  Jet__environment::setLastEnv( storedEnv );
+  JetC__environment::setLastEnv( storedEnvC );
   return ret;
 }
 

@@ -29,22 +29,22 @@
 
 static EnvPtr<std::complex<double> > getLastEnvC_local( ) 
 {
-  return JetC::_lastEnv; 
+  return JetC__environment::getLastEnv(); 
 }
 
 static EnvPtr<double>  getLastEnv_local( ) 
 {
-  return Jet::_lastEnv; 
+  return Jet__environment::getLastEnv(); 
 }
 
 static void setLastEnvC_local( EnvPtr<std::complex<double> > const& env ) 
 {
-  JetC::_lastEnv = env; 
+  JetC__environment::setLastEnv(env); 
 }
 
 static void setLastEnv_local(  EnvPtr<double> const& env  ) 
 {
-  Jet::_lastEnv = env; 
+  Jet__environment::setLastEnv(env); 
 }
 
 static TJet<double>  (*log_ptr  )(const TJet<double>& )          = &::log;

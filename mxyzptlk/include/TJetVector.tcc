@@ -95,7 +95,7 @@ TJetVector<T>::TJetVector( int n, const TJet<T>* x, EnvPtr<T> const& pje )
   CHECKOUT(n <= 0, "TJetVector<T>::TJetVector<T>", "Dimension must be positive.")
   CHECKOUT(pje == 0, "TJetVector<T>::TJetVector<T>", "Environment is required.")
 
-  if ( n < 0 ) { n = TJet<T>::lastEnvironment()->numVar(); }
+  if ( n < 0 ) { n = TJetEnvironment<T>::getLastEnv()->numVar(); }
 
   _myEnv = pje;
   _dim   = n;

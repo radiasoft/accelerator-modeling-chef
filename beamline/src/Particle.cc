@@ -43,6 +43,7 @@
 
 #include <beamline/Particle.h>
 #include <basic_toolkit/PhysicsConstants.h>
+#include <mxyzptlk/Jet__environment.h>
 
 // Error flags for _tag manipulation functions.
 const short Particle::BF_OK         = 0;
@@ -631,7 +632,7 @@ JetParticle* AntiMuon::ConvertToJetParticle() const
 JetParticle::JetParticle( double mass ) {
  q     = 0.0;
  // ??? REMOVE for( int i = 0; i < BMLN_dynDim; i++ )  state.SetComponent( i, 0.0 );
- state = Mapping( "id", Jet::_lastEnv );
+ state = Mapping( "id", Jet__environment::getLastEnv() );
  E     = mass;
  p     = 0.0;
  m     = mass;
@@ -644,7 +645,7 @@ JetParticle::JetParticle( double mass ) {
 
 JetParticle::JetParticle( double mass, double energy ) {
  q = 0.0;
- state = Mapping( "id", Jet::_lastEnv );
+ state = Mapping( "id", Jet__environment::getLastEnv() );
  m = mass;
  E = energy;
  if( E < m ) {
@@ -665,9 +666,9 @@ JetParticle::JetParticle( double mass, double energy ) {
 
 JetParticle::JetParticle( double mass, double energy, double* s ) {
  q = 0.0;
- state = Mapping( "id", Jet::_lastEnv );
+ state = Mapping( "id", Jet__environment::getLastEnv() );
  for( int i = 0; i < state.Dim(); i++ )  
-   state(i) = state(i) + ( s[i] - Jet::_lastEnv->refPoint()[i] );
+   state(i) = state(i) + ( s[i] - Jet__environment::getLastEnv()->refPoint()[i] );
  m = mass;
  E = energy;
  if( E < m ) {
@@ -688,9 +689,9 @@ JetParticle::JetParticle( double mass, double energy, double* s ) {
 
 JetParticle::JetParticle( const Particle& u ) {
  q = u.Charge();
- state = Mapping( "id", Jet::_lastEnv );
+ state = Mapping( "id", Jet__environment::getLastEnv() );
  for( int i = 0; i < state.Dim(); i++ )  
-   state(i) = state(i) + ( u.State(i) - Jet::_lastEnv->refPoint()[i] );
+   state(i) = state(i) + ( u.State(i) - Jet__environment::getLastEnv()->refPoint()[i] );
  m = u.Mass();
  E = u.ReferenceEnergy();
  if( E < m ) {
@@ -789,7 +790,7 @@ void JetParticle::createStandardEnvironments( int deg )
   Jet__environment::BeginEnvironment( deg );
   coord x(0.0),  y(0.0),  z(0.0),
        px(0.0), py(0.0), pz(0.0);
-  JetC::_lastEnv  =  Jet__environment::EndEnvironment(scale); // implicit conversion
+  JetC__environment::setLastEnv( Jet__environment::EndEnvironment(scale) ); // implicit conversion
 }
 
 

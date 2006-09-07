@@ -86,10 +86,10 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
   // Preliminary steps ...
 
-  Jet__environment_ptr  storedEnv  = Jet::_lastEnv;
-  JetC__environment_ptr storedEnvC = JetC::_lastEnv;
+  Jet__environment_ptr  storedEnv  = Jet__environment::getLastEnv();
+  JetC__environment_ptr storedEnvC = JetC__environment::getLastEnv();
 
-  Jet::_lastEnv = p_jp->State().Env();
+  Jet__environment::setLastEnv( p_jp->State().Env() );
 
 
   // Data structures for handling RF ...
@@ -187,12 +187,12 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   Vector z( BMLN_dynDim );
   z = p_prt->State();
 
-  Jet::_lastEnv = TJetEnvironment<double>::getApproxJetEnvironment(Jet::_lastEnv->maxWeight(), z);
+  Jet__environment::setLastEnv( Jet__environment::getApproxJetEnvironment(Jet__environment::getLastEnv()->maxWeight(), z));
 
   bool newcoords = false;
   coord*  tmpcoord[BMLN_dynDim];
 
-  if ( !Jet::_lastEnv ) {  // true if there was no suitable approximate Environment  
+  if ( !Jet__environment::getLastEnv() ) {  // true if there was no suitable approximate Environment  
     Jet__environment::BeginEnvironment( p_jp->State().Env()->maxWeight() );
     for( i = 0; i < BMLN_dynDim; i++ ) { 
       tmpcoord[i] = new coord(z(i)); 
@@ -231,8 +231,8 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
   // ... Reset the Jet environment to its incoming state
 
-  Jet::_lastEnv  = storedEnv;
-  JetC::_lastEnv = storedEnvC;
+  Jet__environment::setLastEnv(storedEnv);
+  JetC__environment::setLastEnv(storedEnvC);
 
   // ... delete temporary coordinates 
   if( newcoords ) {

@@ -75,10 +75,6 @@
 //      static variables
 //-----------------------------------------------------------------
 
-template<typename T> 
-EnvPtr<T> TJet<T>::_lastEnv; // defaults to a null pointer
-
-
 using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
