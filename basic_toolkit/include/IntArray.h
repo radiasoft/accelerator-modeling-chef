@@ -46,6 +46,11 @@
 ******  - added iterator classes
 ******  - eliminated inefficient array style 
 ******    dereferencing 
+*****
+******  Sep 2006 ostiguy@fnal.gov 
+******
+****** - added MonomialOrderPredicate member. 
+******   (useful for debugging)
 ******   
 *************************************************************************/
 
@@ -73,8 +78,12 @@ typedef signed char exponent_t;
 
 // **************************************************************************
 
+
+class IntArray;
 class IntArrayIterator;
 class IntArrayReverseIterator;
+
+bool  MonomialOrderPredicate( IntArray const& a1, IntArray const& a2);
 
 class DLLEXPORT IntArray {
 
@@ -89,13 +98,15 @@ protected:
 public:
 
   // Constructors and the destructor ...
-  IntArray( int         dim = intarray_max_variables,
-            const int*  components = 0 );
-  IntArray( const IntArray& );
+  IntArray( int              dim = intarray_max_variables,
+            int const* const components = 0 );
+
+  IntArray( IntArray const& x): _dim(x._dim) { memcpy((void *)_comp, (const void *)x._comp, _dim * sizeof(exponent_t)); }
 
   // ~IntArray();  MUST NOT BE DEFINED !
 
   // Assignment ...
+
   void     Set              ( const int* );
   void     Set              ( int  );
 
@@ -105,29 +116,31 @@ public:
   inline exponent_t&  operator()       ( int  i)
      { return _comp[i]; }    // set    component
 
-  void     Reconstruct( int = 0, const int* = 0 );  
-  void     Reconstruct( const IntArray& );  
-           // Just like constructor
+  //void     Reconstruct( int = 0, const int* = 0 );  
+  //void     Reconstruct( const IntArray& );  
+
+ // Just like constructor
 
   // Functions ...
-  IntArray&     operator=      ( const IntArray& );
 
-  bool          operator==     ( const IntArray& ) const;
-  bool          operator!=     ( const IntArray& ) const;
-  bool          operator<      ( const IntArray& ) const;
-  bool          operator<=     ( const IntArray& ) const;
-  bool          operator>      ( const IntArray& ) const;
-  bool          operator>=     ( const IntArray& ) const;
+  IntArray&     operator=      ( IntArray const& );
+
+  bool          operator==     ( IntArray const& ) const;
+  bool          operator!=     ( IntArray const& ) const;
+  bool          operator<      ( IntArray const& ) const;
+  bool          operator<=     ( IntArray const& ) const;
+  bool          operator>      ( IntArray const& ) const; // compares weights only 
+  bool          operator>=     ( IntArray const& ) const;
 
   bool          operator==     ( int ) const;
   bool          operator!=     ( int ) const;
 
   bool          IsNull         () const;
 
-  // This operator+ does not belong here, because an "array"
-  //   is not a "vector." The proper approach would be to
-  //   define a derived class IntVector : public IntArray
-  IntArray      operator+( const IntArray& );
+
+  friend bool   MonomialOrderPredicate( IntArray const& a1, IntArray const& a2);
+
+  IntArray      operator+( const IntArray& ) const;
 
   // Queries ...
    int  Dim() const { return _dim; }
@@ -151,8 +164,32 @@ public:
 
 };
  
+
+inline int IntArray::Sum() const {
+    
+     exponent_t s = 0;
+     const exponent_t* comp_ptr  = &_comp[0] - 1;  
+     int count = _dim+1;
+     while (--count) s += *(++comp_ptr);
+     return s;
+}
+
+
+inline IntArray IntArray::operator+( IntArray const& y) const {
+     
+     IntArray ret( *this );
+     const exponent_t* yPtr = &(y._comp[0])   - 1;  
+     exponent_t* xPtr = &(ret._comp[0]) - 1; 
+
+     const exponent_t* upper = yPtr + _dim;
+     while( yPtr < upper ) { 
+        *(++xPtr) += *(++yPtr);
+     }
+     return ret;
+}
+
 // -----------------------------------------------------------------
-// Iterator classes with all inline member functions for efficiency. 
+// Iterator classes with inlined member functions for efficiency. 
 //------------------------------------------------------------------
 
 class IntArrayIterator{
@@ -160,8 +197,8 @@ class IntArrayIterator{
  public:
 
   IntArrayIterator( const IntArray& a): _origin(&a._comp[0] - 1), _current_index(_origin) { }
-  int operator()() { return *(++_current_index); }
-  void reset(){ _current_index = _origin; }
+  int operator()()   { return *(++_current_index); }
+  void reset()       { _current_index = _origin;   }
 
  protected:
 
@@ -176,7 +213,7 @@ class IntArrayReverseIterator{
 
   IntArrayReverseIterator( const IntArray& a): _origin(&a._comp[a._dim]), _current_index(_origin) { }
   int operator()() { return *(--_current_index); }
-  void reset(){ _current_index = _origin; }
+  void reset()     { _current_index = _origin;   }
 
  protected:
 

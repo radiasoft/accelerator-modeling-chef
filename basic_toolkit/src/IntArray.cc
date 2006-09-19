@@ -45,6 +45,14 @@
 ******  - added iterator classes
 ******  - eliminated inefficient array style 
 ******    dereferencing 
+******
+****** Sep 2006 ostiguy@fnal.gov
+******  
+****** - eliminated archaic "Reconstruct" members. 
+******   Use placement new syntax instead.  
+****** - added MonomialOrderPredicate member. 
+******   (useful for debugging)
+******
 ******   
 *************************************************************************
 *************************************************************************/
@@ -91,7 +99,7 @@ const char* IntArray::GenericException::what() const throw()
     throw( IntArray::GenericException( fcn, message ) ); \
   }
 
-IntArray::IntArray( int n, const int* x ): _dim(n)
+IntArray::IntArray( int n, int const* const x ): _dim(n)
 {
 
   // This function depends on endian-ness of the CPU !
@@ -109,12 +117,6 @@ IntArray::IntArray( int n, const int* x ): _dim(n)
 
 }
 
-IntArray::IntArray( const IntArray& x ) : _dim(x._dim)
-{
-
-  memcpy((void *)_comp, (const void *)x._comp, _dim * sizeof(exponent_t));
-
-}
 
 // Assignment ...
 
@@ -144,31 +146,6 @@ void IntArray::Set( int x )
 
 
 
-void IntArray::Reconstruct( int n, const int* x )
-{
- 
-  exponent_t*       comp_ptr = &_comp[0] - 1;
-          const int* x_ptr    =  x -1 ;
-  
-  _dim  = n;
-  int count = _dim+1; 
-  
-  if (x) while (--count) *(++comp_ptr) = *(++x_ptr);
-  else   while (--count) *(++comp_ptr) = 0;
-
-}
-
-void IntArray::Reconstruct( const IntArray& x )
-{
-
-  exponent_t*       comp_ptr = &_comp[0]  - 1;
-  const exponent_t* x_ptr    = &(x._comp[0]) - 1;
-  
-  _dim = x.Dim();
-  int count = _dim+1; 
-  while ( --count ) *(++comp_ptr) = *(++x_ptr);
-
-}
 
 // Algebraic functions ...
 
@@ -179,30 +156,6 @@ IntArray& IntArray::operator= ( const IntArray& x )
 }
 
 
-IntArray IntArray::operator+( const IntArray& y )
-{
-  IntArray ret( *this );
-  const exponent_t* yPtr = &(y._comp[0])   - 1;  
-        exponent_t* xPtr = &(ret._comp[0]) - 1; 
-
-  const exponent_t* upper = yPtr + _dim;
-  while( yPtr < upper ) { 
-    *(++xPtr) += *(++yPtr);
-
-  }
-  return ret;
-}
-
-
-int IntArray::Sum() const
-{
-  int s = 0;
-  const exponent_t* comp_ptr  = &_comp[0] - 1;  
-  int count = _dim+1;
-
-  while (--count) s += *(++comp_ptr);
-  return s;
-}
 
 // Boolean functions ...
 
@@ -358,11 +311,57 @@ std::istream& operator>>( std::istream& is, IntArray& x )
   return is;
 }
 
-// this destructor should never be called !!!
+// The destructor should never be called !!!
+
 #if  0
 IntArray::~IntArray() { }
 #endif
 
 
+bool  MonomialOrderPredicate( IntArray const& a1, IntArray const& a2) {
+ 
+ 
+  // Sample ordering ...
+  // 
+  // Index: ( 0, 0, 0, 0, 0, 0 )    
+  // Index: ( 1, 0, 0, 0, 0, 0 )    
+  // Index: ( 0, 1, 0, 0, 0, 0 )    
+  // Index: ( 0, 0, 1, 0, 0, 0 )    
+  // Index: ( 2, 0, 0, 0, 0, 0 )    
+  // Index: ( 1, 1, 0, 0, 0, 0 )    
+  // Index: ( 0, 2, 0, 0, 0, 0 )    
+  // Index: ( 1, 0, 1, 0, 0, 0 )    
+  // Index: ( 0, 1, 1, 0, 0, 0 )    
+  // Index: ( 0, 0, 2, 0, 0, 0 )    
+  // Index: ( 3, 0, 0, 0, 0, 0 )    
+  // Index: ( 2, 1, 0, 0, 0, 0 )    
+  // Index: ( 1, 2, 0, 0, 0, 0 )    
+  // Index: ( 0, 3, 0, 0, 0, 0 ) 
 
+   int w1 = 0;
+   int w2 = 0;
 
+   exponent_t const* p1 = &a1._comp[0];
+   exponent_t const* p2 = &a2._comp[0];
+  
+   for (int i=0; i<a1._dim; ++i) {
+   
+     w1 += *p1;
+     w2 += *p2;
+  
+     ++p1; ++p2;
+   };
+
+   if (w1 > w2) return true; 
+
+   p1 = &a1._comp[0];
+   p2 = &a2._comp[0];
+  
+   for (int i=0; i<a1._dim; ++i) {
+   
+     if (*p1 < *p2)  return true;
+     ++p1; ++p2;
+   }
+
+   return false;
+}

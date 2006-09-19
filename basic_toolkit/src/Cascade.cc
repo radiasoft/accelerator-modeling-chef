@@ -30,7 +30,14 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-**************************************************************************
+****** Revision History
+******
+****** Sep 2006     Jean-Francois Ostiguy
+******              ostiguy@fnal.gov
+******
+****** - eliminated archaic "reconstruct" member functions. 
+******   Use placemnent new instead.                                     
+********************************************************************************
 *************************************************************************/
 
 #if HAVE_CONFIG_H
@@ -75,32 +82,6 @@ Switch::Switch( const Switch& x )
   _index(x._index),
   _xpt(x._xpt) // , _terminator(x._terminator)
 {
-  _finishConstructor();
-}
-
-
-void Switch::reconstruct( int maxWeight, int indexValue, const IntArray& x )
-{
-  _clean();
-  // REMOVE: this->~Switch();
-  _w = maxWeight;
-  _index = indexValue;
-  _xpt.Reconstruct( x.Dim(), 0 );
-  _xpt = x;
-  // _terminator = false;
-  _finishConstructor();
-}
-
-
-void Switch::reconstruct( const Switch& x )
-{
-  _clean();
-  // REMOVE:   this->~Switch();
-  _w = x._w;
-  _index = x._index;
-  _xpt.Reconstruct( x._xpt.Dim(), 0 );
-  _xpt = x._xpt;
-  // _terminator = x._terminator;
   _finishConstructor();
 }
 
@@ -150,36 +131,6 @@ Cascade::Cascade( const Cascade& x )
 }
 
 
-void Cascade::reconstruct( int weight, int numvar, bool verbosity )
-{
-  _clean();
-  // REMOVE:   this->~Cascade();
-
-  _maxWeight         = weight;
-  _numVar            = numvar;
-  _numberOfMonomials = bcfRec( weight + numvar, numvar );
-  _numberOfSwitches  = 0;
-  _verbose           = verbosity;
-
-  _finishConstructor();
-}
-
-
-void Cascade::reconstruct( const Cascade& x )
-{
-  _clean();
-  // REMOVE:   this->~Cascade();
-
-  _maxWeight         = x._maxWeight;
-  _numVar            = x._numVar;
-  _numberOfMonomials = bcfRec( _maxWeight + _numVar, _numVar );
-  _numberOfSwitches  = 0;
-  _verbose           = x._verbose;
-
-  _finishConstructor();
-}
-
-
 void Cascade::_finishConstructor()
 {
   // Construct an array of switches
@@ -217,24 +168,24 @@ void Cascade::_finishConstructor()
   if( _verbose ) { (*pcout) << "Making: " << e << endl; }
 
   if( swPtr < upperBound ) {
-    swPtr->reconstruct( _maxWeight, counter++, e );
+    new (swPtr) Switch( _maxWeight, counter++, e );
   }
   else {
     exit(-7);
   }
   setOfSwitches.append(swPtr);
   swPtr++;
-  // swPtr->_terminator = true;
-  // swPtr->_arrow[0] = &swPtr;
 
 
   // Initialize remaining Switches
+
   for( int i = 1; i <= _maxWeight; i++ ) {
+
     while( nexcom( i, _numVar, f) ) {
       e.Set(f);
       if( _verbose ) { (*pcout) << "Making: " << e << endl; }
       if( swPtr < upperBound ) {
-        swPtr->reconstruct( _maxWeight, counter++, e );
+        new (swPtr) Switch( _maxWeight, counter++, e );
       }
       else {
         exit(-7);
@@ -315,7 +266,7 @@ void Cascade::_finishConstructor()
 
       else {  // Not found
         if( swPtr < upperBound ) {
-          swPtr->reconstruct( _maxWeight, -1, dummy );
+          new (swPtr) Switch( _maxWeight, -1, dummy );
           // if( swPtr->_terminator ) {
           //   swPtr->_arrow[0] = swPtr; ???
           // }
@@ -446,36 +397,6 @@ void Cascade::_clean()
 }
 
 
-// DEPRECATED: int Cascade::index( const IntArray& e ) const
-// DEPRECATED: {
-// DEPRECATED:   Switch* swPtr = _startPoint[e(0)];
-// DEPRECATED:   for( int j = 1; j < _numVar; ++j ) {
-// DEPRECATED:     swPtr = (Switch*) (swPtr->_arrow[e(j)]); 
-// DEPRECATED:   }
-// DEPRECATED:   return swPtr->_index;
-// DEPRECATED: }
-
-
-int Cascade::index( const IntArray& e ) const
-{
-  IntArrayIterator getNext( e );
-  Switch* swPtr = _startPoint[ getNext() ];
-  for( int j = 1; j < _numVar; ++j ) {
-    swPtr = (Switch*) ( swPtr->_arrow[ getNext() ] ); 
-  }
-  return swPtr->_index;
-}
-
-
-// DEPRECATED: int Cascade::index( const int e[] ) const
-// DEPRECATED: {
-// DEPRECATED:   const int* idx = &e[0] - 1;
-// DEPRECATED:   Switch* swPtr = _startPoint[ *(++idx) ];
-// DEPRECATED:   for( int j = 1; j < _numVar; j++ ) {
-// DEPRECATED:     swPtr = (Switch*) (swPtr->_arrow[*(++idx)]);
-// DEPRECATED:   }
-// DEPRECATED:   return swPtr->_index;
-// DEPRECATED: }
 
 
 int Cascade::index( const int e[] ) const
