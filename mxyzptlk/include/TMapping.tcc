@@ -270,14 +270,9 @@ TMapping<T> TMapping<T>::inverse() const
    if( !ref_pt_image_is_zero[j] ) { 
 
      // NOTE: calling get() here implicitly clones z._comp[j] !!!!;
-     (z._comp[j].get())->_deleted = true; // pops out and deletes the first term (i.e. the weight==0 term);        
-
-     // replace the weight==0 term with a new one that has value 0 
-     TJLterm<T> tmp_term( z._myEnv->allZeroes(), T(), z._myEnv);
-     z._comp[j].addTerm( TJLterm<T>( z._myEnv->allZeroes(), T(), z._myEnv));
-   }
+     z._comp[j].setStandardPart( T () ); 
+  }
  }
-
  // In case the original reference point was not zero, set the reference point of each component to zero 
  // before taking an inverse.
   

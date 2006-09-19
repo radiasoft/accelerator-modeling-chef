@@ -252,6 +252,12 @@ template
 TJet<std::complex<double> > asin(TJet<std::complex<double> > const&);
 
 template 
+TJet<double > acos(TJet<double > const&);
+
+template 
+TJet<std::complex<double> > acos(TJet<std::complex<double> > const&);
+
+template 
 TJet<double > atan(TJet<double > const&);
 
 template 
@@ -301,6 +307,12 @@ TJet<double > cos(TJet<double > const&);
 
 template 
 TJet<std::complex<double> > cos(TJet<std::complex<double> > const&);
+
+template 
+TJet<double > tan(TJet<double > const&);
+
+template 
+TJet<std::complex<double> > tan(TJet<std::complex<double> > const&);
 
 template 
 TJet<double > pow(TJet<double > const&, int);

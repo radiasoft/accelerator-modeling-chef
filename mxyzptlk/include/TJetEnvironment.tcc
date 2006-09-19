@@ -87,49 +87,55 @@ using FNAL::pcout;
 using FNAL::pcerr;
 
 // --------------------------------------------------------------------------------
+// IMPORTANT NOTE: The effect of calling exit() or returning from main() is to call the destructors 
+// for all static objects, ***in the reverse order of their construction *** (automatic objects are not destructed).
+// This may seem unabiguous ... unfortunately, according to the current std, the order of construction is *unspecified* !
+//
+// The last-in-first-out process also incorporates functions registered with atexit(), such that a function 
+// registered with atexit() after a static object is constructed, will be called before that static object is destructed.
+// EnvPtr<>s are kept in a static (list) container. When the program terminates, the destructor for this container is
+// called. All the contained objects are "destroyed" (dispose() is called only if refcount = 0). 
+// Unfortunately, there may be static instances of  EnvPtr in existence with refcount=1 *after* the list is destroyed. 
+// When their destructor is called, the dispose() function will be called. In normal operations, dispose() removes 
+// the object from the list ... but at this point the list is gone ! 
+// 
+// The kludge below is meant to work around this sort problem.  Note that the _environments list destructor will never be called
+// because the destructors are **not** called for **dynamic** objects upon exit from the main program.    
+// Perhaps a cleaner scheme based on atexit() should be explored. -JFO
+ 
+// --------------------------------------------------------------------------------
 //  Static variables
 //--------------------------------------------------------------------------------- 
 
 template<typename T> 
-EnvPtr<T>                                                           TJetEnvironment<T>::_lastEnv; // defaults to a null pointer
+EnvPtr<T>                                     TJetEnvironment<T>::_lastEnv; // defaults to a null pointer
 
 template<typename T> 
-EnvList<T>                                                          TJetEnvironment<T>::_environments;  
-
-template<typename T> std::deque<Tcoord<T>*>                         TJetEnvironment<T>::_coordinates; 
-template<typename T> std::deque<Tparam<T>*>                         TJetEnvironment<T>::_parameters;  
+std::list<EnvPtr<T> >&                        TJetEnvironment<T>::_environments 
+               = *( new std::list<EnvPtr<T> >() );
 
 template<typename T> 
-std::list<typename TJetEnvironment<T>::template ScratchArea<T>* >   TJetEnvironment<T>::_scratch_areas;  
+std::deque<Tcoord<T>*>&                       TJetEnvironment<T>::_coordinates
+               = *(new std::deque<Tcoord<T>*>() );
 
-template<typename T> int                                            TJetEnvironment<T>::_tmp_maxWeight = 0;
+template<typename T> 
+std::deque<Tparam<T>*>&                        TJetEnvironment<T>::_parameters  
+               = *( new std::deque<Tparam<T>*>() );
+
+
+template<typename T> 
+std::list<typename TJetEnvironment<T>::template ScratchArea<T>* >&  TJetEnvironment<T>::_scratch_areas 
+               = * (new std::list<typename TJetEnvironment<T>::template ScratchArea<T>* >() ); 
+  
+
+template<typename T> int                       TJetEnvironment<T>::_tmp_maxWeight = 0;
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-template<typename T>
-EnvList<T>::~EnvList() {   
 
-  // IMPORTANT NOTE: The effect of calling exit() or returning from main() is to call the destructors 
-  // for all static objects, ***in the reverse order of their construction *** (automatic objects are not destructed). 
-  // This last-in-first-out process also incorporates functions registered with atexit(), such that a function 
-  // registered with atexit() after a static object is constructed, will be called before that static object is destructed.
-  // EnvPtr<>s are kept in a static (list) container. When the program terminates, the destructor for this container is
-  // called. All the contained objects are "destroyed" (dispose() is called only if refcount = 0). 
-  // Unfortunately, there may be static instances of  EnvPtr in existence with refcount=1 *after* the list is destroyed. 
-  // When their destructor is called, the dispose() function will be called. In normal operations, dispose() removes 
-  // the object from the list ... but at this point the list is gone ! 
-  // 
-  // The unfortunate kludge below is meant to work around this problem. A flag is set at the time where the 
-  // list destructor is called. This flag is used to prevent dispose() to iterate through a non-existent list 
-  // Actually, dispose() then does nothing and just returns. 
-  // A better and cleaner scheme based on atexit() should be explored. -JFO
- 
-     _destructor_called = true;
-
-}
 
 // ================================================================
 //      Implementation of TJetEnvironment
@@ -307,8 +313,6 @@ template<typename T>
 void TJetEnvironment<T>::dispose() {
 
 
-  if( TJetEnvironment<T>::_environments._destructor_called ) return; // do nothing (see note at the top of this file)
-
   TJetEnvironment* pje = 0;
 
   typename std::list<EnvPtr<T> >::iterator iter;
@@ -357,13 +361,13 @@ TJetEnvironment<T>::TJetEnvironment(int maxweight, int numvar, int spacedim, T* 
   _refPoint(new T[numvar]),       // reference point (set to zero by default)
   _scale(new double[numvar]),     // scale (set to 1.0e-3 by default) should be a Vector
   _maxWeight(maxweight),          // maximum weight (polynomial order)
-  _pbok(numvar>spacedim),         // THIS IS HERE FOR COMPATIBILITY WITH EARLIER VERSIONS
+  _pbok(numvar>spacedim)          // THIS IS HERE FOR COMPATIBILITY WITH EARLIER VERSIONS
                                   // _pbok was used as a flag to detect the presence of parameters 
                                   // poisson bracket OK is true only when phase space dimension is even; 
                                   // Consider simply checking the space dimensions before taking a PB ? 
 
-  _scratch( _buildScratchPads(maxweight, numvar) )
  {
+  _scratch = _buildScratchPads(maxweight, numvar);
 
     
   for (int i=0; i<_numVar; ++i) {   
@@ -404,14 +408,14 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
  IntArray powers(n);
  T startValue(0.0);
 
- _TJLmml[0].Reconstruct( powers, startValue );
+ new ( &_TJLmml[0] ) TJLterm<T>( powers, startValue );
 
  int i = 1;
  for( int wd = 1; wd <= w; wd++ ) {
    while( nexcom( wd, n, _exponent ) ) {
      powers.Set(_exponent);
      if( i < _maxTerms ) {
-       _TJLmml[i].Reconstruct( powers, startValue ); 
+       new ( &_TJLmml[i]) TJLterm<T>( powers, startValue );
      }
      else {
        throw( GenericException( __FILE__, __LINE__, 
@@ -429,6 +433,8 @@ template<typename T>
 template<typename U>
 TJetEnvironment<T>::ScratchArea<U>::~ScratchArea()
 {
+
+  std::cout << "TJetEnvironment<T>::ScratchArea<U>::~ScratchArea()" << std::endl;
 
   if( _monomial   )  { delete [] _monomial;    _monomial    = 0; }
 

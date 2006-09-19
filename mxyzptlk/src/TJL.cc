@@ -68,14 +68,13 @@ using FNAL::pcerr;
 template<>
 template<>
 TJL<std::complex<double> >::TJL( TJL<double> const& x):
- _count(0),                     
+_count(0),                     
 _weight(x._weight),     
 _accuWgt(x._accuWgt),
+_lowWgt(x._lowWgt),
 _jltermStoreCapacity(0), 
 _jltermStore(0), 
-_jltermStoreCurrentPtr(0), 
-_constIterPtr(0), 
-_iterPtr(0)
+_jltermStoreCurrentPtr(0)
 {
 
   this->_myEnv = x._myEnv;        
@@ -86,14 +85,11 @@ _iterPtr(0)
   // copy all the terms of the TJL<double> to the new TJL<complex> ...
   // --------------------------------------------------------------------------
 
-  dlist_iterator getNext( x._theList );
-
-  TJLterm<double>* p                = 0;
   TJLterm<std::complex<double> >* q = 0;
+  for ( TJLterm<double> const *p = x._jltermStore; p < x._jltermStoreCurrentPtr; ++p) { 
 
-  while ( p = (TJLterm<double>*) getNext() ) {
-    q = new(  storePtr() )  TJLterm<complex<double> > ( *p ); // implicit conversion 
-    append(q);
+    append( TJLterm<complex<double> >( *p ) ); //implicit conversion 
+
   }
  
    _accuWgt  = x._accuWgt;  // accurate weight depends on previous operations, 
@@ -126,6 +122,7 @@ JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL(  TJL<double> 
   p->_count    = 0;          // needed by append function
   p->_weight   = x._weight;  // needed by append function
   p->_accuWgt  = x._accuWgt;
+  p->_accuWgt  = x._lowWgt;
   p->_myEnv    = x._myEnv;  // implicit conversion
  
 
@@ -134,65 +131,16 @@ JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL(  TJL<double> 
   // note: no direct memcopy here because of conversion  
   // --------------------------------------------------------------------------
 
-  dlist_iterator getNext( x._theList );
 
-  TJLterm<double>* r                = 0;
   TJLterm<std::complex<double> >* q = 0;
 
-  while ( r = (TJLterm<double>*) getNext() ) {
-    q = new(  p->storePtr() )  TJLterm<complex<double> > ( *r ); // implicit conversion operator
-    p->append(q);
+  for ( TJLterm<double> const* r = x._jltermStore; r < x._jltermStoreCurrentPtr; ++r) { 
+    p->append(TJLterm<complex<double> >(*r) );
   }
  
   p->_accuWgt  = x._accuWgt;  // accurate weight depends on previous operations, 
                              // so it must be preserved. 
 
- //****************************************************************************************
- // set the JLterm iterators properly in case they are in use. 
- // 
- // THIS TERRIBLE KLUDGE MUST GO AWAY ! THE TERM ITERATORS DO NOT BELONG 
- // IN THE TJL CLASS ! 
- // FIX ME !!! 
- // 
- //****************************************************************************************
-#if 0 
-========================================================================================================
- // this messy code is necessary because there is no way (nor should there be any !) 
- // to access the internals of an iterator.    
-
- getNext.Reset(); 
- 
- if ( x._constIterPtr) {
-
-    p->_constIterPtr = new dlist_iterator( p->_theList );
-    q = (TJLterm<double>*) x._constIterPtr->current();
-
-    if( q ) {
-
-       while(  r = (TJLterm<std::complex<double> >*) getNext( ) ) {
-	 //// BROKEN !!!! if ( *r   ==   *q ) break;
-       } 
-     };
- };  
-
- getNext.Reset(); 
- 
- if (x._iterPtr ) {
-
-   p->_iterPtr  = new dlist_iterator( p->_theList );
-
-   if (q) {
-     q = (TJLterm<double>*) x._iterPtr->current();
-     while(  r = ( TJLterm<std::complex<double> >*) getNext( ) ) {
-       /// BROKEN if ( *r  ==  *q ) break;
-     }   
-   };
-
-   *(p->_iterPtr) = getNext;
-
- }
-====================================================================================================================
-#endif
 
  return JLPtr<std::complex<double> >(p);
 
@@ -213,25 +161,19 @@ JLPtr<double> real( JLPtr<std::complex<double> > const& z )
 
   EnvPtr<double> pje = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(EnvPtr<std::complex<double> >(z->_myEnv) );            
 
-  // If the argument is void, then return a copy ...
-  if( z->_count < 1 ) {
-     return JLPtr<double>(  TJL<double>::makeTJL(pje) );
-  }
-
   JLPtr<double>  x( TJL<double>::makeTJL( pje ) );
 
-  // Proceed ...
- 
-  TJLterm<std::complex<double> >*  p;
+  x->setStandardPart( std::real( z->standardPart() ));
 
-  dlist_iterator gz( z->_theList );
-   
-  while((  p = (TJLterm<complex<double> >*) gz()  )) {
-    x->addTerm( TJLterm<double>( p->_index, std::real( p->_value ), x->_myEnv ));
+  for ( TJLterm<std::complex<double> >* p = z->_jltermStore+1; p < z->_jltermStoreCurrentPtr; ++p) {
+
+    x->append( TJLterm<double>( p->_index, std::real( p->_value ), x->_myEnv ));
   }
  
   // Set the maximum accurate _weight.
   x->_accuWgt = z->_accuWgt;
+  x->_lowWgt  = z->_lowWgt;
+
   
   return x;
 }
@@ -250,24 +192,21 @@ JLPtr<double> imag( const JLPtr<std::complex<double> >& z )
   
   EnvPtr<double> pje = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment( z->_myEnv);       
 
-  // If the argument is void, then return ...
-  if( z->_count < 1 ) {
-     return JLPtr<double>(  TJL<double>::makeTJL( pje) );
-  }
-
   JLPtr<double>  x( TJL<double>::makeTJL(pje) );
 
   // Proceed ...
  
-  TJLterm<complex<double> >*  p;
-  dlist_iterator gz( z->_theList );
-   
-  while((  p = (TJLterm<complex<double> >*) gz()  )) {
-    x->addTerm( TJLterm<double>( p->_index, std::imag( p->_value ), x->_myEnv ) );
+  x->setStandardPart( std::imag( z->standardPart() ));
+
+  for ( TJLterm<std::complex<double> >* p = z->_jltermStore+1; p < z->_jltermStoreCurrentPtr; ++p) {
+
+    x->append( TJLterm<double>( p->_index, std::imag( p->_value ), x->_myEnv ) );
   }
  
   // Set the maximum accurate _weight.
+
   x->_accuWgt = z->_accuWgt;
+  x->_lowWgt  = z->_lowWgt;
   
   return x;
 

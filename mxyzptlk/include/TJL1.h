@@ -225,9 +225,6 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   void printCoeffs() const;               // prints term coefficients 
   void peekAt() const;                     
 
-  TJLterm<T>* get();                      // Pops the top term (lowest weight).
-  //TJLterm<T>  get();                      // Pops the top term (lowest weight).
-
   TJLterm<T>  firstTerm() const;          // Returns a TJLterm<T> equivalent 
                                           // to the top term but does not remove it
  
@@ -266,6 +263,7 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   void setVariable( const int&, EnvPtr<T> const& pje );               
 
   T standardPart() const;
+  void setStandardPart( T const& std) { _std.value = std; } 
 
   T weightedDerivative( const int* ) const;
   T derivative( const int* ) const;
@@ -377,43 +375,6 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
     double im;
   };
 
-  struct HorribleException : public std::exception
-  {
-    HorribleException( int, int, int, 
-                       std::string, int, const char* = "", const char* = "" );
-    // Thrown from Jet::EndEnvironment if index numbers don't align correctly.
-    // This should be impossible.
-    // 1st argument: currentIndex
-    // 2nd         : newCoords.size()
-    // 3rd         : newValues.size()
-    // 4th         : name of file in which exception is thrown
-    // 5th	   : line from which exception is thrown
-    // 6th         : identifies function containing throw
-    // 7th         : identifies type of error
-    ~HorribleException() throw() {}
-    const char* what() const throw();
-    std::string errorString;
-    int curIndex, coordSize, valueSize;
-  };
-
-  struct HideousException : public std::exception
-  {
-    HideousException( int, int, 
-                       std::string, int, const char* = "", const char* = "" );
-    // Thrown from Jet::EndEnvironment if index numbers don't align correctly.
-    // This should be impossible.
-    // 1st argument: currentIndex
-    // 2nd         : newCoords.size()
-    // 3rd         : newValues.size()
-    // 4th         : name of file in which exception is thrown
-    // 5th	   : line from which exception is thrown
-    // 6th         : identifies function containing throw
-    // 7th         : identifies type of error
-    ~HideousException() throw() {}
-    const char* what() const throw();
-    std::string errorString;
-    int i, n;
-  };
 };
 
 //  ================== specializations ====================

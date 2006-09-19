@@ -46,7 +46,11 @@
 ****** - header files support for both explicit and implicit template instantiations
 ******   (default for mxyzptlk = explicit)
 ******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
+******
+******  Sep 2006 
 ******  
+****** - eliminated archaic "Reconstruct" members. Use placement new syntax instead.
+******
 **************************************************************************
 *************************************************************************/
 #ifndef TJLTERM_H
@@ -87,6 +91,7 @@ class DLLEXPORT TJLterm
 {
 
  public:
+
   // Data
   IntArray _index;      //  An integer array giving the derivatives associated
                         //  with the JLterm.  For example, ( 1, 1, 0, 2 )
@@ -95,30 +100,19 @@ class DLLEXPORT TJLterm
                         //  this would be 4.
   T        _value;      //  The value associated with the JLterm.
 
-  bool     _deleted;    //  true when the term has been deleted (but not yet de-allocated)
 
   // Constructors and destructors
-  TJLterm();
 
-  void Reconstruct( const IntArray&, const T& );
+  TJLterm( int nvar=6);
 
-  //   NOTE: The void constructor is to be used ONLY in
-  //   conjunction with Reconstruct. By default,
-  //   _index is made 6 dimensional until Reconstruct
-  //   is invoked.
-
-  TJLterm( EnvPtr<T> const&  pje );
-  TJLterm( const IntArray&, const T&,  EnvPtr<T> const& pje );
-
-  //   If 0 is used for the environment pointer,
-  //   it is assumed that the that the variable
-  //   represents a constant function.
+  TJLterm( EnvPtr<T> const&  pje ); // pje = null implies a constant term 
+  TJLterm( IntArray  const&, const T&,  EnvPtr<T> const& pje );
 
   TJLterm( IntArray const&, T const& );
   TJLterm( TJLterm  const& );
 
   template<typename U>
-  TJLterm( const TJLterm<U>& );
+  TJLterm( TJLterm<U> const& );
 
   TJLterm& operator=( TJLterm const& );
   TJLterm  operator*( TJLterm const& );
@@ -140,15 +134,12 @@ class DLLEXPORT TJLterm
 
   private:
 
-
-  static boost::pool<>                                                       
-                         _ordered_memPool;  // an ordered pool of TJLterms
+  static boost::pool<>& _ordered_memPool;  // an ordered pool of TJLterms
   
-  static __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> > 
-                         _array_sizes;      // the size of the allocated arrays, 
-                                            // indexed by their pointers   
-
-  // these declations are meant to prevent use of all forms of operator new[];
+   // the sizes of the allocated arrays, indexed by their pointers (used for deallocation).    
+  static __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >& _array_sizes; 
+ 
+  // the declarations below are meant to prevent use of all forms of operator new[];
 
   static void* operator new[]( std::size_t size) throw (std::bad_alloc); 
   static void* operator new[]( std::size_t size, const std::nothrow_t&) throw();

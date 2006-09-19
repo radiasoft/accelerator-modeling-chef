@@ -113,7 +113,8 @@ TJet<T>::TJet( T x, EnvPtr<T> const& pje ): _jl(  tjl_t::makeTJL( pje,x ) ){}
 
 
 template<typename T>
-TJet<T>::TJet( TJet<T> const& x ): gms::FastAllocator(), _jl( x._jl ) {}
+TJet<T>::TJet( TJet<T> const& x ): _jl( x._jl ) {}
+//TJet<T>::TJet( TJet<T> const& x ): gms::FastAllocator(), _jl( x._jl ) {}
 // NOTE: ref count is incremented when JLPtr is instantiated. 
 
 
@@ -129,50 +130,6 @@ TJet<T>::~TJet()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-
-template<typename T>
-void TJet<T>::Reconstruct()
-{
- // Combines destructor and constructor functions.
- // Use when initializing a static TJet variable.
-
- _jl = jl_t( tjl_t::makeTJL( _jl->getEnv() ) );
-
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
-void TJet<T>::Reconstruct( EnvPtr<T> const& pje )
-{
- // Combines destructor and constructor functions.
- // Use when initializing a static TJet variable.
-
- _jl = jl_t( tjl_t::makeTJL( pje ) );
-
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
-void TJet<T>::Reconstruct( const IntArray& e, 
-                               const T& x, 
-                               EnvPtr<T> const& pje )
-{
- // Combines destructor and constructor functions.
- // Use when initializing a static TJet variable.
-
- _jl = jl_t( tjl_t::makeTJL( e, x, pje ) ); 
-
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 template<typename T>
@@ -1106,45 +1063,10 @@ void TJet<T>::scaleBy( T y )
  _jl->scaleBy( y );
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJLterm<T>* TJet<T>::get() 
-{
- _jl = _jl->clone();
- return _jl->get();
-}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>
-TJLterm<T> TJet<T>::firstTerm() const 
-{
- return _jl->firstTerm();
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJLterm<T> TJet<T>::lowTerm() const 
-{
- return _jl->lowTerm();
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-T TJet<T>::standardPart() const 
-{
- return _jl->standardPart();
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 void TJet<T>::clear() 
@@ -1279,66 +1201,5 @@ TJet<T> TJet<T>::D( const IntArray& n ) const
 
 }
 
-// --------------------------------------------------------------------
-// --------------------------------------------------------------------
-// --------------------------------------------------------------------
-// ****** These functions need to be eliminated. 
-//
-// Because terms might have been added in between iteations 
-// _jl ptr is modified, a deep copy needs to be performed first.
-// This make the process of iterating **extremely** inefficient. 
 
-template<typename T> 
-const TJLterm<T>* TJet<T>::stepConstIteratorPtr() const
-{
-  if (_jl->count() > 1) _jl =  _jl->clone();
-  return _jl->stepConstIteratorPtr(); 
-}   
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-  
-template<typename T>
-void  TJet<T>::resetConstIterator()
-{
-  if (_jl->count() > 1)_jl =  _jl->clone();
-  _jl->resetConstIterator();
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-#if 0
-
-template<typename T>
-const TJLterm<T>& TJet<T>::stepConstIteratorRef() const
-{   
-  _jl =  _jl->clone();
-  return _jl->stepConstIteratorRef();
-}
-  
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TJet<T>::resetIterator()
-{
-   _jl =  _jl->clone();
-   _jl->resetIterator();
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-  
-template<typename T>
-TJLterm<T>*  TJet<T>::stepIterator()
-{
-  _jl = _jl->clone();
-  return _jl->stepIterator();
-
-}
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-  
-
-#endif
 #endif // TJET_TCC
