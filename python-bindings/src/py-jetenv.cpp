@@ -79,6 +79,27 @@ static EnvPtr<std::complex<double> > makeJetCEnvironment_3_local(int maxweight, 
 }
 
 
+static EnvPtr<std::complex<double> > getLastEnvC_local( ) 
+{
+  return JetC__environment::getLastEnv(); 
+}
+
+static EnvPtr<double>  getLastEnv_local( ) 
+{
+  return Jet__environment::getLastEnv(); 
+}
+
+static void setLastEnvC_local( EnvPtr<std::complex<double> > const& env ) 
+{
+  JetC__environment::setLastEnv(env); 
+}
+
+static void setLastEnv_local(  EnvPtr<double> const& env  ) 
+{
+  Jet__environment::setLastEnv(env); 
+}
+
+
 static EnvPtr<std::complex<double> > toCmplxEnvironment( EnvPtr<double> const& env) {
        
   return TJetEnvironment<std::complex<double> >::makeJetEnvironment(env); // implicit conversion 
@@ -99,9 +120,12 @@ void wrap_mxyzptlk_jetenv() {
   def("makeJetEnvironment",&makeJetEnvironment_4_local);      
 
   class_<EnvPtr<double> >  Jet__environmentClass_("Jet__environment", no_init); 
-
+  Jet__environmentClass_.def("getLastEnv",        &::getLastEnv_local ); 
+  Jet__environmentClass_.staticmethod("getLastEnv");
+  Jet__environmentClass_.def("setLastEnv",        &::setLastEnv_local );
+  Jet__environmentClass_.staticmethod("setLastEnv");
+  Jet__environmentClass_.def( self_ns::str(self));
   def("makeJetEnvironment", &makeJetEnvironment_3_local);      
-
 
 }
 
@@ -111,6 +135,11 @@ void wrap_mxyzptlk_jetcenv() {
  def("EndEnvironmentC",    &EndEnvironmentC_local);
  
  class_<EnvPtr<std::complex<double> > >  JetC__environmentClass_("JetC__environment", no_init);
+ JetC__environmentClass_.def("getLastEnv",        &::getLastEnv_local ); 
+ JetC__environmentClass_.staticmethod("getLastEnv");
+ JetC__environmentClass_.def("setLastEnv",        &::setLastEnv_local );
+ JetC__environmentClass_.staticmethod("setLastEnv");
+ JetC__environmentClass_.def( self_ns::str(self));
 
  def("makeJetCEnvironment", &makeJetCEnvironment_3_local);      
 
