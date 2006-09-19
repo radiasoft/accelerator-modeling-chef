@@ -6,7 +6,7 @@
 ******                                    
 ******  File:      TJetEnvironment.h
 ******  Version:   2.0
-******                                                                
+******                                                               
 ******  Copyright (c) Universities Research Association, Inc.    
 ******                All Rights Reserved                             
 ******                                                                
@@ -99,21 +99,6 @@ std::ostream& operator<<( std::ostream& os, const TJetEnvironment<T>& pje);
 template<typename T> 
 std::istream& streamIn(std::istream&, EnvPtr<T>& pje );
 
-//-------------------------------------------------------------------------
-// the wrapper class EnvList is a kludge to prevent static EnvPtr<> objects
-// from iterating trough a potentially no longer existing 
-//  _environments static container upon program exit. 
-//-------------------------------------------------------------------------  
-
-template<typename T>
-class EnvList : public std::list<EnvPtr<T> > {
- 
-public:
-  EnvList(): _destructor_called(false) {}  
-  virtual  ~EnvList();   
-  bool _destructor_called;    
- 
-};
 
 //----------------------------------------------------------------------------------------------
 // class TJetEnvironment
@@ -247,8 +232,9 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 
    TJLterm<T>*     TJLmml()      const { return  _scratch->_TJLmml;      }
 
-   int             offsetIndex(const IntArray& exp) const    { return _scratch->_offset.index(exp); }  
-   int             offsetIndex(const int*      exp) const    { return _scratch->_offset.index(exp); }  
+   int             offsetIndex(const IntArray& exp)  const    { return _scratch->_offset.index(exp); }  
+   int             offsetIndex(      int const* exp) const    { return _scratch->_offset.index(exp); }  
+
    const IntArray& allZeroes() const                         { return _scratch->_allZeroes; }     
    int             maxTerms() const                          { return _scratch->_maxTerms;}
 
@@ -286,10 +272,10 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 
  // Static data members ------------------------------------------------
  
-  static std::deque<Tcoord<T>*>         _coordinates;    // used only during new environment creation 
-  static std::deque<Tparam<T>*>         _parameters;     // used only during new environment creation
-  static std::list<ScratchArea<T>* >    _scratch_areas;  // list of existing scratch areas 
-  static EnvList<T>                     _environments;  // A list of existing scratch areas 
+  static std::deque<Tcoord<T>*>&        _coordinates;    // used only during new environment creation 
+  static std::deque<Tparam<T>*>&        _parameters;     // used only during new environment creation
+  static std::list<ScratchArea<T>* >&   _scratch_areas;  // list of existing scratch areas 
+  static std::list<EnvPtr<T> >&         _environments;   // list of existing environments
                                                                // Note: there is a list for every typename parameter T
   static int   _tmp_maxWeight; // used by Begin/EndEnvironment() 
 

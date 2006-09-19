@@ -65,8 +65,6 @@ template class TJetEnvironment<std::complex<double> >::ScratchArea<std::complex<
 template class EnvPtr<double>;
 template class EnvPtr<std::complex<double> >;
 
-template class EnvList<double>;
-template class EnvList<std::complex<double> >;
 
 // ============================================================================================
 // The friend function operators

@@ -51,6 +51,11 @@
 ******   (default for mxyzptlk = explicit)
 ******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
 ******
+****** Sep 2006 
+******
+****** - eliminated dlist representation for (non-zero) monomials.   
+****** - eliminated archaic "Reconstruct" members. Use placement new syntax instead. 
+****** 
 **************************************************************************
 *************************************************************************/
 #ifndef TJET_H
@@ -61,6 +66,7 @@
 #include <basic_toolkit/VectorD.h>
 
 #include <mxyzptlk/TJetEnvironment.h>
+#include <mxyzptlk/TJLIterator.h>
 #include <mxyzptlk/TJL.h>
 #include <mxyzptlk/TJL1.h>
 #include <complex>
@@ -274,7 +280,6 @@ class JLType<false, U, V> {
 };
  
 
-
 //-------------------------------------------------------------------------
 // class TJet
 //-------------------------------------------------------------------------
@@ -333,11 +338,8 @@ public:
   template<typename U>
   TJet( TJet<U> const& );
 
-  ~TJet();
+  virtual ~TJet();
 
-  void Reconstruct();
-  void Reconstruct( EnvPtr<T> const& );
-  void Reconstruct( const IntArray&, const T&, EnvPtr<T> const& );
 
   // Environment management __________________________________
  
@@ -356,22 +358,8 @@ public:
 
   // Public member functions__________________________________________
 
-  TJLterm<T>* storePtr() {return _jl->storePtr();}  // reserve and get a ptr to the next available free block  
-  
-  TJLterm<T>* get();               // Pops the top term, which should be the 
-                                   // one of lowest weight. **** eliminate ! ****
-  TJLterm<T>  getLowestWeight();   // Removes the top term(lowest weight);
-
-  TJLterm<T>  firstTerm() const;   // Returns a JLterm equivalent to the top term,
-                                   // which should be the one of lowest weight.
-  TJLterm<T>  lowTerm()  const;    // Returns a JLterm equivalent to the 
-                                   // non-zero term of lowest weight.
-
-
-  const TJLterm<T>* stepConstIteratorPtr() const;   
-  void              resetConstIterator();
-
-  void addTerm( const TJLterm<T>& ); 
+  void addTerm( TJLterm<T> const& ); 
+  // void appendTerm( TJLterm<T> const& ); 
 
   bool isNilpotent() const;
 
@@ -398,7 +386,9 @@ public:
   void setVariable( const int& );
 
 
-  T        standardPart() const;
+  T        standardPart() const            { return _jl->standardPart();    }
+  void     setStandardPart( T const& std ) { _jl->setStandardPart(std);     } 
+
   void     clear();
   T        weightedDerivative( const int* ) const;
   T        derivative( const int* ) const;
@@ -503,12 +493,26 @@ public:
                                //  only when the number of
                                //  coordinates = 1.
 
+
+  // Iterator ...
+
+  class iterator {
+  public:
+
+    iterator( TJet<T> const& jet):    _iter( *(jet._jl) ) {} 
+    TJLterm<T> const* operator++()    { return ++_iter; }
+    void reset()                      { _iter.reset(); } 
+  private:
+
+    TJLIterator<T> _iter;
+  };
+
+  
 };
 
 //-------------------------------------------------------------------------------------
 // specializations for class TJet
 //-------------------------------------------------------------------------------------
-
 
 template<>
 template<>
@@ -637,6 +641,9 @@ inline bool TJet<T>::isNilpotent() const
 {
   return _jl->isNilpotent();
 }
+
+// ================================================================
+
 
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES

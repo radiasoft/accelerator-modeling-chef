@@ -51,6 +51,11 @@
 ****** - header files support for both explicit and implicit template instantiations
 ******   (default for mxyzptlk = explicit)
 ******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
+******
+****** Sep 2006  ostiguy@fnal.gov
+******
+****** - eliminated doubly linked list representation for polynomials
+******  
 ******  
 **************************************************************************
 **************************************************************************
@@ -88,19 +93,29 @@ template<typename T>
 class TJL;
 
 template<typename T>
+class TJLIterator;
+
+template<typename T>
 bool operator==( TJL<T> const& x,      TJL<T> const& y ); 
+
 template<typename T>
 bool operator==( TJL<T> const& x,           const T& y ); 
+
 template<typename T>
 bool operator==( T const&      x,      TJL<T> const& y );
+
 template<typename T>
 bool operator!=( TJL<T> const& x,      TJL<T> const& y ); 
+
 template<typename T>
 bool operator!=( TJL<T> const& x,           T const& y ); 
+
 template<typename T>
 bool operator!=( T const&      x,      TJL<T> const& y ); 
+
 template<typename T>
 std::ostream& operator<<( std::ostream& os, TJL<T> const& x ); 
+
 template<typename T>
 std::istream& operator>>( std::istream& is, TJL<T>& x ); 
 
@@ -158,39 +173,32 @@ template<typename T>
 class DLLLOCAL TJL: public ReferenceCounter<TJL<T> > {
 
 template<typename U>  
-  friend class TJL;
+friend class TJL;
+
+friend class TJLIterator<T>;
 
  private: 
 
   mutable EnvPtr<T>                   _myEnv; // Environment of the jet.
 
-  dlist                               _theList;    // Data structure to hold all the information.
   int                                 _count;      // The number of JL terms in the variable
   int                                 _weight;     // The maximum weight of (the actual) terms    
   int                                 _accuWgt;    // Highest weight computed accurately
+  int                                 _lowWgt;     // the lowest weight present
 
-  
-  TJLterm<T>*                         _jltermStore;
+
+  TJLterm<T>*                         _jltermStore;              // the store holds terms
   TJLterm<T>*                         _jltermStoreCurrentPtr;
   int                                 _jltermStoreCapacity;
 
-  mutable dlist_iterator*             _constIterPtr;
-  mutable dlist_iterator*             _iterPtr;
+  static std::vector<TJL<T>*  >&      _thePool;                  // TJL<T> objects recycling pool.  
 
-  static std::vector<TJL<T>*  >       _thePool;  
-                                           // declared public because the TJet
-                                           // conversion function need access FIXME !
 
   void initStore();                  // setup and initialize the jlterm store using default capacity 
   void initStore(int capacity);      // setup and initialize the jlterm store 
 
-  void insert( TJLterm<T>  const& );  // prefer this form. Allocation performed by insert(). 
-  void append( TJLterm<T>  const&);   // prefer this form. Allocation performed by append().
-
-  void insert( TJLterm<T>  const*);   // implies a pointer to an already allocated obj.         
-  void append( TJLterm<T>  const*);   // implies a pointer to an already allocated obj.  
-
-  TJLterm<T>* remove( dlink* );
+  void transferFromScratchPad( );    // transfer result from scratchpad into current TJL   
+  void append( TJLterm<T>  const&);  
 
   TJL( EnvPtr<T> const&,  T value = T() );
   TJL( IntArray  const&,  T const&,  EnvPtr<T> const&);
@@ -207,6 +215,9 @@ template<typename U>
   static JLPtr<T> _epsSqrt( JLPtr<T> const& epsilon ); 
   static JLPtr<T> _epsExp(  JLPtr<T> const& epsilon ); 
   static JLPtr<T> _epsPow(  JLPtr<T> const& epsilon, const double& s ); 
+
+  TJLterm<T>* storePtr();                 // returns a ptr to the next available block in the JLterm store;
+  void growStore( );                      // grows the size of the store to twice its current size 
 
 
   // Constructors and destructors (factory functions)_____________________________________
@@ -231,13 +242,13 @@ template<typename U>
   void dispose()           { TJL<T>::discardTJL(  this ); }  // used by ReferenceCounter class 
 
   inline JLPtr<T> clone() 
-                           {return JLPtr<T>( TJL<T>::makeTJL(  *this ) ); } 
+                           { return JLPtr<T>( TJL<T>::makeTJL(  *this ) ); } 
 
 
 
   // Public member functions__________________________________________
 
-    void clear();     // clears all the terms. 
+  void clear();           // clears all the terms. 
 
   int                      getCount()   { return _count;   }
   int                      getWeight()  { return _weight;  }
@@ -257,21 +268,16 @@ template<typename U>
   void printCoeffs() const;               // prints term coefficients 
   void peekAt() const;                     
 
-  TJLterm<T>* get();                      // Pops the top term, which should be the
-                                          // one of lowest weight.
+
   TJLterm<T>  firstTerm() const;    
                                           // Returns a TJLterm<T> equivalent 
                                           // to the top term,
                                           // which should be the one of lowest weight.
-  TJLterm<T>  lowTerm()   const;    
-                                          // Returns a TJLterm<T> equivalent to the
-                                          // non-zero term of lowest weight.
 
-  void addTerm( const TJLterm<T>& );      
+  void addTerm( TJLterm<T> const& );      
  
-  TJLterm<T>* removeTerm( TJLterm<T>* a); // Unconditionally remove term pointed to by a;  a is not deleted !
+  void removeTerm( TJLterm<T> const& a);  // remove term a; 
  
-  TJLterm<T>* storePtr();                  // returns a ptr to the next available block in the JLterm store;
 
   bool isNilpotent() const;
   void writeToFile( std::ofstream& ) const;
@@ -322,6 +328,7 @@ template<typename U>
   JLPtr<T> sin()              const;
   JLPtr<T> cos()              const;
   JLPtr<T> asin()             const;
+  JLPtr<T> acos()             const;
   JLPtr<T> atan()             const;
   JLPtr<T> sqrt()             const;
   JLPtr<T> exp()              const;
@@ -331,18 +338,13 @@ template<typename U>
   JLPtr<T> compose(JLPtr<T> const y[ ]) const; 
   JLPtr<T> D( const int* n ) const; 
 
-  void              resetConstIterator();
-  TJLterm<T>        stepConstIterator()     const;
-  const TJLterm<T>& stepConstIteratorRef()  const;
-  const TJLterm<T>* stepConstIteratorPtr()  const;
-  void              resetIterator();
-  TJLterm<T>*       stepIterator();
 
   void setVariable( const T&, const int& );
   void setVariable( const T& x, const int& j,  EnvPtr<T> const& pje );
   void setVariable( const int&, EnvPtr<T> const& pje );               
 
-  T standardPart() const;
+  T    standardPart()                 const  { return _jltermStore[0]._value; }
+  void setStandardPart( T const& std)        { _jltermStore[0]._value = std;  } 
 
   T weightedDerivative( const int* ) const;
   T derivative( const int* ) const;
@@ -363,14 +365,6 @@ template<typename U>
   TJL& operator+=( const TJL& );
   TJL& operator+=( const T& );
 
-  //TJL& operator-=( const TJL& );
-  //TJL& operator-=( const T& );
-
-  //TJL& operator*=( const TJL& );
-  //TJL& operator*=( const T& );
-
-  //TJL& operator/=( const TJL& );
-  //TJL& operator/=( const T& );
 
   friend   bool operator==<>( const TJL<T>& x, const TJL<T>& y ); 
   friend   bool operator==<>( const TJL<T>& x, const T& y ); 
@@ -437,43 +431,6 @@ template<typename U>
     double im;
   };
 
-  struct HorribleException : public std::exception
-  {
-    HorribleException( int, int, int, 
-                       std::string, int, const char* = "", const char* = "" );
-    // Thrown from Jet::EndEnvironment if index numbers don't align correctly.
-    // This should be impossible.
-    // 1st argument: currentIndex
-    // 2nd         : newCoords.size()
-    // 3rd         : newValues.size()
-    // 4th         : name of file in which exception is thrown
-    // 5th	   : line from which exception is thrown
-    // 6th         : identifies function containing throw
-    // 7th         : identifies type of error
-    ~HorribleException() throw() {}
-    const char* what() const throw();
-    std::string errorString;
-    int curIndex, coordSize, valueSize;
-  };
-
-  struct HideousException : public std::exception
-  {
-    HideousException( int, int, 
-                       std::string, int, const char* = "", const char* = "" );
-    // Thrown from Jet::EndEnvironment if index numbers don't align correctly.
-    // This should be impossible.
-    // 1st argument: currentIndex
-    // 2nd         : newCoords.size()
-    // 3rd         : newValues.size()
-    // 4th         : name of file in which exception is thrown
-    // 5th	   : line from which exception is thrown
-    // 6th         : identifies function containing throw
-    // 7th         : identifies type of error
-    ~HideousException() throw() {}
-    const char* what() const throw();
-    std::string errorString;
-    int i, n;
-  };
 };
 
 

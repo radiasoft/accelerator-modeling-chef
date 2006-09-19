@@ -545,7 +545,7 @@ void TJL1<T>::insert( const TJLterm<T>& a)
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
+#if  0
 template<typename T>
 TJLterm<T>* TJL1<T>::get() 
 {
@@ -577,6 +577,7 @@ TJLterm<T>* TJL1<T>::get()
  return new TJLterm<T>(index, T() ); 
 
 }
+#endif
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1414,91 +1415,6 @@ const char* TJL1<T>::BadReference::what() const throw()
   return errorString.c_str();
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJL1<T>::HorribleException::HorribleException( int i, int j, int k, 
-                                std::string fileName, int lineNumber, 
-                                const char* fcn, 
-                                const char* msg )
-: curIndex(i), coordSize(j), valueSize(k)
-{
-  std::ostringstream uic;
-  uic << "\n*** ERROR *** "
-         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
-      << "\n*** ERROR *** " << fcn
-      << "\n*** ERROR *** A horrible, inexplicable error    "
-         "\n*** ERROR *** has occurred. This is beyond      "
-         "\n*** ERROR *** the realm of human understanding. "
-         "\n*** ERROR *** Please consult an exorcist.       "
-         "\n*** ERROR *** _currentIndex:      " << curIndex
-      << "\n*** ERROR *** _newCoords.size() : " << coordSize
-      << "\n*** ERROR *** _newValues.size() : " << valueSize
-      << "\n*** ERROR *** " << msg
-      << "\n*** ERROR *** ";
-  errorString = uic.str();
-
-  static bool firstTime = true;
-  if( firstTime ) {
-    (*pcerr) << errorString;
-    (*pcerr) << "\n*** ERROR *** This message is printed only once."
-            "\n*** ERROR *** "
-         << std::endl;
-    firstTime = false;
-  }
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-const char* TJL1<T>::HorribleException::what() const throw()
-{
-  return errorString.c_str();
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJL1<T>::HideousException::HideousException( int x, int y, 
-                                std::string fileName, int lineNumber, 
-                                const char* fcn, 
-                                const char* msg )
-: i(x), n(y)
-{
-  std::ostringstream uic;
-  uic << "\n*** ERROR *** "
-         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
-      << "\n*** ERROR *** " << fcn
-      << "\n*** ERROR *** An unbelievably hideous error     "
-      << "\n*** ERROR *** has occurred.                     "
-      << "\n*** ERROR *** " << i << " != " << n << "        "
-      << "\n*** ERROR ***               This is beyond      "
-      << "\n*** ERROR *** the realm of human understanding. "
-      << "\n*** ERROR *** " << msg
-      << "\n*** ERROR *** ";
-  errorString = uic.str();
-
-  static bool firstTime = true;
-  if( firstTime ) {
-    (*pcerr) << errorString;
-    (*pcerr) << "\n*** ERROR *** This message is printed only once."
-            "\n*** ERROR *** "
-         << std::endl;
-    firstTime = false;
-  }
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-const char* TJL1<T>::HideousException::what() const throw()
-{
-  return errorString.c_str();
-}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

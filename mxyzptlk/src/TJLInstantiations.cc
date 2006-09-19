@@ -36,6 +36,8 @@
 #include <mxyzptlk/TJLterm.h>
 #include <mxyzptlk/TJL.h>
 #include <mxyzptlk/TJL.tcc>
+#include <mxyzptlk/TJLIterator.h>
+#include <mxyzptlk/TJLIterator.tcc>
 
 #include <gms/FastPODAllocator.h>
 #include <gms/FastAllocator.h>
@@ -49,6 +51,7 @@
 #include <algorithm>
 #include <istream>
 
+
 // ============================================================================================
 // The standard classes
 //=============================================================================================
@@ -59,6 +62,11 @@ template JLPtr<double> TJL<double>::makeTJL(TJL<double> const&);
 template class TJL<std::complex<double> >;
 template TJL<std::complex<double> >::TJL(TJL<double> const&);
 template JLPtr<std::complex<double> > TJL<std::complex<double> >::makeTJL(TJL<std::complex<double> > const&);
+
+
+template class  TJLIterator<double>;
+template class  TJLIterator<std::complex<double> >;
+
 
 // ============================================================================================
 // Friend function operators

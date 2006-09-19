@@ -46,6 +46,11 @@
 ****** - header files support for both explicit and implicit template instantiations
 ******   (default for mxyzptlk = explicit)
 ******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
+******
+****** Sep 2006 ostiguy@fnal.gov
+******  
+****** - eliminated archaic "Reconstruct" member(s). 
+******   Use placement new syntax instead.
 ******  
 **************************************************************************
 **************************************************************************
@@ -72,10 +77,13 @@ using FNAL::pcout;
 //  pointer hash fnct. 
 
 template <typename T>
-boost::pool<> TJLterm<T>::_ordered_memPool( sizeof(TJLterm<T>), 2048 );
+boost::pool<>&  TJLterm<T>::_ordered_memPool = *( new boost::pool<>( sizeof(TJLterm<T>), 2048 ));
 
 template <typename T>
-__gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> > TJLterm<T>::_array_sizes;
+__gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >& TJLterm<T>::_array_sizes = 
+* (new __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >()  );  
+
+
 
 
 // ***************************************************************
@@ -85,8 +93,8 @@ __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> > TJLte
 //      Implementation of Class TJLterm<T>
 
 template<typename T>
-TJLterm<T>::TJLterm() 
-: _index(6), _weight(0), _value(T()), _deleted(false) /// index argument necessary ???
+TJLterm<T>::TJLterm( int nvar) 
+: _index(nvar), _weight(0), _value(T()) 
 {}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -94,7 +102,7 @@ TJLterm<T>::TJLterm()
 
 template<typename T>
 TJLterm<T>::TJLterm(  EnvPtr<T> const& pje ) 
-: _index( pje->numVar() ), _weight(0), _value(T()), _deleted(false) 
+: _index( pje->numVar() ), _weight(0), _value(T())
 {}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -102,7 +110,7 @@ TJLterm<T>::TJLterm(  EnvPtr<T> const& pje )
 
 template<typename T>
 TJLterm<T>::TJLterm( IntArray const& l, T const& x, EnvPtr<T> const& pje ) :   
-_index( l ), _weight(l.Sum()), _value(x), _deleted(false) 
+_index( l ), _weight(l.Sum()), _value(x) 
 {
    if( !pje ) return; 
    if (l.Dim() != pje->numVar() ) {
@@ -188,31 +196,17 @@ _index( l ), _weight(l.Sum()), _value(x), _deleted(false)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJLterm<T>::TJLterm( const IntArray& l, const T& x )
-: _index(l), _weight(l.Sum()), _value(x),_deleted(false)
-{
-}
+TJLterm<T>::TJLterm(  IntArray const& l, const T& x )
+: _index(l), _weight(l.Sum()), _value(x)
+{}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJLterm<T>::TJLterm( const TJLterm<T>& x ) 
-: _index( x._index ), _weight(x._weight), _value(x._value), _deleted(x._deleted)
-{
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TJLterm<T>::Reconstruct( const IntArray& e, const T& x )
-{
-  _index.Reconstruct(e);
-  _weight   = e.Sum();
-  _value    = x;
-  _deleted  = false;
-}
+TJLterm<T>::TJLterm( TJLterm<T> const& x ) 
+: _index( x._index ), _weight(x._weight), _value(x._value)
+{}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -270,7 +264,6 @@ void TJLterm<T>::array_deallocate(TJLterm<T>* p) {
 template<typename T>
 TJLterm<T>& TJLterm<T>::operator=( const TJLterm<T>& x ) 
 {
- _deleted = x._deleted;
  _weight  = x._weight;
  _value   = x._value;
  _index   = x._index;
