@@ -29,7 +29,15 @@
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws.
-******                                                                
+******                              
+****** Revision History
+******
+****** Sep 2006     Jean-Francois Ostiguy
+******              ostiguy@fnal.gov
+******
+****** - eliminated archaic "reconstruct" member functions. 
+******   Use placemnent new instead.                                     
+******
 **************************************************************************
 *************************************************************************/
 
@@ -47,8 +55,6 @@ class Switch
     Switch();
     Switch( int, int, const IntArray& );
     Switch( const Switch& );
-    void reconstruct( int, int, const IntArray& );
-    void reconstruct( const Switch& );
     ~Switch();
 
     friend class Cascade;
@@ -74,9 +80,7 @@ class DLLEXPORT Cascade
     //                will write to std::cout as it progresses.
     // Restrictions: w >= 0
     //               n >= 1
-    Cascade( const Cascade& );
-    void reconstruct( int w = 2, int n = 2, bool v = false );
-    void reconstruct( const Cascade& );
+    Cascade( Cascade const& );
     ~Cascade();
 
     int index( const IntArray& ) const;
@@ -107,5 +111,30 @@ class DLLEXPORT Cascade
     void _clean();
     void _finishConstructor();
 };
+
+
+inline int Cascade::index( IntArray const& e ) const
+{
+
+
+  IntArrayIterator getNext( e );
+  Switch* swPtr = _startPoint[ getNext() ];
+    for( int j = 1; j < _numVar; ++j ) {
+    swPtr = (Switch*) ( swPtr->_arrow[ getNext() ] ); 
+  }
+  return swPtr->_index;
+
+  //----------------------------------------------
+  // the code below works only with 1st order Jets
+  //----------------------------------------------
+#if  0
+  IntArrayIterator getNext( e );
+  for( int j = 0; j < _numVar; ++j ) {
+    if (getNext() != 0 ) return j+1;  
+  }
+  return 0;
+#endif
+}
+
 
 #endif // CASCADE_H
