@@ -39,6 +39,9 @@
 #include <config.h>
 #endif
 
+#include <boost/shared_ptr.hpp>
+#include <vector>
+
 /*
 **
 ** Utility function.
@@ -287,6 +290,8 @@ void normalForm( const Mapping& theMapping, /* input */
  MappingC              reg;
  MappingC              doc;
 
+ std::vector<boost::shared_ptr<JetC::iterator> >  iter;
+
  for( int k = 0; k <= maxOrder - 2; k++ ) {
   reg = id;
   ll = 0;
@@ -297,14 +302,21 @@ void normalForm( const Mapping& theMapping, /* input */
   N[k] = reg.filter( shear );
 
   doc = N[k] - reg;
-  for( i = 0; i < 6; i++ ) {
+
+  for (int n=0; n<6; ++n) {
+     iter.push_back( boost::shared_ptr<JetC::iterator>(new JetC::iterator( doc(n)) ) );
+  };
+
+  for( i = 0; i < 6; ++i ) {
+
    #if 0
    // Including this line causes an error.
    // lpjm - 2006.08.06
    T[k](i).clear();
    #endif
-   doc(i).resetConstIterator();
-   while((  q = doc(i).stepConstIteratorPtr()  )) {
+
+   iter[i]->reset();
+   while( (q = ++(*iter[i])) ) {
     factor = 1.0;
     for( j = 0; j < 6; j++ ) {
      temp = complex_1 / lambda(j);
