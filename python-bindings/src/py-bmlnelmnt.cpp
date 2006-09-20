@@ -153,11 +153,37 @@ void wrap_bmlnelmnt() {
     .def("Type",                     &bmlnElmnt::Type)
     .def("OrbitLength",              &bmlnElmnt::OrbitLength)
     .def_readwrite("dataHook",       &bmlnElmnt::dataHook);
-  
+}  
+
+//-------------------------------------------------------------------------------------------------------------
+// class beamline 
+//-------------------------------------------------------------------------------------------------------------
+
+struct beamlineWrap: beamline {
+
+    beamlineWrap(PyObject* self, const char* name = "NONAME"):
+       _self(self), beamline(name) {}
+    
+    beamlineWrap(PyObject* self,   beamline const& bl):
+        _self(self),beamline( bl) {}
+ 
+
+    double InsertElementsFromList( double s_0, InsertionList& il, slist& sl);  // a version of InsertElementsFromList
+                                                                                // that is callable from Python.
+ 
+    PyObject* _self;
+};
 
 
-     //lattFunc (beamline::*whatIsLattice1)(int   )            = &beamline::whatIsLattice;
-     //lattFunc (beamline::*whatIsLattice2)(char* )            = &beamline::whatIsLattice;
+double  
+beamlineWrap::InsertElementsFromList( double s_0, InsertionList& il, slist& sl ) 
+{
+
+ double tmp_s = s_0;  
+ call_method<double>(_self, "InsertElementsFromList"); 
+ return tmp_s;
+
+}
 
 
 int (beamline::*twiss1)( JetParticle&, double, short )            = &beamline::twiss;
@@ -167,54 +193,62 @@ int (beamline::*twiss3)( lattFunc&, JetParticle&, short)          = &beamline::t
 void (beamline::*insert1) ( bmlnElmnt&  )          = &beamline::insert;
 void (beamline::*append1) (  bmlnElmnt& )          = &beamline::append;
 
+void wrap_beamline() {
 
-class_<beamline>("beamline", init<>() )
-  .def( init<const char*>() )
-  .def( init<const beamline& >())
-  .def("propagateParticle",      beamline_propagateParticle)
-  .def("propagateJetParticle",   beamline_propagateJetParticle)
-  .def("propagateParticleBunch", beamline_propagateParticleBunch)
-  .def("zap",    &beamline::zap) 
-  .def("clear",  &beamline::clear)
-  .def("insert", insert1)
-  .def("append", append1 )
-     //beamline& operator^( bmlnElmnt& );  // Alters the beamline
-     //beamline& operator^( beamline& );
-   //beamline& operator+( bmlnElmnt& );  // Does not alter the beamline
-   //.def(self + self)
-   //.def(self - self)     
-     //beamline& operator+( beamline& );
-     //beamline& operator-( beamline& );
-     //friend beamline& operator-( beamline& );
-  //.def("resetGeometry",  &beamline::resetGeometry)
+ class_<beamline, bases<bmlnElmntWrap>, beamlineWrap> beamlineWrap_("beamline", init<>() );
+
+ beamlineWrap_.def( init<const char*>() );
+ beamlineWrap_.def( init<const beamline& >() );
+ beamlineWrap_.def("propagateParticle",      beamline_propagateParticle);
+ beamlineWrap_.def("propagateJetParticle",   beamline_propagateJetParticle);
+ beamlineWrap_.def("propagateParticleBunch", beamline_propagateParticleBunch);
+ beamlineWrap_.def("zap",    &beamline::zap) ;
+ beamlineWrap_.def("clear",  &beamline::clear);
+ beamlineWrap_.def("insert", insert1);
+ beamlineWrap_.def("append", append1 );
+
+ //beamline& operator^( bmlnElmnt& );  // Alters the beamline
+ //beamline& operator^( beamline& );
+ //beamline& operator+( bmlnElmnt& );  // Does not alter the beamline
+ //beamlineWrap_.def(self + self)
+ //beamlineWrap_.def(self - self)     
+ //beamline& operator+( beamline& );
+ //beamline& operator-( beamline& );
+ //friend beamline& operator-( beamline& );
+ //beamlineWrap_.def("resetGeometry",  &beamline::resetGeometry)
+
   // PROPAGATE PARTICLES
-  .def("setEnergy",      &beamline::setEnergy)
-  .def("unTwiss",        &beamline::unTwiss)
-  .def("eraseBarnacles", &beamline::eraseBarnacles)
-  .def("twiss", twiss1) 
-  .def("twiss", twiss2)
-  .def("twiss", twiss3)
+
+ beamlineWrap_.def("setEnergy",      &beamline::setEnergy);
+ beamlineWrap_.def("unTwiss",        &beamline::unTwiss);
+ beamlineWrap_.def("eraseBarnacles", &beamline::eraseBarnacles);
+ beamlineWrap_.def("twiss", twiss1);
+ beamlineWrap_.def("twiss", twiss2);
+ beamlineWrap_.def("twiss", twiss3);
+
   // QUERIES
-  //.def("whatisLattice",            whatisLattice1) 
-  //.def("whatisLattice",            whatisLattice2) 
-  .def("countHowMany",             &beamline::countHowMany,       beamline_overloads1())
-  .def("countHowManyDeeply",       &beamline::countHowManyDeeply, beamline_overloads2())
-  .def("depth",                    &beamline::depth)
-     //.def("contains",                 &beamline::contains)
-     //.def("firstElement",             &beamline::firstElement)
-     //.def("lastElement",              &beamline::lastElement)
-  .def("twissIsDone",              &beamline::twissIsDone)
-  .def("setTwissIsDone",           &beamline::setTwissIsDone)
-  .def("unsetTwissIsDone",         &beamline::unsetTwissIsDone)
-  .def("Energy",                   &beamline::Energy)
-  .def("OrbitLength",              &beamline::OrbitLength);
+
+  //beamlineWrap_.def("whatisLattice",            whatisLattice1); 
+  //beamlineWrap_.def("whatisLattice",            whatisLattice2);
+  beamlineWrap_.def("countHowMany",             &beamline::countHowMany,       beamline_overloads1());
+  beamlineWrap_.def("countHowManyDeeply",       &beamline::countHowManyDeeply, beamline_overloads2());
+  beamlineWrap_.def("depth",                    &beamline::depth);
+//beamlineWrap_.def("contains",                 &beamline::contains);
+//beamlineWrap_.def("firstElement",             &beamline::firstElement);
+//beamlineWrap_.def("lastElement",              &beamline::lastElement);
+  beamlineWrap_.def("twissIsDone",              &beamline::twissIsDone);
+  beamlineWrap_.def("setTwissIsDone",           &beamline::setTwissIsDone);
+  beamlineWrap_.def("unsetTwissIsDone",         &beamline::unsetTwissIsDone);
+  beamlineWrap_.def("Energy",                   &beamline::Energy);
+  beamlineWrap_.def("OrbitLength",              &beamline::OrbitLength);
  
-   //  .def("InsertElementAt",          &beamline::InsertElementAt);
+   //  beamlineWrap_.def("InsertElementAt",          &beamline::InsertElementAt);
  
-  //.def("whatIsRing",               &beamline::whatIsRing)
+  //beamlineWrap_.def("whatIsRing",               &beamline::whatIsRing)
+
   // CLONING AND STORING
   //beamline& operator=( const beamline& );
-  //.def("flatten",                  &beamline::flatten); returns a ptr, need to specify a policy 
+  //beamlineWrap_.def("flatten",                  &beamline::flatten); returns a ptr, need to specify a policy 
  
      //void   writeLattFunc( );
      //void   writeLattFunc( FILE* );
@@ -227,16 +261,5 @@ class_<beamline>("beamline", init<>() )
      //extern beamline& operator^( bmlnElmnt&, bmlnElmnt& );
      //extern beamline& operator-( beamline& );
 
-#if 0
-    class_<lattFunc>("lattFunc", init<>() )
-      .def( self_ns::str(self) )
-      .def_readwrite("arcLength",    &lattFunc::arcLength)
-      .def_readwrite("dispersion",   &lattFunc::dispersion)
-      .def_readwrite("dPrime",       &lattFunc::dPrime)
-      .def_readwrite("beta",         &lattFunc::beta)
-      .def_readwrite("alpha" ,       &lattFunc::alpha)
-      .def_readwrite("psi" ,         &lattFunc::psi);
-    
-#endif
-
 }
+
