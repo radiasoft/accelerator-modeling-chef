@@ -26,6 +26,7 @@
 #include <beamline/Particle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/InsertionList.h>
 
 
 class PropFunc;
@@ -179,9 +180,12 @@ double
 beamlineWrap::InsertElementsFromList( double s_0, InsertionList& il, slist& sl ) 
 {
 
- double tmp_s = s_0;  
- call_method<double>(_self, "InsertElementsFromList"); 
- return tmp_s;
+ double tmp_s0 = s_0;  
+
+ beamline& bml = extract<beamline&>(_self); 
+ bml.InsertElementsFromList(tmp_s0, il, sl); 
+
+ return tmp_s0;
 
 }
 
@@ -207,15 +211,6 @@ void wrap_beamline() {
  beamlineWrap_.def("insert", insert1);
  beamlineWrap_.def("append", append1 );
 
- //beamline& operator^( bmlnElmnt& );  // Alters the beamline
- //beamline& operator^( beamline& );
- //beamline& operator+( bmlnElmnt& );  // Does not alter the beamline
- //beamlineWrap_.def(self + self)
- //beamlineWrap_.def(self - self)     
- //beamline& operator+( beamline& );
- //beamline& operator-( beamline& );
- //friend beamline& operator-( beamline& );
- //beamlineWrap_.def("resetGeometry",  &beamline::resetGeometry)
 
   // PROPAGATE PARTICLES
 
@@ -226,23 +221,26 @@ void wrap_beamline() {
  beamlineWrap_.def("twiss", twiss2);
  beamlineWrap_.def("twiss", twiss3);
 
+ // Editing
+
+  beamlineWrap_.def("InsertElementsFromList", &beamlineWrap::InsertElementsFromList);
+
   // QUERIES
 
   //beamlineWrap_.def("whatisLattice",            whatisLattice1); 
   //beamlineWrap_.def("whatisLattice",            whatisLattice2);
-  beamlineWrap_.def("countHowMany",             &beamline::countHowMany,       beamline_overloads1());
-  beamlineWrap_.def("countHowManyDeeply",       &beamline::countHowManyDeeply, beamline_overloads2());
-  beamlineWrap_.def("depth",                    &beamline::depth);
-//beamlineWrap_.def("contains",                 &beamline::contains);
-//beamlineWrap_.def("firstElement",             &beamline::firstElement);
-//beamlineWrap_.def("lastElement",              &beamline::lastElement);
-  beamlineWrap_.def("twissIsDone",              &beamline::twissIsDone);
-  beamlineWrap_.def("setTwissIsDone",           &beamline::setTwissIsDone);
-  beamlineWrap_.def("unsetTwissIsDone",         &beamline::unsetTwissIsDone);
-  beamlineWrap_.def("Energy",                   &beamline::Energy);
-  beamlineWrap_.def("OrbitLength",              &beamline::OrbitLength);
+  beamlineWrap_.def("countHowMany",               &beamline::countHowMany,       beamline_overloads1());
+  beamlineWrap_.def("countHowManyDeeply",         &beamline::countHowManyDeeply, beamline_overloads2());
+  beamlineWrap_.def("depth",                      &beamline::depth);
+//beamlineWrap_.def("contains",                   &beamline::contains);
+//beamlineWrap_.def("firstElement",               &beamline::firstElement);
+//beamlineWrap_.def("lastElement",                &beamline::lastElement);
+  beamlineWrap_.def("twissIsDone",                &beamline::twissIsDone);
+  beamlineWrap_.def("setTwissIsDone",             &beamline::setTwissIsDone);
+  beamlineWrap_.def("unsetTwissIsDone",           &beamline::unsetTwissIsDone);
+  beamlineWrap_.def("Energy",                     &beamline::Energy);
+  beamlineWrap_.def("OrbitLength",                &beamline::OrbitLength);
  
-   //  beamlineWrap_.def("InsertElementAt",          &beamline::InsertElementAt);
  
   //beamlineWrap_.def("whatIsRing",               &beamline::whatIsRing)
 
