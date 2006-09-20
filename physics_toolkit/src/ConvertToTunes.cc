@@ -341,6 +341,7 @@ int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
 
 int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
 {
+
   const std::complex<double> complex_0(0.0, 0.0);
   const std::complex<double> c_zero = std::complex<double>( 0.0, 0.0 );
   const std::complex<double> c_i    = std::complex<double>( 0.0, 1.0 );
@@ -357,7 +358,7 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
   // Environment is set ........................
   JetC__environment_ptr thisEnv = N.Env();
 
-  JLCterm* jlctPtr;
+  JLCterm const*  jlctPtr;
   IntArray  ndx( N.Env()->numVar() );
   std::complex<double>   v;
 
@@ -367,8 +368,10 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
                         // really necessary here.
   for( i = 0; i < N.Dim(); i++ ) {
     y = N( i );
+    JetC::iterator iter(y);
     nu(i) = complex_0;
-    while((  jlctPtr = y.get()  )) {
+
+    while((  jlctPtr = ++iter)) {
       v = jlctPtr->coefficient();
       if((  v != c_zero  )) {
 
@@ -402,11 +405,7 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
             return 142;
 	  }
         }
-        // REMOVE: nu(i).addTerm( new JLCterm( ndx, 
-        // REMOVE:                             c_i*v/MATH_TWOPI, 
-        // REMOVE:                             thisEnv 
-        // REMOVE:                           ) );
-        nu(i).addTerm( JLCterm( ndx, c_i*v/MATH_TWOPI, thisEnv) );
+	nu(i).addTerm( JLCterm( ndx, c_i*v/MATH_TWOPI, thisEnv) );
       }
     }
   }
@@ -416,67 +415,7 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
 
 
 
-// int ConvertToTunes( /* const */ LieOperator& N, 
-//                     const Jet__environment*  y )
-// {
-//   // Environment is set ...
-//   Jet__environment* thisJetEnv;
-//   coord* dummyCoordPtr;
-//   JLterm* jltPtr;
-//   IntArray  ndx;
-// 
-//   if( y != 0 ) thisJetEnv = y;
-//   else 
-//   {
-//     // A quick check
-//     int sd = N.Env()->SpaceDim;
-//     if( ( sd%2 != 0 ) || ( sd != N.Dim() ) ) {
-//       (*pcerr) << "*** ERROR ***                                 \n"
-//            << "*** ERROR ***  ConvertToTunes                 \n"
-//            << "*** ERROR ***                                 \n"
-//            << "*** ERROR ***  Phase space dimension in N is not correct.\n"
-//            << "*** ERROR ***                                 \n"
-//            << endl;
-//       exit( 137 );
-//     }
-// 
-//     // Create an environment
-//     Jet::BeginEnvironment( sd/2 );
-//     for( i = 0; i < sd/2; i++ ) dummyCoordPtr = new coord( 0.0 );
-//     thisJetEnv = Jet::EndEnvironment();
-// 
-//     // Check to see if this environment already exists.
-//     // This is horribly inefficient, but it is assumed that
-//     // ConvertToTunes is not going to be called many times
-//     // within a program.
-//     slist_iterator g( Jet::environments );
-//     Jet__environment* pje;
-//     while( pje = (JetC__environment*) g() ) {
-//       if( *pje == *thisJetEnv ) {
-//         slist_iterator gc( thisJetEnv->myCoords );
-//         while((  dummyCoordPtr = (coord*) gc()  )) delete dummyCoordPtr;
-//         delete thisJetEnv;
-//         thisJetEnv = pje;
-//         break;
-//       }
-//     }
-//   }
-// 
-//   // Construct the Mapping
-//   int  i;
-//   JetC y( N.Env() );    // Specifying environment is not 
-//                         // really necessary here.
-//   Mapping nu( sd/2, 0, thisJetEnv );
-//   for( i = 0; i < sd/2; i++ ) {
-//     y = N( i );
-//     while((  jltPtr = y.get()  )) {
-//       ndx = jltPtr->index;
-//       ndx(i) -= 1;
-//       nu(i).addTerm( new JLterm( ndx, jltPtr->value,  ) );
-//     }
-//   }
-// 
-//   return nu;
-// }
+
+
 
 

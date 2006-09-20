@@ -127,14 +127,16 @@ void BmlUtil::writeAsTransport( const Mapping* mapPtr )
 void BmlUtil::writeAsTransport( const Mapping& map )
 {
   Jet cmp;
+  Jet::iterator iter(cmp);
+
   const JLterm* termPtr;
   int d = map.Dim();
   int e;
   IntArray exps(d);
   for( int i = 0; i < d; i++ ) {
     cmp = map(i);
-    cmp.resetConstIterator();
-    termPtr = cmp.stepConstIteratorPtr();
+    iter.reset();
+    termPtr = ++iter;
     while( 0 != termPtr ) {
       *_outputStreamPtr << "M_{ " << (i+1);
       exps = termPtr->exponents();
@@ -147,7 +149,7 @@ void BmlUtil::writeAsTransport( const Mapping& map )
         }        
       }
       *_outputStreamPtr << " } = " << termPtr->coefficient() << endl;
-      termPtr = cmp.stepConstIteratorPtr();
+      termPtr = ++iter;
     }
   }
 }
