@@ -1,0 +1,11 @@
+*.lo
+*.la
+Makefile
+Makefile.in
+.deps
+.libs
+source_files
+
+mad_lex.c
+mad_yacc.c
+mad_yacc.h
