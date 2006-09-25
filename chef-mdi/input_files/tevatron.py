@@ -63,11 +63,11 @@ lfsage = physics_toolkit.LattFuncSage(tevatron,0)
 
 # Preserve/reset the current Jet environment
 
-storedEnv    =   mxyzptlk.Jet.getLastEnv()
-mxyzptlk.Jet.setLastEnv(  jp.State().Env())
+storedEnv    =   mxyzptlk.Jet__environment.getLastEnv()
+mxyzptlk.Jet__environment.setLastEnv(  jp.State().Env())
 
-storedEnvC   =   mxyzptlk.JetC.getLastEnv()
-mxyzptlk.JetC.setLastEnv( mxyzptlk.toCmplxEnvironment( mxyzptlk.Jet.getLastEnv() ) ); 
+storedEnvC   =   mxyzptlk.JetC__environment.getLastEnv()
+mxyzptlk.JetC__environment.setLastEnv( mxyzptlk.toCmplxEnvironment( mxyzptlk.Jet__environment.getLastEnv() ) ); 
 
 # propagate the JetProton ( i.e. compute a one-turn map)
 tevatron.propagateJetParticle(jp)
@@ -80,8 +80,8 @@ lfsage.Slow_CS_Calc(jp)
 
 # Restore the Jet environment
 
-mxyzptlk.Jet.setLastEnv(storedEnv)
-mxyzptlk.JetC.setLastEnv(storedEnvC)
+mxyzptlk.Jet__environment.setLastEnv(storedEnv)
+mxyzptlk.JetC__environment.setLastEnv(storedEnvC)
 
 # ----------------------------
 # output lattice functions 
@@ -112,9 +112,9 @@ bit = beamline.DeepBeamlineIterator(tevatron)
 be = bit.reset()
 be = bit.next()
 while   be:
-#	print i, be.Type()
+# 	print i, be.Type()
 	lf  = be.dataHook.find("Twiss",1) # this should return a LattFuncSage.lattFunc
-#	print lf
+ 	print lf
 	be   = bit.next()
 	arcLength_array[i]      = lf.arcLength
 	hor_beta_array[i]       = lf.beta.hor
