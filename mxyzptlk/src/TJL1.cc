@@ -54,11 +54,11 @@ TJL1<std::complex<double> >::TJL1( TJL1<double> const& x ):
 
 {
 
-    _std.value = std::complex<double>(x._std.value, 0.0);
-     _jcb = new term [ _count-1 ];
+    _std = std::complex<double>(x._std, 0.0);
+     _jcb = new std::complex<double> [ _count-1 ];
 
      for (int i=0; i<_count-1; ++i) 
-       _jcb[i].value =  std::complex<double>(x._jcb[i].value, 0.0);
+       _jcb[i] =  std::complex<double>(x._jcb[i], 0.0);
 
 
 
@@ -87,7 +87,7 @@ JL1Ptr<std::complex<double> > TJL1<std::complex<double> >::makeTJL( const TJL1<d
   
   if ( p->_count  != x._myEnv->numVar()+1) {
       delete [] p->_jcb; 
-      p->_jcb   = new term[ x._myEnv->numVar() ];
+      p->_jcb   = new std::complex<double>[ x._myEnv->numVar() ];
       p->_count =  x._myEnv->numVar()+1;
   }
  
@@ -95,10 +95,10 @@ JL1Ptr<std::complex<double> > TJL1<std::complex<double> >::makeTJL( const TJL1<d
   p->_accuWgt  = x._accuWgt;
   p->_myEnv    = x._myEnv;
  
-  p->_std.value      = std::complex<double>(x._std.value, 0.0);
+  p->_std      = std::complex<double>(x._std, 0.0);
 
   for (int i=0; i < (p->_count-1); ++i) 
-       p->_jcb[i].value = std::complex<double>( x._jcb[i].value, 0.0);
+       p->_jcb[i] = std::complex<double>( x._jcb[i], 0.0);
 
 
  if ( !p->_myEnv ) {
@@ -121,7 +121,7 @@ template<>
 JL1Ptr<double> TJL1<double>::sqrt() const 
 {
 
-  if( _std.value <= 0.0 ) {
+  if( _std <= 0.0 ) {
 
     throw( GenericException( __FILE__, __LINE__, 
            "Jet sqrt( const Jet& )",
@@ -130,10 +130,10 @@ JL1Ptr<double> TJL1<double>::sqrt() const
 
   JL1Ptr<double> z( makeTJL(_myEnv) ); 
 
-  z->_std.value = std::sqrt(_std.value );
+  z->_std = std::sqrt(_std );
 
   for( int i=0; i < _count-1; ++i ) { 
-    z->_jcb[i].value = ( 1.0 / ( 2.0*z->_std.value )) * _jcb[i].value; 
+    z->_jcb[i] = ( 1.0 / ( 2.0*z->_std )) * _jcb[i]; 
   }
   return z;
 
@@ -149,10 +149,10 @@ JL1Ptr<std::complex<double> > TJL1<std::complex<double> >::sqrt() const
 
   JL1Ptr<std::complex<double> > z( makeTJL(_myEnv) ); 
 
-  z->_std.value = std::sqrt(_std.value );
+  z->_std = std::sqrt(_std );
 
   for( int i=0; i < _count-1; ++i ) { 
-    z->_jcb[i].value = ( 1.0 / ( 2.0*z->_std.value )) * _jcb[i].value; 
+    z->_jcb[i] = ( 1.0 / ( 2.0*z->_std )) * _jcb[i]; 
   }
   return z;
 
@@ -174,9 +174,9 @@ JL1Ptr<double>  real(JL1Ptr<std::complex<double> > const& z) {
 
   JL1Ptr<double> x( TJL1<double>::makeTJL(env));
 
-  x->_std.value = std::real(z->_std.value);
+  x->_std = std::real(z->_std);
   for (int i=0; i< x->_count-1; ++i) {
-     x->_jcb[i].value = std::real(z->_jcb[i].value);
+     x->_jcb[i] = std::real(z->_jcb[i]);
   }
 
  if ( !x->_myEnv ) {
@@ -206,9 +206,9 @@ JL1Ptr<double>    imag(JL1Ptr<std::complex<double> > const& z){
 
   JL1Ptr<double> x( TJL1<double>::makeTJL(env));
 
-  x->_std.value = std::imag(z->_std.value);
+  x->_std = std::imag(z->_std);
   for (int i=0; i<x->_count-1 ; ++i) {
-     x->_jcb[i].value = std::imag(z->_jcb[i].value);
+     x->_jcb[i] = std::imag(z->_jcb[i]);
   }
 
   if ( !x->_myEnv ) {

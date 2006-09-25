@@ -86,26 +86,27 @@ std::ostream& operator<<(std::ostream& os, TJLterm<T> const&);
 
 // ********************************************************************************************************************
 
+
+
 template<typename T>
 class DLLEXPORT TJLterm
 {
 
  public:
 
-  // Data
+  T        _value;      //  The value associated with the JLterm.
+  int      _weight;     //  The sum of the values in index.  For the above example, 
+                        //  this would be 4.
   IntArray _index;      //  An integer array giving the derivatives associated
                         //  with the JLterm.  For example, ( 1, 1, 0, 2 )
                         //  would correspond to D_1^1 D_2^1 D_4^2 .
-  int      _weight;     //  The sum of the values in index.  For the above example, 
-                        //  this would be 4.
-  T        _value;      //  The value associated with the JLterm.
 
 
   // Constructors and destructors
 
   TJLterm( int nvar=6);
 
-  TJLterm( EnvPtr<T> const&  pje ); // pje = null implies a constant term 
+  TJLterm( EnvPtr<T> const&  pje );     // pje = null implies a constant term 
   TJLterm( IntArray  const&, const T&,  EnvPtr<T> const& pje );
 
   TJLterm( IntArray const&, T const& );
@@ -174,12 +175,30 @@ class DLLEXPORT TJLterm
 
 } ;
 
-
+//-----------------------------------------------------------------------------------
 // specializations
+//-----------------------------------------------------------------------------------
 
 template<>
 template<>
 TJLterm<std::complex<double> >::TJLterm( TJLterm<double> const& );
+
+
+//-----------------------------------------------------------------------------------
+// Inline members
+//-----------------------------------------------------------------------------------
+
+
+template<typename T>
+inline TJLterm<T>::TJLterm( TJLterm<T> const& x ) 
+{
+
+ // this copy constructor is called **furiously**. 
+ // It must be as efficient as possible !!! 
+
+ memcpy((void *) this, (const void *) &x, sizeof( TJLterm<T>) );
+
+}
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES
 #include <mxyzptlk/TJLterm.tcc>

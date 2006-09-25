@@ -497,42 +497,6 @@ TJetEnvironment<T>::~TJetEnvironment()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>
-TJetEnvironment<T>& TJetEnvironment<T>::DeepCopy( const TJetEnvironment& x ) 
-{
-
-  _numVar    = x._numVar;               // number of variables
-  _spaceDim  = x._spaceDim;             // phase space dimensions
-  _dof       = x._dof;                  // degrees of freedom                             
-
-  if ( _refPoint ) delete _refPoint; 
-
-  _refPoint = new T [_numVar];
-
-  for (int i=0; i<_numVar; ++i ) {
-     _refPoint[i] = x._refPoint[i];                 
-  }
-
-  if (_scale) delete _scale; 
-
-  _scale = new double[_numVar];  
-  
-  for (int i=0; i<_numVar; ++i ) {
-     _scale[i] = x._scale[i];                 
-  }
-
-  _maxWeight = x._maxWeight; 
-
-  _pbok     = x._pbok;                  
-
-  _scratch = _buildScratchPads(_maxWeight, _numVar);
-
-  return *this;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 template<typename T>
 EnvPtr<T> TJetEnvironment<T>::makeInverseJetEnvironment( TMapping<T> const& map ){
@@ -668,6 +632,42 @@ TJetEnvironment<T>::TJetEnvironment( const TJetEnvironment&)
 
 }
 #endif
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TJetEnvironment<T>& TJetEnvironment<T>::DeepCopy( const TJetEnvironment& x ) 
+{
+
+  _numVar    = x._numVar;               // number of variables
+  _spaceDim  = x._spaceDim;             // phase space dimensions
+  _dof       = x._dof;                  // degrees of freedom                             
+
+  if ( _refPoint ) delete _refPoint; 
+
+  _refPoint = new T [_numVar];
+
+  for (int i=0; i<_numVar; ++i ) {
+     _refPoint[i] = x._refPoint[i];                 
+  }
+
+  if (_scale) delete _scale; 
+
+  _scale = new double[_numVar];  
+  
+  for (int i=0; i<_numVar; ++i ) {
+     _scale[i] = x._scale[i];                 
+  }
+
+  _maxWeight = x._maxWeight; 
+
+  _pbok     = x._pbok;                  
+
+  _scratch = _buildScratchPads(_maxWeight, _numVar);
+
+  return *this;
+}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

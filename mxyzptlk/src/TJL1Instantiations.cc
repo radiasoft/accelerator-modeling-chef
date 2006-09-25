@@ -33,10 +33,14 @@
 
 #include <complex>
 #include <basic_toolkit/ReferenceCounter.h>
+#include <boost/shared_ptr.hpp>
+#include <vector>
 #include <mxyzptlk/TJLterm.h>
 #include <mxyzptlk/TJLterm.tcc>
 #include <mxyzptlk/TJL1.h>
 #include <mxyzptlk/TJL1.tcc>
+#include <mxyzptlk/TJL1Iterator.h>
+#include <mxyzptlk/TJL1Iterator.tcc>
 
 
 // ============================================================================================
@@ -105,18 +109,77 @@ template class TJL1<std::complex<double> >;
 template JL1Ptr<double> TJL1<double>::makeTJL( TJL1<double> const& x );
 template JL1Ptr<std::complex<double> > TJL1<std::complex<double> >::makeTJL( TJL1<std::complex<double> >const& x );
 
+template class TJL1Iterator<double>;
+template class TJL1Iterator<std::complex<double> >;
 
 //============================================================================================
 // misc
 //=============================================================================================
 
 
-//TJL1<double>::printCoeffs() const'
-//TJL1<std::complex<double> >::printCoeffs() const'
 
 template void std::vector<TJL1<double>*, std::allocator<TJL1<double>*> >::_M_insert_aux(__gnu_cxx::__normal_iterator<TJL1<double>**, std::vector<TJL1<double>*, std::allocator<TJL1<double>*> > >, TJL1<double>* const&);
 
 template void std::vector<TJL1<std::complex<double> >*, std::allocator<TJL1<std::complex<double> >*> >::_M_insert_aux(__gnu_cxx::__normal_iterator<TJL1<std::complex<double> >**, std::vector<TJL1<std::complex<double> >*, std::allocator<TJL1<std::complex<double> >*> > >, TJL1<std::complex<double> >* const&);
+
+
+template 
+class std::vector<boost::shared_ptr<TJLterm<double> > >;
+
+template 
+class std::vector<boost::shared_ptr<TJLterm<std::complex<double> > > >;
+
+
+template
+class boost::shared_ptr<TJLterm<double> >;
+template
+class boost::shared_ptr<TJLterm<std::complex<double> > >;
+
+
+template 
+void std::__uninitialized_fill_n_a<__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<double> >*, std::vector<boost::shared_ptr<TJLterm<double> >, std::allocator<boost::shared_ptr<TJLterm<double> > > > >, unsigned int, boost::shared_ptr<TJLterm<double> >, boost::shared_ptr<TJLterm<double> > >(__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<double> >*, std::vector<boost::shared_ptr<TJLterm<double> >, std::allocator<boost::shared_ptr<TJLterm<double> > > > >, unsigned int, boost::shared_ptr<TJLterm<double> > const&, std::allocator<boost::shared_ptr<TJLterm<double> > >);
+
+template 
+class boost::detail::sp_counted_impl_p<TJLterm<double> >;
+
+template 
+void std::__uninitialized_fill_n_a<boost::shared_ptr<TJLterm<double> >*, unsigned int, boost::shared_ptr<TJLterm<double> >, boost::shared_ptr<TJLterm<double> > >(boost::shared_ptr<TJLterm<double> >*, unsigned int, boost::shared_ptr<TJLterm<double> > const&, std::allocator<boost::shared_ptr<TJLterm<double> > >);
+
+template 
+class boost::detail::sp_counted_impl_p<TJLterm<std::complex<double> > >;
+
+template 
+class __gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<double> >*, std::vector<boost::shared_ptr<TJLterm<double> >, std::allocator<boost::shared_ptr<TJLterm<double> > > > > std::fill_n<__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<double> >*, std::vector<boost::shared_ptr<TJLterm<double> >, std::allocator<boost::shared_ptr<TJLterm<double> > > > >, unsigned int, boost::shared_ptr<TJLterm<double> > >(__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<double> >*, std::vector<boost::shared_ptr<TJLterm<double> >, std::allocator<boost::shared_ptr<TJLterm<double> > > > >, unsigned int, boost::shared_ptr<TJLterm<double> > const&);
+
+template class
+__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<std::complex<double> > >*, std::vector<boost::shared_ptr<TJLterm<std::complex<double> > >, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > > > > std::fill_n<__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<std::complex<double> > >*, std::vector<boost::shared_ptr<TJLterm<std::complex<double> > >, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > > > >, unsigned int, boost::shared_ptr<TJLterm<std::complex<double> > > >(__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<std::complex<double> > >*, std::vector<boost::shared_ptr<TJLterm<std::complex<double> > >, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > > > >, unsigned int, boost::shared_ptr<TJLterm<std::complex<double> > > const&);
+
+
+template 
+void std::__uninitialized_fill_n_aux<__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<double> >*, std::vector<boost::shared_ptr<TJLterm<double> >, std::allocator<boost::shared_ptr<TJLterm<double> > > > >, unsigned int, boost::shared_ptr<TJLterm<double> > >(__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<double> >*, std::vector<boost::shared_ptr<TJLterm<double> >, std::allocator<boost::shared_ptr<TJLterm<double> > > > >, unsigned int, boost::shared_ptr<TJLterm<double> > const&, __false_type);
+
+template
+void std::__uninitialized_fill_n_aux<boost::shared_ptr<TJLterm<double> >*, unsigned int, boost::shared_ptr<TJLterm<double> > >(boost::shared_ptr<TJLterm<double> >*, unsigned int, boost::shared_ptr<TJLterm<double> > const&, __false_type);
+
+template
+void std::__uninitialized_fill_n_a<__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<std::complex<double> > >*, std::vector<boost::shared_ptr<TJLterm<std::complex<double> > >, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > > > >, unsigned int, boost::shared_ptr<TJLterm<std::complex<double> > >, boost::shared_ptr<TJLterm<std::complex<double> > > >(__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<std::complex<double> > >*, std::vector<boost::shared_ptr<TJLterm<std::complex<double> > >, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > > > >, unsigned int, boost::shared_ptr<TJLterm<std::complex<double> > > const&, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > >);
+
+template 
+void std::__uninitialized_fill_n_a<boost::shared_ptr<TJLterm<std::complex<double> > >*, unsigned int, boost::shared_ptr<TJLterm<std::complex<double> > >, boost::shared_ptr<TJLterm<std::complex<double> > > >(boost::shared_ptr<TJLterm<std::complex<double> > >*, unsigned int, boost::shared_ptr<TJLterm<std::complex<double> > > const&, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > >);
+
+template 
+void std::fill<__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<std::complex<double> > >*, std::vector<boost::shared_ptr<TJLterm<std::complex<double> > >, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > > > >, boost::shared_ptr<TJLterm<std::complex<double> > > >(__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<std::complex<double> > >*, std::vector<boost::shared_ptr<TJLterm<std::complex<double> > >, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > > > >, __gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<std::complex<double> > >*, std::vector<boost::shared_ptr<TJLterm<std::complex<double> > >, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > > > >, boost::shared_ptr<TJLterm<std::complex<double> > > const&);
+
+template
+void std::fill<__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<double> >*, std::vector<boost::shared_ptr<TJLterm<double> >, std::allocator<boost::shared_ptr<TJLterm<double> > > > >, boost::shared_ptr<TJLterm<double> > >(__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<double> >*, std::vector<boost::shared_ptr<TJLterm<double> >, std::allocator<boost::shared_ptr<TJLterm<double> > > > >, __gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<double> >*, std::vector<boost::shared_ptr<TJLterm<double> >, std::allocator<boost::shared_ptr<TJLterm<double> > > > >, boost::shared_ptr<TJLterm<double> > const&);
+
+template
+void std::__uninitialized_fill_n_aux<boost::shared_ptr<TJLterm<std::complex<double> > >*, unsigned int, boost::shared_ptr<TJLterm<std::complex<double> > > >(boost::shared_ptr<TJLterm<std::complex<double> > >*, unsigned int, boost::shared_ptr<TJLterm<std::complex<double> > > const&, __false_type);
+
+template
+void std::__uninitialized_fill_n_aux<__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<std::complex<double> > >*, std::vector<boost::shared_ptr<TJLterm<std::complex<double> > >, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > > > >, unsigned int, boost::shared_ptr<TJLterm<std::complex<double> > > >(__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<std::complex<double> > >*, std::vector<boost::shared_ptr<TJLterm<std::complex<double> > >, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > > > >, unsigned int, boost::shared_ptr<TJLterm<std::complex<double> > > const&, __false_type);
+
+
 
 #endif // MXYZPTLK_EXPLICIT_TEMPLATES 
 

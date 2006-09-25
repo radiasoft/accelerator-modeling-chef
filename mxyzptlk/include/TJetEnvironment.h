@@ -190,8 +190,6 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
                 
    // operators -------------------------------------------
 
-  TJetEnvironment& operator=( const TJetEnvironment& env) { return  DeepCopy(env); }
-  TJetEnvironment& DeepCopy( const TJetEnvironment& env);
 
   bool operator==( const TJetEnvironment<T>& ) const;
   bool operator!=( const TJetEnvironment<T>& ) const;
@@ -281,6 +279,10 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 
 
 // Private Member  functions -------------------------------------
+
+  TJetEnvironment& operator=( const TJetEnvironment& env) { return  DeepCopy(env); }
+
+  TJetEnvironment& DeepCopy( const TJetEnvironment& env);
 
   ScratchArea<T>* _buildScratchPads(int maxweight, int numvar);
 

@@ -359,13 +359,11 @@ TLieOperator<T> operator^( const TLieOperator<T>& x, const TLieOperator<T>& y )
 template<typename T>
 TJet<T> TLieOperator<T>::expMap( const T& t, const TJet<T>& x ) 
 { 
- TJet<T> answer;
- TJet<T> u;
+ TJet<T> answer(x);
+ TJet<T> u(x);
  double f;
  int count;
  
- answer.DeepCopy( x );
- u     .DeepCopy( x );
  f      = 1.0;
  count  = 0;
 
@@ -395,13 +393,11 @@ TJet<T> TLieOperator<T>::expMap( const T& t, const TJet<T>& x )
 template<typename T>
 TJet<T> TLieOperator<T>::expMap( const TJet<T>& t, const TJet<T>& x ) 
 { 
- TJet<T> answer;
- TJet<T> u;
+ TJet<T> answer(x);
+ TJet<T> u(x);
  double f;
  int count;
  
- answer.DeepCopy( x );
- u     .DeepCopy( x );
  f      = 1.0;
  count  = 0;
 

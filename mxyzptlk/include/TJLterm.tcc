@@ -200,13 +200,6 @@ TJLterm<T>::TJLterm(  IntArray const& l, const T& x )
 : _index(l), _weight(l.Sum()), _value(x)
 {}
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJLterm<T>::TJLterm( TJLterm<T> const& x ) 
-: _index( x._index ), _weight(x._weight), _value(x._value)
-{}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -228,6 +221,8 @@ TJLterm<T>::~TJLterm<T>()
 template<typename T>
 TJLterm<T>* TJLterm<T>::array_allocate(int n) {
 
+
+
 // ----------------------------------------------------------------------
 // To use the system allocator instead of boost:pool to allocate JLterms
 // define JLTERM_ALLOCATOR_MALLOC. This is often useful for debugging.  
@@ -235,10 +230,28 @@ TJLterm<T>* TJLterm<T>::array_allocate(int n) {
 
 #ifdef JLTERM_ALLOCATOR_MALLOC
     TJLterm<T>* p = (TJLterm<T>*) malloc(n*sizeof(TJLterm<T>));
-#else
+#else 
+// -----------------------------------------------------------------------
+// This code allocates an extra block and uses it to store the array size
+//------------------------------------------------------------------------   
     TJLterm<T>* p = 
-     static_cast<TJLterm<T>*>(_ordered_memPool.ordered_malloc( n ));
-    _array_sizes[ p ] = n;
+     static_cast<TJLterm<T>*>(_ordered_memPool.ordered_malloc( n+1 ));
+     int * psize = (int *) p;
+     *psize = n+1;
+     ++p;
+//-------------------------------------------------------------------------------------
+// Alternately, one could save the array size in a hash table indexed with the pointer
+// allocated block.
+//------------------------------------------------------------------------------------
+
+/***********
+
+       TJLterm<T>* p = 
+       static_cast<TJLterm<T>*>(_ordered_memPool.ordered_malloc( n ));
+       _array_sizes[ p ] = n;
+
+************/ 
+
 #endif
 
     return p;
@@ -250,8 +263,25 @@ void TJLterm<T>::array_deallocate(TJLterm<T>* p) {
 #ifdef JLTERM_ALLOCATOR_MALLOC
     free(p)
 #else 
-    _ordered_memPool.ordered_free( p, _array_sizes[p] ); 
-    _array_sizes.erase(p );
+// --------------------------------------------------------------------------------------------------
+// This code deallocates an array of blocks assuming that the size has been stored in an extra block
+//---------------------------------------------------------------------------------------------------   
+      --p;
+      int*  psize = (int *) p;
+      _ordered_memPool.ordered_free( p, *psize ); 
+
+//-----------------------------------------------------------------------------------------------------
+// Alternately, one could retrieve the array size from a hash table indexed with the pointer to the
+// allocated block
+//------------------------------------------------------------------------------------------------------
+
+/***********
+
+     _ordered_memPool.ordered_free( p, _array_sizes[p] ); 
+     _array_sizes.erase(p );
+
+*************/
+
 #endif
 
 }
@@ -262,7 +292,7 @@ void TJLterm<T>::array_deallocate(TJLterm<T>* p) {
 //      ******** Overloaded operators for class TJLterm<T> ******
 
 template<typename T>
-TJLterm<T>& TJLterm<T>::operator=( const TJLterm<T>& x ) 
+TJLterm<T>& TJLterm<T>::operator=( TJLterm<T> const& x ) 
 {
  _weight  = x._weight;
  _value   = x._value;
@@ -274,7 +304,7 @@ TJLterm<T>& TJLterm<T>::operator=( const TJLterm<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJLterm<T> TJLterm<T>::operator*( const TJLterm<T>& y ) 
+TJLterm<T> TJLterm<T>::operator*( TJLterm<T> const& y ) 
 {
  TJLterm<T> z(*this);
  int n = 0;
@@ -282,7 +312,7 @@ TJLterm<T> TJLterm<T>::operator*( const TJLterm<T>& y )
  if((  ( n = this->_index.Dim() ) != y._index.Dim()  )) {
    throw( typename TJLterm<T>::BadDimension( this->_index.Dim(), y._index.Dim(),
                             __FILE__, __LINE__, 
-                            "TJLterm<T> TJLterm<T>::operator*( const TJLterm<T>& y ) ",
+                            "TJLterm<T> TJLterm<T>::operator*( TJLterm<T> const& y ) ",
                             "Inconsistent number of coordinates." ) );
  }
 
@@ -296,12 +326,12 @@ TJLterm<T> TJLterm<T>::operator*( const TJLterm<T>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJLterm<T> TJLterm<T>::operator+( const TJLterm<T>& y ) 
+TJLterm<T> TJLterm<T>::operator+( TJLterm<T> const& y ) 
 {
  if( this->_index != y._index ) {
    throw( typename TJLterm<T>::BadDimension( this->_index.Dim(), y._index.Dim(),
                             __FILE__, __LINE__, 
-                            "TJLterm<T> TJLterm<T>::operator*( const TJLterm<T>& y ) ",
+                            "TJLterm<T> TJLterm<T>::operator*( TJLterm<T> const& y ) ",
                             "Inconsistent number of coordinates." ) );
  }
  TJLterm<T> z(*this);
@@ -313,7 +343,7 @@ TJLterm<T> TJLterm<T>::operator+( const TJLterm<T>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator==( const TJLterm<T>& a, const TJLterm<T>& b ) 
+bool operator==( TJLterm<T> const& a, TJLterm<T> const& b ) 
 {
  if( a._weight != b._weight ) return false;
  if( a._value  != b._value  ) return false;
@@ -326,7 +356,7 @@ bool operator==( const TJLterm<T>& a, const TJLterm<T>& b )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator!=( const TJLterm<T>& a, const TJLterm<T>& b ) 
+bool operator!=( TJLterm<T> const& a, TJLterm<T> const& b ) 
 {
  return !( a == b );
 }
@@ -335,13 +365,14 @@ bool operator!=( const TJLterm<T>& a, const TJLterm<T>& b )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator<=( const TJLterm<T>& a, const TJLterm<T>& b ) 
+bool operator<=( TJLterm<T> const& a, TJLterm<T> const& b ) 
 {
  int i;
+
  if( a._index.Dim() != b._index.Dim() ) {
    throw( typename TJLterm<T>::BadDimension( a._index.Dim(), b._index.Dim(), 
           __FILE__, __LINE__, 
-          "char operator<=( const TJLterm<T>&, const TJLterm<T>& )",
+          "char operator<=( TJLterm<T> const&, TJLterm<T> const& )",
           "Dimensions don't match.") );
  }
 
@@ -392,7 +423,7 @@ bool operator<=( const TJLterm<T>& a, const TJLterm<T>& b )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator%=( const TJLterm<T>& a, const TJLterm<T>& b ) 
+bool operator%=( TJLterm<T> const& a, TJLterm<T> const& b ) 
 {
  if( a._weight != b._weight ) return false;
  return a._index == b._index;
