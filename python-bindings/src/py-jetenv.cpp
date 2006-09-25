@@ -106,11 +106,6 @@ static EnvPtr<std::complex<double> > toCmplxEnvironment( EnvPtr<double> const& e
 }
 
   
-//static EnvPtr<double>   toRealEnvironment( EnvPtr<std::complex<double> > const& env) {
-//
-//  return env; // implicit converter 
-//
-//}
 
 void wrap_mxyzptlk_jetenv() {
 
@@ -120,9 +115,9 @@ void wrap_mxyzptlk_jetenv() {
   def("makeJetEnvironment",&makeJetEnvironment_4_local);      
 
   class_<EnvPtr<double> >  Jet__environmentClass_("Jet__environment", no_init); 
-  Jet__environmentClass_.def("getLastEnv",        &::getLastEnv_local ); 
+  Jet__environmentClass_.def("getLastEnv",        &getLastEnv_local ); 
   Jet__environmentClass_.staticmethod("getLastEnv");
-  Jet__environmentClass_.def("setLastEnv",        &::setLastEnv_local );
+  Jet__environmentClass_.def("setLastEnv",        &setLastEnv_local );
   Jet__environmentClass_.staticmethod("setLastEnv");
   Jet__environmentClass_.def( self_ns::str(self));
   def("makeJetEnvironment", &makeJetEnvironment_3_local);      
@@ -135,29 +130,20 @@ void wrap_mxyzptlk_jetcenv() {
  def("EndEnvironmentC",    &EndEnvironmentC_local);
  
  class_<EnvPtr<std::complex<double> > >  JetC__environmentClass_("JetC__environment", no_init);
- JetC__environmentClass_.def("getLastEnv",        &::getLastEnv_local ); 
+ JetC__environmentClass_.def("getLastEnv",        &getLastEnvC_local ); 
  JetC__environmentClass_.staticmethod("getLastEnv");
- JetC__environmentClass_.def("setLastEnv",        &::setLastEnv_local );
+ JetC__environmentClass_.def("setLastEnv",        &setLastEnvC_local );
  JetC__environmentClass_.staticmethod("setLastEnv");
  JetC__environmentClass_.def( self_ns::str(self));
 
  def("makeJetCEnvironment", &makeJetCEnvironment_3_local);      
 
-
  def("toCmplxEnvironment",&toCmplxEnvironment);      
+
  // def("toRealEnvironment", &toRealEnvironment);      
 
 
 }
 
-
-//  def("makeInverseJetEnvironment" , &Jet__environment:: (typename EnvPtr<T>::Type, const TMapping<T>& map); 
-//  def("makeJetEnvironmentVec"     , &Jet__environment:: (int maxweight, const Vector&, double* scale=0);
-
-
-// static makeInverseJetEnvironment_local",   &Jet__environment:: (typename EnvPtr<T>::Type, const TMapping<T>& map); 
-// static makeJetEnvironmentVecLocal",        &Jet__environment:: (int maxweight, const Vector&, double* scale=0);
-
-// static EnvPtr<double>::Type  getApproxJetEnvironment(int maxweight, const Vector& refpoints);
 
 
