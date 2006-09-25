@@ -179,9 +179,12 @@ friend class TJLIterator<T>;
 
  private: 
 
-  mutable EnvPtr<T>                   _myEnv; // Environment of the jet.
+  static const double                 _mx_small;                // = 1.0e-12    //  abs coeff threshold for removal of a JLterm
+  static const int                    _mx_maxiter;              // = 100        // Max no of iterations allowed  (e.g. transcendental functions)
 
-  int                                 _count;      // The number of JL terms in the variable
+  mutable EnvPtr<T>                   _myEnv;                   // Environment of the jet.
+
+  int                                 _count;      // The number of JL terms with weight > 1 in the variable
   int                                 _weight;     // The maximum weight of (the actual) terms    
   int                                 _accuWgt;    // Highest weight computed accurately
   int                                 _lowWgt;     // the lowest weight present
@@ -194,7 +197,6 @@ friend class TJLIterator<T>;
   static std::vector<TJL<T>*  >&      _thePool;                  // TJL<T> objects recycling pool.  
 
 
-  void initStore();                  // setup and initialize the jlterm store using default capacity 
   void initStore(int capacity);      // setup and initialize the jlterm store 
 
   void transferFromScratchPad( );    // transfer result from scratchpad into current TJL   
@@ -216,8 +218,9 @@ friend class TJLIterator<T>;
   static JLPtr<T> _epsExp(  JLPtr<T> const& epsilon ); 
   static JLPtr<T> _epsPow(  JLPtr<T> const& epsilon, const double& s ); 
 
-  TJLterm<T>* storePtr();                 // returns a ptr to the next available block in the JLterm store;
-  void growStore( );                      // grows the size of the store to twice its current size 
+  TJLterm<T>* storePtr();                        // returns a ptr to the next available block in the JLterm store;
+  void growStore( );                             // grows the size of the store to twice its current size 
+  void appendLinearTerms( int numvar );          // appends all linear monomial terms (_value set to 0)   
 
 
   // Constructors and destructors (factory functions)_____________________________________
@@ -250,9 +253,9 @@ friend class TJLIterator<T>;
 
   void clear();           // clears all the terms. 
 
-  int                      getCount()   { return _count;   }
-  int                      getWeight()  { return _weight;  }
-  int                      getAccuWgt() { return _accuWgt; }
+  int                      getCount()   const;  
+  int                      getWeight()  const { return _weight;  } 
+  int                      getAccuWgt() const { return _accuWgt; }
 
  
   EnvPtr<T>                getEnv() const { return this->_myEnv; }    
@@ -285,7 +288,7 @@ friend class TJLIterator<T>;
   void getReference( T* ) const;
   void   scaleBy( T );
 
-  TJL& Negate();
+  TJL& Negate(); // in-place negation 
 
   friend JLPtr<T>  
          operator+<>(JLPtr<T> const & x, JLPtr<T> const& y  );  
@@ -433,8 +436,11 @@ friend class TJLIterator<T>;
 
 };
 
-
+//-------------------------------------------------------------------------------------
 // specializations 
+//-------------------------------------------------------------------------------------
+
+
 
 template<> 
 template<> 
@@ -443,6 +449,146 @@ TJL<std::complex<double> >::TJL( TJL<double> const& );
 template<> 
 template<> 
 JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL( TJL<double> const& );
+
+//-------------------------------------------------------------------------------------
+// Inline functions 
+//-------------------------------------------------------------------------------------
+
+
+template<typename T>
+template<typename U>
+inline JLPtr<T>  TJL<T>::makeTJL( TJL<U> const& x )
+{
+
+  if (_thePool.empty() ) 
+     return  JLPtr<T>(new TJL<T>(x));
+ 
+  TJL<T>* p = _thePool.back(); _thePool.pop_back(); 
+  
+  if (p->_jltermStoreCapacity < x._jltermStoreCapacity)  
+  { 
+       TJLterm<T>::array_deallocate( p->_jltermStore );
+       p->initStore(x._jltermStoreCapacity);   
+  
+  }
+
+  p->_count    = x._count;   
+  p->_weight   = x._weight;  
+  p->_accuWgt  = x._accuWgt;
+  p->_lowWgt   = x._lowWgt;
+  p->_myEnv    = x._myEnv;
+ 
+   memcpy( p->_jltermStore, x._jltermStore, (x._jltermStoreCurrentPtr-x._jltermStore)*sizeof(TJLterm<T>) );
+   p->_jltermStoreCurrentPtr = p->_jltermStore + (x._jltermStoreCurrentPtr - x._jltermStore);
+
+  return JLPtr<T>(p);
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+inline void TJL<T>::discardTJL( TJL<T>* p) 
+{
+  
+   EnvPtr<T> nullEnv;
+
+   p->clear();     
+
+   p->_myEnv = nullEnv; // nullify the environment. 
+
+   _thePool.push_back(p);
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+template<typename T>
+inline TJLterm<T>* TJL<T>::storePtr( ) {
+
+  if ( (_jltermStoreCurrentPtr-_jltermStore) < _jltermStoreCapacity ) 
+
+     return _jltermStoreCurrentPtr++;
+
+  growStore();
+
+  return _jltermStoreCurrentPtr++;
+}         
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+
+template<typename T>
+inline void TJL<T>::append( TJLterm<T> const& a) 
+{
+
+  // **** append a non-linear term (weight >1 )
+
+  TJLterm<T>* p = new( this->storePtr() ) TJLterm<T>(a); 
+  ++_count;
+  _weight  = std::max(_weight, p->_weight);
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+inline void TJL<T>::transferFromScratchPad( ) {   
+
+  clear();// clears all the terms of current TJL, including the std part ! 
+  appendLinearTerms(  _myEnv->numVar() );                      
+
+  
+  TJLterm<T>* const scpad_begin      =   _myEnv->TJLmml();    
+  TJLterm<T>* const scpad_end        =   _myEnv->TJLmml() + _myEnv->maxTerms();
+
+ // *Unconditionally* append the std part and the linear terms
+ 
+  int i = 0;
+  for( TJLterm<T>* p = scpad_begin;  p < scpad_begin + _myEnv->numVar() + 1; ++p, ++i) {
+     _jltermStore[i]._value = p->_value;
+     p->_value = T();
+     
+  }
+
+  for( TJLterm<T>* p = scpad_begin + _myEnv->numVar() + 1 ;  p < scpad_end; ++p) 
+  {
+   if (  p->_value != T() )  {
+     append( *p ); 
+     p->_value = T();
+   }
+  }
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+inline void TJL<T>::appendLinearTerms( int numvar ) {   
+
+  TJLterm<T> term( numvar ); 
+
+  // --- append standard part
+
+   TJLterm<T>* p = new( this->storePtr() ) TJLterm<T>(term); 
+
+  // -- append weight == 1 terms 
+
+  for (int i=0; i< _myEnv->numVar(); ++i) {  // terms of weight 1
+
+   term._index(i) = 1; term._weight = 1; // DANGER ! changing exponent index directly; weight must be adjusted !
+
+   p = new( this->storePtr() ) TJLterm<T>(term); 
+   _weight  = std::max(_weight, p->_weight);
+   term._index(i) = 0; 
+ }
+
+  return;
+}
 
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES

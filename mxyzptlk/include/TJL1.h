@@ -67,6 +67,9 @@ template<typename T>
 class TJL1;
 
 template<typename T>
+class TJL1Iterator;
+
+template<typename T>
 bool operator==( const TJL1<T>& x, const TJL1<T>& y ); 
 
 template<typename T>
@@ -137,13 +140,10 @@ JL1Ptr<T>  operator/( T const& x,         JL1Ptr<T> const& y);
 template<typename T> 
 class TJL1: public ReferenceCounter<TJL1<T> > {
   
- struct term {
-    T      value;
-    bool   deleted;
-  };
-
   template <typename U>
   friend class TJL1;
+  
+  friend class TJL1Iterator<T>;
  
  private: 
 
@@ -153,8 +153,8 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
 
   mutable EnvPtr<T>                    _myEnv; // Environment of the jet.
   
-  term                                 _std;  // standard part
-  term*                                _jcb;  // jacobian
+  T                                    _std;  // standard part
+  T*                                   _jcb;  // jacobian
 
   mutable int                         _constIterPtr;
   int                                 _iterPtr;
@@ -263,7 +263,7 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   void setVariable( const int&, EnvPtr<T> const& pje );               
 
   T standardPart() const;
-  void setStandardPart( T const& std) { _std.value = std; } 
+  void setStandardPart( T const& std) { _std = std; } 
 
   T weightedDerivative( const int* ) const;
   T derivative( const int* ) const;

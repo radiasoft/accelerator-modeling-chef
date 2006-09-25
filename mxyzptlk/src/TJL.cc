@@ -68,7 +68,7 @@ using FNAL::pcerr;
 template<>
 template<>
 TJL<std::complex<double> >::TJL( TJL<double> const& x):
-_count(0),                     
+_count(x._count ),          
 _weight(x._weight),     
 _accuWgt(x._accuWgt),
 _lowWgt(x._lowWgt),
@@ -77,25 +77,22 @@ _jltermStore(0),
 _jltermStoreCurrentPtr(0)
 {
 
-  this->_myEnv = x._myEnv;        
+  _myEnv = x._myEnv; // implicit conversion        
 
-  initStore( x._jltermStoreCapacity );
+  initStore( x._jltermStoreCapacity ); //  ***NOTE *** this resets the count !               
 
   //--------------------------------------------------------------------------
   // copy all the terms of the TJL<double> to the new TJL<complex> ...
   // --------------------------------------------------------------------------
 
-  TJLterm<std::complex<double> >* q = 0;
+
   for ( TJLterm<double> const *p = x._jltermStore; p < x._jltermStoreCurrentPtr; ++p) { 
 
-    append( TJLterm<complex<double> >( *p ) ); //implicit conversion 
+      new  (storePtr()) TJLterm<std::complex<double> >(*p); //implicit conversion 
 
   }
- 
-   _accuWgt  = x._accuWgt;  // accurate weight depends on previous operations, 
-                             // so it must be preserved. 
-
-   return; 
+  
+  return; 
 
 }
 
@@ -119,10 +116,10 @@ JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL(  TJL<double> 
   
   }
 
-  p->_count    = 0;          // needed by append function
-  p->_weight   = x._weight;  // needed by append function
+  p->_count    = x._count;   
+  p->_weight   = x._weight;  
   p->_accuWgt  = x._accuWgt;
-  p->_accuWgt  = x._lowWgt;
+  p->_lowWgt   = x._lowWgt;
   p->_myEnv    = x._myEnv;  // implicit conversion
  
 
@@ -132,15 +129,11 @@ JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL(  TJL<double> 
   // --------------------------------------------------------------------------
 
 
-  TJLterm<std::complex<double> >* q = 0;
-
   for ( TJLterm<double> const* r = x._jltermStore; r < x._jltermStoreCurrentPtr; ++r) { 
-    p->append(TJLterm<complex<double> >(*r) );
+
+    new ( p->storePtr() )  TJLterm<std::complex<double> >(*r); // implicit conversion 
   }
  
-  p->_accuWgt  = x._accuWgt;  // accurate weight depends on previous operations, 
-                             // so it must be preserved. 
-
 
  return JLPtr<std::complex<double> >(p);
 
@@ -163,14 +156,17 @@ JLPtr<double> real( JLPtr<std::complex<double> > const& z )
 
   JLPtr<double>  x( TJL<double>::makeTJL( pje ) );
 
-  x->setStandardPart( std::real( z->standardPart() ));
+  x->clear(); // clears **all** the terms (including the linear ones that are present by default); 
 
-  for ( TJLterm<std::complex<double> >* p = z->_jltermStore+1; p < z->_jltermStoreCurrentPtr; ++p) {
+  for ( TJLterm<std::complex<double> >* p = z->_jltermStore; p < z->_jltermStoreCurrentPtr; ++p) {
 
-    x->append( TJLterm<double>( p->_index, std::real( p->_value ), x->_myEnv ));
+     new ( x->storePtr() )  TJLterm<double>( p->_index, std::real( p->_value ), x->_myEnv );
   }
  
   // Set the maximum accurate _weight.
+
+  x->_weight  = z->_weight;
+  x->_count   = z->_count;
   x->_accuWgt = z->_accuWgt;
   x->_lowWgt  = z->_lowWgt;
 
@@ -196,15 +192,17 @@ JLPtr<double> imag( const JLPtr<std::complex<double> >& z )
 
   // Proceed ...
  
-  x->setStandardPart( std::imag( z->standardPart() ));
+  x->clear(); // clears **all** the terms (including the linear ones that are present by default); 
 
-  for ( TJLterm<std::complex<double> >* p = z->_jltermStore+1; p < z->_jltermStoreCurrentPtr; ++p) {
+  for ( TJLterm<std::complex<double> >* p = z->_jltermStore; p < z->_jltermStoreCurrentPtr; ++p) {
 
-    x->append( TJLterm<double>( p->_index, std::imag( p->_value ), x->_myEnv ) );
+    new (x->storePtr() )  TJLterm<double>( p->_index, std::imag( p->_value ), x->_myEnv );
   }
  
   // Set the maximum accurate _weight.
 
+  x->_weight  = z->_weight;
+  x->_count   = z->_count;
   x->_accuWgt = z->_accuWgt;
   x->_lowWgt  = z->_lowWgt;
   

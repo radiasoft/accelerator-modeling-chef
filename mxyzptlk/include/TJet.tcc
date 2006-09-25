@@ -113,8 +113,7 @@ TJet<T>::TJet( T x, EnvPtr<T> const& pje ): _jl(  tjl_t::makeTJL( pje,x ) ){}
 
 
 template<typename T>
-TJet<T>::TJet( TJet<T> const& x ): _jl( x._jl ) {}
-//TJet<T>::TJet( TJet<T> const& x ): gms::FastAllocator(), _jl( x._jl ) {}
+TJet<T>::TJet( TJet<T> const& x ): gms::FastAllocator(), _jl( x._jl ) {}
 // NOTE: ref count is incremented when JLPtr is instantiated. 
 
 
@@ -180,8 +179,8 @@ void TJet<T>::setVariable( const T& x,
                                const int& j, 
                                EnvPtr<T> const& pje )
 {
-  _jl = _jl->clone();
-  _jl->setVariable( x, j, pje );  // !! Alters the environment!
+  if (_jl.count() > 1 ) _jl = _jl->clone();
+  _jl->setVariable( x, j, pje );  
 
 }
 
@@ -205,7 +204,7 @@ template<typename T>
 void TJet<T>::setVariable( const int& j, EnvPtr<T> const& pje ) 
 {
 
-    _jl = _jl->clone();;
+  if (_jl.count() > 1 ) _jl = _jl->clone();
     _jl->setVariable( j, pje );
 }
 
@@ -216,7 +215,7 @@ template<typename T>
 void TJet<T>::setVariable( const int& j )
 {
 
- _jl = _jl->clone();
+  if (_jl.count() > 1 ) _jl = _jl->clone();
  _jl->setVariable( j, _jl->getEnv() );
 
 }
@@ -233,20 +232,6 @@ TJet<T>& TJet<T>::operator=( const TJet& x )
 
 }
 
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJet<T>& TJet<T>::DeepCopy( const TJet& x ) 
-{
-
- if( this != &x ) {
-   _jl = (x._jl)->clone();
-}
-
- return *this; 
-}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -268,7 +253,7 @@ TJet<T>& TJet<T>::operator=( const T& x )
 template<typename T>
 void TJet<T>::addTerm( const TJLterm<T>& a) 
 {
- _jl = _jl->clone();
+  if (_jl.count() > 1 ) _jl = _jl->clone();
  _jl->addTerm( TJLterm<T>(a) );
 }
 
@@ -403,7 +388,7 @@ template<typename T>
 TJet<T>& TJet<T>::operator+=( const TJet<T>& y ) 
 {
 
-  _jl = _jl->clone();
+  if (_jl.count() > 1 ) _jl = _jl->clone();
   _jl += y._jl; 
   return *this;
  
@@ -417,7 +402,7 @@ template<typename T>
 TJet<T>& TJet<T>::operator-=( const TJet<T>& y ) 
 {
 
-    _jl = _jl->clone();
+    if (_jl.count() > 1 ) _jl = _jl->clone();
     _jl +=( -y._jl );
     return *this; 
 
@@ -431,7 +416,7 @@ template<typename T>
 TJet<T>& TJet<T>::operator*=( const TJet<T>& y ) 
 {
 
- _jl = _jl->clone();
+ if (_jl.count() > 1 ) _jl = _jl->clone();
  _jl = _jl * y._jl;
  return *this;
 
@@ -446,7 +431,8 @@ TJet<T>& TJet<T>::operator/=( const TJet<T>& y )
 
 // no in-place division yet ...
 // use std operator instead
- _jl = _jl->clone();
+
+ if (_jl.count() > 1 ) _jl = _jl->clone();
  _jl = _jl / (y._jl);  
  return *this;
 
@@ -458,7 +444,7 @@ TJet<T>& TJet<T>::operator/=( const TJet<T>& y )
 template<typename T>
 TJet<T>& TJet<T>::operator/=( const T& y ) 
 {
-  _jl = _jl->clone();
+ if (_jl.count() > 1 ) _jl = _jl->clone();
   _jl->scaleBy( ((T) 1.0)/ y);
   return *this;
 
@@ -550,7 +536,7 @@ template<typename T>
 TJet<T>& TJet<T>::operator+=( const T& x ) 
 {   
 
-  _jl  = _jl->clone();
+ if (_jl.count() > 1 ) _jl = _jl->clone();
   _jl->operator+=(x);
 
  return *this;
@@ -563,7 +549,7 @@ template<typename T>
 TJet<T>& TJet<T>::operator-=( const T& x ) 
 {
 
- _jl  = _jl->clone();
+ if (_jl.count() > 1 ) _jl = _jl->clone();
  _jl->operator+=(-x);
  return *this;
 
@@ -576,7 +562,7 @@ template<typename T>
 TJet<T>& TJet<T>::operator*=( const T& x ) 
 {
 
- _jl = _jl->clone();
+ if (_jl.count() > 1 ) _jl = _jl->clone();
  _jl->scaleBy(x); 
  return *this;
 }
@@ -638,7 +624,7 @@ TJet<T> operator-( const T& x, const TJet<T>& y )
 template<typename T> 
 TJet<T> operator-( const TJet<T>& x) // Unary form of minus 
 {
-  typename TJet<T>::jl_t jl ( (x._jl)->clone() ); // deep copy
+  typename TJet<T>::jl_t jl( (x._jl)->clone() );
   jl->Negate();
   return TJet<T>( jl );
 
@@ -650,7 +636,7 @@ TJet<T> operator-( const TJet<T>& x) // Unary form of minus
 template<typename T>
 void TJet<T>::Negate()    // ??? What is this for ???
 {
-  _jl = _jl->clone();
+  if (_jl.count() > 1 ) _jl = _jl->clone();
   _jl->Negate();
 
 }
@@ -662,7 +648,7 @@ template<typename T>
 void TJet<T>::Mult( const T& x ) // ??? What is this for ???
 {
 
- _jl = _jl->clone();
+  if (_jl.count() > 1 ) _jl = _jl->clone();
  _jl->scaleBy(x);
 
 }
@@ -1053,16 +1039,6 @@ void TJet<T>::writeToFile( ofstream& outStr ) const
  _jl->writeToFile( outStr );
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TJet<T>::scaleBy( T y ) 
-{
- _jl = _jl->clone(); 
- _jl->scaleBy( y );
-}
-
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1071,7 +1047,7 @@ void TJet<T>::scaleBy( T y )
 template<typename T>
 void TJet<T>::clear() 
 {
- _jl = _jl->clone(); 
+ if (_jl.count() > 1) _jl = _jl->clone();
  _jl->clear();
 }
 

@@ -67,6 +67,7 @@
 
 #include <mxyzptlk/TJetEnvironment.h>
 #include <mxyzptlk/TJLIterator.h>
+#include <mxyzptlk/TJL1Iterator.h>
 #include <mxyzptlk/TJL.h>
 #include <mxyzptlk/TJL1.h>
 #include <complex>
@@ -100,46 +101,46 @@ TJet<T> operator+( TJet<T> const&, T const& );
 template<typename T> 
 TJet<T> operator+( T const&, TJet<T> const& );
 
-TJet<std::complex<double> > operator+( const TJet<double >& x,               const TJet<std::complex<double> >& y );
-TJet<std::complex<double> > operator+( const TJet<std::complex<double> >& x, const TJet<double >& y );
-TJet<std::complex<double> > operator+( const std::complex<double> & x,       const TJet<double >& y );
-TJet<std::complex<double> > operator+( const TJet<double >& y,               const std::complex<double> & x );
-TJet<std::complex<double> > operator+( const double& x,                      const TJet<std::complex<double> >& y );
-TJet<std::complex<double> > operator+( const TJet<std::complex<double> >& y, const double& x );
+TJet<std::complex<double> > operator+( TJet<double >               const& x, TJet<std::complex<double> > const& y );
+TJet<std::complex<double> > operator+( TJet<std::complex<double> > const& x, TJet<double >               const& y );
+TJet<std::complex<double> > operator+( std::complex<double>        const& x, TJet<double >               const& y );
+TJet<std::complex<double> > operator+( TJet<double >               const& y, std::complex<double>        const& x );
+TJet<std::complex<double> > operator+( double                      const& x, TJet<std::complex<double> > const& y );
+TJet<std::complex<double> > operator+( TJet<std::complex<double> > const& y, double                      const& x );
 
 template<typename T> 
-TJet<T> operator-( const TJet<T>&, const TJet<T>& );
+TJet<T> operator-( TJet<T> const&, TJet<T> const& );
 
 template<typename T> 
-TJet<T> operator-( const TJet<T>& );
+TJet<T> operator-( TJet<T> const& );
 
 template<typename T> 
-TJet<T> operator-( const TJet<T>&, const T& );
+TJet<T> operator-( TJet<T> const&, T const& );
 
 template<typename T> 
-TJet<T> operator-( const T&, const TJet<T>& );
+TJet<T> operator-( T const&, TJet<T> const& );
 
-TJet<std::complex<double> > operator-( const TJet<double >& x,               const TJet<std::complex<double> >& y );
-TJet<std::complex<double> > operator-( const TJet<std::complex<double> >& x, const TJet<double >& y );
-TJet<std::complex<double> > operator-( const std::complex<double> & x,       const TJet<double >& y );
-TJet<std::complex<double> > operator-( const TJet<double >& y,               const std::complex<double> & x );
-TJet<std::complex<double> > operator-( const double& x,                      const TJet<std::complex<double> >& y );
-TJet<std::complex<double> > operator-( const TJet<std::complex<double> >& y, const double& x );
-
-template<typename T> 
-TJet<T> operator*( const TJet<T>&, const TJet<T>& );
+TJet<std::complex<double> > operator-( TJet<double >               const& x, TJet<std::complex<double> > const& y );
+TJet<std::complex<double> > operator-( TJet<std::complex<double> > const& x, TJet<double >               const& y );
+TJet<std::complex<double> > operator-( std::complex<double>        const& x, TJet<double >               const& y );
+TJet<std::complex<double> > operator-( TJet<double >               const& y, std::complex<double>        const& x );
+TJet<std::complex<double> > operator-( double                      const& x, TJet<std::complex<double> > const& y );
+TJet<std::complex<double> > operator-( TJet<std::complex<double> > const& y, double                      const& x );
 
 template<typename T> 
-TJet<T> operator*( const TJet<T>&, const T& );
+TJet<T> operator*( TJet<T> const&, TJet<T> const& );
 
 template<typename T> 
-TJet<T> operator*( const T&, const TJet<T>& );
+TJet<T> operator*( TJet<T> const&, T const& );
 
 template<typename T> 
-TJet<T> operator*( const TJet<T>&, const int& );
+TJet<T> operator*( T const&, TJet<T> const& );
 
 template<typename T> 
-TJet<T> operator*( const int&, const TJet<T>& );
+TJet<T> operator*( TJet<T> const&, const int& );
+
+template<typename T> 
+TJet<T> operator*( const int&, TJet<T> const& );
 
 TJet<std::complex<double> > operator*( const TJet<double >& x,               const TJet<std::complex<double> >& y );
 TJet<std::complex<double> > operator*( const TJet<std::complex<double> >& x, const TJet<double >& y );
@@ -149,16 +150,16 @@ TJet<std::complex<double> > operator*( const TJet<std::complex<double> >& x, con
 TJet<std::complex<double> > operator*( const double& x,                      const TJet<std::complex<double> >& y );
 
 template<typename T> 
-TJet<T> operator/( const TJet<T>&, const TJet<T>& );
+TJet<T> operator/( TJet<T> const&, TJet<T> const& );
 
 template<typename T> 
-TJet<T> operator/( const TJet<T>&, const T& );  
+TJet<T> operator/( TJet<T> const&, T const& );  
 
 template<typename T> 
-TJet<T> operator/( const T&,       const TJet<T>& ); 
+TJet<T> operator/( T const&,       TJet<T> const& ); 
 
 template<typename T> 
-TJet<T> operator/( const TJet<T>&, const int& ); 
+TJet<T> operator/( TJet<T> const&, const int& ); 
 
 TJet<std::complex<double> > operator/( const TJet<double >& x,               const TJet<std::complex<double> >& y );
 TJet<std::complex<double> > operator/( const TJet<std::complex<double> >& x, const TJet<double >& y );
@@ -168,76 +169,76 @@ TJet<std::complex<double> > operator/( const TJet<std::complex<double> >& x, con
 TJet<std::complex<double> > operator/( const double& x,                      const TJet<std::complex<double> >& y );
 
 template<typename T> 
-bool operator==( const TJet<T>&, const TJet<T>& );
+bool operator==( TJet<T> const&, TJet<T> const& );
 
 template<typename T> 
-bool operator==( const TJet<T>&, const T& );
+bool operator==( TJet<T> const&, T const& );
 
 template<typename T> 
-bool operator==( const T&, const TJet<T>& );
+bool operator==( T const&, TJet<T> const& );
 
 template<typename T> 
-bool operator!=( const TJet<T>& x, const TJet<T>& y ); 
+bool operator!=( TJet<T> const& x, TJet<T> const& y ); 
 
 template<typename T> 
-bool operator!=( const TJet<T>& x, const T& y );
+bool operator!=( TJet<T> const& x, T const& y );
 
 template<typename T> 
-bool operator!=( const T& x, const TJet<T>& y ); 
+bool operator!=( T const& x, TJet<T> const& y ); 
 
 template<typename T> 
-TJet<T> operator^( const TJet<T>&, const TJet<T>& );
+TJet<T> operator^( TJet<T> const&, TJet<T> const& );
 
 template<typename T> 
 TJLterm<T> operator*( const TJLterm<T>&, const TJLterm<T>& );
 
 template<typename T> 
-TJet<T> acos ( const TJet<T>& );
+TJet<T> acos ( TJet<T> const& );
 
 template<typename T> 
-TJet<T> asin ( const TJet<T>& );
+TJet<T> asin ( TJet<T> const& );
 
 template<typename T> 
-TJet<T> atan ( const TJet<T>& );
+TJet<T> atan ( TJet<T> const& );
 
 template<typename T> 
-TJet<T> cos  ( const TJet<T>& );
+TJet<T> cos  ( TJet<T> const& );
 
 template<typename T> 
-TJet<T> cosh ( const TJet<T>& );
+TJet<T> cosh ( TJet<T> const& );
 
 template<typename T> 
-TJet<T> exp  ( const TJet<T>& );
+TJet<T> exp  ( TJet<T> const& );
 
 template<typename T> 
-TJet<T> log  ( const TJet<T>& );
+TJet<T> log  ( TJet<T> const& );
 
 template<typename T> 
-TJet<T> log10( const TJet<T>& );
+TJet<T> log10( TJet<T> const& );
 
 template<typename T> 
-TJet<T> pow  ( const TJet<T>&, const double& );
+TJet<T> pow  ( TJet<T> const&, const double& );
 
 template<typename T> 
-TJet<T> pow  ( const TJet<T>&, int );
+TJet<T> pow  ( TJet<T> const&, int );
 
 template<typename T> 
-TJet<T> sin  ( const TJet<T>& );
+TJet<T> sin  ( TJet<T> const& );
 
 template<typename T> 
-TJet<T> sinh ( const TJet<T>& );
+TJet<T> sinh ( TJet<T> const& );
 
 template<typename T> 
-TJet<T> sqrt ( const TJet<T>& );
+TJet<T> sqrt ( TJet<T> const& );
 
 template<typename T> 
-TJet<T> tan  ( const TJet<T>& );
+TJet<T> tan  ( TJet<T> const& );
 
 template<typename T> 
-TJet<T> tanh ( const TJet<T>& );
+TJet<T> tanh ( TJet<T> const& );
 
 template<typename T> 
-TJet<T> erfc ( const TJet<T>& );
+TJet<T> erfc ( TJet<T> const& );
 
 TJet<std::complex<double> > erf    ( const TJet<std::complex<double> >& );
 TJet<double > erf    ( const TJet<double >& );
@@ -256,10 +257,10 @@ template<typename T>
 JL1Ptr<T> makeJL( EnvPtr<T> const& pje,  T value = T());
 
 template<typename T>
-JLPtr<T> makeJL( const IntArray&, const T&, EnvPtr<T> const& pje );
+JLPtr<T> makeJL( const IntArray&, T const&, EnvPtr<T> const& pje );
 
 template<typename T>
-JL1Ptr<T> makeJL( const IntArray&, const T&, EnvPtr<T> const& pje );
+JL1Ptr<T> makeJL( const IntArray&, T const&, EnvPtr<T> const& pje );
 
 
 // ==============================================================================
@@ -291,11 +292,14 @@ class TJet: public gms::FastAllocator
   public:
 
 #ifdef FIRST_ORDER_JETS  
-  typedef typename  JLType<true, JL1Ptr<T>, JLPtr<T> >::ResultT   jl_t;    
-  typedef typename  JLType<true, TJL1<T>,     TJL<T> >::ResultT  tjl_t;    
+  typedef typename  JLType<true, JL1Ptr<T>,             JLPtr<T> >::ResultT         jl_t;    
+  typedef typename  JLType<true, TJL1<T>,                 TJL<T> >::ResultT        tjl_t;    
+  typedef typename  JLType<true, TJL1Iterator<T>, TJLIterator<T> >::ResultT    jl_iter_t;    
+
 #else 
-  typedef typename  JLType<false, JL1Ptr<T>, JLPtr<T> >::ResultT   jl_t;    
-  typedef typename  JLType<false, TJL1<T>,     TJL<T> >::ResultT  tjl_t;    
+  typedef typename  JLType<false, JL1Ptr<T>,             JLPtr<T> >::ResultT         jl_t;    
+  typedef typename  JLType<false, TJL1<T>,                 TJL<T> >::ResultT        tjl_t;    
+  typedef typename  JLType<false, TJL1Iterator<T>, TJLIterator<T> >::ResultT   jl_iter_t;    
 #endif
  
  // the following declarations are needed for the type conversion operator 
@@ -316,9 +320,9 @@ protected:
   TJet _epsInverse() const;  // Calculates the inverse of
                              // nilpotent Jets.
 
-  friend TJet<double > fabs( const TJet<double>& ); // ?????
-  friend TJet<double > real( const TJet<std::complex<double> >& );
-  friend TJet<double > imag( const TJet<std::complex<double> >& );
+  friend TJet<double > fabs( TJet<double> const& ); // ?????
+  friend TJet<double > real( TJet<std::complex<double> > const& );
+  friend TJet<double > imag( TJet<std::complex<double> > const& );
 
   TJet( typename TJet::jl_t const& jl );
 
@@ -346,7 +350,7 @@ public:
 public:
 
 
-  void setEnvTo( const TJet& );                   // Changes environment to
+  void setEnvTo( TJet const& );                   // Changes environment to
   void setEnvTo( EnvPtr<T> const& );              // that of the argument.
 
   int intEnv() const;                             // Returns integer representation
@@ -378,11 +382,9 @@ public:
   int  getWeight()  const;
   int  getAccuWgt() const;
 
-  void scaleBy( T );
-
-  void setVariable( const T&, const int&, EnvPtr<T> const& pje);
+  void setVariable( T const&, const int&, EnvPtr<T> const& pje);
   void setVariable( const int&,           EnvPtr<T> const& pje );
-  void setVariable( const T&, const int& );
+  void setVariable( T const&, const int& );
   void setVariable( const int& );
 
 
@@ -395,7 +397,7 @@ public:
   TJet     filter(  const int&, const int& ) const;  
                                   // Returns only those JLterms whose weight 
                                   // are between two specified values, inclusive.
-  TJet     filter( bool (*)( const IntArray&, const T& ) ) const; 
+  TJet     filter( bool (*)( const IntArray&, T const& ) ) const; 
                                    // Returns those JLterms for which the 
                                    // argument is satisfied.
   T        operator() ( const Vector& ) const;
@@ -412,71 +414,70 @@ public:
 
   // Operators________________________________________________________
 
-  friend std::ostream& operator<<<>(std::ostream&, const TJet&);
+  friend std::ostream& operator<<<>(std::ostream&, TJet const&);
   friend std::istream& operator>><>(std::istream&, TJet&);
 
-  friend bool operator==<>( const TJet&, const TJet& );
-  friend bool operator==<>( const TJet&, const T& );
-  friend bool operator==<>( const T&, const TJet& );
+  friend bool operator==<>( TJet const&, TJet const& );
+  friend bool operator==<>( TJet const&, T const& );
+  friend bool operator==<>( T const&, TJet const& );
 
-  // bool operator==( const TJet& ) const; // ??? what is this for
-  // bool operator==( const T& ) const;    // ??? what is this for
+  // bool operator==( TJet const& ) const; // ??? what is this for
+  // bool operator==( T const& ) const;    // ??? what is this for
 
-  TJet& operator=( const TJet& );
-  TJet& operator=( const T& );
-  TJet& DeepCopy( const TJet& );
+  TJet& operator=( TJet const& );
+  TJet& operator=( T const& );
 
-  TJet& operator+=( const TJet& );
-  TJet& operator+=( const T& );
-  TJet& operator-=( const TJet& );
-  TJet& operator-=( const T& );
+  TJet& operator+=( TJet const& );
+  TJet& operator+=( T const& );
+  TJet& operator-=( TJet const& );
+  TJet& operator-=( T const& );
 
-  TJet& operator*=( const TJet& );
-  TJet& operator*=( const T& );
-  TJet& operator/=( const TJet& );
-  TJet& operator/=( const T& );
+  TJet& operator*=( TJet const& );
+  TJet& operator*=( T const& );
+  TJet& operator/=( TJet const& );
+  TJet& operator/=( T const& );
 
-  friend TJet operator+<>( const TJet&, const TJet& );
-  friend TJet operator+<>( const TJet&, const T& );
-  friend TJet operator+<>( const T&, const TJet& );
-  friend TJet operator-<>( const TJet&, const TJet& );
-  friend TJet operator-<>( const TJet& );
-  friend TJet operator-<>( const TJet&, const T& );
-  friend TJet operator-<>( const T&, const TJet& );
+  friend TJet operator+<>( TJet const&, TJet const& );
+  friend TJet operator+<>( TJet const&, T const& );
+  friend TJet operator+<>( T const&, TJet const& );
+  friend TJet operator-<>( TJet const&, TJet const& );
+  friend TJet operator-<>( TJet const& );
+  friend TJet operator-<>( TJet const&, T const& );
+  friend TJet operator-<>( T const&, TJet const& );
 
-  friend TJet operator*<>( const TJet&, const TJet& );
+  friend TJet operator*<>( TJet const&, TJet const& );
   friend TJet<std::complex<double> > operator*( const TJet<double >&, const TJet<std::complex<double> >& );
   friend TJet<std::complex<double> > operator*( const TJet<std::complex<double> >&, const TJet<double >& );
-  friend TJet operator*<>( const TJet&, const T& );
-  friend TJet operator*<>( const T&, const TJet& );     // ??? Change this!!
+  friend TJet operator*<>( TJet const&, T const& );
+  friend TJet operator*<>( T const&, TJet const& );     // ??? Change this!!
 
-  friend TJet operator/<>( const TJet&, const TJet& );   // ??? Friendliness
-  friend TJet operator/<>( const TJet&, const T& );     // ??? unnecessary
-  friend TJet operator/<>( const T&, const TJet& ); 
+  friend TJet operator/<>( TJet const&, TJet const& );   // ??? Friendliness
+  friend TJet operator/<>( TJet const&, T const& );     // ??? unnecessary
+  friend TJet operator/<>( T const&, TJet const& ); 
 
-  friend TJet operator^<>( const TJet&, const TJet& );   // Poisson bracket
+  friend TJet operator^<>( TJet const&, TJet const& );   // Poisson bracket
 
   friend TJLterm<T> operator*<>( const TJLterm<T>&, const TJLterm<T>& );
-  friend TJet operator*<>( const TJet&, const int& );
-  friend TJet operator*<>( const int&, const TJet& );
-  friend TJet operator/<>( const TJet&, const int& ); 
+  friend TJet operator*<>( TJet const&, const int& );
+  friend TJet operator*<>( const int&, TJet const& );
+  friend TJet operator/<>( TJet const&, const int& ); 
 
-  friend TJet acos<> ( const TJet<T>& );
-  friend TJet asin<> ( const TJet<T>& );  
-  friend TJet atan<> ( const TJet<T>& ); 
-  friend TJet cos<>  ( const TJet<T>& );
-  friend TJet cosh<> ( const TJet<T>& );
-  friend TJet exp<>  ( const TJet<T>& );
-  friend TJet log<>  ( const TJet<T>& );
-  friend TJet log10<>( const TJet<T>& );
-  friend TJet pow<>  ( const TJet<T>&, const double& );
-  friend TJet pow<>  ( const TJet<T>&, int );
-  friend TJet sin<>  ( const TJet<T>& );
-  friend TJet sinh<> ( const TJet<T>& );
-  friend TJet sqrt<> ( const TJet<T>& );
-  friend TJet tan<>  ( const TJet<T>& );
-  friend TJet tanh<> ( const TJet<T>& );
-  friend TJet erfc<> ( const TJet<T>& );
+  friend TJet acos<> ( TJet<T> const& );
+  friend TJet asin<> ( TJet<T> const& );  
+  friend TJet atan<> ( TJet<T> const& ); 
+  friend TJet cos<>  ( TJet<T> const& );
+  friend TJet cosh<> ( TJet<T> const& );
+  friend TJet exp<>  ( TJet<T> const& );
+  friend TJet log<>  ( TJet<T> const& );
+  friend TJet log10<>( TJet<T> const& );
+  friend TJet pow<>  ( TJet<T> const&, const double& );
+  friend TJet pow<>  ( TJet<T> const&, int );
+  friend TJet sin<>  ( TJet<T> const& );
+  friend TJet sinh<> ( TJet<T> const& );
+  friend TJet sqrt<> ( TJet<T> const& );
+  friend TJet tan<>  ( TJet<T> const& );
+  friend TJet tanh<> ( TJet<T> const& );
+  friend TJet erfc<> ( TJet<T> const& );
 
   friend TJet<std::complex<double> > erf    ( const TJet<std::complex<double> >& );
   friend TJet<double > erf    ( const TJet<double >& );
@@ -485,7 +486,7 @@ public:
 
   // Utility arithmetic functions ...
   void Negate();
-  void Mult( const T& );
+  void Mult( T const& );
 
 
   // Inversion ...
@@ -504,7 +505,7 @@ public:
     void reset()                      { _iter.reset(); } 
   private:
 
-    TJLIterator<T> _iter;
+    jl_iter_t  _iter;
   };
 
   
@@ -543,9 +544,9 @@ public:
   T         _refpt; 
 
   Tcoord( const Tcoord& );             // forbidden - no implementation
-  void    operator=( const T& );       // forbidden - no implementation
-  Tcoord& operator=( const Tcoord& );  // forbidden - no implementation
-  Tcoord& operator=( const TJet<T>& ); // forbidden - no implementation
+  void    operator=( T const& );       // forbidden - no implementation
+  Tcoord& operator=( Tcoord const& );  // forbidden - no implementation
+  Tcoord& operator=( TJet<T> const& ); // forbidden - no implementation
 
 };
 
@@ -570,9 +571,9 @@ public:
   T         _refpt; 
 
   Tparam( const Tparam& );                 // forbidden - no implementation
-  void    operator=( const T& );           // forbidden - no implementation
-  Tparam& operator=( const Tparam& );      // forbidden - no implementation
-  Tparam& operator=( const TJet<T>& );     // forbidden - no implementation
+  void    operator=( T const& );           // forbidden - no implementation
+  Tparam& operator=( Tparam const& );      // forbidden - no implementation
+  Tparam& operator=( TJet<T> const& );     // forbidden - no implementation
 
 };
 

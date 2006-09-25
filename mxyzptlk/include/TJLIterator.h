@@ -36,6 +36,9 @@
 template <typename T>
 class TJLterm;
 
+template <typename T>
+class TJL;
+
 
 template <typename T>
 class TJLIterator {
