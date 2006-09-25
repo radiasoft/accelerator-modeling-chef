@@ -213,7 +213,7 @@ template<typename T>
 TMatrix<T>& TMatrix<T>::operator+=( const T& x ) 
 {
  
-  _ml = _ml->clone();
+  if (_ml->count() > 1) _ml= _ml->clone();
   _ml->operator+=( x );
   return *this;
 
@@ -226,7 +226,7 @@ template<typename T>
 TMatrix<T>& TMatrix<T>::operator-=( const T& x ) 
 {
 
- _ml = _ml->clone();
+  if (_ml->count() > 1) _ml= _ml->clone();
  _ml->operator+=( -x );
  return *this;
 
@@ -306,7 +306,7 @@ TMatrix<T> TMatrix<T>::inverse() const
 template<typename T>
 void    TMatrix<T>:: switch_columns( int col1, int col2) {
 
-  _ml = _ml->clone();
+  if (_ml->count() > 1) _ml= _ml->clone();
   _ml->_switch_columns(col1,col2);
 
 };
@@ -321,7 +321,7 @@ template<typename T>
 T& TMatrix<T>::operator()(int i, int j) 
 {
 
-  if ( _ml->count() > 1 ) _ml = _ml->clone();  // This may be bad ! 
+  if ( _ml->count() > 1 ) _ml = _ml->clone();  
   return (*_ml)(i,j); 
 
 }
