@@ -403,8 +403,6 @@ TJL<T>::~TJL()
 template<typename T>
 void TJL<T>::growStore( ) {
  
-TJLterm<T>* p                         = 0;
-TJLterm<T>* q                         = 0;
 TJLterm<T>* old_jltermStore           = 0;
 TJLterm<T>* old_jltermStoreCurrentPtr = 0;
 int             old_jltermStoreCapacity  = 0;
@@ -2484,8 +2482,6 @@ JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  ){
  JLPtr<T> z( TJL<T>::makeTJL( pje ) );
 
  int  indy                = 0;
- TJLterm<T>* zed          = 0;
- TJLterm<T>* upperzed     = 0;
  T  dummy                 = T();
  T  product               = T();
 
@@ -2612,8 +2608,6 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
 
  
  int  indy                = 0;
- TJLterm<T>* zed          = 0;
- TJLterm<T>* upperzed     = 0;
  T  dummy                 = T();
  T  product               = T();
 
@@ -2747,9 +2741,6 @@ JLPtr<T>  operator/(JLPtr<T> const& wArg,  JLPtr<T> const& uArg  ){
  JLPtr<T>  w( TJL<T>::makeTJL(wArg->_myEnv) );
  JLPtr<T>  u( TJL<T>::makeTJL(*uArg )       );
 
- TJLterm<T>* qu = 0;
- TJLterm<T>* qw = 0;
- 
  // Normalize the denominator
 
  if( uArg->standardPart() == T() ) {
@@ -2759,7 +2750,7 @@ JLPtr<T>  operator/(JLPtr<T> const& wArg,  JLPtr<T> const& uArg  ){
  }
 
  T   u0  = uArg->standardPart();
- int wgt = uArg->_weight;
+ // int wgt = uArg->_weight; // not used for the moment
 
  u->scaleBy( T(1.0)/ u0 );
 

@@ -94,7 +94,7 @@ __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >& TJLt
 
 template<typename T>
 TJLterm<T>::TJLterm( int nvar) 
-: _index(nvar), _weight(0), _value(T()) 
+:_value(T()), _weight(0),  _index(nvar)
 {}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -102,7 +102,7 @@ TJLterm<T>::TJLterm( int nvar)
 
 template<typename T>
 TJLterm<T>::TJLterm(  EnvPtr<T> const& pje ) 
-: _index( pje->numVar() ), _weight(0), _value(T())
+: _value( T() ), _weight(0), _index( pje->numVar() )
 {}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -110,7 +110,7 @@ TJLterm<T>::TJLterm(  EnvPtr<T> const& pje )
 
 template<typename T>
 TJLterm<T>::TJLterm( IntArray const& l, T const& x, EnvPtr<T> const& pje ) :   
-_index( l ), _weight(l.Sum()), _value(x) 
+_value(x),  _weight(l.Sum()), _index( l )
 {
    if( !pje ) return; 
    if (l.Dim() != pje->numVar() ) {
@@ -197,7 +197,7 @@ _index( l ), _weight(l.Sum()), _value(x)
 
 template<typename T>
 TJLterm<T>::TJLterm(  IntArray const& l, const T& x )
-: _index(l), _weight(l.Sum()), _value(x)
+: _value(x), _weight(l.Sum()), _index(l)
 {}
 
 
