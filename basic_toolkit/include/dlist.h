@@ -175,7 +175,7 @@ public:
 
   void* operator()();
   void* current();  
-  void  Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
+  void  Reset( const dlist& s ) { cs = const_cast<dlist*>(&s); ce = cs->last; }
   void  Reset() { ce = cs->last; }
   void  GoBack( int = 1 );
   void  Terminate() { ce = 0; }
@@ -189,7 +189,7 @@ public:
   dlist_looper( dlist& s ) { cs = &s; ce = cs->last; }
   dlist_looper( const dlist_looper& x ) { cs = x.cs; ce = x.ce; }
   void* operator()();
-  void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
+  void Reset( const dlist& s ) { cs = const_cast<dlist*>(&s); ce = cs->last; }
   void Reset() { ce = cs->last; }
 } ;
 
@@ -210,10 +210,10 @@ class DLLEXPORT dlist_reverseIterator {
   dlink* ce;
   dlist* cs;
 public:
-  dlist_reverseIterator( dlist& s ) { cs = &s; ce = cs->last; }
-  dlist_reverseIterator( const dlist_reverseIterator& x ) { cs = x.cs; ce = x.ce; }
+  dlist_reverseIterator( dlist const& s )                 { cs = const_cast<dlist*>(&s); ce = cs->last; }
+  dlist_reverseIterator( dlist_reverseIterator const& x ) { cs = x.cs; ce = x.ce; }
   void* operator()();
-  void Reset( const dlist& s ) { cs = (dlist*) &s; ce = cs->last; }
+  void Reset( const dlist& s ) { cs = const_cast<dlist*>(&s); ce = cs->last; }
   void Reset() { ce = cs->last; }
   void Terminate() { ce = 0; }
 } ;
