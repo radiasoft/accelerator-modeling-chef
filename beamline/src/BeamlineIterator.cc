@@ -69,13 +69,13 @@ using FNAL::pcerr;
 
 BeamlineIterator::BeamlineIterator( const beamline& x )
 {
-  _getNext = new dlist_iterator( (dlist&) x );
+  _getNext = new dlist_iterator( x );
 }
 
 
 BeamlineIterator::BeamlineIterator( const beamline* x )
 {
-  _getNext = new dlist_iterator( *(dlist*) x );
+  _getNext = new dlist_iterator( *x );
 }
 
 
@@ -106,6 +106,7 @@ BeamlineIterator::~BeamlineIterator()
 
 bmlnElmnt* BeamlineIterator::operator++( int )
 {
+  
   return (bmlnElmnt*) _getNext->operator()();
 }
 
@@ -131,24 +132,19 @@ void BeamlineIterator::goBack( int n )
 
 DeepBeamlineIterator::DeepBeamlineIterator( const beamline& x )
 {
+ 
   _subIterator = 0;
-  _getNext = new dlist_iterator( (dlist&) x );
+  _getNext = new dlist_iterator( x );
+
 }
 
 
 DeepBeamlineIterator::DeepBeamlineIterator( const beamline* x )
 {
   _subIterator = 0;
-  _getNext = new dlist_iterator( *(dlist*) x );
+  _getNext = new dlist_iterator( *x );
 }
 
-
-DeepBeamlineIterator::DeepBeamlineIterator( const DeepBeamlineIterator& )
-{
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-         "DeepBeamlineIterator::DeepBeamlineIterator( const DeepBeamlineIterator& )", 
-         "Copy constructor must not be called." ) );
-}
 
 
 DeepBeamlineIterator::~DeepBeamlineIterator()
@@ -162,6 +158,7 @@ DeepBeamlineIterator::~DeepBeamlineIterator()
 
 bmlnElmnt* DeepBeamlineIterator::operator++( int )
 {
+
   bmlnElmnt* ret = 0;
 
   if( _subIterator ) 
@@ -181,7 +178,7 @@ bmlnElmnt* DeepBeamlineIterator::operator++( int )
     {
       if( 0 == strcmp( ret->Type(), "beamline" ) ) 
       {
-        _subIterator = new DeepBeamlineIterator( (beamline*) ret );
+        _subIterator = new DeepBeamlineIterator( static_cast<beamline*>(ret) );
         ret = (*this)++;
       }
     }    
@@ -193,9 +190,14 @@ bmlnElmnt* DeepBeamlineIterator::operator++( int )
 
 void DeepBeamlineIterator::reset()
 {
+
   if( _subIterator ) delete _subIterator;
+
   _subIterator = 0;
+ 
   _getNext->Reset();
+
+
 }
 
 
@@ -206,13 +208,13 @@ void DeepBeamlineIterator::reset()
 
 ReverseBeamlineIterator::ReverseBeamlineIterator( const beamline& x )
 {
-  _getNext = new dlist_reverseIterator( (dlist&) x );
+  _getNext = new dlist_reverseIterator( x );
 }
 
 
 ReverseBeamlineIterator::ReverseBeamlineIterator( const beamline* x )
 {
-  _getNext = new dlist_reverseIterator( *(dlist*) x );
+  _getNext = new dlist_reverseIterator( *x );
 }
 
 
@@ -265,23 +267,16 @@ void ReverseBeamlineIterator::goBack( int n )
 DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( const beamline& x )
 {
   _subIterator = 0;
-  _getNext = new dlist_reverseIterator( (dlist&) x );
+  _getNext = new dlist_reverseIterator( x );
 }
 
 
 DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( const beamline* x )
 {
   _subIterator = 0;
-  _getNext = new dlist_reverseIterator( *(dlist*) x );
+  _getNext = new dlist_reverseIterator( *x );
 }
 
-
-DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( const DeepReverseBeamlineIterator& )
-{
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-         "DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( const DeepReverseBeamlineIterator& )", 
-         "Copy constructor must not be called." ) );
-}
 
 
 DeepReverseBeamlineIterator::~DeepReverseBeamlineIterator()
@@ -330,5 +325,4 @@ void DeepReverseBeamlineIterator::reset()
   _subIterator = 0;
   _getNext->Reset();
 }
-
 
