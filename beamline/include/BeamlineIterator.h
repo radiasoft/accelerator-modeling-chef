@@ -82,15 +82,18 @@ class DLLEXPORT  DeepBeamlineIterator
 public:
   DeepBeamlineIterator( const beamline& );
   DeepBeamlineIterator( const beamline* );
-  DeepBeamlineIterator( const DeepBeamlineIterator& );
   ~DeepBeamlineIterator();
 
   bmlnElmnt* operator++( int );    // postfix increment
   void reset();
 
-private:
+  // private:
+  protected:
+
   dlist_iterator*       _getNext;
   DeepBeamlineIterator* _subIterator;
+  DeepBeamlineIterator( const DeepBeamlineIterator& ); // forbidden
+
 };
 
 
@@ -116,7 +119,6 @@ class DLLEXPORT  DeepReverseBeamlineIterator
 public:
   DeepReverseBeamlineIterator( const beamline& );
   DeepReverseBeamlineIterator( const beamline* );
-  DeepReverseBeamlineIterator( const DeepReverseBeamlineIterator& );
   ~DeepReverseBeamlineIterator();
 
   bmlnElmnt* operator++( int );    // postfix increment
@@ -125,6 +127,7 @@ public:
 private:
   dlist_reverseIterator*       _getNext;
   DeepReverseBeamlineIterator* _subIterator;
+  DeepReverseBeamlineIterator( const DeepReverseBeamlineIterator& ); // forbidden
 };
 
 

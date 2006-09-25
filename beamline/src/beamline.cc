@@ -33,6 +33,12 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+******
+****** Sep 2006    Jean-Francois Ostiguy
+******             ostiguy@fnal.gov
+******
+****** - eliminated redundant (and dangerous) c-style hard casts
+******   (dlist*) this  [ where this is a beamline * ]                    
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -247,14 +253,10 @@ beamline::beamline( const char* nm )
 } 
 
 
-beamline::beamline( const beamline& a ) 
-: bmlnElmnt( (const bmlnElmnt&) a ), dlist( (dlist&) a ) 
-{
- _mode             = a._mode;
- nominalEnergy     = a.nominalEnergy;
- numElem           = a.numElem;
- twissDone         = 0;
-} 
+beamline::beamline( beamline const& a ) 
+  : bmlnElmnt(a), dlist(a), _mode(a._mode),  nominalEnergy(a.nominalEnergy), numElem(a.numElem), twissDone(0) 
+{}
+
 
 bmlnElmnt* beamline::Clone() const {
  beamline* ret = new beamline( ident );
@@ -273,14 +275,14 @@ bmlnElmnt* beamline::Clone() const {
  ret->nominalEnergy = nominalEnergy;
  ret->twissDone     = 0;
 
- dlist_iterator getNext ( *(dlist*) this );
+ dlist_iterator getNext ( *this );
  bmlnElmnt* p;
  bmlnElmnt* q;
- while ((  p = (bmlnElmnt*) getNext()  )) {
+ while ((  p = static_cast<bmlnElmnt*>(getNext())  )) {
   q = p->Clone();
   ret->append( q );
  }
- return (bmlnElmnt*) ret;
+ return static_cast<bmlnElmnt*>( ret );
 }
 
 
@@ -293,10 +295,10 @@ const char*  beamline::Type() const
 
 double beamline::OrbitLength( const Particle& x )
 {
- dlist_iterator getNext ( *(dlist*) this );
+ dlist_iterator getNext ( *this );
  bmlnElmnt* p;
  double s = 0.0;
- while ((  p = (bmlnElmnt*) getNext()  )) {
+ while ((  p = static_cast<bmlnElmnt*>(getNext())  )) {
   s += p->OrbitLength( x );
  }
  return s;
@@ -330,14 +332,16 @@ beamline::~beamline() {
  // Notice that this destructor does not destroy
  // the beamline elements.  To do that, use
  // beamline::zap().
+
+
  bmlnElmnt* p;
- while((  p = (bmlnElmnt*) get()  ));
+ while((  p = static_cast<bmlnElmnt*>(get())  ));
  this->dlist::clear();  // Wipes out all the links; probably unnecessary.
 }
 
 void beamline::zap() {
  bmlnElmnt* p;
- while((  p = (bmlnElmnt*) get()  )) {
+ while((  p = static_cast<bmlnElmnt*>( get())  )) {
    if( 0 == strcmp( p->Type(), "beamline" ) ) {
     ((beamline*) p)->zap();
    }
@@ -360,25 +364,25 @@ void beamline::clear() {
 
 
 void beamline::localPropagate( Particle& x ) {
- dlist_iterator getNext ( *(dlist*) this );
+ dlist_iterator getNext ( *this );
  bmlnElmnt* p;
- while ((  p = (bmlnElmnt*) getNext() )) {
+ while ((  p = static_cast<bmlnElmnt*>( getNext()) )) {
    p->propagate( x );
  }
 } 
 
 void beamline::localPropagate( ParticleBunch& x ) {
- dlist_iterator getNext ( *(dlist*) this );
+ dlist_iterator getNext ( *this );
  bmlnElmnt* p;
- while ((  p = (bmlnElmnt*) getNext() )) {
+ while ((  p = static_cast<bmlnElmnt*>( getNext()) )) {
    p -> propagate( x );
  }
 } 
 
 void beamline::localPropagate( JetParticle& x ) {
- dlist_iterator getNext ( *(dlist*) this );
+ dlist_iterator getNext ( *this );
  bmlnElmnt* p;
- while ((  p = (bmlnElmnt*) getNext()  )) {
+ while ((  p = static_cast<bmlnElmnt*>( getNext())  )) {
    p->propagate( x );
  }
 } 
@@ -388,11 +392,11 @@ void beamline::setEnergy( double E ) {
 }
 
 void beamline::unTwiss() {
- dlist_iterator getNext( *(dlist*) this );
+ dlist_iterator getNext( *this );
  bmlnElmnt* p;
  dataHook.eraseFirst( "Ring" );
  if( !dataHook.eraseFirst( "Twiss" ) )
-  while((  p = (bmlnElmnt*) getNext()  ))
+  while((  p = static_cast<bmlnElmnt*>( getNext())  ))
    p->dataHook.eraseFirst( "Twiss" );
  twissDone = 0;   // ??? Remove this eventually.
 }
@@ -437,10 +441,10 @@ lattFunc beamline::whatIsLattice( int n ) {
  }
 
  int count = 0;
- dlist_iterator getNext( *(dlist*) this );
+ dlist_iterator getNext( *this );
  bmlnElmnt* p;
 
- while((  p = (bmlnElmnt*) getNext()  )) 
+ while((  p = static_cast<bmlnElmnt*>( getNext())  )) 
   if( n == count++ ) 
    return (*(lattFunc*) p->dataHook.find( "Twiss" ));
  
@@ -460,10 +464,10 @@ lattFunc beamline::whatIsLattice( char* n ) {
   // May 24, 1996
   lattFunc errRet;
   
-  dlist_iterator getNext( *(dlist*) this );
+  dlist_iterator getNext( *this );
   bmlnElmnt* p;
   
-  while((  p = (bmlnElmnt*) getNext()  )) 
+  while((  p = static_cast<bmlnElmnt*>( getNext())  )) 
     if( !strcmp(p->Name(),n) ) 
       return (*(lattFunc*) p->dataHook.find( "Twiss" ));
         return errRet;  
@@ -502,8 +506,8 @@ void beamline::InsertElementsFromList( double& s,
                                        slist& removedElements 
                                      )
 {
- dlist_iterator getNext( *(dlist*) this );
- bmlnElmnt* p_be   = (bmlnElmnt*) getNext();
+ dlist_iterator getNext( *this );
+ bmlnElmnt* p_be   = static_cast<bmlnElmnt*>(getNext());
  bmlnElmnt* p_be_a = 0;
  bmlnElmnt* p_be_b = 0;
  InsertionListElement* p_ile = inList(0);  // top element; not removed
@@ -538,12 +542,12 @@ void beamline::InsertElementsFromList( double& s,
   if( strcasecmp( p_be->Type(), "beamline" ) == 0 ) {
     ( (beamline*) p_be )->InsertElementsFromList( s, inList, removedElements );
     p_ile = inList(0);   // this may have changed
-    p_be = (bmlnElmnt*) getNext();
+    p_be = static_cast<bmlnElmnt*>( getNext() );
   }
 
   else if ( s + p_be->OrbitLength( *prtnPtr ) <= p_ile->s ) {
     s += p_be->OrbitLength( *prtnPtr );
-    p_be = (bmlnElmnt*) getNext();
+    p_be = static_cast<bmlnElmnt*>( getNext() );
   }
 
   else if ( s == p_ile->s ) {
@@ -555,13 +559,13 @@ void beamline::InsertElementsFromList( double& s,
   // else if ( p_be->p_bml ) {
   //   p_be->p_bml->InsertElementsFromList( s, inList, removedElements );
   //   p_ile = inList(0);   // this may have changed
-  //   p_be = (bmlnElmnt*) getNext();
+  //   p_be = static_cast<bmlnElmnt*>( getNext() );
   // }
 
   else if (  0 == strcmp( p_be->Type(), "combinedFunction" )  ) {
     p_be->p_bml->InsertElementsFromList( s, inList, removedElements );
     p_ile = inList(0);   // this may have changed
-    p_be = (bmlnElmnt*) getNext();
+    p_be = static_cast<bmlnElmnt*>( getNext() );
 
     if( firstWarning ) {
       (*pcerr) << "\n*** WARNING:                                   *** "
@@ -634,7 +638,7 @@ void beamline::InsertElementsFromList( double& s,
          << " ) )\n";
 
     s += p_be->OrbitLength( *prtnPtr );
-    p_be = (bmlnElmnt*) getNext();
+    p_be = static_cast<bmlnElmnt*>( getNext());
   }
  }
 
@@ -646,7 +650,7 @@ int beamline::replace( const bmlnElmnt* a, const bmlnElmnt* b )
 {
   // This routine has a potential to break things!
   if( 0 == a || 0 == b ) { return 2; }
-  return dynamic_cast<dlist*>(this)->replaceOne( (const void*) a, (const void*) b );
+  return this->replaceOne( (const void*) a, (const void*) b );
 }
 
 
@@ -662,7 +666,7 @@ int beamline::deepReplace( const bmlnElmnt* a, const bmlnElmnt* b )
   while((  q = bi++  )) {
     if( q == a ) 
     {
-      if( 0 == ( dynamic_cast<dlist*>(this)->replaceOne( (const void*) a, (const void*) b ) ) )
+      if( 0 == ( this->replaceOne( (const void*) a, (const void*) b ) ) )
       { return 0; }
       else 
       { 
@@ -707,7 +711,7 @@ beamline& operator-( beamline& x ) {
  beamline* result = new beamline( theName );
  dlist_reverseIterator getNext( (dlist&) x );
  bmlnElmnt* p;
- while((  p = (bmlnElmnt*) getNext()  )) {
+ while((  p = static_cast<bmlnElmnt*>( getNext())  )) {
   if( strcasecmp( p->Type(), "beamline" ) == 0 ) 
                             result->append( - *(beamline*) p );
   else                      result->append( p );
@@ -732,7 +736,7 @@ beamline& beamline::operator-( beamline& x ) {
  beamline* result = new beamline( *this );
  dlist_reverseIterator getNext( (dlist&) x );
  bmlnElmnt* p;
- while((  p = (bmlnElmnt*) getNext()  )) {
+ while((  p = static_cast<bmlnElmnt*>( getNext())  )) {
   if( strcasecmp( p->Type(), "beamline" ) == 0 ) 
                             result->append( - *(beamline*) p );
   else                      result->append( p );
@@ -861,7 +865,7 @@ beamline* beamline::flatten() const {
  // WARNING: the elements are not cloned.
  //   Thus the flattened line contains the
  //   same objects as its original.
- dlist_iterator  getNext( *(dlist*) this );
+ dlist_iterator  getNext( *this );
  dlist_iterator* getNew;
  beamline*       r;
  beamline*       s;
@@ -870,12 +874,12 @@ beamline* beamline::flatten() const {
 
  r = new beamline;
 
- while ((  p = (bmlnElmnt*) getNext()  ))  {
+ while ((  p = static_cast<bmlnElmnt*>( getNext())  ))  {
    if( strcasecmp( p->Type(), "beamline" ) == 0 )
    { 
      s = ( (beamline*) p ) -> flatten();
-     getNew = new dlist_iterator( *(dlist*) s );
-     while ((  q = (bmlnElmnt*) (*getNew)()  )) {
+     getNew = new dlist_iterator( *s );
+     while ((  q = static_cast<bmlnElmnt*>( (*getNew)() )  )) {
        r->append( q );
      }
      delete getNew;
@@ -902,13 +906,13 @@ int beamline::startAt( const bmlnElmnt* x, int n )
 
 int beamline::startAt( const char* s, int n )
 {
-  dlist_traversor getNext( *(dlist*) this );
+  dlist_traversor getNext( *this );
   dlink* q;
   int count(0);
 
   while((  q = getNext()  )) 
   {
-    if( 0 == strcmp( ((bmlnElmnt*)(q->info()))->Name(), s ) ) 
+    if( 0 == strcmp( static_cast<bmlnElmnt*>(q->info())->Name(), s ) ) 
     {
       if( (++count) == n ) {
         this->dlist::riskStartAt( q );
@@ -1001,7 +1005,7 @@ sector* beamline::MakeSectorFromStart ( const bmlnElmnt& be_1, int deg, JetParti
  // desired by the calling program.  This routine does NOT
  // initialize the state of jp.
 
- dlist_iterator getNext( *(dlist*) this );
+ dlist_iterator getNext( *this );
  bmlnElmnt* p_be;
  char       firstFound  = 0;
  Particle*  p_prt;
@@ -1010,7 +1014,7 @@ sector* beamline::MakeSectorFromStart ( const bmlnElmnt& be_1, int deg, JetParti
  p_prt = jp.ConvertToParticle();
 
  // Check first element against the argument ------------
- p_be = (bmlnElmnt*) getNext();
+ p_be = static_cast<bmlnElmnt*>( getNext() );
 
  if( !p_be ) {
   (*pcout) << "*** WARNING ***                                      \n" 
@@ -1034,7 +1038,7 @@ sector* beamline::MakeSectorFromStart ( const bmlnElmnt& be_1, int deg, JetParti
 
 
  // Find element that matches argument ------------------
- while ( p_be = (bmlnElmnt*) getNext() ) {
+ while ( p_be = static_cast<bmlnElmnt*>( getNext() ) ){
   if( p_be == &be_1 ) {     // Notice: we do not propagate through be_1
     firstFound = 1;
     break;
@@ -1069,7 +1073,7 @@ sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle&
  // desired by the calling program.  This routine does NOT
  // initialize the state of jp.
 
- dlist_iterator getNext( *(dlist*) this );
+ dlist_iterator getNext( *this );
  bmlnElmnt* p_be;
  char       firstFound  = 0;
  Particle*  p_prt;
@@ -1078,7 +1082,7 @@ sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle&
  p_prt = jp.ConvertToParticle();
 
  // Find the element that matches argument ---------------------------------
- while ( p_be = (bmlnElmnt*) getNext() ) {
+ while ( p_be = static_cast<bmlnElmnt*>( getNext() ) ) {
   if( p_be == &be_1 ) { 
     firstFound = 1;
     break;
@@ -1097,7 +1101,7 @@ sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle&
  }
  
  // Check that it is not the last element --------------------------------
- p_be = (bmlnElmnt*) getNext();
+ p_be = static_cast<bmlnElmnt*>( getNext() );
  if( !p_be ) {
     delete p_prt;
     return 0;
@@ -1108,7 +1112,7 @@ sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle&
  }
 
  // Construct the map and return sector ------------------------------------
- while ( p_be = (bmlnElmnt*) getNext() ) {  // Notice: we do not propagate through be_1
+ while ( p_be = static_cast<bmlnElmnt*>( getNext()) ) {  // Notice: we do not propagate through be_1
     p_be->propagate( jp );
     s += p_be->OrbitLength( *p_prt );
  }
@@ -1186,14 +1190,14 @@ void beamline::peekAt( double& s, const Particle& prt ) const
   // REMOVE:    newProton = 1;
   // REMOVE: }
 
-  dlist_iterator getNext( *(dlist*) this );
+  dlist_iterator getNext( *this );
   bmlnElmnt* p;
 
   (*pcout) << "\nBegin beamline::peekat() -- Address of beamline: "
        << ident << " = " << (int) this 
        << endl;
 
-  while ((  p = (bmlnElmnt*) getNext()  ))  {
+  while ((  p = static_cast<bmlnElmnt*>( getNext() ) ) )  {
     if( strcasecmp( p->Type(), "beamline" ) == 0 ) 
       ( (beamline*) p)->peekAt( s, prt );
     else p->peekAt( s, prt );
@@ -1209,13 +1213,13 @@ void beamline::peekAt( double& s, const Particle& prt ) const
 
 int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
  int ret;
- dlist_iterator getNext ( *(dlist*) this );
+ dlist_iterator getNext ( *this );
  bmlnElmnt* p;
 
  ret = 0;
 
  if( query == 0 ) {
-   while ((  p = (bmlnElmnt*) getNext()  )) { 
+   while ((  p = static_cast<bmlnElmnt*>( getNext() )  )) { 
      ret++; 
    }
    if( ret != numElem ) {
@@ -1232,7 +1236,7 @@ int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
  }
 
  else {
-   while ((  p = (bmlnElmnt*) getNext()  )) {
+   while ((  p = static_cast<bmlnElmnt*>( getNext() )  )) {
      if( query(p) ) { 
        ret++; 
        if( listPtr ) {
@@ -1251,7 +1255,7 @@ int beamline::countHowManyDeeply( CRITFUNC query, slist* listPtr ) const {
  bmlnElmnt* p;
 
  ret = 0;
- while ((  p = (bmlnElmnt*) getNext()  )) {
+ while ((  p = static_cast<bmlnElmnt*>( getNext() )  )) {
    if( 0 == strcmp( p->Type(), "beamline" ) ) {
      ret += ((beamline*) p)->countHowManyDeeply( query, listPtr );
    }
@@ -1317,10 +1321,10 @@ beamline beamline::remove( const bmlnElmnt& x, const bmlnElmnt& y ) {
  dl = dlist::remove( ((void*) &x), ((void*) &y) );
 
  dlist_iterator getNext( dl );
- if((  p = (bmlnElmnt*) getNext()  )) {
+ if((  p = static_cast<bmlnElmnt*>( getNext() )  )) {
    a.append( *p );
  }
- while ((  p = (bmlnElmnt*) getNext()  ))  a.append( *p );
+ while ((  p = static_cast<bmlnElmnt*>( getNext() )  ))  a.append( *p );
 
  a.nominalEnergy = nominalEnergy;
  numElem = numElem - a.numElem;
@@ -2117,9 +2121,9 @@ void beamline::_rotateRel(   int axis, double angle
 
 bool beamline::setAlignment( const alignmentData& al ) {
   // Propogate alignment data of entire  beamline to each individual element
-  dlist_iterator getNext ( *(dlist*) this );
+  dlist_iterator getNext ( *this );
   bmlnElmnt* p;
-  while ((  p = (bmlnElmnt*) getNext()  )) {
+  while ((  p = static_cast<bmlnElmnt*>( getNext() )  )) {
     if( !(p->setAlignment(al)) ) {
       (*pcerr) << "\n*** ERROR *** "
            << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
@@ -2157,7 +2161,7 @@ ostream& beamline::writeTo(ostream& os) {
   double energy = Energy();
 
   os <<  OSTREAM_DOUBLE_PREC << energy << endl;
-  while((element = (bmlnElmnt*)getNext()) != 0) {
+  while((element = static_cast<bmlnElmnt*>(getNext()) ) != 0) {
     os << *element ;
   }
   os << "beamline_END " << Name() << " 0 0 0 0 0\n";
@@ -2172,10 +2176,10 @@ ostream& beamline::writeTo(ostream& os) {
 void beamline::enterLocalFrame( Particle& p ) const
 {
   // Check for bends
-  dlist_iterator getNext( *(dlist*) this );
+  dlist_iterator getNext( *this );
   static bmlnElmnt* element;
 
-  while((  element = (bmlnElmnt*) getNext() )) 
+  while((  element = static_cast<bmlnElmnt*>( getNext() ) )) 
   {
     if( strcasecmp( element->Type(), "sbend" ) == 0 ||
         strcasecmp( element->Type(), "rbend" ) == 0     
@@ -2192,10 +2196,10 @@ void beamline::enterLocalFrame( Particle& p ) const
 void beamline::enterLocalFrame( JetParticle& p ) const
 {
   // Check for bends
-  dlist_iterator getNext( *(dlist*) this );
+  dlist_iterator getNext( *this );
   static bmlnElmnt* element;
 
-  while((  element = (bmlnElmnt*) getNext() )) 
+  while((  element = static_cast<bmlnElmnt*>(getNext()) )) 
   {
     if( strcasecmp( element->Type(), "sbend" ) == 0 ||
         strcasecmp( element->Type(), "rbend" ) == 0     
