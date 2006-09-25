@@ -51,7 +51,7 @@ bmlnElmnt* (DeepBeamlineIterator::* local_iterator)(int) = &DeepBeamlineIterator
 void wrap_beamlineiterator() {
 
 
- class_<DeepBeamlineIterator>("DeepBeamlineIterator", init<beamline&>()) 
+ class_<DeepBeamlineIterator,boost::noncopyable>("DeepBeamlineIterator", init<beamline&>()) 
         .def("next",      &next, return_value_policy<reference_existing_object>())
         .def("__iter__",  &pass_through )
         .def("reset",     &DeepBeamlineIterator::reset);
@@ -59,76 +59,4 @@ void wrap_beamlineiterator() {
 }
 
 
-
-#if 0
-
-class BeamlineIterator
-{
-public:
-  BeamlineIterator( const beamline& );
-  BeamlineIterator( const beamline* );
-  BeamlineIterator( const BeamlineIterator& );
-  ~BeamlineIterator();
-
-  bmlnElmnt* operator++( int );    // postfix increment
-  void reset();
-  void goBack( int = 1 );
-
-private:
-  dlist_iterator* _getNext;
-};
-
-
-class DeepBeamlineIterator 
-{
-public:
-  DeepBeamlineIterator( const beamline& );
-  DeepBeamlineIterator( const beamline* );
-  DeepBeamlineIterator( const DeepBeamlineIterator& );
-  ~DeepBeamlineIterator();
-
-  bmlnElmnt* operator++( int );    // postfix increment
-  void reset();
-
-private:
-  dlist_iterator*       _getNext;
-  DeepBeamlineIterator* _subIterator;
-};
-
-
-class ReverseBeamlineIterator
-{
-public:
-  ReverseBeamlineIterator( const beamline& );
-  ReverseBeamlineIterator( const beamline* );
-  ReverseBeamlineIterator( const ReverseBeamlineIterator& );
-  ~ReverseBeamlineIterator();
-
-  bmlnElmnt* operator++( int );    // postfix increment
-  void reset();
-  void goBack( int = 1 );
-
-private:
-  dlist_reverseIterator* _getNext;
-};
-
-
-class DeepReverseBeamlineIterator
-{
-public:
-  DeepReverseBeamlineIterator( const beamline& );
-  DeepReverseBeamlineIterator( const beamline* );
-  DeepReverseBeamlineIterator( const DeepReverseBeamlineIterator& );
-  ~DeepReverseBeamlineIterator();
-
-  bmlnElmnt* operator++( int );    // postfix increment
-  void reset();
-
-private:
-  dlist_reverseIterator*       _getNext;
-  DeepReverseBeamlineIterator* _subIterator;
-};
-
-
-#endif 
 
