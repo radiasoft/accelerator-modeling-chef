@@ -65,6 +65,7 @@ BOOST_PYTHON_MODULE( beamline )
 wrap_aperture();
 wrap_bblens();
 wrap_bmlnelmnt();
+wrap_beamline();
 wrap_cf_rbend();
 wrap_cf_sbend();
    //wrap_circuit();
