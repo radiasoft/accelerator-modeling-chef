@@ -46,7 +46,9 @@ class TJLIterator {
 public:
 
   TJLIterator( TJL<T> const& jl);     
-  TJLterm<T> const * const operator++(); // pre-increment operator
+  TJLterm<T> const* const  operator++(); // pre-increment operator
+  TJLterm<T> const* const  operator->()  { return  _it; }
+  TJLterm<T> const&        operator*()   { return *_it; }
   void reset(); 
 
  
