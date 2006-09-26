@@ -47,7 +47,7 @@ BmlPtrList::BmlPtrList()
 }
 
 BmlPtrList::BmlPtrList( const BmlPtrList& x )
-: dlist( (dlist&) x )
+: dlist( x )
 {
 }
 
@@ -97,7 +97,7 @@ void BmlPtrList::insert( bmlnElmnt* x )
 
 BmlPtrList& BmlPtrList::operator=( const BmlPtrList& x )
 {
-  this->dlist::operator=( (dlist&) x );
+  this->dlist::operator=( x );
   return *this;
 }
 

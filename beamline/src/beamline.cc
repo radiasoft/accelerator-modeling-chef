@@ -709,7 +709,7 @@ beamline& operator-( beamline& x ) {
  strcat( theName, rev );
  strcat( theName, x.Name() );
  beamline* result = new beamline( theName );
- dlist_reverseIterator getNext( (dlist&) x );
+ dlist_reverseIterator getNext( x );
  bmlnElmnt* p;
  while((  p = static_cast<bmlnElmnt*>( getNext())  )) {
   if( strcasecmp( p->Type(), "beamline" ) == 0 ) 
@@ -734,7 +734,7 @@ beamline& beamline::operator+( beamline& x ) {
 
 beamline& beamline::operator-( beamline& x ) {
  beamline* result = new beamline( *this );
- dlist_reverseIterator getNext( (dlist&) x );
+ dlist_reverseIterator getNext( x );
  bmlnElmnt* p;
  while((  p = static_cast<bmlnElmnt*>( getNext())  )) {
   if( strcasecmp( p->Type(), "beamline" ) == 0 ) 
@@ -1251,7 +1251,7 @@ int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
 
 int beamline::countHowManyDeeply( CRITFUNC query, slist* listPtr ) const {
  int ret;
- dlist_iterator getNext ( *(dlist*) this );
+ dlist_iterator getNext ( *this );
  bmlnElmnt* p;
 
  ret = 0;

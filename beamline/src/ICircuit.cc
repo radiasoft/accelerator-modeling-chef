@@ -69,7 +69,7 @@ ICircuit::~ICircuit() {
 }
 void ICircuit::switchOn() {
   onOffSwitch = 1;
-  dlist_iterator getNext ( *(dlist*) this );
+  dlist_iterator getNext ( *this );
   bmlnElmnt* p;
   
   while((  p = (bmlnElmnt*) getNext()  )) {
@@ -80,7 +80,7 @@ void ICircuit::switchOn() {
 void ICircuit::switchOff() {
   onOffSwitch = 0;
   double dummy = 0.0;
-  dlist_iterator getNext ( *(dlist*) this );
+  dlist_iterator getNext ( *this );
   bmlnElmnt* p;
   
   while((  p = (bmlnElmnt*) getNext()  )) {
@@ -90,7 +90,7 @@ void ICircuit::switchOff() {
 
 void ICircuit::set(void* x) {
   double* curr = (double*)x;
-  dlist_iterator getNext ( *(dlist*) this );
+  dlist_iterator getNext ( *this );
   bmlnElmnt* p;
   
   current = *curr;

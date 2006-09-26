@@ -61,7 +61,7 @@ InsertionList::InsertionList( const Particle& x )
 }
 
 InsertionList::InsertionList( const InsertionList& x )
-: dlist( (dlist&) x )
+: dlist( x )
 {
   _smax = x._smax;
 }
@@ -134,11 +134,11 @@ void InsertionList::MergeUnique( InsertionList& x )
 {
   if( x.Size() <= 0 ) return;
 
-  dlist_iterator gx(  (dlist&) x );
+  dlist_iterator gx( x );
   InsertionListElement* p_ile_x;
 
   while((  p_ile_x = (InsertionListElement*) gx()  )) {
-    dlist_iterator gt( *(dlist*) this );
+    dlist_iterator gt( *this );
     InsertionListElement* p_ile_t;
     char inserted = 0;
     while((  p_ile_t = (InsertionListElement*) gt()  )) {
@@ -161,11 +161,11 @@ void InsertionList::MergeAll( InsertionList& x )
 {
   if( x.Size() <= 0 ) return;
 
-  dlist_iterator gx(  (dlist&) x );
+  dlist_iterator gx( x );
   InsertionListElement* p_ile_x;
 
   while((  p_ile_x = (InsertionListElement*) gx()  )) {
-    dlist_iterator gt( *(dlist*) this );
+    dlist_iterator gt( *this );
     InsertionListElement* p_ile_t;
     char inserted = 0;
     while((  p_ile_t = (InsertionListElement*) gt()  ))
@@ -184,7 +184,7 @@ void InsertionList::MergeAll( InsertionList& x )
 InsertionList& InsertionList::operator=( const InsertionList& x )
 {
   _smax = x._smax;
-  dlist::operator=( (dlist&) x );
+  dlist::operator=( x );
   return *this;
 }
 
@@ -201,7 +201,7 @@ void InsertionList::Clear()
 
 ostream& operator<<(ostream& os, const InsertionList& x)
 {
-  dlist_iterator getNext((dlist&)x);
+  dlist_iterator getNext( x);
   InsertionListElement* ple;
   os << "InsertionList Dump " << endl;
   while((  ple = (InsertionListElement*)getNext()  )) {

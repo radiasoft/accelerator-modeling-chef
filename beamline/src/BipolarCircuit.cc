@@ -73,7 +73,7 @@ void BipolarCircuit::switchOn() {
 void BipolarCircuit::switchOff() {
   onOffSwitch = 0;
   double dummy = 0.0;
-  dlist_iterator getNext ( *(dlist*) this );
+  dlist_iterator getNext ( *this );
   bmlnElmnt* p;
 
   while ( (p = (bmlnElmnt*) getNext()) ) {
@@ -83,7 +83,7 @@ void BipolarCircuit::switchOff() {
 
 void BipolarCircuit::set(void* x) {
   double* curr = (double*)x;
-  dlist_iterator getNext ( *(dlist*) this );
+  dlist_iterator getNext ( *this );
   bmlnElmnt* p;
   PolarityBarn* pol;
   

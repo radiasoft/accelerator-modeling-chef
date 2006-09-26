@@ -68,7 +68,7 @@ FCircuit::~FCircuit() {
 }
 void FCircuit::switchOn() {
   onOffSwitch = 1;
-  dlist_iterator getNext ( *(dlist*) this );
+  dlist_iterator getNext ( *this );
   bmlnElmnt* p;
   
   while((  p = (bmlnElmnt*) getNext()  )) {
@@ -80,7 +80,7 @@ void FCircuit::switchOn() {
 void FCircuit::switchOff() {
   onOffSwitch = 0;
   double dummy = 0.0;
-  dlist_iterator getNext ( *(dlist*) this );
+  dlist_iterator getNext ( *this );
   bmlnElmnt* p;
   
   while((  p = (bmlnElmnt*) getNext()  )) {
@@ -90,7 +90,7 @@ void FCircuit::switchOff() {
 
 void FCircuit::set(void* x) {
   double* curr = (double*)x;
-  dlist_iterator getNext ( *(dlist*) this );
+  dlist_iterator getNext ( *this );
   bmlnElmnt* p;
   
   field = *curr;
@@ -107,7 +107,7 @@ void FCircuit::get(void* x) {
 void FCircuit::getCurrent(void* x) {
   double* curr = (double*)x;
   double  ItoFieldvalue;
-  dlist_iterator getNext ( *(dlist*) this );
+  dlist_iterator getNext ( *this );
   bmlnElmnt* p;
   
   // Take as a representative element, the first one and use it's ItoField.
@@ -127,7 +127,7 @@ void FCircuit::getCurrent(void* x) {
 
 void FCircuit::setCurrent(void* x) {
   double ItoFieldvalue;
-  dlist_iterator getNext ( *(dlist*) this );
+  dlist_iterator getNext ( *this );
   bmlnElmnt* p;
   
   while(p = (bmlnElmnt*) getNext()) {
