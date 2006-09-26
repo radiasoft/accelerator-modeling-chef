@@ -22,6 +22,10 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 
+#include <beamline/beamline.h>
+
+extern beamline* DriftsToSlots( beamline& original );
+
 using namespace boost::python;
 
 extern void wrap_lattfuncsage();
@@ -30,9 +34,10 @@ extern void wrap_beamlinecontext();
 BOOST_PYTHON_MODULE( physics_toolkit )
 {
 
+  def("DriftsToSlots",DriftsToSlots, 
+      return_value_policy<reference_existing_object>());
 wrap_lattfuncsage();
 wrap_beamlinecontext();
- 
 
 }
 

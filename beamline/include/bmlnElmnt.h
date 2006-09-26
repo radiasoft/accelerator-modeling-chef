@@ -731,6 +731,16 @@ public:
                                       // the list.  Removed elements are stored
                                       // in the final argument, in case they
                                       // need to be eliminated by the user module.
+  // InsertElementsFromList1 is a workaround for python bindings. See
+  // python-bindings/src/py-bmlnelmnt.cpp
+  double InsertElementsFromList1( double s_0, InsertionList& il, slist& sl)
+                                      // a version of InsertElementsFromList
+                                      // that is callable from Python.
+    {
+      double tmp(s_0);
+      InsertElementsFromList(tmp, il, sl);
+      return tmp;
+    }
 
   int replace( const bmlnElmnt*, const bmlnElmnt* );
                                       // Will replace the first argument with

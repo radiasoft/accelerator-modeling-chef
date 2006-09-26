@@ -20,19 +20,21 @@
 ******             ostiguy@fnal.gov                         
 ******
 ****************************************************************************/
-#include <string>
 #include <boost/python.hpp>
+#include <string>
 
 #include <beamline/Particle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/InsertionList.h>
-
+#include <beamline/InsertionList.h>
 
 class PropFunc;
 
 using namespace boost::python;
 
+
+#define USE_INSERTELEMENTSFROMLIST_WORKARAOUND yes
 
 struct bmlnElmntWrap : bmlnElmnt {
     bmlnElmntWrap(PyObject* self, const char* name = "NONAME", PropFunc* pf=0):
@@ -48,7 +50,9 @@ struct bmlnElmntWrap : bmlnElmnt {
         _self(self),bmlnElmnt(name, length, strength, pf) {}
 
     void   setLength(double);
+    double Strength();
     void   setStrength(double);
+    void   setStrength(double,int);
     void   setCurrent(double);
     void   Rename(const char* name);
     double getReferenceTime() const;
@@ -64,7 +68,13 @@ struct bmlnElmntWrap : bmlnElmnt {
 void bmlnElmntWrap::setLength(double){ 
 call_method<void>(_self, "setLength"); }
 
+double bmlnElmntWrap::Strength(){ 
+call_method<void>(_self, "Strength"); }
+
 void bmlnElmntWrap::setStrength(double){
+call_method<void>(_self, "setStrength"); }
+
+void bmlnElmntWrap::setStrength(double,int){
 call_method<void>(_self, "setStrength"); }
 
 void bmlnElmntWrap::setCurrent(double){ 
@@ -144,8 +154,10 @@ void wrap_bmlnelmnt() {
     .def("getShunt",                 &bmlnElmnt::getShunt)
       /****  virtual functions ***/ 
     .def("setLength",                &bmlnElmnt::setLength)
+    .def("Strength",                 &bmlnElmnt::Strength)
     .def("setStrength",              setStrength1)
     .def("setCurrent",               &bmlnElmnt::setCurrent)
+    .def("Name",                     &bmlnElmnt::Name)
     .def("Rename",                   &bmlnElmnt::Rename)
     .def("getReferenceTime",         &bmlnElmnt::getReferenceTime)
     .def("setReferenceTime",         setReferenceTime1)
@@ -168,7 +180,6 @@ struct beamlineWrap: beamline {
     beamlineWrap(PyObject* self,   beamline const& bl):
         _self(self),beamline( bl) {}
  
-
     double InsertElementsFromList( double s_0, InsertionList& il, slist& sl);  // a version of InsertElementsFromList
                                                                                 // that is callable from Python.
  
@@ -196,6 +207,7 @@ int (beamline::*twiss3)( lattFunc&, JetParticle&, short)          = &beamline::t
 
 void (beamline::*insert1) ( bmlnElmnt&  )          = &beamline::insert;
 void (beamline::*append1) (  bmlnElmnt& )          = &beamline::append;
+void (beamline::*accept1) (  BmlVisitor& )          = &beamline::accept;
 
 void wrap_beamline() {
 
@@ -212,6 +224,8 @@ void wrap_beamline() {
  beamlineWrap_.def("append", append1 );
 
 
+   //.def("InsertElementAt",          &beamline::InsertElementAt);
+ beamlineWrap_.def("InsertElementsFromList", &beamlineWrap::InsertElementsFromList);
   // PROPAGATE PARTICLES
 
  beamlineWrap_.def("setEnergy",      &beamline::setEnergy);
@@ -222,8 +236,14 @@ void wrap_beamline() {
  beamlineWrap_.def("twiss", twiss3);
 
  // Editing
-
+#ifdef USE_INSERTELEMENTSFROMLIST_WORKARAOUND
+ // n.b. as soon as this workaround is no longer needed, the function
+ // InsertElementsFromList1 should be deleted from
+ // beamline/include/bmlnElmnt.h
+ beamlineWrap_.def("InsertElementsFromList", &beamline::InsertElementsFromList1);
+#else  
   beamlineWrap_.def("InsertElementsFromList", &beamlineWrap::InsertElementsFromList);
+#endif
 
   // QUERIES
 
@@ -240,7 +260,9 @@ void wrap_beamline() {
   beamlineWrap_.def("unsetTwissIsDone",           &beamline::unsetTwissIsDone);
   beamlineWrap_.def("Energy",                     &beamline::Energy);
   beamlineWrap_.def("OrbitLength",                &beamline::OrbitLength);
- 
+  beamlineWrap_.def("accept",                     accept1);
+  beamlineWrap_.def("flatten",&beamline::flatten,
+       return_value_policy<reference_existing_object>());
  
   //beamlineWrap_.def("whatIsRing",               &beamline::whatIsRing)
 
