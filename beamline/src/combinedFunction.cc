@@ -315,7 +315,7 @@ void combinedFunction::setSkew(WHICH_MULTIPOLE mult, alignmentData& alignD) {
 }
 
 alignmentData combinedFunction::Skew(WHICH_MULTIPOLE mult) {
-  dlist_iterator getNext(*(dlist*)p_bml);
+  dlist_iterator getNext(*p_bml);
   bmlnElmnt* element;
   alignmentData alignD;
   int foundIt = 0;

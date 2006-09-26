@@ -79,7 +79,7 @@ void mover::switchOff() {
 
 void mover::set(void* x) {
   alignmentData* curr = (alignmentData*)x;
-  dlist_iterator getNext ( *(dlist*) this );
+  dlist_iterator getNext ( *this );
   bmlnElmnt* p;
   
   align = *curr;

@@ -931,9 +931,9 @@ public:
 
 
   inline bmlnElmnt* firstElement() const
-  { return (bmlnElmnt*) ( ((dlist*) this)->firstInfoPtr() ); }
+  { return (bmlnElmnt*)  firstInfoPtr(); }
   inline bmlnElmnt* lastElement() const
-  { return (bmlnElmnt*) ( ((dlist*) this)->lastInfoPtr() ); }
+  { return (bmlnElmnt*)  lastInfoPtr(); }
   inline char twissIsDone()
   { return twissDone; }
   inline void setTwissIsDone()
