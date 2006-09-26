@@ -180,7 +180,7 @@ struct beamlineWrap: beamline {
     beamlineWrap(PyObject* self,   beamline const& bl):
         _self(self),beamline( bl) {}
  
-    double InsertElementsFromList( double s_0, InsertionList& il, slist& sl);  // a version of InsertElementsFromList
+    double InsertElementsFromListWrap( double s_0, InsertionList& il, slist& sl);  // a version of InsertElementsFromList
                                                                                 // that is callable from Python.
  
     PyObject* _self;
@@ -188,13 +188,12 @@ struct beamlineWrap: beamline {
 
 
 double  
-beamlineWrap::InsertElementsFromList( double s_0, InsertionList& il, slist& sl ) 
+beamlineWrap::InsertElementsFromListWrap( double s_0, InsertionList& il, slist& sl ) 
 {
 
  double tmp_s0 = s_0;  
 
- beamline& bml = extract<beamline&>(_self); 
- bml.InsertElementsFromList(tmp_s0, il, sl); 
+ beamline::InsertElementsFromList(tmp_s0, il, sl); 
 
  return tmp_s0;
 
@@ -211,7 +210,7 @@ void (beamline::*accept1) (  BmlVisitor& )          = &beamline::accept;
 
 void wrap_beamline() {
 
- class_<beamline, bases<bmlnElmntWrap>, beamlineWrap> beamlineWrap_("beamline", init<>() );
+ class_<beamline, bases<bmlnElmnt>, beamlineWrap> beamlineWrap_("beamline", init<>() );
 
  beamlineWrap_.def( init<const char*>() );
  beamlineWrap_.def( init<const beamline& >() );
@@ -225,7 +224,7 @@ void wrap_beamline() {
 
 
    //.def("InsertElementAt",          &beamline::InsertElementAt);
- beamlineWrap_.def("InsertElementsFromList", &beamlineWrap::InsertElementsFromList);
+
   // PROPAGATE PARTICLES
 
  beamlineWrap_.def("setEnergy",      &beamline::setEnergy);
@@ -242,7 +241,7 @@ void wrap_beamline() {
  // beamline/include/bmlnElmnt.h
  beamlineWrap_.def("InsertElementsFromList", &beamline::InsertElementsFromList1);
 #else  
-  beamlineWrap_.def("InsertElementsFromList", &beamlineWrap::InsertElementsFromList);
+  beamlineWrap_.def("InsertElementsFromList", &beamlineWrap::InsertElementsFromListWrap);
 #endif
 
   // QUERIES
