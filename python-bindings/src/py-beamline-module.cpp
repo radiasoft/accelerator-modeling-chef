@@ -20,11 +20,11 @@
 ******             ostiguy@fnal.gov                         
 ******
 ****************************************************************************/
+#define BOOST_PYTHON_STATIC_MODULE
+#include <boost/python.hpp>
 #include <physics_toolkit/LattFuncSage.h>
 #include <iostream>
 
-#define BOOST_PYTHON_STATIC_MODULE
-#include <boost/python.hpp>
 using namespace boost::python;
 
 extern void wrap_aperture();
@@ -58,10 +58,15 @@ extern void wrap_srot();
 extern void wrap_thinpoles();
 extern void wrap_beamlineiterator();
 extern void wrap_lattfunc();
+extern void wrap_insertionlistelement();
+extern void wrap_insertionlist();
+extern void wrap_refregvisitor(); 
+extern void wrap_bmlvisitor();
 
 BOOST_PYTHON_MODULE( beamline )
 {
 
+wrap_bmlvisitor(); 
 wrap_aperture();
 wrap_bblens();
 wrap_bmlnelmnt();
@@ -93,6 +98,9 @@ wrap_thinpoles();
 wrap_particle();
 wrap_beamlineiterator();
 wrap_lattfunc();
+wrap_insertionlistelement();
+wrap_insertionlist();
+wrap_refregvisitor(); 
 
 }
 

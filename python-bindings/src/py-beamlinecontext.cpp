@@ -111,6 +111,10 @@ class_<BeamlineContext>( "BeamlineContext", init<const Particle&, beamline*, boo
 .def("ri_reset",                        &BeamlineContext::ri_reset)                              // void ri_reset();
 .def("dri_reset",                       &BeamlineContext::dri_reset)                             // void dri_reset();
 
+  .def("isRing", &BeamlineContext::isRing)
+  .def("isTreatedAsRing", &BeamlineContext::isTreatedAsRing)
+  .def("handleAsRing", &BeamlineContext::handleAsRing)
+  .def("handleAsLine", &BeamlineContext::handleAsLine)
   ;
 
 }

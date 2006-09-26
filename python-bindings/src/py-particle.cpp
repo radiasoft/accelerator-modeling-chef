@@ -87,6 +87,8 @@ void wrap_particle () {
    .def( init<double,double*>());
 
 
+  def("createStandardEnvironments", 
+      &JetParticle::createStandardEnvironments);
   class_<JetParticle, boost::noncopyable>("JetParticle", no_init)
        //.def( init<double>())
        //.def( init<double,double>())
