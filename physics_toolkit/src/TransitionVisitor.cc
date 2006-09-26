@@ -203,7 +203,7 @@ void TransitionVisitor::visitBeamline( beamline* x )
   // Enter the beamline
   _level++;
   this->BmlVisitor::visitBeamline(x);
-  // dlist_iterator getNext ( *(dlist*) x );
+  // dlist_iterator getNext ( *x );
   // bmlnElmnt* p;
   // while ( 0 != (  p = (bmlnElmnt*) getNext() ) ) {
   //   p->accept( *this );
