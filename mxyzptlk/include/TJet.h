@@ -501,8 +501,10 @@ public:
   public:
 
     iterator( TJet<T> const& jet):    _iter( *(jet._jl) ) {} 
-    TJLterm<T> const* operator++()    { return ++_iter; }
-    void reset()                      { _iter.reset(); } 
+    TJLterm<T>  const* operator->()        { return   _iter;  }
+    TJLterm<T>  const& operator*()         { return  *_iter;  }
+    TJLterm<T>  const* operator++()        { return ++_iter;  }
+    void reset()                           { _iter.reset();   } 
   private:
 
     jl_iter_t  _iter;

@@ -50,6 +50,8 @@ public:
 
   TJL1Iterator( TJL1<T> const& jl);     
   TJLterm<T> const * const operator++(); // pre-increment operator
+  TJLterm<T> const * const operator->() { return  (*_it).get();}
+  TJLterm<T> const&        operator*()  { return *(*_it);      }
   void reset(); 
 
  
