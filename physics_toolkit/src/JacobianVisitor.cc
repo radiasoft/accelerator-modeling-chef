@@ -169,7 +169,7 @@ void JacobianVisitor::visitBmlnElmnt(bmlnElmnt* be) {
 }
 
 void JacobianVisitor::clearBarnacles() {
-  dlist_iterator getNext(*(dlist*)theLine);
+  dlist_iterator getNext(*theLine);
   bmlnElmnt* element;
   while((element = (bmlnElmnt*)getNext()) != 0) {
     element->dataHook.eraseAll("Jacobian");

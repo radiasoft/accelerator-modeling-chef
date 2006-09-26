@@ -197,7 +197,7 @@ int FPSolver::operator()( Particle* p, const char*, FP_CRITFUNC Crit )
   if( Crit ) {
     zs = p->State();
 
-    dlist_iterator getNext ( *(dlist*) bmLine );
+    dlist_iterator getNext ( *bmLine );
     bmlnElmnt* q;
     while ((  q = (bmlnElmnt*) getNext()  )) {
        q->propagate( *p );
@@ -336,7 +336,7 @@ int FPSolver::operator()( JetParticle* p_jpr, const char*, FP_CRITFUNC Crit )
     if( Crit ) {
       zs = p->State();
     
-      dlist_iterator getNext ( *(dlist*) bmLine );
+      dlist_iterator getNext ( *bmLine );
       bmlnElmnt* q;
       while ((  q = (bmlnElmnt*) getNext()  )) {
          q->propagate( *p );
@@ -459,7 +459,7 @@ int FPSolver::operator()( Particle* p, FP_CRITFUNC Crit )
   if( !Crit ) {
     z = p->State();
 
-    dlist_iterator getNext ( *(dlist*) bmLine );
+    dlist_iterator getNext ( *bmLine );
     bmlnElmnt* q;
     while ((  q = (bmlnElmnt*) getNext()  )) {
        q->propagate( *p );
@@ -587,7 +587,7 @@ void FPSolver::operator()( JetParticle* p, FP_CRITFUNC Crit )
   if( !Crit ) {
     Particle* xp = p->ConvertToParticle();
 
-    dlist_iterator getNext ( *(dlist*) bmLine );
+    dlist_iterator getNext ( *bmLine );
     bmlnElmnt* q;
     while ((  q = (bmlnElmnt*) getNext()  )) {
        q->propagate( *xp );
@@ -714,7 +714,7 @@ void FPSolver::operator()( JetParticle* p, FP_CRITFUNC Crit )
 
 
 void FPSolver::eraseAll() {
- dlist_iterator getNext ( *(dlist*) bmLine );
+ dlist_iterator getNext ( *bmLine );
  bmlnElmnt*     be;
  while((  be = (bmlnElmnt*) getNext()  )) 
   be->dataHook.eraseAll( "FPS_orbit" );
