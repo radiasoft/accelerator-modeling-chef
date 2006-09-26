@@ -140,11 +140,11 @@ public:
   char SetLast( DLIST_CRITFUNC );
   char SetFirst( DLIST_CRITFUNC );
   dlink* lastPtr() {return last;}
-  void* lastInfoPtr() { if( last ) return last->e;
-                      else       return 0;
-                    }
-  void* firstInfoPtr() { if( last ) return last->next->e;
-                       else       return 0;
+  void* lastInfoPtr()  const { if( last ) return last->e;
+                               else       return 0;
+                   }
+  void* firstInfoPtr() const { if( last ) return last->next->e;
+                       else    return 0;
                     }
   dlist& operator=( const dlist& );
 
