@@ -45,6 +45,7 @@
 
 #include <iostream>
 
+#include <qcolor.h>
 #include <qpushbutton.h>
 #include <qmenubar.h>
 #include <qvbox.h>
@@ -384,6 +385,7 @@ public:
 
   void uploadBuffer();
   void downloadBuffer();
+  void clearBuffer( const QColor& );
 
   // REMOVE: int handle( int );
   const OrbitTransformer* getTransformer();
