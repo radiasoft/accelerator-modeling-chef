@@ -651,6 +651,15 @@ void DrawSpace::setRange( double xl, double xh, double yl, double yh )
 }
 
 
+void DrawSpace::clearBuffer( const QColor& c )
+{
+  int myW = this->width();
+  int myH = this->height();
+  _pic.resize( myW, myH );
+  _pic.fill( c );
+}
+
+
 void DrawSpace::uploadBuffer()
 {
   int myW = this->width();
@@ -750,7 +759,8 @@ void DrawSpace::setClearColor( GLclampf r, GLclampf g, GLclampf b, GLclampf a )
   _gClr = g;
   _bClr = b;
   _aClr = a;
-  updateGL();
+  this->updateGL();
+  this->uploadBuffer();
 }
 
 
@@ -1037,6 +1047,7 @@ void DrawSpace::mouseReleaseEvent( QMouseEvent* qme )
     _zoomed = true;
 
     this->updateGL();
+    this->uploadBuffer();
   }
 }
 
@@ -1067,6 +1078,7 @@ void DrawSpace::resetZoom()
   this->setScaleTo( DEF_RANGE );
   this->setCenterTo( DEF_X_CENTER, DEF_Y_CENTER );
   this->updateGL();
+  this->uploadBuffer();
 }
 
 
@@ -1241,7 +1253,7 @@ void Tracker::_finishConstructor()
 
     _p_leftWindow->setClearColor( 0.0, 0.0, 0.0, 1.0 );
     _p_leftWindow->update();
-    _p_leftWindow->uploadBuffer();
+    _p_leftWindow->clearBuffer( QColor( 0, 0, 0 ) );
 
   _p_rightWindow = new DrawSpace( this, _p_phaseSpaceViews, "Second" );
     _p_rightWindow->show();
@@ -1256,7 +1268,7 @@ void Tracker::_finishConstructor()
 
     _p_rightWindow->setClearColor( 0.0, 0.0, 0.0, 1.0 );
     _p_rightWindow->update();
-    _p_rightWindow->uploadBuffer();
+    _p_rightWindow->clearBuffer( QColor( 0, 0, 0 ) );
 
 
   // Construct text displays
@@ -1442,7 +1454,9 @@ void Tracker::_view_rect()
   }
 
   _p_leftWindow->updateGL();
+  _p_leftWindow->uploadBuffer();
   _p_rightWindow->updateGL();
+  _p_rightWindow->uploadBuffer();
 }
 
 
@@ -1490,7 +1504,9 @@ void Tracker::_view_norm()
   }
 
   _p_leftWindow->updateGL();
+  _p_leftWindow->uploadBuffer();
   _p_rightWindow->updateGL();
+  _p_rightWindow->uploadBuffer();
 }
 
 
@@ -1548,7 +1564,9 @@ void Tracker::_view_actang()
   }
 
   _p_leftWindow->updateGL();
+  _p_leftWindow->uploadBuffer();
   _p_rightWindow->updateGL();
+  _p_rightWindow->uploadBuffer();
 }
 
 
@@ -1566,7 +1584,9 @@ void Tracker::_view_zoom_out()
   _p_rightWindow->multScaleBy( 0.5 );
 
   _p_leftWindow->updateGL();
+  _p_leftWindow->uploadBuffer();
   _p_rightWindow->updateGL();
+  _p_rightWindow->uploadBuffer();
 }
 
 
@@ -1576,7 +1596,9 @@ void Tracker::_view_zoom_in()
   _p_rightWindow->multScaleBy( 2.0 );
 
   _p_leftWindow->updateGL();
+  _p_leftWindow->uploadBuffer();
   _p_rightWindow->updateGL();
+  _p_rightWindow->uploadBuffer();
 }
 
 
@@ -1629,7 +1651,9 @@ void Tracker::_view_zoom_s()
   _p_rightWindow->multScaleBy( multiplier );
 
   _p_leftWindow->updateGL();
+  _p_leftWindow->uploadBuffer();
   _p_rightWindow->updateGL();
+  _p_rightWindow->uploadBuffer();
 }
 
 
@@ -1653,7 +1677,9 @@ void Tracker::_view_center()
   _p_rightWindow->setCenterOn( *_centralParticlePtr );
 
   _p_leftWindow->updateGL();
+  _p_leftWindow->uploadBuffer();
   _p_rightWindow->updateGL();
+  _p_rightWindow->uploadBuffer();
 }
 
 
@@ -1663,7 +1689,9 @@ void Tracker::_opt_largePoints()
   _p_rightWindow->setPointSize( 3 );
 
   _p_leftWindow->updateGL();
+  _p_leftWindow->uploadBuffer();
   _p_rightWindow->updateGL();
+  _p_rightWindow->uploadBuffer();
 }
 
 
@@ -1673,7 +1701,9 @@ void Tracker::_opt_smallPoints()
   _p_rightWindow->setPointSize( 1 );
 
   _p_leftWindow->updateGL();
+  _p_leftWindow->uploadBuffer();
   _p_rightWindow->updateGL();
+  _p_rightWindow->uploadBuffer();
 }
 
 
@@ -1802,7 +1832,7 @@ void Tracker::_tool_pdicOrb()
   
     beamline* bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
     Jet__environment_ptr storedEnv = Jet__environment::getLastEnv();
-    double energy = dummyPtr->Energy();
+    // REMOVE: double energy = dummyPtr->Energy();
 
     JetParticle* jpPtr = 0;
     for( unsigned int iterCount = 0; iterCount < ul; iterCount++ ) {
@@ -2001,7 +2031,9 @@ void Tracker::_iterate()
     }
 
     _p_leftWindow->updateGL();
+    _p_leftWindow->uploadBuffer();
     _p_rightWindow->updateGL();
+    _p_rightWindow->uploadBuffer();
 
     _p_timer->start( 100, true );
   }
