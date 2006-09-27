@@ -500,8 +500,8 @@ public:
   class iterator {
   public:
 
-    iterator( TJet<T> const& jet):    _iter( *(jet._jl) ) {} 
-    TJLterm<T>  const* operator->()        { return   _iter;  }
+    iterator( TJet<T> const& jet): _iter( *(jet._jl) ) {} 
+    jl_iter_t          operator->()        { return   _iter;  }
     TJLterm<T>  const& operator*()         { return  *_iter;  }
     TJLterm<T>  const* operator++()        { return ++_iter;  }
     void reset()                           { _iter.reset();   } 
