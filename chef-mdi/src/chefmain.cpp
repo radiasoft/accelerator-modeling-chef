@@ -44,6 +44,7 @@ extern boost::python::class_ <CHEFGUI, CHEFGUI*,  boost::noncopyable>*  PythonTy
 #include <qdatetime.h>
 #include <time.h>
 #include <exception>
+#include <GL/glut.h>
 
 using namespace boost::python;
 
@@ -55,12 +56,14 @@ CHEFGUI* get_existing() { return gui; }
 int main( int argc, char** argv )
 {
 
+  glutInit( &argc, argv); 
+
   QApplication a(argc,argv);
 
 
   a.setStyle( new QWindowsStyle );
 
-  QDate expiration(2006,10,1);
+  QDate expiration(2007,3,1);
  
  
   if (QDate::currentDate() > expiration ) {
