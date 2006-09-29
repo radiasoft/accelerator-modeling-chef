@@ -28,14 +28,21 @@ libpurepyphysics_toolkit_la_SOURCES = $(libpyphysics_toolkit_la_SOURCES)
 libpurepybasic_toolkit_la_LIBADD = ../../basic_toolkit/src/libbasic_toolkit.la -lboost_python-gcc 
 
 libpurepymxyzptlk_la_LIBADD = -lboost_python-gcc \
-    ../../mxyzptlk/src/libmxyzptlk.la\
-    ../../basic_toolkit/src/libbasic_toolkit.la
+    ../../physics_toolkit/src/libphysics_toolkit.la \
+    ../../beamline/src/libbeamline.la \
+    ../../bmlfactory/src/libbmlfactory.la \
+    -lglib-2.0 \
+    ../../mxyzptlk/src/libmxyzptlk.la \
+    ../../basic_toolkit/src/libbasic_toolkit.la \
+    libpurepybeamline.la
 
 libpurepybeamline_la_LIBADD = -lboost_python-gcc \
     ../../physics_toolkit/src/libphysics_toolkit.la \
     ../../beamline/src/libbeamline.la \
+    ../../bmlfactory/src/libbmlfactory.la \
+    -lglib-2.0 \
     ../../mxyzptlk/src/libmxyzptlk.la \
-    ../../basic_toolkit/src/libbasic_toolkit.la 
+    ../../basic_toolkit/src/libbasic_toolkit.la
 
 libpurepybmlfactory_la_LIBADD = -lboost_python-gcc \
     ../../physics_toolkit/src/libphysics_toolkit.la \
@@ -49,8 +56,11 @@ libpurepybmlfactory_la_LIBADD = -lboost_python-gcc \
 libpurepyphysics_toolkit_la_LIBADD = -lboost_python-gcc \
     ../../physics_toolkit/src/libphysics_toolkit.la \
     ../../beamline/src/libbeamline.la \
+    ../../bmlfactory/src/libbmlfactory.la \
+    -lglib-2.0 \
     ../../mxyzptlk/src/libmxyzptlk.la \
-    ../../basic_toolkit/src/libbasic_toolkit.la 
+    ../../basic_toolkit/src/libbasic_toolkit.la \
+    libpurepybeamline.la
 
 CPPFLAGS                          =    -I$(BOOST_INC)  -I$(top_srcdir)/../include -I$(GLIB_INC) -I$(GLIBCONFIG_INC) -I$(PYTHON_INC)
 
