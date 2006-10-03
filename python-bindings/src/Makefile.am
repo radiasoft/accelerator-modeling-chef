@@ -67,8 +67,12 @@ CPPFLAGS                          =    -I$(BOOST_INC)  -I$(top_srcdir)/../includ
 install-exec-hook:
 	for lib in basic_toolkit beamline bmlfactory mxyzptlk physics_toolkit ;\
             do \
+            if test -f $(DESTDIR)$(libdir)/libpurepy$$lib.so ; then \
                 rm -f $(DESTDIR)$(libdir)/$$lib.so ; \
                 $(LN_S) $(DESTDIR)$(libdir)/libpurepy$$lib.so \
                         $(DESTDIR)$(libdir)/$$lib.so ; \
+                echo "installed $(DESTDIR)$(libdir)/$$lib.so"; \
+            else echo "python libs install error: no such file $(DESTDIR)$(libdir)/libpurepy$$lib.so" ; \
+            fi \
             done
 
