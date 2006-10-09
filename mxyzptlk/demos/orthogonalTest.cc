@@ -1,4 +1,5 @@
 #include <Matrix.h>
+#include <RandomOrthogonal.h>
 
 using namespace std;
 
