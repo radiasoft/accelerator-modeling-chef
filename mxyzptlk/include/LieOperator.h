@@ -47,7 +47,6 @@
 #define LIEOPERATOR_H
 
 #include <complex>
-#include <mxyzptlk/Jet.h>
 #include <mxyzptlk/JetVector.h>
 #include <mxyzptlk/TLieOperator.h>
 

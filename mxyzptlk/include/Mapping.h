@@ -43,6 +43,7 @@
 #define MAPPING_H
 
 #include <complex>
+#include <mxyzptlk/JetVector.h>
 #include <mxyzptlk/TMapping.h>
 
 typedef TMapping<double>                Mapping;

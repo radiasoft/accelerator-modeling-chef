@@ -764,7 +764,7 @@ TJet<T> operator/( const TJet<T>& wArg, const TJet<T>& uArg )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator^( const TJet<T>& x, const TJet<T>& y ) 
+TJet<T> operator^( TJet<T> const& x, TJet<T> const& y ) 
 { 
 
 //--------------------------
@@ -778,14 +778,14 @@ TJet<T> operator^( const TJet<T>& x, const TJet<T>& y )
           "Inconsistent environments." ) );
  }
 
- TJetEnvironment<T>* theEnv = x->getEnv();
+ EnvPtr<double> theEnv;
+ theEnv = x.Env();
  TJet<T> z (theEnv);
 
  int*  m = new int [ theEnv->numVar() ];
  int*  n = new int [ theEnv->numVar() ];
 
-if( theEnv->_pbok ) {
- 
+ if( 0 == theEnv->spaceDim()%2 ) {
    for( int i = 0; i < theEnv->numVar(); i++ ) {
      m[i] = 0;
      n[i] = 0;
