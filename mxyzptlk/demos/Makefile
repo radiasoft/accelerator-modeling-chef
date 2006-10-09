@@ -9,7 +9,7 @@
 C++        = g++
 
 INSTALLDIR = ../../RUNTIME
-INCS       = -I/usr/local/ap/include/boost-1_33 \
+INCS       = -I$(BOOST_INC) \
              -I$(INSTALLDIR)/include/gms \
              -I$(INSTALLDIR)/include/mxyzptlk \
              -I$(INSTALLDIR)/include/basic_toolkit \
