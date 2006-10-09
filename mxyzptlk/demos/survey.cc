@@ -7,15 +7,20 @@
 ** corresponding to a monostatic radar observation
 ** (i.e., polar to Cartesian conversion).
 ** 
+** Original.
 ** --- Leo Michelotti
 ** --- August 19, 1993
 ** 
 ** Templated version.
+** --- Leo Michelotti
 ** --- March 18, 2004
+** 
+** Retemplated version.
+** --- Leo Michelotti
+** --- October 9, 2006
 **
 */
 
-// #include <stdlib.h>
 #include <Matrix.h>
 #include <Mapping.h>
 

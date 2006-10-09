@@ -157,10 +157,9 @@ void eval() {
 
 void dffr() {
   int r;
-  JLterm* p;
   cout << "Enter the register ..> ";
   cin >> r;
-  p = HPreg[r]->get();
+  HPreg[r]->setStandardPart(0);
 }
 
 void nlys() {
