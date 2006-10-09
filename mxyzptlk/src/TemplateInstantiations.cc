@@ -333,6 +333,9 @@ template
 TJetVector<double > operator^<double >(Vector const&, TJetVector<double > const&);
 
 template 
+TJet<double> operator^( TJet<double> const&, TJet<double> const& );
+
+template 
 std::istream& operator>>(std::istream&, TJetVector<double >&);
 
 template
