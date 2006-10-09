@@ -25,7 +25,7 @@ libpurepyphysics_toolkit_la_SOURCES = $(libpyphysics_toolkit_la_SOURCES)
 
 # libpychef_la_SOURCES            =   py-chef-module.cpp 
 
-libpurepybasic_toolkit_la_LIBADD = -lboost_python-gcc \
+libpurepybasic_toolkit_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../physics_toolkit/src/libphysics_toolkit.la \
     ../../beamline/src/libbeamline.la \
     ../../bmlfactory/src/libbmlfactory.la \
@@ -33,7 +33,7 @@ libpurepybasic_toolkit_la_LIBADD = -lboost_python-gcc \
     ../../mxyzptlk/src/libmxyzptlk.la \
     ../../basic_toolkit/src/libbasic_toolkit.la 
 
-libpurepymxyzptlk_la_LIBADD = -lboost_python-gcc \
+libpurepymxyzptlk_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../physics_toolkit/src/libphysics_toolkit.la \
     ../../beamline/src/libbeamline.la \
     ../../bmlfactory/src/libbmlfactory.la \
@@ -41,7 +41,7 @@ libpurepymxyzptlk_la_LIBADD = -lboost_python-gcc \
     ../../mxyzptlk/src/libmxyzptlk.la \
     ../../basic_toolkit/src/libbasic_toolkit.la 
 
-libpurepybeamline_la_LIBADD = -lboost_python-gcc \
+libpurepybeamline_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../physics_toolkit/src/libphysics_toolkit.la \
     ../../beamline/src/libbeamline.la \
     ../../bmlfactory/src/libbmlfactory.la \
@@ -49,7 +49,7 @@ libpurepybeamline_la_LIBADD = -lboost_python-gcc \
     ../../mxyzptlk/src/libmxyzptlk.la \
     ../../basic_toolkit/src/libbasic_toolkit.la
 
-libpurepybmlfactory_la_LIBADD = -lboost_python-gcc \
+libpurepybmlfactory_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../physics_toolkit/src/libphysics_toolkit.la \
     ../../beamline/src/libbeamline.la \
     ../../bmlfactory/src/libbmlfactory.la \
@@ -57,7 +57,7 @@ libpurepybmlfactory_la_LIBADD = -lboost_python-gcc \
     ../../mxyzptlk/src/libmxyzptlk.la \
     ../../basic_toolkit/src/libbasic_toolkit.la
 
-libpurepyphysics_toolkit_la_LIBADD = -lboost_python-gcc \
+libpurepyphysics_toolkit_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../physics_toolkit/src/libphysics_toolkit.la \
     ../../beamline/src/libbeamline.la \
     ../../bmlfactory/src/libbmlfactory.la \
