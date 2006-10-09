@@ -2,10 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <VectorD.h>
-#include <Symplectic.h>
-#include <DriftMap.h>
-#include <KickMap.h>
+
+#include <basic_toolkit/VectorD.h>
+#include <integrator/Symplectic.h>
+#include <integrator/DriftMap.h>
+#include <integrator/KickMap.h>
 
 using namespace std;
 
