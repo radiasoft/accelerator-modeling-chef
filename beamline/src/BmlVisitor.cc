@@ -63,7 +63,7 @@ using namespace std;
 
 void BmlVisitor::visitBeamline( beamline* x )
 {
-  dlist_iterator getNext ( *x );
+  dlist_iterator getNext ( x->_theList );
   bmlnElmnt* p;
   while ( 0 != (  p = (bmlnElmnt*) getNext() ) ) {
     p->accept( *this );
@@ -73,7 +73,7 @@ void BmlVisitor::visitBeamline( beamline* x )
 
 void ConstBmlVisitor::visitBeamline( const beamline* x )
 {
-  dlist_iterator getNext ( *x );
+  dlist_iterator getNext ( x->_theList );
   bmlnElmnt* p;
   while ( 0 != (  p = (bmlnElmnt*) getNext() ) ) {
     p->accept( *this );

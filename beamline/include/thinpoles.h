@@ -65,8 +65,10 @@ public:
   { if ( strcmp(c, "thin2pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  bmlnElmnt* Clone() const { return new thin2pole( *this ); }
+  thin2pole* Clone() const { return new thin2pole( *this ); }
 } ;
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 class DLLEXPORT thin12pole : public bmlnElmnt
@@ -92,8 +94,11 @@ public:
   { if ( strcmp(c, "thin12pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  bmlnElmnt* Clone() const { return new thin12pole( *this ); }
+  thin12pole* Clone() const { return new thin12pole( *this ); }
 } ;
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 class DLLEXPORT thin14pole : public bmlnElmnt
 {
@@ -118,8 +123,11 @@ public:
   { if ( strcmp(c, "thin14pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  bmlnElmnt* Clone() const { return new thin14pole( *this ); }
+  thin14pole* Clone() const { return new thin14pole( *this ); }
 } ;
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 class DLLEXPORT thin16pole : public bmlnElmnt
 {
@@ -144,8 +152,11 @@ public:
   { if ( strcmp(c, "thin16pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  bmlnElmnt* Clone() const { return new thin16pole( *this ); }
+  thin16pole* Clone() const { return new thin16pole( *this ); }
 } ;
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 class DLLEXPORT thin18pole : public bmlnElmnt
 {
@@ -170,8 +181,11 @@ public:
   { if ( strcmp(c, "thin18pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  bmlnElmnt* Clone() const { return new thin18pole( *this ); }
+  thin18pole* Clone() const { return new thin18pole( *this ); }
 } ;
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 class DLLEXPORT thinMultipole : public bmlnElmnt
 {
@@ -196,7 +210,7 @@ public:
   { if ( strcmp(c, "thinMultipole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  bmlnElmnt* Clone() const { return new thinMultipole( *this ); }
+  thinMultipole* Clone() const { return new thinMultipole( *this ); }
 } ;
 
 #endif // THINPOLES_H

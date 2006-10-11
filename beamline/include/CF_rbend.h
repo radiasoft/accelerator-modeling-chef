@@ -139,7 +139,7 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   { if ( strcmp(c, "CF_rbend") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
   
-  bmlnElmnt* Clone() const 
+  CF_rbend* Clone() const 
     { return new CF_rbend( *this ); }
   double OrbitLength( const Particle& );
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;

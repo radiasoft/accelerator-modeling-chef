@@ -99,7 +99,7 @@ public:
   const char* Type() const;
   bool isMagnet() const;
 
-  bmlnElmnt* Clone() const { return new combinedFunction( *this ); }
+  combinedFunction* Clone() const { return new combinedFunction( *this ); }
 
   double AdjustPosition( const Particle& );
   double AdjustPosition( const JetParticle& );

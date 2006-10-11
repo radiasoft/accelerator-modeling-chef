@@ -68,7 +68,7 @@ public:
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
   void localPropagate( ParticleBunch& x );
-  bmlnElmnt* Clone() const { return new Pinger( *this ); }
+  Pinger* Clone() const { return new Pinger( *this ); }
   void accept( BmlVisitor& v ) { v.visitPinger( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitPinger( this ); }
   void arm( int n ) { _counter = n; }
@@ -94,7 +94,7 @@ class DLLEXPORT HPinger : public Pinger {
   ~HPinger();
 
   const char* Type() const;
-  bmlnElmnt* Clone() const { return new HPinger( *this ); }
+  HPinger* Clone() const { return new HPinger( *this ); }
   void accept( BmlVisitor& v ) { v.visitHPinger( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitHPinger( this ); }
 };
@@ -111,7 +111,7 @@ class DLLEXPORT VPinger : public Pinger {
   ~VPinger();
 
   const char* Type() const;
-  bmlnElmnt* Clone() const { return new VPinger( *this ); }
+  VPinger* Clone() const { return new VPinger( *this ); }
   void accept( BmlVisitor& v ) { v.visitVPinger( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitVPinger( this ); }
 };

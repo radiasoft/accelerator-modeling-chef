@@ -315,12 +315,13 @@ void combinedFunction::setSkew(WHICH_MULTIPOLE mult, alignmentData& alignD) {
 }
 
 alignmentData combinedFunction::Skew(WHICH_MULTIPOLE mult) {
-  dlist_iterator getNext(*p_bml);
+
+  BeamlineIterator getNext(*p_bml);
   bmlnElmnt* element;
   alignmentData alignD;
   int foundIt = 0;
 
-  while((element = (bmlnElmnt*)getNext()) != 0 && foundIt == 0) {
+  while( (element = getNext++) != 0 && foundIt == 0) {
     switch (mult) {
     case DIPOLE_FIELD:
       if(strcasecmp(element->Type(),"sbend") == 0 ||

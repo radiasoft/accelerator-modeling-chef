@@ -48,6 +48,7 @@
 #include <beamline/ParticleBunch.h>
 #include <beamline/Aperture.h>
 #include <beamline/BmlVisitor.h>
+#include <beamline/BeamlineIterator.h>
 
 
 // Error flags for _tag manipulation functions.
@@ -423,18 +424,21 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a )
 
  if( a.p_bml ) 
  {
-   p_bml = (beamline*) a.p_bml->Clone();
+   p_bml = a.p_bml->Clone();
+
    if( a.p_bml_e ) {
+
      int count = 0;
-     dlist_iterator getNext( *(dlist*) a.p_bml );
+     BeamlineIterator getNext( *(a.p_bml) );
      bmlnElmnt* q;
      bool notFound = true;
-     while((  q = (bmlnElmnt*) getNext()  )) {
-       count++;
+
+     while( (q = getNext++) ) {
+       ++count;
        if( q == a.p_bml_e ) {
-         getNext.Reset( *(dlist*) p_bml );
-         for( int i = 0; i < count; i++ ) {
-           q = (bmlnElmnt*) getNext();
+         BeamlineIterator getNext2( p_bml );
+         for( int i = 0; i < count; ++i) {
+           q = getNext++;
          }
          p_bml_e = q;
          notFound = false;
