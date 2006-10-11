@@ -56,7 +56,7 @@ Q_OBJECT
     // Returns number of QtMonitors in the beamline.
 
     void localPropagate( Particle& );
-    bmlnElmnt* Clone() const { return new QtMonitor( *this ); }
+    QtMonitor* Clone() const { return new QtMonitor( *this ); }
 
   signals:
     void ping( double, const Vector& );
