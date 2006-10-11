@@ -382,7 +382,7 @@ CHEFPlotMain::_showdata()
      dd->DataTable->horizontalHeader()->setLabel( 2,    "Element Length [m]");
      dd->DataTable->horizontalHeader()->setLabel( 3,    "End Azimuth [m]");
   
-     DeepBeamlineIterator it( _chefplot->getBeamline() );
+     DeepBeamlineIterator it( *_chefplot->getBeamline() );
      bmlnElmnt* beptr = 0;
 
      int idx =0;

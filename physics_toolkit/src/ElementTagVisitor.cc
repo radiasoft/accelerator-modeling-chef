@@ -137,7 +137,7 @@ void ElementTagVisitor::visitBeamline( beamline* e) {
    
   // ... Start visiting from the origin marker  
   
-   DeepBeamlineIterator it ( e );
+   DeepBeamlineIterator it ( *e );
   
    bmlnElmnt* p = 0;
    while( p = it++ ) 

@@ -365,7 +365,7 @@ beamline* BmlUtil::cloneLineAndInsert( double          percent,
 
   // Begin ...
   beamline* ret = new beamline( linePtr->Name() );
-  BeamlineIterator bli( linePtr );
+  BeamlineIterator bli( *linePtr );
   bmlnElmnt* q   = 0;
   bmlnElmnt* ins = 0;
   bmlnElmnt* trg = 0;

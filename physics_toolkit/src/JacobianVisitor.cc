@@ -169,9 +169,9 @@ void JacobianVisitor::visitBmlnElmnt(bmlnElmnt* be) {
 }
 
 void JacobianVisitor::clearBarnacles() {
-  dlist_iterator getNext(*theLine);
+  BeamlineIterator getNext(*theLine);
   bmlnElmnt* element;
-  while((element = (bmlnElmnt*)getNext()) != 0) {
+  while((element = getNext++) != 0) {
     element->dataHook.eraseAll("Jacobian");
   }
   cumulativeMatrix = identityMatrix;

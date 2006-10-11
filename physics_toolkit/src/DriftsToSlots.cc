@@ -379,7 +379,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   
 
   // Process the flattened beamline ...
-  BeamlineIterator bi( flatRing );
+  BeamlineIterator bi( *flatRing );
   bool isRing = ( beamline::ring == flatRing->getLineMode() );
 
   // REMOVE: elPtr  = bi++;

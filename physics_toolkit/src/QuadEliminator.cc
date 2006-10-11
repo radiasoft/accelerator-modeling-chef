@@ -110,7 +110,7 @@ void QuadEliminator::visitBeamline( const beamline* x )
 
 
   // Process the argument
-  DeepBeamlineIterator dbi( x );
+  DeepBeamlineIterator dbi( *x );
   bmlnElmnt* q;
   while( 0 != ( q = dbi++ ) ) {
     q->accept( *this );

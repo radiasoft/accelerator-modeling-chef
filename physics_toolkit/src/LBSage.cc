@@ -142,7 +142,7 @@ void LBSage::eraseAll()
 {
   _myBeamlinePtr->dataHook.eraseAll( "LBSage" );
 
-  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  DeepBeamlineIterator dbi( *_myBeamlinePtr );
   bmlnElmnt* be;
   while((  be = dbi++  )) {
     be->dataHook.eraseAll( "LBSage" );
@@ -190,7 +190,7 @@ int LBSage::doCalc( const JetParticle* ptr_jp, beamline::Criterion& crit )
 
   _createCalcs();
 
-  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  DeepBeamlineIterator dbi( *_myBeamlinePtr );
   bmlnElmnt* be;
   int i = 0;
   double lng = 0.0;

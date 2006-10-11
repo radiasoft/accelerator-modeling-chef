@@ -136,7 +136,7 @@ LegoPlot::paintEvent ( QPaintEvent *event ){
    _painter->setWindow(_painter->viewport());
    _scale = double( ( _roffset -_loffset ) / _w );
 
-   DeepBeamlineIterator it(_beamline);
+   DeepBeamlineIterator it( *_beamline );
      
       double s   = 0;
       double len = 0;
