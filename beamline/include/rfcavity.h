@@ -121,7 +121,7 @@ public:
   const char* Type() const;
   virtual bool isType( const char* c )
   { if ( strcmp(c, "rfcavity") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  bmlnElmnt* Clone() const { return new rfcavity( *this ); }
+  rfcavity* Clone() const { return new rfcavity( *this ); }
   inline double getPhi() const { return phi_s; }
   inline double getFrequency() const { return w_rf; }
   inline double getQ() const { return Q; }
@@ -191,7 +191,7 @@ public:
   const char* Type() const;
   virtual bool isType( const char* c )
   { if ( strcmp(c, "thinrfcavity") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  bmlnElmnt* Clone() const { return new thinrfcavity( *this ); }
+  thinrfcavity* Clone() const { return new thinrfcavity( *this ); }
   inline double getPhi() const { return phi_s; }
   inline double getFrequency() const { return w_rf; }
   inline double getQ() const { return Q; }

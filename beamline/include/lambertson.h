@@ -95,7 +95,7 @@ public:
   virtual bool isType( const char* c )
   { if ( strcmp(c, "thinLamb") != 0 ) return bmlnElmnt::isType(c); else return true; }
 
-  bmlnElmnt* Clone() const { return new thinLamb( *this ); }
+  thinLamb* Clone() const { return new thinLamb( *this ); }
 };
  
 

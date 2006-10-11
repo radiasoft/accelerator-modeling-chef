@@ -72,7 +72,7 @@ public:
   { if ( strcmp(c, "sextupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  bmlnElmnt* Clone() const { return new sextupole( *this ); }
+  sextupole* Clone() const { return new sextupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 } ;
 
@@ -101,7 +101,7 @@ public:
   { if ( strcmp(c, "thinSextupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  bmlnElmnt* Clone() const { return new thinSextupole( *this ); }
+  thinSextupole* Clone() const { return new thinSextupole( *this ); }
 } ;
 
 #endif // SEXTUPOLE_H

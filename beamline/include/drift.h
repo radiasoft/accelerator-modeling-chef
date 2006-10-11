@@ -61,7 +61,7 @@ public:
   const char* Type() const;
   virtual bool isType(const char* c) 
   { if ( strcmp(c, "drift") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  bmlnElmnt* Clone() const { return new drift( *this ); }
+  drift* Clone() const { return new drift( *this ); }
 } ;
 
 #endif // DRIFT_H

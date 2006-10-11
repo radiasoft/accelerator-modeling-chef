@@ -134,7 +134,7 @@ quadrupole::quadrupole( bmlnElmntData& x )
 
 
 quadrupole::quadrupole( const quadrupole& x ) 
-: bmlnElmnt( (bmlnElmnt&) x )
+: bmlnElmnt( x )
 {
   this->setupPropFunc();
 }

@@ -63,23 +63,19 @@ using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
 
-// 
+// --------------------------------------------------------------------------
 // Forward iterator
-// 
-
-BeamlineIterator::BeamlineIterator( const beamline& x )
-{
-  _getNext = new dlist_iterator( x );
-}
+// --------------------------------------------------------------------------
 
 
-BeamlineIterator::BeamlineIterator( const beamline* x )
-{
-  _getNext = new dlist_iterator( *x );
-}
+
+BeamlineIterator::BeamlineIterator( beamline const& x ): _getNext( x._theList ) { }
 
 
-BeamlineIterator::BeamlineIterator( const BeamlineIterator& x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BeamlineIterator::BeamlineIterator( BeamlineIterator const& x ): _getNext( x._getNext )
 {
   static char firstTime = 1;
   if( firstTime ) {
@@ -93,67 +89,74 @@ BeamlineIterator::BeamlineIterator( const BeamlineIterator& x )
     firstTime = 0;
   }
   
-  _getNext = new dlist_iterator( *(x._getNext) );
 }
 
 
-BeamlineIterator::~BeamlineIterator()
-{
-  delete _getNext;
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+BeamlineIterator::~BeamlineIterator() { }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 bmlnElmnt* BeamlineIterator::operator++( int )
 {
   
-  return (bmlnElmnt*) _getNext->operator()();
+   return static_cast<bmlnElmnt*>( _getNext() );
+
 }
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 void BeamlineIterator::reset()
 {
-  _getNext->Reset();
+  _getNext.Reset();
 }
 
- 	 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 bool BeamlineIterator::isFinished() 	 
 { 	 
-   return _getNext->isFinished(); 	 
+   return _getNext.isFinished(); 	 
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BeamlineIterator::goBack( int n )
 {
-  _getNext->GoBack(n);
+  _getNext.GoBack(n);
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-DeepBeamlineIterator::DeepBeamlineIterator( const beamline& x )
-{
- 
-  _subIterator = 0;
-  _getNext = new dlist_iterator( x );
 
-}
+DeepBeamlineIterator::DeepBeamlineIterator( beamline const& x ): _subIterator(0), _getNext( x._theList ) { }
 
 
-DeepBeamlineIterator::DeepBeamlineIterator( const beamline* x )
-{
-  _subIterator = 0;
-  _getNext = new dlist_iterator( *x );
-}
-
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 DeepBeamlineIterator::~DeepBeamlineIterator()
-{
-  delete _getNext;
-  if( _subIterator ) delete _subIterator;
-  _subIterator = 0;
+{ 
+  if (_subIterator) delete _subIterator;
+
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 bmlnElmnt* DeepBeamlineIterator::operator++( int )
@@ -164,21 +167,20 @@ bmlnElmnt* DeepBeamlineIterator::operator++( int )
   if( _subIterator ) 
   {
     ret = (*_subIterator)++;
-    if( ret == 0 ) 
+    if( !ret ) 
     {
-      delete _subIterator;
-      _subIterator = 0;
+      delete _subIterator; _subIterator = 0;
       ret = (*this)++;
     }
   }
   else 
   {
-    ret = (bmlnElmnt*) _getNext->operator()();
-    if( ret != 0 ) 
+    ret = (bmlnElmnt*) _getNext();
+    if( ret ) 
     {
       if( 0 == strcmp( ret->Type(), "beamline" ) ) 
       {
-        _subIterator = new DeepBeamlineIterator( static_cast<beamline*>(ret) );
+        _subIterator = new DeepBeamlineIterator( *static_cast<beamline*>(ret) );
         ret = (*this)++;
       }
     }    
@@ -187,38 +189,37 @@ bmlnElmnt* DeepBeamlineIterator::operator++( int )
   return ret;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void DeepBeamlineIterator::reset()
 {
 
-  if( _subIterator ) delete _subIterator;
-
-  _subIterator = 0;
- 
-  _getNext->Reset();
+  _subIterator =  0;
+  _getNext.Reset();
 
 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// 
+
+//------------------------------------------------------------------------------------------------------ 
 // Reverse iterator
-// 
+// -----------------------------------------------------------------------------------------------------
 
 
-ReverseBeamlineIterator::ReverseBeamlineIterator( const beamline& x )
+ReverseBeamlineIterator::ReverseBeamlineIterator( beamline const& x ): _getNext( x._theList )
 {
-  _getNext = new dlist_reverseIterator( x );
+
 }
 
-
-ReverseBeamlineIterator::ReverseBeamlineIterator( const beamline* x )
-{
-  _getNext = new dlist_reverseIterator( *x );
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-ReverseBeamlineIterator::ReverseBeamlineIterator( const ReverseBeamlineIterator& x )
+ReverseBeamlineIterator::ReverseBeamlineIterator( ReverseBeamlineIterator const& x ): _getNext(x._getNext) 
 {
   static char firstTime = 1;
   if( firstTime ) {
@@ -232,28 +233,37 @@ ReverseBeamlineIterator::ReverseBeamlineIterator( const ReverseBeamlineIterator&
     firstTime = 0;
   }
   
-  _getNext = new dlist_reverseIterator( *(x._getNext) );
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ReverseBeamlineIterator::~ReverseBeamlineIterator()
 {
-  delete _getNext;
+
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 bmlnElmnt* ReverseBeamlineIterator::operator++( int )
 {
-  return (bmlnElmnt*) _getNext->operator()();
+  return (bmlnElmnt*) _getNext();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void ReverseBeamlineIterator::reset()
 {
-  _getNext->Reset();
+  _getNext.Reset();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void ReverseBeamlineIterator::goBack( int n )
 {
@@ -263,29 +273,27 @@ void ReverseBeamlineIterator::goBack( int n )
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( const beamline& x )
+DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( beamline const& x ):   _subIterator(0), _getNext( x._theList )
 {
-  _subIterator = 0;
-  _getNext = new dlist_reverseIterator( x );
+
 }
 
-
-DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( const beamline* x )
-{
-  _subIterator = 0;
-  _getNext = new dlist_reverseIterator( *x );
-}
-
-
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 DeepReverseBeamlineIterator::~DeepReverseBeamlineIterator()
-{
-  delete _getNext;
-  if( _subIterator ) delete _subIterator;
-  _subIterator = 0;
+{ 
+
+      if (_subIterator) delete _subIterator;  
+
+
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 bmlnElmnt* DeepReverseBeamlineIterator::operator++( int )
@@ -295,21 +303,20 @@ bmlnElmnt* DeepReverseBeamlineIterator::operator++( int )
   if( _subIterator ) 
   {
     ret = (*_subIterator)++;
-    if( ret == 0 ) 
+    if( !ret ) 
     {
-      delete _subIterator;
-      _subIterator = 0;
+      delete _subIterator;  _subIterator = 0;
       ret = (*this)++;
     }
   }
   else 
   {
-    ret = (bmlnElmnt*) _getNext->operator()();
-    if( ret != 0 ) 
+    ret = (bmlnElmnt*) _getNext();
+    if( ret ) 
     {
       if( 0 == strcmp( ret->Type(), "beamline" ) ) 
       {
-        _subIterator = new DeepReverseBeamlineIterator( (beamline*) ret );
+        _subIterator = new DeepReverseBeamlineIterator( *static_cast<beamline*>(ret) );
         ret = (*this)++;
       }
     }    
@@ -318,11 +325,15 @@ bmlnElmnt* DeepReverseBeamlineIterator::operator++( int )
   return ret;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void DeepReverseBeamlineIterator::reset()
 {
-  if( _subIterator ) delete _subIterator;
+
   _subIterator = 0;
-  _getNext->Reset();
+  _getNext.Reset();
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -67,7 +67,7 @@ public:
   const char* Type() const;
   virtual bool isType(const char* c) 
   { if ( strcmp(c, "hkick") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  bmlnElmnt* Clone() const { return new hkick( *this ); }
+  virtual hkick* Clone() const { return new hkick( *this ); }
 
   void accept( BmlVisitor& v ) { v.visitHkick( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitHkick( this ); }
@@ -99,7 +99,7 @@ public:
   const char* Type() const;
   virtual bool isType(const char* c) 
   { if ( strcmp(c, "vkick") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  bmlnElmnt* Clone() const { return new vkick( *this ); }
+  vkick* Clone() const { return new vkick( *this ); }
 };
 
 
@@ -137,7 +137,7 @@ public:
         double& verticalStrength() { return verticalKick; }
 
         const char* Type() const;
-        bmlnElmnt* Clone() const { return new kick( *this ); }
+        kick* Clone() const { return new kick( *this ); }
 };
 
 #endif    // KICK_H

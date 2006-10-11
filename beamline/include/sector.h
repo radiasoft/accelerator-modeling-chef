@@ -125,7 +125,7 @@ public:
   virtual bool isType( const char* c )
   { if ( strcmp(c, "sector") != 0 ) return bmlnElmnt::isType(c); else return true; }
 
-  bmlnElmnt* Clone() const { return new sector( *this ); }
+  sector* Clone() const { return new sector( *this ); }
 } ;
 
 

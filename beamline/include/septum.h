@@ -87,7 +87,7 @@ public:
   virtual bool isType( const char* c )
   { if ( strcmp(c, "thinSeptum") != 0 ) return bmlnElmnt::isType(c); else return true; }
 
-  bmlnElmnt* Clone() const { return new thinSeptum( *this ); }
+  thinSeptum* Clone() const { return new thinSeptum( *this ); }
 
 };
  

@@ -66,7 +66,7 @@ public:
   { if ( strcmp(c, "thinDecapole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  bmlnElmnt* Clone() const { return new thinDecapole( *this ); }
+   thinDecapole* Clone() const { return new thinDecapole( *this ); }
 } ;
 
 #endif // DECAPOLE_H

@@ -34,10 +34,15 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** REVISION HISTORY:
+****** -----------------
+****** 
+****** Oct 2006:  Jean-Francois Ostiguy  ostiguy@fnal.gov
+******
+****** - beamline: decoupled dlist container from public interface
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 #ifndef BMLNELMNT_H
 #define BMLNELMNT_H
 
@@ -610,26 +615,33 @@ public:
 };
 
 
-class DLLEXPORT beamline : public bmlnElmnt, public dlist
+class DLLEXPORT beamline : public bmlnElmnt
 {
+
+ friend class BmlVisitor;
+ friend class ConstBmlVisitor;
+ friend class BeamlineIterator;
+ friend class ReverseBeamlineIterator;
+ friend class DeepBeamlineIterator;
+ friend class DeepReverseBeamlineIterator;
+
 public:
   enum LineMode { line, ring, unknown };
 
   class arrayRep
   {
   public:
-    arrayRep( const beamline*, bool = false );  
-    // Clones all elements if 2nd argument is true
-    ~arrayRep();
+    arrayRep( const beamline*, bool = false );    // Clones all elements if 2nd argument is true
+   ~arrayRep();
     int size() { return _n; }
-    bmlnElmnt* e( int i ) { return _element[i]; }
-    // WARNING: For speed, this is made unsafe.
-    // User is responsible for staying in bounds.
+    bmlnElmnt* e( int i ) { return _element[i]; } // WARNING: For speed, this is made unsafe.
+                                                  // User is responsible for staying in bounds.
 
   private:
     int         _n;
     bmlnElmnt** _element;
     bool        _cloned;
+ 
   };
 
   struct Criterion
@@ -664,11 +676,14 @@ public:
 
 
 private:
+
   // Data
+
   double            nominalEnergy;    // In GeV
   int               numElem;          // Number of elements in the beamline
   char              twissDone;
   LineMode          _mode;
+  dlist            _theList; 
 
   // Methods
   void _moveRel(   int axis, double u
@@ -941,17 +956,23 @@ public:
 
 
   inline bmlnElmnt* firstElement() const
-  { return (bmlnElmnt*)  firstInfoPtr(); }
+  { return (bmlnElmnt*)  _theList.firstInfoPtr(); }
+
   inline bmlnElmnt* lastElement() const
-  { return (bmlnElmnt*)  lastInfoPtr(); }
+  { return (bmlnElmnt*)  _theList.lastInfoPtr(); }
+
   inline char twissIsDone()
   { return twissDone; }
+
   inline void setTwissIsDone()
   { twissDone = 1; }
+
   inline void unsetTwissIsDone()
   { twissDone = 0; }
+
   double Energy() const 
   { return nominalEnergy; }
+
   const char*  Type() const;
   virtual bool isType( const char* c )
   { if ( strcmp(c, "beamline") != 0 ) return bmlnElmnt::isType(c); 
@@ -959,7 +980,7 @@ public:
   }
   bool isFlat();
 
-  bmlnElmnt* Clone() const;
+  beamline* Clone() const;
 
   double OrbitLength( const Particle& );
   lattRing whatIsRing();

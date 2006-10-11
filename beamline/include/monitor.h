@@ -103,7 +103,7 @@ public:
     else return true;
   }
 
-  bmlnElmnt* Clone() const 
+  monitor* Clone() const 
   { return new monitor( *this ); }
 };
 
@@ -132,7 +132,7 @@ public:
     else return true; 
   }
 
-  bmlnElmnt* Clone() const 
+  hmonitor* Clone() const 
   { return new hmonitor( *this ); }
 } ;
 
@@ -158,7 +158,7 @@ public:
   { if ( strcmp(c, "vmonitor") != 0 ) return monitor::isType(c); 
     else return true; 
   }
-  bmlnElmnt* Clone() const 
+  vmonitor* Clone() const 
   { return new vmonitor( *this ); }
 } ;
 

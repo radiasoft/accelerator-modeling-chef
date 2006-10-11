@@ -71,7 +71,7 @@ public:
   { if ( strcmp(c, "octupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  bmlnElmnt* Clone() const { return new octupole( *this ); }
+  octupole* Clone() const { return new octupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 };
 
@@ -100,7 +100,7 @@ public:
   { if ( strcmp(c, "thinOctupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
   
-  bmlnElmnt* Clone() const { return new thinOctupole( *this ); }
+  thinOctupole* Clone() const { return new thinOctupole( *this ); }
 } ;
 
 #endif // OCTUPOLE_H

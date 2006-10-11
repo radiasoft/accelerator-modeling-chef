@@ -57,15 +57,17 @@
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
 
+class beamline;
 
 
 class DLLEXPORT BeamlineIterator
 {
+
 public:
-  BeamlineIterator( const beamline& );
-  BeamlineIterator( const beamline* );
-  BeamlineIterator( const BeamlineIterator& );
-  ~BeamlineIterator();
+
+  BeamlineIterator( beamline         const& );
+  BeamlineIterator( BeamlineIterator const& );
+ ~BeamlineIterator();
 
   bmlnElmnt* operator++( int );    // postfix increment
   void reset();
@@ -73,61 +75,77 @@ public:
   bool isFinished();
 
 private:
-  dlist_iterator* _getNext;
+  
+  dlist_iterator _getNext;
+  
 };
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 
 class DLLEXPORT  DeepBeamlineIterator
 {
 public:
-  DeepBeamlineIterator( const beamline& );
-  DeepBeamlineIterator( const beamline* );
-  ~DeepBeamlineIterator();
 
-  bmlnElmnt* operator++( int );    // postfix increment
+  DeepBeamlineIterator( beamline const& );
+ ~DeepBeamlineIterator();
+
+  bmlnElmnt* operator++( int );            // postfix increment
   void reset();
 
-  // private:
   protected:
 
-  dlist_iterator*       _getNext;
-  DeepBeamlineIterator* _subIterator;
-  DeepBeamlineIterator( const DeepBeamlineIterator& ); // forbidden
+  dlist_iterator         _getNext;
+  DeepBeamlineIterator*  _subIterator;
+
+ private:
+
+  DeepBeamlineIterator( DeepBeamlineIterator const& ); // forbidden
 
 };
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 class DLLEXPORT  ReverseBeamlineIterator
 {
 public:
-  ReverseBeamlineIterator( const beamline& );
-  ReverseBeamlineIterator( const beamline* );
-  ReverseBeamlineIterator( const ReverseBeamlineIterator& );
-  ~ReverseBeamlineIterator();
+
+  ReverseBeamlineIterator( beamline const& );
+  ReverseBeamlineIterator( ReverseBeamlineIterator const& );
+ ~ReverseBeamlineIterator();
 
   bmlnElmnt* operator++( int );    // postfix increment
   void reset();
   void goBack( int = 1 );
 
 private:
-  dlist_reverseIterator* _getNext;
+
+  dlist_reverseIterator _getNext;
+
 };
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 class DLLEXPORT  DeepReverseBeamlineIterator
 {
 public:
-  DeepReverseBeamlineIterator( const beamline& );
-  DeepReverseBeamlineIterator( const beamline* );
-  ~DeepReverseBeamlineIterator();
+
+  DeepReverseBeamlineIterator( beamline const& );
+ ~DeepReverseBeamlineIterator();
 
   bmlnElmnt* operator++( int );    // postfix increment
   void reset();
 
 private:
-  dlist_reverseIterator*       _getNext;
-  DeepReverseBeamlineIterator* _subIterator;
-  DeepReverseBeamlineIterator( const DeepReverseBeamlineIterator& ); // forbidden
+
+  dlist_reverseIterator         _getNext;
+  DeepReverseBeamlineIterator*  _subIterator;
+
+  DeepReverseBeamlineIterator( DeepReverseBeamlineIterator const& ); // forbidden
 };
 
 

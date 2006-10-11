@@ -62,7 +62,7 @@ public:
   const char* Type() const;
   virtual bool isType( const char* c ) 
   { if ( strcmp(c, "srot") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  bmlnElmnt* Clone() const { return new srot( *this ); }
+  srot* Clone() const { return new srot( *this ); }
 };
 
 #endif // SROT_H

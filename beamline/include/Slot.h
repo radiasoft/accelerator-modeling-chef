@@ -103,7 +103,7 @@ class DLLEXPORT Slot : public bmlnElmnt
    void localPropagate( JetParticle& );
    void localPropagate( ParticleBunch& );
  
-   bmlnElmnt* Clone() const
+   Slot* Clone() const
      { return new Slot( *this ); }
 
    void Split( double s, bmlnElmnt**, bmlnElmnt** ) const;

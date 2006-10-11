@@ -108,7 +108,7 @@ public:
   { if ( strcmp(c, "quadrupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  bmlnElmnt* Clone() const { return new quadrupole( *this ); }
+  quadrupole* Clone() const { return new quadrupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 } ;
 
@@ -136,7 +136,7 @@ public:
   { if ( strcmp(c, "thinQuad") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
   
-  bmlnElmnt* Clone() const { return new thinQuad( *this ); }
+  thinQuad* Clone() const { return new thinQuad( *this ); }
 } ;
 
 

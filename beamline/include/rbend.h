@@ -354,7 +354,7 @@ public:
   { if ( strcmp(c, "rbend") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  bmlnElmnt* Clone() const { return new rbend( *this ); }
+  rbend* Clone() const { return new rbend( *this ); }
   double OrbitLength( const Particle& );
     // Computes arclength of orbit assuming a symmetric bend.
     // WARNING: This is not the true arclength under all conditions.

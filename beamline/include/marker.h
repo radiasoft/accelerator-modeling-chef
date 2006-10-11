@@ -61,7 +61,7 @@ public:
   const char* Type() const;
   virtual bool isType( const char* c )
   { if ( strcmp(c, "marker") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  bmlnElmnt* Clone() const { return new marker( *this ); }
+  marker* Clone() const { return new marker( *this ); }
 } ;
 
 #endif // MARKER_H

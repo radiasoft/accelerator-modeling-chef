@@ -279,7 +279,7 @@ public:
   { if ( strcmp(c, "sbend") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  bmlnElmnt* Clone() const { return new sbend( *this ); }
+  sbend* Clone() const { return new sbend( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 };
 
