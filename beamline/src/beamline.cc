@@ -34,11 +34,15 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******
-****** Sep 2006    Jean-Francois Ostiguy
-******             ostiguy@fnal.gov
+****** Sep 2006    Jean-Francois Ostiguy ostiguy@fnal.gov
 ******
 ****** - eliminated redundant (and dangerous) c-style hard casts
 ******   (dlist*) this  [ where this is a beamline * ]                    
+****** 
+****** Oct 2006:  Jean-Francois Ostiguy  ostiguy@fnal.gov
+******
+****** - beamline: decoupled dlist container from public interface
+******                                                                
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -183,9 +187,10 @@ void* beamlineData::clone() {
 //   class beamline::arrayRep
 // **************************************************
 
-beamline::arrayRep::arrayRep( const beamline* x, bool doClone )
+beamline::arrayRep::arrayRep(beamline const* x, bool doClone )
 : _element(0)
 {
+ 
   if( 0 == x ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
            "beamline::arrayRep::arrayRep( const beamline* x, bool doClone )", 
@@ -201,26 +206,28 @@ beamline::arrayRep::arrayRep( const beamline* x, bool doClone )
   }
 #endif
 
-  DeepBeamlineIterator dbi(x);
+  DeepBeamlineIterator dbi(*x);
   bmlnElmnt* q;
   int i = 0;
 
   _n = x->countHowManyDeeply();
+
   _cloned = doClone;
 
-  if ( 0 < _n ) {
+  if ( _n > 0 ) {
+
     _element = new bmlnElmnt* [_n];
   
     if( _cloned ) {
-      while( ( 0 != (q = dbi++) ) && ( i < _n ) ) {
+      while( ( (q = dbi++) ) && ( i < _n ) ) {
         _element[i] = q->Clone();   // The second check, i < _n,
-        i++;                        // is simply paranoia;
+        ++i;                        // is simply paranoia;
       }                             // it should not be necessary.
     }
     else {
-      while( ( 0 != (q = dbi++) ) && ( i < _n ) ) {
+      while( ((q = dbi++) ) && ( i < _n ) ) {
         _element[i] = q;
-        i++;
+        ++i;
       }
     }
   }
@@ -244,7 +251,7 @@ beamline::arrayRep::~arrayRep()
 // **************************************************
 
 beamline::beamline( const char* nm ) 
-: bmlnElmnt( nm ), dlist() 
+: bmlnElmnt( nm ), _theList() 
 {
  _mode          = unknown;
  numElem        = 0;
@@ -254,12 +261,16 @@ beamline::beamline( const char* nm )
 
 
 beamline::beamline( beamline const& a ) 
-  : bmlnElmnt(a), dlist(a), _mode(a._mode),  nominalEnergy(a.nominalEnergy), numElem(a.numElem), twissDone(0) 
+  : bmlnElmnt(a), _mode(a._mode),  nominalEnergy(a.nominalEnergy), numElem(a.numElem), twissDone(0), _theList(a._theList) 
 {}
 
 
-bmlnElmnt* beamline::Clone() const {
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+beamline* beamline::Clone() const {
+
  beamline* ret = new beamline( ident );
+
  ret->length        = length;
  ret->strength      = strength;
 
@@ -275,14 +286,16 @@ bmlnElmnt* beamline::Clone() const {
  ret->nominalEnergy = nominalEnergy;
  ret->twissDone     = 0;
 
- dlist_iterator getNext ( *this );
+ BeamlineIterator getNext( *this );
+
  bmlnElmnt* p;
  bmlnElmnt* q;
- while ((  p = static_cast<bmlnElmnt*>(getNext())  )) {
+
+ while ( (  p = getNext++) ) {
   q = p->Clone();
   ret->append( q );
  }
- return static_cast<bmlnElmnt*>( ret );
+ return ret;
 }
 
 
@@ -293,21 +306,21 @@ const char*  beamline::Type() const
 }
 
 
-double beamline::OrbitLength( const Particle& x )
+double beamline::OrbitLength( Particle const& x )
 {
- dlist_iterator getNext ( *this );
+ BeamlineIterator getNext (*this);
  bmlnElmnt* p;
  double s = 0.0;
- while ((  p = static_cast<bmlnElmnt*>(getNext())  )) {
+ while ( (p = getNext++) ) {
   s += p->OrbitLength( x );
  }
  return s;
 }
 
 
-beamline::beamline( bmlnElmnt* q ) : bmlnElmnt(), dlist() 
+beamline::beamline( bmlnElmnt* q ) : bmlnElmnt(), _theList() 
 {
- dlist::insert( q );
+ _theList.insert( q );
 
  _mode          = unknown;
  numElem        = 1;
@@ -315,8 +328,9 @@ beamline::beamline( bmlnElmnt* q ) : bmlnElmnt(), dlist()
 }
 
 
-beamline::beamline( char* n, bmlnElmnt* q ) : bmlnElmnt( n ), dlist() {
- dlist::insert( q );
+beamline::beamline( char* n, bmlnElmnt* q ) : bmlnElmnt( n ), _theList() {
+
+ _theList.insert( q );
 
  _mode          = unknown;
  numElem        = 1;
@@ -335,19 +349,20 @@ beamline::~beamline() {
 
 
  bmlnElmnt* p;
- while((  p = static_cast<bmlnElmnt*>(get())  ));
- this->dlist::clear();  // Wipes out all the links; probably unnecessary.
+ while((  p = static_cast<bmlnElmnt*>(_theList.get())  ));
+ _theList.clear();  // Wipes out all the links; probably unnecessary.
 }
 
 void beamline::zap() {
  bmlnElmnt* p;
- while((  p = static_cast<bmlnElmnt*>( get())  )) {
+ while((  p = static_cast<bmlnElmnt*>( _theList.get())  )) {
    if( 0 == strcmp( p->Type(), "beamline" ) ) {
     ((beamline*) p)->zap();
    }
    delete p;  // ??? This will produce errors if *p is on the stack.
  }
- this->dlist::clear();  // Wipes out all the links.  Probably unnecessary.
+
+ _theList.clear();  // Wipes out all the links.  Probably unnecessary.
  numElem = 0;
 }
 
@@ -358,31 +373,31 @@ void beamline::eliminate() {
 
 
 void beamline::clear() {
-  this->dlist::clear();
+  _theList.clear();
   numElem = 0;
 }
 
 
 void beamline::localPropagate( Particle& x ) {
- dlist_iterator getNext ( *this );
+ BeamlineIterator getNext (*this);
  bmlnElmnt* p;
- while ((  p = static_cast<bmlnElmnt*>( getNext()) )) {
+ while ( (p = getNext++) ) {
    p->propagate( x );
  }
 } 
 
 void beamline::localPropagate( ParticleBunch& x ) {
- dlist_iterator getNext ( *this );
+ BeamlineIterator getNext (*this);
  bmlnElmnt* p;
- while ((  p = static_cast<bmlnElmnt*>( getNext()) )) {
+ while ( ( p = getNext++) ) {
    p -> propagate( x );
  }
 } 
 
 void beamline::localPropagate( JetParticle& x ) {
- dlist_iterator getNext ( *this );
+ BeamlineIterator getNext ( *this );
  bmlnElmnt* p;
- while ((  p = static_cast<bmlnElmnt*>( getNext())  )) {
+ while ( ( p = getNext++ ) ) {
    p->propagate( x );
  }
 } 
@@ -392,11 +407,11 @@ void beamline::setEnergy( double E ) {
 }
 
 void beamline::unTwiss() {
- dlist_iterator getNext( *this );
+ BeamlineIterator getNext(*this);
  bmlnElmnt* p;
  dataHook.eraseFirst( "Ring" );
  if( !dataHook.eraseFirst( "Twiss" ) )
-  while((  p = static_cast<bmlnElmnt*>( getNext())  ))
+  while( (p = getNext++)  )
    p->dataHook.eraseFirst( "Twiss" );
  twissDone = 0;   // ??? Remove this eventually.
 }
@@ -404,7 +419,7 @@ void beamline::unTwiss() {
 
 void beamline::eraseBarnacles( const char* s )
 {
-  DeepBeamlineIterator dbi( this );
+  DeepBeamlineIterator dbi( *this );
   bmlnElmnt* q;
   while((  q = dbi++  )) {
     q->dataHook.eraseAll( s );
@@ -441,10 +456,10 @@ lattFunc beamline::whatIsLattice( int n ) {
  }
 
  int count = 0;
- dlist_iterator getNext( *this );
+ BeamlineIterator getNext( *this );
  bmlnElmnt* p;
 
- while((  p = static_cast<bmlnElmnt*>( getNext())  )) 
+ while( ( p = getNext++)  ) 
   if( n == count++ ) 
    return (*(lattFunc*) p->dataHook.find( "Twiss" ));
  
@@ -464,10 +479,10 @@ lattFunc beamline::whatIsLattice( char* n ) {
   // May 24, 1996
   lattFunc errRet;
   
-  dlist_iterator getNext( *this );
+  BeamlineIterator getNext( *this );
   bmlnElmnt* p;
   
-  while((  p = static_cast<bmlnElmnt*>( getNext())  )) 
+  while( ( p = getNext++)  ) 
     if( !strcmp(p->Name(),n) ) 
       return (*(lattFunc*) p->dataHook.find( "Twiss" ));
         return errRet;  
@@ -476,7 +491,8 @@ lattFunc beamline::whatIsLattice( char* n ) {
     // ++++++++++++ Begin: Insert and append functions ++++++++++++++++++
 
 void beamline::insert( bmlnElmnt& q ) {
- dlist::insert( &q );
+
+ _theList.insert( &q );
 
  if( twissDone ) unTwiss();
 
@@ -489,7 +505,7 @@ void beamline::insert( bmlnElmnt& q ) {
 
 
 void beamline::insert( bmlnElmnt* q ) {
- dlist::insert( q );
+ _theList.insert( q );
 
  if( twissDone ) unTwiss();
 
@@ -501,15 +517,20 @@ void beamline::insert( bmlnElmnt* q ) {
 }  
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void beamline::InsertElementsFromList( double& s, 
                                        InsertionList& inList,
                                        slist& removedElements 
                                      )
 {
- dlist_iterator getNext( *this );
- bmlnElmnt* p_be   = static_cast<bmlnElmnt*>(getNext());
+
+ dlist_iterator getNext( _theList );
+ bmlnElmnt* p_be   = static_cast<bmlnElmnt*>( getNext() );
  bmlnElmnt* p_be_a = 0;
  bmlnElmnt* p_be_b = 0;
+
  InsertionListElement* p_ile = inList(0);  // top element; not removed
  bool   firstWarning = true;
 
@@ -590,14 +611,14 @@ void beamline::InsertElementsFromList( double& s,
     getNext.GoBack();
     s += ( p_be_a->OrbitLength( *prtnPtr ) + p_ile->q->OrbitLength( *prtnPtr ) );
 
-    if( ((void*) p_be) == this->lastInfoPtr() ) {
-      dlist::remove( (void*) p_be );
+    if( ((void*) p_be) == _theList.lastInfoPtr() ) {
+      _theList.remove( (void*) p_be );
       getNext.Terminate();
       // This is required because of the way 
       // dlist_iterator::operator() is written.
     }
     else {
-      dlist::remove( (void*) p_be );
+      _theList.remove( (void*) p_be );
     }
     removedElements.append( (void*) p_be );
 
@@ -638,7 +659,7 @@ void beamline::InsertElementsFromList( double& s,
          << " ) )\n";
 
     s += p_be->OrbitLength( *prtnPtr );
-    p_be = static_cast<bmlnElmnt*>( getNext());
+    p_be = static_cast<bmlnElmnt*>( getNext() );
   }
  }
 
@@ -646,11 +667,11 @@ void beamline::InsertElementsFromList( double& s,
 }
 
 
-int beamline::replace( const bmlnElmnt* a, const bmlnElmnt* b ) 
+int beamline::replace( bmlnElmnt const* a, bmlnElmnt const* b ) 
 {
   // This routine has a potential to break things!
   if( 0 == a || 0 == b ) { return 2; }
-  return this->replaceOne( (const void*) a, (const void*) b );
+  return _theList.replaceOne( (const void*) a, (const void*) b );
 }
 
 
@@ -661,12 +682,12 @@ int beamline::deepReplace( const bmlnElmnt* a, const bmlnElmnt* b )
   // both it and dlist::replaceOne searches.
   // I don't care.
   if( 0 == a || 0 == b ) { return 2; }
-  BeamlineIterator bi( this );
+  BeamlineIterator bi( *this );
   bmlnElmnt* q;
   while((  q = bi++  )) {
     if( q == a ) 
     {
-      if( 0 == ( this->replaceOne( (const void*) a, (const void*) b ) ) )
+      if( 0 == ( _theList.replaceOne( (const void*) a, (const void*) b ) ) )
       { return 0; }
       else 
       { 
@@ -709,9 +730,9 @@ beamline& operator-( beamline& x ) {
  strcat( theName, rev );
  strcat( theName, x.Name() );
  beamline* result = new beamline( theName );
- dlist_reverseIterator getNext( x );
+ ReverseBeamlineIterator getNext( x  );
  bmlnElmnt* p;
- while((  p = static_cast<bmlnElmnt*>( getNext())  )) {
+ while( (  p = getNext++ ) ) {
   if( strcasecmp( p->Type(), "beamline" ) == 0 ) 
                             result->append( - *(beamline*) p );
   else                      result->append( p );
@@ -734,9 +755,9 @@ beamline& beamline::operator+( beamline& x ) {
 
 beamline& beamline::operator-( beamline& x ) {
  beamline* result = new beamline( *this );
- dlist_reverseIterator getNext( x );
+ ReverseBeamlineIterator getNext( x );
  bmlnElmnt* p;
- while((  p = static_cast<bmlnElmnt*>( getNext())  )) {
+ while( (p=getNext++)  ) {
   if( strcasecmp( p->Type(), "beamline" ) == 0 ) 
                             result->append( - *(beamline*) p );
   else                      result->append( p );
@@ -782,7 +803,7 @@ beamline& operator*( bmlnElmnt& x, int c ) {
 
 
 void beamline::append( bmlnElmnt& q ) {
- dlist::append( &q );
+ _theList.append( &q );
 
  if( twissDone ) unTwiss();
 
@@ -794,7 +815,7 @@ void beamline::append( bmlnElmnt& q ) {
 
 
 void beamline::append( bmlnElmnt* q ) {
- dlist::append( q );
+ _theList.append( q );
 
  if( twissDone ) unTwiss();
 
@@ -819,7 +840,7 @@ char beamline::putAbove( const bmlnElmnt& x, const bmlnElmnt& y )
 
  unTwiss();
 
- if ( !dlist::putAbove( &x, &y ) ) {
+ if ( ! _theList.putAbove( &x, &y ) ) {
    (*pcerr) << "\n*** ERROR ***                                             \n"
              "*** ERROR *** beamline::putAbove                          \n"
              "*** ERROR *** dlist::putAbove did not work.               \n"
@@ -841,7 +862,7 @@ char beamline::putBelow( const bmlnElmnt& x, const bmlnElmnt& y )
 
  unTwiss();
 
- if ( !dlist::putBelow( &x, &y ) ) {
+ if ( ! _theList.putBelow( &x, &y ) ) {
    (*pcerr) << "\n*** ERROR ***                                             \n"
              "*** ERROR *** beamline::putBelow                          \n"
              "*** ERROR *** dlist::putBelow did not work.               \n"
@@ -865,8 +886,9 @@ beamline* beamline::flatten() const {
  // WARNING: the elements are not cloned.
  //   Thus the flattened line contains the
  //   same objects as its original.
- dlist_iterator  getNext( *this );
- dlist_iterator* getNew;
+ BeamlineIterator  getNext( *this );
+ BeamlineIterator* getNew = 0;
+
  beamline*       r;
  beamline*       s;
  bmlnElmnt*      p;
@@ -874,12 +896,12 @@ beamline* beamline::flatten() const {
 
  r = new beamline;
 
- while ((  p = static_cast<bmlnElmnt*>( getNext())  ))  {
+ while ( (p = getNext++)  )  {
    if( strcasecmp( p->Type(), "beamline" ) == 0 )
    { 
-     s = ( (beamline*) p ) -> flatten();
-     getNew = new dlist_iterator( *s );
-     while ((  q = static_cast<bmlnElmnt*>( (*getNew)() )  )) {
+     s = ( (beamline*) p )->flatten();
+     getNew = new BeamlineIterator( *s);
+     while ( (  q = (*getNew)++ )  ) {
        r->append( q );
      }
      delete getNew;
@@ -900,13 +922,13 @@ beamline* beamline::flatten() const {
 
 int beamline::startAt( const bmlnElmnt* x, int n )
 {
-  return this->dlist::startAt( (void*) x, n );
+  return _theList.startAt( (void*) x, n );
 }
 
 
 int beamline::startAt( const char* s, int n )
 {
-  dlist_traversor getNext( *this );
+  dlist_traversor getNext( _theList );
   dlink* q;
   int count(0);
 
@@ -915,7 +937,7 @@ int beamline::startAt( const char* s, int n )
     if( 0 == strcmp( static_cast<bmlnElmnt*>(q->info())->Name(), s ) ) 
     {
       if( (++count) == n ) {
-        this->dlist::riskStartAt( q );
+        _theList.riskStartAt( q );
         return 0;
       }
     }
@@ -933,7 +955,7 @@ sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2,
  // desired by the calling program.  This routine does NOT
  // initialize the state of jp.
 
- DeepBeamlineIterator dbi( this );
+ DeepBeamlineIterator dbi( *this );
  bmlnElmnt* p_be;
  char       firstFound  = 0;
  char       secondFound = 0;
@@ -1005,7 +1027,7 @@ sector* beamline::MakeSectorFromStart ( const bmlnElmnt& be_1, int deg, JetParti
  // desired by the calling program.  This routine does NOT
  // initialize the state of jp.
 
- dlist_iterator getNext( *this );
+ BeamlineIterator getNext( *this );
  bmlnElmnt* p_be;
  char       firstFound  = 0;
  Particle*  p_prt;
@@ -1014,7 +1036,7 @@ sector* beamline::MakeSectorFromStart ( const bmlnElmnt& be_1, int deg, JetParti
  p_prt = jp.ConvertToParticle();
 
  // Check first element against the argument ------------
- p_be = static_cast<bmlnElmnt*>( getNext() );
+ p_be = getNext++;
 
  if( !p_be ) {
   (*pcout) << "*** WARNING ***                                      \n" 
@@ -1038,7 +1060,7 @@ sector* beamline::MakeSectorFromStart ( const bmlnElmnt& be_1, int deg, JetParti
 
 
  // Find element that matches argument ------------------
- while ( p_be = static_cast<bmlnElmnt*>( getNext() ) ){
+ while ( ( p_be = getNext++) ){
   if( p_be == &be_1 ) {     // Notice: we do not propagate through be_1
     firstFound = 1;
     break;
@@ -1073,7 +1095,7 @@ sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle&
  // desired by the calling program.  This routine does NOT
  // initialize the state of jp.
 
- dlist_iterator getNext( *this );
+ BeamlineIterator getNext( *this );
  bmlnElmnt* p_be;
  char       firstFound  = 0;
  Particle*  p_prt;
@@ -1082,7 +1104,7 @@ sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle&
  p_prt = jp.ConvertToParticle();
 
  // Find the element that matches argument ---------------------------------
- while ( p_be = static_cast<bmlnElmnt*>( getNext() ) ) {
+ while (  ( p_be = getNext++ ) ) {
   if( p_be == &be_1 ) { 
     firstFound = 1;
     break;
@@ -1101,7 +1123,7 @@ sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle&
  }
  
  // Check that it is not the last element --------------------------------
- p_be = static_cast<bmlnElmnt*>( getNext() );
+ p_be = getNext++;
  if( !p_be ) {
     delete p_prt;
     return 0;
@@ -1112,7 +1134,7 @@ sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle&
  }
 
  // Construct the map and return sector ------------------------------------
- while ( p_be = static_cast<bmlnElmnt*>( getNext()) ) {  // Notice: we do not propagate through be_1
+ while ( (p_be = getNext++) ) {  // Notice: we do not propagate through be_1
     p_be->propagate( jp );
     s += p_be->OrbitLength( *p_prt );
  }
@@ -1158,7 +1180,8 @@ sector* beamline::makeSector( int degree, JetParticle& pd ) {
 void beamline::sectorize( int degree, JetParticle& pd ) {
  sector* s;
  s = makeSector( degree, pd );
- this->dlist::clear();
+
+ _theList.clear();
  unTwiss();
  numElem      = 0;
  length       = 0.0;
@@ -1184,20 +1207,15 @@ beamline beamline::sectorize( bmlnElmnt& x, bmlnElmnt& y, int degree,
 
 void beamline::peekAt( double& s, const Particle& prt ) const
 {
-  // REMOVE: char newProton = 0;
-  // REMOVE: if( !p_prt ) {
-  // REMOVE:    p_prt = new Proton( nominalEnergy );
-  // REMOVE:    newProton = 1;
-  // REMOVE: }
 
-  dlist_iterator getNext( *this );
+  BeamlineIterator getNext( *this );
   bmlnElmnt* p;
 
   (*pcout) << "\nBegin beamline::peekat() -- Address of beamline: "
        << ident << " = " << (int) this 
        << endl;
 
-  while ((  p = static_cast<bmlnElmnt*>( getNext() ) ) )  {
+  while ( (  p = getNext++ ) )  {
     if( strcasecmp( p->Type(), "beamline" ) == 0 ) 
       ( (beamline*) p)->peekAt( s, prt );
     else p->peekAt( s, prt );
@@ -1213,13 +1231,13 @@ void beamline::peekAt( double& s, const Particle& prt ) const
 
 int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
  int ret;
- dlist_iterator getNext ( *this );
+ BeamlineIterator getNext ( *this);
  bmlnElmnt* p;
 
  ret = 0;
 
  if( query == 0 ) {
-   while ((  p = static_cast<bmlnElmnt*>( getNext() )  )) { 
+   while ( ( p = getNext++ ) ) { 
      ret++; 
    }
    if( ret != numElem ) {
@@ -1236,7 +1254,7 @@ int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
  }
 
  else {
-   while ((  p = static_cast<bmlnElmnt*>( getNext() )  )) {
+   while ( (  p = getNext++   )) {
      if( query(p) ) { 
        ret++; 
        if( listPtr ) {
@@ -1250,12 +1268,13 @@ int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
 }
 
 int beamline::countHowManyDeeply( CRITFUNC query, slist* listPtr ) const {
+
  int ret;
- dlist_iterator getNext ( *this );
+ BeamlineIterator getNext ( *this);
  bmlnElmnt* p;
 
  ret = 0;
- while ((  p = static_cast<bmlnElmnt*>( getNext() )  )) {
+ while ( ( p = getNext++ ) ) {
    if( 0 == strcmp( p->Type(), "beamline" ) ) {
      ret += ((beamline*) p)->countHowManyDeeply( query, listPtr );
    }
@@ -1284,7 +1303,7 @@ int beamline::depth() const
   int ret = -1;
   int maxSubDepth = -1;
   
-  BeamlineIterator bi(this);
+  BeamlineIterator bi( *this );
   bmlnElmnt* p_be;
   while( 0 != (p_be = bi++) ) {
     ret = 0;
@@ -1299,9 +1318,9 @@ int beamline::depth() const
 }
 
 
-int beamline::contains( const bmlnElmnt* x ) const
+int beamline::contains( bmlnElmnt const* x ) const
 {
-  DeepBeamlineIterator dbi( this );
+  DeepBeamlineIterator dbi( *this );
   int ret = 0;
   bmlnElmnt* p_be;
   while((  p_be = dbi++  )) {
@@ -1311,14 +1330,14 @@ int beamline::contains( const bmlnElmnt* x ) const
 }
 
 
-beamline beamline::remove( const bmlnElmnt& x, const bmlnElmnt& y ) {
+beamline beamline::remove( bmlnElmnt const& x, bmlnElmnt const& y ) {
  beamline a;
  dlist dl;
  int i;
  bmlnElmnt* p;
 
  unTwiss();
- dl = dlist::remove( ((void*) &x), ((void*) &y) );
+ dl = _theList.remove( ((void*) &x), ((void*) &y) );
 
  dlist_iterator getNext( dl );
  if((  p = static_cast<bmlnElmnt*>( getNext() )  )) {
@@ -1388,7 +1407,7 @@ bool beamline::find( bmlnElmnt*& u, bmlnElmnt*& v, bmlnElmnt*& w ) const
   }
 
   // Setup iterator
-  DeepBeamlineIterator dbi(this);
+  DeepBeamlineIterator dbi( *this );
   bmlnElmnt* q;
     
   // Check for possibility that *v is the first element.
@@ -2121,9 +2140,9 @@ void beamline::_rotateRel(   int axis, double angle
 
 bool beamline::setAlignment( const alignmentData& al ) {
   // Propogate alignment data of entire  beamline to each individual element
-  dlist_iterator getNext ( *this );
+  BeamlineIterator getNext ( *this );
   bmlnElmnt* p;
-  while ((  p = static_cast<bmlnElmnt*>( getNext() )  )) {
+  while ( (  p = getNext++   )) {
     if( !(p->setAlignment(al)) ) {
       (*pcerr) << "\n*** ERROR *** "
            << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
@@ -2142,26 +2161,26 @@ bool beamline::setAlignment( const alignmentData& al ) {
 
 char beamline::remove( void * Element2remove){
   if(numElem > 0) numElem--;
-  return !dlist::remove( Element2remove );
+  return !_theList.remove( Element2remove );
 }
 
 char beamline::remove( const bmlnElmnt& x ){
   if(numElem > 0) numElem--;
-  return !dlist::remove( (void*) &x );
+  return !_theList.remove( (void*) &x );
 }
 
 char beamline::remove( const bmlnElmnt* x ) {
   if(numElem > 0) numElem--;
-  return !dlist::remove( (void*) x );
+  return !_theList.remove( (void*) x );
 }
 
 ostream& beamline::writeTo(ostream& os) {
-  dlist_iterator getNext(*this);
+  BeamlineIterator getNext(*this);
   bmlnElmnt* element;
   double energy = Energy();
 
   os <<  OSTREAM_DOUBLE_PREC << energy << endl;
-  while((element = static_cast<bmlnElmnt*>(getNext()) ) != 0) {
+  while( (element = getNext++) != 0) {
     os << *element ;
   }
   os << "beamline_END " << Name() << " 0 0 0 0 0\n";
@@ -2176,10 +2195,10 @@ ostream& beamline::writeTo(ostream& os) {
 void beamline::enterLocalFrame( Particle& p ) const
 {
   // Check for bends
-  dlist_iterator getNext( *this );
+  BeamlineIterator getNext( *this );
   static bmlnElmnt* element;
 
-  while((  element = static_cast<bmlnElmnt*>( getNext() ) )) 
+  while((  element = getNext++ )) 
   {
     if( strcasecmp( element->Type(), "sbend" ) == 0 ||
         strcasecmp( element->Type(), "rbend" ) == 0     
@@ -2196,10 +2215,10 @@ void beamline::enterLocalFrame( Particle& p ) const
 void beamline::enterLocalFrame( JetParticle& p ) const
 {
   // Check for bends
-  dlist_iterator getNext( *this );
-  static bmlnElmnt* element;
+  BeamlineIterator getNext( *this );
+  bmlnElmnt* element = 0;
 
-  while((  element = static_cast<bmlnElmnt*>(getNext()) )) 
+  while((  element = getNext++ )) 
   {
     if( strcasecmp( element->Type(), "sbend" ) == 0 ||
         strcasecmp( element->Type(), "rbend" ) == 0     
@@ -2260,433 +2279,3 @@ int beamline::Action::operator()( bmlnElmnt& x )
 }
 
 
-// OBSOLETE: REMOVE: bool beamline::moveRelZ( const bmlnElmnt* thePtr, double u /*[m]*/)
-// OBSOLETE: REMOVE: {
-// OBSOLETE: REMOVE:   // Upon entry: thePtr      = pointer to element to be translated
-// OBSOLETE: REMOVE:   //                           longitudinally
-// OBSOLETE: REMOVE:   //             u      [m]  = displacement
-// OBSOLETE: REMOVE:   // 
-// OBSOLETE: REMOVE:   // Upon exit:  *thePtr will have been displaced in the direction
-// OBSOLETE: REMOVE:   //               of its local z coordinate by adjusting its neighboring
-// OBSOLETE: REMOVE:   //               free-space elements. 
-// OBSOLETE: REMOVE:   // 
-// OBSOLETE: REMOVE:   //             Value returned: true,  operation successful
-// OBSOLETE: REMOVE:   //                             false, operation unsuccessful
-// OBSOLETE: REMOVE:   // 
-// OBSOLETE: REMOVE:   // Comments:   This routine alters attributes of the neighboring 
-// OBSOLETE: REMOVE:   //               free-space elements but does not change their identities.
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   bmlnElmnt* upStreamPtr = 0;
-// OBSOLETE: REMOVE:   bmlnElmnt* downStreamPtr = 0;
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   bool ret = this->find( upStreamPtr, thePtr, downStreamPtr ); 
-// OBSOLETE: REMOVE:   if( ret ) {
-// OBSOLETE: REMOVE:     // Test neighbors for free space.
-// OBSOLETE: REMOVE:     if( 0 == upStreamPtr || 0 == downStreamPtr ) {
-// OBSOLETE: REMOVE:       cerr << "\n*** WARNING *** "
-// OBSOLETE: REMOVE:            << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-// OBSOLETE: REMOVE:            << "\n*** WARNING *** bool beamline::moveRelZ( const bmlnElmnt* thePtr, double u /*[m]*/)
-// OBSOLETE: REMOVE:               "\n*** ERROR *** Unable to perform operation on "
-// OBSOLETE: REMOVE:            << thePtr->Type() << "  " << thePtr->Name() << "."
-// OBSOLETE: REMOVE:            << "\n*** ERROR *** Not bounded by neighboring elements.
-// OBSOLETE: REMOVE:               "\n*** WARNING *** "
-// OBSOLETE: REMOVE:            << endl;
-// OBSOLETE: REMOVE:       return false;
-// OBSOLETE: REMOVE:     }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:     bool upStreamDrift   = ( 0 == strcmp("drift",   upStreamPtr->Type()) );
-// OBSOLETE: REMOVE:     bool downStreamDrift = ( 0 == strcmp("drift", downStreamPtr->Type()) );
-// OBSOLETE: REMOVE:     bool upStreamSlot    = ( 0 == strcmp("Slot",    upStreamPtr->Type()) );
-// OBSOLETE: REMOVE:     bool downStreamSlot  = ( 0 == strcmp("Slot",  downStreamPtr->Type()) );
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:     if( upStreamSlot ) {
-// OBSOLETE: REMOVE:       if( !(upStreamPtr->isSimple()) ) {
-// OBSOLETE: REMOVE:         cerr << "\n*** WARNING *** "
-// OBSOLETE: REMOVE:              << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-// OBSOLETE: REMOVE:              << "\n*** WARNING *** bool beamline::moveRelZ( const bmlnElmnt* thePtr, double u /*[m]*/)
-// OBSOLETE: REMOVE:                 "\n*** ERROR *** Unable to perform operation on "
-// OBSOLETE: REMOVE:              << thePtr->Type() << "  " << thePtr->Name() << "."
-// OBSOLETE: REMOVE:              << "\n*** ERROR *** Upstream neighbor is not free space.
-// OBSOLETE: REMOVE:                 "\n*** WARNING *** "
-// OBSOLETE: REMOVE:              << endl;
-// OBSOLETE: REMOVE:         return false;
-// OBSOLETE: REMOVE:       }
-// OBSOLETE: REMOVE:     if( downStreamSlot ) {
-// OBSOLETE: REMOVE:       if( !(downStreamPtr->isSimple()) ) {
-// OBSOLETE: REMOVE:         cerr << "\n*** WARNING *** "
-// OBSOLETE: REMOVE:              << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-// OBSOLETE: REMOVE:              << "\n*** WARNING *** bool beamline::moveRelZ( const bmlnElmnt* thePtr, double u /*[m]*/)
-// OBSOLETE: REMOVE:                 "\n*** ERROR *** Unable to perform operation on "
-// OBSOLETE: REMOVE:              << thePtr->Type() << "  " << thePtr->Name() << "."
-// OBSOLETE: REMOVE:              << "\n*** ERROR *** Downstream neighbor is not free space.
-// OBSOLETE: REMOVE:                 "\n*** WARNING *** "
-// OBSOLETE: REMOVE:              << endl;
-// OBSOLETE: REMOVE:         return false;
-// OBSOLETE: REMOVE:       }
-// OBSOLETE: REMOVE:     }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:     // ??? Too many "if" statements. Do we need another base class?
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:     if( upStreamDrift && downStreamDrift ) {
-// OBSOLETE: REMOVE:       ret = beamline::moveRelZ( dynamic_cast<drift*>(upStreamPtr),
-// OBSOLETE: REMOVE:                                 thePtr,
-// OBSOLETE: REMOVE:                                 dynamic_cast<drift*>(downStreamPtr), 
-// OBSOLETE: REMOVE:                                 u );
-// OBSOLETE: REMOVE:     }
-// OBSOLETE: REMOVE:     else if( upStreamDrift && downStreamSlot ) {
-// OBSOLETE: REMOVE:       ret = beamline::moveRelZ( dynamic_cast<drift*>(upStreamPtr),
-// OBSOLETE: REMOVE:                                 thePtr,
-// OBSOLETE: REMOVE:                                 dynamic_cast<Slot*>(downStreamPtr), 
-// OBSOLETE: REMOVE:                                 u );
-// OBSOLETE: REMOVE:     }
-// OBSOLETE: REMOVE:     else if( upStreamSlot && downStreamDrift ) {
-// OBSOLETE: REMOVE:       ret = beamline::moveRelZ( dynamic_cast<Slot*>(upStreamPtr),
-// OBSOLETE: REMOVE:                                 thePtr,
-// OBSOLETE: REMOVE:                                 dynamic_cast<drift*>(downStreamPtr), 
-// OBSOLETE: REMOVE:                                 u );
-// OBSOLETE: REMOVE:     }
-// OBSOLETE: REMOVE:     else if( upStreamSlot && downStreamSlot ) {
-// OBSOLETE: REMOVE:       ret = beamline::moveRelZ( dynamic_cast<Slot*>(upStreamPtr),
-// OBSOLETE: REMOVE:                                 thePtr,
-// OBSOLETE: REMOVE:                                 dynamic_cast<Slot*>(downStreamPtr), 
-// OBSOLETE: REMOVE:                                 u );
-// OBSOLETE: REMOVE:     }
-// OBSOLETE: REMOVE:     else {
-// OBSOLETE: REMOVE:       cerr << "\n*** WARNING *** "
-// OBSOLETE: REMOVE:            << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-// OBSOLETE: REMOVE:            << "\n*** WARNING *** bool beamline::moveRelZ( const bmlnElmnt* thePtr, double u /*[m]*/)
-// OBSOLETE: REMOVE:               "\n*** WARNING *** Unable to perform operation on "
-// OBSOLETE: REMOVE:            << thePtr->Type() << "  " << thePtr->Name() << "."
-// OBSOLETE: REMOVE:            << "\n*** WARNING *** Does not possess two free-space neighbors."
-// OBSOLETE: REMOVE:               "\n*** WARNING *** "
-// OBSOLETE: REMOVE:            << endl;
-// OBSOLETE: REMOVE:       ret = false;
-// OBSOLETE: REMOVE:     }
-// OBSOLETE: REMOVE:   }
-// OBSOLETE: REMOVE:   
-// OBSOLETE: REMOVE:   return ret;
-// OBSOLETE: REMOVE: }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE: bool beamline::moveRelZ( drift* usPtr, const bmlnElmnt* thePtr, drift* dsPtr, double u )
-// OBSOLETE: REMOVE: {
-// OBSOLETE: REMOVE:   // Will not displace anything less than 1 micron.
-// OBSOLETE: REMOVE:   if( std::abs(u) < 1.0e-6 ) { 
-// OBSOLETE: REMOVE:     cerr << "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** bool beamline::moveRelZ( drift* usPtr, bmlnElmnt* thePtr, drift* dsPtr, double u )"
-// OBSOLETE: REMOVE:             "\n*** ERROR *** Unable to perform operation on "
-// OBSOLETE: REMOVE:          << thePtr->Type() << "  " << thePtr->Name() << "."
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** Displacement of " << (1.e6*u) << " microns is too small."
-// OBSOLETE: REMOVE:             "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << endl;
-// OBSOLETE: REMOVE:     return false; 
-// OBSOLETE: REMOVE:   }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   double usLength = usPtr->Length() + u;
-// OBSOLETE: REMOVE:   double dsLength = dsPtr->Length() - u;
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   // Check for error
-// OBSOLETE: REMOVE:   if( (usLength < 1.0e-7) || (dsLength < 1.0e-7) ) {
-// OBSOLETE: REMOVE:     cerr << "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** bool beamline::moveRelZ( drift* usPtr, bmlnElmnt* thePtr, drift* dsPtr, double u )"
-// OBSOLETE: REMOVE:             "\n*** ERROR *** Unable to perform operation on "
-// OBSOLETE: REMOVE:          << thePtr->Type() << "  " << thePtr->Name() << "."
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** Longitudinal displacement too large.
-// OBSOLETE: REMOVE:             "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << endl;
-// OBSOLETE: REMOVE:     return false;
-// OBSOLETE: REMOVE:   }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   // Perform the movement
-// OBSOLETE: REMOVE:   usPtr->setLength( usLength );
-// OBSOLETE: REMOVE:   dsPtr->setLength( dsLength );
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   return true;
-// OBSOLETE: REMOVE: }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE: bool beamline::moveRelZ( Slot* usPtr, const bmlnElmnt* thePtr, drift* dsPtr, double u )
-// OBSOLETE: REMOVE: {
-// OBSOLETE: REMOVE:   // Assumes orthonormal frames and in Frame is the identity.
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   // Will not displace anything less than 1 micron.
-// OBSOLETE: REMOVE:   if( std::abs(u) < 1.0e-6 ) { 
-// OBSOLETE: REMOVE:     cerr << "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** bool beamline::moveRelZ( drift* usPtr, bmlnElmnt* thePtr, drift* dsPtr, double u )"
-// OBSOLETE: REMOVE:             "\n*** ERROR *** Unable to perform operation on "
-// OBSOLETE: REMOVE:          << thePtr->Type() << "  " << thePtr->Name() << "."
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** Displacement of " << (1.e6*u) << " microns is too small."
-// OBSOLETE: REMOVE:             "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << endl;
-// OBSOLETE: REMOVE:     return false; 
-// OBSOLETE: REMOVE:   }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   Frame usOutFrame( usPtr->getOutFrame() );
-// OBSOLETE: REMOVE:   usOutFrame.translate( u*usOutFrame.getZAxis() );
-// OBSOLETE: REMOVE:   double usZ = (usOutFrame.getOrigin())(usOutFrame.zAxisIndex());
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   double dsLength = dsPtr->Length() - u;
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   // Check for error
-// OBSOLETE: REMOVE:   if( (usZ < 1.0e-7) || (dsLength < 1.0e-7) ) {
-// OBSOLETE: REMOVE:     cerr << "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** bool beamline::moveRelZ( Slot* usPtr, bmlnElmnt* thePtr, drift* dsPtr, double u )"
-// OBSOLETE: REMOVE:             "\n*** ERROR *** Unable to perform operation on "
-// OBSOLETE: REMOVE:          << thePtr->Type() << "  " << thePtr->Name() << "."
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** Longitudinal displacement too large.
-// OBSOLETE: REMOVE:             "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << endl;
-// OBSOLETE: REMOVE:     return false;
-// OBSOLETE: REMOVE:   }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   // Perform the movement
-// OBSOLETE: REMOVE:   usPtr->setOutFrame( usOutFrame );
-// OBSOLETE: REMOVE:   dsPtr->setLength( dsLength );
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   return true;
-// OBSOLETE: REMOVE: }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE: bool beamline::moveRelZ( drift* usPtr, const bmlnElmnt* thePtr, Slot* dsPtr, double u )
-// OBSOLETE: REMOVE: {
-// OBSOLETE: REMOVE:   // Assumes orthonormal frames and in Frame is the identity.
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   // Will not displace anything less than 1 micron.
-// OBSOLETE: REMOVE:   if( std::abs(u) < 1.0e-6 ) { 
-// OBSOLETE: REMOVE:     cerr << "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** bool beamline::moveRelZ( drift* usPtr, bmlnElmnt* thePtr, Slot* dsPtr, double u )"
-// OBSOLETE: REMOVE:             "\n*** ERROR *** Unable to perform operation on "
-// OBSOLETE: REMOVE:          << thePtr->Type() << "  " << thePtr->Name() << "."
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** Displacement of " << (1.e6*u) << " microns is too small."
-// OBSOLETE: REMOVE:             "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << endl;
-// OBSOLETE: REMOVE:     return false; 
-// OBSOLETE: REMOVE:   }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   double usLength = usPtr->Length() + u;
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   Frame dsInFrame( dsPtr->getInFrame() );
-// OBSOLETE: REMOVE:   dsInFrame.translate( (-u)*usOutFrame.getZAxis() );
-// OBSOLETE: REMOVE:   Frame dsOutFrame( (dsPtr->getOutFrame()).relativeTo(dsInFrame) );
-// OBSOLETE: REMOVE:   double dsZ = (dsOutFrame.getOrigin())(dsOutFrame.zAxisIndex());
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   // Check for error
-// OBSOLETE: REMOVE:   if( (usLength < 1.0e-7) || (dsZ < 1.0e-7) ) {
-// OBSOLETE: REMOVE:     cerr << "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** bool beamline::moveRelZ( drift* usPtr, bmlnElmnt* thePtr, Slot* dsPtr, double u )"
-// OBSOLETE: REMOVE:             "\n*** ERROR *** Unable to perform operation on "
-// OBSOLETE: REMOVE:          << thePtr->Type() << "  " << thePtr->Name() << "."
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** Longitudinal displacement too large.
-// OBSOLETE: REMOVE:             "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << endl;
-// OBSOLETE: REMOVE:     return false;
-// OBSOLETE: REMOVE:   }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   // Perform the movement
-// OBSOLETE: REMOVE:   usPtr->setLength( usLength );
-// OBSOLETE: REMOVE:   dsPtr->setOutFrame( dsOutFrame );
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   return true;
-// OBSOLETE: REMOVE: }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE: bool beamline::moveRelZ( Slot* usPtr, const bmlnElmnt* thePtr, Slot* dsPtr, double u )
-// OBSOLETE: REMOVE: {
-// OBSOLETE: REMOVE:   // Assumes orthonormal frames and in Frame is the identity.
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   // Will not displace anything less than 1 micron.
-// OBSOLETE: REMOVE:   if( std::abs(u) < 1.0e-6 ) { 
-// OBSOLETE: REMOVE:     cerr << "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** bool beamline::moveRelZ( drift* usPtr, bmlnElmnt* thePtr, drift* dsPtr, double u )"
-// OBSOLETE: REMOVE:             "\n*** ERROR *** Unable to perform operation on "
-// OBSOLETE: REMOVE:          << thePtr->Type() << "  " << thePtr->Name() << "."
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** Displacement of " << (1.e6*u) << " microns is too small."
-// OBSOLETE: REMOVE:             "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << endl;
-// OBSOLETE: REMOVE:     return false; 
-// OBSOLETE: REMOVE:   }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   Frame usOutFrame( usPtr->getOutFrame() );
-// OBSOLETE: REMOVE:   usOutFrame.translate( u*usOutFrame.getZAxis() );
-// OBSOLETE: REMOVE:   double usZ = (usOutFrame.getOrigin())(usOutFrame.zAxisIndex());
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   Frame dsInFrame( dsPtr->getInFrame() );
-// OBSOLETE: REMOVE:   dsInFrame.translate( (-u)*usOutFrame.getZAxis() );
-// OBSOLETE: REMOVE:   Frame dsOutFrame( (dsPtr->getOutFrame()).relativeTo(dsInFrame) );
-// OBSOLETE: REMOVE:   double dsZ = (dsOutFrame.getOrigin())(dsOutFrame.zAxisIndex());
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   // Check for error
-// OBSOLETE: REMOVE:   if( (usZ < 1.0e-7) || (dsZ < 1.0e-7) ) {
-// OBSOLETE: REMOVE:     cerr << "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** bool beamline::moveRelZ( Slot* usPtr, bmlnElmnt* thePtr, Slot* dsPtr, double u )"
-// OBSOLETE: REMOVE:             "\n*** ERROR *** Unable to perform operation on "
-// OBSOLETE: REMOVE:          << thePtr->Type() << "  " << thePtr->Name() << "."
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** Longitudinal displacement too large.
-// OBSOLETE: REMOVE:             "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << endl;
-// OBSOLETE: REMOVE:     return false;
-// OBSOLETE: REMOVE:   }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   // Perform the movement
-// OBSOLETE: REMOVE:   usPtr->setOutFrame( usOutFrame );
-// OBSOLETE: REMOVE:   dsPtr->setOutFrame( dsOutFrame );
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   return true;
-// OBSOLETE: REMOVE: }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE: BmlPtrList beamline::moveRelX(   const bmlnElmnt* const thePtr, 
-// OBSOLETE: REMOVE:                                , double u /*[m]*/ )
-// OBSOLETE: REMOVE: {
-// OBSOLETE: REMOVE:   // Upon entry: thePtr      = pointer to element to be translated
-// OBSOLETE: REMOVE:   //             u      [m]  = displacement
-// OBSOLETE: REMOVE:   // 
-// OBSOLETE: REMOVE:   // Upon exit:  *thePtr will have been displaced in the direction
-// OBSOLETE: REMOVE:   //               of its local x coordinate by adjusting its neighboring
-// OBSOLETE: REMOVE:   //               free-space elements. in fact, *thePtr is not changed
-// OBSOLETE: REMOVE:   //               at all. Only its neighbors are altered. In fact, they
-// OBSOLETE: REMOVE:   //               may have been replaced.
-// OBSOLETE: REMOVE:   // 
-// OBSOLETE: REMOVE:   //             Value returned: a list of the (zero, one, or two)
-// OBSOLETE: REMOVE:   //               neighboring free-space elements that have been replaced.
-// OBSOLETE: REMOVE:   // 
-// OBSOLETE: REMOVE:   //             NOTE WELL: if the returned list is not empty, it means
-// OBSOLETE: REMOVE:   //               that Slots have been created and installed in the line
-// OBSOLETE: REMOVE:   //               for which the calling program must take responsibility.
-// OBSOLETE: REMOVE:   //               This could be a serious problem. We need smart pointers!
-// OBSOLETE: REMOVE:   // 
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   BmlPtrList recycleBin;
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   // Will not displace anything less than 1 micron.
-// OBSOLETE: REMOVE:   if( std::abs(u) < 1.0e-6 ) { 
-// OBSOLETE: REMOVE:     cerr << "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** BmlPtrList beamline::moveRelX( const bmlnElmnt* const thePtr, double u /*[m]*/)"
-// OBSOLETE: REMOVE:             "\n*** ERROR *** Unable to perform operation on "
-// OBSOLETE: REMOVE:          << thePtr->Type() << "  " << thePtr->Name() << "."
-// OBSOLETE: REMOVE:          << "\n*** ERROR *** Displacement of " << (1.e6*u) << " microns is too small."
-// OBSOLETE: REMOVE:             "\n*** ERROR *** "
-// OBSOLETE: REMOVE:          << endl;
-// OBSOLETE: REMOVE:     return recycleBin; 
-// OBSOLETE: REMOVE:   }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   bmlnElmnt* upStreamPtr   = 0;
-// OBSOLETE: REMOVE:   bmlnElmnt* downStreamPtr = 0;
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   FramePusher fp;
-// OBSOLETE: REMOVE:   Frame frameZero, frameOne, frameTwo, frameThree;
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   if( this->find( upStreamPtr, thePtr, downStreamPtr ) ) {
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:     if( (0 != upStreamPtr) && (0 != downStreamPtr ) {
-// OBSOLETE: REMOVE:       upStreamPtr->accept( fp );
-// OBSOLETE: REMOVE:       frameOne = fp.getFrame();
-// OBSOLETE: REMOVE:       thePtr->accept( fp );
-// OBSOLETE: REMOVE:       frameTwo = fp.getFrame();
-// OBSOLETE: REMOVE:       downStreamPtr->accept( fp );
-// OBSOLETE: REMOVE:       frameThree = fp.getFrame();
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:       Vector displacement(u*frameOne.getxAxis());
-// OBSOLETE: REMOVE:       frameOne.translate( displacement );
-// OBSOLETE: REMOVE:       frameTwo.translate( displacement );
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:       // THIS IS DONE INCREDIBLY INEFFICIENTLY
-// OBSOLETE: REMOVE:       if( 0 == strcmp("Slot", upStreamPtr->Type() ) {
-// OBSOLETE: REMOVE:         upStreamPtr->setInFrame( frameZero );
-// OBSOLETE: REMOVE:         upStreamPtr->setOutFrame( frameOne );
-// OBSOLETE: REMOVE:       }
-// OBSOLETE: REMOVE:       if( 0 == strcmp("Slot", downStreamPtr->Type() ) {
-// OBSOLETE: REMOVE:         downStreamPtr->setInFrame( frameZero );
-// OBSOLETE: REMOVE:         downStreamPtr->setOutFrame( frameThree.relativeTo(frameTwo) );
-// OBSOLETE: REMOVE:       }
-// OBSOLETE: REMOVE:       if( 0 == strcmp("drift", upStreamPtr->Type() ) {
-// OBSOLETE: REMOVE:         // DANGEROUS!!
-// OBSOLETE: REMOVE:         Slot* slotPtr = new Slot(upStreamPtr->Name(), frameOne );
-// OBSOLETE: REMOVE:         this->putAbove( thePtr, slotPtr );
-// OBSOLETE: REMOVE:         this remove( upStreamPtr );
-// OBSOLETE: REMOVE:         recycleBin.append( upStreamPtr );
-// OBSOLETE: REMOVE:       }
-// OBSOLETE: REMOVE:       if( 0 == strcmp("drift", downStreamPtr->Type() ) {
-// OBSOLETE: REMOVE:         // DANGEROUS!!
-// OBSOLETE: REMOVE:         Slot* slotPtr = new Slot(downStreamPtr->Name(), frameThree.relativeTo(frameTwo) );
-// OBSOLETE: REMOVE:         this->putBelow( thePtr, slotPtr );
-// OBSOLETE: REMOVE:         this remove( downStreamPtr );
-// OBSOLETE: REMOVE:         recycleBin.append( downStreamPtr );
-// OBSOLETE: REMOVE:       }
-// OBSOLETE: REMOVE:     }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:     else if( (0 == upStreamPtr) && (0 != downStreamPtr ) {
-// OBSOLETE: REMOVE:       thePtr->accept( fp );
-// OBSOLETE: REMOVE:       frameTwo = fp.getFrame();
-// OBSOLETE: REMOVE:       downStreamPtr->accept( fp );
-// OBSOLETE: REMOVE:       frameThree = fp.getFrame();
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:       Vector displacement(u*frameTwo.getxAxis());
-// OBSOLETE: REMOVE:       frameTwo.translate( displacement );
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:       cerr << "\n*** WARNING *** "
-// OBSOLETE: REMOVE:            << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-// OBSOLETE: REMOVE:            << "\n*** WARNING *** BmlPtrList beamline::moveRelX( const bmlnElmnt* const thePtr, double u /*[m]*/)"
-// OBSOLETE: REMOVE:               "\n*** WARNING *** Will displace using downstream end of "
-// OBSOLETE: REMOVE:            << thePtr->Type() << "  " << thePtr->Name() << "."
-// OBSOLETE: REMOVE:            << "\n*** WARNING *** There is no upstream neighbor."
-// OBSOLETE: REMOVE:               "\n*** WARNING *** "
-// OBSOLETE: REMOVE:            << endl;
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:       // THIS IS DONE INCREDIBLY INEFFICIENTLY
-// OBSOLETE: REMOVE:       if( 0 == strcmp("Slot", downStreamPtr->Type() ) {
-// OBSOLETE: REMOVE:         downStreamPtr->setInFrame( frameZero );
-// OBSOLETE: REMOVE:         downStreamPtr->setOutFrame( frameThree.relativeTo(frameTwo) );
-// OBSOLETE: REMOVE:       }
-// OBSOLETE: REMOVE:       if( 0 == strcmp("drift", downStreamPtr->Type() ) {
-// OBSOLETE: REMOVE:         // DANGEROUS!!
-// OBSOLETE: REMOVE:         Slot* slotPtr = new Slot(downStreamPtr->Name(), frameThree.relativeTo(frameTwo) );
-// OBSOLETE: REMOVE:         this->putBelow( thePtr, slotPtr );
-// OBSOLETE: REMOVE:         this remove( downStreamPtr );
-// OBSOLETE: REMOVE:         recycleBin.append( downStreamPtr );
-// OBSOLETE: REMOVE:       }
-// OBSOLETE: REMOVE:     }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:     else if( (0 != upStreamPtr) && (0 == downStreamPtr ) {
-// OBSOLETE: REMOVE:       upStreamPtr->accept( fp );
-// OBSOLETE: REMOVE:       frameOne = fp.getFrame();
-// OBSOLETE: REMOVE:       thePtr->accept( fp );
-// OBSOLETE: REMOVE:       frameTwo = fp.getFrame();
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:       Vector displacement(u*frameOne.getxAxis());
-// OBSOLETE: REMOVE:       frameOne.translate( displacement );
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:       // THIS IS DONE INCREDIBLY INEFFICIENTLY
-// OBSOLETE: REMOVE:       if( 0 == strcmp("Slot", upStreamPtr->Type() ) {
-// OBSOLETE: REMOVE: // OBSOLETE: REMOVE:         upStreamPtr->setInFrame( frameZero );
-// OBSOLETE: REMOVE:         upStreamPtr->setOutFrame( frameOne );
-// OBSOLETE: REMOVE:       }
-// OBSOLETE: REMOVE:       if( 0 == strcmp("drift", upStreamPtr->Type() ) {
-// OBSOLETE: REMOVE:         // DANGEROUS!!
-// OBSOLETE: REMOVE:         Slot* slotPtr = new Slot(upStreamPtr->Name(), frameOne );
-// OBSOLETE: REMOVE:         this->putAbove( thePtr, slotPtr );
-// OBSOLETE: REMOVE:         this remove( upStreamPtr );
-// OBSOLETE: REMOVE:         recycleBin.append( upStreamPtr );
-// OBSOLETE: REMOVE:       }
-// OBSOLETE: REMOVE:     }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:     else if( (0 == upStreamPtr) && (0 == downStreamPtr ) {
-// OBSOLETE: REMOVE:       ostringstream uic;
-// OBSOLETE: REMOVE:       uic  << "An impossibility has occurred. Am stopping.";
-// OBSOLETE: REMOVE:       throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-// OBSOLETE: REMOVE:              "BmlPtrList beamline::moveRelX"
-// OBSOLETE: REMOVE:              uic.str().c_str() ) );
-// OBSOLETE: REMOVE:     }
-// OBSOLETE: REMOVE:   }
-// OBSOLETE: REMOVE: 
-// OBSOLETE: REMOVE:   return recycleBin;
-// OBSOLETE: REMOVE: }
