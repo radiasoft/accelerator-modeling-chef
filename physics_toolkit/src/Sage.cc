@@ -54,7 +54,7 @@
 
 #include <basic_toolkit/GenericException.h>
 #include <physics_toolkit/Sage.h>
-#include <physics_toolkit/FramePusher.h>  // Used by Sage::isRing functions
+#include <beamline/FramePusher.h>  // Used by Sage::isRing functions
 
 double Sage::_defGapTol   = 0.005;  // = 5 mm
 double Sage::_defAngleTol = 0.001;  // = 1 mrad
