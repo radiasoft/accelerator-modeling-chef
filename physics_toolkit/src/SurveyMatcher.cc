@@ -45,7 +45,7 @@
 #include <physics_toolkit/SurveyMatcher.h>
 #include <basic_toolkit/GenericException.h>
 #include <beamline/beamline.h>
-#include <physics_toolkit/FramePusher.h>
+#include <beamline/FramePusher.h>
 
 using namespace std;
 
