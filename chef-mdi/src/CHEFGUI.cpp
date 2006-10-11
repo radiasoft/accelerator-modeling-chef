@@ -1890,7 +1890,7 @@ void CHEFGUI::_editPartition()
   beamline* bmlPtr = new beamline( newName.ascii() );
   bmlPtr->setEnergy( oldbmlPtr->Energy() );
 
-  DeepBeamlineIterator dbi( oldbmlPtr );
+  DeepBeamlineIterator dbi( *oldbmlPtr );
   bmlnElmnt* qb  = dbi++;
   bmlnElmnt* qa  = theOnes.get();
   bmlnElmnt* spa = 0;
@@ -1949,7 +1949,7 @@ void CHEFGUI::_editPartAndSect()
   double bmlLength = 0.0;
 
   bmlnElmnt* q;
-  DeepBeamlineIterator dbi( bmlPtr );
+  DeepBeamlineIterator dbi( *bmlPtr );
   while((  q = dbi++  )) {
     bmlLength += q->Length();
   }
