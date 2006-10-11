@@ -224,7 +224,12 @@ const char* TJL<T>::BadReference::what() const throw()
 //      Implementation of Class TJL
 // 
 // 
+
+
+
+
 //    Constructors and destructors    |||||||||||||||||||||||||||
+
 
 
 template<typename T>
@@ -855,7 +860,7 @@ T TJL<T>::operator()( const T* x )  const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T TJL<T>::operator()( const Vector& x ) const 
+T TJL<T>::operator()( Vector const& x ) const 
 {
   int n = x.Dim();
   T newarg [n];
@@ -2066,12 +2071,11 @@ JLPtr<T> TJL<T>::D( const int* n ) const
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//                 *** friend functions ******
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-// *** friend functions ******
-
 template <typename T>
-JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  ){  
+template <void T_function(T&, T const&)>
+JLPtr<T>  TJL<T>::add(JLPtr<T> const & x, JLPtr<T> const& y  ){  
 
 
 // Check for consistency and set reference point of the sum.
@@ -2079,7 +2083,7 @@ JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  ){
   if( x->_myEnv != y->_myEnv ) {
 
    throw( GenericException( __FILE__, __LINE__, 
-           "TJL<T>::operator+(JLPtr<T> const& x, JLPtr<T> const& y)"
+           "TJL<T>::add(JLPtr<T> const& x, JLPtr<T> const& y)"
            "Inconsistent environments." ) );
   }
 
@@ -2094,14 +2098,13 @@ JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  ){
    TJLterm<T>* px = x->_jltermStore;
    TJLterm<T>* py = y->_jltermStore;
    TJLterm<T>* pz = z->_jltermStore;
-
+ 
    for( int i=0; i < z->_myEnv->numVar()+1;  ++i, ++px, ++py, ++pz ) { // NOTE: index starts at 0 since std part is at 0 ! 
-
-     pz->_value  = px->_value  + py->_value ; 
-
+     pz->_value = px->_value;
+     T_function( pz->_value, py->_value);
    }
 
-   // In principle, accur. weight should be adjusted befor returning
+   // In principle, accur. weight should be adjusted before returning
 
    return z;
  }
@@ -2147,14 +2150,13 @@ JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  ){
   idx = 0;
 
   for( TJLterm<T> const* p = ystart; p < (ystart+lterms); ++p, ++idx  ) {
-   tjlmml[idx]._value += p->_value;
+   T_function( tjlmml[idx]._value, p->_value);
   }
 
   for(TJLterm<T> const* p = (ystart+lterms); p< yend; ++p  ) {
 
    indy   = x->_myEnv->offsetIndex( p->_index);
-   tjlmml[indy]._value +=  p->_value;
-
+   T_function( tjlmml[indy]._value, p->_value); // T_function(x, y) either adds or subtract y from x in place.   
  }
  //------------------------------------------------
  // At this point, the result is in the scratchpad!
@@ -2176,7 +2178,8 @@ JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  ){
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-JLPtr<T>&  operator+=(JLPtr<T>& x,      JLPtr<T> const& y  ) {
+template <void T_function( T& x, T const& y) >
+JLPtr<T>&  TJL<T>::inplace_add(JLPtr<T>& x, JLPtr<T> const& y  ){  
 
  //---------------
  // In place add()
@@ -2187,7 +2190,7 @@ JLPtr<T>&  operator+=(JLPtr<T>& x,      JLPtr<T> const& y  ) {
   if( y->_myEnv != x->_myEnv ) {
 
    throw( GenericException( __FILE__, __LINE__, 
-           "TJL<T>::add(JLPtr<T> const& y)"
+           "TJL<T>::inplace_add(JLPtr<T> const& y)"
            "Inconsistent environments." ) );
   }
 
@@ -2201,9 +2204,7 @@ JLPtr<T>&  operator+=(JLPtr<T>& x,      JLPtr<T> const& y  ) {
    TJLterm<T>* py = y->_jltermStore;
 
    for( int i=0; i < x->_myEnv->numVar()+1;  ++i, ++px, ++py ) { // NOTE: index starts at 0 since std part is at 0 ! 
-
-     px->_value  += py->_value ; 
-
+     T_function( px->_value, py->_value);
    }
 
    // In principle, accur. weight should be adjusted before returning
@@ -2211,8 +2212,7 @@ JLPtr<T>&  operator+=(JLPtr<T>& x,      JLPtr<T> const& y  ) {
    return x;
  }
 
-
-//  -----------------------------------------------------------------
+ //  -----------------------------------------------------------------
  //  Loop over the terms and accumulate monomials in the scrach pad.
  //  Use direct sequential access to access terms since order is
  //  irrelevant in this context.
@@ -2255,7 +2255,9 @@ JLPtr<T>&  operator+=(JLPtr<T>& x,      JLPtr<T> const& y  ) {
 
  for(  TJLterm<T> const* p = ystart; p< ystart+lterms; ++p,++idx  ) {
 
-   result =  tjlmml[idx]._value +  p->_value;
+   result   = tjlmml[idx]._value;
+   T_function (  result, p->_value);
+
 
    if (std::abs(result) > TJL<T>::_mx_small) 
         tjlmml[idx]._value = result; // should not be needed !
@@ -2266,7 +2268,8 @@ JLPtr<T>&  operator+=(JLPtr<T>& x,      JLPtr<T> const& y  ) {
  for(  TJLterm<T> const* p = ystart+lterms; p< yend; ++p  ) {
 
    indy   =  x->_myEnv->offsetIndex( p->_index);
-   result =  tjlmml[indy]._value +  p->_value;
+   result = tjlmml[indy]._value;
+   T_function (  result, p->_value);
 
    if (std::abs(result) > TJL<T>::_mx_small) 
         tjlmml[indy]._value = result; // should not be needed !
@@ -2295,125 +2298,46 @@ JLPtr<T>&  operator+=(JLPtr<T>& x,      JLPtr<T> const& y  ) {
  return x;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  ){  
+
+  return TJL<T>::template add<TJL<T>::op_add >(x,y); 
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+JLPtr<T>&  operator+=(JLPtr<T>& x,      JLPtr<T> const& y  ) {
+
+ return  TJL<T>::template inplace_add<TJL<T>::op_add>(x,y); 
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+JLPtr<T>   operator-(JLPtr<T> const & x,  JLPtr<T> const& y  ){
+  
+ return   TJL<T>::template add<TJL<T>::op_sub>(x,y); 
+
+}
+  
+
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
 JLPtr<T>&  operator-=(JLPtr<T>& x,      JLPtr<T> const& y  ) {
 
- //----------------------
- // In place subtraction
- //---------------------
+ return   TJL<T>::template inplace_add<TJL<T>::op_sub>(x,y); 
 
-// Check for consistency and set reference point of the sum.
-
-  if( y->_myEnv != x->_myEnv ) {
-
-   throw( GenericException( __FILE__, __LINE__, 
-           "TJL<T>::add(JLPtr<T> const& y)"
-           "Inconsistent environments." ) );
-  }
-
- //-------------------------------------------------
- // Is this 1st order only ?
- //------------------------------------------------ 
-
-  if ( x->_myEnv->maxWeight() == 1) { 
-
-   TJLterm<T>* px = x->_jltermStore;
-   TJLterm<T>* py = y->_jltermStore;
-
-   for( int i=0; i < x->_myEnv->numVar()+1;  ++i, ++px, ++py ) { // NOTE: index starts at 0 since std part is at 0 ! 
-
-     px->_value  -= py->_value ; 
-
-   }
-
-   // In principle, accur. weight should be adjusted before returning
-
-   return x;
- }
-
- //  -----------------------------------------------------------------
- //  Loop over the terms and accumulate monomials in the scrach pad.
- //  Use direct sequential access to access terms since order is
- //  irrelevant in this context.
- //  ------------------------------------------------------------------ 
- 
- TJLterm<T>* const tjlmml =  x->_myEnv->TJLmml(); // the environment scratchpad
- 
- int indy      = 0;
- T result      = T();
-
- TJLterm<T> const * const xstart    = x->_jltermStore; 
- TJLterm<T> const * const xend      = x->_jltermStoreCurrentPtr; 
- TJLterm<T> const * const ystart    = y->_jltermStore;
- TJLterm<T> const * const yend      = y->_jltermStoreCurrentPtr;
-
- //------------------------------------------------------------
- // accumulate terms of the current object into the scratchpad
- //------------------------------------------------------------
-
- int lterms = 1 + x->_myEnv->numVar() ; 
- int idx = 0;
-
- for(TJLterm<T> const* p = xstart; p < xstart+lterms; ++p, ++idx  ) {
-   tjlmml[idx]._value = p->_value;
- }
-
- for(TJLterm<T> const* p = xstart+lterms; p < xend; ++p  ) {
-
-   indy = x->_myEnv->offsetIndex( p->_index);
-   tjlmml[indy]._value = p->_value;
- }
-
- //-------------------------------------------------------------------
- // accumulate terms of the rhs argument (i.e. y)  into the scratchpad
- // ------------------------------------------------------------------
-
- lterms = 1 + y->_myEnv->numVar() ; 
- idx = 0;
-
- for(TJLterm<T> const* p=ystart; p< ystart+lterms; ++p,++idx  ) {
-
-   result =  tjlmml[idx]._value -  p->_value;
-
-   if (std::abs(result) > TJL<T>::_mx_small) 
-        tjlmml[idx]._value = result; // should not be needed !
-   else 
-        tjlmml[idx]._value = T(); 
- }
- 
- for(TJLterm<T> const* p=ystart+lterms; p< yend; ++p  ) {
-
-   indy   =  x->_myEnv->offsetIndex( p->_index);
-   result =  tjlmml[indy]._value -  p->_value;
-
-   if (std::abs(result) > TJL<T>::_mx_small) 
-        tjlmml[indy]._value = result; // should not be needed !
-   else 
-        tjlmml[indy]._value = T(); 
- }
- 
-
- //------------------------------------------------
- // At this point, the result is in the scratchpad!
- //------------------------------------------------
-
- // -----------------------------
- // zero out  the current object 
- // -----------------------------
-
- int accuWgt = x->_accuWgt; // save lhs accurate weight value before clearing it ...   
- int lowWgt  = x->_lowWgt;  
- 
-  x->transferFromScratchPad();
-
-  x->_lowWgt  = std::min(lowWgt,     y->_lowWgt);   
-  x->_accuWgt = std::min(accuWgt, y->_accuWgt);
-
-
- return x;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -2428,17 +2352,6 @@ JLPtr<T>   operator-(JLPtr<T> const &x) {
 
 }
  
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template <typename T>
-JLPtr<T>   operator-(JLPtr<T> const & x,  JLPtr<T> const& y  ){
-  
-  return (x+(-y));
-
-}
-  
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -2605,14 +2518,13 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
    return x;
  }
 
-
  
  int  indy                = 0;
  T  dummy                 = T();
  T  product               = T();
 
 
-  // -------------------------------------------------
+ // -------------------------------------------------
  // Determine the maximum weight computed accurately.
  // -------------------------------------------------
 
@@ -2622,6 +2534,39 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
      testWeight = std::min( testWeight,  x->_myEnv->maxWeight() ); 
  
  x->_accuWgt = testWeight;
+
+
+ // -------------------------------------------------
+ // Is this first order ?
+ // -------------------------------------------------
+
+ if (testWeight == 1 ) {
+
+    T result;
+
+    TJLterm<T>* px = x->_jltermStore;
+    TJLterm<T>* py = y->_jltermStore;
+    
+    T std_x =  px->_value;
+    T std_y =  py->_value;
+ 
+    std_x *= std_y; // std part
+
+    ++px; ++py;  
+    
+    for( int i=1; i < x->_myEnv->numVar()+1;  ++i, ++px, ++py ) { // NOTE: index starts at 1 since std part is at 0 ! 
+
+     result  = ( std_x * py->_value ) + ( std_y * px->_value ); 
+
+     if( std::abs( result ) < MX_ABS_SMALL )   result = T();
+
+     px->_value = result;
+   }
+
+   x->_accuWgt = testWeight;
+
+   return x;
+ }
 
  //  -----------------------------------------------------------------
  //  Loop over the terms and accumulate monomials in the scrach pad.

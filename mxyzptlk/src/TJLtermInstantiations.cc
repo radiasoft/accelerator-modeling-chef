@@ -112,6 +112,8 @@ template
 class boost::hash<TJLterm<std::complex<double>  >* >; 
 
 
+#if (__GNUC__ >= 3 )
+
 template
 class __gnu_cxx::hash_map<TJLterm<double >*, unsigned int, boost::hash<TJLterm<double >* > >;
 
@@ -162,6 +164,10 @@ __gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double
 template
 unsigned long const* std::lower_bound<unsigned long const*, unsigned long>(unsigned long const*, unsigned long const*, unsigned long const&);
 
+#endif
+
+#if (__GNUC__ < 4)
+
 template
 boost::shared_ptr<TJLterm<double> >* std::__uninitialized_fill_n_aux<boost::shared_ptr<TJLterm<double> >*, unsigned int, boost::shared_ptr<TJLterm<double> > >(boost::shared_ptr<TJLterm<double> >*, unsigned int, boost::shared_ptr<TJLterm<double> > const&, __false_type);
 
@@ -174,6 +180,7 @@ __gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<double> >*, std::vector<b
 template
 __gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<std::complex<double> > >*, std::vector<boost::shared_ptr<TJLterm<std::complex<double> > >, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > > > > std::__uninitialized_fill_n_aux<__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<std::complex<double> > >*, std::vector<boost::shared_ptr<TJLterm<std::complex<double> > >, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > > > >, unsigned int, boost::shared_ptr<TJLterm<std::complex<double> > > >(__gnu_cxx::__normal_iterator<boost::shared_ptr<TJLterm<std::complex<double> > >*, std::vector<boost::shared_ptr<TJLterm<std::complex<double> > >, std::allocator<boost::shared_ptr<TJLterm<std::complex<double> > > > > >, unsigned int, boost::shared_ptr<TJLterm<std::complex<double> > > const&, __false_type);
 
+#endif
 
 #endif // MXYZPTLK_EXPLICIT_TEMPLATES 
 

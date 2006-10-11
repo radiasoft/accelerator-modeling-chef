@@ -167,6 +167,7 @@ JLPtr<double> real(  TJL<std::complex<double> >* const& z );
 JLPtr<double> imag(  TJL<std::complex<double> >* const& z );
 
 
+
 // **********************************************************************************************************
 
 template<typename T> 
@@ -221,6 +222,16 @@ friend class TJLIterator<T>;
   TJLterm<T>* storePtr();                        // returns a ptr to the next available block in the JLterm store;
   void growStore( );                             // grows the size of the store to twice its current size 
   void appendLinearTerms( int numvar );          // appends all linear monomial terms (_value set to 0)   
+  
+  
+  static void op_add( T& x, T const& y) { x += y; } 
+  static void op_sub( T& x, T const& y) { x -= y; } 
+
+  template< void T_function( T&, T const&) >
+  static JLPtr<T>          add(  JLPtr<T> const&, JLPtr<T> const&); 
+
+  template<void T_function( T&, T const&) >
+  static JLPtr<T>& inplace_add(  JLPtr<T>&,       JLPtr<T> const&);
 
 
   // Constructors and destructors (factory functions)_____________________________________
