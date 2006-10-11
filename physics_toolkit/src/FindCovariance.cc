@@ -182,7 +182,7 @@ void TestCovariance( const beamline&    line,
                      const JetParticle& jp,
                      const MatrixD&     C ) 
 {
-  dlist_iterator NextElement( line );
+  BeamlineIterator NextElement( line );
   slist_iterator NextSample ( sampleSites );
   bmlnElmnt* pbe_line;
   bmlnElmnt* pbe_sample;
@@ -197,7 +197,7 @@ void TestCovariance( const beamline&    line,
 
   if( pbe_sample = (bmlnElmnt*) NextSample() ) {
     while( ( pbe_sample                            ) && 
-           ( pbe_line = (bmlnElmnt*) NextElement() ) 
+           ( pbe_line = NextElement++ ) 
          ) {
 
       pbe_line->propagate( *jpPtr );

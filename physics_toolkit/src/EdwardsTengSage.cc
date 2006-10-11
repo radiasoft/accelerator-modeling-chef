@@ -396,7 +396,7 @@ void EdwardsTengSage::eraseAll()
   _myBeamlinePtr->dataHook.eraseAll( "EdwardsTengSage" );
   _myBeamlinePtr->dataHook.eraseAll( "eigentunes" );
 
-  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  DeepBeamlineIterator dbi( *_myBeamlinePtr );
   bmlnElmnt* be;
   while((  be = dbi++  )) {
     be->dataHook.eraseAll( "EdwardsTengSage" );
@@ -437,7 +437,7 @@ int EdwardsTengSage::doCalc( JetParticle* ptr_jp, beamline::Criterion& crit )
   // Note: ptr_particle is deleted before returning
 
   double lng = 0.0;
-  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  DeepBeamlineIterator dbi( *_myBeamlinePtr );
    
   // REMOVE: Mapping* tmp_map = 0;  
 
@@ -541,7 +541,7 @@ const EdwardsTengSage::Info* EdwardsTengSage::get_ETFuncPtr( int j )
     EdwardsTengSage::Info* infoPtr;
     Barnacle* barnaclePtr;
     i = 0;
-    DeepBeamlineIterator dbi( _myBeamlinePtr );
+    DeepBeamlineIterator dbi( *_myBeamlinePtr );
     bmlnElmnt* be;
     while( ( 0 != (be = dbi++)  ) && ( i < _n ) ) {
       if( 0 != ( barnaclePtr = be->dataHook.lift( "EdwardsTengSage" ) ) ) {

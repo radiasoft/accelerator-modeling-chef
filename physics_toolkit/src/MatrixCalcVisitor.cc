@@ -142,7 +142,7 @@ void MatrixCalcVisitor::visitBeamline( beamline* x )
     _map_v(0,0) = 1.0;    _map_v(0,1) = 0.0;
     _map_v(1,0) = 0.0;    _map_v(1,1) = 1.0;
 
-    DeepBeamlineIterator dbi( x );
+    DeepBeamlineIterator dbi( *x );
     bmlnElmnt* q;
     double s = 0.0;
     _counter = -1;

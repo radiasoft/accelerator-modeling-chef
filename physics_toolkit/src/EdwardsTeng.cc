@@ -276,7 +276,7 @@ EdwardsTeng::~EdwardsTeng()
 
 void EdwardsTeng::eraseAll() 
 {
- DeepBeamlineIterator dbi( myBeamline );
+ DeepBeamlineIterator dbi( *myBeamline );
  bmlnElmnt* be;
  while((  be = dbi++  )) 
  {  be->dataHook.eraseAll( "EdwardsTeng" ); }
@@ -286,7 +286,7 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
 {
  int                  ret;
  bmlnElmnt*           be;
- DeepBeamlineIterator dbi( myBeamline );
+ DeepBeamlineIterator dbi( *myBeamline );
  double               t;
  int                  i;
  MatrixD              mtrx( BMLN_dynDim, BMLN_dynDim );

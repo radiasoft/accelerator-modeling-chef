@@ -1141,7 +1141,7 @@ void BeamlineBrowser::displayBeamline( const BeamlineContext* ptr )
 
   str2.setNum(s);
 
-  ReverseBeamlineIterator rbi( ptr->cheatBmlPtr() );
+  ReverseBeamlineIterator rbi( *ptr->cheatBmlPtr() );
   _displayLine( root, rbi, s );
 
   str1.setNum( s );
@@ -1180,7 +1180,7 @@ void BeamlineBrowser::_displayLine( QBmlRoot* root,
     if( 0 == strcmp("beamline",q->Type()) ) {
       QBmlRoot* newBml = new QBmlRoot( root, (beamline*) q , s);
       newBml->setPixmap( BeamlineBrowser::bmlBlackSymbol );
-      ReverseBeamlineIterator newbi( (beamline*) q );
+      ReverseBeamlineIterator newbi( *static_cast<beamline*>(q) );
       str2.setNum(s);
       BeamlineBrowser::_displayLine( newBml, newbi, s );
       str1.setNum( s );

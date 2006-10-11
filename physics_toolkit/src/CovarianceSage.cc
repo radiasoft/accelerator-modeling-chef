@@ -187,7 +187,7 @@ int CovarianceSage::doCalc( JetParticle* ptr_jp, MatrixD cov, beamline::Criterio
   MatrixD M( map.Jacobian() );
 
   MatrixD localCov( cov.rows(), cov.cols() );
-  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  DeepBeamlineIterator dbi( *_myBeamlinePtr );
   bmlnElmnt* q;
   double s, normalizer;
   s = 0;
@@ -282,7 +282,7 @@ void CovarianceSage::eraseAll()
 {
   _myBeamlinePtr->dataHook.eraseAll( "CovarianceSage" );
 
-  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  DeepBeamlineIterator dbi( *_myBeamlinePtr );
   bmlnElmnt* be;
   while((  be = dbi++  )) {
     be->dataHook.eraseAll( "CovarianceSage" );

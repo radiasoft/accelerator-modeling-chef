@@ -174,7 +174,7 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetParticle& jp )
   _myBeamlinePtr->propagate( *jprPtr );
 
   // Check for Slots
-  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  DeepBeamlineIterator dbi( *_myBeamlinePtr );
   bmlnElmnt* q;
   char slotFound = 0;
   while((  q = dbi++  )) {
@@ -268,7 +268,7 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H,
   _myBeamlinePtr->propagate( *jprPtr );
 
   // Check for Slots
-  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  DeepBeamlineIterator dbi( *_myBeamlinePtr );
   bmlnElmnt* q;
   char slotFound = 0;
   while((  q = dbi++  )) {
@@ -364,7 +364,7 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V,
   _myBeamlinePtr->propagate( *jprPtr );
 
   // Check for Slots
-  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  DeepBeamlineIterator dbi( *_myBeamlinePtr );
   bmlnElmnt* q;
   char slotFound = 0;
   while((  q = dbi++  )) {

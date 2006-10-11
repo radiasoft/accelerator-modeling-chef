@@ -216,7 +216,7 @@ int LattFuncSage::pushCalc( const Particle& prt,
   double beta_x, beta_y, alpha_x, alpha_y;
 
   bmlnElmnt* be;
-  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  DeepBeamlineIterator dbi( *_myBeamlinePtr );
 
   MatrixD mtrx(N,N,0.0);
 
@@ -290,7 +290,7 @@ int LattFuncSage::pushCalc( const Particle& prt,
 
 void LattFuncSage::eraseAll() 
 {
-  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  DeepBeamlineIterator dbi( *_myBeamlinePtr );
   bmlnElmnt* be = 0;
   while((  be = dbi++  )) {
     be->dataHook.eraseAll( "LattFuncSage" );
@@ -321,7 +321,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   // ??? Perhaps a LattFuncSage variable can toggle
   // ??? this test on or off.
   {
-      DeepBeamlineIterator dbi( _myBeamlinePtr );
+      DeepBeamlineIterator dbi( *_myBeamlinePtr );
       bmlnElmnt* q;
       while((  q = dbi++  )) {
         if( strstr( "CF_rbend|rbend|Slot", q->Type() ) ) {
@@ -490,7 +490,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   std::complex<double>  outState[6], phase;
   double realState[6];
   double imagState[6];
-  DeepBeamlineIterator getNext( _myBeamlinePtr );
+  DeepBeamlineIterator getNext( *_myBeamlinePtr );
   bmlnElmnt* lbe;
   QBpropVisitor zlorfik( *p_1 );
   QBpropVisitor fembril( *p_2 );
@@ -759,7 +759,7 @@ int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   // old beamline::twiss, with some modifications
   // 
 
-  DeepBeamlineIterator getNext( _myBeamlinePtr );
+  DeepBeamlineIterator getNext( *_myBeamlinePtr );
   bmlnElmnt* lbe;
   
   double beta0H  = beta_x;
@@ -1472,7 +1472,7 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp, Sage::CRITFUNC  Crit )
 
 
   bmlnElmnt* q = 0;
-  DeepBeamlineIterator getNext( bml );
+  DeepBeamlineIterator getNext( *bml );
   while((  q = getNext++  )) 
   {
     q->propagate( *firstParticle );
@@ -1864,7 +1864,7 @@ int LattFuncSage::FAD_Disp_Calc( /* const */ JetParticle* arg_jp,
    
      bmlnElmnt* q = 0;
      firstParticle  = p_jp->ConvertToParticle();
-     DeepBeamlineIterator getNext( bml );
+     DeepBeamlineIterator getNext( *bml );
      double dpp = this->get_dpp();
 
      firstParticle->set_x  ( dpp*real( EV( j_x,  theColumn ) ) );
@@ -1941,7 +1941,7 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
 
  bmlnElmnt*      be;
  Jet*            z;
- DeepBeamlineIterator getNext( _myBeamlinePtr );
+ DeepBeamlineIterator getNext( *_myBeamlinePtr );
  double          csH, csV, snH, snV, t, oldpsiH, oldpsiV, lng;
  double*         zero;
  int             i, count;
@@ -2197,7 +2197,7 @@ int LattFuncSage::Twiss_Calc( const LattFuncSage::lattFunc& W, JetParticle& p, S
 
 
   bmlnElmnt*      be;
-  DeepBeamlineIterator getNext( _myBeamlinePtr );
+  DeepBeamlineIterator getNext( *_myBeamlinePtr );
   double          t, oldpsiH, oldpsiV, lng;
   int             elmntPos = 0;
   int             count;

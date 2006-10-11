@@ -159,7 +159,7 @@ void DispersionSage::_deleteCalcs()
 {
   _myBeamlinePtr->dataHook.eraseAll( "DispersionSage" );
 
-  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  DeepBeamlineIterator dbi( *_myBeamlinePtr );
   bmlnElmnt* be = 0;
   while((  be = dbi++  )) {
     be->dataHook.eraseAll( "DispersionSage" );
@@ -464,7 +464,7 @@ int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions
   secondParticle->set_npx (prt.get_npx() + (initialConditions.dPrime.hor)*_dpp);
   secondParticle->set_npy (prt.get_npy() + (initialConditions.dPrime.ver)*_dpp);
 
-  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  DeepBeamlineIterator dbi( *_myBeamlinePtr );
   bmlnElmnt* q = 0;
   int counter = 0;
   while( (0 != (q = dbi++)) && (0 == ret) ) {

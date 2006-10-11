@@ -59,7 +59,7 @@ void BeamlineSpitout( int numspaces, BeamlineIterator& bi )
     cout << q->Type() << "  " << q->Name() << endl;
 
     if( 0 == strcmp("beamline",q->Type()) ) {
-      BeamlineIterator newbi( (beamline*) q );
+      BeamlineIterator newbi( *static_cast<beamline*>(q) );
       BeamlineSpitout(numspaces+3,newbi);
     }
   }

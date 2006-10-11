@@ -331,7 +331,7 @@ void BeamlineContext::getInitial( LattFuncSage::lattFunc* u )
 
 void BeamlineContext::writeTree()
 {
-  BeamlineIterator bi( _p_bml );
+  BeamlineIterator bi( *_p_bml );
   BeamlineSpitout( 0, bi );
 }
 
@@ -359,7 +359,7 @@ void BeamlineContext::peekAt( double& s, const Particle& p ) const
 double BeamlineContext::sumLengths() const
 {
   double ret = 0.0;
-  DeepBeamlineIterator dbi( _p_bml );
+  DeepBeamlineIterator dbi( *_p_bml );
   bmlnElmnt* q;
   while( q = dbi++ ) { 
     ret += q->Length(); 
@@ -373,7 +373,7 @@ int BeamlineContext::setLength( bmlnElmnt* w, double l )
   static bool notFound; notFound = true;
   static int ret;       ret = 0;
 
-  DeepBeamlineIterator dbi( _p_bml );
+  DeepBeamlineIterator dbi( *_p_bml );
   bmlnElmnt* q;
   while( notFound && (q = dbi++) ) 
   { if( q == w ) 
@@ -404,7 +404,7 @@ int BeamlineContext::setStrength( bmlnElmnt* w, double s )
   static bool notFound; notFound = true;
   static int ret;       ret = 0;
 
-  DeepBeamlineIterator dbi( _p_bml );
+  DeepBeamlineIterator dbi( *_p_bml );
   bmlnElmnt* q;
   while( notFound && (q = dbi++) ) 
   { if( q == w ) 
@@ -467,7 +467,7 @@ int BeamlineContext::setAlignment( beamline::Criterion& cf, const alignmentData&
 {
   int ret = 0;
 
-  DeepBeamlineIterator dbi( _p_bml );
+  DeepBeamlineIterator dbi( *_p_bml );
   bmlnElmnt* q;
   while((  q = dbi++  )) {
     if( cf(q) ) {
@@ -508,7 +508,7 @@ int BeamlineContext::processElements( beamline::Action& cf )
 {
   int ret = 0;
 
-  DeepBeamlineIterator dbi( _p_bml );
+  DeepBeamlineIterator dbi( *_p_bml );
   bmlnElmnt* q;
   while((  q = dbi++  )) {
     if( 0 == cf(q) ) {
@@ -1434,7 +1434,7 @@ int BeamlineContext::beginIterator()
   }
 
   if(_p_bi) { _p_bi->reset(); }
-  else      { _p_bi = new BeamlineIterator(_p_bml); }
+  else      { _p_bi = new BeamlineIterator(*_p_bml); }
 
   return 0;
 }
@@ -1454,7 +1454,7 @@ int BeamlineContext::beginDeepIterator()
   }
 
   if(_p_dbi) { _p_dbi->reset(); }
-  else       { _p_dbi = new DeepBeamlineIterator(_p_bml); }
+  else       { _p_dbi = new DeepBeamlineIterator( *_p_bml); }
 
   return 0;
 }
@@ -1474,7 +1474,7 @@ int BeamlineContext::beginReverseIterator()
   }
 
   if(_p_rbi) { _p_rbi->reset(); }
-  else       { _p_rbi = new ReverseBeamlineIterator(_p_bml); }
+  else       { _p_rbi = new ReverseBeamlineIterator( *_p_bml); }
 
   return 0;
 }
@@ -1494,7 +1494,7 @@ int BeamlineContext::beginDeepReverseIterator()
   }
 
   if(_p_drbi) { _p_drbi->reset(); }
-  else        { _p_drbi = new DeepReverseBeamlineIterator(_p_bml); }
+  else        { _p_drbi = new DeepReverseBeamlineIterator( *_p_bml); }
 
   return 0;
 }

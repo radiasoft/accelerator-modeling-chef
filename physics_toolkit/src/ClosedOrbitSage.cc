@@ -117,7 +117,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
   // Turn off all RF ...
   bmlnElmnt* q = 0;
-  DeepBeamlineIterator getNext( _myBeamlinePtr );
+  DeepBeamlineIterator getNext( *_myBeamlinePtr );
 
   while((  q = getNext++  ))
   {

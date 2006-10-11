@@ -623,7 +623,7 @@ void RayTrace::_finishConstructor()
 
 
   // Connect QtMonitor signals to the _appendToHistory slot
-  DeepBeamlineIterator dbi( _bmlConPtr->cheatBmlPtr() );
+  DeepBeamlineIterator dbi( *_bmlConPtr->cheatBmlPtr() );
   bmlnElmnt* q;
   while((  q = dbi++  )) {
     if( typeid(*q) ==  typeid(QtMonitor) ) {
@@ -1136,7 +1136,7 @@ void RayTrace::_pushParticle()
       // ??? It is written as a hack to prevent
       // ??? the program from hanging if the orbit 
       // ??? diverges.
-      DeepBeamlineIterator dbi( bmlPtr );
+      DeepBeamlineIterator dbi( *bmlPtr );
       bmlnElmnt* q = 0;
       while( 0 != (q = dbi++) ) {
         q->propagate( *particlePtr );
@@ -1182,7 +1182,7 @@ void RayTrace::_pushParticle()
       // ??? It is written as a hack to prevent
       // ??? the program from hanging if the orbit 
       // ??? diverges.
-      DeepBeamlineIterator dbi( bmlPtr );
+      DeepBeamlineIterator dbi( *bmlPtr );
       bmlnElmnt* q = 0;
       while( 0 != (q = dbi++) ) {
         q->propagate( *particlePtr );

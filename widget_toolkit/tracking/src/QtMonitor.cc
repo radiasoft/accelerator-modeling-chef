@@ -67,7 +67,7 @@ QtMonitor::~QtMonitor()
 
 int QtMonitor::setAzimuth( const beamline* x )
 {
-  DeepBeamlineIterator dbi( x );
+  DeepBeamlineIterator dbi( *x );
   bmlnElmnt* q;
   int n = 0;
   double s = 0.0;
