@@ -70,7 +70,7 @@ int main( int argc, char** argv )
  LattFuncSage lfs( &cell );
 
  // Initialize JetProtons for use
- JetParticle::createStandardEnvironments( order );
+ JetParticle::createStandardEnvironments(1);
 
  JetProton jpr( energy );
  JetProton jpr2( energy );
