@@ -94,7 +94,7 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
   
   
     // Initial check for Slots
-    DeepBeamlineIterator dbi( this );
+    DeepBeamlineIterator dbi( *this );
     bmlnElmnt* q;
     char slotFound = 0;
     while((  q = dbi++  )) {

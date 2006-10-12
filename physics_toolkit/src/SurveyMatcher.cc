@@ -82,7 +82,7 @@ SurveyMatcher::SurveyMatcher( const vector<Vector>& v, beamline& b )
 void SurveyMatcher::_finishConstructor()
 {
   FramePusher fp;
-  DeepBeamlineIterator dbi( _myBeamlinePtr );
+  DeepBeamlineIterator dbi( *_myBeamlinePtr );
   bmlnElmnt* q = 0;
 
   while( ( 0 != (q = dbi++) ) ) {
@@ -384,7 +384,7 @@ void SurveyMatcher::_generateAlignments()
   FramePusher fp;
   Frame localFrame;
   beamline* bmlPtr = _myBeamlinePtr;
-  DeepBeamlineIterator dbi( bmlPtr );
+  DeepBeamlineIterator dbi( *bmlPtr );
   bmlnElmnt* q = 0;
   Vector r(3), dr(3);
   int i = 0;
