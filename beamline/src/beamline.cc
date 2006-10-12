@@ -2246,7 +2246,7 @@ void beamline::leaveLocalFrame( JetParticle& p ) const
 
 bool beamline::isFlat() 
 {
-  BeamlineIterator bi( this );
+  BeamlineIterator bi( *this );
   bmlnElmnt* q;
   while((  q = bi++  )) {
     if( 0 == strcmp( "beamline", q->Type() ) ) { return false; }

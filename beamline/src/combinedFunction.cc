@@ -103,7 +103,7 @@ void combinedFunction::append(bmlnElmnt& x) {
 void combinedFunction::setField( bmlnElmnt::CRITFUNC crit, 
                                  double s )
 {
-  DeepBeamlineIterator dbi( p_bml );
+  DeepBeamlineIterator dbi( *p_bml );
   bmlnElmnt* element;
   double newstrength;
   slist  foundElements;
@@ -128,7 +128,7 @@ void combinedFunction::setField( bmlnElmnt::CRITFUNC crit,
 
 
 void combinedFunction::setField(WHICH_MULTIPOLE mult, double field) {
-  DeepBeamlineIterator dbi( p_bml );
+  DeepBeamlineIterator dbi( *p_bml );
   bmlnElmnt* element;
   double newstrength;
   slist  foundElements;
@@ -195,7 +195,7 @@ void combinedFunction::setField(WHICH_MULTIPOLE mult, double field) {
 }
 
 double combinedFunction::Field(WHICH_MULTIPOLE mult) {
-  DeepBeamlineIterator dbi( p_bml );
+  DeepBeamlineIterator dbi( *p_bml );
   bmlnElmnt* element;
   double multStrength = 0.0;
 
@@ -259,7 +259,7 @@ double combinedFunction::Field(WHICH_MULTIPOLE mult) {
 }
 
 void combinedFunction::setSkew(WHICH_MULTIPOLE mult, alignmentData& alignD) {
-  DeepBeamlineIterator dbi( p_bml );
+  DeepBeamlineIterator dbi( *p_bml );
   bmlnElmnt* element;
 
   while((  element = dbi++  )) 

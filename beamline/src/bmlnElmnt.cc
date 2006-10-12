@@ -436,7 +436,7 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a )
      while( (q = getNext++) ) {
        ++count;
        if( q == a.p_bml_e ) {
-         BeamlineIterator getNext2( p_bml );
+         BeamlineIterator getNext2( *p_bml );
          for( int i = 0; i < count; ++i) {
            q = getNext++;
          }
