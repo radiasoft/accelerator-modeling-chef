@@ -8,7 +8,6 @@
 
 C++        = g++
 
-INSTALLDIR = ../../RUNTIME
 INCS       = -I$(BOOST_INC) \
              -I$(INSTALLDIR)/include/gms \
              -I$(INSTALLDIR)/include/mxyzptlk \

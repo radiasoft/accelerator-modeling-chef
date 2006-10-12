@@ -8,13 +8,15 @@
 
 C++        = g++
 
-INCS       = -I/usr/local/ap/include/boost-1_33 \
+INCS       = -I$(BOOST_INC) \
              -I$(INSTALLDIR)/include/gms \
              -I$(INSTALLDIR)/include/basic_toolkit \
-             -I$(INSTALLDIR)/include/integrator \
+             -I$(INSTALLDIR)/include/mxyzptlk \
+             -I$(INSTALLDIR)/include/beamline \
+             -I$(INSTALLDIR)/include/physics_toolkit \
              -I$(INSTALLDIR)/include
 
-LIBS       = -L$(INSTALLDIR)/lib -lintegrator -lbasic_toolkit -Wl,-rpath,$(INSTALLDIR)/lib 
+LIBS       = -L$(INSTALLDIR)/lib -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -Wl,-rpath,$(INSTALLDIR)/lib 
 SYSLIBS    = -lglib -lm -lnsl -lintl
 
 .cc.o:
@@ -24,4 +26,6 @@ SYSLIBS    = -lglib -lm -lnsl -lintl
 .cc :
 	$(C++) $(C++FLAGS) $(INCS) -o $@ $< $(LIBS) $(SYSLIBS)
 
-all: Test Test_sym
+all: FODO_E MatrixCalcTest TuneAdjusterTest boosterv6 \
+     demo_1 norm_A norm_B BBDemo_1 \
+     ChromaticityAdjusterTest ChromaticityAdjusterTest_2 
