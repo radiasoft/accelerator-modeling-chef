@@ -133,7 +133,7 @@ void RefRegVisitor::visitBeamline( beamline* x )
     Particle* copy = _prtnPtr->Clone();
     copy->set_cdt(0);
     bmlnElmnt* q;
-    DeepBeamlineIterator dbi( x );
+    DeepBeamlineIterator dbi( *x );
 
     // Adjust the strength of all magnetic elements
     //   if the reference particle has been accelerated.
