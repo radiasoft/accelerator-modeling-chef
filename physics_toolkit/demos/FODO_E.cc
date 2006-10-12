@@ -21,14 +21,14 @@
 
 #include <iostream>
 
-#include <mxyzptlk.h>
-#include <Particle.h>
-#include <quadrupole.h>
-#include <drift.h>
-#include <BeamlineIterator.h>
+#include <mxyzptlk/mxyzptlk.h>
+#include <beamline/Particle.h>
+#include <beamline/quadrupole.h>
+#include <beamline/drift.h>
+#include <beamline/BeamlineIterator.h>
 
 // The following is from the physics_toolkit layer.
-#include <EdwardsTeng.h>
+#include <physics_toolkit/EdwardsTeng.h>
 
 using namespace std;
 
