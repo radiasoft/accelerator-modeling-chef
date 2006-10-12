@@ -153,7 +153,7 @@ void quadrupole::setStrength( double s ) {
  if( p_bml != 0 ) 
  {
    double counter = 0.0;
-   BeamlineIterator bi( p_bml );
+   BeamlineIterator bi( *p_bml );
    bmlnElmnt* q;
    while( 0 != ( q = bi++  ) ) {
      if( 0 == strcmp( q->Type(), "thinQuad" ) )  counter++;
