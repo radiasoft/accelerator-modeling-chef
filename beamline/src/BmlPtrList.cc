@@ -56,10 +56,6 @@ BmlPtrList::~BmlPtrList()
 }
 
 
-void BmlPtrList::append( bmlnElmnt& x )
-{
-  this->BmlPtrList::append( &x  );
-}
 
 void BmlPtrList::append( bmlnElmnt* x )
 {
@@ -74,11 +70,6 @@ void BmlPtrList::append( bmlnElmnt* x )
   }
 }
 
-
-void BmlPtrList::insert( bmlnElmnt& x )
-{
-  this->BmlPtrList::insert( &x  );
-}
 
 
 void BmlPtrList::insert( bmlnElmnt* x )

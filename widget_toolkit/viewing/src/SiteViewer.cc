@@ -118,7 +118,7 @@ void SiteViewer::_finishConstructor()
   _element = new bmlnElmnt* [_n];
 
   // Find site coordinates ...
-  DeepBeamlineIterator dbi( *_bmlConPtr->cheatBmlPtr());
+  DeepBeamlineIterator dbi( const_cast<beamline&>(*_bmlConPtr->cheatBmlPtr()) );
   bmlnElmnt* q;
   FramePusher fp;
   Vector r(3);

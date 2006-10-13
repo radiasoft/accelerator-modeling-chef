@@ -57,25 +57,28 @@
 */
 
 #include <beamline/bmlnElmnt.h>  // This include BmlVisitor.h internally.
+#include <beamline/BeamlineIterator.h>
 
 using namespace std;
 
 
 void BmlVisitor::visitBeamline( beamline* x )
 {
-  dlist_iterator getNext ( x->_theList );
+
+  BeamlineIterator iter ( *x );
   bmlnElmnt* p;
-  while ( 0 != (  p = (bmlnElmnt*) getNext() ) ) {
+  while ( (p=iter++) ) {
     p->accept( *this );
   }
 }
 
 
-void ConstBmlVisitor::visitBeamline( const beamline* x )
+void ConstBmlVisitor::visitBeamline( beamline const* x )  // THIS IS BROKEN !
 {
-  dlist_iterator getNext ( x->_theList );
+
+  BeamlineIterator iter ( const_cast<beamline&>(*x) );
   bmlnElmnt* p;
-  while ( 0 != (  p = (bmlnElmnt*) getNext() ) ) {
+  while ( (p=iter++) ) {
     p->accept( *this );
   }
 }

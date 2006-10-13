@@ -1890,7 +1890,7 @@ void CHEFGUI::_editPartition()
   beamline* bmlPtr = new beamline( newName.ascii() );
   bmlPtr->setEnergy( oldbmlPtr->Energy() );
 
-  DeepBeamlineIterator dbi( *oldbmlPtr );
+  DeepBeamlineIterator dbi( const_cast<beamline&>(*oldbmlPtr) );
   bmlnElmnt* qb  = dbi++;
   bmlnElmnt* qa  = theOnes.get();
   bmlnElmnt* spa = 0;

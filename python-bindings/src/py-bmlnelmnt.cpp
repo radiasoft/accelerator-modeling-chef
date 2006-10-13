@@ -204,8 +204,8 @@ int (beamline::*twiss1)( JetParticle&, double, short )            = &beamline::t
 int (beamline::*twiss2)( char,JetParticle& )                      = &beamline::twiss;
 int (beamline::*twiss3)( lattFunc&, JetParticle&, short)          = &beamline::twiss;
 
-void (beamline::*insert1) ( bmlnElmnt&  )          = &beamline::insert;
-void (beamline::*append1) (  bmlnElmnt& )          = &beamline::append;
+void (beamline::*insert1) (  bmlnElmnt*  )          = &beamline::insert;
+void (beamline::*append1) (  bmlnElmnt* )           = &beamline::append;
 void (beamline::*accept1) (  BmlVisitor& )          = &beamline::accept;
 
 void wrap_beamline() {

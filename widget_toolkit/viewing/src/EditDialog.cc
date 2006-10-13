@@ -507,7 +507,7 @@ void editDialog::visitSlot( Slot* x )
 
       Particle* particlePtr = (_contextPtr->getParticle()).Clone();
       _contextPtr->getReferenceParticle( *particlePtr );
-      DeepBeamlineIterator dbi( *_contextPtr->cheatBmlPtr() );
+      DeepBeamlineIterator dbi( const_cast<beamline&>(*_contextPtr->cheatBmlPtr()) );
       bmlnElmnt* q;
       while((  q = dbi++  )) {
         if( q == x ) { break; }

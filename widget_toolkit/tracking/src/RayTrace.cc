@@ -623,7 +623,7 @@ void RayTrace::_finishConstructor()
 
 
   // Connect QtMonitor signals to the _appendToHistory slot
-  DeepBeamlineIterator dbi( *_bmlConPtr->cheatBmlPtr() );
+  DeepBeamlineIterator dbi( const_cast<beamline&>(*_bmlConPtr->cheatBmlPtr()) );
   bmlnElmnt* q;
   while((  q = dbi++  )) {
     if( typeid(*q) ==  typeid(QtMonitor) ) {
