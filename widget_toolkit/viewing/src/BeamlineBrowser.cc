@@ -1141,7 +1141,7 @@ void BeamlineBrowser::displayBeamline( const BeamlineContext* ptr )
 
   str2.setNum(s);
 
-  ReverseBeamlineIterator rbi( *ptr->cheatBmlPtr() );
+  ReverseBeamlineIterator rbi( const_cast<beamline&>(*ptr->cheatBmlPtr()) );
   _displayLine( root, rbi, s );
 
   str1.setNum( s );

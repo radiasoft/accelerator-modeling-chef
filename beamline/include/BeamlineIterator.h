@@ -32,7 +32,13 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+******  REVISION HISTORY:
+******
+******  October 2006: Jean-Francois Ostiguy ostiguy@fnal.gov
+******
+******  - class beamline contains std::list  
+******  - beamline iterators modified to use STL iterators internally. 
+******                                                                   
 **************************************************************************
 *************************************************************************/
 
@@ -60,12 +66,14 @@
 class beamline;
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 class DLLEXPORT BeamlineIterator
 {
 
 public:
 
-  BeamlineIterator( beamline         const& );
+  BeamlineIterator( beamline              & );
   BeamlineIterator( BeamlineIterator const& );
  ~BeamlineIterator();
 
@@ -76,8 +84,10 @@ public:
 
 private:
   
-  dlist_iterator _getNext;
-  
+  std::list<bmlnElmnt*>::iterator _it;
+  std::list<bmlnElmnt*>::iterator _begin;
+  std::list<bmlnElmnt*>::iterator _end;
+
 };
 
 
@@ -89,7 +99,7 @@ class DLLEXPORT  DeepBeamlineIterator
 {
 public:
 
-  DeepBeamlineIterator( beamline const& );
+  DeepBeamlineIterator( beamline & );
  ~DeepBeamlineIterator();
 
   bmlnElmnt* operator++( int );            // postfix increment
@@ -97,8 +107,11 @@ public:
 
   protected:
 
-  dlist_iterator         _getNext;
-  DeepBeamlineIterator*  _subIterator;
+  std::list<bmlnElmnt*>::iterator _it;
+  std::list<bmlnElmnt*>::iterator _begin;
+  std::list<bmlnElmnt*>::iterator _end;
+
+  DeepBeamlineIterator*           _subit;
 
  private:
 
@@ -114,7 +127,7 @@ class DLLEXPORT  ReverseBeamlineIterator
 {
 public:
 
-  ReverseBeamlineIterator( beamline const& );
+  ReverseBeamlineIterator( beamline & );
   ReverseBeamlineIterator( ReverseBeamlineIterator const& );
  ~ReverseBeamlineIterator();
 
@@ -124,7 +137,10 @@ public:
 
 private:
 
-  dlist_reverseIterator _getNext;
+  std::list<bmlnElmnt*>::reverse_iterator _rit;
+  std::list<bmlnElmnt*>::reverse_iterator _rbegin;
+  std::list<bmlnElmnt*>::reverse_iterator _rend;
+
 
 };
 
@@ -134,7 +150,7 @@ class DLLEXPORT  DeepReverseBeamlineIterator
 {
 public:
 
-  DeepReverseBeamlineIterator( beamline const& );
+  DeepReverseBeamlineIterator( beamline & );
  ~DeepReverseBeamlineIterator();
 
   bmlnElmnt* operator++( int );    // postfix increment
@@ -142,10 +158,13 @@ public:
 
 private:
 
-  dlist_reverseIterator         _getNext;
-  DeepReverseBeamlineIterator*  _subIterator;
+  std::list<bmlnElmnt*>::reverse_iterator _rit;
+  std::list<bmlnElmnt*>::reverse_iterator _rbegin;
+  std::list<bmlnElmnt*>::reverse_iterator _rend;
 
-  DeepReverseBeamlineIterator( DeepReverseBeamlineIterator const& ); // forbidden
+  DeepReverseBeamlineIterator*            _subrit;
+
+  DeepReverseBeamlineIterator( DeepReverseBeamlineIterator const& ); 
 };
 
 

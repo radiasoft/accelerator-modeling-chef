@@ -41,8 +41,8 @@
 ****** 
 ****** Oct 2006:  Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
-****** - beamline: decoupled dlist container from public interface
-******                                                                
+****** - beamline: decoupled list container from public interface
+******             now using std::list<> instead of dlist                                                   
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -64,6 +64,7 @@
 #include <beamline/InsertionList.h>
 #include <beamline/FramePusher.h>
 #include <iomanip>
+#include <algorithm>
 
 using namespace std;
 using FNAL::pcerr;
@@ -91,6 +92,8 @@ lattFunc::lattFunc() : BarnacleData() {
  psi  .ver  = NOTKNOWN;
 } 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 lattFunc& lattFunc::operator=( const lattFunc& x ){
  arcLength = x.arcLength;
@@ -107,6 +110,10 @@ lattFunc& lattFunc::operator=( const lattFunc& x ){
 
  return *this;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 #define PREC setprecision(4)
 
 ostream& operator<<(ostream& os, const lattFunc& x) {
@@ -131,6 +138,9 @@ istream& operator>>(istream& is, lattFunc& x) {
   return is;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 // **************************************************
 //   struct lattRing
 // **************************************************
@@ -143,6 +153,10 @@ lattRing::lattRing() : BarnacleData() {
 } 
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 lattRing& lattRing::operator=( const lattRing& x ){
  tune.hor = x.tune.hor;
  tune.ver = x.tune.ver;
@@ -150,6 +164,10 @@ lattRing& lattRing::operator=( const lattRing& x ){
  chromaticity.ver = x.chromaticity.ver;
  return *this;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 ostream& operator<<(ostream& os, const lattRing& x) {
   os << x.tune.hor << " " << x.tune.ver << " ";
   os << " " << x.chromaticity.hor << " " << x.chromaticity.ver;
@@ -165,17 +183,29 @@ beamlineData::beamlineData() : bmlnElmntData() {
  numElem = 0;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 beamlineData::beamlineData( beamlineData& x ) : bmlnElmntData( (bmlnElmntData&) x ) {
  more = x.more;
  numElem = x.numElem;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 beamlineData::~beamlineData() {
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void beamlineData::eliminate() {
  delete this;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void* beamlineData::clone() {
  void* p = new beamlineData( *this );
@@ -206,7 +236,7 @@ beamline::arrayRep::arrayRep(beamline const* x, bool doClone )
   }
 #endif
 
-  DeepBeamlineIterator dbi(*x);
+  DeepBeamlineIterator dbi( const_cast<beamline&>(*x) );
   bmlnElmnt* q;
   int i = 0;
 
@@ -245,7 +275,10 @@ beamline::arrayRep::~arrayRep()
 }
 
 
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 // **************************************************
 //   class beamline
 // **************************************************
@@ -265,7 +298,8 @@ beamline::beamline( beamline const& a )
 {}
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 beamline* beamline::Clone() const {
 
@@ -286,7 +320,7 @@ beamline* beamline::Clone() const {
  ret->nominalEnergy = nominalEnergy;
  ret->twissDone     = 0;
 
- BeamlineIterator getNext( *this );
+ BeamlineIterator getNext( const_cast<beamline&>(*this) );
 
  bmlnElmnt* p;
  bmlnElmnt* q;
@@ -299,11 +333,18 @@ beamline* beamline::Clone() const {
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 const char*  beamline::Type() const 
 { 
   return "beamline"; 
 }
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 double beamline::OrbitLength( Particle const& x )
@@ -318,9 +359,12 @@ double beamline::OrbitLength( Particle const& x )
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 beamline::beamline( bmlnElmnt* q ) : bmlnElmnt(), _theList() 
 {
- _theList.insert( q );
+ _theList.push_back( q );
 
  _mode          = unknown;
  numElem        = 1;
@@ -328,9 +372,12 @@ beamline::beamline( bmlnElmnt* q ) : bmlnElmnt(), _theList()
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 beamline::beamline( char* n, bmlnElmnt* q ) : bmlnElmnt( n ), _theList() {
 
- _theList.insert( q );
+ _theList.push_back( q );
 
  _mode          = unknown;
  numElem        = 1;
@@ -339,6 +386,9 @@ beamline::beamline( char* n, bmlnElmnt* q ) : bmlnElmnt( n ), _theList() {
  twissDone      = 0;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // Destructors
 
@@ -349,22 +399,31 @@ beamline::~beamline() {
 
 
  bmlnElmnt* p;
- while((  p = static_cast<bmlnElmnt*>(_theList.get())  ));
  _theList.clear();  // Wipes out all the links; probably unnecessary.
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 void beamline::zap() {
- bmlnElmnt* p;
- while((  p = static_cast<bmlnElmnt*>( _theList.get())  )) {
-   if( 0 == strcmp( p->Type(), "beamline" ) ) {
-    ((beamline*) p)->zap();
+
+ for ( std::list<bmlnElmnt*>::iterator it=_theList.begin(); it!= _theList.end(); ++it) 
+ { 
+   if( strcmp( (*it)->Type(), "beamline" ) == 0 ) {
+    static_cast<beamline*>(*it)->zap();
    }
-   delete p;  // ??? This will produce errors if *p is on the stack.
+   delete (*it);  
  }
 
  _theList.clear();  // Wipes out all the links.  Probably unnecessary.
+
  numElem = 0;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void beamline::eliminate() {
  zap();
@@ -372,11 +431,17 @@ void beamline::eliminate() {
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void beamline::clear() {
   _theList.clear();
   numElem = 0;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void beamline::localPropagate( Particle& x ) {
  BeamlineIterator getNext (*this);
@@ -386,6 +451,9 @@ void beamline::localPropagate( Particle& x ) {
  }
 } 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void beamline::localPropagate( ParticleBunch& x ) {
  BeamlineIterator getNext (*this);
  bmlnElmnt* p;
@@ -394,6 +462,9 @@ void beamline::localPropagate( ParticleBunch& x ) {
  }
 } 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void beamline::localPropagate( JetParticle& x ) {
  BeamlineIterator getNext ( *this );
  bmlnElmnt* p;
@@ -401,6 +472,9 @@ void beamline::localPropagate( JetParticle& x ) {
    p->propagate( x );
  }
 } 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void beamline::setEnergy( double E ) {
  nominalEnergy = E;
@@ -426,6 +500,9 @@ void beamline::eraseBarnacles( const char* s )
   }
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 lattRing beamline::whatIsRing() {
   lattRing errRet;
@@ -474,6 +551,9 @@ lattFunc beamline::whatIsLattice( int n ) {
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 lattFunc beamline::whatIsLattice( char* n ) {
   // Function written by Mike Martens.
   // May 24, 1996
@@ -490,22 +570,9 @@ lattFunc beamline::whatIsLattice( char* n ) {
 
     // ++++++++++++ Begin: Insert and append functions ++++++++++++++++++
 
-void beamline::insert( bmlnElmnt& q ) {
-
- _theList.insert( &q );
-
- if( twissDone ) unTwiss();
-
- length += q.length;
-
- if( strcmp( q.Type(), "beamline" ) == 0 )  
-      numElem += ((beamline&) q).numElem;
- else numElem++;
-} 
-
 
 void beamline::insert( bmlnElmnt* q ) {
- _theList.insert( q );
+ _theList.push_back(q);
 
  if( twissDone ) unTwiss();
 
@@ -520,18 +587,18 @@ void beamline::insert( bmlnElmnt* q ) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::InsertElementsFromList( double& s, 
-                                       InsertionList& inList,
-                                       slist& removedElements 
-                                     )
+void beamline::InsertElementsFromList( double& s, InsertionList& inList, slist& removedElements )
 {
 
- dlist_iterator getNext( _theList );
- bmlnElmnt* p_be   = static_cast<bmlnElmnt*>( getNext() );
+ std::list<bmlnElmnt*>::iterator bml_iter = _theList.begin();
+
+ bmlnElmnt* p_be   = *bml_iter;
+
  bmlnElmnt* p_be_a = 0;
  bmlnElmnt* p_be_b = 0;
 
  InsertionListElement* p_ile = inList(0);  // top element; not removed
+
  bool   firstWarning = true;
 
  if( !p_be ) {
@@ -560,19 +627,23 @@ void beamline::InsertElementsFromList( double& s,
  const Particle* prtnPtr = inList.clonedParticlePtr();
 
  while( p_be && p_ile ) {
+
   if( strcasecmp( p_be->Type(), "beamline" ) == 0 ) {
-    ( (beamline*) p_be )->InsertElementsFromList( s, inList, removedElements );
+
+    static_cast<beamline*>(p_be)->InsertElementsFromList( s, inList, removedElements );
+
     p_ile = inList(0);   // this may have changed
-    p_be = static_cast<bmlnElmnt*>( getNext() );
+    p_be = *(++bml_iter);
   }
 
   else if ( s + p_be->OrbitLength( *prtnPtr ) <= p_ile->s ) {
     s += p_be->OrbitLength( *prtnPtr );
-    p_be = static_cast<bmlnElmnt*>( getNext() );
+    p_be = *(++bml_iter);
   }
 
   else if ( s == p_ile->s ) {
-    putAbove( *(p_be), *(p_ile->q) );
+
+    putAbove( bml_iter, p_ile->q );
     inList.Get();      // removes top element
     p_ile = inList(0); // accesses new top element
   }
@@ -580,13 +651,13 @@ void beamline::InsertElementsFromList( double& s,
   // else if ( p_be->p_bml ) {
   //   p_be->p_bml->InsertElementsFromList( s, inList, removedElements );
   //   p_ile = inList(0);   // this may have changed
-  //   p_be = static_cast<bmlnElmnt*>( getNext() );
+  //   p_be = static_cast<bmlnElmnt*>( bml_iter() );
   // }
 
   else if (  0 == strcmp( p_be->Type(), "combinedFunction" )  ) {
     p_be->p_bml->InsertElementsFromList( s, inList, removedElements );
     p_ile = inList(0);   // this may have changed
-    p_be = static_cast<bmlnElmnt*>( getNext() );
+    p_be = *(++bml_iter);
 
     if( firstWarning ) {
       (*pcerr) << "\n*** WARNING:                                   *** "
@@ -604,22 +675,17 @@ void beamline::InsertElementsFromList( double& s,
                  &p_be_a, 
                  &p_be_b 
                );
-    putAbove( *(p_be), *(p_be_a)   );
-    putAbove( *(p_be), *(p_ile->q) );
-    putAbove( *(p_be), *(p_be_b)   );
 
-    getNext.GoBack();
+    bml_iter = _theList.erase( bml_iter );
+
+    putAbove( bml_iter, p_be_b   );
+    putAbove( bml_iter, p_ile->q );
+    putAbove( bml_iter, p_be_a   );
+
+
     s += ( p_be_a->OrbitLength( *prtnPtr ) + p_ile->q->OrbitLength( *prtnPtr ) );
 
-    if( ((void*) p_be) == _theList.lastInfoPtr() ) {
-      _theList.remove( (void*) p_be );
-      getNext.Terminate();
-      // This is required because of the way 
-      // dlist_iterator::operator() is written.
-    }
-    else {
-      _theList.remove( (void*) p_be );
-    }
+  
     removedElements.append( (void*) p_be );
 
     p_be = p_be_b;
@@ -659,7 +725,9 @@ void beamline::InsertElementsFromList( double& s,
          << " ) )\n";
 
     s += p_be->OrbitLength( *prtnPtr );
-    p_be = static_cast<bmlnElmnt*>( getNext() );
+
+    ++bml_iter;
+    p_be =  (bml_iter == _theList.end()) ? 0: *bml_iter;
   }
  }
 
@@ -667,54 +735,66 @@ void beamline::InsertElementsFromList( double& s,
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 int beamline::replace( bmlnElmnt const* a, bmlnElmnt const* b ) 
 {
-  // This routine has a potential to break things!
-  if( 0 == a || 0 == b ) { return 2; }
-  return _theList.replaceOne( (const void*) a, (const void*) b );
+
+ 
+  std::list<bmlnElmnt*>::iterator it =  std::find( _theList.begin(), _theList.end(), a );   
+ 
+  if ( it == _theList.end() ) return 1; // not found 
+
+  (*it) = const_cast<bmlnElmnt*>(b);
+
+  return  0;
+
 }
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 int beamline::deepReplace( const bmlnElmnt* a, const bmlnElmnt* b ) 
 {
-  // This routine has a potential to break things!
-  // It is, of course, horribly inefficient because
-  // both it and dlist::replaceOne searches.
-  // I don't care.
+
   if( 0 == a || 0 == b ) { return 2; }
-  BeamlineIterator bi( *this );
-  bmlnElmnt* q;
-  while((  q = bi++  )) {
-    if( q == a ) 
-    {
-      if( 0 == ( _theList.replaceOne( (const void*) a, (const void*) b ) ) )
-      { return 0; }
-      else 
-      { 
-        throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-               "int beamline::deepReplace( const bmlnElmnt* a, const bmlnElmnt* b )", 
-               "An impossibility has occurred, beyond the realm of human comprehension!!" ) );
-      }
+
+
+  for (std::list<bmlnElmnt*>::iterator it = _theList.begin(); it != _theList.end(); ++it ) {
+
+    if( (*it) == a ) {
+
+      (*it) = const_cast<bmlnElmnt*>(b); 
+      return 0; 
     }
-    else if( 0 == strcmp( "beamline", q->Type() ) ) 
-    {
-      if( 0 == ( dynamic_cast<beamline*>(q)->deepReplace( a, b ) ) )
-      { return 0; }
+
+    else if( strcmp( "beamline", (*it)->Type() ) == 0 ) {
+
+      if( dynamic_cast<beamline*>(*it)->deepReplace( a, b ) == 0  ) { return 0; }
     }
+
   }
   return 1;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if  0
 beamline& beamline::operator^( bmlnElmnt& x ) {
  append( x );
- return *this;
+ return this;
 }
+#endif
 
-beamline& beamline::operator^( beamline& x ) {
- append( x );
- return *this;
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+#if 0
 
 beamline& operator^( bmlnElmnt& x, bmlnElmnt& y ) {
  beamline* result = new beamline;
@@ -722,37 +802,57 @@ beamline& operator^( bmlnElmnt& x, bmlnElmnt& y ) {
  result->append( y );
  return *result;
 }
+#endif
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 beamline& operator-( beamline& x ) {
+
  const static char* rev = "REVERSE_";
  char* theName = new char[ strlen(rev) + strlen(x.Name()) + 1 ];
  theName[0] = '\0';
  strcat( theName, rev );
  strcat( theName, x.Name() );
  beamline* result = new beamline( theName );
- ReverseBeamlineIterator getNext( x  );
+
+ ReverseBeamlineIterator rit( x  );
  bmlnElmnt* p;
- while( (  p = getNext++ ) ) {
+ while( (  p = rit++ ) ) {
   if( strcasecmp( p->Type(), "beamline" ) == 0 ) 
-                            result->append( - *(beamline*) p );
+                            result->append( &(- *static_cast<beamline*>(p)) );
   else                      result->append( p );
  }
  delete [] theName;
  return *result;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if 0
 beamline& beamline::operator+( bmlnElmnt& x ) {
  beamline* result = new beamline( *this );
  result->append( x );
  return *result;
 }
+#endif
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if 0
 beamline& beamline::operator+( beamline& x ) {
  beamline* result = new beamline( *this );
  result->append( x );
  return *result;
 }
 
+#endif
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if 0
 beamline& beamline::operator-( beamline& x ) {
  beamline* result = new beamline( *this );
  ReverseBeamlineIterator getNext( x );
@@ -765,6 +865,12 @@ beamline& beamline::operator-( beamline& x ) {
  return *result;
 }
 
+#endif
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if 0
 beamline& operator*( int c, beamline& x ) {
  beamline* result = new beamline;
  int i;
@@ -773,7 +879,13 @@ beamline& operator*( int c, beamline& x ) {
  for ( i = 0; i < c; i++ ) result->append( x );
  return *result;
 }
+#endif
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if  0
 beamline& operator*( beamline& x, int c ) {
  beamline* result = new beamline;
  int i;
@@ -783,6 +895,11 @@ beamline& operator*( beamline& x, int c ) {
  return *result;
 }
 
+#endif
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if  0
 beamline& operator*( int c, bmlnElmnt& x ) {
  beamline* result = new beamline;
  int i;
@@ -791,7 +908,12 @@ beamline& operator*( int c, bmlnElmnt& x ) {
  for ( i = 0; i < c; i++ ) result->append( x );
  return *result;
 }
+#endif
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if 0
 beamline& operator*( bmlnElmnt& x, int c ) {
  beamline* result = new beamline;
  int i;
@@ -800,22 +922,13 @@ beamline& operator*( bmlnElmnt& x, int c ) {
  for ( i = 0; i < c; i++ ) result->append( x );
  return *result;
 }
+#endif
 
-
-void beamline::append( bmlnElmnt& q ) {
- _theList.append( &q );
-
- if( twissDone ) unTwiss();
-
- length += q.length;
- if( strcmp( q.Type(), "beamline" ) == 0 )  
-      numElem += ((beamline&) q).numElem;
- else numElem++;
-} 
-
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void beamline::append( bmlnElmnt* q ) {
- _theList.append( q );
+ _theList.push_back( q );
 
  if( twissDone ) unTwiss();
 
@@ -826,6 +939,9 @@ void beamline::append( bmlnElmnt* q ) {
 } 
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void beamline::Split( double, bmlnElmnt**, bmlnElmnt** ) const
 {
   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
@@ -834,48 +950,45 @@ void beamline::Split( double, bmlnElmnt**, bmlnElmnt** ) const
 }
 
 
-char beamline::putAbove( const bmlnElmnt& x, const bmlnElmnt& y ) 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void beamline::putAbove( std::list<bmlnElmnt*>::iterator const& iter, bmlnElmnt*  y ) 
 {
  // Insert y above (before; upstream of) x in the beamline
 
  unTwiss();
 
- if ( ! _theList.putAbove( &x, &y ) ) {
-   (*pcerr) << "\n*** ERROR ***                                             \n"
-             "*** ERROR *** beamline::putAbove                          \n"
-             "*** ERROR *** dlist::putAbove did not work.               \n"
-             "*** ERROR ***                                             \n"
-        << endl;
-   return 1;
- }
+ _theList.insert( iter, y );
 
- length += y.length;
+ length += y->length;
  numElem++;
 
- return 0;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-char beamline::putBelow( const bmlnElmnt& x, const bmlnElmnt& y ) 
+void beamline::putBelow( std::list<bmlnElmnt*>::iterator const& iter, bmlnElmnt* y ) 
 {
  // Insert y below (after; downstream of) x in the beamline
 
  unTwiss();
 
- if ( ! _theList.putBelow( &x, &y ) ) {
-   (*pcerr) << "\n*** ERROR ***                                             \n"
-             "*** ERROR *** beamline::putBelow                          \n"
-             "*** ERROR *** dlist::putBelow did not work.               \n"
-             "*** ERROR ***                                             \n"
-        << endl;
-   return 1;
- }
+ std::list<bmlnElmnt*>::iterator tmp_iter = iter; 
 
- length += y.length;
+ ++tmp_iter;
+
+ _theList.insert( tmp_iter, y );
+ 
+ length += y->length;
  numElem++;
 
- return 0;
 }
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
     // ++++++++++++ End:   Insert and append functions ++++++++++++++++++
@@ -886,7 +999,8 @@ beamline* beamline::flatten() const {
  // WARNING: the elements are not cloned.
  //   Thus the flattened line contains the
  //   same objects as its original.
- BeamlineIterator  getNext( *this );
+
+ BeamlineIterator  getNext( const_cast<beamline&>(*this) );
  BeamlineIterator* getNew = 0;
 
  beamline*       r;
@@ -899,7 +1013,8 @@ beamline* beamline::flatten() const {
  while ( (p = getNext++)  )  {
    if( strcasecmp( p->Type(), "beamline" ) == 0 )
    { 
-     s = ( (beamline*) p )->flatten();
+     s =  static_cast<beamline*>(p)->flatten();
+
      getNew = new BeamlineIterator( *s);
      while ( (  q = (*getNew)++ )  ) {
        r->append( q );
@@ -920,33 +1035,76 @@ beamline* beamline::flatten() const {
 } 
 
 
-int beamline::startAt( const bmlnElmnt* x, int n )
-{
-  return _theList.startAt( (void*) x, n );
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+int beamline::startAt( bmlnElmnt const* x, int n ) {
+
+  int count = 0;
+
+  std::list<bmlnElmnt*> newList;
+  std::list<bmlnElmnt*>::iterator pos;
+
+  for ( std::list<bmlnElmnt*>::iterator it =_theList.begin();  it != _theList.end(); ++it) { 
+       if ( *it == x )   ++count;            
+       if ( count == n ) {  
+          pos = it;
+          break;
+       }
+  }
+       
+  if  ( pos == _theList.end()) return 1; // new starting element not found  
+
+  for ( std::list<bmlnElmnt*>::iterator it = pos;  it != _theList.end(); ++it) { 
+    newList.push_back(*it);
+  }
+
+  for ( std::list<bmlnElmnt*>::iterator it = _theList.begin();  it != pos; ++it) { 
+    newList.push_back(*it);
+  }
+
+  _theList = newList;
+
 }
 
 
-int beamline::startAt( const char* s, int n )
-{
-  dlist_traversor getNext( _theList );
-  dlink* q;
-  int count(0);
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  while((  q = getNext()  )) 
-  {
-    if( 0 == strcmp( static_cast<bmlnElmnt*>(q->info())->Name(), s ) ) 
-    {
-      if( (++count) == n ) {
-        _theList.riskStartAt( q );
-        return 0;
-      }
-    }
+int beamline::startAt( char const* s, int n ) {
+
+  int count = 0;
+
+  std::list<bmlnElmnt*> newList;
+  std::list<bmlnElmnt*>::iterator pos;
+
+  for ( std::list<bmlnElmnt*>::iterator it =_theList.begin();  it != _theList.end(); ++it) { 
+       if ( std::string( (*it)->Name() ) == std::string( s ) )   ++count;            
+       if ( count == n ) {  
+          pos = it;
+          break;
+       }
   }
+       
+  if  ( pos == _theList.end()) return 1; // new starting element not found  
+
+  for ( std::list<bmlnElmnt*>::iterator it = pos;  it != _theList.end(); ++it) { 
+    newList.push_back(*it);
+  }
+
+  for ( std::list<bmlnElmnt*>::iterator it = _theList.begin();  it != pos; ++it) { 
+    newList.push_back(*it);
+  }
+
+  _theList = newList;
 
   return 1;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2, 
                                int deg, JetParticle& jp ) {
@@ -1021,6 +1179,9 @@ sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2,
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 sector* beamline::MakeSectorFromStart ( const bmlnElmnt& be_1, int deg, JetParticle& jp ) {
 
  // This assumes that the argument jp has been initialized as
@@ -1089,6 +1250,10 @@ sector* beamline::MakeSectorFromStart ( const bmlnElmnt& be_1, int deg, JetParti
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle& jp ) {
 
  // This assumes that the argument jp has been initialized as
@@ -1144,6 +1309,9 @@ sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle&
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 sector* beamline::makeSector( int degree, JetParticle& pd ) {
  double zero[ BMLN_dynDim ];
  Jet* zd;
@@ -1177,9 +1345,12 @@ sector* beamline::makeSector( int degree, JetParticle& pd ) {
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void beamline::sectorize( int degree, JetParticle& pd ) {
- sector* s;
- s = makeSector( degree, pd );
+
+ sector* s = makeSector( degree, pd );
 
  _theList.clear();
  unTwiss();
@@ -1187,28 +1358,37 @@ void beamline::sectorize( int degree, JetParticle& pd ) {
  length       = 0.0;
  strength     = 0.0;
  align        = 0;
- append( *s );
+
+ append( s );
 }
 
 
-beamline beamline::sectorize( bmlnElmnt& x, bmlnElmnt& y, int degree,
-                              JetParticle& pd, const char* sectorName ) {
- beamline a;
- sector* s;
- if( &x == &y ) return a;
- a = remove( x, y );
- s = a.makeSector( degree, pd );
- s->Rename( sectorName );
- putAbove( y, *s );
- return a;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+beamline beamline::sectorize( bmlnElmnt* x, bmlnElmnt* y, int degree, JetParticle& pd, const char* sectorName ) {
+
+  beamline a = remove( x, y ); // remove should peharps somehow return the iterator position for x
+
+  sector* s = a.makeSector( degree, pd );
+  s->Rename( sectorName );
+
+  std::list<bmlnElmnt*>::iterator xpos = std::find( _theList.begin(), _theList.end(), y ); 
+   
+  putAbove( xpos, s );
+
+  return a;
 }
 
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void beamline::peekAt( double& s, const Particle& prt ) const
 {
 
-  BeamlineIterator getNext( *this );
+  BeamlineIterator getNext( const_cast<beamline&>(*this) );
   bmlnElmnt* p;
 
   (*pcout) << "\nBegin beamline::peekat() -- Address of beamline: "
@@ -1229,15 +1409,19 @@ void beamline::peekAt( double& s, const Particle& prt ) const
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
+
  int ret;
- BeamlineIterator getNext ( *this);
+ BeamlineIterator bit ( const_cast<beamline&>(*this) );
  bmlnElmnt* p;
 
  ret = 0;
 
  if( query == 0 ) {
-   while ( ( p = getNext++ ) ) { 
+   while ( ( p = bit++ ) ) { 
      ret++; 
    }
    if( ret != numElem ) {
@@ -1254,7 +1438,7 @@ int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
  }
 
  else {
-   while ( (  p = getNext++   )) {
+   while ( (  p = bit++   )) {
      if( query(p) ) { 
        ret++; 
        if( listPtr ) {
@@ -1267,10 +1451,13 @@ int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
  return ret;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int beamline::countHowManyDeeply( CRITFUNC query, slist* listPtr ) const {
 
  int ret;
- BeamlineIterator getNext ( *this);
+ BeamlineIterator getNext ( const_cast<beamline&>(*this) );
  bmlnElmnt* p;
 
  ret = 0;
@@ -1292,6 +1479,9 @@ int beamline::countHowManyDeeply( CRITFUNC query, slist* listPtr ) const {
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int beamline::depth() const
 {
   // Returns -1 if beamline is empty.
@@ -1303,7 +1493,7 @@ int beamline::depth() const
   int ret = -1;
   int maxSubDepth = -1;
   
-  BeamlineIterator bi( *this );
+  BeamlineIterator bi( const_cast<beamline&>(*this) );
   bmlnElmnt* p_be;
   while( 0 != (p_be = bi++) ) {
     ret = 0;
@@ -1318,9 +1508,12 @@ int beamline::depth() const
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int beamline::contains( bmlnElmnt const* x ) const
 {
-  DeepBeamlineIterator dbi( *this );
+  DeepBeamlineIterator dbi( const_cast<beamline&>(*this) );
   int ret = 0;
   bmlnElmnt* p_be;
   while((  p_be = dbi++  )) {
@@ -1330,26 +1523,47 @@ int beamline::contains( bmlnElmnt const* x ) const
 }
 
 
-beamline beamline::remove( bmlnElmnt const& x, bmlnElmnt const& y ) {
- beamline a;
- dlist dl;
- int i;
- bmlnElmnt* p;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+beamline beamline::remove( bmlnElmnt *x, bmlnElmnt * y ) {
+
+ // remove the elements in the interval  ] x, y [  and return them in a new beamline
 
  unTwiss();
- dl = _theList.remove( ((void*) &x), ((void*) &y) );
 
- dlist_iterator getNext( dl );
- if((  p = static_cast<bmlnElmnt*>( getNext() )  )) {
-   a.append( *p );
+ beamline a;
+
+ if (x == y ) return a; // empty
+
+ std::list<bmlnElmnt*>::iterator pos1 = std::find(_theList.begin(), _theList.end(), x); 
+ std::list<bmlnElmnt*>::iterator pos2 = std::find(pos1,             _theList.end(), y);  
+
+ if ( (pos1 == _theList.end()) || (pos2 == _theList.end() ) ) 
+   return a; // one of the element not found. return an empty line  
+
+ ++pos1; --pos2; // exclude the boundary elements
+
+ ++pos2;
+
+ for ( std::list<bmlnElmnt*>::iterator it = pos1; it != pos2;  ++it ) { 
+   a.append(*it);
  }
- while ((  p = static_cast<bmlnElmnt*>( getNext() )  ))  a.append( *p );
 
- a.nominalEnergy = nominalEnergy;
- numElem = numElem - a.numElem;
+ --pos2; 
+
+ _theList.erase( pos1, pos2 ); 
+
+ numElem = numElem - a.numElem; 
+
  return a;
+
+
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool beamline::find( bmlnElmnt*& u, bmlnElmnt*& v, bmlnElmnt*& w ) const
 {
@@ -1407,7 +1621,7 @@ bool beamline::find( bmlnElmnt*& u, bmlnElmnt*& v, bmlnElmnt*& w ) const
   }
 
   // Setup iterator
-  DeepBeamlineIterator dbi( *this );
+  DeepBeamlineIterator dbi( const_cast<beamline&>(*this) );
   bmlnElmnt* q;
     
   // Check for possibility that *v is the first element.
@@ -1452,6 +1666,9 @@ bool beamline::find( bmlnElmnt*& u, bmlnElmnt*& v, bmlnElmnt*& w ) const
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 BmlPtrList beamline::moveRelX(   bmlnElmnt* thePtr
                                , double u
                                , int* errorCodePtr )
@@ -1482,6 +1699,9 @@ BmlPtrList beamline::moveRelX(   bmlnElmnt* thePtr
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 BmlPtrList beamline::moveRelY(   bmlnElmnt* thePtr
                                , double u
                                , int* errorCodePtr )
@@ -1500,6 +1720,9 @@ BmlPtrList beamline::moveRelY(   bmlnElmnt* thePtr
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 BmlPtrList beamline::moveRelZ(   bmlnElmnt* thePtr
                                , double u
                                , int* errorCodePtr )
@@ -1517,6 +1740,9 @@ BmlPtrList beamline::moveRelZ(   bmlnElmnt* thePtr
   return recycleBin;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void beamline::_moveRel(   int axis, double u
                          , bmlnElmnt* thePtr
@@ -1641,8 +1867,8 @@ void beamline::_moveRel(   int axis, double u
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._downStream = (thePtr->_pinnedFrames)._upStream;
         slotPtr->_pinnedFrames._altered = true;
-        this->putAbove( *thePtr, *slotPtr );
-        this->remove( upStreamPtr );
+        putAbove( std::find(_theList.begin(), _theList.end(), thePtr),  slotPtr ); // !!!! TERRIBLE !
+        remove( upStreamPtr );
         recycleBinPtr->append( upStreamPtr );
       }
       if( 0 == strcmp("drift", downStreamPtr->Type() ) ) {
@@ -1651,7 +1877,7 @@ void beamline::_moveRel(   int axis, double u
         slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._upStream = (thePtr->_pinnedFrames)._downStream;
         slotPtr->_pinnedFrames._altered = true;
-        this->putBelow( *thePtr, *slotPtr );
+        putBelow( std::find(_theList.begin(), _theList.end(), thePtr), slotPtr ); // !!!! TERRIBLE  !
         this->remove( downStreamPtr );
         recycleBinPtr->append( downStreamPtr );
       }
@@ -1697,7 +1923,7 @@ void beamline::_moveRel(   int axis, double u
         slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._upStream = (thePtr->_pinnedFrames)._downStream;
         slotPtr->_pinnedFrames._altered = true;
-        this->putBelow( *thePtr, *slotPtr );
+        this->putBelow( std::find(_theList.begin(), _theList.end(), thePtr), slotPtr );
         this->remove( downStreamPtr );
         recycleBinPtr->append( downStreamPtr );
       }
@@ -1734,8 +1960,8 @@ void beamline::_moveRel(   int axis, double u
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._downStream = (thePtr->_pinnedFrames)._upStream;
         slotPtr->_pinnedFrames._altered = true;
-        this->putAbove( *thePtr, *slotPtr );
-        this->remove( upStreamPtr );
+        putAbove( std::find(_theList.begin(), _theList.end(), thePtr), slotPtr ); // TERRIBLE !
+        remove( upStreamPtr );
         recycleBinPtr->append( upStreamPtr );
       }
     }
@@ -1752,10 +1978,10 @@ void beamline::_moveRel(   int axis, double u
 }
 
 
-BmlPtrList beamline::pitch(   bmlnElmnt* thePtr
-                            , double angle
-                            , double pct
-                            , int* errorCodePtr )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BmlPtrList beamline::pitch(   bmlnElmnt* thePtr, double angle, double pct, int* errorCodePtr )
 {
   BmlPtrList recycleBin;
   int dummyErr;
@@ -1773,26 +1999,25 @@ BmlPtrList beamline::pitch(   bmlnElmnt* thePtr
 }
 
 
-BmlPtrList beamline::yaw(   bmlnElmnt* thePtr
-                          , double angle
-                          , double pct
-                          , int* errorCodePtr )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BmlPtrList beamline::yaw(   bmlnElmnt* thePtr, double angle, double pct, int* errorCodePtr )
 {
   BmlPtrList recycleBin;
   int dummyErr;
   if( 0 == errorCodePtr ) {
-    this->_rotateRel( Frame::yAxisIndex(), angle, thePtr, pct, 
-                      &dummyErr, &recycleBin, 
-                      string("beamline::pitch") );
+    this->_rotateRel( Frame::yAxisIndex(), angle, thePtr, pct, &dummyErr, &recycleBin, string("beamline::pitch") );
   }
   else {
-    this->_rotateRel( Frame::yAxisIndex(), angle, thePtr, pct, 
-                      errorCodePtr, &recycleBin, 
-                      string("beamline::pitch") );
+    this->_rotateRel( Frame::yAxisIndex(), angle, thePtr, pct, errorCodePtr, &recycleBin, string("beamline::pitch"));
   }
   return recycleBin;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BmlPtrList beamline::roll(   bmlnElmnt* thePtr
                            , double angle
@@ -1814,6 +2039,9 @@ BmlPtrList beamline::roll(   bmlnElmnt* thePtr
   return recycleBin;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void beamline::_rotateRel(   int axis, double angle
                            , bmlnElmnt* thePtr
@@ -1976,8 +2204,8 @@ void beamline::_rotateRel(   int axis, double angle
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._downStream = (thePtr->_pinnedFrames)._upStream;
         slotPtr->_pinnedFrames._altered = true;
-        this->putAbove( *thePtr, *slotPtr );
-        this->remove( upStreamPtr );
+        putAbove( std::find(_theList.begin(), _theList.end(), thePtr), slotPtr ); // TERRIBLE !
+        remove( upStreamPtr );
         recycleBinPtr->append( upStreamPtr );
       }
       if( 0 == strcmp("drift", downStreamPtr->Type() ) ) {
@@ -1986,8 +2214,8 @@ void beamline::_rotateRel(   int axis, double angle
         slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._upStream = (thePtr->_pinnedFrames)._downStream;
         slotPtr->_pinnedFrames._altered = true;
-        this->putBelow( *thePtr, *slotPtr );
-        this->remove( downStreamPtr );
+        putBelow( std::find(_theList.begin(), _theList.end(), thePtr), slotPtr ); // TERRIBLE !
+        remove( downStreamPtr );
         recycleBinPtr->append( downStreamPtr );
       }
     }
@@ -2040,7 +2268,7 @@ void beamline::_rotateRel(   int axis, double angle
       // Note: this is done inefficiently
       // DANGEROUS!!  Creates free object
       Slot* slotPtr = new Slot( frameOne );
-      this->putAbove( *thePtr, *slotPtr );
+      putAbove( std::find(_theList.begin(), _theList.end(), thePtr), slotPtr );
       if( 0 == strcmp("Slot", downStreamPtr->Type() ) ) {
         dynamic_cast<Slot*>(downStreamPtr)->setInFrame( frameZero );
         dynamic_cast<Slot*>(downStreamPtr)->setOutFrame( frameThree.relativeTo(frameTwo) );
@@ -2053,8 +2281,8 @@ void beamline::_rotateRel(   int axis, double angle
         slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._upStream = (thePtr->_pinnedFrames)._downStream;
         slotPtr->_pinnedFrames._altered = true;
-        this->putBelow( *thePtr, *slotPtr );
-        this->remove( downStreamPtr );
+        putBelow( std::find( _theList.begin(), _theList.end(), thePtr), slotPtr );
+        remove( downStreamPtr );
         recycleBinPtr->append( downStreamPtr );
       }
     }
@@ -2117,13 +2345,13 @@ void beamline::_rotateRel(   int axis, double angle
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->_pinnedFrames._downStream = (thePtr->_pinnedFrames)._upStream;
         slotPtr->_pinnedFrames._altered = true;
-        this->putAbove( *thePtr, *slotPtr );
-        this->remove( upStreamPtr );
+        putAbove( std::find(_theList.begin(), _theList.end(), thePtr), slotPtr );
+        remove( upStreamPtr );
         recycleBinPtr->append( upStreamPtr );
       }
       // DANGEROUS!!  Creates free object
       Slot* slotPtr = new Slot( frameThree.relativeTo(frameTwo) );
-      this->putBelow( *thePtr, *slotPtr );
+      putBelow( std::find(_theList.begin(), _theList.end(), thePtr), slotPtr );
     }
 
     else if( (0 == upStreamPtr) && (0 == downStreamPtr ) ) {
@@ -2137,6 +2365,9 @@ void beamline::_rotateRel(   int axis, double angle
   return;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool beamline::setAlignment( const alignmentData& al ) {
   // Propogate alignment data of entire  beamline to each individual element
@@ -2159,20 +2390,20 @@ bool beamline::setAlignment( const alignmentData& al ) {
   return true;
 }
 
-char beamline::remove( void * Element2remove){
-  if(numElem > 0) numElem--;
-  return !_theList.remove( Element2remove );
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void beamline::remove( bmlnElmnt* Element2remove){ 
+  if (numElem == 0 ) return;
+  _theList.remove( Element2remove );
+  --numElem;
+  return; 
 }
 
-char beamline::remove( const bmlnElmnt& x ){
-  if(numElem > 0) numElem--;
-  return !_theList.remove( (void*) &x );
-}
 
-char beamline::remove( const bmlnElmnt* x ) {
-  if(numElem > 0) numElem--;
-  return !_theList.remove( (void*) x );
-}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ostream& beamline::writeTo(ostream& os) {
   BeamlineIterator getNext(*this);
@@ -2192,10 +2423,13 @@ ostream& beamline::writeTo(ostream& os) {
 //   Frame functions
 // **************************************************
 
+
+
+
 void beamline::enterLocalFrame( Particle& p ) const
 {
   // Check for bends
-  BeamlineIterator getNext( *this );
+  BeamlineIterator getNext( const_cast<beamline&>(*this) );
   static bmlnElmnt* element;
 
   while((  element = getNext++ )) 
@@ -2212,10 +2446,13 @@ void beamline::enterLocalFrame( Particle& p ) const
   bmlnElmnt::enterLocalFrame( p );
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void beamline::enterLocalFrame( JetParticle& p ) const
 {
   // Check for bends
-  BeamlineIterator getNext( *this );
+  BeamlineIterator getNext( const_cast<beamline&>(*this) );
   bmlnElmnt* element = 0;
 
   while((  element = getNext++ )) 
@@ -2233,10 +2470,16 @@ void beamline::enterLocalFrame( JetParticle& p ) const
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void beamline::leaveLocalFrame( Particle& p ) const
 {
   bmlnElmnt::leaveLocalFrame( p );
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void beamline::leaveLocalFrame( JetParticle& p ) const
 {
@@ -2244,9 +2487,12 @@ void beamline::leaveLocalFrame( JetParticle& p ) const
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool beamline::isFlat() 
 {
-  BeamlineIterator bi( *this );
+  BeamlineIterator bi( const_cast<beamline&>(*this) );
   bmlnElmnt* q;
   while((  q = bi++  )) {
     if( 0 == strcmp( "beamline", q->Type() ) ) { return false; }
@@ -2255,11 +2501,17 @@ bool beamline::isFlat()
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool beamline::Criterion::operator()( const bmlnElmnt* x )
 {
   return false;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool beamline::Criterion::operator()( const bmlnElmnt& x )
 {
@@ -2267,11 +2519,17 @@ bool beamline::Criterion::operator()( const bmlnElmnt& x )
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int beamline::Action::operator()( bmlnElmnt* x )
 {
   return -1;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int beamline::Action::operator()( bmlnElmnt& x )
 {

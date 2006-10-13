@@ -37,10 +37,11 @@
 ****** REVISION HISTORY:
 ****** -----------------
 ****** 
-****** Oct 2006:  Jean-Francois Ostiguy  ostiguy@fnal.gov
+****** Oct 2006:   Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
-****** - beamline: decoupled dlist container from public interface
-******                                                                
+****** - beamline: decoupled list container from public interface
+******             use std:list<> instead of dlist
+******                                                           
 **************************************************************************
 *************************************************************************/
 #ifndef BMLNELMNT_H
@@ -50,6 +51,7 @@
 #include <iostream>
 #include <exception>
 
+#include <list>
 #include <basic_toolkit/slist.h>
 #include <basic_toolkit/Frame.h>
 #include <basic_toolkit/Barnacle.h>
@@ -167,18 +169,18 @@ public:
                                 // BMLM_dynDim in length
                                 // I don\'t think that the Particle or
                                 // JetParticle should be modified directly
-  void align(const Particle&, double*);
-  void align(double*, double*);
-  void misalign(const Particle&, double*);
-  void align(JetParticle&, Jet*);
-  void align(Jet*, Jet*);
-  void misalign(JetParticle&, Jet*);
-  void misalign( double* );
-  void align( double* );
-  void misalign( JetVector& );
-  void align( JetVector& );
+  void    align(Particle const&, double*);
+  void    align(double*,         double*);
+  void misalign(Particle const&, double*);
+  void    align(JetParticle&,    Jet*);
+  void    align(Jet*,            Jet*);
+  void misalign(JetParticle&,    Jet*);
+  void misalign(double* );
+  void    align(double* );
+  void misalign(JetVector& );
+  void    align(JetVector& );
 
-  void setAlignment(const alignmentData&);
+  void          setAlignment(alignmentData const&);
   alignmentData getAlignment() const;
 
   double x_offset() { return xOffset; }
@@ -335,6 +337,7 @@ protected:
 
   friend class beamline;
   // friend class circuit;
+
   friend beamline& operator-( beamline& );
 
   double _ctRef;  // (normalized) time required for
@@ -346,26 +349,13 @@ protected:
 
 
 public:
-  bmlnElmnt( const char*   n = "NONAME" /* name     */,
-             PropFunc*       = 0 
-           );              
-  bmlnElmnt( double  l       /* length   */,
-             PropFunc*       = 0
-           );              
-  bmlnElmnt( double  l       /* length   */,
-             double  s       /* strength */,
-             PropFunc*       = 0
-           );              
-  bmlnElmnt( const char*   n /* name     */,
-             double        l /* length   */,
-             PropFunc*       = 0
-           );              
-  bmlnElmnt( const char*   n /* name     */,
-             double        l /* length   */,
-             double        s /* strength */,
-             PropFunc*       = 0
-           );
-  bmlnElmnt( const bmlnElmnt&  );
+  bmlnElmnt( char const*   name = "NONAME",                                  PropFunc* = 0);              
+  bmlnElmnt(                               double  length,                   PropFunc* = 0);              
+  bmlnElmnt(                               double  length, double  strength, PropFunc* = 0);              
+  bmlnElmnt( char const*   name,           double  length,                   PropFunc* = 0);
+  bmlnElmnt( char const*   name,           double  length, double strength,  PropFunc* = 0);
+
+  bmlnElmnt( bmlnElmnt const&  );
   bmlnElmnt( bmlnElmntData& );
 
   virtual ~bmlnElmnt();
@@ -377,9 +367,9 @@ public:
   // ??? REMOVE:  lattFunc     lattInfo;   // Information on maps and lattice functions.
   // REMOVE: bmlnElmnt& operator=( const bmlnElmnt& );
 
-  boost::any& operator[](const std::string& s);   // a type-safe facility to attach attributes
-  bool attributeExists(const std::string& s);     // of arbitary type -jfo   
-  void attributeClear (const std::string& s);           
+  boost::any& operator[](std::string const& s);   // a type-safe facility to attach attributes
+  bool attributeExists(std::string const& s);     // of arbitary type -jfo   
+  void attributeClear (std::string const& s);           
   void attributeClear ();                                
 
   virtual void accept( BmlVisitor& ) = 0;
@@ -387,6 +377,7 @@ public:
 
   virtual PropFunc* setPropFunction ( const PropFunc* a );  // return previous
   virtual PropFunc* setPropFunction ( const PropFunc& a );  // Propagator
+
   PropFunc* getPropFunction() { return Propagator; }
 
   void propagate( Particle& );
@@ -400,19 +391,19 @@ public:
 
   // Methods to set alignment without 
   // (a little overkill, but so what?)
-  virtual bool alignRelX( double /*[m]*/ );
-  virtual bool alignRelY( double /*[m]*/ );
-  virtual bool alignAbsX( double /*[m]*/ );
-  virtual bool alignAbsY( double /*[m]*/ );
-  virtual bool alignRelXmm( double /*[mm]*/ );
-  virtual bool alignRelYmm( double /*[mm]*/ );
-  virtual bool alignAbsXmm( double /*[mm]*/ );
-  virtual bool alignAbsYmm( double /*[mm]*/ );
-  virtual bool alignRelRoll( double /*[radians]*/ );
-  virtual bool alignAbsRoll( double /*[radians]*/ );
-  virtual bool alignRelRollmrad( double /*[milliradians]*/ );
-  virtual bool alignAbsRollmrad( double /*[milliradians]*/ );
-  virtual bool setAlignment( const alignmentData& );
+  virtual bool        alignRelX( double  meters);
+  virtual bool        alignRelY( double  meters);
+  virtual bool        alignAbsX( double  meters);
+  virtual bool        alignAbsY( double  meters);
+  virtual bool      alignRelXmm( double  mm);
+  virtual bool      alignRelYmm( double  mm);
+  virtual bool      alignAbsXmm( double  mm);
+  virtual bool      alignAbsYmm( double  mm);
+  virtual bool     alignRelRoll( double radians);
+  virtual bool     alignAbsRoll( double radians);
+  virtual bool alignRelRollmrad( double mrad );
+  virtual bool alignAbsRollmrad( double mrad );
+  virtual bool     setAlignment( alignmentData const& );
 
   inline  bool hasMoved()
     { return ( _pinnedFrames._altered || (0 != align) ); }
@@ -469,6 +460,7 @@ public:
                                    // eventually deleting these.
 
   // REMOVE: virtual void peekAt( double& s, Particle* = 0 );
+
   virtual void peekAt( double& s, const Particle& ) const;
   virtual bool equivTo( const bmlnElmnt& ) const;
   virtual bool equivTo( const bmlnElmnt* ) const;
@@ -483,28 +475,20 @@ public:
   static const short BF_NULL_ARG;
   static const short BF_BAD_START;
 
-  short       writeTag(  const std::string& );  // Replaces entire tag
-  short       writeTag(  const std::string&
-                       , short                  // starting position in tag
-                      );
-  short       writeTag(  const char* );         // Replaces entire tag
-  short       writeTag(  const char*            // characters to be written
-                       , short                  // starting position in tag
-                       );
+  short       writeTag(  std::string const& );              // Replaces entire tag
+  short       writeTag(  std::string const& , short );      // starting position in tag
+                   
+  short       writeTag(  char const* newtag);               // Replaces entire tag
+  short       writeTag(  char const* newtag, short pos);    // starting position in tag
+                    
   short       writeTag(  char );
-  short       writeTag(  char                   // character to be written
-                       , short                  // position in tag
-                      );
+  short       writeTag(  char, short pos);                  // pos = position in tag
 
-  std::string readTag() const;                  // returns entire tag
-  std::string readTag(  short                   // starting position in tag
-                      , short  ) const;         // number of characters read
-  short       readTag(  char* ) const;
-  short       readTag(  char*                   // returned characters
-                      , short                   // starting position in tag   
-                      , short                   // number of characters
-                     ) const;
-  char        readTag( short ) const;           // position in tag
+  std::string readTag() const;                              // returns entire tag
+  std::string readTag(  short startpos, short n  ) const;   // n = no of characters read
+  short       readTag(  char* )                    const;
+  short       readTag(  char* returned_chars, short startpos, short n) const; 
+  char        readTag(  short pos )                 const;  // pos = position in tag
 
   short       getTagSize() const;
 
@@ -523,44 +507,39 @@ public:
 
 
   // REMOVE: virtual double getReferenceTime() const {return _ctRef;}
+
   virtual double getReferenceTime() const;
   virtual double setReferenceTime( const Particle& );  // returns _ctRef
   virtual double setReferenceTime( double );  // returns previous _ctRef
 
 
   // Query functions ...
-  alignmentData  Alignment( void ) const;
-  Aperture*      getAperture( void );   // returns a clone of the aperture class
-  inline int     hasAperture( void ) const { return  ( pAperture ? 1 : 0 ); }
-  inline double  Strength()     const { return strength; }
-  double  Length() const;
-  virtual double Current()      const { return strength/iToField; }
-  inline char    IsYourName( const char* x ) { return strcmp( x, ident ); }
-  char hasName( const char* x ) const
-    { return ( 0 == strcmp( ident, x ) ); }
-  virtual const char*  Name() const
-    { return ident; }
-  virtual const char*  Type() const = 0;
-  virtual bool isType( const char* c )
-  { return strcmp(c, "bmlnElmnt") == 0; }
+
+  alignmentData  Alignment( void )        const;
+  Aperture*      getAperture( void );                                           // returns a clone of the aperture class
+  int            hasAperture( void )      const { return  ( pAperture ? 1 : 0 ); }
+  double         Strength()               const { return strength; }
+  double         Length()                 const;
+  virtual double Current()                const  { return strength/iToField; }
+  char           IsYourName(char const* x)       { return strcmp( x, ident ); }
+  char           hasName( const char* x ) const  { return ( 0 == strcmp( ident, x ) ); }
+
+  virtual const char*  Name()             const { return ident; }
+  virtual const char*  Type()             const = 0;
+  virtual bool isType( const char* c )          { return strcmp(c, "bmlnElmnt") == 0; }
 
 
-  void setFlavor( const std::string& x )
-    { flavor = x; }
-  void setFlavor( const char* x )
-    { flavor = x; }
-  std::string Flavor()
-    { return flavor; }
-  std::string getFlavor()
-    { return flavor; }
-  std::string FlavorOrType()
-    { if( flavor.length() == 0 ) return std::string(this->Type());
-      else                       return flavor;
-    }
+  void setFlavor( const std::string& x ) { flavor = x; }
+  void setFlavor( const char* x )        { flavor = x; }
+  std::string Flavor()                   { return flavor; }
+  std::string getFlavor()                { return flavor; }
+  std::string FlavorOrType()             { if( flavor.length() == 0 ) return std::string(this->Type());
+                                            else                      return flavor; 
+                                         }
   std::string getFlavorOrType()
-    { if( flavor.length() == 0 ) return std::string(this->Type());
-      else                       return flavor;
-    }
+                                         { if( flavor.length() == 0 ) return std::string(this->Type());
+                                           else                       return flavor;
+                                         }
 
 
   virtual double OrbitLength( const Particle& ) { return length; }
@@ -571,11 +550,9 @@ public:
   double& IToField()            { return iToField; }
   double  getShunt() const      { return shuntCurrent; }
 
-  #ifdef OBJECT_DEBUG
-  static int objectCount;
-  #endif
 
 private:
+
   /* All the work is done in friend ostream& operator<<(),
      placeholder for if descendants want to do somthing. */
   virtual std::ostream& writeTo(std::ostream& os)       { return os; }
@@ -587,6 +564,8 @@ private:
   std::string  _tag;
 };
 
+
+//------------------------------------------------------------------------------------------------------------
 
 class DLLEXPORT BmlPtrList : private dlist
 {
@@ -602,9 +581,7 @@ public:
 
   BmlPtrList& operator=( const BmlPtrList& );
 
-  void append( bmlnElmnt& );
   void append( bmlnElmnt* );
-  void insert( bmlnElmnt& );
   void insert( bmlnElmnt* );
 
   bmlnElmnt* get();   // Iterator; removes elements from list
@@ -614,6 +591,8 @@ public:
   void clear();   // Preserves the bmlnElmnts
 };
 
+
+//-----------------------------------------------------------------------------------------------------
 
 class DLLEXPORT beamline : public bmlnElmnt
 {
@@ -679,22 +658,15 @@ private:
 
   // Data
 
-  double            nominalEnergy;    // In GeV
-  int               numElem;          // Number of elements in the beamline
-  char              twissDone;
-  LineMode          _mode;
-  dlist            _theList; 
+  double                  nominalEnergy;    // In GeV
+  int                     numElem;          // Number of elements in the beamline
+  char                    twissDone;
+  LineMode               _mode;
+  std::list<bmlnElmnt*>  _theList; 
 
   // Methods
-  void _moveRel(   int axis, double u
-                 , bmlnElmnt* thePtr
-                 , int* errorCodePtr, BmlPtrList* recycleBinPtr
-                 , std::string invoker );
-  void _rotateRel(   int axis, double angle
-                   , bmlnElmnt* thePtr
-                   , double pct
-                   , int* errorCodePtr, BmlPtrList* recycleBinPtr
-                   , std::string invoker );
+  void   _moveRel(   int axis, double u,     bmlnElmnt* thePtr,             int*   errorCodePtr, BmlPtrList* recycleBinPtr, std::string invoker );
+  void _rotateRel(   int axis, double angle, bmlnElmnt* thePtr, double pct, int*   errorCodePtr, BmlPtrList* recycleBinPtr, std::string invoker );
 
   std::ostream& writeTo(std::ostream&);
   friend std::istream& operator>>( std::istream&, beamline& );
@@ -702,11 +674,11 @@ private:
 
 public:
 
-  // CONSTRUCTORS AND DESTRUCTOR
+  // CONSTRUCTORS AND DESTRUCTOR____________________________________________________________
 
   beamline( const char* nm = "NONAME" );
   beamline( bmlnElmnt* );
-  beamline( const beamline& );
+  beamline( beamline const& );
   beamline( char*, bmlnElmnt* );
   beamline( char*, beamline* );
   beamline( FILE* );                  // Reading persistent object stored
@@ -722,16 +694,13 @@ public:
 
 
 
-  // EDITING LATTICE
+  // EDITING LATTICE_____________________________________________________________________
 
-  void insert( bmlnElmnt& );
   void insert( bmlnElmnt* );
-  void append( bmlnElmnt& );
   void append( bmlnElmnt* );
 
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 
-  void InsertElementAt( double s_0, double s, const bmlnElmnt& q );
   void InsertElementAt( double s_0, double s, const bmlnElmnt* q );
                                       // Will insert q into the beamline at
                                       // OrbitLength s, assuming the beamline
@@ -775,11 +744,11 @@ public:
                                       // the hierarchy. Either argument
                                       // may be a pointer to a beamline.
 
-  beamline& operator^( bmlnElmnt& );  // Alters the beamline
-  beamline& operator^( beamline& );
-  beamline& operator+( bmlnElmnt& );  // Does not alter the beamline
-  beamline& operator+( beamline& );
-  beamline& operator-( beamline& );
+  //beamline& operator^( bmlnElmnt& );  // Alters the beamline
+  //beamline& operator+( bmlnElmnt& );  // Does not alter the beamline
+  //beamline& operator+( beamline& );
+  //beamline& operator-( beamline& );
+
   friend beamline& operator-( beamline& );
 
 
@@ -801,54 +770,57 @@ public:
                                      // sector equivalent to the entire
                                      // beamline.  The argument is the
                                      // degree of the map.
-  sector* MakeSector ( const bmlnElmnt&,   // Returns a pointer to a new sector
-                      const bmlnElmnt&,   // equivalent to everything between
-                      int,                // the first two arguments( exclusive).
-                      JetParticle& );
-  sector* MakeSectorFromStart 
-    ( const bmlnElmnt&,   
-     int,                
-     JetParticle& );
-  sector* MakeSectorToEnd 
-    ( const bmlnElmnt&,   
-     int,                
-     JetParticle& );
-  void     sectorize ( int, JetParticle& );
-                                     // Alters the object itself.
-  beamline sectorize ( bmlnElmnt&,   // Alters the object: everything between
-                       bmlnElmnt&,   // the bmlnElmnt arguments replaced by a map.
-                       int,          // <-- This argument is the degree of the map.
-                       JetParticle&, 
-                       const char* = "NONAME" );
-  char putAbove( const bmlnElmnt& x, const bmlnElmnt& y ); // Insert y above (before;  upstream of) x
-  char putBelow( const bmlnElmnt& x, const bmlnElmnt& y ); // Insert y below (after, downstream of) x
 
-  char     remove( void * );
-  beamline remove( const bmlnElmnt&, const bmlnElmnt& );
-  char     remove( const bmlnElmnt& );
-  char     remove( const bmlnElmnt* );
+  sector* MakeSector ( bmlnElmnt const&, bmlnElmnt const&, int,  JetParticle&);                       // Returns a pointer to a new sector
+                                                                                                      // equivalent to everything between
+                                                                                                      // the first two arguments( exclusive).
+                 
+
+
+  sector* MakeSectorFromStart (bmlnElmnt const&,  int,  JetParticle& );
+  sector*     MakeSectorToEnd (bmlnElmnt const&,  int,  JetParticle& );
+
+
+  void     sectorize ( int, JetParticle& );                                                                         // Alters the object itself.
+  beamline sectorize ( bmlnElmnt* start,  bmlnElmnt* end, int degree,  JetParticle& p,   const char* = "NONAME");   // Alters the object: everything between
+                                                                                                                    // the bmlnElmnt arguments replaced by a map.
+                                                                                                                    // <-- This argument is the degree of the map.
+                        
+                
+
+  void putAbove( std::list<bmlnElmnt*>::iterator const& iter, bmlnElmnt* y ); // Insert y above (before;  upstream of) x
+  void putBelow( std::list<bmlnElmnt*>::iterator const& iter, bmlnElmnt* y ); // Insert y below (after, downstream of) x
+
+  beamline remove( bmlnElmnt*, bmlnElmnt* );
+  void     remove( bmlnElmnt* );
 
 
   // Change geometry of the line
-  bool setAlignment ( const alignmentData& );
-  BmlPtrList moveRelX( bmlnElmnt*, double, int* = 0 );
-  BmlPtrList moveRelY( bmlnElmnt*, double, int* = 0 );
-  BmlPtrList moveRelZ( bmlnElmnt*, double, int* = 0 );
-  BmlPtrList pitch( bmlnElmnt*, double, double, int* );
-  BmlPtrList   yaw( bmlnElmnt*, double, double, int* );
-  BmlPtrList  roll( bmlnElmnt*, double, double, int* );
+
+  bool     setAlignment( alignmentData const& );
+  BmlPtrList   moveRelX( bmlnElmnt*, double, int* = 0 );
+  BmlPtrList   moveRelY( bmlnElmnt*, double, int* = 0 );
+  BmlPtrList   moveRelZ( bmlnElmnt*, double, int* = 0 );
+  BmlPtrList      pitch( bmlnElmnt*, double, double, int* );
+  BmlPtrList        yaw( bmlnElmnt*, double, double, int* );
+  BmlPtrList       roll( bmlnElmnt*, double, double, int* );
 
 
   // PROPAGATE PARTICLES
 
-  void localPropagate( ParticleBunch& );
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
 
-  void enterLocalFrame( Particle&    ) const;
-  void enterLocalFrame( JetParticle& ) const;
-  void leaveLocalFrame( Particle&    ) const;
-  void leaveLocalFrame( JetParticle& ) const;
+  void localPropagate( Particle& );          
+  void localPropagate( ParticleBunch& );          
+  void localPropagate( JetParticle& );          
+
+  void enterLocalFrame( Particle&    )    const;   
+  void enterLocalFrame( JetParticle&    ) const;   
+
+  void leaveLocalFrame( Particle&    )    const;   
+  void leaveLocalFrame( JetParticle&    ) const;   
+
+
+
 
   void accept( BmlVisitor& v )
   { v.visitBeamline( this ); }
@@ -862,31 +834,28 @@ public:
   void realignAllElements();  // WRITE
   void markAllPins();         // WRITE
 
-  // EDIT PROPERTIES
+  // EDIT PROPERTIES________________________________________________________________
 
   inline beamline::LineMode getLineMode() const
   { return _mode; }
   inline void setLineMode( beamline::LineMode x )
   { _mode = x; }
-  // _mode doesn't affect behavior at the beamline level
+
+  //   _mode doesn't affect behavior at the beamline level
   //    but carries information for higher level code,
   //    like _dataHook.
 
-  void setEnergy( double /* Nominal energy in GeV */ );
+  void setEnergy( double  nominalEnergyGeV );
   void unTwiss();
 
   void eraseBarnacles( const char* = 0 );
 
-  // ANALYSIS
+  // ANALYSIS_________________________________________________________________________
 
-  // ??? These three twiss functions should be eliminated.
-  // ??? They are hopelessly obsolete.
   // twiss no-longer virtual to eliminate
   // circular library dependencies - FO
 
-  int twiss( JetParticle&, 
-             double = 0.00001 /* dpp */,
-             short int = 1 /* attachFlag */ );
+  int twiss( JetParticle&, double dpp = 0.00001, short int  attachFlag = 1 );
                            // Computes lattice functions all the
                            // way around the ring.
                            // Attaches a lattRing Barnacle labelled 
@@ -894,37 +863,37 @@ public:
                            // Barnacle labelled "Twiss" to every element
                            // in the line.
 
-  int twiss( char, 
-             JetParticle& );
+  int twiss( char,         JetParticle& );
                            // Only computes lattice functions at
                            // the beginning of the ring.
                            // Uses the same method as MAD.
-  int twiss( lattFunc&,
-             JetParticle&,
-             short int = 1 /* attachFlag */ );
+
+  int twiss( lattFunc&,    JetParticle&,  short int attachFlag = 1);
                            // Computes lattice functions for a
                            // non-periodic beamline.
                            // Uses the same method as MAD.
 
 
-  // QUERIES
-  // REMOVE: void   peekAt( double& s, Particle* = 0 );
-  void   peekAt( double& s, const Particle& ) const;
-  lattFunc whatIsLattice( int );     // After element n, 0 <= n.
-  lattFunc whatIsLattice( char* n ); // n is name of element 
-  int    howMany() const { return numElem; }  // WARNING: not reliable!
-  int    countHowMany( CRITFUNC = 0, slist* = 0 ) const;
-  int    countHowManyDeeply( CRITFUNC = 0, slist* = 0 ) const;
-  int    depth() const;  // Returns -1 if beamline is empty.
-                         // Returns  0 if beamline is flat
-                         //   or all its subbeamlines are empty.
-                         // Otherwise returns 1 + largest
-                         //   depth of all subbeamlines.
+  // QUERIES _________________________________________________________________________________
 
-  int    contains( const bmlnElmnt*) const;
-  // Returns the number of times the argument appears.
+  // REMOVE: void   peekAt( double& s, Particle* = 0 );
+
+  void                peekAt( double& s, const Particle& ) const;
+  lattFunc     whatIsLattice( int );                                                // After element n, 0 <= n.
+  lattFunc     whatIsLattice( char* n );                                            // n is name of element 
+  int                howMany()                           const { return numElem; }  // WARNING: not reliable!
+  int           countHowMany( CRITFUNC = 0, slist* = 0 ) const;
+  int     countHowManyDeeply( CRITFUNC = 0, slist* = 0 ) const;
+  int                  depth()                           const;                     // Returns -1 if beamline is empty.
+                                                                                    // Returns  0 if beamline is flat
+                                                                                    //            or all its subbeamlines are empty.
+                                                                                    // Otherwise returns 1 + largest
+                                                                                    // depth of all subbeamlines.
+
+  int    contains( const bmlnElmnt*) const;     // Returns the number of times the argument appears.
 
   bool find( bmlnElmnt*& u, bmlnElmnt*& v, bmlnElmnt*& w ) const;
+
   // Upon entry: u and w should have null value but can, in fact
   //               be anything. 
   //               WARNING: they will be reset, so don't use addresses
@@ -954,12 +923,11 @@ public:
 
 
 
-
   inline bmlnElmnt* firstElement() const
-  { return (bmlnElmnt*)  _theList.firstInfoPtr(); }
+  { return   _theList.front(); }
 
   inline bmlnElmnt* lastElement() const
-  { return (bmlnElmnt*)  _theList.lastInfoPtr(); }
+  { return   _theList.back(); }
 
   inline char twissIsDone()
   { return twissDone; }
@@ -986,7 +954,7 @@ public:
   lattRing whatIsRing();
 
 
-  // CLONING AND STORING
+  // CLONING AND STORING_______________________________________________________________________
 
   // REMOVE: beamline& operator=( const beamline& );
   beamline* flatten() const;    // Produces a flattened version of itself.
@@ -1001,13 +969,9 @@ public:
 } ;
 
 
-extern beamline& operator*( int, beamline& );
-extern beamline& operator*( int, bmlnElmnt& );
-extern beamline& operator*( beamline&, int );
-extern beamline& operator*( bmlnElmnt&, int );
-extern beamline& operator^( bmlnElmnt&, bmlnElmnt& );
-extern beamline& operator-( beamline& );
 
+
+//------------------------------------------------------------------------------------------------------------
 
 struct beamlineData : public bmlnElmntData
 {
@@ -1015,11 +979,12 @@ struct beamlineData : public bmlnElmntData
 
   beamlineData();
   beamlineData( beamlineData& );
-  ~beamlineData();
+ ~beamlineData();
   void eliminate();
   void* clone();
 
 };
+
 
 
 #endif // BMLNELMNT_H

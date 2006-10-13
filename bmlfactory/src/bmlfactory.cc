@@ -968,7 +968,7 @@ bmlfactory::append_bml_element( char* ptr, beamline* lbml ) {
     beamline* subbml = create_beamline_private( ptr+1, BRHO_ );
     if ( subbml != NULL ) {
       if ( *ptr == '-' ) {
-        lbml->append( -(*subbml) );
+        lbml->append( &(-(*subbml)) ); // YUCK !
       } else {
         lbml->append( subbml );
       }
