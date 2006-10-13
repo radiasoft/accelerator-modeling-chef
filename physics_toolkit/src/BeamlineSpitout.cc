@@ -68,6 +68,6 @@ void BeamlineSpitout( int numspaces, BeamlineIterator& bi )
 
 void BeamlineSpitout( const beamline& bml )
 {
-  BeamlineIterator bi( bml );
+  BeamlineIterator bi( const_cast<beamline&>(bml) );
   BeamlineSpitout( 0, bi );
 }
