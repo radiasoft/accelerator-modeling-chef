@@ -86,8 +86,7 @@ MatrixD FindCovariance( const beamline&    line,
 
   const int columns = 3;
 
-  // dlist_iterator NextElement( line );
-  BeamlineIterator bi( line );
+  BeamlineIterator bi( const_cast<beamline&>(line) );
   slist_iterator NextSample ( sampleSites );
   bmlnElmnt* pbe_line;
   bmlnElmnt* pbe_sample;
@@ -182,7 +181,7 @@ void TestCovariance( const beamline&    line,
                      const JetParticle& jp,
                      const MatrixD&     C ) 
 {
-  BeamlineIterator NextElement( line );
+  BeamlineIterator NextElement( const_cast<beamline&>(line) );
   slist_iterator NextSample ( sampleSites );
   bmlnElmnt* pbe_line;
   bmlnElmnt* pbe_sample;

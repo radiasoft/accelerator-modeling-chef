@@ -116,7 +116,7 @@ void DriftEliminator::visitBeamline( const beamline* x )
 
 
   // Process the argument
-  DeepBeamlineIterator dbi( *x );
+  DeepBeamlineIterator dbi( const_cast<beamline&>(*x) );
   bmlnElmnt* q;
   while( 0 != ( q = dbi++ ) ) {
     q->accept( *this );
