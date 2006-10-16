@@ -592,8 +592,8 @@ void beamline::InsertElementsFromList( double& s, InsertionList& inList, slist& 
 
  std::list<bmlnElmnt*>::iterator bml_iter = _theList.begin();
 
- bmlnElmnt* p_be   = *bml_iter;
-
+ bmlnElmnt* p_be   = (bml_iter == _theList.end()) ? 0: *bml_iter;
+ 
  bmlnElmnt* p_be_a = 0;
  bmlnElmnt* p_be_b = 0;
 
@@ -633,12 +633,15 @@ void beamline::InsertElementsFromList( double& s, InsertionList& inList, slist& 
     static_cast<beamline*>(p_be)->InsertElementsFromList( s, inList, removedElements );
 
     p_ile = inList(0);   // this may have changed
-    p_be = *(++bml_iter);
+ 
+    ++bml_iter;
+    p_be =  (bml_iter == _theList.end()) ? 0: *bml_iter;
   }
 
   else if ( s + p_be->OrbitLength( *prtnPtr ) <= p_ile->s ) {
     s += p_be->OrbitLength( *prtnPtr );
-    p_be = *(++bml_iter);
+    ++bml_iter;
+    p_be =  (bml_iter == _theList.end()) ? 0: *bml_iter;
   }
 
   else if ( s == p_ile->s ) {
@@ -657,7 +660,8 @@ void beamline::InsertElementsFromList( double& s, InsertionList& inList, slist& 
   else if (  0 == strcmp( p_be->Type(), "combinedFunction" )  ) {
     p_be->p_bml->InsertElementsFromList( s, inList, removedElements );
     p_ile = inList(0);   // this may have changed
-    p_be = *(++bml_iter);
+    ++bml_iter;
+    p_be =  (bml_iter == _theList.end()) ? 0: *bml_iter;
 
     if( firstWarning ) {
       (*pcerr) << "\n*** WARNING:                                   *** "
@@ -678,9 +682,9 @@ void beamline::InsertElementsFromList( double& s, InsertionList& inList, slist& 
 
     bml_iter = _theList.erase( bml_iter );
 
-    putAbove( bml_iter, p_be_b   );
-    putAbove( bml_iter, p_ile->q );
     putAbove( bml_iter, p_be_a   );
+    putAbove( bml_iter, p_ile->q );
+    putAbove( bml_iter, p_be_b   );
 
 
     s += ( p_be_a->OrbitLength( *prtnPtr ) + p_ile->q->OrbitLength( *prtnPtr ) );
