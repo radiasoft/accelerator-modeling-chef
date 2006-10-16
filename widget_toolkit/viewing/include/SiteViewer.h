@@ -43,6 +43,7 @@ class BeamlineContext;
 class QPopupMenu;
 class QString;
 class QMouseEvent;
+class QueryDialog;
 
 #ifndef BMLEXPTREE_H
 #include "BeamlineExpressionTree.h"
@@ -109,14 +110,14 @@ public slots:
   void _viewZoomOut();
   void _viewReset();
   void _viewHilite();
+  void _viewHilt( const BoolNode& );
   void _optionOrigin();
-  void _optionHilt( const BoolNode& );
 
 private:
   static const BoolNullNode nada;
   void _finishConstructor();
 
-  Wndw* _myGLwindow;
+  Wndw*   _myGLwindowPtr;
 
   int     _n;
   double* _x;
@@ -134,12 +135,13 @@ private:
   bool             _showStart;
   bmlnElmnt**      _element;
 
-  BoolNode*  _filterPtr; // owned
+  BoolNode*    _filterPtr;      // owned
+  QueryDialog* _queryDialogPtr; // owned
 
   QPopupMenu* _viewMenuPtr;
   QPopupMenu* _optionMenuPtr;
   int         _id_viewZoom;
-  int         _id_optHilit;
+  int         _id_viewHilit;
   int         _id_optShoOrig;
 };
 

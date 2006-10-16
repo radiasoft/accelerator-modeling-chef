@@ -73,7 +73,8 @@ SiteViewer::SiteViewer( BeamlineContext& bmlCP, QWidget* parent, const char* nam
   _deleteContext( false ),
   _showStart( false ),
   _element(0),
-  _filterPtr(0)
+  _filterPtr(0),
+  _queryDialogPtr(0)
 {
   this->_finishConstructor();
 }
@@ -90,7 +91,8 @@ SiteViewer::SiteViewer( const Particle& prt, beamline* x, QWidget* parent, const
   _deleteContext( true ),
   _showStart( false ),
   _element(0),
-  _filterPtr(0)
+  _filterPtr(0),
+  _queryDialogPtr(0)
 {
   if( 0 == x ) {
     QMessageBox::information( 0, "CHEF::SiteViewer",
@@ -168,33 +170,32 @@ void SiteViewer::_finishConstructor()
     _viewMenuPtr->insertItem( "Zoom out (x2)", this, SLOT(_viewZoomOut()) );
     _viewMenuPtr->insertItem( "Reset", this, SLOT(_viewReset()) );
     fileMenu->insertSeparator();
-    _id_optHilit =
+    _id_viewHilit =
     _viewMenuPtr->insertItem( "Highlight", this, SLOT(_viewHilite()) );
   myMenuPtr->insertItem( "View", _viewMenuPtr );
 
     _optionMenuPtr = new QPopupMenu( this );
     _id_optShoOrig =
     _optionMenuPtr->insertItem( "Show origin", this, SLOT(_optionOrigin()) );
-    // REMOVE: _optionMenuPtr->insertItem( "Highlight sextupoles", this, SLOT(_optionHiltSext()) );
   myMenuPtr->insertItem( "Options", _optionMenuPtr );
 
-  _myGLwindow = new Wndw( this );
-  _myGLwindow->show();
+  _myGLwindowPtr = new Wndw( this );
+  _myGLwindowPtr->show();
 
   // ------------------------------------------------------
   // From chef-mdi/src/SiteViewer.cpp:
   // 
-  _myGLwindow->resize(width(), height());
+  _myGLwindowPtr->resize(width(), height());
   // ------------------------------------------------------
   // From chef/src/SiteViewer.cc:
   // 
-  // _myGLwindow->setMinimumSize(QSize(  (2*QApplication::desktop()->height())/3
+  // _myGLwindowPtr->setMinimumSize(QSize(  (2*QApplication::desktop()->height())/3
   //                                   , (2*QApplication::desktop()->height())/3 ));
   // this->adjustSize();
-  // _myGLwindow->setMinimumSize(QSize( 10, 10 ));
+  // _myGLwindowPtr->setMinimumSize(QSize( 10, 10 ));
   // ------------------------------------------------------
 
-  // NOTE: _myGLwindow will be
+  // NOTE: _myGLwindowPtr will be
   // deleted automatically by Qt.
 }
 
@@ -207,6 +208,7 @@ SiteViewer::~SiteViewer()
   if(_element)       { delete [] _element; }
   if(_deleteContext) { delete _bmlConPtr; _bmlConPtr = 0; }
   if(_filterPtr)     { _filterPtr->eliminate(); _filterPtr = 0; }
+  if(_queryDialogPtr){ delete _queryDialogPtr; _queryDialogPtr = 0; }
 }
 
 
@@ -286,36 +288,41 @@ void SiteViewer::_viewZoom()
   _viewMenuPtr->setItemChecked( _id_viewZoom, checked );
 
   if( checked ) 
-  { _myGLwindow->activateZoom(); }
+  { _myGLwindowPtr->activateZoom(); }
   else 
-  { _myGLwindow->deactivateZoom(); }
+  { _myGLwindowPtr->deactivateZoom(); }
 }
 
 
 void SiteViewer::_viewZoomOut()
 {
-  _myGLwindow->zoomOut();
+  _myGLwindowPtr->zoomOut();
 }
 
 
 void SiteViewer::_viewReset()
 {
   _viewMenuPtr->setItemChecked( _id_viewZoom, false );
-  _myGLwindow->resetZoom();
+  _myGLwindowPtr->resetZoom();
 }
 
 
 void SiteViewer::_viewHilite()
 {
-  bool checked = !( _optionMenuPtr->isItemChecked(_id_optHilit) );
-  _optionMenuPtr->setItemChecked( _id_optHilit, checked );
-  _myGLwindow->toggleHighlight();
+  bool checked = !( _viewMenuPtr->isItemChecked(_id_viewHilit) );
+  _viewMenuPtr->setItemChecked( _id_viewHilit, checked );
+  _myGLwindowPtr->toggleHighlight();
 
   if( checked ) {
-    QueryDialog* qdl = new QueryDialog( 0, 0, Qt::WDestructiveClose );
-    connect( qdl,  SIGNAL(_useThis( const BoolNode& )), 
-             this, SLOT  (_optionHilt( const BoolNode& )) );
-    qdl->show();
+    if( 0 == _queryDialogPtr ) {
+      _queryDialogPtr = new QueryDialog( 0, 0, 0 );
+      connect( _queryDialogPtr,  SIGNAL(_useThis( const BoolNode& )), 
+               this,             SLOT  (_viewHilt( const BoolNode& )) );
+    }
+    _queryDialogPtr->show();
+  }
+  else {
+    _queryDialogPtr->hide();
   }
 }
 
@@ -326,14 +333,14 @@ void SiteViewer::_optionOrigin()
   _optionMenuPtr->setItemChecked( _id_optShoOrig, checked );
 
   _showStart = !_showStart;
-  this->_myGLwindow->updateGL();
+  this->_myGLwindowPtr->updateGL();
 }
 
 
-void SiteViewer::_optionHilt( const BoolNode& x )
+void SiteViewer::_viewHilt( const BoolNode& x )
 {
   _filterPtr = x.Clone();
-  this->_myGLwindow->updateGL();
+  this->_myGLwindowPtr->updateGL();
 }
 
 
