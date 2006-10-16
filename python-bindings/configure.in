@@ -264,9 +264,9 @@ else
 
 fi
 ])
-AC_ARG_VAR([BOOST_PYTHON_LINK],    [link option for BOOST Python lib, default -lboost_python-gcc-mt])dnl
+AC_ARG_VAR([BOOST_PYTHON_LINK],    [link option for BOOST Python lib, default -lboost_python-gcc])dnl
 if test -z "${BOOST_PYTHON_LINK}" ; then
-        BOOST_PYTHON_LINK='-lboost_python-gcc-mt'
+        BOOST_PYTHON_LINK='-lboost_python-gcc'
 fi
 AC_SUBST(BOOST_PYTHON_LINK)
 AC_ARG_VAR([BOOST_INC],    [BOOST include directory])dnl
