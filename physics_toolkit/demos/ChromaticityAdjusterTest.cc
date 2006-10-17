@@ -67,7 +67,13 @@ int main( int argc, char** argv )
  cell.append(  D.Clone() );
  cell.append( SD.Clone() );
  cell.append(  O.Clone() );
+ cell.setLineMode( beamline::ring );
  
+ // Regrettably, this step must be done.
+ // -----------------------------------
+ RefRegVisitor registrar(pr);
+ cell.accept(registrar);
+
  ChromaticityAdjuster adj ( cell );
  LattFuncSage         lfs ( cell );
 
@@ -92,6 +98,7 @@ int main( int argc, char** argv )
 
  cell.dataHook.eraseAll( "Ring" );
  // lfs.TuneCalc( &jpr3 );
+ // REMOVE: lfs.set_verbose();
  lfs.Disp_Calc( &jpr3 );
  LattFuncSage::lattRing* tuneptr = (LattFuncSage::lattRing*) cell.dataHook.find( "Ring" );
  if( tuneptr == 0 ) {
