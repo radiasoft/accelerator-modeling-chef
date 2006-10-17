@@ -12,17 +12,6 @@
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******* The U.S. Government retains a world-wide non-exclusive, 
-******* royalty-free license to publish or reproduce documentation 
-******* and software for U.S. Government purposes. This software 
-******* is protected under the U.S. and Foreign Copyright Laws. 
-******* URA/FNAL reserves all rights.
-*******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -33,6 +22,9 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License and the GNU General Public License, both of
+******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -40,7 +32,7 @@
 #ifndef DISPERSIONSAGE_H
 #define DISPERSIONSAGE_H
 
-#include <physics_toolkit/Sage.h>
+#include "Sage.h"
 
 class DispersionSage : public Sage
 {
@@ -110,7 +102,7 @@ public:
   int doCalc( JetParticle*, beamline::Criterion& = beamline::yes );
   int fullCalc( JetParticle*, beamline::Criterion& = beamline::yes );
       // Two equivalent functions. doCalc is a name alias for fullCalc.
-      //   It provides compatability with other Sages.
+      //   It provides backwards compatability with other Sages.
   // int fadCalc( const JetParticle*, beamline::Criterion& = beamline::yes ) const;
       // Assumes no vertical dispersion.
       // Uses the 5x5 matrix formalism that 
@@ -170,8 +162,8 @@ public:
   int    _n;      // size of the _calcs array
   GlobalInfo _lr;
 
-  void _finishConstructor();
   void _deleteCalcs();
+  void _createCalcs();
   bool _ignoreErrors;
 };
 
