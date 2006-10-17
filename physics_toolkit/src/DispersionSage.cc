@@ -51,14 +51,15 @@ const int DispersionSage::IMPOSSIBILITY    = 111;
 
 
 DispersionSage::Info::Info()
+: BarnacleData()
 {
-  arcLength = -1.0;
+  arcLength       = -1.0;
   closedOrbit.hor = 0.0;
   closedOrbit.ver = 0.0;
-  dispersion.hor = 0.0;
-  dispersion.ver = 0.0;
-  dPrime.hor = 0.0;
-  dPrime.ver = 0.0;
+  dispersion.hor  = 0.0;
+  dispersion.ver  = 0.0;
+  dPrime.hor      = 0.0;
+  dPrime.ver      = 0.0;
 }
 
 DispersionSage::Info::Info( const Info& x )
@@ -77,17 +78,21 @@ DispersionSage::Info& DispersionSage::Info::operator=( const Info& x )
 
 
 DispersionSage::GlobalInfo::GlobalInfo()
+: BarnacleData()
 {
-  tune.hor = 0.0;
-  tune.ver = 0.0;
+  tune.hor         = 0.0;
+  tune.ver         = 0.0;
   chromaticity.hor = 0.0;
   chromaticity.ver = 0.0;
 }
 
+
 DispersionSage::GlobalInfo::GlobalInfo( const GlobalInfo& x )
+: BarnacleData()
 {
   memcpy((void*) this, (const void*) &x, sizeof(DispersionSage::GlobalInfo));
 }
+
 
 DispersionSage::GlobalInfo& DispersionSage::GlobalInfo::operator=( const GlobalInfo& x )
 {
@@ -130,7 +135,6 @@ DispersionSage::DispersionSage( const beamline* x, bool doClone )
   _calcs((DispersionSage::Info*) 0),
   _n(0)
 {
-  // REMOVE: _finishConstructor();
 }
 
 DispersionSage::DispersionSage( const beamline& x, bool doClone )
@@ -140,20 +144,15 @@ DispersionSage::DispersionSage( const beamline& x, bool doClone )
   _calcs((DispersionSage::Info*) 0),
   _n(0)
 {
-  // REMOVE: _finishConstructor();
 }
 
 
-void DispersionSage::_finishConstructor()
+void DispersionSage::_createCalcs()
 {
   _n = _arrayPtr->size();
   if( 0 < _n ) { _calcs = new Info[_n]; }
 }
 
-DispersionSage::~DispersionSage()
-{
-  _deleteCalcs();
-}
 
 void DispersionSage::_deleteCalcs()
 {
@@ -165,13 +164,6 @@ void DispersionSage::_deleteCalcs()
     be->dataHook.eraseAll( "DispersionSage" );
   }
 
-  // REMOVE: if( _calcs ) { 
-  // REMOVE:   for( int i = 0; i < _n; i++ )
-  // REMOVE:   { if( 0 != _calcs[i] ) {delete _calcs[i];} }
-  // REMOVE:   delete [] _calcs;
-  // REMOVE:   _calcs = 0;
-  // REMOVE:   _n = 0;
-  // REMOVE: }
   if( _calcs ) { 
     delete [] _calcs;
     _calcs = 0;
@@ -180,8 +172,15 @@ void DispersionSage::_deleteCalcs()
 }
 
 
+DispersionSage::~DispersionSage()
+{
+  _deleteCalcs();
+}
+
+
 int DispersionSage::doCalc( JetParticle* p_jp, beamline::Criterion& crit )
 {
+  // DispersionSage::doCalc maintained for backwards compatability.
   return ( this->fullCalc( p_jp, crit ) );
 }
 
@@ -201,7 +200,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
 
   // Create the _calcs array
   _deleteCalcs();
-  _finishConstructor();
+  _createCalcs();
 
   // Preserve the current Jet environment
   Jet__environment_ptr storedEnv = Jet__environment::getLastEnv();
@@ -435,8 +434,9 @@ int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions
   int i;
   Vector d( prt.State().Dim() );
 
+  // Create the _calcs array
   _deleteCalcs();
-  _finishConstructor();
+  _createCalcs();
 
   Particle* firstParticle  = prt.Clone();
   Particle* secondParticle = prt.Clone();
@@ -751,8 +751,9 @@ const DispersionSage::Info* DispersionSage::getInfoPtr( int i ) const
 
 void DispersionSage::eraseAll()
 {
+  // Create the _calcs array
   _deleteCalcs();
-  _finishConstructor();
+  _createCalcs();
 
   if( _n != _myBeamlinePtr->countHowManyDeeply() ) {
     *_errorStreamPtr << "\n*** WARNING ***"
