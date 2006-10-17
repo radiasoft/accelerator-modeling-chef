@@ -41,7 +41,8 @@
 #include <basic_toolkit/dlist.h>
 
 struct DLLEXPORT BarnacleData {
- BarnacleData() {};
+ bool valid;
+ BarnacleData() : valid(false) {};
  virtual ~BarnacleData() {};
 };
 
