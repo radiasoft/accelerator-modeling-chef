@@ -322,6 +322,8 @@ private:
 
   static int _buildVTuneCircuit( const CHEFGUI*, const bmlnElmnt* );
   static int _buildHTuneCircuit( const CHEFGUI*, const bmlnElmnt* );
+  static int _buildVChromCircuit( const CHEFGUI*, const bmlnElmnt* );
+  static int _buildHChromCircuit( const CHEFGUI*, const bmlnElmnt* );
 
   void _testFC( ACTFUNC11 ) const;
   void _traverseTree( const QBmlRoot*, ACTFUNC11 ) const;
@@ -395,6 +397,8 @@ private slots:
   void _horTuneCtrl();
   void _verTuneCtrl();
   void _tuneCtrl();
+  void _horChromCtrl();
+  void _verChromCtrl();
   void _chromCtrl();
 
   void _set_p_clickedContext( BeamlineContext*, QBmlRoot* );
