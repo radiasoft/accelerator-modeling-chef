@@ -367,7 +367,7 @@ void CHEFGUI::_openFile()
       }
       catch (GenericException& e)
       {
-        QMessageBox::information( 0, "CHEF: ERROR", e.what() );
+        QMessageBox::critical( 0, "CHEF: ERROR", e.what() );
         return;
       }
 
@@ -880,12 +880,50 @@ void CHEFGUI::_verTuneCtrl()
 }
 
 
+void CHEFGUI::_horChromCtrl()
+{
+
+ if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+
+  if( _p_currBmlCon->isTreatedAsRing() ) {
+    _testFC( CHEFGUI::_buildHChromCircuit );
+  }
+  else {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
+  }
+}
+
+
+void CHEFGUI::_verChromCtrl()
+{
+
+  if( 0 == _p_currBmlCon ) {
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+
+  if( _p_currBmlCon->isTreatedAsRing() ) {
+    _testFC( CHEFGUI::_buildVChromCircuit );
+  }
+  else {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
+  }
+
+}
+
+
 int
 CHEFGUI::_buildHTuneCircuit( const CHEFGUI* aPtr, const bmlnElmnt* bPtr )
 {
   aPtr->_p_currBmlCon->addHTuneCorrector( bPtr );
   return 0; // this should really be a void function
-
 }
 
 
@@ -894,7 +932,22 @@ CHEFGUI::_buildVTuneCircuit( const CHEFGUI* aPtr, const bmlnElmnt* bPtr )
 {
   aPtr->_p_currBmlCon->addVTuneCorrector( bPtr );
   return 0; // this should really be a void function
+}
 
+
+int
+CHEFGUI::_buildHChromCircuit( const CHEFGUI* aPtr, const bmlnElmnt* bPtr )
+{
+  aPtr->_p_currBmlCon->addHChromCorrector( bPtr );
+  return 0; // this should really be a void function
+}
+
+
+int
+CHEFGUI::_buildVChromCircuit( const CHEFGUI* aPtr, const bmlnElmnt* bPtr )
+{
+  aPtr->_p_currBmlCon->addVChromCorrector( bPtr );
+  return 0; // this should really be a void function
 }
 
 
@@ -2050,7 +2103,6 @@ void CHEFGUI::_editPartAndSect()
       coord* px = new coord(0.0);
       coord* py = new coord(0.0);
       coord* pz = new coord(0.0);
-
       Jet__environment::EndEnvironment(scale);
       JetC__environment::setLastEnv( _p_JetEnv ); // implicit conversion
 
@@ -3110,6 +3162,74 @@ void CHEFGUI::_chromCtrl()
     return;
   }
 
+  // --------------------------------------------------------------
+
+  QDialog* wpu = new QDialog( 0, 0, true );
+    QVBox* qvb = new QVBox( wpu );
+      QHBox* qhb1 = new QHBox( qvb );
+      ///QLabel* qlbh = new QLabel( "Delta H tune", qhb1 );
+        QLineEdit* qleh = new QLineEdit( "0.0", qhb1 );
+      qhb1->setMargin(5);
+      qhb1->setSpacing(3);
+      qhb1->adjustSize();
+
+      QHBox* qhb2 = new QHBox( qvb );
+      ////QLabel* qlbv = new QLabel( "Delta V tune", qhb2 );
+        QLineEdit* qlev = new QLineEdit( "0.0", qhb2 );
+      qhb2->setMargin(5);
+      qhb2->setSpacing(3);
+      qhb2->adjustSize();
+
+      QHBox* qhb3 = new QHBox( qvb );
+        QPushButton* okayBtn = new QPushButton( "OK", qhb3 );
+          okayBtn->setDefault( true );
+          connect( okayBtn, SIGNAL(pressed()),
+                   wpu,     SLOT(accept()) );
+        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb3 );
+          connect( cancelBtn, SIGNAL(pressed()),
+                   wpu,       SLOT(reject()) );
+      qhb3->setMargin(5);
+      qhb3->setSpacing(3);
+      qhb3->adjustSize();
+
+    qvb->adjustSize();
+
+  wpu->setCaption( "CHEF: Chromaticity Adjuster" );
+  wpu->adjustSize();
+
+  int returnCode = wpu->exec();
+
+  if( returnCode == QDialog::Accepted ) {
+    bool okh, okv;
+    double deltaChrH = (qleh->text()).toDouble( &okh);
+    double deltaChrV = (qlev->text()).toDouble( &okv);
+    if( okh && okv ) {
+      if( (0. != deltaChrH) || (0. != deltaChrV) ) {
+        try 
+        {
+          if( 0 != (returnCode = _p_currBmlCon->changeChromaticityBy( deltaChrH, deltaChrV )) ) {
+            (*pcerr) << "*** WARNING *** File "
+                 << __FILE__
+                 << ", Line "
+                 << __LINE__
+                 << ": Chromaticity adjustment returned error condition "
+                 << returnCode
+                 << std::endl;
+            QMessageBox::information( 0, "CHEF",
+                        "Chromaticity adjustment error." );
+          }
+        }
+        catch (GenericException& e)
+        {
+          QMessageBox::information( 0, "CHEF: ERROR", e.what() );
+          delete wpu;
+          return;
+	}
+      }
+    }
+  }
+
+  delete wpu;
 }
 
 
@@ -3352,6 +3472,9 @@ void CHEFGUI::_enableMenus( bool set )
     controlsBuildHTuneCctAction->setEnabled(set);
     controlsBuildVTuneCctAction->setEnabled(set);
     controlsAdjustTuneAction->setEnabled(set);
+    controlsBuildHChromCctAction->setEnabled(set);
+    controlsBuildVChromCctAction->setEnabled(set);
+    controlsAdjustChromAction->setEnabled(set);
     toolsGenBunchAction->setEnabled(set);
 
     editCopyLineAction->setEnabled(set);
