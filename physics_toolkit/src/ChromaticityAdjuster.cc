@@ -176,30 +176,41 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
  
   LattFuncSage::lattFunc* ptr;
   bmlnElmnt* q; 
+  bool gotDispersion;
+  bool gotBetas;
   for( j = 0; j < N; j++ ) 
   {
+    gotDispersion = false;
+    gotBetas      = false;
+
     ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Dispersion" );
-    if(!ptr) {
-      delete jprPtr;  jprPtr  = 0;
-      delete jpr2Ptr; jpr2Ptr = 0;
-      delete jpr3Ptr; jpr3Ptr = 0;
-      throw( GenericException( __FILE__, __LINE__, 
-             "int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetParticle& jp )", 
-             "No dispersion information found." ) );
+    if(!ptr) { 
+      ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
     }
-    dsp       =   ptr->dispersion.hor;
+    if(ptr) { 
+      dsp =   ptr->dispersion.hor;
+      gotDispersion = true;
+    }
+    else {
+      dsp = 0.0;  // Just to give it a value.
+    }
 
     ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
-    if(!ptr) {
+    // NOTE: possibly 2nd time this is done.
+    if(ptr) {
+      beta(0,j) =   ptr->beta.hor * dsp;
+      beta(1,j) = - ptr->beta.ver * dsp;
+      gotBetas = true;
+    }
+
+    if( !(gotBetas && gotDispersion) ) {
       delete jprPtr;  jprPtr  = 0;
       delete jpr2Ptr; jpr2Ptr = 0;
       delete jpr3Ptr; jpr3Ptr = 0;
       throw( GenericException( __FILE__, __LINE__, 
              "int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetParticle& jp )", 
-             "Lattice functions not yet calculated." ) );
+             "Lattice functions or dispersion not yet calculated." ) );
     }
-    beta(0,j) =   ptr->beta.hor * dsp;
-    beta(1,j) = - ptr->beta.ver * dsp;
   }
   
 
