@@ -65,8 +65,7 @@
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/Matrix.h>
-#include <mxyzptlk/TJetVector.h>
-#include <mxyzptlk/Jet.h>
+
 
 using FNAL::pcout;
 using FNAL::pcerr;
@@ -131,22 +130,6 @@ _dim(x._dim), _myEnv(x._myEnv)
   }
 
 }
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
- template<>
- template<>
- TJetVector<std::complex<double> >::TJetVector(TJetVector<double> const& x):
- _dim(x._dim), _myEnv(x._myEnv) // Note: env implicit conversion
-{ 
-  _comp  = new TJet<std::complex<double> > [ _dim ];
-  for ( int i=0; i< _dim; ++i) {
-    _comp[i] = x._comp[i];     // implicit type conversion
-    CHECKOUT(  _comp[i].Env() != _myEnv , "TJetVector<std::complex<double> >::const TJetVector<double>& x", "Incompatible environments.")
-  }
-}
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
