@@ -94,6 +94,10 @@
         <action name="controlsBuildHTuneCctAction"/>
         <action name="controlsBuildVTuneCctAction"/>
         <action name="controlsAdjustTuneAction"/>
+        <separator/>
+        <action name="controlsBuildHChromCctAction"/>
+        <action name="controlsBuildVChromCctAction"/>
+        <action name="controlsAdjustChromAction"/>
     </item>
     <item text="&amp;Tools" name="Tools">
         <action name="toolsGenBunchAction"/>
@@ -584,6 +588,39 @@
         </property>
         <property name="menuText">
             <string>Adjust Tune</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>controlsBuildHChromCctAction</cstring>
+        </property>
+        <property name="text">
+            <string>Build Horizontal Chromaticity Circuit</string>
+        </property>
+        <property name="menuText">
+            <string>Build Horizontal Chromaticity Circuit</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>controlsBuildVChromCctAction</cstring>
+        </property>
+        <property name="text">
+            <string>Build Vertical Chromaticity Circuit</string>
+        </property>
+        <property name="menuText">
+            <string>Build Vertical Chromaticity Circuit</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>controlsAdjustChromAction</cstring>
+        </property>
+        <property name="text">
+            <string>Adjust Chromaticity</string>
+        </property>
+        <property name="menuText">
+            <string>Adjust Chromaticity</string>
         </property>
     </action>
     <action>
@@ -1328,6 +1365,24 @@
         <slot>_tuneCtrl()</slot>
     </connection>
     <connection>
+        <sender>controlsBuildHChromCctAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_horChromCtrl()</slot>
+    </connection>
+    <connection>
+        <sender>controlsBuildVChromCctAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_verChromCtrl()</slot>
+    </connection>
+    <connection>
+        <sender>controlsAdjustChromAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>_chromCtrl()</slot>
+    </connection>
+    <connection>
         <sender>toolsSite_ViewerAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
@@ -1685,6 +1740,9 @@
     <slot>_horTuneCtrl()</slot>
     <slot>_verTuneCtrl()</slot>
     <slot>_tuneCtrl()</slot>
+    <slot>_horChromCtrl()</slot>
+    <slot>_verChromCtrl()</slot>
+    <slot>_chromCtrl()</slot>
     <slot>windowsInterpreterAction_toggled( bool set )</slot>
     <slot>windowsMessagesAction_toggled( bool set )</slot>
     <slot>windowsTree_BrowserAction_toggled( bool set )</slot>
