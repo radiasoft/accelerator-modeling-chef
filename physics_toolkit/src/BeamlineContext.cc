@@ -57,8 +57,9 @@ using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
 
-const int BeamlineContext::OKAY = 0;
-const int BeamlineContext::NO_TUNE_ADJUSTER = 1;
+const int BeamlineContext::OKAY                     = 0;
+const int BeamlineContext::NO_TUNE_ADJUSTER         = 1;
+const int BeamlineContext::NO_CHROMATICITY_ADJUSTER = 2;
 
 const double BeamlineContext::_smallClosedOrbitXError   /* [m] */ = 1.0e-9;
 const double BeamlineContext::_smallClosedOrbitYError   /* [m] */ = 1.0e-9;
@@ -1409,6 +1410,66 @@ int BeamlineContext::changeTunesBy( double dnuh, double dnuv )
   JetParticle* jpPtr = dummyPtr->ConvertToJetParticle();
 
   _p_ta->changeTunesBy( dnuh, dnuv, *jpPtr );
+
+  delete dummyPtr;
+  delete jpPtr;
+  _deleteLFS();
+
+  return OKAY;
+}
+
+
+int BeamlineContext::addHChromCorrector( const bmlnElmnt* x ) 
+{
+  if( 0 == _p_ca ) {
+    _p_ca = new ChromaticityAdjuster( _p_bml, false );
+  }
+    
+  if( 0 == strcmp( x->Type(), "sextupole" ) ) {
+    _p_ca->addCorrector( dynamic_cast<const sextupole*>(x), 1.0, 0.0 );
+  }  
+  else if( 0 == strcmp( x->Type(), "thinSextupole"   ) ) {
+    _p_ca->addCorrector( dynamic_cast<const thinSextupole*>(x), 1.0, 0.0 );
+  }  
+  else {
+    return 1;
+  }
+
+  return 0;
+}
+
+int BeamlineContext::addVChromCorrector( const bmlnElmnt* x ) 
+{
+  if( 0 == _p_ca ) {
+    _p_ca = new ChromaticityAdjuster( _p_bml, false );
+  }
+    
+  if( 0 == strcmp( x->Type(), "sextupole" ) ) {
+    _p_ca->addCorrector( dynamic_cast<const sextupole*>(x), 0.0, 1.0 );
+  }  
+  else if( 0 == strcmp( x->Type(), "thinSextupole"   ) ) {
+    _p_ca->addCorrector( dynamic_cast<const thinSextupole*>(x), 0.0, 1.0 );
+  }  
+  else {
+    return 1;
+  }
+
+  return 0;
+}
+
+
+int BeamlineContext::changeChromaticityBy( double dh, double dv )
+{
+  if( 0 == _p_ca ) {
+    return NO_CHROMATICITY_ADJUSTER;
+  }
+
+  Particle* dummyPtr = _particlePtr->Clone();
+  dummyPtr->setStateToZero();
+  dummyPtr->SetReferenceEnergy( _p_bml->Energy() );
+  JetParticle* jpPtr = dummyPtr->ConvertToJetParticle();
+
+  _p_ca->changeChromaticityBy( dh, dv, *jpPtr );
 
   delete dummyPtr;
   delete jpPtr;
