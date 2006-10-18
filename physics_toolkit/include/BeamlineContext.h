@@ -204,6 +204,12 @@ class BeamlineContext
     // The method will check to make certain that
     // the argument is either a quadrupole or a 
     // thinQuad.
+    int addHChromCorrector( const bmlnElmnt* );
+    int addVChromCorrector( const bmlnElmnt* );
+    int changeChromaticityBy( double, double );
+    // The method will check to make certain that
+    // the argument is either a sextupole or a 
+    // thinSextupole.
 
 
     // Iterator functions
@@ -241,6 +247,7 @@ class BeamlineContext
     // Status flags
     static const int OKAY;
     static const int NO_TUNE_ADJUSTER;
+    static const int NO_CHROMATICITY_ADJUSTER;
 
   private:
     beamline*             _p_bml;
