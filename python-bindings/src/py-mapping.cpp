@@ -68,6 +68,25 @@ class MappingWrapper: public TMapping<T> {
       new(mapping) TMapping<T>(dim, comps); // placement new   
       delete[] comps;
   }
+
+  tuple toPython() {
+    boost::python::list terms[6];
+    for (int i = 0; i<6; ++i) {
+      Jet::iterator jet_it(this->operator()(i));
+      while(++jet_it) {
+        tuple term = make_tuple(jet_it->coefficient(),
+                                make_tuple(jet_it->exponents()(0),
+                                           jet_it->exponents()(1),
+                                           jet_it->exponents()(2),
+                                           jet_it->exponents()(3),
+                                           jet_it->exponents()(4),
+                                           jet_it->exponents()(5)));
+        terms[i].append(term);
+      }
+    }
+    return make_tuple(terms[0],terms[1],terms[2],terms[3],terms[4],terms[5]);
+  }
+
 };
 
 
@@ -92,6 +111,7 @@ void wrap_mxyzptlk_mapping() {
   Mapping_class_.def( init<boost::python::tuple, EnvPtr<double> >() );
   Mapping_class_.def("inverse", &MappingWrapper<double>::inverse  );
   Mapping_class_.def("jacobian",&MappingWrapper<double>::jacobian );
+  Mapping_class_.def("toPython",&MappingWrapper<double>::toPython );
 
   //-----------------------------------
   // *** composition ***
