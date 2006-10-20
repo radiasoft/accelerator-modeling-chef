@@ -66,7 +66,7 @@ class Testclass_for_synergia(unittest.TestCase):
         assertArrayAlmostEqual(self,expected.alpha_y,lattice_fns.alpha_y,
                                accuracy)
         
-    def xtest_06_insert_markers(self):
+    def test_06_insert_markers(self):
         self.apron.insert_accuracy_markers(self.accuracy_markers)
         self.apron.insert_space_charge_markers(self.space_charge_markers)
 
