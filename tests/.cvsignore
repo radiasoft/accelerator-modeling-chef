@@ -1,0 +1,4 @@
+*.pyc
+Makefile
+Makefile.in
+local_paths.py

@@ -5,5 +5,5 @@ AC_CONFIG_SUBDIRS(basic_toolkit beamline bmlfactory integrator mxyzptlk physics_
 AM_INIT_AUTOMAKE(fnal, 1.0, no-define)
 
 AC_CONFIG_FILES(Makefile)
-AC_OUTPUT(tests/local_paths.py)
+AC_OUTPUT(tests/Makefile tests/local_paths.py)
 

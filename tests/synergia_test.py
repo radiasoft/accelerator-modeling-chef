@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import unittest
 from testclass_for_synergia import Testclass_for_synergia
 
