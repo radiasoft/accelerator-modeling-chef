@@ -1,1 +1,2 @@
-TESTS = synergia_test.py
+TESTS = int_lattice_tests.py
+
