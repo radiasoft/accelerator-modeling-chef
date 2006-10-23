@@ -188,7 +188,7 @@ void nlys() {
 
 void clear() {
   int i;
-  for( i = 0; i < NUMREG; i++ ) HPreg[i]->setVariable( 1.0, -3, pje );
+  for( i = 0; i < NUMREG; i++ ) HPreg[i]->clear();
 }
 
 
