@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
+import os
 import unittest
 import shelve
 import apron
 from custom_assertions import *
+
+from local_paths import tests_dir
 
 write_answers = 0
 accuracy = 7
@@ -11,9 +14,11 @@ accuracy = 7
 class Testclass_for_synergia(unittest.TestCase):
     
     def setUp(self):
-        self.apron = apron.Apron(self.mad_file_name,self.line_name,
+        mad_file_name = os.path.join(tests_dir,self.mad_file_name)
+        self.apron = apron.Apron(mad_file_name,self.line_name,
                                  self.kinetic_energy,self.order,self.particle)
-        self.answers = shelve.open(self.data_file_name)
+        data_file_name = os.path.join(tests_dir,self.data_file_name)
+        self.answers = shelve.open(data_file_name)
 
     def tearDown(self):
         self.answers.close()
