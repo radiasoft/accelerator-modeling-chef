@@ -84,10 +84,8 @@ public:
 
 private:
   
-  std::list<bmlnElmnt*>::iterator _it;
-  std::list<bmlnElmnt*>::iterator _begin;
-  std::list<bmlnElmnt*>::iterator _end;
-
+  std::list<bmlnElmnt*>::iterator m_it;
+  beamline&                       m_bml;
 };
 
 
@@ -107,11 +105,9 @@ public:
 
   protected:
 
-  std::list<bmlnElmnt*>::iterator _it;
-  std::list<bmlnElmnt*>::iterator _begin;
-  std::list<bmlnElmnt*>::iterator _end;
-
-  DeepBeamlineIterator*           _subit;
+  std::list<bmlnElmnt*>::iterator m_it;
+  beamline&                       m_bml;
+  DeepBeamlineIterator*           m_subit;
 
  private:
 
@@ -137,10 +133,8 @@ public:
 
 private:
 
-  std::list<bmlnElmnt*>::reverse_iterator _rit;
-  std::list<bmlnElmnt*>::reverse_iterator _rbegin;
-  std::list<bmlnElmnt*>::reverse_iterator _rend;
-
+  std::list<bmlnElmnt*>::reverse_iterator m_rit;
+  beamline&                               m_bml;
 
 };
 
@@ -158,12 +152,9 @@ public:
 
 private:
 
-  std::list<bmlnElmnt*>::reverse_iterator _rit;
-  std::list<bmlnElmnt*>::reverse_iterator _rbegin;
-  std::list<bmlnElmnt*>::reverse_iterator _rend;
-
-  DeepReverseBeamlineIterator*            _subrit;
-
+  std::list<bmlnElmnt*>::reverse_iterator m_rit;
+  beamline&                               m_bml;
+  DeepReverseBeamlineIterator*            m_subrit;
   DeepReverseBeamlineIterator( DeepReverseBeamlineIterator const& ); 
 };
 
