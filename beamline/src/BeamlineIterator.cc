@@ -33,7 +33,13 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+******  REVISION HISTORY:
+******
+******  October 2006:   Jean-Francois Ostiguy
+******                  ostiguy@fnal.gov
+******             
+******  - modified code to make use of new beamline embedded std::list<> member.
+******                                                                  
 **************************************************************************
 *************************************************************************/
 
@@ -55,7 +61,9 @@
 */
 
 
+#include <typeinfo>
 #include <basic_toolkit/iosetup.h>
+#include <beamline/beamline.h>
 #include <beamline/BeamlineIterator.h>
 
 using namespace std;
@@ -69,19 +77,16 @@ using FNAL::pcerr;
 
 
 
-BeamlineIterator::BeamlineIterator( beamline& x ) {
- 
-  _it     = x._theList.begin();
-  _begin  = x._theList.begin();
-  _end    = x._theList.end();
-
+BeamlineIterator::BeamlineIterator( beamline& x ) : m_bml(x) {
+  m_it =  x._theList.begin();
 }
+
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BeamlineIterator::BeamlineIterator( BeamlineIterator const& x ): 
-_it( x._it ), _begin(x._begin), _end(x._end) { }
+m_it( x.m_it ), m_bml(m_bml) { }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -98,10 +103,10 @@ bmlnElmnt* BeamlineIterator::operator++( int )
 {
   bmlnElmnt* ret = 0;
 
-  if ( _it == _end ) return 0;
+  if ( m_it == m_bml._theList.end() ) return 0;
  
-  ret = *_it;
-  ++_it;
+  ret = *m_it;
+  ++m_it;
 
   return ret;
 
@@ -114,7 +119,7 @@ bmlnElmnt* BeamlineIterator::operator++( int )
 
 void BeamlineIterator::reset()
 {
-  _it = _begin;
+  m_it = m_bml._theList.begin();
 
 }
 
@@ -125,7 +130,7 @@ void BeamlineIterator::reset()
 
 bool BeamlineIterator::isFinished() 	 
 { 	 
-   return (_it == _end);
+   return ( m_it == m_bml._theList.end() );
 }
 
 
@@ -134,20 +139,17 @@ bool BeamlineIterator::isFinished()
 
 void BeamlineIterator::goBack( int n )
 {
-  std::advance(_it, -n );
+  std::advance(m_it, -n );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-DeepBeamlineIterator::DeepBeamlineIterator( beamline & x ): _subit(0) {
-
- _it    = x._theList.begin();
- _begin = x._theList.begin();
- _end   = x._theList.end();
-
+DeepBeamlineIterator::DeepBeamlineIterator( beamline & x ): m_subit(0), m_bml(x){
+  m_it = x._theList.begin();
 }
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -155,7 +157,7 @@ DeepBeamlineIterator::DeepBeamlineIterator( beamline & x ): _subit(0) {
 DeepBeamlineIterator::~DeepBeamlineIterator()
 { 
 
-  if (_subit) delete _subit;
+  if (m_subit) delete m_subit;
 
 }
 
@@ -168,27 +170,29 @@ bmlnElmnt* DeepBeamlineIterator::operator++( int )
 
   bmlnElmnt* ret = 0;
 
-  if( _subit ) 
+  if( m_subit ) 
   {
-    ret = (*_subit)++; 
+    ret = (*m_subit)++; 
 
     if( !ret ) 
     {
-      _subit = 0;
+      m_subit = 0;
          ret = (*this)++;
     }
   }
   else 
   {
 
-    ret = ( _it ==  _end ) ? 0 : *_it; 
+    ret = ( m_it ==  m_bml._theList.end() ) ? 0 : *m_it; 
 
     if( ret ) 
     {
-      ++_it;      
-      if( strcmp( ret->Type(), "beamline" ) == 0 ) 
+      ++m_it;      
+
+
+      if(  typeid(*ret) == typeid(beamline) )  
       {
-        _subit = new  DeepBeamlineIterator( *static_cast<beamline*>(ret) );
+        m_subit = new  DeepBeamlineIterator( *static_cast<beamline*>(ret) );
         ret = (*this)++;
       }
     }    
@@ -204,8 +208,8 @@ void DeepBeamlineIterator::reset()
 {
 
 
-  _subit   = 0;
-  _it       = _begin;
+  m_subit   = 0;
+  m_it       = m_bml._theList.begin();
 
 }
 
@@ -218,19 +222,15 @@ void DeepBeamlineIterator::reset()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-ReverseBeamlineIterator::ReverseBeamlineIterator( beamline& x ) {
- 
-  _rit    =  x._theList.rbegin();
-  _rbegin =  x._theList.rbegin();
-  _rend   =  x._theList.rend();
-
+ReverseBeamlineIterator::ReverseBeamlineIterator( beamline& x ): m_bml(x) {
+  m_rit = x._theList.rbegin();
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 ReverseBeamlineIterator::ReverseBeamlineIterator( ReverseBeamlineIterator const& x ): 
-_rit(x._rit), _rbegin(x._rbegin), _rend(x._rend) {}
+m_rit(x.m_rit), m_bml(x.m_bml){}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -247,9 +247,9 @@ bmlnElmnt* ReverseBeamlineIterator::operator++( int )
  
   bmlnElmnt* ret = 0;
 
-  if ( _rit ==  _rend ) return 0;
+  if ( m_rit ==  m_bml._theList.rend() ) return 0;
  
-  ret = *_rit;  ++_rit;
+  ret = *m_rit;  ++m_rit;
 
   return ret;
 
@@ -261,7 +261,7 @@ bmlnElmnt* ReverseBeamlineIterator::operator++( int )
 
 void ReverseBeamlineIterator::reset()
 {
-  _rit = _rbegin;
+  m_rit = m_bml._theList.rbegin();
 }
 
 
@@ -271,7 +271,7 @@ void ReverseBeamlineIterator::reset()
 void ReverseBeamlineIterator::goBack( int n )
 {
 
-  std::advance(_rit, -n );
+  std::advance(m_rit, -n );
 
 }
 
@@ -280,11 +280,9 @@ void ReverseBeamlineIterator::goBack( int n )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( beamline& x ): 
-  _subrit(0) 
+  m_subrit(0),   m_bml(x)
 {   
-    _rit    = x._theList.rbegin();
-    _rbegin = x._theList.rbegin();
-    _rend   = x._theList.rend();
+    m_rit    = x._theList.rbegin();
 
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -293,7 +291,7 @@ DeepReverseBeamlineIterator::DeepReverseBeamlineIterator( beamline& x ):
 DeepReverseBeamlineIterator::~DeepReverseBeamlineIterator()
 { 
 
-      if (_subrit) delete _subrit;  
+      if (m_subrit) delete m_subrit;  
 
 
 }
@@ -306,26 +304,26 @@ bmlnElmnt* DeepReverseBeamlineIterator::operator++( int )
 {
   bmlnElmnt* ret = 0;
 
-  if( _subrit) 
+  if( m_subrit) 
   {
-    ret = (*_subrit)++;
+    ret = (*m_subrit)++;
 
     if( !ret ) 
     {
-      _subrit = 0;
+      m_subrit = 0;
       ret = (*this)++;
     }
   }
   else 
   {
-    ret = (_rit == _rend) ? 0 : *_rit;
+    ret = (m_rit == m_bml._theList.rend()) ? 0 : *m_rit;
 
     if( ret ) 
     {
-      ++_rit;
-      if(  strcmp( ret->Type(), "beamline" ) == 0 ) 
+      ++m_rit;
+      if(  typeid(*ret) == typeid(beamline) ) 
       {
-        _subrit = new  DeepReverseBeamlineIterator( *static_cast<beamline*>(ret) );
+        m_subrit = new  DeepReverseBeamlineIterator( *static_cast<beamline*>(ret) );
         ret = (*this)++;
       }
     }    
@@ -340,8 +338,8 @@ bmlnElmnt* DeepReverseBeamlineIterator::operator++( int )
 void DeepReverseBeamlineIterator::reset()
 {
 
-  _subrit = 0;
-  _rit = _rbegin;
+  m_subrit = 0;
+  m_rit = m_bml._theList.rbegin();
 
 }
 
