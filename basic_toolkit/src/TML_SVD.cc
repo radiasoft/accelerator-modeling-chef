@@ -75,12 +75,6 @@ void TML<double>::SVD ( MLPtr<double> & U, MLPtr<double> & W, MLPtr<double> & V 
   int n = _ncols;
 
 
-  if (m < n) {
-    throw GenericMatrixException( m, n, 
-           "void TML<double>::SVD ( MLPtr<double>& U, MLPtr<double>& W, MLPtr<double>& V ) const",
-           "Fewer rows than columns: augment matrix with extra rows" );
-  } 
-  
   if( (W->_nrows != n) || (W->_ncols != 1) ) {
     throw  GenericMatrixException(W->_nrows, W->_ncols, 
            "void TML<double>::SVD (  MLPtr<double>& U, MLPtr<double>& W, MLPtr<double>& V ) const",
