@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import sys
+
 def assertLinearMapAlmostEqual(testcase,expected,found,accuracy):
     for i in range(0,6):
         for j in range(0,6):
@@ -39,9 +41,21 @@ def assertPropagatedParticleAlmostEqual(testcase,initial,final,cdt_offset,
         testcase.assertAlmostEqual(initial.get_ndp(),final.get_ndp(),accuracy,
                                "different inital and final ndp")
 
+verbose_array = 1
 def assertArrayAlmostEqual(testcase,expected,found,accuracy):
     testcase.assertEqual(len(expected),len(found))
     for i in range(0,len(expected)):
-        testcase.assertAlmostEqual(expected[i],found[i],accuracy,
-                                   'element %d: expected %g, found %g' %\
-                                   (i,expected[i],found[i]))
+        try:
+            testcase.assertAlmostEqual(expected[i],found[i],accuracy,
+                                       'element %d: expected %g, found %g' %\
+                                       (i,expected[i],found[i]))
+        except Exception, e:
+            if verbose_array:
+                sys.stderr.write("assertAlmostEqual failure:\n")
+                sys.stderr.write("%6s%12s%12s\n" %
+                                 ("index","expected","found"))
+                for j in range(0,len(expected)):
+                    sys.stderr.write("%6d%12g%12g\n" %
+                                     (j,expected[j],found[j]))
+            raise e
+        
