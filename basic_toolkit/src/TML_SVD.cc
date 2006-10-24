@@ -29,7 +29,12 @@
 ******
 ******  Nov 2005   ostiguy@fnal.gov                                                                
 ******
-****** - Modified to use smart pointers
+******  - Modified to use smart pointers
+******  
+******  Oct 2006   ostiguy@fnal.gov
+******
+******  - fixed issues with indexing that made SVD fail with rectangular
+******    matrices. 
 ****** 
 **************************************************************************
 *************************************************************************/
@@ -71,152 +76,179 @@ void TML<double>::SVD ( MLPtr<double> & U, MLPtr<double> & W, MLPtr<double> & V 
   double anorm=0.0,g=0.0,scale=0.0;
 
   int flag,i,its,j,jj,k,l,nm;
+
+  // ----------------------------------------------------------------------------------------------------
+  // IMPORTANT:
+  // ----------
+  //
+  // *** WARNING ****
+  // 
+  // The original NR C version of the SVD routine has been translated from fortran (by its authors, not us). 
+  // The indexing was kludged to emulate fortran 77 style array with the index starting at 1 rather than 0. 
+  //
+  //  *** IN THIS VERSION: arrays start at 0. 
+  //
+  //  Dimensions:
+  //  -----------
+  //  Given  a linear system where A x = b
+  //
+  //  A is m x n , that is has been declared as Matrix(m.n).
+  //  U is m x n
+  //  W is n x 1  
+  //  V is n x n
+  //
+  //  calling parameters: ***there is no need to dimension the calling parameters. They will be
+  //                         automatically dimensioned.    
+  //
+  //
+  //  upon return, U W and V will contain the factors U, W and V from the factorization, correctly dimensioned.
+  //
+  //  A = U  W V^T  
+  // 
+  //  
+  //
+  // -----------------------------------------------------------------------------------------------------
+ 
+
   int m = _nrows;
   int n = _ncols;
 
 
-  if( (W->_nrows != n) || (W->_ncols != 1) ) {
-    throw  GenericMatrixException(W->_nrows, W->_ncols, 
-           "void TML<double>::SVD (  MLPtr<double>& U, MLPtr<double>& W, MLPtr<double>& V ) const",
-           "W has the wrong dimensions." );
-  }
-
-  if( (V->_nrows != n) || (V->_ncols != n) ) {
-    throw GenericMatrixException( V->_nrows, V->_ncols, 
-           "void TML<double>::SVD ( MLPtr<double>& U, MLPtr<double>& W, MLPtr<double>& V ) const",
-           "V has the wrong dimensions." );
-  }
+  U = MLPtr<double>( new TML<double>( *this) ); 
 
 
+  if ((V->_nrows == _ncols) && (V->_ncols == _ncols) ) 
+    V->clear();
+  else
+    V = MLPtr<double>( new TML<double>( _ncols, _ncols )); 
 
-  U = MLPtr<double>( new TML<double>(*this) ); // deep copy
+
+  if ((W->_nrows == _ncols) && (V->_ncols == 1) ) 
+    W->clear();
+  else
+    W = MLPtr<double>( new TML<double>( _ncols, 1 )); 
+ 
 
   double*  rv1 = new double[n];
 
-  for (i=1;i<=n;i++) {
+  for (i=0; i<n; ++i) {
     l=i+1;
-    rv1[i-1]=scale*g;
+    rv1[i]=scale*g;
     g = s = scale=0.0;
- 
-    if (i <= m) {
-      for (k=i;  k<=m; ++k) scale += std::abs((*U)(k-1,i-1));
+    if (i < m) {
+      for (k=i;  k<m; ++k) scale += std::abs((*U)(k,i));
       if (scale) {
-        for (k=i; k<=m; ++k) {
-          (*U)(k-1,i-1) /= scale;
-          s += (*U)(k-1,i-1)*(*U)(k-1,i-1);
+        for (k=i; k<m; ++k) {
+          (*U)(k,i) /= scale;
+          s += (*U)(k,i)*(*U)(k,i);
         }
-        f=(*U)(i-1,i-1);
+        f=(*U)(i,i);
         g = -SIGN(sqrt(s),f);
         h=f*g-s;
-        (*U)(i-1,i-1)=f-g;
-        if (i != n) {
-          for (j=l;j<=n; ++j) {
-            for (s=0.0,k=i; k<=m; ++k) s += (*U)(k-1,i-1)*(*U)(k-1,j-1);
+        (*U)(i,i) = f-g;
+        for (j=l; j<n; ++j) {
+            for (s=0.0, k=i; k<m; ++k) s += (*U)(k,i)*(*U)(k,j);
             f=s/h;
-            for (k=i; k<=m; ++k) (*U)(k-1,j-1) += f*(*U)(k-1,i-1);
-          }
+            for (k=i; k<m; ++k) (*U)(k,j) += f*(*U)(k,i);
         }
-        for (k=i; k<=m; ++k) (*U)(k-1,i-1) *= scale;
+        for (k=i; k<m; ++k) (*U)(k,i) *= scale;
       }
     }
-    (*W)(i-1)=scale*g;
+    (*W)(i)=scale*g;
     g=s=scale=0.0;
-    if (i <= m && i != n) {
-      for (k=l; k<=n; ++k) scale += std::abs((*U)(i-1,k-1));
+    if (i <m && i != n) {
+      for (k=l; k<n; ++k) scale += std::abs((*U)(i,k));
       if (scale) {
-        for (k=l; k<=n; ++k) {
-          (*U)(i-1,k-1) /= scale;
-          s += (*U)(i-1,k-1)*(*U)(i-1,k-1);
+        for (k=l; k<n; ++k) {
+          (*U)(i,k) /= scale;
+          s += (*U)(i,k)*(*U)(i,k);
         }
-        f=(*U)(i-1,l-1);
+        f=(*U)(i,l);
         g = -SIGN(sqrt(s),f);
         h=f*g-s;
-        (*U)(i-1,l-1)=f-g;
-        for (k=l; k<=n; ++k) rv1[k-1]=(*U)(i-1,k-1)/h;
+        (*U)(i,l)=f-g;
+        for (k=l; k<n; ++k) rv1[k]=(*U)(i,k)/h;
         if (i != m) {
-          for (j=l;j<=m;j++) {
-            for (s=0.0,k=l; k<=n; ++k) s += (*U)(j-1,k-1)*(*U)(i-1,k-1);
-            for (k=l;k<=n;k++) (*U)(j-1,k-1) += s*rv1[k-1];
+          for (j=l; j<m; ++j) {
+            for (s=0.0,k=l; k<n; ++k) s += (*U)(j,k)*(*U)(i,k);
+            for (k=l; k<n; ++k) (*U)(j,k) += s*rv1[k];
           }
         }
-        for (k=l;k<=n; ++k) (*U)(i-1,k-1) *= scale;
+        for (k=l;k<n; ++k) (*U)(i,k) *= scale;
       }
     }
-    anorm= MAX(anorm,(std::abs((*W)(i-1))+std::abs(rv1[i-1])));
+    anorm= std::max( anorm, ( std::abs((*W)(i)) + std::abs(rv1[i]) ));
   }
-  for (i=n; i>=1; --i) {
+  for (i=n-1; i>=0; --i) {
     if (i < n) {
       if (g) {
-        for (j=l;j<=n; ++j)
-          (*V)(j-1,i-1)=((*U)(i-1,j-1)/(*U)(i-1,l-1))/g;
-        for (j=l;j<=n; ++j) {
-          for (s=0.0,k=l;k<=n; ++k) s += (*U)(i-1,k-1)*(*V)(k-1,j-1);
-          for (k=l; k<=n; ++k) (*V)(k-1,j-1) += s*(*V)(k-1,i-1);
+        for (j=l; j<n; ++j)
+          (*V)(j,i)=((*U)(i,j)/(*U)(i,l))/g;
+        for (j=l;j<n; ++j) {
+          for (s=0.0,k=l;k<n; ++k) s += (*U)(i,k)*(*V)(k,j);
+          for (k=l; k<n; ++k) (*V)(k,j) += s*(*V)(k,i);
         }
       }
-      for (j=l; j<=n; ++j) (*V)(i-1,j-1)=(*V)(j-1,i-1)=0.0;
+      for (j=l; j<n; ++j) (*V)(i,j)=(*V)(j,i)=0.0;
     }
-    (*V)(i-1,i-1)=1.0;
-    g=rv1[i-1];
+    (*V)(i,i)=1.0;
+    g=rv1[i];
     l=i;
   }
-  for (i=n;i>=1; --i) {
+  for ( i=std::min(m,n)-1; i>=0; --i) {
     l=i+1;
-    g=(*W)(i-1);
-    if (i < n)
-      for (j=l;j<=n;++j) (*U)(i-1,j-1)=0.0;
+    g=(*W)(i);
+    for (j=l; j<n; ++j) (*U)(i,j) =0.0;
     if (g) {
       g=1.0/g;
-      if (i != n) {
-        for (j=l;j<=n; ++j) {
-          for (s=0.0,k=l;k<=m; ++k) s += (*U)(k-1,i-1)*(*U)(k-1,j-1);
-          f=(s/(*U)(i-1,i-1))*g;
-          for (k=i;k<=m; ++k) (*U)(k-1,j-1) += f*(*U)(k-1,i-1);
-        }
+      for (j=l; j<n; ++j) {
+         for (s=0.0, k=l; k<m; ++k) s += (*U)(k,i)*(*U)(k,j);
+         f=(s/(*U)(i,i))*g;
+         for (k=i; k<m; ++k) (*U)(k,j) += f*(*U)(k,i);
       }
-      for (j=i;j<=m;j++) (*U)(j-1,i-1) *= g;
+      for (j=i; j<m; ++j) (*U)(j,i) *= g;
     } else {
-      for (j=i;j<=m;j++) (*U)(j-1,i-1)=0.0;
+      for (j=i; j<m; ++j) (*U)(j,i) = 0.0;
     }
-    ++(*U)(i-1,i-1);
-  }
-  for (k=n;k>=1;k--) {
-    for (its=1;its<=30; ++its) {
+    ++(*U)(i,i);
+    }
+  for (k=n-1; k>=0; --k) {
+    for (its=0; its<30; ++its) {
       flag=1;
-      for (l=k;l>=1; --l) {
+      for (l=k; l>=0; --l) {
         nm=l-1;
-        if (fabs(rv1[l-1])+anorm == anorm) {
+        if (fabs(rv1[l])+anorm == anorm) {
           flag=0;
           break;
         }
-        if (fabs((*W)(nm-1))+anorm == anorm) break;
+        if (fabs((*W)(nm))+anorm == anorm) break;
       }
       if (flag) {
         c=0.0;
         s=1.0;
-        for (i=l;i<=k; ++i) {
-          f=s*rv1[i-1];
+        for (i=l; i<=k; ++i) {
+          f=s*rv1[i];
           if (fabs(f)+anorm != anorm) {
-            g=(*W)(i-1);
+            g=(*W)(i);
             h=PYTHAG(f,g);
-            (*W)(i-1)=h;
+            (*W)(i)=h;
             h=1.0/h;
             c=g*h;
             s=(-f*h);
-            for (j=1;j<=m; ++j) {
-              y=(*U)(j-1,nm-1);
-              z=(*U)(j-1,i-1);
-              (*U)(j-1,nm-1)=y*c+z*s;
-              (*U)(j-1,i-1)=z*c-y*s;
+            for (j=0; j<m; ++j) {
+              y=(*U)(j,nm);
+              z=(*U)(j,i);
+              (*U)(j,nm)= y*c+z*s;
+              (*U)(j,i) = z*c-y*s;
             }
           }
         }
       }
-      z=(*W)(k-1);
+      z=(*W)(k);
       if (l == k) {
         if (z < 0.0) {
-          (*W)(k-1) = -z;
-          for (j=1;j<=n;++j) (*V)(j-1,k-1)=(-(*V)(j-1,k-1));
+          (*W)(k) = -z;
+          for (j=0; j<n; ++j) (*V)(j,k)=(-(*V)(j,k));
         }
         break;
       }
@@ -227,37 +259,37 @@ void TML<double>::SVD ( MLPtr<double> & U, MLPtr<double> & W, MLPtr<double> & V 
                "No convergence in 30 SVDCMP iterations." );
       }
 
-      x=(*W)(l-1);
-      nm=k-1;
-      y=(*W)(nm-1);
-      g=rv1[nm-1];
-      h=rv1[k-1];
-      f=((y-z)*(y+z)+(g-h)*(g+h))/(2.0*h*y);
-      g=PYTHAG(f,1.0);
+      x  = (*W)(l);
+      nm = k-1;
+      y  = (*W)(nm);
+      g  = rv1[nm];
+      h  = rv1[k];
+      f  = ((y-z)*(y+z)+(g-h)*(g+h))/(2.0*h*y);
+      g  = PYTHAG(f,1.0);
       f=((x-z)*(x+z)+h*((y/(f+SIGN(g,f)))-h))/x;
       c=s=1.0;
-      for (j=l;j<=nm;++j) {
+      for (j=l;j<=nm; ++j) {
         i=j+1;
-        g=rv1[i-1];
-        y=(*W)(i-1);
+        g=rv1[i];
+        y=(*W)(i);
         h=s*g;
         g=c*g;
         z=PYTHAG(f,h);
-        rv1[j-1]=z;
+        rv1[j]=z;
         c=f/z;
         s=h/z;
         f=x*c+g*s;
         g=g*c-x*s;
         h=y*s;
         y=y*c;
-        for (jj=1;jj<=n;++jj) {
-          x=(*V)(jj-1,j-1);
-          z=(*V)(jj-1,i-1);
-          (*V)(jj-1,j-1)=x*c+z*s;
-          (*V)(jj-1,i-1)=z*c-x*s;
+        for (jj=0; jj<n; ++jj) {
+          x=(*V)(jj,j);
+          z=(*V)(jj,i);
+          (*V)(jj,j)=x*c+z*s;
+          (*V)(jj,i)=z*c-x*s;
         }
         z=PYTHAG(f,h);
-        (*W)(j-1)=z;
+        (*W)(j)=z;
         if (z) {
           z=1.0/z;
           c=f*z;
@@ -265,22 +297,24 @@ void TML<double>::SVD ( MLPtr<double> & U, MLPtr<double> & W, MLPtr<double> & V 
         }
         f=(c*g)+(s*y);
         x=(c*y)-(s*g);
-        for (jj=1;jj<=m;++jj) {
-          y=(*U)(jj-1,j-1);
-          z=(*U)(jj-1,i-1);
-          (*U)(jj-1,j-1)=y*c+z*s;
-          (*U)(jj-1,i-1)=z*c-y*s;
+        for (jj=0; jj<m; ++jj) {
+          y=(*U)(jj,j);
+          z=(*U)(jj,i);
+            (*U)(jj, j)=y*c+z*s;
+            (*U)(jj, i)=z*c-y*s;
         }
       }
-      rv1[l-1]=0.0;
-      rv1[k-1]=f;
-      (*W)(k-1)=x;
+      rv1[l]=0.0;
+      rv1[k]=f;
+      (*W)(k)=x;
     }
   }
 
   delete [] rv1;
+ 
+
+}
 
 #undef SIGN
 #undef MAX
 #undef PYTHAG
-}
