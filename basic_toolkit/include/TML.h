@@ -90,7 +90,6 @@ class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
   int _nrows;      // number of rows
   int _ncols;      // number of columns
 
-  void                    _clear();
   void                    _copy_column(MLPtr<T> const& mm, int from_col, int to_col); 
   void                    _switch_rows(int row1, int row2); 
   MLPtr<T> _scale() const; 
@@ -111,7 +110,7 @@ class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
   TML(TML<U> const&);
 
   explicit TML(const char*, int);
-  explicit TML(int rows, int columns,        T  initval);
+  explicit TML(int rows, int columns,        T  initval = T());
   explicit TML(int rows, int columns,  const T* initval);
 
  ~TML();
@@ -126,6 +125,8 @@ class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
 
   inline int rows() const { return _nrows;}
   inline int cols() const { return _ncols;}
+
+  void                 clear(); 
 
   MLPtr<T> Square()    const; 
   MLPtr<T> transpose() const; 

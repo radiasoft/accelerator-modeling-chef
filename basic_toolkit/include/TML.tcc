@@ -186,7 +186,12 @@ TML<T>::TML( TML<T> const& X ): ReferenceCounter<TML<T> >(), _nrows(X._nrows), _
 
 template<typename T>
 TML<T>::~TML() {
-  _clear();
+
+  if (_mdata[0]) delete [] _mdata[0];
+  if (_mdata)    delete [] _mdata;
+
+  _nrows = 0;
+  _ncols = 0;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -194,14 +199,17 @@ TML<T>::~TML() {
 
 
 template<typename T>
-void TML<T>::_clear() {
+void TML<T>::clear() {
 
-  if((_nrows == 0) && (_ncols == 0)) return;
+  int sz = _nrows*_ncols;
 
-  if (_mdata[0]) delete [] _mdata[0];
-  if (_mdata)    delete [] _mdata;
-  _nrows = 0;
-  _ncols = 0;
+  T* dataptr = _mdata[0];
+
+  for( int i=0;  i<sz;  ++i) {
+    *dataptr = T(); 
+    ++dataptr; 
+  }
+
 }
 
 
@@ -469,11 +477,10 @@ T TML<T>::operator()(int i) const
 template<typename T>
 std::ostream& operator<<( std::ostream& os, const TML<T>& x)
 {
-  int i,j;
 
-  for(i=0; i< x._nrows; i++) {
+  for(int i=0; i< x._nrows; i++) {
     os << "( ";
-    for(j=0; j< x._ncols; j++) {
+    for(int j=0; j< x._ncols; j++) {
       os  << x._mdata[i][j] << ", ";
     }
     os << " )\n";
@@ -615,14 +622,14 @@ MLPtr<T> multiply(MLPtr<T> const& x, MLPtr<T> const& y)
     throw( typename TML<T>::Incompatible( x->_nrows, x->_ncols, y->_nrows, y->_ncols,
            "multiply(MLPtr<T> const& x, MLPtr<T> const& y)" ) );
   }
-  T tmp;
-  for(int row=0; row< x->_nrows; ++row) {
-    for(int col = 0; col <y->_ncols; ++col) {
-      T sum = T();
+
+  T sum;
+
+  for( int row=0; row< x->_nrows; ++row) {
+    for(int col=0; col <y->_ncols; ++col) {
+      sum = T();
       for(int i=0; i<x->_ncols; ++i) {
-        tmp = x->_mdata[row][i] * y->_mdata[i][col];
-        sum += tmp;
-        //if(std::abs(sum) < M_SMALL*std::abs(tmp) ) sum = T();
+        sum += x->_mdata[row][i] * y->_mdata[i][col];
       }
       z->_mdata[row][col] = sum;
     }
@@ -955,7 +962,8 @@ TML<T>& TML<T>::operator=(const TML& x)
 {
   if( this == &x )  return *this;
  
-  _clear();
+  if (_mdata[0]) delete [] _mdata[0];
+  if (_mdata)    delete [] _mdata;
 
   _nrows = x._nrows;
   _ncols = x._ncols;
