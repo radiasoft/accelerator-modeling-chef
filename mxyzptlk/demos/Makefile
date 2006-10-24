@@ -15,7 +15,7 @@ INCS       = -I$(BOOST_INC) \
              -I$(INSTALLDIR)/include
 
 LIBS       = -L$(INSTALLDIR)/lib -lmxyzptlk -lbasic_toolkit -Wl,-rpath,$(INSTALLDIR)/lib 
-SYSLIBS    = -lglib -lm -lnsl -lintl
+SYSLIBS    = -lm -lnsl
 
 .cc.o:
 	$(C++) $(C++FLAGS) $(INCS) -c $*.cc

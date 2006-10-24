@@ -83,11 +83,11 @@ QueryDialog::QueryDialog( QWidget* p, const char* n, WFlags f )
 
     QPushButton* applyPtr = new QPushButton( "Apply",   _opsBoxPtr );
     applyPtr->setMaximumWidth( 70 );
-    connect( applyPtr,   SIGNAL(pressed()),
+    connect( applyPtr, SIGNAL(pressed()),
              this,     SLOT(_doFilter()) );
     QPushButton* closePtr = new QPushButton( "Close",   _opsBoxPtr );
     closePtr->setMaximumWidth( 70 );
-    connect( closePtr,   SIGNAL(pressed()),
+    connect( closePtr, SIGNAL(pressed()),
              this,     SLOT(close()) );
 
     QWidget* opsFiller = new QWidget( _opsBoxPtr );

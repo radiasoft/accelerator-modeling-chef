@@ -443,7 +443,8 @@ void CHEFGUI::_openFile()
 
 	new QLabel( "I regret you must specify\na particle species.", qvb );
         QRadioButton* qrb_proton_ptr = new QRadioButton( "proton", qvb );
-        QRadioButton* qrb_positron_ptr = new QRadioButton( "positron", qvb );
+        // QRadioButton* qrb_positron_ptr =
+        new QRadioButton( "positron", qvb );
 
         QPushButton* okayBtn = new QPushButton( "OK", qvb );
           connect( okayBtn, SIGNAL(pressed()),
@@ -456,7 +457,7 @@ void CHEFGUI::_openFile()
       wpu->setCaption( "CHEF: Particle Choice" );
       wpu->adjustSize();
 
-      int returnCode = wpu->exec();
+      wpu->exec();
 
       if( qrb_proton_ptr->isDown() ) {
         _p_currBmlCon = new BeamlineContext( Proton(bmlPtr->Energy()), bmlPtr, false );
@@ -2766,7 +2767,30 @@ void CHEFGUI::_launchTrack()
 
   _trackWidget = new Tracker( _p_currBmlCon, _centralWidget, "Tracker", Qt::WDestructiveClose);
   _trackWidget->setCaption( "CHEF:: Phase Space Tracking" );
-  _trackWidget->setGeometry(0, 0,_centralWidget->width(), _centralWidget->height());
+
+
+  // Centrally locate the track widget.
+  // ----------------------------------
+  _trackWidget->adjustSize();
+
+  int cw = _centralWidget->width();
+  int ch = _centralWidget->height();
+  int  w = _trackWidget->width();
+  int  h = _trackWidget->height();
+
+  if( w < cw && h < ch ) {
+    _trackWidget->parentWidget()->move( (cw-w)/2, (ch-h)/2 );  // Accessing the parent
+  }                                                            // is required by the
+  else if( h < ch ) {                                          // MDI interface, that
+    _trackWidget->parentWidget()->move( 0, (ch-h)/2 );         // is, the QWorkspace.
+  }
+  else if( w < cw ) {
+    _trackWidget->parentWidget()->move( (cw-w)/2, 0 );
+  }
+  else {
+    _trackWidget->parentWidget()->move( 0, 0 );
+  }
+
   _trackWidget->show();
 }
 
@@ -2781,7 +2805,30 @@ void CHEFGUI::_launchRayTrace()
 
   _traceWidget = new RayTrace(_p_currBmlCon, _centralWidget, "RayTrace", Qt::WDestructiveClose );
   _traceWidget->setCaption( "CHEF:: Orbit Trace" );
-  _traceWidget->setGeometry(0,0, _centralWidget->width(), _centralWidget->height() );
+
+
+  // Centrally locate the trace widget.
+  // ----------------------------------
+  _traceWidget->adjustSize();
+
+  int cw = _centralWidget->width();
+  int ch = _centralWidget->height();
+  int  w = _traceWidget->width();
+  int  h = _traceWidget->height();
+
+  if( w < cw && h < ch ) {
+    _traceWidget->parentWidget()->move( (cw-w)/2, (ch-h)/2 );  // Accessing the parent
+  }                                                            // is required by the
+  else if( h < ch ) {                                          // MDI interface, that
+    _traceWidget->parentWidget()->move( 0, (ch-h)/2 );         // is, the QWorkspace.
+  }
+  else if( w < cw ) {
+    _traceWidget->parentWidget()->move( (cw-w)/2, 0 );
+  }
+  else {
+    _traceWidget->parentWidget()->move( 0, 0 );
+  }
+
   _traceWidget->show();
 }
 
@@ -3056,7 +3103,49 @@ void CHEFGUI::_launchSiteVu()
   _siteWidget->setCaption( QString("CHEF:: Site Viewer")+
                            QString("    ")+
                            QString(_p_currBmlCon->name()) );
-  _siteWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
+
+  // Centrally locate the site widget.
+  // ----------------------------------
+  // _siteWidget->adjustSize();    //    !! Must not do this here, for some reason. !!
+
+  // int a = int( sqrt( double( (_siteWidget->parentWidget()->width())*(_siteWidget->parentWidget()->height()) )/3.0 ) );
+  // _siteWidget->resize(a,a);                    // Order is important
+  // _siteWidget->adjustSize();  // NEW           // These two interfere in some bizarre way.
+
+  int cw = _centralWidget->width();
+  int ch = _centralWidget->height();
+  int  w = _siteWidget->width();
+  int  h = _siteWidget->height();
+
+  #if 1
+  if( w < cw && h < ch ) {                                     // ??? THIS WORKS ???
+    _siteWidget->move( (cw-w)/2, (ch-h)/2 );                   
+  }                                                            
+  else if( h < ch ) {                                          
+    _siteWidget->move( 0, (ch-h)/2 );                          
+  }
+  else if( w < cw ) {
+    _siteWidget->move( (cw-w)/2, 0 );
+  }
+  else {
+    _siteWidget->move( 0, 0 );
+  }
+  #endif
+  #if 0
+  if( w < cw && h < ch ) {                                     // ??? BUT THIS DOES NOT ???
+    _siteWidget->parentWidget()->move( (cw-w)/2, (ch-h)/2 );   // Accessing the parent
+  }                                                            // is required by the
+  else if( h < ch ) {                                          // MDI interface, that
+    _siteWidget->parentWidget()->move( 0, (ch-h)/2 );          // is, the QWorkspace.
+  }
+  else if( w < cw ) {
+    _siteWidget->parentWidget()->move( (cw-w)/2, 0 );
+  }
+  else {
+    _siteWidget->parentWidget()->move( 0, 0 );
+  }
+  #endif
+
   _siteWidget->show();
 }
 
@@ -3167,14 +3256,12 @@ void CHEFGUI::_chromCtrl()
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
       QHBox* qhb1 = new QHBox( qvb );
-      ///QLabel* qlbh = new QLabel( "Delta H tune", qhb1 );
         QLineEdit* qleh = new QLineEdit( "0.0", qhb1 );
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
       qhb1->adjustSize();
 
       QHBox* qhb2 = new QHBox( qvb );
-      ////QLabel* qlbv = new QLabel( "Delta V tune", qhb2 );
         QLineEdit* qlev = new QLineEdit( "0.0", qhb2 );
       qhb2->setMargin(5);
       qhb2->setSpacing(3);
