@@ -35,6 +35,7 @@
 ******
 ******  - fixed issues with indexing that made SVD fail with rectangular
 ******    matrices. 
+******  - factors automatically allocated with the right dimensions.
 ****** 
 **************************************************************************
 *************************************************************************/
@@ -55,10 +56,13 @@
 #include <config.h>
 #endif
 
+#include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/TML.h>
 #include <basic_toolkit/MLPtr.h>
 
 using namespace std;
+using FNAL::pcerr;
+
 
 template<>
 void TML<double>::SVD ( MLPtr<double> & U, MLPtr<double> & W, MLPtr<double> & V ) const
@@ -123,11 +127,18 @@ void TML<double>::SVD ( MLPtr<double> & U, MLPtr<double> & W, MLPtr<double> & V 
     V = MLPtr<double>( new TML<double>( _ncols, _ncols )); 
 
 
-  if ((W->_nrows == _ncols) && (V->_ncols == 1) ) 
-    W->clear();
-  else
-    W = MLPtr<double>( new TML<double>( _ncols, 1 )); 
+  if ( (W->_nrows != _ncols) && (W->_ncols != 1) ) {
+   (*pcerr) << "***WARNING**: SVD input matrix W had wrong dimension." << "\n"   
+	    << "              Old dimensions: " << "(" << W->_nrows << "," << W->_ncols << ")" << "\n" 
+	    << "              New dimensions: " << "(" << _ncols    << "," << 1         << ")" << "\n"
+            << "              NOTE: All weights set to 1.0 . \n\n" << std::endl; 
  
+    W = MLPtr<double>( new TML<double>( _ncols, 1 )); 
+  
+    for (int i=0; i<_ncols; ++i)  W->_mdata[i][0] = 1.0; 
+
+  }
+
 
   double*  rv1 = new double[n];
 
