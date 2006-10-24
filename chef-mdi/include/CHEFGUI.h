@@ -89,14 +89,8 @@ class QBml;
 class QBmlRoot;
 
 
-
-
-
-
-
-
-
 class CHEFPlotMain;
+class AppWorkspace;
 class RayTrace;
 class SiteViewer;
 class Tracker;
@@ -257,7 +251,7 @@ private:
   QApplication*                    _appl;
   QMainWindow*                     _mainWindow;
                                              // BEGIN CHEFGUI SPECIFIC CODE
-  QWidget*                         _centralWidget;
+  AppWorkspace*                    _centralWidget;
                                              // END   CHEFGUI SPECIFIC CODE
 
   QGuardedPtr<CHEFPlotMain>        _plotWidget;

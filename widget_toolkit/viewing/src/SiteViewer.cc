@@ -33,7 +33,7 @@
 #include <fstream>
 #include <iomanip>
 
-// #include <qapplication.h>
+#include <qapplication.h>
 #include <qmenubar.h>
 #include <qmessagebox.h>
 #include <qfiledialog.h>
@@ -63,8 +63,7 @@ const BoolNullNode SiteViewer::nada;
 
 
 SiteViewer::SiteViewer( BeamlineContext& bmlCP, QWidget* parent, const char* name, WFlags f)
-: 
-  QVBox(parent,name,f),
+: QVBox(parent,name,f),
   _x(0), _y(0), _z(0), 
   _xmin(1.0e10), _xmax(-1.0e10),
   _ymin(1.0e10), _ymax(-1.0e10),
@@ -81,8 +80,7 @@ SiteViewer::SiteViewer( BeamlineContext& bmlCP, QWidget* parent, const char* nam
 
 
 SiteViewer::SiteViewer( const Particle& prt, beamline* x, QWidget* parent, const char* name, WFlags f)
-: 
-  QVBox(parent,name,f),
+: QVBox(parent,name,f),
    _x(0), _y(0), _z(0), 
   _xmin(1.0e10), _xmax(-1.0e10),
   _ymin(1.0e10), _ymax(-1.0e10),
@@ -179,13 +177,30 @@ void SiteViewer::_finishConstructor()
     _optionMenuPtr->insertItem( "Show origin", this, SLOT(_optionOrigin()) );
   myMenuPtr->insertItem( "Options", _optionMenuPtr );
 
-  _myGLwindowPtr = new Wndw( this );
-  _myGLwindowPtr->show();
 
+  // Construct display widget
+  // NOTE: _myGLwindowPtr will be
+  // deleted automatically by Qt.
+  _myGLwindowPtr = new Wndw( this );
+  QWidget* d = 0;
+  if( this->isTopLevel() ) {
+    d = QApplication::desktop();
+  }
+  else {
+    d = this->parentWidget();
+  }
+  int w = int( sqrt( double( (d->width())*(d->height()) )/3.0 ) );
+  this->resize(w,w);
+
+
+  // ------------------------------------------------------
+  // ARCHIVAL MATERIAL
   // ------------------------------------------------------
   // From chef-mdi/src/SiteViewer.cpp:
   // 
-  _myGLwindowPtr->resize(width(), height());
+  // int w = int( sqrt( double( (this->parentWidget()->width())*(this->parentWidget()->height()) )/3.0 ) );
+  // this->resize(w,w);
+  // this->adjustSize();
   // ------------------------------------------------------
   // From chef/src/SiteViewer.cc:
   // 
@@ -194,9 +209,6 @@ void SiteViewer::_finishConstructor()
   // this->adjustSize();
   // _myGLwindowPtr->setMinimumSize(QSize( 10, 10 ));
   // ------------------------------------------------------
-
-  // NOTE: _myGLwindowPtr will be
-  // deleted automatically by Qt.
 }
 
 
