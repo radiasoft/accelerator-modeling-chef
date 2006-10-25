@@ -128,15 +128,7 @@ void TML<double>::SVD ( MLPtr<double> & U, MLPtr<double> & W, MLPtr<double> & V 
 
 
   if ( (W->_nrows != _ncols) && (W->_ncols != 1) ) {
-   (*pcerr) << "***WARNING**: SVD input matrix W had wrong dimension." << "\n"   
-	    << "              Old dimensions: " << "(" << W->_nrows << "," << W->_ncols << ")" << "\n" 
-	    << "              New dimensions: " << "(" << _ncols    << "," << 1         << ")" << "\n"
-            << "              NOTE: All weights set to 1.0 . \n\n" << std::endl; 
- 
     W = MLPtr<double>( new TML<double>( _ncols, 1 )); 
-  
-    for (int i=0; i<_ncols; ++i)  W->_mdata[i][0] = 1.0; 
-
   }
 
 
