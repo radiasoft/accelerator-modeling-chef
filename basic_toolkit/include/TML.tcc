@@ -186,12 +186,16 @@ TML<T>::TML( TML<T> const& X ): ReferenceCounter<TML<T> >(), _nrows(X._nrows), _
 
 template<typename T>
 TML<T>::~TML() {
-
-  if (_mdata[0]) delete [] _mdata[0];
-  if (_mdata)    delete [] _mdata;
-
+ 
   _nrows = 0;
   _ncols = 0;
+
+  if (!_mdata) return; // valid to delete a 0x0 matrix ... 
+   
+  if (_mdata[0]) delete [] _mdata[0];
+  
+  delete [] _mdata;
+  
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -962,8 +966,7 @@ TML<T>& TML<T>::operator=(const TML& x)
 {
   if( this == &x )  return *this;
  
-  if (_mdata[0]) delete [] _mdata[0];
-  if (_mdata)    delete [] _mdata;
+  this->~TML(); // call the destructor. 
 
   _nrows = x._nrows;
   _ncols = x._ncols;
