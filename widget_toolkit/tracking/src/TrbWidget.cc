@@ -64,7 +64,6 @@
 #include <GL/glut.h>
 
 #include "MathConstants.h"
-#include "ExpandingArray.h"
 
 #include "Tracker.h"  // ??? Needed only for class Orbit
 #include "TrbWidget.h"
