@@ -10,7 +10,7 @@
 #
 #-------------------------------------------------------------------
 
-AC_INIT(src/DriftMap.cc)
+AC_INIT(src/Integrator.cc)
 AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE(integrator, 1.0, no-define)
