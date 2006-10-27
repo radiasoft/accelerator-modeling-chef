@@ -24,9 +24,8 @@
 #include <boost/python.hpp>
 #include <boost/shared_array.hpp>
 #include <basic_toolkit/Matrix.h>
+#include <basic_toolkit/VectorD.h>
 #include <basic_toolkit/TMatrix.h>
-#include <basic_toolkit/TVector.h>
-
 
 using namespace boost::python;
 
@@ -216,9 +215,6 @@ Matrix_class_.def( -self );
 // *** string representation ****
 //-----------------------------------
 Matrix_class_.def( self_ns::str(self) );         
-
-
-
 
 
 }
