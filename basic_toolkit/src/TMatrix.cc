@@ -49,6 +49,7 @@
 #include <basic_toolkit/TML.h>
 #include <basic_toolkit/MLPtr.h>
 #include <basic_toolkit/TMatrix.h>
+#include <basic_toolkit/VectorD.h>
 #include <basic_toolkit/MathConstants.h>
 #include <basic_toolkit/PhysicsConstants.h>
 #include <basic_toolkit/iosetup.h>
@@ -180,14 +181,13 @@ TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenVectors() co
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-void TMatrix<double>::SVD( TMatrix<double>& U, TMatrix<double>& V, TMatrix<double>& W) 
+void TMatrix<double>::SVD( TMatrix<double>& U, Vector& W, TMatrix<double>& V) 
 {
-  _ml->SVD( U._ml, V._ml, W._ml);
+  _ml->SVD( U._ml, W, V._ml);
 
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 TMatrix<std::complex<double>  > operator*(const TMatrix<std::complex<double>  >& x, const TMatrix<double>& y)
 {
@@ -210,6 +210,30 @@ TMatrix<std::complex<double> > operator*(const TMatrix<double>& x, const TMatrix
   MLPtr<std::complex<double>  > p(   multiply<std::complex<double> >(z._ml, y._ml) ); 
   return TMatrix<std::complex<double>  >( p ); 
 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+/*** static function ***/
+
+template<>
+Vector 
+TMatrix<double>::backSubstitute(TMatrix<double> const& U, Vector const& W, TMatrix<double> const& V, Vector const& rhs, double threshold) { 
+
+   VectorD x  = U.transpose()*rhs;
+   
+   int n = W.Dim();
+   for (int i=0; i<n; ++i ) {
+   if ( std::abs(W(i)) > threshold ) 
+     x(i) /= W(i); 
+   else 
+     x(i) = 0.0; 
+   }
+
+   x = V*x;
+
+   return x;
 }
 
 
