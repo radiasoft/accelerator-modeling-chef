@@ -77,6 +77,10 @@ MLPtr<double> imag_part( MLPtr<std::complex<double> > const& x );
 
 template<typename T> std::ostream& operator<< (std::ostream& os, const TML<T>& x);
 
+template <typename T>
+class TVector;
+
+typedef TVector<double> Vector;
 
 template<typename T> 
 class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
@@ -138,7 +142,7 @@ class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
   
   static void orderCoordinates(MLPtr<std::complex<double> >& eigenvalues,   MLPtr<std::complex<double> >& eigenvectors); 
  
-  void SVD (MLPtr<T>& U, MLPtr<T>& W, MLPtr<T>& V ) const;   
+  void SVD (MLPtr<T>& U, Vector& W, MLPtr<T>& V ) const;   
 
   T      determinant() const; 
   T      trace() const; 
@@ -259,7 +263,7 @@ void TML<double>::orderCoordinates(MLPtr<std::complex<double> >& eigenvalues,   
 template<>
 void TML<std::complex<double> >::orderCoordinates(MLPtr<std::complex<double> >& eigenvalues,   MLPtr<std::complex<double> >& eigenvectors); 
 
-template<> void TML<double>::SVD (MLPtr<double>& U, MLPtr<double>& W, MLPtr<double>& V ) const;   
+template<> void TML<double>::SVD (MLPtr<double>& U, Vector& W, MLPtr<double>& V ) const;   
 
 
 #ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES

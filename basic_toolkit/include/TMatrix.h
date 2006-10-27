@@ -131,6 +131,8 @@ public:
 
   TMatrix(MLPtr<T> const& ml);
 
+  TMatrix<T>& DeepCopy(TMatrix<T> const& x); // forces a deep copy  
+
  ~TMatrix();
 
   // Public member functions__________________________________________
@@ -149,51 +151,54 @@ public:
   TMatrix<std::complex<double> > eigenValues()  const;
   TMatrix<std::complex<double> > eigenVectors() const;
   T                              trace()        const ; 
-  void                           SVD( TMatrix&, TMatrix&, TMatrix& );
+  void                           SVD( TMatrix& U, Vector& W, TMatrix& V);
+  static TVector<T>              backSubstitute(TMatrix const& U, TVector<T> const& W, 
+                                                TMatrix const& V, TVector<T> const& rhs, double threshold = 1.e-12);
   bool                           isOrthogonal() const;
 
   // Operators________________________________________________________
   
   
-  TMatrix& DeepCopy(const TMatrix&);
-
-  TMatrix& operator=(const TMatrix&);
+  TMatrix& operator=(TMatrix const&);
 
   T& operator()(int row, int column);
   T  operator()(int row, int column) const;
+
   T  getElement(int row, int column) const;
+
   T& operator()(int row);
   T  operator()(int row) const;
-  TMatrix<T>& operator+=( const T&);
-  TMatrix<T>& operator-=( const T&);
+
+  TMatrix<T>& operator+=( T const&);
+  TMatrix<T>& operator-=( T const&);
 
   // Friends
 
-  friend TMatrix<double> real( const TMatrix<std::complex<double> >& x );
-  friend TMatrix<double> imag( const TMatrix<std::complex<double> >& x );
+  friend TMatrix<double> real( TMatrix<std::complex<double> > const& x );
+  friend TMatrix<double> imag( TMatrix<std::complex<double> > const& x );
 
-  friend bool operator==<>( const TMatrix&, const TMatrix& );
-  friend bool operator==<>( const TMatrix&, const T& );
-  friend bool operator==<>( const T&,       const TMatrix& );
+  friend bool operator==<>( TMatrix const&, TMatrix const& );
+  friend bool operator==<>( TMatrix const&, T       const& );
+  friend bool operator==<>( T       const&, TMatrix const& );
 
   friend std::ostream& operator<< <T>(std::ostream&, const TMatrix<T>&);
 
-  friend TMatrix operator+<>(const TMatrix&, const TMatrix&);
-  friend TMatrix operator+<>(const TMatrix&, const T&); 
-  friend TMatrix operator+<>(const T&,       const TMatrix&); 
-  friend TMatrix operator-<>(const TMatrix&); 
-  friend TMatrix operator-<>(const TMatrix&, const TMatrix&); 
-  friend TMatrix operator-<>(const TMatrix&, const T&); 
-  friend TMatrix operator-<>(const T&,       const TMatrix&); 
-  friend TMatrix operator*<>(const TMatrix&, const TMatrix&); 
+  friend TMatrix operator+<>(TMatrix const&, TMatrix  const&);
+  friend TMatrix operator+<>(TMatrix const&, T        const&); 
+  friend TMatrix operator+<>(T       const&, TMatrix  const&); 
+  friend TMatrix operator-<>(TMatrix const&); 
+  friend TMatrix operator-<>(TMatrix const&, TMatrix  const&); 
+  friend TMatrix operator-<>(TMatrix const&, T        const&); 
+  friend TMatrix operator-<>(T       const&, TMatrix  const&); 
+  friend TMatrix operator*<>(TMatrix const&, TMatrix  const&); 
 
-  friend TMatrix<std::complex<double> > operator*(const TMatrix<double>&,                const TMatrix<std::complex<double> >&); 
-  friend TMatrix<std::complex<double> > operator*(const TMatrix<std::complex<double> >&, const TMatrix<double>&); 
+  friend TMatrix<std::complex<double> > operator*(TMatrix<double>                const&,  TMatrix<std::complex<double> > const&); 
+  friend TMatrix<std::complex<double> > operator*(TMatrix<std::complex<double> > const&,  TMatrix<double>                const&); 
 
-  friend TMatrix operator*<>(const TMatrix&,   const T&);
-  friend TMatrix operator*<>(const T&,         const TMatrix&);
-  friend TMatrix operator/<>(const TMatrix&,   const T&);
-  friend TMatrix operator/<>(const T&,         TMatrix const&);
+  friend TMatrix operator*<>(TMatrix const&,   T       const&);
+  friend TMatrix operator*<>(T       const&,   TMatrix const&);
+  friend TMatrix operator/<>(TMatrix const&,   T       const&);
+  friend TMatrix operator/<>(T       const&,   TMatrix const&);
   friend TMatrix operator/<>(TMatrix const&,   TMatrix const&);
 
 };
@@ -219,8 +224,11 @@ template<> TMatrix<std::complex<double> > TMatrix<double>::eigenVectors()   cons
 template<> TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenValues()  const;
 template<> TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenVectors() const;
 
-template<> void  TMatrix<double>::SVD( TMatrix<double>&, TMatrix<double>&, TMatrix<double>& );
+template<> void  TMatrix<double>::SVD( TMatrix<double>&, Vector&, TMatrix<double>& );
 
+template<> 
+TVector<double> TMatrix<double>::backSubstitute(TMatrix<double> const& U, TVector<double> const& W, 
+                                                TMatrix<double> const& V, TVector<double> const& rhs, double threshold);
 
 
 #ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES

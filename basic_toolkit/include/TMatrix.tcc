@@ -355,7 +355,7 @@ template<typename T>
 T& TMatrix<T>::operator()(int i) 
 {
 
-if ( _ml->count() > 1 ) _ml = _ml->clone();  // THIS IS BAD !
+if ( _ml->count() > 1 ) _ml = _ml->clone();  
 return (*_ml)(i);
 
 }
@@ -523,5 +523,7 @@ TMatrix<T> operator/( TMatrix<T> const& x, TMatrix<T> const& y)
   return TMatrix<T>(p);
 
 }
+
+
 
 
