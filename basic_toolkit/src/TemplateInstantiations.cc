@@ -111,9 +111,6 @@ template TVector<std::complex<double> > operator*(TVector<std::complex<double> >
 template bool TVector<double>::IsUnit() const;
 template bool TVector<std::complex<double> >::IsUnit() const;
 
-template TVector<double> operator*(TMatrix<double> const&, TVector<double> const&);
-template TVector<std::complex<double> > operator*(TMatrix<std::complex<double> > const&, TVector<std::complex<double> > const&);
-
 template std::ostream& operator<<(std::ostream&, TVector<double> const&);
 template std::ostream& operator<<(std::ostream&, TVector<std::complex<double> > const&);
 
@@ -143,6 +140,8 @@ template TMatrix<double> operator-(const double&,          const TMatrix<double>
 template TMatrix<double> operator*(const TMatrix<double>&, const TMatrix<double>&); 
 template TMatrix<double> operator*(const TMatrix<double>&, const double&);
 template TMatrix<double> operator*(const double&,          const TMatrix<double>&);
+template TMatrix<double> operator*(TMatrix<double> const&, TVector<double> const&);
+
 
 template TMatrix<double> operator/<double>(const TMatrix<double>&, const double&);
 template TMatrix<double> operator/<double>(const double&,          TMatrix<double> const &);
@@ -190,6 +189,8 @@ template TMatrix<std::complex<double> > operator-(std::complex<double>  const&, 
 template TMatrix<std::complex<double> > operator*(TMatrix<std::complex<double> > const&,       TMatrix<std::complex<double> > const& ); 
 template TMatrix<std::complex<double> > operator*(TMatrix<std::complex<double> > const&,       std::complex<double> const&           );
 template TMatrix<std::complex<double> > operator*(std::complex<double> const& ,                TMatrix<std::complex<double> > const& );
+template TMatrix<std::complex<double> > operator*(TMatrix<std::complex<double> > const&,       TVector<std::complex<double> > const&);
+
 
 template TMatrix<std::complex<double> > operator/(TMatrix<std::complex<double> > const&,       std::complex<double> const&           );
 template TMatrix<std::complex<double> > operator/(std::complex<double> const& ,                TMatrix<std::complex<double> > const& );
@@ -240,7 +241,6 @@ MLPtr<int> TML<int>::multiply(  MLPtr<int> const&,  MLPtr<int> const& );
 template 
 MLPtr<int> TML<int>::multiply(  MLPtr<int> const&,  int const& );  
 
-
 template 
 MLPtr<int> TML<int>::divide  (  MLPtr<int> const&,  MLPtr<int> const& );  
 
@@ -269,6 +269,10 @@ MLPtr<double> multiply<double>(  MLPtr<double> const&,  MLPtr<double> const& );
 template 
 MLPtr<double> multiply<double>(  MLPtr<double> const&,  double const& );  
 
+template
+MLPtr<double> 
+multiply<double>(MLPtr<double> const&, TVector<double> const&);
+
 
 template 
 MLPtr<double> divide<double>  (  MLPtr<double> const&,  MLPtr<double> const& );  
@@ -295,6 +299,10 @@ multiply<std::complex<double> >(  MLPtr<std::complex<double> > const&,  MLPtr<st
 
 template MLPtr<std::complex<double> > 
 multiply<std::complex<double> >(  MLPtr<std::complex<double> > const&,  std::complex<double> const& );  
+
+template
+MLPtr<std::complex<double> > 
+multiply<std::complex<double> >(MLPtr<std::complex<double> > const&, TVector<std::complex<double> > const&);
 
 
 template MLPtr<std::complex<double> > 

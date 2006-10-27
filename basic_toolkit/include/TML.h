@@ -56,6 +56,12 @@
 #include <basic_toolkit/ReferenceCounter.h>
 #include <basic_toolkit/MLPtr.h>
 
+template<typename T>
+class TMatrix;
+
+template<typename T>
+class TVector;
+
 template<typename T> MLPtr<T> Negate( MLPtr<T> const& );
 
 template<typename T> MLPtr<T> add(MLPtr<T> const& x, MLPtr<T> const& y); 
@@ -64,18 +70,20 @@ template<typename T> MLPtr<T> add(MLPtr<T> const& x, const T& y);
 template<typename T> MLPtr<T> subtract(MLPtr<T> const& x, MLPtr<T> const& y); 
 
 
-template<typename T> MLPtr<T> multiply( MLPtr<T> const& x, const T& y); 
-template<typename T> MLPtr<T> multiply(MLPtr<T> const& x, MLPtr<T> const& y);
+template<typename T> MLPtr<T> multiply(  MLPtr<T>   const& x, const T& y); 
+template<typename T> MLPtr<T> multiply(  MLPtr<T>   const& x, MLPtr<T> const& y);
+template<typename T> MLPtr<T> multiply(  MLPtr<T>   const& x, TVector<T>  const& y);
+template<typename T> MLPtr<T> multiply(  TVector<T> const& x, MLPtr<T>    const& y);
 
-template<typename T> MLPtr<T> divide (MLPtr<T> const& x, T const& y); 
-template<typename T> MLPtr<T> divide (T const&y,                        MLPtr<T> const& x  ); 
-template<typename T> MLPtr<T> divide (MLPtr<T> const& y, MLPtr<T> const& x);
+template<typename T> MLPtr<T> divide (MLPtr<T> const& x,   T        const& y); 
+template<typename T> MLPtr<T> divide (T        const& y,   MLPtr<T> const& x  ); 
+template<typename T> MLPtr<T> divide (MLPtr<T> const& y,   MLPtr<T> const& x);
 
 
 MLPtr<double> real_part( MLPtr<std::complex<double> > const& x );
 MLPtr<double> imag_part( MLPtr<std::complex<double> > const& x );
 
-template<typename T> std::ostream& operator<< (std::ostream& os, const TML<T>& x);
+template<typename T> std::ostream& operator<< (std::ostream& os, TML<T> const& x);
 
 template <typename T>
 class TVector;
@@ -160,11 +168,14 @@ class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
 
   friend MLPtr<T> multiply<T>( MLPtr<T> const& x, const T& y); 
   friend MLPtr<T> multiply<T>( MLPtr<T> const& x, MLPtr<T> const& y);
+
+  friend MLPtr<T> multiply<T>( MLPtr<T>   const& x, TVector<T>   const& y);
+  friend MLPtr<T> multiply<T>( TVector<T> const& x, MLPtr<T>     const& y);
   
   
-  friend MLPtr<T> divide<T>( MLPtr<T> const& x, T const& y); 
-  friend MLPtr<T> divide<T>( T const&y,                        MLPtr<T> const& x ); 
-  friend MLPtr<T> divide<T>( MLPtr<T> const& y, MLPtr<T> const& x ); 
+  friend MLPtr<T> divide<T>( MLPtr<T>  const&  x, T        const& y); 
+  friend MLPtr<T> divide<T>( T         const&  y, MLPtr<T> const& x ); 
+  friend MLPtr<T> divide<T>( MLPtr<T>  const&  y, MLPtr<T> const& x ); 
 
   friend MLPtr<T> Negate<T>( MLPtr<T> const& x ); 
 

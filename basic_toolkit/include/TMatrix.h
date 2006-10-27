@@ -53,7 +53,8 @@
 #include <complex>
 #include <basic_toolkit/TML.h>
 
-template<typename T> class TMatrix; 
+template <typename T> class TVector; 
+template <typename T> class TMatrix; 
 
 // Friend functions
 
@@ -77,6 +78,10 @@ template<typename T> TMatrix<T> operator*(const T&,          const TMatrix<T>&);
 
 TMatrix<std::complex<double> > operator*(const TMatrix<std::complex<double> >& x, const TMatrix<double>& y);
 TMatrix<std::complex<double> > operator*(const TMatrix<double>& y,                const TMatrix<std::complex<double> >& x);
+
+template<typename T> TMatrix<T> operator*(TMatrix<T>  const&,  TVector<T> const&); // right multiply
+template<typename T> TMatrix<T> operator*(TVector<T>  const&,  TMatrix<T> const&);  // left multiply
+
 
 template<typename T> TMatrix<T> operator/(const TMatrix<T>&,     const T&);
 template<typename T> TMatrix<T> operator/(const T&,              TMatrix<T> const&);
@@ -195,8 +200,11 @@ public:
   friend TMatrix<std::complex<double> > operator*(TMatrix<double>                const&,  TMatrix<std::complex<double> > const&); 
   friend TMatrix<std::complex<double> > operator*(TMatrix<std::complex<double> > const&,  TMatrix<double>                const&); 
 
-  friend TMatrix operator*<>(TMatrix const&,   T       const&);
-  friend TMatrix operator*<>(T       const&,   TMatrix const&);
+  friend TMatrix operator*<>(TMatrix     const&,   T          const&);
+  friend TMatrix operator*<>(T           const&,   TMatrix    const&);
+  friend TMatrix operator*<>(TMatrix     const&,   TVector<T> const&);
+  friend TMatrix operator*<>(TVector<T>  const&,   TMatrix    const&);
+
   friend TMatrix operator/<>(TMatrix const&,   T       const&);
   friend TMatrix operator/<>(T       const&,   TMatrix const&);
   friend TMatrix operator/<>(TMatrix const&,   TMatrix const&);

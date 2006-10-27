@@ -644,6 +644,61 @@ MLPtr<T> multiply(MLPtr<T> const& x, MLPtr<T> const& y)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<typename T> 
+MLPtr<T> multiply( MLPtr<T> const& x, TVector<T> const& y){ // right vector multiply
+
+
+  MLPtr<T> z( new TML<T>( x->_nrows, 1 , T()) );
+
+  if ( x->_ncols != y.Dim() ) {
+    throw( typename TML<T>::Incompatible( x->_nrows, x->_ncols, y.Dim(), 1,
+           "multiply(MLPtr<T> const& x, Vector const& y)" ) );
+  }
+
+  T sum;
+
+  for( int row=0; row< x->_nrows; ++row) {
+      sum = T();
+      for(int i=0; i<x->_ncols; ++i) {
+        sum += x->_mdata[row][i] * y(i);
+      }
+      z->_mdata[row][0] = sum;
+  }
+  return z;
+
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T> MLPtr<T> 
+multiply( TVector<T>  const& x, MLPtr<T> const& y) {        // left vector multiply 
+
+  MLPtr<T> z( new TML<T>( 1 , y->_ncols, T()) );
+
+  if( x.Dim() != y->_nrows) {
+    throw( typename TML<T>::Incompatible( 1, x.Dim(), y->_nrows, y->_ncols,
+           "multiply(Vector const& x, MLPtr<T> const& y)" ) );
+  }
+
+  T sum;
+
+    for(int col=0; col < x.Dim(); ++col) {
+      sum = T();
+      for(int i=0; i< y->_nrows; ++i) {
+        sum += x(i) * y->_mdata[i][col];
+      }
+      z->_mdata[0][col] = sum;
+    }
+ 
+  return z;
+
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 MLPtr<T> divide (MLPtr<T> const& x, T const& y) 
