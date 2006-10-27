@@ -25,6 +25,8 @@
 #include <boost/shared_array.hpp>
 #include <basic_toolkit/Matrix.h>
 #include <basic_toolkit/TMatrix.h>
+#include <basic_toolkit/TVector.h>
+
 
 using namespace boost::python;
 
