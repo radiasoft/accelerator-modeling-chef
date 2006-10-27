@@ -33,12 +33,18 @@
 ******             ostiguy@fnal.gov
 ******
 ******  - templated version
-******                                                                
+****** 
+******  October 2006
+******   
+******  - new implementation based on std::vector<> 
+******                                                              
 **************************************************************************
 *************************************************************************/
 
 #include <basic_toolkit/TVector.h>
-
+#include <numeric>
+#include <functional>
+#include <complex>
 
 #ifdef CHECKOUT
 #undef CHECKOUT
@@ -55,18 +61,15 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-double 
-TVector<double>::operator* ( const TVector<double>& x ) const
+double TVector<double>::operator* ( TVector <double> const& x ) const
 {
+
 #ifndef NOCHECKS
-  CHECKOUT(double, _dim != x._dim, "TVector<double>::operator*", "dimensions incompatible.")
+  CHECKOUT(double, Dim() != x.Dim(), "TVector<double>::operator*", "dimensions incompatible.")
 #endif
 
-  double u = 0.0;
+  return std::inner_product(m_theVector.begin(), m_theVector.end(), x.m_theVector.begin(), 0.0);
 
-  for ( int i=0; i < _dim; ++i)  u += _comp[i] * x._comp[i];
-
-  return u;
 }
 
 
@@ -75,29 +78,32 @@ TVector<double>::operator* ( const TVector<double>& x ) const
 
 template<> 
 std::complex<double> 
-TVector<std::complex<double> >::operator* ( const TVector<std::complex<double> >& x ) const {
+TVector<std::complex<double> >::operator* ( TVector<std::complex<double> > const& x ) const {
+
 #ifndef NOCHECKS
-  CHECKOUT(std::complex<double>, _dim != x._dim, "TVector<double>::operator*", "dimensions incompatible.")
+  CHECKOUT(std::complex<double>, Dim() != x.Dim(), "TVector<double>::operator*", "dimensions incompatible.")
 #endif
 
-  std::complex<double> u = 0.0;
+   
 
-  for ( int i=0; i < _dim; ++i)  
-      u += _comp[i] * (std::real(x._comp[i]) - std::complex<double>(0.0,1.0) * std::imag(x._comp[i])) ;
+  return std::real( std::inner_product( m_theVector.begin(),  m_theVector.end(), 
+                                      x.m_theVector.begin(),  std::complex<double>(), 
+                                      std::plus<std::complex<double> >(),
+				      op_mult() )); 
 
-  return u;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 template<>
 bool 
-TVector<double>::operator> ( const TVector<double>& x ) const
+TVector<double>::operator > ( TVector<double> const& x ) const
 {
 #ifndef NOCHECKS
-  CHECKOUT(double, _dim != x._dim, "TVector<T>::operator>", "Dimensions incompatible.")
+  CHECKOUT(double, Dim() != x.Dim(), "TVector<T>::operator>", "Dimensions incompatible.")
 #endif
-  for( int i=0; i < _dim; ++i) if( _comp[i] <=  x._comp[i] ) return false;
+
+  for( int i=0; i < Dim(); ++i) if( m_theVector[i] <=  x.m_theVector[i] ) return false;
   return true;
 }
 
@@ -108,9 +114,6 @@ TVector<double>::operator> ( const TVector<double>& x ) const
 template<>
 double TVector<double>::Norm () const
 {
-  double x = 0.0;
-  for ( int i = 0; i < _dim; ++i) x += _comp[i]*_comp[i];
-  return sqrt(x);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -119,9 +122,9 @@ double TVector<double>::Norm () const
 template<>
 double TVector<std::complex<double> >::Norm () const
 {
-  double x = 0.0;
-  for ( int i = 0; i < _dim; ++i) x += ( std::real(_comp[i])*std::real(_comp[i]) ) + ( std::imag(_comp[i])*std::imag(_comp[i]) ); 
-  return sqrt(x);
+
+  return std::sqrt( std::real( (*this) * (*this) ) );  
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -130,9 +133,7 @@ double TVector<std::complex<double> >::Norm () const
 template<>
 bool TVector<double>::IsUnit() const
 {
-  double x = 0.0;
-  for( int i = 0; i < _dim; ++i ) x += _comp[i]*_comp[i];
-  return ( fabs(x - 1.0) < 1.0e-10 );
+  return (std::abs( Norm() - 1.0 ) < 1.0e-10 );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -141,8 +142,10 @@ bool TVector<double>::IsUnit() const
 template<>
 bool TVector<std::complex<double> >::IsUnit() const
 {
-  double x = 0.0;
-  for( int i = 0; i < _dim; ++i ) x += (std::real(_comp[i])*std::real(_comp[i]) +  std::imag(_comp[i])*std::imag(_comp[i]) );
-  return ( fabs(x - 1.0) < 1.0e-10 );
+  return (std::abs( Norm() - 1.0 ) < 1.0e-10 );
+
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 

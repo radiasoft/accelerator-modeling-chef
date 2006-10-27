@@ -46,6 +46,8 @@
 #include <ostream>
 #include <iomanip>
 #include <sstream>
+#include <numeric>
+#include <functional>
 
 #include <basic_toolkit/complexAddon.h>
 #include <basic_toolkit/TMatrix.h>
@@ -309,6 +311,51 @@ template class MLPtr<double>;
 template class MLPtr<std::complex<double> >;
 
 template MLPtr<double>::operator MLPtr<std::complex<double> >() const;
+
+
+// -------------------------------------------------------------------------------------------------------------------------
+
+template
+std::complex<double> std::inner_product<__gnu_cxx::__normal_iterator<std::complex<double> const*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, __gnu_cxx::__normal_iterator<std::complex<double> const*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, std::complex<double>, std::plus<std::complex<double> >, TVector<std::complex<double> >::op_mult >(__gnu_cxx::__normal_iterator<std::complex<double> const*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, __gnu_cxx::__normal_iterator<std::complex<double> const*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, __gnu_cxx::__normal_iterator<std::complex<double> const*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, std::complex<double>, std::plus<std::complex<double> >, TVector<std::complex<double> >::op_mult);
+
+template
+double std::inner_product<__gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double> > >, __gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double> > >, double>(__gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double> > >, __gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double> > >, __gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double> > >, double);
+
+template 
+class std::vector<std::complex<double>, std::allocator<std::complex<double> > >;
+
+template
+class std::vector<double, std::allocator<double> >;
+
+template
+void std::__uninitialized_fill_n_a<__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double>, std::complex<double> >(__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> const&, std::allocator<std::complex<double> >);
+
+template
+void std::fill<__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double const&);
+
+template __gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > > std::fill_n<__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> >(__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> const&);
+
+template
+__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > > std::fill_n<__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double const&);
+
+template
+void std::__uninitialized_fill_n_a<std::complex<double>*, unsigned int, std::complex<double>, std::complex<double> >(std::complex<double>*, unsigned int, std::complex<double> const&, std::allocator<std::complex<double> >);
+
+template
+void std::__uninitialized_fill_n_a<double*, unsigned int, double, double>(double*, unsigned int, double const&, std::allocator<double>);
+
+template
+void std::__uninitialized_fill_n_a<__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double, double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double const&, std::allocator<double>);
+
+template
+void std::fill<__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, std::complex<double> >(__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, __gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, std::complex<double> const&);
+
+
+template
+void std::__uninitialized_fill_n_aux<std::complex<double>*, unsigned int, std::complex<double> >(std::complex<double>*, unsigned int, std::complex<double> const&, __false_type);
+
+template
+void std::__uninitialized_fill_n_aux<__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> >(__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> const&, __false_type);
 
 
 #endif //BASICTOOLKIT_EXPLICIT_TEMPLATES
