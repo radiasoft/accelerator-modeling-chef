@@ -33,7 +33,11 @@
 ******             ostiguy@fnal.gov
 ******
 ******  - templated version
-******                                                                
+******
+******  Oct 2006   ostiguy@fnal.gov
+******  
+******  - new implementation based on std::vector<>
+******                                                                        
 **************************************************************************
 *************************************************************************/
 #ifndef TVECTOR_H
@@ -43,9 +47,10 @@
 #include <iostream>
 #include <exception>
 #include <string>
+#include <vector>
 
-#include <math.h>
 #include <basic_toolkit/OutputFormat.h>
+
 
 template<typename T> 
 class TMatrix;
@@ -73,76 +78,80 @@ template<typename T>
 class DLLEXPORT TVector {
 
 private:
-  int           _dim;
-  T*            _comp;
-  T*            _loComp;
-  T*            _hiComp;
-  OutputFormat* _ofPtr;
+  
+  std::vector<T>       m_theVector;
+  OutputFormat*        m_ofPtr;
 
-  static OutputFormat* _defOFPtr;  // default OutputFormat
+  static OutputFormat* m_defOFPtr;  // default OutputFormat
 
 public:
   // Constructors and the destructor __________________________
+
   TVector( int  dimension= 3, const T* components=0, OutputFormat* ofmt=0 );
-  TVector( const TVector& );
+  TVector( TVector const& );
+
   void reset();
+
   ~TVector();
+
+  friend  std::ostream& operator<< <>( std::ostream& , TVector<T> const& );
 
   // Assignment _____________________________
 
-  void        Set              ( const T* );
-  void        set              ( T, T, T );   // anachronistic
-  T      operator()            ( int ) const; // return component
-  T&     operator()            ( int );       // set    component
+  void        Set                   ( T const* );
+  T           operator()            ( int )       const; // return component
+  T&          operator()            ( int );              // set    component
 
   // Algebraic functions ___________________________
-  TVector&  operator= ( const TVector& );
+
+  TVector&  operator= ( TVector const& );
+
   // ... Utility extension
-  TVector&  operator= ( const TMatrix<T>& );
+  TVector&  operator= ( TMatrix<T> const& );
 
-  TVector   operator+ ( const TVector& ) const;
-  TVector   operator+=( const TVector& );
+  TVector   operator+ ( TVector const& ) const;
+  TVector   operator+=( TVector const& );
 
-  friend  TVector<T> operator-<T>(    const TVector& );
-  friend  TVector<T> operator*<T>( T, const TVector& );
-  friend  TVector<T> operator*<T>( const TVector&, T ); 
-  friend  TVector<T> operator*<T>( const TMatrix<T>&, const TVector<T>& );
-  friend  std::ostream& operator<< <>( std::ostream& , const TVector<T>& );
+  friend  TVector<T> operator-<T>( TVector const& );
+  friend  TVector<T> operator*<T>( T,                 TVector const&    );
+  friend  TVector<T> operator*<T>( TVector const&,    T                 ); 
+  friend  TVector<T> operator*<T>( TMatrix<T> const&, TVector<T> const& );
 
-  TVector          operator-      ( const TVector& ) const; 
-  TVector          operator-=     ( const TVector& ); 
-  TVector          operator*=     (       T  );
-  TVector          operator/      (       T  ) const;
-  TVector          operator/=     (       T  );
 
-  T         operator*      (  const TVector<T>& ) const; // dot product
+  TVector          operator-      ( TVector const& ) const; 
+  TVector          operator-=     ( TVector const& ); 
+  TVector          operator*=     (       T        );
+  TVector          operator/      (       T        ) const;
+  TVector          operator/=     (       T        );
+
+  T         operator*       ( TVector<T> const&  ) const; // dot product
  
-  TVector    operator^      ( const TVector& ) const; // cross product:
-                                                        // only works if
-                                                        // the vector is
-                                                        // three-dimensional
+  TVector    operator^      ( TVector<T>  const& ) const; // cross product:
+                                                          // only works if
+                                                          // the vector is
+                                                          // three-dimensional
 
   // Boolean functions ________________________
 
-  bool          operator==     ( const TVector& ) const;
-  bool          operator!=     ( const TVector& ) const;
-  bool          operator<      ( const TVector& ) const;
-  bool          operator<=     ( const TVector& ) const;
-  bool          operator>      ( const TVector& ) const;
-  bool          operator>=     ( const TVector& ) const;
+  bool          operator==     ( TVector const& ) const;
+  bool          operator!=     ( TVector const& ) const;
+  bool          operator<      ( TVector const& ) const;
+  bool          operator<=     ( TVector const& ) const;
+  bool          operator>      ( TVector const& ) const;
+  bool          operator>=     ( TVector const& ) const;
   bool          IsNull         () const;
   bool          IsUnit         () const;
 
   // Queries ___________________________
 
-  int  Dim() const { return _dim; }
+  int  Dim() const { return m_theVector.size(); }
 
   // Utilities __________________________
 
 
-  static void   setDefaultFormat ( const OutputFormat& );
-  void          setOutputFormat  ( OutputFormat* x ) { _ofPtr = x; }
-  OutputFormat* getOutputFormat()                  { return _ofPtr; }
+  static void   setDefaultFormat ( OutputFormat const&  ); 
+  void          setOutputFormat  ( OutputFormat* x      ) { m_ofPtr = x; }
+  OutputFormat* getOutputFormat()                         { return m_ofPtr; }
 
   TVector      Abs              () const;
   double       Norm             () const;
@@ -165,23 +174,33 @@ public:
     std::string w;
   };
 
+
+
+  class op_mult: public std::binary_function<std::complex<double>&, std::complex<double>&, std::complex<double> > {
+   public:   
+       std::complex<double> operator()( std::complex<double> const& x, std::complex<double> const& y) const {
+         return x * std::conj(y);   
+       }
+  };
+
+
 };
 
 // specializations _________________________________________________________
 
 
 template <>  
-double   TVector<double>::operator* ( const TVector<double>& x ) const; 
+double   TVector<double>::operator* ( TVector<double> const& x ) const; 
 
 template <>  
-std::complex<double> TVector<std::complex<double> >::operator* ( const TVector<std::complex<double> >& x ) const; 
+std::complex<double> TVector<std::complex<double> >::operator* ( TVector<std::complex<double> > const& x ) const; 
 
 template<>
-bool TVector<double>::operator> ( const TVector<double>& x ) const;
+bool TVector<double>::operator> ( TVector<double> const& x ) const;
 
 // This is *not* implemented (it does not make much sense)
 template<>
-bool TVector<std::complex<double> >::operator> ( const TVector<std::complex<double> >& x ) const;
+bool TVector<std::complex<double> >::operator> ( TVector<std::complex<double> > const& x ) const;
 
 template<> 
 double TVector<double>::Norm () const;
