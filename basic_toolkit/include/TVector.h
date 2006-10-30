@@ -53,10 +53,10 @@
 
 
 template<typename T> 
-class TMatrix;
+class TVector;
 
 template<typename T> 
-class TVector;
+class TMatrix;
 
 template<typename T> 
 std::ostream& operator<<( std::ostream& , const TVector<T>& );
@@ -69,9 +69,6 @@ TVector<T> operator*( T, const TVector<T>& );
 
 template<typename T>
 TVector<T> operator*( const TVector<T>&, T );
-
-template<typename T>
-TVector<T> operator*( const TMatrix<T>&, const TVector<T>& );
 
 
 template<typename T>
@@ -89,6 +86,7 @@ public:
 
   TVector( int  dimension= 3, const T* components=0, OutputFormat* ofmt=0 );
   TVector( TVector const& );
+  TVector( TMatrix<T> const& m); // implicit conversion
 
   void reset();
 
@@ -107,19 +105,19 @@ public:
   TVector&  operator= ( TVector const& );
 
   // ... Utility extension
-  TVector&  operator= ( TMatrix<T> const& );
 
-  TVector   operator+ ( TVector const& ) const;
-  TVector   operator+=( TVector const& );
 
-  friend  TVector<T> operator-<T>( TVector const& );
+  friend  TVector<T> operator-<T>( TVector const& );  // unary minus 
   friend  TVector<T> operator*<T>( T,                 TVector const&    );
   friend  TVector<T> operator*<T>( TVector const&,    T                 ); 
-  friend  TVector<T> operator*<T>( TMatrix<T> const&, TVector<T> const& );
 
+
+  TVector          operator+      ( TVector const& ) const;
+  TVector&         operator+=     ( TVector const& );
 
   TVector          operator-      ( TVector const& ) const; 
-  TVector          operator-=     ( TVector const& ); 
+  TVector&         operator-=     ( TVector const& ); 
+
   TVector          operator*=     (       T        );
   TVector          operator/      (       T        ) const;
   TVector          operator/=     (       T        );
