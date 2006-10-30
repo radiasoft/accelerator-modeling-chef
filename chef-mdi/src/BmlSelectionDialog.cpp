@@ -48,6 +48,8 @@ BmlSelectionDialog::BmlSelectionDialog(QWidget* parent, const char* name, WFlags
 
   beamlines_listBox->clear();
 
+  connect( buttonGroupParticle, SIGNAL( clicked(int) ), this, SLOT( particleCheck(int) ));
+
   connect( checkBoxMomentum, SIGNAL( toggled(bool) ), this, SLOT( momentumCheck(bool) ));
   connect( checkBoxET,       SIGNAL( toggled(bool) ), this, SLOT( ETCheck(bool)       ));
   connect( checkBoxEK,       SIGNAL( toggled(bool) ), this, SLOT( EKCheck(bool)       ));
@@ -482,3 +484,13 @@ BmlSelectionDialog::_cancel( ){
    _bmllist->clear();
    hide();
 }
+
+void 
+BmlSelectionDialog::particleCheck(int id) {
+
+
+  std::cout<< "particle checked: id = " << id << std::endl; 
+
+
+} 
+
