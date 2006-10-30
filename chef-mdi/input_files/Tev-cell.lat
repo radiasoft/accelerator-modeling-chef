@@ -1,0 +1,75 @@
+! File: Tevatron-E.lat
+!
+! 15 standard cells;
+! 2 low beta straight sections;  
+! 3 normal straight sections;    
+! 1 high beta straight section.  
+! 
+! Adjust 17 locations: remove two dipoles.
+! Include 11 dipoles in each straight section.
+!
+! Leo Michelotti
+! July 23, 2003
+! 
+! Patch 1: shifted dipoles in "17" locations upstream 
+!   by 16.50 inches
+! 
+! Leo Michelotti
+! July 26, 2004
+! 
+! Patch 2: shifted cell boundaries and moved long
+!   straight sections approx. 30 cm relative to the arcs.
+! 
+! Leo Michelotti
+! July 29, 2004
+
+
+momentum  := 150.0                ! GeV/c
+beam, pc=momentum, particle=proton
+
+
+brho      := momentum/0.299792458 ! T-m
+
+twopi     := 6.2831853072
+nbends    := ((4.0*30.0)-2.0+11.0)*6.0  ! = 720 - 12 + 66 = 774
+!              |         |   |     |
+!              |         |   |     * 6 sectors
+!              |         |   11 bends in each straight section
+!              |         only 2 dipoles in the X17 half-cells
+!              4 dipoles in each of 30 standard half-cells per arc
+bendangle := twopi/nbends
+
+
+! Strengths of main bus quads.
+! Units are in m^-2 ( or kG/m / BRHO )
+! This corresponds to 76.0 T/m at 1 TeV.
+mainbusf := 0.0227724747
+mainbusd := -mainbusf
+
+! Standard lengths between quads and bends
+dqb: drift, l=2.14028
+dbq: drift, l=0.30019
+dbb: drift, l=0.27940
+dqq: drift, l=3.85191
+
+
+! Standard quads and bends (for normal cells)
+B: sbend,      l=6.1214,  angle=bendangle
+F: quadrupole, l=1.67894, k1=mainbusf
+D: quadrupole, l=1.67894, k1=mainbusd
+
+
+! Half-cells, including the X17 half-cell
+inches := 0.0254
+spacer: drift, l=(dqb[l]+2*(B[l]+dbb[l]))-(16.5*inches)
+dbx: drift, l=dbq[l]+(16.5*inches)
+
+halfcellf:   line=(dbq,F,dqb,B,dbb,B,dbb,B,dbb,B,dbq)
+halfcelld:   line=(dbq,D,dqb,B,dbb,B,dbb,B,dbb,B,dbq)
+halfcell_17: line=(dbq,F,    spacer,     B,dbb,B,dbx)
+
+
+! An arc consists of 15 cells
+cell:        line=(halfcellf,halfcelld)
+
+USE, cell
