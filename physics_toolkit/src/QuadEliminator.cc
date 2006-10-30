@@ -58,6 +58,7 @@
 #include <physics_toolkit/QuadEliminator.h>
 #include <beamline/quadrupole.h>
 #include <beamline/BeamlineIterator.h>
+#include <beamline/beamline.h>
 
 using namespace std;
 

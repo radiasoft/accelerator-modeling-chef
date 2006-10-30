@@ -40,7 +40,7 @@
 #endif
 
 #include <basic_toolkit/GenericException.h>
-#include <beamline/beamline.h>
+#include <beamline/beamline_elements.h>
 #include <physics_toolkit/MatrixCalcVisitor.h>
 #include <basic_toolkit/iosetup.h>
 

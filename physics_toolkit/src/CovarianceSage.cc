@@ -39,6 +39,8 @@
 #endif
 
 #include <iomanip>
+#include <beamline/Particle.h>
+#include <beamline/BeamlineIterator.h>
 #include <physics_toolkit/CovarianceSage.h>
 
 using namespace std;

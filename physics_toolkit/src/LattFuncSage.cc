@@ -57,6 +57,8 @@
 #include <physics_toolkit/ClosedOrbitSage.h>
 #include <physics_toolkit/FPSolver.h>
 #include <physics_toolkit/QBpropVisitor.h>
+#include <beamline/BeamlineIterator.h>
+#include <beamline/Particle.h>
 
 using namespace std;
 

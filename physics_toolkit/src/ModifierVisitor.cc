@@ -53,7 +53,11 @@
 
 #include <physics_toolkit/ModifierVisitor.h>
 #include <beamline/BeamlineExpressionTree.h>
+#include <beamline/beamline_elements.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/beamline.h>
+#include <beamline/BmlPtrList.h>
+#include <beamline/Alignment.h>
 
 
 

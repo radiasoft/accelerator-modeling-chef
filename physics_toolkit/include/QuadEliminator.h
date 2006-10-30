@@ -56,6 +56,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/BmlVisitor.h>
+#include <beamline/Alignment.h>
 
 
 class QuadEliminator : public ConstBmlVisitor

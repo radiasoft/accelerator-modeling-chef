@@ -62,12 +62,13 @@ public:
   ChromaticityAdjuster( const beamline&, bool = false );
   // Second argument is used by class Sage
   // to control cloning. (See Sage.h)
+
   ~ChromaticityAdjuster();
 
-  void addCorrector( const sextupole&, double, double );
-  void addCorrector( const sextupole*, double, double );
-  void addCorrector( const thinSextupole&, double, double );
-  void addCorrector( const thinSextupole*, double, double );
+  void addCorrector( sextupole     const&, double, double );
+  void addCorrector( sextupole     const*, double, double );
+  void addCorrector( thinSextupole const&, double, double );
+  void addCorrector( thinSextupole const*, double, double );
 
   int numberOfCorrectors() const;
   int changeChromaticityBy ( double, double, const JetParticle& );
@@ -80,7 +81,7 @@ private:
   int         _numberOfCorrectors;
   MatrixD*    _f;
   MatrixD     _c;
-  void        _addCorrector( const bmlnElmnt*, double, double );
+  void        _addCorrector( bmlnElmnt const* const, double, double );
   char        _isaThinSextupole( const bmlnElmnt* ) const;
 };
 

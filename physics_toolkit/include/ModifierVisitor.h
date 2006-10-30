@@ -58,8 +58,11 @@
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/BmlPtrList.h>
+#include <beamline/Alignment.h>
 
 class BoolNode;
+
 
 
 class ModifierVisitor : public virtual BmlVisitor
@@ -108,7 +111,7 @@ class AlignVisitor : public ModifierVisitor
 
  private:
   alignmentData _myAlign;
-  void _doAlign( bmlnElmnt* );
+  void         _doAlign( bmlnElmnt* );
 };
 
 #endif // MODIFIERVISITOR_H

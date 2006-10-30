@@ -43,6 +43,7 @@
 #include <physics_toolkit/Sage.h>
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/VectorD.h>
+#include <beamline/Alignment.h>
 
 class beamline;
 

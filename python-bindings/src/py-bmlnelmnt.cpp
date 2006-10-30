@@ -26,8 +26,10 @@
 #include <beamline/Particle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/BmlVisitor.h>
+#include <beamline/beamline.h>
 #include <beamline/InsertionList.h>
-#include <beamline/InsertionList.h>
+
 
 class PropFunc;
 

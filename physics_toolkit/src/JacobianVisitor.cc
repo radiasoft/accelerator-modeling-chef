@@ -41,6 +41,9 @@
 
 #include <beamline/beamline.h>
 #include <physics_toolkit/JacobianVisitor.h>
+#include <mxyzptlk/Mapping.h>
+#include <beamline/Particle.h>
+#include <beamline/BeamlineIterator.h>
 
 const MatrixD identityMatrix("I",6);
 

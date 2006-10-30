@@ -64,6 +64,19 @@
 #include <BeamlineContext.h>
 #include <bmlfactory.h>
 #include <BeamlineExpressionTree.h>
+#include <beamline/drift.h>
+#include <beamline/Slot.h>
+#include <beamline/marker.h>
+#include <beamline/sextupole.h>
+#include <beamline/quadrupole.h>
+#include <beamline/monitor.h>
+#include <beamline/CF_rbend.h>
+#include <beamline/CF_sbend.h>
+#include <beamline/sbend.h>
+#include <beamline/rbend.h>
+#include <beamline/sector.h>
+#include <beamline/Alignment.h>
+
 
 using namespace std;
 using FNAL::pcerr;

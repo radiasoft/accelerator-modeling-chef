@@ -38,8 +38,8 @@
 #include <config.h>
 #endif
 
-#include <beamline/beamline.h>
 #include <physics_toolkit/QBpropVisitor.h>
+#include <beamline/beamline_elements.h>
 
 using namespace std;
 

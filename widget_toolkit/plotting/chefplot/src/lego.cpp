@@ -32,7 +32,8 @@
 **************************************************************************
 *************************************************************************/
 
-#include <beamline.h>
+#include <beamline/beamline.h>
+#include <beamline/BeamlineIterator.h>
 #include <lego.h>
 #include <qpainter.h>
 #include <qwmatrix.h>

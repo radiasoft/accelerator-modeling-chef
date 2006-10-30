@@ -53,6 +53,7 @@
 #define LATTFUNCSAGE_H
 
 #include <basic_toolkit/globaldefs.h>
+#include <mxyzptlk/Mapping.h>
 #include <beamline/beamline.h>
 #include <physics_toolkit/Sage.h>
 

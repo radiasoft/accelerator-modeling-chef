@@ -63,9 +63,12 @@
 #include <GL/glut.h>
 #include <qwt/qwt_math.h>
 
-#include <Particle.h>  // This line should not be necessary!!!
-#include <beamline.h>
-#include <BeamlineContext.h>
+#include <beamline/Particle.h>  // This line should not be necessary!!!
+#include <beamline/beamline.h>
+#include <beamline/BeamlineIterator.h>
+#include <physics_toolkit/BeamlineContext.h>
+#include <beamline/Particle.h>
+#include <beamline/ParticleBunch.h>
 
 
 // This undef is needed because of the compiler.
