@@ -39,6 +39,8 @@
 #include <config.h>
 #endif
 
+#include <beamline/Particle.h>
+#include <beamline/BeamlineIterator.h>
 #include <physics_toolkit/ClosedOrbitSage.h>
 #include <physics_toolkit/DispersionSage.h>
 
