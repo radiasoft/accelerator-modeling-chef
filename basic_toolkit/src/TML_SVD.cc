@@ -1,6 +1,6 @@
-/*************************************************************************
-**************************************************************************
-**************************************************************************
+/*******************************************************************************************
+ *******************************************************************************************
+ *******************************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
 ******                                    
@@ -41,9 +41,10 @@
 ******  - fixed issues with indexing that made SVD fail with rectangular
 ******    matrices. 
 ******  - automatic allocation of matrix factors parameters (with the right dimensions).
-****** 
-**************************************************************************
-*************************************************************************/
+******  - added backsubstitution for SVD 
+******
+******************************************************************************************
+******************************************************************************************/
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -53,6 +54,8 @@
 #include <basic_toolkit/TML.h>
 #include <basic_toolkit/VectorD.h>
 #include <basic_toolkit/MLPtr.h>
+
+#include<limits>
 
 using namespace std;
 using FNAL::pcerr;
@@ -314,3 +317,83 @@ void TML<double>::SVD ( MLPtr<double> & UPtr,  Vector& W, MLPtr<double> & VPtr )
 
 #undef SIGN
 #undef PYTHAG
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<>
+TVector<double>
+TML<double>::backSubstitute(     MLPtr<double> const& U,   TVector<double> const& W, MLPtr<double> const& V, 
+                               TVector<double> const& rhs, double threshold) 
+{
+
+  //-------------------------------------------------------
+  // NOTE: we perform the matrix multiplication explicitly 
+  // to avoid unecessary copying. 
+  //
+  //   x = V W U^T rhs 
+  // 
+  //-------------------------------------------------------
+
+   
+  double sum = 0.0;
+
+  int      m =  U->_nrows;
+  int      n =  U->_ncols;
+  
+  Vector xtmp(n);
+  
+  double** mdata = U->_mdata;
+ 
+  //  **** xtmp  = U.transpose()*rhs;
+
+  for( int row=0; row< n; ++row) {
+      sum = 0.0;
+      for(int i=0; i<m; ++i) {
+        sum += mdata[i][row] * rhs(i); // note transposed indices
+      }
+      xtmp(row) = sum;
+  }
+  
+  
+  if (threshold < 0.0 ) {  // set default threshold in that case
+
+     // determine maximum Singular Value
+ 
+    double wmax = W(0);
+    for (int i=1; i<n; ++i) {
+      wmax = std::max( wmax,W(i));
+    }
+
+    // set the default threshold
+    threshold = wmax* numeric_limits<double>::epsilon();
+ 
+  }
+     
+  for (int i=0; i<n; ++i ) {
+   if ( std::abs(W(i)) > threshold ) 
+     xtmp(i) /= W(i); 
+   else 
+     xtmp(i) = 0.0; 
+  }
+
+
+  //  V*xtmp;
+
+  Vector x(n);
+  mdata =   V->_mdata;
+  for( int row=0; row< n; ++row) {
+
+    sum = 0.0;
+    for(int i=0; i<n; ++i) {
+      sum += mdata[row][i] * xtmp(i); 
+    }
+       x(row) = sum;
+  }
+ 
+  return x;
+
+
+}
+
+

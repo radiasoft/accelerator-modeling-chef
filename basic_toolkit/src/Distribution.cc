@@ -113,8 +113,7 @@ MultiGaussian::MultiGaussian( const Vector& average,
 
 
 MultiGaussian::~MultiGaussian()
-{
-}
+{}
 
 
 void MultiGaussian::setSigma( const Vector& s )
