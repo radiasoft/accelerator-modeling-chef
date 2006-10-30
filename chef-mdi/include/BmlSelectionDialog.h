@@ -29,6 +29,7 @@ class BmlSelectionDialog: public BmlSelectionDialogBase {
 
  private slots:
 
+  void particleCheck(int id); 
   void momentumCheck(bool set); 
   void ETCheck(bool set); 
   void EKCheck(bool set); 
