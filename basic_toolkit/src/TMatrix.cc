@@ -221,19 +221,8 @@ template<>
 Vector 
 TMatrix<double>::backSubstitute(TMatrix<double> const& U, Vector const& W, TMatrix<double> const& V, Vector const& rhs, double threshold) { 
 
-   VectorD x  = U.transpose()*rhs;
-   
-   int n = W.Dim();
-   for (int i=0; i<n; ++i ) {
-   if ( std::abs(W(i)) > threshold ) 
-     x(i) /= W(i); 
-   else 
-     x(i) = 0.0; 
-   }
-
-   x = V*x;
-
-   return x;
+  return TML<double>::backSubstitute(U._ml, W, V._ml, rhs, threshold);
+ 
 }
 
 

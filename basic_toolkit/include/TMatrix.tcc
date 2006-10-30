@@ -50,6 +50,7 @@
 #include <iomanip>
 #include <sstream>
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/MathConstants.h>
 #include <basic_toolkit/PhysicsConstants.h>
 #include <basic_toolkit/TML.h>
@@ -143,7 +144,31 @@ TMatrix<T>& TMatrix<T>::operator=(const TMatrix& x)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T>& TMatrix<T>::DeepCopy(const TMatrix<T>& x) 
+TMatrix<T>& TMatrix<T>::operator=(TVector<T> const& x) 
+{
+
+  if ( std::min( rows(), cols()) != 1 ) { 
+      throw( GenericException( __FILE__,  __LINE__, 
+                              "TMatrix<T>::TMatrix<T>operator=(TVector<T> const& )"
+                              "RHS Vector has dimension incompatible with LHS Matrix.") );
+  }
+ 
+  if ( rows() == 1) {
+   
+      for (int i=0; i<  cols(); ++i ) (*this)(0,i) = x(i);
+      return *this;
+   }
+
+  for (int i=0; i< rows(); ++i )  (*this) (i,0) = x(i);
+
+  return *this;
+}
+
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TMatrix<T>& TMatrix<T>::DeepCopy(TMatrix<T> const& x) 
 {
   _ml = MLPtr<T>( new TML<T>( *x._ml ) );
 
@@ -155,7 +180,7 @@ TMatrix<T>& TMatrix<T>::DeepCopy(const TMatrix<T>& x)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator==( const TMatrix<T>& x, const TMatrix<T>& y ) 
+bool operator==( TMatrix<T> const& x, TMatrix<T> const& y ) 
 {
  return *(x._ml) == *(y._ml);
 }
@@ -164,7 +189,7 @@ bool operator==( const TMatrix<T>& x, const TMatrix<T>& y )
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator==( const TMatrix<T>& x, const T& y ) 
+bool operator==( TMatrix<T> const& x, T const& y ) 
 
 {
  return *(x._ml) == y;
@@ -174,7 +199,7 @@ bool operator==( const TMatrix<T>& x, const T& y )
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator==( const T& y, const TMatrix<T>& x )
+bool operator==( T const& y, TMatrix<T> const& x )
 {
  return *(x._ml) == y;
 }
@@ -183,7 +208,7 @@ bool operator==( const T& y, const TMatrix<T>& x )
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator!=( const TMatrix<T>& x, const TMatrix<T>& y ) 
+bool operator!=( TMatrix<T> const& x, TMatrix<T> const& y ) 
 {
  return !( x == y );
 }
@@ -192,7 +217,7 @@ bool operator!=( const TMatrix<T>& x, const TMatrix<T>& y )
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator!=( const TMatrix<T>& x, const T& y ) 
+bool operator!=( TMatrix<T> const& x, T const& y ) 
 {
  return !( x == y );
 }
@@ -201,7 +226,7 @@ bool operator!=( const TMatrix<T>& x, const T& y )
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator!=( const T& x, const TMatrix<T>& y ) 
+bool operator!=( T const& x, TMatrix<T> const& y ) 
 {
  return !( x == y );
 }
@@ -210,7 +235,7 @@ bool operator!=( const T& x, const TMatrix<T>& y )
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T>& TMatrix<T>::operator+=( const T& x ) 
+TMatrix<T>& TMatrix<T>::operator+=( T const& x ) 
 {
  
   if (_ml->count() > 1) _ml= _ml->clone();
@@ -223,7 +248,7 @@ TMatrix<T>& TMatrix<T>::operator+=( const T& x )
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T>& TMatrix<T>::operator-=( const T& x ) 
+TMatrix<T>& TMatrix<T>::operator-=( T const& x ) 
 {
 
   if (_ml->count() > 1) _ml= _ml->clone();
@@ -374,7 +399,7 @@ return _ml->operator()(i);
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-std::ostream& operator<<(std::ostream& os, const TMatrix<T>& x)
+std::ostream& operator<<(std::ostream& os, TMatrix<T> const& x)
 {
 
    return os << *(x._ml); 
@@ -386,7 +411,7 @@ std::ostream& operator<<(std::ostream& os, const TMatrix<T>& x)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T> operator+(const TMatrix<T>& x, const TMatrix<T>& y) 
+TMatrix<T> operator+(TMatrix<T> const& x, TMatrix<T> const& y) 
 {
   MLPtr<T> p = add<T>(x._ml, y._ml); // add returns a new matrix
   return TMatrix<T>(p);
@@ -396,7 +421,7 @@ TMatrix<T> operator+(const TMatrix<T>& x, const TMatrix<T>& y)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T> operator+(const TMatrix<T>& x, const T& y) 
+TMatrix<T> operator+(TMatrix<T> const& x, T const& y) 
 {
   MLPtr<T> p = add<T>(x._ml, y); // add returns a new matrix
   return TMatrix<T>(p);
@@ -406,7 +431,7 @@ TMatrix<T> operator+(const TMatrix<T>& x, const T& y)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T> operator+( const T& y, const TMatrix<T>& x )  // add returns a new matrix
+TMatrix<T> operator+( T const& y, TMatrix<T> const& x )  // add returns a new matrix
 {
   MLPtr<T> p = add<T>(x._ml, y);
   return TMatrix<T>( p);
@@ -417,7 +442,7 @@ TMatrix<T> operator+( const T& y, const TMatrix<T>& x )  // add returns a new ma
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T> operator-(const TMatrix<T>& x) 
+TMatrix<T> operator-(TMatrix<T> const& x) 
 {
 
   MLPtr<T> p( Negate<T>(x._ml) ); // Note: Negate does a deepcopy   
@@ -429,7 +454,7 @@ TMatrix<T> operator-(const TMatrix<T>& x)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T> operator-(const TMatrix<T>& x, const TMatrix<T>& y) 
+TMatrix<T> operator-(TMatrix<T> const& x, TMatrix<T> const& y) 
 {
   MLPtr<T> p( subtract<T>(x._ml, y._ml));
   return TMatrix<T>(p);
@@ -439,7 +464,7 @@ TMatrix<T> operator-(const TMatrix<T>& x, const TMatrix<T>& y)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T> operator-(const TMatrix<T>& x, const T& y) 
+TMatrix<T> operator-(TMatrix<T> const& x, T const& y) 
 {
   MLPtr<T> p(add<T>(x._ml, -y));
   return TMatrix<T>(p);
@@ -450,7 +475,7 @@ TMatrix<T> operator-(const TMatrix<T>& x, const T& y)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T> operator-( const T& y, const TMatrix<T>& x ) 
+TMatrix<T> operator-( T const& y, TMatrix<T> const& x ) 
 {
   MLPtr<T> p(  Negate<T>( add<T>(x._ml, -y) ) );
   return TMatrix<T>(p);
@@ -461,7 +486,7 @@ TMatrix<T> operator-( const T& y, const TMatrix<T>& x )
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T> operator*( const TMatrix<T>& x, const T& y) 
+TMatrix<T> operator*( TMatrix<T> const& x, T const& y) 
 {
   MLPtr<T> p(multiply<T>(x._ml, y));
   return TMatrix<T>(p);
@@ -472,7 +497,7 @@ TMatrix<T> operator*( const TMatrix<T>& x, const T& y)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T> operator*( const T& y, const TMatrix<T>& x) 
+TMatrix<T> operator*( T const& y, TMatrix<T> const& x) 
 {
   MLPtr<T> p( multiply<T> (x._ml, y));
   return TMatrix<T>(p);
@@ -483,7 +508,7 @@ TMatrix<T> operator*( const T& y, const TMatrix<T>& x)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T> operator*(const TMatrix<T>& x, const TMatrix<T>& y)  
+TMatrix<T> operator*(TMatrix<T> const& x, TMatrix<T> const& y)  
 {
 
   MLPtr<T> p(multiply<T>(x._ml, y._ml));
@@ -517,7 +542,7 @@ TMatrix<T> operator*(TVector<T>  const& v,  TMatrix<T> const& y) {  // left mult
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T> operator/( const TMatrix<T>& x, const T& y) 
+TMatrix<T> operator/( TMatrix<T> const& x, T const& y) 
 {
 
   MLPtr<T> p(divide<T>(x._ml, y) );
@@ -529,7 +554,7 @@ TMatrix<T> operator/( const TMatrix<T>& x, const T& y)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T> operator/( const T& x, TMatrix<T> const& y) 
+TMatrix<T> operator/( T const& x, TMatrix<T> const& y) 
 {
   MLPtr<T> p(divide<T>(x, y._ml) );
   return TMatrix<T>(p);

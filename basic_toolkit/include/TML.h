@@ -150,7 +150,9 @@ class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
   
   static void orderCoordinates(MLPtr<std::complex<double> >& eigenvalues,   MLPtr<std::complex<double> >& eigenvectors); 
  
-  void SVD (MLPtr<T>& U, Vector& W, MLPtr<T>& V ) const;   
+  void                              SVD ( MLPtr<T>& U, Vector& W, MLPtr<T>& V ) const;   
+  static TVector<T>       backSubstitute( MLPtr<T> const& U, Vector const& W, MLPtr<T> const & V, 
+                                          TVector<T> const& rhs, double threshold);  
 
   T      determinant() const; 
   T      trace() const; 
@@ -276,6 +278,8 @@ void TML<std::complex<double> >::orderCoordinates(MLPtr<std::complex<double> >& 
 
 template<> void TML<double>::SVD (MLPtr<double>& U, Vector& W, MLPtr<double>& V ) const;   
 
+template<> TVector<double>  TML<double>::backSubstitute( MLPtr<double> const& U, TVector<double> const& W, MLPtr<double> const& V, 
+                                                         TVector<double> const& rhs, double threshold);  
 
 #ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES
 #include <basic_toolkit/TML.tcc>

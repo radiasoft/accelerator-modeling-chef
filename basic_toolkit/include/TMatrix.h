@@ -76,8 +76,8 @@ template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const TMatrix<T>&);
 template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const T&);
 template<typename T> TMatrix<T> operator*(const T&,          const TMatrix<T>&);
 
-TMatrix<std::complex<double> > operator*(const TMatrix<std::complex<double> >& x, const TMatrix<double>& y);
-TMatrix<std::complex<double> > operator*(const TMatrix<double>& y,                const TMatrix<std::complex<double> >& x);
+TMatrix<std::complex<double> >  operator*(const TMatrix<std::complex<double> >& x, const TMatrix<double>& y);
+TMatrix<std::complex<double> >  operator*(const TMatrix<double>& y,                const TMatrix<std::complex<double> >& x);
 
 template<typename T> TMatrix<T> operator*(TMatrix<T>  const&,  TVector<T> const&); // right multiply
 template<typename T> TMatrix<T> operator*(TVector<T>  const&,  TMatrix<T> const&);  // left multiply
@@ -124,7 +124,7 @@ public:
   TMatrix();
   TMatrix(int);
   TMatrix(int rows, int columns);
-  TMatrix(int rows, int columns, T initval);
+  TMatrix(int rows, int columns, T  initval);
   TMatrix(int rows, int columns, T* initval);
   TMatrix(const char* flag, int dimension); // create an identity matrix
                                             // or a symplectic matrix
@@ -158,13 +158,14 @@ public:
   T                              trace()        const ; 
   void                           SVD( TMatrix& U, Vector& W, TMatrix& V);
   static TVector<T>              backSubstitute(TMatrix const& U, TVector<T> const& W, 
-                                                TMatrix const& V, TVector<T> const& rhs, double threshold = 1.e-12);
+                                                TMatrix const& V, TVector<T> const& rhs, double threshold=-1.0); // threshold < 0.0 ==> threshold = svmax*macheps
   bool                           isOrthogonal() const;
 
   // Operators________________________________________________________
   
   
-  TMatrix& operator=(TMatrix const&);
+  TMatrix& operator=(TMatrix    const&);
+  TMatrix& operator=(TVector<T> const&);
 
   T& operator()(int row, int column);
   T  operator()(int row, int column) const;
@@ -186,8 +187,6 @@ public:
   friend bool operator==<>( TMatrix const&, T       const& );
   friend bool operator==<>( T       const&, TMatrix const& );
 
-  friend std::ostream& operator<< <T>(std::ostream&, const TMatrix<T>&);
-
   friend TMatrix operator+<>(TMatrix const&, TMatrix  const&);
   friend TMatrix operator+<>(TMatrix const&, T        const&); 
   friend TMatrix operator+<>(T       const&, TMatrix  const&); 
@@ -208,6 +207,8 @@ public:
   friend TMatrix operator/<>(TMatrix const&,   T       const&);
   friend TMatrix operator/<>(T       const&,   TMatrix const&);
   friend TMatrix operator/<>(TMatrix const&,   TMatrix const&);
+
+  friend std::ostream& operator<< <T>(std::ostream&, const TMatrix<T>&);
 
 };
 
