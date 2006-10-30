@@ -38,18 +38,20 @@
 #include <config.h>
 #endif
 
-
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/GenericException.h>
-#include <physics_toolkit/BmlUtil.h>
 #include <basic_toolkit/slist.h>  // This should not be necessary!!!
-#include <physics_toolkit/BeamlineContext.h>
-#include <beamline/beamline.h>
+
+#include <beamline/beamline_elements.h>
 #include <beamline/BeamlineIterator.h>
+#include <beamline/RefRegVisitor.h>
+
+#include <physics_toolkit/BmlUtil.h>
+#include <physics_toolkit/BeamlineContext.h>
 #include <physics_toolkit/ClosedOrbitSage.h>
 #include <physics_toolkit/ChromaticityAdjuster.h>
 #include <physics_toolkit/TuneAdjuster.h>
-#include <beamline/RefRegVisitor.h>
+
 
 extern void BeamlineSpitout( int, BeamlineIterator& );
 
