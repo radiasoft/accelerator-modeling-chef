@@ -9,8 +9,8 @@ pz = mxyzptlk.coord(0.0)
 mxyzptlk.EndEnvironment()
 #
 
-print mxyzptlk.sqrt(x)
-print mxyzptlk.sqrt(x)*mxyzptlk.sqrt(x)
+print mxyzptlk.sqrt(x+y+z)
+print mxyzptlk.sqrt(x+y+z)*mxyzptlk.sqrt(x+y+z)
 
 
 
