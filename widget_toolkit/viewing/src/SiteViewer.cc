@@ -46,9 +46,11 @@
 #endif
 
 #include "SiteViewer.h"
-#include "beamline.h"
-#include "FramePusher.h"
-#include "BeamlineContext.h"
+#include <beamline/beamline.h>
+#include <beamline/FramePusher.h>
+#include <beamline/BeamlineIterator.h>
+#include <physics_toolkit/BeamlineContext.h>
+
 #include "QueryDialog.h"
 #include "BeamlineExpressionTree.h"
 
