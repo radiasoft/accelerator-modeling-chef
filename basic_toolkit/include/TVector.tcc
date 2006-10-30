@@ -132,6 +132,35 @@ TVector<T>::TVector( TVector const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<typename T>
+TVector<T>::TVector( TMatrix<T> const& x ): m_ofPtr(0)
+{
+
+
+  if( std::min( x.rows(), x.cols() ) != 1 ) {
+
+  throw( typename TVector<T>::GenericException( 
+               "TVector& TVector( TMatrix const & x )", 
+               "Incompatible dimensions."  ) );
+ 
+  }
+
+  if( x.rows() == 1 ) {
+    for (int i=0; i < x.cols(); ++i) { 
+         m_theVector.push_back( x(0,i) );
+    }
+    return;
+  }
+ 
+  for (int i=0; i < x.rows(); ++i) {
+         m_theVector.push_back( x(i,0) );
+  }
+ 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T> 
 void TVector<T>::reset()
 {
@@ -228,18 +257,21 @@ TVector<T> TVector<T>::operator+ ( TVector<T> const& x ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TVector<T> TVector<T>::operator+= ( const TVector& x )
+TVector<T>& TVector<T>::operator+= ( TVector const& x )
 {
 #ifndef NOCHECKS
   CHECKOUT( Dim() != x.Dim(), "TVector::operator+=", "Incompatible dimensions.")
 #endif
 
-  typename std::vector<T>::iterator it  =   m_theVector.begin(); 
+  typename std::vector<T>::iterator it         =   m_theVector.begin(); 
   typename std::vector<T>::const_iterator itx = x.m_theVector.begin(); 
 
   for (  ; it !=  m_theVector.end(); ++it, ++itx) {
     (*it) += (*itx);     
   }
+
+ return (*this);
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -247,7 +279,7 @@ TVector<T> TVector<T>::operator+= ( const TVector& x )
 
 
 template<typename T>
-TVector<T> TVector<T>::operator- ( const TVector& x ) const
+TVector<T> TVector<T>::operator- ( TVector const& x ) const
 {
 #ifndef NOCHECKS
   CHECKOUT( Dim() != x.Dim(), "TVector::operator-", "Incompatible dimensions.")
@@ -270,6 +302,27 @@ TVector<T> TVector<T>::operator- ( const TVector& x ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
+TVector<T>& TVector<T>::operator-= ( TVector<T> const& x )
+{
+#ifndef NOCHECKS
+  CHECKOUT( Dim() != x.Dim(), "TVector<T> TVector<T>::operator-=", "Incompatible dimensions.")
+#endif
+
+  typename std::vector<T>::iterator it        =   m_theVector.begin(); 
+  typename std::vector<T>::const_iterator itx = x.m_theVector.begin(); 
+
+  for (  ; it !=  m_theVector.end(); ++it, ++itx) {
+    (*it) -= (*itx);     
+  }
+ 
+  return (*this);
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
 TVector<T> operator- ( TVector<T> const& x ) // unary minus
 {
   TVector<T> z( x.Dim() );
@@ -282,27 +335,6 @@ TVector<T> operator- ( TVector<T> const& x ) // unary minus
   }
 
   return z;
-
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TVector<T> TVector<T>::operator-= ( TVector<T> const& x )
-{
-#ifndef NOCHECKS
-  CHECKOUT( Dim() != x.Dim(), "TVector<T> TVector<T>::operator-=", "Incompatible dimensions.")
-#endif
-
-  typename std::vector<T>::iterator it  =   m_theVector.begin(); 
-  typename std::vector<T>::const_iterator itx = x.m_theVector.begin(); 
-
-  for (  ; it !=  m_theVector.end(); ++it, ++itx) {
-    (*it) += (*itx);     
-  }
-
 
 }
 
@@ -565,7 +597,7 @@ void TVector<T>::Rotate ( TVector& v, double theta ) const
   typename std::vector<T>::iterator itu  = u.m_theVector.begin(); 
   typename std::vector<T>::iterator itv =  v.m_theVector.begin(); 
 
-  for ( ; itu !=  m_theVector.end(); ++itu, ++itv ) {
+  for ( ; itu !=  u.m_theVector.end(); ++itu, ++itv ) {
     (*itv) = (*itu);
   }
 
@@ -624,65 +656,6 @@ ostream& operator<<( std::ostream & os, TVector<T> const& v )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-// Utilities
-
-template<typename T>
-TVector<T> operator*( TMatrix<T> const& A,  TVector<T> const& x )
-{
-  int r = A.rows();
-  int c = A.cols();
-
-  if( c != x.Dim() ) {
-    throw( typename TVector<T>::GenericException( 
-                        "Vector operator*( const TMatrix<T>& A, const TVector<T>& x )",
-                        "Incompatible dimensions.") );
-  }
-
-  TVector<T> z( r );
-  for( int i=0; i < r; ++i ) {
-    z(i) = T();
-    for( int j=0; j<c; ++j ) {
-      z(i) += A( i, j ) * x(j);
-    }
-  }
-  return z;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TVector<T>& TVector<T>::operator=( TMatrix<T> const& x )
-{
-
-
-  typename std::vector<T>::iterator it  =   m_theVector.begin(); 
-
-
-
-  if( (x.rows() == 1) &&  x.cols() == Dim() ) {
-
-    for (int i=0; it !=  m_theVector.end(); ++it, ++i ) {
-         (*it) = x(0,i);
-    }
-  }
- 
-  if( (x.cols() == 1) &&  x.rows() ==Dim() ) {
-
-    for (int i=0; it !=  m_theVector.end(); ++it, ++i ) {
-         (*it) = x(i,0);
-    }
-
-  }
-
-
-  throw( typename TVector<T>::GenericException( 
-               "TVector& TVector::operator=( const TMatrix& x )", 
-               "Incompatible dimensions."  ) );
- 
-
-  return *this;
-}
 
 #undef CHECKOUT
 
