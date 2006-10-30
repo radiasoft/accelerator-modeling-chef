@@ -44,6 +44,7 @@
 #include <basic_toolkit/complexAddon.h>
 #include <mxyzptlk/Mapping.h>
 #include <physics_toolkit/LattFuncSage.h>
+#include <beamline/Particle.h>
 #include <physics_toolkit/EdwardsTengSage.h>
 #include <physics_toolkit/CovarianceSage.h>
 #include <physics_toolkit/LBSage.h>

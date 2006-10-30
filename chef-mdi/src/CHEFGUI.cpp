@@ -63,6 +63,12 @@
 #include <appworkspace.h>
 #include <about.h>
 
+#include <beamline/BeamlineIterator.h>
+#include <beamline/marker.h>
+#include <beamline/CF_rbend.h>
+#include <beamline/CF_sbend.h>
+#include <beamline/sector.h>
+
 #include <qwt/qwt_plot.h>
 
 #include <GenericException.h>
@@ -94,6 +100,8 @@
 #include <chefplotmain.h>
 #include <DbConnectDialog.h>
 #include <EnvPtr.h>
+
+#include <beamline/marker.h>
 
 #include <iosetup.h>
 
