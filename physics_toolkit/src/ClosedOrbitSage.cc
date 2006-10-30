@@ -55,6 +55,7 @@
 #include <physics_toolkit/ClosedOrbitSage.h>
 #include <physics_toolkit/FPSolver.h>
 #include <beamline/RefRegVisitor.h>
+#include <beamline/BeamlineIterator.h>
 #include <mxyzptlk/Jet__environment.h>
 
 

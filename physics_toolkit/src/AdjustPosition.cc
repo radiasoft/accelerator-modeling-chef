@@ -41,6 +41,7 @@
 #include <basic_toolkit/GenericException.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/Particle.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 

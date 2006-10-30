@@ -67,6 +67,7 @@
 
 #include <beamline/beamline.h>
 #include <physics_toolkit/Sage.h>
+#include <beamline/quadrupole.h>
 
 class TuneAdjuster : public Sage
 {

@@ -23,6 +23,7 @@
 #include <boost/python.hpp>
 
 #include <beamline/bmlnElmnt.h>
+#include <beamline/Particle.h>
 #include <physics_toolkit/LattFuncSage.h>
 #include <iostream>
 

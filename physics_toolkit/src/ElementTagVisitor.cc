@@ -36,6 +36,7 @@
 #include <beamline/beamline.h>
 #include <boost/any.hpp>
 #include <basic_toolkit/iosetup.h>
+#include <beamline/BeamlineIterator.h>
 
 
 using boost::any;

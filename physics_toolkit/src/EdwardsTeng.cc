@@ -53,6 +53,7 @@
 
 #include <beamline/Particle.h>
 #include <beamline/BeamlineIterator.h>
+#include <beamline/beamline.h>
 #include <physics_toolkit/EdwardsTeng.h>
 
 using namespace std;

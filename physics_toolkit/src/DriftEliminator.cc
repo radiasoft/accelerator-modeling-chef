@@ -64,6 +64,7 @@
 #include <beamline/monitor.h>
 #include <beamline/Slot.h>
 #include <beamline/BeamlineIterator.h>
+#include <beamline/beamline.h>
 
 using namespace std;
 

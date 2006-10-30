@@ -43,6 +43,8 @@
 
 #include <basic_toolkit/GenericException.h>
 #include <beamline/beamline.h>
+#include <beamline/Particle.h>
+#include <beamline/BeamlineIterator.h>
 #include <physics_toolkit/FPSolver.h>
 #include <basic_toolkit/iosetup.h>
 

@@ -37,7 +37,8 @@
 #include <plot.h>
 #include <lego.h>
 #include <TuneDiagram.h>
-#include <beamline.h>
+#include <beamline/beamline.h>
+#include <beamline/BeamlineIterator.h>
 #include <qwt/qwt_plot_canvas.h>
 #include <qwt/qwt_scale.h>
 #include <qapplication.h>

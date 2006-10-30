@@ -80,8 +80,12 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/GenericException.h>
+#include <beamline/BeamlineIterator.h>
+#include <beamline/rbend.h>
+#include <beamline/sbend.h>
 #include <beamline/beamline.h>
 #include <beamline/CF_rbend.h>
+#include <beamline/CF_sbend.h>
 #include <beamline/Slot.h>
 
 using namespace std;
@@ -230,29 +234,16 @@ bool d2S_sbendLike( const bmlnElmnt* xPtr )
     const CF_sbend* bp = dynamic_cast<const CF_sbend*>(xPtr);
     return ( (0.0 == bp->getEntryEdgeAngle()) && (0.0 == bp->getExitEdgeAngle()) );
   }
-  // REMOVE: if(0 == strcmp("rbend", xPtr->Type())) {
-  // REMOVE:   const rbend* bp = dynamic_cast<const rbend*>(xPtr);
-  // REMOVE:   if( (1.0e-8 < std::abs( bp->getEntryAngle() )) || 
-  // REMOVE:       (1.0e-8 < std::abs( bp->getExitAngle()  ))    ) { 
-  // REMOVE:     return false; 
-  // REMOVE:   }
-  // REMOVE:   return ( std::abs(bp->getEntryEdgeAngle() - bp->getEntryEdgeAngle()) < 1.0e-8 );
-  // REMOVE:   // REMOVE: double halfBendAngle = ( bp->getEntryAngle() - bp->getExitAngle() )/ 2.0;
-  // REMOVE:   // REMOVE: return ( (std::abs(bp->getEntryEdgeAngle() + halfBendAngle) < 1.0e-8) &&
-  // REMOVE:   // REMOVE:          (std::abs(bp->getExitEdgeAngle()  + halfBendAngle) < 1.0e-8)    );
-  // REMOVE: }
-  // REMOVE: if(0 == strcmp("CF_rbend", xPtr->Type())) {
-  // REMOVE:   const CF_rbend* bp = dynamic_cast<const CF_rbend*>(xPtr);
-  // REMOVE:   return ( std::abs(bp->getEntryEdgeAngle() - bp->getEntryEdgeAngle()) < 1.0e-8 );
-  // REMOVE: }
+
   return false;
 }
 
 
 beamline* DriftsToSlots( /* const */ beamline& original )
 {
+
   // This routine creates and returns a beamline
-  //   for which the invoker must take responsibility.
+  // for which the invoker must take responsibility.
 
   // Preliminary tests for a valid argument.
 
@@ -273,7 +264,10 @@ beamline* DriftsToSlots( /* const */ beamline& original )
   }
 
   // Bends with parallel faces should not be adjacent.
+  // 
+
   DeepBeamlineIterator dbi( original );
+
   bmlnElmnt* q;
   bool triggered = false;
   while((  q = dbi++  )) {

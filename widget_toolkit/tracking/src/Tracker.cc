@@ -1874,8 +1874,8 @@ void Tracker::_tool_pdicOrb()
   
       Vector z(w);
       z = stuff(z);
-  
-      w = w + M*( w - stuff(w) );
+      
+      w = w + M * ( w - stuff(w) );
   
       cout << w << endl;
     }

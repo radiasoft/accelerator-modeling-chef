@@ -41,9 +41,11 @@
 #endif
 
 #include <basic_toolkit/GenericException.h>
-#include <physics_toolkit/BmlUtil.h>
 #include <basic_toolkit/TMatrix.h>
 #include <mxyzptlk/Mapping.h>
+#include <beamline/beamline_elements.h>
+#include <beamline/BmlPtrList.h>
+#include <physics_toolkit/BmlUtil.h>
 
 using namespace std;
 
@@ -75,44 +77,44 @@ bool BmlUtil::isKnown( const bmlnElmnt* x )
 
 bool BmlUtil::isKnown( const bmlnElmnt& x )
 {
-  if( 0 == strcmp( "drift", x.Type() ))           { return true; }
-  if( 0 == strcmp( "marker", x.Type() ))          { return true; }
-  if( 0 == strcmp( "sbend", x.Type() ))           { return true; }
-  if( 0 == strcmp( "rbend", x.Type() ))           { return true; }
-  if( 0 == strcmp( "thinQuad", x.Type() ))        { return true; }
-  if( 0 == strcmp( "quadrupole", x.Type() ))      { return true; }
-  if( 0 == strcmp( "Slot", x.Type() ))            { return true; }
-  if( 0 == strcmp( "srot", x.Type() ))            { return true; }
-  if( 0 == strcmp( "BBLens", x.Type() ))          { return true; }
-  if( 0 == strcmp( "beamline", x.Type() ))        { return true; }
-  if( 0 == strcmp( "CF_rbend", x.Type() ))        { return true; }
-  if( 0 == strcmp( "CF_sbend", x.Type() ))        { return true; }
-  if( 0 == strcmp( "combinedFunction", x.Type() )){ return true; }
-  if( 0 == strcmp( "thinDecapole", x.Type() ))    { return true; }
-  if( 0 == strcmp( "ElSeparator", x.Type() ))     { return true; }
-  if( 0 == strcmp( "hkick", x.Type() ))           { return true; }
-  if( 0 == strcmp( "vkick", x.Type() ))           { return true; }
-  if( 0 == strcmp( "kick", x.Type() ))            { return true; }
-  if( 0 == strcmp( "thinLamb", x.Type() ))        { return true; }
-  if( 0 == strcmp( "monitor", x.Type() ))         { return true; }
-  if( 0 == strcmp( "hmonitor", x.Type() ))        { return true; }
-  if( 0 == strcmp( "vmonitor", x.Type() ))        { return true; }
-  if( 0 == strcmp( "octupole", x.Type() ))        { return true; }
-  if( 0 == strcmp( "thinOctupole", x.Type() ))    { return true; }
-  if( 0 == strcmp( "Pinger", x.Type() ))          { return true; }
-  if( 0 == strcmp( "HPinger", x.Type() ))         { return true; }
-  if( 0 == strcmp( "VPinger", x.Type() ))         { return true; }
-  if( 0 == strcmp( "rfcavity", x.Type() ))        { return true; }
-  if( 0 == strcmp( "thinrfcavity", x.Type() ))    { return true; }
-  if( 0 == strcmp( "sector", x.Type() ))          { return true; }
-  if( 0 == strcmp( "thinSeptum", x.Type() ))      { return true; }
-  if( 0 == strcmp( "sextupole", x.Type() ))       { return true; }
-  if( 0 == strcmp( "thinSextupole", x.Type() ))   { return true; }
-  if( 0 == strcmp( "thin12pole", x.Type() ))      { return true; }
-  if( 0 == strcmp( "thin14pole", x.Type() ))      { return true; }
-  if( 0 == strcmp( "thin16pole", x.Type() ))      { return true; }
-  if( 0 == strcmp( "thin18pole", x.Type() ))      { return true; }
-  if( 0 == strcmp( "thinMultipole", x.Type() ))   { return true; }
+  if ( typeid(x) == typeid(drift)         )   { return true; }
+  if ( typeid(x) == typeid(marker)        )   { return true; }
+  if ( typeid(x) == typeid(sbend)         )   { return true; }
+  if ( typeid(x) == typeid(rbend)         )   { return true; }
+  if ( typeid(x) == typeid(thinQuad)      )   { return true; }
+  if ( typeid(x) == typeid(quadrupole)    )   { return true; }
+  if ( typeid(x) == typeid(Slot)          )   { return true; }
+  if ( typeid(x) == typeid(srot)          )   { return true; }
+  if ( typeid(x) == typeid(BBLens)        )   { return true; }
+  if ( typeid(x) == typeid(beamline)      )   { return true; }
+  if ( typeid(x) == typeid(CF_rbend)      )   { return true; }
+  if ( typeid(x) == typeid(CF_sbend)      )   { return true; }
+  if ( typeid(x) == typeid(combinedFunction) ){ return true; }
+  if ( typeid(x) == typeid(thinDecapole)  )   { return true; }
+  //if ( typeid(x) == typeid(ElSeparator)   )   { return true; }
+  if ( typeid(x) == typeid(hkick)         )   { return true; }
+  if ( typeid(x) == typeid(vkick)         )   { return true; }
+  if ( typeid(x) == typeid(kick)          )   { return true; }
+  if ( typeid(x) == typeid(thinLamb)      )   { return true; }
+  if ( typeid(x) == typeid(monitor)       )   { return true; }
+  if ( typeid(x) == typeid(hmonitor)      )   { return true; }
+  if ( typeid(x) == typeid(vmonitor)      )   { return true; }
+  if ( typeid(x) == typeid(octupole)      )   { return true; }
+  if ( typeid(x) == typeid(thinOctupole)  )   { return true; }
+  if ( typeid(x) == typeid(Pinger)        )   { return true; }
+  if ( typeid(x) == typeid(HPinger)       )   { return true; }
+  if ( typeid(x) == typeid(VPinger)       )   { return true; }
+  if ( typeid(x) == typeid(rfcavity)      )   { return true; }
+  if ( typeid(x) == typeid(thinrfcavity)  )   { return true; }
+  if ( typeid(x) == typeid(sector)        )   { return true; }
+  if ( typeid(x) == typeid(thinSeptum)    )   { return true; }
+  if ( typeid(x) == typeid(sextupole)     )   { return true; }
+  if ( typeid(x) == typeid(thinSextupole) )   { return true; }
+  if ( typeid(x) == typeid(thin12pole)    )   { return true; }
+  if ( typeid(x) == typeid(thin14pole)    )   { return true; }
+  if ( typeid(x) == typeid(thin16pole)    )   { return true; }
+  if ( typeid(x) == typeid(thin18pole)    )   { return true; }
+  if ( typeid(x) == typeid(thinMultipole) )   { return true; }
 
   return false;
 }
@@ -354,7 +356,7 @@ beamline* BmlUtil::cloneLineAndInsert( double          percent,
   if( !linePtr ) { return 0; }
 
   if( 0 == insertions.size() || 0 == targets.size() ) {
-    return ((beamline*) (linePtr->Clone()));
+    return  linePtr->Clone();
   }
 
   if( percent < 0.0 ) { percent = 0.0; }
@@ -378,7 +380,7 @@ beamline* BmlUtil::cloneLineAndInsert( double          percent,
     trg = targets.get();
     if( (0 == ins) || (0 == trg) ) { break; }
 
-    if( 0 == strcmp( "beamline", q->Type() ) ) {
+    if( typeid(*q) == typeid(beamline) ) {
       insertions.insert(ins);
       targets.insert(trg);
       ret->append( BmlUtil::cloneLineAndInsert

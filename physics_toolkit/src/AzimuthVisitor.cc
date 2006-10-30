@@ -34,6 +34,7 @@
 #include <physics_toolkit/AzimuthVisitor.h>
 
 #include <beamline/beamline.h>
+#include <beamline/BeamlineIterator.h>
 #include <boost/any.hpp>
 
 using std::string;

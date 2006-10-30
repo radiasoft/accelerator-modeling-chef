@@ -64,10 +64,12 @@
  */
 
 
-#include <basic_toolkit/GenericException.h>
 #include <physics_toolkit/TuneAdjuster.h>
-#include <physics_toolkit/LattFuncSage.h>
+#include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/iosetup.h>
+#include <beamline/BeamlineIterator.h>
+#include <beamline/Particle.h>
+#include <physics_toolkit/LattFuncSage.h>
 
 using namespace std;
 

@@ -41,6 +41,9 @@
 #include "BeamlineContext.h"
 #include "bmlfactory.h"
 #include "QtMonitor.h"
+#include <beamline/drift.h>
+#include <beamline/quadrupole.h>
+#include <beamline/sextupole.h>
 
 
 // FIX THIS:

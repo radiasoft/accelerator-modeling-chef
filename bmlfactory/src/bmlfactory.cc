@@ -69,7 +69,7 @@ using namespace std;
 
 #include <iostream>
 #include <basic_toolkit/iosetup.h> 
-#include <beamline/beamline.h>
+#include <beamline/beamline_elements.h>
 #include <basic_toolkit/GenericException.h>
 
 #include <functional>

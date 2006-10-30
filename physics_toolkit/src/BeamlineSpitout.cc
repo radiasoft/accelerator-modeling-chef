@@ -41,24 +41,25 @@
 
 #include <beamline/bmlnElmnt.h>
 #include <beamline/BeamlineIterator.h>
+#include <beamline/beamline.h>
 
 using namespace std;
 
 void BeamlineSpitout( int numspaces, BeamlineIterator& bi )
 {
-  static bmlnElmnt* q;
-  static int i;
+
+  bmlnElmnt* q = 0;
 
   while( true ) {
     q = bi++;
-    if( 0 == q ) {return;}
+    if( !q ) {return;}
 
-    for( i = 0; i < numspaces; i++ ) {
+    for( int i = 0; i < numspaces; ++i) {
       cout << " ";
     }
     cout << q->Type() << "  " << q->Name() << endl;
 
-    if( 0 == strcmp("beamline",q->Type()) ) {
+    if( typeid(*q) == typeid(beamline) ) {
       BeamlineIterator newbi( *static_cast<beamline*>(q) );
       BeamlineSpitout(numspaces+3,newbi);
     }
