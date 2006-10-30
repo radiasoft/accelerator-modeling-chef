@@ -44,8 +44,8 @@
 #define INSERTIONLIST_H
 
 #include <basic_toolkit/globaldefs.h>
+#include <beamline/Particle.h>
 
-class Particle;
 
 struct DLLEXPORT InsertionListElement {
   double     s;  // Position (design orbit length)
@@ -75,8 +75,10 @@ public:
   void Append( const InsertionListElement* );
   void Insert( const InsertionListElement& );
   void Insert( const InsertionListElement* );
+
   void MergeUnique( InsertionList& );
   void MergeAll   ( InsertionList& );
+
   InsertionListElement* Get();   // Iterator; removes elements from list
   InsertionListElement* operator()( const int& ) const;
   InsertionList& operator=( const InsertionList& );

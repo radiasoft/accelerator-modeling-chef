@@ -63,6 +63,7 @@
 #include <beamline/Slot.h>
 #include <beamline/rfcavity.h>
 #include <beamline/Particle.h>
+#include <beamline/beamline.h>
 #include <beamline/BeamlineIterator.h>
 
 // Static error codes

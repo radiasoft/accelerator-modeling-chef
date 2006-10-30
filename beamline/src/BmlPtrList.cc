@@ -37,6 +37,7 @@
 *************************************************************************/
 #include <basic_toolkit/iosetup.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/BmlPtrList.h>
 #include <basic_toolkit/PhysicsConstants.h>
 
 using FNAL::pcout;

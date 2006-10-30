@@ -39,6 +39,8 @@
 #include <config.h>
 #endif
 
+#include <beamline/beamline.h>
+#include <beamline/BmlPtrList.h>
 #include <beamline/combinedFunction.h>
 #include <beamline/Particle.h>
 

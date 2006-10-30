@@ -41,6 +41,7 @@
 #endif
 
 #include <basic_toolkit/iosetup.h>
+#include <beamline/beamline.h>
 #include <beamline/octupole.h>
 #include <beamline/drift.h>
 
@@ -74,17 +75,9 @@ octupole::octupole( const char* n, double l, double s ) : bmlnElmnt( n, l, s ) {
  p_bml->append( new drift( length / 2.0 ) );
 }
 
-octupole::octupole( bmlnElmntData& x ) : bmlnElmnt( x ) {
- p_bml = new beamline;
- p_bml->append( new drift( length / 2.0 ) );
- p_bml->append( p_bml_e = new thinOctupole( strength*length ) );
- p_bml->append( new drift( length / 2.0 ) );
-}
 
 octupole::octupole( const octupole& x ) 
-: bmlnElmnt( (bmlnElmnt&) x )
-{
-}
+: bmlnElmnt( x ){ }
 
 octupole::~octupole() {
   p_bml_e = 0;
@@ -164,13 +157,9 @@ thinOctupole::thinOctupole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) 
 }
 
 
-thinOctupole::thinOctupole( bmlnElmntData& x ) : bmlnElmnt( x ) {
-}
 
 thinOctupole::thinOctupole( const thinOctupole& x ) 
-: bmlnElmnt( (bmlnElmnt&) x )
-{
-}
+: bmlnElmnt( x ){}
 
 thinOctupole::~thinOctupole() {
 }

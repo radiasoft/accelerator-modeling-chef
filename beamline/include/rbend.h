@@ -45,6 +45,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/BmlVisitor.h>
 
 
 class DLLEXPORT rbend : public bmlnElmnt

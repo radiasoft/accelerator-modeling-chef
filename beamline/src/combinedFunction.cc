@@ -41,6 +41,7 @@
 #endif
 
 #include <basic_toolkit/iosetup.h>
+#include <beamline/beamline.h>
 #include <beamline/combinedFunction.h>
 #include <beamline/BeamlineIterator.h>
 #include <beamline/Particle.h>

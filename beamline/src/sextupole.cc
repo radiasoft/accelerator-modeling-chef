@@ -41,6 +41,7 @@
 #include <config.h>
 #endif
 
+#include <beamline/beamline.h>
 #include <beamline/sextupole.h>
 #include <beamline/drift.h>
 
@@ -75,18 +76,9 @@ sextupole::sextupole ( const char* n, double l, double s ) : bmlnElmnt( n, l, s 
 }
 
 
-sextupole::sextupole( bmlnElmntData& x ) : bmlnElmnt( x ) {
- p_bml = new beamline;
- p_bml->append( new drift( length / 2.0 ) );
- p_bml->append( p_bml_e = new thinSextupole( strength*length ) );
- p_bml->append( new drift( length / 2.0 ) );
-}
 
 sextupole::sextupole( const sextupole& x ) 
-: bmlnElmnt( (bmlnElmnt&) x )
-{
-
-}
+: bmlnElmnt( x ){}
 
 sextupole::~sextupole() {
   p_bml_e = 0;
@@ -167,13 +159,9 @@ thinSextupole::thinSextupole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s 
 }
 
 
-thinSextupole::thinSextupole( bmlnElmntData& x ) : bmlnElmnt( x ) {
-}
 
 thinSextupole::thinSextupole( const thinSextupole& x ) 
-: bmlnElmnt( (bmlnElmnt&) x )
-{
-}
+: bmlnElmnt( x ){}
 
 thinSextupole::~thinSextupole() {
 }

@@ -39,6 +39,12 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/BmlVisitor.h>
+
+template <typename T>
+class TJetVector;
+
+typedef TJetVector<double> JetVector;
 
 class DLLEXPORT BBLens : public bmlnElmnt
 {
@@ -102,7 +108,7 @@ public:
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitBBLens( this ); }
+  void accept( BmlVisitor& v )            { v.visitBBLens( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitBBLens( this ); }
 
   const char* Type() const;

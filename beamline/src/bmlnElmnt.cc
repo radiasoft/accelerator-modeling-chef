@@ -47,8 +47,10 @@
 #include <beamline/Particle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/Aperture.h>
-#include <beamline/BmlVisitor.h>
+#include <beamline/beamline.h>
 #include <beamline/BeamlineIterator.h>
+#include <beamline/BmlVisitor.h>
+#include <beamline/Alignment.h>
 
 
 // Error flags for _tag manipulation functions.
@@ -168,55 +170,6 @@ Jet bmlnElmnt::AsinFunctor::operator()( const Jet& x ) const
     }
     return (x*multiplier);
   }
-}
-
-
-// **************************************************
-//   struct bmlnElmntData
-// **************************************************
-
-bmlnElmntData::bmlnElmntData() {
- strcpy( type, "" );
- address  = 0;
- name     = 0;  // ??? START HERE, LEO ... Is this a problem?
- length   = 0.0;
- strength = 0.0;
- pAperture = 0;
- 
- iToField = 1.0;                // 1 KA = 1 Tesla default
- shuntCurrent = 0.0;
-
- more     = 0;
-}
-
-bmlnElmntData::bmlnElmntData( bmlnElmntData& x ) {
- strcpy( type, x.type );
- address   = x.address;
- name      = new char [ strlen(x.name) + 1 ];
-             strcpy( name, x.name );
- length    = x.length;
- strength  = x.strength;
- more      = x.more;
- pAperture = 0;
- if(x.pAperture != 0) 
-   pAperture = x.pAperture->Clone();
- 
- iToField  = x.iToField;
- shuntCurrent = 0.0;
- align     = x.align;
-}
-
-bmlnElmntData::~bmlnElmntData( ) {
- delete [] name;
-}
-
-void bmlnElmntData::eliminate() {
- delete this;
-}
-
-void* bmlnElmntData::clone() {
- void* p = new bmlnElmntData( *this );
- return p;
 }
 
 
@@ -471,36 +424,6 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a )
 
 }
 
-bmlnElmnt::bmlnElmnt( bmlnElmntData& x ) {
- ident         = new char [ strlen(x.name) + 1 ];
-                 strcpy( ident, x.name );
- length        = x.length;
- strength      = x.strength;
-
- _ctRef = 0.0;  // not kosher, but I should eliminate bmlnElmntData anyway.
-
- pAperture = 0;
- if(x.pAperture != 0) 
-   pAperture = x.pAperture->Clone();
- 
- iToField      = x.iToField;
- shuntCurrent  = x.shuntCurrent;
- align         = 0;
- if( (x.align.xOffset != 0.0) || 
-     (x.align.yOffset != 0.0) || 
-     (x.align.tilt != 0.0) )
- align         = new alignment(x.align);
-
- (*pcerr) << "*** WARNING ***                                    \n"
-         "*** WARNING *** bmlnElmnt::bmlnElmnt( bmlnElmntData& ) \n"
-         "*** WARNING *** p_bml and p_bml_e are not going    \n"
-         "*** WARNING *** to be copied.  Sorry.              \n"
-         "*** WARNING ***                                    \n"
-      << endl;
- p_bml = 0;
- p_bml_e = 0;
-
-}
 
 bmlnElmnt::~bmlnElmnt() {
  delete []     ident;
@@ -519,32 +442,6 @@ bmlnElmnt::~bmlnElmnt() {
  //   if it is necessary.
  dataHook.eraseAll();
 }
-
-void bmlnElmnt::set( const bmlnElmntData& data ) {
- length       = data.length;                            // J. Holt
- strength     = data.strength;                          // J. Holt
-   //
-   // O.K.
-   //
-   // aperture     = data.aperture;
-
-// pAperture    = data.pAperture;
- pAperture = 0;
- if(data.pAperture != 0) 
-   pAperture = data.pAperture->Clone();
- 
- iToField     = data.iToField;
- shuntCurrent = data.shuntCurrent;
- if(align != 0) {
-   delete align;
-   align = 0;
- }
- if((data.align.xOffset != 0.0) || (data.align.yOffset != 0.0) || 
-    (data.align.tilt != 0.0))
-   align        = new alignment(data.align);
-
-}
-
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

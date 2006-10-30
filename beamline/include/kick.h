@@ -42,6 +42,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/BmlVisitor.h>
 
 
 class DLLEXPORT hkick : public bmlnElmnt
@@ -56,7 +57,6 @@ public:
          double,           // length
          double );         // kick size in radians
   hkick( const hkick& );
-  hkick( bmlnElmntData& );
 
   ~hkick();
 
@@ -86,7 +86,6 @@ public:
          double,            // length
          double  );         // kick size in radians
   vkick( const vkick& );
-  vkick( bmlnElmntData& );
   ~vkick();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }

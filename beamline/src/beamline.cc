@@ -58,11 +58,16 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/combinedFunction.h>
 #include <beamline/Slot.h>
 #include <beamline/sector.h>
 #include <beamline/BeamlineIterator.h>
 #include <beamline/InsertionList.h>
 #include <beamline/FramePusher.h>
+#include <beamline/beamline.h>
+#include <beamline/BmlPtrList.h>
+#include <beamline/BmlVisitor.h>
+
 #include <iomanip>
 #include <algorithm>
 
@@ -172,44 +177,6 @@ ostream& operator<<(ostream& os, const lattRing& x) {
   os << x.tune.hor << " " << x.tune.ver << " ";
   os << " " << x.chromaticity.hor << " " << x.chromaticity.ver;
   return (os << endl);
-}
-
-// **************************************************
-//   struct beamlineData
-// **************************************************
-
-beamlineData::beamlineData() : bmlnElmntData() {
- more = 1;     // ??? Is this correct???
- numElem = 0;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-beamlineData::beamlineData( beamlineData& x ) : bmlnElmntData( (bmlnElmntData&) x ) {
- more = x.more;
- numElem = x.numElem;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-beamlineData::~beamlineData() {
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void beamlineData::eliminate() {
- delete this;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void* beamlineData::clone() {
- void* p = new beamlineData( *this );
- return p;
 }
 
 
@@ -347,6 +314,7 @@ const char*  beamline::Type() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+
 double beamline::OrbitLength( Particle const& x )
 {
  BeamlineIterator getNext (*this);
@@ -410,7 +378,7 @@ void beamline::zap() {
 
  for ( std::list<bmlnElmnt*>::iterator it=_theList.begin(); it!= _theList.end(); ++it) 
  { 
-   if( strcmp( (*it)->Type(), "beamline" ) == 0 ) {
+   if ( typeid( **it) == typeid(beamline) ) {
     static_cast<beamline*>(*it)->zap();
    }
    delete (*it);  
@@ -572,16 +540,30 @@ lattFunc beamline::whatIsLattice( char* n ) {
 
 
 void beamline::insert( bmlnElmnt* q ) {
- _theList.push_back(q);
-
+ _theList.push_front(q);
+ 
  if( twissDone ) unTwiss();
 
  length += q -> length;
 
+ if( typeid(*q) == typeid(beamline) )  
+      numElem += static_cast<beamline*>(q)->numElem;
+ else numElem++;
+}  
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void beamline::append( bmlnElmnt* q ) {
+ _theList.push_back( q );
+
+ if( twissDone ) unTwiss();
+
+ length += q->length;
  if( strcmp( q->Type(), "beamline" ) == 0 )  
       numElem += ((beamline*) q)->numElem;
  else numElem++;
-}  
+} 
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -592,8 +574,8 @@ void beamline::InsertElementsFromList( double& s, InsertionList& inList, slist& 
 
  std::list<bmlnElmnt*>::iterator bml_iter = _theList.begin();
 
- bmlnElmnt* p_be   = (bml_iter == _theList.end()) ? 0: *bml_iter;
- 
+ bmlnElmnt* p_be   = ( bml_iter == _theList.end() ) ? 0 : *bml_iter;
+
  bmlnElmnt* p_be_a = 0;
  bmlnElmnt* p_be_b = 0;
 
@@ -624,24 +606,23 @@ void beamline::InsertElementsFromList( double& s, InsertionList& inList, slist& 
  }
 
 
- const Particle* prtnPtr = inList.clonedParticlePtr();
+ Particle const* prtnPtr = inList.clonedParticlePtr();
 
  while( p_be && p_ile ) {
 
-  if( strcasecmp( p_be->Type(), "beamline" ) == 0 ) {
+  if( typeid(*p_be) == typeid(beamline) ) {
 
     static_cast<beamline*>(p_be)->InsertElementsFromList( s, inList, removedElements );
 
     p_ile = inList(0);   // this may have changed
- 
-    ++bml_iter;
-    p_be =  (bml_iter == _theList.end()) ? 0: *bml_iter;
+    ++bml_iter; 
+    p_be = (bml_iter == _theList.end()) ? 0 : *bml_iter; 
   }
 
   else if ( s + p_be->OrbitLength( *prtnPtr ) <= p_ile->s ) {
     s += p_be->OrbitLength( *prtnPtr );
-    ++bml_iter;
-    p_be =  (bml_iter == _theList.end()) ? 0: *bml_iter;
+    ++bml_iter; 
+    p_be = (bml_iter == _theList.end()) ? 0 : *bml_iter;     
   }
 
   else if ( s == p_ile->s ) {
@@ -649,43 +630,40 @@ void beamline::InsertElementsFromList( double& s, InsertionList& inList, slist& 
     putAbove( bml_iter, p_ile->q );
     inList.Get();      // removes top element
     p_ile = inList(0); // accesses new top element
+
   }
 
-  // else if ( p_be->p_bml ) {
-  //   p_be->p_bml->InsertElementsFromList( s, inList, removedElements );
-  //   p_ile = inList(0);   // this may have changed
-  //   p_be = static_cast<bmlnElmnt*>( bml_iter() );
-  // }
+  else if (  typeid(*p_be) == typeid(combinedFunction)  ) {
 
-  else if (  0 == strcmp( p_be->Type(), "combinedFunction" )  ) {
     p_be->p_bml->InsertElementsFromList( s, inList, removedElements );
     p_ile = inList(0);   // this may have changed
-    ++bml_iter;
-    p_be =  (bml_iter == _theList.end()) ? 0: *bml_iter;
+    ++bml_iter; 
+    p_be = (bml_iter == _theList.end()) ? 0 : *bml_iter;     
 
     if( firstWarning ) {
       (*pcerr) << "\n*** WARNING:                                   *** "
-              "\n*** WARNING: Insertion into a combinedFunction *** "
-              "\n*** WARNING: element will hide what is being   *** "
-              "\n*** WARNING: inserted.                         *** "
-              "\n*** WARNING:                                   *** "
-           << endl;
+                   "\n*** WARNING: Insertion into a combinedFunction *** "
+                   "\n*** WARNING: element will hide what is being   *** "
+                   "\n*** WARNING: inserted.                         *** "
+                   "\n*** WARNING:                                   *** "
+               << endl;
       firstWarning = false;
     }
   }
 
-  else if ( ( s < p_ile->s ) && ( p_ile->s < s + p_be->OrbitLength( *prtnPtr ) ) ) {
-    p_be->Split( ( p_ile->s - s )/p_be->OrbitLength( *prtnPtr ), 
-                 &p_be_a, 
-                 &p_be_b 
-               );
+  else if ( ( s < p_ile->s ) && ( p_ile->s < s + p_be->OrbitLength( *prtnPtr ) ) )  {
 
-    bml_iter = _theList.erase( bml_iter );
+    //std::cout << " about to split element ... " << std::endl;
+    //std::cout << " element to be split: Name = " << p_be->Name() << " Type = " << p_be ->Type() << std::endl;
 
+    p_be->Split( ( p_ile->s - s )/p_be->OrbitLength( *prtnPtr ), &p_be_a, &p_be_b );
+
+    //std::cout << " about to delete element ... " << std::endl;
+    //std::cout << " element to be deleted: Name = " << p_be->Name() << " Type = " << p_be ->Type() << std::endl;
+    
     putAbove( bml_iter, p_be_a   );
     putAbove( bml_iter, p_ile->q );
     putAbove( bml_iter, p_be_b   );
-
 
     s += ( p_be_a->OrbitLength( *prtnPtr ) + p_ile->q->OrbitLength( *prtnPtr ) );
 
@@ -695,6 +673,10 @@ void beamline::InsertElementsFromList( double& s, InsertionList& inList, slist& 
     p_be = p_be_b;
     inList.Get();      // removes top element
     p_ile = inList(0); // accesses new top element
+
+    bml_iter = _theList.erase( bml_iter ); // bml_iter now points to element downstream of p_be_b !
+    --bml_iter;                            // now points to p_be_b 
+
   }
 
   else {
@@ -728,10 +710,12 @@ void beamline::InsertElementsFromList( double& s, InsertionList& inList, slist& 
          << " < "          << setprecision(10) << ( s + p_be->OrbitLength( *prtnPtr ) )
          << " ) )\n";
 
+
     s += p_be->OrbitLength( *prtnPtr );
 
     ++bml_iter;
-    p_be =  (bml_iter == _theList.end()) ? 0: *bml_iter;
+    p_be =  ( bml_iter == _theList.end() ) ? 0: *bml_iter;
+
   }
  }
 
@@ -776,7 +760,7 @@ int beamline::deepReplace( const bmlnElmnt* a, const bmlnElmnt* b )
       return 0; 
     }
 
-    else if( strcmp( "beamline", (*it)->Type() ) == 0 ) {
+    else if( typeid(**it) == typeid(beamline) ) {
 
       if( dynamic_cast<beamline*>(*it)->deepReplace( a, b ) == 0  ) { return 0; }
     }
@@ -822,7 +806,7 @@ beamline& operator-( beamline& x ) {
  ReverseBeamlineIterator rit( x  );
  bmlnElmnt* p;
  while( (  p = rit++ ) ) {
-  if( strcasecmp( p->Type(), "beamline" ) == 0 ) 
+  if( typeid(*p) == typeid(beamline) ) 
                             result->append( &(- *static_cast<beamline*>(p)) );
   else                      result->append( p );
  }
@@ -928,20 +912,6 @@ beamline& operator*( bmlnElmnt& x, int c ) {
 }
 #endif
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void beamline::append( bmlnElmnt* q ) {
- _theList.push_back( q );
-
- if( twissDone ) unTwiss();
-
- length += q->length;
- if( strcmp( q->Type(), "beamline" ) == 0 )  
-      numElem += ((beamline*) q)->numElem;
- else numElem++;
-} 
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -959,7 +929,8 @@ void beamline::Split( double, bmlnElmnt**, bmlnElmnt** ) const
 
 void beamline::putAbove( std::list<bmlnElmnt*>::iterator const& iter, bmlnElmnt*  y ) 
 {
- // Insert y above (before; upstream of) x in the beamline
+ // Insert y above (before; upstream of) iter in the beamline
+ // upon return, iter points Insert y above (before; upstream of) iter in the beamline
 
  unTwiss();
 
@@ -981,12 +952,19 @@ void beamline::putBelow( std::list<bmlnElmnt*>::iterator const& iter, bmlnElmnt*
 
  std::list<bmlnElmnt*>::iterator tmp_iter = iter; 
 
+ if ( iter == _theList.end() ) {
+   (*pcout) << "*** WARNING **** : attempt to insert an element downstream of a beamline's end." << std::endl;
+   (*pcout) << "                   beamline name :" << Name()  << std::endl;
+   return;
+ }
+
  ++tmp_iter;
 
  _theList.insert( tmp_iter, y );
  
  length += y->length;
- numElem++;
+ 
+ ++numElem;
 
 }
 
@@ -1015,7 +993,7 @@ beamline* beamline::flatten() const {
  r = new beamline;
 
  while ( (p = getNext++)  )  {
-   if( strcasecmp( p->Type(), "beamline" ) == 0 )
+   if( typeid(*p) == typeid(beamline) )
    { 
      s =  static_cast<beamline*>(p)->flatten();
 
@@ -1400,8 +1378,8 @@ void beamline::peekAt( double& s, const Particle& prt ) const
        << endl;
 
   while ( (  p = getNext++ ) )  {
-    if( strcasecmp( p->Type(), "beamline" ) == 0 ) 
-      ( (beamline*) p)->peekAt( s, prt );
+    if( typeid(*p) == typeid(beamline) ) 
+      static_cast<beamline*>(p)->peekAt( s, prt );
     else p->peekAt( s, prt );
   }
 
@@ -1466,8 +1444,8 @@ int beamline::countHowManyDeeply( CRITFUNC query, slist* listPtr ) const {
 
  ret = 0;
  while ( ( p = getNext++ ) ) {
-   if( 0 == strcmp( p->Type(), "beamline" ) ) {
-     ret += ((beamline*) p)->countHowManyDeeply( query, listPtr );
+   if( typeid(*p) == typeid(beamline) ) {
+     ret += static_cast<beamline*>(p)->countHowManyDeeply( query, listPtr );
    }
    else {
      if( ( query == 0 ) || ( query(p) ) ) {

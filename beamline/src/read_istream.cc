@@ -46,7 +46,7 @@
 #include <config.h>
 #endif
 
-#include <beamline/beamline.h>
+#include <beamline/beamline_elements.h>
 #include <iomanip>
 
 #include <beamline/combinedFunction.h>

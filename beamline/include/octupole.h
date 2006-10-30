@@ -40,6 +40,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/BmlVisitor.h>
 
 class DLLEXPORT octupole : public bmlnElmnt
 {
@@ -51,7 +52,6 @@ public:
             double,       /* length   */
             double        /* strength */ );
   octupole( const octupole& );
-  octupole( bmlnElmntData& );
   ~octupole();
 
   void accept( BmlVisitor& v ) { v.visitOctupole( this ); }
@@ -84,7 +84,6 @@ public:
   thinOctupole( double       /* strength */ );
   thinOctupole( const char*  /* name */,
                 double       /* strength */ );
-  thinOctupole( bmlnElmntData& );
   thinOctupole( const thinOctupole& );
   ~thinOctupole();
 

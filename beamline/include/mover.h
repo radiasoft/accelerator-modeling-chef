@@ -42,6 +42,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/circuit.h>
+#include <beamline/Alignment.h>
 
 
 class DLLEXPORT mover : public circuit {

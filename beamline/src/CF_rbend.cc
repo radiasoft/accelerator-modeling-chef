@@ -51,6 +51,7 @@
 #include <beamline/rbend.h>
 #include <beamline/octupole.h>
 #include <beamline/Particle.h>
+#include <beamline/Alignment.h>
 
 
 using namespace std;

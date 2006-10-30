@@ -41,6 +41,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/BmlVisitor.h>
 
 class DLLEXPORT quadrupole : public bmlnElmnt
 {
@@ -85,7 +86,6 @@ public:
               PropFunc*    = &quadrupole::LikeTPOT );
 
 
-  quadrupole( bmlnElmntData& );
   quadrupole( const quadrupole& );
   ~quadrupole();
 
@@ -119,7 +119,6 @@ public:
   thinQuad( double );    // B'L in Tesla; + = horizontally focussing
   thinQuad( const char*, // name
             double );    // B'L in Tesla; + = horizontally focussing
-  thinQuad( bmlnElmntData& );
   thinQuad( const thinQuad& );
   ~thinQuad();
 

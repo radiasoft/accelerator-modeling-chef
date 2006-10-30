@@ -42,6 +42,7 @@
 
 #include <iomanip>
 
+#include <beamline/Alignment.h>
 #include <beamline/bmlnElmnt.h>
 #include <basic_toolkit/VectorD.h>
 #include <beamline/Particle.h>

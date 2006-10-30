@@ -43,6 +43,7 @@
 #include <basic_toolkit/iosetup.h>
 #include <beamline/quadrupole.h>
 #include <beamline/drift.h>
+#include <beamline/beamline.h>
 #include <beamline/BeamlineIterator.h>
 
 using namespace std;
@@ -106,30 +107,6 @@ quadrupole::quadrupole( double l, double s, bmlnElmnt::PropFunc* pf )
  // REMOVE: {
  // REMOVE:   p_bml = 0;
  // REMOVE: }
-}
-
-
-quadrupole::quadrupole( bmlnElmntData& x ) 
-: bmlnElmnt( x ) 
-{
- // ??? GET RID OF THIS FUNCTION.
-  static char firstTime = 1;
-  if( firstTime ) {
-    (*pcerr) << "Warning: call to quadrupole::quadrupole( bmlnElmntData& x )" << endl;
-    firstTime = 0;
-  }
-
- double xm = 3.0;
- p_bml = new beamline;
-
- p_bml->append( new drift( length / ( 2.0*xm ) ) );
- p_bml->append( new thinQuad( strength*length/ xm ) );
- for( int i = 0; i < 2; i++ ) {
-   p_bml->append( new drift( length / xm ) );
-   p_bml->append( new thinQuad( strength*length/ xm ) );
- }
- p_bml->append( new drift( length / ( 2.0*xm ) ) );
-
 }
 
 
@@ -323,13 +300,9 @@ thinQuad::thinQuad( const char* n, double s ) : bmlnElmnt(n) {
  strength = s;
 }
 
-thinQuad::thinQuad( bmlnElmntData& x ) : bmlnElmnt( x ) {
-}
 
 thinQuad::thinQuad( const thinQuad& x ) 
-: bmlnElmnt( (bmlnElmnt&) x )
-{
-}
+: bmlnElmnt( x ){}
 
 thinQuad::~thinQuad() {
 }
