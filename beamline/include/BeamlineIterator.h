@@ -37,8 +37,10 @@
 ******  October 2006: Jean-Francois Ostiguy ostiguy@fnal.gov
 ******
 ******  - class beamline contains std::list  
-******  - beamline iterators modified to use STL iterators internally. 
-******                                                                   
+******  - beamline iterators now use STL iterators internally
+******    Public interface unchanged, old behavior emulated. 
+****** 
+******                                                                  
 **************************************************************************
 *************************************************************************/
 
@@ -84,6 +86,7 @@ public:
 
 private:
   
+  bool                            m_reset;  // needed to emulate position before begin()
   std::list<bmlnElmnt*>::iterator m_it;
   beamline&                       m_bml;
 };
@@ -105,6 +108,7 @@ public:
 
   protected:
 
+  bool                            m_reset;  // needed to emulate position before begin()
   std::list<bmlnElmnt*>::iterator m_it;
   beamline&                       m_bml;
   DeepBeamlineIterator*           m_subit;
@@ -133,6 +137,7 @@ public:
 
 private:
 
+  bool                                    m_reset;  // needed to emulate position before begin()
   std::list<bmlnElmnt*>::reverse_iterator m_rit;
   beamline&                               m_bml;
 
@@ -152,6 +157,7 @@ public:
 
 private:
 
+  bool                                    m_reset;  // needed to emulate position before begin()
   std::list<bmlnElmnt*>::reverse_iterator m_rit;
   beamline&                               m_bml;
   DeepReverseBeamlineIterator*            m_subrit;
