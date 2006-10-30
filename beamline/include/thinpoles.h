@@ -41,6 +41,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/BmlVisitor.h>
 
 class DLLEXPORT thin2pole : public bmlnElmnt
 {
@@ -49,7 +50,6 @@ public:
   thin2pole( double /* strength = BL */ );
   thin2pole( const char*  /* name */,
              double /* strength */ );
-  thin2pole( bmlnElmntData& );
   thin2pole( const thin2pole& );
   ~thin2pole();
 
@@ -78,7 +78,6 @@ public:
   thin12pole( double /* strength */ );
   thin12pole( const char*  /* name */,
               double /* strength */ );
-  thin12pole( bmlnElmntData& );
   thin12pole( const thin12pole& );
   ~thin12pole();
 
@@ -107,7 +106,6 @@ public:
   thin14pole( double /* strength */ );
   thin14pole( const char*  /* name */,
               double /* strength */ );
-  thin14pole( bmlnElmntData& );
   thin14pole( const thin14pole& );
   ~thin14pole();
 
@@ -136,7 +134,6 @@ public:
   thin16pole( double /* strength */ );
   thin16pole( const char*  /* name */,
               double /* strength */ );
-  thin16pole( bmlnElmntData& );
   thin16pole( const thin16pole& );
   ~thin16pole();
 
@@ -165,7 +162,6 @@ public:
   thin18pole( double /* strength */ );
   thin18pole( const char*  /* name */,
               double /* strength */ );
-  thin18pole( bmlnElmntData& );
   thin18pole( const thin18pole& );
   ~thin18pole();
 
@@ -194,7 +190,6 @@ public:
   thinMultipole( double /* strength */ );
   thinMultipole( const char*  /* name */,
                 double /* strength */ );
-  thinMultipole( bmlnElmntData& );
   thinMultipole( const thinMultipole& );
   ~thinMultipole();
 

@@ -66,19 +66,15 @@ vkick::vkick( const char* n, double k ) : bmlnElmnt(n) {
                       // single "double" argument
 }                     // indicates length.
 
-vkick::vkick( bmlnElmntData& x ) : bmlnElmnt( x ) {
-}
 
-vkick::vkick( const vkick& x )
-: bmlnElmnt( (bmlnElmnt&) x )
-{
-}
+vkick::vkick( vkick const& x )
+: bmlnElmnt( x )
+{}
 
 
 vkick::vkick( const char* n, double l, double s ) 
 : bmlnElmnt(n,l,s) 
-{
-}
+{}
 
 
 vkick::~vkick() {
@@ -113,24 +109,15 @@ hkick::hkick( const char* n, double k )
 }                   // single "double" argument
                     // indicates length.
 
-hkick::hkick( const hkick& x ) 
-: bmlnElmnt( (bmlnElmnt&) x )
-{
-}
-
-
-hkick::hkick( bmlnElmntData& x ) : bmlnElmnt( x ) {
-}
+hkick::hkick( hkick const& x ) 
+: bmlnElmnt( x ){}
 
 
 hkick::hkick( const char* n, double l, double s ) 
-: bmlnElmnt(n,l,s) 
-{
-}
+: bmlnElmnt(n,l,s) { }
 
 
-hkick::~hkick() {
-}
+hkick::~hkick() { }
 
 
 const char* hkick::Type() const 
@@ -148,8 +135,9 @@ kick::kick() : bmlnElmnt() {
 	verticalKick = 0.0;
 }
 
-kick::kick( const char* s ) : bmlnElmnt(s) {
-}
+
+kick::kick( const char* s ) : bmlnElmnt(s) {}
+
 
 kick::kick(double hStrength, double vStrength ) : bmlnElmnt() {
 	horizontalKick = hStrength;
@@ -175,15 +163,11 @@ kick::kick( const char* s, double lng, double hStrength, double vStrength )
 : bmlnElmnt( s, lng, hStrength + vStrength, 0 ),  // strength is arbitrary
   horizontalKick( hStrength ), 
   verticalKick  ( vStrength )
-{
-}
+{}
 
 
+kick::kick( kick const& x ): bmlnElmnt (x){ }
 
-kick::kick(const kick& x) : bmlnElmnt( (bmlnElmnt&) x ) {
-	horizontalKick = x.horizontalKick;
-	verticalKick = x.verticalKick;
-}
 
 kick::~kick() {
 }

@@ -44,8 +44,10 @@
 #include <basic_toolkit/iosetup.h>
 #include <beamline/marker.h>
 #include <beamline/Slot.h>
+#include <beamline/beamline.h>
 #include <beamline/Particle.h>
 #include <beamline/ParticleBunch.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 
@@ -361,6 +363,7 @@ double Slot::setReferenceTime( const Particle& prtn )
   // This assumes the in face corresponds to the
   // in Frame. It is attached to the out face
   // of the previous element.
+
   Vector r(3);
   r(0) = localParticle->get_x();
   r(1) = localParticle->get_y();
@@ -525,22 +528,18 @@ void Slot::Split( double pct, bmlnElmnt** a, bmlnElmnt** b ) const
 
 void Slot::processFrame( const Frame& frm, Particle& p ) const
 {
-  static const int x    = p.xIndex();
-  static const int y    = p.yIndex();
-  static const int cdt  = p.cdtIndex();
-  static const int xp   = p.npxIndex();
-  static const int yp   = p.npyIndex();
-  static const int dpop = p.ndpIndex();
+  const int x    = p.xIndex();
+  const int y    = p.yIndex();
+  const int cdt  = p.cdtIndex();
+  const int xp   = p.npxIndex();
+  const int yp   = p.npyIndex();
+  const int dpop = p.ndpIndex();
 
+  static bool firstTime = true;
   static Vector u_z(3);
   static Vector u_y(3);
-  static bool firstTime = 1;
   
-  static double* inState;
-  static double temp;
-  static double cs, sn;
-  
-
+  double* inState;
   if( firstTime ) {
     firstTime = false;
     u_y(0) = 0.0; u_y(1) = 1.0; u_y(2) = 0.0;
@@ -549,6 +548,8 @@ void Slot::processFrame( const Frame& frm, Particle& p ) const
     // This is never deleted.
   }
 
+  double temp;
+  double cs, sn;
 
   // Yaw -------------------------------------
   if( ( frm.getAxis(1) == u_y ) && ( frm.getAxis(2) != u_z ) ) 
@@ -611,27 +612,29 @@ void Slot::processFrame( const Frame& frm, Particle& p ) const
 
 void Slot::processFrame( const Frame& frm, JetParticle& p ) const
 {
-  static const int x    = p.xIndex();
-  static const int y    = p.yIndex();
-  static const int cdt  = p.cdtIndex();
-  static const int xp   = p.npxIndex();
-  static const int yp   = p.npyIndex();
-  static const int dpop = p.ndpIndex();
+  const int x    = p.xIndex();
+  const int y    = p.yIndex();
+  const int cdt  = p.cdtIndex();
+  const int xp   = p.npxIndex();
+  const int yp   = p.npyIndex();
+  const int dpop = p.ndpIndex();
 
+  static bool firstTime = true;
   static Vector u_z(3);
   static Vector u_y(3);
-  static bool firstTime = 1;
-  
-  Mapping   inState ( p.State() );
-  Jet       temp    ( inState.Env() );
-  static    double  cs, sn;
-
-
+ 
   if( firstTime ) {
     firstTime = false;
     u_y(0) = 0.0; u_y(1) = 1.0; u_y(2) = 0.0;
     u_z(0) = 0.0; u_z(1) = 0.0; u_z(2) = 1.0;
   }
+
+   
+  Mapping   inState ( p.State() );
+  Jet       temp    ( inState.Env() );
+  double    cs, sn;
+
+
 
   // Yaw -------------------------------------
   if( ( frm.getAxis(1) == u_y ) && ( frm.getAxis(2) != u_z ) ) 

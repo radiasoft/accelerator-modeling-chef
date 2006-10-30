@@ -62,8 +62,6 @@ thinDecapole::thinDecapole ( char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
 }
 
 
-thinDecapole::thinDecapole( bmlnElmntData& x ) : bmlnElmnt( x ) {
-}
 
 thinDecapole::thinDecapole( const thinDecapole& x ) 
 : bmlnElmnt( (bmlnElmnt&) x )
@@ -85,3 +83,5 @@ bool thinDecapole::isMagnet() const
 {
   return true;
 }
+
+

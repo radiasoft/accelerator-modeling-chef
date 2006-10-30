@@ -42,6 +42,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/BmlVisitor.h>
 
 class DLLEXPORT drift : public bmlnElmnt
 {
@@ -51,7 +52,6 @@ public:
   drift( const char* );        // name
   drift( const char*,          // name
          double );             // length of drift in meters
-  drift( bmlnElmntData& );
   drift( const drift& );
   ~drift();
 

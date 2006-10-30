@@ -58,16 +58,10 @@ marker::marker( const char* n ) : bmlnElmnt(n)
 {
 }
 
-marker::marker( const marker& x ) : bmlnElmnt( (bmlnElmnt&) x ) 
-{
-}
+marker::marker( marker const& x ) : bmlnElmnt( x ) {}
 
-marker::marker( bmlnElmntData& x ) : bmlnElmnt( x ) 
-{
-}
 
-marker::~marker() {
-}
+marker::~marker() {}
 
 
 

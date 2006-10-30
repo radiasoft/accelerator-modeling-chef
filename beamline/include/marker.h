@@ -40,6 +40,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/BmlVisitor.h>
 
 
 class DLLEXPORT marker : public bmlnElmnt
@@ -48,7 +49,6 @@ public:
   marker();                   // Data to be written to standard output
   marker( const char* );      // Name identifier.
   marker( const marker& );
-  marker( bmlnElmntData& );
   ~marker();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }

@@ -42,24 +42,23 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/BmlVisitor.h>
 
 class DLLEXPORT thinDecapole : public bmlnElmnt
 {
 public:
   thinDecapole();
-  thinDecapole( double /* strength */ );
-  thinDecapole( char*  /* name */,
-                double /* strength */ );
-  thinDecapole( bmlnElmntData& );
-  thinDecapole( const thinDecapole& );
-  ~thinDecapole();
+  thinDecapole( double strength );
+  thinDecapole( char*  name, double strength);
+  thinDecapole( thinDecapole const& );
+ ~thinDecapole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& p );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitThinDecapole( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitThinDecapole( this ); }
+  void accept( BmlVisitor& v )             { v.visitThinDecapole( this ); }
+  void accept( ConstBmlVisitor& v ) const  { v.visitThinDecapole( this ); }
 
   const char* Type() const;
   virtual bool isType( const char* c )
@@ -68,5 +67,8 @@ public:
 
    thinDecapole* Clone() const { return new thinDecapole( *this ); }
 } ;
+
+
+
 
 #endif // DECAPOLE_H

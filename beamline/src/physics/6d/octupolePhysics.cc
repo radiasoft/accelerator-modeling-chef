@@ -39,6 +39,7 @@
 #endif
 
 #include <beamline/Particle.h>
+#include <beamline/beamline.h>
 #include <beamline/octupole.h>
 
 void octupole::localPropagate( Particle& p ) {

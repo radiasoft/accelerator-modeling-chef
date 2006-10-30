@@ -39,6 +39,7 @@
 #include <config.h>
 #endif
 
+#include <beamline/beamline.h>
 #include <beamline/sextupole.h>
 #include <beamline/Particle.h>
 

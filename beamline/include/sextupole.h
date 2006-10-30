@@ -41,6 +41,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/BmlVisitor.h>
 
 class DLLEXPORT sextupole : public bmlnElmnt
 {
@@ -51,7 +52,6 @@ public:
   sextupole( const char*,  /* name     */
              double,       /* length   */
              double        /* strength */ );
-  sextupole( bmlnElmntData& );
   sextupole( const sextupole& );
   ~sextupole();
 
@@ -85,7 +85,6 @@ public:
   thinSextupole( double        /* strength */ );
   thinSextupole( const char*   /* name */,
                  double        /* strength */ );
-  thinSextupole( bmlnElmntData& );
   thinSextupole( const thinSextupole& );
   ~thinSextupole();
 

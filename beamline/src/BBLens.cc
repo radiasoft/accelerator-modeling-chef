@@ -43,6 +43,7 @@
 #include <beamline/BBLens.h>
 #include <basic_toolkit/utils.h>
 #include <mxyzptlk/Jet.h>
+#include <mxyzptlk/JetVector.h>
 #include <physics_toolkit/EdwardsTeng.h>  // ??? Doesn't belong here.
 
 using namespace std;

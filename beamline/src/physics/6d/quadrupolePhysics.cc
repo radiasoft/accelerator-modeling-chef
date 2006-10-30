@@ -40,6 +40,7 @@
 #endif
 
 #include <beamline/Particle.h>
+#include <beamline/beamline.h>
 #include <beamline/quadrupole.h>
 #include <beamline/drift.h>
 

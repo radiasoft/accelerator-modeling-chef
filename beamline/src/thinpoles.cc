@@ -67,21 +67,13 @@ thin2pole::thin2pole( const char*  n /* name */, double s /* strength */ )
 }
 
 
-thin2pole::thin2pole( bmlnElmntData& x )
-: bmlnElmnt( x )
-{
-}
-
 
 thin2pole::thin2pole( const thin2pole& x )
-: bmlnElmnt( (const bmlnElmnt&) x )
-{
-}
+: bmlnElmnt( x ){}
 
 
 thin2pole::~thin2pole()
-{
-}
+{}
 
 
 const char* thin2pole::Type() const
@@ -110,13 +102,8 @@ thin12pole::thin12pole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
 }
 
 
-thin12pole::thin12pole( bmlnElmntData& x ) : bmlnElmnt( x ) {
-}
-
 thin12pole::thin12pole( const thin12pole& x ) 
-: bmlnElmnt( (bmlnElmnt&) x )
-{
-}
+: bmlnElmnt( x ){}
 
 thin12pole::~thin12pole() {
 }
@@ -147,13 +134,9 @@ thin14pole::thin14pole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
 }
 
 
-thin14pole::thin14pole( bmlnElmntData& x ) : bmlnElmnt( x ) {
-}
 
 thin14pole::thin14pole( const thin14pole& x ) 
-: bmlnElmnt( (bmlnElmnt&) x )
-{
-}
+: bmlnElmnt( x ){}
 
 thin14pole::~thin14pole() {
 }
@@ -185,13 +168,8 @@ thin16pole::thin16pole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
 }
 
 
-thin16pole::thin16pole( bmlnElmntData& x ) : bmlnElmnt( x ) {
-}
-
 thin16pole::thin16pole( const thin16pole& x ) 
-: bmlnElmnt( (bmlnElmnt&) x )
-{
-}
+: bmlnElmnt( x ){}
 
 thin16pole::~thin16pole() {
 }
@@ -222,13 +200,9 @@ thin18pole::thin18pole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
 }
 
 
-thin18pole::thin18pole( bmlnElmntData& x ) : bmlnElmnt( x ) {
-}
 
 thin18pole::thin18pole( const thin18pole& x ) 
-: bmlnElmnt( (bmlnElmnt&) x )
-{
-}
+: bmlnElmnt( x ){}
 
 thin18pole::~thin18pole() {
 }
@@ -295,16 +269,11 @@ thinMultipole::thinMultipole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s 
 }
 
 
-thinMultipole::thinMultipole( bmlnElmntData& x ) : bmlnElmnt( x ) {
-}
 
 thinMultipole::thinMultipole( const thinMultipole& x ) 
-: bmlnElmnt( (bmlnElmnt&) x )
-{
-}
+: bmlnElmnt( x ){}
 
-thinMultipole::~thinMultipole() {
-}
+thinMultipole::~thinMultipole() {}
 
 
 
