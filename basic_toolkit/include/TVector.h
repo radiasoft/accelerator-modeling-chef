@@ -206,11 +206,6 @@ double TVector<double>::Norm () const;
 template<> 
 double TVector<std::complex<double> >::Norm () const;
 
-template<> 
-bool TVector<double>::IsUnit() const;
-
-template<> 
-bool TVector<std::complex<double> >::IsUnit() const;
 
 
 #ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES
