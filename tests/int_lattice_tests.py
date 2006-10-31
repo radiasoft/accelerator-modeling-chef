@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 
+import sys
+sys.path.append(".")
+
 import unittest
+
 from testclass_for_synergia import Testclass_for_synergia
 
 class Test_channel(Testclass_for_synergia):
+
     def __init__(self,arg):
         self.mad_file_name = 'channel.mad'
         self.line_name = 'channel'
