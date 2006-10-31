@@ -108,9 +108,6 @@ template TVector<double> operator*<double>(double, TVector<double> const&);
 template TVector<std::complex<double> > operator*(std::complex<double>, TVector<std::complex<double> > const&);
 template TVector<std::complex<double> > operator*(TVector<std::complex<double> > const&, std::complex<double>);
 
-template bool TVector<double>::IsUnit() const;
-template bool TVector<std::complex<double> >::IsUnit() const;
-
 template std::ostream& operator<<(std::ostream&, TVector<double> const&);
 template std::ostream& operator<<(std::ostream&, TVector<std::complex<double> > const&);
 
