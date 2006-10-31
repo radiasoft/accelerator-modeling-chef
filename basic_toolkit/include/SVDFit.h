@@ -39,6 +39,7 @@
 #define SVDFIT_H
 
 #include <basic_toolkit/Matrix.h>
+#include <basic_toolkit/VectorD.h>
 
 class SVDFit
 {
@@ -64,7 +65,7 @@ class SVDFit
     Matrix _sigInv;
 
     Matrix _xU;
-    Matrix _xW;
+    Vector _xW;
     Matrix _xV;
 
     bool   _applyWeights;
