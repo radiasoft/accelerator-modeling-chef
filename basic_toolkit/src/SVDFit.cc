@@ -46,13 +46,13 @@ using FNAL::pcout;
 
 using namespace std;
 
-Matrix sqrt( const Matrix& x )
+Matrix sqrt( Matrix& x )
 {
   int r = x.rows();
   int c = x.cols();
   if( r == c ) {
     Matrix U(r,c);
-    Matrix W(c,1);
+    Vector W(c);
     Matrix V(c,c);
     x.SVD(U,W,V);
 
@@ -69,7 +69,7 @@ Matrix sqrt( const Matrix& x )
     // probably the slowest possible way to do this.
     double aaa;
     for( int j = 0; j < c; j++ ) {
-      aaa = sqrt(W(j,0));
+      aaa = sqrt(W(j));
       for( int i = 0; i < r; i++ ) {
         U(i,j) *= aaa;
       }
@@ -108,7 +108,7 @@ SVDFit::SVDFit()
 , _sig(3,3)
 , _sigInv(3,3)
 , _xU(3,2)
-, _xW(2,1)
+, _xW(2)
 , _xV(2,2)
 , _applyWeights(false)
 , _ready(false)
