@@ -29,6 +29,7 @@
 
 #include <boost/python.hpp>
 #include <iostream>
+#include <ctime>
 
 #include <CHEFGUI.h>
 
@@ -47,7 +48,6 @@ extern boost::python::class_ <CHEFGUI, CHEFGUI*,  boost::noncopyable>*  PythonTy
 #include <GL/glut.h>
 
 using namespace boost::python;
-
 
 CHEFGUI* gui = 0;
 
@@ -73,7 +73,13 @@ int main( int argc, char** argv )
   };
 
   QSplashScreen *splash = new QSplashScreen( (const char**) chef_logo_preview_xpm );
-  splash->message("BUILD DATE: 20060130", (Qt::AlignHCenter | Qt::AlignBottom), QColor("White") );
+
+  time_t theTime;
+  time( &theTime );
+  char timeString[65];
+  size_t stored = strftime( timeString, 64, "BUILD DATE: %A. %B %d, %Y.", localtime(&theTime) );
+
+  splash->message(timeString, (Qt::AlignHCenter | Qt::AlignBottom), QColor("White") );
 
   splash->show();
 
@@ -101,7 +107,7 @@ int main( int argc, char** argv )
   do {
     time(&cur_time);
   }
-  while ( (cur_time - start_time) < 2 );
+  while ( (cur_time - start_time) < 4 );
 
   a.setMainWidget( gui ) ;
   gui->show();
