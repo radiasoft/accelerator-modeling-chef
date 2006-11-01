@@ -128,7 +128,7 @@ void SVDFit::_reconstruct( int r, int c )
   _sig          = Matrix( r, r );
   _sigInv       = Matrix( r, r );
   _xU           = Matrix( r, c );
-  _xW           = Matrix( c, 1 );
+  _xW           = Vector( c    );
   _xV           = Matrix( c, c );
   _applyWeights = false;
   _ready        = false;
