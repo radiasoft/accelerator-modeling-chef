@@ -220,9 +220,6 @@ template<typename T>
 TVector<T>& TVector<T>::operator= ( TVector const& x )
 {
   if( this != &x ) {
-    #ifndef NOCHECKS
-    CHECKOUT( Dim() != x.Dim(), "TVector::operator=", "Incompatible dimensions.")
-    #endif
   
     m_theVector = x.m_theVector;
     m_ofPtr     = x.m_ofPtr;
