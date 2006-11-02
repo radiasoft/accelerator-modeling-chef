@@ -49,9 +49,12 @@ class SVDFit
 
     void setLinearResponse( const Matrix& );
     void setErrorCovariance( const Matrix& );
+    void setWeighted( bool );
 
     Matrix solve( const Matrix& ) const;
+
     Matrix getStateCovariance()   const;
+    bool   getWeighted() const;
 
   private:
     int    _rows;

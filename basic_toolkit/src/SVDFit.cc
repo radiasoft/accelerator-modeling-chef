@@ -184,6 +184,7 @@ void SVDFit::setErrorCovariance( const Matrix& E )
       _sigInv(i,i) = 1.0/sqrt( fabs( E(i,0) ) );
     }
 
+    _applyWeights = true;
     _buildSolver();
   }
 
@@ -193,6 +194,7 @@ void SVDFit::setErrorCovariance( const Matrix& E )
     _covInv = _cov.inverse();
     _sigInv = _sig.inverse();
 
+    _applyWeights = true;
     _buildSolver();
   }
 
@@ -204,6 +206,8 @@ void SVDFit::setErrorCovariance( const Matrix& E )
              << "\n*** WARNING *** Oh, please ..."
              << "\n*** WARNING *** Your argument isn't even square: it is "
              <<                    E.rows() << " x " << E.cols() << "."
+             << "\n*** WARNING *** " 
+             << "\n*** WARNING *** No change will be made to SVDFit object." 
              << "\n*** WARNING *** " 
              << endl;
   }
@@ -218,8 +222,16 @@ void SVDFit::setErrorCovariance( const Matrix& E )
              << "\n*** WARNING *** but the current response matrix has " << _rows << " rows."
              << "\n*** WARNING *** Either set a new response matrix or use another error matrix."
              << "\n*** WARNING *** " 
+             << "\n*** WARNING *** No change will be made to SVDFit object." 
+             << "\n*** WARNING *** " 
              << endl;
   }
+}
+
+
+void SVDFit::setWeighted( bool x )
+{
+  _applyWeights = x; 
 }
 
 
@@ -300,4 +312,10 @@ Matrix SVDFit::solve( const Matrix& theData ) const
 Matrix SVDFit::getStateCovariance() const
 {
   return ( _solver * _cov *  _solver.transpose() );
+}
+
+
+bool SVDFit::getWeighted() const
+{
+  return _applyWeights;
 }
