@@ -438,14 +438,26 @@ public:
     class iterator;
     class reverse_iterator;
 
+    class const_iterator;
+    class const_reverse_iterator;
+
     class pre_order_iterator;
     class reverse_pre_order_iterator;
+
+    class const_pre_order_iterator;
+    class const_reverse_pre_order_iterator;
 
     class post_order_iterator;
     class reverse_post_order_iterator;
 
+    class const_post_order_iterator;
+    class const_reverse_post_order_iterator;
+
     class deep_iterator;
-    class reverse_deep_iterator;
+    class reverse_deep_iterator;    
+
+    class const_deep_iterator;
+    class const_reverse_deep_iterator;
 
     beamline::iterator begin()                        
                       { return beamline::iterator(this, _theList.begin());      } 
@@ -478,20 +490,14 @@ public:
                       { return beamline::post_order_iterator(beamline::iterator(this, _theList.begin() )); }   
 
     beamline::deep_iterator deep_begin() 
-                      { beamline::deep_iterator dit(beamline::iterator(this, _theList.begin()   ));   
-                        if (_theList.empty()) return dit; 
-                        if ( typeid(**dit) == typeid(beamline) ) ++dit; // the first element is a beamline. 
-                                                                        // Skip it. Note: the iteration will
-                                                                        // skip nested beamlines, if any. 
-                        return dit;
-                      } 
+                      { return beamline::deep_iterator(beamline::pre_order_iterator(beamline::iterator(this, _theList.begin() ))); } 
     beamline::deep_iterator deep_end()   
-                      { return beamline::deep_iterator(beamline::iterator(this, _theList.end()     )); }   
+                      { return beamline::deep_iterator(beamline::pre_order_iterator(beamline::iterator(this, _theList.end()   ))); }   
 
     beamline::reverse_deep_iterator rdeep_begin() 
-                      { return beamline::deep_iterator(beamline::iterator(this, _theList.end()     )); } 
+                      { return beamline::deep_iterator( beamline::pre_order_iterator(beamline::iterator(this, _theList.end()  ))); } 
     beamline::reverse_deep_iterator rdeep_end()   
-                      { return beamline::deep_iterator(beamline::iterator(this, _theList.begin()   )); }   
+                      { return beamline::deep_iterator( beamline::pre_order_iterator(beamline::iterator(this, _theList.begin() ))); }   
 
 
 
