@@ -122,152 +122,139 @@
 
      public:
 
-       pre_order_iterator() {}
+      pre_order_iterator() {}
    
-       pre_order_iterator( pre_order_iterator const& pit )                 
-	 : m_recursed_into(pit.m_recursed_into) { 
+      pre_order_iterator( pre_order_iterator const& pit )                 
+	: m_parent(pit.m_parent), m_iter( pit.m_iter), m_visited( pit.m_visited ) {}
 
-         if ( pit.m_iter_ptr) m_iter_ptr = boost::shared_ptr<beamline::iterator>( new iterator(*(pit.m_iter_ptr)) ); 
 
-	 if ( pit.m_subiter_ptr ) {
-           m_subiter_ptr = boost::shared_ptr<beamline::pre_order_iterator>( new pre_order_iterator(*(pit.m_subiter_ptr)) ); 
-         }
-       } 
-
-       pre_order_iterator( beamline::iterator const& it)
-        :  m_recursed_into(false) { 
-           m_iter_ptr = boost::shared_ptr<beamline::iterator>( new iterator(it) );
-       }
-
+      pre_order_iterator( beamline::iterator const& it)
+	: m_parent(), m_iter( it ), m_visited( it.end()) { } 
+        
+  
+     ~pre_order_iterator() { }
+ 
      private:
+
+      pre_order_iterator( boost::shared_ptr<beamline::pre_order_iterator> const& parent, iterator const& it )                 
+	 : m_parent(parent), m_iter( it.m_bml, it.base() ), m_visited( it.end()) {} 
+
 
       friend class boost::iterator_core_access;
 
-      boost::shared_ptr<beamline::iterator>                m_iter_ptr;
-      boost::shared_ptr<beamline::pre_order_iterator>      m_subiter_ptr;           // NOTE: incomplete type mandatory 
-                                                                                    // due to recursive definition ! 
-      bool                                                 m_recursed_into;     // true if the child has already been
-                                                                                // visited (recursed into) 
+      boost::shared_ptr<beamline::pre_order_iterator>         m_parent; 
+      beamline::iterator                                      m_iter;
+      beamline::iterator                                      m_visited;
                                                                             
      //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-      void increment()
+     void increment()
       {
 
-	if ( m_subiter_ptr ) {
-      
-          ++(*m_subiter_ptr); 
+          if( typeid(**m_iter) == typeid(beamline) )  {  // NOTE: need to dereference twice in order for typeid test to work !
+ 
+            beamline* bml      = static_cast<beamline*>(*m_iter);
 
-          if(  *m_subiter_ptr->m_iter_ptr != m_subiter_ptr->m_iter_ptr->end() ) return;
-         
-          // end of sub (child) beamline reached 
+            m_visited = m_iter;  
+            pre_order_iterator down( boost::shared_ptr<beamline::pre_order_iterator>( new pre_order_iterator(*this) ),  bml->begin() ); 
 
-          m_subiter_ptr = boost::shared_ptr<beamline::pre_order_iterator>(); // null ptr
-  	  ++(*m_iter_ptr); // increment the parent 
+            std::swap(*this, down); 
+  
+            return;
+             
+          }
+
+          ++m_iter; 
+
+          while (  (m_iter == m_iter.end()) &&  (m_parent) )  {  
+
+            pre_order_iterator up( *m_parent ); 
+            
+            ++up.m_iter; 
+
+            std::swap(*this, up); 
+ 
+          }
+
 	  return; 
-	}	 
-              
-        
-        if( typeid(***m_iter_ptr) == typeid(beamline) )  { // NOTE: need to dereference twice in order for typeid test to work !
-	    beamline* bml = static_cast<beamline*>(**m_iter_ptr);
 
-            m_subiter_ptr    
-               = boost::shared_ptr<beamline::pre_order_iterator>( new pre_order_iterator( bml->begin() ));
-	    m_recursed_into = true;
-
-        } else {
-
-              ++(*m_iter_ptr); 
-        }
-     	 
-
-      }// void increment() 
+      } // void increment() 
 
       //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
       void decrement()
       {
 
+	if ( m_iter == m_iter.end() ) {
+ 	  --m_iter;
+	  while (typeid(**m_iter) == typeid(beamline)) { 
+            beamline* bml      = static_cast<beamline*>(*m_iter);
+            pre_order_iterator down( boost::shared_ptr<beamline::pre_order_iterator>( new pre_order_iterator(*this) ), 
+                                     --(bml->end()) ); 
+            std::swap(*this, down); 
+          }
+          return;
+        }
 
-	if ( m_subiter_ptr ) {
-         
-         if ( (*m_subiter_ptr->m_iter_ptr == (m_subiter_ptr->m_iter_ptr->begin())  &&   
-	      ( !m_subiter_ptr->m_subiter_ptr ) ) ) { 
-
-	   std::cout << "begin reached ... " << std::endl;
-
-	      // is the first element of the child beamline itself a beamline ? 
-              // If so, decrement the current beamline iterator only if the child bml has 
-              // already been recursed into ... 
-              
-              if (   ( typeid(***(m_subiter_ptr->m_iter_ptr)) == typeid(beamline) ) &&
-		     ( !m_subiter_ptr->m_recursed_into ) ){
-
-			 --(*m_subiter_ptr); 
-                         return;  
-	      }  
-
-              m_subiter_ptr = boost::shared_ptr<beamline::pre_order_iterator>(); // null ptr
-
-              if (*m_iter_ptr != m_iter_ptr->begin()) { 
-                --(*m_iter_ptr);  
-              } else { 
-		m_iter_ptr = boost::shared_ptr<beamline::iterator>(); // null ptr
-             --(*m_iter_ptr); // increment the parent 
-
-              }
-              return;
-               
-
-	 }  else  {
-             --(*m_subiter_ptr);
-         }         
-
- 	return; 
-
-       }
-       //--------------------------------------------------------------------------------------------------
-       // NOTE: unfortunately, the iterators need to know about their own end() because of the 
-       //       need to detect end() here ! typeid(beamline) in the test below throws an exception 
-       //       when *m_iter is not a valid bmlElmnt* ...      
-       //---------------------------------------------------------------------------------------------------
-
-
-
-      if(  *m_iter_ptr == m_iter_ptr->end() ) { 
-         --(*m_iter_ptr); 
-         return;
-       }
+	if ( (m_iter == m_iter.begin()) && (m_parent) ) {
  
-       if(  typeid( ***m_iter_ptr) == typeid(beamline) )  { 
-            beamline* bml  = static_cast<beamline*>(**m_iter_ptr); 
-            m_subiter_ptr    
-	      = boost::shared_ptr<beamline::pre_order_iterator>(new pre_order_iterator( --(bml->end()) ) );
-	    m_recursed_into = true; 
-    
-       } else {
-	    --(*m_iter_ptr); 
-       }
+	  if ( (typeid(**m_iter) == typeid(beamline)) && (m_iter != m_visited) ) {
  
+             beamline* bml      = static_cast<beamline*>(*m_iter);
+             pre_order_iterator down( boost::shared_ptr<beamline::pre_order_iterator>( new pre_order_iterator(*this) ), 
+                                     --(bml->end()) ); 
+             std::swap(*this, down); 
+             return;
+          }
+          
+          pre_order_iterator up( *m_parent ); 
+          std::swap(*this, up); 
+          m_visited = m_iter;            
+
+          return;
+
+	 }
+
+
+	--m_iter;
+
+	 while ( (typeid(**m_iter) == typeid(beamline)) && (m_iter != m_visited) ) {
+           beamline* bml      = static_cast<beamline*>(*m_iter);
+           pre_order_iterator down( boost::shared_ptr<beamline::pre_order_iterator>( new pre_order_iterator(*this) ), 
+                                     --(bml->end()) ); 
+           std::swap(*this, down); 
+         }
+
+         return; 
+             
      }// void decrement() 
+
 
      //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
       bool equal( beamline::pre_order_iterator const& other) const {
          
-        if ( m_subiter_ptr &&  !other.m_subiter_ptr) return false; 
+	if (  (m_iter == m_iter.end() ) || ( other.m_iter == other.m_iter.end() ) ) {
+            if ( m_iter   ==  other.m_iter ) return true; 
+            else                             return false;
+        }
 
-        if ( m_subiter_ptr && other.m_subiter_ptr) 
-           return ( ( *m_iter_ptr == *other.m_iter_ptr ) && (  (*m_subiter_ptr) == (*other.m_subiter_ptr)  ) );  
 
-        return ( (*m_iter_ptr == *other.m_iter_ptr) ); 
+	if ( *m_iter      !=  *(other.m_iter) )     return false;
+
+        if ( !m_parent    &&   other.m_parent   )   return false;
+        if (  m_parent    &&  (!other.m_parent) )   return false;
+        if ( !m_parent    &&  (!other.m_parent) )   return true;
+        if ( **m_parent   !=  **other.m_parent  )   return false;
+
+        return true;
       }
 
      //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
      bmlnElmnt*& dereference() const { 
-       return  ( m_subiter_ptr ) ?  *(*m_subiter_ptr) : **m_iter_ptr;
+       return  *m_iter;
      }
     
  };
@@ -313,138 +300,160 @@
    {
      public:
 
-       post_order_iterator(): m_sub_end_reached(false) {}
+       post_order_iterator() {}
    
        post_order_iterator( post_order_iterator const& pit )                 
-	 :  m_sub_end_reached(pit.m_sub_end_reached), m_iter(pit.m_iter) { 
-	 if ( pit.m_subiter_ptr ) {
-           m_subiter_ptr = boost::shared_ptr<beamline::post_order_iterator>( new post_order_iterator(*(pit.m_subiter_ptr)) ); 
-         }
-       } 
+	 :  m_parent(pit.m_parent), m_iter(pit.m_iter), m_visited(pit.m_visited) {}
+      
 
        post_order_iterator( beamline::iterator const& it)
-        :  m_sub_end_reached(false), m_iter(it) { }
+        :  m_parent(), m_iter(it), m_visited(it.end()) 
+       { 
+
+         if ( it == it.end() ) return;
+
+	 while ( (typeid(**m_iter) == typeid(beamline)) && ( m_iter != m_visited) )  {  
+ 
+              beamline* bml      = static_cast<beamline*>(*m_iter);
+              post_order_iterator 
+                  down( boost::shared_ptr<beamline::post_order_iterator>( new post_order_iterator(*this) ),  bml->begin() ); 
+              std::swap(*this, down); 
+  
+         }
+         return; 
+       }
 
      private:
 
-      bool                                                 m_sub_end_reached;  
+      post_order_iterator( boost::shared_ptr<beamline::post_order_iterator> const& parent, iterator const& it )                 
+	 : m_parent(parent), m_iter( it.m_bml, it.base() ), m_visited( it.end()) {} 
+
+
+      boost::shared_ptr<beamline::post_order_iterator>     m_parent;       
       beamline::iterator                                   m_iter;
-      boost::shared_ptr<beamline::post_order_iterator>     m_subiter_ptr;       // NOTE: incomplete type mandatory due to recursive definition ! 
+      beamline::iterator                                   m_visited;
+
 
       friend class boost::iterator_core_access;
 
      //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
        
-      void increment()
+     void increment()
       {
 
+          ++m_iter; 
 
-	if ( m_subiter_ptr ) {
-      
-          ++(*m_subiter_ptr); 
+          if (  (m_iter == m_iter.end()) &&  (!m_parent) )   return;   
 
-          if( m_subiter_ptr->m_iter != m_subiter_ptr->m_iter.end() ) return;
+          if (  (m_iter == m_iter.end()) &&  ( m_parent) )  {  
+
+            post_order_iterator up( *m_parent ); 
+            std::swap(*this, up); 
+            m_visited = m_iter; 
+            return; 
+          }
+
+	 if ( (typeid(**m_iter) == typeid(beamline)) && ( m_iter != m_visited) ) { 
+	   while ( (typeid(**m_iter) == typeid(beamline)) && ( m_iter != m_visited) )  {  
  
-          m_subiter_ptr      = boost::shared_ptr<beamline::post_order_iterator>(); // null ptr
-          m_sub_end_reached = true; 
-          ++m_iter;
-          return;
+              beamline* bml      = static_cast<beamline*>(*m_iter);
+              m_visited = m_iter;  
+              post_order_iterator 
+                  down( boost::shared_ptr<beamline::post_order_iterator>( new post_order_iterator(*this) ),  bml->begin() ); 
+              std::swap(*this, down); 
+  
+           }
+           return; 
+         }
 
-       } 
-              
 
-        if (m_sub_end_reached) { m_sub_end_reached = false; ++m_iter; return; }
- 
-        beamline::iterator next = m_iter; ++next;
-        if( next == next.end() ) {
-          ++m_iter;  
-	  return;
-        }
- 
+	  return; 
 
-        if( typeid(**next) == typeid(beamline) )  { // NOTE: need to dereference twice in order for typeid test to work !
-	    beamline* bml = static_cast<beamline*>(*next);
-            m_subiter_ptr    
-               = boost::shared_ptr<beamline::post_order_iterator>( new post_order_iterator( bml->begin() ));
-            return;
-        } 
+      } // void increment() 
 
-        ++m_iter; 
-       
-     	 
-
-      }// void increment() 
 
      //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
       void decrement()
       {
 
+	if ( m_iter == m_iter.end() ) { 
+          --m_iter;
+          return;
+        }
+	
 
-	if ( m_subiter_ptr ) {
-        
-          if( (m_subiter_ptr->m_iter ==  (m_subiter_ptr->m_iter).begin())  &&  !(m_subiter_ptr->m_subiter_ptr) ) { 
-              m_subiter_ptr = boost::shared_ptr<beamline::post_order_iterator>(); // null ptr
-              m_sub_end_reached = true;  
-	  }  else  {
-             --(*m_subiter_ptr);
-          }         
+        if( (typeid(**m_iter)==typeid(beamline))  && (m_iter != m_visited) )  {
+           beamline* bml      = static_cast<beamline*>(*m_iter);
+           post_order_iterator down( boost::shared_ptr<beamline::post_order_iterator>( new post_order_iterator(*this) ), 
+                                     --(bml->end()) ); 
+           std::swap(*this, down); 
+           return;
+        } 
 
-	return; 
+        while ( (m_iter == m_iter.begin()) && (m_parent) ) {
+          
+          if ( (typeid(**m_iter)==typeid(beamline))  && (m_iter != m_visited) )  {
+              beamline* bml      = static_cast<beamline*>(*m_iter);
+              post_order_iterator down( boost::shared_ptr<beamline::post_order_iterator>( new post_order_iterator(*this) ), 
+                                     --(bml->end()) ); 
+              std::swap(*this, down); 
+              return; 
+          }
 
-	}
+          post_order_iterator up( *m_parent ); 
+          std::swap(*this, up); 
+          m_visited = m_iter; 
 
-       //--------------------------------------------------------------------------------------------------
-       // NOTE: unfortunately, the iterators need to know about their own end() because of the 
-       //       need to detect end() here ! typeid(beamline) in the test below throws an exception 
-       //       when *m_iter is not a valid bmlElmnt* ...      
-       //---------------------------------------------------------------------------------------------------
+        }
 
-      if(  m_sub_end_reached) { m_sub_end_reached = false; --m_iter; return;}
- 
-      if(  m_iter == m_iter.end() ) { 
-         --m_iter; 
-         return;
-       }
- 
-       beamline::iterator next = m_iter; --next;
+	--m_iter;
 
-       if(  typeid( **next) == typeid(beamline) )  { 
-            beamline* bml  = static_cast<beamline*>(*next); 
-            m_subiter_ptr    
-	      = boost::shared_ptr<beamline::post_order_iterator>(new post_order_iterator( --(bml->end()) ));
-            
-       }
-   
-      --m_iter; 
-   
- 
+	if ( (typeid(**m_iter) == typeid(beamline)) && (m_iter != m_visited) ) {
+           beamline* bml      = static_cast<beamline*>(*m_iter);
+           post_order_iterator down( boost::shared_ptr<beamline::post_order_iterator>( new post_order_iterator(*this) ), 
+                                     --(bml->end()) ); 
+           std::swap(*this, down); 
+           return;
+        }
+
+        while ( (typeid(**m_iter)==typeid(beamline))  && (m_iter == m_visited) ) --m_iter;
+
+        return; 
+             
       }// void decrement() 
 
      //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
       bool equal( beamline::post_order_iterator const& other) const {
+         
+	if (  (m_iter == m_iter.end() ) || ( other.m_iter == other.m_iter.end() ) ) {
+            if ( m_iter   ==  other.m_iter ) return true; 
+            else                             return false;
+        }
 
-        if ( m_subiter_ptr && !other.m_subiter_ptr ) return false;   
 
-        if ( m_subiter_ptr ) 
-           return ( ( m_iter == other.m_iter ) && (  (*m_subiter_ptr) == (*other.m_subiter_ptr)  ) );  
-        return ( (m_iter == other.m_iter) ); 
+	if ( *m_iter      !=  *(other.m_iter) )     return false;
+
+        if ( !m_parent    &&   other.m_parent   )   return false;
+        if (  m_parent    &&  (!other.m_parent) )   return false;
+        if ( !m_parent    &&  (!other.m_parent) )   return true;
+        if ( **m_parent   !=  **other.m_parent  )   return false;
+
+        return true;
       }
 
      //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
      bmlnElmnt*& dereference() const { 
-        return  ( m_subiter_ptr ) ?  *(*m_subiter_ptr) : *m_iter;
-       }
+        return  *m_iter;
+     }
     
      //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-
-   };
+ };
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // 
@@ -490,8 +499,13 @@
        deep_iterator( deep_iterator const& dit) 
               : deep_iterator::iterator_adaptor_(dit) {}
 
-       deep_iterator( pre_order_iterator const& dit) 
-              : deep_iterator::iterator_adaptor_(dit) {}
+       deep_iterator( pre_order_iterator const& pit) 
+              : deep_iterator::iterator_adaptor_(pit) 
+        {
+	  if (  pit.m_iter  == pit.m_iter.end() )      return; 
+	  if ( typeid(***this) ==  typeid(beamline)  ) increment(); 
+        }
+
 
 
     private:
@@ -500,33 +514,33 @@
 
 
        void increment() {
-        
+
 	 base_reference().increment();  
 
-         if ( *(base().m_iter_ptr) == base().m_iter_ptr->end() ) {
+         if ( base().m_iter  == base().m_iter.end() ) {
 	    return;
          }
 
-         if ( typeid(***this) == typeid(beamline) ) 
+         while ( typeid(***this) == typeid(beamline) ) { 
             increment(); // skip beamlines 
          }
+       }   
 
        void decrement() {
-        
+
 	 base_reference().decrement();  
 
-         if ( *base().m_iter_ptr == base().m_iter_ptr->end() ) {
-	    std::cerr << " decrement reached end of beamline ! " << std::endl;
+         if ( base().m_iter == base().m_iter.end() ) {
 	    return;
          }
 
-         if ( typeid(***this) == typeid(beamline) ) {
-	    std::cerr << " found beamline: " << (**this)->Name() << std::endl; 
-            decrement(); // skip beamlines 
+         while ( typeid(***this) == typeid(beamline) ) {
+	   if (base().m_iter == base().m_iter.begin()) break;  
+            decrement();  
          }
        }
 
-    };
+};
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
