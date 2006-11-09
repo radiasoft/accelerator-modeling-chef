@@ -57,6 +57,13 @@
 class BmlPtrList;
 class slist;
 
+class beamline;
+
+beamline& operator-( beamline const& );
+
+// --------------------------------------------------------------------------------------------------
+
+
 class beamline: public bmlnElmnt {
 
  friend class BmlVisitor;
@@ -211,7 +218,7 @@ public:
   //beamline& operator+( beamline& );
   //beamline& operator-( beamline& );
 
-  friend beamline& operator-( beamline& );
+  friend beamline& operator-( beamline const& );
 
 
   int startAt( const bmlnElmnt*,     // Resets the "beginning" of the
@@ -459,32 +466,41 @@ public:
     class const_deep_iterator;
     class const_reverse_deep_iterator;
 
-    beamline::iterator begin()                        
-                      { return beamline::iterator(this, _theList.begin());      } 
-    beamline::iterator end()                          
-                      { return beamline::iterator(this, _theList.end()  );      }   
+
+    beamline::iterator begin() const
+                      { beamline* self = const_cast<beamline*>(this);
+                        return beamline::iterator(self, self->_theList.begin());       
+                      }
+    beamline::iterator end()   const
+                      { beamline* self = const_cast<beamline*>(this);
+                        return beamline::iterator(self, self->_theList.end()  );      
+                      }   
   
-    beamline::reverse_iterator rbegin()               
-                      { return beamline::iterator(this, _theList.end()   );     } 
-    beamline::reverse_iterator rend()                 
-                      { return beamline::iterator(this, _theList.begin() );     }   
+    beamline::reverse_iterator rbegin() const        
+                      { beamline* self = const_cast<beamline*>(this);
+                        return beamline::iterator(self, self->_theList.end()   );     
+                      } 
+    beamline::reverse_iterator rend()   const               
+                      { beamline* self = const_cast<beamline*>(this);
+                        return beamline::iterator(self, self->_theList.begin() );     
+                      }   
    
     beamline::pre_order_iterator pre_begin()          
                       { return beamline::pre_order_iterator(beamline::iterator(this, _theList.begin() )); } 
     beamline::pre_order_iterator pre_end()            
                       { return beamline::pre_order_iterator(beamline::iterator(this, _theList.end()   )); }   
  
-    beamline::reverse_pre_order_iterator rpre_begin() 
+    beamline::reverse_pre_order_iterator rpre_begin()  
                       { return beamline::pre_order_iterator(beamline::iterator(this, _theList.end()   )); } 
     beamline::reverse_pre_order_iterator rpre_end()   
                       { return beamline::pre_order_iterator(beamline::iterator(this, _theList.begin() )); }   
 
     beamline::post_order_iterator post_begin() 
                       { return beamline::post_order_iterator(beamline::iterator(this, _theList.begin()   )); } 
-    beamline::post_order_iterator post_end()   
+    beamline::post_order_iterator post_end()     
                       { return beamline::post_order_iterator(beamline::iterator(this, _theList.end()     )); }   
 
-    beamline::reverse_post_order_iterator rpost_begin() 
+    beamline::reverse_post_order_iterator rpost_begin()  
                       { return beamline::post_order_iterator(beamline::iterator(this, _theList.end()   )); } 
     beamline::reverse_post_order_iterator rpost_end()   
                       { return beamline::post_order_iterator(beamline::iterator(this, _theList.begin() )); }   
@@ -494,9 +510,9 @@ public:
     beamline::deep_iterator deep_end()   
                       { return beamline::deep_iterator(beamline::pre_order_iterator(beamline::iterator(this, _theList.end()   ))); }   
 
-    beamline::reverse_deep_iterator rdeep_begin() 
+    beamline::reverse_deep_iterator rdeep_begin()  
                       { return beamline::deep_iterator( beamline::pre_order_iterator(beamline::iterator(this, _theList.end()  ))); } 
-    beamline::reverse_deep_iterator rdeep_end()   
+    beamline::reverse_deep_iterator rdeep_end()    
                       { return beamline::deep_iterator( beamline::pre_order_iterator(beamline::iterator(this, _theList.begin() ))); }   
 
 
