@@ -48,7 +48,6 @@
 #include <beamline/ParticleBunch.h>
 #include <beamline/Aperture.h>
 #include <beamline/beamline.h>
-#include <beamline/BeamlineIterator.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/Alignment.h>
 
@@ -381,24 +380,23 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a )
 
    if( a.p_bml_e ) {
 
-     int count = 0;
-     BeamlineIterator getNext( *(a.p_bml) );
-     bmlnElmnt* q;
-     bool notFound = true;
+     bool found = false;
 
-     while( (q = getNext++) ) {
-       ++count;
-       if( q == a.p_bml_e ) {
-         BeamlineIterator getNext2( *p_bml );
-         for( int i = 0; i < count; ++i) {
-           q = getNext++;
-         }
-         p_bml_e = q;
-         notFound = false;
+     int count = 0;
+
+     beamline::iterator it1  = a.p_bml->begin(); 
+     beamline::iterator it2  =   p_bml->begin(); 
+     for ( ; it1 != a.p_bml->end(); ++it1, ++it2 ) {
+
+       if( (*it1) == a.p_bml_e ) { 
+         p_bml_e == *it2;  
+         found = true;
          break;
-       }
+       } 
+
      }
-     if( notFound ) {
+    
+     if (! found) {  
        p_bml_e = a.p_bml_e->Clone();
        (*pcerr) << "*** WARNING *** \n"
             << "*** WARNING *** bmlnElmnt::bmlnElmnt( const bmlnElmnt& )\n"
@@ -424,6 +422,8 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a )
 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bmlnElmnt::~bmlnElmnt() {
  delete []     ident;
@@ -445,7 +445,7 @@ bmlnElmnt::~bmlnElmnt() {
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-// Begin: basic propagaor functions
+// Begin: basic propagator functions
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 void bmlnElmnt::propagate( Particle& x ) 
@@ -1343,7 +1343,7 @@ double bmlnElmnt::setReferenceTime( double x )
 }
 
 
-void bmlnElmnt::Rename( const char* n ) {
+void bmlnElmnt::rename( const char* n ) {
   delete [] ident;
   if( n ) {
     ident = new char [ strlen(n) + 1 ];
@@ -1412,7 +1412,7 @@ bmlnElmnt* bmlnElmnt::clone() const
 bmlnElmnt* bmlnElmnt::Clone(const char* name) {
   // Clone this bmlnElmnt, changing the name to my argument.
   bmlnElmnt *temp = Clone();
-  temp->Rename(name);
+  temp->rename(name);
   return temp;
 }
 
