@@ -96,10 +96,10 @@ template<typename T>
 class TJLIterator;
 
 template<typename T>
-bool operator==( TJL<T> const& x,      TJL<T> const& y ); 
+bool operator==( TJL<T> const& x,     TJL<T> const& y ); 
 
 template<typename T>
-bool operator==( TJL<T> const& x,           const T& y ); 
+bool operator==( TJL<T> const& x,          const T& y ); 
 
 template<typename T>
 bool operator==( T const&      x,      TJL<T> const& y );
@@ -111,7 +111,7 @@ template<typename T>
 bool operator!=( TJL<T> const& x,           T const& y ); 
 
 template<typename T>
-bool operator!=( T const&      x,      TJL<T> const& y ); 
+bool operator!=( T const&      x,       TJL<T> const& y ); 
 
 template<typename T>
 std::ostream& operator<<( std::ostream& os, TJL<T> const& x ); 
@@ -135,7 +135,7 @@ template <typename T>
 JLPtr<T>   operator-(JLPtr<T> const & x,  JLPtr<T> const& y  );  
 
 template <typename T>
-JLPtr<T>&  operator-=(JLPtr<T>& x,      JLPtr<T> const& y  );  
+JLPtr<T>&  operator-=(JLPtr<T>& x,        JLPtr<T> const& y  );  
 
 // ..........................................................................
 
@@ -335,9 +335,16 @@ friend class TJLIterator<T>;
          operator/<>( JLPtr<T> const & x,  T const& y  );  
 
 
-  friend JLPtr<double> real( const JLPtr<std::complex<double> > & z ); 
-  friend JLPtr<double> imag( const JLPtr<std::complex<double> > & z );
+  friend JLPtr<double> real( JLPtr<std::complex<double> > const& z ); 
+  friend JLPtr<double> imag( JLPtr<std::complex<double> > const& z );
 
+
+  friend   bool operator==<>( TJL<T>   const& x, TJL<T>  const& y ); 
+  friend   bool operator==<>( TJL<T>   const& x, T       const& y ); 
+  friend   bool operator==<>( T        const& y, TJL<T>  const& x );
+  friend   bool operator!=<>( TJL<T>   const& x, TJL<T>  const& y ); 
+  friend   bool operator!=<>( TJL<T>   const& x, T       const& y ); 
+  friend   bool operator!=<>( T        const& x, TJL<T>  const& y ); 
 
   JLPtr<T> sin()              const;
   JLPtr<T> cos()              const;
@@ -347,24 +354,24 @@ friend class TJLIterator<T>;
   JLPtr<T> sqrt()             const;
   JLPtr<T> exp()              const;
   JLPtr<T> pow(int)           const;
-  JLPtr<T> pow(const double&) const;
+  JLPtr<T> pow(double const&) const;
   JLPtr<T> log()              const;
   JLPtr<T> compose(JLPtr<T> const y[ ]) const; 
-  JLPtr<T> D( const int* n ) const; 
+  JLPtr<T> D( int const* n )  const; 
 
 
-  void setVariable( const T&, const int& );
-  void setVariable( const T& x, const int& j,  EnvPtr<T> const& pje );
-  void setVariable( const int&, EnvPtr<T> const& pje );               
+  void setVariable( T   const&,   int const& );
+  void setVariable( T   const& x, int const& j,  EnvPtr<T> const& pje );
+  void setVariable( int const&,   EnvPtr<T> const& pje );               
 
   T    standardPart()                 const  { return _jltermStore[0]._value; }
   void setStandardPart( T const& std)        { _jltermStore[0]._value = std;  } 
 
-  T weightedDerivative( const int* ) const;
-  T derivative( const int* ) const;
+  T weightedDerivative( int const* ) const;
+  T derivative( int const* )         const;
 
-  T operator()( const Vector& ) const;
-  T operator()( const T* ) const;
+  T operator()( Vector const& ) const;
+  T operator()( T const* )      const;
                        // Performs a multinomial evaluation of
                        // the TJL variable.  Essentially acts as a
                        // power series expansion.
@@ -373,21 +380,16 @@ friend class TJLIterator<T>;
 
   // Arithmetic operators // some of these may no longer be needed ... FIXME !
 
-  TJL& operator=( const TJL& );
-  TJL& operator=( const T& );
+  TJL& operator=( TJL const& );
+  TJL& operator=( T   const& );
 
-  TJL& operator+=( const TJL& );
-  TJL& operator+=( const T& );
+  TJL& operator+=( TJL const& );
+  TJL& operator+=( T   const& );
 
 
-  friend   bool operator==<>( const TJL<T>& x, const TJL<T>& y ); 
-  friend   bool operator==<>( const TJL<T>& x, const T& y ); 
-  friend   bool operator==<>( const T& y, const TJL<T>& x );
-  friend   bool operator!=<>( const TJL<T>& x, const TJL<T>& y ); 
-  friend   bool operator!=<>( const TJL<T>& x, const T& y ); 
-  friend   bool operator!=<>( const T& x, const TJL<T>& y ); 
-  friend   std::ostream& operator<< <T>( std::ostream& os, const TJL<T>& x ); 
-  friend   std::istream& operator>><T>(  std::istream& is,  TJL<T>& x ); 
+
+  friend   std::ostream& operator<< <T>( std::ostream& os,  TJL<T> const& x ); 
+  friend   std::istream& operator>><T>(  std::istream& is,  TJL<T>      & x ); 
 
 
   // Exception subclasses____________________________________________

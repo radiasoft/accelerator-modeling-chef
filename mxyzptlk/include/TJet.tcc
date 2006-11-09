@@ -772,15 +772,14 @@ TJet<T> operator^( TJet<T> const& x, TJet<T> const& y )
 //--------------------------
 
  // Check for consistency 
- if( x->getEnv() != y->getEnv() ) {
+ if( x.Env() != y.Env() ) {
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T> operator^( const TJet<T>&, const TJet<T>& )",
+          "TJet<T> operator^( TJet<T> const&,  TJet<T> const& )",
           "Inconsistent environments." ) );
  }
 
- EnvPtr<double> theEnv;
- theEnv = x.Env();
- TJet<T> z (theEnv);
+ EnvPtr<T> theEnv(x.Env());
+ TJet<T>   z (theEnv);
 
  int*  m = new int [ theEnv->numVar() ];
  int*  n = new int [ theEnv->numVar() ];
@@ -810,7 +809,7 @@ TJet<T> operator^( TJet<T> const& x, TJet<T> const& y )
    delete [] m;
    delete [] n;
    throw( GenericException( __FILE__, __LINE__, 
-          "TJet<T> operator^( const TJet<T>&, const TJet<T>& )",
+          "TJet<T> operator^( TJet<T> const&, TJet<T> const& )",
           "Environment not correct for performing bracket." ) );
  }
 }
