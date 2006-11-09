@@ -79,13 +79,15 @@ void TVector<T>::setDefaultFormat( OutputFormat const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TVector<T>::GenericException::GenericException( const char* fcn, const char* msg ): w( msg ) { }
+TVector<T>::GenericException::GenericException( const char* fcn, const char* msg ){ 
+  w = std::string(fcn) + std::string(msg); 
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-const char* TVector<T>::GenericException::what() const throw()
+char const* TVector<T>::GenericException::what() const throw()
 {
   return strcat( "Vector::GenericException: ", w.c_str() );
 }
@@ -340,7 +342,7 @@ TVector<T> operator- ( TVector<T> const& x ) // unary minus
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TVector<T>  operator* ( TVector<T> const& x,  T c ) 
+TVector<T>  operator* ( TVector<T> const& x,  T const& c ) 
 {
   TVector<T> z( x.Dim() );
 
@@ -358,7 +360,7 @@ TVector<T>  operator* ( TVector<T> const& x,  T c )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TVector<T> operator* ( T c, const TVector<T>& x )
+TVector<T> operator* ( T const& c, TVector<T> const& x )
 {
   return x*c;
 }
@@ -367,7 +369,7 @@ TVector<T> operator* ( T c, const TVector<T>& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TVector<T> TVector<T>::operator*=( T c ) {
+TVector<T> TVector<T>::operator*=( T const& c ) {
 
  typename std::vector<T>::iterator it   =     m_theVector.begin();
  
@@ -383,7 +385,7 @@ TVector<T> TVector<T>::operator*=( T c ) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TVector<T>  TVector<T>::operator/ ( T c ) const
+TVector<T>  TVector<T>::operator/ ( T const& c ) const
 {
  TVector z( Dim() );
 
@@ -401,7 +403,7 @@ TVector<T>  TVector<T>::operator/ ( T c ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TVector<T> TVector<T>::operator/=( T c ) {
+TVector<T> TVector<T>::operator/=( T const& c ) {
 
  typename std::vector<T>::iterator it   =     m_theVector.begin();
  
@@ -417,7 +419,7 @@ TVector<T> TVector<T>::operator/=( T c ) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TVector<T> TVector<T>::operator^ ( const TVector<T>& x ) const
+TVector<T> TVector<T>::operator^ ( TVector<T> const& x ) const
 {
 #ifndef NOCHECKS
   CHECKOUT(( Dim() != 3) || ( x.Dim() != 3 ),
@@ -450,7 +452,7 @@ bool TVector<T>::operator== ( TVector<T> const& x ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool TVector<T>::operator!= ( const TVector<T>& x ) const
+bool TVector<T>::operator!= ( TVector<T> const& x ) const
 {
   return !( *this == x  );
 }
@@ -584,7 +586,7 @@ bool TVector<T>::IsUnit() const
 
 
 template<typename T>
-void TVector<T>::Rotate ( TVector& v, double theta ) const
+void TVector<T>::Rotate ( TVector& v, double const& theta ) const
 {
 #ifndef NOCHECKS
   CHECKOUT(( Dim() != 3) || ( v.Dim() != 3 ),

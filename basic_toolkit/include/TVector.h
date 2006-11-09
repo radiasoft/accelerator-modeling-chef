@@ -59,16 +59,16 @@ template<typename T>
 class TMatrix;
 
 template<typename T> 
-std::ostream& operator<<( std::ostream& , const TVector<T>& );
+std::ostream& operator<<( std::ostream& , TVector<T> const& );
 
 template<typename T>
-TVector<T> operator-( const TVector<T>& );
+TVector<T> operator-( TVector<T> const& );
 
 template<typename T>
-TVector<T> operator*( T, const TVector<T>& );
+TVector<T> operator*( T          const&, TVector<T> const& );
 
 template<typename T>
-TVector<T> operator*( const TVector<T>&, T );
+TVector<T> operator*( TVector<T> const&,          T const&);
 
 
 template<typename T>
@@ -108,8 +108,8 @@ public:
 
 
   friend  TVector<T> operator-<T>( TVector const& );  // unary minus 
-  friend  TVector<T> operator*<T>( T,                 TVector const&    );
-  friend  TVector<T> operator*<T>( TVector const&,    T                 ); 
+  friend  TVector<T> operator*<T>( T const&,          TVector const&    );
+  friend  TVector<T> operator*<T>( TVector const&,          T const&    ); 
 
 
   TVector          operator+      ( TVector const& ) const;
@@ -118,9 +118,9 @@ public:
   TVector          operator-      ( TVector const& ) const; 
   TVector&         operator-=     ( TVector const& ); 
 
-  TVector          operator*=     (       T        );
-  TVector          operator/      (       T        ) const;
-  TVector          operator/=     (       T        );
+  TVector          operator*=     (       T const&       );
+  TVector          operator/      (       T const&       ) const;
+  TVector          operator/=     (       T const&       );
 
   T         operator*       ( TVector<T> const&  ) const; // dot product
  
@@ -154,7 +154,7 @@ public:
   TVector      Abs              () const;
   double       Norm             () const;
   TVector      Unit             () const;           // returns unit vector
-  void         Rotate           ( TVector& v, double  theta ) const;
+  void         Rotate           ( TVector& v, double const&  theta ) const;
                                                    // rotates v through 
                                                    // an angle theta using
                                                    // *this as the axis
