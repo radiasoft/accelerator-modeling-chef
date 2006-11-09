@@ -43,8 +43,14 @@
 #include <basic_toolkit/iosetup.h>
 #include <beamline/beamline.h>
 #include <beamline/combinedFunction.h>
-#include <beamline/BeamlineIterator.h>
 #include <beamline/Particle.h>
+#include <beamline/sbend.h>
+#include <beamline/rbend.h>
+#include <beamline/quadrupole.h>
+#include <beamline/sextupole.h>
+#include <beamline/octupole.h>
+#include <beamline/decapole.h>
+#include <beamline/thinpoles.h>
 
 using namespace std;
 
@@ -104,20 +110,23 @@ void combinedFunction::append(bmlnElmnt& x) {
 void combinedFunction::setField( bmlnElmnt::CRITFUNC crit, 
                                  double s )
 {
-  DeepBeamlineIterator dbi( *p_bml );
-  bmlnElmnt* element;
-  double newstrength;
+
   slist  foundElements;
 
-  while((  element = dbi++  )) {
-    if( crit( element ) ) foundElements.append( element );
+  for (beamline::deep_iterator it= p_bml->deep_begin();
+                               it !=  p_bml->deep_end(); ++it ) {
+    if( crit( *it ) ) foundElements.append( *it );
   }
 
+  double newstrength = 0.0;
   if( foundElements.size() > 0 ) {
     newstrength = s/( (double) foundElements.size() );
     slist_iterator getNext( foundElements );
+
+    bmlnElmnt* element;
+  
     while((  element = (bmlnElmnt*) getNext()  )) {
-      if( 0 == strcmp( "combinedFunction", element->Type() ) ) {
+      if( typeid(*element) == typeid(combinedFunction) ) {
         ((combinedFunction*) element)->setField( crit, newstrength );
       }
       else {
@@ -127,185 +136,212 @@ void combinedFunction::setField( bmlnElmnt::CRITFUNC crit,
   }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void combinedFunction::setField(WHICH_MULTIPOLE mult, double field) {
-  DeepBeamlineIterator dbi( *p_bml );
+
   bmlnElmnt* element;
+ 
   double newstrength;
   slist  foundElements;
 
-  while((  element = dbi++  )) 
-  {
+  for (beamline::deep_iterator it= p_bml->deep_begin();
+                               it !=  p_bml->deep_end(); ++it ) {
+    element = *it; 
+
     switch (mult) {
+
     case DIPOLE_FIELD:
-      if(strcasecmp(element->Type(),"sbend") == 0 ||
-	 strcasecmp(element->Type(),"rbend") == 0 )
-	foundElements.append( element );
+      if( (typeid(*element) == typeid(sbend)) ||
+          (typeid(*element) == typeid(rbend))    ) {
+ 	       foundElements.append( element );
+      }
       break;
     case QUADRUPOLE_FIELD:
-      if(strcasecmp(element->Type(),"quadrupole") == 0 ||
-	 strcasecmp(element->Type(),"thinQuad") == 0 )
+      if(     (typeid(*element) == typeid(quadrupole)  ) 
+	      || (typeid(*element) == typeid(thinQuad) ) ) {
 	foundElements.append( element );
+      }
       break;
     case SEXTUPOLE_FIELD:
-      if(strcasecmp(element->Type(),"sextupole") == 0 ||
-	 strcasecmp(element->Type(),"thinSextupole") == 0 )
+      if(   (typeid(*element) == typeid(sextupole)     )
+	 || (typeid(*element) == typeid(thinSextupole )) ) {
 	foundElements.append( element );
+      }
       break;
     case OCTUPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thinOctupole") == 0 )
+      if( typeid(*element) == typeid(thinOctupole) ) 
 	foundElements.append( element );
       break;
     case DECAPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thinDecapole") == 0 )
+      if( typeid(*element) == typeid(thinDecapole) )
 	foundElements.append( element );
       break;
     case TWELVEPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin12pole") == 0 )
+      if( typeid(*element) == typeid(thin12pole) )
 	foundElements.append( element );
       break;
     case FOURTEENPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin14pole") == 0 )
+      if( typeid(*element) == typeid(thin14pole) )
 	foundElements.append( element );
       break;
     case SIXTEENPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin16pole") == 0 )
+      if( typeid(*element) == typeid(thin16pole) )
 	foundElements.append( element );
       break;
     case EIGHTEENPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin18pole") == 0 )
+      if( typeid(*element) == typeid(thin18pole) )
 	foundElements.append( element );
       break;
     default:
       break;
-    }
-  }
+    } //switch
+  }// for
+
 
   if( foundElements.size() > 0 ) {
     newstrength = field/( (double) foundElements.size() );
     slist_iterator getNext( foundElements );
-    while((  element = (bmlnElmnt*) getNext()  )) {
-      if( 0 == strcmp( "combinedFunction", element->Type() ) ) {
-        ((combinedFunction*) element)->setField( mult, newstrength );
-      }
-      else {
-        element->setStrength( newstrength );
-      }
-    }
-  }
+
+     while((  element = (bmlnElmnt*) getNext()  )) {
+         if(  typeid(*element) == typeid(combinedFunction) ) {
+                ((combinedFunction*) element)->setField( mult, newstrength );
+         }
+         else {
+           element->setStrength( newstrength );
+         }
+     }// while
+  } // if
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double combinedFunction::Field(WHICH_MULTIPOLE mult) {
-  DeepBeamlineIterator dbi( *p_bml );
+
   bmlnElmnt* element;
   double multStrength = 0.0;
 
-  while((  element = dbi++  )) 
+  for (beamline::deep_iterator it= p_bml->deep_begin();
+                               it !=  p_bml->deep_end(); ++it ) 
   {
+    element = *it;
+
     switch (mult) {
+
     case DIPOLE_FIELD:
-      if(strcasecmp(element->Type(),"sbend") == 0 ||
-	 strcasecmp(element->Type(),"rbend") == 0 ) {
+      if(  (typeid(*element) == typeid(sbend) ) 
+	 ||(typeid(*element) == typeid(rbend) ) ) {
 	multStrength += element->Strength();
       }
       break;
     case QUADRUPOLE_FIELD:
-      if(strcasecmp(element->Type(),"quadrupole") == 0 ||
-	 strcasecmp(element->Type(),"thinQuad") == 0 ) {
+      if(   (typeid(*element) == typeid(quadrupole) )
+         || (typeid(*element) == typeid(thinQuad)   )  ){
 	multStrength += element->Strength();
       }
       break;
     case SEXTUPOLE_FIELD:
-      if(strcasecmp(element->Type(),"sextupole") == 0 ||
-	 strcasecmp(element->Type(),"thinSextupole") == 0 ) {
+      if(     ( typeid(*element) == typeid(sextupole)     )
+	   || ( typeid(*element) == typeid(thinSextupole) ) ) {
 	multStrength += element->Strength();
-      }
+     }
       break;
     case OCTUPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thinOctupole") == 0 ) {
+      if(typeid(*element) == typeid(thinOctupole) ) {
 	multStrength += element->Strength();
       }
       break;
     case DECAPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thinDecapole") == 0 ) {
+      if(typeid(*element) == typeid(thinDecapole) ) {
 	multStrength += element->Strength();
       }
       break;
     case TWELVEPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin12pole") == 0 ) {
+      if(typeid(*element) == typeid(thin12pole) ) {
 	multStrength += element->Strength();
       }
       break;
     case FOURTEENPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin14pole") == 0 ) {
+      if(typeid(*element) == typeid(thin14pole) ) {
 	multStrength += element->Strength();
       }
       break;
     case SIXTEENPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin16pole") == 0 ) {
+      if(typeid(*element) == typeid(thin16pole) ) {
 	multStrength += element->Strength();
       }
       break;
     case EIGHTEENPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin18pole") == 0 ) {
+      if( typeid(*element) == typeid(thin18pole) ) {
 	multStrength += element->Strength();
       }
       break;
     default:
       break;
-    }
-  }
+    } // switch
+  } //for
 
   return multStrength;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void combinedFunction::setSkew(WHICH_MULTIPOLE mult, alignmentData& alignD) {
-  DeepBeamlineIterator dbi( *p_bml );
+
   bmlnElmnt* element;
 
-  while((  element = dbi++  )) 
+  for (beamline::deep_iterator it= p_bml->deep_begin();
+                               it !=  p_bml->deep_end(); ++it ) 
   {
+    element = *it; 
+
     switch (mult) {
     case DIPOLE_FIELD:
-      if(strcasecmp(element->Type(),"sbend") == 0 ||
-	 strcasecmp(element->Type(),"rbend") == 0 )
+      if(  (typeid(*element) == typeid(sbend) )
+        || (typeid(*element) == typeid(rbend) ) ) {
 	element->setAlignment(alignD);
+      }
       break;
     case QUADRUPOLE_FIELD:
-      if(strcasecmp(element->Type(),"quadrupole") == 0 ||
-	 strcasecmp(element->Type(),"thinQuad") == 0 )
+      if(   (typeid(*element) == typeid(quadrupole) )
+         || (typeid(*element) == typeid(thinQuad)   ) ) {
 	element->setAlignment(alignD);
+      }
       break;
     case SEXTUPOLE_FIELD:
-      if(strcasecmp(element->Type(),"sextupole") == 0 ||
-	 strcasecmp(element->Type(),"thinSextupole") == 0 )
+      if(    (typeid(*element) == typeid(sextupole)    ) 
+          || (typeid(*element) == typeid(thinSextupole)) ) {
 	element->setAlignment(alignD);
+      }
       break;
     case OCTUPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thinOctupole") == 0 )
+      if( typeid(*element) == typeid(thinOctupole))
 	element->setAlignment(alignD);
       break;
     case DECAPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thinDecapole") == 0 )
+      if( typeid(*element) == typeid(thinDecapole))
 	element->setAlignment(alignD);
       break;
     case TWELVEPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin12pole") == 0 ) {
+      if( typeid(*element) == typeid(thin12pole) ){
 	element->setAlignment(alignD);
       }
       break;
     case FOURTEENPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin14pole") == 0 ) {
+      if(typeid(*element) == typeid(thin14pole) ){
 	element->setAlignment(alignD);
       }
       break;
     case SIXTEENPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin16pole") == 0 ) {
+      if(typeid(*element) == typeid(thin16pole) ){
 	element->setAlignment(alignD);
       }
       break;
     case EIGHTEENPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin18pole") == 0 ) {
+      if(typeid(*element) == typeid(thin18pole) ){
 	element->setAlignment(alignD);
       }
       break;
@@ -315,70 +351,76 @@ void combinedFunction::setSkew(WHICH_MULTIPOLE mult, alignmentData& alignD) {
   }
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 alignmentData combinedFunction::Skew(WHICH_MULTIPOLE mult) {
 
-  BeamlineIterator getNext(*p_bml);
   bmlnElmnt* element;
   alignmentData alignD;
-  int foundIt = 0;
+  bool foundIt = false;
 
-  while( (element = getNext++) != 0 && foundIt == 0) {
+  for (beamline::deep_iterator it  = p_bml->deep_begin();
+                               it !=  p_bml->deep_end(); ++it ) {
+ 
+    if ( foundIt ) break;
+
     switch (mult) {
     case DIPOLE_FIELD:
-      if(strcasecmp(element->Type(),"sbend") == 0 ||
-	 strcasecmp(element->Type(),"rbend") == 0 ) {
+      if(  (typeid(*element) == typeid(sbend) )
+        || (typeid(*element) == typeid(rbend) ) ) {
 	alignD = element->Alignment();
-	foundIt = 1;
+	foundIt = true;
       }
       break;
     case QUADRUPOLE_FIELD:
-      if(strcasecmp(element->Type(),"quadrupole") == 0 ||
-	 strcasecmp(element->Type(),"thinQuadrupole") == 0 ) {
+      if(  ( typeid(*element) == typeid(quadrupole)     ) 
+        || ( typeid(*element) == typeid(thinQuad) ) ) {
 	alignD = element->Alignment();
-	foundIt = 1;
+	foundIt = true;
       }
       break;
     case SEXTUPOLE_FIELD:
-      if(strcasecmp(element->Type(),"sextupole") == 0 ||
-	 strcasecmp(element->Type(),"thinSextupole") == 0 ) {
+      if(   ( typeid(*element) == typeid(sextupole)       ) 
+         || ( typeid(*element) == typeid(thinSextupole)   ) ) {
 	alignD = element->Alignment();
-	foundIt = 1;
+	foundIt = true;
       }
       break;
     case OCTUPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thinOctupole") == 0 ) {
+      if(typeid(*element) == typeid(thinOctupole)) {
 	alignD = element->Alignment();
-	foundIt = 1;
+	foundIt = true;
       }
       break;
     case DECAPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thinDecapole") == 0 ) {
+      if(typeid(*element) == typeid(thinDecapole)) {
 	alignD = element->Alignment();
-	foundIt = 1;
+	foundIt = true;
       }
       break;
     case TWELVEPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin12pole") == 0 ) {
+      if(typeid(*element) == typeid(thin12pole)) {
 	alignD = element->Alignment();
-	foundIt = 1;
+	foundIt = true;
       }
       break;
     case FOURTEENPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin14pole") == 0 ) {
+      if(typeid(*element) == typeid(thin14pole)) {
 	alignD = element->Alignment();
-	foundIt = 1;
+	foundIt = true;
       }
       break;
     case SIXTEENPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin16pole") == 0 ) {
+      if(typeid(*element) == typeid(thin16pole)) {
 	alignD = element->Alignment();
-	foundIt = 1;
+	foundIt = true;
       }
       break;
     case EIGHTEENPOLE_FIELD:
-      if(strcasecmp(element->Type(),"thin18pole") == 0 ) {
+      if(typeid(*element) == typeid(thin18pole)) {
 	alignD = element->Alignment();
-	foundIt = 1;
+	foundIt = true;
       }
       break;
     default:
@@ -388,11 +430,17 @@ alignmentData combinedFunction::Skew(WHICH_MULTIPOLE mult) {
   return alignD;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 ostream& combinedFunction::writeTo(ostream& os) {
   os << *p_bml;
   os << "combinedFunction_END " << ident << " 0 0 0 0 0\n";
   return os;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 istream& combinedFunction::readFrom(istream& is)
 {
@@ -409,17 +457,26 @@ istream& combinedFunction::readFrom(istream& is)
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 const char* combinedFunction::Type() const 
 { 
   return "combinedFunction"; 
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool combinedFunction::isMagnet() const
 {
   return true;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double combinedFunction::AdjustPosition( const Particle& arg_p )
 {
@@ -430,6 +487,9 @@ double combinedFunction::AdjustPosition( const Particle& arg_p )
   return ret;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double combinedFunction::AdjustPosition( const JetParticle& arg_jp )
 {
