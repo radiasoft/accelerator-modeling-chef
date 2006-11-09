@@ -129,18 +129,19 @@ void quadrupole::setStrength( double s ) {
 
  if( p_bml != 0 ) 
  {
-   double counter = 0.0;
-   BeamlineIterator bi( *p_bml );
-   bmlnElmnt* q;
-   while( 0 != ( q = bi++  ) ) {
-     if( 0 == strcmp( q->Type(), "thinQuad" ) )  counter++;
+   int counter = 0;
+
+   for ( beamline::iterator it  = p_bml->begin();
+	                    it != p_bml->end(); ++it ) {
+     if( typeid(**it) == typeid(thinQuad ) )  ++counter;
    }
+
    if( counter <= 0.0 ) {
      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
             "void quadrupole::setStrength( double s ) {", 
             "No thin quads in the internal beamline." ) );
    }
-   else if( counter == 1.0 ) {
+   else if( counter == 1) {
      if(p_bml_e != 0) 
      {
        p_bml_e->setStrength( integratedStrength );
@@ -153,16 +154,19 @@ void quadrupole::setStrength( double s ) {
      }
    }
    else {
-     bi.reset();
-     while( 0 != ( q = bi++  ) ) {
-       if( 0 == strcmp( q->Type(), "thinQuad" ) ) {
-         q->setStrength( integratedStrength/counter );
+
+       for ( beamline::iterator it  = p_bml->begin();
+	                    it != p_bml->end(); ++it ) {
+       if( typeid(**it) == typeid(thinQuad) ) {
+           (*it)->setStrength( integratedStrength/counter );
        }
      }
    }
  }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void quadrupole::releasePropFunc()
 {
@@ -175,6 +179,8 @@ void quadrupole::releasePropFunc()
   Propagator = 0;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 void quadrupole::setupPropFunc()
@@ -239,11 +245,11 @@ void quadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 
   strcpy( newname, ident );
   strcat( newname, "_1" );
-  (*a)->Rename( newname );
+  (*a)->rename( newname );
 
   strcpy( newname, ident );
   strcat( newname, "_2" );
-  (*b)->Rename( newname );
+  (*b)->rename( newname );
 
   delete [] newname;
 }
