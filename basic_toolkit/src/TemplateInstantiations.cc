@@ -102,11 +102,11 @@ template double TVector<std::complex<double> >::Norm() const;
 template TVector<double> operator-(TVector<double> const&);
 template TVector<std::complex<double> > operator-(TVector<std::complex<double> > const&);
 
-template TVector<double> operator*<double>(TVector<double> const&, double);
-template TVector<double> operator*<double>(double, TVector<double> const&);
+template TVector<double> operator*<double>(TVector<double> const&,          double const&);
+template TVector<double> operator*<double>(         double const&, TVector<double> const&);
 
-template TVector<std::complex<double> > operator*(std::complex<double>, TVector<std::complex<double> > const&);
-template TVector<std::complex<double> > operator*(TVector<std::complex<double> > const&, std::complex<double>);
+template TVector<std::complex<double> > operator*(          std::complex<double> const&, TVector<std::complex<double> > const&);
+template TVector<std::complex<double> > operator*(TVector<std::complex<double> > const&,           std::complex<double> const&);
 
 template std::ostream& operator<<(std::ostream&, TVector<double> const&);
 template std::ostream& operator<<(std::ostream&, TVector<std::complex<double> > const&);
@@ -122,21 +122,21 @@ template class TMatrix<std::complex<double> >;
 //template class TMatrix<int>;  // This should not be used at all, 
                                 // but apparently it is ... 
 
-template bool operator==( const TMatrix<double>&, const TMatrix<double>& );
-template bool operator==( const TMatrix<double>&, const double& );
-template bool operator==( const double&, const TMatrix<double>& );
-template std::ostream& operator<<(std::ostream&, const TMatrix<double>&);
+template bool operator==( const TMatrix<double>&, TMatrix<double> const& );
+template bool operator==( const TMatrix<double>&,          double const& );
+template bool operator==( double const&,          TMatrix<double> const& );
+template std::ostream& operator<<(std::ostream&,  TMatrix<double> const& );
 
-template TMatrix<double> operator+(const TMatrix<double>&, const TMatrix<double>&);
-template TMatrix<double> operator+(const TMatrix<double>&, const double&); 
-template TMatrix<double> operator+(const double&,          const TMatrix<double>&); 
-template TMatrix<double> operator-(const TMatrix<double>&); 
-template TMatrix<double> operator-(const TMatrix<double>&, const TMatrix<double>&); 
-template TMatrix<double> operator-(const TMatrix<double>&, const double&); 
-template TMatrix<double> operator-(const double&,          const TMatrix<double>&); 
-template TMatrix<double> operator*(const TMatrix<double>&, const TMatrix<double>&); 
-template TMatrix<double> operator*(const TMatrix<double>&, const double&);
-template TMatrix<double> operator*(const double&,          const TMatrix<double>&);
+template TMatrix<double> operator+(TMatrix<double> const&, TMatrix<double> const&);
+template TMatrix<double> operator+(TMatrix<double> const&, double const&); 
+template TMatrix<double> operator+(         double const&, TMatrix<double> const&); 
+template TMatrix<double> operator-(TMatrix<double> const&); 
+template TMatrix<double> operator-(TMatrix<double> const&, TMatrix<double> const&); 
+template TMatrix<double> operator-(TMatrix<double> const&, double          const&); 
+template TMatrix<double> operator-(         double const&, TMatrix<double> const&); 
+template TMatrix<double> operator*(TMatrix<double> const&, TMatrix<double> const&); 
+template TMatrix<double> operator*(TMatrix<double> const&,          double const&);
+template TMatrix<double> operator*(         double const&, TMatrix<double> const&);
 template TMatrix<double> operator*(TMatrix<double> const&, TVector<double> const&);
 
 
