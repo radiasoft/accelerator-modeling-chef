@@ -349,7 +349,7 @@ const char* BeamlineContext::name() const
 
 void BeamlineContext::rename( const char* newname )
 {
-  _p_bml->Rename( newname );
+  _p_bml->rename( newname );
 }
 
 

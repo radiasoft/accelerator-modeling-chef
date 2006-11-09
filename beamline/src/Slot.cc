@@ -511,11 +511,11 @@ void Slot::Split( double pct, bmlnElmnt** a, bmlnElmnt** b ) const
 
   strcpy( newname, ident );
   strcat( newname, "_1" );
-  (*a)->Rename( newname );
+  (*a)->rename( newname );
 
   strcpy( newname, ident );
   strcat( newname, "_2" );
-  (*b)->Rename( newname );
+  (*b)->rename( newname );
 
   delete [] newname;
 }

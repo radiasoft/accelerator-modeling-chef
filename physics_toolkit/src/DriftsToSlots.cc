@@ -665,7 +665,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
 
   // Final manipulations
   ret->setEnergy( original.Energy() );
-  ret->Rename( original.Name() );
+  ret->rename( original.Name() );
   ret->setLineMode( original.getLineMode() );
   return ret;
 }

@@ -56,7 +56,7 @@ struct bmlnElmntWrap : bmlnElmnt {
     void   setStrength(double);
     void   setStrength(double,int);
     void   setCurrent(double);
-    void   Rename(const char* name);
+    void   rename(const char* name);
     double getReferenceTime() const;
     double setReferenceTime( double );
     double Current();
@@ -82,8 +82,8 @@ call_method<void>(_self, "setStrength"); }
 void bmlnElmntWrap::setCurrent(double){ 
 call_method<void>(_self, "setCurrent"); }
 
-void bmlnElmntWrap::Rename(const char* name){ 
-call_method<void>(_self, "Rename"); }
+void bmlnElmntWrap::rename(const char* name){ 
+call_method<void>(_self, "rename"); }
 
 double  bmlnElmntWrap::getReferenceTime() const {
 return call_method<double>(_self, "getReferenceTime"); }
@@ -160,7 +160,7 @@ void wrap_bmlnelmnt() {
     .def("setStrength",              setStrength1)
     .def("setCurrent",               &bmlnElmnt::setCurrent)
     .def("Name",                     &bmlnElmnt::Name)
-    .def("Rename",                   &bmlnElmnt::Rename)
+    .def("rename",                   &bmlnElmnt::rename)
     .def("getReferenceTime",         &bmlnElmnt::getReferenceTime)
     .def("setReferenceTime",         setReferenceTime1)
     .def("setReferenceTime",         setReferenceTime2)
