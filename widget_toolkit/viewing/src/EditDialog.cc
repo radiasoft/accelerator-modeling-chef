@@ -96,7 +96,7 @@ void editDialog::visitBeamline( beamline* x )
 
   if( returnCode == QDialog::Accepted ) {
     if( sts != qlePtr->text() ) {
-      x->Rename( (qlePtr->text()).latin1() );
+      x->rename( (qlePtr->text()).latin1() );
     }
   }
 

@@ -632,7 +632,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       }
       else if( 1 == n ) {
         lbel = temp->firstElement();
-        lbel->Rename( strip_final_colon( bel->name_ ).c_str() );
+        lbel->rename( strip_final_colon( bel->name_ ).c_str() );
         delete temp;  // This should not delete the element.
       }
       else {

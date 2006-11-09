@@ -156,7 +156,7 @@ void QuadEliminator::visitQuadrupole( const quadrupole* x )
     strcat( newName, "+" );
     strcat( newName, x->Name() );
 
-    _quadPtr->Rename( newName );
+    _quadPtr->rename( newName );
     _quadPtr->setLength( x->Length() + _quadPtr->Length() );
   }
 

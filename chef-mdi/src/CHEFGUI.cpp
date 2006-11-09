@@ -1740,7 +1740,7 @@ void CHEFGUI::_editAddMarkers()
 
     QString newName( oldbmlPtr->Name() );
     newName += ".marked";
-    bmlPtr->Rename( newName.ascii() );
+    bmlPtr->rename( newName.ascii() );
     bmlPtr->setEnergy( oldbmlPtr->Energy() );  // Probably unnecessary.
 
 
@@ -1817,7 +1817,7 @@ void CHEFGUI::_editAddQtMons()
     // Final steps
     QString newName( oldbmlPtr->Name() );
     newName += ".monitored";
-    bmlPtr->Rename( newName.ascii() );
+    bmlPtr->rename( newName.ascii() );
     bmlPtr->setEnergy( oldbmlPtr->Energy() );  // Probably unnecessary.
 
     // Generate a new BeamlineContext to handle the new line

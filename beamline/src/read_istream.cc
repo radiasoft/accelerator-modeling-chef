@@ -387,7 +387,7 @@ istream& operator>>(istream& is, beamline& bl)
            , uic.str().c_str() ) );
   }
   else {
-    bl.Rename(name);
+    bl.rename(name);
     bl.setReferenceTime(ref_ct);  // Meaningless???  No!
   }
   
