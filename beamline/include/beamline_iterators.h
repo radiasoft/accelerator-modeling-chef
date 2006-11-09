@@ -50,6 +50,9 @@
     friend class beamline::pre_order_iterator;
     friend class beamline::post_order_iterator;
     friend class beamline::deep_iterator;
+ 
+    friend class beamline::const_iterator;
+
 
     public:
  
@@ -62,8 +65,12 @@
        explicit iterator( beamline* bml, std::list<bmlnElmnt*>::iterator const& it )
               :  iterator::iterator_adaptor_(it), m_bml(bml) { } 
        
-       iterator end()   const { return m_bml->end(); } 
-       iterator begin() const { return m_bml->begin(); } 
+       iterator end()   const { iterator* self = const_cast<iterator*>(this); 
+                                return self->m_bml->end(); 
+                              } 
+       iterator begin() const { iterator* self = const_cast<iterator*>(this);
+                                return self->m_bml->begin(); 
+                              } 
 
     private:
 
@@ -73,6 +80,48 @@
 
  
        bool equal( beamline::iterator const& x) const {
+         return ( (m_bml == x.m_bml) && (x.base() == base()) ); 
+       }
+
+    };
+
+//---------------------------------------------------------------------------------------------------------------
+
+    class const_iterator : public boost::iterator_adaptor <  const_iterator,
+                                                             std::list<bmlnElmnt*>::const_iterator,   // Base
+                                                             boost::use_default,                      // Value
+                                                             boost::bidirectional_traversal_tag > {  
+
+    public:
+ 
+       const_iterator() 
+              : const_iterator::iterator_adaptor_(), m_bml(0) {}
+
+       const_iterator( beamline::const_iterator const& it )
+              : const_iterator::iterator_adaptor_(it), m_bml(it.m_bml) { } 
+
+       const_iterator( beamline::iterator const& it )
+              : const_iterator::iterator_adaptor_( it.base() ), m_bml( it.m_bml ) { } 
+
+       explicit const_iterator( beamline const* bml, std::list<bmlnElmnt*>::iterator const& it )
+              :  const_iterator::iterator_adaptor_(it), m_bml(bml) { } 
+       
+
+       const_iterator end()   const {  const_iterator* self = const_cast<const_iterator*>(this);
+                                       return const_iterator (self->m_bml, const_cast<beamline*>(self->m_bml)->_theList.end() ); 
+                                    } 
+       const_iterator begin() const {  const_iterator* self = const_cast<const_iterator*>(this);
+                                       return const_iterator (self->m_bml, const_cast<beamline*>(self->m_bml)->_theList.begin() ); 
+                                    }
+
+    private:
+
+       friend class boost::iterator_core_access;
+
+       beamline const* m_bml;
+
+ 
+       bool equal( beamline::const_iterator const& x) const {
          return ( (m_bml == x.m_bml) && (x.base() == base()) ); 
        }
 
@@ -100,6 +149,25 @@
                    : boost::reverse_iterator<beamline::iterator>(rit) {} 
 
     };
+
+//-------------------------------------------------------------------------------------------------------------
+   
+    class const_reverse_iterator : public boost::reverse_iterator<beamline::const_iterator>  {
+
+    public: 
+
+      friend class boost::iterator_core_access;
+
+      const_reverse_iterator()                                                       
+                   : boost::reverse_iterator<beamline::const_iterator>()    {}
+
+      const_reverse_iterator( beamline::iterator         const&  it )
+                   : boost::reverse_iterator<beamline::const_iterator>(it) {} 
+
+      const_reverse_iterator( beamline::reverse_iterator const& rit )               
+                   : boost::reverse_iterator<beamline::const_iterator>(rit) {} 
+
+    };
    
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -112,7 +180,7 @@
  
    class pre_order_iterator : public boost::iterator_facade <pre_order_iterator,           // Derived
                                                          bmlnElmnt*,                       // Value
-                                                         boost::forward_traversal_tag,     // class CategoryOrTraversal
+                                                         boost::bidirectional_traversal_tag,     // class CategoryOrTraversal
                                                          bmlnElmnt*&,                      // Reference  
                                                          ptrdiff_t                         // Difference // ???? 
                                                        >   
