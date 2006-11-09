@@ -96,6 +96,9 @@ bmlnElmnt* read_istream(std::istream&);
 
 class DLLEXPORT bmlnElmnt
 {
+
+  friend class beamline; 
+
 public:
 
   // AsinFunctor is a utility class used by sbend and rbend.
@@ -188,6 +191,7 @@ public:
   };
 
 protected:
+
   char*        ident;      // Name identifier of the element.
   double       length;     // Length of object [ meters ]
   double       strength;   // Interpretation depends on object.
@@ -208,10 +212,6 @@ protected:
 
   PinnedFrameSet _pinnedFrames;
 
-  friend class beamline;
-  // friend class circuit;
-
-  friend beamline& operator-( beamline& );
 
   double _ctRef;  // (normalized) time required for
                   // a reference particle to cross
@@ -372,9 +372,8 @@ public:
   virtual void setCurrent    ( double );
   virtual void setShunt(double a);
           void setAperture   ( Aperture* );
-          void Rename        ( const char* );
-          void rename        ( const char* x ) { this->Rename(x); }  
-          // an alias
+          void rename        ( const char* x );  
+
 
 
   // REMOVE: virtual double getReferenceTime() const {return _ctRef;}
