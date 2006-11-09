@@ -68,6 +68,7 @@
 #include <complex>
 #include <iomanip>
 #include <fstream>
+#include <limits>
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/utils.h>             // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
 #include <basic_toolkit/GenericException.h>
@@ -95,7 +96,6 @@ const int TJL<T>::_mx_maxiter = 100;          // Maximum number of iterations al
 
 template <typename T> 
 std::vector<TJL<T>* >& TJL<T>::_thePool = * ( new std::vector<TJL<T>* > ); 
-
 
 
 // ================================================================
@@ -1043,32 +1043,29 @@ std::ostream& operator<<( std::ostream& os, const TJL<T>& x )
  return os << "\n" << std::endl;
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator==( const TJL<T>& x, const TJL<T>& y ) 
-{
- 
-// Note: as curently implemented, this is a computationally VERY expensive opeation. 
+bool operator==( TJL<T> const& x,  TJL<T> const& y ) {
 
 if( x._myEnv != y._myEnv ) return false;
 
-if( (  x._weight  != y._weight )  ||
-     ( x._accuWgt != y._accuWgt )
-   ) return false;
+if( (  x._weight  != y._weight )  || ( x._accuWgt != y._accuWgt ) ) return false;
  
-TJLterm<T> const* q = 0;   
-for ( TJLterm<T> const* p = x._jltermStore; p < x._jltermStoreCurrentPtr; ++p, ++q) {
+JLPtr<T> diff = TJL<T>::makeTJL(x) - TJL<T>::makeTJL(y) ; 
+    // this is not very efficient because it involves copying the arguments ! 
 
-   if(  !( *p == *q)  ) return false;
+for ( TJLterm<T> const* p = diff->_jltermStore; p < diff->_jltermStoreCurrentPtr; ++p ) {
+
+   if ( std::abs(p->_value) >  10.0* std::numeric_limits<double>::epsilon( ) ) return false;
 }
 
 return true;
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 bool operator==( TJL<T> const& x, T const& y ) 
@@ -1080,7 +1077,7 @@ bool operator==( TJL<T> const& x, T const& y )
  // all terms of weight  >0 must also have _value == 0 (coefficient)
 
  for (  TJLterm<T> const* p = x._jltermStore+1; p < x._jltermStoreCurrentPtr; ++p) {
-   if ( p->_value != T() ) return false;
+   if ( std::abs(p->_value) >  10.0* std::numeric_limits<double>::epsilon( ) ) return false;
  } 
 
  return true;
@@ -1090,7 +1087,7 @@ bool operator==( TJL<T> const& x, T const& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator==( const T& y, const TJL<T>& x )
+bool operator==( T const& y, TJL<T> const& x )
 {
  return x == y;
 }
@@ -1099,7 +1096,7 @@ bool operator==( const T& y, const TJL<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator!=( const TJL<T>& x, const TJL<T>& y ) 
+bool operator!=( TJL<T> const& x, TJL<T> const& y ) 
 {
  return !( x == y );
 }
@@ -1108,7 +1105,7 @@ bool operator!=( const TJL<T>& x, const TJL<T>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator!=( const TJL<T>& x, const T& y ) 
+bool operator!=( TJL<T> const& x, const T& y ) 
 {
  return !( x == y );
 }
@@ -1117,13 +1114,14 @@ bool operator!=( const TJL<T>& x, const T& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator!=( const T& x, const TJL<T>& y ) 
+bool operator!=(  T const& x, TJL<T> const& y ) 
 {
  return !( x == y );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 TJL<T>& TJL<T>::operator=( const T& x ) 
 {
@@ -2330,8 +2328,8 @@ JLPtr<T>   operator-(JLPtr<T> const & x,  JLPtr<T> const& y  ){
 }
   
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
 JLPtr<T>&  operator-=(JLPtr<T>& x,      JLPtr<T> const& y  ) {

@@ -326,8 +326,7 @@ bool operator!=<double >(TJet<double > const&, double const&);
 template 
 TJet<std::complex<double> > operator/<std::complex<double> >(TJet<std::complex<double> > const&, TJet<std::complex<double> > const&);
 
-
-// ** stream operators
+// Lie operators. *Note that the complex form is not instantiated*.
 
 template 
 TJetVector<double > operator^<double >(Vector const&, TJetVector<double > const&);
@@ -335,6 +334,8 @@ TJetVector<double > operator^<double >(Vector const&, TJetVector<double > const&
 template 
 TJet<double> operator^( TJet<double> const&, TJet<double> const& );
 
+// ** stream operators
+// ----------------------
 template 
 std::istream& operator>>(std::istream&, TJetVector<double >&);
 
