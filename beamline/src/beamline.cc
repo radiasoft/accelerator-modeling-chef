@@ -44,6 +44,8 @@
 ****** - beamline: decoupled list container from public interface
 ******             now using std::list<> instead of dlist                                                   
 ******                                                                
+****** - eliminated all references to old-style BeamlineIterator, DeepBeamlineIterator etc ..
+******            
 **************************************************************************
 *************************************************************************/
 
@@ -61,12 +63,13 @@
 #include <beamline/combinedFunction.h>
 #include <beamline/Slot.h>
 #include <beamline/sector.h>
-#include <beamline/BeamlineIterator.h>
 #include <beamline/InsertionList.h>
 #include <beamline/FramePusher.h>
 #include <beamline/beamline.h>
 #include <beamline/BmlPtrList.h>
 #include <beamline/BmlVisitor.h>
+#include <beamline/sbend.h>
+#include <beamline/rbend.h>
 
 #include <iomanip>
 #include <algorithm>
@@ -203,8 +206,6 @@ beamline::arrayRep::arrayRep(beamline const* x, bool doClone )
   }
 #endif
 
-  DeepBeamlineIterator dbi( const_cast<beamline&>(*x) );
-  bmlnElmnt* q;
   int i = 0;
 
   _n = x->countHowManyDeeply();
@@ -214,21 +215,24 @@ beamline::arrayRep::arrayRep(beamline const* x, bool doClone )
   if ( _n > 0 ) {
 
     _element = new bmlnElmnt* [_n];
+    bmlnElmnt** elm = &_element[0];
   
     if( _cloned ) {
-      while( ( (q = dbi++) ) && ( i < _n ) ) {
-        _element[i] = q->Clone();   // The second check, i < _n,
-        ++i;                        // is simply paranoia;
-      }                             // it should not be necessary.
+      for ( beamline::deep_iterator it = x->deep_begin();  it != x->deep_end(); ++it, ++elm ) {
+         *elm = (*it)->Clone();   
+      }                             
     }
     else {
-      while( ((q = dbi++) ) && ( i < _n ) ) {
-        _element[i] = q;
-        ++i;
-      }
+     for (beamline::deep_iterator it = x->deep_begin(); it != x->deep_end() ; ++it, ++elm ) {
+         *elm = (*it);
+     }
     }
   }
 }
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 beamline::arrayRep::~arrayRep()
@@ -287,14 +291,8 @@ beamline* beamline::Clone() const {
  ret->nominalEnergy = nominalEnergy;
  ret->twissDone     = 0;
 
- BeamlineIterator getNext( const_cast<beamline&>(*this) );
-
- bmlnElmnt* p;
- bmlnElmnt* q;
-
- while ( (  p = getNext++) ) {
-  q = p->Clone();
-  ret->append( q );
+ for ( beamline::const_iterator it = begin(); it != end(); ++it) {
+  ret->append( (*it)->Clone() );
  }
  return ret;
 }
@@ -317,11 +315,11 @@ const char*  beamline::Type() const
 
 double beamline::OrbitLength( Particle const& x )
 {
- BeamlineIterator getNext (*this);
- bmlnElmnt* p;
+
  double s = 0.0;
- while ( (p = getNext++) ) {
-  s += p->OrbitLength( x );
+
+ for ( beamline::const_iterator it = begin(); it != end(); ++it) {
+  s += (*it)->OrbitLength( x );
  }
  return s;
 }
@@ -412,10 +410,8 @@ void beamline::clear() {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void beamline::localPropagate( Particle& x ) {
- BeamlineIterator getNext (*this);
- bmlnElmnt* p;
- while ( (p = getNext++) ) {
-   p->propagate( x );
+ for ( beamline::iterator it = begin(); it != end();  ++it ) { 
+   (*it)->propagate( x );
  }
 } 
 
@@ -423,10 +419,8 @@ void beamline::localPropagate( Particle& x ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void beamline::localPropagate( ParticleBunch& x ) {
- BeamlineIterator getNext (*this);
- bmlnElmnt* p;
- while ( ( p = getNext++) ) {
-   p -> propagate( x );
+ for (beamline::iterator it = begin(); it != end();  ++it ) { 
+   (*it) -> propagate( x );
  }
 } 
 
@@ -434,10 +428,8 @@ void beamline::localPropagate( ParticleBunch& x ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void beamline::localPropagate( JetParticle& x ) {
- BeamlineIterator getNext ( *this );
- bmlnElmnt* p;
- while ( ( p = getNext++ ) ) {
-   p->propagate( x );
+ for (beamline::iterator it = begin(); it != end();  ++it ) { 
+   (*it)->propagate( x );
  }
 } 
 
@@ -448,23 +440,28 @@ void beamline::setEnergy( double E ) {
  nominalEnergy = E;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void beamline::unTwiss() {
- BeamlineIterator getNext(*this);
- bmlnElmnt* p;
+
  dataHook.eraseFirst( "Ring" );
  if( !dataHook.eraseFirst( "Twiss" ) )
-  while( (p = getNext++)  )
-   p->dataHook.eraseFirst( "Twiss" );
- twissDone = 0;   // ??? Remove this eventually.
+
+ for (beamline::iterator it = begin(); it != end();  ++it ) { 
+   (*it)->dataHook.eraseFirst( "Twiss" );
+   twissDone = 0;   // ??? Remove this eventually.
+ }
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void beamline::eraseBarnacles( const char* s )
 {
-  DeepBeamlineIterator dbi( *this );
-  bmlnElmnt* q;
-  while((  q = dbi++  )) {
-    q->dataHook.eraseAll( s );
+ for (beamline::deep_iterator it = deep_begin(); it != deep_end(); ++it ) { 
+    (*it)->dataHook.eraseAll( s );
   }
 }
 
@@ -500,14 +497,12 @@ lattFunc beamline::whatIsLattice( int n ) {
            uic.str().c_str() ) );
  }
 
- int count = 0;
- BeamlineIterator getNext( *this );
- bmlnElmnt* p;
-
- while( ( p = getNext++)  ) 
+int count = 0;
+for (beamline::iterator it = begin(); it != end(); ++it ) { 
   if( n == count++ ) 
-   return (*(lattFunc*) p->dataHook.find( "Twiss" ));
- 
+   return (*(lattFunc*) (*it)->dataHook.find( "Twiss" ));
+}
+
  (*pcout) << endl;
  (*pcout) << "*** WARNING ***                               \n"
       << "*** WARNING *** beamline::whatIsLattice       \n"
@@ -527,13 +522,13 @@ lattFunc beamline::whatIsLattice( char* n ) {
   // May 24, 1996
   lattFunc errRet;
   
-  BeamlineIterator getNext( *this );
-  bmlnElmnt* p;
-  
-  while( ( p = getNext++)  ) 
-    if( !strcmp(p->Name(),n) ) 
-      return (*(lattFunc*) p->dataHook.find( "Twiss" ));
-        return errRet;  
+  for (beamline::iterator it = begin(); it != end(); ++it ) { 
+
+    if( !strcmp((*it)->Name(),n) ) 
+      return (*(lattFunc*) (*it)->dataHook.find( "Twiss" ));
+  } 
+
+    return errRet;  
 }
 
     // ++++++++++++ Begin: Insert and append functions ++++++++++++++++++
@@ -560,7 +555,7 @@ void beamline::append( bmlnElmnt* q ) {
  if( twissDone ) unTwiss();
 
  length += q->length;
- if( strcmp( q->Type(), "beamline" ) == 0 )  
+ if(   typeid(*q) == typeid(beamline) )  
       numElem += ((beamline*) q)->numElem;
  else numElem++;
 } 
@@ -794,23 +789,20 @@ beamline& operator^( bmlnElmnt& x, bmlnElmnt& y ) {
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline& operator-( beamline& x ) {
+beamline& operator-( beamline const& x ) {
 
- const static char* rev = "REVERSE_";
- char* theName = new char[ strlen(rev) + strlen(x.Name()) + 1 ];
- theName[0] = '\0';
- strcat( theName, rev );
- strcat( theName, x.Name() );
- beamline* result = new beamline( theName );
+  // NOTE: THIS IS A MEMORY LEAK ! FIX ME !
 
- ReverseBeamlineIterator rit( x  );
- bmlnElmnt* p;
- while( (  p = rit++ ) ) {
-  if( typeid(*p) == typeid(beamline) ) 
-                            result->append( &(- *static_cast<beamline*>(p)) );
-  else                      result->append( p );
+ std::string theName = std::string("REVERSE_") + std::string( x.Name() );
+ beamline* result = new beamline( theName.c_str() );
+
+  for ( beamline::reverse_iterator rit = x.rbegin(); rit != x.rend(); ++rit) {
+  if( typeid(**rit) == typeid(beamline) ) 
+     result->append( &(- *static_cast<beamline*>(*rit)) );
+  else                      
+     result->append( *rit );
  }
- delete [] theName;
+
  return *result;
 }
 
@@ -832,24 +824,6 @@ beamline& beamline::operator+( bmlnElmnt& x ) {
 beamline& beamline::operator+( beamline& x ) {
  beamline* result = new beamline( *this );
  result->append( x );
- return *result;
-}
-
-#endif
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-#if 0
-beamline& beamline::operator-( beamline& x ) {
- beamline* result = new beamline( *this );
- ReverseBeamlineIterator getNext( x );
- bmlnElmnt* p;
- while( (p=getNext++)  ) {
-  if( strcasecmp( p->Type(), "beamline" ) == 0 ) 
-                            result->append( - *(beamline*) p );
-  else                      result->append( p );
- }
  return *result;
 }
 
@@ -977,42 +951,23 @@ void beamline::putBelow( std::list<bmlnElmnt*>::iterator const& iter, bmlnElmnt*
 
 
 beamline* beamline::flatten() const {
+
  // Produces a flattened version of itself.
  // WARNING: the elements are not cloned.
  //   Thus the flattened line contains the
  //   same objects as its original.
 
- BeamlineIterator  getNext( const_cast<beamline&>(*this) );
- BeamlineIterator* getNew = 0;
 
- beamline*       r;
- beamline*       s;
- bmlnElmnt*      p;
- bmlnElmnt*      q;
+ beamline* r = new beamline;
 
- r = new beamline;
-
- while ( (p = getNext++)  )  {
-   if( typeid(*p) == typeid(beamline) )
-   { 
-     s =  static_cast<beamline*>(p)->flatten();
-
-     getNew = new BeamlineIterator( *s);
-     while ( (  q = (*getNew)++ )  ) {
-       r->append( q );
-     }
-     delete getNew;
-     delete s;
-   }
-   else
-   { // Only beamlines are composite objects
-     r->append( p );
-   }
+ for (beamline::deep_iterator it = deep_begin(); it != deep_end(); ++it ) {  
+     r->append( (*it) );
  }
 
  r->setEnergy( this->Energy() );
- r->Rename( this->Name() );
+ r->rename( this->Name() );
  r->setLineMode( _mode );
+
  return r;
 } 
 
@@ -1088,25 +1043,22 @@ int beamline::startAt( char const* s, int n ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2, 
-                               int deg, JetParticle& jp ) {
+sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2, int deg, JetParticle& jp ) {
 
  // This assumes that the argument jp has been initialized as
  // desired by the calling program.  This routine does NOT
  // initialize the state of jp.
 
- DeepBeamlineIterator dbi( *this );
- bmlnElmnt* p_be;
- char       firstFound  = 0;
- char       secondFound = 0;
+ bool       firstFound  = false;
+ bool       secondFound = false;
  Particle*  p_prt;
  double     s           = 0.0;
 
  p_prt = jp.ConvertToParticle();
 
- while ((  p_be = dbi++  )) {
+ for (beamline::deep_iterator it = deep_begin(); it != deep_end(); ++it) {
 
-  if( p_be == &be_2 ) {
+  if( (*it) == &be_2 ) {
    (*pcout) << "*** WARNING ***                                      \n" 
         << "*** WARNING *** beamline::MakeSector                 \n" 
         << "*** WARNING *** Second element found first.          \n" 
@@ -1117,8 +1069,8 @@ sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2,
    return 0;
   }
 
-  else if( p_be == &be_1 ) { 
-    firstFound = 1;
+  else if( (*it) == &be_1 ) { 
+    firstFound = true;
     break;
   }
  }
@@ -1134,14 +1086,15 @@ sector* beamline::MakeSector ( const bmlnElmnt& be_1, const bmlnElmnt& be_2,
   return 0;
  }
  
- while ((  p_be = dbi++  )) {  // Notice: we do not propagate through
-  if( p_be == &be_2 ) {        // be_1 and be_2
-    secondFound = 1;
+ for (beamline::deep_iterator it = deep_begin(); it != deep_end(); ++it) { // Notice: we do not propagate through
+
+  if( (*it) == &be_2 ) {                                                    // be_1 and be_2
+    secondFound = true;
     break;
   }
   else {
-    p_be->propagate( jp );
-    s += p_be->OrbitLength( *p_prt );
+    (*it)->propagate( jp );
+    s += (*it)->OrbitLength( *p_prt );
   }
  }
 
@@ -1170,16 +1123,17 @@ sector* beamline::MakeSectorFromStart ( const bmlnElmnt& be_1, int deg, JetParti
  // desired by the calling program.  This routine does NOT
  // initialize the state of jp.
 
- BeamlineIterator getNext( *this );
- bmlnElmnt* p_be;
- char       firstFound  = 0;
+ bool       firstFound  = false;
  Particle*  p_prt;
  double     s           = 0.0;
-
+ 
  p_prt = jp.ConvertToParticle();
 
  // Check first element against the argument ------------
- p_be = getNext++;
+
+ beamline::iterator it = begin();
+
+ bmlnElmnt* p_be = *it;
 
  if( !p_be ) {
   (*pcout) << "*** WARNING ***                                      \n" 
@@ -1203,9 +1157,12 @@ sector* beamline::MakeSectorFromStart ( const bmlnElmnt& be_1, int deg, JetParti
 
 
  // Find element that matches argument ------------------
- while ( ( p_be = getNext++) ){
+ for ( beamline::iterator it = begin(); it != end(); ++it) {
+  
+   p_be = *it; 
+ 
   if( p_be == &be_1 ) {     // Notice: we do not propagate through be_1
-    firstFound = 1;
+    firstFound = true;
     break;
   }
   else {
@@ -1242,7 +1199,6 @@ sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle&
  // desired by the calling program.  This routine does NOT
  // initialize the state of jp.
 
- BeamlineIterator getNext( *this );
  bmlnElmnt* p_be;
  char       firstFound  = 0;
  Particle*  p_prt;
@@ -1251,9 +1207,12 @@ sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle&
  p_prt = jp.ConvertToParticle();
 
  // Find the element that matches argument ---------------------------------
- while (  ( p_be = getNext++ ) ) {
-  if( p_be == &be_1 ) { 
-    firstFound = 1;
+
+ beamline::iterator it = begin(); 
+
+ for (  ; it != end(); ++it) {
+  if( (*it) == &be_1 ) { 
+    firstFound = true;
     break;
   }
  }
@@ -1270,8 +1229,9 @@ sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle&
  }
  
  // Check that it is not the last element --------------------------------
- p_be = getNext++;
- if( !p_be ) {
+ p_be = *( ++it );
+
+ if( p_be ) {
     delete p_prt;
     return 0;
  }
@@ -1281,9 +1241,11 @@ sector* beamline::MakeSectorToEnd ( const bmlnElmnt& be_1, int deg, JetParticle&
  }
 
  // Construct the map and return sector ------------------------------------
- while ( (p_be = getNext++) ) {  // Notice: we do not propagate through be_1
-    p_be->propagate( jp );
-    s += p_be->OrbitLength( *p_prt );
+
+ for ( ; it != end(); ++it) {
+   p_be = (*it);
+   p_be->propagate( jp );
+   s += p_be->OrbitLength( *p_prt );
  }
 
  delete p_prt;
@@ -1353,7 +1315,7 @@ beamline beamline::sectorize( bmlnElmnt* x, bmlnElmnt* y, int degree, JetParticl
   beamline a = remove( x, y ); // remove should peharps somehow return the iterator position for x
 
   sector* s = a.makeSector( degree, pd );
-  s->Rename( sectorName );
+  s->rename( sectorName );
 
   std::list<bmlnElmnt*>::iterator xpos = std::find( _theList.begin(), _theList.end(), y ); 
    
@@ -1370,17 +1332,16 @@ beamline beamline::sectorize( bmlnElmnt* x, bmlnElmnt* y, int degree, JetParticl
 void beamline::peekAt( double& s, const Particle& prt ) const
 {
 
-  BeamlineIterator getNext( const_cast<beamline&>(*this) );
   bmlnElmnt* p;
 
   (*pcout) << "\nBegin beamline::peekat() -- Address of beamline: "
        << ident << " = " << (int) this 
        << endl;
 
-  while ( (  p = getNext++ ) )  {
-    if( typeid(*p) == typeid(beamline) ) 
-      static_cast<beamline*>(p)->peekAt( s, prt );
-    else p->peekAt( s, prt );
+ for (beamline::iterator it = begin(); it != end(); ++it )  {
+    if( typeid(**it) == typeid(beamline) ) 
+      static_cast<beamline*>(*it)->peekAt( s, prt );
+    else (*it)->peekAt( s, prt );
   }
 
   (*pcout) << "End beamline::peekat() -- Address of beamline: "
@@ -1396,16 +1357,14 @@ void beamline::peekAt( double& s, const Particle& prt ) const
 
 int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
 
- int ret;
- BeamlineIterator bit ( const_cast<beamline&>(*this) );
- bmlnElmnt* p;
 
- ret = 0;
+ bmlnElmnt* p = 0;
+ int ret      = 0;
 
  if( query == 0 ) {
-   while ( ( p = bit++ ) ) { 
-     ret++; 
-   }
+
+   for (beamline::iterator it = begin(); it != end(); ++it, ++ret ) ;
+
    if( ret != numElem ) {
      (*pcerr) << "\n*** WARNING ***                                     \n"
                "*** WARNING *** beamline::countHowMany              \n"
@@ -1420,9 +1379,11 @@ int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
  }
 
  else {
-   while ( (  p = bit++   )) {
+
+   for (beamline::iterator it = begin(); it != end(); ++it) {
+     p = (*it);
      if( query(p) ) { 
-       ret++; 
+       ++ret; 
        if( listPtr ) {
          listPtr->append(p);
        }
@@ -1438,23 +1399,22 @@ int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
 
 int beamline::countHowManyDeeply( CRITFUNC query, slist* listPtr ) const {
 
- int ret;
- BeamlineIterator getNext ( const_cast<beamline&>(*this) );
- bmlnElmnt* p;
+ int ret      = 0;
+ bmlnElmnt* p = 0;
 
- ret = 0;
- while ( ( p = getNext++ ) ) {
-   if( typeid(*p) == typeid(beamline) ) {
-     ret += static_cast<beamline*>(p)->countHowManyDeeply( query, listPtr );
-   }
-   else {
-     if( ( query == 0 ) || ( query(p) ) ) {
-       ret++;
-       if( listPtr ) {
-         listPtr->append(p);
+   for (beamline::iterator it = begin(); it != end(); ++it) {
+     p = (*it);
+     if( typeid(*p) == typeid(beamline) ) {
+       ret += static_cast<beamline*>(p)->countHowManyDeeply( query, listPtr );
+     }
+     else {
+       if( ( query == 0 ) || ( query(p) ) ) {
+         ++ret;
+         if( listPtr ) {
+           listPtr->append(p);
+         }
        }
      }
-   }
  }
 
  return ret;
@@ -1475,11 +1435,12 @@ int beamline::depth() const
   int ret = -1;
   int maxSubDepth = -1;
   
-  BeamlineIterator bi( const_cast<beamline&>(*this) );
-  bmlnElmnt* p_be;
-  while( 0 != (p_be = bi++) ) {
+  bmlnElmnt* p_be = 0;
+
+  for (beamline::iterator it = begin(); it != end(); ++it) {
+    p_be = (*it);
     ret = 0;
-    if( 0 == strcmp("beamline",p_be->Type()) ) {
+    if(  typeid(*p_be) == typeid(beamline) ) {
       int subDepth = (dynamic_cast<const beamline*>(p_be))->depth();
       if( maxSubDepth < subDepth ) { maxSubDepth = subDepth; }
     }
@@ -1495,11 +1456,10 @@ int beamline::depth() const
 
 int beamline::contains( bmlnElmnt const* x ) const
 {
-  DeepBeamlineIterator dbi( const_cast<beamline&>(*this) );
+
   int ret = 0;
-  bmlnElmnt* p_be;
-  while((  p_be = dbi++  )) {
-    if( p_be == x ) { ret++; }
+  for (beamline::deep_iterator it = deep_begin(); it != deep_end(); ++it) {
+    if( (*it) == x ) { ++ret; }
   }
   return ret;
 }
@@ -1577,10 +1537,13 @@ bool beamline::find( bmlnElmnt*& u, bmlnElmnt*& v, bmlnElmnt*& w ) const
   // 
 
   // There should be at least three elements in the line
+
   int elementCount = this->countHowManyDeeply();
+ 
   if( 0 == elementCount ) { 
     return false; 
   }
+
   if( 1 == elementCount ) { 
     if( v == this->firstElement() ) {
       u = w = 0;
@@ -1588,6 +1551,7 @@ bool beamline::find( bmlnElmnt*& u, bmlnElmnt*& v, bmlnElmnt*& w ) const
     }
     return false;
   }
+ 
   if( 2 == elementCount ) { 
     if( v == this->firstElement() ) {
       u = 0;
@@ -1603,27 +1567,33 @@ bool beamline::find( bmlnElmnt*& u, bmlnElmnt*& v, bmlnElmnt*& w ) const
   }
 
   // Setup iterator
-  DeepBeamlineIterator dbi( const_cast<beamline&>(*this) );
-  bmlnElmnt* q;
-    
+
+
+   beamline::deep_iterator dbi = deep_begin();
+   bmlnElmnt* q = 0;
+     
   // Check for possibility that *v is the first element.
+
   if( v == this->firstElement() ) {
     if( beamline::ring == this->getLineMode() ) {
-      u = this->lastElement();
-    }
-    else {
-      u = 0;
-    }
-    w = dbi++;
+        u = this->lastElement();
+      } else {
+        u = 0;
+      }
+  
+    w = *(++dbi);
     return true;
-  }
+  } 
 
   // Continuing ...
-  q = dbi++;
+  q = *(++dbi);
   u = q;
-  q = dbi++;
+  q = *(++dbi);
 
-  while( q ) {
+  for ( ; dbi != deep_end(); ++dbi ) {
+
+    q = (*dbi);
+
     if( v == q ) {
       if( v == this->lastElement() ) {
         if( beamline::ring == this->getLineMode() ) {
@@ -1634,13 +1604,12 @@ bool beamline::find( bmlnElmnt*& u, bmlnElmnt*& v, bmlnElmnt*& w ) const
         }
       }
       else {
-        w = dbi++;
+        w = *(++dbi);
       }
       return true;
     }
 
     u = q;
-    q = dbi++;
   }
 
   // Target element was never found.
@@ -2353,9 +2322,11 @@ void beamline::_rotateRel(   int axis, double angle
 
 bool beamline::setAlignment( const alignmentData& al ) {
   // Propogate alignment data of entire  beamline to each individual element
-  BeamlineIterator getNext ( *this );
-  bmlnElmnt* p;
-  while ( (  p = getNext++   )) {
+
+
+  bmlnElmnt* p = 0;
+  for (beamline::iterator it = begin() ; it != end(); ++it) {
+    p = (*it);
     if( !(p->setAlignment(al)) ) {
       (*pcerr) << "\n*** ERROR *** "
            << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
@@ -2388,13 +2359,12 @@ void beamline::remove( bmlnElmnt* Element2remove){
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ostream& beamline::writeTo(ostream& os) {
-  BeamlineIterator getNext(*this);
-  bmlnElmnt* element;
+
   double energy = Energy();
 
   os <<  OSTREAM_DOUBLE_PREC << energy << endl;
-  while( (element = getNext++) != 0) {
-    os << *element ;
+  for (beamline::iterator it = begin() ; it != end(); ++it) {
+    os << (**it);
   }
   os << "beamline_END " << Name() << " 0 0 0 0 0\n";
   return os;
@@ -2410,15 +2380,18 @@ ostream& beamline::writeTo(ostream& os) {
 
 void beamline::enterLocalFrame( Particle& p ) const
 {
-  // Check for bends
-  BeamlineIterator getNext( const_cast<beamline&>(*this) );
-  static bmlnElmnt* element;
 
-  while((  element = getNext++ )) 
-  {
-    if( strcasecmp( element->Type(), "sbend" ) == 0 ||
-        strcasecmp( element->Type(), "rbend" ) == 0     
-      ) {
+  // Check for bends
+
+  bmlnElmnt* element = 0;
+
+  for (beamline::iterator it = begin() ; it != end(); ++it) {
+
+    element = (*it);
+
+    if( (typeid(*element) == typeid(sbend) ) ||
+        (typeid(*element) == typeid(rbend) ) ) {    
+
       throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
              "void beamline::enterLocalFrame( Particle& p ) const", 
              "Not implemented for beamlines containing bends." ) );
@@ -2434,14 +2407,13 @@ void beamline::enterLocalFrame( Particle& p ) const
 void beamline::enterLocalFrame( JetParticle& p ) const
 {
   // Check for bends
-  BeamlineIterator getNext( const_cast<beamline&>(*this) );
+
   bmlnElmnt* element = 0;
 
-  while((  element = getNext++ )) 
-  {
-    if( strcasecmp( element->Type(), "sbend" ) == 0 ||
-        strcasecmp( element->Type(), "rbend" ) == 0     
-      ) {
+  for (beamline::iterator it = begin() ; it != end(); ++it) {
+    element = (*it);
+    if( (typeid(*element) == typeid(sbend) )||
+        (typeid(*element) == typeid(rbend) )  ) {
       throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
              "void beamline::enterLocalFrame( JetParticle& p ) const", 
              "Not implemented for beamlines containing bends." ) );
@@ -2474,10 +2446,10 @@ void beamline::leaveLocalFrame( JetParticle& p ) const
 
 bool beamline::isFlat() 
 {
-  BeamlineIterator bi( const_cast<beamline&>(*this) );
   bmlnElmnt* q;
-  while((  q = bi++  )) {
-    if( 0 == strcmp( "beamline", q->Type() ) ) { return false; }
+
+  for (beamline::iterator it = begin() ; it != end(); ++it) {
+    if( typeid(**it) == typeid(beamline) ) return false; 
   }
   return true;
 }
