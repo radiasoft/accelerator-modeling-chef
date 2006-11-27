@@ -46,9 +46,6 @@ extern bool nexcom( int, int, int* );            // Computes the next compositio
                                                  //  of an integer into a number of parts.
                                                  //  Algorithm devised by Herbert Wilf.
 
-extern void BubbleSort( double x[], int n );     // sorts array x /*** OBSOLETE ***/
-
-
 extern "C" {int bcfRec( int, int ); }            // Recursive evaluation of binomial
                                                  //  coefficient.
 
