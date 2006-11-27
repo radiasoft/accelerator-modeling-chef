@@ -824,16 +824,16 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
     }
     else {
       if( !(_topTracker->isIterating()) ) {
-      	QPen myPen;
-      	myPen.setStyle ( Qt::SolidLine );
-      	myPen.setColor ( Qt::gray );
-      	myPen.setWidth ( 1 );
+        QPen myPen;
+        myPen.setStyle ( Qt::SolidLine );
+        myPen.setColor ( Qt::gray );
+        myPen.setWidth ( 1 );
 
-      	QPainter paint ( this );
-      	paint.setPen ( myPen );
+        QPainter paint ( this );
+        paint.setPen ( myPen );
 
-      	this->downloadBuffer();
-      	paint.drawEllipse (  _ixbf - 3, _iybf - 3, 6, 6 );
+        this->downloadBuffer();
+        paint.drawEllipse (  _ixbf - 3, _iybf - 3, 6, 6 );
       }
 
       emit _new_point( _xbf, _ybf, _transformPtr );
@@ -847,13 +847,13 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         // These transformations should be done in
         //   a separate routine!!
 
-  	double alphaH, betaH, alphaV, betaV;
-  	double u, v;
+        double alphaH, betaH, alphaV, betaV;
+        double u, v;
 
-  	alphaH = ( _topTracker->_p_info->alpha ).hor;
-  	betaH  = ( _topTracker->_p_info->beta  ).hor;
-  	alphaV = ( _topTracker->_p_info->alpha ).ver;
-  	betaV  = ( _topTracker->_p_info->beta  ).ver;
+        alphaH = ( _topTracker->_p_info->alpha ).hor;
+        betaH  = ( _topTracker->_p_info->beta  ).hor;
+        alphaV = ( _topTracker->_p_info->alpha ).ver;
+        betaV  = ( _topTracker->_p_info->beta  ).ver;
 
         slist orbits3D;
         slist_iterator getNext( _topTracker->_orbits );
@@ -866,19 +866,19 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         { return; }
 
         while((  0 != orbitPtr )) {
-	  Orbit::Iterator oit( orbitPtr );
+          Orbit::Iterator oit( orbitPtr );
           vec = oit++;
 
-      	  // Horizontal
-      	  u = (*vec)(0);
-      	  v = alphaH*u + betaH*(*vec)(3);
-      	  z(0) = atan2(u,v);
-      	  if( z(0) > M_PI ) z(0) -= M_TWOPI;
-      	  // Vertical
-      	  u = (*vec)(1);
-      	  v = alphaV*u + betaV*(*vec)(4);
-      	  z(1) = atan2(u,v);
-      	  if( z(1) > M_PI ) z(1) -= M_TWOPI;
+          // Horizontal
+          u = (*vec)(0);
+          v = alphaH*u + betaH*(*vec)(3);
+          z(0) = atan2(u,v);
+          if( z(0) > M_PI ) z(0) -= M_TWOPI;
+          // Vertical
+          u = (*vec)(1);
+          v = alphaV*u + betaV*(*vec)(4);
+          z(1) = atan2(u,v);
+          if( z(1) > M_PI ) z(1) -= M_TWOPI;
           
           z(2) = 1000.0*sqrt( u*u + v*v );  // ??? Temporary kludge ???
   
@@ -889,26 +889,26 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
 
           vec = oit++;
           while( 0 != vec ) {
-      	    // Horizontal
-      	    u = (*vec)(0);
-      	    v = alphaH*u + betaH*(*vec)(3);
-      	    z(0) = atan2(u,v);
-      	    if( z(0) > M_PI ) z(0) -= M_TWOPI;
-      	    // Vertical
-      	    u = (*vec)(1);
-      	    v = alphaV*u + betaV*(*vec)(4);
-      	    z(1) = atan2(u,v);
-      	    if( z(1) > M_PI ) z(1) -= M_TWOPI;
+            // Horizontal
+            u = (*vec)(0);
+            v = alphaH*u + betaH*(*vec)(3);
+            z(0) = atan2(u,v);
+            if( z(0) > M_PI ) z(0) -= M_TWOPI;
+            // Vertical
+            u = (*vec)(1);
+            v = alphaV*u + betaV*(*vec)(4);
+            z(1) = atan2(u,v);
+            if( z(1) > M_PI ) z(1) -= M_TWOPI;
 
             z(2) = 1000.0*sqrt( u*u + v*v );  // ??? Temporary kludge ???
   
             newOrbitPtr->add( z );
             vec = oit++;
-	  }
+          }
 
           orbits3D.append( newOrbitPtr );
           orbitPtr = (Orbit*) getNext();
-	}
+        }
 
         TrbWidget* trbPtr = new TrbWidget( orbits3D );
         // The TrbWidget constructor assumes ownership
@@ -934,7 +934,7 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         { return; }
 
         while((  0 != orbitPtr )) {
-	  Orbit::Iterator oit( orbitPtr );
+          Orbit::Iterator oit( orbitPtr );
           vec = oit++;
           while( 0 != vec ) {
             _transformPtr->toDynamics( *vec, &a, &b, &c );
@@ -952,20 +952,20 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
                 newOrbitPtr->setColor( orbitPtr->Red(), 
                                        orbitPtr->Green(), 
                                        orbitPtr->Blue()   );
-	      }
+              }
               else 
               {
                 newOrbitPtr->add( z );
-	      }
+              }
             }
 
             vec = oit++;
-	  }
+          }
 
           orbits3D.append( newOrbitPtr );
           newOrbitPtr = 0;
           orbitPtr = (Orbit*) getNext();
-	}
+        }
 
         TrbWidget* trbPtr = new TrbWidget( orbits3D );
         // The TrbWidget constructor assumes ownership
@@ -976,7 +976,7 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         // REMOVE: getNext.Reset(orbits3D);
         // REMOVE: while((  0 != (orbitPtr = (Orbit*) orbits3D.get())   )) {
         // REMOVE:   delete orbitPtr;
-	// REMOVE: }
+        // REMOVE: }
       }
     }
   }
@@ -1469,6 +1469,8 @@ void Tracker::_view_norm()
   if( _p_info ) { delete _p_info; _p_info = 0; }
   int n = _bmlConPtr->countHowManyDeeply();
 
+  Vector sss( _bmlConPtr->_particlePtr->State() );
+
   try {
     _p_info = new LattFuncSage::lattFunc( *(_bmlConPtr->getLattFuncPtr(n-1)) );
   }
@@ -1507,6 +1509,9 @@ void Tracker::_view_norm()
   _p_leftWindow->uploadBuffer();
   _p_rightWindow->updateGL();
   _p_rightWindow->uploadBuffer();
+
+   // Reset before exiting
+  _bmlConPtr->setParticleState(sss);
 }
 
 
@@ -1807,7 +1812,6 @@ void Tracker::_tool_pdicOrb()
   // Maybe this belongs in a separate method.
  
   if( returnCode == QDialog::Accepted ) {
-
     bool ok = true;
     uint iterate = (qle->text()).toInt( &ok );
     if( !ok ) {
@@ -1825,8 +1829,15 @@ void Tracker::_tool_pdicOrb()
     // w(3) = (_bmlConPtr->getParticle()).State(3); // ??? Change this
     w = dummyPtr->State();
 
+
+    #if 0
     const uint order = 5;  // ??? Change this
     const uint ul    = 5;  // ??? Change this
+    #endif
+    #if 1
+    const uint order = 7;   // ??? Change this
+    const uint ul    = 10;  // ??? Change this
+    #endif
   
     Vector z(w);
   
@@ -1837,31 +1848,49 @@ void Tracker::_tool_pdicOrb()
     JetParticle* jpPtr = 0;
     for( unsigned int iterCount = 0; iterCount < ul; iterCount++ ) {
       Jet__environment::BeginEnvironment( order );
-  	coord  x(w(0)),  y(w(1)),  q(0.0),
-  	      px(w(3)), py(w(4)), qq(0.0);
+        coord  x(w(0)),  y(w(1)),  q(0.0),
+              px(w(3)), py(w(4)), qq(0.0);
       Jet__environment::EndEnvironment();
   
+      #if 0
+      WHY IS THIS HERE???
       Jet xsq;
       Jet x1 = x;   // ??? This is most unfortunate.    ???
       xsq = x1*x1;  // ??? Why do we have to define x1? ???
+      #endif
   
-      dummyPtr->setStateToZero();
+      dummyPtr->setState(w);
       jpPtr = dummyPtr->ConvertToJetParticle();
       Mapping stuff;
       cout << "Begin n-th Henon iterate for n = "
-  	   << iterate
-  	   << endl;
+           << iterate
+           << endl;
       for( unsigned int i = 0; i < iterate; i++ ) {
-  	cout << "No." << (i+1) << endl;
-  	bmlPtr->propagate( *jpPtr );
+        cout << "No." << (i+1) << endl;
+        bmlPtr->propagate( *jpPtr );
       }
       cout << "End n-th Henon iterate" << endl;
   
       stuff = jpPtr->State();
   
-      MatrixD M(6,6);
-      M = stuff.Jacobian();
+      MatrixD M(6,6), N(4,4);
+      int k [] = { 0, 1, 3, 4 };
 
+      M = stuff.Jacobian();
+      for( int i = 0; i < 4; i++ ) {
+        for( int j = 0; j < 4; j++ ) {
+          N(i,j) = M( k[i], k[j] );
+        }
+      }
+      for( int i = 0; i < 4; i++ ) { N( i, i ) -= 1.0; }
+
+      N = N.inverse();
+
+      for( int i = 0; i < 4; i++ ) {
+        for( int j = 0; j < 4; j++ ) {
+          M( k[i], k[j] ) = N(i,j);
+        }
+      }
       for( int i = 0; i < 6; i++ ) {
         M(i,2) = 0.0;
         M(2,i) = 0.0;
@@ -1869,14 +1898,10 @@ void Tracker::_tool_pdicOrb()
         M(5,i) = 0.0;
       }
 
-      for( int i = 0; i < 6; i++ ) { M( i, i ) -= 1.0; }
-      M = M.inverse();
-  
       Vector z(w);
       z = stuff(z);
-      
-      w = w + M * ( w - stuff(w) );
-  
+ 
+      w = w + M*( w - stuff(w) );
       cout << w << endl;
     }
 
@@ -1886,7 +1911,7 @@ void Tracker::_tool_pdicOrb()
     cout << "\nTest the results: " << endl;
     for( int j = 0; j < 10; j++ ) {
       for( unsigned int i = 0; i < iterate; i++ ) {
-  	bmlPtr->propagate(*dummyPtr);
+        bmlPtr->propagate(*dummyPtr);
       }
       cout << dummyPtr->State() << endl;
     }
