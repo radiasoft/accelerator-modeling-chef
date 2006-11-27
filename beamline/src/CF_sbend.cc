@@ -7,7 +7,7 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      CF_sbend.cc
-******  Version:   3.0
+******  Version:   3.1
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -443,6 +443,18 @@ int CF_sbend::setDipoleField( double arg_x )
   
   delete [] w;
   return 0;
+}
+
+
+void CF_sbend::setStrength( double s )
+{
+  double ratio = s / this->getDipoleField();
+  bmlnElmnt** x = _u;
+  while( x <= _v ) {
+    (*x)->setStrength( ratio*((*x)->Strength()) );
+    x++;
+  }
+  this->strength = s;
 }
 
 

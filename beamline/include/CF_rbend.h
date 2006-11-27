@@ -36,15 +36,12 @@
 **************************************************************************
 *************************************************************************/
 
-
 #ifndef CF_RBEND_H
 #define CF_RBEND_H
-
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/BmlVisitor.h>
-
 
 class Particle;
 class JetParticle;
@@ -118,9 +115,11 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
 
   CF_rbend( const CF_rbend& );
 
+  CF_rbend* Clone() const 
+     { return new CF_rbend( *this ); }
+
   ~CF_rbend();
   void eliminate();
-
 
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
@@ -140,8 +139,6 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   { if ( strcmp(c, "CF_rbend") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
   
-  CF_rbend* Clone() const 
-    { return new CF_rbend( *this ); }
   double OrbitLength( const Particle& );
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
     // WARNING: After the Split function is used, the new elements 
@@ -188,6 +185,9 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   int setDipoleField ( double );  
   // Here the argument is the dipole field, 
   // NOT the integrated dipole field.
+  void setStrength   ( double );
+  // Specific implementation of virtual bmlnElmnt method.
+  // Modifies all internal elements.
 
   double getQuadrupole() const;
   double getSextupole()  const;
@@ -200,11 +200,6 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   double getDipoleField() const;
   // Returns the dipole field,
   // NOT the integrated dipole field.
-
-
-
-
-
 
  private:
   bmlnElmnt** _u;           // Address of first internal bmlElmnt pointer

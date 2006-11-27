@@ -86,6 +86,9 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
             int = 4 );  // ignored
 
   CF_sbend( const CF_sbend& );
+  CF_sbend* Clone() const 
+    { return new CF_sbend( *this ); }
+
 
   ~CF_sbend();
   void eliminate();
@@ -109,8 +112,6 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   { if ( strcmp(c, "CF_sbend") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
   
-  CF_sbend* Clone() const 
-    { return new CF_sbend( *this ); }
   double OrbitLength( const Particle& );
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
     // WARNING: After the Split function is used, the new elements 
@@ -132,14 +133,8 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
 
-
-
-
-
-
   // REMOVE: double AdjustPosition( const Particle& );
   // REMOVE: double AdjustPosition( const JetParticle& );
-
 
   int setQuadrupole ( double );  
   int setSextupole  ( double );  
@@ -156,6 +151,9 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   int setDipoleField ( double );  
   // Here the argument is the dipole field, 
   // NOT the integrated dipole field.
+  void setStrength   ( double );
+  // Specific implementation of virtual bmlnElmnt method.
+  // Modifies all internal elements.
 
   double getQuadrupole() const;
   double getSextupole()  const;
