@@ -46,15 +46,10 @@
 #include <config.h>
 #endif
 
-#include <beamline/beamline_elements.h>
 #include <iomanip>
+#include <beamline/beamline.h>
+#include <beamline/beamline_elements.h>
 
-#include <beamline/combinedFunction.h>
-#include <beamline/kick.h>
-#include <beamline/Slot.h>
-
-#include <beamline/pinger.h>
-#include <beamline/CF_rbend.h>
 
 using namespace std;
 
