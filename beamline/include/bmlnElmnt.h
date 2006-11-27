@@ -100,28 +100,7 @@ class DLLEXPORT bmlnElmnt
   friend class beamline; 
 
 public:
-
-  // AsinFunctor is a utility class used by sbend and rbend.
-  class AsinFunctor
-  {
-  public:
-    AsinFunctor( bool = false /* i.e. approximate */, int = 1 );
-    AsinFunctor( const AsinFunctor& );
-    ~AsinFunctor() {}
-    double   operator()( double x ) const;
-    Jet      operator()( const Jet& x ) const;
-    int      setNumTerms( int );
-    int      getNumTerms();
-    bool     isExact();
-    bool     makeExact();
-    bool     makeApproximate();
-  private: 
-    bool                    _exactMode;
-    int                     _n;
-    static   const double   _coeff[];
-    static   const int      _size;
-  };
-
+                      
 
   class PropFunc
   {
@@ -231,6 +210,7 @@ public:
 
   bmlnElmnt( bmlnElmnt const&  );
 
+  virtual bmlnElmnt* Clone() const = 0;  
   virtual ~bmlnElmnt();
 
   // ----------------------------------------------
@@ -314,14 +294,6 @@ public:
   // ??? To do (?): virtual void leaveLocalFrame( const JetParticle&, Jet* ) const;
 
   // Editing functions
-  virtual bmlnElmnt* Clone() const = 0;  
-  bmlnElmnt* clone() const;
-                                       // Each type of bmlnElmnt will
-                                       // create a copy of itself and
-                                       // return a pointer to the new
-                                       // object.
-  bmlnElmnt* Clone(const char* name);  // Clone it and change the name.
-  bmlnElmnt* clone(const char* name);
 
   virtual void Split( double pct, bmlnElmnt**, bmlnElmnt** ) const;
                                    // Splits the element at percent orbitlength
@@ -425,9 +397,11 @@ private:
 
   /* All the work is done in friend ostream& operator<<(),
      placeholder for if descendants want to do somthing. */
-  virtual std::ostream& writeTo(std::ostream& os)       { return os; }
-  virtual std::istream& readFrom(std::istream& is)      { return is; }
-  friend std::ostream& operator<<(std::ostream&, bmlnElmnt&);
+
+  virtual std::ostream&    writeTo(std::ostream& os)      { return os; }
+  virtual std::istream&   readFrom(std::istream& is)      { return is; }
+
+  friend  std::ostream& operator<<(std::ostream&, bmlnElmnt&);
   friend bmlnElmnt* read_istream(std::istream&);
 
   std::string flavor;     // Allows for "flavors" of types of elements.
