@@ -45,6 +45,7 @@
 #include <mxyzptlk/Mapping.h>
 #include <beamline/beamline_elements.h>
 #include <beamline/BmlPtrList.h>
+#include <beamline/BeamlineIterator.h>
 #include <physics_toolkit/BmlUtil.h>
 
 using namespace std;

@@ -43,6 +43,8 @@
 #include <basic_toolkit/slist.h>  // This should not be necessary!!!
 
 #include <beamline/beamline_elements.h>
+#include <beamline/Particle.h>
+#include <beamline/ParticleBunch.h>
 #include <beamline/BeamlineIterator.h>
 #include <beamline/RefRegVisitor.h>
 
