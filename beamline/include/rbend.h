@@ -72,7 +72,6 @@ private:
                             // Used to propagate through constant magnetic
                             // field using bend angle and edge angle data.
 
-  bmlnElmnt::AsinFunctor  _myArcsin;
   void _calcPropParams();
 
   std::ostream& writeTo(std::ostream&);

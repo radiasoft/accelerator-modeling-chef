@@ -68,7 +68,6 @@ private:
                             // Used to propagate through constant magnetic
                             // field using bend angle and edge angle data.
 
-  bmlnElmnt::AsinFunctor  _myArcsin;
   void _calcPropParams();
 
   std::ostream& writeTo(std::ostream&);
@@ -97,8 +96,10 @@ public:
     // REMOVE: void makeApproximate();
     // REMOVE: void makeExact();
   private:
+
     double _fastArcsin( double x     ) const;
     Jet    _fastArcsin( const Jet& x ) const;
+
     // REMOVE: char   _approx;
   };
   static NoEdge_Prop NoEdge;
@@ -160,35 +161,6 @@ public:
   friend class InEdge_Prop;
   friend class OutEdge_Prop;
 
-  // REMOVE: friend class Null_Prop : public bmlnElmnt::PropFunc
-  // REMOVE: {
-  // REMOVE: public:
-  // REMOVE:   int operator()( bmlnElmnt*, Particle&    );
-  // REMOVE:   int operator()( bmlnElmnt*, JetParticle& );
-  // REMOVE:   const char* Type() const { return "sbend::Null_Prop"; }
-  // REMOVE: 
-  // REMOVE:   Null_Prop();
-  // REMOVE:   ~Null_Prop();
-  // REMOVE:   // REMOVE: char isApproximate();
-  // REMOVE:   // REMOVE: void makeApproximate();
-  // REMOVE:   // REMOVE: void makeExact();
-  // REMOVE:   void setPropagator( NoEdge_Prop* );
-  // REMOVE: private:
-  // REMOVE:   NoEdge_Prop* _myPropagator;
-  // REMOVE: };
-  // REMOVE: static Null_Prop AbortProp;
-
-  // REMOVE: friend class Approx_Prop : public bmlnElmnt::PropFunc
-  // REMOVE: {
-  // REMOVE: public:
-  // REMOVE:   int operator()( bmlnElmnt*, Particle&    );
-  // REMOVE:   int operator()( bmlnElmnt*, JetParticle& );
-  // REMOVE:   const char* Type() const { return "sbend::Fast_Prop"; }
-  // REMOVE: private:
-  // REMOVE:   double _fastArcsin( double x     ) const;
-  // REMOVE:   Jet    _fastArcsin( const Jet& x ) const;
-  // REMOVE: };
-  // REMOVE: static Approx_Prop Approx;
 
   void P_Face ( Particle&,    const double& /* psi */  ) const;
   void J_Face ( JetParticle&, const double& /* psi */  ) const;
@@ -235,7 +207,7 @@ public:
   // Public methods
   double setAngle(double a) { return (_angle = a); }
   double getAngle() const   { return _angle; }
-  // aliassed
+  // aliased
   double setBendAngle(double a) { return (_angle = a); }
   double getBendAngle() const   { return _angle; }
   
