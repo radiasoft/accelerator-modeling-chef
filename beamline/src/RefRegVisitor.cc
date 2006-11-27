@@ -56,6 +56,7 @@
 
 #include <beamline/RefRegVisitor.h>
 #include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/beamline.h>
 #include <beamline/CF_rbend.h>
 #include <beamline/CF_sbend.h>
 #include <beamline/rbend.h>
@@ -63,7 +64,6 @@
 #include <beamline/Slot.h>
 #include <beamline/rfcavity.h>
 #include <beamline/Particle.h>
-#include <beamline/beamline.h>
 #include <beamline/BeamlineIterator.h>
 
 // Static error codes
@@ -131,8 +131,8 @@ void RefRegVisitor::visitBeamline( beamline* x )
   // RF cavities in the line.
   if( _revolutionFrequency < 0 ) 
   {
+    double cumulativeCdt = 0.0;
     Particle* copy = _prtnPtr->Clone();
-    copy->set_cdt(0);
     bmlnElmnt* q;
     DeepBeamlineIterator dbi( *x );
 
@@ -144,12 +144,24 @@ void RefRegVisitor::visitBeamline( beamline* x )
       {
         q->setStrength( (q->Strength())*(momentum/_initialMomentum) );
       }
-      q->setReferenceTime(0);
-      q->propagate( *copy );
+      if( typeid(*q) == typeid(rfcavity) ) {
+        double xxx = copy->ReferenceBeta();
+        rfcavity* rfcPtr = dynamic_cast<rfcavity*>(q);
+        copy->SetReferenceEnergy( copy->ReferenceEnergy() + rfcPtr->Strength()*sin( rfcPtr->getPhi() ) );
+        xxx = ( xxx + copy->ReferenceBeta() ) / 2.0;
+        cumulativeCdt += ( rfcPtr->Length() / xxx );
+      }
+      else {
+        q->setReferenceTime(0);
+        copy->set_cdt(0);
+        q->propagate( *copy );
+        cumulativeCdt += copy->get_cdt();
+      }
     }
 
     // Store the total time of traversal as a frequency
-    _revolutionFrequency = PH_MKS_c /( copy->get_cdt() );
+    // REMOVE: _revolutionFrequency = PH_MKS_c /( copy->get_cdt() );
+    _revolutionFrequency = PH_MKS_c /cumulativeCdt;
 
     delete copy;
   }
