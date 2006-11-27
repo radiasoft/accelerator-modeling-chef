@@ -39,21 +39,10 @@
 #ifndef BEAMLINE_ELEMENTS_H
 #define BEAMLINE_ELEMENTS_H
 
-#include <cmath>
-#include <basic_toolkit/PhysicsConstants.h>
-#include <basic_toolkit/MathConstants.h>
-#include <basic_toolkit/slist.h>
-#include <basic_toolkit/Barnacle.h>
-#include <basic_toolkit/VectorD.h>
-#include <mxyzptlk/mxyzptlk.h>
-#include <beamline/Particle.h>
-
 // ****************
 // BEAMLINE CLASSES
 // ****************
 
-#include <beamline/bmlnElmnt.h>
-#include <beamline/beamline.h>
 #include <beamline/kick.h>
 #include <beamline/rfcavity.h>
 #include <beamline/srot.h>
@@ -73,20 +62,8 @@
 #include <beamline/BBLens.h>
 #include <beamline/septum.h>
 #include <beamline/lambertson.h>
-#include <beamline/BeamlineIterator.h>
-#include <beamline/circuit.h>
-#include <beamline/ICircuit.h>
-#include <beamline/FCircuit.h>
-#include <beamline/mover.h>
-#include <beamline/BipolarCircuit.h>
-#include <beamline/Aperture.h>
-#include <beamline/BmlVisitor.h>
-#include <beamline/FDPolarity.h>
-#include <beamline/MappPropFunc.h>
-#include <beamline/Particle.h>
-#include <beamline/ParticleBunch.h>
-#include <beamline/Slot.h>
 #include <beamline/combinedFunction.h>
 #include <beamline/pinger.h>
+#include <beamline/Slot.h>
 
 #endif // BEAMLINE_ELEMENTS_H
