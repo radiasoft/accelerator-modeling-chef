@@ -535,14 +535,17 @@ lattFunc beamline::whatIsLattice( char* n ) {
 
 
 void beamline::insert( bmlnElmnt* q ) {
+
+  if ( !q) throw GenericException( __FILE__, __LINE__,  "beamline::insert( bmlnElmnt* q )", "Error: Attempt to insert a null bmlnElmnt*.");  
+
  _theList.push_front(q);
  
  if( twissDone ) unTwiss();
 
  length += q -> length;
 
- if( typeid(*q) == typeid(beamline) )  
-      numElem += static_cast<beamline*>(q)->numElem;
+ if ( beamline* bml = dynamic_cast<beamline*>(q) )  
+      numElem += bml->numElem;
  else numElem++;
 }  
 
@@ -550,13 +553,16 @@ void beamline::insert( bmlnElmnt* q ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void beamline::append( bmlnElmnt* q ) {
+
+  if ( !q) throw GenericException( __FILE__, __LINE__, "beamline::append( bmlnElmnt* q )", "Error: Attempt to append a null bmlnElmnt*.");  
+
  _theList.push_back( q );
 
  if( twissDone ) unTwiss();
 
  length += q->length;
- if(   typeid(*q) == typeid(beamline) )  
-      numElem += ((beamline*) q)->numElem;
+ if(   beamline* bml = dynamic_cast<beamline*>(q) )  
+      numElem += bml->numElem;
  else numElem++;
 } 
 
