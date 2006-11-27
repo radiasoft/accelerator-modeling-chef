@@ -2,7 +2,7 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  MXYZPTLK:  A C++ implementation of differential algebra. 
+******  Basic Toolkit:  Low Level utility classes 
 ******                                    
 ******  File:      ReferenceCounter.h
 ******                                                                
@@ -32,8 +32,9 @@
 ****** Note:
 ****** -----
 ******
-****** The ReferenceCounter class uses the Curiously Recurring Template 
-****** idiom to provide compile-time polymorphism. 
+****** This version of the ReferenceCounter class uses the Curiously 
+****** Recurring Template idiom to provide compile-time polymorphism. 
+****** (needed for the dispose() function).
 ******
 ****** A derived class DerivedClass should be declared as follows:
 ******
@@ -73,12 +74,13 @@ void intrusive_ptr_release(ReferenceCounter<T>* p);
 template<typename T>
 class DLLEXPORT ReferenceCounter {
 
-  unsigned int _refcount; 
+  unsigned int refcount_; 
+
   T& toDerivedClass() { return static_cast<T&>(*this); }
 
  public:
 
-  ReferenceCounter( ): _refcount(0) {}
+  ReferenceCounter( ): refcount_(0) {}
   
   // NOTE: a locking mechanism needs to be provided in
   //       order to make the ref count manipulation
@@ -92,15 +94,15 @@ class DLLEXPORT ReferenceCounter {
 
 
   void add_ref() {
-    ++ _refcount;
+    ++ refcount_;
   }
 
   int release() {
-    return --_refcount;;
+    return --refcount_;;
   }
 
   int count() { 
-    return _refcount; 
+    return refcount_; 
   }
   
  protected:
@@ -127,13 +129,13 @@ class DLLEXPORT ReferenceCounter {
 template<typename T>
 inline void intrusive_ptr_add_ref(ReferenceCounter<T>* p)
 {
-    ++(p->_refcount);
+    ++(p->refcount_);
 }
 
 template<typename T>
 inline void intrusive_ptr_release(ReferenceCounter<T>* p)
 {
-    if ( --(p->_refcount) == 0 ) p->dispose(); 
+    if ( --(p->refcount_) == 0 ) p->dispose(); 
 } 
 
  
