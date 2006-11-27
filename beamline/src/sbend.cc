@@ -65,7 +65,6 @@ sbend::sbend()
   , _dsAngle(0.0)
   , _usTan(0.0)
   , _dsTan(0.0)
-  , _myArcsin(true)
 {
  _calcPropParams();
 }
@@ -80,7 +79,6 @@ sbend::sbend( double l, double s, double alpha, PropFunc* pf )
   , _dsAngle(0.0)
   , _usTan(0.0)
   , _dsTan(0.0)
-  , _myArcsin(true)
 {
  if ( fabs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
@@ -122,7 +120,6 @@ sbend::sbend( double l, double s, double alpha,
   , _dsAngle(-ds)
   , _usTan(tan(us))
   , _dsTan(-tan(ds))
-  , _myArcsin(true)
 {
  static bool firstTime = true;
  if ( fabs( alpha ) < 1.0e-9 ) {
@@ -198,7 +195,6 @@ sbend::sbend( const char* n, double l, double s, double alpha, PropFunc* pf )
   , _dsAngle(0.0)
   , _usTan(0.0)
   , _dsTan(0.0)
-  , _myArcsin(true)
 {
  if ( fabs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
@@ -240,7 +236,6 @@ sbend::sbend( const char* n, double l, double s, double alpha,
   , _dsAngle(-ds)
   , _usTan(tan(us))
   , _dsTan(-tan(ds))
-  , _myArcsin(true)
 {
  static bool firstTime = true;
  if ( fabs( alpha ) < 1.0e-9 ) {
@@ -342,7 +337,6 @@ sbend::sbend( const sbend& x )
   , _dphi(x._dphi)
   , _propPhase(x._propPhase)
   , _propTerm(x._propTerm)
-  , _myArcsin(x._myArcsin)
 {
   this->setupPropFunc();
 }
@@ -397,24 +391,6 @@ bool sbend::hasStandardFaces() const
   return ( (std::abs(_usEdgeAngle) < 1.0e-9) && (std::abs(_dsEdgeAngle) < 0.5e-9) );
 }
 
-
-void sbend::makeAsinApproximate( int n )
-{
-  _myArcsin.makeApproximate();
-  _myArcsin.setNumTerms(n);
-}
-
-
-void sbend::makeAsinExact()
-{
-  _myArcsin.makeExact();
-}
-
-
-bool sbend::isAsinExact()
-{
-  return _myArcsin.isExact();
-}
 
 
 void sbend::releasePropFunc()
