@@ -226,7 +226,7 @@ CHEFPlotData::setBeamline(const beamline* bml, bool clone)
   if (clone) 
   {
     _cloned = true;  
-    _bml = dynamic_cast<const beamline*>( bml->clone() );
+    _bml = dynamic_cast<const beamline*>( bml->Clone() );
   }  
   else 
   {
