@@ -67,7 +67,6 @@ rbend::rbend()
   , _dsAngle(-M_TWOPI)
   , _usTan(0.0)
   , _dsTan(0.0)
-  , _myArcsin(true)
 {
  _calcPropParams();
 }
@@ -81,7 +80,6 @@ rbend::rbend( double l, double s, PropFunc* pf )
   , _dsAngle(-M_TWOPI)
   , _usTan(0.0)
   , _dsTan(0.0)
-  , _myArcsin(true)
 {
  // This should never happen, but in case it does.
  if(pf == 0) {
@@ -100,7 +98,6 @@ rbend::rbend( const char* n, double l, double s, PropFunc* pf )
   , _dsAngle(-M_TWOPI)
   , _usTan(0.0)
   , _dsTan(0.0)
-  , _myArcsin(true)
 {
  // This should never happen, but in case it does.
  if(pf == 0) {
@@ -119,7 +116,6 @@ rbend::rbend( double l, double s, double entryangle, PropFunc* pf )
   , _dsAngle(-entryangle)
   , _usTan(tan(entryangle))
   , _dsTan(-tan(entryangle))
-  , _myArcsin(true)
 {
  static bool firstTime = true;
  if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-9) ) {
@@ -158,7 +154,6 @@ rbend::rbend( const char* n, double l, double s, double entryangle, PropFunc* pf
   , _dsAngle(-entryangle)
   , _usTan(tan(entryangle))
   , _dsTan(-tan(entryangle))
-  , _myArcsin(true)
 {
  static bool firstTime = true;
  if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-9) ) {
@@ -197,7 +192,6 @@ rbend::rbend( double l, double s, double us, double ds, PropFunc* pf )
   , _dsAngle(-M_TWOPI)
   , _usTan(0.0)
   , _dsTan(0.0)
-  , _myArcsin(true)
 {
  static bool firstTime = true;
  if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
@@ -252,7 +246,6 @@ rbend::rbend( const char* n, double l, double s, double us, double ds, PropFunc*
   , _dsAngle(-M_TWOPI)
   , _usTan(0.0)
   , _dsTan(0.0)
-  , _myArcsin(true)
 {
  static bool firstTime = true;
  if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
@@ -307,7 +300,6 @@ rbend::rbend( double l, double s, double entryangle, double us, double ds, PropF
   , _dsAngle(-(entryangle + ds))
   , _usTan(tan(entryangle + us))
   , _dsTan(-tan(entryangle + ds))
-  , _myArcsin(true)
 {
  static bool firstTime = true;
  if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-9) ) {
@@ -380,7 +372,6 @@ rbend::rbend( const char* n, double l, double s, double entryangle, double us, d
   , _dsAngle(-(entryangle + ds))
   , _usTan(tan(entryangle + us))
   , _dsTan(-tan(entryangle + ds))
-  , _myArcsin(true)
 {
  static bool firstTime = true;
  if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-9) ) {
@@ -474,7 +465,6 @@ rbend::rbend( const rbend& x )
   , _dphi(x._dphi)
   , _propPhase(x._propPhase)
   , _propTerm(x._propTerm)
-  , _myArcsin(x._myArcsin)
 {
   this->setupPropFunc();
 }
@@ -701,23 +691,6 @@ bool rbend::hasStandardFaces() const
 }
 
 
-void rbend::makeAsinApproximate( int n )
-{
-  _myArcsin.makeApproximate();
-  _myArcsin.setNumTerms(n);
-}
-
-
-void rbend::makeAsinExact()
-{
-  _myArcsin.makeExact();
-}
-
-
-bool rbend::isAsinExact()
-{
-  return _myArcsin.isExact();
-}
 
 
 // REMOVE: double rbend::setReferenceTime( const Particle& prtn )

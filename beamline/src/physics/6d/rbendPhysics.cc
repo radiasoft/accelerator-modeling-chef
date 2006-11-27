@@ -335,8 +335,8 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  
  // Step 3.
  double rho = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
- double dthmdphi =   (pbe->_myArcsin)( real(bi)/rho ) 
-                   - (pbe->_myArcsin)( real(bf)/rho );
+ double dthmdphi =   asin( real(bi)/rho ) 
+                   - asin( real(bf)/rho );
 
  // Step 4.
  std::complex<double>  expFactor( cos(dthmdphi), sin(dthmdphi) );
@@ -394,8 +394,8 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  // Step 3.
  Jet rho, dthmdphi;
  rho      = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
- dthmdphi =   (pbe->_myArcsin)( real(bi)/rho ) 
-            - (pbe->_myArcsin)( real(bf)/rho );
+ dthmdphi =   asin( real(bi)/rho ) 
+            - asin( real(bf)/rho );
 
  // Step 4.
  JetC expF, vuf, uf;
