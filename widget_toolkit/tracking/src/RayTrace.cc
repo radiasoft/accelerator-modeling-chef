@@ -1127,46 +1127,45 @@ void RayTrace::_pushParticle()
   // ??? This will eventually have to be changed.
   
   // Continuous operation
+  // --------------------
   if( _continuous ) 
   {
+    _p_timer->stop();
+
     if( _isIterating ) 
     {
-      // REMOVE: for( int i = 0; i < _number; i++ ) {
-      // REMOVE:   bmlPtr->propagate( *particlePtr );
-      // REMOVE: }
-
       // ??? This code fragment must be improved.
       // ??? It is written as a hack to prevent
       // ??? the program from hanging if the orbit 
       // ??? diverges.
       DeepBeamlineIterator dbi( *bmlPtr );
       bmlnElmnt* q = 0;
-      while( 0 != (q = dbi++) ) {
-        q->propagate( *particlePtr );
-        if(    (0.1 < std::abs(particlePtr->get_x())) 
-            || (0.1 < std::abs(particlePtr->get_y())) ) {
-          _p_timer->stop();
 
-          _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
-          _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
-          _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
-          _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() ); // sort.
+      for( int i = 0; i < _number; i++ ) {
+      	while( 0 != (q = dbi++) ) {
+      	  q->propagate( *particlePtr );
+      	  if(    (0.1 < std::abs(particlePtr->get_x())) 
+      	      || (0.1 < std::abs(particlePtr->get_y())) ) {
 
-          _p_leftWindow->updateGL();
-          _p_rightWindow->updateGL();
+      	    _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() );
+      	    _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() );
+      	    _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() );
+      	    _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() );
 
-          return;
-	}
+      	    _p_leftWindow->updateGL();
+      	    _p_rightWindow->updateGL();
+
+      	    return;
+      	  }
+      	}
+        dbi.reset();
       }
-
       _p_leftWindow->updateGL();
       _p_rightWindow->updateGL();
 
       _p_timer->start( 100, true );
     }
     else {
-      _p_timer->stop();
-
       _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
       _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
       _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
@@ -1175,11 +1174,12 @@ void RayTrace::_pushParticle()
   }
 
   // Single shot operation
+  // ---------------------
   else
   {
     if( _isIterating ) 
     {
-      // REMOVE: bmlPtr->propagate( *particlePtr );
+      _p_timer->stop();  // Probably unnecessary
 
       // ??? This code fragment must be improved.
       // ??? It is written as a hack to prevent
@@ -1191,21 +1191,20 @@ void RayTrace::_pushParticle()
         q->propagate( *particlePtr );
         if(    (0.1 < std::abs(particlePtr->get_x())) 
             || (0.1 < std::abs(particlePtr->get_y())) ) {
-      	  _p_leftWindow->updateGL();
-      	  _p_rightWindow->updateGL();
+          _p_leftWindow->updateGL();
+          _p_rightWindow->updateGL();
 
-      	  _isIterating = false;
-      	  _p_timer->stop();  // Probably unnecessary
-      	  _p_startBtn->setOn(false);
-      	  _p_startBtn->setText( "Trace" );
+          _isIterating = false;
+          _p_startBtn->setOn(false);
+          _p_startBtn->setText( "Trace" );
 
-      	  _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
-      	  _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
-      	  _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
-      	  _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() ); // sort.
+          _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
+          _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
+          _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
+          _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() ); // sort.
 
           return;
-	}
+        }
       }
 
       _p_leftWindow->updateGL();
