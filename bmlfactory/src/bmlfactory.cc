@@ -71,6 +71,7 @@ using namespace std;
 #include <basic_toolkit/iosetup.h> 
 #include <beamline/beamline_elements.h>
 #include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/PhysicsConstants.h>
 
 #include <functional>
 #include <algorithm>
@@ -325,7 +326,7 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
     return lbel;
   }
   
-  alignmentData* aligner = new alignmentData;
+  alignmentData aligner;
   
   switch ( bel->kind_ ) {
     case BEL_DRIFT: {
@@ -358,10 +359,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       if( true == simple ) {
         lbel = new sbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*angle/length, angle, e1, e2 );
         if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
-          aligner->xOffset = 0.0;
-          aligner->yOffset = 0.0;
-          aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_SBEND_TILT], var_table_, bel_table_ );
-          lbel->setAlignment( *aligner );
+          aligner.xOffset = 0.0;
+          aligner.yOffset = 0.0;
+          aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_SBEND_TILT], var_table_, bel_table_ );
+          lbel->setAlignment( aligner );
           // Ignored parameters: K1, K2, K3, E1, E2, TILT, H1, H2, HGAP, FINT
 	}
         break;
@@ -420,10 +421,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
           lbel = new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
         }
         if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
-          aligner->xOffset = 0.0;
-          aligner->yOffset = 0.0;
-          aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_RBEND_TILT], var_table_, bel_table_ );
-          lbel->setAlignment( *aligner );
+          aligner.xOffset = 0.0;
+          aligner.yOffset = 0.0;
+          aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_RBEND_TILT], var_table_, bel_table_ );
+          lbel->setAlignment( aligner );
         }
         // Ignored parameters: K1, K2, K3, E1, E2, H1, H2, HGAP, FINT
         break;
@@ -469,10 +470,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_QUADRUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_QUADRUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
-        aligner->xOffset = 0.0;
-        aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_QUADRUPOLE_TILT], var_table_, bel_table_ );
-        lbel->setAlignment( *aligner );
+        aligner.xOffset = 0.0;
+        aligner.yOffset = 0.0;
+        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_QUADRUPOLE_TILT], var_table_, bel_table_ );
+        lbel->setAlignment( aligner );
       }
       break;
     }
@@ -487,10 +488,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_SEXTUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_SEXTUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
-        aligner->xOffset = 0.0;
-        aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_SEXTUPOLE_TILT], var_table_, bel_table_ );
-        lbel->setAlignment( *aligner );
+        aligner.xOffset = 0.0;
+        aligner.yOffset = 0.0;
+        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_SEXTUPOLE_TILT], var_table_, bel_table_ );
+        lbel->setAlignment( aligner );
       }
       break;
     }
@@ -505,10 +506,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_OCTUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_OCTUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
-        aligner->xOffset = 0.0;
-        aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_OCTUPOLE_TILT], var_table_, bel_table_ );
-        lbel->setAlignment( *aligner );
+        aligner.xOffset = 0.0;
+        aligner.yOffset = 0.0;
+        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_OCTUPOLE_TILT], var_table_, bel_table_ );
+        lbel->setAlignment( aligner );
       }
       break;
     }
@@ -523,10 +524,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
         q = new thin2pole(BRHO_*k0l);
         roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T0], var_table_, bel_table_ );
         if( 0.0 != roll ) {
-          aligner->xOffset = 0.0;
-          aligner->yOffset = 0.0;
-          aligner->tilt    = roll;
-          q->setAlignment( *aligner );
+          aligner.xOffset = 0.0;
+          aligner.yOffset = 0.0;
+          aligner.tilt    = roll;
+          q->setAlignment( aligner );
 	}
         temp->append( q );
       }
@@ -536,10 +537,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
         q = new thinQuad( BRHO_*k1l );
         roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T1], var_table_, bel_table_ );
         if( 0.0 != roll ) {
-          aligner->xOffset = 0.0;
-          aligner->yOffset = 0.0;
-          aligner->tilt    = roll;
-          q->setAlignment( *aligner );
+          aligner.xOffset = 0.0;
+          aligner.yOffset = 0.0;
+          aligner.tilt    = roll;
+          q->setAlignment( aligner );
 	}
         temp->append( q );
       }
@@ -549,10 +550,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
         q = new thinSextupole( BRHO_*k2l/2.0 );
         roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T2], var_table_, bel_table_ );
         if( 0.0 != roll ) {
-          aligner->xOffset = 0.0;
-          aligner->yOffset = 0.0;
-          aligner->tilt    = roll;
-          q->setAlignment( *aligner );
+          aligner.xOffset = 0.0;
+          aligner.yOffset = 0.0;
+          aligner.tilt    = roll;
+          q->setAlignment( aligner );
 	}
         temp->append( q );
       }
@@ -562,10 +563,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
         q = new thinOctupole( BRHO_*k3l/6.0 );
         roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T3], var_table_, bel_table_ );
         if( 0.0 != roll ) {
-          aligner->xOffset = 0.0;
-          aligner->yOffset = 0.0;
-          aligner->tilt    = roll;
-          q->setAlignment( *aligner );
+          aligner.xOffset = 0.0;
+          aligner.yOffset = 0.0;
+          aligner.tilt    = roll;
+          q->setAlignment( aligner );
 	}
         temp->append( q );
       }
@@ -655,10 +656,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
-        aligner->xOffset = 0.0;
-        aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_HKICKER_TILT], var_table_, bel_table_ );
-        lbel->setAlignment( *aligner );
+        aligner.xOffset = 0.0;
+        aligner.yOffset = 0.0;
+        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_HKICKER_TILT], var_table_, bel_table_ );
+        lbel->setAlignment( aligner );
       }
       break;
     }
@@ -674,10 +675,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
-        aligner->xOffset = 0.0;
-        aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_VKICKER_TILT], var_table_, bel_table_ );
-        lbel->setAlignment( *aligner );
+        aligner.xOffset = 0.0;
+        aligner.yOffset = 0.0;
+        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_VKICKER_TILT], var_table_, bel_table_ );
+        lbel->setAlignment( aligner );
       }
       break;
     }
@@ -694,10 +695,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
-        aligner->xOffset = 0.0;
-        aligner->yOffset = 0.0;
-        aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_KICKER_TILT], var_table_, bel_table_ );
-        lbel->setAlignment( *aligner );
+        aligner.xOffset = 0.0;
+        aligner.yOffset = 0.0;
+        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_KICKER_TILT], var_table_, bel_table_ );
+        lbel->setAlignment( aligner );
       }
       break;
     }
@@ -754,10 +755,10 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       //      if ( ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->dvalue_ != 0.0 
       //        || ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->kind_ != NUMBER_EXPR ) {
       //
-      //  aligner->xOffset = 0.0;
-      //  aligner->yOffset = 0.0;
-      //  aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
-      //  lbel->setAlignment( *aligner );
+      //  aligner.xOffset = 0.0;
+      //  aligner.yOffset = 0.0;
+      //  aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
+      //  lbel->setAlignment( aligner );
       // }
 
       // It seems that under some circumstances, dvalue_ is unitialized when the above test
@@ -770,16 +771,16 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
       // a well-defined value for any unused parameter. -jfo
 
       if ( ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->kind_ != NUMBER_EXPR ) {    
-           aligner->xOffset = 0.0;
-           aligner->yOffset = 0.0;
-           aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
-           lbel->setAlignment( *aligner );
+           aligner.xOffset = 0.0;
+           aligner.yOffset = 0.0;
+           aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
+           lbel->setAlignment( aligner );
 
       } else if ( ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->dvalue_ != 0.0 ) {
-           aligner->xOffset = 0.0;
-           aligner->yOffset = 0.0;
-           aligner->tilt    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
-           lbel->setAlignment( *aligner );
+           aligner.xOffset = 0.0;
+           aligner.yOffset = 0.0;
+           aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
+           lbel->setAlignment( aligner );
       }
 
       break;
@@ -873,7 +874,6 @@ bmlfactory::beam_element_instantiate( beam_element* bel ) {
   p.lbel_ptr_ = lbel;
   bel_list_->push_back( p );
   
-  delete aligner;
 
   _bmlnElmnt_objects_list.push_back(lbel);
 
