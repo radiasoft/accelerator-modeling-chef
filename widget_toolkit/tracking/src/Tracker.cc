@@ -1846,65 +1846,80 @@ void Tracker::_tool_pdicOrb()
     // REMOVE: double energy = dummyPtr->Energy();
 
     JetParticle* jpPtr = 0;
-    for( unsigned int iterCount = 0; iterCount < ul; iterCount++ ) {
-      Jet__environment::BeginEnvironment( order );
-        coord  x(w(0)),  y(w(1)),  q(0.0),
-              px(w(3)), py(w(4)), qq(0.0);
-      Jet__environment::EndEnvironment();
+    try 
+    { for( unsigned int iterCount = 0; iterCount < ul; iterCount++ ) {
+        Jet__environment::BeginEnvironment( order );
+          coord  x(w(0)),  y(w(1)),  q(0.0),
+                px(w(3)), py(w(4)), qq(0.0);
+        Jet__environment::EndEnvironment();
   
-      #if 0
-      WHY IS THIS HERE???
-      Jet xsq;
-      Jet x1 = x;   // ??? This is most unfortunate.    ???
-      xsq = x1*x1;  // ??? Why do we have to define x1? ???
-      #endif
+        #if 0
+        WHY IS THIS HERE???
+        Jet xsq;
+        Jet x1 = x;   // ??? This is most unfortunate.    ???
+        xsq = x1*x1;  // ??? Why do we have to define x1? ???
+        #endif
   
-      dummyPtr->setState(w);
-      jpPtr = dummyPtr->ConvertToJetParticle();
-      Mapping stuff;
-      cout << "Begin n-th Henon iterate for n = "
-           << iterate
-           << endl;
-      for( unsigned int i = 0; i < iterate; i++ ) {
-        cout << "No." << (i+1) << endl;
-        bmlPtr->propagate( *jpPtr );
-      }
-      cout << "End n-th Henon iterate" << endl;
-  
-      stuff = jpPtr->State();
-  
-      MatrixD M(6,6), N(4,4);
-      int k [] = { 0, 1, 3, 4 };
-
-      M = stuff.Jacobian();
-      for( int i = 0; i < 4; i++ ) {
-        for( int j = 0; j < 4; j++ ) {
-          N(i,j) = M( k[i], k[j] );
+        dummyPtr->setState(w);
+        jpPtr = dummyPtr->ConvertToJetParticle();
+        Mapping stuff;
+        cout << "Begin n-th Henon iterate for n = "
+             << iterate
+             << endl;
+        for( unsigned int i = 0; i < iterate; i++ ) {
+          cout << "No." << (i+1) << endl;
+          bmlPtr->propagate( *jpPtr );
         }
-      }
-      for( int i = 0; i < 4; i++ ) { N( i, i ) -= 1.0; }
+        cout << "End n-th Henon iterate" << endl;
+  
+        stuff = jpPtr->State();
+  
+        MatrixD M(6,6), N(4,4);
+        int k [] = { 0, 1, 3, 4 };
 
-      N = N.inverse();
-
-      for( int i = 0; i < 4; i++ ) {
-        for( int j = 0; j < 4; j++ ) {
-          M( k[i], k[j] ) = N(i,j);
+        M = stuff.Jacobian();
+        for( int i = 0; i < 4; i++ ) {
+          for( int j = 0; j < 4; j++ ) {
+            N(i,j) = M( k[i], k[j] );
+          }
         }
-      }
-      for( int i = 0; i < 6; i++ ) {
-        M(i,2) = 0.0;
-        M(2,i) = 0.0;
-        M(i,5) = 0.0;
-        M(5,i) = 0.0;
-      }
+        for( int i = 0; i < 4; i++ ) { N( i, i ) -= 1.0; }
 
-      Vector z(w);
-      z = stuff(z);
+        N = N.inverse();
+
+        for( int i = 0; i < 4; i++ ) {
+          for( int j = 0; j < 4; j++ ) {
+            M( k[i], k[j] ) = N(i,j);
+          }
+        }
+        for( int i = 0; i < 6; i++ ) {
+          M(i,2) = 0.0;
+          M(2,i) = 0.0;
+          M(i,5) = 0.0;
+          M(5,i) = 0.0;
+        }
+
+        Vector z(w);
+        z = stuff(z);
  
-      w = w + M*( w - stuff(w) );
-      cout << w << endl;
+        w = w + M*( w - stuff(w) );
+        cout << w << endl;
+      }
     }
+    catch( const std::exception& ge ) 
+    { ostringstream uic;
+      uic << __FILE__ << ", line " << __LINE__
+          << ": Exception was thrown during computation of periodic orbit."
+          << "\nError message was:\n"
+          << ge.what();
+      QMessageBox::warning( 0, "CHEF: ERROR", uic.str().c_str() );
 
+      if( 0 != dummyPtr ) { delete dummyPtr; dummyPtr = 0; }
+      if( 0 != jpPtr    ) { delete jpPtr;    jpPtr    = 0; }
+      Jet__environment::setLastEnv(storedEnv);
+      delete wpu;
+      return;
+    }
 
     // A final test ...
     dummyPtr->setState(w);
