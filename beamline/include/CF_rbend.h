@@ -135,8 +135,6 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   void peekAt( double& s, const Particle& ) const;
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "CF_rbend") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
   
   double OrbitLength( const Particle& );

@@ -315,26 +315,9 @@ public:
 
 
   // Tagging methods
-  static const short BF_OK;
-  static const short BF_NULL_ARG;
-  static const short BF_BAD_START;
 
-  short       writeTag(  std::string const& );              // Replaces entire tag
-  short       writeTag(  std::string const& , short );      // starting position in tag
-                   
-  short       writeTag(  char const* newtag);               // Replaces entire tag
-  short       writeTag(  char const* newtag, short pos);    // starting position in tag
-                    
-  short       writeTag(  char );
-  short       writeTag(  char, short pos);                  // pos = position in tag
-
-  std::string readTag() const;                              // returns entire tag
-  std::string readTag(  short startpos, short n  ) const;   // n = no of characters read
-  short       readTag(  char* )                    const;
-  short       readTag(  char* returned_chars, short startpos, short n) const; 
-  char        readTag(  short pos )                 const;  // pos = position in tag
-
-  short       getTagSize() const;
+  void              setTag(  std::string const& tag){ tag_   = tag; }           
+  std::string       getTag()           const        { return tag_;  }  
 
 
   // Modifiers
@@ -368,20 +351,6 @@ public:
 
   virtual const char*  Name()             const { return ident; }
   virtual const char*  Type()             const = 0;
-  virtual bool isType( const char* c )          { return strcmp(c, "bmlnElmnt") == 0; }
-
-
-  void setFlavor( const std::string& x ) { flavor = x; }
-  void setFlavor( const char* x )        { flavor = x; }
-  std::string Flavor()                   { return flavor; }
-  std::string getFlavor()                { return flavor; }
-  std::string FlavorOrType()             { if( flavor.length() == 0 ) return std::string(this->Type());
-                                            else                      return flavor; 
-                                         }
-  std::string getFlavorOrType()
-                                         { if( flavor.length() == 0 ) return std::string(this->Type());
-                                           else                       return flavor;
-                                         }
 
 
   virtual double OrbitLength( const Particle& ) { return length; }
@@ -398,14 +367,14 @@ private:
   /* All the work is done in friend ostream& operator<<(),
      placeholder for if descendants want to do somthing. */
 
-  virtual std::ostream&    writeTo(std::ostream& os)      { return os; }
-  virtual std::istream&   readFrom(std::istream& is)      { return is; }
+  virtual std::ostream&    writeTo(std::ostream      & os) {return os;}     
+  virtual std::istream&   readFrom(std::istream      & is) {return is;}
 
   friend  std::ostream& operator<<(std::ostream&, bmlnElmnt&);
+
   friend bmlnElmnt* read_istream(std::istream&);
 
-  std::string flavor;     // Allows for "flavors" of types of elements.
-  std::string  _tag;
+  std::string  tag_;
 };
 
 

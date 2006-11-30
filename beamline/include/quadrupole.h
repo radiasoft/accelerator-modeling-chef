@@ -87,6 +87,9 @@ public:
 
 
   quadrupole( const quadrupole& );
+
+  quadrupole* Clone() const { return new quadrupole( *this ); }
+
   ~quadrupole();
 
   void setStrength( double );
@@ -104,11 +107,8 @@ public:
   void eliminate();
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "quadrupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  quadrupole* Clone() const { return new quadrupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 } ;
 
@@ -119,7 +119,10 @@ public:
   thinQuad( double );    // B'L in Tesla; + = horizontally focussing
   thinQuad( const char*, // name
             double );    // B'L in Tesla; + = horizontally focussing
-  thinQuad( const thinQuad& );
+  thinQuad( thinQuad const& );
+
+  thinQuad* Clone() const { return new thinQuad( *this ); }
+
   ~thinQuad();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -130,12 +133,9 @@ public:
   void accept( BmlVisitor& v ) { v.visitThinQuad( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitThinQuad( this ); }
 
+  bool  isMagnet()   const;
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "thinQuad") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  bool isMagnet() const;
   
-  thinQuad* Clone() const { return new thinQuad( *this ); }
 } ;
 
 

@@ -33,11 +33,9 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 
 #ifndef RBEND_H
 #define RBEND_H
@@ -310,6 +308,9 @@ public:
   // REMOVE:        PropFunc*    = &rbend::Exact );
 
   rbend( const rbend& );
+
+  rbend* Clone() const { return new rbend( *this ); }
+
   ~rbend();
 
   void releasePropFunc();
@@ -350,11 +351,8 @@ public:
   bool isAsinExact();
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "rbend") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  rbend* Clone() const { return new rbend( *this ); }
   double OrbitLength( const Particle& );
     // Computes arclength of orbit assuming a symmetric bend.
     // WARNING: This is not the true arclength under all conditions.

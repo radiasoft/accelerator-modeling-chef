@@ -53,6 +53,7 @@ public:
              double,       /* length   */
              double        /* strength */ );
   sextupole( const sextupole& );
+  sextupole* Clone() const { return new sextupole( *this ); }
   ~sextupole();
 
   void setStrength( double );
@@ -68,11 +69,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitSextupole( this ); }
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "sextupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  sextupole* Clone() const { return new sextupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 } ;
 
@@ -86,6 +84,7 @@ public:
   thinSextupole( const char*   /* name */,
                  double        /* strength */ );
   thinSextupole( const thinSextupole& );
+  thinSextupole* Clone() const { return new thinSextupole( *this ); }
   ~thinSextupole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -96,11 +95,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThinSextupole( this ); }
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "thinSextupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  thinSextupole* Clone() const { return new thinSextupole( *this ); }
 } ;
 
 #endif // SEXTUPOLE_H

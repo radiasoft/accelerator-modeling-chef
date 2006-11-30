@@ -75,6 +75,9 @@ public:
             double* s );   // reference state for extraction beamline.
   
   thinLamb( const thinLamb& );
+
+  thinLamb* Clone() const { return new thinLamb( *this ); }
+
   ~thinLamb();
   
   void setSeptum( double x); 
@@ -93,10 +96,6 @@ public:
   void eliminate();
   
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "thinLamb") != 0 ) return bmlnElmnt::isType(c); else return true; }
-
-  thinLamb* Clone() const { return new thinLamb( *this ); }
 };
  
 

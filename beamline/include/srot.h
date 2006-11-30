@@ -51,6 +51,7 @@ public:
   srot( const char * /* name */ );
   srot( const char * /* name */, double /* strength */ );
   srot( const srot& );
+  srot* Clone() const { return new srot( *this ); }
   ~srot();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -61,9 +62,6 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitSrot( this ); }
 
   const char* Type() const;
-  virtual bool isType( const char* c ) 
-  { if ( strcmp(c, "srot") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  srot* Clone() const { return new srot( *this ); }
 };
 
 #endif // SROT_H

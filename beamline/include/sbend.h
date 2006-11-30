@@ -201,6 +201,9 @@ public:
          PropFunc*    = &sbend::Exact );
 
   sbend( const sbend& );
+
+  sbend* Clone() const { return new sbend( *this ); }
+
   ~sbend();
 
 
@@ -248,11 +251,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitSbend( this ); }
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "sbend") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  sbend* Clone() const { return new sbend( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 };
 

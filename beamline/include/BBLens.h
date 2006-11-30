@@ -73,7 +73,10 @@ public:
              /* pointer to an array containing
                 three values for 6 X invariant emittance [m] / pi  */
         );
-  BBLens( const BBLens& );
+  BBLens( BBLens const& );
+
+  BBLens* Clone() const { return new BBLens( *this ); }
+
   ~BBLens();
 
   char useRound;         // By default = 1
@@ -112,10 +115,7 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitBBLens( this ); }
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "BBLens") != 0 ) return bmlnElmnt::isType(c); else return true; }
 
-  bmlnElmnt* Clone() const { return new BBLens( *this ); }
   Vector Beta();
   void GetSigma( double* );
 };

@@ -70,6 +70,9 @@ public:
 	    double x ); 
   
   thinSeptum( const thinSeptum& );
+
+  thinSeptum* Clone() const { return new thinSeptum( *this ); }
+
   ~thinSeptum();
   
   void setStrengths( double sPos, double sNeg); 
@@ -85,10 +88,7 @@ public:
   void eliminate();
   
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "thinSeptum") != 0 ) return bmlnElmnt::isType(c); else return true; }
 
-  thinSeptum* Clone() const { return new thinSeptum( *this ); }
 
 };
  

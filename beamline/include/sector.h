@@ -105,6 +105,9 @@ public:
           PropFunc*    = &sector::defaultPropagate );
 
   sector( const sector& );
+
+  sector* Clone() const { return new sector( *this ); }
+
   ~sector();
 
   void eliminate();
@@ -123,10 +126,7 @@ public:
   void setLength( double );
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "sector") != 0 ) return bmlnElmnt::isType(c); else return true; }
 
-  sector* Clone() const { return new sector( *this ); }
 } ;
 
 
