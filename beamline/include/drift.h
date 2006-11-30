@@ -47,21 +47,27 @@
 class DLLEXPORT drift : public bmlnElmnt
 {
 public:
+
   drift();
-  drift( double );             // length of drift in meters
-  drift( const char* );        // name
-  drift( const char*,          // name
-         double );             // length of drift in meters
-  drift( const drift& );
+  drift( double length);             // length of drift in meters
+  drift( char const* name);     
+  drift( char const* name, double length); 
+  drift( drift const& );
+
+  drift* Clone() const { return new drift( *this ); }
+
   ~drift();
 
   void accept( BmlVisitor& v ) { v.visitDrift( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitDrift( this ); }
 
   const char* Type() const;
-  virtual bool isType(const char* c) 
-  { if ( strcmp(c, "drift") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  drift* Clone() const { return new drift( *this ); }
+
+ private:
+
+  friend std::ostream& operator<<(std::ostream&, bmlnElmnt&);
+  friend bmlnElmnt*    read_istream(std::istream&);
+
 } ;
 
 #endif // DRIFT_H

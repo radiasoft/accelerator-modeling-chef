@@ -51,6 +51,7 @@ public:
   thin2pole( const char*  /* name */,
              double /* strength */ );
   thin2pole( const thin2pole& );
+  thin2pole* Clone() const { return new thin2pole( *this ); }
   ~thin2pole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -61,11 +62,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThin2pole( this ); }
 
   const char* Type() const;
-  virtual bool isType(const char* c) 
-  { if ( strcmp(c, "thin2pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  thin2pole* Clone() const { return new thin2pole( *this ); }
 } ;
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -79,6 +77,7 @@ public:
   thin12pole( const char*  /* name */,
               double /* strength */ );
   thin12pole( const thin12pole& );
+  thin12pole* Clone() const { return new thin12pole( *this ); }
   ~thin12pole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -89,11 +88,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThin12pole( this ); }
 
   const char* Type() const;
-  virtual bool isType(const char* c) 
-  { if ( strcmp(c, "thin12pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  thin12pole* Clone() const { return new thin12pole( *this ); }
 } ;
 
 
@@ -107,6 +103,7 @@ public:
   thin14pole( const char*  /* name */,
               double /* strength */ );
   thin14pole( const thin14pole& );
+  thin14pole* Clone() const { return new thin14pole( *this ); }
   ~thin14pole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -117,11 +114,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThin14pole( this ); }
 
   const char* Type() const;
-  virtual bool isType(const char* c) 
-  { if ( strcmp(c, "thin14pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  thin14pole* Clone() const { return new thin14pole( *this ); }
 } ;
 
 
@@ -135,6 +129,7 @@ public:
   thin16pole( const char*  /* name */,
               double /* strength */ );
   thin16pole( const thin16pole& );
+  thin16pole* Clone() const { return new thin16pole( *this ); }
   ~thin16pole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -145,11 +140,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThin16pole( this ); }
 
   const char* Type() const;
-  virtual bool isType(const char* c) 
-  { if ( strcmp(c, "thin16pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  thin16pole* Clone() const { return new thin16pole( *this ); }
 } ;
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -163,6 +155,7 @@ public:
   thin18pole( const char*  /* name */,
               double /* strength */ );
   thin18pole( const thin18pole& );
+  thin18pole* Clone() const { return new thin18pole( *this ); }
   ~thin18pole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -173,11 +166,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThin18pole( this ); }
 
   const char* Type() const;
-  virtual bool isType(const char* c) 
-  { if ( strcmp(c, "thin18pole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  thin18pole* Clone() const { return new thin18pole( *this ); }
 } ;
 
 
@@ -191,6 +181,7 @@ public:
   thinMultipole( const char*  /* name */,
                 double /* strength */ );
   thinMultipole( const thinMultipole& );
+  thinMultipole* Clone() const { return new thinMultipole( *this ); }
   ~thinMultipole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -201,11 +192,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThinMultipole( this ); }
 
   const char* Type() const;
-  virtual bool isType(const char* c) 
-  { if ( strcmp(c, "thinMultipole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  thinMultipole* Clone() const { return new thinMultipole( *this ); }
 } ;
 
 #endif // THINPOLES_H

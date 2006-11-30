@@ -58,6 +58,8 @@ public:
          double );         // kick size in radians
   hkick( const hkick& );
 
+  virtual hkick* Clone() const { return new hkick( *this ); }
+
   ~hkick();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -65,9 +67,6 @@ public:
   void localPropagate( JetParticle& );
 
   const char* Type() const;
-  virtual bool isType(const char* c) 
-  { if ( strcmp(c, "hkick") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  virtual hkick* Clone() const { return new hkick( *this ); }
 
   void accept( BmlVisitor& v ) { v.visitHkick( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitHkick( this ); }
@@ -86,6 +85,9 @@ public:
          double,            // length
          double  );         // kick size in radians
   vkick( const vkick& );
+
+  vkick* Clone() const { return new vkick( *this ); }
+
   ~vkick();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -96,9 +98,6 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitVkick( this ); }
 
   const char* Type() const;
-  virtual bool isType(const char* c) 
-  { if ( strcmp(c, "vkick") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  vkick* Clone() const { return new vkick( *this ); }
 };
 
 

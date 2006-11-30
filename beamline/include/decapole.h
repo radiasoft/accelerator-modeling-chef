@@ -61,9 +61,7 @@ public:
   void accept( ConstBmlVisitor& v ) const  { v.visitThinDecapole( this ); }
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "thinDecapole") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  bool isMagnet() const;
+  bool isMagnet()    const;
 
    thinDecapole* Clone() const { return new thinDecapole( *this ); }
 } ;

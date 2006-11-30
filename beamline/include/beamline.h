@@ -73,6 +73,7 @@ class beamline: public bmlnElmnt {
  friend class DeepBeamlineIterator;
  friend class DeepReverseBeamlineIterator;
 
+
 public:
   enum LineMode { line, ring, unknown };
 
@@ -221,17 +222,17 @@ public:
   friend beamline& operator-( beamline const& );
 
 
-  int startAt( const bmlnElmnt*,     // Resets the "beginning" of the
-               int = 1 );            // beamline to the element given
-                                     // by the argument. Should be used
-                                     // only for rings. Returns non-zero
-                                     // if error occurs (esp., no such
-                                     // element. The optional integer
-                                     // argument allows one to reset to
-                                     // nth occurrence of the element.
-  int startAt( const char*,          // Resets the "beginning" of the
-               int = 1 );            // beamline to the element whose
-                                     // name is given by the argument.
+  int startAt( bmlnElmnt const*, // Resets the "beginning" of the
+               int = 1 );               // beamline to the element given
+                                        // by the argument. Should be used
+                                        // only for rings. Returns non-zero
+                                        // if error occurs (esp., no such
+                                        // element. The optional integer
+                                        // argument allows one to reset to
+                                        // nth occurrence of the element.
+  int startAt( const char*,             // Resets the "beginning" of the
+               int = 1 );               // beamline to the element whose
+                                        // name is given by the argument.
 
 
   sector* makeSector ( int, JetParticle& );
@@ -267,6 +268,7 @@ public:
   // Change geometry of the line
 
   bool     setAlignment( alignmentData const& );
+ 
   BmlPtrList   moveRelX( bmlnElmnt*, double, int* = 0 );
   BmlPtrList   moveRelY( bmlnElmnt*, double, int* = 0 );
   BmlPtrList   moveRelZ( bmlnElmnt*, double, int* = 0 );
@@ -410,10 +412,6 @@ public:
   { return nominalEnergy; }
 
   const char*  Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "beamline") != 0 ) return bmlnElmnt::isType(c); 
-    else return true; 
-  }
   bool isFlat();
 
   beamline* Clone() const;

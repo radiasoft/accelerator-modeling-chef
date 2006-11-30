@@ -55,11 +55,16 @@ protected:
   double*       _rgr;
   
 public:
+
   // Constructors
   monitor();
   monitor( const char* /*name*/ );
   monitor( const char* /*name*/, double /*length*/ );
   monitor( const monitor& );
+
+  monitor* Clone() const 
+  { return new monitor( *this ); }
+
   virtual ~monitor();
 
   // ---------------------
@@ -99,13 +104,7 @@ public:
   
   inline bool State() const { return _onOffSwitch; }
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "monitor") != 0 ) return bmlnElmnt::isType(c); 
-    else return true;
-  }
 
-  monitor* Clone() const 
-  { return new monitor( *this ); }
 };
 
 
@@ -118,6 +117,10 @@ public:
   hmonitor( const char* /*name*/ );
   hmonitor( const char*, double ); 
   hmonitor( const hmonitor& );
+
+  hmonitor* Clone() const 
+  { return new hmonitor( *this ); }
+
   virtual ~hmonitor();
 
   double operator[]( int );    // Readout of data
@@ -128,13 +131,6 @@ public:
 
   const char* Type() const;
 
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "hmonitor") != 0 ) return monitor::isType(c); 
-    else return true; 
-  }
-
-  hmonitor* Clone() const 
-  { return new hmonitor( *this ); }
 } ;
 
 
@@ -146,6 +142,10 @@ public:
   vmonitor( const char* /*name*/ );
   vmonitor( const char*, double ); 
   vmonitor( const vmonitor& );
+
+  vmonitor* Clone() const 
+  { return new vmonitor( *this ); }
+
   virtual ~vmonitor();
 
   double operator[]( int );    // Readout of data
@@ -155,12 +155,7 @@ public:
   void localPropagate( JetParticle& );
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "vmonitor") != 0 ) return monitor::isType(c); 
-    else return true; 
-  }
-  vmonitor* Clone() const 
-  { return new vmonitor( *this ); }
+
 } ;
 
 

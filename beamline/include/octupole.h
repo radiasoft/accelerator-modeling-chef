@@ -52,6 +52,8 @@ public:
             double,       /* length   */
             double        /* strength */ );
   octupole( const octupole& );
+  octupole* Clone() const { return new octupole( *this ); }
+
   ~octupole();
 
   void accept( BmlVisitor& v ) { v.visitOctupole( this ); }
@@ -67,11 +69,8 @@ public:
   void localPropagate( JetParticle& );
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "octupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
 
-  octupole* Clone() const { return new octupole( *this ); }
   void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
 };
 
@@ -85,6 +84,9 @@ public:
   thinOctupole( const char*  /* name */,
                 double       /* strength */ );
   thinOctupole( const thinOctupole& );
+
+  thinOctupole* Clone() const { return new thinOctupole( *this ); }
+
   ~thinOctupole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -95,11 +97,8 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitThinOctupole( this ); }
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "thinOctupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
   bool isMagnet() const;
   
-  thinOctupole* Clone() const { return new thinOctupole( *this ); }
 } ;
 
 #endif // OCTUPOLE_H

@@ -49,6 +49,9 @@ public:
   marker();                   // Data to be written to standard output
   marker( const char* );      // Name identifier.
   marker( const marker& );
+
+  marker* Clone() const { return new marker( *this ); }
+
   ~marker();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -59,9 +62,6 @@ public:
   void accept( ConstBmlVisitor& v ) const { v.visitMarker( this ); }
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "marker") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  marker* Clone() const { return new marker( *this ); }
 } ;
 
 #endif // MARKER_H

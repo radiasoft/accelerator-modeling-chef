@@ -104,6 +104,8 @@ public:
             double    // R shunt impedance
           );
   rfcavity( const rfcavity& );
+
+  rfcavity* Clone() const { return new rfcavity( *this ); }
   ~rfcavity();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -119,9 +121,6 @@ public:
   void eliminate();
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "rfcavity") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  rfcavity* Clone() const { return new rfcavity( *this ); }
   inline double getPhi() const { return phi_s; }
   inline double getFrequency() const { return w_rf; }
   inline double getQ() const { return Q; }
@@ -177,6 +176,7 @@ public:
                 double    // R shunt impedance
                 );
   thinrfcavity( const thinrfcavity& );
+  thinrfcavity* Clone() const { return new thinrfcavity( *this ); }
   ~thinrfcavity();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -189,9 +189,7 @@ public:
   void eliminate();
 
   const char* Type() const;
-  virtual bool isType( const char* c )
-  { if ( strcmp(c, "thinrfcavity") != 0 ) return bmlnElmnt::isType(c); else return true; }
-  thinrfcavity* Clone() const { return new thinrfcavity( *this ); }
+
   inline double getPhi() const { return phi_s; }
   inline double getFrequency() const { return w_rf; }
   inline double getQ() const { return Q; }
