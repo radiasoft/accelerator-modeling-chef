@@ -91,15 +91,12 @@ BBLens::BBLens( const char*   nm,
 }
 
 
-BBLens::BBLens( const BBLens& x )
-: bmlnElmnt( (bmlnElmnt&) x )
+BBLens::BBLens( BBLens const& x )
+: bmlnElmnt( x ), gamma(x.gamma), num(x.num),  useRound( x.useRound)
 {
-  int i;
-  for( i = 0; i < 3; i++ ) emittance[i] = x.emittance[i];
-  for( i = 0; i < 3; i++ ) sigma[i] = x.sigma[i];
-  gamma = x.gamma;
-  num = x.num;
-  useRound = x.useRound;
+  for( int i = 0; i < 3; ++i ) emittance[i] = x.emittance[i];
+  for( int i = 0; i < 3; ++i )     sigma[i] = x.sigma[i];
+
 }
 
 
