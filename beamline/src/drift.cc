@@ -47,20 +47,16 @@ using namespace std;
 //   class drift 
 // **************************************************
 
-drift::drift() : bmlnElmnt() {
-}
+drift::drift() : bmlnElmnt() {}
 
-drift::drift( const char* n ) : bmlnElmnt(n) {
-}
+drift::drift( const char* n ) : bmlnElmnt(n) {}
 
-drift::drift( double l ) : bmlnElmnt(l) {
-}
+drift::drift( double l ) : bmlnElmnt(l)      {}
 
 drift::drift( const char* n, double l ) : bmlnElmnt( n, l ) {}
 
 
-drift::drift( drift const& x ): bmlnElmnt(x) 
-{ }
+drift::drift( drift const& x ): bmlnElmnt(x) { }
 
 drift::~drift() {}
 
