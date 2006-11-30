@@ -102,20 +102,6 @@ return call_method<double>(_self, "OrbitLength"); }
 
 
 
-short          (bmlnElmnt::*readTag1)(char*, short, short) const   = &bmlnElmnt::readTag;
-short          (bmlnElmnt::*readTag2)(char*) const                 = &bmlnElmnt::readTag;
-char           (bmlnElmnt::*readTag3)(short) const                 = &bmlnElmnt::readTag;
-std::string    (bmlnElmnt::*readTag4)(short,short) const           = &bmlnElmnt::readTag;
-std::string    (bmlnElmnt::*readTag5)() const                      = &bmlnElmnt::readTag;
-
-   // short (bmlnElmnt::*writeTag1)     (char)                                    = &bmlnElmnt::writeTag;
-short (bmlnElmnt::*writeTag2)     (char,short)                              = &bmlnElmnt::writeTag;
-short (bmlnElmnt::*writeTag3)     (const char*,short)                       = &bmlnElmnt::writeTag;
-short (bmlnElmnt::*writeTag4)     (const char*)                             = &bmlnElmnt::writeTag;
-short (bmlnElmnt::*writeTag5)     (const std::string&,short)                = &bmlnElmnt::writeTag;
-short (bmlnElmnt::*writeTag6)     (const std::string&)                      = &bmlnElmnt::writeTag;
-
-
 void (bmlnElmnt::*propagateParticle)     (Particle&      ) = &bmlnElmnt::propagate;
 void (bmlnElmnt::*propagateJetParticle)  (JetParticle&   ) = &bmlnElmnt::propagate;
 void (bmlnElmnt::*propagateParticleBunch)(ParticleBunch& ) = &bmlnElmnt::propagate;
@@ -140,18 +126,8 @@ void wrap_bmlnelmnt() {
     .def("propagateParticle",             propagateParticle)
     .def("propagateJetParticle",          propagateJetParticle )
     .def("propagateParticleBunch",        propagateParticleBunch )
-       //    .def("writeTag",                 writeTag1)
-    .def("writeTag",                 writeTag2)
-    .def("writeTag",                 writeTag3)
-    .def("writeTag",                 writeTag4)
-    .def("writeTag",                 writeTag5)
-    .def("writeTag",                 writeTag6)
-    .def("readTag1",                 readTag1)
-    .def("readTag2",                 readTag2)
-    .def("readTag3",                 readTag3)
-    .def("readTag4",                 readTag4)
-    .def("readTag5",                 readTag5)
-    .def("getTagSize",               &bmlnElmnt::getTagSize)
+    .def("getTag",                   &bmlnElmnt::getTag)
+    .def("setTag",                   &bmlnElmnt::setTag)
     .def("setShunt",                 &bmlnElmnt::setShunt)
     .def("getShunt",                 &bmlnElmnt::getShunt)
       /****  virtual functions ***/ 
