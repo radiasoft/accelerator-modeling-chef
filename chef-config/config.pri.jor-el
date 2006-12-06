@@ -46,7 +46,7 @@ BOOST_LIBDIR   =    $${BOOST_INSTALL_TOP_DIR}/lib
 GLIB_LIBDIR    =    $${GLIB_INSTALL_TOP_DIR}/lib
 FNAL_LIBDIR    =    $${FNAL_INSTALL_TOP_DIR}/lib
 CHEF_LIBDIR    =    $${CHEF_INSTALL_TOP_DIR}/lib
-QUTEXR_LIBDIR  =    $${QUTEXR_INSTALL_TOPDIR}/lib
+QUTEXR_LIBDIR  =    $${QUTEXR_INSTALL_TOP_DIR}/lib
 PYTHON_LIBDIR  =    $${PYTHON_INSTALL_TOP_DIR}/lib/python$${PYTHON_VERSION}/config
 
 ################################################################################
