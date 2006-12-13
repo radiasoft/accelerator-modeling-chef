@@ -74,13 +74,9 @@ int main( int argc, char** argv )
 
   QSplashScreen *splash = new QSplashScreen( (const char**) chef_logo_preview_xpm );
 
-  time_t theTime;
-  time( &theTime );
-  char timeString[65];
-  size_t stored = strftime( timeString, 64, "BUILD DATE: %A. %B %d, %Y.", localtime(&theTime) );
-
-  splash->message(timeString, (Qt::AlignHCenter | Qt::AlignBottom), QColor("White") );
-
+  std::stringstream uic;
+  uic << "BUILD DATE: " << __DATE__ << " at " << __TIME__;
+  splash->message( uic.str().c_str(), (Qt::AlignHCenter | Qt::AlignBottom), QColor("White") );
   splash->show();
 
   gui = new CHEFGUI( 0, "CHEF", Qt::WDestructiveClose);
