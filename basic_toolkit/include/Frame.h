@@ -66,9 +66,9 @@ class DLLEXPORT Frame
 
    Frame& operator=( const Frame& );
    
-   short int setOrigin   ( const Vector& );
-   short int setAxis     ( int, const Vector& );
-   short int setDualAxis ( int, const Vector& );
+   int setOrigin   ( const Vector& );
+   int setAxis     ( int, const Vector& );
+   int setDualAxis ( int, const Vector& );
 
    bool setOrthonormalAxes( const MatrixD& );
 
@@ -88,11 +88,11 @@ class DLLEXPORT Frame
    Vector  getzAxis()         const;
    MatrixD getAxes()          const;
 
-   short int rotate    ( double,        // rotation angle [ radians ]
+   int rotate    ( double,        // rotation angle [ radians ]
                          const Vector&, // axis of rotation (right-hand sense)
                          bool = true    // false -> do not rotate origin
                        );
-   short int translate ( const Vector&  // displacement of origin
+   int translate ( const Vector&  // displacement of origin
                        );
    void      reset();
 
