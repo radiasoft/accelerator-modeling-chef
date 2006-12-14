@@ -294,9 +294,13 @@ void TJLterm<T>::array_deallocate(TJLterm<T>* p) {
 template<typename T>
 TJLterm<T>& TJLterm<T>::operator=( TJLterm<T> const& x ) 
 {
+
+ if (&x == this) return *this;
+
  _weight  = x._weight;
  _value   = x._value;
  _index   = x._index;
+
  return *this;
 }
 

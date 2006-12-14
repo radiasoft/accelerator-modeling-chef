@@ -226,6 +226,8 @@ void TJet<T>::setVariable( const int& j )
 template<typename T>
 TJet<T>& TJet<T>::operator=( const TJet& x ) 
 {
+
+  if (&x == this) return *this;
   
   _jl = x._jl;
   return *this;

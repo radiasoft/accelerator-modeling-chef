@@ -350,6 +350,59 @@ std::istream& operator>>(std::istream&, TJet<double >&);
 //=======================================================================================================
 
 template
+class std::vector<TJet<double> >;
+
+template
+class std::vector<TJet<std::complex<double> > >;
+
+static std::vector<TJet<double> >::iterator                  dummy_iter_1;
+
+static std::vector<TJet<std::complex<double> > >::iterator   dummy_iter_2;
+
+static std::vector<TJet<double> >::const_iterator            dummy_iter_3;
+
+std::vector<TJet<std::complex<double> > >::const_iterator    dummy_iter_4;
+
+
+template
+void std::fill( vector<TJet<double> >::iterator, vector<TJet<double> >::iterator, TJet<double> const&);
+
+template
+void std::fill( vector<TJet<std::complex<double> > >::iterator, vector<TJet<std::complex<double> > >::iterator,  TJet<complex<double> > const&);
+
+template
+vector<TJet<double> >::iterator std::fill_n(vector<TJet<double> >::iterator, unsigned int, TJet<double> const&);
+
+template
+vector<TJet<std::complex<double> > >::iterator std::fill_n(vector<TJet<std::complex<double> > >::iterator, unsigned int, TJet<std::complex<double> > const&);
+
+
+template
+void std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<TJet<std::complex<double> >*, std::vector<TJet<std::complex<double> >, std::allocator<TJet<std::complex<double> > > > >, unsigned int, TJet<std::complex<double> > const&, std::allocator<TJet<std::complex<double> > >);
+
+template
+void std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<TJet<double>*, std::vector<TJet<double>, std::allocator<TJet<double> > > >, unsigned int, TJet<double> const&, std::allocator<TJet<double> >);
+
+
+template
+void std::__uninitialized_fill_n_a(TJet<double>*, unsigned int, TJet<double> const&, std::allocator<TJet<double> >);
+
+template
+void std::__uninitialized_fill_n_a(TJet<std::complex<double> >*, unsigned int, TJet<std::complex<double> > const&, std::allocator<TJet<std::complex<double> > >);
+
+template
+void std::__uninitialized_fill_n_aux(__gnu_cxx::__normal_iterator<TJet<double>*, std::vector<TJet<double>, std::allocator<TJet<double> > > >, unsigned int, TJet<double> const&, __false_type);
+
+template
+void std::__uninitialized_fill_n_aux(TJet<double>*, unsigned int, TJet<double> const&, __false_type);
+
+template
+void std::__uninitialized_fill_n_aux(__gnu_cxx::__normal_iterator<TJet<std::complex<double> >*, std::vector<TJet<std::complex<double> >, std::allocator<TJet<std::complex<double> > > > >, unsigned int, TJet<std::complex<double> > const&, __false_type);
+
+template
+void std::__uninitialized_fill_n_aux(TJet<std::complex<double> >*, unsigned int, TJet<std::complex<double> > const&, __false_type);
+
+template
 class std::deque<Tcoord<double>* >;
 
 template
@@ -379,6 +432,9 @@ void std::fill(std::_Deque_iterator<Tcoord<double >*, Tcoord<double >*&, Tcoord<
 
 template
 void std::fill(std::_Deque_iterator<Tcoord<std::complex<double> >*, Tcoord<std::complex<double> >*&, Tcoord<std::complex<double> >**>, std::_Deque_iterator<Tcoord<std::complex<double> >*, Tcoord<std::complex<double> >*&, Tcoord<std::complex<double> >**>, Tcoord<std::complex<double> >* const&);
+
+
+
 
 template
 void std::deque<Tcoord<double >*>::_M_range_insert_aux(std::_Deque_iterator<Tcoord<double >*, Tcoord<double >*&, Tcoord<double >**>, std::_Deque_iterator<Tcoord<double >*, Tcoord<double >* const&, Tcoord<double >* const*>, std::_Deque_iterator<Tcoord<double >*, Tcoord<double >* const&, Tcoord<double >* const*>, std::forward_iterator_tag);

@@ -73,17 +73,16 @@ using FNAL::pcout;
  template<>
  template<>
  TJetVector<std::complex<double> >::TJetVector(TJetVector<double> const& x):
- _dim(x._dim), _myEnv(x._myEnv) // Note: env implicit conversion
+ myEnv_(x.myEnv_) // Note: env implicit conversion
 { 
 
   
-  _comp  = new TJet<std::complex<double> > [ _dim ];
 
-  for ( int i=0; i< _dim; ++i) {
+  for ( int i=0; i< comp_.size(); ++i) {
 
-    _comp[i] = x._comp[i];     // implicit type conversion
+    comp_[i] = x.comp_[i];     // implicit type conversion
 
-    CHECKOUT(  _comp[i].Env() != _myEnv , "TJetVector<std::complex<double> >::const TJetVector<double>& x", "Incompatible environments.")
+    CHECKOUT(  comp_[i].Env() != myEnv_ , "TJetVector<std::complex<double> >::const TJetVector<double>& x", "Incompatible environments.")
 
   }
 
@@ -119,20 +118,20 @@ void TJetVector<double>::printCoeffs() const
 {
   int i;
   (*pcout) << "\n\nBegin TJetVector<double>::printCoeffs() ......\n"
-       << "Dimension: " << _dim 
+       << "Dimension: " << comp_.size() 
        << ", Weight = " << Weight()
        << ", Max accurate weight = " << AccuWgt() 
        << std::endl;
   (*pcout) << "JetVector reference point: " 
        << std::endl;
-  for( i = 0; i < _myEnv->numVar(); i++ ) 
+  for( i = 0; i < myEnv_->numVar(); i++ ) 
     (*pcout) << std::setw(20) << setprecision(12) 
-         << _myEnv->refPoint()[i]
+         << myEnv_->refPoint()[i]
          << "\n" << std::endl;
 
-  for ( i = 0; i < _dim; i++ ) {
+  for ( i = 0; i < comp_.size(); i++ ) {
     (*pcout) << "TJetVector<double>::printCoeffs(): Component " << i << std::endl;
-    _comp[i].printCoeffs();
+    comp_[i].printCoeffs();
   }
   (*pcout) << "End TJetVector<double>::printCoeffs() ......\n" << std::endl;
 }
@@ -147,23 +146,23 @@ void TJetVector<complex<double> >::printCoeffs() const
 {
   int i;
   (*pcout) << "\n\nBegin TJetVector<complex<double> >::printCoeffs() ......\n"
-       << "Dimension: " << _dim 
+       << "Dimension: " << comp_.size() 
        << ", Weight = " << Weight()
        << ", Max accurate weight = " << AccuWgt() 
        << std::endl;
   (*pcout) << "TJetVector<complex<double> > reference point: " 
        << std::endl;
-  for( i = 0; i < _myEnv->numVar(); i++ ) 
+  for( i = 0; i < myEnv_->numVar(); i++ ) 
     (*pcout) << std::setw(20) << setprecision(12) 
-         << real( _myEnv->refPoint()[i] )
+         << real( myEnv_->refPoint()[i] )
          << " + i"
          << std::setw(20) << setprecision(12) 
-         << imag( _myEnv->refPoint()[i] )
+         << imag( myEnv_->refPoint()[i] )
          << "\n" << std::endl;
 
-  for ( i = 0; i < _dim; i++ ) {
+  for ( i = 0; i < comp_.size(); i++ ) {
     (*pcout) << "TJetVector<complex<double> >::printCoeffs(): Component " << i << std::endl;
-    _comp[i].printCoeffs();
+    comp_[i].printCoeffs();
   }
   (*pcout) << "End TJetVector<complex<double> >::printCoeffs() ......\n" << std::endl;
 }
@@ -177,13 +176,13 @@ template<>
 void TJetVector<double>::Rotate ( TJetVector<double>& v, double theta ) const
 {
 #ifndef NOCHECKS
-  CHECKOUT((_dim != 3) || ( v._dim != 3 ),
+  CHECKOUT((comp_.size() != 3) || ( v.comp_.size() != 3 ),
            "TJetVector<double>::Rotate",
            "Dimension must be 3." )
 #endif
 
   double c, s;
-  TJetVector<double> e( 3, 0, _myEnv ), u( 3, 0, _myEnv);
+  TJetVector<double> e( TVector<double>(3), myEnv_ ), u( Vector(3), myEnv_);
 
   e = Unit();
   c = cos( theta );
@@ -191,7 +190,7 @@ void TJetVector<double>::Rotate ( TJetVector<double>& v, double theta ) const
   u = ( c*v ) +
       ( s*( e^v) ) +
       ( ( ( 1.0 - c )*(e*v) )*e );
-  for ( int i = 0; i < 3; i++ ) v._comp[i] = u._comp[i];
+  for ( int i = 0; i < 3; i++ ) v.comp_[i] = u.comp_[i];
 }
 
 
@@ -216,16 +215,16 @@ void TJetVector<double>::Rotate ( TJetVector<double>& v,
                                  const TJet<double>& theta ) const
 {
 #ifndef NOCHECKS
-  CHECKOUT((_dim != 3) || ( v._dim != 3 ),
+  CHECKOUT((comp_.size() != 3) || ( v.comp_.size() != 3 ),
            "TJetVector<double,complex<double> >::Rotate",
            "Dimension must be 3." )
-  CHECKOUT((_myEnv != v._myEnv)||(_myEnv != theta.Env()), 
+  CHECKOUT((myEnv_ != v.myEnv_)||(myEnv_ != theta.Env()), 
            "TJetVector<double,complex<double> >::Rotate", 
            "Incompatible environments.")
 #endif
 
-  TJet<double>       c( _myEnv ), s( _myEnv );
-  TJetVector<double> e( 3, 0, _myEnv), u( 3, 0, _myEnv);
+  TJet<double>       c( myEnv_ ), s( myEnv_ );
+  TJetVector<double> e( Vector(3), myEnv_), u( Vector(3), myEnv_);
 
   e = Unit();
   c = cos( theta );
@@ -233,7 +232,7 @@ void TJetVector<double>::Rotate ( TJetVector<double>& v,
   u = ( c*v ) +
       ( s*( e^v) ) +
       ( ( ( 1.0 - c )*(e*v) )*e );
-  for ( int i = 0; i < 3; i++ ) v._comp[i] = u._comp[i];
+  for ( int i = 0; i < 3; i++ ) v.comp_[i] = u.comp_[i];
 }
 
 
@@ -253,14 +252,16 @@ void TJetVector<complex<double> >::Rotate ( TJetVector<complex<double> >&,
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
 template<>
-TJet<double> TJetVector<double>::operator* ( const TJetVector<double>& x ) const
+TJet<double> TJetVector<double>::operator* ( TJetVector<double> const& x ) const
 {
 
-  TJet<double> u( _myEnv );
-  u = 0.0;
-  int i;
-  for ( i = 0; i < _dim; i++ ) u += _comp[i] * x._comp[i];
+  TJet<double> u( myEnv_);
+
+  for ( int i=0; i < comp_.size(); ++i) {
+      u += ( comp_[i] * x.comp_[i] );
+  }
   return u;
 }
 
@@ -268,15 +269,16 @@ TJet<double> TJetVector<double>::operator* ( const TJetVector<double>& x ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
 template<>
-TJet<std::complex<double> > TJetVector<std::complex<double> >::operator* ( const TJetVector<std::complex<double> >& x ) const
+TJet<std::complex<double> > TJetVector<std::complex<double> >::operator* ( TJetVector<std::complex<double> > const& x ) const
 {
 
-  TJet<std::complex<double> > u( _myEnv );
-  u = std::complex<double>(0.0, 0.0);
-  int i;
-  for ( i = 0; i < _dim; i++ ) u += ( _comp[i] * (real( x._comp[i]) - imag(x._comp[i]))  );
+  TJet<std::complex<double> > u( myEnv_);
+
+  for ( int i=0; i < comp_.size(); ++ i) {
+      u += ( comp_[i] * (real( x.comp_[i]) - imag(x.comp_[i]))  );
+  }
   return u;
 }
-
 

@@ -887,6 +887,8 @@ template<typename T>
 TJL1<T>& TJL1<T>::operator=( const TJL1<T>& x ) 
 {
 
+ if (&x == this) return *this;
+ 
  _std = x._std;
 
  for (int i=0; i< _myEnv->numVar(); ++i ) {
@@ -1181,22 +1183,22 @@ JL1Ptr<T> TJL1<T>::D( const int* n ) const
 template<typename T> 
 void TJL1<T>::printCoeffs() const {
 
- std::cout << "\nCount  = " << _count 
+ (*pcout) << "\nCount  = " << _count 
       << ", Weight = " <<      _weight 
       << ", Max accurate weight = " << _accuWgt << std::endl;
- std::cout << "Reference point: " 
+ (*pcout) << "Reference point: " 
       << _myEnv->getRefPoint()[0];
 
  for( int i=0; i < _count-1; i++ ) {
-   std::cout << ", ";
-   std::cout << _myEnv->getRefPoint()[i];
+   (*pcout) << ", ";
+   (*pcout) << _myEnv->getRefPoint()[i];
  }
 
- std::cout << std::endl;
+ (*pcout) << std::endl;
 
  IntArray index(_count-1);
 
- std::cout << "Index:  " 
+ (*pcout) << "Index:  " 
         << index
         << "   Value: "
         << _std
@@ -1207,14 +1209,14 @@ void TJL1<T>::printCoeffs() const {
   if( _weight > _accuWgt ) break;
  
   index(i) = 1; 
-  std::cout << "Index:  " 
+  (*pcout) << "Index:  " 
         << index
         << "   Value: "
         << _jcb[i]
         << std::endl;
   index(i) = 0; 
   }
-  std::cout << "\n" << std::endl;
+  (*pcout) << "\n" << std::endl;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1229,7 +1231,7 @@ void TJL1<T>::resetConstIterator()
 
   _constIterPtr = 0;
 
- std::cout << "void TJL1<T>::resetConstIterator() called." << std::endl;
+ (*pcout) << "void TJL1<T>::resetConstIterator() called." << std::endl;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
