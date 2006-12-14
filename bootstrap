@@ -64,7 +64,7 @@ automake --add-missing --foreign --copy
 autoconf
 
 
-for dir in basic_toolkit beamline bmlfactory mxyzptlk physics_toolkit integrator gms python-bindings
+for dir in basic_toolkit beamline bmlfactory parsers mxyzptlk physics_toolkit integrator gms python-bindings
 do
   cd $dir
   libtoolize --force --copy
@@ -75,9 +75,25 @@ do
   cd ..
 done
 
-##
+cd parsers/xsif
+libtoolize --force --copy
+aclocal -I config
+autoheader
+automake --add-missing --foreign --copy
+autoconf
+cd ..
+
+###libtoolize --force --copy
+aclocal -I config
+###autoheader
+automake --add-missing --foreign --copy
+autoconf
+cd ..
+
+
+##----------------------------------------
 ## create links for include subdirectories
-##
+##----------------------------------------
 
 
 echo "Creating header file links ..."
@@ -97,6 +113,12 @@ fi
 
 done
 
-cd ..
+if [ ! -d ./parsers ]; then
+ mkdir parsers
+fi
 
- 
+if [ ! -L parsers/xsif ]; then
+ ln -s ../../parsers/xsif/include parsers/xsif
+fi
+
+cd ..
