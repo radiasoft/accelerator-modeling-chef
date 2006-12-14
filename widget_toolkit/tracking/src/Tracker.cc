@@ -58,8 +58,9 @@
 #include "TrbWidget.h"
 #include "beamline.h"
 #include "BeamlineContext.h"
-// #include "EdwardsTeng.h"
 
+#include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 // This undef is needed because of the compiler.
 // #undef connect
@@ -212,8 +213,8 @@ OrbitTransformer::OrbitTransformer()
 
 void RectH::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
-  *xPtr = state(Particle::_x());
-  *yPtr = state(Particle::_xp());
+  *xPtr = state(Particle::xIndex());
+  *yPtr = state(Particle::npxIndex());
   *zPtr = 0.0;
 }
 
@@ -226,8 +227,8 @@ void RectH::toState( double a, double b, Particle* ptrPtr ) const
 
 void RectV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
-  *xPtr = state(Particle::_y());
-  *yPtr = state(Particle::_yp());
+  *xPtr = state(Particle::yIndex());
+  *yPtr = state(Particle::npyIndex());
   *zPtr = 0.0;
 }
 
@@ -241,9 +242,9 @@ void RectV::toState( double a, double b, Particle* ptrPtr ) const
 
 void NormH::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
-  *xPtr = state(Particle::_x());
-  *yPtr = _alpha*state(Particle::_x()) + _beta*state(Particle::_xp());
-  *zPtr = state(Particle::_y());  // Somewhat arbitrary. Fix this.
+  *xPtr = state(Particle::xIndex());
+  *yPtr = _alpha*state(Particle::xIndex()) + _beta*state(Particle::npxIndex());
+  *zPtr = state(Particle::yIndex());  // Somewhat arbitrary. Fix this.
 }
 
 
@@ -256,9 +257,9 @@ void NormH::toState( double a, double b, Particle* ptrPtr ) const
 
 void NormV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
-  *xPtr = state(Particle::_y());
-  *yPtr = _alpha*state(Particle::_y()) + _beta*state(Particle::_yp());
-  *zPtr = state(Particle::_x());  // Somewhat arbitrary. Fix this.
+  *xPtr = state(Particle::yIndex());
+  *yPtr = _alpha*state(Particle::yIndex()) + _beta*state(Particle::npyIndex());
+  *zPtr = state(Particle::xIndex());  // Somewhat arbitrary. Fix this.
 }
 
 
@@ -312,13 +313,13 @@ void IHIV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* 
   double u, v;
 
   // Horizontal
-  u = state(Particle::_x()) - _x_o;
-  v = _alphaH*u + _betaH*( state(Particle::_xp()) - _xp_o );
+  u = state(Particle::xIndex()) - _x_o;
+  v = _alphaH*u + _betaH*( state(Particle::npxIndex()) - _xp_o );
   *xPtr = ( u*u + v*v )/( 2.0*_betaH );
   
   // Vertical
-  u = state(Particle::_y()) - _y_o;
-  v = _alphaV*u + _betaV*( state(Particle::_yp()) - _yp_o );
+  u = state(Particle::yIndex()) - _y_o;
+  v = _alphaV*u + _betaV*( state(Particle::npyIndex()) - _yp_o );
   *yPtr = ( u*u + v*v )/( 2.0*_betaV );
 
   *zPtr = 0.0;
@@ -396,14 +397,14 @@ void PhiHPhiV::toDynamics( const Vector& state, double* xPtr, double* yPtr, doub
   double u, v, phiH, phiV;
 
   // Horizontal
-  u = state(Particle::_x()) - _x_o;
-  v = _alphaH*u + _betaH*( state(Particle::_xp()) - _xp_o );
+  u = state(Particle::xIndex()) - _x_o;
+  v = _alphaH*u + _betaH*( state(Particle::npxIndex()) - _xp_o );
   phiH = atan2(u,v);
   if( phiH > M_PI ) phiH -= M_TWOPI;
   
   // Vertical
-  u = state(Particle::_y()) - _y_o;
-  v = _alphaV*u + _betaV*( state(Particle::_yp()) - _yp_o );
+  u = state(Particle::yIndex()) - _y_o;
+  v = _alphaV*u + _betaV*( state(Particle::npyIndex()) - _yp_o );
   phiV = atan2(u,v);
   if( phiV > M_PI ) phiV -= M_TWOPI;
   
@@ -493,12 +494,12 @@ void OrbitTransformer::copyCenterFrom( const OrbitTransformer& u )
 void OrbitTransformer::set_center( const Vector& u )
 {
   if( 6 == u.Dim() ) {
-    _x_o   = u( Particle::_x());
-    _xp_o  = u( Particle::_xp());
-    _y_o   = u( Particle::_y());
-    _yp_o  = u( Particle::_yp());
-    _cdt_o = u( Particle::_cdt());
-    _dpp_o = u( Particle::_dpop());
+    _x_o   = u( Particle::xIndex());
+    _xp_o  = u( Particle::npxIndex());
+    _y_o   = u( Particle::yIndex());
+    _yp_o  = u( Particle::npyIndex());
+    _cdt_o = u( Particle::cdtIndex());
+    _dpp_o = u( Particle::ndpIndex());
   }
   else {
     ostringstream uic;
@@ -527,12 +528,12 @@ void OrbitTransformer::set_center( const Particle& u )
 Vector OrbitTransformer::get_center() const
 {
   Vector u(6);
-  u( Particle::_x())    = _x_o  ;
-  u( Particle::_xp())   = _xp_o ;
-  u( Particle::_y())    = _y_o  ;
-  u( Particle::_yp())   = _yp_o ;
-  u( Particle::_cdt())  = _cdt_o;
-  u( Particle::_dpop()) = _dpp_o;
+  u( Particle::xIndex())   = _x_o  ;
+  u( Particle::npxIndex()) = _xp_o ;
+  u( Particle::yIndex())   = _y_o  ;
+  u( Particle::npyIndex()) = _yp_o ;
+  u( Particle::cdtIndex()) = _cdt_o;
+  u( Particle::ndpIndex()) = _dpp_o;
   return u;
 }
 
@@ -779,7 +780,7 @@ void DrawSpace::paintGL()
 
   const Vector* vec;
   double a, b, c;
-  while( q = (Orbit*) getNext() ) 
+  while( (q = (Orbit*) getNext()) ) 
   {
     glColor3f( q->Red(), q->Green(), q->Blue() );
     Orbit::Iterator oi( q );
@@ -1370,7 +1371,7 @@ Tracker::~Tracker()
   delete _p_trackBox;
 
   Orbit* q;
-  while( q = (Orbit*) _orbits.get() ) {
+  while( (q = (Orbit*) _orbits.get()) ) {
     delete q;
   }
 
@@ -1861,7 +1862,7 @@ void Tracker::_tool_pdicOrb()
         #endif
   
         dummyPtr->setState(w);
-        jpPtr = dummyPtr->ConvertToJetParticle();
+        jpPtr = new JetParticle(*dummyPtr);
         Mapping stuff;
         cout << "Begin n-th Henon iterate for n = "
              << iterate
