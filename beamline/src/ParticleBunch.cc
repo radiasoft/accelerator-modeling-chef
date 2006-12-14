@@ -43,8 +43,10 @@
 #include <beamline/ParticleBunch.h>
 
 #include <basic_toolkit/iosetup.h>
-#include <cmath>
 #include <basic_toolkit/MathConstants.h>
+#include <cmath>
+#include <ostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -231,18 +233,18 @@ void ParticleBunch::Iterator::reset()
 
 
 
-std::ostream& operator<<( std::ostream &os, const ParticleBunch& bunch) 
+std::ostream& operator<<( std::ostream &os, ParticleBunch const& bunch) 
 {
   // Note: ParticleBunch& bunch should be declared const ParticleBunch& bunch
   // Unfortunately,  const declarations are not consistent  
 
   using std::setw;
-  double state[6];
+
   os << bunch.size() << endl;
   ParticleBunch::Iterator it( const_cast<ParticleBunch&>(bunch) );  
 
   while ( const Particle* p  = it.next()  ) {  
-    const_cast<Particle*>(p)->getState( state ); // work around broken getState() signature.
+    const Vector state = p->State(); 
     os << setw(16) << p->ReferenceEnergy() << "  ";
     for (int i=0; i<6; ++i )
       os << setw(16) << state[i] << "  ";
@@ -255,7 +257,7 @@ std::ostream& operator<<( std::ostream &os, const ParticleBunch& bunch)
 std::istream& operator >>( std::istream &is, ParticleBunch& bunch) 
 {
   using std::setw;
-  double state[6];
+  Vector state(6);
   double reference_energy = 0.0; 
   int counter = 0;
   int nsize   = 0;
@@ -266,7 +268,7 @@ std::istream& operator >>( std::istream &is, ParticleBunch& bunch)
     for (int i=0; i<6; ++i) {
        is >> state[i]; 
     };     
-    bunch.append( ParticlePtr(bunch.makeParticle(reference_energy,  state)));
+    /////// bunch.append( ParticlePtr(bunch.makeParticle(reference_energy,  state))); /// THIS SHOULD GO ! Particle is an abstract class !
   }
   return is;
 }
@@ -304,7 +306,7 @@ void ProtonBunch::append( ProtonPtr p)
 
 
 
-Particle* ProtonBunch::makeParticle( double energy, double* state )
+Proton* ProtonBunch::makeParticle( double energy, Vector const& state )
 {
   return new Proton( energy, state );
 }
@@ -482,7 +484,7 @@ void PositronBunch::append( PositronPtr p)
 
 
 
-Particle* PositronBunch::makeParticle( double energy, double* state )
+Positron* PositronBunch::makeParticle( double energy, Vector const& state )
 {
   return new Positron( energy, state );
 }
