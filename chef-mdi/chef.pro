@@ -19,6 +19,7 @@ INCLUDEPATH += ./include
 INCLUDEPATH += ./licenses 
 
 INCLUDEPATH +=  $${FNAL_INSTALL_TOP_DIR}/include/python-bindings
+INCLUDEPATH +=  $${FNAL_INSTALL_TOP_DIR}/include/parsers/xsif/tree-container
 
 INCLUDEPATH += ../widget_toolkit/plotting/chefplot/include
 INCLUDEPATH += ../widget_toolkit/plotting/chefplot/src/ui
@@ -85,11 +86,12 @@ QMAKE_LIBDIR  += /usr/local/ap/lib
 LIBS    += -L$${CHEF_LIBDIR} -linterpreter -ldevices -ldatabases -lpychefplot -lchefplot -ltunespace
 LIBS    += -L$${CHEF_LIBDIR} -lviewing -ltracking -lfncdata -ldialogs
 LIBS    += -L$${FNAL_LIBDIR} -lpybmlfactory -lpyphysics_toolkit -lpybeamline -lpymxyzptlk -lpybasic_toolkit 
-LIBS    += -L$${FNAL_LIBDIR} -lphysics_toolkit -lbmlfactory -lbeamline -lmxyzptlk -lbasic_toolkit 
+LIBS    += -L$${FNAL_LIBDIR} -lphysics_toolkit -lbmlfactory -lxsifparser -lbeamline -lmxyzptlk -lbasic_toolkit 
 LIBS    += -lqassistantclient
 LIBS    += -lqutexr
 LIBS    += -lqwt
 LIBS    += -lglut
+LIBS    += -L$${BOOST_LIBDIR} -lboost_regex 
 LIBS    += -L$${GLIB_DIR} -lglib-2.0   
 
 unix:LIBS  += -Wl,-rpath,$${CHEF_LIBDIR} -Wl,-rpath,$${FNAL_LIBDIR} -Wl,-rpath,$${GLIB_LIBDIR} -Wl,-rpath,$${BOOST_LIBDIR} 
