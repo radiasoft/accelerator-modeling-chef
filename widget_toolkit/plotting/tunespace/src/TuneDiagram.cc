@@ -39,7 +39,7 @@
 
 extern "C" { int nearestInteger( double ); }
 
-#include <GenericException.h>
+#include <basic_toolkit/GenericException.h>
 
 #include <qapplication.h>
 #include <qlabel.h>
