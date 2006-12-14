@@ -33,6 +33,27 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+******
+******  REVISION HISTORY:
+******
+******  Dec 2006  Jean-Francois Ostiguy
+******            ostiguy@fnal.gov
+******
+******  Major revision 
+****** 
+******  - use covariant return types for Clone()
+******  - eliminated ConvertToXXX() type conversion functions; 
+******    use explicit mixed type constructors instead.
+******  - take max advantage of constructor member initialization (useful 
+******    for bunches, since a lot of particles may be instantiated)
+******  - streamlined public interface. Eliminated get/set functions
+******    with raw ptr as argument(s).
+******  - use Vector and Mapping to store state info instead of raw
+*****     arrays.    
+******  - elements no longer declared friends. Doing so breaks encapsulation 
+******    with no real benefit. Propagators should use access function to 
+******    change state. There is no significant penalty, if any.       
+******  - use empty core_access class as access control mechanism 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -43,615 +64,316 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/VectorD.h>
-#include <mxyzptlk/Mapping.h>
 #include <basic_toolkit/Barnacle.h>
 #include <basic_toolkit/Matrix.h>
-#include <mxyzptlk/Jet.h>
-#include <mxyzptlk/JetVector.h>
 
 // Forward declaration
+
+
 class JetParticle;
+
+class JetProton;
+class JetElectron;
+class JetMuon;
+
+class JetAntiProton;
+class JetPositron;
+class JetAntiMuon;
+
+class particle_core_access; 
+
 
 const int BMLN_dynDim  = 6;   // ??? Doesn't this imply that BMLN_dynDim
                               // ??? can be defined in several modules?
 
 // .............................. Particle classes
+
 class DLLEXPORT Particle {
+
+  friend class JetParticle;
+  friend class particle_core_access;  
+
 protected:
 
-  friend class alignment;
-  friend class bmlnElmnt;
-  friend class combinedFunction;
-  friend class hkick;
-  friend class octupole;
-  friend class thinrfcavity;
-  friend class rfcavity;
-  friend class srot;
-  friend class vkick;
-  friend class monitor;
-  friend class hmonitor;
-  friend class vmonitor;
-  friend class marker;
-  friend class drift;
-  friend class rbend;
-  friend class sbend;
-  friend class sector;
-  friend class quadrupole;
-  friend class thinQuad;
-  friend class thinSextupole;
-  friend class thinOctupole;
-  friend class thinDecapole;
-  friend class thin2pole;
-  friend class thin12pole;
-  friend class thin14pole;
-  friend class thin16pole;
-  friend class thin18pole;
-  friend class thinMultipole;
-  friend class sextupole;
-  friend class BBLens;
-  friend class thinSeptum;
-  friend class thinLamb;
-  friend class beamline;
-  friend class Pinger;
-  friend class HPinger;
-  friend class VPinger;
-  friend class kick;
-  friend class Slot;
-  friend class jetprop;  // ??? Why is this here ???
+  std::string tag_;        // tag for arbitrary identification
+                           // of a particle.
+  double      q_;          // electric charge [C]
+  double      E_;          // reference energy in GeV
+  double      m_;          // mass in GeV / c^2
+  double      p_;          // reference momentum in GeV / c
+  double      gamma_;      // reference gamma
+  double      beta_;       // normalized reference velocity = v/c
+  double      pn_;         // normalized reference momentum = pc/mc^2 = p/mc
+                           //                               = beta*gamma
+  double      bRho_;       // normalized reference momentum / charge
+  double      pni2_;       // ( 1/pn )^2
 
-  double   state [ BMLN_dynDim ];
-                      // state[0] = x
-                      // state[1] = y
-                      // state[2] = c dt
-                      // state[3] = px/p
-                      // state[4] = py/p
-                      // state[5] = dp/p
-  double   q;         // electric charge [C]
-  double   E;         // reference energy in GeV
-  double   p;         // reference momentum in GeV / c
-  double   m;         // mass in GeV / c^2
-  double   pn;        // normalized reference momentum = pc/mc^2 = p/mc
-                      //                               = beta*gamma
-  double   pni2;      // ( 1/pn )^2
-  double   bRho;      // normalized reference momentum / charge
-  double   beta;      // normalized reference velocity = v/c
-  double   gamma;     // reference gamma
+  double      wgt_;        // Statistical weight: i.e. macroparticle
+                           // Default value: 1.0
+  Vector      state_;      // (BMLN_dynDim);
+                           // state_[0] = x
+                           // state_[1] = y
+                           // state_[2] = c dt
+                           // state_[3] = px/p
+                           // state_[4] = py/p
+                           // state_[5] = dp/p
 
-  double   _wgt;      // Statistical weight: i.e. macroparticle
-                      // Default value: 1.0
 
-  std::string _tag;   // Utility tag for arbitrary identification
-                      // of a particle.
-
-  // ctors
-  Particle( double  /* mass [GeV/c^2] */ );
-  Particle( double  /* mass [GeV/c^2] */,
-            double  /* energy [GeV]   */ );  // ??? momentum here???
-  Particle( double  /* mass [GeV/c^2] */,
-            double  /* energy [GeV]   */,
-            double* /* state          */ );
-  Particle( const Particle& );
+  Particle( double  const& massGeV_c2, double const& energyGeV );  
+  Particle( double  const& massGeV_c2, double const& energyGeV, Vector const& state );
 
 public:
-  virtual JetParticle* ConvertToJetParticle() const = 0;
-  
+
+  Particle( Particle    const& );
+
+  explicit Particle( JetParticle const& );
+
   virtual ~Particle();
-  virtual Particle* Clone() const = 0;
-  
+
+  virtual Particle* Clone() const;
+
+  Particle&    operator=(Particle const&);
+
   // Phase space indices
-  short int xIndex()   const  { return 0; }
-  short int yIndex()   const  { return 1; }
-  short int cdtIndex() const  { return 2; }
-  short int npxIndex() const  { return 3; }
-  short int npyIndex() const  { return 4; }
-  short int ndpIndex() const  { return 5; }
+
+  static int xIndex();     
+  static int yIndex();     
+  static int cdtIndex();   
+  static int npxIndex();   
+  static int npyIndex();   
+  static int ndpIndex();   
 
   // Dimension of phase space
-  static const short int PSD;
-  short int psd()        { return Particle::PSD; }
 
-  void SetReferenceEnergy(   double /* energy [GeV] */ );
-  void SetReferenceMomentum( double /* momentum [GeV/c] */ );
+  static const int PSD;
+  int psd();
 
-  double setWeight( double );       // Returns previous value.
+  void SetReferenceEnergy(   double const& energyGeV     );
+  void SetReferenceMomentum( double const& momentumGeV_c );
 
-  void setState      ( double* );
-  void setState      ( const Vector& );
-  void getState      ( double* );
-  void getState      ( Vector& );
-  void getState      ( Vector* );
+  double setWeight( double const&);       // Returns previous value.
+
   void setStateToZero();
 
-  inline double get_x()     const { return state[0]; }
-  inline double get_y()     const { return state[1]; }
-  inline double get_cdt()   const { return state[2]; }
-  inline double get_npx()   const { return state[3]; }
-  inline double get_npy()   const { return state[4]; }
-  inline double get_npz()   const { return sqrt( ( 1.0 + state[5] )*( 1.0 + state[5] ) 
-                                                 - state[3]*state[3]  
-                                                 - state[4]*state[4] ); }
-  inline double get_ndp()   const { return state[5]; }
+  double get_x()     const;
+  double get_y()     const;
+  double get_cdt()   const;
+  double get_npx()   const;
+  double get_npy()   const;
+  double get_npz()   const;
+                           
+                           
+  double get_ndp()   const;
 
-  void set_x   ( double u )  { state[0] = u; }
-  void set_y   ( double u )  { state[1] = u; }
-  void set_cdt ( double u )  { state[2] = u; }
-  void set_npx ( double u )  { state[3] = u; }
-  void set_npy ( double u )  { state[4] = u; }
-  void set_ndp ( double u )  { state[5] = u; }
+  void set_x   ( double u );
+  void set_y   ( double u );
+  void set_cdt ( double u );
+  void set_npx ( double u );
+  void set_npy ( double u );
+  void set_ndp ( double u );
 
-  inline Vector State() const
-         {  return Vector( BMLN_dynDim, state ); } 
-         // Returns the state as a Vector object.
+  Vector  State()                   const;  // Returns the state as a Vector object.
+  double  State( int i )            const;
+  void    setState(Vector const& );
+  Vector& getState();
 
-  inline double State( int i ) const { 
-   if( (0 <= i) && (i <= 5) ) return state[i];
-   else                       return 123.456789; 
-  }
-  inline double Energy() const {
-   double u;
-   u = p*( 1.0+state[5] );
-   return sqrt( u*u + m*m );
-  }
-  inline double Momentum() const {
-   return p*(1.0+state[5]);
-  }
-  inline double NormalizedMomentum() const {
-   return (1.0+state[5]);
-  }
-  inline double Mass() const {
-   return m;
-  }
-  inline double Gamma() const {
-   return Energy() / m;}
-  inline double Beta() const {
-   return Momentum() / Energy();
-  }
-  inline double ReferenceBRho() const {
-   return bRho;
-  }
-  inline double ReferenceBeta() const {
-   return beta;
-  }
-  inline double ReferenceGamma() const {
-   return gamma;
-  }
-  inline double ReferenceMomentum() const {
-   return p; 
-  }
-  inline double PNI2() const {
-   return pni2;
-  }
-  inline double ReferenceEnergy() const {
-   return E;
-  }
-  inline double Weight() const {
-    return _wgt; 
-  }
-  inline double Charge() const {
-   return q;
-  }
-  Vector VectorBeta() const;
-  Vector VectorMomentum() const;
+
+  double Energy()                   const;
+  double Momentum()                 const;
+  double NormalizedMomentum()       const;
+  double Mass()                     const;
+  double Gamma()                    const;
+  double Beta()                     const;
+  double ReferenceBRho()            const;
+  double ReferenceBeta()            const;
+  double ReferenceGamma()           const;
+  double ReferenceMomentum()        const;
+  double PNI2()                     const;
+  double ReferenceEnergy()          const;
+  double Weight()                   const;
+  inline double Charge()            const;
+  Vector VectorBeta()               const;
+  Vector VectorMomentum()           const;
   Vector NormalizedVectorMomentum() const;
-  inline double BRho() const {
-   return bRho*( 1.0 + state[5] );
-  }
-  Particle& operator=(const Particle&);
+  double BRho()                     const;
+
   BarnacleList dataHook;   // Carries data as service to application program.
 
-
-  // State indices ...
-  static int _x();
-  static int _y();
-  static int _cdt();
-  static int _xp();    // Actually, p_x / p_ref
-  static int _yp();    //           p_y / p_ref
-  static int _dpop();
-
-
   // Tagging methods
-  static const short BF_OK;
-  static const short BF_NULL_ARG;
-  static const short BF_BAD_START;
 
-  short       writeTag(  const std::string& );  // Replaces entire tag
-  short       writeTag(  const std::string&
-                       , short                  // starting position in tag
-                      );
-  short       writeTag(  const char* );         // Replaces entire tag
-  short       writeTag(  const char*            // characters to be written
-                       , short                  // starting position in tag
-                       );
-  short       writeTag(  char );
-  short       writeTag(  char                   // character to be written
-                       , short                  // position in tag
-                      );
-
-  std::string readTag() const;                  // returns entire tag
-  std::string readTag(  short                   // starting position in tag
-                      , short  ) const;         // number of characters read
-  short       readTag(  char* ) const;
-  short       readTag(  char*                   // returned characters
-                      , short                   // starting position in tag   
-                      , short                   // number of characters
-                     ) const;
-  char        readTag( short ) const;           // position in tag
-
-  short       getTagSize() const;
+  std::string getTag();                         
+  void        setTag(std::string const& tag);     
 
 
-  // Exceptions
-  struct GenericException : public std::exception
-  {
-    GenericException( std::string, int, const char* = "", const char* = "" );
-    // Miscellaneous errors
-    // 1st argument: name of file in which exception is thrown
-    // 2nd         : line from which exception is thrown
-    // 3rd         : identifies function containing throw
-    // 4th         : identifies type of error
-    ~GenericException() throw() {}
-    const char* what() const throw();
-    std::string errorString;
-  };
 };
-
-
-inline int Particle::_x()    { return 0; }
-inline int Particle::_y()    { return 1; }
-inline int Particle::_cdt()  { return 2; }
-inline int Particle::_xp()   { return 3; }
-inline int Particle::_yp()   { return 4; }
-inline int Particle::_dpop() { return 5; }
-
-
 
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
 class DLLEXPORT Proton : public Particle {
 public:
+
   Proton();
-  Proton( double /* energy [GeV] */ );
-  Proton( double /* energy [GeV] */, double* /* state */ );
-  Proton( const Proton& );
+  Proton( double const& energyGeV );
+  Proton( double const& energyGeV, Vector const& state );
+  Proton( Proton const& );
+
+  explicit Proton( JetProton const& );
+
   ~Proton();
-  JetParticle* ConvertToJetParticle() const;
-  Particle* Clone() const { return new Proton( *this ); }
+
+  Proton*   Clone()  const;
 };
 
 class DLLEXPORT  AntiProton : public Particle {
 public:
   AntiProton();
-  AntiProton( double /* energy [GeV] */ );
-  AntiProton( double /* energy [GeV] */, double* /* state */ );
-  AntiProton( const AntiProton& );
-  ~AntiProton();
-  JetParticle* ConvertToJetParticle() const;
-  Particle* Clone() const { return new AntiProton( *this ); }
+  AntiProton( double const& energyGeV );
+  AntiProton( double const& energyGeV, Vector const& state );
+  AntiProton( AntiProton const& );
+
+  explicit AntiProton( JetAntiProton const& );
+
+ ~AntiProton();
+
+  AntiProton*    Clone() const;
 };
+
 
 class DLLEXPORT  Electron : public Particle {
 public:
   Electron();
-  Electron( double /* energy [GeV] */ );
-  Electron( double /* energy [GeV] */, double* /* state */ );
-  Electron( const Electron& );
-  ~Electron();
-  JetParticle* ConvertToJetParticle() const;
-  Particle* Clone() const { return new Electron( *this ); }
+  Electron( double   const& energyGeV );
+  Electron( double   const& energyGeV , Vector const& state);
+  Electron( Electron const& );
+
+  explicit Electron( JetElectron const& );
+
+ ~Electron();
+
+  Electron*    Clone() const;
 };
 
 class DLLEXPORT  Positron : public Particle {
 public:
   Positron();
-  Positron( double /* energy [GeV] */ );
-  Positron( double /* energy [GeV] */, double* /* state */ );
-  Positron( const Positron& );
-  ~Positron();
-  JetParticle* ConvertToJetParticle() const;
-  Particle* Clone() const { return new Positron( *this ); }
+  Positron( double const& energyGeV );
+  Positron( double const& energyGeV, Vector const& state );
+  Positron( Positron const& );
+
+  explicit Positron( JetPositron const& );
+
+ ~Positron();
+
+  Positron*    Clone() const;
 };
 
 class DLLEXPORT Muon : public Particle {
 public:
   Muon();
-  Muon( double /* energy [GeV] */ );
-  Muon( double /* energy [GeV] */, double* /* state */ );
-  Muon( const Muon& );
-  ~Muon();
-  JetParticle* ConvertToJetParticle() const;
-  Particle* Clone() const { return new Muon( *this ); }
+  Muon( double const& energyGeV );
+  Muon( double const& energyGeV, Vector const& state);
+  Muon( Muon const& );
+
+  explicit Muon( JetMuon const& );
+
+ ~Muon();
+
+  Muon*    Clone() const;
 };
 
 class DLLEXPORT  AntiMuon : public Particle {
 public:
   AntiMuon();
-  AntiMuon( double /* energy [GeV] */ );
-  AntiMuon( double /* energy [GeV] */, double* /* state */ );
-  AntiMuon( const AntiMuon& );
-  ~AntiMuon();
-  JetParticle* ConvertToJetParticle() const;
-  Particle* Clone() const { return new AntiMuon( *this ); }
+  AntiMuon( double const& energyGeV );
+  AntiMuon( double const& energyGeV, Vector const& state );
+  AntiMuon( AntiMuon const& );
+
+  explicit AntiMuon( JetAntiMuon const& );
+
+ ~AntiMuon();
+
+  AntiMuon*    Clone() const;
 };
 
-class JetParticle {
-protected:
 
-  friend class alignment;
-  friend class bmlnElmnt;
-  friend class combinedFunction;
-  friend class hkick;
-  friend class octupole;
-  friend class thinrfcavity;
-  friend class rfcavity;
-  friend class srot;
-  friend class vkick;
-  friend class monitor;
-  friend class hmonitor;
-  friend class vmonitor;
-  friend class marker;
-  friend class drift;
-  friend class rbend;
-  friend class sbend;
-  friend class sector;
-  friend class quadrupole;
-  friend class thinQuad;
-  friend class thinSextupole;
-  friend class thinOctupole;
-  friend class thinDecapole;
-  friend class thin2pole;
-  friend class thin12pole;
-  friend class thin14pole;
-  friend class thin16pole;
-  friend class thin18pole;
-  friend class thinMultipole;
-  friend class sextupole;
-  friend class BBLens;
-  friend class thinSeptum;
-  friend class thinLamb;
-  friend class beamline;
-  friend class Pinger;
-  friend class HPinger;
-  friend class VPinger;
-  friend class kick;
-  friend class Slot;
+//-------------------------------------------------------------------------------------------
+// particle_core_access 
+// 
+// An empty class used to grant access to private members of the Particle class in a controlled. 
+// manner. Typically, it is inherited by functors that need access to Particle's private data.  
+//---------------------------------------------------------------------------------------------
 
-  Mapping state;
-                      // state[0] = x
-                      // state[1] = y
-                      // state[2] = c dt
-                      // state[3] = px/p
-                      // state[4] = py/p
-                      // state[5] = dp/p
-  double   q;         // electric charge [C]
-  double   E;         // reference energy in GeV
-  double   p;         // reference momentum in GeV / c
-  double   m;         // mass in GeV / c^2
-  double   pn;        // normalized reference momentum = pc/mc^2 = p/mc
-                      //                               = beta*gamma
-  double   pni2;      // ( 1/pn )^2
-  double   bRho;      // normalized reference momentum / charge
-  double   beta;      // normalized reference velocity = v/c
-  double   gamma;     // reference gamma
+class particle_core_access 
+{
 
-  double   _wgt;      // Statistical weight: i.e. macrojetparticle
-                      // Default value: 1.0
-  std::string _tag;   // Utility tag for arbitrary identification
-                      // of a particle.
+ protected:
 
-  // ctors
-  JetParticle( double  /* mass [GeV/c^2] */ );
-  JetParticle( double  /* mass [GeV/c^2] */,
-               double  /* energy [GeV]   */ );   // ??? momentum here???
-  JetParticle( double  /* mass [GeV/c^2] */,
-               double  /* energy [GeV]   */,
-               double* /* state          */ );
-  JetParticle( const Particle& );
-  JetParticle( const JetParticle& );
+  static Vector& getState(Particle &p) { return p.getState(); } 
 
-
-public:
-  virtual Particle* ConvertToParticle() const = 0;
-  virtual ~JetParticle();
-  virtual JetParticle* Clone() const = 0;
-
-  // Phase space indices
-  short int xIndex()   const   { return 0; }
-  short int yIndex()   const   { return 1; }
-  short int cdtIndex() const   { return 2; }
-  short int npxIndex() const   { return 3; }
-  short int npyIndex() const   { return 4; }
-  short int ndpIndex() const   { return 5; }
-
-  // Dimension of phase space
-  short int psd()        { return Particle::PSD; }
-
-  void SetReferenceEnergy(   double /* Energy [GeV] */ );
-  void SetReferenceMomentum( double /* momentum [GeV/c] */ );
-
-  double setWeight( double );       // Returns previous value.
-
-  void setState( double* );
-  void setState( const Vector& );
-  void setState( const Mapping& );
-  void getState( Mapping& );
-  void getState( Jet* );
-
-  inline Jet get_x()     const { return state(0); }
-  inline Jet get_y()     const { return state(1); }
-  inline Jet get_cdt()   const { return state(2); }
-  inline Jet get_npx()   const { return state(3); }
-  inline Jet get_npy()   const { return state(4); }
-  inline Jet get_npz()   const { return sqrt( ( 1.0 + state(5) )*( 1.0 + state(5) ) 
-                                              - state(3)*state(3)  
-                                              - state(4)*state(4) ); }
-  inline Jet get_ndp()   const { return state(5); }
-
-  void set_x   ( const Jet& u )  { state.SetComponent(0,u); }
-  void set_y   ( const Jet& u )  { state.SetComponent(1,u); }
-  void set_cdt ( const Jet& u )  { state.SetComponent(2,u); }
-  void set_npx ( const Jet& u )  { state.SetComponent(3,u); }
-  void set_npy ( const Jet& u )  { state.SetComponent(4,u); }
-  void set_ndp ( const Jet& u )  { state.SetComponent(5,u); }
-
-  inline Mapping State() const { return state; }
-  // inline Mapping& State() { return state; }
-  Jet& State( int );
-
-  static void createStandardEnvironments( int = 1 );
-  // Input: argument = degree (or "order")
-
-  MatrixD SymplecticTest();  // Tests the state for the
-                             // symplectic condition, 1 = - MJM^t; 
-                             // returns unit matrix if all is well.
-                             // Note: this assumes a 6x6 state: 
-                             // ( x, y, cdt; px/p, py/p, dp/p )
-
-  inline Jet Energy() const {
-   Jet dum;
-   dum = p*(state(5) + 1.0);
-   return sqrt( dum*dum + m*m );
-  }
-  inline Jet Momentum() const {
-   return p*(state(5) + 1.0);
-  }
-  inline Jet NormalizedMomentum() const {
-   return (state(5) + 1.0);
-  }
-  inline double Mass() const {
-   return m;
-  }
-  inline double ReferenceBRho() const {
-   return bRho;
-  }
-  inline double ReferenceBeta() const {
-   return beta;
-  }
-  inline double ReferenceGamma() const {
-   return gamma;
-  }
-  inline Jet Gamma() const {
-   return Energy() / m;
-  }
-  inline double ReferenceMomentum() const {
-   return p; 
-  }
-  inline double PNI2() const {
-   return pni2;
-  }
-  inline double ReferenceEnergy() const {
-   return E;
-  }
-  inline double Weight() const {
-    return _wgt; 
-  }
-  inline double Charge() const {
-   return q;
-  }
-  JetVector VectorBeta() const;
-  JetVector VectorMomentum() const;
-  JetVector NormalizedVectorMomentum() const;
-  inline Jet Beta() const {
-   return Momentum() / Energy();
-  }
-  // ??? REMOVE inline Jet Beta() const {
-  // ??? REMOVE  Jet ret( Gamma() );
-  // ??? REMOVE  ret = sqrt( 1.0 - ( 1.0 / ( ret*ret ) ) );
-  // ??? REMOVE  return ret;
-  // ??? REMOVE }
-  inline Jet BRho() const {
-   return bRho*( 1.0 + state(5) );
-  }
-  JetParticle& operator=(const JetParticle&);
-  BarnacleList dataHook;   // Carries data as service to application program.
-
-
-  // Tagging
-  short  writeTag ( char,          // character to be written
-                    short = 0      // position in tag
-                  );
-  short  writeTag ( const char* );
-  short  writeTag ( const char*,   // characters to be written
-                    short,         // starting position in tag
-                    short          // number of characters 
-                  );
-
-  short  writeTag ( const std::string& );
-  short  writeTag ( const std::string&, 
-                    short          // starting position in tag
-                  );
-
-  std::string readTag  () const;
-  std::string readTag  ( short,          // starting position in tag
-                         short  ) const; // number of characters read
-  short  readTag  ( char* ) const;
-  short  readTag  ( char*,         // returned characters
-                    short,         // starting position in tag
-                    short          // number of characters
-                  ) const;
-  char   readTag  ( short ) const; // position in tag
-
-  short  getTagSize() const;
 };
 
-struct DLLEXPORT  JetProton : public JetParticle {
-  JetProton();
-  JetProton( double /* Energy [GeV] */ );
-  JetProton( const Proton& );
-  JetProton( const JetProton& );
-  ~JetProton();
-  JetParticle* Clone() const { return new JetProton( *this ); }
-  Particle* ConvertToParticle() const;
-};
+// -------------------------------  Inline members --------------------------------------------------------------
 
-struct DLLEXPORT  JetAntiProton : public JetParticle {
-  JetAntiProton();
-  JetAntiProton( double /* Energy [GeV] */ );
-  JetAntiProton( const AntiProton& );
-  JetAntiProton( const JetAntiProton& );
-  ~JetAntiProton();
-  JetParticle* Clone() const { return new JetAntiProton( *this ); }
-  Particle* ConvertToParticle() const;
-};
+  inline Particle*   Particle::Clone() const  { return new Particle(*this); }
 
-struct DLLEXPORT  JetElectron : public JetParticle {
-  JetElectron();
-  JetElectron( double /* Energy */ );
-  JetElectron( const Electron& );
-  JetElectron( const JetElectron& );
-  ~JetElectron();
-  JetParticle* Clone() const { return new JetElectron( *this ); }
-  Particle* ConvertToParticle() const;
-};
+  inline int  Particle::xIndex()     { return 0; }
+  inline int  Particle::yIndex()     { return 1; }
+  inline int  Particle::cdtIndex()   { return 2; }
+  inline int  Particle::npxIndex()   { return 3; }
+  inline int  Particle::npyIndex()   { return 4; }
+  inline int  Particle::ndpIndex()   { return 5; }
 
-struct DLLEXPORT  JetPositron : public JetParticle {
-  JetPositron();
-  JetPositron( double /* Energy */ );
-  JetPositron( const Positron& );
-  JetPositron( const JetPositron& );
-  ~JetPositron();
-  JetParticle* Clone() const { return new JetPositron( *this ); }
-  Particle* ConvertToParticle() const;
-};
+  inline int  Particle::psd()          { return Particle::PSD; }
 
-struct DLLEXPORT  JetMuon : public JetParticle {
-  JetMuon();
-  JetMuon( double /* Energy [GeV] */ );
-  JetMuon( const Muon& );
-  JetMuon( const JetMuon& );
-  ~JetMuon();
-  JetParticle* Clone() const { return new JetMuon( *this ); }
-  Particle* ConvertToParticle() const;
-};
+  inline double  Particle::get_x()     const { return state_[0]; }
+  inline double  Particle::get_y()     const { return state_[1]; }
+  inline double  Particle::get_cdt()   const { return state_[2]; }
+  inline double  Particle::get_npx()   const { return state_[3]; }
+  inline double  Particle::get_npy()   const { return state_[4]; }
+  inline double  Particle::get_npz()   const { return sqrt( ( 1.0 + state_[5] )*( 1.0 + state_[5] ) 
+                                               - state_[3]*state_[3]  
+                                               - state_[4]*state_[4] ); }
+  inline double  Particle::get_ndp()   const { return state_[5]; }
 
-struct DLLEXPORT  JetAntiMuon : public JetParticle {
-  JetAntiMuon();
-  JetAntiMuon( double /* Energy [GeV] */ );
-  JetAntiMuon( const AntiMuon& );
-  JetAntiMuon( const JetAntiMuon& );
-  ~JetAntiMuon();
-  JetParticle* Clone() const { return new JetAntiMuon( *this ); }
-  Particle* ConvertToParticle() const;
-};
+
+  inline void  Particle::set_x   ( double u )  { state_[0] = u; }
+  inline void  Particle::set_y   ( double u )  { state_[1] = u; }
+  inline void  Particle::set_cdt ( double u )  { state_[2] = u; }
+  inline void  Particle::set_npx ( double u )  { state_[3] = u; }
+  inline void  Particle::set_npy ( double u )  { state_[4] = u; }
+  inline void  Particle::set_ndp ( double u )  { state_[5] = u; }
+
+
+  inline Vector   Particle::State()                   const   { return state_;                }  // Returns the state as a Vector object.
+  inline double   Particle::State( int i )            const   { return state_[i];             }
+
+
+  inline double  Particle::Energy()                   const   { double u= p_*( 1.0+state_[5]); 
+                                                                return sqrt( u*u + m_*m_ );   }
+  inline double  Particle::Momentum()                 const   { return p_*(1.0+state_[5]);    }
+  inline double  Particle::NormalizedMomentum()       const   { return (1.0+state_[5]);       }
+  inline double  Particle::Mass()                     const   { return m_;                    }
+  inline double  Particle::Gamma()                    const   { return Energy() / m_;         }
+  inline double  Particle::Beta()                     const   { return Momentum() / Energy(); }
+  inline double  Particle::ReferenceBRho()            const   { return bRho_;                 }
+  inline double  Particle::ReferenceBeta()            const   { return beta_;                 }
+  inline double  Particle::ReferenceGamma()           const   { return gamma_;                }
+  inline double  Particle::ReferenceMomentum()        const   { return p_;                    }
+  inline double  Particle::PNI2()                     const   { return pni2_;                 }
+  inline double  Particle::ReferenceEnergy()          const   { return E_;                    }
+  inline double  Particle::Weight()                   const   { return wgt_;                  }
+  inline double  Particle::Charge()                   const   { return q_;                    }
+  inline double  Particle::BRho()                     const   {return bRho_*( 1.0 + state_[5] );}
+
+
+
+  inline Proton*           Proton::Clone()    const { return new Proton( *this );     }
+  inline AntiProton*   AntiProton::Clone()    const { return new AntiProton( *this ); }
+  inline Electron*       Electron::Clone()    const { return new Electron( *this );   }
+  inline Positron*       Positron::Clone()    const { return new Positron( *this );   }
+  inline Muon*               Muon::Clone()    const { return new Muon( *this );       }
+  inline AntiMuon*       AntiMuon::Clone()    const { return new AntiMuon( *this );   }
+
 
 #endif // PARTICLE_H

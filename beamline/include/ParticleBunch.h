@@ -135,11 +135,15 @@ public:
   bool isEmpty() const;
 
 protected:
-   virtual Particle* makeParticle( double energy, double* state) = 0;  
-   std::list<ParticlePtr> _bag;
+
+  virtual Particle*  makeParticle(double energy, Vector const& state) = 0;
+
+  std::list<ParticlePtr> _bag;
 
   // Particles in the _bag are owned by the ParticleBunch object.
 };
+
+
 
 
 // stream operators
@@ -188,7 +192,7 @@ public:
                  );
  protected:
 
-  virtual Particle* makeParticle(double energy, double* state);
+ Proton*  makeParticle(double energy, Vector const& state);
 
 };
 
@@ -233,7 +237,7 @@ public:
 
  protected:
  
-  virtual Particle* makeParticle(double energy, double* state);
+  Positron*  makeParticle(double energy, Vector const& state);
 
 };
 
