@@ -39,7 +39,7 @@
 ******                                                            
 ******  Sep-Dec 2005  ostiguy@fnal.gov
 ******  
-****** - refactored code to usea single class template parameter
+****** - refactored code to use a single class template parameter
 ******   rather than two. Mixed mode operations now handled using 
 ******   implicit conversion.
 ****** - reference counting now based on using boost::intrusive pointer
@@ -49,7 +49,15 @@
 ****** - header files support for both explicit and implicit template instantiations
 ******   (default for mxyzptlk = explicit)
 ******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES
+******
+******  Dec 2006 ostiguy@fnal.gov    
 ****** 
+******  - New implementation. TJetVector is now based on a vector<Jet>
+******    container. The previous version was based on a dynamically allocated 
+******    raw array of Jet*. Since a Jet is now basically an envelope for a 
+******    smart ptr to implementation, its mem footprint is negligible. 
+******    This fact enables the use of value semantics for
+******    the stored Jet components and vastly simplifies memory management.       
 ******  
 **************************************************************************
 *************************************************************************/
@@ -59,6 +67,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <vector>
 #include <mxyzptlk/TJet.h>
 #include <mxyzptlk/EnvPtr.h>
 
@@ -72,28 +81,28 @@ template<typename T>
 class TJetVector;
 
 template<typename T> 
-TJetVector<T> operator-( const TJetVector<T>& );
+TJetVector<T> operator-( TJetVector<T> const& );
 
 template<typename T> 
-TJetVector<T> operator*( const TJet<T>&,       const TJetVector<T>& );
+TJetVector<T> operator*( TJet<T> const&,       TJetVector<T> const& );
 
 template<typename T, typename U>
-TJetVector<T> operator*( const U&,             const TJetVector<T>& );
+TJetVector<T> operator*( U       const&,       TJetVector<T> const& );
 
 template<typename T, typename U>
-TJetVector<T> operator*( const TJetVector<T>&, U const& );
+TJetVector<T> operator*( TJetVector<T> const&,  U const& );
 
 template<typename T> 
-TJetVector<T> operator*( const TMatrix<T>&,     const TJetVector<T>& );
+TJetVector<T> operator*( TMatrix<T>    const&,  TJetVector<T> const& );
 
 template<typename T>
-TJetVector<T> operator*( const TJet<T>&,        const Vector& );
+TJetVector<T> operator*( TJet<T>       const&,  Vector const& );
 
 template<typename T> 
-TJetVector<T> operator^( const Vector&, const TJetVector<T>& );
+TJetVector<T> operator^( Vector const&,  TJetVector<T> const& );
 
 template<typename T> 
-std::ostream& operator<<( std::ostream&, const TJetVector<T>& );
+std::ostream& operator<<( std::ostream&, TJetVector<T> const& );
 
 template<typename T> 
 std::istream& operator>>( std::istream&, TJetVector<T>& );
@@ -109,19 +118,21 @@ template<typename U>
 friend class TJetVector;
  
 protected:
-  int                             _dim;
-  TJet<T>*                        _comp;
-  EnvPtr<T>                       _myEnv;
+
+  EnvPtr<T>                       myEnv_;
+  std::vector< TJet<T> >          comp_;
 
 public:
 
-  // Constructors and the destructor ...
-  // Note: dim is set numVar() by the constructor 
- 
-  TJetVector( int   dim = -1,
-              const TJet<T>* components = 0, 
-              EnvPtr<T> const& env = (TJetEnvironment<T>::getLastEnv()) );
+  TJetVector( int n ,  EnvPtr<T>  const& env  = (TJetEnvironment<T>::getLastEnv()) );
+
+  TJetVector( EnvPtr<T>  const& env  = (TJetEnvironment<T>::getLastEnv()) ); // dimension set to numVar 
+
+  explicit TJetVector( TVector<T> const&,                   EnvPtr<T>  const& env    = (TJetEnvironment<T>::getLastEnv()) );
+
   TJetVector( TJetVector const& );
+
+  TJetVector( TJetVector<T> const&, int i1, int i2 ); // subrange
 
   template<typename U>
   TJetVector(TJetVector<U> const&);
@@ -130,65 +141,68 @@ public:
   ~TJetVector();
 
   // Assignment ...
-  void             Set             ( int dim, const TJet<T>* );
-  void             SetComponent    ( int idx, const TJet<T>& );
+  void             SetComponent    ( int idx, TJet<T> const& );
+
+  TJet<T>          operator[]      ( int idx) const { return comp_[idx]; } 
+  TJet<T>&         operator[]      ( int idx)       { return comp_[idx]; }  
+
   TJet<T>          operator()      ( int ) const; 
   TJet<T>&         operator()      ( int ); 
                    // WARNING: There is no way to use this and be
                    //          assured that environments are consistent.
 
   // Algebraic functions ...
-  TJetVector&       operator=      ( const TJetVector& );
+  TJetVector&       operator=      ( TJetVector const& );
 
-  TJetVector        operator+      ( const TJetVector& ) const;
-  TJetVector        operator+      ( const Vector& ) const;
-  TJetVector        operator+=     ( const TJetVector& );
-  TJetVector        operator+=     ( const Vector& );
-  friend TJetVector operator-<>    ( const TJetVector& );
-  TJetVector        operator-      ( const TJetVector& ) const;
-  TJetVector        operator-      ( const Vector& ) const;
-  TJetVector        operator-=     ( const TJetVector& );
-  TJetVector        operator-=     ( const Vector& );
+  TJetVector        operator+      ( TJetVector const& ) const;
+  TJetVector        operator+      ( Vector     const& ) const;
+  TJetVector        operator+=     ( TJetVector const& );
+  TJetVector        operator+=     ( Vector     const& );
+  friend TJetVector operator-<>    ( TJetVector const& );
+  TJetVector        operator-      ( TJetVector const& ) const;
+  TJetVector        operator-      ( Vector     const& ) const;
+  TJetVector        operator-=     ( TJetVector const& );
+  TJetVector        operator-=     ( Vector     const& );
 
-  friend TJetVector operator*<>    ( const TJet<T>&,    const TJetVector& );
-  friend TJetVector operator*<>    ( const T&,          const TJetVector& );
-  friend TJetVector operator*<>    ( const TJetVector&, const T&           );
-  friend TJetVector operator*<>    ( const TMatrix<T>&, const TJetVector& );
+  friend TJetVector operator*<>    ( TJet<T>    const&,  TJetVector const& );
+  friend TJetVector operator*<>    ( T          const&,  TJetVector const& );
+  friend TJetVector operator*<>    ( TJetVector const&,  T          const& );
+  friend TJetVector operator*<>    ( TMatrix<T> const&,  TJetVector const& );
 
-  TJetVector        operator*      ( const TJet<T>&    ) const;
-  TJetVector        operator*      ( const T& ) const;
-  TJetVector        operator*=     ( const TJet<T>&    );
-  TJetVector        operator*=     (       T  );
-  TJetVector        operator/      ( const TJet<T>&    ) const;
-  TJetVector        operator/      (       T  ) const;
-  TJetVector        operator/=     ( const TJet<T>&    );
-  TJetVector        operator/=     (       T  );
+  TJetVector        operator*      ( TJet<T>    const&    ) const;
+  TJetVector        operator*      ( T const& ) const;
+  TJetVector        operator*=     ( TJet<T>    const&    );
+  TJetVector        operator*=     ( T                    );
+  TJetVector        operator/      ( TJet<T>    const&    ) const;
+  TJetVector        operator/      ( T                    ) const;
+  TJetVector        operator/=     ( TJet<T>    const&    );
+  TJetVector        operator/=     ( T                    );
 
 
-  TJet<T>       operator*      ( const TJetVector& )  const; // dot product
-  TJet<T>       operator*      ( const Vector& )      const; // dot product
+  TJet<T>       operator*      (TJetVector const& )  const; // dot product
+  TJet<T>       operator*      (Vector    const& )   const; // dot product
 
-  friend TJetVector operator^<>    ( const Vector&, const TJetVector& );
+  friend TJetVector operator^<>    (Vector     const&,   TJetVector const& );
 
-  TJetVector        operator^      ( const TJetVector& ) const; // cross product:
+  TJetVector        operator^      (TJetVector const& ) const; // cross product:
                                                                 // only works if
                                                                 // the vector is
                                                                 // three-dimensional
-  TJetVector        operator^      ( const Vector& ) const;
+  TJetVector        operator^      (Vector const& ) const;
 
 
   // Boolean functions ...
-  bool operator==     ( const TJetVector& ) const;
-  bool operator==     ( const T&    ) const;
-  bool operator!=     ( const TJetVector& ) const;
-  bool operator!=     ( const T&    ) const;
-  bool operator<      ( const TJetVector& ) const;
-  bool operator<=     ( const TJetVector& ) const;
-  bool operator>      ( const TJetVector& ) const;
-  bool operator>=     ( const TJetVector& ) const;
-  bool IsNull         () const;
-  bool IsUnit         () const;
-  bool IsNilpotent    () const;
+  bool operator==     ( TJetVector const& ) const;
+  bool operator==     ( T          const& ) const;
+  bool operator!=     ( TJetVector const& ) const;
+  bool operator!=     ( T          const& ) const;
+  bool operator<      ( TJetVector const& ) const;
+  bool operator<=     ( TJetVector const& ) const;
+  bool operator>      ( TJetVector const& ) const;
+  bool operator>=     ( TJetVector const& ) const;
+  bool IsNull         ()                    const;
+  bool IsUnit         ()                    const;
+  bool IsNilpotent    ()                    const;
 
 
   // Functions related to differentiation
@@ -197,29 +211,29 @@ public:
   
 
   // Queries ...
-  int       Dim() const;
-  EnvPtr<T> Env() const;
-  int       AccuWgt() const;
-  int       Weight()  const;
-  void      standardPart( T* ) const;
-  void      getReference( T* ) const;
+  int         Dim()          const;
+  EnvPtr<T>   Env()          const;
+  int         AccuWgt()      const;
+  int         Weight()       const;
+  TVector<T>  standardPart() const;
+  TVector<T>  getReference() const;
 
   // Utilities ..
   void        peekAt           () const;
   void        printCoeffs      () const;
   TJet<T> Norm             () const;
   TJetVector  Unit             () const;           // returns unit vector
-  void        Rotate           ( TJetVector& v, double theta ) const;
-  void        Rotate           ( TJetVector& v, const TJet<T>& theta ) const;
+  void        Rotate           ( TJetVector& v,    double         theta ) const;
+  void        Rotate           ( TJetVector& v,    TJet<T> const& theta ) const;
                                                    // rotates v through 
                                                    // an angle theta using
                                                    // *this as the axis
 
-  friend std::ostream& operator<<<>( std::ostream&, const TJetVector& );
-  friend std::istream& operator>><>( std::istream&, TJetVector& );
+  friend std::ostream& operator<<<>( std::ostream&, TJetVector  const& );
+  friend std::istream& operator>><>( std::istream&, TJetVector&        );
 
   TJetVector filter( int, int ) const;
-  TJetVector filter( bool (*[]) ( const IntArray&, const T& ) ) const;
+  TJetVector filter( bool (*[]) ( IntArray const&, T const& ) ) const;
 
 };
 
@@ -228,12 +242,13 @@ public:
 //--------------------------------------
 
 // .. Functions included for symmetry
+
 template<typename T>
-inline bool operator==( const T& x, const TJetVector<T>& y )
+inline bool operator==( T const& x, TJetVector<T> const& y )
 { return y == x; }
 
 template<typename T>
-inline bool operator!=( const T& x, const TJetVector<T>& y )
+inline bool operator!=( T const& x, TJetVector<T> const& y )
 { return !(y == x); }
 
 
@@ -241,26 +256,26 @@ inline bool operator!=( const T& x, const TJetVector<T>& y )
 
 template<typename T>
 inline int TJetVector<T>::Dim() const 
-{ return _dim; }
+{ return comp_.size(); }
 
 template<typename T>
 inline EnvPtr<T> TJetVector<T>::Env() const 
-{ return _myEnv; }
+{ return  myEnv_; }
 
 template<typename T>
-inline TJetVector<T> operator+( const Vector& x, const TJetVector<T>& y )
+inline TJetVector<T> operator+( Vector const& x, TJetVector<T> const& y )
 { return y.operator+( x ); }
 
 template<typename T>
-inline TJetVector<T> operator-( const Vector& x, const TJetVector<T>& y )
+inline TJetVector<T> operator-( Vector const& x, TJetVector<T> const& y )
 { return operator-( y.operator-( x ) ); }
 
 template<typename T>
-inline TJet<T> operator*( const Vector& x, const TJetVector<T>& y )
+inline TJet<T> operator*( Vector const& x, TJetVector<T> const& y )
 { return y.operator*( x ); }
 
 template<typename T>
-TJetVector<T> operator*( const Vector& x, const TJet<T>& y )
+TJetVector<T> operator*( Vector const& x,   TJet<T>      const& y )
 { return operator*(y,x); }
 
 
@@ -272,16 +287,17 @@ TJetVector<T> operator*( const Vector& x, const TJet<T>& y )
  template<>
  TJetVector<std::complex<double> >::TJetVector(TJetVector<double> const&);
 
- template<>  TJet<double>  TJetVector<double>::operator*      ( const TJetVector<double>& ) const; 
+ template<>  TJet<double>  
+             TJetVector<double>::operator*      ( TJetVector<double> const& ) const;
 
  template<>  TJet<std::complex<double> >  
-             TJetVector<std::complex<double> >::operator*      ( const TJetVector<std::complex<double> >& ) const;
+             TJetVector<std::complex<double> >::operator*      ( TJetVector<std::complex<double> > const& ) const;
 
  template<>
- void         TJetVector<double>::Rotate( TJetVector<double>& v, double theta ) const;
+ void         TJetVector<double>::Rotate( TJetVector<double>& v, double              theta ) const;
 
  template<>
- void         TJetVector<double>::Rotate( TJetVector<double>& v, const TJet<double>& theta ) const;
+ void         TJetVector<double>::Rotate( TJetVector<double>& v, TJet<double> const& theta ) const;
 
  template<>
  void         TJetVector<std::complex<double> >::Rotate( TJetVector<std::complex<double> >& v, double theta ) const;
@@ -291,19 +307,19 @@ TJetVector<T> operator*( const Vector& x, const TJet<T>& y )
 
 
  template<> 
- TJetVector<std::complex<double> > operator*( const TJetVector<std::complex<double> >&, double const& );
+ TJetVector<std::complex<double> > operator*( TJetVector<std::complex<double> > const&, double                            const& );
 
  template<> 
- TJetVector<std::complex<double> > operator*( double const&, const TJetVector<std::complex<double> >& );
+ TJetVector<std::complex<double> > operator*( double                            const&, TJetVector<std::complex<double> > const& );
 
 
 
 // these specializations are not implemented ... (they do not really make much sense unless norms are compared)  
 
- template<> bool TJetVector<std::complex<double> >::operator< ( const TJetVector<std::complex<double> >& ) const;
- template<> bool TJetVector<std::complex<double> >::operator<= ( const TJetVector<std::complex<double> >& ) const;
- template<> bool TJetVector<std::complex<double> >::operator>  ( const TJetVector<std::complex<double> >& ) const;
- template<> bool TJetVector<std::complex<double> >::operator>= ( const TJetVector<std::complex<double> >& ) const;
+ template<> bool TJetVector<std::complex<double> >::operator<  ( TJetVector<std::complex<double> > const& ) const;
+ template<> bool TJetVector<std::complex<double> >::operator<= ( TJetVector<std::complex<double> > const& ) const;
+ template<> bool TJetVector<std::complex<double> >::operator>  ( TJetVector<std::complex<double> > const& ) const;
+ template<> bool TJetVector<std::complex<double> >::operator>= ( TJetVector<std::complex<double> > const& ) const;
 
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES

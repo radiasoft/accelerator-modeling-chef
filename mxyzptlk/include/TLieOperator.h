@@ -50,6 +50,9 @@
 ******   (default for mxyzptlk = explicit)
 ******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES
 ******
+******  Dec 2006 ostiguy@fnal
+******
+******  - New TJetVector class implementation. See  TJetVector.h for details. 
 ******                                                                 
 **************************************************************************
 *************************************************************************/
@@ -61,17 +64,18 @@
 #include <mxyzptlk/TJetVector.h>
 
 // Forward declarations
+
 template<typename T>
 class TLieOperator;
 
 template<typename T>
-std::ostream& operator<<( std::ostream&, TLieOperator<T>& );
+std::ostream& operator<<( std::ostream&, TLieOperator<T> const& );
 
 template<typename T>
 std::istream& operator>>( std::istream&, TLieOperator<T>& );
 
 template<typename T>
-TLieOperator<T> operator^( const TLieOperator<T>&, const TLieOperator<T>& );
+TLieOperator<T> operator^( TLieOperator<T> const&,  TLieOperator<T> const& );
 
 
 template<typename T>
@@ -83,50 +87,43 @@ public:
   // Constructors and destructors_____________________________________
 
   TLieOperator( EnvPtr<T> const env = (TJetEnvironment<T>::getLastEnv()) );
-  TLieOperator( const TLieOperator& );
-  TLieOperator( const TJet<T>& );  // Creates a Hamiltonian vector field.
+  TLieOperator( TLieOperator const& );
+  TLieOperator( TJet<T>      const& );      // Creates a Hamiltonian vector field.
   TLieOperator( char*, EnvPtr<T> const env = (TJetEnvironment<T>::getLastEnv) ); 
-                                       // Creates the identity function.  
+                                            // Creates the identity function.  
   ~TLieOperator();
 
   // Member functions (public)
-  void SetComponent( int           /* index     */,
-                     const TJet<T>&  /* component */  );
-  void setComponent( int           /* index     */,
-                     const TJet<T>&  /* component */  );
-  void setVariable( const TJet<T>&, int );
-  void setVariable( const T&, int ); 
-  // WARNING: this version alters the environment!!
 
-  TLieOperator& operator=( const TJetVector<T>& );
+  void SetComponent( int  index,  TJet<T> const&  component );
+  void setComponent( int  index,  TJet<T> const&  component );
+  void setVariable( TJet<T> const&, int );
+  void setVariable( T       const&, int );   // WARNING: this version alters the environment!!
+
+  TLieOperator& operator=( TJetVector<T> const& );
 
   void peekAt();
   void peekAt( char* );
 
   // Friendly operators ...........................
-  friend std::ostream& operator<<<>( std::ostream&, TLieOperator& );
-  friend std::istream& operator>><>( std::istream&, TLieOperator& );
+  friend std::ostream& operator<<<>( std::ostream&, TLieOperator const& );
+  friend std::istream& operator>><>( std::istream&, TLieOperator & );
 
   // Lie operations ...................................
 
   // Lie bracket of two Lie operators
-  friend TLieOperator operator^<>( const TLieOperator&, const TLieOperator& );
+  friend TLieOperator operator^<>( TLieOperator const&, TLieOperator const& );
 
-  TJet<T> operator^( const TJet<T>& ) const ;      
-                                // Action as a Lie operator
-  TJet<T> expMap( const T&, const TJet<T>& );    
-                                // Performs exponential map on
-                                // the second argument.
-  TJet<T> expMap( const TJet<T>&, const TJet<T>& );
-                                // The orbit parameter is here
-                                // a TJet<T> variable.
-  TJetVector<T> expMap( const T&, const TJetVector<T>& );
-                                // Performs exponential map 
-                                // componenet wise.
-  TJetVector<T> expMap( const TJet<T>&, const TJetVector<T>& );
+  TJet<T> operator^( TJet<T> const& ) const ;                     // Action as a Lie operator
 
-  TJet<T>       expMap( const TJet<T>& );
-  TJetVector<T> expMap( const TJetVector<T>& );
+  TJet<T> expMap( T       const&, TJet<T> const & );              // Performs exponential map on the second argument.
+  TJet<T> expMap( TJet<T> const&, TJet<T> const & );              // The orbit parameter is here a TJet<T> variable.
+
+  TJetVector<T> expMap( T       const&,  TJetVector<T> const& );  // Performs exponential map componenet wise.
+  TJetVector<T> expMap( TJet<T> const &, TJetVector<T> const& );
+
+  TJet<T>       expMap( TJet<T>       const & );
+  TJetVector<T> expMap( TJetVector<T> const & );
 
 };
 
@@ -134,23 +131,23 @@ public:
 // Inline functions
 
 template<typename T>
-inline TLieOperator<T>& TLieOperator<T>::operator=( const TJetVector<T>& x )
-{ return (TLieOperator<T>&) TJetVector<T>::operator=( x ); }
+inline TLieOperator<T>& TLieOperator<T>::operator=( TJetVector<T> const& x )
+{ static_cast<TJetVector<T>&>(*this) = x;  return *this;}
 
 template<typename T>
-inline TJet<T> TLieOperator<T>::expMap( const TJet<T>& x )
+inline TJet<T> TLieOperator<T>::expMap( TJet<T> const& x )
 { return this->expMap( 1.0, x ); }
 
 template<typename T>
-inline TJetVector<T> TLieOperator<T>::expMap( const TJetVector<T>& x )
+inline TJetVector<T> TLieOperator<T>::expMap( TJetVector<T> const& x )
 { return this->expMap( 1.0, x  ); }
 
 template<typename T>
-inline void TLieOperator<T>::setComponent( int i, const TJet<T>& x )
+inline void TLieOperator<T>::setComponent( int i, TJet<T> const& x )
 { this->setVariable( x, i ); }
 
 template<typename T>
-inline void TLieOperator<T>::SetComponent( int i, const TJet<T>& x )
+inline void TLieOperator<T>::SetComponent( int i, TJet<T> const& x )
 { this->setVariable( x, i ); }
 
 

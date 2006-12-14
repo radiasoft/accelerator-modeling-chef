@@ -392,8 +392,8 @@ public:
   void     setStandardPart( T const& std ) { _jl->setStandardPart(std);     } 
 
   void     clear();
-  T        weightedDerivative( int  const* ) const;
-  T                derivative( int  const*  ) const;
+  T        weightedDerivative( int  const* ) const;  // FIXME !
+  T                derivative( int  const*  ) const; // FIXME !
   TJet     filter( int const&, int  const& ) const;  
                                   // Returns only those JLterms whose weight 
                                   // are between two specified values, inclusive.
@@ -405,11 +405,12 @@ public:
                                    // Performs a multinomial evaluation of 
 				   // the Jet variable.  Essentially acts as a 
 				   // power series expansion.
-  TJet     operator() ( TJet<T>       const* ) const;        // Self explanatory ...
-  TJet     operator() ( TJetVector<T> const& ) const;       // Self explanatory ...
 
-  TJet     D( int      const* ) const ;	  // Performs differentiation of a Jet variable.
-  TJet     D( IntArray const& ) const ;   // Performs differentiation of a Jet variable.
+  TJet     operator() ( TJetVector<T> const& ) const;       // Self explanatory ...
+  TJet     operator() ( TJet<T> const* y )     const;       // Self explanatory .    FIXME !     
+
+  TJet     D( int      const* ) const ;	  // Performs differentiation of a Jet variable. FIXME !
+  TJet     D( IntArray const& ) const ;   // Performs differentiation of a Jet variable. FIXME !
 
 
   // Operators________________________________________________________

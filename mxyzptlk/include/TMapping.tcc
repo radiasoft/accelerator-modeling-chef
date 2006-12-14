@@ -55,6 +55,10 @@
 ******   (default for mxyzptlk = explicit)
 ******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES
 ******
+******  Dec 2006 ostiguy@fnal
+******
+******  - New TJetVector base class implementation. See  TJetVector.h for details. 
+****** 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -89,8 +93,15 @@ using namespace std;
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping( int n,  const TJet<T>* pj, EnvPtr<T> const& pje )
-: TJetVector<T>( n, pj, pje )
+TMapping<T>::TMapping( int n, EnvPtr<T> const& pje )
+: TJetVector<T>(n, pje)
+{ }
+
+//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TMapping<T>::TMapping( EnvPtr<T> const& pje )
+: TJetVector<T>(pje )
 { }
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -104,14 +115,23 @@ TMapping<T>::TMapping( TMapping<T> const& x )
 
 template<typename T>
 TMapping<T>::TMapping( TJetVector<T> const& x ) 
-: TJetVector<T>( x ) {}
+: TJetVector<T>( x ) {}  // there should be a check here to make sure dims make sense
 
 
+//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TMapping<T>::TMapping( TVector<T> const& x,   EnvPtr<T>  const& env ) 
+: TJetVector<T>( x, env ) {}
+
+
+//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMapping<T>::TMapping( const char*, EnvPtr<T> const& pje  ) 
-: TJetVector<T>( pje->spaceDim(), 0, pje )
+: TJetVector<T>( TVector<T>(pje->spaceDim()), pje )
 {
  
  if( pje->spaceDim() == 0 ) {
@@ -123,7 +143,7 @@ TMapping<T>::TMapping( const char*, EnvPtr<T> const& pje  )
 
  int s  = pje->spaceDim();
 
- for( int i=0; i<s; ++i) (this->_comp)[i].setVariable( i, pje );
+ for( int i=0; i<s; ++i) (this->comp_)[i].setVariable( i, pje );
 
 }
 
@@ -141,16 +161,16 @@ template<typename T>
 TMapping<T> TMapping<T>::operator()(  TMapping<T> const& x ) const
 {
 
- if( x._dim != (this->_myEnv)->numVar() ) {
+ if( x.comp_.size() != (this->myEnv_)->numVar() ) {
    throw( GenericException(__FILE__, __LINE__, 
           "TMapping<T> TMapping<T>::operator()( const TMapping<T>& ) const",
           "Incompatible dimensions." ) );
  }
 
- TMapping<T> z( (this->_dim), 0, x._myEnv );
+ TMapping<T> z( (this->comp_.size()), x.myEnv_ );
 
- for( int i=0; i< (this->_myEnv)->spaceDim(); ++i) {
-  z._comp[i] = (this->_comp)[i]( x );
+ for( int i=0; i< (this->myEnv_)->spaceDim(); ++i) {
+  z.comp_[i] = (this->comp_)[i]( x );
  }
 
    return z;
@@ -177,16 +197,16 @@ void operator*=( TMapping<T>& x, TMapping<T> const& y ) {
 template<typename T>
 TMatrix<T> TMapping<T>::jacobian() const 
 {
- int            nv = (this->_myEnv)->numVar();   // ??? Is this right?
+ int            nv = (this->myEnv_)->numVar();   // ??? Is this right?
  //int*           d = new int[ nv ];
  int           d[ nv ];
- TMatrix<T>    M( (this->_dim), nv,  T() );
+ TMatrix<T>    M( (this->comp_.size()), nv,  T() );
 
  for( int i=0; i<nv; ++i) d[i] = 0;
  for( int j=0; j<nv; ++j) {
   d[j] = 1;
-  for( int i=0; i< (this->_dim); ++i)  {
-      M( i, j ) = (this->_comp)[i].derivative( d );
+  for( int i=0; i< (this->comp_.size()); ++i)  {
+      M( i, j ) = (this->comp_)[i].derivative( d );
   }
   d[j] = 0;
  }
@@ -208,43 +228,41 @@ return jacobian();
 template<typename T>
 TMapping<T> TMapping<T>::inverse() const 
 { 
- if( (this->_myEnv)->spaceDim() != (this->_dim) ) {
+ if( (this->myEnv_)->spaceDim() != (this->comp_.size()) ) {
   throw GenericException( __FILE__, __LINE__, 
          "Mapping Mapping::Inverse() const ",
          "Phase space dimensions do not match." );
  }
 
- int    nv   = (this->_myEnv)->numVar();
+ int    nv   = (this->myEnv_)->numVar();
 
  bool                      ref_pt_is_zero;
- boost::scoped_array<bool> ref_pt_image_is_zero(new bool  [(this->_dim)]);
+ boost::scoped_array<bool> ref_pt_image_is_zero(new bool  [(this->comp_.size())]);
  bool                      zero_mapped_into_zero;
 
- boost::scoped_array<T>    ref( new T[nv] );
- 
  // ------------------------------------------
  // determine if zero is mapped in to zero ... 
  //-------------------------------------------
  ref_pt_is_zero = true;       // true if ref point is the origin.
 
- for( int i=0; i < (this->_dim); ++i ) 
-   if( (this->_myEnv)->getRefPoint()[i] != 0.0 ) {
+ for( int i=0; i < (this->comp_.size()); ++i ) 
+   if( (this->myEnv_)->getRefPoint()[i] != 0.0 ) {
      ref_pt_is_zero = false;
      break;
  }
 
- for( int j=0; j < (this->_dim); ++j )
-   ref_pt_image_is_zero[j] = ( (this->_comp)[j].standardPart() == 0.0 );
+ for( int j=0; j < (this->comp_.size()); ++j )
+   ref_pt_image_is_zero[j] = ( (this->comp_)[j].standardPart() == 0.0 );
 
  zero_mapped_into_zero = false;
  if(  ref_pt_is_zero ) { 
-     for( int j = 0; j < (this->_dim); j++ ) 
+     for( int j = 0; j < (this->comp_.size()); j++ ) 
         zero_mapped_into_zero &= ref_pt_image_is_zero[j];
  }
 
  // If zero maps into zero, return inverse immediately .....................
  
- if( zero_mapped_into_zero ) return _epsInverse( (this->_myEnv) );
+ if( zero_mapped_into_zero ) return _epsInverse( (this->myEnv_) );
 
  // --------------------------------------
  // Otherwise,onstruct an idempotent 
@@ -262,41 +280,41 @@ TMapping<T> TMapping<T>::inverse() const
  EnvPtr<T> tmp_pje_inv_zeroed( 
                          TJetEnvironment<T>::makeJetEnvironment(pje_inv->maxWeight(), pje_inv->numVar(), pje_inv->spaceDim(), 0, 0  )); 
 
- z._myEnv = tmp_pje_inv_zeroed;
+ z.myEnv_ = tmp_pje_inv_zeroed;
 
 
- for( int j=0; j < (this->_dim); j++ ) {
+ for( int j=0; j < (this->comp_.size()); j++ ) {
 
    if( !ref_pt_image_is_zero[j] ) { 
 
-     // NOTE: calling get() here implicitly clones z._comp[j] !!!!;
-     z._comp[j].setStandardPart( T () ); 
+     // NOTE: calling get() here implicitly clones z.comp_[j] !!!!;
+     z.comp_[j].setStandardPart( T () ); 
   }
  }
  // In case the original reference point was not zero, set the reference point of each component to zero 
  // before taking an inverse.
   
-  for( int j = 0; j < (this->_dim); ++j )  {         
-         z._comp[j].setEnvTo( z._myEnv );    // NOTE: setEnvTo() clones z._comp[j] !!!!         
+  for( int j = 0; j < (this->comp_.size()); ++j )  {         
+         z.comp_[j].setEnvTo( z.myEnv_ );    // NOTE: setEnvTo() clones z.comp_[j] !!!!         
    }
 
-   z = z._epsInverse( z._myEnv );
+   z = z._epsInverse( z.myEnv_ );
 
 //---------------------------------------------------------------------
 // Reset the environment with one that has the correct reference point 
 // and make final adjustments before returning. ..................
 //---------------------------------------------------------------------
  
-  z._myEnv = pje_inv;
+  z.myEnv_ = pje_inv;
 
-  for( int i=0; i<(this->_dim); i++ ) 
-     z._comp[i].setEnvTo( pje_inv );    // clones again !!!
+  for( int i=0; i<(this->comp_.size()); i++ ) 
+     z.comp_[i].setEnvTo( pje_inv );    // clones again !!!
 
 
  // ... A little test ...
  
-  z.standardPart( ref.get() );
-  for( int j = 0; j < (this->_dim); j++ ) 
+  TVector<T> ref = z.standardPart();
+  for( int j = 0; j < (this->comp_.size()); j++ ) 
    if( ref[j] != 0.0 ) {
     (*pcout) << "*** WARNING ***                                    \n"
             "*** WARNING *** TJet<T>::Inverse()                     \n"
@@ -307,8 +325,8 @@ TMapping<T> TMapping<T>::inverse() const
 
  // ... Add the correct reference point and return ...
 
-  for( int j = 0; j< z._dim; j++ ) 
-     z._comp[j].addTerm( TJLterm<T>( z._myEnv->allZeroes(), (this->_myEnv)->getRefPoint()[j], z._myEnv ) );
+  for( int j=0; j< z.comp_.size(); j++ ) 
+     z.comp_[j].addTerm( TJLterm<T>( z.myEnv_->allZeroes(), (this->myEnv_)->getRefPoint()[j], z.myEnv_ ) );
 
   return z;
 }
@@ -319,14 +337,14 @@ template<typename T>
 TMapping<T> TMapping<T>::_epsInverse( EnvPtr<T> const& pje) const 
 {
 
- TMapping<T>  z( (this->_dim), 0, pje ); // the second argument creates an "empty mapping"
+ TMapping<T>  z( (this->comp_.size()), pje ); // the second argument creates an "empty mapping"
  TMapping<T>  id( "ident", pje );
- TMapping<T>  v( (this->_dim), 0, pje );
+ TMapping<T>  v( (this->comp_.size()), pje );
 
- TMatrix<T> M( (this->_dim), (this->_dim), 0.0 );
+ TMatrix<T> M( (this->comp_.size()), (this->comp_.size()), 0.0 );
 
 
- if( (this->_dim) == (this->_myEnv)->numVar() ) 
+ if( (this->comp_.size()) == this->myEnv_->numVar() ) 
     M = Jacobian().inverse();
  else{                                            
     M = Jacobian().Square().inverse();

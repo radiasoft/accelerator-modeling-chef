@@ -49,6 +49,9 @@
 ******   (default for mxyzptlk = explicit)
 ******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES
 ******
+******  Dec 2006 ostiguy@fnal
+******
+******  - New TJetVector base class implementation. See  TJetVector.h for details. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -71,19 +74,20 @@ class DLLEXPORT TMapping: public TJetVector<T> {
 
  public: 
 
-  TMapping( int               dim        = TJetEnvironment<T>::getLastEnv()->spaceDim(),
-            const TJet<T>*    components = 0, 
-            EnvPtr<T> const&  env        = TJetEnvironment<T>::getLastEnv() );
+  TMapping( int n, EnvPtr<T> const&  env        = TJetEnvironment<T>::getLastEnv() );
+
+  TMapping(        EnvPtr<T> const&  env        = TJetEnvironment<T>::getLastEnv() );
 
   template<typename U>
   TMapping( TMapping<U> const& );
 
   TMapping( TMapping const& );
 
-  TMapping( const char* id, EnvPtr<T> const& env = TJetEnvironment<T>::getLastEnv() ); // Produces the identity.
-
   TMapping( TJetVector<T> const& );
 
+  explicit TMapping( const char* id, EnvPtr<T> const& env = TJetEnvironment<T>::getLastEnv() ); // Produces the identity.
+
+  explicit TMapping( TVector<T> const&,   EnvPtr<T>  const& env = TJetEnvironment<T>::getLastEnv());
 
   ~TMapping();
 
@@ -126,9 +130,9 @@ inline TJet<T>& TMapping<T>::operator()( int i )
 { return this->TJetVector<T>::operator()( i ); }
 
 template<typename T>
-inline TMapping<T>& TMapping<T>::operator=( const TMapping<T>& x )
-{ static_cast< TJetVector<T>& >(*this) =  static_cast<TJetVector<T> const&>(x); 
-  return *this;
+inline TMapping<T>& TMapping<T>::operator=( TMapping<T> const& x )
+{  static_cast<TJetVector<T>&>(*this) = x;  
+   return *this;
 }
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES 

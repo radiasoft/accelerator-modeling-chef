@@ -72,16 +72,16 @@ template<>
 Vector TMapping<double>::operator()( Vector const& x ) const
 {
  int i = x.Dim();
- if( ( i != _myEnv->numVar() ) || ( i != _dim ) ) {
+ if( ( i != myEnv_->numVar() ) || ( i != comp_.size() ) ) {
    throw( GenericException(__FILE__, __LINE__, 
           "Vector TMapping<double>::operator()( const Vector& ) const",
           "Incompatible dimensions." ) );
  }
 
- Vector z( _dim );
+ Vector z( comp_.size() );
 
- for( i=0;  i <_myEnv->spaceDim(); ++i) {
-  z(i) = _comp[i]( x );
+ for( i=0;  i <myEnv_->spaceDim(); ++i) {
+  z(i) = comp_[i]( x );
  }
 
  return z;
