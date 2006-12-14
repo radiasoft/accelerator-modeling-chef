@@ -85,7 +85,7 @@ DriftEliminator::DriftEliminator( const DriftEliminator& )
 DriftEliminator::~DriftEliminator()
 {
   if( 0 != _driftPtr ) { delete _driftPtr; }
-  if( 0 != _bmlPtr   ) { _bmlPtr->eliminate(); }
+  if( 0 != _bmlPtr   ) { _bmlPtr->zap; delete _bmlPtr; }
 }
 
 

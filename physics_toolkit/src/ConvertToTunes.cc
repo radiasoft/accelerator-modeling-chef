@@ -85,12 +85,12 @@ int filterTransverseTunes( /* const */ MatrixD& mtrx, Vector& nu )
   double sn, cs;
  
   // Check for coupling ...
-  short int i_x   =  0;
-  short int i_y   =  1;
-  short int i_z   =  2;
-  short int i_px  =  3;
-  short int i_py  =  4;
-  short int i_dpp =  5;
+  int i_x   =  0;
+  int i_y   =  1;
+  int i_z   =  2;
+  int i_px  =  3;
+  int i_py  =  4;
+  int i_dpp =  5;
 
   if( ( mtrx( i_y,  i_x  ) != 0.0 )  ||
       ( mtrx( i_x,  i_y  ) != 0.0 )  ||

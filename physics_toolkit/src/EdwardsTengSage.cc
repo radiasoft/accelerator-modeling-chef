@@ -58,6 +58,7 @@
 #include <basic_toolkit/iosetup.h>
 #include <physics_toolkit/EdwardsTengSage.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/BeamlineIterator.h>
 
 using namespace std;
@@ -140,10 +141,10 @@ void EdwardsTengSage::_deleteCalcs()
 int EdwardsTengSage::eigenTuneCalc( const JetParticle& ptr_jp, 
                                     EdwardsTengSage::Tunes& answer )
 {
-  const int x  = Particle::_x();
-  const int y  = Particle::_y();
-  const int xp = Particle::_xp();
-  const int yp = Particle::_yp();
+  const int x  = Particle::xIndex();
+  const int y  = Particle::yIndex();
+  const int xp = Particle::npxIndex();
+  const int yp = Particle::npyIndex();
 
   MatrixD mtrx;
   mtrx = ptr_jp.State().Jacobian();  
@@ -433,7 +434,8 @@ int EdwardsTengSage::doCalc( JetParticle* ptr_jp, beamline::Criterion& crit )
 
   // .......... Propagate a JetParticle element by element
   // .......... It is assumed to be on a closed orbit!!
-  Particle* ptr_particle = ptr_jp->ConvertToParticle();
+  Particle* ptr_particle = new Particle(*ptr_jp);
+
   // Note: ptr_particle is deleted before returning
 
   double lng = 0.0;
@@ -447,14 +449,14 @@ int EdwardsTengSage::doCalc( JetParticle* ptr_jp, beamline::Criterion& crit )
     if( crit(be) ) {
       ETptr = new Info;
       ETptr->arcLength = lng;
-      ptr_jp->getState( ETptr->map );   // ??? Change statements?  Use pointer?
+      ETptr->map= ptr_jp->getState();   // ??? Change statements?  Use pointer?
       // REMOVE: ETptr->mapInv = ETptr->map.Inverse();
       be->dataHook.append( "EdwardsTengSage", ETptr );
     }
   }
 
   // .......... Calculating tunes .........................
-  ptr_jp->getState( *EdwardsTengSage::_theMapPtr );
+  *EdwardsTengSage::_theMapPtr = ptr_jp->getState();
   mtrx = EdwardsTengSage::_theMapPtr->Jacobian();
   MatrixC lambda;
   lambda = mtrx.eigenValues();

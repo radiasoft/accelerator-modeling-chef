@@ -41,6 +41,7 @@
 #include <basic_toolkit/GenericException.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/Alignment.h>
 
 using namespace std;
@@ -52,12 +53,12 @@ int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )
   // --- Must initialize these variables before the goto -----
   // --- (especially for g++ compiler ) ----------------------
   JetParticle* myJPPtr = arg_jp.Clone();
-  Particle* p_myP = myJPPtr->ConvertToParticle();
+  Particle* p_myP = new Particle( arg_jp );
   // These are deleted before returning.
 
   double x_i  = p_myP->get_x();
   double xp_i = p_myP->get_npx();
-  double inState [] = { 0, 0, 0, 0, 0, 0 };
+  Vector inState(6);
 
   int i = 0;
 
@@ -67,15 +68,15 @@ int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )
 
   // --- Set up indices -----------------------------
   // /* static */ enum { x = 0, y, cdt, xp, yp, dpop };
-  static short int x, y, cdt, xp, yp, dpop;
+  static int x, y, cdt, xp, yp, dpop;
   bool firstTime = true;
   if( firstTime ) {
     firstTime = false;
-    x = arg_jp.xIndex();
-    y = arg_jp.yIndex();
-    cdt = arg_jp.cdtIndex();
-    xp = arg_jp.npxIndex();
-    yp = arg_jp.npyIndex();
+    x    = arg_jp.xIndex();
+    y    = arg_jp.yIndex();
+    cdt  = arg_jp.cdtIndex();
+    xp   = arg_jp.npxIndex();
+    yp   = arg_jp.npyIndex();
     dpop = arg_jp.ndpIndex();
   }
   // -----------------------------------------------

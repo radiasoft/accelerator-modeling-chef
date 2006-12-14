@@ -2,7 +2,7 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
+******  Physics TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
 ******                                    
@@ -384,7 +384,8 @@ beamline* DriftsToSlots( /* const */ beamline& original )
 
   while((  elPtr = bi++  )) 
   {
-    isLastPtr = bi.isFinished();
+
+   isLastPtr = bi.isFinished();
 
     // If the trial element is not a drift, just copy it ...
     if( 0 !=  strcmp( elPtr->Type(), "drift" ) ) 
@@ -429,7 +430,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
              << "\n--- END EXCEPTION -----\n" 
              << endl;
         delete flatRing;
-        ret->eliminate();
+        delete ret; ret=0;;
         return &original;
       }
 
@@ -445,7 +446,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
                << "\n*** WARNING: *** "
                << endl;
           delete flatRing;
-          ret->eliminate();
+          delete ret; ret=0;;
           return &original;
         }
       }
@@ -459,7 +460,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
                << "\n*** WARNING: *** "
                << endl;
           delete flatRing;
-          ret->eliminate();
+          delete ret; ret=0;;
           return &original;
         }
       }
@@ -499,7 +500,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
                  << "\n*** WARNING: *** "
                  << endl;
             delete flatRing;
-            ret->eliminate();
+            delete ret; ret=0;;
             return &original;
           }
           fd(x) = 0.0;
@@ -522,7 +523,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
                << "\n*** WARNING: *** "
                << endl;
           delete flatRing;
-          ret->eliminate();
+          delete ret; ret=0;;
           return &original;
         }
       }
@@ -559,7 +560,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
                  << "\n*** WARNING: *** "
                  << endl;
             delete flatRing;
-            ret->eliminate();
+            delete ret; ret=0;;
             return &original;
           }
           ret->append( new Slot(elPtr->Name(), arcFrame) );
@@ -578,7 +579,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
                << "\n*** WARNING: *** "
                << endl;
           delete flatRing;
-          ret->eliminate();
+          delete ret; ret=0;;
           return &original;
         }
       }
@@ -611,7 +612,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
                    << "\n*** WARNING: *** "
                    << endl;
               delete flatRing;
-              ret->eliminate();
+              delete ret; ret=0;;
               return &original;
             }
           }
@@ -640,7 +641,7 @@ beamline* DriftsToSlots( /* const */ beamline& original )
                    << "\n*** WARNING: *** "
                    << endl;
               delete flatRing;
-              ret->eliminate();
+              delete ret; ret=0;
               return &original;
             }
           }

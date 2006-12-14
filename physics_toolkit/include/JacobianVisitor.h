@@ -80,7 +80,7 @@ public:
   JacobianData(const MatrixD& mat) {jac = mat;}
   JacobianData();
   JacobianData(const JacobianData& x) {jac = x.jac;}
-  ~JacobianData() {}
+ ~JacobianData() {}
   MatrixD RMatrix();
 };
 

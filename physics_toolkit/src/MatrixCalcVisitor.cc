@@ -169,7 +169,7 @@ void MatrixCalcVisitor::visitBeamline( beamline* x )
       ostringstream uic;
       uic  << "The count is not correct: "
   	   << _counter << " + 1 != " << _numberOfElements;
-      throw( Particle::GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__, 
              "void MatrixCalcVisitor::visitBeamline( beamline* x )", 
              uic.str().c_str() ) );
     }
@@ -349,20 +349,9 @@ void visitCombinedFunction( combinedFunction* x )
 
 void MatrixCalcVisitor::getState( Vector& x )
 {
-  _myParticle->getState( x );
+  x =_myParticle->getState();
 }
 
-
-void MatrixCalcVisitor::getState( Vector* x )
-{
-  _myParticle->getState( x );
-}
-
-
-void MatrixCalcVisitor::getState( double* x )
-{
-  _myParticle->getState( x );
-}
 
 Vector MatrixCalcVisitor::State()
 {
@@ -382,7 +371,7 @@ int MatrixCalcVisitor::_doCalc()
   // This is more or less cloned from LattFuncSage::Fast_CS_Calc
   // 
 
-  short int i_x  = 0,
+        int i_x  = 0,
             i_px = 1,
             i_y  = 0,
             i_py = 1;

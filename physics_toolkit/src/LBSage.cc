@@ -45,6 +45,7 @@
 #include <basic_toolkit/iosetup.h>
 #include <physics_toolkit/LBSage.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/BeamlineIterator.h>
 #include <basic_toolkit/GenericException.h>
 
@@ -158,15 +159,15 @@ int LBSage::doCalc( const JetParticle* ptr_jp, beamline::Criterion& crit )
   //   orbit with the one-turn  mapping for its state.
 
   JetParticle* localPtr = ptr_jp->Clone();
-  Particle* ptr_proton  = ptr_jp->ConvertToParticle();
+  Particle* ptr_proton  = new Particle(*ptr_jp);
 
   const int n   = Particle::PSD;
-  const int x   = Particle::_x();
-  const int y   = Particle::_y();
-  const int cdt = Particle::_cdt();
-  const int xp  = Particle::_xp(); 
-  const int yp  = Particle::_yp(); 
-  const int dpp = Particle::_dpop();
+  const int x   = Particle::xIndex();
+  const int y   = Particle::yIndex();
+  const int cdt = Particle::cdtIndex();
+  const int xp  = Particle::npxIndex(); 
+  const int yp  = Particle::npyIndex(); 
+  const int dpp = Particle::ndpIndex();
 
   MatrixC E(n,n), E2(n,n);
   

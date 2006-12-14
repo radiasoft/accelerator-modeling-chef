@@ -69,6 +69,7 @@
 #include <basic_toolkit/iosetup.h>
 #include <beamline/BeamlineIterator.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <physics_toolkit/LattFuncSage.h>
 
 using namespace std;

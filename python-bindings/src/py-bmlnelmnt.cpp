@@ -24,6 +24,7 @@
 #include <string>
 
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/BmlVisitor.h>
@@ -106,10 +107,10 @@ void (bmlnElmnt::*propagateParticle)     (Particle&      ) = &bmlnElmnt::propaga
 void (bmlnElmnt::*propagateJetParticle)  (JetParticle&   ) = &bmlnElmnt::propagate;
 void (bmlnElmnt::*propagateParticleBunch)(ParticleBunch& ) = &bmlnElmnt::propagate;
 
-void (bmlnElmnt::*setStrength1)(double      ) = &bmlnElmnt::setStrength;
+void (bmlnElmnt::*setStrength1)(double const&      ) = &bmlnElmnt::setStrength;
 
 double (bmlnElmnt::*setReferenceTime1)(const Particle&  ) = &bmlnElmnt::setReferenceTime;
-double (bmlnElmnt::*setReferenceTime2)(double)            = &bmlnElmnt::setReferenceTime;
+double (bmlnElmnt::*setReferenceTime2)(double const&)            = &bmlnElmnt::setReferenceTime;
 
 void (beamline::*beamline_propagateParticle)     (Particle&      ) = &beamline::propagate;
 void (beamline::*beamline_propagateJetParticle)  (JetParticle&   ) = &beamline::propagate;
@@ -178,9 +179,9 @@ beamlineWrap::InsertElementsFromListWrap( double s_0, InsertionList& il, slist& 
 }
 
 
-int (beamline::*twiss1)( JetParticle&, double, short )            = &beamline::twiss;
-int (beamline::*twiss2)( char,JetParticle& )                      = &beamline::twiss;
-int (beamline::*twiss3)( lattFunc&, JetParticle&, short)          = &beamline::twiss;
+int (beamline::*twiss1)( JetParticle&, double const&, int  )     = &beamline::twiss;
+int (beamline::*twiss2)( char,JetParticle& )                     = &beamline::twiss;
+int (beamline::*twiss3)( lattFunc&, JetParticle&, int)           = &beamline::twiss;
 
 void (beamline::*insert1) (  bmlnElmnt*  )          = &beamline::insert;
 void (beamline::*append1) (  bmlnElmnt* )           = &beamline::append;
@@ -242,21 +243,6 @@ void wrap_beamline() {
        return_value_policy<reference_existing_object>());
  
   //beamlineWrap_.def("whatIsRing",               &beamline::whatIsRing)
-
-  // CLONING AND STORING
-  //beamline& operator=( const beamline& );
-  //beamlineWrap_.def("flatten",                  &beamline::flatten); returns a ptr, need to specify a policy 
- 
-     //void   writeLattFunc( );
-     //void   writeLattFunc( FILE* );
-     //void   writeLattFunc( char* );
-
-     //extern beamline& operator*( int, beamline& );
-     //extern beamline& operator*( int, bmlnElmnt& );
-     //extern beamline& operator*( beamline&, int );
-     //extern beamline& operator*( bmlnElmnt&, int );
-     //extern beamline& operator^( bmlnElmnt&, bmlnElmnt& );
-     //extern beamline& operator-( beamline& );
 
 }
 

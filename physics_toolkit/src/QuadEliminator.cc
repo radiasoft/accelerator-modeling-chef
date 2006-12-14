@@ -79,7 +79,7 @@ QuadEliminator::QuadEliminator( const QuadEliminator& )
 QuadEliminator::~QuadEliminator()
 {
   if( 0 != _quadPtr )  { delete _quadPtr;      }
-  if( 0 != _bmlPtr   ) { _bmlPtr->eliminate(); }
+  if( 0 != _bmlPtr   ) { _bmlPtr->zap(); delete _bmlPtr;  _bmlPtr=0;}
 }
 
 

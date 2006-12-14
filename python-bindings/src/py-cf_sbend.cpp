@@ -28,10 +28,10 @@
 
 using namespace boost::python;
 
-static double (CF_sbend::*setEntryAngleDouble_Ptr)     (double               ) = &CF_sbend::setEntryAngle;
+static double (CF_sbend::*setEntryAngleDouble_Ptr)     (double const&        ) = &CF_sbend::setEntryAngle;
 static double (CF_sbend::*setEntryAngleParticle_Ptr)   (const Particle&      ) = &CF_sbend::setEntryAngle;
 
-static double (CF_sbend::*setExitAngleDouble_Ptr)      (double               ) = &CF_sbend::setExitAngle;
+static double (CF_sbend::*setExitAngleDouble_Ptr)      (double const&        ) = &CF_sbend::setExitAngle;
 static double (CF_sbend::*setExitAngleParticle_Ptr)    (const Particle&      ) = &CF_sbend::setExitAngle;
 
 // The following functions exist in the header file CF_sbend.h but currently have no implementation.
@@ -42,14 +42,13 @@ static double (CF_sbend::*setExitAngleParticle_Ptr)    (const Particle&      ) =
 
 void wrap_cf_sbend () {
 
-  class_<CF_sbend, bases<bmlnElmnt> >("CF_sbend", init<double, double, double>() )
+  class_<CF_sbend, bases<bmlnElmnt> >("CF_sbend", init<double const&, double const&, double const&>() )
 
-  .def(init<const char*, double, double, double>() )
-  .def(init<double,      double, double, int>() )
-  .def(init<const char*, double, double, double, int>() )
-  .def(init<double,      double, double, double, double, int>() )
-  .def(init<const char*, double, double, double, double, double, int>() )
-  .def("eliminate",               &CF_sbend::eliminate)
+  .def(init<const char*, double const&, double const&, double const&>() )
+  .def(init<             double const&, double const&, double const&, int>() )
+  .def(init<const char*, double const&, double const&, double const&, int>() )
+  .def(init<             double const&, double const&, double const&, double const&, double const&, int>() )
+  .def(init<const char*, double const&, double const&, double const&, double const&, double const&, int>() )
   .def("setQuadrupole",           &CF_sbend::setQuadrupole)
   .def("setSextupole",            &CF_sbend::setSextupole)
   .def("setOctupole",             &CF_sbend::setOctupole) 

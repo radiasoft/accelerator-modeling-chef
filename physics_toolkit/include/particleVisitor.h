@@ -53,6 +53,8 @@
 
 #include <beamline/BmlVisitor.h>
 #include <mxyzptlk/Jet.h>
+#include <basic_toolkit/VectorD.h>
+#include <mxyzptlk/Mapping.h>
 
 class Particle;
 class JetParticle;
@@ -61,7 +63,7 @@ class JetParticle;
 class particleVisitor : public BmlVisitor {
  protected:
   Particle* particle;
-  double* state;
+  Vector    state;
   int _x;
   int _xp;
   int _y;
@@ -76,14 +78,14 @@ class particleVisitor : public BmlVisitor {
   particleVisitor(const particleVisitor&);
   virtual ~particleVisitor();
   void setParticle(const Particle&);
-  void setState(double*);
+  void setState(Vector const&);
   const Particle& getParticle();
 };
 
 class JetParticleVisitor : public BmlVisitor {
  protected:
   JetParticle* particle;
-  Jet* state;
+  Mapping      state;
   int dim;
   int _x;
   int _xp;
@@ -99,7 +101,7 @@ class JetParticleVisitor : public BmlVisitor {
   JetParticleVisitor(const JetParticleVisitor&);
   virtual ~JetParticleVisitor();
   void setParticle(const JetParticle&);
-  void setState(Jet*);
+  void setState(Mapping const&);
   const JetParticle& getParticle();
 };
 

@@ -127,7 +127,7 @@ Sage::Sage( const Sage& x )
 Sage::~Sage()
 {
   delete _arrayPtr;
-  if( _cloned ) { _myBeamlinePtr->eliminate(); }
+  if( _cloned ) { _myBeamlinePtr->zap(); delete _myBeamlinePtr; _myBeamlinePtr=0;}
 }
 
 

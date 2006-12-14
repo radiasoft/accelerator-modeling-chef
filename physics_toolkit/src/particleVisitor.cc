@@ -41,6 +41,7 @@
 
 #include <beamline/beamline.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <physics_toolkit/particleVisitor.h>
 
 
@@ -56,55 +57,48 @@ particleVisitor::particleVisitor() : BmlVisitor() {
 
 particleVisitor::particleVisitor(const Particle& x) : BmlVisitor() {
   particle = x.Clone();
-  _x = Particle::_x();
-  _xp = Particle::_xp();
-  _y = Particle::_y();
-  _yp = Particle::_yp();
-  _cdt = Particle::_cdt();
-  _dpop = Particle::_dpop();
-  state = new double[BMLN_dynDim];
-  particle->getState(state);
+  _x     = Particle::xIndex();
+  _xp    = Particle::npxIndex();
+  _y    = Particle:: yIndex();
+  _yp   = Particle:: npyIndex();
+  _cdt  = Particle:: cdtIndex();
+  _dpop = Particle:: ndpIndex();
+  state = particle->getState();
 }
 
 particleVisitor::particleVisitor(const particleVisitor& x) {
   if(x.particle != 0) {
     particle = x.particle->Clone();
-    state = new double[BMLN_dynDim];
-    particle->getState(state);
+    state = particle->getState();
   } else {
     particle = 0;
     state = 0;
   }
-  _x = Particle::_x();
-  _xp = Particle::_xp();
-  _y = Particle::_y();
-  _yp = Particle::_yp();
-  _cdt = Particle::_cdt();
-  _dpop = Particle::_dpop();
+  _x     = Particle::xIndex();
+  _xp    = Particle::npxIndex();
+  _y    = Particle:: yIndex();
+  _yp   = Particle:: npyIndex();
+  _cdt  = Particle:: cdtIndex();
+  _dpop = Particle:: ndpIndex();
 }
 
 particleVisitor::~particleVisitor() {
-  if(particle != 0)
-    delete particle;
-  if(state != 0)
-    delete [] state;
+
+  if(particle) delete particle;
 }
 
 void particleVisitor::setParticle(const Particle& x) {
-  if(particle != 0) {
-    delete particle;
-  } else {
-    state = new double[BMLN_dynDim];
-  }
+
+  if(particle) delete particle;
   particle = x.Clone();
-  particle->getState(state);
+  state = particle->getState();
 
 }
-void particleVisitor::setState(double* x) {
-  if(particle != 0) {
-    particle->setState(x);
-    particle->getState(state);
-  }
+void particleVisitor::setState(Vector const& x) {
+  if(!particle) return;
+  particle->setState(x);
+  state = particle->getState();
+ 
 }
 const Particle& particleVisitor::getParticle() {
   particle->setState(state);
@@ -114,79 +108,69 @@ const Particle& particleVisitor::getParticle() {
 JetParticleVisitor::JetParticleVisitor() : BmlVisitor() {
   particle = 0;
   state = 0;
-  dim = 0;
-  _x = 0;
-  _xp = 0;
-  _y = 0;
-  _yp = 0;
-  _cdt = 0;
+  dim   = 0;
+  _x    = 0;
+  _xp   = 0;
+  _y    = 0;
+  _yp   = 0;
+  _cdt  = 0;
   _dpop = 0;
 }
 
 JetParticleVisitor::JetParticleVisitor(const JetParticle& x) : BmlVisitor() {
+
   particle = x.Clone();
-  _x = Particle::_x();
-  _xp = Particle::_xp();
-  _y = Particle::_y();
-  _yp = Particle::_yp();
-  _cdt = Particle::_cdt();
-  _dpop = Particle::_dpop();
-  Mapping temp;
-  particle->getState(temp);
+  _x     = Particle::xIndex();
+  _xp    = Particle::npxIndex();
+  _y     = Particle::yIndex();
+  _yp    = Particle::npyIndex();
+  _cdt   = Particle::cdtIndex();
+  _dpop  = Particle::ndpIndex();
+
+  Mapping temp= particle->getState();
   dim = temp.Dim();
-  state = new Jet[dim];
-  particle->getState(state);
+  state = particle->getState();
 }
 
-JetParticleVisitor::JetParticleVisitor(const JetParticleVisitor& x) {
-  if(x.particle != 0) {
-    particle = x.particle->Clone();
-    Mapping temp;
-    particle->getState(temp);
-    dim = temp.Dim();
-    state = new Jet[dim];
-    particle->getState(state);
-  } else {
-    particle = 0;
-    state = 0;
+JetParticleVisitor::JetParticleVisitor(JetParticleVisitor const& x) {
+
+  _x     = Particle::xIndex();
+  _xp    = Particle::npxIndex();
+  _y     = Particle::yIndex();
+  _yp    = Particle::npyIndex();
+  _cdt   = Particle::cdtIndex();
+  _dpop  = Particle::ndpIndex();
+
+  if( !x.particle) { 
+      particle = 0; 
+      return;
   }
-  _x = Particle::_x();
-  _xp = Particle::_xp();
-  _y = Particle::_y();
-  _yp = Particle::_yp();
-  _cdt = Particle::_cdt();
-  _dpop = Particle::_dpop();
+ 
+ particle = x.particle->Clone();
+  state = particle->getState();
+
+
 }
 
 JetParticleVisitor::~JetParticleVisitor() {
   if(particle != 0)
     delete particle;
-  if(state != 0)
-    delete [] state;
 }
 
 void JetParticleVisitor::setParticle(const JetParticle& x) {
   if(particle != 0) {
     delete particle;
-    delete state;
   }
   particle = x.Clone();
-  Mapping temp;
-  particle->getState(temp);
-  dim = temp.Dim();
-  state = new Jet[dim];
-  particle->getState(state);
+  state = particle->getState();
 
 }
-void JetParticleVisitor::setState(Jet* x) {
-  if(particle != 0) {		// This method is not robust.
-    Mapping temp(dim,x);
-    particle->setState(temp);	// The user could have changed
-    particle->getState(state);	// dimensions of the state vector.
-  }
+void JetParticleVisitor::setState(Mapping const& x) {
+  if( !particle ) return;
+  state = particle->getState();	
+ 
 }
 const JetParticle& JetParticleVisitor::getParticle() {
-  Mapping temp(dim,state);
-  particle->setState(temp);
+  particle->setState(state);
   return *particle;
 }

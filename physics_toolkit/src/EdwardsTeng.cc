@@ -52,6 +52,7 @@
 #include <basic_toolkit/iosetup.h>
 
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/BeamlineIterator.h>
 #include <beamline/beamline.h>
 #include <physics_toolkit/EdwardsTeng.h>
@@ -298,7 +299,7 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
 
  // .......... Propagate a JetParticle element by element
  // .......... It is assumed to be on a closed orbit!!
- Particle* ptr_particle = ptr_jp->ConvertToParticle();
+ Particle* ptr_particle = new Particle(*ptr_jp);
  // is deleted before returning
 
 
@@ -309,14 +310,14 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
    if( !Crit ) {
      ETptr = new ETinfo;
      ETptr->arcLength = lng;
-     ptr_jp->getState( ETptr->map );   // ??? Change statements?  Use pointer?
+     ETptr->map = ptr_jp->getState();   // ??? Change statements?  Use pointer?
      ETptr->mapInv = ETptr->map.Inverse();
      be->dataHook.append( "EdwardsTeng", ETptr );
    }
    else if( (*Crit)( be ) ) {
      ETptr = new ETinfo;
      ETptr->arcLength = lng;
-     ptr_jp->getState( ETptr->map );   // ??? Change statements?  Use pointer?
+     ETptr->map = ptr_jp->getState();   // ??? Change statements?  Use pointer?
      ETptr->mapInv = ETptr->map.Inverse();
      be->dataHook.append( "EdwardsTeng", ETptr );
    }
@@ -325,7 +326,7 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
 
 
  // .......... Calculating tunes .........................
- ptr_jp->getState( *EdwardsTeng::theMap );
+ *EdwardsTeng::theMap =ptr_jp->getState();
  mtrx = EdwardsTeng::theMap->Jacobian();
  MatrixC lambda;
  lambda = mtrx.eigenValues();

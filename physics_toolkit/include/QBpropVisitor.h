@@ -62,10 +62,8 @@ struct QBpropVisitor : public particleVisitor
   void visitCF_rbend( CF_rbend* );
   void visitMarker( marker* );
 
-  void getState( Vector& );
-  void getState( Vector* );
-  void getState( double* );
-  Vector State();
+  Vector& getState();
+  Vector  State();
 };
 
 #endif // QBPROPVISITOR_H
