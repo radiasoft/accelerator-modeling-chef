@@ -366,7 +366,7 @@ void editDialog::visitDrift( drift* x )
       if( !ok ) { newLength = x->Length(); }
 
       Vector origin(3);
-      origin( Particle::_cdt() ) = newLength; 
+      origin( Particle::cdtIndex() ) = newLength; 
       // This is a phenomenally stupid and convoluted
       // way to do this.
       Frame outFrame;
