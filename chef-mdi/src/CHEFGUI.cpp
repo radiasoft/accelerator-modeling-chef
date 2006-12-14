@@ -103,6 +103,8 @@
 
 #include <beamline/marker.h>
 
+#include <parsers/xsif/XSIFFactory.h>
+
 #include <iosetup.h>
 
 using FNAL::pcout;
@@ -341,108 +343,11 @@ CHEFGUI::~CHEFGUI()
 
 }
 
-void CHEFGUI::_openFile()
-{
-  std::auto_ptr<bmlfactory> bfp;
 
-  // Open file dialog
-  QString s = QFileDialog::getOpenFileName( QString::null,
-                   "MAD (*.mad *.lat);;Beamline (*.bml)");
+void CHEFGUI::readBmlFile( QString s) {
 
-  if( s.isEmpty() )
-  {
-      return;
-  }
-  else
-  {
-
-    if( QString(".mad") == s.right(4) ||
-        QString(".lat") == s.right(4)    )
-    {
-
-      try
-      {
-        bfp.reset(new bmlfactory(s.ascii(), (char*)0 )); // cast needed to avoid ambiguity
-      }
-      catch (ParserException& e)
-      {
-        QMessageBox mb(QString("Error"), QString( e.what() ), 
-                    QMessageBox::Critical, 
-                    QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
-        mb.show();
-        while (mb.isVisible())  qApp->processEvents(); 
-        return;
-      }
-      catch (GenericException& e)
-      {
-        QMessageBox::critical( 0, "CHEF: ERROR", e.what() );
-        return;
-      }
-
-       std::list<std::string>& beamline_list = bfp->getBeamlineList();
-
-        //  instantiate only the n last beamlines defined in the mad file.
-
-        _bmlSelectionDialog->setList( beamline_list, bfp->getUseStatementBeamlineName() );
-        _bmlSelectionDialog->setBeamParameters( *bfp.get() );
-        _bmlSelectionDialog->show();
-
-        while (_bmlSelectionDialog->isVisible()) qApp->processEvents();
-
-        double brho = _bmlSelectionDialog->getBRHO();
-
-        _bmlSelectionDialog->getSelected(); // this function alters beamline_list
-
-        std::list<std::string>::iterator it;
-        int nlines = 0;
-        for ( it = beamline_list.begin(); it != beamline_list.end(); it++) {
-	    beamline* bmlPtr = 0;
-	    try {
-              bmlPtr = bfp->create_beamline( (*it).c_str() , brho);
-            } 
-            catch (ParserException& e) {
-                QMessageBox mb(QString("Error"), QString( e.what() ), 
-                QMessageBox::Critical, 
-                QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
-                mb.show();
-                while (mb.isVisible())  qApp->processEvents(); 
-                return;
-            }
-
-            const char* typeStringPtr = bfp->getParticleType();
-            if( 0 == strcmp( "PROTON", typeStringPtr ) ) {
-              _p_currBmlCon = new BeamlineContext( Proton(bmlPtr->Energy()), bmlPtr, false );
-	    }
-            else if( 0 == strcmp( "POSITRON", typeStringPtr ) ) {
-              _p_currBmlCon = new BeamlineContext( Positron(bmlPtr->Energy()), bmlPtr, false );
-	    }
-            else {
-              QMessageBox mb(  QString("*** ERROR ***")
-                             , QString( "Unrecognized or unspecified particle type."
-                                        "\nDeclare a particle using MAD's BEAM command." )
-                             , QMessageBox::Critical
-                             , QMessageBox::Ok
-                             , QMessageBox::NoButton
-                             , QMessageBox::NoButton );
-              mb.show();
-              while (mb.isVisible())  qApp->processEvents(); 
-	    }
-
-            _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called)
-                                                  //when the context is destroyed;
-            _contextList.insert( _p_currBmlCon );
-
-            _p_vwr->displayBeamline( _p_currBmlCon );
-            nlines++;
-	}
-	
-
-    }
-     else
-     { // Read .bml file, not .mad file
-
-      beamline* bmlPtr = new beamline;
-      std::ifstream inputStream( s );
+ beamline* bmlPtr = new beamline;
+ std::ifstream inputStream( s );
       inputStream >> (*bmlPtr);
       inputStream.close();
 
@@ -474,20 +379,129 @@ void CHEFGUI::_openFile()
         _p_currBmlCon = new BeamlineContext( Positron(bmlPtr->Energy()), bmlPtr, false );
       }
 
-      delete wpu;
+  delete wpu;
 
-      _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called)
+  _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called)
                                             // when the context is destroyed;
 
-      _contextList.insert( _p_currBmlCon );
-      emit _new_beamline();
-     }
-    }
+  _contextList.insert( _p_currBmlCon );
+  emit _new_beamline();
+   
 
   _p_vwr->clearSelection();
 
 }
 
+void CHEFGUI::_openFile()
+{
+  std::auto_ptr<bmlfactory> bfp;
+
+  // Open file dialog
+  QString s = QFileDialog::getOpenFileName( QString::null,
+                   "MAD (*.mad *.lat);; XSIF (*.xsif);; Beamline (*.bml)");
+
+  if( s.isEmpty() ) return;
+ 
+ 
+  enum  { mad_format, xsif_format, bml_format } lattice_format;
+
+  if( (QString(".mad")  == s.right(4)) || (QString(".lat")  == s.right(4)) ) lattice_format = mad_format; 
+  if( QString(".bml")  == s.right(4) )                                       lattice_format = bml_format; 
+  if( QString(".xsif") == s.right(5) )                                       lattice_format = xsif_format; 
+    
+
+   try {
+        switch ( lattice_format ) {
+           case mad_format:   
+                       bfp.reset(new MAD8Factory(s.ascii(), (char*)0 )); // cast needed to avoid ambiguity
+                       break;
+           case xsif_format:  
+                       bfp.reset(new XSIFFactory(s.ascii(), (char*)0 )); // cast needed to avoid ambiguity
+                       break;
+           case bml_format:  
+	               readBmlFile( s );
+	     return;
+                       break;
+           default:    
+                       return; // unknown parser type 
+	}
+    }
+
+    catch (ParserException& e) {
+        QMessageBox mb(QString("Error"), QString( e.what() ), 
+                    QMessageBox::Critical, 
+                    QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+        mb.show();
+        while (mb.isVisible())  qApp->processEvents(); 
+        return;
+    }
+    catch (GenericException& e){
+        QMessageBox::critical( 0, "CHEF: ERROR", e.what() );
+        return;
+    }
+
+    std::list<std::string>& beamline_list = bfp->getBeamlineList();
+
+    //  instantiate only the n last beamlines defined in the mad file.
+
+    _bmlSelectionDialog->setList( beamline_list, bfp->getUseStatementBeamlineName() );
+    _bmlSelectionDialog->setBeamParameters( *bfp.get() );
+    _bmlSelectionDialog->show();
+
+    while (_bmlSelectionDialog->isVisible()) qApp->processEvents();
+
+    double brho = _bmlSelectionDialog->getBRHO();
+
+    _bmlSelectionDialog->getSelected(); // this function alters beamline_list
+
+    std::list<std::string>::iterator it;
+    int nlines = 0;
+
+    for ( it = beamline_list.begin(); it != beamline_list.end(); it++) {
+    	    beamline* bmlPtr = 0;
+    	    try {
+            bmlPtr = bfp->create_beamline( (*it).c_str() , brho);
+          } 
+          catch (ParserException& e) {
+              QMessageBox mb(QString("Error"), QString( e.what() ), 
+              QMessageBox::Critical, 
+              QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+              mb.show();
+              while (mb.isVisible())  qApp->processEvents(); 
+              return;
+          }
+
+          const char* typeStringPtr = bfp->getParticleType();
+          if( 0 == strcmp( "PROTON", typeStringPtr ) ) {
+            _p_currBmlCon = new BeamlineContext( Proton(bmlPtr->Energy()), bmlPtr, false );
+    	    }
+          else if( 0 == strcmp( "POSITRON", typeStringPtr ) ) {
+            _p_currBmlCon = new BeamlineContext( Positron(bmlPtr->Energy()), bmlPtr, false );
+    	    }
+          else {
+            QMessageBox mb(  QString("*** ERROR ***")
+                           , QString( "Unrecognized or unspecified particle type."
+                                      "\nDeclare a particle using MAD's BEAM command." )
+                           , QMessageBox::Critical
+                           , QMessageBox::Ok
+                           , QMessageBox::NoButton
+                           , QMessageBox::NoButton );
+            mb.show();
+            while (mb.isVisible())  qApp->processEvents(); 
+    	    }
+
+          _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called)
+                                                //when the context is destroyed;
+          _contextList.insert( _p_currBmlCon );
+
+          _p_vwr->displayBeamline( _p_currBmlCon );
+
+          nlines++;
+     }
+
+ }
+
+ 
 
 void CHEFGUI::_openDeviceFile()
 {
@@ -640,7 +654,7 @@ CHEFGUI::_parseEditorMAD8( CF_Editor* editor )
  
   try 
   {
-    bfp.reset( new bmlfactory( editor->caption().ascii(), editor->text().ascii()) ); // the 2nd argument is the actual text buffer. 
+    bfp.reset( new MAD8Factory( editor->caption().ascii(), editor->text().ascii()) ); // the 2nd argument is the actual text buffer. 
                                                                                      // It is used only if != 0  
   }
 
@@ -2124,7 +2138,7 @@ void CHEFGUI::_editPartAndSect()
       pPtr->setStateToZero();
 
       for( i = 0; i < numberOfSectors; i++ ) {
-        JetParticle* jpPtr = pPtr->ConvertToJetParticle();
+        JetParticle* jpPtr = new JetParticle(*pPtr);
         splitBmlPtr->append( bmlPtr->MakeSector( *(spaceCharge[i]),
                                                  *(spaceCharge[i+1]),
                                                  order, *jpPtr  ) );
@@ -2151,7 +2165,7 @@ void CHEFGUI::_editPartAndSect()
 
 
   delete wpu;
-  bmlPtr->eliminate();
+  bmlPtr->zap(); delete bmlPtr; bmlPtr = 0;
 
   _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
                                        splitBmlPtr, false );
@@ -2949,8 +2963,8 @@ void CHEFGUI::_launchDilution()
     return;
   }
 
-  const int index [] = { Particle::_x(), Particle::_xp(),
-                         Particle::_y(), Particle::_yp() };
+  const int index [] = { Particle::xIndex(), Particle::npxIndex(),
+                         Particle::yIndex(), Particle::npyIndex() };
 
   // Get invariant emittances
   QDialog* wpu = new QDialog( 0, 0, true );
