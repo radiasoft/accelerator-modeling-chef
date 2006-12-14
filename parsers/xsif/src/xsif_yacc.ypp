@@ -1,0 +1,586 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  XSIF Parser:  Interprets XSIF input files and             
+******                creates instances of class beamline.                 
+******                                                
+******  File:      xif_yacc.ypp
+******                                                                
+******  Copyright (c) Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******                                                                
+******  Author:  Jean-Francois Ostiguy
+******           ostiguy@fnal.gov 
+******
+**************************************************************************
+**************************************************************************/
+
+/*----------------------------------------------*/
+/* A yacc (bison) parser for xsif input files  */
+/*----------------------------------------------*/
+
+  /**** this should be defined only for debugging ***/
+
+%debug 
+%error-verbose 
+
+  /**** ----------------------------------------- ***/  
+
+%skeleton "lalr1.cc"
+%require "2.3"    
+%define   "parser_class_name" "XsifParser"
+%output="XsifParser_ypp.cc"
+%lex-param   {void* yyscanner} 
+%parse-param {void* yyscanner}
+%name-prefix="xsif_yy"                            /**** note: this affects the namespace yy ***/  
+%token-table
+%defines
+%{
+
+#include <iostream>
+#include <string>
+#include <cmath>
+#include <vector>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string_regex.hpp>
+#include <beamline/bmlnElmnt.h>
+#include <basic_toolkit/iosetup.h>
+
+#include <parsers/xsif/Macro.h>
+
+class XsifParserDriver;
+class Expression;
+using FNAL::pcerr; 
+%}
+
+%union
+{
+  int                                ival;
+  double                             dval;
+  std::string*                       sval;    /* string could/should be allocated from a pool to avoid leaks */ 
+  Expression*                        pexp; 
+  std::vector<std::string>*          pstrvec;             
+  Macro*                             pmacro; 
+};
+
+%{
+#include "XsifParserDriver.h"
+%}
+
+
+
+%parse-param {XsifParserDriver& driver}
+%lex-param   {XsifParserDriver& driver}
+%locations
+
+%initial-action 
+{
+   // Initialize the initial location.
+   @$.begin.filename = @$.end.filename = &driver.m_file;
+}
+
+
+%token    XSIF_VALUE
+%token    XSIF_INT_VALUE
+%token    XSIF_STRING_VALUE
+%token    XSIF_VARIABLE
+%token    XSIF_IDENTIFIER
+%token    XSIF_VARASSIGNMENT
+
+%token    XSIF_CALL              
+%token    XSIF_CLOSE             
+%token    XSIF_CONSTANT          
+%token    XSIF_ECHO              
+%token    XSIF_LINE              
+%token    XSIF_NOECHO            
+%token    XSIF_OPEN              
+%token    XSIF_PARAMETER         
+%token    XSIF_PATH              
+%token    XSIF_RETURN            
+%token    XSIF_USE               
+%token    XSIF_NLC               
+%token    XSIF_NONLC             
+
+%token    XSIF_BEAM              
+
+%token    XSIF_SQRT
+%token    XSIF_SIN
+%token    XSIF_COS
+%token    XSIF_TAN
+%token    XSIF_ASIN
+%token    XSIF_ACOS
+%token    XSIF_ATAN
+%token    XSIF_EXP
+%token    XSIF_LOG
+%token    XSIF_LOG10
+%token    XSIF_GAUSS
+%token    XSIF_TGAUSS
+%token    XSIF_RANF
+
+%token    XSIF_EOL
+%token    XSIF_END   0
+
+%token    XSIF_TYPE_ATTRIBUTE
+
+%left '+' '-'
+%left '*' '/' 
+%left '^' 
+%left NEG    /* negation, unary minus */
+
+%% 
+
+%start program;
+
+program:
+       |
+       program XSIF_EOL
+       |
+       program statement XSIF_EOL
+       ;
+
+statement:
+       statement ';' statement
+       | 
+       constant_declaration
+       |
+       variable_assignement
+       |
+       line_declaration
+       |
+       element_declaration
+       | 
+       action
+       ;
+
+
+action: 
+   XSIF_BEAM 
+   |
+   XSIF_BEAM   ',' attributes                                                        { driver.setBeamParameters( yyloc, driver.m_attributes);
+                                                                                       driver.m_attributes.clear(); 
+                                                                                     } 
+   |
+   XSIF_CALL 
+   |
+   XSIF_CALL   ',' attributes  
+   |
+   XSIF_CLOSE 
+   |
+   XSIF_CLOSE  ',' attributes
+   |
+   XSIF_ECHO 
+   |
+   XSIF_ECHO   ',' attributes 
+   |
+   XSIF_LINE 
+   |
+   XSIF_LINE   ',' attributes  
+   |
+   XSIF_NOECHO 
+   |
+   XSIF_NOECHO ',' attributes 
+   |
+   XSIF_OPEN
+   |
+   XSIF_OPEN   ',' attributes 
+   |
+   XSIF_PATH 
+   |
+   XSIF_PATH   ',' attributes 
+   |
+   XSIF_RETURN
+   |
+   XSIF_RETURN ',' attributes 
+   |
+   XSIF_USE
+   |
+   XSIF_USE    ',' attributes 
+   |
+   XSIF_NLC
+   |
+   XSIF_NLC     ',' attributes 
+   |
+   XSIF_NONLC 
+   |
+   XSIF_NONLC   ',' attributes 
+   ;
+
+
+macro_identifier:
+       XSIF_IDENTIFIER '(' arguments ')'                                                  {  *$<sval>1 += std::string("("); 
+                                                                                             *$<sval>1 += *$<sval>3;
+                                                                                             *$<sval>1 += std::string(")");
+                                                                                              $<sval>$ = $<sval>1;
+                                                                                              delete $<sval>3;   
+                                                                                           }
+       ; 
+
+arguments:
+       arguments ',' XSIF_IDENTIFIER                                                      { *$<sval>1 += std::string(",");
+                                                                                            *$<sval>1 += *$<sval>3;
+                                                                                            $<sval>$ = $<sval>1;
+                                                                                            delete $<sval>3; }
+ 
+       | 
+       XSIF_IDENTIFIER                                                                     {  $<sval>$ = new std::string; 
+                                                                                            *$<sval>$ = *$<sval>1; 
+                                                                                             delete $<sval>1; }
+       ;
+
+element_list:                                                                              { driver.error(yyloc, std::string("Line cannot be empty."));}
+       |
+       element_list ',' macro_identifier                                                   { $<pstrvec>$ = $<pstrvec>1;
+                                                                                             $<pstrvec>$->push_back( *$<sval>3 );
+                                                                                             delete $<sval>3; }
+       |
+       element_list ',' XSIF_IDENTIFIER                                                    { $<pstrvec>$ = $<pstrvec>1;
+                                                                                             $<pstrvec>$->push_back(*$<sval>3 ); delete $<sval>3; } 
+       |           
+       element_list ',' XSIF_INT_VALUE '*' macro_identifier                                { $<pstrvec>$ = $<pstrvec>1;
+                                                                                             for (int i = 0; i< $<ival>3; ++i)
+                                                                                                $<pstrvec>$->push_back( *$<sval>5 ); 
+                                                                                             delete $<sval>5; }
+       | 	
+       element_list ',' macro_identifier '*' XSIF_INT_VALUE                                { $<pstrvec>$ = $<pstrvec>1;
+                                                                                             for (int i = 0; i< $<ival>5; ++i)
+                                                                                                $<pstrvec>$->push_back( *$<sval>3 ); 
+                                                                                             delete $<sval>3; }
+       |
+       element_list ',' XSIF_INT_VALUE  '*' XSIF_IDENTIFIER                                { $<pstrvec>$ = $<pstrvec>1;
+                                                                                             for (int i = 0; i< $<ival>3; ++i) 
+                                                                                               $<pstrvec>$->push_back(*$<sval>5 ); 
+                                                                                             delete $<sval>5; }
+       |
+       element_list ',' XSIF_IDENTIFIER '*' XSIF_INT_VALUE                                 { $<pstrvec>$ = $<pstrvec>1;
+                                                                                             for (int i = 0; i< $<ival>5; ++i) 
+                                                                                               $<pstrvec>$->push_back(*$<sval>3 ); 
+                                                                                             delete $<sval>3; }
+       |
+       XSIF_INT_VALUE '*' macro_identifier                                                 { $<pstrvec>$ = new std::vector<std::string>;
+                                                                                             for (int i = 0; i< $<ival>1; ++i) 
+                                                                                                 $<pstrvec>$->push_back( *$<sval>3 ); 
+                                                                                             delete $<sval>3; } 
+       |
+       XSIF_INT_VALUE '*' XSIF_IDENTIFIER                                                  { $<pstrvec>$ = new std::vector<std::string>;
+                                                                                             for (int i = 0; i< $<ival>1; ++i) 
+                                                                                                 $<pstrvec>$->push_back(*$<sval>3 ); 
+                                                                                             delete $<sval>3; }
+       |
+       macro_identifier                                                                    { $<pstrvec>$ = new std::vector<std::string>;
+                                                                                             $<pstrvec>$->push_back( *$<sval>1 ); 
+                                                                                             delete $<sval>1; } 
+       | 
+       XSIF_IDENTIFIER                                                                     { $<pstrvec>$ = new std::vector<std::string>;
+                                                                                             $<pstrvec>$->push_back(*$<sval>1 ); delete $<sval>1; }  
+       ;
+
+
+constant_declaration:
+       XSIF_IDENTIFIER ':' XSIF_CONSTANT '=' expr                                           { 
+                                                                                               if ( driver.m_constants.find( *$<sval>1 ) != driver.m_constants.end() ) {
+                                                                                               driver.error( yyloc, 
+                                                                                                         std::string("Attempt to redefine existing CONSTANT ")
+                                                                                                          +(*$<sval>1) + std::string(".") );
+                                                                                               }
+                                                                                               driver.m_constants[*$<sval>1] = $<dval>5; delete $<sval>1; }
+       ; 
+
+
+variable_assignement:
+       XSIF_IDENTIFIER XSIF_VARASSIGNMENT vexpr                                              { 
+                                                                                               driver.m_variables[*$<sval>1] = Expression( *$<pexp>3 );
+                                                                                               delete $<pexp>3;
+                                                                                               delete $<sval>1; 
+                                                                                             }
+       ;
+
+
+
+line_declaration:
+       XSIF_IDENTIFIER ':'  XSIF_LINE '=' '(' element_list ')'                              { driver.instantiateLine( yyloc, *$<sval>1, *$<pstrvec>6 );
+                                                                                              delete $<sval>1; delete $<pstrvec>6; 
+                                                                                            }
+       |
+       macro_identifier ':' XSIF_LINE '=' '(' element_list ')'                              { driver.defineLineMacro( yyloc, *$<sval>1, *$<pstrvec>6 );
+                                                                                              delete $<sval>1; delete $<pstrvec>6; 
+                                                                                            }
+       ;
+
+
+element_declaration:
+       XSIF_IDENTIFIER ':' attributes                                                        { driver.instantiateElement( yyloc, *$<sval>1,  driver.m_attributes);
+                                                                                               delete $<sval>1;  
+                                                                                               driver.m_attributes.clear(); 
+                                                                                             } 
+       ;
+
+
+attributes:
+       attributes ',' attribute                                                               
+       |
+       attribute
+       ;
+
+
+attribute:
+       XSIF_IDENTIFIER                                                                       { 
+                                                                                               driver.m_attributes.push_back( attrib_pair_t( *$<sval>1, boost::any() ) ); 
+                                                                                               delete $<sval>1; 
+                                                                                             }
+       |
+       XSIF_IDENTIFIER '=' XSIF_STRING_VALUE                                                 {  
+                                                                                                driver.m_attributes.push_back( attrib_pair_t(*$<sval>1, *$<sval>3 ) ); 
+                                                                                                delete $<sval>1; 
+                                                                                                delete $<sval>3;
+                                                                                             }
+       |
+       XSIF_TYPE_ATTRIBUTE '=' XSIF_IDENTIFIER                                               { 
+                                                                                               driver.m_attributes.push_back( attrib_pair_t(std::string("TYPE"), *$<sval>3));
+                                                                                               delete $<sval>3;
+                                                                                             }
+       |
+       XSIF_IDENTIFIER '='vexpr                                                              { 
+                                                                                               driver.m_attributes.push_back( attrib_pair_t(*$<sval>1, *$<pexp>3) );  
+                                                                                               delete $<sval>1;
+                                                                                               delete $<pexp>3; 
+                                                                                             } 
+       ;
+  /*******************************************
+       |
+       XSIF_IDENTIFIER '=' XSIF_LOGICAL
+       |
+       XSIF_IDENTIFIER '=' XSIF_INTEGER
+       |
+       XSIF_IDENTIFIER '=' dexpr                       
+       |   
+       XSIF_IDENTIFIER '=' XSIF_CONSTRAINT           
+       |
+       XSIF_IDENTIFIER '=' XSIF_LINE_DEF               
+       | 
+       XSIF_IDENTIFIER '=' range                     
+
+  *********************************************
+
+ /* ------------------------------------------------------------------------------------------------------------------------*/
+ /* expr are constant expressions. constant expressions are evaluated immediately and cannot change                         */
+ /* ------------------------------------------------------------------------------------------------------------------------*/
+
+
+expr:  vexpr                            {  $<dval>$ = ($<pexp>1)->evaluate(); } 
+       ; 
+
+  
+ /* -----------------------------------------------------------------------------------------------------------*/
+ /* vexpr are variable expressions. Variable expressions are saved in a tree structure for deferred evaluation */
+ /* -----------------------------------------------------------------------------------------------------------*/
+
+
+vexpr: XSIF_INT_VALUE                   { Expression* p = $<pexp>$ = new Expression();
+                                          p->insert( ExprData( $<ival>1)  );   
+                                        } 
+       |
+       XSIF_VALUE                       {  Expression* p = $<pexp>$ = new Expression();  
+                                           p->insert( ExprData( $<dval>1) );
+                                        }
+       |
+       XSIF_IDENTIFIER                  {  
+                                           Expression* p = $<pexp>$ = new Expression();
+
+                                           boost::iterator_range<std::string::iterator> ir = boost::algorithm::find_regex( *($<sval>1), boost::regex("\\[.*\\]") ); 
+                                           
+                                           std::map<std::string, boost::any>::const_iterator it_consts;
+                                           std::map<std::string, Expression>::const_iterator it_vars;
+
+                                           if ( ir.begin()  != ($<sval>1)->end() ) {     // true if identifier is an element attribute of the form ELM[ATTR]   
+
+                                              std::string elmname(($<sval>1)->begin(), ir.begin() );
+                                              std::string attrib ( ++(ir.begin()), --(ir.end()) );
+                                              p->insert( ExprData( driver.getElmAttributeVal(yyloc, elmname, attrib) ));
+
+                                           }
+                                           else if ( (it_consts=driver.m_constants.find( *($<sval>1) )) != driver.m_constants.end() ) {   
+                                                 p->insert( ExprData( boost::any_cast<double>( it_consts->second ) ) );
+
+                                           }
+                                           else if ( (it_vars=driver.m_variables.find( *($<sval>1) )) != driver.m_variables.end() ) {
+                                                 p->insert(  *(it_vars->second.begin().node()) );
+                                           }
+                                           else{ 
+                                                 if ( driver.m_locations_stack.empty() ) std::cout << "stack is empty !" <<std::endl;
+                                                 (*pcerr) << "Warning: "  <<  yyloc 
+                                                          << " variable " << (*$<sval>1) << " is undefined." <<std::endl;
+                                                 (*pcerr) << "Setting value to 0.0." << std::endl;
+                                                 p->insert( ExprData( 0.0 ) ); 
+                                                 driver.m_variables[*($<sval>1)] = *p;
+                                           }
+                                           delete ( $<sval>1 );
+                                        } 
+                                          
+       |
+       '-' vexpr %prec NEG              { 
+                                          Expression* p  = $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token( token::NEG )));
+                                          q.node()->insert( *( $<pexp>2->begin().node() )  );
+                                          delete ($<pexp>2);
+                                          
+                                        }
+       |
+        vexpr '+' vexpr                 { 
+                                          Expression* p  = $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token_type('+'))));
+                                          q.node()->insert( *( $<pexp>1->begin().node() ) );
+                                          q.node()->insert( *( $<pexp>3->begin().node() ) );
+                                          delete ($<pexp>1);
+                                          delete ($<pexp>3);
+                                        } 
+       |                                                                               
+        vexpr '-' vexpr                 { 
+                                          Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token_type('-'))));
+                                          q.node()->insert( *( ($<pexp>1)->begin().node() ) );
+                                          q.node()->insert( *( ($<pexp>3)->begin().node() ) );
+                                          delete ($<pexp>1);
+                                          delete ($<pexp>3);
+
+                                        }
+       | 
+        vexpr '*' vexpr                 { Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token_type('*'))));
+                                          q.node()->insert( *( ($<pexp>1)->begin().node() ) );
+                                          q.node()->insert( *( ($<pexp>3)->begin().node() ) );
+                                          delete ($<pexp>1);
+                                          delete ($<pexp>3);
+                                        }
+       |   
+        vexpr '/' vexpr                 { 
+                                          Expression* p  =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token_type('/'))));
+                                          q.node()->insert( *($<pexp>1->begin().node() ) );
+                                          q.node()->insert( *($<pexp>3->begin().node() ) );
+                                          delete ($<pexp>1);
+                                          delete ($<pexp>3);
+                                        }
+
+       |
+        vexpr '^' vexpr                 {
+                                          $<pexp>$ = new Expression();                      
+                                          Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token_type('^'))));
+                                          q.node()->insert( *($<pexp>1->begin().node() ) );
+                                          q.node()->insert( *($<pexp>3->begin().node() ) );
+                                          delete ($<pexp>1);
+                                          delete ($<pexp>3);
+                                        } 
+       |
+        '(' vexpr ')'                   { $<pexp>$ =  $<pexp>2; }
+       | 
+       vfunction                        { $<pexp>$ =  $<pexp>1; } 
+       ;
+
+vfunction:
+
+        XSIF_SQRT '(' vexpr ')'         {                                           
+                                          Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_SQRT)));
+                                          q.node()->insert( *($<pexp>3->begin().node() ) );
+                                          delete ($<pexp>3);
+                                        }
+       |
+        XSIF_SIN '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_SIN)));
+                                          q.node()->insert( *($<pexp>3->begin().node() ) );
+                                          delete ($<pexp>3);
+                                        }
+       |
+        XSIF_COS '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_COS)));
+                                          q.node()->insert( *( $<pexp>3->begin().node() ) );
+                                          delete ($<pexp>3);
+                                        }
+       |
+        XSIF_TAN '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_TAN)));
+                                          q.node()->insert( *($<pexp>3->begin().node() ) );
+                                          delete ($<pexp>3);
+                                        }
+       |        
+       XSIF_ASIN '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_ASIN)));
+                                          q.node()->insert( *($<pexp>3->begin().node() ) );
+                                          delete ($<pexp>3);
+                                        }
+       |        
+       XSIF_ACOS '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_ACOS)));
+                                          q.node()->insert( *($<pexp>3->begin().node() ) );
+                                          delete ($<pexp>3);
+                                        }
+       |        
+       XSIF_ATAN '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_ATAN)));
+                                          q.node()->insert( *($<pexp>3->begin().node() ) );
+                                          delete ($<pexp>3);
+                                        }
+       |
+       XSIF_EXP '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_EXP)));
+                                          q.node()->insert( *($<pexp>3->begin().node() ) );
+                                          delete ($<pexp>3);
+                                        }
+       |
+       XSIF_LOG '(' vexpr ')'           { Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_LOG)));
+                                          q.node()->insert( *($<pexp>3->begin().node() ) );
+                                          delete ($<pexp>3);
+                                        }
+       |
+       XSIF_LOG10 '(' vexpr ')'         { Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_LOG10)));
+                                          q.node()->insert( *($<pexp>3->begin().node() ) );
+                                          delete ($<pexp>3);
+                                        }
+       |
+       XSIF_GAUSS '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_GAUSS)));
+                                          q.node()->insert( *($<pexp>3->begin().node() ) );
+                                          delete ($<pexp>3);
+                                        }
+       |
+       XSIF_TGAUSS '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_TGAUSS)));
+                                          q.node()->insert( *($<pexp>3->begin().node() ) );
+                                          delete ($<pexp>3);
+                                        }
+       |
+       XSIF_RANF '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
+                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_RANF)));
+                                          q.node()->insert( *($<pexp>3->begin().node() ) );
+                                          delete ($<pexp>3);
+                                        }
+       ;
+      
+
+
+
+%%
+void
+xsif_yy::XsifParser::error(const xsif_yy::XsifParser::location_type& l, const std::string& m )
+{
+
+    driver.error(l,m);
+ 
+}
+
+
+
