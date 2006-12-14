@@ -39,13 +39,20 @@
 #endif
 
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/beamline.h>
 #include <beamline/octupole.h>
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void octupole::localPropagate( Particle& p ) {
   p_bml->propagate( p );
   p.set_cdt( p.get_cdt() - _ctRef );
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void octupole::localPropagate( JetParticle& p ) {
   p_bml->propagate( p );
@@ -53,24 +60,35 @@ void octupole::localPropagate( JetParticle& p ) {
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void thinOctupole::localPropagate( Particle& p ) {
- static double x, y, k;
- static double xx, yy;
+
+ double x, y, k;
+ double xx, yy;
  
+  Vector& state = p.getState(); 
+
   if(strength != 0) {
     k = strength / p.ReferenceBRho();
-    x = p.state[0];
-    y = p.state[1];
+    x = state[0];
+    y = state[1];
  
     xx = x*x;  
     yy = y*y;
  
-    p.state[3] -= k * x * ( xx - 3.0*yy );
-    p.state[4] -= k * y * ( yy - 3.0*xx );
+    state[3] -= k * x * ( xx - 3.0*yy );
+    state[4] -= k * y * ( yy - 3.0*xx );
   }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void thinOctupole::localPropagate( JetParticle& p ) {
+
+
   if(strength != 0) {
     double  k;
     Jet     x( p.State(0) );

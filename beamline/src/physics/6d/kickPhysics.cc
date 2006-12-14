@@ -40,6 +40,7 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/kick.h>
 
 using namespace std;
@@ -70,6 +71,8 @@ void vkick::localPropagate( Particle& p )
     firstTime = false;
   }
 
+  Vector& state = p.getState();
+
   double realLength, realCt;
   if( length > 0.0 ) {
     realLength = length;
@@ -78,17 +81,19 @@ void vkick::localPropagate( Particle& p )
     _ctRef /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    p.state[4] += strength;
+    state[4] += strength;
     bmlnElmnt::localPropagate( p );
 
     length = realLength;
     _ctRef = realCt;
   }
   else {
-    p.state[4] += strength;
+    state[4] += strength;
   }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void vkick::localPropagate( JetParticle& p )
 {
@@ -110,6 +115,8 @@ void vkick::localPropagate( JetParticle& p )
     firstTime = false;
   }
 
+  Mapping& state = p.getState();
+
   double realLength, realCt;
   if( length > 0.0 ) {
     realLength = length;
@@ -118,14 +125,14 @@ void vkick::localPropagate( JetParticle& p )
     _ctRef /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    ( p.state ).SetComponent( 4, p.state(4) + strength );
+    ( state ).SetComponent( 4, state(4) + strength );
     bmlnElmnt::localPropagate( p );
 
     length = realLength;
     _ctRef = realCt;
   }
   else {
-    ( p.state ).SetComponent( 4, p.state(4) + strength );
+    ( state ).SetComponent( 4, state(4) + strength );
   }
 }
 
@@ -154,6 +161,8 @@ void hkick::localPropagate( Particle& p )
     firstTime = false;
   }
 
+  Vector& state = p.getState();
+
   double realLength, realCt;
   if( length > 0.0 ) {
     realLength = length;
@@ -162,17 +171,20 @@ void hkick::localPropagate( Particle& p )
     _ctRef /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    p.state[3] += strength;
+    state[3] += strength;
     bmlnElmnt::localPropagate( p );
 
     length = realLength;
     _ctRef = realCt;
   }
   else {
-    p.state[3] += strength;
+    state[3] += strength;
   }
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void hkick::localPropagate( JetParticle& p )
 {
@@ -194,6 +206,8 @@ void hkick::localPropagate( JetParticle& p )
     firstTime = false;
   }
 
+  Mapping& state = p.getState();
+
   double realLength, realCt;
   if( length > 0.0 ) {
     realLength = length;
@@ -202,14 +216,14 @@ void hkick::localPropagate( JetParticle& p )
     _ctRef /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    ( p.state ).SetComponent( 3, p.state(3) + strength );
+    state.SetComponent( 3, state(3) + strength );
     bmlnElmnt::localPropagate( p );
 
     length = realLength;
     _ctRef = realCt;
   }
   else {
-    ( p.state ).SetComponent( 3, p.state(3) + strength );
+    state.SetComponent( 3, state(3) + strength );
   }
 }
 
@@ -237,6 +251,8 @@ void kick::localPropagate( Particle& p )
     firstTime = false;
   }
 
+  Vector& state = p.getState();
+
   double realLength, realCt;
   if( length > 0.0 ) {
     realLength = length;
@@ -245,18 +261,21 @@ void kick::localPropagate( Particle& p )
     _ctRef /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    p.state[3] += horizontalKick;
-    p.state[4] += verticalKick;
+    state[3] += horizontalKick;
+    state[4] += verticalKick;
     bmlnElmnt::localPropagate( p );
 
     length = realLength;
     _ctRef = realCt;
   }
   else {
-    p.state[3] += horizontalKick;
-    p.state[4] += verticalKick;
+    state[3] += horizontalKick;
+    state[4] += verticalKick;
   }
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void kick::localPropagate( JetParticle& p ) 
 {
@@ -278,6 +297,8 @@ void kick::localPropagate( JetParticle& p )
     firstTime = false;
   }
 
+  Mapping& state = p.getState();
+
   double realLength, realCt;
   if( length > 0.0 ) {
     realLength = length;
@@ -286,15 +307,15 @@ void kick::localPropagate( JetParticle& p )
     _ctRef /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    (p.state).SetComponent( 3, p.state(3) + horizontalKick );
-    (p.state).SetComponent( 4, p.state(4) + verticalKick   );
+    state.SetComponent( 3, state(3) + horizontalKick );
+    state.SetComponent( 4, state(4) + verticalKick   );
     bmlnElmnt::localPropagate( p );
 
     length = realLength;
     _ctRef = realCt;
   }
   else {
-    (p.state).SetComponent( 3, p.state(3) + horizontalKick );
-    (p.state).SetComponent( 4, p.state(4) + verticalKick   );
+    state.SetComponent( 3, state(3) + horizontalKick );
+    state.SetComponent( 4, state(4) + verticalKick   );
   }
 }

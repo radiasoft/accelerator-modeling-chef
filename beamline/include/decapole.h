@@ -48,10 +48,12 @@ class DLLEXPORT thinDecapole : public bmlnElmnt
 {
 public:
   thinDecapole();
-  thinDecapole( double strength );
-  thinDecapole( char*  name, double strength);
+  thinDecapole(                    double const& strength);
+  thinDecapole( char const*  name, double const& strength);
   thinDecapole( thinDecapole const& );
  ~thinDecapole();
+
+  thinDecapole* Clone() const { return new thinDecapole( *this ); }
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& p );
@@ -63,7 +65,6 @@ public:
   const char* Type() const;
   bool isMagnet()    const;
 
-   thinDecapole* Clone() const { return new thinDecapole( *this ); }
 } ;
 
 

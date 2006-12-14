@@ -46,6 +46,7 @@
 #include <beamline/Slot.h>
 #include <beamline/beamline.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/Alignment.h>
 
@@ -200,7 +201,8 @@ Slot::Slot( const Slot& x )
 Slot::~Slot()
 {
   if( p_bml ) {
-    p_bml->eliminate();
+    p_bml->zap();
+    delete p_bml;
     p_bml = 0;
   }
   if( p_bml_e ) {
@@ -215,7 +217,7 @@ Slot::~Slot()
 }
 
 
-void Slot::makeUpstreamHorizontal   ( double lng, double ang )
+void Slot::makeUpstreamHorizontal   ( double const& lng, double const& ang )
 {
   length = lng;
   in.reset();
@@ -229,7 +231,7 @@ void Slot::makeUpstreamHorizontal   ( double lng, double ang )
 }
 
 
-void Slot::makeDownstreamHorizontal ( double lng, double ang )
+void Slot::makeDownstreamHorizontal ( double const& lng, double const& ang )
 {
   length = lng;
   in.reset();
@@ -243,7 +245,7 @@ void Slot::makeDownstreamHorizontal ( double lng, double ang )
 }
 
 
-void Slot::makeUpstreamVertical   ( double lng, double ang )
+void Slot::makeUpstreamVertical   ( double const& lng, double const& ang )
 {
   length = lng;
   in.reset();
@@ -257,7 +259,7 @@ void Slot::makeUpstreamVertical   ( double lng, double ang )
 }
 
 
-void Slot::makeDownstreamVertical ( double lng, double ang )
+void Slot::makeDownstreamVertical ( double const& lng, double const& ang )
 {
   length = lng;
   in.reset();
@@ -276,9 +278,9 @@ const char*  Slot::Type()  const
   return "Slot"; 
 }
 
-short int Slot::setInFrame( const Frame& frm )
+ int Slot::setInFrame( const Frame& frm )
 {
-  short int ret = checkFrame( frm );
+   int ret = checkFrame( frm );
 
   if( 0 == ret ) {
     in = frm;
@@ -288,9 +290,9 @@ short int Slot::setInFrame( const Frame& frm )
 }
 
 
-short int Slot::setOutFrame( const Frame& frm )
+ int Slot::setOutFrame( const Frame& frm )
 {
-  // REMOVE: short int ret = checkFrame( frm );
+  // REMOVE:  int ret = checkFrame( frm );
 
   if( frm.isOrthonormal() ) { 
     out = frm;   
@@ -298,29 +300,29 @@ short int Slot::setOutFrame( const Frame& frm )
   }
 
   throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
-         "short int Slot::setOutFrame( const Frame& frm )", 
+         " int Slot::setOutFrame( const Frame& frm )", 
          "Current implementation requires that frames be orthonormal." ) );
 }
 
 
-short int Slot::checkFrame( const Frame& f ) const
+ int Slot::checkFrame( const Frame& f ) const
 {
   static const Frame zero;
   static const int y = 1;
   static const int z = 2;
-  static short int ret;
+  static  int ret;
 
   ret = 0;
 
   if( !f.isOrthonormal() ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
-           "short int Slot::checkFrame( const Frame& f ) const", 
+           " int Slot::checkFrame( const Frame& f ) const", 
            "Current implementation requires that frames be orthonormal." ) );
   }
 
   if( f.getOrigin() != zero.getOrigin() ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
-           "short int Slot::checkFrame( const Frame& f ) const", 
+           " int Slot::checkFrame( const Frame& f ) const", 
            "Current implementation requires no displacement of origin." ) );
   }
 
@@ -328,7 +330,7 @@ short int Slot::checkFrame( const Frame& f ) const
            (  f.getAxis(z) != zero.getAxis(z) )
          ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
-           "short int Slot::checkFrame( const Frame& f ) const", 
+           " int Slot::checkFrame( const Frame& f ) const", 
            "Current implementation allows rotation about "
            "y or z axis, but not both." ) );
   }
@@ -337,7 +339,7 @@ short int Slot::checkFrame( const Frame& f ) const
 }
 
 
-double Slot::setReferenceTime( double x )
+double Slot::setReferenceTime( double const& x )
 {
   double oldValue = _ctRef;
   _ctRef = x;
@@ -372,8 +374,8 @@ double Slot::setReferenceTime( const Particle& prtn )
   Vector beta ( localParticle->VectorBeta() );
   Vector u_3  ( out.getAxis(2) );
   Vector q    ( out.getOrigin() );
-
   double betaParallel = beta * u_3;
+
 
   if( betaParallel > 0.0 ) {
     _ctRef = ( q - r )*u_3 / betaParallel;
@@ -470,7 +472,7 @@ istream& Slot::readFrom( istream& is )
 }
 
 
-void Slot::Split( double pct, bmlnElmnt** a, bmlnElmnt** b ) const
+void Slot::Split( double const& pct, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   if( pct < 0.0 || 1.0 < pct ) {
     (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
@@ -528,6 +530,7 @@ void Slot::Split( double pct, bmlnElmnt** a, bmlnElmnt** b ) const
 
 void Slot::processFrame( const Frame& frm, Particle& p ) const
 {
+
   const int x    = p.xIndex();
   const int y    = p.yIndex();
   const int cdt  = p.cdtIndex();
@@ -538,13 +541,15 @@ void Slot::processFrame( const Frame& frm, Particle& p ) const
   static bool firstTime = true;
   static Vector u_z(3);
   static Vector u_y(3);
-  
-  double* inState;
+
+  Vector& state = p.getState();
+
+
   if( firstTime ) {
     firstTime = false;
-    u_y(0) = 0.0; u_y(1) = 1.0; u_y(2) = 0.0;
-    u_z(0) = 0.0; u_z(1) = 0.0; u_z(2) = 1.0;
-    inState = new double[ p.psd() ];
+    u_y[0] = 0.0; u_y[1] = 1.0; u_y[2] = 0.0;
+    u_z[0] = 0.0; u_z[1] = 0.0; u_z[2] = 1.0;
+
     // This is never deleted.
   }
 
@@ -572,17 +577,18 @@ void Slot::processFrame( const Frame& frm, Particle& p ) const
   
     double tau      ( - r(2) / beta(2) );
   
-    p.state[x]    = r(0) + tau*beta(0);
-    p.state[y]    = r(1) + tau*beta(1);
-    p.state[cdt] += tau;
+    state[x]    = r(0) + tau*beta(0);
+    state[y]    = r(1) + tau*beta(1);
+    state[cdt] += tau;
   
     // Momentum transformation
+
     double p1( p.State( xp ) );
     double p2( p.State( yp ) );
-    double p3divpbar = sqrt( ( 1.0 + p.state[dpop] ) * ( 1.0 + p.state[dpop] )
+    double p3divpbar = sqrt( ( 1.0 + state[dpop] ) * ( 1.0 + state[dpop] )
                               - p1*p1 - p2*p2 );
   
-    p.state[xp] = cs*p.State( xp ) + sn*p3divpbar;
+    state[xp] = cs*p.State( xp ) + sn*p3divpbar;
   }
 
 
@@ -593,7 +599,7 @@ void Slot::processFrame( const Frame& frm, Particle& p ) const
     sn = ( frm.getAxis(1) )(0); // ??? right?
     // sin of angle by which magnet is rolled
 
-    p.getState( inState );
+    Vector inState  = p.State();
   
     temp       = inState[0] * cs + inState[1] * sn;
     inState[1] = inState[1] * cs - inState[0] * sn;
@@ -623,15 +629,16 @@ void Slot::processFrame( const Frame& frm, JetParticle& p ) const
   static Vector u_z(3);
   static Vector u_y(3);
  
+
   if( firstTime ) {
     firstTime = false;
-    u_y(0) = 0.0; u_y(1) = 1.0; u_y(2) = 0.0;
-    u_z(0) = 0.0; u_z(1) = 0.0; u_z(2) = 1.0;
+    u_y[0] = 0.0; u_y[1] = 1.0; u_y[2] = 0.0;
+    u_z[0] = 0.0; u_z[1] = 0.0; u_z[2] = 1.0;
   }
 
    
-  Mapping   inState ( p.State() );
-  Jet       temp    ( inState.Env() );
+  Mapping&  state = p.getState();
+
   double    cs, sn;
 
 
@@ -657,17 +664,17 @@ void Slot::processFrame( const Frame& frm, JetParticle& p ) const
   
     Jet tau            ( - r(2) / beta(2) );
   
-    ( p.state ).SetComponent( x,   r(0) + tau*beta(0) );
-    ( p.state ).SetComponent( y,   r(1) + tau*beta(1) );
-    ( p.state ).SetComponent( cdt, p.state(cdt) + tau );
+    state.SetComponent( x,   r(0) + tau*beta(0) );
+    state.SetComponent( y,   r(1) + tau*beta(1) );
+    state.SetComponent( cdt, state(cdt) + tau );
   
     // Momentum transformation
     Jet p1( p.State( xp ) );
     Jet p2( p.State( yp ) );
-    Jet p3divpbar = sqrt( ( 1.0 + p.state(dpop) ) * ( 1.0 + p.state(dpop) )
+    Jet p3divpbar = sqrt( ( 1.0 + state(dpop) ) * ( 1.0 + state(dpop) )
                               - p1*p1 - p2*p2 );
   
-    ( p.state ).SetComponent( xp, cs*p.State( xp ) + sn*p3divpbar );
+     state.SetComponent( xp, cs*p.State( xp ) + sn*p3divpbar );
   }
 
   // Roll ------------------------------------
@@ -677,11 +684,11 @@ void Slot::processFrame( const Frame& frm, JetParticle& p ) const
     sn = ( frm.getAxis(1) )(0); // ??? right?
     // sin of angle by which magnet is rolled
 
-    p.getState( inState );
+    Mapping  inState = p.State();
   
-    temp       = inState(0) * cs + inState(1) * sn;
-    inState(1) = inState(1) * cs - inState(0) * sn;
-    inState(0) = temp;
+    Jet temp     = inState(0) * cs + inState(1) * sn;
+    inState(1)   = inState(1) * cs - inState(0) * sn;
+    inState(0)   = temp;
 
     temp       = inState(3) * cs + inState(4) * sn;
     inState(4) = inState(4) * cs - inState(3) * sn;
@@ -728,11 +735,14 @@ void Slot::localPropagate( Particle& p )
   // If this is modified, one should
   // simultaneously modify Slot::setReferenceTime( const Particle& )
 
+  Vector& state = p.getState();
+
   if      ( 0 != p_bml_e ) p_bml_e ->propagate( p );
   else if ( 0 != p_bml   ) p_bml   ->propagate( p );
 
   else {
     // Propagate as drift to the out-plane
+
     Vector r(3);
     r(0) = p.get_x();
     r(1) = p.get_y();
@@ -745,6 +755,7 @@ void Slot::localPropagate( Particle& p )
     Vector u_3  ( out.getAxis(2) );
 
     // REMOVE: double tauZero = length / p.ReferenceBeta();
+
     double tau;
     double betaParallel = beta * u_3;
 
@@ -763,27 +774,31 @@ void Slot::localPropagate( Particle& p )
     r += tau*beta;
     r -= q;
 
-    p.state[ p.xIndex()   ]  = r*u_1;
-    p.state[ p.yIndex()   ]  = r*u_2;
+    state[ p.xIndex()   ]  = r*u_1;
+    state[ p.yIndex()   ]  = r*u_2;
     // REMOVE: p.state[ p.cdtIndex() ] += ( tau - tauZero );
-    p.state[ p.cdtIndex() ] += ( tau - _ctRef );
+    state[ p.cdtIndex() ] += ( tau - _ctRef );
 
     // Momentum transformation
     Vector momntm(3);
     momntm = ( p.NormalizedVectorMomentum() );
-    p.state[ p.npxIndex() ] = momntm*u_1;
-    p.state[ p.npyIndex() ] = momntm*u_2;
+    state[ p.npxIndex() ] = momntm*u_1;
+    state[ p.npyIndex() ] = momntm*u_2;
   }
 }
 
 
 void Slot::localPropagate( JetParticle& p )
 {
+ 
+  Mapping& state = p.getState();
+
   if     ( 0 != p_bml   ) p_bml   ->propagate( p );
   else if( 0 != p_bml_e ) p_bml_e ->propagate( p );
 
   else {
     // Propagate as drift to the out-plane
+
     JetVector r(3);
     r(0) = p.get_x();
     r(1) = p.get_y();
@@ -797,12 +812,14 @@ void Slot::localPropagate( JetParticle& p )
 
     // REMOVE: double tauZero = length / p.ReferenceBeta();
     Jet    tau;
+
     Jet    betaParallel = beta * u_3;
 
     if( betaParallel.standardPart() > 0.0 ) {
       tau = ( q - r )*u_3 / betaParallel;
     }
     else {
+
       ostringstream uic;
       uic << this->Type() << "  " << this->Name()
           << ": Velocity is not forward: it may be NAN.";
@@ -814,15 +831,15 @@ void Slot::localPropagate( JetParticle& p )
     r += tau*beta;
     r -= q;
 
-    p.state( p.xIndex()   )  = r*u_1;
-    p.state( p.yIndex()   )  = r*u_2;
+    state( p.xIndex()   )   = r*u_1;
+    state( p.yIndex()   )   = r*u_2;
     // REMOVE: p.state( p.cdtIndex() ) += ( tau - tauZero );
-    p.state( p.cdtIndex() ) += ( tau - _ctRef );
+    state( p.cdtIndex() )  += ( tau - _ctRef );
 
     // Momentum transformation
     JetVector mom( p.NormalizedVectorMomentum() );
-    p.state( p.npxIndex() ) = mom*u_1;
-    p.state( p.npyIndex() ) = mom*u_2;
+    state( p.npxIndex() ) = mom*u_1;
+    state( p.npyIndex() ) = mom*u_2;
   }
 }
 
@@ -844,13 +861,13 @@ void Slot::localPropagate( ParticleBunch& x )
 // --- Functions passed on to tenant ----------------
 // --------------------------------------------------
 
-void Slot::setStrength   ( double x )
+void Slot::setStrength   ( double const& x )
 {
   if     ( 0 != p_bml   ) p_bml   ->setStrength( x );
   else if( 0 != p_bml_e ) p_bml_e ->setStrength( x );
 }
 
-void Slot::setCurrent    ( double x )
+void Slot::setCurrent    ( double const& x )
 {
   if     ( 0 != p_bml   ) p_bml   ->setStrength( x );
   else if( 0 != p_bml_e ) p_bml_e ->setStrength( x );

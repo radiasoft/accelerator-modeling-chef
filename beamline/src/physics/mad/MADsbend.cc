@@ -9,9 +9,19 @@
 ******                                    
 ******  File:      MADsbend.cc
 ******                                                                
-******  Copyright (c) 1991 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright  Universities Research Association, Inc.    
+******             All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws.
+******
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -22,9 +32,6 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -32,12 +39,11 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 
+#include <basic_toolkit/GenericException.h>
 #include <beamline/sbend.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 sbend::MAD_Prop   sbend::LikeMAD;
 
@@ -76,7 +82,7 @@ int sbend::MAD_Prop::operator()( bmlnElmnt* p_be, Particle& p ) {
     // Finally .. the mapping ...............................
 
     if( BMLN_dynDim != 6 ) {
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+      throw(  GenericException( __FILE__, __LINE__,
              "int sbend::MAD_Prop::operator()( bmlnElmnt* p_be, Particle& p ) {", 
              "This was written for a phase space dimension of 6." ) );
     }
@@ -148,7 +154,7 @@ int sbend::MAD_Prop::operator()( bmlnElmnt* p_be, JetParticle& p ) {
     // Finally .. the mapping ...............................
 
     if( BMLN_dynDim != 6 ) {
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+      throw( GenericException( __FILE__, __LINE__,
              "int sbend::MAD_Prop::operator()( bmlnElmnt* p_be, JetParticle& p ) {", 
              "This was written for a phase space dimension of 6." ) );
     }

@@ -54,33 +54,33 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
  public:
   // Constructors
   CF_sbend();
-  CF_sbend( double,     // length       [ meters ]
-            double,     // field        [ tesla ]
-            double,     // bend angle   [ radians ]
+  CF_sbend( double const&,     // length       [ meters ]
+            double const&,     // field        [ tesla ]
+            double const&,     // bend angle   [ radians ]
             int = 4 );  // ignored
 
   CF_sbend( const char*,// name
-            double,     // length       [ meters ]
-            double,     // field        [ tesla ]
-            double,     // bend angle   [ radians ]
+            double const&,     // length       [ meters ]
+            double const&,     // field        [ tesla ]
+            double const&,     // bend angle   [ radians ]
             int = 4 );  // ignored
 
-  CF_sbend( double,     // length  [ meters ]
-            double,     // field   [ tesla ]
+  CF_sbend( double const&,     // length  [ meters ]
+            double const&,     // field   [ tesla ]
                         // (assumed along the y-axis)
-            double,     // geometric bend angle   [ radians ]
-            double,     // upstream edge angle [radians]
-            double,     // downstream edge angle [radians]
+            double const&,     // geometric bend angle   [ radians ]
+            double const&,     // upstream edge angle [radians]
+            double const&,     // downstream edge angle [radians]
                         // signs of previous two parameters
                         // are as defined for sbends by MAD
             int = 4 );  // ignored
 
   CF_sbend( const char*,// name
-            double,     // length  [ meters ]
-            double,     // field   [ tesla ]
-            double,     // geometric bend angle   [ radians ]
-            double,     // upstream edge angle [radians]
-            double,     // downstream edge angle [radians]
+            double const&,     // length  [ meters ]
+            double const&,     // field   [ tesla ]
+            double const&,     // geometric bend angle   [ radians ]
+            double const&,     // upstream edge angle [radians]
+            double const&,     // downstream edge angle [radians]
                         // signs of previous two parameters
                         // are as defined for sbends by MAD
             int = 4 );  // ignored
@@ -91,8 +91,6 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
 
 
   ~CF_sbend();
-  void eliminate();
-
 
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
@@ -104,14 +102,14 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   void acceptInner( BmlVisitor& v );
   void acceptInner( ConstBmlVisitor& v );
   
-  // REMOVE: void peekAt( double& s, Particle* = 0 );
+  // REMOVE: void peekAt( double const&& s, Particle* = 0 );
   void peekAt( double& s, const Particle& ) const;
 
   const char* Type() const;
   bool isMagnet() const;
   
   double OrbitLength( const Particle& );
-  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
+  void Split( double const&, bmlnElmnt**, bmlnElmnt** ) const;
     // WARNING: After the Split function is used, the new elements 
     // must be commissioned with RefRegVisitor.
 
@@ -119,24 +117,25 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   // Note: entry and exit angles are not arguments
   // in the rbend constructors. A symmetric bend is assumed
   // by default. Otherwise, use one of the following.
-  double setEntryAngle( const Particle& ); 
-  double setExitAngle( const Particle& ); 
-  double getEntryAngle() const { return _usAngle; }
-  double getExitAngle() const { return _dsAngle; }
-  double setEntryAngle( double /* radians */ ); 
-  double setExitAngle( double /* radians */ ); 
+
+  double setEntryAngle( Particle const& ); 
+  double setExitAngle ( Particle const& ); 
+
+  double getEntryAngle()   const { return _usAngle; }
+  double getExitAngle()    const { return _dsAngle; }
+
+  double setEntryAngle( double const& radians); 
+  double setExitAngle(  double const& radians); 
+
   double getEntryEdgeAngle() const { return _usEdgeAngle; }
-  double getExitEdgeAngle() const { return _dsEdgeAngle; }
+  double getExitEdgeAngle()  const { return _dsEdgeAngle; }
 
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
 
-  // REMOVE: double AdjustPosition( const Particle& );
-  // REMOVE: double AdjustPosition( const JetParticle& );
-
-  int setQuadrupole ( double );  
-  int setSextupole  ( double );  
-  int setOctupole   ( double );  
+  int setQuadrupole ( double const& );  
+  int setSextupole  ( double const& );  
+  int setOctupole   ( double const& );  
   // The argument is integrated multipole strength
   // i.e., .setQuadrupole ( B'l   )
   //       .setSextupole  ( B''l/2 )
@@ -146,10 +145,10 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   //         1 if there are no multipoles of required type.
   //           (this should never happen)
 
-  int setDipoleField ( double );  
+  int setDipoleField ( double const& );  
   // Here the argument is the dipole field, 
   // NOT the integrated dipole field.
-  void setStrength   ( double );
+  void setStrength   ( double const& );
   // Specific implementation of virtual bmlnElmnt method.
   // Modifies all internal elements.
 

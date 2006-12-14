@@ -39,11 +39,14 @@
 #include <config.h>
 #endif
 
-#include <beamline/Particle.h>
-#include <basic_toolkit/VectorD.h>
 #include <beamline/rbend.h>
+
 #include <basic_toolkit/PhysicsConstants.h>
+#include <basic_toolkit/VectorD.h>
+#include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <mxyzptlk/Jet.h>
+
 
 static const std::complex<double> complex_i(0.0, 1.0);
 
@@ -57,51 +60,6 @@ rbend::Real_OutEdge_Prop rbend::RealOutEdge;
 
 // ********************************************************
 
-// REMOVE: double rbend::NoEdge_Prop::_fastArcsin( double x ) const
-// REMOVE: {
-// REMOVE:   return x;
-// REMOVE:   /*
-// REMOVE:   double u = x*x;
-// REMOVE:   return x*( 1.0 +
-// REMOVE:              u*( 0.16666666666667 +
-// REMOVE:                  u*( 0.075 +
-// REMOVE:                      u*( 0.044642857142857 +
-// REMOVE:                          u*( 0.030381944444444 +
-// REMOVE:                              u*( 0.022372159090909 +
-// REMOVE:                                  u*( 0.017352764423077 +
-// REMOVE:                                      u*( 0.01396484375 +
-// REMOVE:                                          u*( 0.01155180089614 +
-// REMOVE:                                              u*( 0.0097616095291941 +
-// REMOVE:                                                  u*( 0.0083903358096168 +
-// REMOVE:                                                      u*( 0.0073125258735988 +
-// REMOVE:                                                          u*( 0.0064472103118896 )))))))))))));
-// REMOVE:  */
-// REMOVE: }
-// REMOVE: 
-// REMOVE: 
-// REMOVE: Jet rbend::NoEdge_Prop::_fastArcsin( const Jet& x ) const
-// REMOVE: {
-// REMOVE:   return x;
-// REMOVE:   /*
-// REMOVE:   Jet u( x*x );
-// REMOVE:   return x*( 1.0 +
-// REMOVE:              u*( 0.16666666666667 +
-// REMOVE:                  u*( 0.075 +
-// REMOVE:                      u*( 0.044642857142857 +
-// REMOVE:                          u*( 0.030381944444444 +
-// REMOVE:                              u*( 0.022372159090909 +
-// REMOVE:                                  u*( 0.017352764423077 +
-// REMOVE:                                      u*( 0.01396484375 +
-// REMOVE:                                          u*( 0.01155180089614 +
-// REMOVE:                                              u*( 0.0097616095291941 +
-// REMOVE:                                                  u*( 0.0083903358096168 +
-// REMOVE:                                                      u*( 0.0073125258735988 +
-// REMOVE:                                                          u*( 0.0064472103118896 )))))))))))));
-// REMOVE:  */
-// REMOVE: }
-
-
-// ********************************************************
 
 int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {

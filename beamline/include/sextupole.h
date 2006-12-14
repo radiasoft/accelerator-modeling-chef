@@ -54,7 +54,7 @@ public:
              double        /* strength */ );
   sextupole( const sextupole& );
   sextupole* Clone() const { return new sextupole( *this ); }
-  ~sextupole();
+  virtual ~sextupole();
 
   void setStrength( double );
   void setStrength( double, int );
@@ -85,7 +85,7 @@ public:
                  double        /* strength */ );
   thinSextupole( const thinSextupole& );
   thinSextupole* Clone() const { return new thinSextupole( *this ); }
-  ~thinSextupole();
+  virtual ~thinSextupole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& p );

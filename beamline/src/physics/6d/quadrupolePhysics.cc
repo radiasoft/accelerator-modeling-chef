@@ -40,28 +40,37 @@
 #endif
 
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/beamline.h>
 #include <beamline/quadrupole.h>
 #include <beamline/drift.h>
+#include <iostream>
 
 
 quadrupole::TPOT_Prop::TPOT_Prop( int m )
-: _n(m)
-{
-};
+: _n(m) {}
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int quadrupole::TPOT_Prop::get_n() const
 {
   return _n;
-};
+}
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void quadrupole::TPOT_Prop::set_n( int m )
 {
   _n = m;
-};
+}
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int quadrupole::TPOT_Prop::operator()( bmlnElmnt* pbe, Particle& p ) {
   ((quadrupole*) pbe)->p_bml->propagate( p );
@@ -70,12 +79,18 @@ int quadrupole::TPOT_Prop::operator()( bmlnElmnt* pbe, Particle& p ) {
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int quadrupole::TPOT_Prop::operator()( bmlnElmnt* pbe, JetParticle& p ) {
   ((quadrupole*) pbe)->p_bml->propagate( p );
   p.set_cdt( p.get_cdt() - pbe->getReferenceTime() );
   return 0;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void quadrupole::TPOT_Prop::setup( quadrupole* pqd ) const
 {
@@ -88,7 +103,7 @@ void quadrupole::TPOT_Prop::setup( quadrupole* pqd ) const
   double quarterStrength = pqd->Strength()*lng/4.0;
  
 
-  if( pqd->p_bml ) pqd->p_bml->eliminate();
+  if( pqd->p_bml ) { pqd->p_bml->zap(); delete pqd->p_bml;  pqd->p_bml=0; }
 
   pqd->p_bml = new beamline;
   
@@ -136,6 +151,8 @@ void quadrupole::TPOT_Prop::setup( quadrupole* pqd ) const
   }
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 quadrupole::TPOT_Prop  quadrupole::LikeTPOT(4);
@@ -143,40 +160,36 @@ quadrupole::TPOT_Prop  quadrupole::LikeTPOT(4);
 
 void thinQuad::localPropagate( Particle& p ) {
  // "Strength" is B'l in Tesla
- double TrState[6];
- double k = 0;
+
+ double k      = 0;
+ Vector& state = p.getState();
 
  if( strength != 0.0 ) 
  {
-   memcpy((void *)TrState, (const void *)p.state, 6 * sizeof(double));
-
    k = strength / p.ReferenceBRho();
-   TrState[3] += - k * TrState[0];
-   TrState[4] +=   k * TrState[1];
-
-   p.state[3] = TrState[3];
-   p.state[4] = TrState[4];
+ 
+   state[3] += - k * state[0];
+   state[4] +=   k * state[1];
 
  }
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void thinQuad::localPropagate( JetParticle& p ) {
- Jet TrState[6];
- int i = 0;
- double k = 0;
+
+ double k       = 0;
+ Mapping& state = p.getState();
 
  if( strength != 0.0 ) 
  {
-   for( i = 0; i < 6; i++  ) {
-     TrState[i] = p.state(i);
-   }
 
    k = strength / p.ReferenceBRho();
-   TrState[3] += - k * TrState[0];
-   TrState[4] +=   k * TrState[1];
 
-   ( p.state ).SetComponent( 3, TrState[3] );
-   ( p.state ).SetComponent( 4, TrState[4] );
+   state[3] += - k * state[0];
+   state[4] +=   k * state[1];
+
  }
+
 }

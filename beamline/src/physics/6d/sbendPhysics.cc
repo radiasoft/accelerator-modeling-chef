@@ -36,11 +36,13 @@
 #include <config.h>
 #endif
 
+#include <beamline/sbend.h>
+
 #include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/PhysicsConstants.h>
 #include <mxyzptlk/Jet.h>
 #include <beamline/Particle.h>
-#include <beamline/sbend.h>
+#include <beamline/JetParticle.h>
 
 static const std::complex<double> complex_i(0.0, 1.0);
 
@@ -73,8 +75,8 @@ sbend::OutEdge_Prop sbend::OutEdge;
 
 int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
- static sbend* pbe;
- pbe = dynamic_cast<sbend*>(p_be);
+
+ sbend * pbe = dynamic_cast<sbend*>(p_be);
  double edgeCoeff;
 
  // Put in a kludge for the vertical focusing upon entrance.
@@ -118,8 +120,8 @@ int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 
 int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 {
- static sbend* pbe;
- pbe = dynamic_cast<sbend*>(p_be);
+
+ sbend* pbe = dynamic_cast<sbend*>(p_be);
  double edgeCoeff;
 
  // Put in a kludge for the vertical focusing upon entrance.
@@ -163,8 +165,7 @@ int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 
 int sbend::InEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
- static sbend* pbe;
- pbe = dynamic_cast<sbend*>(p_be);
+ sbend* pbe = dynamic_cast<sbend*>(p_be);
  double edgeCoeff;
 
  // Put in a kludge for the vertical focusing upon entrance.
@@ -192,8 +193,7 @@ int sbend::InEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 
 int sbend::InEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 {
- static sbend* pbe;
- pbe = dynamic_cast<sbend*>(p_be);
+ sbend* pbe = dynamic_cast<sbend*>(p_be);
  double edgeCoeff;
 
  // Put in a kludge for the vertical focusing upon entrance.
@@ -221,8 +221,7 @@ int sbend::InEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 
 int sbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
- static sbend* pbe;
- pbe = dynamic_cast<sbend*>(p_be);
+ sbend* pbe = dynamic_cast<sbend*>(p_be);
  double edgeCoeff;
 
  // Propagate through the constant magnetic field.
@@ -250,8 +249,7 @@ int sbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 
 int sbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 {
- static sbend* pbe;
- pbe = dynamic_cast<sbend*>(p_be);
+ sbend* pbe = dynamic_cast<sbend*>(p_be);
  double edgeCoeff;
 
  (*_myPropagator)(pbe,p);
@@ -279,6 +277,7 @@ int sbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 int sbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
  static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
+
  sbend* pbe = dynamic_cast<sbend*>(p_be);
  double edgeCoeff;
 
@@ -327,55 +326,53 @@ int sbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 
 int sbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p ) 
 {
+
  static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
+
  sbend* pbe = dynamic_cast<sbend*>(p_be);
 
  // Preliminary filter from state coordinates
- Jet psq;
- psq = 1.0 + p.get_ndp();
+
+ Jet psq = 1.0 + p.get_ndp();
  psq = psq*psq;
 
- Jet E_factor;
- E_factor = 1.0 / sqrt( psq + p.PNI2() );
+ Jet E_factor = 1.0 / sqrt( psq + p.PNI2() );
 
- Jet beta_1, beta_2, beta_3;
- beta_1 = E_factor*p.get_npx();
- beta_2 = E_factor*p.get_npy();
- beta_3 = E_factor*sqrt( psq - p.get_npx()*p.get_npx()
+ Jet beta_1 = E_factor*p.get_npx();
+ Jet beta_2 = E_factor*p.get_npy();
+ Jet beta_3 = E_factor*sqrt( psq - p.get_npx()*p.get_npx()
                              - p.get_npy()*p.get_npy() );
 
- JetC ui, vui;
- ui  = complex_i * p.get_x();
- vui = PH_MKS_c*( beta_3 + complex_i * beta_1 );
+ JetC ui  = complex_i * p.get_x();
+ JetC vui = PH_MKS_c*( beta_3 + complex_i * beta_1 );
 
  // Step 1.
- Jet omega;
- JetC bi;
- omega  = csq_red * pbe->Strength() / p.Energy();
- bi = ( complex_i*vui / omega ) - ui;
+
+ Jet omega  = csq_red * pbe->Strength() / p.Energy();
+ JetC bi = ( complex_i*vui / omega ) - ui;
 
  // Step 2.
- JetC bf;
- bf = bi*pbe->_propPhase + pbe->_propTerm;
+ JetC bf = bi*pbe->_propPhase + pbe->_propTerm;
 
  // Step 3.
- Jet rho, dthmdphi;
- rho      = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
- dthmdphi =   asin( real(bi)/rho ) 
-            - asin( real(bf)/rho );
+
+ Jet rho      = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
+ Jet dthmdphi =   asin( real(bi)/rho ) 
+                - asin( real(bf)/rho );
 
  // Step 4.
- JetC expF, vuf, uf;
- expF = cos(dthmdphi) + complex_i*sin(dthmdphi);
- vuf  = vui*expF;
- uf   = ( ui + bi )*expF - bf;
+
+ JetC expF = cos(dthmdphi) + complex_i*sin(dthmdphi);
+ JetC vuf  = vui*expF;
+ JetC uf   = ( ui + bi )*expF - bf;
 
 
  // Final filter back to state coordinates
- Jet dtheta, cdt;
  // REMOVE: double dphi   = - pbe->getAngle();
- dtheta = dthmdphi + pbe->_dphi;
- cdt    = - PH_MKS_c * dtheta / omega;
+
+ Jet dtheta = dthmdphi + pbe->_dphi;
+ Jet cdt    = - PH_MKS_c * dtheta / omega;
+
  double CDT = pbe->getReferenceTime();
 
  p.set_x    ( imag( uf ) );
@@ -386,183 +383,3 @@ int sbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  return 0;
 }
 
-// ********************************************************
-
-// REMOVE: double sbend::Approx_Prop::_fastArcsin( double x ) const
-// REMOVE: {
-// REMOVE:   return x;
-// REMOVE:   /*
-// REMOVE:   double u = x*x;
-// REMOVE:   return x*( 1.0 +
-// REMOVE:              u*( 0.16666666666667 +
-// REMOVE:                  u*( 0.075 +
-// REMOVE:                      u*( 0.044642857142857 +
-// REMOVE:                          u*( 0.030381944444444 +
-// REMOVE:                              u*( 0.022372159090909 +
-// REMOVE:                                  u*( 0.017352764423077 +
-// REMOVE:                                      u*( 0.01396484375 +
-// REMOVE:                                          u*( 0.01155180089614 +
-// REMOVE:                                              u*( 0.0097616095291941 +
-// REMOVE:                                                  u*( 0.0083903358096168 +
-// REMOVE:                                                      u*( 0.0073125258735988 +
-// REMOVE:                                                          u*( 0.0064472103118896 )))))))))))));
-// REMOVE:  */
-// REMOVE: }
-
-
-// REMOVE: Jet sbend::Approx_Prop::_fastArcsin( const Jet& x ) const
-// REMOVE: {
-// REMOVE:   return x;
-// REMOVE:   /*
-// REMOVE:   Jet u( x*x );
-// REMOVE:   return x*( 1.0 +
-// REMOVE:              u*( 0.16666666666667 +
-// REMOVE:                  u*( 0.075 +
-// REMOVE:                      u*( 0.044642857142857 +
-// REMOVE:                          u*( 0.030381944444444 +
-// REMOVE:                              u*( 0.022372159090909 +
-// REMOVE:                                  u*( 0.017352764423077 +
-// REMOVE:                                      u*( 0.01396484375 +
-// REMOVE:                                          u*( 0.01155180089614 +
-// REMOVE:                                              u*( 0.0097616095291941 +
-// REMOVE:                                                  u*( 0.0083903358096168 +
-// REMOVE:                                                      u*( 0.0073125258735988 +
-// REMOVE:                                                          u*( 0.0064472103118896 )))))))))))));
-// REMOVE:  */
-// REMOVE: }
-
-
-// REMOVE: int sbend::Approx_Prop::operator()( bmlnElmnt* p_be, Particle& p )
-// REMOVE: {
-// REMOVE:  static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
-// REMOVE:  sbend* pbe = dynamic_cast<sbend*>(p_be);
-// REMOVE:  double edgeCoeff;
-// REMOVE: 
-// REMOVE:  // Put in a kludge for the vertical focusing upon entrance.
-// REMOVE:  if( 0.0 != pbe->_usTan ) {
-// REMOVE:    edgeCoeff = ( pbe->_usTan / ( p.ReferenceBRho() / pbe->Strength() ) );
-// REMOVE:    p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
-// REMOVE:  }
-// REMOVE: 
-// REMOVE:  // Preliminary filter from state coordinates
-// REMOVE:  double psq = 1.0 + p.get_ndp();
-// REMOVE:         psq = psq*psq;
-// REMOVE:  double E_factor = 1.0 / sqrt( psq + p.PNI2() );
-// REMOVE:  double beta_1 = E_factor*p.get_npx();
-// REMOVE:  double beta_2 = E_factor*p.get_npy();
-// REMOVE:  double beta_3 = E_factor*sqrt( psq - p.get_npx()*p.get_npx()
-// REMOVE:                                     - p.get_npy()*p.get_npy() );
-// REMOVE: 
-// REMOVE:  std::complex<double>  ui  ( 0.0, p.get_x() );
-// REMOVE:  std::complex<double>  vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
-// REMOVE: 
-// REMOVE:  // Step 1.
-// REMOVE:  double omega  = csq_red * pbe->Strength() / p.Energy();
-// REMOVE:  std::complex<double>  bi = ( complex_i*vui / omega ) - ui;
-// REMOVE: 
-// REMOVE:  // Step 2.
-// REMOVE:  std::complex<double>  bf = bi*pbe->_propPhase + pbe->_propTerm;
-// REMOVE: 
-// REMOVE:  // Step 3.
-// REMOVE:  double rho = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
-// REMOVE:  double dthmdphi = _fastArcsin( real(bi)/rho ) - _fastArcsin( real(bf)/rho );
-// REMOVE: 
-// REMOVE:  // Step 4.
-// REMOVE:  std::complex<double>  expFactor( cos(dthmdphi), sin(dthmdphi) );
-// REMOVE:  std::complex<double>  vuf = vui*expFactor;
-// REMOVE:  std::complex<double>  uf  = ( ui + bi )*expFactor - bf;
-// REMOVE: 
-// REMOVE: 
-// REMOVE:  // Final filter back to state coordinates
-// REMOVE:  double dphi   = - pbe->getAngle();
-// REMOVE:  double dtheta = dthmdphi + dphi;
-// REMOVE:  double cdt    = - PH_MKS_c * dtheta / omega;
-// REMOVE:  double CDT = pbe->getReferenceTime();
-// REMOVE: 
-// REMOVE:  p.set_x    ( imag( uf ) );
-// REMOVE:  p.set_y    ( p.get_y() + beta_2*cdt );
-// REMOVE:  p.set_cdt  ( p.get_cdt() + ( cdt - CDT ) );
-// REMOVE:  p.set_npx  ( imag( vuf )/( E_factor * PH_MKS_c ) );
-// REMOVE: 
-// REMOVE:  // Put in a kludge for the vertical focusing upon exit.
-// REMOVE:  if( 0.0 != pbe->_dsTan ) {
-// REMOVE:    edgeCoeff = ( pbe->_dsTan / ( p.ReferenceBRho() / pbe->Strength() ) );
-// REMOVE:    p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
-// REMOVE:  }
-// REMOVE: 
-// REMOVE:  return 0;
-// REMOVE: }
-
-
-// REMOVE: int sbend::Approx_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
-// REMOVE: {
-// REMOVE:  static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
-// REMOVE:  sbend* pbe = dynamic_cast<sbend*>(p_be);
-// REMOVE:  double edgeCoeff;
-// REMOVE: 
-// REMOVE:  // Put in a kludge for the vertical focusing upon entrance.
-// REMOVE:  if( 0.0 != pbe->_usTan ) {
-// REMOVE:    edgeCoeff = ( pbe->_usTan / ( p.ReferenceBRho() / pbe->Strength() ) );
-// REMOVE:    p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
-// REMOVE:  }
-// REMOVE: 
-// REMOVE:  // Preliminary filter from state coordinates
-// REMOVE:  Jet psq;
-// REMOVE:  psq = 1.0 + p.get_ndp();
-// REMOVE:  psq = psq*psq;
-// REMOVE: 
-// REMOVE:  Jet E_factor;
-// REMOVE:  E_factor = 1.0 / sqrt( psq + p.PNI2() );
-// REMOVE: 
-// REMOVE:  Jet beta_1, beta_2, beta_3;
-// REMOVE:  beta_1 = E_factor*p.get_npx();
-// REMOVE:  beta_2 = E_factor*p.get_npy();
-// REMOVE:  beta_3 = E_factor*sqrt( psq - p.get_npx()*p.get_npx()
-// REMOVE:                              - p.get_npy()*p.get_npy() );
-// REMOVE: 
-// REMOVE:  JetC ui, vui;
-// REMOVE:  ui  = complex_i * p.get_x();
-// REMOVE:  vui = PH_MKS_c*( beta_3 + complex_i * beta_1 );
-// REMOVE: 
-// REMOVE:  // Step 1.
-// REMOVE:  Jet omega;
-// REMOVE:  JetC bi;
-// REMOVE:  omega  = csq_red * pbe->Strength() / p.Energy();
-// REMOVE:  bi = ( complex_i*vui / omega ) - ui;
-// REMOVE: 
-// REMOVE:  // Step 2.
-// REMOVE:  JetC bf;
-// REMOVE:  bf = bi*pbe->_propPhase + pbe->_propTerm;
-// REMOVE: 
-// REMOVE:  // Step 3.
-// REMOVE:  Jet rho, dthmdphi;
-// REMOVE:  rho      = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
-// REMOVE:  dthmdphi = _fastArcsin( real(bi)/rho ) - _fastArcsin( real(bf)/rho );
-// REMOVE: 
-// REMOVE:  // Step 4.
-// REMOVE:  JetC expF, vuf, uf;
-// REMOVE:  expF = cos(dthmdphi) + complex_i*sin(dthmdphi);
-// REMOVE:  vuf  = vui*expF;
-// REMOVE:  uf   = ( ui + bi )*expF - bf;
-// REMOVE: 
-// REMOVE: 
-// REMOVE:  // Final filter back to state coordinates
-// REMOVE:  Jet dtheta, cdt;
-// REMOVE:  double dphi   = - pbe->getAngle();
-// REMOVE:  dtheta = dthmdphi + dphi;
-// REMOVE:  cdt    = - PH_MKS_c * dtheta / omega;
-// REMOVE:  double CDT = pbe->getReferenceTime();
-// REMOVE: 
-// REMOVE:  p.set_x    ( imag( uf ) );
-// REMOVE:  p.set_y    ( p.get_y() + beta_2*cdt );
-// REMOVE:  p.set_cdt  ( p.get_cdt() + ( cdt - CDT ) );
-// REMOVE:  p.set_npx  ( imag( vuf )/( E_factor * PH_MKS_c ) );
-// REMOVE: 
-// REMOVE:  // Put in a kludge for the vertical focusing upon exit.
-// REMOVE:  if( 0.0 != pbe->_dsTan ) {
-// REMOVE:    edgeCoeff = ( pbe->_dsTan / ( p.ReferenceBRho() / pbe->Strength() ) );
-// REMOVE:    p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
-// REMOVE:  }
-// REMOVE: 
-// REMOVE:  return 0;
-// REMOVE: }

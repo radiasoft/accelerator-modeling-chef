@@ -88,25 +88,25 @@ private:
 
 public:
   rfcavity( const char* = "NONAME" ); // Name
-  rfcavity( double,   // length [m]
-            double,   // RF frequency [Hz]
-            double,   // max energy gain per turn [eV] (strength*10**9)
-            double,   // synchronous phase [radians]
-            double,   // Q
-            double    // R shunt impedance
+  rfcavity( double const&,   // length [m]
+            double const&,   // RF frequency [Hz]
+            double const&,   // max energy gain per turn [eV] (strength*10**9)
+            double const&,   // synchronous phase [radians]
+            double const&,   // Q
+            double const&    // R shunt impedance
           );
   rfcavity( const char*, // Name
-            double,   // length [m]
-            double,   // RF frequency [Hz]
-            double,   // max energy gain per turn [eV] (strength*10**9)
-            double,   // synchronous phase [radians]
-            double,   // Q
-            double    // R shunt impedance
+            double const&,   // length [m]
+            double const&,   // RF frequency [Hz]
+            double const&,   // max energy gain per turn [eV] (strength*10**9)
+            double const&,   // synchronous phase [radians]
+            double const&,   // Q
+            double const&    // R shunt impedance
           );
   rfcavity( const rfcavity& );
 
   rfcavity* Clone() const { return new rfcavity( *this ); }
-  ~rfcavity();
+  virtual ~rfcavity();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -118,8 +118,6 @@ public:
   void acceptInner( BmlVisitor& v );
   void acceptInner( ConstBmlVisitor& v );
 
-  void eliminate();
-
   const char* Type() const;
   inline double getPhi() const { return phi_s; }
   inline double getFrequency() const { return w_rf; }
@@ -128,13 +126,13 @@ public:
   inline double getHarmonicNumber() const { return h; }
 
   void setHarmonicNumber( int );
-  void setHarmonicNumber( double );
-  void setFrequency( double );
-  void setFrequencyRelativeTo( double );
-  void setRadialFrequency( double );
-  void setRadialFrequencyRelativeTo( double );
-  void setPhi( double );  // radians
-  void setStrength( double );  // eV
+  void setHarmonicNumber( double const& );
+  void setFrequency( double const& );
+  void setFrequencyRelativeTo( double const& );
+  void setRadialFrequency( double const& );
+  void setRadialFrequencyRelativeTo( double const& );
+  void setPhi( double const& );  // radians
+  void setStrength( double const& );  // eV
 };
 
 
@@ -161,23 +159,25 @@ private:
   std::istream& readFrom(std::istream&);
 
 public:
+
   thinrfcavity( const char* = "NONAME" ); // Name
-  thinrfcavity( double,   // RF frequency [Hz]
-                double,   // max energy gain per turn [eV] (strength*10**9)
-                double,   // synchronous phase [radians]
-                double,   // Q
-                double    // R shunt impedance
+  thinrfcavity( double const&,   // RF frequency [Hz]
+                double const&,   // max energy gain per turn [eV] (strength*10**9)
+                double const&,   // synchronous phase [radians]
+                double const&,   // Q
+                double const&    // R shunt impedance
                 );
   thinrfcavity( const char *,   // Name
-                double,   // RF frequency [Hz]
-                double,   // max energy gain per turn [eV] (strength*10**9)
-                double,   // synchronous phase [radians]
-                double,   // Q
-                double    // R shunt impedance
+                double const&,   // RF frequency [Hz]
+                double const&,   // max energy gain per turn [eV] (strength*10**9)
+                double const&,   // synchronous phase [radians]
+                double const&,   // Q
+                double const&    // R shunt impedance
                 );
   thinrfcavity( const thinrfcavity& );
   thinrfcavity* Clone() const { return new thinrfcavity( *this ); }
-  ~thinrfcavity();
+
+  virtual ~thinrfcavity();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -186,23 +186,21 @@ public:
   void accept( BmlVisitor& v ) { v.visitThinrfcavity( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitThinrfcavity( this ); }
 
-  void eliminate();
-
   const char* Type() const;
 
-  inline double getPhi() const { return phi_s; }
-  inline double getFrequency() const { return w_rf; }
-  inline double getQ() const { return Q; }
-  inline double getR() const { return R; }
+  inline double getPhi()            const { return phi_s; }
+  inline double getFrequency()      const { return w_rf; }
+  inline double getQ()              const { return Q; }
+  inline double getR()              const { return R; }
   inline double getHarmonicNumber() const { return h; }
 
-  void setHarmonicNumber( int );
-  void setHarmonicNumber( double );
-  void setFrequency( double );
-  void setFrequencyRelativeTo( double );
-  void setRadialFrequency( double );
-  void setRadialFrequencyRelativeTo( double );
-  void setPhi( double );  // radians
+  void            setHarmonicNumber( int );
+  void            setHarmonicNumber( double const& );
+  void                 setFrequency( double const& );
+  void       setFrequencyRelativeTo( double const& );
+  void           setRadialFrequency( double const& );
+  void setRadialFrequencyRelativeTo( double const& );
+  void                       setPhi( double const& );  // radians
 };
 
 

@@ -39,14 +39,18 @@
 #endif
 
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/monitor.h>
 
 using namespace std;
+
 
 void monitor::localPropagate( Particle& p )
 {
   int i;
   double realLength, realCt;
+
+  Vector& state = p.getState();
 
   if( length > 0.0 ) {
     // ---------------------------------------------------------------------
@@ -56,7 +60,7 @@ void monitor::localPropagate( Particle& p )
     _ctRef *= getDriftFraction();
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     
-    for ( i = 0; i < BMLN_dynDim; i++ ) { _rgr[i] = p.state[i]; }
+    for ( i = 0; i < BMLN_dynDim; i++ ) { _rgr[i] = state[i]; }
     
     if ( _onOffSwitch ) {
       for ( i = 0; i < BMLN_dynDim; i++ ) {
@@ -74,7 +78,7 @@ void monitor::localPropagate( Particle& p )
   } // ---------------------------------------------------------------------
 
   else {
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = p.state[i];
+    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state[i];
     
     if ( _onOffSwitch ) {
       for ( i = 0; i < BMLN_dynDim; i++ ) {
@@ -83,7 +87,12 @@ void monitor::localPropagate( Particle& p )
       (*_outputStreamPtr) << "   BPM: " << ident << endl;
     }
   }
+
 }
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 void monitor::localPropagate( JetParticle& p ) 
@@ -91,6 +100,8 @@ void monitor::localPropagate( JetParticle& p )
   int i;
   double realLength, realCt;
 
+  Mapping& state = p.getState();
+
   if( length > 0.0 ) {
     // ---------------------------------------------------------------------
     realLength = length;
@@ -99,7 +110,7 @@ void monitor::localPropagate( JetParticle& p )
     _ctRef *= getDriftFraction();
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = ( p.state(i) ).standardPart();
+    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = ( state(i) ).standardPart();
     
     if ( _onOffSwitch ) {
       for ( i = 0; i < BMLN_dynDim; i++ ) {
@@ -117,7 +128,7 @@ void monitor::localPropagate( JetParticle& p )
   } // ---------------------------------------------------------------------
 
   else {
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = ( p.state(i) ).standardPart();
+    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = ( state(i) ).standardPart();
     
     if ( _onOffSwitch ) {
       for ( i = 0; i < BMLN_dynDim; i++ ) {
@@ -126,13 +137,18 @@ void monitor::localPropagate( JetParticle& p )
       (*_outputStreamPtr) << "   BPM: " << ident << endl;
     }
   }
+
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void hmonitor::localPropagate( Particle& p ) 
 {
   int i;
   double realLength, realCt;
+  Vector& state = p.getState();
 
   if( length > 0.0 ) {
     // ---------------------------------------------------------------------
@@ -142,7 +158,7 @@ void hmonitor::localPropagate( Particle& p )
     _ctRef *= getDriftFraction();
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = p.state[i];
+    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state[i];
     
     if ( _onOffSwitch ) {
       (*_outputStreamPtr) <<         _rgr[p.xIndex()] 
@@ -160,7 +176,7 @@ void hmonitor::localPropagate( Particle& p )
   } // ---------------------------------------------------------------------
 
   else {
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = p.state[i];
+    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state[i];
     
     if ( _onOffSwitch ) {
       (*_outputStreamPtr) <<         _rgr[p.xIndex()] 
@@ -171,11 +187,15 @@ void hmonitor::localPropagate( Particle& p )
   }
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void hmonitor::localPropagate( JetParticle& p ) 
 {
   int i;
   double realLength, realCt;
+  Mapping& state = p.getState();
 
   if( length > 0.0 ) {
     // ---------------------------------------------------------------------
@@ -185,7 +205,7 @@ void hmonitor::localPropagate( JetParticle& p )
     _ctRef *= getDriftFraction();
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = ( p.state(i) ).standardPart();
+    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] =  state(i).standardPart();
     
     if ( _onOffSwitch ) {
       (*_outputStreamPtr) <<         _rgr[p.xIndex()] 
@@ -203,7 +223,7 @@ void hmonitor::localPropagate( JetParticle& p )
   } // ---------------------------------------------------------------------
 
   else {
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = ( p.state(i) ).standardPart();
+    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state(i).standardPart();
     
     if ( _onOffSwitch ) {
       (*_outputStreamPtr) <<         _rgr[p.xIndex()] 
@@ -214,11 +234,14 @@ void hmonitor::localPropagate( JetParticle& p )
   }
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void vmonitor::localPropagate( Particle& p ) 
 {
   int i;
   double realLength, realCt;
+  Vector& state = p.getState();
 
   if( length > 0.0 ) {
     // ---------------------------------------------------------------------
@@ -228,7 +251,7 @@ void vmonitor::localPropagate( Particle& p )
     _ctRef *= getDriftFraction();
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = p.state[i];
+    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state[i];
     
     if ( _onOffSwitch ) {
       (*_outputStreamPtr) <<         _rgr[p.yIndex()] 
@@ -246,7 +269,7 @@ void vmonitor::localPropagate( Particle& p )
   } // ---------------------------------------------------------------------
 
   else {
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = p.state[i];
+    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state[i];
     
     if ( _onOffSwitch ) {
       (*_outputStreamPtr) <<         _rgr[p.yIndex()] 
@@ -257,11 +280,15 @@ void vmonitor::localPropagate( Particle& p )
   }
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void vmonitor::localPropagate( JetParticle& p ) 
 {
   int i;
   double realLength, realCt;
+  Mapping& state = p.getState();
 
   if( length > 0.0 ) {
     // ---------------------------------------------------------------------
@@ -271,7 +298,7 @@ void vmonitor::localPropagate( JetParticle& p )
     _ctRef *= getDriftFraction();
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = ( p.state(i) ).standardPart();
+    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state(i).standardPart();
     
     if ( _onOffSwitch ) {
       (*_outputStreamPtr) <<         _rgr[p.yIndex()] 
@@ -289,7 +316,7 @@ void vmonitor::localPropagate( JetParticle& p )
   } // ---------------------------------------------------------------------
 
   else {
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = ( p.state(i) ).standardPart();
+    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state(i).standardPart();
     
     if ( _onOffSwitch ) {
       (*_outputStreamPtr) <<         _rgr[p.yIndex()] 
@@ -299,3 +326,5 @@ void vmonitor::localPropagate( JetParticle& p )
     }
   }
 }
+
+

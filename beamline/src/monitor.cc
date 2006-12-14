@@ -44,7 +44,9 @@
 #include <beamline/monitor.h>
 #include <beamline/Particle.h>
 
+
 using namespace std;
+
 
 // **************************************************
 //   class monitor 
@@ -56,8 +58,11 @@ monitor::monitor()
   _onOffSwitch( false ), 
   _driftFraction( 0.5 )
 {
+
+
   _rgr   = new double [ BMLN_dynDim ];
   for( int i = 0; i < BMLN_dynDim; i++ ) { _rgr[i] = 0.0; }
+
 }
 
 
@@ -67,12 +72,13 @@ monitor::monitor( const char* n )
   _onOffSwitch( false ), 
   _driftFraction( 0.5 )
 {
+
   _rgr   = new double [ BMLN_dynDim ];
   for( int i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = 0.0;
 }
 
 
-monitor::monitor( const char* n, double l )
+monitor::monitor( const char* n, double const& l )
 : bmlnElmnt(n,l),
   _outputStreamPtr( &std::cout ), 
   _onOffSwitch( false ), 
@@ -83,12 +89,13 @@ monitor::monitor( const char* n, double l )
 }
 
 
-monitor::monitor( const monitor& x )
-: bmlnElmnt( (bmlnElmnt&) x ),
+monitor::monitor( monitor const& x )
+: bmlnElmnt( x ),
   _outputStreamPtr( x._outputStreamPtr ), 
   _onOffSwitch( x._onOffSwitch ), 
   _driftFraction( x._driftFraction )
 {
+
   _rgr   = new double [ BMLN_dynDim ];
   for( int i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = x._rgr[i];
 }
@@ -177,6 +184,10 @@ istream& monitor::readFrom(istream &is)
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 // **************************************************
 //   class vmonitor 
 // **************************************************
@@ -189,13 +200,14 @@ vmonitor::vmonitor( const char* n ) : monitor( n )
 {
 }
 
-vmonitor::vmonitor( const char* n, double l ) : monitor( n,l )
+vmonitor::vmonitor( const char* n, double const& l ) : monitor( n,l )
 {
 }
 
-vmonitor::vmonitor( const vmonitor& x ) 
-: monitor( (monitor&) x ) 
+vmonitor::vmonitor( vmonitor const& x ) 
+: monitor( x ) 
 {
+
 }
 
 vmonitor::~vmonitor() 
@@ -228,18 +240,18 @@ hmonitor::hmonitor( const char* n ) : monitor( n )
 {
 }
 
-hmonitor::hmonitor( const char* n, double l ) : monitor( n, l )
+hmonitor::hmonitor( const char* n, double const& l ) : monitor( n, l )
 {
 }
 
 hmonitor::hmonitor( const hmonitor& x ) 
-: monitor( (monitor&) x ) 
-{
-}
+: monitor( x ) 
+{}
+
+
 
 hmonitor::~hmonitor() 
-{
-}
+{}
 
 double hmonitor::operator[]( int n ) 
 {
@@ -253,3 +265,4 @@ const char* hmonitor::Type() const
 { 
   return "hmonitor"; 
 }
+

@@ -59,29 +59,32 @@ private:
 
 public:
   combinedFunction();
-  combinedFunction( const char* /* name */ );
-  combinedFunction( const char*, const beamline& );
-  combinedFunction( const beamline& );
-  combinedFunction( const combinedFunction& );
+  combinedFunction( char const* name);
+  combinedFunction( char const* name, beamline const& );
+  combinedFunction( beamline const& );
+
+  combinedFunction( combinedFunction const& );
+  
   virtual ~combinedFunction();
 
-  void append(bmlnElmnt&);
-  void eliminate() {delete this;}
+  combinedFunction* Clone() const { return new combinedFunction( *this ); }
 
-  virtual void enterLocalFrame( Particle&    p ) const
-    { bmlnElmnt::enterLocalFrame( p ); }
-  virtual void enterLocalFrame( JetParticle& p ) const
-    { bmlnElmnt::enterLocalFrame( p ); }
-  virtual void leaveLocalFrame( Particle&    p ) const
-    { bmlnElmnt::leaveLocalFrame( p ); }
-  virtual void leaveLocalFrame( JetParticle& p ) const
-    { bmlnElmnt::leaveLocalFrame( p ); }
+
+  void append(bmlnElmnt&);
+
+  double AdjustPosition( Particle    const& );
+  double AdjustPosition( JetParticle const& );
+
+  virtual void enterLocalFrame( Particle&    p ) const   { bmlnElmnt::enterLocalFrame( p ); }
+  virtual void enterLocalFrame( JetParticle& p ) const   { bmlnElmnt::enterLocalFrame( p ); }
+  virtual void leaveLocalFrame( Particle&    p ) const   { bmlnElmnt::leaveLocalFrame( p ); }
+  virtual void leaveLocalFrame( JetParticle& p ) const   { bmlnElmnt::leaveLocalFrame( p ); }
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitCombinedFunction( this ); }
+  void accept( BmlVisitor& v )            { v.visitCombinedFunction( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitCombinedFunction( this ); }
   
   void setField( bmlnElmnt::CRITFUNC, double );
@@ -92,19 +95,15 @@ public:
     { return this->Field(x); }
 
   void setSkew( WHICH_MULTIPOLE, alignmentData& );
-  void setLength( double x )   // ??? Should this be here???
-    { length = x; }
+  void setLength( double x )                         { length = x; }
+
   alignmentData Skew( WHICH_MULTIPOLE );
-  alignmentData getAlignment( WHICH_MULTIPOLE x )
-    { return this->Skew(x); }
+  alignmentData getAlignment( WHICH_MULTIPOLE x )    { return this->Skew(x); }
 
   const char* Type() const;
   bool isMagnet() const;
 
-  combinedFunction* Clone() const { return new combinedFunction( *this ); }
 
-  double AdjustPosition( const Particle& );
-  double AdjustPosition( const JetParticle& );
 };
 
 #endif // COMBINED_FUNCTION_H

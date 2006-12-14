@@ -58,25 +58,25 @@ public:
   
   thinSeptum();
   
-  thinSeptum( char*  n );
+  thinSeptum( char const*  name );
   
-  thinSeptum( char*  n,      // name
-	    double sPos,    // kick in strength in radians for x > xWire 
-	    double sNeg,    // kick in strength in radians for x < xWire 
-	    double x );     // position of wire septum in meters
+  thinSeptum( char const*  name,
+	    double const& sPos,    // kick in strength in radians for x > xWire 
+	    double const& sNeg,    // kick in strength in radians for x < xWire 
+	    double const& x );     // position of wire septum in meters
    
-  thinSeptum( double sPos,    
-	    double sNeg,    
-	    double x ); 
+  thinSeptum( double const& sPos,    
+	    double const& sNeg,    
+	    double const& x ); 
   
   thinSeptum( const thinSeptum& );
 
   thinSeptum* Clone() const { return new thinSeptum( *this ); }
 
-  ~thinSeptum();
+  virtual ~thinSeptum();
   
-  void setStrengths( double sPos, double sNeg); 
-  void setWire( double x); 
+  void setStrengths( double const& sPos, double const& sNeg); 
+  void setWire( double const& x); 
   
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle&    p );
@@ -85,8 +85,6 @@ public:
   void accept( BmlVisitor& v ) { v.visitThinSeptum( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitThinSeptum( this ); }
 
-  void eliminate();
-  
   const char* Type() const;
 
 

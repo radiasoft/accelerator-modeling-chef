@@ -52,13 +52,13 @@ using namespace std;
 srot::srot() : bmlnElmnt() {
 }
 
-srot::srot( double s) : bmlnElmnt(0.0,s) {
+srot::srot( double const& s) : bmlnElmnt(0.0,s) {
 }
 
 srot::srot( const char* n ) : bmlnElmnt(n) {
 }
 
-srot::srot( const char* n, double s) : bmlnElmnt( n, 0.0,s) {
+srot::srot( const char* n, double const& s) : bmlnElmnt( n, 0.0,s) {
 }
 
 srot::srot( const srot& x )

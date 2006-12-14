@@ -49,11 +49,15 @@ class DLLEXPORT mover : public circuit {
 protected:
   alignmentData align;
 public:
+
   mover();
-  ~mover();
-  mover( const char* );
-  mover( bmlnElmnt* );
-  mover( const char*, bmlnElmnt* );
+  mover( char const* name );
+
+  virtual ~mover();
+
+  mover( char const*, bmlnElmnt* );
+  mover(              bmlnElmnt* );
+
   void append( bmlnElmnt* );
   void switchOn();
   void switchOff();

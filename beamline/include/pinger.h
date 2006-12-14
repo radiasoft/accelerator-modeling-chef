@@ -51,26 +51,26 @@ protected:
   double _kick_direction;	/* In which direction is the kick? */
   int    _counter;              /* Counts number of turns before firing. */
 public:
-  Pinger(       	/* Assumes a zero, horizontal kick */ );
-  Pinger( double, 	/* kick size in radians,  */
-	  double =0,    /* direction of kick, radians (H default) */ 
-          int = -1      /* number of turns before firing */ );
-  Pinger( char * 	/* name */
-	  /* Assumes zero, horizontal kick */ );
-  Pinger( char *, 	/* name */
-	  double,	/* kick size in radians */
-	  double =0,    /* direction of kick, radians (H default) */ 
-          int = -1      /* number of turns before firing */ );
-  Pinger( const Pinger& );
-  ~Pinger(); 
+
+  Pinger( );       	                                              // Assumes a zero, horizontal kick
+  Pinger( double const& kick_rad, double const& direction_rad =0, int ntrns = -1);
+            // directon_rad==0 (Hor) (def) ntrs =number of turns before firing
+  Pinger( char const*  name);                                       // Assumes zero, horizontal kick 
+  Pinger( char const*  name, double const& kick_rad, double const& direction_rad=0, int ntrns= -1);
+  Pinger( Pinger const& );
+  Pinger* Clone() const { return new Pinger( *this ); }
+
+  virtual ~Pinger(); 
 
   const char* Type() const;
+
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
   void localPropagate( ParticleBunch& x );
-  Pinger* Clone() const { return new Pinger( *this ); }
+
   void accept( BmlVisitor& v ) { v.visitPinger( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitPinger( this ); }
+
   void arm( int n ) { _counter = n; }
   void disarm()     { _counter = -1; }
   bool isArmed()    { return ( _counter >= 0 ); };
@@ -78,20 +78,17 @@ public:
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
   
-  double getKickDirection() { return _kick_direction; }
-  void setKickDirection(double k) { _kick_direction = k; }
+  double getKickDirection()        { return _kick_direction; }
+  void  setKickDirection(double const& k) { _kick_direction = k; }
 };
 
 class DLLEXPORT HPinger : public Pinger {
  public:
-  HPinger( double = 0.0 /* kick size in radians */,
-           int    = -1  /* count */ );
-  HPinger( char * /* name */  /* Assumes zero kick */ );
-  HPinger( char * /* name */, 
-           double = 0.0 /* kick size in radians */,
-           int    = -1  /* count */ );
-  HPinger( const HPinger& );
-  ~HPinger();
+  HPinger( double const& kick_rad,  int count= -1);
+  HPinger( char const* name);                  // Assumes zero kick 
+  HPinger( char const* name, double const& kick_rad = 0.0, int cont = -1);
+  HPinger( HPinger const& );
+  virtual ~HPinger();
 
   const char* Type() const;
   HPinger* Clone() const { return new HPinger( *this ); }
@@ -101,18 +98,18 @@ class DLLEXPORT HPinger : public Pinger {
 
 class DLLEXPORT VPinger : public Pinger {
  public:
-  VPinger( double = 0.0 /* kick size in radians */,
-           int    = -1  /* count */ );
-  VPinger( char * /* name */  /* Assumes zero kick */ );
-  VPinger( char * /* name */, 
-           double = 0.0 /* kick size in radians */,
-           int    = -1  /* count */ );
-  VPinger( const VPinger& );
-  ~VPinger();
+  VPinger( double const& kick_rad , int count = -1 );
+  VPinger( char const* name ); //Assumes zero kick 
+  VPinger( char const* name,  double const& kick_rad = 0.0, int count   = -1);
+  VPinger( VPinger const& );
+
+  VPinger* Clone() const { return new VPinger( *this ); }
+
+  virtual ~VPinger();
 
   const char* Type() const;
-  VPinger* Clone() const { return new VPinger( *this ); }
-  void accept( BmlVisitor& v ) { v.visitVPinger( this ); }
+
+  void accept( BmlVisitor& v )            { v.visitVPinger( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitVPinger( this ); }
 };
 

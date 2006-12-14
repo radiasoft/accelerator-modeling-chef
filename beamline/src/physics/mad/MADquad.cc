@@ -43,10 +43,12 @@
 
 #include <beamline/quadrupole.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 quadrupole::MAD_Prop   quadrupole::LikeMAD;
 
 int quadrupole::MAD_Prop::operator()( bmlnElmnt* p_be, Particle& p ) {
+
   quadrupole* pbe = (quadrupole*) p_be;
 
   double length = pbe->Length();

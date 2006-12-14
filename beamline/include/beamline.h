@@ -135,8 +135,8 @@ private:
   std::list<bmlnElmnt*>  _theList; 
 
   // Methods
-  void   _moveRel(   int axis, double u,     bmlnElmnt* thePtr,             int*   errorCodePtr, BmlPtrList* recycleBinPtr, std::string invoker );
-  void _rotateRel(   int axis, double angle, bmlnElmnt* thePtr, double pct, int*   errorCodePtr, BmlPtrList* recycleBinPtr, std::string invoker );
+  void   _moveRel(   int axis, double const& u,     bmlnElmnt* thePtr,             int*   errorCodePtr, BmlPtrList* recycleBinPtr, std::string invoker );
+  void _rotateRel(   int axis, double const& angle, bmlnElmnt* thePtr, double pct, int*   errorCodePtr, BmlPtrList* recycleBinPtr, std::string invoker );
 
   std::ostream& writeTo(std::ostream&);
   friend std::istream& operator>>( std::istream&, beamline& );
@@ -154,12 +154,11 @@ public:
   beamline( FILE* );                  // Reading persistent object stored
                                       //  in a binary file.
 
-  ~beamline();                         // Notice that this destructor does not destroy
+  virtual ~beamline();                 // Notice that this destructor does not destroy
                                        // the beamline elements.  To do that, use
                                        // beamline::zap().
   void zap();                          // Destroys the beamline elements
                                        // without destroying the beamline
-  void eliminate();                    // Combines zap and ~beamline
   void clear();                        // Returns state to empty beamline.
 
 
@@ -169,9 +168,11 @@ public:
   void insert( bmlnElmnt* );
   void append( bmlnElmnt* );
 
-  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
+  void Split( double const&, bmlnElmnt**, bmlnElmnt** ) const;
 
-  void InsertElementAt( double s_0, double s, const bmlnElmnt* q );
+  beamline*  reverse() const;                
+
+  void InsertElementAt( double const& s_0, double const& s, const bmlnElmnt* q );
                                       // Will insert q into the beamline at
                                       // OrbitLength s, assuming the beamline
                                       // begins at OrbitLength s_0.  Normally
@@ -187,7 +188,7 @@ public:
                                       // need to be eliminated by the user module.
   // InsertElementsFromList1 is a workaround for python bindings. See
   // python-bindings/src/py-bmlnelmnt.cpp
-  double InsertElementsFromList1( double s_0, InsertionList& il, slist& sl)
+  double InsertElementsFromList1( double const& s_0, InsertionList& il, slist& sl)
                                       // a version of InsertElementsFromList
                                       // that is callable from Python.
     {
@@ -269,12 +270,12 @@ public:
 
   bool     setAlignment( alignmentData const& );
  
-  BmlPtrList   moveRelX( bmlnElmnt*, double, int* = 0 );
-  BmlPtrList   moveRelY( bmlnElmnt*, double, int* = 0 );
-  BmlPtrList   moveRelZ( bmlnElmnt*, double, int* = 0 );
-  BmlPtrList      pitch( bmlnElmnt*, double, double, int* );
-  BmlPtrList        yaw( bmlnElmnt*, double, double, int* );
-  BmlPtrList       roll( bmlnElmnt*, double, double, int* );
+  BmlPtrList   moveRelX( bmlnElmnt*, double const&, int* = 0 );
+  BmlPtrList   moveRelY( bmlnElmnt*, double const&, int* = 0 );
+  BmlPtrList   moveRelZ( bmlnElmnt*, double const&, int* = 0 );
+  BmlPtrList      pitch( bmlnElmnt*, double const&, double const&, int* );
+  BmlPtrList        yaw( bmlnElmnt*, double const&, double const&, int* );
+  BmlPtrList       roll( bmlnElmnt*, double const&, double const&, int* );
 
 
   // PROPAGATE PARTICLES
@@ -315,7 +316,7 @@ public:
   //    but carries information for higher level code,
   //    like _dataHook.
 
-  void setEnergy( double  nominalEnergyGeV );
+  void setEnergy( double const&  nominalEnergyGeV );
   void unTwiss();
 
   void eraseBarnacles( const char* = 0 );
@@ -325,7 +326,7 @@ public:
   // twiss no-longer virtual to eliminate
   // circular library dependencies - FO
 
-  int twiss( JetParticle&, double dpp = 0.00001, short int  attachFlag = 1 );
+  int twiss( JetParticle&, double const& dpp = 0.00001, int  attachFlag = 1 );
                            // Computes lattice functions all the
                            // way around the ring.
                            // Attaches a lattRing Barnacle labelled 
@@ -338,7 +339,7 @@ public:
                            // the beginning of the ring.
                            // Uses the same method as MAD.
 
-  int twiss( lattFunc&,    JetParticle&,  short int attachFlag = 1);
+  int twiss( lattFunc&,    JetParticle&,  int attachFlag = 1);
                            // Computes lattice functions for a
                            // non-periodic beamline.
                            // Uses the same method as MAD.
@@ -416,7 +417,7 @@ public:
 
   beamline* Clone() const;
 
-  double OrbitLength( const Particle& );
+  double OrbitLength( Particle const& );
   lattRing whatIsRing();
 
 

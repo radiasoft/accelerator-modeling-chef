@@ -54,28 +54,28 @@ thinLamb::thinLamb() : bmlnElmnt() {
   for (int i =0; i < 6 ; i++ ) RefState[i] = 0.0;
 }
 
-thinLamb::thinLamb( char* n)
+thinLamb::thinLamb( char const* n)
 : bmlnElmnt( n ) {
   xSeptum = 0.0;
   ExtBeamline = 0;
   for (int i =0; i < 6 ; i++ ) RefState[i] = 0.0;
 }
 
-thinLamb::thinLamb( char* n, double x, beamline* b, double* s)
+thinLamb::thinLamb( char const* n, double const&x, beamline* b, double* s)
 : bmlnElmnt( n ) {
   xSeptum = x;
   ExtBeamline = b;
   for (int i =0; i < 6 ; i++ ) RefState[i] = s[i];
 }
 
-thinLamb::thinLamb( double x, beamline* b, double* s)
+thinLamb::thinLamb( double const& x, beamline* b, double* s)
 : bmlnElmnt( ) {
   xSeptum = x;
   ExtBeamline = b;
   for (int i =0; i < 6 ; i++ ) RefState[i] = s[i];
 }
 
-thinLamb::thinLamb( const thinLamb& x ) : bmlnElmnt( (bmlnElmnt&) x )
+thinLamb::thinLamb( thinLamb const& x ) : bmlnElmnt( x )
 {
   xSeptum = x.xSeptum;
   ExtBeamline = x.ExtBeamline;
@@ -85,7 +85,7 @@ thinLamb::thinLamb( const thinLamb& x ) : bmlnElmnt( (bmlnElmnt&) x )
 thinLamb::~thinLamb() {
 }
 
-void thinLamb::setSeptum( double x) {
+void thinLamb::setSeptum( double const& x) {
  xSeptum = x;
 }
 
@@ -99,11 +99,6 @@ void thinLamb::setRefState( const double* x) {
 
 void thinLamb::getRefState( double* x) {
   for (int i =0; i < 6 ; i++ ) x[i] = RefState[i];
-}
-
-
-void thinLamb::eliminate() {
- delete this;
 }
 
 

@@ -43,31 +43,44 @@
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/BmlVisitor.h>
+#include <boost/shared_ptr.hpp>
+
+class Particle;
+class JetParticle;
+
 
 class DLLEXPORT drift : public bmlnElmnt
 {
 public:
 
   drift();
-  drift( double length);             // length of drift in meters
-  drift( char const* name);     
-  drift( char const* name, double length); 
-  drift( drift const& );
+  drift( double        length);             // length of drift in meters
+  drift( char   const* name);     
+  drift( char   const* name, double length); 
+
+  drift( drift  const&);
 
   drift* Clone() const { return new drift( *this ); }
 
-  ~drift();
+  virtual ~drift();
 
-  void accept( BmlVisitor& v ) { v.visitDrift( this ); }
+  void localPropagate(Particle&    p) { bmlnElmnt::localPropagate(p); }
+  void localPropagate(JetParticle& p) { bmlnElmnt::localPropagate(p); }
+
+  void accept( BmlVisitor& v )            { v.visitDrift( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitDrift( this ); }
+
 
   const char* Type() const;
 
  private:
 
+ 
   friend std::ostream& operator<<(std::ostream&, bmlnElmnt&);
   friend bmlnElmnt*    read_istream(std::istream&);
 
 } ;
+
+
 
 #endif // DRIFT_H

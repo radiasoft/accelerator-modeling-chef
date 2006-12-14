@@ -94,11 +94,9 @@ public:
 
     NoEdge_Prop();
     virtual ~NoEdge_Prop();
-    // REMOVE: char isApproximate();
-    // REMOVE: void makeApproximate();
-    // REMOVE: void makeExact();
+
   private:
-    double _fastArcsin( double x     ) const;
+    double _fastArcsin( double const& x     ) const;
     Jet    _fastArcsin( const Jet& x ) const;
     // REMOVE: char   _approx;
   };
@@ -128,9 +126,6 @@ public:
 
     InEdge_Prop();
     virtual ~InEdge_Prop();
-    // REMOVE: char isApproximate();
-    // REMOVE: void makeApproximate();
-    // REMOVE: void makeExact();
     void setPropagator( NoEdge_Prop* );
   private:
     NoEdge_Prop* _myPropagator;
@@ -146,9 +141,6 @@ public:
 
     OutEdge_Prop();
     virtual ~OutEdge_Prop();
-    // REMOVE: char isApproximate();
-    // REMOVE: void makeApproximate();
-    // REMOVE: void makeExact();
     void setPropagator( NoEdge_Prop* );
   private:
     NoEdge_Prop* _myPropagator;
@@ -164,9 +156,6 @@ public:
 
     Null_Prop();
     virtual ~Null_Prop();
-    // REMOVE: char isApproximate();
-    // REMOVE: void makeApproximate();
-    // REMOVE: void makeExact();
     void setPropagator( NoEdge_Prop* );
   private:
     NoEdge_Prop* _myPropagator;
@@ -227,126 +216,94 @@ public:
   friend class Real_Exact_Prop;
 
   // Constructors 
+
+  // length  [ meters ]
+  // field   [ tesla ] (assumed along the y-axis)
+
   rbend();
-  rbend( double,     // length  [ meters ]
-         double,     // field   [ tesla ]
-                     // (assumed along the y-axis)
-         PropFunc*    = &rbend::RealExact );
+  rbend( double const& length, double const& field, PropFunc* = &rbend::RealExact );
 
-  rbend( const char*,// name
-         double,     // length  [ meters ]
-         double,     // field   [ tesla ]
-         PropFunc*    = &rbend::RealExact );
+  rbend( char const* name, double const& length, double const& field, PropFunc* = &rbend::RealExact );
 
-  rbend( double,     // length  [ meters ]      // Symmetric bend
-         double,     // field   [ tesla ]       // with parallel faces.
-         double,     // entry angle [ radians ]
-         PropFunc*    = &rbend::Exact );
+// Symmetric bend with parallel faces.
 
-  rbend( const char*,// name
-         double,     // length  [ meters ]
-         double,     // field   [ tesla ]
-         double,     // entry angle [ radians ]
-         PropFunc*    = &rbend::Exact );
+  rbend(                   double const& length, double const& field, double const& entry_angle, PropFunc* = &rbend::Exact );
 
-  rbend( double,     // length  [ meters ]     // No entry angle assumed
-         double,     // field   [ tesla ]      // Must use a registration proton
-                     // (assumed along the y-axis)
-         double,     // upstream edge angle [radians]
-         double,     // downstream edge angle [radians]
+  rbend( const char* name, double const& length, double const& field, double const& entry_angle, PropFunc* = &rbend::Exact );
+
+  rbend(                   double const& length, double const& field, double const& upstream_edge_angle, double const& downstream_edge_angle, PropFunc* = &rbend::RealExact );
+
+  rbend( const char* name, double const&, // length  [ meters ]
+         double const&,     // field   [ tesla ]
+         double const&,     // upstream edge angle [radians]
+         double const&,     // downstream edge angle [radians]
                      // signs of previous two parameters
                      // are as defined for rbends by MAD
          PropFunc*    = &rbend::RealExact );
 
-  rbend( const char*,// name
-         double,     // length  [ meters ]
-         double,     // field   [ tesla ]
-         double,     // upstream edge angle [radians]
-         double,     // downstream edge angle [radians]
-                     // signs of previous two parameters
-                     // are as defined for rbends by MAD
-         PropFunc*    = &rbend::RealExact );
-
-  rbend( double,     // length  [ meters ]
-         double,     // field   [ tesla ]
-         double,     // entry angle [radians] RELATIVE TO parallel faces
+  rbend( double const&,     // length  [ meters ]
+         double const&,     // field   [ tesla ]
+         double const&,     // entry angle [radians] RELATIVE TO parallel faces
                      //   (assumes symmetric pssage unless reset)
-         double,     // upstream edge angle [radians]
-         double,     // downstream edge angle [radians]
+         double const&,     // upstream edge angle [radians]
+         double const&,     // downstream edge angle [radians]
                      // signs of previous two parameters
                      // are as defined for rbends by MAD
          PropFunc*    = &rbend::RealExact );
 
   rbend( const char*,// name
-         double,     // length  [ meters ]
-         double,     // field   [ tesla ]
-         double,     // entry angle [radians] RELATIVE TO parallel faces
+         double const&,     // length  [ meters ]
+         double const&,     // field   [ tesla ]
+         double const&,     // entry angle [radians] RELATIVE TO parallel faces
                      //   (assumes symmetric pssage unless reset)
-         double,     // upstream edge angle [radians]
-         double,     // downstream edge angle [radians]
+         double const&,     // upstream edge angle [radians]
+         double const&,     // downstream edge angle [radians]
                      // signs of previous two parameters
                      // are as defined for rbends by MAD
          PropFunc*    = &rbend::RealExact );
 
-  // REMOVE: rbend( double,     // length  [ meters ]
-  // REMOVE:        double,     // field   [ tesla ]
-  // REMOVE:        double,     // entry angle [ radians ]
-  // REMOVE:        double,     // upstream edge angle [radians]
-  // REMOVE:        double,     // downstream edge angle [radians]
-  // REMOVE:                    // signs of previous two parameters
-  // REMOVE:                    // are as defined for rbends by MAD
-  // REMOVE:        PropFunc*    = &rbend::Exact );
-  // REMOVE: 
-  // REMOVE: rbend( const char*,// name
-  // REMOVE:        double,     // length  [ meters ]
-  // REMOVE:        double,     // field   [ tesla ]
-  // REMOVE:        double,     // entry angle [ radians ]
-  // REMOVE:        double,     // upstream edge angle [radians]
-  // REMOVE:        double,     // downstream edge angle [radians]
-  // REMOVE:                    // signs of previous two parameters
-  // REMOVE:                    // are as defined for rbends by MAD
-  // REMOVE:        PropFunc*    = &rbend::Exact );
 
-  rbend( const rbend& );
+  rbend( rbend const& );
 
   rbend* Clone() const { return new rbend( *this ); }
 
-  ~rbend();
+  virtual ~rbend();
 
   void releasePropFunc();
   void setupPropFunc();
-  void eliminate();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle&    p ) { (*Propagator)( this, p ); }
-  void localPropagate( JetParticle& p ) { (*Propagator)( this, p ); }
+  void localPropagate( Particle&    p )   { (*propfunc_)( this, p ); }
+  void localPropagate( JetParticle& p )   { (*propfunc_)( this, p ); }
 
-  void accept( BmlVisitor& v ) { v.visitRbend( this ); }
+  void accept( BmlVisitor& v )            { v.visitRbend( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitRbend( this ); }
 
   // Note: entry and exit angles are not arguments
   // in the rbend constructors. A symmetric bend is assumed
   // by default. Otherwise, use one of the following.
-  double setEntryAngle( const Particle& ); 
-  double setExitAngle( const Particle& ); 
-  double getEntryAngle() const { return _usAngle; }
-  double getExitAngle() const { return _dsAngle; }
-  double setEntryAngle( double /* radians */ ); 
-  double setExitAngle( double /* radians */ ); 
-  double getEntryEdgeAngle() const { return _usEdgeAngle; }
-  double getExitEdgeAngle() const { return _dsEdgeAngle; }
+
+  double setEntryAngle( Particle const& ); 
+  double setExitAngle(  Particle const& ); 
+  double getEntryAngle()                  const { return _usAngle; }
+  double getExitAngle()                   const { return _dsAngle; }
+  double setEntryAngle( double const& radians ); 
+  double setExitAngle(  double const& radians); 
+  double getEntryEdgeAngle()              const { return _usEdgeAngle; }
+  double getExitEdgeAngle()               const { return _dsEdgeAngle; }
 
   // Aliases, for the sake of backwards compatability
-  double setPoleFaceAngle( const Particle& x );
-  double setPoleFaceAngle( const JetParticle& x );
-  double PoleFaceAngle() const { return this->getEntryAngle(); }
-  double getPoleFaceAngle() const { return this->getEntryAngle(); }
-  double getTanPoleFaceAngle() const { return tan(this->getEntryAngle()); }
+
+  double setPoleFaceAngle(    Particle const& x );
+  double setPoleFaceAngle( JetParticle const& x );
+  double PoleFaceAngle()                           const { return this->getEntryAngle(); }
+  double getPoleFaceAngle()                        const { return this->getEntryAngle(); }
+  double getTanPoleFaceAngle()                     const { return tan(this->getEntryAngle()); }
 
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
 
-  void makeAsinApproximate( int /* number of terms */);
+  void makeAsinApproximate( int nterms);
   void makeAsinExact();
   bool isAsinExact();
 
@@ -356,7 +313,8 @@ public:
   double OrbitLength( const Particle& );
     // Computes arclength of orbit assuming a symmetric bend.
     // WARNING: This is not the true arclength under all conditions.
-  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
+
+  void Split( double const&, bmlnElmnt**, bmlnElmnt** ) const;
     // WARNING: After the Split function is used, the new elements 
     // must be commissioned with RefRegVisitor.
 };

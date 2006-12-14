@@ -40,6 +40,7 @@
 
 #include <beamline/MappPropFunc.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 using namespace std;
 

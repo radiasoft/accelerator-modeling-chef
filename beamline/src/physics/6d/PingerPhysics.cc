@@ -41,6 +41,7 @@
 #endif
 
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/pinger.h>
 
@@ -49,36 +50,51 @@
    */
 
 void Pinger::localPropagate( Particle& p ) {
+
+  Vector& state = p.getState();
+
   if ( isArmed() ) {
     if( 0 == _counter ) {
-      p.state[3] += cos(_kick_direction)*strength;
-      p.state[4] += sin(_kick_direction)*strength;
+       state[3] += cos(_kick_direction)*strength;
+       state[4] += sin(_kick_direction)*strength;
     }
     _counter--;
   }
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Pinger::localPropagate( JetParticle& p ) {
+
+
+  Mapping& state = p.getState();
+
   if ( isArmed() ) {
     if( 0 == _counter ) {
-      Jet  dummy;
-      dummy = p.State(3) + cos(_kick_direction)*strength;
-      ( p.state ).SetComponent( 3, dummy );
+      Jet  dummy = p.State(3) + cos(_kick_direction)*strength;
+      state.SetComponent( 3, dummy );
       dummy = p.State(4) + sin(_kick_direction)*strength;
-      ( p.state ).SetComponent( 4, dummy );
+      state.SetComponent( 4, dummy );
     }
     _counter--;
   }
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void Pinger::localPropagate( ParticleBunch& b ) {
+
+
   if ( isArmed() ) {
     if( 0 == _counter ) {
       Particle* p;
       ParticleBunch::Iterator get( b );
       while((  p = (Particle*) get.next()  )) {
-        p->state[3] += cos(_kick_direction)*strength;
-        p->state[4] += sin(_kick_direction)*strength;
+        Vector& state = p->getState();
+        state[3] += cos(_kick_direction)*strength;
+        state[4] += sin(_kick_direction)*strength;
       }
     }
     _counter--;
