@@ -29,72 +29,15 @@ void wrap_sextupole () {
 using namespace boost::python;
 
 
-class_<sextupole, bases<bmlnElmnt> >("sextupole", init<double,double>() )
-  .def(init<char*, double, double>() )
+class_<sextupole, bases<bmlnElmnt> >("sextupole", init<double,double const&>() )
+  .def(init<char*, double const&, double const&>() )
   .def("setCurrent",         &sextupole::setCurrent)
   .def("Type",               &sextupole::Type);
 
-class_<thinSextupole, bases<bmlnElmnt> >("thinSextupole", init<double>() )
-  .def( init<char*, double>() )
+class_<thinSextupole, bases<bmlnElmnt> >("thinSextupole", init<double const&>() )
+  .def( init<char const*, double const&>() )
   .def("Type",  &thinSextupole::Type);
  
 }
 
-#if 0
 
-class sextupole : public bmlnElmnt
-{
-public:
-  sextupole( double, /* length   */
-             double  /* strength */ );
-  sextupole( char*,  /* name     */
-             double, /* length   */
-             double  /* strength */ );
-  sextupole( bmlnElmntData& );
-  sextupole( const sextupole& );
-  ~sextupole();
-
-  void setStrength( double );
-
-  void setCurrent( double );
-
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& p );
-  void localPropagate( JetParticle& );
-
-  void accept( BmlVisitor& v ) { v.visitSextupole( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitSextupole( this ); }
-
-  const char* Type() const;
-  virtual bool isType(char* c) { if ( strcmp(c, "sextupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
-
-  bmlnElmnt* Clone() const { return new sextupole( *this ); }
-  void Split( double, bmlnElmnt**, bmlnElmnt** );
-} ;
-
-
-
-class thinSextupole : public bmlnElmnt
-{
-public:
-  thinSextupole( double /* strength */ );
-  thinSextupole( char*  /* name */,
-                 double /* strength */ );
-  thinSextupole( bmlnElmntData& );
-  thinSextupole( const thinSextupole& );
-  ~thinSextupole();
-
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& p );
-  void localPropagate( JetParticle& );
-
-  void accept( BmlVisitor& v ) { v.visitThinSextupole( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitThinSextupole( this ); }
-
-  const char* Type() const;
-  virtual bool isType(char* c) { if ( strcmp(c, "thinSextupole") != 0 ) return bmlnElmnt::isType(c); else return true; }
-
-  bmlnElmnt* Clone() const { return new thinSextupole( *this ); }
-} ;
-
-#endif

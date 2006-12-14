@@ -25,6 +25,7 @@
 
 #include <beamline/rbend.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 void wrap_rbend () {
   
@@ -33,7 +34,7 @@ using namespace boost::python;
 
   double   (rbend::* setEntryAngle_overload_1)( const Particle&)    = &rbend::setEntryAngle;
   // double   (rbend::* setEntryAngle_overload_2)( const JetParticle&) = &rbend::setEntryAngle;
-  double   (rbend::* setEntryAngle_overload_3)( double)             = &rbend::setEntryAngle;
+  double   (rbend::* setEntryAngle_overload_3)( double const&)             = &rbend::setEntryAngle;
 
   double   (rbend::* setPoleFaceAngle_overload_1)( const Particle&)     = &rbend::setPoleFaceAngle;
   double   (rbend::* setPoleFaceAngle_overload_2)( const JetParticle&)  = &rbend::setPoleFaceAngle;

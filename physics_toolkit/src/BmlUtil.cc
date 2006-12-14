@@ -285,12 +285,12 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w,
   double I1 = ( std::abs( eps_1 )/betaGamma ) * mm_mr / 2.0;
   double I2 = ( std::abs( eps_2 )/betaGamma ) * mm_mr / 2.0;
 
-  int x   = Particle::_x();
-  int y   = Particle::_y();
-  int cdt = Particle::_cdt();    // not yet used
-  int xp  = Particle::_xp();
-  int yp  = Particle::_yp();
-  int dpp = Particle::_dpop();   // not yet used
+  int x   = Particle::xIndex();
+  int y   = Particle::yIndex();
+  int cdt = Particle::cdtIndex();    // not yet used
+  int xp  = Particle::npxIndex();
+  int yp  = Particle::npyIndex();
+  int dpp = Particle::ndpIndex();    // not yet used
 
   int n = Particle::PSD;
   if( 6 != n ) {

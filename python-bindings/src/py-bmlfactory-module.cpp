@@ -21,23 +21,27 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-#include <bmlfactory/bmlfactory.h>
+
+#include <bmlfactory/MAD8Factory.h>
+#include <beamline/beamline.h>
+#include <string>
+
 
 using namespace boost::python;
 
 // #define BOOST_PYTHON_STATIC_MODULE
 
 
-beamline* ( bmlfactory::* create_beamline_1 )(const char*        )        = &bmlfactory::create_beamline;
-beamline* ( bmlfactory::* create_beamline_2 )(const char*, double)        = &bmlfactory::create_beamline;
+beamline* ( MAD8Factory::* create_beamline_1 )(const char*        )        = &MAD8Factory::create_beamline;
+beamline* ( MAD8Factory::* create_beamline_2 )(const char*, double)        = &MAD8Factory::create_beamline;
 
 BOOST_PYTHON_MODULE(bmlfactory)
 {
 
-class_<bmlfactory>("bmlfactory", init<const char*, const char*>() )
-  .def( init<const char*, double, const char*>() ) 
-  .def( init<const char*>() ) 
-  .def( init<const char*, double>() ) 
+class_<MAD8Factory>("bmlfactory", init<std::string, const char*>() )
+  .def( init<std::string, double, const char*>() ) 
+  .def( init<std::string>() ) 
+  .def( init<std::string, double>() ) 
   .def("create_beamline",  create_beamline_1, return_value_policy<manage_new_object>() )
   .def("create_beamline",  create_beamline_2, return_value_policy<manage_new_object>() );
 }

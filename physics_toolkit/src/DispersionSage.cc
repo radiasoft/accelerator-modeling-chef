@@ -40,9 +40,12 @@
 #endif
 
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/BeamlineIterator.h>
 #include <physics_toolkit/ClosedOrbitSage.h>
 #include <physics_toolkit/DispersionSage.h>
+#include <physics_toolkit/DispersionSage.h>
+
 
 extern int filterTransverseTunes( /* const */ MatrixD&, Vector& );
 
@@ -213,12 +216,12 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   MatrixD   firstJacobian;
   MatrixD   secondJacobian;
 
-  short int i_x   =  Particle::_x();
-  short int i_y   =  Particle::_y();
-  short int i_z   =  Particle::_cdt();
-  short int i_px  =  Particle::_xp();
-  short int i_py  =  Particle::_yp();
-  short int i_dpp =  Particle::_dpop();
+  int i_x   =  Particle::xIndex();
+  int i_y   =  Particle::yIndex();
+  int i_z   =  Particle::cdtIndex();
+  int i_px  =  Particle::npxIndex();
+  int i_py  =  Particle::npyIndex();
+  int i_dpp =  Particle::ndpIndex();
 
   double energy;
   double mass;
@@ -297,7 +300,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   if( local_jp       ) { delete local_jp;      local_jp = 0;      }
   local_jp = p_jp->Clone();
   if( firstParticle  ) { delete firstParticle; firstParticle = 0; }
-  firstParticle  = p_jp->ConvertToParticle();
+  firstParticle  = new Particle(*p_jp);
   firstJacobian  = p_jp->State().Jacobian();
   energy = firstParticle->ReferenceEnergy();
   mass = firstParticle->Mass();
@@ -348,7 +351,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   }
 
   if( secondParticle ) { delete secondParticle;  secondParticle = 0;}
-  secondParticle  = local_jp->ConvertToParticle();
+  secondParticle  = new Particle(*local_jp);
   secondJacobian  = local_jp->State().Jacobian();
 
 
@@ -443,12 +446,12 @@ int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions
   Particle* firstParticle  = prt.Clone();
   Particle* secondParticle = prt.Clone();
 
-  short int i_x   =  Particle::_x();
-  short int i_y   =  Particle::_y();
-  short int i_z   =  Particle::_cdt();
-  short int i_px  =  Particle::_xp();
-  short int i_py  =  Particle::_yp();
-  short int i_dpp =  Particle::_dpop();
+  int i_x   =  Particle::xIndex();
+  int i_y   =  Particle::yIndex();
+  int i_z   =  Particle::cdtIndex();
+  int i_px  =  Particle::npxIndex();
+  int i_py  =  Particle::npyIndex();
+  int i_dpp =  Particle::ndpIndex();
 
   double energy;
   double mass;
@@ -524,18 +527,18 @@ int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions
 // POSTPONED   int ret = DispersionSage::DONE;
 // POSTPONED   Particle* firstParticle = 0;
 // POSTPONED 
-// POSTPONED   short int i_x   =  Particle::_x();
-// POSTPONED   short int i_y   =  Particle::_y();
-// POSTPONED   short int i_z   =  Particle::_cdt();
-// POSTPONED   short int i_px  =  Particle::_xp();
-// POSTPONED   short int i_py  =  Particle::_yp();
-// POSTPONED   short int i_dpp =  Particle::_dpop();
+// POSTPONED   int i_x   =  Particle::_x();
+// POSTPONED   int i_y   =  Particle::_y();
+// POSTPONED   int i_z   =  Particle::_cdt();
+// POSTPONED   int i_px  =  Particle::_xp();
+// POSTPONED   int i_py  =  Particle::_yp();
+// POSTPONED   int i_dpp =  Particle::_dpop();
 // POSTPONED 
-// POSTPONED   short int j_x   =  0;
-// POSTPONED   short int j_px  =  1;
-// POSTPONED   short int j_y   =  2;
-// POSTPONED   short int j_py  =  3;
-// POSTPONED   short int j_dpp =  4;
+// POSTPONED   int j_x   =  0;
+// POSTPONED   int j_px  =  1;
+// POSTPONED   int j_y   =  2;
+// POSTPONED   int j_py  =  3;
+// POSTPONED   int j_dpp =  4;
 // POSTPONED 
 // POSTPONED   MatrixD FADmap( 5, 5 );
 // POSTPONED   MatrixD firstJacobian;

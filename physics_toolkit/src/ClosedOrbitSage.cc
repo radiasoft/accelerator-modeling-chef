@@ -57,6 +57,8 @@
 #include <beamline/RefRegVisitor.h>
 #include <beamline/BeamlineIterator.h>
 #include <mxyzptlk/Jet__environment.h>
+#include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 
 using namespace std;
@@ -105,15 +107,15 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
 
   // Helper particle ...
-  Particle* p_prt =  p_jp->ConvertToParticle();
+  Particle* p_prt = new Particle(*p_jp);
   Vector inState(  p_prt->State() );
 
-  short int i_x   = Particle::_x();
-  short int i_y   = Particle::_y();
-  short int i_z   = Particle::_cdt();
-  short int i_px  = Particle::_xp();
-  short int i_py  = Particle::_yp();
-  short int i_dpp = Particle::_dpop();
+  int i_x   = Particle::xIndex();
+  int i_y   = Particle::yIndex();
+  int i_z   = Particle::cdtIndex();
+  int i_px  = Particle::npxIndex();
+  int i_py  = Particle::npyIndex();
+  int i_dpp = Particle::ndpIndex();
 
 
   // Turn off all RF ...
@@ -175,15 +177,18 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
          << endl;
   }
   if( p_prt ) delete p_prt;
-  p_prt =  p_jp->ConvertToParticle();
+
+  p_prt = new Particle(*p_jp);
+
   RefRegVisitor registrar( *p_prt );
-  _myBeamlinePtr->accept( registrar );
+ _myBeamlinePtr->accept( registrar );
 
 
   // Useful Particle and Vector
   // containing the closed orbit.
+
   if( p_prt ) delete p_prt;
-  p_prt =  p_jp->ConvertToParticle();
+  p_prt =  new Particle(*p_jp);
   p_prt->set_cdt(0.0);
   Vector z( BMLN_dynDim );
   z = p_prt->State();
@@ -212,7 +217,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
          << endl;
   }
 
-  JetParticle* jpr2Ptr = p_prt->ConvertToJetParticle();
+  JetParticle* jpr2Ptr = new JetParticle(*p_prt);
 
   _myBeamlinePtr->propagate( *jpr2Ptr );
 
@@ -270,12 +275,12 @@ int ClosedOrbitSage::_invokeFPSolver( JetParticle* p_jp )
 
   int i;
 
-  short int i_x   = Particle::_x();
-  short int i_y   = Particle::_y();
-  short int i_z   = Particle::_cdt();
-  short int i_px  = Particle::_xp();
-  short int i_py  = Particle::_yp();
-  short int i_dpp = Particle::_dpop();
+  int i_x   = Particle::xIndex();
+  int i_y   = Particle::yIndex();
+  int i_z   = Particle::cdtIndex();
+  int i_px  = Particle::npxIndex();
+  int i_py  = Particle::npyIndex();
+  int i_dpp = Particle::ndpIndex();
 
 
   // Set up an FPSolver ...
@@ -309,7 +314,7 @@ int ClosedOrbitSage::_invokeFPSolver( JetParticle* p_jp )
   }
 
   // Test the new closed orbit ...
-  Particle* p_prt =  p_jp->ConvertToParticle();
+  Particle* p_prt =  new Particle(*p_jp);
   Vector co( BMLN_dynDim );
   co = p_prt->State();
   _myBeamlinePtr->propagate( *p_prt );

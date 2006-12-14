@@ -59,6 +59,7 @@
 #include <physics_toolkit/QBpropVisitor.h>
 #include <beamline/BeamlineIterator.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 using namespace std;
 
@@ -205,7 +206,7 @@ int LattFuncSage::pushCalc( const Particle& prt,
  
 
   Particle* p0Ptr = prt.Clone();
-  JetParticle* jpPtr = prt.ConvertToJetParticle();
+  JetParticle* jpPtr = new JetParticle(prt);
 
   const double beta_x_0  = initialConditions.beta.hor;
   const double alpha_x_0 = initialConditions.alpha.hor;
@@ -344,15 +345,15 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   MatrixD mtrx;
   LattFuncSage::lattFunc* infoPtr;
 
-  Particle* p_1 = arg_jp->ConvertToParticle();
-  Particle* p_2 = arg_jp->ConvertToParticle();
+  Particle* p_1 = new Particle(*arg_jp);
+  Particle* p_2 = new Particle(*arg_jp);
 
-  short int i_x   =  arg_jp->xIndex();
-  short int i_y   =  arg_jp->yIndex();
-  short int i_z   =  arg_jp->cdtIndex();
-  short int i_px  =  arg_jp->npxIndex();
-  short int i_py  =  arg_jp->npyIndex();
-  short int i_dpp =  arg_jp->ndpIndex();
+  int i_x   =  arg_jp->xIndex();
+  int i_y   =  arg_jp->yIndex();
+  int i_z   =  arg_jp->cdtIndex();
+  int i_px  =  arg_jp->npxIndex();
+  int i_py  =  arg_jp->npyIndex();
+  int i_dpp =  arg_jp->ndpIndex();
 
   int ret = 0;
   int i   = 0;
@@ -460,7 +461,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   alpha_y = ( mtrx( i_y, i_y ) - mtrx( i_py, i_py ) ) / ( 2.0*sn );
 
 
-  double inState[] = { 0., 0., 0., 0., 0., 0. };
+  Vector inState(6);
   double resizeFactor = 0.00001;
 
 
@@ -490,8 +491,7 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   
   
   std::complex<double>  outState[6], phase;
-  double realState[6];
-  double imagState[6];
+
   DeepBeamlineIterator getNext( *_myBeamlinePtr );
   bmlnElmnt* lbe;
   QBpropVisitor zlorfik( *p_1 );
@@ -502,14 +502,17 @@ int LattFuncSage::Fast_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   double psi_y = 0.0;
   double dpsi_x, dpsi_y;
 
+  Vector realState(6); 
+  Vector imagState(6);
+
   while( lbe = getNext++ ) 
   {
     lng += lbe->OrbitLength( *p_1 );
 
     lbe->accept( zlorfik );
     lbe->accept( fembril );
-    zlorfik.getState( realState );
-    fembril.getState( imagState );
+    realState  = zlorfik.getState();
+    imagState = fembril.getState();
 
     outState[i_x ] = std::complex<double> ( realState[i_x],  imagState[i_x] );
     outState[i_y ] = std::complex<double> ( realState[i_y],  imagState[i_y] );
@@ -639,14 +642,14 @@ int LattFuncSage::Slow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFUNC 
   LattFuncSage::lattFunc* infoPtr;
 
   JetParticle* jprt = arg_jp->Clone();
-  Particle*     prt = arg_jp->ConvertToParticle();
+  Particle*     prt = new Particle(*arg_jp);
 
-  short int i_x   =  arg_jp->xIndex();
-  short int i_y   =  arg_jp->yIndex();
-  short int i_z   =  arg_jp->cdtIndex();
-  short int i_px  =  arg_jp->npxIndex();
-  short int i_py  =  arg_jp->npyIndex();
-  short int i_dpp =  arg_jp->ndpIndex();
+  int i_x   =  arg_jp->xIndex();
+  int i_y   =  arg_jp->yIndex();
+  int i_z   =  arg_jp->cdtIndex();
+  int i_px  =  arg_jp->npxIndex();
+  int i_py  =  arg_jp->npyIndex();
+  int i_dpp =  arg_jp->ndpIndex();
 
   int ret = 0;
   int i   = 0;
@@ -893,14 +896,14 @@ int LattFuncSage::NewSlow_CS_Calc( /* const */ JetParticle* arg_jp, Sage::CRITFU
   LattFuncSage::lattFunc* infoPtr;
 
   JetParticle* jprt = arg_jp->Clone();
-  Particle*     prt = arg_jp->ConvertToParticle();
+  Particle*     prt = new Particle(*arg_jp);
 
-  short int i_x   =  arg_jp->xIndex();
-  short int i_y   =  arg_jp->yIndex();
-  short int i_z   =  arg_jp->cdtIndex();
-  short int i_px  =  arg_jp->npxIndex();
-  short int i_py  =  arg_jp->npyIndex();
-  short int i_dpp =  arg_jp->ndpIndex();
+  int i_x   =  arg_jp->xIndex();
+  int i_y   =  arg_jp->yIndex();
+  int i_z   =  arg_jp->cdtIndex();
+  int i_px  =  arg_jp->npxIndex();
+  int i_py  =  arg_jp->npyIndex();
+  int i_dpp =  arg_jp->ndpIndex();
 
   int ret = 0;
   int i   = 0;
@@ -1166,12 +1169,12 @@ int LattFuncSage::TuneCalc( JetParticle* arg_jp, bool forceClosedOrbitCalc )
   MatrixD M(2,2);
   double  snH, csH, snV, csV;
 
-  short int i_x   =  arg_jp->xIndex();
-  short int i_y   =  arg_jp->yIndex();
-  short int i_z   =  arg_jp->cdtIndex();
-  short int i_px  =  arg_jp->npxIndex();
-  short int i_py  =  arg_jp->npyIndex();
-  short int i_dpp =  arg_jp->ndpIndex();
+  int i_x   =  arg_jp->xIndex();
+  int i_y   =  arg_jp->yIndex();
+  int i_z   =  arg_jp->cdtIndex();
+  int i_px  =  arg_jp->npxIndex();
+  int i_py  =  arg_jp->npyIndex();
+  int i_dpp =  arg_jp->ndpIndex();
 
   int ret = 0;
 
@@ -1359,12 +1362,12 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp, Sage::CRITFUNC  Crit )
   MatrixD   firstJacobian;
   MatrixD   secondJacobian;
 
-  short int i_x   =  arg_jp->xIndex();
-  short int i_y   =  arg_jp->yIndex();
-  short int i_z   =  arg_jp->cdtIndex();
-  short int i_px  =  arg_jp->npxIndex();
-  short int i_py  =  arg_jp->npyIndex();
-  short int i_dpp =  arg_jp->ndpIndex();
+  int i_x   =  arg_jp->xIndex();
+  int i_y   =  arg_jp->yIndex();
+  int i_z   =  arg_jp->cdtIndex();
+  int i_px  =  arg_jp->npxIndex();
+  int i_py  =  arg_jp->npyIndex();
+  int i_dpp =  arg_jp->ndpIndex();
 
   double dpp;
   double energy;
@@ -1403,7 +1406,7 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp, Sage::CRITFUNC  Crit )
     return ret;
   }
 
-  firstParticle  = p_jp->ConvertToParticle();
+  firstParticle  = new Particle(*p_jp);
   firstJacobian  = p_jp->State().Jacobian();
 
 
@@ -1443,7 +1446,7 @@ int LattFuncSage::Disp_Calc( JetParticle* arg_jp, Sage::CRITFUNC  Crit )
     return ret;
   }
 
-  secondParticle  = p_jp->ConvertToParticle();
+  secondParticle  = new Particle(*p_jp);
   secondJacobian  = p_jp->State().Jacobian();
 
 
@@ -1568,12 +1571,12 @@ int LattFuncSage::NewDisp_Calc( /* const */ JetParticle* arg_jp,
   MatrixD   firstJacobian;
   MatrixD   secondJacobian;
 
-  short int i_x   =  arg_jp->xIndex();
-  short int i_y   =  arg_jp->yIndex();
-  short int i_z   =  arg_jp->cdtIndex();
-  short int i_px  =  arg_jp->npxIndex();
-  short int i_py  =  arg_jp->npyIndex();
-  short int i_dpp =  arg_jp->ndpIndex();
+  int i_x   =  arg_jp->xIndex();
+  int i_y   =  arg_jp->yIndex();
+  int i_z   =  arg_jp->cdtIndex();
+  int i_px  =  arg_jp->npxIndex();
+  int i_py  =  arg_jp->npyIndex();
+  int i_dpp =  arg_jp->ndpIndex();
 
   double dpp;
   double energy;
@@ -1615,7 +1618,7 @@ int LattFuncSage::NewDisp_Calc( /* const */ JetParticle* arg_jp,
     return ret;
   }
 
-  firstParticle  = p_jp->ConvertToParticle();
+  firstParticle  = new Particle(*p_jp);
   firstJacobian  = p_jp->State().Jacobian();
 
 
@@ -1655,7 +1658,7 @@ int LattFuncSage::NewDisp_Calc( /* const */ JetParticle* arg_jp,
     return ret;
   }
 
-  secondParticle  = p_jp->ConvertToParticle();
+  secondParticle  = new Particle(*p_jp);
   secondJacobian  = p_jp->State().Jacobian();
 
 
@@ -1753,18 +1756,18 @@ int LattFuncSage::FAD_Disp_Calc( /* const */ JetParticle* arg_jp,
   int ret = 0;
   Particle* firstParticle = 0;
 
-  short int i_x   =  arg_jp->xIndex();
-  short int i_y   =  arg_jp->yIndex();
-  short int i_z   =  arg_jp->cdtIndex();
-  short int i_px  =  arg_jp->npxIndex();
-  short int i_py  =  arg_jp->npyIndex();
-  short int i_dpp =  arg_jp->ndpIndex();
+  int i_x   =  arg_jp->xIndex();
+  int i_y   =  arg_jp->yIndex();
+  int i_z   =  arg_jp->cdtIndex();
+  int i_px  =  arg_jp->npxIndex();
+  int i_py  =  arg_jp->npyIndex();
+  int i_dpp =  arg_jp->ndpIndex();
 
-  short int j_x   =  0;
-  short int j_px  =  1;
-  short int j_y   =  2;
-  short int j_py  =  3;
-  short int j_dpp =  4;
+  int j_x   =  0;
+  int j_px  =  1;
+  int j_y   =  2;
+  int j_py  =  3;
+  int j_dpp =  4;
 
   beamline* bml = this->_myBeamlinePtr;
   MatrixD FADmap( 5, 5 );
@@ -1865,7 +1868,7 @@ int LattFuncSage::FAD_Disp_Calc( /* const */ JetParticle* arg_jp,
    
    
      bmlnElmnt* q = 0;
-     firstParticle  = p_jp->ConvertToParticle();
+     firstParticle  = new Particle(*p_jp);
      DeepBeamlineIterator getNext( *bml );
      double dpp = this->get_dpp();
 
@@ -1945,7 +1948,6 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
  Jet*            z;
  DeepBeamlineIterator getNext( *_myBeamlinePtr );
  double          csH, csV, snH, snV, t, oldpsiH, oldpsiV, lng;
- double*         zero;
  int             i, count;
  LattFuncSage::lattFunc*       lf;
  LattFuncSage::lattFunc*       lfp = 0;
@@ -1954,17 +1956,15 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
 
  if( !(_myBeamlinePtr->twissIsDone()) ) {  // .... Check to see if this was done already.
 
-   zero           = new double   [ BMLN_dynDim ];
+   Vector zero(BMLN_dynDim);
    z              = new Jet      [ BMLN_dynDim ];
 
    // .......... Propagate a JetParticle to get transfer matrix
-   for ( i = 0; i < BMLN_dynDim; i++ ) zero[i] = 0.0;
    p.setState( zero );
    _myBeamlinePtr->propagate( p );
 
    MatrixD mtrx(BMLN_dynDim,BMLN_dynDim,0.0);
-   Mapping map;
-   p.getState( map );
+   Mapping map= p.getState();
    mtrx = map.Jacobian();
 
    // .......... Calculating tunes .........................
@@ -1980,7 +1980,6 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
      (*pcerr) << "*** WARNING *** beamline::twiss()  did not exit properly." << endl;
      (*pcerr) << "*** WARNING *** " << endl;
 
-     delete [] zero;
      delete [] z;
      delete latticeFunctions;
      delete latticeRing;
@@ -2096,7 +2095,7 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
      be->dataHook.eraseFirst( "Twiss" );
      be->dataHook.insert( new Barnacle( "Twiss", lf ) );
 
-     p.getState(map);
+     map = p.getState();
      mtrx = map.Jacobian();
      dispFinal = mtrx * dispVector;
 
@@ -2168,7 +2167,6 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
           << _myBeamlinePtr->howMany() << endl;
      (*pcerr) << "*** ERROR: Bailing out" << endl;
 
-     delete [] zero;
      delete [] z;
      delete latticeFunctions;
      delete latticeRing;
@@ -2177,7 +2175,6 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
 
    // .......... Cleaning up and leaving ...................
 
-   delete [] zero;
    delete [] z;
    _myBeamlinePtr->setTwissIsDone();
    _myBeamlinePtr->dataHook.eraseFirst( "Twiss" );
@@ -2204,7 +2201,6 @@ int LattFuncSage::Twiss_Calc( const LattFuncSage::lattFunc& W, JetParticle& p, S
   int             elmntPos = 0;
   int             count;
   Jet*            z;
-  double*         zero;
   LattFuncSage::lattFunc*       lf;
   LattFuncSage::lattFunc*       lfp = 0;
   LattFuncSage::lattFunc*       latticeFunctions = new LattFuncSage::lattFunc;
@@ -2212,8 +2208,7 @@ int LattFuncSage::Twiss_Calc( const LattFuncSage::lattFunc& W, JetParticle& p, S
   int             i;
   Mapping         map;
 
-  zero           = new double   [ BMLN_dynDim ];
-  for(i=0; i<BMLN_dynDim; i++) zero[i] = 0.0;
+  Vector zero( BMLN_dynDim );
   z              = new Jet      [ BMLN_dynDim ];
 
   // .......... Calculating betas and alphas ..............
@@ -2249,7 +2244,7 @@ int LattFuncSage::Twiss_Calc( const LattFuncSage::lattFunc& W, JetParticle& p, S
   dispVector(5,0) = 1.0;
 
   double tb;                  // use temp variables to save calc time
-  Particle* ptr_dummy = p.ConvertToParticle();  // This must be deleted before returning.
+  Particle* ptr_dummy = new Particle(p);  // This must be deleted before returning.
 
   while ((  be = getNext++  )) 
   {
@@ -2263,7 +2258,7 @@ int LattFuncSage::Twiss_Calc( const LattFuncSage::lattFunc& W, JetParticle& p, S
 
     be->dataHook.eraseFirst( "Twiss" );
     be->dataHook.insert( new Barnacle( "Twiss", lf ) );
-    p.getState(map);
+    map = p.getState();
     mtrx = map.Jacobian();
     dispFinal = mtrx * dispVector;
 
@@ -2334,7 +2329,6 @@ int LattFuncSage::Twiss_Calc( const LattFuncSage::lattFunc& W, JetParticle& p, S
          << _myBeamlinePtr->countHowMany() << endl;
     (*pcerr) << "*** ERROR: Bailing out" << endl;
 
-    delete [] zero;
     delete [] z;
     delete latticeFunctions;
     delete ptr_dummy;
@@ -2343,7 +2337,6 @@ int LattFuncSage::Twiss_Calc( const LattFuncSage::lattFunc& W, JetParticle& p, S
 
   // .......... Cleaning up and leaving ...................
 
-   delete [] zero;
    delete [] z;
    delete latticeFunctions;
    delete ptr_dummy;

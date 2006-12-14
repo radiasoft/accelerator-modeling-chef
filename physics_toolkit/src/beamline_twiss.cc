@@ -43,6 +43,7 @@
 #include <basic_toolkit/iosetup.h>
 #include <physics_toolkit/LattFuncSage.h>    // ??? Only temporary, until beamline::twiss functions vanish.
 #include <beamline/Particle.h>  
+#include <beamline/JetParticle.h>  
 #include <beamline/BeamlineIterator.h>  
 #include <physics_toolkit/ClosedOrbitSage.h> 
 
@@ -51,7 +52,7 @@ using FNAL::pcerr;
 using FNAL::pcout;
 
 
-int beamline::twiss( JetParticle& p, double dpp, short int flag ) 
+int beamline::twiss( JetParticle& p, double const& dpp, int flag ) 
 {
   static char firstTime = 1;
   if( firstTime ) {
@@ -70,7 +71,7 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
   if( !twissDone )
   {
     int i;
-    double* zero   = new double [ BMLN_dynDim ];
+    Vector zero(BMLN_dynDim);
     for ( i = 0; i < BMLN_dynDim; i++ ) zero[i] = 0.0;
   
     p.SetReferenceEnergy( this->Energy() );
@@ -90,7 +91,6 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
     else
     {
       (*pcerr) << "beamline::twiss: Closed orbit not successfully calculated." << endl;
-      delete [] zero;
       return ret;
     }
   
@@ -127,7 +127,6 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
     if( ret != 0 ) {
       (*pcerr) << "beamline::twiss: Problem calculating the Twiss \n"
   	   << "parameters." << endl;
-      delete [] zero;
       return ret;
     }
 
@@ -153,7 +152,6 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
     if( ret != 0 ) {
       (*pcerr) << "beamline::twiss: Problem calculating dispersion."
   	   << endl;
-      delete [] zero;
       return ret;
     }
   
@@ -178,7 +176,6 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
                  << q->Type() << "  " << q->Name()
                  << endl;
             ret = -1;
-            delete [] zero;
             return ret;
           }
         }
@@ -187,7 +184,6 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
                << q->Type() << "  " << q->Name()
                << endl;
           ret = -1;
-          delete [] zero;
           return ret;
         }
       }
@@ -207,7 +203,6 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
   
   
     twissDone = 1;
-    delete [] zero;
   }
 
   return ret;
@@ -217,7 +212,6 @@ int beamline::twiss( JetParticle& p, double dpp, short int flag )
 int beamline::twiss( char, JetParticle& p ) {
   Jet*             z;
   double          csH, csV, snH, snV, t;
-  double*         zero;
   int             i;
 
  // .......... Propagate a JetParticle to get transfer matrix
@@ -228,8 +222,8 @@ int beamline::twiss( char, JetParticle& p ) {
 
   if( ! twissDone ) {  // .... Check to see if this was done already.
    
-    zero           = new double   [ BMLN_dynDim ];
-    z              = new Jet      [ BMLN_dynDim ];
+      Vector zero(BMLN_dynDim);
+      z              = new Jet      [ BMLN_dynDim ];
 
    // .......... Propagate a JetParticle to get transfer matrix
     for ( i = 0; i < BMLN_dynDim; i++ ) zero[i] = 0.0;
@@ -238,7 +232,7 @@ int beamline::twiss( char, JetParticle& p ) {
     
     MatrixD mtrx(BMLN_dynDim,BMLN_dynDim,0.0);
     Mapping map;
-    p.getState( map );
+    map = p.getState();
     mtrx = map.Jacobian();
 
    // .......... Calculating tunes .........................
@@ -251,8 +245,6 @@ int beamline::twiss( char, JetParticle& p ) {
       (*pcerr) << "*** WARNING *** beamline::twiss(JetParticle)  Lattice is unstable." << endl;
       (*pcerr) << "*** WARNING *** beamline::twiss() did not exit properly." << endl;
       (*pcerr) << "*** WARNING *** " << endl;
-      delete [] zero;
-      delete [] z;
       delete latticeFunctions;
       delete latticeRing;
       return -1;
@@ -329,7 +321,6 @@ int beamline::twiss( char, JetParticle& p ) {
     latticeFunctions->dPrime.ver = Disp(3,0);
 
    // .......... Cleaning up and leaving ...................
-    delete [] zero;
     delete [] z;
     twissDone = 1;
     dataHook.eraseFirst( "Twiss" );
@@ -340,7 +331,7 @@ int beamline::twiss( char, JetParticle& p ) {
   return 0;
 } 
 
-int beamline::twiss( lattFunc& W_arg, JetParticle& p, short int flag ) {
+int beamline::twiss( lattFunc& W_arg, JetParticle& p, int flag ) {
   static char firstTime = 1;
 
   if( firstTime ) {

@@ -131,22 +131,11 @@ void QBpropVisitor::visitCF_rbend( CF_rbend* x )
 }
 
 
-void QBpropVisitor::getState( Vector& x )
+Vector& QBpropVisitor::getState()
 {
-  particle->getState( x );
+  return particle->getState();
 }
 
-
-void QBpropVisitor::getState( Vector* x )
-{
-  particle->getState( x );
-}
-
-
-void QBpropVisitor::getState( double* x )
-{
-  particle->getState( x );
-}
 
 Vector QBpropVisitor::State()
 {

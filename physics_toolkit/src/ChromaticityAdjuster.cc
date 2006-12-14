@@ -53,6 +53,7 @@
 
 #include <basic_toolkit/GenericException.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/sextupole.h>
 #include <physics_toolkit/ChromaticityAdjuster.h>
 #include <physics_toolkit/LattFuncSage.h>

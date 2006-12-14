@@ -43,6 +43,7 @@
 #include <basic_toolkit/slist.h>  // This should not be necessary!!!
 
 #include <beamline/beamline_elements.h>
+#include <beamline/beamline.h>
 #include <beamline/Particle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/BeamlineIterator.h>
@@ -171,7 +172,7 @@ BeamlineContext::~BeamlineContext()
   { delete _particleBunchPtr; _particleBunchPtr = 0; }
 
   if( _isCloned && (_p_bml != 0) ) 
-  { _p_bml->eliminate(); _p_bml = 0; }
+  { _p_bml->zap(); delete _p_bml; _p_bml = 0; }
 }
 
 
@@ -804,7 +805,7 @@ void BeamlineContext::_createClosedOrbit()
     // and propagate it once.
     delete _p_co_p;
     _p_co_p = _particlePtr->Clone();
-    _p_jp = _p_co_p->ConvertToJetParticle();
+    _p_jp = new JetParticle(*_p_co_p);
     _p_bml->propagate( *_p_jp );
   }
   else 
@@ -814,7 +815,7 @@ void BeamlineContext::_createClosedOrbit()
     delete _p_co_p;
     _p_co_p = 0;
 
-    _p_jp = _particlePtr->ConvertToJetParticle();
+    _p_jp = new JetParticle(*_particlePtr);
     _p_cos = new ClosedOrbitSage( _p_bml, false );
     int err;
 
@@ -831,7 +832,7 @@ void BeamlineContext::_createClosedOrbit()
              uic.str().c_str() ) );
     }
 
-    _p_co_p = _p_jp->ConvertToParticle();
+    _p_co_p = new Particle(*_p_jp);
     _particlePtr->setState( _p_co_p->State() );
     _particlePtr->SetReferenceEnergy( _p_co_p->ReferenceEnergy());
   }
@@ -855,7 +856,7 @@ void BeamlineContext::_createClosedOrbit()
   // ...       thus the (possible) necessity of the next line.
   Jet__environment::setLastEnv(pje);
   delete _p_jp;
-  _p_jp = _p_co_p->ConvertToJetParticle();
+  _p_jp = new JetParticle(*_p_co_p);
   _p_bml->propagate( *_p_jp );
 
 
@@ -1161,7 +1162,7 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
         }
         JetC__environment::setLastEnv( Jet__environment::EndEnvironment(scale) ); // implicit conversion 
 
-        ptr_arg = _particlePtr->ConvertToJetParticle();
+        ptr_arg = new JetParticle(*_particlePtr);
       }
 
       else {
@@ -1335,12 +1336,12 @@ MatrixD BeamlineContext::equilibriumCovariance( double eps_1, double eps_2 )
   double I1 = ( std::abs( eps_1 )/betaGamma ) * mm_mr / 2.0;
   double I2 = ( std::abs( eps_2 )/betaGamma ) * mm_mr / 2.0;
 
-  int x   = Particle::_x();
-  int y   = Particle::_y();
-  int cdt = Particle::_cdt();
-  int xp  = Particle::_xp(); 
-  int yp  = Particle::_yp(); 
-  int dpp = Particle::_dpop();
+  int x   = Particle::xIndex();
+  int y   = Particle::yIndex();
+  int cdt = Particle::cdtIndex();
+  int xp  = Particle::npxIndex(); 
+  int yp  = Particle::npyIndex(); 
+  int dpp = Particle::ndpIndex();
 
   int n = Particle::PSD;
 
@@ -1411,7 +1412,7 @@ int BeamlineContext::changeTunesBy( double dnuh, double dnuv )
   Particle* dummyPtr = _particlePtr->Clone();
   dummyPtr->setStateToZero();
   dummyPtr->SetReferenceEnergy( _p_bml->Energy() );
-  JetParticle* jpPtr = dummyPtr->ConvertToJetParticle();
+  JetParticle* jpPtr = new JetParticle(*dummyPtr);
 
   _p_ta->changeTunesBy( dnuh, dnuv, *jpPtr );
 
@@ -1471,7 +1472,7 @@ int BeamlineContext::changeChromaticityBy( double dh, double dv )
   Particle* dummyPtr = _particlePtr->Clone();
   dummyPtr->setStateToZero();
   dummyPtr->SetReferenceEnergy( _p_bml->Energy() );
-  JetParticle* jpPtr = dummyPtr->ConvertToJetParticle();
+  JetParticle* jpPtr = new JetParticle(*dummyPtr);
 
   _p_ca->changeChromaticityBy( dh, dv, *jpPtr );
 

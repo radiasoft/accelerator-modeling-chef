@@ -24,6 +24,7 @@
 
 #include <beamline/bmlnElmnt.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <physics_toolkit/LattFuncSage.h>
 #include <iostream>
 

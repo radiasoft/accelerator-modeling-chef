@@ -28,10 +28,10 @@
 
 using namespace boost::python;
 
-static double (CF_rbend::*setEntryAngleDouble_Ptr)     (double               ) = &CF_rbend::setEntryAngle;
+static double (CF_rbend::*setEntryAngleDouble_Ptr)     (double const&        ) = &CF_rbend::setEntryAngle;
 static double (CF_rbend::*setEntryAngleParticle_Ptr)   (const Particle&      ) = &CF_rbend::setEntryAngle;
 
-static double (CF_rbend::*setExitAngleDouble_Ptr)      (double               ) = &CF_rbend::setExitAngle;
+static double (CF_rbend::*setExitAngleDouble_Ptr)      (double const&        ) = &CF_rbend::setExitAngle;
 static double (CF_rbend::*setExitAngleParticle_Ptr)    (const Particle&      ) = &CF_rbend::setExitAngle;
 
 // The following functions exist in the header file CF_rbend.h but currently have no implementation.
@@ -41,14 +41,13 @@ static double (CF_rbend::*setExitAngleParticle_Ptr)    (const Particle&      ) =
 
 void wrap_cf_rbend () {
 
-  class_<CF_rbend, bases<bmlnElmnt> >("CF_rbend", init<double, double, double>() )
+  class_<CF_rbend, bases<bmlnElmnt> >("CF_rbend", init<double const&, double const&, double const&>() )
 
-  .def(init<const char*, double, double, double>() )
-  .def(init<double,      double, double, int>() )
-  .def(init<const char*, double, double, double, int>() )
-  .def(init<double,      double, double, double, double, int>() )
-  .def(init<const char*, double, double, double, double, double, int>() )
-  .def("eliminate",               &CF_rbend::eliminate)
+  .def(init<const char*,  double const&,  double const&, double const&>() )
+  .def(init<              double const&,  double const&, double const&, double const&,  int>() )
+  .def(init<const char*,  double const&,  double const&, double const&, double const& , int>() )
+  .def(init<              double const&,  double const&, double const&, double const&,  double const&, int>() )
+  .def(init<const char*,  double const&,  double const&, double const&, double const& , double const&, int>() )
   .def("setQuadrupole",           &CF_rbend::setQuadrupole)
   .def("setSextupole",            &CF_rbend::setSextupole)
   .def("setOctupole",             &CF_rbend::setOctupole) 

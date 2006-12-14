@@ -46,27 +46,32 @@ class MappingWrapper: public TMapping<T> {
   MappingWrapper( PyObject* self, TMapping<T> const& map): m_self(self), TMapping<T>(map) {}
 
   MappingWrapper( PyObject* self, boost::python::tuple components): m_self(self) {
- 
+
     int dim = extract<int>( components.attr("__len__")() );
-    TJet<T>* comps = new TJet<T> [dim];
+
+    TJetVector<T> comps(dim);
+
     for (int i=0; i<dim; ++i) {
       comps[i] = extract<TJet<T> >(components[i]); 
     }
-    TMapping<T>* mapping = this; 
-    new(mapping) TMapping<T>(dim, comps); // placement new   
-    delete[] comps;
+
+    new (static_cast<TMapping<T>*>(this) ) TMapping<T>(comps); // note placement new
+
   }
 
   MappingWrapper(  PyObject* self, boost::python::tuple components, EnvPtr<T> const& env ): m_self(self) {
 
-      int dim = extract<int>( components.attr("__len__")() );
-      TJet<T>* comps = new TJet<T> [dim];
-      for (int i=0; i<dim; ++i) {
-        comps[i] = extract<TJet<T> >(components[i]); 
-      }
-      TMapping<T>* mapping = this; 
-      new(mapping) TMapping<T>(dim, comps); // placement new   
-      delete[] comps;
+    int dim = extract<int>( components.attr("__len__")() );
+
+ 
+    TJetVector<T> comps(dim, env);
+
+    for (int i=0; i<dim; ++i) {
+      comps[i] = extract<TJet<T> >(components[i]); 
+    }
+
+    new (static_cast<TMapping<T>*>(this) ) TMapping<T>(comps); // note placement new
+
   }
 
   tuple toPython() {

@@ -40,6 +40,7 @@
 
 #include <iomanip>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/BeamlineIterator.h>
 #include <physics_toolkit/CovarianceSage.h>
 
@@ -164,10 +165,10 @@ int CovarianceSage::doCalc( JetParticle* ptr_jp, MatrixD cov, beamline::Criterio
 
   int i, j;
 
-  const int x  = Particle::_x(); 
-  const int y  = Particle::_y(); 
-  const int xp = Particle::_xp();
-  const int yp = Particle::_yp();
+  const int x  = Particle::xIndex(); 
+  const int y  = Particle::yIndex(); 
+  const int xp = Particle::npxIndex();
+  const int yp = Particle::npyIndex();
 
   // Symmetrize the matrix, just to be on the safe side.
   // cov = ( cov + cov.transpose() )/2.0;
@@ -179,7 +180,7 @@ int CovarianceSage::doCalc( JetParticle* ptr_jp, MatrixD cov, beamline::Criterio
   for( i = 0; i < _n; i++ ) { _calcs[i] = 0;  }
 
 
-  Particle* p_co_p = ptr_jp->ConvertToParticle();  
+  Particle* p_co_p = new Particle(*ptr_jp);
   // MUST BE DELETED BEFORE RETURNING
 
 

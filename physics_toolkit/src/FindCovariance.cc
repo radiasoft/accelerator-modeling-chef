@@ -67,6 +67,7 @@
 #include <mxyzptlk/Mapping.h>
 #include <beamline/beamline.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/BeamlineIterator.h>
 #include <physics_toolkit/FindCovariance.h>
 
@@ -93,7 +94,7 @@ MatrixD FindCovariance( const beamline&    line,
   slist_iterator NextSample ( sampleSites );
   bmlnElmnt* pbe_line;
   bmlnElmnt* pbe_sample;
-  double zero [] = { 0., 0., 0., 0., 0., 0. };
+  Vector zero(6);
 
   int rows = sampleSites.size();
   double  xsq, ysq;
@@ -119,7 +120,7 @@ MatrixD FindCovariance( const beamline&    line,
       pbe_line->propagate( *jpPtr );
       
       if( pbe_line == pbe_sample ) {
-        jpPtr->getState(map);
+        map = jpPtr->getState();
         M = map.Jacobian();
       
         xsq = ( (WIREData*) pbe_line->dataHook.find("WIREData") )->hsigma;
@@ -188,7 +189,7 @@ void TestCovariance( const beamline&    line,
   slist_iterator NextSample ( sampleSites );
   bmlnElmnt* pbe_line;
   bmlnElmnt* pbe_sample;
-  double zero [] = { 0., 0., 0., 0., 0., 0. };
+  Vector zero(6);
   double xsq, ysq;
   MatrixD M, Cov;
   Mapping map;
@@ -206,7 +207,7 @@ void TestCovariance( const beamline&    line,
 
       if( pbe_line == pbe_sample ) 
       {
-        jpPtr->getState(map);
+        map = jpPtr->getState();
         M = map.Jacobian();
         Cov = M*C*M.transpose();
       
@@ -232,7 +233,7 @@ void TestCovariance( const beamline&    line,
       } 
       else 
       {
-        jpPtr->getState(map);
+        map = jpPtr->getState();
         M = map.Jacobian();
         Cov = M*C*M.transpose();
       

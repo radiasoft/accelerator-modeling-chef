@@ -43,6 +43,7 @@
 #include <physics_toolkit/JacobianVisitor.h>
 #include <mxyzptlk/Mapping.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/BeamlineIterator.h>
 
 const MatrixD identityMatrix("I",6);
@@ -115,14 +116,12 @@ JacobianVisitor::JacobianVisitor(const JacobianVisitor& ) {
 
 }
 
-JacobianVisitor::JacobianVisitor(beamline* mach,const JetParticle& p)
+JacobianVisitor::JacobianVisitor(beamline* mach, JetParticle const& p)
 : JetParticleVisitor(p) {
   theLine = mach;
-  Mapping temp;
-  particle->getState(temp);
+  Mapping temp = particle->getState();
   dim = temp.Dim();
-  state = new Jet[dim];
-  particle->getState(state);
+  state = particle->getState();
 
 }
 
@@ -152,8 +151,7 @@ void JacobianVisitor::visitBmlnElmnt(bmlnElmnt* be) {
   if(jacobianType == JACOBIAN_CUMULATIVE) {
     be->propagate(*particle);
 
-    Mapping map;
-    particle->getState( map );
+    Mapping map = particle->getState();
     cumulativeMatrix = map.Jacobian();
     JacobianData* matBarn = new JacobianData(cumulativeMatrix);
     be->dataHook.append( new Barnacle(whichJacobian, matBarn));
@@ -201,7 +199,7 @@ void JacobianVisitor::createJacobian(const JACOBIAN_TYPE& jacType) {
   if(tmpType == JACOBIAN_LOCAL)
     jacobianType = JACOBIAN_LOCAL;
 				// Reset the particle.
-  Mapping tmpMap(dim,state);
+  Mapping tmpMap(state);
   particle->setState(tmpMap);
   cumulativeMatrix = identityMatrix;
   theLine->accept(*this);

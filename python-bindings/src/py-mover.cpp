@@ -38,23 +38,3 @@ class_<mover>("mover")
  
 }
 
-#if 0
-
-class mover : public circuit {
-protected:
-  alignmentData align;
-public:
-  mover();
-  ~mover();
-  mover( const char* );
-  mover( bmlnElmnt* );
-  mover( const char*, bmlnElmnt* );
-  void append( bmlnElmnt* );
-  void switchOn();
-  void switchOff();
-  void set( void* );
-  void get( void* );
-
-};
-
-#endif // MOVER_H
