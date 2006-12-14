@@ -1,0 +1,269 @@
+!========1=========2=========3=========4=========5=========6=========7=========8
+! ILC Main Linac Lattice
+! 1Q/3CM, Curved
+! Version 4, 9/7/2006
+! A.Valishev (valishev@fnal.gov)
+!========1=========2=========3=========4=========5=========6=========7=========8
+ BEAM, ENERGY=15.0
+
+! Define the cavity:
+
+  Lc := 1.036
+  Fc := 1.3e3
+  Vc := 31.5 * Lc
+!  Vc := 0.0 * Lc
+  Pc := -5.1
+  Ac := 0.078 / 2
+
+  MLCAV : LCAV, L = Lc, DELTAE = Vc, FREQ = Fc, PHI0 = Pc / 360, &
+          ELOSS = 1.432e13* Lc, APERTURE = Ac,                   &                 
+          LFILE = "ilc2005.lwake.sr.data",                       &
+          TFILE = "ilc2005.twake.sr.data"
+
+! Define an RF cavity with spare (not-on) status.
+
+  MLCAV_SPARE : MLCAV, DELTAE = 0
+
+! Define the quadrupoles
+
+! Quadrupole gradient switch
+  Ksw := 1
+
+  Lq :=  0.666
+  Aq :=  0.075 / 2
+
+  Kf0:= 0.05153421671*Ksw
+  Kd0:= -0.047121431376*Ksw
+  Kf1:= 0.052562259834*Ksw
+  Kd1:= -0.045999875179*Ksw
+
+  k60:= -0.045487738533*Ksw
+  k61:=  0.045892352368*Ksw
+  k62:= -0.041664265842*Ksw
+  k63:=  0.045360141965*Ksw
+  k64:= -0.039747654733*Ksw
+  k65:=  0.040550733921*Ksw
+  k66:= -0.045791513117*Ksw
+  k67:=  0.046932020262*Ksw
+  k68:= -0.043328990535*Ksw
+  k69:=  0.051945146326*Ksw
+  
+  QF0: QUAD, L = Lq, K1 = Kf0, APERTURE = Aq
+  QD0: QUAD, L = Lq, K1 = Kd0, APERTURE = Aq
+  QF1: QUAD, L = Lq, K1 = Kf1, APERTURE = Aq
+  QD1: QUAD, L = Lq, K1 = Kd1, APERTURE = Aq
+
+  QD60: QUAD, L = Lq, K1 = k60, APERTURE = Aq
+  QF61: QUAD, L = Lq, K1 = k61, APERTURE = Aq
+  QD62: QUAD, L = Lq, K1 = k62, APERTURE = Aq
+  QF63: QUAD, L = Lq, K1 = k63, APERTURE = Aq
+  QD64: QUAD, L = Lq, K1 = k64, APERTURE = Aq
+  QF65: QUAD, L = Lq, K1 = k65, APERTURE = Aq
+  QD66: QUAD, L = Lq, K1 = k66, APERTURE = Aq
+  QF67: QUAD, L = Lq, K1 = k67, APERTURE = Aq
+  QD68: QUAD, L = Lq, K1 = k68, APERTURE = Aq
+  QF69: QUAD, L = Lq, K1 = k69, APERTURE = Aq
+
+
+! Define the cryomodule drift lengths
+
+  D_CMEnd : DRIFT, L = 0.501
+  D_CC    : DRIFT, L = 0.283
+  D_CQ    : DRIFT, L = 0.1775
+  D_QC    : DRIFT, L = 0.1775 
+  D_BPM   : DRIFT, L = 0.184
+  D_YCOR  : DRIFT, L = 0.35
+
+! RF Unit end box / segmentation box
+  D_ST    : DRIFT, L = 2.50
+! Warm diagnostic section
+  D_WRM   : DRIFT, L = 6.271
+
+! Define the angle needed in the vertical correctors to guide the beam
+! around the curved linac
+
+! Curvature switch
+  CSW         := 1
+
+  R_Earth     := 6370.0e3
+  L_CM_NoQuad := 2*D_CMEnd[L] + 7*D_CC[L] + 8*Lc
+  L_CM_Quad   := 2*D_CMEnd[L] + 6*D_CC[L] + 8*Lc &
+                 + D_BPM[L] + D_YCOR[L] + D_CQ[L] + D_QC[L] + Lq
+
+  ANGLE_CM_NoQuad := -CSW * L_CM_NoQuad / R_Earth / 2
+  ANGLE_CM_Quad   := -CSW * L_CM_Quad   / R_Earth / 2
+  ANGLE_DST       := -CSW * D_ST[L] / R_Earth / 2
+  ANGLE_DSG       := -CSW *(2*D_ST[L]+D_WRM[L]) / R_Earth / 2
+  
+  YCOR_Angle      := CSW *(2*ANGLE_CM_Quad + 4*ANGLE_CM_NoQuad)
+  YCOR_AngleST    := CSW *(2*ANGLE_CM_Quad &
+                          + 4*ANGLE_CM_NoQuad &
+                          + ANGLE_DST)
+  YCOR_AngleSG    := CSW *(2*ANGLE_CM_Quad &
+                          + 4*ANGLE_CM_NoQuad &
+                          + ANGLE_DSG)
+
+  YCOR_RG : SBEND, L=0.35, ANGLE=-YCOR_Angle,   TILT
+  YCOR_ST : SBEND, L=0.35, ANGLE=-YCOR_AngleST, TILT
+  YCOR_SG : SBEND, L=0.35, ANGLE=-YCOR_AngleSG, TILT
+
+  KINK_CM_NoQuad : MARK
+  KINK_CM_Quad :   MARK
+  KINK_DST :       MARK
+  KINK_DSG :       MARK
+
+
+! For now, we will define the correctors and BPMs to be zero length
+
+  BPM  : MONI
+  XCOR : HKICK
+  YCOR : VKICK
+
+! Define the two cryomodules:  one with a quad, one without
+
+  CM_NoQuad(cav) : LINE = ( KINK_CM_NoQuad, &
+                            D_CMEnd, &
+                            CAV, D_CC, &
+                            CAV, D_CC, &
+                            CAV, D_CC, &
+                            CAV, D_CC, &
+                            CAV, D_CC, &
+                            CAV, D_CC, &
+                            CAV, D_CC, &
+                            CAV,       &
+                            D_CMEnd,   &
+                            KINK_CM_NoQuad )
+
+  CM_QUAD(cav,MAGNET,cor) : LINE = ( KINK_CM_Quad, &
+                                 D_CMEnd, &
+                                 CAV, D_CC, &
+                                 CAV, D_CC, &
+                                 CAV, D_CC, &
+                                 CAV, D_CQ, &
+                                 D_BPM,&
+                                 BPM,MAGNET,cor,&
+                                 XCOR,YCOR, &
+                                 D_QC, &
+                                 CAV, D_CC, &
+                                 CAV, D_CC, &
+                                 CAV, D_CC, &
+                                 CAV,       &
+                                 D_CMEnd,   &
+                                 KINK_CM_Quad )
+
+! Start and end markers
+
+  MLSTART : MARK
+  MLEND   : MARK
+
+!========1=========2=========3=========4=========5=========6=========7=========8
+!
+! Beamline definitions
+!
+!========1=========2=========3=========4=========5=========6=========7=========8
+
+! FODO cell -- start with an F quad
+
+FODO0(cav) : LINE = (CM_NoQuad(cav),CM_QUAD(cav,QF0,YCOR_ST),&
+                      2*CM_NoQuad(cav),&
+                      CM_Quad(cav,QD0,YCOR_RG), CM_NoQuad(cav) )
+FODO1(cav) : LINE = (CM_NoQuad(cav),CM_QUAD(cav,QF1,YCOR_RG),&
+                      2*CM_NoQuad(cav),&
+                      CM_Quad(cav,QD1,YCOR_ST), CM_NoQuad(cav) )
+
+FODO30(cav) : LINE = (CM_NoQuad(cav),CM_QUAD(cav,QF1,YCOR_RG),&
+                      2*CM_NoQuad(cav),&
+                      CM_Quad(cav,QD60,YCOR_ST), CM_NoQuad(cav) )
+FODO31(cav) : LINE = (CM_NoQuad(cav),CM_QUAD(cav,QF61,YCOR_RG),&
+                      2*CM_NoQuad(cav),&
+                      CM_Quad(cav,QD62,YCOR_ST), CM_NoQuad(cav) )
+FODO32(cav) : LINE = (CM_NoQuad(cav),CM_QUAD(cav,QF63,YCOR_RG),&
+                      2*CM_NoQuad(cav),&
+                      CM_Quad(cav,QD64,YCOR_SG), CM_NoQuad(cav) )
+
+FODO33(cav) : LINE = (CM_NoQuad(cav),CM_QUAD(cav,QF65,YCOR_SG),&
+                      2*CM_NoQuad(cav),&
+                      CM_Quad(cav,QD66,YCOR_ST), CM_NoQuad(cav) )
+FODO34(cav) : LINE = (CM_NoQuad(cav),CM_QUAD(cav,QF67,YCOR_RG),&
+                      2*CM_NoQuad(cav),&
+                      CM_Quad(cav,QD68,YCOR_ST), CM_NoQuad(cav) )
+FODO35(cav) : LINE = (CM_NoQuad(cav),CM_QUAD(cav,QF69,YCOR_RG),&
+                      2*CM_NoQuad(cav),&
+                      CM_Quad(cav,QD0,YCOR_ST), CM_NoQuad(cav) )
+
+BEGELIN : MARKER
+ENDELIN : MARKER
+BPMLAST : MONI
+
+! String = 4 RF Units with 2.5 m end box
+STRING(cav) : LINE = ( FODO0(cav), FODO1(cav),   &
+                       KINK_DST, D_ST, KINK_DST )
+
+! Cryogenic units
+! 1) Long = 16 strings + Warm drift
+CUNIT1(cav) : LINE = ( 14*STRING(cav),           &
+                       FODO0(cav), FODO30(cav),  &
+                       KINK_DST, D_ST, KINK_DST, &
+                       FODO31(cav), FODO32(cav),  &
+                       KINK_DSG, D_ST, D_WRM, D_ST, KINK_DSG )
+CUNIT2(cav) : LINE = ( FODO33(cav), FODO34(cav), &
+                       KINK_DST, D_ST, KINK_DST, &
+                       FODO35(cav), FODO1(cav), &
+                       KINK_DST, D_ST, KINK_DST, &
+                       12*STRING(cav),           &
+                       FODO0(cav), FODO30(cav),  &
+                       KINK_DST, D_ST, KINK_DST, &
+                       FODO31(cav), FODO32(cav),  &
+                       KINK_DSG, D_ST, D_WRM, D_ST, KINK_DSG )
+CUNIT3(cav) : LINE = ( FODO33(cav), FODO34(cav), &
+                       KINK_DST, D_ST, KINK_DST, &
+                       FODO35(cav), FODO1(cav), &
+                       KINK_DST, D_ST, KINK_DST, &
+                       11*STRING(cav),           &
+                       FODO0(cav), FODO30(cav),  &
+                       KINK_DST, D_ST, KINK_DST, &
+                       FODO31(cav), FODO32(cav),  &
+                       KINK_DSG, D_ST, D_WRM, D_ST, KINK_DSG )
+CUNIT4(cav) : LINE = ( FODO33(cav), FODO34(cav), &
+                       KINK_DST, D_ST, KINK_DST, &
+                       FODO35(cav), FODO1(cav), &
+                       KINK_DST, D_ST, KINK_DST, &
+                       11*STRING(cav),           &
+                       FODO0(cav), FODO30(cav),  &
+                       KINK_DST, D_ST, KINK_DST, &
+                       FODO31(cav), FODO32(cav),  &
+                       KINK_DSG, D_ST, D_WRM, D_ST, KINK_DSG )
+CUNIT5(cav) : LINE = ( FODO33(cav), FODO34(cav), &
+                       KINK_DST, D_ST, KINK_DST, &
+                       FODO35(cav), FODO1(cav), &
+                       KINK_DST, D_ST, KINK_DST, &
+                       14*STRING(cav),           &
+                       KINK_DSG, D_ST, D_WRM, D_ST, KINK_DSG )
+
+
+ LINAC : LINE = (BEGELIN,YCOR,2*D_ST,D_WRM,CUNIT1(MLCAV),&
+                              2*D_ST,D_WRM,CUNIT2(MLCAV),&
+                              2*D_ST,D_WRM,CUNIT3(MLCAV),&
+                              2*D_ST,D_WRM,CUNIT4(MLCAV),&
+                              2*D_ST,D_WRM,CUNIT5(MLCAV),&
+                 BPMLAST,ENDELIN) 
+!========1=========2=========3=========4=========5=========6=========7=========8
+!
+! Definition of initial Twiss and orbit -- here the dispersion and the orbit
+! are set for a system in which the F and D dipoles have equal strength.
+! There are other constraints possible.
+!
+!========1=========2=========3=========4=========5=========6=========7=========8
+
+ COMMENT
+  BEAM_LINAC_IN : BEAM, E=15, NPART = 2E10, SIGT = 300E-6, SIGE = 0.0107, &
+       EX = 8E-6 * EMASS / 15, EY = 20E-9 * EMASS / 15
+
+  TWISS_LINAC_IN : BETA0, BETX = 35.3226, ALFX = -0.7486,    &
+                          BETY =  97.7362, ALFY =  1.65062,    &
+                          DY = 0.000496979, DPY = -5.93072e-06,  &
+                          Y = 0.0, PY = 0.0
+ ENDCOMMENT
+  
+RETURN
+
