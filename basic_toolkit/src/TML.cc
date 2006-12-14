@@ -181,15 +181,9 @@ MLPtr<std::complex<double> > TML<double>::eigenVectors()  const
       ++k;
     }
   }
-  //std::cout << "Before call to rg_ ... " <<std::endl;
-  //for (int i=0; i< _nrows*_ncols; ++i) std::cout << b[i] <<", ";  
-  //std::cout << std::endl;
   
   rg_(&nrows,&ncols,b,wr,wi,&matz,c,iv1,fv1,&ierr);
 
-  //std::cout << "After call to rg_ ... " <<std::endl;
-  //for (int i=0; i< _nrows*_ncols; ++i) std::cout << c[i] <<", ";  
-  //std::cout << std::endl;
 
   if(ierr != 0) {
     (*pcerr) << "TML<double>: Error in eigenvector routine. error = ";
