@@ -63,13 +63,11 @@ Frame::Frame()
 
 Frame::Frame( const Frame& x )
 : o(x.o), e(x.e) 
-{ 
-}
+{ }
 
 
 Frame::~Frame()
-{
-}
+{}
 
 
 Frame& Frame::operator=( const Frame& x )
@@ -81,9 +79,9 @@ Frame& Frame::operator=( const Frame& x )
   return *this;
 }
   
-short int Frame::setOrigin ( const Vector& x )
+ int Frame::setOrigin ( const Vector& x )
 {
-  short int ret = 0;
+   int ret = 0;
 
   if( x.Dim() != 3 ) {
     cerr << "***WARNING***                                 \n"
@@ -101,9 +99,9 @@ short int Frame::setOrigin ( const Vector& x )
   return ret;
 }
 
-short int Frame::setAxis   ( int j, const Vector& x )
+ int Frame::setAxis   ( int j, const Vector& x )
 {
-  short int ret = 0;
+   int ret = 0;
 
   if( j < 0 || 2 < j ) {
     cerr << "***WARNING***                                 \n"
@@ -132,9 +130,9 @@ short int Frame::setAxis   ( int j, const Vector& x )
   return ret;
 }
 
-short int Frame::setDualAxis   ( int i, const Vector& x )
+ int Frame::setDualAxis   ( int i, const Vector& x )
 {
-  short int ret = 0;
+   int ret = 0;
 
   if( i < 0 || 2 < i ) {
     cerr << "***WARNING***                                 \n"
@@ -282,11 +280,11 @@ Vector Frame::getDualAxis( int i ) const
   return ret;
 }
 
-short int Frame::rotate( double theta, 
+ int Frame::rotate( double theta, 
                          const  Vector& u,
                          bool   rotateOrigin )
 {
-  short int ret = 0;
+   int ret = 0;
 
   if( u.Dim() != 3 ) {
     cerr << "***WARNING***                                 \n"
@@ -319,9 +317,9 @@ short int Frame::rotate( double theta,
   return ret;
 }
 
-short int Frame::translate ( const Vector& x )
+ int Frame::translate ( const Vector& x )
 {
-  short int ret = 0;
+   int ret = 0;
 
   if( x.Dim() != 3 ) {
     cerr << "***WARNING***                                 \n"
