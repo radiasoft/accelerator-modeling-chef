@@ -59,7 +59,7 @@
 #include <FramePusher.h>
 #include <DriftEliminator.h>
 #include <QuadEliminator.h>
-#include <bmlfactory.h>
+#include <bmlfactory/MAD8Factory.h>
 #include <BeamlineBrowser.h>
 #include <Tracker.h>
 #include <RayTrace.h>
@@ -433,6 +433,8 @@ private slots:
   void _enableMenus();
 
  private:
+
+  void readBmlFile( QString s);
 
   void _parseEditorPython( CF_Editor* editor );
   void _parseEditorMAD8( CF_Editor* editor );
