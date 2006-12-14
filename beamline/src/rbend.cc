@@ -49,6 +49,7 @@
 #include <basic_toolkit/PhysicsConstants.h>
 #include <beamline/rbend.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 using namespace std;
 using FNAL::pcout;
@@ -72,7 +73,7 @@ rbend::rbend()
 }
 
 
-rbend::rbend( double l, double s, PropFunc* pf ) 
+rbend::rbend( double const& l, double const& s, PropFunc* pf ) 
 : bmlnElmnt( l, s, pf )
   , _usEdgeAngle(0.0)
   , _dsEdgeAngle(0.0)
@@ -83,14 +84,14 @@ rbend::rbend( double l, double s, PropFunc* pf )
 {
  // This should never happen, but in case it does.
  if(pf == 0) {
-   Propagator = &rbend::Exact;
+   propfunc_ = &rbend::Exact;
  }
 
  _calcPropParams();
 }
 
 
-rbend::rbend( const char* n, double l, double s, PropFunc* pf ) 
+rbend::rbend( const char* n, double const& l, double const& s, PropFunc* pf ) 
 : bmlnElmnt( n, l, s, pf )
   , _usEdgeAngle(0.0)
   , _dsEdgeAngle(0.0)
@@ -101,14 +102,14 @@ rbend::rbend( const char* n, double l, double s, PropFunc* pf )
 {
  // This should never happen, but in case it does.
  if(pf == 0) {
-   Propagator = &rbend::Exact;
+   propfunc_ = &rbend::Exact;
  }
 
  _calcPropParams();
 }
 
 
-rbend::rbend( double l, double s, double entryangle, PropFunc* pf ) 
+rbend::rbend( double const& l, double const& s, double const& entryangle, PropFunc* pf ) 
 : bmlnElmnt( l, s, pf )
   , _usEdgeAngle(0.0)
   , _dsEdgeAngle(0.0)
@@ -126,7 +127,7 @@ rbend::rbend( double l, double s, double entryangle, PropFunc* pf )
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
+          << "\n*** WARNING *** rbend::rbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream entry angle | = " 
           << fabs(entryangle) 
           << " < 1 nanoradian."
@@ -139,14 +140,14 @@ rbend::rbend( double l, double s, double entryangle, PropFunc* pf )
 
  // This should never happen, but in case it does.
  if(pf == 0) {
-   Propagator = &rbend::Exact;
+   propfunc_ = &rbend::Exact;
  }
 
  _calcPropParams();
 }
 
 
-rbend::rbend( const char* n, double l, double s, double entryangle, PropFunc* pf ) 
+rbend::rbend( const char* n, double const& l, double const& s, double const& entryangle, PropFunc* pf ) 
 : bmlnElmnt( n, l, s, pf )
   , _usEdgeAngle(0.0)
   , _dsEdgeAngle(0.0)
@@ -177,14 +178,14 @@ rbend::rbend( const char* n, double l, double s, double entryangle, PropFunc* pf
 
  // This should never happen, but in case it does.
  if(pf == 0) {
-   Propagator = &rbend::Exact;
+   propfunc_ = &rbend::Exact;
  }
 
  _calcPropParams();
 }
 
 
-rbend::rbend( double l, double s, double us, double ds, PropFunc* pf )
+rbend::rbend( double const& l, double const& s, double const& us, double const& ds, PropFunc* pf )
 :   bmlnElmnt( l, s, pf )
   , _usEdgeAngle(us)
   , _dsEdgeAngle(ds)
@@ -201,7 +202,7 @@ rbend::rbend( double l, double s, double us, double ds, PropFunc* pf )
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
+          << "\n*** WARNING *** rbend::rbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
           << fabs(us) 
           << " < 1 microradian."
@@ -218,7 +219,7 @@ rbend::rbend( double l, double s, double us, double ds, PropFunc* pf )
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
+          << "\n*** WARNING *** rbend::rbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
           << fabs(ds) 
           << " < 1 microradian."
@@ -231,14 +232,14 @@ rbend::rbend( double l, double s, double us, double ds, PropFunc* pf )
 
  // This should never happen, but in case it does.
  if(pf == 0) {
-   Propagator = &rbend::Exact;
+   propfunc_ = &rbend::Exact;
  }
 
  _calcPropParams();
 }
 
 
-rbend::rbend( const char* n, double l, double s, double us, double ds, PropFunc* pf )
+rbend::rbend( const char* n, double const& l, double const& s, double const& us, double const& ds, PropFunc* pf )
 :   bmlnElmnt( n, l, s, pf )
   , _usEdgeAngle(us)
   , _dsEdgeAngle(ds)
@@ -255,7 +256,7 @@ rbend::rbend( const char* n, double l, double s, double us, double ds, PropFunc*
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
+          << "\n*** WARNING *** rbend::rbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
           << fabs(us) 
           << " < 1 microradian."
@@ -272,7 +273,7 @@ rbend::rbend( const char* n, double l, double s, double us, double ds, PropFunc*
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
+          << "\n*** WARNING *** rbend::rbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
           << fabs(ds) 
           << " < 1 microradian."
@@ -285,14 +286,14 @@ rbend::rbend( const char* n, double l, double s, double us, double ds, PropFunc*
 
  // This should never happen, but in case it does.
  if(pf == 0) {
-   Propagator = &rbend::Exact;
+   propfunc_ = &rbend::Exact;
  }
 
  _calcPropParams();
 }
 
 
-rbend::rbend( double l, double s, double entryangle, double us, double ds, PropFunc* pf )
+rbend::rbend( double const& l, double const& s, double const& entryangle, double const& us, double const& ds, PropFunc* pf )
 :   bmlnElmnt( l, s, pf )
   , _usEdgeAngle(us)
   , _dsEdgeAngle(ds)
@@ -327,7 +328,7 @@ rbend::rbend( double l, double s, double entryangle, double us, double ds, PropF
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
+          << "\n*** WARNING *** rbend::rbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
           << fabs(us) 
           << " < 1 microradian."
@@ -344,7 +345,7 @@ rbend::rbend( double l, double s, double entryangle, double us, double ds, PropF
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
+          << "\n*** WARNING *** rbend::rbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
           << fabs(ds) 
           << " < 1 microradian."
@@ -357,14 +358,14 @@ rbend::rbend( double l, double s, double entryangle, double us, double ds, PropF
 
  // This should never happen, but in case it does.
  if(pf == 0) {
-   Propagator = &rbend::Exact;
+   propfunc_ = &rbend::Exact;
  }
 
  _calcPropParams();
 }
 
 
-rbend::rbend( const char* n, double l, double s, double entryangle, double us, double ds, PropFunc* pf )
+rbend::rbend( const char* n, double const& l, double const& s, double const& entryangle, double const& us, double const& ds, PropFunc* pf )
 :   bmlnElmnt( n, l, s, pf )
   , _usEdgeAngle(us)
   , _dsEdgeAngle(ds)
@@ -399,7 +400,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, double us, d
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
+          << "\n*** WARNING *** rbend::rbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
           << fabs(us) 
           << " < 1 microradian."
@@ -416,7 +417,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, double us, d
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** rbend::rbend( double l, ... PropFunc* pf )"
+          << "\n*** WARNING *** rbend::rbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
           << fabs(ds) 
           << " < 1 microradian."
@@ -429,7 +430,7 @@ rbend::rbend( const char* n, double l, double s, double entryangle, double us, d
 
  // This should never happen, but in case it does.
  if(pf == 0) {
-   Propagator = &rbend::Exact;
+   propfunc_ = &rbend::Exact;
  }
 
  _calcPropParams();
@@ -455,7 +456,7 @@ void rbend::_calcPropParams()
 
 
 rbend::rbend( const rbend& x )
-: bmlnElmnt( (bmlnElmnt&) x )
+: bmlnElmnt(x )
   , _usEdgeAngle(x._usEdgeAngle)
   , _dsEdgeAngle(x._dsEdgeAngle)
   , _usAngle(x._usAngle)
@@ -488,11 +489,6 @@ void rbend::setupPropFunc()
 }
 
 
-void rbend::eliminate() {
- delete this;
-}
-
-
 const char* rbend::Type() const { 
   return "rbend"; 
 }
@@ -513,7 +509,7 @@ bool rbend::isMagnet() const
 }
 
 
-void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
+void rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   static bool firstTime = true;
   if( firstTime ) {
@@ -521,7 +517,7 @@ void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
     (*pcerr) << "\n"
             "\n*** WARNING ***"
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
+         << "\n*** WARNING *** void rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )"
             "\n*** WARNING *** The new, split elements must be commissioned with"
             "\n*** WARNING *** RefRegVisitor before being used."
             "\n*** WARNING *** "
@@ -532,14 +528,14 @@ void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
     ostringstream uic;
     uic  << "pc = " << pc << ": this should be within [0,1].";
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           "void sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
            uic.str().c_str() ) );
   }
 
-  if( typeid(*Propagator) == typeid(MAD_Prop) ) {
+  if( typeid(*propfunc_) == typeid(MAD_Prop) ) {
     (*pcerr) << "\n*** WARNING *** "
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
+         << "\n*** WARNING *** void rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )"
             "\n*** WARNING *** Splitting rbend with MAD-like propagator."
             "\n*** WARNING *** I'm not responsible for what happens."
             "\n*** WARNING *** You'll get wrong results, "
@@ -548,16 +544,16 @@ void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
          << endl;
     *a = new rbend( pc*length, strength, 
                     pc*_usAngle, // this is surely the wrong thing to do
-                    Propagator );     // but there is no right thing
+                    propfunc_ );     // but there is no right thing
     *b = new rbend( (1.0 - pc)*length, strength, 
                     (1.0 - pc)*_usAngle,
-                    Propagator );
+                    propfunc_ );
   }
-  else if( typeid(*Propagator) == typeid(NoEdge_Prop) ) {
-    *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, Propagator );
-    *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, Propagator );
+  else if( typeid(*propfunc_) == typeid(NoEdge_Prop) ) {
+    *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, propfunc_ );
+    *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, propfunc_ );
   }
-  else if( typeid(*Propagator) == typeid(Exact_Prop) ) {
+  else if( typeid(*propfunc_) == typeid(Exact_Prop) ) {
     *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, &rbend::InEdge );
     dynamic_cast<rbend*>(*a)->setEntryAngle( this->getEntryAngle() );
     dynamic_cast<rbend*>(*a)->setExitAngle( 0.0 );    // Should not matter
@@ -565,34 +561,34 @@ void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
     dynamic_cast<rbend*>(*b)->setEntryAngle( 0.0 );   // Should not matter
     dynamic_cast<rbend*>(*b)->setExitAngle( this->getExitAngle() );
   }
-  else if( typeid(*Propagator) == typeid(InEdge_Prop) ) {
-    *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, Propagator );
+  else if( typeid(*propfunc_) == typeid(InEdge_Prop) ) {
+    *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, propfunc_ );
     dynamic_cast<rbend*>(*a)->setEntryAngle( this->getEntryAngle() );
     dynamic_cast<rbend*>(*a)->setExitAngle( 0.0 );    // Should not matter
     *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, &rbend::NoEdge );
   }
-  else if( typeid(*Propagator) == typeid(OutEdge_Prop) ) {
+  else if( typeid(*propfunc_) == typeid(OutEdge_Prop) ) {
     *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, &rbend::NoEdge );
-    *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, Propagator );
+    *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, propfunc_ );
     dynamic_cast<rbend*>(*b)->setEntryAngle( 0.0 );   // Should not matter
     dynamic_cast<rbend*>(*b)->setExitAngle( this->getExitAngle() );
   }
-  else if( typeid(*Propagator) == typeid(Real_Exact_Prop) ) {
+  else if( typeid(*propfunc_) == typeid(Real_Exact_Prop) ) {
     *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, &rbend::RealInEdge );
     *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, &rbend::RealOutEdge );
   }
-  else if( typeid(*Propagator) == typeid(Real_InEdge_Prop) ) {
-    *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, Propagator );
+  else if( typeid(*propfunc_) == typeid(Real_InEdge_Prop) ) {
+    *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, propfunc_ );
     *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, &rbend::NoEdge );
   }
-  else if( typeid(*Propagator) == typeid(Real_OutEdge_Prop) ) {
+  else if( typeid(*propfunc_) == typeid(Real_OutEdge_Prop) ) {
     *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, &rbend::NoEdge );
-    *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, Propagator );
+    *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, propfunc_ );
   }
   else {
     (*pcerr) << "\n*** WARNING *** "
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
+         << "\n*** WARNING *** void rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )"
             "\n*** WARNING *** Propagator type unrecognized."
             "\n*** WARNING *** I'm not responsible for what happens."
             "\n*** WARNING *** It's all your fault."
@@ -632,7 +628,7 @@ double rbend::setPoleFaceAngle( const Particle& p )
 }
 
 
-double rbend::setPoleFaceAngle( const JetParticle& p )
+double rbend::setPoleFaceAngle( JetParticle const& p )
 {
   double psi =   
      asin(   ( this->strength * this->Length() )
@@ -661,7 +657,7 @@ double rbend::setExitAngle( const Particle& p )
 }
 
 
-double rbend::setEntryAngle( double phi /* radians */ )
+double rbend::setEntryAngle( double const& phi /* radians */ )
 {
   double ret = _usAngle;
   _usAngle = phi;
@@ -670,7 +666,7 @@ double rbend::setEntryAngle( double phi /* radians */ )
 }
 
 
-double rbend::setExitAngle( double phi /* radians */ )
+double rbend::setExitAngle( double const& phi /* radians */ )
 {
   double ret = _dsAngle;
   _dsAngle = phi;  
@@ -721,15 +717,15 @@ ostream& rbend::writeTo(ostream& os)
      << OSTREAM_DOUBLE_PREC << _dsAngle << endl;
 
   // Determine which propogators are being used, and make a note of it.
-  if ( Propagator ==            &rbend::Exact )
+  if ( propfunc_ ==            &rbend::Exact )
     os << "rbend::P_Exact    rbend::J_Exact";
-  else if ( Propagator ==       &rbend::LikeMAD )
+  else if ( propfunc_ ==       &rbend::LikeMAD )
     os << "rbend::P_LikeMAD  rbend::J_LikeMAD";
-  else if ( Propagator ==       &rbend::NoEdge )
+  else if ( propfunc_ ==       &rbend::NoEdge )
     os << "rbend::P_NoEdge   rbend::J_NoEdge";
-  else if ( Propagator ==       &rbend::InEdge )
+  else if ( propfunc_ ==       &rbend::InEdge )
     os << "rbend::P_InEdge   rbend::J_InEdge";
-  else if ( Propagator ==       &rbend::OutEdge )
+  else if ( propfunc_ ==       &rbend::OutEdge )
     os << "rbend::P_OutEdge  rbend::J_OutEdge";
   else
     os << "UNKNOWN  UNKNOWN";

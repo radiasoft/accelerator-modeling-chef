@@ -51,12 +51,12 @@ using namespace std;
 thinDecapole::thinDecapole () : bmlnElmnt( 0.0, 0.0 ) {
 }
 
-thinDecapole::thinDecapole ( double s ) : bmlnElmnt( 0.0, s ) {
+thinDecapole::thinDecapole ( double const& s ) : bmlnElmnt( 0.0, s ) {
  // The strength is to be interpreted as
  // (1/4!)*B''''l/Brho  in  meters^-2
 }
 
-thinDecapole::thinDecapole ( char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
+thinDecapole::thinDecapole ( char const* n, double const& s ) : bmlnElmnt( n, 0.0, s ) {
  // The strength is to be interpreted as
  // (1/4!)*B''''l/Brho  in  meters^-2
 }

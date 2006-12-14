@@ -47,12 +47,12 @@ class DLLEXPORT thin2pole : public bmlnElmnt
 {
 public:
   thin2pole();
-  thin2pole( double /* strength = BL */ );
+  thin2pole( double const& /* strength = BL */ );
   thin2pole( const char*  /* name */,
-             double /* strength */ );
+             double const& /* strength */ );
   thin2pole( const thin2pole& );
   thin2pole* Clone() const { return new thin2pole( *this ); }
-  ~thin2pole();
+  virtual ~thin2pole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -73,12 +73,12 @@ class DLLEXPORT thin12pole : public bmlnElmnt
 {
 public:
   thin12pole();
-  thin12pole( double /* strength */ );
+  thin12pole( double const& /* strength */ );
   thin12pole( const char*  /* name */,
-              double /* strength */ );
+              double const& /* strength */ );
   thin12pole( const thin12pole& );
   thin12pole* Clone() const { return new thin12pole( *this ); }
-  ~thin12pole();
+  virtual ~thin12pole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -99,12 +99,12 @@ class DLLEXPORT thin14pole : public bmlnElmnt
 {
 public:
   thin14pole();
-  thin14pole( double /* strength */ );
+  thin14pole( double const& /* strength */ );
   thin14pole( const char*  /* name */,
-              double /* strength */ );
+              double const& /* strength */ );
   thin14pole( const thin14pole& );
   thin14pole* Clone() const { return new thin14pole( *this ); }
-  ~thin14pole();
+  virtual ~thin14pole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -125,12 +125,12 @@ class DLLEXPORT thin16pole : public bmlnElmnt
 {
 public:
   thin16pole();
-  thin16pole( double /* strength */ );
+  thin16pole( double const& /* strength */ );
   thin16pole( const char*  /* name */,
-              double /* strength */ );
+              double const& /* strength */ );
   thin16pole( const thin16pole& );
   thin16pole* Clone() const { return new thin16pole( *this ); }
-  ~thin16pole();
+  virtual ~thin16pole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -151,12 +151,12 @@ class DLLEXPORT thin18pole : public bmlnElmnt
 {
 public:
   thin18pole();
-  thin18pole( double /* strength */ );
+  thin18pole( double const& /* strength */ );
   thin18pole( const char*  /* name */,
-              double /* strength */ );
+              double const& /* strength */ );
   thin18pole( const thin18pole& );
   thin18pole* Clone() const { return new thin18pole( *this ); }
-  ~thin18pole();
+  virtual ~thin18pole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -177,12 +177,12 @@ class DLLEXPORT thinMultipole : public bmlnElmnt
 {
 public:
   thinMultipole();
-  thinMultipole( double /* strength */ );
+  thinMultipole( double const& /* strength */ );
   thinMultipole( const char*  /* name */,
-                double /* strength */ );
+                double const& /* strength */ );
   thinMultipole( const thinMultipole& );
   thinMultipole* Clone() const { return new thinMultipole( *this ); }
-  ~thinMultipole();
+  virtual ~thinMultipole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );

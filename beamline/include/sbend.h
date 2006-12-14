@@ -97,7 +97,7 @@ public:
     // REMOVE: void makeExact();
   private:
 
-    double _fastArcsin( double x     ) const;
+    double _fastArcsin( double const& x     ) const;
     Jet    _fastArcsin( const Jet& x ) const;
 
     // REMOVE: char   _approx;
@@ -162,40 +162,40 @@ public:
   friend class OutEdge_Prop;
 
 
-  void P_Face ( Particle&,    const double& /* psi */  ) const;
-  void J_Face ( JetParticle&, const double& /* psi */  ) const;
+  void P_Face ( Particle&,    double const& psi ) const;
+  void J_Face ( JetParticle&, double const& psi ) const;
   
 
   // Constructors 
   sbend();
-  sbend( double,     // (orbit) length [meters]
-         double,     // magnetic field [tesla]
+  sbend( double const&,     // (orbit) length [meters]
+         double const&,     // magnetic field [tesla]
                      // (assumed along the y-axis)
-         double,     // geometric bend angle [radians]
+         double const&,     // geometric bend angle [radians]
                      // sign( bend angle ) = sign( field )
          PropFunc*    = &sbend::Exact );
 
   sbend( const char*,// name
-         double,     // (orbit) length  [meters]
-         double,     // magnetic field [tesla]
-         double,     // geometric bend angle   [radians]
+         double const&,     // (orbit) length  [meters]
+         double const&,     // magnetic field [tesla]
+         double const&,     // geometric bend angle   [radians]
          PropFunc*    = &sbend::Exact );
 
-  sbend( double,     // (orbit) length  [meters]
-         double,     // field   [tesla]
-         double,     // geometric bend angle [radians]
-         double,     // upstream edge angle [radians]
-         double,     // downstream edge angle [radians]
+  sbend( double const&,     // (orbit) length  [meters]
+         double const&,     // field   [tesla]
+         double const&,     // geometric bend angle [radians]
+         double const&,     // upstream edge angle [radians]
+         double const&,     // downstream edge angle [radians]
                      // signs of previous two parameters
                      // are as defined for sbends by MAD
          PropFunc*    = &sbend::Exact );
 
   sbend( const char*,// name
-         double,     // (orbit) length  [meters]
-         double,     // field   [tesla]
-         double,     // geometric bend angle [radians]
-         double,     // upstream edge angle [radians]
-         double,     // downstream edge angle [radians]
+         double const&,     // (orbit) length  [meters]
+         double const&,     // field   [tesla]
+         double const&,     // geometric bend angle [radians]
+         double const&,     // upstream edge angle [radians]
+         double const&,     // downstream edge angle [radians]
                      // signs of previous two parameters
                      // are as defined for sbends by MAD
          PropFunc*    = &sbend::Exact );
@@ -204,28 +204,29 @@ public:
 
   sbend* Clone() const { return new sbend( *this ); }
 
-  ~sbend();
+  virtual ~sbend();
 
 
   // Public methods
-  double setAngle(double a) { return (_angle = a); }
+  double setAngle(double const& a) { return (_angle = a); }
   double getAngle() const   { return _angle; }
   // aliased
-  double setBendAngle(double a) { return (_angle = a); }
+  double setBendAngle(double const& a) { return (_angle = a); }
   double getBendAngle() const   { return _angle; }
   
 
   // Note: entry and exit angles are not arguments
   // in the sbend constructors. A symmetric bend is assumed
   // by default. Otherwise, use one of the following.
+
   double setEntryAngle( const Particle& ); 
-  double setExitAngle( const Particle& ); 
-  double getEntryAngle() const { return _usAngle; }
-  double getExitAngle()  const { return _dsAngle; }
-  double setEntryAngle( double /* radians */ ); 
-  double setExitAngle( double /* radians */ ); 
-  double getEntryEdgeAngle() const { return _usEdgeAngle; }
-  double getExitEdgeAngle()  const { return _dsEdgeAngle; }
+  double  setExitAngle( const Particle& ); 
+  double getEntryAngle()              const { return _usAngle; }
+  double getExitAngle()               const { return _dsAngle; }
+  double setEntryAngle( double const& radians); 
+  double setExitAngle( double const&  radians); 
+  double getEntryEdgeAngle()          const { return _usEdgeAngle; }
+  double getExitEdgeAngle()           const { return _dsEdgeAngle; }
 
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
@@ -236,7 +237,6 @@ public:
 
   void releasePropFunc();
   void setupPropFunc();
-  void eliminate();
 
   void enterLocalFrame( Particle&    ) const;
   void enterLocalFrame( JetParticle& ) const;
@@ -244,8 +244,8 @@ public:
   void leaveLocalFrame( JetParticle& ) const;
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle&    p ) { (*Propagator)( this, p ); }
-  void localPropagate( JetParticle& p ) { (*Propagator)( this, p ); }
+  void localPropagate( Particle&    p ) { (*propfunc_)( this, p ); }
+  void localPropagate( JetParticle& p ) { (*propfunc_)( this, p ); }
 
   void accept( BmlVisitor& v ) { v.visitSbend( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitSbend( this ); }
@@ -253,7 +253,7 @@ public:
   const char* Type() const;
   bool isMagnet() const;
 
-  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
+  void Split( double const&, bmlnElmnt**, bmlnElmnt** ) const;
 };
 
 #endif // SBEND_H

@@ -40,8 +40,9 @@
 #include <config.h>
 #endif
 
-#include <beamline/BBLens.h>
+#include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/utils.h>
+#include <beamline/BBLens.h>
 #include <mxyzptlk/Jet.h>
 #include <mxyzptlk/JetVector.h>
 #include <physics_toolkit/EdwardsTeng.h>  // ??? Doesn't belong here.
@@ -61,9 +62,9 @@ double const SIGMA_ROUND = 0.1;
 // **************************************************
 
 BBLens::BBLens( const char*   nm,
-                double        l, 
-                double        s,
-                double        gmm, 
+                double const&        l, 
+                double const&        s,
+                double const&        gmm, 
                 const double* emt )
 : bmlnElmnt( nm, l, s )
 {
@@ -105,7 +106,7 @@ BBLens::~BBLens()
 }
 
 
-void BBLens::KludgeNum( double N )
+void BBLens::KludgeNum( double const& N )
 {
   num  = N;
 }
@@ -117,7 +118,7 @@ void BBLens::KludgeSigma( const double* S )
 }
 
 
-void BBLens::Kludge( double N, double G, const double* S )
+void BBLens::Kludge( double const& N, double const& G, const double* S )
 {
   num  = N;
   gamma = G;
@@ -131,7 +132,7 @@ void BBLens::AdjustSigma()
   ETinfo* infoPtr = (ETinfo*) dataHook.find( "EdwardsTeng" );
   
   if( !infoPtr ) {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "void BBLens::AdjustSigma()", 
            "Cannot find ETinfo" ) );
   }
@@ -141,7 +142,7 @@ void BBLens::AdjustSigma()
 }
 
 
-Vector BBLens::NormalizedEField( double arg_x, double arg_y )
+Vector BBLens::NormalizedEField( double const& arg_x, double const& arg_y )
 {
   Vector  retvec(3);
   char    normal;
@@ -162,7 +163,7 @@ Vector BBLens::NormalizedEField( double arg_x, double arg_y )
   if( ( sigmaX == 0.0 ) && ( sigmaY == 0.0 ) ) {
     r = x*x + y*y;
     if( r < 1.0e-20 ) {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "Vector BBLens::NormalizedEField( double arg_x, double arg_y )", 
            "Asymptotic limit r seems too small." ) );
     }
@@ -329,7 +330,7 @@ JetVector BBLens::NormalizedEField( const Jet& arg_x, const Jet& arg_y )
   if( ( sigmaX == 0.0 ) && ( sigmaY == 0.0 ) ) {
     r = x*x + y*y;
     if( r.standardPart() < 1.0e-20 ) {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw(  GenericException( __FILE__, __LINE__, 
            "JetVector BBLens::NormalizedEField( const Jet&, const Jet& )", 
            "Asymptotic limit r seems too small." ) );
     }

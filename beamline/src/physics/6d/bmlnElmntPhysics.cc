@@ -41,8 +41,10 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/bmlnElmnt.h>
+#include <iostream>
 
 using FNAL::pcerr;
 using FNAL::pcout;
@@ -99,46 +101,61 @@ void bmlnElmnt::localPropagate( ParticleBunch& b ) {
 #ifndef MADPHYSICS
 
 void bmlnElmnt::localPropagate( Particle& p ) {
- static double /* x, y, */ D, p3divpbar;
- static double xpr, ypr;
 
- p3divpbar = sqrt( ( 1.0 + p.state[5] ) * ( 1.0 + p.state[5] )
-                 - p.state[3]*p.state[3] 
-                 - p.state[4]*p.state[4] );
+ double /* x, y, */ D, p3divpbar;
+ double xpr, ypr;
 
- xpr = p.state[3] / p3divpbar;
- ypr = p.state[4] / p3divpbar; 
+ Vector& state = p.getState();
 
- p.state[0] += length * xpr;
- p.state[1] += length * ypr;
+ p3divpbar = sqrt( ( 1.0 + state[5] ) * ( 1.0 + state[5] )
+                 - state[3]*state[3] 
+                 - state[4]*state[4] );
+
+ xpr = state[3] / p3divpbar;
+ ypr = state[4] / p3divpbar; 
+
+ state[0] += length * xpr;
+ state[1] += length * ypr;
 
  D = length*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
 
- p.state[2] += ( D / p.Beta() ) - _ctRef;
+ state[2] += ( D / p.Beta() ) - _ctRef;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void bmlnElmnt::localPropagate( JetParticle& p ) {
- /* static ??? */ Jet /* x, y, */ D, p3divpbar;
- /* static ??? */ Jet dummy;
- /* static ??? */ Jet xpr, ypr;
 
- p3divpbar = sqrt( pow( 1.0 + p.state(5), 2 )
-                 - p.state(3)*p.state(3) 
-                 - p.state(4)*p.state(4) );
+ Jet /* x, y, */ D, p3divpbar;
+ Jet dummy;
+ Jet xpr, ypr;
 
- xpr = p.state(3) / p3divpbar;
- ypr = p.state(4) / p3divpbar;
+ Mapping& state = p.getState();
 
- dummy = p.state(0) + length * xpr;
- ( p.state ).SetComponent( 0, dummy );
- dummy = p.state(1) + length * ypr;
- ( p.state ).SetComponent( 1, dummy );
+ p3divpbar = sqrt( ( 1.0 + state(5) ) * ( 1.0 + state(5) )
+                 - state(3)*state(3) 
+                 - state(4)*state(4) );
+
+ xpr = state(3) / p3divpbar;
+ ypr = state(4) / p3divpbar;
+
+ dummy = state(0) + length * xpr;
+ state.SetComponent( 0, dummy );
+
+ dummy = state(1) + length * ypr;
+ state.SetComponent( 1, dummy );
 
  D = length*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
 
- dummy = p.state(2) + ( D / p.Beta() ) - _ctRef;
- ( p.state ).SetComponent( 2, dummy );
+ dummy = state(2) + ( D / p.Beta() ) - _ctRef;
+ state.SetComponent( 2, dummy );
+
 }
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void bmlnElmnt::localPropagate( ParticleBunch& b ) {
  Particle* p;

@@ -63,12 +63,12 @@ rfcavity::rfcavity( const char* name_arg)
 }
   
 
-rfcavity::rfcavity(double lng_arg,    // length [m]
-                   double f_arg,      // rf frequency [Hz]
-                   double eV_arg,     // rf voltage   [eV]
-                   double phi_s_arg,  // synchronous phase 
-                   double Q_arg,      // Quality factor 
-                   double R_arg       // shunt impedance 
+rfcavity::rfcavity(double const& lng_arg,    // length [m]
+                   double const& f_arg,      // rf frequency [Hz]
+                   double const& eV_arg,     // rf voltage   [eV]
+                   double const& phi_s_arg,  // synchronous phase 
+                   double const& Q_arg,      // Quality factor 
+                   double const& R_arg       // shunt impedance 
                    ) 
 :   bmlnElmnt( lng_arg, eV_arg*1.0e-9 )
   , w_rf(MATH_TWOPI*f_arg)
@@ -85,12 +85,12 @@ rfcavity::rfcavity(double lng_arg,    // length [m]
 
 
 rfcavity::rfcavity( const char* name_arg, // name
-                    double lng_arg,    // length [m]
-                    double f_arg,      // rf frequency 
-                    double eV_arg,     // rf voltage 
-                    double phi_s_arg,  // synchronous phase 
-                    double Q_arg,      // Quality factor 
-                    double R_arg       // shunt impedance 
+                    double const& lng_arg,    // length [m]
+                    double const& f_arg,      // rf frequency 
+                    double const& eV_arg,     // rf voltage 
+                    double const& phi_s_arg,  // synchronous phase 
+                    double const& Q_arg,      // Quality factor 
+                    double const& R_arg       // shunt impedance 
                   ) 
 :   bmlnElmnt( name_arg, lng_arg, eV_arg*1.0e-9 ) 
   , w_rf(MATH_TWOPI*f_arg)
@@ -174,12 +174,6 @@ rfcavity::~rfcavity()
 }
 
 
-void rfcavity::eliminate() 
-{
-  delete this;
-}
-
-
 void rfcavity::acceptInner( RefRegVisitor& v )
 {
   double cdt = 0;
@@ -254,7 +248,7 @@ const char* rfcavity::Type() const
 }
 
 
-void rfcavity::setHarmonicNumber( double n )
+void rfcavity::setHarmonicNumber( double const& n )
 {
   if( 0 < n ) {
     h = n;
@@ -269,11 +263,11 @@ void rfcavity::setHarmonicNumber( double n )
 
 void rfcavity::setHarmonicNumber( int n )
 {
-  this->setHarmonicNumber( (double) n );
+  this->setHarmonicNumber( static_cast<double>(n) );
 }
 
 
-void rfcavity::setFrequency( double f )
+void rfcavity::setFrequency( double const& f )
 {
   if( 0 < f ) {
     w_rf = MATH_TWOPI*f;
@@ -286,7 +280,7 @@ void rfcavity::setFrequency( double f )
 }
 
 
-void rfcavity::setFrequencyRelativeTo( double f )
+void rfcavity::setFrequencyRelativeTo( double const& f )
 {
   if( (0 < f) && (0 < h) ) {
     MATH_TWOPI*( ((double) h)*f );
@@ -299,7 +293,7 @@ void rfcavity::setFrequencyRelativeTo( double f )
 }
 
 
-void rfcavity::setRadialFrequency( double omega )
+void rfcavity::setRadialFrequency( double const& omega )
 {
   if( 0 < omega ) {
     w_rf = omega;
@@ -312,7 +306,7 @@ void rfcavity::setRadialFrequency( double omega )
 }
 
 
-void rfcavity::setRadialFrequencyRelativeTo( double omega )
+void rfcavity::setRadialFrequencyRelativeTo( double const& omega )
 {
   if( (0 < omega) && (0 < h) ) {
     w_rf = ((double) h)*omega;
@@ -325,7 +319,7 @@ void rfcavity::setRadialFrequencyRelativeTo( double omega )
 }
 
 
-void rfcavity::setPhi( double angle )
+void rfcavity::setPhi( double const& angle )
 {
   phi_s = angle;
   sin_phi_s = sin(angle);
@@ -334,7 +328,7 @@ void rfcavity::setPhi( double angle )
 
 
 
-void rfcavity::setStrength( double eV )
+void rfcavity::setStrength( double const& eV )
 {
   bmlnElmnt::setStrength( eV*1.0e-9 );
   _finishConstructor();
@@ -355,11 +349,11 @@ thinrfcavity::thinrfcavity(const char *name_arg)
 {
 }
   
-thinrfcavity::thinrfcavity(double f_arg,      // rf frequency [Hz]
-                   	   double eV_arg,     // rf voltage   [eV]
-                   	   double phi_s_arg,  // synchronous phase 
-                   	   double Q_arg,      // Quality factor 
-                   	   double R_arg       // shunt impedance 
+thinrfcavity::thinrfcavity(double const& f_arg,      // rf frequency [Hz]
+                   	   double const& eV_arg,     // rf voltage   [eV]
+                   	   double const& phi_s_arg,  // synchronous phase 
+                   	   double const& Q_arg,      // Quality factor 
+                   	   double const& R_arg       // shunt impedance 
                    	   ) 
 :   bmlnElmnt( 0.0, eV_arg*1.0e-9 )
   , w_rf( MATH_TWOPI*f_arg )
@@ -372,11 +366,11 @@ thinrfcavity::thinrfcavity(double f_arg,      // rf frequency [Hz]
 }
 
 thinrfcavity::thinrfcavity(const char * name_arg, // name
-                   	   double f_arg,      // rf frequency 
-                   	   double eV_arg,     // rf voltage 
-                   	   double phi_s_arg,  // synchronous phase 
-                   	   double Q_arg,      // Quality factor 
-                   	   double R_arg       // shunt impedance 
+                   	   double const& f_arg,      // rf frequency 
+                   	   double const& eV_arg,     // rf voltage 
+                   	   double const& phi_s_arg,  // synchronous phase 
+                   	   double const& Q_arg,      // Quality factor 
+                   	   double const& R_arg       // shunt impedance 
                    	   ) 
 :   bmlnElmnt( name_arg, 0.0, eV_arg*1.0e-9 ) 
   , w_rf( MATH_TWOPI*f_arg )
@@ -401,10 +395,6 @@ thinrfcavity::thinrfcavity( const thinrfcavity& x )
 
 
 thinrfcavity::~thinrfcavity(){
-}
-
-void thinrfcavity::eliminate() {
-  delete this;
 }
 
 ostream& thinrfcavity::writeTo(ostream& os) 
@@ -440,7 +430,7 @@ const char* thinrfcavity::Type() const
 }
 
 
-void thinrfcavity::setHarmonicNumber( double n )
+void thinrfcavity::setHarmonicNumber( double const& n )
 {
   if( 0 < n ) {
     h = n;
@@ -450,11 +440,11 @@ void thinrfcavity::setHarmonicNumber( double n )
 
 void thinrfcavity::setHarmonicNumber( int n )
 {
-  this->setHarmonicNumber( (double) n );
+  this->setHarmonicNumber( static_cast<double>(n) );
 }
 
 
-void thinrfcavity::setFrequency( double f )
+void thinrfcavity::setFrequency( double const& f )
 {
   if( 0 < f ) {
     w_rf = MATH_TWOPI*f;
@@ -462,7 +452,7 @@ void thinrfcavity::setFrequency( double f )
 }
 
 
-void thinrfcavity::setFrequencyRelativeTo( double f )
+void thinrfcavity::setFrequencyRelativeTo( double const& f )
 {
   if( (0 < f) && (0 < h) ) {
     MATH_TWOPI*( ((double) h)*f );
@@ -470,7 +460,7 @@ void thinrfcavity::setFrequencyRelativeTo( double f )
 }
 
 
-void thinrfcavity::setRadialFrequency( double omega )
+void thinrfcavity::setRadialFrequency( double const& omega )
 {
   if( 0 < omega ) {
     w_rf = omega;
@@ -478,7 +468,7 @@ void thinrfcavity::setRadialFrequency( double omega )
 }
 
 
-void thinrfcavity::setRadialFrequencyRelativeTo( double omega )
+void thinrfcavity::setRadialFrequencyRelativeTo( double const& omega )
 {
   if( (0 < omega) && (0 < h) ) {
     w_rf = ((double) h)*omega;
@@ -486,7 +476,7 @@ void thinrfcavity::setRadialFrequencyRelativeTo( double omega )
 }
 
 
-void thinrfcavity::setPhi( double angle )
+void thinrfcavity::setPhi( double const& angle )
 {
   phi_s = angle;
   sin_phi_s = sin(angle);

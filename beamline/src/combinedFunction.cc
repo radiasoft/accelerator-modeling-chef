@@ -41,8 +41,10 @@
 #endif
 
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/slist.h>
 #include <beamline/beamline.h>
 #include <beamline/combinedFunction.h>
+#include <beamline/JetParticle.h>
 #include <beamline/Particle.h>
 #include <beamline/sbend.h>
 #include <beamline/rbend.h>
@@ -87,11 +89,10 @@ combinedFunction::combinedFunction( const beamline& b )
 }
 
 combinedFunction::~combinedFunction() {
-  p_bml->zap();
 }
 
 combinedFunction::combinedFunction( const combinedFunction& x ) 
-: bmlnElmnt( (bmlnElmnt&) x )
+: bmlnElmnt( x )
 {
   p_bml = (beamline*)x.p_bml->Clone();
 }
@@ -480,7 +481,7 @@ bool combinedFunction::isMagnet() const
 
 double combinedFunction::AdjustPosition( const Particle& arg_p )
 {
-  JetParticle* myJPPtr = arg_p.ConvertToJetParticle();
+  JetParticle* myJPPtr = new JetParticle(arg_p);
   // This probably won't work properly.
   double ret = AdjustPosition( *myJPPtr );
   delete myJPPtr;
@@ -496,13 +497,13 @@ double combinedFunction::AdjustPosition( const JetParticle& arg_jp )
   enum { x = 0, y, cdt, xp, yp, dpop };
 
   JetParticle* myJPPtr = arg_jp.Clone();
-  Particle*      p_myP = myJPPtr->ConvertToParticle();
+  Particle*      p_myP = new Particle(*myJPPtr);
   // This is deleted before returning.
 
   double x_i  = p_myP->State( x  );
   double xp_i = p_myP->State( xp );
 
-  double inState [] = { 0, 0, 0, 0, 0, 0 };
+  Vector inState;
   inState[x]  = x_i;
   inState[xp] = xp_i;
 

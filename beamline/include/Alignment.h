@@ -30,9 +30,11 @@
 #define ALIGNMENT_H
 
 #include <basic_toolkit/globaldefs.h>
+#include <basic_toolkit/VectorD.h>
 
 class Particle;
 class JetParticle;
+
 
 template <typename T>
 class  TJet;
@@ -40,8 +42,12 @@ class  TJet;
 template <typename T>
 class  TJetVector;
 
+template <typename T>
+class  TMapping;
+
 typedef TJet<double>       Jet;
 typedef TJetVector<double> JetVector; 
+typedef TMapping<double>   Mapping; 
 
 
 struct DLLEXPORT alignmentData {
@@ -82,14 +88,15 @@ public:
                                 // BMLM_dynDim in length
                                 // I don\'t think that the Particle or
                                 // JetParticle should be modified directly
-  void    align(Particle const&, double*);
-  void    align(double*,         double*);
-  void misalign(Particle const&, double*);
-  void    align(JetParticle&,    Jet*);
-  void    align(Jet*,            Jet*);
-  void misalign(JetParticle&,    Jet*);
-  void misalign(double* );
-  void    align(double* );
+  void    align(Particle const&, Vector&);
+  void    align(Vector&,         Vector&);
+  void misalign(Particle const&, Vector&);
+  void    align(JetParticle&,    Mapping&);
+  void    align(JetVector&,      Mapping&);
+
+  void misalign(JetParticle&,    Mapping&);
+  void misalign(Vector& );
+  void    align(Vector& );
   void misalign(JetVector& );
   void    align(JetVector& );
 

@@ -51,6 +51,7 @@
 #include <beamline/rbend.h>
 #include <beamline/octupole.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/Alignment.h>
 
 
@@ -73,8 +74,8 @@ CF_rbend::CF_rbend()
 }
 
 
-CF_rbend::CF_rbend( double        lng,  // length      [ meter    ]
-                    double        fld,  // field       [ tesla    ]
+CF_rbend::CF_rbend( double const&        lng,  // length      [ meter    ]
+                    double const&        fld,  // field       [ tesla    ]
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( lng, fld )
   , _usEdgeAngle(0.0)
@@ -89,8 +90,8 @@ CF_rbend::CF_rbend( double        lng,  // length      [ meter    ]
 
 
 CF_rbend::CF_rbend( const char*   nm,   // name
-                    double        lng,  // length      [ meter    ]
-                    double        fld,  // field       [ tesla    ]
+                    double const&        lng,  // length      [ meter    ]
+                    double const&        fld,  // field       [ tesla    ]
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( nm, lng, fld )
   , _usEdgeAngle(0.0)
@@ -104,9 +105,9 @@ CF_rbend::CF_rbend( const char*   nm,   // name
 }
 
 
-CF_rbend::CF_rbend( double        lng,  // length      [ meter    ]
-                    double        fld,  // field       [ tesla    ]
-                    double        ang,  // entry angle [ radians  ]
+CF_rbend::CF_rbend( double const&        lng,  // length      [ meter    ]
+                    double const&        fld,  // field       [ tesla    ]
+                    double const&        ang,  // entry angle [ radians  ]
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( lng, fld )
   , _usEdgeAngle(0.0)
@@ -121,9 +122,9 @@ CF_rbend::CF_rbend( double        lng,  // length      [ meter    ]
 
 
 CF_rbend::CF_rbend( const char*   nm,   // name
-                    double        lng,  // length      [ meter    ]
-                    double        fld,  // field       [ tesla    ]
-                    double        ang,  // entry angle [ radians  ]
+                    double const&        lng,  // length      [ meter    ]
+                    double const&        fld,  // field       [ tesla    ]
+                    double const&        ang,  // entry angle [ radians  ]
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( nm, lng, fld )
   , _usEdgeAngle(0.0)
@@ -137,10 +138,10 @@ CF_rbend::CF_rbend( const char*   nm,   // name
 }
 
 
-CF_rbend::CF_rbend( double        lng,  // length     [ meter    ]
-                    double        fld,  // field      [ tesla    ]
-                    double        us,   // upstream edge angle [radians]
-                    double        ds,   // downstream edge angle [radians]
+CF_rbend::CF_rbend( double const&        lng,  // length     [ meter    ]
+                    double const&        fld,  // field      [ tesla    ]
+                    double const&        us,   // upstream edge angle [radians]
+                    double const&        ds,   // downstream edge angle [radians]
                                         // signs of previous two parameters
                                         // are as defined for rbends by MAD
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
@@ -157,10 +158,10 @@ CF_rbend::CF_rbend( double        lng,  // length     [ meter    ]
 
 
 CF_rbend::CF_rbend( const char*   nm,   // name
-                    double        lng,  // length     [ meter    ]
-                    double        fld,  // field      [ tesla    ]
-                    double        us,   // upstream edge angle [radians]
-                    double        ds,   // downstream edge angle [radians]
+                    double const&        lng,  // length     [ meter    ]
+                    double const&        fld,  // field      [ tesla    ]
+                    double const&        us,   // upstream edge angle [radians]
+                    double const&        ds,   // downstream edge angle [radians]
                                         // signs of previous two parameters
                                         // are as defined for rbends by MAD
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
@@ -176,11 +177,11 @@ CF_rbend::CF_rbend( const char*   nm,   // name
 }
 
 
-CF_rbend::CF_rbend( double        lng,  // length      [meter]
-                    double        fld,  // field       [tesla]
-                    double        ang,  // entry angle [radians]
-                    double        us,   // upstream edge angle [radians]
-                    double        ds,   // downstream edge angle [radians]
+CF_rbend::CF_rbend( double const&        lng,  // length      [meter]
+                    double const&        fld,  // field       [tesla]
+                    double const&        ang,  // entry angle [radians]
+                    double const&        us,   // upstream edge angle [radians]
+                    double const&        ds,   // downstream edge angle [radians]
                                         // signs of previous two parameters
                                         // are as defined for rbends by MAD
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
@@ -197,11 +198,11 @@ CF_rbend::CF_rbend( double        lng,  // length      [meter]
 
 
 CF_rbend::CF_rbend( const char*   nm,   // name
-                    double        lng,  // length      [meter]
-                    double        fld,  // field       [tesla]
-                    double        ang,  // entry angle [radians]
-                    double        us,   // upstream edge angle [radians]
-                    double        ds,   // downstream edge angle [radians]
+                    double const&        lng,  // length      [meter]
+                    double const&        fld,  // field       [tesla]
+                    double const&        ang,  // entry angle [radians]
+                    double const&        us,   // upstream edge angle [radians]
+                    double const&        ds,   // downstream edge angle [radians]
                                         // signs of previous two parameters
                                         // are as defined for rbends by MAD
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
@@ -361,7 +362,7 @@ double CF_rbend::setExitAngle( const Particle& p )
 }
 
 
-double CF_rbend::setEntryAngle( double phi /* radians */ )
+double CF_rbend::setEntryAngle( double const& phi /* radians */ )
 {
   double ret = _usAngle;
   _usAngle = phi;
@@ -371,7 +372,7 @@ double CF_rbend::setEntryAngle( double phi /* radians */ )
 }
 
 
-double CF_rbend::setExitAngle( double phi /* radians */ )
+double CF_rbend::setExitAngle( double const& phi /* radians */ )
 {
   double ret = _dsAngle;
   _dsAngle = phi;  
@@ -381,7 +382,7 @@ double CF_rbend::setExitAngle( double phi /* radians */ )
 }
 
 
-int CF_rbend::setOctupole( double arg_x )
+int CF_rbend::setOctupole( double const& arg_x )
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   thinOctupole** w = new thinOctupole* [ m ];
@@ -410,7 +411,7 @@ int CF_rbend::setOctupole( double arg_x )
   return 0;
 }
 
-int CF_rbend::setSextupole( double arg_x )
+int CF_rbend::setSextupole( double const& arg_x )
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   thinSextupole** w = new thinSextupole* [ m ];
@@ -452,7 +453,7 @@ bool CF_rbend::hasStandardFaces() const
 }
 
 
-int CF_rbend::setQuadrupole( double arg_x )
+int CF_rbend::setQuadrupole( double const& arg_x )
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   thinQuad** w = new thinQuad* [ m ];
@@ -482,7 +483,7 @@ int CF_rbend::setQuadrupole( double arg_x )
 }
 
 
-int CF_rbend::setDipoleField( double arg_x )
+int CF_rbend::setDipoleField( double const& arg_x )
 {
   this->strength = arg_x;
 
@@ -513,7 +514,7 @@ int CF_rbend::setDipoleField( double arg_x )
 }
 
 
-void CF_rbend::setStrength( double s )
+void CF_rbend::setStrength( double const& s )
 {
   double ratio = s / this->getDipoleField();
   bmlnElmnt** x = _u;
@@ -620,7 +621,7 @@ double CF_rbend::getDipoleField() const
 }
 
 
-void CF_rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
+void CF_rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   static bool firstTime = true;
   if( firstTime ) {
@@ -646,7 +647,7 @@ void CF_rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
     ostringstream uic;
     uic << "Requested percentage = " << pc << "; should be in [0,1].";
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void CF_rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           "void CF_rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
            uic.str().c_str() ) );
   }
 
@@ -810,15 +811,9 @@ double CF_rbend::OrbitLength( const Particle& x )
 }
 
 
-void CF_rbend::eliminate( void )
-{
-  delete this;
-}
-
-
 double CF_rbend::AdjustPosition( const Particle& arg_p )
 {
-  JetParticle* myJPPtr = arg_p.ConvertToJetParticle();
+  JetParticle* myJPPtr = new JetParticle(arg_p);
   // This probably won't work properly.
   double ret = AdjustPosition( *myJPPtr );
   delete myJPPtr;
@@ -837,13 +832,15 @@ double CF_rbend::AdjustPosition( const JetParticle& arg_jp )
   enum { x = 0, y, cdt, xp, yp, dpop };
 
   JetParticle* myJPPtr = arg_jp.Clone();
-  Particle*      p_myP = myJPPtr->ConvertToParticle();
+  Particle*      p_myP = new Particle( *myJPPtr );
+
   // These are deleted before returning.
 
   double x_i  = p_myP->State( x  );
   double xp_i = p_myP->State( xp );
 
-  double inState [] = { 0, 0, 0, 0, 0, 0 };
+  Vector inState(6);
+
   inState[x]  = x_i;
   inState[xp] = xp_i;
 

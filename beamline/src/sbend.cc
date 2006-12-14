@@ -70,7 +70,7 @@ sbend::sbend()
 }
 
 
-sbend::sbend( double l, double s, double alpha, PropFunc* pf ) 
+sbend::sbend( double const& l, double const& s, double const& alpha, PropFunc* pf ) 
 : bmlnElmnt( l, s, pf )
   , _angle(alpha)
   , _usEdgeAngle(0.0)
@@ -84,7 +84,7 @@ sbend::sbend( double l, double s, double alpha, PropFunc* pf )
    ostringstream uic;
    uic  << "| bend angle | = " << fabs(alpha) << " < 1 nanoradian.";
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "sbend::sbend( double l, double s, double alpha, PropFunc* pf )",
+          "sbend::sbend( double const& l, double const& s, double const& alpha, PropFunc* pf )",
           uic.str().c_str() ) );
  }
  if( (0.0 > s ) != (0.0 > alpha ) ) {
@@ -103,15 +103,15 @@ sbend::sbend( double l, double s, double alpha, PropFunc* pf )
 
  // This should never happen, but in case it does.
  if(pf == 0) {
-   Propagator = &sbend::Exact;
+   propfunc_ = &sbend::Exact;
  }
 
  _calcPropParams();
 }
 
 
-sbend::sbend( double l, double s, double alpha, 
-              double us, double ds, PropFunc* pf )
+sbend::sbend( double const& l, double const& s, double const& alpha, 
+              double const& us, double const& ds, PropFunc* pf )
 :   bmlnElmnt( l, s, pf )
   , _angle(alpha)
   , _usEdgeAngle(us)
@@ -126,7 +126,7 @@ sbend::sbend( double l, double s, double alpha,
    ostringstream uic;
    uic  << "| bend angle | = " << fabs(alpha) << " < 1 nanoradian.";
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "sbend::sbend( double l, double s, ... )",
+          "sbend::sbend( double const& l, double const& s, ... )",
           uic.str().c_str() ) );
  }
  if( (0.0 > s ) != (0.0 > alpha ) ) {
@@ -149,7 +149,7 @@ sbend::sbend( double l, double s, double alpha,
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** sbend::sbend( double l, ... PropFunc* pf )"
+          << "\n*** WARNING *** sbend::sbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
           << fabs(us) 
           << " < 1 microradian."
@@ -166,7 +166,7 @@ sbend::sbend( double l, double s, double alpha,
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** sbend::sbend( double l, ... PropFunc* pf )"
+          << "\n*** WARNING *** sbend::sbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
           << fabs(ds) 
           << " < 1 microradian."
@@ -179,14 +179,14 @@ sbend::sbend( double l, double s, double alpha,
 
  // This should never happen, but in case it does.
  if(pf == 0) {
-   Propagator = &sbend::Exact;
+   propfunc_ = &sbend::Exact;
  }
 
  _calcPropParams();
 }
 
 
-sbend::sbend( const char* n, double l, double s, double alpha, PropFunc* pf ) 
+sbend::sbend( const char* n, double const& l, double const& s, double const& alpha, PropFunc* pf ) 
 : bmlnElmnt( n, l, s, pf )
   , _angle(alpha)
   , _usEdgeAngle(0.0)
@@ -200,7 +200,7 @@ sbend::sbend( const char* n, double l, double s, double alpha, PropFunc* pf )
    ostringstream uic;
    uic  << "| bend angle | = " << fabs(alpha) << " < 1 nanoradian.";
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "sbend::sbend( char* n, double l, double s, double alpha, PropFunc* pf )",
+          "sbend::sbend( char* n, double const& l, double const& s, double const& alpha, PropFunc* pf )",
           uic.str().c_str() ) );
  }
  if( (0.0 > s ) != (0.0 > alpha ) ) {
@@ -219,30 +219,35 @@ sbend::sbend( const char* n, double l, double s, double alpha, PropFunc* pf )
 
  // This should never happen, but in case it does.
  if(pf == 0) {
-   Propagator = &sbend::Exact;
+   propfunc_ = &sbend::Exact;
  }
 
  _calcPropParams();
 }
 
 
-sbend::sbend( const char* n, double l, double s, double alpha, 
-              double us, double ds, PropFunc* pf )
+sbend::sbend( const char* n, double const& l, double const& s, double const& alpha, 
+              double const& us_arg, double const& ds_arg, PropFunc* pf )
 :   bmlnElmnt( n, l, s, pf )
   , _angle(alpha)
-  , _usEdgeAngle(us)
-  , _dsEdgeAngle(ds)
-  , _usAngle(us)
-  , _dsAngle(-ds)
-  , _usTan(tan(us))
-  , _dsTan(-tan(ds))
+  , _usEdgeAngle(us_arg)
+  , _dsEdgeAngle(ds_arg)
+  , _usAngle(us_arg)
+  , _dsAngle(-ds_arg)
+  , _usTan(tan(us_arg))
+  , _dsTan(-tan(ds_arg))
 {
+
+  // Note: us and ds are modified below ...  
+  double us = us_arg;
+  double ds = ds_arg;
+ 
  static bool firstTime = true;
  if ( fabs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
    uic  << "| bend angle | = " << fabs(alpha) << " < 1 nanoradian.";
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "sbend::sbend( double l, double s, ... )",
+          "sbend::sbend( double const& l, double const& s, ... )",
           uic.str().c_str() ) );
  }
  if( (0.0 > s ) != (0.0 > alpha ) ) {
@@ -266,7 +271,7 @@ sbend::sbend( const char* n, double l, double s, double alpha,
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** sbend::sbend( double l, ... PropFunc* pf )"
+          << "\n*** WARNING *** sbend::sbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
           << fabs(us) 
           << " < 1 microradian."
@@ -284,7 +289,7 @@ sbend::sbend( const char* n, double l, double s, double alpha,
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** sbend::sbend( double l, ... PropFunc* pf )"
+          << "\n*** WARNING *** sbend::sbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
           << fabs(ds) 
           << " < 1 microradian."
@@ -297,7 +302,7 @@ sbend::sbend( const char* n, double l, double s, double alpha,
 
  // This should never happen, but in case it does.
  if(pf == 0) {
-   Propagator = &sbend::Exact;
+   propfunc_ = &sbend::Exact;
  }
 
  _calcPropParams();
@@ -362,7 +367,7 @@ double sbend::setExitAngle( const Particle& p )
 }
 
 
-double sbend::setEntryAngle( double phi /* radians */ )
+double sbend::setEntryAngle( double const& phi /* radians */ )
 {
   double ret = _usAngle;
   _usAngle = phi;
@@ -371,7 +376,7 @@ double sbend::setEntryAngle( double phi /* radians */ )
 }
 
 
-double sbend::setExitAngle( double phi /* radians */ )
+double sbend::setExitAngle( double const& phi /* radians */ )
 {
   double ret = _dsAngle;
   _dsAngle = phi;  
@@ -405,19 +410,13 @@ void sbend::setupPropFunc()
 }
 
 
-void sbend::eliminate() 
-{
- delete this;
-}
-
-
 bool sbend::isMagnet() const
 {
   return true;
 }
 
 
-void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
+void sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   static bool firstTime = true;
   if( firstTime ) {
@@ -425,7 +424,7 @@ void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
     (*pcerr) << "\n"
             "\n*** WARNING ***"
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
+         << "\n*** WARNING *** void sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )"
             "\n*** WARNING *** The new, split elements must be commissioned with"
             "\n*** WARNING *** RefRegVisitor before being used."
             "\n*** WARNING *** "
@@ -436,14 +435,14 @@ void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
     ostringstream uic;
     uic  << "pc = " << pc << ": this should be within [0,1].";
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
-           "void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )",
+           "void sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )",
            uic.str().c_str() ) );
   }
 
-  if( typeid(*Propagator) == typeid(MAD_Prop) ) {
+  if( typeid(*propfunc_) == typeid(MAD_Prop) ) {
     (*pcerr) << "\n*** WARNING *** "
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
+         << "\n*** WARNING *** void sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )"
             "\n*** WARNING *** Splitting sbend with MAD-like propagator."
             "\n*** WARNING *** I'm not responsible for what happens."
             "\n*** WARNING *** You'll get wrong results, "
@@ -452,16 +451,16 @@ void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
          << endl;
     *a = new sbend( pc*length, strength,
                     pc*_usAngle,  // this is surely the wrong thing to do
-                    Propagator ); // but THERE IS NO RIGHT THING
+                    propfunc_ ); // but THERE IS NO RIGHT THING
     *b = new sbend( (1.0 - pc)*length, strength,
                     (1.0 - pc)*_usAngle,
-                    Propagator );
+                    propfunc_ );
   }
-  else if( typeid(*Propagator) == typeid(NoEdge_Prop) ) {
-    *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, Propagator );
-    *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, Propagator );
+  else if( typeid(*propfunc_) == typeid(NoEdge_Prop) ) {
+    *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, propfunc_ );
+    *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, propfunc_ );
   }
-  else if( typeid(*Propagator) == typeid(Exact_Prop) ) {
+  else if( typeid(*propfunc_) == typeid(Exact_Prop) ) {
     *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::InEdge );
     dynamic_cast<sbend*>(*a)->setEntryAngle( this->getEntryAngle() );
     dynamic_cast<sbend*>(*a)->setExitAngle( 0.0 );    // Should not matter
@@ -469,34 +468,34 @@ void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
     dynamic_cast<sbend*>(*b)->setEntryAngle( 0.0 );   // Should not matter
     dynamic_cast<sbend*>(*b)->setExitAngle( this->getExitAngle() );
   }
-  else if( typeid(*Propagator) == typeid(InEdge_Prop) ) {
-    *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, Propagator );
+  else if( typeid(*propfunc_) == typeid(InEdge_Prop) ) {
+    *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, propfunc_ );
     dynamic_cast<sbend*>(*a)->setEntryAngle( this->getEntryAngle() );
     dynamic_cast<sbend*>(*a)->setExitAngle( 0.0 );    // Should not matter
     *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::NoEdge );
   }
-  else if( typeid(*Propagator) == typeid(OutEdge_Prop) ) {
+  else if( typeid(*propfunc_) == typeid(OutEdge_Prop) ) {
     *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::NoEdge );
-    *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, Propagator );
+    *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, propfunc_ );
     dynamic_cast<sbend*>(*b)->setEntryAngle( 0.0 );   // Should not matter
     dynamic_cast<sbend*>(*b)->setExitAngle( this->getExitAngle() );
   }
-  // TO BE DONE: else if( typeid(*Propagator) == typeid(Real_Exact_Prop) ) {
+  // TO BE DONE: else if( typeid(*propfunc_) == typeid(Real_Exact_Prop) ) {
   // TO BE DONE:   *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::RealInEdge );
   // TO BE DONE:   *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::RealOutEdge );
   // TO BE DONE: }
-  // TO BE DONE: else if( typeid(*Propagator) == typeid(Real_InEdge_Prop) ) {
-  // TO BE DONE:   *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, Propagator );
+  // TO BE DONE: else if( typeid(*propfunc_) == typeid(Real_InEdge_Prop) ) {
+  // TO BE DONE:   *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, propfunc_ );
   // TO BE DONE:   *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::NoEdge );
   // TO BE DONE: }
-  // TO BE DONE: else if( typeid(*Propagator) == typeid(Real_OutEdge_Prop) ) {
+  // TO BE DONE: else if( typeid(*propfunc_) == typeid(Real_OutEdge_Prop) ) {
   // TO BE DONE:   *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::NoEdge );
-  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, Propagator );
+  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, propfunc_ );
   // TO BE DONE: }
   else {
     (*pcerr) << "\n*** WARNING *** "
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
+         << "\n*** WARNING *** void sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )"
             "\n*** WARNING *** Propagator type unrecognized."
             "\n*** WARNING *** I'm not responsible for what happens."
             "\n*** WARNING *** It's all your fault."
@@ -530,15 +529,15 @@ ostream& sbend::writeTo(ostream& os)
      << OSTREAM_DOUBLE_PREC << _dsAngle << endl;
 
   // Determine which propogators are being used, and make a note of it.
-  if ( Propagator ==            &sbend::Exact )
+  if ( propfunc_ ==            &sbend::Exact )
     os << "sbend::P_Exact    sbend::J_Exact";
-  else if ( Propagator ==       &sbend::LikeMAD )
+  else if ( propfunc_ ==       &sbend::LikeMAD )
     os << "sbend::P_LikeMAD  sbend::J_LikeMAD";
-  else if ( Propagator ==       &sbend::NoEdge )
+  else if ( propfunc_ ==       &sbend::NoEdge )
     os << "sbend::P_NoEdge   sbend::J_NoEdge";
-  else if ( Propagator ==       &sbend::InEdge )
+  else if ( propfunc_ ==       &sbend::InEdge )
     os << "sbend::P_InEdge   sbend::J_InEdge";
-  else if ( Propagator ==       &sbend::OutEdge )
+  else if ( propfunc_ ==       &sbend::OutEdge )
     os << "sbend::P_OutEdge  sbend::J_OutEdge";
   else
     os << "UNKNOWN  UNKNOWN";

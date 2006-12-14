@@ -64,8 +64,8 @@ class FramePusher : public ConstBmlVisitor
 {
  public:
   FramePusher();
-  FramePusher( const Frame& );
-  FramePusher( const FramePusher& );
+  FramePusher( Frame      const& );
+  FramePusher( FramePusher const& );
   ~FramePusher();
 
   void visitBmlnElmnt( const bmlnElmnt* );

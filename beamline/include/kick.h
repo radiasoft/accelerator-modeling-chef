@@ -49,18 +49,15 @@ class DLLEXPORT hkick : public bmlnElmnt
 {
 public:
   hkick();
-  hkick( double );         // kick size in radians
-  hkick( const char* );    // name; assumes zero kick
-  hkick( const char*,      // name
-         double );         // kick size in radians
-  hkick( const char*,      // name
-         double,           // length
-         double );         // kick size in radians
+  hkick( double const& );                                          // kick size in radians
+  hkick( const char* name);                                 // name; assumes zero kick
+  hkick( const char* name,                 double const& kick);     // kick size in radians
+  hkick( const char* name,  double const& length, double const& kick);     // kick size in radians
   hkick( const hkick& );
 
   virtual hkick* Clone() const { return new hkick( *this ); }
 
-  ~hkick();
+  virtual ~hkick();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -76,19 +73,16 @@ public:
 class DLLEXPORT vkick : public bmlnElmnt
 {
 public:
-  vkick();                  // Assumes zero kick
-  vkick( double );          // kick size in radians
-  vkick( const char* );     // name; assumes zero kick
-  vkick( const char*,       // name
-         double  );         // kick size in radians
-  vkick( const char*,       // name
-         double,            // length
-         double  );         // kick size in radians
+  vkick();                                               // Assumes zero kick
+  vkick( double const& );                                       // kick size in radians
+  vkick( const char* );                                  // name; assumes zero kick
+  vkick( const char* name, double const& kick);                  // kick size in radians
+  vkick( const char*,     double const& length, double const& kick );  // kick size in radians
   vkick( const vkick& );
 
   vkick* Clone() const { return new vkick( *this ); }
 
-  ~vkick();
+  virtual ~vkick();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -109,33 +103,27 @@ private:
         std::ostream& writeTo(std::ostream&);
 public:
         kick();
-        kick( const char* /* name */ );
-        kick( double, /* horizontal kick */ double /* vertical kick */ );
-        kick( const char*, double, double );
-        kick( double, // length
-              double, // horizontal kick 
-              double  // vertical kick 
-            );
-        kick( const char*, // name 
-              double,      // length
-              double,      // horizontal kick 
-              double       // vertical kick
-            );
-        kick( const kick& );
-        virtual ~kick();
+        kick( char const* name );
+        kick(                                           double const& horizontal_kick,double const& vertical_kick);
+        kick( char const* name,                         double const& horizontal_kick, double const& vertical_kick);
+        kick(                     double const& length, double const& horizontal_kick, double const& vertical_kick);
+        kick( char const* name,   double const& length, double const& horizontal_kick, double const& vertical_kick);
+        kick( kick const& );
+        kick* Clone() const { return new kick( *this ); }
+
+       virtual ~kick();
 
         void localPropagate( ParticleBunch& x) {bmlnElmnt::localPropagate( x ); }
         void localPropagate( Particle& );
         void localPropagate( JetParticle& );
 
-        void accept(BmlVisitor& v) { v.visitKick( this ); }
+        void accept(BmlVisitor& v)            { v.visitKick( this ); }
         void accept(ConstBmlVisitor& v) const { v.visitKick( this ); }
 
         double& horizontalStrength() { return horizontalKick; }
-        double& verticalStrength() { return verticalKick; }
+        double& verticalStrength()   { return verticalKick; }
 
         const char* Type() const;
-        kick* Clone() const { return new kick( *this ); }
-};
+ };
 
 #endif    // KICK_H

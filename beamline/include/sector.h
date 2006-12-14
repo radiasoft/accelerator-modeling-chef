@@ -44,6 +44,7 @@
 #include <beamline/bmlnElmnt.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 class DLLEXPORT sector : public bmlnElmnt
 {
@@ -57,7 +58,7 @@ private:
   double alphaV    [2];
   double deltaPsiV;
   double mapMatrix[BMLN_dynDim][BMLN_dynDim];
-  double (*DeltaT) ( double );
+  double (*DeltaT) ( double const& );
   Jet    (*JetDeltaT) ( const Jet& );
 
   std::ostream& writeTo ( std::ostream& );
@@ -76,54 +77,35 @@ public:
   friend class JET_Prop;
   static JET_Prop defaultPropagate; 
 
-  sector( const char* = 0, double = 0.0 );
+  sector( const char* = 0, double const& = 0.0 );
   sector( double* betaH,  double* alphaH,  double* psiH,
-          double* betaV,  double* alphaV,  double* psiV, double length );
+          double* betaV,  double* alphaV,  double* psiV, double const& length );
   sector( const char*, double* betaH,  double* alphaH,  double* psiH,
-                       double* betaV,  double* alphaV,  double* psiV, double length );
+                       double* betaV,  double* alphaV,  double* psiV, double const& length );
 
-  sector( Jet*, 
-          double /* length */, 
-          char = 1, /* mapType */
-          PropFunc*    = &sector::defaultPropagate );
 
-  sector( const char*, 
-          Jet*, 
-          double, 
-          char = 1,    /* mapType */ 
-          PropFunc*    = &sector::defaultPropagate );
+  sector(              Mapping const&,  double const& length, char mapType=1, PropFunc* = &sector::defaultPropagate );
 
-  sector( const Mapping&,  
-          double /* length */, 
-          char = 1, /* mapType */ 
-          PropFunc*    = &sector::defaultPropagate );
+  sector( const char*, Mapping const&,  double const& length, char mapType=1, PropFunc* = &sector::defaultPropagate );
 
-  sector( const char*, 
-          const Mapping&,  
-          double, 
-          char = 1, /* mapType */ 
-          PropFunc*    = &sector::defaultPropagate );
-
-  sector( const sector& );
+  sector( sector const& );
 
   sector* Clone() const { return new sector( *this ); }
 
-  ~sector();
-
-  void eliminate();
+  virtual ~sector();
 
   Mapping getMap() const;
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle&    p ) { (*Propagator)( this, p ); }
-  void localPropagate( JetParticle& p ) { (*Propagator)( this, p ); }
+  void localPropagate( Particle&    p ) { (*propfunc_)( this, p ); }
+  void localPropagate( JetParticle& p ) { (*propfunc_)( this, p ); }
 
   void accept( BmlVisitor& v ) { v.visitSector( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitSector( this ); }
 
-  void setFrequency( double (*)( double ) );
-  void setFrequency( Jet (*)( const Jet& ) );
-  void setLength( double );
+  void setFrequency( double (*)( double const& ) );
+  void setFrequency( Jet (*)( Jet const& ) );
+  void setLength( double const& );
 
   const char* Type() const;
 

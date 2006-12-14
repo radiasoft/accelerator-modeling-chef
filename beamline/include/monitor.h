@@ -50,6 +50,7 @@ private:
   double   _driftFraction;
 
 protected:
+
   std::ostream* _outputStreamPtr;  // not owned
   bool          _onOffSwitch;
   double*       _rgr;
@@ -58,12 +59,11 @@ public:
 
   // Constructors
   monitor();
-  monitor( const char* /*name*/ );
-  monitor( const char* /*name*/, double /*length*/ );
+  monitor( const char* name );
+  monitor( const char* name, double const& length);
   monitor( const monitor& );
 
-  monitor* Clone() const 
-  { return new monitor( *this ); }
+  monitor* Clone() const  { return new monitor( *this ); }
 
   virtual ~monitor();
 
@@ -83,27 +83,29 @@ public:
     if ( f <= 1 && f >= 0 ) _driftFraction = f; 
     return ret; 
   }
-  double getDriftFraction() 
-  { return _driftFraction; }
 
-  // Is this "virtual" tag really necessary?  Probably!
-  virtual std::ostream& writeTo(std::ostream&); 
-  virtual std::istream& readFrom(std::istream&);
+  double getDriftFraction() { return _driftFraction; }
+
+
+  std::ostream& writeTo(std::ostream&); 
+  std::istream& readFrom(std::istream&);
 
   void getState(double *s) const
   { for ( int i=0; i<6; i++ ) s[i] = _rgr[i]; } // DANGEROUS!!
 
-  // ---------------------
-  void localPropagate( ParticleBunch& x ) 
-  { bmlnElmnt::localPropagate( x ); }
+
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitMonitor( this ); }
+  void accept( BmlVisitor& v )            { v.visitMonitor( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitMonitor( this ); }
   
   inline bool State() const { return _onOffSwitch; }
   const char* Type() const;
+
+
 
 };
 
@@ -112,24 +114,27 @@ public:
 class DLLEXPORT hmonitor : public monitor
 {
 public:
-  // Constructors
-  hmonitor();
-  hmonitor( const char* /*name*/ );
-  hmonitor( const char*, double ); 
-  hmonitor( const hmonitor& );
 
-  hmonitor* Clone() const 
-  { return new hmonitor( *this ); }
+  // Constructors
+
+  hmonitor();
+  hmonitor( const char*  name );
+  hmonitor( const char*, double const& length); 
+  hmonitor( hmonitor const& );
+
+  hmonitor* Clone() const  { return new hmonitor( *this ); }
 
   virtual ~hmonitor();
 
   double operator[]( int );    // Readout of data
-  void localPropagate( ParticleBunch& x ) 
-  { bmlnElmnt::localPropagate( x ); }
+
+  void localPropagate( ParticleBunch& x )  { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
 
   const char* Type() const;
+
+ 
 
 } ;
 
@@ -138,23 +143,24 @@ class DLLEXPORT vmonitor : public monitor
 {
 public:
   // Constructors
+
   vmonitor();  // Data to be written to standard output
-  vmonitor( const char* /*name*/ );
-  vmonitor( const char*, double ); 
+  vmonitor( const char* name );
+  vmonitor( const char* name, double const& length); 
   vmonitor( const vmonitor& );
 
-  vmonitor* Clone() const 
-  { return new vmonitor( *this ); }
+  vmonitor* Clone() const  { return new vmonitor( *this ); }
 
   virtual ~vmonitor();
 
   double operator[]( int );    // Readout of data
-  void localPropagate( ParticleBunch& x ) 
-  { bmlnElmnt::localPropagate( x ); }
+
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
 
   const char* Type() const;
+
 
 } ;
 

@@ -55,13 +55,13 @@ thin2pole::thin2pole()
 }
 
 
-thin2pole::thin2pole( double s /* strength = BL */ )
+thin2pole::thin2pole( double const& s /* strength = BL */ )
 : bmlnElmnt( 0.0, s )
 {
 }
 
 
-thin2pole::thin2pole( const char*  n /* name */, double s /* strength */ )
+thin2pole::thin2pole( const char*  n /* name */, double const& s /* strength */ )
 : bmlnElmnt( n, 0.0, s )
 {
 }
@@ -95,10 +95,10 @@ bool thin2pole::isMagnet() const
 thin12pole::thin12pole () : bmlnElmnt( 0.0, 0.0 ) {
 }
 
-thin12pole::thin12pole ( double s ) : bmlnElmnt( 0.0, s ) {
+thin12pole::thin12pole ( double const& s ) : bmlnElmnt( 0.0, s ) {
 }
 
-thin12pole::thin12pole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
+thin12pole::thin12pole ( const char* n, double const& s ) : bmlnElmnt( n, 0.0, s ) {
 }
 
 
@@ -127,10 +127,10 @@ bool thin12pole::isMagnet() const
 thin14pole::thin14pole () : bmlnElmnt( 0.0, 0.0 ) {
 }
 
-thin14pole::thin14pole ( double s ) : bmlnElmnt( 0.0, s ) {
+thin14pole::thin14pole ( double const& s ) : bmlnElmnt( 0.0, s ) {
 }
 
-thin14pole::thin14pole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
+thin14pole::thin14pole ( const char* n, double const& s ) : bmlnElmnt( n, 0.0, s ) {
 }
 
 
@@ -161,10 +161,10 @@ bool thin14pole::isMagnet() const
 thin16pole::thin16pole () : bmlnElmnt( 0.0, 0.0 ) {
 }
 
-thin16pole::thin16pole ( double s ) : bmlnElmnt( 0.0, s ) {
+thin16pole::thin16pole ( double const& s ) : bmlnElmnt( 0.0, s ) {
 }
 
-thin16pole::thin16pole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
+thin16pole::thin16pole ( const char* n, double const& s ) : bmlnElmnt( n, 0.0, s ) {
 }
 
 
@@ -193,10 +193,10 @@ bool thin16pole::isMagnet() const
 thin18pole::thin18pole () : bmlnElmnt( 0.0, 0.0 ) {
 }
 
-thin18pole::thin18pole ( double s ) : bmlnElmnt( 0.0, s ) {
+thin18pole::thin18pole ( double const& s ) : bmlnElmnt( 0.0, s ) {
 }
 
-thin18pole::thin18pole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
+thin18pole::thin18pole ( const char* n, double const& s ) : bmlnElmnt( n, 0.0, s ) {
 }
 
 
@@ -238,7 +238,7 @@ thinMultipole::thinMultipole () : bmlnElmnt( 0.0, 0.0 ) {
 
 }
 
-thinMultipole::thinMultipole ( double s ) : bmlnElmnt( 0.0, s ) {
+thinMultipole::thinMultipole ( double const& s ) : bmlnElmnt( 0.0, s ) {
  static char firstCall = 1;
 
  if ( firstCall ) {
@@ -253,7 +253,7 @@ thinMultipole::thinMultipole ( double s ) : bmlnElmnt( 0.0, s ) {
 
 }
 
-thinMultipole::thinMultipole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
+thinMultipole::thinMultipole ( const char* n, double const& s ) : bmlnElmnt( n, 0.0, s ) {
  static char firstCall = 1;
 
  if ( firstCall ) {

@@ -41,29 +41,44 @@
 
 #include <beamline/srot.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 void srot::localPropagate(Particle& p) {
-double result[4];
 
-result[0] = p.state[0] * cos(strength) + p.state[1] * sin(strength);
-result[1] = p.state[1] * cos(strength) - p.state[0] * sin(strength);
-p.state[0] = result[0];
-p.state[1] = result[1];
-result[2] = p.state[3] * cos(strength) + p.state[4] * sin(strength);
-result[3] = p.state[4] * cos(strength) - p.state[3] * sin(strength);
-p.state[3] = result[2];
-p.state[4] = result[3];
+ double result[4];
+ 
+ Vector& state = p.getState();
+
+ result[0] = state[0] * cos(strength) + state[1] * sin(strength);
+ result[1] = state[1] * cos(strength) - state[0] * sin(strength);
+
+ state[0]  = result[0];
+ state[1]  = result[1];
+
+ result[2] = state[3] * cos(strength) + state[4] * sin(strength);
+ result[3] = state[4] * cos(strength) - state[3] * sin(strength);
+
+ state[3]  = result[2];
+ state[4]  = result[3];
+
 }
 
 void srot::localPropagate(JetParticle& p) {
+
 Jet result[4];
 
-result[0] = p.state(0) * cos(strength) + p.state(1) * sin(strength);
-result[1] = p.state(1) * cos(strength) - p.state(0) * sin(strength);
-result[2] = p.state(3) * cos(strength) + p.state(4) * sin(strength);
-result[3]  = p.state(4) * cos(strength) - p.state(3) * sin(strength);
-( p.state ).SetComponent( 0, result[0] );
-( p.state ).SetComponent( 1, result[1] );
-( p.state ).SetComponent( 3, result[2] );
-( p.state ).SetComponent( 4, result[3] );
+ Mapping& state = p.getState();
+
+ result[0] = state[0] * cos(strength) + state[1] * sin(strength);
+ result[1] = state[1] * cos(strength) - state[0] * sin(strength);
+
+ state[0]  = result[0];
+ state[1]  = result[1];
+
+ result[2] = state[3] * cos(strength) + state[4] * sin(strength);
+ result[3] = state[4] * cos(strength) - state[3] * sin(strength);
+
+ state[3]  = result[2];
+ state[4]  = result[3];
+
 }

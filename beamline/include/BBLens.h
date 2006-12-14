@@ -61,13 +61,13 @@ private:
 public:
   BBLens( const char*   = 0
              /* name */,
-          double        = 1.0
+          double const&        = 1.0
              /* length [m]: the length of the bunch
                 in its rest frame */,
-          double        = 3.3e11
+          double const&        = 3.3e11
              /* strength : total number of proton
                 charges in the bunch */,
-          double        = 1000.0
+          double const&        = 1000.0
              /* gamma of the bunch, in the lab frame */,
           const double* = 0
              /* pointer to an array containing
@@ -84,14 +84,14 @@ public:
                          // used when horizontal and vertical 
                          // sigmas approximately equal.
 
-  void Kludge( double  /* num    */, 
-               double  /* gamma  */, 
+  void Kludge( double const&  /* num    */, 
+               double const&  /* gamma  */, 
          const double* /* sigma  */ );
-  void KludgeNum( double ); 
+  void KludgeNum( double const& ); 
   void KludgeSigma( const double* );
   void AdjustSigma();
 
-  Vector NormalizedEField( double x, double y );
+  Vector NormalizedEField( double const& x, double const& y );
              /* returns the "normalized" electric field
                 in the rest frame of the bunch, in inverse
                 meters.  To get the field [V/m], this must

@@ -42,11 +42,15 @@
 #include <beamline/beamline.h>
 #include <beamline/sextupole.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 void sextupole::localPropagate( Particle& p ) {
   p_bml->propagate( p );
   p.set_cdt( p.get_cdt() - _ctRef );
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void sextupole::localPropagate( JetParticle& p ) {
   p_bml->propagate( p );
@@ -54,50 +58,128 @@ void sextupole::localPropagate( JetParticle& p ) {
 }
 
 
-void thinSextupole::localPropagate( Particle& p ) {
- double x, y, k;
- double TrState[6], dummy[6];
- int    i;
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void thinSextupole::localPropagate( Particle& p ) {
+
+ Vector& state = p.getState(); 
+ 
+ double k = strength / p.ReferenceBRho();
+ double x = state[0];
+ double y = state[1];
+ 
  if( strength != 0.0 ) 
  {
-   for( i = 0; i < 6; i++  ) {
-     TrState[i] = p.state[i];
-   }
 
-   k = strength / p.ReferenceBRho();
-   x = TrState[0];
-   y = TrState[1];
- 
-   TrState[3] -= k * ( x*x - y*y );
-   TrState[4] += 2.0 * k * x*y;
+   state[3] -= k * ( x*x - y*y );
+   state[4] += 2.0 * k * x*y;
 
-   p.state[3] = TrState[3];
-   p.state[4] = TrState[4];
  }
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void thinSextupole::localPropagate( JetParticle& p ) {
- static Jet TrState[6];
- double k;
- static Jet x, y;
- static int i;
+
+ Mapping& state = p.getState(); 
+
+ double k = strength / p.ReferenceBRho();
+ Jet x = state[0];
+ Jet y = state[1];
  
  if( strength != 0.0 ) 
  {
-   for( i = 0; i < 6; i++  ) {
-     TrState[i] = p.state(i);
-   }
+   state[3] -= k * ( x*x - y*y );
+   state[4] += 2.0 * k * x*y ;
 
-   k = strength / p.ReferenceBRho();
-   x = TrState[0];
-   y = TrState[1];
- 
-   TrState[3] -= k * ( x*x - y*y );
-   TrState[4] += 2.0 * k * x*y ;
-
-   ( p.state ).SetComponent( 3, TrState[3] );
-   ( p.state ).SetComponent( 4, TrState[4] );
  }
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ class thinSextupole;
+
+ class ThinSextupolePropagator: public bmlnElmnt_core_access,
+                                public particle_core_access,
+                                public jetparticle_core_access {
+
+ public:
+
+  ThinSextupolePropagator(); 
+ ~ThinSextupolePropagator();
+ 
+ void  operator()(  bmlnElmnt& elm,    Particle&    );  
+  void  operator()( bmlnElmnt& elm, JetParticle&    );  
+
+  const char* Type()  const;
+
+ };
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ThinSextupolePropagator::ThinSextupolePropagator()
+: bmlnElmnt_core_access(), particle_core_access(), jetparticle_core_access() 
+{}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ThinSextupolePropagator::~ThinSextupolePropagator() {
+
+
+}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ThinSextupolePropagator::operator()( bmlnElmnt& elm,  Particle& p ) 
+{ 
+
+  Vector& state    = p.getState(); 
+  double  strength = elm.Strength(); 
+
+  double k = strength / p.ReferenceBRho();
+  double x = state[0];
+  double y = state[1];
+ 
+
+  state[3] -= k * ( x*x - y*y );
+  state[4] += 2.0 * k * x*y;
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ThinSextupolePropagator::operator()( bmlnElmnt& elm, JetParticle& p)
+{ 
+
+ Mapping& state   = p.getState(); 
+ double  strength = elm.Strength(); 
+
+ double k = strength / p.ReferenceBRho();
+ Jet x = state[0];
+ Jet y = state[1];
+ 
+ if( strength != 0.0 ) 
+ {
+   state[3] -= k * ( x*x - y*y );
+   state[4] += 2.0 * k * x*y ;
+
+ }
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+const char* ThinSextupolePropagator::Type()       const
+{ 
+   return "ThinSextupolePropagator"; 
+}
+

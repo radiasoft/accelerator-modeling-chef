@@ -51,7 +51,7 @@ using namespace std;
 vkick::vkick() : bmlnElmnt() {
 }
 
-vkick::vkick( double k ) : bmlnElmnt() {
+vkick::vkick( double const& k ) : bmlnElmnt() {
                       // Unfortunately, this is a
  strength = k;        // special case. Normally a
                       // single "double" argument
@@ -60,7 +60,7 @@ vkick::vkick( double k ) : bmlnElmnt() {
 vkick::vkick( const char* n ) : bmlnElmnt(n) {
 }
 
-vkick::vkick( const char* n, double k ) : bmlnElmnt(n) {
+vkick::vkick( const char* n, double const& k ) : bmlnElmnt(n) {
                       // Unfortunately, this is a
  strength = k;        // special case. Normally a
                       // single "double" argument
@@ -72,7 +72,7 @@ vkick::vkick( vkick const& x )
 {}
 
 
-vkick::vkick( const char* n, double l, double s ) 
+vkick::vkick( const char* n, double const& l, double const& s ) 
 : bmlnElmnt(n,l,s) 
 {}
 
@@ -94,14 +94,14 @@ const char* vkick::Type() const
 hkick::hkick() : bmlnElmnt() {
 }
 
-hkick::hkick( double k ) : bmlnElmnt() {
+hkick::hkick( double const& k ) : bmlnElmnt() {
  strength = k;
 }
 
 hkick::hkick( const char* n ) : bmlnElmnt(n) {
 }
 
-hkick::hkick( const char* n, double k ) 
+hkick::hkick( const char* n, double const& k ) 
 : bmlnElmnt( n ) 
 {
  strength = k;      // Unfortunately, this is a
@@ -113,7 +113,7 @@ hkick::hkick( hkick const& x )
 : bmlnElmnt( x ){}
 
 
-hkick::hkick( const char* n, double l, double s ) 
+hkick::hkick( const char* n, double const& l, double const& s ) 
 : bmlnElmnt(n,l,s) { }
 
 
@@ -139,12 +139,12 @@ kick::kick() : bmlnElmnt() {
 kick::kick( const char* s ) : bmlnElmnt(s) {}
 
 
-kick::kick(double hStrength, double vStrength ) : bmlnElmnt() {
+kick::kick(double const& hStrength, double const& vStrength ) : bmlnElmnt() {
 	horizontalKick = hStrength;
 	verticalKick = vStrength;
 }
 
-kick::kick(const char* s, double hStrength, double vStrength) : bmlnElmnt(s) {
+kick::kick(const char* s, double const& hStrength, double const& vStrength) : bmlnElmnt(s) {
 	horizontalKick = hStrength;
 	verticalKick = vStrength;
 }
@@ -152,14 +152,14 @@ kick::kick(const char* s, double hStrength, double vStrength) : bmlnElmnt(s) {
 
 // The following two constructors added 9/1/99.
 // (L.M.)
-kick::kick( double lng, double hStrength, double vStrength ) 
+kick::kick( double const& lng, double const& hStrength, double const& vStrength ) 
 : bmlnElmnt( "NONAME", lng, hStrength + vStrength, 0 ),  // strength is arbitrary
   horizontalKick( hStrength ), 
   verticalKick  ( vStrength )
 {
 }
 
-kick::kick( const char* s, double lng, double hStrength, double vStrength ) 
+kick::kick( const char* s, double const& lng, double const& hStrength, double const& vStrength ) 
 : bmlnElmnt( s, lng, hStrength + vStrength, 0 ),  // strength is arbitrary
   horizontalKick( hStrength ), 
   verticalKick  ( vStrength )

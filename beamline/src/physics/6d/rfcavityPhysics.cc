@@ -39,10 +39,12 @@
 #include <config.h>
 #endif
 
+#include <beamline/rfcavity.h>
+
+#include <basic_toolkit/PhysicsConstants.h>
 #include <basic_toolkit/iosetup.h>
 #include <beamline/Particle.h>
-#include <beamline/rfcavity.h>
-#include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/JetParticle.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;
@@ -52,12 +54,15 @@ using FNAL::pcout;
 
 void rfcavity::localPropagate( Particle& p ) 
 {
-  double E;
+  double E( p.ReferenceEnergy() );
+
   double oldRefP, newRefP;
   double oldLength;
   double referenceEnergyGain;
   double w;
   double k1, k2;
+
+  Vector& state = p.getState();
 
   // Scale length to "effective" length.
   referenceEnergyGain = strength*sin_phi_s;
@@ -65,18 +70,19 @@ void rfcavity::localPropagate( Particle& p )
 
   // Assign focal lengths for effective kicks that
   // model first order edge focussing.
-  k1 = - 0.5*(referenceEnergyGain/oldLength)/(p.E);
-  k2 =   0.5*(referenceEnergyGain/oldLength)/(p.E + referenceEnergyGain);
+
+  k1 = - 0.5*(referenceEnergyGain/oldLength)/ E;
+  k2 =   0.5*(referenceEnergyGain/oldLength)/(E + referenceEnergyGain);
 
   // Thin lens kick upon entry
-  p.state[3] += k1*p.state[0];
-  p.state[4] += k1*p.state[1];
+  state[3] += k1*state[0];
+  state[4] += k1*state[1];
 
 
   // Propagate through the inner structures
-  double x_in = p.state[0];
-  double y_in = p.state[1];
-  w = (referenceEnergyGain/2.0) / p.E;
+  double x_in = state[0];
+  double y_in = state[1];
+  w = (referenceEnergyGain/2.0) / E;
   if( std::abs(w) > 1.0e-8 ) { w = (log(1.+w)/w); }
   else                       { w = 1.0;           }
 
@@ -85,27 +91,32 @@ void rfcavity::localPropagate( Particle& p )
     (*(x++))->localPropagate( p );
   }
 
-  p.state[0] = ( 1.0 - w )*x_in + w*p.state[0];
-  p.state[1] = ( 1.0 - w )*y_in + w*p.state[1];
+  state[0] = ( 1.0 - w )*x_in + w*state[0];
+  state[1] = ( 1.0 - w )*y_in + w*state[1];
 
 
   // Thin lens kick upon exit
-  p.state[3] += k2*p.state[0];
-  p.state[4] += k2*p.state[1];
+  state[3] += k2*state[0];
+  state[4] += k2*state[1];
 
   // Restore length before returning.
   this->length = oldLength;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void rfcavity::localPropagate( JetParticle& p ) 
 {
-  Jet E( p.State().Env() );
+  double E( p.ReferenceEnergy() ); 
+
   double oldRefP, newRefP;
   double oldLength;
   double referenceEnergyGain;
   double w;
   double k1, k2;
+
+  Mapping& state = p.getState();
 
   // Scale length to "effective" length.
   referenceEnergyGain = strength*sin_phi_s;
@@ -113,18 +124,20 @@ void rfcavity::localPropagate( JetParticle& p )
 
   // Assign focal lengths for effective kicks that
   // model first order edge focussing.
-  k1 = - 0.5*(referenceEnergyGain/oldLength)/(p.E);
-  k2 =   0.5*(referenceEnergyGain/oldLength)/(p.E + referenceEnergyGain);
+  k1 = - 0.5*(referenceEnergyGain/oldLength)/ E;
+  k2 =   0.5*(referenceEnergyGain/oldLength)/(E + referenceEnergyGain);
 
   // Thin lens kick upon entry
-  ( p.state ).SetComponent( 3, p.State(3) + k1*p.State(0) );
-  ( p.state ).SetComponent( 4, p.State(4) + k1*p.State(1) );
+
+   state[3] = state[3] + k1*state[0];
+   state[4] = state[4] + k1*state[1];
 
 
   // Propagate through the inner structures
-  Jet x_in( p.State(0) );
-  Jet y_in( p.State(1) );
-  w = (referenceEnergyGain/2.0) / p.E;
+  Jet x_in( state[0] );
+  Jet y_in( state[1] );
+  w = (referenceEnergyGain/2.0) / E;
+
   if( std::abs(w) > 1.0e-8 ) { w = (log(1.+w)/w); }
   else                       { w = 1.0;           }
 
@@ -133,67 +146,83 @@ void rfcavity::localPropagate( JetParticle& p )
     (*(x++))->localPropagate( p );
   }
 
-  ( p.state ).SetComponent( 0, ( 1.0 - w )*x_in + w*p.State(0) );
-  ( p.state ).SetComponent( 1, ( 1.0 - w )*y_in + w*p.State(1) );
-
+   state[0] = ( 1.0 - w )*x_in + w*state[0];
+   state[1] = ( 1.0 - w )*y_in + w*state[1];
 
   // Thin lens kick upon exit
-  ( p.state ).SetComponent( 3, p.State(3) + k2*p.State(0) );
-  ( p.state ).SetComponent( 4, p.State(4) + k2*p.state(1) );
+   state[3] =  state[3] + k2*state[0];
+   state[4] =  state[4] + k2*state[1];
 
   // Restore length
   this->length = oldLength;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void thinrfcavity::localPropagate( Particle& p ) 
 {
   
-  double denom, px, py, cs, E;
+  double denom, px, py, cs; 
   double oldRefP, newRefP;
-
+  
+  Vector& state = p.getState(); 
+ 
   if( 0.0 != this->strength ) {
     px = p.get_npx();
     py = p.get_npy();
     denom = 1.0 + p.get_ndp();
     cs = sqrt( 1.0 - ( ( px*px + py*py ) / ( denom*denom ) ) );
-    E = p.Energy() + ((strength*cs)*(sin( phi_s + p.state[2] * w_rf / PH_MKS_c )));
+    double E = p.Energy() + ((strength*cs)*(sin( phi_s + state[2] * w_rf / PH_MKS_c )));
 
     oldRefP = p.ReferenceMomentum();
-    p.SetReferenceEnergy( p.E + strength*sin_phi_s );
+    p.SetReferenceEnergy( p.ReferenceEnergy() + strength*sin_phi_s );
     newRefP = p.ReferenceMomentum();
-    p.state[3] *= ( oldRefP / newRefP );
-    p.state[4] *= ( oldRefP / newRefP );
 
-    // REMOVE: p.state[5] = ( sqrt((E - p.m)*(E + p.m)) 
-    // REMOVE:              - sqrt((p.E-p.m)*(p.E+p.m))) / p.p;
-    p.state[5] = ( sqrt((E - p.m)*(E + p.m))/p.p ) - 1.0;
+    state[3] *= ( oldRefP / newRefP );
+    state[4] *= ( oldRefP / newRefP );
+
+    double   m  = p.Mass();
+    double   pr = p.ReferenceMomentum();
+
+    state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0;
+
   }
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void thinrfcavity::localPropagate( JetParticle& p ) 
 {
   Jet__environment_ptr myEnv( p.State().Env() );
-  Jet denom(myEnv), px(myEnv), py(myEnv), cs(myEnv), E(myEnv);
+  Jet denom(myEnv), px(myEnv), py(myEnv), cs(myEnv);
   double oldRefP, newRefP;
+
+  Mapping& state = p.getState(); 
 
   if( 0.0 != this->strength ) {
     px = p.get_npx();
     py = p.get_npy();
     denom = 1.0 + p.get_ndp();
     cs = sqrt( 1.0 - ( ( px*px + py*py ) / ( denom*denom ) ) );
-    E = p.Energy() + ((strength*cs)*(sin( phi_s + p.state(2) * w_rf / PH_MKS_c )));
+    Jet E = p.Energy() + ((strength*cs)*(sin( phi_s + state(2) * w_rf / PH_MKS_c )));
 
     oldRefP = p.ReferenceMomentum();
-    p.SetReferenceEnergy( p.E + strength*sin_phi_s );
+    p.SetReferenceEnergy( p.ReferenceEnergy() + strength*sin_phi_s );
     newRefP = p.ReferenceMomentum();
-    ( p.state ).SetComponent( 3, ( oldRefP / newRefP )*p.State(3) );
-    ( p.state ).SetComponent( 4, ( oldRefP / newRefP )*p.State(4) );
+    state[3] = ( oldRefP / newRefP )*state[3];
+    state[4] = ( oldRefP / newRefP )*state[4];
 
-    // REMOVE: ( p.state ).SetComponent( 5, ( sqrt((E - p.m)*(E + p.m)) 
+    // REMOVE: ( state ).SetComponent( 5, ( sqrt((E - p.m)*(E + p.m)) 
     // REMOVE:                              - sqrt((p.E-p.m)*(p.E+p.m)) ) / p.p 
     // REMOVE:                         );
-    ( p.state ).SetComponent( 5, ( sqrt((E - p.m)*(E + p.m))/p.p ) - 1.0 );
+
+     double   m  = p.Mass();
+     double   pr = p.ReferenceMomentum();
+
+     state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0 ;
   }
 }
 // REMOVE: 

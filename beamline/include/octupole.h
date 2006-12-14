@@ -42,27 +42,29 @@
 #include <beamline/bmlnElmnt.h>
 #include <beamline/BmlVisitor.h>
 
+#include <beamline/Particle.h>
+
+template<typename T> 
+class TVector;
+
 class DLLEXPORT octupole : public bmlnElmnt
 {
 public:
   octupole();
-  octupole( double,       /* length   */
-            double        /* strength */ );
-  octupole( const char*,  /* name     */
-            double,       /* length   */
-            double        /* strength */ );
-  octupole( const octupole& );
+  octupole( double const& length,    double const& strength);
+  octupole( char const* name, double const& length,    double const& strength);
+  octupole( octupole const& );
   octupole* Clone() const { return new octupole( *this ); }
 
-  ~octupole();
+  virtual ~octupole();
 
   void accept( BmlVisitor& v ) { v.visitOctupole( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitOctupole( this ); }
 
-  void setStrength( double );
-  void setStrength( double, int );
+  void setStrength( double const& );
+  void setStrength( double const&, int );
 
-  void setCurrent( double );
+  void setCurrent( double const& );
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -71,29 +73,29 @@ public:
   const char* Type() const;
   bool isMagnet() const;
 
-  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
+  void Split( double const&, bmlnElmnt**, bmlnElmnt** ) const;
+
 };
 
 
 
-class DLLEXPORT thinOctupole : public bmlnElmnt
+class DLLEXPORT thinOctupole : public bmlnElmnt 
 {
 public:
   thinOctupole();
-  thinOctupole( double       /* strength */ );
-  thinOctupole( const char*  /* name */,
-                double       /* strength */ );
-  thinOctupole( const thinOctupole& );
+  thinOctupole( double const&  strength);
+  thinOctupole( char const* name,  double const& strength );
+  thinOctupole( thinOctupole const& );
 
   thinOctupole* Clone() const { return new thinOctupole( *this ); }
 
-  ~thinOctupole();
+  virtual ~thinOctupole();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& p );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitThinOctupole( this ); }
+  void accept( BmlVisitor& v )            { v.visitThinOctupole( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitThinOctupole( this ); }
 
   const char* Type() const;

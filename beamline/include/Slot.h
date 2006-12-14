@@ -50,48 +50,28 @@ class DLLEXPORT Slot : public bmlnElmnt
 {
  public:
    Slot();
-   Slot( const char*  /* name */ );
+   Slot( char const*  name);
 
-   Slot( const Frame& /* out */
-       );
-   Slot( const char*  /* name */,
-         const Frame& /* out */
-       );
+   Slot(                    Frame const& out );
+   Slot( char const*  name, Frame const& out );
 
-   Slot( const Frame& /* in */, 
-         const Frame& /* out */, 
-         const beamline&
-       );
-   Slot( const char*  /* name */,
-         const Frame& /* in */, 
-         const Frame& /* out */, 
-         const beamline&
-       );
+   Slot(                    Frame const& in, Frame const& out, beamline const& );
+   Slot( char const*  name, Frame const& in, Frame const& out, beamline const& );
 
-   Slot( const Frame& /* in */, 
-         const Frame& /* out */, 
-         const bmlnElmnt&
-       );
-   Slot( const char*  /* name */,
-         const Frame& /* in */, 
-         const Frame& /* out */, 
-         const bmlnElmnt&
-       );
+   Slot(                    Frame const&  in, Frame const& out, bmlnElmnt const&);
+   Slot( char const*  name, Frame const&  in, Frame const& out, bmlnElmnt const&);
 
    Slot( const Slot& );
 
    ~Slot();
  
-   void makeUpstreamHorizontal   ( double /* length */, double /* angle */ );
-   void makeDownstreamHorizontal ( double /* length */, double /* angle */ );
-   void makeUpstreamVertical     ( double /* length */, double /* angle */ );
-   void makeDownstreamVertical   ( double /* length */, double /* angle */ );
+   void makeUpstreamHorizontal   ( double const& length, double const& angle );
+   void makeDownstreamHorizontal ( double const& length, double const& angle );
+   void makeUpstreamVertical     ( double const& length, double const& angle );
+   void makeDownstreamVertical   ( double const& length, double const& angle );
 
-   short int checkFrame( const Frame& ) const;
+   int checkFrame( const Frame& ) const;
 
-   void eliminate() 
-     { delete this; }
- 
    void accept( BmlVisitor& v ) { v.visitSlot( this ); }
    void accept( ConstBmlVisitor& v ) const { v.visitSlot( this ); }
 
@@ -107,12 +87,12 @@ class DLLEXPORT Slot : public bmlnElmnt
    Slot* Clone() const
      { return new Slot( *this ); }
 
-   void Split( double s, bmlnElmnt**, bmlnElmnt** ) const;
+   void Split( double const& s, bmlnElmnt**, bmlnElmnt** ) const;
 
    const char*  Type()  const;
 
-   short int setInFrame( const Frame& );
-   short int setOutFrame( const Frame& );
+   int  setInFrame( Frame const& );
+   int setOutFrame( Frame const& );
 
    Frame getInFrame() const
      { return in; }
@@ -120,16 +100,19 @@ class DLLEXPORT Slot : public bmlnElmnt
      { return out; }
 
    // Not overloaded: virtual double getReferenceTime() const {return _ctRef;}
-   double setReferenceTime( double );
-   double setReferenceTime( const Particle& );  // returns _ctRef
+
+   double setReferenceTime(   double const& );
+   double setReferenceTime( Particle const& );  // returns _ctRef
 
    // Functions passed on to tenant
-   void setStrength   ( double );
-   void setStrength   ( double, int );
-   void setCurrent    ( double );
+
+   void setStrength   ( double const& );
+   void setStrength   ( double const&, int );
+   void setCurrent    ( double const& );
    bool setAlignment  ( const alignmentData& );
    double Current() const;
-   double OrbitLength( const Particle& );
+   double OrbitLength( Particle const& );
+
    const char* Name() const;
 
 

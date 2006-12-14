@@ -70,9 +70,9 @@ CF_sbend::CF_sbend()
 }
 
 
-CF_sbend::CF_sbend( double        lng,  // length     [ meter    ]
-                    double        fld,  // field      [ tesla    ]
-                    double        ang,  // bend angle [ radians  ]
+CF_sbend::CF_sbend( double const&        lng,  // length     [ meter    ]
+                    double const&        fld,  // field      [ tesla    ]
+                    double const&        ang,  // bend angle [ radians  ]
                     int )
 : bmlnElmnt( lng, fld )
   , _angle(ang)
@@ -88,9 +88,9 @@ CF_sbend::CF_sbend( double        lng,  // length     [ meter    ]
 
 
 CF_sbend::CF_sbend( const char*   nm,   // name
-                    double        lng,  // length     [ meter    ]
-                    double        fld,  // field      [ tesla    ]
-                    double        ang,  // angle      [ radians  ]
+                    double const&        lng,  // length     [ meter    ]
+                    double const&        fld,  // field      [ tesla    ]
+                    double const&        ang,  // angle      [ radians  ]
                     int )
 : bmlnElmnt( nm, lng, fld )
   , _angle(ang)
@@ -105,11 +105,11 @@ CF_sbend::CF_sbend( const char*   nm,   // name
 }
 
 
-CF_sbend::CF_sbend( double        lng,  // length     [ meter    ]
-                    double        fld,  // field      [ tesla    ]
-                    double        ang,  // bend angle [ radians ]
-                    double        us,   // upstream edge angle [radians]
-                    double        ds,   // downstream edge angle [radians]
+CF_sbend::CF_sbend( double const&        lng,  // length     [ meter    ]
+                    double const&        fld,  // field      [ tesla    ]
+                    double const&        ang,  // bend angle [ radians ]
+                    double const&        us,   // upstream edge angle [radians]
+                    double const&        ds,   // downstream edge angle [radians]
                                         // signs of previous two parameters
                                         // are as defined for sbends by MAD
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
@@ -127,11 +127,11 @@ CF_sbend::CF_sbend( double        lng,  // length     [ meter    ]
 
 
 CF_sbend::CF_sbend( const char*   nm,   // name
-                    double        lng,  // length     [ meter    ]
-                    double        fld,  // field      [ tesla    ]
-                    double        ang,  // bend angle [ radians ]
-                    double        us,   // upstream edge angle [radians]
-                    double        ds,   // downstream edge angle [radians]
+                    double const&        lng,  // length     [ meter    ]
+                    double const&        fld,  // field      [ tesla    ]
+                    double const&        ang,  // bend angle [ radians ]
+                    double const&        us,   // upstream edge angle [radians]
+                    double const&        ds,   // downstream edge angle [radians]
                                         // signs of previous two parameters
                                         // are as defined for sbends by MAD
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
@@ -294,7 +294,7 @@ double CF_sbend::setExitAngle( const Particle& p )
 }
 
 
-double CF_sbend::setEntryAngle( double phi /* radians */ )
+double CF_sbend::setEntryAngle( double const& phi /* radians */ )
 {
   double ret = _usAngle;
   _usAngle = phi;
@@ -304,7 +304,7 @@ double CF_sbend::setEntryAngle( double phi /* radians */ )
 }
 
 
-double CF_sbend::setExitAngle( double phi /* radians */ )
+double CF_sbend::setExitAngle( double const& phi /* radians */ )
 {
   double ret = _dsAngle;
   _dsAngle = phi;  
@@ -314,7 +314,7 @@ double CF_sbend::setExitAngle( double phi /* radians */ )
 }
 
 
-int CF_sbend::setOctupole( double arg_x )
+int CF_sbend::setOctupole( double const& arg_x )
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   thinOctupole** w = new thinOctupole* [ m ];
@@ -343,7 +343,7 @@ int CF_sbend::setOctupole( double arg_x )
   return 0;
 }
 
-int CF_sbend::setSextupole( double arg_x )
+int CF_sbend::setSextupole( double const& arg_x )
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   thinSextupole** w = new thinSextupole* [ m ];
@@ -385,7 +385,7 @@ bool CF_sbend::hasStandardFaces() const
 }
 
 
-int CF_sbend::setQuadrupole( double arg_x )
+int CF_sbend::setQuadrupole( double const& arg_x )
 {
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   thinQuad** w = new thinQuad* [ m ];
@@ -415,7 +415,7 @@ int CF_sbend::setQuadrupole( double arg_x )
 }
 
 
-int CF_sbend::setDipoleField( double arg_x )
+int CF_sbend::setDipoleField( double const& arg_x )
 {
   this->strength = arg_x;
 
@@ -446,7 +446,7 @@ int CF_sbend::setDipoleField( double arg_x )
 }
 
 
-void CF_sbend::setStrength( double s )
+void CF_sbend::setStrength( double const& s )
 {
   double ratio = s / this->getDipoleField();
   bmlnElmnt** x = _u;
@@ -559,7 +559,7 @@ double CF_sbend::getBendAngle() const
 }
 
 
-void CF_sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
+void CF_sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   static bool firstTime = true;
   if( firstTime ) {
@@ -585,7 +585,7 @@ void CF_sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
     ostringstream uic;
     uic << "Requested percentage = " << pc << "; should be in [0,1].";
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void CF_sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           "void CF_sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
            uic.str().c_str() ) );
   }
 
@@ -677,12 +677,6 @@ istream& CF_sbend::readFrom( istream& is )
   this->setOctupole( octStrength );
 
   return is;
-}
-
-
-void CF_sbend::eliminate( void )
-{
-  delete this;
 }
 
 

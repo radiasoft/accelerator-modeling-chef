@@ -63,19 +63,19 @@ Pinger::Pinger() : bmlnElmnt() {
 }
 
 
-Pinger::Pinger( double k, double r, int c ) : bmlnElmnt() {
+Pinger::Pinger( double const& k, double const& r, int c ) : bmlnElmnt() {
   strength = k;
   _kick_direction = r;
   _counter = c;
 }
 
-Pinger::Pinger(char *n, double k, double r, int c) : bmlnElmnt(n) {
+Pinger::Pinger(char const* n, double const& k, double const& r, int c) : bmlnElmnt(n) {
   strength = k;
   _kick_direction = r;
   _counter = c;
 }
 
-Pinger::Pinger(char *n) : bmlnElmnt(n) {
+Pinger::Pinger(char const* n) : bmlnElmnt(n) {
   strength = 0;
   _kick_direction = 0;
   _counter = -1;
@@ -104,13 +104,14 @@ ostream& Pinger::writeTo(ostream& os) {
 
 /* HPinger Constructors */
 
-HPinger::HPinger(double kick, int c) : Pinger(kick, 0.0, c) {
+HPinger::HPinger(double const& kick, int c) : Pinger(kick, 0.0, c) {
 }
 
-HPinger::HPinger(char *name, double kick, int c) : Pinger(name, kick, 0.0, c) {
+HPinger::HPinger(char const * name, double const& kick, int c) 
+: Pinger(name, kick, 0.0, c) {
 }
 
-HPinger::HPinger(char *name) : Pinger(name, 0.0, 0.0, -1) {
+HPinger::HPinger(char const* name) : Pinger(name, 0.0, 0.0, -1) {
 }
 
 HPinger::HPinger(const HPinger& p) : Pinger(p) {
@@ -127,13 +128,13 @@ const char* HPinger::Type() const
 
 /* VPinger Constructors */
 
-VPinger::VPinger(double kick, int c) : Pinger(kick, M_PI_2, c) {
+VPinger::VPinger(double const& kick, int c) : Pinger(kick, M_PI_2, c) {
 }
 
-VPinger::VPinger(char *name, double kick, int c) : Pinger(name, kick, M_PI_2, c) {
+VPinger::VPinger(char const* name, double const& kick, int c) : Pinger(name, kick, M_PI_2, c) {
 }
 
-VPinger::VPinger(char *name) : Pinger(name, 0.0, M_PI_2, -1) {
+VPinger::VPinger(char const* name) : Pinger(name, 0.0, M_PI_2, -1) {
 }
 
 VPinger::VPinger(const VPinger& p) : Pinger(p) {

@@ -45,17 +45,18 @@
 #include <basic_toolkit/iosetup.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/Aperture.h>
 #include <beamline/beamline.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/Alignment.h>
 
-
-
 using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
+
+
 
 // **************************************************
 //   yes and no Criteria
@@ -74,9 +75,11 @@ bmlnElmnt::PinnedFrameSet::PinnedFrameSet()
 :   _altered(false)
   , _upStream()
   , _downStream()
-{
-}
+{}
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void bmlnElmnt::PinnedFrameSet::reset()
 {
@@ -90,7 +93,22 @@ void bmlnElmnt::PinnedFrameSet::reset()
 //   class bmlnElmnt
 // **************************************************
 
-bmlnElmnt::bmlnElmnt( const char* n, PropFunc* pf ) {
+bmlnElmnt::bmlnElmnt( const char* n, PropFunc* pf )
+  : ident(0),      
+    length(0.0),     
+    strength(0.0),  
+    align(0),   
+    iToField(1.0),   
+    shuntCurrent(0.0), 
+    p_bml(0),      
+    p_bml_e(0),    
+    propfunc_(pf),
+    _pinnedFrames(),
+    _ctRef(0.0),
+    _attributes(),
+    tag_(),
+    pAperture(0)
+ {
  if( n ) {
   ident = new char [ strlen(n) + 1 ];
   strcpy( ident, n );
@@ -100,82 +118,77 @@ bmlnElmnt::bmlnElmnt( const char* n, PropFunc* pf ) {
   strcpy( ident, "NONAME" );
  }
 
- _ctRef = 0.0;
+ }
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- length       = 0.0;
- strength     = 0.0;
- pAperture = 0;
- 
- iToField     = 1.0;
- shuntCurrent = 0.0;
 
- // Pointers
- align         = 0;
- p_bml         = 0;
- p_bml_e       = 0;
- Propagator    = pf;
- // WARNING: I'm assuming that any derived class will 
- //          initialize its propagator functor within
- //          its constructor.
+bmlnElmnt::bmlnElmnt( double const& l, PropFunc* pf )
+  : ident(0),      
+    length(l),     
+    strength(0.0),  
+    align(0),   
+    iToField(1.0),   
+    shuntCurrent(0.0), 
+    p_bml(0),      
+    p_bml_e(0),    
+    propfunc_(pf),
+    _pinnedFrames(),
+    _ctRef(0.0),
+    _attributes(),
+    tag_(),
+    pAperture(0),
+    dataHook()
+{
+ ident        = new char [8];
+                 strcpy( ident, "NONAME" );
 
 }
 
-bmlnElmnt::bmlnElmnt( double l /* length */, PropFunc* pf ) {
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bmlnElmnt::bmlnElmnt( double const& l /* length */, double const& s /* strength */, PropFunc* pf )
+  : ident(0),      
+    length(l),     
+    strength(s),  
+    align(0),   
+    iToField(1.0),   
+    shuntCurrent(0.0), 
+    p_bml(0),      
+    p_bml_e(0),    
+    propfunc_(pf),
+    _pinnedFrames(),
+    _ctRef(0.0),
+    _attributes(),
+    tag_(),
+    pAperture(0),
+    dataHook()
+{
  ident        = new char [8];
                  strcpy( ident, "NONAME" );
- length       = l;
- strength     = 0.0;
-
- pAperture = 0;
- 
- _ctRef = 0.0;
-
- iToField     = 1.0;
- shuntCurrent = 0.0;
-
- // Pointers
- align         = 0;
- p_bml         = 0;
- p_bml_e       = 0;
- Propagator    = pf;
- // WARNING: I'm assuming that any derived class will 
- //          initialize its propagator functor within
- //          its constructor.
-
-}
-
-bmlnElmnt::bmlnElmnt( double l /* length */, 
-                      double s /* strength */, 
-                      PropFunc* pf ) {
- ident        = new char [8];
-                 strcpy( ident, "NONAME" );
- length       = l;
- strength     = s;
-
- _ctRef = 0.0;
-
- pAperture    = 0;
- 
- iToField     = 1.0;
- shuntCurrent = 0.0;
-
- // Pointers
- align         = 0;
- p_bml         = 0;
- p_bml_e       = 0;
- Propagator    = pf;
- // WARNING: I'm assuming that any derived class will 
- //          initialize its propagator functor within
- //          its constructor.
 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt::bmlnElmnt(   const char*  n // name
-                      , double l       // length
-                      , PropFunc* pf ) // propagator
+bmlnElmnt::bmlnElmnt( const char*  n, double const& l, PropFunc* pf ) 
+  : ident(0),      
+    length(l),     
+    strength(0.0),  
+    align(0),   
+    iToField(1.0),   
+    shuntCurrent(0.0), 
+    p_bml(0),      
+    p_bml_e(0),    
+    propfunc_(pf),
+    _pinnedFrames(),
+    _ctRef(0.0),
+    _attributes(),
+    tag_(),
+    pAperture(0),
+    dataHook()
 {
  if( n ) {
   ident = new char [ strlen(n) + 1 ];
@@ -185,34 +198,30 @@ bmlnElmnt::bmlnElmnt(   const char*  n // name
   ident = new char [8];
   strcpy( ident, "NONAME" );
  }
- length       = l;
- strength     = 0.0;
-
- _ctRef = 0.0;
-
- pAperture = 0;
- 
- iToField     = 1.0;
- shuntCurrent = 0.0;
-
- // Pointers
- align         = 0;
- p_bml         = 0;
- p_bml_e       = 0;
- Propagator    = pf;
- // WARNING: I'm assuming that any derived class will 
- //          initialize its propagator functor within
- //          its constructor.
 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt::bmlnElmnt( const char*  n /* name */, 
-                      double l       /* length */, 
-                      double s       /* strength */, 
-                      PropFunc* pf ) {
+bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s, PropFunc* pf ) 
+  : ident(0),      
+    length(l),     
+    strength(s),  
+    align(0),   
+    iToField(1.0),   
+    shuntCurrent(0.0), 
+    p_bml(0),      
+    p_bml_e(0),    
+    propfunc_(pf),
+    _pinnedFrames(),
+    _ctRef(0.0),
+    _attributes(),
+    tag_(), 
+    pAperture(0),
+    dataHook()
+{
+
  if( n ) {
   ident = new char [ strlen(n) + 1 ];
   strcpy( ident, n );
@@ -221,53 +230,36 @@ bmlnElmnt::bmlnElmnt( const char*  n /* name */,
   ident = new char [8];
   strcpy( ident, "NONAME" );
  }
- length       = l;
- strength     = s;
-
- _ctRef = 0.0;
-
- pAperture = 0;
- 
- iToField     = 1.0;
- shuntCurrent = 0.0;
-
- // Pointers
- align         = 0;
- p_bml         = 0;
- p_bml_e       = 0;
- Propagator    = pf;
- // WARNING: I'm assuming that any derived class will 
- //          initialize its propagator functor within
- //          its constructor.
 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt::bmlnElmnt( const bmlnElmnt& a ) 
-: tag_(a.tag_)
+bmlnElmnt::bmlnElmnt( bmlnElmnt const& a ) 
+  : ident(0),      
+    length(a.length),     
+    strength(a.strength),  
+    align(0),   
+    iToField(a.iToField),   
+    shuntCurrent(a.shuntCurrent), 
+    p_bml(0),      
+    p_bml_e(0),    
+    propfunc_(a.propfunc_),
+    _pinnedFrames(),
+    _ctRef(a._ctRef),
+    _attributes(a._attributes),
+    tag_(a.tag_),
+    pAperture(0),
+    dataHook()
 {
+
  ident         = new char [ strlen(a.ident) + 1 ];
                  strcpy( ident, a.ident );
- length        = a.length;
- strength      = a.strength;
 
- _ctRef = a._ctRef;
 
- pAperture = 0;
- if(a.pAperture != 0) 
-   pAperture = a.pAperture->Clone();
- 
- iToField      = a.iToField;
- shuntCurrent  = a.getShunt();
 
- Propagator = a.Propagator;
- // WARNING: I'm assuming that any derived class will 
- //          initialize its propagator functor within
- //          its own copy constructor.
-
- _attributes = a._attributes; 
+ if(a.pAperture != 0) pAperture = a.pAperture->Clone();
  
  if(a.align != 0) {
    alignmentData data = a.align->getAlignment();
@@ -276,51 +268,58 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a )
  } 
  else align = 0;
 
- if( a.p_bml ) 
- {
-   p_bml = a.p_bml->Clone();
+ // ---------------------------------------------------------------------------------
+ // If neither the beamline or the "element of interest" p_bml_e are  defined, 
+ // we are done, just return.  
+ //----------------------------------------------------------------------------------
 
-   if( a.p_bml_e ) {
+ if (( !a.p_bml ) && (!a.p_bml_e)) return; 
 
-     bool found = false;
+ // ---------------------------------------------------------------------------------
+ // If only the "element of interest" p_bml_e is defined, and the beamline p_bml is not,
+ // clone the element of interest and return;
+ //----------------------------------------------------------------------------------
 
-     int count = 0;
+ if( !a.p_bml ) {
+    p_bml_e = (a.p_bml_e) ? a.p_bml_e->Clone() : 0; 
+    return;
+ } 
 
-     beamline::iterator it1  = a.p_bml->begin(); 
-     beamline::iterator it2  =   p_bml->begin(); 
-     for ( ; it1 != a.p_bml->end(); ++it1, ++it2 ) {
+ // -------------------------------------------------------------------------------------------------------------------------
+ // If we get here, the beamline p_bml is defined. The element of interest may or may not be defined. Typically, 
+ // p_bml_e would be defined for elements modeled with a *single* thin kick in the middle, but not for elements 
+ // modeled with multiple thin kicks. 
+ //---------------------------------------------------------------------------------------------------------------------------
 
-       if( (*it1) == a.p_bml_e ) { 
-         p_bml_e == *it2;  
-         found = true;
-         break;
-       } 
+ p_bml = a.p_bml->Clone();
 
-     }
+ if (!p_bml_e) return;  // there is no element of interest ... were are done 
+
+
+ beamline::iterator it  =   p_bml->begin(); 
+
+ // find the position of the element of interest in the orginal beamline. The set the element of interest in the new one  
+ // to the element with the same position
+
+ for (  beamline::iterator ita  = a.p_bml->begin(); ita != a.p_bml->end(); ++ita, ++it ) {
+
+   if( (*ita) == a.p_bml_e ) { p_bml_e = (*it);  return; }  // element of interest found. All OK. We are done.
+ }
     
-     if (! found) {  
-       p_bml_e = a.p_bml_e->Clone();
-       (*pcerr) << "*** WARNING *** \n"
-            << "*** WARNING *** bmlnElmnt::bmlnElmnt( const bmlnElmnt& )\n"
+ //--------------------------------------------------------------------------------------------------------------------------
+ // If we get here, this means that the element of interest exists, but was not found within the beamline. This is 
+ // most likely a bug. Clone the element, and continue nevertheless, and  issue a warning.   
+ //--------------------------------------------------------------------------------------------------------------------------
+
+ p_bml_e = a.p_bml_e->Clone();
+ 
+ 
+   (*pcerr) << "*** WARNING *** \n"
+            << "*** WARNING *** bmlnElmnt::bmlnElmnt( bmlnElmnt const& )\n"
             << "*** WARNING *** The element pointed to by p_bml_e does not exist\n"
             << "*** WARNING *** within the beamline pointed to by p_bml .\n"
             << "*** WARNING *** "
             << endl;
-     }
-   }
-   else {
-     p_bml_e = 0;
-   }
- }
- else 
- {
-   p_bml = 0;
-   if( a.p_bml_e ) {
-     p_bml_e = a.p_bml_e->Clone();
-   }
-   else p_bml_e = 0;
- }
-
 
 }
 
@@ -329,27 +328,47 @@ bmlnElmnt::bmlnElmnt( const bmlnElmnt& a )
 
 bmlnElmnt::~bmlnElmnt() {
 
- delete []     ident;
- if( align )   delete align;
- if(pAperture) delete pAperture;
- if( p_bml )   {
-   p_bml->eliminate();
-   p_bml = 0;
- }
- if( p_bml_e ) {
-   delete p_bml_e;
-   p_bml_e = 0;
- }
  // virtual method releasePropFunc() must
  //   be invoked within the derived class's destructor
  //   if it is necessary.
- dataHook.eraseAll();
+
+
+  dataHook.eraseAll();
+
+  if(ident)     delete []  ident;
+  if(align)     delete align;
+  if(pAperture) delete pAperture;
+
+  //  
+
+
+ if( p_bml_e ) { 
+
+
+   // ***DANGER WILL ROBINSON ! : 
+   // ----------------------------
+   // p_bml_e will be deleted by p_bml->zap() if it is within the beamline ! 
+   // Find the position of the element of interest and determine if it needs to be
+   // deleted. 
+
+     bool p_bml_e_inside_p_bml = false;
+     for ( beamline::iterator it = p_bml->begin(); it != p_bml->end(); ++it ) {
+         if( (*it) == p_bml_e ) { p_bml_e_inside_p_bml = true;}  // element of interest is found.  
+     }
+
+     if ( !p_bml_e_inside_p_bml) { delete p_bml_e; p_bml_e = 0; } // safe to delete
+
+ } // p_bml_e
+
+ if( p_bml   ) { p_bml->zap(); delete p_bml;  p_bml=0; }
+ 
 }
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 // Begin: basic propagator functions
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 
 void bmlnElmnt::propagate( Particle& x ) 
 {
@@ -364,6 +383,9 @@ void bmlnElmnt::propagate( Particle& x )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void bmlnElmnt::propagate( JetParticle& x )
 {
   if( align == 0 ) {
@@ -375,6 +397,9 @@ void bmlnElmnt::propagate( JetParticle& x )
     leaveLocalFrame ( x );
   }
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 void bmlnElmnt::propagate( ParticleBunch& x )
@@ -402,7 +427,7 @@ void bmlnElmnt::propagate( ParticleBunch& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setLength( double x ) {
+void bmlnElmnt::setLength( double const& x ) {
   if( length < 0.0 ) {
     (*pcerr) << "*** WARNING ***                       \n"
             "*** WARNING *** bmlnElmnt::setLength  \n"
@@ -420,23 +445,23 @@ void bmlnElmnt::setLength( double x ) {
     length = x;
   }
 
-  if( 0 != Propagator ) { this->setupPropFunc(); }
+  if( 0 != propfunc_ ) { this->setupPropFunc(); }
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setStrength( double s ) {
+void bmlnElmnt::setStrength( double const& s ) {
   strength = s - getShunt()*IToField(); 
-  if( 0 != Propagator ) { this->setupPropFunc(); }
+  if( 0 != propfunc_ ) { this->setupPropFunc(); }
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setCurrent( double I ) {
+void bmlnElmnt::setCurrent( double const& I ) {
   setStrength((I-getShunt()) * IToField());
 }
 
@@ -471,20 +496,13 @@ void bmlnElmnt::setupPropFunc()
 }
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void bmlnElmnt::eliminate() {
- delete this;
-}
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( const PropFunc* a ) 
 { 
-  bmlnElmnt::PropFunc* ret = this->Propagator;
+  bmlnElmnt::PropFunc* ret = this->propfunc_;
 
   if( 0 == a ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
@@ -493,7 +511,7 @@ bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( const PropFunc* a )
   }
   else {
     this->releasePropFunc();  // virtual
-    this->Propagator = const_cast<PropFunc*>(a);
+    this->propfunc_ = const_cast<PropFunc*>(a);
     this->setupPropFunc();    // virtual
   }
 
@@ -608,7 +626,7 @@ bool bmlnElmnt::isMagnet() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::alignRelX( double u )
+bool bmlnElmnt::alignRelX( double const& u )
 {
   bool ret = true;
   if( this->hasParallelFaces() ) {
@@ -641,7 +659,7 @@ bool bmlnElmnt::alignRelX( double u )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::alignRelY( double u )
+bool bmlnElmnt::alignRelY( double const& u )
 {
   bool ret = true;
   if( this->hasParallelFaces() ) {
@@ -674,7 +692,7 @@ bool bmlnElmnt::alignRelY( double u )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::alignAbsX( double u )
+bool bmlnElmnt::alignAbsX( double const& u )
 {
   bool ret = true;
   if( this->hasParallelFaces() ) {
@@ -707,7 +725,7 @@ bool bmlnElmnt::alignAbsX( double u )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::alignAbsY( double u )
+bool bmlnElmnt::alignAbsY( double const& u )
 {
   bool ret = true;
   if( this->hasParallelFaces() ) {
@@ -740,7 +758,7 @@ bool bmlnElmnt::alignAbsY( double u )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::alignRelXmm( double u )
+bool bmlnElmnt::alignRelXmm( double const& u )
 {
   return (this->alignRelX( 0.001*u ));
 }
@@ -749,7 +767,7 @@ bool bmlnElmnt::alignRelXmm( double u )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::alignRelYmm( double u )
+bool bmlnElmnt::alignRelYmm( double const& u )
 {
   return (this->alignRelY( 0.001*u ));
 }
@@ -758,7 +776,7 @@ bool bmlnElmnt::alignRelYmm( double u )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::alignAbsXmm( double u )
+bool bmlnElmnt::alignAbsXmm( double const& u )
 {
   return (this->alignAbsX( 0.001*u ));
 }
@@ -767,7 +785,7 @@ bool bmlnElmnt::alignAbsXmm( double u )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::alignAbsYmm( double u )
+bool bmlnElmnt::alignAbsYmm( double const& u )
 {
   return (this->alignAbsY( 0.001*u ));
 }
@@ -776,7 +794,7 @@ bool bmlnElmnt::alignAbsYmm( double u )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::alignRelRoll( double u )
+bool bmlnElmnt::alignRelRoll( double const& u )
 {
   bool ret = true;
   if( this->hasParallelFaces() && this->hasStandardFaces() ) {
@@ -793,7 +811,7 @@ bool bmlnElmnt::alignRelRoll( double u )
   else {
     (*pcerr) << "\n*** WARNING *** "
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
+         << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double const& u )"
             "\n*** WARNING *** Cannot use this method on an element "
          << this->Type() << "  " << this->Name()
          << "\n*** WARNING *** without affecting its neighbors."
@@ -809,7 +827,7 @@ bool bmlnElmnt::alignRelRoll( double u )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::alignAbsRoll( double u )
+bool bmlnElmnt::alignAbsRoll( double const& u )
 {
   bool ret = true;
   if( this->hasParallelFaces() && this->hasStandardFaces() ) {
@@ -826,7 +844,7 @@ bool bmlnElmnt::alignAbsRoll( double u )
   else {
     (*pcerr) << "\n*** WARNING *** "
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
+         << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double const& u )"
             "\n*** WARNING *** Cannot use this method on an element "
          << this->Type() << "  " << this->Name()
          << "\n*** WARNING *** without affecting its neighbors."
@@ -842,7 +860,7 @@ bool bmlnElmnt::alignAbsRoll( double u )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::alignRelRollmrad( double u )
+bool bmlnElmnt::alignRelRollmrad( double const& u )
 {
   return (this->alignRelRoll( 0.001*u ));
 }
@@ -851,7 +869,7 @@ bool bmlnElmnt::alignRelRollmrad( double u )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::alignAbsRollmrad( double u )
+bool bmlnElmnt::alignAbsRollmrad( double const& u )
 {
   return (this->alignAbsRoll( 0.001*u ));
 }
@@ -940,14 +958,14 @@ void bmlnElmnt::loadPinnedCoordinates( const Particle& prtcl, Vector& ret, doubl
   //                         |
   //                         +--------- Not foolproof.
 
-  static int x  = Particle::_x();
-  static int y  = Particle::_y();
-  static int z  = Particle::_cdt();
+  static int x  = Particle::xIndex();
+  static int y  = Particle::yIndex();
+  static int z  = Particle::cdtIndex();
   //                         |
   //                         +--------- Not quite what I want.
-  static int xp = Particle::_xp();
-  static int yp = Particle::_yp();
-  static int zp = Particle::_dpop();
+  static int xp = Particle::npxIndex();
+  static int yp = Particle::npyIndex();
+  static int zp = Particle::ndpIndex();
   //                         |
   //                         +--------- Not quite what I want.
 
@@ -1020,6 +1038,9 @@ void bmlnElmnt::loadPinnedCoordinates( const Particle& prtcl, Vector& ret, doubl
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool bmlnElmnt::setAlignment(alignmentData const& a) 
 {
   bool ret = true;
@@ -1091,20 +1112,19 @@ alignmentData bmlnElmnt::Alignment() const {
 
 void bmlnElmnt::enterLocalFrame( Particle& p ) const
 {
-  double inState[ BMLN_dynDim ];
   double temp;
   double cs, sn;
 
   cs = align->cos_roll();
   sn = align->sin_roll();
 
-  p.getState( inState );
+  Vector inState = p.getState();
 
   inState[0] -= align->x_offset();
   inState[1] -= align->y_offset();
 
   if( align->roll() != 0.0) {
-    temp       = inState[0] * cs + inState[1] * sn;
+    double temp       = inState[0] * cs + inState[1] * sn;
     inState[1] = inState[1] * cs - inState[0] * sn;
     inState[0] = temp;
 
@@ -1122,18 +1142,18 @@ void bmlnElmnt::enterLocalFrame( Particle& p ) const
 
 void bmlnElmnt::enterLocalFrame( JetParticle& p ) const
 {
-  JetVector inState ( p.State() );
-  Jet       temp    ( inState.Env() );
   double    cs, sn;
 
   cs = align->cos_roll();
   sn = align->sin_roll();
 
+  JetVector inState = p.getState();
+
   inState(0) -= align->x_offset();
   inState(1) -= align->y_offset();
 
   if( align->roll() != 0.0) {
-    temp       = inState(0) * cs + inState(1) * sn;
+    Jet temp       = inState(0) * cs + inState(1) * sn;
     inState(1) = inState(1) * cs - inState(0) * sn;
     inState(0) = temp;
 
@@ -1150,17 +1170,16 @@ void bmlnElmnt::enterLocalFrame( JetParticle& p ) const
 
 void bmlnElmnt::leaveLocalFrame( Particle& p ) const
 {
-  static double outState[ BMLN_dynDim ];
-  static double temp;
+
   static double cs, sn;
 
   cs = align->cos_roll();
   sn = align->sin_roll();
 
-  p.getState( outState );
+  Vector outState = p.getState();
 
   if( align->roll() != 0.0) {
-    temp        = outState[0] * cs - outState[1] * sn;
+    double temp        = outState[0] * cs - outState[1] * sn;
     outState[1] = outState[1] * cs + outState[0] * sn;
     outState[0] = temp;
 
@@ -1180,25 +1199,24 @@ void bmlnElmnt::leaveLocalFrame( Particle& p ) const
 
 void bmlnElmnt::leaveLocalFrame( JetParticle& p ) const
 {
-  JetVector outState ( p.State() );
-  Jet       temp     ( outState.Env() );
-  static    double   cs, sn;
 
-  cs = align->cos_roll();
-  sn = align->sin_roll();
+  double cs = align->cos_roll();
+  double sn = align->sin_roll();
+
+  JetVector outState = p.getState();
 
   if( align->roll() != 0.0) {
-    temp        = outState(0) * cs - outState(1) * sn;
-    outState(1) = outState(1) * cs + outState(0) * sn;
-    outState(0) = temp;
+    Jet temp    = outState[0] * cs - outState[1] * sn;
+    outState[1] = outState[1] * cs + outState[0] * sn;
+    outState[0] = temp;
 
-    temp        = outState(3) * cs - outState(4) * sn;
-    outState(4) = outState(4) * cs + outState(3) * sn;
-    outState(3) = temp;
+    temp        = outState[3] * cs - outState[4] * sn;
+    outState[4] = outState[4] * cs + outState[3] * sn;
+    outState[3] = temp;
   }
 
-  outState(0) += align->x_offset();
-  outState(1) += align->y_offset();
+  outState[0] += align->x_offset();
+  outState[1] += align->y_offset();
 
   p.setState( outState );
 }
@@ -1241,13 +1259,15 @@ double bmlnElmnt::getReferenceTime() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double bmlnElmnt::setReferenceTime( double x )
+double bmlnElmnt::setReferenceTime( double const& x )
 {
+  double xtmp = x;
+
   double oldValue = _ctRef;
-  if( fabs(x) < 1.0e-12 ) { x = 0.0; }
-  _ctRef = x;
-  if( p_bml   ) {   p_bml->setReferenceTime( x ); }
-  if( p_bml_e ) { p_bml_e->setReferenceTime( x ); }
+  if( fabs(xtmp) < 1.0e-12 ) { xtmp = 0.0; }
+  _ctRef = xtmp;
+  if( p_bml   ) {   p_bml->setReferenceTime( xtmp ); }
+  if( p_bml_e ) { p_bml_e->setReferenceTime( xtmp ); }
   return oldValue;
 }
 
@@ -1280,11 +1300,11 @@ Aperture* bmlnElmnt::getAperture() {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
+void bmlnElmnt::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   if( p_bml || p_bml_e ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           "void bmlnElmnt::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
            "Cannot use base ::Split function when the element is composite." ) );
   }
 
@@ -1292,7 +1312,7 @@ void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
     ostringstream uic;
     uic  << "Requested percentage = " << pc << "; not within [0,1].";
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           "void bmlnElmnt::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
            uic.str().c_str() ) );
   }
 
@@ -1318,7 +1338,7 @@ void bmlnElmnt::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setShunt(double a) 
+void bmlnElmnt::setShunt(double const& a) 
 {               // Set the value of the shunt, creating it if necessary
   // REMOVE: strength += ( shuntCurrent - a ) * IToField();
   this->setStrength( strength + ( shuntCurrent - a ) * IToField() );
@@ -1460,4 +1480,8 @@ bmlnElmnt::attributeClear() {
   _attributes.clear();
 
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 

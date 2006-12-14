@@ -55,7 +55,7 @@ using FNAL::pcout;
 
 sector::sector(   double* bH,  double* aH,  double* pH
                 , double* bV,  double* aV,  double* pV
-                , double l  ) 
+                , double const& l  ) 
 : bmlnElmnt(l) 
 {
  int    i, j;
@@ -65,14 +65,14 @@ sector::sector(   double* bH,  double* aH,  double* pH
 
  if( pH[1] <= pH[0] ) {
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "sector::sector( double*,  double*,  double*, double*,  double*,  double*, double )", 
+          "sector::sector( double*,  double*,  double*, double*,  double*,  double*, double const& )", 
           "Horizontal phases inverted." ) );
  }
  else deltaPsiH = pH[1] - pH[0];
 
  if( pV[1] <= pV[0] ) {
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "sector::sector( double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double l  ) : bmlnElmnt(l) {", 
+          "sector::sector( double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double const& l  ) : bmlnElmnt(l) {", 
           "Vertical phases inverted." ) );
  }
  else deltaPsiV = pV[1] - pV[0];
@@ -115,7 +115,7 @@ sector::sector(   double* bH,  double* aH,  double* pH
 } // end function sector::sector( double* bH, ... )
 
 
-sector::sector( const char* n, double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double l  ) : bmlnElmnt( n, l ) {
+sector::sector( const char* n, double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double const& l  ) : bmlnElmnt( n, l ) {
  int    i, j;
  double dummy, cs, sn;
 
@@ -123,14 +123,14 @@ sector::sector( const char* n, double* bH,  double* aH,  double* pH, double* bV,
 
  if( pH[1] <= pH[0] ) {
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "sector::sector( const char* n, double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double l  ) : bmlnElmnt( n, l ) {", 
+          "sector::sector( const char* n, double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double const& l  ) : bmlnElmnt( n, l ) {", 
           "Horizontal phases inverted." ) );
  }
  else deltaPsiH = pH[1] - pH[0];
 
  if( pV[1] <= pV[0] ) {
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "sector::sector( const char* n, double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double l  ) : bmlnElmnt( n, l ) {", 
+          "sector::sector( const char* n, double* bH,  double* aH,  double* pH, double* bV,  double* aV,  double* pV, double const& l  ) : bmlnElmnt( n, l ) {", 
           "Vertical phases inverted." ) );
  }
  else deltaPsiV = pV[1] - pV[0];
@@ -173,10 +173,26 @@ sector::sector( const char* n, double* bH,  double* aH,  double* pH, double* bV,
 } // end function sector::sector( double* bH, ... )
 
 
-sector::sector( Jet* m, double l, char mpt, PropFunc* prop) : bmlnElmnt(l,prop) {
- int i, j;
+sector::sector( Mapping const& m, double const& l, char mpt, PropFunc* prop   ) : bmlnElmnt(l, prop) {
+ int i,j;
  mapType  = mpt;
- for( i = 0; i < BMLN_dynDim; i++ ) myMap.SetComponent( i, m[i] );
+ myMap = m;
+ if( mpt == 0 ) {
+   MatrixD M(6,6);
+   M = myMap.Jacobian();
+   for( i = 0; i < BMLN_dynDim; i++ ) {
+     for( j = 0; j < BMLN_dynDim; j++ ) {
+       mapMatrix[i][j] = M(i,j);
+     }
+   }
+ }
+}
+
+
+sector::sector( const char* n, Mapping const& m, double const& l, char mpt,PropFunc* prop ) : bmlnElmnt( n, l, prop ) {
+ int i,j;
+ mapType  = mpt;
+ myMap = m;
  if( mpt == 0 ) {
    MatrixD M = myMap.Jacobian();
    for( i = 0; i < BMLN_dynDim; i++ ) {
@@ -188,25 +204,25 @@ sector::sector( Jet* m, double l, char mpt, PropFunc* prop) : bmlnElmnt(l,prop) 
 }
 
 
-sector::sector( const char* n, Jet* m, double l, char mpt, PropFunc* prop ) : bmlnElmnt( n, l, prop ) {
- int i, j;
- mapType  = mpt;
- for( i = 0; i < BMLN_dynDim; i++ ) myMap.SetComponent( i, m[i] );
- if( mpt == 0 ) {
-   MatrixD M = myMap.Jacobian();
-   for( i = 0; i < BMLN_dynDim; i++ ) {
-     for( j = 0; j < BMLN_dynDim; j++ ) {
-       mapMatrix[i][j] = M(i,j);
-     }
+sector::sector( const char* n, double const& l ) 
+: bmlnElmnt( n, l ) 
+{
+ mapType  = 0;
+ for   ( int i = 0; i < BMLN_dynDim; i++ ) {
+   for ( int j = 0; j < BMLN_dynDim; j++ ) {
+     mapMatrix[i][j] = 0.0;
    }
+   mapMatrix[i][i] = 1.0;
  }
 }
+
 
 sector::sector( const sector& x )
-: bmlnElmnt( (bmlnElmnt&) x )
+: bmlnElmnt(x )
 {
+
  mapType = x.mapType;
- myMap = x.myMap;
+ myMap   = x.myMap;
 
  int i;
  for( i = 0; i < 2; i++ ) {
@@ -223,57 +239,8 @@ sector::sector( const sector& x )
    mapMatrix[i][j] = x.mapMatrix[i][j];
 }
 
-sector::sector( const Mapping& m, double l, char mpt, PropFunc* prop   ) : bmlnElmnt(l, prop) {
- int i,j;
- mapType  = mpt;
- myMap = m;
- if( mpt == 0 ) {
-   MatrixD M(6,6);
-   M = myMap.Jacobian();
-   for( i = 0; i < BMLN_dynDim; i++ ) {
-     for( j = 0; j < BMLN_dynDim; j++ ) {
-       mapMatrix[i][j] = M(i,j);
-     }
-   }
- }
-}
-
-
-sector::sector( const char* n, const Mapping& m, double l, char mpt,PropFunc* prop ) : bmlnElmnt( n, l, prop ) {
- int i,j;
- mapType  = mpt;
- myMap = m;
- if( mpt == 0 ) {
-   MatrixD M = myMap.Jacobian();
-   for( i = 0; i < BMLN_dynDim; i++ ) {
-     for( j = 0; j < BMLN_dynDim; j++ ) {
-       mapMatrix[i][j] = M(i,j);
-     }
-   }
- }
-}
-
-
-sector::sector( const char* n, double l ) 
-: bmlnElmnt( n, l ) 
-{
- mapType  = 0;
- for   ( int i = 0; i < BMLN_dynDim; i++ ) {
-   for ( int j = 0; j < BMLN_dynDim; j++ ) {
-     mapMatrix[i][j] = 0.0;
-   }
-   mapMatrix[i][i] = 1.0;
- }
-}
-
-
 
 sector::~sector() {
-}
-
-
-void sector::eliminate() {
- delete this;
 }
 
 
@@ -283,7 +250,7 @@ Mapping sector::getMap() const
 }
 
 
-void sector::setFrequency( double (*fcn)( double ) ) {
+void sector::setFrequency( double (*fcn)( double const& ) ) {
   DeltaT = fcn;
 }
 
@@ -298,7 +265,7 @@ const char* sector::Type() const
 }
 
 
-void sector::setLength( double )
+void sector::setLength( double const& )
 {
   (*pcerr) << "*** WARNING ***                                \n"
           "*** WARNING *** sector::setLength does nothing.\n"

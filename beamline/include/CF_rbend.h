@@ -51,64 +51,64 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
  public:
   // Constructors
   CF_rbend();
-  CF_rbend( double,     // length       [ meters ]
-            double,     // field        [ tesla ]
+  CF_rbend( double const&,     // length       [ meters ]
+            double const&,     // field        [ tesla ]
             int n = 1 );// number of blocks: 4n+1 bends + 2(4n) thin multipoles
  
   CF_rbend( const char*,// name
-            double,     // length       [ meters ]
-            double,     // field        [ tesla ]
+            double const&,     // length       [ meters ]
+            double const&,     // field        [ tesla ]
             int = 1 );
 
-  CF_rbend( double,     // length       [ meters ]
-            double,     // field        [ tesla ]
-            double,     // entry angle  [ radians ]
+  CF_rbend( double const&,     // length       [ meters ]
+            double const&,     // field        [ tesla ]
+            double const&,     // entry angle  [ radians ]
             int n = 1 );// number of blocks: 4n+1 bends + 2(4n) thin multipoles
  
   CF_rbend( const char*,// name
-            double,     // length       [ meters ]
-            double,     // field        [ tesla ]
-            double,     // entry angle  [ radians ]
+            double const&,     // length       [ meters ]
+            double const&,     // field        [ tesla ]
+            double const&,     // entry angle  [ radians ]
             int = 1 );
 
-  CF_rbend( double,     // length  [ meters ]           // No entry angle assumed.
-            double,     // field   [ tesla ]            // Must be registered.
+  CF_rbend( double const&,     // length  [ meters ]           // No entry angle assumed.
+            double const&,     // field   [ tesla ]            // Must be registered.
                         // (assumed along the y-axis)   // See RefRegVisitor
 
-            double,     // upstream edge angle [radians]
-            double,     // downstream edge angle [radians]
+            double const&,     // upstream edge angle [radians]
+            double const&,     // downstream edge angle [radians]
                         // signs of previous two parameters
                         // are as defined for rbends by MAD
             int = 1 );
 
   CF_rbend( const char*,// name
-            double,     // length  [ meters ]
-            double,     // field   [ tesla ]
+            double const&,     // length  [ meters ]
+            double const&,     // field   [ tesla ]
 
-            double,     // upstream edge angle [radians]
-            double,     // downstream edge angle [radians]
+            double const&,     // upstream edge angle [radians]
+            double const&,     // downstream edge angle [radians]
                         // signs of previous two parameters
                         // are as defined for rbends by MAD
             int = 1 );
 
-  CF_rbend( double,     // length  [ meters ]
-            double,     // field   [ tesla ]
+  CF_rbend( double const&,     // length  [ meters ]
+            double const&,     // field   [ tesla ]
                         // (assumed along the y-axis)
-            double,     // entry angle [radians] RELATIVE TO parallel faces
+            double const&,     // entry angle [radians] RELATIVE TO parallel faces
                         //   (assumes symmetric pssage unless reset)
-            double,     // upstream edge angle [radians]
-            double,     // downstream edge angle [radians]
+            double const&,     // upstream edge angle [radians]
+            double const&,     // downstream edge angle [radians]
                         // signs of previous two parameters
                         // are as defined for rbends by MAD
             int = 1 );
 
   CF_rbend( const char*,// name
-            double,     // length  [ meters ]
-            double,     // field   [ tesla ]
-            double,     // entry angle [radians] RELATIVE TO parallel faces
+            double const&,     // length  [ meters ]
+            double const&,     // field   [ tesla ]
+            double const&,     // entry angle [radians] RELATIVE TO parallel faces
                         //   (assumes symmetric pssage unless reset)
-            double,     // upstream edge angle [radians]
-            double,     // downstream edge angle [radians]
+            double const&,     // upstream edge angle [radians]
+            double const&,     // downstream edge angle [radians]
                         // signs of previous two parameters
                         // are as defined for rbends by MAD
             int = 1 );
@@ -119,7 +119,6 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
      { return new CF_rbend( *this ); }
 
   ~CF_rbend();
-  void eliminate();
 
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
@@ -138,7 +137,7 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   bool isMagnet() const;
   
   double OrbitLength( const Particle& );
-  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
+  void Split( double const&, bmlnElmnt**, bmlnElmnt** ) const;
     // WARNING: After the Split function is used, the new elements 
     // must be commissioned with RefRegVisitor.
 
@@ -150,8 +149,8 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   double setExitAngle( const Particle& ); 
   double getEntryAngle() const { return _usAngle; }
   double getExitAngle() const { return _dsAngle; }
-  double setEntryAngle( double /* radians */ ); 
-  double setExitAngle( double /* radians */ ); 
+  double setEntryAngle( double const& /* radians */ ); 
+  double setExitAngle( double const& /* radians */ ); 
   double getEntryEdgeAngle() const { return _usEdgeAngle; }
   double getExitEdgeAngle() const { return _dsEdgeAngle; }
 
@@ -168,9 +167,9 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   double AdjustPosition( const JetParticle& );
 
 
-  int setQuadrupole ( double );  
-  int setSextupole  ( double );  
-  int setOctupole   ( double );  
+  int setQuadrupole ( double const& );  
+  int setSextupole  ( double const& );  
+  int setOctupole   ( double const& );  
   // The argument is integrated multipole strength
   // i.e., .setQuadrupole ( B'l   )
   //       .setSextupole  ( B''l/2 )
@@ -180,10 +179,10 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   //         1 if there are no multipoles of required type.
   //           (this should never happen)
 
-  int setDipoleField ( double );  
+  int setDipoleField ( double const& );  
   // Here the argument is the dipole field, 
   // NOT the integrated dipole field.
-  void setStrength   ( double );
+  void setStrength   ( double const& );
   // Specific implementation of virtual bmlnElmnt method.
   // Modifies all internal elements.
 
@@ -200,6 +199,7 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   // NOT the integrated dipole field.
 
  private:
+
   bmlnElmnt** _u;           // Address of first internal bmlElmnt pointer
   bmlnElmnt** _v;           // Address of final internal bmlElmnt pointer
 

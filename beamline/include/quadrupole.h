@@ -75,66 +75,71 @@ public:
   friend class TPOT_Prop;
   static TPOT_Prop LikeTPOT;
 
+
+  // length    in meters^-1
+  // strength (B') in Tesla-meters^-1
+
+
   quadrupole();
-  quadrupole( const char*  n,   // name
-              double l,         // length,        in meters
-              double s,         // strength = B', in Tesla-meters^-1
-              PropFunc*    = &quadrupole::LikeTPOT );
-
-  quadrupole( double l,         // length,        in meters
-              double s,         // strength = B', in Tesla-meters^-1
-              PropFunc*    = &quadrupole::LikeTPOT );
-
-
-  quadrupole( const quadrupole& );
+  quadrupole( const char* name, double const& length, double const& strength, PropFunc* = &quadrupole::LikeTPOT );
+  quadrupole(                   double const& length, double const& strength, PropFunc* = &quadrupole::LikeTPOT );
+  quadrupole( quadrupole const& );
 
   quadrupole* Clone() const { return new quadrupole( *this ); }
 
-  ~quadrupole();
+  virtual ~quadrupole();
 
-  void setStrength( double );
-  void setStrength( double, int );
+  void setStrength( double const& );
+  void setStrength( double const&, int );
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle&    p ) { (*Propagator)( this, p ); }
-  void localPropagate( JetParticle& p ) { (*Propagator)( this, p ); }
+  void localPropagate( Particle&    p )   { (*propfunc_)( this, p );        }
+  void localPropagate( JetParticle& p )   { (*propfunc_)( this, p );        }
 
-  void accept( BmlVisitor& v ) { v.visitQuadrupole( this ); }
+  void accept( BmlVisitor& v )            { v.visitQuadrupole( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitQuadrupole( this ); }
 
   void releasePropFunc();
   void setupPropFunc();
-  void eliminate();
 
   const char* Type() const;
   bool isMagnet() const;
 
-  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
+  void Split( double const&, bmlnElmnt**, bmlnElmnt** ) const;
 } ;
+
+
+
+
+
+
+
+
 
 class DLLEXPORT thinQuad : public bmlnElmnt
 {
 public:
+
+  // integrated_strength (B'L) in Tesla; + = horizontally focussing
+
   thinQuad();
-  thinQuad( double );    // B'L in Tesla; + = horizontally focussing
-  thinQuad( const char*, // name
-            double );    // B'L in Tesla; + = horizontally focussing
+  thinQuad(                   double const& integrated_strength );    
+  thinQuad( char const* name, double const& integrated_strength );    // B'L in Tesla; + = horizontally focussing
   thinQuad( thinQuad const& );
 
   thinQuad* Clone() const { return new thinQuad( *this ); }
 
-  ~thinQuad();
+  virtual ~thinQuad();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& p );
   void localPropagate( JetParticle& );
-  void eliminate();
 
-  void accept( BmlVisitor& v ) { v.visitThinQuad( this ); }
+  void accept( BmlVisitor& v )            { v.visitThinQuad( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitThinQuad( this ); }
 
-  bool  isMagnet()   const;
-  const char* Type() const;
+  bool        isMagnet()   const;
+  char const* Type()       const;
   
 } ;
 

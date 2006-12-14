@@ -47,12 +47,12 @@ class DLLEXPORT srot : public bmlnElmnt
 {
 public:
   srot();
-  srot( double /* strength = rotation angle in radians */ );
+  srot( double const& /* strength = rotation angle in radians */ );
   srot( const char * /* name */ );
-  srot( const char * /* name */, double /* strength */ );
+  srot( const char * /* name */, double const& /* strength */ );
   srot( const srot& );
   srot* Clone() const { return new srot( *this ); }
-  ~srot();
+  virtual ~srot();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );

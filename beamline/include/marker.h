@@ -46,19 +46,19 @@
 class DLLEXPORT marker : public bmlnElmnt
 {
 public:
-  marker();                   // Data to be written to standard output
-  marker( const char* );      // Name identifier.
-  marker( const marker& );
+  marker();                       // Data to be written to standard output
+  marker( char const* name);      // Name identifier.
+  marker( marker const& );
 
   marker* Clone() const { return new marker( *this ); }
 
-  ~marker();
+  virtual ~marker();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitMarker( this ); }
+  void accept( BmlVisitor& v )            { v.visitMarker( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitMarker( this ); }
 
   const char* Type() const;

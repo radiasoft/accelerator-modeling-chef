@@ -46,6 +46,7 @@
 #include <beamline/bmlnElmnt.h>
 #include <basic_toolkit/VectorD.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 using namespace std;
 
@@ -166,10 +167,12 @@ alignment& alignment::operator=(alignment const& x) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void alignment::misalign(Particle const& p, double* inState) {
+void alignment::misalign(Particle const& p, Vector& inState) {
+
+  Vector& state = p.getState();
 
   for( int i = 0; i < BMLN_dynDim; ++i  ) 
-    inState[i] = p.state[i];
+    inState[i] = state[i];
   
   inState[0] -= xOffset;
   inState[1] -= yOffset;
@@ -200,11 +203,13 @@ void alignment::misalign(Particle const& p, double* inState) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void alignment::align(Particle const& p, double* inState) {
+void alignment::align(Particle const& p, Vector& inState) {
 
+
+  Vector& state = p.getState();
 
   for( int i=0; i < BMLN_dynDim; ++i  ) 
-    inState[i] = p.state[i];
+    inState[i] = state[i];
   
 
  if(tilt != 0.0) {
@@ -236,7 +241,7 @@ void alignment::align(Particle const& p, double* inState) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void alignment::align(double* p, double* inState) {
+void alignment::align(Vector& p, Vector& inState) {
 
 
   for( int i = 0; i < BMLN_dynDim; ++i  ) 
@@ -271,10 +276,12 @@ void alignment::align(double* p, double* inState) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void alignment::misalign(JetParticle& p, Jet* inState) {
+void alignment::misalign(JetParticle& p, Mapping& inState) {
+
+  Mapping& state = p.getState();
 
   for( int i=0; i < BMLN_dynDim; ++i  ) 
-    inState[i] = p.state(i);
+    inState[i] = state(i);
   
   inState[0] -= xOffset;
   inState[1] -= yOffset;
@@ -305,10 +312,12 @@ void alignment::misalign(JetParticle& p, Jet* inState) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void alignment::align(JetParticle& p, Jet* inState) {
+void alignment::align(JetParticle& p, Mapping& inState) {
+
+  Mapping& state = p.getState();
 
   for( int i = 0; i < BMLN_dynDim; ++i  ) 
-    inState[i] = p.state(i);
+    inState[i] = state(i);
   
 
  if(tilt != 0.0) {
@@ -339,7 +348,7 @@ void alignment::align(JetParticle& p, Jet* inState) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void alignment::align(Jet* p, Jet* inState) {
+void alignment::align(JetVector& p, Mapping& inState) {
 
   for( int i = 0; i < BMLN_dynDim; ++i  ) 
     inState[i] = p[i];
@@ -408,9 +417,11 @@ ostream& operator<<(ostream& os, alignment& align)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void alignment::misalign( double* inState )
+void alignment::misalign( Vector& inState )
 {
-  static double result[4];
+
+  double result[4];
+
   inState[0] -= xOffset;
   inState[1] -= yOffset;
 
@@ -429,7 +440,7 @@ void alignment::misalign( double* inState )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void alignment::align( double* outState ) 
+void alignment::align( Vector& outState ) 
 {
  if(tilt != 0.0) {
    double result[4];

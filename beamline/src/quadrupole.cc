@@ -62,60 +62,56 @@ quadrupole::quadrupole()
  this->setupPropFunc();
 }
 
-quadrupole::quadrupole( const char* n, double l, double s, bmlnElmnt::PropFunc* pf )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+quadrupole::quadrupole( const char* n, double const& l, double const& s, bmlnElmnt::PropFunc* pf )
 : bmlnElmnt( n, l, s, pf )
 {
  if( l<= 0.0 ) {
   ostringstream uic;
   uic  << "Quadrupole length l = " << l << " is negative.";
   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-         "quadrupole::quadrupole( const char* n, double l, double s, bmlnElmnt::PropFunc* pf )", 
+         "quadrupole::quadrupole( const char* n, double const& l, double const& s, bmlnElmnt::PropFunc* pf )", 
          uic.str().c_str() ) );
  }
 
  this->setupPropFunc();
 
- // REMOVE: if( 0 == strcmp( pf->Type(), "quadrupole::TPOT_Prop" ) ) 
- // REMOVE: {
- // REMOVE:   ((quadrupole::TPOT_Prop*) pf)->setup( this );
- // REMOVE: }
- // REMOVE: else 
- // REMOVE: {
- // REMOVE:   p_bml = 0;
- // REMOVE: }
 }
 
 
-quadrupole::quadrupole( double l, double s, bmlnElmnt::PropFunc* pf )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+quadrupole::quadrupole( double const& l, double const& s, bmlnElmnt::PropFunc* pf )
 : bmlnElmnt( l, s, pf )
 {
  if( l<= 0.0 ) {
   ostringstream uic;
   uic  << "Quadrupole length l = " << l << " is negative.";
   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-         "quadrupole::quadrupole( double l, double s, bmlnElmnt::PropFunc* pf )", 
+         "quadrupole::quadrupole( double const& l, double const& s, bmlnElmnt::PropFunc* pf )", 
          uic.str().c_str() ) );
  }
 
  this->setupPropFunc();
 
- // REMOVE: if( 0 == strcmp( pf->Type(), "quadrupole::TPOT_Prop" ) ) 
- // REMOVE: {
- // REMOVE:   ((quadrupole::TPOT_Prop*) pf)->setup( this );
- // REMOVE: }
- // REMOVE: else 
- // REMOVE: {
- // REMOVE:   p_bml = 0;
- // REMOVE: }
 }
 
 
-quadrupole::quadrupole( const quadrupole& x ) 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+quadrupole::quadrupole( quadrupole const& x ) 
 : bmlnElmnt( x )
 {
   this->setupPropFunc();
+
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 quadrupole::~quadrupole() 
 {
@@ -123,8 +119,12 @@ quadrupole::~quadrupole()
 }
 
 
-void quadrupole::setStrength( double s ) {
- strength = s - getShunt()*IToField();
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void quadrupole::setStrength( double const& s ) {
+
+ strength                  = s - getShunt()*IToField();
  double integratedStrength = strength*length;
 
  if( p_bml != 0 ) 
@@ -138,7 +138,7 @@ void quadrupole::setStrength( double s ) {
 
    if( counter <= 0.0 ) {
      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-            "void quadrupole::setStrength( double s ) {", 
+            "void quadrupole::setStrength( double const& s ) {", 
             "No thin quads in the internal beamline." ) );
    }
    else if( counter == 1) {
@@ -149,7 +149,7 @@ void quadrupole::setStrength( double s ) {
      else 
      {
      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-            "void quadrupole::setStrength( double s ) {", 
+            "void quadrupole::setStrength( double const& s ) {", 
             "p_bml_e not set." ) );
      }
    }
@@ -165,38 +165,24 @@ void quadrupole::setStrength( double s ) {
  }
 }
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void quadrupole::releasePropFunc()
 {
-  if( 0 != Propagator ) {
-    if( 0 != p_bml ) {
-      p_bml->eliminate();
-      p_bml = 0;
-    }
-  }
-  Propagator = 0;
+  if( !propfunc_ ) return;
+
+  { p_bml->zap(); delete p_bml;  p_bml = 0; propfunc_ = 0; }
+
 }
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 void quadrupole::setupPropFunc()
 {
-  if( 0 != Propagator ) {
-    if( 0 != p_bml ) {
-      p_bml->eliminate();
-      p_bml = 0;
-    }
-    if( 0 == strcmp( Propagator->Type(), "quadrupole::TPOT_Prop" ) ) 
-    {
-      ((quadrupole::TPOT_Prop*) Propagator)->setup( this );
-      // This method will create *p_bml
-    }
-  }
-  else {
+  if( !propfunc_ ) {
     (*pcerr) << "\n**** WARNING **** "
             "\n**** WARNING **** void quadrupole::setupPropFunc()"
             "\n**** WARNING **** Invoked with a null propagator functor."
@@ -204,14 +190,25 @@ void quadrupole::setupPropFunc()
             "\n**** WARNING **** probably crash soon."
             "\n**** WARNING **** "
          << endl;
-  }
+
+// if( p_bel ) { delete p_bml_e;  p_bml_e = 0;          } // This is needed if p_bml_e is not an element of  p_bml?
+   if( p_bml ) { p_bml->zap(); delete p_bml; p_bml = 0; }
+
+ }
+
+   if( 0 == strcmp( propfunc_->Type(), "quadrupole::TPOT_Prop" ) ) {
+
+      ((quadrupole::TPOT_Prop*) propfunc_)->setup( this );
+   
+      // This method will create *p_bml
+   };
+
 }
 
 
-void quadrupole::eliminate() {
- delete this;
-}
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char* quadrupole::Type() const 
 { 
@@ -219,29 +216,36 @@ const char* quadrupole::Type() const
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool quadrupole::isMagnet() const
 {
   return true;
 }
 
 
-void quadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void quadrupole::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
     uic  << "pc = " << pc << ": this should be within [0,1].";
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void quadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           "void quadrupole::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
            uic.str().c_str() ) );
   }
 
   // We assume "strength" means field, not field*length.
-  *a = new quadrupole(         pc  *length, strength, Propagator ); // ??? Fix
-  *b = new quadrupole( ( 1.0 - pc )*length, strength, Propagator ); // ??? this
+
+  *a = new quadrupole(         pc  *length, strength, propfunc_ ); // ??? Fix
+  *b = new quadrupole( ( 1.0 - pc )*length, strength, propfunc_ ); // ??? this
 
   // Rename
-  char* newname;
-  newname = new char [ strlen(ident) + 6 ];
+
+  char* newname = new char [ strlen(ident) + 6 ];
 
   strcpy( newname, ident );
   strcat( newname, "_1" );
@@ -253,6 +257,9 @@ void quadrupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 
   delete [] newname;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 istream& quadrupole::readFrom(istream& is)
 {
@@ -275,11 +282,14 @@ istream& quadrupole::readFrom(istream& is)
   return is;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 ostream& quadrupole::writeTo(ostream& os)
 {
-  if ( Propagator == 		&quadrupole::LikeMAD )
+  if ( propfunc_ == 		&quadrupole::LikeMAD )
     os << "quadrupole::P_LikeMAD   quadrupole::J_LikeMAD";
-  else if ( Propagator == 	&quadrupole::LikeTPOT )
+  else if ( propfunc_ == 	&quadrupole::LikeTPOT )
     os << "quadrupole::P_LikeTPOT  quadrupole::J_LikeTPOT";
   else 
     os << "UNKNOWN  UNKNOWN";
@@ -298,14 +308,23 @@ thinQuad::thinQuad() : bmlnElmnt() {
  strength = 0.0;
 }
 
-thinQuad::thinQuad( double s ) : bmlnElmnt() {
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinQuad::thinQuad( double const& s ) : bmlnElmnt() {
  strength = s;      // B'L in Tesla
 }
 
-thinQuad::thinQuad( const char* n, double s ) : bmlnElmnt(n) {
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinQuad::thinQuad( const char* n, double const& s ) : bmlnElmnt(n) {
  strength = s;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinQuad::thinQuad( const thinQuad& x ) 
 : bmlnElmnt( x ){}
@@ -313,15 +332,17 @@ thinQuad::thinQuad( const thinQuad& x )
 thinQuad::~thinQuad() {
 }
 
-void thinQuad::eliminate() {
- delete this;
-}
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char* thinQuad::Type() const { 
   return "thinQuad"; 
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool thinQuad::isMagnet() const
 {

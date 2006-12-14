@@ -40,9 +40,13 @@
 
 
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <beamline/BBLens.h>
 #include <basic_toolkit/VectorD.h>
 #include <basic_toolkit/PhysicsConstants.h>
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BBLens::localPropagate( Particle& p ) {
 
@@ -52,21 +56,28 @@ void BBLens::localPropagate( Particle& p ) {
  Vector p_beta(3);
  Vector E(3), K(3);
 
- x = p.state[0];
- y = p.state[1];
+ Vector& state = p.getState();
+
+ x = state[0];
+ y = state[1];
  
  E = NormalizedEField( x, y );
  p_beta = p.VectorBeta();
  K  = Beta()^E;
  K  = p_beta^K;
  K += E; 
- K *= - num*PH_MKS_rp / ( p.Beta()*p.pn );
+ 
+ double pn =  p.Beta()*p.Gamma();
+ K *= - num*PH_MKS_rp / ( p.Beta()*pn );
 
- if( p.q*num < 0.0 ) K = -K;  // ??? Check this!
+ if( p.Charge()*num < 0.0 ) K = -K;  // ??? Check this!
 
- p.state[3] += K(0);
- p.state[4] += K(1);
+ state[3] += K(0);
+ state[4] += K(1);
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BBLens::localPropagate( JetParticle& p ) {
 
@@ -76,22 +87,26 @@ void BBLens::localPropagate( JetParticle& p ) {
  JetVector p_beta(3);
  JetVector E(3), K(3);
 
- x = p.state(0);
- y = p.state(1);
+ Mapping& state = p.getState();
+
+ x = state(0);
+ y = state(1);
  
  E = NormalizedEField( x, y );
  p_beta = p.VectorBeta();
  K  = Beta()^E;
  K  = p_beta^K;
  K += E; 
- K *= - num*PH_MKS_rp / ( p.Beta()*p.pn );
+
+ Jet pn =  p.Beta()*p.Gamma();
+ K *= - num*PH_MKS_rp / ( p.Beta()*pn );
 
 
- if( p.q*num < 0.0 ) K = -K;  // ??? Check this!
+ if( p.Charge()*num < 0.0 ) K = -K;  // ??? Check this!
 
- s = p.state(3) + K(0);
- ( p.state ).SetComponent( 3, s );
- s = p.state(4) + K(1);
- ( p.state ).SetComponent( 4, s );
+ s = state(3) + K(0);
+ state.SetComponent( 3, s );
+ s = state(4) + K(1);
+ state.SetComponent( 4, s );
 
 }

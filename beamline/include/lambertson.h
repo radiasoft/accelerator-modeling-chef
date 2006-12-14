@@ -62,25 +62,23 @@ private:
 
 public:
   
+  // x position of the septum
+  // extracted beamline pointer
+  // s  reference state for extraction beamline
   thinLamb();
-  thinLamb( char* n);      // name
+  thinLamb( char const* n);      // name
   
-  thinLamb( char*  n,      // name
-            double x,      // x position of the septum.
-            beamline* b,   // extracted beamline pointer.
-            double* s );   // reference state for extraction beamline.
+  thinLamb( char const*  name, double const& septum_pos_x,  beamline* b,  double* state );   
   
-  thinLamb( double x,      // x position of the septum.
-            beamline* b,   // extracted beamline pointer.
-            double* s );   // reference state for extraction beamline.
+  thinLamb(                    double const& septum_pos_x,  beamline* b,  double* state );   
   
-  thinLamb( const thinLamb& );
+  thinLamb( thinLamb const& );
 
   thinLamb* Clone() const { return new thinLamb( *this ); }
 
-  ~thinLamb();
+  virtual ~thinLamb();
   
-  void setSeptum( double x); 
+  void setSeptum( double const& x); 
   void setBeamline( beamline* b); 
   void setRefState( const double* s);
 
@@ -90,11 +88,9 @@ public:
   void localPropagate( Particle&    p );
   void localPropagate( JetParticle& p );
   
-  void accept( BmlVisitor& v ) { v.visitThinLamb( this ); }
+  void accept( BmlVisitor& v )            { v.visitThinLamb( this ); }
   void accept( ConstBmlVisitor& v ) const { v.visitThinLamb( this ); }
 
-  void eliminate();
-  
   const char* Type() const;
 };
  

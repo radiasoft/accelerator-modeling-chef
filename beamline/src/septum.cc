@@ -57,21 +57,21 @@ thinSeptum::thinSeptum() : bmlnElmnt() {
          "Default construction not permitted in this version." ) );
 }
 
-thinSeptum::thinSeptum( char* n )
+thinSeptum::thinSeptum( char const* n )
 : bmlnElmnt( n ) {
   strengthPos = 0.0;
   strengthNeg = 0.0;
   xWire = 0.0;
 }
 
-thinSeptum::thinSeptum( char* n, double sP, double sN, double xw)
+thinSeptum::thinSeptum( char const* n, double const& sP, double const& sN, double const& xw)
 : bmlnElmnt( n ) {
   strengthPos = sP;
   strengthNeg = sN;
   xWire = xw;
 }
 
-thinSeptum::thinSeptum( double sP, double sN, double xw)
+thinSeptum::thinSeptum( double const& sP, double const& sN, double const& xw)
 : bmlnElmnt( ) {
   strengthPos = sP;
   strengthNeg = sN;
@@ -90,19 +90,15 @@ thinSeptum::~thinSeptum() {
 }
 
 
-void thinSeptum::setStrengths( double sPos, double sNeg ) {
+void thinSeptum::setStrengths( double const& sPos, double const& sNeg ) {
  strengthPos = sPos;
  strengthNeg = sNeg;
 }
 
-void thinSeptum::setWire( double x) {
+void thinSeptum::setWire( double const& x) {
  xWire = x;
 }
 
-
-void thinSeptum::eliminate() {
- delete this;
-}
 
 
 const char* thinSeptum::Type() const 

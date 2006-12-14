@@ -43,11 +43,12 @@
 #include <beamline/BmlPtrList.h>
 #include <beamline/combinedFunction.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 void combinedFunction::localPropagate( Particle& p ) 
 {
-  if( Propagator ) {
-    (*Propagator)( this, p );
+  if( propfunc_ ) {
+    (*propfunc_)( this, p );
   }
   else {
     p_bml->propagate( p );
@@ -56,10 +57,13 @@ void combinedFunction::localPropagate( Particle& p )
 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void combinedFunction::localPropagate( JetParticle& p ) 
 {
-  if( Propagator ) {
-    (*Propagator)( this, p );
+  if( propfunc_ ) {
+    (*propfunc_)( this, p );
   }
   else {
     p_bml->propagate( p );
