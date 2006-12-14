@@ -42,6 +42,7 @@
 *************************************************************************/
 
 #include <basic_toolkit/TVector.h>
+#include <basic_toolkit/GenericException.h>
 #include <numeric>
 #include <functional>
 #include <complex>
@@ -52,7 +53,7 @@
 
 #define CHECKOUT(type, test, fcn, message)                       \
   if( test ) {                                           \
-    throw( TVector<type >::GenericException( fcn, message ) ); \
+    throw( GenericException( __FILE__, __LINE__, fcn, message ) ); \
   }
 
 
