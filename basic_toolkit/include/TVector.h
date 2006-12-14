@@ -82,6 +82,7 @@ private:
   static OutputFormat* m_defOFPtr;  // default OutputFormat
 
 public:
+
   // Constructors and the destructor __________________________
 
   TVector( int  dimension= 3, const T* components=0, OutputFormat* ofmt=0 );
@@ -99,6 +100,8 @@ public:
   void        Set                   ( T const* );
   T           operator()            ( int )       const; // return component
   T&          operator()            ( int );              // set    component
+  T           operator[]            ( int idx)    const { return m_theVector[idx]; }
+  T&          operator[]            ( int idx)          { return m_theVector[idx]; }
 
   // Algebraic functions ___________________________
 
@@ -129,7 +132,7 @@ public:
                                                           // the vector is
                                                           // three-dimensional
 
-  // Boolean functions ________________________
+  // ... Boolean functions
 
   bool          operator==     ( TVector const& ) const;
   bool          operator!=     ( TVector const& ) const;
@@ -140,11 +143,11 @@ public:
   bool          IsNull         () const;
   bool          IsUnit         () const;
 
-  // Queries ___________________________
+  //  ... Queries
 
   int  Dim() const { return m_theVector.size(); }
 
-  // Utilities __________________________
+  // ... Utilities
 
 
   static void   setDefaultFormat ( OutputFormat const&  ); 
@@ -160,18 +163,6 @@ public:
                                                    // *this as the axis
 
   friend std::ostream& operator<< <T>(std::ostream& , const TVector<T>& );
-
-  // Exceptions ...
-  struct GenericException : public std::exception
-  {
-    GenericException( const char* fcn, const char* msg );
-    // 1st argument: identifies function containing throw
-    // 2nd         : identifies type of error
-    ~GenericException() throw() {}
-    const char* what() const throw();
-    std::string w;
-  };
-
 
 
   class op_mult: public std::binary_function<std::complex<double>&, std::complex<double>&, std::complex<double> > {

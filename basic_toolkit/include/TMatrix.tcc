@@ -135,6 +135,8 @@ template<typename T>
 TMatrix<T>& TMatrix<T>::operator=(const TMatrix& x) 
 {
 
+    if (&x == this) return *this;
+
     _ml = x._ml;
     return *this;
 

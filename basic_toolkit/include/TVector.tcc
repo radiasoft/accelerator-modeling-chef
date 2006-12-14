@@ -48,6 +48,7 @@
 
 #include <basic_toolkit/VectorD.h>
 #include <basic_toolkit/Matrix.h>
+#include <basic_toolkit/GenericException.h>
 
 #include <iomanip>
 #include <vector>
@@ -78,28 +79,11 @@ void TVector<T>::setDefaultFormat( OutputFormat const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>
-TVector<T>::GenericException::GenericException( const char* fcn, const char* msg ){ 
-  w = std::string(fcn) + std::string(msg); 
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-char const* TVector<T>::GenericException::what() const throw()
-{
-  return strcat( "Vector::GenericException: ", w.c_str() );
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 // #define NOCHECKS
 
 #define CHECKOUT(test,fcn,message)                       \
   if( test ) {                                           \
-    throw( typename TVector<T>::GenericException( fcn, message ) ); \
+    throw( GenericException( __FILE__, __LINE__, fcn, message ) ); \
   }
 
 
@@ -141,9 +125,7 @@ TVector<T>::TVector( TMatrix<T> const& x ): m_ofPtr(0)
 
   if( std::min( x.rows(), x.cols() ) != 1 ) {
 
-  throw( typename TVector<T>::GenericException( 
-               "TVector& TVector( TMatrix const & x )", 
-               "Incompatible dimensions."  ) );
+  throw(  GenericException( __FILE__, __LINE__, "TVector& TVector( TMatrix const & x )", "Incompatible dimensions."  ) );
  
   }
 
@@ -196,8 +178,9 @@ T TVector<T>::operator() ( int i ) const
 {
   if ( ( 0 <= i ) && ( i < Dim() ) ) { return m_theVector[i]; }
   else {
-    throw( GenericException( "T TVector<T>::operator() ( int i ) const",
-                             "Index out of range.") );
+    void* p = 0 ;
+    *((int *)p ) = 0;
+    throw( GenericException( __FILE__, __LINE__, "T TVector<T>::operator() ( int i ) const", "Index out of range.") );
   }
 }
 
@@ -209,8 +192,7 @@ T& TVector<T>::operator() ( int i )
 {
   if ( ( 0 <= i ) && ( i < Dim() ) ) { return m_theVector[i]; }
   else {
-    throw( GenericException( "T& TVector<T>::operator() ( int i )",
-                             "Index out of range.") );
+    throw( GenericException( __FILE__, __LINE__, "T& TVector<T>::operator() ( int i )", "Index out of range.") );
   }
 }
 
@@ -221,13 +203,12 @@ T& TVector<T>::operator() ( int i )
 template<typename T>
 TVector<T>& TVector<T>::operator= ( TVector const& x )
 {
-  if( this != &x ) {
+   if( this == &x )  return *this;
   
     m_theVector = x.m_theVector;
     m_ofPtr     = x.m_ofPtr;
 
-  }
-  return *this;
+    return *this;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
