@@ -376,7 +376,32 @@ vector<TJet<double> >::iterator std::fill_n(vector<TJet<double> >::iterator, uns
 template
 vector<TJet<std::complex<double> > >::iterator std::fill_n(vector<TJet<std::complex<double> > >::iterator, unsigned int, TJet<std::complex<double> > const&);
 
+template
+void std::fill<Tcoord<double >**, Tcoord<double >*>(Tcoord<double >**, Tcoord<double >**, Tcoord<double >* const&);
 
+template
+void std::fill<Tcoord<std::complex<double> >**, Tcoord<std::complex<double> >*>(Tcoord<std::complex<double> >**, Tcoord<std::complex<double> >**, Tcoord<std::complex<double> >* const&);
+
+template
+void std::fill<Tparam<double >**, Tparam<double >*>(Tparam<double >**, Tparam<double >**, Tparam<double >* const&);
+
+template
+void std::fill<Tparam<std::complex<double> >**, Tparam<std::complex<double> >*>(Tparam<std::complex<double> >**, Tparam<std::complex<double> >**, Tparam<std::complex<double> >* const&);
+
+template
+class std::deque<Tcoord<double>* >;
+
+template
+class std::deque<Tcoord<std::complex<double> >* >;
+
+template
+class std::deque<Tparam<double>* >;
+
+template
+class std::deque<Tparam<std::complex<double> >* >;
+
+
+#if (__GNUC__ > 3 )
 template
 void std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<TJet<std::complex<double> >*, std::vector<TJet<std::complex<double> >, std::allocator<TJet<std::complex<double> > > > >, unsigned int, TJet<std::complex<double> > const&, std::allocator<TJet<std::complex<double> > >);
 
@@ -402,11 +427,6 @@ void std::__uninitialized_fill_n_aux(__gnu_cxx::__normal_iterator<TJet<std::comp
 template
 void std::__uninitialized_fill_n_aux(TJet<std::complex<double> >*, unsigned int, TJet<std::complex<double> > const&, __false_type);
 
-template
-class std::deque<Tcoord<double>* >;
-
-template
-class std::deque<Tcoord<std::complex<double> >* >;
 
 template class
 std::_Deque_base<Tcoord<double>*, std::allocator<Tcoord<double>*> >;
@@ -414,12 +434,6 @@ std::_Deque_base<Tcoord<double>*, std::allocator<Tcoord<double>*> >;
 template class
 std::_Deque_base<Tcoord<std::complex<double> >*, std::allocator<Tcoord<std::complex<double> >*> >;
 
-
-template
-class std::deque<Tparam<double>* >;
-
-template
-class std::deque<Tparam<std::complex<double> >* >;
 
 template class
 std::_Deque_base<Tparam<double>*, std::allocator<Tparam<double>*> >;
@@ -432,9 +446,6 @@ void std::fill(std::_Deque_iterator<Tcoord<double >*, Tcoord<double >*&, Tcoord<
 
 template
 void std::fill(std::_Deque_iterator<Tcoord<std::complex<double> >*, Tcoord<std::complex<double> >*&, Tcoord<std::complex<double> >**>, std::_Deque_iterator<Tcoord<std::complex<double> >*, Tcoord<std::complex<double> >*&, Tcoord<std::complex<double> >**>, Tcoord<std::complex<double> >* const&);
-
-
-
 
 template
 void std::deque<Tcoord<double >*>::_M_range_insert_aux(std::_Deque_iterator<Tcoord<double >*, Tcoord<double >*&, Tcoord<double >**>, std::_Deque_iterator<Tcoord<double >*, Tcoord<double >* const&, Tcoord<double >* const*>, std::_Deque_iterator<Tcoord<double >*, Tcoord<double >* const&, Tcoord<double >* const*>, std::forward_iterator_tag);
@@ -467,18 +478,7 @@ void std::deque<Tparam<double>* >::_M_insert_aux(std::_Deque_iterator<Tparam<dou
 template
 void std::deque<Tparam<std::complex<double> >* >::_M_insert_aux(std::_Deque_iterator<Tparam<std::complex<double> >*, Tparam<std::complex<double> >*&, Tparam<std::complex<double> >**>, std::_Deque_iterator<Tparam<std::complex<double> >*, Tparam<std::complex<double> >* const&, Tparam<std::complex<double> >* const*>, std::_Deque_iterator<Tparam<std::complex<double> >*, Tparam<std::complex<double> >* const&, Tparam<std::complex<double> >* const*>, unsigned int);
 
-template
-void std::fill<Tcoord<double >**, Tcoord<double >*>(Tcoord<double >**, Tcoord<double >**, Tcoord<double >* const&);
-
-template
-void std::fill<Tcoord<std::complex<double> >**, Tcoord<std::complex<double> >*>(Tcoord<std::complex<double> >**, Tcoord<std::complex<double> >**, Tcoord<std::complex<double> >* const&);
-
-template
-void std::fill<Tparam<double >**, Tparam<double >*>(Tparam<double >**, Tparam<double >**, Tparam<double >* const&);
-
-template
-void std::fill<Tparam<std::complex<double> >**, Tparam<std::complex<double> >*>(Tparam<std::complex<double> >**, Tparam<std::complex<double> >**, Tparam<std::complex<double> >* const&);
-
+#endif // GNUC > 4 
 
 
 #endif // MXYZPTLK_EXPLICIT_TEMPLATES 
