@@ -37,19 +37,15 @@
 
 #include <fstream>
 
-#include "beamline.h"
-#include "BeamlineContext.h"
-#include "bmlfactory.h"
-#include "QtMonitor.h"
+#include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/beamline.h>
 #include <beamline/drift.h>
 #include <beamline/quadrupole.h>
 #include <beamline/sextupole.h>
+#include <bmlfactory/bmlfactory.h>
+#include <physics_toolkit/BeamlineContext.h>
 
-
-// FIX THIS:
-// External variable that has to be defined for the MAD parser
-madparser* mp = 0;
-
+#include "QtMonitor.h"
 #include "CHEFGUI.h"
 
 using namespace std;

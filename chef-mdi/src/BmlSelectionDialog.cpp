@@ -26,10 +26,11 @@
 ******* URA/FNAL reserves all rights.
 *******                                                                
 **************************************************************************/
-
 #include <BmlSelectionDialog.h>
-#include <bmlfactory.h>
-#include <GenericException.h>
+
+#include <basic_toolkit/PhysicsConstants.h>
+#include <basic_toolkit/GenericException.h>
+#include <bmlfactory/bmlfactory.h>
 
 #include <qlistbox.h>
 #include <qlabel.h>
@@ -39,6 +40,8 @@
 #include <qvalidator.h>
 #include <qpushbutton.h>
 #include <qbuttongroup.h>
+#include <iostream>
+#include <cmath>
 
 using namespace std;
 
@@ -234,7 +237,7 @@ BmlSelectionDialog::computeBeamParameters( double value, int datatype)
  case MOMENTUM:
 
     _momentum  = value;
-    _et        = sqrt( (_momentum*_momentum)+(_mass*_mass) );
+    _et        = std::sqrt( (_momentum*_momentum)+(_mass*_mass) );
     _ek        = _et - _mass;
     _gamma     = _et/_mass;
     _brho      = _momentum/PH_CNV_brho_to_p;
@@ -246,7 +249,7 @@ BmlSelectionDialog::computeBeamParameters( double value, int datatype)
    _et        = value;
    _ek        = _et - _mass;
    _gamma     = _et/_mass;
-   _momentum  = sqrt((_et*_et)-(_mass*_mass));
+   _momentum  = std::sqrt((_et*_et)-(_mass*_mass));
    _brho      = _momentum/PH_CNV_brho_to_p;
 
    break;
@@ -256,7 +259,7 @@ BmlSelectionDialog::computeBeamParameters( double value, int datatype)
    _ek        = value;
    _et        = _mass + _ek;
    _gamma     = _et/_mass;
-   _momentum  = sqrt((_et*_et)-(_mass*_mass));
+   _momentum  = std::sqrt((_et*_et)-(_mass*_mass));
    _brho      = _momentum/PH_CNV_brho_to_p;
   
    break;
@@ -266,7 +269,7 @@ BmlSelectionDialog::computeBeamParameters( double value, int datatype)
    _gamma     = value;
    _et        = _gamma*_mass;
    _ek        = _et-_mass;
-   _momentum  = sqrt((_et*_et)-(_mass*_mass));
+   _momentum  = std::sqrt((_et*_et)-(_mass*_mass));
    _brho      = _momentum/PH_CNV_brho_to_p;
 
    break;
@@ -275,7 +278,7 @@ BmlSelectionDialog::computeBeamParameters( double value, int datatype)
 
    _brho      =  value;
    _momentum  =  _brho*PH_CNV_brho_to_p;
-   _et        =  sqrt( (_momentum*_momentum)+(_mass*_mass) );
+   _et        =  std::sqrt( (_momentum*_momentum)+(_mass*_mass) );
    _ek        =  _et - _mass;
    _gamma     =  _et/_mass;
 
