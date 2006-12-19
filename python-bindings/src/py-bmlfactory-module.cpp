@@ -32,8 +32,8 @@ using namespace boost::python;
 // #define BOOST_PYTHON_STATIC_MODULE
 
 
-beamline* ( MAD8Factory::* create_beamline_1 )(const char*        )        = &MAD8Factory::create_beamline;
-beamline* ( MAD8Factory::* create_beamline_2 )(const char*, double)        = &MAD8Factory::create_beamline;
+beamline* ( MAD8Factory::* create_beamline_1 )(std::string        )        = &MAD8Factory::create_beamline;
+beamline* ( MAD8Factory::* create_beamline_2 )(std::string, double)        = &MAD8Factory::create_beamline;
 
 BOOST_PYTHON_MODULE(bmlfactory)
 {
