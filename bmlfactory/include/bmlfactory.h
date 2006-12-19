@@ -47,26 +47,25 @@ class bmlfactory {
 
     virtual ~bmlfactory() = 0;
 
-    virtual beamline* create_beamline( const char* beamline,  double brho) = 0;
-    virtual beamline* create_beamline( const char* beamline)               = 0;
+    virtual beamline* create_beamline( std::string bmlname ,  double brho) = 0;
+    virtual beamline* create_beamline( std::string bmlname)                = 0;
         
-    virtual std::list<std::string>&  getBeamlineList() =0;          // list of all available beamlines  
+    virtual std::list<std::string>  getBeamlineList() =0;          // list of all available beamlines  
 
-    virtual const char* getUseStatementBeamlineName()=0;           // get beamline name from USE statement, 0 if none found 
-    virtual const char* getParticleType()               const = 0;
+    virtual const char* getUseStatementBeamlineName()   const =0; 
+          
+    virtual const char* getParticleType()               const =0;
+    virtual double      getEnergy()                     const =0;
+    virtual double      getBrho()                       const =0;
 
     virtual bool        variableIsDefined(const char* varname) const =0;
-    virtual double      getVariableValue(const char* varname)  const =0;   
+    virtual double      getVariableValue (const char* varname) const =0;   
 
-    virtual double      getEnergy() const =0;
-    virtual double      getBrho()   const =0;
+
 
   protected:
 
     std::string             fname_;
-    double                  BRHO_;
-
-    std::list<std::string>  beamline_identifiers_list_;
 
 
 };
