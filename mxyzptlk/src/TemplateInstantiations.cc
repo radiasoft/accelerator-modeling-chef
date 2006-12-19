@@ -400,34 +400,6 @@ class std::deque<Tparam<double>* >;
 template
 class std::deque<Tparam<std::complex<double> >* >;
 
-
-#if (__GNUC__ > 3 )
-template
-void std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<TJet<std::complex<double> >*, std::vector<TJet<std::complex<double> >, std::allocator<TJet<std::complex<double> > > > >, unsigned int, TJet<std::complex<double> > const&, std::allocator<TJet<std::complex<double> > >);
-
-template
-void std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<TJet<double>*, std::vector<TJet<double>, std::allocator<TJet<double> > > >, unsigned int, TJet<double> const&, std::allocator<TJet<double> >);
-
-
-template
-void std::__uninitialized_fill_n_a(TJet<double>*, unsigned int, TJet<double> const&, std::allocator<TJet<double> >);
-
-template
-void std::__uninitialized_fill_n_a(TJet<std::complex<double> >*, unsigned int, TJet<std::complex<double> > const&, std::allocator<TJet<std::complex<double> > >);
-
-template
-void std::__uninitialized_fill_n_aux(__gnu_cxx::__normal_iterator<TJet<double>*, std::vector<TJet<double>, std::allocator<TJet<double> > > >, unsigned int, TJet<double> const&, __false_type);
-
-template
-void std::__uninitialized_fill_n_aux(TJet<double>*, unsigned int, TJet<double> const&, __false_type);
-
-template
-void std::__uninitialized_fill_n_aux(__gnu_cxx::__normal_iterator<TJet<std::complex<double> >*, std::vector<TJet<std::complex<double> >, std::allocator<TJet<std::complex<double> > > > >, unsigned int, TJet<std::complex<double> > const&, __false_type);
-
-template
-void std::__uninitialized_fill_n_aux(TJet<std::complex<double> >*, unsigned int, TJet<std::complex<double> > const&, __false_type);
-
-
 template class
 std::_Deque_base<Tcoord<double>*, std::allocator<Tcoord<double>*> >;
 
@@ -459,6 +431,8 @@ void std::fill(std::_Deque_iterator<Tparam<double >*, Tparam<double >*&, Tparam<
 template
 void std::fill(std::_Deque_iterator<Tparam<std::complex<double> >*, Tparam<std::complex<double> >*&, Tparam<std::complex<double> >**>, std::_Deque_iterator<Tparam<std::complex<double> >*, Tparam<std::complex<double> >*&, Tparam<std::complex<double> >**>, Tparam<std::complex<double> >* const&);
 
+
+
 template
 void std::deque<Tparam<double>* >::_M_range_insert_aux(std::_Deque_iterator<Tparam<double >*, Tparam<double >*&, Tparam<double >**>, std::_Deque_iterator<Tparam<double >*, Tparam<double >* const&, Tparam<double >* const*>, std::_Deque_iterator<Tparam<double >*, Tparam<double >* const&, Tparam<double >* const*>, std::forward_iterator_tag);
 
@@ -478,7 +452,58 @@ void std::deque<Tparam<double>* >::_M_insert_aux(std::_Deque_iterator<Tparam<dou
 template
 void std::deque<Tparam<std::complex<double> >* >::_M_insert_aux(std::_Deque_iterator<Tparam<std::complex<double> >*, Tparam<std::complex<double> >*&, Tparam<std::complex<double> >**>, std::_Deque_iterator<Tparam<std::complex<double> >*, Tparam<std::complex<double> >* const&, Tparam<std::complex<double> >* const*>, std::_Deque_iterator<Tparam<std::complex<double> >*, Tparam<std::complex<double> >* const&, Tparam<std::complex<double> >* const*>, unsigned int);
 
-#endif // GNUC > 4 
+
+//============================================================================================================================================================================
+
+#if GCC_VERSION < 30500
+
+template
+__gnu_cxx::__normal_iterator<TJet<std::complex<double> >*, std::vector<TJet<std::complex<double> >, std::allocator<TJet<std::complex<double> > > > > std::__uninitialized_fill_n_aux<__gnu_cxx::__normal_iterator<TJet<std::complex<double> >*, std::vector<TJet<std::complex<double> >, std::allocator<TJet<std::complex<double> > > > >, unsigned int, TJet<std::complex<double> > >(__gnu_cxx::__normal_iterator<TJet<std::complex<double> >*, std::vector<TJet<std::complex<double> >, std::allocator<TJet<std::complex<double> > > > >, unsigned int, TJet<std::complex<double> > const&, __false_type);
+
+template
+__gnu_cxx::__normal_iterator<TJet<double>*, std::vector<TJet<double>, std::allocator<TJet<double> > > > std::__uninitialized_fill_n_aux<__gnu_cxx::__normal_iterator<TJet<double>*, std::vector<TJet<double>, std::allocator<TJet<double> > > >, unsigned int, TJet<double> >(__gnu_cxx::__normal_iterator<TJet<double>*, std::vector<TJet<double>, std::allocator<TJet<double> > > >, unsigned int, TJet<double> const&, __false_type);
+
+template
+TJet<double>* std::__uninitialized_fill_n_aux<TJet<double>*, unsigned int, TJet<double> >(TJet<double>*, unsigned int, TJet<double> const&, __false_type);
+
+template
+TJet<std::complex<double> >* std::__uninitialized_fill_n_aux<TJet<std::complex<double> >*, unsigned int, TJet<std::complex<double> > >(TJet<std::complex<double> >*, unsigned int, TJet<std::complex<double> > const&, __false_type);
+
+#endif
+
+//============================================================================================================================================================================
+
+#if GCC_VERSION > 30500
+
+template
+void std::__uninitialized_fill_n_aux(__gnu_cxx::__normal_iterator<TJet<double>*, std::vector<TJet<double>, std::allocator<TJet<double> > > >, unsigned int, TJet<double> const&, __false_type);
+
+template
+void std::__uninitialized_fill_n_aux(TJet<double>*, unsigned int, TJet<double> const&, __false_type);
+
+template
+void std::__uninitialized_fill_n_aux(__gnu_cxx::__normal_iterator<TJet<std::complex<double> >*, std::vector<TJet<std::complex<double> >, std::allocator<TJet<std::complex<double> > > > >, unsigned int, TJet<std::complex<double> > const&, __false_type);
+
+template
+void std::__uninitialized_fill_n_aux(TJet<std::complex<double> >*, unsigned int, TJet<std::complex<double> > const&, __false_type);
+
+template
+void std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<TJet<std::complex<double> >*, std::vector<TJet<std::complex<double> >, std::allocator<TJet<std::complex<double> > > > >, unsigned int, TJet<std::complex<double> > const&, std::allocator<TJet<std::complex<double> > >);
+
+template
+void std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<TJet<double>*, std::vector<TJet<double>, std::allocator<TJet<double> > > >, unsigned int, TJet<double> const&, std::allocator<TJet<double> >);
+
+
+template
+void std::__uninitialized_fill_n_a(TJet<double>*, unsigned int, TJet<double> const&, std::allocator<TJet<double> >);
+
+template
+void std::__uninitialized_fill_n_a(TJet<std::complex<double> >*, unsigned int, TJet<std::complex<double> > const&, std::allocator<TJet<std::complex<double> > >);
+
+
+
+
+#endif // 
 
 
 #endif // MXYZPTLK_EXPLICIT_TEMPLATES 
