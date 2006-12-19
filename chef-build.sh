@@ -44,11 +44,28 @@ if [ $? -ne 0 ];  then exit; fi
 $MAKE install
 if [ $? -ne 0 ];  then exit; fi
 cd ..
+
 cd chef-mdi
+## ----------------------------------------------
+## Write date and time of build into chefmain.cpp
+## before compiling.
+## ----------------------------------------------
+'mv' -f src/chefmain.cpp src/chefmain_original.cpp
+$SED -e \
+   "/#define __DATE__/s/today/`date '+%A %B %d, %Y'`/;/#define __TIME__/s/now/`date '+%H:%M.'`/" \
+   src/chefmain_original.cpp > src/chefmain.cpp
+## ----------------------------------------------
+
 qmake chef.pro
 if [ $? -ne 0 ];  then exit; fi
 $MAKE
 if [ $? -ne 0 ];  then exit; fi
+
+## ----------------------------------------------
+## Restore file chefmain.cpp to its original state.
+## ----------------------------------------------
+'mv' -f src/chefmain_original.cpp src/chefmain.cpp
+cd ..
 }
 
 INSTALLDIR=""
