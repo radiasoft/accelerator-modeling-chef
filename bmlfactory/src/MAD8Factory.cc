@@ -108,9 +108,10 @@ using FNAL::pcerr;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 MAD8Factory::MAD8Factory( std::string fname, double BRHO, const char* stringbuffer)
-: bmlfactory( fname,BRHO, stringbuffer)  
+  : bmlfactory( fname, BRHO, stringbuffer), BRHO_(BRHO)  
 {
 
+  
   try 
   {
 
@@ -143,7 +144,7 @@ MAD8Factory::MAD8Factory( std::string fname, double BRHO, const char* stringbuff
 
 
 MAD8Factory::MAD8Factory( std::string fname, const char* stringbuffer) 
-: bmlfactory( fname, stringbuffer)  
+  : bmlfactory( fname, stringbuffer),  BRHO_(0.0)   
 
 {
   try 
@@ -232,9 +233,9 @@ MAD8Factory::~MAD8Factory() {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 beamline* 
-MAD8Factory::create_beamline( const char* bmlname) {   // *** DEPRECATED ***
+MAD8Factory::create_beamline( std::string bmlname) {   // *** DEPRECATED ***
   
- beamline* bml = create_beamline_private(bmlname);
+ beamline* bml = create_beamline_private(bmlname.c_str());
 
  if ( bml == 0)
  { 
@@ -253,21 +254,17 @@ MAD8Factory::create_beamline( const char* bmlname) {   // *** DEPRECATED ***
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 beamline* 
-MAD8Factory::create_beamline( const char* bmlname, double brho   ) 
+MAD8Factory::create_beamline( std::string bmlname, double brho   ) 
 {
 
- beamline* bml = create_beamline_private(bmlname, brho);
+ beamline* bml = create_beamline_private(bmlname.c_str(), brho);
  
- if ( bml == 0)
- { 
-   throw GenericException(__FILE__, __LINE__, 
+ if ( bml) return bml->Clone();  
+ 
+ throw GenericException(__FILE__, __LINE__, 
                                 "MAD8Factory::create_beamline( const char* bmlname, brho)",
                                 "Beamline not found");
- }  
- else
- {
-    return bml->Clone();
- } 
+   
 }
 
 
@@ -276,7 +273,7 @@ MAD8Factory::create_beamline( const char* bmlname, double brho   )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 beamline*
-MAD8Factory::create_beamline_private( const char* bmlname) { // *** DEPRECATED ****
+MAD8Factory::create_beamline_private( const char* bmlname) { 
 
   return create_beamline_private( bmlname, BRHO_); 
 
@@ -1031,18 +1028,20 @@ MAD8Factory::delete_bel_list() {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::list<std::string>& 
+std::list<std::string>
 MAD8Factory::getBeamlineList() {
 
   beam_line** bml_arr_ptr = bml_arr_;
   
+  list<string> bml_list;
+
   for (int i = 0; i< bml_arr_size_; i++) {
     
-    beamline_identifiers_list_.push_back( std::string( (*(bml_arr_ptr++))->name_ ) );
+    bml_list.push_back( std::string( (*(bml_arr_ptr++))->name_ ) );
    
   };
 
-  return beamline_identifiers_list_;
+  return bml_list;
 
 }
 
@@ -1086,7 +1085,7 @@ MAD8Factory::variableIsDefined(const char* var_name) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char* 
-MAD8Factory::getUseStatementBeamlineName() {
+MAD8Factory::getUseStatementBeamlineName() const {
 
   return madparser_get_use_statement_beamline_name( mp_ ); 
 
