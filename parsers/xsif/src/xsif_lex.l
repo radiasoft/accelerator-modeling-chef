@@ -47,7 +47,10 @@
 #include <string>
 #include <cstdlib>
 #include <errno.h>
+
+#ifndef __sun__
 #include <err.h>
+#endif
 
 #include "XsifParserDriver.h"
 #include "XsifParser_ypp.hh"
