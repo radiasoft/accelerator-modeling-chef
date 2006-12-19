@@ -264,6 +264,9 @@ beamline::beamline( const char* nm )
 } 
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 beamline::beamline( beamline const& a ) 
   : bmlnElmnt(a), 
     _mode(a._mode),  
@@ -319,34 +322,6 @@ double beamline::OrbitLength( Particle const& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline::beamline( bmlnElmnt* q ) : bmlnElmnt(), _theList() 
-{
- _theList.push_back( q );
-
- _mode          = unknown;
- numElem        = 1;
- nominalEnergy  = NOTKNOWN;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-beamline::beamline( char* n, bmlnElmnt* q ) : bmlnElmnt( n ), _theList() {
-
- _theList.push_back( q );
-
- _mode          = unknown;
- numElem        = 1;
- nominalEnergy  = NOTKNOWN;
-
- twissDone      = 0;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 // Destructors
 
 beamline::~beamline() {
@@ -392,7 +367,9 @@ void beamline::clear() {
 
 void beamline::localPropagate( Particle& x ) {
  for ( beamline::iterator it = begin(); it != end();  ++it ) { 
+
    (*it)->propagate( x );
+
  }
 } 
 
@@ -412,25 +389,9 @@ void beamline::localPropagate( JetParticle& x ) {
 
  for (beamline::iterator it = begin(); it != end();  ++it ) { 
  
-   //  std::cout << "propagating through element : " << (*it)->Name() << "  " << (*it)->Type() << std::endl;  
-   //std::cout << "before state : " 
-   //           << x.State(0).standardPart()  << "  "  
-   //            << x.State(1).standardPart()  << "  "  
-   //           << x.State(2).standardPart()  << "  "  
-   //           << x.State(3).standardPart()  << "  "  
-   //           << x.State(4).standardPart()  << "  "  
-   //           << x.State(5).standardPart()  <<std::endl; 
 
    (*it)->propagate( x );
 
-   // std::cout << "after state : " 
-   //           << x.State(0).standardPart()  << "  "  
-   //           << x.State(1).standardPart()  << "  "  
-   //           << x.State(2).standardPart()  << "  "  
-   //          << x.State(3).standardPart()  << "  "  
-   //           << x.State(4).standardPart()  << "  "  
-   //           << x.State(5).standardPart()  <<std::endl; 
- 
  }
 } 
 

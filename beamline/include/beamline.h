@@ -147,10 +147,7 @@ public:
   // CONSTRUCTORS AND DESTRUCTOR____________________________________________________________
 
   beamline( const char* nm = "NONAME" );
-  beamline( bmlnElmnt* );
   beamline( beamline const& );
-  beamline( char*, bmlnElmnt* );
-  beamline( char*, beamline* );
   beamline( FILE* );                  // Reading persistent object stored
                                       //  in a binary file.
 
