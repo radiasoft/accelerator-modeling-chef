@@ -64,13 +64,13 @@ class MAD8Factory: public bmlfactory {
 
    ~MAD8Factory();
 
-    std::list<std::string>&  getBeamlineList();       // list of all instantiated beamlines  
+    std::list<std::string>   getBeamlineList();       // list of all instantiated beamlines  
 
-    const char* getUseStatementBeamlineName();        // get beamline name from USE statement, 0 if none found 
+    const char* getUseStatementBeamlineName() const;   // get beamline name from USE statement, 0 if none found 
     const char* getParticleType() const;
 
-    beamline* create_beamline( const char* beamline,  double brho );
-    beamline* create_beamline( const char* beamline ); // deprecated 
+    beamline* create_beamline( std::string bmlname,  double brho );
+    beamline* create_beamline( std::string bmlname );               // deprecated 
 
     bool    variableIsDefined(const char* varname) const;
     double  getVariableValue(const char* varname) const;   
@@ -101,6 +101,10 @@ class MAD8Factory: public bmlfactory {
     void bmlfactory_init(const char* stringbuffer);
 
     std::string strip_final_colon( const char* );
+
+    double                  BRHO_;
+    double                  energy_;
+    std::string             particle_type_name_;
 
     madparser*              mp_;
 
