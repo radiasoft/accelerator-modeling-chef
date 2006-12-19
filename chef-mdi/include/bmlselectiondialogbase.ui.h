@@ -11,7 +11,7 @@
 *****************************************************************************/
 
 
-void BmlSelectionDialogBase::_cancel()
+void BmlSelectionDialogBase::cancel()
 {
 
 }

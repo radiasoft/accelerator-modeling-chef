@@ -17,10 +17,11 @@ class BmlSelectionDialog: public BmlSelectionDialogBase {
  public:
 
   BmlSelectionDialog(QWidget* parent=0, const char* name=0, WFlags f=0);
-  void setList( std::list<std::string>& bmllist, const char* use_name=0);
-  void getSelected();
-  void setBeamParameters(const bmlfactory& bf);
-  double getBRHO() {return _brho;}
+
+  void              setList( std::list<std::string> const& bmllist, const char* use_name=0);
+  std::list<std::string> getSelected();
+  void                   setBeamParameters(bmlfactory const& bf);
+  double                 getBRHO() {return brho_;}
 
  private:
 
@@ -43,18 +44,16 @@ class BmlSelectionDialog: public BmlSelectionDialogBase {
   void BrhoChanged(); 
   void updateBeamParameters();
 
-  virtual void _cancel();
+  virtual void cancel();
 
  private:
 
-  std::list<std::string>* _bmllist; 
-
-  double _momentum;
-  double _et;
-  double _ek;
-  double _gamma;
-  double _brho;
-  double _mass;
+  double momentum_;
+  double et_;
+  double ek_;
+  double gamma_;
+  double brho_;
+  double mass_;
 
 };
 
