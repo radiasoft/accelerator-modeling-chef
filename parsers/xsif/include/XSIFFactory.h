@@ -41,24 +41,25 @@ class XSIFFactory: public bmlfactory {
 
   public:
 
-    XSIFFactory( const char* filename, double brho, const char* stringbuffer=0); // deprecated
-    XSIFFactory( const char* filename, const char* stringbuffer=0);
+    XSIFFactory( std::string filename, double brho, const char* stringbuffer=0); 
+    XSIFFactory( std::string filename, const char* stringbuffer=0);
 
    ~XSIFFactory();
 
-    beamline* create_beamline( const char* beamline,  double brho);
-    beamline* create_beamline( const char* beamline); // deprecated 
+    beamline* create_beamline( std::string beamline,  double brho);
+    beamline* create_beamline( std::string beamline); 
         
-    std::list<std::string>&  getBeamlineList();          
+    std::list<std::string>   getBeamlineList();          
 
-    const char* getUseStatementBeamlineName();           
+    const char* getUseStatementBeamlineName() const;           
+
     const char* getParticleType() const;
+    double getEnergy()            const;
+    double getBrho()              const;
 
     bool    variableIsDefined(const char* varname) const;
     double  getVariableValue(const char* varname) const;   
 
-    double getEnergy() const;
-    double getBrho() const;
 
   private:
  

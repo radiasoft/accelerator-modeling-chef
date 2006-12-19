@@ -36,7 +36,7 @@
 using namespace std;
 
 
-XSIFFactory::XSIFFactory( const char* filename, double brho, const char* stringbuffer)
+XSIFFactory::XSIFFactory( string filename, double brho, const char* stringbuffer)
   : bmlfactory(filename, brho, stringbuffer)
 {
 
@@ -55,7 +55,7 @@ XSIFFactory::XSIFFactory( const char* filename, double brho, const char* stringb
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-XSIFFactory::XSIFFactory( const char* filename, const char* stringbuffer)
+XSIFFactory::XSIFFactory( string filename, const char* stringbuffer)
   : bmlfactory(filename, stringbuffer)
  
 {
@@ -95,43 +95,43 @@ XSIFFactory::~XSIFFactory()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline* XSIFFactory::create_beamline( const char* beamline,  double brho) 
+beamline* XSIFFactory::create_beamline( string bmlname,  double brho) 
 {
 
- return driver_.getLine(beamline)->Clone(); 
+ return driver_.getLine(bmlname)->Clone(); 
 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline* XSIFFactory::create_beamline( const char* beamline)  
+beamline* XSIFFactory::create_beamline( string bmlname)  
 {
 
- return driver_.getLine(beamline)->Clone(); 
+ return driver_.getLine(bmlname)->Clone(); 
 
 }        
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::list<std::string>&  XSIFFactory::getBeamlineList()
+std::list<std::string>   XSIFFactory::getBeamlineList()
 {
 
-  beamline_identifiers_list_.clear();
+  list<string> bml_list;
 
   for ( std::map<std::string, beamline*>::iterator it  = driver_.m_lines.begin(); it != driver_.m_lines.end(); ++it) {
-     beamline_identifiers_list_.push_back(it->first);
+     bml_list.push_back(it->first);
   }
 
-  return  beamline_identifiers_list_;
+  return  bml_list;
 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-const char* XSIFFactory::getUseStatementBeamlineName()
+const char* XSIFFactory::getUseStatementBeamlineName() const
 {           
 
   return 0;
@@ -143,7 +143,7 @@ const char* XSIFFactory::getUseStatementBeamlineName()
 const char* XSIFFactory::getParticleType() const 
 {
 
-  return "POSITRON";
+  return driver_.m_particle_type_name.c_str();
 
 
 }
@@ -185,7 +185,7 @@ double  XSIFFactory::getVariableValue(const char* varname) const
 double XSIFFactory::getEnergy() const
 {
 
-  return 0;
+  return driver_.m_energy;
 
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -194,10 +194,7 @@ double XSIFFactory::getEnergy() const
 double XSIFFactory::getBrho() const
 {
 
-
-  double bhro = driver_.m_variables["BRHO"].evaluate();
-
-  return bhro;
+  return driver_.m_BRHO;
 
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
