@@ -135,7 +135,7 @@ class XsifParserDriver {
 
   beamline* getLine(std::string label);
 
-  void      setBeamParameters(  xsif_yy::location const& yyloc,  std::vector<attrib_pair_t> const& attributes);
+  void      command_BEAM(  xsif_yy::location const& yyloc,  std::vector<attrib_pair_t> const& attributes);
 
   void init(); 
 
@@ -191,6 +191,10 @@ class XsifParserDriver {
   std::map<std::string,make_fnc_ptr>                m_makefncs;
 
   yyscan_t                                          m_yyscanner; 
+
+  double                                            m_BRHO;
+  double                                            m_energy;
+  std::string                                       m_particle_type_name;
 
  
 
