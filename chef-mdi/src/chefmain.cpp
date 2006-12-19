@@ -74,6 +74,12 @@ int main( int argc, char** argv )
 
   QSplashScreen *splash = new QSplashScreen( (const char**) chef_logo_preview_xpm );
 
+  #ifndef __DATE__
+  #define __DATE__ "today"
+  #endif
+  #ifndef __TIME__
+  #define __TIME__ "now"
+  #endif
   std::stringstream uic;
   uic << "BUILD DATE: " << __DATE__ << " at " << __TIME__;
   splash->message( uic.str().c_str(), (Qt::AlignHCenter | Qt::AlignBottom), QColor("White") );
