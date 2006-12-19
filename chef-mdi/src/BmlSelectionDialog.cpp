@@ -46,7 +46,7 @@
 using namespace std;
 
 BmlSelectionDialog::BmlSelectionDialog(QWidget* parent, const char* name, WFlags f):
-  BmlSelectionDialogBase(parent,name,f), _bmllist(0), _mass(0)
+  BmlSelectionDialogBase(parent,name,f), mass_(0)
 {
 
   beamlines_listBox->clear();
@@ -80,14 +80,12 @@ BmlSelectionDialog::BmlSelectionDialog(QWidget* parent, const char* name, WFlags
   
 
 void 
-BmlSelectionDialog::setList( std::list<std::string>& bmllist, const char* use_name) {
+BmlSelectionDialog::setList( std::list<std::string> const& bmllist, const char* use_name) {
 
-  _bmllist = &bmllist;   
-  
   beamlines_listBox->clear();
 
   
-  list<string>::reverse_iterator it;
+  list<string>::const_reverse_iterator it;
 
   QListBoxText* item          = 0;
   QListBoxText* selected_item = 0;
@@ -107,7 +105,7 @@ BmlSelectionDialog::setList( std::list<std::string>& bmllist, const char* use_na
   else 
      beamlines_listBox->setSelected ( 0, true );             // the first item is the last defined beamline
 
-  beamlines_textLabel->setText( QString("A total of %1 beamlines are defined in this file.\n Select one or more from the list below.").arg( _bmllist->size() ) );
+  beamlines_textLabel->setText( QString("A total of %1 beamlines are defined in this file.\n Select one or more from the list below.").arg( bmllist.size() ) );
 
 
 
@@ -116,30 +114,31 @@ BmlSelectionDialog::setList( std::list<std::string>& bmllist, const char* use_na
 
 
 void 
-BmlSelectionDialog::setBeamParameters(const bmlfactory& bf) 
+BmlSelectionDialog::setBeamParameters( bmlfactory const& bf) 
 {
-  // ------------------------------------
-  // Determining the mass of the particle.
-  // This assumes that a MAD file has already
-  // been parsed.                 - lpjm
-  // ------------------------------------
-  if( 0 == strcmp( "POSITRON", bf.getParticleType() ) ) {
-    _mass = PH_NORM_me;
-  }
-  else if( 0 == strcmp( "PROTON", bf.getParticleType() ) ) {
-    _mass = PH_NORM_mp;
-  }
-  else {
+
+  enum particle_type { proton=0, antiproton=1, positron=2, electron=3, muon=4, antimuon=5, unknown=255 } ptype = unknown;
+
+  string pname =  string( bf.getParticleType() );
+
+  if ( pname == string("PROTON")     ) { mass_ = PH_NORM_mp;  ptype = proton;     }
+  if ( pname == string("ANTIPROTON") ) { mass_ = PH_NORM_mp;  ptype = antiproton; }
+  if ( pname == string("POSITRON")   ) { mass_ = PH_NORM_me;  ptype = positron;   }
+  if ( pname == string("ELECTRON")   ) { mass_ = PH_NORM_me;  ptype = electron;   } 
+  if ( pname == string("MUON")       ) { mass_ = PH_NORM_mmu; ptype = muon;       }
+  if ( pname == string("ANTIMUON")   ) { mass_ = PH_NORM_mmu; ptype = antimuon;   }
+  
+  if (ptype == unknown ) {
     ostringstream uic;
-    uic  << "Unrecognized particle type: "
-         << bf.getParticleType()
-         << "\nCurrent implementation allows "
-            "\nonly proton or positron.";
-    throw GenericException( __FILE__, __LINE__,
+    uic  << "Unspecified or unknown particle type: "
+         << bf.getParticleType();
+      throw GenericException( __FILE__, __LINE__,
                             "BmlSelectionDialog::setBeamParameters",
                             uic.str().c_str() );
   }
-  // ------------------------------------
+
+
+  dynamic_cast<QCheckBox*>(buttonGroupParticle->find(ptype))->setChecked(true);  
 
 
   typedef  void (BmlSelectionDialog::* checkfptrtype)(bool);
@@ -191,39 +190,38 @@ BmlSelectionDialog::setBeamParameters(const bmlfactory& bf)
   };
      
   
-  QString brho_str("0.0");
+  QString     brho_str("0.0");
   QString momentum_str("0.0");
-  QString et_str("0.0");
-  QString ek_str("0.0");
-  QString gamma_str("0.0");
+  QString       et_str("0.0");
+  QString       ek_str("0.0");
+  QString     gamma_str("0.0");
 
-  lineEditBrho->setText( brho_str.setNum(_brho) );
-  lineEditMomentum->setText( momentum_str.setNum(_momentum) );
-  lineEditET->setText( et_str.setNum(_et) );
-  lineEditEK->setText( ek_str.setNum(_ek) );
-  lineEditGamma->setText( gamma_str.setNum(_gamma) );
+  lineEditBrho->setText( brho_str.setNum(brho_) );
+  lineEditMomentum->setText( momentum_str.setNum(momentum_) );
+  lineEditET->setText( et_str.setNum(et_) );
+  lineEditEK->setText( ek_str.setNum(ek_) );
+  lineEditGamma->setText( gamma_str.setNum(gamma_) );
 
 }
 
 
 
-void 
+std::list<string>
 BmlSelectionDialog::getSelected( ) {
   
-  if (!_bmllist) return;
-
-  list<string>::reverse_iterator it;
+  list<string> bmllist;
 
   int nbml = beamlines_listBox->count();
 
-  for ( int i = 0; i < nbml; i++) {
+  for ( int i=0; i < nbml; ++i) {
 
-    if  ( !beamlines_listBox->isSelected(i) ) {
-      _bmllist->remove(  std::string( beamlines_listBox->item(i)->text().ascii() )  );
+    if  ( beamlines_listBox->isSelected(i) ) {
+      bmllist.push_back( std::string( beamlines_listBox->item(i)->text().ascii() ) );
     }
 
-  };
-
+  }
+ 
+  return bmllist;
 }
 
 
@@ -236,51 +234,51 @@ BmlSelectionDialog::computeBeamParameters( double value, int datatype)
 
  case MOMENTUM:
 
-    _momentum  = value;
-    _et        = std::sqrt( (_momentum*_momentum)+(_mass*_mass) );
-    _ek        = _et - _mass;
-    _gamma     = _et/_mass;
-    _brho      = _momentum/PH_CNV_brho_to_p;
+    momentum_  = value;
+    et_        = std::sqrt( ( momentum_* momentum_)+( mass_* mass_) );
+    ek_        = et_ -  mass_;
+    gamma_     = et_ / mass_;
+    brho_      = momentum_ / PH_CNV_brho_to_p;
 
     break;
 
  case ET:
   
-   _et        = value;
-   _ek        = _et - _mass;
-   _gamma     = _et/_mass;
-   _momentum  = std::sqrt((_et*_et)-(_mass*_mass));
-   _brho      = _momentum/PH_CNV_brho_to_p;
+   et_        = value;
+   ek_        = et_ - mass_;
+   gamma_     = et_/mass_;
+   momentum_  = std::sqrt((et_*et_)-(mass_*mass_));
+   brho_      = momentum_/PH_CNV_brho_to_p;
 
    break;
   
  case EK: 
  
-   _ek        = value;
-   _et        = _mass + _ek;
-   _gamma     = _et/_mass;
-   _momentum  = std::sqrt((_et*_et)-(_mass*_mass));
-   _brho      = _momentum/PH_CNV_brho_to_p;
+   ek_        = value;
+   et_        = mass_ + ek_;
+   gamma_     = et_ / mass_;
+   momentum_  = std::sqrt((et_*et_)-(mass_*mass_));
+   brho_      = momentum_/PH_CNV_brho_to_p;
   
    break;
 
  case GAMMA: 
  
-   _gamma     = value;
-   _et        = _gamma*_mass;
-   _ek        = _et-_mass;
-   _momentum  = std::sqrt((_et*_et)-(_mass*_mass));
-   _brho      = _momentum/PH_CNV_brho_to_p;
+   gamma_     = value;
+   et_        = gamma_*mass_;
+   ek_        = et_ - mass_;
+   momentum_  = std::sqrt((et_*et_)-(mass_*mass_));
+   brho_      = momentum_/PH_CNV_brho_to_p;
 
    break;
    
  case BRHO:
 
-   _brho      =  value;
-   _momentum  =  _brho*PH_CNV_brho_to_p;
-   _et        =  std::sqrt( (_momentum*_momentum)+(_mass*_mass) );
-   _ek        =  _et - _mass;
-   _gamma     =  _et/_mass;
+   brho_      =  value;
+   momentum_  =  brho_*PH_CNV_brho_to_p;
+   et_        =  std::sqrt( (momentum_*momentum_)+(mass_*mass_) );
+   ek_        =  et_ - mass_;
+   gamma_     =  et_/mass_;
 
    break;
 
@@ -428,11 +426,11 @@ BmlSelectionDialog::refreshBeamParameters()
   QString ek_str;
   QString gamma_str;
   
-  lineEditBrho->setText( brho_str.setNum(_brho) );
-  lineEditMomentum->setText( momentum_str.setNum(_momentum) );
-  lineEditET->setText( et_str.setNum(_et) );
-  lineEditEK->setText( ek_str.setNum(_ek) );
-  lineEditGamma->setText( gamma_str.setNum(_gamma) );
+  lineEditBrho->setText( brho_str.setNum(brho_) );
+  lineEditMomentum->setText( momentum_str.setNum(momentum_) );
+  lineEditET->setText( et_str.setNum(et_) );
+  lineEditEK->setText( ek_str.setNum(ek_) );
+  lineEditGamma->setText( gamma_str.setNum(gamma_) );
 
   return;
 
@@ -482,18 +480,15 @@ BmlSelectionDialog::updateBeamParameters()
 
 
 void 
-BmlSelectionDialog::_cancel( ){
+BmlSelectionDialog::cancel( ){
 
-   _bmllist->clear();
    hide();
 }
 
 void 
-BmlSelectionDialog::particleCheck(int id) {
+BmlSelectionDialog::particleCheck( int id) {
 
-
-  std::cout<< "particle checked: id = " << id << std::endl; 
-
+  // std::cout<< "particle checked: id = " << id << std::endl; 
 
 } 
 

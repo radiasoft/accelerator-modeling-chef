@@ -440,7 +440,7 @@ void CHEFGUI::_openFile()
         return;
     }
 
-    std::list<std::string>& beamline_list = bfp->getBeamlineList();
+    std::list<std::string> beamline_list = bfp->getBeamlineList();
 
     //  instantiate only the n last beamlines defined in the mad file.
 
@@ -452,12 +452,11 @@ void CHEFGUI::_openFile()
 
     double brho = _bmlSelectionDialog->getBRHO();
 
-    _bmlSelectionDialog->getSelected(); // this function alters beamline_list
+     beamline_list = _bmlSelectionDialog->getSelected(); 
 
-    std::list<std::string>::iterator it;
+    std::list<std::string>::reverse_iterator it;
     int nlines = 0;
-
-    for ( it = beamline_list.begin(); it != beamline_list.end(); it++) {
+    for ( it = beamline_list.rbegin(); it != beamline_list.rend(); it++) {
     	    beamline* bmlPtr = 0;
     	    try {
             bmlPtr = bfp->create_beamline( (*it).c_str() , brho);
@@ -635,11 +634,11 @@ CHEFGUI::editParse()
     {
       if ( QString((w)->name()) == QString("MAD8 Editor") ) 
       { 
-	if ( editor = dynamic_cast<CF_Editor*>(w) ) _parseEditorMAD8( editor );
+	if ( (editor = dynamic_cast<CF_Editor*>(w)) ) _parseEditorMAD8( editor );
       }
       if ( QString((w)->name()) == QString("Python Editor") ) 
       { 
-        if( editor = dynamic_cast<CF_Editor*>(w) )  _parseEditorPython(editor);
+        if( (editor = dynamic_cast<CF_Editor*>(w)) )  _parseEditorPython(editor);
       }
     }
   }
@@ -687,7 +686,7 @@ CHEFGUI::_parseEditorMAD8( CF_Editor* editor )
 
   }
 
-  std::list<std::string>& beamline_list = bfp->getBeamlineList();
+  std::list<std::string> beamline_list = bfp->getBeamlineList();
        
   //  instantiate only the n last beamlines defined in the mad file. 
 
