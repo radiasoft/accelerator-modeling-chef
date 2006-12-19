@@ -69,7 +69,7 @@
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bmlfactory::bmlfactory(std::string fname,              const char* stringbuffer)
-: fname_(fname), BRHO_(0.0)
+: fname_(fname)  
 {}
 
 
@@ -77,7 +77,7 @@ bmlfactory::bmlfactory(std::string fname,              const char* stringbuffer)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bmlfactory::bmlfactory( std::string fname, double brho, const char* stringbuffer)
-: fname_(fname), BRHO_(brho)
+: fname_(fname)
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
