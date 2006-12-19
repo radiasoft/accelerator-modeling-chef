@@ -455,7 +455,7 @@ void std::deque<Tparam<std::complex<double> >* >::_M_insert_aux(std::_Deque_iter
 
 //============================================================================================================================================================================
 
-#if GCC_VERSION < 30500
+#if ( (__GNUC__ == 3 && __GNUC_MINOR__ > 3) || (__GNUC__ == 4 && __GNUC_MINOR__ == 0) )
 
 template
 __gnu_cxx::__normal_iterator<TJet<std::complex<double> >*, std::vector<TJet<std::complex<double> >, std::allocator<TJet<std::complex<double> > > > > std::__uninitialized_fill_n_aux<__gnu_cxx::__normal_iterator<TJet<std::complex<double> >*, std::vector<TJet<std::complex<double> >, std::allocator<TJet<std::complex<double> > > > >, unsigned int, TJet<std::complex<double> > >(__gnu_cxx::__normal_iterator<TJet<std::complex<double> >*, std::vector<TJet<std::complex<double> >, std::allocator<TJet<std::complex<double> > > > >, unsigned int, TJet<std::complex<double> > const&, __false_type);
@@ -473,7 +473,7 @@ TJet<std::complex<double> >* std::__uninitialized_fill_n_aux<TJet<std::complex<d
 
 //============================================================================================================================================================================
 
-#if GCC_VERSION > 30500
+#if (__GNUC__ == 4 && __GNUC_MINOR__ > 0)
 
 template
 void std::__uninitialized_fill_n_aux(__gnu_cxx::__normal_iterator<TJet<double>*, std::vector<TJet<double>, std::allocator<TJet<double> > > >, unsigned int, TJet<double> const&, __false_type);
