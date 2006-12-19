@@ -481,14 +481,14 @@ BmlSelectionDialog::updateBeamParameters()
 
 void 
 BmlSelectionDialog::cancel( ){
-
+   beamlines_listBox->clear();
    hide();
 }
 
 void 
 BmlSelectionDialog::particleCheck( int id) {
 
-  // std::cout<< "particle checked: id = " << id << std::endl; 
+  //  std::cout<< "particle checked: id = " << id << std::endl; 
 
 } 
 
