@@ -28,6 +28,8 @@
 
 #include <iomanip>
 #include <algorithm>
+#include <sstream>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string_regex.hpp>
 #include <basic_toolkit/PhysicsConstants.h>
@@ -231,7 +233,9 @@ void
 XsifParserDriver::error(  xsif_yy::location const& l, const string& m) const
 {
 
-  cerr << l <<": "    << m << endl;
+  stringstream ss; 
+
+  ss <<  "XSIF Parser syntax error : " << l  << m << endl;
 
   xsif_yy::location loc;
 
@@ -240,7 +244,7 @@ XsifParserDriver::error(  xsif_yy::location const& l, const string& m) const
     loc = m_locations_stack.top();
     m_locations_stack.pop();
 
-    cerr <<"Included from: " << loc << endl;
+    ss <<"Included from : " << loc << endl;
 
     // **** unwind the stack and free memory allocated for strings (filenames) **** 
      
@@ -257,7 +261,7 @@ XsifParserDriver::error(  xsif_yy::location const& l, const string& m) const
     }
   }
 
-  throw ParserException( __FILE__, __LINE__, "XsifParserDriver::error()", "Error" );  
+  throw ParserException( __FILE__, __LINE__, "XsifParserDriver::error()", ss.str().c_str() );  
  
 } 
 
@@ -281,6 +285,7 @@ XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string const&
 
   
   beamline* bl = new beamline( name.c_str() ); 
+  bl->setEnergy( m_energy); 
 
   map<string,  beamline*>::iterator bml_it;  
   map<string, bmlnElmnt*>::iterator elm_it;  
@@ -303,9 +308,6 @@ XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string const&
     }
   } 
  
-   double BRHO  = m_variables["BRHO"].evaluate();
- 
-   bl->setEnergy( BRHO* PH_CNV_brho_to_p); // THIS is wrong argument should be TOTAL energy.  FIXME ! 
 
    m_lines[name] = bl;
 
@@ -434,6 +436,7 @@ XsifParserDriver::expandLineMacro(xsif_yy::location const& yyloc, string const& 
   // substitute arguments and return the expanded line ... 
  
   beamline* bl = new beamline ( name_and_args.c_str() ); 
+  bl->setEnergy( m_energy );
 
   map<string, bmlnElmnt*>::iterator elm_it;
   map<string,  beamline*>::iterator bml_it;
@@ -524,25 +527,80 @@ double  XsifParserDriver::getElmAttributeVal( xsif_yy::location const& yyloc, st
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void XsifParserDriver::setBeamParameters( xsif_yy::location const& yyloc, std::vector<attrib_pair_t> const& attributes) {
+void XsifParserDriver::command_BEAM( xsif_yy::location const& yyloc, std::vector<attrib_pair_t> const& attributes) {
 
-  // for the moment hardwired to positron --- FIXME !
+  //-----------------------------------------------------------------------------------------------------------------
+  //    BEAM, PARTICLE=name, ENERGY=real,PC=real,GAMMA=real,&
+  //    EX=real,EXN=real,EY=real,EYN=real,ET=real,SIGT=real,SIGE=real,&
+  //    KBUNCH=integer,NPART=real,BCURRENT=real,&
+  //    BUNCHED=logical,RADIATE=logical
+  //------------------------------------------------------------------------------------------------------------------ 
 
+  bool    pc_defined   = false;
+  bool gamma_defined   = false;
+  bool energy_defined  = false;
+ 
   any value;
 
-  if ( ! eval( string("ENERGY"), attributes, value) ) return;
+  string pname    =  eval( string("PARTICLE"),     attributes, value) ? any_cast<string>(value) : string("PROTON"); // default is proton 
  
-   double mass = PH_NORM_me;
+  double energy   = (energy_defined = eval( string("ENERGY"),     attributes, value) ) ? any_cast<double>(value) : 1.0; 
+  double pc       = (pc_defined     = eval( string("PC"),         attributes, value) ) ? any_cast<double>(value) : 0.0; 
+  double gamma    = (gamma_defined  = eval( string("GAMMA"),      attributes, value) ) ? any_cast<double>(value) : 1.0; 
 
-   double et        = any_cast<double>(value );
-   double ek        = et - mass;
-   double gamma     = et/mass;
-   double momentum  = std::sqrt((et*et)-(mass*mass));
-   double brho      = momentum/PH_CNV_brho_to_p;
+  double et       = eval( string("ET"),         attributes, value) ? any_cast<double> (value): 0.0; // longitudinal emittance
+  double ex       = eval( string("EX"),         attributes, value) ? any_cast<double> (value): 0.0;
+  double ey       = eval( string("EY"),         attributes, value) ? any_cast<double> (value): 0.0; 
+  double exn      = eval( string("EXN"),        attributes, value) ? any_cast<double> (value): 0.0;
+  double eyn      = eval( string("EYN"),        attributes, value) ? any_cast<double> (value): 0.0;
+  double sigt     = eval( string("SIGT"),       attributes, value) ? any_cast<double> (value): 0.0;
+  double sige     = eval( string("SIGE"),       attributes, value) ? any_cast<double> (value): 0.0;
+  int    kbunch   = eval( string("KBUNCH"),     attributes, value) ? any_cast<int>    (value): 0;
+  int    npart    = eval( string("NPART"),      attributes, value) ? any_cast<int>    (value): 0;
+  double bcurrent = eval( string("BCURRENR"),   attributes, value) ? any_cast<double> (value): 0;
+  bool   bunched  = eval( string("BUNCHED"),    attributes, value) ? any_cast<bool>   (value): false;
+  bool   radiate  = eval( string("RADIATE"),    attributes, value) ? any_cast<bool>   (value): false;
  
-   Expression exp; exp.insert(ExprData(brho));
+  enum  particle_type { proton, antiproton, electron, positron, muon, antimuon } ptype;
+  double mass =   PH_NORM_mp; 
+
+  if ( pname == string("PROTON")     ) { m_particle_type_name = pname; ptype = proton;        mass = PH_NORM_mp;  }  
+  if ( pname == string("ANTIPROTON") ) { m_particle_type_name = pname; ptype = antiproton;    mass = PH_NORM_mp;  }
+  if ( pname == string("ELECTRON")   ) { m_particle_type_name = pname; ptype = electron;      mass = PH_NORM_me;  }
+  if ( pname == string("POSITRON")   ) { m_particle_type_name = pname; ptype = positron;      mass = PH_NORM_me;  }
+  if ( pname == string("MUON")       ) { m_particle_type_name = pname; ptype = muon;          mass = PH_NORM_mmu; }
+  if ( pname == string("ANTIMUON")   ) { m_particle_type_name = pname; ptype = antimuon;      mass = PH_NORM_mmu; }
+
+
+  double  ek = 0.0; 
+
+
+  if ( energy_defined ) {
+   ek        = energy - mass;
+   gamma     = energy/mass;
+   pc        = std::sqrt((energy*energy)-(mass*mass));
+  }
   
+  if ( gamma_defined ) {
+     energy    = gamma*mass;
+     ek        = energy - mass;
+     pc        = std::sqrt((energy*energy)-(mass*mass));
+  }
+
+  if ( pc_defined    ) {
+    energy    = std::sqrt(pc*pc + mass*mass);
+    ek        = energy - mass;
+    gamma     = energy/mass;
+  }
+
+  
+   m_BRHO          = pc/PH_CNV_brho_to_p;
+   m_energy        = energy;
+
+   Expression exp; exp.insert(ExprData(m_BRHO));
+
    m_variables["BRHO"] = exp; 
+
 }
 
 
@@ -994,7 +1052,7 @@ alignmentData aligner;
 
 bmlnElmnt* q    = 0;
 beamline* temp  = new beamline( label.c_str() ); 
-// temp->setEnergy( this->getEnergy() ); 
+temp->setEnergy( BRHO ); 
 
 double   kl[21]; { for (int i=0; i<21; ++i)   kl[i] = 0.0; } // LEAK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 double tilt[21]; { for (int i=0; i<21; ++i) tilt[i] = 0.0; }
