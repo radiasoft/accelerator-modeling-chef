@@ -52,7 +52,10 @@ CHEF_LIBDIR    =    $${CHEF_INSTALL_TOP_DIR}/lib
 
 ################################################################################
 
-QMAKE_CXXFLAGS           += -pipe 
+QMAKE_CXXFLAGS  += -pipe 
+
+DEFINES +=  BASICTOOLKIT_EXPLICIT_TEMPLATES
+DEFINES +=  MXYZPTLK_EXPLICIT_TEMPLATES
 
 UI_DIR       =  src/ui
 MOC_DIR      =  src/moc
