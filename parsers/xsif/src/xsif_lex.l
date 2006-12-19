@@ -45,12 +45,8 @@
 
 #include <iostream>
 #include <string>
-#include <cstdlib>
-#include <errno.h>
+#include <basic_toolkit/iosetup.h>
 
-#ifndef __sun__
-#include <err.h>
-#endif
 
 #include "XsifParserDriver.h"
 #include "XsifParser_ypp.hh"
@@ -107,12 +103,13 @@ blk             [ \t]
 
 
 ^#(include|INCLUDE)[ \t]+.*                               {  
-                                                              std::string* filename = new std::string(&yytext[8]);
-                                                              *filename = trim(*filename); // remove quotes, if any 
-                                                              FILE* fp = fopen( filename->c_str(), "r");
-                                                                if (!fp) {
-                                                                    err(1,"%s", filename->c_str());
-                                                                }
+                                                             std::string* filename = new std::string(&yytext[8]);
+                                                             *filename = trim(*filename); // remove quotes, if any 
+                                                             FILE* fp = fopen( filename->c_str(), "r");
+                                                             if (!fp) {
+                                                               (*pcerr) << "Error opening file:" << filename->c_str() << std::endl;
+                                                               
+                                                             }
                                                              driver.m_locations_stack.push(*yylloc);
                                                              yypush_buffer_state( xsif_yy_create_buffer(fp, YY_BUF_SIZE, yyscanner), yyscanner);
 
