@@ -30,7 +30,7 @@
 /* A lexer for xsif input files                                                */
 /*------------------------------------------------------------------------------*/
 
-%option debug 
+   /* %option debug */
 
 %option batch 
 %option stack
@@ -175,6 +175,10 @@ blk             [ \t]
 {blk}*(TYPE|type){blk}*=                                 { 
                                                             unput('='); return token::XSIF_TYPE_ATTRIBUTE;  
                                                          }
+{blk}*(PARTICLE|particle){blk}*=                         { 
+                                                            unput('='); return token::XSIF_PARTICLE_ATTRIBUTE;  
+                                                         }
+
 
 {identifier}                                             {  
                                                               yylval->sval =  new parser_string_t(yytext);

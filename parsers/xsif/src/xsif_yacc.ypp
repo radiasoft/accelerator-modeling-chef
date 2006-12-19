@@ -32,8 +32,8 @@
 
   /**** this should be defined only for debugging ***/
 
-%debug 
-%error-verbose 
+  /* %debug         */ 
+  /* %error-verbose */ 
 
   /**** ----------------------------------------- ***/  
 
@@ -132,6 +132,7 @@ using FNAL::pcerr;
 %token    XSIF_END   0
 
 %token    XSIF_TYPE_ATTRIBUTE
+%token    XSIF_PARTICLE_ATTRIBUTE
 
 %left '+' '-'
 %left '*' '/' 
@@ -167,9 +168,9 @@ statement:
 action: 
    XSIF_BEAM 
    |
-   XSIF_BEAM   ',' attributes                                                        { driver.setBeamParameters( yyloc, driver.m_attributes);
+   XSIF_BEAM   ',' attributes                                                        { driver.command_BEAM( yyloc, driver.m_attributes);
                                                                                        driver.m_attributes.clear(); 
-                                                                                     } 
+                                                                                       } 
    |
    XSIF_CALL 
    |
@@ -348,6 +349,11 @@ attribute:
        XSIF_TYPE_ATTRIBUTE '=' XSIF_IDENTIFIER                                               { 
                                                                                                driver.m_attributes.push_back( attrib_pair_t(std::string("TYPE"), *$<sval>3));
                                                                                                delete $<sval>3;
+                                                                                             }
+       |
+       XSIF_PARTICLE_ATTRIBUTE '=' XSIF_IDENTIFIER                                           { 
+                                                                                            driver.m_attributes.push_back( attrib_pair_t(std::string("PARTICLE"), *$<sval>3));
+                                                                                            delete $<sval>3;
                                                                                              }
        |
        XSIF_IDENTIFIER '='vexpr                                                              { 
