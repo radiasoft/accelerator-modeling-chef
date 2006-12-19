@@ -4,7 +4,9 @@
 ! Version 4, 9/7/2006
 ! A.Valishev (valishev@fnal.gov)
 !========1=========2=========3=========4=========5=========6=========7=========8
- BEAM, ENERGY=15.0
+! energy is total energy in GeV
+ 
+BEAM, PARTICLE=POSITRON, ENERGY=15.0
 
 ! Define the cavity:
 
