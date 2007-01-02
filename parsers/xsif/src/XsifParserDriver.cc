@@ -624,6 +624,7 @@ XsifParserDriver::init()
      m_makefncs["VKICKER"    ] = &XsifParserDriver::make_vkicker;
      m_makefncs["HKICKER"    ] = &XsifParserDriver::make_hkicker;
      m_makefncs["RFCAVITY"   ] = &XsifParserDriver::make_rfcavity;
+     m_makefncs["MONITOR"    ] = &XsifParserDriver::make_monitor;
      m_makefncs["HMONITOR"   ] = &XsifParserDriver::make_hmonitor;
      m_makefncs["VMONITOR"   ] = &XsifParserDriver::make_vmonitor;
      m_makefncs["MATRIX"     ] = &XsifParserDriver::make_matrix;
@@ -681,7 +682,7 @@ XsifParserDriver::instantiateElement(xsif_yy::location const& yyloc, string cons
     elm_type  = attributes[0].first; 
  } 
  else if ( eval( string("TYPE"), attributes, value) ) {  
-   std:: cout << "TYPE attribute found " << std::endl; 
+    std:: cout << "TYPE attribute found " << std::endl; 
     elm_type  = any_cast<string>(value);
  }
  else {
@@ -1435,6 +1436,45 @@ bmlnElmnt*  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string co
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+ bmlnElmnt*  XsifParserDriver::make_monitor(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+{
+ //----------------------------------------------------------------------------------------------
+ // valid attributes for type HMONITOR
+ // ---------------------------------------------------------------------------------------------
+ // LENGTH                              
+ // XSERR                            
+ // YSERR                           
+ // XRERR                             
+ // YRERR                              
+ //-----------------------------------------------------------------------------------------------
+                       
+  any value;
+  bmlnElmnt* elm = 0;
+
+  double length = 0.0; 
+  double xserr  = 0.0; 
+  double yserr  = 0.0; 
+  double xrerr  = 0.0; 
+  double yrerr  = 0.0; 
+
+  if ( eval( string("LENGTH"),   attributes, value) )    length   = any_cast<double>(value); 
+  if ( eval( string("XSERR"),    attributes, value) )    xserr    = any_cast<double>(value); 
+  if ( eval( string("YSERR"),    attributes, value) )    yserr    = any_cast<double>(value); 
+  if ( eval( string("XRERR"),    attributes, value) )    xrerr    = any_cast<double>(value); 
+  if ( eval( string("YRERR"),    attributes, value) )    yrerr    = any_cast<double>(value); 
+
+  if( length > 0.0 ) {
+    elm = new monitor( label.c_str(), length );
+  }
+  else {
+    elm = new monitor( label.c_str() );
+  }
+  return elm;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
  bmlnElmnt*  XsifParserDriver::make_hmonitor(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
  //----------------------------------------------------------------------------------------------
@@ -1475,49 +1515,7 @@ bmlnElmnt*  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string co
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- bmlnElmnt*  XsifParserDriver::make_vmonitor(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
- {
-
- //----------------------------------------------------------------------------------------------
- // valid attributes for type HMONITOR
- // ---------------------------------------------------------------------------------------------
- // LENGTH                              
- // XSERR                            
- // YSERR                           
- // XRERR                             
- // YRERR                              
- //-----------------------------------------------------------------------------------------------
-                       
-  
-  any value;
-  bmlnElmnt* elm = 0;
-
-  double length = 0.0; 
-  double xserr  = 0.0; 
-  double yserr  = 0.0; 
-  double xrerr  = 0.0; 
-  double yrerr  = 0.0; 
-
-  if ( eval( string("LENGTH"),   attributes, value) )    length   = any_cast<double>(value); 
-  if ( eval( string("XSERR"),    attributes, value) )    xserr    = any_cast<double>(value); 
-  if ( eval( string("YSERR"),    attributes, value) )    yserr    = any_cast<double>(value); 
-  if ( eval( string("XRERR"),    attributes, value) )    xrerr    = any_cast<double>(value); 
-  if ( eval( string("YRERR"),    attributes, value) )    yrerr    = any_cast<double>(value); 
-
-  if( length > 0.0 ) {
-    elm = new vmonitor( label.c_str(), length );
-  }
-  else {
-    elm = new vmonitor( label.c_str() );
-  }
-
-  return elm;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
- bmlnElmnt*  XsifParserDriver::make_monitor(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ bmlnElmnt*  XsifParserDriver::make_vmonitor(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
  {
 
  //----------------------------------------------------------------------------------------------
@@ -1547,10 +1545,10 @@ bmlnElmnt*  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string co
   if ( eval( string("YRERR"),    attributes, value) )    yrerr    = any_cast<double>(value); 
 
   if( length > 0.0 ) {
-    elm = new monitor(  label.c_str(), length );
+    elm = new vmonitor(  label.c_str(), length );
   }
   else {
-    elm = new monitor(  label.c_str() );
+    elm = new vmonitor(  label.c_str() );
   }
 
   return elm;
