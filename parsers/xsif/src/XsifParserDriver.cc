@@ -745,7 +745,6 @@ bmlnElmnt*  XsifParserDriver::make_sbend(  double const& BRHO, std::string const
   // FINTX   exit fringe field integral
   //--------------------------------------------------------------------- 
 
-
   any value;
   bmlnElmnt* elm = 0;
 
@@ -764,31 +763,32 @@ bmlnElmnt*  XsifParserDriver::make_sbend(  double const& BRHO, std::string const
 
   if ( eval( string("L"),      attributes, value) )    length = any_cast<double>(value); 
   if ( eval( string("ANGLE"),  attributes, value) )    angle  = any_cast<double>(value); 
-  if ( eval( string("K1"),     attributes, value) )  { k1     = any_cast<double>(value); simple = false; } 
-  if ( eval( string("K2"),     attributes, value) )  { k2     = any_cast<double>(value); simple = false; }
-  if ( eval( string("K3"),     attributes, value) )  { k3     = any_cast<double>(value); simple = false; }
-  ///// ********if ( eval( string("TILT"),   attributes, value) )  { tilt   = any_cast<double>(value); simple = false; } 
+  if ( eval( string("K1"),     attributes, value) )  { k1     = any_cast<double>(value); simple = ( k1 == 0.0 ); } 
+  if ( eval( string("K2"),     attributes, value) )  { k2     = any_cast<double>(value); simple = ( k2 == 0.0 ); }
+  if ( eval( string("K3"),     attributes, value) )  { k3     = any_cast<double>(value); simple = ( k3 == 0.0 ); }
+
+  if ( eval( string("TILT"),   attributes, value) )  {  if (value.empty() ) 
+                                                           { simple = false; tilt = M_PI/2.0;} 
+                                                        else 
+                                                           { tilt  = any_cast<double>(value); simple = ( tilt == 0.0); } 
+                                                     }; 
+
   if ( eval( string("E1"),     attributes, value) )    e1     = any_cast<double>(value); 
   if ( eval( string("E2"),     attributes, value) )    e2     = any_cast<double>(value); 
 
 
-
-  if( simple) {
-    elm = new sbend( label.c_str(), length, BRHO*angle/length, angle, e1, e2 );
-    if ( tilt != 0.0  ) {
-      aligner.xOffset = 0.0;
-      aligner.yOffset = 0.0;
-      aligner.tilt    = tilt;
-      elm->setAlignment( aligner );
-	}
-    return elm; 
-  }
+  if( simple) return new sbend( label.c_str(), length, BRHO*angle/length, angle, e1, e2 );
 
   elm = new CF_sbend( label.c_str(), length, BRHO*angle/length, angle, e1, e2 );
 
-  double multipoleStrength;
+  aligner.xOffset = 0.0;
+  aligner.yOffset = 0.0;
+  aligner.tilt    = tilt;
 
-  multipoleStrength = k1*BRHO*length;
+  if (tilt != 0.0 ) elm->setAlignment( aligner );
+
+  double multipoleStrength = k1*BRHO*length;
+
   if( multipoleStrength != 0.0 ) {
       dynamic_cast<CF_sbend*>(elm)->setQuadrupole( multipoleStrength );
   }
@@ -803,6 +803,8 @@ bmlnElmnt*  XsifParserDriver::make_sbend(  double const& BRHO, std::string const
       dynamic_cast<CF_sbend*>(elm)->setOctupole( multipoleStrength );
   }
   
+  
+
   return elm;
 }
 
@@ -843,14 +845,21 @@ bmlnElmnt*  XsifParserDriver::make_rbend(  double const& BRHO, std::string const
   double e1     = 0.0;
   double e2     = 0.0;
 
+  alignmentData  aligner;
+
   bool simple = true;
 
   if ( eval( string("L"),      attributes, value) )    length = any_cast<double>(value); 
   if ( eval( string("ANGLE"),  attributes, value) )    angle  = any_cast<double>(value); 
-  if ( eval( string("K1"),     attributes, value) )  { k1     = any_cast<double>(value); simple = false; } 
-  if ( eval( string("K2"),     attributes, value) )  { k2     = any_cast<double>(value); simple = false; }
-  if ( eval( string("K3"),     attributes, value) )  { k3     = any_cast<double>(value); simple = false; }
-  if ( eval( string("TILT"),   attributes, value) )  { tilt   = any_cast<double>(value); simple = false; } 
+  if ( eval( string("K1"),     attributes, value) )  { k1     = any_cast<double>(value); simple = (k1 == 0.0); } 
+  if ( eval( string("K2"),     attributes, value) )  { k2     = any_cast<double>(value); simple = (k2 == 0.0); }
+  if ( eval( string("K3"),     attributes, value) )  { k3     = any_cast<double>(value); simple = (k3 == 0.0); }
+  if ( eval( string("TILT"),   attributes, value) )  {  if (value.empty() ) 
+                                                           { simple = false; tilt = M_PI/2.0; } 
+                                                        else 
+                                                           { tilt  = any_cast<double>(value); simple = ( tilt == 0.0); } 
+                                                     }; 
+
   if ( eval( string("E1"),     attributes, value) )    e1     = any_cast<double>(value); 
   if ( eval( string("E2"),     attributes, value) )    e2     = any_cast<double>(value); 
 
@@ -863,7 +872,6 @@ bmlnElmnt*  XsifParserDriver::make_rbend(  double const& BRHO, std::string const
     }
    
     return elm;
-    // Ignored parameters: K1, K2, K3, E1, E2, H1, H2, HGAP, FINT
   }
 
   if( (0.0 == e1) && (0.0 == e2) ) {
@@ -872,9 +880,14 @@ bmlnElmnt*  XsifParserDriver::make_rbend(  double const& BRHO, std::string const
       elm = new CF_rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
   }
 
-  double multipoleStrength;
+  aligner.xOffset = 0.0;
+  aligner.yOffset = 0.0;
+  aligner.tilt    = tilt;
 
-  multipoleStrength = k1*BRHO*length;
+  if (tilt != 0.0 ) elm->setAlignment( aligner );
+
+  double multipoleStrength = k1*BRHO*length;
+
   if( multipoleStrength != 0.0 ) {
       dynamic_cast<CF_rbend*>(elm)->setQuadrupole( multipoleStrength );
   }
