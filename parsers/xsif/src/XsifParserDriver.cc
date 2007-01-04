@@ -42,6 +42,7 @@
 
 using namespace std;
 using namespace boost;
+using namespace boost::algorithm;
 
 
 using std::setw;
@@ -57,7 +58,7 @@ struct AttributesEqual {
   AttributesEqual( string const& str): m_str(str) {} 
 
   bool operator()( attrib_pair_t const& attr ) const
-    { return (attr.first == m_str); }
+    { return iequals(attr.first, m_str); }
 
   string m_str;  
 };
@@ -543,6 +544,7 @@ void XsifParserDriver::command_BEAM( xsif_yy::location const& yyloc, std::vector
   any value;
 
   string pname    =  eval( string("PARTICLE"),     attributes, value) ? any_cast<string>(value) : string("PROTON"); // default is proton 
+  to_upper(pname);
  
   double energy   = (energy_defined = eval( string("ENERGY"),     attributes, value) ) ? any_cast<double>(value) : 1.0; 
   double pc       = (pc_defined     = eval( string("PC"),         attributes, value) ) ? any_cast<double>(value) : 0.0; 
@@ -564,12 +566,12 @@ void XsifParserDriver::command_BEAM( xsif_yy::location const& yyloc, std::vector
   enum  particle_type { proton, antiproton, electron, positron, muon, antimuon } ptype;
   double mass =   PH_NORM_mp; 
 
-  if ( pname == string("PROTON")     ) { m_particle_type_name = pname; ptype = proton;        mass = PH_NORM_mp;  }  
-  if ( pname == string("ANTIPROTON") ) { m_particle_type_name = pname; ptype = antiproton;    mass = PH_NORM_mp;  }
-  if ( pname == string("ELECTRON")   ) { m_particle_type_name = pname; ptype = electron;      mass = PH_NORM_me;  }
-  if ( pname == string("POSITRON")   ) { m_particle_type_name = pname; ptype = positron;      mass = PH_NORM_me;  }
-  if ( pname == string("MUON")       ) { m_particle_type_name = pname; ptype = muon;          mass = PH_NORM_mmu; }
-  if ( pname == string("ANTIMUON")   ) { m_particle_type_name = pname; ptype = antimuon;      mass = PH_NORM_mmu; }
+  if ( iequals( pname, "PROTON"    )  ) { m_particle_type_name = pname; ptype = proton;        mass = PH_NORM_mp;  }  
+  if ( iequals( pname, "ANTIPROTON")  ) { m_particle_type_name = pname; ptype = antiproton;    mass = PH_NORM_mp;  }
+  if ( iequals( pname, "ELECTRON"  )  ) { m_particle_type_name = pname; ptype = electron;      mass = PH_NORM_me;  }
+  if ( iequals( pname, "POSITRON"  )  ) { m_particle_type_name = pname; ptype = positron;      mass = PH_NORM_me;  }
+  if ( iequals( pname, "MUON"      )  ) { m_particle_type_name = pname; ptype = muon;          mass = PH_NORM_mmu; }
+  if ( iequals( pname, "ANTIMUON"  )  ) { m_particle_type_name = pname; ptype = antimuon;      mass = PH_NORM_mmu; }
 
 
   double  ek = 0.0; 
@@ -768,7 +770,7 @@ bmlnElmnt*  XsifParserDriver::make_sbend(  double const& BRHO, std::string const
   if ( eval( string("K3"),     attributes, value) )  { k3     = any_cast<double>(value); simple = ( k3 == 0.0 ); }
 
   if ( eval( string("TILT"),   attributes, value) )  {  if (value.empty() ) 
-                                                           { simple = false; tilt = M_PI/2.0;} 
+                                                           { simple = false; tilt = M_PI/2.0; } 
                                                         else 
                                                            { tilt  = any_cast<double>(value); simple = ( tilt == 0.0); } 
                                                      }; 
@@ -844,16 +846,15 @@ bmlnElmnt*  XsifParserDriver::make_rbend(  double const& BRHO, std::string const
   double tilt   = 0.0;
   double e1     = 0.0;
   double e2     = 0.0;
-
-  alignmentData  aligner;
+  alignmentData aligner;
 
   bool simple = true;
 
   if ( eval( string("L"),      attributes, value) )    length = any_cast<double>(value); 
   if ( eval( string("ANGLE"),  attributes, value) )    angle  = any_cast<double>(value); 
-  if ( eval( string("K1"),     attributes, value) )  { k1     = any_cast<double>(value); simple = (k1 == 0.0); } 
-  if ( eval( string("K2"),     attributes, value) )  { k2     = any_cast<double>(value); simple = (k2 == 0.0); }
-  if ( eval( string("K3"),     attributes, value) )  { k3     = any_cast<double>(value); simple = (k3 == 0.0); }
+  if ( eval( string("K1"),     attributes, value) )  { k1     = any_cast<double>(value); simple = false; } 
+  if ( eval( string("K2"),     attributes, value) )  { k2     = any_cast<double>(value); simple = false; }
+  if ( eval( string("K3"),     attributes, value) )  { k3     = any_cast<double>(value); simple = false; }
   if ( eval( string("TILT"),   attributes, value) )  {  if (value.empty() ) 
                                                            { simple = false; tilt = M_PI/2.0; } 
                                                         else 
@@ -930,7 +931,7 @@ bmlnElmnt*  XsifParserDriver::make_quadrupole( double const& BRHO, std::string c
   double tilt     = 0.0;
   double aperture = 0.0;
 
-  if ( eval( string("LENGTH"),   attributes, value) )    length   = any_cast<double>(value); 
+  if ( eval( string("L"),        attributes, value) )    length   = any_cast<double>(value); 
   if ( eval( string("K1"),       attributes, value) )    k1       = any_cast<double>(value); 
   if ( eval( string("TILT"),     attributes, value) )    tilt     = any_cast<double>(value); 
   if ( eval( string("APERTURE"), attributes, value) )    aperture = any_cast<double>(value); 
@@ -975,7 +976,7 @@ bmlnElmnt*  XsifParserDriver::make_sextupole(  double const& BRHO, std::string c
   double tilt     = 0.0;
   double aperture = 0.0;
 
-  if ( eval( string("LENGTH"),   attributes, value) )    length   = any_cast<double>(value); 
+  if ( eval( string("L"),        attributes, value) )    length   = any_cast<double>(value); 
   if ( eval( string("K2"),       attributes, value) )    k2       = any_cast<double>(value); 
   if ( eval( string("TILT"),     attributes, value) )    tilt     = any_cast<double>(value); 
   if ( eval( string("APERTURE"), attributes, value) )    aperture = any_cast<double>(value); 
@@ -1021,7 +1022,7 @@ bmlnElmnt*  XsifParserDriver::make_octupole(  double const& BRHO, std::string co
   double tilt     = 0.0;
   double aperture = 0.0;
 
-  if ( eval( string("LENGTH"),   attributes, value) )    length   = any_cast<double>(value); 
+  if ( eval( string("L"),        attributes, value) )    length   = any_cast<double>(value); 
   if ( eval( string("K3"),       attributes, value) )    k3       = any_cast<double>(value); 
   if ( eval( string("TILT"),     attributes, value) )    tilt     = any_cast<double>(value); 
   if ( eval( string("APERTURE"), attributes, value) )    aperture = any_cast<double>(value); 
@@ -1206,7 +1207,7 @@ bmlnElmnt*  XsifParserDriver::make_hkicker( double const& BRHO, std::string cons
   double kck    = 0.0;
   double tilt   = 0.0;
 
-  if ( eval( string("LENGTH"),      attributes, value) )    length  = any_cast<double>(value); 
+  if ( eval( string("L"),           attributes, value) )    length  = any_cast<double>(value); 
   if ( eval( string("KICK"),        attributes, value) )    kck     = any_cast<double>(value); 
   if ( eval( string("TILT"),        attributes, value) )    tilt    = any_cast<double>(value); 
 
@@ -1249,7 +1250,7 @@ bmlnElmnt*  XsifParserDriver::make_vkicker( double const& BRHO, std::string cons
   double kck    = 0.0;
   double tilt   = 0.0;
 
-  if ( eval( string("LENGTH"),      attributes, value) )    length  = any_cast<double>(value); 
+  if ( eval( string("L"),           attributes, value) )    length  = any_cast<double>(value); 
   if ( eval( string("KICK"),        attributes, value) )    kck     = any_cast<double>(value); 
   if ( eval( string("TILT"),        attributes, value) )    tilt    = any_cast<double>(value); 
 
@@ -1295,7 +1296,7 @@ bmlnElmnt*  XsifParserDriver::make_kicker(  double const& BRHO, std::string cons
   double vkck   = 0.0;
   double tilt   = 0.0;
 
-  if ( eval( string("LENGTH"),      attributes, value) )    length  = any_cast<double>(value); 
+  if ( eval( string("L"),           attributes, value) )    length  = any_cast<double>(value); 
   if ( eval( string("HKICK"),       attributes, value) )    hkck    = any_cast<double>(value); 
   if ( eval( string("VKICK"),       attributes, value) )    vkck    = any_cast<double>(value); 
   if ( eval( string("TILT"),        attributes, value) )    tilt    = any_cast<double>(value); 
@@ -1470,7 +1471,7 @@ bmlnElmnt*  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string co
   double xrerr  = 0.0; 
   double yrerr  = 0.0; 
 
-  if ( eval( string("LENGTH"),   attributes, value) )    length   = any_cast<double>(value); 
+  if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
   if ( eval( string("XSERR"),    attributes, value) )    xserr    = any_cast<double>(value); 
   if ( eval( string("YSERR"),    attributes, value) )    yserr    = any_cast<double>(value); 
   if ( eval( string("XRERR"),    attributes, value) )    xrerr    = any_cast<double>(value); 
@@ -1510,7 +1511,7 @@ bmlnElmnt*  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string co
   double xrerr  = 0.0; 
   double yrerr  = 0.0; 
 
-  if ( eval( string("LENGTH"),   attributes, value) )    length   = any_cast<double>(value); 
+  if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
   if ( eval( string("XSERR"),    attributes, value) )    xserr    = any_cast<double>(value); 
   if ( eval( string("YSERR"),    attributes, value) )    yserr    = any_cast<double>(value); 
   if ( eval( string("XRERR"),    attributes, value) )    xrerr    = any_cast<double>(value); 
@@ -1551,7 +1552,7 @@ bmlnElmnt*  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string co
   double xrerr  = 0.0; 
   double yrerr  = 0.0; 
 
-  if ( eval( string("LENGTH"),   attributes, value) )    length   = any_cast<double>(value); 
+  if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
   if ( eval( string("XSERR"),    attributes, value) )    xserr    = any_cast<double>(value); 
   if ( eval( string("YSERR"),    attributes, value) )    yserr    = any_cast<double>(value); 
   if ( eval( string("XRERR"),    attributes, value) )    xrerr    = any_cast<double>(value); 
@@ -1593,7 +1594,7 @@ bmlnElmnt*  XsifParserDriver::make_ecollimator(  double const& BRHO, std::string
   bmlnElmnt* elm = 0;
 
    double length = 0.0;
-   if ( eval( string("LENGTH"),   attributes, value) )    length   = any_cast<double>(value); 
+   if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
    // elm = make_ecollimator(  label.c_str(), length );
    elm = 0;
@@ -1610,7 +1611,7 @@ bmlnElmnt*  XsifParserDriver::make_rcollimator(  double const& BRHO, std::string
   bmlnElmnt* elm = 0;
 
   double length = 0.0;
-  if ( eval( string("LENGTH"),   attributes, value) )    length   = any_cast<double>(value); 
+  if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
   //elm = make_rcollimator(  label.c_str(), length );
   elm = 0;
@@ -1628,7 +1629,7 @@ bmlnElmnt*  XsifParserDriver::make_yrot(  double const& BRHO, std::string const&
   bmlnElmnt* elm = 0;
 
   double length = 0.0;
-  if ( eval( string("LENGTH"),   attributes, value) )    length   = any_cast<double>(value); 
+  if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
   //elm = make_yrot(  label.c_str(), length);
   elm = 0;
@@ -1662,7 +1663,7 @@ bmlnElmnt*  XsifParserDriver::make_beambeam( double const& BRHO, std::string con
   bmlnElmnt* elm = 0;
 
   double length = 0.0;
-  if ( eval( string("LENGTH"),   attributes, value) )    length   = any_cast<double>(value); 
+  if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
   //     elm = make_beambeam(  label.c_str(), length);
   elm = 0;
@@ -1681,7 +1682,7 @@ bmlnElmnt*  XsifParserDriver::make_matrix( double const& BRHO, std::string const
   bmlnElmnt* elm = 0;
 
   double length = 0.0;
-  if ( eval( string("LENGTH"),   attributes, value) )    length   = any_cast<double>(value); 
+  if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
   // elm = make_matrix( label.c_str(), length);
   elm = 0;
@@ -1699,7 +1700,7 @@ bmlnElmnt*  XsifParserDriver::make_lump( double const& BRHO, std::string const& 
   bmlnElmnt* elm = 0;
 
   double length = 0.0;
-  if ( eval( string("LENGTH"),   attributes, value) )    length   = any_cast<double>(value); 
+  if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
   //elm = make_lump( label.c_str(), length);
   elm = 0;
