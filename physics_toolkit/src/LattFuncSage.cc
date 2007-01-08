@@ -325,7 +325,7 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
 
 void LattFuncSage::eraseAll() 
 {
-  dataHook.eraseAll( "LattFuncSage" );
+
 
   for (beamline::deep_iterator it =  _myBeamlinePtr->deep_begin(); 
                                it != _myBeamlinePtr->deep_end();  ++it ) { 
