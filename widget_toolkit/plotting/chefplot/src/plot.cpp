@@ -32,9 +32,10 @@
 **************************************************************************
 *************************************************************************/
 
-#include <plot.h>
-#include <chefplotdata.h>
-#include <chefplotzoomer.h>
+#include <Plot.h>
+#include <CHEFPlotData.h>
+#include <CHEFCurve.h>
+#include <CHEFPlotZoomer.h>
 
 #include <qapplication.h>
 #include <qlayout.h>

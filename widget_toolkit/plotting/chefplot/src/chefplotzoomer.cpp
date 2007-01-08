@@ -32,7 +32,7 @@
 **************************************************************************
 *************************************************************************/
 
-#include <chefplotzoomer.h>
+#include <CHEFPlotZoomer.h>
 #include <qwt/qwt_double_rect.h>
 #include <qwt/qwt_plot_canvas.h>
 #include <qwt/qwt_plot.h>

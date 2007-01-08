@@ -32,7 +32,11 @@
 **************************************************************************
 *************************************************************************/
 
-#include <chefplotdata.h>
+#include <CurveData.h>
+
+#include <CHEFPlotData.h>
+#include <CHEFCurve.h>
+#include <Curve.h>
 #include <beamline.h>
 #include <string>
 #include <fstream>
@@ -40,21 +44,22 @@
 #include <algorithm>
 #include <qwt/qwt_plot.h>
 #include <qwt/qwt_plot_classes.h>
+#include <qstring.h>
 
 
 CurveData::CurveData( boost::shared_array<double> x , boost::shared_array<double> y, int size):
-  _x(x), _y(y), _size(size) 
+  xarray_(x), yarray_(y), size_(size) 
 
 {
 
-  const double* xp = _x.get();
-  const double* yp = _y.get();
+  const double* xp = xarray_.get();
+  const double* yp = yarray_.get();
 
-  _xmin = *std::min_element( xp, xp+_size);
-  _xmax = *std::max_element( xp, xp+_size);
+  xmin_ = *std::min_element( xp, xp+ size_);
+  xmax_ = *std::max_element( xp, xp+ size_);
 
-  _ymin = *std::min_element( yp, yp+_size);
-  _ymax = *std::max_element( yp, yp+_size);
+  ymin_ = *std::min_element( yp, yp+ size_);
+  ymax_ = *std::max_element( yp, yp+ size_);
 
 
 }
@@ -62,30 +67,30 @@ CurveData::CurveData( boost::shared_array<double> x , boost::shared_array<double
 //..........................................................................................
 
 CurveData::CurveData( const double* x , const double* y, int size):
-  _x( new double[size] ), _y( new double[size] ), _size(size) 
+  xarray_( new double[size] ), yarray_( new double[size] ), size_(size) 
 
 {
 
   // copy the data 
 
-  double* xdum = _x.get();
-  double* ydum = _y.get();
+  double* xdum = xarray_.get();
+  double* ydum = yarray_.get();
 
-  for ( int i=0; i<size ; i++ ) 
+  for ( int i=0; i<size_ ; ++i) 
   {
 
-    *xdum++ = *x++; 
-    *ydum++ = *y++; 
+    *xdum = *x; ++xdum; ++x; 
+    *ydum = *y; ++ydum; ++y; 
 
    };
 
  // find and store min/max values
 
-  _xmin = *std::min_element( _x.get(), _x.get()+_size);
-  _xmax = *std::max_element( _x.get(), _x.get()+_size);
+   xmin_ = *std::min_element( x, x + size);
+   xmax_ = *std::max_element( x, x + size);
 
-  _ymin = *std::min_element( _y.get(), _y.get()+_size);
-  _ymax = *std::max_element( _y.get(), _y.get()+_size);
+   ymin_ = *std::min_element( y, y + size);
+   ymax_ = *std::max_element( y, y + size);
 
 
 }
@@ -97,10 +102,6 @@ CurveData::~CurveData()
 
   // data is automatically destroyed when smart_array[s] go out of scope   
 
-  // std::cout << "CurveData::~CurveData" << std::endl;
-  // std::cout << "_x.use_count() = " << _x.use_count() << endl;
-  // std::cout << "_y.use_count() = " << _y.use_count() << endl;
-
 }
 
 //..........................................................................................
@@ -109,7 +110,7 @@ QwtData*
 CurveData::copy () const
 {
 
-  return new CurveData(_x, _y, _size);
+  return new CurveData(xarray_, yarray_, size_);
 
 }
 
@@ -119,7 +120,7 @@ size_t
 CurveData::size () const 
 {
 
-  return _size;
+  return  size_;
 
 }
 
@@ -128,7 +129,7 @@ CurveData::size () const
 double
 CurveData::x (size_t i) const
 {
-  return _x.get()[i];
+  return xarray_.get()[i];
 
 }
 
@@ -138,7 +139,7 @@ double
 CurveData::y (size_t i) const
 {
 
-  return _y.get()[i];
+  return yarray_.get()[i];
 }
 
 
@@ -148,38 +149,34 @@ QwtDoubleRect
 CurveData::boundingRect () const
 {
 
-  return QwtDoubleRect(_xmin, _xmax, _ymin, _ymax);
+  return QwtDoubleRect(xmin_, xmax_, ymin_, ymax_);
 
 }
 
 //..........................................................................................
 
 
-CHEFPlotData::CHEFPlotData(): _bml(0), _scalemagright(1.0), _scalemagleft(1.0), _cloned(true) {
- 
- _global_xmin  = 0.0;
- _global_xmax  = 0.0;
- _global_ylmin = 0.0;
- _global_ylmax = 0.0;
- _global_yrmin = 0.0;
- _global_yrmax = 0.0;
+CHEFPlotData::CHEFPlotData(): 
 
-}
+  global_xmin_(0.0),
+  global_xmax_(0.0),
+  global_ylmin_(0.0),
+  global_ylmax_(0.0),
+  global_yrmin_(0.0),
+  global_yrmax_(0.0), 
+  scalemagleft_(1.0),
+  scalemagright_(1.0),
+  bml_()
+{}
+
 
 //..........................................................................................
 
 CHEFPlotData::~CHEFPlotData(){
 
-   // plot widget destroys Curves and beamline.
-   // both have been cloned, so this is safe  
+   // Qwt plot widget destroys Curves 
 
-  if (_bml && _cloned) 
-  { 
-    const_cast<beamline*>(_bml)->zap();
-    delete const_cast<beamline*>(_bml);
-    _bml = 0;
-  }
-
+    bml_.zap(); 
 
 }
 
@@ -206,11 +203,11 @@ double CHEFPlotData::getVerTune()
 
 //..........................................................................................
 
-const beamline* 
+beamline const& 
 CHEFPlotData::getBeamline() 
 {
  
-  return _bml;
+  return bml_;
   
 }
 
@@ -218,21 +215,11 @@ CHEFPlotData::getBeamline()
 //..........................................................................................
 
 void 
-CHEFPlotData::setBeamline(const beamline* bml, bool clone)
+CHEFPlotData::setBeamline( beamline const& bml )
 {
 
-  if (bml == 0) return;
+  bml_    = *(bml.Clone());  
 
-  if (clone) 
-  {
-    _cloned = true;  
-    _bml = dynamic_cast<const beamline*>( bml->Clone() );
-  }  
-  else 
-  {
-    _cloned = false;
-    _bml = dynamic_cast<const beamline*>( bml );  
-  }
 }
 
 //..........................................................................................
@@ -252,29 +239,29 @@ CHEFPlotData::addCurve(boost::shared_ptr<CHEFCurve> curve)
   double ymax = curve->maxYValue();
   
   
-  _global_xmin     =  std::min(xmin, _global_xmin);
-  _global_xmax     =  std::max(xmax, _global_xmax);
+  global_xmin_     =  std::min(xmin, global_xmin_);
+  global_xmax_     =  std::max(xmax, global_xmax_);
 
   switch (axis) {
 
     case QwtPlot::yLeft:
       
-        _global_ylmin    =  std::min(ymin, _global_ylmin);
-        _global_ylmax    =  std::max(ymax, _global_ylmax);
+        global_ylmin_    =  std::min(ymin, global_ylmin_);
+        global_ylmax_    =  std::max(ymax, global_ylmax_);
 
         break;
         
 
     case QwtPlot::yRight:
       
-       _global_yrmin    =  std::min(ymin, _global_yrmin);
-       _global_yrmax    =  std::max(ymax, _global_yrmax);
+        global_yrmin_    =  std::min(ymin, global_yrmin_);
+        global_yrmax_    =  std::max(ymax, global_yrmax_);
 
        break;
        
   };
    
-  _curves.push_back(curve);
+   curves_.push_back(curve);
   
 
 }
@@ -285,7 +272,7 @@ boost::shared_ptr<CHEFCurve>
 CHEFPlotData::operator[](int i) const 
 {
   
-  return _curves[i];
+  return curves_[i];
   
 }
 
@@ -296,7 +283,7 @@ void
 CHEFPlotData::setXLabel(const char* label) 
 {
 
-  _xLabel = QString(label);
+  xLabel_ = QString(label);
 
 }
  
@@ -308,10 +295,10 @@ CHEFPlotData::setYLabel(const char* label, int axis)
 
 switch (axis) {
   case QwtPlot::yRight:  
-     _yRLabel = QString(label);
+     yRLabel_ = QString(label);
      break;
   case QwtPlot::yLeft:
-     _yLLabel = QString(label);
+     yLLabel_ = QString(label);
      break;
   }
 
@@ -322,7 +309,7 @@ switch (axis) {
 QString 
 CHEFPlotData::yLLabel() const 
 {
-  return _yLLabel;
+  return yLLabel_;
 }
 
 //..........................................................................................
@@ -330,14 +317,14 @@ CHEFPlotData::yLLabel() const
 QString 
 CHEFPlotData::yRLabel() const 
 {
-  return _yRLabel;
+  return yRLabel_;
 }
 
 //..........................................................................................
 
 QString CHEFPlotData::xLabel() const 
 {
-  return _xLabel;
+  return xLabel_;
 }
 
 
@@ -346,14 +333,14 @@ QString CHEFPlotData::xLabel() const
 double 
 CHEFPlotData::xMin() const 
 {
-  return _global_xmin;
+  return global_xmin_;
 }
 
 //..........................................................................................
 
 double CHEFPlotData::xMax()const 
 {
-  return  _global_xmax;
+  return  global_xmax_;
 }
 
 
@@ -361,14 +348,14 @@ double CHEFPlotData::xMax()const
 
 double CHEFPlotData::yLMin() const 
 {
-  return _global_ylmin;
+  return  global_ylmin_;
 }
 
 //..........................................................................................
 
 double CHEFPlotData::yLMax() const 
 {
-  return _global_ylmax; 
+  return global_ylmax_; 
 }
 
 
@@ -376,14 +363,14 @@ double CHEFPlotData::yLMax() const
 
 double CHEFPlotData::yRMin() const 
 {
-  return _global_yrmin;
+  return global_yrmin_;
 }
 
 //..........................................................................................
 
 double CHEFPlotData::yRMax() const  
 {
-  return _global_yrmax;
+  return  global_yrmax_;
   
 }
 
@@ -391,7 +378,7 @@ double CHEFPlotData::yRMax() const
 
 int CHEFPlotData::nCurves() const  
 {
-  return _curves.size();
+  return curves_.size();
   
 }
 
@@ -399,7 +386,7 @@ int CHEFPlotData::nCurves() const
 
 void CHEFPlotData::setScaleMagRight(double rmag)  
 {
-  _scalemagright = rmag;
+   scalemagright_ = rmag;
   
 }
 
@@ -408,7 +395,7 @@ void CHEFPlotData::setScaleMagRight(double rmag)
 
 void CHEFPlotData::setScaleMagLeft(double lmag)  
 {
-  _scalemagleft = lmag;
+   scalemagleft_ = lmag;
   
 }
 
@@ -416,7 +403,7 @@ void CHEFPlotData::setScaleMagLeft(double lmag)
 
 double CHEFPlotData::scaleMagLeft() const  
 {
-  return _scalemagleft;
+  return scalemagleft_;
   
 }
 
@@ -424,7 +411,7 @@ double CHEFPlotData::scaleMagLeft() const
 
 double CHEFPlotData::scaleMagRight() const  
 {
-  return _scalemagright;
+  return scalemagright_;
   
 }
 

@@ -32,9 +32,11 @@
 **************************************************************************
 *************************************************************************/
 
-#include <chefplot.h> 
-#include <plot.h>
-#include <lego.h>
+#include <CHEFPlot.h> 
+#include <CHEFPlotData.h>
+
+#include <Plot.h>
+#include <Lego.h>
 #include <qwt/qwt_plot_canvas.h>
 #include <qtoolbar.h>
 #include <qmenubar.h>
@@ -44,6 +46,7 @@
 
 #include <iostream>
 #include <string>
+#include <cmath>
 
 
 
@@ -97,7 +100,7 @@ CHEFPlot::resizeLego () {
 //............................................................................................
 
 void 
-CHEFPlot::displayLattice(const beamline* bml) {
+CHEFPlot::displayLattice(beamline const& bml) {
 
   _plot->setGeometry(0, _lego_height,  width(), height()- _lego_height);
   _lego->setGeometry(_plot->canvas()->x(), 0,  _plot->canvas()->width(),  _lego_height);
@@ -107,7 +110,7 @@ CHEFPlot::displayLattice(const beamline* bml) {
 
 //............................................................................................
 
-const beamline*
+const beamline&
 CHEFPlot::getBeamline()
 {
 
@@ -128,8 +131,7 @@ CHEFPlot::updateLatticeDisplay() {
   int loffset = _plot->transform( QwtPlot::xBottom, xmin);
   int roffset = _plot->transform( QwtPlot::xBottom, xmax);
   
-//  _lego->setBeamlineDisplayLimits(xmin, std::abs(xmax-xmin), loffset, roffset );
-    _lego->setBeamlineDisplayLimits(xmin, abs(xmax-xmin), loffset, roffset );
+    _lego->setBeamlineDisplayLimits(xmin, std::abs(xmax-xmin), loffset, roffset );
   _lego->update();
 
 }
@@ -211,16 +213,14 @@ void
 CHEFPlot::addData(CHEFPlotData& cpdata) {
 
 
-  const beamline* bml = cpdata.getBeamline(); 
+  beamline const& bml = cpdata.getBeamline(); 
    
-   if (bml) {
-      displayLattice(bml);
-      enableLegoPlot(true);
+   if ( bml.empty() ) {
+      displayLattice( bml );
+      enableLegoPlot( true);
 
    } else {
      
-
-     displayLattice(0);
      enableLegoPlot(false);
    
     }

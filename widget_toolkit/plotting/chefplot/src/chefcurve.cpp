@@ -32,7 +32,9 @@
 **************************************************************************
 *************************************************************************/
 
-#include <chefplotdata.h>
+#include <CHEFCurve.h>
+#include <CHEFInterpolator.h>
+#include <CurveData.h>
 #include <qwt/qwt_plot.h>
 #include <string>
 #include <iostream>
@@ -82,8 +84,8 @@ is.getline(linebuf, 256);
    dataptr++;
  };
 
- _dataIp = new CHEFCurve::DefaultLinearInterpolator();
- _visible      = true;
+ dataIp_       = new CHEFCurve::DefaultLinearInterpolator();
+ visible_      = true;
 
  interpolationOff();
 
@@ -119,8 +121,8 @@ CHEFCurve::CHEFCurve(const double* x, const double* y, int npts, const char* nam
   
    setData(x, y, npts);
 
-  _visible   = true;                                     // currently unused
-  _dataIp = new CHEFCurve::DefaultLinearInterpolator();  // currently unused
+  visible_   = true;                                     // currently unused
+  dataIp_    = new CHEFCurve::DefaultLinearInterpolator();  // currently unused
 
 }
 

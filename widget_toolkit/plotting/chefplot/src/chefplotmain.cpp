@@ -32,10 +32,11 @@
 **************************************************************************
 *************************************************************************/
 
-#include <chefplotmain.h> 
-#include <chefplot.h>
-#include <plot.h>
-#include <lego.h>
+#include <CHEFPlotMain.h> 
+#include <CHEFPlotData.h> 
+#include <CHEFPlot.h>
+#include <Plot.h>
+#include <Lego.h>
 #include <TuneDiagram.h>
 #include <beamline/beamline.h>
 #include <beamline/BeamlineIterator.h>
@@ -51,7 +52,7 @@
 
 #include <qwt/qwt_painter.h>
 #include <qwt/qwt_plot_printfilter.h>
-#include <datadisplay.h>
+#include <DataDisplay.h>
 
 #include <iostream>
 #include <string>
@@ -82,7 +83,7 @@ CHEFPlotMain::~CHEFPlotMain() {
 
 //.................................................................................
 
-void CHEFPlotMain::displayLattice(beamline* bml){
+void CHEFPlotMain::displayLattice(beamline const& bml){
 
   _chefplot->displayLattice(bml);
   
@@ -344,7 +345,7 @@ CHEFPlotMain::_showdata()
     parent = this->parentWidget()->parentWidget();
 
 
-  DataDisplay* dd =  new DataDisplay(parent, "DataDisplay", Qt::WDestructiveClose, (bool) _chefplot->getBeamline() ); 
+  DataDisplay* dd =  new DataDisplay(parent, "DataDisplay", Qt::WDestructiveClose, ! (_chefplot->getBeamline().empty()) ); 
   dd->setCaption( this->caption() );
   dd->resize(width(), height());
 
@@ -369,9 +370,9 @@ CHEFPlotMain::_showdata()
   // adjust row and col size to accomodate beamline element names and azimuth info if applicable  
 
   QString data("");
-  if ( _chefplot->getBeamline() ) 
+  if ( !( _chefplot->getBeamline().empty() )  ) 
   {  
-     nelmnts    = _chefplot->getBeamline()->countHowManyDeeply();  
+     nelmnts    = _chefplot->getBeamline().countHowManyDeeply();  
      bmlcolsize = 4;
      rowsize    = std::max( rowsize, nelmnts );
 
@@ -383,7 +384,7 @@ CHEFPlotMain::_showdata()
      dd->DataTable->horizontalHeader()->setLabel( 2,    "Element Length [m]");
      dd->DataTable->horizontalHeader()->setLabel( 3,    "End Azimuth [m]");
   
-     DeepBeamlineIterator it( const_cast<beamline&>(*_chefplot->getBeamline()) );
+     DeepBeamlineIterator it( const_cast<beamline&>(_chefplot->getBeamline()) );
      bmlnElmnt* beptr = 0;
 
      int idx =0;
