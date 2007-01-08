@@ -38,7 +38,6 @@ INCLUDEPATH +=  $${FNAL_INSTALL_TOP_DIR}/include/python-bindings
 INCLUDEPATH += $${PYTHON_INC}
 
 LIBS	+= -L$${FNAL_LIBDIR} -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -L$$GLIB_LIBDIR -lglib-2.0
-LIBS    += -lqwt
 
 unix:LIBS  +=  -Wl,-rpath,$${FNAL_LIBDIR}  -Wl,-rpath,$${GLIB_LIBDIR}
 
