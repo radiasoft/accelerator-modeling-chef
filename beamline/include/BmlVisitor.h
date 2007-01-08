@@ -180,10 +180,13 @@ public:
 
 
 protected:
-  BmlVisitor() {}
-  virtual ~BmlVisitor() {}
+  BmlVisitor();
+  virtual ~BmlVisitor();
 
 };
+
+inline BmlVisitor::BmlVisitor()  {}
+inline BmlVisitor::~BmlVisitor() {}
 
 
 // ************************************************************
@@ -302,9 +305,12 @@ public:
 
 
 protected:
-  ConstBmlVisitor() {}
-  virtual ~ConstBmlVisitor() {}
+  ConstBmlVisitor();
+  virtual ~ConstBmlVisitor();
 
 };
+
+inline ConstBmlVisitor::ConstBmlVisitor() {}
+inline ConstBmlVisitor::~ConstBmlVisitor() {}
 
 #endif // BMLVISITOR_H
