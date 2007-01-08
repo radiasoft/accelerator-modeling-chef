@@ -70,8 +70,7 @@ using namespace std;
 
 DriftEliminator::DriftEliminator()
 : _driftPtr(0), _bmlPtr(0)
-{
-}
+{}
 
 
 DriftEliminator::DriftEliminator( const DriftEliminator& )
@@ -84,8 +83,8 @@ DriftEliminator::DriftEliminator( const DriftEliminator& )
 
 DriftEliminator::~DriftEliminator()
 {
-  if( 0 != _driftPtr ) { delete _driftPtr; }
-  if( 0 != _bmlPtr   ) { _bmlPtr->zap; delete _bmlPtr; }
+  if( _driftPtr ) { delete _driftPtr; }
+  if( _bmlPtr   ) { _bmlPtr->zap; delete _bmlPtr; }
 }
 
 

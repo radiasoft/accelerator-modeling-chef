@@ -48,6 +48,7 @@
 #include <physics_toolkit/ClosedOrbitSage.h> 
 
 using namespace std;
+using boost::any_cast;
 using FNAL::pcerr;
 using FNAL::pcout;
 
@@ -84,7 +85,7 @@ int beamline::twiss( JetParticle& p, double const& dpp, int flag )
   
     // Put p on closed orbit and construct one-turn map
     clsg.setForcedCalc();
-    if( ( ret = clsg.findClosedOrbit( &p ) ) == 0 )
+    if( ( ret = clsg.findClosedOrbit( p ) ) == 0 )
     {
       (*pcerr) << "beamline::twiss: Closed orbit successfully calculated." << endl;
     }
@@ -109,18 +110,18 @@ int beamline::twiss( JetParticle& p, double const& dpp, int flag )
 
     if( slotFound ) {
       if( flag ) {
-        ret = lfs.Slow_CS_Calc( &p );
+        ret = lfs.Slow_CS_Calc( p );
       }
       else {
-        ret = lfs.Slow_CS_Calc( &p, Sage::no );
+        ret = lfs.Slow_CS_Calc( p, Sage::no );
       }
     }
     else {
       if( flag ) {
-        ret = lfs.Fast_CS_Calc( &p );
+        ret = lfs.Fast_CS_Calc( p );
       }
       else {
-        ret = lfs.Fast_CS_Calc( &p, Sage::no );
+        ret = lfs.Fast_CS_Calc( p, Sage::no );
       }
     }  
 
@@ -134,18 +135,18 @@ int beamline::twiss( JetParticle& p, double const& dpp, int flag )
     // This also puts the chromaticity ring data on the beamline.
     if( flag > 0 ) {
       if( 1 == flag ) {
-        ret = lfs.Disp_Calc( &p );
+        ret = lfs.Disp_Calc(  p );
       }
       else {
-        ret = lfs.FAD_Disp_Calc( &p );
+        ret = lfs.FAD_Disp_Calc( p );
       }
     }
     else {
       if( 0 == flag ) {
-        ret = lfs.Disp_Calc( &p, Sage::no );
+        ret = lfs.Disp_Calc(  p, Sage::no );
       }
       else {
-        ret = lfs.FAD_Disp_Calc( &p, Sage::no );
+        ret = lfs.FAD_Disp_Calc( p, Sage::no );
       }
     }
   
@@ -158,17 +159,18 @@ int beamline::twiss( JetParticle& p, double const& dpp, int flag )
   
   
     // Combine dispersion and lattice function information ...
-    lattFunc*  plf;
-    lattFunc*  qlf;
+    
+    BarnacleList::iterator plf;
+    BarnacleList::iterator qlf;
     
     if( flag ) {
       while( q = dbi++ ) {
-        if( 0 != ( plf = (lattFunc*) q->dataHook.find("Twiss") ) ) {
-          if( 0 != ( qlf = (lattFunc*) q->dataHook.find("Dispersion") ) ) {
-            plf->dispersion.hor = qlf->dispersion.hor;
-            plf->dispersion.ver = qlf->dispersion.ver;
-            plf->dPrime.hor     = qlf->dPrime.hor;
-            plf->dPrime.ver     = qlf->dPrime.ver;
+        if(  ( plf = q->dataHook.find("Twiss") ) != q->dataHook.end() ) {
+          if( ( qlf = q->dataHook.find("Dispersion")) !=  q->dataHook.end() ) {
+            any_cast<lattFunc>(plf->info).dispersion.hor = any_cast<lattFunc>(qlf->info).dispersion.hor;
+            any_cast<lattFunc>(plf->info).dispersion.ver = any_cast<lattFunc>(qlf->info).dispersion.ver;
+            any_cast<lattFunc>(plf->info).dPrime.hor     = any_cast<lattFunc>(qlf->info).dPrime.hor;
+            any_cast<lattFunc>(plf->info).dPrime.ver     = any_cast<lattFunc>(qlf->info).dPrime.ver;
             q->dataHook.eraseAll("Dispersion");
           }
           else {
@@ -193,10 +195,16 @@ int beamline::twiss( JetParticle& p, double const& dpp, int flag )
     // .......... Cleaning up and leaving ...................
   
     if( flag ) {
-      lattFunc* latticeFunctions = new lattFunc;
-      (*latticeFunctions) = *((lattFunc*)( lastElement()->dataHook.find( "Twiss" ) ));
-      this->dataHook.eraseFirst( "Twiss" );
-      this->dataHook.insert( new Barnacle( "Twiss", latticeFunctions ) );
+
+      BarnacleList::iterator it = lastElement()->dataHook.find( "Twiss" );
+
+      if ( it  !=   lastElement()->dataHook.end() ) {
+
+        lattFunc latticeFunctions =  boost::any_cast<lattFunc>(it->info);
+        dataHook.eraseFirst( "Twiss" );
+        dataHook.insert( Barnacle( std::string("Twiss"), boost::any(latticeFunctions)) );
+      } 
+
       // dataHook.eraseFirst( "Ring" );
       // dataHook.insert( new Barnacle( "Ring", latticeRing ) );
     }
@@ -324,9 +332,9 @@ int beamline::twiss( char, JetParticle& p ) {
     delete [] z;
     twissDone = 1;
     dataHook.eraseFirst( "Twiss" );
-    dataHook.insert( new Barnacle( "Twiss", latticeFunctions ) );
+    dataHook.insert( Barnacle( "Twiss", latticeFunctions ) );
     dataHook.eraseFirst( "Ring" );
-    dataHook.insert( new Barnacle( "Ring", latticeRing ) );
+    dataHook.insert( Barnacle( "Ring",  latticeRing  ) );
   }
   return 0;
 } 

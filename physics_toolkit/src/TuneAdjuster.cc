@@ -160,7 +160,7 @@ void TuneAdjuster::addCorrector( const thinQuad* x, double a, double b )
 }
 
 
-int TuneAdjuster::changeTunesBy ( double x, double y, const JetParticle& jp )
+int TuneAdjuster::changeTunesBy ( double x, double y, JetParticle const& jp )
 {
   int j;
   double delta_H = x;
@@ -169,12 +169,12 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetParticle& jp )
   _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
   _myBeamlinePtr->eraseBarnacles( "Twiss" );
 
-  JetParticle* jprPtr  = jp.Clone();
+  JetParticle jpr(jp);
 
   // Calculate current lattice functions
   LattFuncSage lfs( _myBeamlinePtr );
 
-  _myBeamlinePtr->propagate( *jprPtr );
+  _myBeamlinePtr->propagate( jpr );
 
   // Check for Slots
   DeepBeamlineIterator dbi( *_myBeamlinePtr );
@@ -189,13 +189,13 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetParticle& jp )
   dbi.reset();
 
   if( slotFound ) {
-    lfs.Slow_CS_Calc( jprPtr );
+    lfs.Slow_CS_Calc( jpr );
   }
   else {
-    lfs.Fast_CS_Calc( jprPtr );
+    lfs.Fast_CS_Calc( jpr);
   }  
   
-  // lfs.Fast_CS_Calc( jprPtr );
+  // lfs.Fast_CS_Calc( jpr);
   // This Fast_CS_Calc does not work if there are Slot's!!!  Take action!
 
   int N = this->numberOfCorrectors();
@@ -207,27 +207,32 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetParticle& jp )
   // w = f*c
   // delta strength_k = w_k
  
-  LattFuncSage::lattFunc* ptr;
+  LattFuncSage::lattFunc lf;
 
-  for( j = 0; j < N; j++ ) 
+  for( int j=0; j < N; ++j) 
   {
-    ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
-    if(!ptr) {
-      delete jprPtr;
+ 
+   BarnacleList::iterator it = _correctors[j]->dataHook.find( "Twiss" );
+
+    if( it ==  _correctors[j]->dataHook.end() ) {
       throw( GenericException( __FILE__, __LINE__, 
              "int TuneAdjuster::changeTunesBy ( double x, double y, const JetParticle& jp )", 
              "No lattice functions." ) );
     }
-    beta(0,j) =   ptr->beta.hor;
-    beta(1,j) = - ptr->beta.ver;
+
+    lf = boost::any_cast<LattFuncSage::lattFunc>(it->info);
+
+    beta(0,j) =   lf.beta.hor;
+    beta(1,j) = - lf.beta.ver;
   }
   
 
   // Adjust tunes and recalculate
+
   delta_nu(0,0) = delta_H;
   delta_nu(1,0) = delta_V;
  
-  double brho = jprPtr->ReferenceBRho();
+  double brho = jpr.ReferenceBRho();
   _c = (4.0*M_PI*brho)*( (beta*(*_f)).inverse() * delta_nu );
   w = (*_f)*_c;
  
@@ -246,29 +251,26 @@ int TuneAdjuster::changeTunesBy ( double x, double y, const JetParticle& jp )
 
 
   // Clean up ...
+
   _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
   _myBeamlinePtr->eraseBarnacles( "Twiss" );
-
-  delete jprPtr;
 
   return 0;
 }
 
 
-int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, 
-                                           const  JetParticle& jp )
+int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, JetParticle const& jp )
 {
-  int j;
 
   _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
   _myBeamlinePtr->eraseBarnacles( "Twiss" );
 
-  JetParticle* jprPtr = jp.Clone();
+  JetParticle jpr(jp);
 
   // Calculate current lattice functions
   LattFuncSage lfs( _myBeamlinePtr );
  
-  _myBeamlinePtr->propagate( *jprPtr );
+  _myBeamlinePtr->propagate( jpr );
 
   // Check for Slots
   DeepBeamlineIterator dbi( *_myBeamlinePtr );
@@ -283,13 +285,13 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H,
   dbi.reset();
 
   if( slotFound ) {
-    lfs.Slow_CS_Calc( jprPtr );
+    lfs.Slow_CS_Calc( jpr );
   }
   else {
-    lfs.Fast_CS_Calc( jprPtr );
+    lfs.Fast_CS_Calc( jpr );
   }  
   
-  // lfs.Fast_CS_Calc( jprPtr );
+  // lfs.Fast_CS_Calc( jpr );
   // This Fast_CS_Calc does not work if there are Slot's!!!  Take action!
 
   int N = this->numberOfCorrectors();
@@ -302,29 +304,33 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H,
   // w = f*c
   // delta strength_k = w_k
  
-  LattFuncSage::lattFunc* ptr;
+  LattFuncSage::lattFunc lf;
 
-  for( j = 0; j < N; j++ ) 
+  for( int j=0; j < N; ++j) 
   {
     f(j,0) = (*_f)(j,0);
 
-    ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
-    if(!ptr) {
-      delete jprPtr;
+    BarnacleList::iterator it = _correctors[j]->dataHook.find( "Twiss" );
+
+    if(  it == _correctors[j]->dataHook.end()  ) {
       throw( GenericException( __FILE__, __LINE__, 
              "int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, ", 
              "No lattice functions." ) );
     }
-    beta(0,j) = ptr->beta.hor;
+
+    lf = boost::any_cast<LattFuncSage::lattFunc>(it->info);
+
+    beta(0,j) = lf.beta.hor;
+
   }
   
   // Adjust tune 
-  double brho = jprPtr->ReferenceBRho();
+  double brho = jpr.ReferenceBRho();
   c = (beta*f)(0,0);
   c = (4.0*M_PI*brho)*( delta_H/c );
   w = c*f;
  
-  for( j = 0; j < _numberOfCorrectors; j++ ) 
+  for( int j=0; j < _numberOfCorrectors; j++ ) 
   {
     q = _correctors[j];
     if( _isQuadLike(q) ) {
@@ -344,27 +350,23 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H,
   _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
   _myBeamlinePtr->eraseBarnacles( "Twiss" );
 
-  delete jprPtr;
-
   return 0;
 }
 
 
-int TuneAdjuster::changeVerticalTuneBy ( double delta_V, 
-                                         const JetParticle& jp )
+int TuneAdjuster::changeVerticalTuneBy ( double delta_V, JetParticle const& jp )
 {
-  int j;
 
   _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
   _myBeamlinePtr->eraseBarnacles( "Twiss" );
 
   // 
-  JetParticle* jprPtr = jp.Clone();
+  JetParticle jpr(jp);
 
   // Calculate current lattice functions
   LattFuncSage lfs( _myBeamlinePtr );
  
-  _myBeamlinePtr->propagate( *jprPtr );
+  _myBeamlinePtr->propagate( jpr );
 
   // Check for Slots
   DeepBeamlineIterator dbi( *_myBeamlinePtr );
@@ -379,13 +381,13 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V,
   dbi.reset();
 
   if( slotFound ) {
-    lfs.Slow_CS_Calc( jprPtr );
+    lfs.Slow_CS_Calc( jpr );
   }
   else {
-    lfs.Fast_CS_Calc( jprPtr );
+    lfs.Fast_CS_Calc( jpr );
   }  
   
-  // lfs.Fast_CS_Calc( jprPtr );
+  // lfs.Fast_CS_Calc( jpr);
   // This Fast_CS_Calc does not work if there are Slot's!!!  Take action!
 
   int N = this->numberOfCorrectors();
@@ -398,29 +400,31 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V,
   // w = f*c
   // delta strength_k = w_k
  
-  LattFuncSage::lattFunc* ptr;
+  LattFuncSage::lattFunc lf;
 
-  for( j = 0; j < N; j++ ) 
+  for( int j=0; j < N; ++j) 
   {
     f(j,0) = (*_f)(j,1);
 
-    ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
-    if(!ptr) {
-      delete jprPtr;
+    BarnacleList::iterator it = _correctors[j]->dataHook.find( "Twiss" );
+
+    if( it == _correctors[j]->dataHook.end() ) {
       throw( GenericException( __FILE__, __LINE__, 
              "int TuneAdjuster::changeVerticalTuneBy ( double delta_V, ", 
              "No lattice functions." ) );
     }
-    beta(0,j) = ptr->beta.ver;
+    
+    lf = boost::any_cast<LattFuncSage::lattFunc>(it->info);
+    beta(0,j) = lf.beta.ver;
   }
   
   // Adjust tune 
-  double brho = jprPtr->ReferenceBRho();
+  double brho = jpr.ReferenceBRho();
   c = (beta*f)(0,0);
   c = (4.0*M_PI*brho)*( delta_V/c );
   w = c*f;
  
-  for( j = 0; j < _numberOfCorrectors; j++ ) 
+  for( int j=0; j < _numberOfCorrectors; ++j) 
   {
     q = _correctors[j];
     if( _isQuadLike(q) ) {
@@ -440,8 +444,6 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V,
   // Clean up ...
   _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
   _myBeamlinePtr->eraseBarnacles( "Twiss" );
-
-  delete jprPtr;
 
   return 0;
 }

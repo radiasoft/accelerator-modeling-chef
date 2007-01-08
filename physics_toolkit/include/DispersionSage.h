@@ -12,6 +12,17 @@
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -22,9 +33,6 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -32,15 +40,18 @@
 #ifndef DISPERSIONSAGE_H
 #define DISPERSIONSAGE_H
 
-#include "Sage.h"
+#include <physics_toolkit/Sage.h>
 
-class DispersionSage : public Sage
-{
+class DispersionSage : public Sage {
+
 public: 
 
   // Substructs
-  struct GlobalInfo : BarnacleData
-  {
+
+  struct GlobalInfo {
+
+    GlobalInfo(); 
+
     struct Tunes {
       double hor;
       double ver;
@@ -50,14 +61,12 @@ public:
       double ver;
     } chromaticity;
 
-    GlobalInfo();
-    GlobalInfo( const GlobalInfo&  );
-    ~GlobalInfo() {}
-    GlobalInfo& operator=( const GlobalInfo& );
   };
 
-  struct Info : BarnacleData 
-  {
+  struct Info {
+
+    Info();
+
     double arcLength;
     struct Clort {
       double hor;
@@ -72,37 +81,31 @@ public:
       double ver;
     } dPrime;
 
-    Info();
-    Info( const Info&  );
-    ~Info() {}
-    Info& operator=( const Info& );
   };
 
   struct Options {
-    bool onClosedOrbit;   // Default: false
-    // 
     Options();
-    Options( const Options& x );
-    ~Options() {}
-    Options& operator=( const Options& x );
+    bool onClosedOrbit;   // Default: false
   };
+
   Options flags;
+
   static const Options defaultFlags;
 
 
   // Constructors and the destructor
-  DispersionSage( const beamline*, bool = false );
-  DispersionSage( const beamline&, bool = false );
-  // Second argument is used by class Sage
-  // to control cloning. (See Sage.h)
-  virtual ~DispersionSage();
+
+  DispersionSage( beamline const*, bool clonebml = false );
+  DispersionSage( beamline const&, bool clonebml = false );
 
 
   // Public member functions
-  int doCalc( JetParticle*, beamline::Criterion& = beamline::yes );
-  int fullCalc( JetParticle*, beamline::Criterion& = beamline::yes );
+  int doCalc( JetParticle&,   beamline::Criterion& = beamline::yes );
+
+  int fullCalc( JetParticle&, beamline::Criterion& = beamline::yes );
       // Two equivalent functions. doCalc is a name alias for fullCalc.
       //   It provides backwards compatability with other Sages.
+
   // int fadCalc( const JetParticle*, beamline::Criterion& = beamline::yes ) const;
       // Assumes no vertical dispersion.
       // Uses the 5x5 matrix formalism that 
@@ -120,24 +123,17 @@ public:
       //   calculation down the beamline.
 
   DispersionSage::GlobalInfo getGlobalInfo() const;
-  const DispersionSage::Info* getInfoPtr() const;
+
+  DispersionSage::Info const& getInfo() const;
       // Returns the information calculated at the of
       //   the beamline. For a ring, this will be the
       //   dispersion at its beginning. If nothing has
       //   been calculated, return value is zero.
-  const DispersionSage::Info* getInfoPtr( int ) const;
+
+  std::vector<DispersionSage::Info> const& getDispersionArray() const;
+
       // Returns the information calculated for the
       //   ith element in the line.
-  // REMOVE: bool checkInfoPtr() const;
-  // REMOVE:     // Checks whether the address of the Info
-  // REMOVE:     //   stored on the last beamline element
-  // REMOVE:     //   matches the pointer stored in the _calcs
-  // REMOVE:     //   array
-  // REMOVE: bool checkInfoPtr( int ) const;
-  // REMOVE:     // Checks whether the address of the Info
-  // REMOVE:     //   stored on the kth beamline element
-  // REMOVE:     //   matches the pointer stored in the _calcs
-  // REMOVE:     //   array
 
   void eraseAll();
 
@@ -150,48 +146,26 @@ public:
   void setIgnoreErrors( bool );
 
   // Error identifiers
+
   static const int DONE;
   static const int TOO_MANY_VECTORS;
   static const int IMPOSSIBILITY;
 
  private:
-  double _dpp;    // used for dispersion calculations
-  Info*  _calcs;  // array of calculated results;
-                  //   the objects stored on
-                  //   the individual beamline elements
-  int    _n;      // size of the _calcs array
-  GlobalInfo _lr;
 
-  void _deleteCalcs();
-  void _createCalcs();
-  bool _ignoreErrors;
+  DispersionSage(DispersionSage const&);
+
+  double              dpp_;    // used for dispersion calculations
+  std::vector<Info>   calcs_;  // array of calculated results;
+                               //   the objects stored on
+                               //   the individual beamline elements
+  GlobalInfo          lr_;
+
+  bool                ignoreErrors_;
+
+
 };
 
 
-inline DispersionSage::GlobalInfo DispersionSage::getGlobalInfo() const
-{
-  return _lr;
-}
-
-
-inline double DispersionSage::get_dpp() const
-{
-  return _dpp;
-}
-
-inline void DispersionSage::setIgnoreErrors( bool x )
-{
-  _ignoreErrors = x;
-}
-
-inline DispersionSage::Options DispersionSage::get_options()
-{
-  return flags;
-}
-
-inline void DispersionSage::set_options( const DispersionSage::Options& x )
-{
-  flags = x;
-}
 
 #endif // DISPERSIONSAGE_H

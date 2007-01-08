@@ -55,6 +55,8 @@
 #ifndef EDWARDSTENGSAGE_H
 #define EDWARDSTENGSAGE_H
 
+#include <vector>
+
 #include <beamline/bmlnElmnt.h>
 #include <mxyzptlk/Mapping.h>
 #include <basic_toolkit/MathConstants.h>
@@ -62,9 +64,10 @@
 
 class EdwardsTengSage : public Sage
 {
+
 public:
-  struct Info : BarnacleData 
-  {
+
+  struct Info {
     double arcLength;
     Mapping map;
     Mapping mapInv;
@@ -81,40 +84,22 @@ public:
     MatrixC EV;
 
     Info();
-    Info( const Info& );
+    Info( Info const& );
     ~Info(){}
   };
 
-  struct Tunes : BarnacleData 
-  {
+  struct Tunes {
     double hor;
     double ver;
-
-    Tunes() : hor(0.0), ver(0.0) {}
-    Tunes( const Tunes& x ) : BarnacleData(), hor(x.hor), ver(x.ver) {}
-    ~Tunes() {}
-    
-    Tunes& operator=( const Tunes& x )
-    { if( this != &x ) {hor = x.hor;ver = x.ver;} return *this; }
   };
 
-private:
-  static double _csH, _csV, _snH, _snV;
-  static Mapping* _theMapPtr;
-  static int _attachETFuncs( bmlnElmnt* );
-
-  Info** _calcs;  // array of calculated results
-  int    _n;      // size of the _calcs array
-
-  void _deleteCalcs();
-
 public:
+
   EdwardsTengSage( const beamline*, bool = false );
   EdwardsTengSage( const beamline&, bool = false );
-  virtual ~EdwardsTengSage();
 
   // vestigial: need to retain???
-  int doCalc( JetParticle*, beamline::Criterion& = beamline::yes ); 
+  int doCalc( JetParticle& , beamline::Criterion& = beamline::yes ); 
       // PRECONDITION: The JetParticle must be on the closed
       //   orbit with the identity mapping for its state.
       //               Its Jet environment's reference point 
@@ -129,9 +114,21 @@ public:
   //   orbit. Its state is the one-turn mapping
   //   for an environment centered on the closed orbit.
 
-  const EdwardsTengSage::Info* get_ETFuncPtr( int );
+  std::vector<EdwardsTengSage::Info> const& getETArray();
 
   void eraseAll();
+
+private:
+
+  static double    _csH; 
+  static double    _csV; 
+  static double    _snH; 
+  static double    _snV;
+  static Mapping*  _theMapPtr;
+  static int       _attachETFuncs( bmlnElmnt* );
+
+  std::vector<Info> calcs_;  // array of calculated results
+
 };
 
 #endif // EDWARDSTENGSAGE_H

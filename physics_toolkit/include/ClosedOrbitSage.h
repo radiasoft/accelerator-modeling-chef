@@ -54,15 +54,13 @@
 #include <beamline/beamline.h>
 
 
-class ClosedOrbitSage : public Sage
-{
+class ClosedOrbitSage : public Sage {
+
  public:
-  ClosedOrbitSage( const beamline*, bool = false );
-  // Second argument is used by class Sage
-  // to control cloning. (See Sage.h)
-  ~ClosedOrbitSage();
+
+  ClosedOrbitSage( const beamline*, bool clonebml = false );
   
-  int findClosedOrbit( JetParticle* );
+  int findClosedOrbit( JetParticle& );
 
   void eraseAll();
   void setForcedCalc();
@@ -72,28 +70,15 @@ class ClosedOrbitSage : public Sage
   static int ERR_NOTRING;
 
  private:
-  bool _forced;
-  bool _ignoreErrors;
 
-  int  _invokeFPSolver( JetParticle* );
-  
+  ClosedOrbitSage( ClosedOrbitSage const&);
+
+  int  invokeFPSolver( JetParticle& );
+
+  bool  forced_;
+  bool  ignoreErrors_;
+
 };
-
-
-inline void ClosedOrbitSage::setForcedCalc()
-{
-  _forced = true;
-}
-
-inline void ClosedOrbitSage::unsetForcedCalc()
-{
-  _forced = false;
-}
-
-inline void ClosedOrbitSage::setIgnoreErrors( bool x )
-{
-  _ignoreErrors = x;
-}
 
 
 #endif // CLORB_SAGE_H

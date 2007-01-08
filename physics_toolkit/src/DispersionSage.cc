@@ -32,6 +32,19 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
+******  REVISION HISTORY
+******
+******  Dec 2006 - Jean-Francois Ostiguy 
+******             ostiguy@fnal
+******    
+******  - interface based on Particle& rather than ptrs. 
+******    Stack allocated local Particle objects.
+******  - changes to accomodate new boost::any based Barnacle objects.
+******  - use new style STL-compatible beamline iterators
+******  - calcs_ array is now an STL vector. LF are now returned by 
+******    returning a const reference to the entire vector.
+******  - misc cleanup.  
+******
 **************************************************************************
 *************************************************************************/
 
@@ -41,7 +54,6 @@
 
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
-#include <beamline/BeamlineIterator.h>
 #include <physics_toolkit/ClosedOrbitSage.h>
 #include <physics_toolkit/DispersionSage.h>
 #include <physics_toolkit/DispersionSage.h>
@@ -54,10 +66,13 @@ const int DispersionSage::DONE             = 0;
 const int DispersionSage::TOO_MANY_VECTORS = 7;
 const int DispersionSage::IMPOSSIBILITY    = 111;
 
+const DispersionSage::Options DispersionSage::defaultFlags;
 
-DispersionSage::Info::Info()
-: BarnacleData()
-{
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+DispersionSage::Info::Info() {
   arcLength       = -1.0;
   closedOrbit.hor = 0.0;
   closedOrbit.ver = 0.0;
@@ -67,24 +82,12 @@ DispersionSage::Info::Info()
   dPrime.ver      = 0.0;
 }
 
-DispersionSage::Info::Info( const Info& x )
-{
-  memcpy((void*) this, (const void*) &x, sizeof(DispersionSage::Info));
-}
 
-DispersionSage::Info& DispersionSage::Info::operator=( const Info& x )
-{
-  if( this != &x ) {
-    memcpy((void*) this, (const void*) &x, sizeof(DispersionSage::Info));
-  }
-  return *this;
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-
-DispersionSage::GlobalInfo::GlobalInfo()
-: BarnacleData()
-{
+DispersionSage::GlobalInfo::GlobalInfo() {
   tune.hor         = 0.0;
   tune.ver         = 0.0;
   chromaticity.hor = 0.0;
@@ -92,105 +95,109 @@ DispersionSage::GlobalInfo::GlobalInfo()
 }
 
 
-DispersionSage::GlobalInfo::GlobalInfo( const GlobalInfo& x )
-: BarnacleData()
-{
-  memcpy((void*) this, (const void*) &x, sizeof(DispersionSage::GlobalInfo));
-}
-
-
-DispersionSage::GlobalInfo& DispersionSage::GlobalInfo::operator=( const GlobalInfo& x )
-{
-  if( this != &x ) {
-    memcpy((void*) this, (const void*) &x, sizeof(DispersionSage::GlobalInfo));
-  }
-  return *this;
-}
-
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 DispersionSage::Options::Options()
 : onClosedOrbit(false)
-{
-}
+{}
 
 
-DispersionSage::Options::Options( const Options& x )
-: onClosedOrbit(x.onClosedOrbit)
-{
-}
-
-
-DispersionSage::Options& DispersionSage::Options::operator=( const Options& x )
-{
-  if( this != &x ) {
-    memcpy((void*) this, (const void*) &x, sizeof(DispersionSage::Options));
-  }
-  return *this;
-}
-
-
-const DispersionSage::Options DispersionSage::defaultFlags;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 DispersionSage::DispersionSage( const beamline* x, bool doClone )
 : Sage( x, doClone ), 
-  _dpp( 0.00005 ), 
-  _ignoreErrors( false ),
-  _calcs((DispersionSage::Info*) 0),
-  _n(0)
-{
-}
+  dpp_( 0.00005 ), 
+  ignoreErrors_( false ),
+  calcs_()
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 DispersionSage::DispersionSage( const beamline& x, bool doClone )
 : Sage( &x, doClone ), 
-  _dpp( 0.00005 ), 
-  _ignoreErrors( false ),
-  _calcs((DispersionSage::Info*) 0),
-  _n(0)
-{
+  dpp_( 0.00005 ), 
+  ignoreErrors_( false ),
+  calcs_()
+{}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+DispersionSage::GlobalInfo DispersionSage::getGlobalInfo() const                            
+{ 
+ return lr_; 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void DispersionSage::_createCalcs()
-{
-  _n = _arrayPtr->size();
-  if( 0 < _n ) { _calcs = new Info[_n]; }
+double DispersionSage::get_dpp() const
+{ 
+  return dpp_; 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void DispersionSage::_deleteCalcs()
+void DispersionSage::set_dpp( double x )
 {
-  _myBeamlinePtr->dataHook.eraseAll( "DispersionSage" );
-
-  DeepBeamlineIterator dbi( *_myBeamlinePtr );
-  bmlnElmnt* be = 0;
-  while((  be = dbi++  )) {
-    be->dataHook.eraseAll( "DispersionSage" );
+  if( x > 0.0 ) { dpp_ = x; }
+  else {
+    *_errorStreamPtr << "\n*** WARNING ***                         "
+                        "\n*** WARNING *** DispersionSage::set_dpp( "
+                     << x 
+                     << " )"
+                        "\n*** WARNING *** Non-positive argument changed."
+                        "\n*** WARNING ***                         "
+                     << std::endl;
+    if( x != 0.0 ) { dpp_ = -x; }
   }
-
-  if( _calcs ) { 
-    delete [] _calcs;
-    _calcs = 0;
-    _n = 0;
-  }
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-DispersionSage::~DispersionSage()
-{
-  _deleteCalcs();
+void DispersionSage::setIgnoreErrors( bool x )                        
+{  
+  ignoreErrors_ = x; 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int DispersionSage::doCalc( JetParticle* p_jp, beamline::Criterion& crit )
+DispersionSage::Options DispersionSage::get_options() 
+{ 
+ return flags;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void DispersionSage::set_options( const DispersionSage::Options& x )
+{ 
+ flags = x;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int DispersionSage::doCalc( JetParticle & jp, beamline::Criterion& crit )
 {
   // DispersionSage::doCalc maintained for backwards compatability.
-  return ( this->fullCalc( p_jp, crit ) );
+  return fullCalc( jp, crit );
 }
 
 
-int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int DispersionSage::fullCalc( JetParticle& jp, beamline::Criterion& )
 {
   // 
   // This is copied and modified from 
@@ -203,18 +210,11 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
     _outputStreamPtr->flush();
   }
 
-  // Create the _calcs array
-  _deleteCalcs();
-  _createCalcs();
 
   // Preserve the current Jet environment
   Jet__environment_ptr storedEnv = Jet__environment::getLastEnv();
 
   int ret = 0;
-  Particle* firstParticle = 0;
-  Particle* secondParticle = 0;
-  MatrixD   firstJacobian;
-  MatrixD   secondJacobian;
 
   int i_x   =  Particle::xIndex();
   int i_y   =  Particle::yIndex();
@@ -222,11 +222,6 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   int i_px  =  Particle::npxIndex();
   int i_py  =  Particle::npyIndex();
   int i_dpp =  Particle::ndpIndex();
-
-  double energy;
-  double mass;
-  double momentum;
-  double lng = 0.0;
 
 
   // Preliminary steps ...
@@ -237,10 +232,11 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   // If the argument is not already declared
   //   to be on the closed orbit, then use a
   //   ClosedOrbitSage to rebuild it.
-  JetParticle* local_jp = 0;
-  if( !(this->flags.onClosedOrbit) ) { 
+
+  JetParticle local_jp(jp);
+
+  if( !flags.onClosedOrbit ) { 
     clsg.setForcedCalc(); 
-    local_jp = p_jp->Clone();
     ret = clsg.findClosedOrbit( local_jp );
     clsg.unsetForcedCalc();
 
@@ -250,10 +246,10 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
         *_outputStreamPtr << "DispersionSage -- Closed orbit successfully calculated." << std::endl;
         _outputStreamPtr->flush();
       }
-      *p_jp = *local_jp;
+      jp = local_jp;
     }
     else {
-      if( _ignoreErrors ) {
+      if( ignoreErrors_ ) {
         if( _verbose ) {
           *_outputStreamPtr << "DispersionSage -- ClosedOrbitSage error "
                             << ret
@@ -266,7 +262,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
           _outputStreamPtr->flush();
           _errorStreamPtr->flush();
         }
-        *p_jp = *local_jp;
+        jp = local_jp;
         ret = 0;
       }
       else {
@@ -275,9 +271,6 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
           *_errorStreamPtr << "DispersionSage -- Leaving DispersionSage::fullCalc" << std::endl;
           _errorStreamPtr->flush();
         }
-        if( firstParticle  ) { delete firstParticle;   firstParticle = 0; }
-        if( secondParticle ) { delete secondParticle;  secondParticle = 0;}
-        if( local_jp       ) { delete local_jp;        local_jp = 0;      }
         Jet__environment::setLastEnv( storedEnv );
         return ret;
       }
@@ -285,10 +278,11 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   }
 
 
-  // At this point,  *p_jp is on a closed orbit, with
+  // At this point,  jp is on a closed orbit, with
   //   appropriate Jet__environment. 
   //   For purposes of paranoia, I reset Jet::_lastEnv here.
-  Jet__environment::setLastEnv( p_jp->State().Env() );
+
+  Jet__environment::setLastEnv( jp.State().Env() );
 
 
   // Calculate the closed orbit for an off-momentum particle ...
@@ -297,17 +291,19 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
     _outputStreamPtr->flush();
   }
 
-  if( local_jp       ) { delete local_jp;      local_jp = 0;      }
-  local_jp = p_jp->Clone();
-  if( firstParticle  ) { delete firstParticle; firstParticle = 0; }
-  firstParticle  = new Particle(*p_jp);
-  firstJacobian  = p_jp->State().Jacobian();
-  energy = firstParticle->ReferenceEnergy();
-  mass = firstParticle->Mass();
-  momentum = sqrt( energy*energy - mass*mass )*( 1.0 + _dpp );
-  energy = sqrt( momentum*momentum + mass*mass );
 
-  local_jp->SetReferenceEnergy( energy );
+  local_jp = Particle(jp);
+
+  Particle firstParticle(jp);
+  MatrixD firstJacobian  = jp.State().Jacobian();
+
+  double energy = firstParticle.ReferenceEnergy();
+  double mass   = firstParticle.Mass();
+
+  double momentum = sqrt( energy*energy - mass*mass )*( 1.0 + dpp_ );
+  energy   = sqrt( momentum*momentum + mass*mass );
+
+  local_jp.SetReferenceEnergy( energy );
 
   clsg.setForcedCalc();
   ret = clsg.findClosedOrbit( local_jp );
@@ -321,7 +317,7 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
     }
   }
   else {
-    if( _ignoreErrors ) {
+    if( ignoreErrors_ ) {
       *_outputStreamPtr << "DispersionSage -- ClosedOrbitSage error "
                         << ret
                         << " is being ignored for offset orbit." 
@@ -342,21 +338,17 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
         _outputStreamPtr->flush();
       }
 
-      if( firstParticle  ) { delete firstParticle;   firstParticle = 0; }
-      if( secondParticle ) { delete secondParticle;  secondParticle = 0;}
-      if( local_jp       ) { delete local_jp;        local_jp = 0;      }
       Jet__environment::setLastEnv( storedEnv );
       return ret;
     }
   }
 
-  if( secondParticle ) { delete secondParticle;  secondParticle = 0;}
-  secondParticle  = new Particle(*local_jp);
-  secondJacobian  = local_jp->State().Jacobian();
+  Particle secondParticle(local_jp);
+  MatrixD secondJacobian  = local_jp.State().Jacobian();
 
 
   // Attach initial dispersion data to the beamline ...
-  Vector d( firstParticle->State().Dim() );
+  Vector d( firstParticle.State().Dim() );
 
 
   // Attach dispersion data wherever desired ...
@@ -365,24 +357,37 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
     _outputStreamPtr->flush();
   }
 
+
+
+  double lng = 0.0;
   bmlnElmnt* q = 0;
-  for( int counter = 0; counter < _n; counter++ ) 
+ 
+  DispersionSage::Info info;
+ 
+  calcs_.clear();
+
+  for (beamline::deep_iterator it = _myBeamlinePtr->deep_begin(); it != _myBeamlinePtr->deep_end(); ++it ) 
   {
-    q = _arrayPtr->e( counter );
-    q->propagate( *firstParticle );
-    q->propagate( *secondParticle );
 
-    lng += q->OrbitLength( *firstParticle );
+    q = (*it);
+ 
+    q->propagate( firstParticle );
+    q->propagate( secondParticle );
 
-    d = ( secondParticle->State()  -  firstParticle->State() ) / _dpp;
+    lng += q->OrbitLength( firstParticle );
+
+    d = ( secondParticle.State()  -  firstParticle.State() ) / dpp_;
   
-    _calcs[counter].closedOrbit.hor  = firstParticle->get_x();
-    _calcs[counter].closedOrbit.ver = firstParticle->get_y();
-    _calcs[counter].dispersion.hor  = d( i_x  );
-    _calcs[counter].dPrime.hor      = d( i_px );
-    _calcs[counter].dispersion.ver  = d( i_y  );
-    _calcs[counter].dPrime.ver      = d( i_py );
-    _calcs[counter].arcLength       = lng;
+    info.closedOrbit.hor  = firstParticle.get_x();
+    info.closedOrbit.ver = firstParticle.get_y();
+    info.dispersion.hor  = d( i_x  );
+    info.dPrime.hor      = d( i_px );
+    info.dispersion.ver  = d( i_y  );
+    info.dPrime.ver      = d( i_py );
+    info.arcLength       = lng;
+   
+    calcs_.push_back(info);
+
   }  
 
 
@@ -391,10 +396,10 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
   if( ( 0 == filterTransverseTunes( firstJacobian, firstNu   ) ) && 
       ( 0 == filterTransverseTunes( secondJacobian, secondNu ) ) )
   {
-    _lr.tune.hor = firstNu(0);
-    _lr.tune.ver = firstNu(1);
-    _lr.chromaticity.hor = ( secondNu(0) - firstNu(0) ) / _dpp;
-    _lr.chromaticity.ver = ( secondNu(1) - firstNu(1) ) / _dpp;
+    lr_.tune.hor = firstNu(0);
+    lr_.tune.ver = firstNu(1);
+    lr_.chromaticity.hor = ( secondNu(0) - firstNu(0) ) / dpp_;
+    lr_.chromaticity.ver = ( secondNu(1) - firstNu(1) ) / dpp_;
   }
   else {
     *_errorStreamPtr 
@@ -406,9 +411,6 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
             "\n*** ERROR ***"
          << std::endl;
     ret = 111;
-    if( firstParticle  ) { delete firstParticle;   firstParticle = 0; }
-    if( secondParticle ) { delete secondParticle;  secondParticle = 0;}
-    if( local_jp       ) { delete local_jp;        local_jp = 0;      }
     Jet__environment::setLastEnv( storedEnv );
     return ret;
   }
@@ -420,13 +422,13 @@ int DispersionSage::fullCalc( JetParticle* p_jp, beamline::Criterion& )
     _outputStreamPtr->flush();
   }
 
-  if( firstParticle  ) { delete firstParticle;   firstParticle = 0; }
-  if( secondParticle ) { delete secondParticle;  secondParticle = 0;}
-  if( local_jp       ) { delete local_jp;        local_jp = 0;      }
   Jet__environment::setLastEnv( storedEnv );
   return ret;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions )
 {
@@ -436,15 +438,7 @@ int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions
   }
 
   int ret = 0;
-  int i;
   Vector d( prt.State().Dim() );
-
-  // Create the _calcs array
-  _deleteCalcs();
-  _createCalcs();
-
-  Particle* firstParticle  = prt.Clone();
-  Particle* secondParticle = prt.Clone();
 
   int i_x   =  Particle::xIndex();
   int i_y   =  Particle::yIndex();
@@ -453,49 +447,46 @@ int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions
   int i_py  =  Particle::npyIndex();
   int i_dpp =  Particle::ndpIndex();
 
-  double energy;
-  double mass;
-  double momentum;
   double lng = 0.0;
 
-  energy = firstParticle->ReferenceEnergy();
-  mass = firstParticle->Mass();
-  momentum = sqrt( energy*energy - mass*mass )*( 1.0 + _dpp );
-  energy = sqrt( momentum*momentum + mass*mass );
-  secondParticle->SetReferenceEnergy( energy );
+  Particle firstParticle(prt);
+  double energy   = firstParticle.ReferenceEnergy();
+  double mass     = firstParticle.Mass();
+  double momentum = sqrt( energy*energy - mass*mass )*( 1.0 + dpp_ );
+         energy   = sqrt( momentum*momentum + mass*mass );
 
-  secondParticle->set_x   (prt.get_x()   + (initialConditions.dispersion.hor)*_dpp);
-  secondParticle->set_y   (prt.get_y()   + (initialConditions.dispersion.ver)*_dpp);
-  secondParticle->set_npx (prt.get_npx() + (initialConditions.dPrime.hor)*_dpp);
-  secondParticle->set_npy (prt.get_npy() + (initialConditions.dPrime.ver)*_dpp);
+  Particle secondParticle(prt);
+  secondParticle.SetReferenceEnergy( energy );
 
-  DeepBeamlineIterator dbi( *_myBeamlinePtr );
-  bmlnElmnt* q = 0;
-  int counter = 0;
-  while( (0 != (q = dbi++)) && (0 == ret) ) {
-    if( counter < _n ) {
-      q->propagate( *firstParticle );
-      q->propagate( *secondParticle );
-      lng += q->OrbitLength( *firstParticle );
+  secondParticle.set_x   (prt.get_x()   + (initialConditions.dispersion.hor)*dpp_);
+  secondParticle.set_y   (prt.get_y()   + (initialConditions.dispersion.ver)*dpp_);
+  secondParticle.set_npx (prt.get_npx() + (initialConditions.dPrime.hor)*dpp_);
+  secondParticle.set_npy (prt.get_npy() + (initialConditions.dPrime.ver)*dpp_);
+ 
+  eraseAll();
 
-      d = ( secondParticle->State() - firstParticle->State() ) / _dpp;
+  DispersionSage::Info info;
+  for ( beamline::deep_iterator it = _myBeamlinePtr->deep_begin();  it != _myBeamlinePtr->deep_end(); ++it ) {
+
+      (*it)->propagate( firstParticle );
+      (*it)->propagate( secondParticle );
+
+      lng += (*it)->OrbitLength( firstParticle );
+
+      d = ( secondParticle.State() - firstParticle.State() ) / dpp_;
   
-      _calcs[counter].dispersion.hor  = d( i_x  );
-      _calcs[counter].dPrime.hor      = d( i_px );
-      _calcs[counter].dispersion.ver  = d( i_y  );
-      _calcs[counter].dPrime.ver      = d( i_py );
-      _calcs[counter].arcLength       = lng;
+      info.dispersion.hor  = d( i_x  );
+      info.dPrime.hor      = d( i_px );
+      info.dispersion.ver  = d( i_y  );
+      info.dPrime.ver      = d( i_py );
+      info.arcLength       = lng;
 
-      counter++;
-    }
-    else {
-      ret = -1;
-    }
+      calcs_.push_back(info);
+
   }
 
   // Clean up before leaving .............................................
-  if( firstParticle  ) { delete firstParticle;   firstParticle = 0; }
-  if( secondParticle ) { delete secondParticle;  secondParticle = 0;}
+
 
   if( _verbose ) {
     *_outputStreamPtr << "DispersionSage -- Leaving DispersionSage::pushCalc" << std::endl;
@@ -506,284 +497,42 @@ int DispersionSage::pushCalc( const Particle& prt, const Info& initialConditions
 }
 
 
-// POSTPONED int DispersionSage::fadCalc( const JetParticle* arg_jp, beamline::Criterion& crit ) const
-// POSTPONED {
-// POSTPONED   // 
-// POSTPONED   // This is copied and modified from 
-// POSTPONED   // int LattFuncSage::FAD_Disp_Calc( const JetParticle* arg_jp, 
-// POSTPONED   //                                  Sage::CRITFUNC Crit )
-// POSTPONED   // 
-// POSTPONED   // NOTE: This routine does not calculate chromaticity.
-// POSTPONED   // 
-// POSTPONED 
-// POSTPONED   // PRECONDITION: 
-// POSTPONED 
-// POSTPONED   if( _verbose ) {
-// POSTPONED     *_outputStreamPtr << "DispersionSage -- Entering DispersionSage::fadCalc" 
-// POSTPONED          << std::endl;
-// POSTPONED     _outputStreamPtr->flush();
-// POSTPONED   }
-// POSTPONED 
-// POSTPONED   int ret = DispersionSage::DONE;
-// POSTPONED   Particle* firstParticle = 0;
-// POSTPONED 
-// POSTPONED   int i_x   =  Particle::_x();
-// POSTPONED   int i_y   =  Particle::_y();
-// POSTPONED   int i_z   =  Particle::_cdt();
-// POSTPONED   int i_px  =  Particle::_xp();
-// POSTPONED   int i_py  =  Particle::_yp();
-// POSTPONED   int i_dpp =  Particle::_dpop();
-// POSTPONED 
-// POSTPONED   int j_x   =  0;
-// POSTPONED   int j_px  =  1;
-// POSTPONED   int j_y   =  2;
-// POSTPONED   int j_py  =  3;
-// POSTPONED   int j_dpp =  4;
-// POSTPONED 
-// POSTPONED   MatrixD FADmap( 5, 5 );
-// POSTPONED   MatrixD firstJacobian;
-// POSTPONED 
-// POSTPONED 
-// POSTPONED   // Calculate the 5x5 matrix ...
-// POSTPONED   firstJacobian  = arg_jp->State().Jacobian();
-// POSTPONED 
-// POSTPONED   FADmap( j_x,   j_x   ) = firstJacobian( i_x,   i_x   );
-// POSTPONED   FADmap( j_x,   j_px  ) = firstJacobian( i_x,   i_px  );
-// POSTPONED   FADmap( j_x,   j_y   ) = firstJacobian( i_x,   i_y   );
-// POSTPONED   FADmap( j_x,   j_py  ) = firstJacobian( i_x,   i_py  );
-// POSTPONED   FADmap( j_x,   j_dpp ) = firstJacobian( i_x,   i_dpp );
-// POSTPONED 
-// POSTPONED   FADmap( j_px,  j_x   ) = firstJacobian( i_px,  i_x   );
-// POSTPONED   FADmap( j_px,  j_px  ) = firstJacobian( i_px,  i_px  );
-// POSTPONED   FADmap( j_px,  j_y   ) = firstJacobian( i_px,  i_y   );
-// POSTPONED   FADmap( j_px,  j_py  ) = firstJacobian( i_px,  i_py  );
-// POSTPONED   FADmap( j_px,  j_dpp ) = firstJacobian( i_px,  i_dpp );
-// POSTPONED 
-// POSTPONED   FADmap( j_y,   j_x   ) = firstJacobian( i_y,   i_x   );
-// POSTPONED   FADmap( j_y,   j_px  ) = firstJacobian( i_y,   i_px  );
-// POSTPONED   FADmap( j_y,   j_y   ) = firstJacobian( i_y,   i_y   );
-// POSTPONED   FADmap( j_y,   j_py  ) = firstJacobian( i_y,   i_py  );
-// POSTPONED   FADmap( j_y,   j_dpp ) = firstJacobian( i_y,   i_dpp );
-// POSTPONED 
-// POSTPONED   FADmap( j_py,  j_x   ) = firstJacobian( i_py,  i_x   );
-// POSTPONED   FADmap( j_py,  j_px  ) = firstJacobian( i_py,  i_px  );
-// POSTPONED   FADmap( j_py,  j_y   ) = firstJacobian( i_py,  i_y   );
-// POSTPONED   FADmap( j_py,  j_py  ) = firstJacobian( i_py,  i_py  );
-// POSTPONED   FADmap( j_py,  j_dpp ) = firstJacobian( i_py,  i_dpp );
-// POSTPONED 
-// POSTPONED   FADmap( j_dpp, j_x   ) = 0.0;
-// POSTPONED   FADmap( j_dpp, j_px  ) = 0.0;
-// POSTPONED   FADmap( j_dpp, j_y   ) = 0.0;
-// POSTPONED   FADmap( j_dpp, j_py  ) = 0.0;
-// POSTPONED   FADmap( j_dpp, j_dpp ) = 1.0;
-// POSTPONED 
-// POSTPONED 
-// POSTPONED   // Finds its eigenvectors....
-// POSTPONED   int i, j;
-// POSTPONED   MatrixC EV;
-// POSTPONED   MatrixC lambda;
-// POSTPONED   EV = FADmap.eigenVectors();
-// POSTPONED   lambda = FADmap.eigenValues();   // Wildly inefficient. Does the same
-// POSTPONED                                    // calculation twice. But this is only
-// POSTPONED                                    // a 5x5, so it shouldn't matter much.
-// POSTPONED   
-// POSTPONED   int numberFound = 0;
-// POSTPONED   static const FNAL::Complex c_one( 1.0, 0.0 );
-// POSTPONED   int theColumn;
-// POSTPONED 
-// POSTPONED   for( i = 0; i < 5; i++ ) {
-// POSTPONED     if( abs( EV(j_dpp,i) ) > 1.0e-6 ) {
-// POSTPONED       numberFound++;
-// POSTPONED       theColumn = i;
-// POSTPONED       if( abs( EV(j_dpp,i) - c_one ) > 1.0e-6 ) {
-// POSTPONED         for( j = 0; j < 5; j++ ) {
-// POSTPONED           EV(j,i) = EV(j,i) / EV(j_dpp,i);
-// POSTPONED         }
-// POSTPONED       }
-// POSTPONED     }
-// POSTPONED   }
-// POSTPONED 
-// POSTPONED   if( numberFound != 1 ) {
-// POSTPONED     *_errorStreamPtr << "*** ERROR ***                                            \n"
-// POSTPONED             "*** ERROR *** DispersionSage::FAD_Disp_Calc                \n"
-// POSTPONED             "*** ERROR *** Exactly " << numberFound << " eigenvectors \n"
-// POSTPONED             "*** ERROR *** were found matching the criterion.         \n"
-// POSTPONED             "*** ERROR *** Results of this calculation will not be    \n"
-// POSTPONED             "*** ERROR *** correct.                                   \n"
-// POSTPONED             "*** ERROR ***                                            \n"
-// POSTPONED          << std::endl;
-// POSTPONED     ret = DispersionSage::TOO_MANY_VECTORS;
-// POSTPONED   }
-// POSTPONED 
-// POSTPONED   else { // Continue
-// POSTPONED      double lng = 0.0;
-// POSTPONED 
-// POSTPONED      // Attach initial dispersion data to the beamline ...
-// POSTPONED      DispersionSage::Info* lf = new DispersionSage::Info;
-// POSTPONED      lf->dispersion.hor = real( EV( j_x,  theColumn ) );
-// POSTPONED      lf->dPrime.hor     = real( EV( j_px, theColumn ) );
-// POSTPONED      lf->dispersion.ver = real( EV( j_y,  theColumn ) );
-// POSTPONED      lf->dPrime.ver     = real( EV( j_py, theColumn ) );
-// POSTPONED      lf->arcLength      = lng;
-// POSTPONED      
-// POSTPONED      _myBeamlinePtr->dataHook.eraseAll( "DispersionSage" );
-// POSTPONED      _myBeamlinePtr->dataHook.insert( new Barnacle( "DispersionSage", lf ) );
-// POSTPONED    
-// POSTPONED      // Attach dispersion data wherever desired ...
-// POSTPONED      if( _verbose ) {
-// POSTPONED        *_outputStreamPtr << "DispersionSage --- Attaching dispersion data to the elements." << std::endl;
-// POSTPONED        _outputStreamPtr->flush();
-// POSTPONED      }
-// POSTPONED    
-// POSTPONED    
-// POSTPONED      bmlnElmnt* q = 0;
-// POSTPONED      firstParticle  = arg_jp->ConvertToParticle();
-// POSTPONED      DeepBeamlineIterator getNext( _myBeamlinePtr );
-// POSTPONED      double dpp = this->get_dpp();
-// POSTPONED 
-// POSTPONED      firstParticle->set_x  ( dpp*real( EV( j_x,  theColumn ) ) );
-// POSTPONED      firstParticle->set_y  ( dpp*real( EV( j_y,  theColumn ) ) );
-// POSTPONED      firstParticle->set_cdt( 0.0 );
-// POSTPONED      firstParticle->set_npx( dpp*real( EV( j_px, theColumn ) ) );
-// POSTPONED      firstParticle->set_npy( dpp*real( EV( j_py, theColumn ) ) );
-// POSTPONED      firstParticle->set_ndp( 0.0 );
-// POSTPONED 
-// POSTPONED      firstParticle->SetReferenceMomentum( ( 1.0 + dpp )*(firstParticle->ReferenceMomentum()) );
-// POSTPONED 
-// POSTPONED      while((  q = getNext++  )) 
-// POSTPONED      {
-// POSTPONED        q->propagate( *firstParticle );
-// POSTPONED        lng += q->OrbitLength( *firstParticle );
-// POSTPONED    
-// POSTPONED        if( crit( q ) ) 
-// POSTPONED        {
-// POSTPONED          lf = new DispersionSage::Info;
-// POSTPONED          lf->dispersion.hor = firstParticle->get_x()   /dpp;
-// POSTPONED          lf->dPrime.hor     = firstParticle->get_npx() /dpp;
-// POSTPONED          lf->dispersion.ver = firstParticle->get_y()   /dpp;
-// POSTPONED          lf->dPrime.ver     = firstParticle->get_npy() /dpp;
-// POSTPONED          lf->arcLength      = lng;
-// POSTPONED      
-// POSTPONED          q->dataHook.eraseAll( "DispersionSage" );
-// POSTPONED          q->dataHook.insert( new Barnacle( "DispersionSage", lf ) );
-// POSTPONED        }    
-// POSTPONED      }  
-// POSTPONED    
-// POSTPONED 
-// POSTPONED      // Attach tune and chromaticity to the beamline ........
-// POSTPONED      DispersionSage::GlobalInfo* latticeRing = new DispersionSage::GlobalInfo;
-// POSTPONED      Vector firstNu(2);
-// POSTPONED      if( ( 0 == filterTransverseTunes( firstJacobian, firstNu   ) ) )
-// POSTPONED      {
-// POSTPONED        latticeRing->tune.hor = firstNu(0);
-// POSTPONED        latticeRing->tune.ver = firstNu(1);
-// POSTPONED        latticeRing->chromaticity.hor = 12345.6789;  // Nonsense value.
-// POSTPONED        latticeRing->chromaticity.ver = 12345.6789;
-// POSTPONED        _myBeamlinePtr->dataHook.eraseAll( "DispersionSage" );
-// POSTPONED        _myBeamlinePtr->dataHook.insert( new Barnacle( "DispersionSage", latticeRing ) );
-// POSTPONED      }
-// POSTPONED      else {
-// POSTPONED        *_errorStreamPtr << "*** ERROR ***                                        \n"
-// POSTPONED                "*** ERROR *** DispersionSage::fadCalc\n"
-// POSTPONED                "*** ERROR ***                                        \n"
-// POSTPONED                "*** ERROR *** Horrible error occurred while trying   \n"
-// POSTPONED                "*** ERROR *** to filter the tunes.                   \n"
-// POSTPONED                "*** ERROR ***                                        \n"
-// POSTPONED             << std::endl;
-// POSTPONED        ret = DispersionSage::IMPOSSIBILITY;
-// POSTPONED      }  
-// POSTPONED 
-// POSTPONED   } // else continue
-// POSTPONED 
-// POSTPONED   // Final operations ....................................
-// POSTPONED   if( _verbose ) {
-// POSTPONED     *_outputStreamPtr << "DispersionSage -- Leaving DispersionSage::Disp_Calc" << std::endl;
-// POSTPONED     _outputStreamPtr->flush();
-// POSTPONED   }
-// POSTPONED 
-// POSTPONED   if( firstParticle ) { delete firstParticle; firstParticle = 0; }
-// POSTPONED   return ret;
-// POSTPONED }
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-const DispersionSage::Info* DispersionSage::getInfoPtr() const
+DispersionSage::Info const& DispersionSage::getInfo() const
 {
-  return &(_calcs[_n-1]);
+  return calcs_.back();
 }
 
 
-const DispersionSage::Info* DispersionSage::getInfoPtr( int i ) const
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+std::vector<DispersionSage::Info> const& DispersionSage::getDispersionArray() const
 {
-  if( 0 <= i && i < _n ) { 
-    return &(_calcs[i]); 
-  }
-  return 0;
+
+ return calcs_; 
+
 }
 
 
-// REMOVE: bool DispersionSage::checkInfoPtr() const
-// REMOVE: {
-// REMOVE:   bmlnElmnt* be = _myBeamlinePtr->lastElement();
-// REMOVE:   if( _calcs[_n-1] == 
-// REMOVE:       dynamic_cast<DispersionSage::Info*>
-// REMOVE:       (be->dataHook.find( "DispersionSage" )) 
-// REMOVE:     ) 
-// REMOVE:   { return true; }
-// REMOVE:   
-// REMOVE:   return false;
-// REMOVE: }
-
-
-// REMOVE: bool DispersionSage::checkInfoPtr( int i ) const
-// REMOVE: {
-// REMOVE:   int k = 0; 
-// REMOVE:   DeepBeamlineIterator dbi( _myBeamlinePtr );
-// REMOVE:   bmlnElmnt* be = 0;
-// REMOVE:   while((  (k < _n) && (be = dbi++)  )) {
-// REMOVE:     if( k == i ) {
-// REMOVE:       if( _calcs[i] == 
-// REMOVE:           dynamic_cast<DispersionSage::Info*>
-// REMOVE:           (be->dataHook.find( "DispersionSage" )) 
-// REMOVE:         ) 
-// REMOVE:       { return true; }
-// REMOVE:     }
-// REMOVE:     k++;
-// REMOVE:   }
-// REMOVE:   
-// REMOVE:   return false;
-// REMOVE: }
-
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void DispersionSage::eraseAll()
 {
-  // Create the _calcs array
-  _deleteCalcs();
-  _createCalcs();
 
-  if( _n != _myBeamlinePtr->countHowManyDeeply() ) {
-    *_errorStreamPtr << "\n*** WARNING ***"
-                        "\n*** WARNING *** File: " << __FILE__ 
-                     <<                  " Line: " << __LINE__
-                     << "\n*** WARNING *** DispersionSage::eraseAll"
-                        "\n*** WARNING *** Mismatch in number of elements."
-                        "\n*** WARNING *** Has the beamline been edited?"
-                        "\n*** WARNING ***"
-                     << std::endl;
+  _myBeamlinePtr->dataHook.eraseAll( "Dispersion" );
+
+  for ( beamline::deep_iterator it = _myBeamlinePtr->deep_begin();  it != _myBeamlinePtr->deep_end(); ++it ) {
+
+    (*it)->dataHook.eraseAll( "Dispersion" );
   }
+
+  calcs_.clear();
+
 }
 
 
-void DispersionSage::set_dpp( double x )
-{
-  if( x > 0.0 ) { _dpp = x; }
-  else {
-    *_errorStreamPtr << "\n*** WARNING ***                         "
-                        "\n*** WARNING *** DispersionSage::set_dpp( "
-                     << x 
-                     << " )"
-                        "\n*** WARNING *** Non-positive argument changed."
-                        "\n*** WARNING ***                         "
-                     << std::endl;
-    if( x != 0.0 ) { _dpp = -x; }
-  }
-}

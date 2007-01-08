@@ -46,12 +46,13 @@
 #include <mxyzptlk/Mapping.h>
 #include <basic_toolkit/MathConstants.h>
 #include <physics_toolkit/Sage.h>
+#include <vector>
 
 
-class CovarianceSage : public Sage
-{
+class CovarianceSage : public Sage {
+
 public:
-  struct Info : BarnacleData 
+  struct Info
   {
     double arcLength;
     MatrixD covariance;
@@ -65,36 +66,34 @@ public:
     } alpha;
 
     Info();
-    Info( const Info& );
-    ~Info(){}
-    Info& operator=( const Info& );
+    Info( Info const& );
+    Info& operator=( Info const& );
   };
 
 
 public:
-  CovarianceSage( const beamline*, bool = false );
-  CovarianceSage( const beamline&, bool = false );
-  // Second argument is used by class Sage
-  // to control cloning. (See Sage.h)
-  virtual ~CovarianceSage();
+  CovarianceSage( beamline const*, bool clonebml = false );
+  CovarianceSage( beamline const&, bool clonebml = false );
 
-  int doCalc( JetParticle*, MatrixD, beamline::Criterion& = beamline::yes ); 
+  int doCalc( JetParticle&, MatrixD, beamline::Criterion& = beamline::yes ); 
 
-  const CovarianceSage::Info* getInfoPtr( int );
+  std::vector<CovarianceSage::Info> const& getCovarianceArray();
 
   void eraseAll();
 
   // Error codes returned by functions
+
   static const int OKAY;
   static const int NOTSQR;
   static const int OVRRUN;
   static const int NEGDET;
 
 private:
-  Info** _calcs;  // array of calculated results
-  int    _n;      // size of the _calcs array
 
-  void _deleteCalcs();
+  CovarianceSage( CovarianceSage const& );
+
+  std::vector<Info> calcs_;  // array of calculated results
+  void  deleteCalcs();
 };
 
 #endif // COVARIANCESAGE_H

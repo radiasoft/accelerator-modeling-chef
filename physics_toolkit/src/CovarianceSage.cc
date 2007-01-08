@@ -31,9 +31,21 @@
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
-******                                                                
+****** 
+******  Dec 2006 - Jean-Francois Ostiguy 
+******             ostiguy@fnal
+******    
+******  - interface based on Particle& rather than ptrs. 
+******    Stack allocated local Particle objects.
+******  - changes to accomodate new boost::any based Barnacle objects.
+******  - use new style STL-compatible beamline iterators
+******  - calcs_ array is now an STL vector. LF are now returned by 
+******    returning a const reference to the entire vector.
+******  - misc cleanup.  
+******                                                               
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -41,7 +53,6 @@
 #include <iomanip>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
-#include <beamline/BeamlineIterator.h>
 #include <physics_toolkit/CovarianceSage.h>
 
 using namespace std;
@@ -50,16 +61,13 @@ using namespace std;
 // Global error codes
 
 // Returned by 
-// int CovarianceSage::doCalc( JetParticle* ptr_jp, 
+// int CovarianceSage::doCalc( JetParticle& ptr_jp, 
 //                             MatrixD cov, 
 //                             beamline::Criterion& crit )
 const int CovarianceSage::OKAY   = 0;
 const int CovarianceSage::NOTSQR = 1;
 // Argument cov is not a square matrix.
 const int CovarianceSage::OVRRUN = 2;
-// Dimension of _calcs array was overrun. 
-// Indicates too many elements in the beamline
-//   and a mismatch with the _calcs array.
 const int CovarianceSage::NEGDET = 3;
 // Determinant of a sub-covariance matrix is negative.
 // Indicates that the argument cov was not a valid
@@ -77,6 +85,8 @@ CovarianceSage::Info::Info()
   alpha.ver = 0.0;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CovarianceSage::Info::Info( const CovarianceSage::Info& x ) 
 : covariance( Particle::PSD, Particle::PSD )
@@ -90,43 +100,45 @@ CovarianceSage::Info::Info( const CovarianceSage::Info& x )
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 CovarianceSage::Info& CovarianceSage::Info::operator=( const CovarianceSage::Info& x )
 {
-  if( this != &x ) {
-    this->arcLength  = x.arcLength;
-    this->covariance = x.covariance;
-    this->beta.hor   = x.beta.hor;
-    this->beta.ver   = x.beta.ver;
-    this->alpha.hor  = x.alpha.hor;
-    this->alpha.ver  = x.alpha.ver;
-  }
+  if( this == &x )  return *this;
+
+   arcLength  = x.arcLength;
+   covariance = x.covariance;
+   beta.hor   = x.beta.hor;
+   beta.ver   = x.beta.ver;
+   alpha.hor  = x.alpha.hor;
+   alpha.ver  = x.alpha.ver;
 
   return *this;
 }
 
 
-// ============================================================== //
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CovarianceSage::CovarianceSage( const beamline* x, bool doClone ) 
-: Sage( x, doClone ), _calcs(0), _n(0)
-{
-}
+: Sage( x, doClone )
+{}
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CovarianceSage::CovarianceSage( const beamline& x, bool doClone ) 
-: Sage( &x, doClone ), _calcs(0), _n(0)
-{
-}
+: Sage( &x, doClone )
+{}
 
 
-CovarianceSage::~CovarianceSage()
-{
-  _deleteCalcs();
-}
 
-// ============================================================== //
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int CovarianceSage::doCalc( JetParticle* ptr_jp, MatrixD cov, beamline::Criterion& crit )
+int CovarianceSage::doCalc( JetParticle& jp, MatrixD cov, beamline::Criterion& crit )
 {
   // PRECONDITION:   The JetParticle must be on the closed
   //   orbit with the identity mapping for its state.
@@ -173,63 +185,50 @@ int CovarianceSage::doCalc( JetParticle* ptr_jp, MatrixD cov, beamline::Criterio
   // Symmetrize the matrix, just to be on the safe side.
   // cov = ( cov + cov.transpose() )/2.0;
 
-  // Create the _calcs array
-  _deleteCalcs();
-  _n = _arrayPtr->size();
-  _calcs = new Info* [_n];
-  for( i = 0; i < _n; i++ ) { _calcs[i] = 0;  }
 
 
-  Particle* p_co_p = new Particle(*ptr_jp);
-  // MUST BE DELETED BEFORE RETURNING
+  Particle co_particle(jp);
 
-
-  CovarianceSage::Info* infoPtr = 0;
   MatrixD initialCov( cov );
-  Mapping map( ptr_jp->State() );
+  Mapping map( jp.State() );
   MatrixD M( map.Jacobian() );
 
   MatrixD localCov( cov.rows(), cov.cols() );
-  DeepBeamlineIterator dbi( *_myBeamlinePtr );
-  bmlnElmnt* q;
-  double s, normalizer;
-  s = 0;
+
+
+  double s          = 0.0;
+  double normalizer = 0.0;
+
   i = 0;
 
+  // Clear the calcs_ array and delete its contents
+
+  calcs_.clear();
 
   // Go through the line element by element
-  while((  q = dbi++  )) {
-    q->propagate( *ptr_jp );
-    s += q->OrbitLength( *p_co_p );
 
-    map = ptr_jp->State();
+   CovarianceSage::Info info;
+
+   for (beamline::deep_iterator it = _myBeamlinePtr->deep_begin(); 
+                               it != _myBeamlinePtr->deep_end(); ++it) {
+
+    bmlnElmnt* q = (*it);
+
+    q->propagate( jp );
+    s += q->OrbitLength( co_particle );
+
+    map = jp.State();
     M = map.Jacobian();
     cov = M * initialCov * M.transpose();
 
-    infoPtr = new CovarianceSage::Info;
-    if( i < _n ) {
-      _calcs[i++] = infoPtr;
-    }
-    else {
-      *_errorStreamPtr 
-           << "\n***ERROR*** File: " << __FILE__ << "  Line: " << __LINE__
-           << "\n***ERROR*** int CovarianceSage::doCalc( JetParticle*, MatrixD, beamline::Criterion& )"
-           << "\n***ERROR*** Overran dimension ("
-           << _n
-           << ")of _calc array."
-           << "\n***ERROR*** Calculation is terminating."
-           << endl;
-      delete p_co_p;
-      delete infoPtr;
-      return OVRRUN;
-    }
 
-    // Push local data into the infoPtr
-    infoPtr->arcLength = s;
-    infoPtr->covariance = cov;
+    info.arcLength  = s;
+    info.covariance = cov;
 
     // ... "Horizontal" lattice functions
+
     normalizer = (cov(x,x)*cov(xp,xp)) - (cov(x,xp)*cov(xp,x));
+
     if( normalizer <= 0.0 ) {
       *_errorStreamPtr 
            << "\n***ERROR*** File: " << __FILE__ << "  Line: " << __LINE__
@@ -238,15 +237,17 @@ int CovarianceSage::doCalc( JetParticle* ptr_jp, MatrixD cov, beamline::Criterio
            << normalizer
            << " <= 0.0."
            << endl;
-      delete p_co_p;
       return NEGDET;
     }
     normalizer = 1.0/sqrt(normalizer);
-    infoPtr->beta.hor  =   normalizer*cov(x,x);
-    infoPtr->alpha.hor = - normalizer*cov(x,xp);
+
+    info.beta.hor  =   normalizer*cov(x,x);
+    info.alpha.hor = - normalizer*cov(x,xp);
 
     // ... "Vertical" lattice functions
+
     normalizer = (cov(y,y)*cov(yp,yp)) - (cov(y,yp)*cov(yp,y));
+
     if( normalizer <= 0.0 ) {
       *_errorStreamPtr 
            << "\n***ERROR*** File: " << __FILE__ << "  Line: " << __LINE__
@@ -255,27 +256,29 @@ int CovarianceSage::doCalc( JetParticle* ptr_jp, MatrixD cov, beamline::Criterio
            << normalizer
            << " <= 0.0."
            << endl;
-      delete p_co_p;
       return NEGDET;
     }
+
     normalizer = 1.0/sqrt(normalizer);
-    infoPtr->beta.ver  =   normalizer*cov(y,y);
-    infoPtr->alpha.ver = - normalizer*cov(y,yp);
+
+    info.beta.ver  =   normalizer*cov(y,y);
+    info.alpha.ver = - normalizer*cov(y,yp);
+
+    calcs_.push_back(info);
+   
   }
 
-
   // Finished
-  delete p_co_p;
+
   return OKAY;
 }
 
 
 // ============================================================== //
 
-const CovarianceSage::Info* CovarianceSage::getInfoPtr( int j )
+std::vector<CovarianceSage::Info> const& CovarianceSage::getCovarianceArray()
 {
-  if( 0 == _calcs || j < 0 || _n <= j ) { return 0; }
-  return _calcs[j];
+  return calcs_;
 }
 
 
@@ -285,26 +288,11 @@ void CovarianceSage::eraseAll()
 {
   _myBeamlinePtr->dataHook.eraseAll( "CovarianceSage" );
 
-  DeepBeamlineIterator dbi( *_myBeamlinePtr );
-  bmlnElmnt* be;
-  while((  be = dbi++  )) {
-    be->dataHook.eraseAll( "CovarianceSage" );
+  for ( beamline::deep_iterator it  = _myBeamlinePtr->deep_begin();  
+                                it != _myBeamlinePtr->deep_end(); ++it )
+  { 
+    (*it)->dataHook.eraseAll( "CovarianceSage" );
   }
 
-  _deleteCalcs();
 }
 
-// ============================================================== //
-
-void CovarianceSage::_deleteCalcs()
-{
-  if( 0 != _calcs ) {
-    for( int i = 0; i < _n; i++ ) 
-    { if( 0 != _calcs[i] ) {delete _calcs[i];} }
-    delete [] _calcs;
-    _calcs = 0;
-    _n = 0;
-  }
-}
-
-// ============================================================== //

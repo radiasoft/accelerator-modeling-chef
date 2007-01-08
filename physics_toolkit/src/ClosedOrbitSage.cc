@@ -65,17 +65,45 @@ using namespace std;
 
 int ClosedOrbitSage::ERR_NOTRING = -17;
 
-ClosedOrbitSage::ClosedOrbitSage( const beamline* x, bool doClone )
-: Sage( x, doClone ), _forced(false), _ignoreErrors(false)
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ClosedOrbitSage::ClosedOrbitSage( beamline const* x, bool doClone )
+: Sage( x, doClone ), forced_(false), ignoreErrors_(false)
+{}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void ClosedOrbitSage::setForcedCalc()
 {
+  forced_ = true;
 }
 
-ClosedOrbitSage::~ClosedOrbitSage()
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ClosedOrbitSage::unsetForcedCalc()
 {
+  forced_ = false;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ClosedOrbitSage::setIgnoreErrors( bool x )
+{
+  ignoreErrors_ = x;
 }
 
 
-int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
 {
   if( _verbose ) {
     *_outputStreamPtr << "ClosedOrbitSage -- Entering ClosedOrbitSage::findClosedOrbit"
@@ -84,7 +112,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
   // If the line is not to be treated as a ring, abort the calculation.
   if( !(this->isTreatedAsRing()) ) {
-    if( !_ignoreErrors ) { return ERR_NOTRING; }
+    if( !ignoreErrors_ ) { return ERR_NOTRING; }
   }
 
   // Preliminary steps ...
@@ -92,7 +120,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   Jet__environment_ptr  storedEnv  = Jet__environment::getLastEnv();
   JetC__environment_ptr storedEnvC = JetC__environment::getLastEnv();
 
-  Jet__environment::setLastEnv( p_jp->State().Env() );
+  Jet__environment::setLastEnv( jp.State().Env() );
 
 
   // Data structures for handling RF ...
@@ -107,8 +135,10 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
 
   // Helper particle ...
-  Particle* p_prt = new Particle(*p_jp);
-  Vector inState(  p_prt->State() );
+
+  Particle prt(jp);
+
+  Vector inState( prt.State() );
 
   int i_x   = Particle::xIndex();
   int i_y   = Particle::yIndex();
@@ -119,6 +149,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
 
   // Turn off all RF ...
+
   bmlnElmnt* q = 0;
   DeepBeamlineIterator getNext( *_myBeamlinePtr );
 
@@ -139,27 +170,27 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   int i, ret;
 
   // If the calculation is forced, calculate the closed orbit.
-  if( _forced )
+  if( forced_ )
   {
-    if( 0 != ( ret = _invokeFPSolver( p_jp ) ) ) {
-      if( !_ignoreErrors ) { return ret; }
+    if( 0 != ( ret = invokeFPSolver( jp ) ) ) {
+      if( !ignoreErrors_ ) { return ret; }
     }
   }
 
   // If not, check to see if the Particle is on a transverse closed orbit.
   else
   {
-    _myBeamlinePtr->propagate( *p_prt );
+    _myBeamlinePtr->propagate( prt );
     // *** CHANGE ***
     // *** CHANGE *** See above re tolerances
     // *** CHANGE ***
-    if( ( std::abs( inState(i_x)  - p_prt->State(i_x)  ) > 1.0e-6 ) ||
-        ( std::abs( inState(i_y)  - p_prt->State(i_y)  ) > 1.0e-6 ) ||
-        ( std::abs( inState(i_px) - p_prt->State(i_px) ) > 1.0e-6 ) ||
-        ( std::abs( inState(i_py) - p_prt->State(i_py) ) > 1.0e-6 )
+    if( ( std::abs( inState(i_x)  - prt.State(i_x)  ) > 1.0e-6 ) ||
+        ( std::abs( inState(i_y)  - prt.State(i_y)  ) > 1.0e-6 ) ||
+        ( std::abs( inState(i_px) - prt.State(i_px) ) > 1.0e-6 ) ||
+        ( std::abs( inState(i_py) - prt.State(i_py) ) > 1.0e-6 )
     ){
-      if( 0 != ( ret = _invokeFPSolver( p_jp ) ) ) {
-        if( !_ignoreErrors ) { return ret; }
+      if( 0 != ( ret = invokeFPSolver( jp ) ) ) {
+        if( !ignoreErrors_ ) { return ret; }
       }
     }
   }
@@ -176,22 +207,21 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
     *_outputStreamPtr << "ClosedOrbitSage --- Registering closed orbit: will change line."
          << endl;
   }
-  if( p_prt ) delete p_prt;
 
-  p_prt = new Particle(*p_jp);
+  prt = Particle(jp);
 
-  RefRegVisitor registrar( *p_prt );
+  RefRegVisitor registrar( prt );
  _myBeamlinePtr->accept( registrar );
 
 
   // Useful Particle and Vector
   // containing the closed orbit.
 
-  if( p_prt ) delete p_prt;
-  p_prt =  new Particle(*p_jp);
-  p_prt->set_cdt(0.0);
+  prt = Particle(jp);
+  prt.set_cdt(0.0);
+
   Vector z( BMLN_dynDim );
-  z = p_prt->State();
+  z = prt.State();
 
   Jet__environment::setLastEnv( Jet__environment::getApproxJetEnvironment(Jet__environment::getLastEnv()->maxWeight(), z));
 
@@ -199,7 +229,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
   coord*  tmpcoord[BMLN_dynDim];
 
   if ( !Jet__environment::getLastEnv() ) {  // true if there was no suitable approximate Environment  
-    Jet__environment::BeginEnvironment( p_jp->State().Env()->maxWeight() );
+    Jet__environment::BeginEnvironment( jp.State().Env()->maxWeight() );
     for( i = 0; i < BMLN_dynDim; i++ ) { 
       tmpcoord[i] = new coord(z(i)); 
     }
@@ -212,22 +242,24 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
 
   // Instantiate a JetParticle with the new environment
   // and propagate it once around the ring.
+
   if( _verbose ) {
     *_outputStreamPtr << "ClosedOrbitSage --- Propagating JetParticle around ring final time."
          << endl;
   }
 
-  JetParticle* jpr2Ptr = new JetParticle(*p_prt);
+  JetParticle jpr2Ptr(prt);
 
-  _myBeamlinePtr->propagate( *jpr2Ptr );
+  _myBeamlinePtr->propagate( jpr2Ptr );
 
   // Reset the argument to this second JetParticle
-  *p_jp = *jpr2Ptr;
+  jp = jpr2Ptr;
 
 
   // Final operations ....................................
 
   // ... Return RF to original settings before leaving ...
+
   while((  sd = (strengthData*) cavityStrengths.get()  ))
   {
     ( sd->address )->setStrength( sd->strength );
@@ -252,20 +284,14 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle* p_jp )
          << endl;
   }
 
-  if( p_prt ) {
-    delete p_prt;
-    p_prt = 0;
-  }
-  if( jpr2Ptr ) {
-    delete jpr2Ptr;
-    jpr2Ptr = 0;
-  }
-
   return 0;
 }
 
 
-int ClosedOrbitSage::_invokeFPSolver( JetParticle* p_jp )
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int ClosedOrbitSage::invokeFPSolver( JetParticle& jp )
 {
   if( _verbose ) {
     *_outputStreamPtr
@@ -273,7 +299,6 @@ int ClosedOrbitSage::_invokeFPSolver( JetParticle* p_jp )
       << endl;
   }
 
-  int i;
 
   int i_x   = Particle::xIndex();
   int i_y   = Particle::yIndex();
@@ -290,22 +315,26 @@ int ClosedOrbitSage::_invokeFPSolver( JetParticle* p_jp )
   // *** CHANGE *** jumpScale and zeroScale should be
   // *** CHANGE *** member data, set by the invoking program
   // *** CHANGE ***
+
   double jumpScale [] = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-4, 1.0e-4, 1.0e-4 };
   double zeroScale [] = { 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-9 };
-  for( i = 0; i < BMLN_dynDim; i++ ) fp.ZeroScale(i) = zeroScale[i];
-  for( i = 0; i < BMLN_dynDim; i++ ) fp.JumpScale(i) = jumpScale[i];
+
+  for( int i = 0; i < BMLN_dynDim; i++ ) fp.ZeroScale(i) = zeroScale[i];
+  for( int i = 0; i < BMLN_dynDim; i++ ) fp.JumpScale(i) = jumpScale[i];
 
   // *** CHANGE ***
   // *** CHANGE *** fp should know nothing about beamlines
   // *** CHANGE ***
-  // ??? Also: the recast is a kludge which must be changed.
-  int fpError = fp( p_jp, "transverse", Sage::no );
+
+
+  int fpError = fp( jp, "transverse", Sage::no );
+
   if( 0 != fpError )
   {
     *_errorStreamPtr
          << "\n*** ERROR ***"
             "\n*** ERROR *** File: " << __FILE__ << " Line: " << __LINE__
-         << "\n*** ERROR *** ClosedOrbitSage::_invokeFPSolver"
+         << "\n*** ERROR *** ClosedOrbitSage::invokeFPSolver"
             "\n*** ERROR *** The FPSolver failed to find a solution."
             "\n*** ERROR *** Return error code = " << fpError
          << "\n*** ERROR *** "
@@ -314,32 +343,35 @@ int ClosedOrbitSage::_invokeFPSolver( JetParticle* p_jp )
   }
 
   // Test the new closed orbit ...
-  Particle* p_prt =  new Particle(*p_jp);
-  Vector co( BMLN_dynDim );
-  co = p_prt->State();
-  _myBeamlinePtr->propagate( *p_prt );
+
+  Particle prt(jp);
+  Vector co = prt.State();
+
+  _myBeamlinePtr->propagate( prt );
+
   // *** CHANGE ***
   // *** CHANGE *** Why one micron?
   // *** CHANGE *** Shouldn't the stopping criterion be the same
   // *** CHANGE *** as was used by the FPSolver fp?
-  if( ( std::abs( co(i_x)  - p_prt->State(i_x)  ) > 1.0e-6 ) ||
-      ( std::abs( co(i_y)  - p_prt->State(i_y)  ) > 1.0e-6 ) ||
-      ( std::abs( co(i_px) - p_prt->State(i_px) ) > 1.0e-6 ) ||
-      ( std::abs( co(i_py) - p_prt->State(i_py) ) > 1.0e-6 )
+
+  if( ( std::abs( co(i_x)  - prt.State(i_x)  ) > 1.0e-6 ) ||
+      ( std::abs( co(i_y)  - prt.State(i_y)  ) > 1.0e-6 ) ||
+      ( std::abs( co(i_px) - prt.State(i_px) ) > 1.0e-6 ) ||
+      ( std::abs( co(i_py) - prt.State(i_py) ) > 1.0e-6 )
   ){
     *_errorStreamPtr
          << "\n*** WARNING ***"
             "\n*** WARNING *** File: " << __FILE__ << " Line: " << __LINE__
-         << "\n*** WARNING *** ClosedOrbitSage::_invokeFPSolver"
+         << "\n*** WARNING *** ClosedOrbitSage::invokeFPSolver"
             "\n*** WARNING *** Closed orbit not correct."
             "\n*** WARNING *** delta x = "
-         << (std::abs(co(i_x)  - p_prt->State(i_x)))
+         << (std::abs(co(i_x)  - prt.State(i_x)))
          << "\n*** WARNING *** delta y = "
-         << (std::abs(co(i_y)  - p_prt->State(i_y)))
+         << (std::abs(co(i_y)  - prt.State(i_y)))
          << "\n*** WARNING *** delta p_x/p = "
-         << (std::abs(co(i_px)  - p_prt->State(i_px)))
+         << (std::abs(co(i_px)  - prt.State(i_px)))
          << "\n*** WARNING *** delta p_y/p = "
-         << (std::abs(co(i_py)  - p_prt->State(i_py)))
+         << (std::abs(co(i_py)  - prt.State(i_py)))
          << "\n*** WARNING ***"
          << endl;
 
@@ -348,14 +380,15 @@ int ClosedOrbitSage::_invokeFPSolver( JetParticle* p_jp )
                         << endl;
     }
 
-    delete p_prt;
-    return 1;  // ??? Memory leak!!
+    return 1;  
   }
 
-  delete p_prt;
   return 0;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void ClosedOrbitSage::eraseAll()
 {

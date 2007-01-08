@@ -253,15 +253,19 @@ void TransitionVisitor::_visit_bend( bmlnElmnt* x )
   if( !_calcDone && (_errorCode == OKAY) ) 
   {
     // Filters
-    LattFuncSage::lattFunc* lfPtr =
-      dynamic_cast<LattFuncSage::lattFunc*>(x->dataHook.find("Twiss"));
-    if( lfPtr == 0 ) {
+
+
+    BarnacleList::iterator it = x->dataHook.find("Twiss");
+
+    if( it ==  x->dataHook.end() ) {
       _errorCode = NOLATTFUNC;
       return;
     }
+
+    LattFuncSage::lattFunc lf = boost::any_cast<LattFuncSage::lattFunc>( it->info );
     
-    if( fabs(lfPtr->dispersion.ver) > 1.0e-9 || 
-        fabs(lfPtr->dPrime.ver    ) > 1.0e-9    ) 
+    if( fabs(lf.dispersion.ver) > 1.0e-9 || 
+        fabs(lf.dPrime.ver    ) > 1.0e-9    ) 
     {
       _errorCode = VERDISP;
       return;
@@ -285,8 +289,8 @@ void TransitionVisitor::_visit_bend( bmlnElmnt* x )
     double brho = _particlePtr->ReferenceBRho();
     _f(0,0) = str*_D/brho;
     _f(1,0) = str*_Dprime/brho;
-    _f(2,0) = str*(lfPtr->dispersion.hor)/brho;
-    _f(3,0) = str*(lfPtr->dPrime.hor)/brho;
+    _f(2,0) = str*(lf.dispersion.hor)/brho;
+    _f(3,0) = str*(lf.dPrime.hor)/brho;
 
     _alpha += ( _b*_coeff.inverse()*_f )(0,0);  // inefficient use of inverse()
 
@@ -320,18 +324,22 @@ void TransitionVisitor::visitCF_sbend( CF_sbend* x )
 }
 
 
-void TransitionVisitor::_set_prev( const bmlnElmnt* x )
+void TransitionVisitor::_set_prev( bmlnElmnt const* x )
 {
   // Filters
-  LattFuncSage::lattFunc* lfPtr =
-    dynamic_cast<LattFuncSage::lattFunc*>(x->dataHook.find("Twiss"));
-  if( lfPtr == 0 ) {
+
+  BarnacleList::iterator it = x->dataHook.find("Twiss");  
+ 
+  if( it == x->dataHook.end() ) {
     _errorCode = NOLATTFUNC;
     return;
   }
   
-  if( fabs(lfPtr->dispersion.ver) > 1.0e-9 || 
-      fabs(lfPtr->dPrime.ver    ) > 1.0e-9    ) 
+ LattFuncSage::lattFunc lf = boost::any_cast<LattFuncSage::lattFunc>(it->info);
+
+
+  if( fabs(lf.dispersion.ver) > 1.0e-9 || 
+      fabs(lf.dPrime.ver    ) > 1.0e-9    ) 
   {
     _errorCode = VERDISP;
     return;
@@ -339,8 +347,8 @@ void TransitionVisitor::_set_prev( const bmlnElmnt* x )
 
 
   // Body
-  _D      = lfPtr->dispersion.hor;
-  _Dprime = lfPtr->dPrime.hor;
+  _D      = lf.dispersion.hor;
+  _Dprime = lf.dPrime.hor;
 }
 
 
