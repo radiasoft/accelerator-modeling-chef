@@ -41,6 +41,7 @@
 #define CIRCUIT_H
 
 #include <basic_toolkit/globaldefs.h>
+#include <basic_toolkit/dlist.h>
 #include <beamline/bmlnElmnt.h>
 
 
