@@ -84,13 +84,13 @@ void wrap_particle () {
 
 
   class_<Proton, bases<Particle> >("Proton", init<>() )
-   .def( init<double>())
-   .def( init<double,double*>());
+   .def( init<double const&>())
+   .def( init<double const&, Vector const&>());
 
 
   class_<Positron, bases<Particle> >("Positron", init<>() )
-   .def( init<double>())
-   .def( init<double,double*>());
+   .def( init<double const&>())
+   .def( init<double const&, Vector const&>());
 
 
   def("createStandardEnvironments", 
@@ -165,13 +165,11 @@ void wrap_particle () {
 
 
   class_<JetProton, bases<JetParticle> >("JetProton") 
-   .def( init<double>())
-       //.def( init<double,double*>())
+   .def( init<double const&>())
    .def( init<const Proton&>());
 
   class_<JetPositron, bases<JetParticle> >("JetPositron") 
-   .def( init<double>())
-       //.def( init<double,double*>())
+   .def( init<double const&>())
    .def( init<const Positron&>());
 
 }
