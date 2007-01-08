@@ -30,6 +30,18 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******               
+****** 
+****** REVISION HISTORY
+******
+****** Dec 2006   Jean-Francois Ostiguy
+******            ostiguy@fnal.gov
+******
+****** - eliminated class BarnacleData 
+****** - use std::list instead of dlist
+****** - use refs in member function signatures instead of ptrs. 
+****** - use boost::any with value semantics intead of void* objs to 
+******   store arbitrary user data 
+******
 ******                                                                
 ******                                                                
 **************************************************************************
@@ -38,44 +50,55 @@
 #define BARNACLE_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <basic_toolkit/dlist.h>
+#include <boost/any.hpp>
+#include <string>
+#include <list>
 
-struct DLLEXPORT BarnacleData {
- bool valid;
- BarnacleData() : valid(false) {};
- virtual ~BarnacleData() {};
-};
+struct Barnacle {
 
-class DLLEXPORT Barnacle {
-private:
- char* id;
- friend class BarnacleList;
-public:
- Barnacle( const char*         /* identifier tag  */,
-           const BarnacleData* /* the information */ );
- virtual ~Barnacle();
- BarnacleData* info;
+  Barnacle( std::string s,  boost::any  a): id(s), info(a) {} 
+
+  bool operator==( std::string str) const { return ( id  == str ); }   
+
+  std::string    id;
+  boost::any     info;
+
 
 };
+
+
+//-----------------------------------------------------------------------------
+
+
 
 class DLLEXPORT BarnacleList {
 
-public:
-  BarnacleList();
- ~BarnacleList();
-  void            append    ( const Barnacle* );
-  void            insert    ( const Barnacle* );
-  void            append    ( const char*, const BarnacleData* );
-  void            insert    ( const char*, const BarnacleData* );
-  char            eraseFirst( const char*     /* identifier */ );
-  char            eraseAll  ( const char* = 0 /* identifier */ );
-  BarnacleData*   find      ( const char*     /* identifier */,
-                                   int   = 1 /* instance   */ ) const;
-  Barnacle*       lift      ( const char*     /* identifier */,
-                                   int   = 1 /* instance   */ );
 
-private:
- dlist theList;
+public:
+
+  typedef  std::list<Barnacle>::iterator iterator;
+
+  void             append    ( Barnacle const& );
+  void             insert    ( Barnacle const& );
+
+  void             eraseFirst( std::string   identifier );
+  void             eraseAll  ( std::string   = "" );
+
+
+  iterator find  ( std::string   identifier,  int instance = 1 );
+
+  void             remove( iterator pos );
+   
+  
+  iterator begin()       { return theList_.begin(); }
+  iterator end()         { return theList_.end();   }
+
+  bool empty()    const  { return theList_.empty(); }   
+
+ private:
+
+  std::list<Barnacle> theList_;
+
 };
 
 #endif // BARNACLE_H
