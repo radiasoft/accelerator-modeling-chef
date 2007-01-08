@@ -70,9 +70,10 @@ static std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattRing&
 int (LattFuncSage::* Twiss_Calc1)(JetParticle&)    = & LattFuncSage::Twiss_Calc;
 
 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_Disp_Calc_overloads,Disp_Calc, 1, 1) 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_Fast_CS_Calc_overloads,Fast_CS_Calc, 1, 1) 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_Slow_CS_Calc_overloads,Slow_CS_Calc, 1, 1) 
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_Disp_Calc_overloads,    Disp_Calc,    1, 1) 
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_Fast_CS_Calc_overloads, Fast_CS_Calc, 1, 1) 
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_Slow_CS_Calc_overloads, Slow_CS_Calc, 1, 1) 
+
      // BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_ET_Disp_Calc_overloads,ET_Disp_Calc, 1, 1) 
 
 void wrap_lattfuncsage() {
@@ -97,7 +98,7 @@ class_<LattFuncSage::lattRing::chromaticity_type>("chromaticity")
 
 
 
- class_<LattFuncSage>("LattFuncSage", init<const beamline&>())
+ class_<LattFuncSage,  boost::noncopyable>("LattFuncSage", init<const beamline&>())
    .def(init<const beamline&, bool>())
    .def("TuneCalc",        &LattFuncSage::TuneCalc)
    .def("Disp_Calc",       &LattFuncSage::Disp_Calc,   LattFuncSage_Disp_Calc_overloads() ) // ( JetParticle*, Sage::CRITFUNC = 0 )
@@ -108,23 +109,9 @@ class_<LattFuncSage::lattRing::chromaticity_type>("chromaticity")
       //.def("NewSlow_CS_Calc"( /* const */ JetParticle*, Sage::CRITFUNC = 0 )
       ///.def("ET_Disp_Calc",  &LattFuncSage::ET_Disp_Calc, LattFuncSage_ET_Disp_Calc_overloads() )        // (             JetParticle*, Sage::CRITFUNC = 0 )
       ///.def("CS_Disp_Calc",  &LattFuncSage::CS_Disp_Calc)  //  (             JetParticle*, Sage::CRITFUNC = 0 )
-               // If default value is used for Sage::CRITFUNC, then
-               // information is attached to all elements.
       //.def("FAD_Disp_Calc"  ( /* const */ JetParticle*, Sage::CRITFUNC = 0 )
-               // Assumes no vertical dispersion.
-               // Uses the 5x5 matrix formalism that 
-               // everyone knows and loves, ignoring the
-               // closed orbit. 
-               // Attaches the lattRing "Ring" to the beamline
-               // but no information to the beamline elements.
-               // The purpose is to provide a quick, first order
-               // calculation of dispersion at the beginning of the
-               // beamline.
-               // By the way, "FAD" stands for "Fast and Dirty."
       //.def("Twiss_Calc",  &LattFuncSage::Twiss_Calc)
       //.def("Twiss_Calc",  &LattFuncSage::Twiss_Calc)
-               // These reproduce the old beamline::twiss
-               // and therefore are both obsolete and wrong.
      .def("eraseAll",  &LattFuncSage::eraseAll)
      .def("set_dpp",   &LattFuncSage::set_dpp)
      .def("get_dpp",   &LattFuncSage::get_dpp);
