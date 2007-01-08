@@ -29,116 +29,120 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
+****** 
+****** REVISION HISTORY
+******
+****** Dec 2006   Jean-Francois Ostiguy
+******            ostiguy@fnal.gov
+******
+****** - eliminated class BarnacleData 
+****** - Barnacle is now a simple struct 
+****** - use std::list instead of dlist
+****** - use refs in member function signatures instead of ptrs. 
+****** - use boost::any with value semantics intead of void* objs to 
+******   store arbitrary user data 
+******
+****** 
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include <iostream>
+#include <functional>
 #include <basic_toolkit/Barnacle.h>
 
 
-BarnacleList::BarnacleList() {}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-BarnacleList::~BarnacleList() {
- dlist_iterator getNext( theList );
- Barnacle* p;
- while( 0 != (  p = (Barnacle*) getNext() )) delete p;
-}
- 
-void BarnacleList::append( const Barnacle* x ) {
- theList.append( (void*) x );
+
+void BarnacleList::append( Barnacle const& x ) {
+ theList_.push_back( x );
 }
 
 
-void BarnacleList::insert( const Barnacle* x ) {
- theList.insert( (void*) x );
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void BarnacleList::insert( Barnacle const& x ) {
+
+ theList_.push_front( x );
+
 }
 
 
-void BarnacleList::append( const char* ident, const BarnacleData* w ) {
- theList.append( (void*) new Barnacle( ident, w ) );
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+
+
+void BarnacleList::eraseAll( std::string ident ) {
+
+   
+ theList_.erase( remove_if(theList_.begin(), theList_.end(),  
+                 std::bind2nd( std::mem_fun_ref(&Barnacle::operator==), ident ) ),  theList_.end() ); 
+  
+
 }
 
 
-void BarnacleList::insert( const char* ident, const BarnacleData* w ) {
- theList.insert( (void*) new Barnacle( ident, w ) );
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-char BarnacleList::eraseFirst( const char* ident ) {
- dlist_iterator getNext( theList );
- Barnacle* p;
- while( 0 != (  p = (Barnacle*) getNext()  )) {
-  if( strcmp( ident, p->id ) == 0 ) {
-   theList.remove( (void*) p );   // ??? This is REALLY stupid!
-   delete p;
-   return 0;   // All OK
+void BarnacleList::eraseFirst( std::string ident ) {
+
+   
+  for ( std::list<Barnacle>::iterator it = theList_.begin();  it != theList_.end(); ++it ) {
+
+    if ( (it->id) == ident ) return;
+
   }
- }
- return 1;     // Not OK
+
 }
 
 
-char BarnacleList::eraseAll( const char* ident ) {
- dlist_iterator getNext( theList );
- Barnacle* p;
- if( ident != 0 ) {
-  while( 0 != (  p = (Barnacle*) getNext()  )) {
-   if( strcmp( ident, p->id ) == 0 ) {
-    getNext.GoBack();
-    theList.remove( (void*) p );   // ??? This is REALLY stupid!
-    delete p;
-   }
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+BarnacleList::iterator BarnacleList::find( std::string ident, int n ) {
+
+  int count = 0;
+
+  std::list<Barnacle>::iterator it;
+  for ( it = theList_.begin();  it != theList_.end(); ++it ) {
+
+    if ( it->id == ident ) ++count;
+    if ( count  == n     ) return it;
+
   }
- }
- else {
-  while( 0 != (  p = (Barnacle*) getNext()  )) {
-   getNext.GoBack();
-   theList.remove( (void*) p );   // ??? This is REALLY stupid!
-   delete p;
-  }
- }
- return 0;
+  
+  return it;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void BarnacleList::remove( BarnacleList::iterator pos ) {
+
+    theList_.erase(pos);
+
 }
 
 
-BarnacleData* BarnacleList::find( const char* ident, int n ) const {
- dlist_iterator getNext( theList );
- int i = 1;
- Barnacle* p;
- while( 0 != (  p = (Barnacle*) getNext()  )) 
-  if( strcmp( ident, p->id ) == 0 )
-    if( n == i++ ) 
-      return p->info;
- return 0;
-}
-
-Barnacle* BarnacleList::lift( const char* ident, int n ) {
- dlist_iterator getNext( theList );
- int i = 1;
- Barnacle* p;
- while( 0 != (  p = (Barnacle*) getNext()  )) 
-  if( strcmp( ident, p->id ) == 0 ) {
-   if( n == i++ ) {
-    theList.remove( (void*) p );   // ??? This is REALLY stupid!
-    return p;
-   }
-  }
- return 0;
-}
-
-Barnacle::Barnacle( const char* s, const BarnacleData* e ) {
- id = new char[ strlen(s) + 1 ];
- strcpy( id, s );
- info = (BarnacleData*) e;
-
-}
-
-Barnacle::~Barnacle() {
- delete [] id;
- delete info;
-
-}
