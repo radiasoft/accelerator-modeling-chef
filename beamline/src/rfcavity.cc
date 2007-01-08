@@ -106,8 +106,8 @@ rfcavity::rfcavity( const char* name_arg, // name
 }
 
 
-rfcavity::rfcavity( const rfcavity& x ) 
-:   bmlnElmnt( (bmlnElmnt&) x ) 
+rfcavity::rfcavity( rfcavity const& x ) 
+:   bmlnElmnt( x ) 
   , w_rf(x.w_rf)
   , phi_s(x.phi_s)
   , sin_phi_s(x.sin_phi_s)
@@ -131,7 +131,11 @@ void rfcavity::_finishConstructor()
 {
   // NOTE: If this code is ever modified, you 
   // must also modify rfcavity::readFrom and rfcavity::writeTo
+
+  thinrfcavity* q = 0; 
+
   if( 0 != _u ) { 
+
     // rfcavity has been constructed before;
     // it is now being modified
     // ------------------------------------
@@ -152,16 +156,21 @@ void rfcavity::_finishConstructor()
     for( int i = 0; i < 3; i++ ) { delete holder[i]; }
   }
   else { 
+
     // initial construction of rfcavity
     // -----------------------------------
     _u = new bmlnElmnt* [3];
 
     _v = _u;
+
     *(_v++) = new drift( this->Length()/2.0 );
-    *(_v)   = new thinrfcavity( 0.0, 1.0e9*(this->Strength()), phi_s, Q, R );
-    dynamic_cast<thinrfcavity*>(*_v)->setHarmonicNumber(h);
-    dynamic_cast<thinrfcavity*>(*_v)->setRadialFrequency(w_rf);
-    _v++;
+
+    q = new thinrfcavity( 0.0, 1.0e9*(this->Strength()), phi_s, Q, R );
+    q->setHarmonicNumber(h);
+    q->setRadialFrequency(w_rf);
+
+    *(_v++)   = q;
+ 
     *(_v)   = new drift( this->Length()/2.0 );
   }
 }
@@ -383,7 +392,7 @@ thinrfcavity::thinrfcavity(const char * name_arg, // name
 }
 
 thinrfcavity::thinrfcavity( const thinrfcavity& x ) 
-:   bmlnElmnt( (bmlnElmnt&) x ) 
+:   bmlnElmnt( x ) 
   , w_rf( x.w_rf )
   , phi_s( x.phi_s )
   , sin_phi_s( x.sin_phi_s )
@@ -455,7 +464,7 @@ void thinrfcavity::setFrequency( double const& f )
 void thinrfcavity::setFrequencyRelativeTo( double const& f )
 {
   if( (0 < f) && (0 < h) ) {
-    MATH_TWOPI*( ((double) h)*f );
+    w_rf = MATH_TWOPI*h*f;
   }
 }
 
@@ -471,7 +480,7 @@ void thinrfcavity::setRadialFrequency( double const& omega )
 void thinrfcavity::setRadialFrequencyRelativeTo( double const& omega )
 {
   if( (0 < omega) && (0 < h) ) {
-    w_rf = ((double) h)*omega;
+    w_rf = h*omega;
   }
 }
 
