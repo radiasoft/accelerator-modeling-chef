@@ -28,6 +28,10 @@ import numarray
 PH_NORM_mp  = 0.938               #  [GeV]  Proton Rest Mass 
 energy = 150.0                    #  Tevatron injection energy 
 
+# Preserve the current Jet environment
+storedEnv    =   mxyzptlk.Jet__environment.getLastEnv()
+storedEnvC   =   mxyzptlk.JetC__environment.getLastEnv()
+
 pr = beamline.Proton( energy )
 
 #
@@ -60,14 +64,6 @@ print "Reference BRho = ", pr.ReferenceBRho()
 
 tevatron = bfact.create_beamline("normal_tevatron", pr.ReferenceBRho() )
 lfsage = physics_toolkit.LattFuncSage(tevatron,0)
-
-# Preserve/reset the current Jet environment
-
-storedEnv    =   mxyzptlk.Jet__environment.getLastEnv()
-mxyzptlk.Jet__environment.setLastEnv(  jp.State().Env())
-
-storedEnvC   =   mxyzptlk.JetC__environment.getLastEnv()
-mxyzptlk.JetC__environment.setLastEnv( mxyzptlk.toCmplxEnvironment( mxyzptlk.Jet__environment.getLastEnv() ) ); 
 
 # propagate the JetProton ( i.e. compute a one-turn map)
 tevatron.propagateJetParticle(jp)
@@ -108,14 +104,15 @@ ver_dPrime_array = numarray.zeros(nelm,  'Float64')
 # copy the lattice functions from the bealine elements to the arrays 
 
 i=0
-bit = beamline.DeepBeamlineIterator(tevatron)
-be = bit.reset()
-be = bit.next()
-while   be:
-# 	print i, be.Type()
-	lf  = be.dataHook.find("Twiss",1) # this should return a LattFuncSage.lattFunc
- 	print lf
-	be   = bit.next()
+
+bit = iter(tevatron)           # get iterator
+
+try:
+    while 1:
+	be   = bit.next()       # get each item
+    	print i, be.Type()
+	lf  = be.dataHook.find("Twiss",1).info().lattFunc() # this should return a LattFuncSage.lattFunc
+ 	#print lf
 	arcLength_array[i]      = lf.arcLength
 	hor_beta_array[i]       = lf.beta.hor
 	ver_beta_array[i]       = lf.beta.ver
@@ -126,6 +123,8 @@ while   be:
 	hor_dPrime_array[i]     = lf.dPrime.hor
 	ver_dPrime_array[i]     = lf.dPrime.ver
 	i = i+1   
+
+except StopIteration: pass  # iterator exhausted
 
 #--------------------------------------
 # plot and display the lattice functions
@@ -158,6 +157,11 @@ plot.show()
 #print hor_beta_array
 #print hor_disp_array
 #print hor_dPrime_array
+
+
+
+
+
 
 
 
