@@ -385,6 +385,22 @@ void std::__uninitialized_fill_n_aux<__gnu_cxx::__normal_iterator<std::complex<d
 
 #else
 
+template
+std::vector<Barnacle>::iterator 
+std::remove_if(std::vector<Barnacle>::iterator, std::vector<Barnacle>::iterator, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >);
+
+template
+std::_List_iterator<Barnacle> std::remove_copy_if<std::_List_iterator<Barnacle>, std::_List_iterator<Barnacle>, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >(std::_List_iterator<Barnacle>, std::_List_iterator<Barnacle>, std::_List_iterator<Barnacle>, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >);
+
+template
+__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > > std::find_if<__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >(__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, __gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::random_access_iterator_tag);
+
+template
+__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > > std::remove_copy_if<__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, __gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >(__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, __gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, __gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >);
+
+template
+std::_List_iterator<Barnacle> std::remove_if<std::_List_iterator<Barnacle>, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >(std::_List_iterator<Barnacle>, std::_List_iterator<Barnacle>, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >);
+
 template 
 class __gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > > std::__uninitialized_fill_n_aux<__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> >(__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> const&, __false_type);
 
