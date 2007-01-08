@@ -39,15 +39,16 @@
 #include <string>   // needed for strcat
 #include <math.h>
 
+#include <LattFncData.h>
+
 #include <complexAddon.h>
 #include <bmlfactory.h>
-#include <LattFncData.h>
 #include <BeamlineContext.h>
-#include <chefplotmain.h>
-#include <boost/shared_ptr.hpp>
+#include <CHEFPlotMain.h>
+#include <CHEFCurve.h>
+#include <CurveData.h>
 #include <qwt/qwt_plot.h>
 
-static double* dnull = 0;
 
 // This undef is needed because of the compiler.
 #undef connect
@@ -57,103 +58,22 @@ LattFncData::LattFncData( BeamlineContext* bcp, std::ostream* stdoutstream, std:
   _outputStreamPtr(stderrstream),
   _bmlConPtr(bcp),  
   _deleteContext(false),
-  _arraySize(0),     
-  _azimuth(dnull),
-  _beta_H(dnull ),      
-  _beta_V(dnull),
-  _inv_beta_H(dnull ),  
-  _inv_beta_V(dnull),
-  _root_beta_H(dnull ), 
-  _root_beta_V(dnull),
-  _alpha_H(dnull ),     
-  _alpha_V(dnull),
-  _psi_H(dnull ),       
-  _psi_V(dnull),
-  _disp_H(dnull ),      
-  _disp_V(dnull), 
   _name("undefined"),
   _plotType( betaPlot )
-{
-  this->_finishConstructor();
-}
+{}
 
 
-LattFncData::LattFncData( const Particle& prt, beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream)
+LattFncData::LattFncData( Particle const& prt, beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream)
 : _errorStreamPtr(stdoutstream), _outputStreamPtr(stderrstream),
   _bmlConPtr(0),  
   _deleteContext( true ),
-  _arraySize( 0 ),     
-  _azimuth( dnull ),
-  _beta_H( dnull ),      
-  _beta_V( dnull ),
-  _inv_beta_H( dnull ),  
-  _inv_beta_V( dnull ),
-  _root_beta_H( dnull ), 
-  _root_beta_V( dnull ),
-  _alpha_H( dnull ),     
-  _alpha_V( dnull ),
-  _psi_H( dnull ),       
-  _psi_V( dnull ),
-  _disp_H ( dnull ),      
-  _disp_V( dnull ), 
   _name("undefined"),
   _plotType( betaPlot )
 {
   _bmlConPtr = new BeamlineContext( prt, pBml, false );
-  this->_finishConstructor();
+
 }
 
-void LattFncData::_finishConstructor()
-{
-  const beamline* bmlPtr = _bmlConPtr->cheatBmlPtr();
-
-  // Create the lattice function arrays.
-  _arraySize   = bmlPtr->countHowManyDeeply();
-
-  _azimuth     = boost::shared_array<double>( new double[_arraySize] );
-  _beta_H      = boost::shared_array<double>( new double[_arraySize] );
-  _alpha_H     = boost::shared_array<double>( new double[_arraySize] );
-  _psi_H       = boost::shared_array<double>( new double[_arraySize] );
-  _beta_V      = boost::shared_array<double>( new double[_arraySize] );
-  _alpha_V     = boost::shared_array<double>( new double[_arraySize] );
-  _psi_V       = boost::shared_array<double>( new double[_arraySize] );
-  _inv_beta_H  = boost::shared_array<double>( new double[_arraySize] );
-  _inv_beta_V  = boost::shared_array<double>( new double[_arraySize] );
-  _root_beta_H = boost::shared_array<double>( new double[_arraySize] );
-  _root_beta_V = boost::shared_array<double>( new double[_arraySize] );
-  _disp_H      = boost::shared_array<double>( new double[_arraySize] );
-  _disp_V      = boost::shared_array<double>( new double[_arraySize] );
-
-  double* azimuth     = _azimuth.get();
-  double* beta_H      = _beta_H.get();
-  double* beta_V      = _beta_V.get();
-  double* inv_beta_H  = _inv_beta_H.get();
-  double* inv_beta_V  = _inv_beta_V.get(); 
-  double* root_beta_H = _root_beta_H.get();
-  double* root_beta_V = _root_beta_V.get(); 
-  double* alpha_H     = _alpha_H.get(); 
-  double* alpha_V     = _alpha_V.get(); 
-  double* psi_H       = _psi_H.get();
-  double* psi_V       = _psi_V.get();
-  double* disp_H      = _disp_H.get();  
-  double* disp_V      = _disp_V.get();
-
-  for( int i = 0; i < _arraySize; i++ ) {
-    *(azimuth++)    =  0.0;
-    *(beta_H++)     =  0.0;
-    *(beta_V++)     =  0.0;
-    *(inv_beta_H++) =  0.0;
-    *(inv_beta_V++) =  0.0;
-    *(root_beta_H++)=  0.0;
-    *(root_beta_V++)=  0.0;
-    *(alpha_H++)    =  0.0;
-    *(alpha_V++)    =  0.0;
-    *(psi_H++)      =  0.0;
-    *(psi_V++)      =  0.0;
-    *(disp_H++)     =  0.0;
-    *(disp_V++)     =  0.0;
-  }
-}
 
 LattFncData::~LattFncData()
 {
@@ -172,73 +92,50 @@ void LattFncData::doCalc()
     _currentTune[1] = -1.0;
   }
 
-  int i = 0;
-  const LattFuncSage::lattFunc* infoPtr = _bmlConPtr->getLattFuncPtr(i);
+
+  std::vector<LattFuncSage::lattFunc> const&  twiss_array = _bmlConPtr->getTwissArray();
  
-  while( 0 != infoPtr ) {
-    if( i >= _arraySize ) {
-      i = _arraySize;
-      infoPtr = 0;
-      *(_errorStreamPtr) 
-        << "\n*** WARNING *** "
-           "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-        << "\n*** WARNING *** voidLattFncData::doCalc()"
-           "\n*** WARNING *** Too many lattice functions read."
-           "\n*** WARNING *** Am resetting to " << _arraySize << " in all."
-        << "\n*** WARNING *** "
-        << std::endl;
-    }
-    else {
-      _azimuth[i]      = infoPtr->arcLength;
-      _beta_H[i]       = infoPtr->beta.hor;
-      _alpha_H[i]      = infoPtr->alpha.hor;
-      _psi_H[i]        = infoPtr->psi.hor;
-      _beta_V[i]       = infoPtr->beta.ver;
-      _alpha_V[i]      = infoPtr->alpha.ver;
-      _psi_V[i]        = infoPtr->psi.ver;
-      _inv_beta_H[i]   = 1.0/infoPtr->beta.hor;
-      _inv_beta_V[i]   = 1.0/infoPtr->beta.ver;
-      _root_beta_H[i]  = sqrt(infoPtr->beta.hor);
-      _root_beta_V[i]  = sqrt(infoPtr->beta.ver);
-      _disp_H[i]       = infoPtr->dispersion.hor;
-      _disp_V[i]       = infoPtr->dispersion.ver;
+  for ( std::vector<LattFuncSage::lattFunc>::const_iterator it =  twiss_array.begin();  it !=  twiss_array.end(); ++it ) {
 
-      infoPtr = _bmlConPtr->getLattFuncPtr(++i);
-    }
+      _azimuth.push_back( it->arcLength      );
+       _beta_H.push_back(  it->beta.hor      );
+      _alpha_H.push_back( it->alpha.hor      );
+        _psi_H.push_back(   it->psi.hor      );
+       _beta_V.push_back(  it->beta.ver      );
+      _alpha_V.push_back( it->alpha.ver      );
+        _psi_V.push_back(   it->psi.ver      );
+   _inv_beta_H.push_back(  1.0/it->beta.hor  );
+   _inv_beta_V.push_back(  1.0/it->beta.ver  );
+  _root_beta_H.push_back( sqrt(it->beta.hor) );
+  _root_beta_V.push_back( sqrt(it->beta.ver) );
+       _disp_H.push_back( it->dispersion.hor );
+       _disp_V.push_back( it->dispersion.ver );
+
   }
 
-  if( i != _arraySize ) {
-    *(_errorStreamPtr) 
-         << "\n*** WARNING *** "
-         << __FILE__ << ", " << __LINE__ << ": "
-         << "LattFncData::doCalc(): "
-         << "\n*** WARNING ***  _arraySize is being reset from "
-         << _arraySize << " to " << i << "."
-         << "\n*** WARNING *** "
-         << std::endl;
-  }
-
-  _arraySize = i;
 }
 
 
 void LattFncData::makeCurves()
 {
   // This test should be removed, but for now I retain it.   - lpjm
+
   if( _bmlConPtr->isTreatedAsRing() ) {
+
+
     boost::shared_ptr<CHEFCurve>  
-      c1( new CHEFCurve(  CurveData(_azimuth, _beta_H, _arraySize), "Horizontal Beta" ) );
+      c1( new CHEFCurve(  CurveData( &_azimuth[0], &_beta_H[0], _azimuth.size() ), "Horizontal Beta" ) );
     boost::shared_ptr<CHEFCurve>  
-      c2( new CHEFCurve(  CurveData( _azimuth, _beta_V, _arraySize), "Vertical Beta" ) );
+      c2( new CHEFCurve(  CurveData( &_azimuth[0], &_beta_V[0], _azimuth.size() ), "Vertical Beta" ) );
     boost::shared_ptr<CHEFCurve> 
-      c3( new CHEFCurve(  CurveData( _azimuth, _disp_H, _arraySize), "Horizontal Dispersion" ) );
+      c3( new CHEFCurve(  CurveData( &_azimuth[0], &_disp_H[0], _azimuth.size() ), "Horizontal Dispersion" ) );
     boost::shared_ptr<CHEFCurve>  
-      c4( new CHEFCurve(  CurveData(_azimuth, _disp_V, _arraySize), "Vertical Dispersion" ) );
+      c4( new CHEFCurve(  CurveData( &_azimuth[0], &_disp_V[0], _azimuth.size() ), "Vertical Dispersion" ) );
 
     c1->setPen( QPen( "black", 1, Qt::SolidLine ) );
-    c2->setPen( QPen( "red", 1, Qt::SolidLine ) );
-    c3->setPen( QPen( "black",  0, Qt::DashLine ) );
-    c4->setPen( QPen( "red",  0, Qt::DashLine ) );
+    c2->setPen( QPen( "red",   1, Qt::SolidLine ) );
+    c3->setPen( QPen( "black", 0, Qt::DashLine ) );
+    c4->setPen( QPen( "red",   0, Qt::DashLine ) );
 
     c1->setAxis( QwtPlot::xBottom, QwtPlot::yLeft  );
     c2->setAxis( QwtPlot::xBottom, QwtPlot::yLeft  );
@@ -257,28 +154,25 @@ void LattFncData::makeCurves()
     setYLabel( "Dispersion [m]", QwtPlot::yRight );
 
     setScaleMagRight( 5.0 ); 
-    setBeamline( _bmlConPtr->cheatBmlPtr(), false ); // false = do not clone line   
+    setBeamline( *_bmlConPtr->cheatBmlPtr() ); // false = do not clone line   
   }
 
   // The following is done if the line is really a line.
   else {
+
     boost::shared_ptr<CHEFCurve>  
-      c1( new CHEFCurve(  CurveData(_azimuth, _beta_H, _arraySize),
-                          "Horizontal Beta" ) );
+      c1( new CHEFCurve(  CurveData(  &_azimuth[0], &_beta_H[0], _azimuth.size()),   "Horizontal Beta" ) );
     boost::shared_ptr<CHEFCurve>  
-      c2( new CHEFCurve(  CurveData( _azimuth, _beta_V, _arraySize), 
-                                    "Vertical Beta" ) );
+      c2( new CHEFCurve(  CurveData(  &_azimuth[0], &_beta_V[0], _azimuth.size()),   "Vertical Beta" ) );
     boost::shared_ptr<CHEFCurve> 
-      c3( new CHEFCurve(  CurveData( _azimuth, _alpha_H, _arraySize), 
-                                     "Horizontal Alpha" ) );
+      c3( new CHEFCurve(  CurveData(  &_azimuth[0], &_alpha_H[0], _azimuth.size()),  "Horizontal Alpha" ) );
     boost::shared_ptr<CHEFCurve>  
-      c4( new CHEFCurve(  CurveData(_azimuth, _alpha_V, _arraySize), 
-                                    "Vertical Alpha" ) );
+      c4( new CHEFCurve(  CurveData(  &_azimuth[0], &_alpha_V[0], _azimuth.size()),   "Vertical Alpha" ) );
 
     c1->setPen( QPen( "black", 1, Qt::SolidLine ) );
-    c2->setPen( QPen( "red", 1, Qt::SolidLine ) );
-    c3->setPen( QPen( "black",  0, Qt::DashLine ) );
-    c4->setPen( QPen( "red",  0, Qt::DashLine ) );
+    c2->setPen( QPen( "red",   1, Qt::SolidLine ) );
+    c3->setPen( QPen( "black", 0, Qt::DashLine ) );
+    c4->setPen( QPen( "red",   0, Qt::DashLine ) );
 
     c1->setAxis( QwtPlot::xBottom, QwtPlot::yLeft  );
     c2->setAxis( QwtPlot::xBottom, QwtPlot::yLeft  );
@@ -297,7 +191,7 @@ void LattFncData::makeCurves()
     setYLabel( "Alpha",    QwtPlot::yRight );
 
     // setScaleMagRight( 5.0 ); 
-    setBeamline( _bmlConPtr->cheatBmlPtr(), false ); // false = do not clone line   
+    setBeamline( *_bmlConPtr->cheatBmlPtr() ); // false = do not clone line   
   }
 }
 

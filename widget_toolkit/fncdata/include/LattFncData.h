@@ -38,10 +38,11 @@
 
 #include <beamline.h>
 #include <LattFuncSage.h>
-#include <chefplotdata.h>
+#include <CHEFPlotData.h>
 
 #include <ostream>
-#include <boost/shared_array.hpp>
+#include <vector>
+#include <boost/shared_ptr.hpp>
 
 
 class BeamlineContext;
@@ -73,21 +74,19 @@ class LattFncData: public CHEFPlotData
     double           _currentTune[2];
     double           _dnu_x;
 
-    int              _arraySize;
-
-    boost::shared_array<double>   _azimuth;
-    boost::shared_array<double>   _beta_H;
-    boost::shared_array<double>   _beta_V;
-    boost::shared_array<double>   _inv_beta_H;
-    boost::shared_array<double>   _inv_beta_V;
-    boost::shared_array<double>   _root_beta_H;
-    boost::shared_array<double>   _root_beta_V;
-    boost::shared_array<double>   _alpha_H;
-    boost::shared_array<double>   _alpha_V;
-    boost::shared_array<double>   _psi_H;
-    boost::shared_array<double>   _psi_V;
-    boost::shared_array<double>   _disp_H;
-    boost::shared_array<double>   _disp_V;
+    std::vector<double>   _azimuth;
+    std::vector<double>   _beta_H;
+    std::vector<double>   _beta_V;
+    std::vector<double>   _inv_beta_H;
+    std::vector<double>   _inv_beta_V;
+    std::vector<double>   _root_beta_H;
+    std::vector<double>   _root_beta_V;
+    std::vector<double>   _alpha_H;
+    std::vector<double>   _alpha_V;
+    std::vector<double>   _psi_H;
+    std::vector<double>   _psi_V;
+    std::vector<double>   _disp_H;
+    std::vector<double>   _disp_V;
 
     std::string                 _name;
 
@@ -96,7 +95,6 @@ class LattFncData: public CHEFPlotData
     long crv1, crv2, crv3, crv4;
     long mrk1, mrk2;
     
-    void _finishConstructor();
 };
 
 

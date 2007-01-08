@@ -40,7 +40,7 @@
 
 #include <beamline.h>
 #include <LattFuncSage.h>
-#include <chefplotdata.h>
+#include <CHEFPlotData.h>
 #include <boost/shared_array.hpp>
 
 
@@ -53,30 +53,28 @@ class LBFncData : public CHEFPlotData
     bool             _deleteContext;
     double           _currentTune[2];
 
-    int     _arraySize;
-
     // The following representation is named
     //   to agree with Lebedev & Bogacz, 
     //   "Betatron Motion with Coupling ..."
-    boost::shared_array<double> _azimuth;
-    boost::shared_array<double> _beta_1x;
-    boost::shared_array<double> _beta_1y;
-    boost::shared_array<double> _beta_2x;
-    boost::shared_array<double> _beta_2y;
-    boost::shared_array<double> _alpha_1x;
-    boost::shared_array<double> _alpha_1y;
-    boost::shared_array<double> _alpha_2x;
-    boost::shared_array<double> _alpha_2y;
-    boost::shared_array<double> _u1;
-    boost::shared_array<double> _u2;
-    boost::shared_array<double> _u3;
-    boost::shared_array<double> _u4;
-    boost::shared_array<double> _nu_1;
-    boost::shared_array<double> _nu_2;
+
+    std::vector<double> _azimuth;
+    std::vector<double> _beta_1x;
+    std::vector<double> _beta_1y;
+    std::vector<double> _beta_2x;
+    std::vector<double> _beta_2y;
+    std::vector<double> _alpha_1x;
+    std::vector<double> _alpha_1y;
+    std::vector<double> _alpha_2x;
+    std::vector<double> _alpha_2y;
+    std::vector<double> _u1;
+    std::vector<double> _u2;
+    std::vector<double> _u3;
+    std::vector<double> _u4;
+    std::vector<double> _nu_1;
+    std::vector<double> _nu_2;
 
     char*   _name;
 
-    void _finishConstructor();
 
  public:
     LBFncData( const Particle&, beamline*, std::ostream* = &std::cout, std::ostream* = &std::cerr);

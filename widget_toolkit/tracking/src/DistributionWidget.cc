@@ -101,7 +101,7 @@ DistributionWidget::DistributionWidget( BeamlineContext& x, QWidget* parent, con
   , _bmlPtr(0)
   , _bmlConPtr(&x)
   , _kind(uniform)
-  , _theSamplePtr(x._particleBunchPtr)
+  , _theSamplePtr(x.particleBunchPtr_)
   , _average(6)
   , _covariance(6,6)
   , _statsGiven(false)
@@ -317,12 +317,12 @@ void DistributionWidget::_finishConstructor()
 
          if( 0 != _bmlConPtr ) {
            if( _bmlConPtr->isTreatedAsRing() ) {
-             const LBSage::Info* lbsPtr
-               = _bmlConPtr->getLBFuncPtr( _bmlConPtr->countHowManyDeeply() - 1 );
-             beta_x = lbsPtr->beta_1x;
-             beta_y = lbsPtr->beta_2y;
-             alpha_x = lbsPtr->alpha_1x;
-             alpha_y = lbsPtr->alpha_2y;
+             const LBSage::Info lbs
+               = _bmlConPtr->getLBArray().back();
+             beta_x  = lbs.beta_1x;
+             beta_y  = lbs.beta_2y;
+             alpha_x = lbs.alpha_1x;
+             alpha_y = lbs.alpha_2y;
            }
          }
  

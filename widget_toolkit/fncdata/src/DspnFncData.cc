@@ -38,9 +38,12 @@
 #include <string>   // needed for strcat
 #include <math.h>
 
+#include <DspnFncData.h>
+
+#include <CHEFCurve.h>
+#include <CurveData.h>
 #include <complexAddon.h>
 #include <bmlfactory.h>
-#include <DspnFncData.h>
 #include <BeamlineContext.h>
 #include <GenericException.h>
 #include <iosetup.h>
@@ -62,86 +65,36 @@ using namespace std;
 DspnFncData::DspnFncData( BeamlineContext* bcp, std::ostream*  stdoutstream, std::ostream* stderrstream )
 : _bmlConPtr(bcp), 
   _deleteContext(false),
-  _arraySize(0), 
-  _azimuth(dnull),
-  _clo_H(dnull), 
-  _clo_V(dnull), 
-  _disp_H(dnull), 
-  _disp_V(dnull),
   _errorStreamPtr(stderrstream), 
   _outputStreamPtr(stdoutstream)
 
-{
-  this->_finishConstructor();
-}
+{}
 
 
 DspnFncData::DspnFncData( const Particle& prt, beamline* pBml, std::ostream*  stdoutstream, std::ostream* stderrstream )
 : _bmlConPtr(0), 
   _deleteContext(true),
-  _arraySize(0), 
-  _azimuth(dnull),
-  _clo_H(dnull), 
-  _clo_V(dnull), 
-  _disp_H(dnull), 
-  _disp_V(dnull),
   _errorStreamPtr(stderrstream), 
   _outputStreamPtr(stdoutstream)
 {
   _bmlConPtr = new BeamlineContext( prt, pBml, false );
-  this->_finishConstructor();
-}
-
-void DspnFncData::_finishConstructor( )
-{
-  const beamline* bmlPtr = _bmlConPtr->cheatBmlPtr();
-
-  // Create the lattice function arrays.
-  _arraySize   = bmlPtr->countHowManyDeeply();
- 
-  _azimuth     = boost::shared_array<double>( new double[_arraySize] );
-  _disp_H      = boost::shared_array<double>( new double[_arraySize] );
-  _disp_V      = boost::shared_array<double>( new double[_arraySize] );
-  _dPrime_H    = boost::shared_array<double>( new double[_arraySize] );
-  _dPrime_V    = boost::shared_array<double>( new double[_arraySize] );
-  _clo_H       = boost::shared_array<double>( new double[_arraySize] );
-  _clo_V       = boost::shared_array<double>( new double[_arraySize] );
-
-  double* azimuth     =_azimuth.get();   
-  double* disp_H      =_disp_H.get();    
-  double* disp_V      =_disp_V.get();    
-  double* dPrime_H    =_dPrime_H.get();  
-  double* dPrime_V    =_dPrime_V.get();  
-  double* clo_H       =_clo_H.get();     
-  double* clo_V       =_clo_V.get();     
-
-  for( int i = 0; i < _arraySize; i++ ) {
-    *(azimuth)++  = 0.0;
-    *(disp_H)++   = 0.0;
-    *(disp_V)++   = 0.0;
-    *(dPrime_H)++ = 0.0;
-    *(dPrime_V)++ = 0.0;
-    *(clo_H)++    = 0.0;
-    *(clo_V)++    = 0.0;
-  }
-
 }
 
 
 void DspnFncData::makeCurves()
 {
   boost::shared_ptr<CHEFCurve> 
-    c1( new CHEFCurve( CurveData( _azimuth, _disp_H, _arraySize), "Hor Dispersion" ) );
+    c1( new CHEFCurve( CurveData( &_azimuth[0], &_disp_H[0],   _azimuth.size()), "Hor Dispersion" ) );
   boost::shared_ptr<CHEFCurve>
-    c2( new CHEFCurve( CurveData( _azimuth, _disp_V, _arraySize), "Ver Dispersion" ) );
+    c2( new CHEFCurve( CurveData( &_azimuth[0], &_disp_V[0],   _azimuth.size()), "Ver Dispersion" ) );
   boost::shared_ptr<CHEFCurve>
-    c3( new CHEFCurve( CurveData( _azimuth, _dPrime_H, _arraySize),  "Hor Dispersion Derivative" ) );
+    c3( new CHEFCurve( CurveData( &_azimuth[0], &_dPrime_H[0], _azimuth.size()),  "Hor Dispersion Derivative" ) );
   boost::shared_ptr<CHEFCurve>
-    c4( new CHEFCurve( CurveData( _azimuth, _dPrime_V, _arraySize),  "Ver Dispersion Derivative" ) );
+    c4( new CHEFCurve( CurveData( &_azimuth[0], &_dPrime_V[0], _azimuth.size()),  "Ver Dispersion Derivative" ) );
   boost::shared_ptr<CHEFCurve> 
-    c5( new CHEFCurve( CurveData( _azimuth, _clo_H, _arraySize),  "Hor Closed Orbit" ) );
+    c5( new CHEFCurve( CurveData( &_azimuth[0], &_clo_H[0],    _azimuth.size()),  "Hor Closed Orbit" ) );
   boost::shared_ptr<CHEFCurve>
-    c6( new CHEFCurve( CurveData( _azimuth, _clo_V, _arraySize),  "Ver Closed Orbit" ) );
+    c6( new CHEFCurve( CurveData( &_azimuth[0], &_clo_V[0],    _azimuth.size()),  "Ver Closed Orbit" ) );
 
 
   c1->setPen( QPen( "black",  1, Qt::SolidLine ) );
@@ -171,7 +124,8 @@ void DspnFncData::makeCurves()
   setYLabel( "Closed Orbit [mm]", QwtPlot::yRight );
 
   setScaleMagRight( 5.0 ); 
-  setBeamline( _bmlConPtr->cheatBmlPtr(), false ); // false = do not clone line   
+  setBeamline( *_bmlConPtr->cheatBmlPtr()); 
+
 }
 
 
@@ -189,59 +143,21 @@ void DspnFncData::doCalc()
   const double mm = 0.001;
   int i = 0;
 
-  const DispersionSage::Info* infoPtr;
-  try {
-    infoPtr = _bmlConPtr->getDispersionPtr(i);
+  std::vector<DispersionSage::Info> const& dispersion_array =  _bmlConPtr->getDispersionArray();
+
+  for ( std::vector<DispersionSage::Info>::const_iterator it  =  dispersion_array.begin(); 
+                                                          it !=  dispersion_array.end(); ++it ) {
+
+      _azimuth.push_back(   it->arcLength             );
+        _clo_H.push_back(   it->closedOrbit.hor / mm  );
+        _clo_V.push_back(   it->closedOrbit.ver / mm  );
+       _disp_H.push_back(   it->dispersion.hor        );
+       _disp_V.push_back(   it->dispersion.ver        );
+     _dPrime_H.push_back(   it->dPrime.hor            );
+     _dPrime_V.push_back(   it->dPrime.ver            );
+
+
   }
-  catch( const GenericException& ge ) {
-    throw ge;
-  }
-
-  double* azimuth     =_azimuth.get();   
-  double* disp_H      =_disp_H.get();    
-  double* disp_V      =_disp_V.get();    
-  double* dPrime_H    =_dPrime_H.get();  
-  double* dPrime_V    =_dPrime_V.get();  
-  double* clo_H       =_clo_H.get();     
-  double* clo_V       =_clo_V.get();     
-
-  while( 0 != infoPtr ) {
-    if( i >= _arraySize ) {
-      i = _arraySize;
-      infoPtr = 0;
-      *(_errorStreamPtr) 
-        << "\n*** WARNING *** "
-           "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-        << "\n*** WARNING *** void DspnFncData::doCalc()"
-           "\n*** WARNING *** Too many lattice functions read."
-           "\n*** WARNING *** Am resetting to " << _arraySize << " in all."
-        << "\n*** WARNING *** "
-        << std::endl;
-    }
-    else {
-      *(azimuth++)     = infoPtr->arcLength;
-      *(clo_H++)        = infoPtr->closedOrbit.hor / mm;
-      *(clo_V++)        = infoPtr->closedOrbit.ver / mm;
-      *(disp_H++)       = infoPtr->dispersion.hor;
-      *(disp_V++)       = infoPtr->dispersion.ver;
-      *(dPrime_H++)     = infoPtr->dPrime.hor;
-      *(dPrime_V++)     = infoPtr->dPrime.ver;
-
-      infoPtr = _bmlConPtr->getDispersionPtr(++i);
-    }
-  }
-
-  if( i != _arraySize ) {
-    (*pcerr) << "\n*** WARNING *** "
-         << __FILE__ << ", " << __LINE__ << ": "
-         << "DspnFncData::recalc(): "
-         << "\n*** WARNING ***  _arraySize is being reset from "
-         << _arraySize << " to " << i << "."
-         << "\n*** WARNING *** "
-         << std::endl;
-  }
-
-  _arraySize = i;
 }
 
 

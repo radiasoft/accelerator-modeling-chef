@@ -1082,11 +1082,11 @@ void RayTrace::setState( const Vector& s )
 
 void RayTrace::_iterate()
 {
-  if( 0 == (_bmlConPtr->_particleBunchPtr )) {
+  if( 0 == (_bmlConPtr->particleBunchPtr_ )) {
     _pushParticle(); 
   }
   else {
-    if( _bmlConPtr->_particleBunchPtr->isEmpty() ) { 
+    if( _bmlConPtr->particleBunchPtr_->isEmpty() ) { 
       _pushParticle(); 
     }
     else                                           { 
@@ -1099,7 +1099,7 @@ void RayTrace::_iterate()
 void RayTrace::_pushBunch()
 {
   const Particle* particlePtr = 0;
-  ParticleBunch* pbPtr = _bmlConPtr->_particleBunchPtr;
+  ParticleBunch* pbPtr = _bmlConPtr->particleBunchPtr_;
 
   if( _isIterating ) 
   {
@@ -1122,8 +1122,10 @@ void RayTrace::_pushBunch()
 
 void RayTrace::_pushParticle()
 {
-  beamline* bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
-  Particle* particlePtr = _bmlConPtr->_particlePtr;
+  beamline* bmlPtr = const_cast<beamline*>(_bmlConPtr->cheatBmlPtr());
+
+  Particle* particle = _bmlConPtr->particle_;
+
   // ??? This will eventually have to be changed.
   
   // Continuous operation
@@ -1143,14 +1145,14 @@ void RayTrace::_pushParticle()
 
       for( int i = 0; i < _number; i++ ) {
       	while( 0 != (q = dbi++) ) {
-      	  q->propagate( *particlePtr );
-      	  if(    (0.1 < std::abs(particlePtr->get_x())) 
-      	      || (0.1 < std::abs(particlePtr->get_y())) ) {
+      	  q->propagate( *particle );
+      	  if(    (0.1 < std::abs(particle->get_x())) 
+      	      || (0.1 < std::abs(particle->get_y())) ) {
 
-      	    _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() );
-      	    _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() );
-      	    _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() );
-      	    _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() );
+      	    _p_x_input ->_set_first ( particle->get_x(), particle->get_npx() );
+      	    _p_xp_input->_set_second( particle->get_x(), particle->get_npx() );
+      	    _p_y_input ->_set_first ( particle->get_y(), particle->get_npy() );
+      	    _p_yp_input->_set_second( particle->get_y(), particle->get_npy() );
 
       	    _p_leftWindow->updateGL();
       	    _p_rightWindow->updateGL();
@@ -1166,10 +1168,10 @@ void RayTrace::_pushParticle()
       _p_timer->start( 100, true );
     }
     else {
-      _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
-      _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
-      _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
-      _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() ); // sort.
+      _p_x_input ->_set_first ( particle->get_x(), particle->get_npx() ); // Probably should
+      _p_xp_input->_set_second( particle->get_x(), particle->get_npx() ); // be done by emitting
+      _p_y_input ->_set_first ( particle->get_y(), particle->get_npy() ); // a signal of some
+      _p_yp_input->_set_second( particle->get_y(), particle->get_npy() ); // sort.
     }
   }
 
@@ -1188,9 +1190,9 @@ void RayTrace::_pushParticle()
       DeepBeamlineIterator dbi( *bmlPtr );
       bmlnElmnt* q = 0;
       while( 0 != (q = dbi++) ) {
-        q->propagate( *particlePtr );
-        if(    (0.1 < std::abs(particlePtr->get_x())) 
-            || (0.1 < std::abs(particlePtr->get_y())) ) {
+        q->propagate( *particle );
+        if(    (0.1 < std::abs(particle->get_x())) 
+            || (0.1 < std::abs(particle->get_y())) ) {
           _p_leftWindow->updateGL();
           _p_rightWindow->updateGL();
 
@@ -1198,10 +1200,10 @@ void RayTrace::_pushParticle()
           _p_startBtn->setOn(false);
           _p_startBtn->setText( "Trace" );
 
-          _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
-          _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
-          _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
-          _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() ); // sort.
+          _p_x_input ->_set_first ( particle->get_x(), particle->get_npx() ); // Probably should
+          _p_xp_input->_set_second( particle->get_x(), particle->get_npx() ); // be done by emitting
+          _p_y_input ->_set_first ( particle->get_y(), particle->get_npy() ); // a signal of some
+          _p_yp_input->_set_second( particle->get_y(), particle->get_npy() ); // sort.
 
           return;
         }
@@ -1215,10 +1217,10 @@ void RayTrace::_pushParticle()
       _p_startBtn->setOn(false);
       _p_startBtn->setText( "Trace" );
 
-      _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
-      _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
-      _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
-      _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() ); // sort.
+      _p_x_input ->_set_first ( particle->get_x(), particle->get_npx() ); // Probably should
+      _p_xp_input->_set_second( particle->get_x(), particle->get_npx() ); // be done by emitting
+      _p_y_input ->_set_first ( particle->get_y(), particle->get_npy() ); // a signal of some
+      _p_yp_input->_set_second( particle->get_y(), particle->get_npy() ); // sort.
     }
   }
 }

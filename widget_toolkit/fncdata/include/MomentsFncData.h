@@ -38,8 +38,8 @@
 
 #include <beamline.h>
 #include <LattFuncSage.h>
-#include <chefplotdata.h>
-#include <boost/shared_array.hpp>
+#include <CHEFPlotData.h>
+#include <vector>
 
 class BeamlineContext;
 
@@ -56,27 +56,26 @@ class MomentsFncData : public CHEFPlotData
 
     int              _arraySize;
 
-    boost::shared_array<double>          _azimuth;
-    boost::shared_array<double>          _beta_H;
-    boost::shared_array<double>          _beta_V;
-    boost::shared_array<double>          _inv_beta_H;
-    boost::shared_array<double>          _inv_beta_V;
-    boost::shared_array<double>          _root_beta_H;
-    boost::shared_array<double>          _root_beta_V;
-    boost::shared_array<double>          _alpha_H;
-    boost::shared_array<double>          _alpha_V;
-    boost::shared_array<double>          _disp_H;
-    boost::shared_array<double>          _disp_V;
+    std::vector<double>          _azimuth;
+    std::vector<double>          _beta_H;
+    std::vector<double>          _beta_V;
+    std::vector<double>          _inv_beta_H;
+    std::vector<double>          _inv_beta_V;
+    std::vector<double>          _root_beta_H;
+    std::vector<double>          _root_beta_V;
+    std::vector<double>          _alpha_H;
+    std::vector<double>          _alpha_V;
+    std::vector<double>          _disp_H;
+    std::vector<double>          _disp_V;
 
     enum { betaPlot=0, invPlot, rootPlot } _plotType;
 
     long crv1, crv2, crv3, crv4;
     long mrk1, mrk2;
     
-    void _finishConstructor();
 
  public:
-    MomentsFncData( const Particle&, beamline*, std::ostream* stdoutstream = &std::cout, std::ostream* stderrstream=&std::cerr );
+    MomentsFncData( Particle const&,  beamline*, std::ostream* stdoutstream = &std::cout, std::ostream* stderrstream=&std::cerr );
     MomentsFncData( BeamlineContext*, std::ostream* stdoutstream = &std::cout, std::ostream* stderrstream=&std::cerr );
     ~MomentsFncData();
 

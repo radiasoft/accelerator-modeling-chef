@@ -219,10 +219,10 @@ void RectH::toDynamics( const Vector& state, double* xPtr, double* yPtr, double*
 }
 
 
-void RectH::toState( double a, double b, Particle* ptrPtr ) const
+void RectH::toState( double a, double b, Particle& ptr ) const
 {
-  ptrPtr->set_x(a);
-  ptrPtr->set_npx(b);
+  ptr.set_x(a);
+  ptr.set_npx(b);
 }
 
 void RectV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
@@ -233,10 +233,10 @@ void RectV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double*
 }
 
 
-void RectV::toState( double a, double b, Particle* ptrPtr ) const
+void RectV::toState( double a, double b, Particle& ptr ) const
 {
-  ptrPtr->set_y(a);
-  ptrPtr->set_npy(b);
+  ptr.set_y(a);
+  ptr.set_npy(b);
 }
 
 
@@ -248,10 +248,10 @@ void NormH::toDynamics( const Vector& state, double* xPtr, double* yPtr, double*
 }
 
 
-void NormH::toState( double a, double b, Particle* ptrPtr ) const
+void NormH::toState( double a, double b, Particle& ptr ) const
 {
-  ptrPtr->set_x(a);
-  ptrPtr->set_npx(( b - a*_alpha )/_beta);
+  ptr.set_x(a);
+  ptr.set_npx(( b - a*_alpha )/_beta);
 }
 
 
@@ -263,10 +263,10 @@ void NormV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double*
 }
 
 
-void NormV::toState( double a, double b, Particle* ptrPtr ) const
+void NormV::toState( double a, double b, Particle& ptr ) const
 {
-  ptrPtr->set_y(a);
-  ptrPtr->set_npy(( b - a*_alpha )/_beta);
+  ptr.set_y(a);
+  ptr.set_npy(( b - a*_alpha )/_beta);
 }
 
 
@@ -326,7 +326,7 @@ void IHIV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* 
 }
 
 
-void IHIV::toState( double IH, double IV, Particle* particlePtr ) const
+void IHIV::toState( double IH, double IV, Particle& particle ) const
 {
   double  u     = 0;
   double  v     = 0;
@@ -336,15 +336,15 @@ void IHIV::toState( double IH, double IV, Particle* particlePtr ) const
   double  beta  = 0;
 
   // If orbit has diverged, bring it back.
-  if( isnan(particlePtr->get_x()) || isnan(particlePtr->get_npx()) || 
-      isnan(particlePtr->get_y()) || isnan(particlePtr->get_npy())    ) 
+  if( isnan(particle.get_x()) || isnan(particle.get_npx()) || 
+      isnan(particle.get_y()) || isnan(particle.get_npy())    ) 
   {
-    particlePtr->set_x  (0.);
-    particlePtr->set_y  (0.);
-    particlePtr->set_cdt(0.);
-    particlePtr->set_npx(0.);
-    particlePtr->set_npy(0.);
-    particlePtr->set_ndp(0.);
+    particle.set_x  (0.);
+    particle.set_y  (0.);
+    particle.set_cdt(0.);
+    particle.set_npx(0.);
+    particle.set_npy(0.);
+    particle.set_ndp(0.);
     return;
   }
 
@@ -352,8 +352,8 @@ void IHIV::toState( double IH, double IV, Particle* particlePtr ) const
   beta  = _betaH;
   alpha = _alphaH;
 
-  u = particlePtr->get_x() - _x_o;
-  v = alpha*u + beta*( particlePtr->get_npx() - _xp_o );
+  u = particle.get_x() - _x_o;
+  v = alpha*u + beta*( particle.get_npx() - _xp_o );
   phi = atan2(u,v);
   if( phi > M_PI ) phi -= M_TWOPI;
 
@@ -361,20 +361,20 @@ void IHIV::toState( double IH, double IV, Particle* particlePtr ) const
     amp = sqrt(2.0*beta*IH);
     u = amp*sin(phi);
     v = amp*cos(phi);
-    particlePtr->set_x( _x_o + u );
-    particlePtr->set_npx( _xp_o + (( v - alpha*u )/beta) );
+    particle.set_x( _x_o + u );
+    particle.set_npx( _xp_o + (( v - alpha*u )/beta) );
   }
   else {
-    particlePtr->set_x( 0. );
-    particlePtr->set_npx( 0. );
+    particle.set_x( 0. );
+    particle.set_npx( 0. );
   }
 
   // Vertical
   beta  = _betaV;
   alpha = _alphaV;
 
-  u = particlePtr->get_y() - _y_o;
-  v = alpha*u + beta*( particlePtr->get_npy() - _yp_o );
+  u = particle.get_y() - _y_o;
+  v = alpha*u + beta*( particle.get_npy() - _yp_o );
   phi = atan2(u,v);
   if( phi > M_PI ) phi -= M_TWOPI;
 
@@ -382,12 +382,12 @@ void IHIV::toState( double IH, double IV, Particle* particlePtr ) const
     amp = sqrt(2.0*beta*IV);
     u = amp*sin(phi);
     v = amp*cos(phi);
-    particlePtr->set_y( _y_o + u );
-    particlePtr->set_npy( _yp_o + (( v - alpha*u )/beta) );
+    particle.set_y( _y_o + u );
+    particle.set_npy( _yp_o + (( v - alpha*u )/beta) );
   }
   else {
-    particlePtr->set_y( 0. );
-    particlePtr->set_npy( 0. );
+    particle.set_y( 0. );
+    particle.set_npy( 0. );
   }
 }
 
@@ -414,7 +414,7 @@ void PhiHPhiV::toDynamics( const Vector& state, double* xPtr, double* yPtr, doub
 }
 
 
-void PhiHPhiV::toState( double phiH, double phiV, Particle* particlePtr ) const
+void PhiHPhiV::toState( double phiH, double phiV, Particle& particle ) const
 {
   double u     = 0;
   double v     = 0;
@@ -423,15 +423,15 @@ void PhiHPhiV::toState( double phiH, double phiV, Particle* particlePtr ) const
   double beta  = 0;
 
   // If orbit has diverged, bring it back.
-  if( isnan(particlePtr->get_x()) || isnan(particlePtr->get_npx()) || 
-      isnan(particlePtr->get_y()) || isnan(particlePtr->get_npy())    ) 
+  if( isnan(particle.get_x()) || isnan(particle.get_npx()) || 
+      isnan(particle.get_y()) || isnan(particle.get_npy())    ) 
   {
-    particlePtr->set_x  (0.);
-    particlePtr->set_y  (0.);
-    particlePtr->set_cdt(0.);
-    particlePtr->set_npx(0.);
-    particlePtr->set_npy(0.);
-    particlePtr->set_ndp(0.);
+    particle.set_x  (0.);
+    particle.set_y  (0.);
+    particle.set_cdt(0.);
+    particle.set_npx(0.);
+    particle.set_npy(0.);
+    particle.set_ndp(0.);
     return;
   }
 
@@ -445,27 +445,27 @@ void PhiHPhiV::toState( double phiH, double phiV, Particle* particlePtr ) const
   beta  = _betaH;
   alpha = _alphaH;
 
-  u = particlePtr->get_x() - _x_o;
-  v = alpha*u + beta*( particlePtr->get_npx() - _xp_o );
+  u = particle.get_x() - _x_o;
+  v = alpha*u + beta*( particle.get_npx() - _xp_o );
 
   amp = sqrt( u*u + v*v );
   u = amp*sin(phiH);
   v = amp*cos(phiH);
-  particlePtr->set_x( _x_o + u );
-  particlePtr->set_npx( _xp_o + (( v - alpha*u )/beta) );
+  particle.set_x( _x_o + u );
+  particle.set_npx( _xp_o + (( v - alpha*u )/beta) );
 
   // Vertical
   beta  = _betaV;
   alpha = _alphaV;
 
-  u = particlePtr->get_y() - _y_o;
-  v = alpha*u + beta*( particlePtr->get_npy() - _yp_o );
+  u = particle.get_y() - _y_o;
+  v = alpha*u + beta*( particle.get_npy() - _yp_o );
 
   amp = sqrt( u*u + v*v );
   u = amp*sin(phiV);
   v = amp*cos(phiV);
-  particlePtr->set_y( _y_o + u );
-  particlePtr->set_npy( _yp_o + (( v - alpha*u )/beta) );
+  particle.set_y( _y_o + u );
+  particle.set_npy( _yp_o + (( v - alpha*u )/beta) );
 }
 
 
@@ -1468,12 +1468,11 @@ void Tracker::_view_norm()
   }
 
   if( _p_info ) { delete _p_info; _p_info = 0; }
-  int n = _bmlConPtr->countHowManyDeeply();
 
-  Vector sss( _bmlConPtr->_particlePtr->State() );
+  Vector sss( _bmlConPtr->particle_->State() );
 
   try {
-    _p_info = new LattFuncSage::lattFunc( *(_bmlConPtr->getLattFuncPtr(n-1)) );
+    _p_info = new LattFuncSage::lattFunc( _bmlConPtr->getTwissArray().back()  );
   }
   catch( const std::exception& ge ) {
     if( _p_info ) { delete _p_info; _p_info = 0; }
@@ -1523,10 +1522,9 @@ void Tracker::_view_actang()
   }
 
   if( _p_info ) { delete _p_info; _p_info = 0; }
-  int n = _bmlConPtr->countHowManyDeeply();
 
   try {
-    _p_info = new LattFuncSage::lattFunc( *(_bmlConPtr->getLattFuncPtr(n-1)) );
+    _p_info = new LattFuncSage::lattFunc( _bmlConPtr->getTwissArray().back() );
   }
   catch( const std::exception& ge ) {
     if( _p_info ) { delete _p_info; _p_info = 0; }
@@ -2037,7 +2035,7 @@ void Tracker::_makeNewOrbit()
 
 void Tracker::_cnvFromView( double a, double b, const OrbitTransformer* otPtr )
 {
-  otPtr->toState( a, b, _bmlConPtr->_particlePtr );   // ??? WARNING: VERY DANGEROUS! ???
+  otPtr->toState( a, b, *_bmlConPtr->particle_ );   // ??? WARNING: VERY DANGEROUS! ???
   _makeNewOrbit();
 }
 
@@ -2060,15 +2058,16 @@ void Tracker::setState( const Vector& s )
 void Tracker::_iterate()
 {
   beamline* bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
-  Particle* particlePtr = _bmlConPtr->_particlePtr;
+  Particle* particle = _bmlConPtr->particle_;
+
   // ??? WARNING: TWO VERY DANGEROUS LINES! ???
 
   if( _isIterating ) 
   {
     for( int i = 0; i < _number; i++ ) {
-      bmlPtr->propagate( *particlePtr );
-      _p_currOrb->add( particlePtr->State() );
-      // REMOVE: _history.add( particlePtr->State() );
+      bmlPtr->propagate( *particle );
+      _p_currOrb->add( particle->State() );
+      // REMOVE: _history.add( particle->State() );
     }
 
     _p_leftWindow->updateGL();
@@ -2081,10 +2080,10 @@ void Tracker::_iterate()
   else {
     _p_timer->stop();
 
-    _p_x_input ->_set_first ( particlePtr->get_x(), particlePtr->get_npx() ); // Probably should
-    _p_xp_input->_set_second( particlePtr->get_x(), particlePtr->get_npx() ); // be done by emitting
-    _p_y_input ->_set_first ( particlePtr->get_y(), particlePtr->get_npy() ); // a signal of some
-    _p_yp_input->_set_second( particlePtr->get_y(), particlePtr->get_npy() ); // sort.
+    _p_x_input ->_set_first ( particle->get_x(), particle->get_npx() ); // Probably should
+    _p_xp_input->_set_second( particle->get_x(), particle->get_npx() ); // be done by emitting
+    _p_y_input ->_set_first ( particle->get_y(), particle->get_npy() ); // a signal of some
+    _p_yp_input->_set_second( particle->get_y(), particle->get_npy() ); // sort.
   }
 }
 
