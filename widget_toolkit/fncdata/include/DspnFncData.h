@@ -38,9 +38,9 @@
 
 #include <beamline.h>
 #include <DispersionSage.h>
-#include <chefplotdata.h>
+#include <CHEFPlotData.h>
 #include <ostream>
-#include <boost/shared_array.hpp>
+#include <vector>
 
 
 class BeamlineContext;
@@ -57,18 +57,17 @@ class DspnFncData : public CHEFPlotData
 
     int              _arraySize;
 
-    boost::shared_array<double>          _azimuth;
-    boost::shared_array<double>          _clo_H;
-    boost::shared_array<double>          _clo_V;
-    boost::shared_array<double>          _disp_H;
-    boost::shared_array<double>          _disp_V;
-    boost::shared_array<double>          _dPrime_H;
-    boost::shared_array<double>          _dPrime_V;
+    std::vector<double>          _azimuth;
+    std::vector<double>          _clo_H;
+    std::vector<double>          _clo_V;
+    std::vector<double>          _disp_H;
+    std::vector<double>          _disp_V;
+    std::vector<double>          _dPrime_H;
+    std::vector<double>          _dPrime_V;
 
     long crv1, crv2, crv3, crv4;
     long mrk1, mrk2;
     
-    void _finishConstructor( );
 
  public:
     DspnFncData( const Particle&, beamline*, std::ostream* = &std::cout, std::ostream* = &std::cerr );

@@ -123,7 +123,7 @@ class OrbitTransformer
     OrbitTransformer();
     virtual ~OrbitTransformer() {}
 
-    virtual void toState( double, double, Particle* ) const = 0;
+    virtual void toState( double, double, Particle& ) const = 0;
     virtual void toDynamics( const Vector&, double*, double*, double* ) const = 0;
     // This assumes, without checking, that the dimension
     //   of the Vector is correct: i.e. it is the same as the
@@ -170,7 +170,7 @@ class RectH : public OrbitTransformer
     RectH() {}
     ~RectH() {}
 
-    void toState( double, double, Particle* ) const;
+    void toState( double, double, Particle& ) const;
     void toDynamics( const Vector&, double*, double*, double* ) const;
 };
 
@@ -181,7 +181,7 @@ class RectV : public OrbitTransformer
     RectV() {}
     ~RectV() {}
 
-    void toState( double, double, Particle* ) const;
+    void toState( double, double, Particle& ) const;
     void toDynamics( const Vector&, double*, double*, double* ) const;
 };
 
@@ -192,7 +192,7 @@ class NormH : public OrbitTransformer
     NormH() : _alpha(0.0), _beta(1.0) {}
     NormH( double a, double b ) : _alpha(a), _beta(b) {}
 
-    void toState( double, double, Particle* ) const;
+    void toState( double, double, Particle& ) const;
     void toDynamics( const Vector&, double*, double*, double* ) const;
 
   private:
@@ -207,7 +207,7 @@ class NormV : public OrbitTransformer
     NormV() : _alpha(0.0), _beta(1.0) {}
     NormV( double a, double b ) : _alpha(a), _beta(b) {}
 
-    void toState( double, double, Particle* ) const;
+    void toState( double, double, Particle& ) const;
     void toDynamics( const Vector&, double*, double*, double* ) const;
 
   private:
@@ -226,7 +226,7 @@ class IHIV : public OrbitTransformer
     IHIV(); 
     ~IHIV() {}
 
-    void toState( double, double, Particle* ) const;
+    void toState( double, double, Particle& ) const;
     void toDynamics( const Vector&, double*, double*, double* ) const;
 
   private:
@@ -245,7 +245,7 @@ class PhiHPhiV : public OrbitTransformer
     PhiHPhiV();
     ~PhiHPhiV() {}
 
-    void toState( double, double, Particle* ) const;
+    void toState( double, double, Particle& ) const;
     void toDynamics( const Vector&, double*, double*, double* ) const;
 
   private:

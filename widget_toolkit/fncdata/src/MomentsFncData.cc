@@ -46,14 +46,14 @@
 #include <qapplication.h>
 #include <qwt/qwt_plot.h>
 #include <boost/shared_ptr.hpp>
-#include <chefplotmain.h>
+#include <CHEFPlotMain.h>
+#include <CHEFCurve.h>
+#include <CurveData.h>
 
 // This undef is needed because connect is defined by qt as a macro. Unfortunately, the string "connect" is 
 // also used in the std c++ library code.  
 
 #undef connect
-
-static double* dnull = 0;
 
 using namespace std;
 
@@ -63,99 +63,36 @@ MomentsFncData::MomentsFncData( BeamlineContext* bcp, std::ostream* stdoutstream
 : 
   _bmlConPtr(bcp), 
   _deleteContext(false),
-  _arraySize(0), 
-  _azimuth(dnull),
-  _beta_H(dnull),  
-  _beta_V(dnull),
-  _inv_beta_H(dnull), 
-  _inv_beta_V(dnull),
-  _root_beta_H(dnull), 
-  _root_beta_V(dnull),
-  _alpha_H(dnull), 
-  _alpha_V(dnull),
-  _disp_H(dnull), 
-  _disp_V(dnull),
   _plotType( betaPlot ),
   _errorStreamPtr(stderrstream), 
   _outputStreamPtr(stdoutstream)
 
-{
-  this->_finishConstructor();
-}
+{}
 
 
-MomentsFncData::MomentsFncData( const Particle& prt, beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream)
+MomentsFncData::MomentsFncData( Particle const& prt, beamline* pBml, std::ostream* stdoutstream, std::ostream* stderrstream)
 : 
   _bmlConPtr(0), 
   _deleteContext(true),
-  _arraySize(0), 
-  _azimuth(dnull),
-  _beta_H(dnull),  
-  _beta_V(dnull),
-  _inv_beta_H(dnull), 
-  _inv_beta_V(dnull),
-  _root_beta_H(dnull), 
-  _root_beta_V(dnull),
-  _alpha_H(dnull), 
-  _alpha_V(dnull),
-  _disp_H(dnull), 
-  _disp_V(dnull),
   _plotType( betaPlot ),
   _errorStreamPtr(stderrstream), 
   _outputStreamPtr(stdoutstream)
 
 {
   _bmlConPtr = new BeamlineContext( prt, pBml, false );
-  this->_finishConstructor();
-}
-
-void 
-MomentsFncData::_finishConstructor( )
-{
-
-  const beamline* bmlPtr = _bmlConPtr->cheatBmlPtr();
-
-  // Create the lattice function arrays.
-  _arraySize   = bmlPtr->countHowManyDeeply();
-
-  _azimuth     = boost::shared_array<double>( new double[_arraySize] );
-  _beta_H      = boost::shared_array<double>( new double[_arraySize] );
-  _alpha_H     = boost::shared_array<double>( new double[_arraySize] );
-  _beta_V      = boost::shared_array<double>( new double[_arraySize] );
-  _alpha_V     = boost::shared_array<double>( new double[_arraySize] );
-  _inv_beta_H  = boost::shared_array<double>( new double[_arraySize] );
-  _inv_beta_V  = boost::shared_array<double>( new double[_arraySize] );
-  _root_beta_H = boost::shared_array<double>( new double[_arraySize] );
-  _root_beta_V = boost::shared_array<double>( new double[_arraySize] );
-  _disp_H      = boost::shared_array<double>( new double[_arraySize] );
-  _disp_V      = boost::shared_array<double>( new double[_arraySize] );
-
-  for( int i = 0; i < _arraySize; i++ ) {
-    _azimuth[i]     = 0.0;
-    _beta_H[i]      = 0.0;
-    _alpha_H[i]     = 0.0;
-    _beta_V[i]      = 0.0;
-    _alpha_V[i]     = 0.0;
-    _inv_beta_H[i]  = 0.0;
-    _inv_beta_V[i]  = 0.0;
-    _root_beta_H[i] = 0.0;
-    _root_beta_V[i] = 0.0;
-    _disp_H[i]      = 0.0;
-    _disp_V[i]      = 0.0;
-  }
 }
 
 
 void MomentsFncData::makeCurves()
 {
   boost::shared_ptr<CHEFCurve>  
-    c1( new CHEFCurve( CurveData( _azimuth, _beta_H, _arraySize), "Horizontal Beta" ) );
+    c1( new CHEFCurve( CurveData(  &_azimuth[0], &_beta_H[0],  _azimuth.size()), "Horizontal Beta" ) );
   boost::shared_ptr<CHEFCurve>
-    c2( new CHEFCurve( CurveData( _azimuth, _beta_V, _arraySize), "Vertical Beta" ) );
+    c2( new CHEFCurve( CurveData(  &_azimuth[0], &_beta_V[0],  _azimuth.size()), "Vertical Beta" ) );
   boost::shared_ptr<CHEFCurve> 
-    c3( new CHEFCurve(  CurveData( _azimuth, _alpha_H, _arraySize), "Horizontal Alpha" ) );
+    c3( new CHEFCurve(  CurveData( &_azimuth[0], &_alpha_H[0], _azimuth.size()), "Horizontal Alpha" ) );
   boost::shared_ptr<CHEFCurve>  
-    c4( new CHEFCurve(  CurveData(_azimuth, _alpha_V, _arraySize), "Vertical Alpha" ) );
+    c4( new CHEFCurve(  CurveData( &_azimuth[0], &_alpha_V[0], _azimuth.size()), "Vertical Alpha" ) );
 
   c1->setPen( QPen( "black", 1, Qt::SolidLine ) );
   c2->setPen( QPen( "red",   1, Qt::SolidLine ) );
@@ -176,7 +113,7 @@ void MomentsFncData::makeCurves()
   setYLabel( "Beta [m]", QwtPlot::yLeft  );
   setYLabel( "Alpha",    QwtPlot::yRight );
 
-  setBeamline( _bmlConPtr->cheatBmlPtr(), false ); // false = do not clone line   
+  setBeamline( *_bmlConPtr->cheatBmlPtr() ); 
 }
 
 
@@ -197,52 +134,28 @@ void MomentsFncData::doCalc()
     _currentTune[1] = -1.0;
   }
 
-  int i = 0;
-  const CovarianceSage::Info* infoPtr = _bmlConPtr->getCovFuncPtr(i);
 
-  while( 0 != infoPtr ) {
-    if( i >= _arraySize ) {
-      i = _arraySize;
-      infoPtr = 0;
-      *(_errorStreamPtr) 
-        << "\n*** WARNING *** "
-           "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-        << "\n*** WARNING *** void MomentsFncData::_recalc()"
-           "\n*** WARNING *** Too many lattice functions read."
-           "\n*** WARNING *** Am resetting to " << _arraySize << " in all."
-        << "\n*** WARNING *** "
-        << endl;
-    }
-    else {
-      _azimuth[i]      = infoPtr->arcLength;
-      _beta_H[i]       = infoPtr->beta.hor;
-      _alpha_H[i]      = infoPtr->alpha.hor;
-      _beta_V[i]       = infoPtr->beta.ver;
-      _alpha_V[i]      = infoPtr->alpha.ver;
-      _inv_beta_H[i]   = 1.0/infoPtr->beta.hor;
-      _inv_beta_V[i]   = 1.0/infoPtr->beta.ver;
-      _root_beta_H[i]  = sqrt(infoPtr->beta.hor);
-      _root_beta_V[i]  = sqrt(infoPtr->beta.ver);
-      // disp_H[i]       = infoPtr->dispersion.hor;
-      // disp_V[i]       = infoPtr->dispersion.ver;
-      _disp_H[i]       = 0.0;
-      _disp_V[i]       = 0.0;
+  std::vector<CovarianceSage::Info> const&  covariance_array = _bmlConPtr->getCovarianceArray(); 
 
-      infoPtr = _bmlConPtr->getCovFuncPtr(++i);
-    }
+  for (std::vector<CovarianceSage::Info>::const_iterator it = covariance_array.begin(); it != covariance_array.end(); ++it ) {
+
+      _azimuth.push_back(	it->arcLength       );
+       _beta_H.push_back(       it->beta.hor        );
+      _alpha_H.push_back(       it->alpha.hor       );
+       _beta_V.push_back(       it->beta.ver        );
+      _alpha_V.push_back(       it->alpha.ver       );
+   _inv_beta_H.push_back(   1.0/it->beta.hor        );
+   _inv_beta_V.push_back(   1.0/it->beta.ver        );
+  _root_beta_H.push_back(  sqrt(it->beta.hor)       );
+  _root_beta_V.push_back(  sqrt(it->beta.ver)       );
+     // disp_H.push_back(       it->dispersion.hor  );
+     // disp_V.push_back(       it->dispersion.ver  );
+       _disp_H.push_back(       0.0                 );
+       _disp_V.push_back(       0.0                 );
+
   }
-
-  if( i != _arraySize ) {
-    cerr << "\n*** WARNING *** "
-         << __FILE__ << ", " << __LINE__ << ": "
-         << "MomentsFncData::recalc(): "
-         << "\n*** WARNING ***  _arraySize is being reset from "
-         << _arraySize << " to " << i << "."
-         << "\n*** WARNING *** "
-         << endl;
-  }
-  _arraySize = i;
-}
+	
+}		
 
 
 double MomentsFncData::getHorTune()
