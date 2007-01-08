@@ -27,7 +27,7 @@ FORMS	=  src/devicetablebase.ui
 
 INCLUDEPATH += $${QUTEXR_INC}
 
-LIBS	 += -L$${QUTEXR_LIBDIR} -lqutexr -lqwt 
+LIBS	 += -L$${QUTEXR_LIBDIR} -lqutexr 
 LIBS	 += -Wl,-rpath,$${QUTEXR_LIBDIR} 
 
 
