@@ -29,7 +29,8 @@
 #include <numarray/numarray.h>
 #include <numarray/libnumarray.h>
 #include <string>
-#include "chefplotdata.h"
+#include <CHEFCurve.h>
+#include <CurveData.h>
 #include "py-exception.h"
 
 using namespace boost::python;

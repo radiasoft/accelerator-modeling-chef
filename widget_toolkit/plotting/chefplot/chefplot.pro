@@ -21,13 +21,24 @@ LANGUAGE	= C++
 
 unix:CONFIG	+= qt warn_on debug thread rtti exceptions dll
 
-HEADERS	+= ./include/plot.h \
-	   ./include/chefplot.h \
-	   ./include/chefplotdata.h \
-	   ./include/chefplotzoomer.h \
-	   ./include/chefplotmain.h \
-	   ./include/lego.h \
-	   ./include/datadisplay.h
+HEADERS	+=  ./include/CHEFCurve.h            \
+            ./include/CHEFInterpolator.h     \
+            ./include/CHEFPlot.h             \
+            ./include/CHEFPlotData.h         \
+            ./include/CHEFPlotMain.h         \
+            ./include/CHEFPlotZoomer.h       \
+            ./include/Curve.h                \
+            ./include/CurveData.h            \
+            ./include/DataDisplay.h          \
+            ./include/DisplayInfo.h          \
+            ./include/Interpolator.h         \
+            ./include/Lego.h                 \
+            ./include/LinearInterporlator.h  \
+            ./include/OrderedPair.h          \
+            ./include/Plot.h                 \
+            ./include/PlotInterface.h        \
+            ./include/TuneDialog.h           \
+            ./include/chefplotmainbase.ui.h  
 
 SOURCES	+= ./src/chefplot.cpp \
 	   ./src/chefplotmain.cpp \
@@ -57,7 +68,7 @@ IMAGES	= ./src/images/filenew \
 INCLUDEPATH += ../tunespace/include
 
 LIBS	   +=  -L$${FNAL_LIBDIR} -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -L$${GLIB_LIBDIR} -lglib-2.0
-LIBS       +=  -lqwt
+LIBS       +=  -lqwt4
 
 unix:LIBS  +=  -Wl,--rpath,$${FNAL_LIBDIR} -Wl,--rpath,$${GLIB_LIBDIR}
 

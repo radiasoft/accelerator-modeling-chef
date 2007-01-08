@@ -21,8 +21,8 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-#include <chefplotdata.h>
-#include <beamline.h>
+#include <CHEFPlotData.h>
+#include <beamline/beamline.h>
 
 using namespace boost::python;
 
