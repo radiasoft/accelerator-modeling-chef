@@ -21,7 +21,8 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-#include <chefplotmain.h>
+#include <CHEFPlotMain.h>
+#include <CHEFPlotData.h>
 
 using namespace boost::python;
  
