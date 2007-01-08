@@ -29,7 +29,7 @@
 #define LATTFUNC_H
 
 
-struct lattRing : public BarnacleData {
+struct lattRing  {
   struct {
     double hor;
     double ver;
@@ -39,16 +39,14 @@ struct lattRing : public BarnacleData {
     double ver;
   } chromaticity;
 
-  lattRing();
-  ~lattRing() {}
-  lattRing& operator=( const lattRing& );
 } ;
 
 
 std::ostream& operator<<(std::ostream&, const lattRing&);
 
 
-struct lattFunc : public BarnacleData {
+struct lattFunc {
+
   double arcLength;
   struct {
     double hor;
@@ -71,9 +69,6 @@ struct lattFunc : public BarnacleData {
     double ver;
   } psi;
 
-  lattFunc();
-  ~lattFunc() {}
-  lattFunc& operator=( const lattFunc& );
 } ;
 
 std::ostream& operator<<(std::ostream&, const lattFunc&);
