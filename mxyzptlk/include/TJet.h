@@ -40,7 +40,7 @@
 ******
 ******  Sept-Dec 2005  ostiguy@fnal.gov
 ******  
-****** - refactored code to usea single class template parameter
+****** - refactored code to use single class template parameter
 ******   instead of two. Mixed mode operations now handled using 
 ******   implicit conversion operators.
 ****** - reference counting now based on using boost::intrusive pointer
@@ -533,23 +533,23 @@ class Tcoord: public TJet<T>
 
 public:
 
-  Tcoord( T=T() ); 
+  explicit Tcoord( T=T() ); 
+
  ~Tcoord();
 
-  inline int Index() const { return _index; } 
-  inline T   value() const { return _refpt; };  
+
+  int Index() const { return _index; } 
+  T   value() const { return _refpt; };  
    
   void instantiate(int index, EnvPtr<T> const& pje);
  
  private:
 
+  Tcoord( Tcoord const& );                  // forbidden 
+  Tcoord& operator=( Tcoord const& );       // forbidden
+
   int       _index;  
   T         _refpt; 
-
-  Tcoord( const Tcoord& );             // forbidden - no implementation
-  void    operator=( T const& );       // forbidden - no implementation
-  Tcoord& operator=( Tcoord const& );  // forbidden - no implementation
-  Tcoord& operator=( TJet<T> const& ); // forbidden - no implementation
 
 };
 
@@ -560,11 +560,11 @@ class Tparam: public TJet<T>
 
 public:
 
-  Tparam( T = T() );
+  explicit Tparam( T = T() );
  ~Tparam();
 
-  inline int Index() { return _index; } 
-  inline T   value() const { return _refpt; };  
+  int Index()       { return _index; } 
+  T   value() const { return _refpt; };  
 
   void instantiate(int index, EnvPtr<T> const& pje);
 
@@ -573,10 +573,8 @@ public:
   int       _index; // the parameter index  ( > numVar )
   T         _refpt; 
 
-  Tparam( const Tparam& );                 // forbidden - no implementation
-  void    operator=( T const& );           // forbidden - no implementation
+  Tparam( Tparam const& );                 // forbidden - no implementation
   Tparam& operator=( Tparam const& );      // forbidden - no implementation
-  Tparam& operator=( TJet<T> const& );     // forbidden - no implementation
 
 };
 
