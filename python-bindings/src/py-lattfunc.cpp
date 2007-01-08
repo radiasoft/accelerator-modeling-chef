@@ -1,5 +1,7 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/***************************************************************************
+****************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-lattfunc.cpp
@@ -19,6 +21,7 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
+****************************************************************************
 ****************************************************************************/
 #include <boost/python.hpp>
 
@@ -100,13 +103,16 @@ static std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc&
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
+#include <boost/any.hpp>
+
+
 void wrap_lattfunc() {
 
 using namespace boost::python;
 
+class_<LattFuncSage::lattFunc >("lattFunc",init<>())
 
-class_<LattFuncSage::lattFunc, bases<BarnacleData> >("lattFunc")
-  .def(self_ns::str(self))
+  .def( self_ns::str(self) )
   .def_readwrite("arcLength",  &LattFuncSage::lattFunc::arcLength)
   .def_readwrite("dispersion", &LattFuncSage::lattFunc::dispersion)
   .def_readwrite("dPrime",     &LattFuncSage::lattFunc::dPrime)
