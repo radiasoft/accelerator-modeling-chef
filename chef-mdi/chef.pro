@@ -1,4 +1,4 @@
-########################################################################
+#######################################################################
 #                                                                      #
 # FILE:     chef.pro                                                   #
 #                                                                      #
@@ -90,6 +90,7 @@ LIBS    += -L$${FNAL_LIBDIR} -lphysics_toolkit -lbmlfactory -lxsifparser -lbeaml
 LIBS    += -lqassistantclient
 LIBS    += -lqutexr
 LIBS    += -lqwt
+#LIBS    += -lqwt4
 LIBS    += -lglut
 LIBS    += -L$${BOOST_LIBDIR} -lboost_regex 
 LIBS    += -L$${GLIB_DIR} -lglib-2.0   
