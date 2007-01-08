@@ -47,6 +47,7 @@
 #include <mxyzptlk/JetVector.h>
 #include <physics_toolkit/EdwardsTeng.h>  // ??? Doesn't belong here.
 
+using namespace boost;
 using namespace std;
 
 static complex<double> complex_i(0.0, 1.0);
@@ -129,16 +130,16 @@ void BBLens::Kludge( double const& N, double const& G, const double* S )
 
 void BBLens::AdjustSigma() 
 {
-  ETinfo* infoPtr = (ETinfo*) dataHook.find( "EdwardsTeng" );
+  BarnacleList::iterator it = dataHook.find( "EdwardsTeng" );
   
-  if( !infoPtr ) {
+  if( it !=  dataHook.end() ) {
     throw( GenericException( __FILE__, __LINE__, 
            "void BBLens::AdjustSigma()", 
            "Cannot find ETinfo" ) );
   }
   
-  sigma[0] = sqrt( infoPtr->beta.hor*emittance[0] );
-  sigma[1] = sqrt( infoPtr->beta.ver*emittance[1] );
+  sigma[0] = sqrt( any_cast<ETinfo>(it->info).beta.hor*emittance[0] );
+  sigma[1] = sqrt( any_cast<ETinfo>(it->info).beta.ver*emittance[1] );
 }
 
 

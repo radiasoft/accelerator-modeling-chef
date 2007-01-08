@@ -75,49 +75,10 @@
 #include <algorithm>
 
 using namespace std;
+using namespace boost;
 using FNAL::pcerr;
 using FNAL::pcout;
 
-
-// **************************************************
-//   struct lattFunc
-// **************************************************
-
-lattFunc::lattFunc() : BarnacleData() {
- arcLength  = 0.0;
- // map        = LieOperator( "ident" );    ??? Produces error: requires
- // mapInv     = map;                       ??? call to Jet::setup first.
-
- dispersion .hor  = NOTKNOWN;
- dispersion .ver  = NOTKNOWN;
- dPrime .hor  = NOTKNOWN;
- dPrime .ver  = NOTKNOWN;
- beta .hor  = NOTKNOWN;
- beta .ver  = NOTKNOWN;
- alpha.hor  = NOTKNOWN;
- alpha.ver  = NOTKNOWN;
- psi  .hor  = NOTKNOWN;
- psi  .ver  = NOTKNOWN;
-} 
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-lattFunc& lattFunc::operator=( const lattFunc& x ){
- arcLength = x.arcLength;
- dispersion.hor = x.dispersion.hor;
- dispersion.ver = x.dispersion.ver;
- dPrime.hor = x.dPrime.hor;
- dPrime.ver = x.dPrime.ver;
- beta.hor = x.beta.hor;
- beta.ver = x.beta.ver;
- alpha.hor = x.alpha.hor;
- alpha.ver = x.alpha.ver;
- psi.hor = x.psi.hor;
- psi.ver = x.psi.ver;
-
- return *this;
-}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -146,32 +107,6 @@ istream& operator>>(istream& is, lattFunc& x) {
   return is;
 }
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-// **************************************************
-//   struct lattRing
-// **************************************************
-
-lattRing::lattRing() : BarnacleData() {
- tune.hor  = NOTKNOWN;
- tune.ver  = NOTKNOWN;
- chromaticity.hor  = NOTKNOWN;
- chromaticity.ver  = NOTKNOWN;
-} 
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-lattRing& lattRing::operator=( const lattRing& x ){
- tune.hor = x.tune.hor;
- tune.ver = x.tune.ver;
- chromaticity.hor = x.chromaticity.hor;
- chromaticity.ver = x.chromaticity.ver;
- return *this;
-}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -180,69 +115,6 @@ ostream& operator<<(ostream& os, const lattRing& x) {
   os << x.tune.hor << " " << x.tune.ver << " ";
   os << " " << x.chromaticity.hor << " " << x.chromaticity.ver;
   return (os << endl);
-}
-
-
-// **************************************************
-//   class beamline::arrayRep
-// **************************************************
-
-beamline::arrayRep::arrayRep(beamline const* x, bool doClone )
-: _element(0)
-{
- 
-  if( 0 == x ) {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "beamline::arrayRep::arrayRep( const beamline* x, bool doClone )", 
-           "Constructor invoked with null pointer." ) );
-  }
-
-#ifndef NO_RTTI 
-  if( typeid(*x) != typeid(beamline) ) {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "beamline::arrayRep::arrayRep( const beamline* x, bool doClone )", 
-           "Constructor invoked with pointer to something other "
-           "than a beamline." ) );
-  }
-#endif
-
-  int i = 0;
-
-  _n = x->countHowManyDeeply();
-
-  _cloned = doClone;
-
-  if ( _n > 0 ) {
-
-    _element = new bmlnElmnt* [_n];
-    bmlnElmnt** elm = &_element[0];
-  
-    if( _cloned ) {
-      for ( beamline::deep_iterator it = x->deep_begin();  it != x->deep_end(); ++it, ++elm ) {
-         *elm = (*it)->Clone();   
-      }                             
-    }
-    else {
-     for (beamline::deep_iterator it = x->deep_begin(); it != x->deep_end() ; ++it, ++elm ) {
-         *elm = (*it);
-     }
-    }
-  }
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-beamline::arrayRep::~arrayRep()
-{
-  if ( _cloned ) {
-    for( int i = 0; i < _n; i++ ) {
-      delete _element[i];
-    }
-  }
-  delete [] _element;
 }
 
 
@@ -408,12 +280,14 @@ void beamline::setEnergy( double const& E ) {
 void beamline::unTwiss() {
 
  dataHook.eraseFirst( "Ring" );
- if( !dataHook.eraseFirst( "Twiss" ) )
+ dataHook.eraseFirst( "Twiss" );
 
- for (beamline::iterator it = begin(); it != end();  ++it ) { 
+ for ( beamline::iterator it = begin(); it != end();  ++it ) { 
    (*it)->dataHook.eraseFirst( "Twiss" );
-   twissDone = 0;   // ??? Remove this eventually.
  }
+
+ twissDone = false;   
+
 }
 
 
@@ -422,9 +296,11 @@ void beamline::unTwiss() {
 
 void beamline::eraseBarnacles( const char* s )
 {
+
  for (beamline::deep_iterator it = deep_begin(); it != deep_end(); ++it ) { 
     (*it)->dataHook.eraseAll( s );
   }
+
 }
 
 
@@ -432,10 +308,13 @@ void beamline::eraseBarnacles( const char* s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 lattRing beamline::whatIsRing() {
+
   lattRing errRet;
-  lattRing* ringPtr = (lattRing*)dataHook.find( "Ring" );
-  if(ringPtr != 0)
-    return *ringPtr;
+
+  BarnacleList::iterator it = dataHook.find( "Ring" ); 
+
+
+ if( it == dataHook.end() ) {
     (*pcout) << endl;
     (*pcout) << "*** WARNING ***                            \n"
          << "*** WARNING *** beamline::whatIsRing       \n"
@@ -444,6 +323,9 @@ lattRing beamline::whatIsRing() {
          << "*** WARNING *** returned.                  \n"
          << "*** WARNING ***                            \n" << endl;
   return errRet;
+ }
+ 
+  return any_cast<lattRing>(it->info);
 }
 
 lattFunc beamline::whatIsLattice( int n ) {
@@ -462,7 +344,7 @@ lattFunc beamline::whatIsLattice( int n ) {
 int count = 0;
 for (beamline::iterator it = begin(); it != end(); ++it ) { 
   if( n == count++ ) 
-   return (*(lattFunc*) (*it)->dataHook.find( "Twiss" ));
+  return any_cast<lattFunc>( (*it)->dataHook.find( "Twiss")->info ) ;
 }
 
  (*pcout) << endl;
@@ -486,8 +368,8 @@ lattFunc beamline::whatIsLattice( char* n ) {
   
   for (beamline::iterator it = begin(); it != end(); ++it ) { 
 
-    if( !strcmp((*it)->Name(),n) ) 
-      return (*(lattFunc*) (*it)->dataHook.find( "Twiss" ));
+    if( !strcmp((*it)->Name() , n ) ) 
+      return any_cast<lattFunc>( (*it)->dataHook.find( "Twiss" )->info );
   } 
 
     return errRet;  
@@ -1338,6 +1220,16 @@ void beamline::peekAt( double& s, const Particle& prt ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+bool beamline::empty() const {
+
+  return _theList.empty();
+
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int beamline::countHowMany( CRITFUNC query, slist* listPtr ) const {
 
 
@@ -1385,19 +1277,16 @@ int beamline::countHowManyDeeply( CRITFUNC query, slist* listPtr ) const {
  int ret      = 0;
  bmlnElmnt* p = 0;
 
-   for (beamline::iterator it = begin(); it != end(); ++it) {
+   for (beamline::deep_iterator it = deep_begin(); it != deep_end(); ++it) {
      p = (*it);
-     if( typeid(*p) == typeid(beamline) ) {
-       ret += static_cast<beamline*>(p)->countHowManyDeeply( query, listPtr );
+
+     if (!query)     { ++ret; continue; }
+   
+     if ( query(p) ) 
+     { 
+       ++ret;  if( listPtr ) listPtr->append(p);
      }
-     else {
-       if( ( query == 0 ) || ( query(p) ) ) {
-         ++ret;
-         if( listPtr ) {
-           listPtr->append(p);
-         }
-       }
-     }
+   
  }
 
  return ret;

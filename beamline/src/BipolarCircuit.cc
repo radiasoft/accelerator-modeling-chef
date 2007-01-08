@@ -85,18 +85,21 @@ void BipolarCircuit::set(void* x) {
   double* curr = (double*)x;
   dlist_iterator getNext ( *this );
   bmlnElmnt* p;
-  PolarityBarn* pol;
+
   
   field = *curr;
+
   while ( (p = (bmlnElmnt*) getNext()) ) {
-    pol = (PolarityBarn*)p->dataHook.find("Polarity");
-    if(pol == 0) {
+
+    BarnacleList::iterator it = p->dataHook.find("Polarity");
+
+    if( it ==  p->dataHook.end() ) {
       (*pcerr) << "BipolarCircuit: no polarity information for " <<
 	p->Name() << " Assuming +1 " << endl;
       p -> setStrength( *curr );
 
     } else 
-      p -> setStrength( (*curr)* pol->polarity );
+      p -> setStrength( (*curr) *  boost::any_cast<double>(it->info) );
   }
 }
 
