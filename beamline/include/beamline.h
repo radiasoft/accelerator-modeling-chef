@@ -77,22 +77,6 @@ class beamline: public bmlnElmnt {
 public:
   enum LineMode { line, ring, unknown };
 
-  class arrayRep
-  {
-  public:
-    arrayRep( const beamline*, bool = false );    // Clones all elements if 2nd argument is true
-   ~arrayRep();
-    int size() { return _n; }
-    bmlnElmnt* e( int i ) { return _element[i]; } // WARNING: For speed, this is made unsafe.
-                                                  // User is responsible for staying in bounds.
-
-  private:
-    int         _n;
-    bmlnElmnt** _element;
-    bool        _cloned;
- 
-  };
-
   struct Criterion
   {
     virtual bool operator()( const bmlnElmnt* );
@@ -346,6 +330,7 @@ public:
 
   // REMOVE: void   peekAt( double& s, Particle* = 0 );
 
+  bool                empty() const;
   void                peekAt( double& s, const Particle& ) const;
   lattFunc     whatIsLattice( int );                                                // After element n, 0 <= n.
   lattFunc     whatIsLattice( char* n );                                            // n is name of element 
