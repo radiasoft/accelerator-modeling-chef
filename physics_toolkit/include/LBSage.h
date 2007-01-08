@@ -33,6 +33,16 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+******  Dec 2006 - Jean-Francois Ostiguy 
+******             ostiguy@fnal
+******    
+******  - interface based on Particle& rather than ptrs. 
+******    Stack allocated local Particle objects.
+******  - changes to accomodate new boost::any based Barnacle objects.
+******  - use new style STL-compatible beamline iterators
+******  - calcs_ array is now an STL vector. LF are now returned 
+******    by returning a const reference to the entire vector.
+******  - misc cleanup.  
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -50,8 +60,11 @@
 class LBSage : public Sage
 {
 public:
-  struct Info : BarnacleData 
-  {
+
+  struct Info {
+
+    Info(); 
+
     double arcLength;
     double beta_1x;
     double beta_1y;
@@ -67,28 +80,17 @@ public:
     double u4;
     double nu_1;
     double nu_2;
-
-    Info();
-    Info( const Info& );
-    ~Info(){}
   };
 
 
-private:
-  Info** _calcs;  // array of calculated results
-  int    _n;      // size of the _calcs array
-
-  void _deleteCalcs();
-  void _createCalcs();
-
-
 public:
-  LBSage( const beamline*, bool = false );
-  LBSage( const beamline&, bool = false );
-  virtual ~LBSage();
+
+  LBSage( beamline const*, bool = false );
+  LBSage( beamline const&, bool = false );
+
 
   // vestigial: need to retain???
-  int doCalc( const JetParticle*, beamline::Criterion& = beamline::yes ); 
+  int doCalc( JetParticle const&, beamline::Criterion& = beamline::yes ); 
       // PRECONDITION: The JetParticle must be on the closed
       //   orbit with the identity mapping for its state.
       //               Its Jet environment's reference point 
@@ -98,9 +100,16 @@ public:
       // If default value is used for second argument, 
       //   information is attached to all elements.
 
-  const LBSage::Info* getInfoPtr( int );
+  std::vector<LBSage::Info> const& getLBArray();
 
   void eraseAll();
+
+private:
+
+  LBSage( LBSage const&); // forbidden
+
+  std::vector<Info>   calcs_;  // array of calculated results
+
 };
 
 #endif // LBSAGE_H

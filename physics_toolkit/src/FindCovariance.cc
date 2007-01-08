@@ -73,9 +73,9 @@
 
 using namespace std;
 
-MatrixD FindCovariance( const beamline&    line,       
-                        const slist&       sampleSites,
-                        const JetParticle& jp ) 
+MatrixD FindCovariance( beamline    const&   line,       
+                        slist       const&   sampleSites,
+                        JetParticle const&   jparg ) 
 {
   //******************************************************************
   // This routine will calculate the covariance matrix from a sequence
@@ -92,12 +92,13 @@ MatrixD FindCovariance( const beamline&    line,
 
   BeamlineIterator bi( const_cast<beamline&>(line) );
   slist_iterator NextSample ( sampleSites );
+
   bmlnElmnt* pbe_line;
   bmlnElmnt* pbe_sample;
+
   Vector zero(6);
 
   int rows = sampleSites.size();
-  double  xsq, ysq;
 
   MatrixD C( 6, 6 );
   MatrixD M;
@@ -108,8 +109,8 @@ MatrixD FindCovariance( const beamline&    line,
   Mapping map;
   int count = 0;
 
-  JetParticle* jpPtr = jp.Clone();
-  jpPtr->setState( zero );
+  JetParticle jp(jparg);
+  jp.setState( zero );
 
   if( pbe_sample = (bmlnElmnt*) NextSample() ) {
 
@@ -117,19 +118,22 @@ MatrixD FindCovariance( const beamline&    line,
 
     while( ( pbe_sample ) && ( pbe_line = bi++ ) ) {
 
-      pbe_line->propagate( *jpPtr );
+      pbe_line->propagate( jp );
       
       if( pbe_line == pbe_sample ) {
-        map = jpPtr->getState();
+        map = jp.getState();
         M = map.Jacobian();
-      
-        xsq = ( (WIREData*) pbe_line->dataHook.find("WIREData") )->hsigma;
+
+	BarnacleList::iterator it = pbe_line->dataHook.find("WIREData");
+        double xsq = boost::any_cast<WIREData>(it->info).hsigma;
+
         yH( count, 0 ) = xsq*xsq;
         AH( count, 0 ) =       M( 0, 0 ) * M( 0, 0 );
         AH( count, 1 ) = 2.0 * M( 0, 0 ) * M( 0, 3 );
         AH( count, 2 ) =       M( 0, 3 ) * M( 0, 3 );
         
-        ysq = ( (WIREData*) pbe_line->dataHook.find("WIREData") )->vsigma;
+        double ysq = boost::any_cast<WIREData>(it->info).vsigma;
+
         yV( count, 0 ) = ysq*ysq;
         AV( count, 0 ) =       M( 1, 1 ) * M( 1, 1 );
         AV( count, 1 ) = 2.0 * M( 1, 1 ) * M( 1, 4 );
@@ -149,7 +153,6 @@ MatrixD FindCovariance( const beamline&    line,
           << count << " marked bmlnElmnts but expected " 
           << rows
           << endl;
-      delete jpPtr; jpPtr = 0;
       throw( GenericException( __FILE__, __LINE__, 
              "MatrixD FindCovariance( const beamline& line,       ", 
              uic.str().c_str() ) );
@@ -168,11 +171,9 @@ MatrixD FindCovariance( const beamline&    line,
     C( 1, 4 ) = C( 4, 1 ) = xV( 1, 0 );
     C( 4, 4 )             = xV( 2, 0 );
 
-    delete jpPtr; jpPtr = 0;
     return C;
   }
   else {
-    delete jpPtr; jpPtr = 0;
     throw( GenericException( __FILE__, __LINE__, 
            "MatrixD FindCovariance( const beamline& line,       ", 
            "Empty sampling list." ) );
@@ -182,7 +183,7 @@ MatrixD FindCovariance( const beamline&    line,
 
 void TestCovariance( const beamline&    line,
                      const slist&       sampleSites,
-                     const JetParticle& jp,
+                     const JetParticle& jparg,
                      const MatrixD&     C ) 
 {
   BeamlineIterator NextElement( const_cast<beamline&>(line) );
@@ -194,8 +195,9 @@ void TestCovariance( const beamline&    line,
   MatrixD M, Cov;
   Mapping map;
 
-  JetParticle* jpPtr = jp.Clone();
-  jpPtr->setState( zero );
+  JetParticle jp(jparg);
+  jp.setState( zero );
+
   (*FNAL::pcout).setf( ios::fixed );
 
   if( pbe_sample = (bmlnElmnt*) NextSample() ) {
@@ -203,15 +205,17 @@ void TestCovariance( const beamline&    line,
            ( pbe_line = NextElement++ ) 
          ) {
 
-      pbe_line->propagate( *jpPtr );
+      pbe_line->propagate( jp );
 
       if( pbe_line == pbe_sample ) 
       {
-        map = jpPtr->getState();
+        map = jp.getState();
         M = map.Jacobian();
         Cov = M*C*M.transpose();
       
-        xsq = ( (WIREData*) pbe_line->dataHook.find("WIREData") )->hsigma;
+	BarnacleList::iterator it = pbe_line->dataHook.find("WIREData");
+        double xsq = boost::any_cast<WIREData>(it->info).hsigma;
+
         (*FNAL::pcout) << setw(12) << pbe_line->Name()
              << "  Data = "   
              << setw(8) << setprecision(3) << 1000.0*xsq
@@ -220,7 +224,7 @@ void TestCovariance( const beamline&    line,
              << "  [mm]  Horizontal"
              << endl;
         
-        ysq = ( (WIREData*) pbe_line->dataHook.find("WIREData") )->vsigma;
+        double ysq = boost::any_cast<WIREData>(it->info).vsigma;
         (*FNAL::pcout) << setw(12) << pbe_line->Name()
              << "  Data = "   
              << setw(8) << setprecision(3) << 1000.0*ysq
@@ -233,7 +237,7 @@ void TestCovariance( const beamline&    line,
       } 
       else 
       {
-        map = jpPtr->getState();
+        map = jp.getState();
         M = map.Jacobian();
         Cov = M*C*M.transpose();
       

@@ -59,6 +59,7 @@
 extern void BeamlineSpitout( int, BeamlineIterator& );
 
 using namespace std;
+using namespace boost;
 using FNAL::pcerr;
 using FNAL::pcout;
 
@@ -66,55 +67,65 @@ const int BeamlineContext::OKAY                     = 0;
 const int BeamlineContext::NO_TUNE_ADJUSTER         = 1;
 const int BeamlineContext::NO_CHROMATICITY_ADJUSTER = 2;
 
-const double BeamlineContext::_smallClosedOrbitXError   /* [m] */ = 1.0e-9;
-const double BeamlineContext::_smallClosedOrbitYError   /* [m] */ = 1.0e-9;
-const double BeamlineContext::_smallClosedOrbitNPXError /*[rad]*/ = 1.0e-9;
-const double BeamlineContext::_smallClosedOrbitNPYError /*[rad]*/ = 1.0e-9;
+const double BeamlineContext::smallClosedOrbitXError   /* [m] */ = 1.0e-9;
+const double BeamlineContext::smallClosedOrbitYError   /* [m] */ = 1.0e-9;
+const double BeamlineContext::smallClosedOrbitNPXError /*[rad]*/ = 1.0e-9;
+const double BeamlineContext::smallClosedOrbitNPYError /*[rad]*/ = 1.0e-9;
 
 
-BeamlineContext::BeamlineContext( const Particle& w, beamline* x, bool doClone )
-:   _p_bml(x)
-  , _particlePtr( w.Clone() )
-  , _facadeParticlePtr( w.Clone() )
-  , _particleBunchPtr(0)
-  , _p_lfs(0)
-  , _p_ets(0)
-  , _p_covs(0)
-  , _p_lbs(0)
-  , _p_cos(0)
-  , _p_dsps(0)
-  , _p_ca(0)
-  , _p_ta(0)
-  , _p_co_p(0)
-  , _p_disp_p(0)
-  , _initialLattFuncPtr(0)
-  , _initialDispersionPtr(0)
-  , _initialCovariancePtr(0)
-  , _dpp(0.0001)
-  , _isCloned(doClone)
-  , _p_bi(0)
-  , _p_dbi(0)
-  , _p_rbi(0)
-  , _p_drbi(0)
-  , _tunes(0)
-  , _eigentunes(0)
-  , _p_jp(0)
-  , _eps_1(40.0)
-  , _eps_2(40.0)
-  , _normalLattFuncsCalcd(false)
-  , _edwardstengFuncsCalcd(false)
-  , _momentsFuncsCalcd(false)
-  , _LBFuncsCalcd(false)
-  , _dispersionFuncsCalcd(false)
-  , _dispCalcd(false)
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BeamlineContext::BeamlineContext( Particle const& w, beamline* x, bool doClone )
+:   p_bml_(x)
+  , particle_(0)
+  , particleBunchPtr_(0)
+  , p_lfs_(0)
+  , p_ets_(0)
+  , p_covs_(0)
+  , p_lbs_(0)
+  , p_cos_(0)
+  , p_dsps_(0)
+  , p_ca_(0)
+  , p_ta_(0)
+  , co_part_(w)
+  , disp_part_(w)
+  , initialLattFunc_()
+  , initialDispersion_()
+  , initialCovariance_()
+  , dpp_(0.0001)
+  , isCloned_(doClone)
+  , p_bi_(0)
+  , p_dbi_(0)
+  , p_rbi_(0)
+  , p_drbi_(0)
+  , jetparticle_(w)
+  , eps1_(40.0)
+  , eps2_(40.0)
+  , normalLattFuncsCalcd_(false)
+  , edwardstengFuncsCalcd_(false)
+  , momentsFuncsCalcd_(false)
+  , LBFuncsCalcd_(false)
+  , dispersionFuncsCalcd_(false)
+  , dispCalcd_(false)
+  , closed_orbit_computed_(false)
+  , tunes_computed_(false)
+  , eigentunes_computed_(false)
+  , initial_lattfunc_set_(false)
+  , initial_dispersion_set_(false)
+  , initial_covariance_set_(false)
 {
+
+  particle_ = w.Clone();
+
   // Try to instantiate _theSamplePtr
   // --------------------------------
+ 
   if( typeid(w) == typeid(Proton) ) {
-    _particleBunchPtr = new ProtonBunch;
+    particleBunchPtr_ = new ProtonBunch;
   }
   else if( typeid(w) == typeid(Positron) ) {
-    _particleBunchPtr = new PositronBunch;
+    particleBunchPtr_ = new PositronBunch;
   }
   else {
     throw GenericException( __FILE__, __LINE__, 
@@ -130,8 +141,8 @@ BeamlineContext::BeamlineContext( const Particle& w, beamline* x, bool doClone )
 
   // If that succeeds, then continue 
   // -------------------------------
+
   if( x == 0 ) {
-    delete _particlePtr; _particlePtr = 0;
     throw( GenericException( __FILE__, __LINE__, 
            "BeamlineContext::BeamlineContext( bool doClone, beamline* x )", 
            "Invoked with null beamline pointer." ) );
@@ -140,72 +151,62 @@ BeamlineContext::BeamlineContext( const Particle& w, beamline* x, bool doClone )
 
   // Reinitialize the internal particle
   // ----------------------------------
-  _particlePtr->setStateToZero();
-  _particlePtr->SetReferenceEnergy( _p_bml->Energy() );
 
-  if( _isCloned ) { _p_bml = (beamline*) (x->Clone()); }
+   particle_->setStateToZero();
+   particle_->SetReferenceEnergy( p_bml_->Energy() );
 
-  if( Sage::isRing(_p_bml) ) { this->handleAsRing(); }
-  else                       { this->handleAsLine(); }
+  if( isCloned_ ) { p_bml_ = x->Clone(); }
+
+  if( Sage::isRing( p_bml_) ) { handleAsRing(); }
+  else                        { handleAsLine(); }
 }
 
 
-BeamlineContext::BeamlineContext( const BeamlineContext& )
-{
-  throw( GenericException( __FILE__, __LINE__, 
-         "BeamlineContext::BeamlineContext( const BeamlineContext& )", 
-         "Calling copy constructor is not allowed." ) );
-}
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BeamlineContext::~BeamlineContext()
 {
-  this->reset();
+  reset();
 
-  if( 0 != _particlePtr ) 
-  { delete _particlePtr; _particlePtr = 0; }
+  if( particleBunchPtr_ ) { delete particleBunchPtr_; particleBunchPtr_ = 0; }
 
-  if( 0 != _facadeParticlePtr ) 
-  { delete _facadeParticlePtr; _facadeParticlePtr = 0; }
-
-  if( 0 != _particleBunchPtr ) 
-  { delete _particleBunchPtr; _particleBunchPtr = 0; }
-
-  if( _isCloned && (_p_bml != 0) ) 
-  { _p_bml->zap(); delete _p_bml; _p_bml = 0; }
+  if( isCloned_ && ( p_bml_) )  { p_bml_->zap(); delete p_bml_; p_bml_ = 0; }
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BeamlineContext::reset()
 {
-  _deleteLFS();
-  _deleteETS();
-  _deleteCOVS();
-  _deleteLBS();
-  _deleteDSPS();
-  _deleteClosedOrbit();
+  deleteLFS();
+  deleteETS();
+  deleteCOVS();
+  deleteLBS();
+  deleteDSPS();
+  deleteClosedOrbit();
 
-  if( _p_ca  ) { delete _p_ca; _p_ca = 0; }
-  if( _p_ta  ) { delete _p_ta; _p_ta = 0; }
+  if( p_ca_   ) { delete  p_ca_;  p_ca_ = 0; }
+  if( p_ta_   ) { delete  p_ta_;  p_ta_ = 0; }
 
-  if( _p_bi   )  { delete _p_bi;   _p_bi   = 0; }
-  if( _p_dbi  )  { delete _p_dbi;  _p_dbi  = 0; }
-  if( _p_rbi  )  { delete _p_rbi;  _p_rbi  = 0; }
-  if( _p_drbi )  { delete _p_drbi; _p_drbi = 0; }
+  if( p_bi_   )  { delete  p_bi_;    p_bi_   = 0; }
+  if( p_dbi_  )  { delete  p_dbi_;   p_dbi_  = 0; }
+  if( p_rbi_  )  { delete  p_rbi_;   p_rbi_  = 0; }
+  if( p_drbi_ )  { delete  p_drbi_;  p_drbi_ = 0; }
 
-  if( _initialLattFuncPtr ) 
-  { delete _initialLattFuncPtr;   _initialLattFuncPtr = 0;   } 
-  if( _initialDispersionPtr ) 
-  { delete _initialDispersionPtr; _initialDispersionPtr = 0; }
-
-  _particlePtr->setStateToZero();
+  particle_->setStateToZero();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int BeamlineContext::assign( beamline* x )
 {
   static bool firstTime = true;
-  if( 0 != _p_bml ) 
+  if( p_bml_ ) 
   { if( firstTime ) 
     { (*pcerr) << "\n*** WARNING *** BeamlineContext::assign "
               "invoked illegally."
@@ -216,156 +217,182 @@ int BeamlineContext::assign( beamline* x )
     return 1; 
   }
   
-  if( 0 == x ) 
-  { return 2;}
+  if( !x ) { return 2;}
 
-  if( _isCloned ) 
-  { _p_bml = (beamline*) (x->Clone()); }
-  else 
-  { _p_bml = x; }
+  if( isCloned_ )  { p_bml_ = x->Clone(); }
+  else             { p_bml_ = x; }
 
   return 0;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void BeamlineContext::accept( ConstBmlVisitor& x ) const
 {
-  _p_bml->accept(x);
+   p_bml_->accept(x);
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BeamlineContext::accept( BmlVisitor& x )
 {
-  _p_bml->accept(x);
-  this->_deleteLFS();
-  if( _p_cos ) { delete _p_cos; _p_cos = 0; }
-  if( _p_ca  ) { delete _p_ca; _p_ca = 0;   }
-  if( _p_ta  ) { delete _p_ta; _p_ta = 0;   }
+  p_bml_->accept(x);
+  deleteLFS();
+  if( p_cos_ ) { delete p_cos_;  p_cos_ = 0;  }
+  if( p_ca_  ) { delete p_ca_;   p_ca_  = 0;  }
+  if( p_ta_  ) { delete p_ta_;   p_ta_  = 0;  }
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BeamlineContext::setClonedFlag( bool x )
 {
-  _isCloned = x;
+  isCloned_ = x;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool BeamlineContext::getClonedFlag()
 {
-  return _isCloned;
+  return isCloned_;
 }
 
 
-void BeamlineContext::setInitial( const DispersionSage::Info& u )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::setInitialDispersion( DispersionSage::Info const& u )
 {
-  if( _initialDispersionPtr ) { delete _initialDispersionPtr; }
-  _initialDispersionPtr = new DispersionSage::Info(u);
+  initialDispersion_      = u;
+  initial_dispersion_set_ = true;
 }
 
 
-void BeamlineContext::setInitial( const DispersionSage::Info* u )
-{
-  if( _initialDispersionPtr ) { delete _initialDispersionPtr; }
-  _initialDispersionPtr = new DispersionSage::Info(*u);
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void BeamlineContext::getInitial( DispersionSage::Info* u )
+DispersionSage::Info const& BeamlineContext::getInitialDispersion()
 {
-  if( 0 == _initialDispersionPtr ) { 
+
+ if( !initial_dispersion_set_ ) { 
     throw( GenericException( __FILE__, __LINE__, 
              "BeamlineContext::getInitial( DispersionSage::Info* )",
              "Initial conditions for dispersion are not available." ) );
   }
 
-  (*u) = (*_initialDispersionPtr);
+  return initialDispersion_;
 }
 
 
-void BeamlineContext::setInitial( const CovarianceSage::Info& u )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::setInitialCovariance( CovarianceSage::Info const& u )
 {
-  if( _initialCovariancePtr ) { delete _initialCovariancePtr; }
-  _initialCovariancePtr = new CovarianceSage::Info(u);
+
+  initialCovariance_       = u;
+  initial_covariance_set_  = true;  
 }
 
 
-void BeamlineContext::setInitial( const CovarianceSage::Info* u )
-{
-  if( _initialCovariancePtr ) { delete _initialCovariancePtr; }
-  _initialCovariancePtr = new CovarianceSage::Info(*u);
-}
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BeamlineContext::getInitial( CovarianceSage::Info* u )
+CovarianceSage::Info const& BeamlineContext::getInitialCovariance()
 {
-  if( 0 == _initialCovariancePtr ) { 
+
+ if( !initial_covariance_set_ ) { 
     throw( GenericException( __FILE__, __LINE__, 
              "BeamlineContext::getInitial( CovarianceSage::Info* )",
              "Initial conditions for covariance are not available." ) );
   }
 
-  (*u) = (*_initialCovariancePtr);
+  return initialCovariance_;
 }
 
 
-void BeamlineContext::setInitial( const LattFuncSage::lattFunc& u )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::setInitialTwiss( LattFuncSage::lattFunc const& u )
 {
-  if( _initialLattFuncPtr ) { delete _initialLattFuncPtr; }
-  _initialLattFuncPtr = new LattFuncSage::lattFunc(u);
+  initialLattFunc_      = u;
+  initial_lattfunc_set_ = true;
 }
 
 
-void BeamlineContext::setInitial( const LattFuncSage::lattFunc* u )
-{
-  if( _initialLattFuncPtr ) { delete _initialLattFuncPtr; }
-  _initialLattFuncPtr = new LattFuncSage::lattFunc(*u);
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-void BeamlineContext::getInitial( LattFuncSage::lattFunc* u )
+LattFuncSage::lattFunc const& BeamlineContext::getInitialTwiss()
 {
-  if( 0 == _initialLattFuncPtr ) { 
+
+ if( !initial_lattfunc_set_ ) { 
     throw( GenericException( __FILE__, __LINE__, 
              "BeamlineContext::getInitial( LattFuncSage::lattFunc* )",
              "Initial conditions for uncoupled \n"
              "lattice functions are not available." ) );
   }
-
-  (*u) = (*_initialLattFuncPtr);
+  return initialLattFunc_;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BeamlineContext::writeTree()
 {
-  BeamlineIterator bi( *_p_bml );
+  BeamlineIterator bi( *p_bml_ );
   BeamlineSpitout( 0, bi );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // Beamline Functions
 
 const char* BeamlineContext::name() const
 {
-  return _p_bml->Name();
+  return p_bml_->Name();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BeamlineContext::rename( const char* newname )
 {
-  _p_bml->rename( newname );
+   p_bml_->rename( newname );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BeamlineContext::peekAt( double& s, const Particle& p ) const
 {
-  _p_bml->peekAt( s, p );
+   p_bml_->peekAt( s, p );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double BeamlineContext::sumLengths() const
 {
   double ret = 0.0;
-  DeepBeamlineIterator dbi( *_p_bml );
+  DeepBeamlineIterator dbi( *p_bml_ );
   bmlnElmnt* q;
   while( q = dbi++ ) { 
     ret += q->Length(); 
@@ -374,24 +401,20 @@ double BeamlineContext::sumLengths() const
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int BeamlineContext::setLength( bmlnElmnt* w, double l )
 {
   static bool notFound; notFound = true;
   static int ret;       ret = 0;
 
-  DeepBeamlineIterator dbi( *_p_bml );
+  DeepBeamlineIterator dbi( *p_bml_ );
   bmlnElmnt* q;
   while( notFound && (q = dbi++) ) 
   { if( q == w ) 
     { notFound = false;
-      // REMOVE: if( l != q->Length() ) 
-      // REMOVE: { q->setLength(l);
-      // REMOVE:   this->_deleteLFS();
-      // REMOVE:   // if( _p_lfs ) { delete _p_lfs; _p_lfs = 0; }  // This is extreme.
-      // REMOVE:   if( _p_cos ) { delete _p_cos; _p_cos = 0; }
-      // REMOVE:   if( _p_ca  ) { delete _p_ca; _p_ca = 0;   }
-      // REMOVE:   if( _p_ta  ) { delete _p_ta; _p_ta = 0;   }
-      // REMOVE: }
+
       if( l != q->Length() ) 
       { q->setLength(l);
         this->reset();  // This is extreme.
@@ -405,23 +428,27 @@ int BeamlineContext::setLength( bmlnElmnt* w, double l )
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int BeamlineContext::setStrength( bmlnElmnt* w, double s )
 {
   static bool notFound; notFound = true;
   static int ret;       ret = 0;
 
-  DeepBeamlineIterator dbi( *_p_bml );
+  DeepBeamlineIterator dbi( *p_bml_ );
   bmlnElmnt* q;
+
   while( notFound && (q = dbi++) ) 
   { if( q == w ) 
     { notFound = false;
       if( s != q->Strength() ) 
       { q->setStrength(s);
-        this->_deleteLFS();
-        // if( _p_lfs ) { delete _p_lfs; _p_lfs = 0; }  // This is extreme.
-        if( _p_cos ) { delete _p_cos; _p_cos = 0; }
-        if( _p_ca  ) { delete _p_ca; _p_ca = 0;   }
-        if( _p_ta  ) { delete _p_ta; _p_ta = 0;   }
+        deleteLFS();
+
+        if(  p_cos_ ) { delete  p_cos_;  p_cos_ = 0;   }
+        if(  p_ca_  ) { delete  p_ca_;   p_ca_  = 0;   }
+        if(  p_ta_  ) { delete  p_ta_;   p_ta_  = 0;   }
       }
     }
   }
@@ -432,48 +459,64 @@ int BeamlineContext::setStrength( bmlnElmnt* w, double s )
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void BeamlineContext::setAvgInvariantEmittance( double x, double y )
 {
-  _eps_1 = std::abs(x);
-  _eps_2 = std::abs(y);
+   eps1_ = std::abs(x);
+   eps2_ = std::abs(y);
   // Note: it is assumed that x and y are
   //       in units of pi mm-mr.
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double BeamlineContext::getEnergy() const
 {
-  return _p_bml->Energy();
+  return p_bml_->Energy();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int BeamlineContext::countHowManyDeeply() const
 {
-  return _p_bml->countHowManyDeeply();
+  return  p_bml_->countHowManyDeeply();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int BeamlineContext::setAlignment( bmlnElmnt* v, const alignmentData& u )
 {
   static int errCode_nullArg  = 1;
   static int errCode_notFound = 2;
   if( v == 0 )                   { return errCode_nullArg; }
-  if( 0 == _p_bml->contains(v) ) { return errCode_notFound; }
+  if( 0 == p_bml_->contains(v) ) { return errCode_notFound; }
 
   v->setAlignment( u );
   // ??? Check for passive element!!!
 
-  this->_deleteLFS(); // ??? Too conservative
-  this->_deleteClosedOrbit();
+  deleteLFS(); // ??? Too conservative
+  deleteClosedOrbit();
+
   return 0;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int BeamlineContext::setAlignment( beamline::Criterion& cf, const alignmentData& u )
 {
   int ret = 0;
 
-  DeepBeamlineIterator dbi( *_p_bml );
+  DeepBeamlineIterator dbi( *p_bml_ );
   bmlnElmnt* q;
   while((  q = dbi++  )) {
     if( cf(q) ) {
@@ -483,13 +526,16 @@ int BeamlineContext::setAlignment( beamline::Criterion& cf, const alignmentData&
   }
 
   if( ret != 0 ) {
-    this->_deleteLFS(); // ??? Too conservative
-    this->_deleteClosedOrbit();
+    deleteLFS(); // ??? Too conservative
+    deleteClosedOrbit();
   }
 
   return ret;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int BeamlineContext::replaceElement( bmlnElmnt* a, bmlnElmnt* b )
 {
@@ -503,18 +549,21 @@ int BeamlineContext::replaceElement( bmlnElmnt* a, bmlnElmnt* b )
   // been cloned. It is assumed that *b has been created on the
   // heap, and the BeamlineContext takes over ownership.
 
-  int ret = _p_bml->replace(a,b);
-  if( 0 == ret ) { this->reset(); }
+  int ret = p_bml_->replace(a,b);
+  if( 0 == ret ) { reset(); }
   // This step will not always be necessary.
   return ret;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int BeamlineContext::processElements( beamline::Action& cf )
 {
   int ret = 0;
 
-  DeepBeamlineIterator dbi( *_p_bml );
+  DeepBeamlineIterator dbi( *p_bml_ );
   bmlnElmnt* q;
   while((  q = dbi++  )) {
     if( 0 == cf(q) ) {
@@ -523,269 +572,272 @@ int BeamlineContext::processElements( beamline::Action& cf )
   }
 
   if( ret != 0 ) {
-    this->_deleteLFS(); // ??? Too conservative
-    this->_deleteClosedOrbit();
+    deleteLFS(); // ??? Too conservative
+    deleteClosedOrbit();
   }
 
   return ret;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 alignmentData BeamlineContext::getAlignmentData( const bmlnElmnt* v ) const
 {
   static const alignment err1Ret(  137.,  137.,  137. );
   static const alignment err2Ret( -137., -137., -137. );
   if( v == 0 )                   { return err1Ret.getAlignment(); }
-  if( 0 == _p_bml->contains(v) ) { return err2Ret.getAlignment(); }
+  if( 0 == p_bml_->contains(v) ) { return err2Ret.getAlignment(); }
 
   return v->Alignment();
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 beamline* BeamlineContext::cloneBeamline() const
 {
   // Creates new beamline, for which the invoker is responsible.
-  return dynamic_cast<beamline*>(_p_bml->Clone());
+  return p_bml_->Clone();
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 Mapping BeamlineContext::getOneTurnMap()
 {
-  // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
-  if( ( 0 == _p_co_p ) || ( 0 == _p_jp ) ) {
-    try {
-      this->_createClosedOrbit(); 
+
+  if( !closed_orbit_computed_ ) {
+    try { createClosedOrbit(); 
     }
-    catch( const GenericException& ge ) {
-      this->_deleteClosedOrbit(); // Almost certainly not necessary.
+    catch( GenericException const& ge ) {
+      deleteClosedOrbit(); // Almost certainly not necessary.
       throw ge;
     }
   }
 
-  if( 0 == _p_jp ) {
-    (*pcerr) << "\n*** ERROR *** " << __FILE__ << ", line " << __LINE__ << ": "
-         << "\n*** ERROR *** Mapping BeamlineContext::getOneTurnMap() const"
-            "\n*** ERROR *** Unable to calculate closed orbit correctly."
-            "\n*** ERROR *** Will return identity map. Your calculations"
-            "\n*** ERROR *** will be wrong."
-         << endl;
-    Mapping idMap("id");
-    return idMap;
-  }
-  
-  return _p_jp->State();
+  closed_orbit_computed_ = true;
+
+  return jetparticle_.State();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const beamline* BeamlineContext::cheatBmlPtr() const
 {
-  return _p_bml;
+  return p_bml_;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // Sage operations
 
-void BeamlineContext::_deleteLFS()
+void BeamlineContext::deleteLFS()
 {
-  if( 0 != _p_lfs )
-  {
-    _p_lfs->eraseAll();
-    if( _tunes ) { 
-      delete _tunes; 
-      _tunes = 0;
-    }
-    delete _p_lfs;
-    _p_lfs = 0;
+  if( p_lfs_ ) { p_lfs_->eraseAll(); delete p_lfs_; p_lfs_ = 0; }
 
-    _normalLattFuncsCalcd = false;
-    _dispCalcd = false;
-  }
-}
-
-
-void BeamlineContext::_createLFS()
-{
-  this->_deleteLFS();
-  _p_lfs = new LattFuncSage( _p_bml, false );
-}
-
-
-void BeamlineContext::_deleteETS()
-{
-  if( 0 != _p_ets )
-  {
-    _p_ets->eraseAll();
-    if( _eigentunes ) { 
-      delete _eigentunes; 
-      _eigentunes = 0;
-    }
-    delete _p_ets;
-    _p_ets = 0;
-
-    _edwardstengFuncsCalcd = false;
-  }
-}
-
-
-void BeamlineContext::_createETS()
-{
-  this->_deleteETS();
-  _p_ets = new EdwardsTengSage( _p_bml, false );
-}
-
-
-void BeamlineContext::_deleteLBS()
-{
-  if( 0 != _p_lbs )
-  {
-    _p_lbs->eraseAll();
-    delete _p_lbs;
-    _p_lbs = 0;
-
-    _LBFuncsCalcd = false;
-  }
-}
-
-
-void BeamlineContext::_createLBS()
-{
-  this->_deleteLBS();
-  _p_lbs = new LBSage( _p_bml, false );
-}
-
-
-void BeamlineContext::_deleteCOVS()
-{
-  if( 0 != _p_covs )
-  {
-    _p_covs->eraseAll();
-    if( _eigentunes ) { 
-      delete _eigentunes; 
-      _eigentunes = 0;
-    }
-    delete _p_covs;
-    _p_covs = 0;
-
-    _momentsFuncsCalcd = false;
-  }
-}
-
-
-void BeamlineContext::_createCOVS()
-{
-  this->_deleteCOVS();
-  _p_covs = new CovarianceSage( _p_bml, false );
-}
-
-
-void BeamlineContext::_deleteDSPS()
-{
-  if( 0 != _p_dsps )
-  {
-    _p_dsps->eraseAll();
-    delete _p_dsps;
-    _p_dsps = 0;
-
-    _dispersionFuncsCalcd = false;
-  }
-}
-
-
-void BeamlineContext::_createDSPS()
-{
-  this->_deleteDSPS();
-  _p_dsps = new DispersionSage( _p_bml, false );
-}
-
-
-bool BeamlineContext::onTransClosedOrbit( const Particle& arg ) const
-{
-  Particle* probePtr = arg.Clone();
+    normalLattFuncsCalcd_ = false;
+    dispCalcd_            = false;
   
-  _p_bml->propagate( *probePtr );
+}
 
-  if(    ( fabs( arg.get_x()   - probePtr->get_x()  ) < _smallClosedOrbitXError   )
-      && ( fabs( arg.get_y()   - probePtr->get_y()  ) < _smallClosedOrbitYError   )
-      && ( fabs( arg.get_npx() - probePtr->get_npx()) < _smallClosedOrbitNPXError )
-      && ( fabs( arg.get_npy() - probePtr->get_npy()) < _smallClosedOrbitNPYError ) ) 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::createLFS()
+{
+  if (  p_lfs_) deleteLFS();
+  p_lfs_ = new LattFuncSage( p_bml_, false );
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::deleteETS()
+{
+  if( p_ets_ ) { p_ets_->eraseAll(); delete p_ets_; p_ets_ = 0; }
+  edwardstengFuncsCalcd_ = false;
+  
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::createETS()
+{
+  deleteETS();
+  p_ets_ = new EdwardsTengSage( p_bml_, false );
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::deleteLBS()
+{
+
+  if( p_lbs_ ) { p_lbs_->eraseAll(); delete p_lbs_; p_lbs_ = 0; }
+  LBFuncsCalcd_ = false;
+  
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext:: createLBS()
+{
+  if (!p_lbs_) deleteLBS();
+  p_lbs_ = new LBSage( p_bml_, false );
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::deleteCOVS()
+{
+  if( p_covs_ ) { p_covs_->eraseAll(); delete p_covs_;  p_covs_ = 0; }
+  momentsFuncsCalcd_ = false;
+ 
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::createCOVS()
+{
+  deleteCOVS();
+  p_covs_ = new CovarianceSage( p_bml_, false );
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::deleteDSPS()
+{
+  if( p_dsps_ ) { p_dsps_->eraseAll(); delete p_dsps_; p_dsps_ = 0; }
+  dispersionFuncsCalcd_ = false;
+ 
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::createDSPS()
+{
+  if ( !p_dsps_) deleteDSPS();
+  p_dsps_ = new DispersionSage( p_bml_, false );
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool BeamlineContext::onTransClosedOrbit( Particle const& arg ) const
+{
+
+  Particle probe(arg);
+  
+  p_bml_->propagate( probe );
+
+  if(    ( fabs( arg.get_x()   - probe.get_x()  ) <  smallClosedOrbitXError   )
+      && ( fabs( arg.get_y()   - probe.get_y()  ) <  smallClosedOrbitYError   )
+      && ( fabs( arg.get_npx() - probe.get_npx()) <  smallClosedOrbitNPXError )
+      && ( fabs( arg.get_npy() - probe.get_npy()) <  smallClosedOrbitNPYError ) ) 
   {
-    delete probePtr; probePtr = 0;
     return true;
   }
 
-  delete probePtr; probePtr = 0;
   return false;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool BeamlineContext::hasReferenceParticle() const
 {
-  return (0 != _p_co_p);
+  return hasRefParticle_;
 }
 
 
-void BeamlineContext::setReferenceParticle( const Particle& x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::setReferenceParticle( Particle const& x )
 {
-  this->reset();
-  _p_co_p = x.Clone();
+   reset();
+
+   co_part_        = x;
+   hasRefParticle_ = true;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int BeamlineContext::getReferenceParticle( Particle& x ) const
 {
-  if( 0 != _p_co_p ) {
-    try {
-      x = *_p_co_p;
-    }
-    catch( const GenericException& ge ) {
-      (*pcerr) << "\n*** ERROR *** "
-                  "\n*** ERROR *** " << __FILE__ << ", line" << __LINE__ 
-               << "\n*** ERROR *** : BeamlineContext::getReferenceParticle( Particle& x )"
-                  "\n*** ERROR *** Exception thrown by Particle::operator= indicates incompatability."
-                  "\n*** ERROR *** "
-               << endl;
-      throw ge;
-    }
-  }
 
-  else {
-    (*pcerr) << "\n*** WARNING *** "
-                "\n*** WARNING *** No reference particle is established,"
-                "\n*** WARNING *** so none is being returned."
-                "\n*** WARNING *** "
+  if (hasRefParticle_) { x = co_part_;  return 0; } // ???????????????????? closed orbit particle, referece particle distinct ????
+ 
+
+  (*pcerr) << "\n*** WARNING *** "
+              "\n*** WARNING *** No reference particle is established,"
+              "\n*** WARNING *** so none is being returned."
+              "\n*** WARNING *** "
              << endl;
-    return -1;
-  }
+  return -1;
+ 
 
-  return 0;
 }
 
 
-const Particle& BeamlineContext::getParticle()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Particle const& BeamlineContext::getParticle()
 {
-  if( 0 != _facadeParticlePtr ) 
-  { delete _facadeParticlePtr; _facadeParticlePtr = 0; }
+ 
+  return *particle_;
 
-  _facadeParticlePtr = _particlePtr->Clone();
-  return *_facadeParticlePtr;
 }
 
 
-void BeamlineContext::setParticleState( const Vector& s )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::setParticleState( Vector const& s )
 {
-  _particlePtr->setState(s);
+   particle_->setState(s);
 }
 
 
-void BeamlineContext::_createClosedOrbit()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::createClosedOrbit()
 {
   // Instantiates the closed orbit Particle and JetParticle.
   // The JetParticle is on the closed orbit and its environment
   // is centered on the closed orbit. Its state corresponds
   // to the one turn map.
   
-  if( !(this->isTreatedAsRing()) ) {
+  if( !isTreatedAsRing() ) {
     ostringstream uic;
     uic  <<   "Cannot find closed orbit: line is not considered a ring.";
     throw( GenericException( __FILE__, __LINE__, 
@@ -794,36 +846,34 @@ void BeamlineContext::_createClosedOrbit()
   }
 
   // Eliminate previous information, if necessary
-  _deleteClosedOrbit();
-  _particlePtr->SetReferenceEnergy( _p_bml->Energy() );
-  _particlePtr->setStateToZero();
-  _p_co_p = _particlePtr->Clone();
+   deleteClosedOrbit();
+   particle_->SetReferenceEnergy( p_bml_->Energy() );
+   particle_->setStateToZero();
+   co_part_ = *particle_;
 
-  if( (this->onTransClosedOrbit( *_p_co_p )) ) 
+  if( onTransClosedOrbit( co_part_ ) ) 
   {
-    // Instantiate _p_jp on the closed orbit
+    // Instantiate jetparticle_ on the closed orbit
     // and propagate it once.
-    delete _p_co_p;
-    _p_co_p = _particlePtr->Clone();
-    _p_jp = new JetParticle(*_p_co_p);
-    _p_bml->propagate( *_p_jp );
+
+    co_part_  = *particle_;
+    jetparticle_ = JetParticle( co_part_);
+    p_bml_->propagate( jetparticle_ );
   }
   else 
   {
-    // Instantiate _p_jp 
+    // Instantiate jetparticle_ 
     // and use a ClosedOrbitSage
-    delete _p_co_p;
-    _p_co_p = 0;
 
-    _p_jp = new JetParticle(*_particlePtr);
-    _p_cos = new ClosedOrbitSage( _p_bml, false );
+    jetparticle_ = JetParticle( *particle_);
+    p_cos_   = new ClosedOrbitSage( p_bml_, false );
+
     int err;
 
-    if( 0 != ( err = _p_cos->findClosedOrbit( _p_jp ) ) ) {
-      delete _p_jp; 
-      _p_jp = 0;
-      delete _p_cos;
-      _p_cos = 0;
+    if( ( err = p_cos_->findClosedOrbit( jetparticle_ ) ) ) {
+
+      delete p_cos_; p_cos_ = 0;
+
       ostringstream uic;
       uic  << "Closed orbit calculation exited with error "
            << err;
@@ -832,32 +882,30 @@ void BeamlineContext::_createClosedOrbit()
              uic.str().c_str() ) );
     }
 
-    _p_co_p = new Particle(*_p_jp);
-    _particlePtr->setState( _p_co_p->State() );
-    _particlePtr->SetReferenceEnergy( _p_co_p->ReferenceEnergy());
+    co_part_ = Particle(jetparticle_);
   }
 
 
   // As a final step, register the closed orbit particle
   //   to initialize the reference times correctly
   //   in the elements.
-  Particle* dummyParticlePtr = _p_co_p->Clone();
-  RefRegVisitor registrar( *dummyParticlePtr );
-  _p_bml->accept( registrar );
-  delete dummyParticlePtr;
+
+  Particle  dummyParticle( co_part_ );
+  RefRegVisitor registrar( dummyParticle);
+  p_bml_->accept( registrar );
   
  
   // If necessary, create a new Jet environment, 
   // centered on the closed orbit, for the JetParticle.
 
   Jet__environment_ptr storedEnv = Jet__environment::getLastEnv();
-  Jet__environment_ptr pje = Jet__environment::makeJetEnvironment( storedEnv->maxWeight(), _p_co_p->State() );
+  Jet__environment_ptr pje = Jet__environment::makeJetEnvironment( storedEnv->maxWeight(), co_part_.State() );
   // ... Note: this method does not reset Jet::_lastEnv;
   // ...       thus the (possible) necessity of the next line.
   Jet__environment::setLastEnv(pje);
-  delete _p_jp;
-  _p_jp = new JetParticle(*_p_co_p);
-  _p_bml->propagate( *_p_jp );
+
+  jetparticle_ = JetParticle(co_part_);
+  p_bml_->propagate( jetparticle_ );
 
 
   // Before returning, restore Jet__environment::_lastEnv
@@ -865,129 +913,106 @@ void BeamlineContext::_createClosedOrbit()
 }
 
 
-void BeamlineContext::_deleteClosedOrbit()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::deleteClosedOrbit()
 {
-  if( _p_cos ) {
-    delete _p_cos;
-    _p_cos = 0;
-  }
-
-  if( _p_co_p ) {
-    delete _p_co_p;
-    _p_co_p = 0;
-  }
-
-  if( _p_jp ) {
-    delete _p_jp;
-    _p_jp = 0;
-
-    // !!! if( 1 < Jet::environments.size() ) {
-    // !!!   Jet__environment* q = (Jet__environment*) Jet::environments.get();
-    // !!!   delete q;
-    // !!!   Jet::lastEnv = (Jet__environment*) Jet::environments.firstPtr();
-    // !!! }
-    // !!! or
-    // !!! Jet::popEnvironment();  <-- preferred!
-  }
+  if( p_cos_  ) { delete p_cos_; p_cos_ = 0; }
 }
 
 
-void BeamlineContext::_createTunes()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::createTunes()
 {
-  // First, 
-  // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
-  if( ( 0 == _p_co_p ) || ( 0 == _p_jp ) ) {
+
+
+  if( !closed_orbit_computed_) {
     try {
-      _createClosedOrbit(); 
+      createClosedOrbit(); 
     }
-    catch( const GenericException& ge ) {
-      _deleteClosedOrbit(); // Almost certainly not necessary.
+    catch( GenericException const& ge ) {
+      deleteClosedOrbit(); // Almost certainly not necessary.
       throw ge;
     }
   }
+  
+  closed_orbit_computed_ = true;
 
-  // At this point, _p_jp's state is that after one-turn on the
+  // At this point, jet_part's state is that after one-turn on the
   // closed orbit.
 
 
   // A little paranoia never hurt.
-  if( 0 == _p_lfs ) {
-    this->_createLFS();
-  }
+  if( !p_lfs_ ) createLFS();
   
-  int lfs_result = _p_lfs->TuneCalc( _p_jp, false );
+  int lfs_result = p_lfs_->TuneCalc( jetparticle_, false );
   if( lfs_result != 0 ) {
     ostringstream uic;
     uic  << "Something went wrong while calculating tune: error no. " 
          << lfs_result;
     throw( GenericException( __FILE__, __LINE__, 
-           "void BeamlineContext::_createTunes()", 
+           "void BeamlineContext::createTunes()", 
            uic.str().c_str() ) );
   }
     
-  if( _tunes == 0 ) {
-    _tunes = new LattFuncSage::tunes( *( dynamic_cast<LattFuncSage::tunes*>
-                                         (_p_bml->dataHook.find( "Tunes" )) 
-                                       ) 
-                                    );
-  }
-  else {
-    *_tunes = *( dynamic_cast<LattFuncSage::tunes*>(_p_bml->dataHook.find( "Tunes" )) );
-  }
+  tunes_ = LattFuncSage::tunes( any_cast<LattFuncSage::tunes>( p_bml_->dataHook.find("Tunes")->info ) );
 
-  _p_bml->dataHook.eraseAll( "Tunes" );
+  p_bml_->dataHook.eraseAll( "Tunes" );
+  
+  tunes_computed_ = true;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double BeamlineContext::getHorizontalFracTune()
 {
-  if( 0 == _p_lfs ) {
-    this->_createLFS();
-  }
-  
-  if( 0 == _tunes ) {
-    this->_createTunes();
-  }
+  if( !p_lfs_ ) createLFS();
 
-  return _tunes->hor;
+  if( !tunes_computed_ ) { createTunes(); tunes_computed_ = true; }
+
+  return tunes_.hor;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double BeamlineContext::getVerticalFracTune()
 {
-  if( 0 == _p_lfs ) {
-    this->_createLFS();
-  }
-  
-  if( 0 == _tunes ) {
-    this->_createTunes();
-  }
+  if( !p_lfs_ ) createLFS();
+ 
+  if( !tunes_computed_ ) { createTunes(); tunes_computed_ = true; }
 
-  return _tunes->ver;
+  return tunes_.ver;
 }
 
 
-void BeamlineContext::_createEigentunes()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::createEigentunes()
 {
-  // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
-  if( ( 0 == _p_co_p ) || ( 0 == _p_jp ) ) {
+
+  if( !closed_orbit_computed_ ) {
     try {
-      _createClosedOrbit(); 
+      createClosedOrbit(); 
     }
-    catch( const GenericException& ge ) {
-      _deleteClosedOrbit(); // Almost certainly not necessary.
+    catch( GenericException const& ge ) {
+      deleteClosedOrbit(); // Almost certainly not necessary.
       throw ge;
     }
   }
-  // At this point, _p_jp's state is that after one-turn on the
+  // At this point, jet_part's state is that after one-turn on the
   //   closed orbit. It's environment is centered on the closed
   //   orbit and may be out of synch with the current environment.
 
-  if( _eigentunes == 0 ) {
-    _eigentunes = new EdwardsTengSage::Tunes;
-  }
-					     
-  int ets_result = EdwardsTengSage::eigenTuneCalc( *_p_jp, *_eigentunes );
+
+  int ets_result = EdwardsTengSage::eigenTuneCalc( jetparticle_, eigentunes_ );
 
   if( 0 != ets_result ) {
     ostringstream uic;
@@ -997,61 +1022,68 @@ void BeamlineContext::_createEigentunes()
            "void BeamlineContext::_createEigenTunes()", 
            uic.str().c_str() ) );
   }
+
+  eigentunes_computed_ = true;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double BeamlineContext::getHorizontalEigenTune()
 {
-  if( 0 == _eigentunes ) {
-    this->_createEigentunes();
-  }
-  return _eigentunes->hor;
+  if( ! eigentunes_computed_ ) createEigentunes();
+  return eigentunes_.hor;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double BeamlineContext::getVerticalEigenTune()
 {
-  if( 0 == _eigentunes ) {
-    this->_createEigentunes();
-  }
-  return _eigentunes->ver;
+  if( !eigentunes_computed_ ) createEigentunes();
+  return eigentunes_.ver;
 }
 
 
-const LattFuncSage::lattFunc* BeamlineContext::getLattFuncPtr( int i )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<LattFuncSage::lattFunc> const&  BeamlineContext::getTwissArray()
 {
-  if( 0 == _p_lfs ) {
-    this->_createLFS();
-  }
+  if( !p_lfs_ ) createLFS();
+ 
   
-  if( !_normalLattFuncsCalcd ) 
+  if( !normalLattFuncsCalcd_ ) 
   {
-    if( this->isTreatedAsRing() ) 
+    if( isTreatedAsRing() ) 
     {
-      if( 0 == _tunes ) {
-        this->_createTunes();
+      if( !tunes_computed_ ) createTunes();
+      
+
+      if( !normalLattFuncsCalcd_ ) {
+        p_lfs_->NewSlow_CS_Calc( jetparticle_ );
+        normalLattFuncsCalcd_ = true;
       }
 
-      if( !_normalLattFuncsCalcd ) {
-        _p_lfs->NewSlow_CS_Calc( _p_jp );
-        _normalLattFuncsCalcd = true;
-      }
-
-      if( !_dispCalcd ) {
-        _p_lfs->NewDisp_Calc( _p_jp, true );
-        _dispCalcd = true;
+      if( !dispCalcd_ ) {
+        p_lfs_->NewDisp_Calc( jetparticle_, true );
+        dispCalcd_ = true;
       }
     }
 
     // If the line is not treated as periodic, do the following:
     else
     {
-      if( 0 != _initialLattFuncPtr ) {
-        int errorFlag = _p_lfs->pushCalc( *_particlePtr, *_initialLattFuncPtr );
-        _normalLattFuncsCalcd = ( 0 == errorFlag );
+
+      if(!initial_lattfunc_set_) {
+
+        int errorFlag = p_lfs_->pushCalc( *particle_, initialLattFunc_);
+        normalLattFuncsCalcd_ = ( 0 == errorFlag );
       }
       else {
-        _normalLattFuncsCalcd = false;
+        normalLattFuncsCalcd_ = false;
         throw( GenericException( __FILE__, __LINE__, 
                "BeamlineContext::getLattFuncPtr( int i )", 
                "You must first provide initial conditions"
@@ -1060,22 +1092,24 @@ const LattFuncSage::lattFunc* BeamlineContext::getLattFuncPtr( int i )
     }
   }
 
-  return (_p_lfs->get_lattFuncPtr(i));
+  return p_lfs_->getTwissArray();
 }
 
 
-const EdwardsTengSage::Info* BeamlineContext::getETFuncPtr( int i )
-{
-  if( 0 == _p_ets ) {
-    this->_createETS();
-  }
-  
-  if( 0 == _eigentunes ) {
-    this->_createEigentunes();
-  }
 
-  if( !_edwardstengFuncsCalcd ) {
-    // This is inefficient! _p_jp is already on the closed
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<EdwardsTengSage::Info> const&  BeamlineContext::getETArray( )
+{
+
+  if( !p_ets_ ) createETS();
+  
+  if( !eigentunes_computed_ ) createEigentunes();
+
+
+  if( !edwardstengFuncsCalcd_ ) {
+    // This is inefficient! jetparticle_ is already on the closed
     //   orbit, which means it has traversed the beamline.
     //   This information should have been preserved.
 
@@ -1084,63 +1118,65 @@ const EdwardsTengSage::Info* BeamlineContext::getETFuncPtr( int i )
     EnvPtr<double>                 storedEnv  = Jet__environment::getLastEnv();
     EnvPtr<std::complex<double> >  storedEnvC = JetC__environment::getLastEnv();
 
-     Jet__environment::setLastEnv(_p_jp->State().Env() );
-    JetC__environment::setLastEnv(Jet__environment::getLastEnv() ) ; // implicit conversion 
+     Jet__environment::setLastEnv( jetparticle_.State().Env() );
+    JetC__environment::setLastEnv( Jet__environment::getLastEnv() ) ; // implicit conversion 
 
-    JetParticle* ptr_arg = _p_jp->Clone();
+    JetParticle tmp_jetpart(jetparticle_);
     Mapping id( "identity" );
-    ptr_arg->setState( id );
-    int errorFlag = _p_ets->doCalc( ptr_arg, beamline::yes );
-    _edwardstengFuncsCalcd = ( 0 == errorFlag );
-    delete ptr_arg;
+    tmp_jetpart.setState( id );
+    int errorFlag = p_ets_->doCalc(tmp_jetpart , beamline::yes );
+ 
+    edwardstengFuncsCalcd_ = ( 0 == errorFlag ); // SHOULD THROW EXCEPTION IF THIS FAILS
 
     // Restore current environment
     Jet__environment::setLastEnv(storedEnv);
     JetC__environment::setLastEnv(storedEnvC);
   }
 
-  if( _edwardstengFuncsCalcd ) { return (_p_ets->get_ETFuncPtr(i)); }
-  else                         { return 0;                          }
+  return p_ets_->getETArray(); 
+
 }
 
 
-const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<CovarianceSage::Info> const&  BeamlineContext::getCovarianceArray()
 {
-  if( 0 == _p_covs ) {
-    this->_createCOVS();
-  }
+  if( !p_covs_ ) createCOVS();
   
-  if( this->isTreatedAsRing() ) {
-    if( 0 == _eigentunes ) {
-      this->_createEigentunes();
-    }
+  if( isTreatedAsRing() ) {
+    if( !eigentunes_computed_ ) createEigentunes();
   }
 
-  if( !_momentsFuncsCalcd ) 
-  { 
+  if( !momentsFuncsCalcd_ ) { 
     int j;
+
     const int n = Particle::PSD;
     MatrixD covariance(n,n);
 
     EnvPtr<double>                  storedEnv;  // null 
     EnvPtr<std::complex<double> >   storedEnvC; // null
 
-    JetParticle* ptr_arg = 0;
+    JetParticle tmp_jetpart(jetparticle_);
+
     coord** coordPtr = 0;
 
-    if( this->isTreatedAsRing() ) {
-      covariance = this->equilibriumCovariance( _eps_1, _eps_2 );
+    if( isTreatedAsRing() ) { 
+    
+      covariance = equilibriumCovariance( eps1_, eps2_ );
 
       storedEnv  = Jet__environment::getLastEnv();
       storedEnvC = JetC__environment::getLastEnv();
-      Jet__environment::setLastEnv( _p_jp->State().Env() );
+      Jet__environment::setLastEnv(  jetparticle_.State().Env() );
       JetC__environment::setLastEnv( Jet__environment::getLastEnv() ); //implicit conversion operator
 
-      ptr_arg = _p_jp->Clone();
     }
     else {
-      if( 0 != _initialCovariancePtr ) {
-        covariance = _initialCovariancePtr->covariance;
+
+       if( initial_covariance_set_) {
+
+        covariance = initialCovariance_.covariance;
 
         coordPtr = new coord* [n];
 
@@ -1158,15 +1194,14 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
         Jet__environment::BeginEnvironment( 1 );
 
         for( int j = 0; j < n; j++ ) {
-          coordPtr[j] = new coord( _particlePtr->State(j) );
+          coordPtr[j] = new coord( particle_->State(j) );
         }
         JetC__environment::setLastEnv( Jet__environment::EndEnvironment(scale) ); // implicit conversion 
 
-        ptr_arg = new JetParticle(*_particlePtr);
       }
 
       else {
-        _momentsFuncsCalcd = false;
+        momentsFuncsCalcd_ = false;
         throw( GenericException( __FILE__, __LINE__, 
                "BeamlineContext::getCovFuncPtr", 
                "You must first provide initial conditions"
@@ -1174,14 +1209,16 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
       }
     }
 
-    Mapping id( "identity" );
-    ptr_arg->setState( id );
 
-    int errorFlag = _p_covs->doCalc( ptr_arg, covariance, beamline::yes );
-    _momentsFuncsCalcd = ( 0 == errorFlag );
+
+    Mapping id( "identity" );
+    tmp_jetpart.setState( id );
+
+    int errorFlag = p_covs_->doCalc( tmp_jetpart, covariance, beamline::yes );
+    momentsFuncsCalcd_ = ( 0 == errorFlag );
 
     // Clean up before leaving 
-    delete ptr_arg;
+
     if( coordPtr ) {
       for( j = 0; j < n; j++ ) { delete coordPtr[j]; }
       delete [] coordPtr;
@@ -1192,70 +1229,72 @@ const CovarianceSage::Info* BeamlineContext::getCovFuncPtr( int i )
     JetC__environment::setLastEnv(storedEnvC );
   }
 
-  return (_p_covs->getInfoPtr(i));
+  return (p_covs_->getCovarianceArray() );
 }
 
 
-const LBSage::Info* BeamlineContext::getLBFuncPtr( int i )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<LBSage::Info> const& BeamlineContext::getLBArray()
 {
-  if( 0 == _p_lbs ) {
-    this->_createLBS();
-  }
+  if( !p_lbs_ ) createLBS();
   
-  // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
-  if( ( 0 == _p_co_p ) || ( 0 == _p_jp ) ) {
+  if( !closed_orbit_computed_ ) {
     try {
-      _createClosedOrbit(); 
+      createClosedOrbit(); 
     }
-    catch( const GenericException& ge ) {
-      _deleteClosedOrbit(); // Almost certainly not necessary.
+    catch( GenericException const& ge ) {
+      deleteClosedOrbit(); // Almost certainly not necessary.
       throw ge;
     }
   }
-  // At this point, _p_jp's state is that after one-turn on the
+  // At this point,  jetparticle_'s state is that after one-turn on the
   //   closed orbit. It's environment is centered on the closed
   //   orbit and may be out of synch with the current environment.
 
 
-  if( !_LBFuncsCalcd ) {
+  if( ! LBFuncsCalcd_ ) {
     // Preserve current Jet environment
-    //   and reset to that of *_p_jp
+    //   and reset to that of jetparticle_
 
     EnvPtr<double>                storedEnv  = Jet__environment::getLastEnv();
     EnvPtr<std::complex<double> > storedEnvC = JetC__environment::getLastEnv();
 
-    Jet__environment::setLastEnv ( _p_jp->State().Env() );
+    Jet__environment::setLastEnv ( jetparticle_.State().Env() );
     JetC__environment::setLastEnv( Jet__environment::getLastEnv() ); // implicit conversion 
 
-    _LBFuncsCalcd = ( 0 == _p_lbs->doCalc( _p_jp, beamline::yes ) );
+    LBFuncsCalcd_ = ( 0 == p_lbs_->doCalc( jetparticle_, beamline::yes ) );
 
     // Restore current environment
     Jet__environment::setLastEnv( storedEnv );
     JetC__environment::setLastEnv( storedEnvC );
   }
 
-  if( _LBFuncsCalcd ) { return (_p_lbs->getInfoPtr(i)); }
-  else                { return 0;                       }
+  return  p_lbs_->getLBArray();
+
 }
 
 
-const DispersionSage::Info* BeamlineContext::getDispersionPtr( int i )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<DispersionSage::Info> const&  BeamlineContext::getDispersionArray()
 {
-  if( 0 == _p_dsps ) {
-    this->_createDSPS();
-  }
+  if( !p_dsps_ ) createDSPS();
   
-  if( !_dispersionFuncsCalcd ) 
+  if( !dispersionFuncsCalcd_ ) 
   { 
-    if( this->isTreatedAsRing() ) {
-      // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
-      if( ( 0 == _p_co_p ) || ( 0 == _p_jp ) ) {
-        try {
-          this->_createClosedOrbit(); 
+    if( isTreatedAsRing() ) {
+
+      if( !closed_orbit_computed_ ) {
+        try
+        { 
+           createClosedOrbit(); 
         }
-        catch( const GenericException& ge ) {
-          this->_deleteDSPS(); 
-          this->_deleteClosedOrbit();
+        catch( GenericException const& ge ) {
+          deleteDSPS(); 
+          deleteClosedOrbit();
           throw ge;
         }
       }
@@ -1265,16 +1304,13 @@ const DispersionSage::Info* BeamlineContext::getDispersionPtr( int i )
       EnvPtr<double>   storedEnv                = Jet__environment::getLastEnv();
       EnvPtr<std::complex<double> >  storedEnvC = JetC__environment::getLastEnv();
  
-      Jet__environment::setLastEnv ( _p_jp->State().Env() );
+      Jet__environment::setLastEnv (  jetparticle_.State().Env() );
       JetC__environment::setLastEnv ( Jet__environment::getLastEnv() ); //implicit conversion 
 
-      // DispersionSage::Options newOptions;
-      // newOptions.onClosedOrbit = true;
-      // _p_dsps->set_options( newOptions );
     
-      _p_dsps->flags.onClosedOrbit = true;
-      int errorFlag = _p_dsps->doCalc( _p_jp, beamline::yes );
-      _dispersionFuncsCalcd = ( 0 == errorFlag );
+      p_dsps_->flags.onClosedOrbit = true;
+      int errorFlag = p_dsps_->doCalc( jetparticle_, beamline::yes );
+      dispersionFuncsCalcd_ = ( 0 == errorFlag );
 
       // Restore current environment
       Jet__environment::setLastEnv( storedEnv );
@@ -1283,58 +1319,63 @@ const DispersionSage::Info* BeamlineContext::getDispersionPtr( int i )
 
     // If the line is not treated as periodic, do the following:
     else {
-      if( 0 != _initialDispersionPtr ) {
-        int errorFlag = _p_dsps->pushCalc( *_particlePtr, *_initialDispersionPtr );
-        _dispersionFuncsCalcd = ( 0 == errorFlag );
-      }
-      else {
-        _dispersionFuncsCalcd = false;
-        throw( GenericException( __FILE__, __LINE__, 
-               "BeamlineContext::getDispersionPtr( int i )", 
-               "You must first provide initial conditions"
-               "\nfor a non-periodic line." ) );
-      }
-    }
+    
+        int errorFlag = p_dsps_->pushCalc( *particle_, initialDispersion_ );
+        dispersionFuncsCalcd_ = ( 0 == errorFlag );
+
+//else {
+//      _dispersionFuncsCalcd = false;
+//      throw( GenericException( __FILE__, __LINE__, 
+//             "BeamlineContext::getDispersionPtr( int i )", 
+//             "You must first provide initial conditions"
+//             "\nfor a non-periodic line." ) );
+//     }
+  
+     } 
   }
 
-  if( _dispersionFuncsCalcd ) { return (_p_dsps->getInfoPtr(i)); }
-  else                        { return 0;                        }
+  return p_dsps_->getDispersionArray();  
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 MatrixD BeamlineContext::equilibriumCovariance()
 {
-  return this->equilibriumCovariance( _eps_1, _eps_2 );
+  return equilibriumCovariance( eps1_, eps2_ );
 }
 
 
-MatrixD BeamlineContext::equilibriumCovariance( double eps_1, double eps_2 )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+MatrixD BeamlineContext::equilibriumCovariance( double eps1, double eps2 )
 {
-  // eps_1 and eps_2 are two "invariant emittances"
+  // eps1 and eps2 are two "invariant emittances"
   //   in units of pi mm-mr.
-  // I assume that eps_1 is "mostly horizontal" and eps_2 is
+  // I assume that eps1_ is "mostly horizontal" and eps2_ is
   //   "mostly vertical."
 
   int i=0, j=0;
   const double mm_mr = 1.0e-6;
 
-  // If necessary ...
-  // REMOVE: if( ( 0 == _p_cos ) || ( 0 == _p_jp ) ) {
-  if( ( 0 == _p_co_p ) || ( 0 == _p_jp ) ) {
+
+  if( ! closed_orbit_computed_ ) {
     try {
-      _createClosedOrbit(); 
+       createClosedOrbit(); 
     }
-    catch( const GenericException& ge ) {
-      _deleteClosedOrbit(); // Almost certainly not necessary.
+    catch( GenericException const& ge ) {
+      deleteClosedOrbit(); // Almost certainly not necessary.
       throw ge;
     }
   }
 
-  double betaGamma = _p_jp->ReferenceBeta() * _p_jp->ReferenceGamma();
+  double betaGamma = jetparticle_.ReferenceBeta() * jetparticle_.ReferenceGamma();
 
   // Convert to action, in meters (crazy units)
-  double I1 = ( std::abs( eps_1 )/betaGamma ) * mm_mr / 2.0;
-  double I2 = ( std::abs( eps_2 )/betaGamma ) * mm_mr / 2.0;
+  double I1 = ( std::abs( eps1_ )/betaGamma ) * mm_mr / 2.0;
+  double I2 = ( std::abs( eps2_ )/betaGamma ) * mm_mr / 2.0;
 
   int x   = Particle::xIndex();
   int y   = Particle::yIndex();
@@ -1352,7 +1393,7 @@ MatrixD BeamlineContext::equilibriumCovariance( double eps_1, double eps_2 )
   aa(yp,yp)   = I2;
 
   MatrixC E(n,n);
-  E = ( _p_jp->State() ).Jacobian().eigenVectors();
+  E = ( jetparticle_.State() ).Jacobian().eigenVectors();
   BmlUtil::normalize( E );
 
   MatrixD cov(n,n);
@@ -1364,17 +1405,15 @@ MatrixD BeamlineContext::equilibriumCovariance( double eps_1, double eps_2 )
 
 // Adjuster methods
 
-int BeamlineContext::addHTuneCorrector( const bmlnElmnt* x ) 
+int BeamlineContext::addHTuneCorrector( bmlnElmnt const* x ) 
 {
-  if( 0 == _p_ta ) {
-    _p_ta = new TuneAdjuster( _p_bml, false );
-  }
+  if( !p_ta_ ) p_ta_ = new TuneAdjuster( p_bml_, false );
     
   if( 0 == strcmp( x->Type(), "quadrupole" ) ) {
-    _p_ta->addCorrector( dynamic_cast<const quadrupole*>(x), 1.0, 0.0 );
+    p_ta_->addCorrector( dynamic_cast<const quadrupole*>(x), 1.0, 0.0 );
   }  
   else if( 0 == strcmp( x->Type(), "thinQuad"   ) ) {
-    _p_ta->addCorrector( dynamic_cast<const thinQuad*>(x), 1.0, 0.0 );
+     p_ta_->addCorrector( dynamic_cast<const thinQuad*>(x), 1.0, 0.0 );
   }  
   else {
     return 1;
@@ -1383,17 +1422,16 @@ int BeamlineContext::addHTuneCorrector( const bmlnElmnt* x )
   return 0;
 }
 
-int BeamlineContext::addVTuneCorrector( const bmlnElmnt* x ) 
+int BeamlineContext::addVTuneCorrector( bmlnElmnt const* x ) 
 {
-  if( 0 == _p_ta ) {
-    _p_ta = new TuneAdjuster( _p_bml, false );
-  }
+  if( !p_ta_ ) p_ta_ = new TuneAdjuster( p_bml_, false );
+
     
   if( 0 == strcmp( x->Type(), "quadrupole" ) ) {
-    _p_ta->addCorrector( dynamic_cast<const quadrupole*>(x), 0.0, 1.0 );
+    p_ta_->addCorrector( dynamic_cast<const quadrupole*>(x), 0.0, 1.0 );
   }  
   else if( 0 == strcmp( x->Type(), "thinQuad"   ) ) {
-    _p_ta->addCorrector( dynamic_cast<const thinQuad*>(x), 0.0, 1.0 );
+    p_ta_->addCorrector( dynamic_cast<const thinQuad*>(x), 0.0, 1.0 );
   }  
   else {
     return 1;
@@ -1402,39 +1440,40 @@ int BeamlineContext::addVTuneCorrector( const bmlnElmnt* x )
   return 0;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int BeamlineContext::changeTunesBy( double dnuh, double dnuv )
 {
-  if( 0 == _p_ta ) {
-    return NO_TUNE_ADJUSTER;
-  }
+  if( !p_ta_ ) return NO_TUNE_ADJUSTER;
+ 
 
-  Particle* dummyPtr = _particlePtr->Clone();
-  dummyPtr->setStateToZero();
-  dummyPtr->SetReferenceEnergy( _p_bml->Energy() );
-  JetParticle* jpPtr = new JetParticle(*dummyPtr);
+  Particle  dummyParticle( *particle_);
+  dummyParticle.setStateToZero();
+  dummyParticle.SetReferenceEnergy( p_bml_->Energy() );
+  JetParticle  jp(dummyParticle);
 
-  _p_ta->changeTunesBy( dnuh, dnuv, *jpPtr );
+  p_ta_->changeTunesBy( dnuh, dnuv, jp );
 
-  delete dummyPtr;
-  delete jpPtr;
-  _deleteLFS();
+  deleteLFS();
 
   return OKAY;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int BeamlineContext::addHChromCorrector( const bmlnElmnt* x ) 
 {
-  if( 0 == _p_ca ) {
-    _p_ca = new ChromaticityAdjuster( _p_bml, false );
-  }
+  if( !p_ca_ ) p_ca_ = new ChromaticityAdjuster( p_bml_, false );
     
   if( 0 == strcmp( x->Type(), "sextupole" ) ) {
-    _p_ca->addCorrector( dynamic_cast<const sextupole*>(x), 1.0, 0.0 );
+    p_ca_->addCorrector( dynamic_cast<const sextupole*>(x), 1.0, 0.0 );
   }  
   else if( 0 == strcmp( x->Type(), "thinSextupole"   ) ) {
-    _p_ca->addCorrector( dynamic_cast<const thinSextupole*>(x), 1.0, 0.0 );
+    p_ca_->addCorrector( dynamic_cast<const thinSextupole*>(x), 1.0, 0.0 );
   }  
   else {
     return 1;
@@ -1442,18 +1481,20 @@ int BeamlineContext::addHChromCorrector( const bmlnElmnt* x )
 
   return 0;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int BeamlineContext::addVChromCorrector( const bmlnElmnt* x ) 
 {
-  if( 0 == _p_ca ) {
-    _p_ca = new ChromaticityAdjuster( _p_bml, false );
-  }
+  if( !p_ca_ ) p_ca_ = new ChromaticityAdjuster( p_bml_, false );
+ 
     
   if( 0 == strcmp( x->Type(), "sextupole" ) ) {
-    _p_ca->addCorrector( dynamic_cast<const sextupole*>(x), 0.0, 1.0 );
+    p_ca_->addCorrector( dynamic_cast<const sextupole*>(x), 0.0, 1.0 );
   }  
   else if( 0 == strcmp( x->Type(), "thinSextupole"   ) ) {
-    _p_ca->addCorrector( dynamic_cast<const thinSextupole*>(x), 0.0, 1.0 );
+    p_ca_->addCorrector( dynamic_cast<const thinSextupole*>(x), 0.0, 1.0 );
   }  
   else {
     return 1;
@@ -1463,22 +1504,22 @@ int BeamlineContext::addVChromCorrector( const bmlnElmnt* x )
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int BeamlineContext::changeChromaticityBy( double dh, double dv )
 {
-  if( 0 == _p_ca ) {
-    return NO_CHROMATICITY_ADJUSTER;
-  }
+  if( ! p_ca_ ) return NO_CHROMATICITY_ADJUSTER;
+ 
 
-  Particle* dummyPtr = _particlePtr->Clone();
-  dummyPtr->setStateToZero();
-  dummyPtr->SetReferenceEnergy( _p_bml->Energy() );
-  JetParticle* jpPtr = new JetParticle(*dummyPtr);
+  Particle dummyParticle( *particle_);
+  dummyParticle.setStateToZero();
+  dummyParticle.SetReferenceEnergy( p_bml_->Energy() );
+  JetParticle  jp(dummyParticle);
 
-  _p_ca->changeChromaticityBy( dh, dv, *jpPtr );
+  p_ca_->changeChromaticityBy( dh, dv, jp );
 
-  delete dummyPtr;
-  delete jpPtr;
-  _deleteLFS();
+  deleteLFS();
 
   return OKAY;
 }
@@ -1488,7 +1529,7 @@ int BeamlineContext::changeChromaticityBy( double dh, double dv )
 
 int BeamlineContext::beginIterator()
 {
-  if(_p_rbi||_p_dbi||_p_drbi)
+  if( p_rbi_ || p_dbi_ || p_drbi_)
   { 
     (*pcerr) << "*** WARNING *** "
          << __FILE__ 
@@ -1499,16 +1540,19 @@ int BeamlineContext::beginIterator()
     return -1;
   }
 
-  if(_p_bi) { _p_bi->reset(); }
-  else      { _p_bi = new BeamlineIterator(*_p_bml); }
+  if( p_bi_) {  p_bi_->reset(); }
+  else       {  p_bi_ = new BeamlineIterator(*p_bml_); }
 
   return 0;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int BeamlineContext::beginDeepIterator()
 {
-  if(_p_bi||_p_rbi||_p_drbi)
+  if( p_bi_ ||  p_rbi_ || p_drbi_ )
   { 
     (*pcerr) << "*** WARNING *** "
          << __FILE__ 
@@ -1519,16 +1563,19 @@ int BeamlineContext::beginDeepIterator()
     return -1;
   }
 
-  if(_p_dbi) { _p_dbi->reset(); }
-  else       { _p_dbi = new DeepBeamlineIterator( *_p_bml); }
+  if( p_dbi_ ) {  p_dbi_->reset(); }
+  else         {  p_dbi_ = new DeepBeamlineIterator( * p_bml_); }
 
   return 0;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int BeamlineContext::beginReverseIterator()
 {
-  if(_p_bi||_p_dbi||_p_drbi)
+  if( p_bi_ || p_dbi_ || p_drbi_ )
   { 
     (*pcerr) << "*** WARNING *** "
          << __FILE__ 
@@ -1539,16 +1586,19 @@ int BeamlineContext::beginReverseIterator()
     return -1;
   }
 
-  if(_p_rbi) { _p_rbi->reset(); }
-  else       { _p_rbi = new ReverseBeamlineIterator( *_p_bml); }
+  if( p_rbi_ )  {  p_rbi_->reset(); }
+  else          {  p_rbi_ = new ReverseBeamlineIterator( *p_bml_); }
 
   return 0;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int BeamlineContext::beginDeepReverseIterator()
 {
-  if(_p_bi||_p_rbi||_p_dbi)
+  if( p_bi_ || p_rbi_ || p_dbi_ )
   { 
     (*pcerr) << "*** WARNING *** "
          << __FILE__ 
@@ -1559,116 +1609,145 @@ int BeamlineContext::beginDeepReverseIterator()
     return -1;
   }
 
-  if(_p_drbi) { _p_drbi->reset(); }
-  else        { _p_drbi = new DeepReverseBeamlineIterator( *_p_bml); }
+  if( p_drbi_) {  p_drbi_->reset(); }
+  else         {  p_drbi_ = new DeepReverseBeamlineIterator( *p_bml_); }
 
   return 0;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void BeamlineContext::endIterator()
 {
-  if(_p_bi) 
-  { delete _p_bi;
-    _p_bi = 0;
-  }
+  if( p_bi_) { delete p_bi_; p_bi_ = 0; }
+
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void BeamlineContext::endDeepIterator()
 {
-  if(_p_dbi) 
-  { delete _p_dbi;
-    _p_dbi = 0;
-  }
+  if( p_dbi_ ) { delete p_dbi_; p_dbi_ = 0; }
 }
 
 
 void BeamlineContext::endReverseIterator()
 {
-  if(_p_rbi) 
-  { delete _p_rbi;
-    _p_rbi = 0;
-  }
+  if( p_rbi_ ) { delete p_rbi_; p_rbi_ = 0; }
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BeamlineContext::endDeepReverseIterator()
 {
-  if(_p_drbi) 
-  { delete _p_drbi;
-    _p_drbi = 0;
-  }
+  if( p_drbi_) { delete p_drbi_; p_drbi_ = 0; }
+
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const bmlnElmnt* BeamlineContext::i_next()
 {
-  if(_p_bi) { return (*_p_bi)++; }
-  else      { return 0; }
+  if( p_bi_) { return (*p_bi_)++; }
+  else       { return 0; }
   return 0;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const bmlnElmnt* BeamlineContext::di_next()
 {
-  if(_p_dbi) { return (*_p_dbi)++; }
-  else       { return 0; }
-  return 0;
-}
-
-
-const bmlnElmnt* BeamlineContext::ri_next()
-{
-  if(_p_rbi) { return (*_p_rbi)++; }
-  else       { return 0; }
-  return 0;
-}
-
-
-const bmlnElmnt* BeamlineContext::dri_next()
-{
-  if(_p_drbi) { return (*_p_drbi)++; }
+  if( p_dbi_) { return (*p_dbi_)++; }
   else        { return 0; }
   return 0;
 }
 
 
-void BeamlineContext::i_reset()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+const bmlnElmnt* BeamlineContext::ri_next()
 {
-  _p_bi->reset();
+  if(p_rbi_) { return (*p_rbi_)++; }
+  else       { return 0; }
+  return 0;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+const bmlnElmnt* BeamlineContext::dri_next()
+{
+  if(p_drbi_) { return (*p_drbi_)++; }
+  else        { return 0; }
+  return 0;
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::i_reset()
+{
+  p_bi_->reset();
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BeamlineContext::di_reset()
 {
-  _p_dbi->reset();
+  p_dbi_->reset();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BeamlineContext::ri_reset()
 {
-  _p_rbi->reset();
+  p_rbi_->reset();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BeamlineContext::dri_reset()
 {
-  _p_drbi->reset();
+  p_drbi_->reset();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ostream& operator<<( ostream& os, const BeamlineContext& x )
 {
   os << "Begin BeamlineContext" << endl;
-  if( x._p_bml ) 
-  { os << "_p_bml" << endl;
-    os << *(x._p_bml);
+  if( x.p_bml_ ) 
+  { os << "p_bml_" << endl;
+    os << *(x.p_bml_);
   }
   os << "End BeamlineContext" << endl;
   return os;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 istream& operator>>( istream& is, BeamlineContext& x )
 {
@@ -1684,9 +1763,9 @@ istream& operator>>( istream& is, BeamlineContext& x )
   is.getline( charBuffer, 128, '\n' );
   while( 0 != strcmp( charBuffer, "End BeamlineContext" ) )
   { 
-    if( 0 == strcmp( charBuffer, "_p_bml" ) )
+    if( 0 == strcmp( charBuffer, "p_bml_" ) )
     {
-      is >> *(x._p_bml);
+      is >> *(x.p_bml_);
     }
 
     else 

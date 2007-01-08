@@ -43,16 +43,14 @@
 
 #include <basic_toolkit/globaldefs.h>
 
-class WIREData : public BarnacleData {
-public:
+struct WIREData {
+
   float hwires[48];
   float vwires[48];
   float hmean;
   float hsigma;
   float vmean;
   float vsigma;
-  WIREData() {}
-  ~WIREData() {}
 };
 
 MatrixD FindCovariance( const beamline& , const slist& , const JetParticle& );

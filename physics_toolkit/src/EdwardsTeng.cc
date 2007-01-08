@@ -94,14 +94,16 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
                 D( 2, 2 ), S( "J", 2 ), A( 2, 2 ), B( 2, 2 ),
                 U( "I", 2 );
  ETinfo*   ETptr;
- Barnacle* ETbarn;
  Mapping   localMap;
 
- ETbarn = lbe->dataHook.lift( "EdwardsTeng" );
- ETptr = (ETinfo*) ETbarn->info;
- localMap = ETptr->map( (*EdwardsTeng::theMap)( ETptr->mapInv ) );
+ BarnacleList::iterator it = lbe->dataHook.find( "EdwardsTeng" );
+
+ ETinfo etinfo = boost::any_cast<ETinfo>(it->info);
+ lbe->dataHook.remove(it);
+
+ localMap = etinfo.map( (*EdwardsTeng::theMap)( ETptr->mapInv ) );
  mtrx = localMap.Jacobian();
- ETptr->EV = mtrx.eigenVectors(); 
+ etinfo.EV = mtrx.eigenVectors(); 
 
  M( 0, 0 ) = mtrx( 0, 0 );     n( 0, 0 ) = mtrx( 0, 1 );
  M( 0, 1 ) = mtrx( 0, 3 );     n( 0, 1 ) = mtrx( 0, 4 );
@@ -191,8 +193,8 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
  }
 
  // .......... Save the ET information
- ETptr->phi       = atan( tanphi ) / 2.0;
- ETptr->D         = D;
+ etinfo.phi       = atan( tanphi ) / 2.0;
+ etinfo.D         = D;
 
  // .......... Lattice functions ..........................
 
@@ -205,8 +207,8 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
   EdwardsTeng::snH = - sqrt( 1.0 - EdwardsTeng::csH*EdwardsTeng::csH );
  }
 
- ETptr->beta .hor = JH( 0, 1 ) / EdwardsTeng::snH;
- ETptr->alpha.hor = JH( 0, 0 ) / EdwardsTeng::snH;
+ etinfo.beta .hor = JH( 0, 1 ) / EdwardsTeng::snH;
+ etinfo.alpha.hor = JH( 0, 0 ) / EdwardsTeng::snH;
 
  // .......... A little test to keep everyone honest .....
  if( JH( 0, 0 ) != 0.0 )
@@ -236,8 +238,8 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
   EdwardsTeng::snV = - sqrt( 1.0 - EdwardsTeng::csV*EdwardsTeng::csV );
  }
 
- ETptr->beta .ver = JV( 0, 1 ) / EdwardsTeng::snV;
- ETptr->alpha.ver = JV( 0, 0 ) / EdwardsTeng::snV;
+ etinfo.beta .ver = JV( 0, 1 ) / EdwardsTeng::snV;
+ etinfo.alpha.ver = JV( 0, 0 ) / EdwardsTeng::snV;
 
  // .......... A little test to keep everyone honest .....
  if( JV( 0, 0 ) != 0.0 )
@@ -257,16 +259,17 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
    // return 6;
  }
 
- lbe->dataHook.append( ETbarn );
+ lbe->dataHook.append( Barnacle("EdwardsTeng", etinfo) );
 
  return 0;
 }
 
 
-EdwardsTeng::EdwardsTeng( const beamline* x ) 
+EdwardsTeng::EdwardsTeng( beamline const* x ) 
 {
- myBeamline = (beamline*) x;
+  myBeamline = const_cast<beamline*>(x);
 }
+
 
 EdwardsTeng::~EdwardsTeng()
 {
@@ -284,7 +287,7 @@ void EdwardsTeng::eraseAll()
  {  be->dataHook.eraseAll( "EdwardsTeng" ); }
 }
 
-int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit ) 
+int EdwardsTeng::doCalc( JetParticle& jp, ET_CRITFUNC Crit ) 
 {
  int                  ret;
  bmlnElmnt*           be;
@@ -292,41 +295,41 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
  double               t;
  int                  i;
  MatrixD              mtrx( BMLN_dynDim, BMLN_dynDim );
- ETinfo*              ETptr;
  ETtunes*             tuneptr;
 
  EdwardsTeng::theMap = new Mapping;
 
  // .......... Propagate a JetParticle element by element
  // .......... It is assumed to be on a closed orbit!!
- Particle* ptr_particle = new Particle(*ptr_jp);
+ Particle particle(jp);
+
  // is deleted before returning
 
 
  double lng = 0.0;
  while ((  be = dbi++  )) {
-   lng += be->OrbitLength( *ptr_particle );
-   be->propagate( *ptr_jp );
+   lng += be->OrbitLength( particle );
+   be->propagate( jp );
    if( !Crit ) {
-     ETptr = new ETinfo;
-     ETptr->arcLength = lng;
-     ETptr->map = ptr_jp->getState();   // ??? Change statements?  Use pointer?
-     ETptr->mapInv = ETptr->map.Inverse();
-     be->dataHook.append( "EdwardsTeng", ETptr );
+    ETinfo etinfo;
+    etinfo.arcLength = lng;
+    etinfo.map = jp.getState();   // ??? Change statements?  Use pointer?
+    etinfo.mapInv =etinfo.map.Inverse();
+     be->dataHook.append( Barnacle( "EdwardsTeng", etinfo) );
    }
    else if( (*Crit)( be ) ) {
-     ETptr = new ETinfo;
-     ETptr->arcLength = lng;
-     ETptr->map = ptr_jp->getState();   // ??? Change statements?  Use pointer?
-     ETptr->mapInv = ETptr->map.Inverse();
-     be->dataHook.append( "EdwardsTeng", ETptr );
+    ETinfo etinfo;
+    etinfo.arcLength = lng;
+    etinfo.map = jp.getState();   // ??? Change statements?  Use pointer?
+    etinfo.mapInv = etinfo.map.Inverse();
+     be->dataHook.append( Barnacle( "EdwardsTeng", etinfo) );
    }
  }
  dbi.reset();
 
 
  // .......... Calculating tunes .........................
- *EdwardsTeng::theMap =ptr_jp->getState();
+ *EdwardsTeng::theMap = jp.getState();
  mtrx = EdwardsTeng::theMap->Jacobian();
  MatrixC lambda;
  lambda = mtrx.eigenValues();
@@ -344,7 +347,6 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
         << "*** ERROR ***                                     \n"
         << endl;
    delete EdwardsTeng::theMap;
-   delete ptr_particle;
    eraseAll();
    return 10;
   }
@@ -359,7 +361,6 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
         << "*** ERROR *** Eigenvalues =                        \n"
         << "*** ERROR *** " << lambda << endl;
    delete EdwardsTeng::theMap;
-   delete ptr_particle;
    eraseAll();
    return 11;
  }
@@ -376,7 +377,6 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
   if( !Crit ) {
    if( ( ret = attachETLattFuncs( be ) ) != 0 ) {
     delete EdwardsTeng::theMap;
-    delete ptr_particle;
     eraseAll();
     return ret;
    }
@@ -384,7 +384,6 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
   else if( (*Crit)( be ) ) {
    if( ( ret = attachETLattFuncs( be ) ) != 0 ) {
     delete EdwardsTeng::theMap;
-    delete ptr_particle;
     eraseAll();
     return ret;
    }
@@ -393,7 +392,7 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
  dbi.reset();
 
 
- tuneptr = new ETtunes;
+ ETtunes tunes;
  t = atan2( EdwardsTeng::snH, EdwardsTeng::csH );
  if( t < 0.0 )   t += M_TWOPI;
  tuneptr->hor = ( t / M_TWOPI );
@@ -401,10 +400,9 @@ int EdwardsTeng::doCalc( JetParticle* ptr_jp, ET_CRITFUNC Crit )
  if( t < 0.0 )   t += M_TWOPI;
  tuneptr->ver = ( t / M_TWOPI );
 
- myBeamline->dataHook.append( "Tunes", tuneptr );
+ myBeamline->dataHook.append( Barnacle( "Tunes", tunes ) );
 
  delete EdwardsTeng::theMap;
- delete ptr_particle;
 
  return 0;
 }

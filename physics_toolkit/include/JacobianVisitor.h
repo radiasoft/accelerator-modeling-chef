@@ -52,21 +52,28 @@ class beamline;
 /// beamline. In the visitBmlnElmnt method the progate method is called.
 
 class JacobianVisitor : public JetParticleVisitor {
+
  public:
   enum JACOBIAN_TYPE {JACOBIAN_LOCAL, JACOBIAN_CUMULATIVE};
+
   JacobianVisitor();
-  JacobianVisitor( beamline*, const JetParticle& );
+  JacobianVisitor( beamline*, JetParticle const& );
+
   virtual ~JacobianVisitor();
+
   void visitBeamline(beamline* x);
   void visitBmlnElmnt(bmlnElmnt*);
   void clearBarnacles();
   void createJacobian(const JACOBIAN_TYPE&);
+
  private:
-  beamline* theLine;
-  char* whichJacobian;
-  MatrixD cumulativeMatrix;
+
+  beamline*     theLine;
+  char*         whichJacobian;
+  MatrixD       cumulativeMatrix;
   JACOBIAN_TYPE jacobianType;
-  JacobianVisitor(const JacobianVisitor&);
+
+  JacobianVisitor(JacobianVisitor const&);
 };
 
 /// The label for this Barnacle is either "Local_Jacobian" or 
@@ -74,13 +81,13 @@ class JacobianVisitor : public JetParticleVisitor {
 /// createJacobian method was called.
 
 
-class JacobianData : public BarnacleData {
-public:
-  MatrixD jac;
-  JacobianData(const MatrixD& mat) {jac = mat;}
+struct JacobianData {
+
   JacobianData();
-  JacobianData(const JacobianData& x) {jac = x.jac;}
- ~JacobianData() {}
+  JacobianData(MatrixD      const& mat)    {jac = mat;}
+  JacobianData(JacobianData const& x)      {jac = x.jac;}
+
+  MatrixD jac;
   MatrixD RMatrix();
 };
 

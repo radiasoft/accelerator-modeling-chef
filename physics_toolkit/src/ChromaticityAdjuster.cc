@@ -148,7 +148,6 @@ void ChromaticityAdjuster::addCorrector( const thinSextupole* x, double a, doubl
 
 int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetParticle& jp )
 {
-  int j;
   double delta_H = x;
   double delta_V = y;
 
@@ -156,60 +155,61 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
   _myBeamlinePtr->eraseBarnacles( "Ring" );
 
   // 
-  JetParticle* jprPtr  = jp.Clone();
-  JetParticle* jpr2Ptr = jp.Clone(); // Necessary????
-  JetParticle* jpr3Ptr = jp.Clone(); // Necessary????
+
+  JetParticle  jpr(jp); 
+  JetParticle  jpr2(jp);
+  JetParticle  jpr3(jp);
 
   // Calculate current lattice functions
   LattFuncSage lfs( _myBeamlinePtr );
  
-  _myBeamlinePtr->propagate( *jprPtr );
+  _myBeamlinePtr->propagate(jpr);
+
   // lfs.Fast_CS_Calc( jprPtr  );
-  lfs.Slow_CS_Calc( jprPtr  );
-  lfs.Disp_Calc   ( jpr2Ptr );
+
+  lfs.Slow_CS_Calc( jpr);
+  lfs.Disp_Calc   ( jpr2);
  
   int N = this->numberOfCorrectors();
   MatrixD beta      (2,N);
   MatrixD delta_xi  (2,1);
   MatrixD w         (N,1);
   double  dsp;
+
   // delta_xi = beta*_f*c
   // w = _f*c
   // delta strength_k = 2 pi * brho * w_k / dps_k
  
-  LattFuncSage::lattFunc* ptr;
-  bmlnElmnt* q; 
-  bool gotDispersion;
-  bool gotBetas;
-  for( j = 0; j < N; j++ ) 
+  bool gotDispersion = false;
+  bool gotBetas      = false;
+
+  for( int j = 0; j < N; ++j) 
   {
     gotDispersion = false;
     gotBetas      = false;
 
-    ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Dispersion" );
-    if(!ptr) { 
-      ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
+    BarnacleList::iterator ptr = _correctors[j]->dataHook.find( "Dispersion" );
+    if( ptr ==  _correctors[j]->dataHook.end() ) { 
+      ptr = _correctors[j]->dataHook.find( "Twiss" );
     }
-    if(ptr) { 
-      dsp =   ptr->dispersion.hor;
+
+    if( ptr != _correctors[j]->dataHook.end() ) { 
+      dsp =   boost::any_cast<lattFunc>(ptr->info).dispersion.hor;
       gotDispersion = true;
     }
     else {
       dsp = 0.0;  // Just to give it a value.
     }
 
-    ptr = (LattFuncSage::lattFunc*) _correctors[j]->dataHook.find( "Twiss" );
+    ptr = _correctors[j]->dataHook.find( "Twiss" );
     // NOTE: possibly 2nd time this is done.
-    if(ptr) {
-      beta(0,j) =   ptr->beta.hor * dsp;
-      beta(1,j) = - ptr->beta.ver * dsp;
+    if(ptr != _correctors[j]->dataHook.end() ) {
+      beta(0,j) =   boost::any_cast<lattFunc>(ptr->info).beta.hor * dsp;
+      beta(1,j) = - boost::any_cast<lattFunc>(ptr->info).beta.ver * dsp;
       gotBetas = true;
     }
 
     if( !(gotBetas && gotDispersion) ) {
-      delete jprPtr;  jprPtr  = 0;
-      delete jpr2Ptr; jpr2Ptr = 0;
-      delete jpr3Ptr; jpr3Ptr = 0;
       throw( GenericException( __FILE__, __LINE__, 
              "int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetParticle& jp )", 
              "Lattice functions or dispersion not yet calculated." ) );
@@ -221,13 +221,13 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
   delta_xi(0,0) = delta_H;
   delta_xi(1,0) = delta_V;
  
-  double brho = jprPtr->ReferenceBRho();
+  double brho = jpr.ReferenceBRho();
   _c = (M_TWOPI*brho)*( (beta*(*_f)).inverse() * delta_xi );
   w = (*_f)*_c;
  
-  for( j = 0; j < _numberOfCorrectors; j++ ) 
+  for( int j = 0; j < _numberOfCorrectors; j++ ) 
   {
-    q = _correctors[j];
+      bmlnElmnt* q = _correctors[j];
     if( _isaThinSextupole(q) ) {
       q->setStrength( q->Strength() + w(j,0) );
     }
@@ -237,13 +237,6 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
   }
 
  
-  // Clean up ...
-  // REMOVE: _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
-  // REMOVE: _myBeamlinePtr->eraseBarnacles( "Twiss" );
-  delete jprPtr;  jprPtr  = 0;
-  delete jpr2Ptr; jpr2Ptr = 0;
-  delete jpr3Ptr; jpr3Ptr = 0;
-
   return 0;
 }
 

@@ -63,6 +63,7 @@ using namespace std;
 
 Sage::Sage( const beamline* x, bool doClone )
 : _verbose(false),
+   nelms_(0), 
   _cloned(doClone),
   _isRing(Sage::isRing(x)),
   _errorStreamPtr( &std::cerr ),
@@ -90,11 +91,14 @@ Sage::Sage( const beamline* x, bool doClone )
 #endif
 
   if( doClone ) {
-    _myBeamlinePtr = (beamline*) (x->Clone());
+    _myBeamlinePtr = x->Clone();
   }
   else {
-    _myBeamlinePtr = (beamline*) x;
+    _myBeamlinePtr = const_cast<beamline*>(x);
   }
+
+
+
 
   if( beamline::unknown == _myBeamlinePtr->getLineMode() ) {
     if( _isRing ) {
@@ -105,28 +109,13 @@ Sage::Sage( const beamline* x, bool doClone )
     }
   }
 
-  _arrayPtr = new beamline::arrayRep( _myBeamlinePtr, false );
+  nelms_ = _myBeamlinePtr->countHowManyDeeply();
 }
 
-
-Sage::Sage( const Sage& x )
-: _verbose(false),
-  _cloned(x._cloned),
-  _isRing(x._isRing),
-  _errorStreamPtr( &std::cerr ),
-  _outputStreamPtr( &std::cout ),
-  _ringGapTolerance(_defGapTol),
-  _ringAngleTolerance(_defAngleTol)
-{
-  throw( GenericException( __FILE__, __LINE__, 
-         "Sage::Sage( const Sage& )",
-         "A Sage should never be copied." ) );
-}
 
 
 Sage::~Sage()
 {
-  delete _arrayPtr;
   if( _cloned ) { _myBeamlinePtr->zap(); delete _myBeamlinePtr; _myBeamlinePtr=0;}
 }
 
@@ -147,14 +136,17 @@ bool Sage::isRing( const beamline& bml, double gap_tol, double angle_tol )
 {
   // This test will return true for pathologically short lines
   //   like a beamline consisting of a single 1 mm drift.
-  gap_tol = std::abs(gap_tol); 
-  angle_tol = std::abs(angle_tol); 
+
+  gap_tol    = std::abs(gap_tol); 
+  angle_tol  = std::abs(angle_tol); 
+
   // Paranoia in case of excessively stupid user.
 
   FramePusher fp;
   bml.accept( fp );
 
   // Check the point of return
+
   Vector r(3);
   r = fp.getFrame().getOrigin();
   int i,j;

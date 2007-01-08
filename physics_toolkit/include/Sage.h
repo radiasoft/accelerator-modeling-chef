@@ -60,9 +60,6 @@
 
 class Sage 
 {
-private:
- static double _defGapTol;
- static double _defAngleTol;
 
 public:
   Sage( const beamline*, bool = false );
@@ -73,7 +70,7 @@ public:
   //   disconnecting it from the calling
   //   routine. 
   // By default, it just stores the pointer.
-  Sage( const Sage& );
+
  virtual ~Sage();
   
  void set_verbose();
@@ -97,22 +94,32 @@ public:
  void setErrorStream( std::ostream* );
  void setOutputStream( std::ostream* );
 
- void treatAsRing( bool );
- void setGapTolerance( double );
- double getGapTolerance() const;
- void setAngleTolerance( double );
- double getAngleTolerance() const;
+ void     treatAsRing( bool );
+ void     setGapTolerance( double );
+ double   getGapTolerance()            const;
+ void     setAngleTolerance( double );
+ double   getAngleTolerance()          const;
+
 
 protected:
+
  beamline*           _myBeamlinePtr;
- beamline::arrayRep* _arrayPtr;
+ int                 nelms_;   
  bool                _verbose;
  bool                _cloned;
  bool                _isRing;
- std::ostream*            _errorStreamPtr;
- std::ostream*            _outputStreamPtr;
+ std::ostream*       _errorStreamPtr;
+ std::ostream*       _outputStreamPtr;
  double              _ringGapTolerance;
  double              _ringAngleTolerance;
+
+private:
+
+ static double _defGapTol;
+ static double _defAngleTol;
+ 
+ Sage( Sage const&); // copy forbidden 
+
 };
 
 

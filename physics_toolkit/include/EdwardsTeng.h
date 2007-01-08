@@ -60,8 +60,8 @@
 typedef bool (*ET_CRITFUNC)( bmlnElmnt* );
 
 
-struct ETinfo : BarnacleData 
-{
+struct ETinfo {
+
  double arcLength;
  Mapping map;
  Mapping mapInv;
@@ -74,39 +74,54 @@ struct ETinfo : BarnacleData
   double ver;
  } alpha;
  double phi;
+
  MatrixD D;
  MatrixC EV;
 
  ETinfo() : D(2,2), EV(6,6), arcLength(-1.0) { }
- ETinfo( const ETinfo& );
- ~ETinfo(){}
+
+ ETinfo( ETinfo const& );
+
 };
 
 
-struct ETtunes : BarnacleData 
-{
+struct ETtunes {
+
  double hor;
  double ver;
+
  ETtunes() : hor(0.0), ver(0.0) {}
- ETtunes( const ETtunes& x ) {hor = x.hor; ver = x.ver;}
- ~ETtunes(){}
+
+ ETtunes( ETtunes const & x ) : hor(x.hor), ver(x.ver) {}
+
 };
 
 
-class EdwardsTeng 
-{
+class EdwardsTeng {
+
 private:
- beamline* myBeamline;
- static double csH, csV, snH, snV;
- static Mapping* theMap;
- static int attachETLattFuncs( bmlnElmnt* );
+
 public:
- EdwardsTeng( const beamline* );
+
+  EdwardsTeng( beamline const* );
+
  ~EdwardsTeng();
- int doCalc( JetParticle*, ET_CRITFUNC = 0 ); 
+ 
+  int doCalc( JetParticle&, ET_CRITFUNC = 0 ); 
                             // If default value is used for ET_CRITFUNC, then
                             // information is attached to all elements.
- void eraseAll();
+  void eraseAll();
+
+ private:
+
+ static int attachETLattFuncs( bmlnElmnt* );
+
+ beamline* myBeamline;
+
+ static double   csH, csV, snH, snV;
+ static Mapping* theMap;
+
+
 };
 
 #endif // EDWARDSTENG_H

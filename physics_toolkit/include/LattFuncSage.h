@@ -57,24 +57,19 @@
 #include <beamline/beamline.h>
 #include <physics_toolkit/Sage.h>
 
-class LattFuncSage : public Sage
-{
+class LattFuncSage : public Sage {
+
 public:
+
  LattFuncSage( const beamline*, bool = false );
  LattFuncSage( const beamline&, bool = false );
- // Second argument is used by class Sage
- // to control cloning. (See Sage.h)
- virtual ~LattFuncSage();
   
- struct tunes : BarnacleData {
+ struct tunes {
    double hor;
    double ver;
-   tunes() : hor(0.0), ver(0.0) {}
-   tunes( const tunes& x ): BarnacleData( ), hor(x.hor), ver(x.ver) { }
-   ~tunes(){}
  };
 
- struct lattRing : public BarnacleData {
+ struct lattRing  {
    struct tune_type{
      double hor;
      double ver;
@@ -83,25 +78,13 @@ public:
      double hor;
      double ver;
    } chromaticity;
-   lattRing(): BarnacleData()
-     { tune.hor = 0.;
-       tune.ver = 0.;
-       chromaticity.hor = 0.;
-       chromaticity.ver = 0.;
-     }
-   ~lattRing() {}
-   lattRing& operator=( const LattFuncSage::lattRing& x )
-     { if( this != &x ) {
-         tune.hor = x.tune.hor;
-         tune.ver = x.tune.ver;
-         chromaticity.hor = x.chromaticity.hor;
-         chromaticity.ver = x.chromaticity.ver;
-       }
-       return *this;
-     }
+
  };
 
- struct lattFunc : public BarnacleData {
+ struct lattFunc {
+
+   lattFunc();
+
    double arcLength;
    struct dispersion_type {
      double hor;
@@ -124,13 +107,10 @@ public:
      double ver;
    } psi;
  
-   lattFunc();
-   ~lattFunc() {}
-   lattFunc& operator=( const lattFunc& );
- };
+  };
 
 
- int TuneCalc       ( JetParticle*, bool forceClosedOrbitCalc = true );
+ int TuneCalc  ( JetParticle&, bool forceClosedOrbitCalc = true );
                // TuneCalc implicitly assumes an uncoupled ring; results
                // are suspect-to-meaningless if coupling exists.
                // Upon exit, (a) the JetParticle argument is on the closed
@@ -139,14 +119,14 @@ public:
                //                labelled "Tunes" containing a
                //                LattFuncSage::tunes data struct.
 
- int Disp_Calc      ( JetParticle*, Sage::CRITFUNC = 0 );
- int NewDisp_Calc   ( JetParticle*, bool onClosedOrbit = false );
- int Fast_CS_Calc   ( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
- int Slow_CS_Calc   ( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
- int NewSlow_CS_Calc( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
+ int Disp_Calc      ( JetParticle const&, Sage::CRITFUNC = 0 );
+ int NewDisp_Calc   ( JetParticle const&, bool onClosedOrbit = false );
+ int Fast_CS_Calc   ( JetParticle const&, Sage::CRITFUNC = 0 );
+ int Slow_CS_Calc   ( JetParticle const&, Sage::CRITFUNC = 0 );
+ int NewSlow_CS_Calc( JetParticle const&,       Sage::CRITFUNC = 0 );
                // If default value is used for Sage::CRITFUNC, then
                // information is attached to all elements.
- int FAD_Disp_Calc  ( /* const */ JetParticle*, Sage::CRITFUNC = 0 );
+ int FAD_Disp_Calc  ( JetParticle const&, Sage::CRITFUNC = 0 );
                // Assumes no vertical dispersion.
                // Uses the 5x5 matrix formalism that 
                // everyone knows and loves, ignoring the
@@ -158,22 +138,20 @@ public:
                // beamline.
                // By the way, "FAD" stands for "Fast and Dirty."
 
- int Twiss_Calc     ( const LattFuncSage::lattFunc&, JetParticle&, Sage::CRITFUNC = 0 ); 
+ int Twiss_Calc     ( LattFuncSage::lattFunc const&, JetParticle&, Sage::CRITFUNC = 0 ); 
  int Twiss_Calc     ( JetParticle& );
                // These reproduce the old beamline::twiss
                // and therefore are both obsolete and wrong.
 
- int pushCalc       ( const Particle&, const LattFuncSage::lattFunc& );
+ int pushCalc       ( Particle const &, LattFuncSage::lattFunc const& );
 
  void eraseAll();
 
- lattFunc* get_lattFuncPtr( int );
- lattRing* get_lattRingPtr();
-               // Returns 0 if the argument is
-               // out of bounds.
-               // Unsafe!! returns pointer.
+ std::vector<lattFunc> const& getTwissArray();
+ lattRing              const& getLattRing();
+
   
- void set_dpp( double );
+ void   set_dpp( double );
  double get_dpp();
 
  // Error identifiers
@@ -187,22 +165,21 @@ public:
  static const int TOO_MANY_VECTORS;
 
 private:
- static double     _csH, _csV, _snH, _snV;
- static Mapping*   _theMapPtr;
-        double     _dpp;    // used for dispersion calculations
 
- lattFunc* _lf;
- lattRing* _lr;
+ LattFuncSage( LattFuncSage const&); 
 
- void _deleteCalcs();
- void _finishConstructor();
+ static double           _csH; 
+ static double           _csV; 
+ static double           _snH; 
+  static double          _snV;
+ static Mapping*         _theMapPtr;
+
+        double           _dpp;    
+ std::vector<lattFunc>   lfvec_;
+ lattRing                lr_;
+
+
 };
-
-
-inline double LattFuncSage::get_dpp()
-{
-  return _dpp;
-}
 
 
 #endif // LATTFUNCSAGE_H

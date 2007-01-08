@@ -31,7 +31,20 @@
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
-******                                                                
+******
+******  REVISION HISTORY:
+******
+******  Dec 2006 - Jean-Francois Ostiguy 
+******             ostiguy@fnal
+******    
+******  - interface based on Particle& rather than ptrs. 
+******    Stack allocated local Particle objects.
+******  - changes to accomodate new boost::any based Barnacle objects.
+******  - use new style STL-compatible beamline iterators
+******  - calcs_ array is now an STL vector. LF are now returned by 
+******    returning a const reference to the entire vector.
+******  - misc cleanup.  
+******                                                                 
 **************************************************************************
 *************************************************************************/
 
@@ -59,13 +72,12 @@
 #include <physics_toolkit/EdwardsTengSage.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
-#include <beamline/BeamlineIterator.h>
 
 using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
 
-// ============================================================== //
+
 
 // ... Globals:
 double   EdwardsTengSage::_csH, 
@@ -75,7 +87,8 @@ double   EdwardsTengSage::_csH,
 Mapping* EdwardsTengSage::_theMapPtr;
 
 
-// ============================================================== //
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 EdwardsTengSage::Info::Info() 
 : D(2,2), EV(6,6)
@@ -88,6 +101,9 @@ EdwardsTengSage::Info::Info()
   phi       = 0.0;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 EdwardsTengSage::Info::Info( const Info& x ) 
 {
@@ -104,38 +120,26 @@ EdwardsTengSage::Info::Info( const Info& x )
 }
 
 
-// ============================================================== //
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 EdwardsTengSage::EdwardsTengSage( const beamline* x, bool doClone ) 
-: Sage( x, doClone ), _calcs(0), _n(0)
-{
-}
+  : Sage( x, doClone )
+{}
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 EdwardsTengSage::EdwardsTengSage( const beamline& x, bool doClone ) 
-: Sage( &x, doClone ), _calcs(0), _n(0)
-{
-}
+  : Sage( &x, doClone )
+{}
 
 
-EdwardsTengSage::~EdwardsTengSage()
-{
-  _deleteCalcs();
-}
 
-void EdwardsTengSage::_deleteCalcs()
-{
-  if( 0 != _calcs ) {
-    for( int i = 0; i < _n; i++ ) 
-    { if( 0 != _calcs[i] ) {delete _calcs[i];} }
-    delete [] _calcs;
-    _calcs = 0;
-    _n = 0;
-  }
-}
-
-
-// ============================================================== //
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 int EdwardsTengSage::eigenTuneCalc( const JetParticle& ptr_jp, 
@@ -202,26 +206,32 @@ int EdwardsTengSage::eigenTuneCalc( const JetParticle& ptr_jp,
 }
 
 
-// ============================================================== //
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 int EdwardsTengSage::_attachETFuncs( bmlnElmnt* lbe ) 
 {
  double  dcos, cos2phi, sin2phi, tanphi;
- MatrixD mtrx;
+
  MatrixD M( 2, 2 ), N( 2, 2 ), m( 2, 2 ), n( 2, 2 ),
          D( 2, 2 ), S( "J", 2 ), A( 2, 2 ), B( 2, 2 ),
          U( "I", 2 );
- Info*     ETptr;
- Barnacle* ETbarn;
- Mapping   localMap;
 
- ETbarn = lbe->dataHook.lift( "EdwardsTengSage" );
- ETptr = (Info*) ETbarn->info;
- // REMOVE: localMap = ETptr->map( (*EdwardsTengSage::_theMapPtr)( ETptr->mapInv ) );
- localMap = ETptr->map( (*EdwardsTengSage::_theMapPtr)( ETptr->map.Inverse() ) );
- mtrx = localMap.Jacobian();
- ETptr->EV = mtrx.Matrix::eigenVectors();
+
+ BarnacleList::iterator it = lbe->dataHook.find( "EdwardsTengSage" );
+
+ Info etinfo;
+
+ if ( it != lbe->dataHook.end() ) { 
+  etinfo = boost::any_cast<Info>(it->info);
+  lbe->dataHook.remove(it);
+ }
+
+ Mapping localMap = etinfo.map( (*EdwardsTengSage::_theMapPtr)( etinfo.map.Inverse() ) );
+ MatrixD mtrx     = localMap.Jacobian();
+
+ etinfo.EV = mtrx.Matrix::eigenVectors();
   // In the above, it is necessary to qualify the member 
   // function eigenValues(). Without explicit class qualifier, 
   // the complex form of the algorithm is called. 
@@ -242,10 +252,11 @@ int EdwardsTengSage::_attachETFuncs( bmlnElmnt* lbe )
 
   A = M;
   B = N;
+
   sin2phi = tanphi = 0.0;
   cos2phi = 1.0;
-  D(0,0) = 1.0;  D(0,1) = 0.0;
-  D(1,0) = 0.0;  D(1,1) = 1.0;
+  D(0,0)  = 1.0;  D(0,1) = 0.0;
+  D(1,0)  = 0.0;  D(1,1) = 1.0;
  }
 
  else {                                // Coupled lattice
@@ -264,6 +275,7 @@ int EdwardsTengSage::_attachETFuncs( bmlnElmnt* lbe )
 
   dcos    = EdwardsTengSage::_csH - EdwardsTengSage::_csV;
   cos2phi = ( M - N ).trace() / ( 2.0 *( dcos ) );
+
   if( fabs( cos2phi - 1.0 ) < 1.0e-4 ) cos2phi =   1.0;  // ??? Rather coarse,
   if( fabs( cos2phi + 1.0 ) < 1.0e-4 ) cos2phi = - 1.0;  // ??? isn't it?
 
@@ -317,8 +329,8 @@ int EdwardsTengSage::_attachETFuncs( bmlnElmnt* lbe )
  }
 
  // .......... Save the ET information
- ETptr->phi       = atan( tanphi ) / 2.0;
- ETptr->D         = D;
+ etinfo.phi       = atan( tanphi ) / 2.0;
+ etinfo.D         = D;
 
  // .......... Lattice functions ..........................
 
@@ -331,8 +343,8 @@ int EdwardsTengSage::_attachETFuncs( bmlnElmnt* lbe )
   EdwardsTengSage::_snH = - sqrt( 1.0 - EdwardsTengSage::_csH*EdwardsTengSage::_csH );
  }
 
- ETptr->beta .hor = JH( 0, 1 ) / EdwardsTengSage::_snH;
- ETptr->alpha.hor = JH( 0, 0 ) / EdwardsTengSage::_snH;
+ etinfo.beta .hor = JH( 0, 1 ) / EdwardsTengSage::_snH;
+ etinfo.alpha.hor = JH( 0, 0 ) / EdwardsTengSage::_snH;
 
  // .......... A little test to keep everyone honest .....
  if( JH( 0, 0 ) != 0.0 )
@@ -362,8 +374,8 @@ int EdwardsTengSage::_attachETFuncs( bmlnElmnt* lbe )
   EdwardsTengSage::_snV = - sqrt( 1.0 - EdwardsTengSage::_csV*EdwardsTengSage::_csV );
  }
 
- ETptr->beta .ver = JV( 0, 1 ) / EdwardsTengSage::_snV;
- ETptr->alpha.ver = JV( 0, 0 ) / EdwardsTengSage::_snV;
+ etinfo.beta .ver = JV( 0, 1 ) / EdwardsTengSage::_snV;
+ etinfo.alpha.ver = JV( 0, 0 ) / EdwardsTengSage::_snV;
 
  // .......... A little test to keep everyone honest .....
  if( JV( 0, 0 ) != 0.0 )
@@ -384,31 +396,33 @@ int EdwardsTengSage::_attachETFuncs( bmlnElmnt* lbe )
  }
 
 
- lbe->dataHook.append( ETbarn );
+ lbe->dataHook.append( Barnacle("EdwardsTengSage", etinfo) );
 
  return 0;
 }
 
 
-// ============================================================== //
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void EdwardsTengSage::eraseAll() 
 {
   _myBeamlinePtr->dataHook.eraseAll( "EdwardsTengSage" );
   _myBeamlinePtr->dataHook.eraseAll( "eigentunes" );
 
-  DeepBeamlineIterator dbi( *_myBeamlinePtr );
-  bmlnElmnt* be;
-  while((  be = dbi++  )) {
-    be->dataHook.eraseAll( "EdwardsTengSage" );
-    be->dataHook.eraseAll( "eigentunes" );
+  for( beamline::deep_iterator it = _myBeamlinePtr->deep_begin(); it != _myBeamlinePtr->deep_end(); ++it) {
+    (*it)->dataHook.eraseAll( "EdwardsTengSage" );
+    (*it)->dataHook.eraseAll( "eigentunes" );
   }
 
-  _deleteCalcs();
+  calcs_.clear();
 }
 
 
-int EdwardsTengSage::doCalc( JetParticle* ptr_jp, beamline::Criterion& crit )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int EdwardsTengSage::doCalc( JetParticle& jp, beamline::Criterion& crit )
 {
   // PRECONDITION:   The JetParticle must be on the closed
   //   orbit with the identity mapping for its state.
@@ -423,45 +437,42 @@ int EdwardsTengSage::doCalc( JetParticle* ptr_jp, beamline::Criterion& crit )
   //                 The beamline has attached to it
   //   a Barnacle labelled eigentunes that possesses
   //   an EdwardsTengSage::Tunes data struct. 
+
   int             ret;
-  bmlnElmnt*      be;
   double          t;
-  int             i;
-  MatrixD         mtrx( BMLN_dynDim, BMLN_dynDim );
-  Info*           ETptr;
 
   EdwardsTengSage::_theMapPtr = new Mapping;
 
   // .......... Propagate a JetParticle element by element
   // .......... It is assumed to be on a closed orbit!!
-  Particle* ptr_particle = new Particle(*ptr_jp);
 
-  // Note: ptr_particle is deleted before returning
+  Particle particle(jp);
 
   double lng = 0.0;
-  DeepBeamlineIterator dbi( *_myBeamlinePtr );
-   
-  // REMOVE: Mapping* tmp_map = 0;  
+  bmlnElmnt*  be = 0;
 
-  while ((  be = dbi++  )) {
-    lng += be->OrbitLength( *ptr_particle );
-    be->propagate( *ptr_jp );
+  for( beamline::deep_iterator it  = _myBeamlinePtr->deep_begin(); 
+                               it != _myBeamlinePtr->deep_end(); ++it) {
+    be = (*it);
+    lng += be->OrbitLength( particle );
+    be->propagate( jp );
     if( crit(be) ) {
-      ETptr = new Info;
-      ETptr->arcLength = lng;
-      ETptr->map= ptr_jp->getState();   // ??? Change statements?  Use pointer?
-      // REMOVE: ETptr->mapInv = ETptr->map.Inverse();
-      be->dataHook.append( "EdwardsTengSage", ETptr );
+      Info etinfo;
+      etinfo.arcLength = lng;
+      etinfo.map= jp.getState();   // ??? Change statements?  Use pointer?
+
+      be->dataHook.append( Barnacle("EdwardsTengSage", etinfo) );
     }
   }
 
   // .......... Calculating tunes .........................
-  *EdwardsTengSage::_theMapPtr = ptr_jp->getState();
-  mtrx = EdwardsTengSage::_theMapPtr->Jacobian();
-  MatrixC lambda;
-  lambda = mtrx.eigenValues();
 
-  for( i = 0; i < BMLN_dynDim; i++ )
+  *EdwardsTengSage::_theMapPtr = jp.getState();
+
+  MatrixD mtrx   = EdwardsTengSage::_theMapPtr->Jacobian();
+  MatrixC lambda = mtrx.eigenValues();
+
+  for( int i = 0; i < BMLN_dynDim; i++ )
    if( fabs( abs(lambda(i)) - 1.0 ) > 1.0e-4 ) {
     (*pcerr) << "\n"
          << "*** ERROR ***                                     \n"
@@ -474,7 +485,6 @@ int EdwardsTengSage::doCalc( JetParticle* ptr_jp, beamline::Criterion& crit )
          << "*** ERROR ***                                     \n"
          << endl;
     delete EdwardsTengSage::_theMapPtr;
-    delete ptr_particle;
     eraseAll();
     return 10;
    }
@@ -489,70 +499,68 @@ int EdwardsTengSage::doCalc( JetParticle* ptr_jp, beamline::Criterion& crit )
          << "*** ERROR *** Eigenvalues =                        \n"
          << "*** ERROR *** " << lambda << endl;
     delete EdwardsTengSage::_theMapPtr;
-    delete ptr_particle;
     eraseAll();
     return 11;
   }
 
   EdwardsTengSage::_csH = real( lambda(0) );    
   EdwardsTengSage::_csV = real( lambda(1) );
-  // EdwardsTengSage::_snH = imag( lambda(0) );    
-  // EdwardsTengSage::_snV = imag( lambda(1) );
 
   // Go through the accelerator again and attach
   //   the Edwards Teng lattice info to each element
   //   satisfying the selection criterion.
-  dbi.reset();
-  while ((  be = dbi++  )) {
+
+  for( beamline::deep_iterator it = _myBeamlinePtr->deep_begin(); it != _myBeamlinePtr->deep_end(); ++it) {
+    be = (*it);
     if( crit(be) ) {
       if( 0 != ( ret = _attachETFuncs(be) ) ) {
         delete EdwardsTengSage::_theMapPtr;
-        delete ptr_particle;
         eraseAll();
         return ret;
       }
     }
   }
 
-  EdwardsTengSage::Tunes* tuneptr = new EdwardsTengSage::Tunes;
+  EdwardsTengSage::Tunes tunes;
   t = atan2( EdwardsTengSage::_snH, EdwardsTengSage::_csH );
   if( t < 0.0 )   t += M_TWOPI;
-  tuneptr->hor = ( t / M_TWOPI );
+  tunes.hor = ( t / M_TWOPI );
   t = atan2( EdwardsTengSage::_snV, EdwardsTengSage::_csV );
   if( t < 0.0 )   t += M_TWOPI;
-  tuneptr->ver = ( t / M_TWOPI );
+  tunes.ver = ( t / M_TWOPI );
 
-  _myBeamlinePtr->dataHook.append( "eigentunes", tuneptr );
+  _myBeamlinePtr->dataHook.append( Barnacle("eigentunes", tunes) );
 
   delete EdwardsTengSage::_theMapPtr;
-  delete ptr_particle;
+
+
+  
+  // ------------------------------------------------------------------------------------
+  // If we got here, the calculation was successful. Populate the calc_ array. 
+  //-------------------------------------------------------------------------------------
+
+  for ( beamline::deep_iterator it = _myBeamlinePtr->deep_begin(); it != _myBeamlinePtr->deep_end(); ++it) 
+  {
+        bmlnElmnt* be = (*it);
+         
+        BarnacleList::iterator itb;
+        if( ( itb = be->dataHook.find( "EdwardsTengSage" )) !=  be->dataHook.end() ) {
+           calcs_.push_back( boost::any_cast<EdwardsTengSage::Info>(itb->info) );
+        }
+   
+  }
+
   return 0;
 }
 
 
-const EdwardsTengSage::Info* EdwardsTengSage::get_ETFuncPtr( int j )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<EdwardsTengSage::Info> const& 
+  EdwardsTengSage::getETArray()
 {
-  if( j < 0 || _arrayPtr->size() <= j ) { return 0; }
 
-  if( _calcs == 0 ) {
-    int i;
-    _n = _arrayPtr->size();
-    _calcs = new Info* [_n];
-    for( i = 0; i < _n; i++ ) { _calcs[i] = 0;  }
-    
-    EdwardsTengSage::Info* infoPtr;
-    Barnacle* barnaclePtr;
-    i = 0;
-    DeepBeamlineIterator dbi( *_myBeamlinePtr );
-    bmlnElmnt* be;
-    while( ( 0 != (be = dbi++)  ) && ( i < _n ) ) {
-      if( 0 != ( barnaclePtr = be->dataHook.lift( "EdwardsTengSage" ) ) ) {
-        infoPtr = dynamic_cast<EdwardsTengSage::Info*>(barnaclePtr->info);
-        _calcs[i] = infoPtr;
-        i++;
-      }
-    }
-  }
+  return  calcs_;
 
-  return _calcs[j];
 }
