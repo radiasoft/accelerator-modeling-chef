@@ -50,6 +50,8 @@
 #include <streambuf>
 
 #include <CHEFGUI.h>
+#include <CHEFCurve.h>
+#include <CurveData.h>
 #include <filters.h>
 #include <BeamlineBrowser.h>
 #include <BmlSelectionDialog.h>
@@ -97,7 +99,7 @@
 #include <DspnFncData.h>
 #include <MomentsFncData.h>
 
-#include <chefplotmain.h>
+#include <CHEFPlotMain.h>
 #include <DbConnectDialog.h>
 #include <EnvPtr.h>
 
@@ -1533,20 +1535,21 @@ void CHEFGUI::_editAlignData()
 
   // Preparing the plot
   // Load the shared arrays
-  boost::shared_array<double> azimuthArray( new double[n] );
-  boost::shared_array<double>       xArray( new double[n] );
-  boost::shared_array<double>       yArray( new double[n] );
-  boost::shared_array<double>       zArray( new double[n] );
+
+  std::vector<double> azimuthArray;
+  std::vector<double>       xArray;
+  std::vector<double>       yArray;
+  std::vector<double>       zArray;
 
   bool firstPass = true;
-  for( int i = 0; i < n; i++ ) {
+  for( int i = 0; i < n; ++i) {
     dtmPtr = (DataStore*) dataBag.get();
-    if( 0 != dtmPtr ) {
-      azimuthArray[i] = dtmPtr->az;
+    if( dtmPtr ) {
+      azimuthArray.push_back( dtmPtr->az );
       r = sm.getLocalDisplacement(i);
-      xArray[i]       = r(0);
-      yArray[i]       = r(1);
-      zArray[i]       = r(2);
+      xArray.push_back( r(0) );
+      yArray.push_back( r(1) );
+      zArray.push_back( r(2) );
       delete dtmPtr;
     }
     else {
@@ -1574,11 +1577,11 @@ void CHEFGUI::_editAlignData()
 
 
   boost::shared_ptr<CHEFCurve> 
-    dxCurve( new CHEFCurve( CurveData(azimuthArray,xArray,n), "dx" ));
+    dxCurve( new CHEFCurve( CurveData( &azimuthArray[0], &xArray[0], azimuthArray.size() ), "dx" ));
   boost::shared_ptr<CHEFCurve> 
-    dyCurve( new CHEFCurve( CurveData(azimuthArray,yArray,n), "dy" ));
+    dyCurve( new CHEFCurve( CurveData( &azimuthArray[0], &yArray[0], azimuthArray.size() ), "dy" ));
   boost::shared_ptr<CHEFCurve> 
-    dzCurve( new CHEFCurve( CurveData(azimuthArray,zArray,n), "dz" ));
+    dzCurve( new CHEFCurve( CurveData( &azimuthArray[0], &zArray[0], azimuthArray.size() ), "dz" ));
 
   dxCurve->setPen( QPen( "black", 1, Qt::SolidLine ) );
   dyCurve->setPen( QPen( "red", 1, Qt::SolidLine ) );
@@ -1596,8 +1599,7 @@ void CHEFGUI::_editAlignData()
   plotData.addCurve(dzCurve);
   plotData.setXLabel( "Arc Length [m]"              );
   plotData.setYLabel( "Data",       QwtPlot::yLeft  );
-  plotData.setBeamline( _p_currBmlCon->cheatBmlPtr(), false );
-  // false = do not clone line   
+  plotData.setBeamline( *_p_currBmlCon->cheatBmlPtr() );
 
 
   // Plot and display the results
@@ -2551,7 +2553,7 @@ void CHEFGUI::_pushMoments()
       return;
     }
 
-    _p_currBmlCon->setInitial( initialCovariance );
+    _p_currBmlCon->setInitialCovariance( initialCovariance );
 
     MomentsFncData* mfd = 0;
     try {
@@ -2636,7 +2638,7 @@ void CHEFGUI::_pushDispersion()
     initialDispersion.dPrime.hor     = initialConditions.dPrime.hor;
     initialDispersion.dPrime.ver     = initialConditions.dPrime.ver;
 
-    _p_currBmlCon->setInitial( initialDispersion );
+    _p_currBmlCon->setInitialDispersion( initialDispersion );
 
     DspnFncData* dfd = 0;
     try {
@@ -2717,7 +2719,7 @@ void CHEFGUI::_pushULF()
     _initCondDialogLF->readInputValues();
     LattFuncSage::lattFunc initialConditions( _initCondDialogLF->getInitCond() );
 
-    _p_currBmlCon->setInitial( initialConditions );
+    _p_currBmlCon->setInitialTwiss( initialConditions );
 
     LattFncData* lfd = 0;
     try {
