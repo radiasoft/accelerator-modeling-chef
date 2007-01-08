@@ -21,88 +21,56 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
+#include <string>
 #include <basic_toolkit/Barnacle.h>
+#include <physics_toolkit/LattFuncSage.h>
 
 using namespace boost::python;
 
-void wrap_barnacle () {
+struct BarnacleListIteratorWrapper: public BarnacleList::iterator {
 
-void (BarnacleList::* append_overload_1)(const Barnacle*)                  = &BarnacleList::append;
-void (BarnacleList::* append_overload_2)(const char*, const BarnacleData*) = &BarnacleList::append;
+   BarnacleListIteratorWrapper( PyObject* self, BarnacleList::iterator const& it):  BarnacleList::iterator(it), self_(self) {} 
 
-void (BarnacleList::* insert_overload_1)(const Barnacle*)                  = &BarnacleList::insert;
-void (BarnacleList::* insert_overload_2)(const char*, const BarnacleData*) = &BarnacleList::insert;
-  
+   BarnacleListIteratorWrapper( PyObject* self): self_(self) {} 
 
-   // class_<Barnacle>("BarnacleData")
+   std::string&         get_id()     { return (*this)->id;   }    
+   boost::any&        get_info()     { return (*this)->info; }    
 
-
-class_<Barnacle>("Barnacle", init<const char*, const BarnacleData*>() )
-  .def_readwrite("info",   &Barnacle::info);
+   PyObject* self_;
  
+};
+
+static LattFuncSage::lattFunc& lattFunc_local(PyObject* o) {
  
-
-class_<BarnacleList>("BarnacleList")
- .def("append",      append_overload_1)
- .def("append",      append_overload_2)
- .def("insert",      insert_overload_1) 
- .def("insert",      insert_overload_2) 
- .def("eraseFirst",  &BarnacleList::eraseFirst) 
- .def("eraseAll",    &BarnacleList::eraseAll)
- .def("find",        &BarnacleList::find, return_value_policy<reference_existing_object>() )
- .def("lift",        &BarnacleList::lift, return_value_policy<reference_existing_object>() );
- 
-
-
-class_<BarnacleData>("BarnacleData");
-
+  return boost::any_cast<LattFuncSage::lattFunc&> ( extract<boost::any&>(o) ); 
 
 }
 
-#if 0
 
-struct BarnacleData {
- BarnacleData() {};
- virtual ~BarnacleData() {};
-};
+void wrap_barnacle () {
 
-class Barnacle {
-private:
- char* id;
- friend class BarnacleList;
-public:
- Barnacle( const char*         /* identifier tag  */,
-           const BarnacleData* /* the information */ );
- virtual ~Barnacle();
- BarnacleData* info;
+class_<boost::any>("Any")
+ .def( "lattFunc",  &lattFunc_local, return_value_policy<reference_existing_object>() );
 
-#ifdef OBJECT_DEBUG
-  static int objectCount;
-#endif
-};
+class_<Barnacle>("Barnacle", init<std::string, boost::any >() )
+  .def_readwrite("id",     &Barnacle::id)
+  .def_readwrite("info",   &Barnacle::info);
+ 
 
-class BarnacleList {
-public:
- BarnacleList();
- ~BarnacleList();
- void            append    ( const Barnacle* );
- void            insert    ( const Barnacle* );
- void            append    ( const char*, const BarnacleData* );
- void            insert    ( const char*, const BarnacleData* );
- char            eraseFirst( const char*     /* identifier */ );
- char            eraseAll  ( const char* = 0 /* identifier */ );
- BarnacleData*   find      ( const char*     /* identifier */,
-                                   int   = 1 /* instance   */ ) const;
- Barnacle*       lift      ( const char*     /* identifier */,
-                                   int   = 1 /* instance   */ );
+class_<BarnacleList>("BarnacleList")
+ .def("append",      &BarnacleList::append)
+ .def("insert",      &BarnacleList::insert) 
+ .def("eraseFirst",  &BarnacleList::eraseFirst) 
+ .def("eraseAll",    &BarnacleList::eraseAll)
+ .def("find",        &BarnacleList::find )
+ .def("remove",      &BarnacleList::remove)
+ .def("begin",       &BarnacleList::begin)
+ .def("end",         &BarnacleList::end)
+ .def("__iter__",    range( &BarnacleList::begin, &BarnacleList::end ) );
 
-#ifdef OBJECT_DEBUG
-  static int objectCount;
-#endif
 
-private:
- dlist theList;
-};
-
-#endif // BARNACLE_H
+ class_<BarnacleList::iterator, BarnacleListIteratorWrapper >("BarnacleListIterator")
+   .def("id",   &BarnacleListIteratorWrapper::get_id,   return_value_policy<reference_existing_object>()  )  
+   .def("info", &BarnacleListIteratorWrapper::get_info, return_value_policy<reference_existing_object>()  ); 
+}
 
