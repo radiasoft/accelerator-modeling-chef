@@ -220,9 +220,12 @@ public:
 
   explicit Proton( JetProton const& );
 
-  ~Proton();
+ ~Proton();
+
+  Proton&   operator=(Proton const&);
 
   Proton*   Clone()  const;
+
 };
 
 class DLLEXPORT  AntiProton : public Particle {
@@ -235,6 +238,8 @@ public:
   explicit AntiProton( JetAntiProton const& );
 
  ~AntiProton();
+
+  AntiProton&   operator=(AntiProton const&);
 
   AntiProton*    Clone() const;
 };
@@ -251,6 +256,9 @@ public:
 
  ~Electron();
 
+  Electron&   operator=(Electron const&);
+
+
   Electron*    Clone() const;
 };
 
@@ -264,6 +272,8 @@ public:
   explicit Positron( JetPositron const& );
 
  ~Positron();
+
+  Positron&   operator=(Positron const&);
 
   Positron*    Clone() const;
 };
@@ -279,6 +289,8 @@ public:
 
  ~Muon();
 
+  Muon&   operator=(Muon const&);
+
   Muon*    Clone() const;
 };
 
@@ -292,6 +304,8 @@ public:
   explicit AntiMuon( JetAntiMuon const& );
 
  ~AntiMuon();
+
+  AntiMuon&   operator=(AntiMuon const&);
 
   AntiMuon*    Clone() const;
 };
