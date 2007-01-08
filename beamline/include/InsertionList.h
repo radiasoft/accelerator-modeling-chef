@@ -44,6 +44,7 @@
 #define INSERTIONLIST_H
 
 #include <basic_toolkit/globaldefs.h>
+#include <basic_toolkit/dlist.h>
 #include <beamline/Particle.h>
 
 
@@ -56,8 +57,7 @@ struct DLLEXPORT InsertionListElement {
 };
 
 
-class DLLEXPORT InsertionList : private dlist
-{
+class DLLEXPORT InsertionList : private dlist {
 private:
   double    _smax;
   Particle* _pPtr;
