@@ -32,9 +32,10 @@
 **************************************************************************
 *************************************************************************/
 
+#include <Lego.h>
+
 #include <beamline/beamline.h>
 #include <beamline/BeamlineIterator.h>
-#include <lego.h>
 #include <qpainter.h>
 #include <qwmatrix.h>
 #include <qpixmap.h>
@@ -42,7 +43,7 @@
 
 
 LegoPlot::LegoPlot(QWidget * parent, const char * name, WFlags f ): 
-QWidget(parent,name,f), _beamline(0) {
+QWidget(parent,name,f) {
  
   setBackgroundMode( Qt::PaletteBase );
    _pixmap  = 0;
@@ -58,32 +59,21 @@ LegoPlot::~LegoPlot() {
   if (!_pixmap)    delete _pixmap;
   if (!_painter)   delete _painter;
 
-  // delete the beamline elements using zap
-  // then delete the beamline itself
-  // The beamline is currently cloned. 
-  // This is wasteful - we need reference counting !
+  _beamline.zap();
 
-  if (_beamline ) 
-  {
-    // std::cout << "lego: beamline destroyed." << std::endl;
-    _beamline->zap();
-    delete _beamline;
-  };
 }
 
 //.........................................................................................
 
 
 void 
-LegoPlot::setBeamline(const beamline* bml) {
+LegoPlot::setBeamline(beamline const& bml) {
   
-  if (bml)
-     _beamline = (beamline*) bml->Clone();
-  else
-    _beamline =0;
+     _beamline = *(bml.Clone());
+
 }
 
-const beamline* 
+const beamline& 
 LegoPlot::getBeamline() 
 {
 
@@ -124,7 +114,7 @@ LegoPlot::resizeEvent ( QResizeEvent *event ){
 void 
 LegoPlot::paintEvent ( QPaintEvent *event ){
 
-  if( !_beamline ) return;
+  if( _beamline.empty() ) return;
 
   QRect legorect  = rect();
 
@@ -137,7 +127,7 @@ LegoPlot::paintEvent ( QPaintEvent *event ){
    _painter->setWindow(_painter->viewport());
    _scale = double( ( _roffset -_loffset ) / _w );
 
-   DeepBeamlineIterator it( *_beamline );
+   DeepBeamlineIterator it( _beamline );
      
       double s   = 0;
       double len = 0;

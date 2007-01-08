@@ -32,7 +32,7 @@
 **************************************************************************
 *************************************************************************/
 
-#include <datadisplay.h>
+#include <DataDisplay.h>
 #include <qtable.h>
 #include <qfiledialog.h>
 #include <qdatetime.h>
