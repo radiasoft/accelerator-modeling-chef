@@ -25,6 +25,7 @@
 #include <beamline/bmlnElmnt.h>
 #include <beamline/beamline.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 #include <basic_toolkit/Matrix.h>
 #include <physics_toolkit/BeamlineContext.h>
 
@@ -42,7 +43,7 @@ void wrap_beamlinecontext() {
 
 using namespace boost::python;
 
-class_<BeamlineContext>( "BeamlineContext", init<const Particle&, beamline*, bool>() )
+class_<BeamlineContext, boost::noncopyable>( "BeamlineContext", init<const Particle&, beamline*, bool>() )
       
 .def( "assign",                         &BeamlineContext::assign )                    //
 //.def( "accept",                       &BeamlineContext::accept )                    //  ( ConstBmlVisitor& ) const;
@@ -69,13 +70,13 @@ class_<BeamlineContext>( "BeamlineContext", init<const Particle&, beamline*, boo
 .def( "getVerticalFracTune",            &BeamlineContext::getVerticalFracTune)
 .def( "getHorizontalEigenTune",         &BeamlineContext::getHorizontalEigenTune)             //double getHorizontalEigenTune()
 .def( "getVerticalEigenTune",           &BeamlineContext::getVerticalEigenTune)               // double getVerticalEigenTune()
-.def( "getLattFuncPtr",                 &BeamlineContext::getLattFuncPtr, 
+.def( "getTwissArray",                    &BeamlineContext::getTwissArray, 
                                         return_value_policy<reference_existing_object>() )    // const LattFuncSage::lattFunc* getLattFuncPtr( int )
-.def("getETFuncPtr",                    &BeamlineContext::getETFuncPtr,  
+.def("getETArray",                      &BeamlineContext::getETArray,  
                                           return_value_policy<reference_existing_object>() )  //const EdwardsTengSage::Info* getETFuncPtr( int )
-.def("getCovFuncPtr",                   &BeamlineContext::getCovFuncPtr, 
-                                          return_value_policy<reference_existing_object>() )   //const CovarianceSage::Info* getCovFuncPtr( int )
-.def("getDispersionPtr",                &BeamlineContext::getDispersionPtr, 
+.def("getCovarianceArray",                     &BeamlineContext::getCovarianceArray, 
+                                           return_value_policy<reference_existing_object>() )   //const CovarianceSage::Info* getCovFuncPtr( int )
+.def("getDispersionArray",                  &BeamlineContext::getDispersionArray, 
                                           return_value_policy<reference_existing_object>() )   //const DispersionSage::Info* getDispersionPtr( int )
 
 
