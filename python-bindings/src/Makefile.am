@@ -4,7 +4,7 @@ libpybasic_toolkit_la_SOURCES     =   py-basictoolkit-module.cpp py-barnacle.cpp
 
 libpymxyzptlk_la_SOURCES          =   py-mxyzptlk-module.cpp py-jetenv.cpp  py-jet.cpp py-jetvector.cpp py-mapping.cpp py-coord.cpp 
 
-libpybeamline_la_SOURCES          =   py-beamline-module.cpp py-aperture.cpp py-kick.cpp py-bblens.cpp py-bmlnelmnt.cpp py-drift.cpp py-sbend.cpp \
+libpybeamline_la_SOURCES          =   py-beamline-module.cpp py-aperture.cpp py-kick.cpp py-bblens.cpp py-bmlnelmnt.cpp py-beamline.cpp py-drift.cpp py-sbend.cpp \
                                       py-cf_sbend.cpp py-cf_rbend.cpp py-lambertson.cpp py-mover.cpp py-marker.cpp py-monitor.cpp \
                                       py-quadrupole.cpp py-octupole.cpp py-sextupole.cpp py-septum.cpp py-sector.cpp py-slot.cpp \
                                       py-rbend.cpp py-rfcavity.cpp py-thinpoles.cpp py-decapole.cpp py-particle.cpp py-beamlineiterator.cpp \
