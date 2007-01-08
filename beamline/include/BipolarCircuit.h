@@ -42,15 +42,9 @@
 #define BIPOLARCIRCUIT_H
 
 #include <basic_toolkit/globaldefs.h>
+#include <basic_toolkit/dlist.h>
 #include <beamline/circuit.h>
 
-
-struct DLLEXPORT  PolarityBarn : public BarnacleData {
-  double polarity;
-  PolarityBarn(double x) : polarity(x) {}
-  PolarityBarn(const PolarityBarn& x): BarnacleData() {polarity = x.polarity;}
-  ~PolarityBarn() {}
-};
 
 class  DLLEXPORT  BipolarCircuit : public circuit {
 protected:
