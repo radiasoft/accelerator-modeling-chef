@@ -323,40 +323,49 @@ Vector Particle::NormalizedVectorMomentum() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Particle& Particle::operator=( Particle const& u ) 
+Particle& Particle::operator=( Particle const& p ) 
 {
 
-  if( &u == this ) return *this;
+  if( &p == this ) return *this;
 
-  if( typeid(u) != typeid(*this) ) {
-     ostringstream uic;
-     uic  << "Incompatible types: "
-          << typeid(*this).name()
-          << " is not "
-          << typeid(u).name()
-          << '.';
-     throw( GenericException( __FILE__, __LINE__, 
-            "Particle& Particle::operator=( const Particle& u )",
-            uic.str().c_str() ) );
-  }     
-
-  tag_   = u.tag_;
-  q_     = u.q_;
-  E_     = u.E_;
-  p_     = u.p_;
-  m_     = u.m_;
-  pn_    = u.pn_;
-  pni2_  = u.pni2_;
-  bRho_  = u.bRho_;
-  beta_  = u.beta_;
-  gamma_ = u.gamma_;
-  state_ = u.state_;  
+  tag_   = p.tag_;
+  q_     = p.q_;
+  E_     = p.E_;
+  p_     = p.p_;
+  m_     = p.m_;
+  pn_    = p.pn_;
+  pni2_  = p.pni2_;
+  bRho_  = p.bRho_;
+  beta_  = p.beta_;
+  gamma_ = p.gamma_;
+  state_ = p.state_;  
 
  return *this;
 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+std::string Particle::getTag()
+{
+
+  return tag_;
+
+}                         
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void   Particle::setTag(std::string const& tag)
+{
+
+  tag_ = tag; 
+
+}     
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // **************************************************
 //   class Proton
@@ -395,6 +404,40 @@ Proton::Proton( JetProton const &p ): Particle(p) {}
 
 Proton::~Proton() {}
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Proton& Proton::operator=(Proton const& p) {
+
+  if( typeid(p) != typeid(*this) ) {
+     ostringstream uic;
+     uic  << "Incompatible types: "
+          << typeid(*this).name()
+          << " is not "
+          << typeid(p).name()
+          << '.';
+     throw( GenericException( __FILE__, __LINE__, 
+            "Particle& Particle::operator=( const Particle& u )",
+            uic.str().c_str() ) );
+
+ }
+ 
+  if( &p == this ) return *this;
+
+  tag_   = p.tag_;
+  q_     = p.q_;
+  E_     = p.E_;
+  p_     = p.p_;
+  m_     = p.m_;
+  pn_    = p.pn_;
+  pni2_  = p.pni2_;
+  bRho_  = p.bRho_;
+  beta_  = p.beta_;
+  gamma_ = p.gamma_;
+  state_ = p.state_;  
+
+}
 
 // **************************************************
 //   class AntiProton
@@ -444,6 +487,40 @@ AntiProton::~AntiProton() {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+AntiProton& AntiProton::operator=(AntiProton const& p) {
+
+  if( typeid(p) != typeid(*this) ) {
+     ostringstream uic;
+     uic  << "Incompatible types: "
+          << typeid(*this).name()
+          << " is not "
+          << typeid(p).name()
+          << '.';
+     throw( GenericException( __FILE__, __LINE__, 
+            "Particle& Particle::operator=( const Particle& u )",
+            uic.str().c_str() ) );
+
+ }
+ 
+  if( &p == this ) return *this;
+
+  tag_   = p.tag_;
+  q_     = p.q_;
+  E_     = p.E_;
+  p_     = p.p_;
+  m_     = p.m_;
+  pn_    = p.pn_;
+  pni2_  = p.pni2_;
+  bRho_  = p.bRho_;
+  beta_  = p.beta_;
+  gamma_ = p.gamma_;
+  state_ = p.state_;  
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 // **************************************************
 //   class Electron
 // **************************************************
@@ -486,6 +563,40 @@ Electron::~Electron() {}
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+Electron& Electron::operator=(Electron const& p) {
+
+  if( typeid(p) != typeid(*this) ) {
+     ostringstream uic;
+     uic  << "Incompatible types: "
+          << typeid(*this).name()
+          << " is not "
+          << typeid(p).name()
+          << '.';
+     throw( GenericException( __FILE__, __LINE__, 
+            "Particle& Particle::operator=( const Particle& u )",
+            uic.str().c_str() ) );
+
+ }
+
+  if( &p == this ) return *this;
+
+  tag_   = p.tag_;
+  q_     = p.q_;
+  E_     = p.E_;
+  p_     = p.p_;
+  m_     = p.m_;
+  pn_    = p.pn_;
+  pni2_  = p.pni2_;
+  bRho_  = p.bRho_;
+  beta_  = p.beta_;
+  gamma_ = p.gamma_;
+  state_ = p.state_;  
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 // **************************************************
 //   class Positron
@@ -524,6 +635,42 @@ Positron::Positron( JetPositron const& p): Particle(p) {}
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Positron::~Positron() {
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+Positron& Positron::operator=(Positron const& p) {
+
+  if( typeid(p) != typeid(*this) ) {
+     ostringstream uic;
+     uic  << "Incompatible types: "
+          << typeid(*this).name()
+          << " is not "
+          << typeid(p).name()
+          << '.';
+     throw( GenericException( __FILE__, __LINE__, 
+            "Particle& Particle::operator=( const Particle& u )",
+            uic.str().c_str() ) );
+
+ }
+ 
+  if( &p == this ) return *this;
+
+  tag_   = p.tag_;
+  q_     = p.q_;
+  E_     = p.E_;
+  p_     = p.p_;
+  m_     = p.m_;
+  pn_    = p.pn_;
+  pni2_  = p.pni2_;
+  bRho_  = p.bRho_;
+  beta_  = p.beta_;
+  gamma_ = p.gamma_;
+  state_ = p.state_;  
+
+
 }
 
 // **************************************************
@@ -569,6 +716,38 @@ Muon::~Muon() {
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Muon& Muon::operator=(Muon const& p) {
+
+  if( typeid(p) != typeid(*this) ) {
+     ostringstream uic;
+     uic  << "Incompatible types: "
+          << typeid(*this).name()
+          << " is not "
+          << typeid(p).name()
+          << '.';
+     throw( GenericException( __FILE__, __LINE__, 
+            "Particle& Particle::operator=( const Particle& u )",
+            uic.str().c_str() ) );
+  }
+
+  if( &p == this ) return *this;
+
+  tag_   = p.tag_;
+  q_     = p.q_;
+  E_     = p.E_;
+  p_     = p.p_;
+  m_     = p.m_;
+  pn_    = p.pn_;
+  pni2_  = p.pni2_;
+  bRho_  = p.bRho_;
+  beta_  = p.beta_;
+  gamma_ = p.gamma_;
+  state_ = p.state_;  
+}
+
 // **************************************************
 //   class AntiMuon
 // **************************************************
@@ -610,6 +789,41 @@ AntiMuon::AntiMuon( JetAntiMuon const & p): Particle(p) {}
 AntiMuon::~AntiMuon() {
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+AntiMuon& AntiMuon::operator=(AntiMuon const& p) {
+
+  if( typeid(p) != typeid(*this) ) {
+     ostringstream uic;
+     uic  << "Incompatible types: "
+          << typeid(*this).name()
+          << " is not "
+          << typeid(p).name()
+          << '.';
+     throw( GenericException( __FILE__, __LINE__, 
+            "Particle& Particle::operator=( const Particle& u )",
+            uic.str().c_str() ) );
+
+ }
+
+  if( &p == this ) return *this;
+
+  tag_   = p.tag_;
+  q_     = p.q_;
+  E_     = p.E_;
+  p_     = p.p_;
+  m_     = p.m_;
+  pn_    = p.pn_;
+  pni2_  = p.pni2_;
+  bRho_  = p.bRho_;
+  beta_  = p.beta_;
+  gamma_ = p.gamma_;
+  state_ = p.state_;  
+
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
