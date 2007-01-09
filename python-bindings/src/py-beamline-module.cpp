@@ -96,7 +96,7 @@ wrap_slot();
 wrap_thinpoles();
 
 wrap_particle();
-wrap_beamlineiterator();
+//wrap_beamlineiterator();
 wrap_lattfunc();
 wrap_insertionlistelement();
 wrap_insertionlist();
