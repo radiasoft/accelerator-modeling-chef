@@ -54,10 +54,33 @@
 #include <functional>
 #include <basic_toolkit/Barnacle.h>
 
+   
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool Barnacle::operator<(  Barnacle const& b ) const 
+{ 
+  return ( id  < b.id  );  
+}   
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+bool Barnacle::operator==( Barnacle const& b) const 
+{ 
+  return ( id  == b.id ); 
+}   
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool Barnacle::operator==( std::string str  ) const 
+{ 
+  return ( id  == str  );  
+}   
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BarnacleList::append( Barnacle const& x ) {
  theList_.push_back( x );
@@ -81,20 +104,12 @@ void BarnacleList::insert( Barnacle const& x ) {
 
 
 
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-
-
-
 void BarnacleList::eraseAll( std::string ident ) {
 
-   
+ bool (Barnacle::* fptr)(std::string) const = &Barnacle::operator==;
+
  theList_.erase( remove_if(theList_.begin(), theList_.end(),  
-                 std::bind2nd( std::mem_fun_ref(&Barnacle::operator==), ident ) ),  theList_.end() ); 
+                 std::bind2nd( std::mem_fun_ref(fptr), ident ) ),  theList_.end() ); 
   
 
 }
