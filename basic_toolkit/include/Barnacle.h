@@ -58,7 +58,10 @@ struct Barnacle {
 
   Barnacle( std::string s,  boost::any  a): id(s), info(a) {} 
 
-  bool operator==( std::string str) const { return ( id  == str ); }   
+  bool operator==( std::string str  ) const;   
+  bool operator==( Barnacle const& b) const;   
+
+  bool operator< ( Barnacle const& b) const;   
 
   std::string    id;
   boost::any     info;
