@@ -91,6 +91,12 @@ template
 unsigned int boost::details::pool::gcd<unsigned int>(unsigned int, unsigned int);
 
 // ----------------------------------------------------------------------------
+// Instantiations related to Barnacle
+// ----------------------------------------------------------------------------
+
+template class std::list<Barnacle>;
+
+// ----------------------------------------------------------------------------
 // Instantiations related to Vector Class
 // ----------------------------------------------------------------------------
 
