@@ -1314,6 +1314,8 @@ bmlnElmnt*  XsifParserDriver::make_kicker(  double const& BRHO, std::string cons
     aligner.tilt    = tilt;
     elm->setAlignment( aligner );
   }
+
+  return elm;
 }
 
 
