@@ -51,7 +51,13 @@ if __name__ == '__main__':
     channel_suite = unittest.TestLoader().loadTestsFromTestCase(Test_channel)
     booster_suite = unittest.TestLoader().loadTestsFromTestCase(Test_booster)
     damping_ring_suite = unittest.TestLoader().loadTestsFromTestCase(Test_damping_ring)
-    unittest.TextTestRunner(verbosity=2).run(channel_suite)
-    unittest.TextTestRunner(verbosity=2).run(booster_suite)
-    unittest.TextTestRunner(verbosity=2).run(damping_ring_suite)
+    channel_result = unittest.TextTestRunner(verbosity=2).run(channel_suite)
+    booster_result = unittest.TextTestRunner(verbosity=2).run(booster_suite)
+    damping_ring_result = unittest.TextTestRunner(verbosity=2).run(damping_ring_suite)
+    if channel_result.wasSuccessful() and \
+       booster_result.wasSuccessful() and \
+       damping_ring_result.wasSuccessful():
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
