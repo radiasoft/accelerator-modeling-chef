@@ -1,0 +1,13 @@
+.deps
+.libs
+*.lo
+*.la
+Makefile
+Makefile.in
+XsifParser_ypp.cc
+XsifParser_ypp.hh
+XsifParser_ypp.output
+lex.xsif_yy.cc
+location.hh
+position.hh
+stack.hh

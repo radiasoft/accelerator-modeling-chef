@@ -10,3 +10,4 @@ configure
 header_files
 libtool
 stamp-h1
+.in
