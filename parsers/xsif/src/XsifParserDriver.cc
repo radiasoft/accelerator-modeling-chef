@@ -852,9 +852,9 @@ bmlnElmnt*  XsifParserDriver::make_rbend(  double const& BRHO, std::string const
 
   if ( eval( string("L"),      attributes, value) )    length = any_cast<double>(value); 
   if ( eval( string("ANGLE"),  attributes, value) )    angle  = any_cast<double>(value); 
-  if ( eval( string("K1"),     attributes, value) )  { k1     = any_cast<double>(value); simple = false; } 
-  if ( eval( string("K2"),     attributes, value) )  { k2     = any_cast<double>(value); simple = false; }
-  if ( eval( string("K3"),     attributes, value) )  { k3     = any_cast<double>(value); simple = false; }
+  if ( eval( string("K1"),     attributes, value) )  { k1     = any_cast<double>(value); simple = (k1 == 0.0); } 
+  if ( eval( string("K2"),     attributes, value) )  { k2     = any_cast<double>(value); simple = (k2 == 0.0); }
+  if ( eval( string("K3"),     attributes, value) )  { k3     = any_cast<double>(value); simple = (k3 == 0.0); }
   if ( eval( string("TILT"),   attributes, value) )  {  if (value.empty() ) 
                                                            { simple = false; tilt = M_PI/2.0; } 
                                                         else 
