@@ -126,7 +126,7 @@ blk             [ \t]
                                                          }
 
 {real}                                                   {    
-                                                              yylval->dval = strtof(yytext,0);
+                                                              yylval->dval = atof(yytext);
                                                               return token::XSIF_VALUE;   
                                                          }
 
