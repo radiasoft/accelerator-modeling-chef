@@ -54,8 +54,9 @@
 #include <string>
 #include <list>
 
-struct Barnacle {
-
+struct Barnacle 
+{
+  Barnacle(): id(""), info(0) {} 
   Barnacle( std::string s,  boost::any  a): id(s), info(a) {} 
 
   bool operator==( std::string str  ) const;   
@@ -65,8 +66,6 @@ struct Barnacle {
 
   std::string    id;
   boost::any     info;
-
-
 };
 
 
@@ -74,11 +73,9 @@ struct Barnacle {
 
 
 
-class DLLEXPORT BarnacleList {
-
-
-public:
-
+class DLLEXPORT BarnacleList 
+{
+ public:
   typedef  std::list<Barnacle>::iterator iterator;
 
   void             append    ( Barnacle const& );
@@ -92,16 +89,13 @@ public:
 
   void             remove( iterator pos );
    
-  
   iterator begin()       { return theList_.begin(); }
   iterator end()         { return theList_.end();   }
 
   bool empty()    const  { return theList_.empty(); }   
 
  private:
-
   std::list<Barnacle> theList_;
-
 };
 
 #endif // BARNACLE_H
