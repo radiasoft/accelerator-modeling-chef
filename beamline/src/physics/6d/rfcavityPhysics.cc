@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      rfcavityPhysics.cc
-******  Version:   3.0
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -32,6 +31,31 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+******  ------------------
+******  Revisions (a few):
+******  ------------------
+******  Date: January 4, 2000   (Tuesday)
+******  Stored in cvs repository
+******  after major reorganization of files.
+******  - lpjm
+******
+******  Date: January 13, 2006  (Friday)
+******  Upgrades: preparation for use in ILC studies.
+******  - lpjm
+******
+******  Date: December 14, 2006 (Thursday)
+******  Elimination of raw pointers; usage of reference to 
+******  particle state to eliminate one level of indirection.
+******  Changes made by Jean-Francois Ostiguy.
+******  - lpjm
+******  
+******  Date: February 2, 2007  (Friday)
+******  Fixed edge focusing following recommendation of Paul Lebrun
+******  to use actual electric field upon entry.
+******  In addition, included change to "effective length" calculation.
+******  !! WARNING: THESE CHANGES ARE TENTATIVE AND BEING REVIEWED !!
+******  - lpjm
+******  
 **************************************************************************
 *************************************************************************/
 
@@ -50,39 +74,34 @@ using FNAL::pcerr;
 using FNAL::pcout;
 
 
-// REMOVE: #ifndef MADPHYSICS
-
 void rfcavity::localPropagate( Particle& p ) 
 {
   double E( p.ReferenceEnergy() );
 
   double oldRefP, newRefP;
-  double oldLength;
-  double referenceEnergyGain;
+  double referenceEnergyGain, onaxisEnergyGain;
   double w;
   double k1, k2;
 
   Vector& state = p.getState();
 
-  // Scale length to "effective" length.
   referenceEnergyGain = strength*sin_phi_s;
-  oldLength = this->length;
+  onaxisEnergyGain    = strength*sin( phi_s + state[2] * w_rf / PH_MKS_c );
 
   // Assign focal lengths for effective kicks that
   // model first order edge focussing.
-
-  k1 = - 0.5*(referenceEnergyGain/oldLength)/ E;
-  k2 =   0.5*(referenceEnergyGain/oldLength)/(E + referenceEnergyGain);
+  k1 = - 0.5*(onaxisEnergyGain/length)/ E;
+  k2 =   0.5*(onaxisEnergyGain/length)/(E + referenceEnergyGain);
+  // ??? Are the denominators correct ???
 
   // Thin lens kick upon entry
   state[3] += k1*state[0];
   state[4] += k1*state[1];
 
-
   // Propagate through the inner structures
   double x_in = state[0];
   double y_in = state[1];
-  w = (referenceEnergyGain/2.0) / E;
+  w = (onaxisEnergyGain/2.0) / p.Energy();
   if( std::abs(w) > 1.0e-8 ) { w = (log(1.+w)/w); }
   else                       { w = 1.0;           }
 
@@ -94,13 +113,9 @@ void rfcavity::localPropagate( Particle& p )
   state[0] = ( 1.0 - w )*x_in + w*state[0];
   state[1] = ( 1.0 - w )*y_in + w*state[1];
 
-
   // Thin lens kick upon exit
   state[3] += k2*state[0];
   state[4] += k2*state[1];
-
-  // Restore length before returning.
-  this->length = oldLength;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -111,50 +126,42 @@ void rfcavity::localPropagate( JetParticle& p )
   double E( p.ReferenceEnergy() ); 
 
   double oldRefP, newRefP;
-  double oldLength;
   double referenceEnergyGain;
-  double w;
-  double k1, k2;
 
   Mapping& state = p.getState();
 
-  // Scale length to "effective" length.
   referenceEnergyGain = strength*sin_phi_s;
-  oldLength = this->length;
+  Jet onaxisEnergyGain( strength*sin( phi_s + state[2] * w_rf / PH_MKS_c ) );
 
   // Assign focal lengths for effective kicks that
   // model first order edge focussing.
-  k1 = - 0.5*(referenceEnergyGain/oldLength)/ E;
-  k2 =   0.5*(referenceEnergyGain/oldLength)/(E + referenceEnergyGain);
+  Jet k1( - 0.5*(onaxisEnergyGain/length)/ E );
+  Jet k2(   0.5*(onaxisEnergyGain/length)/(E + referenceEnergyGain) );
+  // ??? Are the denominators correct ???
 
   // Thin lens kick upon entry
-
-   state[3] = state[3] + k1*state[0];
-   state[4] = state[4] + k1*state[1];
-
+  state[3] = state[3] + k1*state[0];
+  state[4] = state[4] + k1*state[1];
 
   // Propagate through the inner structures
   Jet x_in( state[0] );
   Jet y_in( state[1] );
-  w = (referenceEnergyGain/2.0) / E;
+  Jet w( (onaxisEnergyGain/2.0) / p.Energy() );
 
-  if( std::abs(w) > 1.0e-8 ) { w = (log(1.+w)/w); }
-  else                       { w = 1.0;           }
+  if( std::abs(w.standardPart()) > 1.0e-8 ) { w = (log(1.+w)/w); }
+  else                                      { w = 1.0;           }
 
   bmlnElmnt** x = _u;
   while( x <= _v ) {
     (*(x++))->localPropagate( p );
   }
 
-   state[0] = ( 1.0 - w )*x_in + w*state[0];
-   state[1] = ( 1.0 - w )*y_in + w*state[1];
+  state[0] = ( 1.0 - w )*x_in + w*state[0];
+  state[1] = ( 1.0 - w )*y_in + w*state[1];
 
   // Thin lens kick upon exit
-   state[3] =  state[3] + k2*state[0];
-   state[4] =  state[4] + k2*state[1];
-
-  // Restore length
-  this->length = oldLength;
+  state[3] =  state[3] + k2*state[0];
+  state[4] =  state[4] + k2*state[1];
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -162,7 +169,6 @@ void rfcavity::localPropagate( JetParticle& p )
 
 void thinrfcavity::localPropagate( Particle& p ) 
 {
-  
   double denom, px, py, cs; 
   double oldRefP, newRefP;
   
@@ -186,7 +192,6 @@ void thinrfcavity::localPropagate( Particle& p )
     double   pr = p.ReferenceMomentum();
 
     state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0;
-
   }
 }
 
@@ -215,57 +220,9 @@ void thinrfcavity::localPropagate( JetParticle& p )
     state[3] = ( oldRefP / newRefP )*state[3];
     state[4] = ( oldRefP / newRefP )*state[4];
 
-    // REMOVE: ( state ).SetComponent( 5, ( sqrt((E - p.m)*(E + p.m)) 
-    // REMOVE:                              - sqrt((p.E-p.m)*(p.E+p.m)) ) / p.p 
-    // REMOVE:                         );
-
      double   m  = p.Mass();
      double   pr = p.ReferenceMomentum();
 
      state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0 ;
   }
 }
-// REMOVE: 
-// REMOVE: #endif
-// REMOVE: 
-// REMOVE: // ================================================================
-// REMOVE: 
-// REMOVE: #ifdef MADPHYSICS
-// REMOVE: 
-// REMOVE: void thinrfcavity::localPropagate( Particle& p) 
-// REMOVE: {
-// REMOVE:  static char firstCall = 1;
-// REMOVE:  if( firstCall ) {
-// REMOVE:   (*pcout) << "*** WARNING ***  thinrfcavity::localPropagate( Particle& ): This\n"
-// REMOVE:        << "*** WARNING ***  routine was written using a linear\n"
-// REMOVE:        << "*** WARNING ***  approximation.  Eventually it will be\n"
-// REMOVE:        << "*** WARNING ***  fixed so as to represent an RF kick more\n"
-// REMOVE:        << "*** WARNING ***  correctly." << endl;
-// REMOVE:   firstCall = 0;
-// REMOVE:  }
-// REMOVE: 
-// REMOVE:  double kick;
-// REMOVE:  kick = strength*M_TWOPI*w_rf/p.Beta()*cos(phi_s)/p.Momentum()/PH_MKS_c/1.0e9;
-// REMOVE:  p.state[5] += kick*p.state[2];
-// REMOVE: }
-// REMOVE: 
-// REMOVE: void thinrfcavity::localPropagate( JetParticle& p) 
-// REMOVE: {
-// REMOVE:  static char firstCall = 1;
-// REMOVE:  if( firstCall ) {
-// REMOVE:   (*pcout) << "*** WARNING ***  thinrfcavity::localPropagate( JetParticle& ): This\n"
-// REMOVE:        << "*** WARNING ***  routine was written using a linear\n"
-// REMOVE:        << "*** WARNING ***  approximation.  Eventually it will be\n"
-// REMOVE:        << "*** WARNING ***  fixed so as to represent an RF kick more\n"
-// REMOVE:        << "*** WARNING ***  correctly." << endl;
-// REMOVE:   firstCall = 0;
-// REMOVE:  }
-// REMOVE: 
-// REMOVE:  Jet phi, u;
-// REMOVE:  Jet kick;
-// REMOVE:  kick = strength*M_TWOPI*w_rf/p.Beta()*cos(phi_s)/p.Momentum()/PH_MKS_c/1.0e9;
-// REMOVE:  u = p.state(5) + kick *p.state(2);
-// REMOVE:  ( p.state ).SetComponent( 5, u );
-// REMOVE: }
-// REMOVE: 
-// REMOVE: #endif
