@@ -23,8 +23,9 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ****** 
 ******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
+******  Authors:   Leo Michelotti (Original version)                                    
+******             Jean-Francois Ostiguy 
+******
 ******             Fermilab                                           
 ******             P.O.Box 500                                        
 ******             Mail Stop 220                                      
@@ -36,8 +37,7 @@
 ******
 ******  REVISION HISTORY:
 ******
-******  Dec 2006  Jean-Francois Ostiguy
-******            ostiguy@fnal.gov
+******  Dec 2006 ostiguy@fnal.gov                                                                
 ******
 ******  Major revision 
 ****** 
@@ -46,8 +46,8 @@
 ******    use explicit mixed type constructors instead.
 ******  - take max advantage of constructor member initialization (useful 
 ******    for bunches, since a lot of particles may be instantiated)
-******  - streamlined public interface. Eliminated get/set functions
-******    with raw ptr as argument(s).
+******  - streamlined public interface. Eliminated members
+******    with raw ptr as argument(s) when possible.
 ******  - use Vector and Mapping to store state info instead of raw
 *****     arrays.    
 ******  - elements no longer declared friends. Doing so breaks encapsulation 
@@ -161,8 +161,6 @@ public:
   double get_npx()   const;
   double get_npy()   const;
   double get_npz()   const;
-                           
-                           
   double get_ndp()   const;
 
   void set_x   ( double u );
@@ -345,10 +343,10 @@ class particle_core_access
   inline double  Particle::get_cdt()   const { return state_[2]; }
   inline double  Particle::get_npx()   const { return state_[3]; }
   inline double  Particle::get_npy()   const { return state_[4]; }
-  inline double  Particle::get_npz()   const { return sqrt( ( 1.0 + state_[5] )*( 1.0 + state_[5] ) 
-                                               - state_[3]*state_[3]  
-                                               - state_[4]*state_[4] ); }
   inline double  Particle::get_ndp()   const { return state_[5]; }
+
+  inline double  Particle::get_npz()   const { return sqrt( ( 1.0 + state_[5] )*( 1.0 + state_[5] ) 
+                                               - state_[3]*state_[3] - state_[4]*state_[4] );      }   
 
 
   inline void  Particle::set_x   ( double u )  { state_[0] = u; }
@@ -359,25 +357,26 @@ class particle_core_access
   inline void  Particle::set_ndp ( double u )  { state_[5] = u; }
 
 
-  inline Vector   Particle::State()                   const   { return state_;                }  // Returns the state as a Vector object.
-  inline double   Particle::State( int i )            const   { return state_[i];             }
+  inline Vector   Particle::State()                   const   { return state_;                  }  // Returns the state as a Vector object.
+  inline double   Particle::State( int i )            const   { return state_[i];               }
 
 
-  inline double  Particle::Energy()                   const   { double u= p_*( 1.0+state_[5]); 
-                                                                return sqrt( u*u + m_*m_ );   }
-  inline double  Particle::Momentum()                 const   { return p_*(1.0+state_[5]);    }
-  inline double  Particle::NormalizedMomentum()       const   { return (1.0+state_[5]);       }
-  inline double  Particle::Mass()                     const   { return m_;                    }
-  inline double  Particle::Gamma()                    const   { return Energy() / m_;         }
-  inline double  Particle::Beta()                     const   { return Momentum() / Energy(); }
-  inline double  Particle::ReferenceBRho()            const   { return bRho_;                 }
-  inline double  Particle::ReferenceBeta()            const   { return beta_;                 }
-  inline double  Particle::ReferenceGamma()           const   { return gamma_;                }
-  inline double  Particle::ReferenceMomentum()        const   { return p_;                    }
-  inline double  Particle::PNI2()                     const   { return pni2_;                 }
-  inline double  Particle::ReferenceEnergy()          const   { return E_;                    }
-  inline double  Particle::Weight()                   const   { return wgt_;                  }
-  inline double  Particle::Charge()                   const   { return q_;                    }
+  inline double  Particle::Energy()                   const   { double p = Momentum(); 
+                                                                return sqrt( p*p + m_*m_ );     }
+
+  inline double  Particle::Momentum()                 const   { return p_ * ( 1.0 + state_[5] );}
+  inline double  Particle::NormalizedMomentum()       const   { return ( 1.0 + state_[5] );     }
+  inline double  Particle::Mass()                     const   { return m_;                      }
+  inline double  Particle::Gamma()                    const   { return Energy() / m_;           }
+  inline double  Particle::Beta()                     const   { return Momentum() / Energy();   }
+  inline double  Particle::ReferenceBRho()            const   { return bRho_;                   }
+  inline double  Particle::ReferenceBeta()            const   { return beta_;                   }
+  inline double  Particle::ReferenceGamma()           const   { return gamma_;                  }
+  inline double  Particle::ReferenceMomentum()        const   { return p_;                      }
+  inline double  Particle::PNI2()                     const   { return pni2_;                   }
+  inline double  Particle::ReferenceEnergy()          const   { return E_;                      }
+  inline double  Particle::Weight()                   const   { return wgt_;                    }
+  inline double  Particle::Charge()                   const   { return q_;                      }
   inline double  Particle::BRho()                     const   {return bRho_*( 1.0 + state_[5] );}
 
 
