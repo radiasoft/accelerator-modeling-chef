@@ -3,7 +3,6 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.0                    
 ******                                    
 ******  File:      Barnacle.cc
 ******                                                                
@@ -20,8 +19,9 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******
-******  Author:    Leo Michelotti                                     
-******                                                                
+******  Authors:   Leo Michelotti (Original Version)                                    
+******             Jean-Francois Ostiguy
+******                                                   
 ******             Fermilab                                           
 ******             P.O.Box 500                                        
 ******             Mail Stop 220                                      
@@ -35,13 +35,15 @@
 ****** Dec 2006   Jean-Francois Ostiguy
 ******            ostiguy@fnal.gov
 ******
-****** - eliminated class BarnacleData 
-****** - Barnacle is now a simple struct 
+****** - eliminated abstract class BarnacleData    
 ****** - use std::list instead of dlist
 ****** - use refs in member function signatures instead of ptrs. 
 ****** - use boost::any with value semantics intead of void* objs to 
-******   store arbitrary user data 
+******   store arbitrary user data. No inheritance involved. 
 ******
+****** Feb 2007  ostiguy@fnal.gov
+******
+****** - added iterators, erase member functions, empty() and size()                                                      
 ****** 
 **************************************************************************
 *************************************************************************/
@@ -104,7 +106,20 @@ void BarnacleList::insert( Barnacle const& x ) {
 
 
 
+void BarnacleList::clear() 
+{
+
+  theList_.clear();
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
 void BarnacleList::eraseAll( std::string ident ) {
+
 
  bool (Barnacle::* fptr)(std::string) const = &Barnacle::operator==;
 
@@ -119,15 +134,67 @@ void BarnacleList::eraseAll( std::string ident ) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void BarnacleList::eraseFirst( std::string ident ) {
+void BarnacleList::eraseFirst( std::string ident ) 
+{
 
    
-  for ( std::list<Barnacle>::iterator it = theList_.begin();  it != theList_.end(); ++it ) {
+  for ( std::list<Barnacle>::iterator it = theList_.begin();  it != theList_.end(); ++it ) 
+  {
 
-    if ( (it->id) == ident ) return;
+    if ( (it->id) == ident ) 
+    {
+        theList_.erase(it);
+        break;
+    }
 
   }
+  return;
 
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void BarnacleList::eraseLast( std::string ident ) 
+{
+
+  for ( std::list<Barnacle>::reverse_iterator rit  = theList_.rbegin();  
+                                              rit != theList_.rend();  ++rit ) 
+  {
+
+    if ( (rit->id) == ident ) 
+    {
+        theList_.erase( --(rit.base()) );
+        break;
+    }
+
+  }
+  return;
+
+
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BarnacleList::erase(  std::list<Barnacle>::reverse_iterator& rit ) 
+{
+
+  theList_.erase( --(rit.base()) );
+  return;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BarnacleList::erase(  std::list<Barnacle>::iterator& it ) 
+{
+
+  theList_.erase(it);
+  return;
 }
 
 
@@ -140,7 +207,8 @@ BarnacleList::iterator BarnacleList::find( std::string ident, int n ) {
   int count = 0;
 
   std::list<Barnacle>::iterator it;
-  for ( it = theList_.begin();  it != theList_.end(); ++it ) {
+  for ( it = theList_.begin();  it != theList_.end(); ++it ) 
+  {
 
     if ( it->id == ident ) ++count;
     if ( count  == n     ) return it;
@@ -154,10 +222,25 @@ BarnacleList::iterator BarnacleList::find( std::string ident, int n ) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void BarnacleList::remove( BarnacleList::iterator pos ) {
+BarnacleList::reverse_iterator BarnacleList::rfind( std::string ident, int n ) 
+{
 
-    theList_.erase(pos);
+  int count = 0;
 
+  std::list<Barnacle>::reverse_iterator rit;
+  for ( rit = theList_.rbegin();  rit != theList_.rend(); ++rit ) 
+  {
+
+    if ( rit->id == ident ) ++count;
+    if ( count  == n     )  return rit;
+
+  }
+  
+  return rit;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 
