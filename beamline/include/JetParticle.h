@@ -23,8 +23,9 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ****** 
 ******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
+******  Authors:   Leo Michelotti (original version)                                     
+******             Jean-Francois Ostiguy
+******                                                   
 ******             Fermilab                                           
 ******             P.O.Box 500                                        
 ******             Mail Stop 220                                      
@@ -34,10 +35,9 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******
-*******  REVISION HISTORY:
+******  REVISION HISTORY:
 ******
-******  Dec 2006  Jean-Francois Ostiguy
-******            ostiguy@fnal.gov
+******  Dec 2006 ostiguy@fnal.gov                                                                
 ******
 ******  Major revision 
 ****** 
@@ -46,8 +46,8 @@
 ******    use explicit mixed type constructors instead.
 ******  - take max advantage of constructor member initialization (useful 
 ******    for bunches, since a lot of particles may be instantiated)
-******  - streamlined public interface. Eliminated get/set functions
-******    with raw ptr as argument(s).
+******  - streamlined public interface. Eliminated members
+******    with raw ptr as argument(s) when possible.
 ******  - use Vector and Mapping to store state info instead of raw
 *****     arrays.    
 ******  - elements no longer declared friends. Doing so breaks encapsulation 
@@ -55,9 +55,9 @@
 ******    change state. There is no significant penalty, if any.       
 ******  - use empty core_access class as access control mechanism 
 ******                                                                
-**************************************************************************                                                               
-**************************************************************************
+**************************************************************************                                                      **************************************************************************
 *************************************************************************/
+
 #ifndef JETPARTICLE_H
 #define JETPARTICLE_H
 
@@ -113,6 +113,7 @@ protected:
                       // state_[5] = dp/p
   // ctors
 
+
   JetParticle( double const&  massGeV_c2,  double  const& energyGeV );                
   JetParticle( double const&  massGeV_c2,  double  const& energyGeV,  Mapping const&  state );
 
@@ -121,11 +122,11 @@ public:
   JetParticle( Particle const& u , EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
   JetParticle( JetParticle const& );
 
+  JetParticle& operator=(JetParticle const&);
+
   virtual ~JetParticle();
 
   virtual JetParticle* Clone() const { return new JetParticle(*this); }
-
-  JetParticle& operator=(JetParticle const&);
 
   // Phase space indices
 
@@ -206,8 +207,6 @@ public:
   Jet Beta()                 const;
   Jet BRho()                 const; 
 
-  BarnacleList dataHook;   // Carries data as service to application program.
-
  };
 
 struct DLLEXPORT  JetProton : public JetParticle {
@@ -216,6 +215,8 @@ struct DLLEXPORT  JetProton : public JetParticle {
   JetProton( JetProton const& );
 
   explicit JetProton( Proton const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
+
+  JetProton& operator=(JetProton const&);
 
  ~JetProton();
 
@@ -229,6 +230,8 @@ struct DLLEXPORT  JetAntiProton : public JetParticle {
 
   explicit JetAntiProton( AntiProton const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
 
+  JetAntiProton& operator=(JetAntiProton const&);
+
  ~JetAntiProton();
 
   JetAntiProton* Clone()             const;
@@ -240,6 +243,8 @@ struct DLLEXPORT  JetElectron : public JetParticle {
   JetElectron( JetElectron const& );
 
   explicit JetElectron( Electron const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv());
+
+  JetElectron& operator=(JetElectron const&);
 
   ~JetElectron();
 
@@ -253,6 +258,8 @@ struct DLLEXPORT  JetPositron : public JetParticle {
 
   explicit JetPositron( Positron const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
 
+  JetPositron& operator=(JetPositron const&);
+
  ~JetPositron();
 
   JetPositron* Clone()             const;
@@ -264,6 +271,8 @@ struct DLLEXPORT  JetMuon : public JetParticle {
   JetMuon( JetMuon const& );
 
   explicit JetMuon( Muon const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
+
+  JetMuon& operator=(JetMuon const&);
 
   ~JetMuon();
 
@@ -278,6 +287,8 @@ struct DLLEXPORT  JetAntiMuon : public JetParticle {
 
 
   explicit JetAntiMuon( AntiMuon const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
+
+  JetAntiMuon& operator=(JetAntiMuon const&);
 
 
  ~JetAntiMuon();
@@ -323,10 +334,10 @@ class jetparticle_core_access
   inline Jet JetParticle::get_cdt()   const { return state_[2]; }
   inline Jet JetParticle::get_npx()   const { return state_[3]; }
   inline Jet JetParticle::get_npy()   const { return state_[4]; }
-  inline Jet JetParticle::get_npz()   const { return sqrt( ( 1.0 + state_[5] )*( 1.0 + state_[5] ) 
-                                              - state_[3]*state_[3]  
-                                              - state_[4]*state_[4] ); }
   inline Jet JetParticle::get_ndp()   const { return state_[5]; }
+  inline Jet JetParticle::get_npz()   const { return sqrt( ( 1.0 + state_[5] )*( 1.0 + state_[5] ) 
+                                                       - state_[3]*state_[3] - state_[4]*state_[4] ); }
+
 
   inline void JetParticle::set_x   ( Jet const& u )  { state_[0] = u; }
   inline void JetParticle::set_y   ( Jet const& u )  { state_[1] = u; }
@@ -336,22 +347,22 @@ class jetparticle_core_access
   inline void JetParticle::set_ndp ( Jet const& u )  { state_[5] = u; }
 
 
-  inline Jet    JetParticle::Energy()             const { Jet dum(p_*(state_(5) + 1.0)); return sqrt( dum*dum + m_*m_ );}
-  inline Jet    JetParticle::Momentum()           const { return p_*(state_(5) + 1.0);                                   }
-  inline Jet    JetParticle::NormalizedMomentum() const { return (state_(5) + 1.0);                                      }
-  inline double JetParticle::Mass()               const { return m_;                                                     }
-  inline double JetParticle::ReferenceBRho()      const { return bRho_;                                                  }
-  inline double JetParticle::ReferenceBeta()      const { return beta_;                                                  }
-  inline double JetParticle::ReferenceGamma()     const { return gamma_;                                                 }
-  inline Jet    JetParticle::Gamma()              const { return Energy() / m_;                                          }
-  inline double JetParticle::ReferenceMomentum()  const { return p_;                                                     }
-  inline double JetParticle::PNI2()               const { return pni2_;                                                  }
-  inline double JetParticle::ReferenceEnergy()    const { return E_;                                                     } 
-  inline double JetParticle::Weight()             const { return wgt_;                                                   }
-  inline double JetParticle::Charge()             const { return q_;                                                     }
+  inline Jet    JetParticle::Energy()             const { Jet p  = Momentum(); return sqrt( p*p + m_*m_ );                 }
+  inline Jet    JetParticle::Momentum()           const { return p_ * (1.0 + state_[5]);                                   } 
+  inline Jet    JetParticle::NormalizedMomentum() const { return (1.0 + state_[5]) ;                                       }
+  inline double JetParticle::Mass()               const { return m_;                                                       }
+  inline double JetParticle::ReferenceBRho()      const { return bRho_;                                                    }
+  inline double JetParticle::ReferenceBeta()      const { return beta_;                                                    }
+  inline double JetParticle::ReferenceGamma()     const { return gamma_;                                                   }
+  inline Jet    JetParticle::Gamma()              const { return Energy() / m_;                                            }
+  inline double JetParticle::ReferenceMomentum()  const { return p_;                                                       }
+  inline double JetParticle::PNI2()               const { return pni2_;                                                    }
+  inline double JetParticle::ReferenceEnergy()    const { return E_;                                                       } 
+  inline double JetParticle::Weight()             const { return wgt_;                                                     }
+  inline double JetParticle::Charge()             const { return q_;                                                       }
 
-  inline Jet       JetParticle::Beta()            const { return Momentum() / Energy();                                  }
-  inline Jet       JetParticle::BRho()            const { return bRho_*( 1.0 + state_(5) );                              }
+  inline Jet       JetParticle::Beta()            const { return Momentum() / Energy();                                    }
+  inline Jet       JetParticle::BRho()            const { return bRho_*( 1.0 + state_(5) );                                }
 
 
   inline JetProton*         JetProton::Clone()             const { return new     JetProton( *this ); }
