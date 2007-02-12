@@ -236,8 +236,8 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
    const IntArray& allZeroes() const                         { return _scratch->_allZeroes; }     
    int             maxTerms() const                          { return _scratch->_maxTerms;}
 
-   static EnvPtr<T>      getLastEnv()                  { return _lastEnv; }
-   static EnvPtr<T>      setLastEnv( EnvPtr<T> pje)    { _lastEnv = pje;  return pje;} 
+   static EnvPtr<T> const& getLastEnv()                  { return _lastEnv; }
+   static EnvPtr<T>        setLastEnv( EnvPtr<T> pje)    { _lastEnv = pje;  return pje;} 
 
    // Streams --------------------------------------------------------- 
 
