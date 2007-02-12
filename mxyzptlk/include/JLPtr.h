@@ -54,9 +54,9 @@ class DLLEXPORT JLPtr: public boost::intrusive_ptr<TJL<T> >
 
  public:
 
-  JLPtr():                                 boost::intrusive_ptr<TJL<T> >() {}
-  JLPtr(TJL<T>* p, bool add_ref=true):     boost::intrusive_ptr<TJL<T> >(p,add_ref) {}
-  int count()                              { return this->get()->count(); }
+  JLPtr():                                          boost::intrusive_ptr<TJL<T> >() {}
+  explicit JLPtr(TJL<T>* p, bool add_ref=true):     boost::intrusive_ptr<TJL<T> >(p,add_ref) {}
+  int count()                                       { return this->get()->count(); }
 };
 
 //------------------------------------------------
@@ -69,9 +69,9 @@ class DLLEXPORT JL1Ptr: public boost::intrusive_ptr<TJL1<T> >
 
  public:
 
-  JL1Ptr():                                 boost::intrusive_ptr<TJL1<T> >() {}
-  JL1Ptr(TJL1<T>* p, bool add_ref=true):    boost::intrusive_ptr<TJL1<T> >(p,add_ref) {}
-  int count()                               { return this->get()->count(); }
+  JL1Ptr():                                          boost::intrusive_ptr<TJL1<T> >() {}
+  explicit JL1Ptr(TJL1<T>* p, bool add_ref=true):    boost::intrusive_ptr<TJL1<T> >(p,add_ref) {}
+  int count()                                        { return this->get()->count(); }
 
 
 };
