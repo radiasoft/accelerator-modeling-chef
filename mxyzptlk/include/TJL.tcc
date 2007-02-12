@@ -267,7 +267,7 @@ template<typename T>
 JLPtr<T> TJL<T>::makeTJL( EnvPtr<T> const& pje, T x )
 {
 
-  if (!pje) return 0; // this form is called by TCoord and Tparam
+  if (!pje) return JLPtr<T>(); // this form is called by TCoord and Tparam
 
   if (_thePool.empty() ) return (  JLPtr<T>(new  TJL<T>(pje, x ) )); 
  
@@ -329,7 +329,7 @@ template<typename T>
  JLPtr<T> TJL<T>::makeTJL( const IntArray& e, const T& x, EnvPtr<T> const& pje ) 
 {
 
-  if (!pje) return 0;  // cannot create a TJL without a properly constructed environemnt 
+  if (!pje) return JLPtr<T>();  // cannot create a TJL without a properly constructed environemnt 
 
   if (_thePool.empty() ) return  JLPtr<T>( new TJL<T>(e,x,pje) );
 
