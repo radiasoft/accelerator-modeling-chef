@@ -99,10 +99,10 @@ template<typename T>
 JL1Ptr<T>  TJL1<T>::makeTJL( EnvPtr<T> const& pje, T x )
 {
 
-  if (!pje) return 0; // this form is called by ONLY by Tcoord and Tparam
+  if (!pje) return JL1Ptr<T>(); // this form is called by ONLY by Tcoord and Tparam
 
   if (_thePool.empty() ) 
-     return ( new  TJL1<T>(pje, x )); 
+     return (JL1Ptr<T>( new  TJL1<T>(pje, x )) ); 
  
   TJL1<T>* p   = _thePool.back();  _thePool.pop_back();
 
@@ -188,7 +188,7 @@ JL1Ptr<T> TJL1<T>::makeTJL( const IntArray& e, const T& x, EnvPtr<T> const& pje 
 
 
   if (_thePool.empty() ) 
-      return new TJL1<T>(e,x,pje);
+      return JL1Ptr<T>( new TJL1<T>(e,x,pje) );
 
   TJL1<T>* p = _thePool.back(); _thePool.pop_back();
 
@@ -211,11 +211,11 @@ JL1Ptr<T> TJL1<T>::makeTJL( const IntArray& e, const T& x, EnvPtr<T> const& pje 
   }
 
   if (weight > 1)  
-     return p ;  // all terms of order 1 or lower are 0
+     return JL1Ptr<T>(p) ;  // all terms of order 1 or lower are 0
 
   if (weight == 0) { 
      p->_std = x; 
-     return p;  
+     return JL1Ptr<T>(p);  
   }
  
   for (int i=0; i < p->_count-1; ++i) {
@@ -245,7 +245,7 @@ JL1Ptr<T> TJL1<T>::makeTJL( TJL1<U> const& x )
 {
 
   if (_thePool.empty() ) {
-     return new TJL1<T>(x);
+     return JL1Ptr<T>( new TJL1<T>(x) );
   }
   
   TJL1<T>* p = _thePool.back(); _thePool.pop_back(); 
