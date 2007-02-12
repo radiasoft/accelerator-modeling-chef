@@ -81,7 +81,7 @@ JL1Ptr<std::complex<double> > TJL1<std::complex<double> >::makeTJL( const TJL1<d
 {
  
   if (_thePool.empty() ) 
-     return new TJL1<std::complex<double> >(x);
+     return JL1Ptr<std::complex<double> >(new TJL1<std::complex<double> >(x) );
  
   TJL1<std::complex<double> >* p = _thePool.back(); _thePool.pop_back(); 
   

@@ -105,7 +105,7 @@ template<>
 JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL(  TJL<double> const& x )
 {
 
-  if (_thePool.empty() ) return new TJL<std::complex<double> >(x);
+  if (_thePool.empty() ) return JLPtr<std::complex<double> >( new TJL<std::complex<double> >(x) );
 
   TJL<std::complex<double> >* p = _thePool.back(); _thePool.pop_back(); 
   
