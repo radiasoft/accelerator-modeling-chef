@@ -136,7 +136,7 @@ void JacobianVisitor::visitBeamline(beamline* x) {
 
     BarnacleList::iterator it = x->dataHook.find( whichJacobian );
     JacobianData jacInfo = boost::any_cast<JacobianData>(it->info);
-    x->dataHook.remove(it); 
+    x->dataHook.erase(it); 
 
     jacInfo.jac = jacInfo.jac * cumulativeMatrix.inverse();
 
@@ -161,7 +161,7 @@ void JacobianVisitor::visitBmlnElmnt(bmlnElmnt* be) {
 
     BarnacleList::iterator it = be->dataHook.find( whichJacobian );
     JacobianData jacInfo = boost::any_cast<JacobianData>(it->info);
-    be->dataHook.remove( it);
+    be->dataHook.erase( it);
     
     MatrixD tmpMat;
     tmpMat = jacInfo.jac;
@@ -217,7 +217,7 @@ void JacobianVisitor::createJacobian(const JACOBIAN_TYPE& jacType) {
 
     BarnacleList::iterator it = theLine->dataHook.find( whichJacobian );
     JacobianData jacInfo = boost::any_cast<JacobianData>(it->info);
-    theLine->dataHook.remove( it);
+    theLine->dataHook.erase( it);
     jacInfo.jac = cumulativeMatrix;
     theLine->dataHook.append( Barnacle( whichJacobian,jacInfo ) );
   }
