@@ -27,6 +27,8 @@
 
 using namespace boost::python;
 
+namespace {
+
 struct BarnacleListIteratorWrapper: public BarnacleList::iterator {
 
    BarnacleListIteratorWrapper( PyObject* self, BarnacleList::iterator const& it):  BarnacleList::iterator(it), self_(self) {} 
@@ -40,12 +42,19 @@ struct BarnacleListIteratorWrapper: public BarnacleList::iterator {
  
 };
 
-static LattFuncSage::lattFunc& lattFunc_local(PyObject* o) {
+LattFuncSage::lattFunc& lattFunc_local(PyObject* o) {
  
   return boost::any_cast<LattFuncSage::lattFunc&> ( extract<boost::any&>(o) ); 
 
 }
 
+
+BarnacleList::iterator (BarnacleList::*begin_ptr)() =  &BarnacleList::begin;
+BarnacleList::iterator (BarnacleList::*end_ptr)()   =  &BarnacleList::end;
+
+void (BarnacleList::*erase_ptr)( BarnacleList::iterator& )  =  &BarnacleList::erase;
+
+}
 
 void wrap_barnacle () {
 
@@ -63,10 +72,10 @@ class_<BarnacleList>("BarnacleList")
  .def("eraseFirst",  &BarnacleList::eraseFirst) 
  .def("eraseAll",    &BarnacleList::eraseAll)
  .def("find",        &BarnacleList::find )
- .def("remove",      &BarnacleList::remove)
- .def("begin",       &BarnacleList::begin)
- .def("end",         &BarnacleList::end)
- .def("__iter__",    range( &BarnacleList::begin, &BarnacleList::end ) );
+ .def("erase",       erase_ptr           )
+ .def("begin",       begin_ptr           )
+ .def("end",         end_ptr             )
+ .def("__iter__",    range( begin_ptr, end_ptr ));
 
 
  class_<BarnacleList::iterator, BarnacleListIteratorWrapper >("BarnacleListIterator")
