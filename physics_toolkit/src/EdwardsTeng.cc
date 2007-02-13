@@ -99,7 +99,7 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
  BarnacleList::iterator it = lbe->dataHook.find( "EdwardsTeng" );
 
  ETinfo etinfo = boost::any_cast<ETinfo>(it->info);
- lbe->dataHook.remove(it);
+ lbe->dataHook.erase(it);
 
  localMap = etinfo.map( (*EdwardsTeng::theMap)( ETptr->mapInv ) );
  mtrx = localMap.Jacobian();

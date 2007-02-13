@@ -225,7 +225,7 @@ int EdwardsTengSage::_attachETFuncs( bmlnElmnt* lbe )
 
  if ( it != lbe->dataHook.end() ) { 
   etinfo = boost::any_cast<Info>(it->info);
-  lbe->dataHook.remove(it);
+  lbe->dataHook.erase(it);
  }
 
  Mapping localMap = etinfo.map( (*EdwardsTengSage::_theMapPtr)( etinfo.map.Inverse() ) );
