@@ -333,7 +333,7 @@ bmlnElmnt::~bmlnElmnt() {
  //   if it is necessary.
 
 
-  dataHook.eraseAll();
+  dataHook.clear();
 
   if(ident)     delete []  ident;
   if(align)     delete align;
