@@ -153,7 +153,6 @@ void wrap_particle () {
     .def("ReferenceMomentum",   &JetParticle::ReferenceMomentum)
     .def("PNI2",                &JetParticle::PNI2)
     .def("ReferenceEnergy",     &JetParticle::ReferenceEnergy)
-    .def_readwrite("dataHook",  &JetParticle::dataHook) 
     .def("Charge",              &JetParticle::Charge);
   
            // JetVector VectorBeta() const;
