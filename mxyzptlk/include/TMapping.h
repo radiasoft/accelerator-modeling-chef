@@ -131,7 +131,7 @@ inline TJet<T>& TMapping<T>::operator()( int i )
 
 template<typename T>
 inline TMapping<T>& TMapping<T>::operator=( TMapping<T> const& x )
-{  static_cast<TJetVector<T>&>(*this) = x;  
+{  this->TJetVector<T>::operator=(x);  
    return *this;
 }
 
