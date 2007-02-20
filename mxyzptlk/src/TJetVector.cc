@@ -70,24 +70,19 @@ using FNAL::pcout;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- template<>
- template<>
- TJetVector<std::complex<double> >::TJetVector(TJetVector<double> const& x):
- myEnv_(x.myEnv_) // Note: env implicit conversion
+template<>
+template<>
+TJetVector<std::complex<double> >::TJetVector(TJetVector<double> const& x)
+: myEnv_(x.myEnv_) // Note: env implicit conversion
 { 
-
-  
-
-  for ( int i=0; i< comp_.size(); ++i) {
-
-    comp_[i] = x.comp_[i];     // implicit type conversion
-
-    CHECKOUT(  comp_[i].Env() != myEnv_ , "TJetVector<std::complex<double> >::const TJetVector<double>& x", "Incompatible environments.")
-
-  }
-
+  comp_ = std::vector<TJet<std::complex<double > > >( x.comp_.begin(),  x.comp_.end() ); 
+  CHECKOUT(  comp_[0].Env() != myEnv_ , "TJetVector<std::complex<double> >::const TJetVector<double>& x", "Incompatible environments.")
+  // REMOVE: 
+  // REMOVE: for ( int i=0; i< comp_.size(); ++i) {
+  // REMOVE:   comp_[i] = x.comp_[i];     // implicit type conversion
+  // REMOVE:   CHECKOUT(  comp_[i].Env() != myEnv_ , "TJetVector<std::complex<double> >::const TJetVector<double>& x", "Incompatible environments.")
+  // REMOVE: }
 }
-
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
