@@ -191,9 +191,9 @@ EnvPtr<T> TJetEnvironment<T>::EndEnvironment(double* scale)
 
     (*pcerr) << "\n\n"
          << "*** ERROR ***                                  \n"
-         << "*** ERROR ***  No coordinates or parameters    \n"
-         << "*** ERROR ***  compatible with the environment.\n"
-         << "*** ERROR ***  have been declared.             \n"
+         << "*** ERROR ***  No coordinate or parameter      \n"
+         << "*** ERROR ***  compatible with the environment \n"
+         << "*** ERROR ***  has been found.                 \n"
          << "*** ERROR ***  Does the environment type match \n"
          << "*** ERROR ***  that of the coordinates and     \n"
          << "*** ERROR ***  parameters ?                    \n"
@@ -201,7 +201,7 @@ EnvPtr<T> TJetEnvironment<T>::EndEnvironment(double* scale)
 
      throw GenericException(__FILE__, __LINE__, 
                             "EnvPtr<T> TJetEnvironment<T>::EndEnvironment(double* scale)",
-                            "No coordinates or parameters have been declared." );
+                            "No coordinate or parameter found." );
      
     
   }
