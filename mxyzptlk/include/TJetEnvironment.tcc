@@ -186,7 +186,25 @@ EnvPtr<T> TJetEnvironment<T>::EndEnvironment(double* scale)
          << endl;
   }
   
+  if ( TJetEnvironment<T>::_coordinates.empty()  &&  TJetEnvironment<T>::_parameters.empty())
+  {
 
+    (*pcerr) << "\n\n"
+         << "*** ERROR ***                                  \n"
+         << "*** ERROR ***  No coordinates or parameters    \n"
+         << "*** ERROR ***  compatible with the environment.\n"
+         << "*** ERROR ***  have been declared.             \n"
+         << "*** ERROR ***  Does the environment type match \n"
+         << "*** ERROR ***  that of the coordinates and     \n"
+         << "*** ERROR ***  parameters ?                    \n"
+         << endl;
+
+     throw GenericException(__FILE__, __LINE__, 
+                            "EnvPtr<T> TJetEnvironment<T>::EndEnvironment(double* scale)",
+                            "No coordinates or parameters have been declared." );
+     
+    
+  }
   //--------------------------
   // Get the reference points 
   //--------------------------
