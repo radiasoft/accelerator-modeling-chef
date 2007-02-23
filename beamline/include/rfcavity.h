@@ -46,26 +46,6 @@
 
 class rfcavity : public bmlnElmnt
 {
-#if 0
-public:
-  class WakeField
-  {
-  public:
-    Wakefield();
-    ~Wakefield();
-
-    clear();
-    acceptSource( const Particle& );
-    acceptSource( const JetParticle& );
-
-    propagate( Particle& );
-    propagate( JetParticle& );
-
-  private:
-    Linterpoland _wakeSpline;
-  };
-#endif
-
 private:
   double w_rf;                  // RF frequency [Hz]
   double phi_s;                 // synchronous phase
