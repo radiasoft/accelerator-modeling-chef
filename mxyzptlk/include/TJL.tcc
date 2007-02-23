@@ -449,11 +449,19 @@ int TJL<T>::getCount() const {
   int count = _count;
 
   int lterms = _myEnv->numVar(); 
-  for (TJLterm<T> const * p =_jltermStore;  p < _jltermStore + lterms +1; ++p ) {
 
-       if (p->_value != T() ) ++count;   
+  TJLterm<T> const * p =_jltermStore;
+
+  // add the non-zero linear terms, if any 
+
+  for ( TJLterm<T> const * p =_jltermStore; p < _jltermStore+lterms +1; ++p ) {
+
+    if (std::abs(p->_value) > 10.0*std::numeric_limits<double>::epsilon() ) { 
+      ++count;   
+    }
 
   }   
+
   return count; 
 
 }
@@ -1034,12 +1042,13 @@ std::ostream& operator<<( std::ostream& os, const TJL<T>& x )
  
  for ( TJLterm<T> const* p = x._jltermStore; p < x._jltermStoreCurrentPtr; ++p) {
 
-   if ( p->_value == T() ) continue;
+   if ( std::abs(p->_value) < 10.0*std::numeric_limits<double>::epsilon() ) continue;
 
    os << "Index: ";
    os << p->_index << " ";
    os << "   Value: " << std::setprecision(30) << p -> _value << std::endl;
  }
+
  return os << "\n" << std::endl;
 }
 
@@ -1969,6 +1978,8 @@ void TJL<T>::printCoeffs() const {
  for(  TJLterm<T> const* p = _jltermStore; p < _jltermStoreCurrentPtr; ++p  ) {
 
    if( p->_weight > _accuWgt ) break;
+   if ( std::abs( p->_value ) < 10.0*std::numeric_limits<double>::epsilon() ) continue; 
+
    (*pcout) << "Index:  " 
             << p->_index
             << "   Value: "
