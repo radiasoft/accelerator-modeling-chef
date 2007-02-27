@@ -2,7 +2,7 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  MXYZPTLK:  A C++ implementation of differential algebra.      
+******  Mxyzptlk:  A C++ implementation of differential algebra.      
 ******                                    
 ******  File:      TLieOperator.cc
 ******                                                                
@@ -109,15 +109,8 @@ TLieOperator<T>::TLieOperator( EnvPtr<T> const theEnv )
 
 template<typename T>
 TLieOperator<T>::TLieOperator( TLieOperator<T> const& x ) 
-: TJetVector<T>( x.myEnv_->spaceDim(), x.myEnv_ )
-{
-
- TLieOperator<T>::myEnv_ = x.myEnv_;
-
- for ( int i = 0; i < TLieOperator<T>::myEnv_->spaceDim(); i++ ) {
-   TLieOperator<T>::comp_[i] = x.comp_[i];
- }
-}
+: TJetVector<T>( x )
+{}
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -129,6 +122,7 @@ TLieOperator<T>::TLieOperator( TJet<T> const& x )
  EnvPtr<T> pje = x.Env();
 
  int s = pje->spaceDim();
+ 
  int n = pje->numVar();
  int* ndx = new int [n];
 
@@ -294,7 +288,7 @@ ostream& operator<<(ostream& os,  TLieOperator<T> const& x)
  int i;
  os << "\n************ Begin TLieOperator<T>  printCoeffs ********\n";
  os << "Weight: " << x.Weight() << endl;
- for( i = 0; i < x.Env()->numVar(); i++ ) {
+ for( i = 0; i < x.Dim();  ++i) {
    os << "\n******************\n**** Component index = " << i << endl;
    os << x.comp_[i];
    }
@@ -305,7 +299,7 @@ ostream& operator<<(ostream& os,  TLieOperator<T> const& x)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> TLieOperator<T>::operator^( const TJet<T>& x ) const 
+TJet<T> TLieOperator<T>::operator^( TJet<T> const& x ) const 
 { 
 
  if( TLieOperator<T>::myEnv_ != x.Env() ) {
@@ -314,20 +308,17 @@ TJet<T> TLieOperator<T>::operator^( const TJet<T>& x ) const
           "Inconsistent environments." ) );
  }
 
- 
  EnvPtr<T> pje = TLieOperator<T>::myEnv_;
- 
  TJet<T> answer( pje );
- int s = pje->spaceDim();
+ const int s = pje->spaceDim();
  IntArray ndx( pje->numVar() );
 
- int i = 0;
 
  ndx(0) = 1; 
  answer = TLieOperator<T>::comp_[0]*x.D( ndx );
  ndx(0) = 0;
 
- if( s > 1 ) for( i = 1; i < s; i++ ) {
+ if( s > 1 ) for( int i=1; i< s; ++i) {
   ndx(i) = 1;
   answer += TLieOperator<T>::comp_[i]*x.D( ndx );
   ndx(i) = 0;
@@ -340,9 +331,8 @@ TJet<T> TLieOperator<T>::operator^( const TJet<T>& x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TLieOperator<T> operator^( const TLieOperator<T>& x, const TLieOperator<T>& y )
+TLieOperator<T> operator^( TLieOperator<T> const& x, TLieOperator<T> const& y )
 {
- // ??? const has to be systematically fixed throughout MXYZPTLK
 
  if( x.myEnv_ != y.myEnv_ ) {
    throw( GenericException(__FILE__, __LINE__, 
@@ -351,9 +341,10 @@ TLieOperator<T> operator^( const TLieOperator<T>& x, const TLieOperator<T>& y )
  }
 
  TLieOperator<T> z( x.myEnv_ );
- int i;
- for( i = 0; i < x.comp_->size(); i++ ) 
+
+ for( int i = 0; i < x.Dim(); ++i) 
   z.SetComponent( i, ( x^(y(i)) ) - ( y^(x(i)) ) );
+
  return z;
 }
 
@@ -361,20 +352,17 @@ TLieOperator<T> operator^( const TLieOperator<T>& x, const TLieOperator<T>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> TLieOperator<T>::expMap( const T& t, const TJet<T>& x ) 
+TJet<T> TLieOperator<T>::expMap( T const& t, TJet<T> const& x ) 
 { 
- TJet<T> answer(x);
- TJet<T> u(x);
- double f;
- int count;
+ double f  = 1.0;
+ int count = 0;
  
- f      = 1.0;
- count  = 0;
+ TJet<T> u = ( t/f++ )*( (*this)^( x ) );
+ TJet<T> answer(x);
 
- u = ( t/f++ )*( operator^( u ) );
  while( ( count++ < MX_MAXITER ) && ( u != T() ) ) {
-  answer += u;                       // ??? How does this
-  u = ( t/f++ )*( operator^( u ) );  // ??? affect efficiency?
+  answer += u;                       
+  u  = ( t/f++ )* ( (*this)^( u ) );  
  }
 
  if( count >= MX_MAXITER ) {
@@ -388,6 +376,7 @@ TJet<T> TLieOperator<T>::expMap( const T& t, const TJet<T>& x )
        << endl;
  }
 
+  
  return answer;
 }
 
@@ -395,20 +384,18 @@ TJet<T> TLieOperator<T>::expMap( const T& t, const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> TLieOperator<T>::expMap( const TJet<T>& t, const TJet<T>& x ) 
+TJet<T> TLieOperator<T>::expMap( TJet<T> const& t, TJet<T> const& x ) 
 { 
- TJet<T> answer(x);
- TJet<T> u(x);
- double f;
- int count;
- 
- f      = 1.0;
- count  = 0;
 
- u = ( t/f++ )*( operator^( u ) );
+ double f      = 1.0;
+ int    count  = 0;
+
+ TJet<T> u = ( t/f++ )*( (*this)^( x ) );
+ TJet<T> answer(x);
+
  while( ( count++ < MX_MAXITER ) && ( u != T() ) ) {
-  answer += u;                       // ??? How does this
-  u = ( t/f++ )*( operator^( u ) );  // ??? affect efficiency?
+  answer += u;                       
+  u  = ( t/f++ )* ( (*this)^( u ) );  
  }
 
  if( count >= MX_MAXITER ) {
@@ -429,33 +416,30 @@ TJet<T> TLieOperator<T>::expMap( const TJet<T>& t, const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T> TLieOperator<T>::expMap( const T& t , const TJetVector<T>& x ) 
+TJetVector<T> TLieOperator<T>::expMap( T const& t , TJetVector<T> const& x ) 
 {
+
  TJetVector<T> z( x );
+
  // Copy constructor used only for formal initialization
  // of attributes.  The initial value of z's components
  // are not relevant.                             - lpjm
  
- int i; // O.K.
- for(  i=0;  i < this->comp_.size(); i++ ) {
+ for(  int i=0;  i < x.Dim(); ++i) {
   z(i) = expMap( t, x(i) );
  }
-
  return z;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T> TLieOperator<T>::expMap( const TJet<T>& t, const TJetVector<T>& x ) 
+TJetVector<T> TLieOperator<T>::expMap( TJet<T> const& t, TJetVector<T> const& x ) 
 {
- TJetVector<T> z( x );
- // Copy constructor used only for formal initialization
- // of attributes.  The initial value of z's components
- // are not relevant.                             - lpjm
+  TJetVector<T> z( x ); // used only for formal initialization of attributes.  
+                       // The initial value not relevant.  - lpjm
 
- int i; // O.K.
- for(  i = 0; i < this->comp_.size(); i++ ) {
+ for(  int i = 0; i < x.Dim(); ++i) {
   z(i) = expMap( t, x(i) );
  }
 
