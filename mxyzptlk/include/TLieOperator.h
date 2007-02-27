@@ -119,10 +119,10 @@ public:
   TJet<T> expMap( T       const&, TJet<T> const & );              // Performs exponential map on the second argument.
   TJet<T> expMap( TJet<T> const&, TJet<T> const & );              // The orbit parameter is here a TJet<T> variable.
 
-  TJetVector<T> expMap( T       const&,  TJetVector<T> const& );  // Performs exponential map componenet wise.
+  TJetVector<T> expMap( T       const&,  TJetVector<T> const& );  // Performs exponential map component-wise.
   TJetVector<T> expMap( TJet<T> const &, TJetVector<T> const& );
 
-  TJet<T>       expMap( TJet<T>       const & );
+  TJet<T>       expMap( TJet<T>       const & );  
   TJetVector<T> expMap( TJetVector<T> const & );
 
 };
@@ -132,7 +132,7 @@ public:
 
 template<typename T>
 inline TLieOperator<T>& TLieOperator<T>::operator=( TJetVector<T> const& x )
-{ static_cast<TJetVector<T>&>(*this) = x;  return *this;}
+{ TJetVector<T>::operator=(x);  return *this;}
 
 template<typename T>
 inline TJet<T> TLieOperator<T>::expMap( TJet<T> const& x )
