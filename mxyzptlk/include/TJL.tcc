@@ -246,18 +246,15 @@ void TJL<T>::initStore( int capacity) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJL<T>::TJL(EnvPtr<T> const& pje, T x): 
-_myEnv( pje ),  
-_count(0),
-_weight(0),                        
-_accuWgt( pje->maxWeight() ),
-_lowWgt(0)
+TJL<T>::TJL(EnvPtr<T> const& pje, T x)
+  :  _myEnv( pje ), 
+     _count(0), _weight(0),                        
+     _accuWgt( pje->maxWeight() ),
+     _lowWgt(0)
 {
    initStore( pje->numVar() +1 );    // max no of terms at order 1  
    appendLinearTerms( pje->numVar());
    setStandardPart(x);
-
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -665,12 +662,13 @@ void TJL<T>::setVariable(  const T& x, const int& j, EnvPtr<T> const& pje)
 
  _myEnv = pje;
  _accuWgt = pje->maxWeight();
- _lowWgt  = 0;
  _weight  = 0;
   
  appendLinearTerms(  _myEnv->numVar() );
  setStandardPart(x);
  _jltermStore[j+1]._value =  T(1.0);
+
+ _lowWgt = ( standardPart() != T() ) ? 0 : 1;
 
 }
 
@@ -692,13 +690,13 @@ void TJL<T>::setVariable(  const T& x, const int& j )
  
   clear(); 
  _accuWgt =  _myEnv->maxWeight();
- _lowWgt  =  0;
  _weight  =  0;
-
 
  appendLinearTerms(  _myEnv->numVar() );
  setStandardPart(x);
  _jltermStore[j+1]._value =  T(1.0);
+
+ _lowWgt = ( standardPart() != T() ) ? 0 : 1;
 
  }
 
@@ -727,7 +725,6 @@ void TJL<T>::setVariable( const int& j,
  
   clear();
  _accuWgt =  theEnv->maxWeight();
- _lowWgt  =  0;
  _weight   = 0;
 
  T x = theEnv->refPoint()[j];  
@@ -735,6 +732,8 @@ void TJL<T>::setVariable( const int& j,
  appendLinearTerms(  _myEnv->numVar() );
  setStandardPart(x);
  _jltermStore[j+1]._value =  T(1.0);
+
+ _lowWgt = ( standardPart() != T() ) ? 0 : 1;
 
 }
 
@@ -746,8 +745,9 @@ template<typename T>
 void TJL<T>::clear() 
 {
  
- _weight = 0;
- _count  = 0;
+ _accuWgt = 0;
+ _weight  = 0;
+ _count   = 0;
  _jltermStoreCurrentPtr  = _jltermStore; // do not delete the store here !
  
 
@@ -1978,6 +1978,7 @@ void TJL<T>::printCoeffs() const {
  for(  TJLterm<T> const* p = _jltermStore; p < _jltermStoreCurrentPtr; ++p  ) {
 
    if( p->_weight > _accuWgt ) break;
+
    if ( std::abs( p->_value ) < 10.0*std::numeric_limits<double>::epsilon() ) continue; 
 
    (*pcout) << "Index:  " 
@@ -2040,6 +2041,7 @@ JLPtr<T> TJL<T>::D( const int* n ) const
  
    doit = true;
    // -- Reset the _index.
+
    for( int i=0; i< _myEnv->numVar(); ++i) 
      doit = doit && ( ( q->_index(i) -= n[i] ) >= 0 );
  
@@ -2072,9 +2074,9 @@ JLPtr<T> TJL<T>::D( const int* n ) const
    } //  if( doit )
  }
  
- // --- Finally, adjust _accuWgt and return value
- 
- z->_accuWgt = _accuWgt - w;       // ??? Is this correct ???
+  // --- Finally, adjust _accuWgt and return value
+
+ z->_accuWgt = _accuWgt - w;   // is this correct ??? FIXME !
 
  return z;
 }
@@ -2267,11 +2269,8 @@ JLPtr<T>&  TJL<T>::inplace_add(JLPtr<T>& x, JLPtr<T> const& y  ){
    result   = tjlmml[idx]._value;
    T_function (  result, p->_value);
 
+   tjlmml[idx]._value = result; 
 
-   if (std::abs(result) > TJL<T>::_mx_small) 
-        tjlmml[idx]._value = result; // should not be needed !
-   else 
-        tjlmml[idx]._value = T(); 
  }
 
  for(  TJLterm<T> const* p = ystart+lterms; p< yend; ++p  ) {
@@ -2280,10 +2279,8 @@ JLPtr<T>&  TJL<T>::inplace_add(JLPtr<T>& x, JLPtr<T> const& y  ){
    result = tjlmml[indy]._value;
    T_function (  result, p->_value);
 
-   if (std::abs(result) > TJL<T>::_mx_small) 
-        tjlmml[indy]._value = result; // should not be needed !
-   else 
-        tjlmml[indy]._value = T(); 
+   tjlmml[indy]._value = result; // should not be needed !
+
  }
  
 
@@ -2301,9 +2298,8 @@ JLPtr<T>&  TJL<T>::inplace_add(JLPtr<T>& x, JLPtr<T> const& y  ){
  x->transferFromScratchPad();
 
  x->_lowWgt  = std::min(lowWgt,     y->_lowWgt);   
- x->_accuWgt = std::min(accuWgt,    y->_accuWgt);
-
-
+ x->_accuWgt = std::min(accuWgt,    y->_accuWgt); 
+ 
  return x;
 }
 
@@ -2412,8 +2408,6 @@ JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  ){
  // Determine the lowest weight of the product and the maximum weight computed accurately.
  // ---------------------------------------------------------------------------------------
 
- z->_lowWgt  =  x->_lowWgt + y->_lowWgt;   
-
  int testWeight = std::min( (x->_accuWgt + y->_lowWgt), (y ->_accuWgt+ x->_lowWgt) );
      testWeight = std::min( testWeight,  pje->maxWeight() ); 
  
@@ -2490,7 +2484,7 @@ for(   TJLterm<T> const* p = ystart; p < yend; ++p  ) {
  // At this point, the terms are ordered in the scratchpad
  //------------------------------------------------------------------------------------------------
    
- z->transferFromScratchPad();
+ z->transferFromScratchPad(); // NOTE: this sets _lowWgt
  z->_accuWgt = testWeight;
 
  return z;
@@ -2536,20 +2530,20 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
  // -------------------------------------------------
  // Determine the maximum weight computed accurately.
  // -------------------------------------------------
+ // lowWgt is the weight of the lowest weight non-zero term
 
- int lowWgt =  x->_lowWgt + y->_lowWgt;   
 
  int testWeight = std::min( (x->_accuWgt + y->_lowWgt), (y->_accuWgt+ x->_lowWgt) );
      testWeight = std::min( testWeight,  x->_myEnv->maxWeight() ); 
  
- x->_accuWgt = testWeight;
+     x->_accuWgt = testWeight;
 
 
  // -------------------------------------------------
  // Is this first order ?
  // -------------------------------------------------
 
- if (testWeight == 1 ) {
+  if (testWeight == 1 ) {
 
     T result;
 
@@ -2563,7 +2557,8 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
 
     ++px; ++py;  
     
-    for( int i=1; i < x->_myEnv->numVar()+1;  ++i, ++px, ++py ) { // NOTE: index starts at 1 since std part is at 0 ! 
+    for( int i=1; i < x->_myEnv->numVar()+1;  ++i, ++px, ++py ) { 
+                      // NOTE: index starts at 1 since std part is at 0 ! 
 
      result  = ( std_x * py->_value ) + ( std_y * px->_value ); 
 
@@ -2620,10 +2615,9 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
  // At this point, the terms are ordered in the scratchpad!
  //-------------------------------------------------------------------------------------------------
 
- x->transferFromScratchPad();
-
+ x->transferFromScratchPad(); // NOTE: this sets x->_lowWgt
  x->_accuWgt  = testWeight;
- x->_lowWgt   = lowWgt;
+
 
  return x;
 }
@@ -2757,6 +2751,73 @@ JLPtr<T>   operator/( JLPtr<T> const & x,  T const& y  ){
   return z;
 
 }
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+void TJL<T>::transferFromScratchPad( ) {   
+
+  clear();// clears all the terms of current TJL, including the std part ! 
+  appendLinearTerms(  _myEnv->numVar() );                      
+
+  
+  TJLterm<T>* const scpad_begin      =   _myEnv->TJLmml();    
+  TJLterm<T>* const scpad_end        =   _myEnv->TJLmml() + _myEnv->maxTerms();
+
+ // *Unconditionally* append the std part and the linear terms
+ 
+  int i = 0;
+  for( TJLterm<T>* p = scpad_begin;  p < scpad_begin + _myEnv->numVar() + 1; ++p, ++i) {
+     _jltermStore[i]._value = p->_value;
+     p->_value = T();
+     
+  }
+
+  for( TJLterm<T>* p = scpad_begin + _myEnv->numVar() + 1 ;  p < scpad_end; ++p) 
+  {
+   if (  p->_value != T() )  {
+     append( *p ); 
+     p->_value = T();
+   }
+  }
+
+  // **** Look for and set the weight of the lowest non-zero monomial ***
+
+   for( TJLterm<T>* p = scpad_begin;  p < scpad_end; ++p) {  
+     if ( p->_value != T() ) { 
+        _lowWgt = p->_weight; 
+        break; 
+     }
+   }  
+ 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+void TJL<T>::appendLinearTerms( int numvar ) {   
+
+  TJLterm<T> term( numvar ); 
+
+  // --- append standard part
+
+   TJLterm<T>* p = new( this->storePtr() ) TJLterm<T>(term); 
+
+  // -- append weight == 1 terms 
+
+  for (int i=0; i< _myEnv->numVar(); ++i) {  // terms of weight 1
+
+   term._index(i) = 1; term._weight = 1; // DANGER ! changing exponent index directly; weight must be adjusted !
+
+   p = new( this->storePtr() ) TJLterm<T>(term); 
+   _weight  = std::max(_weight, p->_weight);
+   term._index(i) = 0; 
+ }
+
+  return;
+}
+
 
 
 #endif // TJL_TCC
