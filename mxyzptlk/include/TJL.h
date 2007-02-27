@@ -542,65 +542,9 @@ inline void TJL<T>::append( TJLterm<T> const& a)
 
   TJLterm<T>* p = new( this->storePtr() ) TJLterm<T>(a); 
   ++_count;
-  _weight  = std::max(_weight, p->_weight);
 
-}
+  _weight      = std::max(_weight,     p->_weight);
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template <typename T>
-inline void TJL<T>::transferFromScratchPad( ) {   
-
-  clear();// clears all the terms of current TJL, including the std part ! 
-  appendLinearTerms(  _myEnv->numVar() );                      
-
-  
-  TJLterm<T>* const scpad_begin      =   _myEnv->TJLmml();    
-  TJLterm<T>* const scpad_end        =   _myEnv->TJLmml() + _myEnv->maxTerms();
-
- // *Unconditionally* append the std part and the linear terms
- 
-  int i = 0;
-  for( TJLterm<T>* p = scpad_begin;  p < scpad_begin + _myEnv->numVar() + 1; ++p, ++i) {
-     _jltermStore[i]._value = p->_value;
-     p->_value = T();
-     
-  }
-
-  for( TJLterm<T>* p = scpad_begin + _myEnv->numVar() + 1 ;  p < scpad_end; ++p) 
-  {
-   if (  p->_value != T() )  {
-     append( *p ); 
-     p->_value = T();
-   }
-  }
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template <typename T>
-inline void TJL<T>::appendLinearTerms( int numvar ) {   
-
-  TJLterm<T> term( numvar ); 
-
-  // --- append standard part
-
-   TJLterm<T>* p = new( this->storePtr() ) TJLterm<T>(term); 
-
-  // -- append weight == 1 terms 
-
-  for (int i=0; i< _myEnv->numVar(); ++i) {  // terms of weight 1
-
-   term._index(i) = 1; term._weight = 1; // DANGER ! changing exponent index directly; weight must be adjusted !
-
-   p = new( this->storePtr() ) TJLterm<T>(term); 
-   _weight  = std::max(_weight, p->_weight);
-   term._index(i) = 0; 
- }
-
-  return;
 }
 
 
