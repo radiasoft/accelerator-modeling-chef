@@ -132,23 +132,34 @@ public:
 
 template<typename T>
 inline TLieOperator<T>& TLieOperator<T>::operator=( TJetVector<T> const& x )
-{ TJetVector<T>::operator=(x);  return *this;}
+{ 
+  if ( &x == this ) return *this;
+  TJetVector<T>::operator=(x);  return *this;
+}
 
 template<typename T>
 inline TJet<T> TLieOperator<T>::expMap( TJet<T> const& x )
-{ return this->expMap( 1.0, x ); }
+{ 
+ return this->expMap( 1.0, x ); 
+}
 
 template<typename T>
 inline TJetVector<T> TLieOperator<T>::expMap( TJetVector<T> const& x )
-{ return this->expMap( 1.0, x  ); }
+{ 
+  return this->expMap( 1.0, x  ); 
+}
 
 template<typename T>
 inline void TLieOperator<T>::setComponent( int i, TJet<T> const& x )
-{ this->setVariable( x, i ); }
+{ 
+ this->setVariable( x, i ); 
+}
 
 template<typename T>
 inline void TLieOperator<T>::SetComponent( int i, TJet<T> const& x )
-{ this->setVariable( x, i ); }
+{ 
+ this->setVariable( x, i ); 
+}
 
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES
