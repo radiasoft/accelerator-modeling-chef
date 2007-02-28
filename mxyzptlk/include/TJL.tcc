@@ -440,22 +440,21 @@ int             old_jltermStoreCapacity  = 0;
 template<typename T>
 int TJL<T>::getCount() const { 
 
+  const double eps = 100.0*std::numeric_limits<double>::epsilon();
+
   // returns the true term count 
 
-  
   int count = _count;
 
   int lterms = _myEnv->numVar(); 
 
   TJLterm<T> const * p =_jltermStore;
 
-  // add the non-zero linear terms, if any 
+  // add the non-zero *linear* terms, if any 
 
   for ( TJLterm<T> const * p =_jltermStore; p < _jltermStore+lterms +1; ++p ) {
 
-    if (std::abs(p->_value) > 10.0*std::numeric_limits<double>::epsilon() ) { 
-      ++count;   
-    }
+    if (std::abs(p->_value) > eps ) ++count;   
 
   }   
 
@@ -1058,16 +1057,18 @@ std::ostream& operator<<( std::ostream& os, const TJL<T>& x )
 template<typename T>
 bool operator==( TJL<T> const& x,  TJL<T> const& y ) {
 
-if( x._myEnv != y._myEnv ) return false;
+ double const eps = 10.0e4* std::numeric_limits<double>::epsilon( ); // on a 32-bit Pentium  ~10e-12 
 
-if( (  x._weight  != y._weight )  || ( x._accuWgt != y._accuWgt ) ) return false;
+ if( x._myEnv != y._myEnv ) return false;
+
+ if( ( x._weight  != y._weight ) ) return false;
  
-JLPtr<T> diff = TJL<T>::makeTJL(x) - TJL<T>::makeTJL(y) ; 
+ JLPtr<T> diff = TJL<T>::makeTJL(x) - TJL<T>::makeTJL(y) ; 
     // this is not very efficient because it involves copying the arguments ! 
 
-for ( TJLterm<T> const* p = diff->_jltermStore; p < diff->_jltermStoreCurrentPtr; ++p ) {
+ for ( TJLterm<T> const* p = diff->_jltermStore; p < diff->_jltermStoreCurrentPtr; ++p ) {
 
-   if ( std::abs(p->_value) >  10.0* std::numeric_limits<double>::epsilon( ) ) return false;
+   if ( std::abs(p->_value) > eps ) return false;
 }
 
 return true;
@@ -1077,16 +1078,17 @@ return true;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator==( TJL<T> const& x, T const& y ) 
-{
+bool operator==( TJL<T> const& x, T const& y ) {
 
+ double const eps = 10.0e4* std::numeric_limits<double>::epsilon( ); // on a 32-bit Pentium  ~10e-12 
 
- if (x.standardPart() != y )   return false;
+ if ( std::abs( x.standardPart() - y ) > 10.0* std::numeric_limits<double>::epsilon( ) )   return false;
 
  // all terms of weight  >0 must also have _value == 0 (coefficient)
 
  for (  TJLterm<T> const* p = x._jltermStore+1; p < x._jltermStoreCurrentPtr; ++p) {
-   if ( std::abs(p->_value) >  10.0* std::numeric_limits<double>::epsilon( ) ) return false;
+
+   if ( std::abs(p->_value) >  eps ) return false;
  } 
 
  return true;
@@ -2415,7 +2417,7 @@ JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  ){
  // Is the max accurate weight == 1 ?  If so, no sparsity. perform the multiplication directly 
  //-------------------------------------------------------------------------------
 
- if (testWeight == 1 ) {
+ if ( pje->maxWeight() == 1 ) {
 
     T result;
 
@@ -2543,7 +2545,7 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
  // Is this first order ?
  // -------------------------------------------------
 
-  if (testWeight == 1 ) {
+  if ( x->_myEnv->maxWeight()  == 1 ) {
 
     T result;
 
@@ -2565,9 +2567,9 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
      if( std::abs( result ) < MX_ABS_SMALL )   result = T();
 
      px->_value = result;
+    
    }
 
-   x->_accuWgt = testWeight;
 
    return x;
  }
