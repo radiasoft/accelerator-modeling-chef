@@ -68,10 +68,6 @@ class DLLEXPORT TMapping: public TJetVector<T> {
  template <typename U>
  friend class TMapping;
 
- private:
-
-  TMapping<T> _epsInverse(  EnvPtr<T> const&) const;
-
  public: 
 
   TMapping( int n, EnvPtr<T> const&  env        = TJetEnvironment<T>::getLastEnv() );
@@ -91,6 +87,8 @@ class DLLEXPORT TMapping: public TJetVector<T> {
 
   ~TMapping();
 
+  TMapping  clone() const;
+
   TMapping& operator= ( TMapping const& );
 
 
@@ -107,6 +105,12 @@ class DLLEXPORT TMapping: public TJetVector<T> {
 
   TMapping Inverse() const;  // retained for backwards compatability
   TMapping inverse() const;
+
+ private:
+
+  TMapping<T> _epsInverse(  EnvPtr<T> const&) const;
+
+
 };
 
 
@@ -131,7 +135,7 @@ inline TJet<T>& TMapping<T>::operator()( int i )
 
 template<typename T>
 inline TMapping<T>& TMapping<T>::operator=( TMapping<T> const& x )
-{  this->TJetVector<T>::operator=(x);  
+{  TJetVector<T>::operator=(x);  
    return *this;
 }
 

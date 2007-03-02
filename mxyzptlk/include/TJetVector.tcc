@@ -164,6 +164,27 @@ TJetVector<T>::TJetVector( TJetVector<T> const& x,  int i1, int i2 ): myEnv_(x.m
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
+TJetVector<T> TJetVector<T>::clone() const 
+{ 
+  TJetVector<T> jetvec;
+
+  jetvec.comp_.clear(); 
+ 
+  for ( typename std::vector<TJet<T> >::const_iterator it=comp_.begin(); 
+                                                      it != comp_.end(); ++it ){
+     jetvec.comp_.push_back( it->clone() );
+  }
+
+  jetvec.myEnv_ = myEnv_;
+
+  return jetvec;
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
 TJetVector<T>::~TJetVector(){ }
 
 

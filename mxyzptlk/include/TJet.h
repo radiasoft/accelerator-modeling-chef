@@ -342,6 +342,8 @@ public:
   template<typename U>
   TJet( TJet<U> const& );
 
+  TJet clone() const;
+
   virtual ~TJet();
 
 
@@ -369,7 +371,7 @@ public:
 
   void peekAt()      const;
   void printCoeffs() const;
-  int  termCount()   const;         // Returns number of monomial terms
+  int  termCount()   const;  // Returns number of monomial terms
 
   void writeToFile( char*   /* Name of unopened file */ ) const;
   void writeToFile( std::ofstream& ) const;
@@ -409,8 +411,9 @@ public:
   TJet     operator() ( TJetVector<T> const& ) const;       // Self explanatory ...
   TJet     operator() ( TJet<T> const* y )     const;       // Self explanatory .    FIXME !     
 
-  TJet     D( int      const* ) const ;	  // Performs differentiation of a Jet variable. FIXME !
-  TJet     D( IntArray const& ) const ;   // Performs differentiation of a Jet variable. FIXME !
+
+  TJet     D( int      const* ) const ;	   // Performs differentiation of a Jet variable.
+  TJet     D( IntArray const& ) const ;   
 
 
   // Operators________________________________________________________
