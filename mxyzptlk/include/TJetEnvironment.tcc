@@ -175,17 +175,6 @@ EnvPtr<T> TJetEnvironment<T>::EndEnvironment(double* scale)
 
   int spacedim   =   TJetEnvironment<T>::_coordinates.size();
 
-  if( ( spacedim%2 != 0) ) {
-    (*pcerr) << "\n\n"
-         << "*** WARNING ***                                 \n"
-         << "*** WARNING *** TJet<T>::EndEnvironment()       \n"
-         << "*** WARNING *** Phase space has odd dimension.  \n"
-         << "*** WARNING *** I hope you know what you        \n"
-         << "*** WARNING *** are doing, but I doubt it.      \n"
-         << "*** WARNING ***                                 \n"
-         << endl;
-  }
-  
   if ( TJetEnvironment<T>::_coordinates.empty()  &&  TJetEnvironment<T>::_parameters.empty())
   {
 
