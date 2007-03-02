@@ -158,6 +158,18 @@ TMapping<T>::~TMapping<T>() {}
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
+TMapping<T> TMapping<T>::clone() const 
+{
+
+  return TMapping( this-> TJetVector<T>::clone() );
+
+}
+
+//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+template<typename T>
 TMapping<T> TMapping<T>::operator()(  TMapping<T> const& x ) const
 {
 
@@ -273,8 +285,8 @@ TMapping<T> TMapping<T>::inverse() const
 
  EnvPtr<T> pje_inv( TJetEnvironment<T>:: makeInverseJetEnvironment(*this) );
 
- TMapping<T> z( *this );  // copies the current mapping instance ...
-  
+ TMapping<T> z( clone() );  // copies the current mapping instance ...
+ 
  // ... Temporarily zero out the reference point 
 
  EnvPtr<T> tmp_pje_inv_zeroed( 
@@ -307,8 +319,8 @@ TMapping<T> TMapping<T>::inverse() const
  
   z.myEnv_ = pje_inv;
 
-  for( int i=0; i<(this->comp_.size()); i++ ) 
-     z.comp_[i].setEnvTo( pje_inv );    // clones again !!!
+  for( int i=0; i<(this->comp_.size()); ++i) 
+     z.comp_[i].setEnvTo( pje_inv );    
 
 
  // ... A little test ...
