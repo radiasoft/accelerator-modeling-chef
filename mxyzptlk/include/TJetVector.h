@@ -138,7 +138,9 @@ public:
   TJetVector(TJetVector<U> const&);
 
 
-  ~TJetVector();
+ ~TJetVector();
+
+  TJetVector clone() const;
 
   // Assignment ...
   void             SetComponent    ( int idx, TJet<T> const& );
