@@ -129,18 +129,6 @@ TJet<T>::~TJet()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>
-TJet<T> TJet<T>::clone() const 
-{
-
- return TJet<T>( _jl->clone() ); 
-
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
 
 template<typename T>
 void TJet<T>::setEnvTo( const TJet& x )
@@ -148,7 +136,7 @@ void TJet<T>::setEnvTo( const TJet& x )
  
   if( _jl->getEnv() != x._jl->getEnv() ) 
   {
-    if (_jl->count() > 1 ) _jl = _jl->clone();  // do not clone unless the ref count > 1  
+    if (_jl->count() > 1 ) _jl = _jl->clone();  
 
     _jl->setEnv(x._jl->getEnv());
   }
@@ -230,6 +218,17 @@ void TJet<T>::setVariable( const int& j )
  _jl->setVariable( j, _jl->getEnv() );
 
 }
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+void  TJet<T>::setStandardPart( T const& std ) { 
+
+  if (_jl.count() > 1 ) _jl = _jl->clone();
+  _jl->setStandardPart(std);     
+
+} 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

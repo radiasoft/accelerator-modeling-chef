@@ -342,8 +342,6 @@ public:
   template<typename U>
   TJet( TJet<U> const& );
 
-  TJet clone() const;
-
   virtual ~TJet();
 
 
@@ -389,9 +387,8 @@ public:
   void setVariable( T   const&,  int const& );
   void setVariable( int const& );
 
-
+  void     setStandardPart( T const& std ); 
   T        standardPart() const            { return _jl->standardPart();    }
-  void     setStandardPart( T const& std ) { _jl->setStandardPart(std);     } 
 
   void     clear();
   T        weightedDerivative( int  const* ) const;  // FIXME !
