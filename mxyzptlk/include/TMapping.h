@@ -87,8 +87,6 @@ class DLLEXPORT TMapping: public TJetVector<T> {
 
   ~TMapping();
 
-  TMapping  clone() const;
-
   TMapping& operator= ( TMapping const& );
 
 

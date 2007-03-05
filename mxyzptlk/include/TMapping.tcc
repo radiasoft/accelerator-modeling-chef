@@ -157,16 +157,6 @@ TMapping<T>::~TMapping<T>() {}
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>
-TMapping<T> TMapping<T>::clone() const 
-{
-
-  return TMapping( this-> TJetVector<T>::clone() );
-
-}
-
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 
 template<typename T>
@@ -285,7 +275,7 @@ TMapping<T> TMapping<T>::inverse() const
 
  EnvPtr<T> pje_inv( TJetEnvironment<T>:: makeInverseJetEnvironment(*this) );
 
- TMapping<T> z( clone() );  // copies the current mapping instance ...
+ TMapping<T> z( *this );  // copies the current mapping instance ...
  
  // ... Temporarily zero out the reference point 
 
@@ -299,7 +289,6 @@ TMapping<T> TMapping<T>::inverse() const
 
    if( !ref_pt_image_is_zero[j] ) { 
 
-     // NOTE: calling get() here implicitly clones z.comp_[j] !!!!;
      z.comp_[j].setStandardPart( T () ); 
   }
  }
@@ -326,7 +315,7 @@ TMapping<T> TMapping<T>::inverse() const
  // ... A little test ...
  
   TVector<T> ref = z.standardPart();
-  for( int j = 0; j < (this->comp_.size()); j++ ) 
+  for( int j=0; j< (this->comp_.size()); ++j) 
    if( ref[j] != 0.0 ) {
     (*pcout) << "*** WARNING ***                                    \n"
             "*** WARNING *** TJet<T>::Inverse()                     \n"
