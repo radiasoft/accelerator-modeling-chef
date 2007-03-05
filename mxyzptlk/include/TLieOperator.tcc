@@ -360,7 +360,7 @@ TJet<T> TLieOperator<T>::expMap( T const& t, TJet<T> const& x )
  TJet<T> u = ( t/f++ )*( (*this)^( x ) );
  TJet<T> answer(x);
 
- while( ( count++ < MX_MAXITER ) && ( u != T() ) ) {
+ while(   (++count < MX_MAXITER ) && (  u  != T()  ) ) {
   answer += u;                       
   u  = ( t/f++ )* ( (*this)^( u ) );  
  }
@@ -393,7 +393,7 @@ TJet<T> TLieOperator<T>::expMap( TJet<T> const& t, TJet<T> const& x )
  TJet<T> u = ( t/f++ )*( (*this)^( x ) );
  TJet<T> answer(x);
 
- while( ( count++ < MX_MAXITER ) && ( u != T() ) ) {
+ while( ( ++count < MX_MAXITER ) && ( u != T() ) ) {
   answer += u;                       
   u  = ( t/f++ )* ( (*this)^( u ) );  
  }
