@@ -518,9 +518,22 @@ void TJL<T>::addTerm( TJLterm<T> const& a )
  // -----------------------------------------------------------
  // clear current TJL , transfer back result from scratch pad,  
  // and cleanup
+ //
+ // NOTE:  _accuWgt and _weight are *reset* by transferFromScratchPad
+ //        because clear is called(). They need to be 
+ //        saved and restored.
  //------------------------------------------------------------
 
+ int weight  = _weight;
+ int accuWgt = _accuWgt;
+
  transferFromScratchPad();   
+
+ // adding a term may increase either or both the maximum
+ // weight or the max accurate weight
+
+  _weight =   std::max( weight,  a._weight);  
+  _accuWgt =  std::max( accuWgt, a._weight); 
 
  return;
  
@@ -2760,6 +2773,7 @@ template <typename T>
 void TJL<T>::transferFromScratchPad( ) {   
 
   clear();// clears all the terms of current TJL, including the std part ! 
+
   appendLinearTerms(  _myEnv->numVar() );                      
 
   
