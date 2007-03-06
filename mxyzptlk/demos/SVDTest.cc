@@ -8,8 +8,9 @@
 **
 */
 
-#include <Matrix.h>
-#include <RandomOrthogonal.h>
+#include <basic_toolkit/Matrix.h>
+#include <basic_toolkit/RandomOrthogonal.h>
+#include <basic_toolkit/VectorD.h>
 
 using namespace std;
 
@@ -59,7 +60,15 @@ int main( int argc, char** argv )
   // Do the SVD decomposition.
   // ------------------------
   MatrixD U(3,3), V(3,3);
+  #if 0
+  // NOTE: It seriously bothers me
+  // NOTE: that this form was replaced.
+  // NOTE: - lpjm
   MatrixD W(3);
+  #endif
+  #if 1
+  Vector W(3);
+  #endif
 
   A.SVD( U, W, V );
 

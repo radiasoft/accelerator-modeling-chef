@@ -16,13 +16,13 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "mxyzptlk.h"
+#include <mxyzptlk/Jet.h>
 
 using namespace std;
 
 main( int argc, char** argv ) {
 
- if( argc != 3 ) {
+ if( argc != 4 ) {
   printf( "Usage: Limit_C_Test <y> <z> <degree>\n" );
   exit(0);
  }

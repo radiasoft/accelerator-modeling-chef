@@ -12,7 +12,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "mxyzptlk.h"
+#include <mxyzptlk/Jet.h>
 
 using namespace std;
 

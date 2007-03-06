@@ -21,8 +21,8 @@
 **
 */
 
-#include <Matrix.h>
-#include <Mapping.h>
+#include <basic_toolkit/Matrix.h>
+#include <mxyzptlk/Mapping.h>
 
 using namespace std;
 

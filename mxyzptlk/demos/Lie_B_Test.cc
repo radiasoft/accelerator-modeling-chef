@@ -18,15 +18,15 @@
 **
 */
 
-#include "mxyzptlk.h"
+#include <mxyzptlk/LieOperator.h>
 
 using namespace std;
 
-main() {
-
-  Jet__environment::BeginEnvironment( 6 );
-  coord x( 0.0 );
-  coord y( 0.0 );
+main() 
+{
+  Jet__environment::BeginEnvironment( 20 );
+    coord x( 0.0 );
+    coord y( 0.0 );
   Jet__environment::EndEnvironment();
 
   LieOperator v;

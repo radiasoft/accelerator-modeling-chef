@@ -11,12 +11,10 @@
 **
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include "mxyzptlk.h"
+#include <mxyzptlk/Mapping.h>
 
-main( int, char** ) {
- 
+main( int, char** ) 
+{
  Jet__environment::BeginEnvironment( 4 );
  coord x( 0.0 ), y( 0.0 ), z( 0.0 );
  Jet__environment::EndEnvironment();
@@ -29,15 +27,15 @@ main( int, char** ) {
 
  u = w.Inverse();
 
- printf( "\n====== w.printCoeffs(); =================\n" );
+ cout << "\n====== w.printCoeffs(); =================\n";
  w.printCoeffs();
 
- printf( "\n====== u.printCoeffs(); =================\n" );
+ cout << "\n====== u.printCoeffs(); =================\n";
  u.printCoeffs();
 
- printf( "\n====== w(u).printCoeffs(); =================\n" );
+ cout << "\n====== w(u).printCoeffs(); =================\n";
  w(u).printCoeffs();
 
- printf( "\n====== u(w).printCoeffs(); =================\n" );
+ cout << "\n====== u(w).printCoeffs(); =================\n";
  u(w).printCoeffs();
 }

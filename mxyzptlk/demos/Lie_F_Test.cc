@@ -1,6 +1,5 @@
-#include <stdlib.h>
-#include "Jet.h"
-#include "LieOperator.h"
+#include <mxyzptlk/Jet.h>
+#include <mxyzptlk/LieOperator.h>
 
 using namespace std;
 
@@ -22,22 +21,24 @@ Jet field::operator[]( int i ) {
  return v[i];
 }
 
-main( int argc, char** argv ) {
-
+int main( int argc, char** argv ) 
+{
  if( argc != 6 ) {
-  printf( "\n" );
-  printf( "Usage: %s  d m t p0 nb \n", argv[0] );
-  printf( "where d  = degree of the jet\n" );
-  printf( "      m  = mass \n" );
-  printf( "      t  = time\n" );
-  printf( "      p0 = longitudinal momentum\n" );
-  printf( "      nb = number of cells in time partition\n" );
-  exit(0);
+  cout <<   "Usage: " << argv[0] << "  d m t p0 nb"
+          "\nwhere d  = degree of the jet"
+          "\n      m  = mass "
+          "\n      t  = time"
+          "\n      p0 = longitudinal momentum"
+          "\n      nb = number of cells in time partition"
+       << endl;
+  return -1;
  }
 
  int i, j;
- for( i = 0; i < argc; i++ ) printf( "%s   ", argv[i] );
- printf( "\n\n" );
+ for( i = 0; i < argc; i++ ) {
+   cout << argv[i] << "  ";
+ }
+ cout << '\n' << endl;
 
  int    deg = atoi( argv[1] ); // Degree of the jet
  double msq = atof( argv[2] ); // Mass of the proton
@@ -81,8 +82,9 @@ main( int argc, char** argv ) {
  }
 
  for( j = 0; j < 6; j++ ) {
-  printf( "\nResults for s[%d] ============================\n", j );
+  cout << "\nResults for s[" << j << "] ============================\n";
   s[j].printCoeffs();
  }
 
+ return 0;
 }

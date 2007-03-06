@@ -15,8 +15,7 @@
 **
 */
 
-#include <stdlib.h>
-#include "mxyzptlk.h"
+#include <mxyzptlk/LieOperator.h>
 
 using namespace std;
 
@@ -38,16 +37,15 @@ Jet field::operator[]( int i ) {
  return v[i];
 }
 
-main( int argc, char** argv ) {
-
+main( int argc, char** argv ) 
+{
  if( argc != 4 ) {
-  printf( "\n" );
-  printf( "Usage: %s  d  m  t                        \n", argv[0] );
-  printf( "where  d  = highest order derivative      \n" );
-  printf( "       m  = mass                          \n" );
-  printf( "       t  = upper limit of integration.   \n" );
-  printf( "\n" );
-  exit(0);
+ cout <<   "Usage: " << argv[0] << "  d  m  t"
+          "\nwhere  d  = highest order derivative      "
+          "\n       m  = mass                          "
+          "\n       t  = upper limit of integration.   "
+      << endl;
+  return -1;
  }
 
  int    deg = atoi( argv[1] );
@@ -72,10 +70,12 @@ main( int argc, char** argv ) {
  v.SetComponent( 4,  ( pz*B[0] - px*B[2] ) / E );
  v.SetComponent( 5,  ( px*B[1] - py*B[0] ) / E );
 
- printf( "\n-*-*-*-  x  coefficients  -*-*-*-*-*\n" );
+ cout << "\n-*-*-*-  x  coefficients  -*-*-*-*-*" << endl;
  v.expMap( t, x ).printCoeffs();
- printf( "\n-*-*-*-  y  coefficients  -*-*-*-*-*\n" );
+ cout << "\n-*-*-*-  y  coefficients  -*-*-*-*-*" << endl;
  v.expMap( t, y ).printCoeffs();
- printf( "\n-*-*-*-  z  coefficients  -*-*-*-*-*\n" );
+ cout << "\n-*-*-*-  z  coefficients  -*-*-*-*-*" << endl;
  v.expMap( t, z ).printCoeffs();
+
+ return 0;
 }

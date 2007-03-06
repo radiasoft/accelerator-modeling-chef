@@ -10,7 +10,7 @@
 **
 */
 
-#include "mxyzptlk.h"
+#include <mxyzptlk/LieOperator.h>
 
 using namespace std;
 
@@ -40,9 +40,9 @@ main( int argc, char** argv ) {
       << "Upper limit is double variable."
       << endl;
  v.expMap( limit, x ) .printCoeffs();
+
  cout << "\n-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\n"
       << "Upper limit is Jet variable."
       << endl;
  v.expMap( t, x ) .printCoeffs();
- 
 }

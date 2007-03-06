@@ -14,7 +14,7 @@
 **
 */
 
-#include <Jet.h>
+#include <mxyzptlk/Jet.h>
 
 using namespace std;
 

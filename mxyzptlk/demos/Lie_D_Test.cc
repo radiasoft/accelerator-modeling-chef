@@ -12,13 +12,12 @@
 **
 */
 
-#include <stdlib.h>
-#include "mxyzptlk.h"
+#include <mxyzptlk/LieOperator.h>
 
 using namespace std;
 
-main( int argc, char** argv ) {
-
+main( int argc, char** argv ) 
+{
  if( argc != 3 ) {
   cout << "\n"
        << "Usage: " << argv[0] << "  d  t            \n"

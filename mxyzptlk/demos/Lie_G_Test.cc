@@ -10,39 +10,38 @@
 **
 */
 
-#include <stdlib.h>
-#include "JetC.h"
-#include "CLieOperator.h"
+#include <mxyzptlk/JetC.h>
+#include <mxyzptlk/CLieOperator.h>
 
 using namespace std;
 
-main( int argc, char** argv ) {
-
+int main( int argc, char** argv ) 
+{
  if( argc != 3 ) {
-  printf( "\n" );
-  printf( "Usage: %s  d  t                           \n", argv[0] );
-  printf( "where  d  = degree of highest derivative  \n" );
-  printf( "       t  = upper limit of integration.   \n" );
-  printf( "\n" );
-  exit(0);
+  cout << "Usage: " << argv[0] << "   d  t"
+          "\nwhere  d  = degree of highest derivative"
+          "\n       t  = upper limit of integration."
+       << endl;
+  return -1;
  }
 
  int    deg   = atoi( argv[1]  );
  double limit = atof( argv[2]  );
 
- Jet__environment::BeginEnvironment( deg );
+ JetC__environment::BeginEnvironment( deg );
  coordC x( 0.0 );
  paramC t( limit );
- Jet__environment::EndEnvironment();
+ JetC__environment::EndEnvironment();
 
  CLieOperator v;
  v.SetComponent( 0, x*x );
 
- printf( "\n-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\n" );
- printf( "Upper limit is double variable.\n" );
+ cout << "\n-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-" << endl;
+ cout << "Upper limit is double variable." << endl;
  v.expMap( limit, x ) .printCoeffs();
- printf( "\n-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\n" );
- printf( "Upper limit is Jet variable.\n" );
+ cout << "\n-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-" << endl;
+ cout << "Upper limit is Jet variable." << endl;
  v.expMap( t, x ) .printCoeffs();
  
+ return 0;
 }

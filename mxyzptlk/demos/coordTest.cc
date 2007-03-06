@@ -1,4 +1,4 @@
-#include "mxyzptlk.h"
+#include <mxyzptlk/Jet.h>
 
 using namespace std;
 

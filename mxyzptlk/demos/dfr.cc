@@ -9,7 +9,7 @@
 **
 */
 
-#include "mxyzptlk.h"
+#include <mxyzptlk/Jet.h>
 
 main( int argc, char** argv ) {
 

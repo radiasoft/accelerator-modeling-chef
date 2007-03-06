@@ -7,20 +7,18 @@
 **
 */
 
-#include <stdlib.h>
-#include "LieOperator.h"
+#include <mxyzptlk/LieOperator.h>
 
 using namespace std;
 
-main( int argc, char** argv ) {
-
+main( int argc, char** argv ) 
+{
  if( argc != 3 ) {
-  printf( "\n" );
-  printf( "Usage: %s  d  t                           \n", argv[0] );
-  printf( "where  d  = highest order derivative      \n" );
-  printf( "       t  = upper limit of integration.   \n" );
-  printf( "\n" );
-  exit(0);
+  cout <<   "Usage: " << argv[0] << "  d  t"
+          "\nwhere  d  = highest order derivative"
+          "\n       t  = upper limit of integration"
+       << endl;
+  return -1;
  }
 
  int    deg = atoi( argv[1] );
@@ -41,19 +39,18 @@ main( int argc, char** argv ) {
  v.SetComponent( 1,  z*x );
  v.SetComponent( 2,  x*y );
 
- printf( "\n-*-*-*-  x  coefficients  -*-*-*-*-*\n" );
+ cout << "\n-*-*-*-  x  coefficients  -*-*-*-*-*" << endl;
  r1 = u.expMap( t, v.expMap( t, x ) );
  r2 = v.expMap( t, u.expMap( t, x ) );
  (r1 - r2).printCoeffs();
 
- printf( "\n-*-*-*-  y  coefficients  -*-*-*-*-*\n" );
+ cout << "\n-*-*-*-  y  coefficients  -*-*-*-*-*" << endl;
  r1 = u.expMap( t, v.expMap( t, y ) );
  r2 = v.expMap( t, u.expMap( t, y ) );
  (r1 - r2).printCoeffs();
 
- printf( "\n-*-*-*-  z  coefficients  -*-*-*-*-*\n" );
+ cout << "\n-*-*-*-  z  coefficients  -*-*-*-*-*" << endl;
  r1 = u.expMap( t, v.expMap( t, z ) );
  r2 = v.expMap( t, u.expMap( t, z ) );
  (r1 - r2).printCoeffs();
-
 }

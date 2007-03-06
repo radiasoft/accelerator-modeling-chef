@@ -10,16 +10,14 @@
 **
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include "mxyzptlk.h"
+#include <mxyzptlk/Jet.h>
 
 using namespace std;
 
-main( int argc, char** argv ) {
-
+int main( int argc, char** argv ) 
+{
  if( argc == 1 ) {
-  printf( "Usage: bbb <degree> <n> <c_1> <c_2> ... <c_n>\n" );
+  cout << "Usage: " << argv[0] << "  <degree> <n> <c_1> <c_2> ... <c_n>" << endl;
   exit(0);
  }
 
@@ -32,11 +30,11 @@ main( int argc, char** argv ) {
  int n = atoi( argv[2] );
  double* c = new double [n];
  for( i = 0; i < n; i++ )
-  c[i] = atof( argv[i+3] );
+ { c[i] = atof( argv[i+3] ); }
 
  if( c[0] == 0.0 ) {
-  printf( "\nERROR: The coefficient of x vanishes.\n" );
-  exit(0);
+  cout << "\nERROR: The coefficient of x vanishes." << endl;
+  return -1;
  }
 
  Jet u, v;
@@ -57,9 +55,11 @@ main( int argc, char** argv ) {
   v = ( f(&u) - x ) / g(&u);
  }
 
- printf( "\nThe answers: __________________________ \n" );
+ cout << "\nThe answers: __________________________ " << endl;
  f.peekAt();
  u.peekAt();
  f(&u).peekAt();
  u(&f).peekAt();
+
+ return 0;
 }
