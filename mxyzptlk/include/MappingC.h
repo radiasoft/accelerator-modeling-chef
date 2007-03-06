@@ -40,6 +40,6 @@
 #ifndef MAPPINGC_HXX
 #define MAPPINGC_HXX
 
-#include <Mapping.h>
+#include <mxyzptlk/Mapping.h>
 
 #endif // MAPPINGC_HXX
