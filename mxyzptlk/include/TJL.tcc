@@ -529,11 +529,11 @@ void TJL<T>::addTerm( TJLterm<T> const& a )
 
  transferFromScratchPad();   
 
- // adding a term may increase either or both the maximum
- // weight or the max accurate weight
+ // adding a term may increase the maximum weight 
+ // however, max accurate weight remains unchanged.
 
   _weight =   std::max( weight,  a._weight);  
-  _accuWgt =  std::max( accuWgt, a._weight); 
+  _accuWgt =  accuWgt;
 
  return;
  
