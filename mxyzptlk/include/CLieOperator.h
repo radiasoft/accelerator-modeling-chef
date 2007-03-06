@@ -47,6 +47,6 @@
 #ifndef CLIEOPERATOR_H
 #define CLIEOPERATOR_H
 
-#include <LieOperator.h>
+#include <mxyzptlk/LieOperator.h>
 
 #endif
