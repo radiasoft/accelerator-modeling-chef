@@ -1,14 +1,20 @@
-#include "JetC.h"
-#include "MappingC.h"
+#include <mxyzptlk/JetC.h>
+#include <mxyzptlk/MappingC.h>
 
 using namespace std;
 
-main( int, char** argv ) {
+int main( int argc, char** argv ) 
+{
+ if( 3 != argc ) {
+   cout << "Usage: " << argv[0] << "  x  y " << endl;
+   return -1;
+ }
+
  std::complex<double> z( atof( argv[1] ), atof( argv[2] ) );
 
- Jet__environment::BeginEnvironment( 6 );
+ JetC__environment::BeginEnvironment( 6 );
  coordC x( z );
- Jet__environment::EndEnvironment();
+ JetC__environment::EndEnvironment();
 
  MappingC f;
  JetC     u;
@@ -23,4 +29,6 @@ main( int, char** argv ) {
 
  cout << "\n\n"
       <<  f( f.Inverse() );
+
+ return 0;
 }

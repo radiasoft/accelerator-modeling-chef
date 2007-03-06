@@ -9,7 +9,7 @@
 **
 */
 
-#include "mxyzptlk.h"
+#include <mxyzptlk/mxyzptlk.h>
 
 using namespace std;
 

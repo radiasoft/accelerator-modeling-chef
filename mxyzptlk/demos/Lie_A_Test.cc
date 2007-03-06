@@ -11,30 +11,31 @@
 **
 */
 
-#include <stdlib.h>
 #include <iostream>
-#include "mxyzptlk.h"
+#include <mxyzptlk/LieOperator.h>
 
 using namespace std;
 
-main( int argc, char** argv ) {
+main( int argc, char** argv ) 
+{
+  if( argc != 3 ) {
+    cout << "Usage: " << argv[0] << "  x  y \n" << endl;
+    return -1;
+  }
 
- if( argc != 3 ) {
-  cout << "Usage: " << argv[0] << "x  y \n" << endl;
-  exit(0);
- }
+  Jet__environment::BeginEnvironment( 1 );
+    coord x( atof( argv[1] ) );   
+    coord p( atof( argv[2] ) );
+  Jet__environment::EndEnvironment();
 
- Jet__environment::BeginEnvironment( 1 );
- coord x( atof( argv[1] ) );   
- coord p( atof( argv[2] ) );
- Jet__environment::EndEnvironment();
-
- LieOperator v( x.Env() );
+  LieOperator v( x.Env() );
  
- v.setVariable(      p, 0 );
- v.setVariable( -x - p, 1 );
+  v.setVariable(      p, 0 );
+  v.setVariable( -x - p, 1 );
 
- cout << "Answer is: "
-      << ( v.operator^( x*x + p*p ) ).standardPart()
-      << endl;
+  cout << "Answer is: "
+       << ( v.operator^( x*x + p*p ) ).standardPart()
+       << endl;
+
+  return 0;
 }

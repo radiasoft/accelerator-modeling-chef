@@ -16,8 +16,8 @@
 **
 */
 
-#include <stdlib.h>
-#include "mxyzptlk.h"
+#include <mxyzptlk/LieOperator.h>
+#include <mxyzptlk/Mapping.h>
 
 using namespace std;
 
@@ -39,16 +39,16 @@ Jet field::operator[]( int i ) {
  return v[i];
 }
 
-main( int argc, char** argv ) {
 
+int main( int argc, char** argv ) 
+{
  if( argc != 4 ) {
-  printf( "\n" );
-  printf( "Usage: %s  d  m  t                        \n", argv[0] );
-  printf( "where  d  = highest order derivative      \n" );
-  printf( "       m  = mass                          \n" );
-  printf( "       t  = upper limit of integration.   \n" );
-  printf( "\n" );
-  exit(0);
+  cout <<   "Usage: " << argv[0] << " d  m  t "
+          "\nwhere  d  = highest order derivative"
+          "\n       m  = mass"
+          "\n       t  = upper limit of integration."
+       << endl;
+  return -1;
  }
 
  int    deg = atoi( argv[1] );
@@ -72,11 +72,11 @@ main( int argc, char** argv ) {
  v.SetComponent( 4,  ( pz*B[0] - px*B[2] ) / E );
  v.SetComponent( 5,  ( px*B[1] - py*B[0] ) / E );
 
- printf( "\n-*-*-*-  x  coefficients  -*-*-*-*-*\n" );
+ cout << "\n-*-*-*-  x  coefficients  -*-*-*-*-*" << endl;
  v.expMap( t, x ).printCoeffs();
- printf( "\n-*-*-*-  y  coefficients  -*-*-*-*-*\n" );
+ cout << "\n-*-*-*-  y  coefficients  -*-*-*-*-*" << endl;
  v.expMap( t, y ).printCoeffs();
- printf( "\n-*-*-*-  z  coefficients  -*-*-*-*-*\n" );
+ cout << "\n-*-*-*-  z  coefficients  -*-*-*-*-*" << endl;
  v.expMap( t, z ).printCoeffs();
 
  Mapping u, q;
@@ -90,24 +90,20 @@ main( int argc, char** argv ) {
  w.SetComponent( 5, pz );
  // w.reset();
 
- cout << "DGN: " << __FILE__ << "," << __LINE__
-      << ": u = v.expMap(  t, w );"
-      << endl;
  u = v.expMap(  t, w );
- cout << "DGN: " << __FILE__ << "," << __LINE__
-      << ": q = v.expMap( -t, w );"
-      << endl;
  q = v.expMap( -t, w );
 
- cout << "\n-*-*-*-  u  coefficients  -*-*-*-*-*\n" << endl;
+ cout << "\n-*-*-*-  u  coefficients  -*-*-*-*-*" << endl;
  u.printCoeffs();
 
- cout << "\n-*-*-*-  u  coefficients  -*-*-*-*-*\n" << endl;
+ cout << "\n-*-*-*-  u  coefficients  -*-*-*-*-*" << endl;
  q.printCoeffs();
  
- cout << "\n-*-*-*-  u(q)  coefficients  -*-*-*-*-*\n" << endl;
+ cout << "\n-*-*-*-  u(q)  coefficients  -*-*-*-*-*" << endl;
  u(q).printCoeffs();
 
- cout << "\n-*-*-*-  q(u)  coefficients  -*-*-*-*-*\n" << endl;
+ cout << "\n-*-*-*-  q(u)  coefficients  -*-*-*-*-*" << endl;
  q(u).printCoeffs();
+
+ return 0;
 }

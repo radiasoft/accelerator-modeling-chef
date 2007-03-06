@@ -14,7 +14,7 @@
 **
 */
 
-#include "MappingC.h"
+#include <mxyzptlk/MappingC.h>
 
 using namespace std;
 
