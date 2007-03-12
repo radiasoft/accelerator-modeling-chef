@@ -1054,13 +1054,11 @@ std::vector<LattFuncSage::lattFunc> const&  BeamlineContext::getTwissArray()
 {
   if( !p_lfs_ ) createLFS();
  
-  
   if( !normalLattFuncsCalcd_ ) 
   {
     if( isTreatedAsRing() ) 
     {
       if( !tunes_computed_ ) createTunes();
-      
 
       if( !normalLattFuncsCalcd_ ) {
         p_lfs_->NewSlow_CS_Calc( jetparticle_ );
@@ -1076,9 +1074,7 @@ std::vector<LattFuncSage::lattFunc> const&  BeamlineContext::getTwissArray()
     // If the line is not treated as periodic, do the following:
     else
     {
-
-      if(!initial_lattfunc_set_) {
-
+      if( initial_lattfunc_set_ ) {
         int errorFlag = p_lfs_->pushCalc( *particle_, initialLattFunc_);
         normalLattFuncsCalcd_ = ( 0 == errorFlag );
       }
