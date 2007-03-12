@@ -33,6 +33,9 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+****** Mar 2007        ostiguy@fnal.gov
+****** - added support for reference counted elements.
 **************************************************************************
 *************************************************************************/
 
@@ -44,22 +47,28 @@
 #include <beamline/circuit.h>
 
 
-class DLLEXPORT FCircuit : public circuit {
-protected:
-  double field;
+class DLLEXPORT FCircuit : public Circuit {
+
 public:
-  FCircuit();
-  ~FCircuit();
+
   FCircuit( const char* );
-  FCircuit( bmlnElmnt* );
-  FCircuit( const char*, bmlnElmnt* );
-  void switchOn();
-  void switchOff();
-  void set( void* );
-  void get( void* );
-  void setCurrent( void* );
-  void getCurrent( void* );
-  void append( bmlnElmnt* );
+ ~FCircuit();
+
+  void   switchOn();
+  void   switchOff();
+    
+  void   set(double const&);
+  double get() const;
+
+  void   setCurrent( double const& );
+  double getCurrent() const;
+
+  void append( ElmPtr );
+
+protected:
+
+  double field_;
+
 };
 
 #endif // FCIRCUIT_H
