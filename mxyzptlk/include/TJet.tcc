@@ -1016,6 +1016,47 @@ TJet<T>  erfc( const TJet<T>& z )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
+typename TJet<T>::iterator        TJet<T>::begin()       
+{  
+   if (_jl.count() > 1) _jl = _jl->clone();
+   return       iterator(  _jl->begin() ); 
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJet<T>::const_iterator  TJet<T>::begin() const 
+{ 
+   return const_iterator( static_cast<TJL<T> const&>(*_jl).begin() ); 
+
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJet<T>::iterator        TJet<T>::end()         
+{  
+  if (_jl.count() > 1) _jl = _jl->clone();
+  return       iterator( _jl->end() );   
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJet<T>::const_iterator  TJet<T>::end() const { 
+
+  return const_iterator(  static_cast<TJL<T> const&>(*_jl).end() );   
+
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<typename T>
 void TJet<T>::peekAt() const 
 {
 _jl->peekAt( );
