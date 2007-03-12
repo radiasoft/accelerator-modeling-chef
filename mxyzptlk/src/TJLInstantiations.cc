@@ -36,8 +36,6 @@
 #include <mxyzptlk/TJLterm.h>
 #include <mxyzptlk/TJL.h>
 #include <mxyzptlk/TJL.tcc>
-#include <mxyzptlk/TJLIterator.h>
-#include <mxyzptlk/TJLIterator.tcc>
 
 #include <gms/FastPODAllocator.h>
 #include <gms/FastAllocator.h>
@@ -63,9 +61,6 @@ template class TJL<std::complex<double> >;
 template TJL<std::complex<double> >::TJL(TJL<double> const&);
 template JLPtr<std::complex<double> > TJL<std::complex<double> >::makeTJL(TJL<std::complex<double> > const&);
 
-
-template class  TJLIterator<double>;
-template class  TJLIterator<std::complex<double> >;
 
 
 // ============================================================================================
@@ -196,15 +191,6 @@ class boost::simple_segregated_storage<unsigned int>;
 // Memory allocation templates
 //=============================
 
-//operator*(TJet<std::complex<double> > const&, TJet<double> const&)'
-//operator+(TJet<double> const&, TJet<std::complex<double> > const&)'
-
-//template 
-//void intrusive_ptr_release<TML<std::complex<double> > >(ReferenceCounter<TML<std::complex<double> > >*);
-
-//template
-//void intrusive_ptr_release<TML<double> >(ReferenceCounter<TML<double> >*);
-
 template 
 class boost::pool<>;
 
@@ -270,38 +256,6 @@ template
 double* std::fill_n(double*, unsigned int, double const&);
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------
-
-#if (__GNUC__ > 3 )
-
-template 
-void std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >*> > >, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >* const&, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >*>);
-
-template 
-void  std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >**, std::vector<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*> > >, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >* const&, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*>);
-
-
-template
-void std::__uninitialized_fill_n_a(TJL<double>**, unsigned int, TJL<double>* const&, std::allocator<TJL<double>*>);
-
-template
-void std::__uninitialized_fill_n_a(__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >**, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >* const&, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<double>* const, unsigned int> >*>);
-
-template 
-void std::__uninitialized_fill_n_a(TJL<std::complex<double> >**, unsigned int, TJL<std::complex<double> >* const&, std::allocator<TJL<std::complex<double> >*>);
-
-template 
-void std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<TJL<double>**, std::vector<TJL<double>*, std::allocator<TJL<double>*> > >, unsigned int, TJL<double>* const&, std::allocator<TJL<double>*>);
-
-template
-void std::__uninitialized_fill_n_a(__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >**, unsigned int, __gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >* const&, std::allocator<__gnu_cxx::_Hashtable_node<std::pair<TJLterm<std::complex<double> >* const, unsigned int> >*>);
-
-template 
-void std::__uninitialized_fill_n_a(__gnu_cxx::__normal_iterator<TJL<std::complex<double> >**, std::vector<TJL<std::complex<double> >*, std::allocator<TJL<std::complex<double> >*> > >, unsigned int, TJL<std::complex<double> >* const&, std::allocator<TJL<std::complex<double> >*>);
-
-#endif
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------
 
 template
 std::complex<double> std::pow(std::complex<double> const&, double const&);

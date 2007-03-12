@@ -96,20 +96,7 @@ template
 class std::list<TJetEnvironment<double>::ScratchArea<double> *>;
 
 template
-class std::_List_base<TJetEnvironment<std::complex<double> >::ScratchArea<std::complex<double> >*, std::allocator<TJetEnvironment<std::complex<double> >::ScratchArea<std::complex<double> >*> >;
-
-template
-class std::_List_base<TJetEnvironment<double>::ScratchArea<double> *, std::allocator<TJetEnvironment<double>::ScratchArea<double>*> >;
-
-
-template
 std::complex<double> std::pow(std::complex<double> const&, double const&);
-
-//template
-//class boost::detail::sp_counted_impl_p<TJetEnvironment<std::complex<double> > >;
-
-//template
-//class boost::detail::sp_counted_impl_p<TJetEnvironment<double> >;
 
 template 
 class std::list<EnvPtr<double> >;
@@ -119,48 +106,15 @@ class std::list<EnvPtr<std::complex<double> > >;
 
 
 template
-void std::_List_base<EnvPtr<double>, std::allocator<EnvPtr<double> > > ::_M_clear();
-
-template
-void std::_List_base<EnvPtr<std::complex<double> >,  std::allocator<EnvPtr<std::complex<double> > > >::_M_clear();
-
-template
 std::complex<double>  std::sqrt<double>( const std::complex<double>& );
 
 
 template
-std::_List_iterator<EnvPtr<double> > 
-std::remove(std::_List_iterator<EnvPtr<double> >, 
-            std::_List_iterator<EnvPtr<double> >, 
-            EnvPtr<double> const&);
+std::list<EnvPtr<double> >::iterator
+     std::remove(std::list<EnvPtr<double> >::iterator, 
+                 std::list<EnvPtr<double> >::iterator, 
+                 EnvPtr<double> const&);
 
-
-template
-std::_List_iterator<EnvPtr<std::complex<double> > > 
-std::remove(std::_List_iterator<EnvPtr<std::complex<double> > >, 
-            std::_List_iterator<EnvPtr<std::complex<double> > >, 
-            EnvPtr<std::complex<double> > const& );
-
-
-template
-std::_List_iterator<EnvPtr<double> > 
-std::remove_copy<std::_List_iterator<EnvPtr<double> >, 
-                 std::_List_iterator<EnvPtr<double> >, 
-                 EnvPtr<double> >
-     (std::_List_iterator<EnvPtr<double> >, 
-      std::_List_iterator<EnvPtr<double> >, 
-      std::_List_iterator<EnvPtr<double> >, 
-      EnvPtr<double> const&);
-
-template
-std::_List_iterator<EnvPtr<std::complex<double> > > 
-std::remove_copy<std::_List_iterator<EnvPtr<std::complex<double> > >, 
-                 std::_List_iterator<EnvPtr<std::complex<double> > >, 
-                 EnvPtr<std::complex<double> > >
-     (std::_List_iterator<EnvPtr<std::complex<double> > >, 
-      std::_List_iterator<EnvPtr<std::complex<double> > >, 
-      std::_List_iterator<EnvPtr<std::complex<double> > >, 
-      EnvPtr<std::complex<double>  > const&);
 
 #endif // MXYZPTLK_EXPLICIT_TEMPLATES 
 
