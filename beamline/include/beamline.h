@@ -29,15 +29,16 @@
 ******  October 2006: Jean-Francois Ostiguy 
 ******                ostiguy@fnal.gov
 ******
-******  - beamline no longer inherits from a dlist container                                                               
+******  - beamline no longer inherits from c-style void*  dlist container
 ******  - element container is now a private  nested std::list<> member
 ******  - implemented new STL compatible iterators 
-******    plain iterator               ( one level )
-******    plain reverse_iterator       ( one level )
-******    pre_order_iterator           ( recursive )
-******    reverse_pre_order_iterator   ( recursive )
-******    deep_iterator                ( recursive, skips beamlines )
-******    reverse_deep_iterator        ( recursive, skips beamlines )
+******    iterator, pre_order_iterator. post_order_iteartor, deep_iterator           
+******    as well as const and reverse variants of the above
+******
+******  Jan - Mar 2007:  Jean-Francois Ostiguy 
+******                   ostiguy@fnal.gov
+******
+****** - support for reference counted elements
 ******                                                             
 **************************************************************************
 *************************************************************************/
@@ -45,85 +46,56 @@
 #ifndef BEAMLINE_H
 #define BEAMLINE_H
 
+#include <list>
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/lattFunc.h>
-#include <beamline/BmlVisitor.h>
+
+#include <boost/shared_ptr.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_adaptor.hpp>
 #include <boost/iterator/reverse_iterator.hpp>
-#include <boost/shared_ptr.hpp>
-
-class BmlPtrList;
-class slist;
 
 class beamline;
+class BmlVisitor;
+class ConstBmlVisitor;
 
-beamline& operator-( beamline const& );
+ 
 
 // --------------------------------------------------------------------------------------------------
 
 
 class beamline: public bmlnElmnt {
 
- friend class BmlVisitor;
- friend class ConstBmlVisitor;
- friend class BeamlineIterator;
- friend class ReverseBeamlineIterator;
- friend class DeepBeamlineIterator;
- friend class DeepReverseBeamlineIterator;
-
-
 public:
   enum LineMode { line, ring, unknown };
 
   struct Criterion
   {
-    virtual bool operator()( const bmlnElmnt* );
-    virtual bool operator()( const bmlnElmnt& );
+    virtual bool operator()( bmlnElmnt const & );
     virtual ~Criterion() {};
 
   };
   // Returns true if element matches the derived 
   // criterion; false, if not.
   struct Aye : Criterion {
-    bool operator()( const bmlnElmnt* ) { return true; }
-    bool operator()( const bmlnElmnt& ) { return true; }
+    bool operator()( bmlnElmnt const& ) { return true; }
   };
   struct Nay : Criterion {
-    bool operator()( const bmlnElmnt* ) { return false; }
-    bool operator()( const bmlnElmnt& ) { return false; }
+    bool operator()( bmlnElmnt const& ) { return false; }
   };
+
   static Aye yes;
   static Nay no;
 
   struct Action
   {
-    virtual int operator()( bmlnElmnt* );
     virtual int operator()( bmlnElmnt& );
     virtual ~Action() {}
   };
   // Derived classes should return 0 if the action is 
   // performed successfully on the element. All other
   // values indicate error.
-
-
-private:
-
-  // Data
-
-  double                  nominalEnergy;    // In GeV
-  int                     numElem;          // Number of elements in the beamline
-  char                    twissDone;
-  LineMode               _mode;
-  std::list<bmlnElmnt*>  _theList; 
-
-  // Methods
-  void   _moveRel(   int axis, double const& u,     bmlnElmnt* thePtr,             int*   errorCodePtr, BmlPtrList* recycleBinPtr, std::string invoker );
-  void _rotateRel(   int axis, double const& angle, bmlnElmnt* thePtr, double pct, int*   errorCodePtr, BmlPtrList* recycleBinPtr, std::string invoker );
-
-  std::ostream& writeTo(std::ostream&);
-  friend std::istream& operator>>( std::istream&, beamline& );
 
 
 public:
@@ -135,25 +107,30 @@ public:
   beamline( FILE* );                  // Reading persistent object stored
                                       //  in a binary file.
 
-  virtual ~beamline();                 // Notice that this destructor does not destroy
-                                       // the beamline elements.  To do that, use
-                                       // beamline::zap().
-  void zap();                          // Destroys the beamline elements
-                                       // without destroying the beamline
-  void clear();                        // Returns state to empty beamline.
+  virtual ~beamline();
+
+  beamline* Clone() const;
+
+  beamline& operator=( beamline const& rhs);
+
+
+  void clear();                       // Returns state to empty beamline.
 
 
 
   // EDITING LATTICE_____________________________________________________________________
 
-  void insert( bmlnElmnt* );
-  void append( bmlnElmnt* );
+  void insert( ElmPtr    const&  );
+  void insert( bmlnElmnt const&  );
 
-  void Split( double const&, bmlnElmnt**, bmlnElmnt** ) const;
+  void append( ElmPtr    const&  );
+  void append( bmlnElmnt const&  );
+
+  void Split( double const&, ElmPtr, ElmPtr ) const;
 
   beamline*  reverse() const;                
 
-  void InsertElementAt( double const& s_0, double const& s, const bmlnElmnt* q );
+  void InsertElementAt( double const& s_0, double const& s,  ElmPtr q );
                                       // Will insert q into the beamline at
                                       // OrbitLength s, assuming the beamline
                                       // begins at OrbitLength s_0.  Normally
@@ -161,24 +138,12 @@ public:
                                       // s_0 = 0, but s_0 is included so the
                                       // module can be used recursively.
 
-  void InsertElementsFromList( double& s_0, InsertionList&, slist& );
+  void InsertElementsFromList( Particle const& particle, double& s, std::list<std::pair<ElmPtr,double> >& inList);
                                       // Will insert elements from the list into
                                       // the beamline at locations specified in
-                                      // the list.  Removed elements are stored
-                                      // in the final argument, in case they
-                                      // need to be eliminated by the user module.
-  // InsertElementsFromList1 is a workaround for python bindings. See
-  // python-bindings/src/py-bmlnelmnt.cpp
-  double InsertElementsFromList1( double const& s_0, InsertionList& il, slist& sl)
-                                      // a version of InsertElementsFromList
-                                      // that is callable from Python.
-    {
-      double tmp(s_0);
-      InsertElementsFromList(tmp, il, sl);
-      return tmp;
-    }
+                                      // the list.  
 
-  int replace( const bmlnElmnt*, const bmlnElmnt* );
+  int replace( ElmPtr elm1, ElmPtr elm2);
                                       // Will replace the first argument with
                                       // the second. Return values:
                                       // 0 everything went as planned
@@ -191,20 +156,13 @@ public:
                                       // first object found whose address
                                       // matches that of the second.
 
-  int deepReplace( const bmlnElmnt*, const bmlnElmnt* );
+  int deepReplace( ElmPtr elm1, ElmPtr elm2 );
                                       // Like replace() but descends into
                                       // the hierarchy. Either argument
                                       // may be a pointer to a beamline.
 
-  //beamline& operator^( bmlnElmnt& );  // Alters the beamline
-  //beamline& operator+( bmlnElmnt& );  // Does not alter the beamline
-  //beamline& operator+( beamline& );
-  //beamline& operator-( beamline& );
 
-  friend beamline& operator-( beamline const& );
-
-
-  int startAt( bmlnElmnt const*, // Resets the "beginning" of the
+  int startAt( ConstElmPtr const&,      // Resets the "beginning" of the
                int = 1 );               // beamline to the element given
                                         // by the argument. Should be used
                                         // only for rings. Returns non-zero
@@ -223,40 +181,40 @@ public:
                                      // beamline.  The argument is the
                                      // degree of the map.
 
-  sector* MakeSector ( bmlnElmnt const&, bmlnElmnt const&, int,  JetParticle&);                       // Returns a pointer to a new sector
-                                                                                                      // equivalent to everything between
-                                                                                                      // the first two arguments( exclusive).
+  sector* MakeSector ( ElmPtr start, ElmPtr finish, int,  JetParticle&);          // Returns a pointer to a new sector
+                                                                                  // equivalent to everything between
+                                                                                  // the first two arguments( exclusive).
                  
 
 
-  sector* MakeSectorFromStart (bmlnElmnt const&,  int,  JetParticle& );
-  sector*     MakeSectorToEnd (bmlnElmnt const&,  int,  JetParticle& );
+  sector* MakeSectorFromStart (ElmPtr,  int,  JetParticle& );
+  sector*     MakeSectorToEnd (ElmPtr,  int,  JetParticle& );
 
 
   void     sectorize ( int, JetParticle& );                                                                         // Alters the object itself.
-  beamline sectorize ( bmlnElmnt* start,  bmlnElmnt* end, int degree,  JetParticle& p,   const char* = "NONAME");   // Alters the object: everything between
+  beamline sectorize ( ElmPtr start,  ElmPtr finish, int degree,  JetParticle& p,   const char* = "NONAME");   // Alters the object: everything between
                                                                                                                     // the bmlnElmnt arguments replaced by a map.
                                                                                                                     // <-- This argument is the degree of the map.
                         
                 
 
-  void putAbove( std::list<bmlnElmnt*>::iterator const& iter, bmlnElmnt* y ); // Insert y above (before;  upstream of) x
-  void putBelow( std::list<bmlnElmnt*>::iterator const& iter, bmlnElmnt* y ); // Insert y below (after, downstream of) x
+  void putAbove( std::list<ElmPtr>::iterator const& iter, ElmPtr  y ); // Insert y above (before;  upstream of) x
+  void putBelow( std::list<ElmPtr>::iterator const& iter, ElmPtr  y ); // Insert y below (after, downstream of) x
 
-  beamline remove( bmlnElmnt*, bmlnElmnt* );
-  void     remove( bmlnElmnt* );
+  beamline remove( ElmPtr start_elm, ElmPtr end_elm);
+  void     remove( ElmPtr elm);
 
 
   // Change geometry of the line
 
   bool     setAlignment( alignmentData const& );
  
-  BmlPtrList   moveRelX( bmlnElmnt*, double const&, int* = 0 );
-  BmlPtrList   moveRelY( bmlnElmnt*, double const&, int* = 0 );
-  BmlPtrList   moveRelZ( bmlnElmnt*, double const&, int* = 0 );
-  BmlPtrList      pitch( bmlnElmnt*, double const&, double const&, int* );
-  BmlPtrList        yaw( bmlnElmnt*, double const&, double const&, int* );
-  BmlPtrList       roll( bmlnElmnt*, double const&, double const&, int* );
+  std::list<ElmPtr>   moveRelX( ElmPtr, double const&, int* = 0 );
+  std::list<ElmPtr>   moveRelY( ElmPtr, double const&, int* = 0 );
+  std::list<ElmPtr>   moveRelZ( ElmPtr, double const&, int* = 0 );
+  std::list<ElmPtr>      pitch( ElmPtr, double const&, double const&, int* );
+  std::list<ElmPtr>        yaw( ElmPtr, double const&, double const&, int* );
+  std::list<ElmPtr>       roll( ElmPtr, double const&, double const&, int* );
 
 
   // PROPAGATE PARTICLES
@@ -275,8 +233,8 @@ public:
 
 
 
-  void accept( BmlVisitor& v )            {  v.visitBeamline( this ); }
-  void accept( ConstBmlVisitor& v ) const {  v.visitBeamline( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const ;
 
 
   void propLattFunc( );
@@ -289,13 +247,13 @@ public:
   // EDIT PROPERTIES________________________________________________________________
 
   inline beamline::LineMode getLineMode() const
-  { return _mode; }
+  { return mode_; }
   inline void setLineMode( beamline::LineMode x )
-  { _mode = x; }
+  { mode_ = x; }
 
-  //   _mode doesn't affect behavior at the beamline level
+  //    mode_ doesn't affect behavior at the beamline level
   //    but carries information for higher level code,
-  //    like _dataHook.
+  //    like dataHook_.
 
   void setEnergy( double const&  nominalEnergyGeV );
   void unTwiss();
@@ -304,8 +262,6 @@ public:
 
   // ANALYSIS_________________________________________________________________________
 
-  // twiss no-longer virtual to eliminate
-  // circular library dependencies - FO
 
   int twiss( JetParticle&, double const& dpp = 0.00001, int  attachFlag = 1 );
                            // Computes lattice functions all the
@@ -328,24 +284,38 @@ public:
 
   // QUERIES _________________________________________________________________________________
 
-  // REMOVE: void   peekAt( double& s, Particle* = 0 );
+
+  ElmPtr      firstElement();
+  ElmPtr      firstElement() const;
+
+  ElmPtr      lastElement();
+  ElmPtr      lastElement()  const;
+
+  bool   twissIsDone()  const;
+
+  void  setTwissIsDone();
+  void unsetTwissIsDone();
+
+  double Energy() const; 
 
   bool                empty() const;
-  void                peekAt( double& s, const Particle& ) const;
+  void                peekAt( double& s, Particle const& ) const;
   lattFunc     whatIsLattice( int );                                                // After element n, 0 <= n.
-  lattFunc     whatIsLattice( char* n );                                            // n is name of element 
-  int                howMany()                           const { return numElem; }  // WARNING: not reliable!
-  int           countHowMany( CRITFUNC = 0, slist* = 0 ) const;
-  int     countHowManyDeeply( CRITFUNC = 0, slist* = 0 ) const;
-  int                  depth()                           const;                     // Returns -1 if beamline is empty.
+  lattFunc     whatIsLattice( std::string name );                                    
+  int                howMany()                           const { return numElem_; } // WARNING: not reliable!
+  int           countHowMany() const;
+  int     countHowManyDeeply() const;
+  int           countHowMany( CRITFUNC, std::list<ElmPtr>& ) const;
+  int     countHowManyDeeply( CRITFUNC, std::list<ElmPtr>& ) const;
+  int                  depth()                               const;                 // Returns -1 if beamline is empty.
                                                                                     // Returns  0 if beamline is flat
                                                                                     //            or all its subbeamlines are empty.
                                                                                     // Otherwise returns 1 + largest
                                                                                     // depth of all subbeamlines.
 
-  int    contains( const bmlnElmnt*) const;     // Returns the number of times the argument appears.
+  int    contains( ElmPtr &) const;     // Returns the number of times the argument appears.
 
-  bool find( bmlnElmnt*& u, bmlnElmnt*& v, bmlnElmnt*& w ) const;
+  bool find( ElmPtr&  u, ElmPtr&  v, ElmPtr&  w ) const;
 
   // Upon entry: u and w should have null value but can, in fact
   //               be anything. 
@@ -376,39 +346,17 @@ public:
 
 
 
-  inline bmlnElmnt* firstElement() const
-  { return   _theList.front(); }
-
-  inline bmlnElmnt* lastElement() const
-  { return   _theList.back(); }
-
-  inline char twissIsDone()
-  { return twissDone; }
-
-  inline void setTwissIsDone()
-  { twissDone = 1; }
-
-  inline void unsetTwissIsDone()
-  { twissDone = 0; }
-
-  double Energy() const 
-  { return nominalEnergy; }
-
-  const char*  Type() const;
-  bool isFlat();
-
-  beamline* Clone() const;
-
-  double OrbitLength( Particle const& );
-  lattRing whatIsRing();
 
 
-  // CLONING AND STORING_______________________________________________________________________
+  const char*  Type()                           const;
+  double       OrbitLength( Particle const& );
+  bool         isFlat()                         const;
+  lattRing     whatIsRing();
 
-   beamline* flatten() const;    //   Produces a flattened version of itself.
-                                 //   WARNING: the elements are not cloned.
-                                 //   Thus the flattened line contains the
-                                 //   same objects as its original.
+
+  // STORING_______________________________________________________________________
+
+   beamline flatten() const;     //   Produces a flattened version of itself.
 
    void   writeLattFunc( );
    void   writeLattFunc( FILE* );
@@ -423,82 +371,26 @@ public:
   public:
 
 
-    class iterator;
-    class reverse_iterator;
-
-    class const_iterator;
-    class const_reverse_iterator;
-
-    class pre_order_iterator;
-    class reverse_pre_order_iterator;
-
-    class const_pre_order_iterator;
-    class const_reverse_pre_order_iterator;
-
-    class post_order_iterator;
-    class reverse_post_order_iterator;
-
-    class const_post_order_iterator;
-    class const_reverse_post_order_iterator;
-
-    class deep_iterator;
-    class reverse_deep_iterator;    
-
-    class const_deep_iterator;
-    class const_reverse_deep_iterator;
-
-
-    beamline::iterator begin() const
-                      { beamline* self = const_cast<beamline*>(this);
-                        return beamline::iterator(self, self->_theList.begin());       
-                      }
-    beamline::iterator end()   const
-                      { beamline* self = const_cast<beamline*>(this);
-                        return beamline::iterator(self, self->_theList.end()  );      
-                      }   
-  
-    beamline::reverse_iterator rbegin() const        
-                      { beamline* self = const_cast<beamline*>(this);
-                        return beamline::iterator(self, self->_theList.end()   );     
-                      } 
-    beamline::reverse_iterator rend()   const               
-                      { beamline* self = const_cast<beamline*>(this);
-                        return beamline::iterator(self, self->_theList.begin() );     
-                      }   
-   
-    beamline::pre_order_iterator pre_begin()          
-                      { return beamline::pre_order_iterator(beamline::iterator(this, _theList.begin() )); } 
-    beamline::pre_order_iterator pre_end()            
-                      { return beamline::pre_order_iterator(beamline::iterator(this, _theList.end()   )); }   
- 
-    beamline::reverse_pre_order_iterator rpre_begin()  
-                      { return beamline::pre_order_iterator(beamline::iterator(this, _theList.end()   )); } 
-    beamline::reverse_pre_order_iterator rpre_end()   
-                      { return beamline::pre_order_iterator(beamline::iterator(this, _theList.begin() )); }   
-
-    beamline::post_order_iterator post_begin() 
-                      { return beamline::post_order_iterator(beamline::iterator(this, _theList.begin()   )); } 
-    beamline::post_order_iterator post_end()     
-                      { return beamline::post_order_iterator(beamline::iterator(this, _theList.end()     )); }   
-
-    beamline::reverse_post_order_iterator rpost_begin()  
-                      { return beamline::post_order_iterator(beamline::iterator(this, _theList.end()   )); } 
-    beamline::reverse_post_order_iterator rpost_end()   
-                      { return beamline::post_order_iterator(beamline::iterator(this, _theList.begin() )); }   
-
-    beamline::deep_iterator deep_begin() 
-                      { return beamline::deep_iterator(beamline::pre_order_iterator(beamline::iterator(this, _theList.begin() ))); } 
-    beamline::deep_iterator deep_end()   
-                      { return beamline::deep_iterator(beamline::pre_order_iterator(beamline::iterator(this, _theList.end()   ))); }   
-
-    beamline::reverse_deep_iterator rdeep_begin()  
-                      { return beamline::deep_iterator( beamline::pre_order_iterator(beamline::iterator(this, _theList.end()  ))); } 
-    beamline::reverse_deep_iterator rdeep_end()    
-                      { return beamline::deep_iterator( beamline::pre_order_iterator(beamline::iterator(this, _theList.begin() ))); }   
-
-
-
 #include <beamline/beamline_iterators.h> 
+
+
+private:
+
+  // Data
+
+  double                  nominalEnergy_;    // In GeV
+  int                     numElem_;          // Number of elements in the beamline
+  char                    twissDone_;
+  LineMode                mode_;
+  std::list<ElmPtr>       theList_; 
+
+  // Methods
+  void   moveRel(   int axis, double const& u,     ElmPtr thePtr,             int*   errorCodePtr, std::list<ElmPtr>& replaced_list, std::string invoker );
+  void rotateRel(   int axis, double const& angle, ElmPtr thePtr, double pct, int*   errorCodePtr, std::list<ElmPtr>& replaced_list, std::string invoker );
+
+  std::ostream& writeTo(std::ostream&);
+  friend std::istream& operator>>( std::istream&, beamline& );
+
 
 }; 
 

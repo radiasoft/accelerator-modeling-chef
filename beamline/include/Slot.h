@@ -33,6 +33,11 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007:          ostiguy@fnal.gov
+****** - use covariant return types
+****** - support for reference counted elements
 **************************************************************************
 *************************************************************************/
 
@@ -42,9 +47,15 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
 #include <basic_toolkit/Frame.h>
 
+class BmlVisitor;
+class ConstBmlVisitor;
+
+class Slot;
+
+typedef boost::shared_ptr<Slot> SlotPtr;
+ 
 
 class DLLEXPORT Slot : public bmlnElmnt
 {
@@ -72,8 +83,8 @@ class DLLEXPORT Slot : public bmlnElmnt
 
    int checkFrame( const Frame& ) const;
 
-   void accept( BmlVisitor& v ) { v.visitSlot( this ); }
-   void accept( ConstBmlVisitor& v ) const { v.visitSlot( this ); }
+   void accept( BmlVisitor& v );
+   void accept( ConstBmlVisitor& v ) const;
 
    void enterLocalFrame( Particle&     ) const;
    void enterLocalFrame( JetParticle&  ) const;
@@ -113,10 +124,11 @@ class DLLEXPORT Slot : public bmlnElmnt
    double Current() const;
    double OrbitLength( Particle const& );
 
-   const char* Name() const;
+   std::string  Name() const;
 
 
  private:
+
    Frame in;
    Frame out;
 

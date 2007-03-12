@@ -33,6 +33,11 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+****** 
+****** Mar 2007:          ostiguy@fnal.gov
+****** - use covariant return types
+****** - support for reference counted elements
 **************************************************************************
 *************************************************************************/
 
@@ -42,12 +47,16 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
-#include <boost/shared_ptr.hpp>
 
+class BmlVisitor;
+class ConstBmlVisitor;
 class Particle;
 class JetParticle;
 
+class drift;
+
+typedef boost::shared_ptr<drift>       DriftPtr;
+typedef boost::shared_ptr<drift const> ConstDriftPtr;
 
 class DLLEXPORT drift : public bmlnElmnt
 {
@@ -67,8 +76,8 @@ public:
   void localPropagate(Particle&    p) { bmlnElmnt::localPropagate(p); }
   void localPropagate(JetParticle& p) { bmlnElmnt::localPropagate(p); }
 
-  void accept( BmlVisitor& v )            { v.visitDrift( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitDrift( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
 
   const char* Type() const;

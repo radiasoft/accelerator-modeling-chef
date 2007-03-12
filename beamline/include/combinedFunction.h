@@ -33,6 +33,11 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007:          ostiguy@fnal.gov
+****** - use covariant return types
+****** - added support for reference counted elements
 **************************************************************************
 *************************************************************************/
 
@@ -42,20 +47,20 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
 #include <beamline/Alignment.h>
+
 
 
 enum WHICH_MULTIPOLE { DIPOLE_FIELD, QUADRUPOLE_FIELD, SEXTUPOLE_FIELD, OCTUPOLE_FIELD, DECAPOLE_FIELD, TWELVEPOLE_FIELD, FOURTEENPOLE_FIELD, SIXTEENPOLE_FIELD, EIGHTEENPOLE_FIELD };
 
 class Particle;
 class JetParticle;
+class BmlVisitor;
+class ConstBmlVisitor;
+
 
 class DLLEXPORT combinedFunction : public bmlnElmnt 
 {
-private:
-  std::istream& readFrom(std::istream&);
-  std::ostream& writeTo(std::ostream&);
 
 public:
   combinedFunction();
@@ -68,7 +73,6 @@ public:
   virtual ~combinedFunction();
 
   combinedFunction* Clone() const { return new combinedFunction( *this ); }
-
 
   void append(bmlnElmnt&);
 
@@ -84,8 +88,8 @@ public:
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v )            { v.visitCombinedFunction( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitCombinedFunction( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
   
   void setField( bmlnElmnt::CRITFUNC, double );
   void setField( WHICH_MULTIPOLE, double field );
@@ -95,13 +99,17 @@ public:
     { return this->Field(x); }
 
   void setSkew( WHICH_MULTIPOLE, alignmentData& );
-  void setLength( double x )                         { length = x; }
+  void setLength( double x )                         { length_ = x; }
 
   alignmentData Skew( WHICH_MULTIPOLE );
-  alignmentData getAlignment( WHICH_MULTIPOLE x )    { return this->Skew(x); }
+  alignmentData getAlignment( WHICH_MULTIPOLE x )    { return Skew(x); }
 
   const char* Type() const;
   bool isMagnet() const;
+
+private:
+  std::istream& readFrom(std::istream&);
+  std::ostream& writeTo(std::ostream&);
 
 
 };
