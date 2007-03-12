@@ -33,6 +33,12 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007            ostiguy@fnal.gov
+****** - use covariant return types
+****** - support for reference counted elements
+******
 **************************************************************************
 *************************************************************************/
 #ifndef MARKER_H
@@ -40,7 +46,14 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
+
+class BmlVisitor;
+class ConstBmlVisitor;
+
+class marker;
+
+typedef boost::shared_ptr<marker>        MarkerPtr;
+typedef boost::shared_ptr<marker const>  ConstMarkerPtr;
 
 
 class DLLEXPORT marker : public bmlnElmnt
@@ -52,14 +65,16 @@ public:
 
   marker* Clone() const { return new marker( *this ); }
 
+  marker& operator=( marker const& rhs);
+
   virtual ~marker();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v )            { v.visitMarker( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitMarker( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
 } ;

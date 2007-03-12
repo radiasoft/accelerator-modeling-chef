@@ -33,31 +33,42 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - use covariant return types
+****** - support for reference counted elements
+******
 **************************************************************************
 *************************************************************************/
-
 
 #ifndef MONITOR_H
 #define MONITOR_H
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
 
-class DLLEXPORT monitor : public bmlnElmnt
-{
-private:
-  double   _driftFraction;
+class BmlVisitor;
+class ConstBmlVisitor;
 
-protected:
+class monitor;
+class hmonitor;
+class vmonitor;
 
-  std::ostream* _outputStreamPtr;  // not owned
-  bool          _onOffSwitch;
-  double*       _rgr;
-  
+typedef boost::shared_ptr<monitor>        MonitorPtr;
+typedef boost::shared_ptr<monitor  const> ConstMonitorPtr;
+typedef boost::shared_ptr<hmonitor>       HMonitorPtr;
+typedef boost::shared_ptr<hmonitor const> ConstHMonitorPtr;
+typedef boost::shared_ptr<vmonitor>       VMonitorPtr;
+typedef boost::shared_ptr<vmonitor const> ConstVMonitorPtr;
+
+
+class DLLEXPORT monitor : public bmlnElmnt {
+
 public:
 
   // Constructors
+
   monitor();
   monitor( const char* name );
   monitor( const char* name, double const& length);
@@ -99,21 +110,30 @@ public:
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v )            { v.visitMonitor( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitMonitor( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
   
   inline bool State() const { return _onOffSwitch; }
   const char* Type() const;
 
+private:
+
+  double   _driftFraction;
+
+protected:
+
+  std::ostream* _outputStreamPtr;  // not owned
+  bool          _onOffSwitch;
+  double*       _rgr;
+  
 
 
 };
 
 
+class DLLEXPORT hmonitor : public monitor {
 
-class DLLEXPORT hmonitor : public monitor
-{
-public:
+ public:
 
   // Constructors
 
@@ -134,13 +154,11 @@ public:
 
   const char* Type() const;
 
- 
-
-} ;
+ } ;
 
 
-class DLLEXPORT vmonitor : public monitor
-{
+class DLLEXPORT vmonitor : public monitor {
+
 public:
   // Constructors
 
@@ -161,8 +179,6 @@ public:
 
   const char* Type() const;
 
-
-} ;
-
+};
 
 #endif // MONITOR_H
