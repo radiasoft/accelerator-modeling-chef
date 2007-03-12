@@ -63,19 +63,21 @@
 
 class DLLEXPORT RefRegVisitor : public BmlVisitor
 {
- public:
-  RefRegVisitor( const Particle& );
-  RefRegVisitor( const RefRegVisitor& );
-  ~RefRegVisitor();
 
-  void visitBeamline( beamline* );
-  void visitBmlnElmnt( bmlnElmnt* );
-  void visitCF_rbend( CF_rbend* );
-  void visitCF_sbend( CF_sbend* );
-  void visitSbend( sbend* );
-  void visitRbend( rbend* );
-  void visitThinrfcavity( thinrfcavity* );
-  void visitRfcavity( rfcavity* );
+ public:
+ 
+  RefRegVisitor( Particle      const& );
+  RefRegVisitor( RefRegVisitor const& );
+ ~RefRegVisitor();
+
+  void visit( beamline& );
+  void visit( bmlnElmnt& );
+  void visit( CF_rbend& );
+  void visit( CF_sbend& );
+  void visit( sbend& );
+  void visit( rbend& );
+  void visit( thinrfcavity& );
+  void visit( rfcavity& );
 
   int  getErrorCode() const;
 
@@ -84,14 +86,16 @@ class DLLEXPORT RefRegVisitor : public BmlVisitor
 
   // So far, these two functions are used exclusively
   // by class rfcavity.
+
   double getCdt();
   void setCdt(double);
 
  private:
-  Particle*    _prtnPtr;
-  int          _errorCode;
-  double       _revolutionFrequency;
-  const double _initialMomentum;
+
+  Particle     particle_;
+  int          errorCode_;
+  double       revolutionFrequency_;
+  const double initialMomentum_;
 };
 
 #endif // REFREGVISITOR_H
