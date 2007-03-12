@@ -1,41 +1,136 @@
-/*************************************************************************
-**************************************************************************
-**************************************************************************
-******                                                                
-******  BEAMLINE:  C++ objects for design and analysis
-******             of beamlines, storage rings, and   
-******             synchrotrons.                      
-******                                    
-******  File:      beamline_iterators.h
-******                                                                
-******  Copyright (c) Universities Research Association, Inc. / Fermilab     
-******                All Rights Reserved                             
-******
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S. and Foreign Copyright Laws. 
-******                                                                 
-******  Author: Jean-Francois Ostiguy  
-******          ostiguyfnal.gov
-******
-******                                                             
-**************************************************************************
-*************************************************************************/
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+********************************************************************************
+******                                                                    ******
+******    BEAMLINE:  C++ objects for design and analysis                  ******
+******              of beamlines, storage rings, and                      ******
+******              synchrotrons.                                         ******
+******                                                                    ******
+******    File:      beamline_iterators.h                                 ******
+******                                                                    ******
+******    Copyright (c) Universities Research Association, Inc./Fermilab  ******
+******                  All Rights Reserved                               ******
+******                                                                    ******
+******    Usage, modification, and redistribution are subject to terms    ******
+******    of the License supplied with this software.                     ******
+******                                                                    ******
+******    Software and documentation created under                        ******
+******    U.S. Department of Energy Contract No. DE-AC02-76CH03000.       ******
+******    The U.S. Government retains a world-wide non-exclusive,         ******
+******    royalty-free license to publish or reproduce documentation      ******
+******    and software for U.S. Government purposes. This software        ******
+******    is protected under the U.S. and Foreign Copyright Laws.         ******
+******                                                                    ******
+******    Author: Jean-Francois Ostiguy                                   ******
+******            ostiguy@fnal.gov                                        ******
+******                                                                    ******
+******                                                                    ******
+******                                                                    ******
+********************************************************************************
+********************************************************************************
+********************************************************************************
+********************************************************************************/
 
 // **** NOTE: this is a private include file meant to be included *only* from beamline.h ...  
 
 #ifndef BEAMLINE_ITERATORS_H
 #define BEAMLINE_ITERATORS_H
 
-//---------------------------------------------------------------------------------------------------  
+#include <boost/utility.hpp>
+
+//------------------------------------------------------------------------------  
 // STL compatible iterators for the beamline class ( author: ostiguy@fnal.gov)
-// ----------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// Note: much of the complexity in the code below results from the fact that both 
+//       const and non-const varieties of iterators are dealt with simultaneously.
+// 
+//        pre_order_iter<> and and post_order_iter<> both have a member called    
+//        m_parent that is a (smart pointer) pointer to the parent of the level
+//        iterator. This pointer has been declared mutable in order to enable the 
+//        use of the swap() algorithm with pre and post_iter objects. This may 
+//        not be the optimal type-safe solution ...   
+//    
+// -----------------------------------------------------------------------------
+
+    template<typename held_type>
+    class iter;
+
+    typedef iter<ElmPtr>                                                   iterator;     
+    typedef iter <ElmPtr const>                                      const_iterator;     
+
+    template<typename held_type>
+    class reverse_iter;
+
+    typedef reverse_iter<ElmPtr>                                   reverse_iterator;     
+    typedef reverse_iter<ElmPtr const>                       const_reverse_iterator;     
+
+    template<typename held_type>
+    class pre_order_iter;
+
+    typedef pre_order_iter<ElmPtr>                               pre_order_iterator;     
+    typedef pre_order_iter<ElmPtr const>                   const_pre_order_iterator;     
+
+    template<typename held_type>
+    class reverse_pre_order_iter;
+
+    typedef reverse_pre_order_iter<ElmPtr>               reverse_pre_order_iterator;
+    typedef reverse_pre_order_iter<ElmPtr const>   const_reverse_pre_order_iterator;
+
+    template<typename held_type>
+    class post_order_iter;
+
+    typedef post_order_iter<ElmPtr>                             post_order_iterator;     
+    typedef post_order_iter<ElmPtr const>                 const_post_order_iterator;     
+
+
+    template<typename held_type>
+    class reverse_post_order_iter;
+
+    typedef reverse_post_order_iter<ElmPtr>              reverse_post_order_iterator;
+    typedef reverse_post_order_iter<ElmPtr const>  const_reverse_post_order_iterator;
+
+    template<typename held_type>
+    class deep_iter;
+
+    typedef deep_iter<ElmPtr>                                          deep_iterator;
+    typedef deep_iter<ElmPtr const>                              const_deep_iterator;
+
+
+    template<typename held_type>
+    class reverse_deep_iter;    
+
+    typedef  reverse_deep_iter<ElmPtr>                         reverse_deep_iterator;
+    typedef  reverse_deep_iter<ElmPtr const>             const_reverse_deep_iterator;
+
+
+//-------------------------------------------------------------------------------------------------------------
+// Note:  beamline_iter_traits is defined as a nested class with two parameters and only 
+//        partially specialized. This is done to work around the fact that the C++ standard
+//        does not allow full specialization of nested class templates (but does allow partial specialization). 
+//        The integer parameter Dummy is defined (arbitrarily set to 0) in the nested iterator
+//        classes where the traits are instantiated.   
+//--------------------------------------------------------------------------------------------------------------        
+
+    template<typename U, int Dummy>
+    struct beamline_iter_traits{ };
+
+    template<int Dummy>
+    struct beamline_iter_traits<ElmPtr, Dummy> {
+      typedef  beamline*                                     bmlptr_type;
+      typedef  std::list<ElmPtr>::iterator                   list_iter_type;
+      typedef  boost::shared_ptr<pre_order_iter<ElmPtr>  >   pre_order_parent_type;
+      typedef  boost::shared_ptr<post_order_iter<ElmPtr> >   post_order_parent_type;
+    };
+
+    template<int Dummy>
+    struct beamline_iter_traits<ElmPtr const, Dummy> {
+      typedef  beamline const*                                           bmlptr_type;
+      typedef  std::list<ElmPtr>::const_iterator                         list_iter_type;
+      typedef  boost::shared_ptr<pre_order_iter<ElmPtr const>  >         pre_order_parent_type;
+      typedef  boost::shared_ptr<post_order_iter<ElmPtr const> >         post_order_parent_type;
+    };
+
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //
@@ -43,89 +138,70 @@
 //
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-    class iterator : public boost::iterator_adaptor <  iterator,
-                                                       std::list<bmlnElmnt*>::iterator,   // Base
-                                                       boost::use_default,                // Value
-                                                       boost::bidirectional_traversal_tag > {  
-    friend class beamline::pre_order_iterator;
-    friend class beamline::post_order_iterator;
-    friend class beamline::deep_iterator;
- 
-    friend class beamline::const_iterator;
+    template <typename held_type>
+    class iter: public boost::iterator_adaptor <  iter<held_type>,
+                                                  typename beamline_iter_traits<held_type,0>::list_iter_type,  // Base
+                                                  held_type,                                                  // Value
+                                                  boost::bidirectional_traversal_tag > {  
 
 
-    public:
- 
-       iterator() 
-              : iterator::iterator_adaptor_(), m_bml(0) {}
+    template <typename T> 
+    friend class iter;
 
-       iterator( beamline::iterator const& it )
-              : iterator::iterator_adaptor_(it), m_bml(it.m_bml) { } 
+    template <typename T> 
+    friend class reverse_iter;
 
-       explicit iterator( beamline* bml, std::list<bmlnElmnt*>::iterator const& it )
-              :  iterator::iterator_adaptor_(it), m_bml(bml) { } 
-       
-       iterator end()   const { iterator* self = const_cast<iterator*>(this); 
-                                return self->m_bml->end(); 
-                              } 
-       iterator begin() const { iterator* self = const_cast<iterator*>(this);
-                                return self->m_bml->begin(); 
-                              } 
+    template <typename T> 
+    friend class pre_order_iter;
+
+    template <typename T> 
+    friend class post_order_iter;
+
+    template <typename T> 
+    friend class deep_iter;
 
     private:
 
+       struct enabler {};  // empty private type (to avoid accidental misuse). Used in conjunction with 
+                           // boost::enable_if() below.  
+
+    public:
+    
+      typedef typename beamline_iter_traits<held_type,0>::bmlptr_type bmlptr_type;
+ 
+      iter() 
+              : iter::iterator_adaptor_(), m_bml(0) {}
+
+       template <typename OtherType>
+	 iter( iter<OtherType> const& other, 
+	         typename boost::enable_if<boost::is_convertible<OtherType*, held_type*>, enabler >::type = enabler() ) 
+	      : iter::iterator_adaptor_(other.base()), m_bml(other.m_bml) {} 
+
+
+       explicit iter( bmlptr_type const& bml,  typename beamline_iter_traits<held_type,0>::list_iter_type const& it )
+              : iter::iterator_adaptor_(it), m_bml(bml) { } 
+       
+
+
+       iter end()   const { return m_bml->end();       } 
+       iter begin() const { return m_bml->begin();     } 
+
+
+    private:
+         
+     
        friend class boost::iterator_core_access;
 
-       beamline*       m_bml;
+       bmlptr_type   m_bml;
 
  
-       bool equal( beamline::iterator const& x) const {
-         return ( (m_bml == x.m_bml) && (x.base() == base()) ); 
+       template <typename OtherType>
+       bool equal( OtherType const& x) const {
+         return ( (m_bml == x.m_bml) && (x.base() == this->base()) ); 
        }
 
     };
 
-//---------------------------------------------------------------------------------------------------------------
-
-    class const_iterator : public boost::iterator_adaptor <  const_iterator,
-                                                             std::list<bmlnElmnt*>::const_iterator,   // Base
-                                                             boost::use_default,                      // Value
-                                                             boost::bidirectional_traversal_tag > {  
-
-    public:
- 
-       const_iterator() 
-              : const_iterator::iterator_adaptor_(), m_bml(0) {}
-
-       const_iterator( beamline::const_iterator const& it )
-              : const_iterator::iterator_adaptor_(it), m_bml(it.m_bml) { } 
-
-       const_iterator( beamline::iterator const& it )
-              : const_iterator::iterator_adaptor_( it.base() ), m_bml( it.m_bml ) { } 
-
-       explicit const_iterator( beamline const* bml, std::list<bmlnElmnt*>::iterator const& it )
-              :  const_iterator::iterator_adaptor_(it), m_bml(bml) { } 
-       
-
-       const_iterator end()   const {  const_iterator* self = const_cast<const_iterator*>(this);
-                                       return const_iterator (self->m_bml, const_cast<beamline*>(self->m_bml)->_theList.end() ); 
-                                    } 
-       const_iterator begin() const {  const_iterator* self = const_cast<const_iterator*>(this);
-                                       return const_iterator (self->m_bml, const_cast<beamline*>(self->m_bml)->_theList.begin() ); 
-                                    }
-
-    private:
-
-       friend class boost::iterator_core_access;
-
-       beamline const* m_bml;
-
- 
-       bool equal( beamline::const_iterator const& x) const {
-         return ( (m_bml == x.m_bml) && (x.base() == base()) ); 
-       }
-
-    };
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //
@@ -133,42 +209,35 @@
 //
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-    class reverse_iterator : public boost::reverse_iterator<beamline::iterator>  {
+    template <typename held_type>
+    class reverse_iter: public boost::reverse_iterator<iter<held_type> >  {
 
+    private:
+
+       struct enabler {};  // empty private type (to avoid accidental misuse). Used in conjunction with 
+                           // boost::enable_if() below.  
     public: 
 
       friend class boost::iterator_core_access;
 
-      reverse_iterator()                                                       
-                   : boost::reverse_iterator<beamline::iterator>()    {}
+      reverse_iter()                                                       
+                   : boost::reverse_iterator<iter<held_type> >()    {}
 
-      reverse_iterator( beamline::iterator         const&  it )
-                   : boost::reverse_iterator<beamline::iterator>(it) {} 
+      template <typename OtherType>
+      reverse_iter( reverse_iter<OtherType> const& rit, 
+                    typename boost::enable_if<boost::is_convertible<OtherType*, held_type*>, enabler >::type = enabler() ) 
+                   : boost::reverse_iterator<iter<held_type> >(rit) {} 
 
-      reverse_iterator( beamline::reverse_iterator const& rit )               
-                   : boost::reverse_iterator<beamline::iterator>(rit) {} 
+      reverse_iter( iter<held_type>         const&  it )
+                   : boost::reverse_iterator<iter<held_type> >(it) {} 
 
-    };
 
-//-------------------------------------------------------------------------------------------------------------
-   
-    class const_reverse_iterator : public boost::reverse_iterator<beamline::const_iterator>  {
+      reverse_iter rbegin() const { return this->base_reference().m_bml->rbegin();     } 
+      reverse_iter rend()   const { return this->base_reference().m_bml->rend();       } 
 
-    public: 
-
-      friend class boost::iterator_core_access;
-
-      const_reverse_iterator()                                                       
-                   : boost::reverse_iterator<beamline::const_iterator>()    {}
-
-      const_reverse_iterator( beamline::iterator         const&  it )
-                   : boost::reverse_iterator<beamline::const_iterator>(it) {} 
-
-      const_reverse_iterator( beamline::reverse_iterator const& rit )               
-                   : boost::reverse_iterator<beamline::const_iterator>(rit) {} 
 
     };
-   
+
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //
@@ -176,43 +245,55 @@
 //
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  
- 
-   class pre_order_iterator : public boost::iterator_facade <pre_order_iterator,           // Derived
-                                                         bmlnElmnt*,                       // Value
-                                                         boost::bidirectional_traversal_tag,     // class CategoryOrTraversal
-                                                         bmlnElmnt*&,                      // Reference  
-                                                         ptrdiff_t                         // Difference // ???? 
-                                                       >   
+   
+   template <typename held_type>
+   class pre_order_iter: public boost::iterator_facade <pre_order_iter<held_type>,     // Derived
+                                                   held_type,                          // Value
+                                                   boost::bidirectional_traversal_tag, // class CategoryOrTraversal
+                                                   held_type&,                         // Reference  
+                                                   ptrdiff_t                           // Difference // ???? 
+                                                  >   
    {
 
-     friend class deep_iterator;
+     template <typename T>
+     friend class pre_order_iter;
 
+     template <typename T>
+     friend class deep_iter;
+
+     private:
+
+     struct enabler {};  // empty private type (to avoid accidental misuse). Used in conjunction with 
+                           // boost::enable_if() below.  
      public:
 
-      pre_order_iterator() {}
-   
-      pre_order_iterator( pre_order_iterator const& pit )                 
-	: m_parent(pit.m_parent), m_iter( pit.m_iter), m_visited( pit.m_visited ) {}
+    
+      pre_order_iter() {}
 
 
-      pre_order_iterator( beamline::iterator const& it)
-	: m_parent(), m_iter( it ), m_visited( it.end()) { } 
+      template <typename OtherType>
+	pre_order_iter(pre_order_iter<OtherType> const& pit,
+          typename boost::enable_if<boost::is_convertible<OtherType*, held_type*>, enabler >::type = enabler() ) 
+ 	: m_parent(pit.m_parent), m_iter( pit.m_iter), m_visited( pit.m_visited ) {}
+
+
+      pre_order_iter( iter<held_type> const& it )
+	: m_parent(), m_iter( it ), m_visited( iter<held_type>(it).end()) { } 
         
-  
-     ~pre_order_iterator() { }
  
      private:
 
-      pre_order_iterator( boost::shared_ptr<beamline::pre_order_iterator> const& parent, iterator const& it )                 
+     typedef typename beamline_iter_traits<held_type,0>::pre_order_parent_type pre_order_parent_type;
+
+     pre_order_iter( pre_order_parent_type const& parent, iter<held_type> const& it )                 
 	 : m_parent(parent), m_iter( it.m_bml, it.base() ), m_visited( it.end()) {} 
 
 
       friend class boost::iterator_core_access;
 
-      boost::shared_ptr<beamline::pre_order_iterator>         m_parent; 
-      beamline::iterator                                      m_iter;
-      beamline::iterator                                      m_visited;
+      mutable pre_order_parent_type                         m_parent; 
+      typename beamline::iter<held_type>                    m_iter;
+      typename beamline::iter<held_type>                    m_visited;
                                                                             
      //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -221,10 +302,11 @@
 
           if( typeid(**m_iter) == typeid(beamline) )  {  // NOTE: need to dereference twice in order for typeid test to work !
  
-            beamline* bml      = static_cast<beamline*>(*m_iter);
+            beamline* bml      = static_cast<beamline*>( (*m_iter).get());
 
             m_visited = m_iter;  
-            pre_order_iterator down( boost::shared_ptr<beamline::pre_order_iterator>( new pre_order_iterator(*this) ),  bml->begin() ); 
+
+            pre_order_iter down( pre_order_parent_type(new pre_order_iter(*this)),  bml->begin() ); 
 
             std::swap(*this, down); 
   
@@ -234,11 +316,11 @@
 
           ++m_iter; 
 
-          while (  (m_iter == m_iter.end()) &&  (m_parent) )  {  
+          while (  (m_iter == m_iter.end() ) &&  ( m_parent ) )  {  
 
-            pre_order_iterator up( *m_parent ); 
+            pre_order_iter up( *m_parent ); 
             
-            ++up.m_iter; 
+            ++(up.m_iter); 
 
             std::swap(*this, up); 
  
@@ -255,10 +337,9 @@
 
 	if ( m_iter == m_iter.end() ) {
  	  --m_iter;
-	  while (typeid(**m_iter) == typeid(beamline)) { 
-            beamline* bml      = static_cast<beamline*>(*m_iter);
-            pre_order_iterator down( boost::shared_ptr<beamline::pre_order_iterator>( new pre_order_iterator(*this) ), 
-                                     --(bml->end()) ); 
+	  while ( typeid(**m_iter) == typeid(beamline)) { 
+            beamline* bml      = static_cast<beamline*>( (*m_iter).get() );
+            pre_order_iter down( pre_order_parent_type( new pre_order_iter(*this)), --(bml->end()) ); 
             std::swap(*this, down); 
           }
           return;
@@ -266,16 +347,15 @@
 
 	if ( (m_iter == m_iter.begin()) && (m_parent) ) {
  
-	  if ( (typeid(**m_iter) == typeid(beamline)) && (m_iter != m_visited) ) {
+	  if ( (typeid(**m_iter) == typeid(beamline) ) && (m_iter != m_visited) ) {
  
-             beamline* bml      = static_cast<beamline*>(*m_iter);
-             pre_order_iterator down( boost::shared_ptr<beamline::pre_order_iterator>( new pre_order_iterator(*this) ), 
-                                     --(bml->end()) ); 
+             beamline* bml      = static_cast<beamline*>( (*m_iter).get() );
+             pre_order_iter down( pre_order_parent_type(new pre_order_iter(*this)), --(bml->end()) ); 
              std::swap(*this, down); 
              return;
           }
           
-          pre_order_iterator up( *m_parent ); 
+          pre_order_iter up( *m_parent ); 
           std::swap(*this, up); 
           m_visited = m_iter;            
 
@@ -287,9 +367,8 @@
 	--m_iter;
 
 	 while ( (typeid(**m_iter) == typeid(beamline)) && (m_iter != m_visited) ) {
-           beamline* bml      = static_cast<beamline*>(*m_iter);
-           pre_order_iterator down( boost::shared_ptr<beamline::pre_order_iterator>( new pre_order_iterator(*this) ), 
-                                     --(bml->end()) ); 
+           beamline* bml      = static_cast<beamline*>( (*m_iter).get());
+           pre_order_iter down( pre_order_parent_type (new pre_order_iter(*this)), --(bml->end()) ); 
            std::swap(*this, down); 
          }
 
@@ -300,32 +379,34 @@
 
      //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-      bool equal( beamline::pre_order_iterator const& other) const {
+      template <typename OtherType>
+      bool equal( OtherType const& other) const {
          
-	if (  (m_iter == m_iter.end() ) || ( other.m_iter == other.m_iter.end() ) ) {
-            if ( m_iter   ==  other.m_iter ) return true; 
-            else                             return false;
-        }
 
+	if (   m_iter    !=   other.m_iter )   return false;   // level iterators are different
+    
+        if (  !m_parent  &&   other.m_parent)  return false;   
 
-	if ( *m_iter      !=  *(other.m_iter) )     return false;
+	if (   m_parent  &&  !other.m_parent)  return false;
 
-        if ( !m_parent    &&   other.m_parent   )   return false;
-        if (  m_parent    &&  (!other.m_parent) )   return false;
-        if ( !m_parent    &&  (!other.m_parent) )   return true;
-        if ( **m_parent   !=  **other.m_parent  )   return false;
+	if (  !m_parent  &&  !other.m_parent)  return true;
 
-        return true;
+        if (  *m_parent  !=  *other.m_parent)  return false;   // parent iterators are different
+        
+					       return true;                                         // 
+
       }
 
      //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-     bmlnElmnt*& dereference() const { 
+     held_type& dereference() const { 
        return  *m_iter;
      }
     
  };
+
+
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // 
@@ -333,22 +414,27 @@
 // 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-    class reverse_pre_order_iterator : public boost::reverse_iterator<beamline::pre_order_iterator>  {
+    template <typename held_type>
+    class reverse_pre_order_iter: public boost::reverse_iterator<pre_order_iter<held_type> > {
 
+    private:
+
+     struct enabler {};  // empty private type (to avoid accidental misuse). Used in conjunction with 
+                           // boost::enable_if() below.  
     public: 
 
       friend class boost::iterator_core_access;
 
-      reverse_pre_order_iterator()
-                 : boost::reverse_iterator<beamline::pre_order_iterator>()    {}
+      reverse_pre_order_iter()
+                 : boost::reverse_iterator<pre_order_iter<held_type> >()    {}
 
+      template <typename OtherType>
+      reverse_pre_order_iter( OtherType const& rit,
+                    typename boost::enable_if<boost::is_convertible<OtherType*, held_type*>, enabler >::type = enabler() ) 
+                 : boost::reverse_iterator<OtherType>(rit) {} 
 
-      reverse_pre_order_iterator( beamline::reverse_pre_order_iterator const& rit )
-                 : boost::reverse_iterator<beamline::pre_order_iterator>(rit) {} 
-
-      reverse_pre_order_iterator( beamline::pre_order_iterator const& it )      
-                                                                                
-                 : boost::reverse_iterator<beamline::pre_order_iterator>(it) {} 
+      reverse_pre_order_iter( pre_order_iter<held_type> const& it )      
+                 : boost::reverse_iterator<pre_order_iter<held_type> >(it) {} 
 
 
     };
@@ -359,32 +445,38 @@
 // 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-   class post_order_iterator : public boost::iterator_facade <post_order_iterator,          // Derived
-                                                         bmlnElmnt*,                       // Value
-                                                         boost::forward_traversal_tag,     // class CategoryOrTraversal
-                                                         bmlnElmnt*&,                      // Reference  
-                                                         ptrdiff_t                         // Difference // ???? 
+   template <typename held_type>
+   class post_order_iter : public boost::iterator_facade <post_order_iter<held_type>,  // Derived
+                                                         held_type,                    // Value
+                                                         boost::forward_traversal_tag, // class CategoryOrTraversal
+                                                         held_type&,                   // Reference  
+                                                         ptrdiff_t                     // Difference // ???? 
                                                        >   
    {
+     private:
+
+     struct enabler {};     // empty private type (to avoid accidental misuse). Used in conjunction with 
+                           // boost::enable_if() below.  
      public:
 
-       post_order_iterator() {}
+       post_order_iter() {}
    
-       post_order_iterator( post_order_iterator const& pit )                 
+       template <typename OtherType>
+       post_order_iter( post_order_iter<OtherType> const& pit,         
+                    typename boost::enable_if<boost::is_convertible<OtherType*, held_type*>, enabler >::type = enabler() ) 
 	 :  m_parent(pit.m_parent), m_iter(pit.m_iter), m_visited(pit.m_visited) {}
       
 
-       post_order_iterator( beamline::iterator const& it)
-        :  m_parent(), m_iter(it), m_visited(it.end()) 
+       post_order_iter( iter<held_type> const& it)
+        :  m_parent(), m_iter(it), m_visited( iter<held_type>(it).end()) 
        { 
 
-         if ( it == it.end() ) return;
+         if ( m_iter == m_iter.end() ) return;
 
 	 while ( (typeid(**m_iter) == typeid(beamline)) && ( m_iter != m_visited) )  {  
- 
-              beamline* bml      = static_cast<beamline*>(*m_iter);
-              post_order_iterator 
-                  down( boost::shared_ptr<beamline::post_order_iterator>( new post_order_iterator(*this) ),  bml->begin() ); 
+              beamline* bml      = static_cast<beamline*>( (*m_iter).get());
+              post_order_iter 
+                   down( post_order_parent_type(new post_order_iter(*this)),  bml->begin() ); 
               std::swap(*this, down); 
   
          }
@@ -393,13 +485,15 @@
 
      private:
 
-      post_order_iterator( boost::shared_ptr<beamline::post_order_iterator> const& parent, iterator const& it )                 
+      typedef typename beamline_iter_traits<held_type,0>::post_order_parent_type  post_order_parent_type;
+
+      post_order_iter( post_order_parent_type const& parent, iter<held_type> const& it )                 
 	 : m_parent(parent), m_iter( it.m_bml, it.base() ), m_visited( it.end()) {} 
 
 
-      boost::shared_ptr<beamline::post_order_iterator>     m_parent;       
-      beamline::iterator                                   m_iter;
-      beamline::iterator                                   m_visited;
+      mutable post_order_parent_type                      m_parent;       
+      typename beamline::iter<held_type>                  m_iter;
+      typename beamline::iter<held_type>                  m_visited;
 
 
       friend class boost::iterator_core_access;
@@ -416,7 +510,7 @@
 
           if (  (m_iter == m_iter.end()) &&  ( m_parent) )  {  
 
-            post_order_iterator up( *m_parent ); 
+            post_order_iter up( *m_parent ); 
             std::swap(*this, up); 
             m_visited = m_iter; 
             return; 
@@ -424,11 +518,9 @@
 
 	 if ( (typeid(**m_iter) == typeid(beamline)) && ( m_iter != m_visited) ) { 
 	   while ( (typeid(**m_iter) == typeid(beamline)) && ( m_iter != m_visited) )  {  
- 
-              beamline* bml      = static_cast<beamline*>(*m_iter);
-              m_visited = m_iter;  
-              post_order_iterator 
-                  down( boost::shared_ptr<beamline::post_order_iterator>( new post_order_iterator(*this) ),  bml->begin() ); 
+              beamline* bml      = static_cast<beamline*>( (*m_iter).get());
+              m_visited  = m_iter;  
+              post_order_iter down( post_order_parent_type(new post_order_iter(*this)),  bml->begin() ); 
               std::swap(*this, down); 
   
            }
@@ -452,25 +544,23 @@
         }
 	
 
-        if( (typeid(**m_iter)==typeid(beamline))  && (m_iter != m_visited) )  {
-           beamline* bml      = static_cast<beamline*>(*m_iter);
-           post_order_iterator down( boost::shared_ptr<beamline::post_order_iterator>( new post_order_iterator(*this) ), 
-                                     --(bml->end()) ); 
+        if((typeid(**m_iter) ==typeid(beamline))  && (m_iter != m_visited) )  {
+           beamline* bml      = static_cast<beamline*>( (*m_iter).get() );
+           post_order_iter down( post_order_parent_type(new post_order_iter(*this) ) , --(bml->end()) ); 
            std::swap(*this, down); 
            return;
         } 
 
         while ( (m_iter == m_iter.begin()) && (m_parent) ) {
           
-          if ( (typeid(**m_iter)==typeid(beamline))  && (m_iter != m_visited) )  {
-              beamline* bml      = static_cast<beamline*>(*m_iter);
-              post_order_iterator down( boost::shared_ptr<beamline::post_order_iterator>( new post_order_iterator(*this) ), 
-                                     --(bml->end()) ); 
+          if ( (typeid(*(*m_iter).get())==typeid(beamline))  && (m_iter != m_visited) )  {
+              beamline* bml      = static_cast<beamline*>( (*m_iter).get() );
+              post_order_iter down( post_order_parent_type(new post_order_iter(*this) ), --(bml->end()) ); 
               std::swap(*this, down); 
               return; 
           }
 
-          post_order_iterator up( *m_parent ); 
+          post_order_iter up( *m_parent ); 
           std::swap(*this, up); 
           m_visited = m_iter; 
 
@@ -478,10 +568,9 @@
 
 	--m_iter;
 
-	if ( (typeid(**m_iter) == typeid(beamline)) && (m_iter != m_visited) ) {
-           beamline* bml      = static_cast<beamline*>(*m_iter);
-           post_order_iterator down( boost::shared_ptr<beamline::post_order_iterator>( new post_order_iterator(*this) ), 
-                                     --(bml->end()) ); 
+	if ((typeid(**m_iter)  == typeid(beamline)) && (m_iter != m_visited) ) {
+           beamline* bml      = static_cast<beamline*>( (*m_iter).get() );
+           post_order_iter down(  post_order_parent_type(new post_order_iter(*this) ), --(bml->end()) ); 
            std::swap(*this, down); 
            return;
         }
@@ -493,29 +582,30 @@
       }// void decrement() 
 
      //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-      bool equal( beamline::post_order_iterator const& other) const {
+ 
+      template<typename OtherType>
+      bool equal( OtherType const& other) const {
          
-	if (  (m_iter == m_iter.end() ) || ( other.m_iter == other.m_iter.end() ) ) {
-            if ( m_iter   ==  other.m_iter ) return true; 
-            else                             return false;
-        }
 
+	if (   m_iter    !=   other.m_iter )   return false;   // level iterators are different
+    
+        if (  !m_parent  &&   other.m_parent)  return false;   
 
-	if ( *m_iter      !=  *(other.m_iter) )     return false;
+	if (   m_parent  &&  !other.m_parent)  return false;
 
-        if ( !m_parent    &&   other.m_parent   )   return false;
-        if (  m_parent    &&  (!other.m_parent) )   return false;
-        if ( !m_parent    &&  (!other.m_parent) )   return true;
-        if ( **m_parent   !=  **other.m_parent  )   return false;
+	if (  !m_parent  &&  !other.m_parent)  return true;
 
-        return true;
+        if (  *m_parent  !=  *other.m_parent)  return false;   // parent iterators are different
+        
+					       return true;                                         // 
+
       }
+
 
      //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-     bmlnElmnt*& dereference() const { 
+     ElmPtr& dereference() const { 
         return  *m_iter;
      }
     
@@ -529,22 +619,23 @@
 // 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-    class reverse_post_order_iterator : public boost::reverse_iterator<beamline::post_order_iterator>  {
+    template <typename held_type>
+    class reverse_post_order_iter : public boost::reverse_iterator<beamline::post_order_iter<held_type> >  {
 
     public: 
 
       friend class boost::iterator_core_access;
 
-      reverse_post_order_iterator()
+      reverse_post_order_iter()
                  : boost::reverse_iterator<beamline::post_order_iterator>()    {}
 
 
-      reverse_post_order_iterator( beamline::reverse_post_order_iterator const& rit )
-                 : boost::reverse_iterator<beamline::post_order_iterator>(rit) {} 
+      reverse_post_order_iter( reverse_post_order_iter const& rit )
+                 : boost::reverse_iterator<post_order_iter<held_type> >(rit) {} 
 
-      reverse_post_order_iterator( beamline::post_order_iterator const& it )      
+      reverse_post_order_iter( post_order_iter<held_type> const& it )      
                                                                                 
-                 : boost::reverse_iterator<beamline::post_order_iterator>(it) {} 
+                 : boost::reverse_iterator<post_order_iter<held_type> >(it) {} 
 
 
     };
@@ -555,25 +646,36 @@
 // 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-    class deep_iterator : public boost::iterator_adaptor <  deep_iterator,
-                                                            beamline::pre_order_iterator,      // Base
-                                                            boost::use_default,                // Value
-                                                            boost::bidirectional_traversal_tag > {  
+    template <typename held_type>
+    class deep_iter : public boost::iterator_adaptor <  deep_iter<held_type>,
+                                                        beamline::pre_order_iter<held_type>, // Base
+                                                        boost::use_default,                  // Value
+                                                        boost::bidirectional_traversal_tag > {  
+   template <typename T>
+   friend class deep_iter;
+
+    private:
+
+      struct enabler {};  // empty private type (to avoid accidental misuse). Used in conjunction with 
+                           // boost::enable_if() below.  
     public:
  
-       deep_iterator() 
-              : deep_iterator::iterator_adaptor_() {}
+       deep_iter() 
+              : deep_iter::iterator_adaptor_() {}
 
-       deep_iterator( deep_iterator const& dit) 
-              : deep_iterator::iterator_adaptor_(dit) {}
+       template <typename OtherType>
+       deep_iter( deep_iter<OtherType> const& dit,
+                  typename boost::enable_if<boost::is_convertible<OtherType*, held_type*>, enabler >::type = enabler() ) 
+                : deep_iter::iterator_adaptor_(dit) {}
 
-       deep_iterator( pre_order_iterator const& pit) 
-              : deep_iterator::iterator_adaptor_(pit) 
+       
+
+       deep_iter( pre_order_iter<held_type> const& pit) 
+              : deep_iter::iterator_adaptor_(pit) 
         {
 	  if (  pit.m_iter  == pit.m_iter.end() )      return; 
 	  if ( typeid(***this) ==  typeid(beamline)  ) increment(); 
         }
-
 
 
     private:
@@ -581,11 +683,18 @@
        friend class boost::iterator_core_access;
 
 
+
+       template <class OtherType>
+       bool equal(deep_iter<OtherType> const& other) const
+       { 
+           return this->base() == other.base();
+       }
+
        void increment() {
 
-	 base_reference().increment();  
+	 this->base_reference().increment();  
 
-         if ( base().m_iter  == base().m_iter.end() ) {
+         if ( this->base().m_iter  == this->base().m_iter.end() ) {
 	    return;
          }
 
@@ -596,14 +705,14 @@
 
        void decrement() {
 
-	 base_reference().decrement();  
+	 this->base_reference().decrement();  
 
-         if ( base().m_iter == base().m_iter.end() ) {
+         if ( this->base().m_iter == this->base().m_iter.end() ) {
 	    return;
          }
 
          while ( typeid(***this) == typeid(beamline) ) {
-	   if (base().m_iter == base().m_iter.begin()) break;  
+	   if ( this->base().m_iter == this->base().m_iter.begin()) break;  
             decrement();  
          }
        }
@@ -617,25 +726,115 @@
 // 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-    class reverse_deep_iterator : public boost::reverse_iterator<beamline::deep_iterator>  {
+    template <typename held_type>
+    class reverse_deep_iter: public boost::reverse_iterator<deep_iter<held_type> >  {
 
     public: 
 
       friend class boost::iterator_core_access;
 
-      reverse_deep_iterator()
-                 : boost::reverse_iterator<beamline::deep_iterator>()    {}
+      reverse_deep_iter()
+                 : boost::reverse_iterator<deep_iter<held_type> >()    {}
 
 
-      reverse_deep_iterator( beamline::reverse_deep_iterator const& rit )
-                 : boost::reverse_iterator<beamline::deep_iterator>(rit) {} 
+      template <typename OtherType>
+      reverse_deep_iter( reverse_deep_iter<OtherType> const& rit )
+                 : boost::reverse_iterator<deep_iter<held_type> >(rit) {} 
 
-      reverse_deep_iterator( beamline::deep_iterator const& it )      
-                                                                                
-                 : boost::reverse_iterator<beamline::deep_iterator>(it) {} 
+      reverse_deep_iter( deep_iter<held_type> const& it )      
+                 : boost::reverse_iterator<deep_iter<held_type> >(it)  {} 
 
 
     };
+
+
+    //-------------------------------------------------------------------------------------------
+    // member functions for the beamline class used to set iterators.
+    //-------------------------------------------------------------------------------------------
+
+    beamline::const_iterator begin() const    { return const_iterator(this, theList_.begin());    }       
+    beamline::iterator       begin()          { return       iterator(this, theList_.begin());    }       
+                     
+
+    beamline::const_iterator end()   const    { return const_iterator(this, theList_.end());      }   
+    beamline::iterator end()                  { return       iterator(this, theList_.end());      }   
+  
+
+    beamline::const_reverse_iterator rbegin() const { return           const_iterator(this, theList_.end() );  } 
+    beamline::reverse_iterator rbegin()             { return                 iterator(this, theList_.end() );  } 
+
+
+    beamline::const_reverse_iterator rend()   const { return           const_iterator(this, theList_.begin()); }   
+    beamline::reverse_iterator       rend()         { return                 iterator(this, theList_.begin()); }   
+   
+
+    beamline::const_pre_order_iterator pre_begin() const { return      const_iterator(this, theList_.begin() ); } 
+    beamline::pre_order_iterator       pre_begin()       { return            iterator(this, theList_.begin() ); } 
+
+
+    beamline::const_pre_order_iterator pre_end() const   { return       const_iterator(this, theList_.end()   ); }   
+    beamline::pre_order_iterator       pre_end()         { return             iterator(this, theList_.end()   ); }   
+ 
+
+    beamline::const_reverse_pre_order_iterator rpre_begin()  const 
+                      { return const_pre_order_iterator( const_iterator(this, theList_.end()   )); } 
+    beamline::reverse_pre_order_iterator rpre_begin()  
+                      { return       pre_order_iterator(       iterator(this, theList_.end()   )); } 
+
+
+    beamline::const_reverse_pre_order_iterator rpre_end() const  
+                      { return  const_pre_order_iterator(  const_iterator(this, theList_.begin() )); }   
+    beamline::reverse_pre_order_iterator       rpre_end()   
+                      { return        pre_order_iterator(        iterator(this, theList_.begin() )); }   
+
+
+    beamline::const_post_order_iterator post_begin() const 
+                      { return                               const_iterator(this, theList_.begin()   ); } 
+    beamline::post_order_iterator       post_begin() 
+                      { return                                     iterator(this, theList_.begin()   ); } 
+
+
+    beamline::const_post_order_iterator post_end()  const    
+                      { return                               const_iterator(this, theList_.end()     ) ;}   
+    beamline::post_order_iterator post_end()     
+                      { return                                     iterator(this, theList_.end()     ); }   
+
+
+    beamline::const_reverse_post_order_iterator rpost_begin() const  
+                      { return     const_post_order_iterator( const_iterator(this, theList_.end()   )); } 
+    beamline::reverse_post_order_iterator rpost_begin()  
+                      { return           post_order_iterator(       iterator(this, theList_.end()   )); } 
+
+
+    beamline::const_reverse_post_order_iterator rpost_end() const  
+                      { return const_post_order_iterator(  const_iterator(this, theList_.begin() )); }   
+    beamline::reverse_post_order_iterator rpost_end()   
+                      { return       post_order_iterator(        iterator(this, theList_.begin() )); }   
+
+
+    beamline::const_deep_iterator deep_begin() const 
+                      { return                       const_pre_order_iterator(  const_iterator(this, theList_.begin() )); } 
+    beamline::deep_iterator deep_begin() 
+                      { return                             pre_order_iterator(        iterator(this, theList_.begin() )); } 
+ 
+
+    beamline::const_deep_iterator deep_end() const  
+                      { return                       const_pre_order_iterator(  const_iterator(this, theList_.end()   )); }   
+    beamline::deep_iterator deep_end()   
+                      { return                             pre_order_iterator(        iterator(this, theList_.end()   )); }   
+
+
+    beamline::const_reverse_deep_iterator rdeep_begin() const  
+                      { return  const_deep_iterator( const_pre_order_iterator(  const_iterator(this, theList_.end()  ))); } 
+    beamline::reverse_deep_iterator rdeep_begin()  
+                      { return        deep_iterator(       pre_order_iterator(  iterator(this, theList_.end()  ))); } 
+
+
+    beamline::const_reverse_deep_iterator rdeep_end() const    
+                      { return  const_deep_iterator(  const_pre_order_iterator(  const_iterator(this, theList_.begin() ))); }   
+    beamline::reverse_deep_iterator rdeep_end()    
+                      { return        deep_iterator(        pre_order_iterator(        iterator(this, theList_.begin() ))); }   
+
 
 #endif // BEAMLINE_ITERATORS_H
 
