@@ -60,8 +60,8 @@ XSIFFactory::XSIFFactory( string filename, const char* stringbuffer)
  
 {
 
- driver_.m_trace_scanning = false;
- driver_.m_trace_parsing  = false;
+ driver_.m_trace_scanning = true;
+ driver_.m_trace_parsing  = true;
 
  driver_.parse( filename ); 
  
@@ -75,40 +75,25 @@ XSIFFactory::XSIFFactory( string filename, const char* stringbuffer)
 XSIFFactory::~XSIFFactory() 
 {
 
+}
 
-  // delete all beamlines;
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+BmlPtr XSIFFactory::create_beamline( string bmlname,  double brho) 
+{
 
-  for ( std::map<std::string, beamline*>::iterator it  = driver_.m_lines.begin(); it != driver_.m_lines.end(); ++it) {
-    delete(it->second); 
-  } 
-
-  // delete all elements;
-
-  for ( std::map<std::string, bmlnElmnt*>::iterator it  = driver_.m_elements.begin(); it != driver_.m_elements.end(); ++it) {
-   delete ( it->second ); 
-  }  
-
+ return driver_.getLine(bmlname); 
 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline* XSIFFactory::create_beamline( string bmlname,  double brho) 
+BmlPtr XSIFFactory::create_beamline( string bmlname)  
 {
 
- return driver_.getLine(bmlname)->Clone(); 
-
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-beamline* XSIFFactory::create_beamline( string bmlname)  
-{
-
- return driver_.getLine(bmlname)->Clone(); 
+ return driver_.getLine(bmlname); 
 
 }        
 
@@ -120,7 +105,7 @@ std::list<std::string>   XSIFFactory::getBeamlineList()
 
   list<string> bml_list;
 
-  for ( std::map<std::string, beamline*>::iterator it  = driver_.m_lines.begin(); it != driver_.m_lines.end(); ++it) {
+  for ( std::map<std::string, BmlPtr>::iterator it  = driver_.m_lines.begin(); it != driver_.m_lines.end(); ++it) {
      bml_list.push_back(it->first);
   }
 

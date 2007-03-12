@@ -54,7 +54,7 @@
 #include <vector>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string_regex.hpp>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/beamline.h>
 #include <basic_toolkit/iosetup.h>
 
 #include <parsers/xsif/Macro.h>
@@ -137,7 +137,7 @@ using FNAL::pcerr;
 %left '+' '-'
 %left '*' '/' 
 %left '^' 
-%left NEG    /* negation, unary minus */
+%nonassoc NEG    /* negation, unary minus */
 
 %% 
 
@@ -148,6 +148,11 @@ program:
        program XSIF_EOL
        |
        program statement XSIF_EOL
+       |
+       program XSIF_RETURN XSIF_EOL                                                  { driver.command_RETURN( yylloc, driver.m_yyscanner);
+                                                                                       driver.m_attributes.clear(); 
+                                                                                     } 
+       |
        ;
 
 statement:
@@ -160,21 +165,18 @@ statement:
        line_declaration
        |
        element_declaration
-       | 
+       |
        action
        ;
 
-
 action: 
-   XSIF_BEAM 
-   |
-   XSIF_BEAM   ',' attributes                                                        { driver.command_BEAM( yyloc, driver.m_attributes);
+   XSIF_BEAM   ',' attributes                                                        { driver.command_BEAM( yylloc, driver.m_attributes);
                                                                                        driver.m_attributes.clear(); 
-                                                                                       } 
+                                                                                     } 
    |
-   XSIF_CALL 
-   |
-   XSIF_CALL   ',' attributes  
+   XSIF_CALL   ',' attributes                                                        { driver.command_CALL( yylloc, driver.m_attributes, driver.m_yyscanner);
+                                                                                       driver.m_attributes.clear(); 
+                                                                                     } 
    |
    XSIF_CLOSE 
    |
@@ -199,10 +201,6 @@ action:
    XSIF_PATH 
    |
    XSIF_PATH   ',' attributes 
-   |
-   XSIF_RETURN
-   |
-   XSIF_RETURN ',' attributes 
    |
    XSIF_USE
    |
@@ -239,7 +237,7 @@ arguments:
                                                                                              delete $<sval>1; }
        ;
 
-element_list:                                                                              { driver.error(yyloc, std::string("Line cannot be empty."));}
+element_list:                                                                              { driver.error(yylloc, std::string("Line cannot be empty."));}
        |
        element_list ',' macro_identifier                                                   { $<pstrvec>$ = $<pstrvec>1;
                                                                                              $<pstrvec>$->push_back( *$<sval>3 );
@@ -278,29 +276,47 @@ element_list:                                                                   
                                                                                                  $<pstrvec>$->push_back(*$<sval>3 ); 
                                                                                              delete $<sval>3; }
        |
+       element_list ',' anonymous_line_declaration                                         {  $<pstrvec>$ = $<pstrvec>1;
+                                                                                              for ( vector<string>::iterator it  = $<pstrvec>3->begin();
+                                                                                                                             it != $<pstrvec>3->end(); ++it ) {
+                                                                                                     $<pstrvec>$->push_back(*it);
+                                                                                              }
+                                                                                              delete $<pstrvec>3;
+                                                                                           }
+
+       |
        macro_identifier                                                                    { $<pstrvec>$ = new std::vector<std::string>;
                                                                                              $<pstrvec>$->push_back( *$<sval>1 ); 
                                                                                              delete $<sval>1; } 
        | 
-       XSIF_IDENTIFIER                                                                     { $<pstrvec>$ = new std::vector<std::string>;
-                                                                                             $<pstrvec>$->push_back(*$<sval>1 ); delete $<sval>1; }  
+       XSIF_IDENTIFIER                                                                     { $<pstrvec>$ = new std::vector<std::string>; 
+                                                                                             $<pstrvec>$->push_back(*$<sval>1 ); delete $<sval>1; 
+                                                                                           }  
        ;
 
 
 constant_declaration:
-       XSIF_IDENTIFIER ':' XSIF_CONSTANT '=' expr                                           { 
-                                                                                               if ( driver.m_constants.find( *$<sval>1 ) != driver.m_constants.end() ) {
-                                                                                               driver.error( yyloc, 
+       XSIF_IDENTIFIER  '='  expr                                                          { if ( driver.m_constants.find( *$<sval>1 ) != driver.m_constants.end() ) {
+                                                                                               driver.error( yylloc, 
                                                                                                          std::string("Attempt to redefine existing CONSTANT ")
                                                                                                           +(*$<sval>1) + std::string(".") );
                                                                                                }
-                                                                                               driver.m_constants[*$<sval>1] = $<dval>5; delete $<sval>1; }
+                                                                                               driver.m_constants[*$<sval>1] = $<dval>3; delete $<sval>1; 
+                                                                                            }
+
+       | 
+       XSIF_IDENTIFIER ':' XSIF_CONSTANT '=' expr                                           { if ( driver.m_constants.find( *$<sval>1 ) != driver.m_constants.end() ) {
+                                                                                               driver.error( yylloc, 
+                                                                                                         std::string("Attempt to redefine existing CONSTANT ")
+                                                                                                          +(*$<sval>1) + std::string(".") );
+                                                                                               }
+                                                                                               driver.m_constants[*$<sval>1] = $<dval>5; delete $<sval>1; 
+                                                                                            }
        ; 
 
 
 variable_assignement:
-       XSIF_IDENTIFIER XSIF_VARASSIGNMENT vexpr                                              { 
-                                                                                               driver.m_variables[*$<sval>1] = Expression( *$<pexp>3 );
+       XSIF_IDENTIFIER XSIF_VARASSIGNMENT vexpr                                              { driver.m_variables[*$<sval>1] = Expression( *$<pexp>3 );
                                                                                                delete $<pexp>3;
                                                                                                delete $<sval>1; 
                                                                                              }
@@ -309,18 +325,38 @@ variable_assignement:
 
 
 line_declaration:
-       XSIF_IDENTIFIER ':'  XSIF_LINE '=' '(' element_list ')'                              { driver.instantiateLine( yyloc, *$<sval>1, *$<pstrvec>6 );
+
+       XSIF_IDENTIFIER ':'  XSIF_LINE '=' '(' element_list ')'                              { 
+                                                                                              BmlPtr bml = driver.instantiateLine( yylloc, *$<sval>1, *$<pstrvec>6 );
+                                                                                              driver.addLineToDictionary( *$<sval>1, bml );
                                                                                               delete $<sval>1; delete $<pstrvec>6; 
                                                                                             }
        |
-       macro_identifier ':' XSIF_LINE '=' '(' element_list ')'                              { driver.defineLineMacro( yyloc, *$<sval>1, *$<pstrvec>6 );
+       macro_identifier ':' XSIF_LINE '=' '(' element_list ')'                              { driver.defineLineMacro( yylloc, *$<sval>1, *$<pstrvec>6 );
                                                                                               delete $<sval>1; delete $<pstrvec>6; 
                                                                                             }
        ;
 
+anonymous_line_declaration:
+
+       XSIF_INT_VALUE       '*' '(' element_list ')'                                       {  $<pstrvec>$ = 
+                                                                                              driver.instantiateAnonymousLine( yylloc, *$<pstrvec>4,$<ival>1 );
+                                                                                              delete $<pstrvec>4;
+                                                                                           }  
+       |
+       '(' element_list ')' '*' 'XSIF_INT_VALUE'                                           { $<pstrvec>$ =
+                                                                                             driver.instantiateAnonymousLine( yylloc, *$<pstrvec>2, $<ival>5 );
+                                                                                             delete $<pstrvec>2;
+                                                                                           } 
+
+       ;
+
+
+
 
 element_declaration:
-       XSIF_IDENTIFIER ':' attributes                                                        { driver.instantiateElement( yyloc, *$<sval>1,  driver.m_attributes);
+       XSIF_IDENTIFIER ':' attributes                                                        { ElmPtr elm = driver.instantiateElement( yylloc, *$<sval>1,  driver.m_attributes);
+                                                                                               driver.addElmToDictionary( *$<sval>1, elm );
                                                                                                delete $<sval>1;  
                                                                                                driver.m_attributes.clear(); 
                                                                                              } 
@@ -412,7 +448,7 @@ vexpr: XSIF_INT_VALUE                   { Expression* p = $<pexp>$ = new Express
 
                                               std::string elmname(($<sval>1)->begin(), ir.begin() );
                                               std::string attrib ( ++(ir.begin()), --(ir.end()) );
-                                              p->insert( ExprData( driver.getElmAttributeVal(yyloc, elmname, attrib) ));
+                                              p->insert( ExprData( driver.getElmAttributeVal(yylloc, elmname, attrib) ));
 
                                            }
                                            else if ( (it_consts=driver.m_constants.find( *($<sval>1) )) != driver.m_constants.end() ) {   
@@ -424,7 +460,7 @@ vexpr: XSIF_INT_VALUE                   { Expression* p = $<pexp>$ = new Express
                                            }
                                            else{ 
                                                  if ( driver.m_locations_stack.empty() ) std::cout << "stack is empty !" <<std::endl;
-                                                 (*pcerr) << "Warning: "  <<  yyloc 
+                                                 (*pcerr) << "Warning: "  <<  yylloc 
                                                           << " variable " << (*$<sval>1) << " is undefined." <<std::endl;
                                                  (*pcerr) << "Setting value to 0.0." << std::endl;
                                                  p->insert( ExprData( 0.0 ) ); 

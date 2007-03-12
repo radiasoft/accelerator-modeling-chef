@@ -46,7 +46,7 @@
 #include <iostream>
 #include <string>
 #include <basic_toolkit/iosetup.h>
-
+#include <unistd.h>
 
 #include "XsifParserDriver.h"
 #include "XsifParser_ypp.hh"
@@ -65,9 +65,11 @@ comment        "!"
 comment_begin  "COMMENT"
 comment_end    "ENDCOMMENT"
 
-real            (([0-9]+)|([0-9]*\.?[0-9]*)([eEdD][-+]?[0-9]+)?)  
+real            ([0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)|([-+]?[1-9]+\.?+([eE][-+]?[0-9]+))
 
 integer         [0-9]+[0-9]*  
+
+string          (\"[^\"]*\")|(\'[^\']*\')
 
 identifier      [a-zA-Z][_\.a-zA-Z0-9]*(\[[a-zA-Z][_\.a-zA-Z0-9]*\])?            
 
@@ -92,33 +94,22 @@ blk             [ \t]
 <COMMENT>{comment_end}{blk}*\n                            { yy_pop_state(yyscanner);
                                                             yylloc->lines(1); yylloc->step();   
                                                           }                                            
+
 <COMMENT>.*\n                                             { yylloc->lines(1); yylloc->step(); }  /* ignore comments*/ 
                                                            
 
 {comment_begin}                                           { yy_push_state(COMMENT, yyscanner); } 
 
-{comment}.*\n                                             { yylloc->lines(1); yylloc->step(); }  /* ignore comments*/
- 
+[^{blk}{comment}\n]+{comment}.*\n                         {   /* --- partial comment line ---                 */
+                                                              /* eliminate the comment text                   */
+                                                              /* then, unput the buffer in *reverse order*    */ 
+                                                              unput('\n');
+                                                              int i=yyleng-1; 
+                                                              while ( yytext[i--] != '!' ); 
+                                                              while ( i-- >0 ) unput(yytext[i]);
+                                                          }  
 
-
-
-^#(include|INCLUDE)[ \t]+.*                               {  
-                                                             std::string* filename = new std::string(&yytext[8]);
-                                                             *filename = trim(*filename); // remove quotes, if any 
-                                                             FILE* fp = fopen( filename->c_str(), "r");
-                                                             if (!fp) {
-                                                               (*pcerr) << "Error opening file:" << filename->c_str() << std::endl;
-                                                               
-                                                             }
-                                                             driver.m_locations_stack.push(*yylloc);
-                                                             yypush_buffer_state( xsif_yy_create_buffer(fp, YY_BUF_SIZE, yyscanner), yyscanner);
-
-                                                             xsif_yy::position bpos; bpos.filename = filename;   
-                                                             xsif_yy::position epos; epos.filename = filename; 
-                                                           
-                                                             yylloc->begin = bpos;
-                                                             yylloc->end   = epos;
-                                                         }
+{blk}*{comment}.*\n                                       {  yylloc->lines(1); yylloc->step(); }  /*  full line comment  */
 
 
 {integer}                                                {     yylval->ival = atoi(yytext); 
@@ -126,9 +117,20 @@ blk             [ \t]
                                                          }
 
 {real}                                                   {    
-                                                              yylval->dval = atof(yytext);
+                                                              yylval->dval = strtof(yytext,0);
                                                               return token::XSIF_VALUE;   
                                                          }
+
+{string}                                                 { 
+                                                           yylval->sval = new parser_string_t(yytext);
+                                                            boost::algorithm::erase_first( *yylval->sval, "\"" );
+                                                            boost::algorithm::erase_last(  *yylval->sval, "\""  );
+                                                            boost::algorithm::erase_first( *yylval->sval, "'"  );
+                                                            boost::algorithm::erase_last(  *yylval->sval, "'"   );
+
+                                                           return token::XSIF_STRING_VALUE; 
+                                                         }                                     
+
 
 
    /* ----------------------------------------------- */
@@ -172,9 +174,12 @@ blk             [ \t]
                                                                                                          /*                unit standard deviation,            */
                                                                                                          /*                truncated at x standard deviations  */ 
 
-{blk}*(TYPE|type){blk}*=                                 { 
-                                                            unput('='); return token::XSIF_TYPE_ATTRIBUTE;  
-                                                         }
+   /***********************************************************************************************************
+   {blk}*(TYPE|type){blk}*=                                 { 
+                                                             unput('='); return token::XSIF_TYPE_ATTRIBUTE;  
+                                                            }
+   **************************************************************************************************************/
+
 {blk}*(PARTICLE|particle){blk}*=                         { 
                                                             unput('='); return token::XSIF_PARTICLE_ATTRIBUTE;  
                                                          }
@@ -196,12 +201,6 @@ blk             [ \t]
 
 [-()+*/:;\{\},]                                          { return xsif_yy::XsifParser::token_type (yytext[0]);  }
 
-\".*\"                                                   { 
-                                                           yylval->sval = new parser_string_t(yytext);
-                                                            boost::algorithm::erase_all( *yylval->sval, "\"" );
-                                                           return token::XSIF_STRING_VALUE; 
-                                                         }                                     
-
 
 \&.*\n                                                   { yylloc->lines(1); yylloc->step(); } /* line continuation */
 
@@ -209,34 +208,14 @@ blk             [ \t]
 
 \n                                                       { yylloc->lines(1); yylloc->step();
                                                            BEGIN(0);  
-                                                           return token::XSIF_EOL;} 
+                                                           return token::XSIF_EOL;
+                                                         } 
 
 
-<<EOF>>                                                  {     
-                                                          YY_BUFFER_STATE old_buffer = YY_CURRENT_BUFFER;
-
-                                                          yypop_buffer_state(yyscanner); /* NOTE: yy_delete_buffer is called by yypop_buffer() */ 
-
-                                                          if (! YY_CURRENT_BUFFER ) 
-                                                             yyterminate();
-
-                                                          /* returning form #include                             */
-                                                          /* destroy the current location and restore the old    */
-
-                                                          if (yylloc->begin.filename == yylloc->end.filename)
-                                                          { 
-                                                             delete (yylloc->begin.filename);
-                                                          }
-                                                          else
-                                                          {
-                                                             delete (yylloc->begin.filename);
-                                                             delete (yylloc->end.filename);
-                                                          }
-
-                                                          *yylloc = driver.m_locations_stack.top();
-                                                          driver.m_locations_stack.pop();
-
-                                                        }
+<<EOF>>                                                  { 
+                                                           //delete (yylloc->begin.filename);    
+                                                           yyterminate();
+                                                         }
 
 %%
 
@@ -261,9 +240,16 @@ XsifParserDriver::scan_begin( yyscan_t yyscanner ) {
 
   FILE* input_file = 0;
 
+  // m_cwd = string( getcwd() ); // save current working directory
+
   if ( !(  input_file = fopen(m_file.c_str(), "r")))
     error( std::string("Cannot open ") + m_file );
   
+  string file_dir_path             = m_file;
+  std::string::size_type slash_pos = file_dir_path.find_last_of("/");
+  file_dir_path.erase(slash_pos); 
+   
+  chdir (file_dir_path.c_str() ); // set current dir to that associated with input_file
 
   if (m_input_is_file)
     xsif_yy_switch_to_buffer ( xsif_yy_create_buffer( input_file, YY_BUF_SIZE, yyscanner), yyscanner);
@@ -272,11 +258,24 @@ XsifParserDriver::scan_begin( yyscan_t yyscanner ) {
 
 }
 
-// --------------------------------------------------------------------
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#include <boost/any.hpp>
+#include <stdio.h>
+
+// ------------------------------------------------------------------------------
+// The implemention of the following parse driver member functions is put here 
+// so that they can access the internals of the flex lexer (we use the reentrant
+// version of the C lexer) which is available only at the *.l file scope.
+// -------------------------------------------------------------------------------  
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void
-XsifParserDriver::scan_end( yyscan_t yyscanner ) {
+void XsifParserDriver::scan_end( yyscan_t yyscanner ) {
 
   yyguts_t* yyg =  (yyguts_t*) yyscanner;
 
@@ -287,14 +286,75 @@ XsifParserDriver::scan_end( yyscan_t yyscanner ) {
 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void XsifParserDriver::command_CALL( xsif_yy::location& yylloc, std::vector<attrib_pair_t> const& attributes, yyscan_t yyscanner)
+{
+
+  yyguts_t* yyg =  (yyguts_t*) yyscanner;
+ 
+  std::string filename = boost::any_cast<std::string const>( attributes.front().second );  
+  
+  filename = trim(filename);  
+
+  FILE* fp = fopen( filename.c_str(), "r");
+ 
+  if (!fp) error( yylloc, string( "Error opening file: ") + filename ); 
+
+  yyin = fp;
+
+  m_locations_stack.push(yylloc);
+
+  m_buffer_stack.push( YY_CURRENT_BUFFER );
+  xsif_yy_switch_to_buffer( xsif_yy_create_buffer( yyin, YY_BUF_SIZE, yyscanner ), yyscanner );
+
+  xsif_yy::position bpos;  bpos.filename = new std::string( filename );   
+  xsif_yy::position epos;  epos.filename = new std::string( filename ); 
+                                                           
+  yylloc.begin = bpos;  
+  yylloc.end   = epos;
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void XsifParserDriver::command_RETURN(  xsif_yy::location&  yyloc, yyscan_t yyscanner)
+{
+
+ if (m_locations_stack.empty() ) {
+         return;                     // EXTRA RETURN STATEMENT IN TOP LEVEL FILE
+ } 
+   else {
+       //delete (yyloc.begin.filename);
+       //delete (yyloc.end.filename);
+ }
+
+ yyguts_t* yyg =  (yyguts_t*) yyscanner;
+
+ xsif_yy_delete_buffer( YY_CURRENT_BUFFER, yyscanner);
+ xsif_yy_switch_to_buffer( (YY_BUFFER_STATE) m_buffer_stack.top(), yyscanner);
+ m_buffer_stack.pop();
+
+ yyloc = m_locations_stack.top();  
+ m_locations_stack.pop();
+
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 //-----------------------------------------------------------------------------------------------------------
 
 std::string& trim(std::string& str) {
 
-  // trim leading whitespace and quotes
+// trim whitespace
+
   std::string::size_type  notwhite = str.find_first_not_of(" \t\n");
   str.erase(0,notwhite);
+
   // trim trailing whitespace and quotes
   notwhite = str.find_last_not_of(" \t\n"); 
   str.erase(notwhite+1); 
