@@ -46,8 +46,8 @@ class XSIFFactory: public bmlfactory {
 
    ~XSIFFactory();
 
-    beamline* create_beamline( std::string beamline,  double brho);
-    beamline* create_beamline( std::string beamline); 
+    BmlPtr create_beamline( std::string beamline,  double brho);
+    BmlPtr create_beamline( std::string beamline); 
         
     std::list<std::string>   getBeamlineList();          
 
