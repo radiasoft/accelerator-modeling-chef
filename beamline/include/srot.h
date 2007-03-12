@@ -33,6 +33,10 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+****** Mar 2007          ostiguy@fnal.gov
+****** - use covariant return type
+****** - added support for reference-counted elements
 **************************************************************************
 *************************************************************************/
 #ifndef SROT_H
@@ -40,28 +44,35 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
+
+class BmlVisitor;
+class ConstBmlVisitor;
+
+class srot;
+
+typedef boost::shared_ptr<srot>             SRotPtr;
+typedef boost::shared_ptr<srot const>  ConstSRotPtr;
 
 
-class DLLEXPORT srot : public bmlnElmnt
-{
+class DLLEXPORT srot : public bmlnElmnt {
+
 public:
   srot();
-  srot( double const& /* strength = rotation angle in radians */ );
-  srot( const char * /* name */ );
-  srot( const char * /* name */, double const& /* strength */ );
-  srot( const srot& );
+  srot( double const& strength ); // rotation angle in radians 
+  srot( char const* name);
+  srot( char const* name, double const& strength);
+  srot( srot const& );
   srot* Clone() const { return new srot( *this ); }
-  virtual ~srot();
+ ~srot();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitSrot( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitSrot( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
-  const char* Type() const;
+  char const* Type() const;
 };
 
 #endif // SROT_H
