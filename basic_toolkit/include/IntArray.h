@@ -52,6 +52,12 @@
 ****** - added MonomialOrderPredicate member. 
 ******   (useful for debugging)
 ******   
+******  Feb 2007 ostiguy@fnal.gov
+******  
+****** - refactored to use STL iterators/algorithms
+******
+*************************************************************************
+*************************************************************************
 *************************************************************************/
 
 #ifndef INTARRAY_H
@@ -61,13 +67,20 @@
 #include <exception>
 #include <string>
 
+#include <boost/iterator/iterator_facade.hpp>
+#include <boost/iterator/iterator_adaptor.hpp>
+#include <boost/iterator/reverse_iterator.hpp>
+
 #include <basic_toolkit/globaldefs.h>
+#include <algorithm>
+#include <numeric>
+#include <vector>
+
 
 // ***  Note:
 // ***  Default max is set 8 variables (6 phase space vars + 2). 
 // ***  Increase intarray_max_variables if more variables are needed.
 
-const int intarray_max_variables = 8;
 
 // ***  Note:
 // *** The following typedef can be safely redefined without 
@@ -80,74 +93,126 @@ typedef signed char exponent_t;
 
 
 class IntArray;
-class IntArrayIterator;
-class IntArrayReverseIterator;
 
-bool  MonomialOrderPredicate( IntArray const& a1, IntArray const& a2);
+ 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
+bool  MonomialOrderPredicate( IntArray const& rhs, IntArray const&  lhs);
 
 class DLLEXPORT IntArray {
 
-  friend class IntArrayIterator;
-  friend class IntArrayReverseIterator;
-
-protected:
-
-  int         _dim;                            // Number of components
-  exponent_t _comp[intarray_max_variables];    
-           
 public:
 
+  // Iterators ... 
+
+   template <class Value> 
+   class intarray_iter : public boost::iterator_adaptor <
+         intarray_iter<Value>                  // Derived
+       , Value*                                // Base
+       , boost::use_default                    // Value
+       , boost::random_access_traversal_tag    // CategoryOrTraversal
+    >
+  {
+   private:
+      struct enabler {};  // a private type avoids misuse
+
+   public:
+      intarray_iter()
+       : intarray_iter::iterator_adaptor_(0) {}
+
+    explicit intarray_iter(Value* p)
+      : intarray_iter::iterator_adaptor_(p) {}
+
+    template <class OtherValue>
+    intarray_iter(
+        intarray_iter<OtherValue> const& other
+      , typename boost::enable_if<
+            boost::is_convertible<OtherValue*,Value*>
+          , enabler
+        >::type = enabler()
+    )
+      : intarray_iter::iterator_adaptor_(other.base()) {}
+
+    private:
+      friend class boost::iterator_core_access;
+   };
+
+
+  typedef   intarray_iter<exponent_t>                             iterator;
+  typedef   intarray_iter<exponent_t const>                 const_iterator;
+
+  typedef   boost::reverse_iterator<iterator>              reverse_iterator;
+  typedef   boost::reverse_iterator<const_iterator>  const_reverse_iterator;
+   
+  iterator begin();                
+  iterator end();
+
+  const_iterator begin()    const;
+  const_iterator end()      const;
+
+  reverse_iterator rbegin();
+  reverse_iterator rend();
+
+  const_reverse_iterator rbegin()  const; 
+  const_reverse_iterator rend()    const;
+
+
   // Constructors and the destructor ...
-  IntArray( int              dim = intarray_max_variables,
-            int const* const components = 0 );
 
-  IntArray( IntArray const& x): _dim(x._dim) { memcpy((void *)_comp, (const void *)x._comp, _dim * sizeof(exponent_t)); }
+  IntArray( int  dim=0, int const* const components = 0 );
 
-  // ~IntArray();  MUST NOT BE DEFINED !
+  IntArray( IntArray::const_iterator it1, IntArray::const_iterator it2 );
+
+  IntArray( IntArray const& x);
+
 
   // Assignment ...
 
   void     Set              ( const int* );
   void     Set              ( int  );
 
-  inline int     operator()       (  int i) const
-     { return (int) _comp[i]; }    // return component
+  int          operator()  (  int i )  const;
+  exponent_t&  operator()  (  int i );  
 
-  inline exponent_t&  operator()       ( int  i)
-     { return _comp[i]; }    // set    component
+  exponent_t   operator[]  (  int i )  const;
+  exponent_t&  operator[]  (  int i );  
 
-  //void     Reconstruct( int = 0, const int* = 0 );  
-  //void     Reconstruct( const IntArray& );  
-
- // Just like constructor
 
   // Functions ...
 
   IntArray&     operator=      ( IntArray const& );
 
   bool          operator==     ( IntArray const& ) const;
+
   bool          operator!=     ( IntArray const& ) const;
   bool          operator<      ( IntArray const& ) const;
   bool          operator<=     ( IntArray const& ) const;
-  bool          operator>      ( IntArray const& ) const; // compares weights only 
   bool          operator>=     ( IntArray const& ) const;
+
+  bool          operator>      ( IntArray const& ) const;  // WARNING: compares weights only 
 
   bool          operator==     ( int ) const;
   bool          operator!=     ( int ) const;
 
   bool          IsNull         () const;
 
+  static bool   PartialEqual         ( IntArray const& lhs, IntArray const& rhs, int idx1, int idx2);
+  static bool   PartialLessThan      ( IntArray const& lhs, IntArray const& rhs, int idx1, int idx2);
 
-  friend bool   MonomialOrderPredicate( IntArray const& a1, IntArray const& a2);
-
-  IntArray      operator+( const IntArray& ) const;
+  IntArray      operator+( IntArray const& ) const;
 
   // Queries ...
-   int  Dim() const { return _dim; }
+
+   int  Dim() const;
    int  Sum() const;
 
   // Utilities ..
 
+  friend bool   MonomialOrderPredicate( IntArray const& a1, IntArray const& a2);
   friend std::ostream& operator<<( std::ostream&, const IntArray& );
   friend std::istream& operator>>( std::istream&, IntArray& );
 
@@ -162,65 +227,76 @@ public:
     std::string errorString;
   };
 
+
+
+private:
+
+  static const int   intarray_max_variables = 8;
+
+  int           size_;         
+  exponent_t    comp_[ intarray_max_variables ];
+
+  // ~IntArray();  // WARNING: MUST NOT BE DEFINED !
+
 };
  
+//----------------------------------------------------------------------------------------------------------
 
-inline int IntArray::Sum() const {
-    
-     exponent_t s = 0;
-     const exponent_t* comp_ptr  = &_comp[0] - 1;  
-     int count = _dim+1;
-     while (--count) s += *(++comp_ptr);
-     return s;
+inline  IntArray::iterator IntArray::begin()                        { return IntArray::iterator(&comp_[0]);             }
+inline  IntArray::iterator IntArray::end()                          { return IntArray::iterator(&comp_[size_]);         } 
+
+inline  IntArray::const_iterator IntArray::begin() const            { return IntArray::const_iterator(&comp_[0]);       }  
+inline  IntArray::const_iterator IntArray::end()   const            { return IntArray::const_iterator(&comp_[size_]);   } 
+
+inline  IntArray::reverse_iterator IntArray::rbegin()               { return IntArray::reverse_iterator(end());         } 
+inline  IntArray::reverse_iterator IntArray::rend()                 { return IntArray::reverse_iterator(begin());       } 
+
+inline  IntArray::const_reverse_iterator IntArray::rbegin() const   { return IntArray::const_reverse_iterator(end());   }  
+inline  IntArray::const_reverse_iterator IntArray::rend()   const   { return IntArray::const_reverse_iterator(begin()); } 
+
+
+inline IntArray::IntArray( IntArray const& x) 
+ : size_(x.size_)
+{
+   std::copy ( x.begin(), x.end(), begin() ) ;
 }
 
 
-inline IntArray IntArray::operator+( IntArray const& y) const {
+inline int IntArray::Sum() const 
+{
+    
+    return std::accumulate( begin(), end(), int());
+}
+
+
+inline IntArray IntArray::operator+( IntArray const& y) const 
+{
      
      IntArray ret( *this );
-     const exponent_t* yPtr = &(y._comp[0])   - 1;  
-     exponent_t* xPtr = &(ret._comp[0]) - 1; 
 
-     const exponent_t* upper = yPtr + _dim;
-     while( yPtr < upper ) { 
-        *(++xPtr) += *(++yPtr);
-     }
+     std::transform( begin(), end(), y.begin(), ret.begin(), std::plus<exponent_t>());
+  
      return ret;
 }
 
-// -----------------------------------------------------------------
-// Iterator classes with inlined member functions for efficiency. 
-//------------------------------------------------------------------
 
-class IntArrayIterator{
+inline int  IntArray::Dim() const 
+{ 
+  return size_;
+}
 
- public:
 
-  IntArrayIterator( const IntArray& a): _origin(&a._comp[0] - 1), _current_index(_origin) { }
-  int operator()()   { return *(++_current_index); }
-  void reset()       { _current_index = _origin;   }
+inline  int     IntArray::operator()(  int i )  const
+{ 
+   int value = comp_[i]; 
+   return value;
+}    
 
- protected:
 
-   const exponent_t* _origin;
-   const exponent_t* _current_index;
-	   
-};
-
-class IntArrayReverseIterator{
-
- public:
-
-  IntArrayReverseIterator( const IntArray& a): _origin(&a._comp[a._dim]), _current_index(_origin) { }
-  int operator()() { return *(--_current_index); }
-  void reset()     { _current_index = _origin;   }
-
- protected:
-
-   const exponent_t* _origin;
-   const exponent_t* _current_index;
-	   
-};
+inline  exponent_t&  IntArray::operator()  ( int  i )
+{
+  return comp_[i]; 
+}    
 
 
 #endif // INTARRAY_H
