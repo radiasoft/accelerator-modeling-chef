@@ -33,6 +33,13 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+******
+****** REVISION HISTORY:
+******
+****** Mar 2007     ostiguy@fnal.gov
+******
+****** - added support for reference counted smart pointers.
+****** - added proper assignment operator
 **************************************************************************
 *************************************************************************/
 
@@ -43,8 +50,16 @@
 #include <beamline/bmlnElmnt.h>
 #include <beamline/BmlVisitor.h>
 
+class BmlVisitor;
+class ConstBmlVisitor;
+
 class Particle;
 class JetParticle;
+
+class CF_rbend;
+
+typedef boost::shared_ptr<CF_rbend>            CFRbendPtr;
+typedef boost::shared_ptr<CF_rbend const> ConstCFRbendPtr;
 
 class DLLEXPORT CF_rbend : public bmlnElmnt
 {
@@ -120,18 +135,21 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
 
   ~CF_rbend();
 
+  CF_rbend& operator=( CF_rbend const& rhs);
+
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
+
   void localPropagate( ParticleBunch& x ) 
     { bmlnElmnt::localPropagate( x ); }
 
-  void accept( BmlVisitor& v ) { v.visitCF_rbend( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitCF_rbend( this ); }
+  void accept( BmlVisitor& v ); 
+  void accept( ConstBmlVisitor& v ) const; 
+
   void acceptInner( BmlVisitor& v );
   void acceptInner( ConstBmlVisitor& v );
   
-  // REMOVE: void peekAt( double& s, Particle* = 0 );
-  void peekAt( double& s, const Particle& ) const;
+  void peekAt( double& s, const Particle& );
 
   const char* Type() const;
   bool isMagnet() const;
