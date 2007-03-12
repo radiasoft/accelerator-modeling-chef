@@ -45,24 +45,24 @@
 #include <beamline/Alignment.h>
 
 
-class DLLEXPORT mover : public circuit {
-protected:
-  alignmentData align;
+class DLLEXPORT mover : public Circuit {
+
 public:
 
-  mover();
   mover( char const* name );
+ ~mover();
 
-  virtual ~mover();
+  void append( ElmPtr );
 
-  mover( char const*, bmlnElmnt* );
-  mover(              bmlnElmnt* );
-
-  void append( bmlnElmnt* );
   void switchOn();
   void switchOff();
-  void set( void* );
-  void get( void* );
+
+  void set( alignmentData const& );
+  alignmentData get() const;
+
+protected:
+
+  alignmentData align_;
 
 };
 
