@@ -63,30 +63,36 @@
 class FramePusher : public ConstBmlVisitor
 {
  public:
+
   FramePusher();
-  FramePusher( Frame      const& );
+  FramePusher( Frame       const& );
   FramePusher( FramePusher const& );
-  ~FramePusher();
+ ~FramePusher();
 
-  void visitBmlnElmnt( const bmlnElmnt* );
+  void visit( bmlnElmnt const& );
 
-  void visitSlot     ( const Slot*     );
-  void visitSbend    ( const sbend*    );
-  void visitCF_sbend ( const CF_sbend* );
-  void visitRbend    ( const rbend*    );
-  void visitCF_rbend ( const CF_rbend* );
-  void visitSector   ( const sector*   );
+  void visit( Slot      const& );
+  void visit( sbend     const& );
+  void visit( CF_sbend  const& );
+  void visit( rbend     const& );
+  void visit( CF_rbend  const& );
+  void visit( sector    const& );
 
   Frame getFrame();
 
  private: 
-  Frame _frame;
-  int _errorCode;
+
+  Frame frame_;
+  int   errorCode_;
 
   static const int OKAY;
   static const int SECTORVISITED;
 };
 
-#include "FramePusher.icc"
+
+inline Frame FramePusher::getFrame()
+{
+  return frame_;
+}
 
 #endif // FRAMEPUSHER_H
