@@ -177,8 +177,7 @@ XsifParserDriver::~XsifParserDriver()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int  
-XsifParserDriver::parse(string const& f)
+int XsifParserDriver::parse(string const& f)
 {
  
   m_file = f; 
@@ -203,8 +202,7 @@ XsifParserDriver::parse(string const& f)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int  
-XsifParserDriver::parseFromBuffer(char const* buffer)
+int XsifParserDriver::parseFromBuffer(char const* buffer)
 {
  
   m_buffer = buffer; 
@@ -230,8 +228,7 @@ XsifParserDriver::parseFromBuffer(char const* buffer)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void
-XsifParserDriver::error(  xsif_yy::location const& l, const string& m) const
+void XsifParserDriver::error(  xsif_yy::location const& l, const string& m) const
 {
 
   stringstream ss; 
@@ -270,8 +267,7 @@ XsifParserDriver::error(  xsif_yy::location const& l, const string& m) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void
-XsifParserDriver::error( const string& m) 
+void XsifParserDriver::error( const string& m) 
 {
 
   cerr << "XsifParserDriver::error( const string& m): " << m << endl;
@@ -281,36 +277,96 @@ XsifParserDriver::error( const string& m)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void
-XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string const& name, vector<string> const & elements ) { 
+vector<string>* XsifParserDriver::instantiateAnonymousLine( xsif_yy::location const& yyloc, vector<string> const & elements, int ntimes) 
+{
+
+ //------------------------------------------------------------------------------------------------------------------------------------
+ // An "anonymous" line is created when a statement like N*( elem1, elm2 ... elmn) etc is encountered.
+ // The N copies of the lines are expanded into a *single* line as follows: 
+ // ( elm1, elm2, ....,elmn, elm1, elm2, ....,elmn, elm1, elm2, ....,elmn, ...)
+ // -------------------------------------------------------------------------------------------------------------------------------------  
+ 
+ vector<string>* anonymous  = new  vector<string>;
+
+ enum ElementOrder { FORWARD, REVERSE };
+ 
+  ElementOrder     order = FORWARD;
+  if (ntimes < 0 ) order = REVERSE; 
+
+  switch (order) {
+
+  case FORWARD:
+ 
+      for (int i=0; i < abs(ntimes); ++i ) {   
+         for ( vector<string>::const_iterator it = elements.begin(); it != elements.end(); ++it ){
+	   anonymous->push_back( *it );   
+	 }
+      }
+      break;
+
+  case REVERSE:  
+      for (int i=0; i < abs(ntimes); ++i ) {   
+         for ( vector<string>::const_reverse_iterator it = elements.rbegin(); it != elements.rend(); ++it ){
+	   anonymous->push_back( *it );   
+	 }
+      }
+      break;
+  }
+
+  return anonymous;
+ 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+BmlPtr XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string const& name, vector<string> const & elements ) 
+{ 
 
   
   beamline* bl = new beamline( name.c_str() ); 
   bl->setEnergy( m_energy); 
 
-  map<string,  beamline*>::iterator bml_it;  
-  map<string, bmlnElmnt*>::iterator elm_it;  
- 
+  map<string, BmlPtr>::iterator bml_it;  
+  map<string, ElmPtr>::iterator elm_it;  
+  
+
   for ( vector<string>::const_iterator it=elements.begin(); it != elements.end(); ++it ) {
 
-    if      ( (bml_it = m_lines.find(*it) )    !=  m_lines.end() ) {
+     if( (bml_it = m_lines.find(*it) )    !=  m_lines.end() ) {
   
-        bl->append( bml_it->second->Clone());
-    } 
-    else if ( (elm_it = m_elements.find(*it) ) !=  m_elements.end() ){ 
-        bl->append(elm_it->second->Clone());
-    }
-    else if( contains((*it), "(") ) {
-        bl->append( expandLineMacro(yyloc, *it) );
-    } 
-    else {
-       delete bl;
-       error( yyloc, string(" Error: Element ") + (*it) + string(" is undefined."));
-    }
+          bl->append( BmlPtr( bml_it->second->Clone() ));   // ???? Cloning required ???
+     } 
+     else if ( (elm_it = m_elements.find(*it) ) !=  m_elements.end() ){ 
+          bl->append( ElmPtr( elm_it->second->Clone() )); // ???? Cloning required ???
+     }
+     else if( contains((*it), "(") ) {
+          bl->append( expandLineMacro(yyloc, *it) );
+     } 
+          else {
+     delete bl;
+          error( yyloc, string(" Error: Element ") + (*it) + string(" is undefined."));
+     }
   } 
  
+  return BmlPtr(bl);
+}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-   m_lines[name] = bl;
+void XsifParserDriver::addLineToDictionary( std::string const& label, BmlPtr& bml ) 
+{
+  m_lines[label] = BmlPtr(bml);
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void XsifParserDriver::addElmToDictionary( std::string const& label, ElmPtr& elm ) 
+{
+  m_elements[label] = ElmPtr(elm);
 
 }
 
@@ -318,8 +374,7 @@ XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string const&
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
   
-void
-XsifParserDriver::defineLineMacro(xsif_yy::location const& yyloc, string const& name_and_args, vector<string> const& elements ) { 
+void XsifParserDriver::defineLineMacro(xsif_yy::location const& yyloc, string const& name_and_args, vector<string> const& elements ) { 
 
   //---------------------------------------------------------------------------------------------------------
   // Define a macro. 'name_and_args' includes the parentheses and a list of comma separated dummy arguments. 
@@ -390,8 +445,7 @@ XsifParserDriver::defineLineMacro(xsif_yy::location const& yyloc, string const& 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-beamline*
-XsifParserDriver::expandLineMacro(xsif_yy::location const& yyloc, string const& name_and_args) { 
+BmlPtr XsifParserDriver::expandLineMacro(xsif_yy::location const& yyloc, string const& name_and_args) { 
 
   //-------------------------------------------------------------------------------------------------------------------------------------
   // Recursively expands the line defined by the macro call 'name_and_args', which includes the parentheses and 
@@ -436,11 +490,12 @@ XsifParserDriver::expandLineMacro(xsif_yy::location const& yyloc, string const& 
 
   // substitute arguments and return the expanded line ... 
  
-  beamline* bl = new beamline ( name_and_args.c_str() ); 
+  BmlPtr bl( new beamline ( name_and_args.c_str() ) ); 
+
   bl->setEnergy( m_energy );
 
-  map<string, bmlnElmnt*>::iterator elm_it;
-  map<string,  beamline*>::iterator bml_it;
+  map<string,  ElmPtr>::iterator elm_it;
+  map<string,  BmlPtr>::iterator bml_it;
 
   for( vector<string>::iterator ite = expanded_line.begin(); ite !=  expanded_line.end(); ++ite ) {
 
@@ -476,21 +531,21 @@ XsifParserDriver::expandLineMacro(xsif_yy::location const& yyloc, string const& 
      } 
      else if ( (bml_it = m_lines.find(*ite)) != m_lines.end() ) {   
 	
-         bl->append( bml_it->second->Clone() ); 
+       bl->append( BmlPtr( bml_it->second->Clone() ) );  // is cloning required here ????
 
      } 
      else if ( (elm_it = m_elements.find(*ite)) != m_elements.end() ) {   
 	
-         bl->append( elm_it->second->Clone() ); 
+       bl->append( ElmPtr( elm_it->second->Clone() ) ); //  is cloning required here ????
 
      }
      else {
-       delete bl;    
        error(yyloc, string("Error: element ") + (*ite) + string(" is undefined. ") );
 
      }
    
   }
+
   return bl;  
 
 }
@@ -499,10 +554,9 @@ XsifParserDriver::expandLineMacro(xsif_yy::location const& yyloc, string const& 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline*
-XsifParserDriver::getLine(string label) { 
+BmlPtr XsifParserDriver::getLine(string label) { 
 
-  if  ( m_lines.find(label) ==  m_lines.end() ) return 0; // line not found
+  if  ( m_lines.find(label) ==  m_lines.end() ) return BmlPtr(); // line not found
   return m_lines[label]; 
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -512,7 +566,7 @@ XsifParserDriver::getLine(string label) {
 double  XsifParserDriver::getElmAttributeVal( xsif_yy::location const& yyloc, string const& elm, string const& attrib) const
 {
 
-     std::map<std::string, bmlnElmnt*>::const_iterator it_elm = m_elements.find( elm );
+     std::map<std::string, ElmPtr>::const_iterator it_elm = m_elements.find( elm );
 
      if ( it_elm == m_elements.end() ) 
      { 
@@ -527,8 +581,17 @@ double  XsifParserDriver::getElmAttributeVal( xsif_yy::location const& yyloc, st
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+// void XsifParserDriver::command_CALL     **** implementation located in Xsif_lex.l ****    
 
-void XsifParserDriver::command_BEAM( xsif_yy::location const& yyloc, std::vector<attrib_pair_t> const& attributes) {
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+// void XsifParserDriver::command_RETURN   **** implementation located in Xsif_lex.l ****
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ void XsifParserDriver::command_BEAM( xsif_yy::location const& yyloc, std::vector<attrib_pair_t> const& attributes) {
 
   //-----------------------------------------------------------------------------------------------------------------
   //    BEAM, PARTICLE=name, ENERGY=real,PC=real,GAMMA=real,&
@@ -558,7 +621,7 @@ void XsifParserDriver::command_BEAM( xsif_yy::location const& yyloc, std::vector
   double sigt     = eval( string("SIGT"),       attributes, value) ? any_cast<double> (value): 0.0;
   double sige     = eval( string("SIGE"),       attributes, value) ? any_cast<double> (value): 0.0;
   int    kbunch   = eval( string("KBUNCH"),     attributes, value) ? any_cast<int>    (value): 0;
-  int    npart    = eval( string("NPART"),      attributes, value) ? any_cast<int>    (value): 0;
+  double npart    = eval( string("NPART"),      attributes, value) ? any_cast<double> (value): 0.0;
   double bcurrent = eval( string("BCURRENR"),   attributes, value) ? any_cast<double> (value): 0;
   bool   bunched  = eval( string("BUNCHED"),    attributes, value) ? any_cast<bool>   (value): false;
   bool   radiate  = eval( string("RADIATE"),    attributes, value) ? any_cast<bool>   (value): false;
@@ -638,6 +701,8 @@ XsifParserDriver::init()
      m_makefncs["ECOLLIMATOR"] = &XsifParserDriver::make_matrix;
      m_makefncs["RCOLLIMATOR"] = &XsifParserDriver::make_rcollimator;
      m_makefncs["INSTRUMENT" ] = &XsifParserDriver::make_instrument;
+     m_makefncs["BLMONITOR"  ] = &XsifParserDriver::make_blmonitor;
+     m_makefncs["WIRE"       ] = &XsifParserDriver::make_wire;
 
 
 }
@@ -673,7 +738,7 @@ namespace {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void
+ElmPtr
 XsifParserDriver::instantiateElement(xsif_yy::location const& yyloc, string const& label, vector<attrib_pair_t> const & attributes ) 
 {
   
@@ -694,40 +759,48 @@ XsifParserDriver::instantiateElement(xsif_yy::location const& yyloc, string cons
  pair<string, XsifParserDriver::make_fnc_ptr> search (elm_type, 0);
 
  pair< map<string, XsifParserDriver::make_fnc_ptr>::iterator,  map<string, XsifParserDriver::make_fnc_ptr>::iterator> result = 
- equal_range( m_makefncs.begin(), m_makefncs.end(), search, Ordering() ); 
+                                                       equal_range( m_makefncs.begin(), m_makefncs.end(), search, Ordering() ); 
  
+
+ // if ( result.first == result.second ) error (yyloc, label + string( " is undefined.") ); // element type is undefined
+
  double BRHO   = m_variables["BRHO"].evaluate();
  
- if (  (result.first != m_makefncs.end()) && (distance(result.first,result.second) < 2) )  
-    m_elements[label] = m_makefncs[result.first->first]( BRHO,  label, attributes);   // unambiguous match;
- else
-   throw GenericException( __FILE__, __LINE__, "XsifParserDriver::instantiateElement", "Type name is ambiguous." );
+ ElmPtr elm;
 
+ if ( ( result.first != m_makefncs.end() ) && (distance(result.first,result.second) < 2)) {
+    elm = m_makefncs[result.first->first]( BRHO,  label, attributes);   // unambiguous match;
+ }
+ else {
+   throw GenericException( __FILE__, __LINE__, "XsifParserDriver::instantiateElement", "Element type is ambiguous or unknown.");
+ }
+
+ return elm;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-bmlnElmnt* XsifParserDriver::make_drift( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ElmPtr XsifParserDriver::make_drift( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
    any value;
    eval( string("L"), attributes, value);
-   return new drift( label.c_str(), any_cast<double>(value) );
+   return ElmPtr( new drift( label.c_str(), any_cast<double>(value) ) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
  
-bmlnElmnt* XsifParserDriver::make_marker(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ElmPtr XsifParserDriver::make_marker(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
-      return new marker(  label.c_str() );
+      return ElmPtr( new marker(  label.c_str() ) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
  
-bmlnElmnt*  XsifParserDriver::make_sbend(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ElmPtr  XsifParserDriver::make_sbend(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
   //---------------------------------------------------------------------
   // valid attributes for type SBEND  
@@ -779,7 +852,7 @@ bmlnElmnt*  XsifParserDriver::make_sbend(  double const& BRHO, std::string const
   if ( eval( string("E2"),     attributes, value) )    e2     = any_cast<double>(value); 
 
 
-  if( simple) return new sbend( label.c_str(), length, BRHO*angle/length, angle, e1, e2 );
+  if( simple) return ElmPtr( new sbend( label.c_str(), length, BRHO*angle/length, angle, e1, e2 ) );
 
   elm = new CF_sbend( label.c_str(), length, BRHO*angle/length, angle, e1, e2 );
 
@@ -807,14 +880,14 @@ bmlnElmnt*  XsifParserDriver::make_sbend(  double const& BRHO, std::string const
   
   
 
-  return elm;
+  return ElmPtr(elm);
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_rbend(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ElmPtr  XsifParserDriver::make_rbend(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
 
   //---------------------------------------------------------------------
@@ -852,9 +925,9 @@ bmlnElmnt*  XsifParserDriver::make_rbend(  double const& BRHO, std::string const
 
   if ( eval( string("L"),      attributes, value) )    length = any_cast<double>(value); 
   if ( eval( string("ANGLE"),  attributes, value) )    angle  = any_cast<double>(value); 
-  if ( eval( string("K1"),     attributes, value) )  { k1     = any_cast<double>(value); simple = (k1 == 0.0); } 
-  if ( eval( string("K2"),     attributes, value) )  { k2     = any_cast<double>(value); simple = (k2 == 0.0); }
-  if ( eval( string("K3"),     attributes, value) )  { k3     = any_cast<double>(value); simple = (k3 == 0.0); }
+  if ( eval( string("K1"),     attributes, value) )  { k1     = any_cast<double>(value); simple = false; } 
+  if ( eval( string("K2"),     attributes, value) )  { k2     = any_cast<double>(value); simple = false; }
+  if ( eval( string("K3"),     attributes, value) )  { k3     = any_cast<double>(value); simple = false; }
   if ( eval( string("TILT"),   attributes, value) )  {  if (value.empty() ) 
                                                            { simple = false; tilt = M_PI/2.0; } 
                                                         else 
@@ -872,7 +945,7 @@ bmlnElmnt*  XsifParserDriver::make_rbend(  double const& BRHO, std::string const
       elm = new rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
     }
    
-    return elm;
+    return ElmPtr(elm);
   }
 
   if( (0.0 == e1) && (0.0 == e2) ) {
@@ -903,13 +976,13 @@ bmlnElmnt*  XsifParserDriver::make_rbend(  double const& BRHO, std::string const
       dynamic_cast<CF_rbend*>(elm)->setOctupole( multipoleStrength );
   }
 
-  return elm;     
+  return ElmPtr(elm);     
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_quadrupole( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ElmPtr  XsifParserDriver::make_quadrupole( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 { 
 
   //---------------------------------------------------------------------
@@ -933,7 +1006,11 @@ bmlnElmnt*  XsifParserDriver::make_quadrupole( double const& BRHO, std::string c
 
   if ( eval( string("L"),        attributes, value) )    length   = any_cast<double>(value); 
   if ( eval( string("K1"),       attributes, value) )    k1       = any_cast<double>(value); 
-  if ( eval( string("TILT"),     attributes, value) )    tilt     = any_cast<double>(value); 
+  if ( eval( string("TILT"),     attributes, value) )  {  if (value.empty() ) 
+                                                           { tilt = M_PI/4.0; } 
+                                                        else 
+                                                           { tilt  = any_cast<double>(value); } 
+                                                     }; 
   if ( eval( string("APERTURE"), attributes, value) )    aperture = any_cast<double>(value); 
   
   if ( length != 0.0 ) {
@@ -949,13 +1026,13 @@ bmlnElmnt*  XsifParserDriver::make_quadrupole( double const& BRHO, std::string c
     elm->setAlignment( aligner );
   }
 
-  return elm;
+  return ElmPtr(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_sextupole(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes )
+ElmPtr  XsifParserDriver::make_sextupole(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes )
 { 
 
   //---------------------------------------------------------------------
@@ -978,7 +1055,11 @@ bmlnElmnt*  XsifParserDriver::make_sextupole(  double const& BRHO, std::string c
 
   if ( eval( string("L"),        attributes, value) )    length   = any_cast<double>(value); 
   if ( eval( string("K2"),       attributes, value) )    k2       = any_cast<double>(value); 
-  if ( eval( string("TILT"),     attributes, value) )    tilt     = any_cast<double>(value); 
+  if ( eval( string("TILT"),     attributes, value) )  {  if (value.empty() ) 
+                                                           { tilt = M_PI/6.0; } 
+                                                        else 
+                                                           { tilt  = any_cast<double>(value); } 
+                                                     }; 
   if ( eval( string("APERTURE"), attributes, value) )    aperture = any_cast<double>(value); 
   
   if ( length != 0.0 ) {
@@ -994,14 +1075,14 @@ bmlnElmnt*  XsifParserDriver::make_sextupole(  double const& BRHO, std::string c
     elm->setAlignment( aligner );
   }
 
-  return elm;
+  return ElmPtr(elm);
 }
 
  
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_octupole(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes )
+ElmPtr  XsifParserDriver::make_octupole(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes )
 {
   //---------------------------------------------------------------------
   // valid attributes for type SEXTUPOLE
@@ -1024,7 +1105,11 @@ bmlnElmnt*  XsifParserDriver::make_octupole(  double const& BRHO, std::string co
 
   if ( eval( string("L"),        attributes, value) )    length   = any_cast<double>(value); 
   if ( eval( string("K3"),       attributes, value) )    k3       = any_cast<double>(value); 
-  if ( eval( string("TILT"),     attributes, value) )    tilt     = any_cast<double>(value); 
+  if ( eval( string("TILT"),     attributes, value) )  {  if (value.empty() ) 
+                                                           { tilt = M_PI/8.0; } 
+                                                        else 
+                                                           { tilt  = any_cast<double>(value); } 
+                                                     }; 
   if ( eval( string("APERTURE"), attributes, value) )    aperture = any_cast<double>(value); 
   
   if ( length != 0.0 || k3 != 0.0 ) {
@@ -1040,13 +1125,13 @@ bmlnElmnt*  XsifParserDriver::make_octupole(  double const& BRHO, std::string co
     elm->setAlignment( aligner );
   }
 
-  return elm;
+  return ElmPtr(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_multipole( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes )
+ElmPtr  XsifParserDriver::make_multipole( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes )
 {
 
 //---------------------------------------------------------------------
@@ -1062,11 +1147,11 @@ bmlnElmnt*  XsifParserDriver::make_multipole( double const& BRHO, std::string co
 
 
 any value;
-bmlnElmnt* elm = 0;
+ElmPtr elm;
 alignmentData aligner;
 
-bmlnElmnt* q    = 0;
-beamline* temp  = new beamline( label.c_str() ); 
+ElmPtr  q;
+beamline*  temp  = new beamline( label.c_str() ); 
 temp->setEnergy( BRHO ); 
 
 double   kl[21]; { for (int i=0; i<21; ++i)   kl[i] = 0.0; } // LEAK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1083,7 +1168,7 @@ if ( eval( string("T2"),    attributes, value) )    tilt[2] = any_cast<double>(v
 if ( eval( string("T3"),    attributes, value) )    tilt[3] = any_cast<double>(value); 
 
 if( kl[0] != 0.0 ) {
-  q    = new thin2pole(BRHO*kl[0]);
+  q    = ElmPtr( new thin2pole(BRHO*kl[0]) );
   if( tilt[0] != 0.0 ) {
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
@@ -1094,7 +1179,7 @@ if( kl[0] != 0.0 ) {
 }
 
 if( kl[1] != 0.0 ) {
-  q = new thinQuad( BRHO*kl[1] );
+  q = ElmPtr( new thinQuad( BRHO*kl[1] ) );
   if( 0.0 != tilt[1] ) {
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
@@ -1105,7 +1190,7 @@ if( kl[1] != 0.0 ) {
 }
 
 if( kl[2] != 0.0 ) {
-  q = new thinSextupole( BRHO*kl[2]/2.0 );
+  q = ElmPtr( new thinSextupole( BRHO*kl[2]/2.0 ) );
   if( tilt[2] != 0.0 ) {
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
@@ -1116,7 +1201,7 @@ if( kl[2] != 0.0 ) {
 }
 
 if( kl[3] != 0.0 ) {
-  q = new thinOctupole( BRHO*kl[3]/6.0 );
+  q = ElmPtr( new thinOctupole( BRHO*kl[3]/6.0 ) );
   if( 0.0 != tilt[3] ) {
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
@@ -1129,16 +1214,14 @@ if( kl[3] != 0.0 ) {
 int n = temp->howMany();
 
 if( n == 0 ) {
-  elm = new marker( label.c_str() );
-  delete temp;
+  elm = ElmPtr( new marker( label.c_str() ) );
 }
 else if( n == 1 ) {
   elm = temp->firstElement();
   elm->rename( label.c_str() );
-  delete temp;  // This should not delete the element.
 }
 else {
-  elm = temp;
+  elm = BmlPtr(temp);
 }
 
 return elm;
@@ -1146,11 +1229,10 @@ return elm;
 }
 
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_solenoid(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes )  
+ElmPtr XsifParserDriver::make_solenoid(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes )  
 {
 
   //---------------------------------------------------------------------
@@ -1179,16 +1261,15 @@ bmlnElmnt*  XsifParserDriver::make_solenoid(  double const& BRHO, std::string co
   if ( eval( string("TILT"),     attributes, value) )    tilt     = any_cast<double>(value); 
   if ( eval( string("APERTURE"), attributes, value) )    aperture = any_cast<double>(value); 
 
-  //elm = make_solenoid( label.c_str() , length);
-  elm = 0;
-  return elm;
+  elm = new marker("SOLENOID");
+  return ElmPtr(elm);
 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_hkicker( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ElmPtr  XsifParserDriver::make_hkicker( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
 
  //---------------------------------------------------------------------
@@ -1224,14 +1305,14 @@ bmlnElmnt*  XsifParserDriver::make_hkicker( double const& BRHO, std::string cons
     elm->setAlignment( aligner );
   }
 
-  return elm;
+  return ElmPtr(elm);
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_vkicker( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ElmPtr  XsifParserDriver::make_vkicker( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
  //---------------------------------------------------------------------
  // valid attributes for type VKICK
@@ -1268,13 +1349,13 @@ bmlnElmnt*  XsifParserDriver::make_vkicker( double const& BRHO, std::string cons
     elm->setAlignment( aligner );
   }
 
-  return elm;
+  return ElmPtr(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_kicker(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ElmPtr  XsifParserDriver::make_kicker(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
 
  //---------------------------------------------------------------------
@@ -1315,7 +1396,7 @@ bmlnElmnt*  XsifParserDriver::make_kicker(  double const& BRHO, std::string cons
     elm->setAlignment( aligner );
   }
 
-  return elm;
+  return ElmPtr(elm);
 }
 
 
@@ -1323,7 +1404,7 @@ bmlnElmnt*  XsifParserDriver::make_kicker(  double const& BRHO, std::string cons
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_lcavity(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ElmPtr XsifParserDriver::make_lcavity(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
   
   /***************
@@ -1374,14 +1455,14 @@ bmlnElmnt*  XsifParserDriver::make_lcavity(  double const& BRHO, std::string con
   std::cout <<  "TFILE = "     << tfile     << std::endl;
   ***********/ 
    
-  return elm;
+  return ElmPtr(elm);
 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ElmPtr  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
  //----------------------------------------------------------------------------------------------
  // valid attributes for type RFCAVITY
@@ -1444,7 +1525,7 @@ bmlnElmnt*  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string co
 
   // Ignored parameters: BETRF, PG, TFILL
 
-  return elm;
+  return ElmPtr(elm);
   
 }
 
@@ -1452,7 +1533,7 @@ bmlnElmnt*  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string co
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- bmlnElmnt*  XsifParserDriver::make_monitor(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ ElmPtr  XsifParserDriver::make_monitor(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
  //----------------------------------------------------------------------------------------------
  // valid attributes for type HMONITOR
@@ -1485,13 +1566,13 @@ bmlnElmnt*  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string co
   else {
     elm = new monitor( label.c_str() );
   }
-  return elm;
+  return ElmPtr(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- bmlnElmnt*  XsifParserDriver::make_hmonitor(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ ElmPtr  XsifParserDriver::make_hmonitor(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
  //----------------------------------------------------------------------------------------------
  // valid attributes for type HMONITOR
@@ -1525,13 +1606,13 @@ bmlnElmnt*  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string co
   else {
     elm = new hmonitor( label.c_str() );
   }
-  return elm;
+  return ElmPtr(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- bmlnElmnt*  XsifParserDriver::make_vmonitor(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ ElmPtr  XsifParserDriver::make_vmonitor(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
  {
 
  //----------------------------------------------------------------------------------------------
@@ -1567,28 +1648,28 @@ bmlnElmnt*  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string co
     elm = new vmonitor(  label.c_str() );
   }
 
-  return elm;
+  return ElmPtr(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_instrument(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ElmPtr  XsifParserDriver::make_instrument(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
 
   
   any value;
   bmlnElmnt* elm = 0;
 
-  elm = 0;
-  return elm; 
+  elm = new marker("INSTRUMENT");
+  return ElmPtr(elm); 
 
 }
  
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_ecollimator(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
+ElmPtr  XsifParserDriver::make_ecollimator(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
 {
 
   
@@ -1599,14 +1680,14 @@ bmlnElmnt*  XsifParserDriver::make_ecollimator(  double const& BRHO, std::string
    if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
    // elm = make_ecollimator(  label.c_str(), length );
-   elm = 0;
-   return elm; 
+   elm = new marker("ECOLLIMATOR");
+   return ElmPtr(elm); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_rcollimator(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
+ElmPtr  XsifParserDriver::make_rcollimator(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
 {
   
   any value;
@@ -1616,14 +1697,15 @@ bmlnElmnt*  XsifParserDriver::make_rcollimator(  double const& BRHO, std::string
   if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
   //elm = make_rcollimator(  label.c_str(), length );
-  elm = 0;
-  return elm; 
+
+  elm = new marker("RCOLLIMATOR");
+  return ElmPtr(elm); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_yrot(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ElmPtr  XsifParserDriver::make_yrot(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
 
   
@@ -1633,15 +1715,14 @@ bmlnElmnt*  XsifParserDriver::make_yrot(  double const& BRHO, std::string const&
   double length = 0.0;
   if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
-  //elm = make_yrot(  label.c_str(), length);
-  elm = 0;
-  return elm; 
+  elm = new marker("YROT");
+  return ElmPtr(elm); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_srot( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
+ElmPtr  XsifParserDriver::make_srot( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
   
   any value;
@@ -1650,15 +1731,14 @@ bmlnElmnt*  XsifParserDriver::make_srot( double const& BRHO, std::string const& 
   double angle = 0.0;
   if ( eval( string("ANGLE"),   attributes, value) )    angle   = any_cast<double>(value); 
 
-  //elm = new srot( label.c_str(), angle );
-  elm = 0;
-  return elm;
+  elm =  new marker("SROT");;
+  return ElmPtr(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_beambeam( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
+ElmPtr  XsifParserDriver::make_beambeam( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
 {
   
   any value;
@@ -1667,16 +1747,15 @@ bmlnElmnt*  XsifParserDriver::make_beambeam( double const& BRHO, std::string con
   double length = 0.0;
   if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
-  //     elm = make_beambeam(  label.c_str(), length);
-  elm = 0;
-  return elm;
+  elm =  new marker("BEAMBEAM");;
+  return ElmPtr(elm);
 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_matrix( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
+ElmPtr  XsifParserDriver::make_matrix( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
 {
 
   
@@ -1686,16 +1765,16 @@ bmlnElmnt*  XsifParserDriver::make_matrix( double const& BRHO, std::string const
   double length = 0.0;
   if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
-  // elm = make_matrix( label.c_str(), length);
-  elm = 0;
-  return elm;
+
+  elm =  new marker("MATRIX");;
+  return ElmPtr(elm);
 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*  XsifParserDriver::make_lump( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
+ElmPtr  XsifParserDriver::make_lump( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
 {
 
   any value;
@@ -1704,8 +1783,32 @@ bmlnElmnt*  XsifParserDriver::make_lump( double const& BRHO, std::string const& 
   double length = 0.0;
   if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
-  //elm = make_lump( label.c_str(), length);
-  elm = 0;
-  return elm;
+
+  elm =  new marker("LUMP");;
+  return ElmPtr(elm);
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ElmPtr  XsifParserDriver::make_wire( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
+{
+
+  bmlnElmnt* elm = new marker("WIRE");
+
+  return ElmPtr(elm);
+}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ElmPtr  XsifParserDriver::make_blmonitor( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
+{
+
+  bmlnElmnt* elm = new marker("BLMONITOR");
+ 
+
+  return ElmPtr(elm);
+}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
