@@ -45,19 +45,26 @@
 #include <beamline/circuit.h>
 
 
-class DLLEXPORT ICircuit : public circuit {
-protected:
-  double current;
+class DLLEXPORT ICircuit : public Circuit {
+
 public:
-  ICircuit();
-  ~ICircuit();
+
   ICircuit( const char* );
-  ICircuit( bmlnElmnt* );
-  ICircuit( const char*, bmlnElmnt* );
+ ~ICircuit();
+
   void switchOn();
   void switchOff();
-  void set( void* );
-  void get( void* );
+
+  void   set( double const&);
+  double get( ) const;
+
+  void append( ElmPtr );
+
+protected:
+
+  double current_;
+
+
 };
 
 #endif // ICIRCUIT_H
