@@ -32,7 +32,12 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007:          ostiguy@fnal.gov
+******
+****** - introduced bunch iterators
+****** - use STL containers for implementation
 **************************************************************************
 *************************************************************************/
 
@@ -49,9 +54,13 @@
 
 #include <boost/shared_ptr.hpp>
 
-typedef boost::shared_ptr<Particle> ParticlePtr;
-typedef boost::shared_ptr<Proton>   ProtonPtr;
-typedef boost::shared_ptr<Positron> PositronPtr;
+typedef boost::shared_ptr<Particle>       ParticlePtr;
+typedef boost::shared_ptr<Particle const> ConstParticlePtr;
+
+typedef boost::shared_ptr<Proton>         ProtonPtr;
+typedef boost::shared_ptr<Proton const>   ConstProtonPtr;
+typedef boost::shared_ptr<Positron>       PositronPtr;
+typedef boost::shared_ptr<Positron const> ConstPositronPtr;
 
 
 class ParticleBunch 
@@ -73,22 +82,9 @@ public:
       const ParticleBunch* _within;  // not owned
   };
 
-
-  class Iterator
-  {
-    public:
-      Iterator( ParticleBunch& );
-      Iterator( const Iterator& );
-      ~Iterator();
-
-      const Particle* next();
-      void reset();
-    private:
-
-      std::list<ParticlePtr >::iterator _cur;
-      ParticleBunch* _ref;
-  };
-  friend class Iterator;
+  
+  typedef std::list<ParticlePtr >::iterator       iterator;  
+  typedef std::list<ParticlePtr >::const_iterator const_iterator;
 
 
 // Public member functions
@@ -119,11 +115,17 @@ public:
   void append( ParticlePtr p);     //  Particle is NOT cloned. Shared ownership with caller; 
                                    // caller can safely delete.
 
+  iterator begin();
+  iterator end();
+
+  const_iterator begin() const;
+  const_iterator end()   const;
+
   // void remove( const Particle* );
 
   std::list<ParticlePtr> remove( Discriminator& );
+
   void clear();
-  void empty();
    
   // I'll have to think carefully about this one.
   // Returns a list of removed particles and hands
@@ -131,16 +133,15 @@ public:
 
 
   // Query functions
-  int size() const;
-  bool isEmpty() const;
+  int size()   const;
+  bool empty() const;
 
 protected:
 
   virtual Particle*  makeParticle(double energy, Vector const& state) = 0;
 
-  std::list<ParticlePtr> _bag;
+  std::list<ParticlePtr> bunch_;
 
-  // Particles in the _bag are owned by the ParticleBunch object.
 };
 
 
@@ -172,7 +173,7 @@ public:
               );
 
   ProtonBunch( int, int, char, double, double );
-  ~ProtonBunch();
+ ~ProtonBunch();
   
   void append( const Proton& );
   void append( ProtonPtr  );
