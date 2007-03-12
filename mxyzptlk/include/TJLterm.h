@@ -94,12 +94,15 @@ class DLLEXPORT TJLterm
 
  public:
 
-  T        _value;      //  The value associated with the JLterm.
-  int      _weight;     //  The sum of the values in index.  For the above example, 
+  T        value_;      //  The value associated with the JLterm.
+  int      weight_;     //  The sum of the values in index.  For the above example, 
                         //  this would be 4.
-  IntArray _index;      //  An integer array giving the derivatives associated
+  int      offset_;     //  The offset of this term in the scratchpad  
+  IntArray index_;      //  An integer array giving the derivatives associated
                         //  with the JLterm.  For example, ( 1, 1, 0, 2 )
                         //  would correspond to D_1^1 D_2^1 D_4^2 .
+
+
 
 
   // Constructors and destructors
@@ -120,11 +123,11 @@ class DLLEXPORT TJLterm
   TJLterm  operator+( TJLterm const& );
   
   // Accessors
-  IntArray& exponents()         { return _index; }
-  IntArray  exponents()   const { return _index; }
-  T&        coefficient()       { return _value; }
-  T         coefficient() const { return _value; }
-  T         coeff()       const { return _value; }  // old
+  IntArray& exponents()         { return index_; }
+  IntArray  exponents()   const { return index_; }
+  T&        coefficient()       { return value_; }
+  T         coefficient() const { return value_; }
+  T         coeff()       const { return value_; }  // old
 
   // JLterm array allocation functions
 
