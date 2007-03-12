@@ -49,6 +49,9 @@
 
 #include <basic_toolkit/utils.h> // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
 #include <basic_toolkit/GenericException.h>
+#include <functional>
+#include <algorithm>
+#include <numeric>
 
 using FNAL::pcerr;
 using FNAL::pcout;
@@ -57,7 +60,7 @@ using FNAL::pcout;
 
 
 template <typename T>
-std::vector<TJL1<T>* > TJL1<T>::_thePool; 
+std::vector<TJL1<T>* > TJL1<T>::thePool_; 
 
 
 // ***************************************************************
@@ -78,17 +81,18 @@ std::vector<TJL1<T>* > TJL1<T>::_thePool;
 
 template<typename T>
 TJL1<T>::TJL1( EnvPtr<T> const& pje, T x): 
-_count( pje->numVar()+1 ),
-_weight(1),                        
-_accuWgt(1),
-_myEnv( pje )  
+count_( pje->numVar()+1 ),
+weight_(1),                        
+accuWgt_(1),
+myEnv_( pje )  
 {
 
-   _std = x; 
-   _jcb = new T[ _count-1 ];
+   terms_ = new T[ count_ ]; 
 
-   for (int i=0; i<_count-1; ++i )  
-        _jcb[i] = T();
+   terms_[0] = x; // standard part 
+   jcb_      = terms_+1;
+
+   std::fill_n( &terms_[0]+1,  count_-1,  T()  ); 
    
  }
 
@@ -101,27 +105,29 @@ JL1Ptr<T>  TJL1<T>::makeTJL( EnvPtr<T> const& pje, T x )
 
   if (!pje) return JL1Ptr<T>(); // this form is called by ONLY by Tcoord and Tparam
 
-  if (_thePool.empty() ) 
+  if (thePool_.empty() ) 
      return (JL1Ptr<T>( new  TJL1<T>(pje, x )) ); 
  
-  TJL1<T>* p   = _thePool.back();  _thePool.pop_back();
+  TJL1<T>* p   = thePool_.back();  thePool_.pop_back();
 
-  if ( p->_count  != pje->numVar()+1 ) {
+  if ( p->count_  != pje->numVar()+1 ) {
       
-      delete [] p->_jcb; 
-      p->_jcb   = new T[ pje->numVar() ];
-      p->_count =  pje->numVar()+1;
+      delete [] p->terms_; 
+
+      p->count_  =  pje->numVar()+1;
+      p->terms_  =  new T[ p->count_ ];
+      p->jcb_    =  p->terms_+1;
   }
  
-  p->_weight   = 1;
-  p->_accuWgt  = 1;
-  p->_myEnv    = pje; 
+  p->weight_   = 1;
+  p->accuWgt_  = 1;
+  p->myEnv_    = pje; 
 
-  p->_std = x;
-  for (int i=0; i<p->_count-1; ++i) p->_jcb[i]= T();
+  p->terms_[0] = x; // std part
 
+  std::fill_n( &(p->terms_[0])+1,  p->count_-1,  T()  ); 
 
- if ( !p->_myEnv ) {
+ if ( !p->myEnv_ ) {
  throw( GenericException( __FILE__, __LINE__, 
           "TJL1<T>:makeTJL( EnvPtr<T> const& pje, T x )",
           "Null Environment." ) );
@@ -134,38 +140,36 @@ JL1Ptr<T>  TJL1<T>::makeTJL( EnvPtr<T> const& pje, T x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJL1<T>::TJL1( const IntArray& e, const T& x, EnvPtr<T> const& pje ) :
- _count(  pje->numVar()+1 ),
- _weight(1),
- _accuWgt(1),
- _myEnv(pje) 
+TJL1<T>::TJL1( IntArray const& e, const T& x, EnvPtr<T> const& pje ) :
+ count_(  pje->numVar()+1 ),
+ weight_(1),
+ accuWgt_(1),
+ myEnv_(pje) 
 {
 
-  _jcb = new T[ _count-1 ];
+  terms_ = new T[ count_ ];
+  jcb_   = terms_+1;
  
-  for (int i=0; i<_count-1; ++i) { _jcb[i] = T(); }
+  std::fill_n( &terms_[0]+1,  count_-1,  T()  ); 
 
-  int weight = 0;
-  for (int i=0; i < _count-1; ++i) {
-    weight  += e(i);
-  }
+  int weight = e.Sum(); 
 
-  if (weight > 1) return;
+  if ( weight > 1) return;
 
-  if (weight ==0) {
-    _std = x;   
+  if ( weight ==0 ) {
+    terms_[0] = x;   
     return;
   }
 
-  for (int i=0; i<_count-1; ++i) {
+  for (int i=0; i<count_-1; ++i) {
      if ( e(i) == 1){ 
-       _jcb[i] = x;  
+       jcb_[i] = x;  
        break;
      }
   } 
   
 
- if ( !_myEnv ) {
+ if ( !myEnv_ ) {
  throw( GenericException( __FILE__, __LINE__, 
           "TJL1<T>::TJL1( const IntArray& e, const T& x, EnvPtr<T> const& pje )",
           "Null Environment." ) );
@@ -187,46 +191,43 @@ JL1Ptr<T> TJL1<T>::makeTJL( const IntArray& e, const T& x, EnvPtr<T> const& pje 
  };
 
 
-  if (_thePool.empty() ) 
+  if (thePool_.empty() ) 
       return JL1Ptr<T>( new TJL1<T>(e,x,pje) );
 
-  TJL1<T>* p = _thePool.back(); _thePool.pop_back();
+  TJL1<T>* p = thePool_.back(); thePool_.pop_back();
 
-  if (p->_count  != pje->numVar()+1 ) {
-      delete [] p->_jcb; 
-      p->_jcb   = new T[ pje->numVar() ];
-      p->_count =  pje->numVar()+1;
+  if (p->count_  != pje->numVar()+1 ) {
+      delete [] p->terms_; 
+      p->count_ =  pje->numVar()+1;
+      p->terms_ = new T[ p->count_];
+      p->jcb_   = p->terms_ + 1;
   }
  
-  p->_weight   = 1;
-  p->_accuWgt  = 1;
-  p->_myEnv    = pje; 
+  p->weight_   = 1;
+  p->accuWgt_  = 1;
+  p->myEnv_    = pje; 
 
-  int weight = 0;
+  std::fill_n(  p->terms_+1,  p->count_-1, T() ); 
 
-  for (int i=0; i<  p->_count-1; ++i) { p->_jcb[i] = T(); }
-
-  for (int i=0; i < p->_count-1; ++i) {
-    weight  += e(i);
-  }
+  int weight = e.Sum();
 
   if (weight > 1)  
      return JL1Ptr<T>(p) ;  // all terms of order 1 or lower are 0
 
   if (weight == 0) { 
-     p->_std = x; 
+     p->terms_[0] = x; 
      return JL1Ptr<T>(p);  
   }
  
-  for (int i=0; i < p->_count-1; ++i) {
+  for (int i=0; i < p->count_-1; ++i) {
      if ( e(i) == 1){ 
-       p->_jcb[i] = x;  
+       p->jcb_[i] = x;  
        break;
      }
   } 
 
 
- if ( !p->_myEnv ) {
+ if ( !p->myEnv_ ) {
  throw( GenericException( __FILE__, __LINE__, 
           "JL1Ptr<T> TJL1<T>::makeTJL( const IntArray& e, const T& x, EnvPtr<T> const& pje )",
           "Null Environment." ) );
@@ -244,35 +245,33 @@ template<typename U>
 JL1Ptr<T> TJL1<T>::makeTJL( TJL1<U> const& x )
 {
 
-  if (_thePool.empty() ) {
+  if (thePool_.empty() ) {
      return JL1Ptr<T>( new TJL1<T>(x) );
   }
   
-  TJL1<T>* p = _thePool.back(); _thePool.pop_back(); 
+  TJL1<T>* p = thePool_.back(); thePool_.pop_back(); 
   
-  if ( p->_count  != x._myEnv->numVar()+1) {
-      delete [] p->_jcb; 
-      p->_jcb   = new T[ x._myEnv->numVar() ];
-      p->_count =  x._myEnv->numVar()+1;
+  if ( p->count_  != x.myEnv_->numVar()+1) {
+      delete [] p->terms_; 
+      p->count_ =  x.myEnv_->numVar()+1;
+      p->terms_  = new T[ p->count_ ];
+      p->jcb_    = p->terms_ + 1;
   }
  
-  p->_weight   = x._weight;  
-  p->_accuWgt  = x._accuWgt;
-  p->_myEnv    = x._myEnv;
+  p->weight_   = x.weight_;  
+  p->accuWgt_  = x.accuWgt_;
+  p->myEnv_    = x.myEnv_;
  
-  p->_std      = x._std;
-
-  for (int i=0; i < (p->_count-1); ++i) 
-       p->_jcb[i] = x._jcb[i];
-
- if ( !p->_myEnv ) {
- throw( GenericException( __FILE__, __LINE__, 
-          "JL1Ptr<T> TJL1<T>::makeTJL( TJL1<U> const& x )",
-          "Null Environment." ) );
- };
+  std::copy( x.terms_,  x.terms_+ x.count_, p->terms_ );
+ 
+  if ( !p->myEnv_ ) {
+  throw( GenericException( __FILE__, __LINE__, 
+           "JL1Ptr<T> TJL1<T>::makeTJL( TJL1<U> const& x )",
+           "Null Environment." ) );
+  };
 
 
- return JL1Ptr<T>(p);
+  return JL1Ptr<T>(p);
 
 }
 
@@ -281,26 +280,23 @@ JL1Ptr<T> TJL1<T>::makeTJL( TJL1<U> const& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJL1<T>::TJL1( const TJL1& x ):
- _count(x._count),       
- _weight(x._weight),     
- _accuWgt(x._accuWgt),
- _myEnv(x._myEnv)
+TJL1<T>::TJL1( TJL1 const& x ):
+ count_(x.count_),       
+ weight_(x.weight_),     
+ accuWgt_(x.accuWgt_),
+ myEnv_(x.myEnv_)
 
 {
-    _std = x._std;
-     _jcb = new T [ _count-1 ];
-
-     for (int i=0; i<_count-1; ++i) 
-       _jcb[i] = x._jcb[i];
-
- if ( !_myEnv ) {
- throw( GenericException( __FILE__, __LINE__, 
+    if ( !myEnv_ ) {
+     throw( GenericException( __FILE__, __LINE__, 
           "TJL1<T>::TJL1( const TJL1& x )",
           "Null Environment." ) );
- };
+     };
 
+     terms_ = new T [ count_];
+     jcb_   = terms_+1;     
 
+     std::copy( x.terms_, x.terms_+x.count_, terms_ );
 
 }
 
@@ -311,7 +307,7 @@ template<typename T>
 TJL1<T>::~TJL1() 
 {
   
-  delete [] _jcb;
+  delete [] terms_;
 
 }
 
@@ -322,8 +318,8 @@ template<typename T>
 void TJL1<T>::discardTJL( TJL1<T>* p) 
 {
   
-   p->_myEnv =   EnvPtr<T>();  // nullify the environment. 
-   _thePool.push_back(p); 
+   p->myEnv_ =   EnvPtr<T>();  // nullify the environment. 
+   thePool_.push_back(p); 
 
 }
 
@@ -335,7 +331,7 @@ template<typename T>
 void TJL1<T>::getReference( T* r ) const 
 {
 
- for( int i=0;  i< _count-1; ++i ) r[i] = _myEnv->refPoint()[i];
+ for( int i=0;  i< count_-1; ++i ) r[i] = myEnv_->refPoint()[i];
 
 }
 
@@ -347,7 +343,7 @@ bool TJL1<T>::isNilpotent() const
 {
 
 
- if(   std::abs(_std) > MX_SMALL ) 
+ if(   std::abs(terms_[0]) > MX_SMALL ) 
       { return false; }
  else
       { return true; }
@@ -360,10 +356,7 @@ bool TJL1<T>::isNilpotent() const
 
 template<typename T>
 void TJL1<T>::writeToFile( std::ofstream& outStr ) const 
-{
-
-
-}
+{}
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -373,15 +366,15 @@ template<typename T>
 void TJL1<T>::peekAt() const {
 
  (*pcout) << "\nCount  = "
-      << _count
+      << count_
       << " Weight = "
-      << _weight
+      << weight_
       << " Max accurate weight = "
-      << _accuWgt
+      << accuWgt_
       << std::endl;
  (*pcout) << "Reference point: ";
 
- for( int i = 0; _myEnv->numVar(); ++i ) 
+ for( int i=0; myEnv_->numVar(); ++i ) 
     (*pcout) << std::setprecision(12) << getEnv()->getRefPoint()[i] << "  ";
  (*pcout) << std::endl;
 
@@ -395,12 +388,8 @@ template<typename T>
 void TJL1<T>::scaleBy( T y ) 
 { 
 
-  _std *= y;
- 
-  for (int i=0; i<_count-1; ++i) {
-   _jcb[i] *= y;               
-  }
-
+  std::transform( &terms_[0], &terms_[0]+count_ , &terms_[0], std::bind2nd(std::multiplies<T>(), y ));
+  
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -408,15 +397,11 @@ void TJL1<T>::scaleBy( T y )
 
 
 template<typename T>
-TJL1<T>& TJL1<T>::Negate( ) {
+TJL1<T>& TJL1<T>::Negate( ) 
+{
 
-  _std = -_std;
- 
-  for (int i=0; i<_count-1; ++i) {
-   _jcb[i] = - _jcb[i];               
-  }
-
- return *this;
+  std::transform(  &terms_[0], &terms_[0]+count_, &terms_[0], std::negate<T>() );
+  return *this;
 
 }
 
@@ -425,27 +410,27 @@ TJL1<T>& TJL1<T>::Negate( ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJL1<T>::setVariable(  const T& x, const int& j, EnvPtr<T> const& pje)
+void TJL1<T>::setVariable(  T const& x,  int const& j, EnvPtr<T> const& pje)
 {
  
 // this member function is meant to be called **ONLY** when a coordinate is instantiated
 
- if( ( j < 0 ) || ( j >= _myEnv->numVar() ) ) {
+ if( ( j < 0 ) || ( j >= myEnv_->numVar() ) ) {
    throw( GenericException( __FILE__, __LINE__, 
      "void TJL<T>::setVariable( const T&, const int&, TJetEnvironment<T>* )", 
      "Index out of range") );
  }
  
- _myEnv   = pje;
- _accuWgt = _myEnv->maxWeight();
- _weight  = 1;
+ myEnv_   = pje;
+ accuWgt_ = myEnv_->maxWeight();
+ weight_  = 1;
   
- _std     = x;
- _jcb[j]  = T (1.0);
+ terms_[0]   = x;
+ jcb_[j]     = T (1.0);
  
 
 
- if ( !_myEnv ) {
+ if ( !myEnv_ ) {
  throw( GenericException( __FILE__, __LINE__, 
           "TJL1<T>::setVariable(  const T& x, const int& j, EnvPtr<T> const& pje)" ,
           "Null Environment." ) );
@@ -465,19 +450,19 @@ void TJL1<T>::setVariable(  const T& x, const int& j )
  
 // this member function is meant to be called **ONLY** when a coordinate is instantiated
 
- if( ( j < 0 ) || ( j >= _myEnv->numVar() ) ) {
+ if( ( j < 0 ) || ( j >= myEnv_->numVar() ) ) {
    throw( GenericException( __FILE__, __LINE__, 
      "void TJL<T>::setVariable( const T&, const int&, TJetEnvironment<T>* )", 
      "Index out of range") );
  }
  
- _accuWgt =  _myEnv->maxWeight();
- _weight  = 1;
+ accuWgt_ =  myEnv_->maxWeight();
+ weight_  = 1;
 
- _std     = x;
- _jcb[j]  = T (1.0);
+ terms_[0]   = x;
+ jcb_[j]     = T (1.0);
 
- if ( ! _myEnv ) {
+ if ( ! myEnv_ ) {
  throw( GenericException( __FILE__, __LINE__, 
           "TJL1<T>::setVariable(  const T& x, const int& j )" ,
           "Null Environment." ) );
@@ -494,29 +479,29 @@ template<typename T>
 void TJL1<T>::setVariable( const int& j,  EnvPtr<T> const& theEnv ) 
 {
 
- if( !_myEnv ) {
+ if( !myEnv_ ) {
    throw( GenericException( __FILE__, __LINE__, 
      "void TJL1<T>::setVariable( const int&, TJetEnvironment<T>* )", 
-     "Private data _myEnv is null: object has no environment assigned.") );
+     "Private data myEnv_ is null: object has no environment assigned.") );
  }
 
- if( ( j < 0 ) || ( j >= _myEnv->numVar() ) ) {
+ if( ( j < 0 ) || ( j >= myEnv_->numVar() ) ) {
    throw( GenericException( __FILE__, __LINE__, 
      "void TJL1<T>::setVariable( const int&, TJetEnvironment<T>* )", 
      "Index out of range") );
 
  }
 
- _myEnv   = theEnv;
+ myEnv_   = theEnv;
  
- _accuWgt =  theEnv->maxWeight();
- _weight  = 1;
+ accuWgt_ =  theEnv->maxWeight();
+ weight_  = 1;
 
- _std     = theEnv->refPoint()[j];
+ terms_[0] = theEnv->refPoint()[j];
 
- _jcb[j]  = (T) 1.0;
+ jcb_[j]   = (T) 1.0;
 
- if ( ! _myEnv ) {
+ if ( ! myEnv_ ) {
  throw( GenericException( __FILE__, __LINE__, 
           "TJL1<T>::setVariable(  const T& x, EnvPtr<T> const& theEnv )" ,
           "Null Environment." ) );
@@ -532,12 +517,12 @@ template<typename T>
 void TJL1<T>::insert( const TJLterm<T>& a) 
 {
 
- if (a._weight > 1 ) return;  // weight > 1,  do nothing
+ if (a.weight_ > 1 ) return;  // weight > 1,  do nothing
  
- if (a._weight == 0) _std = a._value;
+ if (a.weight_ == 0) terms_[0] = a.value_;
 
- for (int i=0; i< a._index.Dim(); ++i) { 
-  if (a._index(i) == 1 ) _jcb[i] = a._value;
+ for (int i=0; i< a.index_.Dim(); ++i) { 
+  if (a.index_(i) == 1 ) jcb_[i] = a.value_;
   break;
  }
 
@@ -557,18 +542,18 @@ TJLterm<T>* TJL1<T>::get()
   
  T value;
  
- IntArray index(_count-1);
+ IntArray index(count_-1);
 
- if ( _std  != T() ) { 
-    value = _std;
-    _std  = T(); 
+ if ( std_  != T() ) { 
+    value = std_;
+    std_  = T(); 
     return new TJLterm<T>(index, value );  
  }
 
- for (int i=0; i< _count-1; ++i) { 
-   if (_jcb[i] != T()  ) { 
-     value   = _jcb[i]; 
-     _jcb[i] = T();
+ for (int i=0; i< count_-1; ++i) { 
+   if (jcb_[i] != T()  ) { 
+     value   = jcb_[i]; 
+     jcb_[i] = T();
      index(i) = 1;
      return new TJLterm<T>(index, value ); 
    }
@@ -589,19 +574,21 @@ TJLterm<T> TJL1<T>::lowTerm() const
  
  // returns the lowest order **non-zero**  term;  
  
- IntArray index( this->_myEnv->numVar() );
+ IntArray index( this->myEnv_->numVar() );
 
- if (_std != T() ) return TJLterm<T>( index, _std, this->_myEnv );
+ T std = terms_[0];
 
- for (int i=0; i< _count-1; ++i ) {
+ if (std != T() ) return TJLterm<T>( index, std, this->myEnv_ );
+
+ for (int i=0; i< count_-1; ++i ) {
   
-  if ( _jcb[i] != T() ) { 
+  if ( jcb_[i] != T() ) { 
      index(i) = 1; 
-     return TJLterm<T>( index, _jcb[i], this->_myEnv ); // all terms are zero 
+     return TJLterm<T>( index, jcb_[i], this->myEnv_ ); // all terms are zero 
    }
  }
 
- return TJLterm<T>( index, T(), this->_myEnv ); // all terms are zero 
+ return TJLterm<T>( index, T(), this->myEnv_ ); // all terms are zero 
 
 }
 
@@ -633,21 +620,21 @@ template<typename T>
 void TJL1<T>::append(const TJLterm<T>& a) 
 {
 
- if (a._weight >  1) return; 
+ if (a.weight_ >  1) return; 
 
- if (a._weight == 0) {
-   _std = a._value;
+ if (a.weight_ == 0) {
+   terms_[0] = a.value_;
    return;
  }
 
- if (a._weight ==  1) {
-   for (int i=0; i< a._index.Dim(); ++i) { 
-     if (a._index(i) == 1) { 
-       _jcb[i] = a._value; 
+ if (a.weight_ ==  1) {
+   for (int i=0; i< a.index_.Dim(); ++i) { 
+     if (a.index_(i) == 1) { 
+       jcb_[i] = a.value_; 
        break;
      }
    }
-    _weight  = std::max(_weight, a._weight);
+    weight_  = std::max(weight_, a.weight_);
    return;
  }
  
@@ -662,21 +649,21 @@ template<typename T>
 void TJL1<T>::addTerm(const TJLterm<T>& a) 
 {
 
- if (a._weight >  1) return; 
+ if (a.weight_ >  1) return; 
 
- if (a._weight == 0) {
-   _std += a._value;
+ if (a.weight_ == 0) {
+   terms_[0] += a.value_;
    return;
  }
 
- if (a._weight ==  1) {
-   for (int i=0; i< a._index.Dim(); ++i) { 
-     if (a._index(i) == 1) { 
-       _jcb[i] += a._value; 
+ if (a.weight_ ==  1) {
+   for (int i=0; i< a.index_.Dim(); ++i) { 
+     if (a.index_(i) == 1) { 
+       jcb_[i] += a.value_; 
        break;
      }
    }
-    _weight  = std::max(_weight, a._weight);
+    weight_  = std::max(weight_, a.weight_);
    return;
  }
  
@@ -690,7 +677,7 @@ template<typename T>
 T TJL1<T>::standardPart() const 
 {
 
-return _std;
+return terms_[0];
 
 }
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -700,10 +687,10 @@ template<typename T>
 void TJL1<T>::clear() 
 {
 
-    _std = T();
+    terms_[0] = T();
 
-    for (int i=0; i<_count-1; ++i) { 
-      _jcb[i] = T();
+    for (int i=0; i<count_-1; ++i) { 
+      jcb_[i] = T();
     }
  
 }
@@ -719,14 +706,14 @@ T TJL1<T>::weightedDerivative( const int* ind ) const
  int j   = 0;
  int k   = 0;
 
- for( int i=0; i< _myEnv->numVar(); ++i) {
+ for( int i=0; i< myEnv_->numVar(); ++i) {
   k = ind[i];
   sum += k;
   if( k == 1 ) { j = i; }
  }
 
- if( 0 == sum ) { return _std; }
- if( 1 == sum ) { return _jcb[j]; }
+ if( 0 == sum ) { return terms_[0]; }
+ if( 1 == sum ) { return jcb_[j];  }
 
  return T();
 }
@@ -747,32 +734,32 @@ template<typename T>
 JL1Ptr<T> TJL1<T>::compose( JL1Ptr<T> const y[ ]) const 
 { 
 
- JL1Ptr<T> u[_myEnv->numVar()];
+ JL1Ptr<T> u[myEnv_->numVar()];
 
  // Check consistency of reference points and
  // subtract reference point prior to concatenation.
 
- for( int i=0;  i< _myEnv->numVar(); ++i ) {
-   if(  (y[i]->_myEnv) != (y[0]->_myEnv) ) {
+ for( int i=0;  i< myEnv_->numVar(); ++i ) {
+   if(  (y[i]->myEnv_) != (y[0]->myEnv_) ) {
      throw( GenericException( __FILE__, __LINE__, 
             "TJL1::compose(JL1Ptr<T> const y[ ]) const ",
             "Inconsistent environments." ));
    }
 
-   u[i] = y[i] + JL1Ptr<T>( makeTJL( y[0]->_myEnv, -_myEnv->getRefPoint()[i]));   // u[i] = y[i] - _myEnv->getRefPoint()[i];
+   u[i] = y[i] + JL1Ptr<T>( makeTJL( y[0]->myEnv_, -myEnv_->getRefPoint()[i]));   // u[i] = y[i] - myEnv_->getRefPoint()[i];
  }
 
- JL1Ptr<T> z( makeTJL(y[0]->_myEnv) );
+ JL1Ptr<T> z( makeTJL(y[0]->myEnv_) );
  
- z->_std  =  _std;                                  
+ z->terms_[0]  =  terms_[0];                                  
 
- for( int i=0; i <_myEnv->numVar(); ++i ) { // note: it is assumed that y[] has dimension _myEnv->NumVar()
+ for( int i=0; i <myEnv_->numVar(); ++i ) { // note: it is assumed that y[] has dimension myEnv_->NumVar()
  
-    z->_std += ( _jcb[i] * u[i]->_std ); 
+    z->terms_[0] += ( jcb_[i] * u[i]->terms_[0] ); 
 
-    for( int j=0; j < _count-1; ++j) { 
+    for( int j=0; j < count_-1; ++j) { 
 
-      z->_jcb[j]  += ( _jcb[i] * u[i]->_jcb[j] );   
+      z->jcb_[j]  += ( jcb_[i] * u[i]->jcb_[j] );   
 
     }
  }
@@ -791,10 +778,10 @@ T TJL1<T>::operator()( const T* x )  const
  // This routine is linked to double TJL1::operator()( const Vector& x ) const
  // Any change made to this must be reflected in the other.
 
-  T v             = _std;
+  T v             = terms_[0];
 
- for( int i=0; i< _count-1; ++i ) {
-   v += _jcb[i] * ( x[i] - _myEnv->refPoint()[i] );
+ for( int i=0; i< count_-1; ++i ) {
+   v += jcb_[i] * ( x[i] - myEnv_->refPoint()[i] );
  }
  return v;
 }
@@ -824,17 +811,17 @@ JL1Ptr<T> TJL1<T>::filter( const int& wgtLo, const int& wgtHi ) const
  if( wgtLo <= 0 && wgtHi >= 1 ) { return JL1Ptr<T>( makeTJL(*this) ); }
 
  if( wgtHi < wgtLo ) {
-   return JL1Ptr<T>( makeTJL(_myEnv) );
+   return JL1Ptr<T>( makeTJL(myEnv_) );
  }
 
  JL1Ptr<T> z( makeTJL(*this) );
 
  if( 0 == wgtHi ) {
-  for( int i=0; i < _count-1; ++i ) { z->_jcb[i] = T(); }
+  for( int i=0; i < count_-1; ++i ) { z->jcb_[i] = T(); }
  }
 
  if( 1 == wgtLo ) {
-  z->_std= T();
+  z->terms_[0]= T();
  }
 
  return z;
@@ -847,17 +834,17 @@ template<typename T>
 JL1Ptr<T> TJL1<T>::filter( bool (*f) ( const IntArray&, const T& ) ) const 
 { 
 
- JL1Ptr<T> z(makeTJL(_myEnv) );
+ JL1Ptr<T> z(makeTJL(myEnv_) );
 
- IntArray index(_myEnv->numVar());
+ IntArray index(myEnv_->numVar());
 
 
- if( f( index, _std ) ) { z->_std = _std; }
+ if( f( index, terms_[0] ) ) { z->terms_[0] = terms_[0]; }
 
- for( int i=0; i<_count-1; ++i) {
+ for( int i=0; i<count_-1; ++i) {
   index(i) = 1;
-  if( f( index, _std ) ) { 
-    z->_jcb[i] = _jcb[i];
+  if( f( index, terms_[0] ) ) { 
+    z->jcb_[i] = jcb_[i];
   }
   index(i) = 0;
  }
@@ -875,7 +862,7 @@ TJL1<T>& TJL1<T>::operator=( const T& x )
  // FIX ME ++++ need to check env  !!!!!
  
  clear();
- _std  = x;
+ terms_[0]  = x;
  return *this;
 
 }
@@ -889,11 +876,11 @@ TJL1<T>& TJL1<T>::operator=( const TJL1<T>& x )
 
  if (&x == this) return *this;
  
- _std = x._std;
+ terms_[0] = x.terms_[0];
 
- for (int i=0; i< _myEnv->numVar(); ++i ) {
+ for (int i=0; i< myEnv_->numVar(); ++i ) {
 
-   _jcb[i] = x._jcb[i];
+   jcb_[i] = x.jcb_[i];
  
  }
 
@@ -907,7 +894,7 @@ TJL1<T>& TJL1<T>::operator=( const TJL1<T>& x )
 template<typename T>
 TJL1<T>& TJL1<T>::operator+=( const T& x ) {   
 
-  _std += x;
+  terms_[0] += x;
 
 
  return *this;
@@ -919,11 +906,11 @@ TJL1<T>& TJL1<T>::operator+=( const T& x ) {
 template<typename T>
 void TJL1<T>::add( JL1Ptr<T> const& x) {
 
-   _std += x->_std;
+   terms_[0] += x->terms_[0];
 
- for (int i=0; i< _myEnv->numVar(); ++i ) {
+ for (int i=0; i< myEnv_->numVar(); ++i ) {
 
-   _jcb[i] += x->_jcb[i];
+   jcb_[i] += x->jcb_[i];
  
  } 
 
@@ -937,13 +924,13 @@ template<typename T>
 JL1Ptr<T> TJL1<T>::sin() const
 { 
 
-  JL1Ptr<T> z( makeTJL(_myEnv) ); 
+  JL1Ptr<T> z( makeTJL(myEnv_) ); 
 
-  z->_std = std::sin( _std );
+  z->terms_[0] = std::sin( terms_[0] );
 
-  for( int i=0; i<_count-1;  ++i) { 
+  for( int i=0; i<count_-1;  ++i) { 
 
-    z->_jcb[i]  = std::cos( _std ) * _jcb[i];
+    z->jcb_[i]  = std::cos( terms_[0] ) * jcb_[i];
 
   }
   return z;
@@ -957,13 +944,13 @@ template<typename T>
 JL1Ptr<T> TJL1<T>::cos() const
 { 
 
- JL1Ptr<T> z( makeTJL(_myEnv) ); 
+ JL1Ptr<T> z( makeTJL(myEnv_) ); 
 
-  z->_std = std::cos( _std );
+  z->terms_[0] = std::cos( terms_[0] );
 
-  for( int i=0; i<_count-1;  ++i) { 
+  for( int i=0; i<count_-1;  ++i) { 
 
-    z->_jcb[i]  = -std::sin( _std ) * _jcb[i];
+    z->jcb_[i]  = -std::sin( terms_[0] ) * jcb_[i];
 
   }
   return z;
@@ -978,12 +965,12 @@ JL1Ptr<T> TJL1<T>::cos() const
  JL1Ptr<T> TJL1<T>::exp() const
  {
 
-  JL1Ptr<T> z(makeTJL(_myEnv) );  
+  JL1Ptr<T> z(makeTJL(myEnv_) );  
 
-  z->_std  = std::exp( _std );
+  z->terms_[0]  = std::exp( terms_[0] );
 
-  for( int i=0; i <_count-1; ++i ) { 
-    z->_jcb[i] = _std * _jcb[i]; 
+  for( int i=0; i <count_-1; ++i ) { 
+    z->jcb_[i] = terms_[0] * jcb_[i]; 
   }
 
   return z;
@@ -997,12 +984,12 @@ template<typename T>
 JL1Ptr<T> TJL1<T>::pow(const double& s )  const
 {
 
-  JL1Ptr<T> z( makeTJL(_myEnv) );  
+  JL1Ptr<T> z( makeTJL(myEnv_) );  
 
-  z->_std = std::pow( _std, s );
+  z->terms_[0] = std::pow( terms_[0], s );
 
-  for( int i=0; i<_count-1;  ++i) { 
-    z->_jcb[i] = _jcb[i] * s * std::pow( _std, s-1 ); 
+  for( int i=0; i<count_-1;  ++i) { 
+    z->jcb_[i] = jcb_[i] * s * std::pow( terms_[0], s-1 ); 
   }
 
   return z;
@@ -1021,7 +1008,7 @@ JL1Ptr<T> TJL1<T>::pow(int n ) const
   
   int i = 0;
 
-  if( n == 0 ) z =  JL1Ptr<T>( makeTJL(_myEnv, (T) 1.0 ) );
+  if( n == 0 ) z =  JL1Ptr<T>( makeTJL(myEnv_, (T) 1.0 ) );
   else if( n > 0 ) {
     z = JL1Ptr<T>( makeTJL(*this) );
     for( i = 2; i <= n; i++ ) z = x*z;
@@ -1044,19 +1031,19 @@ template<typename T>
 JL1Ptr<T> TJL1<T>::log() const
 {
 
- if( std::abs(_std) <= 0.0 ) {
+ if( std::abs(terms_[0]) <= 0.0 ) {
     throw( GenericException( __FILE__, __LINE__, 
            "TJL1::log() const",
            "Non-positive standard part.") );
   }
 
-  JL1Ptr<T> z(makeTJL(_myEnv) );
+  JL1Ptr<T> z(makeTJL(myEnv_) );
 
-  z->_std = std::log( _std );
+  z->terms_[0] = std::log( terms_[0] );
 
-  for( int i=0; i<_count-1; ++i ) { 
+  for( int i=0; i<count_-1; ++i ) { 
 
-    z->_jcb[i] = ( 1.0 / _std  ) * _jcb[i]; 
+    z->jcb_[i] = ( 1.0 / terms_[0]  ) * jcb_[i]; 
 
   }
   return z;
@@ -1156,7 +1143,7 @@ JL1Ptr<T> TJL1<T>::D( const int* n ) const
 
  int k   = 0;
  int sum = 0;
- for( int i = 0; i < _myEnv->numVar(); ++i ) {
+ for( int i = 0; i < myEnv_->numVar(); ++i ) {
   if( n[i] < 0 ) {
    throw( GenericException( __FILE__, __LINE__, 
           "TJL1::D( const int* n ) const ",
@@ -1171,8 +1158,8 @@ JL1Ptr<T> TJL1<T>::D( const int* n ) const
   if( 1 == n[i] ) { k = i; }
  }  
 
- JL1Ptr<T> z( makeTJL(_myEnv) );
- if( 1 == sum ) { z->_std = _jcb[k]; }
+ JL1Ptr<T> z( makeTJL(myEnv_) );
+ if( 1 == sum ) { z->terms_[0] = jcb_[k]; }
  return z;
 }
 
@@ -1183,59 +1170,86 @@ JL1Ptr<T> TJL1<T>::D( const int* n ) const
 template<typename T> 
 void TJL1<T>::printCoeffs() const {
 
- (*pcout) << "\nCount  = " << _count 
-      << ", Weight = " <<      _weight 
-      << ", Max accurate weight = " << _accuWgt << std::endl;
+ (*pcout) << "\nCount  = " << count_ 
+      << ", Weight = " <<      weight_ 
+      << ", Max accurate weight = " << accuWgt_ << std::endl;
  (*pcout) << "Reference point: " 
-      << _myEnv->getRefPoint()[0];
+      << myEnv_->getRefPoint()[0];
 
- for( int i=0; i < _count-1; i++ ) {
+ for( int i=0; i < count_-1; i++ ) {
    (*pcout) << ", ";
-   (*pcout) << _myEnv->getRefPoint()[i];
+   (*pcout) << myEnv_->getRefPoint()[i];
  }
 
  (*pcout) << std::endl;
 
- IntArray index(_count-1);
+ IntArray index(count_-1);
 
  (*pcout) << "Index:  " 
         << index
         << "   Value: "
-        << _std
+        << terms_[0]
         << std::endl;
 
- for( int i=0; i < _count-1; ++i ) {
+ for( int i=0; i < count_-1; ++i ) {
   
-  if( _weight > _accuWgt ) break;
+  if( weight_ > accuWgt_ ) break;
  
   index(i) = 1; 
   (*pcout) << "Index:  " 
         << index
         << "   Value: "
-        << _jcb[i]
+        << jcb_[i]
         << std::endl;
   index(i) = 0; 
   }
   (*pcout) << "\n" << std::endl;
 }
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//
-//    **** Iteration routines **** 
-//------------------------------------------------------------ 
 
-template<typename T>
-void TJL1<T>::resetConstIterator() 
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+template <typename U>
+TJLterm<U>  TJL1<T>::iter_<U>::dereference() const  
+{ 
+
+   IntArray exponents(myEnv_->numVar() );
+
+   if ( m_node == terms_ ) return TJLterm<T>(exponents, terms_[0] );    
+
+   int idx = (m_node - terms_) - 1 ;
+   exponents(idx) = 1;  
+
+   return TJLterm<T>(exponents, jcb_[idx] );
+
+}  
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+template <typename U>
+void  TJL1<T>::iter_<U>::increment()          
+{ 
+   ++m_node; 
+} 
+        
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+template <typename U>
+bool  TJL1<T>::iter_<U>::equal( iter_ const& other) const 
 {
+    return this->m_node == other.m_node;
 
-  _constIterPtr = 0;
-
- (*pcout) << "void TJL1<T>::resetConstIterator() called." << std::endl;
 }
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 // ================================================================
 //      Implementation of exceptions
@@ -1371,24 +1385,24 @@ template<typename T>
 std::ostream& operator<<( std::ostream& os, const TJL1<T>& x ) 
 {
 
- os << "\n Count = " << x._count << " , Weight = " << x._weight;
- os << " , Max accurate weight = " << x._accuWgt << std::endl;
+ os << "\n Count = " << x.count_ << " , Weight = " << x.weight_;
+ os << " , Max accurate weight = " << x.accuWgt_ << std::endl;
 
- if (x._myEnv) {
+ if (x.myEnv_) {
  os << "Begin Environment: \n"
-    << *(x._myEnv)
+    << *(x.myEnv_)
     << "\nEnd Environment: " << std::endl;
  }
  else 
  os << "WARNING: null environment ! "<< std::endl; 
  
- IntArray index(x._count-1);
+ IntArray index(x.count_-1);
 
- os << "Index: " << index << "   Value: " << x._std << std::endl;  
+ os << "Index: " << index << "   Value: " << x.terms_[0] << std::endl;  
 
- for (int i=0; i < x._count-1;  ++i) {
+ for (int i=0; i < x.count_-1;  ++i) {
    index(i) = 1;
-   os << "Index: " << index <<"   Value: " << x._jcb[i] << std::endl;  
+   os << "Index: " << index <<"   Value: " << x.jcb_[i] << std::endl;  
    index(i) = 0;
  }
 
@@ -1415,16 +1429,16 @@ std::istream& operator>>( std::istream& is,  TJL1<T>& x )
   is >> buf;
   is >> buf;
   is >> buf;
-  is >> x._weight;
+  is >> x.weight_;
   is >> buf;
   is >> buf;
   is >> buf;
   is >> buf;
   is >> buf;
-  is >> x._accuWgt;
+  is >> x.accuWgt_;
   is >> buf;
   is >> buf;
-  streamIn( is, x._myEnv);
+  streamIn( is, x.myEnv_);
   is >> buf;
   is >> buf;
   IntArray ndx( x.getEnv()->numVar() );
@@ -1448,13 +1462,13 @@ std::istream& operator>>( std::istream& is,  TJL1<T>& x )
 template<typename T>
 bool operator==( const TJL1<T>& x, const TJL1<T>& y ) 
 {
- if( x._myEnv != y._myEnv ) return false;
+ if( x.myEnv_ != y.myEnv_ ) return false;
 
- if( !( x._std == y._std ) ) return false;
+ if( !( x.terms_[0] == y.terms_[0] ) ) return false;
 
- for(  int i=0; i< x._count-1; ++i) {
-    for(  int j=0; j<y._count-1; ++j) {
-      if( !( x._jcb[i] == y._jcb[i] ) ) return false;
+ for(  int i=0; i< x.count_-1; ++i) {
+    for(  int j=0; j<y.count_-1; ++j) {
+      if( !( x.jcb_[i] == y.jcb_[i] ) ) return false;
    }
  }
  return true;
@@ -1468,9 +1482,9 @@ bool operator==( const TJL1<T>& x, const T& y )
 {
 
  bool result = true;
- result = result && ( x._std == y );
- for( int i=0; i < x._myEnv->numVar(); i++ ) {
-  result = result && ( x._jcb[i] == T() );
+ result = result && ( x.terms_[0] == y );
+ for( int i=0; i < x.myEnv_->numVar(); i++ ) {
+  result = result && ( x.jcb_[i] == T() );
  }
 
  return result;
@@ -1521,20 +1535,20 @@ JL1Ptr<T> operator+(JL1Ptr<T> const& x, JL1Ptr<T> const& y ) {
 
 // Check for consistency and set reference point of the sum.
 
-  if( x->_myEnv != y->_myEnv ) {
+  if( x->myEnv_ != y->myEnv_ ) {
 
    throw( GenericException( __FILE__, __LINE__, 
            "TJL<T>::operator+(JL1Ptr<T> const& x)"
            "Inconsistent environments." ) );
   }
 
- JL1Ptr<T> z(TJL1<T>::makeTJL( x->_myEnv ) );
+ JL1Ptr<T> z(TJL1<T>::makeTJL( x->myEnv_ ) );
 
- z->_std  = x->_std +  y->_std;
+ z->terms_[0]  = x->terms_[0] +  y->terms_[0];
 
- for (int i=0; i< z->_myEnv->numVar(); ++i ) {
+ for (int i=0; i< z->myEnv_->numVar(); ++i ) {
 
-   z->_jcb[i] = x->_jcb[i] +  y->_jcb[i];
+   z->jcb_[i] = x->jcb_[i] +  y->jcb_[i];
  
  } 
 
@@ -1548,10 +1562,10 @@ JL1Ptr<T> operator+(JL1Ptr<T> const& x, JL1Ptr<T> const& y ) {
 template<typename T>
 JL1Ptr<T>& operator+=(JL1Ptr<T> &x,      JL1Ptr<T> const& y  ){
 
- x->_std += y->_std;
- for (int i=0; i< x->_count-1; ++i) {
+ x->terms_[0] += y->terms_[0];
+ for (int i=0; i< x->count_-1; ++i) {
 
-    x->_jcb[i] += y->_jcb[i];
+    x->jcb_[i] += y->jcb_[i];
 
  } 
 
@@ -1565,20 +1579,20 @@ JL1Ptr<T> operator-(JL1Ptr<T> const& x, JL1Ptr<T> const& y ) {
 
 // Check for consistency and set reference point of the sum.
 
-  if( x->_myEnv != y->_myEnv ) {
+  if( x->myEnv_ != y->myEnv_ ) {
 
    throw( GenericException( __FILE__, __LINE__, 
            "TJL<T>::operator-(JL1Ptr<T> const& x)"
            "Inconsistent environments." ) );
   }
 
- JL1Ptr<T> z(TJL1<T>::makeTJL( x->_myEnv ) );
+ JL1Ptr<T> z(TJL1<T>::makeTJL( x->myEnv_ ) );
 
- z->_std  = x->_std -  y->_std;
+ z->terms_[0]  = x->terms_[0] -  y->terms_[0];
 
- for (int i=0; i< z->_myEnv->numVar(); ++i ) {
+ for (int i=0; i< z->myEnv_->numVar(); ++i ) {
 
-   z->_jcb[i] = x->_jcb[i] -  y->_jcb[i];
+   z->jcb_[i] = x->jcb_[i] -  y->jcb_[i];
  
  } 
 
@@ -1592,13 +1606,13 @@ JL1Ptr<T> operator-(JL1Ptr<T> const& x, JL1Ptr<T> const& y ) {
 template<typename T>
 JL1Ptr<T> operator-(JL1Ptr<T> const& x) {
 
- JL1Ptr<T> z(TJL1<T>::makeTJL( x->_myEnv ));
+ JL1Ptr<T> z(TJL1<T>::makeTJL( x->myEnv_ ));
 
- z->_std  = - x->_std;
+ z->terms_[0]  = - x->terms_[0];
 
- for (int i=0; i< z->_myEnv->numVar(); ++i ) {
+ for (int i=0; i< z->myEnv_->numVar(); ++i ) {
 
-   z->_jcb[i] = -x->_jcb[i];
+   z->jcb_[i] = -x->jcb_[i];
  } 
 
  return z;
@@ -1635,19 +1649,19 @@ JL1Ptr<T> operator*(JL1Ptr<T> const& x, JL1Ptr<T> const& y ) {
 
  // Consistency check 
 
- if( x->_myEnv != y->_myEnv ) {
+ if( x->myEnv_ != y->myEnv_ ) {
    throw( GenericException( __FILE__, __LINE__, 
           "TJL1Ptr<T> operator*( const JL1Ptr<T>&, const JL1Ptr<T>& ) ",
           "Inconsistent environments." ) );
  };
 
- JL1Ptr<T> z( TJL1<T>::makeTJL(x->_myEnv) );
+ JL1Ptr<T> z( TJL1<T>::makeTJL(x->myEnv_) );
 
- z->_std  = x->_std * y->_std;
+ z->terms_[0]  = x->terms_[0] * y->terms_[0];
 
- for( int i=0; i< z->_myEnv->numVar();  ++i) { 
+ for( int i=0; i< z->myEnv_->numVar();  ++i) { 
 
-   z->_jcb[i]  = ( x->_std * y->_jcb[i] ) + ( y->_std * x->_jcb[i] ); 
+   z->jcb_[i]  = ( x->terms_[0] * y->jcb_[i] ) + ( y->terms_[0] * x->jcb_[i] ); 
 
  }
 
@@ -1664,19 +1678,19 @@ JL1Ptr<T> operator/( T const& wArg, JL1Ptr<T> const& uArg )
 
  // Check for void operators ..
 
- if ( uArg->_count < 1 ) {
+ if ( uArg->count_ < 1 ) {
    throw( GenericException( __FILE__, __LINE__, 
           "TJL1<T>::operator/( JL1Ptr<T> const& wArg, JL1Ptr<T> const& uArg )",
           "Attempt to divide by a null TJL1<T> variable." ) );
  }
  
- JL1Ptr<T>  z( TJL1<T>::makeTJL(uArg->_myEnv) );
+ JL1Ptr<T>  z( TJL1<T>::makeTJL(uArg->myEnv_) );
 
- z->_std =  wArg/(uArg->_std);
+ z->terms_[0] =  wArg/(uArg->terms_[0]);
 
- for( int i=0; i < z->_myEnv->numVar(); ++i) { 
+ for( int i=0; i < z->myEnv_->numVar(); ++i) { 
 
-   z->_jcb[i] =   - ( wArg * uArg->_jcb[i] ) / ( uArg->_std * uArg->_std ); 
+   z->jcb_[i] =   - ( wArg * uArg->jcb_[i] ) / ( uArg->terms_[0] * uArg->terms_[0] ); 
 
  };
  
@@ -1693,7 +1707,7 @@ template<typename T>
 JL1Ptr<T> operator/( JL1Ptr<T> const& wArg, JL1Ptr<T> const& uArg ) 
 { 
 
- if ( (wArg->_myEnv) != (uArg->_myEnv) ) {
+ if ( (wArg->myEnv_) != (uArg->myEnv_) ) {
 
    throw( GenericException( __FILE__, __LINE__, 
           "TJL<T>::operator/( JL1Ptr<T> const& wArg, JL1Ptr<T> const& uArg )",
@@ -1702,21 +1716,21 @@ JL1Ptr<T> operator/( JL1Ptr<T> const& wArg, JL1Ptr<T> const& uArg )
 
  // Check for void operators ..
 
- if ( uArg->_count < 1 ) {
+ if ( uArg->count_ < 1 ) {
    throw( GenericException( __FILE__, __LINE__, 
           "TJL1<T>::operator/( JL1Ptr<T> const& wArg, JL1Ptr<T> const& uArg )",
           "Attempt to divide by a null TJL1<T> variable." ) );
  }
  
- JL1Ptr<T>  z( TJL1<T>::makeTJL(wArg->_myEnv) );
+ JL1Ptr<T>  z( TJL1<T>::makeTJL(wArg->myEnv_) );
 
 
- z->_std =  (wArg->_std)/(uArg->_std);
+ z->terms_[0] =  (wArg->terms_[0])/(uArg->terms_[0]);
 
- for( int i = 0; i < z->_myEnv->numVar(); i++ ) { 
+ for( int i = 0; i < z->myEnv_->numVar(); i++ ) { 
 
-   z->_jcb[i] = ( ( uArg->_std * wArg->_jcb[i] ) - ( wArg->_std * uArg->_jcb[i] ) )
-                / ( uArg->_std* uArg->_std ); 
+   z->jcb_[i] = ( ( uArg->terms_[0] * wArg->jcb_[i] ) - ( wArg->terms_[0] * uArg->jcb_[i] ) )
+                / ( uArg->terms_[0]* uArg->terms_[0] ); 
 
  };
  
