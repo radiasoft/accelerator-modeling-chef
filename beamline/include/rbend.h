@@ -34,46 +34,28 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+****** Mar 2007           ostiguy@fnal.gov
+****** - covariant return types
+****** - support for reference counted elements
 **************************************************************************
 *************************************************************************/
-
 #ifndef RBEND_H
 #define RBEND_H
 
-
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
 
+class rbend;
+
+typedef boost::shared_ptr<rbend>       RBendPtr;
+typedef boost::shared_ptr<rbend const> ConstRBendPtr;
+
+class BmlVisitor;
+class ConstBmlVisitor;
 
 class DLLEXPORT rbend : public bmlnElmnt
 {
-private:
-  // bmlnElmnt::strength -> magnetic field [T]
-
-  double _usEdgeAngle, _dsEdgeAngle;
-                            // [radians] as defined in MAD for rbends.
-  double _usAngle, _dsAngle;// [radians] entry (upstream) and exit (downstream) 
-                            // angles of the fiducial orbit referenced
-                            // to the physical edge of the magnet. If no
-                            // registration particle is used, default
-                            // values depend only on edge angles (see
-                            // below).
-  double _usTan, _dsTan;    // tangents of the entry and exit angles:
-                            // px/pz of a reference particle at the
-                            // upstream and downstream edges of the magnet.
-                            // For a (usual) symmetric bend,
-                            // sgn( _usTan ) = - sgn( _dsTan )
-  double _dphi;             // angle between in- and out-frames: a derived 
-                            // quantity.
-  std::complex<double> _propPhase, _propTerm;
-                            // Used to propagate through constant magnetic
-                            // field using bend angle and edge angle data.
-
-  void _calcPropParams();
-
-  std::ostream& writeTo(std::ostream&);
-  std::istream& readFrom(std::istream&);
 
 public:
    class MAD_Prop : public bmlnElmnt::PropFunc
@@ -276,8 +258,8 @@ public:
   void localPropagate( Particle&    p )   { (*propfunc_)( this, p ); }
   void localPropagate( JetParticle& p )   { (*propfunc_)( this, p ); }
 
-  void accept( BmlVisitor& v )            { v.visitRbend( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitRbend( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   // Note: entry and exit angles are not arguments
   // in the rbend constructors. A symmetric bend is assumed
@@ -314,9 +296,36 @@ public:
     // Computes arclength of orbit assuming a symmetric bend.
     // WARNING: This is not the true arclength under all conditions.
 
-  void Split( double const&, bmlnElmnt**, bmlnElmnt** ) const;
+  void Split( double const&, ElmPtr&, ElmPtr& ) const;
     // WARNING: After the Split function is used, the new elements 
     // must be commissioned with RefRegVisitor.
+
+private:
+  // bmlnElmnt::strength -> magnetic field [T]
+
+  double _usEdgeAngle, _dsEdgeAngle;
+                            // [radians] as defined in MAD for rbends.
+  double _usAngle, _dsAngle;// [radians] entry (upstream) and exit (downstream) 
+                            // angles of the fiducial orbit referenced
+                            // to the physical edge of the magnet. If no
+                            // registration particle is used, default
+                            // values depend only on edge angles (see
+                            // below).
+  double _usTan, _dsTan;    // tangents of the entry and exit angles:
+                            // px/pz of a reference particle at the
+                            // upstream and downstream edges of the magnet.
+                            // For a (usual) symmetric bend,
+                            // sgn( _usTan ) = - sgn( _dsTan )
+  double _dphi;             // angle between in- and out-frames: a derived 
+                            // quantity.
+  std::complex<double> _propPhase, _propTerm;
+                            // Used to propagate through constant magnetic
+                            // field using bend angle and edge angle data.
+
+  void _calcPropParams();
+
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
 };
 
 #endif // RBEND_H

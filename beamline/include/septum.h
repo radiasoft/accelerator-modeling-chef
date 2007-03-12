@@ -34,6 +34,11 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+******  REVISION HISTORY
+******  Mar 2007           ostiguy@fnal.gov
+****** - use covariant return types
+****** - support for reference counted elements
+******
 **************************************************************************
 *************************************************************************/
 
@@ -42,21 +47,20 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
+
+class BmlVisitor;
+class ConstBmlVisitor;
+
+class thinSeptum;
+
+typedef boost::shared_ptr<thinSeptum>             ThinSeptumPtr;
+typedef boost::shared_ptr<thinSeptum const>  ConstThinSeptumPtr;
 
 
 class DLLEXPORT thinSeptum : public bmlnElmnt
 {
-private:
-  double strengthPos;    // kick in strength in radians for x > xWire
-  double strengthNeg;	 // kick in strength in radians for x < xWire
-  double xWire;		 // position of wire septum in meters
-  std::ostream& writeTo(std::ostream&);
-  std::istream& readFrom(std::istream&);
 
 public:
-  
-  thinSeptum();
   
   thinSeptum( char const*  name );
   
@@ -69,9 +73,11 @@ public:
 	    double const& sNeg,    
 	    double const& x ); 
   
-  thinSeptum( const thinSeptum& );
+  thinSeptum( thinSeptum const& );
 
   thinSeptum* Clone() const { return new thinSeptum( *this ); }
+
+  thinSeptum& operator=( thinSeptum const& rhs);
 
   virtual ~thinSeptum();
   
@@ -82,11 +88,21 @@ public:
   void localPropagate( Particle&    p );
   void localPropagate( JetParticle& p );
 
-  void accept( BmlVisitor& v ) { v.visitThinSeptum( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitThinSeptum( this ); }
+  void accept( BmlVisitor& v ); 
+  void accept( ConstBmlVisitor& v ) const; 
 
   const char* Type() const;
 
+private:
+
+  thinSeptum();           // default constructor forbidden
+
+  double strengthPos_;    // kick in strength in radians for x > xWire
+  double strengthNeg_;	  // kick in strength in radians for x < xWire
+  double xWire_;	  // position of wire septum in meters
+
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
 
 };
  
