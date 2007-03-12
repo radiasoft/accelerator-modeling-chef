@@ -33,6 +33,12 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007:          ostiguy@fnal.gov
+****** - use covariant return types
+****** - support for reference counted elements
+******
 **************************************************************************
 *************************************************************************/
 
@@ -42,12 +48,28 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
+
+class BmlVisitor;
+class ConstBmlVisitor;
 
 
-class DLLEXPORT hkick : public bmlnElmnt
-{
+class hkick;
+
+typedef boost::shared_ptr<hkick>        HKickPtr;
+typedef boost::shared_ptr<hkick const>  ConstHKickPtr;
+
+class vkick;
+typedef boost::shared_ptr<vkick>        VKickPtr;
+typedef boost::shared_ptr<vkick const>  ConstVKickPtr;
+
+class kick;
+typedef boost::shared_ptr<kick>        KickPtr;
+typedef boost::shared_ptr<kick const>  ConstKickPtr;
+
+class DLLEXPORT hkick : public bmlnElmnt {
+
 public:
+
   hkick();
   hkick( double const& );                                          // kick size in radians
   hkick( const char* name);                                 // name; assumes zero kick
@@ -57,6 +79,8 @@ public:
 
   virtual hkick* Clone() const { return new hkick( *this ); }
 
+  hkick& operator=( hkick const& rhs);
+
   virtual ~hkick();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -65,13 +89,14 @@ public:
 
   const char* Type() const;
 
-  void accept( BmlVisitor& v ) { v.visitHkick( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitHkick( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 };
 
 
-class DLLEXPORT vkick : public bmlnElmnt
-{
+
+class DLLEXPORT vkick : public bmlnElmnt {
+
 public:
   vkick();                                               // Assumes zero kick
   vkick( double const& );                                       // kick size in radians
@@ -82,48 +107,57 @@ public:
 
   vkick* Clone() const { return new vkick( *this ); }
 
+  vkick& operator=( vkick const& rhs);
+
   virtual ~vkick();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitVkick( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitVkick( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
 };
 
 
+
 class DLLEXPORT kick : public bmlnElmnt {
-private:
-        double horizontalKick;
-        double verticalKick;
-        std::istream& readFrom(std::istream&);
-        std::ostream& writeTo(std::ostream&);
+
 public:
         kick();
         kick( char const* name );
-        kick(                                           double const& horizontal_kick,double const& vertical_kick);
+        kick(                                           double const& horizontal_kick, double const& vertical_kick);
         kick( char const* name,                         double const& horizontal_kick, double const& vertical_kick);
         kick(                     double const& length, double const& horizontal_kick, double const& vertical_kick);
         kick( char const* name,   double const& length, double const& horizontal_kick, double const& vertical_kick);
         kick( kick const& );
+
         kick* Clone() const { return new kick( *this ); }
 
-       virtual ~kick();
+        kick& operator=( kick const& rhs);
+
+        virtual ~kick();
 
         void localPropagate( ParticleBunch& x) {bmlnElmnt::localPropagate( x ); }
         void localPropagate( Particle& );
         void localPropagate( JetParticle& );
 
-        void accept(BmlVisitor& v)            { v.visitKick( this ); }
-        void accept(ConstBmlVisitor& v) const { v.visitKick( this ); }
+        void accept(BmlVisitor& v);
+        void accept(ConstBmlVisitor& v) const;
 
-        double& horizontalStrength() { return horizontalKick; }
-        double& verticalStrength()   { return verticalKick; }
+        double& horizontalStrength() { return horizontalKick_; }
+        double& verticalStrength()   { return verticalKick_; }
 
         const char* Type() const;
+
+private:
+        double horizontalKick_;
+        double verticalKick_;
+        std::istream& readFrom(std::istream&);
+        std::ostream& writeTo(std::ostream&);
+
  };
 
 #endif    // KICK_H
