@@ -101,85 +101,87 @@ class CF_sbend;
 
 // ---------------------------
 
-class DLLEXPORT BmlVisitor
+class DLLEXPORT BmlVisitor 
 {
 public:
-  virtual void visitBeamline( beamline* );
 
-  virtual void visitBmlnElmnt( bmlnElmnt* ) {}
+  virtual void visit( beamline&      x);
 
-  virtual void visitHkick( hkick* x );
+  virtual void visit( bmlnElmnt&     x) {}
 
-  virtual void visitOctupole( octupole* x ); 
+  virtual void visit( hkick&         x );
 
-  virtual void visitThinrfcavity( thinrfcavity* x ); 
+  virtual void visit( octupole&      x ); 
 
-  virtual void visitRfcavity( rfcavity* x ); 
+  virtual void visit( thinrfcavity&  x ); 
 
-  virtual void visitSrot( srot* x ); 
+  virtual void visit( rfcavity&      x ); 
 
-  virtual void visitVkick( vkick* x ); 
+  virtual void visit( srot&          x ); 
 
-  virtual void visitMonitor( monitor* x ); 
+  virtual void visit( vkick&         x ); 
 
-  virtual void visitMarker( marker* x );
+  virtual void visit( monitor&       x ); 
 
-  virtual void visitDrift( drift* x ) ;
+  virtual void visit( marker&        x ); 
 
-  virtual void visitRbend( rbend* x ) ;
+  virtual void visit( drift&         x ) ;
 
-  virtual void visitSbend( sbend* x ); 
+  virtual void visit( rbend&         x ) ;
 
-  virtual void visitSector( sector* x ); 
+  virtual void visit( sbend&         x ); 
 
-  virtual void visitQuadrupole( quadrupole* x ); 
+  virtual void visit( sector&        x ); 
 
-  virtual void visitThin2pole( thin2pole* x ); 
+  virtual void visit( quadrupole&    x ); 
 
-  virtual void visitThinQuad( thinQuad* x ); 
+  virtual void visit( thin2pole&     x ); 
 
-  virtual void visitThinSextupole( thinSextupole* x ); 
+  virtual void visit( thinQuad&      x ); 
 
-  virtual void visitThinOctupole( thinOctupole* x ); 
+  virtual void visit( thinSextupole& x ); 
 
-  virtual void visitThinDecapole( thinDecapole* x ); 
+  virtual void visit( thinOctupole&  x ); 
 
-  virtual void visitThin12pole( thin12pole* x ); 
+  virtual void visit( thinDecapole&  x ); 
 
-  virtual void visitThin14pole( thin14pole* x ); 
+  virtual void visit( thin12pole&    x ); 
 
-  virtual void visitThin16pole( thin16pole* x ); 
+  virtual void visit( thin14pole&    x ); 
 
-  virtual void visitThin18pole( thin18pole* x ); 
+  virtual void visit( thin16pole&    x ); 
 
-  virtual void visitThinMultipole( thinMultipole* x ); 
+  virtual void visit( thin18pole&    x ); 
 
-  virtual void visitSextupole( sextupole* x ); 
+  virtual void visit( thinMultipole& x ); 
 
-  virtual void visitBBLens( BBLens* x ); 
+  virtual void visit( sextupole&     x ); 
 
-  virtual void visitThinSeptum( thinSeptum* x ); 
+  virtual void visit( BBLens&        x ); 
 
-  virtual void visitThinLamb( thinLamb* x ); 
+  virtual void visit( thinSeptum&    x ); 
 
-  virtual void visitCombinedFunction( combinedFunction* x );
+  virtual void visit( thinLamb&      x ); 
 
-  virtual void visitPinger( Pinger* x );
+  virtual void visit( combinedFunction& x );
 
-  virtual void visitHPinger( HPinger* x );
+  virtual void visit( Pinger&        x );
 
-  virtual void visitVPinger( VPinger* x );
+  virtual void visit( HPinger&       x );
 
-  virtual void visitKick( kick* x);
+  virtual void visit( VPinger&       x );
 
-  virtual void visitSlot( Slot* x);
+  virtual void visit( kick&          x);
 
-  virtual void visitCF_rbend( CF_rbend* x);
+  virtual void visit( Slot&          x);
 
-  virtual void visitCF_sbend( CF_sbend* x);
+  virtual void visit( CF_rbend&      x);
+
+  virtual void visit( CF_sbend&      x);
 
 
 protected:
+
   BmlVisitor();
   virtual ~BmlVisitor();
 
@@ -189,128 +191,94 @@ inline BmlVisitor::BmlVisitor()  {}
 inline BmlVisitor::~BmlVisitor() {}
 
 
-// ************************************************************
-
-
-class DLLEXPORT ConstBmlVisitor
+class DLLEXPORT ConstBmlVisitor 
 {
 public:
-  virtual void visitBeamline( const beamline* );
 
-  virtual void visitBmlnElmnt( const bmlnElmnt* ) {}
+  virtual void visit( beamline      const& x );
 
-  virtual void visitHkick( const hkick* x );
+  virtual void visit( bmlnElmnt     const& x ) {}
 
+  virtual void visit( hkick         const& x );
 
-  virtual void visitOctupole( const octupole* x ); 
+  virtual void visit( octupole      const& x ); 
 
+  virtual void visit( thinrfcavity  const& x ); 
 
-  virtual void visitThinrfcavity( const thinrfcavity* x ); 
+  virtual void visit( rfcavity      const& x ); 
 
+  virtual void visit( srot          const& x ); 
 
-  virtual void visitRfcavity( const rfcavity* x ); 
+  virtual void visit( vkick         const& x ); 
 
+  virtual void visit( monitor       const& x ); 
 
-  virtual void visitSrot( const srot* x ); 
+  virtual void visit( marker        const& x );
 
+  virtual void visit( drift         const& x ) ;
 
-  virtual void visitVkick( const vkick* x ); 
+  virtual void visit( rbend         const& x ) ;
 
+  virtual void visit( sbend         const& x ); 
 
-  virtual void visitMonitor( const monitor* x ); 
+  virtual void visit( sector        const& x ); 
 
+  virtual void visit( quadrupole    const& x ); 
 
-  virtual void visitMarker( const marker* x ); 
+  virtual void visit( thin2pole     const& x ); 
 
+  virtual void visit( thinQuad      const& x ); 
 
-  virtual void visitDrift( const drift* x ); 
+  virtual void visit( thinSextupole const& x ); 
 
+  virtual void visit( thinOctupole  const& x ); 
 
-  virtual void visitRbend( const rbend* x ); 
+  virtual void visit( thinDecapole  const& x ); 
 
+  virtual void visit( thin12pole    const& x ); 
 
-  virtual void visitSbend( const sbend* x ); 
+  virtual void visit( thin14pole    const& x ); 
 
+  virtual void visit( thin16pole    const& x ); 
 
-  virtual void visitSector( const sector* x );
+  virtual void visit( thin18pole    const& x ); 
 
+  virtual void visit( thinMultipole const& x ); 
 
-  virtual void visitQuadrupole( const quadrupole* x ); 
+  virtual void visit( sextupole     const& x ); 
 
+  virtual void visit( BBLens        const& x ); 
 
-  virtual void visitThin2pole( const thin2pole* x ); 
+  virtual void visit( thinSeptum    const& x ); 
 
+  virtual void visit( thinLamb      const& x ); 
 
-  virtual void visitThinQuad( const thinQuad* x ); 
+  virtual void visit( combinedFunction const& x );
 
+  virtual void visit( Pinger        const& x );
 
-  virtual void visitThinSextupole( const thinSextupole* x ); 
+  virtual void visit( HPinger       const& x );
 
+  virtual void visit( VPinger       const& x );
 
-  virtual void visitThinOctupole( const thinOctupole* x ); 
+  virtual void visit( kick          const& x);
 
+  virtual void visit( Slot          const& x);
 
-  virtual void visitThinDecapole( const thinDecapole* x ); 
+  virtual void visit( CF_rbend      const& x);
 
-
-  virtual void visitThin12pole( const thin12pole* x ); 
-
-
-  virtual void visitThin14pole( const thin14pole* x ); 
-
-
-  virtual void visitThin16pole( const thin16pole* x ); 
-
-
-  virtual void visitThin18pole( const thin18pole* x ); 
-
-
-  virtual void visitThinMultipole( const thinMultipole* x ); 
-
-
-  virtual void visitSextupole( const sextupole* x ); 
-
-
-  virtual void visitBBLens( const BBLens* x ); 
-
-
-  virtual void visitThinSeptum( const thinSeptum* x ); 
-
-
-  virtual void visitThinLamb( const thinLamb* x ); 
-
-
-  virtual void visitCombinedFunction( const combinedFunction* x );
-
-
-  virtual void visitPinger( const Pinger* x );
-
-
-  virtual void visitHPinger( const HPinger* x );
-
-
-  virtual void visitVPinger( const VPinger* x );
-
-
-  virtual void visitKick( const kick* x);
-
-
-  virtual void visitSlot( const Slot* x);
-
-
-  virtual void visitCF_rbend( const CF_rbend* x);
-
-
-  virtual void visitCF_sbend( const CF_sbend* x);
-
+  virtual void visit( CF_sbend      const& x);
 
 protected:
+
   ConstBmlVisitor();
   virtual ~ConstBmlVisitor();
 
 };
 
-inline ConstBmlVisitor::ConstBmlVisitor() {}
+inline ConstBmlVisitor::ConstBmlVisitor()  {}
 inline ConstBmlVisitor::~ConstBmlVisitor() {}
+
+
 
 #endif // BMLVISITOR_H
