@@ -47,22 +47,22 @@
 template<>
 template<>
 TJL1<std::complex<double> >::TJL1( TJL1<double> const& x ):
- _count(x._count),       
- _weight(x._weight),     
- _accuWgt(x._accuWgt),
- _myEnv(x._myEnv) // implicit conversion
+ count_(x.count_),       
+ weight_(x.weight_),     
+ accuWgt_(x.accuWgt_),
+ myEnv_(x.myEnv_) // implicit conversion
 
 {
 
-    _std = std::complex<double>(x._std, 0.0);
-     _jcb = new std::complex<double> [ _count-1 ];
+    terms_[0] = std::complex<double>(x.terms_[0], 0.0);
+     jcb_ = new std::complex<double> [ count_-1 ];
 
-     for (int i=0; i<_count-1; ++i) 
-       _jcb[i] =  std::complex<double>(x._jcb[i], 0.0);
+     for (int i=0; i<count_-1; ++i) 
+       jcb_[i] =  std::complex<double>(x.jcb_[i], 0.0);
 
 
 
- if ( !_myEnv ) {
+ if ( !myEnv_ ) {
  throw( GenericException( __FILE__, __LINE__, 
           "TJL1<std::complex<double> >::TJL1( TJL1<double> const& x)" ,
           "Null Environment." ) );
@@ -80,28 +80,28 @@ template<>
 JL1Ptr<std::complex<double> > TJL1<std::complex<double> >::makeTJL( const TJL1<double>& x )
 {
  
-  if (_thePool.empty() ) 
+  if (thePool_.empty() ) 
      return JL1Ptr<std::complex<double> >(new TJL1<std::complex<double> >(x) );
  
-  TJL1<std::complex<double> >* p = _thePool.back(); _thePool.pop_back(); 
+  TJL1<std::complex<double> >* p = thePool_.back(); thePool_.pop_back(); 
   
-  if ( p->_count  != x._myEnv->numVar()+1) {
-      delete [] p->_jcb; 
-      p->_jcb   = new std::complex<double>[ x._myEnv->numVar() ];
-      p->_count =  x._myEnv->numVar()+1;
+  if ( p->count_  != x.myEnv_->numVar()+1) {
+      delete [] p->jcb_; 
+      p->jcb_   = new std::complex<double>[ x.myEnv_->numVar() ];
+      p->count_ =  x.myEnv_->numVar()+1;
   }
  
-  p->_weight   = x._weight;  
-  p->_accuWgt  = x._accuWgt;
-  p->_myEnv    = x._myEnv;
+  p->weight_   = x.weight_;  
+  p->accuWgt_  = x.accuWgt_;
+  p->myEnv_    = x.myEnv_;
  
-  p->_std      = std::complex<double>(x._std, 0.0);
+  p->terms_[0]      = std::complex<double>(x.terms_[0], 0.0);
 
-  for (int i=0; i < (p->_count-1); ++i) 
-       p->_jcb[i] = std::complex<double>( x._jcb[i], 0.0);
+  for (int i=0; i < (p->count_-1); ++i) 
+       p->jcb_[i] = std::complex<double>( x.jcb_[i], 0.0);
 
 
- if ( !p->_myEnv ) {
+ if ( !p->myEnv_ ) {
  throw( GenericException( __FILE__, __LINE__, 
           "TJL1<std::complex<double> >::makeTJL( const TJL1<double>& x )",
           "Null Environment." ) );
@@ -121,19 +121,19 @@ template<>
 JL1Ptr<double> TJL1<double>::sqrt() const 
 {
 
-  if( _std <= 0.0 ) {
+  if( terms_[0] <= 0.0 ) {
 
     throw( GenericException( __FILE__, __LINE__, 
            "Jet sqrt( const Jet& )",
            "Non-positive standard part.") );
   }
 
-  JL1Ptr<double> z( makeTJL(_myEnv) ); 
+  JL1Ptr<double> z( makeTJL(myEnv_) ); 
 
-  z->_std = std::sqrt(_std );
+  z->terms_[0] = std::sqrt(terms_[0] );
 
-  for( int i=0; i < _count-1; ++i ) { 
-    z->_jcb[i] = ( 1.0 / ( 2.0*z->_std )) * _jcb[i]; 
+  for( int i=0; i < count_-1; ++i ) { 
+    z->jcb_[i] = ( 1.0 / ( 2.0*z->terms_[0] )) * jcb_[i]; 
   }
   return z;
 
@@ -147,12 +147,12 @@ template<>
 JL1Ptr<std::complex<double> > TJL1<std::complex<double> >::sqrt() const 
 {
 
-  JL1Ptr<std::complex<double> > z( makeTJL(_myEnv) ); 
+  JL1Ptr<std::complex<double> > z( makeTJL(myEnv_) ); 
 
-  z->_std = std::sqrt(_std );
+  z->terms_[0] = std::sqrt(terms_[0] );
 
-  for( int i=0; i < _count-1; ++i ) { 
-    z->_jcb[i] = ( 1.0 / ( 2.0*z->_std )) * _jcb[i]; 
+  for( int i=0; i < count_-1; ++i ) { 
+    z->jcb_[i] = ( 1.0 / ( 2.0*z->terms_[0] )) * jcb_[i]; 
   }
   return z;
 
@@ -169,17 +169,17 @@ JL1Ptr<double>  real(JL1Ptr<std::complex<double> > const& z) {
   // DOES NOT HAVE imaginary components 
   // ---------------------------------------------------------------------------------------------- 
 
-  EnvPtr<double> env = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(z->_myEnv);            
+  EnvPtr<double> env = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(z->myEnv_);            
 
 
   JL1Ptr<double> x( TJL1<double>::makeTJL(env));
 
-  x->_std = std::real(z->_std);
-  for (int i=0; i< x->_count-1; ++i) {
-     x->_jcb[i] = std::real(z->_jcb[i]);
+  x->terms_[0] = std::real(z->terms_[0]);
+  for (int i=0; i< x->count_-1; ++i) {
+     x->jcb_[i] = std::real(z->jcb_[i]);
   }
 
- if ( !x->_myEnv ) {
+ if ( !x->myEnv_ ) {
  throw( GenericException( __FILE__, __LINE__, 
           "JL1Ptr<double>  real(JL1Ptr<std::complex<double> > const& z)",
           "Null Environment." ) );
@@ -202,16 +202,16 @@ JL1Ptr<double>    imag(JL1Ptr<std::complex<double> > const& z){
  // DOES NOT HAVE imaginary components 
  // ---------------------------------------------------------------------------------------------- 
 
-  EnvPtr<double> env = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(z->_myEnv);            
+  EnvPtr<double> env = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(z->myEnv_);            
 
   JL1Ptr<double> x( TJL1<double>::makeTJL(env));
 
-  x->_std = std::imag(z->_std);
-  for (int i=0; i<x->_count-1 ; ++i) {
-     x->_jcb[i] = std::imag(z->_jcb[i]);
+  x->terms_[0] = std::imag(z->terms_[0]);
+  for (int i=0; i<x->count_-1 ; ++i) {
+     x->jcb_[i] = std::imag(z->jcb_[i]);
   }
 
-  if ( !x->_myEnv ) {
+  if ( !x->myEnv_ ) {
   throw( GenericException( __FILE__, __LINE__, 
           "JL1Ptr<double>  image(JL1Ptr<std::complex<double> > const& z)",
           "Null Environment." ) );

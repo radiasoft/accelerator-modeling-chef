@@ -68,25 +68,25 @@ using FNAL::pcerr;
 template<>
 template<>
 TJL<std::complex<double> >::TJL( TJL<double> const& x):
-_count(x._count ),          
-_weight(x._weight),     
-_accuWgt(x._accuWgt),
-_lowWgt(x._lowWgt),
-_jltermStoreCapacity(0), 
-_jltermStore(0), 
-_jltermStoreCurrentPtr(0)
+count_(x.count_ ),          
+weight_(x.weight_),     
+accuWgt_(x.accuWgt_),
+lowWgt_(x.lowWgt_),
+jltermStoreCapacity_(0), 
+jltermStore_(0), 
+jltermStoreCurrentPtr_(0)
 {
 
-  _myEnv = x._myEnv; // implicit conversion        
+  myEnv_ = x.myEnv_; // implicit conversion        
 
-  initStore( x._jltermStoreCapacity ); //  ***NOTE *** this resets the count !               
+  initStore( x.jltermStoreCapacity_ ); //  ***NOTE *** this resets the count !               
 
   //--------------------------------------------------------------------------
   // copy all the terms of the TJL<double> to the new TJL<complex> ...
   // --------------------------------------------------------------------------
 
 
-  for ( TJLterm<double> const *p = x._jltermStore; p < x._jltermStoreCurrentPtr; ++p) { 
+  for ( TJLterm<double> const *p = x.jltermStore_; p < x.jltermStoreCurrentPtr_; ++p) { 
 
       new  (storePtr()) TJLterm<std::complex<double> >(*p); //implicit conversion 
 
@@ -105,22 +105,22 @@ template<>
 JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL(  TJL<double> const& x )
 {
 
-  if (_thePool.empty() ) return JLPtr<std::complex<double> >( new TJL<std::complex<double> >(x) );
+  if (thePool_.empty() ) return JLPtr<std::complex<double> >( new TJL<std::complex<double> >(x) );
 
-  TJL<std::complex<double> >* p = _thePool.back(); _thePool.pop_back(); 
+  TJL<std::complex<double> >* p = thePool_.back(); thePool_.pop_back(); 
   
-  if (p->_jltermStoreCapacity < x._jltermStoreCapacity)  
+  if (p->jltermStoreCapacity_ < x.jltermStoreCapacity_)  
   { 
-       TJLterm<std::complex<double> >::array_deallocate( p->_jltermStore );
-       p->initStore(x._jltermStoreCapacity);   
+       TJLterm<std::complex<double> >::array_deallocate( p->jltermStore_ );
+       p->initStore(x.jltermStoreCapacity_);   
   
   }
 
-  p->_count    = x._count;   
-  p->_weight   = x._weight;  
-  p->_accuWgt  = x._accuWgt;
-  p->_lowWgt   = x._lowWgt;
-  p->_myEnv    = x._myEnv;  // implicit conversion
+  p->count_    = x.count_;   
+  p->weight_   = x.weight_;  
+  p->accuWgt_  = x.accuWgt_;
+  p->lowWgt_   = x.lowWgt_;
+  p->myEnv_    = x.myEnv_;  // implicit conversion
  
 
   //--------------------------------------------------------------------------
@@ -129,7 +129,7 @@ JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL(  TJL<double> 
   // --------------------------------------------------------------------------
 
 
-  for ( TJLterm<double> const* r = x._jltermStore; r < x._jltermStoreCurrentPtr; ++r) { 
+  for ( TJLterm<double> const* r = x.jltermStore_; r < x.jltermStoreCurrentPtr_; ++r) { 
 
     new ( p->storePtr() )  TJLterm<std::complex<double> >(*r); // implicit conversion 
   }
@@ -152,23 +152,23 @@ JLPtr<double> real( JLPtr<std::complex<double> > const& z )
   // DOES NOT HAVE imaginary components 
   // ---------------------------------------------------------------------------------------------- 
 
-  EnvPtr<double> pje = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(EnvPtr<std::complex<double> >(z->_myEnv) );            
+  EnvPtr<double> pje = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(EnvPtr<std::complex<double> >(z->myEnv_) );            
 
   JLPtr<double>  x( TJL<double>::makeTJL( pje ) );
 
   x->clear(); // clears **all** the terms (including the linear ones that are present by default); 
 
-  for ( TJLterm<std::complex<double> >* p = z->_jltermStore; p < z->_jltermStoreCurrentPtr; ++p) {
+  for ( TJLterm<std::complex<double> >* p = z->jltermStore_; p < z->jltermStoreCurrentPtr_; ++p) {
 
-     new ( x->storePtr() )  TJLterm<double>( p->_index, std::real( p->_value ), x->_myEnv );
+     new ( x->storePtr() )  TJLterm<double>( p->index_, std::real( p->value_ ), x->myEnv_ );
   }
  
-  // Set the maximum accurate _weight.
+  // Set the maximum accurate weight_.
 
-  x->_weight  = z->_weight;
-  x->_count   = z->_count;
-  x->_accuWgt = z->_accuWgt;
-  x->_lowWgt  = z->_lowWgt;
+  x->weight_  = z->weight_;
+  x->count_   = z->count_;
+  x->accuWgt_ = z->accuWgt_;
+  x->lowWgt_  = z->lowWgt_;
 
   
   return x;
@@ -186,7 +186,7 @@ JLPtr<double> imag( const JLPtr<std::complex<double> >& z )
   // DOES NOT HAVE imaginary components 
   // ---------------------------------------------------------------------------------------------- 
   
-  EnvPtr<double> pje = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment( z->_myEnv);       
+  EnvPtr<double> pje = TJetEnvironment<std::complex<double> >::makeRealJetEnvironment( z->myEnv_);       
 
   JLPtr<double>  x( TJL<double>::makeTJL(pje) );
 
@@ -194,17 +194,17 @@ JLPtr<double> imag( const JLPtr<std::complex<double> >& z )
  
   x->clear(); // clears **all** the terms (including the linear ones that are present by default); 
 
-  for ( TJLterm<std::complex<double> >* p = z->_jltermStore; p < z->_jltermStoreCurrentPtr; ++p) {
+  for ( TJLterm<std::complex<double> >* p = z->jltermStore_; p < z->jltermStoreCurrentPtr_; ++p) {
 
-    new (x->storePtr() )  TJLterm<double>( p->_index, std::imag( p->_value ), x->_myEnv );
+    new (x->storePtr() )  TJLterm<double>( p->index_, std::imag( p->value_ ), x->myEnv_ );
   }
  
-  // Set the maximum accurate _weight.
+  // Set the maximum accurate weight_.
 
-  x->_weight  = z->_weight;
-  x->_count   = z->_count;
-  x->_accuWgt = z->_accuWgt;
-  x->_lowWgt  = z->_lowWgt;
+  x->weight_  = z->weight_;
+  x->count_   = z->count_;
+  x->accuWgt_ = z->accuWgt_;
+  x->lowWgt_  = z->lowWgt_;
   
   return x;
 
