@@ -33,6 +33,12 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+******  Mar 2007:         ostiguy@fnal.gov
+******  - use covariant return types
+******  - support for reference counted elements
+******
 **************************************************************************
 *************************************************************************/
 
@@ -42,32 +48,43 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
 
-class DLLEXPORT thinDecapole : public bmlnElmnt
-{
+class BmlVisitor;
+class ConstBmlVisitor;
+
+class thinDecapole;
+
+typedef boost::shared_ptr<thinDecapole>            ThinDecapolePtr;
+typedef boost::shared_ptr<thinDecapole const> ConstThinDecapolePtr;
+
+
+class DLLEXPORT thinDecapole : public bmlnElmnt {
+
 public:
+
   thinDecapole();
   thinDecapole(                    double const& strength);
   thinDecapole( char const*  name, double const& strength);
   thinDecapole( thinDecapole const& );
- ~thinDecapole();
 
   thinDecapole* Clone() const { return new thinDecapole( *this ); }
+
+  thinDecapole& operator=( thinDecapole const& rhs);  
+  
+ ~thinDecapole();
+
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& p );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v )             { v.visitThinDecapole( this ); }
-  void accept( ConstBmlVisitor& v ) const  { v.visitThinDecapole( this ); }
+  void accept( BmlVisitor& v );           
+  void accept( ConstBmlVisitor& v ) const;  
 
   const char* Type() const;
   bool isMagnet()    const;
 
 } ;
-
-
 
 
 #endif // DECAPOLE_H
