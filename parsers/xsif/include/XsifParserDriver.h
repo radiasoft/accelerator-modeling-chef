@@ -42,6 +42,7 @@
 #include <parsers/xsif/tree-container/multitree.h>
 #include <parsers/xsif/Expression.h>
 #include <basic_toolkit/GenericException.h>
+#include <beamline/BmlPtr.h>
 
 class bmlnElmnt; 
 class beamline; 
@@ -110,71 +111,82 @@ class XsifParserDriver {
   friend std::ostream& operator<<(std::ostream& os, values_map_t      const& vm);
   friend std::ostream& operator<<(std::ostream& os, beamline_list_t   const& bl);
      
-           XsifParserDriver();
-  virtual ~XsifParserDriver();
+            XsifParserDriver();
+  virtual  ~XsifParserDriver();
 
-  void     scan_begin( yyscan_t yyscanner);
-  void     scan_end  ( yyscan_t yyscanner);
+  void      scan_begin( yyscan_t yyscanner);
+  void      scan_end  ( yyscan_t yyscanner);
 
-  int               parse (std::string const& f);
-  int      parseFromBuffer(char const* buffer);  
+  int                parse (std::string const& f);
+  int       parseFromBuffer(char const* buffer);  
 
-  void     error(xsif_yy::location const& l, std::string const& m) const;
-  void     error(std::string const& m);
+  void      error(xsif_yy::location const& l, std::string const& m) const;
+  void      error(std::string const& m);
 
-  void     setCurrentFilename(std::string s);
+  void      setCurrentFilename(std::string s);
 
 
   void      defineLineMacro( xsif_yy::location const& yyloc, std::string const& name, std::vector<std::string> const& elements);
-  void      instantiateLine( xsif_yy::location const& yyloc, std::string const& name, std::vector<std::string> const& elements);
-  void      instantiateElement( xsif_yy::location const& yyloc, std::string const &label,  std::vector<attrib_pair_t> const& attributes); 
+  BmlPtr    expandLineMacro(xsif_yy::location const& yyloc, std::string const& name);
 
-  beamline* expandLineMacro(xsif_yy::location const& yyloc, std::string const& name);
+  BmlPtr    instantiateLine( xsif_yy::location const& yyloc, std::string const& name, std::vector<std::string> const& elements);
+  void      addLineToDictionary( std::string const& label, BmlPtr& bml); 
+
+  std::vector<std::string>* 
+            instantiateAnonymousLine( xsif_yy::location const& yyloc, std::vector<std::string> const & elements, int ntimes=1); 
+
+  ElmPtr    instantiateElement( xsif_yy::location const& yyloc, std::string const &label,  std::vector<attrib_pair_t> const& attributes); 
+  void      addElmToDictionary( std::string const& label, ElmPtr& bml); 
 
   double    getElmAttributeVal( xsif_yy::location const& yyloc, std::string const& elm, std::string const& attrib) const; 
 
-  beamline* getLine(std::string label);
+  BmlPtr    getLine(std::string label);
 
-  void      command_BEAM(  xsif_yy::location const& yyloc,  std::vector<attrib_pair_t> const& attributes);
+  void      command_BEAM  (  xsif_yy::location const& yyloc,  std::vector<attrib_pair_t> const& attributes);
+  void      command_CALL  (  xsif_yy::location      & yyloc,  std::vector<attrib_pair_t> const& attributes, yyscan_t yyscanner);
+  void      command_RETURN(  xsif_yy::location      & yyloc,  yyscan_t yyscanner);
 
   void init(); 
 
-  static bmlnElmnt*        make_drift(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*       make_marker(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*        make_sbend(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*        make_rbend(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*   make_quadrupole(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*    make_sextupole(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*     make_octupole(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*    make_multipole(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*     make_solenoid(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*       make_kicker(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*      make_vkicker(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*      make_hkicker(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*     make_rfcavity(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*      make_monitor(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*     make_hmonitor(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*     make_vmonitor(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*     make_beambeam(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*         make_srot(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*         make_yrot(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*         make_lump(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*      make_lcavity(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*       make_matrix(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*  make_ecollimator(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*  make_rcollimator(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static bmlnElmnt*   make_instrument(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr        make_drift(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr       make_marker(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr        make_sbend(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr        make_rbend(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr   make_quadrupole(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr    make_sextupole(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr     make_octupole(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr    make_multipole(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr     make_solenoid(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr       make_kicker(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr      make_vkicker(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr      make_hkicker(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr     make_rfcavity(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr      make_monitor(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr     make_hmonitor(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr     make_vmonitor(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr     make_beambeam(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr         make_srot(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr         make_yrot(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr         make_lump(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr      make_lcavity(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr       make_matrix(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr  make_ecollimator(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr  make_rcollimator(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr   make_instrument(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr    make_blmonitor(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  static ElmPtr         make_wire(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
 
  
  // data members (public) _____________________________________________________________________________________________
 
-  typedef  bmlnElmnt* (*make_fnc_ptr)(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  typedef  ElmPtr (*make_fnc_ptr)(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
 
   std::string                                       m_file;
   const char*                                       m_buffer;              // read from a text buffer instead of a file 
   bool                                              m_input_is_file;           
 
   mutable std::stack<xsif_yy::location>             m_locations_stack;
+  mutable std::stack<void*>                         m_buffer_stack;
 
   bool                                              m_trace_scanning;
   bool                                              m_trace_parsing;
@@ -183,9 +195,9 @@ class XsifParserDriver {
   expr_map_t                                        m_variables;
 
 
-  std::map<std::string, beamline* >                 m_lines;
+  std::map<std::string, BmlPtr>                     m_lines;
   std::map<std::string, std::vector<std::string> >  m_line_macros;
-  std::map<std::string, bmlnElmnt*>                 m_elements;
+  std::map<std::string, ElmPtr>                     m_elements;
 
   std::vector<attrib_pair_t>                        m_attributes;
   std::map<std::string,make_fnc_ptr>                m_makefncs;
