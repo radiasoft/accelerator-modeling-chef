@@ -33,6 +33,11 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - covariant return types
+****** - support for reference counted elements
 **************************************************************************
 *************************************************************************/
 
@@ -41,15 +46,26 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
+
+
+class BmlVisitor;
+class ConstBmlVisitor;
+class quadrupole;
+class thinQuad;
+
+typedef boost::shared_ptr<quadrupole> QuadrupolePtr; 
+typedef boost::shared_ptr<thinQuad>   ThinQuadPtr; 
+
+typedef boost::shared_ptr<quadrupole const> ConstQuadrupolePtr; 
+typedef boost::shared_ptr<thinQuad const>   ConstThinQuadPtr; 
+
 
 class DLLEXPORT quadrupole : public bmlnElmnt
 {
-private:
-  std::ostream& writeTo(std::ostream&);
-  std::istream& readFrom(std::istream&);
+
 
 public:
+
   class MAD_Prop : public bmlnElmnt::PropFunc
   {
   public:
@@ -63,6 +79,7 @@ public:
   {
   private:
     int _n;  // number of thinquad kicks
+
   public:
     TPOT_Prop( int /* _n */ = 4 );
     int operator()( bmlnElmnt*, Particle&    );
@@ -72,8 +89,10 @@ public:
     void set_n( int );
     void setup( quadrupole* ) const;
   };
+
   friend class TPOT_Prop;
   static TPOT_Prop LikeTPOT;
+
 
 
   // length    in meters^-1
@@ -96,8 +115,8 @@ public:
   void localPropagate( Particle&    p )   { (*propfunc_)( this, p );        }
   void localPropagate( JetParticle& p )   { (*propfunc_)( this, p );        }
 
-  void accept( BmlVisitor& v )            { v.visitQuadrupole( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitQuadrupole( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   void releasePropFunc();
   void setupPropFunc();
@@ -105,12 +124,12 @@ public:
   const char* Type() const;
   bool isMagnet() const;
 
-  void Split( double const&, bmlnElmnt**, bmlnElmnt** ) const;
+  void Split( double const&, ElmPtr&, ElmPtr& ) const;
+
+private:
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
 } ;
-
-
-
-
 
 
 
@@ -118,6 +137,8 @@ public:
 
 class DLLEXPORT thinQuad : public bmlnElmnt
 {
+
+
 public:
 
   // integrated_strength (B'L) in Tesla; + = horizontally focussing
@@ -135,13 +156,14 @@ public:
   void localPropagate( Particle& p );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v )            { v.visitThinQuad( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitThinQuad( this ); }
+  void accept( BmlVisitor& v );           
+  void accept( ConstBmlVisitor& v ) const;
 
   bool        isMagnet()   const;
   char const* Type()       const;
   
 } ;
+
 
 
 #endif // QUADRUPOLE_H

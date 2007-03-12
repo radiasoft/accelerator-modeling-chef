@@ -33,6 +33,12 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - use covariant return types
+****** - support for reference counted elements
+******
 **************************************************************************
 *************************************************************************/
 
@@ -43,13 +49,12 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
 
+class BmlVisitor;
+class ConstBmlVisitor;
 
 class DLLEXPORT Pinger : public bmlnElmnt {
-protected:
-  double _kick_direction;	/* In which direction is the kick? */
-  int    _counter;              /* Counts number of turns before firing. */
+
 public:
 
   Pinger( );       	                                              // Assumes a zero, horizontal kick
@@ -68,19 +73,23 @@ public:
   void localPropagate( JetParticle& );
   void localPropagate( ParticleBunch& x );
 
-  void accept( BmlVisitor& v ) { v.visitPinger( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitPinger( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
-  void arm( int n ) { _counter = n; }
-  void disarm()     { _counter = -1; }
-  bool isArmed()    { return ( _counter >= 0 ); };
+  void arm( int n ) { counter_ = n; }
+  void disarm()     { counter_ = -1; }
+  bool isArmed()    { return ( counter_ >= 0 ); };
   
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
   
-  double getKickDirection()        { return _kick_direction; }
-  void  setKickDirection(double const& k) { _kick_direction = k; }
-};
+  double getKickDirection()        { return kick_direction_; }
+  void  setKickDirection(double const& k) { kick_direction_ = k; }
+
+protected:
+
+  double kick_direction_;	/* In which direction is the kick? */
+  int    counter_;              /* Counts number of turns before firing. */};
 
 class DLLEXPORT HPinger : public Pinger {
  public:
@@ -92,8 +101,9 @@ class DLLEXPORT HPinger : public Pinger {
 
   const char* Type() const;
   HPinger* Clone() const { return new HPinger( *this ); }
-  void accept( BmlVisitor& v ) { v.visitHPinger( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitHPinger( this ); }
+
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 };
 
 class DLLEXPORT VPinger : public Pinger {
@@ -109,8 +119,8 @@ class DLLEXPORT VPinger : public Pinger {
 
   const char* Type() const;
 
-  void accept( BmlVisitor& v )            { v.visitVPinger( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitVPinger( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 };
 
 #endif /* PINGER_H */

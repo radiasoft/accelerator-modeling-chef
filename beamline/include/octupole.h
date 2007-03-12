@@ -33,6 +33,11 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+****** 
+****** Mar 2007           ostiguy@fnal.gov
+****** - use covariant return types
+****** - support for reference counted elements
 **************************************************************************
 *************************************************************************/
 #ifndef OCTUPOLE_H
@@ -40,26 +45,42 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
-
 #include <beamline/Particle.h>
+
+class BmlVisitor;
+class ConstBmlVisitor;
 
 template<typename T> 
 class TVector;
 
-class DLLEXPORT octupole : public bmlnElmnt
-{
+
+class octupole;
+class thinOctupole;
+
+typedef boost::shared_ptr<octupole>     OctupolePtr;
+typedef boost::shared_ptr<thinOctupole> ThinOctupolePtr;
+
+typedef boost::shared_ptr<octupole const >     ConstOctupolePtr;
+typedef boost::shared_ptr<thinOctupole const>  ConstThinOctupolePtr;
+
+
+class DLLEXPORT octupole : public bmlnElmnt {
+
 public:
+
   octupole();
-  octupole( double const& length,    double const& strength);
   octupole( char const* name, double const& length,    double const& strength);
+  octupole(                   double const& length,    double const& strength);
+
   octupole( octupole const& );
   octupole* Clone() const { return new octupole( *this ); }
 
+  octupole& operator=( octupole const& rhs);
+
   virtual ~octupole();
 
-  void accept( BmlVisitor& v ) { v.visitOctupole( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitOctupole( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   void setStrength( double const& );
   void setStrength( double const&, int );
@@ -73,21 +94,22 @@ public:
   const char* Type() const;
   bool isMagnet() const;
 
-  void Split( double const&, bmlnElmnt**, bmlnElmnt** ) const;
+  void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
 };
 
 
+class DLLEXPORT thinOctupole : public bmlnElmnt {
 
-class DLLEXPORT thinOctupole : public bmlnElmnt 
-{
 public:
   thinOctupole();
-  thinOctupole( double const&  strength);
   thinOctupole( char const* name,  double const& strength );
+  thinOctupole(                    double const& strength );
   thinOctupole( thinOctupole const& );
 
   thinOctupole* Clone() const { return new thinOctupole( *this ); }
+
+  thinOctupole& operator=( thinOctupole const& rhs);
 
   virtual ~thinOctupole();
 
@@ -95,8 +117,8 @@ public:
   void localPropagate( Particle& p );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v )            { v.visitThinOctupole( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitThinOctupole( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
   bool isMagnet() const;
