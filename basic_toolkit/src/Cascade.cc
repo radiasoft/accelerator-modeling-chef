@@ -36,7 +36,16 @@
 ******              ostiguy@fnal.gov
 ******
 ****** - eliminated archaic "reconstruct" member functions. 
-******   Use placemnent new instead.                                     
+******   Use placement new instead.
+****** 
+****** Feb 2007     ostiguy@fnal.gov
+******
+****** - use std::list (instead of c-style slist)
+****** - wrote paragraph to document the purpose of the class, the data layout
+******   and the initialization process. Added detailed comments. 
+****** - refactored and simplified main loop: use partial comparison operators 
+******   for IntArray.    
+******                                    
 ********************************************************************************
 *************************************************************************/
 
@@ -44,10 +53,12 @@
 #include <config.h>
 #endif
 
+#include <list>
+#include <functional>
+#include <boost/bind.hpp>
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/utils.h>
 #include <basic_toolkit/GenericException.h>
-#include <basic_toolkit/slist.h>
 #include <basic_toolkit/IntArray.h>
 #include <basic_toolkit/Cascade.h> // RENAME Cascade.h
 
@@ -57,415 +68,524 @@ using FNAL::pcout;
 
 using namespace std;
 
+//------------------------------------------------------------------------------------
+//
+// The class Cascade implements a network of "Switches" allowing 
+// the of mapping n-tuples of monomial exponents to offsets within a table of monomial
+// coefficients. Assuming n variables, the cost of computing an offset is 
+// roughly that of n additions (computing ptr offset) + n indirections. 
+// 
+// Within the monomial coefficient table, coefficients are layed out in the following order
+// 
+// (1) increasing weight ( sum of the exponents or total order ) 
+// (2) coefficients of identical weight are ordered in inverse lexicographical 
+//     order of exponent tuple.
+//
+//  Let w be the maximum weight w and n be the no of variables.
+//
+//
+//  There are then C(w+n, n) = ( w+n )!/ n! w!  distinct monomials  
+//
+//
+//  e.g. w=1, n=6  C(w,n) = (1+6)!/ 1!6!  = 7 monomials
+//
+//
+//  Now, consider (for example) a 4-tuple (e0, e1, e2, e3 )
+//  at order w=3
+//
+//  The Cascade structure is layed out as follows :
+//
+//  an array arrayOfSwitches with dimension set to Sum(i=1,w) C(w+i,w)  
+//  e.g. for order w=3  
+//
+//  size = C(3+4,4)  + C(3+3,3)  + C (3+2,2)  + C( 3+1,1)    
+//  size = 7!/4!3!)  + 6!/(3!3!) + 5!/(2!3!)  + 4!/(1!3!)    
+//         Group 1     Group 2      Group3      Group4
+//  
+//  The groups and their elements are layed out sequentially in memory,
+//  in the above order.  
+//  
+//  Each Switch has an arrow_ member which is an array of 
+//  pointers to other Switch objects.
+//
+//  a second array, startPoint_ is also defined. In this example, each entry in 
+//  startPoint would point to an entry in Group 4, defined by the value of e0.
+//  The dimension of startPoint_ is therefore equal to the max weight + 1.
+//     
+//  within Group 4, each entry points into an entry in Group 3. This entry is
+//  defined by e1 such that arrow_[e1]  points to switch (e0,e1)  
+//
+//  within Group 3,  each entry points into an entry in Group 2. This entry
+//  is defined e2  such that  arrow_[e2] points to   switch (e0,e1,e2)  
+// 
+//  etc ...
+//
+//  To obtain the offset that corresponds to e0,e1,2  one needs only to follow
+//  the links (hence the name "Cascade")
+// 
+//  startPoint[e0] ->arrow_[e1]->arrow_[e2]->arrow_[e3]
+//
+//  Initialization proceeds as follow: Group1 is collected
+//  into a list of "target" switches. Since these switches are "terminal", 
+//  their arrow_ member array is empty.
+//  Then, new switches are added to Group 2: a new switch is created with 
+//  n-1 exponents; the target switch list is then traversed sequentially and 
+//  the first n-1 exponents are compared. for every match, the new switch arrow_ 
+//  array corresponding to the exponent that was omitted is initialized to the
+//  target. This is repeated until the target group is exhausted. 
+//     
+//  The target switches become group 2 and group 3 are the new switches. 
+//  The process is repeated until the entire array is filled.
+//
+//-----------------------------------------------------------------------------------
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 Switch::Switch()
-: _w(2), _index(0), _xpt(6)// , _terminator(false)
+: w_(2), index_(0), xpt_( IntArray(6) )// , terminator(false)
 {
-  _finishConstructor();
+   finishConstructor();
 }
 
 
-Switch::Switch( int maxWeight, int indexValue, const IntArray& x )
-: _w(maxWeight), 
-  _index(indexValue), 
-  _xpt(x) // , _terminator(false)
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Switch::Switch( int maxWeight, int indexValue, IntArray const& x )
+: w_(maxWeight), index_(indexValue), xpt_(x) // , terminator_(false)
 {
-  if( _w <= 0 ) {
+  if( w_ <= 0 ) {
     (*pcout) << "Can't do this." << endl;
     exit(1);
   }
-  _finishConstructor();
+   finishConstructor();
 }
 
 
-Switch::Switch( const Switch& x )
-: _w(x._w), 
-  _index(x._index),
-  _xpt(x._xpt) // , _terminator(x._terminator)
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Switch::Switch( Switch const& x )
+:  w_(x.w_), index_( x.index_ ), xpt_( x.xpt_ ) 
 {
-  _finishConstructor();
+  arrow_ = new Switch* [w_ + 1 ];
+  std::copy( &x.arrow_[0], &x.arrow_[w_+1], &arrow_[0] );
+
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Switch::_finishConstructor()
+void Switch::finishConstructor()
 {
-  _arrow = new Switch* [_w+1];
-  for( int i = 0; i < _w+1; i++ ) { _arrow[i] = 0; }
+  arrow_ = new Switch* [w_ + 1 ];
+  for( int i=0; i < w_+1; ++i) { arrow_[i] = 0; }
+
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Switch::~Switch()
 {
-  _clean();
+  if( arrow_ ) { delete [] arrow_;  arrow_ = 0; }
 }
 
-
-void Switch::_clean()
-{
-  if( _arrow ) { delete [] _arrow; _arrow = 0; }
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 Cascade::Cascade( int weight, int numvar, bool verbosity ) 
-: _maxWeight(weight), 
-  _numVar(numvar),
-  _numberOfMonomials( bcfRec( weight + numvar, numvar ) ),
-  _numberOfSwitches(0),
-  _verbose( verbosity ),
-  _arrayOfSwitches((Switch*) 0),
-  _startPoint((Switch**) 0)
+:  maxWeight_(weight), 
+   numVar_(numvar),
+   numberOfMonomials_( bcfRec( weight + numvar, numvar ) ),
+   numberOfSwitches_(0),
+   verbose_( verbosity ),
+   arrayOfSwitches_(),
+   startPoint_(0)
 {
-  _finishConstructor();
+   finishConstructor();
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Cascade::Cascade( const Cascade& x )
-: _maxWeight(x._maxWeight), 
-  _numVar(x._numVar),
-  _numberOfMonomials( bcfRec( x._maxWeight + x._numVar, x._numVar ) ),
-  _numberOfSwitches(0),
-  _verbose( x._verbose ),
-  _arrayOfSwitches((Switch*) 0),
-  _startPoint((Switch**) 0)
+
+Cascade::Cascade( Cascade const& x )
+:  maxWeight_(x.maxWeight_), 
+   numVar_(x.numVar_),
+   numberOfMonomials_( bcfRec( x.maxWeight_ + x.numVar_, x.numVar_ ) ),
+   numberOfSwitches_(0),
+   verbose_( x.verbose_ ),
+   arrayOfSwitches_(),
+   startPoint_(0)
 {
-  _finishConstructor();
+   finishConstructor();
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Cascade::_finishConstructor()
+
+void Cascade::finishConstructor()
 {
+
   // Construct an array of switches
-  int f[_numVar];
-  for( int i = 0; i < _numVar; i++ ) { f[i] = 0; }
-  IntArray e(_numVar);
-  e.Set(f);
 
-  _numberOfSwitches = _numberOfMonomials;
-  int m = _numVar;
-  while( 0 < --m ) { 
-    _numberOfSwitches += bcfRec( _maxWeight + m, m ); 
+  numberOfSwitches_ = numberOfMonomials_;
+
+  int m = numVar_;
+
+  while( --m > 0 ) { 
+     numberOfSwitches_ += bcfRec( maxWeight_ + m, m ); 
   }
 
-  if( _verbose ) {
-    (*pcout) << "\nNumber of switches  = " << _numberOfSwitches 
-         << "\n          monomials = " << _numberOfMonomials
-         << "\n          linkers   = " << (_numberOfSwitches - _numberOfMonomials)
-         << endl;
+  if( verbose_ ) {
+    (*pcout) << "\nNumber of switches  = " <<  numberOfSwitches_ 
+             << "\n          monomials = " <<  numberOfMonomials_
+             << "\n          linkers   = " << (numberOfSwitches_ - numberOfMonomials_)
+             << endl;
   }
 
-  _arrayOfSwitches = new Switch [_numberOfSwitches];
-  Switch* upperBound = &(_arrayOfSwitches[_numberOfSwitches]);
-  // for( i = 0; i < numberOfMonomials; i++ ) {
-  //   setOfSwitches[i]._terminator = true;
-  // }
+  arrayOfSwitches_   = std::vector<Switch>(numberOfSwitches_);
+
+  Switch* const upperBound = &arrayOfSwitches_.back() + 1; //  pointer to the top of array memory
 
 
-  // Initialize first Switch
+  // Initialize the first Switch ( 0, 0, 0, .... 0)
+ 
   int counter = 0;
-  slist setOfSwitches;
-  Switch* swPtr = 0;
-  swPtr = _arrayOfSwitches;
 
-  if( _verbose ) { (*pcout) << "Making: " << e << endl; }
+  std::list<Switch*>  setOfSwitches;
 
-  if( swPtr < upperBound ) {
-    new (swPtr) Switch( _maxWeight, counter++, e );
-  }
-  else {
-    exit(-7);
-  }
-  setOfSwitches.append(swPtr);
-  swPtr++;
+  IntArray e(numVar_);
 
+  if( verbose_ ) { (*pcout) << "Making: " << e << endl; }
+
+  Switch* swPtr = &arrayOfSwitches_[0];
+
+  new (swPtr) Switch( maxWeight_, counter++, e );  // this sets the unique weight=0 exponent tuple.
+
+  setOfSwitches.push_back(swPtr);
+
+  ++swPtr;
+
+  // -----------------------------------------------------------------------------------
+  // the code below generates a list of switches with exponent tuples in the following order:
+  // (1) increasing weight 
+  // (2) exponents of the same weight are ordered in inverse lexicographical order.
+  //------------------------------------------------------------------------------------
 
   // Initialize remaining Switches
 
-  for( int i = 1; i <= _maxWeight; i++ ) {
+  int f[numVar_];
+  std::fill( &f[0],&f[0]+ numVar_, int() );
 
-    while( nexcom( i, _numVar, f) ) {
+  for( int i=1; i <= maxWeight_; ++i) {
+
+    while( nexcom( i, numVar_, f) ) { 
       e.Set(f);
-      if( _verbose ) { (*pcout) << "Making: " << e << endl; }
+      if( verbose_ ) { (*pcout) << "Making: " << e << endl; }
       if( swPtr < upperBound ) {
-        new (swPtr) Switch( _maxWeight, counter++, e );
+        new (swPtr) Switch(  maxWeight_, counter++, e );
       }
       else {
         exit(-7);
       }
-      setOfSwitches.append(swPtr);
-      swPtr++;
-      // swPtr->_terminator = true;
-      // swPtr->_arrow[0] = &swPtr;
+      setOfSwitches.push_back(swPtr);
+      ++swPtr;
     }
   }
 
-  if( _numberOfMonomials 
-      != ((((int) swPtr) - ((int) _arrayOfSwitches))/sizeof(Switch))  ) 
-  {
-    (*pcout) << "*** ERROR *** "
-         << "A total of " 
-         << ((((int) swPtr) - ((int) _arrayOfSwitches))/sizeof(Switch))
-         << " monomials have been made; expected " 
-         << _numberOfMonomials << '.'
-         << endl;
-    _numberOfMonomials = ((((int) swPtr) - ((int) _arrayOfSwitches))/sizeof(Switch));
-  }
-
-  if( _numberOfMonomials != counter )
+  if( numberOfMonomials_ != counter )
   {
     (*pcout) << "*** ERROR *** "
          << "Index counter is out of synch: "
          << counter
          << " != "
-         << _numberOfMonomials << '.'
+         << numberOfMonomials_ << '.'
          << endl;
-    _numberOfMonomials = ((((int) swPtr) - ((int) _arrayOfSwitches))/sizeof(Switch));
+    numberOfMonomials_ = arrayOfSwitches_.size();
   }
 
-  slist targetSwitches, newSwitches;
-  targetSwitches = setOfSwitches;
-  int targetDim = _numVar;
+  // ----------------------------------------------------------------------------------------------------------
+  // At this point, arrayofSwitches contains a switch for every possible monomial, in the order specified above.
+  // These switches are the "final" switches in the chain because they fully define all exponents.
+  // 
+  // We now proceed to define the "linking" or intermediate Switches.      
+  //
+  // setOfSwitches  = the complete set of switches defined so far
+  // targetSwitches = the target switches for the current interation
+  // newSwitches    = the "source" switches for the current iteration
+  //     
+  //-----------------------------------------------------------------------------------------------------------
+
+  list<Switch*> targetSwitches = setOfSwitches; 
+  list<Switch*> newSwitches;
+
+  int targetDim = numVar_;
   m = 0;
 
-  while( 1 < targetDim ) {
-    Switch* targetPtr;
+  // --------------------------
+  // ** main loop
+  // -------------------------
 
-    while((  targetPtr = (Switch*) targetSwitches.get()  )) {
-      m = targetDim - 1;
-      IntArray dummy(m);
+  Switch* targetPtr = 0 ;
+  Switch* newPtr    = 0 ;
 
-      for( int i = 0; i < m; i++ ) { dummy(i) = targetPtr->_xpt(i); }
+  while( targetDim > 1 ) { 
 
-      Switch* probePtr = 0;
-      Switch* foundPtr = 0;
-      slist_iterator sli( newSwitches );
-      while((  (0 == foundPtr) && (0 != (probePtr = (Switch*) sli()))  )) {
-        if( probePtr->_xpt == dummy ) {
-          foundPtr = probePtr;
-        }
-      }
+    while(  !targetSwitches.empty() ) {
+      
+      // sort the target switches  ignoring the rightmost index. This garantees that all switches
+      // that have identical indices from 0 to targetDim-1 inclusively appear in succession in the list. 
 
-      if( 0 != foundPtr ) {  // Found
-        int j = 0;
-        bool foundNull = ( 0 == foundPtr->_arrow[j++] );
-        if( foundNull ) {
-          (*pcout) << "Whoops" << endl;
-          return;
-        }
-        while( !foundNull && (j < _maxWeight + 1) ) {
-          foundNull = ( 0 == foundPtr->_arrow[j++] );
-          if( foundNull ) {
-            j--;
-            foundPtr->_arrow[j] = targetPtr;
-            j++;
-          }
-        }
-        if( !foundNull ) {
-          (*pcout) << "Oh-oh" << endl;
-          return;
-        }
-      }
-
-      else {  // Not found
-        if( swPtr < upperBound ) {
-          new (swPtr) Switch( _maxWeight, -1, dummy );
-          // if( swPtr->_terminator ) {
-          //   swPtr->_arrow[0] = swPtr; ???
-          // }
-          // else {
-          swPtr->_arrow[0] = targetPtr;
-          // }
-        }
-        else {
-          exit(-7);
-        }
+      targetSwitches.sort( Switch::PartialLessThan(0,targetDim-2) );
+      
+      for ( std::list<Switch*>::iterator it = targetSwitches.begin(); it != targetSwitches.end(); ++it )
  
-        newSwitches.append( swPtr );
-        swPtr++;
-      }
-    }
+      // get a target switch 
+      targetPtr =  targetSwitches.front();
+      targetSwitches.pop_front();
+ 
+      // create a new switch pointer in arrayOfSwitches based on the new target (note placement new syntax !)
+      // note that the new switch pointer has one less indices than the target.
+  
+      newPtr = new (swPtr++) Switch( maxWeight_, -1, IntArray( targetPtr->xpt_.begin(), targetPtr->xpt_.begin()+ targetDim-1 ) );
+      newSwitches.push_back( newPtr );
 
+      newPtr->arrow_[targetPtr->xpt_(targetDim-1)] =  targetPtr;   
+
+      // Continue poping out target switches and set arrow_ pointer array entries in new switch until 
+      // target switches no longer match( EqualUpTo )
+ 
+      if ( targetSwitches.empty() )  break;
+      targetPtr = targetSwitches.front(); 
+
+      while(  IntArray::PartialEqual( newPtr->xpt_, targetPtr->xpt_, 0, targetDim-2 )  )
+      {
+         targetSwitches.pop_front(); 
+         newPtr->arrow_[ targetPtr->xpt_(targetDim-1) ] =  targetPtr;   
+         targetPtr =  targetSwitches.front();
+
+      }
+    } // while 
 
     // Get ready for the next go-around
+
     targetSwitches = newSwitches;
-    while((  targetPtr = (Switch*) newSwitches.get()  )) {
-      setOfSwitches.append(targetPtr);
+
+    for  ( std::list<Switch*>::iterator it = newSwitches.begin(); it != newSwitches.end(); ++it ) {
+      setOfSwitches.push_back(*it);
     }
-    newSwitches.clear();  // Unnecessary, but what the heck ...
-    targetDim--;
+
+    newSwitches.clear();  
+
+    --targetDim;
+  }
+  //-----------------------
+  // ** main loop ends
+  //-----------------------
+
+
+  //----------------------------------
+  // Initialize the startPoint_ array
+  //----------------------------------
+
+  startPoint_ = new Switch* [maxWeight_ + 1 ];
+  
+  std::list<Switch*>::const_iterator sli = setOfSwitches.end();
+
+  std::advance( sli,  - (maxWeight_ + 1) );
+
+  for( int i=0; i < maxWeight_+1; ++i, ++sli ) 
+  { 
+    startPoint_[i] = *sli; 
   }
 
-
-  // Look at the results
-  slist_iterator sli( setOfSwitches );
-  if( _verbose ) { 
-    (*pcout) << "All the switches:" << endl;
-    int i = 0;
-    while((  swPtr = (Switch*) sli()  )) {
-      (*pcout) << swPtr->_xpt << " : " << ++i << endl;
-    }
-    sli.Reset();
-  }
-
-  int expectedLinks = 0;
-  m = _numVar;
-  while( 0 < --m ) {
-    expectedLinks += bcfRec(_maxWeight+m,m);
-  }
-
-  if( _verbose ) {
-    (*pcout) << "Total number of nodes = " 
-         << _numberOfSwitches << endl;
-    (*pcout) << "           link nodes = " 
-         << (_numberOfSwitches - _numberOfMonomials) 
-         << "; expected "
-         << expectedLinks
-         << endl;
-  }
-
-
-  // Initialize the _startPoint array
-  const int w = _maxWeight;  // Done just for convenience
-  const int n = _numVar;
-
-  _startPoint = new Switch* [w+1];
-  int i = 1;
-  // REMOVE: sli.Reset(); // Unnecessary; already done.
-  while( i <= (_numberOfSwitches - w - 1) ) { sli(); i++; }
-  for( i = 0; i < w+1; i++ ) { 
-    _startPoint[i] = (Switch*) sli(); 
-    if( 0 == _startPoint[i] ) {
-      (*pcout) << "Yike" << endl;
-      exit(-5);
-    }
-  }
-  if( 0 != sli() ) {
-    (*pcout) << "Oh no" << endl;
-    exit(-3);
-  }
-  sli.Reset();
-
-
-  // Test the results
-  if( _verbose ) { (*pcout) << "\nTesting accuracy." << endl; }
-
-  // Do the first monomial by hand
-  for( int i = 0; i < n; i++ ) { f[i] = 0; }
-  e.Set(f);
-  if( _verbose ) { (*pcout) << e << endl; }
-  swPtr = _startPoint[e(0)];
-  if( _verbose ) { (*pcout) << "  " << swPtr->_xpt << endl; }
-  for( int j = 1; j < n; j++ ) {
-    swPtr = (Switch*) (swPtr->_arrow[e(j)]);
-    if( _verbose ) { (*pcout) << "  " << swPtr->_xpt << endl; }
-  }
-  if( _verbose ) { (*pcout) << e << ": -> " << swPtr->_xpt << endl; }
-
-  if( e != swPtr->_xpt ) {
-    (*pcout) << "Error occurred: " 
-         << e << ": -> " << swPtr->_xpt 
-         << endl;
-  }
-
-  // ... and then all subsequent monomials
-  for( int i = 1; i <= w; i++ ) {
-    while( nexcom( i, n, f) ) {
-      e.Set(f);
-      if( _verbose ) { (*pcout) << e << endl; }
-      swPtr = _startPoint[e(0)];
-      if( _verbose ) { (*pcout) << "  " << swPtr->_xpt << endl; }
-      for( int j = 1; j < n; j++ ) {
-        swPtr = (Switch*) (swPtr->_arrow[e(j)]);
-        if( _verbose ) { (*pcout) << "  " << swPtr->_xpt << endl; }
-      }
-      if( _verbose ) { (*pcout) << e << ": -> " << swPtr->_xpt << endl; }
-    }
-  }
-
-  if( _verbose ) { (*pcout) << "Finished testing accuracy." << endl; }
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 Cascade::~Cascade() 
 {
-  _clean();
+  if( startPoint_ )  { delete []  startPoint_; startPoint_  = 0; }
 }
 
 
-void Cascade::_clean()
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Cascade::testSwitchAllocation( std::list<Switch*> const& setOfSwitches ) const
 {
-  if( _arrayOfSwitches ) { delete [] _arrayOfSwitches; _arrayOfSwitches = 0; }
-  if( _startPoint )      { delete [] _startPoint;      _startPoint      = 0; }
-}
+ 
+  (*pcout) << "All the switches:" << endl;
 
+  Switch const * swPtr;
 
-
-
-int Cascade::index( const int e[] ) const
-{
-  Switch* swPtr = _startPoint[e[0]];
-  for( int j = 1; j < _numVar; j++ ) {
-    swPtr = (Switch*) (swPtr->_arrow[e[j]]);
+  int i = 0;
+  for( std::list<Switch*>::const_iterator sli = setOfSwitches.begin(); sli != setOfSwitches.end(); ++sli ) 
+  {
+     swPtr = *sli;
+     (*pcout) << swPtr->xpt_ << " : " << ++i << endl;
   }
-  return swPtr->_index;
-}
 
+  int expectedLinks = 0;
+  int m = numVar_;
 
-IntArray Cascade::exponents( const IntArray& e )
-{
-
-  IntArrayIterator getNext( e );
-
-  //  Switch* swPtr = _startPoint[e(0)];
-
-  Switch* swPtr = _startPoint[ getNext()];
-
-  for( int j = 1; j < _numVar; j++ ) {
-    //    swPtr = (Switch*) (swPtr->_arrow[e(j)]);
-    swPtr = (Switch*) (swPtr->_arrow[ getNext() ] );
+  while( 0 < --m ) {
+    expectedLinks += bcfRec(maxWeight_+m, m);
   }
-  return swPtr->_xpt;
+
+  (*pcout) << "Total number of nodes = " 
+           <<  numberOfSwitches_ << endl;
+  (*pcout) << "           link nodes = " 
+           << ( numberOfSwitches_ - numberOfMonomials_ ) 
+           << "; expected "
+           << expectedLinks
+          << endl;
+ 
+}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int Cascade::index( int const * const e ) const
+{
+
+  Switch* swPtr = startPoint_[e[0]];
+
+  for( int j = 1; j < numVar_; ++j ) {
+    swPtr = swPtr->arrow_[e[j]];
+  }
+
+  return swPtr->index_;
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+IntArray Cascade::exponents( IntArray const& e ) const
+{
+
+  IntArray::const_iterator it = e.begin();
+ 
+  Switch* swPtr = startPoint_[ *it ];
+
+  for( int j=1;  j < numVar_;  ++j) {
+
+     swPtr = swPtr->arrow_[ *(++it) ];
+  }
+ 
+  return swPtr->xpt_;
 }
 
 
-int Cascade::selfTest()
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int Cascade::selfTest() const
 {
+
+  int f[numVar_];
+  IntArray e(numVar_);
+
+  std::fill( &f[0],&f[0]+ numVar_, int() );
+
+  // Test the results
+  if( verbose_ ) { (*pcout) << "\nTesting accuracy." << endl; }
+
+  // Do the first monomial by hand
+
+  for( int i=0; i< numVar_; ++i ) { f[i] = 0; }
+  e.Set(f);
+
+  if( verbose_ ) { (*pcout) << e << endl; }
+
+  Switch const* swPtr = startPoint_[e(0)];
+
+  if( verbose_ ) { (*pcout) << "  " << swPtr->xpt_ << endl; }
+
+  for( int j = 1; j < numVar_; ++j ) {
+    swPtr =  swPtr->arrow_[e(j)];
+    if( verbose_ ) { (*pcout) << "  " << swPtr->xpt_ << endl; }
+  }
+
+  if( verbose_ ) { (*pcout) << e << ": -> " << swPtr->xpt_ << endl; }
+
+  if( e != swPtr->xpt_ ) {
+    (*pcout) << "Error occurred: " 
+         << e << ": -> " << swPtr->xpt_ 
+         << endl;
+  }
+
+  // ... and then all subsequent monomials
+
+  for( int i=1; i <= maxWeight_; ++i) {
+
+    while( nexcom( i, numVar_, f) ) {
+      e.Set(f);
+
+      if( verbose_ ) { (*pcout) << e << endl; }
+
+      swPtr = startPoint_[e(0)];
+
+      if( verbose_ ) { (*pcout) << "  " << swPtr->xpt_ << endl; }
+
+      for( int j = 1; j < numVar_; j++ ) {
+
+        swPtr = swPtr->arrow_[e(j)];
+        if( verbose_ ) { (*pcout) << "  " << swPtr->xpt_ << endl; }
+      }
+      if( verbose_ ) { (*pcout) << e << ": -> " << swPtr->xpt_ << endl; }
+    }
+  }
+
+  if( verbose_  ) { (*pcout) << "Finished testing accuracy." << endl; }
+
+
   (*pcerr) << "\nCascade::selfTest beginning test of all possible indices." 
             << std::endl;
   int ret = 0;
-  int n = _numVar;
-  int w = _maxWeight;
-  int f[n];
-  IntArray e(n);
-  for( int i = 0; i < n; i++ ) { f[i] = 0; }
+
+
+  int w = maxWeight_;
+
+
+  for( int i=0; i < numVar_; ++i) { f[i] = 0; }
 
   e.Set(f);
   if( e != (this->exponents(e)) ) {
     (*pcerr) << "Type 1 error: " << e << " != " << (this->exponents(e)) << endl;
     ret = 1;
   }
-  if( e != _arrayOfSwitches[this->index(e)]._xpt ) {
+  if( e != arrayOfSwitches_[ index(e) ].xpt_ ) {
     (*pcerr) << "Type 2 error: " << e << " != " 
-              << "_arrayOfSwitches["
-              << (this->index(e))
+              << "arrayOfSwitches_["
+              << ( index(e))
               << "] = " 
-              << (_arrayOfSwitches[this->index(e)]._xpt)
+              << ( arrayOfSwitches_[index(e)].xpt_)
               << endl;
     ret = 2;
   }
 
 
-  for( int i = 1; i <= w; i++ ) {
-    while( nexcom( i, n, f) ) {
+  for( int i = 1; i <= maxWeight_; ++i) {
+    while( nexcom( i, numVar_, f) ) {
       e.Set(f);
-      if( e != (this->exponents(e)) ) {
-        (*pcerr) << "Type 1 error: " << e << " != " << (this->exponents(e)) << endl;
+      if( e != exponents(e) ) {
+        (*pcerr) << "Type 1 error: " << e << " != " << exponents(e) << endl;
         ret = 1;
       }
-      if( e != _arrayOfSwitches[this->index(e)]._xpt ) {
+      if( e != arrayOfSwitches_[ index(e)].xpt_ ) {
         (*pcerr) << "Type 2 error: " << e << " != " 
-                  << "_arrayOfSwitches["
-                  << (this->index(e))
+                  << "arrayOfSwitches_["
+                  <<  index(e)
                   << "] = " 
-                  << (_arrayOfSwitches[this->index(e)]._xpt)
+                  << (arrayOfSwitches_[this->index(e)].xpt_)
                   << endl;
         ret = 2;
       }
@@ -476,3 +596,5 @@ int Cascade::selfTest()
             << std::endl;
   return ret;
 }
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
