@@ -33,6 +33,11 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007        ostiguy@fnal.gov
+****** - use covariant return types
+****** - support for reference counted elements
 **************************************************************************
 *************************************************************************/
 
@@ -41,10 +46,24 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
+
+
+class BmlVisitor;
+class ConstBmlVisitor;
+
+class sextupole;
+class thinSextupole;
+
+typedef boost::shared_ptr<sextupole>     SextupolePtr;
+typedef boost::shared_ptr<thinSextupole> ThinSextupolePtr;
+
+typedef boost::shared_ptr<sextupole const>     ConstSextupolePtr;
+typedef boost::shared_ptr<thinSextupole const> ConstThinSextupolePtr;
+
 
 class DLLEXPORT sextupole : public bmlnElmnt
 {
+
 public:
   sextupole();
   sextupole( double,       /* length   */
@@ -65,13 +84,13 @@ public:
   void localPropagate( Particle& p );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitSextupole( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitSextupole( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
   bool isMagnet() const;
 
-  void Split( double, bmlnElmnt**, bmlnElmnt** ) const;
+  void Split( double, ElmPtr&, ElmPtr& ) const;
 } ;
 
 
@@ -91,8 +110,8 @@ public:
   void localPropagate( Particle& p );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitThinSextupole( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitThinSextupole( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
   bool isMagnet() const;

@@ -32,7 +32,17 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+******  REVISION HISTORY
+******
+******  Dec 2006 - Feb 2007  Jean-Francois Ostiguy
+******                       ostiguy@fnal.gov
+******
+******  - Clone() using covariant return type
+******  - adapted to new beamline container based on shared_ptr
+******  - member signatures based on reference types.
+******  Mar 2007 
+******  - added support for reference counted elements
+******                                           
 **************************************************************************
 *************************************************************************/
 
@@ -41,11 +51,40 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
 
-class DLLEXPORT thin2pole : public bmlnElmnt
-{
+class BmlVisitor;
+class ConstBmlVisitor;
+
+class thin2pole;
+class thin12pole;
+class thin14pole;
+class thin16pole;
+class thin18pole;
+class thinMultipole;
+
+typedef boost::shared_ptr<thin2pole>                Thin2polePtr;
+typedef boost::shared_ptr<thin2pole  const>    ConstThin2polePtr;
+
+typedef boost::shared_ptr<thin12pole>              Thin12polePtr;
+typedef boost::shared_ptr<thin12pole const>   ConstThin12polePtr;
+
+typedef boost::shared_ptr<thin14pole>              Thin14polePtr;
+typedef boost::shared_ptr<thin14pole const>   ConstThin14polePtr;
+
+typedef boost::shared_ptr<thin16pole>              Thin16polePtr;
+typedef boost::shared_ptr<thin16pole const>   ConstThin16polePtr;
+
+typedef boost::shared_ptr<thin18pole>              Thin18polePtr;
+typedef boost::shared_ptr<thin18pole const>   ConstThin18polePtr;
+
+typedef boost::shared_ptr<thinMultipole>            ThinMultipolePtr;
+typedef boost::shared_ptr<thinMultipole const> ConstThinMultipolePtr;
+
+
+class DLLEXPORT thin2pole : public bmlnElmnt {
+
 public:
+
   thin2pole();
   thin2pole( double const& /* strength = BL */ );
   thin2pole( const char*  /* name */,
@@ -58,8 +97,8 @@ public:
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitThin2pole( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitThin2pole( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
   bool isMagnet() const;
@@ -84,8 +123,8 @@ public:
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitThin12pole( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitThin12pole( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
   bool isMagnet() const;
@@ -110,8 +149,8 @@ public:
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitThin14pole( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitThin14pole( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
   bool isMagnet() const;
@@ -136,8 +175,8 @@ public:
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitThin16pole( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitThin16pole( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
   bool isMagnet() const;
@@ -162,8 +201,8 @@ public:
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitThin18pole( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitThin18pole( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
   bool isMagnet() const;
@@ -180,7 +219,7 @@ public:
   thinMultipole( double const& /* strength */ );
   thinMultipole( const char*  /* name */,
                 double const& /* strength */ );
-  thinMultipole( const thinMultipole& );
+  thinMultipole( thinMultipole const& );
   thinMultipole* Clone() const { return new thinMultipole( *this ); }
   virtual ~thinMultipole();
 
@@ -188,8 +227,8 @@ public:
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v ) { v.visitThinMultipole( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitThinMultipole( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
   bool isMagnet() const;
