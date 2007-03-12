@@ -42,24 +42,27 @@
 #define BIPOLARCIRCUIT_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <basic_toolkit/dlist.h>
 #include <beamline/circuit.h>
 
 
-class  DLLEXPORT  BipolarCircuit : public circuit {
-protected:
-  double field;
+class  DLLEXPORT  BipolarCircuit : Circuit {
+
 public:
-  BipolarCircuit();
-  ~BipolarCircuit();
+
   BipolarCircuit( const char* );
-  BipolarCircuit( bmlnElmnt* );
-  BipolarCircuit( const char*, bmlnElmnt* );
+ ~BipolarCircuit();
+
   void switchOn();
   void switchOff();
-  void set( void* );
-  void get( void* );
-  void append( bmlnElmnt* );
+
+  void   set( double const& );
+  double get() const;
+
+  void append( ElmPtr );
+
+protected:
+
+  double field_;
 
 };
 
