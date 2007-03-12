@@ -61,20 +61,19 @@ template <typename T> class TMatrix;
 TMatrix<double> real( const TMatrix<std::complex<double> >& x );
 TMatrix<double> imag( const TMatrix<std::complex<double> >& x );
 
-template<typename T> std::ostream& operator<<(std::ostream&, const TMatrix<T>&);
+template<typename T> std::ostream& operator<<(std::ostream&, TMatrix<T> const&);
+template<typename T> TMatrix<T> operator+(TMatrix<T> const&, TMatrix<T> const&);
+template<typename T> TMatrix<T> operator+(TMatrix<T> const&, T const&); 
+template<typename T> TMatrix<T> operator+(T const&,          TMatrix<T> const&); 
 
-template<typename T> TMatrix<T> operator+(const TMatrix<T>&, const TMatrix<T>&);
-template<typename T> TMatrix<T> operator+(const TMatrix<T>&, const T&); 
-template<typename T> TMatrix<T> operator+(const T&,          const TMatrix<T>&); 
+template<typename T> TMatrix<T> operator-(TMatrix<T> const&); 
+template<typename T> TMatrix<T> operator-(TMatrix<T> const&, TMatrix<T> const&); 
+template<typename T> TMatrix<T> operator-(TMatrix<T> const&, T const&); 
+template<typename T> TMatrix<T> operator-(T const&,          TMatrix<T> const&); 
 
-template<typename T> TMatrix<T> operator-(const TMatrix<T>&); 
-template<typename T> TMatrix<T> operator-(const TMatrix<T>&, const TMatrix<T>&); 
-template<typename T> TMatrix<T> operator-(const TMatrix<T>&, const T&); 
-template<typename T> TMatrix<T> operator-(const T&,          const TMatrix<T>&); 
-
-template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const TMatrix<T>&); 
-template<typename T> TMatrix<T> operator*(const TMatrix<T>&, const T&);
-template<typename T> TMatrix<T> operator*(const T&,          const TMatrix<T>&);
+template<typename T> TMatrix<T>  operator*(TMatrix<T> const&, TMatrix<T> const&); 
+template<typename T> TMatrix<T>  operator*(TMatrix<T> const&, T const&);
+template<typename T> TMatrix<T>  operator*(T const&,          TMatrix<T> const&);
 
 TMatrix<std::complex<double> >  operator*(const TMatrix<std::complex<double> >& x, const TMatrix<double>& y);
 TMatrix<std::complex<double> >  operator*(const TMatrix<double>& y,                const TMatrix<std::complex<double> >& x);
@@ -83,18 +82,17 @@ template<typename T> TMatrix<T> operator*(TMatrix<T>  const&,  TVector<T> const&
 template<typename T> TMatrix<T> operator*(TVector<T>  const&,  TMatrix<T> const&);  // left multiply
 
 
-template<typename T> TMatrix<T> operator/(const TMatrix<T>&,     const T&);
-template<typename T> TMatrix<T> operator/(const T&,              TMatrix<T> const&);
+template<typename T> TMatrix<T> operator/(TMatrix<T> const&,     T const&);
+template<typename T> TMatrix<T> operator/(T const&,              TMatrix<T> const&);
 template<typename T> TMatrix<T> operator/(TMatrix<T> const&,     TMatrix<T> const&);
 
-template<typename T> bool operator==( const TMatrix<T>&, const TMatrix<T>& );
-template<typename T> bool operator==( const TMatrix<T>&, const T& );
-template<typename T> bool operator==( const T&,          const TMatrix<T>& );
-template<typename T> void operator-=( TMatrix<T>&,       const TMatrix<T>& );
-template<typename T> void operator*=( TMatrix<T>&,       const TMatrix<T>& );
-template<typename T> bool operator!=( const TMatrix<T>&, const TMatrix<T>& );
-template<typename T> bool operator!=( const TMatrix<T>&, const T& );
-template<typename T> bool operator!=( const T&,          const TMatrix<T>& );
+template<typename T> bool operator==( TMatrix<T> const&, TMatrix<T> const& );
+template<typename T> bool operator==( TMatrix<T> const&, T const& );
+template<typename T> bool operator==( T const&,          TMatrix<T> const& );
+template<typename T> void operator-=( TMatrix<T>&,       TMatrix<T> const& );
+template<typename T> bool operator!=( TMatrix<T> const&, TMatrix<T> const& );
+template<typename T> bool operator!=( TMatrix<T> const&, T const& );
+template<typename T> bool operator!=( T const&,          TMatrix<T> const& );
 
 template<typename T>
 
@@ -208,7 +206,7 @@ public:
   friend TMatrix operator/<>(T       const&,   TMatrix const&);
   friend TMatrix operator/<>(TMatrix const&,   TMatrix const&);
 
-  friend std::ostream& operator<< <T>(std::ostream&, const TMatrix<T>&);
+  friend std::ostream& operator<< <T>(std::ostream&, TMatrix<T> const&);
 
 };
 
