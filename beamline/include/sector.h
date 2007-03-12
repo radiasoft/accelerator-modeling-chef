@@ -33,6 +33,10 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+******    REVISION HISTORY
+****** Mar 2007            ostiguy@fnal.gov
+****** - use covariant return types
+****** - support for reference counted elements
 **************************************************************************
 *************************************************************************/
 
@@ -42,27 +46,19 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 
+class sector;
+class BmlVisitor;
+class ConstBmlVisitor;
+
+typedef boost::shared_ptr<sector>       SectorPtr;
+typedef boost::shared_ptr<sector const> ConstSectorPtr;
+
+
 class DLLEXPORT sector : public bmlnElmnt
 {
-private:
-  char mapType;        // ??? Unnecessary. Get rid of this!
-  Mapping myMap;
-  double betaH     [2];  // 0 = entry;  1 = exit
-  double alphaH    [2];
-  double deltaPsiH;
-  double betaV     [2];
-  double alphaV    [2];
-  double deltaPsiV;
-  double mapMatrix[BMLN_dynDim][BMLN_dynDim];
-  double (*DeltaT) ( double const& );
-  Jet    (*JetDeltaT) ( const Jet& );
-
-  std::ostream& writeTo ( std::ostream& );
-  std::istream& readFrom( std::istream& );
 
 public:
 
@@ -100,14 +96,31 @@ public:
   void localPropagate( Particle&    p ) { (*propfunc_)( this, p ); }
   void localPropagate( JetParticle& p ) { (*propfunc_)( this, p ); }
 
-  void accept( BmlVisitor& v ) { v.visitSector( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitSector( this ); }
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
 
   void setFrequency( double (*)( double const& ) );
   void setFrequency( Jet (*)( Jet const& ) );
   void setLength( double const& );
 
   const char* Type() const;
+
+private:
+
+  char mapType;        // ??? Unnecessary. Get rid of this!
+  Mapping myMap;
+  double betaH     [2];  // 0 = entry;  1 = exit
+  double alphaH    [2];
+  double deltaPsiH;
+  double betaV     [2];
+  double alphaV    [2];
+  double deltaPsiV;
+  double mapMatrix[BMLN_dynDim][BMLN_dynDim];
+  double (*DeltaT) ( double const& );
+  Jet    (*JetDeltaT) ( const Jet& );
+
+  std::ostream& writeTo ( std::ostream& );
+  std::istream& readFrom( std::istream& );
 
 } ;
 
