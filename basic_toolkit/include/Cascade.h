@@ -38,6 +38,9 @@
 ****** - eliminated archaic "reconstruct" member functions. 
 ******   Use placemnent new instead.                                     
 ******
+****** Mar 2006     ostiguy@fnal
+******
+****** -  refactored to take advantage of STL container/algorithms.
 **************************************************************************
 *************************************************************************/
 
@@ -45,95 +48,108 @@
 #define CASCADE_H
 
 #include <basic_toolkit/globaldefs.h>
+#include <list>
  
 class IntArray;
 class Cascade;
 
-class Switch
-{
-  public:
-    Switch();
-    Switch( int, int, const IntArray& );
-    Switch( const Switch& );
-    ~Switch();
+class Switch {
 
-    friend class Cascade;
+  friend class Cascade;
+
+  public:
+
+    Switch();
+    Switch( int weight, int index, IntArray const& );
+    Switch( Switch const& );
+   ~Switch();
+
+    int             index()           { return index_; }
+    IntArray const& exponents() const { return xpt_; }
+
+    struct PartialEqual {
+
+      PartialEqual(int idx1, int idx2) : idx1_(idx1), idx2_(idx2) {}   
+      bool operator()(Switch const* lhs, Switch const* rhs) 
+      { return IntArray::PartialEqual (lhs->xpt_, rhs->xpt_, idx1_, idx2_); }
+
+     int idx1_;
+     int idx2_;
+    };
+
+    struct PartialLessThan {
+
+      PartialLessThan(int idx1, int idx2):  idx1_(idx1), idx2_(idx2)  {}   
+      bool operator()(Switch const* lhs, Switch const* rhs) 
+      { return IntArray::PartialLessThan (lhs->xpt_, rhs->xpt_, idx1_, idx2_); }
+
+     int idx1_;
+     int idx2_;
+    };
+
 
   private:
-    int      _w;
-    int      _index;
-    IntArray _xpt;
-    Switch** _arrow;
+    int      w_;
+    int      index_;
+    IntArray xpt_;
+    Switch** arrow_;
 
-    DLLLOCAL void _clean();
-    DLLLOCAL void _finishConstructor();
+    DLLLOCAL void finishConstructor();
 };
 
+
+
+//----------------------------------------------------------------------
+// Arguments: maxweight = maximum weight of possible IntArrays
+//                    n = number of components in the IntArrays
+//                    v = "verbosity." If true, the constructor
+//                         will write to std::cout as it progresses.
+// Restrictions: maxweight >= 0
+//                       n >= 1
+//----------------------------------------------------------------------
 
 class DLLEXPORT Cascade
 {
   public:
-    Cascade( int w = 2, int n = 2, bool v = false );
-    // Arguments: w = maximum weight of possible IntArrays
-    //            n = number of components in the IntArrays
-    //            v = "verbosity." If true, the constructor
-    //                will write to std::cout as it progresses.
-    // Restrictions: w >= 0
-    //               n >= 1
+    Cascade( int maxweight = 2, int n = 2, bool v = false );
     Cascade( Cascade const& );
-    ~Cascade();
+   ~Cascade();
 
-    int index( const IntArray& ) const;
-    // Warning: for purposes of speed, this assumes that 
-    //   the argument has the correct dimension.
+    int index( IntArray    const& ) const;
+    int index( int const*  const  ) const; // Warning: assumes appropriate dimension. 
 
-    int index( const int [] )    const;
-    // Warning: this assumes that the argument is an array
-    //   of the appropriate dimension. It is provided
-    //   for backwards compatability of old code.
-
-    IntArray exponents( const IntArray& );
-    // This is just for diagnostic purposes.
-    //   The returned value should be the same as
-    //   the input argument.
-
-    int selfTest();
+    IntArray exponents( IntArray const& ) const;  // For diagnostic purposes. 
+                                                  // returned value should be identical to argument.
 
   private:
-    int        _maxWeight;
-    int        _numVar;
-    int        _numberOfMonomials;
-    int        _numberOfSwitches;
-    bool       _verbose;
-    Switch*    _arrayOfSwitches;
-    Switch**   _startPoint;
+    int                     maxWeight_;
+    int                     numVar_;
+    int                     numberOfMonomials_;
+    int                     numberOfSwitches_;
+    bool                    verbose_;
+    std::vector<Switch>     arrayOfSwitches_;
+    Switch**                startPoint_;
 
-    void _clean();
-    void _finishConstructor();
+    void  finishConstructor();
+    void  testSwitchAllocation( std::list<Switch*> const& ) const; 
+    int   selfTest()                                        const;
+
 };
 
 
 inline int Cascade::index( IntArray const& e ) const
 {
 
+  IntArray::const_iterator it = e.begin();
 
-  IntArrayIterator getNext( e );
-  Switch* swPtr = _startPoint[ getNext() ];
-    for( int j = 1; j < _numVar; ++j ) {
-    swPtr = (Switch*) ( swPtr->_arrow[ getNext() ] ); 
+  Switch* swPtr = startPoint_[ *it ];
+  
+  for( int j=1; j < numVar_; ++j ) {
+    swPtr = (Switch*) ( swPtr->arrow_[ *(++it) ] ); 
   }
-  return swPtr->_index;
 
-  //----------------------------------------------
-  // the code below works only with 1st order Jets
-  //----------------------------------------------
-#if  0
-  IntArrayIterator getNext( e );
-  for( int j = 0; j < _numVar; ++j ) {
-    if (getNext() != 0 ) return j+1;  
-  }
-  return 0;
-#endif
+  return swPtr->index_;
+
 }
 
 
