@@ -34,6 +34,10 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY:
+******
+****** Mar 2007    ostiguy@fnal.gov
+****** - added support for reference counted smart pointers.
 **************************************************************************
 *************************************************************************/
 
@@ -43,11 +47,18 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
 
+
+class BmlVisitor;
+class ConstBmlVisitor;
 
 class Particle;
 class JetParticle;
+
+class CF_sbend;
+
+typedef boost::shared_ptr<CF_sbend>            CFSbendPtr;
+typedef boost::shared_ptr<CF_sbend const> ConstCFSbendPtr;
 
 class DLLEXPORT CF_sbend : public bmlnElmnt
 {
@@ -97,18 +108,17 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   void localPropagate( ParticleBunch& x ) 
     { bmlnElmnt::localPropagate( x ); }
 
-  void accept( BmlVisitor& v ) { v.visitCF_sbend( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitCF_sbend( this ); }
+  void accept( BmlVisitor& v ); 
+  void accept( ConstBmlVisitor& v ) const; 
   void acceptInner( BmlVisitor& v );
-  void acceptInner( ConstBmlVisitor& v );
+  void acceptInner( ConstBmlVisitor& v ) const;
   
-  // REMOVE: void peekAt( double const&& s, Particle* = 0 );
-  void peekAt( double& s, const Particle& ) const;
+  void peekAt( double& s, const Particle& );
 
   const char* Type() const;
   bool isMagnet() const;
   
-  double OrbitLength( const Particle& );
+  double OrbitLength( Particle const& );
   void Split( double const&, bmlnElmnt**, bmlnElmnt** ) const;
     // WARNING: After the Split function is used, the new elements 
     // must be commissioned with RefRegVisitor.
