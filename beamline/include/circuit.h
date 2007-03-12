@@ -32,7 +32,16 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+******  REVISION HISTORY:
+****** 
+******  Jan-Mar 2007:  ostiguy@fnal.gov
+******
+******  - eliminated dependence on dlist (c-style void* linked list)
+******  - eliminated inheritance from container type
+******  - support for smart pointers  
+******  - cleanup of constructor interface  
+******
+******                                                              
 **************************************************************************
 *************************************************************************/
 
@@ -41,30 +50,36 @@
 #define CIRCUIT_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <basic_toolkit/dlist.h>
 #include <beamline/bmlnElmnt.h>
+#include <string>
+#include <list>
 
+class DLLEXPORT Circuit {
 
-class DLLEXPORT circuit : public dlist
-{
-protected:
-  char onOffSwitch;     // switch to turn current on and off
-  char* ident;          // name of circuit
-  int numElm;           // number of elements in the circuit
 public:
-  circuit();
-  circuit( const char* );
-  circuit( bmlnElmnt* );
-  circuit( const char*, bmlnElmnt* );
-  circuit(const circuit&);
-  virtual ~circuit();
-  virtual void switchOn();
-  virtual void switchOff();
-  virtual void set( void* );
-  virtual void get( void* );
-  char* getName();
 
-  void append( bmlnElmnt* q );
+  Circuit( char const* name );
+  virtual ~Circuit();
+
+  virtual void switchOn()  = 0;
+  virtual void switchOff() = 0;
+
+  std::string  name() const;
+
+  virtual void append( ElmPtr q ) = 0;
+
+protected:
+
+  std::string                 ident_;      // name of circuit
+  bool                  onOffSwitch_;      // switch to turn current on and off
+
+  std::list<ElmPtr>          theList_;
+
+private:
+
+  Circuit( Circuit const&); // forbidden  
+  
 } ;
+
 
 #endif // CIRCUIT_H
