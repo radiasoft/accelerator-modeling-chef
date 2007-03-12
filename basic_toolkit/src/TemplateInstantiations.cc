@@ -60,9 +60,9 @@
 #include <basic_toolkit/TML.tcc>
 #include <basic_toolkit/TVector.tcc>
 #include <gms/FastPODAllocator.h>
-#include <basic_toolkit/dlist.h>
-#include <basic_toolkit/slist.h>
 #include <basic_toolkit/Barnacle.h>
+#include <basic_toolkit/IntArray.h>
+#include <basic_toolkit/Cascade.h>
 
 using namespace std;
 using std::ostringstream;
@@ -77,16 +77,13 @@ const double limit = double(1e-14);
 
 template 
 class boost::pool<>;
-template 
-class gms::FastPODAllocator<dlink>;
-template 
-class gms::FastPODAllocator<slink>;
 
 template
 class boost::simple_segregated_storage<unsigned int>;
 
 template
 unsigned int boost::details::pool::lcm<unsigned int>(unsigned int const&, unsigned int const&);
+
 template
 unsigned int boost::details::pool::gcd<unsigned int>(unsigned int, unsigned int);
 
@@ -95,6 +92,104 @@ unsigned int boost::details::pool::gcd<unsigned int>(unsigned int, unsigned int)
 // ----------------------------------------------------------------------------
 
 template class std::list<Barnacle>;
+
+
+template BarnacleList::iterator
+         std::remove_if(BarnacleList::iterator, BarnacleList::iterator, 
+		        std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::string> >);
+
+// ----------------------------------------------------------------------------
+// Instantiations related to IntArray
+// ----------------------------------------------------------------------------
+
+template 
+class std::vector<exponent_t>;
+
+namespace {
+ 
+ IntArray::iterator               itdummy1;
+ IntArray::const_iterator         itdummy2;  
+ IntArray::reverse_iterator       itdummy3;
+ IntArray::const_reverse_iterator itdummy4;
+}
+    
+
+template
+void std::fill( IntArray::iterator, IntArray::iterator, int const&); 
+
+template
+void std::fill (IntArray::iterator, IntArray::iterator, exponent_t const&);
+
+template
+int std::accumulate( IntArray::iterator, IntArray::iterator,  int);
+
+template
+int std::accumulate( IntArray::const_iterator, IntArray::const_iterator,  int);
+
+template 
+class std::plus<exponent_t>;
+
+template 
+class std::less_equal<exponent_t>;
+
+template
+class std::greater<exponent_t>;
+
+template
+class std::greater_equal<exponent_t>;
+
+template
+IntArray::iterator std::transform( IntArray::iterator, IntArray::iterator, IntArray::iterator, IntArray::iterator,  std::plus<exponent_t> );
+
+template
+bool std::equal( IntArray::iterator, IntArray::iterator, IntArray::iterator);
+
+template
+bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator);
+
+template
+bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::less_equal<exponent_t>);
+
+template
+bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::greater<exponent_t>);
+
+template
+bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::greater_equal<exponent_t>);
+
+template
+IntArray::iterator std::transform( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator, IntArray::iterator,  std::plus<exponent_t> );
+
+template
+bool std::equal( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator);
+
+template
+bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator);
+
+template
+bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::less_equal<exponent_t>);
+
+template
+bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::greater<exponent_t>);
+
+template
+bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::greater_equal<exponent_t>);
+
+template
+void std::fill<int*, int>(int*, int*, int const&);
+
+// ----------------------------------------------------------------------------
+// Instantiations related to Cascade 
+// ----------------------------------------------------------------------------
+
+template
+class std::vector<Switch>;
+
+template
+class std::list<Switch*>;
+
+template  
+void std::list<Switch*>::sort(Switch::PartialLessThan);
+
 
 // ----------------------------------------------------------------------------
 // Instantiations related to Vector Class
@@ -118,6 +213,12 @@ template TVector<std::complex<double> > operator*(TVector<std::complex<double> >
 template std::ostream& operator<<(std::ostream&, TVector<double> const&);
 template std::ostream& operator<<(std::ostream&, TVector<std::complex<double> > const&);
 
+template double std::inner_product(std::vector<double>::const_iterator, std::vector<double>::const_iterator, 
+                                   std::vector<double>::const_iterator, double);
+template complex<double> std::inner_product(std::vector<complex<double> >::const_iterator, std::vector<complex<double> >::const_iterator, 
+                                            std::vector<complex<double> >::const_iterator, 
+                                            complex<double>, 
+                                            std::plus<std::complex<double> >, TVector<complex<double> >::op_mult ); 
 
 
 // ----------------------------------------------------------------------------
@@ -325,106 +426,5 @@ template class MLPtr<std::complex<double> >;
 template MLPtr<double>::operator MLPtr<std::complex<double> >() const;
 
 
-// -------------------------------------------------------------------------------------------------------------------------
-
-template
-std::complex<double> std::inner_product<__gnu_cxx::__normal_iterator<std::complex<double> const*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, __gnu_cxx::__normal_iterator<std::complex<double> const*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, std::complex<double>, std::plus<std::complex<double> >, TVector<std::complex<double> >::op_mult >(__gnu_cxx::__normal_iterator<std::complex<double> const*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, __gnu_cxx::__normal_iterator<std::complex<double> const*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, __gnu_cxx::__normal_iterator<std::complex<double> const*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, std::complex<double>, std::plus<std::complex<double> >, TVector<std::complex<double> >::op_mult);
-
-template
-double std::inner_product<__gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double> > >, __gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double> > >, double>(__gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double> > >, __gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double> > >, __gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double> > >, double);
-
-template 
-class std::vector<std::complex<double>, std::allocator<std::complex<double> > >;
-
-template
-class std::vector<double, std::allocator<double> >;
-
-
-#if (__GNUC__ > 3 )
-
-template
-std::vector<Barnacle>::iterator 
-std::remove_if(std::vector<Barnacle>::iterator, std::vector<Barnacle>::iterator, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >);
-
-template
-__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > > std::remove_copy_if<__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, __gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >(__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, __gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, __gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >);
-
-template
-__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > > std::__find_if<__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >(__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, __gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::random_access_iterator_tag);
-
-template
-std::_List_iterator<Barnacle> std::remove_if<std::_List_iterator<Barnacle>, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >(std::_List_iterator<Barnacle>, std::_List_iterator<Barnacle>, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >);
-
-template
-std::_List_iterator<Barnacle> std::remove_copy_if<std::_List_iterator<Barnacle>, std::_List_iterator<Barnacle>, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >(std::_List_iterator<Barnacle>, std::_List_iterator<Barnacle>, std::_List_iterator<Barnacle>, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >);
-
-
-template
-void std::__uninitialized_fill_n_a<__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double>, std::complex<double> >(__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> const&, std::allocator<std::complex<double> >);
-
-template
-void std::fill<__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double const&);
-
-template __gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > > std::fill_n<__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> >(__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> const&);
-
-template
-__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > > std::fill_n<__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double const&);
-
-template
-void std::__uninitialized_fill_n_a<std::complex<double>*, unsigned int, std::complex<double>, std::complex<double> >(std::complex<double>*, unsigned int, std::complex<double> const&, std::allocator<std::complex<double> >);
-
-template
-void std::__uninitialized_fill_n_a<double*, unsigned int, double, double>(double*, unsigned int, double const&, std::allocator<double>);
-
-template
-void std::__uninitialized_fill_n_a<__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double, double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double const&, std::allocator<double>);
-
-template
-void std::fill<__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, std::complex<double> >(__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, __gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, std::complex<double> const&);
-
-
-template
-void std::__uninitialized_fill_n_aux<std::complex<double>*, unsigned int, std::complex<double> >(std::complex<double>*, unsigned int, std::complex<double> const&, __false_type);
-
-template
-void std::__uninitialized_fill_n_aux<__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> >(__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> const&, __false_type);
-
-#else
-
-template
-std::vector<Barnacle>::iterator 
-std::remove_if(std::vector<Barnacle>::iterator, std::vector<Barnacle>::iterator, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >);
-
-template
-std::_List_iterator<Barnacle> std::remove_copy_if<std::_List_iterator<Barnacle>, std::_List_iterator<Barnacle>, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >(std::_List_iterator<Barnacle>, std::_List_iterator<Barnacle>, std::_List_iterator<Barnacle>, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >);
-
-template
-__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > > std::find_if<__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >(__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, __gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::random_access_iterator_tag);
-
-template
-__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > > std::remove_copy_if<__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, __gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >(__gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, __gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, __gnu_cxx::__normal_iterator<Barnacle*, std::vector<Barnacle, std::allocator<Barnacle> > >, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >);
-
-template
-std::_List_iterator<Barnacle> std::remove_if<std::_List_iterator<Barnacle>, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >(std::_List_iterator<Barnacle>, std::_List_iterator<Barnacle>, std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >);
-
-template 
-class __gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > > std::__uninitialized_fill_n_aux<__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> >(__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> const&, __false_type);
-
-template 
-void std::fill<__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double const&);
-
-template
-class __gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > > std::fill_n<__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> >(__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, unsigned int, std::complex<double> const&);
-
-template
-class __gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > > std::fill_n<__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double>(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, unsigned int, double const&);
-
-template
-std::complex<double>* std::__uninitialized_fill_n_aux<std::complex<double>*, unsigned int, std::complex<double> >(std::complex<double>*, unsigned int, std::complex<double> const&, __false_type);
-
-template
-void std::fill<__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, std::complex<double> >(__gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, __gnu_cxx::__normal_iterator<std::complex<double>*, std::vector<std::complex<double>, std::allocator<std::complex<double> > > >, std::complex<double> const&);
-
-#endif
 
 #endif //BASICTOOLKIT_EXPLICIT_TEMPLATES
