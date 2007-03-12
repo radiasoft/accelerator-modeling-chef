@@ -32,6 +32,12 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** REVISION HISTORY:
+******
+****** Mar 2007         ostiguy@fnal.gov
+****** - use covariant return type
+****** - added support for reference counted smart pointers
+****** - added proper  assigment operator  
 **************************************************************************
 *************************************************************************/
 #ifndef BBLENS_H
@@ -39,29 +45,26 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlVisitor.h>
+
+class BmlVisitor;
+class ConstBmlVisitor;
 
 template <typename T>
 class TJetVector;
 
 typedef TJetVector<double> JetVector;
 
-class DLLEXPORT BBLens : public bmlnElmnt
-{
-private:
-  double emittance[3];   // One sigma (noninvariant) emittance / pi
-  double gamma;          // Relativistic gamma
-  double beta;           // Relativistic beta
-  double num;            // Number of proton charges; if the bunch
-                         // is negatively charged, then this number
-                         // is negative.
-  double sigma[3];       // This will depend on position in the 
-                         // lattice.  The third component is zero
-                         // for now.
+
+class BBLens;
+
+typedef boost::shared_ptr<BBLens>            BBLensPtr;
+typedef boost::shared_ptr<BBLens const> ConstBBLensPtr;
+
+
+class DLLEXPORT BBLens : public bmlnElmnt {
+
 public:
-  BBLens( const char*   = 0
-             /* name */,
-          double const&        = 1.0
+  BBLens( const char* name=0, double const&  length = 1.0
              /* length [m]: the length of the bunch
                 in its rest frame */,
           double const&        = 3.3e11
@@ -77,7 +80,10 @@ public:
 
   BBLens* Clone() const { return new BBLens( *this ); }
 
-  ~BBLens();
+ ~BBLens();
+
+  BBLens& operator=( BBLens const&);
+
 
   char useRound;         // By default = 1
                          // If 1: then round beam approximation
@@ -111,13 +117,26 @@ public:
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
-  void accept( BmlVisitor& v )            { v.visitBBLens( this ); }
-  void accept( ConstBmlVisitor& v ) const { v.visitBBLens( this ); }
+  void accept( BmlVisitor& v );            
+  void accept( ConstBmlVisitor& v ) const; 
 
   const char* Type() const;
 
   Vector Beta();
   void GetSigma( double* );
+
+private:
+
+  double emittance[3];   // One sigma (noninvariant) emittance / pi
+  double gamma;          // Relativistic gamma
+  double beta;           // Relativistic beta
+  double num;            // Number of proton charges; if the bunch
+                         // is negatively charged, then this number
+                         // is negative.
+  double sigma[3];       // This will depend on position in the 
+                         // lattice.  The third component is zero
+                         // for now.
+
 };
 
 #endif // BBLENS_H
