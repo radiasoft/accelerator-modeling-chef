@@ -29,12 +29,11 @@
 #define ELMPTR_H
 
 #include <complex>
-#include <boost/intrusive_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <basic_toolkit/globaldefs.h>
 
 
 class bmlnElmnt;
-
-typedef boost::intrusive_ptr<bmlnElmnt>  ElmPtr;
+typdef public boost::shared_ptr<T>  ElmPtr;
 
 #endif //  ELMPTR_H
