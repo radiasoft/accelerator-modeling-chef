@@ -65,8 +65,8 @@ using FNAL::pcerr;
 
 template<>
 template<>
-TJLterm<std::complex<double> >::TJLterm( const TJLterm<double>& x):
-  _index(x._index),_value(x._value,0.0),_weight(x._weight) 
+TJLterm<std::complex<double> >::TJLterm( TJLterm<double> const& x):
+  index_(x.index_),offset_(x.offset_), value_(x.value_,0.0),weight_(x.weight_) 
 {}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
