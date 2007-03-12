@@ -40,8 +40,27 @@
 
 #include <iostream>
 
+//-----------------------------------------------------------------------
+// n: weight (order)
+// k: number of variables
+// r: array of exponents ( dimension k) 
+//-----------------------------------------------------------------------
+// Successive calls to nexcom return (through the array r ) the 
+// exponents of each monomial of maximum order n in k variables
+// in inverse lexicographic order.
+// 
+// example:     nexcom( 2, 2, r ) 
+//
+// returns     (2, 0)
+//             (1, 1)
+//             (0, 2)
+//  
+// the function returns false, until the last monomial is reached; in which
+// case it returns true.  
+//-----------------------------------------------------------------------
+
 bool nexcom( int n, int k, int* r ) {
-  int t, h, i;
+
   static bool firstEntry  = true;
   static bool allDone     = false;
 
@@ -54,18 +73,18 @@ bool nexcom( int n, int k, int* r ) {
   if( firstEntry ) {
     r[0] = n;
     if( k > 1 ) {
-      for( i = 1; i < k; i++ ) r[i] = 0;
+      for( int i=1; i < k; ++i) r[i] = 0;
       firstEntry = false;
       }
     else allDone = true;
     return true;
   }
 
-  h = 0;
+  int h = 0;
   while( r[h++] == 0 ) ;
   h--;
 
-  t = r[h];
+  int t = r[h];
   r[h] = 0;
   r[0] = --t;
   r[++h]++;
