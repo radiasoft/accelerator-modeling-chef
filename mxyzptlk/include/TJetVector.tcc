@@ -106,7 +106,8 @@ template<typename T>
 TJetVector<T>::TJetVector( EnvPtr<T> const& pje )
 : myEnv_(pje)
 {
-
+  
+  if (!pje) return; // empty vector is OK.
   comp_.resize( pje->numVar(), TJet<T>(T(), pje) ); 
 
 }
