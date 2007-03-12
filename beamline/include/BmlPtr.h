@@ -29,12 +29,20 @@
 #define BMLPTR_H
 
 #include <complex>
-#include <boost/intrusive_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <basic_toolkit/globaldefs.h>
 
-
 class beamline;
+class bmlnElmnt;
+class BeamlineContext;
 
-typedef boost::intrusive_ptr<beamline>  BmlPtr;
+typedef boost::shared_ptr<beamline>               BmlPtr;
+typedef boost::shared_ptr<const beamline>         ConstBmlPtr;
+
+typedef boost::shared_ptr<bmlnElmnt>              ElmPtr;
+typedef boost::shared_ptr<const bmlnElmnt>        ConstElmPtr;
+
+typedef boost::shared_ptr<BeamlineContext>        BmlContextPtr;
+typedef boost::shared_ptr<const BeamlineContext>  ConstBmlContextPtr;
 
 #endif //  BMLPTR_H
