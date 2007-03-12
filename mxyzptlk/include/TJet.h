@@ -61,13 +61,11 @@
 #ifndef TJET_H
 #define TJET_H
 
-#include <basic_toolkit/slist.h>
 #include <basic_toolkit/IntArray.h>
 #include <basic_toolkit/VectorD.h>
+#include <gms/FastAllocator.h>
 
 #include <mxyzptlk/TJetEnvironment.h>
-#include <mxyzptlk/TJLIterator.h>
-#include <mxyzptlk/TJL1Iterator.h>
 #include <mxyzptlk/TJL.h>
 #include <mxyzptlk/TJL1.h>
 #include <complex>
@@ -286,20 +284,17 @@ class JLType<false, U, V> {
 //-------------------------------------------------------------------------
 
 template<typename T>
-class TJet: public gms::FastAllocator 
-{
+class TJet: public gms::FastAllocator  {
 
   public:
 
 #ifdef FIRST_ORDER_JETS  
   typedef typename  JLType<true, JL1Ptr<T>,             JLPtr<T> >::ResultT         jl_t;    
   typedef typename  JLType<true, TJL1<T>,                 TJL<T> >::ResultT        tjl_t;    
-  typedef typename  JLType<true, TJL1Iterator<T>, TJLIterator<T> >::ResultT    jl_iter_t;    
 
 #else 
   typedef typename  JLType<false, JL1Ptr<T>,             JLPtr<T> >::ResultT         jl_t;    
   typedef typename  JLType<false, TJL1<T>,                 TJL<T> >::ResultT        tjl_t;    
-  typedef typename  JLType<false, TJL1Iterator<T>, TJLIterator<T> >::ResultT   jl_iter_t;    
 #endif
  
  // the following declarations are needed for the type conversion operator 
@@ -393,12 +388,14 @@ public:
   void     clear();
   T        weightedDerivative( int  const* ) const;  // FIXME !
   T                derivative( int  const*  ) const; // FIXME !
+
   TJet     filter( int const&, int  const& ) const;  
                                   // Returns only those JLterms whose weight 
                                   // are between two specified values, inclusive.
   TJet     filter( bool (*)( IntArray const&, T const& ) ) const; 
                                    // Returns those JLterms for which the 
                                    // argument is satisfied.
+
   T        operator() ( Vector const& ) const;
   T        operator() ( T      const*)  const;	   
                                    // Performs a multinomial evaluation of 
@@ -495,23 +492,47 @@ public:
                                //  only when the number of
                                //  coordinates = 1.
 
+  // ( Monomial term) Iterators  ...
 
-  // Iterator ...
+  template <class U>
+  class iter_
+  : public boost::iterator_adaptor<
+        iter_<U>                     // Derived
+      , U                            // Base
+      , boost::use_default           // Value
+      , boost::forward_traversal_tag // CategoryOrTraversal
+    > {
+  
+    private:
+        struct enabler {};  // a private type avoids misuse  
+    public:
+      iter_()
+        : iter_::iterator_adaptor_(U(0)) {}
 
-  class iterator {
-  public:
+       explicit iter_(U p)
+        : iter_::iterator_adaptor_(p) {}
 
-    iterator( TJet<T> const& jet): _iter( *(jet._jl) ) {} 
-    jl_iter_t          operator->()        { return   _iter;  }
-    TJLterm<T>  const& operator*()         { return  *_iter;  }
-    TJLterm<T>  const* operator++()        { return ++_iter;  }
-    void reset()                           { _iter.reset();   } 
-  private:
+       template <class OtherType>
+       iter_(
+             iter_<OtherType> const& other
+             , typename boost::enable_if<
+                boost::is_convertible<OtherType*,U*>
+                , enabler
+                >::type = enabler()
+             )
+         : iter_::iterator_adaptor_(other.base()) {}
 
-    jl_iter_t  _iter;
   };
 
-  
+  typedef iter_< typename TJL<T>::iterator>             iterator;
+  typedef iter_< typename TJL<T>::const_iterator> const_iterator;
+ 
+  iterator       begin();
+  const_iterator begin() const;
+
+  iterator       end();
+  const_iterator end()   const;
+
 };
 
 //-------------------------------------------------------------------------------------
