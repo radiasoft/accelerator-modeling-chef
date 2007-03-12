@@ -186,12 +186,12 @@ class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
 
   friend std::ostream& operator<< <T>(std::ostream& os, const TML<T>& x);
 
-  TML<T>& operator=(const TML<T>&);
-  TML<T>& operator+=(const T&);
-  TML<T>& operator-=(const T&);
+  TML<T>& operator=(TML<T> const&);
+  TML<T>& operator+=(T const&);
+  TML<T>& operator-=(T const&);
 
-  bool operator==(const TML<T>&);
-  bool operator==(const T&);
+  bool operator==(TML<T> const&);
+  bool operator==(T      const&);
 
 
   // Exception subclasses____________________________________________________
