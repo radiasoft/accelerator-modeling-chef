@@ -94,7 +94,7 @@ __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >& TJLt
 
 template<typename T>
 TJLterm<T>::TJLterm( int nvar) 
-:_value(T()), _weight(0),  _index(nvar)
+:value_(T()), weight_(0),  index_(nvar)
 {}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -102,7 +102,7 @@ TJLterm<T>::TJLterm( int nvar)
 
 template<typename T>
 TJLterm<T>::TJLterm(  EnvPtr<T> const& pje ) 
-: _value( T() ), _weight(0), _index( pje->numVar() )
+: value_( T() ), weight_(0), index_( pje->numVar() )
 {}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -110,7 +110,7 @@ TJLterm<T>::TJLterm(  EnvPtr<T> const& pje )
 
 template<typename T>
 TJLterm<T>::TJLterm( IntArray const& l, T const& x, EnvPtr<T> const& pje ) :   
-_value(x),  _weight(l.Sum()), _index( l )
+value_(x),  weight_(l.Sum()), index_( l )
 {
    if( !pje ) return; 
    if (l.Dim() != pje->numVar() ) {
@@ -164,9 +164,9 @@ _value(x),  _weight(l.Sum()), _index( l )
             "Attempt to load a JLTerm with too large a weight.") );
    }
    
-   // ??? REMOVE: _index = l;
-   _weight = dpt;
-   _value = x;
+   // ??? REMOVE: index_ = l;
+   weight_ = dpt;
+   value_ = x;
  }
 
  else {
@@ -181,9 +181,9 @@ _value(x),  _weight(l.Sum()), _index( l )
             "Bad value of the index when pje = 0.") );
    }
 
-   _index = l;
-   _weight = l.Sum();
-   _value = x;
+   index_ = l;
+   weight_ = l.Sum();
+   value_ = x;
  }
 }
 #endif
@@ -197,7 +197,7 @@ _value(x),  _weight(l.Sum()), _index( l )
 
 template<typename T>
 TJLterm<T>::TJLterm(  IntArray const& l, const T& x )
-: _value(x), _weight(l.Sum()), _index(l)
+: value_(x), weight_(l.Sum()), index_(l)
 {}
 
 
@@ -297,9 +297,9 @@ TJLterm<T>& TJLterm<T>::operator=( TJLterm<T> const& x )
 
  if (&x == this) return *this;
 
- _weight  = x._weight;
- _value   = x._value;
- _index   = x._index;
+ weight_  = x.weight_;
+ value_   = x.value_;
+ index_   = x.index_;
 
  return *this;
 }
@@ -311,18 +311,21 @@ template<typename T>
 TJLterm<T> TJLterm<T>::operator*( TJLterm<T> const& y ) 
 {
  TJLterm<T> z(*this);
- int n = 0;
 
- if((  ( n = this->_index.Dim() ) != y._index.Dim()  )) {
-   throw( typename TJLterm<T>::BadDimension( this->_index.Dim(), y._index.Dim(),
+#if 0 
+
+ if((  ( n = this->index_.Dim() ) != y.index_.Dim()  )) {
+   throw( typename TJLterm<T>::BadDimension( this->index_.Dim(), y.index_.Dim(),
                             __FILE__, __LINE__, 
                             "TJLterm<T> TJLterm<T>::operator*( TJLterm<T> const& y ) ",
                             "Inconsistent number of coordinates." ) );
  }
+#endif
 
- z._weight = this->_weight + y._weight;
- for( int i = 0; i < n; ++i ) {  z._index(i) = this->_index(i) + y._index(i);  }
- z._value = this->_value * y._value;
+
+ z.weight_   = this->weight_ + y.weight_;
+ z.index_    = this->index_  + y.index_;  // overloaded + from IntArray
+ z.value_    = this->value_  * y.value_;
  return z;
 }
 
@@ -332,14 +335,18 @@ TJLterm<T> TJLterm<T>::operator*( TJLterm<T> const& y )
 template<typename T>
 TJLterm<T> TJLterm<T>::operator+( TJLterm<T> const& y ) 
 {
- if( this->_index != y._index ) {
-   throw( typename TJLterm<T>::BadDimension( this->_index.Dim(), y._index.Dim(),
+
+#if  0
+ if( this->index_ != y.index_ ) {
+   throw( typename TJLterm<T>::BadDimension( this->index_.Dim(), y.index_.Dim(),
                             __FILE__, __LINE__, 
                             "TJLterm<T> TJLterm<T>::operator*( TJLterm<T> const& y ) ",
                             "Inconsistent number of coordinates." ) );
  }
+#endif
+
  TJLterm<T> z(*this);
- z._value += y._value;
+ z.value_ += y.value_;
  return z;
 }
 
@@ -349,9 +356,9 @@ TJLterm<T> TJLterm<T>::operator+( TJLterm<T> const& y )
 template<typename T>
 bool operator==( TJLterm<T> const& a, TJLterm<T> const& b ) 
 {
- if( a._weight != b._weight ) return false;
- if( a._value  != b._value  ) return false;
- if( a._index  != b._index  ) return false;
+ if( a.weight_ != b.weight_ ) return false;
+ if( a.value_  != b.value_  ) return false;
+ if( a.index_  != b.index_  ) return false;
  return true;
 
 }
@@ -371,56 +378,17 @@ bool operator!=( TJLterm<T> const& a, TJLterm<T> const& b )
 template<typename T>
 bool operator<=( TJLterm<T> const& a, TJLterm<T> const& b ) 
 {
- int i;
 
- if( a._index.Dim() != b._index.Dim() ) {
-   throw( typename TJLterm<T>::BadDimension( a._index.Dim(), b._index.Dim(), 
+ if( a.index_.Dim() != b.index_.Dim() ) {
+   throw( typename TJLterm<T>::BadDimension( a.index_.Dim(), b.index_.Dim(), 
           __FILE__, __LINE__, 
           "char operator<=( TJLterm<T> const&, TJLterm<T> const& )",
           "Dimensions don't match.") );
  }
 
- if( a._weight != b._weight ) { return ( a._weight < b._weight ); }
+ if( a.weight_ != b.weight_ ) { return ( a.weight_ < b.weight_ ); }
  
-// the code below should work, but at the moment it does not for some reason ... . 
-// 
-#if 0
- return (a._index <= b._index) ;
-#endif
-
-// do this instead ... 
-
-#if 1
-
- // for( i = 0; i < a._index.Dim(); ++i ) {
- //   if( a._index(i) == b._index(i) ) continue;
- //   return ( a._index(i) < b._index(i) );
- // }
-
- i = a._index.Dim();
- 
- int k,l;
-
- IntArrayReverseIterator getNext_a(a._index); // this should go away. Use 
- IntArrayReverseIterator getNext_b(b._index); // IntArray operator <= instead
-
- while( 0 < i-- ) {
-   k = getNext_a(); l = getNext_b();
-   if( k  != l ) {
-     return (  k < l );
-   }
- }
-
-// while( 0 < i ) {
-//   i--;
-//   if( a._index(i) != b._index(i) ) {
-//     return ( a._index(i) < b._index(i) );
-//   }
-// }
-
- return true;  // when all indices are the same.
-#endif
-//////////////////////////////////////////////////////////////////////////////
+ return (a.index_ <= b.index_); // overloaded operator: exponents lexicographical ordering 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -429,8 +397,8 @@ bool operator<=( TJLterm<T> const& a, TJLterm<T> const& b )
 template<typename T>
 bool operator%=( TJLterm<T> const& a, TJLterm<T> const& b ) 
 {
- if( a._weight != b._weight ) return false;
- return a._index == b._index;
+ if( a.weight_ != b.weight_ ) return false;
+ return a.index_ == b.index_;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -440,9 +408,9 @@ bool operator%=( TJLterm<T> const& a, TJLterm<T> const& b )
 template<typename T> 
 std::ostream& operator<<(std::ostream& os, TJLterm<T> const& term) {
 
- os << "Index: "   << term._index  
-    << " Weight: " << term._weight 
-    << " Value: "  << term._value;
+ os << " Index:  "  << term.index_  
+    << " Weight: "  << term.weight_ 
+    << " Value:  "  << term.value_;
 
  return os;
 } 
