@@ -53,6 +53,10 @@
 ****** - added MonomialOrderPredicate member. 
 ******   (useful for debugging)
 ******
+******  Feb 2007 ostiguy@fnal.gov
+******  
+****** - refactored implementation. Now use STL iterators/algorithms
+******
 ******   
 *************************************************************************
 *************************************************************************/
@@ -72,6 +76,14 @@
 using FNAL::pcerr;
 using FNAL::pcout;
 
+using namespace std;
+
+
+#define CHECKOUT(test,fcn,message)                       \
+  if( test ) {                                           \
+    throw( IntArray::GenericException( fcn, message ) ); \
+  }
+
 
 IntArray::GenericException::GenericException( const char* fcn, const char* msg )
 : errorString( msg )
@@ -88,197 +100,219 @@ IntArray::GenericException::GenericException( const char* fcn, const char* msg )
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 const char* IntArray::GenericException::what() const throw()
 {
   return strcat( "IntArray::GenericException: ", errorString.c_str() );
 }
 
 
-#define CHECKOUT(test,fcn,message)                       \
-  if( test ) {                                           \
-    throw( IntArray::GenericException( fcn, message ) ); \
-  }
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-IntArray::IntArray( int n, int const* const x ): _dim(n)
+IntArray::IntArray( int n, int const* const x )
+  :size_(n)
 {
 
-  // This function depends on endian-ness of the CPU !
+  if (size_ == 0 ) return;
   
-  
-        exponent_t* comp_ptr = &_comp[0] - 1;
-                   const int* x_ptr    = x-1;
-
-  int count = _dim+1;
-
-  if( x ) 
-    while (--count) *(++comp_ptr) = *(++x_ptr); // 
-  else    
-    while (--count) *(++comp_ptr) = 0;
-
+  if (x) 
+      { std::copy( x, x+n, begin() ); }
+  else
+      { std::fill(begin(), end(), exponent_t() ); }
+      
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+IntArray::IntArray( IntArray::const_iterator it1, IntArray::const_iterator it2 )
+  : size_( it2 - it1 )
+{
+
+  std::copy( it1, it2, begin() ); 
+
+}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // Assignment ...
 
 void IntArray::Set( const int* x )
 {
-      const int* x_ptr    = x-1;
-  exponent_t* comp_ptr   = &_comp[0] -1 ;
 
-  int count = _dim+1;
- 
-  while (--count) *(++comp_ptr) = *(++x_ptr);
+  std::copy( x, x + Dim(), begin() ); 
+
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void IntArray::Set( int x )
 {
-  exponent_t* comp_ptr = &_comp[0] -1 ;
 
-  int count = _dim+1;
-  while (--count) *(++comp_ptr) = x;
+  std::fill( begin(), end(), x); 
+
 }
 
-
-// These functions are in-lined
-
-//  int IntArray::operator() (  int i ) const
-// int& IntArray::operator() ( int i )
-
-
-
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // Algebraic functions ...
 
-IntArray& IntArray::operator= ( const IntArray& x )
+IntArray& IntArray::operator= ( IntArray const& x )
 {
-  memcpy((void *)_comp, (const void *)x._comp, _dim * sizeof(exponent_t));
+  if ( &x == this ) return *this;
+
+  size_ = x.size_;
+
+  std::copy( x.begin(), x.end(), begin() );
+
   return *this;
 }
 
-
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // Boolean functions ...
 
-bool IntArray::operator== ( const IntArray& x ) const
+bool IntArray::operator== ( IntArray const& rhs ) const
 {
 
-
-  const exponent_t* comp_ptr  = &_comp[0] - 1;     
-  const exponent_t* xcomp_ptr = &(x._comp[0]) - 1;   
-
-  if( _dim != x._dim ) return 0;
-  int count = _dim+1;
-
-  while (--count) 
-    if( *(++comp_ptr) != *(++xcomp_ptr) ) return 0;
-
-  return 1;
-
+  return std::equal( begin(), end(), rhs.begin() );
 
 }
 
-bool IntArray::operator!= ( const IntArray& x ) const
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool IntArray::PartialEqual( IntArray const& lhs, IntArray const& rhs, int idx1, int idx2 )
+{
+  
+  //compares only entries between IntArray(idx1) and IntArray(idx2) (inclusively).
+ 
+  return std::equal( lhs.begin()+idx1, lhs.begin()+idx2+1,  rhs.begin()+idx1 );
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool IntArray::PartialLessThan( IntArray const& lhs, IntArray const& rhs, int idx1, int idx2 )
+{
+  
+  //compares only entries between IntArray(idx1) and IntArray(idx2) (inclusively).
+ 
+   return std::lexicographical_compare( lhs.begin()+idx1, lhs.begin()+idx2+1, rhs.begin()+idx1,  rhs.begin()+idx2+1 );
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool IntArray::operator!= ( IntArray const& x ) const
 {
   return !( operator==( x ) );
 }
 
-bool IntArray::operator< ( const IntArray& x ) const
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool IntArray::operator< ( IntArray const& x ) const
 {
 
-  bool z = true;
+  return std::lexicographical_compare( begin(), end(), x.begin(),  x.end());
 
-  const exponent_t*        comp_ptr = &_comp[0] -1 ;     
-  const exponent_t*  xcomp_ptr = &(x._comp[0]) -1;   
-  
-  int count = _dim+1;
-
-  while ( (--count ) && z ) 
-       z &= *(++comp_ptr) < *(++xcomp_ptr);
-
-  return z;
 }
 
-bool IntArray::operator<= ( const IntArray& x ) const
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool IntArray::operator<= ( IntArray const& x ) const
 {
 
-  bool z = true;
-  int  i = -1;
+  return std::lexicographical_compare( begin(), end(), x.begin(),  x.end(), std::less_equal<exponent_t>() );
 
-  const exponent_t*   comp_ptr = &_comp[0] -1 ;     
-  const exponent_t*  xcomp_ptr = &(x._comp[0]) - 1; 
-  
-  int count = _dim+1;
-
-  while ( (--count) && z ) 
-       z &= *(++comp_ptr)  <=   *(++xcomp_ptr);
-
-  return z;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool IntArray::operator> ( const IntArray& x ) const
 {
 
-  bool z = true;
-  const exponent_t*   comp_ptr = &_comp[0] - 1;
-  const exponent_t*  xcomp_ptr = &(x._comp[0]) - 1;
+  return std::lexicographical_compare( begin(), end(), x.begin(),  x.end(), std::greater<exponent_t>() );
 
-  int  count  = _dim+1;
-  while ( ( --count ) && z ) 
-     z &=  *(++comp_ptr) > *(++xcomp_ptr);
-
-  return z;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool IntArray::operator>= ( const IntArray& x ) const
 {
 
-  bool z = true;
+  return std::lexicographical_compare( begin(), end(), x.begin(), x.end(), std::greater_equal<exponent_t>() );
 
-  const exponent_t*   comp_ptr = &_comp[0] - 1;   
-  const exponent_t*  xcomp_ptr = &(x._comp[0]) -1; 
-
-  int  count = _dim+1;
-  while ( (--count) && z ) z  &=  ( *(++comp_ptr)) >= (*( ++xcomp_ptr ));
-  return z;
 }
 
-bool IntArray::operator== ( const int x ) const
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool IntArray::operator== ( int x ) const
 {
 
-  const exponent_t*   comp_ptr = &_comp[0] -1 ; 
+  for ( const_iterator it = begin();  it != end(); ++it ) 
+  {
+    if ( *it == x ) return false;
+  }
 
-  int count = _dim+1;
+  return true;
 
-  while (--count )
-    if( *(++comp_ptr) != x ) return 0;
-
-  return 1;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool IntArray::operator!= ( int x ) const
 {
   return !( operator==( x ) );
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool IntArray::IsNull() const
 {
-  const exponent_t*   comp_ptr = &_comp[0] - 1;
 
-  int count = _dim+1;
-  while ( --count ) if( *(++comp_ptr) != 0 ) return 0;
-  return 1;
+  for ( IntArray::const_iterator it  = begin();
+	                         it != end(); ++it ) 
+  {
+    if ( *it != 0 ) return false;
+  }   
+
+  return true;
+
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // Streams
 
 std::ostream& operator<<( std::ostream& os, const IntArray& x ) 
 {
   os << "( ";
-  for( int i = 0; i < x._dim - 1; i++ )
-    os << (int) x._comp[i] << ", ";
-  os << (int) x._comp[ x._dim - 1 ] << " )";
+  for( int i = 0; i < x.Dim() - 1; i++ )
+    os << (int) x.comp_[i] << ", ";
+  os << (int) x.comp_[ x.Dim() - 1 ] << " )";
   return os;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 std::istream& operator>>( std::istream& is, IntArray& x )
 {
@@ -298,11 +332,11 @@ std::istream& operator>>( std::istream& is, IntArray& x )
   is >> buf;
 
   while( buf[ strlen(buf) - 1 ] != ')' ) {
-    x._comp[i++] = atoi( buf );
+    x.comp_[i++] = atoi( buf );
     is >> buf;
   }
 
-  if( x._dim != i ) {
+  if( x.Dim() != i ) {
     throw( IntArray::GenericException(
                                 "istream& operator>>( istream& is, IntArray& x )",
                                 "Incorrect number of components were read.") );
@@ -311,12 +345,18 @@ std::istream& operator>>( std::istream& is, IntArray& x )
   return is;
 }
 
-// The destructor should never be called !!!
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+// The destructor should ***never be defined nor called*** !!!
 
 #if  0
 IntArray::~IntArray() { }
 #endif
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool  MonomialOrderPredicate( IntArray const& a1, IntArray const& a2) {
  
@@ -341,10 +381,10 @@ bool  MonomialOrderPredicate( IntArray const& a1, IntArray const& a2) {
    int w1 = 0;
    int w2 = 0;
 
-   exponent_t const* p1 = &a1._comp[0];
-   exponent_t const* p2 = &a2._comp[0];
+   exponent_t const* p1 = &a1.comp_[0];
+   exponent_t const* p2 = &a2.comp_[0];
   
-   for (int i=0; i<a1._dim; ++i) {
+   for (int i=0; i<a1.Dim(); ++i) {
    
      w1 += *p1;
      w2 += *p2;
@@ -354,10 +394,10 @@ bool  MonomialOrderPredicate( IntArray const& a1, IntArray const& a2) {
 
    if (w1 > w2) return true; 
 
-   p1 = &a1._comp[0];
-   p2 = &a2._comp[0];
+   p1 = &a1.comp_[0];
+   p2 = &a2.comp_[0];
   
-   for (int i=0; i<a1._dim; ++i) {
+   for (int i=0; i<a1.Dim(); ++i) {
    
      if (*p1 < *p2)  return true;
      ++p1; ++p2;
@@ -365,3 +405,5 @@ bool  MonomialOrderPredicate( IntArray const& a1, IntArray const& a2) {
 
    return false;
 }
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
