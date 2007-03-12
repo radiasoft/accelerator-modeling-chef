@@ -38,7 +38,6 @@
 #ifndef TJL1_H
 #define TJL1_H
 
-#include <basic_toolkit/dlist.h>
 #include <basic_toolkit/IntArray.h>
 #include <basic_toolkit/TMatrix.h>
 #include <basic_toolkit/VectorD.h>
@@ -49,6 +48,8 @@
 #include <mxyzptlk/JLPtr.h>
 #include <mxyzptlk/EnvPtr.h>
 #include <mxyzptlk/TJLterm.h>
+
+#include<boost/iterator/iterator_facade.hpp>
 
 #define MX_SMALL       1.0e-12 // Used by TJL<T>::addTerm to decide 
                                // removal of a TJL<T>Cterm.
@@ -66,35 +67,33 @@
 template<typename T>
 class TJL1;
 
-template<typename T>
-class TJL1Iterator;
 
 template<typename T>
-bool operator==( const TJL1<T>& x, const TJL1<T>& y ); 
+bool operator==( TJL1<T> const& x, TJL1<T> const& y ); 
 
 template<typename T>
-bool operator==( const TJL1<T>& x, const T& y ); 
+bool operator==( TJL1<T> const& x, const T& y ); 
 
 template<typename T>
-bool operator==( const T& y, const TJL1<T>& x );
+bool operator==( T       const& y, TJL1<T> const& x );
 
 template<typename T>
-bool operator!=( const TJL1<T>& x, const TJL1<T>& y ); 
+bool operator!=( TJL1<T> const& x, TJL1<T> const& y ); 
 
 template<typename T>
-bool operator!=( const TJL1<T>& x, const T& y ); 
+bool operator!=( TJL1<T> const& x, const T& y ); 
 
 template<typename T>
-bool operator!=( const T& x, const TJL1<T>& y ); 
+bool operator!=( T       const& x, TJL1<T> const& y ); 
 
 template<typename T>
-std::ostream& operator<<( std::ostream& os, const TJL1<T>& x); 
+std::ostream& operator<<( std::ostream& os, TJL1<T> const& x); 
 
 template<typename T>
 std::istream& operator>>( std::istream& is,  TJL1<T>&  x); 
 
-JL1Ptr<double> real( const JL1Ptr<std::complex<double> > & z ); 
-JL1Ptr<double> imag( const JL1Ptr<std::complex<double> > & z );
+JL1Ptr<double> real( JL1Ptr<std::complex<double> > const& z ); 
+JL1Ptr<double> imag( JL1Ptr<std::complex<double> > const& z );
 
 //...................................................................................................................................
 
@@ -143,37 +142,7 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   template <typename U>
   friend class TJL1;
   
-  friend class TJL1Iterator<T>;
  
- private: 
-
-  int                                 _count;      // The number of terms in the variable ( in this case, dimension of _jcb +1 )
-  int                                 _weight;     // The maximum weight of (the actual) terms  (set to 1)   
-  int                                 _accuWgt;    // Highest weight computed accurately        ( set to 1 )
-
-  mutable EnvPtr<T>                    _myEnv; // Environment of the jet.
-  
-  T                                    _std;  // standard part
-  T*                                   _jcb;  // jacobian
-
-  mutable int                         _constIterPtr;
-  int                                 _iterPtr;
-
-  static std::vector<TJL1<T>* > _thePool;  // pool of discarded TJL1 objects
-
-  void insert( TJLterm<T> const& );
-  void append( TJLterm<T> const& );
-
-  TJL1( EnvPtr<T> const&, T value = T() );
-  TJL1( const IntArray&, const T&,  EnvPtr<T> const&);
-  TJL1(  TJL1 const& );
-
-  template<typename U> 
-  TJL1( TJL1<U> const& );  
-
-  virtual ~TJL1();
-
-
   // Constructors and destructors (factory functions)_____________________________________
 
  public:
@@ -181,12 +150,12 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   // factory functions 
 
   static JL1Ptr<T> makeTJL( EnvPtr<T>  const& pje,  T value = T());
-  static JL1Ptr<T> makeTJL( const IntArray&, const T&, EnvPtr<T> const& pje );
+  static JL1Ptr<T> makeTJL( IntArray   const&,      T const&, EnvPtr<T> const& pje );
 
   template<typename U>
-  static JL1Ptr<T> makeTJL( const TJL1<U>& );
+  static JL1Ptr<T> makeTJL( TJL1<U> const& );
 
-  static JL1Ptr<T> makeTJL( const TJL1* ); /// eliminate ?
+  static JL1Ptr<T> makeTJL( TJL1 const* ); /// eliminate ?
 
   static void discardTJL( TJL1<T>* p);  
 
@@ -198,7 +167,7 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   inline JL1Ptr<T> clone() 
                            {return JL1Ptr<T>( TJL1<T>::makeTJL(*this) ); } 
 
-  // Comaptibility 
+  // Compatibility 
 
   TJLterm<T>* storePtr() {return 0;}                  // returns a ptr to the next available block in the JLterm store;
 
@@ -207,19 +176,19 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
 
   void clear();     // clears all the terms. 
 
-  int                      getCount()   { return _count;   }
-  int                      getWeight()  { return _weight;  }
-  int                      getAccuWgt() { return _accuWgt; }
+  int                      getCount()   { return count_;   }
+  int                      getWeight()  { return weight_;  }
+  int                      getAccuWgt() { return accuWgt_; }
 
  
-  EnvPtr<T>                getEnv() const { return _myEnv; }    
-  void                     setEnv( EnvPtr<T> const& pje) { _myEnv = pje; }  // DANGER !  
+  EnvPtr<T>                getEnv() const                { return myEnv_; }    
+  void                     setEnv( EnvPtr<T> const& pje) { myEnv_ = pje; }  // DANGER !  
 
-  JL1Ptr<T>  truncMult( JL1Ptr<T> const& v, const int& wl )  const; 
+  JL1Ptr<T>  truncMult( JL1Ptr<T> const& v, const int& wl )    const; 
 
   JL1Ptr<T>  filter( const int& wgtLo, const int& wgtHi )      const; 
 
-  JL1Ptr<T>  filter( bool (*f) ( const IntArray&, const T& ) ) const; 
+  JL1Ptr<T>  filter( bool (*f) ( const IntArray&, T const& ) ) const; 
 
 
   void printCoeffs() const;               // prints term coefficients 
@@ -231,7 +200,7 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   TJLterm<T>  lowTerm()   const;          // Returns a TJLterm<T> equivalent to the
                                           // **non-zero** term of lowest weight.
 
-  void addTerm( const TJLterm<T>& );      
+  void addTerm( TJLterm<T> const& );      
  
   bool isNilpotent() const;
   void writeToFile( std::ofstream& ) const;
@@ -254,36 +223,33 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   JL1Ptr<T> compose(JL1Ptr<T> const y[ ]) const; 
   JL1Ptr<T> D( const int* n ) const; 
  
-  void               resetConstIterator();
-  const TJLterm<T>*  stepConstIteratorPtr()  const;
 
-
-  void setVariable( const T&, const int& );
-  void setVariable( const T& x, const int& j, EnvPtr<T> const& pje );
+  void setVariable( T const&, const int& );
+  void setVariable( T const& x, const int& j, EnvPtr<T> const& pje );
   void setVariable( const int&, EnvPtr<T> const& pje );               
 
   T standardPart() const;
-  void setStandardPart( T const& std) { _std = std; } 
+  void setStandardPart( T const& std) { terms_[0] = std; } 
 
   T weightedDerivative( const int* ) const;
   T derivative( const int* ) const;
 
-  T operator()( const Vector& ) const;
-  T operator()( const T* ) const;
+  T operator()( Vector const& ) const;
+  T operator()( T      const* ) const;
                        // Performs a multinomial evaluation of
                        // the TJL1 variable.  Essentially acts as a
                        // power series expansion.
   TJL1& operator()( const TJL1* ) const;
                        // Self explanatory ...
 
-  friend   bool operator==<>( const TJL1<T>& x, const TJL1<T>& y ); 
-  friend   bool operator==<>( const TJL1<T>& x, const T& y ); 
-  friend   bool operator==<>( const T& y, const TJL1<T>& x );
-  friend   bool operator!=<>( const TJL1<T>& x, const TJL1<T>& y ); 
-  friend   bool operator!=<>( const TJL1<T>& x, const T& y ); 
-  friend   bool operator!=<>( const T& x, const TJL1<T>& y ); 
+  friend   bool operator==<>( TJL1<T> const& x, TJL1<T> const& y ); 
+  friend   bool operator==<>( TJL1<T> const& x, T const& y ); 
+  friend   bool operator==<>( T       const& y, TJL1<T> const& x );
+  friend   bool operator!=<>( TJL1<T> const& x, TJL1<T> const& y ); 
+  friend   bool operator!=<>( TJL1<T> const& x, T const& y ); 
+  friend   bool operator!=<>( T const& x, TJL1<T> const& y ); 
 
-  friend   std::ostream& operator<< <T>( std::ostream& os, const TJL1<T>& x ); 
+  friend   std::ostream& operator<< <T>( std::ostream& os, TJL1<T> const& x ); 
   friend   std::istream& operator>><T>(  std::istream& is,  TJL1<T>& x ); 
 
   friend JL1Ptr<double> real( const JL1Ptr<std::complex<double> >& z ); 
@@ -305,20 +271,20 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
 
   // Arithmetic operators // some of these may no longer be needed ... FIXME !
 
-  TJL1& operator=( const TJL1& );
-  TJL1& operator=( const T& );
+  TJL1& operator=( TJL1 const& );
+  TJL1& operator=( T const& );
 
-  TJL1& operator+=( const TJL1& );
-  TJL1& operator+=( const T& );
+  TJL1& operator+=( TJL1 const& );
+  TJL1& operator+=( T const& );
 
-  TJL1& operator-=( const TJL1& );
-  TJL1& operator-=( const T& );
+  TJL1& operator-=( TJL1 const& );
+  TJL1& operator-=( T const& );
 
-  TJL1& operator*=( const TJL1& );
-  TJL1& operator*=( const T& );
+  TJL1& operator*=( TJL1 const& );
+  TJL1& operator*=( T const& );
 
-  TJL1& operator/=( const TJL1& );
-  TJL1& operator/=( const T& );
+  TJL1& operator/=( TJL1 const& );
+  TJL1& operator/=( T const& );
 
     // Exception subclasses____________________________________________
 
@@ -374,6 +340,73 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
     int i;
     double im;
   };
+
+
+   template <typename U>
+   class iter_ :  public boost::iterator_facade< iter_<U> , U , boost::forward_traversal_tag > {
+
+   private:
+      struct enabler {};
+
+    public:
+
+      iter_()               : m_node(0) {}
+
+      explicit iter_( U* p) : m_node(p) {}
+
+      template <class OtherType> 
+      iter_( iter_<OtherType> const& other , 
+             typename boost::enable_if<boost::is_convertible<OtherType*, U*> , enabler>::type = enabler())
+           : m_node(other.m_node) {}
+
+  
+    private:
+
+      friend class boost::iterator_core_access;
+
+      TJLterm<U> dereference() const;
+      void increment();
+      bool equal( iter_ const& other) const; 
+
+      U* m_node;
+   };
+
+  typedef iter_<T>                iterator;
+  typedef iter_<T const>    const_iterator;
+  
+  iterator       begin();
+  const_iterator begin() const;
+
+  iterator       end();
+  const_iterator end()   const;
+
+ private: 
+
+  int                                 count_;      // The number of terms in the variable ( in this case, dimension of _jcb +1 )
+  int                                 weight_;     // The maximum weight of (the actual) terms  (set to 1)   
+  int                                 accuWgt_;    // Highest weight computed accurately        ( set to 1 )
+
+  mutable EnvPtr<T>                   myEnv_;      // Environment of the jet.
+  
+  T*                                  jcb_;        // jacobian
+  T*                                  terms_;      // all terms     // NOTE: standard part = terms_[0]; jcb_ = &terms_[1]; 
+
+
+
+  static std::vector<TJL1<T>* > thePool_;  // pool of discarded TJL1 objects
+
+  void insert( TJLterm<T> const& );
+  void append( TJLterm<T> const& );
+
+  TJL1( EnvPtr<T> const&, T value = T() );
+  TJL1( IntArray  const&, T const&,  EnvPtr<T> const&);
+  TJL1(  TJL1 const& );
+
+  template<typename U> 
+  TJL1( TJL1<U> const& );  
+ 
+  ~TJL1();
+
 
 };
 
