@@ -23,8 +23,9 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 ******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
+******  Authors:   Leo Michelotti (Original Version)                                    
+******             Jean-Francois Ostiguy
+******                                                   
 ******             Fermilab                                           
 ******             P.O.Box 500                                        
 ******             Mail Stop 220                                      
@@ -57,6 +58,7 @@
 ******                                                               
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -181,15 +183,39 @@ state_(u.state_) {}
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetParticle::~JetParticle() {
+
+JetParticle& JetParticle::operator=(JetParticle const& u) 
+{
+
+  if ( &u == this ) return *this;
+ 
+  tag_   = u.tag_;
+  q_     = u.q_;
+  E_     = u.E_;
+  p_     = u.p_;
+  m_     = u.m_;
+  pn_    = u.pn_;
+  pni2_  = u.pni2_;
+  bRho_  = u.bRho_;
+  beta_  = u.beta_;
+  gamma_ = u.gamma_;
+  state_ = u.state_;
+
+  return *this;
 
 }
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JetParticle::~JetParticle() 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void JetParticle::setState( Mapping const& u ) {
+void JetParticle::setState( Mapping const& u ) 
+{
  state_ = u;
 } 
 
@@ -326,6 +352,7 @@ double JetParticle::setWeight( double const& w )
 {
   double ret = wgt_;
   wgt_ = ( w >= 0.0 ) ? w : 1.0;
+
   return ret;
 }
 
@@ -335,18 +362,9 @@ double JetParticle::setWeight( double const& w )
 
 JetVector JetParticle::VectorBeta() const
 {
- // ??? This assumes ret(2) > 0
- JetVector  ret(3, state_.Env() );
 
- Jet nrg( Energy()  );
- Jet  pz( Momentum()); 
+  return VectorMomentum()/Energy();
 
- pz         = sqrt( pz*pz - ((p_*p_)*( state_(3)*state_(3) + state_(4)*state_(4) )) );
-
- ret(0)     = p_*state_(3) / nrg;
- ret(1)     = p_*state_(4) / nrg;
- ret(2)     = pz           / nrg;
- return ret;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -354,16 +372,12 @@ JetVector JetParticle::VectorBeta() const
 
 JetVector JetParticle::VectorMomentum() const
 {
- // ??? This assumes ret(2) > 0
+
  JetVector ret(3, state_.Env());
 
- Jet px, py;
-
- Jet pz( Momentum() ) ;
-
- ret(0) = px = p_*state_(3);  // px
- ret(1) = py = p_*state_(4);  
- ret(2) = sqrt( pz*pz - px*px - py*py );
+ ret(0) = p_ * state_[3];  // px
+ ret(1) = p_ * state_[4];  
+ ret(2) = p_ * get_npz();
 
  return ret;
 }
@@ -373,17 +387,13 @@ JetVector JetParticle::VectorMomentum() const
 
 JetVector JetParticle::NormalizedVectorMomentum() const
 {
- // ??? This assumes ret(2) > 0
  JetVector ret(3, state_.Env());
 
- Jet px, py;
- Jet pz( NormalizedMomentum() ); 
-
- ret(0) = px = state_(3);
- ret(1) = py = state_(4);
- ret(2) = sqrt( pz*pz - px*px - py*py );
-
- return ret;
+ ret(0) = state_[3];  // px
+ ret(1) = state_[4];  
+ ret(2) = get_npz();
+ 
+ return ret; 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -418,30 +428,22 @@ JetProton::JetProton( Proton const& u,   EnvPtr<double> const& pje ): JetParticl
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetProton::~JetProton() {
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-JetParticle& JetParticle::operator=(JetParticle const& u) {
+JetProton& JetProton::operator=(JetProton const& u) {
   
  if(&u == this)  return *this;
 
- tag_   = u.tag_;
- q_     = u.q_;
- E_     = u.E_;
- p_     = u.p_;
- m_     = u.m_;
- pn_    = u.pn_;
- pni2_  = u.pni2_;
- bRho_  = u.bRho_;
- beta_  = u.beta_;
- gamma_ = u.gamma_;
- state_ = u.state_;
+ JetParticle::operator=(u);
 
  return *this;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JetProton::~JetProton() {
+}
+
+
 
 // **************************************************
 //   class JetAntiProton
@@ -469,6 +471,19 @@ JetAntiProton::JetAntiProton( JetAntiProton const & u ) : JetParticle(u) { }
 
 JetAntiProton::JetAntiProton( AntiProton const& u,  EnvPtr<double> const& pje ) : JetParticle(u, pje) {}
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JetAntiProton& JetAntiProton::operator=(JetAntiProton const& u) 
+{
+  
+ if(&u == this)  return *this;
+
+ JetParticle::operator=(u);
+
+ return *this;
+
+}
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -504,8 +519,21 @@ JetElectron::JetElectron( Electron const& u,   EnvPtr<double> const& pje) : JetP
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetElectron::~JetElectron() {
+JetElectron& JetElectron::operator=(JetElectron const& u) 
+{
+  
+ if(&u == this)  return *this;
+
+ JetParticle::operator=(u);
+
+ return *this;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JetElectron::~JetElectron() 
+{ }
 
 // **************************************************
 //   class JetPositron
@@ -532,6 +560,20 @@ JetPositron::JetPositron( JetPositron const& u ) : JetParticle( u ) {}
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetPositron::JetPositron( Positron const& u,  EnvPtr<double> const& pje ) : JetParticle( u, pje ) {}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+JetPositron& JetPositron::operator=(JetPositron const& u) 
+{
+  
+ if(&u == this)  return *this;
+
+ JetParticle::operator=(u);
+
+ return *this;
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -568,8 +610,23 @@ JetMuon::JetMuon( Muon const & u,   EnvPtr<double> const& pje) : JetParticle(u, 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetMuon::~JetMuon() {
+
+JetMuon& JetMuon::operator=(JetMuon const& u) 
+{
+  
+ if(&u == this)  return *this;
+
+ JetParticle::operator=(u);
+
+ return *this;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+JetMuon::~JetMuon() 
+{}
 
 
 // **************************************************
@@ -600,6 +657,20 @@ JetAntiMuon::JetAntiMuon( AntiMuon const& u,   EnvPtr<double> const& pje ): JetP
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetAntiMuon::~JetAntiMuon() {
+JetAntiMuon& JetAntiMuon::operator=(JetAntiMuon const& u) 
+{
+  
+ if(&u == this)  return *this;
+
+ JetParticle::operator=(u);
+
+ return *this;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JetAntiMuon::~JetAntiMuon() 
+{
 }
 
