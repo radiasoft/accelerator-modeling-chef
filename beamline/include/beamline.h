@@ -24,7 +24,7 @@
 ******  Author: Leo Michelotti 
 ******          michelotti@fnal.gov
 ******
-******  REVISION HISTORY
+*******  REVISION HISTORY
 ******
 ******  October 2006: Jean-Francois Ostiguy 
 ******                ostiguy@fnal.gov
@@ -32,14 +32,14 @@
 ******  - beamline no longer inherits from c-style void*  dlist container
 ******  - element container is now a private  nested std::list<> member
 ******  - implemented new STL compatible iterators 
-******    iterator, pre_order_iterator. post_order_iteartor, deep_iterator           
+******    iterator, pre_order_iterator. post_order_iteartor, deep_iterator 
 ******    as well as const and reverse variants of the above
 ******
 ******  Jan - Mar 2007:  Jean-Francois Ostiguy 
 ******                   ostiguy@fnal.gov
 ******
 ****** - support for reference counted elements
-******                                                             
+****** 
 **************************************************************************
 *************************************************************************/
 
@@ -126,7 +126,7 @@ public:
   void append( ElmPtr    const&  );
   void append( bmlnElmnt const&  );
 
-  void Split( double const&, ElmPtr, ElmPtr ) const;
+  void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
   beamline*  reverse() const;                
 
