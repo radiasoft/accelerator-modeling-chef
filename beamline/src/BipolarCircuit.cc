@@ -32,9 +32,19 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - eliminated dependency on dlist
+****** - use new-style Barnacles.
 ******                                                                
 **************************************************************************
+**************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -48,68 +58,79 @@ using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
 
-BipolarCircuit::BipolarCircuit() : circuit () {
-  field = 0.0;
-}
 
-BipolarCircuit::BipolarCircuit(const char* n) : circuit (n) {
-  field = 0.0;
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-BipolarCircuit::BipolarCircuit(bmlnElmnt* q) : circuit (q) {
-  field = 0.0;
-}
+BipolarCircuit::BipolarCircuit(const char* n) 
+ : Circuit (n), field_(0.0) {} 
 
-BipolarCircuit::BipolarCircuit(const char* n, bmlnElmnt* q) : circuit (n,q) {
-  field = 0.0;
-}
-BipolarCircuit::~BipolarCircuit() {
-}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BipolarCircuit::~BipolarCircuit() {}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void BipolarCircuit::switchOn() {
-  onOffSwitch = 1;
-  set(&field);
+  onOffSwitch_ = true;
+  set( field_ );
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BipolarCircuit::switchOff() {
-  onOffSwitch = 0;
-  double dummy = 0.0;
-  dlist_iterator getNext ( *this );
-  bmlnElmnt* p;
 
-  while ( (p = (bmlnElmnt*) getNext()) ) {
-    p -> setStrength( dummy );
+  onOffSwitch_ = false;
+
+  for (std::list<ElmPtr>::iterator it  = theList_.begin(); 
+                                   it != theList_.end(); ++it) {
+    (*it)-> setStrength( 0.0 );
   }
 }
 
-void BipolarCircuit::set(void* x) {
-  double* curr = (double*)x;
-  dlist_iterator getNext ( *this );
-  bmlnElmnt* p;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BipolarCircuit::set(double const& current) {
 
   
-  field = *curr;
+  field_       = current;
+  onOffSwitch_ = true;
 
-  while ( (p = (bmlnElmnt*) getNext()) ) {
+  for (std::list<ElmPtr>::iterator it  = theList_.begin(); 
+                                   it != theList_.end(); ++it) {
 
-    BarnacleList::iterator it = p->dataHook.find("Polarity");
+    BarnacleList::iterator bit = (*it)->dataHook.find("Polarity");
 
-    if( it ==  p->dataHook.end() ) {
+    if( bit ==  (*it)->dataHook.end() ) {
       (*pcerr) << "BipolarCircuit: no polarity information for " <<
-	p->Name() << " Assuming +1 " << endl;
-      p -> setStrength( *curr );
+	(*it)->Name() << " Assuming +1 " << endl;
+      (*it)-> setStrength( current );
 
-    } else 
-      p -> setStrength( (*curr) *  boost::any_cast<double>(it->info) );
+    } else {
+      (*it)->setStrength( current *  boost::any_cast<double>(bit->info) );
+    }
   }
 }
 
-void BipolarCircuit::get(void* x) {
-  double* curr = (double*)x;
-  *curr = field;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+double BipolarCircuit::get() const {
+  return field_;
 }
 
-void BipolarCircuit::append( bmlnElmnt* q ) {
-   dlist::append( q );
-   field = q->Strength();
-   numElm++;
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BipolarCircuit::append( ElmPtr q ) {
+   theList_.push_back( q );
+   field_ = q->Strength();
 }
