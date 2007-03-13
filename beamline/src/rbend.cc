@@ -39,7 +39,7 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
-****** - eliminated unecessary dynamic casts in Split(...);
+****** - eliminated unneeded dynamic casts in Split(...);
 **************************************************************************
 *************************************************************************/
 
