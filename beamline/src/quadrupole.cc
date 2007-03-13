@@ -32,7 +32,14 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
+******
 **************************************************************************
 *************************************************************************/
 
@@ -44,7 +51,7 @@
 #include <beamline/quadrupole.h>
 #include <beamline/drift.h>
 #include <beamline/beamline.h>
-#include <beamline/BeamlineIterator.h>
+#include <beamline/BmlVisitor.h>
 
 using namespace std;
 using FNAL::pcerr;
@@ -59,7 +66,7 @@ using FNAL::pcout;
 quadrupole::quadrupole()
 : bmlnElmnt( 1.0, 0.0, &quadrupole::LikeTPOT )
 {
- this->setupPropFunc();
+  setupPropFunc();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -76,7 +83,7 @@ quadrupole::quadrupole( const char* n, double const& l, double const& s, bmlnElm
          uic.str().c_str() ) );
  }
 
- this->setupPropFunc();
+ setupPropFunc();
 
 }
 
@@ -95,7 +102,7 @@ quadrupole::quadrupole( double const& l, double const& s, bmlnElmnt::PropFunc* p
          uic.str().c_str() ) );
  }
 
- this->setupPropFunc();
+  setupPropFunc();
 
 }
 
@@ -106,7 +113,7 @@ quadrupole::quadrupole( double const& l, double const& s, bmlnElmnt::PropFunc* p
 quadrupole::quadrupole( quadrupole const& x ) 
 : bmlnElmnt( x )
 {
-  this->setupPropFunc();
+  setupPropFunc();
 
 }
 
@@ -115,7 +122,7 @@ quadrupole::quadrupole( quadrupole const& x )
 
 quadrupole::~quadrupole() 
 {
-  this->releasePropFunc();
+  releasePropFunc();
 }
 
 
@@ -124,15 +131,15 @@ quadrupole::~quadrupole()
 
 void quadrupole::setStrength( double const& s ) {
 
- strength                  = s - getShunt()*IToField();
- double integratedStrength = strength*length;
+ strength_                  = s - getShunt()*IToField();
+ double integratedStrength = strength_*length_;
 
- if( p_bml != 0 ) 
+ if( p_bml_ != 0 ) 
  {
    int counter = 0;
 
-   for ( beamline::iterator it  = p_bml->begin();
-	                    it != p_bml->end(); ++it ) {
+   for ( beamline::iterator it  = p_bml_->begin();
+	                    it != p_bml_->end(); ++it ) {
      if( typeid(**it) == typeid(thinQuad ) )  ++counter;
    }
 
@@ -142,21 +149,21 @@ void quadrupole::setStrength( double const& s ) {
             "No thin quads in the internal beamline." ) );
    }
    else if( counter == 1) {
-     if(p_bml_e != 0) 
+     if(bml_e_ != 0) 
      {
-       p_bml_e->setStrength( integratedStrength );
+       bml_e_->setStrength( integratedStrength );
      }
      else 
      {
      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
             "void quadrupole::setStrength( double const& s ) {", 
-            "p_bml_e not set." ) );
+            "bml_e_ not set." ) );
      }
    }
    else {
 
-       for ( beamline::iterator it  = p_bml->begin();
-	                    it != p_bml->end(); ++it ) {
+       for ( beamline::iterator it  = p_bml_->begin();
+	                    it != p_bml_->end(); ++it ) {
        if( typeid(**it) == typeid(thinQuad) ) {
            (*it)->setStrength( integratedStrength/counter );
        }
@@ -172,7 +179,7 @@ void quadrupole::releasePropFunc()
 {
   if( !propfunc_ ) return;
 
-  { p_bml->zap(); delete p_bml;  p_bml = 0; propfunc_ = 0; }
+  { bml_e_ = ElmPtr(); p_bml_ = BmlPtr();  propfunc_ = 0; }
 
 }
 
@@ -191,16 +198,13 @@ void quadrupole::setupPropFunc()
             "\n**** WARNING **** "
          << endl;
 
-// if( p_bel ) { delete p_bml_e;  p_bml_e = 0;          } // This is needed if p_bml_e is not an element of  p_bml?
-   if( p_bml ) { p_bml->zap(); delete p_bml; p_bml = 0; }
-
  }
 
    if( 0 == strcmp( propfunc_->Type(), "quadrupole::TPOT_Prop" ) ) {
 
       ((quadrupole::TPOT_Prop*) propfunc_)->setup( this );
    
-      // This method will create *p_bml
+      // This method will create p_bml_
    };
 
 }
@@ -228,7 +232,7 @@ bool quadrupole::isMagnet() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void quadrupole::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
+void quadrupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
@@ -238,24 +242,17 @@ void quadrupole::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
            uic.str().c_str() ) );
   }
 
-  // We assume "strength" means field, not field*length.
+  // We assume "strength" means field, not field*length_.
 
-  *a = new quadrupole(         pc  *length, strength, propfunc_ ); // ??? Fix
-  *b = new quadrupole( ( 1.0 - pc )*length, strength, propfunc_ ); // ??? this
+  a = QuadrupolePtr( new quadrupole(         pc  *length_, strength_, propfunc_ ) ); // ??? Fix
+  b = QuadrupolePtr( new quadrupole( ( 1.0 - pc )*length_, strength_, propfunc_ ) ); // ??? this
 
   // Rename
 
-  char* newname = new char [ strlen(ident) + 6 ];
 
-  strcpy( newname, ident );
-  strcat( newname, "_1" );
-  (*a)->rename( newname );
+  a->rename( ident_ + string("_1") );
+  b->rename( ident_ + string("_2") );
 
-  strcpy( newname, ident );
-  strcat( newname, "_2" );
-  (*b)->rename( newname );
-
-  delete [] newname;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -298,28 +295,44 @@ ostream& quadrupole::writeTo(ostream& os)
   return os;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void quadrupole::accept( BmlVisitor& v )            
+{  
+  v.visit( *this ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void quadrupole::accept( ConstBmlVisitor& v ) const { 
+  v.visit( *this ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // **************************************************
 //   class thinQuad
 // **************************************************
 
 thinQuad::thinQuad() : bmlnElmnt() {
- strength = 0.0;
+ strength_ = 0.0;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinQuad::thinQuad( double const& s ) : bmlnElmnt() {
- strength = s;      // B'L in Tesla
+ strength_ = s;      // B'L in Tesla
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinQuad::thinQuad( const char* n, double const& s ) : bmlnElmnt(n) {
- strength = s;
+ strength_ = s;
 }
 
 
@@ -348,3 +361,22 @@ bool thinQuad::isMagnet() const
 {
   return true;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinQuad::accept( BmlVisitor& v )            
+{  
+  v.visit( *this ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinQuad::accept( ConstBmlVisitor& v ) const { 
+  v.visit( *this ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+

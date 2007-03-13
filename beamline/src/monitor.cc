@@ -32,7 +32,13 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -43,6 +49,7 @@
 
 #include <beamline/monitor.h>
 #include <beamline/Particle.h>
+#include <beamline/BmlVisitor.h>
 
 
 using namespace std;
@@ -266,3 +273,14 @@ const char* hmonitor::Type() const
   return "hmonitor"; 
 }
 
+
+void monitor::accept( BmlVisitor& v )            
+{ 
+  v.visit( *this ); 
+}
+
+
+void monitor::accept( ConstBmlVisitor& v ) const 
+{ 
+  v.visit( *this ); 
+}

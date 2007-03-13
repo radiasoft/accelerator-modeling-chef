@@ -32,6 +32,13 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -41,6 +48,7 @@
 #endif
 
 #include <beamline/decapole.h>
+#include <beamline/BmlVisitor.h>
 
 using namespace std;
 
@@ -48,40 +56,89 @@ using namespace std;
 //   class thinDecapole 
 // **************************************************
 
-thinDecapole::thinDecapole () : bmlnElmnt( 0.0, 0.0 ) {
-}
 
-thinDecapole::thinDecapole ( double const& s ) : bmlnElmnt( 0.0, s ) {
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinDecapole::thinDecapole () 
+ : bmlnElmnt( 0.0, 0.0 ) 
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinDecapole::thinDecapole ( double const& s ) 
+ : bmlnElmnt( 0.0, s ) {
  // The strength is to be interpreted as
  // (1/4!)*B''''l/Brho  in  meters^-2
 }
 
-thinDecapole::thinDecapole ( char const* n, double const& s ) : bmlnElmnt( n, 0.0, s ) {
- // The strength is to be interpreted as
- // (1/4!)*B''''l/Brho  in  meters^-2
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-
-thinDecapole::thinDecapole( const thinDecapole& x ) 
-: bmlnElmnt( (bmlnElmnt&) x )
+thinDecapole::thinDecapole ( char const* n, double const& s ) 
+ : bmlnElmnt( n, 0.0, s ) 
 {
+ // The strength is to be interpreted as
+ // (1/4!)*B''''l/Brho  in  meters^-2
 }
 
-thinDecapole::~thinDecapole() {
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinDecapole::thinDecapole( thinDecapole const& x ) 
+: bmlnElmnt( x )
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinDecapole& thinDecapole::operator=( thinDecapole const& rhs)
+{  
+  if ( &rhs == this) return *this;
+
+  bmlnElmnt::operator=( rhs); 
+
+  return *this;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+thinDecapole::~thinDecapole() 
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char* thinDecapole::Type() const 
 { 
   return "thinDecapole"; 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool thinDecapole::isMagnet() const
 {
   return true;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void thinDecapole::accept( BmlVisitor& v ) 
+{ 
+  v.visit( *this ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinDecapole::accept( ConstBmlVisitor& v ) const  
+{ 
+  v.visit( *this ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

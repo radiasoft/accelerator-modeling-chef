@@ -32,6 +32,14 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
+******
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -40,6 +48,7 @@
 #endif
 
 #include <beamline/drift.h>
+#include <beamline/BmlVisitor.h>
 
 using namespace std;
 
@@ -106,4 +115,18 @@ const char* drift::Type() const
   return "drift"; 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void drift::accept( BmlVisitor& v ) 
+{ 
+   v.visit(*this ); 
+}
+  
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void drift::accept( ConstBmlVisitor& v ) const 
+{ 
+   v.visit(*this ); 
+}
