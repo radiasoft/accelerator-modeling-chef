@@ -2,7 +2,7 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  BEAMLINE:  C++ objects for design and analysis
+******  Beamline:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
 ******                                    
@@ -32,6 +32,12 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
+****** - eliminated unneeded dynamic casts in Split(...);
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -45,6 +51,7 @@
 #include <basic_toolkit/iosetup.h>
 #include <beamline/sbend.h>
 #include <beamline/Particle.h>
+#include <beamline/BmlVisitor.h>
 
 using namespace std;
 using FNAL::pcerr;
@@ -416,8 +423,11 @@ bool sbend::isMagnet() const
 }
 
 
-void sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
+void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
+
+  sbend* sbptr = 0;
+
   static bool firstTime = true;
   if( firstTime ) {
     firstTime = false;
@@ -449,48 +459,48 @@ void sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
                               "but it's your fault for using this propagator."
             "\n*** WARNING *** "
          << endl;
-    *a = new sbend( pc*length, strength,
+     a = SBendPtr( new sbend( pc*length_, strength_,
                     pc*_usAngle,  // this is surely the wrong thing to do
-                    propfunc_ ); // but THERE IS NO RIGHT THING
-    *b = new sbend( (1.0 - pc)*length, strength,
+                    propfunc_ ) ); // but THERE IS NO RIGHT THING
+     b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_,
                     (1.0 - pc)*_usAngle,
-                    propfunc_ );
+                     propfunc_ ) );
   }
   else if( typeid(*propfunc_) == typeid(NoEdge_Prop) ) {
-    *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, propfunc_ );
-    *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, propfunc_ );
+     a = SBendPtr( new sbend(         pc*length_, strength_,         pc*_angle,  _usEdgeAngle, 0.0, propfunc_ ) );
+     b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, propfunc_ ) );
   }
   else if( typeid(*propfunc_) == typeid(Exact_Prop) ) {
-    *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::InEdge );
-    dynamic_cast<sbend*>(*a)->setEntryAngle( this->getEntryAngle() );
-    dynamic_cast<sbend*>(*a)->setExitAngle( 0.0 );    // Should not matter
-    *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::OutEdge );
-    dynamic_cast<sbend*>(*b)->setEntryAngle( 0.0 );   // Should not matter
-    dynamic_cast<sbend*>(*b)->setExitAngle( this->getExitAngle() );
+    a =  SBendPtr ( sbptr = new sbend( pc*length_, strength_,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::InEdge ) );
+    sbptr->setEntryAngle( this->getEntryAngle() );
+    sbptr->setExitAngle( 0.0 );    // Should not matter
+    b =  SBendPtr(  sbptr = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::OutEdge ) );
+    sbptr->setEntryAngle( 0.0 );   // Should not matter
+    sbptr->setExitAngle( this->getExitAngle() );
   }
   else if( typeid(*propfunc_) == typeid(InEdge_Prop) ) {
-    *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, propfunc_ );
-    dynamic_cast<sbend*>(*a)->setEntryAngle( this->getEntryAngle() );
-    dynamic_cast<sbend*>(*a)->setExitAngle( 0.0 );    // Should not matter
-    *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::NoEdge );
+    a = SBendPtr( sbptr = new sbend(         pc*length_, strength_,         pc*_angle,  _usEdgeAngle, 0.0, propfunc_ ) );
+    sbptr->setEntryAngle( this->getEntryAngle() );
+    sbptr->setExitAngle( 0.0 );    // Should not matter
+    b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::NoEdge ) );
   }
   else if( typeid(*propfunc_) == typeid(OutEdge_Prop) ) {
-    *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::NoEdge );
-    *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, propfunc_ );
-    dynamic_cast<sbend*>(*b)->setEntryAngle( 0.0 );   // Should not matter
-    dynamic_cast<sbend*>(*b)->setExitAngle( this->getExitAngle() );
+    a = SBendPtr( new sbend(         pc*length_, strength_,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::NoEdge ) );
+    b = SBendPtr( sbptr = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, propfunc_ ) );
+    sbptr->setEntryAngle( 0.0 );   // Should not matter
+    sbptr->setExitAngle( this->getExitAngle() );
   }
   // TO BE DONE: else if( typeid(*propfunc_) == typeid(Real_Exact_Prop) ) {
-  // TO BE DONE:   *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::RealInEdge );
-  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::RealOutEdge );
+  // TO BE DONE:   *a = new sbend(         pc*length_, strength_,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::RealInEdge );
+  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::RealOutEdge );
   // TO BE DONE: }
   // TO BE DONE: else if( typeid(*propfunc_) == typeid(Real_InEdge_Prop) ) {
-  // TO BE DONE:   *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, propfunc_ );
-  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::NoEdge );
+  // TO BE DONE:   *a = new sbend(         pc*length_, strength_,         pc*_angle,  _usEdgeAngle, 0.0, propfunc_ );
+  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::NoEdge );
   // TO BE DONE: }
   // TO BE DONE: else if( typeid(*propfunc_) == typeid(Real_OutEdge_Prop) ) {
-  // TO BE DONE:   *a = new sbend(         pc*length, strength,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::NoEdge );
-  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, propfunc_ );
+  // TO BE DONE:   *a = new sbend(         pc*length_, strength_,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::NoEdge );
+  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, propfunc_ );
   // TO BE DONE: }
   else {
     (*pcerr) << "\n*** WARNING *** "
@@ -501,22 +511,15 @@ void sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
             "\n*** WARNING *** It's all your fault."
             "\n*** WARNING *** "
          << endl;
-    *a = new sbend( pc*length,         strength,         pc*_angle, _usEdgeAngle, 0.0 );
-    *b = new sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle, 0.0, _dsEdgeAngle );
+    a = SBendPtr( new sbend( pc*length_,         strength_,         pc*_angle, _usEdgeAngle, 0.0 ) );
+    b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle, 0.0, _dsEdgeAngle ) );
   }
 
   // Rename
-  char* newname = new char [ strlen(ident) + 6 ];
 
-  strcpy( newname, ident );
-  strcat( newname, "_1" );
-  (*a)->rename( newname );
+  a->rename( ident_ + string("_1") );
+  b->rename( ident_ + string("_2") );
 
-  strcpy( newname, ident );
-  strcat( newname, "_2" );
-  (*b)->rename( newname );
-
-  delete [] newname;
 }
 
 
@@ -739,6 +742,16 @@ const char* sbend::Type() const
   return "sbend"; 
 }
 
+void sbend::accept( BmlVisitor& v ) 
+{ 
+ v.visit( *this ); 
+}
+
+void sbend::accept( ConstBmlVisitor& v ) const 
+{ 
+  v.visit( *this ); 
+}
+
 
 // **************************************************
 //   classes sbend::XXXEdge_Prop
@@ -804,21 +817,5 @@ void sbend::OutEdge_Prop::setPropagator( NoEdge_Prop* x )
   _myPropagator = x;
 }
 
-
-// REMOVE: // --- sbend::Null_Prop -----------------------
-// REMOVE: 
-// REMOVE: sbend::Null_Prop::Null_Prop()
-// REMOVE: {
-// REMOVE:   _myPropagator = 0;
-// REMOVE: }
-// REMOVE:  
-// REMOVE: sbend::Null_Prop::~Null_Prop()
-// REMOVE: {
-// REMOVE: }
-// REMOVE:  
-// REMOVE: void sbend::Null_Prop::setPropagator( NoEdge_Prop* x )
-// REMOVE: {
-// REMOVE:   _myPropagator = 0;
-// REMOVE: }
 
 
