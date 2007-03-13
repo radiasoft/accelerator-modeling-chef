@@ -33,7 +33,14 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
+*******                                                                
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -50,6 +57,7 @@
 #include <beamline/sbend.h>
 #include <beamline/octupole.h>
 #include <beamline/Particle.h>
+#include <beamline/BmlVisitor.h>
 
 using namespace std;
 
@@ -172,15 +180,15 @@ void CF_sbend::_finishConstructor()
 {
 // Insertion for CF_sbend constructors
 // 
-  double field       = this->strength;
-  double frontLength =  6.0*(this->length/4.0)/15.0;
-  double sepLength   = 16.0*(this->length/4.0)/15.0;
+  double field       = this->strength_;
+  double frontLength =  6.0*(this->length_/4.0)/15.0;
+  double sepLength   = 16.0*(this->length_/4.0)/15.0;
 
-  sbend inEdge  ( frontLength,     field, (frontLength/this->length)*_angle, 
+  sbend inEdge  ( frontLength,     field, (frontLength/this->length_)*_angle, 
                   _usEdgeAngle, 0.0, &sbend::InEdge  );
-  sbend outEdge ( frontLength,     field, (frontLength/this->length)*_angle, 
+  sbend outEdge ( frontLength,     field, (frontLength/this->length_)*_angle, 
                   0.0, _dsEdgeAngle, &sbend::OutEdge );
-  sbend body    ( sepLength,   field, (sepLength/this->length)*_angle,
+  sbend body    ( sepLength,   field, (sepLength/this->length_)*_angle,
                   0.0,          0.0, &sbend::NoEdge );
 
   thinSextupole ts( 0.0 );
@@ -219,45 +227,21 @@ CF_sbend::~CF_sbend()
 }
 
 
-void CF_sbend::acceptInner( BmlVisitor& v )
-{
-  _ctRef = 0.0;
-  bmlnElmnt** x = _u;
-  while( x <= _v ) {
-    (*x)->accept( v );
-    _ctRef += (*x)->getReferenceTime();
-    x++;
-  }
-}
-
-
-void CF_sbend::acceptInner( ConstBmlVisitor& v )
-{
-  _ctRef = 0.0;
-  bmlnElmnt** x = _u;
-  while( x <= _v ) {
-    (*x)->accept( v );
-    _ctRef += (*x)->getReferenceTime();
-    x++;
-  }
-}
-
-
-void CF_sbend::peekAt( double& s, const Particle& prt ) const
+void CF_sbend::peekAt( double& s, Particle const& prt ) 
 {
  (*pcout) << setw(12) << s;
  s += OrbitLength( prt );
  (*pcout) << setw(12) << s           
                   << " : " 
       << setw(10) << (int) this  
-      << setw(15) << ident       
+      << setw(15) << ident_       
       << setw(15) << Type()      
-      << setw(12) << length      
-      << setw(12) << strength    
-      << setw(12) << ((this->getQuadrupole())/length)
-      << setw(12) << (2.0*(this->getSextupole())/length)
-      << setw(12) << (6.0*(this->getOctupole())/length)
-      << setw(12) << shuntCurrent
+      << setw(12) << length_      
+      << setw(12) << strength_    
+      << setw(12) << ((this->getQuadrupole())/length_)
+      << setw(12) << (2.0*(this->getSextupole())/length_)
+      << setw(12) << (6.0*(this->getOctupole())/length_)
+      << setw(12) << shuntCurrent_
       << endl;
 }
 
@@ -417,7 +401,7 @@ int CF_sbend::setQuadrupole( double const& arg_x )
 
 int CF_sbend::setDipoleField( double const& arg_x )
 {
-  this->strength = arg_x;
+  this->strength_ = arg_x;
 
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   sbend** w = new sbend* [ m ];
@@ -438,7 +422,7 @@ int CF_sbend::setDipoleField( double const& arg_x )
   }
   
   for( int i = 0; i <= counter; i++ ) {
-    w[i]->setStrength( this->strength );
+    w[i]->setStrength( this->strength_ );
   }
   
   delete [] w;
@@ -454,7 +438,7 @@ void CF_sbend::setStrength( double const& s )
     (*x)->setStrength( ratio*((*x)->Strength()) );
     x++;
   }
-  this->strength = s;
+  this->strength_ = s;
 }
 
 
@@ -549,7 +533,7 @@ double CF_sbend::getQuadrupole() const
 
 double CF_sbend::getDipoleField() const
 {
-  return this->strength;
+  return this->strength_;
 }
 
 
@@ -559,7 +543,7 @@ double CF_sbend::getBendAngle() const
 }
 
 
-void CF_sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
+void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
   static bool firstTime = true;
   if( firstTime ) {
@@ -590,37 +574,35 @@ void CF_sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
   }
 
 
-  // We assume "strength" means field, not field*length.
-  // "length," "strength," and "_angle" are private data members.
-  *a = new CF_sbend(         pc*length, strength,         pc*_angle, _usEdgeAngle, 0.0 );
-  dynamic_cast<CF_sbend*>(*a)->setEntryAngle( this->getEntryAngle() );
-  dynamic_cast<CF_sbend*>(*a)->setExitAngle( 0.0 );    // Will matter
-  *b = new CF_sbend( (1.0 - pc)*length, strength, (1.0 - pc)*_angle, 0.0, _dsEdgeAngle );
-  dynamic_cast<CF_sbend*>(*b)->setEntryAngle( 0.0 );   // Will matter
-  dynamic_cast<CF_sbend*>(*b)->setExitAngle( this->getExitAngle() );
+  // We assume "strength_" means field, not field*length_.
+  // "length_," "strength_," and "_angle" are private data members.
+
+  CF_sbend* p_a = 0;
+  CF_sbend* p_b = 0;
+
+  a = CFSbendPtr( p_a = new CF_sbend(         pc*length_, strength_,         pc*_angle, _usEdgeAngle, 0.0 ) );
+
+  p_a->setEntryAngle( getEntryAngle() );
+  p_a->setExitAngle( 0.0 );    // Will matter
+
+  b =  CFSbendPtr( p_b = new CF_sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle, 0.0, _dsEdgeAngle ) );
+
+  p_b->setEntryAngle( 0.0 );   // Will matter
+  p_b->setExitAngle( getExitAngle() );
 
 
   // Assign quadrupole strength
-  double quadStrength = this->getQuadrupole();  
-  // quadStrength = B'l
+  double quadStrength = getQuadrupole();  // quadStrength = B'l
 
-  ((CF_sbend*) *a)->setQuadrupole( pc*quadStrength );
-  ((CF_sbend*) *b)->setQuadrupole( (1.0 - pc)*quadStrength );
+  p_a->setQuadrupole( pc*quadStrength );
+  p_b->setQuadrupole( (1.0 - pc)*quadStrength );
 
 
   // Rename
-  char* newname;
-  newname = new char [ strlen(ident) + 6 ];
 
-  strcpy( newname, ident );
-  strcat( newname, "_1" );
-  (*a)->rename( newname );
+  p_a->rename( ident_ + string("_1") );
+  p_b->rename( ident_ + string("_2") );
 
-  strcpy( newname, ident );
-  strcat( newname, "_2" );
-  (*b)->rename( newname );
-
-  delete [] newname;
 }
 
 
@@ -694,5 +676,41 @@ bool CF_sbend::isMagnet() const
 
 double CF_sbend::OrbitLength( const Particle& x )
 {
-  return length;
+  return length_;
 }
+
+
+void CF_sbend::acceptInner( BmlVisitor& v )
+{
+  ctRef_ = 0.0;
+  bmlnElmnt** x = _u;
+  while( x <= _v ) {
+    (*x)->accept( v );
+    ctRef_ += (*x)->getReferenceTime();
+    x++;
+  }
+}
+
+
+void CF_sbend::acceptInner( ConstBmlVisitor& v ) const
+{
+  ctRef_ = 0.0;
+  bmlnElmnt** x = _u;
+  while( x <= _v ) {
+    (*x)->accept( v );
+    ctRef_ += (*x)->getReferenceTime();
+    x++;
+  }
+}
+
+
+void CF_sbend::accept( BmlVisitor& v )
+{
+  v.visit(*this);
+} 
+
+void CF_sbend::accept( ConstBmlVisitor& v ) const
+{
+  v.visit(*this);
+} 
+
