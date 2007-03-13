@@ -33,7 +33,13 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
 **************************************************************************
 *************************************************************************/
 
@@ -44,6 +50,7 @@
 #include <beamline/beamline.h>
 #include <beamline/sextupole.h>
 #include <beamline/drift.h>
+#include <beamline/BmlVisitor.h>
 
 using namespace std;
 
@@ -56,10 +63,10 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sextupole::sextupole () : bmlnElmnt( 1.0, 0.0 ) {
- p_bml = new beamline;
- p_bml->append( new drift( 1.0 / 2.0 ) );
- p_bml->append( p_bml_e =  new thinSextupole( 0.0 ) );
- p_bml->append( new drift( 1.0 / 2.0 ) );
+ p_bml_ = BmlPtr( new beamline );
+ p_bml_->append( DriftPtr( new drift( 1.0 / 2.0 ) ) );
+ p_bml_->append( bml_e_ =  ThinSextupolePtr( new thinSextupole( 0.0 ) ) );
+ p_bml_->append( DriftPtr( new drift( 1.0 / 2.0 ) ) );
 
 }
 
@@ -67,10 +74,10 @@ sextupole::sextupole () : bmlnElmnt( 1.0, 0.0 ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sextupole::sextupole ( double l, double s ) : bmlnElmnt( l, s ) {
- p_bml = new beamline;
- p_bml->append( new drift( length / 2.0 ) );
- p_bml->append( new thinSextupole( strength*length ) ); 
- p_bml->append( new drift( length / 2.0 ) );
+ p_bml_ = BmlPtr( new beamline );
+ p_bml_->append( DriftPtr( new drift( length_ / 2.0 ) ) );
+ p_bml_->append( ThinSextupolePtr( new thinSextupole( strength_*length_ ) )); 
+ p_bml_->append( DriftPtr( new drift( length_ / 2.0 ) ));
 
 }
 
@@ -79,10 +86,10 @@ sextupole::sextupole ( double l, double s ) : bmlnElmnt( l, s ) {
 
 
 sextupole::sextupole ( const char* n, double l, double s ) : bmlnElmnt( n, l, s ) {
- p_bml = new beamline;
- p_bml->append( new drift( length / 2.0 ) );
- p_bml->append( p_bml_e = new thinSextupole( strength*length ) ); 
- p_bml->append( new drift( length / 2.0 ) );
+ p_bml_ = BmlPtr( new beamline );
+ p_bml_->append( DriftPtr( new drift( length_ / 2.0 ) ));
+ p_bml_->append( bml_e_ = ThinSextupolePtr( new thinSextupole( strength_*length_ ) )); 
+ p_bml_->append( DriftPtr( new drift( length_ / 2.0 ) ));
 
 }
 
@@ -106,8 +113,8 @@ sextupole::~sextupole() {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void sextupole::setStrength( double s ) {
-  strength = s - getShunt()*IToField();
-  p_bml_e->setStrength( strength*length );
+  strength_ = s - getShunt()*IToField();
+  bml_e_->setStrength( strength_*length_ );
 }
 
 
@@ -115,7 +122,7 @@ void sextupole::setStrength( double s ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void sextupole::setCurrent( double s ) {
- p_bml_e->setCurrent( s );
+ bml_e_->setCurrent( s );
 }
 
 
@@ -131,7 +138,7 @@ const char* sextupole::Type() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sextupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
+void sextupole::Split( double pc, ElmPtr& a, ElmPtr& b ) const
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
@@ -141,23 +148,15 @@ void sextupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
            uic.str().c_str() ) );
   }
 
-  // We assume "strength" means field, not field*length.
-  *a = new sextupole(         pc  *length, strength );
-  *b = new sextupole( ( 1.0 - pc )*length, strength );
+  // We assume "strength" means field, not field*length_.
+  a = ElmPtr( new sextupole(         pc  *length_, strength_ ) );
+  b = ElmPtr( new sextupole( ( 1.0 - pc )*length_, strength_ ) );
 
   // Rename
-  char* newname;
-  newname = new char [ strlen(ident) + 6 ];
 
-  strcpy( newname, ident );
-  strcat( newname, "_1" );
-  (*a)->rename( newname );
+  a->rename( ident_ + string("_1") );
+  b->rename( ident_ + string("_2") );
 
-  strcpy( newname, ident );
-  strcat( newname, "_2" );
-  (*b)->rename( newname );
-
-  delete [] newname;
 }
 
 
@@ -167,6 +166,22 @@ void sextupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b ) const
 bool sextupole::isMagnet() const
 {
   return true;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void sextupole::accept( BmlVisitor& v ) 
+{ 
+  v.visit( *this ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void sextupole::accept( ConstBmlVisitor& v ) const 
+{ 
+  v.visit( *this ); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -224,6 +239,22 @@ const char* thinSextupole::Type() const {
 bool thinSextupole::isMagnet() const
 {
   return true;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinSextupole::accept( BmlVisitor& v ) 
+{ 
+  v.visit( *this ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinSextupole::accept( ConstBmlVisitor& v ) const 
+{ 
+  v.visit( *this ); 
 }
 
 

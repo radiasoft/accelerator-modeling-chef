@@ -32,8 +32,15 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
-******                                                                
+******                                                                 
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations.
+****** 
 **************************************************************************
 *************************************************************************/
 
@@ -43,6 +50,7 @@
 
 #include <iomanip>
 #include <beamline/septum.h>
+#include <beamline/BmlVisitor.h>
 
 
 using namespace std;
@@ -51,55 +59,78 @@ using namespace std;
 //   class thinSeptum
 // **************************************************
 
-thinSeptum::thinSeptum() : bmlnElmnt() {
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-         "thinSeptum::thinSeptum() : bmlnElmnt() {", 
-         "Default construction not permitted in this version." ) );
-}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSeptum::thinSeptum( char const* n )
-: bmlnElmnt( n ) {
-  strengthPos = 0.0;
-  strengthNeg = 0.0;
-  xWire = 0.0;
-}
+: bmlnElmnt( n ), strengthPos_(0.0), strengthNeg_(0.0), xWire_(0.0)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSeptum::thinSeptum( char const* n, double const& sP, double const& sN, double const& xw)
-: bmlnElmnt( n ) {
-  strengthPos = sP;
-  strengthNeg = sN;
-  xWire = xw;
-}
+  : bmlnElmnt( n ), strengthPos_(sP), strengthNeg_(sN), xWire_(xw)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSeptum::thinSeptum( double const& sP, double const& sN, double const& xw)
-: bmlnElmnt( ) {
-  strengthPos = sP;
-  strengthNeg = sN;
-  xWire = xw;
+  : bmlnElmnt(), strengthPos_(sP), strengthNeg_(sN), xWire_(xw)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinSeptum::thinSeptum( thinSeptum const& x ) 
+  : bmlnElmnt( x ), strengthPos_(x.strengthPos_), strengthNeg_(x.strengthNeg_),
+    xWire_(x.xWire_)
+{}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinSeptum& thinSeptum::operator=( thinSeptum const& rhs) {
+
+  if ( &rhs == this ) return *this;
+
+  bmlnElmnt::operator=(rhs);
+
+  strengthPos_ =  rhs.strengthPos_;
+  strengthNeg_ =  rhs.strengthNeg_;
+  xWire_       =  rhs.xWire_;
+
+  return *this;
 }
 
-thinSeptum::thinSeptum( const thinSeptum& x ) : bmlnElmnt( (bmlnElmnt&) x )
-{
-  strengthPos = x.strengthPos;
-  strengthNeg = x.strengthNeg;
-  xWire = x.xWire;
-}
-
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSeptum::~thinSeptum() {
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void thinSeptum::setStrengths( double const& sPos, double const& sNeg ) {
- strengthPos = sPos;
- strengthNeg = sNeg;
+ strengthPos_ = sPos;
+ strengthNeg_ = sNeg;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void thinSeptum::setWire( double const& x) {
- xWire = x;
+ xWire_ = x;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char* thinSeptum::Type() const 
 { 
@@ -107,14 +138,38 @@ const char* thinSeptum::Type() const
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 istream& thinSeptum::readFrom(istream& is) 
 {
-  is >> strengthPos >> strengthNeg >> xWire;
+  is >> strengthPos_ >> strengthNeg_ >> xWire_;
   return is;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 ostream& thinSeptum::writeTo(ostream& os) 
 {
-  os << OSTREAM_DOUBLE_PREC << strengthPos << " " << strengthNeg << " " << xWire << "\n";
+  os << OSTREAM_DOUBLE_PREC << strengthPos_ << " " << strengthNeg_ << " " << xWire_ << "\n";
   return os;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinSeptum::accept( BmlVisitor& v )
+{ 
+   v.visit(*this); 
+}
+ 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinSeptum::accept( ConstBmlVisitor& v ) const 
+{ 
+   v.visit(*this); 
+}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
