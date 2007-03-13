@@ -33,7 +33,13 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -44,52 +50,67 @@
 
 using namespace std;
 
-mover::mover() : circuit (), align() {
-}
 
-mover::mover(const char* n) : circuit (n), align() {
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-mover::mover(bmlnElmnt* q) : circuit (q), align(q->Alignment()) {
-}
+mover::mover(const char* n) 
+: Circuit (n), align_() {}
 
-mover::mover(const char* n, bmlnElmnt* q) : circuit (n,q), align(q->Alignment()) {
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 mover::~mover() {}
 
-void mover::append( bmlnElmnt* q ) {
-   dlist::append( q );
-   if ( align.xOffset == 0 && align.yOffset == 0 && align.tilt == 0 ) {
-     align = q->Alignment();
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void mover::append( ElmPtr q ) {
+
+   theList_.push_back(q);
+
+   if ( align_.xOffset == 0 && align_.yOffset == 0 && align_.tilt == 0 ) {
+     align_ = q->Alignment();
    }
-   numElm++;
+   
+  
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void mover::switchOn() {
-  onOffSwitch = 1;
-  set(&align);
+
+  onOffSwitch_ = true;
+  set( align_ );
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void mover::switchOff() {
-  onOffSwitch = 0;
-  alignmentData dummy;
-  set(&dummy);
+  onOffSwitch_ = false;
+  set( alignmentData() ); // reset alignment
 }
 
-void mover::set(void* x) {
-  alignmentData* curr = (alignmentData*)x;
-  dlist_iterator getNext ( *this );
-  bmlnElmnt* p;
-  
-  align = *curr;
-  while((  p = (bmlnElmnt*) getNext()  )) {
-    p -> setAlignment( *curr );
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void mover::set( alignmentData const& x) {
+ 
+  for ( std::list<ElmPtr>::iterator it  = theList_.begin(); 
+	it != theList_.end(); ++it ) {
+    (*it) -> setAlignment( x );
   }
 }
 
-void mover::get(void* x) {
-   alignmentData* curr = (alignmentData*)x;
-  *curr = align;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+alignmentData mover::get()  const {
+
+  return align_;
 }
 
