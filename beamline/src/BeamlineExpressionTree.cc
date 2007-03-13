@@ -303,9 +303,9 @@ bmlnElmnt::Discriminator* NameIs::Clone() const
   return new NameIs( _name );
 }
 
-bool NameIs::operator()( const bmlnElmnt* x ) const
+bool NameIs::operator()( bmlnElmnt const* x ) const
 {
-  return ( 0 == strcmp( x->Name(), _name ) );
+  return ( x->Name() == _name );
 }
 
 
