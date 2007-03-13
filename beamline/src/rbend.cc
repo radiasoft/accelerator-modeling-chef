@@ -34,6 +34,12 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
+****** - eliminated unecessary dynamic casts in Split(...);
 **************************************************************************
 *************************************************************************/
 
@@ -50,6 +56,7 @@
 #include <beamline/rbend.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
+#include <beamline/BmlVisitor.h>
 
 using namespace std;
 using FNAL::pcout;
@@ -498,8 +505,8 @@ double rbend::OrbitLength( const Particle& x )
 {
   // Computes arclength of orbit assuming a symmetric bend.
   // WARNING: This is not the true arclength under all conditions.
-  double tworho = 2.0 * ( x.Momentum() / PH_CNV_brho_to_p ) / strength;
-  return tworho * asin( length / tworho );
+  double tworho = 2.0 * ( x.Momentum() / PH_CNV_brho_to_p ) / strength_;
+  return tworho * asin( length_ / tworho );
 }
 
 
@@ -509,8 +516,11 @@ bool rbend::isMagnet() const
 }
 
 
-void rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
+void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
+
+  rbend* p = 0;
+
   static bool firstTime = true;
   if( firstTime ) {
     firstTime = false;
@@ -535,55 +545,52 @@ void rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
   if( typeid(*propfunc_) == typeid(MAD_Prop) ) {
     (*pcerr) << "\n*** WARNING *** "
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )"
+         << "\n*** WARNING *** void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )"
             "\n*** WARNING *** Splitting rbend with MAD-like propagator."
             "\n*** WARNING *** I'm not responsible for what happens."
             "\n*** WARNING *** You'll get wrong results, "
                               "but it's your fault for using this propagator."
             "\n*** WARNING *** "
          << endl;
-    *a = new rbend( pc*length, strength, 
-                    pc*_usAngle, // this is surely the wrong thing to do
-                    propfunc_ );     // but there is no right thing
-    *b = new rbend( (1.0 - pc)*length, strength, 
-                    (1.0 - pc)*_usAngle,
-                    propfunc_ );
+    // NOTE: pc*_usAngle is surely the wrong thing to do but there is no right thing
+    a = ElmPtr( new rbend( pc*length_, strength_, pc*_usAngle, propfunc_ ) );     
+    b = ElmPtr( new rbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_usAngle, propfunc_ ) );
   }
   else if( typeid(*propfunc_) == typeid(NoEdge_Prop) ) {
-    *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, propfunc_ );
-    *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, propfunc_ );
+    a = ElmPtr( new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, propfunc_ ) );
+    b = ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, propfunc_ ) );
   }
   else if( typeid(*propfunc_) == typeid(Exact_Prop) ) {
-    *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, &rbend::InEdge );
-    dynamic_cast<rbend*>(*a)->setEntryAngle( this->getEntryAngle() );
-    dynamic_cast<rbend*>(*a)->setExitAngle( 0.0 );    // Should not matter
-    *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, &rbend::OutEdge );
-    dynamic_cast<rbend*>(*b)->setEntryAngle( 0.0 );   // Should not matter
-    dynamic_cast<rbend*>(*b)->setExitAngle( this->getExitAngle() );
+    a =  ElmPtr( p = new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, &rbend::InEdge ));
+    p->setEntryAngle( this->getEntryAngle() );
+    p->setExitAngle( 0.0 );    // Should not matter
+    b =  ElmPtr( p = new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, &rbend::OutEdge ));
+    p->setEntryAngle( 0.0 );   // Should not matter
+    p->setExitAngle( this->getExitAngle() );
   }
   else if( typeid(*propfunc_) == typeid(InEdge_Prop) ) {
-    *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, propfunc_ );
-    dynamic_cast<rbend*>(*a)->setEntryAngle( this->getEntryAngle() );
-    dynamic_cast<rbend*>(*a)->setExitAngle( 0.0 );    // Should not matter
-    *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, &rbend::NoEdge );
+    a = ElmPtr( p = new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, propfunc_ ) );
+    p->setEntryAngle( getEntryAngle() );
+    p->setExitAngle( 0.0 );    // Should not matter
+    b =  ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, &rbend::NoEdge ) );
   }
   else if( typeid(*propfunc_) == typeid(OutEdge_Prop) ) {
-    *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, &rbend::NoEdge );
-    *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, propfunc_ );
-    dynamic_cast<rbend*>(*b)->setEntryAngle( 0.0 );   // Should not matter
-    dynamic_cast<rbend*>(*b)->setExitAngle( this->getExitAngle() );
+    a =  ElmPtr( new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, &rbend::NoEdge ) );
+    b =  ElmPtr( p = new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, propfunc_ ) );
+    p->setEntryAngle( 0.0 );   // Should not matter
+    p->setExitAngle( this->getExitAngle() );
   }
   else if( typeid(*propfunc_) == typeid(Real_Exact_Prop) ) {
-    *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, &rbend::RealInEdge );
-    *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, &rbend::RealOutEdge );
+    a = ElmPtr( new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, &rbend::RealInEdge )  );
+    b = ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, &rbend::RealOutEdge ) );
   }
   else if( typeid(*propfunc_) == typeid(Real_InEdge_Prop) ) {
-    *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, propfunc_ );
-    *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, &rbend::NoEdge );
+    a = ElmPtr( new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, propfunc_ ) );
+    b = ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, &rbend::NoEdge ) );
   }
   else if( typeid(*propfunc_) == typeid(Real_OutEdge_Prop) ) {
-    *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, &rbend::NoEdge );
-    *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, propfunc_ );
+    a =  ElmPtr( new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, &rbend::NoEdge ) );
+    b =  ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, propfunc_ ) );
   }
   else {
     (*pcerr) << "\n*** WARNING *** "
@@ -594,36 +601,29 @@ void rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
             "\n*** WARNING *** It's all your fault."
             "\n*** WARNING *** "
          << endl;
-    *a = new rbend(         pc*length, strength, _usEdgeAngle, 0.0, &rbend::NoEdge );
-    *b = new rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle, &rbend::NoEdge );
+    a =  ElmPtr( new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, &rbend::NoEdge ) );
+    b =  ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, &rbend::NoEdge ) );
   }
 
   // Rename
-  char* newname = new char [ strlen(ident) + 6 ];
 
-  strcpy( newname, ident );
-  strcat( newname, "_1" );
-  (*a)->rename( newname );
+  a->rename( ident_ + string("_1") );
+  b->rename( ident_ + string("_2") );
 
-  strcpy( newname, ident );
-  strcat( newname, "_2" );
-  (*b)->rename( newname );
-
-  delete [] newname;
 }
 
 
 double rbend::setPoleFaceAngle( const Particle& p )
 {
   double psi =   
-     asin(   ( this->strength * this->Length() )
+     asin(   ( this->strength_ * this->Length() )
            / ( 2.0*p.ReferenceBRho() )
          );
   // i.e., sin( psi ) = (l/2) / rho
   //                  = Bl/(2*Brho)
   //                  = 1/2 symmetric bend angle
-  this->setEntryAngle( psi );
-  this->setExitAngle( -psi );
+  setEntryAngle( psi );
+  setExitAngle( -psi );
   return _usAngle;
 }
 
@@ -631,28 +631,28 @@ double rbend::setPoleFaceAngle( const Particle& p )
 double rbend::setPoleFaceAngle( JetParticle const& p )
 {
   double psi =   
-     asin(   ( this->strength * this->Length() )
+     asin(   ( this->strength_ * this->Length() )
            / ( 2.0*p.ReferenceBRho() )
          );
   // i.e., sin( psi ) = (l/2) / rho
   //                  = Bl/(2*Brho)
   //                  = 1/2 symmetric bend angle
-  this->setEntryAngle( psi );
-  this->setExitAngle( -psi );
+  setEntryAngle( psi );
+  setExitAngle( -psi );
   return _usAngle;
 }
 
 
 double rbend::setEntryAngle( const Particle& p )
 {
-  return this->setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
+  return setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
 
 double rbend::setExitAngle( const Particle& p )
 {
-  return this->setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
+  return setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
@@ -685,28 +685,6 @@ bool rbend::hasStandardFaces() const
 {
   return ( (std::abs(_usEdgeAngle) < 1.0e-9) && (std::abs(_dsEdgeAngle) < 0.5e-9) );
 }
-
-
-
-
-// REMOVE: double rbend::setReferenceTime( const Particle& prtn )
-// REMOVE: {
-// REMOVE:   // Assumes "normal" symmetric crossing.
-// REMOVE:   static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
-// REMOVE:   double Omega  = csq_red * this->Strength() / prtn.ReferenceEnergy();
-// REMOVE:   double Rho  = prtn.ReferenceBRho() / this->Strength();
-// REMOVE:   _CT = PH_MKS_c * ( 2.0*asin( this->Length() / (2.0*Rho) ) ) / Omega;
-// REMOVE:   return _CT;
-// REMOVE: }
-
-
-// REMOVE: double rbend::setReferenceTime( double x )
-// REMOVE: {
-// REMOVE:   double oldValue = _CT;
-// REMOVE:   _CT = x;
-// REMOVE:   if( fabs(_CT) < 1.0e-12 ) { _CT = 0.0; }
-// REMOVE:   return oldValue;
-// REMOVE: }
 
 
 ostream& rbend::writeTo(ostream& os)
@@ -767,6 +745,15 @@ istream& rbend::readFrom(istream& is)
   return is;
 }
 
+void rbend::accept( BmlVisitor& v )            
+{ 
+  v.visit( *this ); 
+}
+
+void rbend::accept( ConstBmlVisitor& v ) const 
+{ 
+  v.visit(*this ); 
+}
 
 // **************************************************
 //   classes rbend::XXXEdge_Prop
