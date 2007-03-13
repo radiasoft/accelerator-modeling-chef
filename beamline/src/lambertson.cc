@@ -31,6 +31,14 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
+******
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -41,6 +49,7 @@
 
 #include <iomanip>
 #include <beamline/lambertson.h>
+#include <beamline/BmlVisitor.h>
 
 using namespace std;
 
@@ -48,57 +57,54 @@ using namespace std;
 //   class thinLamb
 // **************************************************
 
-thinLamb::thinLamb() : bmlnElmnt() {
-  xSeptum = 0.0;
-  ExtBeamline = 0;
-  for (int i =0; i < 6 ; i++ ) RefState[i] = 0.0;
+thinLamb::thinLamb() 
+ : bmlnElmnt(), xSeptum_ (0.0), ExtBeamline_()
+{
+ for (int i =0; i < 6 ; ++i) RefState_[i] = 0.0;
 }
 
 thinLamb::thinLamb( char const* n)
-: bmlnElmnt( n ) {
-  xSeptum = 0.0;
-  ExtBeamline = 0;
-  for (int i =0; i < 6 ; i++ ) RefState[i] = 0.0;
-}
-
-thinLamb::thinLamb( char const* n, double const&x, beamline* b, double* s)
-: bmlnElmnt( n ) {
-  xSeptum = x;
-  ExtBeamline = b;
-  for (int i =0; i < 6 ; i++ ) RefState[i] = s[i];
-}
-
-thinLamb::thinLamb( double const& x, beamline* b, double* s)
-: bmlnElmnt( ) {
-  xSeptum = x;
-  ExtBeamline = b;
-  for (int i =0; i < 6 ; i++ ) RefState[i] = s[i];
-}
-
-thinLamb::thinLamb( thinLamb const& x ) : bmlnElmnt( x )
+  : bmlnElmnt( n ), xSeptum_(0.0), ExtBeamline_()
 {
-  xSeptum = x.xSeptum;
-  ExtBeamline = x.ExtBeamline;
-  for (int i =0; i < 6 ; i++ ) RefState[i] = x.RefState[i];
+
+  for (int i =0; i < 6 ; ++i) RefState_[i] = 0.0;
 }
 
-thinLamb::~thinLamb() {
+thinLamb::thinLamb( char const* n, double const&x, BmlPtr& b, double* s)
+  : bmlnElmnt( n ), xSeptum_ (x), ExtBeamline_(b)
+{
+  for (int i =0; i < 6 ; ++i) RefState_[i] = s[i];
 }
+
+thinLamb::thinLamb( double const& x, BmlPtr& b, double* s)
+  : bmlnElmnt( ), xSeptum_(x), ExtBeamline_(b)
+{
+  for (int i =0; i < 6 ; i++ ) RefState_[i] = s[i];
+}
+
+thinLamb::thinLamb( thinLamb const& x ) 
+  : bmlnElmnt( x ), xSeptum_(x.xSeptum_), ExtBeamline_(x.ExtBeamline_)
+{
+  for (int i =0; i < 6 ; ++i) RefState_[i] = x.RefState_[i];
+}
+
+thinLamb::~thinLamb() 
+{}
 
 void thinLamb::setSeptum( double const& x) {
- xSeptum = x;
+ xSeptum_ = x;
 }
 
-void thinLamb::setBeamline( beamline* b) {
- ExtBeamline = b;
+void thinLamb::setBeamline( BmlPtr& b) {
+ ExtBeamline_ = b;
 }
 
 void thinLamb::setRefState( const double* x) {
-  for (int i =0; i < 6 ; i++ ) RefState[i] = x[i];
+  for (int i =0; i < 6 ; i++ ) RefState_[i] = x[i];
 }
 
 void thinLamb::getRefState( double* x) {
-  for (int i =0; i < 6 ; i++ ) x[i] = RefState[i];
+  for (int i =0; i < 6 ; i++ ) x[i] = RefState_[i];
 }
 
 
@@ -110,9 +116,9 @@ const char* thinLamb::Type() const
 
 ostream& thinLamb::writeTo(ostream& os) 
 {
-  os << OSTREAM_DOUBLE_PREC << xSeptum;
+  os << OSTREAM_DOUBLE_PREC << xSeptum_;
   for ( int i = 0; i < 6; i++) {
-    os  << " " << RefState[i];
+    os  << " " << RefState_[i];
   }
   os << "\n";
   return os;
@@ -120,9 +126,20 @@ ostream& thinLamb::writeTo(ostream& os)
 
 istream& thinLamb::readFrom(istream& is) 
 {
-  is >> xSeptum;
+  is >> xSeptum_;
   for ( int i = 0; i < 6; i++) {
-    is >> RefState[i];
+    is >> RefState_[i];
   }
   return is;
+}
+
+void thinLamb::accept( BmlVisitor& v )            
+{ 
+  v.visit( *this ); 
+}
+
+
+void thinLamb::accept( ConstBmlVisitor& v ) const 
+{  
+   v.visit( *this ); 
 }

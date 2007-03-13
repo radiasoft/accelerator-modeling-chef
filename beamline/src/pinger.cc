@@ -32,7 +32,14 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-**************************************************************************
+******
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -40,6 +47,7 @@
 
 
 #include <beamline/pinger.h>
+#include <beamline/BmlVisitor.h>
 
 using namespace std;
 
@@ -57,28 +65,28 @@ using namespace std;
 /* baseclass Pinger Constructors */
 
 Pinger::Pinger() : bmlnElmnt() {
-  strength = 0;
-  _kick_direction = 0;
-  _counter = -1;
+  strength_ = 0;
+  kick_direction_ = 0;
+  counter_ = -1;
 }
 
 
 Pinger::Pinger( double const& k, double const& r, int c ) : bmlnElmnt() {
-  strength = k;
-  _kick_direction = r;
-  _counter = c;
+  strength_ = k;
+  kick_direction_ = r;
+  counter_ = c;
 }
 
 Pinger::Pinger(char const* n, double const& k, double const& r, int c) : bmlnElmnt(n) {
-  strength = k;
-  _kick_direction = r;
-  _counter = c;
+  strength_ = k;
+  kick_direction_ = r;
+  counter_ = c;
 }
 
 Pinger::Pinger(char const* n) : bmlnElmnt(n) {
-  strength = 0;
-  _kick_direction = 0;
-  _counter = -1;
+  strength_ = 0;
+  kick_direction_ = 0;
+  counter_ = -1;
 }
 
 Pinger::Pinger(const Pinger& p) : bmlnElmnt((bmlnElmnt&) p) {
@@ -93,14 +101,27 @@ const char* Pinger::Type() const
 }
 
 istream& Pinger::readFrom(istream& is) {
-  is >> _kick_direction >> _counter;
+  is >> kick_direction_ >> counter_;
   return is;
 }
 
 ostream& Pinger::writeTo(ostream& os) {
-  os << _kick_direction << "  " << _counter << "\n";
+  os << kick_direction_ << "  " << counter_ << "\n";
   return os;
 }
+
+
+void  Pinger::accept( BmlVisitor& v ) 
+{ 
+    v.visit( *this ); 
+}
+  
+
+void  Pinger::accept( ConstBmlVisitor& v ) const 
+{ 
+  v.visit( *this ); 
+}
+
 
 /* HPinger Constructors */
 
@@ -125,6 +146,15 @@ const char* HPinger::Type() const
   return "HPinger"; 
 }
 
+void HPinger::accept( BmlVisitor& v ) { 
+  v.visit( *this ); 
+}
+
+
+void HPinger::accept( ConstBmlVisitor& v ) const 
+{ 
+  v.visit( *this ); 
+}
 
 /* VPinger Constructors */
 
@@ -146,4 +176,14 @@ VPinger::~VPinger() {
 const char* VPinger::Type() const 
 { 
   return "VPinger"; 
+}
+
+void VPinger::accept( BmlVisitor& v ) { 
+  v.visit( *this ); 
+}
+
+
+void VPinger::accept( ConstBmlVisitor& v ) const 
+{ 
+  v.visit( *this ); 
 }

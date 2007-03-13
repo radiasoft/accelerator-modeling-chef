@@ -32,6 +32,13 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -41,7 +48,6 @@
 #endif
 
 #include <basic_toolkit/iosetup.h>
-#include <basic_toolkit/slist.h>
 #include <beamline/beamline.h>
 #include <beamline/combinedFunction.h>
 #include <beamline/JetParticle.h>
@@ -53,6 +59,7 @@
 #include <beamline/octupole.h>
 #include <beamline/decapole.h>
 #include <beamline/thinpoles.h>
+#include <beamline/BmlVisitor.h>
 
 using namespace std;
 
@@ -66,26 +73,26 @@ using FNAL::pcerr;
 combinedFunction::combinedFunction()
 : bmlnElmnt()
 {
-  p_bml = new beamline;
+  p_bml_ = BmlPtr( new beamline );
 }
 
 combinedFunction::combinedFunction( const char* n ) : bmlnElmnt(n) 
 {
-  p_bml = new beamline;
+  p_bml_ =  BmlPtr( new beamline );
 }
 
 combinedFunction::combinedFunction( const char* n, const beamline& b ) 
 : bmlnElmnt(n) 
 {
-  p_bml = (beamline*) b.Clone();
-  length = b.Length();
+  p_bml_ = BmlPtr( b.Clone() );
+  length_ = b.Length();
 }
 
 combinedFunction::combinedFunction( const beamline& b ) 
-: bmlnElmnt(b.Name())
+: bmlnElmnt(b.Name().c_str())
 {
-  p_bml = (beamline*) b.Clone();
-  length = b.Length();
+  p_bml_ =  BmlPtr( b.Clone() );
+  length_ = b.Length();
 }
 
 combinedFunction::~combinedFunction() {
@@ -94,17 +101,17 @@ combinedFunction::~combinedFunction() {
 combinedFunction::combinedFunction( const combinedFunction& x ) 
 : bmlnElmnt( x )
 {
-  p_bml = (beamline*)x.p_bml->Clone();
+  p_bml_ =  BmlPtr(  x.p_bml_->Clone() );
 }
 
 //combinedFunction& combinedFunction::operator=(const combinedFunction& x) {
 //  bmlnElmnt::operator=(x);	// This operator needs to be fixed.
-//  p_bml = (beamline*)x.p_bml->Clone();
+//  p_bml_ = (beamline*)x.p_bml_->Clone();
 //}
 
 void combinedFunction::append(bmlnElmnt& x) {
-  p_bml->append(x.Clone());
-  length += x.Length();
+  p_bml_->append( ElmPtr( x.Clone() ));
+  length_ += x.Length();
 }
 
 
@@ -112,26 +119,27 @@ void combinedFunction::setField( bmlnElmnt::CRITFUNC crit,
                                  double s )
 {
 
-  slist  foundElements;
+  std::list<ElmPtr>  foundElements;
 
-  for (beamline::deep_iterator it= p_bml->deep_begin();
-                               it !=  p_bml->deep_end(); ++it ) {
-    if( crit( *it ) ) foundElements.append( *it );
+  for (beamline::deep_iterator it= p_bml_->deep_begin();
+                               it !=  p_bml_->deep_end(); ++it ) {
+    if( crit( (*it).get() ) ) foundElements.push_back( *it );
   }
 
   double newstrength = 0.0;
   if( foundElements.size() > 0 ) {
     newstrength = s/( (double) foundElements.size() );
-    slist_iterator getNext( foundElements );
+ 
 
     bmlnElmnt* element;
   
-    while((  element = (bmlnElmnt*) getNext()  )) {
-      if( typeid(*element) == typeid(combinedFunction) ) {
-        ((combinedFunction*) element)->setField( crit, newstrength );
+    for (std::list<ElmPtr>::iterator it = foundElements.begin();  it != foundElements.end(); ++it)  {
+
+      if( typeid( *(*it).get()) == typeid(combinedFunction) ) {
+         static_cast<combinedFunction*>((*it).get() )->setField( crit, newstrength );
       }
       else {
-        element->setStrength( newstrength );
+        (*it)->setStrength( newstrength );
       }
     }
   }
@@ -142,13 +150,13 @@ void combinedFunction::setField( bmlnElmnt::CRITFUNC crit,
 
 void combinedFunction::setField(WHICH_MULTIPOLE mult, double field) {
 
-  bmlnElmnt* element;
+  ElmPtr element;
  
   double newstrength;
-  slist  foundElements;
+  std::list<ElmPtr> foundElements;
 
-  for (beamline::deep_iterator it= p_bml->deep_begin();
-                               it !=  p_bml->deep_end(); ++it ) {
+  for (beamline::deep_iterator it= p_bml_->deep_begin();
+                               it !=  p_bml_->deep_end(); ++it ) {
     element = *it; 
 
     switch (mult) {
@@ -156,44 +164,44 @@ void combinedFunction::setField(WHICH_MULTIPOLE mult, double field) {
     case DIPOLE_FIELD:
       if( (typeid(*element) == typeid(sbend)) ||
           (typeid(*element) == typeid(rbend))    ) {
- 	       foundElements.append( element );
+ 	       foundElements.push_back( element );
       }
       break;
     case QUADRUPOLE_FIELD:
       if(     (typeid(*element) == typeid(quadrupole)  ) 
 	      || (typeid(*element) == typeid(thinQuad) ) ) {
-	foundElements.append( element );
+	foundElements.push_back( element );
       }
       break;
     case SEXTUPOLE_FIELD:
       if(   (typeid(*element) == typeid(sextupole)     )
 	 || (typeid(*element) == typeid(thinSextupole )) ) {
-	foundElements.append( element );
+	foundElements.push_back( element );
       }
       break;
     case OCTUPOLE_FIELD:
       if( typeid(*element) == typeid(thinOctupole) ) 
-	foundElements.append( element );
+	foundElements.push_back( element );
       break;
     case DECAPOLE_FIELD:
       if( typeid(*element) == typeid(thinDecapole) )
-	foundElements.append( element );
+	foundElements.push_back( element );
       break;
     case TWELVEPOLE_FIELD:
       if( typeid(*element) == typeid(thin12pole) )
-	foundElements.append( element );
+	foundElements.push_back( element );
       break;
     case FOURTEENPOLE_FIELD:
       if( typeid(*element) == typeid(thin14pole) )
-	foundElements.append( element );
+	foundElements.push_back( element );
       break;
     case SIXTEENPOLE_FIELD:
       if( typeid(*element) == typeid(thin16pole) )
-	foundElements.append( element );
+	foundElements.push_back( element );
       break;
     case EIGHTEENPOLE_FIELD:
       if( typeid(*element) == typeid(thin18pole) )
-	foundElements.append( element );
+	foundElements.push_back( element );
       break;
     default:
       break;
@@ -203,16 +211,15 @@ void combinedFunction::setField(WHICH_MULTIPOLE mult, double field) {
 
   if( foundElements.size() > 0 ) {
     newstrength = field/( (double) foundElements.size() );
-    slist_iterator getNext( foundElements );
 
-     while((  element = (bmlnElmnt*) getNext()  )) {
-         if(  typeid(*element) == typeid(combinedFunction) ) {
-                ((combinedFunction*) element)->setField( mult, newstrength );
+     for (std::list<ElmPtr>::iterator it = foundElements.begin();  it != foundElements.end(); ++it ) {
+         if(  typeid( *(*it).get() ) == typeid(combinedFunction) ) {
+                static_cast<combinedFunction*>( (*it).get() )->setField( mult, newstrength );
          }
          else {
            element->setStrength( newstrength );
          }
-     }// while
+     }// for
   } // if
 }
 
@@ -224,10 +231,10 @@ double combinedFunction::Field(WHICH_MULTIPOLE mult) {
   bmlnElmnt* element;
   double multStrength = 0.0;
 
-  for (beamline::deep_iterator it= p_bml->deep_begin();
-                               it !=  p_bml->deep_end(); ++it ) 
+  for (beamline::deep_iterator it= p_bml_->deep_begin();
+                               it !=  p_bml_->deep_end(); ++it ) 
   {
-    element = *it;
+    element = (*it).get();
 
     switch (mult) {
 
@@ -294,10 +301,10 @@ void combinedFunction::setSkew(WHICH_MULTIPOLE mult, alignmentData& alignD) {
 
   bmlnElmnt* element;
 
-  for (beamline::deep_iterator it= p_bml->deep_begin();
-                               it !=  p_bml->deep_end(); ++it ) 
+  for (beamline::deep_iterator it= p_bml_->deep_begin();
+                               it !=  p_bml_->deep_end(); ++it ) 
   {
-    element = *it; 
+    element = (*it).get(); 
 
     switch (mult) {
     case DIPOLE_FIELD:
@@ -361,8 +368,8 @@ alignmentData combinedFunction::Skew(WHICH_MULTIPOLE mult) {
   alignmentData alignD;
   bool foundIt = false;
 
-  for (beamline::deep_iterator it  = p_bml->deep_begin();
-                               it !=  p_bml->deep_end(); ++it ) {
+  for (beamline::deep_iterator it  = p_bml_->deep_begin();
+                               it !=  p_bml_->deep_end(); ++it ) {
  
     if ( foundIt ) break;
 
@@ -435,8 +442,8 @@ alignmentData combinedFunction::Skew(WHICH_MULTIPOLE mult) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ostream& combinedFunction::writeTo(ostream& os) {
-  os << *p_bml;
-  os << "combinedFunction_END " << ident << " 0 0 0 0 0\n";
+  os << *p_bml_;
+  os << "combinedFunction_END " << ident_ << " 0 0 0 0 0\n";
   return os;
 }
 
@@ -445,10 +452,14 @@ ostream& combinedFunction::writeTo(ostream& os) {
 
 istream& combinedFunction::readFrom(istream& is)
 {
-  p_bml = new beamline();
-  is >> *p_bml;
-  length = p_bml->Length();
-  bmlnElmnt *e = read_istream(is);
+  p_bml_ = BmlPtr( new beamline() );
+
+  is >> *p_bml_;
+
+  length_ = p_bml_->Length();
+
+  bmlnElmnt* e = read_istream(is);  /// !!!! FIX ME !!!! 
+
   if ( e ) {
     (*pcerr) << " **** WARNING **** Expecting an end of combinedFunction but got another bmlnElmnt\n";
     (*pcerr) << " **** WARNING **** Will attempt to proceed, but all bets are off!\n";
@@ -539,10 +550,10 @@ double combinedFunction::AdjustPosition( const JetParticle& arg_jp )
   // Set the alignment of the internal beamline.
   // this->align->getAlignment().xOffset -= z;
   alignmentData v;	// Assumes zero alignment constructed this way.
-  if ( align != 0 )
-    v = align->getAlignment();
+  if ( align_ != 0 )
+    v = align_->getAlignment();
   v.xOffset -= z;
-  // ??? Does not work: p_bml->setAlignment( v );
+  // ??? Does not work: p_bml_->setAlignment( v );
   // ??? The reason is that the alignment stategy is
   // ??? not correct for elements whose faces are not
   // ??? parallel.
@@ -557,3 +568,21 @@ double combinedFunction::AdjustPosition( const JetParticle& arg_jp )
 
   return z;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void combinedFunction::accept( BmlVisitor& v )            
+{ 
+  v.visit( *this ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void combinedFunction::accept( ConstBmlVisitor& v ) const 
+{ 
+ v.visit( *this ); 
+}
+

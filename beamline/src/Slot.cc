@@ -33,6 +33,13 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -49,6 +56,7 @@
 #include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/Alignment.h>
+#include <beamline/BmlVisitor.h>
 
 using namespace std;
 
@@ -62,18 +70,14 @@ using FNAL::pcout;
 Slot::Slot()
   : bmlnElmnt()
 {
-  p_bml   = 0;
-  p_bml_e = 0;
-  align = new alignment;  // ??? why???
+  align_ = new alignment;  // ??? why???
 }
 
 
 Slot::Slot( const char* nm )
 : bmlnElmnt(nm)
 {
-  p_bml   = 0;
-  p_bml_e = 0;
-  align = new alignment;
+  align_ = new alignment;
 }
 
 
@@ -87,12 +91,10 @@ Slot::Slot( const Frame& y )
            "Current implementation requires that frames be orthonormal." ) );
   }
 
-  p_bml   = 0;
-  p_bml_e = 0;
-  align   = 0;
+  align_   = 0;
 
-  length = out.getOrigin() .Norm();
-  _ctRef = length;
+  length_ = out.getOrigin() .Norm();
+  ctRef_  = length_;
 }
 
 
@@ -106,12 +108,10 @@ Slot::Slot( const char* nm, const Frame& y )
            "Current implementation requires that frames be orthonormal." ) );
   }
 
-  p_bml   = 0;
-  p_bml_e = 0;
-  align   = 0;
+  align_   = 0;
 
-  length = out.getOrigin() .Norm();
-  _ctRef = length;
+  length_ = out.getOrigin() .Norm();
+  ctRef_  = length_;
 }
 
 
@@ -121,13 +121,12 @@ Slot::Slot( const Frame&     x,
           )
 : bmlnElmnt(), in(x), out(y)
 {
-  if( ( 0 == this->checkFrame(in)  ) && 
-      ( 0 == this->checkFrame(out) ) ) 
+  if( ( 0 == checkFrame(in)  ) && 
+      ( 0 == checkFrame(out) ) ) 
   {
-    p_bml_e = 0;
-    p_bml   = (beamline*) bl.Clone();
+    p_bml_   = BmlPtr( bl.Clone() );
   }
-  align = new alignment;
+  align_ = new alignment;
 }
 
 
@@ -141,10 +140,9 @@ Slot::Slot( const char*      nm,
   if( ( 0 == this->checkFrame(in)  ) && 
       ( 0 == this->checkFrame(out) ) ) 
   {
-    p_bml_e = 0;
-    p_bml   = (beamline*) bl.Clone();
+    p_bml_   = BmlPtr( bl.Clone() );
   }
-  align = new alignment;
+  align_ = new alignment;
 }
 
 
@@ -158,10 +156,9 @@ Slot::Slot( const Frame&     x,
       ( 0 == this->checkFrame(out) ) &&
       ( 0 != strcasecmp( be.Type(), "Slot" ) ) ) 
   {
-    p_bml_e = be.Clone();
-    p_bml   = 0;
+    bml_e_ = ElmPtr( be.Clone() );
   }
-  align = new alignment;
+  align_ = new alignment;
 }
 
 
@@ -176,50 +173,38 @@ Slot::Slot( const char*     nm,
       ( 0 == this->checkFrame(out) ) &&
       ( 0 != strcasecmp( be.Type(), "Slot" ) ) ) 
   {
-    p_bml_e = be.Clone();
-    p_bml   = 0;
+     bml_e_ = ElmPtr( be.Clone() );
   }
-  align = new alignment;
+  align_ = new alignment;
 }
 
 
-Slot::Slot( const Slot& x )
-: bmlnElmnt( (const bmlnElmnt&) x ), in( x.in ), out( x.out )
+Slot::Slot( Slot const& x )
+: bmlnElmnt( x), in( x.in ), out( x.out )
 {
-  p_bml   = 0;
-  p_bml_e = 0;
-  if ( x.align != 0 )
-    align = new alignment( *(x.align) );
+  if ( x.align_ != 0 )
+    align_ = new alignment( *(x.align_) );
   else 
-    align = NULL;
+    align_ = NULL;
 
-  if     ( 0 != x.p_bml   ) p_bml   = (beamline*) x.p_bml->Clone();
-  else if( 0 != x.p_bml_e ) p_bml_e = x.p_bml_e ->Clone();
+  if     ( x.p_bml_   ) p_bml_   = BmlPtr( x.p_bml_->Clone()   );
+  else if( x.bml_e_   ) bml_e_   = ElmPtr( x.bml_e_->Clone() );
 }
 
 
 Slot::~Slot()
 {
-  if( p_bml ) {
-    p_bml->zap();
-    delete p_bml;
-    p_bml = 0;
-  }
-  if( p_bml_e ) {
-    delete p_bml_e;
-    p_bml_e = 0;
-  }
 
-  if( align) {
-    delete align;
-    align = 0;
+  if( align_) {
+    delete align_;
+    align_ = 0;
   }
 }
 
 
 void Slot::makeUpstreamHorizontal   ( double const& lng, double const& ang )
 {
-  length = lng;
+  length_ = lng;
   in.reset();
   out.reset();
 
@@ -233,7 +218,7 @@ void Slot::makeUpstreamHorizontal   ( double const& lng, double const& ang )
 
 void Slot::makeDownstreamHorizontal ( double const& lng, double const& ang )
 {
-  length = lng;
+  length_ = lng;
   in.reset();
   out.reset();
 
@@ -247,7 +232,7 @@ void Slot::makeDownstreamHorizontal ( double const& lng, double const& ang )
 
 void Slot::makeUpstreamVertical   ( double const& lng, double const& ang )
 {
-  length = lng;
+  length_ = lng;
   in.reset();
   out.reset();
 
@@ -261,7 +246,7 @@ void Slot::makeUpstreamVertical   ( double const& lng, double const& ang )
 
 void Slot::makeDownstreamVertical ( double const& lng, double const& ang )
 {
-  length = lng;
+  length_ = lng;
   in.reset();
   out.reset();
 
@@ -341,9 +326,9 @@ const char*  Slot::Type()  const
 
 double Slot::setReferenceTime( double const& x )
 {
-  double oldValue = _ctRef;
-  _ctRef = x;
-  if( fabs(_ctRef) < 1.0e-12 ) { _ctRef = 0.0; }
+  double oldValue = ctRef_;
+  ctRef_ = x;
+  if( fabs(ctRef_) < 1.0e-12 ) { ctRef_ = 0.0; }
   return oldValue;
 }
 
@@ -358,7 +343,7 @@ double Slot::setReferenceTime( const Particle& prtn )
   Particle* localParticle = prtn.Clone();
 
   // This part correlates with bmlnElmnt.h
-  if( this->align != 0 ) {
+  if( this->align_ != 0 ) {
     this->enterLocalFrame( *localParticle );
   }
 
@@ -378,7 +363,7 @@ double Slot::setReferenceTime( const Particle& prtn )
 
 
   if( betaParallel > 0.0 ) {
-    _ctRef = ( q - r )*u_3 / betaParallel;
+    ctRef_ = ( q - r )*u_3 / betaParallel;
   }
   else {
     (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
@@ -392,11 +377,11 @@ double Slot::setReferenceTime( const Particle& prtn )
     (*pcerr) << "\n*** WARNING *** " << "betaParallel: " << betaParallel;
     (*pcerr) << endl;
 
-    _ctRef = 0.0;
+    ctRef_ = 0.0;
   }
 
   delete localParticle;
-  return _ctRef;
+  return ctRef_;
 }
 
 
@@ -408,14 +393,14 @@ ostream& Slot::writeTo ( ostream& os )
 {
   // Write out private attributes, which are the "in" and "out" Frame's.
   os << in ;
-  if ( p_bml != NULL ) {
+  if ( p_bml_ != NULL ) {
     // print out the beamline contained in this slot
     os << "slot_BEGIN " << Name() << " 0 0 0 0 0\n";
-    os << (*p_bml);
+    os << (*p_bml_);
     os << "slot_END " << Name() << " 0 0 0 0 0\n";
-  } else if ( p_bml_e != NULL ) {
+  } else if ( bml_e_ != NULL ) {
     os << "slot_BEGIN " << Name() << " 0 0 0 0 0\n";
-    os << (*p_bml_e);
+    os << (*bml_e_);
     os << "slot_END " << Name() << " 0 0 0 0 0\n";
   } else {
     os << "no_slot_contents " << Name() << " 0 0 0 0 0\n";
@@ -437,16 +422,18 @@ istream& Slot::readFrom( istream& is )
   double Length, Strength, x, y, t;
 
   // Now read in the bmlnElmnt, if there is one
-  p_bml   = 0;
-  p_bml_e = 0;
 
   is >> type >> name >> Length >> Strength >> x >> y >> t;
   if ( strcasecmp(type, "slot_BEGIN") == 0 ) {
-    p_bml_e = read_istream(is);	// Recursively read the bmlnElmnt.
-    if ( p_bml_e != 0 && strcasecmp(p_bml_e->Type(), "beamline") == 0 ) 
-      p_bml = (beamline*) p_bml_e;
+    bml_e_ = ElmPtr( read_istream(is) );  // Recursively read the bmlnElmnt.
+
+    if ( bml_e_  && strcasecmp(bml_e_->Type(), "beamline") == 0 ) 
+
+      p_bml_ = BmlPtr( (beamline*) bml_e_.get() );
+
     // The only element in this Slot is a single bmlnElmnt.  There is a 
     // "slot_END" line to read in.
+
     is >> type >> name >> Length >> Strength >> x >> y >> t;
     if ( strcasecmp(type, "slot_END") != 0 ) {
       ostringstream uic;
@@ -456,9 +443,9 @@ istream& Slot::readFrom( istream& is )
              uic.str().c_str() ) );
     }
   } else {
-    if( align != 0 ) {
-      delete align;
-      align = 0;
+    if( align_ != 0 ) {
+      delete align_;
+      align_ = 0;
     }
     // Skip the next line--it is not "slot_BEGIN" (assume it is "slot_empty")
     ;
@@ -466,7 +453,7 @@ istream& Slot::readFrom( istream& is )
     
   // Finally, read in the "out" frame information.
   is >> out;
-  length = ( out.getOrigin() - in.getOrigin()) .Norm();
+  length_ = ( out.getOrigin() - in.getOrigin()) .Norm();
 
   return is;
 }
@@ -508,18 +495,10 @@ void Slot::Split( double const& pct, bmlnElmnt** a, bmlnElmnt** b ) const
   *b = new Slot( bOutFrame );
 
   // Rename
-  char* newname;
-  newname = new char [ strlen(ident) + 6 ];
 
-  strcpy( newname, ident );
-  strcat( newname, "_1" );
-  (*a)->rename( newname );
+  (*a)->rename( ident_ + string("_1") );
+  (*b)->rename( ident_ + string("_2") );
 
-  strcpy( newname, ident );
-  strcat( newname, "_2" );
-  (*b)->rename( newname );
-
-  delete [] newname;
 }
 
 
@@ -737,8 +716,8 @@ void Slot::localPropagate( Particle& p )
 
   Vector& state = p.getState();
 
-  if      ( 0 != p_bml_e ) p_bml_e ->propagate( p );
-  else if ( 0 != p_bml   ) p_bml   ->propagate( p );
+  if      ( bml_e_   ) bml_e_->propagate( p );
+  else if ( p_bml_   ) p_bml_->propagate( p );
 
   else {
     // Propagate as drift to the out-plane
@@ -754,7 +733,7 @@ void Slot::localPropagate( Particle& p )
     Vector u_2  ( out.getAxis(1) );
     Vector u_3  ( out.getAxis(2) );
 
-    // REMOVE: double tauZero = length / p.ReferenceBeta();
+    // REMOVE: double tauZero = length_ / p.ReferenceBeta();
 
     double tau;
     double betaParallel = beta * u_3;
@@ -777,7 +756,7 @@ void Slot::localPropagate( Particle& p )
     state[ p.xIndex()   ]  = r*u_1;
     state[ p.yIndex()   ]  = r*u_2;
     // REMOVE: p.state[ p.cdtIndex() ] += ( tau - tauZero );
-    state[ p.cdtIndex() ] += ( tau - _ctRef );
+    state[ p.cdtIndex() ] += ( tau - ctRef_ );
 
     // Momentum transformation
     Vector momntm(3);
@@ -793,8 +772,8 @@ void Slot::localPropagate( JetParticle& p )
  
   Mapping& state = p.getState();
 
-  if     ( 0 != p_bml   ) p_bml   ->propagate( p );
-  else if( 0 != p_bml_e ) p_bml_e ->propagate( p );
+  if     (  p_bml_   ) p_bml_->propagate( p );
+  else if(  bml_e_   ) bml_e_->propagate( p );
 
   else {
     // Propagate as drift to the out-plane
@@ -810,7 +789,7 @@ void Slot::localPropagate( JetParticle& p )
     Vector u_2  ( out.getAxis(1) );
     Vector u_3  ( out.getAxis(2) );
 
-    // REMOVE: double tauZero = length / p.ReferenceBeta();
+    // REMOVE: double tauZero = length_ / p.ReferenceBeta();
     Jet    tau;
 
     Jet    betaParallel = beta * u_3;
@@ -834,7 +813,7 @@ void Slot::localPropagate( JetParticle& p )
     state( p.xIndex()   )   = r*u_1;
     state( p.yIndex()   )   = r*u_2;
     // REMOVE: p.state( p.cdtIndex() ) += ( tau - tauZero );
-    state( p.cdtIndex() )  += ( tau - _ctRef );
+    state( p.cdtIndex() )  += ( tau - ctRef_ );
 
     // Momentum transformation
     JetVector mom( p.NormalizedVectorMomentum() );
@@ -846,12 +825,11 @@ void Slot::localPropagate( JetParticle& p )
 
 void Slot::localPropagate( ParticleBunch& x )
 {
-  if     ( 0 != p_bml   ) { p_bml   ->propagate( x ); }
-  else if( 0 != p_bml_e ) { p_bml_e ->propagate( x ); }
+  if     ( p_bml_   ) { p_bml_->propagate( x ); }
+  else if( bml_e_ )   { bml_e_->propagate( x ); }
   else {
-    Particle* p;
-    ParticleBunch::Iterator get( x );
-    while((  p = (Particle*) get.next()  )) { this->localPropagate( *p ); }
+    for ( ParticleBunch::iterator it = x.begin();  it != x.end(); ++it )  
+    { localPropagate( **it ); }
   }
 }
 
@@ -863,24 +841,24 @@ void Slot::localPropagate( ParticleBunch& x )
 
 void Slot::setStrength   ( double const& x )
 {
-  if     ( 0 != p_bml   ) p_bml   ->setStrength( x );
-  else if( 0 != p_bml_e ) p_bml_e ->setStrength( x );
+  if     ( p_bml_   ) p_bml_->setStrength( x );
+  else if( bml_e_   ) bml_e_->setStrength( x );
 }
 
 void Slot::setCurrent    ( double const& x )
 {
-  if     ( 0 != p_bml   ) p_bml   ->setStrength( x );
-  else if( 0 != p_bml_e ) p_bml_e ->setStrength( x );
+  if     ( p_bml_   ) p_bml_->setStrength( x );
+  else if( bml_e_   ) bml_e_->setStrength( x );
 }
 
 bool Slot::setAlignment  ( const alignmentData& x )
 {
   bool ret = true;
-  if     ( 0 != p_bml   ) {
-    ret = p_bml->setAlignment( x );
+  if     ( p_bml_   ) {
+    ret = p_bml_->setAlignment( x );
   }
-  else if( 0 != p_bml_e ) {
-    ret = p_bml_e->setAlignment( x );
+  else if( bml_e_ ) {
+    ret = bml_e_->setAlignment( x );
   }
   if( !ret ) {
     (*pcerr) << "\n*** ERROR *** "
@@ -897,8 +875,8 @@ bool Slot::setAlignment  ( const alignmentData& x )
 
 double Slot::Current() const
 {
-  if     ( 0 != p_bml   ) return p_bml   ->Current();
-  else if( 0 != p_bml_e ) return p_bml_e ->Current();
+  if     ( p_bml_   ) return p_bml_->Current();
+  else if( bml_e_   ) return bml_e_->Current();
   else                    return 0.0;
 }
 
@@ -907,8 +885,8 @@ double Slot::OrbitLength( const Particle& x )
 {
   static bool firstTime = true;
 
-  if     ( 0 != p_bml   ) return p_bml   ->OrbitLength( x );
-  else if( 0 != p_bml_e ) return p_bml_e ->OrbitLength( x );
+  if     ( p_bml_   ) return p_bml_->OrbitLength( x );
+  else if( bml_e_   ) return bml_e_->OrbitLength( x );
   else {
     if( firstTime ) {
       firstTime = false;
@@ -920,14 +898,27 @@ double Slot::OrbitLength( const Particle& x )
               "*** WARNING ***                                 \n"
            << endl;
     }    
-    return length;
+    return length_;
   }
 }
  
 
-const char* Slot::Name() const
+std::string Slot::Name() const
 {
-  if     ( 0 != p_bml   ) return p_bml   ->Name();
-  else if( 0 != p_bml_e ) return p_bml_e ->Name();
+  if     ( p_bml_   )     return p_bml_->Name();
+  else if( bml_e_ )       return bml_e_->Name();
   else                    return bmlnElmnt::Name();
+}
+
+
+
+void Slot::accept( BmlVisitor& v ) 
+{
+ v.visit(*this);
+}
+
+void Slot::accept( ConstBmlVisitor& v ) const
+{
+
+  v.visit(*this);
 }
