@@ -33,11 +33,11 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
-****** REVISION HISTORY
-******
-****** Mar 2007:          ostiguy@fnal.gov
+******    REVISION HISTORY
+****** Mar 2007            ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
+******                                                                
 **************************************************************************
 *************************************************************************/
 
@@ -98,7 +98,7 @@ class DLLEXPORT Slot : public bmlnElmnt
    Slot* Clone() const
      { return new Slot( *this ); }
 
-   void Split( double const& s, bmlnElmnt**, bmlnElmnt** ) const;
+   void Split( double const& s, ElmPtr&, ElmPtr& ) const;
 
    const char*  Type()  const;
 
