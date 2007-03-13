@@ -34,6 +34,12 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced srd file coupling due to visit() member. 
+******   visit() takes advantage of (reference) dynamic type
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -42,6 +48,7 @@
 
 
 #include <beamline/srot.h>
+#include <beamline/BmlVisitor.h>
 
 using namespace std;
 
@@ -76,3 +83,13 @@ const char* srot::Type() const
 }
 
 
+void srot::accept( BmlVisitor& v ) 
+{
+  v.visit(*this);
+}
+
+
+void srot::accept( ConstBmlVisitor& v ) const
+{
+  v.visit(*this);
+}
