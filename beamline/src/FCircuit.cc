@@ -32,6 +32,15 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
+******
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - eliminated dependency on dlist
+****** - use new-style Barnacles.
 ******                                                                
 ******                                                                
 **************************************************************************
@@ -49,107 +58,121 @@ using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
 
-FCircuit::FCircuit() : circuit () {
-  field = 0.0;
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-FCircuit::FCircuit(const char* n) : circuit (n) {
-  field = 0.0;
-}
+FCircuit::FCircuit(const char* n)
+: Circuit (n), field_(0.0) {}
 
-FCircuit::FCircuit(bmlnElmnt* q) : circuit (q) {
-  field = q->Strength();
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-FCircuit::FCircuit(const char* n, bmlnElmnt* q) : circuit (n,q) {
-  field = q->Strength();
-}
-FCircuit::~FCircuit() {
-}
+
+FCircuit::~FCircuit() {}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void FCircuit::switchOn() {
-  onOffSwitch = 1;
-  dlist_iterator getNext ( *this );
-  bmlnElmnt* p;
-  
-  while((  p = (bmlnElmnt*) getNext()  )) {
-    p -> setStrength( field );
+
+  onOffSwitch_ = true;
+
+  for ( std::list<ElmPtr>::iterator it  = theList_.begin(); 
+                                    it != theList_.end(); ++it ) {
+
+    (*it) -> setStrength( field_ );
   }
 
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void FCircuit::switchOff() {
-  onOffSwitch = 0;
-  double dummy = 0.0;
-  dlist_iterator getNext ( *this );
-  bmlnElmnt* p;
-  
-  while((  p = (bmlnElmnt*) getNext()  )) {
-    p -> setStrength( dummy );
+
+  onOffSwitch_ = false;
+
+  for ( std::list<ElmPtr>::iterator it  = theList_.begin(); 
+                                    it != theList_.end(); ++it ) {
+    (*it)->setStrength(0.0);
   }
 }
 
-void FCircuit::set(void* x) {
-  double* curr = (double*)x;
-  dlist_iterator getNext ( *this );
-  bmlnElmnt* p;
-  
-  field = *curr;
-  while((  p = (bmlnElmnt*) getNext()  )) {
-    p -> setStrength( *curr );
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void FCircuit::set(double const& field) {
+
+  field_ = field;
+
+  for ( std::list<ElmPtr>::iterator it  = theList_.begin(); 
+                                    it != theList_.end(); ++it ) {
+    (*it)->setStrength( field_ );
   }
 }
 
-void FCircuit::get(void* x) {
-  double* curr = (double*)x;
-  *curr = field;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double FCircuit::get() const {
+  return field_;
 }
 
-void FCircuit::getCurrent(void* x) {
-  double* curr = (double*)x;
-  double  ItoFieldvalue;
-  dlist_iterator getNext ( *this );
-  bmlnElmnt* p;
-  
-  // Take as a representative element, the first one and use it's ItoField.
-  p = (bmlnElmnt*) getNext();
-  ItoFieldvalue = p->IToField();
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double FCircuit::getCurrent() const {
+
+    // Take as a representative element, the first one and use it's ItoField.
+
+  double ItoFieldvalue = theList_.front()->IToField();
+
+  double current = 0.0;
 
   if(ItoFieldvalue != 0.0) {
-    *curr = field/ItoFieldvalue;
-    return;
-  } else {
+    current = field_/ItoFieldvalue;
+   } else {
     (*pcerr) << "FCircuit::getCurrent(): ItoField conversion is zero for " 
-         << getName() << endl;
-    *curr = 0.0;
-    return;
+         << name() << endl;
   }
+
+  return current;
 }
 
-void FCircuit::setCurrent(void* x) {
-  double ItoFieldvalue;
-  dlist_iterator getNext ( *this );
-  bmlnElmnt* p;
-  
-  while(p = (bmlnElmnt*) getNext()) {
-    double current = *((double *)x);
-    ItoFieldvalue = p->IToField();
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void FCircuit::setCurrent(double const& current) {
+
+  double ItoFieldvalue = 0.0;
+  double lcurrent      = current;
+
+  for ( std::list<ElmPtr>::iterator it  = theList_.begin(); 
+                                    it != theList_.end(); ++it ) {
+
+    ItoFieldvalue = (*it)->IToField();
+
     if(ItoFieldvalue != 0.0) {
-      field = current * ItoFieldvalue;
+      field_ = lcurrent * ItoFieldvalue;
     } else {
       (*pcerr) << "FCircuit::setCurrent(): ItoField conversion is zero for " 
-	   << p->Name() << endl;
-      current = field;
+	   << (*it)->Name() << endl;
+      lcurrent = field_;
       return;
     }
-    p->setCurrent(current);
-    (*pcout) << p->Name() << " Strength= " << p->Strength() << " Current= "
-         << current  << " I2F= " << p->IToField() << endl;
+    (*it)->setCurrent(lcurrent);
+    (*pcout) << (*it)->Name() << " Strength= " << (*it)->Strength() << " Current= "
+         << lcurrent  << " I2F= " << (*it)->IToField() << endl;
   };
 }
 
-void FCircuit::append( bmlnElmnt* q ) {
-   dlist::append( q );
-   field = q->Strength();
-   numElm++;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void FCircuit::append( ElmPtr q ) {
+   
+   theList_.push_back( q );
+   field_ = q->Strength();
 }
 
