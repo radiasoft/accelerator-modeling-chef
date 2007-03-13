@@ -34,6 +34,12 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced srd file coupling due to visit() member. 
+******   visit() now uses reference argument
 **************************************************************************
 *************************************************************************/
 
@@ -42,6 +48,7 @@
 #endif
 
 #include <beamline/thinpoles.h>
+#include <beamline/BmlVisitor.h>
 
 using namespace std;
 
@@ -55,20 +62,20 @@ thin2pole::thin2pole()
 }
 
 
-thin2pole::thin2pole( double const& s /* strength = BL */ )
-: bmlnElmnt( 0.0, s )
+thin2pole::thin2pole( double const& strength /* strength = BL */ )
+: bmlnElmnt( 0.0, strength )
 {
 }
 
 
-thin2pole::thin2pole( const char*  n /* name */, double const& s /* strength */ )
-: bmlnElmnt( n, 0.0, s )
+thin2pole::thin2pole( const char* name, double const& strength )
+: bmlnElmnt( name, 0.0, strength )
 {
 }
 
 
 
-thin2pole::thin2pole( const thin2pole& x )
+thin2pole::thin2pole( thin2pole const& x )
 : bmlnElmnt( x ){}
 
 
@@ -87,6 +94,15 @@ bool thin2pole::isMagnet() const
   return true;
 }
 
+void thin2pole::accept( BmlVisitor& v ) 
+{
+  v.visit(*this);
+}
+
+void thin2pole::accept( ConstBmlVisitor& v ) const
+{
+  v.visit(*this);
+}
 
 // **************************************************
 //   class thin12pole 
@@ -118,6 +134,16 @@ const char* thin12pole::Type() const
 bool thin12pole::isMagnet() const
 {
   return true;
+}
+
+void thin12pole::accept( BmlVisitor& v ) 
+{
+  v.visit(*this);
+}
+
+void thin12pole::accept( ConstBmlVisitor& v ) const
+{
+  v.visit(*this);
 }
 
 // **************************************************
@@ -154,6 +180,16 @@ bool thin14pole::isMagnet() const
 }
 
 
+void thin14pole::accept( BmlVisitor& v ) 
+{
+  v.visit(*this);
+}
+
+void thin14pole::accept( ConstBmlVisitor& v ) const
+{
+  v.visit(*this);
+}
+
 // **************************************************
 //   class thin16pole 
 // **************************************************
@@ -185,6 +221,16 @@ bool thin16pole::isMagnet() const
   return true;
 }
 
+
+void thin16pole::accept( BmlVisitor& v ) 
+{
+  v.visit(*this);
+}
+
+void thin16pole::accept( ConstBmlVisitor& v ) const
+{
+  v.visit(*this);
+}
 
 // **************************************************
 //   class thin18pole 
@@ -219,6 +265,16 @@ bool thin18pole::isMagnet() const
   return true;
 }
 
+
+void thin18pole::accept( BmlVisitor& v ) 
+{
+  v.visit(*this);
+}
+
+void thin18pole::accept( ConstBmlVisitor& v ) const
+{
+  v.visit(*this);
+}
 
 // **************************************************
 //   class thinMultipole 
@@ -289,3 +345,12 @@ bool thinMultipole::isMagnet() const
 }
 
 
+void thinMultipole::accept( BmlVisitor& v ) 
+{
+  v.visit(*this);
+}
+
+void thinMultipole::accept( ConstBmlVisitor& v ) const
+{
+  v.visit(*this);
+}
