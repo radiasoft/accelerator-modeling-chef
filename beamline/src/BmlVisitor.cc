@@ -33,7 +33,15 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+******  REVISION HISTORY:
+******  
+******  Jan-Mar 2007       ostiguy@fnal.gov
+******
+******  - converted to new-style STL compatible beamline iterators    
+******  - take advantage of dynamic typing
+******  - use reference-based argument rather than ptr 
+******  - use safe casting to dispatch to visit( bmlnElmnt& )default behavior   
+******                                                            
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -57,211 +65,243 @@
 */
 
 #include <beamline/beamline_elements.h>  
+#include <beamline/beamline.h>  
 #include <beamline/bmlnElmnt.h>  
 #include <beamline/BmlVisitor.h>
-#include <beamline/BeamlineIterator.h>
+
 
 using namespace std;
 
 
-void BmlVisitor::visitBeamline( beamline* x )
+void BmlVisitor::visit( beamline& x )  // THIS IS BROKEN !
 {
 
-  BeamlineIterator iter ( *x );
-  bmlnElmnt* p;
-  while ( (p=iter++) ) {
-    p->accept( *this );
+  for (beamline::iterator it = x.begin();   it != x.end(); ++it ) {
+    (*it)->accept( *this );
   }
+
 }
 
 
+void BmlVisitor::visit( hkick& x )
+               {visit( static_cast<bmlnElmnt&>(x) ); }
 
-void BmlVisitor::visitHkick( hkick* x )
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitOctupole( octupole* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitThinrfcavity( thinrfcavity* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitRfcavity( rfcavity* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitSrot( srot* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitVkick( vkick* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitMonitor( monitor* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitMarker( marker* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitDrift( drift* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitRbend( rbend* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitSbend( sbend* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitSector( sector* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitQuadrupole( quadrupole* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitThin2pole( thin2pole* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitThinQuad( thinQuad* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitThinSextupole( thinSextupole* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitThinOctupole( thinOctupole* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitThinDecapole( thinDecapole* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitThin12pole( thin12pole* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitThin14pole( thin14pole* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitThin16pole( thin16pole* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitThin18pole( thin18pole* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitThinMultipole( thinMultipole* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitSextupole( sextupole* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitBBLens( BBLens* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitThinSeptum( thinSeptum* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitThinLamb( thinLamb* x ) 
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitCombinedFunction( combinedFunction* x )
-               { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitPinger( Pinger* x )
-		 { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitHPinger( HPinger* x )
-		 { visitBmlnElmnt( (bmlnElmnt*) x ); }
-void BmlVisitor::visitVPinger( VPinger* x )
-		 { visitBmlnElmnt( (bmlnElmnt*) x ); } 
-void BmlVisitor::visitKick( kick* x)
-		 { visitBmlnElmnt( (bmlnElmnt*) x);  }
-void BmlVisitor::visitSlot( Slot* x)
-		 { visitBmlnElmnt( (bmlnElmnt*) x);  }
-void BmlVisitor::visitCF_rbend( CF_rbend* x)
-		 { visitBmlnElmnt( (bmlnElmnt*) x);  }
-void BmlVisitor::visitCF_sbend( CF_sbend* x)
-		 { visitBmlnElmnt( (bmlnElmnt*) x);  }
+void BmlVisitor::visit( octupole& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( thinrfcavity& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( rfcavity& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( srot& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( vkick& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( monitor& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( marker& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( drift& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( rbend& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( sbend& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( sector& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( quadrupole& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( thin2pole& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( thinQuad& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( thinSextupole& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( thinOctupole& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( thinDecapole& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( thin12pole& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( thin14pole& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( thin16pole& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( thin18pole& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( thinMultipole& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( sextupole& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( BBLens& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( thinSeptum& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( thinLamb& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( combinedFunction& x )
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( Pinger& x )
+		 {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( HPinger& x )
+		 {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( VPinger& x )
+		 {visit( static_cast<bmlnElmnt&>(x) ); } 
+
+void BmlVisitor::visit( kick& x)
+		 {visit( static_cast<bmlnElmnt&>(x));  }
+
+void BmlVisitor::visit( Slot& x)
+		 {visit( static_cast<bmlnElmnt&>(x));  }
+
+void BmlVisitor::visit( CF_rbend& x)
+		 {visit( static_cast<bmlnElmnt&>(x));  }
+
+void BmlVisitor::visit( CF_sbend& x)
+		 {visit( static_cast<bmlnElmnt&>(x));  }
 
 
 //---------------------------------------------------------------------------------
 
-void ConstBmlVisitor::visitBeamline( beamline const* x )  // THIS IS BROKEN !
+void ConstBmlVisitor::visit( beamline const& x )  // THIS IS BROKEN !
 {
 
-  BeamlineIterator iter ( const_cast<beamline&>(*x) );
-  bmlnElmnt* p;
-  while ( (p=iter++) ) {
-    p->accept( *this );
+  for (beamline::const_iterator it = x.begin();  it != x.end(); ++it ) {
+    (*it)->accept( *this );
   }
+
 }
 
-void ConstBmlVisitor::visitHkick( const hkick* x )
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( hkick const& x )
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitOctupole( const octupole* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( octupole const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitThinrfcavity( const thinrfcavity* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( thinrfcavity const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitRfcavity( const rfcavity* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( rfcavity const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitSrot( const srot* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( srot const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitVkick( const vkick* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit(  vkick const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitMonitor( const monitor* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit(  monitor const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitMarker( const marker* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit(  marker const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitDrift( const drift* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( drift const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitRbend( const rbend* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( rbend const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitSbend( const sbend* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( sbend const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitSector( const sector* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( sector const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitQuadrupole( const quadrupole* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( quadrupole const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitThin2pole( const thin2pole* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( thin2pole const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitThinQuad( const thinQuad* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( thinQuad const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitThinSextupole( const thinSextupole* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( thinSextupole const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitThinOctupole( const thinOctupole* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( thinOctupole const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitThinDecapole( const thinDecapole* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( thinDecapole const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitThin12pole( const thin12pole* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( thin12pole const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitThin14pole( const thin14pole* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( thin14pole const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitThin16pole( const thin16pole* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( thin16pole const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitThin18pole( const thin18pole* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( thin18pole const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitThinMultipole( const thinMultipole* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( thinMultipole const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitSextupole( const sextupole* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( sextupole const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitBBLens( const BBLens* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( BBLens const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitThinSeptum( const thinSeptum* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( thinSeptum const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitThinLamb( const thinLamb* x ) 
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( thinLamb const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitCombinedFunction( const combinedFunction* x )
-               { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( combinedFunction const& x )
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitPinger( const Pinger* x )
-		 { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( Pinger const& x )
+		 {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitHPinger( const HPinger* x )
-		 { visitBmlnElmnt( (const bmlnElmnt*) x ); }
+void ConstBmlVisitor::visit( HPinger const& x )
+		 {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visitVPinger( const VPinger* x )
-		 { visitBmlnElmnt( (const bmlnElmnt*) x ); } 
+void ConstBmlVisitor::visit( VPinger const& x )
+		 {visit( static_cast<bmlnElmnt const&>(x) ); } 
 
-void ConstBmlVisitor::visitKick( const kick* x)
-		 { visitBmlnElmnt( (const bmlnElmnt*) x);  }
+void ConstBmlVisitor::visit( kick const& x)
+		 {visit( static_cast<bmlnElmnt const&>(x));  }
 
-void ConstBmlVisitor::visitSlot( const Slot* x)
-		 { visitBmlnElmnt( (const bmlnElmnt*) x);  }
+void ConstBmlVisitor::visit( Slot const& x)
+		 {visit( static_cast<bmlnElmnt const&>(x));  }
 
-void ConstBmlVisitor::visitCF_rbend( const CF_rbend* x)
-		 { visitBmlnElmnt( (const bmlnElmnt*) x);  }
+void ConstBmlVisitor::visit( CF_rbend const& x)
+		 {visit( static_cast<bmlnElmnt const&>(x));  }
 
-void ConstBmlVisitor::visitCF_sbend( const CF_sbend* x)
-		 { visitBmlnElmnt( (const bmlnElmnt*) x);  }
+void ConstBmlVisitor::visit( CF_sbend const& x)
+		 {visit( static_cast<bmlnElmnt const&>(x));  }
 
