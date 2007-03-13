@@ -33,11 +33,11 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
-****** REVISION HISTORY
-****** Mar 2007           ostiguy@fnal.gov
-****** - covariant return types
+******    REVISION HISTORY
+****** Mar 2007            ostiguy@fnal.gov
+****** - use covariant return types
 ****** - support for reference counted elements
-****** 
+******                                                                
 **************************************************************************
 *************************************************************************/
 #ifndef SBEND_H
@@ -112,9 +112,6 @@ public:
 
     InEdge_Prop();
     virtual ~InEdge_Prop();
-    // REMOVE: char isApproximate();
-    // REMOVE: void makeApproximate();
-    // REMOVE: void makeExact();
     void setPropagator( NoEdge_Prop* );
   private:
     NoEdge_Prop* _myPropagator;
@@ -130,9 +127,6 @@ public:
 
     OutEdge_Prop();
     virtual ~OutEdge_Prop();
-    // REMOVE: char isApproximate();
-    // REMOVE: void makeApproximate();
-    // REMOVE: void makeExact();
     void setPropagator( NoEdge_Prop* );
   private:
     NoEdge_Prop* _myPropagator;
@@ -237,7 +231,7 @@ public:
   const char* Type() const;
   bool isMagnet() const;
 
-  void Split( double const&, bmlnElmnt**, bmlnElmnt** ) const;
+  void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
 private:
 

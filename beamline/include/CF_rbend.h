@@ -33,13 +33,11 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
-******
-****** REVISION HISTORY:
-******
-****** Mar 2007     ostiguy@fnal.gov
-******
-****** - added support for reference counted smart pointers.
-****** - added proper assignment operator
+******    REVISION HISTORY
+****** Mar 2007            ostiguy@fnal.gov
+****** - use covariant return types
+****** - support for reference counted elements
+******                                                                
 **************************************************************************
 *************************************************************************/
 
@@ -155,7 +153,7 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   bool isMagnet() const;
   
   double OrbitLength( const Particle& );
-  void Split( double const&, bmlnElmnt**, bmlnElmnt** ) const;
+  void Split( double const&, ElmPtr&, ElmPtr& ) const;
     // WARNING: After the Split function is used, the new elements 
     // must be commissioned with RefRegVisitor.
 
