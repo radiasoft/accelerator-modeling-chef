@@ -23,8 +23,9 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 ******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
+******  Authors:   Leo Michelotti (Original version)                                     
+******             Jean-Francois Ostiguy
+******                                                   
 ******             Fermilab                                           
 ******             P.O.Box 500                                        
 ******             Mail Stop 220                                      
@@ -36,8 +37,7 @@
 ******
 ******  REVISION HISTORY:
 ******
-******  Dec 2006  Jean-Francois Ostiguy
-******            ostiguy@fnal.gov
+******  Dec 2006 ostiguy@fnal.gov                                                                
 ******
 ******  Major revision 
 ****** 
@@ -46,8 +46,8 @@
 ******    use explicit mixed type constructors instead.
 ******  - take max advantage of constructor member initialization (useful 
 ******    for bunches, since a lot of particles may be instantiated)
-******  - streamlined public interface. Eliminated get/set functions
-******    with raw ptr as argument(s).
+******  - streamlined public interface. Eliminated members
+******    with raw ptr as argument(s) when possible.
 ******  - use Vector and Mapping to store state info instead of raw
 *****     arrays.    
 ******  - elements no longer declared friends. Doing so breaks encapsulation 
@@ -275,16 +275,7 @@ double Particle::setWeight( double const& w )
 
 Vector Particle::VectorBeta() const
 {
- Vector ret(3);
-
- double nrg  = Energy();
- double pz   = Momentum();
- pz          = sqrt( pz*pz - ((p_*p_)*( state_[3]*state_[3] + state_[4]*state_[4] )) );
- ret(0)      = p_*state_[3] / nrg;
- ret(1)      = p_*state_[4] / nrg;
- ret(2)      = pz           / nrg;
-
- return ret;
+ return VectorMomentum()/Energy();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -293,12 +284,10 @@ Vector Particle::VectorBeta() const
 Vector Particle::VectorMomentum() const
 {
  Vector ret(3);
- double px, py;
- double pz  = Momentum();
 
- ret(0) = px = p_*state_[3];
- ret(1) = py = p_*state_[4];
- ret(2) = sqrt( pz*pz - px*px - py*py );
+ ret(0) = p_ * state_[3];
+ ret(1) = p_ * state_[4];
+ ret(2) = p_ * get_npz();
 
  return ret;
 }
@@ -308,16 +297,15 @@ Vector Particle::VectorMomentum() const
 
 Vector Particle::NormalizedVectorMomentum() const
 {
- // ??? This assumes ret(2) > 0
- Vector ret(3);
- double px, py;
- double pz  = NormalizedMomentum();
 
- ret(0) = px = state_[3];
- ret(1) = py = state_[4];
- ret(2) = sqrt( pz*pz - px*px - py*py );
+ Vector ret(3);
+
+ ret(0) = state_[3];
+ ret(1) = state_[4];
+ ret(2) = get_npz();
 
  return ret;
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -410,33 +398,11 @@ Proton::~Proton() {}
 
 Proton& Proton::operator=(Proton const& p) {
 
-  if( typeid(p) != typeid(*this) ) {
-     ostringstream uic;
-     uic  << "Incompatible types: "
-          << typeid(*this).name()
-          << " is not "
-          << typeid(p).name()
-          << '.';
-     throw( GenericException( __FILE__, __LINE__, 
-            "Particle& Particle::operator=( const Particle& u )",
-            uic.str().c_str() ) );
+  if ( &p == this ) return *this;
 
- }
+  Particle::operator=(p);
  
-  if( &p == this ) return *this;
-
-  tag_   = p.tag_;
-  q_     = p.q_;
-  E_     = p.E_;
-  p_     = p.p_;
-  m_     = p.m_;
-  pn_    = p.pn_;
-  pni2_  = p.pni2_;
-  bRho_  = p.bRho_;
-  beta_  = p.beta_;
-  gamma_ = p.gamma_;
-  state_ = p.state_;  
-
+  return *this;
 }
 
 // **************************************************
@@ -489,32 +455,11 @@ AntiProton::~AntiProton() {
 
 AntiProton& AntiProton::operator=(AntiProton const& p) {
 
-  if( typeid(p) != typeid(*this) ) {
-     ostringstream uic;
-     uic  << "Incompatible types: "
-          << typeid(*this).name()
-          << " is not "
-          << typeid(p).name()
-          << '.';
-     throw( GenericException( __FILE__, __LINE__, 
-            "Particle& Particle::operator=( const Particle& u )",
-            uic.str().c_str() ) );
+  if ( &p == this ) return *this;
 
- }
+  Particle::operator=(p);
  
-  if( &p == this ) return *this;
-
-  tag_   = p.tag_;
-  q_     = p.q_;
-  E_     = p.E_;
-  p_     = p.p_;
-  m_     = p.m_;
-  pn_    = p.pn_;
-  pni2_  = p.pni2_;
-  bRho_  = p.bRho_;
-  beta_  = p.beta_;
-  gamma_ = p.gamma_;
-  state_ = p.state_;  
+  return *this;
 
 }
 
@@ -565,32 +510,11 @@ Electron::~Electron() {}
 
 Electron& Electron::operator=(Electron const& p) {
 
-  if( typeid(p) != typeid(*this) ) {
-     ostringstream uic;
-     uic  << "Incompatible types: "
-          << typeid(*this).name()
-          << " is not "
-          << typeid(p).name()
-          << '.';
-     throw( GenericException( __FILE__, __LINE__, 
-            "Particle& Particle::operator=( const Particle& u )",
-            uic.str().c_str() ) );
+  if ( &p == this ) return *this;
 
- }
-
-  if( &p == this ) return *this;
-
-  tag_   = p.tag_;
-  q_     = p.q_;
-  E_     = p.E_;
-  p_     = p.p_;
-  m_     = p.m_;
-  pn_    = p.pn_;
-  pni2_  = p.pni2_;
-  bRho_  = p.bRho_;
-  beta_  = p.beta_;
-  gamma_ = p.gamma_;
-  state_ = p.state_;  
+  Particle::operator=(p);
+ 
+  return *this;
 
 }
 
@@ -641,36 +565,14 @@ Positron::~Positron() {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-Positron& Positron::operator=(Positron const& p) {
+Positron& Positron::operator=(Positron const& p) 
+{
 
-  if( typeid(p) != typeid(*this) ) {
-     ostringstream uic;
-     uic  << "Incompatible types: "
-          << typeid(*this).name()
-          << " is not "
-          << typeid(p).name()
-          << '.';
-     throw( GenericException( __FILE__, __LINE__, 
-            "Particle& Particle::operator=( const Particle& u )",
-            uic.str().c_str() ) );
+  if ( &p == this ) return *this;
 
- }
+  Particle::operator=(p);
  
-  if( &p == this ) return *this;
-
-  tag_   = p.tag_;
-  q_     = p.q_;
-  E_     = p.E_;
-  p_     = p.p_;
-  m_     = p.m_;
-  pn_    = p.pn_;
-  pni2_  = p.pni2_;
-  bRho_  = p.bRho_;
-  beta_  = p.beta_;
-  gamma_ = p.gamma_;
-  state_ = p.state_;  
-
-
+  return *this;
 }
 
 // **************************************************
@@ -721,31 +623,12 @@ Muon::~Muon() {
 
 Muon& Muon::operator=(Muon const& p) {
 
-  if( typeid(p) != typeid(*this) ) {
-     ostringstream uic;
-     uic  << "Incompatible types: "
-          << typeid(*this).name()
-          << " is not "
-          << typeid(p).name()
-          << '.';
-     throw( GenericException( __FILE__, __LINE__, 
-            "Particle& Particle::operator=( const Particle& u )",
-            uic.str().c_str() ) );
-  }
+  if ( &p == this ) return *this;
 
-  if( &p == this ) return *this;
+  Particle::operator=(p);
+ 
+  return *this;
 
-  tag_   = p.tag_;
-  q_     = p.q_;
-  E_     = p.E_;
-  p_     = p.p_;
-  m_     = p.m_;
-  pn_    = p.pn_;
-  pni2_  = p.pni2_;
-  bRho_  = p.bRho_;
-  beta_  = p.beta_;
-  gamma_ = p.gamma_;
-  state_ = p.state_;  
 }
 
 // **************************************************
@@ -796,33 +679,11 @@ AntiMuon::~AntiMuon() {
 
 AntiMuon& AntiMuon::operator=(AntiMuon const& p) {
 
-  if( typeid(p) != typeid(*this) ) {
-     ostringstream uic;
-     uic  << "Incompatible types: "
-          << typeid(*this).name()
-          << " is not "
-          << typeid(p).name()
-          << '.';
-     throw( GenericException( __FILE__, __LINE__, 
-            "Particle& Particle::operator=( const Particle& u )",
-            uic.str().c_str() ) );
+  if ( &p == this ) return *this;
 
- }
-
-  if( &p == this ) return *this;
-
-  tag_   = p.tag_;
-  q_     = p.q_;
-  E_     = p.E_;
-  p_     = p.p_;
-  m_     = p.m_;
-  pn_    = p.pn_;
-  pni2_  = p.pni2_;
-  bRho_  = p.bRho_;
-  beta_  = p.beta_;
-  gamma_ = p.gamma_;
-  state_ = p.state_;  
-
+  Particle::operator=(p);
+ 
+  return *this;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
