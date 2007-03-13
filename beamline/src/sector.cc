@@ -33,7 +33,13 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations.
 **************************************************************************
 *************************************************************************/
 
@@ -43,6 +49,7 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <beamline/sector.h>
+#include <beamline/BmlVisitor.h>
 
 using namespace std;
 using FNAL::pcerr;
@@ -301,3 +308,15 @@ istream& sector::readFrom( istream& is )
   is >> myMap;
   return is;
 }
+
+void  sector::accept( BmlVisitor& v )
+{
+  v.visit(*this);
+}
+
+
+void  sector::accept( ConstBmlVisitor& v ) const
+{
+  v.visit(*this);
+}
+
