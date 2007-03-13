@@ -32,7 +32,13 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
 **************************************************************************
 *************************************************************************/
 
@@ -255,9 +261,9 @@ void CF_rbend::_finishConstructor(int n)
     n = 1;
   }
 
-  double field       = this->strength;
-  double frontLength =  (6.0*(this->length/4.0)/15.0)/((double) n);
-  double sepLength   = (16.0*(this->length/4.0)/15.0)/((double) n);
+  double field       = this->strength_;
+  double frontLength =  (6.0*(this->length_/4.0)/15.0)/((double) n);
+  double sepLength   = (16.0*(this->length_/4.0)/15.0)/((double) n);
 
   rbend inEdge    ( frontLength,     field, _usEdgeAngle, 0.0, &rbend::InEdge  );
   rbend outEdge   ( frontLength,     field, 0.0, _dsEdgeAngle, &rbend::OutEdge );
@@ -329,6 +335,43 @@ CF_rbend::~CF_rbend()
   delete [] _u;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CF_rbend& CF_rbend::operator=( CF_rbend const& rhs)
+{
+  if ( &rhs == this ) return *this; 
+              
+  bmlnElmnt::operator=( rhs );
+
+  _usEdgeAngle =  rhs._usEdgeAngle;  
+  _dsEdgeAngle =  rhs._dsEdgeAngle;
+
+  _usAngle     =  rhs._usAngle;
+  _dsAngle     =  rhs._dsAngle;
+
+  _usTan       =  rhs._usTan;
+  _dsTan       =  rhs._dsTan;
+
+  if  (!_v ) { _u = _v = 0; return *this; } 
+
+  int nelm = 1 + (rhs._v - rhs._u)/sizeof(bmlnElmnt*);
+
+  _u = new bmlnElmnt*[nelm];
+  
+  for ( int i=0; i < nelm; ++i)
+  {
+    _u[i] = rhs._u[i]->Clone();   
+  }
+
+  _v = _u + nelm-1;       
+  
+  return *this;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CF_rbend::localPropagate( Particle& p )
 {
@@ -485,7 +528,7 @@ int CF_rbend::setQuadrupole( double const& arg_x )
 
 int CF_rbend::setDipoleField( double const& arg_x )
 {
-  this->strength = arg_x;
+  this->strength_ = arg_x;
 
   int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
   rbend** w = new rbend* [ m ];
@@ -506,7 +549,7 @@ int CF_rbend::setDipoleField( double const& arg_x )
   }
   
   for( int i = 0; i <= counter; i++ ) {
-    w[i]->setStrength( this->strength );
+    w[i]->setStrength( this->strength_ );
   }
   
   delete [] w;
@@ -522,7 +565,7 @@ void CF_rbend::setStrength( double const& s )
     (*x)->setStrength( ratio*((*x)->Strength()) );
     x++;
   }
-  this->strength = s;
+  this->strength_ = s;
 }
 
 
@@ -617,11 +660,11 @@ double CF_rbend::getQuadrupole() const
 
 double CF_rbend::getDipoleField() const
 {
-  return this->strength;
+  return this->strength_;
 }
 
 
-void CF_rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
+void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
   static bool firstTime = true;
   if( firstTime ) {
@@ -652,79 +695,51 @@ void CF_rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b ) const
   }
 
 
-  // We assume "strength" means field, not field*length.
-  // "length," "strength," and "_angle" are private data members.
-  *a = new CF_rbend(         pc*length, strength, _usEdgeAngle, 0.0 );
-  dynamic_cast<CF_rbend*>(*a)->setEntryAngle( this->getEntryAngle() );
-  dynamic_cast<CF_rbend*>(*a)->setExitAngle( 0.0 );    // Will matter
-  *b = new CF_rbend( (1.0 - pc)*length, strength, 0.0, _dsEdgeAngle );
-  dynamic_cast<CF_rbend*>(*b)->setEntryAngle( 0.0 );   // Will matter
-  dynamic_cast<CF_rbend*>(*b)->setExitAngle( this->getExitAngle() );
+  // We assume "strength_" means field, not field*length_.
+  // "length_," "strength_," and "_angle" are private data members.
+ 
+  CF_rbend* p_a = 0;
+  CF_rbend* p_b = 0;
+
+  a =  CFRbendPtr( p_a = new CF_rbend(         pc*length_, strength_, _usEdgeAngle, 0.0 ) );
+  p_a->setEntryAngle( this->getEntryAngle() );
+  p_b->setExitAngle( 0.0 );    // Will matter
+
+  b =  CFRbendPtr ( p_b =new CF_rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle ) );
+
+  p_b->setEntryAngle( 0.0 );   // Will matter
+  p_b->setExitAngle( this->getExitAngle() );
 
 
   // Assign quadrupole strength
-  double quadStrength = this->getQuadrupole();  
-  // quadStrength = B'l
 
-  ((CF_rbend*) *a)->setQuadrupole( pc*quadStrength );
-  ((CF_rbend*) *b)->setQuadrupole( (1.0 - pc)*quadStrength );
+  double quadStrength = getQuadrupole();  // quadStrength = B'l
+
+  p_a->setQuadrupole( pc*quadStrength );
+  p_b->setQuadrupole( (1.0 - pc)*quadStrength );
 
 
-  // Rename
-  char* newname;
-  newname = new char [ strlen(ident) + 6 ];
+  p_a->rename( ident_ + string("_1") );
+  p_b->rename( ident_ + string("_2"));
 
-  strcpy( newname, ident );
-  strcat( newname, "_1" );
-  (*a)->rename( newname );
-
-  strcpy( newname, ident );
-  strcat( newname, "_2" );
-  (*b)->rename( newname );
-
-  delete [] newname;
 }
 
 
-void CF_rbend::acceptInner( BmlVisitor& v )
-{
-  _ctRef = 0.0;
-  bmlnElmnt** x = _u;
-  while( x <= _v ) {
-    (*x)->accept( v );
-    _ctRef += (*x)->getReferenceTime();
-    x++;
-  }
-}
-
-
-void CF_rbend::acceptInner( ConstBmlVisitor& v )
-{
-  _ctRef = 0.0;
-  bmlnElmnt** x = _u;
-  while( x <= _v ) {
-    (*x)->accept( v );
-    _ctRef += (*x)->getReferenceTime();
-    x++;
-  }
-}
-
-
-void CF_rbend::peekAt( double& s, const Particle& prt ) const
+void CF_rbend::peekAt( double& s, Particle const& prt ) 
 {
  (*pcout) << setw(12) << s;
  s += OrbitLength( prt );
  (*pcout) << setw(12) << s           
                   << " : " 
       << setw(10) << (int) this  
-      << setw(15) << ident       
+      << setw(15) << ident_       
       << setw(15) << Type()      
-      << setw(12) << length      
-      << setw(12) << strength    
-      << setw(12) << ((this->getQuadrupole())/length)
-      << setw(12) << (2.0*(this->getSextupole())/length)
-      << setw(12) << (6.0*(this->getOctupole())/length)
-      << setw(12) << shuntCurrent
+      << setw(12) << length_      
+      << setw(12) << strength_    
+      << setw(12) << ((this->getQuadrupole())/length_)
+      << setw(12) << (2.0*(this->getSextupole())/length_)
+      << setw(12) << (6.0*(this->getOctupole())/length_)
+      << setw(12) << shuntCurrent_
       << endl;
 }
 
@@ -806,8 +821,8 @@ bool CF_rbend::isMagnet() const
 
 double CF_rbend::OrbitLength( const Particle& x )
 {
-  double tworho = 2.0 * ( x.Momentum() / PH_CNV_brho_to_p ) / strength;
-  return tworho * asin( length / tworho );
+  double tworho = 2.0 * ( x.Momentum() / PH_CNV_brho_to_p ) / strength_;
+  return tworho * asin( length_ / tworho );
 }
 
 
@@ -964,10 +979,10 @@ double CF_rbend::AdjustPosition( const JetParticle& arg_jp )
 
 
   // Set the alignment of the internal beamline.
-  // this->align->getAlignment().xOffset -= z;
+  // this->align_->getAlignment().xOffset -= z;
   alignmentData v;	// Assumes zero alignment constructed this way.
-  if ( align != 0 )
-    v = align->getAlignment();
+  if ( align_ != 0 )
+    v = align_->getAlignment();
   v.xOffset -= z;
   // ??? Does not work: p_bml->setAlignment( v );
   // ??? The reason is that the alignment stategy is
@@ -984,3 +999,42 @@ double CF_rbend::AdjustPosition( const JetParticle& arg_jp )
 
   return z;
 }
+
+
+
+void CF_rbend::acceptInner( BmlVisitor& v )
+{
+  ctRef_ = 0.0;
+  bmlnElmnt** x = _u;
+  while( x <= _v ) {
+    (*x)->accept( v );
+    ctRef_ += (*x)->getReferenceTime();
+    x++;
+  }
+}
+
+
+void CF_rbend::acceptInner( ConstBmlVisitor& v )
+{
+  ctRef_ = 0.0;
+  bmlnElmnt** x = _u;
+  while( x <= _v ) {
+    (*x)->accept( v );
+    ctRef_ += (*x)->getReferenceTime();
+    x++;
+  }
+}
+
+
+void CF_rbend::accept( BmlVisitor& v ) 
+{
+  v.visit(*this);
+} 
+
+
+void CF_rbend::accept( ConstBmlVisitor& v ) const
+{
+  v.visit(*this);
+} 
+
+
