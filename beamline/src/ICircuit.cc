@@ -34,12 +34,16 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - replaced c-style list with std::list 
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-
 
 #include <basic_toolkit/iosetup.h>
 #include <beamline/ICircuit.h>
@@ -49,58 +53,69 @@ using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ICircuit::ICircuit() : circuit () {
-  current = 0.0;
-}
+ICircuit::ICircuit(const char* n) 
+: Circuit (n), current_(0.0) {}
 
-ICircuit::ICircuit(const char* n) : circuit (n) {
-  current = 0.0;
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ICircuit::ICircuit(bmlnElmnt* q) : circuit (q) {
-  current = q->Current();
-}
+ICircuit::~ICircuit() {}
 
-ICircuit::ICircuit(const char* n, bmlnElmnt* q) : circuit (n,q) {
-  current = q->Current();
-}
-ICircuit::~ICircuit() {
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void ICircuit::switchOn() {
-  onOffSwitch = 1;
-  dlist_iterator getNext ( *this );
-  bmlnElmnt* p;
-  
-  while((  p = (bmlnElmnt*) getNext()  )) {
-    p -> setCurrent( current );
+
+  onOffSwitch_ = true;
+
+  for (std::list<ElmPtr>::iterator it  = theList_.begin(); 
+                                   it != theList_.end(); ++it) {  
+    (*it)->setCurrent( current_ );
   }
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void ICircuit::switchOff() {
-  onOffSwitch = 0;
-  double dummy = 0.0;
-  dlist_iterator getNext ( *this );
-  bmlnElmnt* p;
-  
-  while((  p = (bmlnElmnt*) getNext()  )) {
-    p -> setStrength( dummy );
+
+  onOffSwitch_ = false;
+
+  for (std::list<ElmPtr>::iterator it  = theList_.begin(); 
+                                   it != theList_.end(); ++it) {  
+    (*it) -> setStrength( 0.0 );
   }
 }
 
-void ICircuit::set(void* x) {
-  double* curr = (double*)x;
-  dlist_iterator getNext ( *this );
-  bmlnElmnt* p;
-  
-  current = *curr;
-  while((  p = (bmlnElmnt*) getNext()  )) {
-    p -> setCurrent( *curr );
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ICircuit::set(double const& current) {
+
+  for (std::list<ElmPtr>::iterator it  = theList_.begin(); 
+                                   it != theList_.end(); ++it) {  
+    (*it)->setCurrent( current );
   }
 }
 
-void ICircuit::get(void* x) {
-  double* curr = (double*)x;
-  *curr = current;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double ICircuit::get()  const {
+  return current_;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ICircuit::append( ElmPtr q ) {
+   
+   theList_.push_back( q );
+
+   current_ = q->Current();
+
 }
 
