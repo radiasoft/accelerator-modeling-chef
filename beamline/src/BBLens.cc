@@ -33,7 +33,14 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
+****** - implemented missing operator=()
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -43,9 +50,11 @@
 #include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/utils.h>
 #include <beamline/BBLens.h>
+#include <beamline/BmlVisitor.h>
 #include <mxyzptlk/Jet.h>
 #include <mxyzptlk/JetVector.h>
 #include <physics_toolkit/EdwardsTeng.h>  // ??? Doesn't belong here.
+#include <algorithm>
 
 using namespace boost;
 using namespace std;
@@ -92,6 +101,9 @@ BBLens::BBLens( const char*   nm,
   useRound = 1;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 BBLens::BBLens( BBLens const& x )
 : bmlnElmnt( x ), gamma(x.gamma), num(x.num),  useRound( x.useRound)
@@ -101,10 +113,35 @@ BBLens::BBLens( BBLens const& x )
 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 BBLens::~BBLens()
+{}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BBLens& BBLens::operator=( BBLens const& rhs) 
 {
+  if ( &rhs == this) return *this;
+
+  bmlnElmnt::operator=(rhs);
+
+  std::copy( &rhs.emittance[0], &rhs.emittance[2],  &emittance[0]);   // One sigma (noninvariant) emittance / pi
+
+  gamma = rhs.gamma;          
+  beta  = rhs.beta;           
+  num   = rhs.num;            
+  std::copy( &rhs.sigma[0], &rhs.sigma[2],  &sigma[0]);
+ 
+  return *this;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 void BBLens::KludgeNum( double const& N )
@@ -137,9 +174,12 @@ void BBLens::AdjustSigma()
            "void BBLens::AdjustSigma()", 
            "Cannot find ETinfo" ) );
   }
-  
-  sigma[0] = sqrt( any_cast<ETinfo>(it->info).beta.hor*emittance[0] );
-  sigma[1] = sqrt( any_cast<ETinfo>(it->info).beta.ver*emittance[1] );
+   std::cout << " BBLens::AdjustSigma() is BROKEN ! FIXME ! << std::end;
+   exit (1); 
+
+  // These statement BREAK the library hierarchy !!!
+  // FIXME !!!! sigma[0] = sqrt( any_cast<ETinfo>(it->info).beta.hor*emittance[0] );
+  // FIXME !!!! sigma[1] = sqrt( any_cast<ETinfo>(it->info).beta.ver*emittance[1] );
 }
 
 
@@ -499,3 +539,22 @@ void BBLens::GetSigma( double* sgm ) {
   for( int i = 0; i < 3; i++ ) sgm[i] = sigma[i];
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BBLens::accept( BmlVisitor& v ) 
+{ 
+  v.visit( *this ); 
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void BBLens::accept( ConstBmlVisitor& v ) const  
+{ 
+  v.visit( *this ); 
+
+}
