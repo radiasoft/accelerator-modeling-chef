@@ -33,6 +33,15 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+******  REVISION HISTORY:
+****** 
+******  ostiguy@fnal.gov
+******
+******  - eliminated dependence on dlist (c-style void* linked list)
+******  - eliminated inheritance from container type
+******  - support for smart pointers  
+******  - cleanup constructor interface  
+******                                                              
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -63,71 +72,30 @@ using FNAL::pcerr;
 
 //Constructors
 
-circuit::circuit() {
-   onOffSwitch  = 1;
-   ident = strdup( "NONAME" );
-   numElm = 0;
-}
 
-circuit::circuit( const char* n ) {
-   onOffSwitch  = 1;
-   numElm = 0;
-   ident  = strdup( n );
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-circuit::circuit( bmlnElmnt* q ) {
-   onOffSwitch  = 1;
-   dlist::append(q);
-   ident = strdup( q->Name() );
-   numElm++;
-}
+Circuit::Circuit( const char* name )
+: ident_(std::string(name)), onOffSwitch_(true) {}
 
-circuit::circuit( const char* n, bmlnElmnt* q ) {
-   onOffSwitch  = 1;
-   dlist::append(q);
-   numElm++;
-   ident  = strdup( n );
-}
 
-circuit::circuit( const circuit& ) 
-{
- throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-        "circuit::circuit( const circuit& ) ", 
-        "Cannot copy a circuit." ) );
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // Destructor
 
-circuit::~circuit() {
-  clear();
-  delete [] ident;
-}
+Circuit::~Circuit() {}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // Methods
 
-void circuit::append( bmlnElmnt* q ) {
-   dlist::append( q );
-   numElm++;
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void circuit::switchOn() {
-   onOffSwitch = 1;
-   (*pcerr) << "*** ERROR *** circuit::switchOn(): This doesn't set anything!!" << endl;
-}
-void circuit::switchOff() {
-   onOffSwitch = 0;
-   (*pcerr) << "*** ERROR *** circuit::switchOff():  This doesn't set anything!!" << endl;
-}
-
-void circuit::set( void* ) {
-  (*pcerr) << " This should never be called!! " << endl;
-}
-
-char* circuit::getName() {
- return strdup( ident );
-}
-
-void circuit::get(void* ) {
-  (*pcerr) << " This should never be called!! " << endl;
+std::string  Circuit::name() const {
+  return ident_;
 }
 
