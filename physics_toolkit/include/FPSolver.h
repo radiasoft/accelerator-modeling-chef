@@ -32,7 +32,12 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
+******                                                         
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - Pass particles by reference 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -42,8 +47,9 @@
 #define FPSOLVER_H
 
 #include <basic_toolkit/globaldefs.h>
+#include <beamline/BmlPtr.h>
 
-typedef bool (*FP_CRITFUNC)( bmlnElmnt* );
+typedef bool (*FP_CRITFUNC)( ConstElmPtr );
 
 struct FPinfo {
   FPinfo( double const&, Vector const& );
@@ -51,20 +57,13 @@ struct FPinfo {
   Vector state;
 };
 
+
 class FPSolver {
 
- private:
-  int       dimension;
-  double*   jumpScale;
-  double*   zeroScale;
-  int*      l;
-  beamline* bmLine;   // Not owned; not deleted.
-
  public:
-  FPSolver( beamline* = 0,  /* beamline attached to the solver */
-            int       = 6   /* dimension of phase space        */ 
-          );
-  ~FPSolver();
+
+  FPSolver( BmlPtr bml = BmlPtr(), int ndim=6);
+ ~FPSolver();
   
   double& JumpScale( int ); 
   double& ZeroScale( int );
@@ -98,6 +97,16 @@ class FPSolver {
   // fixed point information is attached to the elements.
 
  void eraseAll();
+
+ private:
+  int       dimension_;
+  double*   jumpScale_;
+  double*   zeroScale_;
+  int*      l_;
+  BmlPtr    bmLine_;   // Not owned; not deleted.
+
+
+
 };
 
 #endif // FPSOLVER_H

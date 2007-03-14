@@ -43,7 +43,10 @@
 ******  - calcs_ array is now an STL vector. LF are now returned 
 ******    by returning a const reference to the entire vector.
 ******  - misc cleanup.  
-******                                                                
+****** 
+****** Mar 2007                                                                
+****** - support for reference counted elements
+****** - Pass particles by reference 
 **************************************************************************
 *************************************************************************/
 
@@ -85,8 +88,8 @@ public:
 
 public:
 
-  LBSage( beamline const*, bool = false );
-  LBSage( beamline const&, bool = false );
+  LBSage( BmlPtr );
+  LBSage( beamline const&);
 
 
   // vestigial: need to retain???

@@ -12,7 +12,7 @@
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
+******  Usage, modification, and redistribution are subject to terms 
 ******  of the License supplied with this software.
 ******  
 ******  Software and documentation created under 
@@ -32,7 +32,10 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - Pass particles by reference 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -59,6 +62,7 @@
 
 #include <beamline/bmlnElmnt.h>
 #include <mxyzptlk/Mapping.h>
+
 #include <basic_toolkit/MathConstants.h>
 #include <physics_toolkit/Sage.h>
 
@@ -68,9 +72,11 @@ class EdwardsTengSage : public Sage
 public:
 
   struct Info {
+
     double arcLength;
-    Mapping map;
-    Mapping mapInv;
+
+    MatrixD map;    // cumulative map  // (in the previous version, declared as Mapping) 
+
     struct {
      double hor;
      double ver;
@@ -80,12 +86,11 @@ public:
      double ver;
     } alpha;
     double phi;
-    MatrixD D;
-    MatrixC EV;
+
+    MatrixD D;       // eigenvectors
+    MatrixC EV;      // eigenvalues 
 
     Info();
-    Info( Info const& );
-    ~Info(){}
   };
 
   struct Tunes {
@@ -95,24 +100,23 @@ public:
 
 public:
 
-  EdwardsTengSage( const beamline*, bool = false );
-  EdwardsTengSage( const beamline&, bool = false );
+  EdwardsTengSage( BmlPtr );
+  EdwardsTengSage( beamline const& );
 
-  // vestigial: need to retain???
   int doCalc( JetParticle& , beamline::Criterion& = beamline::yes ); 
       // PRECONDITION: The JetParticle must be on the closed
-      //   orbit with the identity mapping for its state.
+      //               orbit with the identity mapping for its state.
       //               Its Jet environment's reference point 
-      //   should be the closed orbit. It is not reset.
+      //               should be the closed orbit. It is not reset.
       // POSTCONDITION: The JetParticle has the one-turn
-      //   mapping for its state.
-      // If default value is used for second argument, 
-      //   information is attached to all elements.
+      //                mapping for its state.
+      //                If default value is used for second argument, 
+      //                information is attached to all elements.
 
-  static int eigenTuneCalc( const JetParticle&, Tunes& );
+  static int eigenTuneCalc( JetParticle const&, Tunes& );
   // PRECONDITION: The JetParticle is on the closed
-  //   orbit. Its state is the one-turn mapping
-  //   for an environment centered on the closed orbit.
+  //               orbit. Its state is the one-turn mapping
+  //               for an environment centered on the closed orbit.
 
   std::vector<EdwardsTengSage::Info> const& getETArray();
 
@@ -120,12 +124,14 @@ public:
 
 private:
 
-  static double    _csH; 
-  static double    _csV; 
-  static double    _snH; 
-  static double    _snV;
-  static Mapping*  _theMapPtr;
-  static int       _attachETFuncs( bmlnElmnt* );
+  int       attachETFuncs( ElmPtr, MatrixD const& one_turn_map );
+
+  double    csH_; 
+  double    csV_; 
+  double    snH_; 
+  double    snV_;
+
+  Mapping   theMapPtr_;
 
   std::vector<Info> calcs_;  // array of calculated results
 

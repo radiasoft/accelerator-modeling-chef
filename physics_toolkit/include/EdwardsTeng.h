@@ -33,7 +33,11 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - Pass particles by reference 
 **************************************************************************
 *************************************************************************/
 
@@ -114,12 +118,15 @@ public:
 
  private:
 
- static int attachETLattFuncs( bmlnElmnt* );
+ static int attachETLattFuncs( ElmPtr );
 
- beamline* myBeamline;
+ beamline* myBeamline_;
 
- static double   csH, csV, snH, snV;
- static Mapping* theMap;
+ static double   csH_;
+ static double   csV_; 
+ static double   snH_;
+ static double   snV_;
+ static Mapping  theMap_;
 
 
 };
