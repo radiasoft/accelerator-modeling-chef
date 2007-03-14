@@ -68,14 +68,14 @@ struct Location {
 
 private:
   
- std::string                       _tag_name;
- std::string                       _azimuth_up_tag;
- std::string                       _azimuth_down_tag;
+ std::string                       tag_name_;
+ std::string                       azimuth_up_tag_;
+ std::string                       azimuth_down_tag_;
  
- std::vector<Location>&            _locations;
- std::vector<Location>::iterator   _loc_it;
- static const double               _overlap_tolerance =  0.90;    
- int                               _ntags; 
+ std::vector<Location>&            locations_;
+ std::vector<Location>::iterator   loc_it_;
+ static const double               overlap_tolerance_ =  0.90;    
+ int                               ntags_; 
 
 
 };
