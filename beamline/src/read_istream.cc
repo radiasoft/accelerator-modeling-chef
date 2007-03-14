@@ -34,6 +34,12 @@
 ******          Phone: (630) 840 4956                              
 ******          Email: michelotti@fnal.gov                         
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007            ostiguy@fnal.gov
+******
+****** -eliminated unsafe casts
+****** -support for reference counted elements
 **************************************************************************
 *************************************************************************/
 
@@ -329,12 +335,12 @@ bmlnElmnt* read_istream(istream& is)
     else {
       double energy;
       is >> energy;
-      ((beamline*) element)->setEnergy( energy );
+      ( static_cast<beamline*>(element)->setEnergy( energy );
       bmlnElmnt *e = NULL;
       do {
         e = read_istream(is);
         if ( e ) {
-          ((beamline*) element)->append(e);
+          ( static_cast<beamline*>(element)->append(ElmPtr(e)); 
 	}
       } while ( e );
     }
@@ -388,14 +394,14 @@ istream& operator>>(istream& is, beamline& bl)
   
   // ??? REMOVE: bl.readFrom(is); // Polymorphically call the right readFrom().
   bmlnElmnt *e = 0;
-  is >> bl.nominalEnergy;
+  is >> bl.nominalEnergy_;
   // Now, continue reading is until we see the end of this beamline
   length = 0;
   do {
     e = read_istream(is);     // (Recursion)
     // read_istream will return NULL when end of file or end of beamline is reached.
     if ( e ) 
-      bl.append(e);
+      bl.append(ElmPtr(e));
   } while ( e );
   
   if ( x!=0 || y!=0 || t!=0 ) {
