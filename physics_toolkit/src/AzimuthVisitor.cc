@@ -34,31 +34,32 @@
 #include <physics_toolkit/AzimuthVisitor.h>
 
 #include <beamline/beamline.h>
-#include <beamline/BeamlineIterator.h>
 #include <boost/any.hpp>
 
 using std::string;
 using boost::any;
 using boost::any_cast;
 
-AzimuthVisitor::AzimuthVisitor(Particle* p, 
+AzimuthVisitor::AzimuthVisitor(Particle& p, 
                                string origin_tag, 
                                string azimuth_up_tag, 
-                               string azimuth_down_tag):   
-  BmlVisitor(), _p(p), 
-  _origin_tag( origin_tag ), 
-  _azimuth_up_tag(azimuth_up_tag), 
-  _azimuth_down_tag(azimuth_down_tag), 
-  _azimuth(0.0) 
+                               string azimuth_down_tag)
+: BmlVisitor(), particle_(p), 
+  origin_tag_( origin_tag ), 
+  azimuth_up_tag_(azimuth_up_tag), 
+  azimuth_down_tag_(azimuth_down_tag), 
+  azimuth_(0.0) 
 { }
   
 
-//...............................................................................................................
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+AzimuthVisitor::~AzimuthVisitor() 
+{}
 
-AzimuthVisitor::~AzimuthVisitor() {}
-
-//...............................................................................................................
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 // void setAzimuthLabelUp(std::string s)   
@@ -68,57 +69,64 @@ AzimuthVisitor::~AzimuthVisitor() {}
 // {  _azimuth_down_tag    = s; } INLINED
 
 
-//...............................................................................................................
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void AzimuthVisitor::visitBmlnElmnt( bmlnElmnt* e) { 
+void AzimuthVisitor::visit( bmlnElmnt& e) 
+{ 
 
-  (*e)[_azimuth_up_tag]   = any(_azimuth); 
+  e[azimuth_up_tag_]   = any(azimuth_); 
 
-  _azimuth += e->OrbitLength( *_p); 
+  azimuth_ += e.OrbitLength( particle_); 
 
-  (*e)[_azimuth_down_tag] = any(_azimuth); 
+  e[azimuth_down_tag_] = any(azimuth_); 
 
 }
 
-//................................................................................................................
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void AzimuthVisitor::visitBeamline( beamline* e) {   
+void AzimuthVisitor::visit( beamline& bml) 
+{   
    
 // ... Start visiting from the origin marker  
 
-DeepBeamlineIterator it ( *e );
 
-bmlnElmnt* p = 0;
-while( p = it++ ) 
+beamline::deep_iterator dit = bml.deep_begin();
+
+for ( ;  dit != bml.deep_end(); ++dit) 
 {
 
-   if (  ( std::string( p->Type() ) == std::string("marker") ) &&
-	  ( std::string( p->Name() ) == _origin_tag         )        
+   if (  ( std::string( (*dit)->Type() ) == std::string("marker") ) &&
+	  ( std::string( (*dit)->Name() ) == origin_tag_         )        
 	) break;
 } 
 
 // ... At this point, we should have found the origin marker. However, there might not be one;
 // ... in this case, p == 0. 
 
-if(p) visitBmlnElmnt( p );
+if( dit != bml.deep_end() ) visit( **dit );
 
 // ... Continue and visit the elements between the origin marker and the end of the line
 // ... If there was no origin marker, the effective origin becomes the first element in the line   
 
-while ( p = it++ ) visitBmlnElmnt( p );
+for ( ;  dit != bml.deep_end(); ++dit) 
+ visit( **dit );
 
 // Finally, visit elements between beginning of the line and beamline and the origin marker  
 
-it.reset();
+dit = bml.deep_begin();
 
-while ( p = it++ )  
+for ( ;  dit != bml.deep_end(); ++dit) 
 {
-  if (  ( std::string( p->Type() ) == std::string("marker") ) &&
-	   ( std::string( p->Name() ) == _origin_tag         )         
+  if (  ( std::string( (*dit)->Type() ) == std::string("marker") ) &&
+	   ( std::string( (*dit)->Name() ) == origin_tag_         )         
      ) break;  
 
-    visitBmlnElmnt( p ); 
+    visit( **dit ); 
 }
 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
