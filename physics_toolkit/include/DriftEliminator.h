@@ -33,6 +33,10 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - updated visitor interface to advantage of dynamic typing
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -54,38 +58,43 @@
 #ifndef DRIFTELIMINATOR_H
 #define DRIFTELIMINATOR_H
 
+#include <boost/shared_ptr.hpp>
 #include <beamline/BmlVisitor.h>
+
+class beamline;
+class drift;
+typedef boost::shared_ptr<beamline> BmlPtr;
+typedef boost::shared_ptr<drift>    DriftPtr;
+
 
 class DriftEliminator : public ConstBmlVisitor
 {
+
  public:
+
   DriftEliminator();
-  DriftEliminator( const DriftEliminator& );
-  ~DriftEliminator();
+  DriftEliminator( DriftEliminator const& );
 
-  void visitBeamline( const beamline* );
-  void visitBmlnElmnt( const bmlnElmnt* );
+ ~DriftEliminator();
 
-  void visitMonitor( const monitor* ); 
-  void visitMarker( const marker* ); 
-  void visitDrift( const drift* ); 
+  void visit(  beamline  const& );
+  void visit(  bmlnElmnt const& );
 
-  void visitSlot( const Slot* );
+  void visit(  monitor   const& ); 
+  void visit(  marker    const& ); 
+  void visit(  drift     const& ); 
 
-  beamline* beamlinePtr();
-  // Invoking routine is responsible for
-  // using this beamline before the 
-  // DriftEliminator goes out of scope.
+  void visit(  Slot      const& );
 
-  beamline* clonedBeamlinePtr();
-  // Invoking routine is responsible for
-  // eliminating the cloned beamline.
-
+  BmlPtr beamlinePtr();
 
  private: 
-  beamline* _bmlPtr;
-  drift*    _driftPtr;
-  void      _handlePassiveElement( const bmlnElmnt* );
+
+  void       handlePassiveElement( bmlnElmnt const& );
+
+  BmlPtr     bmlPtr_;
+  DriftPtr   driftPtr_;
+
 };
 
 
