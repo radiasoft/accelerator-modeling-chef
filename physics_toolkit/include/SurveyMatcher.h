@@ -36,74 +36,59 @@
 ******   September, 2005
 ******     First version
 ******
+****** Mar 2007           ostiguy@fnal.gov
+****** - eliminated refereces to slist/dlist
+******                                                   
 **************************************************************************
 *************************************************************************/
 
 
+#include <boost/shared_ptr.hpp>
 #include <physics_toolkit/Sage.h>
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/VectorD.h>
 #include <beamline/Alignment.h>
+#include <beamline/BmlPtr.h>
 
-class beamline;
+class SurveyMatcher : public Sage {
 
-class SurveyMatcher : public Sage
-{
  public:
-  SurveyMatcher( const std::vector<Vector>&, beamline* );
-  SurveyMatcher( const std::vector<Vector>&, beamline& );
-  ~SurveyMatcher();
+
+  SurveyMatcher( std::vector<Vector> const&, BmlPtr );
+ 
+ ~SurveyMatcher();
 
   static void removeCentroid( std::vector<Vector>&, Frame& );
-  static void orientPlane( std::vector<Vector>&, Frame& );
+  static void orientPlane(    std::vector<Vector>&, Frame& );
 
   void eraseAll();
   void rotate();
 
   Frame getModelFrame() const;
-  Frame getDataFrame() const;
+  Frame getDataFrame()  const;
 
-  alignment getAlignment( int ) const;
+  alignment getAlignment( int )         const;
   Vector    getLocalDisplacement( int ) const;
 
-  int size() const;
+  int  size()                        const;
   void print( std::vector<Vector>& ) const;
 
  private:
-  std::vector<Vector> _surveyData;
-  std::vector<Vector> _bufferData;
-  std::vector<Vector> _modelCoordinates;
-  std::vector<Vector> _inputModel;
 
-  Frame _centralModelFrame;
-  Frame _centralDataFrame;
+  void  finishConstructor();
 
-  void _finishConstructor();
+  void  diff();
+  void  generateAlignments();
 
-  void _diff();
-  void _generateAlignments();
+  std::vector<Vector>  surveyData_;
+  std::vector<Vector>  bufferData_;
+  std::vector<Vector>  modelCoordinates_;
+  std::vector<Vector>  inputModel_;
+
+  Frame                centralModelFrame_;
+  Frame                centralDataFrame_;
+
+
 };
 
 
-inline Frame SurveyMatcher::getModelFrame() const
-{
-  return _centralModelFrame;
-}
-
-
-inline Frame SurveyMatcher::getDataFrame() const
-{
-  return _centralDataFrame;
-}
-
-
-inline int SurveyMatcher::size() const
-{
-  return _modelCoordinates.size();
-}
-
-
-inline Vector SurveyMatcher::getLocalDisplacement( int i ) const
-{
-  return _modelCoordinates[i];
-}
