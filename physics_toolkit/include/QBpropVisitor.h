@@ -33,6 +33,10 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - visitor takes advantage of dynamic typing
+******                                                   
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -41,26 +45,26 @@
 #ifndef QBPROPVISITOR_H
 #define QBPROPVISITOR_H
 
-#include <physics_toolkit/particleVisitor.h>
+#include <physics_toolkit/ParticleVisitor.h>
 #include <beamline/Slot.h>
 #include <beamline/CF_rbend.h>
 
-struct QBpropVisitor : public particleVisitor
+struct QBpropVisitor : public ParticleVisitor
 {
-  QBpropVisitor( const Particle& );
-  QBpropVisitor( const QBpropVisitor& );
-  ~QBpropVisitor();
+  QBpropVisitor( Particle      const& );
+  QBpropVisitor( QBpropVisitor const& );
+ ~QBpropVisitor();
 
-  void visitBmlnElmnt( bmlnElmnt* );
-  void visitDrift( drift* );
-  void visitRbend( rbend* );
-  void visitSbend( sbend* );
-  void visitSector( sector* );
-  void visitQuadrupole( quadrupole* );
-  void visitThinQuad( thinQuad* );
-  void visitSlot( Slot* );
-  void visitCF_rbend( CF_rbend* );
-  void visitMarker( marker* );
+  void visit( bmlnElmnt&  );
+  void visit( drift&      );
+  void visit( rbend&      );
+  void visit( sbend&      );
+  void visit( sector&     );
+  void visit( quadrupole& );
+  void visit( thinQuad&   );
+  void visit( Slot&       );
+  void visit( CF_rbend&   );
+  void visit( marker&     );
 
   Vector& getState();
   Vector  State();
