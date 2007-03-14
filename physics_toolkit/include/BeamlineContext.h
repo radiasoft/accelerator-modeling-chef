@@ -34,6 +34,13 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+******
+****** - support for reference counted beamlines/elements/BeamlineContext
+****** - Particles/JetParticles members stored by value whenever possible
+******
 **************************************************************************
 *************************************************************************/
 
@@ -41,6 +48,7 @@
 #define BEAMLINECONTEXT_H
 
 #include <iostream>
+#include <boost/shared_ptr.hpp>
 #include <basic_toolkit/complexAddon.h>
 #include <mxyzptlk/Mapping.h>
 #include <physics_toolkit/LattFuncSage.h>
@@ -64,21 +72,33 @@ class DeepBeamlineIterator;
 class ReverseBeamlineIterator;
 class DeepReverseBeamlineIterator;
 
+class quadrupole;
+class thinQuad;
+class sextupole;
+class thinSextupole;
+
+typedef boost::shared_ptr<quadrupole>    QuadrupolePtr;
+typedef boost::shared_ptr<thinQuad>      ThinQuadPtr;
+typedef boost::shared_ptr<sextupole>     SextupolePtr;
+typedef boost::shared_ptr<thinSextupole> ThinSextupolePtr;
+
+class  BeamlineContext;
+
+typedef boost::shared_ptr<BeamlineContext>            BmlContextPtr;
+typedef boost::shared_ptr<BeamlineContext const>  ConstBmlContextPtr;
+
 
 class BeamlineContext
 {
   public:
 
-    BeamlineContext( Particle const&, beamline* = 0, bool cloned = false );
+    BeamlineContext( Particle const&, BmlPtr bml );
    ~BeamlineContext();
 
-    int assign(  beamline* bml);
+    int assign(  BmlPtr bml);
 
     void accept( ConstBmlVisitor& ) const;
     void accept( BmlVisitor& );
-
-    void setClonedFlag( bool );
-    bool getClonedFlag();
 
     void setInitialDispersion( DispersionSage::Info const& );
     DispersionSage::Info const& getInitialDispersion();
@@ -94,18 +114,19 @@ class BeamlineContext
 
     // Beamline methods
 
-    const char* name() const;
+    std::string name() const;
     void rename( const char* );
     void peekAt( double& s, Particle const& ) const;
     double sumLengths() const;
 
-    int setLength   ( bmlnElmnt*, double );
-    int setStrength ( bmlnElmnt*, double );
-    int setAlignment( bmlnElmnt*, const alignmentData& );
+    int setLength   ( ElmPtr, double );
+    int setStrength ( ElmPtr, double );
+    int setAlignment( ElmPtr, alignmentData const& );
+
     // I really want to get rid of AlignmentData altogether!
     int setAlignment( beamline::Criterion&, const alignmentData& );
 
-    int replaceElement( bmlnElmnt*, bmlnElmnt* );
+    int replaceElement( ElmPtr , ElmPtr );
     // Will replace the first argument with
     // the second. Return values:
     // 0 everything went as planned
@@ -128,10 +149,10 @@ class BeamlineContext
     // If not set, default values are: (40,40).
 
     double getEnergy() const;
+
     int countHowManyDeeply() const;
-    alignmentData getAlignmentData( const bmlnElmnt* ) const;
-    beamline* cloneBeamline() const;
-    // Creates new beamline, for which the invoker is responsible.
+    alignmentData getAlignmentData( ElmPtr ) const;
+
     Mapping getOneTurnMap();
     // Returns the one turn map; 
     // Side effect: calculates closed orbit if not
@@ -200,42 +221,30 @@ class BeamlineContext
     //   eps1_ and eps2_ are used for the arguments.
 
     // Adjuster methods
-    int addHTuneCorrector( const bmlnElmnt* );
-    int addVTuneCorrector( const bmlnElmnt* );
-    int changeTunesBy( double, double );
-    // The method will check to make certain that
-    // the argument is either a quadrupole or a 
-    // thinQuad.
-    int addHChromCorrector( const bmlnElmnt* );
-    int addVChromCorrector( const bmlnElmnt* );
-    int changeChromaticityBy( double, double );
-    // The method will check to make certain that
-    // the argument is either a sextupole or a 
-    // thinSextupole.
 
+    void addHTuneCorrector( QuadrupolePtr );
+    void addHTuneCorrector( ThinQuadPtr );
+    void addHTuneCorrector( ElmPtr );          // Used by  GUI. MUST go away ! 
+
+    void addVTuneCorrector( QuadrupolePtr );
+    void addVTuneCorrector( ThinQuadPtr );
+    void addVTuneCorrector( ElmPtr );          // Used by  GUI. MUST go away ! 
+ 
+    int changeTunesBy( double, double );
+
+    void addHChromCorrector( SextupolePtr );
+    void addHChromCorrector( ThinSextupolePtr );
+    void addHChromCorrector( ElmPtr );         // Used by  GUI. MUST go away ! 
+
+    void addVChromCorrector( SextupolePtr );
+    void addVChromCorrector( ThinSextupolePtr );
+    void addVChromCorrector( ElmPtr );         // Used by  GUI. MUST go away ! 
+
+    int changeChromaticityBy( double, double );
 
     // Iterator functions
-    int beginIterator();
-    int beginDeepIterator();
-    int beginReverseIterator();
-    int beginDeepReverseIterator();
 
-    void endIterator();
-    void endDeepIterator();
-    void endReverseIterator();
-    void endDeepReverseIterator();
-
-    const bmlnElmnt* i_next();
-    const bmlnElmnt* di_next();
-    const bmlnElmnt* ri_next();
-    const bmlnElmnt* dri_next();
-
-    void i_reset();
-    void di_reset();
-    void ri_reset();
-    void dri_reset();
-
-    const beamline* cheatBmlPtr() const;
+    ConstBmlPtr cheatBmlPtr() const;
 
     // Stream functions
     friend std::ostream& operator<<( std::ostream&, const BeamlineContext& );
@@ -252,7 +261,8 @@ class BeamlineContext
 
     BeamlineContext( BeamlineContext const&); // forbidden
 
-    beamline*             p_bml_;
+    BmlPtr                p_bml_;
+
     LattFuncSage*         p_lfs_;
     EdwardsTengSage*      p_ets_;
     CovarianceSage*       p_covs_;
@@ -310,7 +320,6 @@ class BeamlineContext
 
     // Status flags
 
-    bool isCloned_;
     bool normalLattFuncsCalcd_;
     bool edwardstengFuncsCalcd_;
     bool dispersionFuncsCalcd_;
@@ -333,7 +342,7 @@ class BeamlineContext
 
     // Operations
  
-   void createTunes();
+    void createTunes();
     void createLFS();
     void deleteLFS();
     void createETS();
@@ -349,60 +358,6 @@ class BeamlineContext
     void deleteClosedOrbit();
 
 };
-
-
-inline bool BeamlineContext::isRing()          const { return Sage::isRing(p_bml_);                       }
-
-
-inline bool BeamlineContext::isTreatedAsRing() const { return (beamline::ring == p_bml_->getLineMode() ); }
-
-
-inline void BeamlineContext::handleAsRing()          { p_bml_->setLineMode( beamline::ring );             }
-
-
-inline void BeamlineContext::handleAsLine()          { p_bml_->setLineMode( beamline::line );             }
-
-
-inline Vector BeamlineContext::getParticleState()    { return particle_->State();                          }
-
-
-inline void BeamlineContext::loadParticleStateInto( Vector& s ) { s = particle_->State();                  }
-
-
-inline double BeamlineContext::getParticle_x()       { return   particle_->get_x();                        }
-
-
-inline double BeamlineContext::getParticle_y()       { return  particle_->get_y();                         }
-
-
-inline double BeamlineContext::getParticle_cdt()     { return  particle_->get_cdt();                       }
-
-
-inline double BeamlineContext::getParticle_npx()     { return particle_->get_npx();                        }
-
-
-inline double BeamlineContext::getParticle_npy()     { return particle_->get_npy();                        }
-
-
-inline double BeamlineContext::getParticle_ndp()     { return  particle_->get_ndp();                       }
-
-
-inline void BeamlineContext::setParticle_x( double u ) { particle_->set_x(u);                              }
-
-
-inline void BeamlineContext::setParticle_y( double u ) { particle_->set_y(u);                              }
-
-
-inline void BeamlineContext::setParticle_cdt( double u ) { particle_->set_cdt(u);                          }
-
-
-inline void BeamlineContext::setParticle_npx( double u ) { particle_->set_npx(u);                          }
-
-
-inline void BeamlineContext::setParticle_npy( double u ) { particle_->set_npy(u);                          }
-
-
-inline void BeamlineContext::setParticle_ndp( double u ) { particle_->set_ndp(u);                          }
 
 
 #endif // BEAMLINECONTEXT_H
