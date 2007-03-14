@@ -33,6 +33,10 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - visitor takes advantage of dynamic typing
+******                                                   
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -62,27 +66,29 @@
 
 class TransitionVisitor : public BmlVisitor
 {
+
  public:
+
   TransitionVisitor();
   TransitionVisitor( const Particle& );
   TransitionVisitor( const TransitionVisitor& );
   ~TransitionVisitor();
 
-  void visitBeamline  ( beamline*   );
-  void visitBmlnElmnt ( bmlnElmnt*  );
-  void visitRbend     ( rbend*      );
-  void visitSbend     ( sbend*      );
-  void visitCF_rbend  ( CF_rbend*   );
-  void visitCF_sbend  ( CF_sbend*   );
+  void visit( beamline&   );
+  void visit( bmlnElmnt&  );
+  void visit( rbend&      );
+  void visit( sbend&      );
+  void visit( CF_rbend&   );
+  void visit( CF_sbend&   );
 
-  void setParticle( const Particle& );
+  void setParticle( Particle const& );
 
-  double getTransitionGamma() const;
+  double getTransitionGamma()    const;
   double getMomentumCompaction() const;
 
   // Error codes
-  int  getErrorCode() const;
-  const char* getErrorMessage() const;
+  int         getErrorCode()       const;
+  const char* getErrorMessage()    const;
   const char* getErrorMessage(int) const;
 
   static const int NUMERRS;
@@ -98,26 +104,30 @@ class TransitionVisitor : public BmlVisitor
   static const int NULLBMLPTR;
 
  private:
-  double    _s;
-  double    _alpha;
-  double    _gamma_t;
-  Particle* _particlePtr;
 
-  int     _level;
-  double  _D;
-  double  _Dprime;
 
-  MatrixD _coeff;
-  MatrixD _b;
-  MatrixD _f;
+  void  visit_bend( bmlnElmnt& );
+  void  set_prev( bmlnElmnt const& );
 
-  bool    _calcDone;
+  double     s_;
+  double     alpha_;
+  double     gamma_t_;
+  Particle*  particlePtr_;
 
-  int    _errorCode;
-  static const char* _errorMessage[];
+  int        level_;
+  double     D_;
+  double     Dprime_;
 
-  void _visit_bend( bmlnElmnt* );
-  void _set_prev( const bmlnElmnt* );
+  MatrixD    coeff_;
+  MatrixD    b_;
+  MatrixD    f_;
+
+  bool       calcDone_;
+
+  int        errorCode_;
+
+  static const char*  errorMessage_[];
+
 };
 
 #endif // TRANSITIONVISITOR_H
