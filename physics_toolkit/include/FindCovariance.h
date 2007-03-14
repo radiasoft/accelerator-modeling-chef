@@ -33,6 +33,11 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - Pass particles by reference 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -53,8 +58,8 @@ struct WIREData {
   float vsigma;
 };
 
-MatrixD FindCovariance( const beamline& , const slist& , const JetParticle& );
-void    TestCovariance( const beamline& , const slist& , const JetParticle& ,
-		        const MatrixD& );
+MatrixD FindCovariance( beamline const& , std::list<ElmPtr>& , JetParticle const& );
+void    TestCovariance( beamline const& , std::list<ElmPtr>& , JetParticle const& ,
+		        MatrixD const& );
 
-#endif
+#endif //FINDCOVARIANCE_H
