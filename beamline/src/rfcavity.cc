@@ -42,6 +42,8 @@
 #include <iomanip>
 #include <beamline/rfcavity.h>
 #include <beamline/drift.h>
+#include <beamline/BmlVisitor.h>
+#include <beamline/RefRegVisitor.h>
 
 using namespace std;
 
@@ -183,46 +185,6 @@ rfcavity::~rfcavity()
 }
 
 
-void rfcavity::acceptInner( RefRegVisitor& v )
-{
-  double cdt = 0;
-  _ctRef = 0.0;
-  bmlnElmnt** x = _u;
-  while( x <= _v ) {
-    if( 0 == strcmp( "thinrfcavity", (*x)->Type() ) ) {
-      cdt = v.getCdt();
-      v.setCdt(0.0);
-      (*x)->accept(v);
-      v.setCdt(cdt);
-    }
-    else {
-      (*x)->accept( v );
-      _ctRef += (*x)->getReferenceTime();
-    }
-    x++;
-  }
-}
-
-
-void rfcavity::acceptInner( BmlVisitor& v )
-{
-  bmlnElmnt** x = _u;
-  while( x <= _v ) {
-    (*x)->accept( v );
-    x++;
-  }
-}
-
-
-void rfcavity::acceptInner( ConstBmlVisitor& v )
-{
-  bmlnElmnt** x = _u;
-  while( x <= _v ) {
-    (*x)->accept( v );
-    x++;
-  }
-}
-
 
 ostream& rfcavity::writeTo(ostream& os) 
 {
@@ -337,12 +299,56 @@ void rfcavity::setPhi( double const& angle )
 
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void rfcavity::setStrength( double const& eV )
 {
   bmlnElmnt::setStrength( eV*1.0e-9 );
   _finishConstructor();
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rfcavity::accept( BmlVisitor& v ) 
+{ 
+  v.visit( *this ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rfcavity::accept( ConstBmlVisitor& v ) const 
+{ 
+  v.visit( *this ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rfcavity::acceptInner( BmlVisitor& v ) {
+
+  bmlnElmnt** x = _u;
+  while( x <= _v ) {
+    (*x)->accept( v );
+    ++x;
+  }
+}  
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rfcavity::acceptInner( ConstBmlVisitor& v ) const {
+
+  bmlnElmnt const* const* x = _u;
+
+  while( x <= _v ) {
+    (*x)->accept( v );
+    ++x;
+  }
+}
 
 // **************************************************
 //   class thinrfcavity 
@@ -492,4 +498,43 @@ void thinrfcavity::setPhi( double const& angle )
 };
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void  thinrfcavity::accept( BmlVisitor& v )
+{
+ 
+  v.visit(*this); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void  thinrfcavity::accept( ConstBmlVisitor& v ) const
+{
+  v.visit(*this); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rfcavity::acceptInner( RefRegVisitor& v )
+{
+  double cdt = 0;
+  ctRef_ = 0.0;
+  bmlnElmnt** x = _u;
+  while( x <= _v ) {
+    if( 0 == strcmp( "thinrfcavity", (*x)->Type() ) ) {
+      cdt = v.getCdt();
+      v.setCdt(0.0);
+      (*x)->accept(v);
+      v.setCdt(cdt);
+    }
+    else {
+      (*x)->accept( v );
+      ctRef_ += (*x)->getReferenceTime();
+    }
+    x++;
+  }
+}
