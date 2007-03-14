@@ -64,21 +64,16 @@ using FNAL::pcerr;
 
 ParticleBunch::Discriminator::Discriminator( const ParticleBunch* x )
 : _within(x)
-{
-
-}
+{}
 
 
 ParticleBunch::Discriminator::Discriminator( const Discriminator& x )
 : _within( x._within )
-{
-}
+{}
 
 
 ParticleBunch::ParticleBunch()
-{
-
-}
+{}
 
 
 ParticleBunch::~ParticleBunch() 
@@ -90,22 +85,43 @@ ParticleBunch::~ParticleBunch()
 }
 
 
+ParticleBunch::iterator   ParticleBunch::begin()
+{
+  return bunch_.begin();
+}
+ 
+ParticleBunch:: iterator  ParticleBunch::end()
+{
+  return bunch_.end();
+}
+
+ParticleBunch::const_iterator   ParticleBunch::begin() const
+{
+  return bunch_.begin();
+}
+ 
+ParticleBunch:: const_iterator  ParticleBunch::end() const
+{
+  return bunch_.end();
+}
+
+
 void ParticleBunch::append( const Particle& x )
 {
-  _bag.push_back( ParticlePtr( x.Clone()) ); 
+  bunch_.push_back( ParticlePtr( x.Clone()) ); 
 }
 
 
 void ParticleBunch::append( ParticlePtr p )
 {
-  _bag.push_back( p ); 
+  bunch_.push_back( p ); 
 } 
 
 
 list<ParticlePtr> ParticleBunch::remove( Discriminator& dsc )
 {
   //list<Particle*>::iterator collector 
-  //    = remove_if ( _bag.begin(), _bag.end(), dsc );
+  //    = remove_if ( bunch_.begin(), bunch_.end(), dsc );
 
   // This is kludged, until I can figure out how
   // to make std algorithms do what I want them to do.
@@ -114,8 +130,8 @@ list<ParticlePtr> ParticleBunch::remove( Discriminator& dsc )
 
   list<ParticlePtr> marked;
   list<ParticlePtr>::iterator cur;
-  for( cur  = _bag.begin();
-       cur != _bag.end();
+  for( cur  = bunch_.begin();
+       cur != bunch_.end();
        cur++                ) 
   {
     if( dsc( *cur ) ) { 
@@ -128,124 +144,61 @@ list<ParticlePtr> ParticleBunch::remove( Discriminator& dsc )
        cur++                  )
   {
     list<ParticlePtr>::iterator new_end 
-      = _bag.erase( std::remove( _bag.begin(), _bag.end(), *cur ), _bag.end() );
+      = bunch_.erase( std::remove( bunch_.begin(), bunch_.end(), *cur ), bunch_.end() );
   }
   
   return marked;
 }
 
 
-void ParticleBunch::empty()
-{
-  this->clear();
-}
-
-
 void ParticleBunch::clear()
 {
-  if( !_bag.empty() ) { _bag.clear(); }
+  clear();
 }
 
 
 int ParticleBunch::size() const
 {
-  return _bag.size();
+  return bunch_.size();
 }
 
 
-bool ParticleBunch::isEmpty() const
+bool ParticleBunch::empty() const
 {
-  return _bag.empty();
+  return bunch_.empty();
 }
 
 
 // FAILS: list<Particle*> ParticleBunch::remove( Discriminator& dsc )
 // FAILS: {
 // FAILS:   list<Particle*>::iterator new_end
-// FAILS:     = remove_if( _bag.begin(), _bag.end(), dsc );
+// FAILS:     = remove_if( bunch_.begin(), bunch_.end(), dsc );
 // FAILS:   // Contrary to its name, remove_if actually removes nothing.
 // FAILS: 
 // FAILS:   list<Particle*> ret;
 // FAILS:   list<Particle*>::iterator cur;
-// FAILS:   for( cur  = new_end; cur != _bag.end(); cur++ ) {
+// FAILS:   for( cur  = new_end; cur != bunch_.end(); cur++ ) {
 // FAILS:     ret.push_back( *cur ); 
 // FAILS:   }
-// FAILS:   _bag.erase( new_end, _bag.end() );
+// FAILS:   bunch_.erase( new_end, bunch_.end() );
 // FAILS: 
 // FAILS:   return ret;
 // FAILS: }
 
 
 
-ParticleBunch::Iterator::Iterator( ParticleBunch& x )
-{
-  _cur = x._bag.begin();
-  _ref = &x;
-}
-
-
-ParticleBunch::Iterator::Iterator( const Iterator& x )
-: _cur(x._cur)
-, _ref(x._ref)
-{
-  static bool firstTime = true;
-  if( firstTime ) {
-    (*pcerr) << "\n*** WARNING *** "
-             << "\n*** WARNING *** " << __FILE__ << ", Line " << __LINE__
-             << "\n*** WARNING *** ParticleBunch::Iterator::Iterator( const Iterator& x )" 
-                "\n*** WARNING *** ------------------------------------------------------" 
-                "\n*** WARNING *** Copying an iterator may lead to unexpected results."
-                "\n*** WARNING *** Do so at your own risk."
-                "\n*** WARNING *** " 
-             << endl;
-    firstTime = false;
-  }
-}
-
-
-ParticleBunch::Iterator::~Iterator()
-{
-}
-
-
-
-
-const Particle* ParticleBunch::Iterator::next()
-{
-
-  if( _cur == _ref->_bag.end() ) { 
-    return 0;
-  }
-  else {
-    Particle* ptr = (*_cur).get();
-    _cur++;
-    return ptr; 
-  }
-  
-
-}
-
-
-void ParticleBunch::Iterator::reset()
-{
-  _cur = _ref->_bag.begin();
-}
-
-
 
 std::ostream& operator<<( std::ostream &os, ParticleBunch const& bunch) 
 {
-  // Note: ParticleBunch& bunch should be declared const ParticleBunch& bunch
-  // Unfortunately,  const declarations are not consistent  
 
   using std::setw;
 
   os << bunch.size() << endl;
-  ParticleBunch::Iterator it( const_cast<ParticleBunch&>(bunch) );  
 
-  while ( const Particle* p  = it.next()  ) {  
-    const Vector state = p->State(); 
-    os << setw(16) << p->ReferenceEnergy() << "  ";
+  for (ParticleBunch::const_iterator it = bunch.begin(); it != bunch.end(); ++it )
+  {
+    const Vector state = (*it)->State(); 
+    os << setw(16) << (*it)->ReferenceEnergy() << "  ";
     for (int i=0; i<6; ++i )
       os << setw(16) << state[i] << "  ";
     os << std::endl;
@@ -268,7 +221,7 @@ std::istream& operator >>( std::istream &is, ParticleBunch& bunch)
     for (int i=0; i<6; ++i) {
        is >> state[i]; 
     };     
-    /////// bunch.append( ParticlePtr(bunch.makeParticle(reference_energy,  state))); /// THIS SHOULD GO ! Particle is an abstract class !
+    /// bunch.append( ParticlePtr(bunch.makeParticle(reference_energy,  state))); /// Particle is an abstract class !
   }
   return is;
 }
@@ -490,302 +443,3 @@ Positron* PositronBunch::makeParticle( double energy, Vector const& state )
 }
 
 
-////////////////////////////////////////////////////
-////////////////////////////////////////////////////
-//
-//  *** OLD CODE ***
-//
-////////////////////////////////////////////////////
-////////////////////////////////////////////////////
-
-/*
-
-ProtonBunch::ProtonBunch(int nm, double energy, double* widths,
-			 Distribution& distrib,
-                         BunchPredicate* pBunchPredicate ): ParticleBunch() 
-{
- Proton* p;
- double x[ BMLN_dynDim ];
-
- int bProtonAllocated = false;
-
- while( iNOfTracked_ < nm ) {
-   
-   if ( !bProtonAllocated ) {  
-     p = new Proton(energy);
-   }
-   x[0] = distrib.getValue()*widths[0];
-   x[1] = distrib.getValue()*widths[1];
-   x[2] = distrib.getValue()*widths[2];
-   x[3] = distrib.getValue()*widths[3];
-   x[4] = distrib.getValue()*widths[4];
-   x[5] = distrib.getValue()*widths[5];
-   p->setState( x );
-   
-   if (( pBunchPredicate != 0 ) && ( (*pBunchPredicate)( *p ) == 0 )) {
-     bProtonAllocated = true;
-   } else {
-     append( p );
-     bProtonAllocated = false;
-     iNOfTracked_++;
-   }
-   iNOfTotal_++;
- }
-}
-
-ProtonBunch::ProtonBunch(int nm, double energy, double* widths, double* offsets,
-                         Distribution& distrib,
-                         BunchPredicate* pBunchPredicate ): ParticleBunch() {
- Proton* p;
- double x[ BMLN_dynDim ];
-
- while( iNOfTracked_ < nm ) {
-   
-   p = new Proton(energy);
-   x[0] = distrib.getValue()*widths[0] + offsets[0];
-   x[1] = distrib.getValue()*widths[1] + offsets[1];
-   x[2] = distrib.getValue()*widths[2] + offsets[2];
-   x[3] = distrib.getValue()*widths[3] + offsets[3];
-   x[4] = distrib.getValue()*widths[4] + offsets[4];
-   x[5] = distrib.getValue()*widths[5] + offsets[5];
-   p->setState( x );
-   
-   if (( pBunchPredicate != 0 ) && ( (*pBunchPredicate)( *p ) == 0 )) {
-     delete p;
-   } else {
-     append( p );
-     iNOfTracked_++;
-   }
-   iNOfTotal_++;
- }
-}
-
-void ProtonBunch::recreate( int nm, double energy, double* widths,
-			    Distribution& distrib,
-                            BunchPredicate* pBunchPredicate ) {
- Proton* p;
- double x[ BMLN_dynDim ];
-				// First get rid of the old particles
- slist_iterator getNext( *(slist*) this );
- while( (p = (Proton*) getNext()) )delete p;
- clear();
-
- iNOfTracked_ = 0;
- iNOfTotal_   = 0;
-
- while( iNOfTracked_ < nm ) {
-   
-   p = new Proton(energy);
-   x[0] = distrib.getValue()*widths[0];
-   x[1] = distrib.getValue()*widths[1];
-   x[2] = distrib.getValue()*widths[2];
-   x[3] = distrib.getValue()*widths[3];
-   x[4] = distrib.getValue()*widths[4];
-   x[5] = distrib.getValue()*widths[5];
-   p->setState( x );
-
-   if (( pBunchPredicate != 0 ) && ( (*pBunchPredicate)( *p ) == 0 )) {
-     delete p;
-   } else {
-     append( p );
-     iNOfTracked_++;
-   }
-   iNOfTotal_++;   
- }
-}
-
-void ProtonBunch::recreate(int nm, double energy, double* widths, double* offsets,
-                           Distribution& distrib, BunchPredicate* pBunchPredicate ) {
- Proton* p;
- double x[ BMLN_dynDim ];
-
-				// First get rid of the old particles
- slist_iterator getNext( *(slist*) this );
- while( (p = (Proton*) getNext()) ) delete p;
- clear();
-
- iNOfTracked_ = 0;
- iNOfTotal_   = 0;
- 
- while( iNOfTracked_ < nm ) {
-   
-   p = new Proton(energy);
-   x[0] = distrib.getValue()*widths[0] + offsets[0];
-   x[1] = distrib.getValue()*widths[1] + offsets[1];
-   x[2] = distrib.getValue()*widths[2] + offsets[2];
-   x[3] = distrib.getValue()*widths[3] + offsets[3];
-   x[4] = distrib.getValue()*widths[4] + offsets[4];
-   x[5] = distrib.getValue()*widths[5] + offsets[5];
-   p->setState( x );
-
-   if (( pBunchPredicate != 0 ) && ( (*pBunchPredicate)( *p ) == 0 )) {
-     delete p;
-   } else {
-     append( p );
-     iNOfTracked_++;
-   }
-   iNOfTotal_++;   
- }
-}
-
-ProtonBunch::ProtonBunch( int, int nm, char t, 
-                          double time_h, double energy_h ) : ParticleBunch() {
- int i;
- Proton* p;
- double x[ BMLN_dynDim ];
- x[0] = x[1] = x[3] = x[4] = 0.0;
-
- srand48(0);     // has to be before the loop
-
- double random, rad_fract, theta;
- for( i = 0; i < nm; i++ ) {
-  p = new Proton;
-  
-  switch (t){
-  case 'R':
-    random =  lrand48()/MAX_RANDOM;
-    rad_fract = sqrt(1. - pow(1. - random, 2./3.) );
-    theta = M_TWOPI * lrand48()/MAX_RANDOM;
-
-    x[2] = time_h * rad_fract * cos(theta);
-    x[5] = energy_h * rad_fract * sin(theta);
-
-    break;
-
-  default: printf("No implementation yet for types other than R" );
-    break;
-  }
-
-  p->setState( x );
-  append( p );
- }
-}
-
-PositronBunch::PositronBunch() : ParticleBunch() {
-}
- 
-PositronBunch::PositronBunch(int nm, double energy, double* widths,
-                             Distribution& distrib,
-                             BunchPredicate* pBunchPredicate ) : ParticleBunch() {
-                               
- Positron* p;
- double x[ BMLN_dynDim ];
-
- while( iNOfTracked_ < nm ) {
-   
-   p = new Positron(energy);
-   x[0] = distrib.getValue()*widths[0];
-   x[1] = distrib.getValue()*widths[1];
-   x[2] = distrib.getValue()*widths[2];
-   x[3] = distrib.getValue()*widths[3];
-   x[4] = distrib.getValue()*widths[4];
-   x[5] = distrib.getValue()*widths[5];
-   p->setState( x );
-   
-   if (( pBunchPredicate != 0 ) && ( (*pBunchPredicate)( *p ) == 0 )) {
-     delete p;
-   } else {
-     append( p );
-     iNOfTracked_++;
-   }
-   iNOfTotal_++;   
- }
-}
-
-PositronBunch::PositronBunch(int nm, double energy, double* widths,
-			     double* offsets,Distribution& distrib,
-                             BunchPredicate* pBunchPredicate ) : ParticleBunch() {
- Positron* p;
- double x[ BMLN_dynDim ];
-
- while( iNOfTracked_ < nm ) {
-   
-   p = new Positron(energy);
-   x[0] = distrib.getValue()*widths[0] + offsets[0];
-   x[1] = distrib.getValue()*widths[1] + offsets[1];
-   x[2] = distrib.getValue()*widths[2] + offsets[2];
-   x[3] = distrib.getValue()*widths[3] + offsets[3];
-   x[4] = distrib.getValue()*widths[4] + offsets[4];
-   x[5] = distrib.getValue()*widths[5] + offsets[5];
-   p->setState( x );
-   
-   if (( pBunchPredicate != 0 ) && ( (*pBunchPredicate)( *p ) == 0 )) {
-     delete p;
-   } else {
-     append( p );
-     iNOfTracked_++;
-   }
-   iNOfTotal_++;   
- }
-}
-
-PositronBunch::~PositronBunch() {
-}
-
-void PositronBunch::recreate(int nm, double energy, double* widths,
-			     Distribution& distrib, BunchPredicate* pBunchPredicate ) {
- Positron* p;
- double x[ BMLN_dynDim ];
-				// First get rid of the old particles
- slist_iterator getNext( *(slist*) this );
- while( (p = (Positron*) getNext()) ) delete p;
-
- clear();
- iNOfTracked_ = 0;
- iNOfTotal_   = 0;
-
- while( iNOfTracked_ < nm ) {
-   
-   p = new Positron(energy);
-   x[0] = distrib.getValue()*widths[0];
-   x[1] = distrib.getValue()*widths[1];
-   x[2] = distrib.getValue()*widths[2];
-   x[3] = distrib.getValue()*widths[3];
-   x[4] = distrib.getValue()*widths[4];
-   x[5] = distrib.getValue()*widths[5];   
-   p->setState( x );
-   
-   if (( pBunchPredicate != 0 ) && ( (*pBunchPredicate)( *p ) == 0 )) {
-     delete p;
-   } else {
-     append( p );
-     iNOfTracked_++;
-   }
-   iNOfTotal_++;   
- }
-}
-
-void PositronBunch::recreate(int nm, double energy, double* widths, double* offsets,
-                             Distribution& distrib, BunchPredicate* pBunchPredicate ) {
- Positron* p;
- double x[ BMLN_dynDim ];
-
-				// First get rid of the old particles
- slist_iterator getNext( *(slist*) this );
- while( (p = (Positron*) getNext()) ) delete p;
- clear();
-
- iNOfTracked_ = 0;
- iNOfTotal_   = 0;
-
- while( iNOfTracked_ < nm ) {
-
-   p = new Positron(energy);
-   x[0] = distrib.getValue()*widths[0] + offsets[0];
-   x[1] = distrib.getValue()*widths[1] + offsets[1];
-   x[2] = distrib.getValue()*widths[2] + offsets[2];
-   x[3] = distrib.getValue()*widths[3] + offsets[3];
-   x[4] = distrib.getValue()*widths[4] + offsets[4];
-   x[5] = distrib.getValue()*widths[5] + offsets[5];
-   p->setState( x );
-   
-   if (( pBunchPredicate != 0 ) && ( (*pBunchPredicate)( *p ) == 0 )) {
-     delete p;
-   } else {
-     append( p );
-     iNOfTracked_++;
-   }
-   iNOfTotal_++;
- }
-}
-*/
