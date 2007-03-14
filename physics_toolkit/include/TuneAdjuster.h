@@ -32,6 +32,11 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
+******
+******  Mar 2007      ostiguy@fnal.gov
+******
+******  - controls Matrix returned by reference !
+******  - support for reference counted elements
 ******                                                                
 ******                                                                
 **************************************************************************
@@ -69,43 +74,49 @@
 #include <physics_toolkit/Sage.h>
 #include <beamline/quadrupole.h>
 
-class TuneAdjuster : public Sage
-{
+class TuneAdjuster : public Sage {
+
 public:
-  TuneAdjuster( const beamline*, bool = false );
-  TuneAdjuster( const beamline&, bool = false );
-  // Second argument is used by class Sage
-  // to control cloning. (See Sage.h)
-  ~TuneAdjuster();
 
-  void addCorrector( const quadrupole&, double, double );
-  void addCorrector( const quadrupole*, double, double );
-  void addCorrector( const thinQuad&,   double, double );
-  void addCorrector( const thinQuad*,   double, double );
+  TuneAdjuster( BmlPtr bml     ); // shared
+  TuneAdjuster( beamline const&); // beamline is cloned
 
-  int  numberOfCorrectors() const;
+ ~TuneAdjuster();
 
-  int changeTunesBy ( double, double, const JetParticle& );
-  int changeHorizontalTuneBy ( double, const JetParticle& );
-  int changeVerticalTuneBy ( double, const JetParticle& );
-  MatrixD getControls();
+  void addCorrector( quadrupole     const&,  double, double );
+  void addCorrector( QuadrupolePtr,          double, double );
+
+  void addCorrector( thinQuad       const&,  double, double );
+  void addCorrector( ThinQuadPtr,            double, double );
+
+  void addCorrector( ElmPtr,          double, double );      // Form used by GUI code. Needs to go away ! 
+
+
+
+  int numberOfCorrectors() const;
+
+  int          changeTunesBy ( double, double,  JetParticle const& );
+  int changeHorizontalTuneBy ( double,          JetParticle const& );
+  int   changeVerticalTuneBy ( double,          JetParticle const& );
+
+  MatrixD& getControls();
 
   void eraseAll();
 
 private:
-  bmlnElmnt** _correctors;
-  int         _numberOfCorrectors;
-  MatrixD*    _f;
-  MatrixD     _c;
-  void        _addCorrector( const bmlnElmnt*, double, double );
 
-  char        _isQuadLike  ( const bmlnElmnt* ) const;
-  char        _isaThinQuad ( const bmlnElmnt* ) const;
-  char        _isaQuad     ( const bmlnElmnt* ) const;
+  bool        isQuadLike  ( bmlnElmnt const& ) const;
+  bool        isaThinQuad ( bmlnElmnt const& ) const;
+  bool        isaQuad     ( bmlnElmnt const& ) const;
+  bool        slotFound();
+
+  std::vector<ElmPtr> correctors_;
+
+  MatrixD     f_;
+  MatrixD     c_;
+
+  void        addCorrector_private( ElmPtr, double, double );
+
 };
 
-
-#include <physics_toolkit/TuneAdjuster.icc>
-
-
-#endif // LATTFUNCSAGE_H
+#endif // TUNEADJUST_H
