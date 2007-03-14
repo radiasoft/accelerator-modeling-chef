@@ -45,16 +45,16 @@
 #include <beamline/JetParticle.h>
 
 void sextupole::localPropagate( Particle& p ) {
-  p_bml->propagate( p );
-  p.set_cdt( p.get_cdt() - _ctRef );
+  p_bml_->propagate( p );
+  p.set_cdt( p.get_cdt() - ctRef_ );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void sextupole::localPropagate( JetParticle& p ) {
-  p_bml->propagate( p );
-  p.set_cdt( p.get_cdt() - _ctRef );
+  p_bml_->propagate( p );
+  p.set_cdt( p.get_cdt() - ctRef_ );
 }
 
 
@@ -65,11 +65,11 @@ void thinSextupole::localPropagate( Particle& p ) {
 
  Vector& state = p.getState(); 
  
- double k = strength / p.ReferenceBRho();
+ double k = strength_ / p.ReferenceBRho();
  double x = state[0];
  double y = state[1];
  
- if( strength != 0.0 ) 
+ if( strength_ != 0.0 ) 
  {
 
    state[3] -= k * ( x*x - y*y );
@@ -86,11 +86,11 @@ void thinSextupole::localPropagate( JetParticle& p ) {
 
  Mapping& state = p.getState(); 
 
- double k = strength / p.ReferenceBRho();
+ double k = strength_ / p.ReferenceBRho();
  Jet x = state[0];
  Jet y = state[1];
  
- if( strength != 0.0 ) 
+ if( strength_ != 0.0 ) 
  {
    state[3] -= k * ( x*x - y*y );
    state[4] += 2.0 * k * x*y ;
@@ -141,9 +141,9 @@ void ThinSextupolePropagator::operator()( bmlnElmnt& elm,  Particle& p )
 { 
 
   Vector& state    = p.getState(); 
-  double  strength = elm.Strength(); 
+  double  strength_ = elm.Strength(); 
 
-  double k = strength / p.ReferenceBRho();
+  double k = strength_ / p.ReferenceBRho();
   double x = state[0];
   double y = state[1];
  
@@ -160,13 +160,13 @@ void ThinSextupolePropagator::operator()( bmlnElmnt& elm, JetParticle& p)
 { 
 
  Mapping& state   = p.getState(); 
- double  strength = elm.Strength(); 
+ double  strength_ = elm.Strength(); 
 
- double k = strength / p.ReferenceBRho();
+ double k = strength_ / p.ReferenceBRho();
  Jet x = state[0];
  Jet y = state[1];
  
- if( strength != 0.0 ) 
+ if( strength_ != 0.0 ) 
  {
    state[3] -= k * ( x*x - y*y );
    state[4] += 2.0 * k * x*y ;

@@ -52,8 +52,8 @@ void thin2pole::localPropagate( Particle& p ) {
 
  Vector& state = p.getState();
  
- if(strength != 0) {
-   state[3] -= strength/p.ReferenceBRho();
+ if(strength_ != 0) {
+   state[3] -= strength_/p.ReferenceBRho();
  }
 }
 
@@ -61,8 +61,8 @@ void thin2pole::localPropagate( JetParticle& p ) {
 
  Mapping& state = p.getState();
 
-  if(strength != 0) {
-    state[3] -= strength/p.ReferenceBRho();
+  if(strength_ != 0) {
+    state[3] -= strength_/p.ReferenceBRho();
   }
 }
 
@@ -73,8 +73,8 @@ void thin12pole::localPropagate( Particle& p ) {
  
  Vector& state = p.getState();
 
- if(strength != 0) {
-   k = strength/p.ReferenceBRho();
+ if(strength_ != 0) {
+   k = strength_/p.ReferenceBRho();
    x = state[0];
    y = state[1];
    
@@ -91,11 +91,11 @@ void thin12pole::localPropagate( JetParticle& p ) {
 
   Mapping& state = p.getState();
 
-  if(strength != 0) {
+  if(strength_ != 0) {
     Jet  k, x, y, s;
     JetC z, z2;
     
-    k = strength/p.ReferenceBRho();
+    k = strength_/p.ReferenceBRho();
     x = state(0);
     y = state(1);
     
@@ -116,8 +116,8 @@ void thin14pole::localPropagate( Particle& p ) {
  
  Vector& state = p.getState();
 
-  if(strength != 0) {
-    k = strength/p.ReferenceBRho();
+  if(strength_ != 0) {
+    k = strength_/p.ReferenceBRho();
     x = state[0];
     y = state[1];
  
@@ -134,11 +134,11 @@ void thin14pole::localPropagate( JetParticle& p ) {
 
   Mapping& state = p.getState();
 
-  if(strength != 0) {
+  if(strength_ != 0) {
     Jet  k, x, y, s;
     JetC z;
  
-    k = strength/p.ReferenceBRho();
+    k = strength_/p.ReferenceBRho();
     x = state(0);
     y = state(1);
  
@@ -160,8 +160,8 @@ void thin16pole::localPropagate( Particle& p ) {
  
  Vector& state = p.getState();
 
-  if(strength != 0) {
-    k = strength/p.ReferenceBRho();
+  if(strength_ != 0) {
+    k = strength_/p.ReferenceBRho();
     x = state[0];
     y = state[1];
  
@@ -179,11 +179,11 @@ void thin16pole::localPropagate( JetParticle& p ) {
 
   Mapping& state = p.getState();
 
-  if(strength != 0) {
+  if(strength_ != 0) {
     Jet  k, x, y, s;
     JetC z, u;
  
-    k = strength/p.ReferenceBRho();
+    k = strength_/p.ReferenceBRho();
     x = state(0);
     y = state(1);
  
@@ -205,8 +205,8 @@ void thin18pole::localPropagate( Particle& p ) {
  
  Vector& state = p.getState();
 
-  if(strength != 0) {
-    k = strength/p.ReferenceBRho();
+  if(strength_ != 0) {
+    k = strength_/p.ReferenceBRho();
     x = state[0];
     y = state[1];
  
@@ -224,11 +224,11 @@ void thin18pole::localPropagate( JetParticle& p ) {
 
  Mapping& state = p.getState();
 
-  if(strength != 0) {
+  if(strength_ != 0) {
     Jet  k, x, y, s;
     JetC z;
  
-    k = strength/p.ReferenceBRho();
+    k = strength_/p.ReferenceBRho();
     x = state(0);
     y = state(1);
  
