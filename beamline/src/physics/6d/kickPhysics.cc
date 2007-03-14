@@ -74,21 +74,22 @@ void vkick::localPropagate( Particle& p )
   Vector& state = p.getState();
 
   double realLength, realCt;
-  if( length > 0.0 ) {
-    realLength = length;
-    realCt     = _ctRef;
-    length /= 2.0;
-    _ctRef /= 2.0;
+
+  if( length_ > 0.0 ) {
+    realLength  = length_;
+    realCt      = ctRef_;
+    length_    /= 2.0;
+    ctRef_     /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    state[4] += strength;
+    state[4] += strength_;
     bmlnElmnt::localPropagate( p );
 
-    length = realLength;
-    _ctRef = realCt;
+    length_ = realLength;
+    ctRef_  = realCt;
   }
   else {
-    state[4] += strength;
+    state[4] += strength_;
   }
 }
 
@@ -118,21 +119,21 @@ void vkick::localPropagate( JetParticle& p )
   Mapping& state = p.getState();
 
   double realLength, realCt;
-  if( length > 0.0 ) {
-    realLength = length;
-    realCt     = _ctRef;
-    length /= 2.0;
-    _ctRef /= 2.0;
+  if( length_ > 0.0 ) {
+    realLength = length_;
+    realCt     = ctRef_;
+    length_ /= 2.0;
+    ctRef_ /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    ( state ).SetComponent( 4, state(4) + strength );
+    ( state ).SetComponent( 4, state(4) + strength_ );
     bmlnElmnt::localPropagate( p );
 
-    length = realLength;
-    _ctRef = realCt;
+    length_ = realLength;
+    ctRef_ = realCt;
   }
   else {
-    ( state ).SetComponent( 4, state(4) + strength );
+    ( state ).SetComponent( 4, state(4) + strength_ );
   }
 }
 
@@ -164,21 +165,21 @@ void hkick::localPropagate( Particle& p )
   Vector& state = p.getState();
 
   double realLength, realCt;
-  if( length > 0.0 ) {
-    realLength = length;
-    realCt     = _ctRef;
-    length /= 2.0;
-    _ctRef /= 2.0;
+  if( length_ > 0.0 ) {
+    realLength = length_;
+    realCt     = ctRef_;
+    length_ /= 2.0;
+    ctRef_ /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    state[3] += strength;
+    state[3] += strength_;
     bmlnElmnt::localPropagate( p );
 
-    length = realLength;
-    _ctRef = realCt;
+    length_ = realLength;
+    ctRef_ = realCt;
   }
   else {
-    state[3] += strength;
+    state[3] += strength_;
   }
 }
 
@@ -209,21 +210,22 @@ void hkick::localPropagate( JetParticle& p )
   Mapping& state = p.getState();
 
   double realLength, realCt;
-  if( length > 0.0 ) {
-    realLength = length;
-    realCt     = _ctRef;
-    length /= 2.0;
-    _ctRef /= 2.0;
+
+  if( length_ > 0.0 ) {
+    realLength = length_;
+    realCt     = ctRef_;
+    length_   /= 2.0;
+    ctRef_    /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    state.SetComponent( 3, state(3) + strength );
+    state.SetComponent( 3, state(3) + strength_ );
     bmlnElmnt::localPropagate( p );
 
-    length = realLength;
-    _ctRef = realCt;
+    length_ = realLength;
+    ctRef_ = realCt;
   }
   else {
-    state.SetComponent( 3, state(3) + strength );
+    state.SetComponent( 3, state(3) + strength_ );
   }
 }
 
@@ -254,23 +256,23 @@ void kick::localPropagate( Particle& p )
   Vector& state = p.getState();
 
   double realLength, realCt;
-  if( length > 0.0 ) {
-    realLength = length;
-    realCt     = _ctRef;
-    length /= 2.0;
-    _ctRef /= 2.0;
+  if( length_ > 0.0 ) {
+    realLength = length_;
+    realCt     = ctRef_;
+    length_ /= 2.0;
+    ctRef_ /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    state[3] += horizontalKick;
-    state[4] += verticalKick;
+    state[3] += horizontalKick_;
+    state[4] += verticalKick_;
     bmlnElmnt::localPropagate( p );
 
-    length = realLength;
-    _ctRef = realCt;
+    length_ = realLength;
+    ctRef_ = realCt;
   }
   else {
-    state[3] += horizontalKick;
-    state[4] += verticalKick;
+    state[3] += horizontalKick_;
+    state[4] += verticalKick_;
   }
 }
 
@@ -300,22 +302,22 @@ void kick::localPropagate( JetParticle& p )
   Mapping& state = p.getState();
 
   double realLength, realCt;
-  if( length > 0.0 ) {
-    realLength = length;
-    realCt     = _ctRef;
-    length /= 2.0;
-    _ctRef /= 2.0;
+  if( length_ > 0.0 ) {
+    realLength = length_;
+    realCt     = ctRef_;
+    length_ /= 2.0;
+    ctRef_ /= 2.0;
 
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    state.SetComponent( 3, state(3) + horizontalKick );
-    state.SetComponent( 4, state(4) + verticalKick   );
+    state.SetComponent( 3, state(3) + horizontalKick_ );
+    state.SetComponent( 4, state(4) + verticalKick_   );
     bmlnElmnt::localPropagate( p );
 
-    length = realLength;
-    _ctRef = realCt;
+    length_ = realLength;
+    ctRef_ = realCt;
   }
   else {
-    state.SetComponent( 3, state(3) + horizontalKick );
-    state.SetComponent( 4, state(4) + verticalKick   );
+    state.SetComponent( 3, state(3) + horizontalKick_ );
+    state.SetComponent( 4, state(4) + verticalKick_   );
   }
 }

@@ -73,7 +73,7 @@ void quadrupole::TPOT_Prop::set_n( int m )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int quadrupole::TPOT_Prop::operator()( bmlnElmnt* pbe, Particle& p ) {
-  ((quadrupole*) pbe)->p_bml->propagate( p );
+  ((quadrupole*) pbe)->p_bml_->propagate( p );
   p.set_cdt( p.get_cdt() - pbe->getReferenceTime() );
   return 0;
 }
@@ -83,7 +83,7 @@ int quadrupole::TPOT_Prop::operator()( bmlnElmnt* pbe, Particle& p ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int quadrupole::TPOT_Prop::operator()( bmlnElmnt* pbe, JetParticle& p ) {
-  ((quadrupole*) pbe)->p_bml->propagate( p );
+  ((quadrupole*) pbe)->p_bml_->propagate( p );
   p.set_cdt( p.get_cdt() - pbe->getReferenceTime() );
   return 0;
 }
@@ -103,24 +103,26 @@ void quadrupole::TPOT_Prop::setup( quadrupole* pqd ) const
   double quarterStrength = pqd->Strength()*lng/4.0;
  
 
-  if( pqd->p_bml ) { pqd->p_bml->zap(); delete pqd->p_bml;  pqd->p_bml=0; }
+  if  ( ! (pqd->p_bml_) ) {
+    pqd->p_bml_ = BmlPtr( new beamline() );
+  }
 
-  pqd->p_bml = new beamline;
-  
+  pqd->p_bml_->clear();
+
   if( _n == 1 ) {           // One thin element ..........
-    pqd->p_bml->append( new drift( lng / 2.0 ) );
-    pqd->p_bml->append( pqd->p_bml_e = new thinQuad( str*lng ) );
-    pqd->p_bml->append( new drift( lng / 2.0 ) );
+    pqd->p_bml_->append( DriftPtr( new drift( lng / 2.0 ) ));
+    pqd->p_bml_->append( pqd->bml_e_ = ThinQuadPtr( new thinQuad( str*lng ) ));
+    pqd->p_bml_->append( DriftPtr( new drift( lng / 2.0 ) ) );
   }
   
   else if( _n == 4 ) {      // TEAPOT-like schema .........
-    pqd->p_bml->append( new drift( frontLength ) );
-    pqd->p_bml->append( new thinQuad( quarterStrength ) );
+    pqd->p_bml_->append( DriftPtr( new drift( frontLength ) ));
+    pqd->p_bml_->append( ThinQuadPtr( new thinQuad( quarterStrength ) ) );
     for( int i = 0; i < 3; i++ ) {
-      pqd->p_bml->append( new drift( sepLength ) );
-      pqd->p_bml->append( new thinQuad( quarterStrength ) );
+      pqd->p_bml_->append( DriftPtr( new drift( sepLength ) ));
+      pqd->p_bml_->append( ThinQuadPtr( new thinQuad( quarterStrength ) ) );
     }
-    pqd->p_bml->append( new drift( frontLength ) );
+    pqd->p_bml_->append( DriftPtr( new drift( frontLength ) ) );
   }
   
   else if( 0 == _n % 4 ) { // TEAPOT tandem ...............
@@ -130,24 +132,24 @@ void quadrupole::TPOT_Prop::setup( quadrupole* pqd ) const
     sepLength       /= xu;
     quarterStrength /= xu;
     for( int i = 0; i < u; i++ ) {
-      pqd->p_bml->append( new drift( frontLength ) );
-      pqd->p_bml->append( new thinQuad( quarterStrength ) );
+      pqd->p_bml_->append( DriftPtr( new drift( frontLength ) ) );
+      pqd->p_bml_->append( ThinQuadPtr( new thinQuad( quarterStrength ) ) );
       for( int i = 0; i < 3; i++ ) {
-        pqd->p_bml->append( new drift( sepLength ) );
-        pqd->p_bml->append( new thinQuad( quarterStrength ) );
+        pqd->p_bml_->append( DriftPtr( new drift( sepLength ) ));
+        pqd->p_bml_->append( ThinQuadPtr( new thinQuad( quarterStrength ) ) );
       }
-      pqd->p_bml->append( new drift( frontLength ) );
+      pqd->p_bml_->append( DriftPtr( new drift( frontLength ) ) );
     }
   }
 
   else {                   // Equal spacing ...............
-    pqd->p_bml->append( new drift( lng / ( 2.0*xm ) ) );
-    pqd->p_bml->append( new thinQuad( str*lng/ xm ) );
+    pqd->p_bml_->append( DriftPtr( new drift( lng / ( 2.0*xm ) )  ));
+    pqd->p_bml_->append( ThinQuadPtr( new thinQuad( str*lng/ xm ) ) );
     for( int i = 0; i < _n-1; i++ ) {
-      pqd->p_bml->append( new drift( lng / xm ) );
-      pqd->p_bml->append( new thinQuad( str*lng/ xm ) );
+      pqd->p_bml_->append( DriftPtr( new drift( lng / xm ) ));
+      pqd->p_bml_->append( ThinQuadPtr( new thinQuad( str*lng/ xm ) ));
     }
-    pqd->p_bml->append( new drift( lng / ( 2.0*xm ) ) );
+    pqd->p_bml_->append( DriftPtr( new drift( lng / ( 2.0*xm ) ) ) );
   }
 }
 
@@ -164,9 +166,9 @@ void thinQuad::localPropagate( Particle& p ) {
  double k      = 0;
  Vector& state = p.getState();
 
- if( strength != 0.0 ) 
+ if( strength_ != 0.0 ) 
  {
-   k = strength / p.ReferenceBRho();
+   k = strength_ / p.ReferenceBRho();
  
    state[3] += - k * state[0];
    state[4] +=   k * state[1];
@@ -182,10 +184,10 @@ void thinQuad::localPropagate( JetParticle& p ) {
  double k       = 0;
  Mapping& state = p.getState();
 
- if( strength != 0.0 ) 
+ if( strength_ != 0.0 ) 
  {
 
-   k = strength / p.ReferenceBRho();
+   k = strength_ / p.ReferenceBRho();
 
    state[3] += - k * state[0];
    state[4] +=   k * state[1];
