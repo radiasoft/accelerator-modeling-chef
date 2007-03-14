@@ -31,6 +31,11 @@
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
+******
+****** REVISION HISTORY
+****** 
+****** Mar 2007        ostiguy@fnal.gov
+****** -use new style beamline iterators
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -40,35 +45,27 @@
 
 
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BeamlineIterator.h>
 #include <beamline/beamline.h>
 
 using namespace std;
 
-void BeamlineSpitout( int numspaces, BeamlineIterator& bi )
+void BeamlineSpitout( int numspaces, beamline::const_iterator& it )
 {
 
-  bmlnElmnt* q = 0;
+    for ( ; it != it.end(); ++it ) 
+    {
 
-  while( true ) {
-    q = bi++;
-    if( !q ) {return;}
+      for( int i = 0; i < numspaces; ++i ) {
+        cout << " ";
+      }
+      cout << (*it)->Type() << "  " << (*it)->Name() << endl;
 
-    for( int i = 0; i < numspaces; ++i) {
-      cout << " ";
+      if( typeid(**it) == typeid(beamline) ) 
+      {
+        beamline::const_iterator newit = it;
+        BeamlineSpitout(numspaces+3, newit);
+      }
     }
-    cout << q->Type() << "  " << q->Name() << endl;
-
-    if( typeid(*q) == typeid(beamline) ) {
-      BeamlineIterator newbi( *static_cast<beamline*>(q) );
-      BeamlineSpitout(numspaces+3,newbi);
-    }
-  }
 }
 
 
-void BeamlineSpitout( const beamline& bml )
-{
-  BeamlineIterator bi( const_cast<beamline&>(bml) );
-  BeamlineSpitout( 0, bi );
-}
