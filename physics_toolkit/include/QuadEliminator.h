@@ -33,6 +33,10 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - visitor takes advantage of dynamic typing
+******                                                   
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -54,35 +58,46 @@
 #ifndef QUADELIMINATOR_H
 #define QUADELIMINATOR_H
 
+#include <boost/shared_ptr.hpp>
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/Alignment.h>
 
+class quadrupole;
+class beamline;
 
-class QuadEliminator : public ConstBmlVisitor
-{
+typedef boost::shared_ptr<quadrupole>  QuadrupolePtr;
+typedef boost::shared_ptr<beamline>  BmlPtr;
+
+
+
+
+class QuadEliminator : public ConstBmlVisitor {
+
  public:
-  QuadEliminator();
-  QuadEliminator( const QuadEliminator& );
+   QuadEliminator();
   ~QuadEliminator();
 
-  void visitBeamline  ( const beamline*   );
-  void visitBmlnElmnt ( const bmlnElmnt*  );
-  void visitQuadrupole( const quadrupole* ); 
+  void visit( beamline   const&  );
+  void visit( bmlnElmnt  const&  );
+  void visit( quadrupole const&  ); 
 
-  beamline* beamlinePtr();
+  BmlPtr beamlinePtr();
+
   // Invoking routine is responsible for
   // using this beamline before the 
   // QuadEliminator goes out of scope.
 
-  beamline* clonedBeamlinePtr();
-  // Invoking routine is responsible for
-  // eliminating the cloned beamline.
-
 
  private: 
-  beamline*   _bmlPtr;
-  quadrupole* _quadPtr;
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+  QuadEliminator( QuadEliminator const& ); // forbidden
+
+  BmlPtr        bmlPtr_;
+  QuadrupolePtr quadPtr_;
 };
 
 
