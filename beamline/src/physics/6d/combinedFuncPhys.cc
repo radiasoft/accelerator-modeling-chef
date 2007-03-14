@@ -40,7 +40,6 @@
 #endif
 
 #include <beamline/beamline.h>
-#include <beamline/BmlPtrList.h>
 #include <beamline/combinedFunction.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
@@ -51,8 +50,8 @@ void combinedFunction::localPropagate( Particle& p )
     (*propfunc_)( this, p );
   }
   else {
-    p_bml->propagate( p );
-    p.set_cdt( p.get_cdt() - _ctRef );
+    p_bml_->propagate( p );
+    p.set_cdt( p.get_cdt() - ctRef_ );
   }
 
 }
@@ -66,8 +65,8 @@ void combinedFunction::localPropagate( JetParticle& p )
     (*propfunc_)( this, p );
   }
   else {
-    p_bml->propagate( p );
-    p.set_cdt( p.get_cdt() - _ctRef );
+    p_bml_->propagate( p );
+    p.set_cdt( p.get_cdt() - ctRef_ );
   }
 }
   

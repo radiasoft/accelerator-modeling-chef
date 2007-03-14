@@ -54,11 +54,11 @@ void Pinger::localPropagate( Particle& p ) {
   Vector& state = p.getState();
 
   if ( isArmed() ) {
-    if( 0 == _counter ) {
-       state[3] += cos(_kick_direction)*strength;
-       state[4] += sin(_kick_direction)*strength;
+    if( 0 == counter_ ) {
+       state[3] += cos(kick_direction_)*strength_;
+       state[4] += sin(kick_direction_)*strength_;
     }
-    _counter--;
+    --counter_;
   }
 }
 
@@ -71,13 +71,13 @@ void Pinger::localPropagate( JetParticle& p ) {
   Mapping& state = p.getState();
 
   if ( isArmed() ) {
-    if( 0 == _counter ) {
-      Jet  dummy = p.State(3) + cos(_kick_direction)*strength;
+    if( 0 == counter_ ) {
+      Jet  dummy = p.State(3) + cos(kick_direction_)*strength_;
       state.SetComponent( 3, dummy );
-      dummy = p.State(4) + sin(_kick_direction)*strength;
+      dummy = p.State(4) + sin(kick_direction_)*strength_;
       state.SetComponent( 4, dummy );
     }
-    _counter--;
+    --counter_;
   }
 }
 
@@ -88,16 +88,16 @@ void Pinger::localPropagate( ParticleBunch& b ) {
 
 
   if ( isArmed() ) {
-    if( 0 == _counter ) {
-      Particle* p;
-      ParticleBunch::Iterator get( b );
-      while((  p = (Particle*) get.next()  )) {
-        Vector& state = p->getState();
-        state[3] += cos(_kick_direction)*strength;
-        state[4] += sin(_kick_direction)*strength;
+    if( 0 == counter_ ) {
+
+      for (  ParticleBunch::iterator it = b.begin(); it != b.end(); ++it )  
+      {
+        Vector& state = (*it)->getState();
+        state[3] += cos(kick_direction_)*strength_;
+        state[4] += sin(kick_direction_)*strength_;
       }
     }
-    _counter--;
+    --counter_;
   }
 }
  

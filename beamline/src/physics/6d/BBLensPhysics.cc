@@ -50,7 +50,7 @@
 
 void BBLens::localPropagate( Particle& p ) {
 
- if( strength == 0.0 ) return;
+ if( strength_ == 0.0 ) return;
 
  double x, y;
  Vector p_beta(3);
@@ -61,11 +61,11 @@ void BBLens::localPropagate( Particle& p ) {
  x = state[0];
  y = state[1];
  
- E = NormalizedEField( x, y );
+ E      = NormalizedEField( x, y );
  p_beta = p.VectorBeta();
- K  = Beta()^E;
- K  = p_beta^K;
- K += E; 
+ K      = Beta()^E;
+ K      = p_beta^K;
+ K     += E; 
  
  double pn =  p.Beta()*p.Gamma();
  K *= - num*PH_MKS_rp / ( p.Beta()*pn );
@@ -81,7 +81,7 @@ void BBLens::localPropagate( Particle& p ) {
 
 void BBLens::localPropagate( JetParticle& p ) {
 
- if( strength == 0.0 ) return;
+ if( strength_ == 0.0 ) return;
 
  Jet x, y, s;
  JetVector p_beta(3);
