@@ -32,6 +32,11 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - visitor takes advantage of dynamic typing
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -40,7 +45,7 @@
 #ifndef JACOBIANVISITOR_H
 #define JACOBIANVISITOR_H
 
-#include <physics_toolkit/particleVisitor.h>
+#include <physics_toolkit/JetParticleVisitor.h>
 
 class beamline;
 
@@ -56,13 +61,12 @@ class JacobianVisitor : public JetParticleVisitor {
  public:
   enum JACOBIAN_TYPE {JACOBIAN_LOCAL, JACOBIAN_CUMULATIVE};
 
-  JacobianVisitor();
   JacobianVisitor( beamline*, JetParticle const& );
 
   virtual ~JacobianVisitor();
 
-  void visitBeamline(beamline* x);
-  void visitBmlnElmnt(bmlnElmnt*);
+  void visit(beamline& x);
+  void visit(bmlnElmnt& x);
   void clearBarnacles();
   void createJacobian(const JACOBIAN_TYPE&);
 
