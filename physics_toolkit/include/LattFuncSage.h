@@ -12,7 +12,7 @@
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
+******  Usage, modification, and redistribution are subject to terms 
 ******  of the License supplied with this software.
 ******  
 ******  Software and documentation created under 
@@ -32,7 +32,12 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+******
+****** - support for reference counted elements
+****** - Pass particles by reference
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -61,8 +66,8 @@ class LattFuncSage : public Sage {
 
 public:
 
- LattFuncSage( const beamline*, bool = false );
- LattFuncSage( const beamline&, bool = false );
+ LattFuncSage( BmlPtr bml      );
+ LattFuncSage( beamline const& );
   
  struct tunes {
    double hor;
@@ -168,13 +173,13 @@ private:
 
  LattFuncSage( LattFuncSage const&); 
 
- static double           _csH; 
- static double           _csV; 
- static double           _snH; 
-  static double          _snV;
- static Mapping*         _theMapPtr;
+ static double           csH_; 
+ static double           csV_; 
+ static double           snH_; 
+ static double           snV_;
+ static Mapping*         theMapPtr_;
 
-        double           _dpp;    
+        double           dpp_;    
  std::vector<lattFunc>   lfvec_;
  lattRing                lr_;
 
