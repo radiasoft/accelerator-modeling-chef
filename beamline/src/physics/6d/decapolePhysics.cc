@@ -49,8 +49,8 @@ void thinDecapole::localPropagate( Particle& p ) {
  
  Vector& state = p.getState();
 
-  if(strength != 0) {
-    k = strength/p.ReferenceBRho();
+  if(strength_ != 0) {
+    k = strength_/p.ReferenceBRho();
     x = state[0];
     y = state[1];
  
@@ -69,11 +69,11 @@ void thinDecapole::localPropagate( JetParticle& p ) {
 
   Mapping& state = p.getState();
 
-  if(strength != 0) {
+  if(strength_ != 0) {
     Jet     k, x, y, s;;
     Jet     xx, xy, yy;
  
-    k = strength/p.ReferenceBRho();
+    k = strength_/p.ReferenceBRho();
     x = state(0);
     y = state(1);
  

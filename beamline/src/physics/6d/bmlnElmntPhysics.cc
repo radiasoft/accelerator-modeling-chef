@@ -62,9 +62,9 @@ void bmlnElmnt::localPropagate( Particle& p ) {
   firstCall = 0;
  }
 
- p.state[0] += length * p.state[3];
- p.state[1] += length * p.state[4];
- p.state[2] += length/p.Beta()/p.Gamma()/p.Gamma() * p.state[5];
+ p.state[0] += length_ * p.state[3];
+ p.state[1] += length_ * p.state[4];
+ p.state[2] += length_/p.Beta()/p.Gamma()/p.Gamma() * p.state[5];
 
 }
 
@@ -78,12 +78,11 @@ void bmlnElmnt::localPropagate( JetParticle& p ) {
   firstCall = 0;
  }
 
- Jet  dummy;
- dummy = p.state[0] + length * p.state[3];
+ Jet  dummy = p.state[0] + length_ * p.state[3];
  ( p.state ).SetComponent( 0, dummy );
- dummy = p.state[1] + length * p.state[4];
+ dummy = p.state[1] + length_ * p.state[4];
  ( p.state ).SetComponent( 1, dummy );
- dummy = p.state[2] + length/p.Beta()/p.Gamma()/p.Gamma() * p.state[5];
+ dummy = p.state[2] + length_/p.Beta()/p.Gamma()/p.Gamma() * p.state[5];
  ( p.state ).SetComponent( 2, dummy );
 
 }
@@ -114,12 +113,12 @@ void bmlnElmnt::localPropagate( Particle& p ) {
  xpr = state[3] / p3divpbar;
  ypr = state[4] / p3divpbar; 
 
- state[0] += length * xpr;
- state[1] += length * ypr;
+ state[0] += length_ * xpr;
+ state[1] += length_ * ypr;
 
- D = length*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
+ D = length_*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
 
- state[2] += ( D / p.Beta() ) - _ctRef;
+ state[2] += ( D / p.Beta() ) - ctRef_;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -140,15 +139,15 @@ void bmlnElmnt::localPropagate( JetParticle& p ) {
  xpr = state(3) / p3divpbar;
  ypr = state(4) / p3divpbar;
 
- dummy = state(0) + length * xpr;
+ dummy = state(0) + length_ * xpr;
  state.SetComponent( 0, dummy );
 
- dummy = state(1) + length * ypr;
+ dummy = state(1) + length_ * ypr;
  state.SetComponent( 1, dummy );
 
- D = length*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
+ D = length_*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
 
- dummy = state(2) + ( D / p.Beta() ) - _ctRef;
+ dummy = state(2) + ( D / p.Beta() ) - ctRef_;
  state.SetComponent( 2, dummy );
 
 }
@@ -158,9 +157,10 @@ void bmlnElmnt::localPropagate( JetParticle& p ) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void bmlnElmnt::localPropagate( ParticleBunch& b ) {
- Particle* p;
- ParticleBunch::Iterator get( b );
- while((  p = (Particle*) get.next()  )) { this->localPropagate( *p ); }
+
+ for (  ParticleBunch::iterator it = b.begin(); it != b.end(); ++it )  
+ {  localPropagate( **it ); }
+
 }
 
 #endif

@@ -47,16 +47,16 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void octupole::localPropagate( Particle& p ) {
-  p_bml->propagate( p );
-  p.set_cdt( p.get_cdt() - _ctRef );
+  p_bml_->propagate( p );
+  p.set_cdt( p.get_cdt() - ctRef_ );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void octupole::localPropagate( JetParticle& p ) {
-  p_bml->propagate( p );
-  p.set_cdt( p.get_cdt() - _ctRef );
+  p_bml_->propagate( p );
+  p.set_cdt( p.get_cdt() - ctRef_ );
 }
 
 
@@ -70,8 +70,8 @@ void thinOctupole::localPropagate( Particle& p ) {
  
   Vector& state = p.getState(); 
 
-  if(strength != 0) {
-    k = strength / p.ReferenceBRho();
+  if(strength_ != 0) {
+    k = strength_ / p.ReferenceBRho();
     x = state[0];
     y = state[1];
  
@@ -89,14 +89,14 @@ void thinOctupole::localPropagate( Particle& p ) {
 void thinOctupole::localPropagate( JetParticle& p ) {
 
 
-  if(strength != 0) {
+  if(strength_ != 0) {
     double  k;
     Jet     x( p.State(0) );
     Jet     y( p.State(1) );
     Jet     xx( x.Env() );
     Jet     yy( y.Env() );
  
-    k = strength / p.ReferenceBRho();
+    k = strength_ / p.ReferenceBRho();
     
     xx = x*x;  
     yy = y*y;
