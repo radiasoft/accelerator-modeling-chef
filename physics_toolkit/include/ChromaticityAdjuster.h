@@ -34,6 +34,12 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+******  Mar 2007      ostiguy@fnal.gov
+******
+******  - controls Matrix returned by reference !
+******  - support for reference counted elements
 **************************************************************************
 *************************************************************************/
 
@@ -55,37 +61,41 @@
 #include <beamline/beamline.h>
 #include <physics_toolkit/Sage.h>
 
-class ChromaticityAdjuster : public Sage
-{
-public:
-  ChromaticityAdjuster( const beamline*, bool = false );
-  ChromaticityAdjuster( const beamline&, bool = false );
-  // Second argument is used by class Sage
-  // to control cloning. (See Sage.h)
+class ChromaticityAdjuster : public Sage {
 
-  ~ChromaticityAdjuster();
+public:
+
+  ChromaticityAdjuster( BmlPtr );
+  ChromaticityAdjuster( beamline const& );
+
+
+ ~ChromaticityAdjuster();
 
   void addCorrector( sextupole     const&, double, double );
-  void addCorrector( sextupole     const*, double, double );
-  void addCorrector( thinSextupole const&, double, double );
-  void addCorrector( thinSextupole const*, double, double );
+  void addCorrector( SextupolePtr,         double, double );
 
-  int numberOfCorrectors() const;
-  int changeChromaticityBy ( double, double, const JetParticle& );
-  MatrixD getControls();
+  void addCorrector( thinSextupole const&, double, double );
+  void addCorrector( ThinSextupolePtr,     double, double );
+
+  void  addCorrector(  ElmPtr x, double a, double b ); // This form is used by the GUI code. It MUST go away !
+
+  int numberOfCorrectors()  const;
+  int changeChromaticityBy ( double, double, JetParticle const& );
+
+  MatrixD& getControls();
 
   void eraseAll();
 
 private:
-  bmlnElmnt** _correctors;
-  int         _numberOfCorrectors;
-  MatrixD*    _f;
-  MatrixD     _c;
-  void        _addCorrector( bmlnElmnt const* const, double, double );
-  char        _isaThinSextupole( const bmlnElmnt* ) const;
+
+  void  addCorrector_private(  ElmPtr x, double a, double b );
+  bool  isaThinSextupole(  bmlnElmnt const& ) const;
+
+  std::vector<ElmPtr> correctors_;
+
+  MatrixD     f_;
+  MatrixD     c_;
+
 };
-
-
-#include <physics_toolkit/ChromaticityAdjuster.icc>
 
 #endif // LATTFUNCSAGE_H
