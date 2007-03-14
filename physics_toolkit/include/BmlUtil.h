@@ -32,6 +32,12 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTOIRY
+******
+****** Mar 2007           ostiguy@fnal.gov
+******
+****** -support for reference counted elements
+****** -eliminated references to dlist/slist
 **************************************************************************
 *************************************************************************/
 #ifndef BMLUTILS_H
@@ -52,6 +58,7 @@
  */
 
 
+#include <list>
 #include <basic_toolkit/Matrix.h>
 #include <mxyzptlk/Mapping.h>
 #include <physics_toolkit/CovarianceSage.h>
@@ -86,10 +93,10 @@ class BmlUtil
   //   compatability.
 
 
-  static beamline* cloneLineAndInsert( double          percent,
-                                       BmlPtrList&     insertions,
-                                       BmlPtrList&     targets,
-                                       const beamline* linePtr );
+  static BmlPtr    cloneLineAndInsert( double              percent,
+                                       std::list<ElmPtr>&  insertions,
+                                       std::list<ElmPtr>&  targets,
+                                       ConstBmlPtr  linePtr );
   // Creates a new beamline and returns its address. The
   //   invoking program takes responsibility for deleting the
   //   created beamline. It also takes the responsibility of 
@@ -121,13 +128,12 @@ class BmlUtil
   //   of <linePtr> is preserved.
 
 
-  static void writeAsTransport( const Mapping* );
-  static void writeAsTransport( const Mapping& );
+  static void writeAsTransport( Mapping const& );
+
   // Streams the mapping as a sequence of Transport-like
   //   "matrix" coefficients.
 
-  static bool isSpace( const bmlnElmnt* );
-  static bool isSpace( const bmlnElmnt& );
+  static bool isSpace( bmlnElmnt const& );
   // Returns true if the argument refers to an element
   //   which acts like empty space: e.g. drifts, Slots, markers.
 
@@ -142,8 +148,9 @@ class BmlUtil
   static void setOutputStream( std::ostream& );
 
  private: 
-  static std::ostream* _errorStreamPtr;
-  static std::ostream* _outputStreamPtr;
+
+  static std::ostream* errorStreamPtr_;
+  static std::ostream* outputStreamPtr_;
 
   static const double mlt1;
 
