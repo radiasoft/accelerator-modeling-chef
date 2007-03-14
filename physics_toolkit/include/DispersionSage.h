@@ -33,6 +33,10 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -95,8 +99,8 @@ public:
 
   // Constructors and the destructor
 
-  DispersionSage( beamline const*, bool clonebml = false );
-  DispersionSage( beamline const&, bool clonebml = false );
+  DispersionSage( BmlPtr );
+  DispersionSage( beamline const& );
 
 
   // Public member functions

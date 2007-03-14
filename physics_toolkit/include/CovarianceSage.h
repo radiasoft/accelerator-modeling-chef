@@ -33,7 +33,10 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
 **************************************************************************
 *************************************************************************/
 
@@ -72,10 +75,10 @@ public:
 
 
 public:
-  CovarianceSage( beamline const*, bool clonebml = false );
-  CovarianceSage( beamline const&, bool clonebml = false );
+  CovarianceSage( BmlPtr );
+  CovarianceSage( beamline const&);
 
-  int doCalc( JetParticle&, MatrixD, beamline::Criterion& = beamline::yes ); 
+  int doCalc( JetParticle&, MatrixD const&, beamline::Criterion& = beamline::yes ); 
 
   std::vector<CovarianceSage::Info> const& getCovarianceArray();
 

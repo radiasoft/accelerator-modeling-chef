@@ -34,6 +34,10 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
 **************************************************************************
 *************************************************************************/
 
@@ -58,7 +62,7 @@ class ClosedOrbitSage : public Sage {
 
  public:
 
-  ClosedOrbitSage( const beamline*, bool clonebml = false );
+  ClosedOrbitSage( BmlPtr );
   
   int findClosedOrbit( JetParticle& );
 
@@ -77,6 +81,15 @@ class ClosedOrbitSage : public Sage {
 
   bool  forced_;
   bool  ignoreErrors_;
+
+  // Data structures for handling RF ...
+  struct strengthData
+
+  {
+    ElmPtr      address;
+    double      strength;
+  }; 
+
 
 };
 
