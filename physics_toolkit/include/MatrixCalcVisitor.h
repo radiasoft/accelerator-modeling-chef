@@ -33,14 +33,18 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - visitor takes advantage of dynamic typing
+******                                                   
 ******                                                                
 **************************************************************************
 *************************************************************************/
 
-
 #ifndef MATRIXCALCVISITOR_H
 #define MATRIXCALCVISITOR_H
 
+#include <vector>
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/Slot.h>
 #include <beamline/CF_rbend.h>
@@ -48,62 +52,68 @@
 class MatrixCalcVisitor : public BmlVisitor
 {
  public:
-  MatrixCalcVisitor( const Particle& );
-  MatrixCalcVisitor( const MatrixCalcVisitor& );
-  ~MatrixCalcVisitor();
 
-  void visitBeamline( beamline* );
-  void visitBmlnElmnt( bmlnElmnt* );
-  void visitDrift( drift* );
-  void visitRbend( rbend* );
-  void visitSbend( sbend* );
-  void visitSector( sector* );
-  void visitQuadrupole( quadrupole* );
-  void visitThinQuad( thinQuad* );
-  void visitSlot( Slot* );
-  void visitCF_rbend( CF_rbend* );
-  void visitMarker( marker* );
+  MatrixCalcVisitor( Particle const& );
+ ~MatrixCalcVisitor();
 
-  void getState( Vector& );
-  void getState( Vector* );
-  void getState( double* );
-  Vector State();
+  void visit( beamline&   );
+  void visit( bmlnElmnt&  );
+  void visit( drift&      );
+  void visit( rbend&      );
+  void visit( sbend&      );
+  void visit( sector&     );
+  void visit( quadrupole& );
+  void visit( thinQuad&   );
+  void visit( Slot&       );
+  void visit( CF_rbend&   );
+  void visit( marker&     );
+
+  Vector& getState();
+  Vector  State();
 
   static int UNSTABLE;
   static int INTEGER_TUNE;
   static int PHASE_ERROR;
   static int DONE;
 
-  const double* Beta_h();
-  const double* Beta_v();
-  const double* Alpha_h();
-  const double* Alpha_v();
-  const double* Psi_h();
-  const double* Psi_v();
-  const double* s();
-  int           NumberOfElements();
+  std::vector<double> const& Beta_h();
+  std::vector<double> const& Beta_v();
+  std::vector<double> const& Alpha_h();
+  std::vector<double> const& Alpha_v();
+  std::vector<double> const& Psi_h();
+  std::vector<double> const& Psi_v();
+  std::vector<double> const& s();
+
+  int   NumberOfElements() const;
 
  private: 
-  char      _firstTime;
-  char      _calcDone;
-  int       _doCalc();
-  Particle* _myParticle;
-  beamline* _myBeamlinePtr;
-  int       _numberOfElements;
-  int       _counter;
-  MatrixD** _linearModel_h;
-  MatrixD** _linearModel_v;
-  double*   _beta_h;
-  double*   _beta_v;
-  double*   _alpha_h;
-  double*   _alpha_v;
-  double*   _psi_h;
-  double*   _psi_v;
-  double*   _arcLength;
-  MatrixD   _map_h;
-  MatrixD   _map_v;
-};
 
-#include <physics_toolkit/MatrixCalcVisitor.icc>
+  MatrixCalcVisitor( MatrixCalcVisitor const& x ); // forbidden 
+
+  int       doCalc();
+
+  bool            firstTime_;
+  bool            calcDone_;
+  Particle        particle_;
+  beamline*       myBeamlinePtr_;
+  int             numberOfElements_;
+  int             counter_;
+
+  std::vector<MatrixD> linearModel_h_;
+  std::vector<MatrixD> linearModel_v_;
+
+  std::vector<double>   beta_h_;
+  std::vector<double>   beta_v_;
+  std::vector<double>   alpha_h_;
+  std::vector<double>   alpha_v_;
+  std::vector<double>   psi_h_;
+  std::vector<double>   psi_v_;
+  std::vector<double>   arcLength_;
+
+  MatrixD   map_h_;
+  MatrixD   map_v_;
+
+
+};
 
 #endif // MATRIXCALCVISITOR_H
