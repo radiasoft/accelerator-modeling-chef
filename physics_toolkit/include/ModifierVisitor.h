@@ -33,7 +33,12 @@
 ******             Phone: (630) 840 4956
 ******             Email: michelotti@fnal.gov
 ******
+******  REVISION HISTORY
 ******
+****** Mar 2007     ostiguy@fnal.gov
+******  - support for reference counted elements
+******  - eliminated references to slist/dlist
+******  
 **************************************************************************
 *************************************************************************/
 
@@ -53,26 +58,22 @@
 #ifndef MODIFIERVISITOR_H
 #define MODIFIERVISITOR_H
 
-#include <fstream>
-
+#include <list>
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/BmlPtrList.h>
-#include <beamline/Alignment.h>
 
 class BoolNode;
-
-
 
 class ModifierVisitor : public virtual BmlVisitor
 {
  public:
+
   ModifierVisitor();
-  ModifierVisitor( bmlnElmnt& );        // Modifies one element
-  ModifierVisitor( bmlnElmnt* );
-  ModifierVisitor( const BoolNode& );   // Modifies elements satisfying criterion
-  ModifierVisitor( const BmlPtrList& ); // Modifies elements in a list
+  ModifierVisitor( ElmPtr const& );                 // Modifies one element
+  ModifierVisitor( BoolNode const& );               // Modifies elements satisfying criterion
+  ModifierVisitor( std::list<ElmPtr> const& );      // Modifies elements in a list
+
   // This list is assumed to be sorted.
   // Elements must appear
   //   in the same order in which
@@ -80,38 +81,18 @@ class ModifierVisitor : public virtual BmlVisitor
   //   to be visited.
   // They also must appear only once
   //   in the line.
+
   ~ModifierVisitor();
 
-  const BmlPtrList& getDoneList() const;
-  int getNumberModified() const;
-  int getNumberRemaining() const;
+  std::list<ElmPtr>&           getDoneList();
+  int                          getNumberRemaining() const;
 
  protected:
-  BoolNode*   _queryPtr;     // owned
-  BmlPtrList  _toDoList;     // list is owned, not the pointers
-  BmlPtrList  _doneList;  
-  bmlnElmnt*  _currentPtr;   // not owned
+
+  BoolNode*               queryPtr_;     // owned
+  std::list<ElmPtr>       toDoList_;     
+  ElmPtr                 currentPtr_;   // not owned
 };
 
-
-class AlignVisitor : public ModifierVisitor
-{
- public: 
-  AlignVisitor( const alignmentData&, bmlnElmnt* = 0 );
-  AlignVisitor( const alignmentData&, const BoolNode& );
-  AlignVisitor( const alignmentData&, const BmlPtrList& );
-  // This list is assumed to be sorted.
-  // Elements must appear
-  // in the same order in which
-  // they appear in the beamline
-  // to be visited.
-  ~AlignVisitor();
-
-  void visitBmlnElmnt( bmlnElmnt* );
-
- private:
-  alignmentData _myAlign;
-  void         _doAlign( bmlnElmnt* );
-};
 
 #endif // MODIFIERVISITOR_H
