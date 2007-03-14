@@ -37,9 +37,9 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/BmlVisitor.h>
+#include <beamline/Particle.h>
 #include <string>
 
-class Particle;
 class beamline;
 class bmlnElmnt;
 
@@ -48,7 +48,7 @@ class AzimuthVisitor: public BmlVisitor {
 
 public: 
 
-  AzimuthVisitor(Particle* p, 
+  AzimuthVisitor(Particle& p, 
                  std::string origin_tag       = "ORIGIN",
                  std::string azimuth_up_tag   = "azimuth_up", 
                  std::string azimuth_down_tag = "azimuth_down");
@@ -56,21 +56,21 @@ public:
   virtual ~AzimuthVisitor();
 
 
-  void setAzimuthUpTag(std::string s)   {  _azimuth_up_tag      = s; }
-  void setAzimuthDownTag(std::string s) {  _azimuth_down_tag    = s; }
-  void setOriginTag(std::string s)      {  _origin_tag          = s; }
+  void   setAzimuthUpTag( std::string s )  {  azimuth_up_tag_      = s; }
+  void setAzimuthDownTag( std::string s )  {  azimuth_down_tag_    = s; }
+  void      setOriginTag( std::string s )  {  origin_tag_          = s; }
 
-  virtual void visitBeamline( beamline* e);   
-  virtual void visitBmlnElmnt( bmlnElmnt* e); 
+  void visit( beamline&  e);   
+  void visit( bmlnElmnt& e); 
 
 
 private:
 
- Particle*          _p;
- std::string        _azimuth_up_tag;
- std::string        _azimuth_down_tag;
- std::string        _origin_tag;
- double             _azimuth;
+ Particle           particle_;
+ std::string        azimuth_up_tag_;
+ std::string        azimuth_down_tag_;
+ std::string        origin_tag_;
+ double             azimuth_;
 
 };
 
