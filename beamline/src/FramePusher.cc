@@ -71,20 +71,20 @@ using namespace std;
 // Constructors
 
 FramePusher::FramePusher()
-: _frame()
-  , _errorCode(OKAY)
+: frame_()
+  , errorCode_(OKAY)
 {
 }
 
 FramePusher::FramePusher( const Frame& f )
-: _frame(f)
-  , _errorCode(OKAY)
+: frame_(f)
+  , errorCode_(OKAY)
 {
 }
 
 FramePusher::FramePusher( const FramePusher& x )
-: _frame( x._frame )
-  , _errorCode(x._errorCode)
+: frame_( x.frame_ )
+  , errorCode_(x.errorCode_)
 {
 }
 
@@ -95,105 +95,105 @@ FramePusher::~FramePusher()
 
 // Visiting functions
 
-void FramePusher::visitBmlnElmnt( const bmlnElmnt* x )
+void FramePusher::visit( bmlnElmnt const& x )
 {
-  if( x->Length() > 0.0 ) {
-    _frame.translate( (x->Length())*_frame.getzAxis() );
+  if( x.Length() > 0.0 ) {
+    frame_.translate( (x.Length())*frame_.getzAxis() );
   }
 }
 
 
-void FramePusher::visitRbend( const rbend* x )
-{
-  // Note: the lower bound of 1/2 nanoradian was
-  // taken from file: rbend.cc
-  //        function: bool rbend::hasStandardFaces
-  // 
-  double edgeAngle = x->getEntryEdgeAngle();
-  if( 0.5e-9 < std::abs(edgeAngle) ) {
-    _frame.rotate( - edgeAngle, _frame.getyAxis(), false );
-  }
-
-  _frame.translate( (x->Length())*_frame.getzAxis() );
-
-  edgeAngle = x->getExitEdgeAngle();
-  if( 0.5e-9 < std::abs(edgeAngle) ) {
-    _frame.rotate(   edgeAngle, _frame.getyAxis(), false );
-  }
-}
-
-
-void FramePusher::visitCF_rbend ( const CF_rbend* x )
+void FramePusher::visit( rbend const& x )
 {
   // Note: the lower bound of 1/2 nanoradian was
   // taken from file: rbend.cc
   //        function: bool rbend::hasStandardFaces
   // 
-  double edgeAngle = x->getEntryEdgeAngle();
+  double edgeAngle = x.getEntryEdgeAngle();
   if( 0.5e-9 < std::abs(edgeAngle) ) {
-    _frame.rotate( - edgeAngle, _frame.getyAxis(), false );
+    frame_.rotate( - edgeAngle, frame_.getyAxis(), false );
   }
 
-  _frame.translate( (x->Length())*_frame.getzAxis() );
+  frame_.translate( (x.Length())*frame_.getzAxis() );
 
-  edgeAngle = x->getExitEdgeAngle();
+  edgeAngle = x.getExitEdgeAngle();
   if( 0.5e-9 < std::abs(edgeAngle) ) {
-    _frame.rotate(   edgeAngle, _frame.getyAxis(), false );
+    frame_.rotate(   edgeAngle, frame_.getyAxis(), false );
   }
 }
 
 
-void FramePusher::visitSbend    ( const sbend* x    )
+void FramePusher::visit( CF_rbend const& x )
+{
+  // Note: the lower bound of 1/2 nanoradian was
+  // taken from file: rbend.cc
+  //        function: bool rbend::hasStandardFaces
+  // 
+  double edgeAngle = x.getEntryEdgeAngle();
+  if( 0.5e-9 < std::abs(edgeAngle) ) {
+    frame_.rotate( - edgeAngle, frame_.getyAxis(), false );
+  }
+
+  frame_.translate( (x.Length())*frame_.getzAxis() );
+
+  edgeAngle = x.getExitEdgeAngle();
+  if( 0.5e-9 < std::abs(edgeAngle) ) {
+    frame_.rotate(   edgeAngle, frame_.getyAxis(), false );
+  }
+}
+
+
+void FramePusher::visit( sbend const& x    )
 {
   double angle;
   double displacement;
   double rho;
 
-  angle = x->getAngle();
-  rho = x->Length() / angle;
+  angle = x.getAngle();
+  rho = x.Length() / angle;
   angle /= 2.0;
   displacement = 2.0*rho*sin(angle);
 
-  double edgeAngle = x->getEntryEdgeAngle();
+  double edgeAngle = x.getEntryEdgeAngle();
   if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
-    _frame.rotate( - (angle - edgeAngle), _frame.getyAxis(), false );
+    frame_.rotate( - (angle - edgeAngle), frame_.getyAxis(), false );
   }
 
-  _frame.translate( displacement*_frame.getzAxis() );
+  frame_.translate( displacement*frame_.getzAxis() );
 
-  edgeAngle = x->getExitEdgeAngle();
+  edgeAngle = x.getExitEdgeAngle();
   if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
-    _frame.rotate( - (angle - edgeAngle), _frame.getyAxis(), false );
+    frame_.rotate( - (angle - edgeAngle), frame_.getyAxis(), false );
   }
 }
 
 
-void FramePusher::visitCF_sbend ( const CF_sbend* x )
+void FramePusher::visit( CF_sbend const& x )
 {
   double angle;
   double displacement;
   double rho;
 
-  angle = x->getAngle();
-  rho = x->Length() / angle;
+  angle = x.getAngle();
+  rho = x.Length() / angle;
   angle /= 2.0;
   displacement = 2.0*rho*sin(angle);
 
-  double edgeAngle = x->getEntryEdgeAngle();
+  double edgeAngle = x.getEntryEdgeAngle();
   if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
-    _frame.rotate( - (angle - edgeAngle), _frame.getyAxis(), false );
+    frame_.rotate( - (angle - edgeAngle), frame_.getyAxis(), false );
   }
 
-  _frame.translate( displacement*_frame.getzAxis() );
+  frame_.translate( displacement*frame_.getzAxis() );
 
-  edgeAngle = x->getExitEdgeAngle();
+  edgeAngle = x.getExitEdgeAngle();
   if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
-    _frame.rotate( - (angle - edgeAngle), _frame.getyAxis(), false );
+    frame_.rotate( - (angle - edgeAngle), frame_.getyAxis(), false );
   }
 }
 
 
-void FramePusher::visitSector   ( const sector*     )
+void FramePusher::visit( sector const&)
 {
   cerr << "*** WARNING ***                                \n"
        << "*** WARNING *** FramePusher::visitSector       \n"
@@ -204,12 +204,12 @@ void FramePusher::visitSector   ( const sector*     )
        << "*** WARNING *** unreliable.                    \n"
        << "*** WARNING ***                                \n"
        << endl;
-  _errorCode = SECTORVISITED;
+  errorCode_ = SECTORVISITED;
 }
 
 
-void FramePusher::visitSlot     ( const Slot* x     )
+void FramePusher::visit( Slot const& x     )
 {
-  _frame = ( ( x->getOutFrame() ).relativeTo( x->getInFrame() ) ) 
-           .patchedOnto( _frame );
+  frame_ = ( ( x.getOutFrame() ).relativeTo( x.getInFrame() ) ) 
+           .patchedOnto( frame_ );
 }
