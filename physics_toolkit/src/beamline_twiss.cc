@@ -44,7 +44,6 @@
 #include <physics_toolkit/LattFuncSage.h>    // ??? Only temporary, until beamline::twiss functions vanish.
 #include <beamline/Particle.h>  
 #include <beamline/JetParticle.h>  
-#include <beamline/BeamlineIterator.h>  
 #include <physics_toolkit/ClosedOrbitSage.h> 
 
 using namespace std;
@@ -53,11 +52,18 @@ using FNAL::pcerr;
 using FNAL::pcout;
 
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int beamline::twiss( JetParticle& p, double const& dpp, int flag ) 
 {
-  static char firstTime = 1;
+
+#if 0 
+=============================================================================================
+  static bool firstTime = true;
   if( firstTime ) {
-    firstTime = 0;
+    firstTime = false;
     (*pcerr) << "*** WARNING ***                                      \n"
             "*** WARNING *** beamline::twiss                      \n"
             "*** WARNING ***                                      \n"
@@ -69,17 +75,17 @@ int beamline::twiss( JetParticle& p, double const& dpp, int flag )
 
   int ret = 0;
 
-  if( !twissDone )
+  if( !twissDone_ )
   {
-    int i;
+
     Vector zero(BMLN_dynDim);
-    for ( i = 0; i < BMLN_dynDim; i++ ) zero[i] = 0.0;
+    for ( int i = 0; i < BMLN_dynDim; i++ ) zero[i] = 0.0;
   
-    p.SetReferenceEnergy( this->Energy() );
+    p.SetReferenceEnergy( Energy() );
     p.setState(zero);
   
-    ClosedOrbitSage clsg( this );
-    LattFuncSage lfs( this );
+    ClosedOrbitSage clsg( *this );   // FIXME !!!
+    LattFuncSage lfs( *this );       // FIXME !!!
     lfs.set_dpp( dpp );
   
   
@@ -97,18 +103,9 @@ int beamline::twiss( JetParticle& p, double const& dpp, int flag )
   
   
     // Initial check for Slots
-    DeepBeamlineIterator dbi( *this );
-    bmlnElmnt* q;
-    char slotFound = 0;
-    while((  q = dbi++  )) {
-      if( strstr( "CF_rbend|rbend|Slot", q->Type() ) ) {
-        slotFound = 1;
-        break;
-      }
-    }
-    dbi.reset();
 
-    if( slotFound ) {
+
+    if( slotFound() ) {
       if( flag ) {
         ret = lfs.Slow_CS_Calc( p );
       }
@@ -164,18 +161,20 @@ int beamline::twiss( JetParticle& p, double const& dpp, int flag )
     BarnacleList::iterator qlf;
     
     if( flag ) {
-      while( q = dbi++ ) {
-        if(  ( plf = q->dataHook.find("Twiss") ) != q->dataHook.end() ) {
-          if( ( qlf = q->dataHook.find("Dispersion")) !=  q->dataHook.end() ) {
+
+      for (beamline::deep_iterator it = deep_begin(); it != deep_end(); ++it ) {
+
+        if(  ( plf = (*it)->dataHook.find("Twiss") ) != (*it)->dataHook.end() ) {
+          if( ( qlf = (*it)->dataHook.find("Dispersion")) !=  (*it)->dataHook.end() ) {
             any_cast<lattFunc>(plf->info).dispersion.hor = any_cast<lattFunc>(qlf->info).dispersion.hor;
             any_cast<lattFunc>(plf->info).dispersion.ver = any_cast<lattFunc>(qlf->info).dispersion.ver;
             any_cast<lattFunc>(plf->info).dPrime.hor     = any_cast<lattFunc>(qlf->info).dPrime.hor;
             any_cast<lattFunc>(plf->info).dPrime.ver     = any_cast<lattFunc>(qlf->info).dPrime.ver;
-            q->dataHook.eraseAll("Dispersion");
+            (*it)->dataHook.eraseAll("Dispersion");
           }
           else {
             (*pcerr) << "beamline::twiss: Dispersion data missing from "
-                 << q->Type() << "  " << q->Name()
+                 << (*it)->Type() << "  " << (*it)->Name()
                  << endl;
             ret = -1;
             return ret;
@@ -183,7 +182,7 @@ int beamline::twiss( JetParticle& p, double const& dpp, int flag )
         }
         else {
           (*pcerr) << "beamline::twiss: Twiss data missing from "
-               << q->Type() << "  " << q->Name()
+               << (*it)->Type() << "  " << (*it)->Name()
                << endl;
           ret = -1;
           return ret;
@@ -210,31 +209,42 @@ int beamline::twiss( JetParticle& p, double const& dpp, int flag )
     }
   
   
-    twissDone = 1;
+    twissDone_ = true;
   }
 
   return ret;
+=================================================================================================
+#endif
+
+    return 0;
+
 }
 
 
-int beamline::twiss( char, JetParticle& p ) {
-  Jet*             z;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int beamline::twiss( char, JetParticle& p ) 
+{
+
+#if 0 
+
+==============================================================================================
+
   double          csH, csV, snH, snV, t;
-  int             i;
 
  // .......... Propagate a JetParticle to get transfer matrix
 
 
-  lattFunc*       latticeFunctions = new lattFunc;
-  lattRing*       latticeRing = new lattRing;
+  lattFunc       latticeFunctions;
+  lattRing       latticeRing; 
 
-  if( ! twissDone ) {  // .... Check to see if this was done already.
+  if( !twissDone_ ) {  // .... Check to see if this was done already.
    
-      Vector zero(BMLN_dynDim);
-      z              = new Jet      [ BMLN_dynDim ];
+    Vector zero(BMLN_dynDim);
 
    // .......... Propagate a JetParticle to get transfer matrix
-    for ( i = 0; i < BMLN_dynDim; i++ ) zero[i] = 0.0;
+    for ( int i=0; i < BMLN_dynDim; i++ ) zero[i] = 0.0;
     p.setState( zero );
     propagate( p );
     
@@ -253,8 +263,6 @@ int beamline::twiss( char, JetParticle& p ) {
       (*pcerr) << "*** WARNING *** beamline::twiss(JetParticle)  Lattice is unstable." << endl;
       (*pcerr) << "*** WARNING *** beamline::twiss() did not exit properly." << endl;
       (*pcerr) << "*** WARNING *** " << endl;
-      delete latticeFunctions;
-      delete latticeRing;
       return -1;
    }
     
@@ -272,26 +280,26 @@ int beamline::twiss( char, JetParticle& p ) {
    t = asin( snH );
    if( csH < 0.0 ) t  = M_PI - t;              // 0 < t < 2 pi
    if( t < 0.0 )   t += M_TWOPI;
-   latticeRing->tune.hor = ( t / M_TWOPI );
+   latticeRing.tune.hor = ( t / M_TWOPI );
 
    t = asin( snV );
    if( csV < 0.0 ) t  = M_PI - t;              // 0 < t < 2 pi
    if( t < 0.0 )   t += M_TWOPI;
-   latticeRing->tune.ver = t / M_TWOPI;
+   latticeRing.tune.ver = t / M_TWOPI;
 //    t = atan2(snH,csH);
-//    latticeRing->tune.hor = ( t / M_TWOPI );
+//    latticeRing.tune.hor = ( t / M_TWOPI );
 
 //    t = atan2(snV,csV);
-//    latticeRing->tune.ver = ( t / M_TWOPI );
+//    latticeRing.tune.ver = ( t / M_TWOPI );
 
 
    // .......... Calculating betas and alphas ..............
-    latticeFunctions->beta .hor = mtrx(0,3) / snH;
-    latticeFunctions->beta .ver = mtrx(1,4) / snV;
-    latticeFunctions->alpha.hor = ( mtrx(0,0) - mtrx(3,3) ) / (2.0*snH);
-    latticeFunctions->alpha.ver = ( mtrx(1,1) - mtrx(4,4) ) / (2.0 * snV);
-    latticeFunctions->psi  .hor = 0.0;
-    latticeFunctions->psi  .ver = 0.0;
+    latticeFunctions.beta .hor = mtrx(0,3) / snH;
+    latticeFunctions.beta .ver = mtrx(1,4) / snV;
+    latticeFunctions.alpha.hor = ( mtrx(0,0) - mtrx(3,3) ) / (2.0*snH);
+    latticeFunctions.alpha.ver = ( mtrx(1,1) - mtrx(4,4) ) / (2.0 * snV);
+    latticeFunctions.psi  .hor = 0.0;
+    latticeFunctions.psi  .ver = 0.0;
  
 // calculate dispersion
     
@@ -323,14 +331,14 @@ int beamline::twiss( char, JetParticle& p ) {
     MatrixD id("I",4);
     Disp = (A - id).inverse() * Long;
 
-    latticeFunctions->dispersion.hor = Disp(0,0);
-    latticeFunctions->dPrime.hor = Disp(1,0);
-    latticeFunctions->dispersion.ver = Disp(2,0);
-    latticeFunctions->dPrime.ver = Disp(3,0);
+    latticeFunctions.dispersion.hor = Disp(0,0);
+    latticeFunctions.dPrime.hor = Disp(1,0);
+    latticeFunctions.dispersion.ver = Disp(2,0);
+    latticeFunctions.dPrime.ver = Disp(3,0);
 
    // .......... Cleaning up and leaving ...................
-    delete [] z;
-    twissDone = 1;
+
+    twissDone_ = true;
     dataHook.eraseFirst( "Twiss" );
     dataHook.insert( Barnacle( "Twiss", latticeFunctions ) );
     dataHook.eraseFirst( "Ring" );
@@ -339,11 +347,16 @@ int beamline::twiss( char, JetParticle& p ) {
   return 0;
 } 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 int beamline::twiss( lattFunc& W_arg, JetParticle& p, int flag ) {
-  static char firstTime = 1;
+
+  static bool firstTime = true;
 
   if( firstTime ) {
-    firstTime = 0;
+    firstTime = false;
     (*pcerr) << "***WARNING***                                           \n"
             "***WARNING***  beamline::twiss( lattFunc& W, JetParticle& p)      \n"
             "***WARNING***  Using LattFuncSage is preferred.         \n"
@@ -354,7 +367,8 @@ int beamline::twiss( lattFunc& W_arg, JetParticle& p, int flag ) {
   }
 
   int ret;
-  LattFuncSage et( this );
+
+  LattFuncSage et( *this ); // FIXME !!!
 
   // This is a stupid conversion necessary because
   // LattFunc exists outside of LattFuncSage.
@@ -389,5 +403,11 @@ int beamline::twiss( lattFunc& W_arg, JetParticle& p, int flag ) {
     }
   }
   return ret;
+==============================================================================================
+#endif
+
+    return 0;
+
 } 
+
 
