@@ -32,6 +32,12 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
+****** REVISION HISTORY
+****** 
+****** Mar 2007       ostiguy@fnal.gov
+****** -some efficiency improvements
+****** -use new style Jet iterators.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -121,7 +127,7 @@ void normalForm( const Mapping& theMapping, /* input */
 
  bool (*shear[])( const IntArray&, const std::complex<double>& ) 
     = { sh0, sh1, sh2, sh3, sh4, sh5 };
- int i, j;
+
 
       /* CAUTION */  // A little test
       /* CAUTION */  if( !(theMapping.IsNilpotent()) ) {
@@ -131,17 +137,16 @@ void normalForm( const Mapping& theMapping, /* input */
       /* CAUTION */  }
 
  // Establishing linear normal form coordinates
- MatrixD  A;
- A = theMapping.Jacobian();
- MatrixC B;
- B = A.eigenVectors();
+
+ MatrixD  A = theMapping.Jacobian();
+ MatrixC  B = A.eigenVectors();
 
  // Normalizing the linear normal form coordinates
- MatrixD  J( "J", 6 );
- MatrixC  Nx;
- Nx = ( B.transpose() * J * B * J ) * mi;
 
- for( i = 0; i < 6; i++ ) {
+ MatrixD  J( "J", 6 );
+ MatrixC  Nx = ( B.transpose() * J * B * J ) * mi;
+
+ for( int i=0; i < 6; ++i) {
   Nx( i, i ) = 1.0 / sqrt( abs( Nx(i,i) ) );  
                                        // ??? "abs" should not be necessary,
                                        // ??? but Holt is finding some
@@ -152,7 +157,7 @@ void normalForm( const Mapping& theMapping, /* input */
 
   if( abs( ( (std::complex<double>) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) Nx(i,i) = 1.0;
 
-      /* CAUTION */   for( j = 0; j < 6; j++ ) {
+      /* CAUTION */   for( int j = 0; j < 6; j++ ) {
       /* CAUTION */    if( j == i ) continue;
       /* CAUTION */    else if( abs( Nx(i,j) ) > MLT1) {
       /* CAUTION */     ostringstream uic;
@@ -169,29 +174,29 @@ void normalForm( const Mapping& theMapping, /* input */
 
  B = B*Nx;
 
-
-
  // Try to get the phase correct ...
+
  std::complex<double> m0, cm0, m1, cm1;
  m0  = B(0,0)/abs(B(0,0));
  cm0 = conj(m0);
  m1  = B(1,1)/abs(B(1,1));
  cm1 = conj(m1);
- for( i = 0; i < 6; i++ ) {
+
+ for( int i=0; i < 6; ++i) {
    B(i,0) *= cm0;
    B(i,3) *= m0;
    B(i,1) *= cm1;
    B(i,4) *= m1;
  }
  if( imag(B(3,0)) > 0.0 ) {
-   for( i = 0; i < 6; i++ ) {
+   for( int i=0; i < 6; ++i) {
      m0 = B(i,0);
      B(i,0) = B(i,3);
      B(i,3) = m0;
    }
  }
  if( imag(B(4,1)) > 0.0 ) {
-   for( i = 0; i < 6; i++ ) {
+   for( int i = 0; i < 6; ++i) {
      m0 = B(i,1);
      B(i,1) = B(i,4);
      B(i,4) = m0;
@@ -203,18 +208,17 @@ void normalForm( const Mapping& theMapping, /* input */
 
 
  // Some useful matrices
- MatrixC Binv;
- Binv = B.inverse();
- MatrixC D;
- D = Binv * A * B;
- MatrixC Dinv;
- Dinv = D.inverse();
+
+ MatrixC Binv = B.inverse();
+ MatrixC D    = Binv * A * B;
+ MatrixC Dinv = D.inverse();
 
  MatrixC lambda(1,D.cols());
- for( i = 0; i < D.cols(); i++ ) {
+
+ for( int i = 0; i < D.cols(); i++ ) {
    lambda(i) = D(i,i);
  }
-      /* CAUTION */  for( i = 0; i < 6; i++ ) {
+      /* CAUTION */  for( int i = 0; i < 6; i++ ) {
       /* CAUTION */   if( fabs( abs(lambda(i)) - 1.0 ) > MLT1 ) {
       /* CAUTION */    ostringstream uic;
       /* CAUTION */    uic  << "For now, only elliptic fixed points allowed:"
@@ -227,7 +231,7 @@ void normalForm( const Mapping& theMapping, /* input */
       /* CAUTION */  }
       /* CAUTION */  
       /* CAUTION */  // A little checking and cleaning.
-      /* CAUTION */  for( i = 0; i < 6; i++ ) {
+      /* CAUTION */  for( int i = 0; i < 6; i++ ) {
       /* CAUTION */   if( fabs( abs(Dinv(i,i)) - 1.0 ) > MLT1 ) {
       /* CAUTION */    ostringstream uic;
       /* CAUTION */    uic  << "For now, only elliptic maps allowed: | Dinv( " 
@@ -237,7 +241,7 @@ void normalForm( const Mapping& theMapping, /* input */
       /* CAUTION */           "void normalForm( const Mapping& theMapping, /* input */", 
       /* CAUTION */           uic.str().c_str() ) );
       /* CAUTION */   }
-      /* CAUTION */   for( j = 0; j < 6; j++ ) {
+      /* CAUTION */   for( int j=0; j < 6; ++j) {
       /* CAUTION */    if( j == i ) continue;
       /* CAUTION */    else if( abs( Dinv(i,j) ) > MLT1) {
       /* CAUTION */     throw( GenericException( __FILE__, __LINE__, 
@@ -248,7 +252,7 @@ void normalForm( const Mapping& theMapping, /* input */
       /* CAUTION */   }
       /* CAUTION */  }
       /* CAUTION */ 
-      /* CAUTION */  for( i = 0; i < 6; i++ ) {
+      /* CAUTION */  for( int i = 0; i < 6; i++ ) {
       /* CAUTION */   if( fabs( abs(D(i,i)) - 1.0 ) > MLT1 ) {
       /* CAUTION */    ostringstream uic;
       /* CAUTION */    uic  << "For now, only elliptic maps allowed: | D( " 
@@ -259,7 +263,7 @@ void normalForm( const Mapping& theMapping, /* input */
       /* CAUTION */           uic.str().c_str() ) );
       /* CAUTION */   }
       /* CAUTION */ 
-      /* CAUTION */   for( j = 0; j < 6; j++ ) {
+      /* CAUTION */   for( int j=0; j < 6; ++j) {
       /* CAUTION */    if( j == i ) continue;
       /* CAUTION */    else if( abs( D(i,j) ) > MLT1) {
       /* CAUTION */     throw( GenericException( __FILE__, __LINE__, 
@@ -272,26 +276,22 @@ void normalForm( const Mapping& theMapping, /* input */
 
 
  // The original near-identity transformation
- MappingC CL1;
- CL1 = theMapping;
 
+ MappingC CL1 = theMapping;
 
  MappingC id( "ident" );
- MappingC calN;
- calN = Binv*CL1( B*(Dinv*id) );
+ MappingC calN = Binv*CL1( B*(Dinv*id) );
  MappingC mapT;
 
-
-
  // And the rest ...
+
  std::complex<double>  factor, denom, temp;
  int                   l, ll;
  const JLCterm*        q;
  MappingC              reg;
  MappingC              doc;
 
- std::vector<boost::shared_ptr<JetC::iterator> >  iter;
-
+ 
  for( int k = 0; k <= maxOrder - 2; k++ ) {
   reg = id;
   ll = 0;
@@ -303,11 +303,7 @@ void normalForm( const Mapping& theMapping, /* input */
 
   doc = N[k] - reg;
 
-  for (int n=0; n<6; ++n) {
-     iter.push_back( boost::shared_ptr<JetC::iterator>(new JetC::iterator( doc(n)) ) );
-  };
-
-  for( i = 0; i < 6; ++i ) {
+  for( int i=0; i< 6; ++i ) {
 
    #if 0
    // Including this line causes an error.
@@ -315,32 +311,33 @@ void normalForm( const Mapping& theMapping, /* input */
    T[k](i).clear();
    #endif
 
-   iter[i]->reset();
-   while( (q = ++(*iter[i])) ) {
+   for ( JetC::iterator it = doc(i).begin() ; it != doc(i).end(); ++it ) {
     factor = 1.0;
-    for( j = 0; j < 6; j++ ) {
+
+    for( int j=0; j < 6; ++j) {
      temp = complex_1 / lambda(j);
-     for( l = 0; l < q->exponents()(j); l++ ) {
+     
+     for( int l=0;  l < it->exponents()(j); ++l) {
       factor *= temp;
      }
-     // REMOVE: factor *= pow( complex_1 / lambda(j), q->exponents()(j) );
-     // REMOVE: factor *= pow( 1.0 / lambda(j), q->exponents()(j) );
+     // REMOVE: factor *= pow( complex_1 / lambda(j), it->exponents()(j) );
+     // REMOVE: factor *= pow( 1.0 / lambda(j), it->exponents()(j) );
     }
     factor *= lambda(i);
 
     // Either absorption or resonance subtraction ... 
     denom = factor - complex_1;
     if( abs( denom ) <= 1.0e-7 ) {
-      N[k](i).addTerm( JLCterm( q->exponents(), - q->coefficient(), CL1.Env() ) );
+      N[k](i).addTerm( JLCterm( it->exponents(), - it->coefficient(), CL1.Env() ) );
     }
     else {
-      T[k](i).addTerm( JLCterm( q->exponents(), q->coefficient()/denom, CL1.Env() ) );
+      T[k](i).addTerm( JLCterm( it->exponents(), it->coefficient()/denom, CL1.Env() ) );
     }
-
    }
   }
 
   // Prepare for the next order
+
   reg = Dinv*id;
   mapT = T[k].expMap( complex_1, id );
   reg = mapT( reg );
@@ -348,7 +345,9 @@ void normalForm( const Mapping& theMapping, /* input */
   reg = calN( reg );
   mapT = T[k].expMap( -complex_1, id );
   calN = mapT( reg );
+
   // In one line:
   // calN = T[k].expMap( -1.0, calN( D*( T[k].expMap( 1.0, Dinv*id ) ) ) );
- }
+ } 
+
 }
