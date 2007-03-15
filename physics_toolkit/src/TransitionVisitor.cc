@@ -78,7 +78,7 @@ const int  TransitionVisitor::NOLATTFUNC = 6;
 const int  TransitionVisitor::VERDISP    = 7;
 const int  TransitionVisitor::NOELEMENTS = 8;
 const int  TransitionVisitor::NULLBMLPTR = 9;
-const char* TransitionVisitor::_errorMessage [] = 
+const char* TransitionVisitor::errorMessage_ [] = 
 { "OKAY: No errors.",
   "NEGLEVEL: Negative beamline levels reached.",
   "ZEROLENGTH: No calculation done: beamline length = 0.",
@@ -94,171 +94,182 @@ const char* TransitionVisitor::_errorMessage [] =
 
 // Constructors
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 TransitionVisitor::TransitionVisitor()
-: _s(0.0),
-  _alpha(0.0),
-  _gamma_t(0.0),
-  _errorCode(NOPARTICLE),
-  _particlePtr(0),
-  _level(0),
-  _D(0.0),
-  _Dprime(0.0),
-  _calcDone(false),
-  _coeff(4,4),
-  _b(1,4),
-  _f(4,1)
+: s_(0.0),
+  alpha_(0.0),
+  gamma_t_(0.0),
+  errorCode_(NOPARTICLE),
+  particlePtr_(0),
+  level_(0),
+  D_(0.0),
+  Dprime_(0.0),
+  calcDone_(false),
+  coeff_(4,4),
+  b_(1,4),
+  f_(4,1)
 {
-  _coeff(0,0) = 1.0;
-  _coeff(1,1) = 1.0;
-  _coeff(2,0) = 1.0;
-  _coeff(3,1) = 1.0;
+   coeff_(0,0) = 1.0;
+   coeff_(1,1) = 1.0;
+   coeff_(2,0) = 1.0;
+   coeff_(3,1) = 1.0;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 TransitionVisitor::TransitionVisitor( const TransitionVisitor& x )
-: _s(x._s),
-  _alpha(x._alpha),
-  _gamma_t(x._gamma_t),
-  _errorCode(x._errorCode),
-  _level(x._level),
-  _D(x._D),
-  _Dprime(x._Dprime),
-  _calcDone(x._calcDone),
-  _coeff(x._coeff),
-  _b(x._b),
-  _f(x._f)
+: s_(x.s_),
+  alpha_(x.alpha_),
+  gamma_t_(x.gamma_t_),
+  errorCode_(x.errorCode_),
+  level_(x.level_),
+  D_(x.D_),
+  Dprime_(x.Dprime_),
+  calcDone_(x.calcDone_),
+  coeff_(x.coeff_),
+  b_(x.b_),
+  f_(x.f_)
 {
-  if( x._particlePtr ) {
-    _particlePtr = (x._particlePtr)->Clone();
-    _errorCode = OKAY;
+  if( x.particlePtr_ ) {
+    particlePtr_ = (x.particlePtr_)->Clone();
+    errorCode_   = OKAY;
   }
   else {
-    _particlePtr = 0;
-    _errorCode = NOPARTICLE;
+    particlePtr_ = 0;
+    errorCode_   = NOPARTICLE;
   }
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 TransitionVisitor::TransitionVisitor( const Particle& x )
-: _s(0.0),
-  _alpha(0.0),
-  _gamma_t(0.0),
-  _errorCode(OKAY),
-  _particlePtr( x.Clone() ),
-  _level(0),
-  _D(0.0),
-  _Dprime(0.0),
-  _calcDone(false),
-  _coeff(4,4),
-  _b(1,4),
-  _f(4,1)
+: s_(0.0),
+  alpha_(0.0),
+  gamma_t_(0.0),
+  errorCode_(OKAY),
+  particlePtr_( x.Clone() ),
+  level_(0),
+  D_(0.0),
+  Dprime_(0.0),
+  calcDone_(false),
+  coeff_(4,4),
+  b_(1,4),
+  f_(4,1)
 {
-  _coeff(0,0) = 1.0;
-  _coeff(1,1) = 1.0;
-  _coeff(2,0) = 1.0;
-  _coeff(3,1) = 1.0;
+  coeff_(0,0) = 1.0;
+  coeff_(1,1) = 1.0;
+  coeff_(2,0) = 1.0;
+  coeff_(3,1) = 1.0;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 TransitionVisitor::~TransitionVisitor()
 {
-  if( _particlePtr ) { delete _particlePtr; }
-  _particlePtr = 0;
+  if( particlePtr_ ) { delete particlePtr_; }
+   particlePtr_ = 0;
 }
 
 
 // Visiting functions
 
-void TransitionVisitor::visitBeamline( beamline* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TransitionVisitor::visit( beamline& x )
 {
-  // Some filters
-  if( x == 0 ) {
-    _errorCode = NULLBMLPTR;
+  if( calcDone_ ) {
+    errorCode_ = DOUBLED;
     return;
   }
-  if( _calcDone ) {
-    _errorCode = DOUBLED;
-    return;
+  if( !particlePtr_ ) {
+     errorCode_ = NOPARTICLE;
   }
-  if( !_particlePtr ) {
-    _errorCode = NOPARTICLE;
-  }
-  if( _errorCode != OKAY ) {
+  if(  errorCode_ != OKAY ) {
     return;
   }
 
   // Inititiate, if appropriate
-  if( _level == 0 ) 
+  if( level_ == 0 ) 
   {
-    bmlnElmnt* l = x->lastElement();
-    if( l == 0) { _errorCode = NOELEMENTS; return; }
+    bmlnElmnt* l = x.lastElement().get();                   //////////////FIXME !!!!!
+     if( l == 0) { errorCode_ = NOELEMENTS; return; }
     while( typeid(*l) == typeid(beamline) ) {
-      l = ((beamline*) l)->lastElement();
-      if( l == 0) { _errorCode = NOELEMENTS; return; }
+      l = ((beamline*) l)->lastElement().get();              //////////////FIXME !
+      if( l == 0) { errorCode_ = NOELEMENTS; return; }
     }
-    this->_set_prev(l);
+    set_prev(*l);
   }
 
 
   // Enter the beamline
-  _level++;
-  this->BmlVisitor::visitBeamline(x);
-  // dlist_iterator getNext ( *x );
-  // bmlnElmnt* p;
-  // while ( 0 != (  p = (bmlnElmnt*) getNext() ) ) {
-  //   p->accept( *this );
-  // }
-  _level--;
+  ++level_;
+  BmlVisitor::visit(x);
+  --level_;
   
 
   // Finish the calculation, if appropriate
-  if( _level == 0 ) {
-    if( _s > 0.0 ) {
-      _alpha = _alpha / _s;
-      _calcDone = true;
+  if( level_ == 0 ) {
+    if( s_ > 0.0 ) {
+       alpha_    = alpha_ / s_;
+       calcDone_ = true;
     }
     else {
-      _errorCode = ZEROLENGTH;
+      errorCode_ = ZEROLENGTH;
       (*pcerr) << "\n*** ERROR ***                              "
            << "\n*** ERROR *** " 
-           << _errorMessage[_errorCode]
+           << errorMessage_[ errorCode_]
            << "\n*** ERROR *** " 
            << endl;
     }
   }
   
-  else if( _level < 0 ) {
+  else if( level_ < 0 ) {
     (*pcerr) << "\n*** ERROR ***                              "
             "\n*** ERROR *** TransitionVisitor::visitBeamline  "
-            "\n*** ERROR *** Impossible! _level = " << _level << " < 0."
+            "\n*** ERROR *** Impossible! level_ = " << level_ << " < 0."
             "\n*** ERROR ***                              "
          << endl;
-    _errorCode = NEGLEVEL;
+    errorCode_ = NEGLEVEL;
   }
 }
 
 
-void TransitionVisitor::visitBmlnElmnt( bmlnElmnt* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TransitionVisitor::visit( bmlnElmnt& x )
 {
-  if( !_calcDone && (_errorCode == OKAY) ) 
+  if( ! calcDone_ && ( errorCode_ == OKAY) ) 
   {
-    _s += x->OrbitLength( *(_particlePtr) );
-    this->_set_prev(x);
+    s_ += x.OrbitLength( *(particlePtr_) );
+    set_prev(x);
   }
 }
 
 
-void TransitionVisitor::_visit_bend( bmlnElmnt* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TransitionVisitor::visit_bend( bmlnElmnt& x )
 {
-  if( !_calcDone && (_errorCode == OKAY) ) 
+  if( !calcDone_ && ( errorCode_ == OKAY) ) 
   {
     // Filters
 
 
-    BarnacleList::iterator it = x->dataHook.find("Twiss");
+    BarnacleList::iterator it = x.dataHook.find("Twiss");
 
-    if( it ==  x->dataHook.end() ) {
-      _errorCode = NOLATTFUNC;
+    if( it ==  x.dataHook.end() ) {
+      errorCode_ = NOLATTFUNC;
       return;
     }
 
@@ -267,71 +278,86 @@ void TransitionVisitor::_visit_bend( bmlnElmnt* x )
     if( fabs(lf.dispersion.ver) > 1.0e-9 || 
         fabs(lf.dPrime.ver    ) > 1.0e-9    ) 
     {
-      _errorCode = VERDISP;
+      errorCode_ = VERDISP;
       return;
     }
 
     // The calculation
-    double lng = x->OrbitLength( *(_particlePtr) );
-    _coeff(2,1) = lng;
-    _coeff(2,2) = lng*lng;
-    _coeff(2,3) = _coeff(2,2)*lng;
-    _coeff(3,2) = 2.0*lng;
-    _coeff(3,3) = 3.0*lng*lng;
+    double lng = x.OrbitLength( *(particlePtr_) );
+    coeff_(2,1) = lng;
+    coeff_(2,2) = lng*lng;
+    coeff_(2,3) = coeff_(2,2)*lng;
+    coeff_(3,2) = 2.0*lng;
+    coeff_(3,3) = 3.0*lng*lng;
   
     double temp;
-    temp  = lng; _b(0,0) = temp;
-    temp *= lng; _b(0,1) = temp/2.0;
-    temp *= lng; _b(0,2) = temp/3.0;
-    temp *= lng; _b(0,3) = temp/4.0;
+    temp  = lng; b_(0,0) = temp;
+    temp *= lng; b_(0,1) = temp/2.0;
+    temp *= lng; b_(0,2) = temp/3.0;
+    temp *= lng; b_(0,3) = temp/4.0;
 
-    double str  = x->Strength();
-    double brho = _particlePtr->ReferenceBRho();
-    _f(0,0) = str*_D/brho;
-    _f(1,0) = str*_Dprime/brho;
-    _f(2,0) = str*(lf.dispersion.hor)/brho;
-    _f(3,0) = str*(lf.dPrime.hor)/brho;
+    double str  = x.Strength();
+    double brho = particlePtr_->ReferenceBRho();
+    f_(0,0) = str * D_/brho;
+    f_(1,0) = str * Dprime_/brho;
+    f_(2,0) = str * (lf.dispersion.hor)/brho;
+    f_(3,0) = str * (lf.dPrime.hor)/brho;
 
-    _alpha += ( _b*_coeff.inverse()*_f )(0,0);  // inefficient use of inverse()
+    alpha_ += ( b_* coeff_.inverse()*f_ )(0,0);  // inefficient use of inverse()
 
-    _s += lng;
-    this->_set_prev(x);
+    s_ += lng;
+    set_prev(x);
   }
 }
 
 
-void TransitionVisitor::visitRbend( rbend* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TransitionVisitor::visit( rbend& x )
 {
-  this->_visit_bend(x);
+  visit_bend(x);
 }
 
 
-void TransitionVisitor::visitSbend( sbend* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TransitionVisitor::visit( sbend& x )
 {
-  this->_visit_bend(x);
+  visit_bend(x);
 }
 
 
-void TransitionVisitor::visitCF_rbend( CF_rbend* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TransitionVisitor::visit( CF_rbend& x )
 {
-  this->_visit_bend(x);
+  visit_bend(x);
 }
 
 
-void TransitionVisitor::visitCF_sbend( CF_sbend* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TransitionVisitor::visit( CF_sbend& x )
 {
-  this->_visit_bend(x);
+  visit_bend(x);
 }
 
 
-void TransitionVisitor::_set_prev( bmlnElmnt const* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TransitionVisitor::set_prev( bmlnElmnt const& x )
 {
   // Filters
 
-  BarnacleList::iterator it = x->dataHook.find("Twiss");  
+  BarnacleList::const_iterator it = x.dataHook.find("Twiss");  
  
-  if( it == x->dataHook.end() ) {
-    _errorCode = NOLATTFUNC;
+  if( it == x.dataHook.end() ) {
+    errorCode_ = NOLATTFUNC;
     return;
   }
   
@@ -341,53 +367,68 @@ void TransitionVisitor::_set_prev( bmlnElmnt const* x )
   if( fabs(lf.dispersion.ver) > 1.0e-9 || 
       fabs(lf.dPrime.ver    ) > 1.0e-9    ) 
   {
-    _errorCode = VERDISP;
+    errorCode_ = VERDISP;
     return;
   }
 
 
   // Body
-  _D      = lf.dispersion.hor;
-  _Dprime = lf.dPrime.hor;
+  D_      = lf.dispersion.hor;
+  Dprime_ = lf.dPrime.hor;
 }
 
 
 // Evaluators
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double TransitionVisitor::getTransitionGamma() const
 {
-  if( _calcDone && (_errorCode == OKAY) && (_alpha > 0.0) ) {
-    return sqrt(1.0/_alpha);
+  if( calcDone_ && ( errorCode_ == OKAY) && ( alpha_ > 0.0) ) {
+    return sqrt(1.0/ alpha_);
   }
   return -1.0;  // Error flag.
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double TransitionVisitor::getMomentumCompaction() const
 {
-  if( _calcDone && (_errorCode == OKAY) ) {
-    return _alpha;
+  if( calcDone_ && ( errorCode_ == OKAY) ) {
+    return alpha_;
   }
   return 0.0; 
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int TransitionVisitor::getErrorCode() const
 {
-  return _errorCode;
+  return errorCode_;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char* TransitionVisitor::getErrorMessage( int i ) const
 {
   if( 0 <= i  &&  i < NUMERRS ) {
-    return _errorMessage[i];
+    return errorMessage_[i];
   }
   return 0;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 const char* TransitionVisitor::getErrorMessage() const
 {
-  return _errorMessage[_errorCode];
+  return errorMessage_[ errorCode_ ];
 }
