@@ -36,6 +36,12 @@
 ******   September, 2005
 ******     First version
 ******
+****** Mar 2007 ostiguy@fnal.gov
+****** -minor efficiency improvements
+****** -use new-style STL-compatible bemline iterators
+****** -support for reference counted beamlines / elements
+****** -interface based on stl vectors passed by reference instead of 
+******* raw pointers
 **************************************************************************
 *************************************************************************/
 
@@ -45,11 +51,12 @@
 #include <physics_toolkit/SurveyMatcher.h>
 #include <basic_toolkit/GenericException.h>
 #include <beamline/beamline.h>
-#include <beamline/BeamlineIterator.h>
 #include <beamline/FramePusher.h>
 
 using namespace std;
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void SurveyMatcher::print( vector<Vector>& x ) const
 {
@@ -64,57 +71,62 @@ void SurveyMatcher::print( vector<Vector>& x ) const
 }
 
 
-SurveyMatcher::SurveyMatcher( const vector<Vector>& v, beamline* b )
-:   Sage( b, true )
-  , _surveyData(v)
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+SurveyMatcher::SurveyMatcher( vector<Vector> const& v, BmlPtr b )
+:   Sage( b ), surveyData_(v)
 {
-  _finishConstructor();
+   finishConstructor();
 }
 
 
-SurveyMatcher::SurveyMatcher( const vector<Vector>& v, beamline& b )
-: Sage( &b, true )
-  , _surveyData(v)
-{
-  _finishConstructor();
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-void SurveyMatcher::_finishConstructor()
+void SurveyMatcher::finishConstructor()
 {
   FramePusher fp;
-  DeepBeamlineIterator dbi( *_myBeamlinePtr );
-  bmlnElmnt* q = 0;
 
-  while( ( 0 != (q = dbi++) ) ) {
-    q->accept( fp );
-    _modelCoordinates.push_back(fp.getFrame().getOrigin());
+  for (beamline::deep_iterator it  = myBeamlinePtr_->deep_begin();
+                               it != myBeamlinePtr_->deep_end(); ++it ) {       
+    (*it)->accept( fp );
+    modelCoordinates_.push_back(fp.getFrame().getOrigin());
   }
 
-  _inputModel = _modelCoordinates;
+  inputModel_ = modelCoordinates_;
 
-  this->removeCentroid( _surveyData, _centralDataFrame );
-  this->orientPlane( _surveyData, _centralDataFrame );
+  removeCentroid( surveyData_, centralDataFrame_ );
+  orientPlane( surveyData_, centralDataFrame_ );
 
-  this->removeCentroid( _modelCoordinates, _centralModelFrame );
-  this->orientPlane( _modelCoordinates, _centralModelFrame );
-  this->rotate();
+  removeCentroid( modelCoordinates_,  centralModelFrame_ );
+  orientPlane( modelCoordinates_,  centralModelFrame_ );
+  rotate();
   
-  this->_diff();
-  this->_generateAlignments();
+  diff();
+  generateAlignments();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 SurveyMatcher::~SurveyMatcher()
-{
-}
+{}
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void SurveyMatcher::eraseAll()
 {
-  *_outputStreamPtr << "ClosedOrbitSage::eraseAll() does nothing." << endl;
+  *outputStreamPtr_ << "ClosedOrbitSage::eraseAll() does nothing." << endl;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void SurveyMatcher::removeCentroid( vector<Vector>& stuff, Frame& f )
 {
@@ -149,6 +161,9 @@ void SurveyMatcher::removeCentroid( vector<Vector>& stuff, Frame& f )
   f.setOrigin( centroid );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void SurveyMatcher::orientPlane( vector<Vector>& stuff, Frame& f )
 {
@@ -255,16 +270,20 @@ void SurveyMatcher::orientPlane( vector<Vector>& stuff, Frame& f )
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void SurveyMatcher::rotate()
 {
   // PRECONDITION:
-  //   _surveyData:       in (x,y) plane
-  //   _modelCoordinates: in (x,y) plane
+  //    surveyData_:       in (x,y) plane
+  //    modelCoordinates_: in (x,y) plane
   // POSTCONDITION:
-  //   _surveyData:       unchanged
-  //   _modelCoordinates: rotated about z-axis to bring into
+  //    surveyData_:       unchanged
+  //    modelCoordinates_: rotated about z-axis to bring into
   //                        correspondence with surveyData
-  //   _centralModelFrame: axes rotated about z-axis by same angle
+  //    centralModelFrame_: axes rotated about z-axis by same angle
+
   double phi = 0.0;
   Vector a(3), b(3);
   double sn, cs, denom, anorm, bnorm;
@@ -272,15 +291,17 @@ void SurveyMatcher::rotate()
   double sum_cs = 0;
   int count = 0;
 
-  int n = _surveyData.size();
-  if( n == _modelCoordinates.size() ) {
+  int n =   surveyData_.size();
+  if( n ==  modelCoordinates_.size() ) {
+
     for( int i = 0; i < n; i++ ) {
-      a = _modelCoordinates[i];
+      a =  modelCoordinates_[i];
       a(2) = 0;
-      b = _surveyData[i];
+      b = surveyData_[i];
       b(2) = 0;
       anorm = a.Norm();
       bnorm = b.Norm();
+
       if( (1.0e-6 < std::abs(anorm)) && (1.0e-6 < std::abs(bnorm)) ) {
         denom = anorm*bnorm;
         sn    = (a^b)(2) / denom;
@@ -295,27 +316,19 @@ void SurveyMatcher::rotate()
 
 
     // Extreme paranoia, but necessary
+
     denom = sqrt(cs*cs + sn*sn);
+
     sn /= denom;
     cs /= denom;
 
     if( std::abs(sn) < 1.0e-11 ) {
-      sn = 0;
-      if( 0 < cs ) {
-        cs = 1;
-      }
-      else {
-        cs = - 1;
-      }
+      sn = 0.0;
+      cs = (cs > 0.0 ) ? 1.0 : -1.0;
     }
     else if( std::abs(cs) < 1.0e-11 ) {
-      cs = 0;
-      if( 0 < sn ) {
-        sn = 1;
-      }
-      else {
-        sn = -1;
-      }
+      cs = 0.0;
+      sn = (sn > 0.0) ? 1.0 : -1.0;
     }
 
     phi  = atan2( sn, cs );
@@ -327,17 +340,17 @@ void SurveyMatcher::rotate()
       R(2,2) = 1.0;
 
       vector<Vector> bufferData;
-      for( int i = 0; i < n; i++ ) {
-        bufferData.push_back( R*_modelCoordinates[i] );
+      for( int i = 0; i < n; ++i ) {
+        bufferData.push_back( R* modelCoordinates_[i] );
       }
-      _modelCoordinates.swap( bufferData );
+      modelCoordinates_.swap( bufferData );
 
-      _centralModelFrame.rotate( phi, _centralModelFrame.getzAxis(), false );
+      centralModelFrame_.rotate( phi, centralModelFrame_.getzAxis(), false );
     }
   }
   else {
     ostringstream uic;
-    uic  << "Impossible: _surveyData.size() != _modelCoordinates.size()";
+    uic  << "Impossible: surveyData_.size() != _modelCoordinates.size()";
     throw( GenericException( __FILE__, __LINE__, 
            "void SurveyMatcher::rotate()", 
            uic.str().c_str() ) );
@@ -345,25 +358,29 @@ void SurveyMatcher::rotate()
 }
 
 
-void SurveyMatcher::_diff()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void SurveyMatcher::diff()
 {
   // PRECONDITIONS:
-  //   _surveyData and _modelCoordinates must be expressed
+  //    surveyData_ and modelCoordinates_ must be expressed
   //     in same frame
   // POSTCONDITIONS:
-  //   _surveyData: contains residuals, obtained by subtraction
-  int n = _surveyData.size();
-  if( n == _modelCoordinates.size() ) {
-    _bufferData.clear();
+  //   surveyData_: contains residuals, obtained by subtraction
+
+  int n =  surveyData_.size();
+  if( n == modelCoordinates_.size() ) {
+    bufferData_.clear();
     for( int i = 0; i < n; i++ ) {
-      _bufferData.push_back( _surveyData[i] - _modelCoordinates[i] );
+       bufferData_.push_back( surveyData_[i] - modelCoordinates_[i] );
     }  
-    _surveyData.swap( _bufferData );
-    _bufferData.clear();
+    surveyData_.swap( bufferData_ );
+    bufferData_.clear();
   }
   else {
     ostringstream uic;
-    uic  << "Impossible: _surveyData.size() != _modelCoordinates.size()";
+    uic  << "Impossible: surveyData_.size() != modelCoordinates_.size()";
     throw( GenericException( __FILE__, __LINE__, 
            "void SurveyMatcher::orientPlane(...)", 
            uic.str().c_str() ) );
@@ -371,47 +388,87 @@ void SurveyMatcher::_diff()
 }
 
 
-void SurveyMatcher::_generateAlignments()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void SurveyMatcher::generateAlignments()
 {
   // PRECONDITIONS:
-  //   _surveyData:       contains residuals referenced to global frame
-  //   _centralModelFrame: the oriented, centroid frame; referenced
+  //   surveyData_:        contains residuals referenced to global frame
+  //   centralModelFrame_: the oriented, centroid frame; referenced
   //                       to the same global frame;
   //                       model coordinates will be regenerated in
   //                       the global frame.
   // POSTCONDITIONS:
-  //   _modelCoordinates: contains residuals referenced to
+  //   modelCoordinates_: contains residuals referenced to
   //                      local frames
   FramePusher fp;
   Frame localFrame;
-  beamline* bmlPtr = _myBeamlinePtr;
-  DeepBeamlineIterator dbi( *bmlPtr );
-  bmlnElmnt* q = 0;
-  Vector r(3), dr(3);
-  int i = 0;
 
-  _modelCoordinates.clear();
-  while( ( 0 != (q = dbi++) ) ) {
-    q->accept( fp );
+  Vector r(3), dr(3);
+
+  modelCoordinates_.clear();
+
+  int i = 0;
+  for (beamline::deep_iterator it  = myBeamlinePtr_->deep_begin();
+                               it != myBeamlinePtr_->deep_end(); ++it, ++i ) {       
+    (*it)->accept( fp );
     localFrame = fp.getFrame();
     r = localFrame.getOrigin();
-    dr = _surveyData[i];
-    localFrame.relativeTo(_centralModelFrame).convertInPlace(r,dr);
-    _modelCoordinates.push_back(dr);
-    i++;
+    dr = surveyData_[i];
+    localFrame.relativeTo( centralModelFrame_).convertInPlace(r,dr);
+    modelCoordinates_.push_back(dr);
   }
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 alignment SurveyMatcher::getAlignment( int i ) const
 {
   alignmentData ret;
   Vector dr(3);
-  dr = _modelCoordinates[i];
+  dr          = modelCoordinates_[i];
   ret.xOffset = dr(0);
   ret.yOffset = dr(1);
-  ret.tilt = 0.0;
+  ret.tilt    = 0.0;
   return alignment( ret );
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Frame SurveyMatcher::getModelFrame() const
+{
+  return centralModelFrame_;
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+Frame SurveyMatcher::getDataFrame() const
+{
+  return centralDataFrame_;
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int SurveyMatcher::size() const
+{
+  return modelCoordinates_.size();
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Vector SurveyMatcher::getLocalDisplacement( int i ) const
+{
+  return modelCoordinates_[i];
+}
 
