@@ -32,6 +32,18 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
+******
+****** REVISION HISTORY:
+****** 
+******  Jan-Mar  2007:  Jean-Francois Ostiguy
+******                  ostiguy@fnal.gov
+****** 
+******  - Modified code to handle smart pointers
+******  - use value semantics for matrix members
+******  - use new style STL compatible iterators
+******  - test for presence of slots moved to standalone function slotFound() 
+******
+******
 **************************************************************************
 *************************************************************************/
 
@@ -61,160 +73,222 @@
  *  Leo Michelotti
  *  January 19, 2001
  *
+ *
  */
 
 
 #include <physics_toolkit/TuneAdjuster.h>
 #include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/iosetup.h>
-#include <beamline/BeamlineIterator.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <physics_toolkit/LattFuncSage.h>
 
 using namespace std;
 
-TuneAdjuster::TuneAdjuster( const beamline* x, bool doClone ) 
-: Sage( x, doClone ), _numberOfCorrectors(0), _c(2,1)
-{
-  _correctors = 0;
-  _f = 0;
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TuneAdjuster::TuneAdjuster( const beamline& x, bool doClone ) 
-: Sage( &x, doClone ), _numberOfCorrectors(0), _c(2,1)
-{
-  _correctors = 0;
-  _f = 0;
-}
+TuneAdjuster::TuneAdjuster( BmlPtr x ) 
+: Sage( x ), f_(), c_(2,1) { }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+TuneAdjuster::TuneAdjuster( beamline const& x ) 
+  : Sage( x ), f_(), c_(2,1) { } 
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 TuneAdjuster::~TuneAdjuster() 
+{}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool TuneAdjuster::isaThinQuad( bmlnElmnt const& q ) const
 {
-  if( _correctors ) delete [] _correctors;
-  if( _f ) delete _f;
+  return ( 0 == strcmp( q.Type(), "thinQuad" ) );
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool TuneAdjuster::isaQuad( bmlnElmnt const& q ) const
+{
+  return ( 0 == strcmp( q.Type(), "quadrupole" ) );
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool TuneAdjuster::isQuadLike(  bmlnElmnt const& q ) const
+{
+  return ( isaQuad(q) || isaThinQuad(q) );
 }
 
 
-void TuneAdjuster::_addCorrector( const bmlnElmnt* x,
-                                  double a, double b )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int  TuneAdjuster::numberOfCorrectors() const
 {
-  int         i;
-  bmlnElmnt** oldCorrectors = 0;
-  MatrixD*    old_f = 0;
+  return correctors_.size();
+}
 
-  if( _numberOfCorrectors > 0 ) 
-  {
-    oldCorrectors = new bmlnElmnt* [ _numberOfCorrectors ];
-    old_f = new MatrixD( _numberOfCorrectors, 2 );
 
-    for( i = 0; i < _numberOfCorrectors; i++ ) 
-    {
-      oldCorrectors[i] = _correctors[i];
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-      (*old_f)(i,0) = (*_f)(i,0);
-      (*old_f)(i,1) = (*_f)(i,1);
+MatrixD& TuneAdjuster::getControls()
+{
+  return c_;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool TuneAdjuster::slotFound() {
+
+  bool found = false;
+
+  for ( beamline::deep_iterator it  = myBeamlinePtr_->deep_begin();  
+                                it != myBeamlinePtr_->deep_end(); ++it ) {
+
+
+    if( strstr( "CF_rbend|rbend|Slot", (*it)->Type() ) ) {
+      found = true;
+      break;
     }
+  }
+  return found;
+}
 
-    delete [] _correctors;
-    _correctors = 0;   // Not really necessary.
-    delete _f;
-    _f = 0;            // Not really necessary.
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TuneAdjuster::addCorrector_private(  ElmPtr x, double a, double b )
+{
+
+  MatrixD old_f  =  f_;
+
+  correctors_.push_back(x);
+  
+  int ncor =  correctors_.size();
+
+  f_ = MatrixD(ncor, 2 );
+
+  for( int i=0;  i < ncor-1; ++i) {
+    f_(i,0) = old_f(i,0);
+    f_(i,1) = old_f(i,1);
   }
 
-  _numberOfCorrectors++;
-  _correctors = new bmlnElmnt* [ _numberOfCorrectors ];
-  _f = new MatrixD( _numberOfCorrectors, 2 );
-  for( i = 0; i < _numberOfCorrectors-1; i++ ) {
-    _correctors[i] = oldCorrectors[i];
-    (*_f)(i,0) = (*old_f)(i,0);
-    (*_f)(i,1) = (*old_f)(i,1);
+  f_( ncor-1, 0 )    = a;
+  f_( ncor-1, 1 )    = b;
+
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TuneAdjuster::addCorrector( ElmPtr x, double a, double b ) {
+
+  // This form is used by the GUI code. It is not taking advantage of the
+  // compiler to perform type checking. It *must* to go away !!!! 
+
+  QuadrupolePtr pquad;
+  ThinQuadPtr   ptquad;
+
+  if ( pquad  = boost::dynamic_pointer_cast<quadrupole>(x)  ) 
+  {  
+     addCorrector( pquad,  a, b );
+     return;
   }
-  _correctors[ _numberOfCorrectors-1 ] = (bmlnElmnt*) x;
-  (*_f)( _numberOfCorrectors-1, 0 )    = a;
-  (*_f)( _numberOfCorrectors-1, 1 )    = b;
 
+  if ( ptquad = boost::dynamic_pointer_cast<thinQuad>(x)    ) 
+     addCorrector( ptquad, a, b ); 
 
-  if( oldCorrectors ) delete [] oldCorrectors;
-  if( old_f )         delete old_f;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void TuneAdjuster::addCorrector( const quadrupole& x, double a, double b )
+void TuneAdjuster::addCorrector( quadrupole const& x, double a, double b )
 {
-  this->_addCorrector( &x, a, b );
+   addCorrector_private( QuadrupolePtr( x.Clone() ), a, b );
 }
 
-void TuneAdjuster::addCorrector( const quadrupole* x, double a, double b )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TuneAdjuster::addCorrector( QuadrupolePtr  x, double a, double b )
 {
-  this->_addCorrector( x, a, b );
+   addCorrector_private( x, a, b );
 }
 
-void TuneAdjuster::addCorrector( const thinQuad& x, double a, double b )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TuneAdjuster::addCorrector( thinQuad const& x, double a, double b )
 {
-  this->_addCorrector( &x, a, b );
+   addCorrector_private( ThinQuadPtr( x.Clone()), a, b );
 }
 
-void TuneAdjuster::addCorrector( const thinQuad* x, double a, double b )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TuneAdjuster::addCorrector( ThinQuadPtr x, double a, double b )
 {
-  this->_addCorrector( x, a, b );
+  addCorrector_private( x, a, b );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int TuneAdjuster::changeTunesBy ( double x, double y, JetParticle const& jp )
 {
-  int j;
   double delta_H = x;
   double delta_V = y;
 
-  _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
-  _myBeamlinePtr->eraseBarnacles( "Twiss" );
+  myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
+  myBeamlinePtr_->eraseBarnacles( "Twiss" );
 
   JetParticle jpr(jp);
 
   // Calculate current lattice functions
-  LattFuncSage lfs( _myBeamlinePtr );
+  LattFuncSage lfs( myBeamlinePtr_ );
 
-  _myBeamlinePtr->propagate( jpr );
+  myBeamlinePtr_->propagate( jpr );
 
-  // Check for Slots
-  DeepBeamlineIterator dbi( *_myBeamlinePtr );
-  bmlnElmnt* q;
-  char slotFound = 0;
-  while((  q = dbi++  )) {
-    if( strstr( "CF_rbend|rbend|Slot", q->Type() ) ) {
-      slotFound = 1;
-      break;
-    }
-  }
-  dbi.reset();
 
-  if( slotFound ) {
+  // This Fast_CS_Calc does not work if there are Slot's!!!  Take action!
+
+  if( slotFound() ) {
     lfs.Slow_CS_Calc( jpr );
   }
   else {
     lfs.Fast_CS_Calc( jpr);
   }  
   
-  // lfs.Fast_CS_Calc( jpr);
-  // This Fast_CS_Calc does not work if there are Slot's!!!  Take action!
 
-  int N = this->numberOfCorrectors();
+  int N = numberOfCorrectors();
+
   MatrixD beta      (2,N);
   MatrixD delta_nu  (2,1);
-  MatrixD w         (N,1);
 
-  // delta_nu = beta*f*c/4*pi*brho*;
-  // w = f*c
-  // delta strength_k = w_k
- 
+
   LattFuncSage::lattFunc lf;
 
-  for( int j=0; j < N; ++j) 
-  {
+  for( int j=0; j < N; ++j) {
  
-   BarnacleList::iterator it = _correctors[j]->dataHook.find( "Twiss" );
+   BarnacleList::iterator it = correctors_[j]->dataHook.find( "Twiss" );
 
-    if( it ==  _correctors[j]->dataHook.end() ) {
+    if( it ==  correctors_[j]->dataHook.end() ) {
       throw( GenericException( __FILE__, __LINE__, 
              "int TuneAdjuster::changeTunesBy ( double x, double y, const JetParticle& jp )", 
              "No lattice functions." ) );
@@ -224,7 +298,7 @@ int TuneAdjuster::changeTunesBy ( double x, double y, JetParticle const& jp )
 
     beta(0,j) =   lf.beta.hor;
     beta(1,j) = - lf.beta.ver;
-  }
+  } // for 
   
 
   // Adjust tunes and recalculate
@@ -233,58 +307,52 @@ int TuneAdjuster::changeTunesBy ( double x, double y, JetParticle const& jp )
   delta_nu(1,0) = delta_V;
  
   double brho = jpr.ReferenceBRho();
-  _c = (4.0*M_PI*brho)*( (beta*(*_f)).inverse() * delta_nu );
-  w = (*_f)*_c;
+
+  c_         = (4.0*M_PI*brho)*( (beta*f_).inverse() * delta_nu );
+
+  MatrixD w = f_ * c_;
  
-  for( j = 0; j < _numberOfCorrectors; j++ ) 
+  int j=0;
+  for( std::vector<ElmPtr>::iterator it = correctors_.begin(); 
+                                     it != correctors_.end(); ++it, ++j) 
   {
-    q = _correctors[j];
-    if( _isQuadLike(q) ) {
-      if( _isaThinQuad(q) ) {
-        q->setStrength( q->Strength() + w(j,0) );
+    if( isQuadLike(**it) ) {
+      if( isaThinQuad(**it) ) {
+        (*it)->setStrength( (*it)->Strength() + w(j,0) );
       }
       else {
-        q->setStrength( q->Strength() + (w(j,0)/q->Length()) );
+        (*it)->setStrength( (*it)->Strength() + (w(j,0)/(*it)->Length()) );
       }
     }
   }
 
-
   // Clean up ...
 
-  _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
-  _myBeamlinePtr->eraseBarnacles( "Twiss" );
+  myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
+  myBeamlinePtr_->eraseBarnacles( "Twiss" );
 
   return 0;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, JetParticle const& jp )
 {
 
-  _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
-  _myBeamlinePtr->eraseBarnacles( "Twiss" );
+  myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
+  myBeamlinePtr_->eraseBarnacles( "Twiss" );
 
   JetParticle jpr(jp);
 
   // Calculate current lattice functions
-  LattFuncSage lfs( _myBeamlinePtr );
+  LattFuncSage lfs( myBeamlinePtr_ );
  
-  _myBeamlinePtr->propagate( jpr );
+  myBeamlinePtr_->propagate( jpr );
 
-  // Check for Slots
-  DeepBeamlineIterator dbi( *_myBeamlinePtr );
-  bmlnElmnt* q;
-  char slotFound = 0;
-  while((  q = dbi++  )) {
-    if( strstr( "CF_rbend|rbend|Slot", q->Type() ) ) {
-      slotFound = 1;
-      break;
-    }
-  }
-  dbi.reset();
 
-  if( slotFound ) {
+  if( slotFound() ) {
     lfs.Slow_CS_Calc( jpr );
   }
   else {
@@ -294,11 +362,10 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, JetParticle const& jp
   // lfs.Fast_CS_Calc( jpr );
   // This Fast_CS_Calc does not work if there are Slot's!!!  Take action!
 
-  int N = this->numberOfCorrectors();
+  int N = correctors_.size();
+
   MatrixD beta(1,N);
-  MatrixD w   (N,1);
   MatrixD f   (N,1);
-  double  c;
 
   // delta_H = beta*f*c/4*pi*brho*;
   // w = f*c
@@ -308,11 +375,11 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, JetParticle const& jp
 
   for( int j=0; j < N; ++j) 
   {
-    f(j,0) = (*_f)(j,0);
+    f(j,0) = f_(j,0);
 
-    BarnacleList::iterator it = _correctors[j]->dataHook.find( "Twiss" );
+    BarnacleList::iterator it = correctors_[j]->dataHook.find( "Twiss" );
 
-    if(  it == _correctors[j]->dataHook.end()  ) {
+    if(  it == correctors_[j]->dataHook.end()  ) {
       throw( GenericException( __FILE__, __LINE__, 
              "int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, ", 
              "No lattice functions." ) );
@@ -325,76 +392,73 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, JetParticle const& jp
   }
   
   // Adjust tune 
+
   double brho = jpr.ReferenceBRho();
-  c = (beta*f)(0,0);
-  c = (4.0*M_PI*brho)*( delta_H/c );
-  w = c*f;
+
+  double c = (beta*f)(0,0);
+         c = (4.0*M_PI*brho)*( delta_H/c );
+
+  MatrixD w  = c*f;
  
-  for( int j=0; j < _numberOfCorrectors; j++ ) 
-  {
-    q = _correctors[j];
-    if( _isQuadLike(q) ) {
-      if( _isaThinQuad(q) ) {
-        q->setStrength( q->Strength() + w(j,0) );
+  int j=0;
+  for( std::vector<ElmPtr>::iterator it  = correctors_.begin(); 
+                                     it != correctors_.end(); ++it, ++j) {
+
+    if( isQuadLike(**it) ) {
+      if( isaThinQuad(**it) ) {
+        (*it)->setStrength( (*it)->Strength() + w(j,0) );
       }
       else {
-        q->setStrength( q->Strength() + (w(j,0)/q->Length()) );
+        (*it)->setStrength( (*it)->Strength() + (w(j,0)/(*it)->Length()) );
       }
     }
   }
 
-  _c(0,0) = c;
-  _c(1,0) = 0.0;
+  c_(0,0) = c;
+  c_(1,0) = 0.0;
 
   // Clean up ...
-  _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
-  _myBeamlinePtr->eraseBarnacles( "Twiss" );
+
+  myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
+  myBeamlinePtr_->eraseBarnacles( "Twiss" );
 
   return 0;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int TuneAdjuster::changeVerticalTuneBy ( double delta_V, JetParticle const& jp )
 {
 
-  _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
-  _myBeamlinePtr->eraseBarnacles( "Twiss" );
+  myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
+  myBeamlinePtr_->eraseBarnacles( "Twiss" );
 
-  // 
+  
   JetParticle jpr(jp);
 
   // Calculate current lattice functions
-  LattFuncSage lfs( _myBeamlinePtr );
+  LattFuncSage lfs( myBeamlinePtr_ );
  
-  _myBeamlinePtr->propagate( jpr );
+  myBeamlinePtr_->propagate( jpr );
 
   // Check for Slots
-  DeepBeamlineIterator dbi( *_myBeamlinePtr );
-  bmlnElmnt* q;
-  char slotFound = 0;
-  while((  q = dbi++  )) {
-    if( strstr( "CF_rbend|rbend|Slot", q->Type() ) ) {
-      slotFound = 1;
-      break;
-    }
-  }
-  dbi.reset();
 
-  if( slotFound ) {
+
+  // Fast_CS_Calc does not work if there are Slot's!!!  Take action!
+
+  if( slotFound() ) {
     lfs.Slow_CS_Calc( jpr );
   }
   else {
     lfs.Fast_CS_Calc( jpr );
   }  
   
-  // lfs.Fast_CS_Calc( jpr);
-  // This Fast_CS_Calc does not work if there are Slot's!!!  Take action!
+  int N = correctors_.size();
 
-  int N = this->numberOfCorrectors();
   MatrixD beta(1,N);
-  MatrixD w   (N,1);
   MatrixD f   (N,1);
-  double  c;
 
   // delta_V = beta*f*c/4*pi*brho*;
   // w = f*c
@@ -404,11 +468,11 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V, JetParticle const& jp )
 
   for( int j=0; j < N; ++j) 
   {
-    f(j,0) = (*_f)(j,1);
+    f(j,0) = f_(j,1);
 
-    BarnacleList::iterator it = _correctors[j]->dataHook.find( "Twiss" );
+    BarnacleList::iterator it = correctors_[j]->dataHook.find( "Twiss" );
 
-    if( it == _correctors[j]->dataHook.end() ) {
+    if( it == correctors_[j]->dataHook.end() ) {
       throw( GenericException( __FILE__, __LINE__, 
              "int TuneAdjuster::changeVerticalTuneBy ( double delta_V, ", 
              "No lattice functions." ) );
@@ -420,35 +484,40 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V, JetParticle const& jp )
   
   // Adjust tune 
   double brho = jpr.ReferenceBRho();
-  c = (beta*f)(0,0);
+
+  double c = (beta*f)(0,0);
   c = (4.0*M_PI*brho)*( delta_V/c );
-  w = c*f;
+  MatrixD w = c*f;
  
-  for( int j=0; j < _numberOfCorrectors; ++j) 
-  {
-    q = _correctors[j];
-    if( _isQuadLike(q) ) {
-      if( _isaThinQuad(q) ) {
-        q->setStrength( q->Strength() + w(j,0) );
+  int j=0;
+  for( std::vector<ElmPtr>::iterator it = correctors_.begin(); 
+                                     it != correctors_.end(); ++it, ++j) {
+ 
+    if( isQuadLike(**it) ) {
+      if( isaThinQuad(**it) ) {
+        (*it)->setStrength( (*it)->Strength() + w(j,0) );
       }
       else {
-        q->setStrength( q->Strength() + (w(j,0)/q->Length()) );
+        (*it)->setStrength( (*it)->Strength() + (w(j,0)/(*it)->Length()) );
       }
     }
   }
 
-
-  _c(0,0) = 0.0;
-  _c(1,0) = c;
+  c_(0,0) = 0.0;
+  c_(1,0) = c;
 
   // Clean up ...
-  _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
-  _myBeamlinePtr->eraseBarnacles( "Twiss" );
+
+  myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
+  myBeamlinePtr_->eraseBarnacles( "Twiss" );
 
   return 0;
 }
 
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void TuneAdjuster::eraseAll()
 {
