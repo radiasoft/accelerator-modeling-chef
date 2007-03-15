@@ -32,19 +32,25 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
+****** REVSION HISTORY
+****** 
+****** Mar 2007     ostiguy@fnal.gov
+******
+****** - local particles allocated on the stack
+****** - visitor interface takes advantage of (reference) dynamic type
+****** - new-style type safe Barnacles
+******
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-
 #include <beamline/beamline.h>
-#include <physics_toolkit/JacobianVisitor.h>
 #include <mxyzptlk/Mapping.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
-#include <beamline/BeamlineIterator.h>
+#include <physics_toolkit/JacobianVisitor.h>
 
 const MatrixD identityMatrix("I",6);
 
@@ -53,7 +59,13 @@ char* CUMULATIVE_JACOBIAN_STRING = "Cumulative_Jacobian";
 
 using namespace std;
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 JacobianData::JacobianData() : jac(6,6,0.0) {}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 MatrixD JacobianData::RMatrix() {
   MatrixD retMat(6,6,0.0);
@@ -103,85 +115,92 @@ MatrixD JacobianData::RMatrix() {
   return retMat;
 }
 
-JacobianVisitor::JacobianVisitor() : JetParticleVisitor() {
-  theLine = 0;
-  jacobianType = JACOBIAN_CUMULATIVE;
-  whichJacobian = CUMULATIVE_JACOBIAN_STRING;
-}
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JacobianVisitor::JacobianVisitor(beamline* mach, JetParticle const& p)
 : JetParticleVisitor(p) {
 
   theLine      = mach;
-  Mapping temp = particle->getState();
-  dim          = temp.Dim();
-  state        = particle->getState();
+  Mapping temp = particle_.getState();
+  state_       = particle_.getState();
 
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JacobianVisitor::~JacobianVisitor() {
 				// The destructor does not delete the
 				// beamline passed in from the constructor.
 }
 
-void JacobianVisitor::visitBeamline(beamline* x) {
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  BmlVisitor::visitBeamline(x);
+void JacobianVisitor::visit(beamline& x) {
+
+  BmlVisitor::visit(x);
   if(jacobianType == JACOBIAN_CUMULATIVE) {
 
-    x->dataHook.append( Barnacle(whichJacobian, JacobianData(cumulativeMatrix) ));
+    x.dataHook.append( Barnacle(whichJacobian, JacobianData(cumulativeMatrix) ));
 
   } else {
 
-    BarnacleList::iterator it = x->dataHook.find( whichJacobian );
+    BarnacleList::iterator it = x.dataHook.find( whichJacobian );
     JacobianData jacInfo = boost::any_cast<JacobianData>(it->info);
-    x->dataHook.erase(it); 
+    x.dataHook.erase(it); 
 
     jacInfo.jac = jacInfo.jac * cumulativeMatrix.inverse();
 
-    x->dataHook.append(  Barnacle(whichJacobian, jacInfo) );
+    x.dataHook.append(  Barnacle(whichJacobian, jacInfo) );
 
   }
 }
 
-void JacobianVisitor::visitBmlnElmnt(bmlnElmnt* be) {
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void JacobianVisitor::visit(bmlnElmnt& be) {
 
   if(jacobianType == JACOBIAN_CUMULATIVE) {
 
-    be->propagate(*particle);
+    be.propagate(particle_);
 
-    Mapping map = particle->getState();
+    Mapping map = particle_.getState();
     cumulativeMatrix = map.Jacobian();
     JacobianData matBarn(cumulativeMatrix);
-    be->dataHook.append( Barnacle(whichJacobian,  JacobianData(cumulativeMatrix) ) );
+    be.dataHook.append( Barnacle(whichJacobian,  JacobianData(cumulativeMatrix) ) );
 
   } else {
 
 
-    BarnacleList::iterator it = be->dataHook.find( whichJacobian );
+    BarnacleList::iterator it = be.dataHook.find( whichJacobian );
     JacobianData jacInfo = boost::any_cast<JacobianData>(it->info);
-    be->dataHook.erase( it);
+    be.dataHook.erase( it);
     
-    MatrixD tmpMat;
-    tmpMat = jacInfo.jac;
+    MatrixD tmpMat = jacInfo.jac;
     jacInfo.jac = tmpMat * cumulativeMatrix.inverse();
-    be->dataHook.append( Barnacle(whichJacobian, jacInfo) );
+    be.dataHook.append( Barnacle(whichJacobian, jacInfo) );
     cumulativeMatrix = tmpMat;
   }
     
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void JacobianVisitor::clearBarnacles() {
 
-  BeamlineIterator getNext(*theLine);
-  bmlnElmnt* element;
-
-  while((element = getNext++) != 0) {
-    element->dataHook.eraseAll("Jacobian");
+  for (beamline::iterator it = theLine->begin();  it != theLine->end(); ++it) {
+    (*it)->dataHook.eraseAll("Jacobian");
   }
   cumulativeMatrix = identityMatrix;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void JacobianVisitor::createJacobian(const JACOBIAN_TYPE& jacType) {
   jacobianType = jacType;
@@ -204,8 +223,8 @@ void JacobianVisitor::createJacobian(const JACOBIAN_TYPE& jacType) {
   if(tmpType == JACOBIAN_LOCAL)
     jacobianType = JACOBIAN_LOCAL;
 				// Reset the particle.
-  Mapping tmpMap(state);
-  particle->setState(tmpMap);
+  Mapping tmpMap(state_);
+  particle_.setState(tmpMap);
   cumulativeMatrix = identityMatrix;
   theLine->accept(*this);
 				// We have to do something special for the
