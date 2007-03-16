@@ -32,7 +32,16 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
-**************************************************************************
+****** REVISION HISTORY:
+****** 
+******  January  2007:  Jean-Francois Ostiguy
+******                  ostiguy@fnal.gov
+****** 
+******  - reference counted elements
+******  - use value semantics for matrix members
+******  - use new style STL compatible iterators
+******
+********************************************************************************
 *************************************************************************/
 
 #if HAVE_CONFIG_H
@@ -60,99 +69,141 @@
 
 using namespace std;
 
-ChromaticityAdjuster::ChromaticityAdjuster( const beamline* x, bool doClone ) 
-: Sage( x, doClone ), _numberOfCorrectors(0), _c(2,1)
-{
-  _correctors = 0;
-  _f = 0;
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ChromaticityAdjuster::ChromaticityAdjuster( const beamline& x, bool doClone ) 
-: Sage( &x, doClone ), _numberOfCorrectors(0), _c(2,1)
-{
-  _correctors = 0;
-  _f = 0;
-}
+ChromaticityAdjuster::ChromaticityAdjuster( BmlPtr x ) 
+: Sage( x ) {}  
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ChromaticityAdjuster::ChromaticityAdjuster( beamline const& x ) 
+: Sage( x ) {}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ChromaticityAdjuster::~ChromaticityAdjuster() 
+{}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int  ChromaticityAdjuster::numberOfCorrectors() const
 {
-  if( _correctors ) delete [] _correctors;
-  if( _f ) delete _f;
+  return correctors_.size();
 }
 
 
-void ChromaticityAdjuster::_addCorrector( const bmlnElmnt* x,
-                                          double a, double b )
-{
-  int         i;
-  bmlnElmnt** oldCorrectors = 0;
-  MatrixD*    old_f = 0;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  if( _numberOfCorrectors > 0 ) 
+bool ChromaticityAdjuster::isaThinSextupole( bmlnElmnt const& q ) const
+{
+  return ( 0 == strcmp( q.Type(), "thinSextupole" ) );
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+MatrixD& ChromaticityAdjuster::getControls()
+{
+  return c_;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ChromaticityAdjuster::addCorrector_private(  ElmPtr x, double a, double b ) 
+{
+
+  MatrixD old_f = f_;
+
+  correctors_.push_back(x);
+
+  int ncor =  correctors_.size();
+
+  f_ = MatrixD(ncor,2);
+
+  for( int i= 0;  i < ncor-1; ++i) {
+    f_(i,0) = old_f(i,0);
+    f_(i,1) = old_f(i,1);
+  }
+
+  f_( ncor-1, 0 )    = a;
+  f_( ncor-1, 1 )    = b;
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void  ChromaticityAdjuster::addCorrector(  ElmPtr x, double a, double b ) 
+{
+  // This form is used by the GUI code. It MUST go away !
+
+
+  SextupolePtr     ps;  
+  ThinSextupolePtr pts;  
+
+  if ( ps  = boost::dynamic_pointer_cast<sextupole>(x)     ) 
   {
-    oldCorrectors = new bmlnElmnt* [ _numberOfCorrectors ];
-    old_f = new MatrixD( _numberOfCorrectors, 2 );
-
-    for( i = 0; i < _numberOfCorrectors; i++ ) 
-    {
-      oldCorrectors[i] = _correctors[i];
-
-      (*old_f)(i,0) = (*_f)(i,0);
-      (*old_f)(i,1) = (*_f)(i,1);
-    }
-
-    delete [] _correctors;
-    _correctors = 0;   // Not really necessary.
-    delete _f;
-    _f = 0;            // Not really necessary.
+      addCorrector_private( x, a, b );
+      return;
   }
 
-  _numberOfCorrectors++;
-  _correctors = new bmlnElmnt* [ _numberOfCorrectors ];
-  _f = new MatrixD( _numberOfCorrectors, 2 );
-  for( i = 0; i < _numberOfCorrectors-1; i++ ) {
-    _correctors[i] = oldCorrectors[i];
-    (*_f)(i,0) = (*old_f)(i,0);
-    (*_f)(i,1) = (*old_f)(i,1);
-  }
-  _correctors[ _numberOfCorrectors-1 ] = (bmlnElmnt*) x;
-  (*_f)( _numberOfCorrectors-1, 0 )    = a;
-  (*_f)( _numberOfCorrectors-1, 1 )    = b;
+  if ( pts = boost::dynamic_pointer_cast<thinSextupole>(x) ) 
+      addCorrector_private( x, a, b );
 
-
-  if( oldCorrectors ) delete [] oldCorrectors;
-  if( old_f )         delete old_f;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ChromaticityAdjuster::addCorrector( const sextupole& x, double a, double b )
+void ChromaticityAdjuster::addCorrector( sextupole const& x, double a, double b )
 {
-  this->_addCorrector( &x, a, b );
+  addCorrector_private( ElmPtr( x.Clone() ), a, b );
 }
 
-void ChromaticityAdjuster::addCorrector( const sextupole* x, double a, double b )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ChromaticityAdjuster::addCorrector( SextupolePtr x, double a, double b )
 {
-  this->_addCorrector( x, a, b );
+  addCorrector_private( x, a, b );
 }
 
-void ChromaticityAdjuster::addCorrector( const thinSextupole& x, double a, double b )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ChromaticityAdjuster::addCorrector( thinSextupole const& x, double a, double b )
 {
-  this->_addCorrector( &x, a, b );
+  addCorrector_private( ElmPtr( x.Clone() ), a, b );
 }
 
-void ChromaticityAdjuster::addCorrector( const thinSextupole* x, double a, double b )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ChromaticityAdjuster::addCorrector( ThinSextupolePtr x, double a, double b )
 {
-  this->_addCorrector( x, a, b );
+  addCorrector_private( x, a, b );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetParticle& jp )
 {
   double delta_H = x;
   double delta_V = y;
 
-  _myBeamlinePtr->dataHook.eraseAll( "Ring" );
-  _myBeamlinePtr->eraseBarnacles( "Ring" );
+  myBeamlinePtr_->dataHook.eraseAll( "Ring" );
+  myBeamlinePtr_->eraseBarnacles( "Ring" );
 
   // 
 
@@ -161,19 +212,19 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
   JetParticle  jpr3(jp);
 
   // Calculate current lattice functions
-  LattFuncSage lfs( _myBeamlinePtr );
+  LattFuncSage lfs( myBeamlinePtr_ );
  
-  _myBeamlinePtr->propagate(jpr);
+  myBeamlinePtr_->propagate(jpr);
 
   // lfs.Fast_CS_Calc( jprPtr  );
 
   lfs.Slow_CS_Calc( jpr);
   lfs.Disp_Calc   ( jpr2);
  
-  int N = this->numberOfCorrectors();
+  int N = correctors_.size();
+
   MatrixD beta      (2,N);
   MatrixD delta_xi  (2,1);
-  MatrixD w         (N,1);
   double  dsp;
 
   // delta_xi = beta*_f*c
@@ -188,22 +239,22 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
     gotDispersion = false;
     gotBetas      = false;
 
-    BarnacleList::iterator ptr = _correctors[j]->dataHook.find( "Dispersion" );
-    if( ptr ==  _correctors[j]->dataHook.end() ) { 
-      ptr = _correctors[j]->dataHook.find( "Twiss" );
+    BarnacleList::iterator ptr = correctors_[j]->dataHook.find( "Dispersion" );
+    if( ptr ==  correctors_[j]->dataHook.end() ) { 
+      ptr = correctors_[j]->dataHook.find( "Twiss" );
     }
 
-    if( ptr != _correctors[j]->dataHook.end() ) { 
-      dsp =   boost::any_cast<lattFunc>(ptr->info).dispersion.hor;
+    if( ptr != correctors_[j]->dataHook.end() ) { 
+      dsp           =   boost::any_cast<lattFunc>(ptr->info).dispersion.hor;
       gotDispersion = true;
     }
     else {
       dsp = 0.0;  // Just to give it a value.
     }
 
-    ptr = _correctors[j]->dataHook.find( "Twiss" );
+    ptr = correctors_[j]->dataHook.find( "Twiss" );
     // NOTE: possibly 2nd time this is done.
-    if(ptr != _correctors[j]->dataHook.end() ) {
+    if(ptr !=  correctors_[j]->dataHook.end() ) {
       beta(0,j) =   boost::any_cast<lattFunc>(ptr->info).beta.hor * dsp;
       beta(1,j) = - boost::any_cast<lattFunc>(ptr->info).beta.ver * dsp;
       gotBetas = true;
@@ -216,31 +267,34 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
     }
   }
   
-
   // Adjust tunes and recalculate
+
   delta_xi(0,0) = delta_H;
   delta_xi(1,0) = delta_V;
  
   double brho = jpr.ReferenceBRho();
-  _c = (M_TWOPI*brho)*( (beta*(*_f)).inverse() * delta_xi );
-  w = (*_f)*_c;
+  c_ = (M_TWOPI*brho)*( (beta*f_).inverse() * delta_xi );
+
+  MatrixD w  = f_* c_;
  
-  for( int j = 0; j < _numberOfCorrectors; j++ ) 
+  int j=0;
+  for( std::vector<ElmPtr>::iterator it = correctors_.begin(); it != correctors_.end(); ++it, ++j) 
   {
-      bmlnElmnt* q = _correctors[j];
-    if( _isaThinSextupole(q) ) {
-      q->setStrength( q->Strength() + w(j,0) );
+
+    if( isaThinSextupole(**it) ) {
+      (*it)->setStrength( (*it)->Strength() + w(j,0) );
     }
     else {
-      q->setStrength( q->Strength() + (w(j,0)/q->Length()) );
+      (*it)->setStrength( (*it)->Strength() + (w(j,0)/(*it)->Length()) );
     }
   }
-
  
   return 0;
-}
+  }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 void ChromaticityAdjuster::eraseAll()
-{
-}
+{ }
