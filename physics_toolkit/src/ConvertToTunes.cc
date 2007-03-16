@@ -32,6 +32,11 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
+******  REVISION HISTORY
+******
+****** Mar 2007       ostiguy@fnal.gov
+****** - use new-style STL-compatible Jet iterators
+
 **************************************************************************
 *************************************************************************/
 /*
@@ -358,21 +363,20 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
   // Environment is set ........................
   JetC__environment_ptr thisEnv = N.Env();
 
-  JLCterm const*  jlctPtr;
   IntArray  ndx( N.Env()->numVar() );
+
   std::complex<double>   v;
 
   // Construct the Mapping .......................
-  int  i, j;
+
   JetC y( thisEnv );    // Specifying environment is not 
                         // really necessary here.
-  for( i = 0; i < N.Dim(); i++ ) {
+  for( int i=0; i < N.Dim(); ++i) {
     y = N( i );
-    JetC::iterator iter(y);
     nu(i) = complex_0;
 
-    while((  jlctPtr = ++iter)) {
-      v = jlctPtr->coefficient();
+    for ( JetC::iterator it= y.begin(); it != y.end(); ++it ) { 
+      v = it->coefficient();
       if((  v != c_zero  )) {
 
         // Reality check ...
@@ -381,7 +385,7 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
           (*pcerr) << "WARNING: " << __FILE__ << ", Line " << __LINE__ << endl;
           (*pcerr) << "WARNING: ConvertNToTunes              " << endl;
           (*pcerr) << "WARNING: Reality check was violated for exponent "
-                   << jlctPtr->exponents()
+                   << it->exponents()
                    << ".  " << endl;
           (*pcerr) << "WARNING: Offending ratio is "
                    << "| " << real(v) << " / " << imag(v) << " |  = " ;
@@ -395,9 +399,9 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
           returnValue = 140;
         }
 
-        ndx = jlctPtr->exponents();
+        ndx = it->exponents();
         ndx(i) -= 1;
-        for( j = 0; j < sd2; j++ ) {
+        for( int j=0; j < sd2; j++ ) {
           if( ndx(j) != ndx(j+sd2) ) {
             return 141;
 	  }
