@@ -43,6 +43,11 @@
 ******    returning a const reference to the entire vector.
 ******  - misc cleanup.  
 ******                                                               
+****** REVISION HISTORY
+******
+****** Mar 2007        ostiguy@fnal.gov
+****** -efficiency improvements
+****** -use new-style STL-compatible beamline iterators
 **************************************************************************
 *************************************************************************/
 
@@ -121,16 +126,16 @@ CovarianceSage::Info& CovarianceSage::Info::operator=( const CovarianceSage::Inf
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CovarianceSage::CovarianceSage( const beamline* x, bool doClone ) 
-: Sage( x, doClone )
+CovarianceSage::CovarianceSage( BmlPtr x ) 
+: Sage( x)
 {}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CovarianceSage::CovarianceSage( const beamline& x, bool doClone ) 
-: Sage( &x, doClone )
+CovarianceSage::CovarianceSage( beamline const& x) 
+: Sage( x )
 {}
 
 
@@ -138,32 +143,34 @@ CovarianceSage::CovarianceSage( const beamline& x, bool doClone )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int CovarianceSage::doCalc( JetParticle& jp, MatrixD cov, beamline::Criterion& crit )
+int CovarianceSage::doCalc( JetParticle& jp, MatrixD const& cov, beamline::Criterion& crit )
 {
   // PRECONDITION:   The JetParticle must be on the closed
-  //   orbit with the identity mapping for its state.
+  //                 orbit with the identity mapping for its state.
   //                 Its Jet environment's reference point 
-  //   should be the closed orbit. It is not reset.
+  //                 should be the closed orbit. It is not reset.
   //                 cov is the covariance matrix in particle
-  //   coordinates at the beginning of the line. It need not
-  //   be the equilibrium covariance matrix.
+  //                 coordinates at the beginning of the line. It need not
+  //                 be the equilibrium covariance matrix.
   // POSTCONDITIONS: The JetParticle has the one-turn
-  //   mapping for its state.
-  //                 Every element in the beamline that
-  //   matches the criterion has attached a Barnacle
-  //   labelled CovarianceSage that possesses and
-  //   CovarianceSage::Info data struct.
+  //                 mapping for its state.
+  //                * Every element in the beamline that
+  //          NO!   * matches the criterion has attached a Barnacle
+  //                * labelled CovarianceSage that possesses and
+  //                * CovarianceSage::Info data struct.
   //                 The beamline has attached to it
-  //   a Barnacle labelled eigentunes that possesses
-  //   an CovarianceSage::Tunes data struct. 
+  //                 a Barnacle labelled eigentunes that possesses
+  //                 an CovarianceSage::Tunes data struct. 
  
   // This routine has been partially copied from
   //   TevatronOptics/calcs/ellipse/ellipse_3.cc
 
+
+
   // A little paranoia check.
   int r = cov.rows();
   if( cov.cols() != r ) {
-    *_errorStreamPtr 
+    *errorStreamPtr_ 
          << "\n***ERROR*** File: " << __FILE__ << "  Line: " << __LINE__
          << "\n***ERROR*** int CovarianceSage::doCalc( JetParticle*, MatrixD, beamline::Criterion& )"
          << "\n***ERROR*** Argument covariance matrix is "
@@ -175,31 +182,11 @@ int CovarianceSage::doCalc( JetParticle& jp, MatrixD cov, beamline::Criterion& c
     return NOTSQR;
   }
 
-  int i, j;
-
   const int x  = Particle::xIndex(); 
   const int y  = Particle::yIndex(); 
   const int xp = Particle::npxIndex();
   const int yp = Particle::npyIndex();
 
-  // Symmetrize the matrix, just to be on the safe side.
-  // cov = ( cov + cov.transpose() )/2.0;
-
-
-
-  Particle co_particle(jp);
-
-  MatrixD initialCov( cov );
-  Mapping map( jp.State() );
-  MatrixD M( map.Jacobian() );
-
-  MatrixD localCov( cov.rows(), cov.cols() );
-
-
-  double s          = 0.0;
-  double normalizer = 0.0;
-
-  i = 0;
 
   // Clear the calcs_ array and delete its contents
 
@@ -207,30 +194,35 @@ int CovarianceSage::doCalc( JetParticle& jp, MatrixD cov, beamline::Criterion& c
 
   // Go through the line element by element
 
-   CovarianceSage::Info info;
+  double s          = 0.0;
+  double normalizer = 0.0;
+  Particle co_particle(jp);
 
-   for (beamline::deep_iterator it = _myBeamlinePtr->deep_begin(); 
-                               it != _myBeamlinePtr->deep_end(); ++it) {
+  CovarianceSage::Info info;
 
-    bmlnElmnt* q = (*it);
+  Matrix lcov    = cov;
+  Matrix M;
+  
+  for (beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); 
+                               it != myBeamlinePtr_->deep_end(); ++it) 
+  {
+ 
 
-    q->propagate( jp );
-    s += q->OrbitLength( co_particle );
-
-    map = jp.State();
-    M = map.Jacobian();
-    cov = M * initialCov * M.transpose();
-
+    (*it)->propagate( jp );
+    s += (*it)->OrbitLength( co_particle );
+  
+    M           =  jp.State().Jacobian();
+    lcov        =  M * cov * M.transpose();
 
     info.arcLength  = s;
-    info.covariance = cov;
+    info.covariance = lcov;
 
     // ... "Horizontal" lattice functions
 
-    normalizer = (cov(x,x)*cov(xp,xp)) - (cov(x,xp)*cov(xp,x));
+    normalizer = (lcov(x,x)*lcov(xp,xp)) - (lcov(x,xp)*lcov(xp,x));
 
     if( normalizer <= 0.0 ) {
-      *_errorStreamPtr 
+      *errorStreamPtr_ 
            << "\n***ERROR*** File: " << __FILE__ << "  Line: " << __LINE__
            << "\n***ERROR*** int CovarianceSage::doCalc( JetParticle*, MatrixD, beamline::Criterion& )"
            << "\n***ERROR*** Determinant of (projected) \"horizontal\" covariance matrix = "
@@ -241,15 +233,15 @@ int CovarianceSage::doCalc( JetParticle& jp, MatrixD cov, beamline::Criterion& c
     }
     normalizer = 1.0/sqrt(normalizer);
 
-    info.beta.hor  =   normalizer*cov(x,x);
-    info.alpha.hor = - normalizer*cov(x,xp);
+    info.beta.hor  =   normalizer*lcov(x,x);
+    info.alpha.hor = - normalizer*lcov(x,xp);
 
     // ... "Vertical" lattice functions
 
-    normalizer = (cov(y,y)*cov(yp,yp)) - (cov(y,yp)*cov(yp,y));
+    normalizer = (lcov(y,y)*lcov(yp,yp)) - (lcov(y,yp)*lcov(yp,y));
 
     if( normalizer <= 0.0 ) {
-      *_errorStreamPtr 
+      *errorStreamPtr_ 
            << "\n***ERROR*** File: " << __FILE__ << "  Line: " << __LINE__
            << "\n***ERROR*** int CovarianceSage::doCalc( JetParticle*, MatrixD, beamline::Criterion& )"
            << "\n***ERROR*** Determinant of (projected) \"vertical\" covariance matrix = "
@@ -261,8 +253,8 @@ int CovarianceSage::doCalc( JetParticle& jp, MatrixD cov, beamline::Criterion& c
 
     normalizer = 1.0/sqrt(normalizer);
 
-    info.beta.ver  =   normalizer*cov(y,y);
-    info.alpha.ver = - normalizer*cov(y,yp);
+    info.beta.ver  =   normalizer*lcov(y,y);
+    info.alpha.ver = - normalizer*lcov(y,yp);
 
     calcs_.push_back(info);
    
@@ -274,7 +266,9 @@ int CovarianceSage::doCalc( JetParticle& jp, MatrixD cov, beamline::Criterion& c
 }
 
 
-// ============================================================== //
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 std::vector<CovarianceSage::Info> const& CovarianceSage::getCovarianceArray()
 {
@@ -282,14 +276,16 @@ std::vector<CovarianceSage::Info> const& CovarianceSage::getCovarianceArray()
 }
 
 
-// ============================================================== //
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void CovarianceSage::eraseAll() 
 {
-  _myBeamlinePtr->dataHook.eraseAll( "CovarianceSage" );
+  myBeamlinePtr_->dataHook.eraseAll( "CovarianceSage" );
 
-  for ( beamline::deep_iterator it  = _myBeamlinePtr->deep_begin();  
-                                it != _myBeamlinePtr->deep_end(); ++it )
+  for ( beamline::deep_iterator it  = myBeamlinePtr_->deep_begin();  
+                                it != myBeamlinePtr_->deep_end(); ++it )
   { 
     (*it)->dataHook.eraseAll( "CovarianceSage" );
   }
