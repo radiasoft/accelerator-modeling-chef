@@ -22,7 +22,6 @@
 ****************************************************************************/
 #include <boost/python.hpp>
 #include <boost/shared_ptr.hpp>
-#include <beamline/BeamlineIterator.h>
 #include <beamline/beamline.h>
 #include <beamline/bmlnElmnt.h>
 
