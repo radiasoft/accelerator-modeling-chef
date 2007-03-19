@@ -1,5 +1,6 @@
-/***************************************************************************
-****************************************************************************
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
 ******
 ******  Python bindings for mxyzpltk/beamline libraries 
 ******  
@@ -21,65 +22,63 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************
-****************************************************************************/
-#include <boost/python.hpp>
+*******************************************************************************
+*******************************************************************************
+*******************************************************************************/
 
+#include <boost/python.hpp>
 #include <beamline/bmlnElmnt.h>
 #include <physics_toolkit/LattFuncSage.h>
 #include <iostream>
 
 #define BOOST_PYTHON_STATIC_MODULE
 
+namespace {
 
-static void verbose_hv_output(std::ostream &os, double h, double v) {
+void verbose_hv_output(std::ostream &os, double h, double v) 
+{
    os << std::setiosflags(std::ios::fixed | std::ios::right);
    os << std::setprecision(8);
   
    os << "(hor = "  << std::setw(15) << h << "," << " ver = " << std::setw(15) << v << ")" << std::endl;
    os << resetiosflags(std::ios::fixed | std::ios::right);
-   
 }
 
-
-static std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc::dispersion_type& disp)    {
-
+std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc::dispersion_type& disp)    
+{
       verbose_hv_output(os, disp.hor, disp.ver);
-
       return os;
 }
 
-static std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc::dPrime_type&     dPrime)  {
-
+std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc::dPrime_type&     dPrime)  
+{
       verbose_hv_output(os, dPrime.hor, dPrime.ver);
-
       return os;
 }
 
-static std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc::beta_type&       beta)    {
-
+std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc::beta_type&       beta)    {
       verbose_hv_output(os, beta.hor, beta.ver);
-  
       return os;
 }
 
-static std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc::alpha_type&      alpha)   {
-
+std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc::alpha_type&      alpha)   
+{
       verbose_hv_output(os, alpha.hor, alpha.ver);
-  
       return os;
 }
 
-static std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc::psi_type&        psi)     {
-
+std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc::psi_type&        psi)     
+{
       verbose_hv_output(os, psi.hor, psi.ver);
-  
       return os;
 }
 
-static std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc& lf) {
-  
-  
+
+
+}// anonymous namespace 
+
+static std::ostream& operator<<(std::ostream &os,  LattFuncSage::lattFunc const& lf) 
+{
   os << "arc length = " << lf.arcLength  << std::endl
      << "dispersion = " << lf.dispersion << std::endl  
      << "dPrime     = " << lf.dPrime     << std::endl
@@ -88,9 +87,7 @@ static std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc&
      << "psi        = " << lf.psi        << std::endl;
 
       return os;
-  
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      // 
@@ -105,13 +102,11 @@ static std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc&
 
 #include <boost/any.hpp>
 
+using namespace boost::python;
 
 void wrap_lattfunc() {
 
-using namespace boost::python;
-
 class_<LattFuncSage::lattFunc >("lattFunc",init<>())
-
   .def( self_ns::str(self) )
   .def_readwrite("arcLength",  &LattFuncSage::lattFunc::arcLength)
   .def_readwrite("dispersion", &LattFuncSage::lattFunc::dispersion)
@@ -140,5 +135,4 @@ class_<LattFuncSage::lattFunc::psi_type>("psi")
   .def_readwrite("hor", &LattFuncSage::lattFunc::psi_type::hor)
   .def_readwrite("ver", &LattFuncSage::lattFunc::psi_type::ver);
  
-
 }

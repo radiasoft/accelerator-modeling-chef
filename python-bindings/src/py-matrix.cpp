@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-matrix.cpp
@@ -19,7 +22,9 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
 
 #include <boost/python.hpp>
 #include <boost/shared_array.hpp>
@@ -29,6 +34,8 @@
 
 using namespace boost::python;
 
+
+namespace {
 
 template <typename T>
 class MatrixWrapper: public TMatrix<T> {
@@ -60,6 +67,7 @@ public:
 
 };
 
+} // anonymous namespace
 
 
 void wrap_matrix () {
@@ -219,23 +227,3 @@ Matrix_class_.def( self_ns::str(self) );
 
 }
 
-#if  0
-
-=======================================================================================================================
-
-// standalone functions
-
-TMatrix<double> real( const TMatrix<FNAL::Complex>& x );
-TMatrix<double> imag( const TMatrix<FNAL::Complex>& x );
-
-// Friend functions
-
-  T& operator()(int row, int column);
-  T  operator()(int row, int column) const;
-  T  getElement(int row, int column) const;
-  T& operator()(int row);
-  T  operator()(int row) const;
-  void operator+=( const T&);
-  void operator-=( const T&);
-
-#endif
