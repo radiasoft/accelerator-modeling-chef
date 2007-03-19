@@ -11,6 +11,12 @@
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -31,6 +37,9 @@
 ******  Usage, modification, and redistribution are subject to terms
 ******  of the License and the GNU General Public License, both of
 ******  which are supplied with this software.
+******  Mar 2007  ostiguy@fnal.gov
+******  - removed references to slist/dlist
+******  - support for reference counted elements and beamlines
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -40,6 +49,7 @@
 #define RAYTRACE_H
 
 #include <iostream>
+#include <list>
 
 #include <qpushbutton.h>
 #include <qmenubar.h>
@@ -49,23 +59,14 @@
 #include <qlineedit.h>
 #include <qgl.h>
 
-#include "slist.h"
-#include "ColorWheel.h"
-#include "VectorD.h"
+#include <basic_toolkit/ColorWheel.h>
+#include <basic_toolkit/VectorD.h>
+#include <beamline/BmlPtr.h>
+#include <physics_toolkit/LattFuncSage.h>
 
 // Predeclaration of classes...
-class beamline;
-class BeamlineContext;
 
-#ifndef MONITOR_H
-#include "monitor.h"
-#endif
-
-#ifndef LATTFUNCSAGE_H
-#include "LattFuncSage.h"
-#endif
-
-
+class Particle;
 class RayDrawSpace;
 class RayTrace;
 class PointEdit;
@@ -82,19 +83,20 @@ struct Ray
 };
 
 
-class RayTrace : public QVBox
-{
+class RayTrace : public QVBox {
+
 Q_OBJECT
 
 public:
-  RayTrace( const Particle&, beamline* , 
+  RayTrace( Particle const&, BmlPtr, 
             QWidget* parent=0, const char* name=0, WFlags f=0);
-  RayTrace( BeamlineContext*, 
+  RayTrace( BmlContextPtr, 
             QWidget* parent=0, const char* name=0, WFlags f=0);
-  ~RayTrace();
+ ~RayTrace();
+
   int run();
 
-  slist                   _history;
+  std::list<Ray*>         _history;
   LattFuncSage::lattFunc* _p_info;
 
   void      setBeamline( const beamline* );
@@ -170,8 +172,7 @@ private:
   QLabel*          _p_y_label;
   QLabel*          _p_yp_label;
 
-  BeamlineContext* _bmlConPtr;
-  bool             _deleteContext;
+  BmlContextPtr    _bmlConPtr;
   bool             _continuous;
   bool             _isIterating;
 };
@@ -213,11 +214,12 @@ public slots:
   void _incrementColor();
 
 private:
-  RayTrace*   _topRayTrace;
-  RayDrawFunc _myFunc;
-  int         _pointSize;
-  GLdouble _r, _g, _b;
-  GLclampf _rClr, _gClr, _bClr, _aClr;
+
+  RayTrace*     _topRayTrace;
+  RayDrawFunc   _myFunc;
+  int           _pointSize;
+  GLdouble      _r, _g, _b;
+  GLclampf      _rClr, _gClr, _bClr, _aClr;
   char _myName[20];
 
   double _xLo, _yLo, _xHi, _yHi;
