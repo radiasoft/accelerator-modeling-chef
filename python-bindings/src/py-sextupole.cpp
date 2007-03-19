@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/********************************************************************************
+*********************************************************************************
+*********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-sextupole.cpp
@@ -14,14 +17,23 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S.and Foreign Copyright Laws. 
 ******                                                                
-******  Author:    Jean-Francois Ostiguy                                     
+******  Author:    Jean-Francois Ostiguy
 ******                                                                
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+******
+********************************************************************************
+********************************************************************************
+********************************************************************************/
+
 #include <boost/python.hpp>
 #include <beamline/sextupole.h>
+
+
+//--------------------------------------------------------------------------------
+// wrapper code
+//--------------------------------------------------------------------------------
 
 void wrap_sextupole () {
   
@@ -29,12 +41,12 @@ void wrap_sextupole () {
 using namespace boost::python;
 
 
-class_<sextupole, bases<bmlnElmnt> >("sextupole", init<double,double const&>() )
+class_<sextupole, bases<bmlnElmnt>, SextupolePtr >("sextupole", init<double,double const&>() )
   .def(init<char*, double const&, double const&>() )
   .def("setCurrent",         &sextupole::setCurrent)
   .def("Type",               &sextupole::Type);
 
-class_<thinSextupole, bases<bmlnElmnt> >("thinSextupole", init<double const&>() )
+class_<thinSextupole, bases<bmlnElmnt>, ThinSextupolePtr >("thinSextupole", init<double const&>() )
   .def( init<char const*, double const&>() )
   .def("Type",  &thinSextupole::Type);
  

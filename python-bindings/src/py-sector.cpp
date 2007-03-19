@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-sector.cpp
@@ -19,24 +22,24 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
+
 #include <boost/python.hpp>
-
 #include <beamline/sector.h>
-
-void wrap_sector () {
-  
 
 using namespace boost::python;
 
+void wrap_sector () {
 
- class_<sector, bases<bmlnElmnt> >("sector") 
+ class_<sector, bases<bmlnElmnt>, SectorPtr >("sector") 
    .def( init<char const*>() )
    .def( init<char const*,     double const&>() )
    .def( init<             Mapping const&,  double const&>() )
    .def( init<char const*, Mapping const&,  double const&>() ) 
    .def("Type",         &sector::Type);
    //.def("getMap",    sector::getMap)
- 
+
 }
 

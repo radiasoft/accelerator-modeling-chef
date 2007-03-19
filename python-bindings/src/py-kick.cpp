@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-kick.cpp
@@ -19,15 +22,24 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+******
+*****************************************************************************
+*****************************************************************************
+*****************************************************************************/
+
 #include <beamline/kick.h>
 #include <boost/python.hpp>
 
 using namespace boost::python;
 
+//------------------------------------------------------------------------------
+// wrappper code
+//------------------------------------------------------------------------------
+
 void wrap_kick () {
 
-class_<hkick, bases<bmlnElmnt> >("hkick")
+
+class_<hkick, bases<bmlnElmnt>, HKickPtr >("hkick")
   .def(init<double const&>())
   .def(init<char const*>())
   .def(init<char const*,double const&>())
@@ -35,7 +47,7 @@ class_<hkick, bases<bmlnElmnt> >("hkick")
   .def( "Type", &hkick::Type);
 
 
-class_<vkick, bases<bmlnElmnt> >("vkick")
+class_<vkick, bases<bmlnElmnt>, VKickPtr >("vkick")
   .def(init<double const&>())
   .def(init<char const*>())
   .def(init<char const*,double const&>())
@@ -43,12 +55,11 @@ class_<vkick, bases<bmlnElmnt> >("vkick")
   .def( "Type", &vkick::Type);
 
 
-class_<kick,bases<bmlnElmnt> >("kick")
+class_<kick,bases<bmlnElmnt>, KickPtr >("kick")
   .def(init<double const&,double const&>())
   .def(init<char const*>())
   .def(init<char const*,double const&, double const&, double const&>())
   .def(init<char const*,double const&, double const&, double const&>())
   .def( "Type", &kick::Type);
+
 }
-
-

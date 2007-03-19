@@ -19,7 +19,10 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
+****************************************************************************
+****************************************************************************
 ****************************************************************************/
+
 #include <boost/python.hpp>
 #include <beamline/septum.h>
 
@@ -29,8 +32,7 @@ void wrap_septum () {
 using namespace boost::python;
 
 
-class_<thinSeptum, bases<bmlnElmnt> >("septum")
-  .def(init<char const*>() )
+class_<thinSeptum, bases<bmlnElmnt> >("thinSeptum", init<char const*>() )
   .def(init<char const*, double const&, double const&, double const&>() )
   .def(init<             double const&, double const&, double const&>() )
   .def("setStrengths",  &thinSeptum::setStrengths)

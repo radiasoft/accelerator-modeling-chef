@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/********************************************************************************
+*********************************************************************************
+*********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-octupole.cpp
@@ -19,21 +22,26 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+*********************************************************************************
+*********************************************************************************
+********************************************************************************/
+
 #include <boost/python.hpp>
-
 #include <beamline/octupole.h>
-
-void wrap_octupole () {
-  
 
 using namespace boost::python;
 
+//--------------------------------------------------------------------------------
+// wrapper code
+//--------------------------------------------------------------------------------
 
-class_<octupole,bases<bmlnElmnt> >("octupole", init<double const&,double const&>())
+
+void wrap_octupole () {
+ 
+class_<octupole, bases<bmlnElmnt>, OctupolePtr >("octupole", init<double const&,double const&>())
   .def(init< char const*, double const&, double const&>() );
  
-class_<thinOctupole,bases<bmlnElmnt> >("thinOctupole", init<double const&>())
+class_<thinOctupole,bases<bmlnElmnt>, ThinOctupolePtr >("thinOctupole", init<double const&>())
   .def(init<char const*, double const&>() );
  
 }

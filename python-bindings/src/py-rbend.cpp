@@ -1,5 +1,7 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-rbend.h
@@ -19,28 +21,33 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
 
 #include <boost/python.hpp>
-
 #include <beamline/rbend.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 
-void wrap_rbend () {
-  
+
 using namespace boost::python;
 
+namespace {
 
-  double   (rbend::* setEntryAngle_overload_1)( const Particle&)    = &rbend::setEntryAngle;
-  // double   (rbend::* setEntryAngle_overload_2)( const JetParticle&) = &rbend::setEntryAngle;
+  double   (rbend::* setEntryAngle_overload_1)( Particle const&)    = &rbend::setEntryAngle;
+//double   (rbend::* setEntryAngle_overload_2)( JetParticle const&) = &rbend::setEntryAngle;
   double   (rbend::* setEntryAngle_overload_3)( double const&)             = &rbend::setEntryAngle;
 
   double   (rbend::* setPoleFaceAngle_overload_1)( const Particle&)     = &rbend::setPoleFaceAngle;
   double   (rbend::* setPoleFaceAngle_overload_2)( const JetParticle&)  = &rbend::setPoleFaceAngle;
 
+} // anonymous namespace
 
-class_<rbend, bases<bmlnElmnt> >("rbend", init<double,double>() )
+
+void wrap_rbend () {
+
+class_<rbend, bases<bmlnElmnt>, RBendPtr >("rbend", init<double,double>() )
   .def( init<double, double, double>() )
   .def( init<char*, double, double>() )
   .def( init<char*, double, double, double>() )

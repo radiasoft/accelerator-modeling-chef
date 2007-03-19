@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-thinpoles.cpp
@@ -19,36 +22,46 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
 #include <boost/python.hpp>
 #include <beamline/thinpoles.h>
 
 using namespace boost::python;
 
+//------------------------------------------------------------------------------
+// wrapper code
+//------------------------------------------------------------------------------
+
 void wrap_thinpoles () {
 
 
-class_<thin12pole, bases<bmlnElmnt> >("thin12pole", init<double const&>() )
+class_<thin2pole,  bases<bmlnElmnt>, Thin2polePtr >("thin2pole", init<double const&>() )
+  .def( init<char const*, double const&>() )
+  .def("Type",      &thin12pole::Type);
+
+class_<thin12pole, bases<bmlnElmnt>, Thin12polePtr >("thin12pole", init<double const&>() )
   .def( init<char const*, double const&>() )
   .def("Type",      &thin12pole::Type);
 
 
-class_<thin14pole, bases<bmlnElmnt> >("thin14pole", init<double const&>() )
+class_<thin14pole, bases<bmlnElmnt>, Thin14polePtr >("thin14pole", init<double const&>() )
   .def( init<char const*, double const&>() )
   .def("Type",      &thin14pole::Type);
 
 
-class_<thin16pole, bases<bmlnElmnt> >("thin16pole", init<double const&>() )
+class_<thin16pole, bases<bmlnElmnt>,Thin16polePtr  >("thin16pole", init<double const&>() )
   .def( init<char const*, double const&>() )
   .def("Type",      &thin16pole::Type);
 
 
-class_<thin18pole, bases<bmlnElmnt> >("thin18pole", init<double const&>() )
+class_<thin18pole, bases<bmlnElmnt>, Thin18polePtr >("thin18pole", init<double const&>() )
   .def( init<char const*, double const&>() )
   .def("Type",      &thin18pole::Type);
 
 
-class_<thinMultipole, bases<bmlnElmnt> >("thinMultipole", init<double const&>() )
+class_<thinMultipole, bases<bmlnElmnt>, ThinMultipolePtr >("thinMultipole", init<double const&>() )
   .def( init<char* const, double const&>() )
   .def("Type",      &thinMultipole::Type);
 }

@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-slot.cpp
@@ -19,25 +22,27 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
-#include <boost/python.hpp>
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
 
+#include <boost/python.hpp>
 #include <beamline/Slot.h>
 
-
-void wrap_slot () {
-  
+//------------------------------------------------------------------------------
+// wrapper code
+//------------------------------------------------------------------------------
 
 using namespace boost::python;
 
-
-class_<Slot, bases<bmlnElmnt> >("Slot")
+void wrap_slot () {
+  
+class_<Slot, bases<bmlnElmnt>, SlotPtr >("Slot")
   .def(init<const char*>())
   .def("makeUpstreamHorizontal",   &Slot::makeUpstreamHorizontal)
   .def("makeDownstreamHorizontal", &Slot::makeDownstreamHorizontal)
   .def("makeUpstreamVertical",     &Slot::makeUpstreamVertical)
   .def("makeDownstreamVertical",   &Slot::makeDownstreamVertical)
   .def( "Type", &Slot::Type);
-
 }
 

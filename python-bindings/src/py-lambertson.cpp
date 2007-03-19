@@ -1,4 +1,7 @@
-/***************************************************************************                                                               
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
 ******  Boost.python Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
@@ -19,22 +22,27 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
+
 #include <boost/python.hpp>
 #include <beamline/lambertson.h>
 #include <beamline/beamline.h>
 
-
-void wrap_lambertson () {
-  
-
 using namespace boost::python;
 
 
-class_<thinLamb,bases<bmlnElmnt> >("thinLamb", init<>() )
+//--------------------------------------------------------------------------------
+// wrapper code
+//--------------------------------------------------------------------------------
+
+void wrap_lambertson () {
+  
+class_<thinLamb,bases<bmlnElmnt>, ThinLambPtr >("thinLamb", init<>() )
   .def(init<char const*>() )
-  .def(init<char const*, double const&, beamline*, double*>() )
-  .def(init<double const&, beamline*, double*>() )
+  .def(init<char const*, double const&, BmlPtr&, double*>() )
+  .def(init<double const&, BmlPtr&, double*>() )
   .def("setSeptum",   &thinLamb::setSeptum ) 
   .def("setBeamline", &thinLamb::setBeamline ) 
   .def("setRefState", &thinLamb::setRefState )

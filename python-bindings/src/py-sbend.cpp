@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-sbend.cpp
@@ -19,7 +22,11 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+******
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
+
 #include <boost/python.hpp>
 #include <beamline/sbend.h>
 #include <iostream>
@@ -29,8 +36,7 @@ void wrap_sbend () {
   
 using namespace boost::python;
 
-
-class_<sbend, bases<bmlnElmnt> >("sbend", init<double const&, double const&,  double const&>())
+class_<sbend, bases<bmlnElmnt>, SBendPtr >("sbend", init<double const&, double const&,  double const&>())
   .def(init<char const*,   double const&,  double const&,  double const&>() )
   .def(init<double const&, double const&,  double const&,  bmlnElmnt::PropFunc*>() )
   .def(init<double const&, double const&,  double const&>() )

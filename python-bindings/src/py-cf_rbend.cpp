@@ -1,6 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
-******  
+/***************************************************************************
+****************************************************************************
+****************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******                                    
 ******  File:      py-cf_rbend.h
 ******                                                                
@@ -16,9 +18,11 @@
 ******                                                                
 ******  Author:    Jean-Francois Ostiguy                                     
 ******                                                                
-******             Fermi National Laboratory, Batavia, IL   60510                                
+******             Fermi National Laboratory, Batavia, IL   60510
 ******             ostiguy@fnal.gov                         
 ******
+****************************************************************************
+****************************************************************************
 ****************************************************************************/
 
 #include <boost/python.hpp>
@@ -28,21 +32,32 @@
 
 using namespace boost::python;
 
-static double (CF_rbend::*setEntryAngleDouble_Ptr)     (double const&        ) = &CF_rbend::setEntryAngle;
-static double (CF_rbend::*setEntryAngleParticle_Ptr)   (const Particle&      ) = &CF_rbend::setEntryAngle;
+//-------------------------------------------------------------------------------
+// local code and definitions
+//-------------------------------------------------------------------------------
 
-static double (CF_rbend::*setExitAngleDouble_Ptr)      (double const&        ) = &CF_rbend::setExitAngle;
-static double (CF_rbend::*setExitAngleParticle_Ptr)    (const Particle&      ) = &CF_rbend::setExitAngle;
+namespace {
+
+double (CF_rbend::*setEntryAngleDouble_Ptr)     (double const&        ) = &CF_rbend::setEntryAngle;
+double (CF_rbend::*setEntryAngleParticle_Ptr)   (const Particle&      ) = &CF_rbend::setEntryAngle;
+
+double (CF_rbend::*setExitAngleDouble_Ptr)      (double const&        ) = &CF_rbend::setExitAngle;
+double (CF_rbend::*setExitAngleParticle_Ptr)    (const Particle&      ) = &CF_rbend::setExitAngle;
 
 // The following functions exist in the header file CF_rbend.h but currently have no implementation.
 
-//static double (CF_rbend::*AdjustPositionParticle_Ptr)    (const Particle&        ) = &CF_rbend::AdjustPosition;
-//static double (CF_rbend::*AdjustPositionJetParticle_Ptr) (const JetParticle&     ) = &CF_rbend::AdjustPosition;
+//double (CF_rbend::*AdjustPositionParticle_Ptr)    (const Particle&        ) = &CF_rbend::AdjustPosition;
+//double (CF_rbend::*AdjustPositionJetParticle_Ptr) (const JetParticle&     ) = &CF_rbend::AdjustPosition;
+
+}
+
+//-------------------------------------------------------------------------------
+// wrapper definition
+//-------------------------------------------------------------------------------
 
 void wrap_cf_rbend () {
 
-  class_<CF_rbend, bases<bmlnElmnt> >("CF_rbend", init<double const&, double const&, double const&>() )
-
+  class_<CF_rbend, bases<bmlnElmnt>, CFRbendPtr >("CF_rbend", init<double const&, double const&, double const&>() )
   .def(init<const char*,  double const&,  double const&, double const&>() )
   .def(init<              double const&,  double const&, double const&, double const&,  int>() )
   .def(init<const char*,  double const&,  double const&, double const&, double const& , int>() )
