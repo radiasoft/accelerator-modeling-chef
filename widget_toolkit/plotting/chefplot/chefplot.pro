@@ -21,33 +21,31 @@ LANGUAGE	= C++
 
 unix:CONFIG	+= qt warn_on debug thread rtti exceptions dll
 
-HEADERS	+=  ./include/CHEFCurve.h            \
-            ./include/CHEFInterpolator.h     \
-            ./include/CHEFPlot.h             \
-            ./include/CHEFPlotData.h         \
+HEADERS	+=  ./include/CHEFPlot.h             \
+            ./include/PlotData.h             \
             ./include/CHEFPlotMain.h         \
-            ./include/CHEFPlotZoomer.h       \
-            ./include/Curve.h                \
+            ./include/PlotZoomer.h           \
             ./include/CurveData.h            \
             ./include/DataDisplay.h          \
-            ./include/DisplayInfo.h          \
             ./include/Interpolator.h         \
             ./include/Lego.h                 \
             ./include/LinearInterporlator.h  \
             ./include/OrderedPair.h          \
             ./include/Plot.h                 \
+            ./include/PlotLegendItem.h       \
             ./include/PlotInterface.h        \
             ./include/TuneDialog.h           \
             ./include/chefplotmainbase.ui.h  
 
 SOURCES	+= ./src/chefplot.cpp \
 	   ./src/chefplotmain.cpp \
-	   ./src/plot.cpp \
-	   ./src/chefplotdata.cpp \
-	   ./src/chefcurve.cpp \
-	   ./src/chefplotzoomer.cpp \
-	   ./src/lego.cpp \
-	   ./src/datadisplay.cpp
+	   ./src/Plot.cpp \
+	   ./src/PlotLegendItem.cpp \
+	   ./src/PlotData.cpp \
+	   ./src/PlotZoomer.cpp \
+	   ./src/Lego.cpp \
+	   ./src/datadisplay.cpp \
+	   ./src/CurveData.cpp
 
 FORMS	= ./src/chefplotmainbase.ui \
 	  ./src/datadisplaybase.ui \
