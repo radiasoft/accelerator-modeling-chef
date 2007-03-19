@@ -20,12 +20,15 @@
 ******             ostiguy@fnal.gov                         
 ******
 ****************************************************************************/
+
 #include <boost/python.hpp>
 #include <CHEFPlotMain.h>
-#include <CHEFPlotData.h>
+#include <PlotData.h>
 
 using namespace boost::python;
  
+#if 0 
+==========================================================
 class CHEFPlotMainWrapper: public CHEFPlotMain {
 
 public:
@@ -55,13 +58,21 @@ public:
 
 
 };
+=====================================================================================
+#endif
+
+namespace {
+
+void  (CHEFPlotMain::*resize_int_int)(int, int)    = &CHEFPlotMain::resize;
+
+}
+
 
 void wrap_chefplot_CHEFPlotMain( )
 { 
 
-   void  (CHEFPlotMain::*resize_int_int)(int, int)    = &CHEFPlotMain::resize;
   
-   class_ <CHEFPlotMain, boost::shared_ptr<CHEFPlotMainWrapper>, boost::noncopyable> ("CHEFPlotMain", init<>( ) )
+   class_ <CHEFPlotMain, boost::shared_ptr<CHEFPlotMain>, boost::noncopyable> ("CHEFPlotMain", init<>( ) )
      .def("addData",  &CHEFPlotMain::addData)
      .def("show"   ,  &CHEFPlotMain::show)
      .def("hide"   ,  &CHEFPlotMain::hide)
