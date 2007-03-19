@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-jet.cpp
@@ -19,49 +22,53 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
+
 #include <boost/python.hpp>
 #include <string>
 #include <iostream>
-
 #include <mxyzptlk/Jet.h>
 #include <mxyzptlk/EnvPtr.h>
 
+namespace {
 
-static TJet<double>  (*log_ptr  )(const TJet<double>& )          = &::log;
-static TJet<double>  (*log10_ptr)(const TJet<double>& )          = &::log10;
-static TJet<double>  (*sqrt_ptr )(const TJet<double>& )          = &::sqrt;
-static TJet<double>  (*powd_ptr )(const TJet<double>&, const double& )  = &::pow;
-static TJet<double>  (*pow_ptr  )(const TJet<double>&, int    )  = &::pow;
-static TJet<double>  (*exp_ptr  )(const TJet<double>& )          = &::exp;
-static TJet<double>  (*sin_ptr  )(const TJet<double>& )          = &::sin;
-static TJet<double>  (*cos_ptr  )(const TJet<double>& )          = &::cos;
-static TJet<double>  (*sinh_ptr )(const TJet<double>& )          = &::sinh;
-static TJet<double>  (*cosh_ptr )(const TJet<double>& )          = &::cosh;
-static TJet<double>  (*tanh_ptr )(const TJet<double>& )          = &::tanh;
-static TJet<double>  (*asin_ptr )(const TJet<double>& )          = &::asin;
-static TJet<double>  (*tan_ptr  )(const TJet<double>& )          = &::tan;
-static TJet<double>  (*atan_ptr )(const TJet<double>& )          = &::atan;
-static TJet<double>  (*erf_ptr  )(const TJet<double>& )          = &::erf;  
-//static TJet<double>  (*erfc_ptr )(const TJet<double>& )          = &::erfc;  Not inplemented 
+TJet<double>  (*log_ptr  )(const TJet<double>& )          = &::log;
+TJet<double>  (*log10_ptr)(const TJet<double>& )          = &::log10;
+TJet<double>  (*sqrt_ptr )(const TJet<double>& )          = &::sqrt;
+TJet<double>  (*powd_ptr )(const TJet<double>&, const double& )  = &::pow;
+TJet<double>  (*pow_ptr  )(const TJet<double>&, int    )  = &::pow;
+TJet<double>  (*exp_ptr  )(const TJet<double>& )          = &::exp;
+TJet<double>  (*sin_ptr  )(const TJet<double>& )          = &::sin;
+TJet<double>  (*cos_ptr  )(const TJet<double>& )          = &::cos;
+TJet<double>  (*sinh_ptr )(const TJet<double>& )          = &::sinh;
+TJet<double>  (*cosh_ptr )(const TJet<double>& )          = &::cosh;
+TJet<double>  (*tanh_ptr )(const TJet<double>& )          = &::tanh;
+TJet<double>  (*asin_ptr )(const TJet<double>& )          = &::asin;
+TJet<double>  (*tan_ptr  )(const TJet<double>& )          = &::tan;
+TJet<double>  (*atan_ptr )(const TJet<double>& )          = &::atan;
+TJet<double>  (*erf_ptr  )(const TJet<double>& )          = &::erf;  
+//TJet<double>  (*erfc_ptr )(const TJet<double>& )          = &::erfc;  Not implemented 
 
-static TJet<std::complex<double> >  (*clog_ptr  )( const TJet<std::complex<double> >& )         = &::log;
-static TJet<std::complex<double> >  (*clog10_ptr)( const TJet<std::complex<double> >& )         = &::log10;
-static TJet<std::complex<double> >  (*csqrt_ptr )( const TJet<std::complex<double> >& )         = &::sqrt;
-//static TJet<std::complex<double> >  (*cpowd_ptr )( const TJet<std::complex<double> >&, const double& )  = &::pow; //not implemented
-//static TJet<std::complex<double> >  (*cpow_ptr  )( const TJet<std::complex<double> >&, int           )  = &::pow; //not implemented
-static TJet<std::complex<double> >  (*cexp_ptr  )( const TJet<std::complex<double> >& )         = &::exp;
-static TJet<std::complex<double> >  (*csin_ptr  )( const TJet<std::complex<double> >& )         = &::sin;
-static TJet<std::complex<double> >  (*ccos_ptr  )( const TJet<std::complex<double> >& )         = &::cos;
-static TJet<std::complex<double> >  (*csinh_ptr )( const TJet<std::complex<double> >& )         = &::sinh;
-static TJet<std::complex<double> >  (*ccosh_ptr )( const TJet<std::complex<double> >& )         = &::cosh;
-static TJet<std::complex<double> >  (*ctanh_ptr )( const TJet<std::complex<double> >& )         = &::tanh;
-static TJet<std::complex<double> >  (*casin_ptr )( const TJet<std::complex<double> >& )         = &::asin;
-static TJet<std::complex<double> >  (*ctan_ptr  )( const TJet<std::complex<double> >& )         = &::tan;
-static TJet<std::complex<double> >  (*catan_ptr )( const TJet<std::complex<double> >& )         = &::atan;
-static TJet<std::complex<double> >  (*cerf_ptr  )( const TJet<std::complex<double> >& )         = &::erf;
-//static TJet<std::complex<double> >  (*cerfc_ptr )( const TJet<std::complex<double> >& )         = &::erfc; Not implemented
+ TJet<std::complex<double> >  (*clog_ptr  )( const TJet<std::complex<double> >& )         = &::log;
+ TJet<std::complex<double> >  (*clog10_ptr)( const TJet<std::complex<double> >& )         = &::log10;
+ TJet<std::complex<double> >  (*csqrt_ptr )( const TJet<std::complex<double> >& )         = &::sqrt;
+// TJet<std::complex<double> >  (*cpowd_ptr )( const TJet<std::complex<double> >&, const double& )  = &::pow; //not implemented
+// TJet<std::complex<double> >  (*cpow_ptr  )( const TJet<std::complex<double> >&, int           )  = &::pow; //not implemented
+ TJet<std::complex<double> >  (*cexp_ptr  )( const TJet<std::complex<double> >& )         = &::exp;
+ TJet<std::complex<double> >  (*csin_ptr  )( const TJet<std::complex<double> >& )         = &::sin;
+ TJet<std::complex<double> >  (*ccos_ptr  )( const TJet<std::complex<double> >& )         = &::cos;
+ TJet<std::complex<double> >  (*csinh_ptr )( const TJet<std::complex<double> >& )         = &::sinh;
+ TJet<std::complex<double> >  (*ccosh_ptr )( const TJet<std::complex<double> >& )         = &::cosh;
+ TJet<std::complex<double> >  (*ctanh_ptr )( const TJet<std::complex<double> >& )         = &::tanh;
+ TJet<std::complex<double> >  (*casin_ptr )( const TJet<std::complex<double> >& )         = &::asin;
+ TJet<std::complex<double> >  (*ctan_ptr  )( const TJet<std::complex<double> >& )         = &::tan;
+ TJet<std::complex<double> >  (*catan_ptr )( const TJet<std::complex<double> >& )         = &::atan;
+ TJet<std::complex<double> >  (*cerf_ptr  )( const TJet<std::complex<double> >& )         = &::erf;
+//TJet<std::complex<double> >  (*cerfc_ptr )( const TJet<std::complex<double> >& )         = &::erfc; Not implemented
 
+} // anonymous namespace
 
 using namespace boost::python;
 

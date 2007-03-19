@@ -31,6 +31,9 @@
 
 using namespace boost::python;
 
+namespace {
+
+ 
 template<typename T>
 class JetVectorWrapper: public TJetVector<T> {
  
@@ -47,22 +50,23 @@ class JetVectorWrapper: public TJetVector<T> {
 };
 
 
-static void       (JetVector::*Rotate_1_ptr   )(JetVector&, double     )  const  =  &JetVector::Rotate;
-static void       (JetVector::*Rotate_2_ptr   )(JetVector&, const Jet& )  const  =  &JetVector::Rotate;
-static void       (JetVector::*peekAt_ptr     )()                         const  =  &JetVector::peekAt; 
-static void       (JetVector::*printCoeffs_ptr)()                         const  =  &JetVector::printCoeffs;
-static Jet        (JetVector::*Norm_ptr       )()                         const  =  &JetVector::Norm; 
-static JetVector  (JetVector::*Unit_ptr       )()                         const  =  &JetVector::Unit;
-static JetVector  (JetVector::*filter_1_ptr   )(int, int                ) const   = &JetVector::filter;
+void       (JetVector::*Rotate_1_ptr   )(JetVector&, double     )  const  =  &JetVector::Rotate;
+void       (JetVector::*Rotate_2_ptr   )(JetVector&, const Jet& )  const  =  &JetVector::Rotate;
+void       (JetVector::*peekAt_ptr     )()                         const  =  &JetVector::peekAt; 
+void       (JetVector::*printCoeffs_ptr)()                         const  =  &JetVector::printCoeffs;
+Jet        (JetVector::*Norm_ptr       )()                         const  =  &JetVector::Norm; 
+JetVector  (JetVector::*Unit_ptr       )()                         const  =  &JetVector::Unit;
+JetVector  (JetVector::*filter_1_ptr   )(int, int                ) const   = &JetVector::filter;
 
-static void       (JetCVector::*RotateC_1_ptr    )(JetCVector&, double       ) const  = &JetCVector::Rotate;
-static void       (JetCVector::*RotateC_2_ptr    )(JetCVector&, const JetC&  ) const  = &JetCVector::Rotate;
-static void       (JetCVector::*peekAtC_ptr      )()                           const  = &JetCVector::peekAt; 
-static void       (JetCVector::*printCoeffsC_ptr )()                           const  = &JetCVector::printCoeffs;
-static JetC       (JetCVector::*NormC_ptr        )()                           const  = &JetCVector::Norm; 
-static JetCVector (JetCVector::*UnitC_ptr        )()                           const  = &JetCVector::Unit;
-static JetCVector (JetCVector::*filterC_1_ptr    )(int, int                )   const  = &JetCVector::filter;
+void       (JetCVector::*RotateC_1_ptr    )(JetCVector&, double       ) const  = &JetCVector::Rotate;
+void       (JetCVector::*RotateC_2_ptr    )(JetCVector&, const JetC&  ) const  = &JetCVector::Rotate;
+void       (JetCVector::*peekAtC_ptr      )()                           const  = &JetCVector::peekAt; 
+void       (JetCVector::*printCoeffsC_ptr )()                           const  = &JetCVector::printCoeffs;
+JetC       (JetCVector::*NormC_ptr        )()                           const  = &JetCVector::Norm; 
+JetCVector (JetCVector::*UnitC_ptr        )()                           const  = &JetCVector::Unit;
+JetCVector (JetCVector::*filterC_1_ptr    )(int, int                )   const  = &JetCVector::filter;
 
+} // anonymous namespace
 
 //------------------------------------------------------------------------------
 // Python wrappers
@@ -181,111 +185,3 @@ void wrap_mxyzptlk_jetvectorc() {
   JetCVector_class_.def(self  /= std::complex<double>()  );
 
 }
-
-
-#if 0
-===================================================================================== 
-  TJetVector( int   dim = -1,
-              const TJet<T>* components = 0, 
-              const typename EnvPtr<T>::Type = (TJet<T>::lastEnvironment()) );
-
-  void             Set             ( const TJet<T>* );
-  void             SetComponent    ( int, const TJet<T>& );
-  TJet<T>      operator()      ( int ) const; 
-  TJet<T>&     operator()      ( int ); 
-                   // WARNING: There is no way to use this and be
-                   //          assured that environments are consistent.
-
-  // Algebraic functions ...
-  TJetVector&       operator=      ( const TJetVector& );
-
-  TJetVector        operator+      ( const TJetVector& ) const;
-  TJetVector        operator+      ( const Vector& ) const;
-  TJetVector        operator+=     ( const TJetVector& );
-  TJetVector        operator+=     ( const Vector& );
-  friend TJetVector operator-<>    ( const TJetVector& );
-  TJetVector        operator-      ( const TJetVector& ) const;
-  TJetVector        operator-      ( const Vector& ) const;
-  TJetVector        operator-=     ( const TJetVector& );
-  TJetVector        operator-=     ( const Vector& );
-
-  friend TJetVector operator*<>    ( const TJet<T>&, const TJetVector& );
-  friend TJetVector operator*<>    ( const T&, const TJetVector& );
-  friend TJetVector operator*<>    ( const TMatrix<T>&, const TJetVector& );
-
-  TJetVector        operator*      ( const TJet<T>&    ) const;
-  TJetVector        operator*      ( const T& ) const;
-  TJetVector        operator*=     ( const TJet<T>&    );
-  TJetVector        operator*=     (       T  );
-  TJetVector        operator/      ( const TJet<T>&    ) const;
-  TJetVector        operator/      (       T  ) const;
-  TJetVector        operator/=     ( const TJet<T>&    );
-  TJetVector        operator/=     (       T  );
-
-
-  TJet<T>       operator*      ( const TJetVector& ) const; // dot product
-  TJet<T>       operator*      ( const Vector& )     const; // dot product
-
-  friend TJetVector operator^<>    ( const Vector&, const TJetVector& );
-
-  TJetVector        operator^      ( const TJetVector& ) const; // cross product:
-                                                                // only works if
-                                                                // the vector is
-                                                                // three-dimensional
-  TJetVector        operator^      ( const Vector& ) const;
-
-
-  // Boolean functions ...
-  bool operator==     ( const TJetVector& ) const;
-  bool operator==     ( const T&    ) const;
-  bool operator!=     ( const TJetVector& ) const;
-  bool operator!=     ( const T&    ) const;
-  bool operator<      ( const TJetVector& ) const;
-  bool operator<=     ( const TJetVector& ) const;
-  bool operator>      ( const TJetVector& ) const;
-  bool operator>=     ( const TJetVector& ) const;
-  bool IsNull         () const;
-  bool IsUnit         () const;
-  bool IsNilpotent    () const;
-
-
-  // Functions related to differentiation
-
-  void weightedDerivative( int*, T* );
-  void derivative( int*, T* );
-  
-
-  // Queries ...
-  int  Dim() const;
-  const typename EnvPtr<T>::Type Env() const;
-  int AccuWgt() const;
-  int Weight()  const;
-  void standardPart( T* ) const;
-  void getReference( T* ) const;
-
-  // Utilities ..
-  void        peekAt           () const;
-  void        printCoeffs      () const;
-  TJet<T> Norm             () const;
-  TJetVector  Unit             () const;           // returns unit vector
-
-  void        Rotate           ( TJetVector& v, double theta ) const;
-  void        Rotate           ( TJetVector& v, const TJet<T>& theta ) const;
-                                                   // rotates v through 
-                                                   // an angle theta using
-                                                   // *this as the axis
-
-  friend std::ostream& operator<<<>( std::ostream&, const TJetVector& );
-  friend std::istream& operator>><>( std::istream&, TJetVector& );
-
-  TJetVector filter( int, int );
-  TJetVector filter( bool (*[]) ( const IntArray&, const T& ) );
-} ;
-
-
-template<typename T>
-TJetVector<T> operator*( const TJet<T>&, const Vector& );
-
-
-====================================================================================================
-#endif

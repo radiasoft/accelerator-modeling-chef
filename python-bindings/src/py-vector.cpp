@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-vector.cpp
@@ -19,13 +22,17 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
 
 #include <boost/python.hpp>
 #include <boost/shared_array.hpp>
 #include <basic_toolkit/VectorD.h>
 
 using namespace boost::python;
+
+namespace {
 
 struct VectorWrapper: public Vector {
 
@@ -68,9 +75,12 @@ struct VectorWrapper: public Vector {
   }
 };
 
+} // anonymous namespace
 
-// static TJet<double>  (*log_ptr  )(const TJet<double>& )          = &::log;
 
+//------------------------------------------------------------------------------
+// wrapper code
+//------------------------------------------------------------------------------
 
 void wrap_vector () {
 
@@ -112,90 +122,3 @@ Vector_class_.def( self_ns::str(self) );
 
 }
 
-#if  0 
-=================================================================================================
-class Vector 
-{
-private:
-  int           dim;
-  double*       comp;
-  OutputFormat* ofPtr;
-
-  static OutputFormat* defOFPtr;  // default OutputFormat
-
-public:
-  // Constructors and the destructor ...
-  Vector(       int      /* dimension */  = 3,
-          const double*  /* components */ = 0,
-                OutputFormat*             = 0 );
-  Vector( const Vector& );
-  ~Vector();
-
-  // Assignment ...
-  void        Set              ( const double* );
-  void        set              ( double, double, double );  // anachronistic
-  double      operator()       ( int ) const; // return component
-  double&     operator()       ( int );       // set    component
-
-  // Algebraic functions ...
-  Vector&       operator=      ( const Vector& );
-
-  Vector        operator+      ( const Vector& ) const;
-  Vector        operator+=     ( const Vector& );
-  friend Vector operator-      ( const Vector& );
-  Vector        operator-      ( const Vector& ) const;
-  Vector        operator-=     ( const Vector& );
-  Vector        operator*      (       double  ) const;
-  friend Vector operator*      (       double, const Vector& );
-  Vector        operator*=     (       double  );
-  Vector        operator/      (       double  ) const;
-  Vector        operator/=     (       double  );
-
-  double        operator*      ( const Vector& ) const; // dot product
-  Vector        operator^      ( const Vector& ) const; // cross product:
-                                                        // only works if
-                                                        // the vector is
-                                                        // three-dimensional
-
-  // Boolean functions ...
-  char          operator==     ( const Vector& ) const;
-  char          operator!=     ( const Vector& ) const;
-  char          operator<      ( const Vector& ) const;
-  char          operator<=     ( const Vector& ) const;
-  char          operator>      ( const Vector& ) const;
-  char          operator>=     ( const Vector& ) const;
-  char          IsNull         () const;
-  char          IsUnit         () const;
-
-  // Queries ...
-  int  Dim() const { return dim; }
-
-  // Utilities ..
-  static 
-  void        setDefaultFormat ( const OutputFormat& );
-  void        setOutputFormat  ( OutputFormat* x ) { ofPtr = x; }
-  OutputFormat* getOutputFormat()                  { return ofPtr; }
-
-  Vector      Abs              () const;
-  double      Norm             () const;
-  Vector      Unit             () const;           // returns unit vector
-  void        Rotate           ( Vector& v, 
-                                 double  theta ) const;
-                                                   // rotates v through 
-                                                   // an angle theta using
-                                                   // *this as the axis
-
-  friend std::ostream& operator<<( std::ostream&, const Vector& );
-
-  // Exceptions ...
-  struct GenericException : public std::exception
-  {
-    GenericException( const char* fcn, const char* msg );
-    // 1st argument: identifies function containing throw
-    // 2nd         : identifies type of error
-    ~GenericException() throw() {}
-    const char* what() const throw();
-    std::string w;
-  };
-==========================================================================================
-#endif
