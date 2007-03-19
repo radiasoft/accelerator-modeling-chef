@@ -51,7 +51,10 @@
 ******  
 ****** - eliminated archaic "Reconstruct" member(s). 
 ******   Use placement new syntax instead.
-******  
+****** Mar 2007 ostiguy@fnal.gov 
+****** - Introduced new compact monomial indexing scheme based on monomial ordering
+******   rather than previous scheme based explicitly on monomial exponents tuple.
+****** - monomial multiplication handled via a lookup-table.
 **************************************************************************
 **************************************************************************
 **************************************************************************
@@ -77,10 +80,10 @@ using FNAL::pcout;
 //  pointer hash fnct. 
 
 template <typename T>
-boost::pool<>&  TJLterm<T>::_ordered_memPool = *( new boost::pool<>( sizeof(TJLterm<T>), 2048 ));
+boost::pool<>&  TJLterm<T>::ordered_memPool_ = *( new boost::pool<>( sizeof(TJLterm<T>), 2048 ));
 
 template <typename T>
-__gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >& TJLterm<T>::_array_sizes = 
+__gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >& TJLterm<T>::array_sizes_ = 
 * (new __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >()  );  
 
 
@@ -94,7 +97,7 @@ __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >& TJLt
 
 template<typename T>
 TJLterm<T>::TJLterm( int nvar) 
-:value_(T()), weight_(0),  index_(nvar)
+:value_(T()),  weight_(0), offset_(0), index_(nvar)
 {}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -102,7 +105,7 @@ TJLterm<T>::TJLterm( int nvar)
 
 template<typename T>
 TJLterm<T>::TJLterm(  EnvPtr<T> const& pje ) 
-: value_( T() ), weight_(0), index_( pje->numVar() )
+: value_( T() ), weight_(0), offset_(0), index_( pje->numVar() )
 {}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -110,7 +113,7 @@ TJLterm<T>::TJLterm(  EnvPtr<T> const& pje )
 
 template<typename T>
 TJLterm<T>::TJLterm( IntArray const& l, T const& x, EnvPtr<T> const& pje ) :   
-value_(x),  weight_(l.Sum()), index_( l )
+value_(x), weight_(l.Sum()), offset_(0), index_( l )
 {
    if( !pje ) return; 
    if (l.Dim() != pje->numVar() ) {
@@ -118,11 +121,14 @@ value_(x),  weight_(l.Sum()), index_( l )
               "TJLterm<T>::TJLterm<T>( IntArray const &, T const&, EnvPtr<T> const&)",
               "Dimensions are inconsistent.") );
    }
+
+   offset_ = pje->offsetIndex(l);  
+
 } 
 
 //------------------------------------------------------------------------------------------------------
 // The code below has been commented out for efficiency. It performs sanity checks and can be re-enabled
-// for debugging pruposes.
+// for debugging purpose.
 // Remember: TJLterm<>::TJLterm() is called on a massive scale ! 
 //------------------------------------------------------------------------------------------------------
 #if 0
@@ -196,8 +202,8 @@ value_(x),  weight_(l.Sum()), index_( l )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJLterm<T>::TJLterm(  IntArray const& l, const T& x )
-: value_(x), weight_(l.Sum()), index_(l)
+TJLterm<T>::TJLterm(  IntArray const& l, const T& x , int offset)
+: value_(x), weight_(l.Sum()), offset_(offset), index_(l)
 {}
 
 
@@ -235,7 +241,7 @@ TJLterm<T>* TJLterm<T>::array_allocate(int n) {
 // This code allocates an extra block and uses it to store the array size
 //------------------------------------------------------------------------   
     TJLterm<T>* p = 
-     static_cast<TJLterm<T>*>(_ordered_memPool.ordered_malloc( n+1 ));
+     static_cast<TJLterm<T>*>(ordered_memPool_.ordered_malloc( n+1 ));
      int * psize = (int *) p;
      *psize = n+1;
      ++p;
@@ -247,8 +253,8 @@ TJLterm<T>* TJLterm<T>::array_allocate(int n) {
 /***********
 
        TJLterm<T>* p = 
-       static_cast<TJLterm<T>*>(_ordered_memPool.ordered_malloc( n ));
-       _array_sizes[ p ] = n;
+       static_cast<TJLterm<T>*>(ordered_memPool_.ordered_malloc( n ));
+       array_sizes_[ p ] = n;
 
 ************/ 
 
@@ -268,7 +274,7 @@ void TJLterm<T>::array_deallocate(TJLterm<T>* p) {
 //---------------------------------------------------------------------------------------------------   
       --p;
       int*  psize = (int *) p;
-      _ordered_memPool.ordered_free( p, *psize ); 
+      ordered_memPool_.ordered_free( p, *psize ); 
 
 //-----------------------------------------------------------------------------------------------------
 // Alternately, one could retrieve the array size from a hash table indexed with the pointer to the
@@ -277,8 +283,8 @@ void TJLterm<T>::array_deallocate(TJLterm<T>* p) {
 
 /***********
 
-     _ordered_memPool.ordered_free( p, _array_sizes[p] ); 
-     _array_sizes.erase(p );
+     ordered_memPool_.ordered_free( p, array_sizes_[p] ); 
+     array_sizes_.erase(p );
 
 *************/
 
@@ -299,6 +305,7 @@ TJLterm<T>& TJLterm<T>::operator=( TJLterm<T> const& x )
 
  weight_  = x.weight_;
  value_   = x.value_;
+ offset_  = x.offset_;
  index_   = x.index_;
 
  return *this;
@@ -322,6 +329,10 @@ TJLterm<T> TJLterm<T>::operator*( TJLterm<T> const& y )
  }
 #endif
 
+ std::cout << " TJLterm<T> TJLterm<T>::operator*( TJLterm<T> const& y ) called " << std::endl;
+ 
+ // DANGER: this function has no knowledge of the environment .... so it does not know how to set the
+ //         offset_ field  
 
  z.weight_   = this->weight_ + y.weight_;
  z.index_    = this->index_  + y.index_;  // overloaded + from IntArray
@@ -359,6 +370,7 @@ bool operator==( TJLterm<T> const& a, TJLterm<T> const& b )
  if( a.weight_ != b.weight_ ) return false;
  if( a.value_  != b.value_  ) return false;
  if( a.index_  != b.index_  ) return false;
+ 
  return true;
 
 }
@@ -388,7 +400,7 @@ bool operator<=( TJLterm<T> const& a, TJLterm<T> const& b )
 
  if( a.weight_ != b.weight_ ) { return ( a.weight_ < b.weight_ ); }
  
- return (a.index_ <= b.index_); // overloaded operator: exponents lexicographical ordering 
+ return (a.index_ <= b.index_); // overloaded operator: exponents *reverse* lexicographical ordering 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
