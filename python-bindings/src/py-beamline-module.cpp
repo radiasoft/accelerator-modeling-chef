@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-beamline-module.cpp
@@ -19,18 +22,25 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
+
 #define BOOST_PYTHON_STATIC_MODULE
+
 #include <boost/python.hpp>
 #include <physics_toolkit/LattFuncSage.h>
 #include <iostream>
 
 using namespace boost::python;
 
+extern void wrap_bmlnelmnt();
+extern void wrap_beamline();
+extern void wrap_particle();
+extern void wrap_jetparticle();
+
 extern void wrap_aperture();
 extern void wrap_bblens();
-extern void wrap_beamline();
-extern void wrap_bmlnelmnt();
 extern void wrap_cf_rbend();
 extern void wrap_cf_sbend();
 extern void wrap_circuit();
@@ -45,7 +55,6 @@ extern void wrap_marker();
 extern void wrap_monitor();
 extern void wrap_mover();
 extern void wrap_octupole();
-extern void wrap_particle();
 extern void wrap_quadrupole();
 extern void wrap_rbend();
 extern void wrap_rfcavity();
@@ -58,31 +67,29 @@ extern void wrap_srot();
 extern void wrap_thinpoles();
 extern void wrap_beamlineiterator();
 extern void wrap_lattfunc();
-extern void wrap_insertionlistelement();
-extern void wrap_insertionlist();
 extern void wrap_refregvisitor(); 
 extern void wrap_bmlvisitor();
 
-BOOST_PYTHON_MODULE( beamline )
+BOOST_PYTHON_MODULE( beamline ) 
 {
 
+wrap_bmlnelmnt();
+wrap_beamline();
+wrap_particle();
+wrap_jetparticle();
 wrap_bmlvisitor(); 
 wrap_aperture();
 wrap_bblens();
-wrap_bmlnelmnt();
-wrap_beamline();
 wrap_cf_rbend();
 wrap_cf_sbend();
-   //wrap_circuit();
 wrap_decapole();
 wrap_drift();
-   //wrap_fcircuit();
-   //wrap_icircuit();
+wrap_circuit();
+wrap_fcircuit();
+wrap_icircuit();
 wrap_kick();
 wrap_lambertson();
 wrap_marker();
-wrap_monitor();
-wrap_mover();
 wrap_octupole();
 wrap_quadrupole();
 wrap_rbend();
@@ -92,15 +99,11 @@ wrap_sector();
 wrap_septum();
 wrap_sextupole();
 wrap_slot();
-   //wrap_srot();
+wrap_srot();
 wrap_thinpoles();
-
-wrap_particle();
-//wrap_beamlineiterator();
 wrap_lattfunc();
-wrap_insertionlistelement();
-wrap_insertionlist();
 wrap_refregvisitor(); 
-
+wrap_mover();
+wrap_monitor();
 }
 
