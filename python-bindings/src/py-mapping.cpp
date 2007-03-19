@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-mapping.cpp
@@ -19,7 +22,10 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
+
 #include <boost/python.hpp>
 #include <mxyzptlk/JetVector.h>
 #include <mxyzptlk/Mapping.h>
@@ -31,6 +37,7 @@ using namespace boost::python;
 // Local auxiliary functions and wrapper classe(s)
 //------------------------------------------------------------------------------
 
+namespace {
 
 template<typename T>
 class MappingWrapper: public TMapping<T> {
@@ -75,17 +82,17 @@ class MappingWrapper: public TMapping<T> {
   }
 
   tuple toPython() {
+
     boost::python::list terms[6];
     for (int i = 0; i<6; ++i) {
-      Jet::iterator jet_it(this->operator()(i));
-      while(++jet_it) {
-        tuple term = make_tuple(jet_it->coefficient(),
-                                make_tuple(jet_it->exponents()(0),
-                                           jet_it->exponents()(1),
-                                           jet_it->exponents()(2),
-                                           jet_it->exponents()(3),
-                                           jet_it->exponents()(4),
-                                           jet_it->exponents()(5)));
+      for ( Jet::iterator it = this->operator()(i).begin();  it != this->operator()(i).end(); ++it ) {
+        tuple term = make_tuple(it->coefficient(),
+                                make_tuple(it->exponents()(0),
+                                           it->exponents()(1),
+                                           it->exponents()(2),
+                                           it->exponents()(3),
+                                           it->exponents()(4),
+                                           it->exponents()(5)));
         terms[i].append(term);
       }
     }
@@ -94,7 +101,7 @@ class MappingWrapper: public TMapping<T> {
 
 };
 
-
+} // anonymous namespace
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -105,24 +112,23 @@ class MappingWrapper: public TMapping<T> {
 //------------------------------------------------------------------------------
 
 
-
 void wrap_mxyzptlk_mapping() {
 
 
-  class_<Mapping, bases<JetVector>, MappingWrapper<double> > Mapping_class_("Mapping", init<>() );
+  class_<Mapping, bases<JetVector>, MappingWrapper<double> > Mapping_("Mapping", init<>() );
 
 
-  Mapping_class_.def( init<boost::python::tuple>() );
-  Mapping_class_.def( init<boost::python::tuple, EnvPtr<double> >() );
-  Mapping_class_.def("inverse", &MappingWrapper<double>::inverse  );
-  Mapping_class_.def("jacobian",&MappingWrapper<double>::jacobian );
-  Mapping_class_.def("toPython",&MappingWrapper<double>::toPython );
+  Mapping_.def( init<boost::python::tuple>() );
+  Mapping_.def( init<boost::python::tuple, EnvPtr<double> >() );
+  Mapping_.def("inverse", &MappingWrapper<double>::inverse  );
+  Mapping_.def("jacobian",&MappingWrapper<double>::jacobian );
+  Mapping_.def("toPython",&MappingWrapper<double>::toPython );
 
   //-----------------------------------
   // *** composition ***
   //-----------------------------------
 
-  Mapping_class_.def(self * self);
+  Mapping_.def(self * self);
  
 }
 
