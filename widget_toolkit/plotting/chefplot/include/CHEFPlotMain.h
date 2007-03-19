@@ -21,13 +21,12 @@
 #define CHEFPLOTMAIN_H
 
 #include "chefplotmainbase.h" 
+#include <beamline/beamline.h>
 #include <qcanvas.h>
 #include <qwmatrix.h>
 
 class CHEFPlot;
-class CHEFPlotData;
-class beamline;
-class bmlnElmnt;
+class PlotData;
 class LegoPlot;
 class TuneDiagram;
 
@@ -37,42 +36,46 @@ class CHEFPlotMain: public CHEFPlotMainBase {
     
   public:
   
-  CHEFPlotMain(QWidget * parent = 0, const char* name = 0, WFlags f=0);
+    CHEFPlotMain(QWidget * parent = 0, const char* name = 0, WFlags f=0);
+   ~CHEFPlotMain();
 
-  virtual ~CHEFPlotMain();
-
-  void displayLattice(beamline const& bml);
-  void addData(CHEFPlotData& cpdata);
-  void showDataPoints(bool set);
-  void enableLegend(bool set);
-  void enableInterpolation(bool set);
-  void enableCoordinatesDisplay(bool set);
-  void clear(); 
-  void setAutoClear(bool set); 
+    void displayLattice(BmlPtr bml);
+    void addData(PlotData& cpdata);
+    void showDataPoints(bool set);
+    void enableLegend(bool set);
+    void enableInterpolation(bool set);
+    void enableCoordinatesDisplay(bool set);
+    void clear(); 
+    void setAutoClear(bool set); 
     
   public slots:
 
-  virtual void filePrint();
-  virtual void enableGrid(bool set);
-  virtual void enableThumbWheels(bool set);
-  virtual void enableLegoPlot(bool set);
-  virtual void zoomUseRightAxis();
-  virtual void zoomUseLeftAxis();
-  virtual void exit();
-  virtual void optionsVerLogScaleLeft(bool set);
-  virtual void optionsVerLogScaleRight(bool set);
-  virtual void optionsHorLogScale(bool set);
-  virtual void _showdata();
-  virtual void showTunes();
-  virtual void optionsPersistent(bool set);
+    void filePrint();
+    void enableGrid(bool set);
+    void enableThumbWheels(bool set);
+    void enableLegoPlot(bool set);
+    void optionsVerLogScaleLeft(bool set);
+    void optionsVerLogScaleRight(bool set);
+    void optionsHorLogScale(bool set);
+    void showdata();
+    void showTunes();
+    void optionsPersistent(bool set);
+
+    void enableZoomLeftYAxis();
+    void enableZoomRightYAxis();
+    void enableZoomIn();
+    void enableZoomOut();
+    void zoomReset();
+
+    void exit();
   
   private:
 
-  CHEFPlot*      _chefplot;
-  TuneDiagram*   _tunediagram;
-  bool           _auto_clear;
+  CHEFPlot*      chefplot_;
+  TuneDiagram*   tunediagram_;
+  bool           auto_clear_;
 
 
 };
 
-#endif
+#endif  //CHEFPLOTMAIN_H

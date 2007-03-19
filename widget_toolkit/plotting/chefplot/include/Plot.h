@@ -1,31 +1,47 @@
-////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                            //
-// FILE:       Plot.h                                                                         //
-//                                                                                            //
-// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-//             Accelerator Division / Accelerator Integration Dept                            //
-//             Fermi National Laboratory, Batavia, IL                                         //
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-// DATE:       September 2004                                                                 //
-//                                                                                            //
-// COPYRIGHT: Universities Research Association                                               //
-//                                                                                            //
-//                                                                                            //
-////////////////////////////////////////////////////////////////////////////////////////////////
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  CHEF:      A Qt-based Application 
+******             Layered on top of of BEAMLINE.
+******                                                                
+******  File:      Plot.h
+******                                                                
+******  Copyright (c) Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******                                                                
+******  Author:    Jean-Francois Ostiguy
+******                                                                
+******             Fermilab                                           
+******             Batavia, IL  60510                                
+******             ostiguy@fnal.gov                         
+******                                                                
+******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******* The U.S. Government retains a world-wide non-exclusive, 
+******* royalty-free license to publish or reproduce documentation 
+******* and software for U.S. Government purposes. This software 
+******* is protected under the U.S. and Foreign Copyright Laws. 
+******* URA/FNAL reserves all rights.
+*******                                                                
+**************************************************************************
+**************************************************************************
+*************************************************************************/
 
 #ifndef PLOT_H
 #define PLOT_H
 
-#include <qwt/qwt_plot.h> 
-#include <qwt/qwt_plot_classes.h> 
+#include <qwt_plot.h> 
+#include <qwt_legend.h> 
 #include <list>
 
 class QwtWheel;
-class CHEFPlotZoomer;
-class CHEFPlotData;
+class QwtPlotGrid;
+class PlotData;
 class PlotPropertiesDialog;
 
 class Plot: public QwtPlot {
@@ -37,20 +53,21 @@ class Plot: public QwtPlot {
     
   public:
   
-  Plot(QWidget * parent = 0, const char* name = 0, Qt::WFlags f = 0);
+           Plot(QWidget * parent = 0, const char* name = 0, Qt::WFlags f = 0);
   virtual ~Plot();
 
-  void   addData( CHEFPlotData const& cpdata);
-  double getCurrentXmin();
-  double getCurrentXmax();
-  double getCurrentYmin();
-  double getCurrentYmax();
-  void   enableDataPointSymbols(bool set);
-  void   enableCoordinatesDisplay(bool set);
-  void   enableInterpolation(bool set);
-  void   setAxis(int xAxis, int yAxis);
+  void     setData( PlotData const& cpdata);
+  double   getCurrentXmin();
+  double   getCurrentXmax();
+  double   getCurrentYmin();
+  double   getCurrentYmax();
+  void     enableDataPointSymbols(bool set);
+  void     enableCoordinatesDisplay(bool set);
+  void     enableInterpolation(bool set);
+  void     enableLegend(bool set);
+  void     setAxis(int xAxis, int yAxis);
   
-  bool eventFilter(QObject *object, QEvent *e);
+  bool     eventFilter(QObject *object, QEvent *e);
 
   signals:
 
@@ -65,7 +82,6 @@ class Plot: public QwtPlot {
       void bottomWheelValueChanged( double value);
       void enableThumbWheel(bool set, int axiscode);
       void enableThumbWheels(bool set);
-      void setZoomer(bool set, int axis);
       void toggleCurve(long key, bool set);
       void setLogScale(int axis);
       void setLinScale(int axis);
@@ -76,56 +92,29 @@ class Plot: public QwtPlot {
        
   private:
 
-  void formatPlot();
+     void formatPlot();
   
+     QwtPlotGrid*                grid_; 
+     QwtLegend*                  legend_; 
 
-    CHEFPlotZoomer*             _left_zoomer;
-    CHEFPlotZoomer*             _right_zoomer;
-    CHEFPlotZoomer*             _active_zoomer;
-  
-    QwtWheel*                   _bottom_wheel;
-    QwtWheel*                   _left_wheel;
-    QwtWheel*                   _right_wheel;
+     QwtWheel*                   bottom_wheel_;
+     QwtWheel*                   left_wheel_;
+     QwtWheel*                   right_wheel_;
  
 
-       // data set bounds  
+   // data set bounds  
 
-   double                     _xmin; 
-   double                     _xmax;
-   double                     _ylmin;
-   double                     _ylmax;
-   double                     _yrmin;
-   double                     _yrmax;
+     double                     xmin_; 
+     double                     xmax_;
+     double                     ylmin_;
+     double                     ylmax_;
+     double                     yrmin_;
+     double                     yrmax_;
 
-   double                     _xrange;
-   double                     _ylrange;
-   double                     _yrrange;
+     double                     xrange_;
+     double                     ylrange_;
+     double                     yrrange_;
 
 };
-
-
-class PlotLegendItem: public QwtLegendButton {
-
-  Q_OBJECT
-    
-  public:
-  
-  PlotLegendItem(long curveKey, QWidget* parent = 0, const char* name = 0);
-  PlotLegendItem(long curveKey, const QwtSymbol& symbol, const QPen& curvePen,
-		 const QString & text, QWidget * parent = 0,
-		 const char*  	name = 0);
-
-
-
-  public slots:
-    
-  void toggleCurve(bool set);
-  
-  private:
-
-  long _curve_key;
-  
-};
-
 
 #endif // PLOT_H

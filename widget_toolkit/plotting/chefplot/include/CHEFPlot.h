@@ -1,31 +1,39 @@
-////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                            //
-// FILE:       chefplot.h                                                                     //
-//                                                                                            //
-// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-//             Accelerator Division / Accelerator Integration Dept                            //
-//             Fermi National Laboratory, Batavia, IL                                         //
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-// DATE:       September 2004                                                                 //
-//                                                                                            //
-// COPYRIGHT: Universities Research Association                                               //
-//                                                                                            //
-//                                                                                            //
-////////////////////////////////////////////////////////////////////////////////////////////////
+/********************************************************************************
+*********************************************************************************
+*********************************************************************************
+*********************************************************************************
+****                                                                         ****
+**** FILE:       chefplot.h                                                  ****
+****                                                                         ****
+**** AUTHOR(S):  Jean-Francois Ostiguy                                       **** 
+****             ostiguy@fnal.gov                                            ****
+****                                                                         ****
+****             Accelerator Division / Accelerator Integration Dept         ****
+****             Fermi National Laboratory, Batavia, IL                      ****
+****             ostiguy@fnal.gov                                            ****
+****                                                                         ****
+**** DATE:       September 2004                                              ****
+****                                                                         ****
+**** COPYRIGHT: Universities Research Association                            ****
+****                                                                         ****
+****                                                                         ****
+*********************************************************************************
+*********************************************************************************
+*********************************************************************************
+*********************************************************************************/
 
 #ifndef CHEFPLOT_H
 #define CHEFPLOT_H
 
 #include <qwidget.h>
+#include <beamline/BmlPtr.h>
 #include <qwmatrix.h>
 
+class QwtDoubleRect;
 class Plot;
-class CHEFPlotData;
-class beamline;
-class bmlnElmnt;
+class PlotZoomer;
+class QwtPlotPicker;
+class PlotData;
 class LegoPlot;
 
 
@@ -37,43 +45,53 @@ class CHEFPlot: public QWidget {
     
   public:
   
-  CHEFPlot(QWidget * parent = 0, const char* name = 0, Qt::WFlags f = 0);
-  virtual ~CHEFPlot();
+    CHEFPlot(QWidget * parent = 0, const char* name = 0, Qt::WFlags f = 0);
+   ~CHEFPlot();
 
-  void              displayLattice(beamline const& bml);
-  beamline const&   getBeamline();
-  void              addData(CHEFPlotData& cpdata);
-  void              clear();
+    void              displayLattice(ConstBmlPtr bml);
+    ConstBmlPtr       getBeamline();
+
+    void              setData(PlotData const& cpdata);
+    void              clear();
   
   protected:
 
-  void resizeEvent (QResizeEvent * e);
-  
+    void resizeEvent (QResizeEvent * e);
 
   public slots:
 
-  void updateLatticeDisplay();
-  void enableGrid(bool set);
-  void enableThumbWheels(bool set);
-  void enableLegoPlot(bool set);
-  void zoomUseLeftAxis();
-  void zoomUseRightAxis();
-  void setLogScale(int axis);
-  void setLinScale(int axis);
+    void updateLatticeDisplay();
+    void enableGrid(bool set);
+    void enableThumbWheels(bool set);
+    void enableLegoPlot(bool set);
+    void setLogScale(int axis);
+    void setLinScale(int axis);
+    void enableZoomLeftYAxis();
+    void enableZoomRightYAxis();
+    void enableZoomIn();
+    void enableZoomOut();
+    void zoomReset();
+   
 
   private slots:
   
-  void resizeLego();
+    void resizeLego();
+    void zoomed(QwtDoubleRect const& pg ); 
 
   private:
 
-  
-  Plot*          _plot;
-  LegoPlot*      _lego;
-  QWMatrix       _canvas_transformation;
-  int            _lego_height;
-  
+    Plot*             plot_;
+    LegoPlot*         lego_;
+    QWMatrix          canvas_transformation_;
+    int               lego_height_;
 
+    PlotZoomer*       zoomer_left_;
+    QwtPlotPicker*    picker_left_;
+
+    PlotZoomer*       zoomer_right_;
+    QwtPlotPicker*    picker_right_;
+
+ 
 };
 
 #endif
