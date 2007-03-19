@@ -76,19 +76,19 @@
     <item text="Calculations" name="Calculations">
         <action name="calculationsLatticeFunctionsAction"/>
         <item text="Lattice Functions" name="popupMenu_24" accel="">
-            <action name="calculationsLattice_FunctionsUncoupledAction"/>
-            <action name="calculationsLattice_FunctionsEdwards_TengAction"/>
-            <action name="calculationsLattice_FunctionsMomentsAction"/>
+            <action name="calculationsLatticeFunctionsTwissAction"/>
+            <action name="calculationsLatticeFunctionsEdwardsTengAction"/>
+            <action name="calculationsLatticeFunctionsMomentsAction"/>
             <action name="calculationsLatticeFunctionsEigenvaluesAction"/>
         </item>
         <action name="calculationsPushAction"/>
         <item text="Push" name="popupMenu_29" accel="">
-            <action name="calculationsPushULFAction"/>
-            <action name="calculationsPushMomentsAction"/>
-            <action name="calculationsPushDispersionAction"/>
+            <action name="calculationsPropagateTwissAction"/>
+            <action name="calculationsPropagateMomentsAction"/>
+            <action name="calculationsPropagateDispersionAction"/>
         </item>
         <action name="calculationsDispersionAction"/>
-        <action name="calculationsEmittance_DilutionAction"/>
+        <action name="calculationsEmittanceDilutionAction"/>
     </item>
     <item text="Controls" name="Controls">
         <action name="controlsBuildHTuneCctAction"/>
@@ -520,7 +520,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>calculationsPushULFAction</cstring>
+            <cstring>calculationsPropagateTwissAction</cstring>
         </property>
         <property name="text">
             <string>Uncoupled Lattice Functions</string>
@@ -531,7 +531,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>calculationsPushMomentsAction</cstring>
+            <cstring>calculationsPropagateMomentsAction</cstring>
         </property>
         <property name="iconSet">
             <iconset></iconset>
@@ -545,7 +545,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>calculationsPushDispersionAction</cstring>
+            <cstring>calculationsPropagateDispersionAction</cstring>
         </property>
         <property name="iconSet">
             <iconset></iconset>
@@ -680,7 +680,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>calculationsEmittance_DilutionAction</cstring>
+            <cstring>calculationsEmittanceDilutionAction</cstring>
         </property>
         <property name="text">
             <string>Emittance Dilution</string>
@@ -691,7 +691,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>calculationsLattice_FunctionsUncoupledAction</cstring>
+            <cstring>calculationsLatticeFunctionsTwissAction</cstring>
         </property>
         <property name="text">
             <string>Uncoupled</string>
@@ -705,7 +705,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>calculationsLattice_FunctionsEdwards_TengAction</cstring>
+            <cstring>calculationsLatticeFunctionsEdwardsTengAction</cstring>
         </property>
         <property name="text">
             <string>Factorization</string>
@@ -719,7 +719,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>calculationsLattice_FunctionsMomentsAction</cstring>
+            <cstring>calculationsLatticeFunctionsMomentsAction</cstring>
         </property>
         <property name="text">
             <string>Moments</string>
@@ -1212,13 +1212,13 @@
         <sender>toolsGenBunchAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_pushParticles()</slot>
+        <slot>pushParticles()</slot>
     </connection>
     <connection>
         <sender>fileSaveAsAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_fileSaveAs()</slot>
+        <slot>fileSaveAs()</slot>
     </connection>
     <connection>
         <sender>filePrintAction</sender>
@@ -1230,37 +1230,37 @@
         <sender>editFlattenAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editFlatten()</slot>
+        <slot>editFlatten()</slot>
     </connection>
     <connection>
         <sender>editPermuteAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editNewOrder()</slot>
+        <slot>editNewOrder()</slot>
     </connection>
     <connection>
         <sender>editModifyAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editEditElement()</slot>
+        <slot>editEditElement()</slot>
     </connection>
     <connection>
         <sender>editAlignAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editAlign()</slot>
+        <slot>editAlign()</slot>
     </connection>
     <connection>
         <sender>editAlignDataAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editAlignData()</slot>
+        <slot>editAlignData()</slot>
     </connection>
     <connection>
         <sender>editAlignBendsAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editAlignBends()</slot>
+        <slot>editAlignBends()</slot>
     </connection>
     <connection>
         <sender>editUndoAction</sender>
@@ -1308,163 +1308,163 @@
         <sender>helpContentsAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_helpContents()</slot>
+        <slot>helpContents()</slot>
     </connection>
     <connection>
-        <sender>calculationsLattice_FunctionsUncoupledAction</sender>
+        <sender>calculationsLatticeFunctionsTwissAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_uncoupledLFDispatch()</slot>
+        <slot>twissDispatch()</slot>
     </connection>
     <connection>
-        <sender>calculationsLattice_FunctionsMomentsAction</sender>
+        <sender>calculationsLatticeFunctionsMomentsAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_momentsDispatch()</slot>
+        <slot>momentsDispatch()</slot>
     </connection>
     <connection>
-        <sender>calculationsLattice_FunctionsEdwards_TengAction</sender>
+        <sender>calculationsLatticeFunctionsEdwardsTengAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_launchET()</slot>
+        <slot>periodicET()</slot>
     </connection>
     <connection>
-        <sender>calculationsPushULFAction</sender>
+        <sender>calculationsPropagateTwissAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_pushULF()</slot>
+        <slot>propagateTwiss()</slot>
     </connection>
     <connection>
-        <sender>calculationsPushMomentsAction</sender>
+        <sender>calculationsPropagateMomentsAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_pushMoments()</slot>
+        <slot>propagateMoments()</slot>
     </connection>
     <connection>
-        <sender>calculationsPushDispersionAction</sender>
+        <sender>calculationsPropagateDispersionAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_pushDispersion()</slot>
+        <slot>propagateDispersion()</slot>
     </connection>
     <connection>
         <sender>controlsBuildHTuneCctAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_horTuneCtrl()</slot>
+        <slot>horTuneCtrl()</slot>
     </connection>
     <connection>
         <sender>controlsBuildVTuneCctAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_verTuneCtrl()</slot>
+        <slot>verTuneCtrl()</slot>
     </connection>
     <connection>
         <sender>controlsAdjustTuneAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_tuneCtrl()</slot>
+        <slot>tuneCtrl()</slot>
     </connection>
     <connection>
         <sender>controlsBuildHChromCctAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_horChromCtrl()</slot>
+        <slot>horChromCtrl()</slot>
     </connection>
     <connection>
         <sender>controlsBuildVChromCctAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_verChromCtrl()</slot>
+        <slot>verChromCtrl()</slot>
     </connection>
     <connection>
         <sender>controlsAdjustChromAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_chromCtrl()</slot>
+        <slot>chromCtrl()</slot>
     </connection>
     <connection>
         <sender>toolsSite_ViewerAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_launchSiteVu()</slot>
+        <slot>launchSiteVu()</slot>
     </connection>
     <connection>
         <sender>toolsTrackAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_launchTrack()</slot>
+        <slot>launchTrack()</slot>
     </connection>
     <connection>
         <sender>toolsTraceAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_launchRayTrace()</slot>
+        <slot>launchRayTrace()</slot>
     </connection>
     <connection>
         <sender>calculationsDispersionAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_dispersionDispatch()</slot>
+        <slot>dispersionDispatch()</slot>
     </connection>
     <connection>
-        <sender>calculationsEmittance_DilutionAction</sender>
+        <sender>calculationsEmittanceDilutionAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_launchDilution()</slot>
+        <slot>launchDilution()</slot>
     </connection>
     <connection>
         <sender>examplesSingle_SextupoleAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_makeSingSext()</slot>
+        <slot>makeSingSext()</slot>
     </connection>
     <connection>
         <sender>examplesFODO_CellAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_makeFODO()</slot>
+        <slot>makeFODO()</slot>
     </connection>
     <connection>
         <sender>editSelectlineAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editSelectLine()</slot>
+        <slot>editSelectLine()</slot>
     </connection>
     <connection>
         <sender>editSelectallAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editSelectAll()</slot>
+        <slot>editSelectAll()</slot>
     </connection>
     <connection>
         <sender>editSelectnoneAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editSelectNone()</slot>
+        <slot>editSelectNone()</slot>
     </connection>
     <connection>
         <sender>editRemoveLineAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editRemoveLine()</slot>
+        <slot>editRemoveLine()</slot>
     </connection>
     <connection>
         <sender>windowsTileAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_windowsTile()</slot>
+        <slot>windowsTile()</slot>
     </connection>
     <connection>
         <sender>windowsCascadeAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_windowsCascade()</slot>
+        <slot>windowsCascade()</slot>
     </connection>
     <connection>
         <sender>windowsMinimize_AllAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_windowsMinimizeAll()</slot>
+        <slot>windowsMinimizeAll()</slot>
     </connection>
     <connection>
         <sender>windowsTree_BrowserAction</sender>
@@ -1494,103 +1494,103 @@
         <sender>fileExitAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_exit()</slot>
+        <slot>exit()</slot>
     </connection>
     <connection>
         <sender>windowsDefault_LayoutAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_windowsDefaultLayout()</slot>
+        <slot>windowsDefaultLayout()</slot>
     </connection>
     <connection>
         <sender>editCopyLineAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editCopyLine()</slot>
+        <slot>editCopyLine()</slot>
     </connection>
     <connection>
         <sender>editCondenseAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editCondense()</slot>
+        <slot>editCondense()</slot>
     </connection>
     <connection>
         <sender>editMergeEquivalentQuadsAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editMergeQuads()</slot>
+        <slot>editMergeQuads()</slot>
     </connection>
     <connection>
         <sender>editPartitionAndSectorizeAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editPartAndSect()</slot>
+        <slot>editPartAndSect()</slot>
     </connection>
     <connection>
         <sender>editConvertToSlotsAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editD2S()</slot>
+        <slot>editD2S()</slot>
     </connection>
     <connection>
         <sender>editInsertMonitorAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editAddQtMons()</slot>
+        <slot>editAddQtMons()</slot>
     </connection>
     <connection>
         <sender>fileLoadLatticeFileAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_openFile()</slot>
+        <slot>openFile()</slot>
     </connection>
     <connection>
         <sender>fileLoadDeviceFileAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_openDeviceFile()</slot>
+        <slot>openDeviceFile()</slot>
     </connection>
     <connection>
         <sender>devicesClearSelectionAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_devicesClearSelection()</slot>
+        <slot>devicesClearSelection()</slot>
     </connection>
     <connection>
         <sender>devicesRefreshAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_devicesRefreshAll()</slot>
+        <slot>devicesRefreshAll()</slot>
     </connection>
     <connection>
         <sender>editSelectFilterAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editFindFilter()</slot>
+        <slot>editFindFilter()</slot>
     </connection>
     <connection>
         <sender>devicesAutoRefreshAction</sender>
         <signal>toggled(bool)</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_devicesAutoRefresh(bool)</slot>
+        <slot>devicesAutoRefresh(bool)</slot>
     </connection>
     <connection>
         <sender>fileLoadScriptAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_openScriptFile()</slot>
+        <slot>openScriptFile()</slot>
     </connection>
     <connection>
         <sender>helpAboutAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_helpAbout()</slot>
+        <slot>helpAbout()</slot>
     </connection>
     <connection>
         <sender>calculationsLatticeFunctionsEigenvaluesAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_launchLB()</slot>
+        <slot>periodicLB()</slot>
     </connection>
     <connection>
         <sender>modeLineAction</sender>
@@ -1608,7 +1608,7 @@
         <sender>fileExitAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_exit()</slot>
+        <slot>exit()</slot>
     </connection>
     <connection>
         <sender>fileOpenPythonAction</sender>
@@ -1638,49 +1638,49 @@
         <sender>editModeAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editMode()</slot>
+        <slot>editMode()</slot>
     </connection>
     <connection>
         <sender>editInsertMarkersAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editAddMarkers()</slot>
+        <slot>editAddMarkers()</slot>
     </connection>
     <connection>
         <sender>editPartitionElementsAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editPartition()</slot>
+        <slot>editPartition()</slot>
     </connection>
     <connection>
         <sender>editRenameLineAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_editRenameLine()</slot>
+        <slot>editRenameLine()</slot>
     </connection>
     <connection>
         <sender>fileEditorSaveAsAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_fileEditorSaveAs()</slot>
+        <slot>fileEditorSaveAs()</slot>
     </connection>
     <connection>
         <sender>fileEditorSaveAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_fileEditorSave()</slot>
+        <slot>fileEditorSave()</slot>
     </connection>
     <connection>
         <sender>databaseRetrieveDataAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_databaseRetrieve()</slot>
+        <slot>databaseRetrieve()</slot>
     </connection>
     <connection>
         <sender>databaseConnectAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>_databaseConnect()</slot>
+        <slot>databaseConnect()</slot>
     </connection>
 </connections>
 <includes>
@@ -1690,7 +1690,6 @@
     <slot>fileNew()</slot>
     <slot>fileOpen()</slot>
     <slot>fileSave()</slot>
-    <slot>fileSaveAs()</slot>
     <slot>filePrint()</slot>
     <slot>fileExit()</slot>
     <slot>editUndo()</slot>
@@ -1700,88 +1699,87 @@
     <slot>editPaste()</slot>
     <slot>editFind()</slot>
     <slot>helpIndex()</slot>
-    <slot>helpContents()</slot>
-    <slot>_openFile()</slot>
-    <slot>_print()</slot>
-    <slot>_fileWriteTree()</slot>
-    <slot>_fileSaveAs()</slot>
-    <slot>_editFlatten()</slot>
-    <slot>_editNewOrder()</slot>
-    <slot>_editEditElement()</slot>
-    <slot>_editAlign()</slot>
-    <slot>_editAlignData()</slot>
-    <slot>_editAlignBends()</slot>
-    <slot>_editFindFilter()</slot>
-    <slot>_editSelectAll()</slot>
-    <slot>_editSelectNone()</slot>
-    <slot>_editSelectLine()</slot>
-    <slot>_editCopyLine()</slot>
-    <slot>_editRemoveLine()</slot>
-    <slot>_editCondense()</slot>
-    <slot>_editMergeQuads()</slot>
-    <slot>_editD2S()</slot>
-    <slot>_openDeviceFile()</slot>
-    <slot>_editPartAndSect()</slot>
-    <slot>_toolMisalign()</slot>
-    <slot>_makeFODO()</slot>
-    <slot>_makeSingSext()</slot>
-    <slot>_launchLatt()</slot>
-    <slot>_launchET()</slot>
-    <slot>_launchMoments()</slot>
-    <slot>_launchTrack()</slot>
-    <slot>_launchRayTrace()</slot>
-    <slot>_launchDispersion()</slot>
-    <slot>_launchDilution()</slot>
-    <slot>_enterMapArg()</slot>
-    <slot>_enterContextArg()</slot>
+    <slot>openFile()</slot>
+    <slot>print()</slot>
+    <slot>fileWriteTree()</slot>
+    <slot>fileSaveAs()</slot>
+    <slot>editFlatten()</slot>
+    <slot>editNewOrder()</slot>
+    <slot>editEditElement()</slot>
+    <slot>editAlign()</slot>
+    <slot>editAlignData()</slot>
+    <slot>editAlignBends()</slot>
+    <slot>editFindFilter()</slot>
+    <slot>editSelectAll()</slot>
+    <slot>editSelectNone()</slot>
+    <slot>editSelectLine()</slot>
+    <slot>editCopyLine()</slot>
+    <slot>editRemoveLine()</slot>
+    <slot>editCondense()</slot>
+    <slot>editMergeQuads()</slot>
+    <slot>editD2S()</slot>
+    <slot>openDeviceFile()</slot>
+    <slot>editPartAndSect()</slot>
+    <slot>toolMisalign()</slot>
+    <slot>makeFODO()</slot>
+    <slot>makeSingSext()</slot>
+    <slot>periodicTwiss()</slot>
+    <slot>periodicET()</slot>
+    <slot>periodicMoments()</slot>
+    <slot>launchTrack()</slot>
+    <slot>launchRayTrace()</slot>
+    <slot>periodicDispersion()</slot>
+    <slot>launchDilution()</slot>
+    <slot>enterMapArg()</slot>
+    <slot>enterContextArg()</slot>
     <slot>windowsDevicesAction_toggled( bool set )</slot>
-    <slot>_launchSiteVu()</slot>
-    <slot>_launch_browser()</slot>
-    <slot>_horTuneCtrl()</slot>
-    <slot>_verTuneCtrl()</slot>
-    <slot>_tuneCtrl()</slot>
-    <slot>_horChromCtrl()</slot>
-    <slot>_verChromCtrl()</slot>
-    <slot>_chromCtrl()</slot>
+    <slot>launchSiteVu()</slot>
+    <slot>launch_browser()</slot>
+    <slot>horTuneCtrl()</slot>
+    <slot>verTuneCtrl()</slot>
+    <slot>tuneCtrl()</slot>
+    <slot>horChromCtrl()</slot>
+    <slot>verChromCtrl()</slot>
+    <slot>chromCtrl()</slot>
     <slot>windowsInterpreterAction_toggled( bool set )</slot>
     <slot>windowsMessagesAction_toggled( bool set )</slot>
     <slot>windowsTree_BrowserAction_toggled( bool set )</slot>
-    <slot>_windowsTile()</slot>
-    <slot>_windowsCascade()</slot>
-    <slot>_windowsMinimizeAll()</slot>
-    <slot>_exit()</slot>
-    <slot>_windowsDefaultLayout()</slot>
-    <slot>_helpContents()</slot>
-    <slot>_devicesAutoRefresh( bool )</slot>
-    <slot>_editAddQtMons()</slot>
-    <slot>_devicesRefreshAll()</slot>
-    <slot>_devicesClearSelection()</slot>
-    <slot>_openScriptFile()</slot>
-    <slot>_helpAbout()</slot>
-    <slot>_launchLB()</slot>
+    <slot>windowsTile()</slot>
+    <slot>windowsCascade()</slot>
+    <slot>windowsMinimizeAll()</slot>
+    <slot>exit()</slot>
+    <slot>windowsDefaultLayout()</slot>
+    <slot>helpContents()</slot>
+    <slot>devicesAutoRefresh( bool )</slot>
+    <slot>editAddQtMons()</slot>
+    <slot>devicesRefreshAll()</slot>
+    <slot>devicesClearSelection()</slot>
+    <slot>openScriptFile()</slot>
+    <slot>helpAbout()</slot>
+    <slot>periodicLB()</slot>
     <slot>modeRing( bool )</slot>
     <slot>modeLine( bool )</slot>
     <slot>fileEditMAD8()</slot>
     <slot>fileEditPython()</slot>
     <slot>devicesAutoRefresh()</slot>
     <slot>editParse()</slot>
-    <slot>_editModeRing()</slot>
-    <slot>_editModeLine()</slot>
-    <slot>_editMode()</slot>
-    <slot>_pushDispersion()</slot>
-    <slot>_pushULF()</slot>
-    <slot>_pushMoments()</slot>
-    <slot>_pushParticles()</slot>
-    <slot>_editAddMarkers()</slot>
-    <slot>_editPartition()</slot>
-    <slot>_editRenameLine()</slot>
-    <slot>_uncoupledLFDispatch()</slot>
-    <slot>_dispersionDispatch()</slot>
-    <slot>_momentsDispatch()</slot>
-    <slot>_fileEditorSaveAs()</slot>
-    <slot>_fileEditorSave()</slot>
-    <slot>_databaseConnect()</slot>
-    <slot>_databaseRetrieve()</slot>
+    <slot>editModeRing()</slot>
+    <slot>editModeLine()</slot>
+    <slot>editMode()</slot>
+    <slot>propagateDispersion()</slot>
+    <slot>propagateTwiss()</slot>
+    <slot>propagateMoments()</slot>
+    <slot>pushParticles()</slot>
+    <slot>editAddMarkers()</slot>
+    <slot>editPartition()</slot>
+    <slot>editRenameLine()</slot>
+    <slot>twissDispatch()</slot>
+    <slot>dispersionDispatch()</slot>
+    <slot>momentsDispatch()</slot>
+    <slot>fileEditorSaveAs()</slot>
+    <slot>fileEditorSave()</slot>
+    <slot>databaseConnect()</slot>
+    <slot>databaseRetrieve()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>
