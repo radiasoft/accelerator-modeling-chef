@@ -206,7 +206,7 @@ bool IntArray::PartialLessThan( IntArray const& lhs, IntArray const& rhs, int id
   
   //compares only entries between IntArray(idx1) and IntArray(idx2) (inclusively).
  
-   return std::lexicographical_compare( lhs.begin()+idx1, lhs.begin()+idx2+1, rhs.begin()+idx1,  rhs.begin()+idx2+1 );
+   return std::lexicographical_compare( lhs.begin()+idx1, lhs.begin()+idx2+1, rhs.begin()+idx1,  rhs.begin()+idx2+1, std::less<exponent_t>() );
 }
 
 
@@ -224,7 +224,7 @@ bool IntArray::operator!= ( IntArray const& x ) const
 bool IntArray::operator< ( IntArray const& x ) const
 {
 
-  return std::lexicographical_compare( begin(), end(), x.begin(),  x.end());
+  return std::lexicographical_compare( rbegin(), rend(), x.rbegin(),  x.rend(), std::less<exponent_t>()   );
 
 }
 
@@ -234,27 +234,27 @@ bool IntArray::operator< ( IntArray const& x ) const
 bool IntArray::operator<= ( IntArray const& x ) const
 {
 
-  return std::lexicographical_compare( begin(), end(), x.begin(),  x.end(), std::less_equal<exponent_t>() );
+  return std::lexicographical_compare( rbegin(), rend(), x.rbegin(),  x.rend(), std::less_equal<exponent_t>() );
 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool IntArray::operator> ( const IntArray& x ) const
+bool IntArray::operator> ( IntArray const& x ) const
 {
 
-  return std::lexicographical_compare( begin(), end(), x.begin(),  x.end(), std::greater<exponent_t>() );
+  return std::lexicographical_compare( rbegin(), rend(), x.rbegin(),  x.rend(), std::greater<exponent_t>() );
 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool IntArray::operator>= ( const IntArray& x ) const
+bool IntArray::operator>= ( IntArray const& x ) const
 {
 
-  return std::lexicographical_compare( begin(), end(), x.begin(), x.end(), std::greater_equal<exponent_t>() );
+  return std::lexicographical_compare( rbegin(), rend(), x.rbegin(), x.rend(), std::greater_equal<exponent_t>() );
 
 }
 
@@ -353,57 +353,3 @@ std::istream& operator>>( std::istream& is, IntArray& x )
 #if  0
 IntArray::~IntArray() { }
 #endif
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-bool  MonomialOrderPredicate( IntArray const& a1, IntArray const& a2) {
- 
- 
-  // Sample ordering ...
-  // 
-  // Index: ( 0, 0, 0, 0, 0, 0 )    
-  // Index: ( 1, 0, 0, 0, 0, 0 )    
-  // Index: ( 0, 1, 0, 0, 0, 0 )    
-  // Index: ( 0, 0, 1, 0, 0, 0 )    
-  // Index: ( 2, 0, 0, 0, 0, 0 )    
-  // Index: ( 1, 1, 0, 0, 0, 0 )    
-  // Index: ( 0, 2, 0, 0, 0, 0 )    
-  // Index: ( 1, 0, 1, 0, 0, 0 )    
-  // Index: ( 0, 1, 1, 0, 0, 0 )    
-  // Index: ( 0, 0, 2, 0, 0, 0 )    
-  // Index: ( 3, 0, 0, 0, 0, 0 )    
-  // Index: ( 2, 1, 0, 0, 0, 0 )    
-  // Index: ( 1, 2, 0, 0, 0, 0 )    
-  // Index: ( 0, 3, 0, 0, 0, 0 ) 
-
-   int w1 = 0;
-   int w2 = 0;
-
-   exponent_t const* p1 = &a1.comp_[0];
-   exponent_t const* p2 = &a2.comp_[0];
-  
-   for (int i=0; i<a1.Dim(); ++i) {
-   
-     w1 += *p1;
-     w2 += *p2;
-  
-     ++p1; ++p2;
-   };
-
-   if (w1 > w2) return true; 
-
-   p1 = &a1.comp_[0];
-   p2 = &a2.comp_[0];
-  
-   for (int i=0; i<a1.Dim(); ++i) {
-   
-     if (*p1 < *p2)  return true;
-     ++p1; ++p2;
-   }
-
-   return false;
-}
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
