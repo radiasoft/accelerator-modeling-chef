@@ -12,7 +12,14 @@
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
-******                                                                
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
+                                                                
+                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -23,9 +30,10 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+****** REVISION HISTORY
+****** Mar 2007 ostiguy@fnal.gov
+****** - eliminated references to slist/dlist
+****** - use new style STL-compatible beamline iterators 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -45,19 +53,19 @@
 #include "QtMonitor.h"
 #include "bmlnElmnt.h"
 #include "Particle.h"
-#include "BeamlineIterator.h"
+#include <beamline/beamline.h>
 
 // -------------------------------
 // Implementation: class QtMonitor
 // -------------------------------
 
 QtMonitor::QtMonitor( const char* identifier )
-: monitor( (char*) identifier ), _azimuth(0.0)
+: monitor( (char*) identifier ), azimuth_(0.0)
 {
 }
 
 QtMonitor::QtMonitor( const QtMonitor& x )
-: QObject(this), monitor( x ), _azimuth( x._azimuth )
+: QObject(this), monitor( x ), azimuth_( x.azimuth_ )
 {
 }
 
@@ -65,32 +73,28 @@ QtMonitor::~QtMonitor()
 {
 }
 
-int QtMonitor::setAzimuth( const beamline* x )
+int QtMonitor::setAzimuth( beamline  const& x )
 {
-  DeepBeamlineIterator dbi( const_cast<beamline&>(*x) );
-  bmlnElmnt* q;
-  int n = 0;
-  double s = 0.0;
+ 
+ int n    = 0;
+ double s = 0.0;
 
-  while((  q = dbi++  )) {
-    s += q->Length();
-    if(typeid(*q) == typeid(QtMonitor)) {
-      n++;
-      dynamic_cast<QtMonitor*>(q)->_azimuth = s;
+ for (beamline::const_deep_iterator it  = x.deep_begin();
+	                            it != x.deep_end();   ++it) {
+       
+    s += (*it)->Length();
+    if(typeid(**it) == typeid(QtMonitor)) {
+      ++n;
+      boost::static_pointer_cast<QtMonitor>(*it)->azimuth_ = s;
     }
   }
 
   return n;
 }
 
-int QtMonitor::setAzimuth( const beamline& x )
-{
-  return QtMonitor::setAzimuth( &x );
-}
-
 
 void QtMonitor::localPropagate( Particle& p )
 {
   this->monitor::localPropagate( p );
-  emit ping( _azimuth, p.State() );
+  emit ping( azimuth_, p.State() );
 }
