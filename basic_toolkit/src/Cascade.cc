@@ -336,15 +336,13 @@ void Cascade::finishConstructor()
 
   while( targetDim > 1 ) { 
 
-    while(  !targetSwitches.empty() ) {
-      
-      // sort the target switches  ignoring the rightmost index. This garantees that all switches
-      // that have identical indices from 0 to targetDim-1 inclusively appear in succession in the list. 
+    // sort the target switches  ignoring the rightmost index. This garantees that all switches
+    // that have identical indices from 0 to targetDim-1 inclusively appear in succession in the list. 
 
-      targetSwitches.sort( Switch::PartialLessThan(0,targetDim-2) );
-      
-      for ( std::list<Switch*>::iterator it = targetSwitches.begin(); it != targetSwitches.end(); ++it )
- 
+    targetSwitches.sort( Switch::PartialLessThan(0,targetDim-2) );
+
+    while(  !targetSwitches.empty() ) {
+       
       // get a target switch 
       targetPtr =  targetSwitches.front();
       targetSwitches.pop_front();
