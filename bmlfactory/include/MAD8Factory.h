@@ -38,11 +38,16 @@
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
 ******                                                                
+****** REVISION HISTORY
+****** Mar 2007   ostiguy@fnal.gov
+****** - added support for reference counted elements/beamlines
 **************************************************************************
 *************************************************************************/
+
 #ifndef MAD8FACTORY_H
 #define MAD8FACTORY_H
 
+#include <boost/shared_ptr.hpp>
 #include <map>
 #include <list>
 #include <string>
@@ -51,9 +56,6 @@
 #include <bmlfactory/beam_element.h>
 #include <bmlfactory/beam_line.h>
 #include <bmlfactory/bmlfactory.h>
-
-class   beamline;
-class   bmlnElmnt;
 
 class MAD8Factory: public bmlfactory {
 
@@ -66,11 +68,11 @@ class MAD8Factory: public bmlfactory {
 
     std::list<std::string>   getBeamlineList();       // list of all instantiated beamlines  
 
-    const char* getUseStatementBeamlineName() const;   // get beamline name from USE statement, 0 if none found 
-    const char* getParticleType() const;
+    char const* getUseStatementBeamlineName() const;   // get beamline name from USE statement, 0 if none found 
+    char const* getParticleType() const;
 
-    beamline* create_beamline( std::string bmlname,  double brho );
-    beamline* create_beamline( std::string bmlname );               // deprecated 
+    BmlPtr create_beamline( std::string bmlname,  double brho );
+    BmlPtr create_beamline( std::string bmlname );               // deprecated 
 
     bool    variableIsDefined(const char* varname) const;
     double  getVariableValue(const char* varname) const;   
@@ -81,21 +83,21 @@ class MAD8Factory: public bmlfactory {
 
   private:
 
-    bmlnElmnt* beam_element_instantiate( beam_element* );
-    bmlnElmnt* find_beam_element( char const* ) const;
+    ElmPtr beam_element_instantiate(  beam_element* bel );
+    ElmPtr find_beam_element( char const* name) const;
 
-    void create_bel_list();
-    void delete_bel_list();
+    //void create_bel_list();
+    //void delete_bel_list();
     
-    beamline* beam_line_instantiate( beam_line* );
-    beamline* find_beam_line( char const* ) const;
+    BmlPtr beam_line_instantiate( beam_line* );
+    BmlPtr find_beam_line( char const* ) const;
 
     void append_bml_element( char*, beamline* );
-    void create_bml_list();
-    void delete_bml_list();
+    //void create_bml_list();
+    //void delete_bml_list();
 
-    beamline* create_beamline_private( const char*  beamline, double brho);    
-    beamline* create_beamline_private( const char*  beamline);    
+    BmlPtr create_beamline_private( const char*  beamline, double brho);    
+    BmlPtr create_beamline_private( const char*  beamline);    
 
 
     void bmlfactory_init(const char* stringbuffer);
@@ -115,8 +117,8 @@ class MAD8Factory: public bmlfactory {
     beam_line**             bml_arr_;
     int                     bml_arr_size_;
 
-    std::map<std::string,beamline*>  bml_map_;
-    std::map<std::string,bmlnElmnt*> bel_map_;
+    std::map<std::string,BmlPtr>  bml_map_;
+    std::map<std::string,ElmPtr>  bel_map_;
 
 };
 

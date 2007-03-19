@@ -27,16 +27,25 @@
 ******
 ******  NOTE: bmlfactory is an abstract interface class. The old bmlfactory
 ******        class is now called MAD8BmlFactory.  
+******
+****** REVISION HISTORY
+****** Mar 2007     ostiguy@fnal.gov
+****** - support for reference counted elements/beamlines
 ******                                                        
 **************************************************************************
 *************************************************************************/
 #ifndef BMLFACTORY_H
 #define BMLFACTORY_H
 
+#include <boost/shared_ptr.hpp>
 #include <list>
 #include <string>
 
-class beamline;
+class   beamline;
+class   bmlnElmnt;
+
+typedef boost::shared_ptr<beamline>  BmlPtr;
+typedef boost::shared_ptr<bmlnElmnt> ElmPtr;
 
 class bmlfactory {
 
@@ -47,8 +56,8 @@ class bmlfactory {
 
     virtual ~bmlfactory() = 0;
 
-    virtual beamline* create_beamline( std::string bmlname ,  double brho) = 0;
-    virtual beamline* create_beamline( std::string bmlname)                = 0;
+    virtual BmlPtr create_beamline( std::string bmlname ,  double brho) = 0;
+    virtual BmlPtr create_beamline( std::string bmlname)                = 0;
         
     virtual std::list<std::string>  getBeamlineList() =0;          // list of all available beamlines  
 
