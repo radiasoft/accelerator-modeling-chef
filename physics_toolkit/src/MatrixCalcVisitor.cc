@@ -32,6 +32,13 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
+****** REVSION HISTORY
+****** 
+****** Mar 2007     ostiguy@fnal.gov
+******
+****** - use STL container for linear model matrices
+****** - visitor interface takes advantage of (reference) dynamic type
+****** - initialization optimizations
 **************************************************************************
 *************************************************************************/
 
@@ -40,7 +47,6 @@
 #endif
 
 #include <basic_toolkit/GenericException.h>
-#include <beamline/BeamlineIterator.h>
 #include <beamline/beamline.h>
 #include <beamline/beamline_elements.h>
 #include <physics_toolkit/MatrixCalcVisitor.h>
@@ -57,200 +63,233 @@ int MatrixCalcVisitor::INTEGER_TUNE = -2;
 int MatrixCalcVisitor::PHASE_ERROR  = -3;
 
 
-MatrixCalcVisitor::MatrixCalcVisitor( const Particle& x )
-: _numberOfElements(0), 
-  _firstTime(1),
-  _calcDone(0),
-  _map_h(2,2), 
-  _map_v(2,2),
-  _counter(0), 
-  _myParticle((Particle*) &x),
-  _myBeamlinePtr(0),
-  _linearModel_h(0),
-  _linearModel_v(0),
-  _beta_h(0),
-  _beta_v(0),
-  _alpha_h(0),
-  _alpha_v(0),
-  _psi_h(0),
-  _psi_v(0)
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+MatrixCalcVisitor::MatrixCalcVisitor( Particle const& x )
+: numberOfElements_(0), 
+  firstTime_(true),
+  calcDone_(false),
+  map_h_(2,2), 
+  map_v_(2,2),
+  counter_(0), 
+  particle_(x),
+  myBeamlinePtr_(0),
+  linearModel_h_(0),
+  linearModel_v_(0),
+  beta_h_(),
+  beta_v_(),
+  alpha_h_(),
+  alpha_v_(),
+  psi_h_(),
+  psi_v_()
 {
-  _map_h(0,0) = 1.0;    _map_h(0,1) = 0.0;
-  _map_h(1,0) = 0.0;    _map_h(1,1) = 1.0;
-  _map_v(0,0) = 1.0;    _map_v(0,1) = 0.0;
-  _map_v(1,0) = 0.0;    _map_v(1,1) = 1.0;
+  map_h_(0,0) = 1.0;    map_h_(0,1) = 0.0;
+  map_h_(1,0) = 0.0;    map_h_(1,1) = 1.0;
+  map_v_(0,0) = 1.0;    map_v_(0,1) = 0.0;
+  map_v_(1,0) = 0.0;    map_v_(1,1) = 1.0;
 }
 
 
-MatrixCalcVisitor::MatrixCalcVisitor( const MatrixCalcVisitor& x )
-{
-  throw( GenericException( __FILE__, __LINE__, 
-         "MatrixCalcVisitor::MatrixCalcVisitor( const MatrixCalcVisitor& x )", 
-         "Not permitted to call copy constructor." ) );
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 MatrixCalcVisitor::~MatrixCalcVisitor()
-{
-  if( _myParticle ) delete _myParticle;
-  if( _numberOfElements > 0 ) {
-    for( int i = 0; i < _numberOfElements; i++ ) {
-      delete _linearModel_h[i];
-      delete _linearModel_v[i];
-    }
-    delete [] _linearModel_h;
-    delete [] _linearModel_v;
-  }
-  if( _beta_h )  delete [] _beta_h;
-  if( _beta_v )  delete [] _beta_v;
-  if( _alpha_h ) delete [] _alpha_h;
-  if( _alpha_v ) delete [] _alpha_v;
-  if( _psi_h )   delete [] _psi_h;
-  if( _psi_v )   delete [] _psi_v;
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<double> const&  MatrixCalcVisitor::s() {
+  return  arcLength_;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+int MatrixCalcVisitor::NumberOfElements() const {
+  return numberOfElements_;
+}
 
-void MatrixCalcVisitor::visitBeamline( beamline* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void MatrixCalcVisitor::visit( beamline& x )
 {
-  if( _firstTime ) 
+  if( firstTime_ ) 
   {
-    _myBeamlinePtr    = x;
-    _numberOfElements = x->countHowManyDeeply();
-    _linearModel_h    = new MatrixD* [_numberOfElements];
-    _linearModel_v    = new MatrixD* [_numberOfElements];
-    _beta_h           = new double   [_numberOfElements];
-    _beta_v           = new double   [_numberOfElements];
-    _alpha_h          = new double   [_numberOfElements];
-    _alpha_v          = new double   [_numberOfElements];
-    _psi_h            = new double   [_numberOfElements];
-    _psi_v            = new double   [_numberOfElements];
-    _arcLength        = new double   [_numberOfElements];
-
-    for( int i = 0; i < _numberOfElements; i++ ) {
-      _linearModel_h[i] = new MatrixD(2,2,0.0);
-      _linearModel_v[i] = new MatrixD(2,2,0.0);
-    }
-
-    _firstTime = 0;
+     myBeamlinePtr_    = &x;
+     numberOfElements_ = x.countHowManyDeeply();
+     firstTime_        = false;
   }
 
 
-  if( x == _myBeamlinePtr ) 
+  if( myBeamlinePtr_ = &x ) 
   {
-    _calcDone = 0;
+    calcDone_ = 0;
 
-    _map_h(0,0) = 1.0;    _map_h(0,1) = 0.0;
-    _map_h(1,0) = 0.0;    _map_h(1,1) = 1.0;
-    _map_v(0,0) = 1.0;    _map_v(0,1) = 0.0;
-    _map_v(1,0) = 0.0;    _map_v(1,1) = 1.0;
+    map_h_(0,0) = 1.0;    map_h_(0,1) = 0.0;
+    map_h_(1,0) = 0.0;    map_h_(1,1) = 1.0;
+    map_v_(0,0) = 1.0;    map_v_(0,1) = 0.0;
+    map_v_(1,0) = 0.0;    map_v_(1,1) = 1.0;
 
-    DeepBeamlineIterator dbi( *x );
-    bmlnElmnt* q;
+
     double s = 0.0;
-    _counter = -1;
-    while((  q = dbi++  )) {
-      _counter++;
-      if( _counter < _numberOfElements ) {
+    counter_ = 0;
+
+    ElmPtr q;
+    for (beamline::deep_iterator it  = x.deep_begin();  
+	 it !=  x.deep_end(); ++it ) { 
+      
+      ++counter_;
+
+      q = (*it);
+
+      if( counter_ <= numberOfElements_ ) {
   	q->accept( *this );
-  	s += q->OrbitLength( *_myParticle );
-  	_arcLength[_counter] = s;
+  	s += q->OrbitLength( particle_ );
+  	arcLength_.push_back(s);
       }
       else {
         ostringstream uic;
         uic  << "The counter has overrun the number of elements: "
-  	     << _counter << " > " << _numberOfElements;
+  	     << counter_ << " > " << numberOfElements_;
         throw( GenericException( __FILE__, __LINE__, 
                "void MatrixCalcVisitor::visitBeamline( beamline* x )", 
                uic.str().c_str() ) );
       }
     }
   
-    if( _counter + 1 != _numberOfElements ) {
+    if( counter_  != numberOfElements_ ) {
       ostringstream uic;
       uic  << "The count is not correct: "
-  	   << _counter << " + 1 != " << _numberOfElements;
+  	   << counter_ << "  != " << numberOfElements_;
       throw( GenericException( __FILE__, __LINE__, 
-             "void MatrixCalcVisitor::visitBeamline( beamline* x )", 
+             "void MatrixCalcVisitor::visit( beamline& x )", 
              uic.str().c_str() ) );
     }
   }
 }
 
 
-void MatrixCalcVisitor::visitBmlnElmnt( bmlnElmnt* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void MatrixCalcVisitor::visit( bmlnElmnt& x )
 {
   // The arbitrary elements will act like a drift.
-  static double lng;
-  lng = x->Length();
 
-  (*(_linearModel_h[_counter]))(0,0) = 1.0;    
-  (*(_linearModel_h[_counter]))(0,1) = lng;
-  (*(_linearModel_h[_counter]))(1,1) = 1.0;
+  double lng = x.Length();
 
-  (*(_linearModel_v[_counter]))(0,0) = 1.0;
-  (*(_linearModel_v[_counter]))(0,1) = lng;
-  (*(_linearModel_v[_counter]))(1,1) = 1.0;
+  MatrixD mtrx_h(2,2);
+
+  mtrx_h(0,0) = 1.0;    
+  mtrx_h(0,1) = lng;
+  mtrx_h(1,1) = 1.0;
+
+  linearModel_h_.push_back(mtrx_h);
+ 
+
+  MatrixD mtrx_v(2,2);
+
+  mtrx_v(0,0) = 1.0;
+  mtrx_v(0,1) = lng;
+  mtrx_v(1,1) = 1.0;
+
+  linearModel_v_.push_back(mtrx_v);
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void MatrixCalcVisitor::visitMarker( marker* x )
+void MatrixCalcVisitor::visit( marker& x )
 {
   // The matrices are unit matrices; 
   // i.e., nothing happens.
 
-  (*(_linearModel_h[_counter]))(0,0) = 1.0;    
-  (*(_linearModel_h[_counter]))(0,1) = 0.0;
-  (*(_linearModel_h[_counter]))(1,0) = 0.0;
-  (*(_linearModel_h[_counter]))(1,1) = 1.0;
 
-  (*(_linearModel_v[_counter]))(0,0) = 1.0;
-  (*(_linearModel_v[_counter]))(0,1) = 0.0;
-  (*(_linearModel_v[_counter]))(1,0) = 0.0;
-  (*(_linearModel_v[_counter]))(1,1) = 1.0;
+   MatrixD mtrx_h(2,2);
+
+   mtrx_h(0,0) = 1.0;    
+   mtrx_h(0,1) = 0.0;
+   mtrx_h(1,0) = 0.0;
+   mtrx_h(1,1) = 1.0;
+
+   linearModel_h_.push_back(mtrx_h);
+
+   MatrixD mtrx_v(2,2);
+
+   mtrx_v(0,0) = 1.0;
+   mtrx_v(0,1) = 0.0;
+   mtrx_v(1,0) = 0.0;
+   mtrx_v(1,1) = 1.0;
+
+   linearModel_v_.push_back(mtrx_v);
 }
 
 
-void MatrixCalcVisitor::visitDrift( drift* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void MatrixCalcVisitor::visit( drift& x )
 {
-  static double lng;
-  lng = x->Length();
+  double lng = x.Length();
 
-  (*(_linearModel_h[_counter]))(0,0) = 1.0;    
-  (*(_linearModel_h[_counter]))(0,1) = lng;
-  (*(_linearModel_h[_counter]))(1,1) = 1.0;
+  MatrixD mtrx_h(2,2);
 
-  (*(_linearModel_v[_counter]))(0,0) = 1.0;
-  (*(_linearModel_v[_counter]))(0,1) = lng;
-  (*(_linearModel_v[_counter]))(1,1) = 1.0;
+  mtrx_h(0,0) = 1.0;    
+  mtrx_h(0,1) = lng;
+  mtrx_h(1,1) = 1.0;
+
+  linearModel_h_.push_back(mtrx_h);
+
+  MatrixD mtrx_v(2,2);
+
+  mtrx_v(0,0) = 1.0;
+  mtrx_v(0,1) = lng;
+  mtrx_v(1,1) = 1.0;
+ 
+  linearModel_v_.push_back(mtrx_v);
+
 }
 
 
-void MatrixCalcVisitor::visitSbend( sbend* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void MatrixCalcVisitor::visit( sbend& x )
 {
-  static double theta;
-  static double rho;
-  static double cs;
-  static double sn;
-  static double lng;
   
-  lng   = x->Length();
-  rho   = _myParticle->ReferenceBRho() / x->Strength();
-  theta = lng / rho;
-  cs    = cos( theta );
-  sn    = sin( theta );
+  double lng   = x.Length();
+  double rho   = particle_.ReferenceBRho() / x.Strength();
+  double theta = lng / rho;
+  double cs    = cos( theta );
+  double sn    = sin( theta );
 
-  (*(_linearModel_h[_counter]))(0,0) = cs;
-  (*(_linearModel_h[_counter]))(0,1) = rho*sn;
-  (*(_linearModel_h[_counter]))(1,0) = - sn/rho;
-  (*(_linearModel_h[_counter]))(1,1) = cs;
 
-  (*(_linearModel_v[_counter]))(0,0) = 1.0;
-  (*(_linearModel_v[_counter]))(0,1) = lng;
-  (*(_linearModel_v[_counter]))(1,1) = 1.0;
+  MatrixD mtrx_h(2,2);
+
+  mtrx_h(0,0) = cs;
+  mtrx_h(0,1) = rho*sn;
+  mtrx_h(1,0) = - sn/rho;
+  mtrx_h(1,1) = cs;
+
+  linearModel_h_.push_back(mtrx_h);
+
+  MatrixD mtrx_v(2,2);
+
+  mtrx_v(0,0) = 1.0;
+  mtrx_v(0,1) = lng;
+  mtrx_v(1,1) = 1.0;
+
+  linearModel_v_.push_back(mtrx_v);
 }
 
 
-void MatrixCalcVisitor::visitRbend( rbend* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void MatrixCalcVisitor::visit( rbend& x )
 {
   throw( GenericException( __FILE__, __LINE__, 
          "void MatrixCalcVisitor::visitRbend( rbend* x )", 
@@ -258,7 +297,10 @@ void MatrixCalcVisitor::visitRbend( rbend* x )
 }
 
 
-void MatrixCalcVisitor::visitSector( sector* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void MatrixCalcVisitor::visit( sector& x )
 {
   throw( GenericException( __FILE__, __LINE__, 
          "void MatrixCalcVisitor::visitSector( sector* x )", 
@@ -266,63 +308,81 @@ void MatrixCalcVisitor::visitSector( sector* x )
 }
 
 
-void MatrixCalcVisitor::visitQuadrupole( quadrupole* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void MatrixCalcVisitor::visit( quadrupole& x )
 {
-  static double theta;
-  static double kappa;
-  static double cs;
-  static double sn;
-  static double csh;
-  static double snh;
   
-  kappa = sqrt( fabs( x->Strength() / _myParticle->ReferenceBRho() ) );
-  theta = x->Length() * kappa;
-  cs    = cos ( theta );
-  sn    = sin ( theta );
-  csh   = cosh( theta );
-  snh   = sinh( theta );
+  double kappa = sqrt( fabs( x.Strength() / particle_.ReferenceBRho() ) );
+  double theta = x.Length() * kappa;
+  double cs    = cos ( theta );
+  double sn    = sin ( theta );
+  double csh   = cosh( theta );
+  double snh   = sinh( theta );
 
-  if( x->Strength() > 0.0 ) {
-    (*(_linearModel_h[_counter]))(0,0) = cs;
-    (*(_linearModel_h[_counter]))(0,1) = sn/kappa;
-    (*(_linearModel_h[_counter]))(1,0) = - kappa*sn;
-    (*(_linearModel_h[_counter]))(1,1) = cs;
+  MatrixD mtrx_h(2,2);
+  MatrixD mtrx_v(2,2);
 
-    (*(_linearModel_v[_counter]))(0,0) = csh;
-    (*(_linearModel_v[_counter]))(0,1) = snh/kappa;
-    (*(_linearModel_v[_counter]))(1,0) = - kappa*snh;
-    (*(_linearModel_v[_counter]))(1,1) = csh;
+  if( x.Strength() > 0.0 ) {
+    mtrx_h(0,0) = cs;
+    mtrx_h(0,1) = sn/kappa;
+    mtrx_h(1,0) = - kappa*sn;
+    mtrx_h(1,1) = cs;
+
+    mtrx_v(0,0) = csh;
+    mtrx_v(0,1) = snh/kappa;
+    mtrx_v(1,0) = - kappa*snh;
+    mtrx_v(1,1) = csh;
   }
   else {
-    (*(_linearModel_v[_counter]))(0,0) = cs;
-    (*(_linearModel_v[_counter]))(0,1) = sn/kappa;
-    (*(_linearModel_v[_counter]))(1,0) = - kappa*sn;
-    (*(_linearModel_v[_counter]))(1,1) = cs;
+    mtrx_h(0,0) = cs;
+    mtrx_h(0,1) = sn/kappa;
+    mtrx_h(1,0) = - kappa*sn;
+    mtrx_h(1,1) = cs;
 
-    (*(_linearModel_h[_counter]))(0,0) = csh;
-    (*(_linearModel_h[_counter]))(0,1) = snh/kappa;
-    (*(_linearModel_h[_counter]))(1,0) = - kappa*snh;
-    (*(_linearModel_h[_counter]))(1,1) = csh;
+    mtrx_v(0,0) = csh;
+    mtrx_v(0,1) = snh/kappa;
+    mtrx_v(1,0) = - kappa*snh;
+    mtrx_v(1,1) = csh;
   }
+
+  linearModel_h_.push_back(mtrx_h);
+  linearModel_v_.push_back(mtrx_v);
+
+
 }
 
 
-void MatrixCalcVisitor::visitThinQuad( thinQuad* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void MatrixCalcVisitor::visit( thinQuad& x )
 {
-  static double kappa;  // = 1/f
-  kappa = x->Strength() / _myParticle->ReferenceBRho();
+  double kappa = x.Strength() / particle_.ReferenceBRho(); // 1/f
   
-  (*(_linearModel_h[_counter]))(0,0) = 1.0;    
-  (*(_linearModel_h[_counter]))(1,0) = - kappa;
-  (*(_linearModel_h[_counter]))(1,1) = 1.0;
+  MatrixD  mtrx_h(2,2);
+  MatrixD  mtrx_v(2,2);
 
-  (*(_linearModel_v[_counter]))(0,0) = 1.0;
-  (*(_linearModel_v[_counter]))(1,0) = kappa;
-  (*(_linearModel_v[_counter]))(1,1) = 1.0;
+  mtrx_h(0,0) = 1.0;    
+  mtrx_h(1,0) = - kappa;
+  mtrx_h(1,1) = 1.0;
+
+  linearModel_h_.push_back(mtrx_h);
+
+  mtrx_v(0,0) = 1.0;
+  mtrx_v(1,0) = kappa;
+  mtrx_v(1,1) = 1.0;
+
+  linearModel_v_.push_back(mtrx_v);
+
 }
 
 
-void MatrixCalcVisitor::visitSlot( Slot* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void MatrixCalcVisitor::visit( Slot& x )
 {
   throw( GenericException( __FILE__, __LINE__, 
          "void MatrixCalcVisitor::visitSlot( Slot* x )", 
@@ -330,7 +390,10 @@ void MatrixCalcVisitor::visitSlot( Slot* x )
 }
 
 
-void MatrixCalcVisitor::visitCF_rbend( CF_rbend* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void MatrixCalcVisitor::visit( CF_rbend& x )
 {
   throw( GenericException( __FILE__, __LINE__, 
          "void MatrixCalcVisitor::visitCF_rbend( CF_rbend* x )", 
@@ -338,7 +401,10 @@ void MatrixCalcVisitor::visitCF_rbend( CF_rbend* x )
 }
 
 
-void visitCombinedFunction( combinedFunction* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void visit( combinedFunction& x )
 {
   throw( GenericException( __FILE__, __LINE__, 
          "void visitCombinedFunction( combinedFunction* x )", 
@@ -347,24 +413,38 @@ void visitCombinedFunction( combinedFunction* x )
 
 
 
-void MatrixCalcVisitor::getState( Vector& x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Vector& MatrixCalcVisitor::getState()
 {
-  x =_myParticle->getState();
+  return  particle_.getState();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Vector MatrixCalcVisitor::State()
 {
-  return _myParticle->State();
+  return particle_.State();
 }
 
 
-int MatrixCalcVisitor::_doCalc()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int MatrixCalcVisitor::doCalc()
 {
-  int i;
-  for( i = 0; i < _numberOfElements; i++ ) {
-    _map_h = (*(_linearModel_h[i]))*_map_h;
-    _map_v = (*(_linearModel_v[i]))*_map_v;
+  
+  std::vector<MatrixD>::iterator ith;
+  std::vector<MatrixD>::iterator itv;
+
+  for( int i=0;  i < numberOfElements_; ++i, ++ith, ++itv) {
+
+     map_h_ = map_h_ * (*ith);
+     map_v_ = map_v_ * (*itv);
+
   }
 
   // ==========================================================
@@ -381,9 +461,9 @@ int MatrixCalcVisitor::_doCalc()
   double alpha_x, beta_x;
 
   double sn;
-  double cs = ( _map_h( i_x, i_x ) + _map_h( i_px, i_px ) )/2.0;
+  double cs = ( map_h_( i_x, i_x ) + map_h_( i_px, i_px ) )/2.0;
   if( fabs( cs ) <= 1.0 ) {
-    if( _map_h( i_x, i_px ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
+    if( map_h_( i_x, i_px ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
     else                             sn = - sqrt( 1.0 - cs*cs );
   }
   else {
@@ -409,15 +489,15 @@ int MatrixCalcVisitor::_doCalc()
     return MatrixCalcVisitor::INTEGER_TUNE;
   }
 
-  beta_x  = _map_h( i_x, i_px ) / sn;
-  alpha_x = ( _map_h( i_x, i_x ) - _map_h( i_px, i_px ) ) / ( 2.0*sn );
+  beta_x  = map_h_( i_x, i_px ) / sn;
+  alpha_x = ( map_h_( i_x, i_x ) - map_h_( i_px, i_px ) ) / ( 2.0*sn );
 
 
   // ... then vertical.
   double alpha_y, beta_y;
-  cs = ( _map_v( i_y, i_y ) + _map_v( i_py, i_py ) )/2.0;
+  cs = ( map_v_( i_y, i_y ) + map_v_( i_py, i_py ) )/2.0;
   if( fabs( cs ) <= 1.0 ) {
-    if( _map_v( i_y, i_py ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
+    if( map_v_( i_y, i_py ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
     else                           sn = - sqrt( 1.0 - cs*cs );
   }
   else {
@@ -443,11 +523,12 @@ int MatrixCalcVisitor::_doCalc()
     return MatrixCalcVisitor::INTEGER_TUNE;
   }
 
-  beta_y  = _map_v( i_y, i_py ) / sn;
-  alpha_y = ( _map_v( i_y, i_y ) - _map_v( i_py, i_py ) ) / ( 2.0*sn );
+  beta_y  = map_v_( i_y, i_py ) / sn;
+  alpha_y = ( map_v_( i_y, i_y ) - map_v_( i_py, i_py ) ) / ( 2.0*sn );
 
 
   // Set up the "proton" states ...
+
   MatrixC w_x(2,1);
   MatrixC w_y(2,1);
   double  dum;
@@ -465,19 +546,20 @@ int MatrixCalcVisitor::_doCalc()
   double psi_y = 0.0;
   double dpsi_x, dpsi_y;
 
-  // cout << "DGN> number of elements = " << _numberOfElements << endl;
+  // cout << "DGN> number of elements = " << numberOfElements_ << endl;
   // cout << "DGN> w_x = \n" << w_x << endl;
-  for( int jc = 0; jc < _numberOfElements; jc++ )
+
+  for( int jc = 0; jc < numberOfElements_; ++jc)
   {
-    MatrixC w_z;
-    w_z = w_x;
-    w_x = (*(_linearModel_h[jc])) * w_z;
-    w_y = (*(_linearModel_v[jc])) * w_y;
+
+    MatrixC w_z = w_x;
+
+    w_x  = w_x * linearModel_h_[jc];
+    w_y  = w_y * linearModel_v_[jc];
+
     outState_x = w_x;
     outState_y = w_y;
 
-    // cout << "DGN> M = \n" << (*(_linearModel_h[jc])) << endl;
-    // cout << "DGN> w_x = \n" << w_x << endl;
     phase = w_x(i_x,0) / abs( w_x(i_x,0) );
     outState_x = outState_x/phase;
     if(   fabs( imag( outState_x(i_px,0) )*real( outState_x(i_x,0) ) - 1.0 )
@@ -520,22 +602,23 @@ int MatrixCalcVisitor::_doCalc()
   
 
     // Calculate lattice functions ...
-    beta_x  =   real( outState_x(i_x,0)  );
-    alpha_x = - real( outState_x(i_px,0) );
+    beta_x   =   real( outState_x(i_x,0)  );
+    alpha_x  = - real( outState_x(i_px,0) );
     alpha_x *= beta_x;
     beta_x  *= beta_x;
   
     beta_y  =   real( outState_y(i_y,0) );
     alpha_y = - real( outState_y(i_py,0) );
+
     alpha_y *= beta_y;
     beta_y  *= beta_y;
 
-    _beta_h[jc] = beta_x;
-    _beta_v[jc] = beta_y;
-    _alpha_h[jc] = alpha_x;
-    _alpha_v[jc] = alpha_y;
-    _psi_h[jc]   = psi_x;
-    _psi_v[jc]   = psi_y;
+      beta_h_[jc]   = beta_x;
+      beta_v_[jc]   = beta_y;
+     alpha_h_[jc]   = alpha_x;
+     alpha_v_[jc]   = alpha_y;
+       psi_h_[jc]   = psi_x;
+       psi_v_[jc]   = psi_y;
 
   }  // End loop on jc ...
 
@@ -543,51 +626,61 @@ int MatrixCalcVisitor::_doCalc()
   // 
   // ==========================================================  
 
-  _calcDone = 1;
+  calcDone_ = true;
   return MatrixCalcVisitor::DONE;
 }
 
 
 
-const double* MatrixCalcVisitor::Beta_h() {
-  static int ret;
-  if( !_calcDone ) ret = this->_doCalc();
-  if( ret < 0 )  return (const double*) ret;
-  else           return _beta_h;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<double> const& MatrixCalcVisitor::Beta_h()  {
+
+  if( !calcDone_ ) doCalc();
+  return beta_h_;
 }
 
-const double* MatrixCalcVisitor::Beta_v() {
-  static int ret;
-  if( !_calcDone ) ret = this->_doCalc();
-  if( ret < 0 )  return (const double*) ret;
-  else           return _beta_v;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<double> const& MatrixCalcVisitor::Beta_v()  {
+  if( !calcDone_ ) doCalc();
+  return beta_v_;
 }
 
-const double* MatrixCalcVisitor::Alpha_h() {
-  static int ret;
-  if( !_calcDone ) ret = this->_doCalc();
-  if( ret < 0 )  return (const double*) ret;
-  else           return _alpha_h;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<double> const& MatrixCalcVisitor::Alpha_h()  {
+  if( !calcDone_ ) doCalc();
+  return alpha_h_;
 }
 
-const double* MatrixCalcVisitor::Alpha_v() {
-  static int ret;
-  if( !_calcDone ) ret = this->_doCalc();
-  if( ret < 0 )  return (const double*) ret;
-  else           return _alpha_v;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<double> const& MatrixCalcVisitor::Alpha_v()  {
+
+  if( !calcDone_ ) doCalc();
+  return alpha_v_;
 }
 
-const double* MatrixCalcVisitor::Psi_h() {
-  static int ret;
-  if( !_calcDone ) ret = this->_doCalc();
-  if( ret < 0 )  return (const double*) ret;
-  else           return _psi_h;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<double> const& MatrixCalcVisitor::Psi_h()  {
+
+  if( !calcDone_ ) doCalc();
+  return psi_h_;
 }
 
-const double* MatrixCalcVisitor::Psi_v() {
-  static int ret;
-  if( !_calcDone ) ret = this->_doCalc();
-  if( ret < 0 )  return (const double*) ret;
-  else           return _psi_v;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<double> const& MatrixCalcVisitor::Psi_v() {
+
+  if( !calcDone_ ) doCalc();
+  return psi_v_;
 }
 
