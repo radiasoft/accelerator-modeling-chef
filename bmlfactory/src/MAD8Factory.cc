@@ -35,6 +35,9 @@
 ******                    (630) 840 2231                              
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
+****** REVISION HISTORY
+****** Mar 2007   ostiguy@fnal.gov
+****** - added support for reference counted beamlines/elements
 ******
 **************************************************************************
 **************************************************************************
@@ -126,9 +129,6 @@ MAD8Factory::MAD8Factory( std::string fname, double BRHO, const char* stringbuff
 
      madparser_delete( mp_);
 
-     delete_bel_list();
-     delete_bml_list();
-
   
      if ( bel_arr_) free(bel_arr_);  // memory allocated by call to bel_table_to_array in constructor
      if ( bml_arr_) free(bml_arr_);  // memory allocated by call to bml_table_to_array in constructor
@@ -159,8 +159,8 @@ MAD8Factory::MAD8Factory( std::string fname, const char* stringbuffer)
   
       madparser_delete(mp_);
    
-      delete_bel_list();
-      delete_bml_list();
+      //delete_bel_list();
+      //delete_bml_list();
   
       if (bel_arr_) free(bel_arr_);  // memory allocated by call to bel_table_to_array in constructor
       if (bml_arr_) free(bml_arr_);  // memory allocated by call to bml_table_to_array in constructor
@@ -223,8 +223,8 @@ MAD8Factory::~MAD8Factory() {
 
   // Note: the create_beamline function returns a Cloned() beamline and bmlnElmnts, 
 
-  delete_bml_list();
-  delete_bel_list();
+  //delete_bml_list();
+  //delete_bel_list();
 
 }
 
@@ -232,10 +232,10 @@ MAD8Factory::~MAD8Factory() {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline* 
+BmlPtr 
 MAD8Factory::create_beamline( std::string bmlname) {   // *** DEPRECATED ***
   
- beamline* bml = create_beamline_private(bmlname.c_str());
+ BmlPtr bml = create_beamline_private(bmlname.c_str());
 
  if ( bml == 0)
  { 
@@ -245,7 +245,7 @@ MAD8Factory::create_beamline( std::string bmlname) {   // *** DEPRECATED ***
  }  
  else
  {
-    return bml->Clone();
+    return BmlPtr( bml->Clone() );
  }
 }
 
@@ -253,13 +253,13 @@ MAD8Factory::create_beamline( std::string bmlname) {   // *** DEPRECATED ***
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline* 
+BmlPtr 
 MAD8Factory::create_beamline( std::string bmlname, double brho   ) 
 {
 
- beamline* bml = create_beamline_private(bmlname.c_str(), brho);
+ BmlPtr bml = create_beamline_private(bmlname.c_str(), brho);
  
- if ( bml) return bml->Clone();  
+ if ( bml) return BmlPtr( bml->Clone() );  
  
  throw GenericException(__FILE__, __LINE__, 
                                 "MAD8Factory::create_beamline( const char* bmlname, brho)",
@@ -272,7 +272,7 @@ MAD8Factory::create_beamline( std::string bmlname, double brho   )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline*
+BmlPtr
 MAD8Factory::create_beamline_private( const char* bmlname) { 
 
   return create_beamline_private( bmlname, BRHO_); 
@@ -282,23 +282,27 @@ MAD8Factory::create_beamline_private( const char* bmlname) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline*
+BmlPtr
 MAD8Factory::create_beamline_private( const char* bmlname, double brho ) 
 {
   BRHO_ = brho;
 
-  beamline* bml_ptr = 0;  
-  int i = 0;
-  for ( i = 0; i < bml_arr_size_; ++i ) {
+  BmlPtr bml_ptr;  
+
+  int i=0;
+  for ( i=0; i < bml_arr_size_; ++i ) {
     if ( strcasecmp( (*(bml_arr_+i))->name_, bmlname ) == 0 ) {
       break;
     }
   }
   if ( i == bml_arr_size_ ) {
     (*pcerr) << "Beam line \"" << bmlname << "\" not found." << endl;
-    return NULL;
+    return BmlPtr();
+
   } else {
-    bml_ptr = (beamline*)(beam_line_instantiate( *(bml_arr_+i) ));
+
+    bml_ptr = beam_line_instantiate( *(bml_arr_+i) );
+
     return bml_ptr;
   }
 }
@@ -343,30 +347,32 @@ MAD8Factory::strip_final_colon( const char* stuff )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*
+ElmPtr
 MAD8Factory::beam_element_instantiate( beam_element* bel ) {
   
-  bmlnElmnt* lbel = find_beam_element( bel->name_ );
-  if ( lbel != NULL ) {
-    return lbel; 
-  }
+  ElmPtr lbel = find_beam_element( bel->name_ );
+
+  if ( lbel ) return lbel; 
   
   alignmentData aligner;
   
   switch ( bel->kind_ ) {
     case BEL_DRIFT: {
       double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
-      lbel = new drift( strip_final_colon( bel->name_ ).c_str(), length );
+      lbel = ElmPtr( new drift( strip_final_colon( bel->name_ ).c_str(), length ) );
       break;
     }
     case BEL_MARKER: {
-      lbel = new marker( strip_final_colon( bel->name_ ).c_str() );
+      lbel = ElmPtr( new marker( strip_final_colon( bel->name_ ).c_str() ) );
       break;
     }
     case BEL_SBEND: {
+
       bool simple = false;
+
       double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
       double angle  = expr_evaluate( mp_,  bel->params_[BEL_SBEND_ANGLE], var_table_, bel_table_ );
+
       expr_struct *k1   = (expr_struct*)bel->params_[BEL_SBEND_K1]->data;
       expr_struct *k2   = (expr_struct*)bel->params_[BEL_SBEND_K2]->data;
       expr_struct *k3   = (expr_struct*)bel->params_[BEL_SBEND_K3]->data;
@@ -382,7 +388,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
                 tilt->kind_ == NUMBER_EXPR && tilt->dvalue_ == 0.0);
 
       if( true == simple ) {
-        lbel = new sbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*angle/length, angle, e1, e2 );
+        lbel = ElmPtr( new sbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*angle/length, angle, e1, e2 ) );
         if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
           aligner.xOffset = 0.0;
           aligner.yOffset = 0.0;
@@ -393,26 +399,27 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
         break;
       }
       else {
-        lbel = new CF_sbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*angle/length, angle, e1, e2 );
+        CF_sbend* p = 0;
+        lbel = ElmPtr( p = new CF_sbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*angle/length, angle, e1, e2 ) );
 
         double multipoleStrength;
 
         multipoleStrength = expr_evaluate( mp_,  bel->params_[BEL_SBEND_K1], var_table_, bel_table_ );
         multipoleStrength = multipoleStrength*BRHO_*length;
         if( multipoleStrength != 0.0 ) {
-          ((CF_sbend*) lbel)->setQuadrupole( multipoleStrength );
+          p->setQuadrupole( multipoleStrength );
 	}
 
         multipoleStrength = expr_evaluate( mp_,  bel->params_[BEL_SBEND_K2], var_table_, bel_table_ );
         multipoleStrength = multipoleStrength*BRHO_*length/2.0;
         if( multipoleStrength != 0.0 ) {
-          ((CF_sbend*) lbel)->setSextupole( multipoleStrength );
+          p->setSextupole( multipoleStrength );
 	}
 
         multipoleStrength = expr_evaluate( mp_,  bel->params_[BEL_SBEND_K3], var_table_, bel_table_ );
         multipoleStrength = multipoleStrength*BRHO_*length/6.0;
         if( multipoleStrength != 0.0 ) {
-          ((CF_sbend*) lbel)->setOctupole( multipoleStrength );
+          p->setOctupole( multipoleStrength );
 	}
         break;
       }
@@ -440,10 +447,10 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
 
       if( true == simple ) {
         if( (0.0 == e1) && (0.0 == e2) ) {
-          lbel = new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) );
+          lbel = ElmPtr ( new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) ) );
 	}
         else {
-          lbel = new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
+          lbel = ElmPtr( new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 ) );
         }
         if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
           aligner.xOffset = 0.0;
@@ -455,11 +462,13 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
         break;
       }
       else {
+        CF_rbend* p =0; 
+
         if( (0.0 == e1) && (0.0 == e2) ) {
-          lbel = new CF_rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) );
+          lbel = ElmPtr( p = new CF_rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) )         );
 	}
         else {
-          lbel = new CF_rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
+          lbel = ElmPtr( p = new CF_rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 ) );
 	}
 
         double multipoleStrength;
@@ -467,19 +476,19 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
         multipoleStrength = expr_evaluate( mp_,  bel->params_[BEL_RBEND_K1], var_table_, bel_table_ );
         multipoleStrength = multipoleStrength*BRHO_*length;
         if( multipoleStrength != 0.0 ) {
-          ((CF_rbend*) lbel)->setQuadrupole( multipoleStrength );
+           p->setQuadrupole( multipoleStrength );
 	}
 
         multipoleStrength = expr_evaluate( mp_,  bel->params_[BEL_RBEND_K2], var_table_, bel_table_ );
         multipoleStrength = multipoleStrength*BRHO_*length/2.0;
         if( multipoleStrength != 0.0 ) {
-          ((CF_rbend*) lbel)->setSextupole( multipoleStrength );
+           p->setSextupole( multipoleStrength );
 	}
 
         multipoleStrength = expr_evaluate( mp_,  bel->params_[BEL_RBEND_K3], var_table_, bel_table_ );
         multipoleStrength = multipoleStrength*BRHO_*length/6.0;
         if( multipoleStrength != 0.0 ) {
-          ((CF_rbend*) lbel)->setOctupole( multipoleStrength );
+          p->setOctupole( multipoleStrength );
 	}
         break;
       }
@@ -489,9 +498,9 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       double k1     = expr_evaluate( mp_,  bel->params_[BEL_QUADRUPOLE_K1], var_table_, bel_table_ );
       
       if ( length != 0.0 || k1 != 0.0 ) {
-        lbel = new quadrupole( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*k1 );
+        lbel = ElmPtr( new quadrupole( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*k1 ) );
       } else {
-        lbel = new thinQuad( strip_final_colon( bel->name_ ).c_str(), length );
+        lbel = ElmPtr( new thinQuad( strip_final_colon( bel->name_ ).c_str(), length ) );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_QUADRUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_QUADRUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -507,9 +516,9 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       double k2     = expr_evaluate( mp_,  bel->params_[BEL_SEXTUPOLE_K2], var_table_, bel_table_ );
       
       if ( length != 0.0 || k2 != 0.0 ) {
-        lbel = new sextupole( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*k2/2.0 );
+        lbel = ElmPtr( new sextupole( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*k2/2.0 ) );
       } else {
-        lbel = new thinSextupole( strip_final_colon( bel->name_ ).c_str(), length );
+        lbel = ElmPtr( new thinSextupole( strip_final_colon( bel->name_ ).c_str(), length ) );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_SEXTUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_SEXTUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -525,9 +534,9 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       double k3     = expr_evaluate( mp_,  bel->params_[BEL_OCTUPOLE_K3], var_table_, bel_table_ );
       
       if ( length != 0.0 || k3 != 0.0 ) {
-        lbel = new octupole( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*k3/6.0 );
+        lbel = ElmPtr( new octupole( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*k3/6.0 ) );
       } else {
-        lbel = new thinOctupole( strip_final_colon( bel->name_ ).c_str(), length );
+        lbel = ElmPtr( new thinOctupole( strip_final_colon( bel->name_ ).c_str(), length ) );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_OCTUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_OCTUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -540,13 +549,14 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
     }
     case BEL_MULTIPOLE: {
       double roll     = 0.0;
-      bmlnElmnt* q    = 0;
-      beamline* temp  = new beamline( strip_final_colon( bel->name_ ).c_str() );
+      ElmPtr q;
+      BmlPtr temp( new beamline( strip_final_colon( bel->name_ ).c_str() ) );
+
       temp->setEnergy( this->getEnergy() ); 
 
       double k0l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K0L], var_table_, bel_table_ );
       if( k0l != 0.0 ) {
-        q = new thin2pole(BRHO_*k0l);
+        q = ElmPtr( new thin2pole(BRHO_*k0l) );
         roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T0], var_table_, bel_table_ );
         if( 0.0 != roll ) {
           aligner.xOffset = 0.0;
@@ -559,7 +569,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
 
       double k1l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K1L], var_table_, bel_table_ );
       if( k1l != 0.0 ) {
-        q = new thinQuad( BRHO_*k1l );
+        q = ElmPtr( new thinQuad( BRHO_*k1l ) );
         roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T1], var_table_, bel_table_ );
         if( 0.0 != roll ) {
           aligner.xOffset = 0.0;
@@ -572,7 +582,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       
       double k2l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K2L], var_table_, bel_table_ );
       if( k2l != 0.0 ) {
-        q = new thinSextupole( BRHO_*k2l/2.0 );
+        q = ElmPtr( new thinSextupole( BRHO_*k2l/2.0 ) );
         roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T2], var_table_, bel_table_ );
         if( 0.0 != roll ) {
           aligner.xOffset = 0.0;
@@ -585,7 +595,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       
       double k3l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K3L], var_table_, bel_table_ );
       if( k3l != 0.0 ) {
-        q = new thinOctupole( BRHO_*k3l/6.0 );
+        q = ElmPtr( new thinOctupole( BRHO_*k3l/6.0 ) );
         roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T3], var_table_, bel_table_ );
         if( 0.0 != roll ) {
           aligner.xOffset = 0.0;
@@ -653,13 +663,11 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       int n = temp->howMany();
 
       if( 0 == n ) {
-        lbel = new marker( strip_final_colon( bel->name_ ).c_str() );
-        delete temp;
+        lbel = ElmPtr( new marker( strip_final_colon( bel->name_ ).c_str() ) );
       }
       else if( 1 == n ) {
         lbel = temp->firstElement();
         lbel->rename( strip_final_colon( bel->name_ ).c_str() );
-        delete temp;  // This should not delete the element.
       }
       else {
         lbel = temp;
@@ -667,7 +675,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       break;
     }
     case BEL_SOLENOID:
-      lbel = make_solenoid( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
+      lbel = ElmPtr( make_solenoid( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) ) );
       break;
     case BEL_HKICKER: {
       double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
@@ -675,9 +683,9 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       char   name[BEL_NAME_LENGTH];
       
       if ( length != 0.0 || kck != 0.0 ) {
-        lbel = new hkick( strip_final_colon( bel->name_ ).c_str(), length, kck );
+        lbel = ElmPtr( new hkick( strip_final_colon( bel->name_ ).c_str(), length, kck ) );
       } else {
-        lbel = new hkick( strip_final_colon( bel->name_ ).c_str(), kck );
+        lbel = ElmPtr( new hkick( strip_final_colon( bel->name_ ).c_str(), kck ) );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -694,9 +702,9 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       char   name[BEL_NAME_LENGTH];
       
       if ( length != 0.0 || kck != 0.0 ) {
-        lbel = new vkick( strip_final_colon( bel->name_ ).c_str(), length, kck );
+        lbel = ElmPtr( new vkick( strip_final_colon( bel->name_ ).c_str(), length, kck ) );
       } else {
-        lbel = new vkick( strip_final_colon( bel->name_ ).c_str(), kck );
+        lbel = ElmPtr( new vkick( strip_final_colon( bel->name_ ).c_str(), kck ) );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -714,9 +722,9 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       char   name[BEL_NAME_LENGTH];
       
       if ( length != 0.0 || hkck != 0.0 || vkck != 0.0 ) {
-        lbel = new kick( strip_final_colon( bel->name_ ).c_str(), length, hkck, vkck );
+        lbel = ElmPtr( new kick( strip_final_colon( bel->name_ ).c_str(), length, hkck, vkck ) );
       } else {
-        lbel = new kick( strip_final_colon( bel->name_ ).c_str(), hkck, vkck );
+        lbel = ElmPtr( new kick( strip_final_colon( bel->name_ ).c_str(), hkck, vkck ) );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -746,8 +754,8 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*) rfcPtr );
       // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "right" ), length/2.0 ) );
       
-      lbel = new rfcavity( strip_final_colon( bel->name_ ).c_str(), 
-                           length, 0, volt*1.0e6, lag*(2.0*M_PI), 0, shunt );
+      lbel = ElmPtr ( new rfcavity( strip_final_colon( bel->name_ ).c_str(), 
+                           length, 0, volt*1.0e6, lag*(2.0*M_PI), 0, shunt ) );
       // ......................................................................
       // NOTE: I cannot set the frequency of the rf cavity from harmonic number
       // until the revolution frequency is known; i.e. until the beamline
@@ -773,7 +781,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       double energy   = this->getEnergy();
       double angle    = 0.001 * (field*length/momentum) * (energy/momentum);
 
-      lbel = new vkick( strip_final_colon( bel->name_ ).c_str(), length, angle );
+      lbel = ElmPtr( new vkick( strip_final_colon( bel->name_ ).c_str(), length, angle ) );
 
       // Original code:. 
 
@@ -815,10 +823,10 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       // REMOVE: char   name[BEL_NAME_LENGTH];
       
       if( length > 0.0 ) {
-        lbel = new hmonitor( strip_final_colon( bel->name_ ).c_str(), length );
+        lbel = ElmPtr ( new hmonitor( strip_final_colon( bel->name_ ).c_str(), length ) );
       }
       else {
-        lbel = new hmonitor( strip_final_colon( bel->name_ ).c_str() );
+        lbel = ElmPtr( new hmonitor( strip_final_colon( bel->name_ ).c_str() ) );
       }
 
       // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
@@ -833,10 +841,10 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       // REMOVE: char   name[BEL_NAME_LENGTH];
       
       if( length > 0.0 ) {
-        lbel = new vmonitor( strip_final_colon( bel->name_ ).c_str(), length );
+        lbel = ElmPtr( new vmonitor( strip_final_colon( bel->name_ ).c_str(), length ) );
       }
       else {
-        lbel = new vmonitor( strip_final_colon( bel->name_ ).c_str() );
+        lbel = ElmPtr( new vmonitor( strip_final_colon( bel->name_ ).c_str() ) );
       }
 
       // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
@@ -851,10 +859,10 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       // REMOVE: char   name[BEL_NAME_LENGTH];
       
       if( length > 0.0 ) {
-        lbel = new monitor( strip_final_colon( bel->name_ ).c_str(), length );
+        lbel = ElmPtr( new monitor( strip_final_colon( bel->name_ ).c_str(), length ) );
       }
       else {
-        lbel = new monitor( strip_final_colon( bel->name_ ).c_str() );
+        lbel = ElmPtr( new monitor( strip_final_colon( bel->name_ ).c_str() ) );
       }
 
       // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
@@ -865,30 +873,30 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       break;
     }
     case BEL_INSTRUMENT:
-      lbel = make_instrument( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
+      lbel = ElmPtr( make_instrument( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) ) );
       break;
     case BEL_ECOLLIMATOR:
-      lbel = make_ecollimator( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
+      lbel = ElmPtr( make_ecollimator( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) ) );
       break;
     case BEL_RCOLLIMATOR:
-      lbel = make_rcollimator( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
+      lbel = ElmPtr( make_rcollimator( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) ) );
       break;
     case BEL_YROT:
-      lbel = make_yrot( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
+      lbel = ElmPtr( make_yrot( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) ) );
       break;
     case BEL_SROT: {
       double angle = expr_evaluate( mp_,  bel->params_[BEL_SROT_ANGLE], var_table_, bel_table_ );
-      lbel = new srot( strip_final_colon( bel->name_ ).c_str(), angle );
+      lbel = ElmPtr( new srot( strip_final_colon( bel->name_ ).c_str(), angle ) );
       break;
     }
     case BEL_BEAMBEAM:
-      lbel = make_beambeam( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
+      lbel = ElmPtr( make_beambeam( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) ) );
       break;
     case BEL_MATRIX:
-      lbel = make_matrix( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
+      lbel = ElmPtr( make_matrix( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) ) );
       break;
     case BEL_LUMP:
-      lbel = make_lump( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) );
+      lbel = ElmPtr( make_lump( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) ) );
       break;
     default:
       (*pcerr) << "Unknown beam element." << endl;
@@ -901,15 +909,15 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt*
-MAD8Factory::find_beam_element( const char* ptr ) const {
+ElmPtr
+MAD8Factory::find_beam_element( char const* name ) const {
   
-  map<string,bmlnElmnt*>::const_iterator res = bel_map_.find( string(ptr) );
+  map<string,ElmPtr>::const_iterator res = bel_map_.find( string(name) );
 
   if ( res != bel_map_.end() ) {
     return res->second;
   } else {
-    return NULL;
+    return ElmPtr();
   }
 }
 
@@ -917,20 +925,21 @@ MAD8Factory::find_beam_element( const char* ptr ) const {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline*
+BmlPtr
 MAD8Factory::beam_line_instantiate( beam_line* bml ) {
   
-  beamline* lbml = find_beam_line( bml->name_ );
-  if ( lbml == NULL ) {
-    lbml = new beamline( bml->name_ );
+  BmlPtr lbml = find_beam_line( bml->name_ );
+
+  if ( lbml ) return lbml;
+
+  lbml = BmlPtr( new beamline( bml->name_ ) );
     
-    for ( GList* listptr = bml->bel_list_;
+  for ( GList* listptr = bml->bel_list_;
           listptr != NULL; listptr = g_list_next( listptr ) ) {
-      append_bml_element( (char*)(listptr->data), lbml );
-    }
-    
-    bml_map_[string(bml->name_)] = lbml;
+    append_bml_element( (char*)(listptr->data), lbml.get() ); // FIXME !!!!
   }
+    
+  bml_map_[string(bml->name_)] = lbml;
 
   lbml->setEnergy( this->getEnergy() ); 
 
@@ -942,15 +951,15 @@ MAD8Factory::beam_line_instantiate( beam_line* bml ) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline*
+BmlPtr
 MAD8Factory::find_beam_line( char const* ptr ) const {
   
-  map<string,beamline*>::const_iterator res = bml_map_.find(string(ptr) );
+  map<string,BmlPtr>::const_iterator res = bml_map_.find(string(ptr) );
 
   if ( res != bml_map_.end() ) {
     return res->second;
   } else {
-    return NULL;
+    return BmlPtr();
   }
 }
 
@@ -963,7 +972,7 @@ MAD8Factory::append_bml_element( char* ptr, beamline* lbml ) {
      // search in the beam element table
 
   char label[BEL_NAME_LENGTH];
-  beamline* subbml = 0;
+  BmlPtr subbml;
 
   int i;
   for ( i = 0; i < bel_arr_size_; ++i ) {
@@ -979,14 +988,14 @@ MAD8Factory::append_bml_element( char* ptr, beamline* lbml ) {
 
   } else if (subbml = create_beamline_private( ptr+1, BRHO_ ) )  {   // note the first char in ptr is '+' or '-' 
 
-    beamline* tmp_bml = 0;
+   BmlPtr tmp_bml;
 
     if ( *ptr == '-' ) { 
       if ( (tmp_bml = find_beam_line( (string("REVERSE_") + string(ptr+1)).c_str())) ) {
 	subbml = tmp_bml;
       } 
       else {
-        subbml = subbml->reverse();
+        subbml = BmlPtr( subbml->reverse() );
         bml_map_[string( subbml->Name())] = subbml;
       }
     }
@@ -998,31 +1007,6 @@ MAD8Factory::append_bml_element( char* ptr, beamline* lbml ) {
       (*pcerr) << "Element \"" << ptr+1 << "\" not found." << endl;
   }
 }
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void
-MAD8Factory::delete_bml_list() {
-  for( map<string,beamline*>::iterator it = bml_map_.begin(); it != bml_map_.end(); ++it ) {
-       delete (it->second); 
-       it->second = 0;
-  }
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void
-MAD8Factory::delete_bel_list() {
-  for( map<string,bmlnElmnt*>::iterator it = bel_map_.begin(); it != bel_map_.end(); ++it ) {
-       delete (it->second); 
-       it->second = 0;
-  }
-
-}
-
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
